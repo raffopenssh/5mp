@@ -1,0 +1,2737 @@
+{
+ "park_id": "CMR_Lob\u00e9k\u00e9",
+ "scanned_at": "2026-07-28T06:00:36Z",
+ "datetime_range": "2026-06-13T00:00:00Z/2026-07-28T23:59:59Z",
+ "buffer_km": 50,
+ "n_waterways": 60,
+ "n_sample_pts": 4039,
+ "alerts": [
+  {
+   "lat": 2.50059,
+   "lon": 16.08194,
+   "river": "Sangha",
+   "waterway": "river",
+   "type": "turbid_headwater",
+   "red": 1497,
+   "upstream_median": null,
+   "ratio": null,
+   "dist_km": 0.0,
+   "downstream_turbid_km": 59.5,
+   "scene": "S2C_33NXC_20260628_0_L2A",
+   "date": "2026-06-28"
+  },
+  {
+   "lat": 2.69295,
+   "lon": 16.08088,
+   "river": "Centrafrique - Cameroun",
+   "waterway": "river",
+   "type": "turbid_headwater",
+   "red": 1591,
+   "upstream_median": null,
+   "ratio": null,
+   "dist_km": 0.0,
+   "downstream_turbid_km": 10.5,
+   "scene": "S2B_33NXD_20260723_0_L2A",
+   "date": "2026-07-23"
+  },
+  {
+   "lat": 2.82254,
+   "lon": 16.16453,
+   "river": "Sangha",
+   "waterway": "river",
+   "type": "turbid_headwater",
+   "red": 1508,
+   "upstream_median": null,
+   "ratio": null,
+   "dist_km": 0.0,
+   "downstream_turbid_km": 10.2,
+   "scene": "S2B_33NXD_20260723_0_L2A",
+   "date": "2026-07-23"
+  },
+  {
+   "lat": 1.91236,
+   "lon": 15.34359,
+   "river": "Ngoko",
+   "waterway": "river",
+   "type": "turbidity_onset",
+   "red": 1343,
+   "upstream_median": 632,
+   "ratio": 2.12,
+   "dist_km": 29.5,
+   "downstream_turbid_km": 6.2,
+   "scene": "S2B_33NWC_20260703_0_L2A",
+   "date": "2026-07-03"
+  }
+ ],
+ "rivers": [
+  {
+   "name": "Sangha",
+   "waterway": "river",
+   "length_km": 134.4,
+   "water_samples": 260,
+   "turbid_km": 59.5
+  },
+  {
+   "name": "Centrafrique - Cameroun",
+   "waterway": "river",
+   "length_km": 23.1,
+   "water_samples": 44,
+   "turbid_km": 10.5
+  },
+  {
+   "name": "Sangha",
+   "waterway": "river",
+   "length_km": 20.0,
+   "water_samples": 45,
+   "turbid_km": 10.2
+  },
+  {
+   "name": "Ngoko",
+   "waterway": "river",
+   "length_km": 139.6,
+   "water_samples": 245,
+   "turbid_km": 8.0
+  },
+  {
+   "name": "Boumba",
+   "waterway": "river",
+   "length_km": 192.1,
+   "water_samples": 70,
+   "turbid_km": 2.2
+  },
+  {
+   "name": "Dja",
+   "waterway": "river",
+   "length_km": 29.2,
+   "water_samples": 32,
+   "turbid_km": 1.2
+  },
+  {
+   "name": "Lopondji",
+   "waterway": "river",
+   "length_km": 43.0,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Gaboumo",
+   "waterway": "river",
+   "length_km": 28.0,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Lob\u00e9k\u00e9",
+   "waterway": "river",
+   "length_km": 68.5,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Ndjombi",
+   "waterway": "river",
+   "length_km": 41.6,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "stream",
+   "length_km": 9.6,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "stream",
+   "length_km": 10.4,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  }
+ ],
+ "turbid_points": [
+  {
+   "lat": 2.69295,
+   "lon": 16.08088,
+   "red": 1591,
+   "date": "2026-07-23",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.69021,
+   "lon": 16.07853,
+   "red": 1593,
+   "date": "2026-07-23",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.68596,
+   "lon": 16.07607,
+   "red": 1670,
+   "date": "2026-07-23",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.68344,
+   "lon": 16.07506,
+   "red": 1382,
+   "date": "2026-07-23",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.67975,
+   "lon": 16.07394,
+   "red": 1423,
+   "date": "2026-07-03",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.67624,
+   "lon": 16.07319,
+   "red": 1416,
+   "date": "2026-06-18",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.66338,
+   "lon": 16.07015,
+   "red": 1824,
+   "date": "2026-07-23",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.6598,
+   "lon": 16.06896,
+   "red": 1821,
+   "date": "2026-07-23",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.65675,
+   "lon": 16.06774,
+   "red": 1644,
+   "date": "2026-07-03",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.65316,
+   "lon": 16.06645,
+   "red": 1570,
+   "date": "2026-07-03",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.64841,
+   "lon": 16.06568,
+   "red": 1337,
+   "date": "2026-07-23",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.64539,
+   "lon": 16.06551,
+   "red": 1680,
+   "date": "2026-07-23",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.64129,
+   "lon": 16.06613,
+   "red": 1681,
+   "date": "2026-07-23",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.6334,
+   "lon": 16.06874,
+   "red": 1436,
+   "date": "2026-06-28",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.6293,
+   "lon": 16.07014,
+   "red": 1458,
+   "date": "2026-07-23",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.62545,
+   "lon": 16.07094,
+   "red": 1504,
+   "date": "2026-06-28",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.61889,
+   "lon": 16.07283,
+   "red": 1605,
+   "date": "2026-06-28",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.61641,
+   "lon": 16.07394,
+   "red": 1381,
+   "date": "2026-06-28",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.61442,
+   "lon": 16.07527,
+   "red": 1927,
+   "date": "2026-06-28",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.6112,
+   "lon": 16.07712,
+   "red": 1373,
+   "date": "2026-06-18",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.60857,
+   "lon": 16.07851,
+   "red": 2180,
+   "date": "2026-06-28",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.6031,
+   "lon": 16.0804,
+   "red": 1399,
+   "date": "2026-06-28",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.59658,
+   "lon": 16.08277,
+   "red": 1366,
+   "date": "2026-06-28",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.59363,
+   "lon": 16.08317,
+   "red": 1631,
+   "date": "2026-06-28",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.58963,
+   "lon": 16.08306,
+   "red": 1600,
+   "date": "2026-06-28",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.5867,
+   "lon": 16.08354,
+   "red": 1636,
+   "date": "2026-06-28",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.58368,
+   "lon": 16.08345,
+   "red": 1715,
+   "date": "2026-06-28",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.57999,
+   "lon": 16.08306,
+   "red": 1686,
+   "date": "2026-06-28",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.57624,
+   "lon": 16.08248,
+   "red": 1708,
+   "date": "2026-06-28",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.57303,
+   "lon": 16.0818,
+   "red": 2131,
+   "date": "2026-06-28",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.56847,
+   "lon": 16.08043,
+   "red": 1221,
+   "date": "2026-06-28",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.55573,
+   "lon": 16.07613,
+   "red": 1648,
+   "date": "2026-06-28",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.55213,
+   "lon": 16.07347,
+   "red": 1835,
+   "date": "2026-06-28",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.54216,
+   "lon": 16.0689,
+   "red": 1552,
+   "date": "2026-06-28",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.52946,
+   "lon": 16.06545,
+   "red": 1476,
+   "date": "2026-06-28",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.52574,
+   "lon": 16.06553,
+   "red": 1538,
+   "date": "2026-06-28",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.52198,
+   "lon": 16.06651,
+   "red": 1399,
+   "date": "2026-06-28",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.51425,
+   "lon": 16.06932,
+   "red": 1444,
+   "date": "2026-06-28",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.51208,
+   "lon": 16.07074,
+   "red": 1299,
+   "date": "2026-06-28",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.50738,
+   "lon": 16.07608,
+   "red": 1427,
+   "date": "2026-06-28",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.50552,
+   "lon": 16.0782,
+   "red": 1461,
+   "date": "2026-06-28",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.50059,
+   "lon": 16.08194,
+   "red": 1497,
+   "date": "2026-06-28",
+   "river": "Centrafrique - Cameroun"
+  },
+  {
+   "lat": 2.50059,
+   "lon": 16.08194,
+   "red": 1497,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.4974,
+   "lon": 16.08338,
+   "red": 1464,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.49429,
+   "lon": 16.08407,
+   "red": 1417,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.49047,
+   "lon": 16.08403,
+   "red": 1370,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.48658,
+   "lon": 16.0834,
+   "red": 1462,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.48166,
+   "lon": 16.08265,
+   "red": 1449,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.47918,
+   "lon": 16.08218,
+   "red": 1416,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.4768,
+   "lon": 16.08116,
+   "red": 1432,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.47216,
+   "lon": 16.07768,
+   "red": 1433,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.46797,
+   "lon": 16.07396,
+   "red": 1454,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.46498,
+   "lon": 16.07225,
+   "red": 1483,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.46268,
+   "lon": 16.0725,
+   "red": 1465,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.46027,
+   "lon": 16.07436,
+   "red": 1450,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.45797,
+   "lon": 16.07597,
+   "red": 1522,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.45275,
+   "lon": 16.07666,
+   "red": 1432,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.45041,
+   "lon": 16.07691,
+   "red": 1422,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.44426,
+   "lon": 16.07905,
+   "red": 1439,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.44209,
+   "lon": 16.08121,
+   "red": 1411,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.44088,
+   "lon": 16.08371,
+   "red": 1400,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.43847,
+   "lon": 16.08516,
+   "red": 1394,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.43644,
+   "lon": 16.08772,
+   "red": 1407,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.43563,
+   "lon": 16.09017,
+   "red": 1370,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.43473,
+   "lon": 16.09237,
+   "red": 1472,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.43202,
+   "lon": 16.09536,
+   "red": 1211,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.42739,
+   "lon": 16.09815,
+   "red": 1400,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.42134,
+   "lon": 16.10235,
+   "red": 1417,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.40847,
+   "lon": 16.10814,
+   "red": 1406,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.39928,
+   "lon": 16.11166,
+   "red": 1459,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.39164,
+   "lon": 16.11597,
+   "red": 1410,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.38461,
+   "lon": 16.12356,
+   "red": 1415,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.3773,
+   "lon": 16.12919,
+   "red": 1401,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.37153,
+   "lon": 16.13184,
+   "red": 1387,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.3629,
+   "lon": 16.13566,
+   "red": 1384,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.3602,
+   "lon": 16.14011,
+   "red": 1384,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.35244,
+   "lon": 16.14384,
+   "red": 1394,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.34047,
+   "lon": 16.14287,
+   "red": 1337,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.33267,
+   "lon": 16.14462,
+   "red": 1372,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.32844,
+   "lon": 16.14601,
+   "red": 1389,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.3257,
+   "lon": 16.14741,
+   "red": 1354,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.31813,
+   "lon": 16.15123,
+   "red": 1272,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.31088,
+   "lon": 16.15378,
+   "red": 1394,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.29751,
+   "lon": 16.15929,
+   "red": 1364,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.29033,
+   "lon": 16.16248,
+   "red": 1375,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.28478,
+   "lon": 16.16601,
+   "red": 1403,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.28298,
+   "lon": 16.16795,
+   "red": 1383,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.27327,
+   "lon": 16.16944,
+   "red": 1288,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.27102,
+   "lon": 16.1689,
+   "red": 1377,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.26852,
+   "lon": 16.16806,
+   "red": 1398,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.26286,
+   "lon": 16.16547,
+   "red": 1387,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.25638,
+   "lon": 16.16123,
+   "red": 1433,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.25447,
+   "lon": 16.15949,
+   "red": 1412,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.2493,
+   "lon": 16.16106,
+   "red": 1359,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.24363,
+   "lon": 16.16817,
+   "red": 1392,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.23805,
+   "lon": 16.17329,
+   "red": 1416,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.23594,
+   "lon": 16.17535,
+   "red": 1364,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.23322,
+   "lon": 16.17979,
+   "red": 1353,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.23054,
+   "lon": 16.18461,
+   "red": 1425,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.22615,
+   "lon": 16.18919,
+   "red": 1465,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.21937,
+   "lon": 16.1911,
+   "red": 1439,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.21324,
+   "lon": 16.1899,
+   "red": 1255,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.21126,
+   "lon": 16.18865,
+   "red": 1420,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.20338,
+   "lon": 16.18222,
+   "red": 1440,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.20094,
+   "lon": 16.18051,
+   "red": 1442,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.19879,
+   "lon": 16.17891,
+   "red": 1436,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.19678,
+   "lon": 16.17437,
+   "red": 1437,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.18993,
+   "lon": 16.15376,
+   "red": 1481,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.18174,
+   "lon": 16.15059,
+   "red": 1508,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.17964,
+   "lon": 16.14941,
+   "red": 1514,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.17779,
+   "lon": 16.14541,
+   "red": 1533,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.17854,
+   "lon": 16.13912,
+   "red": 1488,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.1819,
+   "lon": 16.13693,
+   "red": 1678,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.18526,
+   "lon": 16.13605,
+   "red": 1522,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.19107,
+   "lon": 16.13598,
+   "red": 1519,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.19748,
+   "lon": 16.13241,
+   "red": 1516,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.1987,
+   "lon": 16.12946,
+   "red": 1479,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.20034,
+   "lon": 16.1114,
+   "red": 1462,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.20067,
+   "lon": 16.1086,
+   "red": 1447,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.20105,
+   "lon": 16.10576,
+   "red": 1416,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.2024,
+   "lon": 16.0997,
+   "red": 1458,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.20271,
+   "lon": 16.09732,
+   "red": 1445,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.20278,
+   "lon": 16.0944,
+   "red": 1271,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.20258,
+   "lon": 16.09112,
+   "red": 1442,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.20171,
+   "lon": 16.08774,
+   "red": 1437,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.20023,
+   "lon": 16.08493,
+   "red": 1436,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.19669,
+   "lon": 16.08302,
+   "red": 1460,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.19456,
+   "lon": 16.08199,
+   "red": 1481,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.19201,
+   "lon": 16.08099,
+   "red": 1450,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.18883,
+   "lon": 16.0804,
+   "red": 1477,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.18513,
+   "lon": 16.08051,
+   "red": 1447,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.18232,
+   "lon": 16.08064,
+   "red": 1274,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.17936,
+   "lon": 16.08068,
+   "red": 1460,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.17473,
+   "lon": 16.08065,
+   "red": 1477,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.171,
+   "lon": 16.08073,
+   "red": 1473,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.16467,
+   "lon": 16.0797,
+   "red": 1490,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.15281,
+   "lon": 16.07738,
+   "red": 1479,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.15006,
+   "lon": 16.07687,
+   "red": 1450,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.14731,
+   "lon": 16.07636,
+   "red": 1479,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.14476,
+   "lon": 16.07609,
+   "red": 1445,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.14159,
+   "lon": 16.07613,
+   "red": 1472,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.13794,
+   "lon": 16.07715,
+   "red": 1462,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.13288,
+   "lon": 16.07863,
+   "red": 1312,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.12164,
+   "lon": 16.08336,
+   "red": 1476,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.11927,
+   "lon": 16.0842,
+   "red": 1388,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.11305,
+   "lon": 16.08522,
+   "red": 1469,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.11058,
+   "lon": 16.08542,
+   "red": 1472,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.10262,
+   "lon": 16.08623,
+   "red": 1461,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.09776,
+   "lon": 16.08688,
+   "red": 1519,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.09438,
+   "lon": 16.08685,
+   "red": 1494,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.08967,
+   "lon": 16.08586,
+   "red": 1473,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.08562,
+   "lon": 16.08446,
+   "red": 1520,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.08221,
+   "lon": 16.08328,
+   "red": 1318,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.08043,
+   "lon": 16.08175,
+   "red": 1450,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.07907,
+   "lon": 16.07919,
+   "red": 1465,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.07797,
+   "lon": 16.07712,
+   "red": 1427,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.07639,
+   "lon": 16.07187,
+   "red": 1437,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.07554,
+   "lon": 16.06884,
+   "red": 1394,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.07434,
+   "lon": 16.06597,
+   "red": 1429,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.07196,
+   "lon": 16.06249,
+   "red": 1434,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.07023,
+   "lon": 16.06075,
+   "red": 1426,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.06803,
+   "lon": 16.05964,
+   "red": 1406,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.065,
+   "lon": 16.06009,
+   "red": 1426,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.06282,
+   "lon": 16.06172,
+   "red": 1427,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.06067,
+   "lon": 16.06373,
+   "red": 1394,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.05853,
+   "lon": 16.06729,
+   "red": 1464,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.05735,
+   "lon": 16.07218,
+   "red": 1486,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.05606,
+   "lon": 16.07603,
+   "red": 1500,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.05501,
+   "lon": 16.07843,
+   "red": 1521,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.05192,
+   "lon": 16.08235,
+   "red": 1549,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.0438,
+   "lon": 16.08158,
+   "red": 1490,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.04113,
+   "lon": 16.08023,
+   "red": 1515,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.03655,
+   "lon": 16.07919,
+   "red": 1453,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.03099,
+   "lon": 16.0769,
+   "red": 1438,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.02874,
+   "lon": 16.07596,
+   "red": 1420,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.02377,
+   "lon": 16.07081,
+   "red": 1433,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.016,
+   "lon": 16.06027,
+   "red": 1398,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.01251,
+   "lon": 16.05705,
+   "red": 1427,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.00628,
+   "lon": 16.05315,
+   "red": 1431,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.00413,
+   "lon": 16.0521,
+   "red": 1481,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.0002,
+   "lon": 16.05195,
+   "red": 1488,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.99783,
+   "lon": 16.05247,
+   "red": 1461,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.99489,
+   "lon": 16.05337,
+   "red": 1448,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.99085,
+   "lon": 16.05547,
+   "red": 1464,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.98789,
+   "lon": 16.05577,
+   "red": 1476,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.9852,
+   "lon": 16.05531,
+   "red": 1461,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.98246,
+   "lon": 16.05362,
+   "red": 1442,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.97985,
+   "lon": 16.05098,
+   "red": 1423,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.97806,
+   "lon": 16.04943,
+   "red": 1405,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.97556,
+   "lon": 16.04876,
+   "red": 1422,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.9728,
+   "lon": 16.05083,
+   "red": 1401,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.97076,
+   "lon": 16.0538,
+   "red": 1395,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.96755,
+   "lon": 16.0576,
+   "red": 1229,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.96156,
+   "lon": 16.06076,
+   "red": 1375,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.9596,
+   "lon": 16.06469,
+   "red": 1377,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.95785,
+   "lon": 16.06749,
+   "red": 1372,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.9554,
+   "lon": 16.07023,
+   "red": 1351,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.95333,
+   "lon": 16.07182,
+   "red": 1349,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.95091,
+   "lon": 16.0728,
+   "red": 1375,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.94866,
+   "lon": 16.07366,
+   "red": 1372,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.94493,
+   "lon": 16.07517,
+   "red": 1398,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.93007,
+   "lon": 16.07918,
+   "red": 1387,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.91918,
+   "lon": 16.08156,
+   "red": 1403,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.91553,
+   "lon": 16.08212,
+   "red": 1337,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.90804,
+   "lon": 16.08302,
+   "red": 1357,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.8999,
+   "lon": 16.08416,
+   "red": 1351,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.89764,
+   "lon": 16.08495,
+   "red": 1345,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.89444,
+   "lon": 16.08656,
+   "red": 1349,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.89258,
+   "lon": 16.10011,
+   "red": 1390,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.89355,
+   "lon": 16.10448,
+   "red": 1356,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.89348,
+   "lon": 16.10698,
+   "red": 1370,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.89221,
+   "lon": 16.10942,
+   "red": 1377,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.88978,
+   "lon": 16.10985,
+   "red": 1387,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.88664,
+   "lon": 16.10949,
+   "red": 1361,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.88328,
+   "lon": 16.10883,
+   "red": 1381,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.88105,
+   "lon": 16.10782,
+   "red": 1400,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.87692,
+   "lon": 16.10556,
+   "red": 1376,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.87337,
+   "lon": 16.10483,
+   "red": 1373,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.87051,
+   "lon": 16.10516,
+   "red": 1373,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.86366,
+   "lon": 16.10948,
+   "red": 1370,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.84588,
+   "lon": 16.116,
+   "red": 1378,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.84247,
+   "lon": 16.11681,
+   "red": 1356,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.83895,
+   "lon": 16.11776,
+   "red": 1381,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.82893,
+   "lon": 16.12061,
+   "red": 1361,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.82426,
+   "lon": 16.12291,
+   "red": 1359,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.81791,
+   "lon": 16.12722,
+   "red": 1241,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.81118,
+   "lon": 16.13119,
+   "red": 1382,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.80605,
+   "lon": 16.13385,
+   "red": 1382,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.79897,
+   "lon": 16.13694,
+   "red": 1339,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.79059,
+   "lon": 16.13954,
+   "red": 1396,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.78754,
+   "lon": 16.13992,
+   "red": 1373,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.78205,
+   "lon": 16.13922,
+   "red": 1365,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.77926,
+   "lon": 16.13894,
+   "red": 1388,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.77671,
+   "lon": 16.139,
+   "red": 1401,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.77397,
+   "lon": 16.13958,
+   "red": 1383,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.76899,
+   "lon": 16.1416,
+   "red": 1307,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.76639,
+   "lon": 16.14211,
+   "red": 1395,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.76286,
+   "lon": 16.14286,
+   "red": 1394,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.75709,
+   "lon": 16.14593,
+   "red": 1359,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.75417,
+   "lon": 16.14696,
+   "red": 1355,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.75155,
+   "lon": 16.14703,
+   "red": 1346,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.74881,
+   "lon": 16.14632,
+   "red": 1361,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.74426,
+   "lon": 16.14198,
+   "red": 1395,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.73866,
+   "lon": 16.13789,
+   "red": 1404,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.73429,
+   "lon": 16.13799,
+   "red": 1389,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.73045,
+   "lon": 16.13907,
+   "red": 1334,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.72532,
+   "lon": 16.14166,
+   "red": 1415,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.71417,
+   "lon": 16.15065,
+   "red": 1238,
+   "date": "2026-06-18",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.70578,
+   "lon": 16.15211,
+   "red": 1227,
+   "date": "2026-06-18",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.70345,
+   "lon": 16.15191,
+   "red": 1289,
+   "date": "2026-06-18",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.69712,
+   "lon": 16.14908,
+   "red": 1307,
+   "date": "2026-06-18",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.69458,
+   "lon": 16.14896,
+   "red": 1313,
+   "date": "2026-06-18",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.69214,
+   "lon": 16.14821,
+   "red": 1318,
+   "date": "2026-06-18",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.69,
+   "lon": 16.14607,
+   "red": 1292,
+   "date": "2026-06-18",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.68792,
+   "lon": 16.1413,
+   "red": 1368,
+   "date": "2026-06-18",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.6871,
+   "lon": 16.13825,
+   "red": 1311,
+   "date": "2026-06-18",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.68753,
+   "lon": 16.13514,
+   "red": 1218,
+   "date": "2026-06-18",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.68968,
+   "lon": 16.13289,
+   "red": 1339,
+   "date": "2026-06-18",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.69231,
+   "lon": 16.13089,
+   "red": 1316,
+   "date": "2026-06-18",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.6942,
+   "lon": 16.129,
+   "red": 1318,
+   "date": "2026-06-18",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.69735,
+   "lon": 16.12688,
+   "red": 1296,
+   "date": "2026-06-18",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.69954,
+   "lon": 16.12553,
+   "red": 1334,
+   "date": "2026-06-18",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.7019,
+   "lon": 16.12235,
+   "red": 1329,
+   "date": "2026-06-18",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.70274,
+   "lon": 16.11975,
+   "red": 1267,
+   "date": "2026-06-18",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.7028,
+   "lon": 16.11523,
+   "red": 1248,
+   "date": "2026-06-18",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.70216,
+   "lon": 16.11267,
+   "red": 1333,
+   "date": "2026-06-18",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.69617,
+   "lon": 16.09688,
+   "red": 1299,
+   "date": "2026-06-18",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.69527,
+   "lon": 16.09179,
+   "red": 1332,
+   "date": "2026-06-18",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.69454,
+   "lon": 16.08913,
+   "red": 1221,
+   "date": "2026-06-18",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.69257,
+   "lon": 16.08557,
+   "red": 1338,
+   "date": "2026-06-18",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.68971,
+   "lon": 16.08315,
+   "red": 1300,
+   "date": "2026-06-18",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.68353,
+   "lon": 16.0793,
+   "red": 1310,
+   "date": "2026-06-18",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.67867,
+   "lon": 16.07593,
+   "red": 1315,
+   "date": "2026-06-18",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.67505,
+   "lon": 16.07331,
+   "red": 1332,
+   "date": "2026-06-18",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.67242,
+   "lon": 16.07165,
+   "red": 1329,
+   "date": "2026-06-18",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.6686,
+   "lon": 16.07081,
+   "red": 1279,
+   "date": "2026-06-18",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.66601,
+   "lon": 16.0702,
+   "red": 1283,
+   "date": "2026-06-18",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.65685,
+   "lon": 16.06105,
+   "red": 1353,
+   "date": "2026-06-18",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.65489,
+   "lon": 16.05991,
+   "red": 1359,
+   "date": "2026-06-18",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.65179,
+   "lon": 16.05646,
+   "red": 1340,
+   "date": "2026-06-18",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.82254,
+   "lon": 16.16453,
+   "red": 1508,
+   "date": "2026-07-23",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.82055,
+   "lon": 16.16288,
+   "red": 1512,
+   "date": "2026-07-23",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.81809,
+   "lon": 16.16019,
+   "red": 1522,
+   "date": "2026-07-23",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.81675,
+   "lon": 16.15682,
+   "red": 1552,
+   "date": "2026-07-23",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.81689,
+   "lon": 16.15323,
+   "red": 1583,
+   "date": "2026-07-23",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.81789,
+   "lon": 16.14962,
+   "red": 1509,
+   "date": "2026-07-23",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.81896,
+   "lon": 16.14598,
+   "red": 1510,
+   "date": "2026-07-23",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.81934,
+   "lon": 16.14368,
+   "red": 1515,
+   "date": "2026-07-23",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.81953,
+   "lon": 16.14104,
+   "red": 1504,
+   "date": "2026-07-23",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.81781,
+   "lon": 16.13453,
+   "red": 1467,
+   "date": "2026-07-23",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.8164,
+   "lon": 16.1325,
+   "red": 1467,
+   "date": "2026-07-23",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.81484,
+   "lon": 16.13019,
+   "red": 1523,
+   "date": "2026-07-23",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.81296,
+   "lon": 16.12768,
+   "red": 1506,
+   "date": "2026-07-23",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.81034,
+   "lon": 16.12378,
+   "red": 1497,
+   "date": "2026-07-23",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.80738,
+   "lon": 16.11902,
+   "red": 1528,
+   "date": "2026-07-23",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.8049,
+   "lon": 16.11618,
+   "red": 1553,
+   "date": "2026-07-23",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.80302,
+   "lon": 16.11462,
+   "red": 1555,
+   "date": "2026-07-23",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.79994,
+   "lon": 16.1128,
+   "red": 1632,
+   "date": "2026-07-23",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.79728,
+   "lon": 16.11091,
+   "red": 1589,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.7936,
+   "lon": 16.10793,
+   "red": 1664,
+   "date": "2026-07-23",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.7905,
+   "lon": 16.10583,
+   "red": 1643,
+   "date": "2026-07-23",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.78762,
+   "lon": 16.10379,
+   "red": 1653,
+   "date": "2026-07-23",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.78443,
+   "lon": 16.10278,
+   "red": 1633,
+   "date": "2026-07-23",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.77802,
+   "lon": 16.10179,
+   "red": 1602,
+   "date": "2026-07-23",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.77395,
+   "lon": 16.1007,
+   "red": 1650,
+   "date": "2026-07-23",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.76767,
+   "lon": 16.10081,
+   "red": 1478,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.75914,
+   "lon": 16.1016,
+   "red": 4094,
+   "date": "2026-07-03",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.75513,
+   "lon": 16.10205,
+   "red": 1565,
+   "date": "2026-06-28",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.74808,
+   "lon": 16.10364,
+   "red": 1613,
+   "date": "2026-07-23",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.73884,
+   "lon": 16.10404,
+   "red": 1627,
+   "date": "2026-07-23",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.73197,
+   "lon": 16.10368,
+   "red": 1586,
+   "date": "2026-07-23",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.72528,
+   "lon": 16.10426,
+   "red": 1539,
+   "date": "2026-07-23",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.71975,
+   "lon": 16.10321,
+   "red": 1531,
+   "date": "2026-07-23",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.71728,
+   "lon": 16.10224,
+   "red": 1530,
+   "date": "2026-07-23",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.71383,
+   "lon": 16.09981,
+   "red": 1526,
+   "date": "2026-07-23",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.71196,
+   "lon": 16.09814,
+   "red": 1543,
+   "date": "2026-07-23",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.71008,
+   "lon": 16.09619,
+   "red": 1602,
+   "date": "2026-07-23",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.70703,
+   "lon": 16.09303,
+   "red": 1587,
+   "date": "2026-07-23",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.70086,
+   "lon": 16.08774,
+   "red": 1595,
+   "date": "2026-07-23",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.69645,
+   "lon": 16.0843,
+   "red": 1597,
+   "date": "2026-07-23",
+   "river": "Sangha"
+  },
+  {
+   "lat": 2.69295,
+   "lon": 16.08088,
+   "red": 1591,
+   "date": "2026-07-23",
+   "river": "Sangha"
+  },
+  {
+   "lat": 1.99686,
+   "lon": 15.05761,
+   "red": 1277,
+   "date": "2026-06-18",
+   "river": "Dja"
+  },
+  {
+   "lat": 2.00043,
+   "lon": 15.07108,
+   "red": 1718,
+   "date": "2026-07-03",
+   "river": "Dja"
+  },
+  {
+   "lat": 1.9918,
+   "lon": 15.06998,
+   "red": 1348,
+   "date": "2026-06-18",
+   "river": "Dja"
+  },
+  {
+   "lat": 1.98569,
+   "lon": 15.08099,
+   "red": 1449,
+   "date": "2026-07-03",
+   "river": "Dja"
+  },
+  {
+   "lat": 2.04123,
+   "lon": 15.16281,
+   "red": 1406,
+   "date": "2026-07-03",
+   "river": "Dja"
+  },
+  {
+   "lat": 2.65174,
+   "lon": 15.22522,
+   "red": 1277,
+   "date": "2026-07-23",
+   "river": "Boumba"
+  },
+  {
+   "lat": 2.64303,
+   "lon": 15.24078,
+   "red": 1400,
+   "date": "2026-07-23",
+   "river": "Boumba"
+  },
+  {
+   "lat": 2.43954,
+   "lon": 15.22975,
+   "red": 1416,
+   "date": "2026-07-03",
+   "river": "Boumba"
+  },
+  {
+   "lat": 2.34876,
+   "lon": 15.1562,
+   "red": 1279,
+   "date": "2026-07-03",
+   "river": "Boumba"
+  },
+  {
+   "lat": 2.34646,
+   "lon": 15.14599,
+   "red": 1376,
+   "date": "2026-07-03",
+   "river": "Boumba"
+  },
+  {
+   "lat": 2.34754,
+   "lon": 15.14399,
+   "red": 1342,
+   "date": "2026-07-03",
+   "river": "Boumba"
+  },
+  {
+   "lat": 2.16612,
+   "lon": 15.15076,
+   "red": 2764,
+   "date": "2026-07-03",
+   "river": "Boumba"
+  },
+  {
+   "lat": 2.13626,
+   "lon": 15.13665,
+   "red": 2017,
+   "date": "2026-07-03",
+   "river": "Boumba"
+  },
+  {
+   "lat": 2.04959,
+   "lon": 15.17877,
+   "red": 1837,
+   "date": "2026-07-03",
+   "river": "Boumba"
+  },
+  {
+   "lat": 2.03966,
+   "lon": 15.20658,
+   "red": 2896,
+   "date": "2026-07-03",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 2.03847,
+   "lon": 15.21142,
+   "red": 1425,
+   "date": "2026-07-03",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 2.03319,
+   "lon": 15.22292,
+   "red": 1625,
+   "date": "2026-07-03",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 2.01843,
+   "lon": 15.25145,
+   "red": 1411,
+   "date": "2026-07-03",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 2.01658,
+   "lon": 15.2493,
+   "red": 1279,
+   "date": "2026-06-18",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 1.99683,
+   "lon": 15.27638,
+   "red": 1678,
+   "date": "2026-06-18",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 1.98619,
+   "lon": 15.29148,
+   "red": 1267,
+   "date": "2026-06-18",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 1.91236,
+   "lon": 15.34359,
+   "red": 1343,
+   "date": "2026-07-03",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 1.91208,
+   "lon": 15.34686,
+   "red": 1516,
+   "date": "2026-06-18",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 1.92083,
+   "lon": 15.35972,
+   "red": 1373,
+   "date": "2026-07-03",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 1.92828,
+   "lon": 15.37072,
+   "red": 1208,
+   "date": "2026-07-03",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 1.94139,
+   "lon": 15.40396,
+   "red": 1453,
+   "date": "2026-07-03",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 1.94555,
+   "lon": 15.41358,
+   "red": 1271,
+   "date": "2026-07-03",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 1.96992,
+   "lon": 15.45505,
+   "red": 1526,
+   "date": "2026-07-03",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 1.95037,
+   "lon": 15.55981,
+   "red": 1708,
+   "date": "2026-07-03",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 1.94961,
+   "lon": 15.5672,
+   "red": 1539,
+   "date": "2026-07-03",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 1.95039,
+   "lon": 15.5747,
+   "red": 1635,
+   "date": "2026-07-03",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 1.9259,
+   "lon": 15.71097,
+   "red": 1296,
+   "date": "2026-07-03",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 1.91676,
+   "lon": 15.73523,
+   "red": 1437,
+   "date": "2026-07-03",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 1.8703,
+   "lon": 15.79179,
+   "red": 1343,
+   "date": "2026-07-03",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 1.84009,
+   "lon": 15.83575,
+   "red": 2279,
+   "date": "2026-07-03",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 1.8345,
+   "lon": 15.83925,
+   "red": 1226,
+   "date": "2026-07-03",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 1.8234,
+   "lon": 15.86957,
+   "red": 4919,
+   "date": "2026-07-03",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 1.8096,
+   "lon": 15.87312,
+   "red": 2996,
+   "date": "2026-07-03",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 1.78734,
+   "lon": 15.87985,
+   "red": 1245,
+   "date": "2026-07-03",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 1.79504,
+   "lon": 15.91215,
+   "red": 3843,
+   "date": "2026-07-03",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 1.78455,
+   "lon": 15.91138,
+   "red": 1381,
+   "date": "2026-07-03",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 1.77769,
+   "lon": 15.93881,
+   "red": 1450,
+   "date": "2026-07-03",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 1.76885,
+   "lon": 15.95555,
+   "red": 1462,
+   "date": "2026-07-03",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 1.76698,
+   "lon": 15.97934,
+   "red": 1661,
+   "date": "2026-07-03",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 1.76557,
+   "lon": 16.01821,
+   "red": 1227,
+   "date": "2026-06-28",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 1.65179,
+   "lon": 16.05646,
+   "red": 1340,
+   "date": "2026-06-18",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 2.69295,
+   "lon": 16.08088,
+   "red": 1591,
+   "date": "2026-07-23",
+   "river": "Gaboumo"
+  },
+  {
+   "lat": 2.39741,
+   "lon": 16.11267,
+   "red": 1436,
+   "date": "2026-06-28",
+   "river": "Lob\u00e9k\u00e9"
+  }
+ ]
+}

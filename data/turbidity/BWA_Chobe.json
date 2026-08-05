@@ -1,0 +1,222 @@
+{
+ "park_id": "BWA_Chobe",
+ "scanned_at": "2026-07-15T06:00:27Z",
+ "datetime_range": "2026-05-31T00:00:00Z/2026-07-15T23:59:59Z",
+ "buffer_km": 50,
+ "n_waterways": 51,
+ "n_sample_pts": 4568,
+ "alerts": [],
+ "rivers": [
+  {
+   "name": "Zambezi",
+   "waterway": "river",
+   "length_km": 99.3,
+   "water_samples": 172,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Chobe River",
+   "waterway": "river",
+   "length_km": 196.1,
+   "water_samples": 454,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Linyanti",
+   "waterway": "river",
+   "length_km": 188.5,
+   "water_samples": 5,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Savuti Channel",
+   "waterway": "river",
+   "length_km": 26.4,
+   "water_samples": 3,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Kwando",
+   "waterway": "river",
+   "length_km": 107.0,
+   "water_samples": 2,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Khwai",
+   "waterway": "river",
+   "length_km": 70.0,
+   "water_samples": 2,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Khwai",
+   "waterway": "river",
+   "length_km": 43.0,
+   "water_samples": 3,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Mbudi River",
+   "waterway": "river",
+   "length_km": 42.4,
+   "water_samples": 2,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Thamalakane River",
+   "waterway": "river",
+   "length_km": 74.8,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Selinda",
+   "waterway": "river",
+   "length_km": 109.7,
+   "water_samples": 60,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Gomoti River",
+   "waterway": "river",
+   "length_km": 40.3,
+   "water_samples": 19,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 24.9,
+   "water_samples": 6,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 6.2,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 15.1,
+   "water_samples": 2,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 6.4,
+   "water_samples": 14,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 14.0,
+   "water_samples": 11,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 7.8,
+   "water_samples": 2,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "stream",
+   "length_km": 16.3,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 7.1,
+   "water_samples": 14,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 3.9,
+   "water_samples": 2,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 8.1,
+   "water_samples": 2,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "stream",
+   "length_km": 23.9,
+   "water_samples": 3,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 3.2,
+   "water_samples": 8,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 4.8,
+   "water_samples": 3,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 13.0,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "stream",
+   "length_km": 11.3,
+   "water_samples": 2,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 4.7,
+   "water_samples": 5,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 11.4,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 7.3,
+   "water_samples": 2,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 3.2,
+   "water_samples": 5,
+   "turbid_km": 0.0
+  }
+ ],
+ "turbid_points": []
+}

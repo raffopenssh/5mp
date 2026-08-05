@@ -1,0 +1,19 @@
+{
+ "park_id": "CMR_Dja",
+ "scanned_at": "2026-07-26T06:00:09Z",
+ "datetime_range": "2026-06-11T00:00:00Z/2026-07-26T23:59:59Z",
+ "buffer_km": 50,
+ "n_waterways": 284,
+ "n_sample_pts": 12134,
+ "alerts": [],
+ "rivers": [
+  {
+   "name": "Dja",
+   "waterway": "river",
+   "length_km": 636.0,
+   "water_samples": 7,
+   "turbid_km": 0.0
+  }
+ ],
+ "turbid_points": []
+}

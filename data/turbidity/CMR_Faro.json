@@ -1,0 +1,3332 @@
+{
+ "park_id": "CMR_Faro",
+ "scanned_at": "2026-07-27T06:01:38Z",
+ "datetime_range": "2026-06-12T00:00:00Z/2026-07-27T23:59:59Z",
+ "buffer_km": 50,
+ "n_waterways": 182,
+ "n_sample_pts": 8658,
+ "alerts": [
+  {
+   "lat": 8.07557,
+   "lon": 12.23567,
+   "river": "Mayo D\u00e9o",
+   "waterway": "river",
+   "type": "turbid_headwater",
+   "red": 457,
+   "upstream_median": null,
+   "ratio": null,
+   "dist_km": 0.0,
+   "downstream_turbid_km": 37.0,
+   "scene": "S2B_32PRQ_20260629_0_L2A",
+   "date": "2026-06-29"
+  },
+  {
+   "lat": 7.45762,
+   "lon": 13.1422,
+   "river": "Faro",
+   "waterway": "river",
+   "type": "turbid_headwater",
+   "red": 1877,
+   "upstream_median": null,
+   "ratio": null,
+   "dist_km": 50.9,
+   "downstream_turbid_km": 34.0,
+   "scene": "S2B_33NTJ_20260726_0_L2A",
+   "date": "2026-07-26"
+  },
+  {
+   "lat": 8.50788,
+   "lon": 12.73549,
+   "river": "Le Faro",
+   "waterway": "river",
+   "type": "turbid_headwater",
+   "red": 1415,
+   "upstream_median": null,
+   "ratio": null,
+   "dist_km": 0.4,
+   "downstream_turbid_km": 32.2,
+   "scene": "S2B_33PTK_20260629_0_L2A",
+   "date": "2026-06-29"
+  }
+ ],
+ "rivers": [
+  {
+   "name": "Mayo D\u00e9o",
+   "waterway": "river",
+   "length_km": 96.6,
+   "water_samples": 149,
+   "turbid_km": 37.0
+  },
+  {
+   "name": "Faro",
+   "waterway": "river",
+   "length_km": 257.6,
+   "water_samples": 181,
+   "turbid_km": 34.0
+  },
+  {
+   "name": "Le Faro",
+   "waterway": "river",
+   "length_km": 104.4,
+   "water_samples": 180,
+   "turbid_km": 32.2
+  },
+  {
+   "name": "Mayo Nial",
+   "waterway": "river",
+   "length_km": 99.6,
+   "water_samples": 2,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Mayo Iz\u00e9lou",
+   "waterway": "river",
+   "length_km": 48.8,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Mayo Pounko",
+   "waterway": "river",
+   "length_km": 31.6,
+   "water_samples": 2,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Mayo Gu\u00e9mou",
+   "waterway": "river",
+   "length_km": 20.0,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "M\u00e9r\u00e9",
+   "waterway": "river",
+   "length_km": 37.8,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Mayo Ilou",
+   "waterway": "river",
+   "length_km": 63.0,
+   "water_samples": 2,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Mayo Siba",
+   "waterway": "river",
+   "length_km": 11.2,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Le Faro",
+   "waterway": "river",
+   "length_km": 34.9,
+   "water_samples": 9,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Mayo Lif\u00e9",
+   "waterway": "river",
+   "length_km": 43.2,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Mayo Momb\u00e9rou",
+   "waterway": "river",
+   "length_km": 32.9,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Mayo Bantadj\u00e9",
+   "waterway": "river",
+   "length_km": 51.5,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Mayo Mali",
+   "waterway": "river",
+   "length_km": 5.4,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Mayo Kadam",
+   "waterway": "stream",
+   "length_km": 9.3,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 12.8,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 40.5,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 33.7,
+   "water_samples": 2,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 11.1,
+   "water_samples": 2,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 10.0,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 12.5,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 48.5,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "stream",
+   "length_km": 19.3,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 14.8,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  }
+ ],
+ "turbid_points": [
+  {
+   "lat": 7.45762,
+   "lon": 13.1422,
+   "red": 1877,
+   "date": "2026-07-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.4828,
+   "lon": 13.13874,
+   "red": 1564,
+   "date": "2026-07-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.54026,
+   "lon": 13.17239,
+   "red": 1201,
+   "date": "2026-07-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.5882,
+   "lon": 13.24095,
+   "red": 1835,
+   "date": "2026-07-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.60622,
+   "lon": 13.24313,
+   "red": 1768,
+   "date": "2026-07-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.61832,
+   "lon": 13.25268,
+   "red": 1563,
+   "date": "2026-07-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.62091,
+   "lon": 13.25342,
+   "red": 1698,
+   "date": "2026-07-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.64151,
+   "lon": 13.252,
+   "red": 1578,
+   "date": "2026-07-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.64653,
+   "lon": 13.25169,
+   "red": 1631,
+   "date": "2026-07-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.64894,
+   "lon": 13.25181,
+   "red": 1779,
+   "date": "2026-07-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.65862,
+   "lon": 13.25136,
+   "red": 1593,
+   "date": "2026-07-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.6673,
+   "lon": 13.2508,
+   "red": 1509,
+   "date": "2026-07-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.67776,
+   "lon": 13.25457,
+   "red": 1770,
+   "date": "2026-07-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.69512,
+   "lon": 13.26307,
+   "red": 1573,
+   "date": "2026-07-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.70035,
+   "lon": 13.27389,
+   "red": 1788,
+   "date": "2026-07-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.71346,
+   "lon": 13.28593,
+   "red": 1613,
+   "date": "2026-07-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.72428,
+   "lon": 13.29348,
+   "red": 1688,
+   "date": "2026-07-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.72958,
+   "lon": 13.29155,
+   "red": 1606,
+   "date": "2026-07-23",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.7452,
+   "lon": 13.29525,
+   "red": 1724,
+   "date": "2026-07-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.74763,
+   "lon": 13.29368,
+   "red": 1602,
+   "date": "2026-07-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.78026,
+   "lon": 13.30444,
+   "red": 1653,
+   "date": "2026-07-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.78364,
+   "lon": 13.30459,
+   "red": 1615,
+   "date": "2026-07-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.80478,
+   "lon": 13.30105,
+   "red": 1421,
+   "date": "2026-07-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.84387,
+   "lon": 13.32822,
+   "red": 1510,
+   "date": "2026-07-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.84746,
+   "lon": 13.32856,
+   "red": 1364,
+   "date": "2026-07-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.84985,
+   "lon": 13.32875,
+   "red": 1425,
+   "date": "2026-07-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.8528,
+   "lon": 13.33022,
+   "red": 1526,
+   "date": "2026-07-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.85301,
+   "lon": 13.33333,
+   "red": 1414,
+   "date": "2026-07-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.85444,
+   "lon": 13.33603,
+   "red": 1678,
+   "date": "2026-07-23",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.8564,
+   "lon": 13.33811,
+   "red": 1787,
+   "date": "2026-07-23",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.86972,
+   "lon": 13.33953,
+   "red": 1849,
+   "date": "2026-07-23",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.89335,
+   "lon": 13.32697,
+   "red": 1631,
+   "date": "2026-07-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.90901,
+   "lon": 13.33076,
+   "red": 1415,
+   "date": "2026-07-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.91278,
+   "lon": 13.33752,
+   "red": 1458,
+   "date": "2026-07-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.91709,
+   "lon": 13.33963,
+   "red": 1552,
+   "date": "2026-07-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.92077,
+   "lon": 13.34075,
+   "red": 1542,
+   "date": "2026-07-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.92553,
+   "lon": 13.34457,
+   "red": 1476,
+   "date": "2026-07-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.93339,
+   "lon": 13.35517,
+   "red": 1580,
+   "date": "2026-07-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.96763,
+   "lon": 13.33001,
+   "red": 1820,
+   "date": "2026-07-23",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.97224,
+   "lon": 13.32371,
+   "red": 1663,
+   "date": "2026-07-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.97299,
+   "lon": 13.32071,
+   "red": 1532,
+   "date": "2026-07-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.97084,
+   "lon": 13.31294,
+   "red": 1477,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.97024,
+   "lon": 13.28848,
+   "red": 1486,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.97022,
+   "lon": 13.28157,
+   "red": 1362,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.96924,
+   "lon": 13.2789,
+   "red": 1639,
+   "date": "2026-07-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.97039,
+   "lon": 13.27328,
+   "red": 1467,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.96886,
+   "lon": 13.265,
+   "red": 1526,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.97152,
+   "lon": 13.25176,
+   "red": 1433,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.97216,
+   "lon": 13.24627,
+   "red": 1405,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.97284,
+   "lon": 13.24312,
+   "red": 1504,
+   "date": "2026-07-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.9729,
+   "lon": 13.23901,
+   "red": 1404,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.97307,
+   "lon": 13.23643,
+   "red": 1254,
+   "date": "2026-07-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.97156,
+   "lon": 13.22801,
+   "red": 1547,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.97263,
+   "lon": 13.2153,
+   "red": 1287,
+   "date": "2026-07-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.98027,
+   "lon": 13.18154,
+   "red": 1436,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.98103,
+   "lon": 13.17424,
+   "red": 1411,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.98288,
+   "lon": 13.16803,
+   "red": 1427,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.98872,
+   "lon": 13.15626,
+   "red": 1399,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 7.99097,
+   "lon": 13.15589,
+   "red": 1414,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.00616,
+   "lon": 13.1383,
+   "red": 1438,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.02628,
+   "lon": 13.09653,
+   "red": 1381,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.02685,
+   "lon": 13.09048,
+   "red": 1392,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.02585,
+   "lon": 13.08271,
+   "red": 1337,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.02876,
+   "lon": 13.07427,
+   "red": 1310,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.03161,
+   "lon": 13.07017,
+   "red": 1337,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.04281,
+   "lon": 13.05732,
+   "red": 1353,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.04412,
+   "lon": 13.05521,
+   "red": 1335,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.05092,
+   "lon": 13.04633,
+   "red": 1504,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.05579,
+   "lon": 13.0436,
+   "red": 1459,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.05963,
+   "lon": 13.0438,
+   "red": 1382,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.06686,
+   "lon": 13.04478,
+   "red": 1346,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.07017,
+   "lon": 13.04601,
+   "red": 1405,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.07261,
+   "lon": 13.04777,
+   "red": 1421,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.07491,
+   "lon": 13.04916,
+   "red": 1434,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.07699,
+   "lon": 13.05049,
+   "red": 1392,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.08326,
+   "lon": 13.04672,
+   "red": 1483,
+   "date": "2026-07-23",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.0857,
+   "lon": 13.04661,
+   "red": 1460,
+   "date": "2026-07-23",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.10711,
+   "lon": 13.0271,
+   "red": 1321,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.10916,
+   "lon": 13.02276,
+   "red": 1298,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.11458,
+   "lon": 13.01816,
+   "red": 1443,
+   "date": "2026-07-23",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.11714,
+   "lon": 13.01825,
+   "red": 1243,
+   "date": "2026-07-23",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.13708,
+   "lon": 13.01453,
+   "red": 1210,
+   "date": "2026-07-23",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.14166,
+   "lon": 13.01139,
+   "red": 1293,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.149,
+   "lon": 13.00515,
+   "red": 1272,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.15132,
+   "lon": 13.00487,
+   "red": 1288,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.15338,
+   "lon": 13.00602,
+   "red": 1333,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.15607,
+   "lon": 13.0065,
+   "red": 1390,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.16239,
+   "lon": 13.0071,
+   "red": 1290,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.16518,
+   "lon": 13.00727,
+   "red": 1327,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.16784,
+   "lon": 13.00714,
+   "red": 1333,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.17015,
+   "lon": 13.00776,
+   "red": 1251,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.17245,
+   "lon": 13.01063,
+   "red": 1292,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.1744,
+   "lon": 13.01358,
+   "red": 1270,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.18646,
+   "lon": 13.01641,
+   "red": 1232,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.18911,
+   "lon": 13.01051,
+   "red": 1274,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.19194,
+   "lon": 13.00873,
+   "red": 1299,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.19448,
+   "lon": 13.00764,
+   "red": 1270,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.19669,
+   "lon": 13.0071,
+   "red": 1255,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.19966,
+   "lon": 13.00674,
+   "red": 1255,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.20458,
+   "lon": 13.00241,
+   "red": 1261,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.2052,
+   "lon": 13.00012,
+   "red": 1234,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.20612,
+   "lon": 12.99383,
+   "red": 1232,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.2078,
+   "lon": 12.99228,
+   "red": 1241,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.21731,
+   "lon": 12.9853,
+   "red": 1204,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.2191,
+   "lon": 12.98218,
+   "red": 1271,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.22147,
+   "lon": 12.97919,
+   "red": 1214,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.22198,
+   "lon": 12.97623,
+   "red": 1349,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.22262,
+   "lon": 12.97099,
+   "red": 1230,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.22555,
+   "lon": 12.9658,
+   "red": 1285,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.22699,
+   "lon": 12.96061,
+   "red": 1254,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.22985,
+   "lon": 12.95459,
+   "red": 1265,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.25974,
+   "lon": 12.87538,
+   "red": 1217,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.28385,
+   "lon": 12.87707,
+   "red": 1213,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.28711,
+   "lon": 12.87392,
+   "red": 1274,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.309,
+   "lon": 12.84941,
+   "red": 1206,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.33007,
+   "lon": 12.85383,
+   "red": 1212,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.35708,
+   "lon": 12.85538,
+   "red": 1348,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.36027,
+   "lon": 12.85561,
+   "red": 1270,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.36713,
+   "lon": 12.85486,
+   "red": 1277,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.36864,
+   "lon": 12.85297,
+   "red": 1304,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.36925,
+   "lon": 12.85042,
+   "red": 1268,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.36998,
+   "lon": 12.84782,
+   "red": 1271,
+   "date": "2026-07-21",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.39235,
+   "lon": 12.82332,
+   "red": 1267,
+   "date": "2026-06-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.39739,
+   "lon": 12.81454,
+   "red": 1276,
+   "date": "2026-06-29",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.40783,
+   "lon": 12.79847,
+   "red": 1304,
+   "date": "2026-06-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.40944,
+   "lon": 12.79527,
+   "red": 1281,
+   "date": "2026-06-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.41458,
+   "lon": 12.78768,
+   "red": 1272,
+   "date": "2026-06-29",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.42008,
+   "lon": 12.78345,
+   "red": 1263,
+   "date": "2026-06-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.4357,
+   "lon": 12.76251,
+   "red": 1259,
+   "date": "2026-06-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.44233,
+   "lon": 12.7529,
+   "red": 1304,
+   "date": "2026-06-29",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.44546,
+   "lon": 12.74556,
+   "red": 1442,
+   "date": "2026-06-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.45336,
+   "lon": 12.73384,
+   "red": 1543,
+   "date": "2026-06-29",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.4645,
+   "lon": 12.73509,
+   "red": 1309,
+   "date": "2026-06-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.47152,
+   "lon": 12.73948,
+   "red": 1389,
+   "date": "2026-06-29",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.49317,
+   "lon": 12.73489,
+   "red": 1432,
+   "date": "2026-06-29",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.50289,
+   "lon": 12.73116,
+   "red": 1655,
+   "date": "2026-06-26",
+   "river": "Faro"
+  },
+  {
+   "lat": 8.08165,
+   "lon": 12.2315,
+   "red": 1703,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.10246,
+   "lon": 12.24682,
+   "red": 1261,
+   "date": "2026-06-26",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.11546,
+   "lon": 12.27188,
+   "red": 1206,
+   "date": "2026-06-26",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.11546,
+   "lon": 12.27486,
+   "red": 1558,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.11651,
+   "lon": 12.27691,
+   "red": 1423,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.12984,
+   "lon": 12.27699,
+   "red": 1233,
+   "date": "2026-06-26",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.13715,
+   "lon": 12.27518,
+   "red": 1344,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.14531,
+   "lon": 12.27523,
+   "red": 1351,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.14982,
+   "lon": 12.27293,
+   "red": 1257,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.15657,
+   "lon": 12.2772,
+   "red": 1302,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.15759,
+   "lon": 12.27958,
+   "red": 1333,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.16863,
+   "lon": 12.28366,
+   "red": 1267,
+   "date": "2026-06-26",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.17279,
+   "lon": 12.28608,
+   "red": 1405,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.17727,
+   "lon": 12.28874,
+   "red": 1354,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.18886,
+   "lon": 12.28811,
+   "red": 1497,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.20097,
+   "lon": 12.29369,
+   "red": 1247,
+   "date": "2026-06-26",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.22103,
+   "lon": 12.29892,
+   "red": 1357,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.22689,
+   "lon": 12.29907,
+   "red": 1353,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.23284,
+   "lon": 12.29779,
+   "red": 1470,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.23806,
+   "lon": 12.30441,
+   "red": 1444,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.24139,
+   "lon": 12.30743,
+   "red": 1614,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.24439,
+   "lon": 12.30718,
+   "red": 1458,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.24734,
+   "lon": 12.30812,
+   "red": 1389,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.25449,
+   "lon": 12.31325,
+   "red": 1421,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.26371,
+   "lon": 12.31316,
+   "red": 1388,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.26732,
+   "lon": 12.31685,
+   "red": 1364,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.27208,
+   "lon": 12.32102,
+   "red": 1310,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.27826,
+   "lon": 12.32662,
+   "red": 1539,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.2811,
+   "lon": 12.32833,
+   "red": 1511,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.28387,
+   "lon": 12.32928,
+   "red": 1346,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.28683,
+   "lon": 12.32954,
+   "red": 1531,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.29095,
+   "lon": 12.33014,
+   "red": 1309,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.29331,
+   "lon": 12.33106,
+   "red": 1326,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.29525,
+   "lon": 12.33239,
+   "red": 1638,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.30089,
+   "lon": 12.33589,
+   "red": 1473,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.3079,
+   "lon": 12.3435,
+   "red": 1373,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.30951,
+   "lon": 12.34157,
+   "red": 1575,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.31156,
+   "lon": 12.33833,
+   "red": 1667,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.31631,
+   "lon": 12.33271,
+   "red": 1456,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.3186,
+   "lon": 12.33217,
+   "red": 1301,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.32085,
+   "lon": 12.33187,
+   "red": 1288,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.32376,
+   "lon": 12.33181,
+   "red": 1434,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.32642,
+   "lon": 12.33308,
+   "red": 1368,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.32875,
+   "lon": 12.3369,
+   "red": 1577,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.33393,
+   "lon": 12.35496,
+   "red": 1304,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.33558,
+   "lon": 12.3632,
+   "red": 1259,
+   "date": "2026-06-26",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.33675,
+   "lon": 12.36792,
+   "red": 1771,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.33834,
+   "lon": 12.38,
+   "red": 1428,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.33847,
+   "lon": 12.3855,
+   "red": 1521,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.33881,
+   "lon": 12.38863,
+   "red": 1469,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.33991,
+   "lon": 12.39073,
+   "red": 1615,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.34122,
+   "lon": 12.39393,
+   "red": 1403,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.34159,
+   "lon": 12.39897,
+   "red": 1650,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.34365,
+   "lon": 12.40646,
+   "red": 1576,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.34722,
+   "lon": 12.4197,
+   "red": 1443,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.34815,
+   "lon": 12.42412,
+   "red": 1633,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.35006,
+   "lon": 12.42652,
+   "red": 1421,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.35448,
+   "lon": 12.42743,
+   "red": 1503,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.35728,
+   "lon": 12.42627,
+   "red": 1212,
+   "date": "2026-06-26",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.35979,
+   "lon": 12.42571,
+   "red": 1249,
+   "date": "2026-06-26",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.36248,
+   "lon": 12.4285,
+   "red": 1482,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.36452,
+   "lon": 12.43388,
+   "red": 1367,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.36987,
+   "lon": 12.43676,
+   "red": 1378,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.37389,
+   "lon": 12.43721,
+   "red": 1440,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.37664,
+   "lon": 12.4379,
+   "red": 1395,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.37934,
+   "lon": 12.4388,
+   "red": 1365,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.38329,
+   "lon": 12.43792,
+   "red": 1405,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.38437,
+   "lon": 12.43483,
+   "red": 1400,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.38624,
+   "lon": 12.4329,
+   "red": 1232,
+   "date": "2026-06-26",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.38849,
+   "lon": 12.432,
+   "red": 1355,
+   "date": "2026-06-26",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.39072,
+   "lon": 12.43247,
+   "red": 1505,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.39766,
+   "lon": 12.43678,
+   "red": 1320,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.40014,
+   "lon": 12.43654,
+   "red": 1355,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.40562,
+   "lon": 12.4359,
+   "red": 1410,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.40829,
+   "lon": 12.43715,
+   "red": 1396,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.41131,
+   "lon": 12.43727,
+   "red": 1351,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.41475,
+   "lon": 12.43779,
+   "red": 1372,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.4202,
+   "lon": 12.43865,
+   "red": 1432,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.42372,
+   "lon": 12.43901,
+   "red": 1379,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.42842,
+   "lon": 12.44114,
+   "red": 1428,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.43368,
+   "lon": 12.44363,
+   "red": 1371,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.43604,
+   "lon": 12.44436,
+   "red": 1359,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.44049,
+   "lon": 12.44609,
+   "red": 1338,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.44559,
+   "lon": 12.44682,
+   "red": 1344,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.44915,
+   "lon": 12.44953,
+   "red": 1445,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.45149,
+   "lon": 12.45214,
+   "red": 1335,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.45306,
+   "lon": 12.45506,
+   "red": 1278,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.45493,
+   "lon": 12.46141,
+   "red": 1355,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.45539,
+   "lon": 12.46922,
+   "red": 1451,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.45497,
+   "lon": 12.47163,
+   "red": 1505,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.45544,
+   "lon": 12.47403,
+   "red": 1418,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.45605,
+   "lon": 12.47669,
+   "red": 1334,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.45643,
+   "lon": 12.4801,
+   "red": 1439,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.45633,
+   "lon": 12.48352,
+   "red": 1344,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.45781,
+   "lon": 12.48858,
+   "red": 1520,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.45698,
+   "lon": 12.49287,
+   "red": 1326,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.45533,
+   "lon": 12.503,
+   "red": 1396,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.45665,
+   "lon": 12.50688,
+   "red": 1489,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.45836,
+   "lon": 12.50993,
+   "red": 1580,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.45637,
+   "lon": 12.52126,
+   "red": 1444,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.45601,
+   "lon": 12.5242,
+   "red": 1476,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.45533,
+   "lon": 12.52858,
+   "red": 1393,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.45478,
+   "lon": 12.53647,
+   "red": 1483,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.45314,
+   "lon": 12.54379,
+   "red": 1462,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.45412,
+   "lon": 12.54864,
+   "red": 1479,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.45399,
+   "lon": 12.56527,
+   "red": 1443,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.45493,
+   "lon": 12.57224,
+   "red": 1525,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.45667,
+   "lon": 12.57523,
+   "red": 1483,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.45732,
+   "lon": 12.57769,
+   "red": 1378,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.45828,
+   "lon": 12.58042,
+   "red": 1516,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.46066,
+   "lon": 12.58259,
+   "red": 1752,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.46458,
+   "lon": 12.58473,
+   "red": 1545,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.46963,
+   "lon": 12.58583,
+   "red": 1392,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.47312,
+   "lon": 12.58713,
+   "red": 1229,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.47651,
+   "lon": 12.58917,
+   "red": 1390,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.47855,
+   "lon": 12.59228,
+   "red": 1425,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.48029,
+   "lon": 12.5954,
+   "red": 1339,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.47893,
+   "lon": 12.6001,
+   "red": 1349,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.47853,
+   "lon": 12.60344,
+   "red": 1597,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.48114,
+   "lon": 12.60883,
+   "red": 1324,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.4836,
+   "lon": 12.61074,
+   "red": 1332,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.48311,
+   "lon": 12.62707,
+   "red": 1512,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.48207,
+   "lon": 12.62943,
+   "red": 1632,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.47899,
+   "lon": 12.64011,
+   "red": 1663,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.47681,
+   "lon": 12.64872,
+   "red": 1351,
+   "date": "2026-06-24",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.47517,
+   "lon": 12.65327,
+   "red": 1572,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.47331,
+   "lon": 12.65541,
+   "red": 1533,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.4728,
+   "lon": 12.65962,
+   "red": 1683,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.47212,
+   "lon": 12.66267,
+   "red": 1658,
+   "date": "2026-06-26",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.46985,
+   "lon": 12.66801,
+   "red": 1613,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.46796,
+   "lon": 12.67357,
+   "red": 1689,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.46664,
+   "lon": 12.67646,
+   "red": 1698,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.46403,
+   "lon": 12.68157,
+   "red": 1531,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.46227,
+   "lon": 12.68599,
+   "red": 1682,
+   "date": "2026-06-26",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.46236,
+   "lon": 12.69024,
+   "red": 1843,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.46473,
+   "lon": 12.69414,
+   "red": 1530,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.4683,
+   "lon": 12.69728,
+   "red": 1439,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.47513,
+   "lon": 12.69912,
+   "red": 1624,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.47929,
+   "lon": 12.7005,
+   "red": 1486,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.48325,
+   "lon": 12.70183,
+   "red": 1534,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.49041,
+   "lon": 12.70522,
+   "red": 1678,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.49432,
+   "lon": 12.71019,
+   "red": 1691,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.50111,
+   "lon": 12.71217,
+   "red": 1456,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.50426,
+   "lon": 12.71384,
+   "red": 1580,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.50629,
+   "lon": 12.71672,
+   "red": 1461,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.50701,
+   "lon": 12.71989,
+   "red": 1532,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.50722,
+   "lon": 12.72461,
+   "red": 1432,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.50769,
+   "lon": 12.72775,
+   "red": 1421,
+   "date": "2026-06-29",
+   "river": "Mayo D\u00e9o"
+  },
+  {
+   "lat": 8.43958,
+   "lon": 12.74157,
+   "red": 1265,
+   "date": "2026-06-29",
+   "river": "Mayo Nial"
+  },
+  {
+   "lat": 8.44546,
+   "lon": 12.74556,
+   "red": 1442,
+   "date": "2026-06-26",
+   "river": "Mayo Nial"
+  },
+  {
+   "lat": 8.46664,
+   "lon": 12.67646,
+   "red": 1698,
+   "date": "2026-06-29",
+   "river": "Mayo Iz\u00e9lou"
+  },
+  {
+   "lat": 8.92134,
+   "lon": 12.89117,
+   "red": 1676,
+   "date": "2026-06-26",
+   "river": "Mayo Pounko"
+  },
+  {
+   "lat": 8.92431,
+   "lon": 12.89134,
+   "red": 1466,
+   "date": "2026-06-26",
+   "river": "Mayo Pounko"
+  },
+  {
+   "lat": 8.23806,
+   "lon": 12.30441,
+   "red": 1444,
+   "date": "2026-06-29",
+   "river": "Mayo Gu\u00e9mou"
+  },
+  {
+   "lat": 8.45605,
+   "lon": 12.47669,
+   "red": 1334,
+   "date": "2026-06-29",
+   "river": "Mayo Siba"
+  },
+  {
+   "lat": 8.50788,
+   "lon": 12.73549,
+   "red": 1415,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.5118,
+   "lon": 12.73841,
+   "red": 1423,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.51533,
+   "lon": 12.74006,
+   "red": 1376,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.51929,
+   "lon": 12.74187,
+   "red": 1335,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.52229,
+   "lon": 12.74234,
+   "red": 1356,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.52638,
+   "lon": 12.7424,
+   "red": 1411,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.52935,
+   "lon": 12.7432,
+   "red": 1331,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.53852,
+   "lon": 12.74333,
+   "red": 1758,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.54236,
+   "lon": 12.74439,
+   "red": 1443,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.54354,
+   "lon": 12.74686,
+   "red": 1320,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.54712,
+   "lon": 12.74793,
+   "red": 1368,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.55055,
+   "lon": 12.74765,
+   "red": 1484,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.55555,
+   "lon": 12.7483,
+   "red": 1366,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.55815,
+   "lon": 12.74953,
+   "red": 1338,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.55948,
+   "lon": 12.75219,
+   "red": 1376,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.56311,
+   "lon": 12.75437,
+   "red": 1450,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.56611,
+   "lon": 12.755,
+   "red": 1503,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.56916,
+   "lon": 12.75558,
+   "red": 1539,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.57186,
+   "lon": 12.75669,
+   "red": 1416,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.57461,
+   "lon": 12.75933,
+   "red": 1393,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.57699,
+   "lon": 12.76337,
+   "red": 1335,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.57881,
+   "lon": 12.76736,
+   "red": 1332,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.57831,
+   "lon": 12.77345,
+   "red": 1371,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.57792,
+   "lon": 12.7786,
+   "red": 1329,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.57559,
+   "lon": 12.78736,
+   "red": 1898,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.57563,
+   "lon": 12.79027,
+   "red": 1505,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.57393,
+   "lon": 12.79336,
+   "red": 1342,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.57241,
+   "lon": 12.79675,
+   "red": 1232,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.57334,
+   "lon": 12.80251,
+   "red": 1854,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.57461,
+   "lon": 12.80899,
+   "red": 1567,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.57461,
+   "lon": 12.81384,
+   "red": 1204,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.57915,
+   "lon": 12.82246,
+   "red": 1609,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.58361,
+   "lon": 12.82405,
+   "red": 1698,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.58794,
+   "lon": 12.82465,
+   "red": 1604,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.59087,
+   "lon": 12.82615,
+   "red": 1229,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.59638,
+   "lon": 12.82572,
+   "red": 1547,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.5991,
+   "lon": 12.82628,
+   "red": 1237,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.60203,
+   "lon": 12.82641,
+   "red": 1226,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.63041,
+   "lon": 12.81718,
+   "red": 1231,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.6372,
+   "lon": 12.81521,
+   "red": 1260,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.64433,
+   "lon": 12.81263,
+   "red": 1229,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.65392,
+   "lon": 12.81263,
+   "red": 1470,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.66007,
+   "lon": 12.81478,
+   "red": 1226,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.68777,
+   "lon": 12.83971,
+   "red": 1237,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.79318,
+   "lon": 12.87838,
+   "red": 1247,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.80204,
+   "lon": 12.87675,
+   "red": 1232,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.80586,
+   "lon": 12.87795,
+   "red": 1205,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.80934,
+   "lon": 12.87984,
+   "red": 1232,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.81527,
+   "lon": 12.88499,
+   "red": 1239,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.82851,
+   "lon": 12.88422,
+   "red": 1327,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.83385,
+   "lon": 12.8831,
+   "red": 1238,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.83877,
+   "lon": 12.87778,
+   "red": 1296,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.84044,
+   "lon": 12.87439,
+   "red": 1769,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.84271,
+   "lon": 12.87334,
+   "red": 1466,
+   "date": "2026-06-24",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.84549,
+   "lon": 12.87299,
+   "red": 1359,
+   "date": "2026-06-24",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.84839,
+   "lon": 12.87138,
+   "red": 1284,
+   "date": "2026-06-24",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.85335,
+   "lon": 12.87353,
+   "red": 1277,
+   "date": "2026-06-24",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.85361,
+   "lon": 12.87616,
+   "red": 1563,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.85781,
+   "lon": 12.87615,
+   "red": 1304,
+   "date": "2026-06-24",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.86769,
+   "lon": 12.8795,
+   "red": 1442,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.87829,
+   "lon": 12.87769,
+   "red": 1320,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.88104,
+   "lon": 12.87838,
+   "red": 1327,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.88494,
+   "lon": 12.87808,
+   "red": 1371,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.88817,
+   "lon": 12.87649,
+   "red": 1396,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.8919,
+   "lon": 12.87821,
+   "red": 1420,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.89398,
+   "lon": 12.87911,
+   "red": 1332,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.89593,
+   "lon": 12.88061,
+   "red": 1285,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.90067,
+   "lon": 12.87915,
+   "red": 1377,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.90483,
+   "lon": 12.87739,
+   "red": 1339,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.90788,
+   "lon": 12.87679,
+   "red": 1278,
+   "date": "2026-06-24",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.91216,
+   "lon": 12.87651,
+   "red": 1278,
+   "date": "2026-06-24",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.91399,
+   "lon": 12.87789,
+   "red": 1459,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.9156,
+   "lon": 12.88117,
+   "red": 1289,
+   "date": "2026-06-24",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.91725,
+   "lon": 12.8828,
+   "red": 1240,
+   "date": "2026-06-24",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.91793,
+   "lon": 12.8857,
+   "red": 1693,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.9216,
+   "lon": 12.88735,
+   "red": 1881,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.93222,
+   "lon": 12.89119,
+   "red": 1351,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.93841,
+   "lon": 12.89198,
+   "red": 1285,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.94752,
+   "lon": 12.90181,
+   "red": 1256,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.94901,
+   "lon": 12.90353,
+   "red": 1301,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.94845,
+   "lon": 12.90683,
+   "red": 1263,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.95045,
+   "lon": 12.90902,
+   "red": 1204,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.96105,
+   "lon": 12.91362,
+   "red": 1234,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.96668,
+   "lon": 12.91793,
+   "red": 1349,
+   "date": "2026-07-04",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.96946,
+   "lon": 12.91758,
+   "red": 1210,
+   "date": "2026-07-04",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.97236,
+   "lon": 12.91741,
+   "red": 1296,
+   "date": "2026-07-04",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.97597,
+   "lon": 12.92044,
+   "red": 1219,
+   "date": "2026-07-04",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.97859,
+   "lon": 12.92168,
+   "red": 1425,
+   "date": "2026-07-04",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.9804,
+   "lon": 12.92308,
+   "red": 1220,
+   "date": "2026-07-04",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.98279,
+   "lon": 12.92589,
+   "red": 1281,
+   "date": "2026-07-04",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.98345,
+   "lon": 12.92855,
+   "red": 1388,
+   "date": "2026-07-04",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.98567,
+   "lon": 12.93177,
+   "red": 1231,
+   "date": "2026-07-04",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.99144,
+   "lon": 12.93112,
+   "red": 1289,
+   "date": "2026-07-04",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.99375,
+   "lon": 12.92932,
+   "red": 1255,
+   "date": "2026-07-04",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.99835,
+   "lon": 12.92844,
+   "red": 1295,
+   "date": "2026-07-04",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 9.00547,
+   "lon": 12.92793,
+   "red": 1202,
+   "date": "2026-07-04",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 9.00704,
+   "lon": 12.93072,
+   "red": 1331,
+   "date": "2026-07-04",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 9.01219,
+   "lon": 12.93117,
+   "red": 1272,
+   "date": "2026-07-04",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 9.01672,
+   "lon": 12.93426,
+   "red": 1263,
+   "date": "2026-07-04",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 9.01935,
+   "lon": 12.93404,
+   "red": 1328,
+   "date": "2026-07-04",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 9.02488,
+   "lon": 12.9376,
+   "red": 1240,
+   "date": "2026-07-04",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 9.05408,
+   "lon": 12.94333,
+   "red": 1238,
+   "date": "2026-06-19",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 9.05711,
+   "lon": 12.94312,
+   "red": 1388,
+   "date": "2026-06-19",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 9.06849,
+   "lon": 12.94646,
+   "red": 1544,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 9.07031,
+   "lon": 12.94835,
+   "red": 1750,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 9.07258,
+   "lon": 12.94847,
+   "red": 1511,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 9.07726,
+   "lon": 12.95061,
+   "red": 1523,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 9.08364,
+   "lon": 12.94621,
+   "red": 1223,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 9.09066,
+   "lon": 12.94644,
+   "red": 1528,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 9.10161,
+   "lon": 12.94401,
+   "red": 1317,
+   "date": "2026-06-19",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 9.10497,
+   "lon": 12.93989,
+   "red": 1249,
+   "date": "2026-06-19",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 9.11112,
+   "lon": 12.93674,
+   "red": 1804,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 9.11487,
+   "lon": 12.93359,
+   "red": 1575,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 9.11935,
+   "lon": 12.93223,
+   "red": 1388,
+   "date": "2026-07-04",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 9.12126,
+   "lon": 12.93069,
+   "red": 1462,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 9.12344,
+   "lon": 12.92997,
+   "red": 1472,
+   "date": "2026-07-04",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 9.12598,
+   "lon": 12.93015,
+   "red": 1431,
+   "date": "2026-07-04",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 9.12784,
+   "lon": 12.93166,
+   "red": 1649,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 9.13,
+   "lon": 12.9336,
+   "red": 1470,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 9.14405,
+   "lon": 12.9268,
+   "red": 1508,
+   "date": "2026-07-04",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 9.15314,
+   "lon": 12.92396,
+   "red": 1203,
+   "date": "2026-06-19",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 9.17027,
+   "lon": 12.91327,
+   "red": 1300,
+   "date": "2026-07-04",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 9.17328,
+   "lon": 12.91361,
+   "red": 1371,
+   "date": "2026-07-04",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 9.17896,
+   "lon": 12.91576,
+   "red": 1455,
+   "date": "2026-07-04",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 9.18794,
+   "lon": 12.91486,
+   "red": 1558,
+   "date": "2026-07-04",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 9.19256,
+   "lon": 12.9146,
+   "red": 1757,
+   "date": "2026-07-04",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 9.19734,
+   "lon": 12.9128,
+   "red": 1620,
+   "date": "2026-07-04",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 9.20243,
+   "lon": 12.91151,
+   "red": 1558,
+   "date": "2026-07-04",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 9.20912,
+   "lon": 12.91022,
+   "red": 1337,
+   "date": "2026-06-26",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.95045,
+   "lon": 12.90902,
+   "red": 1204,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.95325,
+   "lon": 12.90845,
+   "red": 1252,
+   "date": "2026-07-04",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.95509,
+   "lon": 12.90991,
+   "red": 1266,
+   "date": "2026-07-04",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.95701,
+   "lon": 12.91162,
+   "red": 1240,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.95965,
+   "lon": 12.91165,
+   "red": 1250,
+   "date": "2026-06-29",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.96263,
+   "lon": 12.91149,
+   "red": 1377,
+   "date": "2026-07-04",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.96666,
+   "lon": 12.91213,
+   "red": 1278,
+   "date": "2026-07-04",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 9.22133,
+   "lon": 12.90591,
+   "red": 1390,
+   "date": "2026-07-04",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 9.22095,
+   "lon": 12.90859,
+   "red": 1848,
+   "date": "2026-07-04",
+   "river": "Le Faro"
+  },
+  {
+   "lat": 8.15204,
+   "lon": 13.00511,
+   "red": 1281,
+   "date": "2026-07-21",
+   "river": "Mayo Lif\u00e9"
+  },
+  {
+   "lat": 8.43368,
+   "lon": 12.44363,
+   "red": 1371,
+   "date": "2026-06-29",
+   "river": "Mayo Momb\u00e9rou"
+  },
+  {
+   "lat": 8.22084,
+   "lon": 12.98085,
+   "red": 1267,
+   "date": "2026-07-21",
+   "river": "Mayo Bantadj\u00e9"
+  },
+  {
+   "lat": 8.47853,
+   "lon": 12.60344,
+   "red": 1597,
+   "date": "2026-06-29",
+   "river": "Mayo Mali"
+  },
+  {
+   "lat": 8.44253,
+   "lon": 12.44638,
+   "red": 1310,
+   "date": "2026-06-29",
+   "river": "Mayo Kadam"
+  },
+  {
+   "lat": 7.87292,
+   "lon": 12.23538,
+   "red": 1541,
+   "date": "2026-06-26",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 7.77906,
+   "lon": 12.24813,
+   "red": 1418,
+   "date": "2026-07-26",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 7.79607,
+   "lon": 12.23826,
+   "red": 1536,
+   "date": "2026-06-26",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 8.69255,
+   "lon": 12.83497,
+   "red": 1458,
+   "date": "2026-06-26",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 8.32642,
+   "lon": 12.33308,
+   "red": 1368,
+   "date": "2026-06-29",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 8.36987,
+   "lon": 12.43676,
+   "red": 1378,
+   "date": "2026-06-29",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 7.60641,
+   "lon": 11.77018,
+   "red": 1570,
+   "date": "2026-07-26",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 8.59607,
+   "lon": 12.82809,
+   "red": 1644,
+   "date": "2026-06-29",
+   "river": "unnamed stream"
+  },
+  {
+   "lat": 7.88005,
+   "lon": 13.338,
+   "red": 1209,
+   "date": "2026-07-26",
+   "river": "unnamed river"
+  }
+ ]
+}

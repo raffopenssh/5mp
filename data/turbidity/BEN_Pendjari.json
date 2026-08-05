@@ -1,0 +1,55 @@
+{
+ "park_id": "BEN_Pendjari",
+ "scanned_at": "2026-07-12T06:01:23Z",
+ "datetime_range": "2026-05-28T00:00:00Z/2026-07-12T23:59:59Z",
+ "buffer_km": 50,
+ "n_waterways": 72,
+ "n_sample_pts": 4648,
+ "alerts": [],
+ "rivers": [
+  {
+   "name": "Koumongou",
+   "waterway": "river",
+   "length_km": 100.9,
+   "water_samples": 2,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Le Pendjari",
+   "waterway": "river",
+   "length_km": 455.7,
+   "water_samples": 3,
+   "turbid_km": 0.0
+  }
+ ],
+ "turbid_points": [
+  {
+   "lat": 9.98826,
+   "lon": 1.15463,
+   "red": 2092,
+   "date": "2026-07-08",
+   "river": "Koumongou"
+  },
+  {
+   "lat": 11.07448,
+   "lon": 1.01567,
+   "red": 2069,
+   "date": "2026-07-08",
+   "river": "Le Pendjari"
+  },
+  {
+   "lat": 11.08837,
+   "lon": 0.99893,
+   "red": 2500,
+   "date": "2026-07-06",
+   "river": "Le Pendjari"
+  },
+  {
+   "lat": 11.01256,
+   "lon": 0.95752,
+   "red": 2361,
+   "date": "2026-07-08",
+   "river": "Le Pendjari"
+  }
+ ]
+}

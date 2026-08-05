@@ -1,6 +1,6 @@
 [
   {
-    "id": 42733,
+    "id": 20908,
     "park_id": "CMR_Mbam_et_Djerem",
     "lat": 5.9384095,
     "lon": 12.5232,
@@ -14,14 +14,14 @@
     "in_buffer": 0,
     "tile_row": null,
     "tile_col": null,
-    "detected_at": "2026-02-15 17:20:42",
-    "classification": "settlement",
-    "classification_confidence": 0.5,
-    "narrative": "Settlement in Mbam et Djerem. Area: 2.00 ha, estimated population: 3. Located 8.9km from Malimbo. Near Sanaga river.",
-    "fires_5km": 0,
-    "fire_seasonality": null,
+    "detected_at": "2026-03-02 15:11:35",
+    "classification": "fishing",
+    "classification_confidence": 0.6,
+    "narrative": "Fishing camp 9km from Malimbo, 2.7km from Mekie River, 2.7km from Mekie River. Small footprint (20000 m\u00b2) and minimal forest disturbance consistent with seasonal fishing activity.",
+    "fires_5km": 520,
+    "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.0,
-    "classified_at": null,
+    "classified_at": "2026-07-29 07:30:16",
     "polygon_ids": "settlement_CMR_Mbam_et_Djerem_0,settlement_CMR_Mbam_et_Djerem_1"
   }
 ]

@@ -1,3 +1,14 @@
+6602054 2026-07-16 09:18:36 Legal pages follow browser language (Accept-Language)
+d3a46de 2026-07-16 08:08:36 Add sitemap, SEO/OpenGraph meta tags and OG image
+af5c29c 2026-07-16 08:02:24 Add bilingual (DE/EN) Impressum and Datenschutz pages
+3abbbce 2026-07-09 20:38:58 Animator pull-to-extend: measure pull against original handle position
+a1d48a1 2026-07-09 20:37:29 Time slider: gravity fine-squeeze to 1 day + animator pull-to-extend
+adfb3bb 2026-07-09 20:29:23 Time slider: robust handle dragging + mobile PDF export + animator scrub fixes
+eeffd7a 2026-07-09 20:06:21 Add in-process response cache for hot park endpoints; speed up fire-trend
+15f5bd2 2026-07-09 20:01:28 Speed up /stats and /fire-narrative with composite indexes; fix silently-broken fire stats
+9fbf0f6 2026-07-09 19:23:31 Fix server-wide DB pool deadlock that froze star-report CSV/XLSX/PDF exports
+e6f0812 2026-07-09 18:44:04 Onboarding: export raw fire JSON so the v5 pipeline sees backfilled fires
+bca8dfc 2026-07-09 18:38:41 Fix circle-fallback regression: Protected Planet returns area_km2 as string
 0dc9258 2026-07-09 18:29:17 Star report: unified multi-report handling, section-filtered exports, coherent accordion stars
 7b84afa 2026-07-09 18:08:08 Data: daily worker outputs (GFW, turbidity, mining pits, OSM waterways)
 aa1b4d4 2026-07-09 18:08:08 Onboard DZA_Djurdjura via worker test (163 parks, onboarded_at set)
@@ -7,14 +18,3 @@ aa1b4d4 2026-07-09 18:08:08 Onboard DZA_Djurdjura via worker test (163 parks, on
 fb35419 2026-07-09 17:23:51 Rivers: point all readers at park_rivers_hydro (canonical table)
 9384edc 2026-07-09 17:06:23 Hide session chip while full-screen modals are open (star report, login, upload, version)
 17c2e52 2026-07-09 16:32:40 Document Locus/KML export architecture in AGENTS.md
-4ef0c2c 2026-07-09 16:32:02 Locus/KML export: default device settings, merged rivers, waterbodies, airstrips
-fe1296f 2026-07-09 15:57:26 Upload: friendly error when proxy/auth returns HTML instead of JSON
-753ac37 2026-07-09 15:45:58 Fix password gate on mobile when keyboard opens
-1978d80 2026-07-09 15:42:10 Update generated commit list
-c702694 2026-07-09 15:41:58 Smooth UX: upload busy/toast polish, star report pager & loading shine, richer login page
-0557fca 2026-07-09 15:24:00 Bbox draw UX + session chip declutter
-0903639 2026-07-09 15:16:50 FloatUI polish: bar controls inside popup outline, tag-style pinned chips
-b4341f4 2026-07-09 10:05:19 Update generated commit list
-8396053 2026-07-09 10:05:17 Compact pinned-layers box + cleaner popup country line
-8797be3 2026-07-09 09:46:51 Update generated commit list
-604a285 2026-07-09 09:46:28 FloatUI: draggable/collapsible/dockable pinned-layers box and park popup

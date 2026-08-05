@@ -1,0 +1,76 @@
+{
+ "park_id": "CMR_Campo-Ma'an",
+ "scanned_at": "2026-07-25T06:00:07Z",
+ "datetime_range": "2026-06-10T00:00:00Z/2026-07-25T23:59:59Z",
+ "buffer_km": 50,
+ "n_waterways": 87,
+ "n_sample_pts": 5670,
+ "alerts": [],
+ "rivers": [
+  {
+   "name": "R\u00edo Campo",
+   "waterway": "river",
+   "length_km": 96.4,
+   "water_samples": 43,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Bongola",
+   "waterway": "river",
+   "length_km": 65.0,
+   "water_samples": 20,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Cocoloondo",
+   "waterway": "river",
+   "length_km": 9.4,
+   "water_samples": 4,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 4.1,
+   "water_samples": 4,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 3.9,
+   "water_samples": 3,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 5.9,
+   "water_samples": 4,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 5.2,
+   "water_samples": 6,
+   "turbid_km": 0.0
+  }
+ ],
+ "turbid_points": [
+  {
+   "lat": 2.28558,
+   "lon": 9.89228,
+   "red": 1495,
+   "date": "2026-06-24",
+   "river": "Bongola"
+  },
+  {
+   "lat": 2.2859,
+   "lon": 9.88969,
+   "red": 2239,
+   "date": "2026-06-26",
+   "river": "Bongola"
+  }
+ ]
+}

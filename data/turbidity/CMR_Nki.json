@@ -1,0 +1,280 @@
+{
+ "park_id": "CMR_Nki",
+ "scanned_at": "2026-07-31T06:00:22Z",
+ "datetime_range": "2026-06-16T00:00:00Z/2026-07-31T23:59:59Z",
+ "buffer_km": 50,
+ "n_waterways": 105,
+ "n_sample_pts": 6746,
+ "alerts": [
+  {
+   "lat": 1.91236,
+   "lon": 15.34359,
+   "river": "Ngoko",
+   "waterway": "river",
+   "type": "turbidity_onset",
+   "red": 1343,
+   "upstream_median": 632,
+   "ratio": 2.12,
+   "dist_km": 29.5,
+   "downstream_turbid_km": 1.5,
+   "scene": "S2B_33NWC_20260703_0_L2A",
+   "date": "2026-07-03"
+  }
+ ],
+ "rivers": [
+  {
+   "name": "Ngoko",
+   "waterway": "river",
+   "length_km": 41.4,
+   "water_samples": 77,
+   "turbid_km": 3.2
+  },
+  {
+   "name": "Dja",
+   "waterway": "river",
+   "length_km": 355.8,
+   "water_samples": 46,
+   "turbid_km": 2.5
+  },
+  {
+   "name": "Boumba",
+   "waterway": "river",
+   "length_km": 268.9,
+   "water_samples": 79,
+   "turbid_km": 2.2
+  },
+  {
+   "name": "Lopondji",
+   "waterway": "river",
+   "length_km": 39.2,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  }
+ ],
+ "turbid_points": [
+  {
+   "lat": 2.66972,
+   "lon": 14.12684,
+   "red": 2430,
+   "date": "2026-07-03",
+   "river": "Dja"
+  },
+  {
+   "lat": 2.64935,
+   "lon": 14.12552,
+   "red": 2421,
+   "date": "2026-07-03",
+   "river": "Dja"
+  },
+  {
+   "lat": 2.01366,
+   "lon": 15.00445,
+   "red": 1321,
+   "date": "2026-07-03",
+   "river": "Dja"
+  },
+  {
+   "lat": 2.01073,
+   "lon": 15.01389,
+   "red": 1575,
+   "date": "2026-06-18",
+   "river": "Dja"
+  },
+  {
+   "lat": 2.00048,
+   "lon": 15.02997,
+   "red": 1604,
+   "date": "2026-06-18",
+   "river": "Dja"
+  },
+  {
+   "lat": 1.99686,
+   "lon": 15.05761,
+   "red": 1277,
+   "date": "2026-06-18",
+   "river": "Dja"
+  },
+  {
+   "lat": 2.00043,
+   "lon": 15.07108,
+   "red": 1718,
+   "date": "2026-07-03",
+   "river": "Dja"
+  },
+  {
+   "lat": 1.9918,
+   "lon": 15.06998,
+   "red": 1348,
+   "date": "2026-06-18",
+   "river": "Dja"
+  },
+  {
+   "lat": 1.98569,
+   "lon": 15.08099,
+   "red": 1449,
+   "date": "2026-07-03",
+   "river": "Dja"
+  },
+  {
+   "lat": 2.04123,
+   "lon": 15.16281,
+   "red": 1406,
+   "date": "2026-07-03",
+   "river": "Dja"
+  },
+  {
+   "lat": 2.65174,
+   "lon": 15.22522,
+   "red": 1277,
+   "date": "2026-07-23",
+   "river": "Boumba"
+  },
+  {
+   "lat": 2.64303,
+   "lon": 15.24078,
+   "red": 1400,
+   "date": "2026-07-23",
+   "river": "Boumba"
+  },
+  {
+   "lat": 2.43954,
+   "lon": 15.22975,
+   "red": 1416,
+   "date": "2026-07-03",
+   "river": "Boumba"
+  },
+  {
+   "lat": 2.34876,
+   "lon": 15.1562,
+   "red": 1279,
+   "date": "2026-07-03",
+   "river": "Boumba"
+  },
+  {
+   "lat": 2.34646,
+   "lon": 15.14599,
+   "red": 1376,
+   "date": "2026-07-03",
+   "river": "Boumba"
+  },
+  {
+   "lat": 2.34754,
+   "lon": 15.14399,
+   "red": 1342,
+   "date": "2026-07-03",
+   "river": "Boumba"
+  },
+  {
+   "lat": 2.16612,
+   "lon": 15.15076,
+   "red": 2764,
+   "date": "2026-07-03",
+   "river": "Boumba"
+  },
+  {
+   "lat": 2.13626,
+   "lon": 15.13665,
+   "red": 2017,
+   "date": "2026-07-03",
+   "river": "Boumba"
+  },
+  {
+   "lat": 2.04959,
+   "lon": 15.17877,
+   "red": 1837,
+   "date": "2026-07-03",
+   "river": "Boumba"
+  },
+  {
+   "lat": 2.03966,
+   "lon": 15.20658,
+   "red": 2896,
+   "date": "2026-07-03",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 2.03847,
+   "lon": 15.21142,
+   "red": 1425,
+   "date": "2026-07-03",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 2.03319,
+   "lon": 15.22292,
+   "red": 1625,
+   "date": "2026-07-03",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 2.01843,
+   "lon": 15.25145,
+   "red": 1411,
+   "date": "2026-07-03",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 2.01658,
+   "lon": 15.2493,
+   "red": 1279,
+   "date": "2026-06-18",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 1.99683,
+   "lon": 15.27638,
+   "red": 1678,
+   "date": "2026-06-18",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 1.98619,
+   "lon": 15.29148,
+   "red": 1267,
+   "date": "2026-06-18",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 1.91236,
+   "lon": 15.34359,
+   "red": 1343,
+   "date": "2026-07-03",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 1.91208,
+   "lon": 15.34686,
+   "red": 1516,
+   "date": "2026-06-18",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 1.92083,
+   "lon": 15.35972,
+   "red": 1373,
+   "date": "2026-07-03",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 1.92828,
+   "lon": 15.37072,
+   "red": 1208,
+   "date": "2026-07-03",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 1.94139,
+   "lon": 15.40396,
+   "red": 1453,
+   "date": "2026-07-03",
+   "river": "Ngoko"
+  },
+  {
+   "lat": 1.94555,
+   "lon": 15.41358,
+   "red": 1271,
+   "date": "2026-07-03",
+   "river": "Ngoko"
+  }
+ ]
+}

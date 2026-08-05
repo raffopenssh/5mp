@@ -1,0 +1,700 @@
+{
+ "park_id": "CIV_Comoe",
+ "scanned_at": "2026-07-20T06:02:05Z",
+ "datetime_range": "2026-06-05T00:00:00Z/2026-07-20T23:59:59Z",
+ "buffer_km": 50,
+ "n_waterways": 739,
+ "n_sample_pts": 23507,
+ "alerts": [
+  {
+   "lat": 9.69115,
+   "lon": -4.57566,
+   "river": "Como\u00e9",
+   "waterway": "river",
+   "type": "turbid_headwater",
+   "red": 1338,
+   "upstream_median": null,
+   "ratio": null,
+   "dist_km": 184.7,
+   "downstream_turbid_km": 9.0,
+   "scene": "S2C_30PUR_20260615_0_L2A",
+   "date": "2026-06-15"
+  },
+  {
+   "lat": 9.44587,
+   "lon": -2.68968,
+   "river": "Mouhoun River",
+   "waterway": "river",
+   "type": "turbid_headwater",
+   "red": 2053,
+   "upstream_median": null,
+   "ratio": null,
+   "dist_km": 4.1,
+   "downstream_turbid_km": 8.2,
+   "scene": "S2C_30PWR_20260622_0_L2A",
+   "date": "2026-06-22"
+  }
+ ],
+ "rivers": [
+  {
+   "name": "Como\u00e9",
+   "waterway": "river",
+   "length_km": 492.9,
+   "water_samples": 37,
+   "turbid_km": 9.0
+  },
+  {
+   "name": "Mouhoun River",
+   "waterway": "river",
+   "length_km": 82.6,
+   "water_samples": 34,
+   "turbid_km": 8.2
+  },
+  {
+   "name": "Le Mouhoun / Mouhoun River",
+   "waterway": "river",
+   "length_km": 23.6,
+   "water_samples": 10,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "L\u00e9raba",
+   "waterway": "river",
+   "length_km": 89.8,
+   "water_samples": 5,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Kongbo",
+   "waterway": "stream",
+   "length_km": 21.3,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "stream",
+   "length_km": 38.9,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "stream",
+   "length_km": 13.3,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "stream",
+   "length_km": 8.9,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  }
+ ],
+ "turbid_points": [
+  {
+   "lat": 9.69115,
+   "lon": -4.57566,
+   "red": 1338,
+   "date": "2026-06-15",
+   "river": "Como\u00e9"
+  },
+  {
+   "lat": 9.69105,
+   "lon": -4.57211,
+   "red": 2177,
+   "date": "2026-06-05",
+   "river": "Como\u00e9"
+  },
+  {
+   "lat": 9.69114,
+   "lon": -4.56896,
+   "red": 2217,
+   "date": "2026-06-05",
+   "river": "Como\u00e9"
+  },
+  {
+   "lat": 9.69254,
+   "lon": -4.56346,
+   "red": 2219,
+   "date": "2026-06-05",
+   "river": "Como\u00e9"
+  },
+  {
+   "lat": 9.75231,
+   "lon": -4.52429,
+   "red": 1617,
+   "date": "2026-06-15",
+   "river": "Como\u00e9"
+  },
+  {
+   "lat": 9.66721,
+   "lon": -4.51738,
+   "red": 2299,
+   "date": "2026-06-15",
+   "river": "Como\u00e9"
+  },
+  {
+   "lat": 9.62334,
+   "lon": -4.35963,
+   "red": 1343,
+   "date": "2026-06-15",
+   "river": "Como\u00e9"
+  },
+  {
+   "lat": 9.62305,
+   "lon": -4.35499,
+   "red": 2462,
+   "date": "2026-06-05",
+   "river": "Como\u00e9"
+  },
+  {
+   "lat": 9.10434,
+   "lon": -3.85219,
+   "red": 1854,
+   "date": "2026-06-07",
+   "river": "Como\u00e9"
+  },
+  {
+   "lat": 9.05799,
+   "lon": -3.8851,
+   "red": 1622,
+   "date": "2026-06-07",
+   "river": "Como\u00e9"
+  },
+  {
+   "lat": 9.05802,
+   "lon": -3.88224,
+   "red": 1823,
+   "date": "2026-06-07",
+   "river": "Como\u00e9"
+  },
+  {
+   "lat": 9.05358,
+   "lon": -3.87739,
+   "red": 2205,
+   "date": "2026-06-07",
+   "river": "Como\u00e9"
+  },
+  {
+   "lat": 9.04808,
+   "lon": -3.87542,
+   "red": 1881,
+   "date": "2026-06-07",
+   "river": "Como\u00e9"
+  },
+  {
+   "lat": 9.03114,
+   "lon": -3.83383,
+   "red": 2034,
+   "date": "2026-06-07",
+   "river": "Como\u00e9"
+  },
+  {
+   "lat": 9.02449,
+   "lon": -3.82127,
+   "red": 2369,
+   "date": "2026-06-07",
+   "river": "Como\u00e9"
+  },
+  {
+   "lat": 9.02254,
+   "lon": -3.81858,
+   "red": 2452,
+   "date": "2026-06-07",
+   "river": "Como\u00e9"
+  },
+  {
+   "lat": 9.0209,
+   "lon": -3.81531,
+   "red": 2546,
+   "date": "2026-06-07",
+   "river": "Como\u00e9"
+  },
+  {
+   "lat": 9.02012,
+   "lon": -3.81297,
+   "red": 2495,
+   "date": "2026-06-07",
+   "river": "Como\u00e9"
+  },
+  {
+   "lat": 9.01613,
+   "lon": -3.80741,
+   "red": 2412,
+   "date": "2026-06-07",
+   "river": "Como\u00e9"
+  },
+  {
+   "lat": 9.01416,
+   "lon": -3.80545,
+   "red": 2468,
+   "date": "2026-06-07",
+   "river": "Como\u00e9"
+  },
+  {
+   "lat": 8.99742,
+   "lon": -3.80754,
+   "red": 2429,
+   "date": "2026-06-07",
+   "river": "Como\u00e9"
+  },
+  {
+   "lat": 8.99641,
+   "lon": -3.8101,
+   "red": 2435,
+   "date": "2026-06-07",
+   "river": "Como\u00e9"
+  },
+  {
+   "lat": 8.99527,
+   "lon": -3.81437,
+   "red": 2395,
+   "date": "2026-06-07",
+   "river": "Como\u00e9"
+  },
+  {
+   "lat": 8.99305,
+   "lon": -3.81862,
+   "red": 2378,
+   "date": "2026-06-07",
+   "river": "Como\u00e9"
+  },
+  {
+   "lat": 8.99057,
+   "lon": -3.82566,
+   "red": 2419,
+   "date": "2026-06-07",
+   "river": "Como\u00e9"
+  },
+  {
+   "lat": 8.98305,
+   "lon": -3.83351,
+   "red": 2384,
+   "date": "2026-06-07",
+   "river": "Como\u00e9"
+  },
+  {
+   "lat": 8.98055,
+   "lon": -3.84196,
+   "red": 2418,
+   "date": "2026-06-07",
+   "river": "Como\u00e9"
+  },
+  {
+   "lat": 8.98072,
+   "lon": -3.84531,
+   "red": 2456,
+   "date": "2026-06-07",
+   "river": "Como\u00e9"
+  },
+  {
+   "lat": 8.98031,
+   "lon": -3.84862,
+   "red": 2102,
+   "date": "2026-06-07",
+   "river": "Como\u00e9"
+  },
+  {
+   "lat": 8.97149,
+   "lon": -3.85854,
+   "red": 2571,
+   "date": "2026-06-07",
+   "river": "Como\u00e9"
+  },
+  {
+   "lat": 8.95842,
+   "lon": -3.86856,
+   "red": 2351,
+   "date": "2026-06-07",
+   "river": "Como\u00e9"
+  },
+  {
+   "lat": 8.95777,
+   "lon": -3.87107,
+   "red": 2303,
+   "date": "2026-06-07",
+   "river": "Como\u00e9"
+  },
+  {
+   "lat": 8.96467,
+   "lon": -3.88989,
+   "red": 2375,
+   "date": "2026-06-07",
+   "river": "Como\u00e9"
+  },
+  {
+   "lat": 8.96433,
+   "lon": -3.89306,
+   "red": 2330,
+   "date": "2026-06-07",
+   "river": "Como\u00e9"
+  },
+  {
+   "lat": 8.963,
+   "lon": -3.89538,
+   "red": 2395,
+   "date": "2026-06-07",
+   "river": "Como\u00e9"
+  },
+  {
+   "lat": 8.95904,
+   "lon": -3.89588,
+   "red": 2410,
+   "date": "2026-06-07",
+   "river": "Como\u00e9"
+  },
+  {
+   "lat": 9.44587,
+   "lon": -2.68968,
+   "red": 2053,
+   "date": "2026-06-22",
+   "river": "Mouhoun River"
+  },
+  {
+   "lat": 9.31317,
+   "lon": -2.72103,
+   "red": 2773,
+   "date": "2026-06-22",
+   "river": "Mouhoun River"
+  },
+  {
+   "lat": 9.28564,
+   "lon": -2.69911,
+   "red": 1241,
+   "date": "2026-06-22",
+   "river": "Mouhoun River"
+  },
+  {
+   "lat": 9.28732,
+   "lon": -2.68669,
+   "red": 2964,
+   "date": "2026-06-22",
+   "river": "Mouhoun River"
+  },
+  {
+   "lat": 9.28334,
+   "lon": -2.6812,
+   "red": 2942,
+   "date": "2026-06-22",
+   "river": "Mouhoun River"
+  },
+  {
+   "lat": 9.27903,
+   "lon": -2.67538,
+   "red": 2314,
+   "date": "2026-06-22",
+   "river": "Mouhoun River"
+  },
+  {
+   "lat": 9.26363,
+   "lon": -2.66254,
+   "red": 2277,
+   "date": "2026-06-22",
+   "river": "Mouhoun River"
+  },
+  {
+   "lat": 9.25478,
+   "lon": -2.65759,
+   "red": 2175,
+   "date": "2026-06-22",
+   "river": "Mouhoun River"
+  },
+  {
+   "lat": 9.2522,
+   "lon": -2.65783,
+   "red": 2448,
+   "date": "2026-06-22",
+   "river": "Mouhoun River"
+  },
+  {
+   "lat": 9.24669,
+   "lon": -2.65946,
+   "red": 3083,
+   "date": "2026-06-22",
+   "river": "Mouhoun River"
+  },
+  {
+   "lat": 9.2353,
+   "lon": -2.67201,
+   "red": 2927,
+   "date": "2026-06-22",
+   "river": "Mouhoun River"
+  },
+  {
+   "lat": 9.21485,
+   "lon": -2.70428,
+   "red": 3218,
+   "date": "2026-06-22",
+   "river": "Mouhoun River"
+  },
+  {
+   "lat": 9.1979,
+   "lon": -2.71823,
+   "red": 2808,
+   "date": "2026-06-22",
+   "river": "Mouhoun River"
+  },
+  {
+   "lat": 9.19424,
+   "lon": -2.71763,
+   "red": 2771,
+   "date": "2026-06-22",
+   "river": "Mouhoun River"
+  },
+  {
+   "lat": 9.19062,
+   "lon": -2.71768,
+   "red": 2786,
+   "date": "2026-06-22",
+   "river": "Mouhoun River"
+  },
+  {
+   "lat": 9.18791,
+   "lon": -2.71849,
+   "red": 2817,
+   "date": "2026-06-22",
+   "river": "Mouhoun River"
+  },
+  {
+   "lat": 9.18503,
+   "lon": -2.72015,
+   "red": 3027,
+   "date": "2026-06-22",
+   "river": "Mouhoun River"
+  },
+  {
+   "lat": 9.17036,
+   "lon": -2.72556,
+   "red": 3257,
+   "date": "2026-06-22",
+   "river": "Mouhoun River"
+  },
+  {
+   "lat": 9.15608,
+   "lon": -2.73811,
+   "red": 2952,
+   "date": "2026-06-22",
+   "river": "Mouhoun River"
+  },
+  {
+   "lat": 9.14089,
+   "lon": -2.77385,
+   "red": 3071,
+   "date": "2026-06-22",
+   "river": "Mouhoun River"
+  },
+  {
+   "lat": 9.13757,
+   "lon": -2.77385,
+   "red": 3086,
+   "date": "2026-06-22",
+   "river": "Mouhoun River"
+  },
+  {
+   "lat": 9.10448,
+   "lon": -2.76368,
+   "red": 1968,
+   "date": "2026-06-22",
+   "river": "Mouhoun River"
+  },
+  {
+   "lat": 9.0989,
+   "lon": -2.76157,
+   "red": 2622,
+   "date": "2026-06-22",
+   "river": "Mouhoun River"
+  },
+  {
+   "lat": 9.08751,
+   "lon": -2.76175,
+   "red": 1705,
+   "date": "2026-06-22",
+   "river": "Mouhoun River"
+  },
+  {
+   "lat": 9.06316,
+   "lon": -2.78029,
+   "red": 3416,
+   "date": "2026-06-22",
+   "river": "Mouhoun River"
+  },
+  {
+   "lat": 9.06059,
+   "lon": -2.77966,
+   "red": 2216,
+   "date": "2026-06-22",
+   "river": "Mouhoun River"
+  },
+  {
+   "lat": 9.03693,
+   "lon": -2.76092,
+   "red": 1207,
+   "date": "2026-06-22",
+   "river": "Mouhoun River"
+  },
+  {
+   "lat": 9.0323,
+   "lon": -2.7221,
+   "red": 3015,
+   "date": "2026-06-22",
+   "river": "Mouhoun River"
+  },
+  {
+   "lat": 9.02958,
+   "lon": -2.7144,
+   "red": 3298,
+   "date": "2026-06-22",
+   "river": "Mouhoun River"
+  },
+  {
+   "lat": 9.02368,
+   "lon": -2.69085,
+   "red": 2803,
+   "date": "2026-06-22",
+   "river": "Mouhoun River"
+  },
+  {
+   "lat": 9.01619,
+   "lon": -2.66112,
+   "red": 2791,
+   "date": "2026-06-22",
+   "river": "Mouhoun River"
+  },
+  {
+   "lat": 9.01397,
+   "lon": -2.6594,
+   "red": 2703,
+   "date": "2026-06-22",
+   "river": "Mouhoun River"
+  },
+  {
+   "lat": 8.98367,
+   "lon": -2.65845,
+   "red": 2949,
+   "date": "2026-06-22",
+   "river": "Mouhoun River"
+  },
+  {
+   "lat": 9.64129,
+   "lon": -2.7456,
+   "red": 2452,
+   "date": "2026-06-22",
+   "river": "Le Mouhoun / Mouhoun River"
+  },
+  {
+   "lat": 9.60386,
+   "lon": -2.76858,
+   "red": 2844,
+   "date": "2026-06-22",
+   "river": "Le Mouhoun / Mouhoun River"
+  },
+  {
+   "lat": 9.59741,
+   "lon": -2.77191,
+   "red": 2952,
+   "date": "2026-06-22",
+   "river": "Le Mouhoun / Mouhoun River"
+  },
+  {
+   "lat": 9.59447,
+   "lon": -2.77189,
+   "red": 2184,
+   "date": "2026-06-22",
+   "river": "Le Mouhoun / Mouhoun River"
+  },
+  {
+   "lat": 9.59182,
+   "lon": -2.77068,
+   "red": 2578,
+   "date": "2026-06-22",
+   "river": "Le Mouhoun / Mouhoun River"
+  },
+  {
+   "lat": 9.58525,
+   "lon": -2.77062,
+   "red": 2766,
+   "date": "2026-06-22",
+   "river": "Le Mouhoun / Mouhoun River"
+  },
+  {
+   "lat": 9.57301,
+   "lon": -2.77019,
+   "red": 2532,
+   "date": "2026-06-22",
+   "river": "Le Mouhoun / Mouhoun River"
+  },
+  {
+   "lat": 9.51426,
+   "lon": -2.7066,
+   "red": 2415,
+   "date": "2026-06-22",
+   "river": "Le Mouhoun / Mouhoun River"
+  },
+  {
+   "lat": 9.50657,
+   "lon": -2.69622,
+   "red": 2437,
+   "date": "2026-06-22",
+   "river": "Le Mouhoun / Mouhoun River"
+  },
+  {
+   "lat": 9.50169,
+   "lon": -2.69227,
+   "red": 2566,
+   "date": "2026-06-22",
+   "river": "Le Mouhoun / Mouhoun River"
+  },
+  {
+   "lat": 9.88713,
+   "lon": -4.92189,
+   "red": 2556,
+   "date": "2026-06-30",
+   "river": "L\u00e9raba"
+  },
+  {
+   "lat": 9.89129,
+   "lon": -4.91112,
+   "red": 2644,
+   "date": "2026-07-05",
+   "river": "L\u00e9raba"
+  },
+  {
+   "lat": 9.88982,
+   "lon": -4.90476,
+   "red": 2607,
+   "date": "2026-06-30",
+   "river": "L\u00e9raba"
+  },
+  {
+   "lat": 9.88315,
+   "lon": -4.89837,
+   "red": 2091,
+   "date": "2026-06-05",
+   "river": "L\u00e9raba"
+  },
+  {
+   "lat": 9.87853,
+   "lon": -4.89813,
+   "red": 2595,
+   "date": "2026-06-30",
+   "river": "L\u00e9raba"
+  },
+  {
+   "lat": 9.19243,
+   "lon": -2.71764,
+   "red": 2729,
+   "date": "2026-06-22",
+   "river": "unnamed stream"
+  },
+  {
+   "lat": 9.27119,
+   "lon": -4.78806,
+   "red": 2676,
+   "date": "2026-06-15",
+   "river": "unnamed stream"
+  }
+ ]
+}

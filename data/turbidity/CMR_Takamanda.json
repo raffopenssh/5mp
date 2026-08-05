@@ -1,0 +1,55 @@
+{
+ "park_id": "CMR_Takamanda",
+ "scanned_at": "2026-08-01T06:00:18Z",
+ "datetime_range": "2026-06-17T00:00:00Z/2026-08-01T23:59:59Z",
+ "buffer_km": 50,
+ "n_waterways": 83,
+ "n_sample_pts": 6102,
+ "alerts": [],
+ "rivers": [
+  {
+   "name": "Menchum",
+   "waterway": "river",
+   "length_km": 121.7,
+   "water_samples": 55,
+   "turbid_km": 0.8
+  },
+  {
+   "name": "Tunga",
+   "waterway": "river",
+   "length_km": 43.6,
+   "water_samples": 21,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Wom",
+   "waterway": "river",
+   "length_km": 35.4,
+   "water_samples": 21,
+   "turbid_km": 0.0
+  }
+ ],
+ "turbid_points": [
+  {
+   "lat": 6.62593,
+   "lon": 9.76409,
+   "red": 1221,
+   "date": "2026-07-02",
+   "river": "Menchum"
+  },
+  {
+   "lat": 6.62877,
+   "lon": 9.7643,
+   "red": 1516,
+   "date": "2026-07-02",
+   "river": "Menchum"
+  },
+  {
+   "lat": 6.68609,
+   "lon": 9.76597,
+   "red": 1238,
+   "date": "2026-07-02",
+   "river": "Menchum"
+  }
+ ]
+}

@@ -1,0 +1,203 @@
+{
+ "park_id": "BWA_Central_Kalahari",
+ "scanned_at": "2026-07-14T06:01:32Z",
+ "datetime_range": "2026-05-30T00:00:00Z/2026-07-14T23:59:59Z",
+ "buffer_km": 50,
+ "n_waterways": 27,
+ "n_sample_pts": 3154,
+ "alerts": [
+  {
+   "lat": -20.97915,
+   "lon": 25.11602,
+   "river": "Boteti River",
+   "waterway": "river",
+   "type": "turbidity_onset",
+   "red": 1697,
+   "upstream_median": 202,
+   "ratio": 8.4,
+   "dist_km": 61.5,
+   "downstream_turbid_km": 3.2,
+   "scene": "S2C_35KKS_20260710_0_L2A",
+   "date": "2026-07-10"
+  },
+  {
+   "lat": -20.99655,
+   "lon": 25.16485,
+   "river": "Boteti River",
+   "waterway": "river",
+   "type": "turbidity_onset",
+   "red": 1676,
+   "upstream_median": 349,
+   "ratio": 4.8,
+   "dist_km": 67.1,
+   "downstream_turbid_km": 2.5,
+   "scene": "S2C_35KKS_20260710_0_L2A",
+   "date": "2026-07-10"
+  }
+ ],
+ "rivers": [
+  {
+   "name": "Boteti River",
+   "waterway": "river",
+   "length_km": 106.5,
+   "water_samples": 78,
+   "turbid_km": 3.5
+  },
+  {
+   "name": "Boteti",
+   "waterway": "river",
+   "length_km": 195.4,
+   "water_samples": 69,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Quoxo",
+   "waterway": "river",
+   "length_km": 331.3,
+   "water_samples": 4,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 8.2,
+   "water_samples": 8,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 3.9,
+   "water_samples": 2,
+   "turbid_km": 0.0
+  }
+ ],
+ "turbid_points": [
+  {
+   "lat": -21.05402,
+   "lon": 24.97218,
+   "red": 1313,
+   "date": "2026-07-10",
+   "river": "Boteti River"
+  },
+  {
+   "lat": -20.97915,
+   "lon": 25.11602,
+   "red": 1697,
+   "date": "2026-07-10",
+   "river": "Boteti River"
+  },
+  {
+   "lat": -20.99254,
+   "lon": 25.15541,
+   "red": 1615,
+   "date": "2026-07-10",
+   "river": "Boteti River"
+  },
+  {
+   "lat": -20.99447,
+   "lon": 25.15713,
+   "red": 2345,
+   "date": "2026-07-10",
+   "river": "Boteti River"
+  },
+  {
+   "lat": -20.99655,
+   "lon": 25.16485,
+   "red": 1676,
+   "date": "2026-07-10",
+   "river": "Boteti River"
+  },
+  {
+   "lat": -21.00234,
+   "lon": 25.17352,
+   "red": 1357,
+   "date": "2026-07-10",
+   "river": "Boteti River"
+  },
+  {
+   "lat": -21.00375,
+   "lon": 25.18134,
+   "red": 1584,
+   "date": "2026-07-10",
+   "river": "Boteti River"
+  },
+  {
+   "lat": -21.01041,
+   "lon": 25.18732,
+   "red": 1472,
+   "date": "2026-07-10",
+   "river": "Boteti River"
+  },
+  {
+   "lat": -21.01365,
+   "lon": 25.19372,
+   "red": 3865,
+   "date": "2026-07-10",
+   "river": "Boteti River"
+  },
+  {
+   "lat": -21.01963,
+   "lon": 25.22013,
+   "red": 1354,
+   "date": "2026-07-10",
+   "river": "Boteti River"
+  },
+  {
+   "lat": -21.02742,
+   "lon": 25.2574,
+   "red": 1582,
+   "date": "2026-07-10",
+   "river": "Boteti River"
+  },
+  {
+   "lat": -21.00047,
+   "lon": 25.31337,
+   "red": 1265,
+   "date": "2026-07-10",
+   "river": "Boteti River"
+  },
+  {
+   "lat": -20.99158,
+   "lon": 25.32913,
+   "red": 1251,
+   "date": "2026-07-10",
+   "river": "Boteti River"
+  },
+  {
+   "lat": -20.98004,
+   "lon": 25.36775,
+   "red": 1249,
+   "date": "2026-07-10",
+   "river": "Boteti River"
+  },
+  {
+   "lat": -21.33633,
+   "lon": 24.64293,
+   "red": 1954,
+   "date": "2026-07-10",
+   "river": "Quoxo"
+  },
+  {
+   "lat": -21.3334,
+   "lon": 24.64813,
+   "red": 1735,
+   "date": "2026-07-10",
+   "river": "Quoxo"
+  },
+  {
+   "lat": -21.32911,
+   "lon": 24.65157,
+   "red": 1461,
+   "date": "2026-07-10",
+   "river": "Quoxo"
+  },
+  {
+   "lat": -21.31809,
+   "lon": 24.65575,
+   "red": 1627,
+   "date": "2026-07-10",
+   "river": "Quoxo"
+  }
+ ]
+}

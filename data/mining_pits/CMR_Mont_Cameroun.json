@@ -1,0 +1,9 @@
+{
+ "park_id": "CMR_Mont_Cameroun",
+ "scanned_at": "2026-07-31T09:00:32Z",
+ "datetime_range": "2026-06-16T00:00:00Z/2026-07-31T23:59:59Z",
+ "bbox_filter": null,
+ "tiles_total": 328,
+ "tiles_scanned": 1,
+ "sites": []
+}

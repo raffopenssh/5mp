@@ -1,19 +1,23 @@
 {
-  "total_groups": 537,
-  "total_fires": 23139,
+  "total_groups": 561,
+  "total_fires": 17030,
   "total_parks": 1,
   "date_range": {
     "start": "2020-01-01",
-    "end": "2026-07-09"
+    "end": "2026-08-05"
   },
-  "algorithm": "v6_track_matching",
+  "algorithm": "v7_overpass_track_matching",
+  "source": "json",
   "params": {
     "day_eps_km": 3.0,
     "day_min_samples": 3,
+    "overpass_gap_h": 4.0,
     "max_gap_days": 3,
     "base_link_km": 5.0,
     "spread_km_per_day": 8.0,
     "turn_limit_deg": 100,
+    "mass_penalty_km": 3.0,
+    "assignment": "hungarian",
     "chain_max_gap_days": 4,
     "chain_turn_limit_deg": 75,
     "min_fires": 10,
@@ -22,8 +26,8 @@
     "max_zigzag_ratio": 0.3
   },
   "trajectory_types": {
-    "clean": 509,
-    "cleaned": 18,
-    "cluster": 10
+    "clean": 547,
+    "cleaned": 7,
+    "cluster": 7
   }
 }

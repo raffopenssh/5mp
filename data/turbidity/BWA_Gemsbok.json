@@ -1,0 +1,11 @@
+{
+ "park_id": "BWA_Gemsbok",
+ "scanned_at": "2026-07-16T06:00:25Z",
+ "datetime_range": "2026-06-01T00:00:00Z/2026-07-16T23:59:59Z",
+ "buffer_km": 50,
+ "n_waterways": 3,
+ "n_sample_pts": 2351,
+ "alerts": [],
+ "rivers": [],
+ "turbid_points": []
+}

@@ -440,7 +440,7 @@
     "polygon_ids": "deforest_CAF_Bamingui-Bangoran_2023_38"
   },
   {
-    "id": 32321,
+    "id": 32859,
     "park_id": "CAF_Bamingui-Bangoran",
     "year": 2026,
     "area_km2": 0.0055,
@@ -458,11 +458,11 @@
     "fires_same_year": 70,
     "fire_ratio": 7000.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-07T07:35:11.658130",
+    "classified_at": "2026-07-31T07:30:10.627989",
     "polygon_ids": "deforest_gfw_CAF_Bamingui-Bangoran_2026_7.55_20.21,deforest_gfw_CAF_Bamingui-Bangoran_2026_7.52_20.20"
   },
   {
-    "id": 32322,
+    "id": 32860,
     "park_id": "CAF_Bamingui-Bangoran",
     "year": 2026,
     "area_km2": 0.0009,
@@ -480,7 +480,7 @@
     "fires_same_year": 83,
     "fire_ratio": 8300.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-07T07:35:14.172772",
+    "classified_at": "2026-07-31T07:30:13.780502",
     "polygon_ids": "deforest_gfw_CAF_Bamingui-Bangoran_2026_7.56_20.14"
   }
 ]

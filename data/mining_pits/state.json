@@ -6,5 +6,109 @@
  "AGO_Iona": {
   "scanned_at": "2026-07-09T09:21:28Z",
   "n_sites": 399
+ },
+ "AGO_Luando": {
+  "scanned_at": "2026-07-10T09:10:06Z",
+  "n_sites": 399
+ },
+ "AGO_Luengue-Luiana": {
+  "scanned_at": "2026-07-11T09:10:58Z",
+  "n_sites": 399
+ },
+ "BEN_Pendjari": {
+  "scanned_at": "2026-07-12T09:15:03Z",
+  "n_sites": 369
+ },
+ "BEN_W_Benin": {
+  "scanned_at": "2026-07-13T09:36:29Z",
+  "n_sites": 371
+ },
+ "BWA_Central_Kalahari": {
+  "scanned_at": "2026-07-14T09:10:19Z",
+  "n_sites": 393
+ },
+ "BWA_Chobe": {
+  "scanned_at": "2026-07-15T09:06:36Z",
+  "n_sites": 392
+ },
+ "BWA_Gemsbok": {
+  "scanned_at": "2026-07-16T09:06:44Z",
+  "n_sites": 400
+ },
+ "CAF_Bamingui-Bangoran": {
+  "scanned_at": "2026-07-17T09:16:53Z",
+  "n_sites": 174
+ },
+ "CAF_Chinko": {
+  "scanned_at": "2026-07-18T09:15:58Z",
+  "n_sites": 80
+ },
+ "CAF_Dzanga_Park": {
+  "scanned_at": "2026-07-19T09:04:41Z",
+  "n_sites": 202
+ },
+ "CAF_Manovo_Gounda_St_Floris": {
+  "scanned_at": "2026-07-20T09:17:27Z",
+  "n_sites": 119
+ },
+ "CIV_Comoe": {
+  "scanned_at": "2026-07-21T09:20:02Z",
+  "n_sites": 255
+ },
+ "CIV_Ta\u00ef": {
+  "scanned_at": "2026-07-22T09:06:28Z",
+  "n_sites": 132
+ },
+ "CMR_Bouba_Ndjida": {
+  "scanned_at": "2026-07-23T09:11:35Z",
+  "n_sites": 370
+ },
+ "CMR_Boumba-Djombi": {
+  "scanned_at": "2026-07-24T09:10:33Z",
+  "n_sites": 374
+ },
+ "CMR_Boumba_Bek": {
+  "scanned_at": "2026-07-25T09:09:20Z",
+  "n_sites": 121
+ },
+ "CMR_Campo-Ma'an": {
+  "scanned_at": "2026-07-26T09:05:35Z",
+  "n_sites": 287
+ },
+ "CMR_Dja": {
+  "scanned_at": "2026-07-27T09:05:11Z",
+  "n_sites": 175
+ },
+ "CMR_Faro": {
+  "scanned_at": "2026-07-28T09:19:17Z",
+  "n_sites": 246
+ },
+ "CMR_Lob\u00e9k\u00e9": {
+  "scanned_at": "2026-07-29T09:07:02Z",
+  "n_sites": 143
+ },
+ "CMR_Mbam_et_Djerem": {
+  "scanned_at": "2026-07-30T09:14:41Z",
+  "n_sites": 167
+ },
+ "CMR_Mont_Cameroun": {
+  "scanned_at": "2026-07-31T09:00:32Z",
+  "n_sites": 0
+ },
+ "CMR_Nki": {
+  "scanned_at": "2026-08-01T09:06:55Z",
+  "n_sites": 149
+ },
+ "CMR_Takamanda": {
+  "scanned_at": "2026-08-02T09:05:48Z",
+  "n_sites": 282
+ },
+ "CMR_Waza": {
+  "scanned_at": "2026-08-03T09:20:45Z",
+  "n_sites": 387
+ },
+ "COD_Abumonbazi": {
+  "scanned_at": "2026-08-04T09:06:45Z",
+  "n_sites": 135
  }
 }

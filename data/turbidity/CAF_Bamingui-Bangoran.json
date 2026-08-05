@@ -1,0 +1,497 @@
+{
+ "park_id": "CAF_Bamingui-Bangoran",
+ "scanned_at": "2026-07-17T06:02:09Z",
+ "datetime_range": "2026-06-02T00:00:00Z/2026-07-17T23:59:59Z",
+ "buffer_km": 50,
+ "n_waterways": 197,
+ "n_sample_pts": 11695,
+ "alerts": [
+  {
+   "lat": 8.566,
+   "lon": 19.06627,
+   "river": "Chari",
+   "waterway": "river",
+   "type": "turbid_headwater",
+   "red": 1371,
+   "upstream_median": null,
+   "ratio": null,
+   "dist_km": 0.3,
+   "downstream_turbid_km": 5.2,
+   "scene": "S2C_34PBQ_20260625_0_L2A",
+   "date": "2026-06-25"
+  }
+ ],
+ "rivers": [
+  {
+   "name": "Chari",
+   "waterway": "river",
+   "length_km": 17.2,
+   "water_samples": 29,
+   "turbid_km": 5.2
+  },
+  {
+   "name": "Chari \u0634\u0627\u0631\u064a",
+   "waterway": "river",
+   "length_km": 91.3,
+   "water_samples": 126,
+   "turbid_km": 2.8
+  },
+  {
+   "name": "Bahr Aouk",
+   "waterway": "river",
+   "length_km": 142.1,
+   "water_samples": 24,
+   "turbid_km": 0.8
+  },
+  {
+   "name": "Bamingui",
+   "waterway": "river",
+   "length_km": 364.1,
+   "water_samples": 22,
+   "turbid_km": 0.5
+  },
+  {
+   "name": "Chari \u0646\u0647\u0631 \u0634\u0627\u0631\u064a",
+   "waterway": "river",
+   "length_km": 42.7,
+   "water_samples": 60,
+   "turbid_km": 0.5
+  },
+  {
+   "name": "Bahr Aouk",
+   "waterway": "river",
+   "length_km": 165.3,
+   "water_samples": 24,
+   "turbid_km": 0.2
+  },
+  {
+   "name": "Gribingui",
+   "waterway": "river",
+   "length_km": 286.4,
+   "water_samples": 8,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Bahr Aouk",
+   "waterway": "river",
+   "length_km": 30.0,
+   "water_samples": 5,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Bangoran",
+   "waterway": "river",
+   "length_km": 329.8,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Arap",
+   "waterway": "river",
+   "length_km": 92.3,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 8.8,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 11.3,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "stream",
+   "length_km": 64.5,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 30.1,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 3.2,
+   "water_samples": 2,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "stream",
+   "length_km": 31.6,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 16.2,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  }
+ ],
+ "turbid_points": [
+  {
+   "lat": 8.4355,
+   "lon": 19.1328,
+   "red": 1520,
+   "date": "2026-06-25",
+   "river": "Bamingui"
+  },
+  {
+   "lat": 8.44638,
+   "lon": 19.12973,
+   "red": 1484,
+   "date": "2026-06-25",
+   "river": "Bamingui"
+  },
+  {
+   "lat": 8.566,
+   "lon": 19.06627,
+   "red": 1371,
+   "date": "2026-06-25",
+   "river": "Chari"
+  },
+  {
+   "lat": 8.56949,
+   "lon": 19.05974,
+   "red": 1556,
+   "date": "2026-06-25",
+   "river": "Chari"
+  },
+  {
+   "lat": 8.57026,
+   "lon": 19.05745,
+   "red": 1350,
+   "date": "2026-06-25",
+   "river": "Chari"
+  },
+  {
+   "lat": 8.57173,
+   "lon": 19.05251,
+   "red": 1339,
+   "date": "2026-06-25",
+   "river": "Chari"
+  },
+  {
+   "lat": 8.57303,
+   "lon": 19.04995,
+   "red": 1233,
+   "date": "2026-06-25",
+   "river": "Chari"
+  },
+  {
+   "lat": 8.57404,
+   "lon": 19.04777,
+   "red": 1281,
+   "date": "2026-06-25",
+   "river": "Chari"
+  },
+  {
+   "lat": 8.57632,
+   "lon": 19.04663,
+   "red": 1300,
+   "date": "2026-06-25",
+   "river": "Chari"
+  },
+  {
+   "lat": 8.57918,
+   "lon": 19.04672,
+   "red": 1322,
+   "date": "2026-06-25",
+   "river": "Chari"
+  },
+  {
+   "lat": 8.58163,
+   "lon": 19.04687,
+   "red": 1327,
+   "date": "2026-06-25",
+   "river": "Chari"
+  },
+  {
+   "lat": 8.58491,
+   "lon": 19.04641,
+   "red": 1353,
+   "date": "2026-06-25",
+   "river": "Chari"
+  },
+  {
+   "lat": 8.58729,
+   "lon": 19.04556,
+   "red": 1378,
+   "date": "2026-06-25",
+   "river": "Chari"
+  },
+  {
+   "lat": 8.5923,
+   "lon": 19.0464,
+   "red": 1251,
+   "date": "2026-06-25",
+   "river": "Chari"
+  },
+  {
+   "lat": 8.61323,
+   "lon": 19.06463,
+   "red": 1412,
+   "date": "2026-06-25",
+   "river": "Chari"
+  },
+  {
+   "lat": 8.6204,
+   "lon": 19.06749,
+   "red": 1392,
+   "date": "2026-06-17",
+   "river": "Chari"
+  },
+  {
+   "lat": 8.62499,
+   "lon": 19.06632,
+   "red": 1230,
+   "date": "2026-06-25",
+   "river": "Chari"
+  },
+  {
+   "lat": 8.62772,
+   "lon": 19.06614,
+   "red": 1451,
+   "date": "2026-06-25",
+   "river": "Chari"
+  },
+  {
+   "lat": 8.63492,
+   "lon": 19.0657,
+   "red": 1550,
+   "date": "2026-06-17",
+   "river": "Chari"
+  },
+  {
+   "lat": 8.63573,
+   "lon": 19.07494,
+   "red": 1451,
+   "date": "2026-06-25",
+   "river": "Chari"
+  },
+  {
+   "lat": 8.64012,
+   "lon": 19.08139,
+   "red": 1377,
+   "date": "2026-06-17",
+   "river": "Chari"
+  },
+  {
+   "lat": 8.64721,
+   "lon": 19.09179,
+   "red": 1307,
+   "date": "2026-06-17",
+   "river": "Chari"
+  },
+  {
+   "lat": 8.657,
+   "lon": 19.09936,
+   "red": 1362,
+   "date": "2026-06-17",
+   "river": "Chari"
+  },
+  {
+   "lat": 8.24408,
+   "lon": 19.01154,
+   "red": 1697,
+   "date": "2026-06-25",
+   "river": "Gribingui"
+  },
+  {
+   "lat": 8.3608,
+   "lon": 19.03277,
+   "red": 1392,
+   "date": "2026-06-25",
+   "river": "Gribingui"
+  },
+  {
+   "lat": 8.39379,
+   "lon": 19.04347,
+   "red": 1327,
+   "date": "2026-06-25",
+   "river": "Gribingui"
+  },
+  {
+   "lat": 8.40934,
+   "lon": 19.07017,
+   "red": 1616,
+   "date": "2026-06-17",
+   "river": "Gribingui"
+  },
+  {
+   "lat": 8.49086,
+   "lon": 19.05509,
+   "red": 1473,
+   "date": "2026-06-25",
+   "river": "Gribingui"
+  },
+  {
+   "lat": 8.49529,
+   "lon": 19.0435,
+   "red": 1437,
+   "date": "2026-06-25",
+   "river": "Gribingui"
+  },
+  {
+   "lat": 8.49766,
+   "lon": 19.04499,
+   "red": 1218,
+   "date": "2026-06-25",
+   "river": "Gribingui"
+  },
+  {
+   "lat": 9.01931,
+   "lon": 19.08394,
+   "red": 1688,
+   "date": "2026-06-25",
+   "river": "Bahr Aouk"
+  },
+  {
+   "lat": 9.1482,
+   "lon": 20.23712,
+   "red": 1672,
+   "date": "2026-06-20",
+   "river": "Bahr Aouk"
+  },
+  {
+   "lat": 9.14807,
+   "lon": 20.22399,
+   "red": 1210,
+   "date": "2026-06-20",
+   "river": "Bahr Aouk"
+  },
+  {
+   "lat": 9.13615,
+   "lon": 20.17962,
+   "red": 1285,
+   "date": "2026-06-20",
+   "river": "Bahr Aouk"
+  },
+  {
+   "lat": 8.82609,
+   "lon": 18.88142,
+   "red": 1836,
+   "date": "2026-06-25",
+   "river": "Chari \u0634\u0627\u0631\u064a"
+  },
+  {
+   "lat": 8.81611,
+   "lon": 18.84855,
+   "red": 1647,
+   "date": "2026-06-25",
+   "river": "Chari \u0634\u0627\u0631\u064a"
+  },
+  {
+   "lat": 8.81238,
+   "lon": 18.83773,
+   "red": 2335,
+   "date": "2026-06-25",
+   "river": "Chari \u0634\u0627\u0631\u064a"
+  },
+  {
+   "lat": 8.81101,
+   "lon": 18.83355,
+   "red": 2166,
+   "date": "2026-06-25",
+   "river": "Chari \u0634\u0627\u0631\u064a"
+  },
+  {
+   "lat": 8.81053,
+   "lon": 18.82359,
+   "red": 2386,
+   "date": "2026-06-17",
+   "river": "Chari \u0634\u0627\u0631\u064a"
+  },
+  {
+   "lat": 8.95119,
+   "lon": 18.55981,
+   "red": 1864,
+   "date": "2026-06-25",
+   "river": "Chari \u0634\u0627\u0631\u064a"
+  },
+  {
+   "lat": 8.97597,
+   "lon": 18.53145,
+   "red": 1415,
+   "date": "2026-06-25",
+   "river": "Chari \u0634\u0627\u0631\u064a"
+  },
+  {
+   "lat": 8.97971,
+   "lon": 18.52905,
+   "red": 1257,
+   "date": "2026-06-25",
+   "river": "Chari \u0634\u0627\u0631\u064a"
+  },
+  {
+   "lat": 8.98044,
+   "lon": 18.52629,
+   "red": 1278,
+   "date": "2026-06-25",
+   "river": "Chari \u0634\u0627\u0631\u064a"
+  },
+  {
+   "lat": 8.99779,
+   "lon": 18.51318,
+   "red": 1482,
+   "date": "2026-06-25",
+   "river": "Chari \u0634\u0627\u0631\u064a"
+  },
+  {
+   "lat": 9.13949,
+   "lon": 18.40924,
+   "red": 1267,
+   "date": "2026-06-20",
+   "river": "Chari \u0634\u0627\u0631\u064a"
+  },
+  {
+   "lat": 8.68488,
+   "lon": 19.10707,
+   "red": 2479,
+   "date": "2026-06-25",
+   "river": "Chari \u0646\u0647\u0631 \u0634\u0627\u0631\u064a"
+  },
+  {
+   "lat": 8.73922,
+   "lon": 19.027,
+   "red": 1285,
+   "date": "2026-06-17",
+   "river": "Chari \u0646\u0647\u0631 \u0634\u0627\u0631\u064a"
+  },
+  {
+   "lat": 7.60169,
+   "lon": 20.45479,
+   "red": 1519,
+   "date": "2026-07-12",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 9.03671,
+   "lon": 19.58716,
+   "red": 1243,
+   "date": "2026-06-20",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 9.02211,
+   "lon": 19.54963,
+   "red": 1649,
+   "date": "2026-06-20",
+   "river": "unnamed river"
+  }
+ ]
+}

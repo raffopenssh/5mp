@@ -1,0 +1,83 @@
+{
+ "park_id": "AGO_Luengue-Luiana",
+ "scanned_at": "2026-07-11T06:00:52Z",
+ "datetime_range": "2026-05-27T00:00:00Z/2026-07-11T23:59:59Z",
+ "buffer_km": 50,
+ "n_waterways": 76,
+ "n_sample_pts": 6471,
+ "alerts": [],
+ "rivers": [
+  {
+   "name": "Kavango",
+   "waterway": "river",
+   "length_km": 56.9,
+   "water_samples": 126,
+   "turbid_km": 0.2
+  },
+  {
+   "name": "Okavango (Cubango)",
+   "waterway": "river",
+   "length_km": 118.0,
+   "water_samples": 316,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Cuito",
+   "waterway": "river",
+   "length_km": 206.6,
+   "water_samples": 481,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Cuando",
+   "waterway": "river",
+   "length_km": 668.5,
+   "water_samples": 3,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Okavango",
+   "waterway": "river",
+   "length_km": 89.9,
+   "water_samples": 191,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Okavango",
+   "waterway": "river",
+   "length_km": 8.8,
+   "water_samples": 19,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 24.7,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 12.9,
+   "water_samples": 7,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "stream",
+   "length_km": 35.6,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  }
+ ],
+ "turbid_points": [
+  {
+   "lat": -18.21337,
+   "lon": 21.76089,
+   "red": 1324,
+   "date": "2026-07-06",
+   "river": "Kavango"
+  }
+ ]
+}

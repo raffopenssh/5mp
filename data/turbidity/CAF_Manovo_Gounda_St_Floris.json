@@ -1,0 +1,76 @@
+{
+ "park_id": "CAF_Manovo_Gounda_St_Floris",
+ "scanned_at": "2026-07-19T06:02:32Z",
+ "datetime_range": "2026-06-04T00:00:00Z/2026-07-19T23:59:59Z",
+ "buffer_km": 50,
+ "n_waterways": 308,
+ "n_sample_pts": 14094,
+ "alerts": [],
+ "rivers": [
+  {
+   "name": "Bahr Aouk",
+   "waterway": "river",
+   "length_km": 171.7,
+   "water_samples": 25,
+   "turbid_km": 0.8
+  },
+  {
+   "name": "Aoukal\u00e9",
+   "waterway": "river",
+   "length_km": 202.0,
+   "water_samples": 2,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Aoukal\u00e9",
+   "waterway": "river",
+   "length_km": 53.1,
+   "water_samples": 3,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Bahr Kameur",
+   "waterway": "river",
+   "length_km": 163.8,
+   "water_samples": 8,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Gounda",
+   "waterway": "river",
+   "length_km": 207.6,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 16.2,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  }
+ ],
+ "turbid_points": [
+  {
+   "lat": 9.1482,
+   "lon": 20.23712,
+   "red": 1672,
+   "date": "2026-06-20",
+   "river": "Bahr Aouk"
+  },
+  {
+   "lat": 9.14807,
+   "lon": 20.22399,
+   "red": 1210,
+   "date": "2026-06-20",
+   "river": "Bahr Aouk"
+  },
+  {
+   "lat": 9.13615,
+   "lon": 20.17962,
+   "red": 1285,
+   "date": "2026-06-20",
+   "river": "Bahr Aouk"
+  }
+ ]
+}

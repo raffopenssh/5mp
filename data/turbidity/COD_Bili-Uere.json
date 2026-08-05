@@ -1,0 +1,9135 @@
+{
+ "park_id": "COD_Bili-Uere",
+ "scanned_at": "2026-08-04T06:03:54Z",
+ "datetime_range": "2026-06-20T00:00:00Z/2026-08-04T23:59:59Z",
+ "buffer_km": 50,
+ "n_waterways": 212,
+ "n_sample_pts": 15227,
+ "alerts": [
+  {
+   "lat": 3.6969,
+   "lon": 28.20885,
+   "river": "Uele",
+   "waterway": "river",
+   "type": "turbid_headwater",
+   "red": 2314,
+   "upstream_median": null,
+   "ratio": null,
+   "dist_km": 0.0,
+   "downstream_turbid_km": 167.0,
+   "scene": "S2A_35NPE_20260725_0_L2A",
+   "date": "2026-07-25"
+  },
+  {
+   "lat": 3.42438,
+   "lon": 25.08775,
+   "river": "Uele",
+   "waterway": "river",
+   "type": "turbid_headwater",
+   "red": 1533,
+   "upstream_median": null,
+   "ratio": null,
+   "dist_km": 0.0,
+   "downstream_turbid_km": 117.8,
+   "scene": "S2C_35NKD_20260626_0_L2A",
+   "date": "2026-06-26"
+  },
+  {
+   "lat": 4.9793,
+   "lon": 23.93348,
+   "river": "Chinko",
+   "waterway": "river",
+   "type": "turbid_headwater",
+   "red": 623,
+   "upstream_median": null,
+   "ratio": null,
+   "dist_km": 0.0,
+   "downstream_turbid_km": 8.8,
+   "scene": "S2B_34NHL_20260624_0_L2A",
+   "date": "2026-06-24"
+  }
+ ],
+ "rivers": [
+  {
+   "name": "Uele",
+   "waterway": "river",
+   "length_km": 537.8,
+   "water_samples": 728,
+   "turbid_km": 167.0
+  },
+  {
+   "name": "Uele",
+   "waterway": "river",
+   "length_km": 389.4,
+   "water_samples": 507,
+   "turbid_km": 117.8
+  },
+  {
+   "name": "Chinko",
+   "waterway": "river",
+   "length_km": 24.5,
+   "water_samples": 66,
+   "turbid_km": 8.8
+  },
+  {
+   "name": "Mbomou",
+   "waterway": "river",
+   "length_km": 1110.3,
+   "water_samples": 1187,
+   "turbid_km": 7.5
+  },
+  {
+   "name": "Bomokandi",
+   "waterway": "river",
+   "length_km": 116.0,
+   "water_samples": 69,
+   "turbid_km": 1.0
+  },
+  {
+   "name": "Ouara",
+   "waterway": "river",
+   "length_km": 228.1,
+   "water_samples": 27,
+   "turbid_km": 1.0
+  },
+  {
+   "name": "Uere",
+   "waterway": "river",
+   "length_km": 490.8,
+   "water_samples": 47,
+   "turbid_km": 0.8
+  },
+  {
+   "name": "Bili",
+   "waterway": "river",
+   "length_km": 573.3,
+   "water_samples": 92,
+   "turbid_km": 0.8
+  },
+  {
+   "name": "Mbari",
+   "waterway": "river",
+   "length_km": 62.3,
+   "water_samples": 60,
+   "turbid_km": 0.2
+  },
+  {
+   "name": "Kapili",
+   "waterway": "river",
+   "length_km": 36.1,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Gada",
+   "waterway": "river",
+   "length_km": 49.4,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Bwere",
+   "waterway": "river",
+   "length_km": 34.3,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Lele",
+   "waterway": "river",
+   "length_km": 15.4,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Kiliwa",
+   "waterway": "river",
+   "length_km": 12.6,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Wawa",
+   "waterway": "river",
+   "length_km": 22.7,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Bomu",
+   "waterway": "river",
+   "length_km": 4.8,
+   "water_samples": 8,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Mbomou",
+   "waterway": "river",
+   "length_km": 10.7,
+   "water_samples": 14,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Mbomou",
+   "waterway": "river",
+   "length_km": 8.1,
+   "water_samples": 14,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Mbomou",
+   "waterway": "river",
+   "length_km": 4.4,
+   "water_samples": 9,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Mbomou",
+   "waterway": "river",
+   "length_km": 7.8,
+   "water_samples": 18,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Mbomou",
+   "waterway": "river",
+   "length_km": 3.5,
+   "water_samples": 11,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Asa",
+   "waterway": "river",
+   "length_km": 25.1,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Duru",
+   "waterway": "river",
+   "length_km": 19.7,
+   "water_samples": 2,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Bagi",
+   "waterway": "river",
+   "length_km": 18.4,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 6.7,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 4.5,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 9.7,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 4.1,
+   "water_samples": 5,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "stream",
+   "length_km": 38.3,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "stream",
+   "length_km": 37.2,
+   "water_samples": 12,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "stream",
+   "length_km": 36.8,
+   "water_samples": 9,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "stream",
+   "length_km": 16.2,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 10.2,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "stream",
+   "length_km": 24.4,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "stream",
+   "length_km": 11.6,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "stream",
+   "length_km": 18.1,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 6.5,
+   "water_samples": 2,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "stream",
+   "length_km": 10.9,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "stream",
+   "length_km": 12.9,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 4.7,
+   "water_samples": 14,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "stream",
+   "length_km": 12.9,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "stream",
+   "length_km": 15.3,
+   "water_samples": 2,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "stream",
+   "length_km": 9.6,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  }
+ ],
+ "turbid_points": [
+  {
+   "lat": 3.42438,
+   "lon": 25.08775,
+   "red": 1533,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.42546,
+   "lon": 25.08253,
+   "red": 1444,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.43067,
+   "lon": 25.06627,
+   "red": 1454,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.4306,
+   "lon": 25.05891,
+   "red": 1443,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.42519,
+   "lon": 25.05141,
+   "red": 1479,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.41451,
+   "lon": 25.0395,
+   "red": 1455,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.4085,
+   "lon": 25.03535,
+   "red": 1445,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.40648,
+   "lon": 25.03269,
+   "red": 1447,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.40569,
+   "lon": 25.02661,
+   "red": 1454,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.405,
+   "lon": 25.02445,
+   "red": 1471,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.40335,
+   "lon": 25.02231,
+   "red": 1459,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.3987,
+   "lon": 25.02098,
+   "red": 1429,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.39533,
+   "lon": 25.01855,
+   "red": 1469,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.39176,
+   "lon": 25.01477,
+   "red": 1487,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.38882,
+   "lon": 25.01044,
+   "red": 1372,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.3868,
+   "lon": 24.99105,
+   "red": 1500,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.39114,
+   "lon": 24.98812,
+   "red": 1438,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.39673,
+   "lon": 24.98066,
+   "red": 1592,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.40165,
+   "lon": 24.97728,
+   "red": 1620,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.40542,
+   "lon": 24.97473,
+   "red": 1624,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.41251,
+   "lon": 24.9731,
+   "red": 1256,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.42582,
+   "lon": 24.98125,
+   "red": 1522,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.42825,
+   "lon": 24.9787,
+   "red": 1506,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.43063,
+   "lon": 24.97547,
+   "red": 1469,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.43306,
+   "lon": 24.97367,
+   "red": 1450,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.43557,
+   "lon": 24.97059,
+   "red": 1454,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.43782,
+   "lon": 24.96769,
+   "red": 1478,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.44271,
+   "lon": 24.96405,
+   "red": 1351,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.44653,
+   "lon": 24.96103,
+   "red": 1488,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.44838,
+   "lon": 24.95945,
+   "red": 1561,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.46172,
+   "lon": 24.95159,
+   "red": 1381,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.463,
+   "lon": 24.94817,
+   "red": 1316,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.46505,
+   "lon": 24.93789,
+   "red": 1350,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.46847,
+   "lon": 24.9292,
+   "red": 1283,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.47168,
+   "lon": 24.92504,
+   "red": 1410,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.4689,
+   "lon": 24.91849,
+   "red": 1471,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.46748,
+   "lon": 24.90671,
+   "red": 1204,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.46417,
+   "lon": 24.89897,
+   "red": 1377,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.46117,
+   "lon": 24.88626,
+   "red": 1532,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.46504,
+   "lon": 24.87073,
+   "red": 1401,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.47258,
+   "lon": 24.8522,
+   "red": 1338,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.47725,
+   "lon": 24.84591,
+   "red": 1351,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.48143,
+   "lon": 24.83822,
+   "red": 1318,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.4831,
+   "lon": 24.83027,
+   "red": 1353,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.48304,
+   "lon": 24.82607,
+   "red": 1304,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.48559,
+   "lon": 24.82282,
+   "red": 1249,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.4867,
+   "lon": 24.81854,
+   "red": 1388,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.4868,
+   "lon": 24.81203,
+   "red": 1351,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.49403,
+   "lon": 24.79649,
+   "red": 1388,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.49258,
+   "lon": 24.78606,
+   "red": 1404,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.48789,
+   "lon": 24.77278,
+   "red": 1379,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.46938,
+   "lon": 24.74571,
+   "red": 1299,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.46284,
+   "lon": 24.74069,
+   "red": 1213,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.45803,
+   "lon": 24.73781,
+   "red": 1249,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.45583,
+   "lon": 24.73166,
+   "red": 1349,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.44701,
+   "lon": 24.72684,
+   "red": 1353,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.44926,
+   "lon": 24.706,
+   "red": 1246,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.45568,
+   "lon": 24.70305,
+   "red": 1356,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.46465,
+   "lon": 24.68793,
+   "red": 1375,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.46824,
+   "lon": 24.67673,
+   "red": 1214,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.47806,
+   "lon": 24.67456,
+   "red": 1324,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.48091,
+   "lon": 24.67491,
+   "red": 1418,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.48908,
+   "lon": 24.66983,
+   "red": 1433,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.49477,
+   "lon": 24.66024,
+   "red": 1432,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.49517,
+   "lon": 24.65741,
+   "red": 1373,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.49266,
+   "lon": 24.65404,
+   "red": 1415,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.48865,
+   "lon": 24.6459,
+   "red": 1399,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.48133,
+   "lon": 24.63352,
+   "red": 1404,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.47841,
+   "lon": 24.62741,
+   "red": 1421,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.47752,
+   "lon": 24.61606,
+   "red": 1383,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.4749,
+   "lon": 24.61152,
+   "red": 1381,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.47031,
+   "lon": 24.60634,
+   "red": 1403,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.46871,
+   "lon": 24.60353,
+   "red": 1373,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.46554,
+   "lon": 24.59535,
+   "red": 1416,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.46407,
+   "lon": 24.59115,
+   "red": 1387,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.46267,
+   "lon": 24.58715,
+   "red": 1335,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.46185,
+   "lon": 24.58217,
+   "red": 1277,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.46083,
+   "lon": 24.57193,
+   "red": 1296,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.47035,
+   "lon": 24.56649,
+   "red": 1372,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.47603,
+   "lon": 24.56022,
+   "red": 1439,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.47995,
+   "lon": 24.55294,
+   "red": 1409,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.48479,
+   "lon": 24.54433,
+   "red": 1361,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.48788,
+   "lon": 24.53906,
+   "red": 1350,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.49031,
+   "lon": 24.53578,
+   "red": 1333,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.49572,
+   "lon": 24.53078,
+   "red": 1683,
+   "date": "2026-06-29",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.49988,
+   "lon": 24.52817,
+   "red": 1863,
+   "date": "2026-06-29",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.5076,
+   "lon": 24.51835,
+   "red": 1431,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.50885,
+   "lon": 24.50868,
+   "red": 1388,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.50979,
+   "lon": 24.49764,
+   "red": 1404,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.51553,
+   "lon": 24.49012,
+   "red": 1846,
+   "date": "2026-06-29",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.52108,
+   "lon": 24.48697,
+   "red": 1473,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.52655,
+   "lon": 24.48387,
+   "red": 1687,
+   "date": "2026-07-18",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.53289,
+   "lon": 24.47952,
+   "red": 1671,
+   "date": "2026-07-18",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.53417,
+   "lon": 24.46753,
+   "red": 1814,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.5325,
+   "lon": 24.45945,
+   "red": 1782,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.52861,
+   "lon": 24.45421,
+   "red": 1812,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.52813,
+   "lon": 24.44671,
+   "red": 1702,
+   "date": "2026-07-18",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.53279,
+   "lon": 24.44301,
+   "red": 1497,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.53959,
+   "lon": 24.4358,
+   "red": 1710,
+   "date": "2026-07-18",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.54158,
+   "lon": 24.42929,
+   "red": 1750,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.54062,
+   "lon": 24.42559,
+   "red": 1813,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.53743,
+   "lon": 24.41823,
+   "red": 1860,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.53289,
+   "lon": 24.40624,
+   "red": 1660,
+   "date": "2026-07-18",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.53448,
+   "lon": 24.40047,
+   "red": 1896,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.53819,
+   "lon": 24.39644,
+   "red": 1686,
+   "date": "2026-07-18",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.54152,
+   "lon": 24.39227,
+   "red": 1711,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.5476,
+   "lon": 24.38426,
+   "red": 1671,
+   "date": "2026-07-18",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.55035,
+   "lon": 24.3783,
+   "red": 1815,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.54907,
+   "lon": 24.37119,
+   "red": 1770,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.5492,
+   "lon": 24.36395,
+   "red": 1836,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.55476,
+   "lon": 24.36234,
+   "red": 1477,
+   "date": "2026-07-04",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.56116,
+   "lon": 24.36222,
+   "red": 2252,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.56512,
+   "lon": 24.35837,
+   "red": 1848,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.57056,
+   "lon": 24.3526,
+   "red": 1316,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.5776,
+   "lon": 24.34533,
+   "red": 1864,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.57945,
+   "lon": 24.34203,
+   "red": 1857,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.57669,
+   "lon": 24.3292,
+   "red": 1290,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.58264,
+   "lon": 24.31845,
+   "red": 1331,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.59824,
+   "lon": 24.31497,
+   "red": 1694,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.6106,
+   "lon": 24.31407,
+   "red": 2274,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.61334,
+   "lon": 24.31311,
+   "red": 1926,
+   "date": "2026-07-04",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.61352,
+   "lon": 24.30738,
+   "red": 1973,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.61553,
+   "lon": 24.29988,
+   "red": 2678,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.62371,
+   "lon": 24.29422,
+   "red": 2930,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.63129,
+   "lon": 24.29147,
+   "red": 4077,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.63845,
+   "lon": 24.28382,
+   "red": 2107,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.64658,
+   "lon": 24.27528,
+   "red": 1274,
+   "date": "2026-06-24",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.65585,
+   "lon": 24.27494,
+   "red": 1284,
+   "date": "2026-06-24",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.66158,
+   "lon": 24.26893,
+   "red": 1289,
+   "date": "2026-06-24",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.66459,
+   "lon": 24.26361,
+   "red": 1294,
+   "date": "2026-06-24",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.66739,
+   "lon": 24.25804,
+   "red": 2148,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.66946,
+   "lon": 24.25314,
+   "red": 2303,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.67273,
+   "lon": 24.25185,
+   "red": 2257,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.67758,
+   "lon": 24.25185,
+   "red": 1350,
+   "date": "2026-07-04",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.68351,
+   "lon": 24.25245,
+   "red": 3315,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69133,
+   "lon": 24.24988,
+   "red": 1567,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69447,
+   "lon": 24.24662,
+   "red": 1965,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69793,
+   "lon": 24.23872,
+   "red": 1821,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69824,
+   "lon": 24.23323,
+   "red": 1847,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69977,
+   "lon": 24.21973,
+   "red": 1827,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70304,
+   "lon": 24.20885,
+   "red": 1826,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70891,
+   "lon": 24.1985,
+   "red": 1794,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.71126,
+   "lon": 24.19546,
+   "red": 1810,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.7132,
+   "lon": 24.19102,
+   "red": 1906,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.71277,
+   "lon": 24.18401,
+   "red": 1842,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.714,
+   "lon": 24.17864,
+   "red": 1826,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.71622,
+   "lon": 24.1702,
+   "red": 1877,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.7164,
+   "lon": 24.1601,
+   "red": 1790,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.71409,
+   "lon": 24.14646,
+   "red": 1770,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.71407,
+   "lon": 24.13516,
+   "red": 1772,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70961,
+   "lon": 24.12374,
+   "red": 1801,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70501,
+   "lon": 24.11597,
+   "red": 1948,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70463,
+   "lon": 24.10886,
+   "red": 1340,
+   "date": "2026-06-24",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70802,
+   "lon": 24.10366,
+   "red": 1390,
+   "date": "2026-07-04",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70955,
+   "lon": 24.0983,
+   "red": 1798,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.7101,
+   "lon": 24.0921,
+   "red": 1335,
+   "date": "2026-07-04",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.7123,
+   "lon": 24.0884,
+   "red": 1382,
+   "date": "2026-07-04",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.71524,
+   "lon": 24.08107,
+   "red": 1801,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.71423,
+   "lon": 24.07823,
+   "red": 1835,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.7149,
+   "lon": 24.07481,
+   "red": 1805,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.71655,
+   "lon": 24.0712,
+   "red": 1689,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.71684,
+   "lon": 24.06808,
+   "red": 1768,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.71492,
+   "lon": 24.0654,
+   "red": 1803,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.7147,
+   "lon": 24.05969,
+   "red": 1764,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.71777,
+   "lon": 24.05264,
+   "red": 1793,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.7112,
+   "lon": 24.03895,
+   "red": 1846,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70858,
+   "lon": 24.03452,
+   "red": 1735,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70897,
+   "lon": 24.0284,
+   "red": 1837,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70905,
+   "lon": 24.02159,
+   "red": 2021,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.71451,
+   "lon": 24.01352,
+   "red": 1874,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.71611,
+   "lon": 24.00988,
+   "red": 1968,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.71844,
+   "lon": 24.00556,
+   "red": 1982,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.72258,
+   "lon": 24.00429,
+   "red": 1797,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.72467,
+   "lon": 24.0004,
+   "red": 1757,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.72564,
+   "lon": 23.99545,
+   "red": 1755,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.726,
+   "lon": 23.98419,
+   "red": 1868,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.72312,
+   "lon": 23.97792,
+   "red": 1401,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.7251,
+   "lon": 23.9701,
+   "red": 2009,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.72428,
+   "lon": 23.95411,
+   "red": 1617,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.72142,
+   "lon": 23.94928,
+   "red": 2080,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.71332,
+   "lon": 23.94381,
+   "red": 1212,
+   "date": "2026-07-04",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.7075,
+   "lon": 23.94162,
+   "red": 1255,
+   "date": "2026-07-04",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69893,
+   "lon": 23.93797,
+   "red": 1841,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69466,
+   "lon": 23.92888,
+   "red": 1830,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69397,
+   "lon": 23.91997,
+   "red": 1726,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69432,
+   "lon": 23.91501,
+   "red": 1711,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69778,
+   "lon": 23.90228,
+   "red": 1808,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69604,
+   "lon": 23.89672,
+   "red": 1332,
+   "date": "2026-07-04",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69714,
+   "lon": 23.89132,
+   "red": 1951,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70304,
+   "lon": 23.88338,
+   "red": 1727,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70533,
+   "lon": 23.87764,
+   "red": 1750,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70429,
+   "lon": 23.86906,
+   "red": 1771,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70315,
+   "lon": 23.86363,
+   "red": 1704,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70198,
+   "lon": 23.85757,
+   "red": 1801,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69621,
+   "lon": 23.85158,
+   "red": 1779,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69485,
+   "lon": 23.84561,
+   "red": 1813,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69894,
+   "lon": 23.83644,
+   "red": 1798,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70308,
+   "lon": 23.83138,
+   "red": 1951,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70515,
+   "lon": 23.82676,
+   "red": 1759,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70495,
+   "lon": 23.8185,
+   "red": 1744,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70649,
+   "lon": 23.80873,
+   "red": 1617,
+   "date": "2026-07-04",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70373,
+   "lon": 23.79892,
+   "red": 1227,
+   "date": "2026-07-04",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70035,
+   "lon": 23.79095,
+   "red": 1836,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69996,
+   "lon": 23.78279,
+   "red": 1886,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70475,
+   "lon": 23.77386,
+   "red": 1492,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.71739,
+   "lon": 23.76202,
+   "red": 1237,
+   "date": "2026-07-04",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.72664,
+   "lon": 23.75824,
+   "red": 1918,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.73945,
+   "lon": 23.75318,
+   "red": 1753,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.74501,
+   "lon": 23.75095,
+   "red": 1693,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.75104,
+   "lon": 23.75174,
+   "red": 1688,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.75953,
+   "lon": 23.75137,
+   "red": 1671,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.77139,
+   "lon": 23.74221,
+   "red": 1696,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.77563,
+   "lon": 23.73078,
+   "red": 1721,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.77437,
+   "lon": 23.72368,
+   "red": 1671,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.78321,
+   "lon": 23.7159,
+   "red": 1434,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.78773,
+   "lon": 23.71355,
+   "red": 1672,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.7915,
+   "lon": 23.71046,
+   "red": 1733,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.79459,
+   "lon": 23.706,
+   "red": 1727,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.79527,
+   "lon": 23.69964,
+   "red": 1613,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.79476,
+   "lon": 23.6969,
+   "red": 1647,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.78893,
+   "lon": 23.69467,
+   "red": 1825,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.78791,
+   "lon": 23.69175,
+   "red": 1322,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.79207,
+   "lon": 23.68752,
+   "red": 1653,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.79955,
+   "lon": 23.68025,
+   "red": 1643,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.80303,
+   "lon": 23.67687,
+   "red": 1599,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.80464,
+   "lon": 23.67499,
+   "red": 1614,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.80654,
+   "lon": 23.67316,
+   "red": 1632,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.80987,
+   "lon": 23.67045,
+   "red": 1648,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.81247,
+   "lon": 23.66779,
+   "red": 1685,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.82354,
+   "lon": 23.65364,
+   "red": 1624,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.82868,
+   "lon": 23.64695,
+   "red": 1635,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.83162,
+   "lon": 23.64496,
+   "red": 1637,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.8357,
+   "lon": 23.63957,
+   "red": 1648,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.8381,
+   "lon": 23.63751,
+   "red": 1683,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.84221,
+   "lon": 23.63631,
+   "red": 1733,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.84563,
+   "lon": 23.63425,
+   "red": 1628,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.84757,
+   "lon": 23.62504,
+   "red": 1779,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.84871,
+   "lon": 23.62034,
+   "red": 1826,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.85373,
+   "lon": 23.61301,
+   "red": 1774,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.85556,
+   "lon": 23.60746,
+   "red": 1965,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.85544,
+   "lon": 23.60065,
+   "red": 1451,
+   "date": "2026-07-04",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.85442,
+   "lon": 23.59036,
+   "red": 1826,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.85784,
+   "lon": 23.57765,
+   "red": 1710,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86195,
+   "lon": 23.56358,
+   "red": 1392,
+   "date": "2026-07-04",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.85681,
+   "lon": 23.54881,
+   "red": 1725,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.84928,
+   "lon": 23.53714,
+   "red": 1747,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.83112,
+   "lon": 23.52512,
+   "red": 1713,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.82004,
+   "lon": 23.51354,
+   "red": 1705,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.81943,
+   "lon": 23.5062,
+   "red": 1661,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.81949,
+   "lon": 23.49599,
+   "red": 1779,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.81782,
+   "lon": 23.48096,
+   "red": 1676,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.81567,
+   "lon": 23.47257,
+   "red": 1678,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.82119,
+   "lon": 23.4647,
+   "red": 1692,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.82838,
+   "lon": 23.45577,
+   "red": 1681,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.83095,
+   "lon": 23.45332,
+   "red": 1722,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.83078,
+   "lon": 23.44582,
+   "red": 1423,
+   "date": "2026-07-04",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.82735,
+   "lon": 23.4338,
+   "red": 1709,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.83021,
+   "lon": 23.42846,
+   "red": 1724,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.83717,
+   "lon": 23.42262,
+   "red": 1664,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.84252,
+   "lon": 23.41456,
+   "red": 1711,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.84315,
+   "lon": 23.40573,
+   "red": 1689,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.82755,
+   "lon": 23.38993,
+   "red": 1814,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.81606,
+   "lon": 23.38683,
+   "red": 1719,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.80902,
+   "lon": 23.38235,
+   "red": 1746,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.81194,
+   "lon": 23.37715,
+   "red": 1763,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.81505,
+   "lon": 23.37224,
+   "red": 1364,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.81623,
+   "lon": 23.36816,
+   "red": 1880,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.81399,
+   "lon": 23.36479,
+   "red": 1681,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.81176,
+   "lon": 23.35929,
+   "red": 1720,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.81151,
+   "lon": 23.35595,
+   "red": 1604,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.81765,
+   "lon": 23.34981,
+   "red": 1348,
+   "date": "2026-07-04",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.82573,
+   "lon": 23.33749,
+   "red": 1300,
+   "date": "2026-07-04",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.83167,
+   "lon": 23.3357,
+   "red": 1379,
+   "date": "2026-07-04",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.83733,
+   "lon": 23.3355,
+   "red": 1345,
+   "date": "2026-06-29",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.85935,
+   "lon": 23.32396,
+   "red": 1312,
+   "date": "2026-07-04",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86342,
+   "lon": 23.31015,
+   "red": 1331,
+   "date": "2026-07-04",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.8451,
+   "lon": 23.30851,
+   "red": 1311,
+   "date": "2026-07-04",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.84524,
+   "lon": 23.29909,
+   "red": 1368,
+   "date": "2026-07-04",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.842,
+   "lon": 23.29019,
+   "red": 1353,
+   "date": "2026-07-04",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.83958,
+   "lon": 23.28555,
+   "red": 1318,
+   "date": "2026-07-04",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.83783,
+   "lon": 23.28161,
+   "red": 1312,
+   "date": "2026-07-04",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.83669,
+   "lon": 23.27379,
+   "red": 1345,
+   "date": "2026-07-04",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.83864,
+   "lon": 23.26248,
+   "red": 1283,
+   "date": "2026-07-04",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.84586,
+   "lon": 23.25352,
+   "red": 1338,
+   "date": "2026-07-04",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.85544,
+   "lon": 23.25047,
+   "red": 1373,
+   "date": "2026-07-04",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.85785,
+   "lon": 23.24017,
+   "red": 1367,
+   "date": "2026-07-04",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86076,
+   "lon": 23.23004,
+   "red": 1357,
+   "date": "2026-07-04",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.8671,
+   "lon": 23.20532,
+   "red": 1503,
+   "date": "2026-06-29",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86316,
+   "lon": 23.20274,
+   "red": 1420,
+   "date": "2026-07-04",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.8575,
+   "lon": 23.19313,
+   "red": 1494,
+   "date": "2026-07-04",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.8534,
+   "lon": 23.18266,
+   "red": 1510,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.85117,
+   "lon": 23.17802,
+   "red": 1699,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.85065,
+   "lon": 23.17253,
+   "red": 1556,
+   "date": "2026-06-29",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.85288,
+   "lon": 23.1691,
+   "red": 1477,
+   "date": "2026-06-29",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.85203,
+   "lon": 23.15674,
+   "red": 1575,
+   "date": "2026-06-29",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.85168,
+   "lon": 23.15296,
+   "red": 1737,
+   "date": "2026-06-29",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.85323,
+   "lon": 23.15004,
+   "red": 1703,
+   "date": "2026-06-29",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.87286,
+   "lon": 23.15178,
+   "red": 1730,
+   "date": "2026-06-29",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.88286,
+   "lon": 23.15536,
+   "red": 1426,
+   "date": "2026-07-04",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.88525,
+   "lon": 23.15382,
+   "red": 1678,
+   "date": "2026-06-29",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.8856,
+   "lon": 23.15142,
+   "red": 1688,
+   "date": "2026-06-29",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.8784,
+   "lon": 23.14146,
+   "red": 1853,
+   "date": "2026-06-29",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.87412,
+   "lon": 23.13854,
+   "red": 1542,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.87053,
+   "lon": 23.13648,
+   "red": 1566,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86933,
+   "lon": 23.12223,
+   "red": 1548,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86864,
+   "lon": 23.1188,
+   "red": 1610,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.87378,
+   "lon": 23.10781,
+   "red": 1631,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.87721,
+   "lon": 23.1049,
+   "red": 1647,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.8808,
+   "lon": 23.09975,
+   "red": 1608,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.88063,
+   "lon": 23.09666,
+   "red": 1647,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.87926,
+   "lon": 23.09357,
+   "red": 1516,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.87394,
+   "lon": 23.0891,
+   "red": 1591,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.87224,
+   "lon": 23.08378,
+   "red": 1582,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86984,
+   "lon": 23.08138,
+   "red": 1646,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86607,
+   "lon": 23.07949,
+   "red": 1611,
+   "date": "2026-06-29",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86419,
+   "lon": 23.07623,
+   "red": 1660,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86213,
+   "lon": 23.07074,
+   "red": 1584,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86213,
+   "lon": 23.06627,
+   "red": 1501,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86402,
+   "lon": 23.06353,
+   "red": 1545,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86892,
+   "lon": 23.05429,
+   "red": 1543,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86528,
+   "lon": 23.04322,
+   "red": 1444,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86619,
+   "lon": 23.0328,
+   "red": 1423,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86883,
+   "lon": 23.02658,
+   "red": 1488,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.87358,
+   "lon": 23.01541,
+   "red": 1626,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.87292,
+   "lon": 23.00791,
+   "red": 1581,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.8707,
+   "lon": 22.99967,
+   "red": 1555,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.8683,
+   "lon": 22.99726,
+   "red": 1533,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86744,
+   "lon": 22.99503,
+   "red": 1542,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.87118,
+   "lon": 22.98899,
+   "red": 1542,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86629,
+   "lon": 22.98319,
+   "red": 1594,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86686,
+   "lon": 22.98073,
+   "red": 1700,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.868,
+   "lon": 22.97821,
+   "red": 1410,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.87245,
+   "lon": 22.9734,
+   "red": 1600,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.87142,
+   "lon": 22.9686,
+   "red": 1643,
+   "date": "2026-06-29",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86611,
+   "lon": 22.96396,
+   "red": 1572,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.84658,
+   "lon": 22.90182,
+   "red": 1351,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.8446,
+   "lon": 22.89813,
+   "red": 1370,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.84586,
+   "lon": 22.88961,
+   "red": 1652,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.8488,
+   "lon": 22.8856,
+   "red": 1527,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.85102,
+   "lon": 22.86963,
+   "red": 1455,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.85102,
+   "lon": 22.85848,
+   "red": 1580,
+   "date": "2026-06-24",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.85235,
+   "lon": 22.85217,
+   "red": 1481,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.85888,
+   "lon": 22.84945,
+   "red": 1577,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86158,
+   "lon": 22.84895,
+   "red": 1224,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.866,
+   "lon": 22.84447,
+   "red": 1234,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86712,
+   "lon": 22.84062,
+   "red": 1243,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86729,
+   "lon": 22.83552,
+   "red": 1532,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86678,
+   "lon": 22.83191,
+   "red": 1364,
+   "date": "2026-07-04",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86478,
+   "lon": 22.82691,
+   "red": 1323,
+   "date": "2026-07-04",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.85894,
+   "lon": 22.82387,
+   "red": 1582,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.85473,
+   "lon": 22.82168,
+   "red": 1520,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.84948,
+   "lon": 22.81681,
+   "red": 1425,
+   "date": "2026-06-24",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.84417,
+   "lon": 22.81475,
+   "red": 1688,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.84109,
+   "lon": 22.812,
+   "red": 1637,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.84023,
+   "lon": 22.80857,
+   "red": 1630,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.83955,
+   "lon": 22.8053,
+   "red": 1713,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.83749,
+   "lon": 22.80273,
+   "red": 1660,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.83235,
+   "lon": 22.79998,
+   "red": 1588,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.82807,
+   "lon": 22.79689,
+   "red": 1576,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.82602,
+   "lon": 22.7902,
+   "red": 1572,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.82594,
+   "lon": 22.78766,
+   "red": 1573,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.82622,
+   "lon": 22.78541,
+   "red": 1555,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.82674,
+   "lon": 22.78099,
+   "red": 1541,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.82691,
+   "lon": 22.77803,
+   "red": 1560,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.82769,
+   "lon": 22.77427,
+   "red": 1576,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.83001,
+   "lon": 22.76896,
+   "red": 1538,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.83113,
+   "lon": 22.7664,
+   "red": 1525,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.83179,
+   "lon": 22.76409,
+   "red": 1505,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.83201,
+   "lon": 22.76035,
+   "red": 1526,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.83174,
+   "lon": 22.75782,
+   "red": 1544,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.83139,
+   "lon": 22.75514,
+   "red": 1523,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.83124,
+   "lon": 22.75257,
+   "red": 1533,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.83117,
+   "lon": 22.74888,
+   "red": 1545,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.83178,
+   "lon": 22.74564,
+   "red": 1558,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.83291,
+   "lon": 22.74298,
+   "red": 1536,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.83375,
+   "lon": 22.74066,
+   "red": 1534,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.83479,
+   "lon": 22.73797,
+   "red": 1563,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.83646,
+   "lon": 22.72857,
+   "red": 1541,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.8368,
+   "lon": 22.724,
+   "red": 1500,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.83709,
+   "lon": 22.72079,
+   "red": 1517,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.83771,
+   "lon": 22.7177,
+   "red": 1520,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.84138,
+   "lon": 22.71052,
+   "red": 1624,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.84281,
+   "lon": 22.70868,
+   "red": 1503,
+   "date": "2026-07-09",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.84601,
+   "lon": 22.70546,
+   "red": 1530,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.84798,
+   "lon": 22.70393,
+   "red": 1499,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.85071,
+   "lon": 22.70044,
+   "red": 1552,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.85249,
+   "lon": 22.69782,
+   "red": 1591,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.85475,
+   "lon": 22.69589,
+   "red": 1550,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.8569,
+   "lon": 22.69447,
+   "red": 1515,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.85814,
+   "lon": 22.69228,
+   "red": 1520,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.85907,
+   "lon": 22.68958,
+   "red": 1534,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.85946,
+   "lon": 22.68709,
+   "red": 1525,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86022,
+   "lon": 22.68469,
+   "red": 1580,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86251,
+   "lon": 22.68316,
+   "red": 1532,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86542,
+   "lon": 22.68009,
+   "red": 1505,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86736,
+   "lon": 22.67734,
+   "red": 1509,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86863,
+   "lon": 22.67401,
+   "red": 1559,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86942,
+   "lon": 22.66945,
+   "red": 1611,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86987,
+   "lon": 22.66682,
+   "red": 1577,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.87106,
+   "lon": 22.6618,
+   "red": 1520,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.87316,
+   "lon": 22.65536,
+   "red": 1686,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.87472,
+   "lon": 22.65327,
+   "red": 1713,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.87739,
+   "lon": 22.65229,
+   "red": 1589,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.88,
+   "lon": 22.65195,
+   "red": 1559,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.88227,
+   "lon": 22.65224,
+   "red": 1305,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.88507,
+   "lon": 22.65418,
+   "red": 1606,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.88778,
+   "lon": 22.65726,
+   "red": 1512,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.88986,
+   "lon": 22.65925,
+   "red": 1492,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.89227,
+   "lon": 22.65985,
+   "red": 1488,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.8945,
+   "lon": 22.65914,
+   "red": 1622,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.89687,
+   "lon": 22.65788,
+   "red": 1505,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.89874,
+   "lon": 22.65578,
+   "red": 1505,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.89951,
+   "lon": 22.65276,
+   "red": 1505,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.89912,
+   "lon": 22.64891,
+   "red": 1519,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.89768,
+   "lon": 22.64556,
+   "red": 1512,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.89583,
+   "lon": 22.64268,
+   "red": 1509,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.89479,
+   "lon": 22.63982,
+   "red": 1523,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.89627,
+   "lon": 22.63757,
+   "red": 1520,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.90109,
+   "lon": 22.63465,
+   "red": 1488,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.90376,
+   "lon": 22.63302,
+   "red": 1517,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.90621,
+   "lon": 22.63113,
+   "red": 1549,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.90805,
+   "lon": 22.62946,
+   "red": 1289,
+   "date": "2026-07-04",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.91148,
+   "lon": 22.62589,
+   "red": 1466,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.91396,
+   "lon": 22.62287,
+   "red": 1277,
+   "date": "2026-07-04",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.91575,
+   "lon": 22.62004,
+   "red": 1649,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.91687,
+   "lon": 22.61466,
+   "red": 1296,
+   "date": "2026-07-04",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.91826,
+   "lon": 22.61229,
+   "red": 1591,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.91877,
+   "lon": 22.60941,
+   "red": 1664,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.91913,
+   "lon": 22.60634,
+   "red": 1755,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.9199,
+   "lon": 22.60379,
+   "red": 1289,
+   "date": "2026-07-04",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.92092,
+   "lon": 22.60112,
+   "red": 1821,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.92237,
+   "lon": 22.59766,
+   "red": 1428,
+   "date": "2026-07-09",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.92325,
+   "lon": 22.59486,
+   "red": 1865,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.92495,
+   "lon": 22.59123,
+   "red": 1361,
+   "date": "2026-07-09",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.92761,
+   "lon": 22.58916,
+   "red": 1757,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.93056,
+   "lon": 22.58774,
+   "red": 1687,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.93373,
+   "lon": 22.58657,
+   "red": 1631,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.93717,
+   "lon": 22.58541,
+   "red": 1619,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.94054,
+   "lon": 22.58471,
+   "red": 1626,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.9453,
+   "lon": 22.58356,
+   "red": 1237,
+   "date": "2026-07-09",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.94992,
+   "lon": 22.5821,
+   "red": 1494,
+   "date": "2026-07-09",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.95499,
+   "lon": 22.58094,
+   "red": 1476,
+   "date": "2026-07-09",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.97785,
+   "lon": 22.563,
+   "red": 1599,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.97964,
+   "lon": 22.56044,
+   "red": 1329,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.98208,
+   "lon": 22.55814,
+   "red": 1353,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.98496,
+   "lon": 22.5556,
+   "red": 1444,
+   "date": "2026-07-09",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.98785,
+   "lon": 22.55243,
+   "red": 1427,
+   "date": "2026-07-09",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.9923,
+   "lon": 22.54679,
+   "red": 1472,
+   "date": "2026-07-09",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.99427,
+   "lon": 22.54451,
+   "red": 1464,
+   "date": "2026-07-09",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.99758,
+   "lon": 22.54179,
+   "red": 1444,
+   "date": "2026-07-09",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.00261,
+   "lon": 22.53883,
+   "red": 1462,
+   "date": "2026-07-19",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.00885,
+   "lon": 22.53597,
+   "red": 1564,
+   "date": "2026-07-09",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.03163,
+   "lon": 22.52893,
+   "red": 1606,
+   "date": "2026-07-09",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.03779,
+   "lon": 22.52618,
+   "red": 1570,
+   "date": "2026-07-09",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.04533,
+   "lon": 22.52447,
+   "red": 1505,
+   "date": "2026-07-09",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.05389,
+   "lon": 22.52514,
+   "red": 1414,
+   "date": "2026-07-09",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.05937,
+   "lon": 22.52395,
+   "red": 1407,
+   "date": "2026-07-09",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.06622,
+   "lon": 22.52103,
+   "red": 1401,
+   "date": "2026-07-09",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.07255,
+   "lon": 22.51657,
+   "red": 1398,
+   "date": "2026-07-09",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.07683,
+   "lon": 22.51434,
+   "red": 1392,
+   "date": "2026-07-09",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.08951,
+   "lon": 22.51314,
+   "red": 1388,
+   "date": "2026-07-09",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.10046,
+   "lon": 22.51245,
+   "red": 1383,
+   "date": "2026-07-09",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.10423,
+   "lon": 22.51073,
+   "red": 1404,
+   "date": "2026-07-09",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.10585,
+   "lon": 22.50837,
+   "red": 1399,
+   "date": "2026-07-09",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.11026,
+   "lon": 22.49666,
+   "red": 1405,
+   "date": "2026-07-09",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.11201,
+   "lon": 22.48812,
+   "red": 1401,
+   "date": "2026-07-09",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.11539,
+   "lon": 22.47262,
+   "red": 1425,
+   "date": "2026-07-09",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.11338,
+   "lon": 22.45859,
+   "red": 1399,
+   "date": "2026-07-09",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.11587,
+   "lon": 22.44344,
+   "red": 1364,
+   "date": "2026-07-09",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.12065,
+   "lon": 22.4372,
+   "red": 1360,
+   "date": "2026-07-09",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.12812,
+   "lon": 22.4334,
+   "red": 1365,
+   "date": "2026-07-09",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.6969,
+   "lon": 28.20885,
+   "red": 2314,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69656,
+   "lon": 28.2027,
+   "red": 2083,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69872,
+   "lon": 28.19698,
+   "red": 2039,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70946,
+   "lon": 28.19097,
+   "red": 2139,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.71349,
+   "lon": 28.18892,
+   "red": 2114,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.71607,
+   "lon": 28.18657,
+   "red": 2128,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.71919,
+   "lon": 28.17978,
+   "red": 2075,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.72213,
+   "lon": 28.17568,
+   "red": 2426,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.72267,
+   "lon": 28.17081,
+   "red": 1660,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.72309,
+   "lon": 28.15715,
+   "red": 1887,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.72585,
+   "lon": 28.14272,
+   "red": 2084,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.72261,
+   "lon": 28.13694,
+   "red": 2131,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.72321,
+   "lon": 28.12846,
+   "red": 2140,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.72327,
+   "lon": 28.12599,
+   "red": 2064,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.727,
+   "lon": 28.12226,
+   "red": 2139,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.72814,
+   "lon": 28.12016,
+   "red": 2135,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.72736,
+   "lon": 28.11775,
+   "red": 2108,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.72489,
+   "lon": 28.11131,
+   "red": 2308,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.72459,
+   "lon": 28.10602,
+   "red": 1987,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.72381,
+   "lon": 28.10193,
+   "red": 1915,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.72441,
+   "lon": 28.0997,
+   "red": 2128,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.72778,
+   "lon": 28.09122,
+   "red": 2161,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.73012,
+   "lon": 28.08653,
+   "red": 2250,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.73042,
+   "lon": 28.0837,
+   "red": 2162,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.73336,
+   "lon": 28.08117,
+   "red": 2211,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.73618,
+   "lon": 28.07672,
+   "red": 2166,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.73534,
+   "lon": 28.07347,
+   "red": 2153,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.73486,
+   "lon": 28.06685,
+   "red": 2440,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.74068,
+   "lon": 28.05957,
+   "red": 1292,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.74401,
+   "lon": 28.05121,
+   "red": 2180,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.74455,
+   "lon": 28.04806,
+   "red": 2129,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.74701,
+   "lon": 28.04463,
+   "red": 2188,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.74603,
+   "lon": 28.03639,
+   "red": 2155,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.74181,
+   "lon": 28.03216,
+   "red": 2208,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.73843,
+   "lon": 28.0299,
+   "red": 2233,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.73386,
+   "lon": 28.03251,
+   "red": 2234,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.73151,
+   "lon": 28.03163,
+   "red": 2253,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.72863,
+   "lon": 28.02878,
+   "red": 2180,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.72659,
+   "lon": 28.02169,
+   "red": 1937,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.72467,
+   "lon": 28.01726,
+   "red": 2224,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.72261,
+   "lon": 28.01534,
+   "red": 2224,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.71209,
+   "lon": 28.00061,
+   "red": 2274,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.71017,
+   "lon": 27.99768,
+   "red": 2245,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70397,
+   "lon": 27.98728,
+   "red": 2323,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70316,
+   "lon": 27.97688,
+   "red": 2095,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70309,
+   "lon": 27.96576,
+   "red": 2273,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70317,
+   "lon": 27.96163,
+   "red": 2109,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70287,
+   "lon": 27.95711,
+   "red": 2046,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70205,
+   "lon": 27.95312,
+   "red": 2042,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70092,
+   "lon": 27.94951,
+   "red": 2096,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69938,
+   "lon": 27.94614,
+   "red": 2081,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69768,
+   "lon": 27.94435,
+   "red": 2009,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.6937,
+   "lon": 27.94064,
+   "red": 2064,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69327,
+   "lon": 27.93765,
+   "red": 1969,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69513,
+   "lon": 27.93551,
+   "red": 1924,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69898,
+   "lon": 27.93164,
+   "red": 1968,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70028,
+   "lon": 27.92876,
+   "red": 1923,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70106,
+   "lon": 27.92626,
+   "red": 1901,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70102,
+   "lon": 27.92275,
+   "red": 1947,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.6999,
+   "lon": 27.92038,
+   "red": 1898,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70027,
+   "lon": 27.91672,
+   "red": 1920,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70009,
+   "lon": 27.9136,
+   "red": 1887,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69756,
+   "lon": 27.91016,
+   "red": 1975,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69603,
+   "lon": 27.90618,
+   "red": 1908,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69592,
+   "lon": 27.90221,
+   "red": 1914,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69581,
+   "lon": 27.89572,
+   "red": 2031,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69677,
+   "lon": 27.89343,
+   "red": 2104,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69845,
+   "lon": 27.89118,
+   "red": 1990,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69952,
+   "lon": 27.8889,
+   "red": 1987,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70071,
+   "lon": 27.88327,
+   "red": 2032,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70182,
+   "lon": 27.87612,
+   "red": 1940,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70162,
+   "lon": 27.8735,
+   "red": 1927,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70082,
+   "lon": 27.869,
+   "red": 1917,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69902,
+   "lon": 27.86494,
+   "red": 1935,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69731,
+   "lon": 27.86127,
+   "red": 1897,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.6953,
+   "lon": 27.85655,
+   "red": 1934,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.6929,
+   "lon": 27.8528,
+   "red": 1924,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69095,
+   "lon": 27.85048,
+   "red": 1959,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.6887,
+   "lon": 27.84894,
+   "red": 1951,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.68652,
+   "lon": 27.83978,
+   "red": 1620,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.6836,
+   "lon": 27.83655,
+   "red": 1962,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.67984,
+   "lon": 27.82708,
+   "red": 2037,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.67723,
+   "lon": 27.82583,
+   "red": 2028,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.67212,
+   "lon": 27.82599,
+   "red": 2104,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.67037,
+   "lon": 27.81853,
+   "red": 2010,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.66505,
+   "lon": 27.8076,
+   "red": 1913,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.66008,
+   "lon": 27.78597,
+   "red": 1914,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.66495,
+   "lon": 27.7743,
+   "red": 1989,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.66572,
+   "lon": 27.77173,
+   "red": 1924,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.66409,
+   "lon": 27.76975,
+   "red": 1926,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.65998,
+   "lon": 27.76709,
+   "red": 2140,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.65768,
+   "lon": 27.7652,
+   "red": 2068,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.6539,
+   "lon": 27.76083,
+   "red": 2043,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.65211,
+   "lon": 27.75851,
+   "red": 2070,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.65116,
+   "lon": 27.75636,
+   "red": 2045,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.65537,
+   "lon": 27.74992,
+   "red": 2089,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.65827,
+   "lon": 27.74924,
+   "red": 2080,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.66033,
+   "lon": 27.74795,
+   "red": 2052,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.66316,
+   "lon": 27.74426,
+   "red": 2062,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.66692,
+   "lon": 27.73422,
+   "red": 2023,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.67036,
+   "lon": 27.72898,
+   "red": 2051,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.67146,
+   "lon": 27.72426,
+   "red": 2031,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.67232,
+   "lon": 27.72152,
+   "red": 2034,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.67514,
+   "lon": 27.71662,
+   "red": 2128,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.67541,
+   "lon": 27.71207,
+   "red": 2106,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.6743,
+   "lon": 27.70967,
+   "red": 2211,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.6719,
+   "lon": 27.70632,
+   "red": 2185,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.66804,
+   "lon": 27.70194,
+   "red": 2084,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.66564,
+   "lon": 27.69963,
+   "red": 2090,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.66496,
+   "lon": 27.6943,
+   "red": 2220,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.66513,
+   "lon": 27.69053,
+   "red": 2220,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.66701,
+   "lon": 27.68444,
+   "red": 2087,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.66847,
+   "lon": 27.6816,
+   "red": 2075,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.67027,
+   "lon": 27.6792,
+   "red": 2988,
+   "date": "2026-06-28",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.67326,
+   "lon": 27.67603,
+   "red": 2390,
+   "date": "2026-07-13",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.679,
+   "lon": 27.67148,
+   "red": 2231,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.68268,
+   "lon": 27.6683,
+   "red": 2119,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.68585,
+   "lon": 27.66461,
+   "red": 1967,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.68807,
+   "lon": 27.66102,
+   "red": 1639,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69139,
+   "lon": 27.65672,
+   "red": 2122,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69438,
+   "lon": 27.65272,
+   "red": 2115,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69717,
+   "lon": 27.64946,
+   "red": 2190,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70119,
+   "lon": 27.64079,
+   "red": 2223,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70278,
+   "lon": 27.63504,
+   "red": 2322,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70337,
+   "lon": 27.63066,
+   "red": 2063,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70324,
+   "lon": 27.62204,
+   "red": 2062,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70238,
+   "lon": 27.61942,
+   "red": 2051,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70051,
+   "lon": 27.61577,
+   "red": 2086,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69831,
+   "lon": 27.60916,
+   "red": 2107,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69854,
+   "lon": 27.60538,
+   "red": 2163,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.6996,
+   "lon": 27.60135,
+   "red": 1959,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69991,
+   "lon": 27.59727,
+   "red": 2103,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69913,
+   "lon": 27.59131,
+   "red": 2047,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69901,
+   "lon": 27.58757,
+   "red": 2032,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69938,
+   "lon": 27.58376,
+   "red": 2056,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70054,
+   "lon": 27.57955,
+   "red": 2083,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70242,
+   "lon": 27.57273,
+   "red": 2174,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70315,
+   "lon": 27.56157,
+   "red": 2018,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70367,
+   "lon": 27.55873,
+   "red": 1969,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70458,
+   "lon": 27.55472,
+   "red": 1965,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70449,
+   "lon": 27.55096,
+   "red": 2006,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70487,
+   "lon": 27.54762,
+   "red": 2109,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70482,
+   "lon": 27.54432,
+   "red": 2245,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70415,
+   "lon": 27.53491,
+   "red": 2264,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70402,
+   "lon": 27.53118,
+   "red": 2323,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70432,
+   "lon": 27.52667,
+   "red": 1863,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70376,
+   "lon": 27.52427,
+   "red": 1941,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70063,
+   "lon": 27.52136,
+   "red": 2295,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.699,
+   "lon": 27.51874,
+   "red": 1945,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69767,
+   "lon": 27.51166,
+   "red": 1255,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.68954,
+   "lon": 27.4969,
+   "red": 1992,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.68441,
+   "lon": 27.49535,
+   "red": 1926,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.6807,
+   "lon": 27.49653,
+   "red": 1945,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.67815,
+   "lon": 27.49655,
+   "red": 2069,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.67541,
+   "lon": 27.49499,
+   "red": 2031,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.67418,
+   "lon": 27.48608,
+   "red": 1816,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.67478,
+   "lon": 27.48374,
+   "red": 2222,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.67527,
+   "lon": 27.48104,
+   "red": 2034,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.67562,
+   "lon": 27.47848,
+   "red": 1991,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.67563,
+   "lon": 27.47432,
+   "red": 1918,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.67547,
+   "lon": 27.46757,
+   "red": 1901,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.6753,
+   "lon": 27.46339,
+   "red": 1877,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.67524,
+   "lon": 27.45759,
+   "red": 1899,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.67616,
+   "lon": 27.45304,
+   "red": 1940,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.67893,
+   "lon": 27.44969,
+   "red": 1913,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.68321,
+   "lon": 27.44918,
+   "red": 2231,
+   "date": "2026-07-03",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.68753,
+   "lon": 27.4422,
+   "red": 1879,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69331,
+   "lon": 27.4327,
+   "red": 1818,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69685,
+   "lon": 27.42718,
+   "red": 1747,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69846,
+   "lon": 27.42498,
+   "red": 1859,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70198,
+   "lon": 27.42269,
+   "red": 1790,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70684,
+   "lon": 27.42051,
+   "red": 1483,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.71121,
+   "lon": 27.42102,
+   "red": 1876,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.71445,
+   "lon": 27.42133,
+   "red": 1902,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.71834,
+   "lon": 27.41997,
+   "red": 1991,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.73459,
+   "lon": 27.42016,
+   "red": 2054,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.73788,
+   "lon": 27.41913,
+   "red": 2421,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.74344,
+   "lon": 27.41462,
+   "red": 1307,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.74658,
+   "lon": 27.41038,
+   "red": 1875,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.75069,
+   "lon": 27.39956,
+   "red": 1868,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.75182,
+   "lon": 27.39657,
+   "red": 2617,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.75304,
+   "lon": 27.38956,
+   "red": 1924,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.75239,
+   "lon": 27.38631,
+   "red": 1890,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.751,
+   "lon": 27.38198,
+   "red": 1858,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.75171,
+   "lon": 27.37889,
+   "red": 1875,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.76182,
+   "lon": 27.37022,
+   "red": 1877,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.76479,
+   "lon": 27.36316,
+   "red": 1926,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.7723,
+   "lon": 27.35744,
+   "red": 1875,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.77766,
+   "lon": 27.35496,
+   "red": 1881,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.7794,
+   "lon": 27.35201,
+   "red": 1841,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.77935,
+   "lon": 27.34913,
+   "red": 1819,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.78032,
+   "lon": 27.3446,
+   "red": 1863,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.78003,
+   "lon": 27.34201,
+   "red": 1868,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.77541,
+   "lon": 27.33691,
+   "red": 1903,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.77206,
+   "lon": 27.33292,
+   "red": 1871,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.7703,
+   "lon": 27.32987,
+   "red": 1924,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.76801,
+   "lon": 27.32327,
+   "red": 2561,
+   "date": "2026-07-15",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.76772,
+   "lon": 27.32032,
+   "red": 1370,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.76818,
+   "lon": 27.31729,
+   "red": 1899,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.77109,
+   "lon": 27.3137,
+   "red": 1534,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.77531,
+   "lon": 27.31056,
+   "red": 1934,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.77971,
+   "lon": 27.30828,
+   "red": 1910,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.78384,
+   "lon": 27.30688,
+   "red": 1912,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.78768,
+   "lon": 27.30665,
+   "red": 1893,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.79283,
+   "lon": 27.30687,
+   "red": 1877,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.80961,
+   "lon": 27.30172,
+   "red": 1866,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.82384,
+   "lon": 27.30143,
+   "red": 1881,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.82849,
+   "lon": 27.29965,
+   "red": 1803,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.8324,
+   "lon": 27.2976,
+   "red": 1970,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.83762,
+   "lon": 27.29435,
+   "red": 1952,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.84099,
+   "lon": 27.29178,
+   "red": 1577,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.84362,
+   "lon": 27.2891,
+   "red": 1879,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.84722,
+   "lon": 27.28699,
+   "red": 1858,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.8509,
+   "lon": 27.28656,
+   "red": 1697,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.85323,
+   "lon": 27.28615,
+   "red": 1846,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.85593,
+   "lon": 27.28478,
+   "red": 1852,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.85808,
+   "lon": 27.28274,
+   "red": 1864,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86071,
+   "lon": 27.27943,
+   "red": 1857,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86557,
+   "lon": 27.27414,
+   "red": 1855,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86914,
+   "lon": 27.27202,
+   "red": 1844,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.87316,
+   "lon": 27.27085,
+   "red": 1946,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.87734,
+   "lon": 27.26933,
+   "red": 1897,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.88258,
+   "lon": 27.26567,
+   "red": 1826,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.8857,
+   "lon": 27.26359,
+   "red": 1840,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.88937,
+   "lon": 27.25939,
+   "red": 1842,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.8965,
+   "lon": 27.24987,
+   "red": 1892,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.90023,
+   "lon": 27.23976,
+   "red": 1917,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.90068,
+   "lon": 27.23692,
+   "red": 1876,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.90058,
+   "lon": 27.2338,
+   "red": 1849,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.89886,
+   "lon": 27.23046,
+   "red": 1860,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.8957,
+   "lon": 27.22845,
+   "red": 1805,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.88891,
+   "lon": 27.22574,
+   "red": 1835,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.88524,
+   "lon": 27.2244,
+   "red": 1820,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.88113,
+   "lon": 27.22251,
+   "red": 1818,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.87939,
+   "lon": 27.2209,
+   "red": 1819,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.87783,
+   "lon": 27.21764,
+   "red": 1804,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.87551,
+   "lon": 27.2134,
+   "red": 1835,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.87301,
+   "lon": 27.20995,
+   "red": 1787,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.87117,
+   "lon": 27.20577,
+   "red": 1801,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86971,
+   "lon": 27.2008,
+   "red": 1846,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86815,
+   "lon": 27.19155,
+   "red": 1812,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86747,
+   "lon": 27.18505,
+   "red": 1859,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86758,
+   "lon": 27.17845,
+   "red": 1439,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.8683,
+   "lon": 27.17349,
+   "red": 1848,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.87233,
+   "lon": 27.16617,
+   "red": 1876,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.87611,
+   "lon": 27.16241,
+   "red": 2407,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.88052,
+   "lon": 27.16013,
+   "red": 1918,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.88351,
+   "lon": 27.15756,
+   "red": 1345,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.88686,
+   "lon": 27.15119,
+   "red": 2219,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.88714,
+   "lon": 27.14775,
+   "red": 1882,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.88587,
+   "lon": 27.14253,
+   "red": 1962,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.88419,
+   "lon": 27.14017,
+   "red": 2490,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.8748,
+   "lon": 27.1423,
+   "red": 1884,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86981,
+   "lon": 27.14385,
+   "red": 2112,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.8629,
+   "lon": 27.14652,
+   "red": 2413,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.85765,
+   "lon": 27.15062,
+   "red": 1890,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.85475,
+   "lon": 27.15295,
+   "red": 1583,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.85067,
+   "lon": 27.15633,
+   "red": 1908,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.84518,
+   "lon": 27.15908,
+   "red": 1820,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.83921,
+   "lon": 27.16147,
+   "red": 1842,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.83148,
+   "lon": 27.16285,
+   "red": 1857,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.8284,
+   "lon": 27.16285,
+   "red": 1945,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.82154,
+   "lon": 27.16319,
+   "red": 1862,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.81857,
+   "lon": 27.16282,
+   "red": 1840,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.80419,
+   "lon": 27.15885,
+   "red": 1836,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.79799,
+   "lon": 27.15826,
+   "red": 1886,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.79356,
+   "lon": 27.15842,
+   "red": 1847,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.78729,
+   "lon": 27.16028,
+   "red": 1846,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.77907,
+   "lon": 27.16285,
+   "red": 1876,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.76985,
+   "lon": 27.16383,
+   "red": 1830,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.76232,
+   "lon": 27.16416,
+   "red": 1826,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.75579,
+   "lon": 27.16397,
+   "red": 1843,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.74972,
+   "lon": 27.16235,
+   "red": 1849,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.74131,
+   "lon": 27.15846,
+   "red": 1876,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.73604,
+   "lon": 27.15616,
+   "red": 1908,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.73185,
+   "lon": 27.15561,
+   "red": 1854,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.72803,
+   "lon": 27.15622,
+   "red": 1860,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.72366,
+   "lon": 27.15719,
+   "red": 1840,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.72022,
+   "lon": 27.15879,
+   "red": 1862,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.7179,
+   "lon": 27.15953,
+   "red": 1873,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.71298,
+   "lon": 27.159,
+   "red": 1821,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.71025,
+   "lon": 27.15859,
+   "red": 1819,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.7054,
+   "lon": 27.15947,
+   "red": 1790,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.7019,
+   "lon": 27.16118,
+   "red": 1885,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69574,
+   "lon": 27.167,
+   "red": 1908,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69359,
+   "lon": 27.16886,
+   "red": 1879,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.68911,
+   "lon": 27.17012,
+   "red": 1927,
+   "date": "2026-06-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.68181,
+   "lon": 27.17018,
+   "red": 1869,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.67672,
+   "lon": 27.17088,
+   "red": 1830,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.67239,
+   "lon": 27.17035,
+   "red": 1847,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.67048,
+   "lon": 27.16883,
+   "red": 1832,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.66835,
+   "lon": 27.1663,
+   "red": 1832,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.66622,
+   "lon": 27.16307,
+   "red": 1840,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.66486,
+   "lon": 27.15992,
+   "red": 1840,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.66427,
+   "lon": 27.15441,
+   "red": 1869,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.66466,
+   "lon": 27.15082,
+   "red": 2269,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.66667,
+   "lon": 27.14862,
+   "red": 2299,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.66983,
+   "lon": 27.14952,
+   "red": 2222,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.67161,
+   "lon": 27.14642,
+   "red": 1923,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.67438,
+   "lon": 27.13988,
+   "red": 1923,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.67545,
+   "lon": 27.13455,
+   "red": 2184,
+   "date": "2026-07-23",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.67594,
+   "lon": 27.12766,
+   "red": 1849,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.66961,
+   "lon": 27.11873,
+   "red": 1846,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.66601,
+   "lon": 27.1117,
+   "red": 1830,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.66652,
+   "lon": 27.09899,
+   "red": 1782,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.6595,
+   "lon": 27.09333,
+   "red": 1812,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.65504,
+   "lon": 27.08784,
+   "red": 1798,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.64631,
+   "lon": 27.08045,
+   "red": 1807,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.63963,
+   "lon": 27.07754,
+   "red": 1813,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.63466,
+   "lon": 27.07479,
+   "red": 1810,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.62935,
+   "lon": 27.06724,
+   "red": 1768,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.62678,
+   "lon": 27.06569,
+   "red": 1801,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.6201,
+   "lon": 27.06844,
+   "red": 1761,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.61425,
+   "lon": 27.06831,
+   "red": 2002,
+   "date": "2026-07-31",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.61256,
+   "lon": 27.06123,
+   "red": 2246,
+   "date": "2026-07-31",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.60314,
+   "lon": 27.04938,
+   "red": 1903,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.59166,
+   "lon": 27.0372,
+   "red": 1949,
+   "date": "2026-07-31",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.58189,
+   "lon": 27.03411,
+   "red": 2189,
+   "date": "2026-07-31",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.56956,
+   "lon": 27.03805,
+   "red": 2125,
+   "date": "2026-07-31",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.56099,
+   "lon": 27.04046,
+   "red": 2084,
+   "date": "2026-07-31",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.5478,
+   "lon": 27.03445,
+   "red": 1891,
+   "date": "2026-07-31",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.54643,
+   "lon": 27.0317,
+   "red": 1936,
+   "date": "2026-07-31",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.54574,
+   "lon": 27.02518,
+   "red": 2028,
+   "date": "2026-07-31",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.53974,
+   "lon": 27.02346,
+   "red": 1971,
+   "date": "2026-07-31",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.54249,
+   "lon": 27.01883,
+   "red": 1910,
+   "date": "2026-07-31",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.54951,
+   "lon": 27.01625,
+   "red": 1947,
+   "date": "2026-07-31",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.55996,
+   "lon": 27.01213,
+   "red": 1454,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.57247,
+   "lon": 27.00115,
+   "red": 1857,
+   "date": "2026-07-31",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.57915,
+   "lon": 26.99909,
+   "red": 1862,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.59155,
+   "lon": 26.99462,
+   "red": 1921,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.59309,
+   "lon": 26.99271,
+   "red": 1965,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.59302,
+   "lon": 26.98891,
+   "red": 1956,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.59048,
+   "lon": 26.98352,
+   "red": 1962,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.59239,
+   "lon": 26.97853,
+   "red": 2167,
+   "date": "2026-07-03",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.59428,
+   "lon": 26.97462,
+   "red": 1359,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.5983,
+   "lon": 26.97267,
+   "red": 1901,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.6017,
+   "lon": 26.96997,
+   "red": 1859,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.60289,
+   "lon": 26.96754,
+   "red": 1860,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.60267,
+   "lon": 26.96492,
+   "red": 1832,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.60043,
+   "lon": 26.96105,
+   "red": 1873,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.59805,
+   "lon": 26.95564,
+   "red": 2018,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.59862,
+   "lon": 26.95249,
+   "red": 1779,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.60094,
+   "lon": 26.94915,
+   "red": 1292,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.60191,
+   "lon": 26.94299,
+   "red": 1912,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.60014,
+   "lon": 26.93695,
+   "red": 1917,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.59748,
+   "lon": 26.93283,
+   "red": 2019,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.59095,
+   "lon": 26.92256,
+   "red": 2158,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.59132,
+   "lon": 26.91529,
+   "red": 2123,
+   "date": "2026-07-03",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.59229,
+   "lon": 26.90938,
+   "red": 2009,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.59268,
+   "lon": 26.90416,
+   "red": 2064,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.59128,
+   "lon": 26.89876,
+   "red": 2020,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.5937,
+   "lon": 26.89282,
+   "red": 2078,
+   "date": "2026-07-25",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.59389,
+   "lon": 26.88631,
+   "red": 2534,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.59021,
+   "lon": 26.87816,
+   "red": 2607,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.58744,
+   "lon": 26.8626,
+   "red": 2028,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.58478,
+   "lon": 26.85599,
+   "red": 2052,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.57924,
+   "lon": 26.84498,
+   "red": 2313,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.5784,
+   "lon": 26.84179,
+   "red": 2357,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.57694,
+   "lon": 26.83951,
+   "red": 2008,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.57465,
+   "lon": 26.83847,
+   "red": 2463,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.56986,
+   "lon": 26.83675,
+   "red": 1953,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.56742,
+   "lon": 26.83286,
+   "red": 2396,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.56827,
+   "lon": 26.81957,
+   "red": 2639,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.56874,
+   "lon": 26.81667,
+   "red": 1249,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.56818,
+   "lon": 26.8144,
+   "red": 1301,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.56584,
+   "lon": 26.81002,
+   "red": 1997,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.56554,
+   "lon": 26.80748,
+   "red": 1995,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.56552,
+   "lon": 26.80424,
+   "red": 1965,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.56701,
+   "lon": 26.80041,
+   "red": 2500,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.57194,
+   "lon": 26.79603,
+   "red": 2351,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.58002,
+   "lon": 26.79392,
+   "red": 2057,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.58449,
+   "lon": 26.79546,
+   "red": 2089,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.58857,
+   "lon": 26.79732,
+   "red": 2349,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.59805,
+   "lon": 26.79726,
+   "red": 2583,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.60074,
+   "lon": 26.79472,
+   "red": 1833,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.6032,
+   "lon": 26.78928,
+   "red": 2395,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.60406,
+   "lon": 26.78604,
+   "red": 2404,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.60527,
+   "lon": 26.78324,
+   "red": 2283,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.60654,
+   "lon": 26.78113,
+   "red": 2090,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.61483,
+   "lon": 26.77755,
+   "red": 1456,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.61846,
+   "lon": 26.77634,
+   "red": 2223,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.62109,
+   "lon": 26.77511,
+   "red": 2156,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.6248,
+   "lon": 26.772,
+   "red": 2101,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.62794,
+   "lon": 26.77108,
+   "red": 2118,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.64451,
+   "lon": 26.77481,
+   "red": 2266,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.64911,
+   "lon": 26.77575,
+   "red": 2307,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.65317,
+   "lon": 26.77698,
+   "red": 2297,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.65656,
+   "lon": 26.777,
+   "red": 2316,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.66704,
+   "lon": 26.78084,
+   "red": 2544,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.66932,
+   "lon": 26.78385,
+   "red": 2412,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.6719,
+   "lon": 26.78494,
+   "red": 2328,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.67537,
+   "lon": 26.78416,
+   "red": 2256,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.67834,
+   "lon": 26.78256,
+   "red": 2285,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.6806,
+   "lon": 26.78103,
+   "red": 2295,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.68302,
+   "lon": 26.77982,
+   "red": 2229,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.68671,
+   "lon": 26.77943,
+   "red": 2411,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.68936,
+   "lon": 26.77824,
+   "red": 2289,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.6918,
+   "lon": 26.77564,
+   "red": 1898,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69393,
+   "lon": 26.7718,
+   "red": 2197,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69568,
+   "lon": 26.76993,
+   "red": 2217,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70815,
+   "lon": 26.76639,
+   "red": 2185,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.7197,
+   "lon": 26.76764,
+   "red": 2502,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.72235,
+   "lon": 26.77174,
+   "red": 2360,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.72434,
+   "lon": 26.77519,
+   "red": 2174,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.72797,
+   "lon": 26.77714,
+   "red": 2144,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.73213,
+   "lon": 26.77749,
+   "red": 2069,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.73576,
+   "lon": 26.77794,
+   "red": 2140,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.7395,
+   "lon": 26.77794,
+   "red": 2352,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.74412,
+   "lon": 26.77683,
+   "red": 2188,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.74889,
+   "lon": 26.77487,
+   "red": 2209,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.75388,
+   "lon": 26.77309,
+   "red": 1377,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.79363,
+   "lon": 26.78108,
+   "red": 2422,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.80613,
+   "lon": 26.78296,
+   "red": 2098,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.82651,
+   "lon": 26.77833,
+   "red": 2360,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.83762,
+   "lon": 26.78364,
+   "red": 2007,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.85683,
+   "lon": 26.78279,
+   "red": 2625,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.86916,
+   "lon": 26.78211,
+   "red": 2229,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.87207,
+   "lon": 26.78296,
+   "red": 2202,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.88885,
+   "lon": 26.76649,
+   "red": 2297,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.88903,
+   "lon": 26.75104,
+   "red": 2225,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.89759,
+   "lon": 26.73747,
+   "red": 2371,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.91009,
+   "lon": 26.72975,
+   "red": 2311,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.913,
+   "lon": 26.72923,
+   "red": 2258,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.94545,
+   "lon": 26.71607,
+   "red": 1714,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.95121,
+   "lon": 26.71246,
+   "red": 2147,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.96294,
+   "lon": 26.70624,
+   "red": 2092,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.96504,
+   "lon": 26.70414,
+   "red": 2164,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.96738,
+   "lon": 26.70151,
+   "red": 2109,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.9694,
+   "lon": 26.70046,
+   "red": 2151,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.97806,
+   "lon": 26.71099,
+   "red": 2349,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.98577,
+   "lon": 26.71277,
+   "red": 2184,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.99338,
+   "lon": 26.71298,
+   "red": 2126,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.99898,
+   "lon": 26.71007,
+   "red": 2114,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.00226,
+   "lon": 26.70722,
+   "red": 2131,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.00734,
+   "lon": 26.70389,
+   "red": 2216,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.01048,
+   "lon": 26.70023,
+   "red": 2054,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.01351,
+   "lon": 26.68995,
+   "red": 2230,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.01674,
+   "lon": 26.68004,
+   "red": 2275,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.01823,
+   "lon": 26.67079,
+   "red": 2256,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.01601,
+   "lon": 26.66305,
+   "red": 2203,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.01625,
+   "lon": 26.6592,
+   "red": 2228,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.01803,
+   "lon": 26.6545,
+   "red": 1405,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.02072,
+   "lon": 26.64918,
+   "red": 2498,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.02306,
+   "lon": 26.64398,
+   "red": 2308,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.02493,
+   "lon": 26.64003,
+   "red": 2195,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.02669,
+   "lon": 26.63627,
+   "red": 2135,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.02762,
+   "lon": 26.63349,
+   "red": 2140,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.02952,
+   "lon": 26.62792,
+   "red": 2174,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.02851,
+   "lon": 26.62148,
+   "red": 2234,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.02641,
+   "lon": 26.61856,
+   "red": 2209,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.02334,
+   "lon": 26.6157,
+   "red": 2131,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.02085,
+   "lon": 26.61199,
+   "red": 2151,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.01936,
+   "lon": 26.60786,
+   "red": 2368,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.01815,
+   "lon": 26.60511,
+   "red": 2357,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.01609,
+   "lon": 26.59906,
+   "red": 1467,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 4.00267,
+   "lon": 26.57683,
+   "red": 2566,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.96387,
+   "lon": 26.53491,
+   "red": 2300,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.94674,
+   "lon": 26.51346,
+   "red": 2302,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.93673,
+   "lon": 26.49976,
+   "red": 2104,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.93372,
+   "lon": 26.4956,
+   "red": 1271,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.92433,
+   "lon": 26.48436,
+   "red": 1970,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.92129,
+   "lon": 26.47362,
+   "red": 2122,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.91216,
+   "lon": 26.47038,
+   "red": 2219,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.90313,
+   "lon": 26.44993,
+   "red": 1918,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.89911,
+   "lon": 26.44304,
+   "red": 1876,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.8932,
+   "lon": 26.44117,
+   "red": 1315,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.88772,
+   "lon": 26.44048,
+   "red": 2266,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.87984,
+   "lon": 26.43705,
+   "red": 2332,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.87625,
+   "lon": 26.42864,
+   "red": 2042,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.85885,
+   "lon": 26.41004,
+   "red": 2235,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.8523,
+   "lon": 26.40648,
+   "red": 2296,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.83822,
+   "lon": 26.40273,
+   "red": 2153,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.83069,
+   "lon": 26.39689,
+   "red": 1921,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.82212,
+   "lon": 26.38436,
+   "red": 1931,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.8026,
+   "lon": 26.37749,
+   "red": 2214,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.78787,
+   "lon": 26.36874,
+   "red": 2101,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.79643,
+   "lon": 26.34968,
+   "red": 2134,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.79075,
+   "lon": 26.33793,
+   "red": 1918,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.78735,
+   "lon": 26.32153,
+   "red": 2235,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.78671,
+   "lon": 26.31704,
+   "red": 2148,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.78362,
+   "lon": 26.31355,
+   "red": 2108,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.77858,
+   "lon": 26.30939,
+   "red": 2113,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.77425,
+   "lon": 26.30512,
+   "red": 2216,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.76074,
+   "lon": 26.29256,
+   "red": 2097,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.7593,
+   "lon": 26.28868,
+   "red": 2069,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.75775,
+   "lon": 26.2835,
+   "red": 2086,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.75423,
+   "lon": 26.27983,
+   "red": 2113,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.74941,
+   "lon": 26.27813,
+   "red": 2175,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.74163,
+   "lon": 26.27433,
+   "red": 2413,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.73867,
+   "lon": 26.27228,
+   "red": 2242,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.73842,
+   "lon": 26.25253,
+   "red": 1937,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.73969,
+   "lon": 26.24501,
+   "red": 1903,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.73811,
+   "lon": 26.24008,
+   "red": 1910,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.73663,
+   "lon": 26.23538,
+   "red": 1288,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.73467,
+   "lon": 26.23336,
+   "red": 1901,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.73044,
+   "lon": 26.22893,
+   "red": 2162,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.72523,
+   "lon": 26.22427,
+   "red": 2147,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.7212,
+   "lon": 26.22087,
+   "red": 2214,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.71752,
+   "lon": 26.21704,
+   "red": 1941,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.71365,
+   "lon": 26.21334,
+   "red": 1893,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.7065,
+   "lon": 26.20563,
+   "red": 2429,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70106,
+   "lon": 26.20008,
+   "red": 2350,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.6977,
+   "lon": 26.19893,
+   "red": 2390,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69008,
+   "lon": 26.20059,
+   "red": 2264,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.68531,
+   "lon": 26.20073,
+   "red": 2147,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.68142,
+   "lon": 26.19675,
+   "red": 2087,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.67631,
+   "lon": 26.18404,
+   "red": 2686,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.67752,
+   "lon": 26.17449,
+   "red": 2344,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.67829,
+   "lon": 26.16345,
+   "red": 2354,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.68388,
+   "lon": 26.15282,
+   "red": 2162,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.68203,
+   "lon": 26.14568,
+   "red": 1447,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.68176,
+   "lon": 26.1431,
+   "red": 2136,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.6797,
+   "lon": 26.13984,
+   "red": 2328,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.67223,
+   "lon": 26.13439,
+   "red": 1930,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.6635,
+   "lon": 26.12734,
+   "red": 2268,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.66175,
+   "lon": 26.12174,
+   "red": 1461,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.66069,
+   "lon": 26.11869,
+   "red": 1323,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.66172,
+   "lon": 26.11036,
+   "red": 1932,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.66836,
+   "lon": 26.09559,
+   "red": 1715,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.67133,
+   "lon": 26.09269,
+   "red": 1598,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.67458,
+   "lon": 26.08491,
+   "red": 1985,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.67589,
+   "lon": 26.07877,
+   "red": 2041,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.68113,
+   "lon": 26.06374,
+   "red": 1896,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.68744,
+   "lon": 26.05872,
+   "red": 1863,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69066,
+   "lon": 26.05723,
+   "red": 1644,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70032,
+   "lon": 26.04917,
+   "red": 2106,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.7045,
+   "lon": 26.04505,
+   "red": 2037,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70442,
+   "lon": 26.02771,
+   "red": 1831,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.70792,
+   "lon": 26.0238,
+   "red": 1915,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.71255,
+   "lon": 26.01856,
+   "red": 1886,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.71599,
+   "lon": 26.01417,
+   "red": 1787,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.71944,
+   "lon": 26.01249,
+   "red": 1848,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.72452,
+   "lon": 26.01072,
+   "red": 1898,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.72903,
+   "lon": 26.00904,
+   "red": 1868,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.73108,
+   "lon": 26.00713,
+   "red": 1938,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.73112,
+   "lon": 26.00236,
+   "red": 1591,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.73195,
+   "lon": 25.99565,
+   "red": 2075,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69504,
+   "lon": 25.94606,
+   "red": 1858,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69271,
+   "lon": 25.94272,
+   "red": 1898,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69209,
+   "lon": 25.93945,
+   "red": 1461,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69221,
+   "lon": 25.93441,
+   "red": 1600,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.68982,
+   "lon": 25.92653,
+   "red": 1982,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69077,
+   "lon": 25.92174,
+   "red": 2063,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69083,
+   "lon": 25.91361,
+   "red": 1606,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.69001,
+   "lon": 25.91015,
+   "red": 1361,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.68674,
+   "lon": 25.90794,
+   "red": 1610,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.68265,
+   "lon": 25.9053,
+   "red": 2074,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.68165,
+   "lon": 25.89994,
+   "red": 2144,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.68378,
+   "lon": 25.87733,
+   "red": 2220,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.68386,
+   "lon": 25.87451,
+   "red": 1558,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.68394,
+   "lon": 25.86955,
+   "red": 1528,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.68306,
+   "lon": 25.85515,
+   "red": 1625,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.66875,
+   "lon": 25.85544,
+   "red": 1616,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.62059,
+   "lon": 25.85108,
+   "red": 2156,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.60353,
+   "lon": 25.8536,
+   "red": 2229,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.59324,
+   "lon": 25.85037,
+   "red": 1444,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.58087,
+   "lon": 25.84687,
+   "red": 1909,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.57693,
+   "lon": 25.84359,
+   "red": 1230,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.57392,
+   "lon": 25.84269,
+   "red": 1284,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.56627,
+   "lon": 25.84521,
+   "red": 1897,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.55933,
+   "lon": 25.84395,
+   "red": 1329,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.54469,
+   "lon": 25.84042,
+   "red": 1200,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.53769,
+   "lon": 25.83462,
+   "red": 1775,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.53216,
+   "lon": 25.83084,
+   "red": 1732,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.52723,
+   "lon": 25.82439,
+   "red": 1776,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.52396,
+   "lon": 25.81695,
+   "red": 1758,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.52451,
+   "lon": 25.80025,
+   "red": 1808,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.52255,
+   "lon": 25.78828,
+   "red": 1709,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.52349,
+   "lon": 25.78277,
+   "red": 1693,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.52561,
+   "lon": 25.78119,
+   "red": 1622,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.53056,
+   "lon": 25.78025,
+   "red": 1688,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.5374,
+   "lon": 25.77552,
+   "red": 1709,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.54487,
+   "lon": 25.76568,
+   "red": 1542,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.54932,
+   "lon": 25.76355,
+   "red": 1761,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.55297,
+   "lon": 25.75843,
+   "red": 1729,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.55996,
+   "lon": 25.75583,
+   "red": 1770,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.56783,
+   "lon": 25.75276,
+   "red": 1713,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.57136,
+   "lon": 25.7474,
+   "red": 1458,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.57293,
+   "lon": 25.73543,
+   "red": 1537,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.57443,
+   "lon": 25.72653,
+   "red": 1436,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.58111,
+   "lon": 25.71732,
+   "red": 1543,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.58583,
+   "lon": 25.70826,
+   "red": 1803,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.59298,
+   "lon": 25.70109,
+   "red": 1781,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.60453,
+   "lon": 25.69723,
+   "red": 1593,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.60493,
+   "lon": 25.68999,
+   "red": 1577,
+   "date": "2026-06-21",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.60398,
+   "lon": 25.6807,
+   "red": 1990,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.60335,
+   "lon": 25.67321,
+   "red": 1816,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.6065,
+   "lon": 25.66179,
+   "red": 1715,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.60618,
+   "lon": 25.65179,
+   "red": 1615,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.60398,
+   "lon": 25.64013,
+   "red": 2029,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.6006,
+   "lon": 25.63013,
+   "red": 2008,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.59785,
+   "lon": 25.62013,
+   "red": 2402,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.59062,
+   "lon": 25.60611,
+   "red": 1858,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.58473,
+   "lon": 25.59627,
+   "red": 1930,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.57899,
+   "lon": 25.59154,
+   "red": 1848,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.57561,
+   "lon": 25.59115,
+   "red": 1748,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.57034,
+   "lon": 25.58469,
+   "red": 1758,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.56492,
+   "lon": 25.58114,
+   "red": 1716,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.55627,
+   "lon": 25.57516,
+   "red": 1721,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.55077,
+   "lon": 25.56854,
+   "red": 1750,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.54872,
+   "lon": 25.55933,
+   "red": 1593,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.54817,
+   "lon": 25.54925,
+   "red": 1658,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.54981,
+   "lon": 25.54213,
+   "red": 1655,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.54603,
+   "lon": 25.52854,
+   "red": 1646,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.54016,
+   "lon": 25.51717,
+   "red": 1688,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.53364,
+   "lon": 25.5126,
+   "red": 1660,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.52526,
+   "lon": 25.50908,
+   "red": 1718,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.51591,
+   "lon": 25.50092,
+   "red": 1761,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.5117,
+   "lon": 25.49476,
+   "red": 1880,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.51691,
+   "lon": 25.47917,
+   "red": 1675,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.51825,
+   "lon": 25.46833,
+   "red": 1713,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.51464,
+   "lon": 25.46017,
+   "red": 1775,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.53381,
+   "lon": 25.4322,
+   "red": 1776,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.54095,
+   "lon": 25.42223,
+   "red": 1660,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.54376,
+   "lon": 25.41152,
+   "red": 1630,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.54363,
+   "lon": 25.39466,
+   "red": 1663,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.54149,
+   "lon": 25.38496,
+   "red": 1681,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.53782,
+   "lon": 25.37874,
+   "red": 1635,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.53314,
+   "lon": 25.3699,
+   "red": 1599,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.53161,
+   "lon": 25.3604,
+   "red": 1592,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.5286,
+   "lon": 25.35037,
+   "red": 1621,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.52827,
+   "lon": 25.34153,
+   "red": 1528,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.52579,
+   "lon": 25.32969,
+   "red": 1602,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.52246,
+   "lon": 25.32159,
+   "red": 1597,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.51665,
+   "lon": 25.31745,
+   "red": 1593,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.5111,
+   "lon": 25.31223,
+   "red": 1254,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.5091,
+   "lon": 25.30754,
+   "red": 1503,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.51277,
+   "lon": 25.30172,
+   "red": 1488,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.51645,
+   "lon": 25.29677,
+   "red": 1517,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.52145,
+   "lon": 25.29289,
+   "red": 1521,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.53194,
+   "lon": 25.28908,
+   "red": 1550,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.54015,
+   "lon": 25.28707,
+   "red": 1810,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.54279,
+   "lon": 25.28203,
+   "red": 2390,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.54484,
+   "lon": 25.27844,
+   "red": 1820,
+   "date": "2026-07-11",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.54894,
+   "lon": 25.27354,
+   "red": 1578,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.55072,
+   "lon": 25.26919,
+   "red": 1318,
+   "date": "2026-06-28",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.5526,
+   "lon": 25.26234,
+   "red": 1835,
+   "date": "2026-06-28",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.55219,
+   "lon": 25.2598,
+   "red": 1827,
+   "date": "2026-06-28",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.54933,
+   "lon": 25.25614,
+   "red": 2000,
+   "date": "2026-06-28",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.54707,
+   "lon": 25.25041,
+   "red": 1385,
+   "date": "2026-06-28",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.53595,
+   "lon": 25.24658,
+   "red": 1676,
+   "date": "2026-06-28",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.53036,
+   "lon": 25.24641,
+   "red": 1670,
+   "date": "2026-06-28",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.52515,
+   "lon": 25.24387,
+   "red": 1267,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.5128,
+   "lon": 25.23905,
+   "red": 1438,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.50447,
+   "lon": 25.23574,
+   "red": 1377,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.49628,
+   "lon": 25.23346,
+   "red": 1453,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.48611,
+   "lon": 25.22579,
+   "red": 1553,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.47943,
+   "lon": 25.21909,
+   "red": 1565,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.47192,
+   "lon": 25.21115,
+   "red": 1588,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.45355,
+   "lon": 25.20513,
+   "red": 1531,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.44979,
+   "lon": 25.19902,
+   "red": 1522,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.44963,
+   "lon": 25.18982,
+   "red": 1520,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.44781,
+   "lon": 25.18292,
+   "red": 1428,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.44608,
+   "lon": 25.17516,
+   "red": 1340,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.4424,
+   "lon": 25.17286,
+   "red": 1350,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.43796,
+   "lon": 25.16912,
+   "red": 1473,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.43438,
+   "lon": 25.16778,
+   "red": 1361,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.43075,
+   "lon": 25.16617,
+   "red": 1486,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.42865,
+   "lon": 25.1615,
+   "red": 1354,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.42513,
+   "lon": 25.15876,
+   "red": 1370,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.42393,
+   "lon": 25.15482,
+   "red": 1510,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.42335,
+   "lon": 25.15112,
+   "red": 1418,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.42397,
+   "lon": 25.14832,
+   "red": 1534,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.42308,
+   "lon": 25.14009,
+   "red": 1405,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.42552,
+   "lon": 25.13672,
+   "red": 1439,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.42588,
+   "lon": 25.1329,
+   "red": 1429,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.4223,
+   "lon": 25.12534,
+   "red": 1469,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.42133,
+   "lon": 25.11953,
+   "red": 1444,
+   "date": "2026-06-26",
+   "river": "Uele"
+  },
+  {
+   "lat": 3.27558,
+   "lon": 26.52841,
+   "red": 1259,
+   "date": "2026-06-26",
+   "river": "Bomokandi"
+  },
+  {
+   "lat": 3.6367,
+   "lon": 26.13501,
+   "red": 1252,
+   "date": "2026-07-11",
+   "river": "Bomokandi"
+  },
+  {
+   "lat": 3.64081,
+   "lon": 26.13346,
+   "red": 1439,
+   "date": "2026-07-11",
+   "river": "Bomokandi"
+  },
+  {
+   "lat": 3.66069,
+   "lon": 26.11869,
+   "red": 1323,
+   "date": "2026-07-11",
+   "river": "Bomokandi"
+  },
+  {
+   "lat": 3.70182,
+   "lon": 27.87612,
+   "red": 1940,
+   "date": "2026-07-25",
+   "river": "Kapili"
+  },
+  {
+   "lat": 3.67537,
+   "lon": 27.82678,
+   "red": 1324,
+   "date": "2026-07-25",
+   "river": "Gada"
+  },
+  {
+   "lat": 3.83762,
+   "lon": 27.29435,
+   "red": 1952,
+   "date": "2026-07-25",
+   "river": "Bwere"
+  },
+  {
+   "lat": 4.12101,
+   "lon": 25.91147,
+   "red": 1293,
+   "date": "2026-07-11",
+   "river": "Uere"
+  },
+  {
+   "lat": 3.55167,
+   "lon": 25.25225,
+   "red": 1570,
+   "date": "2026-06-21",
+   "river": "Uere"
+  },
+  {
+   "lat": 3.54707,
+   "lon": 25.25041,
+   "red": 1385,
+   "date": "2026-06-28",
+   "river": "Uere"
+  },
+  {
+   "lat": 3.70242,
+   "lon": 27.57273,
+   "red": 2174,
+   "date": "2026-07-23",
+   "river": "Kiliwa"
+  },
+  {
+   "lat": 3.68807,
+   "lon": 27.66102,
+   "red": 1639,
+   "date": "2026-07-25",
+   "river": "Wawa"
+  },
+  {
+   "lat": 4.24801,
+   "lon": 22.94081,
+   "red": 1265,
+   "date": "2026-07-19",
+   "river": "Bili"
+  },
+  {
+   "lat": 4.20213,
+   "lon": 22.92909,
+   "red": 1251,
+   "date": "2026-07-19",
+   "river": "Bili"
+  },
+  {
+   "lat": 4.16821,
+   "lon": 22.86184,
+   "red": 1334,
+   "date": "2026-07-19",
+   "river": "Bili"
+  },
+  {
+   "lat": 4.97062,
+   "lon": 23.92534,
+   "red": 1366,
+   "date": "2026-07-19",
+   "river": "Chinko"
+  },
+  {
+   "lat": 4.96862,
+   "lon": 23.92365,
+   "red": 1292,
+   "date": "2026-07-19",
+   "river": "Chinko"
+  },
+  {
+   "lat": 4.96849,
+   "lon": 23.92139,
+   "red": 1411,
+   "date": "2026-07-19",
+   "river": "Chinko"
+  },
+  {
+   "lat": 4.97011,
+   "lon": 23.91865,
+   "red": 1436,
+   "date": "2026-07-04",
+   "river": "Chinko"
+  },
+  {
+   "lat": 4.97165,
+   "lon": 23.9166,
+   "red": 1290,
+   "date": "2026-07-19",
+   "river": "Chinko"
+  },
+  {
+   "lat": 4.97588,
+   "lon": 23.91201,
+   "red": 1232,
+   "date": "2026-07-19",
+   "river": "Chinko"
+  },
+  {
+   "lat": 4.97647,
+   "lon": 23.90939,
+   "red": 1214,
+   "date": "2026-07-19",
+   "river": "Chinko"
+  },
+  {
+   "lat": 4.97419,
+   "lon": 23.90575,
+   "red": 1219,
+   "date": "2026-07-19",
+   "river": "Chinko"
+  },
+  {
+   "lat": 4.9712,
+   "lon": 23.89991,
+   "red": 1225,
+   "date": "2026-07-19",
+   "river": "Chinko"
+  },
+  {
+   "lat": 4.9693,
+   "lon": 23.89804,
+   "red": 1368,
+   "date": "2026-07-19",
+   "river": "Chinko"
+  },
+  {
+   "lat": 4.9617,
+   "lon": 23.89538,
+   "red": 1248,
+   "date": "2026-07-19",
+   "river": "Chinko"
+  },
+  {
+   "lat": 4.96047,
+   "lon": 23.89256,
+   "red": 1210,
+   "date": "2026-07-19",
+   "river": "Chinko"
+  },
+  {
+   "lat": 4.95941,
+   "lon": 23.89008,
+   "red": 1205,
+   "date": "2026-07-19",
+   "river": "Chinko"
+  },
+  {
+   "lat": 4.95181,
+   "lon": 23.88729,
+   "red": 1241,
+   "date": "2026-07-19",
+   "river": "Chinko"
+  },
+  {
+   "lat": 4.94826,
+   "lon": 23.88847,
+   "red": 1245,
+   "date": "2026-07-19",
+   "river": "Chinko"
+  },
+  {
+   "lat": 4.94574,
+   "lon": 23.88913,
+   "red": 1215,
+   "date": "2026-07-19",
+   "river": "Chinko"
+  },
+  {
+   "lat": 4.94269,
+   "lon": 23.88861,
+   "red": 1299,
+   "date": "2026-07-19",
+   "river": "Chinko"
+  },
+  {
+   "lat": 4.9312,
+   "lon": 23.87635,
+   "red": 1304,
+   "date": "2026-07-19",
+   "river": "Chinko"
+  },
+  {
+   "lat": 4.93122,
+   "lon": 23.87356,
+   "red": 1220,
+   "date": "2026-07-19",
+   "river": "Chinko"
+  },
+  {
+   "lat": 4.92978,
+   "lon": 23.87017,
+   "red": 1263,
+   "date": "2026-07-19",
+   "river": "Chinko"
+  },
+  {
+   "lat": 4.92723,
+   "lon": 23.86788,
+   "red": 1203,
+   "date": "2026-07-19",
+   "river": "Chinko"
+  },
+  {
+   "lat": 4.92439,
+   "lon": 23.86624,
+   "red": 1262,
+   "date": "2026-07-19",
+   "river": "Chinko"
+  },
+  {
+   "lat": 4.91874,
+   "lon": 23.86744,
+   "red": 1213,
+   "date": "2026-07-19",
+   "river": "Chinko"
+  },
+  {
+   "lat": 4.91418,
+   "lon": 23.87192,
+   "red": 1236,
+   "date": "2026-07-19",
+   "river": "Chinko"
+  },
+  {
+   "lat": 4.9113,
+   "lon": 23.87686,
+   "red": 1204,
+   "date": "2026-07-19",
+   "river": "Chinko"
+  },
+  {
+   "lat": 4.90871,
+   "lon": 23.87946,
+   "red": 1234,
+   "date": "2026-07-19",
+   "river": "Chinko"
+  },
+  {
+   "lat": 4.90203,
+   "lon": 23.88088,
+   "red": 1282,
+   "date": "2026-07-19",
+   "river": "Chinko"
+  },
+  {
+   "lat": 4.89955,
+   "lon": 23.88047,
+   "red": 1274,
+   "date": "2026-07-19",
+   "river": "Chinko"
+  },
+  {
+   "lat": 4.89433,
+   "lon": 23.87726,
+   "red": 1475,
+   "date": "2026-06-29",
+   "river": "Chinko"
+  },
+  {
+   "lat": 4.87439,
+   "lon": 23.87457,
+   "red": 1218,
+   "date": "2026-07-04",
+   "river": "Chinko"
+  },
+  {
+   "lat": 4.86903,
+   "lon": 23.88246,
+   "red": 1279,
+   "date": "2026-07-04",
+   "river": "Chinko"
+  },
+  {
+   "lat": 4.86199,
+   "lon": 23.88682,
+   "red": 1344,
+   "date": "2026-07-04",
+   "river": "Chinko"
+  },
+  {
+   "lat": 4.8527,
+   "lon": 23.88831,
+   "red": 1307,
+   "date": "2026-07-04",
+   "river": "Chinko"
+  },
+  {
+   "lat": 4.84246,
+   "lon": 23.88849,
+   "red": 1213,
+   "date": "2026-07-04",
+   "river": "Chinko"
+  },
+  {
+   "lat": 4.83705,
+   "lon": 23.8867,
+   "red": 1268,
+   "date": "2026-07-04",
+   "river": "Chinko"
+  },
+  {
+   "lat": 4.95159,
+   "lon": 24.90621,
+   "red": 1318,
+   "date": "2026-06-28",
+   "river": "Mbomou"
+  },
+  {
+   "lat": 4.91009,
+   "lon": 24.6829,
+   "red": 1305,
+   "date": "2026-07-21",
+   "river": "Mbomou"
+  },
+  {
+   "lat": 4.90845,
+   "lon": 24.67995,
+   "red": 1234,
+   "date": "2026-07-21",
+   "river": "Mbomou"
+  },
+  {
+   "lat": 5.02645,
+   "lon": 24.38658,
+   "red": 1450,
+   "date": "2026-06-29",
+   "river": "Mbomou"
+  },
+  {
+   "lat": 5.00998,
+   "lon": 24.36774,
+   "red": 1271,
+   "date": "2026-07-04",
+   "river": "Mbomou"
+  },
+  {
+   "lat": 5.00191,
+   "lon": 24.31549,
+   "red": 1245,
+   "date": "2026-07-19",
+   "river": "Mbomou"
+  },
+  {
+   "lat": 5.00175,
+   "lon": 24.30078,
+   "red": 1525,
+   "date": "2026-07-19",
+   "river": "Mbomou"
+  },
+  {
+   "lat": 4.9899,
+   "lon": 24.27858,
+   "red": 1230,
+   "date": "2026-07-04",
+   "river": "Mbomou"
+  },
+  {
+   "lat": 4.91616,
+   "lon": 24.17312,
+   "red": 1217,
+   "date": "2026-07-04",
+   "river": "Mbomou"
+  },
+  {
+   "lat": 4.89398,
+   "lon": 24.15382,
+   "red": 1447,
+   "date": "2026-07-19",
+   "river": "Mbomou"
+  },
+  {
+   "lat": 4.89205,
+   "lon": 24.1464,
+   "red": 1227,
+   "date": "2026-07-04",
+   "river": "Mbomou"
+  },
+  {
+   "lat": 4.89339,
+   "lon": 24.06614,
+   "red": 1328,
+   "date": "2026-07-19",
+   "river": "Mbomou"
+  },
+  {
+   "lat": 4.88627,
+   "lon": 24.05344,
+   "red": 1282,
+   "date": "2026-07-19",
+   "river": "Mbomou"
+  },
+  {
+   "lat": 4.82947,
+   "lon": 23.90765,
+   "red": 1316,
+   "date": "2026-07-04",
+   "river": "Mbomou"
+  },
+  {
+   "lat": 4.77324,
+   "lon": 23.69223,
+   "red": 1411,
+   "date": "2026-07-19",
+   "river": "Mbomou"
+  },
+  {
+   "lat": 4.77407,
+   "lon": 22.88481,
+   "red": 1205,
+   "date": "2026-07-19",
+   "river": "Mbomou"
+  },
+  {
+   "lat": 4.54842,
+   "lon": 22.72568,
+   "red": 1553,
+   "date": "2026-07-19",
+   "river": "Mbomou"
+  },
+  {
+   "lat": 4.4785,
+   "lon": 22.6685,
+   "red": 1259,
+   "date": "2026-07-19",
+   "river": "Mbomou"
+  },
+  {
+   "lat": 4.47484,
+   "lon": 22.59229,
+   "red": 1578,
+   "date": "2026-07-19",
+   "river": "Mbomou"
+  },
+  {
+   "lat": 4.47082,
+   "lon": 22.59499,
+   "red": 3237,
+   "date": "2026-07-19",
+   "river": "Mbomou"
+  },
+  {
+   "lat": 4.42068,
+   "lon": 22.59107,
+   "red": 1626,
+   "date": "2026-07-19",
+   "river": "Mbomou"
+  },
+  {
+   "lat": 4.41516,
+   "lon": 22.57979,
+   "red": 1672,
+   "date": "2026-07-19",
+   "river": "Mbomou"
+  },
+  {
+   "lat": 4.35983,
+   "lon": 22.59877,
+   "red": 1217,
+   "date": "2026-07-19",
+   "river": "Mbomou"
+  },
+  {
+   "lat": 4.33521,
+   "lon": 22.57117,
+   "red": 1902,
+   "date": "2026-07-19",
+   "river": "Mbomou"
+  },
+  {
+   "lat": 4.33418,
+   "lon": 22.56862,
+   "red": 1360,
+   "date": "2026-07-19",
+   "river": "Mbomou"
+  },
+  {
+   "lat": 4.31418,
+   "lon": 22.56143,
+   "red": 1346,
+   "date": "2026-07-19",
+   "river": "Mbomou"
+  },
+  {
+   "lat": 4.21226,
+   "lon": 22.5435,
+   "red": 1289,
+   "date": "2026-07-19",
+   "river": "Mbomou"
+  },
+  {
+   "lat": 4.21086,
+   "lon": 22.54117,
+   "red": 1392,
+   "date": "2026-07-19",
+   "river": "Mbomou"
+  },
+  {
+   "lat": 4.20908,
+   "lon": 22.5381,
+   "red": 1411,
+   "date": "2026-07-19",
+   "river": "Mbomou"
+  },
+  {
+   "lat": 4.20455,
+   "lon": 22.53194,
+   "red": 1379,
+   "date": "2026-07-19",
+   "river": "Mbomou"
+  },
+  {
+   "lat": 4.46736,
+   "lon": 22.60284,
+   "red": 1370,
+   "date": "2026-07-09",
+   "river": "Mbomou"
+  },
+  {
+   "lat": 4.67276,
+   "lon": 22.70233,
+   "red": 1234,
+   "date": "2026-06-29",
+   "river": "Mbari"
+  },
+  {
+   "lat": 5.7777,
+   "lon": 25.13837,
+   "red": 1301,
+   "date": "2026-07-21",
+   "river": "Ouara"
+  },
+  {
+   "lat": 5.77783,
+   "lon": 25.13114,
+   "red": 1240,
+   "date": "2026-07-21",
+   "river": "Ouara"
+  },
+  {
+   "lat": 5.79483,
+   "lon": 25.12444,
+   "red": 1234,
+   "date": "2026-07-21",
+   "river": "Ouara"
+  },
+  {
+   "lat": 5.76865,
+   "lon": 25.08497,
+   "red": 1249,
+   "date": "2026-07-21",
+   "river": "Ouara"
+  },
+  {
+   "lat": 3.7492,
+   "lon": 28.04526,
+   "red": 2117,
+   "date": "2026-07-25",
+   "river": "Duru"
+  },
+  {
+   "lat": 3.74739,
+   "lon": 28.04249,
+   "red": 2178,
+   "date": "2026-07-25",
+   "river": "Duru"
+  },
+  {
+   "lat": 3.81933,
+   "lon": 23.5222,
+   "red": 1536,
+   "date": "2026-07-19",
+   "river": "Bagi"
+  },
+  {
+   "lat": 3.70458,
+   "lon": 27.55472,
+   "red": 1965,
+   "date": "2026-07-25",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 3.751,
+   "lon": 27.38198,
+   "red": 1858,
+   "date": "2026-07-25",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 3.59239,
+   "lon": 26.97853,
+   "red": 2167,
+   "date": "2026-07-03",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 3.46407,
+   "lon": 24.59115,
+   "red": 1387,
+   "date": "2026-06-26",
+   "river": "unnamed stream"
+  },
+  {
+   "lat": 3.51614,
+   "lon": 24.42503,
+   "red": 1429,
+   "date": "2026-06-26",
+   "river": "unnamed stream"
+  },
+  {
+   "lat": 3.51963,
+   "lon": 24.4189,
+   "red": 1324,
+   "date": "2026-06-29",
+   "river": "unnamed stream"
+  },
+  {
+   "lat": 3.52038,
+   "lon": 24.4139,
+   "red": 1266,
+   "date": "2026-06-29",
+   "river": "unnamed stream"
+  },
+  {
+   "lat": 3.52015,
+   "lon": 24.40827,
+   "red": 1599,
+   "date": "2026-06-26",
+   "river": "unnamed stream"
+  },
+  {
+   "lat": 3.5222,
+   "lon": 24.40289,
+   "red": 1322,
+   "date": "2026-06-24",
+   "river": "unnamed stream"
+  },
+  {
+   "lat": 3.52481,
+   "lon": 24.39853,
+   "red": 1782,
+   "date": "2026-07-18",
+   "river": "unnamed stream"
+  },
+  {
+   "lat": 3.52704,
+   "lon": 24.39124,
+   "red": 1772,
+   "date": "2026-06-29",
+   "river": "unnamed stream"
+  },
+  {
+   "lat": 3.52938,
+   "lon": 24.38654,
+   "red": 1815,
+   "date": "2026-07-19",
+   "river": "unnamed stream"
+  },
+  {
+   "lat": 3.53107,
+   "lon": 24.37939,
+   "red": 1820,
+   "date": "2026-07-19",
+   "river": "unnamed stream"
+  },
+  {
+   "lat": 3.5424,
+   "lon": 24.35723,
+   "red": 1887,
+   "date": "2026-07-19",
+   "river": "unnamed stream"
+  },
+  {
+   "lat": 3.56703,
+   "lon": 24.33394,
+   "red": 1520,
+   "date": "2026-07-11",
+   "river": "unnamed stream"
+  },
+  {
+   "lat": 3.57662,
+   "lon": 24.33077,
+   "red": 1396,
+   "date": "2026-07-11",
+   "river": "unnamed stream"
+  },
+  {
+   "lat": 3.45354,
+   "lon": 24.58133,
+   "red": 1382,
+   "date": "2026-06-26",
+   "river": "unnamed stream"
+  },
+  {
+   "lat": 3.45309,
+   "lon": 24.57303,
+   "red": 1503,
+   "date": "2026-06-26",
+   "river": "unnamed stream"
+  },
+  {
+   "lat": 3.45366,
+   "lon": 24.56597,
+   "red": 1389,
+   "date": "2026-06-26",
+   "river": "unnamed stream"
+  },
+  {
+   "lat": 3.4581,
+   "lon": 24.55972,
+   "red": 1327,
+   "date": "2026-06-26",
+   "river": "unnamed stream"
+  },
+  {
+   "lat": 3.46251,
+   "lon": 24.55444,
+   "red": 1361,
+   "date": "2026-06-26",
+   "river": "unnamed stream"
+  },
+  {
+   "lat": 3.47322,
+   "lon": 24.5412,
+   "red": 1445,
+   "date": "2026-06-26",
+   "river": "unnamed stream"
+  },
+  {
+   "lat": 3.4814,
+   "lon": 24.53477,
+   "red": 2131,
+   "date": "2026-06-29",
+   "river": "unnamed stream"
+  },
+  {
+   "lat": 3.49572,
+   "lon": 24.53078,
+   "red": 1683,
+   "date": "2026-06-29",
+   "river": "unnamed stream"
+  },
+  {
+   "lat": 3.52832,
+   "lon": 24.48265,
+   "red": 1542,
+   "date": "2026-07-19",
+   "river": "unnamed stream"
+  },
+  {
+   "lat": 3.84138,
+   "lon": 22.71052,
+   "red": 1624,
+   "date": "2026-07-19",
+   "river": "unnamed river"
+  }
+ ]
+}

@@ -1,0 +1,363 @@
+{
+ "park_id": "CMR_Bouba_Ndjida",
+ "scanned_at": "2026-07-22T06:04:16Z",
+ "datetime_range": "2026-06-07T00:00:00Z/2026-07-22T23:59:59Z",
+ "buffer_km": 50,
+ "n_waterways": 158,
+ "n_sample_pts": 8164,
+ "alerts": [],
+ "rivers": [
+  {
+   "name": "Mayo Godi",
+   "waterway": "river",
+   "length_km": 87.1,
+   "water_samples": 27,
+   "turbid_km": 4.8
+  },
+  {
+   "name": "B\u00e9nou\u00e9",
+   "waterway": "river",
+   "length_km": 161.8,
+   "water_samples": 138,
+   "turbid_km": 2.5
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 85.1,
+   "water_samples": 44,
+   "turbid_km": 1.2
+  },
+  {
+   "name": "Mayo Loua",
+   "waterway": "river",
+   "length_km": 59.0,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Mayo Liddi",
+   "waterway": "river",
+   "length_km": 99.7,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Mayo Sina",
+   "waterway": "river",
+   "length_km": 77.3,
+   "water_samples": 3,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 43.7,
+   "water_samples": 2,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 101.2,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 17.7,
+   "water_samples": 10,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 14.8,
+   "water_samples": 2,
+   "turbid_km": 0.0
+  }
+ ],
+ "turbid_points": [
+  {
+   "lat": 8.15303,
+   "lon": 13.94548,
+   "red": 1208,
+   "date": "2026-07-21",
+   "river": "B\u00e9nou\u00e9"
+  },
+  {
+   "lat": 8.15771,
+   "lon": 13.94619,
+   "red": 1240,
+   "date": "2026-07-21",
+   "river": "B\u00e9nou\u00e9"
+  },
+  {
+   "lat": 8.31269,
+   "lon": 14.0007,
+   "red": 1252,
+   "date": "2026-07-21",
+   "river": "B\u00e9nou\u00e9"
+  },
+  {
+   "lat": 8.36666,
+   "lon": 14.01904,
+   "red": 1257,
+   "date": "2026-07-21",
+   "river": "B\u00e9nou\u00e9"
+  },
+  {
+   "lat": 8.5707,
+   "lon": 13.93617,
+   "red": 1204,
+   "date": "2026-07-21",
+   "river": "B\u00e9nou\u00e9"
+  },
+  {
+   "lat": 8.65928,
+   "lon": 13.99098,
+   "red": 1295,
+   "date": "2026-07-21",
+   "river": "B\u00e9nou\u00e9"
+  },
+  {
+   "lat": 8.69877,
+   "lon": 14.00218,
+   "red": 1315,
+   "date": "2026-07-21",
+   "river": "B\u00e9nou\u00e9"
+  },
+  {
+   "lat": 8.81581,
+   "lon": 13.93186,
+   "red": 1482,
+   "date": "2026-07-21",
+   "river": "B\u00e9nou\u00e9"
+  },
+  {
+   "lat": 8.90749,
+   "lon": 13.88546,
+   "red": 1260,
+   "date": "2026-07-21",
+   "river": "B\u00e9nou\u00e9"
+  },
+  {
+   "lat": 8.92369,
+   "lon": 13.85706,
+   "red": 1409,
+   "date": "2026-07-21",
+   "river": "B\u00e9nou\u00e9"
+  },
+  {
+   "lat": 9.37425,
+   "lon": 13.80634,
+   "red": 1881,
+   "date": "2026-07-21",
+   "river": "Mayo Loua"
+  },
+  {
+   "lat": 8.63141,
+   "lon": 14.5711,
+   "red": 1548,
+   "date": "2026-07-21",
+   "river": "Mayo Liddi"
+  },
+  {
+   "lat": 8.95763,
+   "lon": 14.00907,
+   "red": 1803,
+   "date": "2026-07-21",
+   "river": "Mayo Sina"
+  },
+  {
+   "lat": 8.8767,
+   "lon": 13.98027,
+   "red": 2040,
+   "date": "2026-07-21",
+   "river": "Mayo Sina"
+  },
+  {
+   "lat": 8.87269,
+   "lon": 13.9803,
+   "red": 1478,
+   "date": "2026-07-21",
+   "river": "Mayo Sina"
+  },
+  {
+   "lat": 8.69446,
+   "lon": 14.37543,
+   "red": 1526,
+   "date": "2026-07-21",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.69642,
+   "lon": 14.3742,
+   "red": 1527,
+   "date": "2026-07-21",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.69676,
+   "lon": 14.37056,
+   "red": 1534,
+   "date": "2026-07-21",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.79396,
+   "lon": 14.19973,
+   "red": 1261,
+   "date": "2026-07-21",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.83366,
+   "lon": 14.09483,
+   "red": 1216,
+   "date": "2026-07-21",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.86207,
+   "lon": 14.08209,
+   "red": 1210,
+   "date": "2026-07-21",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.86273,
+   "lon": 14.0787,
+   "red": 1207,
+   "date": "2026-07-21",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.86302,
+   "lon": 14.07634,
+   "red": 1238,
+   "date": "2026-07-21",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.86798,
+   "lon": 14.06563,
+   "red": 1305,
+   "date": "2026-07-21",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.87044,
+   "lon": 14.06428,
+   "red": 1335,
+   "date": "2026-07-21",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.8812,
+   "lon": 14.02024,
+   "red": 1777,
+   "date": "2026-07-21",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.88185,
+   "lon": 14.01661,
+   "red": 1925,
+   "date": "2026-07-21",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.88177,
+   "lon": 14.01314,
+   "red": 1804,
+   "date": "2026-07-21",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.87307,
+   "lon": 13.98452,
+   "red": 1285,
+   "date": "2026-07-21",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.87269,
+   "lon": 13.9803,
+   "red": 1478,
+   "date": "2026-07-21",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.87239,
+   "lon": 13.97006,
+   "red": 2063,
+   "date": "2026-07-21",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.87286,
+   "lon": 13.95676,
+   "red": 1898,
+   "date": "2026-07-21",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.87812,
+   "lon": 13.92895,
+   "red": 1316,
+   "date": "2026-07-21",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.90749,
+   "lon": 13.88546,
+   "red": 1260,
+   "date": "2026-07-21",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.51122,
+   "lon": 14.24935,
+   "red": 1235,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 8.52863,
+   "lon": 14.22933,
+   "red": 1250,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 8.54111,
+   "lon": 14.22712,
+   "red": 1221,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 8.76374,
+   "lon": 14.01662,
+   "red": 1209,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 8.77411,
+   "lon": 14.02866,
+   "red": 1212,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 8.86131,
+   "lon": 14.08325,
+   "red": 1216,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  }
+ ]
+}

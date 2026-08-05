@@ -1,0 +1,4711 @@
+{
+ "park_id": "CMR_Mbam_et_Djerem",
+ "scanned_at": "2026-07-29T06:01:21Z",
+ "datetime_range": "2026-06-14T00:00:00Z/2026-07-29T23:59:59Z",
+ "buffer_km": 50,
+ "n_waterways": 309,
+ "n_sample_pts": 12673,
+ "alerts": [
+  {
+   "lat": 6.59836,
+   "lon": 13.53034,
+   "river": "Dj\u00e9rem",
+   "waterway": "river",
+   "type": "turbid_headwater",
+   "red": 1183,
+   "upstream_median": null,
+   "ratio": null,
+   "dist_km": 0.7,
+   "downstream_turbid_km": 78.8,
+   "scene": "S2C_33NUH_20260721_0_L2A",
+   "date": "2026-07-21"
+  },
+  {
+   "lat": 5.31405,
+   "lon": 13.65992,
+   "river": "Lom",
+   "waterway": "river",
+   "type": "turbid_headwater",
+   "red": 2729,
+   "upstream_median": null,
+   "ratio": null,
+   "dist_km": 0.0,
+   "downstream_turbid_km": 22.8,
+   "scene": "S2C_33NUF_20260721_0_L2A",
+   "date": "2026-07-21"
+  },
+  {
+   "lat": 5.32213,
+   "lon": 13.39902,
+   "river": "Sanaga",
+   "waterway": "river",
+   "type": "turbid_headwater",
+   "red": 1389,
+   "upstream_median": null,
+   "ratio": null,
+   "dist_km": 0.0,
+   "downstream_turbid_km": 13.5,
+   "scene": "S2C_33NUF_20260721_0_L2A",
+   "date": "2026-07-21"
+  },
+  {
+   "lat": 5.38236,
+   "lon": 13.50296,
+   "river": "Lom",
+   "waterway": "river",
+   "type": "turbidity_onset",
+   "red": 1313,
+   "upstream_median": 654,
+   "ratio": 2.01,
+   "dist_km": 39.5,
+   "downstream_turbid_km": 10.8,
+   "scene": "S2C_33NUG_20260721_0_L2A",
+   "date": "2026-07-21"
+  },
+  {
+   "lat": 6.47336,
+   "lon": 12.13437,
+   "river": "Mbam",
+   "waterway": "river",
+   "type": "turbid_headwater",
+   "red": 1892,
+   "upstream_median": null,
+   "ratio": null,
+   "dist_km": 45.6,
+   "downstream_turbid_km": 8.5,
+   "scene": "S2C_32NRN_20260704_0_L2A",
+   "date": "2026-07-04"
+  },
+  {
+   "lat": 5.64256,
+   "lon": 13.68286,
+   "river": "Pangar",
+   "waterway": "river",
+   "type": "turbid_headwater",
+   "red": 1346,
+   "upstream_median": null,
+   "ratio": null,
+   "dist_km": 2.0,
+   "downstream_turbid_km": 6.2,
+   "scene": "S2C_33NUG_20260721_0_L2A",
+   "date": "2026-07-21"
+  },
+  {
+   "lat": 6.77459,
+   "lon": 12.39815,
+   "river": "Meng",
+   "waterway": "river",
+   "type": "turbid_headwater",
+   "red": 1699,
+   "upstream_median": null,
+   "ratio": null,
+   "dist_km": 19.3,
+   "downstream_turbid_km": 6.0,
+   "scene": "S2C_32NRN_20260704_0_L2A",
+   "date": "2026-07-04"
+  },
+  {
+   "lat": 6.46404,
+   "lon": 12.71915,
+   "river": "unnamed river",
+   "waterway": "river",
+   "type": "turbid_headwater",
+   "red": 1116,
+   "upstream_median": null,
+   "ratio": null,
+   "dist_km": 0.0,
+   "downstream_turbid_km": 5.2,
+   "scene": "S2C_33NTH_20260721_0_L2A",
+   "date": "2026-07-21"
+  }
+ ],
+ "rivers": [
+  {
+   "name": "Dj\u00e9rem",
+   "waterway": "river",
+   "length_km": 312.1,
+   "water_samples": 428,
+   "turbid_km": 78.8
+  },
+  {
+   "name": "Lom",
+   "waterway": "river",
+   "length_km": 61.2,
+   "water_samples": 110,
+   "turbid_km": 22.8
+  },
+  {
+   "name": "Sanaga",
+   "waterway": "river",
+   "length_km": 38.5,
+   "water_samples": 57,
+   "turbid_km": 13.5
+  },
+  {
+   "name": "Mbam",
+   "waterway": "river",
+   "length_km": 125.9,
+   "water_samples": 34,
+   "turbid_km": 8.5
+  },
+  {
+   "name": "Pangar",
+   "waterway": "river",
+   "length_km": 73.0,
+   "water_samples": 54,
+   "turbid_km": 6.2
+  },
+  {
+   "name": "Meng",
+   "waterway": "river",
+   "length_km": 150.3,
+   "water_samples": 26,
+   "turbid_km": 6.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 18.0,
+   "water_samples": 24,
+   "turbid_km": 5.2
+  },
+  {
+   "name": "Dj\u00e9rem",
+   "waterway": "river",
+   "length_km": 5.0,
+   "water_samples": 2,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Pangar",
+   "waterway": "river",
+   "length_km": 78.2,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Pangar",
+   "waterway": "river",
+   "length_km": 43.7,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Mekie",
+   "waterway": "river",
+   "length_km": 143.9,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Miy\u00e9r\u00e9",
+   "waterway": "river",
+   "length_km": 33.7,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Minka\u00ef",
+   "waterway": "river",
+   "length_km": 55.9,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Mer\u00e9",
+   "waterway": "river",
+   "length_km": 87.3,
+   "water_samples": 4,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Djerem",
+   "waterway": "river",
+   "length_km": 28.0,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Djerem",
+   "waterway": "river",
+   "length_km": 4.5,
+   "water_samples": 9,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Vina",
+   "waterway": "river",
+   "length_km": 22.0,
+   "water_samples": 10,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "sanaga",
+   "waterway": "river",
+   "length_km": 7.2,
+   "water_samples": 14,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 86.7,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 3.0,
+   "water_samples": 5,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 3.3,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 3.6,
+   "water_samples": 2,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 5.5,
+   "water_samples": 11,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "stream",
+   "length_km": 11.3,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 4.8,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 6.0,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 4.9,
+   "water_samples": 10,
+   "turbid_km": 0.0
+  }
+ ],
+ "turbid_points": [
+  {
+   "lat": 5.32213,
+   "lon": 13.39902,
+   "red": 1389,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.31297,
+   "lon": 13.39267,
+   "red": 1461,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.30955,
+   "lon": 13.39027,
+   "red": 1370,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.30697,
+   "lon": 13.38706,
+   "red": 1349,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.30073,
+   "lon": 13.38222,
+   "red": 1355,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.29673,
+   "lon": 13.3802,
+   "red": 1357,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.29276,
+   "lon": 13.37868,
+   "red": 1401,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.29121,
+   "lon": 13.37623,
+   "red": 1365,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.28977,
+   "lon": 13.37328,
+   "red": 1383,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.28773,
+   "lon": 13.37072,
+   "red": 1431,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.2837,
+   "lon": 13.36726,
+   "red": 1351,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.2818,
+   "lon": 13.36591,
+   "red": 1531,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.28091,
+   "lon": 13.36325,
+   "red": 1370,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.27929,
+   "lon": 13.35724,
+   "red": 1448,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.27459,
+   "lon": 13.35107,
+   "red": 1332,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.26942,
+   "lon": 13.34745,
+   "red": 1522,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.26481,
+   "lon": 13.34668,
+   "red": 1913,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.258,
+   "lon": 13.34862,
+   "red": 1309,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.25599,
+   "lon": 13.35672,
+   "red": 1511,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.24824,
+   "lon": 13.35986,
+   "red": 1641,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.23406,
+   "lon": 13.35633,
+   "red": 1531,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.22547,
+   "lon": 13.36483,
+   "red": 1553,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.21537,
+   "lon": 13.36234,
+   "red": 1591,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.20835,
+   "lon": 13.37132,
+   "red": 1469,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.20486,
+   "lon": 13.37332,
+   "red": 1514,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.19997,
+   "lon": 13.37296,
+   "red": 1591,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.18557,
+   "lon": 13.37899,
+   "red": 1487,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.18086,
+   "lon": 13.38165,
+   "red": 1476,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.17349,
+   "lon": 13.38044,
+   "red": 1490,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.16959,
+   "lon": 13.37691,
+   "red": 1471,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.1665,
+   "lon": 13.37133,
+   "red": 1511,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.16301,
+   "lon": 13.3691,
+   "red": 1511,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.15799,
+   "lon": 13.36765,
+   "red": 1519,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.15315,
+   "lon": 13.3691,
+   "red": 1514,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.15049,
+   "lon": 13.37123,
+   "red": 1499,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.13958,
+   "lon": 13.37998,
+   "red": 1448,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.13729,
+   "lon": 13.37956,
+   "red": 1458,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.13398,
+   "lon": 13.38126,
+   "red": 1461,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.12909,
+   "lon": 13.38288,
+   "red": 1578,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.12288,
+   "lon": 13.3839,
+   "red": 1608,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.11459,
+   "lon": 13.39184,
+   "red": 1489,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.11044,
+   "lon": 13.39584,
+   "red": 1576,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.10402,
+   "lon": 13.39866,
+   "red": 1552,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.09884,
+   "lon": 13.40053,
+   "red": 1533,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.09442,
+   "lon": 13.40053,
+   "red": 1504,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.0908,
+   "lon": 13.39729,
+   "red": 1498,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.08752,
+   "lon": 13.38863,
+   "red": 1543,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.08331,
+   "lon": 13.38419,
+   "red": 1505,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.07957,
+   "lon": 13.37382,
+   "red": 1453,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.07614,
+   "lon": 13.36953,
+   "red": 1565,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.06957,
+   "lon": 13.36507,
+   "red": 1360,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.06571,
+   "lon": 13.36207,
+   "red": 1600,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.06477,
+   "lon": 13.35952,
+   "red": 1577,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 5.06495,
+   "lon": 13.3525,
+   "red": 1532,
+   "date": "2026-07-21",
+   "river": "Sanaga"
+  },
+  {
+   "lat": 6.47336,
+   "lon": 12.13437,
+   "red": 1892,
+   "date": "2026-07-04",
+   "river": "Mbam"
+  },
+  {
+   "lat": 6.39428,
+   "lon": 12.06255,
+   "red": 1440,
+   "date": "2026-06-19",
+   "river": "Mbam"
+  },
+  {
+   "lat": 6.37607,
+   "lon": 12.06933,
+   "red": 1421,
+   "date": "2026-06-19",
+   "river": "Mbam"
+  },
+  {
+   "lat": 6.36192,
+   "lon": 12.07337,
+   "red": 1552,
+   "date": "2026-06-26",
+   "river": "Mbam"
+  },
+  {
+   "lat": 6.34929,
+   "lon": 12.05603,
+   "red": 1443,
+   "date": "2026-06-26",
+   "river": "Mbam"
+  },
+  {
+   "lat": 6.3287,
+   "lon": 12.07741,
+   "red": 1481,
+   "date": "2026-06-26",
+   "river": "Mbam"
+  },
+  {
+   "lat": 6.32613,
+   "lon": 12.07859,
+   "red": 1449,
+   "date": "2026-06-26",
+   "river": "Mbam"
+  },
+  {
+   "lat": 6.32598,
+   "lon": 12.07593,
+   "red": 1487,
+   "date": "2026-06-26",
+   "river": "Mbam"
+  },
+  {
+   "lat": 6.31772,
+   "lon": 12.0461,
+   "red": 1489,
+   "date": "2026-06-26",
+   "river": "Mbam"
+  },
+  {
+   "lat": 6.26329,
+   "lon": 11.99421,
+   "red": 2383,
+   "date": "2026-07-04",
+   "river": "Mbam"
+  },
+  {
+   "lat": 6.26335,
+   "lon": 11.99051,
+   "red": 1294,
+   "date": "2026-06-26",
+   "river": "Mbam"
+  },
+  {
+   "lat": 6.23045,
+   "lon": 11.93967,
+   "red": 1489,
+   "date": "2026-06-19",
+   "river": "Mbam"
+  },
+  {
+   "lat": 6.22735,
+   "lon": 11.93994,
+   "red": 1508,
+   "date": "2026-06-19",
+   "river": "Mbam"
+  },
+  {
+   "lat": 6.22187,
+   "lon": 11.93631,
+   "red": 1619,
+   "date": "2026-06-19",
+   "river": "Mbam"
+  },
+  {
+   "lat": 6.22191,
+   "lon": 11.92896,
+   "red": 1592,
+   "date": "2026-06-19",
+   "river": "Mbam"
+  },
+  {
+   "lat": 6.22361,
+   "lon": 11.92696,
+   "red": 1550,
+   "date": "2026-06-19",
+   "river": "Mbam"
+  },
+  {
+   "lat": 6.22463,
+   "lon": 11.91738,
+   "red": 1621,
+   "date": "2026-06-19",
+   "river": "Mbam"
+  },
+  {
+   "lat": 6.22545,
+   "lon": 11.9143,
+   "red": 1774,
+   "date": "2026-06-19",
+   "river": "Mbam"
+  },
+  {
+   "lat": 6.22486,
+   "lon": 11.91208,
+   "red": 1555,
+   "date": "2026-06-19",
+   "river": "Mbam"
+  },
+  {
+   "lat": 6.22501,
+   "lon": 11.90916,
+   "red": 1576,
+   "date": "2026-06-19",
+   "river": "Mbam"
+  },
+  {
+   "lat": 6.20966,
+   "lon": 11.90046,
+   "red": 1600,
+   "date": "2026-06-19",
+   "river": "Mbam"
+  },
+  {
+   "lat": 6.20786,
+   "lon": 11.89394,
+   "red": 1498,
+   "date": "2026-06-19",
+   "river": "Mbam"
+  },
+  {
+   "lat": 6.2092,
+   "lon": 11.88964,
+   "red": 1619,
+   "date": "2026-06-19",
+   "river": "Mbam"
+  },
+  {
+   "lat": 6.20987,
+   "lon": 11.88358,
+   "red": 1603,
+   "date": "2026-06-19",
+   "river": "Mbam"
+  },
+  {
+   "lat": 6.20893,
+   "lon": 11.8806,
+   "red": 1632,
+   "date": "2026-06-19",
+   "river": "Mbam"
+  },
+  {
+   "lat": 6.2075,
+   "lon": 11.87775,
+   "red": 1528,
+   "date": "2026-06-19",
+   "river": "Mbam"
+  },
+  {
+   "lat": 6.20732,
+   "lon": 11.87333,
+   "red": 1619,
+   "date": "2026-06-19",
+   "river": "Mbam"
+  },
+  {
+   "lat": 6.20545,
+   "lon": 11.87019,
+   "red": 1620,
+   "date": "2026-06-19",
+   "river": "Mbam"
+  },
+  {
+   "lat": 6.21013,
+   "lon": 11.86778,
+   "red": 1636,
+   "date": "2026-06-19",
+   "river": "Mbam"
+  },
+  {
+   "lat": 6.21219,
+   "lon": 11.86032,
+   "red": 1654,
+   "date": "2026-06-19",
+   "river": "Mbam"
+  },
+  {
+   "lat": 6.21148,
+   "lon": 11.85404,
+   "red": 1747,
+   "date": "2026-06-19",
+   "river": "Mbam"
+  },
+  {
+   "lat": 6.20534,
+   "lon": 11.84453,
+   "red": 1689,
+   "date": "2026-06-19",
+   "river": "Mbam"
+  },
+  {
+   "lat": 6.20377,
+   "lon": 11.84206,
+   "red": 1667,
+   "date": "2026-06-19",
+   "river": "Mbam"
+  },
+  {
+   "lat": 6.2031,
+   "lon": 11.83764,
+   "red": 1683,
+   "date": "2026-06-19",
+   "river": "Mbam"
+  },
+  {
+   "lat": 6.6469,
+   "lon": 13.43241,
+   "red": 1329,
+   "date": "2026-07-23",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.63256,
+   "lon": 13.37712,
+   "red": 1447,
+   "date": "2026-07-23",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.62719,
+   "lon": 13.36788,
+   "red": 1440,
+   "date": "2026-07-23",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.62942,
+   "lon": 13.35514,
+   "red": 1516,
+   "date": "2026-07-23",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.62451,
+   "lon": 13.33283,
+   "red": 1215,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.62423,
+   "lon": 13.31879,
+   "red": 1203,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.62172,
+   "lon": 13.31324,
+   "red": 1206,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.61184,
+   "lon": 13.29344,
+   "red": 1359,
+   "date": "2026-07-23",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.6132,
+   "lon": 13.29078,
+   "red": 1328,
+   "date": "2026-07-23",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.63614,
+   "lon": 13.27898,
+   "red": 1226,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.64336,
+   "lon": 13.27379,
+   "red": 1205,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.63944,
+   "lon": 13.26413,
+   "red": 1254,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.63928,
+   "lon": 13.25958,
+   "red": 1500,
+   "date": "2026-07-23",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.63914,
+   "lon": 13.25684,
+   "red": 1544,
+   "date": "2026-07-23",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.62671,
+   "lon": 13.23731,
+   "red": 1216,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.62557,
+   "lon": 13.23183,
+   "red": 1266,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.61829,
+   "lon": 13.22052,
+   "red": 1234,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.60871,
+   "lon": 13.22025,
+   "red": 1218,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.59843,
+   "lon": 13.2094,
+   "red": 1238,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.59575,
+   "lon": 13.20903,
+   "red": 1238,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.59334,
+   "lon": 13.2087,
+   "red": 1257,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.59082,
+   "lon": 13.20461,
+   "red": 1243,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.58656,
+   "lon": 13.1987,
+   "red": 1239,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.58419,
+   "lon": 13.19727,
+   "red": 1223,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.5827,
+   "lon": 13.19546,
+   "red": 1212,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.58116,
+   "lon": 13.19102,
+   "red": 1236,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.58021,
+   "lon": 13.18727,
+   "red": 1229,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.57889,
+   "lon": 13.18461,
+   "red": 1242,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.57726,
+   "lon": 13.178,
+   "red": 1224,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.57623,
+   "lon": 13.17584,
+   "red": 1238,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.57246,
+   "lon": 13.16607,
+   "red": 1216,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.57059,
+   "lon": 13.16387,
+   "red": 1223,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.56408,
+   "lon": 13.15952,
+   "red": 1212,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.56057,
+   "lon": 13.1563,
+   "red": 1220,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.55288,
+   "lon": 13.15039,
+   "red": 1221,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.54722,
+   "lon": 13.14825,
+   "red": 1223,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.54373,
+   "lon": 13.148,
+   "red": 1219,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.53157,
+   "lon": 13.1319,
+   "red": 1207,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.52832,
+   "lon": 13.12655,
+   "red": 1202,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.52098,
+   "lon": 13.12205,
+   "red": 1201,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.51463,
+   "lon": 13.10649,
+   "red": 1204,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.43663,
+   "lon": 13.009,
+   "red": 1206,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.36291,
+   "lon": 12.89465,
+   "red": 1311,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.36711,
+   "lon": 12.88728,
+   "red": 1307,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.36777,
+   "lon": 12.87583,
+   "red": 1309,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.37008,
+   "lon": 12.85309,
+   "red": 1333,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.37057,
+   "lon": 12.83533,
+   "red": 1593,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.36596,
+   "lon": 12.82654,
+   "red": 1943,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.36282,
+   "lon": 12.82422,
+   "red": 1899,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.35853,
+   "lon": 12.82023,
+   "red": 2059,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.35332,
+   "lon": 12.81807,
+   "red": 1979,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.34521,
+   "lon": 12.81915,
+   "red": 1591,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.33398,
+   "lon": 12.81748,
+   "red": 1357,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.3159,
+   "lon": 12.81237,
+   "red": 1348,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.30992,
+   "lon": 12.81146,
+   "red": 1400,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.30687,
+   "lon": 12.81031,
+   "red": 1525,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.3052,
+   "lon": 12.80846,
+   "red": 1632,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.29761,
+   "lon": 12.80146,
+   "red": 1571,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.29538,
+   "lon": 12.79995,
+   "red": 1571,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.28912,
+   "lon": 12.7968,
+   "red": 1556,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.28665,
+   "lon": 12.79578,
+   "red": 1592,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.28203,
+   "lon": 12.79709,
+   "red": 1599,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.27941,
+   "lon": 12.79711,
+   "red": 1560,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.27551,
+   "lon": 12.79533,
+   "red": 1606,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.27154,
+   "lon": 12.79569,
+   "red": 1594,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.26856,
+   "lon": 12.79501,
+   "red": 1583,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.26527,
+   "lon": 12.79278,
+   "red": 1580,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.26305,
+   "lon": 12.79056,
+   "red": 1589,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.26243,
+   "lon": 12.78776,
+   "red": 1646,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.26142,
+   "lon": 12.7853,
+   "red": 1624,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.26127,
+   "lon": 12.78252,
+   "red": 1624,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.26177,
+   "lon": 12.77667,
+   "red": 1624,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.26189,
+   "lon": 12.77341,
+   "red": 1626,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.26119,
+   "lon": 12.77017,
+   "red": 1619,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.25885,
+   "lon": 12.76663,
+   "red": 1606,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.25445,
+   "lon": 12.76861,
+   "red": 1503,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.25156,
+   "lon": 12.77014,
+   "red": 1530,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.23979,
+   "lon": 12.76885,
+   "red": 1765,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.23857,
+   "lon": 12.76578,
+   "red": 1608,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.23981,
+   "lon": 12.76328,
+   "red": 1449,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.23028,
+   "lon": 12.76606,
+   "red": 1798,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.22994,
+   "lon": 12.76313,
+   "red": 1592,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.22926,
+   "lon": 12.75523,
+   "red": 1625,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.2272,
+   "lon": 12.75413,
+   "red": 1686,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.22296,
+   "lon": 12.75761,
+   "red": 1390,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.2222,
+   "lon": 12.7548,
+   "red": 1599,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.21013,
+   "lon": 12.7545,
+   "red": 1633,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.20697,
+   "lon": 12.75517,
+   "red": 1586,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.20509,
+   "lon": 12.75911,
+   "red": 1609,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.20305,
+   "lon": 12.76182,
+   "red": 1560,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.19892,
+   "lon": 12.76717,
+   "red": 1593,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.19395,
+   "lon": 12.77485,
+   "red": 1593,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.19015,
+   "lon": 12.77985,
+   "red": 1509,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.18618,
+   "lon": 12.78549,
+   "red": 1543,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.18395,
+   "lon": 12.78979,
+   "red": 1561,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.1808,
+   "lon": 12.79661,
+   "red": 1526,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.17781,
+   "lon": 12.80385,
+   "red": 1548,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.17676,
+   "lon": 12.80808,
+   "red": 1481,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.17565,
+   "lon": 12.81032,
+   "red": 1539,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.17255,
+   "lon": 12.81755,
+   "red": 1495,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.17191,
+   "lon": 12.82167,
+   "red": 1517,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.16927,
+   "lon": 12.8309,
+   "red": 1482,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.16851,
+   "lon": 12.83537,
+   "red": 1466,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.166,
+   "lon": 12.84561,
+   "red": 1547,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.16598,
+   "lon": 12.84942,
+   "red": 1537,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.1639,
+   "lon": 12.85088,
+   "red": 1578,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.16113,
+   "lon": 12.85096,
+   "red": 1512,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.15436,
+   "lon": 12.85526,
+   "red": 1545,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.15155,
+   "lon": 12.85737,
+   "red": 1547,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.15037,
+   "lon": 12.85999,
+   "red": 1526,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.14845,
+   "lon": 12.86467,
+   "red": 1509,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.14682,
+   "lon": 12.86861,
+   "red": 1514,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.14243,
+   "lon": 12.86908,
+   "red": 1523,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.13828,
+   "lon": 12.86877,
+   "red": 1501,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.13393,
+   "lon": 12.8694,
+   "red": 1490,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.13044,
+   "lon": 12.87061,
+   "red": 1484,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.12681,
+   "lon": 12.87096,
+   "red": 1487,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.12325,
+   "lon": 12.86961,
+   "red": 1476,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.11752,
+   "lon": 12.86832,
+   "red": 1493,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.11448,
+   "lon": 12.86621,
+   "red": 1486,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.11126,
+   "lon": 12.86508,
+   "red": 1466,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.10823,
+   "lon": 12.86465,
+   "red": 1495,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.10482,
+   "lon": 12.86496,
+   "red": 1416,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.10244,
+   "lon": 12.86551,
+   "red": 1484,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.09757,
+   "lon": 12.86879,
+   "red": 1443,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.09523,
+   "lon": 12.86908,
+   "red": 1459,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.0916,
+   "lon": 12.86885,
+   "red": 1466,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.08774,
+   "lon": 12.86914,
+   "red": 1455,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.08394,
+   "lon": 12.86961,
+   "red": 1466,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.08043,
+   "lon": 12.86767,
+   "red": 1599,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.0754,
+   "lon": 12.86555,
+   "red": 1462,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.07271,
+   "lon": 12.86537,
+   "red": 1478,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.06844,
+   "lon": 12.8662,
+   "red": 1472,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.06534,
+   "lon": 12.86673,
+   "red": 1438,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.06212,
+   "lon": 12.86626,
+   "red": 1440,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.05902,
+   "lon": 12.86467,
+   "red": 1461,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.05592,
+   "lon": 12.86367,
+   "red": 1462,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.05247,
+   "lon": 12.86349,
+   "red": 1434,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.04923,
+   "lon": 12.86184,
+   "red": 1416,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.04553,
+   "lon": 12.86148,
+   "red": 1357,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.0427,
+   "lon": 12.86268,
+   "red": 1411,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.04043,
+   "lon": 12.86405,
+   "red": 1400,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.03828,
+   "lon": 12.86542,
+   "red": 1405,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.03489,
+   "lon": 12.86667,
+   "red": 1406,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.0303,
+   "lon": 12.87187,
+   "red": 1367,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.0279,
+   "lon": 12.87362,
+   "red": 1495,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.02508,
+   "lon": 12.87441,
+   "red": 1481,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.01767,
+   "lon": 12.8739,
+   "red": 1434,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.00906,
+   "lon": 12.87391,
+   "red": 1395,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.0067,
+   "lon": 12.88103,
+   "red": 1392,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 6.00064,
+   "lon": 12.88214,
+   "red": 1394,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.9981,
+   "lon": 12.88178,
+   "red": 1460,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.99603,
+   "lon": 12.88024,
+   "red": 1237,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.9938,
+   "lon": 12.875,
+   "red": 1320,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.98112,
+   "lon": 12.87533,
+   "red": 1373,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.96831,
+   "lon": 12.8767,
+   "red": 1458,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.95586,
+   "lon": 12.87716,
+   "red": 1399,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.93849,
+   "lon": 12.87612,
+   "red": 1405,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.93038,
+   "lon": 12.87516,
+   "red": 1387,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.92003,
+   "lon": 12.87479,
+   "red": 1403,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.91341,
+   "lon": 12.87383,
+   "red": 1409,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.90555,
+   "lon": 12.87059,
+   "red": 1415,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.89753,
+   "lon": 12.87462,
+   "red": 1334,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.89078,
+   "lon": 12.87978,
+   "red": 1399,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.88735,
+   "lon": 12.88132,
+   "red": 1404,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.88416,
+   "lon": 12.88136,
+   "red": 1472,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.88015,
+   "lon": 12.8829,
+   "red": 1400,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.86927,
+   "lon": 12.88444,
+   "red": 1798,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.86633,
+   "lon": 12.89717,
+   "red": 1588,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.86497,
+   "lon": 12.89995,
+   "red": 1487,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.86157,
+   "lon": 12.90282,
+   "red": 1519,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.85429,
+   "lon": 12.90852,
+   "red": 1431,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.8494,
+   "lon": 12.9134,
+   "red": 1455,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.84262,
+   "lon": 12.91777,
+   "red": 1495,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.8287,
+   "lon": 12.92301,
+   "red": 1685,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.81237,
+   "lon": 12.93256,
+   "red": 1462,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.81039,
+   "lon": 12.93406,
+   "red": 1423,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.80853,
+   "lon": 12.93685,
+   "red": 1456,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.80617,
+   "lon": 12.93955,
+   "red": 1450,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.79744,
+   "lon": 12.94529,
+   "red": 1486,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.79284,
+   "lon": 12.94937,
+   "red": 1478,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.78941,
+   "lon": 12.95132,
+   "red": 1478,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.78502,
+   "lon": 12.9517,
+   "red": 1466,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.77736,
+   "lon": 12.95066,
+   "red": 1515,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.77393,
+   "lon": 12.95036,
+   "red": 1526,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.76404,
+   "lon": 12.95473,
+   "red": 1515,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.76036,
+   "lon": 12.9561,
+   "red": 1544,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.75225,
+   "lon": 12.95598,
+   "red": 1525,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.74515,
+   "lon": 12.95598,
+   "red": 1550,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.73466,
+   "lon": 12.95738,
+   "red": 1670,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.72466,
+   "lon": 12.95991,
+   "red": 1719,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.71847,
+   "lon": 12.96025,
+   "red": 1719,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.71232,
+   "lon": 12.96352,
+   "red": 1633,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.71096,
+   "lon": 12.96643,
+   "red": 1644,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.70632,
+   "lon": 12.99047,
+   "red": 1665,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.70293,
+   "lon": 12.99905,
+   "red": 1605,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.69832,
+   "lon": 13.00008,
+   "red": 1593,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.69388,
+   "lon": 13.00265,
+   "red": 1451,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.68482,
+   "lon": 13.00094,
+   "red": 1709,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.65869,
+   "lon": 13.00506,
+   "red": 1799,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.64365,
+   "lon": 13.00437,
+   "red": 1833,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.63779,
+   "lon": 13.00898,
+   "red": 1593,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.62736,
+   "lon": 13.01633,
+   "red": 1608,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.62279,
+   "lon": 13.01854,
+   "red": 1583,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.62113,
+   "lon": 13.0203,
+   "red": 1611,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.61974,
+   "lon": 13.02232,
+   "red": 1652,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.61199,
+   "lon": 13.02225,
+   "red": 1692,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.60802,
+   "lon": 13.02348,
+   "red": 1625,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.60494,
+   "lon": 13.03064,
+   "red": 1599,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.59905,
+   "lon": 13.03545,
+   "red": 1580,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.59401,
+   "lon": 13.04266,
+   "red": 1910,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.59414,
+   "lon": 13.04534,
+   "red": 1650,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.5935,
+   "lon": 13.04771,
+   "red": 1593,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.59113,
+   "lon": 13.04985,
+   "red": 1646,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.58818,
+   "lon": 13.05137,
+   "red": 1710,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.57855,
+   "lon": 13.04931,
+   "red": 1777,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.57592,
+   "lon": 13.04918,
+   "red": 1780,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.56961,
+   "lon": 13.05033,
+   "red": 1598,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.56484,
+   "lon": 13.05509,
+   "red": 1549,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.56179,
+   "lon": 13.06068,
+   "red": 1606,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.56018,
+   "lon": 13.06547,
+   "red": 1553,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.55835,
+   "lon": 13.06742,
+   "red": 1530,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.55412,
+   "lon": 13.06826,
+   "red": 1545,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.55,
+   "lon": 13.06783,
+   "red": 1887,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.53066,
+   "lon": 13.06984,
+   "red": 1609,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.52888,
+   "lon": 13.06843,
+   "red": 1588,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.52657,
+   "lon": 13.06778,
+   "red": 1558,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.52358,
+   "lon": 13.06845,
+   "red": 1516,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.52074,
+   "lon": 13.06972,
+   "red": 1554,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.51754,
+   "lon": 13.07161,
+   "red": 1613,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.51602,
+   "lon": 13.07418,
+   "red": 1593,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.51597,
+   "lon": 13.078,
+   "red": 1576,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.5171,
+   "lon": 13.0847,
+   "red": 1509,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.51715,
+   "lon": 13.08712,
+   "red": 1537,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.51704,
+   "lon": 13.08957,
+   "red": 1567,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.52024,
+   "lon": 13.10186,
+   "red": 1678,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.52129,
+   "lon": 13.10738,
+   "red": 1664,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.5234,
+   "lon": 13.11434,
+   "red": 1499,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.52522,
+   "lon": 13.11727,
+   "red": 1525,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.52862,
+   "lon": 13.12085,
+   "red": 1833,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.52971,
+   "lon": 13.12303,
+   "red": 1475,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.52959,
+   "lon": 13.12563,
+   "red": 1484,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.5289,
+   "lon": 13.12787,
+   "red": 1462,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.5278,
+   "lon": 13.13022,
+   "red": 1454,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.52674,
+   "lon": 13.13422,
+   "red": 1442,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.52655,
+   "lon": 13.13774,
+   "red": 1469,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.52582,
+   "lon": 13.14132,
+   "red": 1433,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.52474,
+   "lon": 13.14617,
+   "red": 1447,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.523,
+   "lon": 13.14909,
+   "red": 1455,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.51949,
+   "lon": 13.15064,
+   "red": 1635,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.50697,
+   "lon": 13.15612,
+   "red": 1659,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.49428,
+   "lon": 13.16591,
+   "red": 1630,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.49148,
+   "lon": 13.17538,
+   "red": 1573,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.48872,
+   "lon": 13.18067,
+   "red": 1493,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.4863,
+   "lon": 13.18916,
+   "red": 1505,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.48432,
+   "lon": 13.19773,
+   "red": 1500,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.47992,
+   "lon": 13.2077,
+   "red": 1526,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.48173,
+   "lon": 13.21333,
+   "red": 1484,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.48561,
+   "lon": 13.21723,
+   "red": 1266,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.48811,
+   "lon": 13.2207,
+   "red": 1426,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.48863,
+   "lon": 13.22624,
+   "red": 1512,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.48725,
+   "lon": 13.23213,
+   "red": 1415,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.48389,
+   "lon": 13.23872,
+   "red": 1389,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.47684,
+   "lon": 13.24692,
+   "red": 1449,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.46896,
+   "lon": 13.25369,
+   "red": 1488,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.46226,
+   "lon": 13.26106,
+   "red": 1454,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.45286,
+   "lon": 13.26859,
+   "red": 1453,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.45042,
+   "lon": 13.27232,
+   "red": 1439,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.44544,
+   "lon": 13.27765,
+   "red": 1418,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.4425,
+   "lon": 13.28229,
+   "red": 1411,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.44194,
+   "lon": 13.28472,
+   "red": 1401,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.44371,
+   "lon": 13.28726,
+   "red": 1414,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.44903,
+   "lon": 13.29853,
+   "red": 1387,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.44831,
+   "lon": 13.30187,
+   "red": 1460,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.44793,
+   "lon": 13.30657,
+   "red": 1359,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.44654,
+   "lon": 13.31161,
+   "red": 1365,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.44477,
+   "lon": 13.31758,
+   "red": 1348,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.44342,
+   "lon": 13.32105,
+   "red": 1428,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.44022,
+   "lon": 13.32338,
+   "red": 1459,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.43735,
+   "lon": 13.3249,
+   "red": 1370,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.43693,
+   "lon": 13.33028,
+   "red": 1293,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.43655,
+   "lon": 13.33303,
+   "red": 1364,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.43402,
+   "lon": 13.33574,
+   "red": 1356,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.43179,
+   "lon": 13.33837,
+   "red": 1385,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.43115,
+   "lon": 13.34176,
+   "red": 1400,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.43221,
+   "lon": 13.34519,
+   "red": 1390,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.43267,
+   "lon": 13.34742,
+   "red": 1422,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.43246,
+   "lon": 13.34993,
+   "red": 1409,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.43013,
+   "lon": 13.35294,
+   "red": 1409,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.42406,
+   "lon": 13.35571,
+   "red": 1396,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.42175,
+   "lon": 13.35734,
+   "red": 1356,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.41897,
+   "lon": 13.35852,
+   "red": 1334,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.41101,
+   "lon": 13.35772,
+   "red": 1366,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.40877,
+   "lon": 13.35641,
+   "red": 1418,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.40553,
+   "lon": 13.35725,
+   "red": 1394,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.40203,
+   "lon": 13.35729,
+   "red": 1400,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.39769,
+   "lon": 13.35624,
+   "red": 1451,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.3877,
+   "lon": 13.35941,
+   "red": 1508,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.38424,
+   "lon": 13.36115,
+   "red": 1465,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.37931,
+   "lon": 13.36263,
+   "red": 1450,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.37505,
+   "lon": 13.36729,
+   "red": 1433,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.37488,
+   "lon": 13.37313,
+   "red": 1324,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.37442,
+   "lon": 13.37575,
+   "red": 1368,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.37282,
+   "lon": 13.37758,
+   "red": 1379,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.37016,
+   "lon": 13.37859,
+   "red": 1353,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.36696,
+   "lon": 13.378,
+   "red": 1406,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.36337,
+   "lon": 13.3777,
+   "red": 1395,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.35873,
+   "lon": 13.37738,
+   "red": 1434,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.35259,
+   "lon": 13.37534,
+   "red": 1412,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.34047,
+   "lon": 13.37853,
+   "red": 1364,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.3374,
+   "lon": 13.38749,
+   "red": 1505,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.33488,
+   "lon": 13.38981,
+   "red": 1348,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.329,
+   "lon": 13.39347,
+   "red": 1588,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.32578,
+   "lon": 13.39596,
+   "red": 1379,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.32317,
+   "lon": 13.39815,
+   "red": 1464,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.40694,
+   "lon": 13.35302,
+   "red": 1272,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.37931,
+   "lon": 13.36263,
+   "red": 1450,
+   "date": "2026-07-21",
+   "river": "Dj\u00e9rem"
+  },
+  {
+   "lat": 5.31405,
+   "lon": 13.65992,
+   "red": 2729,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.31191,
+   "lon": 13.65885,
+   "red": 2700,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.30704,
+   "lon": 13.66152,
+   "red": 2649,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.30552,
+   "lon": 13.66343,
+   "red": 2720,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.303,
+   "lon": 13.66489,
+   "red": 2844,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.2995,
+   "lon": 13.66489,
+   "red": 2849,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.29189,
+   "lon": 13.66129,
+   "red": 2788,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.28899,
+   "lon": 13.65885,
+   "red": 2844,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.28732,
+   "lon": 13.65563,
+   "red": 2695,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.28785,
+   "lon": 13.64944,
+   "red": 2644,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.28922,
+   "lon": 13.64676,
+   "red": 2710,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.29189,
+   "lon": 13.64432,
+   "red": 2671,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.29333,
+   "lon": 13.63828,
+   "red": 2686,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.2809,
+   "lon": 13.63096,
+   "red": 2705,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.27734,
+   "lon": 13.62941,
+   "red": 2952,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.27407,
+   "lon": 13.62963,
+   "red": 2759,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.26996,
+   "lon": 13.62413,
+   "red": 2676,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.26805,
+   "lon": 13.62206,
+   "red": 2839,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.26501,
+   "lon": 13.61059,
+   "red": 2761,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.2679,
+   "lon": 13.61036,
+   "red": 2832,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.27095,
+   "lon": 13.6187,
+   "red": 2891,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.27331,
+   "lon": 13.62084,
+   "red": 2571,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.27711,
+   "lon": 13.61809,
+   "red": 2739,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.28229,
+   "lon": 13.6151,
+   "red": 3040,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.27453,
+   "lon": 13.61067,
+   "red": 2629,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.2679,
+   "lon": 13.5852,
+   "red": 2930,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.2613,
+   "lon": 13.57516,
+   "red": 2969,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.2603,
+   "lon": 13.57263,
+   "red": 3040,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.26051,
+   "lon": 13.56999,
+   "red": 2805,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.26798,
+   "lon": 13.57733,
+   "red": 2900,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.26996,
+   "lon": 13.57618,
+   "red": 2925,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.27521,
+   "lon": 13.57549,
+   "red": 3054,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.27925,
+   "lon": 13.56869,
+   "red": 2671,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.28176,
+   "lon": 13.56731,
+   "red": 2896,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.2858,
+   "lon": 13.56165,
+   "red": 2600,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.28915,
+   "lon": 13.56027,
+   "red": 2922,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.29349,
+   "lon": 13.55966,
+   "red": 2910,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.29486,
+   "lon": 13.55767,
+   "red": 2937,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.29577,
+   "lon": 13.55469,
+   "red": 2644,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.29859,
+   "lon": 13.55599,
+   "red": 2766,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.3024,
+   "lon": 13.55477,
+   "red": 2803,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.30666,
+   "lon": 13.55225,
+   "red": 1896,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.30925,
+   "lon": 13.55202,
+   "red": 1659,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.31313,
+   "lon": 13.55286,
+   "red": 1598,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.31793,
+   "lon": 13.555,
+   "red": 1255,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.31968,
+   "lon": 13.55691,
+   "red": 1458,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.32448,
+   "lon": 13.55798,
+   "red": 1470,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.32673,
+   "lon": 13.55841,
+   "red": 1516,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.38236,
+   "lon": 13.50296,
+   "red": 1313,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.38464,
+   "lon": 13.50108,
+   "red": 2737,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.38691,
+   "lon": 13.49993,
+   "red": 2734,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.39296,
+   "lon": 13.49781,
+   "red": 2520,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.39617,
+   "lon": 13.49557,
+   "red": 2676,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.39745,
+   "lon": 13.49341,
+   "red": 2683,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.39715,
+   "lon": 13.49048,
+   "red": 2283,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.39742,
+   "lon": 13.48758,
+   "red": 2656,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.39797,
+   "lon": 13.48385,
+   "red": 2703,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.39592,
+   "lon": 13.48006,
+   "red": 2595,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.3912,
+   "lon": 13.47858,
+   "red": 2167,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.38693,
+   "lon": 13.47836,
+   "red": 2573,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.38212,
+   "lon": 13.47916,
+   "red": 2581,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.37912,
+   "lon": 13.47977,
+   "red": 2629,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.37153,
+   "lon": 13.47999,
+   "red": 2615,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.36895,
+   "lon": 13.47836,
+   "red": 2578,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.3677,
+   "lon": 13.47599,
+   "red": 2563,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.36737,
+   "lon": 13.47317,
+   "red": 2642,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.36836,
+   "lon": 13.47041,
+   "red": 2429,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.37161,
+   "lon": 13.47037,
+   "red": 2622,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.37447,
+   "lon": 13.47046,
+   "red": 2556,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.37505,
+   "lon": 13.46295,
+   "red": 1813,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.37914,
+   "lon": 13.45514,
+   "red": 2620,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.37898,
+   "lon": 13.45173,
+   "red": 2242,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.37777,
+   "lon": 13.44791,
+   "red": 2568,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.37722,
+   "lon": 13.44553,
+   "red": 2499,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.3774,
+   "lon": 13.44292,
+   "red": 2534,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.37541,
+   "lon": 13.43855,
+   "red": 2625,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.3676,
+   "lon": 13.43226,
+   "red": 2100,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.36358,
+   "lon": 13.42597,
+   "red": 2303,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.35782,
+   "lon": 13.41845,
+   "red": 2585,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.35653,
+   "lon": 13.41656,
+   "red": 2605,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.35225,
+   "lon": 13.4151,
+   "red": 2556,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.34977,
+   "lon": 13.41625,
+   "red": 1351,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.34586,
+   "lon": 13.41712,
+   "red": 2103,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.33975,
+   "lon": 13.41687,
+   "red": 2617,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.33658,
+   "lon": 13.41727,
+   "red": 2639,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.33342,
+   "lon": 13.418,
+   "red": 2637,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.32905,
+   "lon": 13.41405,
+   "red": 2681,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.33005,
+   "lon": 13.40915,
+   "red": 2426,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.32972,
+   "lon": 13.40549,
+   "red": 2408,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.32583,
+   "lon": 13.40188,
+   "red": 2727,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.32213,
+   "lon": 13.39902,
+   "red": 1389,
+   "date": "2026-07-21",
+   "river": "Lom"
+  },
+  {
+   "lat": 5.64256,
+   "lon": 13.68286,
+   "red": 1346,
+   "date": "2026-07-21",
+   "river": "Pangar"
+  },
+  {
+   "lat": 5.61249,
+   "lon": 13.70163,
+   "red": 1328,
+   "date": "2026-07-21",
+   "river": "Pangar"
+  },
+  {
+   "lat": 5.60871,
+   "lon": 13.70233,
+   "red": 1259,
+   "date": "2026-07-21",
+   "river": "Pangar"
+  },
+  {
+   "lat": 5.60708,
+   "lon": 13.70492,
+   "red": 1536,
+   "date": "2026-07-21",
+   "river": "Pangar"
+  },
+  {
+   "lat": 5.52447,
+   "lon": 13.67799,
+   "red": 1466,
+   "date": "2026-07-21",
+   "river": "Pangar"
+  },
+  {
+   "lat": 5.52151,
+   "lon": 13.67382,
+   "red": 1478,
+   "date": "2026-07-21",
+   "river": "Pangar"
+  },
+  {
+   "lat": 5.5165,
+   "lon": 13.65713,
+   "red": 1416,
+   "date": "2026-07-21",
+   "river": "Pangar"
+  },
+  {
+   "lat": 5.51849,
+   "lon": 13.65599,
+   "red": 1512,
+   "date": "2026-07-21",
+   "river": "Pangar"
+  },
+  {
+   "lat": 5.50238,
+   "lon": 13.63488,
+   "red": 1331,
+   "date": "2026-07-21",
+   "river": "Pangar"
+  },
+  {
+   "lat": 5.48414,
+   "lon": 13.65884,
+   "red": 1448,
+   "date": "2026-07-21",
+   "river": "Pangar"
+  },
+  {
+   "lat": 5.47501,
+   "lon": 13.65391,
+   "red": 1438,
+   "date": "2026-07-21",
+   "river": "Pangar"
+  },
+  {
+   "lat": 5.46853,
+   "lon": 13.65075,
+   "red": 1450,
+   "date": "2026-07-21",
+   "river": "Pangar"
+  },
+  {
+   "lat": 5.46872,
+   "lon": 13.64329,
+   "red": 1360,
+   "date": "2026-07-21",
+   "river": "Pangar"
+  },
+  {
+   "lat": 5.46897,
+   "lon": 13.64038,
+   "red": 1338,
+   "date": "2026-07-21",
+   "river": "Pangar"
+  },
+  {
+   "lat": 5.46192,
+   "lon": 13.62496,
+   "red": 1329,
+   "date": "2026-07-21",
+   "river": "Pangar"
+  },
+  {
+   "lat": 5.46111,
+   "lon": 13.6199,
+   "red": 1333,
+   "date": "2026-07-21",
+   "river": "Pangar"
+  },
+  {
+   "lat": 5.45538,
+   "lon": 13.60959,
+   "red": 1261,
+   "date": "2026-07-21",
+   "river": "Pangar"
+  },
+  {
+   "lat": 5.45607,
+   "lon": 13.60738,
+   "red": 1238,
+   "date": "2026-07-21",
+   "river": "Pangar"
+  },
+  {
+   "lat": 5.45418,
+   "lon": 13.60447,
+   "red": 1273,
+   "date": "2026-07-21",
+   "river": "Pangar"
+  },
+  {
+   "lat": 5.45513,
+   "lon": 13.60125,
+   "red": 1249,
+   "date": "2026-07-21",
+   "river": "Pangar"
+  },
+  {
+   "lat": 5.45028,
+   "lon": 13.60131,
+   "red": 1379,
+   "date": "2026-07-21",
+   "river": "Pangar"
+  },
+  {
+   "lat": 5.44789,
+   "lon": 13.60245,
+   "red": 1429,
+   "date": "2026-07-21",
+   "river": "Pangar"
+  },
+  {
+   "lat": 5.44556,
+   "lon": 13.6027,
+   "red": 1333,
+   "date": "2026-07-21",
+   "river": "Pangar"
+  },
+  {
+   "lat": 5.43889,
+   "lon": 13.59284,
+   "red": 1225,
+   "date": "2026-07-21",
+   "river": "Pangar"
+  },
+  {
+   "lat": 5.4382,
+   "lon": 13.59019,
+   "red": 1292,
+   "date": "2026-07-21",
+   "river": "Pangar"
+  },
+  {
+   "lat": 5.51856,
+   "lon": 13.06928,
+   "red": 1603,
+   "date": "2026-07-21",
+   "river": "Mekie"
+  },
+  {
+   "lat": 6.20697,
+   "lon": 12.75517,
+   "red": 1586,
+   "date": "2026-07-21",
+   "river": "Miy\u00e9r\u00e9"
+  },
+  {
+   "lat": 6.77459,
+   "lon": 12.39815,
+   "red": 1699,
+   "date": "2026-07-04",
+   "river": "Meng"
+  },
+  {
+   "lat": 6.77431,
+   "lon": 12.39526,
+   "red": 1749,
+   "date": "2026-07-04",
+   "river": "Meng"
+  },
+  {
+   "lat": 6.76042,
+   "lon": 12.39251,
+   "red": 1632,
+   "date": "2026-07-04",
+   "river": "Meng"
+  },
+  {
+   "lat": 6.71219,
+   "lon": 12.36316,
+   "red": 1732,
+   "date": "2026-07-04",
+   "river": "Meng"
+  },
+  {
+   "lat": 6.68973,
+   "lon": 12.34592,
+   "red": 1774,
+   "date": "2026-07-04",
+   "river": "Meng"
+  },
+  {
+   "lat": 6.67887,
+   "lon": 12.34899,
+   "red": 1727,
+   "date": "2026-07-04",
+   "river": "Meng"
+  },
+  {
+   "lat": 6.6772,
+   "lon": 12.35068,
+   "red": 1473,
+   "date": "2026-07-04",
+   "river": "Meng"
+  },
+  {
+   "lat": 6.67552,
+   "lon": 12.35628,
+   "red": 1338,
+   "date": "2026-07-04",
+   "river": "Meng"
+  },
+  {
+   "lat": 6.66599,
+   "lon": 12.36158,
+   "red": 1720,
+   "date": "2026-07-04",
+   "river": "Meng"
+  },
+  {
+   "lat": 6.65915,
+   "lon": 12.36678,
+   "red": 1743,
+   "date": "2026-07-04",
+   "river": "Meng"
+  },
+  {
+   "lat": 6.65472,
+   "lon": 12.38262,
+   "red": 1761,
+   "date": "2026-07-04",
+   "river": "Meng"
+  },
+  {
+   "lat": 6.64528,
+   "lon": 12.4032,
+   "red": 1521,
+   "date": "2026-07-04",
+   "river": "Meng"
+  },
+  {
+   "lat": 6.64293,
+   "lon": 12.4035,
+   "red": 1741,
+   "date": "2026-07-04",
+   "river": "Meng"
+  },
+  {
+   "lat": 6.48413,
+   "lon": 12.64074,
+   "red": 1498,
+   "date": "2026-07-21",
+   "river": "Meng"
+  },
+  {
+   "lat": 6.48985,
+   "lon": 12.66823,
+   "red": 1455,
+   "date": "2026-07-21",
+   "river": "Meng"
+  },
+  {
+   "lat": 6.4568,
+   "lon": 12.72475,
+   "red": 1338,
+   "date": "2026-07-21",
+   "river": "Meng"
+  },
+  {
+   "lat": 6.45313,
+   "lon": 12.73597,
+   "red": 1838,
+   "date": "2026-07-21",
+   "river": "Meng"
+  },
+  {
+   "lat": 6.45527,
+   "lon": 12.73701,
+   "red": 2135,
+   "date": "2026-07-21",
+   "river": "Meng"
+  },
+  {
+   "lat": 6.45374,
+   "lon": 12.74049,
+   "red": 1586,
+   "date": "2026-07-21",
+   "river": "Meng"
+  },
+  {
+   "lat": 6.45428,
+   "lon": 12.74576,
+   "red": 1927,
+   "date": "2026-07-21",
+   "river": "Meng"
+  },
+  {
+   "lat": 6.45993,
+   "lon": 12.75788,
+   "red": 1576,
+   "date": "2026-07-21",
+   "river": "Meng"
+  },
+  {
+   "lat": 6.45901,
+   "lon": 12.76475,
+   "red": 1616,
+   "date": "2026-07-21",
+   "river": "Meng"
+  },
+  {
+   "lat": 6.44095,
+   "lon": 12.76348,
+   "red": 1493,
+   "date": "2026-07-21",
+   "river": "Meng"
+  },
+  {
+   "lat": 6.35332,
+   "lon": 12.81807,
+   "red": 1979,
+   "date": "2026-07-21",
+   "river": "Meng"
+  },
+  {
+   "lat": 6.26343,
+   "lon": 12.78862,
+   "red": 1201,
+   "date": "2026-07-21",
+   "river": "Minka\u00ef"
+  },
+  {
+   "lat": 6.59651,
+   "lon": 13.55696,
+   "red": 1589,
+   "date": "2026-07-23",
+   "river": "Djerem"
+  },
+  {
+   "lat": 5.61878,
+   "lon": 13.02279,
+   "red": 1744,
+   "date": "2026-07-21",
+   "river": "Djerem"
+  },
+  {
+   "lat": 5.61863,
+   "lon": 13.0268,
+   "red": 1594,
+   "date": "2026-07-21",
+   "river": "Djerem"
+  },
+  {
+   "lat": 5.61138,
+   "lon": 13.02797,
+   "red": 1455,
+   "date": "2026-07-21",
+   "river": "Djerem"
+  },
+  {
+   "lat": 5.60824,
+   "lon": 13.02916,
+   "red": 1675,
+   "date": "2026-07-21",
+   "river": "Djerem"
+  },
+  {
+   "lat": 5.60562,
+   "lon": 13.03312,
+   "red": 1692,
+   "date": "2026-07-21",
+   "river": "Djerem"
+  },
+  {
+   "lat": 5.60389,
+   "lon": 13.03594,
+   "red": 1586,
+   "date": "2026-07-21",
+   "river": "Djerem"
+  },
+  {
+   "lat": 5.60189,
+   "lon": 13.03793,
+   "red": 1641,
+   "date": "2026-07-21",
+   "river": "Djerem"
+  },
+  {
+   "lat": 5.59713,
+   "lon": 13.04311,
+   "red": 1517,
+   "date": "2026-07-21",
+   "river": "Djerem"
+  },
+  {
+   "lat": 5.5948,
+   "lon": 13.04623,
+   "red": 1644,
+   "date": "2026-07-21",
+   "river": "Djerem"
+  },
+  {
+   "lat": 6.75094,
+   "lon": 13.33533,
+   "red": 1357,
+   "date": "2026-07-23",
+   "river": "Vina"
+  },
+  {
+   "lat": 6.74128,
+   "lon": 13.34194,
+   "red": 1331,
+   "date": "2026-07-23",
+   "river": "Vina"
+  },
+  {
+   "lat": 6.72579,
+   "lon": 13.35222,
+   "red": 1202,
+   "date": "2026-07-21",
+   "river": "Vina"
+  },
+  {
+   "lat": 5.31297,
+   "lon": 13.39267,
+   "red": 1461,
+   "date": "2026-07-21",
+   "river": "sanaga"
+  },
+  {
+   "lat": 5.30904,
+   "lon": 13.39293,
+   "red": 1843,
+   "date": "2026-07-21",
+   "river": "sanaga"
+  },
+  {
+   "lat": 5.30588,
+   "lon": 13.39332,
+   "red": 1794,
+   "date": "2026-07-21",
+   "river": "sanaga"
+  },
+  {
+   "lat": 5.30066,
+   "lon": 13.38783,
+   "red": 1453,
+   "date": "2026-07-21",
+   "river": "sanaga"
+  },
+  {
+   "lat": 5.29784,
+   "lon": 13.38585,
+   "red": 1456,
+   "date": "2026-07-21",
+   "river": "sanaga"
+  },
+  {
+   "lat": 5.29425,
+   "lon": 13.38212,
+   "red": 1508,
+   "date": "2026-07-21",
+   "river": "sanaga"
+  },
+  {
+   "lat": 5.28925,
+   "lon": 13.37946,
+   "red": 1570,
+   "date": "2026-07-21",
+   "river": "sanaga"
+  },
+  {
+   "lat": 5.2831,
+   "lon": 13.37628,
+   "red": 1549,
+   "date": "2026-07-21",
+   "river": "sanaga"
+  },
+  {
+   "lat": 5.27947,
+   "lon": 13.3747,
+   "red": 1499,
+   "date": "2026-07-21",
+   "river": "sanaga"
+  },
+  {
+   "lat": 5.27631,
+   "lon": 13.36487,
+   "red": 1713,
+   "date": "2026-07-21",
+   "river": "sanaga"
+  },
+  {
+   "lat": 5.27592,
+   "lon": 13.35895,
+   "red": 1625,
+   "date": "2026-07-21",
+   "river": "sanaga"
+  },
+  {
+   "lat": 5.27532,
+   "lon": 13.3538,
+   "red": 1643,
+   "date": "2026-07-21",
+   "river": "sanaga"
+  },
+  {
+   "lat": 5.27459,
+   "lon": 13.35107,
+   "red": 1332,
+   "date": "2026-07-21",
+   "river": "sanaga"
+  },
+  {
+   "lat": 5.66557,
+   "lon": 11.85065,
+   "red": 1470,
+   "date": "2026-06-19",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 6.25885,
+   "lon": 12.76663,
+   "red": 1606,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 6.24982,
+   "lon": 12.76206,
+   "red": 1626,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 6.2473,
+   "lon": 12.76062,
+   "red": 1649,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 6.24477,
+   "lon": 12.75611,
+   "red": 1664,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 6.24195,
+   "lon": 12.75681,
+   "red": 1521,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 6.61829,
+   "lon": 13.22052,
+   "red": 1234,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 6.47213,
+   "lon": 12.73472,
+   "red": 1359,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 6.46474,
+   "lon": 12.73801,
+   "red": 1510,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 6.46516,
+   "lon": 12.74167,
+   "red": 1409,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 6.462,
+   "lon": 12.74297,
+   "red": 1486,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 6.46002,
+   "lon": 12.74414,
+   "red": 1255,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 6.46445,
+   "lon": 12.74672,
+   "red": 1533,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 6.46274,
+   "lon": 12.74926,
+   "red": 1396,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 6.46027,
+   "lon": 12.74967,
+   "red": 1503,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 6.46081,
+   "lon": 12.75267,
+   "red": 1511,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 6.4642,
+   "lon": 12.7538,
+   "red": 1522,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 6.46446,
+   "lon": 12.75669,
+   "red": 1406,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 6.46583,
+   "lon": 12.75991,
+   "red": 1460,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 6.47,
+   "lon": 12.76257,
+   "red": 1428,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 6.47406,
+   "lon": 12.76721,
+   "red": 1511,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 6.47763,
+   "lon": 12.76891,
+   "red": 1400,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 6.47506,
+   "lon": 12.77114,
+   "red": 1504,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 6.47181,
+   "lon": 12.77324,
+   "red": 1493,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 6.46636,
+   "lon": 12.77548,
+   "red": 1509,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 6.46282,
+   "lon": 12.7754,
+   "red": 1501,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 6.46093,
+   "lon": 12.78107,
+   "red": 1450,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 6.44095,
+   "lon": 12.76348,
+   "red": 1493,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 6.00534,
+   "lon": 12.88194,
+   "red": 1394,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 5.99068,
+   "lon": 12.88225,
+   "red": 1407,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 6.05074,
+   "lon": 12.86333,
+   "red": 1433,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 6.04781,
+   "lon": 12.86405,
+   "red": 1407,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 6.04403,
+   "lon": 12.86978,
+   "red": 1322,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 6.04002,
+   "lon": 12.87091,
+   "red": 1349,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 6.03884,
+   "lon": 12.87332,
+   "red": 1372,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 6.03628,
+   "lon": 12.8794,
+   "red": 1371,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 6.03127,
+   "lon": 12.88392,
+   "red": 1415,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 6.02858,
+   "lon": 12.88529,
+   "red": 1417,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 6.02632,
+   "lon": 12.88525,
+   "red": 1432,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 6.02154,
+   "lon": 12.88119,
+   "red": 1456,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 6.01945,
+   "lon": 12.8763,
+   "red": 1444,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 6.16707,
+   "lon": 12.84023,
+   "red": 1476,
+   "date": "2026-07-21",
+   "river": "unnamed stream"
+  },
+  {
+   "lat": 6.10244,
+   "lon": 12.86551,
+   "red": 1484,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 5.98112,
+   "lon": 12.87533,
+   "red": 1373,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 5.35873,
+   "lon": 13.37738,
+   "red": 1434,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 5.35438,
+   "lon": 13.37942,
+   "red": 1351,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 5.35036,
+   "lon": 13.38208,
+   "red": 1356,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 5.34493,
+   "lon": 13.38744,
+   "red": 1488,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 5.34369,
+   "lon": 13.38976,
+   "red": 1274,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 5.34109,
+   "lon": 13.3919,
+   "red": 1344,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 5.33652,
+   "lon": 13.39354,
+   "red": 1365,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 5.33152,
+   "lon": 13.39667,
+   "red": 1307,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 5.32793,
+   "lon": 13.39903,
+   "red": 1359,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 5.32317,
+   "lon": 13.39815,
+   "red": 1464,
+   "date": "2026-07-21",
+   "river": "unnamed river"
+  }
+ ]
+}

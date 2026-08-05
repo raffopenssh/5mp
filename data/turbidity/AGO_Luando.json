@@ -1,7 +1,7 @@
 {
  "park_id": "AGO_Luando",
- "scanned_at": "2026-07-09T06:01:17Z",
- "datetime_range": "2026-05-25T00:00:00Z/2026-07-09T23:59:59Z",
+ "scanned_at": "2026-07-10T06:01:24Z",
+ "datetime_range": "2026-05-26T00:00:00Z/2026-07-10T23:59:59Z",
  "buffer_km": 50,
  "n_waterways": 256,
  "n_sample_pts": 16712,

@@ -1,0 +1,343 @@
+{
+ "park_id": "CMR_Boumba-Djombi",
+ "scanned_at": "2026-07-24T06:00:53Z",
+ "datetime_range": "2026-06-09T00:00:00Z/2026-07-24T23:59:59Z",
+ "buffer_km": 50,
+ "n_waterways": 158,
+ "n_sample_pts": 8164,
+ "alerts": [
+  {
+   "lat": 8.69446,
+   "lon": 14.37543,
+   "river": "Mayo Godi",
+   "waterway": "river",
+   "type": "turbid_headwater",
+   "red": 1682,
+   "upstream_median": null,
+   "ratio": null,
+   "dist_km": 6.0,
+   "downstream_turbid_km": 6.0,
+   "scene": "S2A_33PVK_20260723_0_L2A",
+   "date": "2026-07-23"
+  }
+ ],
+ "rivers": [
+  {
+   "name": "Mayo Godi",
+   "waterway": "river",
+   "length_km": 87.1,
+   "water_samples": 30,
+   "turbid_km": 6.0
+  },
+  {
+   "name": "B\u00e9nou\u00e9",
+   "waterway": "river",
+   "length_km": 161.8,
+   "water_samples": 137,
+   "turbid_km": 1.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 85.1,
+   "water_samples": 44,
+   "turbid_km": 0.2
+  },
+  {
+   "name": "Mayo Loua",
+   "waterway": "river",
+   "length_km": 59.0,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Mayo Liddi",
+   "waterway": "river",
+   "length_km": 99.7,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "Mayo Sina",
+   "waterway": "river",
+   "length_km": 77.3,
+   "water_samples": 3,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 43.7,
+   "water_samples": 2,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 101.2,
+   "water_samples": 1,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 17.7,
+   "water_samples": 10,
+   "turbid_km": 0.0
+  },
+  {
+   "name": "(unnamed)",
+   "waterway": "river",
+   "length_km": 14.8,
+   "water_samples": 2,
+   "turbid_km": 0.0
+  }
+ ],
+ "turbid_points": [
+  {
+   "lat": 8.65928,
+   "lon": 13.99098,
+   "red": 1295,
+   "date": "2026-07-21",
+   "river": "B\u00e9nou\u00e9"
+  },
+  {
+   "lat": 8.69877,
+   "lon": 14.00218,
+   "red": 1438,
+   "date": "2026-07-23",
+   "river": "B\u00e9nou\u00e9"
+  },
+  {
+   "lat": 8.81581,
+   "lon": 13.93186,
+   "red": 1429,
+   "date": "2026-07-23",
+   "river": "B\u00e9nou\u00e9"
+  },
+  {
+   "lat": 8.92369,
+   "lon": 13.85706,
+   "red": 1439,
+   "date": "2026-07-23",
+   "river": "B\u00e9nou\u00e9"
+  },
+  {
+   "lat": 9.37425,
+   "lon": 13.80634,
+   "red": 1881,
+   "date": "2026-07-21",
+   "river": "Mayo Loua"
+  },
+  {
+   "lat": 8.63141,
+   "lon": 14.5711,
+   "red": 1548,
+   "date": "2026-07-21",
+   "river": "Mayo Liddi"
+  },
+  {
+   "lat": 8.95763,
+   "lon": 14.00907,
+   "red": 1508,
+   "date": "2026-07-23",
+   "river": "Mayo Sina"
+  },
+  {
+   "lat": 8.8767,
+   "lon": 13.98027,
+   "red": 1689,
+   "date": "2026-07-23",
+   "river": "Mayo Sina"
+  },
+  {
+   "lat": 8.87269,
+   "lon": 13.9803,
+   "red": 1622,
+   "date": "2026-07-23",
+   "river": "Mayo Sina"
+  },
+  {
+   "lat": 8.69446,
+   "lon": 14.37543,
+   "red": 1682,
+   "date": "2026-07-23",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.69642,
+   "lon": 14.3742,
+   "red": 1720,
+   "date": "2026-07-23",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.69676,
+   "lon": 14.37056,
+   "red": 1674,
+   "date": "2026-07-23",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.75163,
+   "lon": 14.28107,
+   "red": 1555,
+   "date": "2026-07-23",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.7807,
+   "lon": 14.24656,
+   "red": 1544,
+   "date": "2026-07-23",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.79396,
+   "lon": 14.19973,
+   "red": 1942,
+   "date": "2026-07-23",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.77609,
+   "lon": 14.15458,
+   "red": 1515,
+   "date": "2026-07-23",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.81785,
+   "lon": 14.10587,
+   "red": 1489,
+   "date": "2026-07-23",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.82295,
+   "lon": 14.09887,
+   "red": 1309,
+   "date": "2026-07-23",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.83366,
+   "lon": 14.09483,
+   "red": 1462,
+   "date": "2026-07-23",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.86207,
+   "lon": 14.08209,
+   "red": 1598,
+   "date": "2026-07-23",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.86273,
+   "lon": 14.0787,
+   "red": 1399,
+   "date": "2026-07-23",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.86302,
+   "lon": 14.07634,
+   "red": 1448,
+   "date": "2026-07-23",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.86415,
+   "lon": 14.07397,
+   "red": 1398,
+   "date": "2026-07-23",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.87044,
+   "lon": 14.06428,
+   "red": 1302,
+   "date": "2026-07-23",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.87623,
+   "lon": 14.06144,
+   "red": 1345,
+   "date": "2026-07-23",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.8812,
+   "lon": 14.02024,
+   "red": 1776,
+   "date": "2026-07-23",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.88185,
+   "lon": 14.01661,
+   "red": 1709,
+   "date": "2026-07-23",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.88177,
+   "lon": 14.01314,
+   "red": 1775,
+   "date": "2026-07-23",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.87307,
+   "lon": 13.98452,
+   "red": 1284,
+   "date": "2026-07-23",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.87269,
+   "lon": 13.9803,
+   "red": 1622,
+   "date": "2026-07-23",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.87239,
+   "lon": 13.97006,
+   "red": 1814,
+   "date": "2026-07-23",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.87286,
+   "lon": 13.95676,
+   "red": 1669,
+   "date": "2026-07-23",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.87812,
+   "lon": 13.92895,
+   "red": 1445,
+   "date": "2026-07-23",
+   "river": "Mayo Godi"
+  },
+  {
+   "lat": 8.493,
+   "lon": 14.26437,
+   "red": 1210,
+   "date": "2026-07-23",
+   "river": "unnamed river"
+  },
+  {
+   "lat": 8.86131,
+   "lon": 14.08325,
+   "red": 1602,
+   "date": "2026-07-23",
+   "river": "unnamed river"
+  }
+ ]
+}
