@@ -223,13 +223,13 @@ def load_parks():
     return parks
 
 
-def load_park_fires(park_id, min_date, source='db'):
+def load_park_fires(park_id, min_date, source='db', conn=None):
     """Load fires from the canonical source (SQLite by default).
 
     See fire_source.py: the legacy JSON files are a rolling window and must not
     be used for full rebuilds.
     """
-    return _load_fires(park_id, min_date, source=source)
+    return _load_fires(park_id, min_date, source=source, conn=conn)
 
 
 # ---------------------------------------------------------------------------
@@ -808,6 +808,10 @@ def process_park_fires(fires, park_id, park_geometry):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--park', help='Single park')
+    parser.add_argument('--parks', help='Comma-separated park list. Preferred over '
+                                        'repeated --park calls: one process reuses '
+                                        'the keystone load, the DB connection and '
+                                        'the sklearn/scipy import.')
     parser.add_argument('--incremental', action='store_true',
                         help='Incremental mode: only process recent fires')
     parser.add_argument('--days', type=int, default=14, help='Days window for incremental mode')
@@ -872,7 +876,19 @@ def main():
     out_dir.mkdir(exist_ok=True, parents=True)
     TRENDS_DIR.mkdir(exist_ok=True, parents=True)
 
-    park_ids = [args.park] if args.park else sorted(parks.keys())
+    # One shared read-only connection for all parks in this run.
+    shared_conn = None
+    if args.source == 'db':
+        import sqlite3
+        from fire_source import DB_PATH
+        shared_conn = sqlite3.connect(f"file:{DB_PATH}?mode=ro", uri=True)
+
+    if args.parks:
+        park_ids = [p.strip() for p in args.parks.split(',') if p.strip()]
+    elif args.park:
+        park_ids = [args.park]
+    else:
+        park_ids = sorted(parks.keys())
     total_groups = 0
     total_fires_processed = 0
     stats = {'clean': 0, 'cleaned': 0, 'cluster': 0}
@@ -901,11 +917,12 @@ def main():
                 effective_min_date = min(g['start_date'] for g in spanning)
             # Never walk back before the raw data actually starts, or we'd
             # drop old groups that cannot be rebuilt from available fires.
-            raw_min = earliest_fire_date(park_id, source=args.source)
+            raw_min = earliest_fire_date(park_id, source=args.source, conn=shared_conn)
             if raw_min and effective_min_date < raw_min:
                 effective_min_date = raw_min
 
-        fires = load_park_fires(park_id, effective_min_date, source=args.source)
+        fires = load_park_fires(park_id, effective_min_date, source=args.source,
+                                conn=shared_conn)
         if not fires and not existing_groups:
             continue
 
@@ -944,6 +961,16 @@ def main():
         log(f"[{i+1}/{len(park_ids)}] {park_id}: {len(fires):,} fires -> {len(groups)} groups "
             f"(avg {avg_fires:.0f}/grp, {multi_day} multi-day, "
             f"{park_stats['clean']} clean, {park_stats['cleaned']} zigzaggy)")
+
+    # A partial run (subset of parks) must not clobber the global trend file
+    # with only its own parks' data.
+    partial = bool(args.park or args.parks)
+    if partial:
+        log("Partial run: skipping global trend/summary rewrite")
+        if shared_conn:
+            shared_conn.close()
+        log(f"\nDone! {total_fires_processed:,} fires -> {total_groups} groups")
+        return
 
     log("Writing trend stats...")
     trends = {'daily': {k: dict(v) for k, v in daily_counts.items()},

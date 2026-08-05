@@ -1,4 +1,4 @@
-# Fire Analysis Pipeline Specification (v5)
+# Fire Analysis Pipeline Specification (v7)
 
 ## Overview
 
@@ -643,3 +643,143 @@ python3 scripts/precompute_narratives_v5.py  # Updates cache for all
 ```bash
 python3 scripts/rebuild_fire_trajectories_v5.py --park PARK_ID
 ```
+
+---
+
+## v7 Algorithm & Data Source (2026-08)
+
+### ⚠️ SQLite is the canonical fire source, NOT `data/raw-fire-viirs-*/`
+
+`data/raw-fire-viirs-20200101-20260222/{park}.json` is a **rolling window**, not an
+archive. As of 2026-08 it held only ~6 months for 162 of 163 parks (CAF_Chinko:
+18k fires in JSON vs **425k** in `fire_detections`).
+
+The trajectory builder used to read those files, which meant a full
+(non-incremental) rebuild would silently discard years of trajectories — the
+pre-window history only survived as frozen group JSON carried forward by each
+incremental run. `scripts/fire_source.py` now reads `fire_detections` (~50ms per
+park via `idx_fire_pa_date`).
+
+```bash
+# Correct (default):
+python3 scripts/rebuild_fire_trajectories_v5.py --parks A,B,C
+# A/B against the legacy window only:
+python3 scripts/rebuild_fire_trajectories_v5.py --park X --source json
+```
+
+The raw JSON files are still written nightly because other scripts read them
+(`rebuild_fire_front.py`, `rebuild_fire_hull.py`, `onboard_park.py`).
+
+### Multi-satellite ingest
+
+All three operational VIIRS sensors are ingested (`FIRMS_SOURCES` in
+`daily_fire_update.py`). Previously only NOAA-20, i.e. ~2 overpasses/day.
+
+| Source | Sat code | Typical Africa/day |
+|--------|----------|--------------------|
+| `VIIRS_NOAA20_NRT` | `N20` | ~1,560 |
+| `VIIRS_SNPP_NRT`   | `N`   | ~2,680 |
+| `VIIRS_NOAA21_NRT` | `N21` | ~500 |
+
+Codes are distinct, so the `fire_detections` UNIQUE constraint
+`(lat, lon, acq_date, acq_time, satellite)` keeps them as separate real rows.
+A partial sensor failure still ingests the rest and raises a SYSTEM notification.
+
+`DEFAULT_DAYS` is 10 (was 5). The fetch window must be >= the FIRMS late-arrival
+delay; at 5 days a detection arriving later than that was lost permanently,
+since the rebuild window is 14 days. Overlap is free (`INSERT OR IGNORE`).
+
+### Algorithm (v7)
+
+Measured on the 6-park golden set vs v6, same fire window:
+
+| Metric | Change |
+|--------|--------|
+| `fires_per_grp` | **+5.9%** (less fragmentation) |
+| `zigzag_bad_pct` | **−36.2%** (cleaner geometry) |
+| `frag_pct` | **−16.3%** |
+| `mean_days` | +4.1% |
+| `traj_pts` | +7.6% |
+| `coverage_pct` | +1.1% |
+
+1. **Hungarian assignment** (`scipy.linear_sum_assignment`) per time slice
+   instead of greedy nearest-first, which could hand a cluster to the wrong
+   track and cross two parallel fronts. Alone: `fires_per_grp` +4.2%,
+   `frag_pct` −18.8%.
+2. **Mass-aware match cost** — `MASS_PENALTY_KM=3.0` × |log10(size ratio)|, so a
+   1-fire DBSCAN noise point can't outbid a 400-fire front for a track. Value
+   chosen by sweep over 0/3/6/12.
+3. **Holes honoured in `pct_inside`** — v6 tested only `ring[0]`, so donut-shaped
+   parks counted enclave fires as inside. Now shapely prepared geometry.
+4. **Real detection times** in trajectory point 4 (was the `'1200'` stub);
+   `speed_km_day` from true elapsed time, floored at 1 day so `classify_group`
+   thresholds stay valid.
+
+### Per-overpass slicing: implemented, OFF by default
+
+`--overpass` slices by satellite overpass rather than calendar day. It is
+**disabled** because with only NOAA-20 the two daily passes are wildly
+asymmetric — on ZMB_Kafue the day pass averages 763 fires at mean FRP 10.6, the
+night pass **63 fires at FRP 1.7**, with a median centroid offset of 55 km.
+Alternating them makes every other vertex a sparse, spatially-biased estimate,
+injecting an oscillation that trips the turn gate: `mean_days` −21%,
+`dup_pairs` +23%, `coverage` −2.4%.
+
+**Re-evaluate once SNPP + NOAA-21 have accumulated history** (~6 passes/day):
+each slice should then have enough detections to stand on its own.
+
+### A/B eval harness
+
+Never tune this pipeline by eye — use `scripts/eval_fire_trajectories.py`.
+
+```bash
+# Snapshot current production output for the golden parks
+python3 scripts/eval_fire_trajectories.py --snapshot data/eval/baseline
+
+# Build a candidate
+python3 scripts/rebuild_fire_trajectories_v5.py --parks CAF_Chinko,ZMB_Kafue \
+    --output-dir data/eval/candidate --set MASS_PENALTY_KM=6
+
+# Compare
+python3 scripts/eval_fire_trajectories.py \
+    --baseline data/eval/baseline --candidate data/eval/candidate
+```
+
+Golden set: `CAF_Chinko` (transhumance), `ZMB_Kafue` (peak-season volume),
+`COD_Virunga` (montane/agricultural edge), `TZA_Serengeti` (fast grassland
+fronts), `CMR_Nki` (near-zero fire regression canary), `MOZ_Niassa` (high volume).
+
+Ablation flags reproduce the v6 configuration **bit-exactly**, which is how the
+numbers above were validated — always confirm this before trusting a delta:
+
+```bash
+python3 scripts/rebuild_fire_trajectories_v5.py --park ZMB_Kafue --source json \
+  --no-overpass --no-mass-penalty --no-hungarian --output-dir data/eval/v6check
+```
+
+`--set NAME=VALUE` overrides any tuning constant.
+
+### Notification volume control
+
+Peak season generated **509–1,132 fire alerts per night** (25,154 in five weeks;
+93 for a single park in one night), which buried everything else. Two gates in
+`create_fire_notifications`:
+
+1. **Status-transition only** — a group is re-announced only when its status
+   actually changes ("Active → Entering" alerts, "Active → Active" is silent).
+   Was: re-announce every group every 7 days. ~20% of alerts were pure repeats.
+2. **`MAX_ALERTS_PER_PARK = 5`** per run, applied *after* the existing priority
+   sort so Entering/Approaching survive over Cooling/Outside. The remainder
+   becomes one rollup notification per park ("N more active fire groups").
+
+Combined: ~509 → ~150 alerts/night.
+
+### Performance
+
+Step 3 ran ~100 subprocesses (one `--park` each), re-paying the sklearn/scipy
+import, keystone load and DB connect every time (~6 min). Use `--parks a,b,c`
+for one process with a shared read-only connection.
+
+A partial run (`--park`/`--parks`) now **skips** the global trend/summary
+rewrite; previously every per-park invocation overwrote
+`data/fire_trends_v5/park_fire_trends.json` with just that park's data.

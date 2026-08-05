@@ -287,6 +287,36 @@ curl -H "Authorization: Bearer $BACKUP_PEER_TOKEN" \
 
 ---
 
+## ⚠️ Fire data source: SQLite, NOT `data/raw-fire-viirs-*/`
+
+`data/raw-fire-viirs-20200101-20260222/{park}.json` is a **rolling window**
+(~6 months for 162/163 parks), not an archive. `fire_detections` is canonical —
+CAF_Chinko has 18k fires in JSON vs **425k** in the DB.
+
+Read fires via `scripts/fire_source.py` (`load_park_fires(park, min_date)`).
+The trajectory builder defaults to `--source db`; `--source json` exists only
+for A/B against old output. Before this was fixed, a full non-incremental
+rebuild would have silently discarded years of trajectories.
+
+**Never tune the fire algorithm by eye** — use
+`scripts/eval_fire_trajectories.py` (6-park golden set;
+`--snapshot`/`--baseline`/`--candidate`). The builder's ablation flags
+(`--no-hungarian --no-mass-penalty --no-overpass`) reproduce the old v6 output
+bit-exactly; verify that before trusting any delta.
+See `docs/FIRE_PIPELINE.md` § v7.
+
+Per-overpass slicing (`--overpass`) is implemented but **off**: with only
+NOAA-20 the night pass is ~12x sparser than the day pass, which measurably
+regresses tracking. Revisit once SNPP/NOAA-21 history accumulates.
+
+All three VIIRS sensors are now ingested (NOAA-20 + SNPP + NOAA-21, ~3x the
+detections). Satellite codes `N`/`N20`/`N21` are part of the
+`fire_detections` UNIQUE key — never default that field.
+
+Use `--parks a,b,c` (one process) rather than repeated `--park` calls.
+
+---
+
 ## ⚠️ Fire Narrative Cache — Single Writer Rule
 
 **Only `scripts/precompute_narratives_v5.py` may write `fire_narrative_cache`.**
