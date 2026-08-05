@@ -1,27 +1,48 @@
 #!/usr/bin/env python3
 """
-Fire Trajectory Builder v6 - per-day clustering + multi-day track matching
+Fire Trajectory Builder v7 - per-overpass clustering + multi-day track matching
 
 Replaces the v5 global spatio-temporal DBSCAN, which produced too many
 splits and zigzag trajectories. Root causes fixed here:
 
 1. v5 picked the single fire "furthest along the overall bearing" as the
    daily trajectory point -> jumped between flanks of the burn scar (zigzag).
-   v6 uses FRP-weighted daily centroids + light smoothing.
+   v6+ uses FRP-weighted centroids + light smoothing.
 2. v5 clustered all fires at once with a hard 2-day temporal eps -> one
    moving front fragmented into many short groups.
-   v6 clusters each day spatially (DBSCAN), then TRACKS clusters day-to-day
-   with velocity prediction and direction-continuity gating.
+   v6+ clusters each time-slice spatially (DBSCAN), then TRACKS clusters
+   slice-to-slice with velocity prediction and direction-continuity gating.
 3. Fragments that still split (cloud cover, satellite gaps) are CHAINED
    post-hoc when collinear and within reach (gap <= 4 days).
 4. Incremental mode walks the cutoff back so groups spanning the window
    boundary are fully re-formed instead of chopped.
+
+v7 changes:
+5. SOURCE IS NOW SQLite (`fire_source.py`). data/raw-fire-viirs-*/ is a rolling
+   window holding ~6 months for 162/163 parks, so full rebuilds used to discard
+   years of history. Use --source json only for A/B against old output.
+6. Optional per-overpass slicing (--overpass), plus real overpass times in the
+   trajectory's 4th element instead of the old '1200' stub, and speed computed
+   from true elapsed time. Overpass slicing is OFF by default: with only
+   NOAA-20 ingested the night pass is ~12x sparser than the day pass, so it
+   measurably regresses tracking. See the USE_OVERPASS comment.
+7. Slice-to-slice assignment is globally optimal (Hungarian) instead of
+   greedy nearest-first, which could hand a cluster to the wrong track and
+   cross two parallel fronts. Measured: fires_per_grp +4.2%, frag_pct -18.8%,
+   zigzag_bad -19.2%, coverage +1.2%.
+8. Match cost is mass-aware: a 1-fire DBSCAN noise point can no longer outbid
+   a 400-fire front for an established track. Measured (with 7): zigzag_bad
+   -36.2%, fires_per_grp +5.9%.
+9. pct_inside honours polygon HOLES (v6 only tested ring[0], so donut-shaped
+   parks counted enclave fires as inside) and uses a prepared geometry.
 
 Output (unchanged schema): data/fire_groups_v5/{park_id}.json
 """
 
 import json
 import math
+import sys
+import bisect
 import hashlib
 import argparse
 import numpy as np
@@ -30,23 +51,59 @@ from datetime import datetime, timedelta
 from collections import defaultdict
 from sklearn.cluster import DBSCAN
 
+sys.path.insert(0, str(Path(__file__).parent))
+from fire_source import (load_park_fires as _load_fires, earliest_fire_date,
+                         date_num, parse_acq_time)
+
+try:
+    from scipy.optimize import linear_sum_assignment
+    HAVE_SCIPY = True
+except ImportError:  # fall back to greedy assignment
+    HAVE_SCIPY = False
+
 BASE_DIR = Path(__file__).parent.parent
 KEYSTONES_FILE = BASE_DIR / "data" / "keystones_with_boundaries.json"
 FIRE_DIR = BASE_DIR / "data" / "raw-fire-viirs-20200101-20260222"
 OUTPUT_DIR = BASE_DIR / "data" / "fire_groups_v5"
 TRENDS_DIR = BASE_DIR / "data" / "fire_trends_v5"
 
-# --- Per-day spatial clustering ---
-DAY_EPS_KM = 3.0           # DBSCAN eps within a single day
-DAY_MIN_SAMPLES = 3        # min fires to form a day-cluster
+# --- Per-slice spatial clustering ---
+DAY_EPS_KM = 3.0           # DBSCAN eps within a single time slice
+DAY_MIN_SAMPLES = 3        # min fires to form a slice-cluster
 
-# --- Day-to-day track matching ---
+# --- Overpass slicing ---
+# Fires whose acq_dt fall within this many hours of each other belong to the
+# same overpass. A single VIIRS swath spans minutes and day/night passes are
+# ~12h apart, so 4h separates passes cleanly even with 3 satellites.
+OVERPASS_GAP_H = 4.0
+# DEFAULT OFF - measured regression, see docs/FIRE_PIPELINE.md.
+# With a single satellite (NOAA-20) the two daily passes are wildly asymmetric:
+# on ZMB_Kafue the day pass averages 763 fires at mean FRP 10.6, the night pass
+# 63 fires at FRP 1.7. Treating them as equal temporal samples makes every
+# other trajectory vertex a sparse, low-FRP, spatially-biased estimate, which
+# injects an oscillation that trips the turn gate: mean_days -21%,
+# dup_pairs +23%, coverage -2.4%.
+# Revisit once VIIRS_SNPP + NOAA-21 are ingested (~6 passes/day): each slice
+# then has enough detections to stand on its own. Enable with --overpass.
+USE_OVERPASS = False
+
+# --- Slice-to-slice track matching ---
 MAX_GAP_DAYS = 3           # max days a track survives without detections
-BASE_LINK_KM = 5.0         # base matching radius (day-cluster -> predicted pos)
+BASE_LINK_KM = 5.0         # base matching radius (slice-cluster -> predicted pos)
 SPREAD_KM_PER_DAY = 8.0    # extra radius per day of gap (fast grass fires)
 TURN_LIMIT_DEG = 100       # reject match if established track turns harder than this
 TURN_MIN_STEP_KM = 3.0     # ...unless the step is small (stationary flicker)
 VELOCITY_ALPHA = 0.5       # EMA weight for track velocity update
+# Match gate has a floor of one day's spread: a day and a night pass sit ~12h
+# apart, and the FRP centroid genuinely jumps a few km between them (night
+# passes detect more small fires). Scaling the gate down with the real sub-day
+# gap fragments tracks badly - measured frag_pct +79%, mean_days -22%.
+GATE_MIN_GAP_DAYS = 1.0
+# Mass-similarity penalty (km-equivalent) for size mismatch between a track's
+# last cluster and a candidate. Stops noise singletons hijacking large fronts.
+# 3.0 chosen by ablation (scripts/eval_fire_trajectories.py): best zigzag_bad
+# (-36%) and the only value that improved geometry on all 6 golden parks.
+MASS_PENALTY_KM = 3.0
 
 # --- Post-hoc chaining of track fragments ---
 CHAIN_MAX_GAP_DAYS = 4     # A ends, B starts within N days
@@ -88,15 +145,56 @@ def bearing_diff(b1, b2):
 
 
 def point_in_polygon(lon, lat, geometry):
+    """Correct point-in-polygon INCLUDING holes.
+
+    v6 only tested ring[0] of each polygon, so any park mapped as a donut
+    (excluded enclave, inner village) counted enclave fires as inside.
+    """
     coords = geometry.get('coordinates', [])
     if geometry['type'] == 'MultiPolygon':
-        for poly in coords:
-            if _point_in_ring(lon, lat, poly[0]):
-                return True
-        return False
+        return any(_point_in_poly_rings(lon, lat, poly) for poly in coords)
     elif geometry['type'] == 'Polygon':
-        return _point_in_ring(lon, lat, coords[0])
+        return _point_in_poly_rings(lon, lat, coords)
     return False
+
+
+def _point_in_poly_rings(lon, lat, rings):
+    """rings[0] = outer, rings[1:] = holes."""
+    if not rings or not _point_in_ring(lon, lat, rings[0]):
+        return False
+    for hole in rings[1:]:
+        if _point_in_ring(lon, lat, hole):
+            return False
+    return True
+
+
+def make_inside_test(geometry, park_shape=None):
+    """Return f(lons, lats) -> bool ndarray.
+
+    Prefers shapely's prepared geometry, which handles holes natively and is
+    far faster than the pure-python ray cast that ran once per fire per group.
+    Falls back to point_in_polygon if shapely is unavailable.
+    """
+    try:
+        from shapely.geometry import shape as _shape, Point
+        from shapely.prepared import prep
+        geom = park_shape
+        if geom is None:
+            geom = _shape(geometry)
+            if not geom.is_valid:
+                geom = geom.buffer(0)
+        pgeom = prep(geom)
+
+        def _fast(lons, lats):
+            return np.fromiter(
+                (pgeom.contains(Point(x, y)) for x, y in zip(lons, lats)),
+                dtype=bool, count=len(lons))
+        return _fast
+    except Exception:
+        def _slow(lons, lats):
+            return np.array([point_in_polygon(x, y, geometry)
+                             for x, y in zip(lons, lats)], dtype=bool)
+        return _slow
 
 
 def _point_in_ring(lon, lat, ring):
@@ -125,67 +223,103 @@ def load_parks():
     return parks
 
 
-def load_park_fires(park_id, min_date):
-    fire_file = FIRE_DIR / f"{park_id}.json"
-    if not fire_file.exists():
+def load_park_fires(park_id, min_date, source='db'):
+    """Load fires from the canonical source (SQLite by default).
+
+    See fire_source.py: the legacy JSON files are a rolling window and must not
+    be used for full rebuilds.
+    """
+    return _load_fires(park_id, min_date, source=source)
+
+
+# ---------------------------------------------------------------------------
+# Stage 1: per-overpass spatial clustering
+# ---------------------------------------------------------------------------
+
+def overpass_slices(fires):
+    """Split fires into satellite overpasses by gap-clustering acq_dt.
+
+    v6 bucketed by calendar date, which merged the day and night pass (~12h
+    apart) into a single FRP-weighted centroid - averaging away the very
+    movement we are trying to measure. Slicing by overpass roughly doubles
+    temporal resolution today, and scales automatically as more satellites
+    are ingested.
+    """
+    if not fires:
         return []
-    with open(fire_file) as f:
-        data = json.load(f)
-    fires = data.get('fires', data) if isinstance(data, dict) else data
-    valid_fires = []
-    for f in fires:
-        if f.get('acq_date', '') < min_date:
-            continue
-        lon = f.get('longitude', 0)
-        lat = f.get('latitude', 0)
-        if lon == 0.0 or lat == 0.0:  # data errors
-            continue
-        valid_fires.append(f)
-    return valid_fires
+    if not USE_OVERPASS:
+        by_date = defaultdict(list)
+        for f in fires:
+            by_date[f['acq_date']].append(f)
+        return [by_date[d] for d in sorted(by_date)]
+    ordered = sorted(fires, key=lambda f: f['acq_dt'])
+    gap = OVERPASS_GAP_H / 24.0
+    slices = [[ordered[0]]]
+    for f in ordered[1:]:
+        if f['acq_dt'] - slices[-1][-1]['acq_dt'] > gap:
+            slices.append([f])
+        else:
+            slices[-1].append(f)
+    return slices
 
-
-# ---------------------------------------------------------------------------
-# Stage 1: per-day spatial clustering
-# ---------------------------------------------------------------------------
 
 def daily_clusters(fires):
-    """Cluster fires within each day spatially.
-    Returns list of dicts: {date, fires, centroid (FRP-weighted), n}.
-    """
-    by_date = defaultdict(list)
-    for f in fires:
-        by_date[f['acq_date']].append(f)
+    """Cluster fires spatially within each overpass.
+    Returns list of dicts: {t, date, fires, centroid (FRP-weighted), n}.
 
+    All clusters from one slice share the slice's `t` so that build_tracks
+    considers them together in a single assignment step. (Using each cluster's
+    own mean time would put every cluster in its own time slice and defeat the
+    joint matching entirely.)
+    """
     out = []
-    for date in sorted(by_date.keys()):
-        day_fires = by_date[date]
-        if len(day_fires) < DAY_MIN_SAMPLES:
-            out.append(_make_day_cluster(date, day_fires))
+    for sl in overpass_slices(fires):
+        # Slice-level timestamp + representative date, shared by all clusters.
+        # In calendar mode t must be the integer day number, otherwise the mean
+        # detection time makes consecutive days differ by != 1.0 and tracks get
+        # retired early against MAX_GAP_DAYS (this silently shortened tracks).
+        if USE_OVERPASS:
+            slice_t = sum(f['acq_dt'] for f in sl) / len(sl)
+            slice_date = min(sl, key=lambda f: abs(f['acq_dt'] - slice_t))['acq_date']
+            slice_hhmm = None  # derived from slice_t
+        else:
+            slice_date = sl[0]['acq_date']
+            slice_t = float(date_num(slice_date))
+            # Keep the real median detection time for display/animation even
+            # though matching uses the integer day number.
+            fracs = sorted(f['acq_dt'] - math.floor(f['acq_dt']) for f in sl)
+            slice_hhmm = _hhmm(fracs[len(fracs) // 2])
+        if len(sl) < DAY_MIN_SAMPLES:
+            out.append(_make_day_cluster(sl, slice_t, slice_date, slice_hhmm))
             continue
-        coords = np.array([[f['longitude'], f['latitude']] for f in day_fires])
+        coords = np.array([[f['longitude'], f['latitude']] for f in sl])
         lat0 = math.radians(float(np.mean(coords[:, 1])))
         # local km projection (fixes v5's 1deg==111km assumption for lon)
         coords_km = np.column_stack([coords[:, 0] * 111.32 * math.cos(lat0),
                                      coords[:, 1] * 110.57])
         labels = DBSCAN(eps=DAY_EPS_KM, min_samples=DAY_MIN_SAMPLES).fit_predict(coords_km)
-        # collect clusters
         for label in sorted(set(labels)):
             if label < 0:
                 continue
-            cf = [day_fires[i] for i, l in enumerate(labels) if l == label]
-            out.append(_make_day_cluster(date, cf))
-        # noise points become singleton clusters (can still join tracks)
-        for f, l in zip(day_fires, labels):
+            cf = [sl[i] for i, l in enumerate(labels) if l == label]
+            out.append(_make_day_cluster(cf, slice_t, slice_date, slice_hhmm))
+        # noise points become singleton clusters (can still join tracks, but
+        # the mass penalty stops them stealing established fronts)
+        for f, l in zip(sl, labels):
             if l < 0:
-                out.append(_make_day_cluster(date, [f]))
+                out.append(_make_day_cluster([f], slice_t, slice_date, slice_hhmm))
+    out.sort(key=lambda c: c['t'])
     return out
 
 
-def _make_day_cluster(date, cf):
+def _make_day_cluster(cf, slice_t, slice_date, slice_hhmm=None):
     wsum = sum(max(f.get('frp') or 0.0, 0.1) for f in cf)
     cx = sum(f['longitude'] * max(f.get('frp') or 0.0, 0.1) for f in cf) / wsum
     cy = sum(f['latitude'] * max(f.get('frp') or 0.0, 0.1) for f in cf) / wsum
-    return {'date': date, 'fires': cf, 'centroid': (cx, cy), 'n': len(cf)}
+    # slice_date is the date of the overpass midpoint, so a 23:5x pass is not
+    # attributed to the following day.
+    return {'t': slice_t, 'date': slice_date, 'fires': cf,
+            'centroid': (cx, cy), 'n': len(cf), 'hhmm': slice_hhmm}
 
 
 # ---------------------------------------------------------------------------
@@ -193,25 +327,31 @@ def _make_day_cluster(date, cf):
 # ---------------------------------------------------------------------------
 
 class Track:
-    __slots__ = ('points', 'fires', 'vel', 'last_date', 'last_bearing', 'moved_km')
+    __slots__ = ('points', 'fires', 'vel', 'last_t', 'last_date', 'last_bearing',
+                 'moved_km', 'last_n')
 
     def __init__(self, dc):
-        self.points = [(dc['centroid'][0], dc['centroid'][1], dc['date'])]
+        self.points = [(dc['centroid'][0], dc['centroid'][1], dc['date'], dc['t'],
+                        dc.get('hhmm'))]
         self.fires = list(dc['fires'])
         self.vel = (0.0, 0.0)          # deg/day (lon, lat)
+        self.last_t = dc['t']
         self.last_date = dc['date']
         self.last_bearing = None
         self.moved_km = 0.0
+        self.last_n = dc['n']
 
-    def predict(self, date):
-        gap = _days_between(self.last_date, date)
+    def predict(self, t):
+        gap = t - self.last_t
         lon, lat = self.points[-1][0], self.points[-1][1]
         return (lon + self.vel[0] * gap, lat + self.vel[1] * gap)
 
     def extend(self, dc):
-        lon0, lat0, d0 = self.points[-1]
+        lon0, lat0 = self.points[-1][0], self.points[-1][1]
         lon1, lat1 = dc['centroid']
-        gap = max(_days_between(d0, dc['date']), 1)
+        # Real elapsed time between overpasses, floored so a same-pass merge
+        # cannot explode the velocity estimate.
+        gap = max(dc['t'] - self.last_t, 1.0 / 24.0)
         step_km = haversine(lon0, lat0, lon1, lat1)
         if step_km > 0.5:
             self.last_bearing = bearing(lon0, lat0, lon1, lat1)
@@ -220,9 +360,11 @@ class Track:
         vlat = (lat1 - lat0) / gap
         self.vel = (VELOCITY_ALPHA * vlon + (1 - VELOCITY_ALPHA) * self.vel[0],
                     VELOCITY_ALPHA * vlat + (1 - VELOCITY_ALPHA) * self.vel[1])
-        self.points.append((lon1, lat1, dc['date']))
+        self.points.append((lon1, lat1, dc['date'], dc['t'], dc.get('hhmm')))
         self.fires.extend(dc['fires'])
+        self.last_t = dc['t']
         self.last_date = dc['date']
+        self.last_n = dc['n']
 
 
 _date_cache = {}
@@ -239,53 +381,74 @@ def _days_between(d0, d1):
     return (_parse_date(d1) - _parse_date(d0)).days
 
 
+def _hhmm(t):
+    """Fractional-day time -> 'HHMM' for the trajectory point's 4th element."""
+    frac = t - math.floor(t)
+    mins = int(round(frac * 1440)) % 1440
+    return f"{mins // 60:02d}{mins % 60:02d}"
+
+
+def _mass_penalty(n_track, n_cand):
+    """km-equivalent cost for cluster-size mismatch.
+
+    A 1-fire noise point and a 400-fire front used to compete on pure distance,
+    letting noise hijack an established track (and truncate the real front).
+    Log-ratio keeps this scale-free: 2x mismatch is cheap, 100x is expensive.
+    """
+    a, b = max(n_track, 1), max(n_cand, 1)
+    return MASS_PENALTY_KM * abs(math.log10(a / b))
+
+
 def build_tracks(day_clusters):
-    """Greedy nearest-match tracking of day-clusters into multi-day tracks."""
-    by_date = defaultdict(list)
+    """Track slice-clusters into multi-day tracks.
+
+    Assignment within each time slice is globally optimal (Hungarian) rather
+    than greedy nearest-first: with two parallel fronts a few km apart, greedy
+    could hand the nearer cluster to the wrong track and cross the two.
+    """
+    by_t = defaultdict(list)
     for dc in day_clusters:
-        by_date[dc['date']].append(dc)
+        by_t[dc['t']].append(dc)
 
     active = []
     closed = []
 
-    for date in sorted(by_date.keys()):
+    for t in sorted(by_t.keys()):
         # retire stale tracks
         still_active = []
-        for t in active:
-            if _days_between(t.last_date, date) > MAX_GAP_DAYS:
-                closed.append(t)
+        for tr in active:
+            if t - tr.last_t > MAX_GAP_DAYS:
+                closed.append(tr)
             else:
-                still_active.append(t)
+                still_active.append(tr)
         active = still_active
 
-        clusters = by_date[date]
-        candidates = []
-        for ti, t in enumerate(active):
-            gap = _days_between(t.last_date, date)
-            pred = t.predict(date)
-            gate = BASE_LINK_KM + gap * SPREAD_KM_PER_DAY
+        clusters = by_t[t]
+        # Build sparse cost list, applying hard gates (radius / turn).
+        costs = {}
+        for ti, tr in enumerate(active):
+            gap = t - tr.last_t
+            pred = tr.predict(t)
+            gate = BASE_LINK_KM + max(gap, GATE_MIN_GAP_DAYS) * SPREAD_KM_PER_DAY
+            lon0, lat0 = tr.points[-1][0], tr.points[-1][1]
             for ci, dc in enumerate(clusters):
                 lon1, lat1 = dc['centroid']
                 dist = haversine(pred[0], pred[1], lon1, lat1)
                 if dist > gate:
                     continue
-                # direction continuity for established, actually-moving tracks
-                lon0, lat0 = t.points[-1][0], t.points[-1][1]
                 step_km = haversine(lon0, lat0, lon1, lat1)
-                if (t.last_bearing is not None and t.moved_km > 3.0
+                if (tr.last_bearing is not None and tr.moved_km > 3.0
                         and step_km > TURN_MIN_STEP_KM):
-                    turn = bearing_diff(t.last_bearing, bearing(lon0, lat0, lon1, lat1))
+                    turn = bearing_diff(tr.last_bearing, bearing(lon0, lat0, lon1, lat1))
                     if turn > TURN_LIMIT_DEG:
                         continue
-                candidates.append((dist, ti, ci))
+                costs[(ti, ci)] = dist + _mass_penalty(tr.last_n, dc['n'])
 
-        candidates.sort(key=lambda c: c[0])
-        used_tracks, used_clusters = set(), set()
-        for dist, ti, ci in candidates:
-            if ti in used_tracks or ci in used_clusters:
-                continue
+        pairs = _solve_assignment(costs, len(active), len(clusters))
+
+        used_clusters = set()
+        for ti, ci in pairs:
             active[ti].extend(clusters[ci])
-            used_tracks.add(ti)
             used_clusters.add(ci)
 
         for ci, dc in enumerate(clusters):
@@ -294,6 +457,36 @@ def build_tracks(day_clusters):
 
     closed.extend(active)
     return closed
+
+
+def _solve_assignment(costs, n_tracks, n_clusters):
+    """Min-cost 1:1 matching over the gated (track, cluster) pairs."""
+    if not costs:
+        return []
+    if not HAVE_SCIPY:
+        # Greedy fallback (previous v6 behaviour).
+        out, ut, uc = [], set(), set()
+        for (ti, ci), c in sorted(costs.items(), key=lambda kv: kv[1]):
+            if ti in ut or ci in uc:
+                continue
+            ut.add(ti)
+            uc.add(ci)
+            out.append((ti, ci))
+        return out
+
+    # Restrict the matrix to rows/cols that actually have a candidate; a dense
+    # matrix over all tracks x clusters would be huge in peak season.
+    rows = sorted({ti for ti, _ in costs})
+    cols = sorted({ci for _, ci in costs})
+    ri = {t: i for i, t in enumerate(rows)}
+    cj = {c: j for j, c in enumerate(cols)}
+    BIG = 1e6
+    m = np.full((len(rows), len(cols)), BIG, dtype=float)
+    for (ti, ci), c in costs.items():
+        m[ri[ti], cj[ci]] = c
+    r_idx, c_idx = linear_sum_assignment(m)
+    return [(rows[r], cols[c]) for r, c in zip(r_idx, c_idx)
+            if m[r, c] < BIG]
 
 
 # ---------------------------------------------------------------------------
@@ -326,39 +519,42 @@ def chain_tracks(tracks):
     if n < 2:
         return tracks
 
-    # bucket track starts by date for fast lookup
-    starts_by_date = defaultdict(list)
-    for i, t in enumerate(tracks):
-        starts_by_date[t.points[0][2]].append(i)
+    # Sort by start time so we only ever look forward.
+    order_by_start = sorted(range(n), key=lambda i: tracks[i].points[0][3])
+    starts = [tracks[i].points[0][3] for i in order_by_start]
 
     links = []
     for a in range(n):
         ta = tracks[a]
-        end_dt = _parse_date(ta.last_date)
-        for gap in range(1, CHAIN_MAX_GAP_DAYS + 1):
-            d = (end_dt + timedelta(days=gap)).strftime('%Y-%m-%d')
-            for b in starts_by_date.get(d, []):
-                if a == b:
-                    continue
-                tb = tracks[b]
-                dist = haversine(ta.points[-1][0], ta.points[-1][1],
+        t_end = ta.last_t
+        # candidates: tracks starting in (t_end, t_end + CHAIN_MAX_GAP_DAYS]
+        lo = _bisect_right(starts, t_end)
+        for k in range(lo, len(starts)):
+            gap = starts[k] - t_end
+            if gap > CHAIN_MAX_GAP_DAYS:
+                break
+            b = order_by_start[k]
+            if a == b:
+                continue
+            tb = tracks[b]
+            dist = haversine(ta.points[-1][0], ta.points[-1][1],
+                             tb.points[0][0], tb.points[0][1])
+            if dist > CHAIN_BASE_KM + max(gap, GATE_MIN_GAP_DAYS) * SPREAD_KM_PER_DAY:
+                continue
+            jump_b = None
+            if dist > 1.0:
+                jump_b = bearing(ta.points[-1][0], ta.points[-1][1],
                                  tb.points[0][0], tb.points[0][1])
-                if dist > CHAIN_BASE_KM + gap * SPREAD_KM_PER_DAY:
-                    continue
-                jump_b = None
-                if dist > 1.0:
-                    jump_b = bearing(ta.points[-1][0], ta.points[-1][1],
-                                     tb.points[0][0], tb.points[0][1])
-                exit_b = _track_exit_bearing(ta)
-                entry_b = _track_entry_bearing(tb)
-                ok = True
-                for b1, b2 in ((exit_b, jump_b), (jump_b, entry_b), (exit_b, entry_b)):
-                    if b1 is not None and b2 is not None and bearing_diff(b1, b2) > CHAIN_TURN_LIMIT_DEG:
-                        ok = False
-                        break
-                if not ok:
-                    continue
-                links.append((dist + gap * 2.0, a, b))
+            exit_b = _track_exit_bearing(ta)
+            entry_b = _track_entry_bearing(tb)
+            ok = True
+            for b1, b2 in ((exit_b, jump_b), (jump_b, entry_b), (exit_b, entry_b)):
+                if b1 is not None and b2 is not None and bearing_diff(b1, b2) > CHAIN_TURN_LIMIT_DEG:
+                    ok = False
+                    break
+            if not ok:
+                continue
+            links.append((dist + gap * 2.0 + _mass_penalty(ta.last_n, tb.last_n), a, b))
 
     links.sort(key=lambda l: l[0])
     next_of, prev_of = {}, {}
@@ -382,8 +578,7 @@ def chain_tracks(tracks):
 
     merged = []
     consumed = set()
-    order = sorted(range(n), key=lambda i: tracks[i].points[0][2])
-    for i in order:
+    for i in order_by_start:
         if i in prev_of or i in consumed:
             continue
         t = tracks[i]
@@ -394,10 +589,15 @@ def chain_tracks(tracks):
             nxt = tracks[j]
             t.points.extend(nxt.points)
             t.fires.extend(nxt.fires)
+            t.last_t = nxt.last_t
             t.last_date = nxt.last_date
             consumed.add(j)
         merged.append(t)
     return merged
+
+
+def _bisect_right(arr, x):
+    return bisect.bisect_right(arr, x)
 
 
 # ---------------------------------------------------------------------------
@@ -405,7 +605,7 @@ def chain_tracks(tracks):
 # ---------------------------------------------------------------------------
 
 def smooth_trajectory(points):
-    """points: [(lon,lat,date)]. Remove single-point spikes, then 3-pt moving
+    """points: [(lon,lat,date,t,hhmm)]. Remove single-point spikes, then 3-pt moving
     average on interior points. Endpoints preserved."""
     pts = list(points)
     if len(pts) >= 3:
@@ -420,7 +620,8 @@ def smooth_trajectory(points):
                 if (d_in > 1.0 and d_out > 1.0 and bearing_diff(b_in, b_out) > SPIKE_TURN_DEG
                         and d_skip < 0.7 * (d_in + d_out)):
                     pts[i] = ((pts[i-1][0] + pts[i+1][0]) / 2,
-                              (pts[i-1][1] + pts[i+1][1]) / 2, pts[i][2])
+                              (pts[i-1][1] + pts[i+1][1]) / 2,
+                              pts[i][2], pts[i][3], pts[i][4])
                     changed = True
             if not changed:
                 break
@@ -428,7 +629,8 @@ def smooth_trajectory(points):
         sm = [pts[0]]
         for i in range(1, len(pts) - 1):
             sm.append(((pts[i-1][0] + pts[i][0] + pts[i+1][0]) / 3,
-                       (pts[i-1][1] + pts[i][1] + pts[i+1][1]) / 3, pts[i][2]))
+                       (pts[i-1][1] + pts[i][1] + pts[i+1][1]) / 3,
+                       pts[i][2], pts[i][3], pts[i][4]))
         sm.append(pts[-1])
         pts = sm
     return pts
@@ -486,26 +688,34 @@ def _group_dist_to_park_km(trajectory, pct_inside, park_shape):
         return 0.0
 
 
-def track_to_group(track, park_id, park_geometry, park_shape=None):
+def track_to_group(track, park_id, park_geometry, park_shape=None, inside_test=None):
     fires = track.fires
     if len(fires) < MIN_FIRES:
         return None
 
-    sorted_fires = sorted(fires, key=lambda f: f['acq_date'])
+    sorted_fires = sorted(fires, key=lambda f: f['acq_dt'])
     start_date = sorted_fires[0]['acq_date']
     end_date = sorted_fires[-1]['acq_date']
     days = _days_between(start_date, end_date) + 1
+    # Real elapsed duration, floored at one day: speed stays in km/day and
+    # comparable to the thresholds classify_group() was tuned against, while
+    # still using true elapsed time for multi-day groups.
+    span_days = max(sorted_fires[-1]['acq_dt'] - sorted_fires[0]['acq_dt'], 1.0)
 
     lons = [f['longitude'] for f in fires]
     lats = [f['latitude'] for f in fires]
     centroid = [sum(lons)/len(lons), sum(lats)/len(lats)]
 
-    pts = sorted(track.points, key=lambda p: p[2])
+    pts = sorted(track.points, key=lambda p: p[3])
     if len(pts) >= MIN_DAYS_FOR_TRAJECTORY:
         pts = smooth_trajectory(pts)
-        trajectory = [[round(p[0], 5), round(p[1], 5), p[2], '1200'] for p in pts]
+        # 4th element is the real detection time (HHMM), not the old '1200' stub.
+        trajectory = [[round(p[0], 5), round(p[1], 5), p[2], p[4] or _hhmm(p[3])]
+                      for p in pts]
     else:
-        trajectory = [[round(centroid[0], 5), round(centroid[1], 5), start_date, '1200']]
+        p0 = pts[0] if pts else None
+        trajectory = [[round(centroid[0], 5), round(centroid[1], 5), start_date,
+                       (p0[4] or _hhmm(p0[3])) if p0 else '1200']]
 
     zigzag_ratio, _avg = zigzag_metrics(trajectory)
     if len(trajectory) < 2:
@@ -527,11 +737,14 @@ def track_to_group(track, park_id, park_geometry, park_shape=None):
     else:
         direction = 'N'
 
-    inside = sum(1 for f in fires
-                 if point_in_polygon(f['longitude'], f['latitude'], park_geometry))
+    if inside_test is not None:
+        inside = int(np.count_nonzero(inside_test(lons, lats)))
+    else:
+        inside = sum(1 for f in fires
+                     if point_in_polygon(f['longitude'], f['latitude'], park_geometry))
     pct_inside = 100 * inside / len(fires)
     total_frp = sum(f.get('frp', 0) or 0 for f in fires)
-    speed = distance_km / max(days, 1)
+    speed = distance_km / span_days
     group_type = classify_group(days, distance_km, pct_inside, speed, len(fires))
 
     first_point = trajectory[0] if trajectory else centroid
@@ -579,9 +792,10 @@ def process_park_fires(fires, park_id, park_geometry):
             park_shape = park_shape.buffer(0)
     except Exception:
         pass
+    inside_test = make_inside_test(park_geometry, park_shape)
     groups = []
     for t in tracks:
-        g = track_to_group(t, park_id, park_geometry, park_shape)
+        g = track_to_group(t, park_id, park_geometry, park_shape, inside_test)
         if g:
             groups.append(g)
     return groups
@@ -598,11 +812,50 @@ def main():
                         help='Incremental mode: only process recent fires')
     parser.add_argument('--days', type=int, default=14, help='Days window for incremental mode')
     parser.add_argument('--output-dir', help='Override output directory (for A/B testing)')
+    parser.add_argument('--source', choices=['db', 'json'], default='db',
+                        help='Fire source. db = fire_detections (canonical, full '
+                             'history). json = legacy rolling-window files, for '
+                             'A/B only - they silently omit years of data.')
+    # Ablation switches, for scripts/eval_fire_trajectories.py A/B runs.
+    parser.add_argument('--overpass', action='store_true',
+                        help='Slice by satellite overpass instead of calendar day. '
+                             'Currently a measured regression with one satellite; '
+                             'revisit with SNPP+NOAA-21 ingested.')
+    parser.add_argument('--no-overpass', action='store_true',
+                        help='(default) Bucket by calendar day')
+    parser.add_argument('--no-mass-penalty', action='store_true',
+                        help='Disable mass-similarity term in match cost')
+    parser.add_argument('--no-hungarian', action='store_true',
+                        help='Use greedy nearest-first assignment (v6 behaviour)')
+    parser.add_argument('--set', action='append', metavar='NAME=VALUE', default=[],
+                        help='Override a tuning constant, e.g. --set MASS_PENALTY_KM=3')
     args = parser.parse_args()
+
+    global USE_OVERPASS, MASS_PENALTY_KM, HAVE_SCIPY
+    if args.overpass:
+        USE_OVERPASS = True
+    if args.no_overpass:
+        USE_OVERPASS = False
+    if args.no_mass_penalty:
+        MASS_PENALTY_KM = 0.0
+    if args.no_hungarian:
+        HAVE_SCIPY = False
+    for kv in args.set:
+        name, _, val = kv.partition('=')
+        name = name.strip().upper()
+        if name not in globals():
+            parser.error(f'unknown constant {name}')
+        globals()[name] = type(globals()[name])(val)
+        log(f'  override {name}={globals()[name]}')
 
     out_dir = Path(args.output_dir) if args.output_dir else OUTPUT_DIR
 
-    log("Fire Trajectory Builder v6 (per-day clustering + track matching)")
+    log("Fire Trajectory Builder v7 (per-overpass clustering + track matching)")
+    log(f"Source: {args.source}"
+        + ("  (WARNING: rolling window, not full history)"
+           if args.source == 'json' else ""))
+    if not HAVE_SCIPY:
+        log("  scipy unavailable -> greedy assignment fallback")
 
     min_date = MIN_DATE
     if args.incremental:
@@ -612,7 +865,8 @@ def main():
     log("Loading parks...")
     parks = load_parks()
     log(f"Loaded {len(parks)} parks")
-    log(f"Params: day_eps={DAY_EPS_KM}km, link={BASE_LINK_KM}km+{SPREAD_KM_PER_DAY}km/day, "
+    log(f"Params: day_eps={DAY_EPS_KM}km, overpass_gap={OVERPASS_GAP_H}h, "
+        f"link={BASE_LINK_KM}km+{SPREAD_KM_PER_DAY}km/day, "
         f"max_gap={MAX_GAP_DAYS}d, chain_gap<={CHAIN_MAX_GAP_DAYS}d, min_fires={MIN_FIRES}")
 
     out_dir.mkdir(exist_ok=True, parents=True)
@@ -647,13 +901,11 @@ def main():
                 effective_min_date = min(g['start_date'] for g in spanning)
             # Never walk back before the raw data actually starts, or we'd
             # drop old groups that cannot be rebuilt from available fires.
-            all_raw = load_park_fires(park_id, '0000-00-00')
-            if all_raw:
-                raw_min = min(f['acq_date'] for f in all_raw)
-                if effective_min_date < raw_min:
-                    effective_min_date = raw_min
+            raw_min = earliest_fire_date(park_id, source=args.source)
+            if raw_min and effective_min_date < raw_min:
+                effective_min_date = raw_min
 
-        fires = load_park_fires(park_id, effective_min_date)
+        fires = load_park_fires(park_id, effective_min_date, source=args.source)
         if not fires and not existing_groups:
             continue
 
@@ -704,14 +956,18 @@ def main():
         'total_fires': total_fires_processed,
         'total_parks': len([p for p in park_ids if p in parks]),
         'date_range': {'start': min_date, 'end': datetime.now().strftime('%Y-%m-%d')},
-        'algorithm': 'v6_track_matching',
+        'algorithm': 'v7_overpass_track_matching',
+        'source': args.source,
         'params': {
             'day_eps_km': DAY_EPS_KM,
             'day_min_samples': DAY_MIN_SAMPLES,
+            'overpass_gap_h': OVERPASS_GAP_H,
             'max_gap_days': MAX_GAP_DAYS,
             'base_link_km': BASE_LINK_KM,
             'spread_km_per_day': SPREAD_KM_PER_DAY,
             'turn_limit_deg': TURN_LIMIT_DEG,
+            'mass_penalty_km': MASS_PENALTY_KM,
+            'assignment': 'hungarian' if HAVE_SCIPY else 'greedy',
             'chain_max_gap_days': CHAIN_MAX_GAP_DAYS,
             'chain_turn_limit_deg': CHAIN_TURN_LIMIT_DEG,
             'min_fires': MIN_FIRES,

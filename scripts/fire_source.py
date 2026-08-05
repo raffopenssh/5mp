@@ -141,3 +141,25 @@ def park_fire_count(park_id, min_date, conn=None):
     finally:
         if own:
             conn.close()
+
+
+def earliest_fire_date(park_id, source="db", conn=None):
+    """Earliest available detection date for a park, or None.
+
+    Incremental mode uses this to avoid walking the rebuild cutoff back past
+    the point where data exists (which would drop unrebuildable old groups).
+    """
+    if source == "json":
+        fires = load_park_fires_json(park_id, "0000-00-00")
+        return min((f["acq_date"] for f in fires), default=None)
+    own = conn is None
+    if own:
+        conn = sqlite3.connect(f"file:{DB_PATH}?mode=ro", uri=True)
+    try:
+        row = conn.execute(
+            "SELECT MIN(acq_date) FROM fire_detections WHERE protected_area_id = ?",
+            (park_id,)).fetchone()
+        return row[0] if row and row[0] else None
+    finally:
+        if own:
+            conn.close()
