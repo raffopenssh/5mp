@@ -93,7 +93,7 @@ func (s *Server) HandleAPIFireFrames(w http.ResponseWriter, r *http.Request) {
 	// layer=effort: patrol effort (green pixels) from effort_data, bucketed the same way.
 	// Returns grid-indexed coords in p entries: [xi, yi, distance_km, uploads].
 	if q.Get("layer") == "effort" {
-		s.serveEffortFrames(w, from, to, step, res, south, north, west, east)
+		s.serveEffortFrames(w, RequestEnv(r), from, to, step, res, south, north, west, east)
 		return
 	}
 
@@ -248,7 +248,10 @@ func (s *Server) serveFirePoints(w http.ResponseWriter, from, to string, south, 
 // xi/yi grid as fire frames (cell center = xi*res, yi*res), so the animator
 // renders both layers with identical grid-aligned pixels.
 // p entries: [xi, yi, distance_km, uploads].
-func (s *Server) serveEffortFrames(w http.ResponseWriter, from, to, step string, res, south, north, west, east float64) {
+func (s *Server) serveEffortFrames(w http.ResponseWriter, env, from, to, step string, res, south, north, west, east float64) {
+	if env != "test" {
+		env = "prod"
+	}
 	var bucketExpr string
 	dateExpr := "printf('%04d-%02d-%02d', e.year, e.month, COALESCE(e.day,1))"
 	switch step {
@@ -272,13 +275,13 @@ func (s *Server) serveEffortFrames(w http.ResponseWriter, from, to, step string,
 		       SUM(e.total_distance_km) AS dist, SUM(e.unique_uploads) AS ups
 		FROM effort_data e
 		JOIN grid_cells gc ON gc.id = e.grid_cell_id
-		WHERE e.day IS NOT NULL AND e.movement_type = 'all' AND e.env = 'prod'
+		WHERE e.day IS NOT NULL AND e.movement_type = 'all' AND e.env = ?
 		  AND gc.lat_center BETWEEN ? AND ? AND gc.lon_center BETWEEN ? AND ?
 		  AND %s >= ? AND %s <= ?
 		GROUP BY xi, yi, bucket
 		LIMIT 200000`, bucketExpr, dateExpr, dateExpr)
 
-	rows, err := s.DB.Query(query, res, res, south, north, west, east, from, to)
+	rows, err := s.DB.Query(query, res, res, env, south, north, west, east, from, to)
 	if err != nil {
 		http.Error(w, `{"error":"query failed"}`, http.StatusInternalServerError)
 		return
