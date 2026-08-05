@@ -1,3 +1,15 @@
+932a0c2 2026-08-05 14:07:17 AGENTS.md: mining is a measured negative result, not just 'not ready'
+b0eb67a 2026-08-05 14:06:49 Mining: record the measurement that kills the spectral approach
+7c8899c 2026-08-05 13:51:57 Mining rescope 3-4/5: ranker wired to basins, plus a real evaluator
+7160a2e 2026-08-05 11:06:36 Add mining rebuild handover: steps 1-2 done, 3 partial, 4-5 open
+3f7c4bf 2026-08-05 11:05:56 Mining rescope 3/5 (partial): spectral core as a ranker, not a thresholder
+c734632 2026-08-05 11:04:12 Mining rescope 2/5: corridor from DEM flow accumulation, not OSM waterways
+9141492 2026-08-05 11:04:00 Basins: use mghydro /app/getwshed (watershed+rivers+snapped outlet in 1 call)
+934b348 2026-08-05 10:38:35 Mining rescope 1/5: per-park contributing basin + downstream trace
+702570a 2026-08-05 10:26:47 AGENTS.md: flag mining detection as not production-ready, point at findings doc
+2104086 2026-08-05 10:26:27 Complete mining data source catalogue: 30 sources with verified URLs
+be553c1 2026-08-05 10:19:39 Mining detection: measure against truth data, document findings & sources
+84d1a37 2026-08-05 08:42:07 Handover: keep only open fire-pipeline work
 7b71c6f 2026-08-05 08:41:07 Fire pipeline: hotspot mask, unique group ids, consistency tooling, heartbeat
 8fb2626 2026-08-05 08:11:05 Document remaining fire pipeline work with verified findings
 974a978 2026-08-05 08:03:08 Data: fire pipeline run with 3-sensor ingest (v7 groups)
@@ -6,15 +18,3 @@
 e8b7322 2026-08-05 07:47:01 Fire trajectories v7: SQLite source, Hungarian matching, mass-aware cost
 612da11 2026-08-05 07:26:22 Add fire trajectory A/B eval harness and canonical SQLite fire source
 6602054 2026-07-16 09:18:36 Legal pages follow browser language (Accept-Language)
-d3a46de 2026-07-16 08:08:36 Add sitemap, SEO/OpenGraph meta tags and OG image
-af5c29c 2026-07-16 08:02:24 Add bilingual (DE/EN) Impressum and Datenschutz pages
-3abbbce 2026-07-09 20:38:58 Animator pull-to-extend: measure pull against original handle position
-a1d48a1 2026-07-09 20:37:29 Time slider: gravity fine-squeeze to 1 day + animator pull-to-extend
-adfb3bb 2026-07-09 20:29:23 Time slider: robust handle dragging + mobile PDF export + animator scrub fixes
-eeffd7a 2026-07-09 20:06:21 Add in-process response cache for hot park endpoints; speed up fire-trend
-15f5bd2 2026-07-09 20:01:28 Speed up /stats and /fire-narrative with composite indexes; fix silently-broken fire stats
-9fbf0f6 2026-07-09 19:23:31 Fix server-wide DB pool deadlock that froze star-report CSV/XLSX/PDF exports
-e6f0812 2026-07-09 18:44:04 Onboarding: export raw fire JSON so the v5 pipeline sees backfilled fires
-bca8dfc 2026-07-09 18:38:41 Fix circle-fallback regression: Protected Planet returns area_km2 as string
-0dc9258 2026-07-09 18:29:17 Star report: unified multi-report handling, section-filtered exports, coherent accordion stars
-7b84afa 2026-07-09 18:08:08 Data: daily worker outputs (GFW, turbidity, mining pits, OSM waterways)
