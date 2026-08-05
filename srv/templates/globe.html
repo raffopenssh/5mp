@@ -8837,11 +8837,13 @@
             if (!el) return;
             try {
                 // Fetch infrastructure data from new API
-                const [statsResp, infraResp, learnedResp] = await Promise.all([
+                const [statsResp, infraResp, learnedResp, basinResp] = await Promise.all([
                     fetch(`/api/parks/${encodeURIComponent(paId)}/stats?pwd=${encodeURIComponent(getPwd())}`),
                     fetch(`/api/parks/${encodeURIComponent(paId)}/infrastructure?pwd=${encodeURIComponent(getPwd())}`),
-                    fetch(`/api/admin/learned-features?park_id=${encodeURIComponent(paId)}&pwd=${encodeURIComponent(getPwd())}`)
+                    fetch(`/api/admin/learned-features?park_id=${encodeURIComponent(paId)}&pwd=${encodeURIComponent(getPwd())}`),
+                    fetch(`/api/parks/${encodeURIComponent(paId)}/basin?pwd=${encodeURIComponent(getPwd())}`)
                 ]);
+                const basin = basinResp.ok ? await basinResp.json() : { basins: [] };
                 
                 const data = statsResp.ok ? await statsResp.json() : {};
                 const infra = infraResp.ok ? await infraResp.json() : { rivers: [], roads: [], places: [], summary: {} };
@@ -8884,7 +8886,30 @@
                 }
                 
                 html += '</div>';
-                
+
+                // Watershed context: the contributing (upstream) basin and the
+                // downstream trace. This is the frame in which upstream pressure
+                // (mining, deforestation) on this park is expressible at all -
+                // see docs/MINING_FINDINGS_2026-08.md.
+                const upstream = (basin.basins || []).find(b => b.kind === 'upstream');
+                const downstream = (basin.basins || []).find(b => b.kind === 'downstream');
+                if (upstream || downstream) {
+                    html += '<div class="road-pin-buttons" style="display: flex; gap: 8px; padding: 0 0 4px 0;">';
+                    if (upstream) {
+                        const a = Math.round(upstream.area_km2 || 0).toLocaleString();
+                        html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="basin" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${escapeHtml(parkName)}', 'basin', this)" style="flex: 1;" title="Contributing watershed upstream of this park's river exits (mghydro / MERIT-Hydro). Anything happening in here drains through the park.">
+                            <span style="color: #0ea5e9;">⌬</span> Upstream basin <span style="color:#888;font-size:9px;">${a} km²</span>
+                        </button>`;
+                    }
+                    if (downstream) {
+                        const l = Math.round(downstream.length_km || 0).toLocaleString();
+                        html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="basin_downstream" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${escapeHtml(parkName)}', 'basin_downstream', this)" style="flex: 1;" title="River path traced from this park's outlet to the sea or terminal sink (global-river-runner / MERIT-Basins).">
+                            <span style="color: #22d3ee;">⇣</span> Downstream <span style="color:#888;font-size:9px;">${l} km</span>
+                        </button>`;
+                    }
+                    html += '</div>';
+                }
+
                 // Patrol-visited locations (learned places from GPX uploads) with visit counts
                 const placesVisited = (learned.places || []).filter(p => p.status === 'auto_approved' || p.status === 'approved');
                 if (placesVisited.length > 0) {
@@ -15346,7 +15371,9 @@ ${starredItems.narratives.map(n => {
                 'river': 'river',
                 'place': 'place',
                 'water': 'waterbody',
-                'infrastructure': 'infrastructure'
+                'infrastructure': 'infrastructure',
+                'basin': 'basin_upstream',
+                'basin_downstream': 'basin_downstream'
             }[type] || type;
             
             // Get date range from time slider for time-filtered features
@@ -15453,9 +15480,9 @@ ${starredItems.narratives.map(n => {
             map.addSource(sourceId, { type: 'geojson', data: geojson });
             
             // Style based on type
-            const colors = { fire: '#ef4444', settlement: '#fbbf24', deforestation: '#a855f7', road: '#60a5fa', river: '#3b82f6', water: '#3b82f6', place: '#a855f7', infrastructure: '#22c55e', turbidity: '#eab308', visits: '#10b981' };
+            const colors = { fire: '#ef4444', settlement: '#fbbf24', deforestation: '#a855f7', road: '#60a5fa', river: '#3b82f6', water: '#3b82f6', place: '#a855f7', infrastructure: '#22c55e', turbidity: '#eab308', visits: '#10b981', basin: '#0ea5e9', basin_downstream: '#22d3ee' };
             const color = colors[normalizedType] || '#22c55e';
-            const lineWidths = { fire: 3, settlement: 3, deforestation: 3, road: 2, river: 2.5, water: 2, place: 2, infrastructure: 2 };
+            const lineWidths = { fire: 3, settlement: 3, deforestation: 3, road: 2, river: 2.5, water: 2, place: 2, infrastructure: 2, basin: 2, basin_downstream: 3 };
             const lineWidth = lineWidths[normalizedType] || 2;
             
             // Store reference early so we can add arrowLayerId

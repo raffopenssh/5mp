@@ -1800,6 +1800,18 @@ func (s *Server) HandleAPIParkFeatures(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
+	// Handle contributing basin / downstream trace from park_basins table
+	if featureType == "basin" || featureType == "basin_upstream" || featureType == "basin_downstream" {
+		kind := r.URL.Query().Get("kind")
+		if featureType == "basin_upstream" {
+			kind = "upstream"
+		} else if featureType == "basin_downstream" {
+			kind = "downstream"
+		}
+		s.handleBasinFeatures(w, internalID, kind)
+		return
+	}
+
 	// Handle rivers from park_rivers_hydro table
 	if featureType == "river" {
 		s.handleRiverFeatures(w, internalID, limitStr)
