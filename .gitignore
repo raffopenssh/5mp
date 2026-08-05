@@ -63,3 +63,6 @@ data/worldclim/*.zip
 
 # Local secrets (see secrets.env.example)
 secrets.env
+
+# Fire trajectory A/B eval snapshots (regenerate via eval_fire_trajectories.py)
+data/eval/
