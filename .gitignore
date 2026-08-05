@@ -66,3 +66,4 @@ secrets.env
 
 # Fire trajectory A/B eval snapshots (regenerate via eval_fire_trajectories.py)
 data/eval/
+data/viirs_backfill_state.json
