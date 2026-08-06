@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document id="root_doc">
+<Schema name="mask" id="mask">
+	<SimpleField name="id" type="float"></SimpleField>
+</Schema>
+<Folder><name>mask</name>
+  <Placemark id="mask.1">
+	<Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>
+	<ExtendedData><SchemaData schemaUrl="#mask">
+		<SimpleData name="id">99</SimpleData>
+	</SchemaData></ExtendedData>
+      <MultiGeometry><Polygon><outerBoundaryIs><LinearRing><coordinates>22.7539385200758,10.9664791911196 26.2865773713493,10.8161541336186 31.2974126213825,5.57983129733383 30.5958956863779,4.55261007107701 27.9150988276101,4.25195995607502 23.7811597463327,5.07874777233051 22.7038301675755,5.78026470733516 22.7539385200758,10.9664791911196</coordinates></LinearRing></outerBoundaryIs></Polygon></MultiGeometry>
+  </Placemark>
+</Folder>
+</Document></kml>
