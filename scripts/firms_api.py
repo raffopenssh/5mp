@@ -42,8 +42,9 @@ STATUS_URL = BASE + "/mapserver/mapkey_status/"
 # Hard API limit; do not raise it hoping for the best -- the server 400s.
 MAX_WINDOW_DAYS = 5
 
-# NRT/RT products are served for ~2 months back; beyond that only SP has rows.
-# 45 gives margin on both sides of the real cutover.
+# Fallback only. The real NRT/SP cutover is not a fixed age and is not the same
+# for the three sensors -- see availability() below. Used when the availability
+# endpoint is unreachable.
 NRT_MAX_AGE_DAYS = 45
 
 SENSORS = ["VIIRS_NOAA20", "VIIRS_SNPP", "VIIRS_NOAA21"]
@@ -63,8 +64,63 @@ def _as_date(d):
     return datetime.strptime(str(d)[:10], "%Y-%m-%d").date()
 
 
+_AVAIL_CACHE = {}
+
+
+def availability(force=False):
+    """{'VIIRS_NOAA20_SP': (min_date, max_date), ...} from FIRMS itself.
+
+    The NRT/SP cutover is NOT a fixed age and NOT the same across sensors.
+    Measured 2026-08-06:
+
+        VIIRS_NOAA20   SP .. 2026-05-31   NRT 2026-06-01 ..   (~2 mo of NRT)
+        VIIRS_SNPP     SP .. 2026-04-27   NRT 2026-04-28 ..   (~3.5 mo)
+        VIIRS_NOAA21   SP does not exist  NRT 2024-01-17 ..   (NRT only)
+
+    Guessing this by age fails two ways, both silent-ish:
+      * asking for a nonexistent product ('VIIRS_NOAA21_SP') returns HTTP 400
+        'Invalid source.' -- which is at least loud;
+      * asking the wrong side of a real cutover returns HTTP 200 with a
+        header-only CSV, i.e. zero detections that look like "no fires".
+    An AOI backfill over 2024 hit both: every NOAA21 window 400'd, and the
+    SNPP/NOAA20 windows between the guessed 45-day line and the true cutover
+    came back empty.
+
+    Cached for the life of the process; the boundaries move by a day at a time.
+    """
+    if _AVAIL_CACHE and not force:
+        return _AVAIL_CACHE
+    try:
+        r = requests.get(f"{BASE}/api/data_availability/csv/{api_key()}/ALL",
+                         timeout=60)
+        r.raise_for_status()
+        for line in r.text.strip().splitlines()[1:]:
+            parts = [p.strip() for p in line.split(",")]
+            if len(parts) >= 3:
+                _AVAIL_CACHE[parts[0]] = (parts[1], parts[2])
+    except Exception:
+        pass
+    return _AVAIL_CACHE
+
+
 def pick_source(sensor, start_day):
-    """Full FIRMS source name for a sensor and the start of the window."""
+    """Full FIRMS source name for a sensor and the start of a window.
+
+    Returns None when NEITHER product covers the date -- callers must treat
+    that as "skip", not as a failure to retry: for NOAA21 before 2024-01-17 no
+    amount of retrying will produce rows.
+    """
+    day = _as_date(start_day).isoformat()
+    avail = availability()
+    if avail:
+        hit = [suf for suf in ("SP", "NRT")
+               if sensor + "_" + suf in avail
+               and avail[sensor + "_" + suf][0] <= day <= avail[sensor + "_" + suf][1]]
+        if hit:
+            # Prefer SP where both cover the date: it is the reprocessed
+            # archive and the one our history is built from.
+            return f"{sensor}_{hit[0]}"
+        return None
     age = (date.today() - _as_date(start_day)).days
     return f"{sensor}_{'NRT' if age <= NRT_MAX_AGE_DAYS else 'SP'}"
 
@@ -154,6 +210,8 @@ def fetch_range(sensor, area, start, end=None, log=None, sleep=0.0,
     rows, failed = [], 0
     for start_day, n in day_windows(start, end):
         src = pick_source(sensor, start_day)
+        if src is None:
+            continue        # no product covers this date for this sensor
         got = fetch(src, area, start_day, n, log=log)
         if got is None:
             failed += 1
