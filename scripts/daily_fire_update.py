@@ -17,6 +17,7 @@ Cron: 0 3 * * * cd /home/exedev/5mp && python3 scripts/daily_fire_update.py >> l
 import sys as _sys, os as _os
 _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
 from secrets_config import secret, app_password
+import firms_api
 import os
 import sys
 import re
@@ -29,25 +30,12 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from collections import defaultdict
 
-# Import Webshare proxy helper - use absolute path for cron reliability
 BASE_DIR = Path(__file__).parent.parent
 SCRIPTS_DIR = BASE_DIR / "scripts"
 if str(SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_DIR))
 
-try:
-    from webshare_proxy import get_webshare_proxies, get_proxy_dict
-    WEBSHARE_AVAILABLE = True
-    # Verify we can actually get proxies
-    test_proxies = get_webshare_proxies()
-    if not test_proxies:
-        print("WARNING: Webshare module loaded but no proxies available")
-        WEBSHARE_AVAILABLE = False
-except Exception as e:
-    print(f"WARNING: Could not import Webshare proxies: {e}")
-    print(f"  Scripts dir: {SCRIPTS_DIR}")
-    print(f"  sys.path: {sys.path[:3]}")
-    WEBSHARE_AVAILABLE = False
+# Webshare proxy fallback for FIRMS now lives in firms_api.fetch().
 
 DB_PATH = BASE_DIR / "db.sqlite3"
 DATA_DIR = BASE_DIR / "data"
@@ -59,8 +47,6 @@ LOG_DIR.mkdir(exist_ok=True)
 # failure) rewrites this. Surfaced by GET /api/pipeline-status.
 STATUS_FILE = DATA_DIR / "pipeline_status.json"
 
-NASA_API_KEY = secret('NASA_FIRMS_KEY')
-FIRMS_NRT_URL = "https://firms.modaps.eosdis.nasa.gov/api/area/csv"
 
 # Fetch window. Must be >= the late-arrival delay of FIRMS NRT data, and
 # should not exceed INCREMENTAL_DAYS or a detection older than the fetch window
@@ -70,40 +56,19 @@ FIRMS_NRT_URL = "https://firms.modaps.eosdis.nasa.gov/api/area/csv"
 DEFAULT_DAYS = 10
 INCREMENTAL_DAYS = 14  # Days window for incremental rebuild
 
-# All three operational VIIRS sensors. Previously only NOAA-20 was ingested,
-# giving ~2 overpasses/day; with SNPP and NOAA-21 it is ~6, which is the single
-# biggest quality lever on trajectory continuity (fewer gap-retirements, fewer
-# spurious "gone dark" statuses). Their FIRMS `satellite` codes are distinct
-# (N / N20 / N21) so the fire_detections UNIQUE constraint keeps them apart.
-FIRMS_SOURCES = ["VIIRS_NOAA20_NRT", "VIIRS_SNPP_NRT", "VIIRS_NOAA21_NRT"]
+# All three operational VIIRS sensors live in firms_api.SENSORS; NRT-vs-SP and
+# the 5-day window cap are handled there. Their FIRMS `satellite` codes are
+# distinct (N / N20 / N21) so the fire_detections UNIQUE constraint keeps them
+# apart -- never default that field.
 
 # Max fire_alert notifications per park per run; the rest are rolled up into a
 # single "N more active fire groups" entry. Peak-season parks legitimately have
 # 150-280 active groups, so an uncapped feed drowns everything else.
 MAX_ALERTS_PER_PARK = 5
-FIRMS_SP_SOURCES = ["VIIRS_NOAA20_SP", "VIIRS_SNPP_SP", "VIIRS_NOAA21_SP"]
-
-# FIRMS API has different modes:
-# - NRT (Near Real-Time): 1-10 days, use /days parameter
-# - SP (Standard Processing): historical data, use /1/YYYY-MM-DD parameter
 
 def log(msg):
     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print(f"[{timestamp}] {msg}", flush=True)
-
-
-def parse_firms_csv(text):
-    """Parse FIRMS CSV text into a list of dicts (one per detection)."""
-    lines = text.strip().split('\n')
-    if len(lines) < 2:
-        return []
-    header = lines[0].split(',')
-    fires = []
-    for line in lines[1:]:
-        values = line.split(',')
-        if len(values) >= len(header):
-            fires.append(dict(zip(header, values)))
-    return fires
 
 
 class DailyFireUpdater:
@@ -161,75 +126,70 @@ class DailyFireUpdater:
         return (min(lons), min(lats), max(lons), max(lats))
     
     def download_nrt_fires(self):
-        """Download from every VIIRS sensor and concatenate.
+        """Download from every VIIRS sensor, assigning and inserting per window.
+
+        The FIRMS area API caps a request at 5 days (see scripts/firms_api.py);
+        this used to ask for `self.days`=10 in one URL and got a 400 from every
+        sensor, ingesting nothing while reporting only 'degraded'. Windows are
+        now chunked, and NRT vs SP is chosen per window by age -- asking NRT
+        for an old date returns an empty CSV with HTTP 200, which is worse than
+        an error because it looks like a quiet fire season.
 
         A partial failure is tolerated (we still ingest what we got) but is
         reported, because silently running on one sensor is exactly the
         degradation that is hard to notice.
+
+        Windows are assigned + inserted as they arrive rather than buffered:
+        3 sensors x 10 days of the Africa bbox is >1.2M rows, and this box has
+        7.4 GB and no swap, shared with whatever analysis is running.
         """
-        log(f"Step 1: Downloading fires for last {self.days} days "
-            f"from {len(FIRMS_SOURCES)} sensors...")
-        area = "-20,-35,55,40"  # Africa bbox
-        nrt = self.days <= 10
-        sources = FIRMS_SOURCES if nrt else FIRMS_SP_SOURCES
+        start = (datetime.now() - timedelta(days=self.days - 1)).date()
+        windows = firms_api.day_windows(start)
+        log(f"Steps 1-2: Downloading + ingesting last {self.days} days "
+            f"from {len(firms_api.SENSORS)} sensors "
+            f"({len(windows)} x <=5d windows each)...")
+        area = firms_api.AFRICA_BBOX
 
-        all_fires = []
+        total = 0
         failed = []
-        for source in sources:
-            if nrt:
-                url = f"{FIRMS_NRT_URL}/{NASA_API_KEY}/{source}/{area}/{self.days}"
-            else:
-                start_date = datetime.now() - timedelta(days=self.days)
-                url = (f"{FIRMS_NRT_URL}/{NASA_API_KEY}/{source}/{area}/1/"
-                       f"{start_date.strftime('%Y-%m-%d')}")
-            fires = self._fetch_one(source, url)
-            if fires is None:
-                failed.append(source)
-            else:
-                log(f"  {source}: {len(fires):,} detections")
-                all_fires.extend(fires)
+        for sensor in firms_api.SENSORS:
+            got = [0]
 
-        log(f"  Total: {len(all_fires):,} detections from "
-            f"{len(sources) - len(failed)}/{len(sources)} sensors")
-        self.stats['fires_fetched'] = len(all_fires)
+            def sink(_day, _n, rows, got=got):
+                got[0] += len(rows)
+                self._assign_fires(rows, quiet=True)
+                self.insert_fires(rows, quiet=True)
+
+            _, nfail = firms_api.fetch_range(sensor, area, start, log=log,
+                                             on_window=sink)
+            if nfail and not got[0]:
+                failed.append(sensor)
+                continue
+            if nfail:
+                self._fail('download', f"{sensor}: {nfail} window(s) failed")
+            log(f"  {sensor}: {got[0]:,} detections"
+                + (f" ({nfail} window(s) failed)" if nfail else ""))
+            total += got[0]
+
+        log(f"  Total: {total:,} detections from "
+            f"{len(firms_api.SENSORS) - len(failed)}/{len(firms_api.SENSORS)} sensors, "
+            f"{self.stats['detections_inserted']:,} new rows, "
+            f"{len(self.affected_parks)} parks affected")
+        self.stats['fires_fetched'] = total
         if failed:
             self._fail('download', f"sources failed: {','.join(failed)}")
-
-        if failed:
             msg = (f"Fire download incomplete: {', '.join(failed)} failed; "
-                   f"ingested {len(all_fires)} detections from the rest.")
+                   f"ingested {total} detections from the rest.")
             log(f"  WARNING: {msg}")
             self._notify_system('fire_download_failed',
                                'Fire Download Partially Failed'
-                               if all_fires else 'Fire Download Failed', msg)
-        return all_fires
-
-    def _fetch_one(self, source, url):
-        """Fetch one FIRMS source. Returns list, or None on total failure."""
-        # 1. Direct connection first (verified working from this VM, 2026-07-05)
-        last_err = None
-        try:
-            response = requests.get(url, timeout=120)
-            response.raise_for_status()
-            return parse_firms_csv(response.text)
-        except Exception as e:
-            last_err = e
-            log(f"    {source}: direct failed: {str(e)[:80]}")
-
-        # 2. Fallback: Webshare authenticated proxies
-        if WEBSHARE_AVAILABLE:
-            for ws_proxy in (get_webshare_proxies() or []):
-                proxy_str = f"{ws_proxy['host']}:{ws_proxy['port']}"
-                try:
-                    response = requests.get(url, proxies=get_proxy_dict(ws_proxy),
-                                            timeout=120)
-                    response.raise_for_status()
-                    log(f"    {source}: via Webshare {proxy_str}")
-                    return parse_firms_csv(response.text)
-                except Exception as e:
-                    last_err = e
-        log(f"    {source}: all paths failed: {str(last_err)[:80]}")
-        return None
+                               if total else 'Fire Download Failed', msg)
+        elif self.stats['detections_inserted'] > 1000:
+            self._notify_system(
+                'fire_download_success', 'Fire Download Success',
+                f"Downloaded and processed {self.stats['detections_inserted']} "
+                f"new fire detections from {len(self.affected_parks)} parks")
+        return total
 
     def _fail(self, what, detail):
         """Record a step failure for the heartbeat (the log already has detail)."""
@@ -274,11 +234,14 @@ class DailyFireUpdater:
         except Exception as notif_err:
             log(f"  Failed to create notification: {notif_err}")
     
-    def insert_fires(self, fires):
+    def insert_fires(self, fires, quiet=False):
+        """Insert a batch of detections. Called once per download window, so
+        counters accumulate into self.stats rather than being assigned."""
         if not fires:
             return 0
-        
-        log(f"Step 2: Inserting {len(fires)} fires into database...")
+
+        if not quiet:
+            log(f"Step 2: Inserting {len(fires)} fires into database...")
         
         inserted = 0
         skipped_invalid = 0
@@ -335,10 +298,12 @@ class DailyFireUpdater:
                     first_error = f"{type(e).__name__}: {e}"
         
         self.conn.commit()
-        log(f"  Inserted {inserted} new fire records")
-        self.stats['detections_inserted'] = inserted
-        if skipped_invalid > 0:
-            log(f"  Skipped {skipped_invalid} records with invalid coordinates")
+        self.stats['detections_inserted'] += inserted
+        if not quiet:
+            log(f"  Inserted {inserted} new fire records")
+            if skipped_invalid > 0:
+                log(f"  Skipped {skipped_invalid} records with invalid coordinates")
+            log(f"  Affected parks: {len(self.affected_parks)}")
         if errors:
             log(f"  WARNING: {errors} records failed to insert; first: {first_error}")
             if errors > len(fires) * 0.01:
@@ -346,23 +311,9 @@ class DailyFireUpdater:
                     'fire_ingest_errors', 'Fire Ingest Errors',
                     f"{errors} of {len(fires)} detections failed to insert. "
                     f"First error: {first_error}")
-        log(f"  Affected parks: {len(self.affected_parks)}")
-        
-        # Create success notification if we inserted significant data
-        if inserted > 1000:
-            try:
-                self.conn.execute("""
-                    INSERT INTO notifications (park_id, notification_type, title, message, created_at)
-                    VALUES ('SYSTEM', 'fire_download_success', 'Fire Download Success', ?, datetime('now'))
-                """, (f"Downloaded and processed {inserted} new fire detections from {len(self.affected_parks)} parks",))
-                self.conn.commit()
-                log("  Created notification for successful download")
-            except Exception as notif_err:
-                log(f"  Failed to create notification: {notif_err}")
-        
         return inserted
-    
-    def _assign_fires(self, fires):
+
+    def _assign_fires(self, fires, quiet=False):
         """Annotate each fire dict with _park_id/_dist_km via ParkAssigner.
 
         One fire -> at most one park (nearest boundary within 100km).
@@ -370,7 +321,8 @@ class DailyFireUpdater:
         """
         if not fires:
             return
-        log(f"Step 1b: Assigning {len(fires)} fires to parks (nearest boundary, <=100km)...")
+        if not quiet:
+            log(f"Step 1b: Assigning {len(fires)} fires to parks (nearest boundary, <=100km)...")
         assigned = 0
         for fire in fires:
             try:
@@ -386,7 +338,8 @@ class DailyFireUpdater:
             fire['_park_id'], fire['_dist_km'] = park_id, dist_km
             if park_id:
                 assigned += 1
-        log(f"  {assigned}/{len(fires)} fires within 100km of a park")
+        if not quiet:
+            log(f"  {assigned}/{len(fires)} fires within 100km of a park")
 
     
     def refresh_grid_agg(self):
@@ -1013,14 +966,9 @@ class DailyFireUpdater:
         log(f"Incremental window: {INCREMENTAL_DAYS} days")
         log("")
         
-        # Step 1: Download NRT fires
-        fires = self.download_nrt_fires()
-        
-        # Step 1b: Canonical park assignment (one park per fire, <=100km)
-        self._assign_fires(fires)
-        
-        # Step 2: Insert into database
-        self.insert_fires(fires)
+        # Steps 1/1b/2: download, assign to a single park, insert.
+        # Fused so a window is discarded as soon as it is persisted.
+        self.download_nrt_fires()
         
         # Step 2c: Refresh pre-aggregated animation grids (fire_grid_day/week/month)
         self.refresh_grid_agg()
