@@ -18,19 +18,19 @@ import (
 )
 
 type Server struct {
-	DB           *sql.DB
-	Hostname     string
-	TemplatesDir string
-	StaticDir    string
-	AreaStore    *areas.AreaStore
-	WDPAIndex    *areas.WDPAIndex
-	Auth         *auth.Manager
-	LegalStore   *LegalStore
-	GADMStore    *GADMStore
-	GPXLearner   *GPXLearner
+	DB                   *sql.DB
+	Hostname             string
+	TemplatesDir         string
+	StaticDir            string
+	AreaStore            *areas.AreaStore
+	WDPAIndex            *areas.WDPAIndex
+	Auth                 *auth.Manager
+	LegalStore           *LegalStore
+	GADMStore            *GADMStore
+	GPXLearner           *GPXLearner
 	UploadQueueProcessor *UploadQueueProcessor
-	httpServer   *http.Server
-	templates    map[string]*template.Template
+	httpServer           *http.Server
+	templates            map[string]*template.Template
 }
 
 // Version is set at build time via ldflags
@@ -68,7 +68,10 @@ func New(dbPath, hostname string) (*Server, error) {
 	if err := srv.SeedPrincipals(); err != nil {
 		slog.Warn("seed principals", "error", err)
 	}
-	
+	if err := srv.RefreshAOIIDs(); err != nil {
+		slog.Warn("load aoi ids", "error", err)
+	}
+
 	// Start the GPX learner background processor
 	srv.GPXLearner = NewGPXLearner(srv.DB)
 	srv.GPXLearner.Start()
@@ -76,7 +79,7 @@ func New(dbPath, hostname string) (*Server, error) {
 	// Start the upload queue processor
 	srv.UploadQueueProcessor = NewUploadQueueProcessor(srv.DB, srv)
 	srv.UploadQueueProcessor.Start()
-	
+
 	return srv, nil
 }
 
@@ -133,8 +136,6 @@ func (s *Server) renderTemplate(w http.ResponseWriter, name string, data any) er
 	return nil
 }
 
-
-
 // SetupDatabase initializes the database connection and runs migrations
 func (s *Server) setUpDatabase(dbPath string) error {
 	wdb, err := db.Open(dbPath)
@@ -153,8 +154,8 @@ func (s *Server) Serve(addr string) error {
 	mux := http.NewServeMux()
 
 	// Rate limiters
-	authRL := newRateLimiter(1, time.Second, 10)    // 10 burst, 1/sec refill
-	uploadRL := newRateLimiter(1, time.Second, 5)   // 5 burst, 1/sec refill
+	authRL := newRateLimiter(1, time.Second, 10)  // 10 burst, 1/sec refill
+	uploadRL := newRateLimiter(1, time.Second, 5) // 5 burst, 1/sec refill
 
 	// Public routes
 	mux.HandleFunc("GET /{$}", s.HandleRoot)
@@ -165,7 +166,7 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("GET /logout", s.HandleLogout)
 	mux.HandleFunc("GET /register", s.HandleRegisterPage)
 	mux.HandleFunc("POST /register", RateLimitMiddleware(authRL, s.HandleRegister))
-	
+
 	// Protected routes (require auth)
 	mux.HandleFunc("GET /upload", s.HandleUploadPage)
 	mux.HandleFunc("POST /upload", RateLimitMiddleware(uploadRL, s.HandleUpload))
@@ -173,7 +174,7 @@ func (s *Server) Serve(addr string) error {
 	// Async upload endpoints
 	mux.HandleFunc("POST /api/upload/async", RateLimitMiddleware(uploadRL, s.HandleAsyncUpload))
 	mux.HandleFunc("GET /api/upload/status/{id}", s.HandleUploadStatus)
-	
+
 	// Admin routes (require admin role)
 	mux.HandleFunc("GET /admin", s.RequireAdmin(s.HandleAdminPage))
 	mux.HandleFunc("POST /admin/approve", s.RequireAdmin(s.HandleApproveUser))
@@ -181,7 +182,7 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("POST /admin/upload/fire", s.RequireAdmin(s.HandleUploadFire))
 	mux.HandleFunc("POST /admin/upload/ghsl", s.RequireAdmin(s.HandleUploadGHSL))
 	mux.HandleFunc("GET /admin/status", s.RequireAdmin(s.HandleProcessingStatus))
-	
+
 	// API routes
 	mux.HandleFunc("GET /api/version", s.HandleAPIVersion)
 	mux.HandleFunc("GET /api/pipeline-status", s.HandleAPIPipelineStatus)
@@ -201,7 +202,16 @@ func (s *Server) Serve(addr string) error {
 	// enforcement surface (docs/PLAN_AOI_OVERLAY.md §9).
 	mux.HandleFunc("GET /api/aois", s.HandleAPIAOIList)
 	mux.HandleFunc("GET /api/aois/{id}", s.HandleAPIAOIGet)
-	
+	// Read surface: the park handlers, gated on visibility. They key off
+	// r.PathValue("id") and read the same tables the --aoi v5 chain writes.
+	mux.HandleFunc("GET /api/aois/{id}/fire-narrative", s.aoiGate(s.HandleAPIFireNarrative))
+	mux.HandleFunc("GET /api/aois/{id}/fire-trend", s.aoiGate(s.HandleAPIFireTrend))
+	mux.HandleFunc("GET /api/aois/{id}/fire-realtime", s.aoiGate(s.HandleAPIFireRealtime))
+	mux.HandleFunc("GET /api/aois/{id}/features", s.aoiGate(s.HandleAPIParkFeatures))
+	mux.HandleFunc("GET /api/aois/{id}/deforestation-narrative", s.aoiGate(s.HandleAPIDeforestationNarrative))
+	mux.HandleFunc("GET /api/aois/{id}/settlement-narrative", s.aoiGate(s.HandleAPISettlementNarrative))
+	mux.HandleFunc("GET /api/aois/{id}/export.geojson", s.HandleAPIAOIExportGeoJSON)
+
 	// API auth endpoints
 	mux.HandleFunc("POST /api/login", RateLimitMiddleware(authRL, s.HandleAPILogin))
 	mux.HandleFunc("POST /api/register", RateLimitMiddleware(authRL, s.HandleAPIRegister))
@@ -240,7 +250,7 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("GET /api/parks/{id}/export.kml", s.HandleAPIParkKML)
 	mux.HandleFunc("GET /api/parks/{id}/export.locus", s.HandleAPIParkLocus)
 	mux.HandleFunc("GET /api/export/merged.kml", s.HandleAPIMergedKML)
-	
+
 	// MBTiles generation endpoints (Zenodo-backed, with legacy fallback)
 	mux.HandleFunc("POST /api/parks/{id}/mbtiles", s.HandleAPIZenodoMBTilesCreate)
 	mux.HandleFunc("GET /api/parks/{id}/mbtiles/estimate", s.HandleAPIZenodoMBTilesEstimate)
@@ -278,7 +288,7 @@ func (s *Server) Serve(addr string) error {
 	// Export endpoint
 	mux.HandleFunc("GET /api/export/parks", s.HandleAPIExportParks)
 	mux.HandleFunc("GET /api/export/patrol-pixels", s.HandleAPIExportPatrolPixels)
-	
+
 	// Admin APIs
 	mux.HandleFunc("GET /api/admin/gpx-logs", s.RequireAdmin(s.HandleAPIGPXUploadLogs))
 	mux.HandleFunc("GET /api/admin/learning-results", s.RequireAdmin(s.HandleAPILearningResults))
@@ -333,7 +343,7 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("GET /sitemap.xml", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, s.StaticDir+"/sitemap.xml")
 	})
-	
+
 	// Initialize MBTiles queue (legacy disk-based, as fallback)
 	InitMBTilesQueue("data/mbtiles_output", s.DB)
 
@@ -345,9 +355,9 @@ func (s *Server) Serve(addr string) error {
 	} else {
 		slog.Info("ZENODO_TOKEN not set, MBTiles will use disk storage only")
 	}
-	
+
 	slog.Info("starting server", "addr", addr)
-	
+
 	// Wrap with security headers, compression, and password protection
 	// ResponseCacheMiddleware sits inside Password (auth still enforced) and
 	// inside Gzip (caches uncompressed bodies; gzip recompresses per client).
@@ -372,5 +382,3 @@ func (s *Server) Shutdown() error {
 	defer cancel()
 	return s.httpServer.Shutdown(ctx)
 }
-
-

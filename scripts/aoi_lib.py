@@ -128,3 +128,39 @@ def seed_datasets(conn, aoi_id, datasets=None):
             INSERT OR IGNORE INTO aoi_datasets (aoi_id, dataset, priority, depends_on)
             VALUES (?,?,?,?)""", (aoi_id, name, prio, dep))
     conn.commit()
+
+
+# --------------------------------------------------------------------------
+# v5 fire chain integration
+#
+# The three v5 scripts are park-shaped: they read keystones_with_boundaries.json
+# into a {park_id: {...geometry...}} dict and key everything off it. Rather than
+# fork them, --aoi injects the AOI as an extra entry in that *in-memory* dict
+# and swaps the fire loader. The keystones FILE is never written — that is the
+# hard isolation rule (§3): an AOI in the keystones file would make
+# park_assigner reassign detections away from the parks it overlaps.
+
+def as_pseudo_park(row):
+    """AOI row -> the {'id','name','country','geometry'} shape the v5 scripts
+    expect. Only ever inserted into an in-memory dict."""
+    return {
+        "id": row["id"],
+        "name": row["name"],
+        "country": "",
+        "geometry": json.loads(row["geometry"]),
+        "is_aoi": True,
+    }
+
+
+def inject_aoi(parks, aoi_id, conn=None):
+    """Add the AOI to a parks dict in place; returns the pseudo-park."""
+    own = conn is None
+    if own:
+        conn = connect(readonly=True)
+    try:
+        p = as_pseudo_park(load_aoi(conn, aoi_id))
+        parks[aoi_id] = p
+        return p
+    finally:
+        if own:
+            conn.close()

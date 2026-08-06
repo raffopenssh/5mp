@@ -25,11 +25,22 @@ def log(msg):
     print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}", flush=True)
 
 class NarrativeGeneratorV5:
-    def __init__(self):
+    def __init__(self, aoi_id=None):
         self.conn = sqlite3.connect(str(DB_PATH))
         self.conn.row_factory = sqlite3.Row
         self._load_context()
         self._load_park_info()
+        # AOI overlays reuse the whole fire-narrative path: their trajectories
+        # are ordinary feature_geometries rows keyed by the AOI id, so all this
+        # needs is a name/area entry. Still the single writer of
+        # fire_narrative_cache (AGENTS.md) — including for AOIs.
+        if aoi_id:
+            import sys as _sys
+            _sys.path.insert(0, str(Path(__file__).parent))
+            import aoi_lib
+            row = aoi_lib.load_aoi(aoi_lib.connect(readonly=True), aoi_id)
+            self.parks[aoi_id] = {'name': row['name'], 'country': '',
+                                  'area_km2': row['area_km2'] or 10000}
     
     def _load_context(self):
         log("Loading context data...")
@@ -631,13 +642,17 @@ def main():
     parser.add_argument('--incremental', action='store_true', help='Incremental mode: only updated parks')
     parser.add_argument('--days', type=int, default=60, help='Days window for incremental (default: 60)')
     parser.add_argument('--park', action='append', help='Refresh fire narrative for specific park(s) only')
+    parser.add_argument('--aoi', help='Refresh the fire narrative for an AOI overlay')
     args = parser.parse_args()
     
     log("=" * 70)
     log(f"Precompute Narratives v5 (from {MIN_DATE})")
     log("=" * 70)
     
-    NarrativeGeneratorV5().run(only_parks=args.park)
+    only = args.park
+    if args.aoi:
+        only = (only or []) + [args.aoi]
+    NarrativeGeneratorV5(aoi_id=args.aoi).run(only_parks=only)
 
 if __name__ == "__main__":
     main()

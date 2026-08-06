@@ -18,21 +18,41 @@ func ValidParkID(s string) bool {
 }
 
 // ParkIDMiddleware rejects requests whose park identifier (path segment
-// after /api/parks/ or /api/park/, or ?park= query param) is malformed.
+// after /api/parks/ or /api/park/, or ?park= query param) is malformed, and
+// requests that aim a park route at an AOI.
+//
+// The AOI check is not cosmetic. AOI-derived rows share the park-shaped
+// tables (feature_geometries.park_id, fire_narrative_cache.park_id) and an id
+// such as 'XSA_Study_Area' satisfies parkIDRe, so /api/parks/{aoi}/... would
+// otherwise serve a private AOI's data through routes that know nothing about
+// visibility. AOI data is reachable only through /api/aois/* (srv/aoi.go).
 func ParkIDMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		for _, prefix := range []string{"/api/parks/", "/api/park/"} {
+		for _, prefix := range []string{"/api/parks/", "/api/park/", "/park/"} {
 			if rest, ok := strings.CutPrefix(r.URL.Path, prefix); ok {
 				id, _, _ := strings.Cut(rest, "/")
-				if id != "" && !ValidParkID(id) {
+				if id == "" {
+					continue
+				}
+				if !ValidParkID(id) {
 					http.Error(w, "invalid park id", http.StatusBadRequest)
+					return
+				}
+				if IsAOIID(id) {
+					http.NotFound(w, r)
 					return
 				}
 			}
 		}
-		if p := r.URL.Query().Get("park"); p != "" && !ValidParkID(p) {
-			http.Error(w, "invalid park id", http.StatusBadRequest)
-			return
+		if p := r.URL.Query().Get("park"); p != "" {
+			if !ValidParkID(p) {
+				http.Error(w, "invalid park id", http.StatusBadRequest)
+				return
+			}
+			if IsAOIID(p) {
+				http.NotFound(w, r)
+				return
+			}
 		}
 		next.ServeHTTP(w, r)
 	})

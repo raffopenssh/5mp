@@ -52,8 +52,9 @@ from collections import defaultdict
 from sklearn.cluster import DBSCAN
 
 sys.path.insert(0, str(Path(__file__).parent))
-from fire_source import (load_park_fires as _load_fires, earliest_fire_date,
-                         date_num, parse_acq_time)
+from fire_source import (load_park_fires as _load_fires,
+                         load_aoi_fires as _load_aoi_fires,
+                         earliest_fire_date, date_num, parse_acq_time)
 
 try:
     from scipy.optimize import linear_sum_assignment
@@ -227,8 +228,19 @@ def load_parks():
 
 
 def load_park_fires(park_id, min_date, conn=None):
-    """Load fires from the canonical source (fire_detections in SQLite)."""
+    """Load fires from the canonical source (fire_detections in SQLite).
+
+    For an AOI (--aoi) the selection is by polygon via the aoi_fires membership
+    cache instead of protected_area_id: an AOI is not a park and must never own
+    a detection (docs/PLAN_AOI_OVERLAY.md §3). Still one fire source.
+    """
+    if park_id in AOI_IDS:
+        return _load_aoi_fires(park_id, min_date, conn=conn)
     return _load_fires(park_id, min_date, conn=conn)
+
+
+# AOI ids present in this run; see --aoi in main().
+AOI_IDS = set()
 
 
 # ---------------------------------------------------------------------------
@@ -920,6 +932,11 @@ def main():
                                         'repeated --park calls: one process reuses '
                                         'the keystone load, the DB connection and '
                                         'the sklearn/scipy import.')
+    parser.add_argument('--aoi', help='Build for an AOI overlay instead of a park: '
+                                      'geometry comes from the aois table and fires '
+                                      'from the aoi_fires polygon membership. The AOI '
+                                      'is NEVER written to keystones_with_boundaries.json '
+                                      '(docs/PLAN_AOI_OVERLAY.md §3).')
     parser.add_argument('--incremental', action='store_true',
                         help='Incremental mode: only process recent fires')
     parser.add_argument('--days', type=int, default=14, help='Days window for incremental mode')
@@ -975,6 +992,12 @@ def main():
     log("Loading parks...")
     parks = load_parks()
     log(f"Loaded {len(parks)} parks")
+    if args.aoi:
+        sys.path.insert(0, str(Path(__file__).parent))
+        import aoi_lib
+        aoi = aoi_lib.inject_aoi(parks, args.aoi)
+        AOI_IDS.add(args.aoi)
+        log(f"AOI overlay: {args.aoi} ({aoi['name']}) — fires by polygon membership")
     log(f"Params: day_eps={DAY_EPS_KM}km, overpass_gap={OVERPASS_GAP_H}h, "
         f"link={BASE_LINK_KM}km+{SPREAD_KM_PER_DAY}km/day, "
         f"max_gap={MAX_GAP_DAYS}d, chain_gap<={CHAIN_MAX_GAP_DAYS}d, min_fires={MIN_FIRES}")
@@ -1003,12 +1026,20 @@ def main():
             _mc.close()
             log(f"Persistent hotspot mask: {sum(len(v) for v in hotspot_masks.values())} "
                 f"cells in {len(hotspot_masks)} parks")
+            # cell_x/cell_y are GLOBAL 0.0034deg indices, only *keyed* by park,
+            # so an AOI can safely take the union: cells outside its polygon
+            # simply never match a detection it holds.
+            if args.aoi:
+                hotspot_masks[args.aoi] = set().union(*hotspot_masks.values()) \
+                    if hotspot_masks else set()
         except Exception as e:
             log(f"Persistent hotspot mask unavailable ({e}); seeding unmasked")
     else:
         log("Persistent hotspot mask DISABLED (--no-hotspot-mask)")
 
-    if args.parks:
+    if args.aoi:
+        park_ids = [args.aoi]
+    elif args.parks:
         park_ids = [p.strip() for p in args.parks.split(',') if p.strip()]
     elif args.park:
         park_ids = [args.park]
@@ -1093,7 +1124,7 @@ def main():
 
     # A partial run (subset of parks) must not clobber the global trend file
     # with only its own parks' data.
-    partial = bool(args.park or args.parks)
+    partial = bool(args.park or args.parks or args.aoi)
     if partial:
         log("Partial run: skipping global trend/summary rewrite")
         if shared_conn:

@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
+	"sync"
 )
 
 // Areas of interest (AOI): a user-drawn polygon promoted to a first-class
@@ -88,6 +89,47 @@ func visibilityFingerprint(r *http.Request) string {
 		return "anon"
 	}
 	return principalRef(pwd)[:8]
+}
+
+// aoiIDSet is every AOI id, cached at startup. It exists to plug the one hole
+// created by reusing park-shaped storage: AOI rows live in feature_geometries
+// and fire_narrative_cache keyed by their own id, and an id like
+// 'XSA_Study_Area' happens to satisfy parkIDRe. Without this, a private AOI
+// would be readable through /api/parks/XSA_Study_Area/fire-narrative with no
+// visibility check at all. Park routes therefore 404 on any AOI id; AOI data
+// is only reachable through /api/aois/*.
+var (
+	aoiIDMu  sync.RWMutex
+	aoiIDSet = map[string]bool{}
+)
+
+// RefreshAOIIDs reloads the id set. Called at startup and after any create or
+// delete — cheap (one column, a handful of rows).
+func (s *Server) RefreshAOIIDs() error {
+	rows, err := s.DB.Query(`SELECT id FROM aois`)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	set := map[string]bool{}
+	for rows.Next() {
+		var id string
+		if err := rows.Scan(&id); err != nil {
+			return err
+		}
+		set[id] = true
+	}
+	aoiIDMu.Lock()
+	aoiIDSet = set
+	aoiIDMu.Unlock()
+	return rows.Err()
+}
+
+// IsAOIID reports whether an id belongs to an AOI rather than a park.
+func IsAOIID(id string) bool {
+	aoiIDMu.RLock()
+	defer aoiIDMu.RUnlock()
+	return aoiIDSet[id]
 }
 
 // ---------------------------------------------------------------------- AOI
@@ -280,4 +322,44 @@ func (s *Server) HandleAPIAOIGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"aoi": a, "datasets": ds})
+}
+
+// aoiGate wraps a park handler so it can serve an AOI id.
+//
+// The park handlers are not park-specific in any deep way: they resolve
+// r.PathValue("id"), fail to match it in the AreaStore, and then read
+// feature_geometries / fire_narrative_cache keyed by that id — which is
+// exactly how AOI rows are written by the --aoi v5 chain. So the whole AOI
+// read surface is the park handlers plus one visibility check, and there is no
+// second copy of the narrative logic to drift.
+//
+// The gate is mandatory: without it these ids would be readable through
+// /api/parks/* (which is why ParkIDMiddleware 404s on AOI ids).
+func (s *Server) aoiGate(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if a := s.requireAOI(w, r, false); a != nil {
+			next(w, r)
+		}
+	}
+}
+
+// HandleAPIAOIExportGeoJSON — GET /api/aois/{id}/export.geojson: the polygon
+// itself, so it can be loaded into QGIS/Locus like a park boundary.
+func (s *Server) HandleAPIAOIExportGeoJSON(w http.ResponseWriter, r *http.Request) {
+	a := s.requireAOI(w, r, true)
+	if a == nil {
+		return
+	}
+	w.Header().Set("Content-Disposition", `attachment; filename="`+a.ID+`.geojson"`)
+	writeJSON(w, http.StatusOK, map[string]any{
+		"type": "FeatureCollection",
+		"features": []any{map[string]any{
+			"type":     "Feature",
+			"geometry": a.Geometry,
+			"properties": map[string]any{
+				"id": a.ID, "name": a.Name, "area_km2": a.AreaKm2,
+				"from_date": a.FromDate, "to_date": a.ToDate,
+			},
+		}},
+	})
 }

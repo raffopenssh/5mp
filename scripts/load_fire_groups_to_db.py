@@ -89,10 +89,20 @@ def _point_in_ring(lon, lat, ring):
 
 
 class FireGroupLoader:
-    def __init__(self):
+    def __init__(self, aoi_id=None):
         self.conn = sqlite3.connect(str(DB_PATH))
         self.conn.row_factory = sqlite3.Row
         self.parks = self._load_parks()
+        # An AOI is injected into the in-memory parks dict only; the keystones
+        # FILE is never touched, because that is what park_assigner reads
+        # (docs/PLAN_AOI_OVERLAY.md §3). Its feature_geometries rows carry
+        # park_id = <aoi_id>, an id space the park routes 404 on.
+        self.aoi_id = aoi_id
+        if aoi_id:
+            import sys as _sys
+            _sys.path.insert(0, str(Path(__file__).parent))
+            import aoi_lib
+            aoi_lib.inject_aoi(self.parks, aoi_id)
         
         # Context data (loaded lazily per park)
         self.climate = {}
@@ -590,8 +600,13 @@ class FireGroupLoader:
         
         if park_id:
             park_ids = [park_id]
+        elif self.aoi_id:
+            park_ids = [self.aoi_id]
         else:
-            park_ids = sorted([f.stem for f in INPUT_DIR.glob("*.json")])
+            # AOI outputs live in the same directory but must not be swept up
+            # by a full park run.
+            park_ids = sorted([f.stem for f in INPUT_DIR.glob("*.json")
+                               if f.stem in self.parks])
         
         log(f"Processing {len(park_ids)} parks...")
         
@@ -628,11 +643,13 @@ def main():
     parser = argparse.ArgumentParser(description="Load fire groups to database")
     parser.add_argument('--park', help='Process specific park only')
     parser.add_argument('--force', action='store_true', help='Force reload all')
+    parser.add_argument('--aoi', help='Load an AOI overlay instead of parks '
+                                      '(geometry from the aois table)')
     parser.add_argument('--incremental', action='store_true', help='Incremental mode: only updated parks')
     parser.add_argument('--days', type=int, default=60, help='Days window for incremental (default: 60)')
     args = parser.parse_args()
     
-    loader = FireGroupLoader()
+    loader = FireGroupLoader(aoi_id=args.aoi)
     loader.run(args.park, args.force, args.incremental, args.days)
 
 

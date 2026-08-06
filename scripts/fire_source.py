@@ -138,3 +138,62 @@ def earliest_fire_date(park_id, conn=None):
     finally:
         if own:
             conn.close()
+
+
+# --------------------------------------------------------------------------
+# AOI overlays (docs/PLAN_AOI_OVERLAY.md §3)
+#
+# An AOI selects fires by POLYGON, never by protected_area_id: it is not a park
+# and must never appear in that column, or park_assigner would start stealing
+# detections from the parks it overlaps. Membership is precomputed into
+# aoi_fires by scripts/build_aoi_fires.py because point-in-polygon over
+# millions of rows per query is not viable.
+#
+# This is still the one and only fire source: aoi_fires holds ids into
+# fire_detections, not a second copy of the detections.
+
+def load_aoi_fires(aoi_id, min_date, max_date=None, conn=None):
+    """Fires inside an AOI polygon, via the cached aoi_fires membership.
+
+    Same dict schema as load_park_fires so the v5 chain needs no changes.
+    """
+    own = conn is None
+    if own:
+        conn = sqlite3.connect(f"file:{DB_PATH}?mode=ro", uri=True)
+    try:
+        sql = ("SELECT f.latitude, f.longitude, f.acq_date, f.acq_time, f.frp, "
+               "f.confidence, f.satellite FROM aoi_fires a "
+               "JOIN fire_detections f ON f.id = a.fire_id "
+               "WHERE a.aoi_id = ? AND f.acq_date >= ?")
+        params = [aoi_id, min_date]
+        if max_date:
+            sql += " AND f.acq_date <= ?"
+            params.append(max_date)
+        out = []
+        for lat, lon, d, t, frp, conf, sat in conn.execute(sql, params):
+            if not lat or not lon:  # 0.0 == known data error
+                continue
+            out.append(_finalize({
+                "latitude": lat, "longitude": lon, "acq_date": d,
+                "acq_time": t, "frp": frp or 0.0,
+                "confidence": conf or "n", "satellite": sat or "N20",
+            }))
+        return out
+    finally:
+        if own:
+            conn.close()
+
+
+def aoi_fire_count(aoi_id, min_date="0000-00-00", conn=None):
+    own = conn is None
+    if own:
+        conn = sqlite3.connect(f"file:{DB_PATH}?mode=ro", uri=True)
+    try:
+        row = conn.execute(
+            "SELECT COUNT(*) FROM aoi_fires a JOIN fire_detections f "
+            "ON f.id = a.fire_id WHERE a.aoi_id = ? AND f.acq_date >= ?",
+            (aoi_id, min_date)).fetchone()
+        return row[0] if row else 0
+    finally:
+        if own:
+            conn.close()
