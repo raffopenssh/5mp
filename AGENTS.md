@@ -519,6 +519,10 @@ fixed analysis window, an owner, and data fetched *for it* over days by a cron.
 Instance #1 is `XSA_Study_Area` (485,150 km², owner `$AOI_OWNER_PWD`).
 Full handover: `docs/PLAN_AOI_OVERLAY.md`.
 
+**Current handover: `docs/AOI_HANDOVER.md`** — what is done, what is left,
+and the verification set. `docs/PLAN_AOI_OVERLAY.md` remains the design
+rationale and the measured-facts record.
+
 **An AOI is not a park.** Own table (`aois`), own id space, own route prefix.
 Never in `keystones_with_boundaries.json`, never a
 `fire_detections.protected_area_id` — otherwise `park_assigner` reassigns
@@ -562,8 +566,22 @@ separate from `?popup=`/`sections=` which resolve against the `areas` source an
 AOI is never in. Anything wanting a specific date window must go through
 `setTimeSliderRange()`, not `dateFrom`/`dateTo`.
 
+The runner treats **interruption as its normal exit**: out of time, Ctrl-C or
+SIGTERM all release the lease and resume next run with no cooldown, dead-pid
+leases self-heal, and bookkeeping writes wait out the v5 chain's long hold on
+SQLite's single writer. Never run two units concurrently — that is what
+stranded three leases on 2026-08-07. `scripts/test_aoi_resume.py` proves the
+guarantee; run it after any change to the lease/cursor code.
+
+Pre-2024 deforestation for an AOI comes from **Hansen**, not GFW alerts
+(`scripts/hansen_loss.py`, reversed 2026-08-07): tiles are 45-116 MB COGs read
+through `/vsicurl` in 0.6 s per 2-degree window, no download and no quota,
+while GFW integrated alerts only start in 2024. Cutover is Hansen <=2023 /
+alerts >=2024, matching the parks exactly so the numbers stay comparable.
+
 ```bash
 python3 scripts/aoi_runner.py --status          # queue state
+python3 scripts/aoi_runner.py --heal            # reclaim dead-pid leases
 python3 scripts/aoi_clip.py --aoi XSA_Study_Area  # Phase A preview, ~4s
 # cron: 0 12 * * *  aoi_runner.py --daily  (deliberately far from the 3am fire job)
 ```
