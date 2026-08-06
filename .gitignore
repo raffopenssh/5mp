@@ -108,3 +108,6 @@ scripts/histmaps/qa.json
 scripts/histmaps/*_geo.tif
 scripts/histmaps/*_geo.tif.points
 scripts/histmaps/__pycache__/
+
+# GFW per-tile alert cache (regenerable; shared by park scans and AOI scans)
+data/gfw_tiles/
