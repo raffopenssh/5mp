@@ -135,19 +135,25 @@ def name_rivers(conn, park_id, dry_run=False):
     log(f"  river naming: {n} segments named from OSM waterway points")
 
 
-def ingest_gfw_deforestation(conn, rebuilder, park_id, dry_run=False):
+def ingest_gfw_deforestation(conn, rebuilder, park_id, dry_run=False,
+                             bbox=None, clip_geom=None):
     """GFW alert cells -> feature_geometries + deforestation_events (years >= 2024).
 
     Idempotent: deletes and reinserts only rows marked with the
     deforest_gfw_{park}_ feature-id prefix. Hansen rows untouched.
     Returns number of events created.
+
+    bbox/clip_geom exist for AOIs (docs/PLAN_AOI_OVERLAY.md §3a): an AOI has no
+    row in the parks bbox source and is not a rectangle, so it passes its own
+    bounds plus a shapely polygon that cells must fall inside. For a park both
+    stay None and the behaviour is exactly as before.
     """
     scan = load_json(GFW_DIR / f'{park_id}.json', None)
     if not scan or not scan.get('clusters'):
         log(f"  no GFW scan data for {park_id}, skipping GFW ingest")
         return 0
 
-    bbox = park_bbox(conn, park_id)
+    bbox = bbox or park_bbox(conn, park_id)
     if not bbox:
         log(f"  no bbox for {park_id}, skipping GFW ingest")
         return 0
@@ -159,6 +165,10 @@ def ingest_gfw_deforestation(conn, rebuilder, park_id, dry_run=False):
     for c in scan['clusters']:
         if not (w <= c['lon'] <= e and s <= c['lat'] <= n):
             continue
+        if clip_geom is not None:
+            from shapely.geometry import Point
+            if not clip_geom.contains(Point(c['lon'], c['lat'])):
+                continue
         if c['n'] < MIN_ALERTS_PER_CELL or c['high_conf'] < MIN_HIGH_CONF:
             continue
         year = int(c['last'][:4])
