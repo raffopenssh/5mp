@@ -60,15 +60,24 @@ func cacheablePath(r *http.Request) bool {
 	return false
 }
 
-// cacheKey ignores the specific pwd (auth already passed) so different users
-// share entries, but MUST keep the env tenant: several cached endpoints are
+// cacheKey ignores the specific pwd value (auth already passed) so different
+// users share entries, but MUST keep two discriminators.
+//
+// visibilityFingerprint: AOI-scoped responses depend on *who* is asking
+// (docs/PLAN_AOI_OVERLAY.md §9). A visibility-blind key would serve a private
+// AOI body from the shared cache to the next caller. It is included for every
+// cacheable path, not just AOI ones, because "which endpoints are
+// audience-dependent" is exactly the kind of list that goes stale; the cost is
+// one cache entry per active password.
+//
+// RequestEnv: the env tenant. several cached endpoints are
 // env-dependent (/stats patrol pixels, /features learned road+airstrip
 // filtering), so a tenant-blind key serves prod client data to the test
 // environment and vice versa.
 func cacheKey(r *http.Request) string {
 	q := r.URL.Query()
 	q.Del("pwd")
-	return RequestEnv(r) + "|" + r.URL.Path + "?" + q.Encode()
+	return RequestEnv(r) + "|" + visibilityFingerprint(r) + "|" + r.URL.Path + "?" + q.Encode()
 }
 
 type cacheRecorder struct {
