@@ -117,7 +117,35 @@ def residuals(gcps):
     r = np.hypot(ex, ey)
     return r.mean(), r.max()
 
-def georef(path, out=None, method="tps", cutline=True, verbose=True):
+def _make_ink_vrt(path, verbose=True, svg=None):
+    """Render the source to a paper-free RGBA TIFF for warping.
+
+    Done before gdalwarp (not after) so the alpha is resampled together with the
+    image and the neatline cutline still applies. Full resolution is preserved.
+
+    Intermediate is TIFF, not PNG: at 12000x9200 the PNG encoder is the slowest
+    step in the whole sheet, and this file is deleted seconds later.
+    """
+    import ink
+    W, H = rsize(path)
+    tmp = tempfile.mktemp(suffix=".tif")
+    subprocess.check_call(["gdal_translate","-q","-of","GTiff","-ot","Byte",
+                           "-co","COMPRESS=LZW","-co","BIGTIFF=IF_SAFER", path, tmp])
+    frac = ink.apply_to_file(tmp, svg=svg)
+    # cv2 writes the 4th band without an ExtraSamples tag, so GDAL reads it as
+    # "Undefined" and would warp it as a plain 4th colour band -- transparency
+    # silently lost. Declare it alpha before it reaches gdalwarp.
+    subprocess.check_call(["python3", "-c",
+        "from osgeo import gdal;"
+        "ds=gdal.Open(%r, gdal.GA_Update);"
+        "ds.GetRasterBand(4).SetColorInterpretation(gdal.GCI_AlphaBand);"
+        "ds.FlushCache();ds=None" % tmp])
+    if verbose:
+        print(f"  ink traced ({W}x{H}), coverage {frac:.3f}")
+    return tmp, frac
+
+def georef(path, out=None, method="tps", cutline=True, verbose=True,
+           transparent=True, svg=False):
     cs = re.search(r'(cs\d{6})', os.path.basename(path))
     cat = {c["id"]: c for c in catalogue()}
     rec = cat.get(cs.group(1)) if cs else None
@@ -133,15 +161,30 @@ def georef(path, out=None, method="tps", cutline=True, verbose=True):
     # estimate -- see aspect err / rung counts above for detection quality.
     print(f"  {len(gcps)} GCPs, non-affine deformation mean {mean:.0f} m  max {mx:.0f} m")
     out = out or re.sub(r'\.\w+$', '', path) + "_geo.tif"
+    svg_out = re.sub(r'\.\w+$', '', out) + ".svg" if (transparent and svg) else None
+    if transparent:
+        src, ink_frac = _make_ink_vrt(path, verbose, svg_out)
+    else:
+        src, ink_frac = path, None
     tmp = tempfile.mktemp(suffix=".vrt")
     cmd = ["gdal_translate","-q","-of","VRT","-a_srs","EPSG:4326"]
     for x, y, lon, lat in gcps:
         cmd += ["-gcp", f"{x:.2f}", f"{y:.2f}", f"{lon:.6f}", f"{lat:.6f}"]
-    cmd += [path, tmp]
+    cmd += [src, tmp]
     subprocess.check_call(cmd)
-    warp = ["gdalwarp","-q","-r","cubic","-t_srs","EPSG:4326",
-            "-dstalpha","-co","COMPRESS=DEFLATE","-co","TILED=YES",
+    # Storage, and the bug that ate the last attempt: a JPEG-compressed COG
+    # cannot hold an alpha band, so GDAL demoted our 8-bit alpha to a 1-BIT
+    # internal mask -- every antialiased grain wisp at alpha=1 became fully
+    # opaque, and the sheet came out 53% speckle. Traced ink is a few percent
+    # coverage of one flat colour, so lossless DEFLATE RGBA is ~30x SMALLER
+    # than that JPEG was (1.3 MB vs 44 MB on cs000029). Keep the real alpha band.
+    warp = ["gdalwarp","-q","-r","cubic","-t_srs","EPSG:4326","-of","COG",
+            "-co","COMPRESS=DEFLATE","-co","PREDICTOR=2","-co","LEVEL=9",
+            "-co","BLOCKSIZE=512","-co","OVERVIEWS=IGNORE_EXISTING",
             "-co","BIGTIFF=IF_SAFER","-overwrite"]
+    # Source already carries alpha when traced; -dstalpha would add a second one.
+    if not transparent:
+        warp += ["-dstalpha"]
     warp += ["-tps"] if method == "tps" else ["-order","1"]
     if cutline:                                   # clip collar to the neatline
         cl = tempfile.mktemp(suffix=".geojson")
@@ -150,8 +193,11 @@ def georef(path, out=None, method="tps", cutline=True, verbose=True):
                        [ext[2],ext[3]],[ext[0],ext[3]],[ext[0],ext[1]]]]}}]}, open(cl,"w"))
         warp += ["-cutline", cl, "-crop_to_cutline"]
     warp += [tmp, out]
-    subprocess.check_call(warp)
-    subprocess.call(["gdaladdo","-q","-r","average", out, "2","4","8","16","32"])
+    subprocess.check_call(warp)   # COG driver builds overviews itself
+    if src != path and os.path.exists(src):
+        os.remove(src)
+        for e in (".aux.xml", ".wld"):
+            if os.path.exists(src+e): os.remove(src+e)
     pts = out + ".points"                          # QGIS Georeferencer format
     with open(pts,"w") as f:
         f.write("mapX,mapY,pixelX,pixelY,enable\n")
@@ -162,7 +208,8 @@ def georef(path, out=None, method="tps", cutline=True, verbose=True):
                 aspect_err=stat["aspect_err"], ladder_support=stat["ladder_hits"],
                 lon_rungs=[stat["nx_meas"], stat["nx_int"]],
                 lat_rungs=[stat["ny_meas"], stat["ny_int"]],
-                nonaffine_mean_m=round(mean), nonaffine_max_m=round(mx))
+                nonaffine_mean_m=round(mean), nonaffine_max_m=round(mx),
+                ink_frac=ink_frac)
 
 # ------------------------------------------------------------------ cli
 def fetch(cs, dest=None):
@@ -181,10 +228,15 @@ def main():
     g = sub.add_parser("geo");   g.add_argument("files", nargs="+")
     g.add_argument("--method", default="tps", choices=["tps","affine"])
     g.add_argument("--no-cutline", action="store_true")
+    g.add_argument("--no-transparent", action="store_true", help="keep the raw scan, paper and all")
+    g.add_argument("--svg", action="store_true", help="also write the traced vectors as .svg")
     a = sub.add_parser("all");   a.add_argument("--sheet"); a.add_argument("--filter")
     a.add_argument("--block", help="1:1M block number, e.g. 65")
     a.add_argument("--all", action="store_true", help="every sheet with a known extent")
     a.add_argument("--method", default="tps", choices=["tps","affine"])
+    a.add_argument("--jobs", type=int, default=4, help="parallel sheets")
+    a.add_argument("--no-transparent", action="store_true", help="keep the raw scan, paper and all")
+    a.add_argument("--svg", action="store_true", help="also write the traced vectors as .svg")
     a.add_argument("--keep-jp2", action="store_true", default=False,
                    help="keep the downloaded source JP2 (default: delete after warp)")
     ns = ap.parse_args()
@@ -201,7 +253,8 @@ def main():
     elif ns.cmd == "fetch":
         for i in ns.ids: fetch(i)
     elif ns.cmd == "geo":
-        for p in ns.files: georef(p, method=ns.method, cutline=not ns.no_cutline)
+        for p in ns.files: georef(p, method=ns.method, cutline=not ns.no_cutline,
+                                  transparent=not ns.no_transparent, svg=ns.svg)
     elif ns.cmd == "all":
         sel = [c for c in cat if c["extent"] and
                (ns.all
@@ -210,24 +263,52 @@ def main():
                 or (ns.filter and ns.filter.lower() in c["title"].lower()))]
         print(f"{len(sel)} sheets selected")
         qa, fails = [], []
-        for c in sel:
+        import io, contextlib
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+
+        def one(c):
+            """Download+warp a sheet. Output is captured so parallel workers do
+            not interleave their line-by-line reports."""
+            buf = io.StringIO()
             try:
-                qa.append(georef(fetch(c["id"]), method=ns.method))
+                with contextlib.redirect_stdout(buf):
+                    r = georef(fetch(c["id"]), method=ns.method,
+                               transparent=not ns.no_transparent, svg=ns.svg)
+                return c, r, None, buf.getvalue()
             except Exception as e:
-                print(f"  !! {c['id']}: {e}"); fails.append(dict(id=c["id"], sheet=c["sheet"],
-                       title=c["title"], error=str(e)))
+                return c, None, e, buf.getvalue()
             finally:
-                if ns.keep_jp2 is False:
+                if not ns.keep_jp2:
                     j = os.path.join(ROOT, f"{c['id']}.jp2")
                     if os.path.exists(j): os.remove(j)
+
+        done = 0
+        with ThreadPoolExecutor(max_workers=ns.jobs) as ex:
+            futs = {ex.submit(one, c): c for c in sel}
+            for f in as_completed(futs):
+                c, r, err, log = f.result()
+                done += 1
+                print(f"[{done}/{len(sel)}] {log.rstrip()}", flush=True)
+                if err is not None:
+                    print(f"  !! {c['id']}: {err}", flush=True)
+                    fails.append(dict(id=c["id"], sheet=c["sheet"],
+                                      title=c["title"], error=str(err)))
+                else:
+                    qa.append(r)
         json.dump(dict(ok=qa, failed=fails), open(os.path.join(ROOT,"qa.json"),"w"), indent=1)
         print(f"\n{len(qa)} georeferenced, {len(fails)} failed -> qa.json")
+        # Ink coverage is the tracing QA: ~0.02-0.12 is a normal sheet. Near 0
+        # means the trace ate the map (over-strict threshold / blank scan);
+        # high means paper grain leaked through and survived speckle removal.
         bad = [q for q in qa if q["aspect_err"] > 0.02
-               or q["lon_rungs"][0] < q["lon_rungs"][1] or q["lat_rungs"][0] < q["lat_rungs"][1]]
+               or q["lon_rungs"][0] < q["lon_rungs"][1] or q["lat_rungs"][0] < q["lat_rungs"][1]
+               or (q.get("ink_frac") is not None and not 0.01 <= q["ink_frac"] <= 0.25)]
         if bad:
             print("needs review:")
             for q in bad:
+                ink = q.get("ink_frac")
                 print(f"  {q['id']} {q['sheet']:6} asp {q['aspect_err']*100:.1f}% "
-                      f"rungs {q['lon_rungs'][0]}/{q['lon_rungs'][1]},{q['lat_rungs'][0]}/{q['lat_rungs'][1]}  {q['title']}")
+                      f"rungs {q['lon_rungs'][0]}/{q['lon_rungs'][1]},{q['lat_rungs'][0]}/{q['lat_rungs'][1]}"
+                      f"  ink {ink if ink is None else round(ink,3)}  {q['title']}")
 
 if __name__ == "__main__": main()
