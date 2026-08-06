@@ -1,431 +1,473 @@
-# Plan: private "Study Area" + per-credential park visibility (ACL)
+# Plan: AOI overlays — the drawn bbox, promoted to a first-class object
 
-Status: PLAN ONLY (nothing implemented except the two staged data files in §1).
-Written 2026-08-06. Execute in a fresh conversation; this file is the brief.
+Status: PLAN ONLY. Rewritten 2026-08-06 after the first draft
+(`PLAN_STUDY_AREA_ACL.md`, in git history) was reframed by the user.
+Execute in a fresh conversation; this file is the entire brief.
 
-## Goal
+---
 
-1. Add artificial reserve `XSA_Study_Area` (KML staged, §1), **visible only to
-   password `$AOI_OWNER_PWD`**; invisible to all other passwords and test mode.
-2. Full data processing for it back to **2024-01-01** (fires, deforestation,
-   GHSL settlements, rivers, roads, places, climate, species, basin, narratives).
-3. Visibility must be **generic**: a *principal* (today a password, later a
-   user/NGO/gov account) is scoped to a set of parks. Same tables either way.
-4. Ingest must be **generic + batched**: a per-park declaration of which
-   datasets to collect, ground down over **days to weeks by the crons we
-   already run** — each one nibbling a bounded slice per night, so no quota is
-   ever burst and no long-lived process exists. Only the 03:00 fire cron is
-   time-critical and keeps priority; every other cron yields its rotation slot
-   to the overlay until it is finished (§5).
-5. No heavy work until tonight's crons finish (§8).
+## 0. Mental model — read this first, it is the whole design
 
-## Facts established (do not re-derive)
+**An AOI is a power bounding box.**
 
-* Polygon: 7 vertices, bbox `22.704,4.252 .. 31.297,10.966`, **482,000 km2**
-  (2nd largest object in the system; only DZA_Ahaggar 542k is bigger).
-* It **fully contains** CAF_Chinko and SSD_Southern; overlaps COD_Bili-Uere
-  (35%) and COD_Garamba (13%). Overlap is the central design constraint (§3).
-* **Only 10.5% of the study area lies inside any existing park**, and only
-  **53.6% falls inside the 100 km ingest buffer** used by every current
-  pipeline. So **~46% (~223,000 km2) has never been ingested for anything**.
-  This is the gap the user is asking about; §4a quantifies it per layer.
-* GADM level-2 says the area spans **5 countries**: SSD (23 regions), CAF (10),
-  SDN (6), COD (3), TCD (1). All ingest that is country-keyed must cover all 5.
-* 163 parks in `data/keystones_with_boundaries.json` (1 onboarded: DZA_Djurdjura).
+The app already has a user-drawn area: `currentBbox` in `globe.html`. Today it
+is a rectangle that is (a) ephemeral, (b) client-side, (c) resolved by
+`findParksInBbox()` into whichever parks it touches, and (d) able to drive
+`/api/grid`, the animator (`anim.js` `activeBbox()` → `A.bboxFixed`), the
+starred-areas list (`starredItems.bboxes`) and the star report
+(`collectReportParks()` folds bbox parks in alongside starred parks).
 
-## 0. Can we reuse onboard_park.py?
+An **AOI** is that same object with five upgrades:
 
-**Partially: reuse its shape, not its path.** `scripts/onboard_park.py` starts
-from a **WDPA id** (`fetch_pp_area(wdpa_id)`), and `park_onboarding_requests`
-has `wdpa_id INTEGER NOT NULL UNIQUE`. Our area has no WDPA id.
+| drawn bbox (today) | AOI (this plan) |
+|---|---|
+| rectangle | arbitrary polygon |
+| lives in browser memory | row in `aois`, owned by a principal |
+| answers only from data already ingested | **has data fetched for it**, over days, by a cron |
+| whatever the time slider says | a **fixed analysis window**, e.g. 2024-01-01..2026-01-01 |
+| union of the parks it touches | its own precomputed layers **plus** those parks |
 
-* Refactor the post-geometry half into `run_pipeline(park_id, geometry,
-  datasets, window)`.
-* Add entry point `--from-geojson FILE --park-id XSA_Study_Area` that skips
-  Protected Planet and calls `run_pipeline`.
-* Keep `park_onboarding_requests` for the WDPA flow; the study area is seeded
-  by CLI + rows in the new `park_datasets` table (§5.1).
-* Do **not** run its all-time FIRMS backfill (§4), and keep its
-  `sudo systemctl restart 5mp` to one deliberate restart (§8).
+Everything else follows from that sentence, and three rules keep it from
+sprawling:
 
-## 1. Files already staged
+1. **An AOI is not a park.** It does not enter
+   `keystones_with_boundaries.json`, does not get a `park_assigner` entry, does
+   not get the ~40 `/api/parks/{id}/*` endpoints. It gets a **small, deliberate
+   surface**: summary, layers, animate, report, coverage. Species /
+   publications / legal / climate stay park-level — the user said so, and they
+   are meaningless averaged over 482,000 km².
+2. **Ingest is keyed by geography, not by owner.** A private AOI may *cause*
+   data to be fetched, but what lands is fetched into the shared, geographic
+   stores (`fire_detections` rows, per-tile GFW/GHSL caches, country OSM
+   extracts). Every park within reach benefits, permanently, and a second AOI
+   over the same ground costs nothing. **Only the derived, AOI-shaped
+   artefacts** (its trajectories, its narratives, its coverage numbers) are
+   private. This is the answer to "the data is usable for all parks".
+3. **The work is a queue, ground down by a cron, resumable at every step.**
+   No long-lived process, no burst of quota, no babysitting. A user draws an
+   area and the answer arrives over days — that is the product, not a
+   limitation, so the UI must **show progress and partial coverage** rather
+   than pretend.
 
-```
-data/study_areas/XSA_Study_Area.kml       # original upload
-data/study_areas/XSA_Study_Area.geojson   # {"type":"Polygon","coordinates":[[...]]}
-```
+The concrete first instance is `XSA_Study_Area` (7-vertex polygon, 482,000 km²,
+window 2024-01-01..now, visible only to password `$AOI_OWNER_PWD`). Build it as
+instance #1 of the general mechanism, not as a special case — the intended
+future is "user draws an area of interest, it computes over a couple of weeks,
+only they can see it".
 
-Park id `XSA_Study_Area` (verify against `parkIDRe` in
-`srv/park_id_middleware.go`: `^[A-Z]{3}_[\pL0-9_'\-.]+$` -> OK).
-Keystone entry: `country_code:"XSA", country:"Central Africa (study)",
-name:"Study Area", wdpa_id:"", area_km2:482087,
-coordinates{lat:7.6,lon:27.0}, geometry, onboarded_at`, plus two new
-additive flags (old readers ignore them):
+---
 
-```json
-"restricted": true,   // never served to unscoped principals
-"overlay":    true    // overlaps other parks; excluded from park_assigner
-```
+## 1. Facts established (measured; do not re-derive)
 
-## 2. Visibility / ACL layer (the reusable part)
+**The area.** Polygon staged at `data/study_areas/XSA_Study_Area.{kml,geojson}`,
+7 vertices, bbox `22.704,4.252 .. 31.297,10.966`, 482,000 km². Fully contains
+CAF_Chinko and SSD_Southern; overlaps COD_Bili-Uere (35%) and COD_Garamba (13%).
+Spans 5 GADM countries: SSD, CAF, SDN, COD, TCD.
 
-### 2.1 `db/migrations/040-park-acl.sql`
+**The data gap.** Only 10.5% of the polygon is inside any park and only 53.6%
+inside the 100 km ingest buffer every current pipeline uses. Measured on a
+1° grid (46 cells): median fire detections/cell is **122,179 inside** the
+buffer and **1,050 outside** it. A 100× cliff at the buffer edge — that is
+ingest scope, not fire behaviour. Same cliff for every other layer:
+
+| layer | inside buffer | in the gap | fix |
+|---|---|---|---|
+| fires | full 2018-2026 | sparse | FIRMS backfill over the AOI bbox (§4) |
+| GFW alerts | per-park scans | none | tiled scan, ~240 × 0.5° tiles |
+| settlements | GHSL per-park | none | 4 GHSL 100 m tiles (URLs verified, §5) |
+| roads / places | per park | none | Geofabrik PBF + osmium (§6) |
+| rivers / lakes | `park_rivers_hydro` | none | HydroSHEDS, or PBF waterways |
+| GSW water | `occ_20E_10N.tif` only | 3 tiles | direct download |
+| basins | `park_basins` | none | `fetch_park_basins.py` |
+| species / climate / publications | per park | n/a | **out of scope, by decision** |
+
+**FIRMS (measured today, 2026-08-06).** This changes the schedule dramatically
+versus the first draft:
+
+* the area API rejects windows > 5 days (`Invalid day range. Expects [1..5]`)
+  — this is why the nightly cron had been fetching **nothing**; fixed in
+  `scripts/firms_api.py`, commit `6acafd5`. **Use that module, do not hand-roll
+  URLs.**
+* map-key quota is **5000 transactions / 10 minutes** (`firms_api.key_status()`),
+  not the scarce resource the first draft assumed.
+* 2024-01-01..today = 949 days = 190 windows × 3 sensors = **~570 requests**,
+  ~13k rows per window per sensor over the AOI bbox → **~7M rows, ~30-60 min**
+  of wall clock in total. So `fire_gap` is **one or two midday sessions**, not
+  19 nights. Slice it anyway (resumability, and to stay clear of 03:00), but
+  budget generously: 120 requests/slice, not 30.
+* `INSERT OR IGNORE` on `UNIQUE(lat, lon, acq_date, acq_time, satellite)` makes
+  overlap with existing rows free → request the **whole AOI bbox**, never try
+  to tile a concave gap polygon.
+
+**Baselines to record before touching anything.**
+`CAF_Chinko` has **8,753** `feature_geometries` rows of type `fire_trajectory`
+(2026-08-06). If that number moves after the AOI lands, the assigner isolation
+(§3) is broken.
+
+**Park infra enrichment is nearly complete but its only caller is dead.**
+`enrich_park_infra()` in `analysis/river_turbidity.py` backfills `osm_places`
+and `roads_heigit` opportunistically while a country PBF is on disk. Coverage
+today: places 162/163, roads 161/163. Missing: `DZA_Djurdjura` (both),
+`COG_Nouabalé-Ndoki` (roads). The turbidity cron that used to call it is
+disabled (mining retired, AGENTS.md), so **the mechanism is orphaned**. It must
+be lifted out — see §6; the user explicitly asked that this survive the
+turbidity retirement.
+
+**On disk already:** `data/osm_geofabrik/{central-african-republic,south-sudan}.osm.pbf`.
+63 GB free. `osmium` at `/usr/bin/osmium`.
+
+---
+
+## 2. Schema (migration 040)
 
 ```sql
+-- An area of interest: a polygon + an analysis window + an owner.
+CREATE TABLE IF NOT EXISTS aois (
+  id          TEXT PRIMARY KEY,       -- 'XSA_Study_Area', later 'aoi_<nanoid>'
+  name        TEXT NOT NULL,
+  geometry    TEXT NOT NULL,          -- GeoJSON Polygon/MultiPolygon
+  bbox_minx REAL, bbox_miny REAL, bbox_maxx REAL, bbox_maxy REAL,
+  area_km2    REAL,
+  from_date   TEXT,                   -- analysis window; NULL = all available
+  to_date     TEXT,
+  owner_principal_id INTEGER REFERENCES principals(id) ON DELETE CASCADE,
+  visibility  TEXT NOT NULL DEFAULT 'private',  -- 'private' | 'shared' | 'public'
+  state       TEXT NOT NULL DEFAULT 'pending',  -- pending|ingesting|ready|failed
+  created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  notes       TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_aois_owner ON aois(owner_principal_id);
+
+-- Who may see what. Generic on purpose: a principal is a password today, a
+-- user or an NGO tomorrow, with no migration.
 CREATE TABLE IF NOT EXISTS principals (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  kind TEXT NOT NULL,            -- 'password' | 'user' | 'org'
-  ref  TEXT NOT NULL,            -- sha256(pwd)[:16] | user_id | org slug
+  kind TEXT NOT NULL,      -- 'password' | 'user' | 'org'
+  ref  TEXT NOT NULL,      -- sha256(pwd)[:16] | user_id | org slug
   label TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(kind, ref)
 );
-CREATE TABLE IF NOT EXISTS park_grants (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+CREATE TABLE IF NOT EXISTS aoi_grants (
+  aoi_id TEXT NOT NULL REFERENCES aois(id) ON DELETE CASCADE,
   principal_id INTEGER NOT NULL REFERENCES principals(id) ON DELETE CASCADE,
-  park_id TEXT,                                  -- NULL = wildcard
-  scope   TEXT NOT NULL DEFAULT 'view',          -- 'view' | 'all_public'
+  scope TEXT NOT NULL DEFAULT 'view',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE(principal_id, park_id, scope)
+  PRIMARY KEY (aoi_id, principal_id, scope)
 );
-CREATE INDEX IF NOT EXISTS idx_pg_principal ON park_grants(principal_id);
-```
 
-Seeding (in Go at startup, not in the .sql, so it can read `ACCESS_PASSWORDS`):
-one `password` principal per configured password keyed by **sha256 prefix, not
-the secret**; each gets `('all_public', NULL)`; `$AOI_OWNER_PWD` additionally gets
-`('view','XSA_Study_Area')`.
-
-### 2.2 `srv/park_acl.go` (new)
-
-```go
-type Visibility struct {
-    AllPublic bool            // sees every non-restricted park
-    Extra     map[string]bool // restricted parks explicitly granted
-}
-func (s *Server) VisibilityFor(r *http.Request) Visibility // in-memory cache
-func (v Visibility) CanSee(parkID string) bool
-func (v Visibility) SQLFilter(col string) string           // "AND col NOT IN ('XSA_...')"
-```
-
-`restrictedParks` is a startup-built set from the keystones `restricted` flag
-(1 entry today), so checks are one map lookup. Principal lookup: sha256 of
-`RequestPwd(r)` (`srv/auth_middleware.go:128`); when real accounts land, prefer
-`s.Auth.GetUserFromRequest(r)` with `kind='user'`.
-
-### 2.3 Enforcement points (a miss = data leak)
-
-| Where | Change |
-|---|---|
-| `ParkIDMiddleware` (`srv/park_id_middleware.go`, wired at `srv/server.go:341`) | **primary choke point**: after id validation, restricted && !CanSee -> 404. Covers all ~40 `/api/parks/{id}/*` routes and `?park=`. Must become a method on `*Server`. |
-| `HandleAPIAreas` (`srv/api.go` ~L900) | skip areas failing CanSee |
-| `HandleAPIAreasSearch` (`srv/api.go` ~L1296) | same in the loaded-areas loop |
-| `/api/fire-alerts`, `/api/notifications`, `/api/activity`, `/api/feed`, `/api/grid`, `/api/features-in-bbox`, `/api/parks/export`, `/api/stats` | append `Visibility.SQLFilter("park_id")`, mirroring `miningNotifSQLFilter()` in `srv/mining_flag.go` |
-| `srv/response_cache.go` `cacheKey` (L68) | **must** add a visibility fingerprint: `env + "|" + visHash + "|" + path`. Otherwise a Chink0 response is served to everyone. |
-| `globe.html` | server passes `RestrictedVisible []string` via `pageData`; `/api/areas` already omits hidden parks so the frontend needs nothing else. |
-
-### 2.4 Frontend "only study area" toggle
-
-Reuse the keystones toggle machinery (`keystonesEnabled`,
-`#keystones-toggle-btn`, globe.html ~L293 / ~L4891). When the principal has
-restricted grants, render a second chip `Study Area` with modes
-`all / study only / off`. `study only` = filter the areas source to restricted
-ids and grey the rest using the existing disabled paint branch (~L4825).
-Share param `parks=study` in `shareCurrentView()` + `restoreStateFromURL()`.
-
-### 2.5 Admin UI (last)
-
-Admin panel -> "Access" tab: principals list, checkbox grid of restricted
-parks + of `park_datasets`, `POST /api/admin/grants` (RequireAdmin). Enough to
-onboard an NGO later with no migration.
-
-## 3. Overlap handling (critical)
-
-`scripts/park_assigner.py` assigns each fire to **exactly one** park. If
-`XSA_Study_Area` enters that file it will **steal** detections from
-Chinko/Southern/Bili-Uere/Garamba and silently gut their trajectories.
-
-* `ParkAssigner.__init__` must skip `overlay: true` parks (add comment).
-* Grep other `keystones_with_boundaries.json` consumers for disjointness
-  assumptions before running anything.
-* Consequence: `fire_detections.protected_area_id` is never `XSA_Study_Area`;
-  the study area selects fires **by polygon** (§4).
-
-## 4a. THE DATA GAP (measured, per layer)
-
-Every existing pipeline is park-scoped with a <=100 km buffer, so the study
-area is a patchwork: dense where it overlaps Chinko/Southern/Bili-Uere/Garamba,
-empty elsewhere. Measured on a 1-degree grid over the polygon (46 cells):
-
-| | cells | median fire detections/cell |
-|---|---|---|
-| inside the 100 km ingest buffer | 21 | **122,179** |
-| outside it (the gap) | 25 | **1,050** |
-
-A ~100x cliff at the buffer edge. That is **ingest scope, not fire behaviour** —
-these are savanna cells that burn every dry season. Do not mistake the low
-counts for a quiet landscape; the same cliff exists for every other layer:
-
-| layer | inside buffer | in the gap | fix |
-|---|---|---|---|
-| fires | full 2018-2026 | sparse, unusable | FIRMS backfill 2024-01-01.. for the gap bbox (§4b) |
-| deforestation / GFW | per-park scans | none | tiled GFW, ~240 tiles (§5.2) |
-| settlements | GHSL per-park | none | 4 GHSL tiles (§5.2) |
-| roads / places | `roads_heigit`, `osm_places` per park | none | **Geofabrik PBF, not Overpass** (§5.4) |
-| rivers / lakes | `park_rivers_hydro` per park | none | HydroSHEDS source, or PBF waterways |
-| GSW water occurrence | `data/gsw/occ_20E_10N.tif` only | 3 tiles missing (`occ_20E_0N`, `occ_30E_10N`, `occ_30E_0N`) | direct download |
-| climate / species | `park_climate`, `park_species` keyed per park | no row | derive from grid / union neighbours |
-| basins | `park_basins` per park | none | `fetch_park_basins.py --park` |
-
-Consequence for the phased plan: **phase A (clip from the 4 overlapped parks)
-covers at best the 53.6%, realistically the 10.5% that is actually inside
-them.** It is still worth doing first because it makes the area usable
-immediately, but it must be labelled as partial in the UI (see §4c) and phase B
-is not optional.
-
-## 4b. Fires — partial backfill IS required
-
-Earlier assumption ("3.75M rows already in the bbox, no backfill needed") is
-**only true for the covered 54%**. Correct plan:
-
-1. `fire_detections` already holds 3.75M rows in the bbox (2024: 731k,
-   2025: 905k, 2026: 522k) — reuse all of it, insert nothing there.
-2. Backfill **only the gap**, window 2024-01-01..today (949 days):
-   FIRMS area API in 5-day chunks = **190 requests per sensor**, and all three
-   VIIRS sensors are ingested here (`VIIRS_NOAA20`, `VIIRS_SNPP`, `VIIRS_NOAA21`
-   — SP for age > 60d, NRT for the tail) => **~570 requests**.
-   Batch as a `park_datasets` dataset `fire_gap` with a nightly budget of
-   ~60 requests => ~10 nights, or 2-3 nights at 200/night if quota allows.
-   `INSERT OR IGNORE` on the `UNIQUE(lat,lon,acq_date,acq_time,satellite)` key
-   makes overlap with existing rows free — so just request the **whole study
-   bbox**, do not try to tile the concave gap polygon.
-   Never default the `satellite` field (AGENTS.md).
-3. Because `XSA_Study_Area` is `overlay` (§3), `park_assigner` will not tag
-   these rows; gap detections stay `protected_area_id = NULL`. That is correct
-   and intentional — the study area selects **by polygon**:
-
-```python
-# scripts/fire_source.py
-def load_area_fires_db(geometry, min_date, max_date=None, conn=None):
-    # bbox prefilter via idx_fire_location, then shapely prepared.contains
-```
-   dispatched from `load_park_fires` for overlay parks. ~4M candidate rows:
-   run point-in-polygon once, cache ids in `overlay_area_fires(park_id,
-   fire_id)`, refresh incrementally (`--since`) from the daily cron.
-
-4. After the gap backfill lands, run
-   `scripts/build_fire_grid_agg.py --since 2024-01-01` or the animator shows
-   stale fires (AGENTS.md).
-
-Then the normal chain (all support `--park`):
-`rebuild_fire_trajectories_v5.py` -> `load_fire_groups_to_db.py --force` ->
-`precompute_narratives_v5.py`. Obey AGENTS.md: single writer for
-`fire_narrative_cache`; a zero-group park still writes an empty v5 cache row.
-Verify with `scripts/check_fire_consistency.py --verbose`.
-
-Window is 2024-01-01 (`STUDY_MIN_DATE`) per the request; ~2.1M detections in
-the covered part alone, so expect a very large group count. `dedupe_feature_ids`
-and the 100-group payload cap in `srv/fire_realtime_handlers.go` already cope.
-
-## 4c. Surface the coverage, don't hide it
-
-Store a per-dataset coverage fraction in `park_datasets.detail` (computed as
-polygon-area-with-data / polygon area) and render it in the popup as a small
-"data coverage" line per section. A 482,000 km2 area that silently shows
-Chinko-only data is worse than one that says "fires 54% -> 100% (backfilling,
-6 nights left)". Cheap, and it generalises to every future custom area.
-
-## 5. Overlay ingest: a multi-week job hosted by the existing crons
-
-Design principle the user asked for: **the overlay is one long job that every
-existing cron nibbles at, over days to weeks, until it is finished.**
-Not a new heavyweight cron. Two rules:
-
-1. **The fire cron (03:00) is time-critical and untouchable.** It runs its own
-   7 steps first; it may host an overlay slice *only* if it finished early and
-   the 04:00 deadline is still far. Its slice budget is small and it aborts
-   the slice at the first sign of overrun. It never defers its own work.
-2. **Every other cron yields its slot to the overlay while an overlay is
-   pending.** The GFW park rotation, the daily park refresh rotation and the
-   weekly precompute are all *rotations* — a park scanned a day later loses
-   nothing. So while `park_datasets` has pending overlay work, those jobs spend
-   their quota on the overlay instead of their normal rotation, and resume
-   normal rotation automatically when the overlay reports `done`.
-
-### 5.1 `park_datasets` (migration 040)
-
-```sql
-CREATE TABLE IF NOT EXISTS park_datasets (
-  park_id TEXT NOT NULL,
-  dataset TEXT NOT NULL,   -- fire_gap|gfw|ghsl|hydro|osm_pbf|roads|places|
-                           -- climate|species|basin|waterbodies|gsw|deforestation
+-- The work queue. One row per (aoi, dataset); the cron grinds these down.
+CREATE TABLE IF NOT EXISTS aoi_datasets (
+  aoi_id  TEXT NOT NULL REFERENCES aois(id) ON DELETE CASCADE,
+  dataset TEXT NOT NULL,   -- fire_gap|fire_v5|gfw|ghsl|osm|hydro|gsw|basin|deforestation
   enabled INTEGER NOT NULL DEFAULT 1,
-  since_date TEXT,         -- '2024-01-01' for the study area
-  priority INTEGER NOT NULL DEFAULT 100,   -- lower runs first
-  state TEXT NOT NULL DEFAULT 'pending',   -- pending|running|done|failed|blocked
-  cursor TEXT,             -- JSON work queue + index (resumable mid-unit)
+  priority INTEGER NOT NULL DEFAULT 100,      -- lower runs first
+  state TEXT NOT NULL DEFAULT 'pending',      -- pending|running|done|failed|blocked
+  depends_on TEXT,                            -- e.g. fire_v5 depends on fire_gap
+  cursor TEXT,             -- JSON work queue + index; resumable mid-unit
   units_total INTEGER, units_done INTEGER DEFAULT 0,
-  coverage REAL,           -- 0..1, drives the UI line in §4c
-  host TEXT,               -- which cron may run it: 'any'|'fire'|'gfw'|'refresh'|'weekly'
+  coverage REAL,           -- 0..1, drives the UI line in §7
+  lease_owner TEXT, lease_until TIMESTAMP,    -- so two hosts never collide
   last_run_at TIMESTAMP, next_run_at TIMESTAMP, detail TEXT,
-  PRIMARY KEY (park_id, dataset)
+  PRIMARY KEY (aoi_id, dataset)
 );
-CREATE INDEX IF NOT EXISTS idx_pd_state ON park_datasets(state, priority, next_run_at);
+CREATE INDEX IF NOT EXISTS idx_aoi_ds_state
+  ON aoi_datasets(state, priority, next_run_at);
+
+-- Point-in-polygon is expensive over millions of rows; cache the membership
+-- once and refresh incrementally. This is what makes an AOI cheap to query.
+CREATE TABLE IF NOT EXISTS aoi_fires (
+  aoi_id TEXT NOT NULL, fire_id INTEGER NOT NULL,
+  PRIMARY KEY (aoi_id, fire_id)
+) WITHOUT ROWID;
 ```
 
-This doubles as the per-park "what should be collected" switchboard the user
-wants to expose per account later (admin Access tab, §2.5).
+Principals are seeded in Go at startup (needs `ACCESS_PASSWORDS`, so not in the
+.sql): one `password` principal per configured password, keyed by **sha256
+prefix, never the secret**. `$AOI_OWNER_PWD`'s principal owns `XSA_Study_Area`.
 
-### 5.2 `scripts/overlay_runner.py` (new; the shared nibbler)
+---
 
-Single public entry point, called at the **end** of each existing cron script:
+## 3. Isolation: an AOI must not perturb the parks
+
+This is the one way this feature can do damage, so it is stated before any
+code. `scripts/park_assigner.py` assigns each detection to **exactly one**
+park. If the AOI polygon ever enters `keystones_with_boundaries.json`, it steals
+detections from Chinko / Southern / Bili-Uere / Garamba and silently guts their
+trajectories.
+
+* The AOI lives in the `aois` table. **It is never appended to the keystones
+  file.** (The first draft proposed a keystone entry with `overlay: true`;
+  rejected — a flag that 20 consumers must remember to honour is a landmine.
+  A separate table cannot be forgotten.)
+* Therefore `fire_detections.protected_area_id` is never an AOI id. Gap
+  detections stay `NULL` (or belong to a nearby park if within 100 km), which
+  is correct: **the AOI selects by polygon**, via `aoi_fires`.
+* Verification gate: `CAF_Chinko` fire_trajectory count is **8,753** before and
+  after. Re-check it; do not trust the diff to be zero.
+
+New in `scripts/fire_source.py`:
 
 ```python
-from overlay_runner import run_slice
-run_slice(host="gfw", budget_units=40, deadline="04:25", yields_rotation=True)
+def load_aoi_fires(aoi_id, min_date, max_date=None, conn=None):
+    """Fires inside an AOI polygon, via the cached aoi_fires membership."""
 ```
 
-* Picks the highest-priority `pending` row whose `host` matches (or `any`).
-* Executes at most `budget_units` work units, **committing cursor + units_done
-  after every single unit**, so a kill at any moment resumes cleanly.
-* Hard-stops at `deadline` (wall clock, UTC) regardless of remaining budget.
-* Sets `state='done'` and recomputes `coverage` when the queue empties.
-* Returns `True` if it consumed the slot — the caller then **skips its normal
-  rotation** when `yields_rotation=True`.
-* Writes a `overlay_progress` notification (throttled to one/day) and a step in
-  `data/pipeline_status.json`, so the existing admin badge shows
-  "XSA_Study_Area: gfw 118/240, ETA 4 nights".
+and a `--aoi` mode on the v5 chain (`rebuild_fire_trajectories_v5.py` →
+`load_fire_groups_to_db.py` → `precompute_narratives_v5.py`) that swaps the
+park geometry for the AOI geometry and the fire loader for the above. Those
+three scripts already take `--park`/`--parks`; add `--aoi` alongside, sharing
+the code path, writing `feature_geometries` rows with `park_id = <aoi_id>`.
+Obey AGENTS.md: single writer for `fire_narrative_cache`, and a zero-group AOI
+still writes an **empty** v5 cache row.
 
-### 5.3 Host schedule (who nibbles what)
+---
 
-| cron | time | overlay budget | notes |
-|---|---|---|---|
-| `daily_fire_update.py` | 03:00 | `fire_gap`, **30 FIRMS requests**, deadline 03:50 | only after its own steps 1-7 succeed; skipped entirely if it ran long. Time-critical: never defers itself. |
-| `gfw_alerts.py --rotate` | 04:30 | `gfw`, **40 tiles**, deadline 05:30 | **yields its park rotation** while overlay pending. Same API quota it would have spent anyway. |
-| `daily_park_refresh.py --rotate` | 07:30 | `ghsl`, `osm_pbf`, `roads`, `places`, `hydro`, `gsw`, `basin`, `climate`, `species` — 1-2 units | yields rotation; these are download/CPU bound, not quota bound |
-| `cron_weekly_precompute.sh` | weekly | whatever is left, large budget | the catch-up slot; long deadline |
-| manual | any | `--park X --dataset Y --budget N` | for debugging/forcing |
+## 4. Ingest: a dedicated midday cron
 
-At these budgets the overlay finishes in roughly:
-`fire_gap` 570/30 ≈ **19 nights** (or 3 nights if you allow 200/night once the
-FIRMS quota is confirmed), `gfw` 240/40 = **6 nights**, everything else within
-the first week. So: **usable in ~1 week, complete in ~2-3 weeks** — exactly the
-"days to weeks" cadence requested. Bump `budget_units` to compress.
+The user's call, and it is the right one: **a dedicated cron, not slices
+smuggled into the existing ones.** Rationale — the 03:00 fire cron is
+time-critical and was until today silently broken; the last thing it needs is a
+second job sharing its window and its FIRMS quota. And the measured quota
+(5000/10 min) means the overlay does not need to scavenge anyone's budget.
 
-### 5.4 Work units — use Geofabrik, not Overpass
+```cron
+# AOI overlay ingest — grinds the aoi_datasets queue. Midday, far from the
+# 03:00 fire cron, the 04:30 GFW rotation and the 07:30 park refresh.
+0 12 * * * cd /home/exedev/5mp && /usr/bin/python3 scripts/aoi_runner.py --daily >> logs/aoi.log 2>&1
+```
 
-**Yes, Geofabrik is the right call here and Overpass is the wrong one.** The
-gap is ~223,000 km2 spanning 5 countries; Overpass would need ~20 large bbox
-queries that routinely time out at that size, is rate-limited, and gives no
-resumability. Geofabrik gives one deterministic download per country and
-`osmium` (already installed at `/usr/bin/osmium`) does the rest offline.
+`scripts/aoi_runner.py`:
 
-The codebase already has this exact pattern — reuse it rather than writing new:
-`analysis/river_turbidity.py` has the `GEOFABRIK` ISO3->region map,
-`_osmium_extract()` (bbox extract -> tags-filter -> export geojson) and
-`enrich_park_infra()` (fills `osm_places` + `roads_heigit` from a park PBF).
-Lift those three into a shared `scripts/osm_pbf.py` and call it from both.
+* `--daily` — take a lease on the highest-priority `pending` dataset whose
+  `depends_on` is `done`, run until **budget or wall-clock deadline** (default:
+  90 min, hard stop 13:45), then release. Move to the next dataset if one
+  finishes early.
+* Commits `cursor` + `units_done` **after every unit**, so a kill at any moment
+  resumes cleanly. Leases (`lease_owner`/`lease_until`, stale after 6 h) mean a
+  manual run and the cron cannot collide.
+* `--aoi X --dataset Y --budget N` for manual/debug runs.
+* Writes a step into `data/pipeline_status.json` (own key, `aoi_runner`, so it
+  never marks the fire pipeline degraded) and one throttled
+  `aoi_progress` notification per day, visible only to the AOI's principal.
+* Never touches `fire_narrative_cache` directly — shells out to
+  `precompute_narratives_v5.py` (AGENTS.md single-writer rule).
 
-Countries needed and verified sizes:
-
-| region | size | status |
-|---|---|---|
-| `central-african-republic` | 99 MB | **already on disk** (`data/osm_geofabrik/`) |
-| `south-sudan` | 138 MB | **already on disk** |
-| `congo-democratic-republic` | 415 MB | download (note: `democratic-republic-of-the-congo` 404s; the `GEOFABRIK` dict already has the right name) |
-| `sudan` | 203 MB | download |
-| `chad` | 135 MB | download |
-
-~750 MB to fetch, one unit each, deleted after extraction (the turbidity script
-already does download -> extract -> delete). 63 GB free, so headroom is fine.
-
-Full unit table:
+Work units:
 
 | dataset | unit | count | notes |
 |---|---|---|---|
-| `fire_gap` | one 5-day FIRMS window x sensor | ~570 | §4b; whole study bbox, `INSERT OR IGNORE` dedupes |
-| `gfw` | one 0.5 deg tile | ~240 | add `--max-tiles N` + cursor to `analysis/gfw_alerts.py`; merge partials into `data/gfw_alerts/XSA_Study_Area.json` |
-| `ghsl` | one 100 m tile zip | 4 | **URLs verified live** (E2030 R2023A 100 m): `R7_C20` 1.5 MB, `R7_C21` 1.7 MB, `R8_C20` 11.5 MB, `R8_C21` 6.6 MB from `.../GHS_BUILT_S_GLOBE_R2023A/GHS_BUILT_S_E2030_GLOBE_R2023A_54009_100/V1-0/tiles/`. The 10 m tiles now 404. `process_settlement_polygons.py` hardcodes `data/ghsl/ghsl_pop_2030.zip` and `data/ghsl/` doesn't exist -> generalise it to a tile dir. |
-| `osm_pbf` | one country download | 3 | see table above |
-| `roads` + `places` | one country's osmium extract+enrich | 5 | offline, from the PBFs |
-| `hydro` | HydroRIVERS_v10_af + HydroLAKES (~2 GB) | 1-2 | `data/hydro_source/` absent; stopgap = union the 4 overlapped parks' `park_rivers_hydro` rows, or derive waterways from the PBFs |
-| `gsw` | one 10x10 deg occurrence tile | 3 | missing `occ_20E_0N`, `occ_30E_10N`, `occ_30E_0N`; `occ_20E_10N` present |
-| `basin` | `fetch_park_basins.py --park` | 1 | has `--sleep` |
-| `climate`, `species` | local grid / neighbour union | 1 each | no row exists for a new park |
-| `deforestation` | Hansen tile, or derive from the GFW alerts already fetched | ~6 | prefer deriving — no extra quota |
+| `fire_gap` | one 5-day FIRMS window × sensor | ~570 | `firms_api.fetch_range`, AOI bbox, `INSERT OR IGNORE`. Budget 120/slice → done in ~2 days. Then `build_fire_grid_agg.py --since 2024-01-01` **or the animator shows stale fires**. |
+| `fire_v5` | the AOI v5 chain | 1 | depends on `fire_gap`; expect a very large group count over 482k km² |
+| `gfw` | one 0.5° tile | ~240 | add `--max-tiles N` + cursor to `analysis/gfw_alerts.py`; **cache per tile** (§8), not per park |
+| `ghsl` | one 100 m tile zip | 4 | R2023A E2030 100 m, verified live: `R7_C20` 1.5 MB, `R7_C21` 1.7 MB, `R8_C20` 11.5 MB, `R8_C21` 6.6 MB under `GHS_BUILT_S_GLOBE_R2023A/GHS_BUILT_S_E2030_GLOBE_R2023A_54009_100/V1-0/tiles/`. The 10 m tiles now 404. `process_settlement_polygons.py` hardcodes `data/ghsl/ghsl_pop_2030.zip` (a path that doesn't exist) → generalise to a tile dir. |
+| `osm` | one country PBF: download → extract → enrich → delete | 5 | §6 |
+| `hydro` | HydroRIVERS_v10_af + HydroLAKES | 1-2 | `data/hydro_source/` absent; stopgap = PBF waterways from the `osm` unit |
+| `gsw` | one 10×10° occurrence tile | 3 | missing `occ_20E_0N`, `occ_30E_10N`, `occ_30E_0N` |
+| `basin` | `fetch_park_basins.py` on the AOI | 1 | has `--sleep` |
+| `deforestation` | derive from the GFW alerts already fetched | ~6 | prefer deriving over a Hansen download — no extra quota |
 
-### 5.5 Phase A still goes first
+Rough completion: `fire_gap` + `fire_v5` in 2-3 days, `gfw` ~2 days at 120
+tiles/slice, everything else within the first week. **Usable in days, complete
+in ~1-2 weeks** — the requested cadence, with the fire cron untouched.
 
-Clipping the 4 overlapped parks' existing rows into the study area is instant
-and zero-quota, and makes the area usable the same day. But per §4a it covers
-only ~10.5% (parks) to 53.6% (buffer) of the polygon, so it is a **preview**,
-not the deliverable. Ship it, label the coverage (§4c), let the crons grind out
-phase B.
+Optional, **off by default**: `aoi_runner.run_slice(host=...)` appended to the
+existing crons as extra capacity. Ship the dedicated cron first; only add
+piggyback slots if the queue is actually the bottleneck. If they are added, the
+call must be the last statement, wrapped in try/except, so an AOI failure can
+never mark the host cron failed.
 
-## 6. Commit order
+Kill switch: `UPDATE aoi_datasets SET enabled=0 WHERE aoi_id='XSA_Study_Area'`.
 
-1. migration 040 (`principals`, `park_grants`, `park_datasets`) +
-   `srv/park_acl.go` + enforcement + response-cache key fix + api tests.
-2. `$AOI_OWNER_PWD` appended to `ACCESS_PASSWORDS` in `secrets.env` (gitignored).
-3. Keystone entry + `restricted`/`overlay` flags + `park_assigner` overlay skip
-   + `fire_source.load_area_fires_db`. **Record CAF_Chinko's group count first.**
-4. Phase A clip-from-neighbours + fire v5 chain on the covered part; coverage
-   line in the popup (§4c).
-5. `scripts/osm_pbf.py` (lifted from `river_turbidity.py`) +
-   `scripts/overlay_runner.py` + `run_slice()` calls appended to the four cron
-   scripts + `--max-tiles` on `gfw_alerts.py`. Seed `park_datasets` rows with
-   `next_run_at` >= tomorrow 08:00 UTC.
-6. Frontend study-area chip + `parks=study` share param; admin Access tab.
+---
 
-## 7. Verification
+## 5. Phase A: clip first, so it is usable on day one
 
-* `/api/areas?pwd=test2026` must not contain `XSA_Study_Area`; with
-  `pwd=$AOI_OWNER_PWD` it must.
-* `/api/parks/XSA_Study_Area/{stats,fire-narrative,fire-realtime,features,basin}`
-  200 for Chink0, 404 otherwise.
-* Response cache: Chink0 request then test2026 request back to back; the second
-  must not be `X-Response-Cache: HIT` of the first.
-* `scripts/check_fire_consistency.py --verbose` exit 0.
-* **CAF_Chinko group count unchanged** before/after (proves the assigner skip).
-  Record the baseline *before* step 3.
+Before any download: intersect what already exists (the 4 overlapped parks'
+`feature_geometries`, settlements, deforestation, rivers, roads) with the AOI
+polygon and window. Instant, zero quota, and it makes the AOI real immediately.
+Per §1 it covers 10.5%-53.6% of the polygon, so it is a **preview**. Label it
+(§7) and let the cron fill in the rest.
+
+---
+
+## 6. OSM: rescue the park-infra enrichment from the turbidity script
+
+The user asked for this explicitly and it is independently worth doing: the
+`osm_places` / `roads_heigit` backfill is good code whose only caller was
+retired with mining.
+
+Lift into a new **`scripts/osm_pbf.py`** — moved verbatim, not retyped:
+`GEOFABRIK` (ISO3 → region; note DR Congo is `congo-democratic-republic`,
+`democratic-republic-of-the-congo` 404s), `_osmium_extract()`,
+`_export_filtered()`, `_road_class()`, `enrich_park_infra()`. Then:
+
+* `analysis/river_turbidity.py` imports from it (behind the mining flag, no
+  behaviour change).
+* the AOI `osm` unit calls it per country: download PBF → extract AOI bbox →
+  fill AOI places/roads → **while the PBF is on disk, enrich every park of that
+  country that still has no rows** → delete the PBF.
+* that last clause is the point: it restores the opportunistic park backfill
+  and would close today's two known gaps (`DZA_Djurdjura` places+roads,
+  `COG_Nouabalé-Ndoki` roads — neither country is in the AOI, so also add
+  `scripts/osm_pbf.py --enrich-missing` for a one-off manual run).
+
+Geofabrik, not Overpass: the gap is ~223,000 km² over 5 countries; Overpass
+needs ~20 oversized bbox queries that time out, is rate-limited, and gives no
+resumability. One deterministic download per country + offline osmium wins on
+every axis. ~750 MB to fetch (`congo-democratic-republic` 415 MB, `sudan`
+203 MB, `chad` 135 MB; CAF and South Sudan already on disk), deleted after use.
+
+---
+
+## 7. UI: reduced popup, layer inspection, animate, report
+
+The AOI reuses the *chrome* of the park popup and almost none of its content.
+
+**Tooltip** (hover on the AOI outline) — deliberately thin: name, area km²,
+analysis window, `state` badge, and a one-line coverage summary
+("fires 100%, forest 62%, settlements pending"). Two icon buttons: Animate,
+Report.
+
+**Popup** — sections, in order:
+
+1. **Overview** — area, window, the 4 parks it intersects (each a link that
+   opens the real park popup — this is where species/publications/legal/climate
+   live, and saying so once is better than duplicating them), and the
+   **coverage table**: one row per dataset with a progress bar and an ETA
+   ("gfw 118/240 · ~2 days"). Straight from `aoi_datasets`.
+2. **Fire** — v5 narrative + the `areaSparkline` trend, same components as the
+   park popup, fed by `/api/aois/{id}/fire-narrative` and `/fire-trend`.
+3. **Deforestation** and 4. **Settlements** — same pattern.
+5. **Layers** — the toggle/pin grid, so every available layer can be inspected
+   on the map. Pins reuse the existing pinned-layer machinery with
+   `aoi:<id>:<type>` keys.
+
+No species, no publications, no legal, no climate. Not "hidden" — absent, with
+the Overview line pointing at the parks.
+
+**Animate.** Nearly free: `anim.js` is already bbox-driven and already supports
+a fixed bbox (`activeBbox()` → `A.bboxFixed`, canvas clipped). Opening the
+animator from an AOI sets the fetch bbox to the AOI bbox, the time range to the
+AOI window, and **clips the canvas to the AOI polygon** instead of the
+rectangle — one `ctx.clip()` with a path instead of a rect. Layer chips work
+unchanged because every frames endpoint is bbox-scoped.
+
+**Report.** `collectReportParks()` already folds starred bboxes in by resolving
+them to parks. An AOI is a starred bbox with a polygon and its own precomputed
+layers, so it slots in as a new source: AOI-level sections first (its own fire /
+deforestation / settlement narratives + coverage caveat), then the intersecting
+parks as today. PDF/KML/CSV/XLSX exports inherit this for free.
+
+**Visibility in the shell.** `/api/areas` gains AOIs the principal may see, as
+features with `kind: "aoi"` (dashed outline, distinct colour, no fill). Reuse
+the keystones-toggle machinery for an `Areas of interest` chip with
+`all / AOI only / off`. Share param `aoi=<id>`; `parks=study` from the first
+draft is dropped as too special-cased.
+
+---
+
+## 8. Making the data reusable for every park (rule 2, concretely)
+
+* **Fires** — already global. The `fire_gap` backfill lands in
+  `fire_detections` with normal park assignment, so Chinko/Southern/Bili-Uere/
+  Garamba gain real detections in their outer buffers. Free win, no extra code.
+* **GFW** — today `data/gfw_alerts/{park_id}.json`. The AOI scan must write
+  `data/gfw_tiles/{tile_key}.json` (0.5° key) and have both the AOI *and* the
+  park rotation read through that cache with a freshness TTL. Without this,
+  240 tiles of API work benefit exactly one private AOI.
+* **OSM** — §6 already does it: park backfill while the PBF is on disk.
+* **GHSL / GSW / HydroSHEDS** — raw tiles under `data/{ghsl,gsw,hydro_source}/`,
+  keyed by tile id. Any park in the footprint can use them afterwards.
+
+The rule to apply when adding any future dataset: **if the artefact is named
+after the AOI, ask whether it could be named after the tile instead.**
+
+---
+
+## 9. API surface (small on purpose)
+
+```
+GET  /api/aois                      -> list visible to the principal
+POST /api/aois                      -> create {name, geometry, from, to} (future: draw)
+GET  /api/aois/{id}                 -> metadata + coverage per dataset
+GET  /api/aois/{id}/fire-narrative  -> v5 cache row (AOI-scoped)
+GET  /api/aois/{id}/fire-trend
+GET  /api/aois/{id}/deforestation-narrative
+GET  /api/aois/{id}/settlement-narrative
+GET  /api/aois/{id}/features?type=  -> GeoJSON, same shape as the park endpoint
+GET  /api/aois/{id}/export.{kml,geojson}
+POST /api/aois/{id}/refresh         -> requeue a dataset (owner only)
+DELETE /api/aois/{id}               -> owner only
+```
+
+Enforcement, mirroring `ParkIDMiddleware` (`srv/park_id_middleware.go`, wired at
+`srv/server.go:341`): an **`AOIMiddleware`** validates the id and resolves
+visibility once — not visible → **404**, never 403, so an id is not an oracle.
+Because AOIs are a separate id space and a separate route prefix, the
+park-endpoint audit that the first draft needed (~40 routes, one miss = a leak)
+**disappears**. That is the main reason not to model an AOI as a park.
+
+Still required:
+
+* `srv/response_cache.go` `cacheKey()` (L68) must gain a visibility fingerprint:
+  `env + "|" + visHash + "|" + path`. Cache the AOI endpoints only after this.
+  Otherwise a `Chink0` response is served to everyone.
+* `notifications` for an AOI must be principal-filtered, or the name leaks in a
+  title. Same shape as `miningNotifSQLFilter()` in `srv/mining_flag.go`.
+* `/api/fire-frames`, `/api/features-in-bbox`, `/api/grid` stay **unfiltered** —
+  they serve raw geography that was always public within the app, and the AOI
+  polygon itself is the only secret. Do not pretend otherwise: an AOI is
+  privacy for *the question being asked*, not for the underlying pixels.
+
+---
+
+## 10. Commit order
+
+1. Migration 040 (`aois`, `principals`, `aoi_grants`, `aoi_datasets`,
+   `aoi_fires`) + `srv/aoi.go` (store + `AOIMiddleware` + visibility) +
+   response-cache key fix + api tests. Seed `$AOI_OWNER_PWD` into `secrets.env`
+   (gitignored) and the AOI row from the staged geojson.
+2. `scripts/osm_pbf.py` lifted from `river_turbidity.py`, with
+   `--enrich-missing`; close the two known park gaps. **Independently useful,
+   ships first, no AOI needed.**
+3. `fire_source.load_aoi_fires` + `aoi_fires` builder + `--aoi` on the v5 chain.
+   **Record CAF_Chinko = 8,753 fire_trajectory rows first**, re-check after.
+4. Phase A clip-from-neighbours + `/api/aois/*` read endpoints + the reduced
+   popup with the coverage table.
+5. `scripts/aoi_runner.py` + the midday cron + `--max-tiles`/tile-cache on
+   `gfw_alerts.py`. Seed `aoi_datasets` rows; first slice runs the next midday.
+6. Animator polygon clip + AOI chip in `/api/areas` + report integration.
+7. Admin "Access" tab: principals, AOI ownership, per-dataset toggles.
+
+---
+
+## 11. Verification
+
+* `/api/aois?pwd=test2026` empty; with `pwd=$AOI_OWNER_PWD` contains the study area.
+* `/api/aois/XSA_Study_Area/*` → 200 for Chink0, **404** otherwise.
+* Response cache: Chink0 request then test2026 back-to-back; the second must not
+  be `X-Response-Cache: HIT` of the first.
+* **CAF_Chinko fire_trajectory count still 8,753.**
+* `python3 scripts/check_fire_consistency.py --verbose` exit 0.
+* `aoi_runner` killed mid-slice resumes with no duplicate and no lost unit
+  (kill -9 during `fire_gap`, rerun, compare `units_done` and row counts).
 * `./tests/run_all.sh`.
 
-## 8. Scheduling / resources
+---
 
-* **histmaps is running now** (tmux `histmaps`, `sudan250k.py all --method tps
-  --jobs 2 --resume`, ~166% CPU, 2.1 GB RSS on a 7.4 GB box with **no swap**,
-  into the night). Do not run CPU/RAM-heavy jobs alongside it; keep
-  `systemctl restart 5mp` to one deliberate restart.
-* Tonight's crons run untouched: 01:00 onboard_park, 03:00 fire update,
-  04:30 GFW rotate, 07:30 park refresh. **Do not seed any `park_datasets` row
-  with `next_run_at` before ~08:00 UTC tomorrow**, so the first overlay slice is
-  picked up by tomorrow evening's crons at the earliest.
-* Steps 1-3 (schema, ACL, keystone entry, assigner skip) are cheap and can land
-  today; they change no cron behaviour until a `park_datasets` row exists.
-* The overlay then runs itself: no babysitting, no long-lived tmux job, and no
-  risk of colliding with histmaps because every slice is bounded by
-  `budget_units` and a wall-clock deadline.
-* Kill switch: `UPDATE park_datasets SET enabled=0 WHERE park_id='XSA_Study_Area'`
-  — every cron returns to normal rotation on its next run.
+## 12. Gotchas
 
-## 9. Gotchas
-
-* `data/fire_groups_v5/XSA_Study_Area.json` will be large (gitignored; 63 GB
-  free on `/`).
+* `data/fire_groups_v5/XSA_Study_Area.json` will be very large (gitignored).
 * `srv/areas/areas.go loadKeystonesWithBoundaries` keeps only the first ring for
-  point-in-polygon; our simple Polygon is fine.
-* `notifications` must be ACL-filtered too or the park name leaks in a title.
-* Star report / KML / Locus exports all go through `/api/parks/{id}/...`, so the
-  middleware choke point covers them.
-* Do not introduce a second fire source (AGENTS.md): `load_area_fires_db` reads
+  point-in-polygon; the AOI store must not inherit that shortcut if a future
+  drawn AOI has holes.
+* Do not introduce a second fire source (AGENTS.md): `load_aoi_fires` reads
   `fire_detections` only.
-* `run_slice()` must be the **last** statement in each cron script and wrapped
-  in try/except: an overlay failure must never mark the host cron failed in
-  `data/pipeline_status.json`.
-* Two crons can overlap in wall-clock time (04:30 GFW vs a long 03:00 fire run).
-  `overlay_runner` takes a row-level lock (`state='running'` + `host` + a
-  timestamp; stale-running > 6 h is reclaimable) so two hosts never work the
-  same dataset.
-* Geofabrik region name for DR Congo is `congo-democratic-republic`;
-  `democratic-republic-of-the-congo` 404s. The `GEOFABRIK` dict in
-  `analysis/river_turbidity.py` is already correct — copy it, don't retype it.
+* After any bulk fire change: `scripts/build_fire_grid_agg.py --since`.
+* The 03:00 fire cron's FIRMS window cap is now enforced in `firms_api.py`.
+  Any new FIRMS caller **must** go through it; a hand-rolled 10-day URL is a
+  silent 400.
+* `park_datasets` from the first draft is renamed `aoi_datasets` and is *not* a
+  per-park switchboard. If a per-park version is wanted later, it is a separate
+  table — conflating them was what pulled AOIs into the park id space.

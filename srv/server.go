@@ -61,6 +61,13 @@ func New(dbPath, hostname string) (*Server, error) {
 		return nil, fmt.Errorf("load templates: %w", err)
 	}
 	srv.Auth = auth.NewManager(srv.DB)
+
+	// One principal per configured access password (sha256 prefix, never the
+	// secret). Seeded here rather than in the migration because
+	// ACCESS_PASSWORDS lives in the environment.
+	if err := srv.SeedPrincipals(); err != nil {
+		slog.Warn("seed principals", "error", err)
+	}
 	
 	// Start the GPX learner background processor
 	srv.GPXLearner = NewGPXLearner(srv.DB)
@@ -188,6 +195,12 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("POST /api/onboarding/request", s.HandleAPIRequestOnboard)
 	mux.HandleFunc("POST /api/onboarding/cancel", s.HandleAPICancelOnboard)
 	mux.HandleFunc("GET /api/onboarding", s.HandleAPIOnboardingStatus)
+
+	// Areas of interest (AOI). Separate id space and route prefix from parks
+	// on purpose: one middleware + per-handler visibility check is the whole
+	// enforcement surface (docs/PLAN_AOI_OVERLAY.md §9).
+	mux.HandleFunc("GET /api/aois", s.HandleAPIAOIList)
+	mux.HandleFunc("GET /api/aois/{id}", s.HandleAPIAOIGet)
 	
 	// API auth endpoints
 	mux.HandleFunc("POST /api/login", RateLimitMiddleware(authRL, s.HandleAPILogin))
@@ -338,7 +351,7 @@ func (s *Server) Serve(addr string) error {
 	// Wrap with security headers, compression, and password protection
 	// ResponseCacheMiddleware sits inside Password (auth still enforced) and
 	// inside Gzip (caches uncompressed bodies; gzip recompresses per client).
-	protectedHandler := SecurityHeadersMiddleware(GzipMiddleware(s.PasswordMiddleware(s.ResponseCacheMiddleware(ParkIDMiddleware(mux)))))
+	protectedHandler := SecurityHeadersMiddleware(GzipMiddleware(s.PasswordMiddleware(s.ResponseCacheMiddleware(ParkIDMiddleware(AOIMiddleware(mux))))))
 
 	s.httpServer = &http.Server{
 		Addr:         addr,

@@ -155,6 +155,34 @@ test_api "infrastructure_chinko" "/api/parks/CAF_Chinko/infrastructure" "200" "t
 test_api "legal_docs_virunga" "/api/parks/COD_Virunga/legal" "200" ".count >= 0"
 test_api "legal_docs_serengeti" "/api/parks/TZA_Serengeti/legal" "200" ".count >= 0"
 
+yellow "\n=== Areas of interest (AOI) ==="
+# Visibility is the whole point: an AOI owned by another principal must be
+# invisible AND must 404 (never 403 — an id must not be an oracle).
+test_api "aoi_list_empty_for_test_pwd" "/api/aois" "200" ".count == 0"
+test_api "aoi_private_is_404_not_403" "/api/aois/XSA_Study_Area" "404" ""
+test_api "aoi_bad_id_rejected" "/api/aois/..%2Fetc" "400" ""
+
+# Same checks with the owning password, if it is configured locally.
+AOI_PWD=$(grep -o 'ACCESS_PASSWORDS=.*' secrets.env 2>/dev/null | tr ',' '\n' | grep -i 'chink' | head -1)
+if [[ -n "$AOI_PWD" ]]; then
+    printf "%-50s" "aoi_visible_to_owner"
+    body=$(curl -s -m 30 --get --data-urlencode "pwd=$AOI_PWD" "${BASE_URL}/api/aois")
+    if [[ "$(echo "$body" | jq -r '.count >= 1')" == "true" ]]; then
+        green "✓"; PASSED=$((PASSED + 1))
+    else
+        red "FAIL"; FAILED=$((FAILED + 1)); ERRORS+=("aoi_visible_to_owner")
+    fi
+    # Response cache must not serve the owner's body to the next caller.
+    printf "%-50s" "aoi_cache_not_shared_across_principals"
+    curl -s -m 30 --get --data-urlencode "pwd=$AOI_PWD" "${BASE_URL}/api/aois" > /dev/null
+    n=$(curl -s -m 30 -b "$COOKIE_FILE" "${BASE_URL}/api/aois" | jq -r '.count')
+    if [[ "$n" == "0" ]]; then
+        green "✓"; PASSED=$((PASSED + 1))
+    else
+        red "FAIL (leaked $n AOIs)"; FAILED=$((FAILED + 1)); ERRORS+=("aoi cache leak")
+    fi
+fi
+
 echo
 echo "======================================="
 if [[ $FAILED -eq 0 ]]; then
