@@ -349,19 +349,8 @@ func (s *Server) HandleAPIParkLocus(w http.ResponseWriter, r *http.Request) {
 	fromDate := r.URL.Query().Get("from")
 	toDate := r.URL.Query().Get("to")
 
-	parkName := parkID
-	var boundary string
-	for _, pa := range s.AreaStore.Areas {
-		if pa.ID == parkID {
-			parkName = pa.Name
-			if pa.Geometry.Type != "" {
-				if b, err := json.Marshal(pa.Geometry); err == nil {
-					boundary = string(b)
-				}
-			}
-			break
-		}
-	}
+	// resolveAreaGeom covers AOIs too (srv/aoi.go): they are not in AreaStore.
+	parkName, boundary := s.resolveAreaGeom(parkID)
 
 	tdb, err := newLocusDB(locusTracksSchema)
 	if err != nil {

@@ -303,22 +303,45 @@
                     <button class="bbox-select-btn bbox-star-btn" id="bbox-star-btn" onclick="starCurrentBbox()" title="Star this area" aria-label="Star this area" style="display: none;">
                         <span id="bbox-star-icon">☆</span>
                     </button>
-                    <!-- Only rendered for principals who can see at least one AOI;
-                         loadAOIs() unhides it. -->
-                    <button class="keystones-compact-toggle active" id="aoi-toggle" onclick="toggleAOILayer()" title="Toggle areas of interest" aria-label="Toggle areas of interest" aria-pressed="true" style="display:none">
-                        ◈ AOI
-                    </button>
-                    <!-- Creating an AOI needs an owner, so it is only shown to a
-                         principal with a password: POST /api/aois 403s otherwise.
-                         initAOICreateButton() unhides it. Amber, not blue: this
-                         is not the disposable bbox filter next to it. -->
-                    <button class="bbox-select-btn aoi-new-btn" id="aoi-new-btn" onclick="startAOIDraw()" title="Draw a new area of interest — data is fetched for it over the following days" aria-label="Draw a new area of interest" style="display:none">
-                        <i class="icon-pencil-ruler"></i> <span id="aoi-new-label">New area…</span>
-                    </button>
                 </div>
                 <input type="checkbox" id="keystones-toggle" checked style="display:none;">
+                <div class="starred-areas" id="starred-areas"></div>
                 <div class="selected-countries" id="selected-countries"></div>
                 <div class="selected-parks" id="selected-parks"></div>
+            </div>
+
+            <!-- Areas of interest — deliberately its OWN section, not another
+                 button next to "Select Area".
+
+                 The two gestures look identical and mean opposite things. A
+                 bounding box is an instant, disposable *filter* over data we
+                 already hold: draw it, read it, throw it away. An AOI is a
+                 *commissioned* object — an arbitrary polygon with an owner, a
+                 fixed analysis window and a queue of downloads that will spend
+                 real satellite quota and hours of CPU spread over days
+                 (docs/PLAN_AOI_OVERLAY.md §0 rule 3). Putting them in one row
+                 invited exactly the confusion this separation removes: own
+                 heading, own colour (amber = commitment), own explanatory line.
+
+                 The whole section is hidden unless this principal can either
+                 see an AOI or create one; loadAOIs() decides. -->
+            <div class="filter-section aoi-section" id="aoi-section" style="display:none">
+                <div class="filter-section-label aoi-section-label">
+                    Areas of Interest
+                    <button class="aoi-layer-toggle active" id="aoi-toggle" onclick="toggleAOILayer()" title="Show or hide areas of interest on the map" aria-label="Toggle areas of interest" aria-pressed="true">◈ shown</button>
+                </div>
+                <div class="selected-aois" id="selected-aois"></div>
+                <!-- Creating an AOI needs an owner: POST /api/aois 403s without
+                     a principal, so the button only appears when the server
+                     says can_create. -->
+                <button class="aoi-new-btn" id="aoi-new-btn" onclick="startAOIDraw()" title="Draw an area of interest — its data is fetched over the following days" aria-label="Draw a new area of interest" style="display:none">
+                    <i class="icon-pencil-ruler"></i> <span id="aoi-new-label">Draw an area…</span>
+                </button>
+                <div class="aoi-section-hint" id="aoi-section-hint">
+                    Unlike <em>Select Area</em> above, an area of interest is kept:
+                    fires, forest loss and settlements are fetched for it over the
+                    following days.
+                </div>
             </div>
             
 
@@ -4965,14 +4988,15 @@
         // Keystones toggle state
         var keystonesEnabled = true;
 
-        // AOI layer toggle. Reuses the keystones-chip styling deliberately:
-        // an AOI belongs in the same mental slot as "which areas am I looking
-        // at", not in the data-layer toggles.
+        // AOI layer toggle. Lives in the AOI section's own heading rather than
+        // among the data-layer toggles: it answers "am I looking at my areas",
+        // which is a question about scope, not about a layer.
         function toggleAOILayer() {
             const btn = document.getElementById('aoi-toggle');
             const on = !btn.classList.contains('active');
             btn.classList.toggle('active', on);
             btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+            btn.textContent = on ? '◈ shown' : '◈ hidden';
             ['aois-outline', 'aois-fill'].forEach(id => {
                 if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', on ? 'visible' : 'none');
             });
@@ -7633,11 +7657,9 @@
                 if (src) src.setData(fc);
                 const chip = document.getElementById('aoi-toggle');
                 if (chip) chip.style.display = list.length ? '' : 'none';
-                // Whether this principal may create one is the server's call:
-                // a password can arrive as a cookie, so getPwd() being empty
-                // says nothing (see can_create in HandleAPIAOIList).
                 window._aoiCanCreate = !!data.can_create;
                 initAOICreateButton();
+                updateAOITagsDisplay();
                 // A ?aoi= share link can only be honoured once the polygons
                 // are known (and only if this principal may see them — an
                 // invisible id simply does nothing, no error, no oracle).
@@ -7650,18 +7672,100 @@
         }
         window.loadAOIs = loadAOIs;
 
+        // AOI tags in the filter panel's "Selected Parks" row.
+        //
+        // There can be several, so this is a list of tags rather than a single
+        // line: the same shape as the park tags below it, deliberately amber so
+        // an AOI is never mistaken for a park (it has a different id space, a
+        // different route prefix and no species/climate/legal at all).
+        //
+        // Each tag carries the analysis window, because that is half of what an
+        // AOI *is* — two versions of the same area differ only by their dates,
+        // and a tag showing just the name would be ambiguous the moment someone
+        // restores an archived version.
+        function updateAOITagsDisplay() {
+            const el = document.getElementById('selected-aois');
+            if (!el) return;
+            const list = Object.values(window._aois || {});
+            if (!list.length) { el.innerHTML = ''; return; }
+            el.innerHTML = list.map(a => {
+                const win = (a.from_date || '…') + ' → ' + (a.to_date || 'now');
+                const km = a.area_km2 ? formatNumber(Math.round(a.area_km2)) + ' km²' : '';
+                const cov = window._aoiCoverage?.[a.id];
+                const covTxt = cov ? ` · ${cov.done}/${cov.total} layers` : '';
+                return `<div class="aoi-tag" title="${escapeHtml(a.name)} — ${escapeHtml(win)}${km ? ' · ' + km : ''}${covTxt}">
+                    <span class="aoi-tag-name" onclick="openAOIPopupById('${escapeHtml(a.id)}')">◈ ${escapeHtml(a.name)}</span>
+                    <span class="aoi-tag-win">${escapeHtml(win)}</span>
+                    <button class="aoi-tag-zoom" onclick="event.stopPropagation();zoomToAOI('${escapeHtml(a.id)}')" title="Zoom to this area">⌖</button>
+                </div>`;
+            }).join('');
+        }
+        window.updateAOITagsDisplay = updateAOITagsDisplay;
+
+        function zoomToAOI(id) {
+            const bb = window._aois?.[id]?.bbox;
+            if (bb && bb.length === 4) {
+                map.fitBounds([[bb[0], bb[1]], [bb[2], bb[3]]], { padding: 60, duration: 900 });
+            }
+        }
+        window.zoomToAOI = zoomToAOI;
+
+        // Starred monitored areas (bboxes), as tags in the same row.
+        //
+        // These already drive the star report — collectReportParks() resolves
+        // each one to the parks inside it — but until now the filter panel only
+        // ever showed the *current* selection, so a user with three starred
+        // areas had no way to see them without opening the star modal. There
+        // can be several, hence tags rather than a line of text.
+        function updateStarredAreaTags() {
+            const el = document.getElementById('starred-areas');
+            if (!el) return;
+            const list = (typeof starredItems !== 'undefined' && starredItems.bboxes) || [];
+            if (!list.length) { el.innerHTML = ''; return; }
+            el.innerHTML = list.map((b, i) => {
+                const bb = b.bbox || [];
+                const km = bb.length === 4
+                    ? formatNumber(Math.round(Math.abs(bb[3] - bb[1]) * 111 *
+                          Math.abs(bb[2] - bb[0]) * 111 *
+                          Math.cos((bb[1] + bb[3]) / 2 * Math.PI / 180))) + ' km²'
+                    : '';
+                const name = b.name || 'Saved Area';
+                return `<div class="starred-area-tag" title="${escapeHtml(name)}${km ? ' · ' + km : ''}">
+                    <span class="starred-area-tag-name" onclick="flyToBbox([${bb.join(',')}])">☆ ${escapeHtml(name)}</span>
+                    <span class="starred-area-tag-size">${km}</span>
+                    <button class="park-tag-remove" onclick="event.stopPropagation();unstarAreaTag(${i})" title="Unstar">×</button>
+                </div>`;
+            }).join('');
+        }
+        window.updateStarredAreaTags = updateStarredAreaTags;
+
+        function unstarAreaTag(i) {
+            const item = starredItems.bboxes[i];
+            if (!item) return;
+            toggleStar('bboxes', item);
+            updateStarredAreaTags();
+            if (typeof updateBboxStarButton === 'function') updateBboxStarButton();
+        }
+        window.unstarAreaTag = unstarAreaTag;
+
         // ── Creating and editing an AOI ──────────────────────────────────
         // The heavy lifting is srv/static/aoi_draw.js; these are the three
         // seams it needs in the page: who may create one, how an edit starts
         // with an existing polygon, and how a lineage is presented.
 
-        // Only a principal the server recognises can own an AOI (POST /api/aois
-        // 403s otherwise), so an anonymous visitor is shown nothing rather than
-        // a button that fails. Driven by can_create from loadAOIs().
+        // The AOI section is hidden entirely for a principal who can neither
+        // see nor create one: a heading explaining a feature you cannot use is
+        // worse than no heading. Driven by can_create from loadAOIs(), because
+        // a password can arrive as a cookie and getPwd() would say nothing.
         function initAOICreateButton() {
             const btn = document.getElementById('aoi-new-btn');
-            if (!btn) return;
-            btn.style.display = window._aoiCanCreate ? '' : 'none';
+            const sec = document.getElementById('aoi-section');
+            const hasAny = Object.keys(window._aois || {}).length > 0;
+            if (btn) btn.style.display = window._aoiCanCreate ? '' : 'none';
+            if (sec) sec.style.display = (window._aoiCanCreate || hasAny) ? '' : 'none';
+            // Once you have one, the explanation is redundant.
+            const hint = document.getElementById('aoi-section-hint');
+            if (hint) hint.style.display = hasAny ? 'none' : '';
         }
         window.initAOICreateButton = initAOICreateButton;
 
@@ -10265,6 +10369,10 @@
             
             // Also update filter area display with names
             updateFilterAreaDisplay();
+            // AOI + starred-area tags share this row and are independent of
+            // selectedParks, so they must repaint even on the empty path below.
+            if (typeof updateAOITagsDisplay === 'function') updateAOITagsDisplay();
+            if (typeof updateStarredAreaTags === 'function') updateStarredAreaTags();
             
             // Clear existing tags
             container.innerHTML = '';
@@ -11979,6 +12087,9 @@
         }
         // Blue flash while report data is still being prepared
         badge.classList.toggle('preparing', reportDataCache.loading.size > 0 && total > 0);
+        // The filter panel shows starred areas as tags; this is the one call
+        // every star/unstar path already goes through.
+        if (typeof updateStarredAreaTags === 'function') updateStarredAreaTags();
     }
     // Poll so the badge stops flashing once background prefetches finish
     setInterval(() => {

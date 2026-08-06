@@ -472,6 +472,43 @@ func (s *Server) aoiGate(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+// resolveAreaGeom returns the display name and boundary GeoJSON for either a
+// park or an AOI.
+//
+// Handlers that need geography (KML, Locus, anything that buffers a bbox out
+// of the boundary) all wrote the same `for _, pa := range s.AreaStore.Areas`
+// loop. An AOI is deliberately NOT in AreaStore -- putting it there would let
+// park_assigner reassign detections away from the parks it overlaps -- so that
+// loop silently yields an empty boundary and the handler emits a file with no
+// geometry and no patrol effort (the effort bbox is derived from the
+// boundary). Rather than special-case each one, they resolve through here.
+//
+// Visibility is NOT checked: callers reach this only after aoiGate.
+func (s *Server) resolveAreaGeom(id string) (name, boundary string) {
+	name = id
+	if s.AreaStore != nil {
+		for _, pa := range s.AreaStore.Areas {
+			if pa.ID == id {
+				if pa.Geometry.Type != "" {
+					if b, err := json.Marshal(pa.Geometry); err == nil {
+						boundary = string(b)
+					}
+				}
+				return pa.Name, boundary
+			}
+		}
+	}
+	if !IsAOIID(id) {
+		return name, ""
+	}
+	var n, geo string
+	if err := s.DB.QueryRow(`SELECT name, geometry FROM aois WHERE id = ?`, id).
+		Scan(&n, &geo); err != nil {
+		return name, ""
+	}
+	return n, geo
+}
+
 // HandleAPIAOIExportGeoJSON — GET /api/aois/{id}/export.geojson: the polygon
 // itself, so it can be loaded into QGIS/Locus like a park boundary.
 func (s *Server) HandleAPIAOIExportGeoJSON(w http.ResponseWriter, r *http.Request) {
