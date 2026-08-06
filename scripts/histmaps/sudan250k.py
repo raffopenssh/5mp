@@ -40,9 +40,20 @@ def extent(block, letter):
     ymax = la + 4 - (i // 4) * SH
     return (xmin, ymax - SH, xmin + SW, ymax)
 
-def parse_sheet(title):
-    t = re.sub(r'\bSheet\s+(\d{2})-l\b', r'Sheet \1-I', title)     # OCR l -> I
-    m = re.search(r'\bN[EFCD][-\s]*(\d{2})-([A-Pa-p])\b', t)        # new-style
+# The letter I and the letter L are indistinguishable in these OCR'd captions
+# when the caption renders lowercase ("Sheet 65-l"). Guessing is not safe: 65-I
+# and 65-L sit at the same latitude, 4.5 deg apart in longitude, so the aspect
+# check cannot catch a wrong guess and the sheet lands ~450 km off.
+# Resolved by reading the printed NW graticule corner off the scan itself.
+#   cs000004 "Hasoba Sheet 65-l Mar 1910" prints 28d30'E 10d00'N -> 65-L, not 65-I.
+# Add an entry here (with the printed corner as evidence) for any new one.
+AMBIGUOUS_IL = {"cs000004": (65, "L")}      # verified against printed corner
+
+def parse_sheet(title, cs_id=None):
+    if cs_id in AMBIGUOUS_IL:
+        return AMBIGUOUS_IL[cs_id]
+    t = title
+    m = re.search(r'\bN[EFCD][-\s]*(\d{2})-([A-Pa-p])\b', t)         # new-style
     if m:
         # new designators use a different block table; prefer the "(Old Number NN-X)"
         old = re.search(r'Old\s*(?:Number|no\.?)\s*(\d{2})-([A-Pa-p])', t, re.I)
@@ -51,7 +62,10 @@ def parse_sheet(title):
     else:
         m = re.search(r'\b(\d{2})[-\s]([A-Pa-p])\b', t)
     if not m: return None, None
-    return int(m.group(1)), m.group(2).upper()
+    letter = m.group(2)
+    if letter == "l":            # unresolved lowercase l: refuse to guess I vs L
+        return None, None
+    return int(m.group(1)), letter.upper()
 
 # ------------------------------------------------------------------ catalogue
 def catalogue(refresh=False):
@@ -63,7 +77,7 @@ def catalogue(refresh=False):
         f = line.rstrip("\n").split("\t")
         if len(f) < 4: continue
         cs, title = f[2], f[3]
-        blk, let = parse_sheet(title)
+        blk, let = parse_sheet(title, cs)
         e = extent(blk, let) if blk else None
         yr = re.search(r'\b(19|18|20)\d{2}\b', title)
         out.append(dict(id=cs, title=title.strip(),
@@ -231,10 +245,12 @@ def main():
     g.add_argument("--no-transparent", action="store_true", help="keep the raw scan, paper and all")
     g.add_argument("--svg", action="store_true", help="also write the traced vectors as .svg")
     a = sub.add_parser("all");   a.add_argument("--sheet"); a.add_argument("--filter")
+    a.add_argument("--ids", help="comma-separated cs ids, or @file / @selection.json")
     a.add_argument("--block", help="1:1M block number, e.g. 65")
     a.add_argument("--all", action="store_true", help="every sheet with a known extent")
     a.add_argument("--method", default="tps", choices=["tps","affine"])
     a.add_argument("--jobs", type=int, default=4, help="parallel sheets")
+    a.add_argument("--dry-run", action="store_true", help="list what would be done, fetch nothing")
     a.add_argument("--resume", action="store_true", help="skip sheets already georeferenced")
     a.add_argument("--out-check", default="/home/exedev/5mp/data/histmaps/geo",
                    help="also treat sheets present here as done (for --resume)")
@@ -259,11 +275,31 @@ def main():
         for p in ns.files: georef(p, method=ns.method, cutline=not ns.no_cutline,
                                   transparent=not ns.no_transparent, svg=ns.svg)
     elif ns.cmd == "all":
+        want = None
+        if ns.ids:
+            if ns.ids.startswith("@"):
+                p = ns.ids[1:]
+                raw = open(p).read()
+                if p.endswith(".json"):
+                    want = [r["id"] for r in json.loads(raw)["selected"]] \
+                           if isinstance(json.loads(raw), dict) else json.loads(raw)
+                else:
+                    want = raw.split()
+            else:
+                want = ns.ids.split(",")
+            want = {w.strip() for w in want if w.strip()}
         sel = [c for c in cat if c["extent"] and
-               (ns.all
-                or (ns.block and c["sheet"].split("-")[0] == str(ns.block))
-                or (ns.sheet and c["sheet"] == ns.sheet.upper())
-                or (ns.filter and ns.filter.lower() in c["title"].lower()))]
+               (want is not None and c["id"] in want
+                or want is None and
+                (ns.all
+                 or (ns.block and c["sheet"].split("-")[0] == str(ns.block))
+                 or (ns.sheet and c["sheet"] == ns.sheet.upper())
+                 or (ns.filter and ns.filter.lower() in c["title"].lower())))]
+        if want is not None:
+            missing = want - {c["id"] for c in sel}
+            if missing:
+                print(f"warning: {len(missing)} requested ids have no known extent: "
+                      f"{','.join(sorted(missing))}", flush=True)
         if ns.resume:
             # A full run is many hours; skip sheets already written, whether they
             # sit in the working dir or have been swept into --out-check.
@@ -274,6 +310,12 @@ def main():
             before = len(sel)
             sel = [c for c in sel if not have(c["id"])]
             print(f"resume: skipping {before - len(sel)} already-written sheets", flush=True)
+        if ns.dry_run:
+            for c in sel:
+                print(f"  {c['id']} {(c['sheet'] or '?'):7} {str(c['year'] or ''):5} "
+                      f"{c['title'][:52]}")
+            print(f"\n{len(sel)} sheets would be fetched+georeferenced")
+            return
         print(f"{len(sel)} sheets selected", flush=True)
         qa, fails = [], []
         import io, threading
