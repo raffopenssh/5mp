@@ -9,8 +9,8 @@ Those files were a ROLLING WINDOW (most parks only held ~6 months), while
 silently discarded years of trajectories, because pre-window history only
 survived as frozen group JSON carried forward by each incremental run.
 
-This module makes SQLite the only source (the JSON window was deleted in
-2026-08; see docs/FIRE_TODO_HANDOVER.md #15). It is also faster - the
+This module makes SQLite the only source (the JSON window and its two nightly
+writers were deleted 2026-08-05). It is also faster - the
 `idx_fire_pa_date` index answers a full-history park query in ~50ms - and it
 removes the nightly rewrite of 176MB of JSON.
 

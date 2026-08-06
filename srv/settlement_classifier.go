@@ -439,7 +439,9 @@ func (s *Server) buildSettlementNarrativeText(st *ClassifiedSettlement) string {
 		return base
 		
 	case ClassFishing:
-		if st.NearestRiver == "" {
+		// Same redundancy guard as ClassResidential: `location` may already
+		// carry the river distance.
+		if st.NearestRiver == "" || strings.Contains(location, st.NearestRiver) {
 			return fmt.Sprintf("Fishing camp %s. Small footprint (%.0f m²) and minimal forest disturbance consistent with seasonal fishing activity.",
 				location, st.AreaM2)
 		}
@@ -451,12 +453,15 @@ func (s *Server) buildSettlementNarrativeText(st *ClassifiedSettlement) string {
 			location, st.DeforestNearby)
 		
 	case ClassResidential:
-		if st.NearestPlace == "" {
-			return fmt.Sprintf("Permanent settlement %s. Population ~%d with %.0f m² built area. Established community with moderate surrounding land use.",
-				location, st.PopulationEst, st.AreaM2)
+		// `location` already names the nearest place ("8km SW of Tetelle"), so
+		// appending "near <place>" produced "8km from Tetelle near Tetelle".
+		// Only name it here when location fell back to bare coordinates.
+		if st.NearestPlace != "" && !strings.Contains(location, st.NearestPlace) {
+			return fmt.Sprintf("Permanent settlement %s near %s. Population ~%d with %.0f m² built area. Established community with moderate surrounding land use.",
+				location, st.NearestPlace, st.PopulationEst, st.AreaM2)
 		}
-		return fmt.Sprintf("Permanent settlement %s near %s. Population ~%d with %.0f m² built area. Established community with moderate surrounding land use.",
-			location, st.NearestPlace, st.PopulationEst, st.AreaM2)
+		return fmt.Sprintf("Permanent settlement %s. Population ~%d with %.0f m² built area. Established community with moderate surrounding land use.",
+			location, st.PopulationEst, st.AreaM2)
 		
 	case ClassTemporaryCamp:
 		return fmt.Sprintf("Temporary camp %s. Small footprint (%.0f m²) and remote location suggest seasonal occupation, possibly hunting or resource extraction.",

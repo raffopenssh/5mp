@@ -305,10 +305,13 @@ flag; don't reintroduce a second copy of the detections.
 bit-exactly; verify that before trusting any delta.
 See `docs/FIRE_PIPELINE.md` § v7.
 
-Per-overpass slicing (`--overpass`) is implemented but **off**: measured as a
-regression back when only NOAA-20 was ingested (night pass ~12x sparser). All
-three sensors are in now, so the A/B is finally meaningful —
-`docs/FIRE_TODO_HANDOVER.md` #4.
+Per-overpass slicing (`--overpass`) is implemented but **off, permanently**.
+All three VIIRS sensors share one sun-synchronous ~13:30 orbit plane, so
+ingesting three of them tripled the density of each pass without adding passes
+(1.71 slices/day). Re-tested 2026-08-06 on the frozen DB: every gate regresses
+(`fires_per_grp` −10.6%, `mean_days` −22.4%, `dup_pairs` +16%). Only a
+different orbit plane or a geostationary source could change this —
+`docs/FIRE_PIPELINE.md` § "Per-overpass slicing".
 
 All three VIIRS sensors are ingested (NOAA-20 + SNPP + NOAA-21, ~3x the
 detections). Satellite codes `N`/`N20`/`N21` are part of the
@@ -359,6 +362,13 @@ panel header** (click for per-step counters + errors). Log rotation:
 flares, kilns. Built by `scripts/build_persistent_hotspots.py` (monthly, step 2d
 on the 1st). Masked detections cannot **seed** a cluster but are still absorbed
 by a real front within `DAY_EPS_KM`. Ablate with `--no-hotspot-mask`.
+
+A/B'd 2026-08-06 on a frozen DB: **keep it**. It cuts `stationary_fire_pct`
+(detections locked up in groups that burn ≥60 days inside a <3 km box) from
+3.01% to 0.27%. Beware: every *other* harness metric "regresses" — a lava lake
+is the harness's idea of a perfect group, so removing it costs `mean_days`
+−28%, `coverage_pct` −20%. **Never judge a detection-filtering change on
+`coverage_pct`**; read `stationary_pct`/`stationary_fire_pct` instead.
 
 **Group feature_ids are deduped**: `dedupe_feature_ids()` salts only actual
 collisions (722/181,711) so persisted friendly names in `fire_group_names` stay

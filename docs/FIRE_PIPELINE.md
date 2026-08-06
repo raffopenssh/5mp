@@ -667,12 +667,10 @@ python3 scripts/rebuild_fire_trajectories_v5.py --parks A,B,C
 python3 scripts/rebuild_fire_trajectories_v5.py --park X --source json
 ```
 
-The raw JSON files are still written nightly (`daily_fire_update.py` step 2b,
-`onboard_park.py:export_raw_fire_json()`), but nothing in the trajectory path
-reads them any more. The dead v4-era readers `rebuild_fire_front.py` /
-`rebuild_fire_hull.py` moved to `scripts/deprecated/` on 2026-08-05; the two
-writers and the 176MB directory itself are the remaining work in
-`docs/FIRE_TODO_HANDOVER.md` #15.
+The raw JSON files and their two nightly writers were deleted on 2026-08-05,
+along with the `--source json` flag; the dead v4-era readers
+`rebuild_fire_front.py` / `rebuild_fire_hull.py` moved to `scripts/deprecated/`
+at the same time. Nothing in the trajectory path reads JSON any more.
 
 ### Multi-satellite ingest
 
@@ -827,6 +825,49 @@ With only NOAA-20 on ZMB_Kafue the day pass averaged 763 fires at mean FRP
 10.6, the night pass **63 fires at FRP 1.7**, median centroid offset 55 km;
 `mean_days` −21%, `dup_pairs` +23%, `coverage` −2.4%. The 2026-08 re-test above
 supersedes this but reaches the same conclusion for the same reason.
+
+### Known limitation: NRT detections are never revised (NRT→SP reconciliation)
+
+FIRMS revises NRT detections weeks later via Standard Processing (better
+geolocation + confidence). We ingest NRT and never re-fetch, so early rows keep
+their provisional coordinates forever. This is the one known open gap in the
+fire data path — everything else in the v7 rebuild is done.
+
+Re-ingesting SP would **duplicate rather than update**, because the uniqueness
+key is built from raw REALs:
+
+```sql
+UNIQUE(latitude, longitude, acq_date, acq_time, satellite)
+```
+
+Stored precision is inconsistent — of July 2026 rows, 1,321,500 have 5 decimals,
+132,413 have 4, 13,002 have 3, 1,390 have 2, 154 have 1. Any SP coordinate
+revision changes the key → a second row for the same fire. `acq_time` is stored
+unpadded (`'1'`, `'11'`, `'1246'` all occur), so it is not a stable key
+component either.
+
+**Size the prize before building this.** It is a slow, risky migration on a
+42.9M-row / 14.4 GB database, and nobody has yet measured how far SP actually
+moves a detection. Pick a historical week, re-fetch it as SP into a scratch
+table, and join on a rounded key to get the coordinate-delta distribution. If
+the median shift is well under a VIIRS pixel (375 m) it cannot change a single
+trajectory, and this should be closed as a negative result rather than built —
+the same outcome as the per-overpass experiment above.
+
+If it does prove worth doing:
+
+1. Rounded key columns (`lat5`, `lon5` at 5dp, `acq_hhmm` zero-padded) + unique
+   index on `(lat5, lon5, acq_date, acq_hhmm, satellite)`. The migration must
+   dedupe existing rows first — expect collisions. Back up first, watch disk.
+2. A `processing` column (`NRT`/`SP`) so SP can UPSERT over NRT.
+3. Monthly re-fetch of T-60d..T-30d from the SP archive with
+   `ON CONFLICT ... DO UPDATE WHERE processing='NRT'`.
+4. Reuse `scripts/backfill_viirs_sensors.py` to fetch — it already handles the
+   5-day cap and per-sensor SP/NRT availability windows.
+
+Note SP/NRT ranges do not overlap (SNPP_SP ends 2026-04-27, NRT starts 04-28),
+so you cannot diff the two for the same day to size the drift; validate on
+historical dates instead.
 
 ### A/B eval harness
 
