@@ -334,6 +334,15 @@ def run_osm(conn, aoi, ds, deadline, budget):
     return cur["i"] >= total, f"{cur['i']}/{total} countries"
 
 
+def run_clip(conn, aoi, ds, deadline, budget):
+    """Phase A preview. One unit, sub-second; aoi_clip writes its own
+    aoi_datasets row (coverage = fraction of the polygon inside a park), which
+    release() then confirms."""
+    import aoi_clip
+    stats = aoi_clip.run(aoi["id"])
+    return True, ", ".join(f"{k} {v:,}" for k, v in stats.items() if v)
+
+
 def run_basin(conn, aoi, ds, deadline, budget):
     sh(["python3", "scripts/fetch_park_basins.py", "--park", aoi["id"]],
        check=False)
@@ -343,6 +352,7 @@ def run_basin(conn, aoi, ds, deadline, budget):
 
 
 RUNNERS = {
+    "clip": run_clip,
     "fire_gap": run_fire_gap,
     "fire_v5": run_fire_v5,
     "gfw": run_gfw,

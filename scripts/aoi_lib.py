@@ -110,6 +110,11 @@ def upsert_aoi(conn, aoi_id, name, geojson_geom, from_date=None, to_date=None,
 # dataset until its dependency is 'done'.
 DEFAULT_DATASETS = [
     # dataset,        priority, depends_on
+    # 'clip' runs first and costs nothing: it intersects data we already hold
+    # for the overlapped parks with the polygon, so an AOI is useful on the day
+    # it is drawn rather than after the queue drains (scripts/aoi_clip.py).
+    # It is a labelled PREVIEW, superseded per-layer as the real ingest lands.
+    ("clip",           5, None),
     ("fire_gap",      10, None),
     ("fire_v5",       20, "fire_gap"),
     ("gfw",           30, None),
