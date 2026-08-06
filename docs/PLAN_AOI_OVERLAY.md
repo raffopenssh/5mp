@@ -8,7 +8,95 @@ file is the map of what exists, what is measured, and what is left.
 
 ---
 
-## Resume here (2026-08-07)
+## Resume here (2026-08-07, later)
+
+Three units are **in flight in tmux** (`aoiv5`, `aoighsl`, `aoidefo`) — check
+them first, they may well have finished:
+
+```bash
+python3 scripts/aoi_runner.py --status
+tmux ls
+sqlite3 db.sqlite3 "SELECT COUNT(*) FROM feature_geometries
+  WHERE park_id='CAF_Chinko' AND feature_type='fire_trajectory'"   # must be 8753
+```
+
+`fire_gap` (3,182,542 detections) and **`gfw` are done** — 252/252 tiles,
+2,225,511 alerts, `data/gfw_alerts/XSA_Study_Area.json` written.
+
+1. **`fire_v5`** — started 18:39, step 2/4 (`rebuild_fire_trajectories_v5.py`)
+   over a much larger detection set than the 21,189-group first run. One long
+   restartable unit; if tmux died, rerun `--dataset fire_v5` or let the noon
+   cron take it.
+2. **`deforestation`** — started 19:05; it found **3,505 quality cells**
+   (2024–2026) inside the polygon. Still to verify when it lands (this is the
+   sanity check §3a asked for and it has *not* been done yet):
+   ```bash
+   sqlite3 db.sqlite3 "SELECT COUNT(*) FROM deforestation_events
+     WHERE park_id='XSA_Study_Area' AND polygon_ids LIKE 'deforest_gfw_%'"
+   python3 scripts/aoi_clip.py --aoi XSA_Study_Area --dry-run   # then for real
+   # then re-count: the deforest_gfw_ rows must survive the clip
+   ```
+3. **`ghsl`** — started 19:03, 4 tiles (`R8_C21 R8_C22 R9_C21 R9_C22`).
+   Each tile is ~4 min of vectorising and yields ~40k polygons, so expect
+   ~170k built-up polygons for the AOI, then one clustering pass. **Sanity
+   check when it lands**: `park_settlements` for the AOI should jump from the
+   145 clipped preview rows to thousands, and every row's `polygon_ids` must
+   start `settlement_ghsl_` (the preview rows are deleted by the runner's
+   handover delete — see SUPERSEDED_BY below).
+4. Remaining blocked runners: `gsw`, `hydro` (both need a download, §3a).
+5. Then §3e (report) and §3f (write endpoints + admin tab). §3c's Layers
+   item is still open; the **tooltip is now done**.
+
+### Landed this session (commit `31158bf`)
+
+* **`scripts/ghsl_tiles.py`** — the GHSL blocker is gone.
+  `process_settlement_polygons.py` read one hardcoded
+  `data/ghsl/ghsl_pop_2030.zip` that does not exist on this machine, so the
+  GHSL step of park onboarding *and* the AOI queue was a silent no-op. Tiles
+  (R2023A E2030 100 m) are now fetched on demand and cached **by tile id**
+  under `data/ghsl/tiles/` (gitignored via `data/ghsl/`), so a park onboarding
+  or a second AOI over the same ground pays nothing — rule 2.
+  **The tile grid is 1-indexed.** `R7_C20` in the JRC naming is grid cell
+  (row 6, col 19) counting from zero; verified against the tile's own affine
+  (`origin = (959000, 3000000)`). Off-by-one does not fail loudly — it reads a
+  window 2,000 km away, or raises `Intersection is empty` if you are lucky.
+* **`rebuild_events_enhanced.py`**: `rebuild_settlements_for_park()` split out
+  of the global rebuild, so a single park (or an AOI) reaches the *canonical*
+  clusterer and classifier instead of the codebase growing a second one.
+  `_cluster_polygons()` is now grid-accelerated single linkage. The single-
+  linkage partition is unique, so it is the same answer — **asserted identical**
+  on ETH_Borana / TZA_Ngorongoro / CAF_Chinko (207 s → 0.11 s). The old
+  quadratic version simply does not finish on an AOI's ~170k polygons. The
+  longitude cell span is scaled by `1/cos(lat)`; without that the neighbour
+  search misses links near the equator-distant edges.
+* **`aoi_clip.py` `SUPERSEDED_BY`** — a preview layer is dropped once its real
+  ingest is `done`. This is not tidiness: the real ingest covers the **whole**
+  polygon *including* the ~10% inside parks that the preview stood in for, so
+  keeping both double counts exactly that overlap. The clip still deletes its
+  own previous preview rows (atomic handover); `DELETE_EXCLUDE` keeps the real
+  ones. `settlement_ghsl_%` joins `deforest_gfw_%` there — there are now
+  **four** writers of `(park_id=<aoi>, feature_type)` and the whole scheme
+  rests on each deleting a disjoint id prefix.
+* **AOI hover tooltip** (§3c): name, area, window, `N/M data layers ready`,
+  parks inside. Registered through `MapTip`, not a per-layer popup.
+  `MapTip.register(...).html()` may now return **falsy to decline** a feature —
+  the hit-test falls through to whatever is underneath and, if nothing renders,
+  there is no tip *and no click interception*. The AOI tip uses this to stand
+  down over a park polygon, mirroring the click precedence rule ("a park inside
+  an AOI wins"). AOI feature ids are per-coordinate, not per-counter, because
+  the AOI is built one tile per queue unit across days and a counter would
+  renumber on resume.
+
+**Do not re-litigate**: whether AOI rows belong in the bbox-keyed endpoints
+(no — §1), whether the clip is a preview (yes, and it must say so), whether
+FIRMS product selection can be done by date arithmetic (no — §2), whether the
+AOI's deforestation should come from Hansen (no — §3a), whether the 10 m GHSL
+product can be used (it is not published as tiles; 100 m is what exists and is
+the same source the parks' settlements came from, so numbers stay comparable).
+
+---
+
+## Resume here (2026-08-07, earlier — superseded, kept for the trail)
 
 `fire_gap` is **done** (3,182,542 detections, all 570 windows; it refreshed
 `aoi_fires` and ran `build_fire_grid_agg.py --since` on its final pass).
@@ -282,16 +370,13 @@ RSS over a much larger detection set than the 21,189-group first run.
   `data/gfw_alerts/{aoi}.json` on its last tile (all cache hits by then) and
   pins `since` into the cursor, or a resumed scan stops matching its own cache
   keys.
-* Still missing runners (`RUNNERS` returns `blocked`): `ghsl` (4 tiles, R2023A
-  E2030 100 m, `R7_C20` 1.5 MB / `R7_C21` 1.7 MB / `R8_C20` 11.5 MB /
-  `R8_C21` 6.6 MB under
-  `GHS_BUILT_S_GLOBE_R2023A/GHS_BUILT_S_E2030_GLOBE_R2023A_54009_100/V1-0/tiles/`
-  — re-verified live 2026-08-07; the 10 m tiles still 404.
-  `process_settlement_polygons.py` hardcodes `data/ghsl/ghsl_pop_2030.zip`,
-  which does not exist — generalise it to a tile dir); `gsw` (3 missing
+* Still missing runners (`RUNNERS` returns `blocked`): `gsw` (3 missing
   10×10° occurrence tiles: `occ_20E_0N`, `occ_30E_10N`, `occ_30E_0N`);
   `hydro` (HydroRIVERS_v10_af + HydroLAKES; stopgap = PBF waterways from the
-  `osm` unit).
+  `osm` unit). **`ghsl` is implemented** (2026-08-07): one 1000 km Mollweide
+  tile per unit via `scripts/ghsl_tiles.py`, last unit clusters into
+  `park_settlements` through the canonical `EventRebuilder`. The 10 m tiles
+  still 404; 100 m R2023A E2030 is the product.
 * Kill switch: `UPDATE aoi_datasets SET enabled=0 WHERE aoi_id='XSA_Study_Area'`.
 
 **b. ~~Phase A: clip from neighbours.~~** Done — `scripts/aoi_clip.py`,
@@ -307,7 +392,7 @@ in effect, and consumed by a dozen park-shaped code paths; a visibility-scoped
 member in it would have been the same hole as §1's park-route hole.
 
 Still open:
-* Hover **tooltip** (currently click-only, no hover card).
+* ~~Hover **tooltip**.~~ Done — via `MapTip`, declining over park polygons.
 * ~~Share param `aoi=<id>`.~~ Done: `?aoi=<id>&aoi_sections=fire,ghsl,…`, plus
   `anim_aoi` so a shared animation restores its polygon clip. Deliberately
   **separate params from `?popup=`/`&sections=`**, whose restorer resolves the
@@ -369,12 +454,14 @@ the underlying pixels — don't pretend otherwise.
   `park_id` needs `aoiExcludeSQL()`** — for privacy *and* to avoid double
   counting an AOI over the parks it overlaps. See §1.
 * `aoi_clip.py` must not touch `feature_type='fire_trajectory'`: that belongs
-  to the v5 chain, which has its own delete. **Three** writers now share
-  `(park_id=<aoi>, feature_type)` — clip, the v5 chain, and the
-  `deforestation` unit — and they are only safe because each deletes a
-  disjoint id prefix. The clip's deletes skip `deforest_gfw_%`
-  (`DELETE_EXCLUDE` / `delete_rows()` in `aoi_clip.py`); a fourth writer needs
-  the same treatment.
+  to the v5 chain, which has its own delete. **Four** writers now share
+  `(park_id=<aoi>, feature_type)` — clip, the v5 chain, the `deforestation`
+  unit and the `ghsl` unit — and they are only safe because each deletes a
+  disjoint id prefix. The clip's deletes skip `deforest_gfw_%` and
+  `settlement_ghsl_%` (`DELETE_EXCLUDE` / `delete_rows()` in `aoi_clip.py`);
+  a fifth writer needs the same treatment. A layer in `SUPERSEDED_BY` is
+  additionally *not re-clipped* once its real ingest is done — otherwise the
+  preview and the real thing double count the ground they share.
 * Frontend: build every park/AOI endpoint URL through `apiBase(id)`. A raw
   `/api/parks/${id}/` string works for parks and 404s for AOIs.
 * Verification set: `/api/aois` empty for `test2026`, populated for
