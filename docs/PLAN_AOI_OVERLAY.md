@@ -7,6 +7,33 @@ file is the map of what exists, what is measured, and what is left.
 
 ---
 
+## Resume here (2026-08-07)
+
+The read path is complete and shipped. What is in flight and what to do next:
+
+1. **`fire_gap` is mid-backfill** — ~450/570 windows, ~2.0M new detections.
+   It was last driven by hand in a tmux session; if that is gone, the noon
+   cron picks it up from its cursor, or push it along with:
+   ```bash
+   python3 scripts/aoi_runner.py --aoi XSA_Study_Area --dataset fire_gap \
+       --budget 900 --minutes 300
+   ```
+   On its final pass it refreshes `aoi_fires` and runs
+   `build_fire_grid_agg.py --since` — **do not declare it done without
+   those**, or the animator shows stale fires.
+2. **Then `fire_v5` runs itself** (via `depends_on`), ~8 min / 1.3 GB RSS,
+   over a much bigger detection set than the 21,189-group first run. After it,
+   re-check the isolation gate: `CAF_Chinko` fire_trajectory must still be
+   **8,753**.
+3. Then `gfw` (252 tiles, per-tile cache shared with the park rotation).
+4. Everything after that is §3.
+
+**Do not re-litigate**: whether AOI rows belong in the bbox-keyed endpoints
+(no — §1), whether the clip is a preview (yes, and it must say so), whether
+FIRMS product selection can be done by date arithmetic (no — §2).
+
+---
+
 ## 0. Mental model — read this first
 
 **An AOI is a power bounding box.** The app already had a user-drawn area
@@ -176,6 +203,25 @@ edge — that is ingest scope, not fire behaviour.
 rows, tens of minutes total. So `fire_gap` is one or two slices, not weeks.
 **Always go through `scripts/firms_api.py`** — a hand-rolled 10-day URL is a
 silent 400 (that bug shipped once).
+
+**FIRMS product selection cannot be computed from the date** (found here, fixed
+in `1c3330a`, affects the nightly cron too). Measured 2026-08-06 via
+`/api/data_availability/csv/KEY/ALL`:
+
+| sensor | SP | NRT |
+|---|---|---|
+| VIIRS_NOAA20 | .. 2026-05-31 | 2026-06-01 .. |
+| VIIRS_SNPP | .. 2026-04-27 | 2026-04-28 .. |
+| VIIRS_NOAA21 | **does not exist** | 2024-01-17 .. |
+
+The old fixed 45-day threshold was wrong two ways: `VIIRS_NOAA21_SP` 400s
+("Invalid source.") for every window, and asking the wrong side of a real
+cutover returns **HTTP 200 with a header-only CSV** — zero detections that read
+as "no fires". This backfill lost 34 of its first 414 windows to it.
+`pick_source()` now reads availability (cached per process, SP preferred where
+both cover) and returns `None` when no product covers the date; callers must
+treat that as *skip*, not as a failure to retry. `fire_gap` requeues genuinely
+failed windows for up to three passes.
 
 **GFW**: `tiles_for_bbox` gives **252** tiles at 0.5° for this AOI.
 
