@@ -7539,6 +7539,14 @@
                 if (src) src.setData(fc);
                 const chip = document.getElementById('aoi-toggle');
                 if (chip) chip.style.display = list.length ? '' : 'none';
+                // A ?aoi= share link can only be honoured once the polygons
+                // are known (and only if this principal may see them — an
+                // invisible id simply does nothing, no error, no oracle).
+                const pend = window._pendingAOIPopup;
+                if (pend) {
+                    window._pendingAOIPopup = null;
+                    openAOIPopupById(pend.id, pend.sections);
+                }
             } catch (e) { console.warn('AOI load failed', e); }
         }
         window.loadAOIs = loadAOIs;
@@ -7622,6 +7630,7 @@
                 </div>`;
             currentAOIPopup = new maplibregl.Popup({ closeButton: true, maxWidth: '320px' })
                 .setLngLat(lngLat).setHTML(html).addTo(map);
+            currentAOIPopup._aoiID = id;   // shareCurrentView() reads this
             if (window.FloatUI) FloatUI.decoratePAPopup(currentAOIPopup);
             currentAOIPopup.on('close', () => { currentAOIPopup = null; });
 
@@ -7662,6 +7671,33 @@
             }
         }
 
+        // Share-link entry point: ?aoi=<id>[&aoi_sections=fire,ghsl].
+        // Deliberately its own param rather than reusing ?popup=, which
+        // resolves against the 'areas' source — an AOI is not in it, and
+        // silently falling through to a park lookup is exactly the class of
+        // confusion apiBase() exists to prevent.
+        function openAOIPopupById(id, sections) {
+            const a = window._aois?.[id];
+            if (!a) return false;
+            const bb = a.bbox;
+            const ll = bb ? { lng: (bb[0] + bb[2]) / 2, lat: (bb[1] + bb[3]) / 2 } : null;
+            if (!ll) return false;
+            showAOIPopup({ id: a.id, name: a.name, area_km2: a.area_km2,
+                           from_date: a.from_date || '', to_date: a.to_date || '',
+                           state: a.state, is_owner: !!a.is_owner }, ll);
+            if (sections && sections.length) {
+                const secMap = { fire: 'fire', settlement: 'ghsl', ghsl: 'ghsl',
+                                 deforestation: 'deforest', deforest: 'deforest',
+                                 overview: 'aoi-overview' };
+                setTimeout(() => sections.forEach(s => {
+                    const el = document.getElementById(`${secMap[s] || s}-section-${id}`);
+                    if (el && !el.classList.contains('open')) el.click();
+                }), 400);
+            }
+            return true;
+        }
+        window.openAOIPopupById = openAOIPopupById;
+
         function openParkPopupById(parkId) {
             const f = (window._cachedAreasGeoJSON?.features || []).find(x => x.properties.id === parkId);
             if (!f) return;
@@ -7673,16 +7709,24 @@
         }
         window.openParkPopupById = openParkPopupById;
 
-        // Animate the AOI: its own bbox and its own window, which is exactly
-        // what a fixed drawn bbox already does in anim.js.
+        // Animate the AOI: its own bbox, its own window, and its own polygon
+        // as the canvas clip (anim.js opts.aoi) — a bbox clip would paint
+        // fires into the corners the AOI does not cover.
         function animateAOI(id) {
             const a = window._aois?.[id];
             if (!a || !window.Animator) return;
             if (a.bbox) map.fitBounds([[a.bbox[0], a.bbox[1]], [a.bbox[2], a.bbox[3]]], { padding: 40 });
-            if (a.from_date) { dateFrom = a.from_date; }
-            if (a.to_date) { dateTo = a.to_date; }
-            Animator.open();
+            // Go through the slider rather than assigning dateFrom/dateTo:
+            // the animator reads the globals, but the slider labels, presets
+            // and pinned layers read their own state, and a window that only
+            // exists inside the animation is how you get a play head that
+            // disagrees with the chip above it.
+            if (a.from_date && typeof setTimeSliderRange === 'function') {
+                setTimeSliderRange(a.from_date, a.to_date || fmtToday());
+            }
+            Animator.open({ aoi: id });
         }
+        function fmtToday() { return new Date().toISOString().slice(0, 10); }
         window.animateAOI = animateAOI;
 
         function showPAPopup(props, lngLat) {
@@ -17977,6 +18021,22 @@ ${starredItems.narratives.map(n => {
             params.set('q', searchInput.value.trim());
         }
         
+        // Add open AOI popup, if any. Separate params from ?popup=/&sections=
+        // because the restorer for those resolves the id against the 'areas'
+        // source, which an AOI is deliberately never in.
+        if (typeof currentAOIPopup !== 'undefined' && currentAOIPopup) {
+            const aid = currentAOIPopup._aoiID;
+            if (aid) {
+                params.set('aoi', aid);
+                const open = [];
+                document.querySelectorAll('.pa-popup-section.open').forEach(sec => {
+                    const m = (sec.id || '').match(/^([\w-]+)-section-/);
+                    if (m) open.push(m[1]);
+                });
+                if (open.length) params.set('aoi_sections', open.join(','));
+            }
+        }
+
         // Add open popup PA if any
         if (currentPAPopup && currentPAPopup._lngLat) {
             // Find the PA at popup location
@@ -18090,6 +18150,7 @@ ${starredItems.narratives.map(n => {
                 params.set('anim', st.layers.join(','));
                 params.set('anim_speed', st.speed.toFixed(2));
                 params.set('anim_t', st.tISO);
+                if (st.aoi) params.set('anim_aoi', st.aoi);
                 if (!st.playing) params.set('anim_paused', '1');
             }
         }
@@ -18211,6 +18272,7 @@ ${starredItems.narratives.map(n => {
                 layers: animParam ? animParam.split(',').map(s => s.trim()).filter(Boolean) : [],
                 speed: parseFloat(params.get('anim_speed')) || undefined,
                 t: params.get('anim_t') || undefined,
+                aoi: params.get('anim_aoi') || undefined,
                 paused: params.get('anim_paused') === '1'
             };
         }
@@ -18403,6 +18465,17 @@ ${starredItems.narratives.map(n => {
             }
         }
         
+        // Restore an AOI popup. loadAOIs() may not have resolved yet (and for
+        // a principal who cannot see this AOI it never will), so this is a
+        // request, not a command: loadAOIs() picks it up if the id is visible.
+        const aoiParam = params.get('aoi');
+        if (aoiParam) {
+            const aoiSections = params.get('aoi_sections')?.split(',').filter(Boolean) || [];
+            if (!(typeof openAOIPopupById === 'function' && openAOIPopupById(aoiParam, aoiSections))) {
+                window._pendingAOIPopup = { id: aoiParam, sections: aoiSections };
+            }
+        }
+
         // Restore popup (with retry for source data availability)
         const popupPaId = params.get('popup');
         const sectionsToOpen = params.get('sections')?.split(',') || [];
