@@ -308,6 +308,13 @@
                     <button class="keystones-compact-toggle active" id="aoi-toggle" onclick="toggleAOILayer()" title="Toggle areas of interest" aria-label="Toggle areas of interest" aria-pressed="true" style="display:none">
                         ◈ AOI
                     </button>
+                    <!-- Creating an AOI needs an owner, so it is only shown to a
+                         principal with a password: POST /api/aois 403s otherwise.
+                         initAOICreateButton() unhides it. Amber, not blue: this
+                         is not the disposable bbox filter next to it. -->
+                    <button class="bbox-select-btn aoi-new-btn" id="aoi-new-btn" onclick="startAOIDraw()" title="Draw a new area of interest — data is fetched for it over the following days" aria-label="Draw a new area of interest" style="display:none">
+                        <i class="icon-pencil-ruler"></i> <span id="aoi-new-label">New area…</span>
+                    </button>
                 </div>
                 <input type="checkbox" id="keystones-toggle" checked style="display:none;">
                 <div class="selected-countries" id="selected-countries"></div>
@@ -5580,6 +5587,7 @@
         let mbtilesJobs = [];
         let publicationNotifications = [];
         let fireDownloadNotifications = [];
+        let aoiProgressNotifications = [];
         
         async function loadNotifications() {
             try {
@@ -5588,11 +5596,14 @@
                 const fireAlertsRes = await fetchRetry('/api/fire-alerts?limit=100');
                 const fireNotifRes = await fetchRetry('/api/notifications?type=fire_alert&active=1&limit=500');
                 // Non-critical: load in parallel batch (fewer concurrent)
-                const [uploadRes, mbtilesRes, pubRes, fireDownloadRes] = await Promise.all([
+                const [uploadRes, mbtilesRes, pubRes, fireDownloadRes, aoiRes] = await Promise.all([
                     fetchRetry('/api/notifications?type=new_upload&limit=10'),
                     fetchRetry(`/api/mbtiles?pwd=${encodeURIComponent(getPwd())}`),
                     fetchRetry('/api/notifications?type=new_publication&limit=10'),
-                    fetchRetry('/api/notifications?type=fire_download_success,fire_download_failed,gfw_scan_success,gfw_scan_failed,park_refresh_success,park_refresh_failed&limit=10')
+                    fetchRetry('/api/notifications?type=fire_download_success,fire_download_failed,gfw_scan_success,gfw_scan_failed,park_refresh_success,park_refresh_failed&limit=10'),
+                    // AOI progress cards. Filtered server-side to this principal
+                    // (aoiNotifSQLFilter) — an AOI's name is part of the secret.
+                    fetchRetry('/api/notifications?type=aoi_progress&limit=10')
                 ]);
                 
                 // Process upload notifications
@@ -5690,6 +5701,16 @@
                 } else {
                     fireDownloadNotifications = [];
                 }
+
+                // AOI progress. Kept as raw notification rows: the card is
+                // rendered by AOIProgress, which owns its own live region and
+                // its own polling, so reshaping them here would lose fields.
+                if (aoiRes.ok) {
+                    const data = await aoiRes.json();
+                    aoiProgressNotifications = data.notifications || [];
+                } else {
+                    aoiProgressNotifications = [];
+                }
                 
                 updateNotificationList();
                 showNotificationBadge();
@@ -5780,6 +5801,19 @@
                 });
             });
             
+            // Add AOI progress cards. Priority 0: an AOI ingest is the only
+            // thing in this panel the user personally started and is waiting
+            // days for, so it belongs at the top until it is done.
+            aoiProgressNotifications.forEach((notif, i) => {
+                allItems.push({
+                    ...notif,
+                    _index: i,
+                    _source: 'aoi_progress',
+                    _sortTime: new Date(notif.created_at).getTime(),
+                    _priority: 0
+                });
+            });
+            
             // Add fire alert notifications (from database)
             (fireNotifications || []).forEach((notif, i) => {
                 allItems.push({ 
@@ -5857,7 +5891,9 @@
             const fireCount = allItems.filter(i => i._source === 'fire_notification' || i._source === 'fire').length;
             const uploadCount = allItems.filter(i => i._source === 'activity').length;
             const pubCount = allItems.filter(i => i._source === 'publication').length;
-            const systemCount = allItems.filter(i => i._source === 'fire_download' || i._source === 'system' || i._source === 'mbtiles').length;
+            // AOI progress counts as system: it is a long-running job like an
+            // MBTiles export, not a park event.
+            const systemCount = allItems.filter(i => i._source === 'fire_download' || i._source === 'system' || i._source === 'mbtiles' || i._source === 'aoi_progress').length;
             
             // Update filter buttons
             const fireBtn = document.querySelector('.notif-type-filter[data-type="fire"]');
@@ -5893,7 +5929,7 @@
                     } else if (notificationTypeFilter === 'research') {
                         return item._source === 'publication';
                     } else if (notificationTypeFilter === 'system') {
-                        return item._source === 'fire_download' || item._source === 'system' || item._source === 'mbtiles';
+                        return item._source === 'fire_download' || item._source === 'system' || item._source === 'mbtiles' || item._source === 'aoi_progress';
                     }
                     return true;
                 });
@@ -5907,6 +5943,8 @@
             listEl.innerHTML = displayItems.slice(0, 50).map((item, displayIndex) => {
                 if (item._source === 'mbtiles') {
                     return renderMBTilesNotification(item);
+                } else if (item._source === 'aoi_progress') {
+                    return window.AOIProgress ? AOIProgress.cardHTML(item) : '';
                 } else if (item._source === 'fire_notification') {
                     return renderFireAlertNotification(item);
                 } else if (item._source === 'fire') {
@@ -6550,6 +6588,14 @@
                     return;
                 }
                 
+                // Handle AOI progress card — open the area's popup
+                if (action === 'open_aoi') {
+                    const aoiId = item.dataset.aoiId;
+                    if (typeof openAOIPopupById === 'function') openAOIPopupById(aoiId);
+                    closeNotificationDropdown();
+                    return;
+                }
+                
                 // Handle MBTiles download
                 if (action === 'download') {
                     const jobId = item.dataset.jobId;
@@ -7032,14 +7078,21 @@
             results.style.display = 'block';
             
             try {
-                // Search both loaded keystones and WDPA index
-                const [keystonesRes, wdpaRes] = await Promise.all([
+                // Search loaded keystones and the WDPA index, plus the
+                // principal's own areas of interest. The AOI search is the only
+                // route back to an *archived* version (an edit archives the
+                // previous one, and archived AOIs are off the map by design),
+                // so it belongs in the ordinary search box rather than hidden
+                // in an admin panel.
+                const [keystonesRes, wdpaRes, aoiRes] = await Promise.all([
                     fetch(`/api/areas/search?q=${encodeURIComponent(query)}`),
-                    fetch(`/api/wdpa/search?q=${encodeURIComponent(query)}`)
+                    fetch(`/api/wdpa/search?q=${encodeURIComponent(query)}`),
+                    fetch(`/api/aois/search?q=${encodeURIComponent(query)}&pwd=${encodeURIComponent(getPwd())}`)
                 ]);
                 
                 const areaResults = keystonesRes.ok ? await keystonesRes.json() : [];
                 const wdpaAreas = wdpaRes.ok ? await wdpaRes.json() : [];
+                const aoiResults = aoiRes.ok ? ((await aoiRes.json()).results || []) : [];
 
                 // /api/areas/search mixes loaded keystones (loaded:true) with
                 // unloaded WDPA entries (loaded:false) — split by the real flag.
@@ -7051,7 +7104,10 @@
                     !w.loaded && !loadedIds.has(w.name.toLowerCase()) && !seenWdpa.has(String(w.wdpa_id)))];
                 const merged = [...keystones, ...unloaded];
 
-                displaySearchResults(merged);
+                // AOIs lead: they are the user's own objects, and there are at
+                // most a handful of them against 300k WDPA rows.
+                const aoiItems = aoiResults.map(a => ({ ...a, type: 'aoi' }));
+                displaySearchResults([...aoiItems, ...merged]);
                 scheduleOnboardDwell(query, keystones.filter(a => a.type === 'pa'), unloaded);
             } catch (err) {
                 console.error('Search error:', err);
@@ -7227,7 +7283,23 @@
                 const isLoaded = area.loaded !== false;
                 
                 // Different styling for countries vs parks
-                if (areaType === 'country') {
+                if (areaType === 'aoi') {
+                    // An AOI is labelled by its analysis window, not "v3":
+                    // that is what the user remembers about it, and it is the
+                    // only thing that distinguishes two versions in practice.
+                    const chip = area.archived
+                        ? '<span class="loaded-badge" style="background:rgba(136,136,136,0.2);color:#888;">archived</span>'
+                        : '<span class="loaded-badge" style="background:rgba(251,191,36,0.18);color:#fbbf24;">area</span>';
+                    return `
+                    <div class="search-result-item" onclick="selectSearchResult(${JSON.stringify(area).replace(/"/g, '&quot;')})">
+                        <div class="search-result-name">
+                            <span style="color:#fbbf24;">◈</span> ${escapeHtml(area.name)}
+                            ${chip}
+                        </div>
+                        <div class="search-result-country">${escapeHtml(area.label || '')}${area.area_km2 ? ' • ' + formatNumber(Math.round(area.area_km2)) + ' km²' : ''}</div>
+                    </div>
+                `;
+                } else if (areaType === 'country') {
                     const countryData = { name: area.name, bbox: area.bbox, parkCount: area.parkCount };
                     return `
                     <div class="search-result-item" onclick="selectSearchResult(${JSON.stringify(area).replace(/"/g, '&quot;')})">
@@ -7278,13 +7350,34 @@
                 document.getElementById('search-bar').classList.remove('open');
                 document.getElementById('toolbar-search').classList.remove('active');
             }
+            const areaType = area.type || 'pa';
+            const isLoaded = area.loaded !== false;
+
+            // An AOI: fly to its bbox and open its popup. Handled before the
+            // filter panel opens — that panel is about which *parks* are
+            // selected, and an AOI is not in the parks source at all.
+            // An *archived* version is not in window._aois (ListAOIs hides it
+            // from the map), so the popup is built from the search row itself;
+            // reaching an archived version is the point of this code path.
+            if (areaType === 'aoi') {
+                const bb = area.bbox;
+                if (bb && bb.length === 4) {
+                    map.fitBounds([[bb[0], bb[1]], [bb[2], bb[3]]], { padding: 60, duration: 900 });
+                }
+                if (!openAOIPopupById(area.id) && bb) {
+                    showAOIPopup({ id: area.id, name: area.name, area_km2: area.area_km2,
+                                   from_date: area.from_date || '', to_date: area.to_date || '',
+                                   state: area.archived ? 'archived' : 'ready',
+                                   is_owner: !!area.is_owner },
+                                 { lng: (bb[0] + bb[2]) / 2, lat: (bb[1] + bb[3]) / 2 });
+                }
+                return;
+            }
+
             // Open filter panel to show selection
             if (!filterPanelOpen) {
                 toggleFilterPanel();
             }
-            
-            const areaType = area.type || 'pa';
-            const isLoaded = area.loaded !== false;
             
             // Handle country selection - set bbox and country filter, then zoom
             if (areaType === 'country') {
@@ -7540,6 +7633,11 @@
                 if (src) src.setData(fc);
                 const chip = document.getElementById('aoi-toggle');
                 if (chip) chip.style.display = list.length ? '' : 'none';
+                // Whether this principal may create one is the server's call:
+                // a password can arrive as a cookie, so getPwd() being empty
+                // says nothing (see can_create in HandleAPIAOIList).
+                window._aoiCanCreate = !!data.can_create;
+                initAOICreateButton();
                 // A ?aoi= share link can only be honoured once the polygons
                 // are known (and only if this principal may see them — an
                 // invisible id simply does nothing, no error, no oracle).
@@ -7551,6 +7649,100 @@
             } catch (e) { console.warn('AOI load failed', e); }
         }
         window.loadAOIs = loadAOIs;
+
+        // ── Creating and editing an AOI ──────────────────────────────────
+        // The heavy lifting is srv/static/aoi_draw.js; these are the three
+        // seams it needs in the page: who may create one, how an edit starts
+        // with an existing polygon, and how a lineage is presented.
+
+        // Only a principal the server recognises can own an AOI (POST /api/aois
+        // 403s otherwise), so an anonymous visitor is shown nothing rather than
+        // a button that fails. Driven by can_create from loadAOIs().
+        function initAOICreateButton() {
+            const btn = document.getElementById('aoi-new-btn');
+            if (!btn) return;
+            btn.style.display = window._aoiCanCreate ? '' : 'none';
+        }
+        window.initAOICreateButton = initAOICreateButton;
+
+        function startAOIDraw() {
+            if (!window.AOIDraw) return;
+            // Drawing happens on the map; the filter panel would cover the
+            // very corner the user is about to click.
+            if (filterPanelOpen) toggleFilterPanel();
+            AOIDraw.start();
+        }
+        window.startAOIDraw = startAOIDraw;
+
+        // Editing forks: the server archives this version and mints the next
+        // one (srv/aoi_versions.go). The editor starts from the existing
+        // polygon, and the new window comes from the time slider like it does
+        // for a fresh AOI — that is the promise of the flow, that an edit is
+        // always also an opportunity to change the dates.
+        async function editAOI(id) {
+            if (!window.AOIDraw || !AOIDraw.startEdit) return;
+            let geom = window._aois?.[id]?.geometry;
+            if (!geom) {
+                try {
+                    const r = await fetch(`/api/aois/${encodeURIComponent(id)}?geometry=1&pwd=${encodeURIComponent(getPwd())}`);
+                    if (r.ok) geom = (await r.json()).geometry;
+                } catch (e) { /* fall through: startEdit reports it */ }
+            }
+            if (currentAOIPopup) currentAOIPopup.remove();
+            if (filterPanelOpen) toggleFilterPanel();
+            AOIDraw.startEdit(id, window._aois?.[id]?.name || id, geom);
+        }
+        window.editAOI = editAOI;
+
+        // The lineage, rendered into the popup's own section. Archived
+        // versions are dimmed rather than hidden: reaching an old one is the
+        // entire payoff of never mutating in place.
+        async function loadAOIVersions(id) {
+            const el = document.getElementById(`aoi-versions-content-${id}`);
+            if (!el) return;
+            try {
+                const r = await fetch(`/api/aois/${encodeURIComponent(id)}/versions?pwd=${encodeURIComponent(getPwd())}`);
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                const d = await r.json();
+                const vs = d.versions || [];
+                if (vs.length <= 1) {
+                    el.innerHTML = '<div style="font-size:11px;color:#888">Only one version. Editing this area creates a new one and keeps this as history.</div>';
+                    return;
+                }
+                el.innerHTML = vs.map(v => {
+                    const isThis = v.id === id;
+                    const chip = v.archived
+                        ? '<span class="aoi-ver-chip">archived</span>'
+                        : '<span class="aoi-ver-chip current">current</span>';
+                    const geo = v.geometry_changed ? ' <span style="color:#666">· shape changed</span>' : '';
+                    const act = v.archived && v.is_owner !== false
+                        ? `<button class="aoi-ver-btn" onclick="event.stopPropagation();restoreAOIVersion('${escapeHtml(v.id)}')">Restore</button>`
+                        : (isThis ? '' : `<button class="aoi-ver-btn" onclick="event.stopPropagation();openAOIPopupById('${escapeHtml(v.id)}')">Open</button>`);
+                    return `<div class="aoi-ver-row${v.archived ? ' archived' : ''}">
+                        <span style="min-width:0;overflow-wrap:anywhere">${escapeHtml(v.label)}${geo}</span>
+                        <span style="display:flex;gap:4px;align-items:center">${chip}${act}</span>
+                    </div>`;
+                }).join('');
+            } catch (e) {
+                el.innerHTML = '<div style="font-size:11px;color:#888">Could not load versions.</div>';
+            }
+        }
+        window.loadAOIVersions = loadAOIVersions;
+
+        async function restoreAOIVersion(id) {
+            try {
+                const r = await fetch(`/api/aois/${encodeURIComponent(id)}/restore?pwd=${encodeURIComponent(getPwd())}`,
+                                      { method: 'POST' });
+                if (!r.ok) throw new Error(await r.text() || ('HTTP ' + r.status));
+                if (currentAOIPopup) currentAOIPopup.remove();
+                await loadAOIs();
+                openAOIPopupById(id);
+                showToast('Version restored', 'success');
+            } catch (e) {
+                showToast('Could not restore: ' + (e.message || e), 'error');
+            }
+        }
+        window.restoreAOIVersion = restoreAOIVersion;
 
         // Hover tooltip. Registered through MapTip (one shared DOM tip) rather
         // than a maplibregl.Popup per layer — see srv/static/maptip.js for why.
@@ -7656,6 +7848,7 @@
                         <div class="pa-popup-name" style="display:flex;align-items:center;justify-content:space-between;gap:8px">
                             <span style="min-width:0;overflow-wrap:break-word">${escapeHtml(name)}</span>
                             <span style="display:flex;gap:4px;align-items:center;flex-shrink:0">
+                                ${props.is_owner ? `<button onclick="event.stopPropagation();editAOI('${id}')" title="Edit — creates a new version and keeps this one as history" class="pa-export-btn"><i class="icon-pencil-ruler"></i></button>` : ''}
                                 <a href="/api/aois/${encodeURIComponent(id)}/export.geojson?pwd=${encodeURIComponent(getPwd())}" download="${id}.geojson" title="GeoJSON — download the area polygon" class="pa-export-btn"><i class="icon-globe"></i></a>
                                 <button onclick="animateAOI('${id}')" title="Animate this area over its analysis window" class="pa-export-btn"><i class="icon-play"></i></button>
                             </span>
@@ -7677,6 +7870,15 @@
                     ${sec('fire', '◇', 'Fire Activity', 'fire')}
                     ${sec('ghsl', '◻', 'Settlements', 'settlement')}
                     ${sec('deforest', '△', 'Deforestation', 'deforestation')}
+                    <div class="pa-popup-section" id="aoi-versions-section-${id}" onclick="togglePopupSection(this); loadAOIVersions('${id}')">
+                        <div class="pa-popup-section-header">
+                            <div class="pa-popup-section-title"><span class="pa-popup-section-icon">⧉</span> Versions</div>
+                            <span class="pa-popup-section-toggle">▼</span>
+                        </div>
+                        <div class="pa-popup-section-content" id="aoi-versions-content-${id}">
+                            <div class="pa-popup-section-loading">Loading...</div>
+                        </div>
+                    </div>
                 </div>`;
             currentAOIPopup = new maplibregl.Popup({ closeButton: true, maxWidth: '320px' })
                 .setLngLat(lngLat).setHTML(html).addTo(map);
@@ -7738,7 +7940,7 @@
             if (sections && sections.length) {
                 const secMap = { fire: 'fire', settlement: 'ghsl', ghsl: 'ghsl',
                                  deforestation: 'deforest', deforest: 'deforest',
-                                 overview: 'aoi-overview' };
+                                 overview: 'aoi-overview', versions: 'aoi-versions' };
                 setTimeout(() => sections.forEach(s => {
                     const el = document.getElementById(`${secMap[s] || s}-section-${id}`);
                     if (el && !el.classList.contains('open')) el.click();
@@ -19277,5 +19479,10 @@ ${starredItems.narratives.map(n => {
         </div>
     </div>
     <script src="/static/anim.js?v={{.Version}}"></script>
+    <!-- AOI write path. Loaded as files rather than inlined because both are
+         self-contained modules with their own lifecycle: a map interaction
+         mode, and a poller that outlives any one panel render. -->
+    <script src="/static/aoi_draw.js?v={{.Version}}"></script>
+    <script src="/static/aoi_progress.js?v={{.Version}}"></script>
     <script src="/static/floatui.js?v={{.Version}}"></script>
 </body></html>

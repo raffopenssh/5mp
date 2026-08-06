@@ -1101,6 +1101,67 @@
         .bbox-star-btn.starred { color: #fbbf24; }
         .parks-selector { display: flex; gap: 4px; }
 
+        /* --- Areas of interest ---------------------------------------
+           The "New area…" button sits in the same row as "Select Area" but
+           must not look like it. The bbox tool is an instant, disposable
+           filter; an AOI is days of ingest against real FIRMS quota. Same
+           geometry, deliberately different colour (amber = commitment). */
+        .aoi-new-btn { background: rgba(251,191,36,0.10); border-color: rgba(251,191,36,0.25); color: #fbbf24; flex: 1; }
+        .aoi-new-btn:hover { background: rgba(251,191,36,0.18); border-color: rgba(251,191,36,0.45); }
+        .aoi-new-btn.active { background: rgba(251,191,36,0.25); border-color: #fbbf24; }
+
+        /* Draw panel. Floats over the map (the map IS the input surface, so
+           it cannot live inside the filter panel, which the user will want
+           closed while drawing). Bottom-left, clear of the time slider. */
+        .aoi-draw-panel { position: fixed; left: 16px; bottom: 120px; width: 300px; max-width: calc(100vw - 32px); z-index: 1200;
+            background: rgba(18,18,18,0.96); border: 1px solid rgba(251,191,36,0.3); border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.55); padding: 12px; font-size: 12px; color: #ddd; }
+        .aoi-draw-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-weight: 600; color: #fbbf24; margin-bottom: 8px; }
+        .aoi-draw-x { background: none; border: none; color: #888; font-size: 18px; line-height: 1; cursor: pointer; padding: 0 2px; }
+        .aoi-draw-x:hover { color: #fff; }
+        .aoi-draw-hint { font-size: 11px; color: #aaa; line-height: 1.45; margin-bottom: 8px; }
+        .aoi-draw-estimate { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 8px; margin-bottom: 8px; }
+        .aoi-draw-input { width: 100%; box-sizing: border-box; padding: 6px 8px; background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; color: #eee; font-size: 12px; }
+        .aoi-draw-input:focus { outline: none; border-color: rgba(251,191,36,0.5); }
+        .aoi-draw-actions { display: flex; gap: 6px; margin-top: 8px; }
+        .aoi-draw-btn { flex: 1; padding: 6px 8px; border-radius: 4px; font-size: 12px; cursor: pointer; transition: all 0.2s;
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #bbb; }
+        .aoi-draw-btn:hover { background: rgba(255,255,255,0.12); color: #eee; }
+        .aoi-draw-btn.primary { background: rgba(251,191,36,0.15); border-color: rgba(251,191,36,0.4); color: #fbbf24; font-weight: 600; }
+        .aoi-draw-btn.primary:hover:not(:disabled) { background: rgba(251,191,36,0.28); }
+        .aoi-draw-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .aoi-draw-dim { font-size: 10px; color: #777; line-height: 1.45; }
+        .aoi-draw-err { font-size: 11px; color: #ef4444; line-height: 1.45; }
+
+        .aoi-est-head { margin-bottom: 4px; }
+        .aoi-est-eta { font-size: 13px; font-weight: 600; color: #eee; }
+        .aoi-est-details { margin-top: 6px; }
+        .aoi-est-details > summary { cursor: pointer; font-size: 10px; color: #888; list-style: none; }
+        .aoi-est-details > summary::-webkit-details-marker { display: none; }
+        .aoi-est-details > summary::before { content: '▸ '; }
+        .aoi-est-details[open] > summary::before { content: '▾ '; }
+        .aoi-est-row { display: flex; justify-content: space-between; gap: 8px; font-size: 10px; color: #aaa; margin-top: 3px; }
+        .aoi-est-row.blocked { color: #666; }
+        .aoi-est-note { color: #777; flex-shrink: 0; }
+
+        /* Progress card body, inside a .notification-item. */
+        .aoi-prog-line { font-size: 11px; color: #bbb; line-height: 1.4; }
+        .aoi-prog-bar { height: 3px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; margin: 5px 0 3px; }
+        .aoi-prog-bar > div { height: 100%; transition: width 0.4s; }
+        .aoi-prog-dim { font-size: 9px; color: #666; }
+
+        /* Version list in the AOI popup. Archived rows are dimmed rather than
+           hidden: getting back to an old version is the whole point of
+           forking on edit. */
+        .aoi-ver-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: 11px; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .aoi-ver-row:last-child { border-bottom: none; }
+        .aoi-ver-row.archived { color: #777; }
+        .aoi-ver-chip { font-size: 9px; padding: 1px 5px; border-radius: 3px; background: rgba(255,255,255,0.08); color: #888; flex-shrink: 0; }
+        .aoi-ver-chip.current { background: rgba(34,197,94,0.15); color: #22c55e; }
+        .aoi-ver-btn { background: rgba(96,165,250,0.12); border: 1px solid rgba(96,165,250,0.3); color: #60a5fa; border-radius: 3px; font-size: 10px; padding: 2px 6px; cursor: pointer; flex-shrink: 0; }
+        .aoi-ver-btn:hover { background: rgba(96,165,250,0.25); }
+
         /* PA Popup Tooltip (map popup style) */
         .maplibregl-popup-content { background: rgba(18,18,18,0.95) !important; border: 1px solid rgba(255,255,255,0.1) !important; border-radius: 8px !important; padding: 0 !important; box-shadow: 0 10px 40px rgba(0,0,0,0.5) !important; min-width: 220px; max-width: 280px; }
         .maplibregl-popup-tip { border-top-color: rgba(18,18,18,0.95) !important; }

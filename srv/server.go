@@ -201,6 +201,9 @@ func (s *Server) Serve(addr string) error {
 	// on purpose: one middleware + per-handler visibility check is the whole
 	// enforcement surface (docs/PLAN_AOI_OVERLAY.md §9).
 	mux.HandleFunc("GET /api/aois", s.HandleAPIAOIList)
+	// Literal before the wildcard: 'search' is not an id, and the only reason
+	// the mux gets that right on its own is Go 1.22's specificity rule.
+	mux.HandleFunc("GET /api/aois/search", s.HandleAPIAOISearch)
 	mux.HandleFunc("GET /api/aois/{id}", s.HandleAPIAOIGet)
 	// Read surface: the park handlers, gated on visibility. They key off
 	// r.PathValue("id") and read the same tables the --aoi v5 chain writes.
@@ -226,6 +229,11 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("POST /api/aois/{id}/refresh", s.HandleAPIAOIRefresh)
 	mux.HandleFunc("POST /api/aois/{id}/kick", s.HandleAPIAOIKick)
 	mux.HandleFunc("DELETE /api/aois/{id}", s.HandleAPIAOIDelete)
+	// Versioning (migration 042): an edit forks, it never mutates. See
+	// srv/aoi_versions.go for why.
+	mux.HandleFunc("GET /api/aois/{id}/versions", s.HandleAPIAOIVersions)
+	mux.HandleFunc("POST /api/aois/{id}/edit", s.HandleAPIAOIEdit)
+	mux.HandleFunc("POST /api/aois/{id}/restore", s.HandleAPIAOIRestore)
 
 	// API auth endpoints
 	mux.HandleFunc("POST /api/login", RateLimitMiddleware(authRL, s.HandleAPILogin))
