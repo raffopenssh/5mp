@@ -1101,18 +1101,42 @@
         .bbox-star-btn.starred { color: #fbbf24; }
         .parks-selector { display: flex; gap: 4px; }
 
-        /* --- Areas of interest ---------------------------------------
-           The "New area…" button sits in the same row as "Select Area" but
-           must not look like it. The bbox tool is an instant, disposable
-           filter; an AOI is days of ingest against real FIRMS quota. Same
-           geometry, deliberately different colour (amber = commitment). */
-        .aoi-new-btn { background: rgba(251,191,36,0.10); border-color: rgba(251,191,36,0.25); color: #fbbf24; flex: 1; }
-        .aoi-new-btn:hover { background: rgba(251,191,36,0.18); border-color: rgba(251,191,36,0.45); }
+        /* Tag rows. Both can hold several entries, so they wrap like
+           .selected-parks rather than truncating to one line. */
+        .selected-aois, .starred-areas { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+
+        /* The AOI section is visually a different kind of thing from the bbox
+           filter above it: amber, its own heading, its own left rule. That
+           separation is the point -- a bounding box is disposable, an AOI is
+           days of ingest. */
+        .aoi-section { border-left: 2px solid rgba(251,191,36,0.35); padding-left: 10px; }
+        .aoi-section-label { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: #fbbf24 !important; }
+        .aoi-layer-toggle { background: rgba(251,191,36,0.10); border: 1px solid rgba(251,191,36,0.25); color: #fbbf24; border-radius: 4px; font-size: 9px; padding: 2px 7px; cursor: pointer; letter-spacing: 0; text-transform: none; }
+        .aoi-layer-toggle:hover { background: rgba(251,191,36,0.2); }
+        .aoi-layer-toggle:not(.active) { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.15); color: #777; }
+        .aoi-new-btn { display: flex; align-items: center; justify-content: center; gap: 5px; width: 100%; margin-top: 8px; padding: 7px 8px; background: rgba(251,191,36,0.10); border: 1px dashed rgba(251,191,36,0.45); border-radius: 4px; color: #fbbf24; font-size: 12px; cursor: pointer; transition: all 0.2s; }
+        .aoi-new-btn:hover { background: rgba(251,191,36,0.2); border-color: #fbbf24; }
+        .aoi-section-hint { margin-top: 6px; font-size: 9px; color: #777; line-height: 1.5; }
+        .aoi-section-hint em { color: #93c5fd; font-style: normal; }
+
+        .aoi-tag { display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px; background: rgba(251,191,36,0.10); border: 1px solid rgba(251,191,36,0.28); border-radius: 4px; font-size: 11px; color: #fbbf24; cursor: pointer; max-width: 100%; }
+        .aoi-tag:hover { background: rgba(251,191,36,0.18); border-color: rgba(251,191,36,0.5); }
+        .aoi-tag-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
+        .aoi-tag-win { color: #9a7b2a; font-size: 9px; flex-shrink: 0; }
+        .aoi-tag-zoom { background: none; border: none; color: #9a7b2a; cursor: pointer; font-size: 11px; padding: 0 0 0 2px; line-height: 1; flex-shrink: 0; }
+        .aoi-tag-zoom:hover { color: #fbbf24; }
+        .starred-area-tag { display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px; background: rgba(59,130,246,0.10); border: 1px solid rgba(59,130,246,0.25); border-radius: 4px; font-size: 11px; color: #93c5fd; cursor: pointer; max-width: 100%; }
+        .starred-area-tag:hover { background: rgba(59,130,246,0.18); border-color: rgba(59,130,246,0.45); }
+        .starred-area-tag-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
+        .starred-area-tag-size { color: #64748b; font-size: 9px; flex-shrink: 0; }
+
+        /* --- AOI editor ----------------------------------------------
+           Floats over the map: the map IS the input surface, so the panel
+           cannot live inside the filter panel (which the user will want out of
+           the way while drawing). Bottom-left, clear of the time slider. */
         .aoi-new-btn.active { background: rgba(251,191,36,0.25); border-color: #fbbf24; }
 
-        /* Draw panel. Floats over the map (the map IS the input surface, so
-           it cannot live inside the filter panel, which the user will want
-           closed while drawing). Bottom-left, clear of the time slider. */
+        /* Draw panel. Floats over the map, bottom-left, clear of the slider. */
         .aoi-draw-panel { position: fixed; left: 16px; bottom: 120px; width: 300px; max-width: calc(100vw - 32px); z-index: 1200;
             background: rgba(18,18,18,0.96); border: 1px solid rgba(251,191,36,0.3); border-radius: 8px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.55); padding: 12px; font-size: 12px; color: #ddd; }

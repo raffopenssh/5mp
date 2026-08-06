@@ -35,7 +35,16 @@
 
     let S = null;   // active editor state, or null
 
-    function map() { return window.map; }
+    // The MapLibre instance is a top-level `const map` in globe.html. That is
+    // a global *lexical* binding, so a bare reference from another classic
+    // script resolves to it — which is what anim.js does too.
+    //
+    // What must NOT be used is `window.map`: named access on window resolves
+    // that to the <div id="map"> ELEMENT, which has no getSource(), so the
+    // failure is a confusing TypeError rather than an obvious undefined.
+    // Hence the accessor is called theMap(), not map(): a local function named
+    // `map` would shadow the very binding it is trying to read.
+    function theMap() { return typeof map !== 'undefined' ? map : null; }
     function pwd() { return (typeof getPwd === 'function' ? getPwd() : ''); }
 
     // ---------------------------------------------------------- geometry
@@ -64,7 +73,7 @@
     // source so an in-progress draft can never be mistaken for a saved AOI
     // (and so cancelling is a single setData).
     function ensureLayers() {
-        const m = map();
+        const m = theMap();
         if (m.getSource(SRC)) return;
         m.addSource(SRC, { type: 'geojson', data: empty() });
         m.addLayer({
@@ -91,7 +100,7 @@
     function empty() { return { type: 'FeatureCollection', features: [] }; }
 
     function redraw() {
-        const m = map();
+        const m = theMap();
         if (!m || !m.getSource(SRC)) return;
         const f = [];
         if (S && S.ringLocked && S.originalGeom) {
@@ -213,7 +222,7 @@
 
     function nearestHandle(e) {
         if (!S) return -1;
-        const m = map();
+        const m = theMap();
         for (let i = 0; i < S.pts.length; i++) {
             const p = m.project(S.pts[i]);
             if (Math.hypot(p.x - e.point.x, p.y - e.point.y) <= HANDLE_HIT_PX) return i;
@@ -251,7 +260,7 @@
         }
         S.hover = [e.lngLat.lng, e.lngLat.lat];
         const over = nearestHandle(e) !== -1;
-        map().getCanvas().style.cursor = over ? 'move' : 'crosshair';
+        theMap().getCanvas().style.cursor = over ? 'move' : 'crosshair';
         if (!S.closed && S.pts.length) redraw();
     }
 
@@ -261,14 +270,14 @@
         if (hit === -1) return;
         // Dragging a vertex must not also pan the map.
         S.dragging = hit;
-        map().dragPan.disable();
+        theMap().dragPan.disable();
         e.preventDefault && e.preventDefault();
     }
 
     function onUp() {
         if (!S || S.dragging === -1) return;
         S.dragging = -1;
-        map().dragPan.enable();
+        theMap().dragPan.enable();
         scheduleEstimate();
     }
 
@@ -342,7 +351,7 @@
 
     function start() {
         if (S) return;
-        const m = map();
+        const m = theMap();
         if (!m) return;
         ensureLayers();
         S = { pts: [], closed: false, dragging: -1, hover: null, estimate: null };
@@ -360,7 +369,7 @@
     // still be edited window-only (leave the shape alone and press Save).
     function startEdit(id, name, geometry) {
         if (S) return;
-        const m = map();
+        const m = theMap();
         if (!m) return;
         ensureLayers();
         let pts = [];
@@ -389,7 +398,7 @@
 
     // Shared tail of start()/startEdit(): panel, handlers, first paint.
     function attach() {
-        const m = map();
+        const m = theMap();
         const host = document.createElement('div');
         host.innerHTML = panelHTML();
         document.body.appendChild(host.firstElementChild);
@@ -406,7 +415,7 @@
     }
 
     function teardown() {
-        const m = map();
+        const m = theMap();
         if (m) {
             m.off('click', onClick);
             m.off('mousemove', onMouseMove);

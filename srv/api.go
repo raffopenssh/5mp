@@ -4370,20 +4370,11 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 		toDate = r.URL.Query().Get("end")
 	}
 
-	// Get park info
-	parkName := parkID
-	var boundary string
-	for _, pa := range s.AreaStore.Areas {
-		if pa.ID == parkID {
-			parkName = pa.Name
-			if pa.Geometry.Type != "" {
-				if geomBytes, err := json.Marshal(pa.Geometry); err == nil {
-					boundary = string(geomBytes)
-				}
-			}
-			break
-		}
-	}
+	// Get park info. resolveAreaGeom also covers an AOI, which is deliberately
+	// absent from AreaStore -- without it the export would carry no boundary
+	// and, because the patrol-effort bbox is derived from the boundary, no
+	// effort either.
+	parkName, boundary := s.resolveAreaGeom(parkID)
 
 	// Build KML
 	var kml strings.Builder

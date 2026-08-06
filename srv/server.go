@@ -214,6 +214,22 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("GET /api/aois/{id}/deforestation-narrative", s.aoiGate(s.HandleAPIDeforestationNarrative))
 	mux.HandleFunc("GET /api/aois/{id}/settlement-narrative", s.aoiGate(s.HandleAPISettlementNarrative))
 	mux.HandleFunc("GET /api/aois/{id}/export.geojson", s.HandleAPIAOIExportGeoJSON)
+	// The rest of the read surface an AOI genuinely has data for. Same
+	// handlers, same gate. What is deliberately ABSENT is as load-bearing as
+	// what is here: species, climate, publications, legal and checklist are
+	// per-protected-area facts, and averaging them over 485,000 km2 would
+	// invent a number. The AOI popup points at the intersecting parks instead
+	// (docs/AOI_HANDOVER_2.md §"what an AOI is not").
+	mux.HandleFunc("GET /api/aois/{id}/feature-stats", s.aoiGate(s.HandleAPIParkFeatureStats))
+	mux.HandleFunc("GET /api/aois/{id}/classified-settlements", s.aoiGate(s.HandleAPIClassifiedSettlements))
+	mux.HandleFunc("GET /api/aois/{id}/classified-deforestation", s.aoiGate(s.HandleAPIClassifiedDeforestation))
+	mux.HandleFunc("GET /api/aois/{id}/settlement-intensity", s.aoiGate(s.HandleAPISettlementIntensity))
+	mux.HandleFunc("GET /api/aois/{id}/infrastructure", s.aoiGate(s.HandleAPIParkInfrastructure))
+	mux.HandleFunc("GET /api/aois/{id}/basin", s.aoiGate(s.HandleAPIParkBasin))
+	// Exports. Both resolve their boundary through resolveAreaGeom(), which
+	// knows about AOIs -- an AOI is not in AreaStore by design.
+	mux.HandleFunc("GET /api/aois/{id}/export.kml", s.aoiGate(s.HandleAPIParkKML))
+	mux.HandleFunc("GET /api/aois/{id}/export.locus", s.aoiGate(s.HandleAPIParkLocus))
 	// Write surface (docs/PLAN_AOI_OVERLAY.md §3f). None of these run the
 	// ingest: scripts/aoi_runner.py owns the lease discipline and is the only
 	// thing that works a unit. These queue, requeue, price and report.
