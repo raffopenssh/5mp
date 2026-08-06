@@ -11,9 +11,12 @@ Written 2026-08-06. Execute in a fresh conversation; this file is the brief.
    GHSL settlements, rivers, roads, places, climate, species, basin, narratives).
 3. Visibility must be **generic**: a *principal* (today a password, later a
    user/NGO/gov account) is scoped to a set of parks. Same tables either way.
-4. Ingest must be **generic + batched**: per-park declaration of which datasets
-   to collect, executed in tiles/batches by the nightly crons so GFW/Overpass/
-   FIRMS quotas are never burst.
+4. Ingest must be **generic + batched**: a per-park declaration of which
+   datasets to collect, ground down over **days to weeks by the crons we
+   already run** — each one nibbling a bounded slice per night, so no quota is
+   ever burst and no long-lived process exists. Only the 03:00 fire cron is
+   time-critical and keeps priority; every other cron yields its rotation slot
+   to the overlay until it is finished (§5).
 5. No heavy work until tonight's crons finish (§8).
 
 ## Facts established (do not re-derive)
@@ -22,14 +25,12 @@ Written 2026-08-06. Execute in a fresh conversation; this file is the brief.
   (2nd largest object in the system; only DZA_Ahaggar 542k is bigger).
 * It **fully contains** CAF_Chinko and SSD_Southern; overlaps COD_Bili-Uere
   (35%) and COD_Garamba (13%). Overlap is the central design constraint (§3).
-* `fire_detections` already has **3.75M** rows in that bbox (2024: 731k,
-  2025: 905k, 2026: 522k, plus 2018-23). **No FIRMS backfill needed** (§4).
-* GHSL 10 m tiles now 404 on JRC; **100 m tiles are live**. Needed tiles:
-  `R7_C20, R7_C21, R8_C20, R8_C21` (BUILT_S 100 m, ~19 MB total).
-  `scripts/process_settlement_polygons.py` hardcodes
-  `data/ghsl/ghsl_pop_2030.zip`, and `data/ghsl/` does not exist -> needs a
-  fetch step + generalisation to a tile dir.
-* `data/hydro_source/` also absent -> rivers/lakes need download or reuse (§5).
+* **Only 10.5% of the study area lies inside any existing park**, and only
+  **53.6% falls inside the 100 km ingest buffer** used by every current
+  pipeline. So **~46% (~223,000 km2) has never been ingested for anything**.
+  This is the gap the user is asking about; §4a quantifies it per layer.
+* GADM level-2 says the area spans **5 countries**: SSD (23 regions), CAF (10),
+  SDN (6), COD (3), TCD (1). All ingest that is country-keyed must cover all 5.
 * 163 parks in `data/keystones_with_boundaries.json` (1 onboarded: DZA_Djurdjura).
 
 ## 0. Can we reuse onboard_park.py?
@@ -150,91 +151,231 @@ Chinko/Southern/Bili-Uere/Garamba and silently gut their trajectories.
 * Consequence: `fire_detections.protected_area_id` is never `XSA_Study_Area`;
   the study area selects fires **by polygon** (§4).
 
-## 4. Fires (no FIRMS backfill)
+## 4a. THE DATA GAP (measured, per layer)
 
-Add to `scripts/fire_source.py`:
+Every existing pipeline is park-scoped with a <=100 km buffer, so the study
+area is a patchwork: dense where it overlaps Chinko/Southern/Bili-Uere/Garamba,
+empty elsewhere. Measured on a 1-degree grid over the polygon (46 cells):
+
+| | cells | median fire detections/cell |
+|---|---|---|
+| inside the 100 km ingest buffer | 21 | **122,179** |
+| outside it (the gap) | 25 | **1,050** |
+
+A ~100x cliff at the buffer edge. That is **ingest scope, not fire behaviour** —
+these are savanna cells that burn every dry season. Do not mistake the low
+counts for a quiet landscape; the same cliff exists for every other layer:
+
+| layer | inside buffer | in the gap | fix |
+|---|---|---|---|
+| fires | full 2018-2026 | sparse, unusable | FIRMS backfill 2024-01-01.. for the gap bbox (§4b) |
+| deforestation / GFW | per-park scans | none | tiled GFW, ~240 tiles (§5.2) |
+| settlements | GHSL per-park | none | 4 GHSL tiles (§5.2) |
+| roads / places | `roads_heigit`, `osm_places` per park | none | **Geofabrik PBF, not Overpass** (§5.4) |
+| rivers / lakes | `park_rivers_hydro` per park | none | HydroSHEDS source, or PBF waterways |
+| GSW water occurrence | `data/gsw/occ_20E_10N.tif` only | 3 tiles missing (`occ_20E_0N`, `occ_30E_10N`, `occ_30E_0N`) | direct download |
+| climate / species | `park_climate`, `park_species` keyed per park | no row | derive from grid / union neighbours |
+| basins | `park_basins` per park | none | `fetch_park_basins.py --park` |
+
+Consequence for the phased plan: **phase A (clip from the 4 overlapped parks)
+covers at best the 53.6%, realistically the 10.5% that is actually inside
+them.** It is still worth doing first because it makes the area usable
+immediately, but it must be labelled as partial in the UI (see §4c) and phase B
+is not optional.
+
+## 4b. Fires — partial backfill IS required
+
+Earlier assumption ("3.75M rows already in the bbox, no backfill needed") is
+**only true for the covered 54%**. Correct plan:
+
+1. `fire_detections` already holds 3.75M rows in the bbox (2024: 731k,
+   2025: 905k, 2026: 522k) — reuse all of it, insert nothing there.
+2. Backfill **only the gap**, window 2024-01-01..today (949 days):
+   FIRMS area API in 5-day chunks = **190 requests per sensor**, and all three
+   VIIRS sensors are ingested here (`VIIRS_NOAA20`, `VIIRS_SNPP`, `VIIRS_NOAA21`
+   — SP for age > 60d, NRT for the tail) => **~570 requests**.
+   Batch as a `park_datasets` dataset `fire_gap` with a nightly budget of
+   ~60 requests => ~10 nights, or 2-3 nights at 200/night if quota allows.
+   `INSERT OR IGNORE` on the `UNIQUE(lat,lon,acq_date,acq_time,satellite)` key
+   makes overlap with existing rows free — so just request the **whole study
+   bbox**, do not try to tile the concave gap polygon.
+   Never default the `satellite` field (AGENTS.md).
+3. Because `XSA_Study_Area` is `overlay` (§3), `park_assigner` will not tag
+   these rows; gap detections stay `protected_area_id = NULL`. That is correct
+   and intentional — the study area selects **by polygon**:
 
 ```python
+# scripts/fire_source.py
 def load_area_fires_db(geometry, min_date, max_date=None, conn=None):
     # bbox prefilter via idx_fire_location, then shapely prepared.contains
 ```
-dispatched from `load_park_fires` for overlay parks. 3.75M candidate rows in
-bbox: do the point-in-polygon once and cache ids in a helper table
-`overlay_area_fires(park_id, fire_id)`, refreshed incrementally (`--since`)
-by the daily cron.
+   dispatched from `load_park_fires` for overlay parks. ~4M candidate rows:
+   run point-in-polygon once, cache ids in `overlay_area_fires(park_id,
+   fire_id)`, refresh incrementally (`--since`) from the daily cron.
 
-Window: build from **2024-01-01** (`STUDY_MIN_DATE`) though older data exists;
-that is ~2.1M detections. Expect a very large group count; `dedupe_feature_ids`
+4. After the gap backfill lands, run
+   `scripts/build_fire_grid_agg.py --since 2024-01-01` or the animator shows
+   stale fires (AGENTS.md).
+
+Then the normal chain (all support `--park`):
+`rebuild_fire_trajectories_v5.py` -> `load_fire_groups_to_db.py --force` ->
+`precompute_narratives_v5.py`. Obey AGENTS.md: single writer for
+`fire_narrative_cache`; a zero-group park still writes an empty v5 cache row.
+Verify with `scripts/check_fire_consistency.py --verbose`.
+
+Window is 2024-01-01 (`STUDY_MIN_DATE`) per the request; ~2.1M detections in
+the covered part alone, so expect a very large group count. `dedupe_feature_ids`
 and the 100-group payload cap in `srv/fire_realtime_handlers.go` already cope.
 
-Chain (all support `--park`):
-`rebuild_fire_trajectories_v5.py` -> `load_fire_groups_to_db.py --force` ->
-`precompute_narratives_v5.py` -> `build_fire_grid_agg.py --since 2024-01-01`.
-Obey AGENTS.md: single writer for `fire_narrative_cache`; zero-group park still
-writes an empty v5 cache row. Then
-`python3 scripts/check_fire_consistency.py --verbose`.
+## 4c. Surface the coverage, don't hide it
 
-## 5. Per-park dataset declaration + batched ingest
+Store a per-dataset coverage fraction in `park_datasets.detail` (computed as
+polygon-area-with-data / polygon area) and render it in the popup as a small
+"data coverage" line per section. A 482,000 km2 area that silently shows
+Chinko-only data is worse than one that says "fires 54% -> 100% (backfilling,
+6 nights left)". Cheap, and it generalises to every future custom area.
 
-### 5.1 `park_datasets` (same migration 040)
+## 5. Overlay ingest: a multi-week job hosted by the existing crons
+
+Design principle the user asked for: **the overlay is one long job that every
+existing cron nibbles at, over days to weeks, until it is finished.**
+Not a new heavyweight cron. Two rules:
+
+1. **The fire cron (03:00) is time-critical and untouchable.** It runs its own
+   7 steps first; it may host an overlay slice *only* if it finished early and
+   the 04:00 deadline is still far. Its slice budget is small and it aborts
+   the slice at the first sign of overrun. It never defers its own work.
+2. **Every other cron yields its slot to the overlay while an overlay is
+   pending.** The GFW park rotation, the daily park refresh rotation and the
+   weekly precompute are all *rotations* — a park scanned a day later loses
+   nothing. So while `park_datasets` has pending overlay work, those jobs spend
+   their quota on the overlay instead of their normal rotation, and resume
+   normal rotation automatically when the overlay reports `done`.
+
+### 5.1 `park_datasets` (migration 040)
 
 ```sql
 CREATE TABLE IF NOT EXISTS park_datasets (
   park_id TEXT NOT NULL,
-  dataset TEXT NOT NULL,   -- fire|gfw|ghsl|hydro|osm_places|roads|climate|
-                           -- species|basin|waterbodies|deforestation
+  dataset TEXT NOT NULL,   -- fire_gap|gfw|ghsl|hydro|osm_pbf|roads|places|
+                           -- climate|species|basin|waterbodies|gsw|deforestation
   enabled INTEGER NOT NULL DEFAULT 1,
   since_date TEXT,         -- '2024-01-01' for the study area
-  state TEXT NOT NULL DEFAULT 'pending',  -- pending|running|done|failed
-  cursor TEXT,             -- JSON tile queue / next index (resumable)
-  quota_cost INTEGER DEFAULT 1,
+  priority INTEGER NOT NULL DEFAULT 100,   -- lower runs first
+  state TEXT NOT NULL DEFAULT 'pending',   -- pending|running|done|failed|blocked
+  cursor TEXT,             -- JSON work queue + index (resumable mid-unit)
+  units_total INTEGER, units_done INTEGER DEFAULT 0,
+  coverage REAL,           -- 0..1, drives the UI line in §4c
+  host TEXT,               -- which cron may run it: 'any'|'fire'|'gfw'|'refresh'|'weekly'
   last_run_at TIMESTAMP, next_run_at TIMESTAMP, detail TEXT,
   PRIMARY KEY (park_id, dataset)
 );
-CREATE INDEX IF NOT EXISTS idx_pd_state ON park_datasets(state, next_run_at);
+CREATE INDEX IF NOT EXISTS idx_pd_state ON park_datasets(state, priority, next_run_at);
 ```
 
-This is the "choose per park what is collected" knob; the Access tab exposes it.
+This doubles as the per-park "what should be collected" switchboard the user
+wants to expose per account later (admin Access tab, §2.5).
 
-### 5.2 `scripts/dataset_worker.py` (new, the heart)
+### 5.2 `scripts/overlay_runner.py` (new; the shared nibbler)
 
-* One cron entry at `0 5 * * *` (after fire 03:00 and GFW 04:30).
-* Per-dataset nightly budget (table at top of file, e.g. gfw 40 tiles,
-  overpass 8 bboxes, ghsl 2 tiles); pops units off `cursor` and **commits
-  progress after every unit** so a crash resumes.
-* Writes a `dataset_progress` notification + a step into
-  `data/pipeline_status.json` (existing admin badge picks it up).
-* Deadline guard at 02:00 UTC, mirroring `past_deadline()` in `onboard_park.py`.
+Single public entry point, called at the **end** of each existing cron script:
 
-| dataset | work unit | note |
+```python
+from overlay_runner import run_slice
+run_slice(host="gfw", budget_units=40, deadline="04:25", yields_rotation=True)
+```
+
+* Picks the highest-priority `pending` row whose `host` matches (or `any`).
+* Executes at most `budget_units` work units, **committing cursor + units_done
+  after every single unit**, so a kill at any moment resumes cleanly.
+* Hard-stops at `deadline` (wall clock, UTC) regardless of remaining budget.
+* Sets `state='done'` and recomputes `coverage` when the queue empties.
+* Returns `True` if it consumed the slot — the caller then **skips its normal
+  rotation** when `yields_rotation=True`.
+* Writes a `overlay_progress` notification (throttled to one/day) and a step in
+  `data/pipeline_status.json`, so the existing admin badge shows
+  "XSA_Study_Area: gfw 118/240, ETA 4 nights".
+
+### 5.3 Host schedule (who nibbles what)
+
+| cron | time | overlay budget | notes |
+|---|---|---|---|
+| `daily_fire_update.py` | 03:00 | `fire_gap`, **30 FIRMS requests**, deadline 03:50 | only after its own steps 1-7 succeed; skipped entirely if it ran long. Time-critical: never defers itself. |
+| `gfw_alerts.py --rotate` | 04:30 | `gfw`, **40 tiles**, deadline 05:30 | **yields its park rotation** while overlay pending. Same API quota it would have spent anyway. |
+| `daily_park_refresh.py --rotate` | 07:30 | `ghsl`, `osm_pbf`, `roads`, `places`, `hydro`, `gsw`, `basin`, `climate`, `species` — 1-2 units | yields rotation; these are download/CPU bound, not quota bound |
+| `cron_weekly_precompute.sh` | weekly | whatever is left, large budget | the catch-up slot; long deadline |
+| manual | any | `--park X --dataset Y --budget N` | for debugging/forcing |
+
+At these budgets the overlay finishes in roughly:
+`fire_gap` 570/30 ≈ **19 nights** (or 3 nights if you allow 200/night once the
+FIRMS quota is confirmed), `gfw` 240/40 = **6 nights**, everything else within
+the first week. So: **usable in ~1 week, complete in ~2-3 weeks** — exactly the
+"days to weeks" cadence requested. Bump `budget_units` to compress.
+
+### 5.4 Work units — use Geofabrik, not Overpass
+
+**Yes, Geofabrik is the right call here and Overpass is the wrong one.** The
+gap is ~223,000 km2 spanning 5 countries; Overpass would need ~20 large bbox
+queries that routinely time out at that size, is rate-limited, and gives no
+resumability. Geofabrik gives one deterministic download per country and
+`osmium` (already installed at `/usr/bin/osmium`) does the rest offline.
+
+The codebase already has this exact pattern — reuse it rather than writing new:
+`analysis/river_turbidity.py` has the `GEOFABRIK` ISO3->region map,
+`_osmium_extract()` (bbox extract -> tags-filter -> export geojson) and
+`enrich_park_infra()` (fills `osm_places` + `roads_heigit` from a park PBF).
+Lift those three into a shared `scripts/osm_pbf.py` and call it from both.
+
+Countries needed and verified sizes:
+
+| region | size | status |
 |---|---|---|
-| gfw | one 0.5 deg tile | bbox 8.6x6.7 deg => **~240 tiles**; `gfw_alerts.py --park` would fire all at once. Add `--max-tiles N` + cursor, merge partials into `data/gfw_alerts/XSA_Study_Area.json`. |
-| ghsl | one 100 m tile zip (R7_C20/R7_C21/R8_C20/R8_C21) | download to `data/ghsl/`, then `process_settlement_polygons.py --park`; generalise its hardcoded zip path |
-| osm_places | one 2x2 deg sub-bbox (~20 units) | Overpass limits; `download_osm_places_to_file.py --park` currently uses one bbox |
-| roads | one country pbf (CAF, SSD, COD, SDN) | partly present in `data/osm_geofabrik/` |
-| hydro | HydroRIVERS_v10_af + HydroLAKES download (~2 GB, 1 unit) | or, stopgap, union the 4 overlapped parks' `park_rivers_hydro` rows |
-| basin | `fetch_park_basins.py --park` (has `--sleep`) | |
-| climate / species | local files, 1 unit each | |
-| deforestation | Hansen tiles + `process_deforestation_polygons.py`, or derive from the GFW alerts already fetched | |
+| `central-african-republic` | 99 MB | **already on disk** (`data/osm_geofabrik/`) |
+| `south-sudan` | 138 MB | **already on disk** |
+| `congo-democratic-republic` | 415 MB | download (note: `democratic-republic-of-the-congo` 404s; the `GEOFABRIK` dict already has the right name) |
+| `sudan` | 203 MB | download |
+| `chad` | 135 MB | download |
 
-### 5.3 Phase A first (cheap, zero quota)
+~750 MB to fetch, one unit each, deleted after extraction (the turbidity script
+already does download -> extract -> delete). 63 GB free, so headroom is fine.
 
-Chinko + Southern are entirely inside and Bili-Uere/Garamba partly, so rivers,
-roads, places, settlements and deforestation can be **assembled by clipping the
-4 overlapped parks' existing rows** to the polygon. Ship that as **phase A**
-(usable tomorrow), and let `dataset_worker.py` fill the polygon's uncovered
-remainder over subsequent nights as **phase B**.
+Full unit table:
+
+| dataset | unit | count | notes |
+|---|---|---|---|
+| `fire_gap` | one 5-day FIRMS window x sensor | ~570 | §4b; whole study bbox, `INSERT OR IGNORE` dedupes |
+| `gfw` | one 0.5 deg tile | ~240 | add `--max-tiles N` + cursor to `analysis/gfw_alerts.py`; merge partials into `data/gfw_alerts/XSA_Study_Area.json` |
+| `ghsl` | one 100 m tile zip | 4 | **URLs verified live** (E2030 R2023A 100 m): `R7_C20` 1.5 MB, `R7_C21` 1.7 MB, `R8_C20` 11.5 MB, `R8_C21` 6.6 MB from `.../GHS_BUILT_S_GLOBE_R2023A/GHS_BUILT_S_E2030_GLOBE_R2023A_54009_100/V1-0/tiles/`. The 10 m tiles now 404. `process_settlement_polygons.py` hardcodes `data/ghsl/ghsl_pop_2030.zip` and `data/ghsl/` doesn't exist -> generalise it to a tile dir. |
+| `osm_pbf` | one country download | 3 | see table above |
+| `roads` + `places` | one country's osmium extract+enrich | 5 | offline, from the PBFs |
+| `hydro` | HydroRIVERS_v10_af + HydroLAKES (~2 GB) | 1-2 | `data/hydro_source/` absent; stopgap = union the 4 overlapped parks' `park_rivers_hydro` rows, or derive waterways from the PBFs |
+| `gsw` | one 10x10 deg occurrence tile | 3 | missing `occ_20E_0N`, `occ_30E_10N`, `occ_30E_0N`; `occ_20E_10N` present |
+| `basin` | `fetch_park_basins.py --park` | 1 | has `--sleep` |
+| `climate`, `species` | local grid / neighbour union | 1 each | no row exists for a new park |
+| `deforestation` | Hansen tile, or derive from the GFW alerts already fetched | ~6 | prefer deriving — no extra quota |
+
+### 5.5 Phase A still goes first
+
+Clipping the 4 overlapped parks' existing rows into the study area is instant
+and zero-quota, and makes the area usable the same day. But per §4a it covers
+only ~10.5% (parks) to 53.6% (buffer) of the polygon, so it is a **preview**,
+not the deliverable. Ship it, label the coverage (§4c), let the crons grind out
+phase B.
 
 ## 6. Commit order
 
-1. migration 040 + `srv/park_acl.go` + enforcement + cache-key fix + api tests.
+1. migration 040 (`principals`, `park_grants`, `park_datasets`) +
+   `srv/park_acl.go` + enforcement + response-cache key fix + api tests.
 2. `$AOI_OWNER_PWD` appended to `ACCESS_PASSWORDS` in `secrets.env` (gitignored).
-3. keystone entry + `restricted`/`overlay` flags + `park_assigner` skip +
-   `fire_source.load_area_fires_db`.
-4. Phase A assembly + fire v5 chain from 2024-01-01.
-5. `park_datasets` seeds + `dataset_worker.py` + cron + `--max-tiles` on
-   `gfw_alerts.py`.
-6. Frontend chip + share param; admin Access tab.
+3. Keystone entry + `restricted`/`overlay` flags + `park_assigner` overlay skip
+   + `fire_source.load_area_fires_db`. **Record CAF_Chinko's group count first.**
+4. Phase A clip-from-neighbours + fire v5 chain on the covered part; coverage
+   line in the popup (§4c).
+5. `scripts/osm_pbf.py` (lifted from `river_turbidity.py`) +
+   `scripts/overlay_runner.py` + `run_slice()` calls appended to the four cron
+   scripts + `--max-tiles` on `gfw_alerts.py`. Seed `park_datasets` rows with
+   `next_run_at` >= tomorrow 08:00 UTC.
+6. Frontend study-area chip + `parks=study` share param; admin Access tab.
 
 ## 7. Verification
 
@@ -251,18 +392,21 @@ remainder over subsequent nights as **phase B**.
 
 ## 8. Scheduling / resources
 
-* **histmaps is running now** (tmux session `histmaps`,
-  `sudan250k.py all --method tps --jobs 2 --resume`, ~166% CPU, 2.1 GB RSS on a
-  7.4 GB box with **no swap**, into the night). Do not run CPU/RAM-heavy jobs
-  alongside it; keep `systemctl restart 5mp` to one deliberate restart.
-* Tonight: 01:00 onboard_park, 03:00 fire update, 04:30 GFW rotate,
-  07:30 park refresh. **Bulk study-area ingest must not start before ~08:00 UTC
-  tomorrow.** Either schedule the first run manually or set `next_run_at` on the
-  seeded `park_datasets` rows and let the 05:00 cron pick it up the next night.
-* Steps 1-3 (schema/ACL/code) are cheap and can be done immediately; only the
-  ingest execution waits.
-* Gate example:
-  `tmux new-session -d "sleep <until 08:00 UTC> && cd /home/exedev/5mp && python3 scripts/dataset_worker.py --park XSA_Study_Area --phase a"`
+* **histmaps is running now** (tmux `histmaps`, `sudan250k.py all --method tps
+  --jobs 2 --resume`, ~166% CPU, 2.1 GB RSS on a 7.4 GB box with **no swap**,
+  into the night). Do not run CPU/RAM-heavy jobs alongside it; keep
+  `systemctl restart 5mp` to one deliberate restart.
+* Tonight's crons run untouched: 01:00 onboard_park, 03:00 fire update,
+  04:30 GFW rotate, 07:30 park refresh. **Do not seed any `park_datasets` row
+  with `next_run_at` before ~08:00 UTC tomorrow**, so the first overlay slice is
+  picked up by tomorrow evening's crons at the earliest.
+* Steps 1-3 (schema, ACL, keystone entry, assigner skip) are cheap and can land
+  today; they change no cron behaviour until a `park_datasets` row exists.
+* The overlay then runs itself: no babysitting, no long-lived tmux job, and no
+  risk of colliding with histmaps because every slice is bounded by
+  `budget_units` and a wall-clock deadline.
+* Kill switch: `UPDATE park_datasets SET enabled=0 WHERE park_id='XSA_Study_Area'`
+  — every cron returns to normal rotation on its next run.
 
 ## 9. Gotchas
 
@@ -275,3 +419,13 @@ remainder over subsequent nights as **phase B**.
   middleware choke point covers them.
 * Do not introduce a second fire source (AGENTS.md): `load_area_fires_db` reads
   `fire_detections` only.
+* `run_slice()` must be the **last** statement in each cron script and wrapped
+  in try/except: an overlay failure must never mark the host cron failed in
+  `data/pipeline_status.json`.
+* Two crons can overlap in wall-clock time (04:30 GFW vs a long 03:00 fire run).
+  `overlay_runner` takes a row-level lock (`state='running'` + `host` + a
+  timestamp; stale-running > 6 h is reclaimable) so two hosts never work the
+  same dataset.
+* Geofabrik region name for DR Congo is `congo-democratic-republic`;
+  `democratic-republic-of-the-congo` 404s. The `GEOFABRIK` dict in
+  `analysis/river_turbidity.py` is already correct — copy it, don't retype it.
