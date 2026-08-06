@@ -182,20 +182,32 @@ type AOI struct {
 	CreatedAt  string          `json:"created_at,omitempty"`
 	Notes      string          `json:"notes,omitempty"`
 	IsOwner    bool            `json:"is_owner"`
+
+	// Versioning (migration 042). An edit forks rather than mutates, because
+	// an AOI's derived rows were computed for one polygon over one window --
+	// changing either in place would silently turn them into answers to a
+	// question nobody asked. Old versions are archived, not deleted.
+	LineageID    string `json:"lineage_id,omitempty"`
+	Version      int    `json:"version"`
+	SupersededBy string `json:"superseded_by,omitempty"`
+	ArchivedAt   string `json:"archived_at,omitempty"`
 }
 
 const aoiCols = `id, name, geometry,
 	COALESCE(bbox_minx,0), COALESCE(bbox_miny,0), COALESCE(bbox_maxx,0), COALESCE(bbox_maxy,0),
 	COALESCE(area_km2,0), COALESCE(from_date,''), COALESCE(to_date,''),
 	COALESCE(owner_principal_id,0), visibility, state,
-	COALESCE(created_at,''), COALESCE(notes,'')`
+	COALESCE(created_at,''), COALESCE(notes,''),
+	COALESCE(lineage_id, id), COALESCE(version,1),
+	COALESCE(superseded_by,''), COALESCE(archived_at,'')`
 
 func scanAOI(sc interface{ Scan(...any) error }, withGeometry bool) (*AOI, error) {
 	var a AOI
 	var geo string
 	if err := sc.Scan(&a.ID, &a.Name, &geo, &a.BBox[0], &a.BBox[1], &a.BBox[2],
 		&a.BBox[3], &a.AreaKm2, &a.FromDate, &a.ToDate, &a.OwnerID,
-		&a.Visibility, &a.State, &a.CreatedAt, &a.Notes); err != nil {
+		&a.Visibility, &a.State, &a.CreatedAt, &a.Notes,
+		&a.LineageID, &a.Version, &a.SupersededBy, &a.ArchivedAt); err != nil {
 		return nil, err
 	}
 	if withGeometry {
@@ -211,10 +223,19 @@ const aoiVisibleSQL = `(visibility='public'
 	OR (? != 0 AND EXISTS (SELECT 1 FROM aoi_grants g
 		WHERE g.aoi_id = aois.id AND g.principal_id = ?)))`
 
-// ListAOIs returns the AOIs a principal may see.
+// aoiActiveSQL hides archived versions (leading AND).
+//
+// Archived AOIs are still fully readable by id -- a share link to an old
+// version must keep resolving to the data it described -- but they must not
+// render on the map or clutter the list, or every edit would leave a duplicate
+// polygon behind. They come back through search.
+const aoiActiveSQL = ` AND state != 'archived'`
+
+// ListAOIs returns the AOIs a principal may see. Archived versions are
+// excluded; use SearchAOIs to find those.
 func (s *Server) ListAOIs(principalID int64, withGeometry bool) ([]*AOI, error) {
 	rows, err := s.DB.Query(`SELECT `+aoiCols+` FROM aois WHERE `+aoiVisibleSQL+
-		` ORDER BY name`, principalID, principalID, principalID, principalID)
+		aoiActiveSQL+` ORDER BY name`, principalID, principalID, principalID, principalID)
 	if err != nil {
 		return nil, err
 	}

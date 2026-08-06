@@ -10935,6 +10935,13 @@
 
             // If the animator is open, restart it over the new window
             if (window.Animator && Animator.isOpen && Animator.isOpen()) Animator.onDateRangeChanged();
+
+            // One event for "the dates changed". Anything that prices or
+            // renders the current window listens here rather than polling
+            // dateFrom/dateTo. The AOI editor uses it because an area's
+            // analysis window IS the slider (there must not be a second date
+            // picker that can disagree with it).
+            notifyDateWindowChanged();
         }
         
         function initTicks() {
@@ -11420,6 +11427,18 @@
             applyPreciseDateFilter(startISO, endISO);
         };
         
+        // Single announcement point for the time window, debounced: a slider
+        // drag fires this on every frame and listeners do network work.
+        var _dateWindowTimer = null;
+        function notifyDateWindowChanged() {
+            clearTimeout(_dateWindowTimer);
+            _dateWindowTimer = setTimeout(function () {
+                window.dispatchEvent(new CustomEvent('5mp:date-window-changed',
+                    { detail: { from: dateFrom, to: dateTo } }));
+            }, 120);
+        }
+        window.notifyDateWindowChanged = notifyDateWindowChanged;
+
         // Apply precise date filter — single codepath for editSliderDate, setTimeSliderRange, and URL restore.
         // Moves slider handles, updates labels, reloads all data (same as dragging the slider).
         function applyPreciseDateFilter(newFrom, newTo) {
@@ -11471,6 +11490,13 @@
 
             // If the animator is open, restart it over the new window
             if (window.Animator && Animator.isOpen && Animator.isOpen()) Animator.onDateRangeChanged();
+
+            // One event for "the dates changed". Anything that prices or
+            // renders the current window listens here rather than polling
+            // dateFrom/dateTo. The AOI editor uses it because an area's
+            // analysis window IS the slider (there must not be a second date
+            // picker that can disagree with it).
+            notifyDateWindowChanged();
         }
 
         // Inline date editor for precise filtering (expert mode)
