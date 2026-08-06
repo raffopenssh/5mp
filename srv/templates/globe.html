@@ -303,6 +303,11 @@
                     <button class="bbox-select-btn bbox-star-btn" id="bbox-star-btn" onclick="starCurrentBbox()" title="Star this area" aria-label="Star this area" style="display: none;">
                         <span id="bbox-star-icon">☆</span>
                     </button>
+                    <!-- Only rendered for principals who can see at least one AOI;
+                         loadAOIs() unhides it. -->
+                    <button class="keystones-compact-toggle active" id="aoi-toggle" onclick="toggleAOILayer()" title="Toggle areas of interest" aria-label="Toggle areas of interest" aria-pressed="true" style="display:none">
+                        ◈ AOI
+                    </button>
                 </div>
                 <input type="checkbox" id="keystones-toggle" checked style="display:none;">
                 <div class="selected-countries" id="selected-countries"></div>
@@ -643,6 +648,28 @@
         function getPwd() {
             return new URLSearchParams(window.location.search).get('pwd') || '';
         }
+
+        // ── Areas of interest ────────────────────────────────────────────
+        // An AOI is a user-drawn polygon promoted to a first-class object: its
+        // own id space, its own owner, its own fixed analysis window
+        // (docs/PLAN_AOI_OVERLAY.md). Its derived rows live in the same
+        // park-shaped tables, so the server serves them through the SAME
+        // handlers — under /api/aois/{id}/ instead of /api/parks/{id}/, where
+        // one visibility gate covers them all. /api/parks/{aoi} deliberately
+        // 404s, so the prefix is not cosmetic: getting it wrong is a hard
+        // failure rather than a leak.
+        //
+        // apiBase() is therefore the ONLY way the frontend should build one of
+        // these URLs. window.AOI_IDS is filled by loadAOIs() before the map
+        // renders any AOI, and an unknown id falls through to /api/parks,
+        // which is the correct answer for all 163 real parks.
+        window.AOI_IDS = new Set();
+        function isAOI(id) { return !!id && window.AOI_IDS.has(id); }
+        function apiBase(id) {
+            return (isAOI(id) ? '/api/aois/' : '/api/parks/') + encodeURIComponent(id);
+        }
+        window.isAOI = isAOI;
+        window.apiBase = apiBase;
 
         // Fetch with retry for 503 errors (proxy timeout on slow connections)
         async function fetchRetry(url, opts, retries = 3, delay = 2000) {
@@ -1836,6 +1863,42 @@
                     'line-width': 1
                 }
             });
+
+            // Areas of interest: dashed outline, no fill.
+            //
+            // Deliberately styled as *not* a park. An AOI is a question
+            // someone is asking about a piece of ground, usually much larger
+            // than any park and mostly outside every one of them; a green fill
+            // would read as "protected", and at XSA's 485,000 km² it would also
+            // swamp the four parks inside it. Hence dash + no fill: an
+            // annotation over the map rather than another thing on it.
+            //
+            // The source starts empty and is filled by loadAOIs() only if the
+            // principal can see any — /api/aois returns [] otherwise, so an
+            // empty layer is the normal case and costs nothing.
+            map.addSource('aois', {
+                type: 'geojson',
+                data: { type: 'FeatureCollection', features: [] }
+            });
+            map.addLayer({
+                id: 'aois-outline',
+                type: 'line',
+                source: 'aois',
+                paint: {
+                    'line-color': '#60a5fa',
+                    'line-width': 2,
+                    'line-dasharray': [3, 2],
+                    'line-opacity': 0.9
+                }
+            });
+            // An invisible fill is still needed: line layers are only clickable
+            // within a few px of the stroke, and an AOI is mostly interior.
+            map.addLayer({
+                id: 'aois-fill',
+                type: 'fill',
+                source: 'aois',
+                paint: { 'fill-color': '#60a5fa', 'fill-opacity': 0.04 }
+            }, 'aois-outline');
 
             // Fire-active parks layer - red glow for parks with active fire groups
             map.addLayer({
@@ -3339,7 +3402,7 @@
 
             const fetchFeatures = async (type, extra = '') => {
                 try {
-                    const resp = await fetch(`/api/parks/${encodeURIComponent(parkId)}/features?type=${type}&pwd=${encodeURIComponent(pwd)}${extra}`);
+                    const resp = await fetch(`${apiBase(parkId)}/features?type=${type}&pwd=${encodeURIComponent(pwd)}${extra}`);
                     if (!resp.ok) return [];
                     return (await resp.json()).features || [];
                 } catch (e) { return []; }
@@ -4593,6 +4656,10 @@
         
         map.on('load', function() {
             mapLoaded = true;
+            // AOIs load once per session, before anything can reference an AOI
+            // id: apiBase() routes on window.AOI_IDS, so a fetch issued before
+            // this resolves would go to /api/parks/{aoi} and 404 by design.
+            loadAOIs();
             // Wait for areas source to load before fetching grid data
             // This prevents concurrent requests that overwhelm slow connections
             function onAreasLoaded(e) {
@@ -4889,6 +4956,20 @@
 
         // Keystones toggle state
         var keystonesEnabled = true;
+
+        // AOI layer toggle. Reuses the keystones-chip styling deliberately:
+        // an AOI belongs in the same mental slot as "which areas am I looking
+        // at", not in the data-layer toggles.
+        function toggleAOILayer() {
+            const btn = document.getElementById('aoi-toggle');
+            const on = !btn.classList.contains('active');
+            btn.classList.toggle('active', on);
+            btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+            ['aois-outline', 'aois-fill'].forEach(id => {
+                if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', on ? 'visible' : 'none');
+            });
+        }
+        window.toggleAOILayer = toggleAOILayer;
 
         function toggleKeystones(enabled) {
             keystonesEnabled = enabled;
@@ -6191,7 +6272,7 @@
             if (featureId) {
                 // Fetch the specific fire directly from features API (no date filters)
                 try {
-                    const response = await fetch(`/api/parks/${parkId}/features?type=fire_trajectory&pwd=${encodeURIComponent(getPwd())}`);
+                    const response = await fetch(`${apiBase(parkId)}/features?type=fire_trajectory&pwd=${encodeURIComponent(getPwd())}`);
                     if (response.ok) {
                         const geojson = await response.json();
                         // Find the specific feature by feature_id
@@ -6202,7 +6283,7 @@
                             let displayName = groupName;
                             if (!displayName) {
                                 try {
-                                    const realtimeResponse = await fetch(`/api/parks/${parkId}/fire-realtime?pwd=${encodeURIComponent(getPwd())}&days=28`);
+                                    const realtimeResponse = await fetch(`${apiBase(parkId)}/fire-realtime?pwd=${encodeURIComponent(getPwd())}&days=28`);
                                     if (realtimeResponse.ok) {
                                         const realtimeData = await realtimeResponse.json();
                                         const fireGroup = realtimeData.groups?.find(g => g.feature_id === featureId);
@@ -7426,6 +7507,184 @@
         });
 
         // Park popup handler
+        // ── AOI popup ────────────────────────────────────────────────────
+        // Reuses the park popup's *chrome* (same classes, same accordion
+        // machinery, same pin icons) and almost none of its content. Only the
+        // four sections whose data an AOI actually has appear. Species,
+        // publications, legal and climate are ABSENT, not hidden and empty:
+        // they are park-level facts and averaging them over 485,000 km² would
+        // be meaningless, so the popup points at the intersecting parks
+        // instead of pretending.
+        let currentAOIPopup = null;
+
+        async function loadAOIs() {
+            try {
+                const r = await fetch(`/api/aois?geometry=1&pwd=${encodeURIComponent(getPwd())}`);
+                if (!r.ok) return;
+                const data = await r.json();
+                const list = data.aois || [];
+                window._aois = {};
+                window.AOI_IDS = new Set(list.map(a => a.id));
+                const fc = { type: 'FeatureCollection', features: list.map(a => {
+                    window._aois[a.id] = a;
+                    return {
+                        type: 'Feature',
+                        geometry: a.geometry,
+                        properties: { id: a.id, name: a.name, area_km2: a.area_km2,
+                                      from_date: a.from_date || '', to_date: a.to_date || '',
+                                      state: a.state, is_owner: !!a.is_owner }
+                    };
+                })};
+                const src = map.getSource('aois');
+                if (src) src.setData(fc);
+                const chip = document.getElementById('aoi-toggle');
+                if (chip) chip.style.display = list.length ? '' : 'none';
+            } catch (e) { console.warn('AOI load failed', e); }
+        }
+        window.loadAOIs = loadAOIs;
+
+        function aoiCoverageHTML(datasets) {
+            if (!datasets || !datasets.length) return '';
+            // The coverage table is the honest core of the AOI popup: the work
+            // arrives over days, so the UI shows progress and partial coverage
+            // rather than pretending the answer is complete
+            // (docs/PLAN_AOI_OVERLAY.md §0 rule 3).
+            const label = { clip: 'Preview (from nearby parks)', fire_gap: 'Fire detections',
+                            fire_v5: 'Fire trajectories', gfw: 'Forest-loss alerts',
+                            deforestation: 'Deforestation events', ghsl: 'Settlements',
+                            osm: 'Roads & places', gsw: 'Surface water',
+                            hydro: 'Rivers & lakes', basin: 'Watershed' };
+            const rows = datasets.filter(d => d.enabled).map(d => {
+                const pct = d.units_total ? Math.round(100 * d.units_done / d.units_total)
+                                          : (d.state === 'done' ? 100 : 0);
+                const colour = d.state === 'done' ? '#22c55e'
+                             : d.state === 'blocked' ? '#555'
+                             : d.units_done ? '#f59e0b' : '#333';
+                const note = d.state === 'blocked' ? 'not yet available'
+                           : (d.detail || (d.state === 'pending' ? 'queued' : ''));
+                return `<div style="margin-bottom:6px">
+                    <div style="display:flex;justify-content:space-between;gap:8px;font-size:11px">
+                      <span>${escapeHtml(label[d.dataset] || d.dataset)}</span>
+                      <span style="color:#888;flex-shrink:0">${d.state === 'blocked' ? '—' : pct + '%'}</span>
+                    </div>
+                    <div style="height:3px;background:#222;border-radius:2px;overflow:hidden;margin:2px 0">
+                      <div style="height:100%;width:${pct}%;background:${colour}"></div>
+                    </div>
+                    ${note ? `<div style="font-size:9px;color:#666;overflow-wrap:anywhere">${escapeHtml(note)}</div>` : ''}
+                </div>`;
+            }).join('');
+            return `<div style="margin-top:8px">${rows}</div>`;
+        }
+
+        function showAOIPopup(props, lngLat) {
+            if (currentAOIPopup) currentAOIPopup.remove();
+            if (currentPAPopup) currentPAPopup.remove();
+            const id = props.id, name = props.name || id;
+            const area = props.area_km2 ? formatNumber(Math.round(props.area_km2)) + ' km²' : '--';
+            const win = (props.from_date || '…') + ' → ' + (props.to_date || 'now');
+            const sec = (key, sym, title, type) => `
+                <div class="pa-popup-section" id="${key}-section-${id}" onclick="togglePopupSection(this)">
+                    <div class="pa-popup-section-header">
+                        <div class="pa-popup-section-title"><span class="pa-popup-section-icon toggleable" data-park-id="${id}" data-park-name="${escapeHtml(name)}" data-type="${type}" onclick="event.stopPropagation(); togglePinFromIcon(this)">${sym}</span> ${title}</div>
+                        <span class="pa-popup-section-toggle">▼</span>
+                    </div>
+                    <div class="pa-popup-section-content" id="${key}-content-${id}">
+                        <div class="pa-popup-section-loading">Loading...</div>
+                    </div>
+                </div>`;
+            const html = `
+                <div class="pa-popup" style="min-width:260px">
+                    <div class="pa-popup-header">
+                        <div class="pa-popup-name" style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+                            <span style="min-width:0;overflow-wrap:break-word">${escapeHtml(name)}</span>
+                            <span style="display:flex;gap:4px;align-items:center;flex-shrink:0">
+                                <a href="/api/aois/${encodeURIComponent(id)}/export.geojson?pwd=${encodeURIComponent(getPwd())}" download="${id}.geojson" title="GeoJSON — download the area polygon" class="pa-export-btn"><i class="icon-globe"></i></a>
+                                <button onclick="animateAOI('${id}')" title="Animate this area over its analysis window" class="pa-export-btn"><i class="icon-play"></i></button>
+                            </span>
+                        </div>
+                        <div class="pa-popup-country">
+                            <span class="pa-popup-country-name">Area of interest</span><span class="pa-popup-area">• ${area}</span>
+                        </div>
+                        <div style="font-size:10px;color:#888;margin-top:2px">Window ${escapeHtml(win)}</div>
+                    </div>
+                    <div class="pa-popup-section open" id="aoi-overview-section-${id}" onclick="togglePopupSection(this)">
+                        <div class="pa-popup-section-header">
+                            <div class="pa-popup-section-title"><span class="pa-popup-section-icon">◈</span> Overview &amp; coverage</div>
+                            <span class="pa-popup-section-toggle">▼</span>
+                        </div>
+                        <div class="pa-popup-section-content" id="aoi-overview-content-${id}">
+                            <div class="pa-popup-section-loading">Loading...</div>
+                        </div>
+                    </div>
+                    ${sec('fire', '◇', 'Fire Activity', 'fire')}
+                    ${sec('ghsl', '◻', 'Settlements', 'settlement')}
+                    ${sec('deforest', '△', 'Deforestation', 'deforestation')}
+                </div>`;
+            currentAOIPopup = new maplibregl.Popup({ closeButton: true, maxWidth: '320px' })
+                .setLngLat(lngLat).setHTML(html).addTo(map);
+            if (window.FloatUI) FloatUI.decoratePAPopup(currentAOIPopup);
+            currentAOIPopup.on('close', () => { currentAOIPopup = null; });
+
+            setTimeout(() => updateIconPinStates(id), 10);
+            // The three data sections are the park fetchers unchanged: they
+            // build their URL through apiBase(), which routes an AOI id to
+            // /api/aois/. That is the whole point of the server-side aoiGate.
+            fetchPopupFireData(id);
+            fetchPopupGHSLData(id);
+            fetchPopupDeforestData(id);
+            fetchAOIOverview(id);
+        }
+        window.showAOIPopup = showAOIPopup;
+
+        async function fetchAOIOverview(id) {
+            const el = document.getElementById(`aoi-overview-content-${id}`);
+            if (!el) return;
+            try {
+                const r = await fetch(`/api/aois/${encodeURIComponent(id)}?geometry=0&pwd=${encodeURIComponent(getPwd())}`);
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                const d = await r.json();
+                const parks = d.parks || [];
+                const links = parks.length
+                    ? parks.map(p => {
+                        const pct = Math.round(100 * (p.frac_of_park || 0));
+                        const note = pct >= 99 ? '' : ` <span style="color:#666">(${pct}%)</span>`;
+                        return `<a href="#" onclick="event.preventDefault();event.stopPropagation();openParkPopupById('${p.park_id}')" style="color:#60a5fa">${escapeHtml(p.name || p.park_id)}</a>${note}`;
+                      }).join(', ')
+                    : '<span style="color:#666">none</span>';
+                el.innerHTML = `
+                    <div style="font-size:11px;line-height:1.5">
+                      <div>Protected areas inside: ${links}</div>
+                      <div style="color:#888;margin-top:4px">Species, research, legal and climate are recorded per protected area — open one of those for them.</div>
+                    </div>
+                    ${aoiCoverageHTML(d.datasets)}`;
+            } catch (e) {
+                el.innerHTML = '<div style="color:#888;font-size:11px">Could not load coverage.</div>';
+            }
+        }
+
+        function openParkPopupById(parkId) {
+            const f = (window._cachedAreasGeoJSON?.features || []).find(x => x.properties.id === parkId);
+            if (!f) return;
+            const c = f.properties.center ? (typeof f.properties.center === 'string' ? JSON.parse(f.properties.center) : f.properties.center) : null;
+            const bb = geometryBbox(f.geometry);
+            const ll = c ? { lng: c[0], lat: c[1] }
+                         : (bb ? { lng: (bb[0] + bb[2]) / 2, lat: (bb[1] + bb[3]) / 2 } : null);
+            if (ll) showPAPopup(f.properties, ll);
+        }
+        window.openParkPopupById = openParkPopupById;
+
+        // Animate the AOI: its own bbox and its own window, which is exactly
+        // what a fixed drawn bbox already does in anim.js.
+        function animateAOI(id) {
+            const a = window._aois?.[id];
+            if (!a || !window.Animator) return;
+            if (a.bbox) map.fitBounds([[a.bbox[0], a.bbox[1]], [a.bbox[2], a.bbox[3]]], { padding: 40 });
+            if (a.from_date) { dateFrom = a.from_date; }
+            if (a.to_date) { dateTo = a.to_date; }
+            Animator.open();
+        }
+        window.animateAOI = animateAOI;
+
         function showPAPopup(props, lngLat) {
             // Close existing popup
             if (currentPAPopup) {
@@ -7650,7 +7909,7 @@
             if (!el) return;
             try {
                 // Use fire-narrative endpoint with time slider range for richer data
-                let url = `/api/parks/${encodeURIComponent(paId)}/fire-narrative`;
+                let url = `${apiBase(paId)}/fire-narrative`;
                 const params = ['pwd=' + encodeURIComponent(getPwd())];
                 if (dateFrom) params.push('from=' + dateFrom);
                 if (dateTo) params.push('to=' + dateTo);
@@ -7662,7 +7921,7 @@
                 // Also fetch real-time fire groups
                 let realtimeData = null;
                 try {
-                    const rtResp = await fetch(`/api/parks/${encodeURIComponent(paId)}/fire-realtime?days=28&pwd=${encodeURIComponent(getPwd())}`);
+                    const rtResp = await fetch(`${apiBase(paId)}/fire-realtime?days=28&pwd=${encodeURIComponent(getPwd())}`);
                     if (rtResp.ok) realtimeData = await rtResp.json();
                 } catch (e) { console.log('Fire realtime not available'); }
 
@@ -7832,7 +8091,7 @@
                     // Async weekly fire trend sparkline (fires vs groups + prior-years avg).
                     // Fetch full history (2020+) so we can compute the prior-years
                     // average per ISO week client-side, then subset to the filter range.
-                    fetch(`/api/parks/${encodeURIComponent(paId)}/fire-trend?pwd=${encodeURIComponent(getPwd())}`)
+                    fetch(`${apiBase(paId)}/fire-trend?pwd=${encodeURIComponent(getPwd())}`)
                         .then(r => r.json())
                         .then(td => {
                             const div = document.getElementById(`fire-trend-${paId}`);
@@ -7911,7 +8170,7 @@
             if (!el) return;
             try {
                 // Use settlement-narrative endpoint for rich data
-                const resp = await fetch(`/api/parks/${encodeURIComponent(paId)}/settlement-narrative?pwd=${encodeURIComponent(getPwd())}`);
+                const resp = await fetch(`${apiBase(paId)}/settlement-narrative?pwd=${encodeURIComponent(getPwd())}`);
                 const data = await resp.json();
                 
                 // Update count in header
@@ -8516,7 +8775,7 @@
             const el = document.getElementById(`deforest-content-${paId}`);
             if (!el) return;
             try {
-                let url = `/api/parks/${encodeURIComponent(paId)}/deforestation-narrative`;
+                let url = `${apiBase(paId)}/deforestation-narrative`;
                 const params = ['pwd=' + encodeURIComponent(getPwd())];
                 if (dateFrom) params.push('from=' + dateFrom);
                 if (dateTo) params.push('to=' + dateTo);
@@ -9926,6 +10185,19 @@
                 const clickLat = lngLat.lat;
                 const containingFeature = paFeatures.find(f => pointInFeature(clickLng, clickLat, f));
                 
+                // A park inside an AOI wins the click. An AOI is typically far
+                // larger than the parks it contains (XSA: 485,000 km² around
+                // four of them), so the park is always the more specific
+                // answer; the AOI is only reachable where no park is.
+                if (!containingFeature && map.getLayer('aois-fill')) {
+                    const aoiHit = map.queryRenderedFeatures(point, { layers: ['aois-fill'] })
+                        .find(f => pointInFeature(clickLng, clickLat, f));
+                    if (aoiHit) {
+                        showAOIPopup(aoiHit.properties, lngLat);
+                        return true;
+                    }
+                }
+
                 if (containingFeature) {
                     console.log('PA click handler - found PA:', containingFeature.properties?.name);
                     const props = containingFeature.properties;
@@ -13419,9 +13691,9 @@
         
         // Fetch narratives, stats, and metadata
         const [fire, deforestation, settlement, stats, species, climate, publications] = await Promise.all([
-            fetch(`/api/parks/${parkId}/fire-narrative${pwdParam}${dateParams}`).then(r => r.ok ? r.json() : null).catch(() => null),
-            fetch(`/api/parks/${parkId}/deforestation-narrative${pwdParam}${dateParams}`).then(r => r.ok ? r.json() : null).catch(() => null),
-            fetch(`/api/parks/${parkId}/settlement-narrative${pwdParam}${dateParams}`).then(r => r.ok ? r.json() : null).catch(() => null),
+            fetch(`${apiBase(parkId)}/fire-narrative${pwdParam}${dateParams}`).then(r => r.ok ? r.json() : null).catch(() => null),
+            fetch(`${apiBase(parkId)}/deforestation-narrative${pwdParam}${dateParams}`).then(r => r.ok ? r.json() : null).catch(() => null),
+            fetch(`${apiBase(parkId)}/settlement-narrative${pwdParam}${dateParams}`).then(r => r.ok ? r.json() : null).catch(() => null),
             fetch(`/api/parks/${parkId}/stats${pwdParam}${dateParams}`).then(r => r.ok ? r.json() : null).catch(() => null),
             fetch(`/api/parks/${parkId}/species${pwdParam}`).then(r => r.ok ? r.json() : null).catch(() => null),
             fetch(`/api/parks/${parkId}/climate${pwdParam}`).then(r => r.ok ? r.json() : null).catch(() => null),
@@ -13434,7 +13706,7 @@
         
         await Promise.all(featureTypes.map(async type => {
             try {
-                const response = await fetch(`/api/parks/${parkId}/features?type=${type}${pwdParam}${dateParams}`);
+                const response = await fetch(`${apiBase(parkId)}/features?type=${type}${pwdParam}${dateParams}`);
                 if (response.ok) {
                     const geojson = await response.json();
                     if (geojson && geojson.features && geojson.features.length > 0) {
@@ -13524,7 +13796,7 @@
     // Fire data - Uses fire-narrative API (same as popup)
     async function fetchFireDataDirect(parkId, {from, to, pwd}) {
         try {
-            let url = `/api/parks/${encodeURIComponent(parkId)}/fire-narrative`;
+            let url = `${apiBase(parkId)}/fire-narrative`;
             const params = [`pwd=${encodeURIComponent(pwd)}`];
             if (from) params.push(`from=${from}`);
             if (to) params.push(`to=${to}`);
@@ -13538,7 +13810,7 @@
             // Also fetch realtime data for current status
             let realtimeData = null;
             try {
-                const rtResp = await fetch(`/api/parks/${encodeURIComponent(parkId)}/fire-realtime?days=28&pwd=${encodeURIComponent(pwd)}`);
+                const rtResp = await fetch(`${apiBase(parkId)}/fire-realtime?days=28&pwd=${encodeURIComponent(pwd)}`);
                 if (rtResp.ok) realtimeData = await rtResp.json();
             } catch (e) {
                 // Realtime not critical
@@ -13582,7 +13854,7 @@
     // GHSL/Settlement data
     async function fetchGHSLDataDirect(parkId, {pwd}) {
         try {
-            const url = `/api/parks/${encodeURIComponent(parkId)}/features?type=settlement&pwd=${encodeURIComponent(pwd)}`;
+            const url = `${apiBase(parkId)}/features?type=settlement&pwd=${encodeURIComponent(pwd)}`;
             const resp = await fetch(url);
             if (!resp.ok) return {error: 'API error', count: 0};
             
@@ -13620,7 +13892,7 @@
     // Settlement narrative data (rich data with classified settlements)
     async function fetchSettlementNarrativeDirect(parkId, {pwd}) {
         try {
-            const url = `/api/parks/${encodeURIComponent(parkId)}/settlement-narrative?pwd=${encodeURIComponent(pwd)}`;
+            const url = `${apiBase(parkId)}/settlement-narrative?pwd=${encodeURIComponent(pwd)}`;
             const resp = await fetch(url);
             if (!resp.ok) return {error: 'API error', settlement_count: 0};
             
@@ -13646,9 +13918,9 @@
         try {
             // Fetch both narrative and features
             const [narrative, features] = await Promise.all([
-                fetch(`/api/parks/${encodeURIComponent(parkId)}/deforestation-narrative?pwd=${encodeURIComponent(pwd)}`)
+                fetch(`${apiBase(parkId)}/deforestation-narrative?pwd=${encodeURIComponent(pwd)}`)
                     .then(r => r.ok ? r.json() : {}).catch(() => ({})),
-                fetch(`/api/parks/${encodeURIComponent(parkId)}/features?type=deforestation&pwd=${encodeURIComponent(pwd)}`)
+                fetch(`${apiBase(parkId)}/features?type=deforestation&pwd=${encodeURIComponent(pwd)}`)
                     .then(r => r.ok ? r.json() : {features: []}).catch(() => ({features: []}))
             ]);
             
@@ -14929,7 +15201,7 @@ ${starredItems.narratives.map(n => {
                 ? `event_id=${encodeURIComponent(featureId.slice(6))}`
                 : `feature_id=${encodeURIComponent(featureId)}`;
             // First try to fetch the specific feature by ID (efficient)
-            let response = await fetch(`/api/parks/${parkId}/features?type=${featureType}&${idParam}&pwd=${window.getPwd() || ''}`);
+            let response = await fetch(`${apiBase(parkId)}/features?type=${featureType}&${idParam}&pwd=${window.getPwd() || ''}`);
             let allFeatures = response.ok ? await response.json() : { features: [] };
             
             // Find the specific feature(s)
@@ -14938,7 +15210,7 @@ ${starredItems.narratives.map(n => {
             // If found by direct ID query, we're done
             // If not found, fall back to searching in all features
             if (features.length === 0) {
-                response = await fetch(`/api/parks/${parkId}/features?type=${featureType}&limit=5000&pwd=${window.getPwd() || ''}`);
+                response = await fetch(`${apiBase(parkId)}/features?type=${featureType}&limit=5000&pwd=${window.getPwd() || ''}`);
                 if (!response.ok) throw new Error('Failed to fetch features');
                 allFeatures = await response.json();
                 
@@ -15454,7 +15726,7 @@ ${starredItems.narratives.map(n => {
                 });
                 geojson = { type: 'FeatureCollection', features };
             } else {
-                const response = await fetch(`/api/parks/${parkId}/features?type=${featureType}${dateParams}&limit=5000&pwd=${window.getPwd() || ''}`);
+                const response = await fetch(`${apiBase(parkId)}/features?type=${featureType}${dateParams}&limit=5000&pwd=${window.getPwd() || ''}`);
                 if (!response.ok) throw new Error('Failed to fetch features');
                 geojson = await response.json();
             }
@@ -16114,7 +16386,7 @@ ${starredItems.narratives.map(n => {
                     }
                     
                     // Fetch updated data
-                    const response = await fetch(`/api/parks/${layer.parkId}/features?type=${featureType}${dateParams}&limit=5000&pwd=${window.getPwd() || ''}`);
+                    const response = await fetch(`${apiBase(layer.parkId)}/features?type=${featureType}${dateParams}&limit=5000&pwd=${window.getPwd() || ''}`);
                     if (!response.ok) continue;
                     
                     geojson = await response.json();
