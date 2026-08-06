@@ -167,6 +167,14 @@ def run_fire_gap(conn, aoi, ds, deadline, budget):
     while cur["i"] < total and used < budget and time.time() < deadline:
         day, n, sensor = units[cur["i"]]
         src = firms_api.pick_source(sensor, day)
+        if src is None:
+            # No FIRMS product covers this date for this sensor (NOAA21 has no
+            # SP archive and starts 2024-01-17). Not a failure: consume the
+            # unit without spending a request or recording a hole.
+            cur["i"] += 1
+            done = cur["i"]
+            progress(wconn, aoi["id"], ds["dataset"], cur, done, total)
+            continue
         rows = firms_api.fetch(src, area, day, n, log=log)
         used += 1
         if rows is None:
@@ -174,7 +182,7 @@ def run_fire_gap(conn, aoi, ds, deadline, budget):
             # rather than skipped: a silent hole in a backfill is worse than
             # a slow one.
             cur["i"] += 1
-            cur.setdefault("failed", []).append([day, sensor])
+            cur.setdefault("failed", []).append([day, n, sensor])
             progress(wconn, aoi["id"], ds["dataset"], cur, done, total)
             continue
         ins = insert_detections(wconn, rows, assigner)
@@ -184,6 +192,21 @@ def run_fire_gap(conn, aoi, ds, deadline, budget):
         progress(wconn, aoi["id"], ds["dataset"], cur, done, total,
                  detail=f"{cur['rows']:,} new detections")
     finished = cur["i"] >= total
+    if finished and cur.get("failed"):
+        # A failed window is retried on a later slice rather than skipped: a
+        # silent hole in a backfill is worse than a slow one. Requeue them as
+        # a fresh (smaller) unit list instead of declaring the dataset done.
+        # retries counts passes, not windows, so a permanently-400ing window
+        # cannot loop forever.
+        if cur.get("retries", 0) < 3:
+            log(f"  requeueing {len(cur['failed'])} failed windows "
+                f"(pass {cur.get('retries', 0) + 1}/3)")
+            cur = {"i": 0, "units": cur["failed"], "rows": cur["rows"],
+                   "retries": cur.get("retries", 0) + 1}
+            progress(wconn, aoi["id"], ds["dataset"], cur, 0, len(cur["units"]))
+            finished = False
+        else:
+            log(f"  giving up on {len(cur['failed'])} windows after 3 passes")
     if finished:
         # Membership cache + animator aggregates must follow the new rows, or
         # the AOI sees fires the map does not (AGENTS.md).
