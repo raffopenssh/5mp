@@ -36,6 +36,12 @@ Metrics (per park, and aggregated):
                         two "different" fires that are really one.
     frag_pct            % of groups that look like fragments: <=2 days and
                         <20 fires
+    stationary_pct      % of groups burning >=60 days inside a <3km box - i.e.
+                        not fires at all but flares/lava/kilns. Lower is better.
+    stationary_fire_pct % of captured detections locked up in those groups.
+                        This is the metric the persistent-hotspot mask targets;
+                        mean_days/traj_pts/coverage_pct all *drop* when such
+                        artefacts are removed, so don't read them in isolation.
     coverage_pct        % of raw park fires (post MIN_DATE) inside some group
     traj_pts            mean trajectory vertices per multi-day group
     speed_p95           95th pct speed_km_day; runaway values signal bad links
@@ -76,6 +82,10 @@ MIN_DATE = "2020-01-01"
 MAX_ZIGZAG_RATIO = 0.3
 DUP_DAYS = 3
 DUP_KM = 5.0
+# A "stationary" group: burns for ages without going anywhere. Real fire fronts
+# move; gas flares, lava lakes and brick kilns don't. See build_persistent_hotspots.py.
+STATIONARY_DAYS = 60
+STATIONARY_EXTENT_KM = 3.0
 
 # Metrics where a larger value is better; used only for arrow direction.
 HIGHER_IS_BETTER = {
@@ -107,6 +117,16 @@ def raw_fire_count(park_id):
     if park_id not in _raw_cache:
         _raw_cache[park_id] = park_fire_count(park_id, MIN_DATE)
     return _raw_cache[park_id]
+
+
+def group_extent_km(g):
+    """Max pairwise span of the trajectory bbox, in km (cheap diagonal)."""
+    traj = g.get("trajectory") or []
+    if len(traj) < 2:
+        return 0.0
+    xs = [p[0] for p in traj]
+    ys = [p[1] for p in traj]
+    return haversine(min(xs), min(ys), max(xs), max(ys))
 
 
 def count_dup_pairs(groups):
@@ -169,7 +189,8 @@ def park_metrics(groups, park_id):
         return {"groups": 0, "fires": 0, "fires_per_grp": 0.0, "multiday_pct": 0.0,
                 "mean_days": 0.0, "zigzag_mean": 0.0, "zigzag_bad_pct": 0.0,
                 "dup_pairs": 0, "frag_pct": 0.0, "coverage_pct": 0.0,
-                "traj_pts": 0.0, "speed_p95": 0.0}
+                "traj_pts": 0.0, "speed_p95": 0.0,
+                "stationary_pct": 0.0, "stationary_fire_pct": 0.0}
 
     fires = sum(g.get("fire_count", 0) for g in groups)
     days = [g.get("days", 1) for g in groups]
@@ -179,6 +200,10 @@ def park_metrics(groups, park_id):
             if g.get("days", 1) <= 2 and g.get("fire_count", 0) < 20]
     traj_pts = [len(g.get("trajectory", [])) for g in multiday]
     speeds = [g.get("speed_km_day", 0.0) or 0.0 for g in groups]
+    stationary = [g for g in groups
+                  if g.get("days", 1) >= STATIONARY_DAYS
+                  and group_extent_km(g) < STATIONARY_EXTENT_KM]
+    stationary_fires = sum(g.get("fire_count", 0) for g in stationary)
     raw = raw_fire_count(park_id)
 
     return {
@@ -194,12 +219,15 @@ def park_metrics(groups, park_id):
         "coverage_pct": (100.0 * fires / raw) if raw else 0.0,
         "traj_pts": statistics.fmean(traj_pts) if traj_pts else 0.0,
         "speed_p95": percentile(speeds, 0.95),
+        "stationary_pct": 100.0 * len(stationary) / n,
+        "stationary_fire_pct": (100.0 * stationary_fires / fires) if fires else 0.0,
     }
 
 
 ORDER = ["groups", "fires", "fires_per_grp", "multiday_pct", "mean_days",
          "traj_pts", "zigzag_mean", "zigzag_bad_pct", "dup_pairs",
-         "frag_pct", "coverage_pct", "speed_p95"]
+         "frag_pct", "stationary_pct", "stationary_fire_pct",
+         "coverage_pct", "speed_p95"]
 
 
 def load_dir(d, parks):
@@ -272,7 +300,10 @@ def print_compare(base, cand):
     print("-" * 78)
     print("✓ = improved, ✗ = regressed. groups/speed_p95 are informational.")
     print("Watch for: fires_per_grp up + dup_pairs down = less fragmentation.")
-    print("           coverage_pct down = fires being dropped (usually bad).")
+    print("           coverage_pct down = fires being dropped (usually bad) -")
+    print("           EXCEPT when the change deliberately drops junk detections")
+    print("           (hotspot mask): then read stationary_pct/stationary_fire_pct,")
+    print("           and expect mean_days/traj_pts/coverage to fall for good reasons.")
 
 
 def main():

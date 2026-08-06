@@ -719,6 +719,51 @@ Measured on the 6-park golden set vs v6, same fire window:
    `speed_km_day` from true elapsed time, floored at 1 day so `classify_group`
    thresholds stay valid.
 
+### Persistent-hotspot mask: validated 2026-08-06, KEEP
+
+The A/B was owed from the 2026-08-05 handover (the earlier one ran mid-backfill
+and measured the backfill). Re-run on a frozen DB, 6 parks chosen for mask
+density (`DZA_Djurdjura` 36 cells, `ZWE_Hwange` 40, `COD_Virunga` 63,
+`GAB_Lopé` 31, `CAF_Dzanga_Park` 4, `ZMB_Kafue` 0 as a null control):
+
+| Metric | mask off → on | Read |
+|--------|---------------|------|
+| `stationary_fire_pct` | 3.01 → **0.27** (−91%) | the point of the mask |
+| `stationary_pct` | 0.27 → **0.04** (−86%) | −100% on DZA/COD/GAB |
+| `mean_days` | 15.1 → 10.9 (−28%) | *expected*, see below |
+| `traj_pts` | 10.3 → 7.3 (−29%) | *expected* |
+| `coverage_pct` | 75.0 → 59.9 (−20%) | *expected* |
+| `frag_pct` | 3.09 → 6.24 (+102%) | denominator artefact |
+| `ZMB_Kafue` (0 cells) | byte-identical output | mask is inert where unused |
+
+**Every headline metric "regresses", and that is the correct outcome.** The
+harness rewards long, many-vertex, high-coverage groups; a lava lake is the
+perfect such group. Masked-off examples:
+
+| Group | fires | days | trajectory bbox |
+|-------|-------|------|-----------------|
+| `COD_Virunga_2025_grp_999bc103` | 8,218 | 75 | 0.04° × 0.02° (Nyiragongo) |
+| `ZWE_Hwange_2025_grp_79670a6b` | 1,529 | **249** | 0.007° × 0.003° |
+| `GAB_Lopé_2024_grp_af1e56f3` | 187 | 132 | 0.004° × 0.003° |
+| `DZA_Djurdjura_2025_grp_110c868e` | 458 | 134 | 0.003° × 0.003° |
+
+A "spreading_fire" that spreads 3 metres for 249 days is a flare. 377 of the
+481 groups DZA loses start on a masked cell; on `GAB_Lopé` it is 169/192.
+`frag_pct` rises only because these giants leave the denominator — the absolute
+fragment count *falls* everywhere (DZA 347→201, GAB 144→45).
+
+So the harness gained two metrics (`stationary_pct`, `stationary_fire_pct`:
+groups ≥60 days whose whole trajectory fits in a <3 km box). Without them a
+future agent re-running this A/B reads eleven ✗ marks and reverts a correct
+feature. **Do not judge a detection-filtering change on `coverage_pct`.**
+
+Residue: `ZWE_Hwange` keeps 2 stationary groups (1,102 fires) at ~26.515,
+−18.433 — a real un-masked cell cluster (cell 7800,−5424: 853 detections over
+**80 distinct months**, mean FRP 1.9). It is the same Hwange flare complex,
+spread over neighbouring cells that individually clear the ≥30-month bar but
+whose group seeds land on the un-listed fringe. Not a mask bug; a mask-recall
+gap. Worth a dilate-by-one-cell experiment if it recurs elsewhere.
+
 ### Per-overpass slicing: implemented, OFF by default
 
 `--overpass` slices by satellite overpass rather than calendar day. It is
