@@ -235,6 +235,9 @@ def main():
     a.add_argument("--all", action="store_true", help="every sheet with a known extent")
     a.add_argument("--method", default="tps", choices=["tps","affine"])
     a.add_argument("--jobs", type=int, default=4, help="parallel sheets")
+    a.add_argument("--resume", action="store_true", help="skip sheets already georeferenced")
+    a.add_argument("--out-check", default="/home/exedev/5mp/data/histmaps/geo",
+                   help="also treat sheets present here as done (for --resume)")
     a.add_argument("--no-transparent", action="store_true", help="keep the raw scan, paper and all")
     a.add_argument("--svg", action="store_true", help="also write the traced vectors as .svg")
     a.add_argument("--keep-jp2", action="store_true", default=False,
@@ -261,23 +264,56 @@ def main():
                 or (ns.block and c["sheet"].split("-")[0] == str(ns.block))
                 or (ns.sheet and c["sheet"] == ns.sheet.upper())
                 or (ns.filter and ns.filter.lower() in c["title"].lower()))]
-        print(f"{len(sel)} sheets selected")
+        if ns.resume:
+            # A full run is many hours; skip sheets already written, whether they
+            # sit in the working dir or have been swept into --out-check.
+            def have(cid):
+                n = f"{cid}_geo.tif"
+                return any(os.path.exists(os.path.join(d, n))
+                           for d in (ROOT, ns.out_check) if d)
+            before = len(sel)
+            sel = [c for c in sel if not have(c["id"])]
+            print(f"resume: skipping {before - len(sel)} already-written sheets", flush=True)
+        print(f"{len(sel)} sheets selected", flush=True)
         qa, fails = [], []
-        import io, contextlib
+        import io, threading
         from concurrent.futures import ThreadPoolExecutor, as_completed
 
+        class _ThreadTee:
+            """Per-thread stdout capture.
+
+            contextlib.redirect_stdout patches sys.stdout *globally*, so with
+            --jobs>1 one worker's buffer swallows both the other worker's lines
+            and the main thread's progress report -- the run goes silent for
+            hours while still writing correct files. Route each thread to its
+            own buffer instead, falling back to the real stdout.
+            """
+            def __init__(self, real):
+                self.real, self.local = real, threading.local()
+            def _t(self):
+                return getattr(self.local, "buf", None) or self.real
+            def write(self, s):
+                return self._t().write(s)
+            def flush(self):
+                t = self._t()
+                if hasattr(t, "flush"): t.flush()
+
+        tee = _ThreadTee(sys.stdout)
+        sys.stdout = tee
+
         def one(c):
-            """Download+warp a sheet. Output is captured so parallel workers do
-            not interleave their line-by-line reports."""
+            """Download+warp a sheet. Output is captured per-thread so parallel
+            workers do not interleave their line-by-line reports."""
             buf = io.StringIO()
+            tee.local.buf = buf
             try:
-                with contextlib.redirect_stdout(buf):
-                    r = georef(fetch(c["id"]), method=ns.method,
-                               transparent=not ns.no_transparent, svg=ns.svg)
+                r = georef(fetch(c["id"]), method=ns.method,
+                           transparent=not ns.no_transparent, svg=ns.svg)
                 return c, r, None, buf.getvalue()
             except Exception as e:
                 return c, None, e, buf.getvalue()
             finally:
+                tee.local.buf = None
                 if not ns.keep_jp2:
                     j = os.path.join(ROOT, f"{c['id']}.jp2")
                     if os.path.exists(j): os.remove(j)
