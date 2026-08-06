@@ -84,3 +84,9 @@ data/park_basins/
 # AMW (Amazon Mining Watch) evaluation: Sentinel-2 patch composite cache.
 # Regenerable from STAC/GCS; keyed by lon/lat/date-window/patch geometry.
 data/amw_cache/
+
+# Derived fire pipeline output: rebuilt from fire_detections (canonical) by
+# scripts/rebuild_fire_trajectories_v5.py. The 3-sensor v7 rebuild grew this
+# from 131MB/181k groups to 762MB/711k groups, which does not belong in git.
+data/fire_groups_v5/
+data/fire_trends_v5/
