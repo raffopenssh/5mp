@@ -1,3 +1,8 @@
+9e6ed93 2026-08-06 08:52:30 Fire: retire FIRE_TODO_HANDOVER, fold the one open item into the permanent docs
+8117db9 2026-08-06 08:31:58 Fire: close per-overpass slicing (item 4) as a negative result; refresh handover
+5a5ab2b 2026-08-06 08:20:09 Narratives: fix wording bugs found in the post-rebuild audit (item 8)
+422d7bc 2026-08-06 08:19:41 Fire eval: add stationary-group metrics; validate the hotspot mask
+9e2c276 2026-08-06 06:18:26 Docs: record the 3-sensor full rebuild, update handover
 b15e889 2026-08-06 06:16:45 Untrack derived fire_groups_v5/fire_trends_v5
 9a255fb 2026-08-06 06:16:19 Fix two sources of permanent fire-pipeline drift found by the full rebuild
 478a7c0 2026-08-05 15:59:54 Rebuild: refresh embedded commit history
@@ -13,8 +18,3 @@ c2662a7 2026-08-05 14:07:32 Rebuild: refresh embedded commit history
 932a0c2 2026-08-05 14:07:17 AGENTS.md: mining is a measured negative result, not just 'not ready'
 b0eb67a 2026-08-05 14:06:49 Mining: record the measurement that kills the spectral approach
 7c8899c 2026-08-05 13:51:57 Mining rescope 3-4/5: ranker wired to basins, plus a real evaluator
-7160a2e 2026-08-05 11:06:36 Add mining rebuild handover: steps 1-2 done, 3 partial, 4-5 open
-3f7c4bf 2026-08-05 11:05:56 Mining rescope 3/5 (partial): spectral core as a ranker, not a thresholder
-c734632 2026-08-05 11:04:12 Mining rescope 2/5: corridor from DEM flow accumulation, not OSM waterways
-9141492 2026-08-05 11:04:00 Basins: use mghydro /app/getwshed (watershed+rivers+snapped outlet in 1 call)
-934b348 2026-08-05 10:38:35 Mining rescope 1/5: per-park contributing basin + downstream trace
