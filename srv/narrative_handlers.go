@@ -127,15 +127,20 @@ type FireGroupStory struct {
 	FeatureID     string   `json:"feature_id,omitempty"`
 	Year          int      `json:"year,omitempty"`
 	GeoJSONID     int64    `json:"geojson_id,omitempty"`
-	OriginDesc    string   `json:"origin_desc"`
-	DestDesc      string   `json:"dest_desc"`
-	EntryDate     string   `json:"entry_date"`
-	LastInside    string   `json:"last_inside"`
-	DaysInside    int      `json:"days_inside"`
-	FiresInside   int      `json:"fires_inside"`
-	Outcome       string   `json:"outcome"`
+	// Legacy v2 "inside the park" fields. The v5 pipeline never populates these
+	// (they were empty strings/zeros on every narrative of every position, not
+	// just entirely_outside ones), so they are omitempty rather than always-on
+	// nulls in the payload. The frontend already falls back:
+	// `n.entry_date || n.start_date`. Drop entirely once nothing reads them.
+	OriginDesc    string   `json:"origin_desc,omitempty"`
+	DestDesc      string   `json:"dest_desc,omitempty"`
+	EntryDate     string   `json:"entry_date,omitempty"`
+	LastInside    string   `json:"last_inside,omitempty"`
+	DaysInside    int      `json:"days_inside,omitempty"`
+	FiresInside   int      `json:"fires_inside,omitempty"`
+	Outcome       string   `json:"outcome,omitempty"`
 	Narrative     string   `json:"narrative"`
-	NearbyPlaces  []string `json:"nearby_places"`
+	NearbyPlaces  []string `json:"nearby_places,omitempty"`
 	RiversCrossed []string `json:"rivers_crossed,omitempty"`
 	// v3 fields
 	StartDate     string   `json:"start_date,omitempty"`
@@ -1099,9 +1104,20 @@ func (s *Server) HandleAPIDeforestationNarrative(w http.ResponseWriter, r *http.
 	if totalLoss == 0 {
 		narrative.Summary = fmt.Sprintf("No significant deforestation events recorded for %s.", parkName)
 	} else {
-		narrative.Summary = s.buildDeforestationSummary(parkName, totalLoss, len(narrative.YearlyStory), 
+		// yearlyAreas is chronological (the story list is reversed above), so its
+		// ends give the true observed year span.
+		spanFrom, spanTo := 0, 0
+		if len(yearlyAreas) > 0 {
+			spanFrom = yearlyAreas[0].year
+			spanTo = yearlyAreas[len(yearlyAreas)-1].year
+			if spanFrom > spanTo {
+				spanFrom, spanTo = spanTo, spanFrom
+			}
+		}
+		narrative.Summary = s.buildDeforestationSummary(parkName, totalLoss, len(narrative.YearlyStory),
 			worstYear, worstLoss, narrative.TrendDirection, narrative.TrendPercentChange,
-			earlyYearsLat, earlyYearsLon, recentYearsLat, recentYearsLon, earlyCount, recentCount, internalID)
+			earlyYearsLat, earlyYearsLon, recentYearsLat, recentYearsLon, earlyCount, recentCount, internalID,
+			spanFrom, spanTo)
 	}
 	
 	// Get classified deforestation events with individual narratives
@@ -1707,12 +1723,22 @@ func (s *Server) buildDeforestationNarrative(parkID string, year int, area, lat,
 	// Find the closest settlement for primary location reference
 	var primaryPlace string
 	var primaryDist float64
+	var primaryLat, primaryLon float64
 	for _, p := range settlements {
 		if p.Distance < 30 {
 			primaryPlace = p.Name
 			primaryDist = p.Distance
+			primaryLat, primaryLon = p.Lat, p.Lon
 			break
 		}
+	}
+	// Nearest named place at any distance - used for wording that must not
+	// render an empty name (settlements[] is distance-sorted).
+	var nearestPlace string
+	var nearestDist float64
+	if len(settlements) > 0 {
+		nearestPlace = settlements[0].Name
+		nearestDist = settlements[0].Distance
 	}
 	
 	// Find nearby river for geographic context
@@ -1730,20 +1756,20 @@ func (s *Server) buildDeforestationNarrative(parkID string, year int, area, lat,
 	
 	// Build opening sentence with location
 	if primaryPlace != "" && primaryDist < 5 {
-		narr.WriteString(fmt.Sprintf("In %d, %s forest loss (%.2f km²) was concentrated near %s",
-			year, magnitude, area, primaryPlace))
+		narr.WriteString(fmt.Sprintf("In %d, %s forest loss (%s) was concentrated near %s",
+			year, magnitude, formatLossArea(area), primaryPlace))
 	} else if primaryPlace != "" {
-		bearing := bearingTo(lat, lon, settlements[0].Lat, settlements[0].Lon)
+		bearing := bearingTo(lat, lon, primaryLat, primaryLon)
 		direction := bearingToCardinal(bearing)
 		// Reverse direction since we want "X of settlement"
 		reverseDir := reverseCardinal(direction)
-		narr.WriteString(fmt.Sprintf("In %d, %s forest loss (%.2f km²) occurred %.0f km %s of %s",
-			year, magnitude, area, primaryDist, reverseDir, primaryPlace))
+		narr.WriteString(fmt.Sprintf("In %d, %s forest loss (%s) occurred %.0f km %s of %s",
+			year, magnitude, formatLossArea(area), primaryDist, reverseDir, primaryPlace))
 	} else if sector != "" {
-		narr.WriteString(fmt.Sprintf("In %d, %s forest loss (%.2f km²) was detected in the %s",
-			year, magnitude, area, sector))
+		narr.WriteString(fmt.Sprintf("In %d, %s forest loss (%s) was detected in the %s",
+			year, magnitude, formatLossArea(area), sector))
 	} else {
-		narr.WriteString(fmt.Sprintf("In %d, %.2f km² of forest was lost", year, area))
+		narr.WriteString(fmt.Sprintf("In %d, %s of forest was lost", year, formatLossArea(area)))
 	}
 	
 	// Add river context
@@ -1755,11 +1781,16 @@ func (s *Server) buildDeforestationNarrative(parkID string, year int, area, lat,
 	// Add pattern-specific description with geographic context
 	switch pattern {
 	case "scattered":
-		if len(settlements) > 1 {
+		if primaryPlace != "" && len(settlements) > 1 {
 			narr.WriteString(fmt.Sprintf("The scattered clearing pattern suggests smallholder agricultural expansion, "+
 				"with multiple small plots appearing between %s and surrounding communities.", primaryPlace))
+		} else if nearestPlace != "" && nearestDist > 30 {
+			// Remote: no community is close enough to blame for smallholder expansion.
+			narr.WriteString(fmt.Sprintf("Dispersed clearing this far from settlement "+
+				"(nearest is %s, %.0f km away) is more consistent with natural canopy "+
+				"disturbance than with farming.", nearestPlace, nearestDist))
 		} else {
-			narr.WriteString("Dispersed clearing indicates gradual encroachment from multiple entry points, "+
+			narr.WriteString("Dispersed clearing indicates gradual encroachment from multiple entry points, " +
 				"typical of subsistence farming expansion.")
 		}
 	case "cluster":
@@ -1792,20 +1823,57 @@ func (s *Server) buildDeforestationNarrative(parkID string, year int, area, lat,
 			narr.WriteString("The significant extent of clearing warrants investigation to determine drivers.")
 		}
 	}
-	
-	return narr.String()
+
+	// The pattern switch can add nothing (small event, unknown pattern), which
+	// left a trailing space after the opening sentence.
+	return strings.TrimSpace(narr.String())
+}
+
+// pluralize renders "1 recorded event" / "273 recorded events".
+func pluralize(n int, noun string) string {
+	if n == 1 {
+		return fmt.Sprintf("%d %s", n, noun)
+	}
+	return fmt.Sprintf("%d %ss", n, noun)
+}
+
+// formatLossArea renders a clearing area so that sub-hectare events don't all
+// print as "0.00 km²". GFW's 30 m pixel is 0.0009 km², so most single-pixel
+// events fall far below two decimals of a km².
+func formatLossArea(areaKm2 float64) string {
+	if areaKm2 < 0.01 {
+		// Below a hectare, report m²: GFW's 30 m pixel is 900 m², and "0.0 ha"
+		// is what a single-pixel event used to print.
+		return fmt.Sprintf("%.0f m²", areaKm2*1e6)
+	}
+	if areaKm2 < 1 {
+		return fmt.Sprintf("%.0f ha", areaKm2*100)
+	}
+	return fmt.Sprintf("%.2f km²", areaKm2)
 }
 
 // buildDeforestationSummary creates a comprehensive summary with geographic shift analysis
-func (s *Server) buildDeforestationSummary(parkName string, totalLoss float64, yearCount int,
+func (s *Server) buildDeforestationSummary(parkName string, totalLoss float64, eventCount int,
 	worstYear int, worstLoss float64, trendDir string, trendPct float64,
-	earlyLat, earlyLon, recentLat, recentLon float64, earlyCount, recentCount int, parkID string) string {
-	
+	earlyLat, earlyLon, recentLat, recentLon float64, earlyCount, recentCount int, parkID string,
+	yearSpanFrom, yearSpanTo int) string {
+
 	var parts []string
-	
-	// Opening statement
-	parts = append(parts, fmt.Sprintf("%s has experienced %.2f km² of cumulative forest loss across %d recorded years.",
-		parkName, totalLoss, yearCount))
+
+	// Opening statement.
+	// NOTE: yearly_stories is a per-EVENT list (multiple rows share a year), so
+	// its length is an event count, not a year count. It used to be passed as
+	// `yearCount`, producing "across 273 recorded years" for CAF_Chinko.
+	span := ""
+	if yearSpanFrom > 0 && yearSpanTo >= yearSpanFrom {
+		if yearSpanFrom == yearSpanTo {
+			span = fmt.Sprintf(" in %d", yearSpanFrom)
+		} else {
+			span = fmt.Sprintf(" between %d and %d", yearSpanFrom, yearSpanTo)
+		}
+	}
+	parts = append(parts, fmt.Sprintf("%s has experienced %.2f km² of cumulative forest loss across %s%s.",
+		parkName, totalLoss, pluralize(eventCount, "recorded event"), span))
 	
 	// Worst year with location context
 	if worstYear > 0 {
@@ -1872,30 +1940,31 @@ func (s *Server) describeParkSector(parkID string, lat, lon float64) string {
 	// Determine which sector based on position relative to center
 	latDiff := lat - centerLat
 	lonDiff := lon - centerLon
-	
+
+	// Compound sectors read as "south-western", not "southernwestern", so keep
+	// the bare stem and only add the "-ern" suffix on the last word.
 	var ns, ew string
 	if latDiff > 0.05 {
-		ns = "northern"
+		ns = "north"
 	} else if latDiff < -0.05 {
-		ns = "southern"
-	} else {
-		ns = "central"
+		ns = "south"
 	}
-	
+
 	if lonDiff > 0.05 {
-		ew = "eastern"
+		ew = "east"
 	} else if lonDiff < -0.05 {
-		ew = "western"
+		ew = "west"
 	}
-	
-	if ns == "central" && ew == "" {
+
+	switch {
+	case ns == "" && ew == "":
 		return "central sector"
-	} else if ns == "central" {
-		return ew + " sector"
-	} else if ew == "" {
-		return ns + " sector"
+	case ns == "":
+		return ew + "ern sector"
+	case ew == "":
+		return ns + "ern sector"
 	}
-	return ns + ew + " sector"
+	return ns + "-" + ew + "ern sector"
 }
 
 // reverseCardinal returns the opposite cardinal direction

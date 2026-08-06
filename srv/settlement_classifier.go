@@ -35,6 +35,9 @@ type ClassifiedSettlement struct {
 	// Context data used for classification
 	NearestPlace    string  `json:"nearest_place,omitempty"`
 	DistanceToPlace float64 `json:"distance_to_place_km,omitempty"`
+	// DirectionFromPlace is the compass bearing FROM NearestPlace TO this
+	// settlement, so narratives read "20km SE of Yakamale" like the fire ones.
+	DirectionFromPlace string `json:"direction_from_place,omitempty"`
 	NearestRiver    string  `json:"nearest_river,omitempty"`
 	DistanceToRiver float64 `json:"distance_to_river_km,omitempty"`
 	NearestRoad     float64 `json:"nearest_road_km,omitempty"`
@@ -119,6 +122,8 @@ func (s *Server) loadSettlementContext(parkID string, st *ClassifiedSettlement) 
 	if placeName.Valid {
 		st.NearestPlace = placeName.String
 		st.DistanceToPlace = haversineDistance(st.Lat, st.Lon, placeLat.Float64, placeLon.Float64)
+		st.DirectionFromPlace = bearingToCardinal(
+			bearingTo(placeLat.Float64, placeLon.Float64, st.Lat, st.Lon))
 	}
 	
 	// Count fires at different distances
@@ -390,7 +395,12 @@ func (s *Server) buildSettlementNarrativeText(st *ClassifiedSettlement) string {
 	
 	// Location context
 	if st.NearestPlace != "" && st.DistanceToPlace < 50 {
-		parts = append(parts, fmt.Sprintf("%.0fkm from %s", st.DistanceToPlace, st.NearestPlace))
+		if st.DirectionFromPlace != "" {
+			parts = append(parts, fmt.Sprintf("%.0fkm %s of %s",
+				st.DistanceToPlace, st.DirectionFromPlace, st.NearestPlace))
+		} else {
+			parts = append(parts, fmt.Sprintf("%.0fkm from %s", st.DistanceToPlace, st.NearestPlace))
+		}
 	}
 	
 	if st.NearestRiver != "" && st.DistanceToRiver < 10 {
@@ -411,8 +421,14 @@ func (s *Server) buildSettlementNarrativeText(st *ClassifiedSettlement) string {
 			location, st.FiresWithin5km, st.DeforestNearby)
 		
 	case ClassMining:
-		base := fmt.Sprintf("Possible mining site %s. Low fire activity but %.2f km² of forest loss with %s pattern. Proximity to %s suggests alluvial extraction.",
-			location, st.DeforestNearby, st.DeforestPattern, st.NearestRiver)
+		base := fmt.Sprintf("Possible mining site %s. Low fire activity but %.2f km² of forest loss with %s pattern.",
+			location, st.DeforestNearby, st.DeforestPattern)
+		// Only claim alluvial extraction when a river is actually known - the
+		// old unconditional "Proximity to %s" rendered "Proximity to ." for
+		// every riverless site.
+		if st.NearestRiver != "" {
+			base += fmt.Sprintf(" Proximity to %s suggests alluvial extraction.", st.NearestRiver)
+		}
 		if st.TurbidityAlert != nil {
 			base += fmt.Sprintf(" Sentinel-2 shows a sediment plume on the %s %.1fkm away (~%.0fkm of river turbid downstream, %s) — consistent with active alluvial gold washing.",
 				st.TurbidityAlert.River, st.TurbidityAlertKm, st.TurbidityAlert.DownstreamTurbidKm, st.TurbidityAlert.Date)
@@ -423,6 +439,10 @@ func (s *Server) buildSettlementNarrativeText(st *ClassifiedSettlement) string {
 		return base
 		
 	case ClassFishing:
+		if st.NearestRiver == "" {
+			return fmt.Sprintf("Fishing camp %s. Small footprint (%.0f m²) and minimal forest disturbance consistent with seasonal fishing activity.",
+				location, st.AreaM2)
+		}
 		return fmt.Sprintf("Fishing camp %s, %.1fkm from %s River. Small footprint (%.0f m²) and minimal forest disturbance consistent with seasonal fishing activity.",
 			location, st.DistanceToRiver, st.NearestRiver, st.AreaM2)
 		
@@ -431,6 +451,10 @@ func (s *Server) buildSettlementNarrativeText(st *ClassifiedSettlement) string {
 			location, st.DeforestNearby)
 		
 	case ClassResidential:
+		if st.NearestPlace == "" {
+			return fmt.Sprintf("Permanent settlement %s. Population ~%d with %.0f m² built area. Established community with moderate surrounding land use.",
+				location, st.PopulationEst, st.AreaM2)
+		}
 		return fmt.Sprintf("Permanent settlement %s near %s. Population ~%d with %.0f m² built area. Established community with moderate surrounding land use.",
 			location, st.NearestPlace, st.PopulationEst, st.AreaM2)
 		

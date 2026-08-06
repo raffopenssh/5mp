@@ -7754,8 +7754,10 @@
                         // Use narrative if available, otherwise build a concise one-sentence summary
                         let text = n.narrative;
                         if (!text) {
-                            const outcome = n.outcome.toLowerCase().replace(/_/g, ' ');
-                            text = `${n.origin_desc}: ${outcome}.`;
+                            // v5 never sets outcome/origin_desc; guard so a
+                            // missing narrative degrades instead of throwing.
+                            const outcome = (n.outcome || '').toLowerCase().replace(/_/g, ' ');
+                            text = [n.origin_desc, outcome].filter(Boolean).join(': ') || 'Fire group';
                         }
                         // Ensure it's one sentence - truncate if too long, add title for full text on hover
                         const fullText = text;

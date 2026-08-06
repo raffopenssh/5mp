@@ -958,10 +958,19 @@ func (s *Server) classifyParkSettlementsImpl(parkID string, force bool) int {
 				fires_5km = ?,
 				fire_seasonality = ?,
 				deforest_nearby_km2 = ?,
+				nearest_place = COALESCE(NULLIF(?, ''), nearest_place),
+				distance_to_place_km = CASE WHEN ? > 0 THEN ? ELSE distance_to_place_km END,
+				direction_from_place = COALESCE(NULLIF(?, ''), direction_from_place),
 				classified_at = CURRENT_TIMESTAMP
 			WHERE id = ?
 		`, st.Classification, st.Confidence, st.Narrative,
-			st.FiresWithin5km, st.FireSeasonality, st.DeforestNearby, st.ID)
+			st.FiresWithin5km, st.FireSeasonality, st.DeforestNearby,
+			// ClassifySettlement resolves the nearest place itself; persist what it
+			// found so the API's largest_settlements (which reads these columns
+			// straight from the table) isn't blank for parks that were imported
+			// without place enrichment.
+			st.NearestPlace, st.DistanceToPlace, st.DistanceToPlace, st.DirectionFromPlace,
+			st.ID)
 		count++
 	}
 	return count
