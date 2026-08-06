@@ -25,6 +25,45 @@ from cron_notify import notify_status  # noqa: E402
 API_KEY = os.environ.get("GFW_API_KEY") or secret('GFW_API_KEY')
 BASE = "https://data-api.globalforestwatch.org"
 STATE_FILE = "data/gfw_alerts/state.json"
+
+# Per-tile cache. Park scans used to write only data/gfw_alerts/{park}.json, so
+# the same 0.5-deg tile was re-fetched for every park (and every AOI) that
+# touched it. Caching by TILE instead of by consumer is the AOI plan's rule 2
+# made concrete (docs/PLAN_AOI_OVERLAY.md §8): the AOI's ~240-tile scan is
+# geography, so the overlapping parks get it for free, and a second AOI over
+# the same ground costs nothing.
+TILE_CACHE_DIR = "data/gfw_tiles"
+TILE_TTL_DAYS = 14
+
+
+def _tile_key(w, s, since):
+    """Cache key: tile origin at 0.01-deg resolution + the 'since' cutoff.
+    'since' is part of the key because a tile fetched for an older cutoff is a
+    superset but a newer one is not, and quietly serving a short window as a
+    long one would silently under-report alerts."""
+    return f"{w:.2f}_{s:.2f}_{since}"
+
+
+def _tile_cached(key):
+    path = os.path.join(TILE_CACHE_DIR, key + ".json")
+    if not os.path.exists(path):
+        return None
+    age_days = (time.time() - os.path.getmtime(path)) / 86400
+    if age_days > TILE_TTL_DAYS:
+        return None
+    try:
+        return json.load(open(path))["rows"]
+    except Exception:
+        return None
+
+
+def _tile_store(key, rows):
+    os.makedirs(TILE_CACHE_DIR, exist_ok=True)
+    path = os.path.join(TILE_CACHE_DIR, key + ".json")
+    tmp = path + ".tmp"
+    json.dump({"fetched_at": datetime.datetime.now(datetime.timezone.utc)
+               .strftime("%Y-%m-%dT%H:%M:%SZ"), "rows": rows}, open(tmp, "w"))
+    os.replace(tmp, path)
 _version = None
 _nreq = 0
 
@@ -63,8 +102,24 @@ def query(sql, geom, retries=3):
             raise
     raise RuntimeError("query failed")
 
-def fetch_tile(w, s, e, n, since, depth=0):
-    """Fetch alerts for a tile, subdividing on oversize responses."""
+def fetch_tile(w, s, e, n, since, depth=0, use_cache=True):
+    """Fetch alerts for a tile, subdividing on oversize responses.
+
+    Only whole (depth-0) tiles are cached; subdivisions are an internal detail
+    of one tile's fetch.
+    """
+    if use_cache and depth == 0:
+        key = _tile_key(w, s, since)
+        hit = _tile_cached(key)
+        if hit is not None:
+            return hit
+        rows = _fetch_tile_uncached(w, s, e, n, since, 0)
+        _tile_store(key, rows)
+        return rows
+    return _fetch_tile_uncached(w, s, e, n, since, depth)
+
+
+def _fetch_tile_uncached(w, s, e, n, since, depth=0):
     geom = {"type": "Polygon", "coordinates": [[
         [w, s], [e, s], [e, n], [w, n], [w, s]]]}
     sql = ("SELECT longitude, latitude, gfw_integrated_alerts__date, "
@@ -81,7 +136,7 @@ def fetch_tile(w, s, e, n, since, depth=0):
         rows = []
         for (a, b, c, d) in [(w, s, mx, my), (mx, s, e, my),
                              (w, my, mx, n), (mx, my, e, n)]:
-            rows += fetch_tile(a, b, c, d, since, depth+1)
+            rows += _fetch_tile_uncached(a, b, c, d, since, depth+1)
         return rows
 
 def bbox_of(geom):
@@ -109,6 +164,21 @@ def cluster(alerts):
             c["high_conf"] += 1
     return sorted(cells.values(), key=lambda c: -c["n"])
 
+def tiles_for_bbox(w, s, e, n, tile_deg):
+    """[(w, s, e, n)] tiles covering a bbox, snapped to a global tile_deg grid
+    so different consumers produce identical (and therefore shareable) keys."""
+    out = []
+    lat = math.floor(s / tile_deg) * tile_deg
+    while lat < n:
+        lon = math.floor(w / tile_deg) * tile_deg
+        while lon < e:
+            out.append((round(lon, 4), round(lat, 4),
+                        round(lon + tile_deg, 4), round(lat + tile_deg, 4)))
+            lon += tile_deg
+        lat += tile_deg
+    return out
+
+
 def scan_park(park, buffer_km, since, tile_deg):
     global _nreq
     _nreq = 0
@@ -116,14 +186,8 @@ def scan_park(park, buffer_km, since, tile_deg):
     dbuf = buffer_km / 111.0
     w, s, e, n = w-dbuf, s-dbuf, e+dbuf, n+dbuf
     alerts = []
-    lat = s
-    while lat < n:
-        lon = w
-        while lon < e:
-            alerts += fetch_tile(lon, lat, min(lon+tile_deg, e),
-                                 min(lat+tile_deg, n), since)
-            lon += tile_deg
-        lat += tile_deg
+    for (tw, ts, te, tn) in tiles_for_bbox(w, s, e, n, tile_deg):
+        alerts += fetch_tile(tw, ts, te, tn, since)
     clusters = cluster(alerts)
     out = f"data/gfw_alerts/{park['id']}.json"
     json.dump({"park_id": park["id"], "scanned_at": datetime.datetime.now(datetime.timezone.utc)
@@ -151,7 +215,13 @@ def main():
     ap.add_argument("--since", default=None,
                     help="default: 400 days back")
     ap.add_argument("--tile-deg", type=float, default=0.5)
+    ap.add_argument("--no-tile-cache", action="store_true",
+                    help="bypass data/gfw_tiles/ (force fresh API calls)")
     args = ap.parse_args()
+
+    if args.no_tile_cache:
+        global TILE_TTL_DAYS
+        TILE_TTL_DAYS = 0
 
     since = args.since or (datetime.date.today() -
                            datetime.timedelta(days=400)).isoformat()
