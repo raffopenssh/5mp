@@ -432,19 +432,24 @@ measured "bare ≠ vegetation".
 python3 scripts/eval_mining_detector.py --pixel-auc --n 25    # ~15 min, tmux
 ```
 
-The one live thread is the **Amazon Mining Watch CNN ensemble**, now runnable on
-our own Sentinel-2 stacks without Earth Engine (`analysis/amw_model.py`, model in
-`data/models/amw/`). Our reproduction of its input pipeline is validated against
-its own held-out labels (mines 0.92/0.68/0.36, non-mines ~1e-4). The open
-question is one command:
+The one live thread is the **Amazon Mining Watch CNN ensemble**, run on our own
+Sentinel-2 stacks without Earth Engine (`analysis/amw_model.py`, model in
+`data/models/amw/`). **Measured 2026-08-06** (`docs/MINING_FINDINGS_2026-08.md` §9.5):
+
+* pipeline sanity vs upstream held-out labels: **AUC 0.995** — our reproduction is sound
+* 25 IPIS visited African gold mines vs 25 confusers: **AUC 0.781** (CI 0.635–0.899,
+  p=0.0004), vs 0.450–0.555 for every spectral index on the same sets
+* but **sensitivity 0.000 at upstream's 0.43 threshold** — all signal lives at
+  1e-5–1e-1. Only the *ordering* transfers across the domain gap.
+
+So it is a **ranker, not a thresholder**: percentile-rank within park, top-N to
+human adjudication, no counts, nothing in the UI until adjudicated precision@N is
+measured on real scan output. Burn scars/bare savanna are now easy; villages are
+the remaining confusion. Needs `tensorflow-cpu==2.21.0` + `tf-keras`.
 
 ```bash
-python3 scripts/eval_amw_model.py --sanity 60 --workers 6 --json out.json  # first
-python3 scripts/eval_amw_model.py --africa 25 --jitter --workers 4         # then
+python3 scripts/eval_amw_model.py --africa 25 --jitter --workers 4   # re-measure
 ```
-
-AUC ≫ 0.56 → build a real scanner. AUC ≈ 0.5 → optical 10 m ASM detection is
-closed; document and stop. Needs `tensorflow-cpu==2.21.0` + `tf-keras`.
 
 Truth sets are themselves under suspicion — `scripts/adjudicate_truth.py` renders
 Esri contact sheets and records keyed verdicts (`pit`/`maybe`/`no_pit`/

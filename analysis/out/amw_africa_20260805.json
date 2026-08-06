@@ -1,0 +1,928 @@
+{
+ "model": "48px_v4.10b-18d-20g-21a-22bc-ensemble.h5",
+ "threshold": 0.43,
+ "jitter": true,
+ "years": 2,
+ "run_at": "2026-08-05T15:19:39",
+ "africa": {
+  "n_pos": 25,
+  "n_neg": 25,
+  "auc": 0.7808,
+  "threshold": 0.43,
+  "sensitivity": 0.0,
+  "specificity": 1.0,
+  "pos_median": 0.00019358296412974596,
+  "neg_median": 7.467732210386657e-09,
+  "pos": [
+   0.08264273405075073,
+   0.027708284556865692,
+   0.020792970433831215,
+   0.017148230224847794,
+   0.011768008582293987,
+   0.008689341135323048,
+   0.007683650124818087,
+   0.006494611036032438,
+   0.0056280395947396755,
+   0.003771608928218484,
+   0.00029380383784882724,
+   0.0002261386252939701,
+   0.00019358296412974596,
+   0.00014198360440786928,
+   6.468334322562441e-05,
+   2.1779518647235818e-05,
+   2.1779518647235818e-05,
+   1.1884679224749561e-05,
+   2.858670995919965e-06,
+   2.5627748527767835e-06,
+   1.713896722321806e-06,
+   5.670327141160669e-08,
+   1.7814899555546049e-09,
+   4.9987135958273754e-11,
+   3.374973217562527e-11
+  ],
+  "neg": [
+   0.012137304991483688,
+   0.006299490574747324,
+   0.0031701538246124983,
+   0.0014491971815004945,
+   0.0007798834703862667,
+   3.835967163468013e-06,
+   3.3615185657254187e-06,
+   2.9194554826972308e-06,
+   1.9904994132957654e-06,
+   3.504901258111204e-07,
+   2.038309361296342e-07,
+   9.580846338508309e-09,
+   7.467732210386657e-09,
+   1.4267302894666045e-09,
+   7.338287755231931e-10,
+   4.876833381572965e-10,
+   2.930299614067877e-10,
+   2.3933652282259743e-10,
+   2.3502691459675873e-10,
+   8.5052326292967e-11,
+   1.4178794423280738e-11,
+   4.322650310611964e-12,
+   4.227466900846855e-12,
+   3.2993111281215404e-12,
+   2.1833587455361014e-12
+  ],
+  "neg_by_class": {
+   "water": {
+    "n": 6,
+    "median": 1.1704947695534429e-06,
+    "max": 0.0007798834703862667
+   },
+   "village": {
+    "n": 7,
+    "median": 0.0014491971815004945,
+    "max": 0.012137304991483688
+   },
+   "burn_scar": {
+    "n": 10,
+    "median": 1.6003962044486286e-10,
+    "max": 1.4267302894666045e-09
+   },
+   "bare_savanna": {
+    "n": 2,
+    "median": 3.853534366604627e-09,
+    "max": 7.467732210386657e-09
+   }
+  },
+  "detail": {
+   "pos": [
+    {
+     "lon": 17.58686,
+     "lat": 5.556605,
+     "src": "ipis_caf",
+     "name": "Kpo\u00ef",
+     "match_km": 1.5,
+     "score": 0.027708284556865692,
+     "score_center": 0.018614454194903374,
+     "n_patches": 5,
+     "dates": [
+      "2025-12-12",
+      "2026-03-02",
+      "2026-01-06",
+      "2026-01-01"
+     ]
+    },
+    {
+     "lon": 16.5013683333,
+     "lat": 5.4584633333,
+     "src": "ipis_caf",
+     "name": "Tedoa",
+     "match_km": 1.5,
+     "score": 0.006494611036032438,
+     "score_center": 0.002661878475919366,
+     "n_patches": 5,
+     "dates": [
+      "2026-03-05",
+      "2026-03-20",
+      "2025-12-12",
+      "2025-12-30"
+     ]
+    },
+    {
+     "lon": 16.5000033333,
+     "lat": 5.4748366667,
+     "src": "ipis_caf",
+     "name": "Tedoa 5",
+     "match_km": 1.5,
+     "score": 0.008689341135323048,
+     "score_center": 0.006718802731484175,
+     "n_patches": 5,
+     "dates": [
+      "2026-03-05",
+      "2026-03-20",
+      "2025-12-12",
+      "2025-12-30"
+     ]
+    },
+    {
+     "lon": 17.0137316667,
+     "lat": 5.4904783333,
+     "src": "ipis_caf",
+     "name": "Gbaga\u00efn",
+     "match_km": 1.5,
+     "score": 0.003771608928218484,
+     "score_center": 0.0007905401289463043,
+     "n_patches": 5,
+     "dates": [
+      "2026-01-01",
+      "2025-12-25",
+      "2025-12-12",
+      "2025-12-05"
+     ]
+    },
+    {
+     "lon": 15.930393,
+     "lat": 6.81442,
+     "src": "ipis_caf",
+     "name": "Ndarssa",
+     "match_km": 1.5,
+     "score": 2.858670995919965e-06,
+     "score_center": 1.4366711411639699e-06,
+     "n_patches": 5,
+     "dates": [
+      "2026-01-01",
+      "2026-01-01",
+      "2025-12-15",
+      "2026-01-04"
+     ]
+    },
+    {
+     "lon": 16.59185,
+     "lat": 6.621631,
+     "src": "ipis_caf",
+     "name": "Myskine",
+     "match_km": 1.5,
+     "score": 1.1884679224749561e-05,
+     "score_center": 1.9839518472508644e-07,
+     "n_patches": 5,
+     "dates": [
+      "2026-01-01",
+      "2026-03-05",
+      "2026-01-04",
+      "2025-12-12"
+     ]
+    },
+    {
+     "lon": 17.43784,
+     "lat": 4.3640333333,
+     "src": "ipis_caf",
+     "name": "Louame",
+     "match_km": 1.5,
+     "score": 2.5627748527767835e-06,
+     "score_center": 3.2531158922211034e-07,
+     "n_patches": 5,
+     "dates": [
+      "2026-01-06",
+      "2025-12-12",
+      "2025-12-27",
+      "2026-02-20"
+     ]
+    },
+    {
+     "lon": 17.1093766667,
+     "lat": 4.6842716667,
+     "src": "ipis_caf",
+     "name": "Site Doubi 2",
+     "match_km": 1.5,
+     "score": 2.1779518647235818e-05,
+     "score_center": 6.465381829912076e-06,
+     "n_patches": 5,
+     "dates": [
+      "2025-12-12",
+      "2026-01-06",
+      "2025-12-27",
+      "2025-12-12"
+     ]
+    },
+    {
+     "lon": 14.8631433333,
+     "lat": 5.23032,
+     "src": "ipis_caf",
+     "name": "Gom",
+     "match_km": 1.5,
+     "score": 6.468334322562441e-05,
+     "score_center": 6.468334322562441e-05,
+     "n_patches": 5,
+     "dates": [
+      "2025-12-15",
+      "2026-01-01",
+      "2025-12-10",
+      "2025-12-30"
+     ]
+    },
+    {
+     "lon": 17.1093766667,
+     "lat": 4.6842716667,
+     "src": "ipis_caf",
+     "name": "Site Doubi 2",
+     "match_km": 1.5,
+     "score": 2.1779518647235818e-05,
+     "score_center": 6.465381829912076e-06,
+     "n_patches": 5,
+     "dates": [
+      "2025-12-12",
+      "2026-01-06",
+      "2025-12-27",
+      "2025-12-12"
+     ]
+    },
+    {
+     "lon": 15.3888233333,
+     "lat": 5.158435,
+     "src": "ipis_caf",
+     "name": "Sanda",
+     "match_km": 1.5,
+     "score": 0.020792970433831215,
+     "score_center": 0.020792970433831215,
+     "n_patches": 5,
+     "dates": [
+      "2025-12-15",
+      "2025-12-12",
+      "2026-01-01",
+      "2026-02-28"
+     ]
+    },
+    {
+     "lon": 15.0853,
+     "lat": 5.3216066667,
+     "src": "ipis_caf",
+     "name": "Loya",
+     "match_km": 1.5,
+     "score": 4.9987135958273754e-11,
+     "score_center": 2.951205360819664e-13,
+     "n_patches": 5,
+     "dates": [
+      "2025-12-15",
+      "2026-01-01",
+      "2025-12-10",
+      "2025-12-15"
+     ]
+    },
+    {
+     "lon": 17.1980783333,
+     "lat": 6.1137133333,
+     "src": "ipis_caf",
+     "name": "Yoho",
+     "match_km": 1.5,
+     "score": 1.713896722321806e-06,
+     "score_center": 2.8916721817040525e-07,
+     "n_patches": 5,
+     "dates": [
+      "2026-01-01",
+      "2025-12-25",
+      "2025-12-12",
+      "2025-12-05"
+     ]
+    },
+    {
+     "lon": 16.958975,
+     "lat": 5.532365,
+     "src": "ipis_caf",
+     "name": "Gombo",
+     "match_km": 1.5,
+     "score": 0.00014198360440786928,
+     "score_center": 0.00014198360440786928,
+     "n_patches": 5,
+     "dates": [
+      "2026-01-01",
+      "2025-12-25",
+      "2025-12-12",
+      "2025-12-05"
+     ]
+    },
+    {
+     "lon": 17.0727933333,
+     "lat": 5.6182766667,
+     "src": "ipis_caf",
+     "name": "Site De Ban-Kaly\u00e9",
+     "match_km": 1.5,
+     "score": 0.007683650124818087,
+     "score_center": 0.003431033343076706,
+     "n_patches": 5,
+     "dates": [
+      "2026-01-01",
+      "2025-12-25",
+      "2025-12-12",
+      "2025-12-05"
+     ]
+    },
+    {
+     "lon": 17.2563,
+     "lat": 6.1224516667,
+     "src": "ipis_caf",
+     "name": "Willy",
+     "match_km": 1.5,
+     "score": 0.08264273405075073,
+     "score_center": 0.08264273405075073,
+     "n_patches": 5,
+     "dates": [
+      "2026-01-01",
+      "2025-12-25",
+      "2025-12-12",
+      "2025-12-05"
+     ]
+    },
+    {
+     "lon": 14.6346383333,
+     "lat": 5.754745,
+     "src": "ipis_caf",
+     "name": "Yong-Bor\u00e8",
+     "match_km": 1.5,
+     "score": 3.374973217562527e-11,
+     "score_center": 2.3706481222518505e-11,
+     "n_patches": 5,
+     "dates": [
+      "2025-12-13",
+      "2026-01-17",
+      "2026-02-26",
+      "2026-01-07"
+     ]
+    },
+    {
+     "lon": 17.516961,
+     "lat": 4.727429,
+     "src": "ipis_caf",
+     "name": "Pama-Drol",
+     "match_km": 1.5,
+     "score": 0.0002261386252939701,
+     "score_center": 0.00014303594070952386,
+     "n_patches": 5,
+     "dates": [
+      "2026-01-06",
+      "2025-12-27",
+      "2025-12-12",
+      "2026-03-07"
+     ]
+    },
+    {
+     "lon": 16.9530383333,
+     "lat": 5.509415,
+     "src": "ipis_caf",
+     "name": "Gamme-Carri\u00e8re",
+     "match_km": 1.5,
+     "score": 0.0056280395947396755,
+     "score_center": 0.000192251565749757,
+     "n_patches": 5,
+     "dates": [
+      "2026-01-01",
+      "2025-12-25",
+      "2025-12-12",
+      "2025-12-05"
+     ]
+    },
+    {
+     "lon": 16.680344,
+     "lat": 6.661871,
+     "src": "ipis_caf",
+     "name": "Bourazo",
+     "match_km": 1.5,
+     "score": 0.00029380383784882724,
+     "score_center": 2.485973345756065e-05,
+     "n_patches": 5,
+     "dates": [
+      "2026-01-01",
+      "2026-03-05",
+      "2026-01-04",
+      "2025-12-12"
+     ]
+    },
+    {
+     "lon": 15.5607466667,
+     "lat": 5.1278483333,
+     "src": "ipis_caf",
+     "name": "Sipi",
+     "match_km": 1.5,
+     "score": 5.670327141160669e-08,
+     "score_center": 1.0127769733969672e-09,
+     "n_patches": 5,
+     "dates": [
+      "2025-12-15",
+      "2026-01-01",
+      "2026-02-28",
+      "2025-12-10"
+     ]
+    },
+    {
+     "lon": 15.26124,
+     "lat": 5.312445,
+     "src": "ipis_caf",
+     "name": "Mamb\u00e9r\u00e9 Abba",
+     "match_km": 1.5,
+     "score": 0.011768008582293987,
+     "score_center": 2.0714103811769746e-05,
+     "n_patches": 5,
+     "dates": [
+      "2025-12-15",
+      "2025-12-12",
+      "2026-01-01",
+      "2026-02-28"
+     ]
+    },
+    {
+     "lon": 15.0672933333,
+     "lat": 5.1485433333,
+     "src": "ipis_caf",
+     "name": "Medy",
+     "match_km": 1.5,
+     "score": 1.7814899555546049e-09,
+     "score_center": 1.217762782973475e-11,
+     "n_patches": 5,
+     "dates": [
+      "2025-12-15",
+      "2026-01-01",
+      "2025-12-10",
+      "2025-12-15"
+     ]
+    },
+    {
+     "lon": 16.1353783333,
+     "lat": 4.0160033333,
+     "src": "ipis_caf",
+     "name": "Bania Centre",
+     "match_km": 1.5,
+     "score": 0.00019358296412974596,
+     "score_center": 2.1080352741176256e-11,
+     "n_patches": 5,
+     "dates": [
+      "2026-01-01",
+      "2026-03-05",
+      "2025-12-15",
+      "2025-12-20"
+     ]
+    },
+    {
+     "lon": 17.0768216667,
+     "lat": 4.8032133333,
+     "src": "ipis_caf",
+     "name": "Kanga",
+     "match_km": 1.5,
+     "score": 0.017148230224847794,
+     "score_center": 0.0011028555454686284,
+     "n_patches": 5,
+     "dates": [
+      "2025-12-12",
+      "2025-12-27",
+      "2025-12-20",
+      "2025-12-15"
+     ]
+    }
+   ],
+   "neg": [
+    {
+     "lon": 24.5325,
+     "lat": 7.01833,
+     "class": "water",
+     "park_id": "CAF_Chinko",
+     "confidence": "generated",
+     "note": "basin river reach, Strahler >= 4 (sandbank/turbid)",
+     "score": 1.4178794423280738e-11,
+     "score_center": 7.387350280108063e-12,
+     "n_patches": 5,
+     "dates": [
+      "2026-03-06",
+      "2025-12-13",
+      "2026-02-24",
+      "2026-03-11"
+     ]
+    },
+    {
+     "lon": 22.8629086,
+     "lat": 6.1291159,
+     "class": "village",
+     "park_id": "CAF_Chinko",
+     "confidence": "generated",
+     "note": "OSM town: Nzako",
+     "score": 0.0031701538246124983,
+     "score_center": 2.5093480871873908e-05,
+     "n_patches": 5,
+     "dates": [
+      "2025-12-21",
+      "2025-12-13",
+      "2026-03-06",
+      "2025-12-13"
+     ]
+    },
+    {
+     "lon": 23.97,
+     "lat": 7.05,
+     "class": "burn_scar",
+     "park_id": "CAF_Chinko",
+     "confidence": "generated",
+     "note": "29 VIIRS detections, last 2026-03-11",
+     "score": 2.930299614067877e-10,
+     "score_center": 1.6891948950714664e-10,
+     "n_patches": 5,
+     "dates": [
+      "2025-12-13",
+      "2026-02-24",
+      "2026-03-11",
+      "2026-01-12"
+     ]
+    },
+    {
+     "lon": 23.95,
+     "lat": 7.44,
+     "class": "burn_scar",
+     "park_id": "CAF_Chinko",
+     "confidence": "generated",
+     "note": "37 VIIRS detections, last 2026-03-08",
+     "score": 4.876833381572965e-10,
+     "score_center": 1.2376182023654536e-10,
+     "n_patches": 5,
+     "dates": [
+      "2025-12-13",
+      "2026-03-06",
+      "2026-02-24",
+      "2026-01-12"
+     ]
+    },
+    {
+     "lon": 23.95,
+     "lat": 7.09,
+     "class": "burn_scar",
+     "park_id": "CAF_Chinko",
+     "confidence": "generated",
+     "note": "29 VIIRS detections, last 2026-03-08",
+     "score": 3.2993111281215404e-12,
+     "score_center": 2.908983167196344e-12,
+     "n_patches": 5,
+     "dates": [
+      "2025-12-13",
+      "2026-02-24",
+      "2026-03-11",
+      "2026-01-12"
+     ]
+    },
+    {
+     "lon": 23.0285986,
+     "lat": 4.7904935,
+     "class": "village",
+     "park_id": "CAF_Chinko",
+     "confidence": "generated",
+     "note": "OSM village: Ngaragba",
+     "score": 0.0014491971815004945,
+     "score_center": 0.0006693049217574298,
+     "n_patches": 5,
+     "dates": [
+      "2025-12-21",
+      "2026-02-24",
+      "2026-03-13",
+      "2025-12-11"
+     ]
+    },
+    {
+     "lon": 23.99,
+     "lat": 7.17,
+     "class": "burn_scar",
+     "park_id": "CAF_Chinko",
+     "confidence": "generated",
+     "note": "27 VIIRS detections, last 2026-03-02",
+     "score": 2.3502691459675873e-10,
+     "score_center": 9.192044347905437e-11,
+     "n_patches": 5,
+     "dates": [
+      "2025-12-13",
+      "2026-03-06",
+      "2025-12-13",
+      "2026-02-24"
+     ]
+    },
+    {
+     "lon": 23.91,
+     "lat": 7.24,
+     "class": "burn_scar",
+     "park_id": "CAF_Chinko",
+     "confidence": "generated",
+     "note": "29 VIIRS detections, last 2026-03-02",
+     "score": 4.227466900846855e-12,
+     "score_center": 2.055839005976612e-12,
+     "n_patches": 5,
+     "dates": [
+      "2025-12-13",
+      "2026-03-06",
+      "2026-02-24",
+      "2026-01-12"
+     ]
+    },
+    {
+     "lon": 24.02,
+     "lat": 7.23,
+     "class": "burn_scar",
+     "park_id": "CAF_Chinko",
+     "confidence": "generated",
+     "note": "29 VIIRS detections, last 2026-02-26",
+     "score": 1.4267302894666045e-09,
+     "score_center": 7.75676134434633e-10,
+     "n_patches": 5,
+     "dates": [
+      "2025-12-13",
+      "2026-03-06",
+      "2026-02-24",
+      "2026-01-12"
+     ]
+    },
+    {
+     "lon": 23.129822,
+     "lat": 4.8357507,
+     "class": "village",
+     "park_id": "CAF_Chinko",
+     "confidence": "generated",
+     "note": "OSM village: Gbanga",
+     "score": 0.012137304991483688,
+     "score_center": 0.009284515865147114,
+     "n_patches": 5,
+     "dates": [
+      "2025-12-21",
+      "2025-12-13",
+      "2026-02-24",
+      "2026-03-13"
+     ]
+    },
+    {
+     "lon": 24.26676,
+     "lat": 8.16938,
+     "class": "bare_savanna",
+     "park_id": "CAF_Chinko",
+     "confidence": "adjudicated",
+     "note": "Esri z16 contact sheet (analysis/out/eval_new_top12.png), 2026-08-05: dry-season bare savanna / grazing scald, no pit morphology, no spoil heaps, no ponds",
+     "from_scan": "adj_chinko.json",
+     "from_rank": 11,
+     "score": 2.3933652282259743e-10,
+     "score_center": 2.3933652282259743e-10,
+     "n_patches": 5,
+     "dates": [
+      "2025-12-13",
+      "2026-02-24",
+      "2026-01-12",
+      "2025-12-01"
+     ]
+    },
+    {
+     "lon": 23.95,
+     "lat": 6.68,
+     "class": "burn_scar",
+     "park_id": "CAF_Chinko",
+     "confidence": "generated",
+     "note": "31 VIIRS detections, last 2026-03-01",
+     "score": 2.1833587455361014e-12,
+     "score_center": 3.170758740202867e-13,
+     "n_patches": 5,
+     "dates": [
+      "2025-12-13",
+      "2026-02-24",
+      "2026-03-11",
+      "2026-01-12"
+     ]
+    },
+    {
+     "lon": 22.8389661,
+     "lat": 5.1853545,
+     "class": "village",
+     "park_id": "CAF_Chinko",
+     "confidence": "generated",
+     "note": "OSM hamlet: Kpingoyangui",
+     "score": 3.835967163468013e-06,
+     "score_center": 1.1240786079724785e-06,
+     "n_patches": 5,
+     "dates": [
+      "2025-12-21",
+      "2025-12-21",
+      "2025-12-13",
+      "2025-12-13"
+     ]
+    },
+    {
+     "lon": 23.29,
+     "lat": 6.155,
+     "class": "water",
+     "park_id": "CAF_Chinko",
+     "confidence": "generated",
+     "note": "basin river reach, Strahler >= 4 (sandbank/turbid)",
+     "score": 2.9194554826972308e-06,
+     "score_center": 2.5605550035834312e-06,
+     "n_patches": 5,
+     "dates": [
+      "2025-12-13",
+      "2026-03-06",
+      "2026-02-24",
+      "2025-12-21"
+     ]
+    },
+    {
+     "lon": 24.36724,
+     "lat": 8.24573,
+     "class": "bare_savanna",
+     "park_id": "CAF_Chinko",
+     "confidence": "adjudicated",
+     "note": "Esri z16 contact sheet (analysis/out/eval_new_top12.png), 2026-08-05: dry-season bare savanna / grazing scald, no pit morphology, no spoil heaps, no ponds",
+     "from_scan": "adj_chinko.json",
+     "from_rank": 4,
+     "score": 7.467732210386657e-09,
+     "score_center": 3.3931470966308552e-09,
+     "n_patches": 5,
+     "dates": [
+      "2025-12-13",
+      "2026-01-12",
+      "2025-12-26",
+      "2025-12-01"
+     ]
+    },
+    {
+     "lon": 23.38833,
+     "lat": 5.72667,
+     "class": "water",
+     "park_id": "CAF_Chinko",
+     "confidence": "generated",
+     "note": "basin river reach, Strahler >= 4 (sandbank/turbid)",
+     "score": 3.504901258111204e-07,
+     "score_center": 2.898427275965787e-08,
+     "n_patches": 5,
+     "dates": [
+      "2025-12-13",
+      "2026-03-06",
+      "2026-02-24",
+      "2025-12-21"
+     ]
+    },
+    {
+     "lon": 23.0080263,
+     "lat": 5.0877475,
+     "class": "village",
+     "park_id": "CAF_Chinko",
+     "confidence": "generated",
+     "note": "OSM village: Vougba",
+     "score": 0.006299490574747324,
+     "score_center": 0.006299490574747324,
+     "n_patches": 5,
+     "dates": [
+      "2025-12-21",
+      "2025-12-13",
+      "2026-02-24",
+      "2026-03-13"
+     ]
+    },
+    {
+     "lon": 23.37167,
+     "lat": 5.7,
+     "class": "water",
+     "park_id": "CAF_Chinko",
+     "confidence": "generated",
+     "note": "basin river reach, Strahler >= 4 (sandbank/turbid)",
+     "score": 0.0007798834703862667,
+     "score_center": 7.619271491421387e-05,
+     "n_patches": 5,
+     "dates": [
+      "2025-12-13",
+      "2026-03-06",
+      "2026-02-24",
+      "2025-12-21"
+     ]
+    },
+    {
+     "lon": 22.9727764,
+     "lat": 4.8432451,
+     "class": "village",
+     "park_id": "CAF_Chinko",
+     "confidence": "generated",
+     "note": "OSM hamlet: Mbororo",
+     "score": 2.038309361296342e-07,
+     "score_center": 2.3452748632024623e-09,
+     "n_patches": 5,
+     "dates": [
+      "2025-12-21",
+      "2025-12-13",
+      "2026-02-24",
+      "2026-03-13"
+     ]
+    },
+    {
+     "lon": 24.27833,
+     "lat": 6.76,
+     "class": "water",
+     "park_id": "CAF_Chinko",
+     "confidence": "generated",
+     "note": "basin river reach, Strahler >= 4 (sandbank/turbid)",
+     "score": 9.580846338508309e-09,
+     "score_center": 1.3974220669510373e-09,
+     "n_patches": 5,
+     "dates": [
+      "2025-12-13",
+      "2026-02-24",
+      "2026-03-11",
+      "2026-01-12"
+     ]
+    },
+    {
+     "lon": 23.92,
+     "lat": 6.71,
+     "class": "burn_scar",
+     "park_id": "CAF_Chinko",
+     "confidence": "generated",
+     "note": "30 VIIRS detections, last 2026-02-28",
+     "score": 8.5052326292967e-11,
+     "score_center": 1.3311627191162079e-12,
+     "n_patches": 5,
+     "dates": [
+      "2025-12-13",
+      "2026-02-24",
+      "2026-03-11",
+      "2026-01-12"
+     ]
+    },
+    {
+     "lon": 24.79,
+     "lat": 7.06,
+     "class": "burn_scar",
+     "park_id": "CAF_Chinko",
+     "confidence": "generated",
+     "note": "28 VIIRS detections, last 2026-01-20",
+     "score": 4.322650310611964e-12,
+     "score_center": 6.095711907244325e-14,
+     "n_patches": 5,
+     "dates": [
+      "2026-03-06",
+      "2025-12-13",
+      "2026-02-24",
+      "2026-03-11"
+     ]
+    },
+    {
+     "lon": 23.94,
+     "lat": 7.4,
+     "class": "burn_scar",
+     "park_id": "CAF_Chinko",
+     "confidence": "generated",
+     "note": "30 VIIRS detections, last 2026-03-08",
+     "score": 7.338287755231931e-10,
+     "score_center": 3.9427580644790794e-10,
+     "n_patches": 5,
+     "dates": [
+      "2025-12-13",
+      "2026-03-06",
+      "2026-02-24",
+      "2026-01-12"
+     ]
+    },
+    {
+     "lon": 23.2500743,
+     "lat": 6.5103137,
+     "class": "village",
+     "park_id": "CAF_Chinko",
+     "confidence": "generated",
+     "note": "OSM hamlet: Yalinga",
+     "score": 3.3615185657254187e-06,
+     "score_center": 3.3615185657254187e-06,
+     "n_patches": 5,
+     "dates": [
+      "2025-12-13",
+      "2026-02-24",
+      "2025-12-21",
+      "2026-03-06"
+     ]
+    },
+    {
+     "lon": 23.70333,
+     "lat": 7.17,
+     "class": "water",
+     "park_id": "CAF_Chinko",
+     "confidence": "generated",
+     "note": "basin river reach, Strahler >= 4 (sandbank/turbid)",
+     "score": 1.9904994132957654e-06,
+     "score_center": 5.962328231134961e-08,
+     "n_patches": 5,
+     "dates": [
+      "2025-12-13",
+      "2025-12-13",
+      "2026-01-12",
+      "2026-02-24"
+     ]
+    }
+   ]
+  }
+ }
+}

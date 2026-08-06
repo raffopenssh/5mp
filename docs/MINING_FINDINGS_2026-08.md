@@ -338,3 +338,70 @@ Run these in `tmux`, not in a tool call.
 Either way, handover action #2 (adjudicate the truth sets) still gates the
 confidence of the answer: an at-chance result against a suspect positive set is
 weaker evidence than the number looks.
+
+### 9.5 THE RESULT (2026-08-05, both runs finished): AUC 0.781 — signal, but only as a ranker
+
+Both tmux runs completed. Artefacts:
+`analysis/out/amw_sanity_20260805.{json,log}`, `analysis/out/amw_africa_20260805.{json,log}`.
+
+**Sanity (must pass first) — passes.** 60 upstream held-out labels vs 59 negatives,
+scored through *our* S2 pipeline: **AUC 0.995**, mine median 0.779, non-mine median
+0.000, specificity 1.000 and sensitivity 0.783 at upstream's own 0.43 threshold
+(upstream reports 0.994/0.895 on its Venezuela geo-holdout). So the band order,
+harmonisation offset, cloud masking and compositing are right, and the Africa
+number below is about the *domain*, not about our reproduction.
+
+**Africa — IPIS field-visited gold mines (25) vs the same confusers (25) that beat
+every spectral index:**
+
+| metric | value |
+|---|---|
+| **AUC** | **0.781** (95% CI 0.635–0.899, bootstrap n=2000) |
+| permutation p | 0.0004 (5000 shuffles) |
+| sensitivity @ thr 0.43 | **0.000** |
+| specificity @ thr 0.43 | 1.000 |
+| mine median / p90 | 0.00019 / 0.019 |
+| non-mine median / p90 | 7e-9 / 0.0025 |
+| best balanced accuracy | 0.76, at threshold **1.2e-5** |
+| TPR @ FPR 0.20 | 0.52 |
+| precision@10 (pooled ranking) | 0.80 |
+
+Confusers by class: village n=7 median 1.4e-3 max 1.2e-2; water n=6 median 1.2e-6;
+bare_savanna n=2 ~0; burn_scar n=10 ~1.6e-10. **Burn scars and bare savanna — the
+two classes that destroyed our indices (§8.1) — are exactly what the CNN is most
+certain about.** The residual confusion is villages, which is a texture/geometry
+confusion, not a spectral-bareness one.
+
+**How to read this — it lands in neither §9.4 branch cleanly:**
+
+1. AUC 0.781 is far above 0.56, and p=0.0004 rules out chance. Compared with
+   indices at 0.450–0.555 on the *identical* two sets, the learned model is the
+   first thing in this rebuild that separates African ASM from its confusers.
+2. But the **calibration is gone**: at upstream's 0.43 threshold sensitivity is
+   *zero* — not one African mine scores like an Amazonian one. The whole usable
+   signal lives in the range 1e-5…1e-1, five orders of magnitude below where the
+   model was trained to operate. Absolute scores are meaningless here; only the
+   *ordering* is.
+3. So the deliverable is a **ranker, not a thresholder** — the same conclusion
+   step 3 of the rebuild reached for the index detector, arrived at from the
+   opposite direction. Any "N mining sites detected" count is unshippable; a
+   ranked candidate list for human adjudication is not.
+4. Caveats that bound this: n=25/25 (CI lower bound 0.635); the positive set is
+   the unadjudicated IPIS set (handover action #2, 8/723 done, and those 8 came
+   back `unclear_imagery`); and 10 of the 25 negatives are burn scars, the
+   easiest possible class, which inflates AUC relative to a real scan where
+   villages and bare ground dominate. Read TPR@FPR0.2 = 0.52 as the honest
+   operating figure: about half the visited mines rank above the 80th percentile
+   of confusers.
+
+**Decision:** §9.4 branch 1, with the calibration caveat — build the scanner, as a
+ranked-candidate producer only. Concretely: AMW ensemble over
+`flow_corridor.scan_geom()` patches, percentile-ranked *within park* (never
+thresholded against 0.43), top-N to `analysis/chip_grid.py` for adjudication.
+Nothing enters the UI until adjudicated precision@N is measured on real scan
+output — the 0.1%-consistent `data/mining_pits/*.json` is what happens when that
+step is skipped.
+
+Before scaling: n=25 is thin and the positive set is suspect. The cheapest way to
+firm up both is handover action #2 (adjudicate IPIS positives) plus re-running
+`--africa` with a larger, village-heavy negative set.

@@ -1,8 +1,9 @@
-# Mining pipeline rebuild — handover (updated 2026-08-05 evening, after actions 1–3)
+# Mining pipeline rebuild — handover (updated 2026-08-06: the Africa AUC is in)
 
-**Read `docs/MINING_FINDINGS_2026-08.md` §8 first (the negative result that killed
-the spectral approach), then §9 (the AMW learned model, now wired and
-pipeline-validated).**
+**Read `docs/MINING_FINDINGS_2026-08.md` §9.5 first (the result: AMW CNN scores
+AUC 0.781 on African mines vs confusers, but with zero sensitivity at its own
+threshold — a ranker, not a detector), then §8 (why every hand-picked spectral
+index is dead) and §9.1–9.2 (how the model is wired and validated).**
 
 Mining is **not** in the UI and must not be. `data/mining_pits/*.json` (old,
 7,725 "sites", 0.1% truth agreement) is untouched and still wrong; `srv/turbidity.go`
@@ -17,41 +18,37 @@ still reads it — that is pre-existing and out of scope, but do not make it wor
 | 3 ranker not thresholder | ✅ done |
 | 4 golden-set evaluator | ✅ done — and it says the index detector doesn't work |
 | 5 geology prior | ❌ cancelled (§8.4) |
-| 6 Amazon Mining Watch model | 🟡 **wired + sanity-checked; the Africa AUC is the open question** |
+| 6 Amazon Mining Watch model | ✅ **measured: Africa AUC 0.781** (sanity 0.995). Signal is real but uncalibrated — see §9.5 |
 | 7 turbidity | ❌ cancelled as framed |
 | action 2 truth adjudication | 🟡 tooling built; 8/723 adjudicated |
 | action 3 ship the basin layer | ✅ done (API + popup summary line) |
 
-## The one number still missing
+## The number that was missing — read off 2026-08-06
 
-```bash
-# in tmux; ~40 network reads/point, composites cached under data/amw_cache/
-python3 scripts/eval_amw_model.py --africa 25 --jitter --workers 4 --verbose \
-    --json analysis/out/amw_africa_20260805.json
-```
+Both tmux runs finished (`analysis/out/amw_{sanity,africa}_20260805.{json,log}`).
+Full write-up: `docs/MINING_FINDINGS_2026-08.md` **§9.5**.
 
-AMW CNN ensemble on 25 IPIS field-visited gold mines vs 25 confusers — the same
-two sets on which every spectral index scored AUC 0.450–0.555. Interpretation is
-pre-committed in `docs/MINING_FINDINGS_2026-08.md` §9.4:
+* **Sanity (our pipeline vs upstream labels): AUC 0.995**, sens 0.783 / spec 1.000
+  at upstream's 0.43 threshold. The reproduction is sound, so the Africa number
+  is about the domain, not about us.
+* **Africa (25 IPIS visited gold mines vs 25 confusers): AUC 0.781**,
+  95% CI 0.635–0.899, permutation p = 0.0004. Same two sets on which every
+  spectral index scored 0.450–0.555.
 
-* **AUC ≫ 0.56** → build the scanner: AMW scored over `flow_corridor.scan_geom()`
-  patches, ranked, adjudicated with `analysis/chip_grid.py`.
-* **AUC ≈ 0.5** → optical 10 m ASM detection in African savanna is **closed**.
-  Document it, ship only the basin layer, stop. (Caveat: that is a
-  domain-transfer null — Amazonian wash-plains in rainforest vs small pits in an
-  already-bare savanna — not proof the phenomenon is undetectable. But without a
-  labelled African training set it is the end of the cheap options.)
+That is §9.4 branch 1 (AUC ≫ 0.56) — but with a caveat that changes the shape of
+the deliverable:
 
-A run of `--sanity 60` (`analysis/out/amw_sanity_20260805.{log,json}`) and
-`--africa 25 --jitter` (`analysis/out/amw_africa_20260805.{log,json}`) were both
-launched 2026-08-05 ~15:15 UTC in tmux sessions `amwsanity` / `amwafrica`, and
-were **still running** at hand-over (sanity ~38/120 points, africa ~3/50;
-`--jitter` costs 5 patches per point). If a log has no `=== AFRICA` summary
-block at the end, it did not finish — just re-run the command, the
-`data/amw_cache/` composites make a resume cheap. Do not read the partial
-per-point `score=` lines as a result: the first africa positives came back low
-(0.006–0.028), but three points is not a measurement and the confuser scores
-that give them meaning had not been computed yet.
+* **Sensitivity at threshold 0.43 is 0.000.** Not one African mine scores like an
+  Amazonian one. All the signal sits between 1e-5 and 1e-1; best balanced
+  accuracy (0.76) is at threshold **1.2e-5**. Absolute scores are meaningless
+  across the domain gap; only the *ordering* transfers.
+* Honest operating figure: **TPR 0.52 at FPR 0.20**; precision@10 = 0.80 on the
+  pooled ranking.
+* Burn scars (1.6e-10) and bare savanna (~0) — the classes that flattened the
+  indices — are what the CNN is *most* sure about. Residual confusion is
+  **villages** (median 1.4e-3, max 1.2e-2): geometry/texture, not bareness.
+* n=25/25, positives unadjudicated, and 10/25 negatives are the easiest class.
+  The CI lower bound of 0.635 is the number to plan against.
 
 ## What was added 2026-08-05 evening
 
@@ -70,9 +67,19 @@ harmonisation offset cannot produce that, so the reproduction is sound.
 
 ## Next actions, in order
 
-1. **Read off the Africa AUC** (above) and act on whichever branch of §9.4 it
-   lands in. This is the decision the whole rebuild has been converging on.
-2. **Continue truth adjudication.** `scripts/adjudicate_truth.py --sheets --set
+1. **Build the scanner — as a ranker, never a thresholder.** AMW ensemble over
+   `flow_corridor.scan_geom()` patches, percentile-ranked *within park*, top-N
+   into `analysis/chip_grid.py` for adjudication. Do **not** apply the 0.43
+   threshold, do not emit counts, and nothing enters the UI until adjudicated
+   precision@N is measured on real scan output. `data/mining_pits/*.json`
+   (0.1% truth agreement) is what skipping that step produces.
+   Cost gate first: ~5–60 s/patch, network-bound — cost out one park's
+   `scan_geom()` patch count before committing to 163.
+2. **Firm up the measurement before scaling.** n=25 with an unadjudicated
+   positive set and a burn-scar-heavy negative set. Re-run
+   `--africa` with a larger, **village-heavy** negative set (villages are the
+   only class the model confuses), and do action #3 below first.
+3. **Continue truth adjudication.** `scripts/adjudicate_truth.py --sheets --set
    ipis --n 48`, then record verdicts. Only 8/723 done — and those 8 (the Chinko
    manual pits) came back `unclear_imagery`: Esri has **no z18 coverage** there,
    and at z16 they are wooded savanna with pale seasonal drainage lines, no pit
@@ -80,7 +87,7 @@ harmonisation offset cannot produce that, so the reproduction is sound.
    positive set; `no_pit` would. The number to watch is "of N looked at, how many
    show a pit" — it bounds how much any AUC against these positives is worth,
    including §6's flow-accumulation validation.
-3. **The basin layer is shipped but under-exploited.** `GET /api/parks/{id}/basin`
+4. **The basin layer is shipped but under-exploited.** `GET /api/parks/{id}/basin`
    now returns upstream km² + river km (total and order-3+) and the named outlet
    river, and the popup states it in words. Obvious next uses, all independent of
    mining: upstream deforestation/fire inside the basin polygon; "which other
@@ -98,7 +105,7 @@ harmonisation offset cannot produce that, so the reproduction is sound.
 | `analysis/flow_corridor.py` `scan_geom()` | scan extent = (basin clipped 200 km from park edge) ∪ park. Both tails of the coverage distribution require this. `buffer(0)` on boundaries (Kruger, Niokolo-Koba self-intersect). |
 | `analysis/mining_features.py` | composites + 4 features + `Calibration`. **Measures at chance against confusers** — kept for reproducibility, not for use. |
 | `analysis/mining_pits.py` | index ranker → `data/mining_candidates/` (NOT `mining_pits/`). Ablate: `--scope park|strict`, `--corridor osm`. |
-| `analysis/amw_model.py` | AMW CNN on our S2 stacks. `score_point(lon, lat, windows, jitter=1)`. |
+| `analysis/amw_model.py` | AMW CNN on our S2 stacks. `score_point(lon, lat, windows, jitter=1)`. **Africa AUC 0.781; ignore its 0.43 threshold, rank instead (§9.5).** |
 | `scripts/eval_mining_detector.py` | index-scan evaluator: precision@N / recall / precision by negative class, plus `--pixel-auc`. |
 | `scripts/eval_amw_model.py` | AMW evaluator: `--sanity` / `--africa` / `--manual`. |
 | `scripts/adjudicate_truth.py` | imagery adjudication of the truth sets; writes `data/mining_truth/adjudications.json` + `visible_positives.json`. |
