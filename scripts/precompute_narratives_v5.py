@@ -375,6 +375,60 @@ class NarrativeGeneratorV5:
             ''', (park_id, json.dumps(data), datetime.now().isoformat(), from_year, to_year))
         self.conn.commit()
         
+        # Parks that produced no narratives this run must not keep an old cache
+        # row: its feature_ids point at trajectories that no longer exist, and
+        # clicking one in the UI gives "Feature not found". This happens
+        # legitimately when a rebuild drops a park below the >=10-fire seeding
+        # threshold (TZA_Rungwa: 45 fires -> 0 groups), or when every remaining
+        # group sits >20km outside the park (CMR_Lobeke) and is filtered above.
+        #
+        # Write an EMPTY v5 row rather than deleting: a missing row makes
+        # HandleAPIFireNarrative fall through to the deprecated Go slow path,
+        # which is 17s and emits narratives with no feature_id at all (see
+        # AGENTS.md "Single Writer Rule"). An empty row says "no fire groups"
+        # instantly and truthfully.
+        if only_parks:
+            empty = [p for p in only_parks if p not in narratives]
+        else:
+            empty = [r[0] for r in self.conn.execute(
+                'SELECT park_id FROM fire_narrative_cache')
+                if r[0] not in narratives]
+        for park_id in empty:
+            park_info = self.parks.get(park_id, {})
+            blank = {
+                'park_id': park_id,
+                'park_name': park_info.get('name', park_id),
+                'year': datetime.now().year,
+                'summary': 'No fire groups detected within 20km of this park '
+                           f'since {MIN_DATE}.',
+                'narratives': [], 'key_places': [],
+                'trend': {'years': [], 'trend_direction': 'stable',
+                          'avg_response_rate': 0, 'narrative': '',
+                          'peak_months': []},
+                'total_fires': 0, 'total_frp': 0, 'total_groups': 0,
+                'response_rate': 0, 'peak_month': None,
+                'management_fires': 0, 'cross_border_groups': 0,
+                'outside_park_groups': 0, 'stopped_inside_groups': 0,
+                'transited_groups': 0,
+                'group_types': {}, 'seasons': {}, 'directions': {},
+                'trajectory_types': {}, 'erratic_count': 0, 'zigzag_count': 0,
+                'clean_count': 0, 'avg_zigzag_ratio': 0,
+                'climate': self.climate.get(park_id, {}),
+            }
+            self.conn.execute('''
+                INSERT OR REPLACE INTO fire_narrative_cache
+                (park_id, narrative_json, computed_at, from_year, to_year)
+                VALUES (?, ?, ?, NULL, NULL)
+            ''', (park_id, json.dumps(blank), datetime.now().isoformat()))
+            out = EXPORT_DIR / 'fire_narratives' / f'{park_id}.json'
+            out.parent.mkdir(parents=True, exist_ok=True)
+            with open(out, 'w') as f:
+                json.dump(blank, f)
+        if empty:
+            self.conn.commit()
+            log(f"  Blanked {len(empty)} park(s) with no groups: "
+                + ', '.join(empty[:8]) + (" ..." if len(empty) > 8 else ""))
+
         log(f"Fire narratives: {len(narratives)} parks")
         return narratives
 

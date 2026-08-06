@@ -401,6 +401,16 @@ class FireGroupLoader:
             groups = json.load(f)
         
         if not groups:
+            # A park whose rebuild legitimately produced zero groups (too few
+            # fires to seed a cluster) must still have its old rows dropped,
+            # or they linger forever as stale_in_db drift and the map keeps
+            # serving trajectories the builder no longer believes in.
+            # (TZA_Rungwa: 45 fires -> 0 groups, 111 rows left behind.)
+            self.conn.execute(
+                "DELETE FROM feature_geometries WHERE park_id = ? AND feature_type = 'fire_trajectory'",
+                (park_id,)
+            )
+            self.conn.commit()
             return 0, {}
         
         park_geometry = self.parks[park_id]['geometry']
