@@ -99,3 +99,12 @@ data/fire_trends_v5/
 
 # Monthly NRT->SP watchdog output (rewritten by daily_fire_update step 2e)
 data/nrt_sp_audit.json
+
+# Historical map rasters (derived, large) - regenerate with scripts/histmaps/runall.sh
+data/histmaps/geo/
+data/histmaps/*.jp2
+scripts/histmaps/*.jp2
+scripts/histmaps/qa.json
+scripts/histmaps/*_geo.tif
+scripts/histmaps/*_geo.tif.points
+scripts/histmaps/__pycache__/
