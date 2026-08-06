@@ -211,6 +211,21 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("GET /api/aois/{id}/deforestation-narrative", s.aoiGate(s.HandleAPIDeforestationNarrative))
 	mux.HandleFunc("GET /api/aois/{id}/settlement-narrative", s.aoiGate(s.HandleAPISettlementNarrative))
 	mux.HandleFunc("GET /api/aois/{id}/export.geojson", s.HandleAPIAOIExportGeoJSON)
+	// Write surface (docs/PLAN_AOI_OVERLAY.md §3f). None of these run the
+	// ingest: scripts/aoi_runner.py owns the lease discipline and is the only
+	// thing that works a unit. These queue, requeue, price and report.
+	//
+	// NOTE ordering: 'POST /api/aois/estimate' must be registered before any
+	// '/api/aois/{id}' pattern would swallow it. Go 1.22's mux prefers the more
+	// specific literal, so this is documentation rather than load-bearing --
+	// but 'estimate' is also rejected by ValidAOIID collisions only by luck,
+	// so keep it a literal.
+	mux.HandleFunc("POST /api/aois/estimate", s.HandleAPIAOIEstimate)
+	mux.HandleFunc("POST /api/aois", s.HandleAPIAOICreate)
+	mux.HandleFunc("GET /api/aois/{id}/progress", s.HandleAPIAOIProgress)
+	mux.HandleFunc("POST /api/aois/{id}/refresh", s.HandleAPIAOIRefresh)
+	mux.HandleFunc("POST /api/aois/{id}/kick", s.HandleAPIAOIKick)
+	mux.HandleFunc("DELETE /api/aois/{id}", s.HandleAPIAOIDelete)
 
 	// API auth endpoints
 	mux.HandleFunc("POST /api/login", RateLimitMiddleware(authRL, s.HandleAPILogin))

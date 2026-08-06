@@ -8,7 +8,21 @@ file is the map of what exists, what is measured, and what is left.
 
 ---
 
-## Resume here (2026-08-07, later)
+## → Current handover: `docs/AOI_HANDOVER.md`
+
+Written 2026-08-07. It supersedes the two "Resume here" sections below (kept
+for the trail). **This file remains the design rationale and the record of
+measured facts** — read §1 (the isolation rules and the two holes they plug),
+§2 (numbers; do not re-derive them) and §4 (gotchas) before touching anything.
+
+One entry in §3a is now **reversed**: the AOI's pre-2024 deforestation *should*
+come from Hansen. Tiles are 45–116 MB COGs read through `/vsicurl` in 0.6 s per
+2° window, not "tens of GB", and GFW alerts only start in 2024. See
+`docs/AOI_HANDOVER.md` §2f.
+
+---
+
+## Resume here (2026-08-07, later — superseded by AOI_HANDOVER.md)
 
 Three units are **in flight in tmux** (`aoiv5`, `aoighsl`, `aoidefo`) — check
 them first, they may well have finished:
