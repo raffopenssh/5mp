@@ -1,3 +1,5 @@
+e1d464c 2026-08-06 09:31:42 NRT->SP reconciliation: measure it, then ship a watchdog instead
+a10e070 2026-08-06 08:52:53 Rebuild: refresh embedded commit history
 9e6ed93 2026-08-06 08:52:30 Fire: retire FIRE_TODO_HANDOVER, fold the one open item into the permanent docs
 8117db9 2026-08-06 08:31:58 Fire: close per-overpass slicing (item 4) as a negative result; refresh handover
 5a5ab2b 2026-08-06 08:20:09 Narratives: fix wording bugs found in the post-rebuild audit (item 8)
@@ -16,5 +18,3 @@ e517e66 2026-08-05 14:20:58 Retire the duplicate raw fire JSON window (closes ha
 1835096 2026-08-05 14:16:35 Admin panel: nightly fire pipeline heartbeat badge
 c2662a7 2026-08-05 14:07:32 Rebuild: refresh embedded commit history
 932a0c2 2026-08-05 14:07:17 AGENTS.md: mining is a measured negative result, not just 'not ready'
-b0eb67a 2026-08-05 14:06:49 Mining: record the measurement that kills the spectral approach
-7c8899c 2026-08-05 13:51:57 Mining rescope 3-4/5: ranker wired to basins, plus a real evaluator
