@@ -45,6 +45,10 @@ func (s *Server) HandleGetNotifications(w http.ResponseWriter, r *http.Request) 
 	// all other notification types are shared across prod and test.
 	env := RequestEnv(r)
 	envCond := "(notification_type NOT IN ('new_upload','mbtiles_complete','mbtiles_failed') OR env = ?)"
+	// Mining/turbidity notifications (4,267 mining_alert + scan-status rows) are
+	// retired but not deleted -- docs/MINING_FINDINGS_2026-08.md §10. Appended to
+	// envCond so every branch below (and the unread count) inherits it.
+	envCond += miningNotifSQLFilter()
 
 	// For fire_alert notifications with active=true, filter by recent end_date in feature_geometries
 	if notifType == "fire_alert" && activeOnly {

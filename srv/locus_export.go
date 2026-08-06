@@ -678,7 +678,8 @@ func (s *Server) buildLocusContent(tdb, wdb *locusDB, parkID, parkName, boundary
 			var featureID, geojson string
 			var classification, nearestPlace sql.NullString
 			settlementRows.Scan(&featureID, &geojson, &classification, &nearestPlace)
-			name := strOr(classification.String, "Settlement")
+			// mining labels retired (docs/MINING_FINDINGS_2026-08.md §10)
+			name := strOr(publicSettlementClass(classification.String), "Settlement")
 			if nearestPlace.Valid && nearestPlace.String != "" {
 				name += " near " + nearestPlace.String
 			}

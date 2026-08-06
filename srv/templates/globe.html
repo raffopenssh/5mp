@@ -495,7 +495,6 @@
                     <li style="margin-bottom: 6px;"><span style="color: #a855f7;">Settlements</span> – Built-up areas classified by type and distance to park</li>
                     <li style="margin-bottom: 6px;"><span style="color: #ef4444;">Deforestation</span> – Forest loss events clustered and classified by cause</li>
                     <li style="margin-bottom: 6px;"><span style="color: #22c55e;">Patrol Tracks</span> – GPS coverage intensity in 10×10 km grid cells</li>
-                    <li style="margin-bottom: 6px;"><span style="color: #38bdf8;">River Turbidity &amp; Mining</span> – Sediment plumes and bare-earth pits along rivers, signs of alluvial mining</li>
                 </ul>
 
                 <!-- Data Processing -->
@@ -516,8 +515,8 @@
                 <ul style="margin-bottom: 14px; padding-left: 20px; font-size: 12px; color: #aaa;">
                     <li>Source: EU Global Human Settlement Layer (10m resolution)</li>
                     <li>Built-up pixels clustered into settlement polygons</li>
-                    <li>Classified: village, hamlet, farm compound, mining camp</li>
                     <li>Distance to park boundary and nearest road calculated</li>
+                    <li>Classified: village, farm compound, herding camp, fishing camp, seasonal camp, possible mining site — inferred from river proximity, deforestation shape, fire seasonality and remoteness</li>
                 </ul>
 
                 <h4 style="color: #ef4444; margin: 14px 0 6px; font-size: 13px;">Deforestation Analysis</h4>
@@ -527,14 +526,6 @@
                     <li>Clustered into events (5km radius)</li>
                     <li>Classified: agricultural clearing, logging, charcoal production</li>
                     <li>Near-real-time: GFW integrated alerts (GLAD-S2/RADD, ~10m) with 100km buffer — one park rescanned per day</li>
-                </ul>
-
-                <h4 style="color: #38bdf8; margin: 14px 0 6px; font-size: 13px;">River Turbidity &amp; Mining Detection</h4>
-                <ul style="margin-bottom: 14px; padding-left: 20px; font-size: 12px; color: #aaa;">
-                    <li>Source: Sentinel-2 L2A imagery (10m), sampled along OSM waterways</li>
-                    <li>Flags abrupt turbidity onsets vs. upstream median — the signature of alluvial mining</li>
-                    <li>Companion pit scanner finds bright bare-earth clusters near rivers, verified for persistence across scenes</li>
-                    <li>Rotation: one park scanned per day; each park revisited on a rolling cycle</li>
                 </ul>
 
                 <h4 style="color: #22c55e; margin: 14px 0 6px; font-size: 13px;">Patrol Tracking</h4>
@@ -554,14 +545,6 @@
                     </tr>
                     <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
                         <td style="padding: 6px 0; color: #ef4444;">Deforestation alerts (GFW)</td>
-                        <td style="padding: 6px 0;">Daily rotation — one park/day</td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <td style="padding: 6px 0; color: #38bdf8;">River turbidity scan</td>
-                        <td style="padding: 6px 0;">Daily rotation — one park/day</td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <td style="padding: 6px 0; color: #eab308;">Mining pit scan</td>
                         <td style="padding: 6px 0;">Daily rotation — one park/day</td>
                     </tr>
                     <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
@@ -596,10 +579,6 @@
                     <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
                         <td style="padding: 6px 0; color: #fff;">Forest alerts</td>
                         <td style="padding: 6px 0;"><a href="https://www.globalforestwatch.org/" target="_blank" style="color: #22c55e;">GFW integrated alerts</a></td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <td style="padding: 6px 0; color: #fff;">Turbidity / mining</td>
-                        <td style="padding: 6px 0;"><a href="https://registry.opendata.aws/sentinel-2-l2a-cogs/" target="_blank" style="color: #22c55e;">Sentinel-2 L2A</a> + OSM waterways</td>
                     </tr>
                     <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
                         <td style="padding: 6px 0; color: #fff;">Settlements</td>
@@ -3733,32 +3712,11 @@
                 }
             }
 
-            // Mining & water quality (turbidity, pits, GFW alerts)
-            const turb = data.turbidity || {};
-            const miningSites = turb.mining_settlements || [];
-            const turbAlerts = turb.alerts || [];
-            const pitSites = turb.pit_sites || [];
-            if (has('mining') && cfg.settlement !== false && (miningSites.length || turbAlerts.length || pitSites.length || (turb.turbid_rivers || []).length)) {
-                lines.push('### Mining & water quality');
-                lines.push('');
-                const mp = [];
-                if (miningSites.length) mp.push(`Suspected mining sites: ${miningSites.length}`);
-                if (turbAlerts.length) mp.push(`Turbidity alerts: ${turbAlerts.length}`);
-                if (pitSites.length) mp.push(`Bare-earth pit clusters: ${pitSites.length}`);
-                if (turb.gfw_total_alerts) mp.push(`GFW canopy alerts: ${fmt(turb.gfw_total_alerts)} in ${fmt(turb.gfw_clusters)} clusters`);
-                if (turb.scanned_at) mp.push(`Last Sentinel-2 scan: ${String(turb.scanned_at).slice(0, 10)}`);
-                lines.push(mp.join(' | '));
-                lines.push('');
-                for (const r of (turb.turbid_rivers || []).slice(0, deep ? 99 : 5)) {
-                    lines.push(`- ${r.name || 'Unnamed river'}: ${r.turbid_km} km turbid of ${r.length_km} km monitored`);
-                }
-                const limit = deep ? miningSites.length : 5;
-                for (const m of miningSites.slice(0, limit)) {
-                    lines.push(`- ${plain(m.narrative || 'Suspected mining site')} (${m.lat.toFixed(4)}, ${m.lon.toFixed(4)}, confidence ${Math.round((m.confidence || 0) * 100)}%)`);
-                }
-                if (miningSites.length > limit) lines.push(`- ... ${miningSites.length - limit} more mining sites omitted`);
-                lines.push('');
-            }
+            // "Mining & water quality" section removed 2026-08-06 (§10). It was
+            // sourced entirely from /api/parks/{id}/turbidity -- sediment plumes,
+            // bare-earth "pit" clusters -- all of which measure at chance.
+            // Settlements classified 'mining' from river proximity + deforestation
+            // shape are unaffected and still appear in the Settlements section.
 
             // Publications
             const pubs = research.publications || [];
@@ -4588,7 +4546,7 @@
             document.body.removeChild(link);
             URL.revokeObjectURL(link.href);
             
-            showToast(`Exported KML with ${successCount} park${successCount !== 1 ? 's' : ''} (all geo layers incl. turbidity)`, 'success', { key: 'export' });
+            showToast(`Exported KML with ${successCount} park${successCount !== 1 ? 's' : ''} (all geo layers incl. all geo layers)`, 'success', { key: 'export' });
         }
         
         // Helper function to merge multiple KML documents into one
@@ -5552,7 +5510,7 @@
                     fetchRetry('/api/notifications?type=new_upload&limit=10'),
                     fetchRetry(`/api/mbtiles?pwd=${encodeURIComponent(getPwd())}`),
                     fetchRetry('/api/notifications?type=new_publication&limit=10'),
-                    fetchRetry('/api/notifications?type=fire_download_success,fire_download_failed,turbidity_scan_success,turbidity_scan_failed,gfw_scan_success,gfw_scan_failed,park_refresh_success,park_refresh_failed&limit=10')
+                    fetchRetry('/api/notifications?type=fire_download_success,fire_download_failed,gfw_scan_success,gfw_scan_failed,park_refresh_success,park_refresh_failed&limit=10')
                 ]);
                 
                 // Process upload notifications
@@ -7547,17 +7505,7 @@
                         </div>
                     </div>
                     
-                    <!-- Mining / Water Quality Section -->
-                    <div class="pa-popup-section" id="mining-section-${paId}" onclick="togglePopupSection(this)">
-                        <div class="pa-popup-section-header">
-                            <div class="pa-popup-section-title"><span class="pa-popup-section-icon toggleable" data-park-id="${paId}" data-park-name="${escapeHtml(name)}" data-type="turbidity" onclick="event.stopPropagation(); togglePinFromIcon(this)">◈</span> Mining &amp; Water Quality<span id="mining-count-${paId}" class="pa-popup-section-count"></span></div>
-                            <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${escapeHtml(name)}', 'mining', this)" title="Star this narrative">☆</button>
-                            <span class="pa-popup-section-toggle">▼</span>
-                        </div>
-                        <div class="pa-popup-section-content" id="mining-content-${paId}">
-                            <div class="pa-popup-section-loading">Loading...</div>
-                        </div>
-                    </div>
+                    <!-- Mining / Water Quality section removed 2026-08-06: docs/MINING_FINDINGS_2026-08.md §10 -->
 
                     <!-- Roadless Section -->
                     <div class="pa-popup-section" id="road-section-${paId}" onclick="togglePopupSection(this)">
@@ -7653,7 +7601,6 @@
                 fetchPopupClimateData(paId);
                 fetchPopupSpeciesData(paId);
                 fetchPopupLegalData(paId);
-                fetchPopupMiningData(paId, name);
             }
         }
         
@@ -13545,7 +13492,9 @@
                 fetchLegalDataDirect(parkId, {pwd}),
                 fetchGridDataDirect(parkId, {from, to, pwd}),
                 fetchStatsDirect(parkId, {pwd}),
-                fetchTurbidityDataDirect(parkId, {pwd})
+                // mining/turbidity retired (§10): resolve empty rather than
+                // hitting the now-disabled endpoint
+                MINING_ENABLED ? fetchTurbidityDataDirect(parkId, {pwd}) : Promise.resolve({})
             ]);
             
             return {
@@ -14939,6 +14888,10 @@ ${starredItems.narratives.map(n => {
         setTimeout(() => { entry.style.background = ''; entry.style.border = ''; }, 3000);
     }
 
+    // Mirror of MiningEnabled in srv/mining_flag.go. Retired 2026-08-06 --
+    // docs/MINING_FINDINGS_2026-08.md §10. Flip both together to restore.
+    const MINING_ENABLED = false;
+
     async function addSinglePinnedFeature(parkId, parkName, type, featureId, narrative = '') {
         const key = getSinglePinKey(parkId, type, featureId);
         const layerId = `pinned-single-${key.replace(/[^a-zA-Z0-9]/g, '_')}`;
@@ -14947,6 +14900,7 @@ ${starredItems.narratives.map(n => {
         try {
             // Turbidity alerts / mining sites: build from turbidity endpoint
             if (type === 'turbidity') {
+                if (!MINING_ENABLED) return false;  // retired; ignore stale pins silently
                 const all = await buildTurbidityGeoJSON(parkId);
                 const features = all.features.filter(f => f.properties?.feature_id === featureId);
                 if (features.length === 0) { showToast(`Feature not found: ${featureId}`, 'warning'); return false; }
@@ -15448,6 +15402,7 @@ ${starredItems.narratives.map(n => {
             
             // Turbidity alerts + mining sites + plume points (time-filtered)
             if (type === 'turbidity') {
+                if (!MINING_ENABLED) return;  // retired (§10); ignore stale pins
                 geojson = await buildTurbidityGeoJSON(parkId);
             } else if (type === 'visits') {
                 // Patrol-visited locations learned from GPX uploads (camps, outposts, gates)
@@ -16147,6 +16102,7 @@ ${starredItems.narratives.map(n => {
                     // date-filtered and don't exist in the features API — leave as-is.
                     continue;
                 } else if (layer.type === 'turbidity') {
+                    if (!MINING_ENABLED) continue;  // retired (§10)
                     // rebuild with current timeslider window (plume points carry dates)
                     geojson = await buildTurbidityGeoJSON(layer.parkId);
                 } else {

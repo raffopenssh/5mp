@@ -1188,7 +1188,7 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 		SELECT COUNT(*) as count,
 		       COALESCE(SUM(population_est), 0) as total_pop
 		FROM park_settlements
-		WHERE park_id = ?
+		WHERE park_id = ?` + scannerInjectedSQLFilter("narrative") + `
 	`, internalID).Scan(&settlementCount, &totalPopulation)
 	
 	if err != nil {
@@ -1239,7 +1239,7 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 			COALESCE(s.direction_from_place, '') as direction,
 			COALESCE(s.distance_to_place_km, 0) as distance_km
 		FROM park_settlements s
-		WHERE s.park_id = ?
+		WHERE s.park_id = ?` + scannerInjectedSQLFilter("s.narrative") + `
 		ORDER BY s.area_m2 DESC
 	`, internalID)
 	
@@ -1251,7 +1251,10 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 			var settNarrative, polygonIDs string
 			if err := largestRows.Scan(&sd.ID, &sd.Name, &sd.Classification, &settNarrative, &polygonIDs, &sd.AreaM2, &sd.PopulationEst, &sd.Lat, &sd.Lon, &sd.Direction, &distKm); err == nil {
 				sd.NearestBoundaryKm = distKm
-				sd.Narrative = settNarrative
+				// mining labels + their "suspected alluvial extraction" prose are
+				// retired (docs/MINING_FINDINGS_2026-08.md §10)
+				sd.Narrative = publicSettlementNarrative(sd.Classification, settNarrative)
+				sd.Classification = publicSettlementClass(sd.Classification)
 				sd.PolygonIDs = polygonIDs
 				narrative.LargestSettlements = append(narrative.LargestSettlements, sd)
 			}
@@ -1293,7 +1296,7 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 	classRows, err := s.DB.Query(`
 		SELECT COALESCE(classification, 'unclassified'), COUNT(*)
 		FROM park_settlements
-		WHERE park_id = ?
+		WHERE park_id = ?` + scannerInjectedSQLFilter("narrative") + `
 		GROUP BY classification
 	`, internalID)
 	if err == nil {
@@ -1303,7 +1306,7 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 			var cls string
 			var cnt int
 			if classRows.Scan(&cls, &cnt) == nil {
-				classMap[cls] = cnt
+				classMap[publicSettlementClass(cls)] += cnt
 			}
 		}
 		if len(classMap) > 0 {
@@ -2852,7 +2855,7 @@ func (s *Server) handleSettlementNarrativeStats(w http.ResponseWriter, parkID, p
 			COALESCE(SUM(population_2030), 0),
 			AVG(distance_to_road_m)
 		FROM park_settlements
-		WHERE park_id = ?
+		WHERE park_id = ?` + scannerInjectedSQLFilter("narrative") + `
 	`, parkID).Scan(&count, &totalArea, &avgArea, &popEst, &pop2030, &avgDistRoad)
 	
 	if err != nil && err != sql.ErrNoRows {
@@ -2881,7 +2884,7 @@ func (s *Server) handleSettlementNarrativeStats(w http.ResponseWriter, parkID, p
 	classRows, err := s.DB.Query(`
 		SELECT COALESCE(classification, 'unclassified'), COUNT(*)
 		FROM park_settlements
-		WHERE park_id = ?
+		WHERE park_id = ?` + scannerInjectedSQLFilter("narrative") + `
 		GROUP BY classification
 	`, parkID)
 	if err == nil {
@@ -2890,7 +2893,8 @@ func (s *Server) handleSettlementNarrativeStats(w http.ResponseWriter, parkID, p
 			var class string
 			var cnt int
 			if classRows.Scan(&class, &cnt) == nil {
-				response.Stats.ByClassification[class] = cnt
+				// mining is retired (§10); fold into unclassified
+				response.Stats.ByClassification[publicSettlementClass(class)] += cnt
 			}
 		}
 	}
@@ -2908,7 +2912,7 @@ func (s *Server) handleSettlementNarrativeStats(w http.ResponseWriter, parkID, p
 			s.distance_to_road_m
 		FROM park_settlements s
 		LEFT JOIN feature_geometries fg ON fg.feature_id = 'settlement_' || s.id AND fg.feature_type = 'settlement'
-		WHERE s.park_id = ?
+		WHERE s.park_id = ?` + scannerInjectedSQLFilter("s.narrative") + `
 		ORDER BY s.area_m2 DESC
 		LIMIT 500
 	`, parkID)
@@ -2931,7 +2935,7 @@ func (s *Server) handleSettlementNarrativeStats(w http.ResponseWriter, parkID, p
 			
 			feature := SettlementFeature{
 				ID:             fmt.Sprintf("settlement_%d", id),
-				Classification: class,
+				Classification: publicSettlementClass(class),
 				AreaM2:         area,
 				PopulationEst:  popEst,
 				Population2030: pop2030,

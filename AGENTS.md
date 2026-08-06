@@ -413,15 +413,50 @@ pre-cap counts. `is_inside` = touches park (`dist_to_park_km≈0` or `pct_inside
 groups up to 20km outside are included for context but not "inside". Peak-season
 parks (Angola/DRC/Zambia, Jun–Aug) legitimately have 150–280 active groups — not a bug.
 
-## ⚠️ Mining detection: the spectral approach measures at chance. Do not ship it.
+## ⚠️ Mining detection is retired. Do not rebuild it.
 
-Nothing mining-related goes in the UI. `data/mining_pits/*.json` (7,725 "sites")
-is 0.1% consistent with visited-mine truth — top hits are a sandbank and rice
-paddies. `srv/turbidity.go` still reads that file; leave it, don't extend it.
+**Verdict 2026-08-06** (`docs/MINING_FINDINGS_2026-08.md` §10, read §10.2 first):
+optical 10 m ASM detection from our stack is closed. Hand-picked spectral
+indices measure at chance vs confusers (§8, AUC 0.45–0.56). The Amazon Mining
+Watch CNN does carry signal (§9.5, **AUC 0.781**, p=0.0004, sanity 0.995 so the
+reproduction is sound) — but at zero sensitivity at its own threshold, and a
+scan is ~77k patches/park, so precision lands at ~0.001. We'd need FPR ≤ 2.6e-4;
+25 negatives can only resolve 0.04. **The AUC is fine and the base rate is
+fatal** — the same failure as `data/mining_pits/*.json` (7,725 "sites", 0.1%
+truth agreement).
 
-Start at **`docs/MINING_REBUILD_HANDOVER.md`** (state + next actions), then
-`docs/MINING_FINDINGS_2026-08.md` §8 (why hand-picked indices are dead) and §9
-(the AMW learned model). Data source catalogue: `docs/MINING_DATA_SOURCES.md`.
+Kill switch: `srv/mining_flag.go` → `MiningEnabled = false` (mirrored by
+`MINING_ENABLED` in globe.html). Nothing deleted; flip both to restore.
+
+**The line: mining *inference* stays, turbidity/pit *evidence* goes.**
+Settlements classified `mining` from river proximity + deforestation shape +
+fire absence + remoteness are ordinary context — same kind as `fishing` — and
+still render. Removed: popup "Mining & Water Quality" accordion, star-report
+block, animator `turb` chip, `mining_alert`/`turbidity_scan_*` notifications,
+turbidity+pit terms in `scoreMining` (they were +1.0 of a 1.0 cap — one spurious
+plume could mint a label), the sediment-plume narrative sentence, and the two
+cron rotations. `/api/parks/{id}/turbidity` returns `{"disabled": true}`.
+`analysis/gfw_alerts.py --rotate` **stays** (real canopy-loss data).
+
+⚠️ **2,562 `park_settlements` rows are detector output, not settlements** —
+`RegisterMiningCandidate` wrote pit/turbidity hits into the settlements table,
+inflating the global count 10,390 → 12,952. They're excluded by
+`scannerInjectedSQLFilter()`, keyed on the `[Pit detection …]`/`[Turbidity …]`
+narrative prefix (not classification — they're spread across all six classes).
+**Any new settlement query must apply that filter.**
+
+What survives and validates: the **basin layer** (see below). Worth trying only
+with new resources, per §10.2: Sentinel-1 SAR, sub-metre commercial imagery over
+small AOIs, a few thousand labelled African chips to fine-tune AMW, or simply
+ingesting IPIS field visits as *reported* sites.
+
+`srv/turbidity.go` still reads `data/mining_pits/*.json` behind the flag; leave
+it, don't extend it.
+
+Background if you need it: `docs/MINING_FINDINGS_2026-08.md` §8 (why
+hand-picked indices are dead), §9 (the AMW learned model and its 0.781),
+`docs/MINING_REBUILD_HANDOVER.md` (rebuild history). Data source catalogue:
+`docs/MINING_DATA_SOURCES.md`.
 
 The 2026-08 rebuild produced a **negative result** for every hand-picked index:
 mine pixels vs *confuser* pixels (villages, burn scars, river water, bare

@@ -405,3 +405,105 @@ step is skipped.
 Before scaling: n=25 is thin and the positive set is suspect. The cheapest way to
 firm up both is handover action #2 (adjudicate IPIS positives) plus re-running
 `--africa` with a larger, village-heavy negative set.
+
+---
+
+## 10. VERDICT (2026-08-06): nothing mining-related ships. Layer retired.
+
+§9.5 found real signal (AUC 0.781, p=0.0004). This section is why that is still
+not enough to build anything, and what was switched off as a result.
+
+### 10.1 The AUC is real and the scanner is still infeasible
+
+AUC is a *balanced* metric on a 25-vs-25 set. A scan is not balanced. Sizing it:
+
+* AMW patch = 48 px × 10 m = **0.23 km²**.
+* Median park scan extent (`flow_corridor.scan_geom()`, basin clipped to 200 km
+  ∪ park) ≈ 17,700 km² → **~77,000 patches per park**. All 163 parks ≈ 60M
+  patches.
+* Inference is network-bound at 5–60 s/patch. One park ≈ **13 h at 8 workers**;
+  the estate ≈ 10,000+ worker-hours. Composite caching does not help a scan —
+  every patch is new.
+
+And precision at the only operating points we can actually measure:
+
+| true mine patches in a park | op point | TP | FP | precision |
+|---|---|---|---|---|
+| 20 | FPR 0.20 / TPR 0.52 | 10 | 15,360 | **0.0007** |
+| 20 | FPR 0.04 / TPR 0.08 | 1.6 | 3,072 | **0.0005** |
+| 500 | FPR 0.20 / TPR 0.52 | 260 | 15,264 | **0.017** |
+
+To surface ~20 candidates worth a human's time we need **FPR ≤ 2.6e-4**. With 25
+negatives the smallest FPR we can even *measure* is 0.04 — **154× coarser than
+the requirement**. The measurement does not reach the regime the product needs,
+and closing that gap needs ~10,000 labelled African negatives, which is the
+labelled-training-set problem we started with.
+
+Note the shape of this: ranking is fine, the base rate is fatal. That is the
+identical failure mode as `data/mining_pits/*.json` (7,725 "sites", 0.1% truth
+agreement) — a detector with respectable relative ordering, deployed against a
+prevalence it was never characterised at.
+
+### 10.2 So: is there anything we can do about mining?
+
+Honestly:
+
+* **Optical 10 m detection from our stack — no.** Both the hand-picked indices
+  (§8, AUC 0.45–0.56) and a well-trained CNN (§9.5, 0.781 balanced / ~0.001
+  precision at scale) fail, for different reasons. There is no third cheap
+  optical idea. Consider this closed.
+* **What would actually work** is out of our current reach, and worth naming so
+  nobody re-litigates the cheap options: (a) sub-metre commercial imagery over
+  small candidate AOIs, which needs a budget and an AOI source we don't have;
+  (b) Sentinel-1 SAR change detection, immune to the dry-season "everything is
+  bare" problem that flattened every optical feature, but a from-scratch
+  project; (c) a few thousand hand-labelled African ASM chips to fine-tune AMW —
+  the only route that turns 0.781 into something deployable; (d) simply
+  ingesting IPIS/partner field visits as *reported* sites, which is not
+  detection at all but is the only trustworthy mining data we have.
+* **What we already got out of this** is the basin layer (`park_basins`,
+  `park_basin_rivers`, `/api/parks/{id}/basin`, popup watershed line) — built as
+  mining infrastructure, validates on its own terms, and stays.
+
+### 10.3 What was switched off (2026-08-06)
+
+Kill switch: `srv/mining_flag.go` → `MiningEnabled = false`, mirrored by
+`MINING_ENABLED` in globe.html. Nothing was deleted — all JSON, notification
+rows and settlement labels remain in the DB.
+
+**The line drawn: the mining *inference* stays, the turbidity/pit *evidence*
+goes.** A settlement classified `mining` from river proximity + deforestation
+shape + fire absence + remoteness is ordinary contextual reasoning of exactly
+the same kind as `fishing` or `pastoral`, and is unaffected by the spectral
+negative result. What is removed is everything that came out of
+`river_turbidity.py` / `mining_pits.py`.
+
+| surface | action |
+|---|---|
+| Popup "Mining & Water Quality" accordion | removed (it was 100% turbidity-endpoint data) |
+| Star report `### Mining & water quality` block | removed |
+| Animator `turb` layer chip | dropped from `LAYER_ORDER`; remaining branches inert |
+| `GET /api/parks/{id}/turbidity` | returns `{"disabled": true}` |
+| `mining_alert` (4,267) + `turbidity_scan_*` notifications | filtered from the notifications API, dropdown, cron-status poll and RSS |
+| Turbidity/pit terms in `scoreMining` | removed — they contributed up to **+1.0** of a 1.0-capped score, so a single spurious plume could mint a `mining` label on its own. Remaining terms are contextual. |
+| "Sentinel-2 shows a sediment plume…" narrative sentence | stripped at serve time by `publicSettlementNarrative()` (28 stored rows) |
+| **2,562 scanner-injected `park_settlements` rows** | excluded from every settlement query (`scannerInjectedSQLFilter`). These were never settlements — `RegisterMiningCandidate` wrote detector output into the settlements table, inflating the global count from a true 10,390 to 12,952. |
+| cron `river_turbidity.py --rotate` (06:00), `mining_pits.py --rotate` (09:00) | commented out |
+| About/methodology copy on turbidity + pit scanning | removed; settlement-classification copy now states the contextual basis |
+
+`analysis/gfw_alerts.py --rotate` (04:30) **stays** — GFW integrated alerts are
+genuine near-real-time canopy loss, only ever *borrowed* by the mining scorer.
+
+Two subtleties worth keeping in mind if this is revisited:
+
+* The narrative strip cannot use `[^.]*` to find the end of a sentence — these
+  strings are full of decimals ("2.1km away", "0.11 km²") and a naive matcher
+  stops mid-number, leaving debris like "…alluvial extraction.1km away (~67km of
+  river turbid downstream…". See `sentenceTail` and the regression tests in
+  `srv/mining_flag_test.go`.
+* The injected rows are identified by the `[Pit detection …]` / `[Turbidity …]`
+  prefix `RegisterMiningCandidate` prepends, not by classification — they were
+  spread across *all six* classes (910 residential, 537 pastoral, 610 mining…),
+  because they went through the normal classifier on insert.
+
+If mining is revisited, start at §10.2's list — not at another index.

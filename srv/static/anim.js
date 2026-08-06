@@ -44,10 +44,12 @@
         effortPts:   { label: 'patrol circles', color: '#86efac', title: 'Patrol effort circles (like the live map) — age and ashen over 90d' },
         deforest:    { label: 'deforest',      color: '#a855f7', title: 'Deforestation events (accumulate)' },
         settlements: { label: 'settlements',   color: '#fbbf24', title: 'Settlements (static context)' },
-        turb:        { label: 'turbidity',     color: '#eab308', title: 'Turbidity plume + mining sites' },
         infra:       { label: 'infra',         color: '#60a5fa', title: 'Pinned roads/rivers/places (static)' }
     };
-    const LAYER_ORDER = ['fireGrid', 'firePts', 'trajs', 'effortGrid', 'effortPts', 'deforest', 'settlements', 'turb', 'infra'];
+    // 'turb' (turbidity plume + mining sites) removed 2026-08-06 --
+    // docs/MINING_FINDINGS_2026-08.md §10. The turbidity endpoint is disabled, so
+    // there is nothing to animate. Remaining turb branches below are inert.
+    const LAYER_ORDER = ['fireGrid', 'firePts', 'trajs', 'effortGrid', 'effortPts', 'deforest', 'settlements', 'infra'];
 
     function getPwdSafe() { return (typeof getPwd === 'function' ? getPwd() : '') || ''; }
     function toast(msg, type) { if (typeof showToast === 'function') showToast(msg, type || 'info'); }
@@ -1124,7 +1126,6 @@
                 if (v.settlements || pins.has('settlements')) initial.push('settlements');
                 const snap = snapshotPinned();
                 A.snapPreview = snap;
-                if (snap.turb.plume.length || snap.turb.mines.length) initial.push('turb');
                 if (snap.statics.length) initial.push('infra');
                 if (!initial.length) initial = ['fireGrid', 'trajs'];
             }

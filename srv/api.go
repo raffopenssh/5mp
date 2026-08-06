@@ -1212,10 +1212,11 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 	if len(bbox) == 4 {
 		s.DB.QueryRow(`
 			SELECT COUNT(*) FROM park_settlements
-			WHERE lon >= ? AND lon <= ? AND lat >= ? AND lat <= ?
+			WHERE lon >= ? AND lon <= ? AND lat >= ? AND lat <= ?` + scannerInjectedSQLFilter("narrative") + `
 		`, bbox[0], bbox[2], bbox[1], bbox[3]).Scan(&totalSettlements)
 	} else {
-		s.DB.QueryRow(`SELECT COUNT(*) FROM park_settlements`).Scan(&totalSettlements)
+		s.DB.QueryRow(`SELECT COUNT(*) FROM park_settlements WHERE 1=1` +
+			scannerInjectedSQLFilter("narrative")).Scan(&totalSettlements)
 	}
 
 	// Calculate trends
@@ -2465,7 +2466,7 @@ func (s *Server) HandleAPIParkFeatureStats(w http.ResponseWriter, r *http.Reques
 	rows2, err := s.DB.Query(`
 		SELECT classification, COUNT(*) 
 		FROM park_settlements 
-		WHERE park_id = ? AND classification != 'unclassified'
+		WHERE park_id = ? AND classification != 'unclassified'` + scannerInjectedSQLFilter("narrative") + `
 		GROUP BY classification
 	`, internalID)
 	if err == nil {
@@ -2474,7 +2475,8 @@ func (s *Server) HandleAPIParkFeatureStats(w http.ResponseWriter, r *http.Reques
 			var class string
 			var count int
 			if rows2.Scan(&class, &count) == nil {
-				stats.SettlementsByClass[class] = count
+				// mining labels are retired; fold into unclassified (§10)
+				stats.SettlementsByClass[publicSettlementClass(class)] += count
 			}
 		}
 	}
@@ -3740,7 +3742,7 @@ func (s *Server) fetchParkNarrativeSummary(parkID string) string {
 			COUNT(*) as count,
 			COALESCE(SUM(population_est), 0) as population
 		FROM park_settlements
-		WHERE park_id = ?
+		WHERE park_id = ?` + scannerInjectedSQLFilter("narrative") + `
 	`, parkID).Scan(&settlementCount, &totalPopulation)
 	if err == nil && settlementCount > 0 {
 		parts = append(parts, fmt.Sprintf("SETTLEMENTS: %d settlements, est. population %d", settlementCount, totalPopulation))
@@ -3805,7 +3807,8 @@ func (s *Server) HandleAPIFeed(w http.ResponseWriter, r *http.Request) {
 		since := now.AddDate(0, 0, -7)
 		notifQuery := `SELECT notification_type, title, message, created_at 
 		               FROM notifications 
-		               WHERE park_id = ? AND created_at > ? 
+		               WHERE park_id = ? AND created_at > ?` +
+			miningNotifSQLFilter() + ` 
 		               ORDER BY created_at DESC LIMIT 5`
 		notifRows, err := s.DB.Query(notifQuery, id, since.Format("2006-01-02 15:04:05"))
 		
@@ -3942,8 +3945,10 @@ func (s *Server) handleNotificationsFeed(w http.ResponseWriter, r *http.Request)
 	}
 
 	// Query recent notifications
+	// Mining/turbidity notifications are retired (docs/MINING_FINDINGS_2026-08.md
+	// §10) and must not leak out through the public RSS feed either.
 	query := `SELECT id, park_id, notification_type, title, message, reference_url, created_at
-	          FROM notifications ORDER BY created_at DESC LIMIT ?`
+	          FROM notifications WHERE 1=1` + miningNotifSQLFilter() + ` ORDER BY created_at DESC LIMIT ?`
 	rows, err := s.DB.Query(query, limit)
 	if err != nil {
 		http.Error(w, "Database error", http.StatusInternalServerError)
@@ -4444,8 +4449,8 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 			
 			// Use narrative from park_settlements if available
 			var description string
-			if narrative.Valid && narrative.String != "" {
-				description = narrative.String
+			if n := publicSettlementNarrative(classification.String, narrative.String); narrative.Valid && n != "" {
+				description = n
 			} else {
 				// Build from properties
 				var descParts []string
@@ -5266,7 +5271,7 @@ func (s *Server) HandleAPIParksExport(w http.ResponseWriter, r *http.Request) {
 			) d ON a.id = d.park_id
 			LEFT JOIN (
 				SELECT park_id, COUNT(*) as settlement_count, SUM(population_est) as total_pop 
-				FROM park_settlements GROUP BY park_id
+				FROM park_settlements WHERE 1=1` + scannerInjectedSQLFilter("narrative") + ` GROUP BY park_id
 			) st ON a.id = st.park_id
 			LEFT JOIN (
 				SELECT park_id, road_length_km as road_km, roadless_percentage as roadless_pct 
@@ -5306,7 +5311,8 @@ func (s *Server) HandleAPIParksExport(w http.ResponseWriter, r *http.Request) {
 			area.ID, dateFrom, dateFrom, dateTo, dateTo).Scan(&fires)
 		s.DB.QueryRow(`SELECT COUNT(DISTINCT group_name) FROM fire_group_alerts WHERE park_id = ?`, area.ID).Scan(&groups)
 		s.DB.QueryRow(`SELECT COALESCE(SUM(area_km2), 0), COUNT(*) FROM deforestation_events WHERE park_id = ?`, area.ID).Scan(&defoKm2, &defoEvents)
-		s.DB.QueryRow(`SELECT COUNT(*), COALESCE(SUM(population_est), 0) FROM park_settlements WHERE park_id = ?`, area.ID).Scan(&settlements, &pop)
+		s.DB.QueryRow(`SELECT COUNT(*), COALESCE(SUM(population_est), 0) FROM park_settlements WHERE park_id = ?`+
+			scannerInjectedSQLFilter("narrative"), area.ID).Scan(&settlements, &pop)
 		s.DB.QueryRow(`SELECT COALESCE(road_length_km, 0), COALESCE(roadless_percentage, 0) FROM osm_roadless_data WHERE park_id = ?`, area.ID).Scan(&roadsKm, &roadlessPct)
 		// Count patrolled grid cells within park bounds.
 		// Pixel count must respect the request's env tenant (test2026 -> 'test'):
@@ -5783,10 +5789,12 @@ func (s *Server) handleSettlementFeatures(w http.ResponseWriter, parkID string, 
 		
 		// Add narrative and other fields from park_settlements
 		if narrative.Valid {
-			props["narrative"] = narrative.String
+			if n := publicSettlementNarrative(classification.String, narrative.String); n != "" {
+				props["narrative"] = n
+			}
 		}
 		if classification.Valid {
-			props["classification"] = classification.String
+			props["classification"] = publicSettlementClass(classification.String)
 		}
 		if nearestPlace.Valid {
 			props["nearest_place"] = nearestPlace.String
@@ -5813,17 +5821,21 @@ func (s *Server) handleSettlementFeatures(w http.ResponseWriter, parkID string, 
 				SELECT lat, lon, narrative, classification
 				FROM park_settlements WHERE id = ? AND park_id = ?`,
 				sid, parkID).Scan(&lat, &lon, &narrative, &classification)
-			if err == nil {
+			// Scanner-injected rows (retired pit/turbidity detector) are not
+			// settlements and must not resolve as map features -- §10.
+			if err == nil && !scannerInjectedSettlement(narrative.String) {
 				props := map[string]interface{}{
 					"feature_type":  "settlement",
 					"feature_id":    featureID,
 					"settlement_id": sid,
 				}
 				if narrative.Valid {
-					props["narrative"] = narrative.String
+					if n := publicSettlementNarrative(classification.String, narrative.String); n != "" {
+						props["narrative"] = n
+					}
 				}
 				if classification.Valid {
-					props["classification"] = classification.String
+					props["classification"] = publicSettlementClass(classification.String)
 				}
 				geom, _ := json.Marshal(map[string]interface{}{
 					"type": "Point", "coordinates": []float64{lon, lat}})

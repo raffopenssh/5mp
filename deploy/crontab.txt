@@ -1,0 +1,26 @@
+# Daily fire update (3am UTC) - v5 pipeline with explicit environment
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+PYTHONPATH=/home/exedev/5mp/scripts
+
+# Main daily fire update
+0 3 * * * cd /home/exedev/5mp && /usr/bin/python3 scripts/daily_fire_update.py >> logs/daily_fire.log 2>&1
+
+# One-time test (will be removed after verification)
+# Run manually: /tmp/test_fire_download.sh
+
+# GFW deforestation alert rotation - one park/day (rate-limit friendly), CAR+SSD priority
+30 4 * * * cd /home/exedev/5mp && /usr/bin/python3 analysis/gfw_alerts.py --rotate >> logs/gfw_alerts.log 2>&1
+
+# River turbidity mining-detection rotation - DISABLED 2026-08-06.
+# docs/MINING_FINDINGS_2026-08.md §10: turbidity/pit detection measures at
+# chance against confusers; nothing downstream consumes it any more.
+# 0 6 * * * cd /home/exedev/5mp && /usr/bin/python3 analysis/river_turbidity.py --rotate >> logs/turbidity.log 2>&1
+
+# Daily park refresh - re-run fire/deforest/settlement narratives for park scanned by rotations above
+30 7 * * * cd /home/exedev/5mp && /usr/bin/python3 scripts/daily_park_refresh.py --rotate >> logs/daily_refresh.log 2>&1
+# Mining pit scanner rotation - DISABLED 2026-08-06 (see above; §10).
+# 0 9 * * * cd /home/exedev/5mp && /usr/bin/python3 analysis/mining_pits.py --rotate >> logs/mining_pits.log 2>&1
+
+# On-the-fly park onboarding/removal - all-time fire backfill ~25-30min/park, so start 01:00 (2h before 3am fire update)
+0 1 * * * cd /home/exedev/5mp && /usr/bin/python3 scripts/onboard_park.py >> logs/onboard_park.log 2>&1

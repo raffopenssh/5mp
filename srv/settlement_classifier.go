@@ -179,16 +179,22 @@ func (s *Server) loadSettlementContext(parkID string, st *ClassifiedSettlement) 
 		st.NearestRoad = haversineDistance(st.Lat, st.Lon, roadLat.Float64, roadLon.Float64)
 	}
 
-	// Mining evidence: river turbidity onsets (Sentinel-2) + GFW alert clusters
+	// Mining evidence: river turbidity onsets (Sentinel-2) + GFW alert clusters.
+	// Turbidity/pit evidence is retired (docs/MINING_FINDINGS_2026-08.md §10) so
+	// no NEW settlement can be labelled 'mining' from it. GFW alerts are genuine
+	// canopy-loss data and are still gathered for the other classifiers.
 	st.TurbidityAlertKm = 1e9
+	st.PitSiteKm = 1e9
+	st.GFWAlertsWithin5km = gfwAlertsNearby(parkID, st.Lat, st.Lon, 5)
+	if !MiningEnabled {
+		return
+	}
 	if d, a := nearestTurbidityAlertKm(parkID, st.Lat, st.Lon); a != nil {
 		st.TurbidityAlertKm = d
 		if d < 15 {
 			st.TurbidityAlert = a
 		}
 	}
-	st.GFWAlertsWithin5km = gfwAlertsNearby(parkID, st.Lat, st.Lon, 5)
-	st.PitSiteKm = 1e9
 	if d, p := nearestPitSiteKm(parkID, st.Lat, st.Lon); p != nil {
 		st.PitSiteKm = d
 		if d < 5 {
@@ -255,26 +261,19 @@ func (s *Server) scoreMining(st *ClassifiedSettlement) float64 {
 		score += 0.1
 	}
 	
-	// River turbidity onset nearby (Sentinel-2 sediment plume) — strongest
-	// signal for alluvial gold mining; confirmed at Chinko headwaters.
-	if st.TurbidityAlertKm < 3 {
-		score += 0.5
-	} else if st.TurbidityAlertKm < 10 {
-		score += 0.3
-	}
-	
-	// GFW integrated alerts clustered nearby (fresh canopy disturbance)
+	// Sentinel-2 turbidity onsets and bright-bare "pit" clusters used to add
+	// up to +1.0 here. Both are retired (docs/MINING_FINDINGS_2026-08.md §10):
+	// measured at chance against confusers, and they dominated this score, so
+	// a spurious plume alone could mint a mining label. What remains is
+	// contextual reasoning — river proximity, deforestation shape, fire
+	// absence, remoteness — which is independent of the spectral work.
+
+	// GFW integrated alerts clustered nearby (fresh canopy disturbance).
+	// Genuine near-real-time canopy loss, not a mining detector.
 	if st.GFWAlertsWithin5km > 100 {
 		score += 0.2
 	} else if st.GFWAlertsWithin5km > 20 {
 		score += 0.1
-	}
-
-	// Detected pit cluster nearby (Sentinel-2 bright-bare, persistent, riverside)
-	if st.PitSiteKm < 1 {
-		score += 0.5
-	} else if st.PitSiteKm < 5 {
-		score += 0.2
 	}
 
 	return math.Min(score, 1.0)
@@ -429,10 +428,8 @@ func (s *Server) buildSettlementNarrativeText(st *ClassifiedSettlement) string {
 		if st.NearestRiver != "" {
 			base += fmt.Sprintf(" Proximity to %s suggests alluvial extraction.", st.NearestRiver)
 		}
-		if st.TurbidityAlert != nil {
-			base += fmt.Sprintf(" Sentinel-2 shows a sediment plume on the %s %.1fkm away (~%.0fkm of river turbid downstream, %s) — consistent with active alluvial gold washing.",
-				st.TurbidityAlert.River, st.TurbidityAlertKm, st.TurbidityAlert.DownstreamTurbidKm, st.TurbidityAlert.Date)
-		}
+		// The Sentinel-2 "sediment plume" sentence was removed here (§10): it
+		// asserted active gold washing from a signal that measures at chance.
 		if st.GFWAlertsWithin5km > 20 {
 			base += fmt.Sprintf(" %d GFW canopy-disturbance alerts within 5km corroborate recent ground activity.", st.GFWAlertsWithin5km)
 		}
@@ -478,7 +475,7 @@ func (s *Server) GetClassifiedSettlements(parkID string) []ClassifiedSettlement 
 	rows, err := s.DB.Query(`
 		SELECT id, park_id, lat, lon, area_m2, population_est, nearest_place, distance_to_place_km
 		FROM park_settlements
-		WHERE park_id = ?
+		WHERE park_id = ?` + scannerInjectedSQLFilter("narrative") + `
 		ORDER BY area_m2 DESC
 	`, parkID)
 	if err != nil {

@@ -335,6 +335,10 @@ func (s *Server) RegisterMiningCandidate(parkID string, lat, lon, areaM2 float64
 // StartTurbidityWatcher periodically syncs turbidity scan output into
 // notifications (python cron writes the JSON; we surface it).
 func (s *Server) StartTurbidityWatcher() {
+	if !MiningEnabled {
+		slog.Info("turbidity watcher disabled (MiningEnabled=false, docs/MINING_FINDINGS_2026-08.md §10)")
+		return
+	}
 	go func() {
 		time.Sleep(30 * time.Second) // let server settle
 		for {
@@ -350,6 +354,18 @@ func (s *Server) StartTurbidityWatcher() {
 // settlements, and a GFW corroboration summary.
 func (s *Server) HandleAPIParkTurbidity(w http.ResponseWriter, r *http.Request) {
 	parkID := r.PathValue("id")
+
+	// Mining/turbidity is retired (docs/MINING_FINDINGS_2026-08.md §10). Serve an
+	// explicit disabled marker rather than 404 so any stale client renders
+	// nothing instead of an error.
+	if !MiningEnabled {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]any{
+			"disabled": true,
+			"reason":   "turbidity/pit mining detection retired: measured at chance against confusers",
+		})
+		return
+	}
 
 	// raw scan file (includes rivers[] coverage which loadTurbidityAlerts drops)
 	var scan map[string]any

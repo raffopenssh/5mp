@@ -1029,7 +1029,7 @@ func (s *Server) GetCachedClassifiedSettlements(parkID string) []ClassifiedSettl
 			COALESCE(narrative, ''), COALESCE(nearest_place, ''), COALESCE(distance_to_place_km, 0),
 			COALESCE(fires_5km, 0), COALESCE(fire_seasonality, ''), COALESCE(deforest_nearby_km2, 0)
 		FROM park_settlements
-		WHERE park_id = ?
+		WHERE park_id = ?` + scannerInjectedSQLFilter("narrative") + `
 		ORDER BY area_m2 DESC
 	`, parkID)
 	if err != nil {
@@ -1047,6 +1047,9 @@ func (s *Server) GetCachedClassifiedSettlements(parkID string) []ClassifiedSettl
 		if err != nil {
 			continue
 		}
+		// Strip retired turbidity/pit evidence sentences (§10). The 'mining'
+		// label itself is river-proximity inference and is kept.
+		st.Narrative = publicSettlementNarrative(st.Classification, st.Narrative)
 		settlements = append(settlements, st)
 	}
 	return settlements
