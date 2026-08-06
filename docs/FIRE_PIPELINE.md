@@ -764,18 +764,69 @@ spread over neighbouring cells that individually clear the ≥30-month bar but
 whose group seeds land on the un-listed fringe. Not a mask bug; a mask-recall
 gap. Worth a dilate-by-one-cell experiment if it recurs elsewhere.
 
-### Per-overpass slicing: implemented, OFF by default
+### Per-overpass slicing: implemented, OFF by default — re-tested 2026-08-06, STAYS OFF
 
-`--overpass` slices by satellite overpass rather than calendar day. It is
-**disabled** because with only NOAA-20 the two daily passes are wildly
-asymmetric — on ZMB_Kafue the day pass averages 763 fires at mean FRP 10.6, the
-night pass **63 fires at FRP 1.7**, with a median centroid offset of 55 km.
-Alternating them makes every other vertex a sparse, spatially-biased estimate,
-injecting an oscillation that trips the turn gate: `mean_days` −21%,
-`dup_pairs` +23%, `coverage` −2.4%.
+`--overpass` slices by satellite overpass (gap-clustering `acq_dt` with
+`OVERPASS_GAP_H=4`) rather than by calendar day.
 
-**Re-evaluate once SNPP + NOAA-21 have accumulated history** (~6 passes/day):
-each slice should then have enough detections to stand on its own.
+The 2026-08-05 handover parked this as "the point of the backfill": with only
+NOAA-20 the two daily passes were wildly asymmetric, and the expectation was
+that three sensors would give **~6 passes/day**, each dense enough to stand on
+its own. The full backfill is in, so it was finally testable.
+
+**The premise is false.** The three VIIRS sensors are all in the same
+sun-synchronous ~13:30 orbit plane, so their overpasses land on top of each
+other, not spread across the day. MOZ_Niassa, July 2025:
+
+| Sensor | Modal overpass hour (UTC) |
+|--------|---------------------------|
+| SNPP (`N`) | 10–11 |
+| NOAA-20 (`N20`) | 10–12 |
+| NOAA-21 (`N21`) | 10–12 |
+
+Gap-clustering at 4 h therefore yields **1.71 slices/day** (2 on 10 days of 14,
+1 on the other 4) — essentially the same day/night split as with one sensor.
+Three sensors made each pass ~3× denser; they did not add passes. And the
+day/night asymmetry that killed this in the first place is unchanged, because
+it is physical (night fires are smaller and cooler), not a sampling artefact:
+
+| Pass | detections | mean FRP |
+|------|-----------:|---------:|
+| day | 38,948 | 9.5 |
+| night | 2,220 | 1.5 |
+
+Still a 17× count gap and 6× FRP gap with all three sensors. Alternating a
+39k-detection estimate with a 2k one injects the same oscillation as before.
+
+A/B on the golden set (`data/eval/pre_overpass` vs `data/eval/overpass`):
+
+| Metric | Change | |
+|--------|--------|--|
+| `groups` | +10.5% | same fires cut into more pieces |
+| `fires_per_grp` | −10.6% | ✗ |
+| `mean_days` | −22.4% | ✗ tracks retired early |
+| `dup_pairs` | +16.0% | ✗ over-splitting |
+| `frag_pct` | +16.6% | ✗ |
+| `coverage_pct` | −3.3% | ✗ |
+| `speed_p95` | +16.9% | spurious velocity from the day↔night centroid jump |
+| `zigzag_bad_pct` | −17.8% | ✓ (only because groups are too short to zigzag) |
+
+Every gate in the flip criterion fails. `stationary_pct` is 0 on both sides, so
+this is not the hotspot-mask situation where the metrics mislead — the
+regression is real.
+
+**Conclusion: `USE_OVERPASS` stays `False`, and the "re-evaluate once more
+sensors land" plan is closed, not deferred.** More VIIRS sensors cannot help;
+they all fly the same orbit. This would only be worth revisiting with a sensor
+in a genuinely different plane or a geostationary source (MSG/SEVIRI, ~15 min
+cadence), which is a different ingest problem entirely.
+
+### Historical note: the original single-sensor measurement
+
+With only NOAA-20 on ZMB_Kafue the day pass averaged 763 fires at mean FRP
+10.6, the night pass **63 fires at FRP 1.7**, median centroid offset 55 km;
+`mean_days` −21%, `dup_pairs` +23%, `coverage` −2.4%. The 2026-08 re-test above
+supersedes this but reaches the same conclusion for the same reason.
 
 ### A/B eval harness
 

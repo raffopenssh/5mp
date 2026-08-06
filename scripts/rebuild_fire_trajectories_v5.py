@@ -238,11 +238,18 @@ def load_park_fires(park_id, min_date, conn=None):
 def overpass_slices(fires):
     """Split fires into satellite overpasses by gap-clustering acq_dt.
 
-    v6 bucketed by calendar date, which merged the day and night pass (~12h
-    apart) into a single FRP-weighted centroid - averaging away the very
-    movement we are trying to measure. Slicing by overpass roughly doubles
-    temporal resolution today, and scales automatically as more satellites
-    are ingested.
+    Only active with USE_OVERPASS (--overpass), which is OFF and expected to
+    stay off. The idea was that v6's calendar-date bucketing merges the day and
+    night pass (~12h apart) into one FRP-weighted centroid, averaging away the
+    movement we want to measure.
+
+    Measured 2026-08-06 with all three VIIRS sensors ingested: it does not pay
+    off, and cannot. SNPP/NOAA-20/NOAA-21 share one sun-synchronous ~13:30
+    orbit plane, so their overpasses coincide (all modal at 10-12 UTC) instead
+    of spreading through the day - 1.71 slices/day, not the ~6 that was hoped
+    for. The night pass stays ~17x sparser at ~6x lower FRP, so alternating
+    slices still injects an oscillation: fires_per_grp -10.6%, mean_days -22.4%,
+    dup_pairs +16.0%, coverage -3.3%. See docs/FIRE_PIPELINE.md.
     """
     if not fires:
         return []
