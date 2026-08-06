@@ -1,9 +1,9 @@
 # AOI overlays — status & handover
 
-Status: **commits 1–3/4 landed, 5 partial.** Rewritten 2026-08-06 from a plan
-into a handover. The design rationale is now in the code comments and the
-commit messages (`git log --oneline --grep '^aoi'`); this file is the map of
-what exists, what is measured, and what is left.
+Status: **commits 1–7/7 landed; the queue is running.** Rewritten 2026-08-06
+from a plan into a handover, updated 2026-08-07. The design rationale is in the
+code comments and the commit messages (`git log --oneline --grep '^aoi'`); this
+file is the map of what exists, what is measured, and what is left.
 
 ---
 
@@ -46,9 +46,10 @@ mechanism, not a special case.
 
 ## 1. What exists now
 
-### Schema — migration `db/migrations/040-aoi-overlays.sql`
+### Schema — migrations `040-aoi-overlays.sql`, `041-aoi-parks.sql`
 `aois`, `principals`, `aoi_grants`, `aoi_datasets` (the work queue),
-`aoi_fires` (polygon membership cache). Applied; 40 migrations total.
+`aoi_fires` (polygon membership cache), `aoi_parks` (precomputed park overlap,
+both fractions). Applied; 41 migrations total.
 
 ### Go — `srv/aoi.go`
 * `principalRef(pwd)` = `sha256(pwd)[:16]`. The secret is never stored.
@@ -73,10 +74,25 @@ any id in the AOI set (also for `/api/park/`, `/park/`, and `?park=`).
 *every* cacheable path rather than an AOI-only list — such a list is exactly
 the thing that goes stale. Cost: one cache entry per active password.
 
+### The second hole: queries with no park_id at all
+Visibility at the `/api/aois/*` boundary covers every query keyed by an
+explicit park id. It does **not** cover the ones keyed by bbox alone:
+`/api/features-in-bbox`, `/api/fire-anim-trajectories`, the dashboard's global
+`SUM(stat_value)` counters, the global settlement count, the two `osm_places`
+nearest-place lookups. Over the XSA bbox the feature browser was serving 573
+of its top 1,500 rows from a private AOI. The same shape also **double
+counts**: an AOI is rebuilt over ground four parks already cover.
+
+`aoiExcludeSQL(col)` in `srv/aoi.go` is the one filter (leading `AND`,
+subquery over the tiny `aois` table, plus the `'aoi:%'` scope prefix that
+`run_osm` uses for `osm_places`/`roads_heigit`). Applied at all six sites; two
+regression tests assert it over the XSA bbox. **Any new query over
+park-shaped storage that does not take a park_id needs it.**
+
 ### Routes
 ```
 GET /api/aois                                  list visible to the principal
-GET /api/aois/{id}                             metadata + per-dataset coverage
+GET /api/aois/{id}                             metadata + coverage + parks
 GET /api/aois/{id}/fire-narrative              \
 GET /api/aois/{id}/fire-trend                   |  park handlers,
 GET /api/aois/{id}/fire-realtime                |  gated by aoiGate()
@@ -88,11 +104,27 @@ GET /api/aois/{id}/export.geojson
 Still to add (§3): `POST /api/aois`, `POST /api/aois/{id}/refresh`,
 `DELETE /api/aois/{id}`, `export.kml`.
 
+### Frontend — `srv/templates/globe.html`
+* **`apiBase(id)`** is the single routing point: `/api/aois/{id}` for an id in
+  `window.AOI_IDS`, `/api/parks/{id}` otherwise. 22 call sites. Filled by
+  `loadAOIs()` at map load, before anything can reference an AOI. Because
+  `/api/parks/{aoi}` 404s, a missed call site fails loudly rather than leaking.
+* `aois` source + `aois-outline` (dashed blue) and `aois-fill` (4% opacity,
+  only so the interior is clickable). A park inside an AOI wins the click.
+* `showAOIPopup()` reuses the park popup's chrome: Overview & coverage, Fire,
+  Settlements, Deforestation — the last three are the *unmodified* park
+  fetchers. Species/research/legal/climate are absent by design; Overview
+  links to the intersecting parks instead.
+* `aoiCoverageHTML()` renders one progress bar per `aoi_datasets` row.
+* `#aoi-toggle` chip (hidden unless the principal can see an AOI),
+  `animateAOI()` → fit bbox + set the window + `Animator.open()`.
+
 ### Python
 | file | what |
 |---|---|
 | `scripts/aoi_lib.py` | connect, `principal_ref` (mirrors Go), `upsert_aoi`, `seed_datasets`, `firms_area`, `inject_aoi` |
 | `scripts/aoi_admin.py` | `create` / `list` / `show` |
+| `scripts/aoi_clip.py` | **Phase A**: clip the overlapped parks' data into the AOI; writes `aoi_parks` |
 | `scripts/build_aoi_fires.py` | polygon membership → `aoi_fires`; `--since` incremental |
 | `scripts/aoi_runner.py` | the queue runner; `--daily` / `--aoi X --dataset Y --budget N` / `--status` |
 | `scripts/osm_pbf.py` | Geofabrik+osmium, lifted out of the retired turbidity script; `--enrich-missing` |
@@ -112,9 +144,18 @@ Still one fire source: `aoi_fires` holds **ids**, not detections.
 
 **XSA_Study_Area**: 7-vertex polygon, bbox `22.7038,4.2520 .. 31.2974,10.9665`,
 **485,150 km²**, window 2024-01-01.., owner `$AOI_OWNER_PWD` (appended to
-`ACCESS_PASSWORDS` in `secrets.env`, gitignored). Contains CAF_Chinko and
-SSD_Southern; overlaps COD_Bili-Uere (35%) and COD_Garamba (13%). Spans SSD,
-CAF, SDN, COD, TCD.
+`ACCESS_PASSWORDS` in `secrets.env`, gitignored). Spans SSD, CAF, SDN, COD, TCD.
+Park overlap, now precomputed in `aoi_parks` (frac of AOI / frac of park):
+CAF_Chinko 4.1% / 100%, SSD_Southern 4.0% / 100%, COD_Bili-Uere 2.3% / 34.6%,
+COD_Garamba 0.13% / 12.6% — **10.5% of the polygon inside any park**.
+
+**Phase A clip** (`aoi_clip.py`, ~4 s, zero quota): 145 settlements, 40
+deforestation events, 539 places, 8,845 river reaches, 141 roads, 373
+`feature_geometries`. Two traps found while building it, both still live for
+any future clip: `feature_id` must be re-keyed `<aoi>_<srcpark>`, not `<aoi>`
+(the per-park counters all restart at 0, so four parks' `_0` rows collide and
+`INSERT OR IGNORE` silently drops 106 of 373); and roads must be clipped by
+geojson intersection, not by centroid, and kept whole.
 
 **Built end to end** (with only pre-existing ingest, i.e. before `fire_gap`):
 2,154,657 detections tested in bbox → **1,613,243 inside** (14 s) → **21,189
@@ -142,9 +183,12 @@ silent 400 (that bug shipped once).
 +1,748 roads, DZA_Djurdjura +2,505 places / +46,866 roads. `osm_places` and
 `roads_heigit` are now **163/163 parks**.
 
-**Tests**: `./tests/api_tests.sh` 43/43, including AOI visibility, 404-not-403,
-malformed id, and a back-to-back owner/test2026 request proving the response
-cache does not leak.
+**Tests**: `./tests/api_tests.sh` 45/45, including AOI visibility,
+404-not-403, malformed id, a back-to-back owner/test2026 request proving the
+response cache does not leak, and two assertions that AOI rows are absent from
+the bbox-keyed endpoints. UI verified both ways: `$AOI_OWNER_PWD` sees the
+polygon, the chip and populated sections; `test2026` gets `AOI_IDS` empty, the
+chip hidden and a 0-feature source.
 
 **Pre-existing, unrelated**: `check_fire_consistency.py` reports ~39k issues
 across ZMB/ZWE parks from an earlier partial rebuild. Not caused by this work
@@ -157,18 +201,17 @@ gate. Fix it separately before relying on it.
 
 Ordered; each is independently shippable.
 
-**a. Finish the runner (commit 5).**
-* Cron entry — deliberately its own, far from the 03:00 fire job:
-  ```cron
-  0 12 * * * cd /home/exedev/5mp && /usr/bin/python3 scripts/aoi_runner.py --daily >> logs/aoi.log 2>&1
-  ```
-  Add `logs/aoi.log` to `5mp.logrotate`.
-* Then actually run `fire_gap` (budget generously, ~120 windows/slice) and
-  `gfw`. `fire_gap` finishes by refreshing `aoi_fires` and running
-  `build_fire_grid_agg.py --since` — **without that the animator shows stale
-  fires.** Re-run `fire_v5` afterwards; its `aoi_datasets` row is still
-  `pending` even though the chain has been run once by hand, which is correct:
-  it must re-run once the gap is filled.
+**a. Finish the runner.** Cron installed (`0 12 * * *`, deliberately far from
+the 03:00 fire job); `logs/aoi.log` is already covered by `5mp.logrotate`'s
+`logs/*.log` glob. `clip` is done, `fire_gap` is in progress (~2M new
+detections, 570 five-day windows × 3 sensors).
+
+`fire_gap` finishes by refreshing `aoi_fires` and running
+`build_fire_grid_agg.py --since` — **without that the animator shows stale
+fires.** `fire_v5` then runs automatically via `depends_on`; its row is still
+`pending` even though the chain has been run once by hand, which is correct:
+it must re-run once the gap is filled, and it will take ~8 min and 1.3 GB RSS
+over a much larger detection set than the 21,189-group first run.
 * Missing runners (`RUNNERS` returns `blocked`): `ghsl` (4 tiles, R2023A E2030
   100 m, `R7_C20` 1.5 MB / `R7_C21` 1.7 MB / `R8_C20` 11.5 MB / `R8_C21` 6.6 MB
   under `GHS_BUILT_S_GLOBE_R2023A/GHS_BUILT_S_E2030_GLOBE_R2023A_54009_100/V1-0/tiles/`;
@@ -180,31 +223,34 @@ Ordered; each is independently shippable.
   that over a Hansen download).
 * Kill switch: `UPDATE aoi_datasets SET enabled=0 WHERE aoi_id='XSA_Study_Area'`.
 
-**b. Phase A: clip from neighbours.** Intersect what already exists (the 4
-overlapped parks' `feature_geometries`, settlements, deforestation, rivers,
-roads) with the AOI polygon and window. Zero quota, instant, makes the AOI real
-before the cron finishes. Covers 10.5–53.6% of the polygon, so **label it as a
-preview** (see the coverage table below).
+**b. ~~Phase A: clip from neighbours.~~** Done — `scripts/aoi_clip.py`,
+dataset `clip` at priority 5. See §2 for the numbers and the two re-keying
+traps.
 
-**c. UI.** Reuses the *chrome* of the park popup and almost none of its content.
-* Tooltip: name, km², window, `state` badge, one-line coverage summary; two
-  icon buttons (Animate, Report).
-* Popup sections: **Overview** (area, window, the 4 intersecting parks as links
-  — say once that species/publications/legal/climate live there — plus the
-  **coverage table**, one row per `aoi_datasets` row with a progress bar and
-  ETA), **Fire**, **Deforestation**, **Settlements**, **Layers** (toggle/pin
-  grid; pins keyed `aoi:<id>:<type>`). No species/publications/legal/climate —
-  absent, not hidden.
-* `/api/areas` gains AOIs as features with `kind: "aoi"` (dashed outline, no
-  fill) + an `Areas of interest` chip reusing the keystones-toggle machinery.
-  Share param `aoi=<id>`.
-* Notifications for an AOI must be principal-filtered or the name leaks in a
-  title — same shape as `miningNotifSQLFilter()` in `srv/mining_flag.go`.
+**c. ~~UI.~~** Done for read: `aois` map source with a dashed outline and a
+click-only fill, `showAOIPopup()` (Overview & coverage / Fire / Settlements /
+Deforestation), the per-dataset coverage table, `apiBase()` routing and the
+`#aoi-toggle` chip. AOIs are served by `/api/aois`, **not** folded into
+`/api/areas` as originally sketched — `/api/areas` is cached, unauthenticated
+in effect, and consumed by a dozen park-shaped code paths; a visibility-scoped
+member in it would have been the same hole as §1's park-route hole.
 
-**d. Animator.** Nearly free: `anim.js` is already bbox-driven and supports a
-fixed bbox (`activeBbox()` → `A.bboxFixed`). Set the fetch bbox to the AOI bbox
-and the range to the AOI window, and replace the rect clip with one
-`ctx.clip()` on the polygon path. Layer chips work unchanged — every frames
+Still open:
+* Hover **tooltip** (currently click-only, no hover card).
+* Share param `aoi=<id>` and the popup/section state that goes with it.
+* **Notifications** for an AOI must be principal-filtered or the name leaks in
+  a title — same shape as `miningNotifSQLFilter()` in `srv/mining_flag.go`.
+  Nothing generates them yet, so this is a precondition, not a bug.
+* A **Layers** section (pins keyed `aoi:<id>:<type>`). The existing pin
+  machinery already works because `loadPinnedLayer()` goes through
+  `apiBase()`, but the pins are keyed by bare id, so an AOI and a park of the
+  same name would share a pin. Not reachable today (ids are disjoint).
+
+**d. Animator.** `animateAOI()` ships the cheap 80%: fit the AOI bbox, set the
+date range to the AOI window, open the animator. What is left is the polygon
+clip — `anim.js` clips to a *rectangle* (`A.bboxFixed`), so frames currently
+spill into the bbox corners outside the polygon. Replace the rect clip with
+one `ctx.clip()` on the polygon path. Layer chips work unchanged; every frames
 endpoint is bbox-scoped.
 
 **e. Report.** `collectReportParks()` already folds starred bboxes in by
@@ -237,6 +283,14 @@ the underlying pixels — don't pretend otherwise.
 * After any bulk fire change: `build_fire_grid_agg.py --since`.
 * `aoi_runner` must never write `fire_narrative_cache` directly — it shells out
   to `precompute_narratives_v5.py` (AGENTS.md single-writer rule).
+* **Any new query over park-shaped storage that does not take an explicit
+  `park_id` needs `aoiExcludeSQL()`** — for privacy *and* to avoid double
+  counting an AOI over the parks it overlaps. See §1.
+* `aoi_clip.py` must not touch `feature_type='fire_trajectory'`: that belongs
+  to the v5 chain, which has its own delete. The two writers are only safe
+  because they own disjoint feature types for the same `park_id`.
+* Frontend: build every park/AOI endpoint URL through `apiBase(id)`. A raw
+  `/api/parks/${id}/` string works for parks and 404s for AOIs.
 * Verification set: `/api/aois` empty for `test2026`, populated for
   `$AOI_OWNER_PWD`; `/api/aois/XSA_Study_Area/*` 404 vs 200;
   `/api/parks/XSA_Study_Area/*` 404 for everyone; **CAF_Chinko = 8,753**;
