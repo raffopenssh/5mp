@@ -111,6 +111,16 @@ GEOM_TABLES = [
 LINE_TABLES = ["roads_heigit"]
 
 
+# Rows a later unit owns and the clip must not delete. The clip is a preview
+# from neighbouring parks; the `deforestation` unit derives real GFW-era events
+# for the AOI itself into the same table, keyed by a 'deforest_gfw_' prefix.
+# Two writers, one table, disjoint prefixes -- and that only holds if each
+# scopes its delete.
+DELETE_EXCLUDE = {
+    "deforestation_events": "polygon_ids LIKE 'deforest_gfw_%'",
+}
+
+
 def columns(conn, table):
     return [r[1] for r in conn.execute(f"PRAGMA table_info({table})")]
 
@@ -146,13 +156,19 @@ def clip_table(conn, aoi_id, table, geom, park_ids, lo, hi, dry=False):
 
     if dry:
         return len(rows), len(keep)
-    conn.execute(f"DELETE FROM {table} WHERE park_id = ?", (aoi_id,))
+    delete_rows(conn, table, aoi_id)
     if keep:
         ph = ",".join("?" for _ in copy)
         conn.executemany(
             f"INSERT OR IGNORE INTO {table} ({src_sel}) VALUES ({ph})", keep)
     conn.commit()
     return len(rows), len(keep)
+
+
+def delete_rows(conn, table, aoi_id):
+    excl = DELETE_EXCLUDE.get(table)
+    conn.execute(f"DELETE FROM {table} WHERE park_id = ?" +
+                 (f" AND NOT ({excl})" if excl else ""), (aoi_id,))
 
 
 def clip_line_table(conn, aoi_id, table, geom, park_ids, lo, hi, dry=False):
@@ -180,7 +196,7 @@ def clip_line_table(conn, aoi_id, table, geom, park_ids, lo, hi, dry=False):
         keep.append(vals)
     if dry:
         return len(rows), len(keep)
-    conn.execute(f"DELETE FROM {table} WHERE park_id = ?", (aoi_id,))
+    delete_rows(conn, table, aoi_id)
     if keep:
         ph = ",".join("?" for _ in copy)
         conn.executemany(f"INSERT OR IGNORE INTO {table} ({', '.join(copy)}) "
@@ -241,8 +257,14 @@ def clip_features(conn, aoi_id, geom, park_ids, lo, hi, dry=False):
     # nothing must not leave the previous run's rows immortal (AGENTS.md,
     # "a park with zero groups is a real state"). fire_trajectory is NOT
     # touched here — it belongs to the v5 chain.
+    #
+    # Nor are 'deforest_gfw_%' rows: the `deforestation` unit derives those
+    # from the AOI's own GFW alerts and owns them, exactly as it does for a
+    # park. Three writers now share (park_id=<aoi>, feature_type) and they are
+    # only safe because each deletes a disjoint id prefix.
     conn.execute("DELETE FROM feature_geometries WHERE park_id = ? AND "
-                 "feature_type IN ('settlement', 'deforestation')", (aoi_id,))
+                 "feature_type IN ('settlement', 'deforestation') AND "
+                 "feature_id NOT LIKE 'deforest_gfw_%'", (aoi_id,))
     if out:
         conn.executemany("""
             INSERT OR IGNORE INTO feature_geometries

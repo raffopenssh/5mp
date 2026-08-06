@@ -292,7 +292,9 @@ def run_gfw(conn, aoi, ds, deadline, budget):
     cur = load_cursor(ds)
     if not cur:
         cur = {"i": 0, "tiles": gfw_alerts.tiles_for_bbox(x0, y0, x1, y1, 0.5),
-               "alerts": 0}
+               "alerts": 0, "since": since}
+    since = cur.get("since", since)   # a resumed scan keeps its cutoff, or the
+                                      # cache keys stop matching mid-scan
     tiles, total = cur["tiles"], len(cur["tiles"])
     used = 0
     while cur["i"] < total and used < budget and time.time() < deadline:
@@ -306,7 +308,72 @@ def run_gfw(conn, aoi, ds, deadline, budget):
         used += 1
         progress(conn, aoi["id"], ds["dataset"], cur, cur["i"], total,
                  detail=f"{cur['alerts']:,} alerts")
-    return cur["i"] >= total, f"{cur['alerts']:,} alerts, {cur['i']}/{total} tiles"
+    finished = cur["i"] >= total
+    if finished:
+        # Collate the scan file the deforestation step (and srv/turbidity.go's
+        # GFW reader) expect. Re-reading every tile is cheap because they are
+        # all cache hits by now -- and it is the only way to assemble a scan
+        # that was fetched across several days of slices without holding
+        # hundreds of thousands of alert rows in the cursor.
+        alerts = []
+        for (w, s, e, n) in tiles:
+            try:
+                alerts += gfw_alerts.fetch_tile(w, s, e, n, since)
+            except Exception:
+                continue
+        write_gfw_scan(aoi, alerts, since, (x0, y0, x1, y1))
+        log(f"  wrote data/gfw_alerts/{aoi['id']}.json ({len(alerts):,} alerts)")
+    return finished, f"{cur['alerts']:,} alerts, {cur['i']}/{total} tiles"
+
+
+def write_gfw_scan(aoi, alerts, since, bbox):
+    """Same shape as analysis/gfw_alerts.py scan_park() writes for a park."""
+    sys.path.insert(0, str(BASE_DIR / "analysis"))
+    import gfw_alerts
+    out = BASE_DIR / "data" / "gfw_alerts" / f"{aoi['id']}.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "park_id": aoi["id"], "is_aoi": True,
+        "scanned_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "since": since, "buffer_km": 0,
+        "bbox": [round(v, 3) for v in bbox],
+        "n_alerts": len(alerts),
+        "clusters": gfw_alerts.cluster(alerts),
+    }
+    tmp = out.with_suffix(".json.tmp")
+    json.dump(payload, open(tmp, "w"))
+    tmp.replace(out)
+
+
+def run_deforestation(conn, aoi, ds, deadline, budget):
+    """Deforestation events for the AOI, derived from the GFW alerts the `gfw`
+    unit already fetched -- deliberately NOT a Hansen download.
+
+    Hansen would be tens of GB of tiles for one polygon and stops at 2023;
+    the integrated alerts are already on disk, already quality-gated, and are
+    the same source the parks' own 2024+ events come from, so the AOI's
+    numbers are comparable to its parks' instead of being a second method.
+
+    One unit: the classifier is the canonical EventRebuilder, so an AOI event
+    reads exactly like a park event.
+    """
+    sys.path.insert(0, str(BASE_DIR / "scripts"))
+    import daily_park_refresh as dpr
+    from rebuild_events_enhanced import EventRebuilder
+
+    geom = aoi_lib.aoi_geom(aoi)
+    rebuilder = EventRebuilder()
+    try:
+        n = dpr.ingest_gfw_deforestation(
+            conn, rebuilder, aoi["id"],
+            bbox=aoi_lib.aoi_bbox(aoi), clip_geom=geom)
+    finally:
+        try:
+            rebuilder.conn.close()
+        except Exception:
+            pass
+    progress(conn, aoi["id"], ds["dataset"], {"i": 1}, 1, 1)
+    return True, f"{n:,} deforestation events from GFW alerts"
 
 
 def run_osm(conn, aoi, ds, deadline, budget):
@@ -379,6 +446,7 @@ RUNNERS = {
     "fire_gap": run_fire_gap,
     "fire_v5": run_fire_v5,
     "gfw": run_gfw,
+    "deforestation": run_deforestation,
     "osm": run_osm,
     "basin": run_basin,
 }
