@@ -169,8 +169,8 @@ curl -X POST "http://localhost:8000/api/upload/async?pwd=test2026" -F "gpx=@file
 
 | Table | Records | Description |
 |-------|---------|-------------|
-| fire_detections | 6.1M+ | VIIRS satellite fires (2018-2026) |
-| feature_geometries | 458K | GeoJSON polygons/lines |
+| fire_detections | 42.9M | VIIRS satellite fires, 3 sensors (2018-2026) |
+| feature_geometries | 997K | GeoJSON polygons/lines |
 | fire_narrative_cache | 162 | Precomputed fire narratives (v5) |
 | park_rivers | 215K | HydroRIVERS data (161 parks) |
 | park_settlements | 9,933 | Classified settlement clusters |
@@ -179,7 +179,7 @@ curl -X POST "http://localhost:8000/api/upload/async?pwd=test2026" -F "gpx=@file
 | park_species | 39.5K | IUCN mammal species |
 
 **Feature geometries by type:**
-- fire_trajectory: 173,066 (2020-2026, v5)
+- fire_trajectory: 711,506 (2020-2026, v7 rebuild 2026-08-06)
 - deforestation: 221,277 (2001-2024)
 - settlement: 64,016
 - road: 26,550
@@ -287,16 +287,16 @@ curl -H "Authorization: Bearer $BACKUP_PEER_TOKEN" \
 
 ---
 
-## ⚠️ Fire data source: SQLite, NOT `data/raw-fire-viirs-*/`
+## ⚠️ Fire data source: SQLite only
 
-`data/raw-fire-viirs-20200101-20260222/{park}.json` is a **rolling window**
-(~6 months for 162/163 parks), not an archive. `fire_detections` is canonical —
-CAF_Chinko has 18k fires in JSON vs **425k** in the DB.
+`fire_detections` (42.9M rows, 3 sensors) is the one and only fire source.
+Read it via `scripts/fire_source.py` (`load_park_fires(park, min_date)`).
 
-Read fires via `scripts/fire_source.py` (`load_park_fires(park, min_date)`).
-The trajectory builder defaults to `--source db`; `--source json` exists only
-for A/B against old output. Before this was fixed, a full non-incremental
-rebuild would have silently discarded years of trajectories.
+The old `data/raw-fire-viirs-*/{park}.json` was a **rolling ~6-month window**
+masquerading as an archive (CAF_Chinko: 18k fires in JSON vs 425k in the DB), so
+a full non-incremental rebuild silently discarded years of trajectories. It was
+deleted 2026-08-05 along with its two nightly writers and the `--source json`
+flag; don't reintroduce a second copy of the detections.
 
 **Never tune the fire algorithm by eye** — use
 `scripts/eval_fire_trajectories.py` (6-park golden set;
@@ -305,15 +305,32 @@ rebuild would have silently discarded years of trajectories.
 bit-exactly; verify that before trusting any delta.
 See `docs/FIRE_PIPELINE.md` § v7.
 
-Per-overpass slicing (`--overpass`) is implemented but **off**: with only
-NOAA-20 the night pass is ~12x sparser than the day pass, which measurably
-regresses tracking. Revisit once SNPP/NOAA-21 history accumulates.
+Per-overpass slicing (`--overpass`) is implemented but **off**: measured as a
+regression back when only NOAA-20 was ingested (night pass ~12x sparser). All
+three sensors are in now, so the A/B is finally meaningful —
+`docs/FIRE_TODO_HANDOVER.md` #4.
 
-All three VIIRS sensors are now ingested (NOAA-20 + SNPP + NOAA-21, ~3x the
+All three VIIRS sensors are ingested (NOAA-20 + SNPP + NOAA-21, ~3x the
 detections). Satellite codes `N`/`N20`/`N21` are part of the
 `fire_detections` UNIQUE key — never default that field.
 
 Use `--parks a,b,c` (one process) rather than repeated `--park` calls.
+
+`data/fire_groups_v5/` and `data/fire_trends_v5/` are **gitignored derived
+output** (762 MB, 711k groups) — regenerate, don't commit.
+
+### A park with zero groups is a real state, not a no-op
+
+Rainforest/desert parks can rebuild to 0 groups, or to groups that all sit
+>20 km outside the boundary (past the narrative cutoff). Both writers must
+handle it explicitly or the old rows become immortal:
+
+- `load_fire_groups_to_db.py` deletes `feature_geometries` rows **before**
+  the empty-input early return.
+- `precompute_narratives_v5.py` writes an **empty v5 cache row** for such
+  parks. Do *not* delete the row instead: a cache miss drops
+  `HandleAPIFireNarrative` into the deprecated Go slow path (17s,
+  `feature_id: null`) — the exact Single-Writer-Rule failure.
 
 ---
 
@@ -333,8 +350,9 @@ python3 scripts/fix_fire_consistency.py --dry-run     # then without --dry-run
 
 The nightly pipeline runs the check as step 7 and records the result in
 `data/pipeline_status.json`, served by `GET /api/pipeline-status` (adds `stale`
-after 48h = two missed runs). Log rotation: `5mp.logrotate` →
-`/etc/logrotate.d/5mp`.
+after 48h = two missed runs) and shown as a colour-coded badge in the **admin
+panel header** (click for per-step counters + errors). Log rotation:
+`5mp.logrotate` → `/etc/logrotate.d/5mp`.
 
 **Persistent hotspot mask**: `fire_persistent_cells` (323 cells, 32 parks) lists
 0.0034deg cells detected in >=30 distinct months — lava lakes (COD_Virunga),
