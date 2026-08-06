@@ -49,6 +49,15 @@ func (s *Server) HandleGetNotifications(w http.ResponseWriter, r *http.Request) 
 	// retired but not deleted -- docs/MINING_FINDINGS_2026-08.md §10. Appended to
 	// envCond so every branch below (and the unread count) inherits it.
 	envCond += miningNotifSQLFilter()
+	// AOI notifications ('aoi_progress', and anything else keyed by an AOI id)
+	// are private to the principals who may see the AOI: the title carries its
+	// name. Appended to envCond for the same reason, so every branch and the
+	// unread count inherit it. envArgs replaces the bare `env` in each branch.
+	aoiCond, aoiArgs := aoiNotifSQLFilter("park_id", s.RequestPrincipalID(r))
+	envCond += aoiCond
+	envArgs := append([]interface{}{env}, aoiArgs...)
+	// Same filter for the aliased fire_alert branch (which does not use envCond).
+	nAOICond, nAOIArgs := aoiNotifSQLFilter("n.park_id", s.RequestPrincipalID(r))
 
 	// For fire_alert notifications with active=true, filter by recent end_date in feature_geometries
 	if notifType == "fire_alert" && activeOnly {
@@ -57,13 +66,14 @@ func (s *Server) HandleGetNotifications(w http.ResponseWriter, r *http.Request) 
 		         JOIN feature_geometries fg ON n.park_id = fg.park_id AND n.reference_id = fg.feature_id
 		         WHERE n.notification_type = 'fire_alert'
 		           AND fg.feature_type = 'fire_trajectory'
-		           AND julianday('now') - julianday(fg.end_date) <= 3
+		           AND julianday('now') - julianday(fg.end_date) <= 3` +
+			nAOICond + `
 		         ORDER BY n.created_at DESC LIMIT ?`
-		args = []interface{}{limit}
+		args = append(append([]interface{}{}, nAOIArgs...), limit)
 	} else if parkID != "" {
 		query = `SELECT id, park_id, notification_type, title, message, reference_id, reference_url, reference_data, is_read, created_at
 		         FROM notifications WHERE park_id = ? AND ` + envCond + ` ORDER BY created_at DESC LIMIT ?`
-		args = []interface{}{parkID, env, limit}
+		args = append(append([]interface{}{parkID}, envArgs...), limit)
 	} else if notifType != "" {
 		// comma-separated list of types supported (e.g. cron status types)
 		types := strings.Split(notifType, ",")
@@ -73,15 +83,16 @@ func (s *Server) HandleGetNotifications(w http.ResponseWriter, r *http.Request) 
 		for _, t := range types {
 			args = append(args, strings.TrimSpace(t))
 		}
-		args = append(args, env, limit)
+		args = append(args, envArgs...)
+		args = append(args, limit)
 	} else if unreadOnly {
 		query = `SELECT id, park_id, notification_type, title, message, reference_id, reference_url, reference_data, is_read, created_at
 		         FROM notifications WHERE is_read = 0 AND ` + envCond + ` ORDER BY created_at DESC LIMIT ?`
-		args = []interface{}{env, limit}
+		args = append(append([]interface{}{}, envArgs...), limit)
 	} else {
 		query = `SELECT id, park_id, notification_type, title, message, reference_id, reference_url, reference_data, is_read, created_at
 		         FROM notifications WHERE ` + envCond + ` ORDER BY created_at DESC LIMIT ?`
-		args = []interface{}{env, limit}
+		args = append(append([]interface{}{}, envArgs...), limit)
 	}
 
 	rows, err := s.DB.Query(query, args...)
@@ -129,7 +140,7 @@ func (s *Server) HandleGetNotifications(w http.ResponseWriter, r *http.Request) 
 
 	// Get unread count
 	var unreadCount int
-	s.DB.QueryRow("SELECT COUNT(*) FROM notifications WHERE is_read = 0 AND "+envCond, env).Scan(&unreadCount)
+	s.DB.QueryRow("SELECT COUNT(*) FROM notifications WHERE is_read = 0 AND "+envCond, envArgs...).Scan(&unreadCount)
 
 	response := map[string]interface{}{
 		"notifications": notifications,

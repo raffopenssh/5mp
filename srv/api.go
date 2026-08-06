@@ -3948,10 +3948,14 @@ func (s *Server) handleNotificationsFeed(w http.ResponseWriter, r *http.Request)
 
 	// Query recent notifications
 	// Mining/turbidity notifications are retired (docs/MINING_FINDINGS_2026-08.md
-	// §10) and must not leak out through the public RSS feed either.
+	// §10) and must not leak out through the public RSS feed either. Nor may an
+	// AOI's name: 'aoi_progress' rows are keyed by the AOI id, and a feed URL is
+	// the easiest thing in the app to paste somewhere public.
+	aoiCond, aoiArgs := aoiNotifSQLFilter("park_id", s.RequestPrincipalID(r))
 	query := `SELECT id, park_id, notification_type, title, message, reference_url, created_at
-	          FROM notifications WHERE 1=1` + miningNotifSQLFilter() + ` ORDER BY created_at DESC LIMIT ?`
-	rows, err := s.DB.Query(query, limit)
+	          FROM notifications WHERE 1=1` + miningNotifSQLFilter() + aoiCond +
+		` ORDER BY created_at DESC LIMIT ?`
+	rows, err := s.DB.Query(query, append(aoiArgs, limit)...)
 	if err != nil {
 		http.Error(w, "Database error", http.StatusInternalServerError)
 		return

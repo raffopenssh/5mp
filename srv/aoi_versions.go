@@ -64,6 +64,9 @@ type aoiVersionInfo struct {
 	IsCurrent  bool    `json:"is_current"`
 	CreatedAt  string  `json:"created_at,omitempty"`
 	GeomChange bool    `json:"geometry_changed,omitempty"`
+	// Restore is owner-only; the UI needs to know before offering the button,
+	// or a shared-with-me lineage grows Restore buttons that 404.
+	IsOwner bool `json:"is_owner"`
 }
 
 // loadAOIVersions returns every version in a lineage the principal may see,
@@ -89,6 +92,7 @@ func (s *Server) loadAOIVersions(lineage string, principalID int64) ([]aoiVersio
 			FromDate: a.FromDate, ToDate: a.ToDate, AreaKm2: a.AreaKm2,
 			State: a.State, Archived: a.State == "archived",
 			IsCurrent: a.State != "archived", CreatedAt: a.CreatedAt,
+			IsOwner:   principalID != 0 && a.OwnerID == principalID,
 		}
 		// A geometry change is worth flagging because it is the one difference
 		// the window label cannot express.

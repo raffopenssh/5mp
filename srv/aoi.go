@@ -166,6 +166,30 @@ func aoiExcludeSQL(col string) string {
 		" NOT LIKE 'aoi:%'"
 }
 
+// aoiNotifSQLFilter keeps another principal's AOI out of the notification
+// list (leading AND, plus the args to append).
+//
+// 'aoi_progress' rows are keyed by park_id = the AOI id and carry the AOI's
+// *name* in their title, so without this every principal's notification panel
+// would announce the existence and name of every private AOI — the polygon is
+// the secret, but so is the fact that someone is watching one. Same shape as
+// miningNotifSQLFilter(), except it needs the principal, hence the args.
+//
+// Written as "not an AOI at all, or an AOI you may see" so it is a no-op for
+// the 99.99% of rows that are park notifications.
+func aoiNotifSQLFilter(col string, principalID int64) (string, []any) {
+	aoiIDMu.RLock()
+	n := len(aoiIDSet)
+	aoiIDMu.RUnlock()
+	if n == 0 {
+		return "", nil
+	}
+	sqlStr := " AND (" + col + " NOT IN (SELECT id FROM aois)" +
+		" OR EXISTS (SELECT 1 FROM aois WHERE aois.id = " + col +
+		" AND " + aoiVisibleSQL + "))"
+	return sqlStr, []any{principalID, principalID, principalID, principalID}
+}
+
 // ---------------------------------------------------------------------- AOI
 
 type AOI struct {
@@ -398,7 +422,14 @@ func (s *Server) HandleAPIAOIList(w http.ResponseWriter, r *http.Request) {
 	if list == nil {
 		list = []*AOI{}
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"aois": list, "count": len(list)})
+	// can_create tells the UI whether to offer the draw button. The frontend
+	// cannot work this out for itself: a password may arrive as a cookie
+	// rather than ?pwd=, so getPwd() is empty for a perfectly valid principal.
+	// Only the server knows whether POST /api/aois would 403.
+	writeJSON(w, http.StatusOK, map[string]any{
+		"aois": list, "count": len(list),
+		"can_create": s.RequestPrincipalID(r) != 0,
+	})
 }
 
 // HandleAPIAOIGet — GET /api/aois/{id}: metadata + per-dataset coverage.

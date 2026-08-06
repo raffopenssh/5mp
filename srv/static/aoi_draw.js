@@ -50,6 +50,11 @@
     }
 
     function geometry() {
+        // A locked shape (holes, or a multipolygon) is carried through
+        // untouched: the editor can only express a single outer ring, and
+        // silently flattening a donut into its outer ring would change what
+        // the AOI *means* while looking like a date-only edit.
+        if (S && S.ringLocked && S.originalGeom) return S.originalGeom;
         const r = ring();
         return r ? { type: 'Polygon', coordinates: [r] } : null;
     }
@@ -89,6 +94,13 @@
         const m = map();
         if (!m || !m.getSource(SRC)) return;
         const f = [];
+        if (S && S.ringLocked && S.originalGeom) {
+            // Not editable, but it must still be visible: the user is about to
+            // re-date exactly this shape.
+            f.push({ type: 'Feature', geometry: S.originalGeom, properties: {} });
+            m.getSource(SRC).setData({ type: 'FeatureCollection', features: f });
+            return;
+        }
         if (S && S.pts.length >= 3) {
             f.push({ type: 'Feature', geometry: geometry(), properties: {} });
         }
@@ -210,7 +222,7 @@
     }
 
     function onClick(e) {
-        if (!S || S.dragging !== -1) return;
+        if (!S || S.dragging !== -1 || S.ringLocked) return;
         const hit = nearestHandle(e);
         // Clicking the first vertex closes the ring — the standard gesture,
         // and the only one that works on touch without a keyboard.
@@ -230,7 +242,7 @@
     }
 
     function onMouseMove(e) {
-        if (!S) return;
+        if (!S || S.ringLocked) return;
         if (S.dragging !== -1) {
             S.pts[S.dragging] = [e.lngLat.lng, e.lngLat.lat];
             redraw();
@@ -244,7 +256,7 @@
     }
 
     function onDown(e) {
-        if (!S) return;
+        if (!S || S.ringLocked) return;
         const hit = nearestHandle(e);
         if (hit === -1) return;
         // Dragging a vertex must not also pan the map.
@@ -275,7 +287,7 @@
     // The slider is the window. If the user moves it while the editor is
     // open, the price changes — so re-fetch rather than quoting a stale one.
     function onWindowChanged() {
-        if (S && S.pts.length >= MIN_VERTICES) scheduleEstimate();
+        if (S && (S.pts.length >= MIN_VERTICES || S.ringLocked)) scheduleEstimate();
     }
 
     // ---------------------------------------------------------- panel
@@ -283,23 +295,27 @@
     function updateHint() {
         const el = document.getElementById('aoi-draw-hint-text');
         if (!el || !S) return;
-        if (!S.pts.length) el.textContent = 'Click on the map to place the first corner.';
+        const editing = !!S.editID;
+        if (S.ringLocked) el.textContent = 'This area has a complex shape. Move the time slider to change its dates, then save — the shape is kept exactly as it is.';
+        else if (!S.pts.length) el.textContent = 'Click on the map to place the first corner.';
         else if (S.pts.length < MIN_VERTICES) el.textContent = `${S.pts.length} corner${S.pts.length > 1 ? 's' : ''} — at least ${MIN_VERTICES} needed.`;
         else if (!S.closed) el.textContent = 'Keep clicking, or click the amber first corner to close the shape.';
+        else if (editing) el.textContent = 'Drag any corner to adjust, and move the time slider for a different window. Saving creates a new version and keeps the current one as history.';
         else el.textContent = 'Drag any corner to adjust. Name it below when you are happy.';
         const save = document.getElementById('aoi-draw-save');
-        if (save) save.disabled = !(S.closed && S.pts.length >= MIN_VERTICES);
+        if (save) save.disabled = !(S.ringLocked || (S.closed && S.pts.length >= MIN_VERTICES));
         const est = document.getElementById('aoi-draw-estimate');
-        if (est && S.pts.length < MIN_VERTICES) {
+        if (est && S.pts.length < MIN_VERTICES && !S.ringLocked) {
             est.innerHTML = '<div class="aoi-draw-dim">Draw at least three corners to see how long this will take.</div>';
         }
     }
 
     function panelHTML() {
+        const editing = !!(S && S.editID);
         return `
         <div class="aoi-draw-panel" id="aoi-draw-panel">
           <div class="aoi-draw-head">
-            <span><i class="icon-pencil-ruler"></i> New area of interest</span>
+            <span><i class="icon-pencil-ruler"></i> ${editing ? 'Edit area' : 'New area of interest'}</span>
             <button class="aoi-draw-x" onclick="AOIDraw.cancel()" aria-label="Cancel">×</button>
           </div>
           <div class="aoi-draw-hint" id="aoi-draw-hint-text">Click on the map to place the first corner.</div>
@@ -307,15 +323,17 @@
             <div class="aoi-draw-dim">Draw at least three corners to see how long this will take.</div>
           </div>
           <input class="aoi-draw-input" id="aoi-draw-name" maxlength="80"
+                 value="${editing ? escHtml(S.editName) : ''}"
                  placeholder="Name this area (e.g. Chinko northern buffer)">
           <div class="aoi-draw-actions">
             <button class="aoi-draw-btn ghost" onclick="AOIDraw.undo()">Undo corner</button>
             <button class="aoi-draw-btn primary" id="aoi-draw-save" disabled
-                    onclick="AOIDraw.save()">Create area</button>
+                    onclick="AOIDraw.save()">${editing ? 'Save as new version' : 'Create area'}</button>
           </div>
           <div class="aoi-draw-dim" style="margin-top:6px">
-            The analysis window comes from the time slider. Move it to change
-            which dates this area covers.
+            ${editing
+              ? 'Editing never overwrites: the current version is archived and stays reachable, with the data it already holds.'
+              : 'The analysis window comes from the time slider. Move it to change which dates this area covers.'}
           </div>
         </div>`;
     }
@@ -328,7 +346,50 @@
         if (!m) return;
         ensureLayers();
         S = { pts: [], closed: false, dragging: -1, hover: null, estimate: null };
+        attach();
+    }
 
+    // Editing an existing AOI. Deliberately the *same* editor, prefilled: the
+    // server turns this into a fork (a new version, the old one archived), so
+    // from the user's side it is "draw the question again, slightly differently"
+    // and it must feel like the create flow, including re-pricing live and
+    // taking its window from the time slider.
+    //
+    // Only the outer ring is editable. A hole or a multipolygon would need a
+    // ring selector that nothing in this app has ever needed; such an AOI can
+    // still be edited window-only (leave the shape alone and press Save).
+    function startEdit(id, name, geometry) {
+        if (S) return;
+        const m = map();
+        if (!m) return;
+        ensureLayers();
+        let pts = [];
+        let ringLocked = false;
+        const g = geometry && (typeof geometry === 'string' ? JSON.parse(geometry) : geometry);
+        if (g && g.type === 'Polygon' && g.coordinates && g.coordinates[0]) {
+            pts = g.coordinates[0].slice(0, -1).map(c => [c[0], c[1]]);
+            if (g.coordinates.length > 1) ringLocked = true;   // has holes
+        } else if (g && g.type === 'MultiPolygon') {
+            ringLocked = true;
+        }
+        S = { pts, closed: pts.length >= MIN_VERTICES, dragging: -1, hover: null,
+              estimate: null, editID: id, editName: name || id,
+              originalGeom: g, ringLocked };
+        attach();
+        if (S.pts.length >= MIN_VERTICES || S.ringLocked) scheduleEstimate();
+        // Frame the shape being edited: an edit often starts from a share link
+        // or a notification, with the map somewhere else entirely.
+        if (pts.length) {
+            const lons = pts.map(p => p[0]), lats = pts.map(p => p[1]);
+            m.fitBounds([[Math.min(...lons), Math.min(...lats)],
+                         [Math.max(...lons), Math.max(...lats)]],
+                        { padding: 80, duration: 600 });
+        }
+    }
+
+    // Shared tail of start()/startEdit(): panel, handlers, first paint.
+    function attach() {
+        const m = map();
         const host = document.createElement('div');
         host.innerHTML = panelHTML();
         document.body.appendChild(host.firstElementChild);
@@ -366,25 +427,35 @@
     function cancel() { teardown(); }
 
     function undo() {
-        if (!S || !S.pts.length) return;
+        if (!S || !S.pts.length || S.ringLocked) return;
         S.pts.pop(); S.closed = false; redraw(); scheduleEstimate(); updateHint();
     }
 
     async function save() {
-        if (!S || !S.closed) return;
+        if (!S || !(S.closed || S.ringLocked)) return;
         const nameEl = document.getElementById('aoi-draw-name');
         const name = (nameEl && nameEl.value.trim()) || '';
         if (!name) { nameEl && nameEl.focus(); return; }
         const btn = document.getElementById('aoi-draw-save');
-        if (btn) { btn.disabled = true; btn.textContent = 'Creating…'; }
+        const editing = !!S.editID;
+        if (btn) { btn.disabled = true; btn.textContent = editing ? 'Saving…' : 'Creating…'; }
         const w = currentWindow();
+        // An edit that did not move a vertex sends no geometry at all: the
+        // server carries the old one forward, and "same shape, new dates" is
+        // the common case because the window comes from the slider.
+        const geomChanged = editing && !S.ringLocked && geometryDiffers();
+        const url = editing
+            ? `/api/aois/${encodeURIComponent(S.editID)}/edit?pwd=${encodeURIComponent(pwd())}`
+            : `/api/aois?pwd=${encodeURIComponent(pwd())}`;
+        const body = editing
+            ? { name, from_date: w.from, to_date: w.to,
+                ...(geomChanged ? { geometry: geometry() } : {}) }
+            : { name, geometry: geometry(), from_date: w.from, to_date: w.to,
+                visibility: 'private' };
         try {
-            const r = await fetch(`/api/aois?pwd=${encodeURIComponent(pwd())}`, {
+            const r = await fetch(url, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name, geometry: geometry(),
-                    from_date: w.from, to_date: w.to, visibility: 'private'
-                })
+                body: JSON.stringify(body)
             });
             if (!r.ok) {
                 const msg = await r.text();
@@ -396,17 +467,38 @@
             // polygon appears, and hand the user to the progress notification —
             // that card, not this dialog, is where the next few days live.
             if (typeof loadAOIs === 'function') await loadAOIs();
-            if (window.AOIProgress) AOIProgress.track(d.aoi.id, d.estimate);
+            if (d.unchanged) {
+                if (typeof showToast === 'function') showToast('Nothing changed — no new version created', 'info');
+                return;
+            }
+            if (window.AOIProgress && d.aoi) AOIProgress.track(d.aoi.id, d.estimate);
             if (typeof loadNotifications === 'function') loadNotifications();
             if (typeof showToast === 'function') {
-                showToast(`“${name}” queued — ${d.estimate && d.estimate.human || 'processing'}`, 'success');
+                const eta = d.estimate && d.estimate.human || 'processing';
+                showToast(editing ? `New version of “${name}” queued — ${eta}`
+                                  : `“${name}” queued — ${eta}`, 'success');
             }
         } catch (e) {
-            if (btn) { btn.disabled = false; btn.textContent = 'Create area'; }
+            if (btn) { btn.disabled = false; btn.textContent = editing ? 'Save as new version' : 'Create area'; }
             const box = document.getElementById('aoi-draw-estimate');
             if (box) box.innerHTML = `<div class="aoi-draw-err">${escHtml(String(e.message || e))}</div>`;
         }
     }
 
-    window.AOIDraw = { start, cancel, undo, save, isActive: () => !!S };
+    // Cheap structural comparison against the polygon we started the edit
+    // with. Exact equality is the right test here: the coordinates came from
+    // the server unmodified unless a handle was actually dragged.
+    function geometryDiffers() {
+        const before = S.originalGeom && S.originalGeom.coordinates &&
+                       S.originalGeom.coordinates[0];
+        if (!before) return true;
+        const after = ring();
+        if (!after || after.length !== before.length) return true;
+        for (let i = 0; i < after.length; i++) {
+            if (after[i][0] !== before[i][0] || after[i][1] !== before[i][1]) return true;
+        }
+        return false;
+    }
+
+    window.AOIDraw = { start, startEdit, cancel, undo, save, isActive: () => !!S };
 })();
