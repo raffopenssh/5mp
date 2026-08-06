@@ -519,9 +519,20 @@ fixed analysis window, an owner, and data fetched *for it* over days by a cron.
 Instance #1 is `XSA_Study_Area` (485,150 km², owner `$AOI_OWNER_PWD`).
 Full handover: `docs/PLAN_AOI_OVERLAY.md`.
 
-**Current handover: `docs/AOI_HANDOVER.md`** — what is done, what is left,
+**Current handover: `docs/AOI_HANDOVER_2.md`** — what is done, what is left,
 and the verification set. `docs/PLAN_AOI_OVERLAY.md` remains the design
 rationale and the measured-facts record.
+
+An AOI is a **power bounding box**: kept, owned, versioned, with data fetched
+*for it* over days — as opposed to "Select Area", which is a disposable filter
+over data we already hold. The UI keeps them in separate filter sections for
+exactly that reason; don't merge them back.
+
+Two traps that cost time: handlers needing geography must use
+`resolveAreaGeom(id)` (an AOI is never in `AreaStore`, so the old loop yields
+an empty boundary and KML silently loses its patrol effort), and any query over
+`notifications` without an explicit park_id needs `aoiNotifSQLFilter()` — an
+`aoi_progress` row is keyed by the AOI id and carries its name.
 
 **An AOI is not a park.** Own table (`aois`), own id space, own route prefix.
 Never in `keystones_with_boundaries.json`, never a
