@@ -538,6 +538,18 @@ both load-bearing:
    apply `aoiExcludeSQL(col)`** (`srv/aoi.go`) — the same shape as
    `scannerInjectedSQLFilter()`. Without it, bbox-keyed endpoints leak private
    rows *and* double-count the AOI over the parks it overlaps.
+3. **Three writers share `(park_id=<aoi>, feature_type)`** in
+   `feature_geometries`: `aoi_clip.py` (settlement/deforestation preview from
+   neighbouring parks), the v5 fire chain (`fire_trajectory`), and the
+   `deforestation` unit (`deforest_gfw_%`, derived from the AOI's own GFW
+   alerts — not Hansen). Each is only safe because it deletes a **disjoint id
+   prefix**. A fourth writer needs the same treatment.
+
+UI: an AOI animates as its **polygon** (`Animator.open({aoi})` → `clipGeom`),
+not its bbox; share links use `?aoi=`/`aoi_sections=`/`anim_aoi`, deliberately
+separate from `?popup=`/`sections=` which resolve against the `areas` source an
+AOI is never in. Anything wanting a specific date window must go through
+`setTimeSliderRange()`, not `dateFrom`/`dateTo`.
 
 ```bash
 python3 scripts/aoi_runner.py --status          # queue state

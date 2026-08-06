@@ -1,7 +1,8 @@
 # AOI overlays — status & handover
 
-Status: **commits 1–7/7 landed; the queue is running.** Rewritten 2026-08-06
-from a plan into a handover, updated 2026-08-07. The design rationale is in the
+Status: **commits 1–9 landed; the queue is running.** Rewritten 2026-08-06
+from a plan into a handover, updated 2026-08-07 (animator polygon clip, `?aoi=`
+share links, the `deforestation` runner). The design rationale is in the
 code comments and the commit messages (`git log --oneline --grep '^aoi'`); this
 file is the map of what exists, what is measured, and what is left.
 
@@ -9,28 +10,42 @@ file is the map of what exists, what is measured, and what is left.
 
 ## Resume here (2026-08-07)
 
-The read path is complete and shipped. What is in flight and what to do next:
+`fire_gap` is **done** (3,182,542 detections, all 570 windows; it refreshed
+`aoi_fires` and ran `build_fire_grid_agg.py --since` on its final pass).
+`fire_v5` was started by hand in tmux (`aoiv5`) and takes ~8 min over the much
+larger detection set.
 
-1. **`fire_gap` is mid-backfill** — ~450/570 windows, ~2.0M new detections.
-   It was last driven by hand in a tmux session; if that is gone, the noon
-   cron picks it up from its cursor, or push it along with:
+1. **Check `fire_v5` landed**, then re-check the isolation gate:
    ```bash
-   python3 scripts/aoi_runner.py --aoi XSA_Study_Area --dataset fire_gap \
-       --budget 900 --minutes 300
+   python3 scripts/aoi_runner.py --status
+   sqlite3 db.sqlite3 "SELECT COUNT(*) FROM feature_geometries
+     WHERE park_id='CAF_Chinko' AND feature_type='fire_trajectory'"   # must be 8753
    ```
-   On its final pass it refreshes `aoi_fires` and runs
-   `build_fire_grid_agg.py --since` — **do not declare it done without
-   those**, or the animator shows stale fires.
-2. **Then `fire_v5` runs itself** (via `depends_on`), ~8 min / 1.3 GB RSS,
-   over a much bigger detection set than the 21,189-group first run. After it,
-   re-check the isolation gate: `CAF_Chinko` fire_trajectory must still be
-   **8,753**.
-3. Then `gfw` (252 tiles, per-tile cache shared with the park rotation).
-4. Everything after that is §3.
+   If tmux is gone, the noon cron picks it up; or run it directly
+   (`--dataset fire_v5`). It is one long restartable unit.
+2. **Then `gfw`** (252 tiles, per-tile cache shared with the park rotation).
+   Budget it: `--dataset gfw --budget 60 --minutes 90` a few times, or let the
+   cron grind it. On its final tile it writes
+   `data/gfw_alerts/XSA_Study_Area.json`.
+3. **Then `deforestation`** runs itself via `depends_on: gfw` — one unit,
+   derived from that scan file. **Sanity-check the first run**: alert cells
+   outside the polygon but inside the bbox must be absent (`clip_geom`), and
+   `aoi_clip.py` must still be re-runnable afterwards without deleting the
+   `deforest_gfw_%` rows (`python3 scripts/aoi_clip.py --aoi XSA_Study_Area
+   --dry-run` then for real, then re-count).
+4. Remaining blocked runners are `ghsl`, `gsw`, `hydro` — all need a download,
+   see §3a. `ghsl` is the closest: the 100 m R2023A E2030 tiles are confirmed
+   live (R7_C20/R8_C20 both HTTP 200 as of 2026-08-07); what is missing is
+   generalising `process_settlement_polygons.py` off its single hardcoded
+   `data/ghsl/ghsl_pop_2030.zip` onto a tile directory.
+5. Then §3e (report) and §3f (write endpoints + admin tab). §3c's tooltip and
+   Layers-section items are still open; the share param and the animator clip
+   are **done** (see below).
 
 **Do not re-litigate**: whether AOI rows belong in the bbox-keyed endpoints
 (no — §1), whether the clip is a preview (yes, and it must say so), whether
-FIRMS product selection can be done by date arithmetic (no — §2).
+FIRMS product selection can be done by date arithmetic (no — §2), whether the
+AOI's deforestation should come from Hansen (no — §3a).
 
 ---
 
@@ -144,7 +159,8 @@ Still to add (§3): `POST /api/aois`, `POST /api/aois/{id}/refresh`,
   links to the intersecting parks instead.
 * `aoiCoverageHTML()` renders one progress bar per `aoi_datasets` row.
 * `#aoi-toggle` chip (hidden unless the principal can see an AOI),
-  `animateAOI()` → fit bbox + set the window + `Animator.open()`.
+  `animateAOI()` → fit bbox + `setTimeSliderRange()` to the AOI window +
+  `Animator.open({aoi})` (polygon clip, §3d).
 
 ### Python
 | file | what |
@@ -249,24 +265,33 @@ Ordered; each is independently shippable.
 
 **a. Finish the runner.** Cron installed (`0 12 * * *`, deliberately far from
 the 03:00 fire job); `logs/aoi.log` is already covered by `5mp.logrotate`'s
-`logs/*.log` glob. `clip` is done, `fire_gap` is in progress (~2M new
-detections, 570 five-day windows × 3 sensors).
+`logs/*.log` glob. `clip`, `fire_gap` done; `fire_v5` in flight.
 
 `fire_gap` finishes by refreshing `aoi_fires` and running
 `build_fire_grid_agg.py --since` — **without that the animator shows stale
-fires.** `fire_v5` then runs automatically via `depends_on`; its row is still
-`pending` even though the chain has been run once by hand, which is correct:
-it must re-run once the gap is filled, and it will take ~8 min and 1.3 GB RSS
-over a much larger detection set than the 21,189-group first run.
-* Missing runners (`RUNNERS` returns `blocked`): `ghsl` (4 tiles, R2023A E2030
-  100 m, `R7_C20` 1.5 MB / `R7_C21` 1.7 MB / `R8_C20` 11.5 MB / `R8_C21` 6.6 MB
-  under `GHS_BUILT_S_GLOBE_R2023A/GHS_BUILT_S_E2030_GLOBE_R2023A_54009_100/V1-0/tiles/`;
-  the 10 m tiles now 404. `process_settlement_polygons.py` hardcodes a path
-  that doesn't exist — generalise it to a tile dir); `gsw` (3 missing 10×10°
-  occurrence tiles: `occ_20E_0N`, `occ_30E_10N`, `occ_30E_0N`); `hydro`
-  (HydroRIVERS_v10_af + HydroLAKES; stopgap = PBF waterways from the `osm`
-  unit); `deforestation` (derive from the GFW alerts already fetched — prefer
-  that over a Hansen download).
+fires.** `fire_v5` then runs automatically via `depends_on`; ~8 min and 1.3 GB
+RSS over a much larger detection set than the 21,189-group first run.
+* **`deforestation` is implemented** (2026-08-07): derived from the GFW alerts
+  the `gfw` unit already fetched, via the canonical
+  `daily_park_refresh.ingest_gfw_deforestation()` with new optional
+  `bbox`/`clip_geom` args (an AOI has no row in the parks bbox source and is
+  not a rectangle). **Not Hansen**: tens of GB of tiles for one polygon,
+  stops at 2023, and would give the AOI a *different method* from the parks it
+  overlaps — the alerts are the same source the parks' own 2024+ events come
+  from, so the numbers stay comparable. `run_gfw` collates
+  `data/gfw_alerts/{aoi}.json` on its last tile (all cache hits by then) and
+  pins `since` into the cursor, or a resumed scan stops matching its own cache
+  keys.
+* Still missing runners (`RUNNERS` returns `blocked`): `ghsl` (4 tiles, R2023A
+  E2030 100 m, `R7_C20` 1.5 MB / `R7_C21` 1.7 MB / `R8_C20` 11.5 MB /
+  `R8_C21` 6.6 MB under
+  `GHS_BUILT_S_GLOBE_R2023A/GHS_BUILT_S_E2030_GLOBE_R2023A_54009_100/V1-0/tiles/`
+  — re-verified live 2026-08-07; the 10 m tiles still 404.
+  `process_settlement_polygons.py` hardcodes `data/ghsl/ghsl_pop_2030.zip`,
+  which does not exist — generalise it to a tile dir); `gsw` (3 missing
+  10×10° occurrence tiles: `occ_20E_0N`, `occ_30E_10N`, `occ_30E_0N`);
+  `hydro` (HydroRIVERS_v10_af + HydroLAKES; stopgap = PBF waterways from the
+  `osm` unit).
 * Kill switch: `UPDATE aoi_datasets SET enabled=0 WHERE aoi_id='XSA_Study_Area'`.
 
 **b. ~~Phase A: clip from neighbours.~~** Done — `scripts/aoi_clip.py`,
@@ -283,7 +308,13 @@ member in it would have been the same hole as §1's park-route hole.
 
 Still open:
 * Hover **tooltip** (currently click-only, no hover card).
-* Share param `aoi=<id>` and the popup/section state that goes with it.
+* ~~Share param `aoi=<id>`.~~ Done: `?aoi=<id>&aoi_sections=fire,ghsl,…`, plus
+  `anim_aoi` so a shared animation restores its polygon clip. Deliberately
+  **separate params from `?popup=`/`&sections=`**, whose restorer resolves the
+  id against the `areas` source — an AOI is never in it (rule 1), and falling
+  through to a park lookup is the confusion `apiBase()` exists to prevent. An
+  id the principal cannot see simply does nothing: `loadAOIs()` is the gate,
+  and a pending request is dropped if the id never appears.
 * **Notifications** for an AOI must be principal-filtered or the name leaks in
   a title — same shape as `miningNotifSQLFilter()` in `srv/mining_flag.go`.
   Nothing generates them yet, so this is a precondition, not a bug.
@@ -292,12 +323,17 @@ Still open:
   `apiBase()`, but the pins are keyed by bare id, so an AOI and a park of the
   same name would share a pin. Not reachable today (ids are disjoint).
 
-**d. Animator.** `animateAOI()` ships the cheap 80%: fit the AOI bbox, set the
-date range to the AOI window, open the animator. What is left is the polygon
-clip — `anim.js` clips to a *rectangle* (`A.bboxFixed`), so frames currently
-spill into the bbox corners outside the polygon. Replace the rect clip with
-one `ctx.clip()` on the polygon path. Layer chips work unchanged; every frames
-endpoint is bbox-scoped.
+**d. ~~Animator.~~** Done. `draw()` takes an optional `clipGeom` and traces
+every ring (`ctx.clip('evenodd')`, so a future hole stays a hole); the fetch
+stays bbox-scoped because every frames endpoint is. Verified visually: the
+fire grid now stops at the AOI's angled edges instead of filling the bbox
+corners.
+
+One trap found doing it: `animateAOI()` used to assign `dateFrom`/`dateTo`
+directly. The animator reads those globals but the slider labels, presets and
+pinned layers do not, so the chip read "9 May 2026" while the animation ran
+from 2024. It now goes through `setTimeSliderRange()`, the single codepath.
+**Any new caller that wants a specific window must do the same.**
 
 **e. Report.** `collectReportParks()` already folds starred bboxes in by
 resolving them to parks. An AOI slots in as a new source: AOI-level sections
@@ -333,8 +369,12 @@ the underlying pixels — don't pretend otherwise.
   `park_id` needs `aoiExcludeSQL()`** — for privacy *and* to avoid double
   counting an AOI over the parks it overlaps. See §1.
 * `aoi_clip.py` must not touch `feature_type='fire_trajectory'`: that belongs
-  to the v5 chain, which has its own delete. The two writers are only safe
-  because they own disjoint feature types for the same `park_id`.
+  to the v5 chain, which has its own delete. **Three** writers now share
+  `(park_id=<aoi>, feature_type)` — clip, the v5 chain, and the
+  `deforestation` unit — and they are only safe because each deletes a
+  disjoint id prefix. The clip's deletes skip `deforest_gfw_%`
+  (`DELETE_EXCLUDE` / `delete_rows()` in `aoi_clip.py`); a fourth writer needs
+  the same treatment.
 * Frontend: build every park/AOI endpoint URL through `apiBase(id)`. A raw
   `/api/parks/${id}/` string works for parks and 404s for AOIs.
 * Verification set: `/api/aois` empty for `test2026`, populated for
