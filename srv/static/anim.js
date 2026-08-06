@@ -190,6 +190,38 @@
         return { bbox: [b.getWest() - w * 0.3, b.getSouth() - h * 0.3, b.getEast() + w * 0.3, b.getNorth() + h * 0.3], fixed: false };
     }
     function bboxArea(bb) { return Math.abs((bb[2] - bb[0]) * (bb[3] - bb[1])); }
+
+    // Trace a GeoJSON Polygon/MultiPolygon as one canvas path (all rings,
+    // including holes -- fill/clip with 'evenodd').
+    function tracePolygon(ctx, geom, proj) {
+        if (!geom) return;
+        const polys = geom.type === 'MultiPolygon' ? geom.coordinates
+                    : geom.type === 'Polygon' ? [geom.coordinates] : [];
+        ctx.beginPath();
+        for (const poly of polys) {
+            for (const ring of poly) {
+                for (let i = 0; i < ring.length; i++) {
+                    const p = proj(ring[i][0], ring[i][1]);
+                    if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
+                }
+                ctx.closePath();
+            }
+        }
+    }
+
+    function geomBbox(geom) {
+        const polys = geom && geom.type === 'MultiPolygon' ? geom.coordinates
+                    : geom && geom.type === 'Polygon' ? [geom.coordinates] : [];
+        let x0 = 180, y0 = 90, x1 = -180, y1 = -90, seen = false;
+        for (const poly of polys) for (const ring of poly) for (const c of ring) {
+            seen = true;
+            if (c[0] < x0) x0 = c[0];
+            if (c[0] > x1) x1 = c[0];
+            if (c[1] < y0) y0 = c[1];
+            if (c[1] > y1) y1 = c[1];
+        }
+        return seen ? [x0, y0, x1, y1] : null;
+    }
     function viewportInside(bb) {
         const b = map.getBounds();
         return b.getWest() >= bb[0] && b.getSouth() >= bb[1] && b.getEast() <= bb[2] && b.getNorth() <= bb[3];
@@ -423,9 +455,22 @@
         const step = (D.fireGrid && D.fireGrid.step) || chooseStep((A.t1 - A.t0) / DAY);
         const bMs = bucketMs(step);
 
-        // clip to fixed bbox selection if present
+        // Clip to the selection, if there is one. Two shapes:
+        //   * a drawn bbox  -> rectangle (what this always did)
+        //   * an AOI        -> its actual polygon. Every frames endpoint is
+        //     bbox-scoped, so without this an AOI animation spills fires into
+        //     the bbox corners *outside* the polygon and reads as data the
+        //     AOI does not have (docs/PLAN_AOI_OVERLAY.md §3d).
         let clipped = false;
-        if (A.bboxFixed) {
+        if (A.clipGeom) {
+            ctx.save();
+            tracePolygon(ctx, A.clipGeom, proj);
+            ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            ctx.clip('evenodd');   // even-odd so holes stay holes
+            clipped = true;
+        } else if (A.bboxFixed) {
             const bb = A.fetchBbox;
             const p0 = proj(bb[0], bb[3]), p1 = proj(bb[2], bb[1]);
             ctx.save();
@@ -1096,13 +1141,29 @@
             injectCSS();
             const fromISO = (typeof dateFrom !== 'undefined' && dateFrom) ? dateFrom : '2023-01-01';
             const toISO = (typeof dateTo !== 'undefined' && dateTo) ? dateTo : fmtDate(Date.now());
-            const { bbox, fixed } = activeBbox();
+            let { bbox, fixed } = activeBbox();
+
+            // An AOI animates as its polygon, not as its bounding box: the
+            // fetch stays bbox-scoped (every frames endpoint is), but draw()
+            // clips to the ring so nothing appears in the corners the AOI
+            // does not cover. opts.aoi survives share links via getState().
+            let clipGeom = null, aoiID = null;
+            if (opts.aoi && window._aois && window._aois[opts.aoi]) {
+                const a = window._aois[opts.aoi];
+                if (a.geometry) {
+                    clipGeom = a.geometry;
+                    aoiID = opts.aoi;
+                    const gb = geomBbox(a.geometry) || a.bbox;
+                    if (gb) { bbox = gb.slice(); fixed = true; }
+                }
+            }
 
             const { canvas, resize } = makeCanvas();
             A = {
                 canvas, ctx: canvas.getContext('2d'), resize,
                 data: {}, loading: {}, on: {},
                 fromISO, toISO, fetchBbox: bbox, bboxFixed: fixed,
+                clipGeom, aoiID,
                 t0: parseD(fromISO), t1: parseD(toISO) + DAY - 1,
                 playing: false, speed: 1, raf: null, recording: false
             };
@@ -1192,9 +1253,10 @@
                 if (!A) return;
                 const layers = LAYER_ORDER.filter(n => A.on[n]);
                 const paused = !A.playing;
+                const aoi = A.aoiID || null;
                 this.close();
                 // speed intentionally recomputed for the new span
-                this.open({ layers, paused });
+                this.open({ layers, paused, aoi });
             }, 350);
         },
         getState() {
@@ -1203,7 +1265,8 @@
                 layers: LAYER_ORDER.filter(n => A.on[n]),
                 speed: A.speed,
                 tISO: fmtDate(A.t),
-                playing: A.playing
+                playing: A.playing,
+                aoi: A.aoiID || null
             };
         }
     };
