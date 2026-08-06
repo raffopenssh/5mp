@@ -333,6 +333,15 @@ All three VIIRS sensors are ingested (NOAA-20 + SNPP + NOAA-21, ~3x the
 detections). Satellite codes `N`/`N20`/`N21` are part of the
 `fire_detections` UNIQUE key — never default that field.
 
+**All FIRMS downloads go through `scripts/firms_api.py`.** Two API facts that
+both produce *silent* zero-row ingests if you hand-roll a URL:
+* the area endpoint caps a request at **5 days** (a 10-day URL 400s);
+* NRT-vs-SP is **not** a function of age. NOAA21 has no SP product at all;
+  SNPP and NOAA20 cut over on different dates. Asking the wrong side of a real
+  cutover returns HTTP 200 with a header-only CSV. `pick_source()` reads
+  `/api/data_availability` and returns `None` when nothing covers the date —
+  callers must skip, not retry. See `docs/PLAN_AOI_OVERLAY.md` §2.
+
 Use `--parks a,b,c` (one process) rather than repeated `--park` calls.
 
 `data/fire_groups_v5/` and `data/fire_trends_v5/` are **gitignored derived
