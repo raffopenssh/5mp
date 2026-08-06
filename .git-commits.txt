@@ -1,20 +1,20 @@
-19064e3 2026-08-06 10:24:44 mining: retire turbidity/pit detection; keep river-proximity inference
-04264e1 2026-08-06 09:39:15 mining: read off the Africa AUC (0.781) and record the decision
-2c72ed6 2026-08-06 09:31:59 Rebuild: refresh version history for e1d464c
-e1d464c 2026-08-06 09:31:42 NRT->SP reconciliation: measure it, then ship a watchdog instead
-a10e070 2026-08-06 08:52:53 Rebuild: refresh embedded commit history
-9e6ed93 2026-08-06 08:52:30 Fire: retire FIRE_TODO_HANDOVER, fold the one open item into the permanent docs
-8117db9 2026-08-06 08:31:58 Fire: close per-overpass slicing (item 4) as a negative result; refresh handover
-5a5ab2b 2026-08-06 08:20:09 Narratives: fix wording bugs found in the post-rebuild audit (item 8)
-422d7bc 2026-08-06 08:19:41 Fire eval: add stationary-group metrics; validate the hotspot mask
-9e2c276 2026-08-06 06:18:26 Docs: record the 3-sensor full rebuild, update handover
-b15e889 2026-08-06 06:16:45 Untrack derived fire_groups_v5/fire_trends_v5
-9a255fb 2026-08-06 06:16:19 Fix two sources of permanent fire-pipeline drift found by the full rebuild
-478a7c0 2026-08-05 15:59:54 Rebuild: refresh embedded commit history
-ab7991b 2026-08-05 15:58:11 Unified hover/tap map tooltip for all pinned & view layers
-21af23c 2026-08-05 15:29:54 Handover: note the in-flight AMW eval runs and how to resume them
-3499b97 2026-08-05 15:28:59 Rebuild: refresh embedded commit history
-1fb2183 2026-08-05 15:27:51 Mining: wire the AMW learned model, adjudication tooling, ship the basin layer
-4398c9f 2026-08-05 15:13:03 fix(test-env): stop leaking client-derived data into the test tenant
-f667f06 2026-08-05 14:47:07 fix(anim): scope patrol-effort frames to request env (test env leaked prod effort pixels)
-e517e66 2026-08-05 14:20:58 Retire the duplicate raw fire JSON window (closes handover #15)
+9dbb893 2026-08-06 18:41:09 docs: AOI handover for the animator clip, share links and deforestation
+eb6271d 2026-08-06 18:39:20 aoi: derive deforestation from the GFW alerts we already fetched
+57297df 2026-08-06 18:32:55 aoi: animate the polygon, not its bounding box; ?aoi= share links
+81ecc96 2026-08-06 18:15:37 docs: AOI resume-here section; record the FIRMS product-availability trap
+1c3330a 2026-08-06 18:14:41 fire: ask FIRMS which product covers a date instead of guessing by age
+3163864 2026-08-06 18:11:20 docs: AOI handover updated for commits 5-7; AGENTS.md section on the two invariants
+44b2045 2026-08-06 18:09:01 aoi: map layer, popup and apiBase() routing (7/7)
+b6f690c 2026-08-06 17:59:20 aoi: Phase A — clip the overlapped parks' data into the AOI (6/7)
+f39b8a2 2026-08-06 17:55:22 aoi: keep AOI rows out of the unkeyed park-shaped queries (5/7)
+71e91a1 2026-08-06 17:45:53 docs: turn the AOI plan into a handover (status, measured facts, what's left)
+2f2bc5a 2026-08-06 17:44:31 aoi: queue runner + per-tile GFW cache (5/7, partial)
+ae01219 2026-08-06 17:41:51 aoi: --aoi on the v5 fire chain + AOI read endpoints (3/7, 4/7)
+4a1ff1b 2026-08-06 17:41:39 osm: lift Geofabrik/osmium park-infra enrichment out of the retired turbidity script (2/7)
+7e7de5c 2026-08-06 17:19:34 aoi: migration 040 + visibility-scoped /api/aois (AOI overlays, commit 1/7)
+57bd907 2026-08-06 17:12:23 histmaps: runall.sh drives the 76-sheet selection, not all 254
+e94846b 2026-08-06 17:11:38 histmaps: select one scan per sheet cell, and fix a 450 km mis-georeference
+c75c748 2026-08-06 17:09:09 docs: rework the study-area plan as generic AOI overlays ("power bbox")
+6acafd5 2026-08-06 16:59:26 fire: fix the nightly FIRMS download (5-day window cap) and stream ingest
+5780044 2026-08-06 16:28:24 docs(plan): overlay ingest hosted by existing crons; measured data gap; Geofabrik over Overpass
+26cc625 2026-08-06 16:21:01 docs: plan for private XSA_Study_Area + per-principal park ACL and batched dataset ingest

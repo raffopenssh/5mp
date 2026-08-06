@@ -4660,6 +4660,7 @@
             // id: apiBase() routes on window.AOI_IDS, so a fetch issued before
             // this resolves would go to /api/parks/{aoi} and 404 by design.
             loadAOIs();
+            registerAOITip();
             // Wait for areas source to load before fetching grid data
             // This prevents concurrent requests that overwhelm slow connections
             function onAreasLoaded(e) {
@@ -7550,6 +7551,55 @@
             } catch (e) { console.warn('AOI load failed', e); }
         }
         window.loadAOIs = loadAOIs;
+
+        // Hover tooltip. Registered through MapTip (one shared DOM tip) rather
+        // than a maplibregl.Popup per layer — see srv/static/maptip.js for why.
+        // It declines (returns '') wherever a park polygon covers the cursor,
+        // mirroring the click rule: the park is always the more specific
+        // answer, and an AOI tip over one would be noise across 485,000 km².
+        function registerAOITip() {
+            if (!window.MapTip || !map.getLayer('aois-fill') || window._aoiTipRegistered) return;
+            window._aoiTipRegistered = true;
+            window._aoiCoverage = window._aoiCoverage || {};
+            MapTip.register('aois-fill', {
+                actionLabel: 'Open area',
+                onActivate: (f, e) => showAOIPopup(f.properties, e.lngLat),
+                html: (p, f, e) => {
+                    if (e && map.getLayer('areas-fill')) {
+                        const over = map.queryRenderedFeatures(e.point, { layers: ['areas-fill'] })
+                            .some(pf => pointInFeature(e.lngLat.lng, e.lngLat.lat, pf));
+                        if (over) return '';
+                    }
+                    const cov = window._aoiCoverage[p.id];
+                    if (cov === undefined) {
+                        window._aoiCoverage[p.id] = null;   // in flight; don't refetch
+                        fetch(`/api/aois/${encodeURIComponent(p.id)}?geometry=0&pwd=${encodeURIComponent(getPwd())}`)
+                            .then(r => r.ok ? r.json() : null)
+                            .then(d => {
+                                const ds = (d?.datasets || []).filter(x => x.enabled);
+                                window._aoiCoverage[p.id] = {
+                                    done: ds.filter(x => x.state === 'done').length,
+                                    total: ds.length,
+                                    running: ds.filter(x => x.state === 'running').length,
+                                    parks: (d?.parks || []).length
+                                };
+                            }).catch(() => { window._aoiCoverage[p.id] = null; });
+                    }
+                    const area = p.area_km2 ? formatNumber(Math.round(p.area_km2)) + ' km²' : '';
+                    const win = (p.from_date || '…') + ' → ' + (p.to_date || 'now');
+                    const line = cov
+                        ? `${cov.done}/${cov.total} data layers ready${cov.running ? ' · ' + cov.running + ' running' : ''}`
+                          + (cov.parks ? ` · ${cov.parks} protected area${cov.parks > 1 ? 's' : ''} inside` : '')
+                        : 'coverage…';
+                    return `<div class="maptip-label">Area of interest</div>
+                        <div class="maptip-title">${escapeHtml(p.name || p.id)}</div>
+                        <div class="maptip-body">${area}</div>
+                        <div class="maptip-meta">Window ${escapeHtml(win)}</div>
+                        <div class="maptip-dim">${escapeHtml(line)}</div>`;
+                }
+            });
+        }
+        window.registerAOITip = registerAOITip;
 
         function aoiCoverageHTML(datasets) {
             if (!datasets || !datasets.length) return '';

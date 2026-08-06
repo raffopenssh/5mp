@@ -15,7 +15,7 @@
  * Usage:
  *   MapTip.init(map);
  *   MapTip.register(layerId, {
- *       html: (props, feature) => '<b>hi</b>',   // required
+ *       html: (props, feature, e) => '<b>hi</b>',  // required; falsy = decline
  *       onActivate: (feature, e) => {...},       // optional (click / "Details")
  *       actionLabel: 'Open in report',           // optional button label
  *   });
@@ -217,7 +217,12 @@
             var opts = registry.get(f.layer && f.layer.id);
             if (!opts || typeof opts.html !== 'function') continue;
             var html;
-            try { html = opts.html(f.properties || {}, f); } catch (err) { html = null; }
+            try { html = opts.html(f.properties || {}, f, e); } catch (err) { html = null; }
+            // A registration may decline a feature by returning falsy — the
+            // loop then falls through to whatever is underneath, and if
+            // nothing renders there is no tip AND no click interception. The
+            // AOI layer uses this to stand down over a park polygon, which is
+            // the same precedence rule the park click handler applies.
             if (!html) continue;
             return { html: html, opts: opts, feature: f, layerId: f.layer.id, extra: feats.length - 1 };
         }
