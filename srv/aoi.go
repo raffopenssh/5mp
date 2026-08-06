@@ -132,6 +132,40 @@ func IsAOIID(id string) bool {
 	return aoiIDSet[id]
 }
 
+// aoiExcludeSQL removes AOI-owned rows from a query over park-shaped storage
+// (leading AND), the same shape as scannerInjectedSQLFilter.
+//
+// Two independent reasons, either of which is sufficient:
+//
+//  1. Privacy. A private AOI's derived rows sit in feature_geometries next to
+//     park rows. Any query that is NOT keyed by an explicit park_id — the
+//     bbox feature browser, the animator's dated trajectories, the global
+//     dashboard counters — would otherwise serve them to every principal.
+//     Visibility is enforced at the /api/aois/* boundary; these endpoints are
+//     deliberately unfiltered raw-geography endpoints (§3), so the AOI rows
+//     have to be kept out of them instead.
+//
+//  2. Double counting. AOI trajectories are rebuilt over ground the parks
+//     already cover — XSA overlaps four parks — so summing stat_value across
+//     feature_geometries without this filter inflates every global total.
+//
+// Cheap: `aois` holds a handful of rows and the subquery is a scan of a tiny
+// table. Written as a subquery rather than an inlined id list so a create or
+// delete cannot leave a stale filter behind.
+func aoiExcludeSQL(col string) string {
+	aoiIDMu.RLock()
+	n := len(aoiIDSet)
+	aoiIDMu.RUnlock()
+	if n == 0 {
+		return ""
+	}
+	// The `aoi:` prefix covers scope keys the ingest uses for tables it shares
+	// with parks but writes per-AOI rather than per-park (osm_places,
+	// roads_heigit): scripts/aoi_runner.py run_osm passes "aoi:<id>".
+	return " AND " + col + " NOT IN (SELECT id FROM aois) AND " + col +
+		" NOT LIKE 'aoi:%'"
+}
+
 // ---------------------------------------------------------------------- AOI
 
 type AOI struct {

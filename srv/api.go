@@ -1132,7 +1132,7 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 	// Uses precomputed stat_value column (= fires_total) for fast aggregation
 	{
 		fireQuery := `SELECT COALESCE(SUM(stat_value), 0) FROM feature_geometries
-			WHERE feature_type = 'fire_trajectory'`
+			WHERE feature_type = 'fire_trajectory'` + aoiExcludeSQL("park_id")
 		var fireArgs []interface{}
 		if fromStr != "" {
 			fireQuery += " AND start_date >= ?"
@@ -1158,7 +1158,7 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 			prevFrom := fromTime.Add(-duration).Format("2006-01-02")
 			prevTo := fromTime.Add(-24 * time.Hour).Format("2006-01-02")
 			prevQuery := `SELECT COALESCE(SUM(stat_value), 0) FROM feature_geometries
-				WHERE feature_type = 'fire_trajectory' AND start_date >= ? AND start_date <= ?`
+				WHERE feature_type = 'fire_trajectory' AND start_date >= ? AND start_date <= ?` + aoiExcludeSQL("park_id")
 			prevArgs := []interface{}{prevFrom, prevTo}
 			if len(bbox) == 4 {
 				prevQuery += " AND bbox_maxx >= ? AND bbox_minx <= ? AND bbox_maxy >= ? AND bbox_miny <= ?"
@@ -1174,7 +1174,7 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 	// Uses precomputed stat_value column (= area_km2) for fast aggregation
 	{
 		deforestQuery := `SELECT COALESCE(SUM(stat_value), 0) FROM feature_geometries
-			WHERE feature_type = 'deforestation'`
+			WHERE feature_type = 'deforestation'` + aoiExcludeSQL("park_id")
 		var deforestArgs []interface{}
 		if fromStr != "" {
 			deforestQuery += " AND start_date >= ?"
@@ -1198,7 +1198,7 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 			prevFrom := fromTime.Add(-duration).Format("2006-01-02")
 			prevTo := fromTime.Add(-24 * time.Hour).Format("2006-01-02")
 			prevQuery := `SELECT COALESCE(SUM(stat_value), 0) FROM feature_geometries
-				WHERE feature_type = 'deforestation' AND start_date >= ? AND start_date <= ?`
+				WHERE feature_type = 'deforestation' AND start_date >= ? AND start_date <= ?` + aoiExcludeSQL("park_id")
 			prevArgs := []interface{}{prevFrom, prevTo}
 			if len(bbox) == 4 {
 				prevQuery += " AND bbox_maxx >= ? AND bbox_minx <= ? AND bbox_maxy >= ? AND bbox_miny <= ?"
@@ -1212,11 +1212,13 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 	if len(bbox) == 4 {
 		s.DB.QueryRow(`
 			SELECT COUNT(*) FROM park_settlements
-			WHERE lon >= ? AND lon <= ? AND lat >= ? AND lat <= ?` + scannerInjectedSQLFilter("narrative") + `
+			WHERE lon >= ? AND lon <= ? AND lat >= ? AND lat <= ?` + scannerInjectedSQLFilter("narrative") +
+			aoiExcludeSQL("park_id") + `
 		`, bbox[0], bbox[2], bbox[1], bbox[3]).Scan(&totalSettlements)
 	} else {
 		s.DB.QueryRow(`SELECT COUNT(*) FROM park_settlements WHERE 1=1` +
-			scannerInjectedSQLFilter("narrative")).Scan(&totalSettlements)
+			scannerInjectedSQLFilter("narrative") +
+			aoiExcludeSQL("park_id")).Scan(&totalSettlements)
 	}
 
 	// Calculate trends
@@ -2515,7 +2517,7 @@ func (s *Server) findNearestOSMPlace(lat, lon, maxDistKm float64) (name string, 
 		FROM osm_places
 		WHERE lat BETWEEN ? AND ?
 		  AND lon BETWEEN ? AND ?
-		  AND name != ''
+		  AND name != ''` + aoiExcludeSQL("park_id") + `
 		LIMIT 100
 	`, lat-maxDistDeg, lat+maxDistDeg, lon-maxDistDeg, lon+maxDistDeg)
 	if err != nil {
@@ -6018,7 +6020,7 @@ func (s *Server) HandleAPINearbyPlaces(w http.ResponseWriter, r *http.Request) {
 		rows, err := s.DB.QueryContext(r.Context(), `
 			SELECT DISTINCT name, place_type, lat, lon
 			FROM osm_places
-			WHERE lat BETWEEN ? AND ? AND lon BETWEEN ? AND ?
+			WHERE lat BETWEEN ? AND ? AND lon BETWEEN ? AND ?` + aoiExcludeSQL("park_id") + `
 			LIMIT 100
 		`, lat-radius, lat+radius, lon-radius, lon+radius)
 		if err != nil {
