@@ -46,6 +46,84 @@ def log(msg):
     print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}", flush=True)
 
 
+# ------------------------------------------------------------ graceful stop
+#
+# Running out of time is the NORMAL exit of this program, not an error: a slice
+# is meant to stop and let tomorrow's cron continue. Three things have to be
+# true for "just resume tomorrow" to actually hold, and each one bit us on
+# 2026-08-07:
+#
+#   1. a stop must not look like a crash    -> STOP flag + stopped_error()
+#      (a crash parks the dataset for 24 h via retry_hours, so an operator
+#       Ctrl-C used to cost a day)
+#   2. a stop must release the lease         -> finally: in run_once
+#   3. a lease whose process is gone must heal -> heal_leases()
+#      (otherwise the row sits in 'running' for the full 6 h LEASE_HOURS and
+#       the queue looks busy while nothing runs)
+
+STOP = {"why": None}
+_CHILD = {"proc": None}
+
+
+class Interrupted(Exception):
+    """Out of time / signalled. Not a failure: resume on the next slice."""
+
+
+def stopping():
+    return STOP["why"] is not None
+
+
+def check_stop(deadline=None):
+    """Raise Interrupted if we were signalled or the deadline passed.
+
+    Runners call this between units. Everything already committed by
+    progress() survives; the cursor is the resume point.
+    """
+    if deadline is not None and time.time() >= deadline and not stopping():
+        STOP["why"] = "deadline"
+    if stopping():
+        raise Interrupted(STOP["why"])
+
+
+def install_signal_handlers():
+    import signal
+
+    def handler(signum, _frame):
+        name = signal.Signals(signum).name
+        if stopping():          # second signal: the operator means it
+            log(f"{name} again -- hard exit")
+            os._exit(130)
+        STOP["why"] = f"signal:{name}"
+        log(f"{name} received -- finishing the current unit, then stopping")
+        p = _CHILD["proc"]
+        if p and p.poll() is None:
+            # A step of a shelled-out chain (the v5 scripts) is itself
+            # restartable from its own outputs, so passing the signal on is
+            # safe and stops us waiting an hour for it.
+            try:
+                p.terminate()
+            except Exception:
+                pass
+
+    for s in (signal.SIGINT, signal.SIGTERM):
+        try:
+            signal.signal(s, handler)
+        except (ValueError, OSError):
+            pass
+
+
+def transient(ex):
+    """Worth retrying in an hour rather than parking the dataset for a day.
+
+    A locked database or a flaky download says nothing about whether the unit
+    can ever succeed; a KeyError in a runner does.
+    """
+    s = str(ex).lower()
+    return any(k in s for k in (
+        "locked", "busy", "timed out", "timeout", "connection", "temporarily",
+        "502", "503", "504", "read operation", "ssl", "broken pipe"))
+
+
 def utcnow():
     return datetime.now(timezone.utc).replace(tzinfo=None)
 
@@ -54,6 +132,62 @@ def utcnow():
 
 def lease_name():
     return f"{socket.gethostname()}:{os.getpid()}"
+
+
+def heal_leases(conn, blocking=True):
+    """Reclaim leases whose process is provably gone.
+
+    A crash between the last progress() and release() leaves the row in
+    'running' with a lease valid for LEASE_HOURS. On this host we can do much
+    better than waiting: lease_owner is 'hostname:pid', so if the hostname is
+    ours and the pid is dead, the unit is dead. (A foreign hostname is left
+    alone -- only the lease clock can judge that.)
+
+    blocking=False for read-mostly callers like --status: another unit may hold
+    the write lock for minutes and a status query must never hang on it.
+    """
+    import sqlite3
+    me = socket.gethostname()
+    healed = []
+    if not blocking:
+        # --status must not wait out a 60 s busy_timeout per stranded row.
+        try:
+            conn.execute("PRAGMA busy_timeout=250")
+        except sqlite3.Error:
+            pass
+    for r in conn.execute("SELECT aoi_id, dataset, lease_owner FROM aoi_datasets "
+                          "WHERE state='running' AND lease_owner IS NOT NULL"):
+        host, _, pid = (r["lease_owner"] or "").rpartition(":")
+        if host != me or not pid.isdigit() or int(pid) == os.getpid():
+            continue
+        try:
+            os.kill(int(pid), 0)
+            continue            # still alive
+        except ProcessLookupError:
+            pass
+        except PermissionError:
+            continue            # exists, not ours
+        healed.append((r["aoi_id"], r["dataset"]))
+    done = []
+    for aoi_id, dataset in healed:
+        def go(a=aoi_id, d=dataset):
+            conn.execute(
+                "UPDATE aoi_datasets SET state='pending', lease_owner=NULL, "
+                "lease_until=NULL WHERE aoi_id=? AND dataset=? AND state='running'",
+                (a, d))
+            conn.commit()
+        try:
+            retry_write(go, tries=8 if blocking else 1)
+        except sqlite3.OperationalError:
+            continue            # someone else holds the lock; next run heals it
+        log(f"  healed stranded lease {aoi_id}/{dataset}")
+        done.append((aoi_id, dataset))
+    if not blocking:
+        try:
+            conn.execute("PRAGMA busy_timeout=60000")
+        except sqlite3.Error:
+            pass
+    return done
 
 
 def claim(conn, aoi_id=None, dataset=None):
@@ -88,30 +222,49 @@ def claim(conn, aoi_id=None, dataset=None):
     if not row:
         return None
     until = (now + timedelta(hours=LEASE_HOURS)).isoformat(" ", "seconds")
-    conn.execute("""UPDATE aoi_datasets SET state='running', lease_owner=?,
-                    lease_until=?, last_run_at=? WHERE aoi_id=? AND dataset=?""",
-                 (lease_name(), until, now.isoformat(" ", "seconds"),
-                  row["aoi_id"], row["dataset"]))
-    conn.commit()
+
+    def go():
+        conn.execute("""UPDATE aoi_datasets SET state='running', lease_owner=?,
+                        lease_until=?, last_run_at=? WHERE aoi_id=? AND dataset=?""",
+                     (lease_name(), until, now.isoformat(" ", "seconds"),
+                      row["aoi_id"], row["dataset"]))
+        conn.commit()
+    # Taking the lease must not fail on a busy database either -- an unclaimed
+    # claim would run the unit with nobody recorded as owning it.
+    retry_write(go, total_wait=BOOKKEEPING_WAIT_S)
     return row
 
 
-def retry_write(fn, tries=8):
+def retry_write(fn, tries=8, total_wait=None):
     """Run a write, waiting out SQLite's single write lock.
 
     Units run concurrently by design and the v5 fire chain holds the write lock
     for minutes, which is longer than any sane busy_timeout. Losing a
     bookkeeping write here is worse than waiting: `release()` failing is what
     strands a unit in 'running' until its lease expires.
+
+    total_wait (seconds) overrides the try count for exactly that case -- a
+    2026-08-07 run lost a completed 30-minute v5 step because the eight-try
+    ladder tops out around four minutes and the other unit's transaction was
+    longer than that.
     """
     import sqlite3
-    for attempt in range(tries):
+    deadline = time.time() + total_wait if total_wait else None
+    attempt = 0
+    while True:
         try:
             return fn()
         except sqlite3.OperationalError as ex:
-            if ("locked" not in str(ex) and "busy" not in str(ex)) or attempt == tries - 1:
+            last = (time.time() >= deadline) if deadline else (attempt >= tries - 1)
+            if ("locked" not in str(ex) and "busy" not in str(ex)) or last:
                 raise
-            time.sleep(min(60, 5 * 2 ** attempt))
+            time.sleep(min(30, 5 * 2 ** min(attempt, 4)))
+            attempt += 1
+
+
+# Bookkeeping must survive an arbitrarily long foreign write transaction:
+# a lost release() strands the unit, a lost progress() redoes finished work.
+BOOKKEEPING_WAIT_S = 45 * 60
 
 
 def release(conn, aoi_id, dataset, state, detail=None, retry_hours=None):
@@ -124,7 +277,7 @@ def release(conn, aoi_id, dataset, state, detail=None, retry_hours=None):
                         WHERE aoi_id=? AND dataset=?""",
                      (state, (detail or "")[:400], nxt, aoi_id, dataset))
         conn.commit()
-    retry_write(go)
+    retry_write(go, total_wait=BOOKKEEPING_WAIT_S)
 
 
 def progress(conn, aoi_id, dataset, cursor, done, total, detail=None):
@@ -137,7 +290,7 @@ def progress(conn, aoi_id, dataset, cursor, done, total, detail=None):
                      (json.dumps(cursor) if cursor is not None else None,
                       done, total, cov, (detail or None), aoi_id, dataset))
         conn.commit()
-    retry_write(go)
+    retry_write(go, total_wait=BOOKKEEPING_WAIT_S)
 
 
 def load_cursor(row):
@@ -187,6 +340,8 @@ def run_fire_gap(conn, aoi, ds, deadline, budget):
     done = cur["i"]
     used = 0
     while cur["i"] < total and used < budget and time.time() < deadline:
+        if stopping():
+            break   # cursor is committed; this dataset stays pending
         day, n, sensor = units[cur["i"]]
         src = firms_api.pick_source(sensor, day)
         if src is None:
@@ -320,6 +475,8 @@ def run_gfw(conn, aoi, ds, deadline, budget):
     tiles, total = cur["tiles"], len(cur["tiles"])
     used = 0
     while cur["i"] < total and used < budget and time.time() < deadline:
+        if stopping():
+            break
         w, s, e, n = tiles[cur["i"]]
         try:
             rows = gfw_alerts.fetch_tile(w, s, e, n, since)
@@ -426,6 +583,8 @@ def run_ghsl(conn, aoi, ds, deadline, budget):
         conn.commit()
     tiles, total = cur["tiles"], len(cur["tiles"])
     while cur["i"] < total and time.time() < deadline:
+        if stopping():
+            break
         cur["polys"] += ghsl_tiles.ingest_tile(
             conn, aid, tiles[cur["i"]], geom, coord_ids=True, log=log)
         cur["i"] += 1
@@ -472,6 +631,8 @@ def run_osm(conn, aoi, ds, deadline, budget):
     scope = f"aoi:{aoi['id']}"
     x0, y0, x1, y1 = aoi_lib.aoi_bbox(aoi)
     while cur["i"] < total and time.time() < deadline:
+        if stopping():
+            break
         iso = countries[cur["i"]]
         try:
             pbf, temporary = osm_pbf.ensure_pbf(iso)
@@ -555,10 +716,23 @@ def aoi_countries(conn, aoi):
 
 
 def sh(cmd, check=True):
-    r = subprocess.run(cmd, cwd=str(BASE_DIR))
-    if check and r.returncode != 0:
-        raise RuntimeError(f"{cmd[1] if len(cmd) > 1 else cmd[0]} exit {r.returncode}")
-    return r.returncode
+    """Run a child step, remembering it so a signal can pass through.
+
+    Without the handoff, SIGTERM during the 30-minute v5 rebuild would be
+    noticed only when the child finally exited.
+    """
+    check_stop()
+    p = subprocess.Popen(cmd, cwd=str(BASE_DIR))
+    _CHILD["proc"] = p
+    try:
+        rc = p.wait()
+    finally:
+        _CHILD["proc"] = None
+    if stopping():
+        raise Interrupted(STOP["why"])
+    if check and rc != 0:
+        raise RuntimeError(f"{cmd[1] if len(cmd) > 1 else cmd[0]} exit {rc}")
+    return rc
 
 
 # --------------------------------------------------------------------- driver
@@ -573,6 +747,7 @@ def write_status(results, started, fatal=None):
                       ("degraded" if any(r.get("error") for r in results) else "ok"),
             "started_at": started.isoformat(),
             "finished_at": datetime.now().isoformat(),
+            "stopped_early": STOP["why"],
             "fatal_error": str(fatal)[:300] if fatal else None,
             "results": results,
         }
@@ -585,6 +760,7 @@ def write_status(results, started, fatal=None):
 
 
 def run_once(conn, aoi_id=None, dataset=None, budget=120, deadline=None):
+    heal_leases(conn)
     ds = claim(conn, aoi_id, dataset)
     if not ds:
         return None
@@ -597,17 +773,34 @@ def run_once(conn, aoi_id=None, dataset=None, budget=120, deadline=None):
     log(f"== {ds['aoi_id']}/{ds['dataset']} (budget {budget})")
     try:
         finished, detail = fn(conn, aoi, ds, deadline or (time.time() + 3600), budget)
+    except Interrupted as ex:
+        # The designed exit. Straight back to 'pending' with no cooldown: the
+        # cursor is committed, so the next slice picks up mid-dataset.
+        done, total = ds["units_done"] or 0, ds["units_total"] or 0
+        detail = f"stopped ({ex}) at {done}/{total} -- resumes next run"
+        log(f"   -> {detail}")
+        release(conn, ds["aoi_id"], ds["dataset"], "pending", detail)
+        return {"aoi": ds["aoi_id"], "dataset": ds["dataset"],
+                "state": "stopped", "detail": detail}
     except Exception as ex:
         traceback.print_exc()
+        # Transient (locked db, flaky download) says nothing about whether the
+        # unit can succeed, so it must not cost a whole day.
         release(conn, ds["aoi_id"], ds["dataset"], "pending",
-                f"error: {ex}"[:400], retry_hours=24)
+                f"error: {ex}"[:400], retry_hours=1 if transient(ex) else 24)
         return {"aoi": ds["aoi_id"], "dataset": ds["dataset"],
                 "error": str(ex)[:200]}
+    # A runner may also notice the stop itself and return cleanly mid-dataset
+    # (the polite path -- it finishes the unit in hand first). Same outcome as
+    # Interrupted: pending, no cooldown, and say so.
+    if not finished and stopping():
+        detail = f"stopped ({STOP['why']}) at {detail} -- resumes next run"
     release(conn, ds["aoi_id"], ds["dataset"],
             "done" if finished else "pending", detail)
-    log(f"   -> {'done' if finished else 'partial'}: {detail}")
+    state = "done" if finished else ("stopped" if stopping() else "partial")
+    log(f"   -> {state}: {detail}")
     return {"aoi": ds["aoi_id"], "dataset": ds["dataset"],
-            "state": "done" if finished else "partial", "detail": detail}
+            "state": state, "detail": detail}
 
 
 def daily(conn, minutes, budget):
@@ -622,14 +815,16 @@ def daily(conn, minutes, budget):
                 log("queue empty")
                 break
             results.append(r)
-            if r.get("state") == "partial":
-                break   # budget for this slice is spent
+            if r.get("state") in ("partial", "stopped"):
+                break   # budget or wall clock for this slice is spent
+            if stopping():
+                break
     except Exception as ex:
         fatal = ex
         traceback.print_exc()
     write_status(results, started, fatal)
     # One throttled notification per run, and only when something moved.
-    moved = [r for r in results if r.get("state") in ("done", "partial")]
+    moved = [r for r in results if r.get("state") in ("done", "partial", "stopped")]
     if moved:
         notify_status("aoi_progress", "AOI ingest progress",
                       "; ".join(f"{r['aoi']}/{r['dataset']}: {r.get('detail','')}"
@@ -659,12 +854,20 @@ def main():
                     help="max API-ish units per slice")
     ap.add_argument("--minutes", type=int, default=DEFAULT_DEADLINE_MIN)
     ap.add_argument("--status", action="store_true")
+    ap.add_argument("--heal", action="store_true",
+                    help="reclaim leases whose process is gone, then exit")
     args = ap.parse_args()
 
     conn = aoi_lib.connect()
     if args.status:
+        heal_leases(conn, blocking=False)
         status(conn)
         return
+    if args.heal:
+        healed = heal_leases(conn)
+        log(f"healed {len(healed)} stranded lease(s)")
+        return
+    install_signal_handlers()
     if args.daily:
         daily(conn, args.minutes, args.budget)
         return
