@@ -327,6 +327,43 @@ func (s *Server) loadAOIDatasets(aoiID string) ([]aoiDataset, error) {
 	return out, rows.Err()
 }
 
+// aoiPark is one protected area the AOI overlaps, precomputed by
+// scripts/aoi_clip.py into aoi_parks (migration 041). The popup links to
+// these and the report folds them in; both fractions are served because
+// "how much of the AOI" and "how much of the park" are different questions.
+type aoiPark struct {
+	ParkID     string  `json:"park_id"`
+	Name       string  `json:"name,omitempty"`
+	FracOfAOI  float64 `json:"frac_of_aoi"`
+	FracOfPark float64 `json:"frac_of_park"`
+}
+
+func (s *Server) loadAOIParks(aoiID string) ([]aoiPark, error) {
+	rows, err := s.DB.Query(`SELECT park_id, frac_of_aoi, frac_of_park
+		FROM aoi_parks WHERE aoi_id = ? ORDER BY frac_of_aoi DESC`, aoiID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := []aoiPark{}
+	for rows.Next() {
+		var p aoiPark
+		if err := rows.Scan(&p.ParkID, &p.FracOfAOI, &p.FracOfPark); err != nil {
+			return nil, err
+		}
+		if s.AreaStore != nil {
+			for _, a := range s.AreaStore.Areas {
+				if a.ID == p.ParkID {
+					p.Name = a.Name
+					break
+				}
+			}
+		}
+		out = append(out, p)
+	}
+	return out, rows.Err()
+}
+
 // ----------------------------------------------------------------- handlers
 
 // HandleAPIAOIList — GET /api/aois
@@ -355,7 +392,13 @@ func (s *Server) HandleAPIAOIGet(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "database error", http.StatusInternalServerError)
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"aoi": a, "datasets": ds})
+	parks, err := s.loadAOIParks(a.ID)
+	if err != nil {
+		slog.Warn("aoi parks", "id", a.ID, "error", err)
+		parks = nil
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"aoi": a, "datasets": ds,
+		"parks": parks})
 }
 
 // aoiGate wraps a park handler so it can serve an AOI id.

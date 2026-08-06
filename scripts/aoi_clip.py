@@ -44,10 +44,16 @@ def log(m):
     print(m, flush=True)
 
 
-def intersecting_parks(geom):
-    """Parks whose boundary meets the AOI, with the fraction of the AOI they
-    cover. The fraction is the honest part of the preview: it is exactly how
-    much of the answer a clip can possibly contain."""
+def intersecting_parks(conn, aoi_id, geom, persist=True):
+    """Parks whose boundary meets the AOI, with both overlap fractions.
+
+    frac_of_aoi is the honest part of the preview: it is exactly how much of
+    the answer a clip can possibly contain. frac_of_park says whether the park
+    is contained or merely clipped at the edge. Both are stored in aoi_parks
+    (migration 041) because this is the AOI's most-used fact and a real
+    polygon intersection is far too expensive to redo per request — the popup,
+    the report and this script all read it back.
+    """
     out = []
     with open(BASE_DIR / "data" / "keystones_with_boundaries.json") as f:
         parks = json.load(f)
@@ -58,11 +64,22 @@ def intersecting_parks(geom):
             g = shape(p["geometry"])
             if not g.intersects(geom):
                 continue
-            frac = g.intersection(geom).area / geom.area if geom.area else 0.0
+            inter = g.intersection(geom).area
         except Exception:
             continue
-        out.append((p["id"], frac))
-    return sorted(out, key=lambda t: -t[1])
+        out.append((p["id"],
+                    inter / geom.area if geom.area else 0.0,
+                    inter / g.area if g.area else 0.0))
+    out.sort(key=lambda t: -t[1])
+    if persist:
+        # Replace wholesale: a park that no longer intersects (edited polygon)
+        # must disappear, not linger.
+        conn.execute("DELETE FROM aoi_parks WHERE aoi_id = ?", (aoi_id,))
+        conn.executemany(
+            "INSERT INTO aoi_parks (aoi_id, park_id, frac_of_aoi, frac_of_park) "
+            "VALUES (?,?,?,?)", [(aoi_id, a, b, c) for a, b, c in out])
+        conn.commit()
+    return out
 
 
 def in_window(row_date, lo, hi):
@@ -243,15 +260,15 @@ def run(aoi_id, dry=False):
     prepare(geom)
     lo, hi = aoi["from_date"], aoi["to_date"]
 
-    parks = intersecting_parks(geom)
+    parks = intersecting_parks(conn, aoi_id, geom, persist=not dry)
     if not parks:
         log("no intersecting parks — nothing to clip")
         return {}
-    park_ids = [p for p, _ in parks]
-    covered = sum(f for _, f in parks)
+    park_ids = [p for p, _, _ in parks]
+    covered = sum(f for _, f, _ in parks)
     log(f"{len(parks)} intersecting parks, {100*covered:.1f}% of the polygon:")
-    for p, f in parks[:8]:
-        log(f"  {p:<34} {100*f:5.1f}%")
+    for p, f, fp in parks[:8]:
+        log(f"  {p:<34} {100*f:5.1f}% of AOI, {100*fp:5.1f}% of park")
 
     t0 = time.time()
     stats = {}
