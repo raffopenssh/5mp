@@ -538,12 +538,23 @@ both load-bearing:
    apply `aoiExcludeSQL(col)`** (`srv/aoi.go`) — the same shape as
    `scannerInjectedSQLFilter()`. Without it, bbox-keyed endpoints leak private
    rows *and* double-count the AOI over the parks it overlaps.
-3. **Three writers share `(park_id=<aoi>, feature_type)`** in
+3. **Four writers share `(park_id=<aoi>, feature_type)`** in
    `feature_geometries`: `aoi_clip.py` (settlement/deforestation preview from
-   neighbouring parks), the v5 fire chain (`fire_trajectory`), and the
+   neighbouring parks), the v5 fire chain (`fire_trajectory`), the
    `deforestation` unit (`deforest_gfw_%`, derived from the AOI's own GFW
-   alerts — not Hansen). Each is only safe because it deletes a **disjoint id
-   prefix**. A fourth writer needs the same treatment.
+   alerts — not Hansen), and the `ghsl` unit (`settlement_ghsl_%`, from
+   built-up-surface tiles). Each is only safe because it deletes a **disjoint
+   id prefix**. A fifth writer needs the same treatment. A layer listed in
+   `aoi_clip.SUPERSEDED_BY` is also no longer clipped once its real ingest is
+   `done` — the real ingest covers the whole polygon *including* the ~10%
+   inside parks the preview stood in for, so keeping both double counts.
+
+GHSL settlement polygons come from `scripts/ghsl_tiles.py` (R2023A E2030 100 m,
+cached **by tile id** in `data/ghsl/tiles/`, shared by parks and AOIs alike).
+The JRC tile grid is **1-indexed**; an off-by-one silently reads a window
+2,000 km away. The 10 m product is not published as tiles.
+`rebuild_events_enhanced.rebuild_settlements_for_park()` is the one clusterer +
+classifier for a single park or AOI — don't write a second one.
 
 UI: an AOI animates as its **polygon** (`Animator.open({aoi})` → `clipGeom`),
 not its bbox; share links use `?aoi=`/`aoi_sections=`/`anim_aoi`, deliberately
