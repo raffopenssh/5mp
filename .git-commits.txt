@@ -1,3 +1,6 @@
+19064e3 2026-08-06 10:24:44 mining: retire turbidity/pit detection; keep river-proximity inference
+04264e1 2026-08-06 09:39:15 mining: read off the Africa AUC (0.781) and record the decision
+2c72ed6 2026-08-06 09:31:59 Rebuild: refresh version history for e1d464c
 e1d464c 2026-08-06 09:31:42 NRT->SP reconciliation: measure it, then ship a watchdog instead
 a10e070 2026-08-06 08:52:53 Rebuild: refresh embedded commit history
 9e6ed93 2026-08-06 08:52:30 Fire: retire FIRE_TODO_HANDOVER, fold the one open item into the permanent docs
@@ -15,6 +18,3 @@ ab7991b 2026-08-05 15:58:11 Unified hover/tap map tooltip for all pinned & view 
 4398c9f 2026-08-05 15:13:03 fix(test-env): stop leaking client-derived data into the test tenant
 f667f06 2026-08-05 14:47:07 fix(anim): scope patrol-effort frames to request env (test env leaked prod effort pixels)
 e517e66 2026-08-05 14:20:58 Retire the duplicate raw fire JSON window (closes handover #15)
-1835096 2026-08-05 14:16:35 Admin panel: nightly fire pipeline heartbeat badge
-c2662a7 2026-08-05 14:07:32 Rebuild: refresh embedded commit history
-932a0c2 2026-08-05 14:07:17 AGENTS.md: mining is a measured negative result, not just 'not ready'
