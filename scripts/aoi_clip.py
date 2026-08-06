@@ -112,13 +112,34 @@ LINE_TABLES = ["roads_heigit"]
 
 
 # Rows a later unit owns and the clip must not delete. The clip is a preview
-# from neighbouring parks; the `deforestation` unit derives real GFW-era events
-# for the AOI itself into the same table, keyed by a 'deforest_gfw_' prefix.
-# Two writers, one table, disjoint prefixes -- and that only holds if each
-# scopes its delete.
+# from neighbouring parks; the real ingest units derive the AOI's own rows into
+# the same tables, keyed by a distinct id prefix. Several writers, one table,
+# disjoint prefixes -- and that only holds if each scopes its delete.
+#   deforest_gfw_%   -> the `deforestation` unit (GFW alerts)
+#   settlement_ghsl_ -> the `ghsl` unit (built-up surface tiles)
 DELETE_EXCLUDE = {
     "deforestation_events": "polygon_ids LIKE 'deforest_gfw_%'",
+    "park_settlements": "polygon_ids LIKE 'settlement_ghsl_%'",
 }
+
+# Which real-ingest dataset supersedes which preview layer. Once it is done the
+# clip must stop copying that layer: the real ingest covers the whole polygon
+# *including* the parts inside parks, so continuing to clip would double count
+# exactly the ground the preview stood in for. The clip still deletes its own
+# previous preview rows (that is what makes the handover atomic); DELETE_EXCLUDE
+# keeps the real ones.
+SUPERSEDED_BY = {
+    "park_settlements": "ghsl",
+}
+
+
+def superseded(conn, aoi_id, table):
+    ds = SUPERSEDED_BY.get(table)
+    if not ds:
+        return False
+    row = conn.execute("SELECT state FROM aoi_datasets WHERE aoi_id=? AND dataset=?",
+                       (aoi_id, ds)).fetchone()
+    return bool(row) and row[0] == "done"
 
 
 def columns(conn, table):
@@ -226,16 +247,23 @@ def clip_features(conn, aoi_id, geom, park_ids, lo, hi, dry=False):
     were never numeric.)
     """
     marks = ",".join("?" for _ in park_ids)
+    # Drop a layer whose real ingest has landed (see SUPERSEDED_BY). 'settlement'
+    # feature_geometries are superseded by the ghsl unit's own tiles, which
+    # cover the whole polygon rather than only its ~10% inside parks.
+    types = [t for t in ("settlement", "deforestation")
+             if not superseded(conn, aoi_id,
+                               "park_settlements" if t == "settlement" else t)]
+    tmarks = ",".join("?" for _ in types)
     x0, y0, x1, y1 = geom.bounds
     rows = conn.execute(f"""
         SELECT feature_type, feature_id, park_id, geojson, bbox_minx, bbox_miny,
                bbox_maxx, bbox_maxy, start_date, end_date, properties_json
         FROM feature_geometries
-        WHERE feature_type IN ('settlement', 'deforestation')
+        WHERE feature_type IN ({tmarks})
           AND park_id IN ({marks})
           AND bbox_maxx >= ? AND bbox_minx <= ?
           AND bbox_maxy >= ? AND bbox_miny <= ?""",
-        park_ids + [x0, x1, y0, y1]).fetchall()
+        types + park_ids + [x0, x1, y0, y1]).fetchall() if types else []
     out = []
     for r in rows:
         if not in_window(r["start_date"], lo, hi):
@@ -264,7 +292,8 @@ def clip_features(conn, aoi_id, geom, park_ids, lo, hi, dry=False):
     # only safe because each deletes a disjoint id prefix.
     conn.execute("DELETE FROM feature_geometries WHERE park_id = ? AND "
                  "feature_type IN ('settlement', 'deforestation') AND "
-                 "feature_id NOT LIKE 'deforest_gfw_%'", (aoi_id,))
+                 "feature_id NOT LIKE 'deforest_gfw_%' AND "
+                 "feature_id NOT LIKE 'settlement_ghsl_%'", (aoi_id,))
     if out:
         conn.executemany("""
             INSERT OR IGNORE INTO feature_geometries
@@ -295,6 +324,14 @@ def run(aoi_id, dry=False):
     t0 = time.time()
     stats = {}
     for table, _, _ in POINT_TABLES + GEOM_TABLES:
+        if superseded(conn, aoi_id, table):
+            # The real ingest owns this layer now; the preview's own rows are
+            # still deleted so the handover leaves nothing behind.
+            if not dry:
+                delete_rows(conn, table, aoi_id)
+                conn.commit()
+            log(f"  {table:<22} {'superseded':>7}")
+            continue
         src, kept = clip_table(conn, aoi_id, table, geom, park_ids, lo, hi, dry)
         stats[table] = kept
         log(f"  {table:<22} {kept:>7,} / {src:,}")

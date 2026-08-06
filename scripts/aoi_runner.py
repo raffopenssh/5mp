@@ -376,6 +376,62 @@ def run_deforestation(conn, aoi, ds, deadline, budget):
     return True, f"{n:,} deforestation events from GFW alerts"
 
 
+def run_ghsl(conn, aoi, ds, deadline, budget):
+    """GHSL built-up surface -> settlement polygons + classified settlements.
+
+    One 1000 km Mollweide tile per unit (4 for XSA). Tiles are cached by tile
+    id under data/ghsl/tiles/, so a second AOI or a park onboarding over the
+    same ground reuses the download (rule 2) -- and the same tiles finally make
+    scripts/process_settlement_polygons.py work again, which had been pointing
+    at a hardcoded zip that does not exist here.
+
+    The last unit clusters the polygons into park_settlements through the
+    *canonical* EventRebuilder, so an AOI settlement reads exactly like a park
+    settlement instead of being a second classifier.
+    """
+    import ghsl_tiles
+
+    aid = aoi["id"]
+    geom = aoi_lib.aoi_geom(aoi)
+    cur = load_cursor(ds)
+    if not cur:
+        cur = {"i": 0, "tiles": ghsl_tiles.tiles_for_geom(geom), "polys": 0}
+        # Fresh scan: drop the previous run's rows before writing any, so a
+        # scan that now yields nothing cannot leave them immortal.
+        conn.execute("DELETE FROM feature_geometries WHERE park_id = ? AND "
+                     "feature_type='settlement' AND feature_id LIKE ?",
+                     (aid, ghsl_tiles.AOI_PREFIX + "%"))
+        conn.commit()
+    tiles, total = cur["tiles"], len(cur["tiles"])
+    while cur["i"] < total and time.time() < deadline:
+        cur["polys"] += ghsl_tiles.ingest_tile(
+            conn, aid, tiles[cur["i"]], geom, coord_ids=True, log=log)
+        cur["i"] += 1
+        progress(conn, aid, ds["dataset"], cur, cur["i"], total,
+                 detail=f"{cur['polys']:,} built-up polygons")
+    if cur["i"] < total:
+        return False, f"{cur['polys']:,} polygons, {cur['i']}/{total} tiles"
+
+    from rebuild_events_enhanced import EventRebuilder
+    # Hand over from the Phase A preview atomically: the clip's copies covered
+    # only the ~10% of the polygon inside a park, and these tiles cover all of
+    # it, so leaving both would double count. aoi_clip won't re-create them
+    # (SUPERSEDED_BY) but it may not run again for a day.
+    conn.execute("DELETE FROM feature_geometries WHERE park_id = ? AND "
+                 "feature_type='settlement' AND feature_id NOT LIKE ?",
+                 (aid, ghsl_tiles.AOI_PREFIX + "%"))
+    conn.commit()
+    rebuilder = EventRebuilder()
+    try:
+        n = rebuilder.rebuild_settlements_for_park(aid)
+    finally:
+        try:
+            rebuilder.conn.close()
+        except Exception:
+            pass
+    return True, f"{cur['polys']:,} built-up polygons, {n:,} settlements"
+
+
 def run_osm(conn, aoi, ds, deadline, budget):
     """One country PBF per unit: download, extract the AOI bbox, fill the
     AOI's places/roads, then — while the PBF is on disk — backfill every park
@@ -446,6 +502,7 @@ RUNNERS = {
     "fire_gap": run_fire_gap,
     "fire_v5": run_fire_v5,
     "gfw": run_gfw,
+    "ghsl": run_ghsl,
     "deforestation": run_deforestation,
     "osm": run_osm,
     "basin": run_basin,

@@ -239,37 +239,52 @@ class EventRebuilder:
         return None
     
     def _cluster_polygons(self, polygons, max_dist_km):
-        """Cluster nearby polygons together"""
+        """Single-linkage clustering: polygons within max_dist_km chain together.
+
+        Grid-accelerated. The original was a rescan of every remaining polygon
+        against every cluster member, which is fine for a park (a few thousand
+        polygons) and hopeless for an AOI (XSA yields ~170k GHSL polygons, and
+        the quadratic version does not finish). The partition produced by
+        single linkage is unique, so this returns exactly the same clusters --
+        only the order of members within a cluster differs.
+        """
         if not polygons:
             return []
-        
-        remaining = list(polygons)
+
+        # Bucket into cells of the linkage distance, so a polygon's possible
+        # neighbours are confined to the 3x3 block around its own cell.
+        deg = max_dist_km / 111.0
+        cells = defaultdict(list)
+        for i, p in enumerate(polygons):
+            cells[(int(p['lat'] // deg), int(p['lon'] // deg))].append(i)
+
+        seen = [False] * len(polygons)
         clusters = []
-        
-        while remaining:
-            seed = remaining.pop(0)
-            cluster = [seed]
-            
-            changed = True
-            while changed:
-                changed = False
-                still_remaining = []
-                for p in remaining:
-                    in_cluster = False
-                    for c in cluster:
-                        dist = haversine(p['lat'], p['lon'], c['lat'], c['lon'])
-                        if dist <= max_dist_km:
-                            in_cluster = True
-                            break
-                    if in_cluster:
-                        cluster.append(p)
-                        changed = True
-                    else:
-                        still_remaining.append(p)
-                remaining = still_remaining
-            
+        for start in range(len(polygons)):
+            if seen[start]:
+                continue
+            seen[start] = True
+            queue = [start]
+            cluster = []
+            while queue:
+                i = queue.pop()
+                p = polygons[i]
+                cluster.append(p)
+                cy, cx = int(p['lat'] // deg), int(p['lon'] // deg)
+                # A degree of longitude is shorter than a degree of latitude,
+                # so the linkage radius can reach further than one lon cell.
+                span = int(1.0 / max(math.cos(math.radians(p['lat'])), 0.1)) + 1
+                for dy in (-1, 0, 1):
+                    for dx in range(-span, span + 1):
+                        for j in cells.get((cy + dy, cx + dx), ()):
+                            if seen[j]:
+                                continue
+                            q = polygons[j]
+                            if haversine(p['lat'], p['lon'], q['lat'], q['lon']) <= max_dist_km:
+                                seen[j] = True
+                                queue.append(j)
             clusters.append(cluster)
-        
+
         return clusters
     
     def _classify_deforestation(self, polygons, park_id, year, fires_near, roads):
@@ -518,14 +533,8 @@ class EventRebuilder:
         
         return count
     
-    def rebuild_settlements(self):
-        """Rebuild park_settlements with clustering"""
-        
-        print("\n" + "=" * 60)
-        print("Rebuilding settlement events")
-        print("=" * 60)
-        
-        # Get all settlement polygons
+    def load_settlement_polygons(self, park_id=None):
+        """{park_id: [polygon dicts]} from feature_geometries."""
         cursor = self.conn.execute("""
             SELECT park_id, feature_id,
                    json_extract(properties_json, '$.area_m2') as area_m2,
@@ -533,11 +542,10 @@ class EventRebuilder:
                    json_extract(properties_json, '$.lat') as lat,
                    json_extract(properties_json, '$.lon') as lon
             FROM feature_geometries
-            WHERE feature_type = 'settlement'
-            ORDER BY park_id
-        """)
-        
-        # Group by park
+            WHERE feature_type = 'settlement'"""
+            + (" AND park_id = ?" if park_id else "") + " ORDER BY park_id",
+            (park_id,) if park_id else ())
+
         park_polygons = defaultdict(list)
         for row in cursor:
             park_polygons[row['park_id']].append({
@@ -547,85 +555,25 @@ class EventRebuilder:
                 'lat': float(row['lat']) if row['lat'] else 0,
                 'lon': float(row['lon']) if row['lon'] else 0
             })
+        return park_polygons
+
+    def rebuild_settlements(self):
+        """Rebuild park_settlements with clustering, for every park at once."""
         
+        print("\n" + "=" * 60)
+        print("Rebuilding settlement events")
+        print("=" * 60)
+        
+        park_polygons = self.load_settlement_polygons()
         print(f"Found polygons for {len(park_polygons)} parks")
-        
-        # Get park names
-        park_names = {}
-        for park_id in park_polygons.keys():
-            parts = park_id.split('_')
-            park_names[park_id] = ' '.join(parts[1:]).replace('_', ' ')
         
         # Clear existing settlements
         self.conn.execute("DELETE FROM park_settlements")
         
         count = 0
         for park_id, polygons in sorted(park_polygons.items()):
-            print(f"  Processing {park_id} ({len(polygons)} polygons)...")
-            clusters = self._cluster_polygons(polygons, SETTLEMENT_CLUSTER_KM)
-            
-            places = self._load_park_places(park_id)
-            rivers = self._load_park_rivers(park_id)
-            climate = self.climate.get(park_id, {})
-            
-            for cluster in clusters:
-                avg_lat = sum(p['lat'] for p in cluster) / len(cluster)
-                avg_lon = sum(p['lon'] for p in cluster) / len(cluster)
-                total_area = sum(p['area_m2'] for p in cluster)
-                total_pop = sum(p['population_est'] for p in cluster)
-                
-                # Simple classification based on size and population
-                if total_pop > 1000:
-                    classification = 'town'
-                    confidence = 0.7
-                elif total_pop > 200:
-                    classification = 'village'
-                    confidence = 0.7
-                elif total_area > 50000:
-                    classification = 'agricultural'
-                    confidence = 0.6
-                elif total_area < 5000:
-                    classification = 'temporary_camp'
-                    confidence = 0.5
-                else:
-                    classification = 'settlement'
-                    confidence = 0.5
-                
-                nearest_place, place_dist = self._get_nearest_place(avg_lat, avg_lon, places)
-                nearest_river = self._get_nearest_river(avg_lat, avg_lon, rivers)
-                
-                # Generate narrative
-                park_name = park_names.get(park_id, park_id)
-                narrative_parts = [f"{classification.replace('_', ' ').title()} in {park_name}."]
-                narrative_parts.append(f"Area: {total_area/10000:.2f} ha, estimated population: {total_pop}.")
-                if nearest_place:
-                    narrative_parts.append(f"Located {place_dist:.1f}km from {nearest_place['name']}.")
-                if nearest_river:
-                    narrative_parts.append(f"Near {nearest_river['name']} river.")
-                narrative = ' '.join(narrative_parts)
-                
-                polygon_ids = ','.join(p['feature_id'] for p in cluster)
-                place_name = nearest_place['name'] if nearest_place else ''
-                
-                sett_type = 'temporary' if classification in ('temporary_camp', 'pastoral') else 'permanent'
-                
-                self.conn.execute("""
-                    INSERT INTO park_settlements
-                    (park_id, lat, lon, area_m2, population_est, households_est,
-                     nearest_place, distance_to_place_km, settlement_type,
-                     classification, classification_confidence, narrative, polygon_ids)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """, (
-                    park_id, avg_lat, avg_lon, total_area, total_pop,
-                    int(total_pop / 4.5),
-                    place_name, place_dist if place_dist else 0, sett_type,
-                    classification, confidence, narrative, polygon_ids
-                ))
-                count += 1
-            
-            if count % 50 == 0:
-                print(f"  Processed {count} settlements...")
-                self.conn.commit()
+            count += self.rebuild_settlements_for_park(park_id, polygons,
+                                                       delete=False)
         
         self.conn.commit()
         print(f"Created {count} settlement records")
@@ -640,6 +588,92 @@ class EventRebuilder:
         for row in cursor:
             print(f"  {row[0]}: {row[1]}")
         
+        return count
+
+    def rebuild_settlements_for_park(self, park_id, polygons=None, delete=True):
+        """Cluster + classify one park's (or AOI's) settlement polygons.
+
+        Split out of rebuild_settlements so a single park can be refreshed
+        after onboarding, and so an AOI can reach the *canonical* classifier
+        rather than growing a second copy of it (docs/PLAN_AOI_OVERLAY.md).
+        `delete` scopes the wipe to this park; the global rebuild has already
+        truncated the table and passes False.
+        """
+        if polygons is None:
+            polygons = self.load_settlement_polygons(park_id).get(park_id, [])
+        if delete:
+            # Before the empty-input early return, not after: a rebuild that
+            # now yields nothing must not leave the old rows immortal.
+            self.conn.execute("DELETE FROM park_settlements WHERE park_id = ?",
+                              (park_id,))
+            self.conn.commit()
+        if not polygons:
+            return 0
+
+        print(f"  Processing {park_id} ({len(polygons)} polygons)...")
+        park_name = ' '.join(park_id.split('_')[1:]).replace('_', ' ')
+        count = 0
+        clusters = self._cluster_polygons(polygons, SETTLEMENT_CLUSTER_KM)
+        
+        places = self._load_park_places(park_id)
+        rivers = self._load_park_rivers(park_id)
+        climate = self.climate.get(park_id, {})
+        
+        for cluster in clusters:
+            avg_lat = sum(p['lat'] for p in cluster) / len(cluster)
+            avg_lon = sum(p['lon'] for p in cluster) / len(cluster)
+            total_area = sum(p['area_m2'] for p in cluster)
+            total_pop = sum(p['population_est'] for p in cluster)
+            
+            # Simple classification based on size and population
+            if total_pop > 1000:
+                classification = 'town'
+                confidence = 0.7
+            elif total_pop > 200:
+                classification = 'village'
+                confidence = 0.7
+            elif total_area > 50000:
+                classification = 'agricultural'
+                confidence = 0.6
+            elif total_area < 5000:
+                classification = 'temporary_camp'
+                confidence = 0.5
+            else:
+                classification = 'settlement'
+                confidence = 0.5
+            
+            nearest_place, place_dist = self._get_nearest_place(avg_lat, avg_lon, places)
+            nearest_river = self._get_nearest_river(avg_lat, avg_lon, rivers)
+            
+            # Generate narrative
+            narrative_parts = [f"{classification.replace('_', ' ').title()} in {park_name}."]
+            narrative_parts.append(f"Area: {total_area/10000:.2f} ha, estimated population: {total_pop}.")
+            if nearest_place:
+                narrative_parts.append(f"Located {place_dist:.1f}km from {nearest_place['name']}.")
+            if nearest_river:
+                narrative_parts.append(f"Near {nearest_river['name']} river.")
+            narrative = ' '.join(narrative_parts)
+            
+            polygon_ids = ','.join(p['feature_id'] for p in cluster)
+            place_name = nearest_place['name'] if nearest_place else ''
+            
+            sett_type = 'temporary' if classification in ('temporary_camp', 'pastoral') else 'permanent'
+            
+            self.conn.execute("""
+                INSERT INTO park_settlements
+                (park_id, lat, lon, area_m2, population_est, households_est,
+                 nearest_place, distance_to_place_km, settlement_type,
+                 classification, classification_confidence, narrative, polygon_ids)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                park_id, avg_lat, avg_lon, total_area, total_pop,
+                int(total_pop / 4.5),
+                place_name, place_dist if place_dist else 0, sett_type,
+                classification, confidence, narrative, polygon_ids
+            ))
+            count += 1
+    
+        self.conn.commit()
         return count
     
     def export_json(self):
