@@ -1,0 +1,144 @@
+{
+  "window": [
+    "2026-05-20",
+    "2026-05-25"
+  ],
+  "bbox": "30,-14,40,-8",
+  "satellite": "N20",
+  "sp_source": "VIIRS_NOAA20_SP",
+  "max_shift_km": 1.5,
+  "time_tol_min": 6.0,
+  "nrt_provenance": 1.0,
+  "verdict_scope": "within_100km",
+  "chosen": {
+    "scope": "within_100km",
+    "sp_max_dist_km": 100.0,
+    "nrt_rows": 510,
+    "sp_rows": 510,
+    "matched": 510,
+    "matched_pct": 100.0,
+    "exact_coord_matches": 510,
+    "exact_pct": 100.0,
+    "only_in_nrt": 0,
+    "only_in_sp": 0,
+    "drop_pct": 0.0,
+    "add_pct": 0.0,
+    "nrt_on_date_with_no_sp": 0,
+    "shift_m": {
+      "median": 0.0,
+      "p90": 0.0,
+      "p99": 0.0,
+      "max": 0.0,
+      "mean": 0.0,
+      "over_pixel_pct": 0.0
+    },
+    "acq_time_shift_min": {
+      "median": 1.0,
+      "p99": 2.0,
+      "changed_pct": 61.96
+    },
+    "frp_abs_median": 0.0,
+    "frp_rel_median": 0.0,
+    "confidence_changes": {},
+    "confidence_change_pct": 0.0
+  },
+  "variants": [
+    {
+      "scope": "inside_park",
+      "sp_max_dist_km": 0.0,
+      "nrt_rows": 111,
+      "sp_rows": 111,
+      "matched": 111,
+      "matched_pct": 100.0,
+      "exact_coord_matches": 111,
+      "exact_pct": 100.0,
+      "only_in_nrt": 0,
+      "only_in_sp": 0,
+      "drop_pct": 0.0,
+      "add_pct": 0.0,
+      "nrt_on_date_with_no_sp": 0,
+      "shift_m": {
+        "median": 0.0,
+        "p90": 0.0,
+        "p99": 0.0,
+        "max": 0.0,
+        "mean": 0.0,
+        "over_pixel_pct": 0.0
+      },
+      "acq_time_shift_min": {
+        "median": 1.0,
+        "p99": 2.0,
+        "changed_pct": 81.08
+      },
+      "frp_abs_median": 0.0,
+      "frp_rel_median": 0.0,
+      "confidence_changes": {},
+      "confidence_change_pct": 0.0
+    },
+    {
+      "scope": "within_100km",
+      "sp_max_dist_km": 100.0,
+      "nrt_rows": 510,
+      "sp_rows": 510,
+      "matched": 510,
+      "matched_pct": 100.0,
+      "exact_coord_matches": 510,
+      "exact_pct": 100.0,
+      "only_in_nrt": 0,
+      "only_in_sp": 0,
+      "drop_pct": 0.0,
+      "add_pct": 0.0,
+      "nrt_on_date_with_no_sp": 0,
+      "shift_m": {
+        "median": 0.0,
+        "p90": 0.0,
+        "p99": 0.0,
+        "max": 0.0,
+        "mean": 0.0,
+        "over_pixel_pct": 0.0
+      },
+      "acq_time_shift_min": {
+        "median": 1.0,
+        "p99": 2.0,
+        "changed_pct": 61.96
+      },
+      "frp_abs_median": 0.0,
+      "frp_rel_median": 0.0,
+      "confidence_changes": {},
+      "confidence_change_pct": 0.0
+    },
+    {
+      "scope": "bbox_unfiltered",
+      "sp_max_dist_km": null,
+      "nrt_rows": 598,
+      "sp_rows": 598,
+      "matched": 598,
+      "matched_pct": 100.0,
+      "exact_coord_matches": 598,
+      "exact_pct": 100.0,
+      "only_in_nrt": 0,
+      "only_in_sp": 0,
+      "drop_pct": 0.0,
+      "add_pct": 0.0,
+      "nrt_on_date_with_no_sp": 0,
+      "shift_m": {
+        "median": 0.0,
+        "p90": 0.0,
+        "p99": 0.0,
+        "max": 0.0,
+        "mean": 0.0,
+        "over_pixel_pct": 0.0
+      },
+      "acq_time_shift_min": {
+        "median": 1.0,
+        "p99": 2.0,
+        "changed_pct": 62.04
+      },
+      "frp_abs_median": 0.0,
+      "frp_rel_median": 0.0,
+      "confidence_changes": {},
+      "confidence_change_pct": 0.0
+    }
+  ],
+  "verdict": "not_worth_building"
+}

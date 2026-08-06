@@ -82,12 +82,16 @@ python3 scripts/daily_fire_update.py --days 2  # Test with 2 days
 **Pipeline Steps:**
 1. Download NRT fires from NASA FIRMS API (last N days)
 2. Insert new fires to `fire_detections` (upsert, no deletions)
+   - **Step 2c**: Refresh `fire_grid_day/week/month` (time animator backend)
+   - **Step 2d**: Persistent hotspot mask (monthly, 1st only)
+   - **Step 2e**: NRT→SP reconciliation audit (monthly, 1st only, read-only)
 3. Rebuild fire groups for affected parks only
 4. Update `feature_geometries` for new groups
 5. Update `fire_narrative_cache` for affected parks
 6. **Step 6a**: Sync `fire_group_alerts` with feature_geometries
 7. **Step 6b1**: Assign persistent hurricane-style names to new fires
 8. **Step 6b2**: Create enhanced fire alert notifications
+9. **Step 7**: Fire consistency check (JSON vs features vs narratives)
 
 **Cron Setup:**
 ```bash
@@ -138,6 +142,35 @@ These steps create actionable fire alerts for managers:
 - Movement direction and speed for resource planning
 - Boundary threat assessment (approaching vs leaving)
 - "Gone dark" detection for follow-up investigation
+
+---
+
+### `scripts/reconcile_nrt_sp.py`
+**Purpose:** Audit (and, if ever needed, apply) FIRMS Standard-Processing
+revisions of the NRT detections we ingest nightly.
+
+Measured 2026-08 across six NRT-provenance windows: SP returns coordinates,
+FRP and confidence **byte-identical**; only `acq_time` moves 1–2 min. That is
+invisible to day-level clustering but would fork the `fire_detections` UNIQUE
+key, so reconciliation is a no-op and is deliberately not applied. See
+`docs/FIRE_PIPELINE.md` § NRT→SP and `data/eval/nrt_sp/`.
+
+```bash
+python3 scripts/reconcile_nrt_sp.py --dry-run       # fetch plan, no network
+python3 scripts/reconcile_nrt_sp.py --watchdog      # what cron runs (step 2e)
+python3 scripts/reconcile_nrt_sp.py --from 2026-05-13 --days 5 \
+    --bbox 20,-16,32,-8 --json data/eval/nrt_sp/kafue_2026-05.json
+
+# only if the watchdog fires: matcher-based UPDATE, dry run without --yes
+python3 scripts/reconcile_nrt_sp.py --apply --from ... --days 5 --bbox ... --yes
+```
+
+**Exit codes:** 0 no action · 2 window outside the SP archive · 3 inconclusive
+(too few matched rows) · 4 material drift (cron raises a SYSTEM notification
+and marks the pipeline degraded).
+
+After any `--apply --yes`, rerun `build_fire_grid_agg.py --since <window>` and
+the v5 rebuild for the affected parks — edited detections do not propagate.
 
 ---
 

@@ -65,7 +65,13 @@ data/worldclim/*.zip
 secrets.env
 
 # Fire trajectory A/B eval snapshots (regenerate via eval_fire_trajectories.py)
-data/eval/
+# (glob the contents, not the dir: git cannot re-include a path under an
+# excluded directory, and the nrt_sp results below must stay tracked)
+data/eval/*
+# ...except the NRT->SP drift measurements (28K): they are the evidence for a
+# negative result documented in docs/FIRE_PIPELINE.md, and re-measuring each
+# costs a FIRMS round-trip.
+!data/eval/nrt_sp/
 data/viirs_backfill_state.json
 
 # Mining analysis: bulk downloads & intermediate rasters (re-fetchable)
@@ -90,3 +96,6 @@ data/amw_cache/
 # from 131MB/181k groups to 762MB/711k groups, which does not belong in git.
 data/fire_groups_v5/
 data/fire_trends_v5/
+
+# Monthly NRT->SP watchdog output (rewritten by daily_fire_update step 2e)
+data/nrt_sp_audit.json

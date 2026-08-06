@@ -431,6 +431,57 @@ class DailyFireUpdater:
             log(f"  Hotspot mask refresh error: {e}")
             self._fail('hotspot_mask', e)
 
+    def audit_nrt_sp(self):
+        """Monthly watchdog: has FIRMS started revising NRT into SP differently?
+
+        We ingest NRT and never re-fetch, on the strength of a 2026-08
+        measurement showing SP revises *nothing* we cluster on: coordinates,
+        FRP and confidence come back byte-identical, and only acq_time moves
+        (1-2 min), which day-level clustering cannot see. See
+        docs/FIRE_PIPELINE.md and data/eval/nrt_sp/.
+
+        That is a property of FIRMS' current processing, not a law. A new VIIRS
+        collection or an ephemeris fix could make SP genuinely relocate
+        detections, and we would otherwise learn about it from a user reporting
+        a fire in the wrong place. So re-measure one dense window a month; exit
+        4 from the script means the finding no longer holds.
+
+        Read-only: the audit never writes fire_detections. Fixing an actual
+        drift is a deliberate `--apply --yes` run plus a rebuild of the
+        affected parks, not something a cron should do behind your back.
+        """
+        if datetime.now().day != 1:
+            return
+        log("Step 2e: NRT->SP reconciliation audit (monthly, read-only)...")
+        try:
+            r = subprocess.run(
+                [sys.executable, 'scripts/reconcile_nrt_sp.py', '--watchdog',
+                 '--json', str(DATA_DIR / 'nrt_sp_audit.json')],
+                cwd=str(BASE_DIR), capture_output=True, text=True, timeout=900)
+            for line in r.stdout.splitlines():
+                if line.startswith(('[verdict', 'median', 'FRP', 'SP drops',
+                                    'VERDICT', 'INCONCLUSIVE')):
+                    log(f"  {line}")
+            self.stats['nrt_sp_drift'] = (r.returncode == 4)
+            if r.returncode == 4:
+                self._fail('nrt_sp_audit',
+                           'SP now revises detections materially; see '
+                           'data/nrt_sp_audit.json')
+                self._notify_system(
+                    'nrt_sp_drift', 'FIRMS SP Revisions Changed',
+                    'The monthly NRT->SP audit found material differences '
+                    'between our NRT rows and the SP archive. Our ingest '
+                    'assumes SP changes nothing we cluster on. Review '
+                    'data/nrt_sp_audit.json, then reconcile with '
+                    'scripts/reconcile_nrt_sp.py --apply --yes.')
+            elif r.returncode == 3:
+                log("  Audit inconclusive (too few matched rows) - not a failure")
+            elif r.returncode != 0:
+                self._fail('nrt_sp_audit', r.stderr.strip()[:200])
+        except Exception as e:
+            log(f"  NRT->SP audit error: {e}")
+            self._fail('nrt_sp_audit', e)
+
     def check_consistency(self):
         """Verify fire_groups_v5 JSON, feature_geometries and the narrative
         cache still agree. Drift here is invisible in the UI until a user
@@ -976,6 +1027,9 @@ class DailyFireUpdater:
         
         # Step 2d: Persistent hotspot mask (monthly; no-op other days)
         self.refresh_persistent_hotspots()
+
+        # Step 2e: NRT->SP reconciliation audit (monthly; no-op other days)
+        self.audit_nrt_sp()
         
         # Step 3: Rebuild groups (incremental)
         self.rebuild_groups_incremental()

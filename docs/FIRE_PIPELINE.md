@@ -826,48 +826,87 @@ With only NOAA-20 on ZMB_Kafue the day pass averaged 763 fires at mean FRP
 `mean_days` −21%, `dup_pairs` +23%, `coverage` −2.4%. The 2026-08 re-test above
 supersedes this but reaches the same conclusion for the same reason.
 
-### Known limitation: NRT detections are never revised (NRT→SP reconciliation)
+### NRT→SP reconciliation: measured, and it is a no-op (2026-08)
 
-FIRMS revises NRT detections weeks later via Standard Processing (better
-geolocation + confidence). We ingest NRT and never re-fetch, so early rows keep
-their provisional coordinates forever. This is the one known open gap in the
-fire data path — everything else in the v7 rebuild is done.
+FIRMS serves each detection twice — NRT (minutes old, provisional) and, weeks
+later, SP (Standard Processing, reprocessed with definitive ephemeris). We
+ingest NRT nightly and never re-fetch, which *looked* like the last open gap in
+the fire data path.
 
-Re-ingesting SP would **duplicate rather than update**, because the uniqueness
-key is built from raw REALs:
+It is not. Measured across six windows whose DB copy is genuinely NRT
+(`scripts/reconcile_nrt_sp.py`, results in `data/eval/nrt_sp/`):
 
-```sql
-UNIQUE(latitude, longitude, acq_date, acq_time, satellite)
+| window | scope | rows | coords identical | acq_time revised | p99 Δt | drop | add |
+|--------|-------|-----:|-----------------:|-----------------:|-------:|-----:|----:|
+| Kafue 2025-07 | inside park | 3,699 | 100% | 0% | 0 min | 0% | 0% |
+| Kafue 2026-05 | inside park | 489 | 100% | 66% | 2 min | 0% | 0% |
+| Chinko 2026-04 | ≤100 km | 968 | 100% | 24% | 2 min | 0% | 0% |
+| Niassa 2026-05 | ≤100 km | 510 | 100% | 62% | 2 min | 0% | 0% |
+| Virunga 2026-03 | ≤100 km | 259 | 100% | 86% | 2 min | 0% | 0% |
+| Serengeti 2026-05 | bbox | 62 | 100% | 18% | 1 min | 0% | 0% |
+
+**Coordinates, FRP and confidence come back byte-identical.** The only field SP
+revises is `acq_time`, by 1–2 minutes. Clustering is day-level (and even
+`--overpass` slices at 4 h), so a 2-minute shift cannot move a single
+trajectory — but it *is* enough to fork
+`UNIQUE(latitude, longitude, acq_date, acq_time, satellite)`, so a naive SP
+re-ingest would be all cost (duplicate rows, a 42.9M-row migration) and no
+benefit. The rounded-key + `processing` column migration sketched here
+previously is **not** being built.
+
+Three traps that make this easy to measure wrong; the script handles all three:
+
+- **Provenance.** SNPP/NOAA-21 history was backfilled *from SP* by
+  `backfill_viirs_sensors.py`, so comparing those against SP is a tautology.
+  Only NOAA-20 was ingested nightly as NRT. The script recovers this from
+  AUTOINCREMENT id ordering (a nightly row has a smaller id than any row
+  acquired a month later) and warns when a window looks backfilled — 2024-08
+  NOAA-20, for instance, reads 0% NRT.
+- **Time-bucket matching.** Keying pairs on exact `(date, acq_time)` throws
+  away ~85% of true pairs precisely *because* SP re-timestamps the overpass, and
+  that reads as a catastrophic drop rate. Match per day with acq_time as a
+  scaled matching dimension instead (`--time-tol-min`, default 6).
+- **Ingest scope.** Add/drop rates over a raw bbox are meaningless: our scope
+  changed over the years (per-park bbox buffers → ParkAssigner 100 km → keep
+  everything), FIRMS has no such notion. Unfiltered, SP "adds" up to 99% of
+  rows that were simply never in scope. The verdict runs on a symmetric subset,
+  both sides clipped with the same assigner.
+
+Note SP/NRT coverage for one sensor never overlaps (NOAA-20 SP ends 2026-05-31,
+NRT starts 06-01), so you can never fetch the same day both ways; the
+comparison is always our DB copy vs the SP archive.
+
+#### What ships: a monthly watchdog
+
+Zero drift is a property of FIRMS' *current* processing, not a law. A new VIIRS
+collection or an ephemeris fix could make SP genuinely relocate detections, and
+we would otherwise learn about it from a user reporting a fire in the wrong
+place. So the nightly cron re-measures one dense window on the 1st of each
+month (`daily_fire_update.py` step 2e → `reconcile_nrt_sp.py --watchdog`,
+read-only, ~40 s):
+
+- writes `data/nrt_sp_audit.json`
+- exit 4 = material drift → recorded as a failed step in
+  `data/pipeline_status.json` (`nrt_sp_drift: true`, shown in the admin
+  pipeline badge popover) **and** raises a SYSTEM notification
+- exit 3 = inconclusive (too few matched rows) — not a failure
+
+```bash
+python3 scripts/reconcile_nrt_sp.py --dry-run              # show the plan
+python3 scripts/reconcile_nrt_sp.py --watchdog             # what cron runs
+python3 scripts/reconcile_nrt_sp.py --from 2026-05-13 --days 5 \
+    --bbox 20,-16,32,-8 --json data/eval/nrt_sp/kafue_2026-05.json
 ```
 
-Stored precision is inconsistent — of July 2026 rows, 1,321,500 have 5 decimals,
-132,413 have 4, 13,002 have 3, 1,390 have 2, 154 have 1. Any SP coordinate
-revision changes the key → a second row for the same fire. `acq_time` is stored
-unpadded (`'1'`, `'11'`, `'1246'` all occur), so it is not a stable key
-component either.
-
-**Size the prize before building this.** It is a slow, risky migration on a
-42.9M-row / 14.4 GB database, and nobody has yet measured how far SP actually
-moves a detection. Pick a historical week, re-fetch it as SP into a scratch
-table, and join on a rounded key to get the coordinate-delta distribution. If
-the median shift is well under a VIIRS pixel (375 m) it cannot change a single
-trajectory, and this should be closed as a negative result rather than built —
-the same outcome as the per-overpass experiment above.
-
-If it does prove worth doing:
-
-1. Rounded key columns (`lat5`, `lon5` at 5dp, `acq_hhmm` zero-padded) + unique
-   index on `(lat5, lon5, acq_date, acq_hhmm, satellite)`. The migration must
-   dedupe existing rows first — expect collisions. Back up first, watch disk.
-2. A `processing` column (`NRT`/`SP`) so SP can UPSERT over NRT.
-3. Monthly re-fetch of T-60d..T-30d from the SP archive with
-   `ON CONFLICT ... DO UPDATE WHERE processing='NRT'`.
-4. Reuse `scripts/backfill_viirs_sensors.py` to fetch — it already handles the
-   5-day cap and per-sensor SP/NRT availability windows.
-
-Note SP/NRT ranges do not overlap (SNPP_SP ends 2026-04-27, NRT starts 04-28),
-so you cannot diff the two for the same day to size the drift; validate on
-historical dates instead.
+If the watchdog ever fires, `--apply` does the reconciliation *through the
+matcher*: paired rows become `UPDATE OR IGNORE ... WHERE id = ?` (so a revision
+can never fork the UNIQUE key; collisions are skipped and counted), and only
+genuinely-unpaired SP rows are inserted, with canonical park assignment.
+Unpaired *DB* rows are left alone — SP omitting a detection is nearly always a
+scope difference, not a retraction. `--apply` is a dry run until `--yes`, and
+it is deliberately **not** wired into cron: edited detections do not propagate
+on their own, so a real reconciliation is `--apply --yes` followed by
+`build_fire_grid_agg.py --since` and a v5 rebuild of the affected parks.
 
 ### A/B eval harness
 

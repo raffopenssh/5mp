@@ -313,6 +313,22 @@ ingesting three of them tripled the density of each pass without adding passes
 different orbit plane or a geostationary source could change this —
 `docs/FIRE_PIPELINE.md` § "Per-overpass slicing".
 
+**NRT→SP reconciliation is a measured no-op** — don't rebuild it. FIRMS' SP
+reprocessing returns coordinates, FRP and confidence *byte-identical* to the
+NRT rows we already have; only `acq_time` moves 1–2 min, which day-level
+clustering cannot see but which *would* fork the `UNIQUE(lat, lon, acq_date,
+acq_time, satellite)` key. Six NRT-provenance windows, `data/eval/nrt_sp/`,
+`docs/FIRE_PIPELINE.md` § NRT→SP. What ships is a watchdog: `daily_fire_update`
+step 2e on the 1st of each month runs `scripts/reconcile_nrt_sp.py --watchdog`
+(read-only, ~40s) → `data/nrt_sp_audit.json`; exit 4 = FIRMS changed, recorded
+as `nrt_sp_drift` in the pipeline heartbeat + a SYSTEM notification. Only then
+use `--apply --yes` (matcher-based UPDATE, never a blind INSERT), and rerun
+`build_fire_grid_agg.py --since` + the v5 rebuild for affected parks.
+Beware three ways to measure this wrong: SNPP/N21 history is SP-sourced (a
+tautology — the script checks provenance via id ordering), exact
+`(date, acq_time)` bucketing discards ~85% of true pairs, and raw bbox add/drop
+rates just reflect our own ingest-scope history.
+
 All three VIIRS sensors are ingested (NOAA-20 + SNPP + NOAA-21, ~3x the
 detections). Satellite codes `N`/`N20`/`N21` are part of the
 `fire_detections` UNIQUE key — never default that field.

@@ -16752,6 +16752,9 @@ ${starredItems.narratives.map(n => {
             ['Notifications', fmtNum(d.notifications_created)],
             ['Affected parks', fmtNum(d.affected_parks)],
             ['Consistency check', d.consistent === undefined ? '—' : (d.consistent ? 'pass' : 'DRIFT')],
+            // Monthly (1st) NRT→SP audit: absent on other days, hence the ―.
+            ['NRT→SP audit', d.nrt_sp_drift === undefined ? '— (monthly)'
+                : (d.nrt_sp_drift ? 'SP REVISIONS CHANGED' : 'no drift')],
         ].filter(r => r[1] !== undefined && r[1] !== null);
 
         const errs = [];
