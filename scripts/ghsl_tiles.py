@@ -169,6 +169,30 @@ def polygons_in(tile, geom_wgs84, min_area_m2=MIN_AREA_M2, log=print):
 AOI_PREFIX = "settlement_ghsl_"
 
 
+def write_rows(conn, sql, rows, tries=8):
+    """executemany that waits out a long-running writer.
+
+    The AOI queue runs several units concurrently by design, and the v5 fire
+    chain holds SQLite's single write lock for minutes at a time. A 60 s
+    busy_timeout is not enough: a GHSL tile is a 40k-row insert that arrives
+    right in the middle of it, and losing it costs a 4-minute vectorise. Back
+    off and retry instead of failing the unit.
+    """
+    import sqlite3
+    import time as _time
+    for attempt in range(tries):
+        try:
+            conn.executemany(sql, rows)
+            conn.commit()
+            return
+        except sqlite3.OperationalError as ex:
+            if "locked" not in str(ex) and "busy" not in str(ex):
+                raise
+            if attempt == tries - 1:
+                raise
+            _time.sleep(min(60, 5 * 2 ** attempt))
+
+
 def ingest_tile(conn, target_id, tile, geom_wgs84, coord_ids=False,
                 start_index=0, log=print):
     """Vectorise one tile into feature_geometries. Returns rows written."""
@@ -194,12 +218,11 @@ def ingest_tile(conn, target_id, tile, geom_wgs84, coord_ids=False,
                      json.dumps(props), b[0], b[1], b[2], b[3]))
         n += 1
     if rows:
-        conn.executemany("""
+        write_rows(conn, """
             INSERT OR REPLACE INTO feature_geometries
             (feature_type, feature_id, park_id, geojson, properties_json,
              bbox_minx, bbox_miny, bbox_maxx, bbox_maxy)
             VALUES (?,?,?,?,?,?,?,?,?)""", rows)
-        conn.commit()
     return n
 
 

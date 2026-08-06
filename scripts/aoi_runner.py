@@ -96,26 +96,48 @@ def claim(conn, aoi_id=None, dataset=None):
     return row
 
 
+def retry_write(fn, tries=8):
+    """Run a write, waiting out SQLite's single write lock.
+
+    Units run concurrently by design and the v5 fire chain holds the write lock
+    for minutes, which is longer than any sane busy_timeout. Losing a
+    bookkeeping write here is worse than waiting: `release()` failing is what
+    strands a unit in 'running' until its lease expires.
+    """
+    import sqlite3
+    for attempt in range(tries):
+        try:
+            return fn()
+        except sqlite3.OperationalError as ex:
+            if ("locked" not in str(ex) and "busy" not in str(ex)) or attempt == tries - 1:
+                raise
+            time.sleep(min(60, 5 * 2 ** attempt))
+
+
 def release(conn, aoi_id, dataset, state, detail=None, retry_hours=None):
     nxt = None
     if retry_hours:
         nxt = (utcnow() + timedelta(hours=retry_hours)).isoformat(" ", "seconds")
-    conn.execute("""UPDATE aoi_datasets SET state=?, lease_owner=NULL,
-                    lease_until=NULL, detail=?, next_run_at=?
-                    WHERE aoi_id=? AND dataset=?""",
-                 (state, (detail or "")[:400], nxt, aoi_id, dataset))
-    conn.commit()
+    def go():
+        conn.execute("""UPDATE aoi_datasets SET state=?, lease_owner=NULL,
+                        lease_until=NULL, detail=?, next_run_at=?
+                        WHERE aoi_id=? AND dataset=?""",
+                     (state, (detail or "")[:400], nxt, aoi_id, dataset))
+        conn.commit()
+    retry_write(go)
 
 
 def progress(conn, aoi_id, dataset, cursor, done, total, detail=None):
     """Commit after EVERY unit. This is the resumability guarantee."""
     cov = (done / total) if total else None
-    conn.execute("""UPDATE aoi_datasets SET cursor=?, units_done=?, units_total=?,
-                    coverage=?, detail=COALESCE(?, detail)
-                    WHERE aoi_id=? AND dataset=?""",
-                 (json.dumps(cursor) if cursor is not None else None,
-                  done, total, cov, (detail or None), aoi_id, dataset))
-    conn.commit()
+    def go():
+        conn.execute("""UPDATE aoi_datasets SET cursor=?, units_done=?, units_total=?,
+                        coverage=?, detail=COALESCE(?, detail)
+                        WHERE aoi_id=? AND dataset=?""",
+                     (json.dumps(cursor) if cursor is not None else None,
+                      done, total, cov, (detail or None), aoi_id, dataset))
+        conn.commit()
+    retry_write(go)
 
 
 def load_cursor(row):

@@ -38,11 +38,25 @@ sqlite3 db.sqlite3 "SELECT COUNT(*) FROM feature_geometries
    ```
 3. **`ghsl`** — started 19:03, 4 tiles (`R8_C21 R8_C22 R9_C21 R9_C22`).
    Each tile is ~4 min of vectorising and yields ~40k polygons, so expect
-   ~170k built-up polygons for the AOI, then one clustering pass. **Sanity
-   check when it lands**: `park_settlements` for the AOI should jump from the
-   145 clipped preview rows to thousands, and every row's `polygon_ids` must
-   start `settlement_ghsl_` (the preview rows are deleted by the runner's
-   handover delete — see SUPERSEDED_BY below).
+   ~170k built-up polygons for the AOI, then one clustering pass.
+   **It crashed on its first tile with `database is locked`** — the v5 fire
+   chain holds SQLite's single write lock for minutes, which is longer than
+   the 60 s busy_timeout, and a tile insert is 40k rows landing right in the
+   middle of it. Fixed by `ghsl_tiles.write_rows()` /
+   `aoi_runner.retry_write()` (exponential backoff up to ~60 s, wrapping
+   `release()` and `progress()` too — a failed `release()` is what strands a
+   unit in `running` until its 6 h lease expires, which is exactly what
+   happened here). A tmux session `ghslkick` waits for the lock, clears the
+   stranded lease and reruns it; if it is gone, do that by hand:
+   ```bash
+   sqlite3 db.sqlite3 "UPDATE aoi_datasets SET state='pending', lease_owner=NULL,
+     lease_until=NULL WHERE aoi_id='XSA_Study_Area' AND dataset='ghsl'"
+   python3 scripts/aoi_runner.py --aoi XSA_Study_Area --dataset ghsl --minutes 180
+   ```
+   **Sanity check when it lands**: `park_settlements` for the AOI should jump
+   from the 145 clipped preview rows to thousands, and every row's
+   `polygon_ids` must start `settlement_ghsl_` (the preview rows are deleted by
+   the runner's handover delete — see SUPERSEDED_BY below).
 4. Remaining blocked runners: `gsw`, `hydro` (both need a download, §3a).
 5. Then §3e (report) and §3f (write endpoints + admin tab). §3c's Layers
    item is still open; the **tooltip is now done**.
