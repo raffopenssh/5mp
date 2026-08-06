@@ -503,6 +503,41 @@ scans (basin clipped to 200 km) ∪ park.
 
 ---
 
+## Areas of interest (AOI)
+
+A user-drawn polygon promoted to a first-class object: arbitrary geometry, a
+fixed analysis window, an owner, and data fetched *for it* over days by a cron.
+Instance #1 is `XSA_Study_Area` (485,150 km², owner `$AOI_OWNER_PWD`).
+Full handover: `docs/PLAN_AOI_OVERLAY.md`.
+
+**An AOI is not a park.** Own table (`aois`), own id space, own route prefix.
+Never in `keystones_with_boundaries.json`, never a
+`fire_detections.protected_area_id` — otherwise `park_assigner` reassigns
+detections away from the four parks XSA overlaps. `--aoi` on the v5 scripts
+injects it into the **in-memory** parks dict only.
+
+But its *derived* rows do live in park-shaped tables (`feature_geometries`,
+`park_settlements`, `osm_places`, …) keyed by the AOI id. Two consequences,
+both load-bearing:
+
+1. `ParkIDMiddleware` 404s on any id in the AOI set, so `/api/parks/{aoi}/*`
+   cannot serve a private AOI unchecked. AOI data is reachable only through
+   `/api/aois/*`, where `aoiGate()` applies one visibility check to the
+   otherwise-unmodified park handlers. In the frontend, **always build these
+   URLs with `apiBase(id)`**.
+2. **Any query over those tables that does not take an explicit `park_id` must
+   apply `aoiExcludeSQL(col)`** (`srv/aoi.go`) — the same shape as
+   `scannerInjectedSQLFilter()`. Without it, bbox-keyed endpoints leak private
+   rows *and* double-count the AOI over the parks it overlaps.
+
+```bash
+python3 scripts/aoi_runner.py --status          # queue state
+python3 scripts/aoi_clip.py --aoi XSA_Study_Area  # Phase A preview, ~4s
+# cron: 0 12 * * *  aoi_runner.py --daily  (deliberately far from the 3am fire job)
+```
+
+---
+
 ## Time Animator ("▶ Animate" button next to slider presets)
 
 Animates all toggled/pinned map layers over the time-slider window.
