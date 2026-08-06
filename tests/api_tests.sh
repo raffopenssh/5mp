@@ -183,6 +183,24 @@ if [[ -n "$AOI_PWD" ]]; then
     fi
 fi
 
+# The unfiltered raw-geography endpoints (bbox feature browser, animator
+# trajectories) read feature_geometries without a park_id, so AOI-owned rows
+# would be served to every principal and would double-count over the parks the
+# AOI overlaps. aoiExcludeSQL() keeps them out; assert it here, over the AOI's
+# own bbox where a regression is guaranteed to show.
+XSA_BBOX="22.7,4.25,31.3,11.0"
+for ep in "features-in-bbox?type=fire_trajectory&bbox=${XSA_BBOX}" \
+          "fire-anim-trajectories?bbox=${XSA_BBOX}&from=2024-01-01&to=2026-01-01"; do
+    name="aoi_rows_absent_from_${ep%%\?*}"
+    printf "%-50s" "$name"
+    body=$(curl -s -m 60 -b "$COOKIE_FILE" "${BASE_URL}/api/${ep}")
+    if echo "$body" | grep -q 'XSA_Study_Area'; then
+        red "FAIL (AOI rows leaked)"; FAILED=$((FAILED + 1)); ERRORS+=("$name")
+    else
+        green "✓"; PASSED=$((PASSED + 1))
+    fi
+done
+
 echo
 echo "======================================="
 if [[ $FAILED -eq 0 ]]; then
