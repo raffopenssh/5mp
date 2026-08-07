@@ -1,3 +1,5 @@
+cf72ca7 2026-08-07 18:01:21 Geography detail tiers + full Geofabrik detail for every park
+d139e49 2026-08-07 17:14:41 build: refresh version history
 6874db4 2026-08-07 17:14:32 features: serve river/road/place/waterbody whole, cached, and drop duplicate place labels
 23f58cd 2026-08-07 17:02:03 build: refresh version history for 1edf2a6
 1edf2a6 2026-08-07 17:01:53 AOI popup: unbreak the layout, add the roads section, kill two O(n*m) LIKE joins
@@ -16,5 +18,3 @@ df390d5 2026-08-07 06:35:34 aoi: re-key SYSTEM-owned aoi_progress at startup, no
 0c14782 2026-08-07 06:29:59 aoi: make the AOI a focus, and give it a hide button and an abort
 d6b8e3d 2026-08-07 05:50:36 build: refresh version history for cda0cc9
 b220a00 2026-08-07 05:50:21 docs: AOI handover rev 3 — strip what shipped, keep only the traps
-e1a84aa 2026-08-07 05:49:03 aoi: reach its own data — animate, report, KML/Locus/MBTiles
-efe68b9 2026-08-07 05:48:29 aoi: reach its own data — animate, report, KML/Locus/MBTiles
