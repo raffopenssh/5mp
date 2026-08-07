@@ -1,0 +1,19 @@
+-- 043: deforestation_events.pixel_count — the column three writers already write.
+--
+-- deforestation_events was never created by a migration: it was created ad hoc
+-- by scripts/rebuild_deforestation_clusters.py (which DOES declare
+-- pixel_count) and the shape that survived on this machine came from an
+-- earlier writer that did not. So rebuild_events_enhanced.py's INSERT — the
+-- one canonical classifier, used by the parks, the GHSL unit, the GFW-alert
+-- unit and now the AOI Hansen unit — referenced a column that does not exist.
+--
+-- It failed silently until an AOI ran it: the parks' rows were written years
+-- ago by the older script and nothing re-ran the INSERT since. The Hansen unit
+-- did, at 20/20 windows, and died with "table deforestation_events has no
+-- column named pixel_count" after ~17 minutes of polygonising.
+--
+-- Adding the column rather than dropping it from the INSERT: how many source
+-- polygons a cluster merged is the one number that separates "one big clearing"
+-- from "forty smallholder plots", and the narrative classifier already computes
+-- it (classification['num_polygons']).
+ALTER TABLE deforestation_events ADD COLUMN pixel_count INTEGER;
