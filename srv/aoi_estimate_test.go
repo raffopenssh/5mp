@@ -46,17 +46,38 @@ func TestEstimateAOIMatchesMeasuredXSA(t *testing.T) {
 	if units["ghsl"] != 4 {
 		t.Errorf("ghsl tiles = %d, measured 4", units["ghsl"])
 	}
+	// hansen_loss.windows_for_bbox enumerated exactly 20 two-degree windows
+	// over XSA (4 tiles), measured 47-61 s each on 2026-08-07 — the polygonising,
+	// not the /vsicurl read, which is 0.6 s.
+	if units["hansen"] != 20 {
+		t.Errorf("hansen windows = %d, measured 20", units["hansen"])
+	}
 	// fire_v5 took ~30 min on this polygon; allow a wide band, it is a rate.
 	if v := secs["fire_v5"]; v < 20*60 || v > 45*60 {
 		t.Errorf("fire_v5 = %.0fs, measured ~1800s", v)
 	}
-	// Two datasets have no runner; they must be visible and free, not hidden.
+	// Every dataset now has a runner (gsw and hydro landed 2026-08-07), so
+	// nothing may be priced at zero without also being labelled blocked — that
+	// combination is how a silently-dropped dataset would look.
 	for _, d := range got.Datasets {
-		if d.Dataset == "gsw" || d.Dataset == "hydro" {
-			if !d.Blocked || d.Seconds != 0 || d.Note == "" {
-				t.Errorf("%s must be blocked, free and explained, got %+v", d.Dataset, d)
+		if d.Blocked {
+			if d.Seconds != 0 || d.Units != 0 || d.Note == "" {
+				t.Errorf("%s blocked but not free/explained: %+v", d.Dataset, d)
 			}
+			continue
 		}
+		if d.Seconds <= 0 {
+			t.Errorf("%s is free but not blocked: %+v", d.Dataset, d)
+		}
+	}
+	// gsw_water.windows_for_bbox: 1-degree windows over XSA's 8.6 x 6.7 deg bbox.
+	if units["gsw"] != 63 {
+		t.Errorf("gsw windows = %d, want 63", units["gsw"])
+	}
+	// hydro is one country PBF per unit, same country list as osm.
+	if units["hydro"] != units["osm"] {
+		t.Errorf("hydro = %d units, osm = %d; both are one country PBF per unit",
+			units["hydro"], units["osm"])
 	}
 	// The headline: multiple days of elapsed time, a few hours of work.
 	if got.Days < 2 || got.Days > 6 {

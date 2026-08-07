@@ -367,6 +367,7 @@ var defaultAOIDatasets = []aoiDatasetDef{
 	{"fire_v5", 20, "fire_gap"},
 	{"gfw", 30, ""},
 	{"deforestation", 35, "gfw"},
+	{"hansen", 36, ""},
 	{"ghsl", 40, ""},
 	{"osm", 50, ""},
 	{"gsw", 60, ""},

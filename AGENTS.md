@@ -585,10 +585,35 @@ stranded three leases on 2026-08-07. `scripts/test_aoi_resume.py` proves the
 guarantee; run it after any change to the lease/cursor code.
 
 Pre-2024 deforestation for an AOI comes from **Hansen**, not GFW alerts
-(`scripts/hansen_loss.py`, reversed 2026-08-07): tiles are 45-116 MB COGs read
-through `/vsicurl` in 0.6 s per 2-degree window, no download and no quota,
-while GFW integrated alerts only start in 2024. Cutover is Hansen <=2023 /
-alerts >=2024, matching the parks exactly so the numbers stay comparable.
+(`scripts/hansen_loss.py`, wired as the `hansen` unit 2026-08-07): tiles are
+45-116 MB COGs read through `/vsicurl` in 0.6 s per 2-degree window, no
+download and no quota, while GFW integrated alerts only start in 2024. Cutover
+is Hansen <=2023 / alerts >=2024, matching the parks exactly so the numbers stay
+comparable. **Onboarding a park runs it too** — before this, a new park showed
+two years of loss beside 161 parks showing twenty-four.
+
+Two traps the plan for it did not mention: the unit costs **~50 s per 2-degree
+window**, not the 0.6 s of the read (the cost is polygonising the mask), and
+polygons alone are invisible — the popup and narratives read
+`deforestation_events`, so it finishes by clustering through
+`EventRebuilder.rebuild_deforestation_for_park(park, id_prefix=...)`, the mirror
+of `rebuild_settlements_for_park`. `id_prefix` scopes read *and* delete, so
+Hansen and the GFW unit own events in one table for one park without erasing
+each other.
+
+**`gsw` and `hydro` now have runners** (2026-08-07), so every dataset does.
+`gsw` = `scripts/gsw_water.py`: the "missing" JRC occurrence tiles are public
+COGs, `/vsicurl` reads a 1-degree window in 0.55 s. It writes the parks' own two
+`waterbody_type` values ('Inland perennial' >=75%, 'Inland intermittent'
+25-75%) under a `gsw_` id prefix, so exports and narratives need no second path.
+`hydro` = `scripts/osm_hydro.py`, because **HydroSHEDS cannot be fetched
+unattended at all** — `data.hydrosheds.org` 403s every request behind
+Cloudflare. It fills `park_rivers_hydro`/`park_lakes_hydro` from the country PBF
+the `osm` unit already downloads, with **negated OSM ids** (HydroSHEDS ids are
+positive, so `< 0` is provably ours) and a tag-derived `stream_order` band, not
+Strahler. It is **not** the `basin` unit: mghydro/MERIT answers "what drains
+through here" and carries no river names; OSM answers "what is this called",
+which is what the narratives and KML folders key on. Both ship.
 
 ```bash
 python3 scripts/aoi_runner.py --status          # queue state

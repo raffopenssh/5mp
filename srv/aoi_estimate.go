@@ -21,6 +21,8 @@ import (
 //
 //	fire_gap  536 FIRMS windows in ~34 min          -> ~3.8 s/window
 //	gfw       252 alert tiles in ~20 min            -> ~4.8 s/tile
+//	hansen    2° lossyear windows over XSA, 2026-08-07 -> ~50 s/window
+//	          (a *read* is 0.6 s; the cost is vectorising the loss mask)
 //	ghsl      ~4 min per 1000 km Mollweide tile (vectorising ~40k polygons)
 //	fire_v5   ~30 min for 4.1M detections -> 38,725 groups
 //	clip      ~4 s regardless of size
@@ -40,9 +42,19 @@ const (
 	secPerFIRMSWindow = 3.8
 	secPerGFWTile     = 4.8
 	secPerGHSLTile    = 240.0
-	secPerOSMCountry  = 600.0 // Geofabrik download + osmium extract, dominated by the download
-	secClipFlat       = 5.0
-	secBasinFlat      = 60.0
+	// Hansen: a /vsicurl window READ is 0.6 s, but the unit is dominated by
+	// polygonising the loss mask — measured 47-61 s per 2° window over XSA's
+	// forested south. Quoting the read time would under-price it by ~80x.
+	secPerHansenWindow = 50.0
+	secPerOSMCountry   = 600.0 // Geofabrik download + osmium extract, dominated by the download
+	secClipFlat        = 5.0
+	secBasinFlat       = 60.0
+	// GSW: same /vsicurl trade as Hansen but a 1° window — 0.55 s to read,
+	// the rest is vectorising water, which is denser than forest loss.
+	secPerGSWWindow = 25.0
+	// hydro: one Geofabrik country PBF, downloaded then osmium-filtered twice.
+	// Same download as the osm unit and dominated by it.
+	secPerHydroCountry = 660.0
 	// fire_v5 is one long unit whose cost tracks the detection count, which in
 	// turn tracks area: XSA is 485,150 km² and took ~30 min over 4.1M
 	// detections. Expressed per km² so a small AOI is not quoted half an hour.
@@ -54,6 +66,12 @@ const (
 // A slice is one cron run. The runner stops on its budget or deadline and
 // resumes the next day, so elapsed days = work / per-slice capacity.
 const secPerDailySlice = 90 * 60.0 // --minutes default
+
+// hansen_loss.WINDOW_DEG — the read window the runner loops over.
+const hansenWindowDeg = 2.0
+
+// gsw_water.WINDOW_DEG.
+const gswWindowDeg = 1.0
 
 // AOIEstimate is one dataset's predicted cost.
 type AOIEstimate struct {
@@ -74,12 +92,12 @@ type AOIEstimateResult struct {
 	FIRMSCalls int           `json:"firms_calls"`
 }
 
-// aoiBlockedDatasets have no runner yet (docs/PLAN_AOI_OVERLAY.md §3a). Priced
-// at zero and labelled rather than hidden.
-var aoiBlockedDatasets = map[string]string{
-	"gsw":   "surface water — needs occurrence tiles we do not hold yet",
-	"hydro": "rivers & lakes — needs a HydroSHEDS download",
-}
+// aoiBlockedDatasets have no runner. Priced at zero and labelled rather than
+// hidden — a total that quietly omits a dataset implies coverage we do not
+// have. Empty since 2026-08-07 (gsw and hydro both landed); kept because the
+// next dataset to be sketched before it is built needs it, and estimateAOI's
+// contract with the UI is that `blocked` means "listed, free, explained".
+var aoiBlockedDatasets = map[string]string{}
 
 // estimateAOI prices a polygon. bbox is [minx,miny,maxx,maxy] in degrees,
 // areaKm2 the geodesic area, days the length of the analysis window.
@@ -101,6 +119,12 @@ func estimateAOI(bbox [4]float64, areaKm2 float64, windowDays int, countries int
 	// so this is a bbox-corner count, deliberately rounded up.
 	ghslTiles := (int(w/9.0) + 2) * (int(h/9.0) + 2)
 
+	// Hansen: 2-degree windows over the bbox, exactly windows_for_bbox().
+	hansenWindows := int(math.Ceil(w/hansenWindowDeg)) * int(math.Ceil(h/hansenWindowDeg))
+
+	// GSW: 1-degree windows over the bbox, exactly gsw_water.windows_for_bbox().
+	gswWindows := int(math.Ceil(w/gswWindowDeg)) * int(math.Ceil(h/gswWindowDeg))
+
 	if countries < 1 {
 		countries = 1
 	}
@@ -112,10 +136,17 @@ func estimateAOI(bbox [4]float64, areaKm2 float64, windowDays int, countries int
 		{Dataset: "fire_v5", Units: 1, Seconds: areaKm2 * secFireV5PerKm2},
 		{Dataset: "gfw", Units: gfwTiles, Seconds: float64(gfwTiles) * secPerGFWTile},
 		{Dataset: "deforestation", Units: 1, Seconds: 300},
+		{Dataset: "hansen", Units: hansenWindows,
+			Seconds: float64(hansenWindows) * secPerHansenWindow,
+			Note:    "forest loss 2001–2023 (Hansen)"},
 		{Dataset: "ghsl", Units: ghslTiles, Seconds: float64(ghslTiles) * secPerGHSLTile},
 		{Dataset: "osm", Units: countries, Seconds: float64(countries) * secPerOSMCountry},
-		{Dataset: "gsw", Blocked: true},
-		{Dataset: "hydro", Blocked: true},
+		{Dataset: "gsw", Units: gswWindows,
+			Seconds: float64(gswWindows) * secPerGSWWindow,
+			Note:    "surface water 1984–2021 (JRC)"},
+		{Dataset: "hydro", Units: countries,
+			Seconds: float64(countries) * secPerHydroCountry,
+			Note:    "rivers & lakes from OpenStreetMap"},
 		{Dataset: "basin", Units: 1, Seconds: secBasinFlat},
 	}
 

@@ -15,6 +15,10 @@ don't have but WDPA does). For each pending prod request:
  4. Backfill GFW deforestation alerts (same window) via analysis/gfw_alerts.py
     --park (rotation state untouched -> new park also becomes top rotation
     priority for future scans automatically, since never-scanned sorts first).
+    Alerts only start in 2024, so scripts/hansen_loss.py then streams Hansen
+    lossyear 2001-2023 for the same park (public COGs via /vsicurl, no local
+    tiles needed) and clusters it into deforestation_events -- otherwise a new
+    park shows two years of loss next to 161 parks showing twenty-four.
  5. GHSL settlements + HydroRIVERS/lakes: processed only if the source
     datasets are present locally (data/ghsl/, data/hydro_source/); otherwise
     recorded in `detail` as skipped — rerun later after fetching sources.
@@ -267,6 +271,18 @@ def process_request(conn, req, dry_run):
     # GFW deforestation alerts (script scans one park; also seeds rotation state)
     if not run([py, 'analysis/gfw_alerts.py', '--park', park_id], dry_run, ok_fail=True):
         notes.append('gfw: failed (will retry via rotation)')
+
+    # Hansen forest loss 2001-2023 — the history the alerts do not have.
+    #
+    # GFW integrated alerts only start in 2024, so an alerts-only park sits on
+    # the globe next to 161 parks with a 2001-2024 record and looks pristine.
+    # This used to need the 26-tile data/hansen/ download that is not on this
+    # machine; hansen_loss.py streams the same public COGs through /vsicurl
+    # (~50 s per 2-degree window, no quota), so onboarding can just do it. Same
+    # cutover as everywhere else: Hansen <=2023, alerts >=2024, never both.
+    if not run([py, 'scripts/hansen_loss.py', '--park', park_id,
+                '--minutes', '45'], dry_run, ok_fail=True):
+        notes.append('hansen: failed (rerun scripts/hansen_loss.py --park ' + park_id + ')')
 
     # GHSL settlements — needs local source raster
     if (BASE_DIR / 'data' / 'ghsl').exists():
