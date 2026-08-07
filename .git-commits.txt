@@ -1,3 +1,13 @@
+f275e9e 2026-08-07 05:19:23 aoi: give every dataset a runner -- Hansen, surface water, rivers & lakes
+0656798 2026-08-06 20:24:16 docs: fresh AOI handover (rev 2); retire the old one
+7fe947b 2026-08-06 20:22:52 aoi: give the AOI its own filter section, KML/Locus exports and area tags
+1e56d6f 2026-08-06 20:11:16 aoi: wire the write path into the UI; close the notification name leak
+934dc7a 2026-08-06 19:57:09 docs: point AGENTS.md at the AOI handover; record the resume guarantee and the Hansen reversal
+e46d114 2026-08-06 19:56:53 aoi: write path — draw, price, version; and Hansen for pre-2024 loss
+ba50ee4 2026-08-06 19:38:42 aoi: make interruption the normal exit -- stop, release, resume tomorrow
+2c30944 2026-08-06 19:10:03 aoi: back off instead of dying when the v5 chain holds the write lock
+1766de5 2026-08-06 19:08:28 docs: AOI handover for the ghsl runner, preview supersession and the hover tip
+31158bf 2026-08-06 19:07:19 aoi: ghsl runner (tile cache), preview supersession, AOI hover tip
 9dbb893 2026-08-06 18:41:09 docs: AOI handover for the animator clip, share links and deforestation
 eb6271d 2026-08-06 18:39:20 aoi: derive deforestation from the GFW alerts we already fetched
 57297df 2026-08-06 18:32:55 aoi: animate the polygon, not its bounding box; ?aoi= share links
@@ -8,13 +18,3 @@ eb6271d 2026-08-06 18:39:20 aoi: derive deforestation from the GFW alerts we alr
 b6f690c 2026-08-06 17:59:20 aoi: Phase A — clip the overlapped parks' data into the AOI (6/7)
 f39b8a2 2026-08-06 17:55:22 aoi: keep AOI rows out of the unkeyed park-shaped queries (5/7)
 71e91a1 2026-08-06 17:45:53 docs: turn the AOI plan into a handover (status, measured facts, what's left)
-2f2bc5a 2026-08-06 17:44:31 aoi: queue runner + per-tile GFW cache (5/7, partial)
-ae01219 2026-08-06 17:41:51 aoi: --aoi on the v5 fire chain + AOI read endpoints (3/7, 4/7)
-4a1ff1b 2026-08-06 17:41:39 osm: lift Geofabrik/osmium park-infra enrichment out of the retired turbidity script (2/7)
-7e7de5c 2026-08-06 17:19:34 aoi: migration 040 + visibility-scoped /api/aois (AOI overlays, commit 1/7)
-57bd907 2026-08-06 17:12:23 histmaps: runall.sh drives the 76-sheet selection, not all 254
-e94846b 2026-08-06 17:11:38 histmaps: select one scan per sheet cell, and fix a 450 km mis-georeference
-c75c748 2026-08-06 17:09:09 docs: rework the study-area plan as generic AOI overlays ("power bbox")
-6acafd5 2026-08-06 16:59:26 fire: fix the nightly FIRMS download (5-day window cap) and stream ingest
-5780044 2026-08-06 16:28:24 docs(plan): overlay ingest hosted by existing crons; measured data gap; Geofabrik over Overpass
-26cc625 2026-08-06 16:21:01 docs: plan for private XSA_Study_Area + per-principal park ACL and batched dataset ingest
