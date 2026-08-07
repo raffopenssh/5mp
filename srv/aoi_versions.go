@@ -308,6 +308,48 @@ func (s *Server) HandleAPIAOIEdit(w http.ResponseWriter, r *http.Request) {
 		"aoi": a, "estimate": est, "archived": old.ID, "version": nextVer})
 }
 
+// HandleAPIAOIArchive — POST /api/aois/{id}/archive
+//
+// "Hide this, I am done looking at it" — the counterpart to DELETE, and the
+// one people actually want. Deleting an AOI throws away days of ingest and
+// breaks every share link; what a user means by "get it off my map" is almost
+// always this.
+//
+// It reuses state='archived', which is exactly the visibility an edit leaves
+// the old version in: hidden from ListAOIs and therefore from the map, the
+// filter section, the tags, focus mode and the report — still readable by id,
+// so old links keep working, and still findable through /api/aois/search.
+//
+// It deliberately does NOT touch aoi_datasets. Hiding an overlay is a
+// statement about the screen, not about the question: an AOI whose ingest has
+// three days left should still be finishing them while hidden, so unhiding it
+// shows an answer rather than a progress bar. (An *edit* does disable the old
+// queue, because there the question genuinely was superseded.) Reversible by
+// /restore.
+func (s *Server) HandleAPIAOIArchive(w http.ResponseWriter, r *http.Request) {
+	a := s.requireAOIOwner(w, r)
+	if a == nil {
+		return
+	}
+	if a.State == "archived" {
+		writeJSON(w, http.StatusOK, map[string]any{"aoi": a, "unchanged": true})
+		return
+	}
+	if _, err := execUserToggle(r.Context(), s.DB,
+		`UPDATE aois SET state='archived', archived_at=? WHERE id=?`,
+		time.Now().UTC().Format("2006-01-02 15:04:05"), a.ID); err != nil {
+		internalError(w, "could not archive", err)
+		return
+	}
+	// The id set still contains it — that is correct. An archived AOI's derived
+	// rows are still in feature_geometries and must stay masked by
+	// aoiExcludeSQL; archiving hides the polygon, it does not publish the rows.
+	if err := s.RefreshAOIIDs(); err != nil {
+		slog.Warn("refresh aoi ids", "error", err)
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"archived": a.ID})
+}
+
 // HandleAPIAOIRestore — POST /api/aois/{id}/restore
 //
 // Brings an archived version back as the live head, archiving whatever head

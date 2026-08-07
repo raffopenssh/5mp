@@ -75,6 +75,12 @@
             watched.delete(id);
             return;
         }
+        if (d && d.state === 'cancelled') {
+            // Nothing will move until the user says so, so polling is pure
+            // waste; Resume re-arms the watcher through post().
+            watched.delete(id);
+            return;
+        }
         const ms = !d ? POLL_PARTIAL
                  : d.state === 'running' ? POLL_RUNNING
                  : d.state === 'partial' ? POLL_PARTIAL : POLL_QUEUED;
@@ -108,10 +114,14 @@
     function bodyHTML(d) {
         const pct = Math.max(0, Math.min(100, d.percent || 0));
         const ready = d.state === 'ready';
-        const colour = ready ? '#22c55e' : d.state === 'running' ? '#3b82f6' : '#f59e0b';
+        const cancelled = d.state === 'cancelled';
+        const colour = ready ? '#22c55e' : cancelled ? '#888'
+                     : d.state === 'running' ? '#3b82f6' : '#f59e0b';
         let line;
         if (ready) {
             line = `All ${d.datasets_total} data layers complete`;
+        } else if (cancelled) {
+            line = `Stopped · ${d.datasets_done} of ${d.datasets_done + (d.datasets_stopped || 0)} layers were fetched`;
         } else if (d.state === 'running') {
             const what = DS_LABEL[d.current] || d.current || 'data';
             line = `Fetching ${what}` + (d.detail ? ` — ${d.detail}` : '');
@@ -123,11 +133,61 @@
         const blocked = d.datasets_blocked
             ? `<div class="aoi-prog-dim">${d.datasets_blocked} layer${d.datasets_blocked > 1 ? 's' : ''} not available yet</div>`
             : '';
+        // Abort. The card is the only place an owner can see a multi-day ingest
+        // in progress, so it is the only honest place to stop it — without it
+        // the choices are "wait days for data you no longer want" or "delete",
+        // which also throws away what already landed. Owner-only (the endpoint
+        // 404s otherwise), and gone once there is nothing left to stop.
+        const stoppable = d.is_owner && !ready && !cancelled;
+        const actions = stoppable
+            ? `<div class="aoi-prog-actions"><button class="aoi-prog-abort"
+                 onclick="event.stopPropagation();AOIProgress.cancel('${esc(d.aoi_id)}')"
+                 title="Stop fetching data for this area. What has already landed is kept and stays queryable; nothing is deleted."
+                 >Stop fetching</button></div>`
+            : (cancelled && d.is_owner
+               ? `<div class="aoi-prog-actions"><button class="aoi-prog-abort resume"
+                 onclick="event.stopPropagation();AOIProgress.resume('${esc(d.aoi_id)}')"
+                 title="Resume from where each layer stopped — nothing is re-downloaded"
+                 >Resume</button></div>`
+               : '');
         return `
             <div class="aoi-prog-line">${esc(line)}</div>
             <div class="aoi-prog-bar"><div style="width:${pct}%;background:${colour}"></div></div>
             <div class="aoi-prog-dim">${d.datasets_done}/${d.datasets_total} layers · ${Math.round(pct)}%</div>
-            ${blocked}`;
+            ${blocked}${actions}`;
+    }
+
+    // Stop / resume. Both go through the server (which re-checks ownership)
+    // and then re-poll rather than optimistically repainting: the runner may
+    // hold a lease mid-unit, so the truthful state is whatever the DB says a
+    // moment later, not what we just asked for.
+    async function cancel(id) {
+        if (!confirm('Stop fetching data for this area?\n\nWhat has already been fetched is kept. You can resume later from exactly where each layer stopped — nothing is re-downloaded.')) return;
+        await post(id, 'cancel', 'Stopped fetching');
+    }
+
+    async function resume(id) {
+        // refresh?resume=1, not plain refresh: plain refresh recomputes the
+        // derived layers of an *enabled* queue, which after a cancel is the
+        // empty set. See HandleAPIAOIRefresh.
+        await post(id, 'refresh?resume=1', 'Resuming — the next batch runs at 12:00 UTC');
+    }
+
+    async function post(id, action, okMsg) {
+        const sep = action.includes('?') ? '&' : '?';
+        try {
+            const r = await fetch(`/api/aois/${encodeURIComponent(id)}/${action}${sep}pwd=${encodeURIComponent(pwd())}`,
+                                  { method: 'POST' });
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            if (typeof showToast === 'function') showToast(okMsg, 'success');
+            // Re-arm the watcher: a cancelled AOI was probably dropped from
+            // `watched` by a 'ready'-like schedule, and a resumed one needs to
+            // start polling again.
+            watched.delete(id);
+            track(id);
+        } catch (e) {
+            if (typeof showToast === 'function') showToast('That did not work — try again', 'error');
+        }
     }
 
     // The notification list calls this to render one 'aoi_progress' row. It
@@ -180,5 +240,5 @@
         }
     });
 
-    window.AOIProgress = { track, stop, cardHTML, poll };
+    window.AOIProgress = { track, stop, cardHTML, poll, cancel, resume };
 })();

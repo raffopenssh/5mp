@@ -252,12 +252,18 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("GET /api/aois/{id}/progress", s.HandleAPIAOIProgress)
 	mux.HandleFunc("POST /api/aois/{id}/refresh", s.HandleAPIAOIRefresh)
 	mux.HandleFunc("POST /api/aois/{id}/kick", s.HandleAPIAOIKick)
+	// Cancel = stop fetching, keep what landed. The abort the progress card
+	// offers; /refresh is the way to resume from the same cursors.
+	mux.HandleFunc("POST /api/aois/{id}/cancel", s.HandleAPIAOICancel)
 	mux.HandleFunc("DELETE /api/aois/{id}", s.HandleAPIAOIDelete)
 	// Versioning (migration 042): an edit forks, it never mutates. See
 	// srv/aoi_versions.go for why.
 	mux.HandleFunc("GET /api/aois/{id}/versions", s.HandleAPIAOIVersions)
 	mux.HandleFunc("POST /api/aois/{id}/edit", s.HandleAPIAOIEdit)
 	mux.HandleFunc("POST /api/aois/{id}/restore", s.HandleAPIAOIRestore)
+	// Archive = hide the overlay, keep the data and the links. The button most
+	// users reach for when they mean "delete"; /restore is the way back.
+	mux.HandleFunc("POST /api/aois/{id}/archive", s.HandleAPIAOIArchive)
 
 	// API auth endpoints
 	mux.HandleFunc("POST /api/login", RateLimitMiddleware(authRL, s.HandleAPILogin))

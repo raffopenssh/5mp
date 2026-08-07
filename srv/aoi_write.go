@@ -401,6 +401,33 @@ func (s *Server) HandleAPIAOIRefresh(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	only := r.URL.Query().Get("dataset")
+
+	// resume=1 is the inverse of /cancel, and deliberately a different query
+	// rather than a mode of the default one. The default refresh re-runs the
+	// cheap *derived* layers of a queue that is still enabled (a "recompute
+	// this" button); resume re-enables a queue that was switched off, whatever
+	// stage it had reached, and must not touch cursors — that is what makes it
+	// a resume rather than a restart, and what keeps FIRMS quota unspent.
+	if r.URL.Query().Get("resume") == "1" {
+		res, err := execUserToggle(r.Context(), s.DB, `UPDATE aoi_datasets
+			SET enabled=1, next_run_at=NULL, lease_owner=NULL, lease_until=NULL,
+			    state=CASE WHEN state='running' THEN 'pending' ELSE state END
+			WHERE aoi_id = ? AND enabled = 0 AND state != 'done'`, a.ID)
+		if err != nil {
+			internalError(w, "could not resume", err)
+			return
+		}
+		n, _ := res.RowsAffected()
+		// Reopen the progress thread the cancel closed.
+		if _, err := execUserToggle(r.Context(), s.DB, `UPDATE notifications
+			SET is_read=0 WHERE park_id=? AND notification_type='aoi_progress'`,
+			a.ID); err != nil {
+			slog.Warn("aoi resume notif", "error", err)
+		}
+		writeJSON(w, http.StatusOK, map[string]any{"resumed": n, "aoi": a.ID})
+		return
+	}
+
 	q := `UPDATE aoi_datasets SET state='pending', next_run_at=NULL,
 	          lease_owner=NULL, lease_until=NULL
 	      WHERE aoi_id = ? AND enabled = 1 AND state != 'running'`
@@ -416,13 +443,58 @@ func (s *Server) HandleAPIAOIRefresh(w http.ResponseWriter, r *http.Request) {
 		// Cursor reset only for the derived layers; the downloads keep theirs.
 		q += ` AND dataset IN ('clip','fire_v5','deforestation','basin')`
 	}
-	res, err := s.DB.Exec(q, args...)
+	// Same wait-it-out treatment as archive/cancel: this is the Resume button
+	// on the progress card, and a batch job holding the writer must not turn it
+	// into an error the user can do nothing about.
+	res, err := execUserToggle(r.Context(), s.DB, q, args...)
 	if err != nil {
 		internalError(w, "could not requeue", err)
 		return
 	}
 	n, _ := res.RowsAffected()
 	writeJSON(w, http.StatusOK, map[string]any{"requeued": n, "aoi": a.ID})
+}
+
+// HandleAPIAOICancel — POST /api/aois/{id}/cancel
+//
+// Stop fetching. The one thing an owner watching a multi-day progress card
+// genuinely needs and cannot express any other way: the ingest is spending
+// FIRMS quota and hours of CPU on a question they have changed their mind
+// about, and neither archiving (which is about the screen) nor deleting (which
+// throws away what already landed) says it.
+//
+// It disables every unfinished dataset and releases any lease, so the next
+// runner slice simply finds nothing to do. It does NOT touch cursors or
+// derived rows: whatever already landed stays queryable, and /refresh re-enables
+// a dataset to carry on from exactly where it stopped — cancelling is a pause
+// with an honest name, not a rollback.
+//
+// A 'running' row is set back to 'pending' rather than 'failed': the runner
+// that owns it may still be mid-unit, and its own interrupt path (which is the
+// normal exit — see scripts/aoi_runner.py) will release the lease cleanly.
+func (s *Server) HandleAPIAOICancel(w http.ResponseWriter, r *http.Request) {
+	a := s.requireAOIOwner(w, r)
+	if a == nil {
+		return
+	}
+	res, err := execUserToggle(r.Context(), s.DB, `UPDATE aoi_datasets
+		SET enabled=0, lease_owner=NULL, lease_until=NULL,
+		    state=CASE WHEN state='running' THEN 'pending' ELSE state END
+		WHERE aoi_id=? AND state != 'done' AND enabled=1`, a.ID)
+	if err != nil {
+		internalError(w, "could not cancel", err)
+		return
+	}
+	n, _ := res.RowsAffected()
+	// Close the progress thread so the card stops claiming work is coming.
+	// Marked read rather than deleted: "we stopped" is itself history. Best
+	// effort — the cancel itself already succeeded, and a stale unread badge is
+	// not worth failing the request the user actually made.
+	if _, err := execUserToggle(r.Context(), s.DB, `UPDATE notifications SET is_read=1
+		WHERE park_id=? AND notification_type='aoi_progress'`, a.ID); err != nil {
+		slog.Warn("aoi cancel notif", "error", err)
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"cancelled": n, "aoi": a.ID})
 }
 
 func isKnownAOIDataset(name string) bool {
@@ -541,10 +613,17 @@ func (s *Server) HandleAPIAOIProgress(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	done, running, planned, blocked := 0, 0, 0, 0
+	stopped := 0
 	var frac float64
 	var current, detail string
 	for _, d := range ds {
 		if !d.Enabled {
+			// Disabled-and-unfinished is what /cancel leaves behind. Counting
+			// it as "not planned" would make a cancelled AOI report 100% ready,
+			// which is the one number the card must never invent.
+			if d.State != "done" && aoiBlockedDatasets[d.Dataset] == "" {
+				stopped++
+			}
 			continue
 		}
 		if d.State == "blocked" || aoiBlockedDatasets[d.Dataset] != "" {
@@ -581,11 +660,19 @@ func (s *Server) HandleAPIAOIProgress(w http.ResponseWriter, r *http.Request) {
 	case done > 0:
 		state = "partial"
 	}
+	// Cancelled outranks everything except work actually in flight: if a runner
+	// still holds a lease the honest answer is "running", and the next slice
+	// will find the queue empty.
+	if stopped > 0 && running == 0 {
+		state = "cancelled"
+	}
 	w.Header().Set("Cache-Control", "no-store")
 	writeJSON(w, http.StatusOK, map[string]any{
 		"aoi_id": a.ID, "name": a.Name, "state": state,
 		"datasets_done": done, "datasets_total": planned,
-		"datasets_blocked": blocked, "percent": math.Round(pct*10) / 10,
+		"datasets_blocked": blocked, "datasets_stopped": stopped,
+		"archived": a.State == "archived", "is_owner": a.IsOwner,
+		"percent": math.Round(pct*10) / 10,
 		"current": current, "detail": detail,
 	})
 }

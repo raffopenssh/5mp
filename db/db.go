@@ -33,7 +33,15 @@ func Open(path string) (*sql.DB, error) {
 		_ = db.Close()
 		return nil, fmt.Errorf("set WAL: %w", err)
 	}
-	if _, err := db.Exec("PRAGMA busy_timeout=5000;"); err != nil {
+	// 30 s, not 5. Every write on this deployment competes with batch jobs
+	// that hold SQLite's single writer for minutes (the v5 fire chain, the AOI
+	// Hansen unit, the nightly rebuilds), and at 5 s a user-initiated write
+	// during one of those failed outright. 30 s absorbs the gaps those jobs
+	// leave between their own commits without making a genuinely stuck request
+	// hang long enough to look like a dead page; anything still busy after it
+	// surfaces as a 503 with Retry-After (srv/errors.go isDBLocked), which is
+	// the honest answer rather than a 500.
+	if _, err := db.Exec("PRAGMA busy_timeout=30000;"); err != nil {
 		_ = db.Close()
 		return nil, fmt.Errorf("set busy_timeout: %w", err)
 	}
