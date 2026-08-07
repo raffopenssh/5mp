@@ -293,8 +293,18 @@
     }
 
     // ---------- per-layer lazy loaders ----------
+    //
+    // aoiQ: the raw-geography endpoints exclude every AOI's rows by default
+    // (srv/aoi.go aoiExcludeSQL) — for privacy, and so an AOI does not
+    // double-count the parks it overlaps in the global counters. That default
+    // also hid the AOI from its own animation: the trajectory and
+    // deforestation/settlement layers came back with the concave gap empty.
+    // ?aoi= lets exactly this AOI back in, and only if the server agrees the
+    // caller may see it (aoiScopeParam re-checks visibility; it never trusts
+    // this parameter).
     async function loadLayer(name) {
         const pwd = encodeURIComponent(getPwdSafe());
+        const aoiQ = A.aoiID ? '&aoi=' + encodeURIComponent(A.aoiID) : '';
         const bb = A.fetchBbox.map(v => v.toFixed(4)).join(',');
         const fromISO = A.fromISO, toISO = A.toISO;
         const spanDays = (A.t1 - A.t0) / DAY;
@@ -316,7 +326,7 @@
                 break;
             }
             case 'trajs': {
-                const j = await fetchJSON(`/api/fire-anim-trajectories?bbox=${bb}&from=${fromISO}&to=${toISO}&limit=800&pwd=${pwd}`);
+                const j = await fetchJSON(`/api/fire-anim-trajectories?bbox=${bb}&from=${fromISO}&to=${toISO}&limit=800&pwd=${pwd}${aoiQ}`);
                 D.trajs = (j.groups || []).map(g => {
                     const pts = g.pts.map(p => [p[0], p[1], parseD(p[2])]).sort((a, b) => a[2] - b[2]);
                     return { pts, t0: pts[0][2], t1: pts[pts.length - 1][2], type: g.type, kmd: g.kmd };
@@ -336,7 +346,7 @@
                 break;
             }
             case 'deforest': {
-                const j = await fetchJSON(`/api/features-in-bbox?type=deforestation&bbox=${bb}&from=${fromISO}&to=${toISO}&limit=1500&pwd=${pwd}`);
+                const j = await fetchJSON(`/api/features-in-bbox?type=deforestation&bbox=${bb}&from=${fromISO}&to=${toISO}&limit=1500&pwd=${pwd}${aoiQ}`);
                 D.deforest = (j.features || []).map(f => {
                     const p = f.properties || {};
                     return { lon: p.lon, lat: p.lat, t: parseD(p.start_date || (p.year + '-06-15')), area: p.area_km2 || 0.1 };
@@ -344,7 +354,7 @@
                 break;
             }
             case 'settlements': {
-                const j = await fetchJSON(`/api/features-in-bbox?type=settlement&bbox=${bb}&limit=1500&pwd=${pwd}`);
+                const j = await fetchJSON(`/api/features-in-bbox?type=settlement&bbox=${bb}&limit=1500&pwd=${pwd}${aoiQ}`);
                 D.settlements = (j.features || []).map(f => {
                     const p = f.properties || {};
                     return { lon: p.lon, lat: p.lat };

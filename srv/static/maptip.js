@@ -72,6 +72,22 @@
 }
 .maptip.sticky .maptip-action.available { display: block; }
 .maptip-action:active { background: rgba(34,197,94,0.28); }
+/* Export row: a tapped (sticky) tip is the mobile equivalent of the popup
+   header's button strip, and on a phone it is often the only thing the user
+   opens. Hidden on hover tips, which have pointer-events:none, so we never
+   show a button that cannot be clicked. */
+.maptip-exports {
+    display: none; gap: 6px; margin-top: 8px; padding-top: 7px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+}
+.maptip.sticky .maptip-exports { display: flex; }
+.maptip-exports > * {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    min-height: 34px; background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.14); border-radius: 6px;
+    color: #d1d5db; font-size: 14px; cursor: pointer; text-decoration: none;
+}
+.maptip-exports > *:active { background: rgba(255,255,255,0.16); }
 /* Legacy inline-styled tip bodies (turbidity etc.) were written for a white
    popup; remap their light-theme greys so they stay readable on dark. */
 .maptip [style*="#374151"] { color: #d1d5db !important; }

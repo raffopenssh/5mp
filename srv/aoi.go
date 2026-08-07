@@ -166,6 +166,58 @@ func aoiExcludeSQL(col string) string {
 		" NOT LIKE 'aoi:%'"
 }
 
+// aoiScopeSQL replaces aoiExcludeSQL's "no AOI at all" with "this AOI only"
+// (leading AND).
+//
+// The exclusion filter is the right default for every bbox-keyed endpoint, but
+// it also made an AOI invisible to the one feature that exists to show it: the
+// animator asks /api/fire-anim-trajectories for a rectangle, and over an AOI's
+// concave interior that rectangle contains 38,725 AOI-owned trajectories which
+// were all filtered out — days of ingest, unreachable, the gap animating black.
+//
+// So the raw-geography endpoints take an optional ?aoi=<id>, resolved through
+// GetAOI by aoiScopeParam, which re-checks visibility and never trusts the
+// parameter. When it is set the query serves *that AOI's rows and nothing
+// else*, park rows included:
+//
+//   - the AOI's own chain (aoi_fires -> v5, GHSL, Hansen+alerts) is computed
+//     over the WHOLE polygon, including the ~11% of it that lies inside parks,
+//     so its rows are already a complete answer for that geometry;
+//   - keeping the park rows too would therefore draw the overlap twice, and
+//     the canvas clip means park rows outside the polygon never render anyway;
+//   - every other AOI stays excluded, so privacy is unchanged.
+//
+// Endpoints that SUM (dashboard totals, /api/stats) must keep using
+// aoiExcludeSQL: this one paints pixels, it does not add anything up.
+func aoiScopeSQL(col, aoiID string) string {
+	if aoiID == "" {
+		return aoiExcludeSQL(col)
+	}
+	return " AND (" + col + " = " + quoteSQLString(aoiID) +
+		" OR " + col + " = " + quoteSQLString("aoi:"+aoiID) + ")"
+}
+
+// quoteSQLString is only ever fed an id already validated by ValidAOIID (no
+// quotes possible); the doubling is belt and braces because the result is
+// concatenated into SQL rather than bound, which aoiExcludeSQL's shape forces.
+func quoteSQLString(s string) string {
+	return "'" + strings.ReplaceAll(s, "'", "''") + "'"
+}
+
+// aoiScopeParam reads ?aoi= and returns the id only if this request may see
+// it. An invisible or unknown id yields "" — the endpoint then behaves exactly
+// as before, so a guessed id is not an oracle and not an error either.
+func (s *Server) aoiScopeParam(r *http.Request) string {
+	id := r.URL.Query().Get("aoi")
+	if id == "" || !ValidAOIID(id) || !IsAOIID(id) {
+		return ""
+	}
+	if _, err := s.GetAOI(id, s.RequestPrincipalID(r), false); err != nil {
+		return ""
+	}
+	return id
+}
+
 // aoiNotifSQLFilter keeps another principal's AOI out of the notification
 // list (leading AND, plus the args to append).
 //
@@ -507,6 +559,40 @@ func (s *Server) resolveAreaGeom(id string) (name, boundary string) {
 		return name, ""
 	}
 	return n, geo
+}
+
+// resolveAreaBBox returns the display name and bounding box for a park or an
+// AOI, plus whether the id resolved at all.
+//
+// Same reason as resolveAreaGeom: the MBTiles handlers used
+// s.AreaStore.GetByID(id) and 404'd on every AOI, because an AOI is
+// deliberately not in AreaStore. Offline satellite tiles are the one export
+// whose usefulness is *purely* geographic — there is nothing park-specific in
+// a tile pyramid — so refusing them for an AOI was an accident of plumbing,
+// not a decision.
+//
+// Visibility is NOT checked: callers reach this only after aoiGate.
+func (s *Server) resolveAreaBBox(id string) (name string, bbox [4]float64, ok bool) {
+	if s.AreaStore != nil {
+		if a := s.AreaStore.GetByID(id); a != nil {
+			latMin, latMax, lonMin, lonMax := a.GetBoundingBox()
+			return a.Name, [4]float64{lonMin, latMin, lonMax, latMax}, true
+		}
+	}
+	if !IsAOIID(id) {
+		return id, bbox, false
+	}
+	var n string
+	var x0, y0, x1, y1 sql.NullFloat64
+	if err := s.DB.QueryRow(
+		`SELECT name, bbox_minx, bbox_miny, bbox_maxx, bbox_maxy FROM aois WHERE id = ?`,
+		id).Scan(&n, &x0, &y0, &x1, &y1); err != nil {
+		return id, bbox, false
+	}
+	if !x0.Valid || !y0.Valid || !x1.Valid || !y1.Valid {
+		return n, bbox, false
+	}
+	return n, [4]float64{x0.Float64, y0.Float64, x1.Float64, y1.Float64}, true
 }
 
 // HandleAPIAOIExportGeoJSON — GET /api/aois/{id}/export.geojson: the polygon

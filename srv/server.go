@@ -230,6 +230,14 @@ func (s *Server) Serve(addr string) error {
 	// knows about AOIs -- an AOI is not in AreaStore by design.
 	mux.HandleFunc("GET /api/aois/{id}/export.kml", s.aoiGate(s.HandleAPIParkKML))
 	mux.HandleFunc("GET /api/aois/{id}/export.locus", s.aoiGate(s.HandleAPIParkLocus))
+	// Offline satellite tiles. A tile pyramid has nothing park-specific in it
+	// -- it is a rectangle of imagery -- so the only reason an AOI could not
+	// have one was that the handlers looked the id up in AreaStore, where an
+	// AOI deliberately never appears. They go through resolveAreaBBox() now.
+	// The job status/download routes are shared with parks: a job id is opaque
+	// and unguessable, and the file is imagery, not the polygon.
+	mux.HandleFunc("POST /api/aois/{id}/mbtiles", s.aoiGate(s.HandleAPIZenodoMBTilesCreate))
+	mux.HandleFunc("GET /api/aois/{id}/mbtiles/estimate", s.aoiGate(s.HandleAPIZenodoMBTilesEstimate))
 	// Write surface (docs/PLAN_AOI_OVERLAY.md §3f). None of these run the
 	// ingest: scripts/aoi_runner.py owns the lease discipline and is the only
 	// thing that works a unit. These queue, requeue, price and report.

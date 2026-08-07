@@ -973,11 +973,21 @@ def daily(conn, minutes, budget):
         traceback.print_exc()
     write_status(results, started, fatal)
     # One throttled notification per run, and only when something moved.
+    #
+    # Keyed by park_id = the AOI id, NOT the default 'SYSTEM': the message
+    # names the AOI, and aoiNotifSQLFilter() decides visibility from park_id.
+    # A 'SYSTEM' row therefore announced every private AOI's id and progress to
+    # every principal -- the fact that someone is watching an area is as much
+    # the secret as the polygon (docs/AOI_HANDOVER_2.md §2). One row per AOI
+    # rather than one per run, for the same reason.
     moved = [r for r in results if r.get("state") in ("done", "partial", "stopped")]
-    if moved:
+    by_aoi = {}
+    for r in moved:
+        by_aoi.setdefault(r["aoi"], []).append(r)
+    for aid, rs in by_aoi.items():
         notify_status("aoi_progress", "AOI ingest progress",
-                      "; ".join(f"{r['aoi']}/{r['dataset']}: {r.get('detail','')}"
-                                for r in moved)[:400])
+                      "; ".join(f"{r['dataset']}: {r.get('detail','')}"
+                                for r in rs)[:400], park_id=aid)
     return results
 
 

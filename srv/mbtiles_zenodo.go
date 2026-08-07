@@ -810,8 +810,8 @@ func (s *Server) HandleAPIZenodoMBTilesCreate(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	area := s.AreaStore.GetByID(parkID)
-	if area == nil {
+	areaName, rawBBox, ok := s.resolveAreaBBox(parkID)
+	if !ok {
 		http.Error(w, "Park not found", http.StatusNotFound)
 		return
 	}
@@ -839,7 +839,7 @@ func (s *Server) HandleAPIZenodoMBTilesCreate(w http.ResponseWriter, r *http.Req
 	}
 
 	bufferKm := 5.0
-	bbox := calculateBufferedBBox(area, bufferKm)
+	bbox := bufferBBox(rawBBox, bufferKm)
 	tiles := calculateTiles(bbox, 1, maxZoom)
 	estimatedSize := estimateTileBytes(len(tiles))
 
@@ -854,7 +854,7 @@ func (s *Server) HandleAPIZenodoMBTilesCreate(w http.ResponseWriter, r *http.Req
 	job := &ZenodoMBTilesJob{
 		ID:       fmt.Sprintf("%d", time.Now().UnixNano()),
 		ParkID:   parkID,
-		ParkName: area.Name,
+		ParkName: areaName,
 		Source:   source,
 		MinZoom:  1,
 		MaxZoom:  maxZoom,
@@ -886,8 +886,8 @@ func (s *Server) HandleAPIZenodoMBTilesCreate(w http.ResponseWriter, r *http.Req
 // HandleAPIZenodoMBTilesEstimate returns size/time estimates for Zenodo upload.
 func (s *Server) HandleAPIZenodoMBTilesEstimate(w http.ResponseWriter, r *http.Request) {
 	parkID := r.PathValue("id")
-	area := s.AreaStore.GetByID(parkID)
-	if area == nil {
+	_, rawBBox, ok := s.resolveAreaBBox(parkID)
+	if !ok {
 		http.Error(w, "Park not found", http.StatusNotFound)
 		return
 	}
@@ -903,7 +903,7 @@ func (s *Server) HandleAPIZenodoMBTilesEstimate(w http.ResponseWriter, r *http.R
 		}
 	}
 
-	bbox := calculateBufferedBBox(area, 5.0)
+	bbox := bufferBBox(rawBBox, 5.0)
 	tiles := calculateTiles(bbox, 1, maxZoom)
 	estimatedSize := estimateTileBytes(len(tiles))
 	ramNeeded := estimateRAMRequired(bbox, 1, maxZoom)

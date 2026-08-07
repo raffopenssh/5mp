@@ -546,16 +546,16 @@ func (s *Server) HandleAPIMBTilesCreate(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	
-	// Get park data
-	area := s.AreaStore.GetByID(parkID)
-	if area == nil {
+	// Get park (or AOI) data
+	areaName, rawBBox, ok := s.resolveAreaBBox(parkID)
+	if !ok {
 		http.Error(w, "Park not found", http.StatusNotFound)
 		return
 	}
 	
 	// Calculate bbox with buffer
 	bufferKm := 5.0 // 5km buffer
-	bbox := calculateBufferedBBox(area, bufferKm)
+	bbox := bufferBBox(rawBBox, bufferKm)
 	
 	// Estimate size
 	minZoom := 1
@@ -593,7 +593,7 @@ func (s *Server) HandleAPIMBTilesCreate(w http.ResponseWriter, r *http.Request) 
 	job := &MBTilesJob{
 		ID:            fmt.Sprintf("%d", time.Now().UnixNano()),
 		ParkID:        parkID,
-		ParkName:      area.Name,
+		ParkName:      areaName,
 		Source:        source,
 		MinZoom:       minZoom,
 		MaxZoom:       maxZoom,
@@ -694,14 +694,14 @@ func (s *Server) HandleAPIMBTilesEstimate(w http.ResponseWriter, r *http.Request
 		return
 	}
 	
-	area := s.AreaStore.GetByID(parkID)
-	if area == nil {
+	_, rawBBox, ok := s.resolveAreaBBox(parkID)
+	if !ok {
 		http.Error(w, "Park not found", http.StatusNotFound)
 		return
 	}
 	
 	bufferKm := 5.0
-	bbox := calculateBufferedBBox(area, bufferKm)
+	bbox := bufferBBox(rawBBox, bufferKm)
 	
 	minZoom := 1
 	maxZoom := 17
@@ -743,15 +743,21 @@ func (s *Server) HandleAPIMBTilesEstimate(w http.ResponseWriter, r *http.Request
 func calculateBufferedBBox(area *areas.ProtectedArea, bufferKm float64) [4]float64 {
 	// Get park bbox
 	latMin, latMax, lonMin, lonMax := area.GetBoundingBox()
-	
+	return bufferBBox([4]float64{lonMin, latMin, lonMax, latMax}, bufferKm)
+}
+
+// bufferBBox pads a [minLon, minLat, maxLon, maxLat] box outward. Split out of
+// calculateBufferedBBox so an AOI (which has a bbox but no
+// areas.ProtectedArea, by design) can be tiled by the same code.
+func bufferBBox(b [4]float64, bufferKm float64) [4]float64 {
 	// Add buffer (~1 degree ≈ 111km)
 	bufferDeg := bufferKm / 111.0
-	
+
 	return [4]float64{
-		lonMin - bufferDeg,
-		latMin - bufferDeg,
-		lonMax + bufferDeg,
-		latMax + bufferDeg,
+		b[0] - bufferDeg,
+		b[1] - bufferDeg,
+		b[2] + bufferDeg,
+		b[3] + bufferDeg,
 	}
 }
 
