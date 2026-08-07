@@ -84,7 +84,7 @@ class EventRebuilder:
         `ABS(latitude - ?) < ?` form is non-sargable, so SQLite drops
         idx_fire_location and covering-scans all 42.9M rows -- 100-1000x
         slower, once per cluster. Same note in rebuild_events_enhanced.py;
-        docs/AOI_HANDOVER_2.md section 0 is where it cost 2.5 hours.
+        docs/AOI_HANDOVER.md §1b is where it cost 2.5 hours.
         """
         radius_deg = radius_km / 111.0
 

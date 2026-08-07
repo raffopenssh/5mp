@@ -50,6 +50,20 @@ INPUT_DIR = BASE_DIR / "data" / "fire_groups_v5"  # Updated for v5 trajectory ou
 # The FULL trajectory geometry is always stored and displayed - never clipped:
 # a transect that reaches the park shows its entire path from wherever it started.
 RELEVANCE_KM = 20
+
+# Commit every BATCH_ROWS inserts instead of once per park.
+#
+# Why: this is the last long writer in the v5 chain (AOI_HANDOVER.md §1c).
+# SQLite has exactly one writer, so a park -- or worse, a 485,000 km² AOI with
+# 38,725 groups -- loaded in a single transaction blocks every user-initiated
+# write for the whole run, and that is what made `archive` and `daily_park_refresh`
+# return "database is locked". Batching costs nothing here because the work is
+# idempotent: the run starts by deleting the park's rows and every group is an
+# INSERT OR REPLACE keyed by feature_id, so an interruption mid-park leaves a
+# partial set that the next run re-derives exactly. (The same argument, and the
+# same batch size, as rebuild_{deforestation,settlements}_for_park.)
+BATCH_ROWS = 200
+
 TRENDS_DIR = BASE_DIR / "data" / "fire_trends"
 KEYSTONES_FILE = BASE_DIR / "data" / "keystones_with_boundaries.json"
 
@@ -90,7 +104,7 @@ def _point_in_ring(lon, lat, ring):
 
 class FireGroupLoader:
     def __init__(self, aoi_id=None):
-        self.conn = sqlite3.connect(str(DB_PATH))
+        self.conn = sqlite3.connect(str(DB_PATH), timeout=120)
         self.conn.row_factory = sqlite3.Row
         self.parks = self._load_parks()
         # An AOI is injected into the in-memory parks dict only; the keystones
@@ -556,7 +570,12 @@ class FireGroupLoader:
                         pass
             
             count += 1
+            if count % BATCH_ROWS == 0:
+                # Release the single writer between batches so a user toggle,
+                # an archive or the nightly refresh can get a slot.
+                self.conn.commit()
         
+        self.conn.commit()
         return count, {'yearly': dict(yearly_stats), 'weekly': dict(weekly_counts)}
 
     def update_park_stats(self, park_id, stats):
@@ -617,6 +636,7 @@ class FireGroupLoader:
             count, stats = self.process_park(pid, force)
             if count > 0:
                 self.update_park_stats(pid, stats)
+                self.conn.commit()   # never hold the writer across parks
                 total_loaded += count
                 
                 # Aggregate yearly stats
@@ -627,7 +647,6 @@ class FireGroupLoader:
                 
                 if (i + 1) % 10 == 0:
                     log(f"  [{i+1}/{len(park_ids)}] {pid}: {count} groups")
-                    self.conn.commit()
         
         self.conn.commit()
         self.conn.close()

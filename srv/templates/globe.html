@@ -3271,7 +3271,7 @@
             // settlements and infrastructure; it has no species, climate,
             // legal or publications, because those are per-protected-area facts
             // and averaging them over 485,000 km² would invent a number
-            // (docs/AOI_HANDOVER_2.md §2). The intersecting parks follow it in
+            // (docs/AOI_HANDOVER.md §2). The intersecting parks follow it in
             // the same report and carry exactly those.
             for (const a of Object.values(window._aois || {})) {
                 byId.set(a.id, {
@@ -3303,6 +3303,9 @@
         // What an AOI actually has data for. Kept next to collectReportParks
         // because it is the same decision the popup and the route table make.
         const AOI_REPORT_SECTIONS = ['fire', 'deforestation', 'settlement', 'road', 'patrol'];
+        // On window because reportParkSectionsSync() lives in a different
+        // <script> block; a bare const there is simply undefined.
+        window.AOI_REPORT_SECTIONS = AOI_REPORT_SECTIONS;
 
         // ===== Shared export geo helpers =====
 
@@ -3651,7 +3654,7 @@
             // sees a 485,000 km2 "park" with no species and assumes the data is
             // broken. Its window is part of its identity (two versions of one
             // area differ only by dates), and the missing sections are a
-            // decision, not a gap -- see docs/AOI_HANDOVER_2.md section 2.
+            // decision, not a gap -- see docs/AOI_HANDOVER.md section 2.
             if (park.isAOI) {
                 const win = (park.from_date || '...') + ' to ' + (park.to_date || 'now');
                 lines.push(`_Area of interest -- a user-drawn polygon with its own ingest. Analysis window ${win}._`);
@@ -9778,7 +9781,7 @@
                 // watersheds) was empty for an AOI even though the rows exist
                 // under its bare id. `stats` stays park-only on purpose -- an
                 // AOI has no per-protected-area facts to average
-                // (docs/AOI_HANDOVER_2.md 2).
+                // (docs/AOI_HANDOVER.md 2).
                 const base = apiBase(paId), pw = encodeURIComponent(getPwd());
                 const [statsResp, infraResp, learnedResp, basinResp] = await Promise.all([
                     isAOI(paId) ? Promise.resolve(null)
@@ -11149,7 +11152,7 @@
                 // those (?aoi= -> aoiScopeSQL). Not an extra filter on top of
                 // the park rows: the AOI's ingest covered the whole polygon
                 // including the ~11% inside parks, so keeping both would paint
-                // that overlap twice. See docs/AOI_HANDOVER_2.md §2.
+                // that overlap twice. See docs/AOI_HANDOVER.md §2.
                 if (aoiFocusID) url += '&aoi=' + encodeURIComponent(aoiFocusID);
                 const res = await fetch(url, { signal: ctrl.signal });
                 if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -13750,6 +13753,13 @@
             for (const p of parks) add(p.id, null);
         }
         for (const n of starredItems.narratives) add(n.park_id || n.parkId, [n.type]);
+        // Visible AOIs, the same trigger and the same sections as
+        // collectReportParks(). Without them this "mirror" reported one fewer
+        // area than the export actually contained -- and the footer count is the
+        // only place a user checks what a report covers before pressing PDF.
+        for (const a of Object.values(window._aois || {})) {
+            add(a.id, window.AOI_REPORT_SECTIONS || ['fire', 'deforestation', 'settlement']);
+        }
         return map;
     }
 
@@ -13762,6 +13772,8 @@
         // inside a starred area is counted once). Narrative-only parks only
         // contribute the sections that are starred.
         const coverage = reportParkSectionsSync();
+        const aoiCount = Object.keys(window._aois || {})
+            .filter(id => coverage.has(id)).length;
         let totalParks = 0, loadedParks = 0, totalFires = 0, totalSettlements = 0;
         for (const [parkId, sections] of coverage) {
             totalParks++;
@@ -13772,8 +13784,11 @@
             if (!sections || sections.has('settlement')) totalSettlements += cached.settlement?.settlement_count || 0;
         }
 
+        // "areas" once an AOI is in scope: an AOI is not a park, and calling it
+        // one is the mistake the whole id-space separation exists to prevent.
+        const noun = aoiCount ? 'area' : 'park';
         const statsStr = totalParks > 0
-            ? ` • ${totalParks} park${totalParks !== 1 ? 's' : ''}${loadedParks < totalParks ? ` (${loadedParks} loaded)` : ''} • ${totalFires.toLocaleString()} fires • ${totalSettlements.toLocaleString()} settlements`
+            ? ` • ${totalParks} ${noun}${totalParks !== 1 ? 's' : ''}${loadedParks < totalParks ? ` (${loadedParks} loaded)` : ''} • ${totalFires.toLocaleString()} fires • ${totalSettlements.toLocaleString()} settlements`
             : '';
 
         meta.innerHTML = `
@@ -14535,7 +14550,7 @@
         const {from, to} = options;
         const pwd = getPwd();
         // An AOI has no species/climate/legal/publications/stats: those are
-        // per-protected-area facts (docs/AOI_HANDOVER_2.md §2) and the routes
+        // per-protected-area facts (docs/AOI_HANDOVER.md §2) and the routes
         // deliberately do not exist under /api/aois, so asking would be five
         // 404s per report. Resolve them empty; buildParkMarkdown already skips
         // empty sections.
@@ -15659,7 +15674,12 @@ ${starredItems.narratives.map(n => {
     let activeHoverPopups = []; // Track all active hover popups for cleanup
     
     function getPinKey(parkId, type) {
-        return `${parkId}_${type}`;
+        // Pins live in one flat map keyed by id, so an AOI and a park with the
+        // same id would share a single entry -- unpinning one would silently
+        // remove the other's layer (AOI_HANDOVER §4.6). Ids are disjoint
+        // today, which is exactly why this is cheap to fix now: namespace the
+        // AOI side so it can never collide, whatever ids we mint later.
+        return isAOI(parkId) ? `aoi:${parkId}:${type}` : `${parkId}_${type}`;
     }
     
     function isPinned(parkId, type) {
@@ -17848,6 +17868,7 @@ ${starredItems.narratives.map(n => {
         else if (tabName === 'pending') loadPendingApprovals();
         else if (tabName === 'learning') loadLearningResults();
         else if (tabName === 'features') loadLearnedFeatures();
+        else if (tabName === 'access') loadAccessTab();
         else if (tabName === 'autofetch') {
             loadAutofetchSources(); initAfSourceViewer();
             // Default backfill date to 30 days ago
@@ -17859,6 +17880,134 @@ ${starredItems.narratives.map(n => {
         }
     }
     
+    // ===== Admin Access tab: AOI ownership + ingest queue =====
+    //
+    // Deliberately a *report* plus two verbs. Everything the operator can do
+    // here already exists as an endpoint the owner-facing UI uses (per-dataset
+    // enable/disable = the granular form of Stop/Resume; "Run now" = /kick,
+    // which shells out to scripts/aoi_runner.py). There is one implementation
+    // of "work a unit" and this is not a second one.
+    async function loadAccessTab() {
+        const box = document.getElementById('access-aois');
+        const pbox = document.getElementById('access-principals');
+        const rbox = document.getElementById('access-runner');
+        if (!box) return;
+        box.innerHTML = 'Loading&hellip;';
+        let d;
+        try {
+            const res = await fetch(`/api/admin/access?pwd=${window.getPwd() || ''}`);
+            if (!res.ok) throw new Error(res.status);
+            d = await res.json();
+        } catch (e) {
+            box.innerHTML = `<div style="color:#ef4444;font-size:12px;">Could not load access data (${e.message})</div>`;
+            return;
+        }
+
+        // Runner heartbeat, from data/aoi_status.json. Its own key on purpose:
+        // an AOI failure must never make the fire pipeline look degraded.
+        const hb = d.runner;
+        if (rbox) {
+            if (!hb) {
+                rbox.innerHTML = 'Runner: <span style="color:#f59e0b">no heartbeat yet</span> · cron 12:00 UTC';
+            } else {
+                const col = hb.status === 'ok' ? '#22c55e' : '#ef4444';
+                const early = hb.stopped_early ? ` · stopped early: ${escapeHtml(String(hb.stopped_early))}` : '';
+                rbox.innerHTML = `Runner: <span style="color:${col}">${escapeHtml(hb.status || '?')}</span>`
+                    + ` · last run ${safeDateStr(hb.finished_at || hb.started_at)}`
+                    + ` · ${(hb.results || []).length} unit(s)${early}`
+                    + (hb.fatal_error ? ` · <span style="color:#ef4444">${escapeHtml(hb.fatal_error)}</span>` : '');
+            }
+        }
+
+        const entries = d.aois || [];
+        if (!entries.length) {
+            box.innerHTML = '<div style="color:#666;font-size:12px;">No areas of interest visible to this login.</div>';
+        } else {
+            box.innerHTML = entries.map(e => {
+                const a = e.aoi || {};
+                const done = (e.datasets || []).filter(x => x.state === 'done').length;
+                const total = (e.datasets || []).length;
+                // Readiness is DERIVED from the queue, never read from
+                // aois.state: nothing ever writes 'ready' there (only
+                // 'archived'), so printing the raw column would label a fully
+                // ingested AOI "pending" forever. Same rule as /progress.
+                const running = (e.datasets || []).some(x => x.state === 'running');
+                const readiness = a.state === 'archived' ? 'archived'
+                    : (total && done === total) ? 'ready'
+                    : running ? 'running' : (done ? 'partial' : 'queued');
+                const rows = (e.datasets || []).map(x => {
+                    const pct = x.units_total ? Math.round(100 * x.units_done / x.units_total) : null;
+                    const colours = {done:'#22c55e', running:'#3b82f6', failed:'#ef4444',
+                                     blocked:'#f59e0b', pending:'#888'};
+                    const lease = x.lease_owner
+                        ? `<span title="lease until ${escapeHtml(x.lease_until || '')}">🔒 ${escapeHtml(x.lease_owner)}</span>`
+                        : '';
+                    return `<tr>
+                        <td style="font-family:monospace">${escapeHtml(x.dataset)}</td>
+                        <td style="color:${colours[x.state] || '#888'}">${escapeHtml(x.state)}</td>
+                        <td>${x.units_total ? `${x.units_done}/${x.units_total} (${pct}%)` : '<span style="color:#666">single unit</span>'}</td>
+                        <td style="color:#9ca3af;font-size:11px">${escapeHtml((x.detail || '').slice(0, 70))} ${lease}</td>
+                        <td>${x.has_cursor ? '<span title="resumable: a cursor is stored" style="color:#60a5fa">cursor</span>' : ''}</td>
+                        <td>${a.is_owner ? `<button class="admin-btn" onclick="setAOIDataset('${escapeHtml(a.id)}','${escapeHtml(x.dataset)}',${x.enabled ? 0 : 1})">${x.enabled ? 'Disable' : 'Enable'}</button>` : ''}</td>
+                    </tr>`;
+                }).join('');
+                return `<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(245,158,11,0.2);border-radius:10px;padding:14px;margin-bottom:14px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+                        <div>
+                            <span style="color:#f59e0b;font-weight:600;">${escapeHtml(a.name || a.id)}</span>
+                            <span style="color:#666;font-size:11px;"> v${a.version || 1} · ${Math.round(a.area_km2 || 0).toLocaleString()} km² · ${readiness} · ${escapeHtml(a.visibility || '')}</span>
+                            <div style="color:#666;font-size:11px;margin-top:2px;">
+                                owner ${a.is_owner ? '<span style="color:#22c55e">you</span>' : `<code>${escapeHtml(e.owner_ref || 'none')}</code>`}
+                                · window ${escapeHtml(a.from_date || 'all')} → ${escapeHtml(a.to_date || 'now')}
+                                · ${done}/${total} datasets done
+                            </div>
+                        </div>
+                        ${a.is_owner ? `<button class="admin-btn admin-btn-success" onclick="kickAOIRunner('${escapeHtml(a.id)}')">Run now</button>` : ''}
+                    </div>
+                    <div class="admin-table-container" style="margin-top:10px;">
+                        <table class="admin-table"><thead><tr>
+                            <th>Dataset</th><th>State</th><th>Units</th><th>Detail</th><th>Resume</th><th></th>
+                        </tr></thead><tbody>${rows}</tbody></table>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        if (pbox) {
+            pbox.innerHTML = `<div class="admin-table-container"><table class="admin-table">
+                <thead><tr><th>Handle</th><th>AOIs owned</th><th>Shared with</th></tr></thead><tbody>`
+                + (d.principals || []).map(p => `<tr>
+                    <td style="font-family:monospace">${escapeHtml(p.handle || '')}${p.is_you ? ' <span style="color:#22c55e">(you)</span>' : ''}</td>
+                    <td>${p.owns}</td><td>${p.granted}</td></tr>`).join('')
+                + '</tbody></table></div>';
+        }
+    }
+
+    async function setAOIDataset(aoiId, dataset, enabled) {
+        try {
+            const body = new URLSearchParams({aoi: aoiId, dataset, enabled: String(enabled)});
+            const res = await fetch(`/api/admin/aoi-dataset?pwd=${window.getPwd() || ''}`,
+                {method: 'POST', body});
+            if (!res.ok) throw new Error(res.status);
+            showToast(`${dataset} ${enabled ? 'enabled' : 'disabled'}`, 'success');
+            loadAccessTab();
+        } catch (e) {
+            showToast(`Could not change ${dataset} (${e.message})`, 'error');
+        }
+    }
+
+    async function kickAOIRunner(aoiId) {
+        try {
+            const res = await fetch(`/api/aois/${encodeURIComponent(aoiId)}/kick?pwd=${window.getPwd() || ''}`,
+                {method: 'POST'});
+            if (!res.ok) throw new Error(res.status);
+            showToast('Runner started — it works one unit at a time', 'info');
+            setTimeout(loadAccessTab, 3000);
+        } catch (e) {
+            showToast(`Could not start runner (${e.message})`, 'error');
+        }
+    }
+
     function safeDateStr(ts) {
         if (!ts) return '-';
         try {
@@ -19539,6 +19688,10 @@ ${starredItems.narratives.map(n => {
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9a9 9 0 0 1-9-9m9 9c1.66 0 3-4.03 3-9s-1.34-9-3-9m0 18c-1.66 0-3-4.03-3-9s1.34-9 3-9"/></svg>
                     Automated Fetch
                 </button>
+                <button class="admin-tab" data-tab="access" onclick="switchAdminTab('access')" role="tab" aria-selected="false" aria-controls="tab-access">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    Access
+                </button>
                 <button class="admin-tab" data-tab="map-settings" onclick="switchAdminTab('map-settings')" role="tab" aria-selected="false" aria-controls="tab-map-settings">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6m-5-7H1m6 0h6m6 0h6M7 7l-2-2m12 0l2-2M7 17l-2 2m12 0l2 2"/></svg>
                     Map Settings
@@ -19700,6 +19853,20 @@ ${starredItems.narratives.map(n => {
                             </div>
                         </details>
                     </div>
+                </div>
+
+                <!-- Access Tab: AOI ownership + per-dataset queue control -->
+                <div class="admin-tab-content" id="tab-access" role="tabpanel" aria-labelledby="tab-access">
+                    <p style="color:#888;font-size:12px;margin-bottom:16px;line-height:1.6;">
+                        Areas of interest visible to <em>this</em> login, their owners, and what each
+                        dataset's ingest queue is doing. Passwords are never shown &mdash; a principal is
+                        identified by a non-secret <code>sha256</code> handle. Disabling a dataset keeps its
+                        cursor, so re-enabling resumes rather than re-spending API quota.
+                    </p>
+                    <div id="access-runner" style="font-size:11px;color:#9ca3af;margin-bottom:16px;"></div>
+                    <div id="access-aois">Loading&hellip;</div>
+                    <h4 style="color:#fff;font-size:13px;font-weight:600;margin:24px 0 8px;">Principals</h4>
+                    <div id="access-principals"></div>
                 </div>
 
                 <!-- Map Settings Tab -->

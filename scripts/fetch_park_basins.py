@@ -593,7 +593,7 @@ def main():
         want += a.parks.split(",")
     # An id given to --park that is actually an AOI is accepted rather than
     # silently dropped: that no-op is what made the AOI runner report
-    # "0 basin rows" as a success (docs/AOI_HANDOVER_2.md).
+    # "0 basin rows" as a success (docs/AOI_HANDOVER.md).
     aoi_ids = list(a.aoi or [])
     if want:
         known = {p["id"] for p in parks}

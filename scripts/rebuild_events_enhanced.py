@@ -53,7 +53,7 @@ class _RoadIndex:
     is not, because the caller runs one query per deforestation polygon. This is
     the same grid trick `_cluster_polygons` uses, for the same reason: it was
     added when fixing the AOI's OSM key made the road count jump 92x
-    (docs/AOI_HANDOVER_2.md §1) and turned this into the new bottleneck.
+    (docs/AOI_HANDOVER.md §1) and turned this into the new bottleneck.
 
     A segment is registered in every cell its bbox touches, or a long way would
     be missing from the cells it passes through. `nearest()` searches outward in
@@ -210,7 +210,7 @@ class EventRebuilder:
         `_get_nearest_road_distance` is called once per polygon and used to scan
         every road's every segment; that was tolerable when a park had ~1,400
         roads and fatal at 12,956 (which is what an AOI has once its OSM ingest
-        is keyed where the readers look — docs/AOI_HANDOVER_2.md §1). Bucketing
+        is keyed where the readers look — docs/AOI_HANDOVER.md §1). Bucketing
         segments into ~0.05° cells confines the search to the 3x3 block around
         the query point, the same trick `_cluster_polygons` uses and for the same
         reason.
@@ -298,7 +298,7 @@ class EventRebuilder:
         made rebuild_deforestation_for_park hold SQLite's single writer for 2.5+
         hours on the XSA AOI's 76,903 Hansen polygons and turned every
         user-initiated write on the deployment into a 500 (the archive "blocker"
-        of docs/AOI_HANDOVER_2.md §0 was this query, not the handler).
+        of docs/AOI_HANDOVER.md §1b was this query, not the handler).
         """
         radius_deg = radius_km / 111.0
 
@@ -564,7 +564,7 @@ class EventRebuilder:
         transaction around the whole rebuild is what made an AOI-sized input
         (76,903 polygons) hold SQLite's single writer for hours, so nothing
         else on the deployment — not the nightly park refresh, not a user
-        flipping a toggle — could get a write slot (docs/AOI_HANDOVER_2.md §0).
+        flipping a toggle — could get a write slot (docs/AOI_HANDOVER.md §1b).
         Committing per batch is safe because a re-run is idempotent: the delete
         above is prefix-scoped and re-derives the same clusters.
 
@@ -755,7 +755,7 @@ class EventRebuilder:
         around the whole rebuild is what let a single AOI-sized input hold
         SQLite's only writer for its entire run, so nothing else on the
         deployment -- not the nightly refresh, not a user toggle -- could get a
-        write slot (docs/AOI_HANDOVER_2.md sections 0 and 4.0: this was the
+        write slot (docs/AOI_HANDOVER.md §1b/§1c: this was the
         pattern that section named as still-missing here). Safe because a re-run
         is idempotent: the delete above is park-scoped and re-derives the same
         clusters. `on_batch` is also the interrupt point -- raise from it (the
