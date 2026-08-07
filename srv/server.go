@@ -71,6 +71,13 @@ func New(dbPath, hostname string) (*Server, error) {
 	if err := srv.RefreshAOIIDs(); err != nil {
 		slog.Warn("load aoi ids", "error", err)
 	}
+	// Best effort, and a warning is the correct failure: this closes a privacy
+	// hole in old rows, and it must never be able to take the site down (a
+	// migration attempt at the same job restart-looped the service when the
+	// write lock was held). It converges on the first boot that gets a slot.
+	if err := srv.reownSystemAOIProgress(); err != nil {
+		slog.Warn("reown aoi_progress notifications", "error", err)
+	}
 
 	// Start the GPX learner background processor
 	srv.GPXLearner = NewGPXLearner(srv.DB)
