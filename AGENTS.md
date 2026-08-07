@@ -502,13 +502,38 @@ pits came back `unclear_imagery`: no z18 coverage exists there, and z16 shows on
 wooded savanna.
 
 What *does* validate and is shipped: the **basin layer** — `park_basins` +
-`park_basin_rivers` (migration 039, 163 parks, upstream polygon + downstream
-trace + Strahler orders), `GET /api/parks/{id}/basin` (upstream km², upstream
-river km total/order-3+, downstream length + outlet river name), pin buttons and
-a plain-language watershed line in the popup's Roads/Rivers/Places section. QA
-with `python3 scripts/check_basin_coverage.py`. Coverage <0.2 for 26
+`park_basin_parts` + `park_basin_rivers` (migrations 039/044, upstream polygon +
+downstream trace + Strahler orders), `GET /api/parks/{id}/basin` (upstream km²,
+upstream river km total/order-3+, downstream length + outlet river name,
+`upstream_count`/`upstream_rivers`), pin buttons and a plain-language watershed
+line in the popup's Roads/Rivers/Places section. QA with
+`python3 scripts/check_basin_coverage.py`. Coverage <0.2 for 26
 divide/endorheic parks is real, not a bug — hence `flow_corridor.scan_geom()`
 scans (basin clipped to 200 km) ∪ park.
+
+⚠️ **An area has several watersheds, not one.** `park_basins` is
+`PRIMARY KEY (park_id, kind)`, so it holds only the *union* of every outlet's
+watershed — which cannot say which river carries which lobe. `park_basin_parts`
+(migration 044) keeps one row per outlet, named by its river; `?type=basin`
+serves all of them, `&merged=1` asks for the old union. CAF_Chinko drains via
+both the Chinko and the Mbari; `XSA_Study_Area` by 22 rivers.
+
+`fetch_park_basins.py` needs **`--aoi`** for an AOI: it resolves ids against
+`keystones_with_boundaries.json`, which an AOI is never in, so `--park <aoi-id>`
+matched nothing, exited 0, and the AOI runner recorded "0 basin rows" as a
+successful `done` for years of missing data. Outlet budget scales with area
+(`outlet_budget()`); don't rank outlets by `ord_flow` alone (HydroRIVERS: lower =
+bigger; OSM rows store 0 there and use `stream_order`, higher = bigger —
+`_discharge_rank()` unifies them).
+
+⚠️ **`ABS(<indexed col> - ?)` in a WHERE clause is a ~1000x slowdown.** It is
+non-sargable, so SQLite drops the index and covering-scans all 42.9M
+`fire_detections` rows (19.8 s vs 0.02 s, measured 2026-08-07). Always
+`col BETWEEN ? AND ?`. Fixed in `settlement_classifier.go`,
+`deforestation_classifier.go`, `turbidity.go`, `upload.go`,
+`rebuild_events_{enhanced,from_polygons}.py`; grep before adding a query:
+`grep -rn 'ABS([a-z_]* - ?)' srv/ scripts/`. In a SELECT list it is harmless —
+only a WHERE term on an indexed column matters.
 
 ---
 

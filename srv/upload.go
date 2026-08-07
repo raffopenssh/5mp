@@ -1901,9 +1901,9 @@ func (s *Server) isNearBase(ctx context.Context, lat, lon, threshold float64) bo
 		SELECT COUNT(*) FROM settlement_intensity si
 		JOIN park_settlements ps ON si.settlement_id = ps.id
 		WHERE si.is_likely_base = 1
-		  AND ABS(ps.lat - ?) < ?
-		  AND ABS(ps.lon - ?) < ?
-	`, lat, threshold, lon, threshold).Scan(&count)
+		  AND ps.lat BETWEEN ? AND ?
+		  AND ps.lon BETWEEN ? AND ?
+	`, lat-threshold, lat+threshold, lon-threshold, lon+threshold).Scan(&count)
 	
 	if err != nil {
 		return false

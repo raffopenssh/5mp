@@ -299,8 +299,8 @@ func (s *Server) RegisterMiningCandidate(parkID string, lat, lon, areaM2 float64
 	var id int64
 	err := s.DB.QueryRow(`
 		SELECT id FROM park_settlements
-		WHERE park_id = ? AND ABS(lat - ?) < 0.01 AND ABS(lon - ?) < 0.01`,
-		parkID, lat, lon).Scan(&id)
+		WHERE park_id = ? AND lat BETWEEN ? AND ? AND lon BETWEEN ? AND ?`,
+		parkID, lat-0.01, lat+0.01, lon-0.01, lon+0.01).Scan(&id)
 	if err == nil {
 		return id, nil // already registered nearby
 	}

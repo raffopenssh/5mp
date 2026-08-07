@@ -17,12 +17,31 @@ the Mbari), so a single outlet systematically under-covers. We therefore:
 
   1. take HydroRIVERS vertices (park_rivers_hydro; `ord_flow` LOWER = more
      discharge) that sit within EXIT_KM of the park boundary,
-  2. sample Copernicus GLO-90 elevation at each and cluster them (CLUSTER_KM),
-  3. rank clusters by (ord_flow, elevation) and keep up to --max-outlets,
+  2. cluster them spatially (CLUSTER_KM), then sample Copernicus GLO-90
+     elevation only for the survivors,
+  3. rank clusters by (discharge, elevation) and keep up to --max-outlets,
   4. skip any outlet that already falls *inside* a fetched watershed - it is a
      nested duplicate of a bigger one.
 
 mghydro then snaps each point to its own MERIT-Hydro network.
+
+**Every outlet's watershed is stored in its own right** (park_basin_parts, one
+row per outlet) as well as merged into park_basins. park_basins is keyed
+(park_id, kind) so it can only hold the union, and a union of several separate
+watersheds cannot say which river carries which lobe - the map could show one
+amorphous MultiPolygon and nothing else. The merged row stays for the summary
+numbers; the parts are what "show all watersheds" reads.
+
+An **AOI** works here too (`--aoi`, or just its id to `--park`): the geometry
+comes from the `aois` table, since an AOI is deliberately never in
+keystones_with_boundaries.json. Before this, `--park <aoi-id>` matched zero
+parks, the loop body never ran, and the AOI runner recorded "0 basin rows" as a
+successful unit - a silent no-op that looked like the correct answer for a
+large polygon.
+
+Outlet budget scales with area: a 3,000 km2 park has one or two drainage exits
+and a 485,000 km2 AOI has dozens, so a fixed 3 systematically under-covers the
+big ones. --max-outlets still overrides.
 
 Courtesy-API etiquette (§5.1, §6.6): mghydro runs on a $25/month shared host and
 its author asks for ~5 s between calls and no parallelism. So: strictly serial,
@@ -34,6 +53,7 @@ Usage:
   python3 scripts/fetch_park_basins.py --park CAF_Chinko
   python3 scripts/fetch_park_basins.py --all                       # 163 parks, ~30 min
   python3 scripts/fetch_park_basins.py --all --kind upstream
+  python3 scripts/fetch_park_basins.py --aoi XSA_Study_Area         # an AOI
 """
 import argparse, json, math, os, sqlite3, sys, time, urllib.error, urllib.request
 
@@ -60,6 +80,23 @@ DEM_TMPL = ("https://copernicus-dem-90m.s3.eu-central-1.amazonaws.com/"
 EXIT_KM = 4.0           # river vertex counts as a park exit within this of edge
 CLUSTER_KM = 25.0       # merge exit candidates closer than this
 MAX_OUTLETS = 3         # API calls per park per kind (courtesy budget)
+# ...but a fixed budget under-covers a big area: exits scale with perimeter.
+# One outlet per ~12,000 km2, clamped, so a 3,000 km2 park still asks for 3
+# (cheap, and the nested-duplicate guard drops the redundant ones without an
+# API call) while a 485,000 km2 AOI is allowed the ~24 it actually drains by.
+AREA_PER_OUTLET_KM2 = 12_000
+MAX_OUTLETS_CAP = 24
+
+
+def outlet_budget(area_km2, explicit=None):
+    if explicit:
+        return explicit
+    if not area_km2:
+        return MAX_OUTLETS
+    return max(MAX_OUTLETS, min(MAX_OUTLETS_CAP,
+                                int(area_km2 // AREA_PER_OUTLET_KM2) + 1))
+
+
 UA = {"User-Agent": "5mp-conservation-monitor/1.0 (+https://exe.dev) basin fetch",
       "Accept-Encoding": "gzip"}
 
@@ -118,40 +155,64 @@ def boundary_rings(geom):
     return []
 
 
-def pick_outlets(park, max_outlets=MAX_OUTLETS):
+def _discharge_rank(ord_flow, stream_order):
+    """Lower = bigger river. Unifies two incompatible encodings.
+
+    HydroRIVERS `ord_flow` is a discharge class where LOWER means more water.
+    OSM-derived rows (scripts/osm_hydro.py, negative hyriv_id) have no discharge
+    at all and store 0 there, plus a tag-derived `stream_order` band where
+    HIGHER means bigger. So a plain `ORDER BY ord_flow` put **every** OSM row --
+    including every ditch -- ahead of the real trunk rivers. On XSA that is
+    10,288 of 18,927 rows, i.e. the outlet ranking was noise.
+    """
+    if ord_flow:
+        return float(ord_flow)
+    # waterway band -> a comparable class: river ~ ord_flow 5, canal/stream 7,
+    # ditch/drain 9. Deliberately conservative: an unranked OSM river must not
+    # outrank a HydroRIVERS trunk (ord_flow 4).
+    return {4: 5.0, 3: 7.0, 2: 7.5, 1: 9.0}.get(stream_order or 1, 8.0)
+
+
+def pick_outlets(area, max_outlets=MAX_OUTLETS):
     """Candidate drainage exits, best first.
 
-    A "river exit" = a HydroRIVERS vertex inside the park but within EXIT_KM of
-    its boundary. Ranked by discharge (ord_flow ascending = bigger river) then
-    elevation, then spatially thinned to CLUSTER_KM so we do not spend three API
-    calls on three vertices of the same reach. Falls back to the lowest sampled
-    boundary DEM pixel for parks with no river data.
+    A "river exit" = a river vertex inside the area but within EXIT_KM of its
+    boundary. Ranked by discharge (see _discharge_rank), spatially thinned to
+    CLUSTER_KM so we do not spend three API calls on three vertices of the same
+    reach, and only *then* sampled for elevation. Falls back to the lowest
+    sampled boundary DEM pixel for areas with no river data.
+
+    The order matters for cost: `elevation()` reads a 1-degree Copernicus COG
+    per tile, and sampling every candidate before thinning meant 18,927 samples
+    for XSA to choose ~24 points. Thinning first makes it a few dozen.
     """
     from shapely.geometry import shape, Point
     from shapely.prepared import prep
-    poly = shape(park["geometry"])
+    poly = shape(area["geometry"])
     inside = prep(poly)
     edge = poly.boundary
     deg = EXIT_KM / 111.0
 
     con = sqlite3.connect(DB)
     rows = con.execute(
-        "SELECT lon, lat, ord_flow, name FROM park_rivers_hydro WHERE park_id=?",
-        (park["id"],)).fetchall()
+        "SELECT lon, lat, ord_flow, name, stream_order, length_km "
+        "FROM park_rivers_hydro WHERE park_id=?", (area["id"],)).fetchall()
     con.close()
 
     cands = []
-    for lo, la, of, nm in rows:
+    for lo, la, of, nm, so, lk in rows:
         if lo is None or la is None:
             continue
         p = Point(lo, la)
         if not inside.contains(p) or p.distance(edge) > deg:
             continue
         cands.append({"lon": round(lo, 5), "lat": round(la, 5),
-                      "ord_flow": of, "river": nm})
+                      "ord_flow": of, "river": nm,
+                      "rank": _discharge_rank(of, so),
+                      "reach_km": lk or 0.0})
     if not cands:
         pts = []
-        for ring in boundary_rings(park["geometry"]):
+        for ring in boundary_rings(area["geometry"]):
             step = max(1, len(ring) // 300)
             pts += [tuple(c[:2]) for c in ring[::step]]
         best, best_z = None, None
@@ -160,7 +221,7 @@ def pick_outlets(park, max_outlets=MAX_OUTLETS):
             if z is not None and (best_z is None or z < best_z):
                 best, best_z = q, z
         if best is None:
-            c = park.get("coordinates") or {}
+            c = area.get("coordinates") or {}
             if c.get("lon") is None:
                 return []
             return [{"lon": c["lon"], "lat": c["lat"], "how": "centroid",
@@ -168,21 +229,26 @@ def pick_outlets(park, max_outlets=MAX_OUTLETS):
         return [{"lon": round(best[0], 5), "lat": round(best[1], 5),
                  "how": "lowest_boundary_pixel", "elev_m": round(best_z, 1)}]
 
-    for c in cands:
-        z = elevation(c["lon"], c["lat"])
-        c["elev_m"] = round(z, 1) if z is not None else None
-        c["how"] = "river_exit"
-    cands.sort(key=lambda c: (c["ord_flow"],
-                              c["elev_m"] if c["elev_m"] is not None else 9e9))
+    # bigger river first, then the longer reach (a trunk vertex beats a stub)
+    cands.sort(key=lambda c: (c["rank"], -c["reach_km"]))
     out = []
+    # keep spares: the nested-duplicate guard drops outlets that turn out to sit
+    # inside an already-fetched watershed, and those cost no API call.
+    want = max_outlets * 2
     for c in cands:
         if any(km((c["lon"], c["lat"]), (o["lon"], o["lat"])) < CLUSTER_KM
                for o in out):
             continue
         out.append(c)
-        if len(out) >= max_outlets:
+        if len(out) >= want:
             break
-    return out
+    for c in out:
+        z = elevation(c["lon"], c["lat"])
+        c["elev_m"] = round(z, 1) if z is not None else None
+        c["how"] = "river_exit"
+    out.sort(key=lambda c: (c["rank"],
+                            c["elev_m"] if c["elev_m"] is not None else 9e9))
+    return out[:max_outlets]
 
 
 # ------------------------------------------------------------ cached fetching
@@ -410,7 +476,7 @@ def contains_point(geom, lon, lat):
         return False
 
 
-def store(con, park_id, res):
+def store(con, park_id, res, parts=None):
     con.execute(
         "INSERT OR REPLACE INTO park_basins"
         "(park_id, kind, outlet_lat, outlet_lon, area_km2, length_km, geojson,"
@@ -418,6 +484,21 @@ def store(con, park_id, res):
         (park_id, res["kind"], res["meta"]["outlet"]["lat"],
          res["meta"]["outlet"]["lon"], res.get("area_km2"), res.get("length_km"),
          json.dumps(res["geojson"]), res["source"], json.dumps(res["meta"])))
+    # ...and each outlet's own watershed, which the merged polygon cannot
+    # express (migration 044). Replace-then-insert scoped to this (park, kind):
+    # a re-run with fewer outlets must not leave orphan lobes on the map.
+    if parts is not None:
+        con.execute("DELETE FROM park_basin_parts WHERE park_id=? AND kind=?",
+                    (park_id, res["kind"]))
+        con.executemany(
+            "INSERT INTO park_basin_parts(park_id, kind, idx, outlet_lat,"
+            " outlet_lon, river, area_km2, length_km, geojson, source, meta,"
+            " fetched_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,datetime('now'))",
+            [(park_id, p["kind"], i, p["meta"]["outlet"]["lat"],
+              p["meta"]["outlet"]["lon"], p["meta"]["outlet"].get("river"),
+              p.get("area_km2"), p.get("length_km"),
+              json.dumps(p["geojson"]), p["source"], json.dumps(p["meta"]))
+             for i, p in enumerate(parts)])
     rivers = res.get("rivers") or []
     if rivers:
         con.execute("DELETE FROM park_basin_rivers WHERE park_id=?", (park_id,))
@@ -435,6 +516,17 @@ def store(con, park_id, res):
     out = {"park_id": park_id, "kind": res["kind"], "source": res["source"],
            "area_km2": res.get("area_km2"), "length_km": res.get("length_km"),
            "meta": res["meta"], "geometry": res["geojson"]}
+    if parts is not None and len(parts) > 1:
+        # One feature per outlet watershed, so a consumer of the file (and not
+        # just the API) can also draw all of them rather than the union.
+        out["parts"] = {"type": "FeatureCollection", "features": [
+            {"type": "Feature", "geometry": p["geojson"],
+             "properties": {"idx": i, "kind": p["kind"],
+                            "area_km2": p.get("area_km2"),
+                            "length_km": p.get("length_km"),
+                            "river": p["meta"]["outlet"].get("river"),
+                            "outlet": p["meta"]["outlet"]}}
+            for i, p in enumerate(parts)]}
     if rivers:
         out["rivers"] = {"type": "FeatureCollection", "features": [
             {"type": "Feature",
@@ -442,6 +534,34 @@ def store(con, park_id, res):
              "geometry": {"type": "LineString", "coordinates": r["coords"]}}
             for r in rivers]}
     json.dump(out, open(path, "w"))
+
+
+def load_aois(ids):
+    """AOIs shaped like keystone park dicts, so the loop needs no branch.
+
+    An AOI is deliberately absent from keystones_with_boundaries.json (it must
+    never become a fire_detections.protected_area_id), but its derived rows live
+    in park-shaped tables keyed by its bare id -- park_rivers_hydro included --
+    so everything below works unchanged once the geometry is in hand.
+    """
+    if not ids:
+        return []
+    con = sqlite3.connect(DB, timeout=60)
+    out = []
+    for aid in ids:
+        row = con.execute(
+            "SELECT id, name, geometry, area_km2, bbox_minx, bbox_miny,"
+            " bbox_maxx, bbox_maxy FROM aois WHERE id=?", (aid,)).fetchone()
+        if not row:
+            print(f"no such park or AOI: {aid}", file=sys.stderr)
+            continue
+        out.append({"id": row[0], "name": row[1],
+                    "geometry": json.loads(row[2]), "area_km2": row[3],
+                    "coordinates": {"lon": (row[4] + row[6]) / 2,
+                                    "lat": (row[5] + row[7]) / 2},
+                    "is_aoi": True})
+    con.close()
+    return out
 
 
 def main():
@@ -456,7 +576,11 @@ def main():
     ap.add_argument("--refresh", action="store_true", help="bypass http_cache")
     ap.add_argument("--list-outlets", action="store_true",
                     help="compute outlets only, no API calls")
-    ap.add_argument("--max-outlets", type=int, default=MAX_OUTLETS)
+    ap.add_argument("--max-outlets", type=int, default=0,
+                    help="0 = scale with area (see outlet_budget)")
+    ap.add_argument("--aoi", action="append",
+                    help="AOI id; an AOI is not in keystones, so --park "
+                         "silently matched nothing before this existed")
     ap.add_argument("--skip-existing", action="store_true", default=True)
     ap.add_argument("--force", dest="skip_existing", action="store_false")
     a = ap.parse_args()
@@ -467,17 +591,34 @@ def main():
         want += a.park
     if a.parks:
         want += a.parks.split(",")
+    # An id given to --park that is actually an AOI is accepted rather than
+    # silently dropped: that no-op is what made the AOI runner report
+    # "0 basin rows" as a success (docs/AOI_HANDOVER_2.md).
+    aoi_ids = list(a.aoi or [])
     if want:
+        known = {p["id"] for p in parks}
+        aoi_ids += [w for w in want if w not in known]
         parks = [p for p in parks if p["id"] in want]
+    elif aoi_ids:
+        # --aoi alone means that AOI, not "every park plus this AOI". (With
+        # --list-outlets the old guard fell through to all 164.)
+        parks = []
     elif not a.all and not a.list_outlets:
-        ap.error("need --park/--parks/--all")
+        ap.error("need --park/--parks/--aoi/--all")
     parks = [p for p in parks if p.get("geometry")]
+    parks += load_aois(aoi_ids)
 
     con = sqlite3.connect(DB, timeout=60)
     con.execute("PRAGMA busy_timeout=60000")
     kinds = (["upstream", "downstream"] if a.kind == "both" else [a.kind])
     have = {(r[0], r[1]) for r in con.execute(
         "SELECT park_id, kind FROM park_basins")} if a.skip_existing else set()
+    # A merged row without parts is a pre-044 fetch. Re-run it: every response
+    # is in http_cache, so backfilling the parts costs no API call.
+    if a.skip_existing:
+        withparts = {(r[0], r[1]) for r in con.execute(
+            "SELECT DISTINCT park_id, kind FROM park_basin_parts")}
+        have &= withparts
 
     for i, p in enumerate(parks, 1):
         pid = p["id"]
@@ -485,7 +626,8 @@ def main():
         if not todo and not a.list_outlets:
             print(f"[{i}/{len(parks)}] {pid}: cached, skip")
             continue
-        outlets = pick_outlets(p, a.max_outlets)
+        budget = outlet_budget(p.get("area_km2"), a.max_outlets)
+        outlets = pick_outlets(p, budget)
         if not outlets:
             print(f"[{i}/{len(parks)}] {pid}: NO OUTLET", file=sys.stderr)
             continue
@@ -493,7 +635,8 @@ def main():
                          + (f" ord{o['ord_flow']}" if o.get("ord_flow") else "")
                          + (f" {o['river']}" if o.get("river") else "") + "]"
                          for o in outlets)
-        print(f"[{i}/{len(parks)}] {pid} outlets: {desc}", flush=True)
+        print(f"[{i}/{len(parks)}] {pid} (max {budget}) outlets: {desc}",
+              flush=True)
         if a.list_outlets:
             continue
         for kind in todo:
@@ -518,7 +661,7 @@ def main():
                 continue
             merged = (merge_upstream(parts) if kind == "upstream"
                       else merge_downstream(parts))
-            store(con, pid, merged)
+            store(con, pid, merged, parts)
             extra = (f"{merged['area_km2']} km2 from {len(parts)} outlet(s)"
                      if kind == "upstream" else
                      f"{merged['length_km']} km, "

@@ -1,4 +1,4 @@
-# AOI — handover, rev 5 (2026-08-07)
+# AOI — handover, rev 6 (2026-08-07)
 
 `docs/PLAN_AOI_OVERLAY.md` is the design rationale and the record of *measured*
 facts — read its §1, §2 and §4 before touching ingest. This file is only "what
@@ -11,7 +11,138 @@ data we already hold.
 
 ---
 
-## 0. Read this first — rev 4's blocker was a missing index hint
+## 0. Read this first — "0 basin rows is correct" was a silent no-op
+
+rev 5 §1 recorded, as a *fact*, that `basin` "returns **0 rows and that is
+correct** — a 485,000 km² polygon has no single watershed". The premise was
+right and the conclusion was backwards. XSA drains by **22 separate
+watersheds** totalling 162,392 km², plus 24 downstream traces (82,863 km) and
+1,746 named upstream reaches. None of it had been fetched.
+
+The cause was one word in `run_basin`:
+
+```python
+sh(["python3", "scripts/fetch_park_basins.py", "--park", aoi["id"]])  # matched nothing
+```
+
+`fetch_park_basins.py` resolved ids only against
+`keystones_with_boundaries.json`, which **an AOI is deliberately never in**
+(§2). So the filter produced an empty list, the loop body never ran, the script
+exited **0**, and the unit recorded `done` with a plausible-sounding detail
+string. Nothing logged an error at any layer.
+
+**A no-op that reads as an answer is the worst failure mode this queue has** —
+worse than a crash, because a crash gets retried. The same shape has now bitten
+three times: the animator's missing 38,725 trajectories (rev 3), the `osm`
+unit's write-only `aoi:` key (rev 5 §1), and this. The tell is always the same:
+a number that is *suspiciously round for its input size*. 0 watersheds for
+485,000 km², 141 roads for three countries, 432 placenames.
+
+So `run_basin` now returns `ok = (rows > 0)`. Zero is legitimate for a park on a
+drainage divide, but for a polygon this size it means the fetch failed, and
+reporting it as unfinished lets the queue retry instead of freezing a wrong
+answer as `done`.
+
+### Watersheds are plural, and the schema said singular
+
+`park_basins` is `PRIMARY KEY (park_id, kind)`, so it can only ever hold **one
+upstream polygon per area: the union**. That was fine for "how much land drains
+through here" and destroyed everything else — a union of separate watersheds
+cannot say which river carries which lobe, so the map could draw one amorphous
+MultiPolygon and nothing more. CAF_Chinko drains via *both* the Chinko and the
+Mbari; the popup said "the watershed", singular, for the majority of parks.
+
+`park_basin_parts` (migration 044) keeps one row per outlet watershed, with the
+river name. **Additive on purpose**: `park_basins` keeps its merged row, every
+existing reader keeps working, and the summary areas still come from the union
+(they must — overlapping lobes would double-count). Readers prefer parts and
+fall back to merged, so a park fetched before 044 degrades rather than breaks.
+
+```bash
+curl -s "localhost:8000/api/parks/CAF_Chinko/features?type=basin&kind=upstream&pwd=test2026" \
+  | jq '[.features[].properties|{name,area_km2}]'   # "Mbari basin", "Chinko basin"
+curl -s ".../features?type=basin&merged=1&..."      # the old single union
+python3 scripts/check_basin_coverage.py             # `wsh` column = parts per park
+```
+
+Backfilling parts for a park already fetched is **free** — every mghydro and
+river-runner response is in `http_cache`, so a re-run replays from cache. Which
+is also why `--skip-existing` now intersects with "has parts": a merged row
+without parts is a pre-044 fetch and *should* be re-run.
+
+Two outlet-selection bugs fell out of looking at this:
+
+1. **`ORDER BY ord_flow` ranked every ditch above every trunk river.**
+   HydroRIVERS `ord_flow` is a discharge class where *lower* = more water. The
+   OSM-derived rows `scripts/osm_hydro.py` writes have no discharge at all and
+   store **0** there, plus a tag-derived `stream_order` where *higher* = bigger.
+   Two incompatible encodings in one column, sorted as one. On XSA that is
+   10,288 of 18,927 rows sorting first — the outlet ranking was noise.
+   `_discharge_rank()` unifies them.
+2. **A fixed `MAX_OUTLETS = 3` under-covers by construction.** Drainage exits
+   scale with perimeter; three is right for a park and wrong by an order of
+   magnitude for an AOI. `outlet_budget()` scales with area (one per ~12,000
+   km², clamped to 24), so XSA asks about 24 and a small park still asks 3.
+
+And one efficiency fix: `pick_outlets` sampled the DEM for **every** candidate
+before thinning — 18,927 COG reads to choose 24 points. Thin first, sample the
+survivors.
+
+---
+
+## 0b. The `ABS()` bug class was still live in five more places
+
+rev 5 §4.0 said "grep for the bug class, not the bug". Doing that found the
+non-sargable `ABS(<indexed col> - ?)` pattern in the **Go** classifiers, which
+is where it hurt most, because they run on every nightly refresh and every
+`/api/refresh-park`:
+
+| file | called | measured |
+|---|---|---|
+| `settlement_classifier.go` fire counts | 2× per settlement × 10,390 | **19.8 s → 0.02 s** (~1000×) |
+| `settlement_classifier.go` seasonality | 1× per settlement | same shape |
+| `settlement_classifier.go` deforest sum | 1× per settlement | `idx_de_park` restored |
+| `deforestation_classifier.go` fire correlation | 2× per event × 221,277 | ~1000× |
+| `rebuild_events_from_polygons.py` `_get_fire_density` | per cluster | 115× (as §0 rev 5) |
+| `turbidity.go`, `upload.go` | per call | `idx_settlements_location` restored |
+
+End to end: `POST /api/refresh-park?park=CMR_Nki` reclassifies 79 settlements in
+**6.6 s**. At ~40 s of full-table scan per settlement that was ~50 minutes of
+CPU, holding a connection, every time anyone pressed refresh — and the annual
+`PrecomputeAllClassifications` did it for all 10,390.
+
+**The signature to grep for**, since it will happen again:
+
+```bash
+grep -rn 'ABS([a-z_]* - ?)' srv/ scripts/ analysis/
+```
+
+`ABS()` in a **SELECT** list is fine (`gpx_learner.go` uses it for an
+approximate distance *sort* over rows an indexed BETWEEN already selected).
+Only a WHERE term on an indexed column matters. Same for `SUBSTR(acq_date,...)`
+— fine when it filters rows the lat/lon bounds already narrowed, fatal as the
+only predicate.
+
+Also done from rev 5 §4.0: `rebuild_settlements_for_park` now takes
+`on_batch`/`batch` and commits every 200 clusters, the mirror of
+`rebuild_deforestation_for_park`. The AOI's `ghsl` unit passes a callback that
+reports progress and raises `Interrupted`. The v5 fire chain is the last long
+writer without it.
+
+---
+
+## 0c. The popup fetched its own infrastructure from `/api/parks/`
+
+`fetchPopupRoadData()` hardcoded four `/api/parks/{id}/...` URLs. For an AOI,
+`ParkIDMiddleware` 404s all of them, so the popup's whole Roads/Rivers/Places
+*and watershed* section was empty for an AOI whose rows exist under its bare id.
+Fixed with `apiBase(id)` — the rule §3 already states. `stats` stays
+park-only deliberately (§2: no per-protected-area averages over 485,000 km²)
+and is now skipped rather than fetched-and-404'd.
+
+---
+
+## 0d. archive works — the earlier "blocker" was a non-sargable ABS()
 
 **`archive` works. It was never a handler bug, and the fix was one SQL
 predicate.** rev 4 spent a session concluding that
@@ -32,7 +163,7 @@ polygons that is hours of CPU inside one transaction — which is why every
 user-initiated write on the deployment returned 500, and why
 `daily_park_refresh` had been dying nightly with `database is locked`.
 
-With the predicate fixed, the whole §0 verification sequence passes **in 17 ms**
+With the predicate fixed, the whole verification sequence passes **in 17 ms**
 on an idle database:
 
 ```bash
@@ -95,24 +226,21 @@ path, write path, queue, exports, animation and the star report are all live.
 python3 scripts/aoi_runner.py --status
 ```
 
-Every dataset has a runner and every one but `hansen` is `done` for XSA:
+Every dataset has a runner and every one is `done` for XSA:
 3.18M detections → 38,725 trajectories, 2.23M GFW alerts → 696 events,
-74,904 built-up polygons → 1,552 settlements, 3,169 waterbodies, 11,370 rivers
-+ 2,530 lakes, 3 country PBFs. `basin` returns **0 rows and that is correct** —
-a 485,000 km² polygon has no single watershed.
+76,903 Hansen loss polygons → 7,079 events, 74,904 built-up polygons → 1,552
+settlements, 3,169 waterbodies, 11,370 rivers + 2,530 lakes, 3 country PBFs,
+and **22 upstream watersheds + 24 downstream traces** (§0 — this was 0 until
+rev 6).
 
-`hansen` (Hansen loss 2001–2023, 20 windows × ~50 s) finished its ingest
-(76,903 loss polygons, cursor `{"i": 20}`) and its clustering step now runs at a
-usable speed (§0). Check it landed:
+⚠️ Note the deforestation-events column is **`polygon_ids`**, not `event_id` —
+rev 4's snippet named a column that does not exist, so it errored rather than
+reporting 0.
 
 ```bash
 sqlite3 db.sqlite3 "SELECT count(*) FROM deforestation_events
   WHERE park_id='XSA_Study_Area' AND polygon_ids LIKE 'deforest_hansen_%'"
-python3 scripts/aoi_runner.py --status | grep hansen   # 'done' = it committed
 ```
-
-⚠️ Note the column is **`polygon_ids`**, not `event_id` — rev 4's snippet named
-a column that does not exist, so it errored rather than reporting 0.
 
 ### The `osm` unit was writing where nothing reads (fixed 2026-08-07)
 
@@ -134,6 +262,9 @@ any stragglers, and `DELETE` now removes both spellings — plus
 `roads_heigit`/`park_rivers_hydro`/`park_lakes_hydro`/`park_waterbodies`, which
 were **never in the delete list at all** (an AOI delete left them behind).
 
+⚠️ `park_basins`/`park_basin_parts`/`park_basin_rivers` are now written for an
+AOI too — check they are in the delete list before shipping a new AOI.
+
 ### `enrich_park_infra` has three modes, and the default is wrong for an AOI
 
 It used to be "skip if this key already has rows", which is right for the
@@ -149,7 +280,7 @@ ingested only its first country. Now:
 
 XSA spans 3 countries and had 432 placenames for 485,000 km²; that was the tell.
 
-**Never run two units at once.****Never run two units at once.** SQLite has one writer and the v5 chain holds
+**Never run two units at once.** SQLite has one writer and the v5 chain holds
 it for minutes; that stranded three leases on 2026-08-07. Dead-pid leases
 self-heal (`--heal`, and at the start of every run).
 `python3 scripts/test_aoi_resume.py` proves interruption is a normal exit — run
@@ -164,6 +295,10 @@ curl -s "localhost:8000/api/aois?pwd=test2026"    | jq '.count'    # 0
 curl -s "localhost:8000/api/aois?pwd=$AOI_OWNER_PWD" | jq '.count'    # 1
 curl -s "localhost:8000/api/parks/XSA_Study_Area/stats?pwd=$AOI_OWNER_PWD" \
   -o /dev/null -w '%{http_code}\n'                                 # 404 (park route must 404)
+curl -s "localhost:8000/api/aois/XSA_Study_Area/basin?pwd=test2026" \
+  -o /dev/null -w '%{http_code}\n'                                 # 404 (not the owner)
+curl -s "localhost:8000/api/aois/XSA_Study_Area/basin?pwd=$AOI_OWNER_PWD" \
+  | jq '{upstream_count, downstream_count}'                        # 22, 24
 curl -s "localhost:8000/api/notifications?type=aoi_progress&pwd=test2026" \
   | jq '.notifications|length'                                     # 0  <- privacy
 # the AOI is visible to its own animation and to nobody else's
@@ -185,16 +320,14 @@ blocked by the writer lock on three attempts across two sessions, so it is now
 a **best-effort startup fixup**, `reownSystemAOIProgress()` in `srv/aoi.go`,
 called from `NewServer` next to `SeedPrincipals`.
 
-It was briefly a migration (044) and that was **wrong**: a migration that
-cannot get a write slot fails `NewServer`, and systemd restart-looped the whole
-service. A privacy tidy-up must never be able to take the site down. As a
-warn-and-continue fixup it converges on the first boot that gets a slot.
-Confirm:
-
-```bash
-curl -s "localhost:8000/api/notifications?type=aoi_progress&pwd=test2026" \
-  | jq '.notifications|length'                                     # 0
-```
+It was briefly a migration (044, since reused for basin parts) and that was
+**wrong**: a migration that cannot get a write slot fails `NewServer`, and
+systemd restart-looped the whole service. A privacy tidy-up must never be able
+to take the site down. As a warn-and-continue fixup it converges on the first
+boot that gets a slot. Highest applied migration is **044**
+(`044-basin-parts.sql`); if you find a `044-aoi-progress-reown.sql` on disk,
+delete it — when a migration is downgraded to a startup fixup, **delete the
+file**, because a doc note is not a revert.
 
 ---
 
@@ -393,23 +526,36 @@ tell, because the id did not change.
 
 ## 4. What is left, in priority order
 
-### 4.0 ~~Verify `archive`~~ — done (§0)
+### 4.0 ~~Verify `archive`~~, ~~grep the ABS bug class~~, ~~yield in the settlement writer~~ — done (§0b)
 
-Verified end to end on an idle database, 17 ms. The batch writers now yield
-(`on_batch`, every 200 events). What is *not* done: the same treatment for the
-other long writers — `rebuild_settlements_for_park` and the v5 fire chain still
-hold the writer for their whole run. Neither has bitten yet because neither is
-CPU-pathological the way `_get_fire_density` was, but the pattern to copy is in
-`rebuild_deforestation_for_park`.
+The grep found five more sites and they are fixed and measured (§0b). The batch
+writers that yield are now `rebuild_deforestation_for_park` **and**
+`rebuild_settlements_for_park` (`on_batch`, every 200). **Still not done: the v5
+fire chain**, the last long writer that holds SQLite's only writer for its whole
+run. Pattern to copy is in either rebuilder.
 
-**Grep for the bug class, not the bug.** `ABS(<indexed col> - ?)` is the
-signature; there may be more. Same for `strftime(acq_date)` and
-`substr(acq_date,...)` in a WHERE clause.
+Keep grepping after any new query: `grep -rn 'ABS([a-z_]* - ?)' srv/ scripts/`.
+`ABS()` in a SELECT list is fine; only a WHERE term on an indexed column is
+fatal. Same for `strftime(acq_date)`/`substr(acq_date,…)` as a *sole* predicate.
 
-### 4.1 Let `hansen` finish
+### 4.1 ~~Let `hansen` finish~~ — done
 
-Ingest is complete; clustering is running at a usable speed now. Just confirm
-`--status` reaches `done` and the event count settles.
+76,903 loss polygons → 7,079 events, `done`.
+
+### 4.1b Finish the park-wide `park_basin_parts` backfill
+
+`XSA_Study_Area` and `CAF_Chinko` are split (§0). A run over all 163 parks was
+started and is *not* finished — the new outlet ranking picks different points, so
+those are cache misses at the 5 s courtesy pace (~30–60 min for the set). It is
+resumable and free to re-run:
+
+```bash
+tmux new-session -d 'cd /home/exedev/5mp && python3 scripts/fetch_park_basins.py --all'
+python3 scripts/check_basin_coverage.py   # `wsh` column; footer counts unsplit parks
+```
+
+Until then those parks fall back to the merged union, which is the pre-rev-6
+behaviour — degraded, not broken.
 
 ### 4.2 ~~Confirm the aoi_progress re-key ran~~ — done
 
@@ -497,6 +643,16 @@ Not reachable today (ids are disjoint). Key them `aoi:<id>:<type>`.
 * Deforestation from Hansen for ≤2023 — yes. Cutover: Hansen ≤2023
   (`deforest_hansen_`), GFW alerts ≥2024 (`deforest_gfw_`).
   `HANSEN_MAX_YEAR = 2023` deliberately stops short of Hansen's own 2024 band.
+* One merged watershed polygon per area — no. `park_basins` can only hold the
+  union (PK `(park_id, kind)`), and a union cannot say which river carries which
+  lobe. `park_basin_parts` keeps one row per outlet; readers prefer it and fall
+  back to merged. `?merged=1` asks for the union explicitly.
+* "0 basin rows for a huge polygon is correct" — no, that was rev 5 believing a
+  silent no-op (§0). XSA has 22 watersheds. A unit that produces nothing for a
+  large input must report unfinished, not `done`.
+* Ranking outlets by `ord_flow` alone — no. HydroRIVERS: lower = bigger. OSM
+  rows (`osm_hydro.py`) store 0 there and put their band in `stream_order`,
+  higher = bigger. Use `_discharge_rank()`.
 * HydroSHEDS fetched unattended — impossible, `data.hydrosheds.org` 403s every
   request behind Cloudflare. `scripts/osm_hydro.py` ships instead (negated OSM
   ids, tag-derived `stream_order` band). It is **not** the `basin` unit:
@@ -528,6 +684,9 @@ Not reachable today (ids are disjoint). Key them `aoi:<id>:<type>`.
 | `srv/aoi_estimate.go` | measured cost model (test pins 252 GFW / 570 FIRMS / 4 GHSL) |
 | `srv/static/aoi_draw.js` | polygon editor + live estimate; `startEdit` forks |
 | `srv/static/aoi_progress.js` | the multi-day notification card |
+| `scripts/fetch_park_basins.py` | watersheds per outlet; `--aoi` (an AOI is not in keystones) |
+| `srv/park_basins.go` | `loadBasinParts` = all watersheds; merged is the fallback |
+| `db/migrations/044-basin-parts.sql` | applied 2026-08-07; additive to `park_basins` |
 | `db/migrations/042-aoi-versions.sql` | applied 2026-08-06 |
 | `db/migrations/043-deforestation-pixel-count.sql` | applied 2026-08-07 |
 | `srv/aoi.go` `reownSystemAOIProgress()` | closes the `SYSTEM`-keyed notification leak; startup fixup, never a migration |

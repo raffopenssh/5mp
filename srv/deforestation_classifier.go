@@ -125,23 +125,30 @@ func (s *Server) loadDeforestContext(parkID string, df *ClassifiedDeforestation)
 		df.IsNearSettlement = settDist.Float64 < 5
 	}
 	
-	// Fire correlation - same year
+	// Fire correlation, same year then prior year.
+	//
+	// ⚠️ `latitude BETWEEN ? AND ?`, never `ABS(latitude - ?) < ?`: the ABS form
+	// is non-sargable, drops idx_fire_location and covering-scans 42.9M rows
+	// (~1000x slower, measured 2026-08-07). Two calls per deforestation event
+	// across 221k events. Same bug class as _get_fire_density
+	// (docs/AOI_HANDOVER_2.md §0/§4.0).
 	yearStart := fmt.Sprintf("%d-01-01", df.Year)
 	yearEnd := fmt.Sprintf("%d-12-31", df.Year)
 	s.DB.QueryRow(`
 		SELECT COUNT(*) FROM fire_detections
-		WHERE ABS(latitude - ?) < 0.1 AND ABS(longitude - ?) < 0.1
+		WHERE latitude BETWEEN ? AND ? AND longitude BETWEEN ? AND ?
 		AND acq_date BETWEEN ? AND ?
-	`, df.Lat, df.Lon, yearStart, yearEnd).Scan(&df.FiresSameYear)
+	`, df.Lat-0.1, df.Lat+0.1, df.Lon-0.1, df.Lon+0.1,
+		yearStart, yearEnd).Scan(&df.FiresSameYear)
 	
-	// Fire correlation - prior year
 	priorStart := fmt.Sprintf("%d-01-01", df.Year-1)
 	priorEnd := fmt.Sprintf("%d-12-31", df.Year-1)
 	s.DB.QueryRow(`
 		SELECT COUNT(*) FROM fire_detections
-		WHERE ABS(latitude - ?) < 0.1 AND ABS(longitude - ?) < 0.1
+		WHERE latitude BETWEEN ? AND ? AND longitude BETWEEN ? AND ?
 		AND acq_date BETWEEN ? AND ?
-	`, df.Lat, df.Lon, priorStart, priorEnd).Scan(&df.FiresPriorYear)
+	`, df.Lat-0.1, df.Lat+0.1, df.Lon-0.1, df.Lon+0.1,
+		priorStart, priorEnd).Scan(&df.FiresPriorYear)
 	
 	// Fire ratio
 	if df.AreaKm2 > 0 {
