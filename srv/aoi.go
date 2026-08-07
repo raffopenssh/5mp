@@ -345,6 +345,62 @@ func (s *Server) GetAOI(id string, principalID int64, withGeometry bool) (*AOI, 
 
 type aoiCtxKey struct{}
 
+// reownSystemAOIProgress re-keys stale 'SYSTEM'-owned aoi_progress rows.
+//
+// scripts/aoi_runner.py originally wrote its per-run progress notification with
+// notify_status()'s default park_id='SYSTEM'. That is a privacy hole, not an
+// untidiness: aoiNotifSQLFilter() decides an AOI notification's visibility from
+// park_id, so 'SYSTEM' was treated as an ordinary park notification and served
+// to every principal -- message included, and that message named the AOI and
+// its ingest progress. The fact that someone is watching a piece of ground is
+// as much the secret as the polygon (docs/AOI_HANDOVER_2.md §2).
+//
+// The writer was fixed to pass park_id=<aoi id>; rows written before that are
+// still there. This runs at startup rather than as a hand-run statement because
+// "run this UPDATE" was carried through two handovers without ever executing --
+// blocked each time by SQLite's single writer, which the AOI Hansen unit holds
+// for 35+ minutes.
+//
+// It is deliberately NOT a migration. A migration that cannot get a write slot
+// fails NewServer, and systemd then restart-loops the whole app: a privacy
+// tidy-up must never be able to take the site down. Best effort, retried every
+// boot, converging the first time the lock is free.
+//
+// The id is recovered from the message, which the runner prefixed with
+// '<aoi_id>/<dataset>: ...'. Rows whose prefix matches no known AOI are deleted:
+// an aoi_progress row we cannot attribute cannot be shown safely, and it is a
+// note about work that finished long ago.
+func (s *Server) reownSystemAOIProgress() error {
+	var n int
+	if err := s.DB.QueryRow(`SELECT COUNT(*) FROM notifications
+		WHERE notification_type='aoi_progress' AND park_id='SYSTEM'`).Scan(&n); err != nil {
+		return err
+	}
+	if n == 0 {
+		return nil
+	}
+	if _, err := s.DB.Exec(`UPDATE notifications
+		   SET park_id = (SELECT a.id FROM aois a
+		                   WHERE notifications.message LIKE a.id || '/%'),
+		       message = replace(message,
+		                   (SELECT a.id || '/' FROM aois a
+		                     WHERE notifications.message LIKE a.id || '/%'), '')
+		 WHERE notification_type='aoi_progress' AND park_id='SYSTEM'
+		   AND EXISTS (SELECT 1 FROM aois a
+		                WHERE notifications.message LIKE a.id || '/%')`); err != nil {
+		return err
+	}
+	res, err := s.DB.Exec(`DELETE FROM notifications
+		WHERE notification_type='aoi_progress' AND park_id='SYSTEM'`)
+	if err != nil {
+		return err
+	}
+	dropped, _ := res.RowsAffected()
+	slog.Info("re-keyed stale aoi_progress notifications",
+		"found", n, "unattributable_dropped", dropped)
+	return nil
+}
+
 // AOIMiddleware validates the id in /api/aois/{id}/... and rejects malformed
 // ones. Visibility itself is resolved per handler via GetAOI (which needs the
 // DB row anyway); this middleware exists for the same reason

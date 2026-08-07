@@ -123,8 +123,14 @@ to AOI** — verified by stashing. Do not chase it as an AOI regression.
 AOI id since rev 3, but rows written before that were `park_id='SYSTEM'` and
 therefore leaked the AOI's name to every principal. The manual UPDATE was
 blocked by the writer lock on three attempts across two sessions, so it is now
-**migration 044** (`044-aoi-progress-reown.sql`) and applies itself at the next
-startup that can get a write slot. Confirm:
+a **best-effort startup fixup**, `reownSystemAOIProgress()` in `srv/aoi.go`,
+called from `NewServer` next to `SeedPrincipals`.
+
+It was briefly a migration (044) and that was **wrong**: a migration that
+cannot get a write slot fails `NewServer`, and systemd restart-looped the whole
+service. A privacy tidy-up must never be able to take the site down. As a
+warn-and-continue fixup it converges on the first boot that gets a slot.
+Confirm:
 
 ```bash
 curl -s "localhost:8000/api/notifications?type=aoi_progress&pwd=test2026" \
@@ -354,10 +360,12 @@ python3 scripts/aoi_runner.py --aoi XSA_Study_Area --dataset hansen --minutes 90
 `seed_datasets()` is `INSERT OR IGNORE`, so an existing AOI picks up newly
 added datasets by re-seeding.
 
-### 4.2 Confirm migration 044 applied
+### 4.2 Confirm the aoi_progress re-key ran
 
-Was §4.2 "run this SQL by hand" in rev 2 and rev 3, and never got run — hence
-it is a migration now. One check, in §1.
+Was §4.2 "run this SQL by hand" in rev 2 and rev 3 and never got run, so it is
+code now (`reownSystemAOIProgress`). One check, in §1. It had still not found a
+free write slot when rev 4 ended — the Hansen clustering step held the writer
+for the whole session.
 
 ### 4.3 Verify the editor by hand
 
@@ -460,5 +468,5 @@ Not reachable today (ids are disjoint). Key them `aoi:<id>:<type>`.
 | `srv/static/aoi_progress.js` | the multi-day notification card |
 | `db/migrations/042-aoi-versions.sql` | applied 2026-08-06 |
 | `db/migrations/043-deforestation-pixel-count.sql` | applied 2026-08-07 |
-| `db/migrations/044-aoi-progress-reown.sql` | closes the `SYSTEM`-keyed notification leak |
+| `srv/aoi.go` `reownSystemAOIProgress()` | closes the `SYSTEM`-keyed notification leak; startup fixup, never a migration |
 | `docs/PLAN_AOI_OVERLAY.md` | design rationale + measured facts |

@@ -595,6 +595,13 @@ database it 500s because `rebuild_deforestation_for_park` holds SQLite's single
 writer for 35+ minutes. `docs/AOI_HANDOVER_2.md` §0 — the fix is in the batch
 writer, not the handler.
 
+Old `aoi_progress` rows keyed `park_id='SYSTEM'` leaked every private AOI's name
+to every principal (`aoiNotifSQLFilter` reads visibility from `park_id`). Fixed
+by `reownSystemAOIProgress()`, a **warn-and-continue startup fixup** in
+`srv/aoi.go` — emphatically not a migration: as one it failed `NewServer` when
+the write lock was held and systemd restart-looped the service. A privacy
+tidy-up must never be able to take the site down.
+
 The runner treats **interruption as its normal exit**: out of time, Ctrl-C or
 SIGTERM all release the lease and resume next run with no cooldown, dead-pid
 leases self-heal, and bookkeeping writes wait out the v5 chain's long hold on
