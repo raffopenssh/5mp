@@ -254,7 +254,15 @@ def enrich_park_infra(park_pbf, park_id, force=False, replace=False,
                 ptype = "mountain" if p.get("natural") == "peak" else "hill"
                 rows.append((park_id, ptype, name, la, lo,
                              f.get("id", ""), json.dumps(p, ensure_ascii=False)))
-            if force:
+            if force and not rows:
+                # An empty export is an osmium failure, not "this park has no
+                # villages" — deleting on it would turn a transient error into
+                # permanent data loss (AGENTS.md: a unit that produces nothing
+                # for a large input must report unfinished, not freeze a wrong
+                # answer). Keep what we have and let the next rotation retry.
+                print(f"  WARN empty places export, keeping existing: {park_id}",
+                      file=sys.stderr)
+            elif force:
                 db.execute("DELETE FROM osm_places WHERE park_id=?", (park_id,))
             elif append and rows:
                 have = {r[0] for r in db.execute(
@@ -281,7 +289,10 @@ def enrich_park_infra(park_pbf, park_id, force=False, replace=False,
                              p.get("highway"), (p.get("surface") or "").split(";")[0],
                              round(length, 2), json.dumps(f["geometry"]),
                              dl_class, passability))
-            if force:
+            if force and not rows:
+                print(f"  WARN empty roads export, keeping existing: {park_id}",
+                      file=sys.stderr)
+            elif force:
                 db.execute("DELETE FROM roads_heigit WHERE park_id=?", (park_id,))
             elif append and rows:
                 have = {r[0] for r in db.execute(
@@ -296,6 +307,116 @@ def enrich_park_infra(park_pbf, park_id, force=False, replace=False,
                 print(f"  enriched roads_heigit: {park_id} +{len(rows)}", file=sys.stderr)
     finally:
         db.close()
+
+
+# --------------------------------------------------------------------------
+# Full-detail refresh: every park at Geofabrik level, one country per run.
+#
+# `--enrich-missing` only ever fired for a park with ZERO rows, so the 159
+# parks carrying the old HeiGIT import (major roads only: primary/secondary/
+# trunk, no track/path/residential) were permanently "not missing" and stayed
+# at that detail. Only 5 parks had a single track or path, while an AOI
+# ingested from the same PBFs has 6,458 paths and 3,642 tracks -- the visible
+# mismatch between a park outline and the AOI drawn over it.
+#
+# A country PBF is ~50-750 MB and is the whole cost, so the unit of work is a
+# COUNTRY, not a park: download once, extract every park of that country, then
+# delete. 33 countries, one per nightly run, so the corpus turns over monthly.
+# State lives in a small json rather than a table -- it is scheduling
+# bookkeeping, not data, and it must survive a db restore.
+
+STATE_PATH = "data/osm_enrich_state.json"
+
+
+def _utcnow():
+    from datetime import datetime, timezone
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _load_state():
+    try:
+        return json.load(open(STATE_PATH))
+    except Exception:
+        return {}
+
+
+def _save_state(state):
+    os.makedirs(os.path.dirname(STATE_PATH), exist_ok=True)
+    tmp = STATE_PATH + ".tmp"
+    with open(tmp, "w") as fh:
+        json.dump(state, fh, indent=1, sort_keys=True)
+    os.replace(tmp, STATE_PATH)
+
+
+def _parks_by_country(iso=None):
+    parks = [p for p in json.load(open("data/keystones_with_boundaries.json"))
+             if p.get("geometry")]
+    by_iso = {}
+    for p in parks:
+        c = p["id"].split("_")[0]
+        if c not in GEOFABRIK:
+            continue
+        if iso and c != iso:
+            continue
+        by_iso.setdefault(c, []).append(p)
+    return by_iso
+
+
+def enrich_country(country, parks, buffer_km=50, dry_run=False):
+    """Re-extract every park of one country at full Geofabrik detail.
+
+    force=True on purpose: this is a refresh, not a backfill. The delete is
+    scoped to (park_id) inside enrich_park_infra and each park is committed
+    before the next, so an interrupted run leaves earlier parks correct and
+    the state file simply does not advance."""
+    if dry_run:
+        print(f"{country}: would refresh {len(parks)} parks")
+        return 0
+    pbf, temporary = ensure_pbf(country)
+    done = 0
+    try:
+        for p in parks:
+            print(f"  {p['id']}", file=sys.stderr)
+            try:
+                area = extract_bbox(pbf, p["id"], park_bbox(p, buffer_km))
+            except subprocess.CalledProcessError as ex:
+                print(f"  extract failed {p['id']}: {ex}", file=sys.stderr)
+                continue
+            try:
+                enrich_park_infra(area, p["id"], force=True)
+                done += 1
+            finally:
+                try: os.remove(area)
+                except OSError: pass
+    finally:
+        if temporary:
+            try: os.remove(pbf)
+            except OSError: pass
+    return done
+
+
+def enrich_all(iso=None, buffer_km=50, dry_run=False, rotate=0):
+    """Refresh every park to full Geofabrik detail.
+
+    rotate=N: only the N least-recently-refreshed countries this run (the
+    nightly mode). rotate=0: all of them, which is the ~hours-long one-off.
+    """
+    by_iso = _parks_by_country(iso)
+    if not by_iso:
+        print("no parks match")
+        return
+    state = _load_state()
+    order = sorted(by_iso, key=lambda c: (state.get(c, {}).get("at", ""), c))
+    if rotate:
+        order = order[:rotate]
+    for country in order:
+        parks = by_iso[country]
+        print(f"== {country}: {len(parks)} parks", file=sys.stderr)
+        n = enrich_country(country, parks, buffer_km, dry_run)
+        if dry_run:
+            continue
+        state[country] = {"at": _utcnow(), "parks": n}
+        _save_state(state)
 
 
 # --------------------------------------------------------------------------
@@ -364,13 +485,20 @@ def main():
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--enrich-missing", action="store_true",
                     help="backfill osm_places/roads_heigit for parks with none")
+    ap.add_argument("--enrich-all", action="store_true",
+                    help="refresh EVERY park to full Geofabrik detail")
+    ap.add_argument("--rotate", type=int, default=0, metavar="N",
+                    help="with --enrich-all: only the N stalest countries")
     ap.add_argument("--iso", help="restrict to one ISO3 country prefix")
     ap.add_argument("--buffer-km", type=float, default=50)
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
-    if not args.enrich_missing:
-        ap.error("need --enrich-missing")
-    enrich_missing(args.iso, args.buffer_km, args.dry_run)
+    if args.enrich_all:
+        enrich_all(args.iso, args.buffer_km, args.dry_run, args.rotate)
+    elif args.enrich_missing:
+        enrich_missing(args.iso, args.buffer_km, args.dry_run)
+    else:
+        ap.error("need --enrich-missing or --enrich-all")
 
 
 if __name__ == "__main__":

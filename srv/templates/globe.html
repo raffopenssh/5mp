@@ -674,6 +674,53 @@
         const MAPTILER_KEY = 'dea58ea0389007e386776c4f583f4425';
         const API_HOST = 'five-mp-conservation-effort';
 
+        // ── Geography detail tier ────────────────────────────────────────
+        // How much of the road / river / place network to draw: 'major',
+        // 'main' or 'all'. One global setting, not per-park — the whole point
+        // is that two areas on screen at once agree with each other, which is
+        // exactly what a per-park setting cannot promise.
+        //
+        // 'main' is the default rather than 'all' because 'all' is the corpus,
+        // not the map: an area's footpaths and headwater stubs outnumber its
+        // roads and rivers ~4:1 and bury them. 'all' stays one click away and
+        // rides in the share link, so nothing is hidden, only unstacked.
+        //
+        // A window property (not a `const`): globe.html has several separate
+        // <script> blocks and a bare const in one is invisible to the others.
+        window.geoDetail = 'main';
+        const GEO_DETAIL_DEFAULT = 'main';
+        const GEO_DETAIL_TIERS = ['major', 'main', 'all'];
+        // The layers the tier applies to. Everything else ignores ?detail=.
+        const GEO_DETAIL_LAYERS = ['river', 'road', 'place'];
+
+        // setGeoDetail re-pins every affected layer in place: the user asked
+        // for a different amount of the same thing, so the map should change
+        // under them rather than making them unpin and pin again. Layers that
+        // are not pinned cost nothing — only the popup's counts refresh.
+        async function setGeoDetail(paId, tier) {
+            if (!GEO_DETAIL_TIERS.includes(tier) || tier === window.geoDetail) return;
+            window.geoDetail = tier;
+            // Repaint the segmented control immediately; the refetch below can
+            // take a second on a cold cache and the click must feel instant.
+            document.querySelectorAll('.geo-detail-opt').forEach(b => {
+                b.classList.toggle('active', b.dataset.tier === tier);
+            });
+            const repin = Object.values(window.pinnedLayers || {})
+                .filter(l => GEO_DETAIL_LAYERS.includes(l.type))
+                .map(l => ({ parkId: l.parkId, parkName: l.parkName, type: l.type }));
+            for (const l of repin) {
+                await addPinnedLayer(l.parkId, l.parkName, l.type);
+            }
+            if (repin.length) { updatePinnedIndicator(); }
+            savePinnedToURL();
+            // Counts on the pin buttons are tier-specific, so the open popup's
+            // section is now stale for every area it is showing.
+            document.querySelectorAll('[id^="road-content-"]').forEach(el => {
+                const id = el.id.replace('road-content-', '');
+                if (el.innerHTML.trim()) fetchPopupRoadData(id);
+            });
+        }
+
         // Get current password from URL
         function getPwd() {
             return new URLSearchParams(window.location.search).get('pwd') || '';
@@ -10293,19 +10340,52 @@
                 
                 let html = '';
                 
+                // Detail tier — one control for all three geography layers.
+                //
+                // "All" is the corpus: for XSA_Study_Area that is 6,458
+                // footpaths and 14,011 headwater stubs, a blue smear at
+                // continental zoom that hides the trunk roads inside it, and
+                // the reason a park outline and an AOI drawn over it looked
+                // like different maps. The tier is a stable WHERE clause, not
+                // a zoom-dependent cap, so a share link reproduces the picture.
+                //
+                // One selector, not three: the tiers mean the same thing for
+                // rivers, roads and places, and three selectors would be three
+                // rows of chrome above three buttons.
+                const dc = s.detail_counts || {};
+                const tierTotal = t => ((dc.river||{})[t] || 0) + ((dc.road||{})[t] || 0) + ((dc.place||{})[t] || 0);
+                html += `<div class="geo-detail-seg" role="group" aria-label="Map detail">`;
+                html += `<span class="geo-detail-label">Detail</span>`;
+                [['major', 'Major', 'Named rivers, trunk & primary roads, towns and cities'],
+                 ['main', 'Main', 'What you could drive or paddle: through-roads, order-3+ rivers, villages'],
+                 ['all', 'All', 'Every mapped feature, including footpaths, tracks, hamlets and headwater streams']
+                ].forEach(([tier, label, tip]) => {
+                    const off = tierTotal(tier) === 0;
+                    html += `<button class="geo-detail-opt${geoDetail === tier ? ' active' : ''}" data-tier="${tier}"
+                        ${off ? 'disabled' : ''} title="${escapeHtml(tip)}"
+                        onclick="event.stopPropagation(); setGeoDetail('${paId}', '${tier}')">${label}</button>`;
+                });
+                html += `</div>`;
+
                 // Three pin buttons only - clean and simple
                 html += '<div class="road-pin-buttons" style="display: flex; gap: 8px; padding: 4px 0;">';
-                
-                html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="river" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${escapeHtml(parkName)}', 'river', this)" style="flex: 1;${s.total_rivers === 0 ? 'opacity:0.4;cursor:default;' : ''}" ${s.total_rivers === 0 ? 'disabled' : ''}>
-                    <span style="color: #3b82f6;">∿</span> Rivers ${s.total_rivers || 0}
+
+                // Counts follow the selected tier: the number on the button is
+                // the number of features the button draws.
+                const nRivers = dc.river ? (dc.river[geoDetail] || 0) : (s.total_rivers || 0);
+                const nRoads = dc.road ? (dc.road[geoDetail] || 0) : (s.total_roads || 0);
+                const nPlaces = dc.place ? (dc.place[geoDetail] || 0) : (s.total_places || 0);
+
+                html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="river" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${escapeHtml(parkName)}', 'river', this)" style="flex: 1;${nRivers === 0 ? 'opacity:0.4;cursor:default;' : ''}" ${nRivers === 0 ? 'disabled' : ''}>
+                    <span style="color: #3b82f6;">∿</span> Rivers ${nRivers}
                 </button>`;
-                
-                html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="road" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${escapeHtml(parkName)}', 'road', this)" style="flex: 1;${s.total_roads === 0 ? 'opacity:0.4;cursor:default;' : ''}" ${s.total_roads === 0 ? 'disabled' : ''}>
-                    <span style="color: #60a5fa;">═</span> Roads ${s.total_roads || 0}
+
+                html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="road" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${escapeHtml(parkName)}', 'road', this)" style="flex: 1;${nRoads === 0 ? 'opacity:0.4;cursor:default;' : ''}" ${nRoads === 0 ? 'disabled' : ''}>
+                    <span style="color: #60a5fa;">═</span> Roads ${nRoads}
                 </button>`;
-                
-                html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="place" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${escapeHtml(parkName)}', 'place', this)" style="flex: 1;${s.total_places === 0 ? 'opacity:0.4;cursor:default;' : ''}" ${s.total_places === 0 ? 'disabled' : ''}>
-                    <span style="color: #a855f7;">●</span> Places ${s.total_places || 0}
+
+                html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="place" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${escapeHtml(parkName)}', 'place', this)" style="flex: 1;${nPlaces === 0 ? 'opacity:0.4;cursor:default;' : ''}" ${nPlaces === 0 ? 'disabled' : ''}>
+                    <span style="color: #a855f7;">●</span> Places ${nPlaces}
                 </button>`;
                 
                 // Learned infrastructure (airstrips) - show only if there are approved ones
@@ -14375,6 +14455,9 @@
             }).join(',');
             params.set('pinned', pinned);
         }
+        if (window.geoDetail && window.geoDetail !== GEO_DETAIL_DEFAULT) {
+            params.set('detail', window.geoDetail);
+        }
         
         // Include map view
         const center = map.getCenter();
@@ -16212,7 +16295,11 @@ ${starredItems.narratives.map(n => {
     // ========== ADMIN PANEL ==========
     
     // ===== Pinned GeoJSON Layers =====
-    let pinnedLayers = {}; // { 'parkId_type': { parkId, parkName, type, features, layerId } }
+    // `var`, not `let`: globe.html has several separate <script> blocks and a
+    // top-level `let` is invisible to the others, while a top-level `var`
+    // becomes a window property. setGeoDetail() (declared far above, in the
+    // early block) needs to read the pin set to re-pin at the new tier.
+    var pinnedLayers = {}; // { 'parkId_type': { parkId, parkName, type, features, layerId } }
     let activeHoverPopups = []; // Track all active hover popups for cleanup
     
     function getPinKey(parkId, type) {
@@ -17095,7 +17182,13 @@ ${starredItems.narratives.map(n => {
                 });
                 geojson = { type: 'FeatureCollection', features };
             } else {
-                const response = await fetch(`${apiBase(parkId)}/features?type=${featureType}${dateParams}&limit=5000&pwd=${window.getPwd() || ''}`);
+                // Geography layers carry the detail tier; everything else
+                // ignores it server-side, so it is only sent where it means
+                // something (an unexpected param in a share link reads as a
+                // setting that exists).
+                const detailParam = GEO_DETAIL_LAYERS.includes(featureType)
+                    ? `&detail=${window.geoDetail}` : '';
+                const response = await fetch(`${apiBase(parkId)}/features?type=${featureType}${dateParams}${detailParam}&limit=5000&pwd=${window.getPwd() || ''}`);
                 if (!response.ok) throw new Error('Failed to fetch features');
                 geojson = await response.json();
             }
@@ -17697,8 +17790,13 @@ ${starredItems.narratives.map(n => {
                     html += `<span class="chip-remove" onclick="event.stopPropagation(); removeRealtimeFireLayer('${p.key}')" title="Remove">×</span>`;
                     html += `</span>`;
                 } else if (p.isBulk) {
-                    // Bulk layer (all of type) - click to fly, × to remove
-                    html += `<span class="pinned-layer-chip ${p.type}" style="cursor:pointer;" onclick="event.stopPropagation(); flyToPinnedLayer('${p.key}')" title="${typeLabels[p.type] || p.type}: ${count} features - Click to fly to">`;
+                    // Bulk layer (all of type) - click to fly, × to remove.
+                    // A geography layer names its tier in the tooltip: the
+                    // count alone cannot say whether 255 roads is the whole
+                    // network or the drivable subset of 3,164.
+                    const tierNote = GEO_DETAIL_LAYERS.includes(p.type)
+                        ? ` (${window.geoDetail} detail)` : '';
+                    html += `<span class="pinned-layer-chip ${p.type}" style="cursor:pointer;" onclick="event.stopPropagation(); flyToPinnedLayer('${p.key}')" title="${typeLabels[p.type] || p.type}: ${count} features${tierNote} - Click to fly to">`;
                     html += `<span class="chip-icon">${icon}</span>`;
                     html += `<span class="chip-count">${count}</span>`;
                     html += `<span class="chip-remove" onclick="event.stopPropagation(); removePinnedLayer('${p.key}')" title="Remove">×</span>`;
@@ -18064,6 +18162,16 @@ ${starredItems.narratives.map(n => {
         } else {
             url.searchParams.delete('pinned');
         }
+
+        // The tier is a property of the view, not of one pin: it applies to
+        // every geography layer at once, so it is one param rather than a
+        // suffix on each entry of `pinned`. Omitted at the default so an
+        // ordinary link stays short.
+        if (window.geoDetail && window.geoDetail !== GEO_DETAIL_DEFAULT) {
+            url.searchParams.set('detail', window.geoDetail);
+        } else {
+            url.searchParams.delete('detail');
+        }
         
         window.history.replaceState({}, '', url);
     }
@@ -18071,7 +18179,13 @@ ${starredItems.narratives.map(n => {
     function restorePinnedFromURL() {
         const params = new URLSearchParams(window.location.search);
         const pinned = params.get('pinned');
-        
+
+        // Read the tier BEFORE any layer is fetched: addPinnedLayer() sends
+        // window.geoDetail, so setting it afterwards would restore the link's
+        // pins at the wrong detail and only correct itself on the next click.
+        const detail = params.get('detail');
+        if (detail && GEO_DETAIL_TIERS.includes(detail)) window.geoDetail = detail;
+
         if (!pinned) return;
         
         const parkIds = new Set();

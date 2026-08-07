@@ -128,15 +128,32 @@ GET /api/parks/{id}/species
 
 ### Get Park Features (GeoJSON)
 ```
-GET /api/parks/{id}/features?type={type}&start={date}&end={date}&limit={n}
+GET /api/parks/{id}/features?type={type}&start={date}&end={date}&limit={n}&detail={tier}
 ```
 
-**Types:** `fire_trajectory`, `deforestation`, `settlement`, `road`, `water`, `waterbody`
+**Types:** `fire_trajectory`, `deforestation`, `settlement`, `road`, `river`, `place`, `water`, `waterbody`
 
 **Parameters:**
 - `type` - Feature type (required)
 - `start`, `end` - Date range filter (for fire_trajectory, deforestation)
-- `limit` - Max features (default: 1000)
+- `limit` - Max features (default: 1000). The geography layers (`river`,
+  `road`, `place`, `waterbody`) default to the WHOLE layer instead; only a
+  limit below 5000 truncates them.
+- `detail` - `major` | `main` | `all` (default `all`). Applies to `river`,
+  `road` and `place`; ignored elsewhere. An unknown value is `all`, never an
+  error — old share links predate the param.
+
+**Detail tiers** are a stable WHERE clause, not a zoom-dependent cap, so a
+share link reproduces the same picture every time:
+
+| tier | river | road | place |
+|---|---|---|---|
+| `major` | stream_order >= 5 | motorway/trunk/primary | city, town |
+| `main` | stream_order >= 3 | + secondary/tertiary/unclassified | + village |
+| `all` | everything | + track/path/residential/service | + hamlet |
+
+Each tier is cached separately (`narrative_cache`, `kind='features:<type>'`,
+`params=<tier>`) and carries its own ETag.
 
 **Response:** GeoJSON FeatureCollection
 
@@ -247,6 +264,63 @@ GET /api/stats
   "deforest_trend": "improving"
 }
 ```
+
+---
+
+## Historical Maps
+
+Scanned survey series draped over the basemap. See
+`scripts/histmaps/README.md` for how the archive is produced.
+
+### Get Archive Metadata
+```
+GET /api/histmap
+```
+
+**Response** (when installed):
+```json
+{
+  "available": true,
+  "id": "sudan250k",
+  "name": "Sudan Survey 1:250,000 (1908-1944)",
+  "bounds": [17.995605, 7.993957, 40.517578, 24.006326],
+  "center": [29.256592, 16.000142, 7],
+  "minzoom": 0, "maxzoom": 14,
+  "tiles": "/api/histmap/sudan250k/{z}/{x}/{y}.png",
+  "download": "/api/histmap/sudan250k/download",
+  "size_bytes": 1471717376,
+  "attribution": "Sudan Survey Dept., Khartoum / Library of Congress ..."
+}
+```
+
+When the archive is not installed the response is
+`{"available": false, "reason": "..."}` with HTTP 200 — the client greys the
+toggle out rather than treating a missing optional dataset as an error.
+
+### Get Tile
+```
+GET /api/histmap/sudan250k/{z}/{x}/{y}.png
+```
+
+XYZ order (the handler flips to the MBTiles' TMS row internally). Returns
+`image/png` RGBA with a transparent background and near-black ink.
+
+**`204 No Content` means "no sheet here"**, which is the normal case: the series
+covers 8 of 22 1:1M blocks. Do not treat it as an error.
+
+Cached `public, max-age=604800, immutable`.
+
+### Download Archive
+```
+GET /api/histmap/sudan250k/download
+```
+
+The MBTiles file itself (1.4 GB), for offline use in Locus Map, OsmAnd or QGIS.
+Supports Range requests so a field-link transfer can be resumed.
+
+Ink is **black** in the download and white only on screen: the whitening is a
+client-side `raster-brightness-min`, applied because the globe's basemap is dark.
+Offline viewers default to light backgrounds, where white ink would be invisible.
 
 ---
 

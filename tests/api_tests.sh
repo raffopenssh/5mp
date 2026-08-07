@@ -155,6 +155,44 @@ test_api "infrastructure_chinko" "/api/parks/CAF_Chinko/infrastructure" "200" "t
 test_api "legal_docs_virunga" "/api/parks/COD_Virunga/legal" "200" ".count >= 0"
 test_api "legal_docs_serengeti" "/api/parks/TZA_Serengeti/legal" "200" ".count >= 0"
 
+yellow "\n=== Geography detail tiers ==="
+# major <= main <= all, per layer. A tier is a stable WHERE clause, so the
+# nesting is a property of the definition, not of the data -- if it ever
+# inverts, a tier predicate has stopped being a subset of the looser one and
+# the buttons are lying about what they draw.
+test_api "detail_counts_present" "/api/parks/CAF_Chinko/infrastructure" "200" \
+    ".summary.detail_counts.road.all >= 1"
+for layer in river road place; do
+    test_api "detail_nested_${layer}" "/api/parks/CAF_Chinko/infrastructure" "200" \
+        ".summary.detail_counts.${layer} | (.major <= .main) and (.main <= .all)"
+done
+# The tier reaches the feature builder, not just the counter: a served layer
+# must match its own advertised count.
+for tier in major main all; do
+    printf "%-50s" "detail_features_road_${tier}"
+    want=$(curl -s -m 60 -b "$COOKIE_FILE" "${BASE_URL}/api/parks/CAF_Chinko/infrastructure" \
+           | jq -r ".summary.detail_counts.road.${tier}")
+    got=$(curl -s -m 60 -b "$COOKIE_FILE" \
+          "${BASE_URL}/api/parks/CAF_Chinko/features?type=road&detail=${tier}&limit=5000" \
+          | jq -r '.features | length')
+    if [[ "$want" == "$got" && "$got" -gt 0 ]]; then
+        green "✓"; PASSED=$((PASSED + 1))
+    else
+        red "FAIL (button says $want, layer has $got)"
+        FAILED=$((FAILED + 1)); ERRORS+=("detail_features_road_${tier}")
+    fi
+done
+# An unknown or absent tier is "all", never an error: old share links and
+# pinned-layer restores predate the param entirely.
+printf "%-50s" "detail_unknown_falls_back_to_all"
+a=$(curl -s -m 60 -b "$COOKIE_FILE" "${BASE_URL}/api/parks/CAF_Chinko/features?type=river&detail=wat" | jq -r '.features|length')
+b=$(curl -s -m 60 -b "$COOKIE_FILE" "${BASE_URL}/api/parks/CAF_Chinko/features?type=river" | jq -r '.features|length')
+if [[ "$a" == "$b" && "$a" -gt 0 ]]; then
+    green "✓"; PASSED=$((PASSED + 1))
+else
+    red "FAIL ($a vs $b)"; FAILED=$((FAILED + 1)); ERRORS+=("detail_unknown_falls_back_to_all")
+fi
+
 yellow "\n=== Areas of interest (AOI) ==="
 # Visibility is the whole point: an AOI owned by another principal must be
 # invisible AND must 404 (never 403 — an id must not be an oracle).
