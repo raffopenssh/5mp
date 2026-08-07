@@ -1134,7 +1134,11 @@
 
         /* Focus banner: bottom-centre, above the time slider, always visible
            while focus is on. A dimmed map with no visible reason is a bug
-           report; this is the reason and the way out, in one line. */
+           report; this is the reason and the way out, in one line.
+           `bottom` here is only the pre-JS fallback — positionAOIFocusBanner()
+           measures the slider, whose height changes with wrapped preset tags
+           and the animator. A fixed offset covered the animate button on a
+           narrow phone. */
         .aoi-focus-banner {
             position: fixed; left: 50%; transform: translateX(-50%);
             bottom: 96px; z-index: 900;
@@ -1255,6 +1259,25 @@
         .pa-export-btn { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 24px; padding: 0; text-decoration: none; font-size: 13px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; color: #888; cursor: pointer; line-height: 1; flex-shrink: 0; font-family: inherit; }
         .pa-export-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
         .pa-export-btn i { font-size: 13px; line-height: 1; }
+
+        /* --- AOI popup actions ---------------------------------------
+           Eight bare icons in a row asked the user to guess, and squeezing
+           them beside the title crushed the name to one letter per line. So:
+           full-width block under the header, grouped by the question being
+           answered (what am I looking at / what do I take away / what do I
+           change), and every icon carries its noun. A title= attribute is not
+           a label on a phone — there is no hover. */
+        .aoi-actions { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+        .aoi-act-group { display: flex; flex-direction: column; gap: 4px; }
+        .aoi-act-group-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em; color: #6b7280; }
+        .aoi-act-row { display: flex; flex-wrap: wrap; gap: 4px; }
+        .aoi-act { display: inline-flex; align-items: center; gap: 5px; padding: 5px 8px; min-height: 28px;
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px;
+            color: #a0a0a0; font-size: 11px; font-family: inherit; line-height: 1; cursor: pointer;
+            text-decoration: none; transition: all 0.15s; }
+        .aoi-act:hover { background: rgba(251,191,36,0.14); border-color: rgba(251,191,36,0.35); color: #fbbf24; }
+        .aoi-act i { font-size: 13px; line-height: 1; flex-shrink: 0; }
+        .aoi-act.active { background: rgba(251,191,36,0.25); border-color: #fbbf24; color: #fbbf24; }
 
         /* Enhanced PA Popup with Collapsible Sections */
         .pa-popup-section { margin-top: 8px; border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; }
@@ -1454,6 +1477,10 @@
                 min-height: 32px;
             }
             .pa-export-btn i { font-size: 15px; }
+            /* Labelled AOI actions keep their label — that is the point — but
+               grow to a 32px touch target. */
+            .aoi-act { min-height: 32px; padding: 6px 9px; }
+            .aoi-act i { font-size: 15px; }
 
             /* Popup section headers — accordion touch target */
             .pa-popup-section-header {

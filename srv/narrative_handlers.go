@@ -907,7 +907,28 @@ func (s *Server) HandleAPIDeforestationNarrative(w http.ResponseWriter, r *http.
 		s.handleDeforestationNarrativeStats(w, internalID, parkName, startYr, endYr)
 		return
 	}
-	
+
+	// Every event below costs ~21 ms of per-event enrichment (nearby places,
+	// rivers, roads, pattern). A park has hundreds of events so nobody noticed;
+	// an AOI has thousands, and XSA_Study_Area's 7,815 took 2m27s — past the
+	// 120 s WriteTimeout, so the section rendered as if it had no data. Same
+	// cache-first shape as the fire narrative above it.
+	cacheParams := fmt.Sprintf("%d-%d", fromYear, toYear)
+	srcRev := s.narrativeSourceRev("deforestation_events", internalID)
+	if payload, computedAt, ok := s.getCachedNarrative(internalID, "deforestation", cacheParams, srcRev); ok {
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("X-Cache", "HIT")
+		w.Header().Set("X-Cache-Date", computedAt)
+		w.Write(payload)
+		return
+	}
+	w.Header().Set("X-Cache", "MISS")
+
+	// One memo for the whole request: consecutive events share a ~0.25° cell, so
+	// this collapses thousands of near-identical bbox scans into a few dozen
+	// without changing the answer (see geoMemo).
+	memo := newGeoMemo(s, internalID)
+
 	narrative := DeforestationNarrative{
 		ParkID:   internalID,
 		ParkName: parkName,
@@ -1004,11 +1025,14 @@ func (s *Server) HandleAPIDeforestationNarrative(w http.ResponseWriter, r *http.
 		}
 		
 		// Find nearby places for context (settlements and rivers)
-		settlements, _ := s.findNearestPlaces(internalID, lat, lon, 3, []string{"village", "hamlet", "town", "city"})
-		
+		settlements := memo.nearestPlaces(lat, lon, 3, []string{"village", "hamlet", "town", "city"}, "settle")
+
 		// Use HydroRIVERS for better river data
 		var rivers []OSMPlace
-		hydroRivers, _ := s.findNearestRiverToPoint(internalID, lat, lon, 3)
+		hydroRivers, memoOK := memo.nearestRivers(lat, lon, 3)
+		if !memoOK {
+			hydroRivers, _ = s.findNearestRiverToPoint(internalID, lat, lon, 3)
+		}
 		for _, hr := range hydroRivers {
 			rivers = append(rivers, OSMPlace{
 				Name:      hr.Name,
@@ -1020,7 +1044,7 @@ func (s *Server) HandleAPIDeforestationNarrative(w http.ResponseWriter, r *http.
 		}
 		// Fallback to OSM places if no HydroRIVERS
 		if len(rivers) == 0 {
-			rivers, _ = s.findNearestPlaces(internalID, lat, lon, 3, []string{"river", "stream"})
+			rivers = memo.nearestPlaces(lat, lon, 3, []string{"river", "stream"}, "riv")
 		}
 		
 		// Check if near road
@@ -1140,9 +1164,15 @@ func (s *Server) HandleAPIDeforestationNarrative(w http.ResponseWriter, r *http.
 			narrative.AreaByClass[ev.Classification] += ev.AreaKm2
 		}
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(narrative)
+	payload, err := json.Marshal(narrative)
+	if err != nil {
+		internalError(w, "request failed", err)
+		return
+	}
+	s.putCachedNarrative(internalID, "deforestation", cacheParams, srcRev, payload)
+	w.Write(payload)
 }
 
 // HandleAPISettlementNarrative returns comprehensive narrative about settlements and human-wildlife interface

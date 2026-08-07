@@ -131,7 +131,7 @@ func (s *Server) loadDeforestContext(parkID string, df *ClassifiedDeforestation)
 	// is non-sargable, drops idx_fire_location and covering-scans 42.9M rows
 	// (~1000x slower, measured 2026-08-07). Two calls per deforestation event
 	// across 221k events. Same bug class as _get_fire_density
-	// (docs/AOI_HANDOVER.md §1b).
+	// (AGENTS.md "Areas of interest").
 	yearStart := fmt.Sprintf("%d-01-01", df.Year)
 	yearEnd := fmt.Sprintf("%d-12-31", df.Year)
 	s.DB.QueryRow(`

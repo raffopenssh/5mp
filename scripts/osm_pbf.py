@@ -189,7 +189,7 @@ def enrich_park_infra(park_pbf, park_id, force=False, replace=False,
     while the country PBF is on disk; no-op when data already present.
 
     park_id is used verbatim as the table key. AOI callers pass their bare AOI
-    id (see docs/AOI_HANDOVER.md §1) — not an `aoi:<id>` scope key, which no
+    id (see AGENTS.md "Areas of interest") — not an `aoi:<id>` scope key, which no
     read path resolves.
 
     Three modes, because "skip if rows exist" is right for a park and wrong for

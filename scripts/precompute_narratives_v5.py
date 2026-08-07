@@ -386,7 +386,7 @@ class NarrativeGeneratorV5:
             ''', (park_id, json.dumps(data), datetime.now().isoformat(), from_year, to_year))
             if i % 25 == 0:
                 # These blobs are megabytes; don't hold SQLite's one writer for
-                # all 163 of them (AOI_HANDOVER.md §1c).
+                # all 163 of them (AGENTS.md "Areas of interest").
                 self.conn.commit()
         self.conn.commit()
         

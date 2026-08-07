@@ -8,7 +8,7 @@ file is the map of what exists, what is measured, and what is left.
 
 ---
 
-## → Current handover: `docs/AOI_HANDOVER.md`
+## → Current handover: `AGENTS.md "Areas of interest"`
 
 Written 2026-08-07. It supersedes the two "Resume here" sections below (kept
 for the trail). **This file remains the design rationale and the record of
@@ -18,11 +18,11 @@ measured facts** — read §1 (the isolation rules and the two holes they plug),
 One entry in §3a is now **reversed**: the AOI's pre-2024 deforestation *should*
 come from Hansen. Tiles are 45–116 MB COGs read through `/vsicurl` in 0.6 s per
 2° window, not "tens of GB", and GFW alerts only start in 2024. See
-`docs/AOI_HANDOVER.md` §2f.
+`AGENTS.md "Areas of interest"` §2f.
 
 ---
 
-## Resume here (2026-08-07, later — superseded by AOI_HANDOVER.md)
+## Resume here (2026-08-07, later — superseded by AGENTS.md "Areas of interest")
 
 Three units are **in flight in tmux** (`aoiv5`, `aoighsl`, `aoidefo`) — check
 them first, they may well have finished:
@@ -364,7 +364,7 @@ failed windows for up to three passes.
 **Tests**: `./tests/api_tests.sh` 45/45, including AOI visibility,
 404-not-403, malformed id, a back-to-back owner/test2026 request proving the
 response cache does not leak, and two assertions that AOI rows are absent from
-the bbox-keyed endpoints. UI verified both ways: `$AOI_OWNER_PWD` sees the
+the bbox-keyed endpoints. UI verified both ways: the owner principal sees the
 polygon, the chip and populated sections; `test2026` gets `AOI_IDS` empty, the
 chip hidden and a 0-feature source.
 
@@ -493,7 +493,7 @@ the underlying pixels — don't pretend otherwise.
 * Frontend: build every park/AOI endpoint URL through `apiBase(id)`. A raw
   `/api/parks/${id}/` string works for parks and 404s for AOIs.
 * Verification set: `/api/aois` empty for `test2026`, populated for
-  `$AOI_OWNER_PWD`; `/api/aois/XSA_Study_Area/*` 404 vs 200;
+  the owner principal; `/api/aois/XSA_Study_Area/*` 404 vs 200;
   `/api/parks/XSA_Study_Area/*` 404 for everyone; **CAF_Chinko = 8,753**;
   runner killed mid-slice resumes with no duplicate and no lost unit;
   `./tests/run_all.sh`.

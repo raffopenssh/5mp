@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Rivers and lakes from an OSM country PBF -> park_rivers_hydro / park_lakes_hydro.
 
-Why not HydroSHEDS (docs/AOI_HANDOVER.md §5 named it as the source): as of
+Why not HydroSHEDS (AGENTS.md "Areas of interest" named it as the source): as of
 2026-08-07 data.hydrosheds.org answers every request with a Cloudflare 403
 challenge, browser UA or not, so HydroRIVERS_v10_af and HydroLAKES cannot be
 fetched unattended at all. The handover already listed "PBF waterways from the
