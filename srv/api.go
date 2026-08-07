@@ -57,24 +57,24 @@ func parseSeasonMonths(season string) []int {
 	if season == "" || season == "None" {
 		return nil
 	}
-	
+
 	monthNames := map[string]int{
 		"Jan": 1, "Feb": 2, "Mar": 3, "Apr": 4, "May": 5, "Jun": 6,
 		"Jul": 7, "Aug": 8, "Sep": 9, "Oct": 10, "Nov": 11, "Dec": 12,
 	}
-	
+
 	parts := strings.Split(season, "-")
 	if len(parts) != 2 {
 		return nil
 	}
-	
+
 	startMonth, startOk := monthNames[parts[0]]
 	endMonth, endOk := monthNames[parts[1]]
-	
+
 	if !startOk || !endOk {
 		return nil
 	}
-	
+
 	var months []int
 	if startMonth <= endMonth {
 		// Simple range: Jan-Jun
@@ -90,7 +90,7 @@ func parseSeasonMonths(season string) []int {
 			months = append(months, m)
 		}
 	}
-	
+
 	return months
 }
 
@@ -100,7 +100,7 @@ func minDistanceToPolygon(lat, lon float64, polygon [][]float64) float64 {
 	if pointInPolygon(lat, lon, polygon) {
 		return 0.0
 	}
-	
+
 	// Find minimum distance to any edge
 	minDist := math.MaxFloat64
 	for i := 0; i < len(polygon)-1; i++ {
@@ -121,7 +121,7 @@ func pointInPolygon(lat, lon float64, polygon [][]float64) bool {
 	for i := 0; i < len(polygon); i++ {
 		xi, yi := polygon[i][0], polygon[i][1]
 		xj, yj := polygon[j][0], polygon[j][1]
-		
+
 		if ((yi > lat) != (yj > lat)) && (lon < (xj-xi)*(lat-yi)/(yj-yi)+xi) {
 			inside = !inside
 		}
@@ -134,19 +134,19 @@ func pointInPolygon(lat, lon float64, polygon [][]float64) bool {
 func distanceToLineSegment(pLat, pLon, aLat, aLon, bLat, bLon float64) float64 {
 	// Convert to simple distance calculation
 	// Project point onto line segment and calculate distance
-	
+
 	// Vector from A to B
 	dx := bLon - aLon
 	dy := bLat - aLat
-	
+
 	if dx == 0 && dy == 0 {
 		// A and B are the same point
 		return haversineDistance(pLat, pLon, aLat, aLon)
 	}
-	
+
 	// Calculate parameter t for projection
 	t := ((pLon-aLon)*dx + (pLat-aLat)*dy) / (dx*dx + dy*dy)
-	
+
 	if t < 0 {
 		// Closest point is A
 		return haversineDistance(pLat, pLon, aLat, aLon)
@@ -154,7 +154,7 @@ func distanceToLineSegment(pLat, pLon, aLat, aLon, bLat, bLon float64) float64 {
 		// Closest point is B
 		return haversineDistance(pLat, pLon, bLat, bLon)
 	}
-	
+
 	// Closest point is on the segment
 	closestLat := aLat + t*dy
 	closestLon := aLon + t*dx
@@ -169,38 +169,38 @@ func (s *Server) HandleAPIExportPatrolPixels(w http.ResponseWriter, r *http.Requ
 		http.Error(w, "parks parameter required", http.StatusBadRequest)
 		return
 	}
-	
+
 	parkIDs := strings.Split(parksStr, ",")
 	if len(parkIDs) == 0 || len(parkIDs) > 100 {
 		http.Error(w, "parks parameter must contain 1-100 park IDs", http.StatusBadRequest)
 		return
 	}
-	
+
 	fromStr := r.URL.Query().Get("from")
 	toStr := r.URL.Query().Get("to")
-	
+
 	// Build bbox for each park (30km buffer) and collect all pixels
 	type PixelData struct {
-		ParkID      string  `json:"park_id"`
-		ParkName    string  `json:"park_name"`
-		Year        int     `json:"year"`
-		Month       int     `json:"month"`
-		Lat         float64 `json:"lat"`
-		Lon         float64 `json:"lon"`
-		Intensity   float64 `json:"intensity"`
-		FootKm      float64 `json:"foot_km"`
-		VehicleKm   float64 `json:"vehicle_km"`
-		AircraftKm  float64 `json:"aircraft_km"`
+		ParkID     string  `json:"park_id"`
+		ParkName   string  `json:"park_name"`
+		Year       int     `json:"year"`
+		Month      int     `json:"month"`
+		Lat        float64 `json:"lat"`
+		Lon        float64 `json:"lon"`
+		Intensity  float64 `json:"intensity"`
+		FootKm     float64 `json:"foot_km"`
+		VehicleKm  float64 `json:"vehicle_km"`
+		AircraftKm float64 `json:"aircraft_km"`
 	}
-	
+
 	var allPixels []PixelData
-	
+
 	for _, parkID := range parkIDs {
 		parkID = strings.TrimSpace(parkID)
 		if parkID == "" {
 			continue
 		}
-		
+
 		// Get park name from AreaStore
 		parkName := parkID
 		if s.AreaStore != nil {
@@ -211,12 +211,12 @@ func (s *Server) HandleAPIExportPatrolPixels(w http.ResponseWriter, r *http.Requ
 				}
 			}
 		}
-		
+
 		// Get park boundary from AreaStore
 		if s.AreaStore == nil {
 			continue
 		}
-		
+
 		var parkArea *areas.ProtectedArea
 		for i := range s.AreaStore.Areas {
 			if s.AreaStore.Areas[i].ID == parkID {
@@ -224,22 +224,22 @@ func (s *Server) HandleAPIExportPatrolPixels(w http.ResponseWriter, r *http.Requ
 				break
 			}
 		}
-		
+
 		if parkArea == nil {
 			continue
 		}
-		
+
 		// Parse boundary coordinates
 		var coordsData [][][]float64
 		if err := json.Unmarshal(parkArea.Geometry.Coordinates, &coordsData); err != nil || len(coordsData) == 0 {
 			continue
 		}
-		
+
 		coords := coordsData[0]
 		if len(coords) == 0 {
 			continue
 		}
-		
+
 		// Calculate bounding box for initial query (with buffer for query efficiency)
 		minLon, maxLon := coords[0][0], coords[0][0]
 		minLat, maxLat := coords[0][1], coords[0][1]
@@ -257,17 +257,17 @@ func (s *Server) HandleAPIExportPatrolPixels(w http.ResponseWriter, r *http.Requ
 				maxLat = c[1]
 			}
 		}
-		
+
 		// Expand bbox slightly for initial query (35km to ensure we catch all cells within 30km of boundary)
 		bufferDeg := 35.0 / 111.0
 		queryMinLon := minLon - bufferDeg
 		queryMaxLon := maxLon + bufferDeg
 		queryMinLat := minLat - bufferDeg
 		queryMaxLat := maxLat + bufferDeg
-		
+
 		// Use WorldClim precipitation data for accurate dry/rainy classification per grid cell
 		// Falls back to park climate, then defaults if unavailable
-		
+
 		// Query intensity using WorldClim-aware function
 		gridParams := GridQueryParams{
 			FromYear: int64(2018),
@@ -287,12 +287,12 @@ func (s *Server) HandleAPIExportPatrolPixels(w http.ResponseWriter, r *http.Requ
 				gridParams.ToMonth = int64(t.Month())
 			}
 		}
-		
+
 		intensityMap, err := s.QueryGridDataWithWorldClim(r.Context(), gridParams, parkID)
 		if err != nil {
 			continue
 		}
-		
+
 		// Query patrol effort data for monthly details (aggregated from day-level records)
 		query := `
 			SELECT 
@@ -311,7 +311,7 @@ func (s *Server) HandleAPIExportPatrolPixels(w http.ResponseWriter, r *http.Requ
 			  AND g.lon_center BETWEEN ? AND ?
 		`
 		args := []interface{}{RequestEnv(r), queryMinLat, queryMaxLat, queryMinLon, queryMaxLon}
-		
+
 		if fromStr != "" {
 			query += " AND (e.year > ? OR (e.year = ? AND e.month >= ?))"
 			if t, err := time.Parse("2006-01-02", fromStr); err == nil {
@@ -324,15 +324,15 @@ func (s *Server) HandleAPIExportPatrolPixels(w http.ResponseWriter, r *http.Requ
 				args = append(args, t.Year(), t.Year(), int(t.Month()))
 			}
 		}
-		
+
 		query += " GROUP BY e.grid_cell_id, e.year, e.month, g.lat_center, g.lon_center, e.movement_type"
 		query += " ORDER BY e.year DESC, e.month DESC LIMIT 5000"
-		
+
 		rows, err := s.DB.Query(query, args...)
 		if err != nil {
 			continue
 		}
-		
+
 		// Group by year/month/grid_cell for monthly records
 		type MonthKey struct {
 			GridCellID string
@@ -340,34 +340,34 @@ func (s *Server) HandleAPIExportPatrolPixels(w http.ResponseWriter, r *http.Requ
 			Month      int
 		}
 		monthlyData := make(map[MonthKey]*PixelData)
-		
+
 		for rows.Next() {
 			var gridCellID, movementType string
 			var year, month int
 			var lat, lon, distanceKm float64
-			
+
 			if err := rows.Scan(&gridCellID, &year, &month, &lat, &lon, &movementType, &distanceKm); err != nil {
 				continue
 			}
-			
+
 			// Check if grid cell is within 30km of polygon boundary
 			minDist := minDistanceToPolygon(lat, lon, coords)
 			if minDist > 30.0 {
 				continue // Skip cells beyond 30km buffer
 			}
-			
+
 			// Create month key
 			key := MonthKey{
 				GridCellID: gridCellID,
 				Year:       year,
 				Month:      month,
 			}
-			
+
 			// Initialize monthly pixel data
 			if monthlyData[key] == nil {
 				// Get intensity from map (already calculated via QueryGridData)
 				intensity := intensityMap[gridCellID]
-				
+
 				monthlyData[key] = &PixelData{
 					ParkID:    parkID,
 					ParkName:  parkName,
@@ -378,7 +378,7 @@ func (s *Server) HandleAPIExportPatrolPixels(w http.ResponseWriter, r *http.Requ
 					Intensity: intensity,
 				}
 			}
-			
+
 			// Aggregate movement types
 			switch movementType {
 			case "foot":
@@ -390,13 +390,13 @@ func (s *Server) HandleAPIExportPatrolPixels(w http.ResponseWriter, r *http.Requ
 			}
 		}
 		rows.Close()
-		
+
 		// Add all monthly pixels (intensity already set from intensityMap)
 		for _, pixelData := range monthlyData {
 			allPixels = append(allPixels, *pixelData)
 		}
 	}
-	
+
 	// Sort by park, year desc, month desc
 	sort.Slice(allPixels, func(i, j int) bool {
 		if allPixels[i].ParkID != allPixels[j].ParkID {
@@ -407,13 +407,13 @@ func (s *Server) HandleAPIExportPatrolPixels(w http.ResponseWriter, r *http.Requ
 		}
 		return allPixels[i].Month > allPixels[j].Month
 	})
-	
+
 	response := map[string]interface{}{
 		"pixels":       allPixels,
 		"total_pixels": len(allPixels),
 		"parks":        len(parkIDs),
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Cache-Control", "public, max-age=300") // Cache for 5 minutes
 	json.NewEncoder(w).Encode(response)
@@ -427,10 +427,10 @@ func (s *Server) HandleAPIGridCellEffort(w http.ResponseWriter, r *http.Request)
 		http.Error(w, "grid cell id required", http.StatusBadRequest)
 		return
 	}
-	
+
 	fromStr := r.URL.Query().Get("from")
 	toStr := r.URL.Query().Get("to")
-	
+
 	// Build query for monthly effort data (aggregated from day-level records)
 	query := `
 		SELECT 
@@ -445,7 +445,7 @@ func (s *Server) HandleAPIGridCellEffort(w http.ResponseWriter, r *http.Request)
 		  AND e.movement_type IN ('foot', 'vehicle', 'aircraft')
 	`
 	args := []interface{}{gridCellID, RequestEnv(r)}
-	
+
 	if fromStr != "" {
 		query += " AND (e.year > ? OR (e.year = ? AND e.month >= ?))"
 		if t, err := time.Parse("2006-01-02", fromStr); err == nil {
@@ -458,17 +458,17 @@ func (s *Server) HandleAPIGridCellEffort(w http.ResponseWriter, r *http.Request)
 			args = append(args, t.Year(), t.Year(), int(t.Month()))
 		}
 	}
-	
+
 	query += " GROUP BY e.year, e.month, e.movement_type"
 	query += " ORDER BY e.year DESC, e.month DESC LIMIT 500"
-	
+
 	rows, err := s.DB.Query(query, args...)
 	if err != nil {
 		internalError(w, "grid query failed", err)
 		return
 	}
 	defer rows.Close()
-	
+
 	type MonthlyEffort struct {
 		Year        int     `json:"year"`
 		Month       int     `json:"month"`
@@ -479,19 +479,19 @@ func (s *Server) HandleAPIGridCellEffort(w http.ResponseWriter, r *http.Request)
 		VehiclePts  int     `json:"vehicle_points"`
 		AircraftPts int     `json:"aircraft_points"`
 	}
-	
+
 	// Group by year/month
 	monthMap := make(map[string]*MonthlyEffort)
-	
+
 	for rows.Next() {
 		var year, month, points int
 		var movementType string
 		var distanceKm float64
-		
+
 		if err := rows.Scan(&year, &month, &movementType, &distanceKm, &points); err != nil {
 			continue
 		}
-		
+
 		key := fmt.Sprintf("%d-%02d", year, month)
 		if monthMap[key] == nil {
 			monthMap[key] = &MonthlyEffort{
@@ -499,7 +499,7 @@ func (s *Server) HandleAPIGridCellEffort(w http.ResponseWriter, r *http.Request)
 				Month: month,
 			}
 		}
-		
+
 		switch movementType {
 		case "foot":
 			monthMap[key].FootKm = distanceKm
@@ -512,7 +512,7 @@ func (s *Server) HandleAPIGridCellEffort(w http.ResponseWriter, r *http.Request)
 			monthMap[key].AircraftPts = points
 		}
 	}
-	
+
 	// Convert to sorted array
 	var months []MonthlyEffort
 	for _, m := range monthMap {
@@ -520,7 +520,7 @@ func (s *Server) HandleAPIGridCellEffort(w http.ResponseWriter, r *http.Request)
 		// Dry season months (Nov-Apr) get full weight, rainy (May-Oct) get 30% weight
 		months = append(months, *m)
 	}
-	
+
 	// Sort by year desc, month desc
 	sort.Slice(months, func(i, j int) bool {
 		if months[i].Year != months[j].Year {
@@ -528,13 +528,13 @@ func (s *Server) HandleAPIGridCellEffort(w http.ResponseWriter, r *http.Request)
 		}
 		return months[i].Month > months[j].Month
 	})
-	
+
 	response := map[string]interface{}{
 		"grid_cell_id": gridCellID,
 		"months":       months,
 		"total_months": len(months),
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
@@ -543,7 +543,7 @@ func (s *Server) HandleAPIGridCellEffort(w http.ResponseWriter, r *http.Request)
 // HandleAPIVersion returns version info and recent commits
 func (s *Server) HandleAPIVersion(w http.ResponseWriter, r *http.Request) {
 	commits := []string{}
-	
+
 	// Read commits from file generated at build time
 	if data, err := os.ReadFile(".git-commits.txt"); err == nil {
 		for _, line := range strings.Split(string(data), "\n") {
@@ -552,7 +552,7 @@ func (s *Server) HandleAPIVersion(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"version": Version,
@@ -854,30 +854,30 @@ func buildGridFeature(row GridRow, movementType string, params GridQueryParams) 
 			Coordinates: []float64{row.LonCenter, row.LatCenter},
 		},
 		Properties: map[string]interface{}{
-			"id":                row.GridCellID,
-			"total_distance_km": row.TotalDistanceKm,
-			"total_points":      row.TotalPoints,
-			"unique_uploads":    row.UniqueUploads,
-			"movement_type":     movementType,
-			"intensity":         intensity,
-			"coverage_percent":  row.CoveragePercent,
-			"subcell_coverage":  subcellCoverage,
-			"recency":           recency,
-			"visit_days":        row.VisitDays,
-			"foot_km":             row.FootKm,
-			"vehicle_km":          row.VehicleKm,
-			"aircraft_km":         row.AircraftKm,
-			"boat_km":             row.BoatKm,
-			"fixed_wing_km":       row.FixedWingKm,
-			"rotor_wing_km":       row.RotorWingKm,
-			"avg_speed_kmh":       row.AvgSpeedKmh,
-			"avg_altitude_m":      row.AvgAltitudeM,
-			"foot_speed_kmh":      row.FootSpeedKmh,
-			"vehicle_speed_kmh":   row.VehicleSpeedKmh,
-			"aircraft_speed_kmh":  row.AircraftSpeedKmh,
-			"boat_speed_kmh":       row.BoatSpeedKmh,
-			"fixed_wing_speed_kmh": row.FixedWingSpeedKmh,
-			"rotor_wing_speed_kmh": row.RotorWingSpeedKmh,
+			"id":                    row.GridCellID,
+			"total_distance_km":     row.TotalDistanceKm,
+			"total_points":          row.TotalPoints,
+			"unique_uploads":        row.UniqueUploads,
+			"movement_type":         movementType,
+			"intensity":             intensity,
+			"coverage_percent":      row.CoveragePercent,
+			"subcell_coverage":      subcellCoverage,
+			"recency":               recency,
+			"visit_days":            row.VisitDays,
+			"foot_km":               row.FootKm,
+			"vehicle_km":            row.VehicleKm,
+			"aircraft_km":           row.AircraftKm,
+			"boat_km":               row.BoatKm,
+			"fixed_wing_km":         row.FixedWingKm,
+			"rotor_wing_km":         row.RotorWingKm,
+			"avg_speed_kmh":         row.AvgSpeedKmh,
+			"avg_altitude_m":        row.AvgAltitudeM,
+			"foot_speed_kmh":        row.FootSpeedKmh,
+			"vehicle_speed_kmh":     row.VehicleSpeedKmh,
+			"aircraft_speed_kmh":    row.AircraftSpeedKmh,
+			"boat_speed_kmh":        row.BoatSpeedKmh,
+			"fixed_wing_speed_kmh":  row.FixedWingSpeedKmh,
+			"rotor_wing_speed_kmh":  row.RotorWingSpeedKmh,
 			"foot_altitude_m":       row.FootAltitudeM,
 			"vehicle_altitude_m":    row.VehicleAltitudeM,
 			"aircraft_altitude_m":   row.AircraftAltitudeM,
@@ -1212,8 +1212,8 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 	if len(bbox) == 4 {
 		s.DB.QueryRow(`
 			SELECT COUNT(*) FROM park_settlements
-			WHERE lon >= ? AND lon <= ? AND lat >= ? AND lat <= ?` + scannerInjectedSQLFilter("narrative") +
-			aoiExcludeSQL("park_id") + `
+			WHERE lon >= ? AND lon <= ? AND lat >= ? AND lat <= ?`+scannerInjectedSQLFilter("narrative")+
+			aoiExcludeSQL("park_id")+`
 		`, bbox[0], bbox[2], bbox[1], bbox[3]).Scan(&totalSettlements)
 	} else {
 		s.DB.QueryRow(`SELECT COUNT(*) FROM park_settlements WHERE 1=1` +
@@ -1259,6 +1259,7 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 // HandleAPIAreasSearch searches protected areas, countries, and regions by name.
 // Query params:
 //   - q: search query (required)
+//
 // Returns matching results with center coordinates for map navigation.
 // Results include:
 //   - Loaded (keystone) PAs - shown in green
@@ -1285,11 +1286,11 @@ func (s *Server) HandleAPIAreasSearch(w http.ResponseWriter, r *http.Request) {
 		countries := s.GADMStore.SearchCountries(query, 3)
 		for _, c := range countries {
 			results = append(results, map[string]interface{}{
-				"type":    "country",
-				"name":    c.Name,
-				"code":    c.Code,
-				"center":  c.Center,
-				"bbox":    c.BBox,
+				"type":   "country",
+				"name":   c.Name,
+				"code":   c.Code,
+				"center": c.Center,
+				"bbox":   c.BBox,
 			})
 		}
 	}
@@ -1305,15 +1306,15 @@ func (s *Server) HandleAPIAreasSearch(w http.ResponseWriter, r *http.Request) {
 				centerLon := (lonMin + lonMax) / 2
 
 				results = append(results, map[string]interface{}{
-					"type":      "pa",
-					"id":        area.ID,
-					"name":      area.Name,
-					"country":   area.Country,
-					"wdpa_id":   area.WDPAID,
-					"area_km2":  area.AreaKm2,
-					"center":    []float64{centerLon, centerLat},
-					"bbox":      []float64{lonMin, latMin, lonMax, latMax},
-					"loaded":    true, // This PA is loaded in the system
+					"type":     "pa",
+					"id":       area.ID,
+					"name":     area.Name,
+					"country":  area.Country,
+					"wdpa_id":  area.WDPAID,
+					"area_km2": area.AreaKm2,
+					"center":   []float64{centerLon, centerLat},
+					"bbox":     []float64{lonMin, latMin, lonMax, latMax},
+					"loaded":   true, // This PA is loaded in the system
 				})
 
 				loadedWDPAIDs[area.WDPAID] = true
@@ -1527,7 +1528,6 @@ func (s *Server) HandleAPIUpload(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-
 // HandleAPIWDPASearch searches the WDPA index for protected areas.
 func (s *Server) HandleAPIWDPASearch(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query().Get("q")
@@ -1603,8 +1603,8 @@ func (s *Server) HandleAPIPublications(w http.ResponseWriter, r *http.Request) {
 	results := make([]map[string]interface{}, 0, len(pubs))
 	for _, p := range pubs {
 		item := map[string]interface{}{
-			"id":       p.ID,
-			"title":    p.Title,
+			"id":    p.ID,
+			"title": p.Title,
 		}
 		if p.Authors != nil && *p.Authors != "" {
 			var authors []string
@@ -1665,18 +1665,18 @@ func (s *Server) HandleAPIPublicationCount(w http.ResponseWriter, r *http.Reques
 
 // ParkDataStatus represents the processing status for a park's various data sources
 type ParkDataStatus struct {
-	ParkID         string `json:"park_id"`
-	FireAnalysis   *DataSourceStatus `json:"fire_analysis,omitempty"`
+	ParkID           string            `json:"park_id"`
+	FireAnalysis     *DataSourceStatus `json:"fire_analysis,omitempty"`
 	GroupInfractions *DataSourceStatus `json:"group_infractions,omitempty"`
-	Publications   *DataSourceStatus `json:"publications,omitempty"`
-	GHSL           *DataSourceStatus `json:"ghsl,omitempty"`
-	Roadless       *DataSourceStatus `json:"roadless,omitempty"`
+	Publications     *DataSourceStatus `json:"publications,omitempty"`
+	GHSL             *DataSourceStatus `json:"ghsl,omitempty"`
+	Roadless         *DataSourceStatus `json:"roadless,omitempty"`
 }
 
 type DataSourceStatus struct {
-	Ready     bool   `json:"ready"`
+	Ready      bool   `json:"ready"`
 	LastUpdate string `json:"last_update,omitempty"`
-	Message   string `json:"message,omitempty"`
+	Message    string `json:"message,omitempty"`
 }
 
 // HandleAPIParkDataStatus returns the processing status for various data sources for a park
@@ -1686,7 +1686,7 @@ func (s *Server) HandleAPIParkDataStatus(w http.ResponseWriter, r *http.Request)
 		http.Error(w, "Park ID required", http.StatusBadRequest)
 		return
 	}
-	
+
 	// Map WDPA ID to internal park_id if needed
 	internalID := parkID
 	if s.AreaStore != nil {
@@ -1697,9 +1697,9 @@ func (s *Server) HandleAPIParkDataStatus(w http.ResponseWriter, r *http.Request)
 			}
 		}
 	}
-	
+
 	status := ParkDataStatus{ParkID: parkID}
-	
+
 	// Check fire analysis
 	var fireCount int
 	var fireDate string
@@ -1709,7 +1709,7 @@ func (s *Server) HandleAPIParkDataStatus(w http.ResponseWriter, r *http.Request)
 	} else {
 		status.FireAnalysis = &DataSourceStatus{Ready: false, Message: "Fire analysis pending"}
 	}
-	
+
 	// Check group infractions
 	var groupCount int
 	var groupDate string
@@ -1719,7 +1719,7 @@ func (s *Server) HandleAPIParkDataStatus(w http.ResponseWriter, r *http.Request)
 	} else {
 		status.GroupInfractions = &DataSourceStatus{Ready: false, Message: "Group analysis pending"}
 	}
-	
+
 	// Check publications
 	var pubCount int
 	var pubDate string
@@ -1729,13 +1729,13 @@ func (s *Server) HandleAPIParkDataStatus(w http.ResponseWriter, r *http.Request)
 	} else {
 		status.Publications = &DataSourceStatus{Ready: false, Message: "Publication sync pending"}
 	}
-	
+
 	// GHSL - not implemented yet
 	status.GHSL = &DataSourceStatus{Ready: false, Message: "Coming soon"}
-	
+
 	// Roadless - not implemented yet
 	status.Roadless = &DataSourceStatus{Ready: false, Message: "Coming soon"}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(status)
 }
@@ -1747,7 +1747,7 @@ func (s *Server) HandleAPIParkInfractionSummary(w http.ResponseWriter, r *http.R
 	if year == "" {
 		year = "2023" // Default to most recent full year
 	}
-	
+
 	// Map WDPA ID to internal park_id if needed
 	internalID := parkID
 	if s.AreaStore != nil {
@@ -1758,33 +1758,33 @@ func (s *Server) HandleAPIParkInfractionSummary(w http.ResponseWriter, r *http.R
 			}
 		}
 	}
-	
+
 	var result struct {
-		Year              int     `json:"year"`
-		TotalGroups       int     `json:"total_groups"`
-		GroupsStoppedInside int   `json:"groups_stopped_inside"`
-		GroupsTransited   int     `json:"groups_transited"`
-		AvgDaysBurning    float64 `json:"avg_days_burning"`
-		ResponseRate      float64 `json:"response_rate"` // % stopped inside
+		Year                int     `json:"year"`
+		TotalGroups         int     `json:"total_groups"`
+		GroupsStoppedInside int     `json:"groups_stopped_inside"`
+		GroupsTransited     int     `json:"groups_transited"`
+		AvgDaysBurning      float64 `json:"avg_days_burning"`
+		ResponseRate        float64 `json:"response_rate"` // % stopped inside
 	}
-	
+
 	err := s.DB.QueryRow(`
 		SELECT year, total_groups, groups_stopped_inside, groups_transited, avg_days_burning
 		FROM park_group_infractions 
 		WHERE park_id = ? AND year = ?
 	`, internalID, year).Scan(&result.Year, &result.TotalGroups, &result.GroupsStoppedInside, &result.GroupsTransited, &result.AvgDaysBurning)
-	
+
 	if err != nil {
 		// Return empty/zero result rather than error
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(result)
 		return
 	}
-	
+
 	if result.TotalGroups > 0 {
 		result.ResponseRate = float64(result.GroupsStoppedInside) / float64(result.TotalGroups) * 100
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(result)
 }
@@ -1799,7 +1799,7 @@ func (s *Server) HandleAPIParkFeatures(w http.ResponseWriter, r *http.Request) {
 	startDate := r.URL.Query().Get("start")
 	endDate := r.URL.Query().Get("end")
 	limitStr := r.URL.Query().Get("limit")
-	
+
 	// Map WDPA ID to internal park_id if needed
 	internalID := parkID
 	if s.AreaStore != nil {
@@ -1810,25 +1810,25 @@ func (s *Server) HandleAPIParkFeatures(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	
+
 	// Handle park boundary from AreaStore
 	if featureType == "boundary" || featureType == "park" {
 		s.handleParkBoundary(w, internalID)
 		return
 	}
-	
+
 	// Handle places from osm_places table
 	if featureType == "place" {
-		s.handlePlaceFeatures(w, internalID, limitStr)
+		s.handlePlaceFeatures(w, r, internalID, limitStr)
 		return
 	}
-	
+
 	// Handle waterbodies from park_waterbodies table
 	if featureType == "waterbody" || featureType == "water" {
-		s.handleWaterbodyFeatures(w, internalID, limitStr)
+		s.handleWaterbodyFeatures(w, r, internalID, limitStr)
 		return
 	}
-	
+
 	// Upstream river network with Strahler order (mghydro /app/getwshed)
 	if featureType == "basin_rivers" {
 		minOrder := 0
@@ -1856,22 +1856,22 @@ func (s *Server) HandleAPIParkFeatures(w http.ResponseWriter, r *http.Request) {
 
 	// Handle rivers from park_rivers_hydro table
 	if featureType == "river" {
-		s.handleRiverFeatures(w, internalID, limitStr)
+		s.handleRiverFeatures(w, r, internalID, limitStr)
 		return
 	}
-	
+
 	// Handle roads from roads_heigit table
 	if featureType == "road" {
-		s.handleRoadFeatures(w, internalID, limitStr)
+		s.handleRoadFeatures(w, r, internalID, limitStr)
 		return
 	}
-	
+
 	// Handle settlements with narrative from park_settlements
 	if featureType == "settlement" {
 		s.handleSettlementFeatures(w, internalID, limitStr, featureID)
 		return
 	}
-	
+
 	// Handle deforestation with narrative from deforestation_events
 	if featureType == "deforestation" {
 		s.handleDeforestationFeatures(w, internalID, limitStr, startDate, endDate, featureID, r.URL.Query().Get("event_id"))
@@ -1898,32 +1898,32 @@ func (s *Server) HandleAPIParkFeatures(w http.ResponseWriter, r *http.Request) {
 		}
 		query += " AND feature_type NOT IN ('road','airstrip')"
 	}
-	
+
 	if featureType != "" {
 		query += " AND feature_type = ?"
 		args = append(args, featureType)
 	}
-	
+
 	// Allow fetching specific feature by ID (for pinning)
 	if featureID != "" {
 		query += " AND feature_id = ?"
 		args = append(args, featureID)
 	}
-	
+
 	// Filter by start_date being within the date range (not overlap)
 	// This matches the UI filtering behavior for fire narratives
 	if startDate != "" {
 		query += " AND (start_date IS NULL OR start_date >= ?)"
 		args = append(args, startDate)
 	}
-	
+
 	if endDate != "" {
 		query += " AND (start_date IS NULL OR start_date <= ?)"
 		args = append(args, endDate)
 	}
-	
+
 	query += " ORDER BY start_date DESC, feature_id"
-	
+
 	limit := 1000 // Default limit
 	// If fetching by feature_id, don't limit
 	if featureID == "" {
@@ -1934,39 +1934,39 @@ func (s *Server) HandleAPIParkFeatures(w http.ResponseWriter, r *http.Request) {
 		}
 		query += fmt.Sprintf(" LIMIT %d", limit)
 	}
-	
+
 	rows, err := s.DB.Query(query, args...)
 	if err != nil {
 		http.Error(w, "Database error", http.StatusInternalServerError)
 		return
 	}
 	defer rows.Close()
-	
+
 	// Build GeoJSON FeatureCollection
 	type GeoJSONFeature struct {
 		Type       string                 `json:"type"`
 		Geometry   json.RawMessage        `json:"geometry"`
 		Properties map[string]interface{} `json:"properties"`
 	}
-	
+
 	type FeatureCollection struct {
 		Type     string           `json:"type"`
 		Features []GeoJSONFeature `json:"features"`
 	}
-	
+
 	fc := FeatureCollection{
 		Type:     "FeatureCollection",
 		Features: []GeoJSONFeature{},
 	}
-	
+
 	for rows.Next() {
 		var fType, fID, geojson string
 		var startDate, endDate, propsJSON sql.NullString
-		
+
 		if err := rows.Scan(&fType, &fID, &geojson, &startDate, &endDate, &propsJSON); err != nil {
 			continue
 		}
-		
+
 		// Parse properties
 		props := make(map[string]interface{})
 		if propsJSON.Valid {
@@ -1980,14 +1980,14 @@ func (s *Server) HandleAPIParkFeatures(w http.ResponseWriter, r *http.Request) {
 		if endDate.Valid {
 			props["end_date"] = endDate.String
 		}
-		
+
 		fc.Features = append(fc.Features, GeoJSONFeature{
 			Type:       "Feature",
 			Geometry:   json.RawMessage(geojson),
 			Properties: props,
 		})
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(fc)
 }
@@ -2002,7 +2002,7 @@ func (s *Server) handleParkBoundary(w http.ResponseWriter, parkID string) {
 		})
 		return
 	}
-	
+
 	// Find the area in AreaStore
 	var area *areas.ProtectedArea
 	for i := range s.AreaStore.Areas {
@@ -2011,7 +2011,7 @@ func (s *Server) handleParkBoundary(w http.ResponseWriter, parkID string) {
 			break
 		}
 	}
-	
+
 	if area == nil || len(area.Geometry.Coordinates) == 0 {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]interface{}{
@@ -2020,37 +2020,65 @@ func (s *Server) handleParkBoundary(w http.ResponseWriter, parkID string) {
 		})
 		return
 	}
-	
+
 	// Return the boundary as a GeoJSON Feature
 	feature := map[string]interface{}{
 		"type":     "Feature",
 		"geometry": area.Geometry,
 		"properties": map[string]interface{}{
-			"park_id":   area.ID,
-			"name":      area.Name,
-			"country":   area.Country,
-			"area_km2":  area.AreaKm2,
-			"wdpa_id":   area.WDPAID,
-			"type":      "boundary",
+			"park_id":  area.ID,
+			"name":     area.Name,
+			"country":  area.Country,
+			"area_km2": area.AreaKm2,
+			"wdpa_id":  area.WDPAID,
+			"type":     "boundary",
 		},
 	}
-	
+
 	fc := map[string]interface{}{
 		"type":     "FeatureCollection",
 		"features": []interface{}{feature},
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(fc)
 }
 
+// The four geography layers below (places, waterbodies, rivers, roads) are
+// static per ingest and are served WHOLE by default — see feature_geo_cache.go
+// for why a cap was wrong and how the result is cached.
+
 // handlePlaceFeatures returns GeoJSON features for osm_places
-func (s *Server) handlePlaceFeatures(w http.ResponseWriter, parkID string, limitStr string) {
-	limit := 1000
-	if limitStr != "" {
-		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 && l <= 10000 {
-			limit = l
+func (s *Server) handlePlaceFeatures(w http.ResponseWriter, r *http.Request, parkID string, limitStr string) {
+	limit, limited := geoFeatureLimit(limitStr)
+	s.serveCachedGeoFeatures(w, r, parkID, "place", limited, func() ([]byte, error) {
+		return s.buildPlaceFeatures(parkID, limit)
+	})
+}
+
+func (s *Server) buildPlaceFeatures(parkID string, limit int) ([]byte, error) {
+	// A place point whose name is already carried by a river or road line is a
+	// duplicate label, not a second thing: OSM records "Chinko" both as a
+	// waterway name node and on the reaches themselves, and the map then draws
+	// a village dot on top of the river that is already labelled. The
+	// place_type filter below catches the rows OSM typed as waterways; this
+	// catches the ones it typed as settlements while naming a line feature.
+	named := map[string]bool{}
+	for _, q := range []string{
+		`SELECT DISTINCT name FROM park_rivers_hydro WHERE park_id = ? AND name IS NOT NULL AND name != ''`,
+		`SELECT DISTINCT name FROM roads_heigit      WHERE park_id = ? AND name IS NOT NULL AND name != ''`,
+	} {
+		rows, err := s.DB.Query(q, parkID)
+		if err != nil {
+			continue
 		}
+		for rows.Next() {
+			var n string
+			if rows.Scan(&n) == nil {
+				named[normPlaceName(n)] = true
+			}
+		}
+		rows.Close()
 	}
 
 	// Exclude waterway rows (river/stream/lake): those are OSM waterway *names*
@@ -2072,27 +2100,11 @@ func (s *Server) handlePlaceFeatures(w http.ResponseWriter, parkID string, limit
 		LIMIT ?
 	`, parkID, limit)
 	if err != nil {
-		http.Error(w, "Database error", http.StatusInternalServerError)
-		return
+		return nil, err
 	}
 	defer rows.Close()
 
-	type GeoJSONFeature struct {
-		Type       string                 `json:"type"`
-		Geometry   json.RawMessage        `json:"geometry"`
-		Properties map[string]interface{} `json:"properties"`
-	}
-
-	type FeatureCollection struct {
-		Type     string           `json:"type"`
-		Features []GeoJSONFeature `json:"features"`
-	}
-
-	fc := FeatureCollection{
-		Type:     "FeatureCollection",
-		Features: []GeoJSONFeature{},
-	}
-
+	fc := newGeoFC()
 	for rows.Next() {
 		var id int
 		var placeType, name string
@@ -2102,9 +2114,9 @@ func (s *Server) handlePlaceFeatures(w http.ResponseWriter, parkID string, limit
 		if err := rows.Scan(&id, &placeType, &name, &lat, &lon, &osmID, &osmTags); err != nil {
 			continue
 		}
-
-		// Create Point geometry from lat/lon
-		geometry := json.RawMessage(fmt.Sprintf(`{"type":"Point","coordinates":[%f,%f]}`, lon, lat))
+		if k := normPlaceName(name); k != "" && named[k] {
+			continue
+		}
 
 		props := map[string]interface{}{
 			"feature_type": "place",
@@ -2123,42 +2135,27 @@ func (s *Server) handlePlaceFeatures(w http.ResponseWriter, parkID string, limit
 				props["osm_tags"] = tags
 			}
 		}
-
-		fc.Features = append(fc.Features, GeoJSONFeature{
-			Type:       "Feature",
-			Geometry:   geometry,
-			Properties: props,
-		})
+		fc.add(pointGeom(lon, lat), props)
 	}
+	return json.Marshal(fc)
+}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(fc)
+// normPlaceName folds a label to the key used when matching a place point
+// against a line feature's name.
+func normPlaceName(n string) string {
+	return strings.ToLower(strings.TrimSpace(n))
 }
 
 // handleWaterbodyFeatures returns waterbody features as GeoJSON
-func (s *Server) handleWaterbodyFeatures(w http.ResponseWriter, parkID string, limitStr string) {
-	limit := 500
-	if limitStr != "" {
-		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 && l <= 5000 {
-			limit = l
-		}
-	}
+func (s *Server) handleWaterbodyFeatures(w http.ResponseWriter, r *http.Request, parkID string, limitStr string) {
+	limit, limited := geoFeatureLimit(limitStr)
+	s.serveCachedGeoFeatures(w, r, parkID, "waterbody", limited, func() ([]byte, error) {
+		return s.buildWaterbodyFeatures(parkID, limit)
+	})
+}
 
-	type GeoJSONFeature struct {
-		Type       string                 `json:"type"`
-		Geometry   json.RawMessage        `json:"geometry"`
-		Properties map[string]interface{} `json:"properties"`
-	}
-
-	type FeatureCollection struct {
-		Type     string           `json:"type"`
-		Features []GeoJSONFeature `json:"features"`
-	}
-
-	fc := FeatureCollection{
-		Type:     "FeatureCollection",
-		Features: []GeoJSONFeature{},
-	}
+func (s *Server) buildWaterbodyFeatures(parkID string, limit int) ([]byte, error) {
+	fc := newGeoFC()
 
 	// Get waterbodies from park_waterbodies table
 	wbRows, err := s.DB.Query(`
@@ -2167,43 +2164,40 @@ func (s *Server) handleWaterbodyFeatures(w http.ResponseWriter, parkID string, l
 		WHERE park_id = ?
 		LIMIT ?
 	`, parkID, limit)
-	if err == nil {
-		defer wbRows.Close()
-		for wbRows.Next() {
-			var wbID, name, wbType string
-			var lat, lon float64
-			var geojson sql.NullString
-
-			if err := wbRows.Scan(&wbID, &name, &wbType, &lat, &lon, &geojson); err != nil {
-				continue
-			}
-
-			var geometry json.RawMessage
-			if geojson.Valid && geojson.String != "" {
-				geometry = json.RawMessage(geojson.String)
-			} else {
-				geometry = json.RawMessage(fmt.Sprintf(`{"type":"Point","coordinates":[%f,%f]}`, lon, lat))
-			}
-
-			displayName := name
-			if displayName == "" {
-				displayName = wbType
-			}
-
-			fc.Features = append(fc.Features, GeoJSONFeature{
-				Type:     "Feature",
-				Geometry: geometry,
-				Properties: map[string]interface{}{
-					"feature_type":   "waterbody",
-					"feature_id":     wbID,
-					"name":           displayName,
-					"waterbody_type": wbType,
-					"lat":            lat,
-					"lon":            lon,
-				},
-			})
-		}
+	if err != nil {
+		return nil, err
 	}
+	for wbRows.Next() {
+		var wbID, name, wbType string
+		var lat, lon float64
+		var geojson sql.NullString
+
+		if err := wbRows.Scan(&wbID, &name, &wbType, &lat, &lon, &geojson); err != nil {
+			continue
+		}
+
+		var geometry json.RawMessage
+		if geojson.Valid && geojson.String != "" {
+			geometry = json.RawMessage(geojson.String)
+		} else {
+			geometry = pointGeom(lon, lat)
+		}
+
+		displayName := name
+		if displayName == "" {
+			displayName = wbType
+		}
+
+		fc.add(geometry, map[string]interface{}{
+			"feature_type":   "waterbody",
+			"feature_id":     wbID,
+			"name":           displayName,
+			"waterbody_type": wbType,
+			"lat":            lat,
+			"lon":            lon,
+		})
+	}
+	wbRows.Close()
 
 	// Also get rivers/streams/lakes from osm_places
 	riverRows, err := s.DB.Query(`
@@ -2229,52 +2223,33 @@ func (s *Server) handleWaterbodyFeatures(w http.ResponseWriter, parkID string, l
 				geometry = json.RawMessage(geojson.String)
 			} else {
 				// Create a point for rivers without geometry
-				geometry = json.RawMessage(fmt.Sprintf(`{"type":"Point","coordinates":[%f,%f]}`, lon, lat))
+				geometry = pointGeom(lon, lat)
 			}
 
-			fc.Features = append(fc.Features, GeoJSONFeature{
-				Type:     "Feature",
-				Geometry: geometry,
-				Properties: map[string]interface{}{
-					"feature_type":   "river",
-					"feature_id":     fmt.Sprintf("river_%d", id),
-					"name":           name,
-					"waterbody_type": placeType,
-					"lat":            lat,
-					"lon":            lon,
-				},
+			fc.add(geometry, map[string]interface{}{
+				"feature_type":   "river",
+				"feature_id":     fmt.Sprintf("river_%d", id),
+				"name":           name,
+				"waterbody_type": placeType,
+				"lat":            lat,
+				"lon":            lon,
 			})
 		}
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(fc)
+	return json.Marshal(fc)
 }
 
 // handleRiverFeatures returns GeoJSON features for HydroRIVERS data
-func (s *Server) handleRiverFeatures(w http.ResponseWriter, parkID string, limitStr string) {
-	limit := 500
-	if limitStr != "" {
-		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 && l <= 2000 {
-			limit = l
-		}
-	}
+func (s *Server) handleRiverFeatures(w http.ResponseWriter, r *http.Request, parkID string, limitStr string) {
+	limit, limited := geoFeatureLimit(limitStr)
+	s.serveCachedGeoFeatures(w, r, parkID, "river", limited, func() ([]byte, error) {
+		return s.buildRiverFeatures(parkID, limit)
+	})
+}
 
-	type GeoJSONFeature struct {
-		Type       string                 `json:"type"`
-		Geometry   json.RawMessage        `json:"geometry"`
-		Properties map[string]interface{} `json:"properties"`
-	}
-
-	type FeatureCollection struct {
-		Type     string           `json:"type"`
-		Features []GeoJSONFeature `json:"features"`
-	}
-
-	fc := FeatureCollection{
-		Type:     "FeatureCollection",
-		Features: []GeoJSONFeature{},
-	}
+func (s *Server) buildRiverFeatures(parkID string, limit int) ([]byte, error) {
+	fc := newGeoFC()
 
 	// Get rivers from park_rivers_hydro
 	rows, err := s.DB.Query(`
@@ -2285,8 +2260,7 @@ func (s *Server) handleRiverFeatures(w http.ResponseWriter, parkID string, limit
 		LIMIT ?
 	`, parkID, limit)
 	if err != nil {
-		http.Error(w, "Database error", http.StatusInternalServerError)
-		return
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -2301,51 +2275,31 @@ func (s *Server) handleRiverFeatures(w http.ResponseWriter, parkID string, limit
 			continue
 		}
 
-		fc.Features = append(fc.Features, GeoJSONFeature{
-			Type:     "Feature",
-			Geometry: json.RawMessage(geojson),
-			Properties: map[string]interface{}{
-				"feature_type":  "river",
-				"feature_id":    fmt.Sprintf("river_%d", hyrivID),
-				"hyriv_id":      hyrivID,
-				"name":          name,
-				"stream_order":  streamOrder,
-				"ord_flow":      ordFlow,
-				"length_km":     lengthKm,
-				"lat":           lat,
-				"lon":           lon,
-			},
+		fc.add(json.RawMessage(geojson), map[string]interface{}{
+			"feature_type": "river",
+			"feature_id":   fmt.Sprintf("river_%d", hyrivID),
+			"hyriv_id":     hyrivID,
+			"name":         name,
+			"stream_order": streamOrder,
+			"ord_flow":     ordFlow,
+			"length_km":    lengthKm,
+			"lat":          lat,
+			"lon":          lon,
 		})
 	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(fc)
+	return json.Marshal(fc)
 }
 
 // handleRoadFeatures returns GeoJSON features for HeiGIT roads
-func (s *Server) handleRoadFeatures(w http.ResponseWriter, parkID string, limitStr string) {
-	limit := 500
-	if limitStr != "" {
-		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 && l <= 2000 {
-			limit = l
-		}
-	}
+func (s *Server) handleRoadFeatures(w http.ResponseWriter, r *http.Request, parkID string, limitStr string) {
+	limit, limited := geoFeatureLimit(limitStr)
+	s.serveCachedGeoFeatures(w, r, parkID, "road", limited, func() ([]byte, error) {
+		return s.buildRoadFeatures(parkID, limit)
+	})
+}
 
-	type GeoJSONFeature struct {
-		Type       string                 `json:"type"`
-		Geometry   json.RawMessage        `json:"geometry"`
-		Properties map[string]interface{} `json:"properties"`
-	}
-
-	type FeatureCollection struct {
-		Type     string           `json:"type"`
-		Features []GeoJSONFeature `json:"features"`
-	}
-
-	fc := FeatureCollection{
-		Type:     "FeatureCollection",
-		Features: []GeoJSONFeature{},
-	}
+func (s *Server) buildRoadFeatures(parkID string, limit int) ([]byte, error) {
+	fc := newGeoFC()
 
 	// Get roads from roads_heigit
 	rows, err := s.DB.Query(`
@@ -2357,8 +2311,7 @@ func (s *Server) handleRoadFeatures(w http.ResponseWriter, parkID string, limitS
 		LIMIT ?
 	`, parkID, limit)
 	if err != nil {
-		http.Error(w, "Database error", http.StatusInternalServerError)
-		return
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -2371,30 +2324,24 @@ func (s *Server) handleRoadFeatures(w http.ResponseWriter, parkID string, limitS
 			continue
 		}
 
-		fc.Features = append(fc.Features, GeoJSONFeature{
-			Type:     "Feature",
-			Geometry: json.RawMessage(geojson),
-			Properties: map[string]interface{}{
-				"feature_type":  "road",
-				"feature_id":    fmt.Sprintf("road_%s", osmID),
-				"osm_id":        osmID,
-				"name":          name,
-				"highway_type":  highwayType,
-				"surface":       surface,
-				"passability":   passability,
-				"length_km":     lengthKm,
-			},
+		fc.add(json.RawMessage(geojson), map[string]interface{}{
+			"feature_type": "road",
+			"feature_id":   fmt.Sprintf("road_%s", osmID),
+			"osm_id":       osmID,
+			"name":         name,
+			"highway_type": highwayType,
+			"surface":      surface,
+			"passability":  passability,
+			"length_km":    lengthKm,
 		})
 	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(fc)
+	return json.Marshal(fc)
 }
 
 // HandleAPIParkFeatureStats returns summary statistics for features in a park
 func (s *Server) HandleAPIParkFeatureStats(w http.ResponseWriter, r *http.Request) {
 	parkID := r.PathValue("id")
-	
+
 	// Map WDPA ID to internal park_id if needed
 	internalID := parkID
 	if s.AreaStore != nil {
@@ -2405,7 +2352,7 @@ func (s *Server) HandleAPIParkFeatureStats(w http.ResponseWriter, r *http.Reques
 			}
 		}
 	}
-	
+
 	type FeatureStats struct {
 		FireTrajectories    int            `json:"fire_trajectories"`
 		Settlements         int            `json:"settlements"`
@@ -2417,12 +2364,12 @@ func (s *Server) HandleAPIParkFeatureStats(w http.ResponseWriter, r *http.Reques
 		SettlementsByClass  map[string]int `json:"settlements_by_class,omitempty"`
 		DeforestByClass     map[string]int `json:"deforestation_by_class,omitempty"`
 	}
-	
+
 	stats := FeatureStats{
 		SettlementsByClass: make(map[string]int),
 		DeforestByClass:    make(map[string]int),
 	}
-	
+
 	// Count by feature type
 	rows, err := s.DB.Query(`
 		SELECT feature_type, COUNT(*) 
@@ -2449,17 +2396,17 @@ func (s *Server) HandleAPIParkFeatureStats(w http.ResponseWriter, r *http.Reques
 			}
 		}
 	}
-	
+
 	// Count places from osm_places
 	var placesCount int
 	s.DB.QueryRow(`SELECT COUNT(*) FROM osm_places WHERE park_id = ? AND place_type NOT IN ('river', 'stream', 'lake')`, internalID).Scan(&placesCount)
 	stats.Places = placesCount
-	
+
 	// Count waterbodies
 	var waterbodyCount int
 	s.DB.QueryRow(`SELECT COUNT(*) FROM park_waterbodies WHERE park_id = ?`, internalID).Scan(&waterbodyCount)
 	stats.Waterbodies = waterbodyCount
-	
+
 	// Count rivers from park_rivers_hydro (HydroRIVERS reach segments)
 	var riverCount int
 	s.DB.QueryRow(`SELECT COUNT(*) FROM park_rivers_hydro WHERE park_id = ?`, internalID).Scan(&riverCount)
@@ -2469,7 +2416,7 @@ func (s *Server) HandleAPIParkFeatureStats(w http.ResponseWriter, r *http.Reques
 	rows2, err := s.DB.Query(`
 		SELECT classification, COUNT(*) 
 		FROM park_settlements 
-		WHERE park_id = ? AND classification != 'unclassified'` + scannerInjectedSQLFilter("narrative") + `
+		WHERE park_id = ? AND classification != 'unclassified'`+scannerInjectedSQLFilter("narrative")+`
 		GROUP BY classification
 	`, internalID)
 	if err == nil {
@@ -2483,7 +2430,7 @@ func (s *Server) HandleAPIParkFeatureStats(w http.ResponseWriter, r *http.Reques
 			}
 		}
 	}
-	
+
 	// Deforestation classifications
 	rows3, err := s.DB.Query(`
 		SELECT classification, COUNT(*) 
@@ -2501,7 +2448,7 @@ func (s *Server) HandleAPIParkFeatureStats(w http.ResponseWriter, r *http.Reques
 			}
 		}
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(stats)
 }
@@ -2518,7 +2465,7 @@ func (s *Server) findNearestOSMPlace(lat, lon, maxDistKm float64) (name string, 
 		FROM osm_places
 		WHERE lat BETWEEN ? AND ?
 		  AND lon BETWEEN ? AND ?
-		  AND name != ''` + aoiExcludeSQL("park_id") + `
+		  AND name != ''`+aoiExcludeSQL("park_id")+`
 		LIMIT 100
 	`, lat-maxDistDeg, lat+maxDistDeg, lon-maxDistDeg, lon+maxDistDeg)
 	if err != nil {
@@ -2571,7 +2518,6 @@ func (s *Server) findCountryByPoint(lat, lon float64) (countryName string, found
 	return "", false
 }
 
-
 // Helper functions for coordinate formatting
 func absFloat(f float64) float64 {
 	if f < 0 {
@@ -2605,7 +2551,7 @@ func (s *Server) HandleAPIGPXUploadLogs(w http.ResponseWriter, r *http.Request) 
 	limitStr := r.URL.Query().Get("limit")
 	offsetStr := r.URL.Query().Get("offset")
 	parkID := r.URL.Query().Get("park_id")
-	
+
 	limit := int64(50)
 	offset := int64(0)
 	if l, err := strconv.ParseInt(limitStr, 10, 64); err == nil && l > 0 && l <= 200 {
@@ -2614,13 +2560,13 @@ func (s *Server) HandleAPIGPXUploadLogs(w http.ResponseWriter, r *http.Request) 
 	if o, err := strconv.ParseInt(offsetStr, 10, 64); err == nil && o >= 0 {
 		offset = o
 	}
-	
+
 	q := dbgen.New(s.DB)
 	ctx := r.Context()
-	
+
 	var logsResult interface{}
 	var err error
-	
+
 	if parkID != "" {
 		logsResult, err = q.ListGPXUploadLogsByPark(ctx, dbgen.ListGPXUploadLogsByParkParams{
 			ProtectedAreaID: &parkID,
@@ -2633,16 +2579,16 @@ func (s *Server) HandleAPIGPXUploadLogs(w http.ResponseWriter, r *http.Request) 
 			Offset: offset,
 		})
 	}
-	
+
 	if err != nil {
 		http.Error(w, "Database error", http.StatusInternalServerError)
 		return
 	}
-	
+
 	// Get summary stats for last 30 days
 	thirtyDaysAgo := time.Now().AddDate(0, 0, -30)
 	stats, _ := q.GetGPXUploadLogStats(ctx, thirtyDaysAgo)
-	
+
 	response := struct {
 		Logs  interface{}                    `json:"logs"`
 		Stats *dbgen.GetGPXUploadLogStatsRow `json:"stats,omitempty"`
@@ -2650,7 +2596,7 @@ func (s *Server) HandleAPIGPXUploadLogs(w http.ResponseWriter, r *http.Request) 
 		Logs:  logsResult,
 		Stats: &stats,
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
@@ -2701,11 +2647,11 @@ func (s *Server) HandleAPILearningResults(w http.ResponseWriter, r *http.Request
 
 	// Get aggregate stats
 	var stats struct {
-		TotalResults     int     `json:"total_results"`
-		TotalNewRoads    int     `json:"total_new_roads"`
-		TotalNewRoadsKm  float64 `json:"total_new_roads_km"`
-		TotalNewPlaces   int     `json:"total_new_places"`
-		TotalNewAirstrips int    `json:"total_new_airstrips"`
+		TotalResults      int     `json:"total_results"`
+		TotalNewRoads     int     `json:"total_new_roads"`
+		TotalNewRoadsKm   float64 `json:"total_new_roads_km"`
+		TotalNewPlaces    int     `json:"total_new_places"`
+		TotalNewAirstrips int     `json:"total_new_airstrips"`
 	}
 
 	for _, r := range results {
@@ -2744,7 +2690,7 @@ func (s *Server) HandleAPIPendingApprovals(w http.ResponseWriter, r *http.Reques
 	if l, err := strconv.Atoi(limitStr); err == nil && l > 0 && l <= 500 {
 		limit = l
 	}
-	
+
 	type PendingFeature struct {
 		Type          string   `json:"type"`
 		ID            int64    `json:"id"`
@@ -2755,9 +2701,9 @@ func (s *Server) HandleAPIPendingApprovals(w http.ResponseWriter, r *http.Reques
 		Details       string   `json:"details"`
 		CreatedAt     string   `json:"created_at"`
 	}
-	
+
 	var features []PendingFeature
-	
+
 	// Get pending roads
 	rows, err := s.DB.Query(`
 		SELECT 'road' as type, id, park_id,
@@ -2780,13 +2726,13 @@ func (s *Server) HandleAPIPendingApprovals(w http.ResponseWriter, r *http.Reques
 		ORDER BY confidence_pct DESC
 		LIMIT ?
 	`, limit)
-	
+
 	if err != nil {
 		http.Error(w, "Database error", http.StatusInternalServerError)
 		return
 	}
 	defer rows.Close()
-	
+
 	for rows.Next() {
 		var f PendingFeature
 		if err := rows.Scan(&f.Type, &f.ID, &f.ParkID, &f.Lat, &f.Lon, &f.ConfidencePct, &f.Details, &f.CreatedAt); err != nil {
@@ -2794,7 +2740,7 @@ func (s *Server) HandleAPIPendingApprovals(w http.ResponseWriter, r *http.Reques
 		}
 		features = append(features, f)
 	}
-	
+
 	// Get stats
 	var stats struct {
 		PendingRoads     int `json:"pending_roads"`
@@ -2802,7 +2748,7 @@ func (s *Server) HandleAPIPendingApprovals(w http.ResponseWriter, r *http.Reques
 		PendingAirstrips int `json:"pending_airstrips"`
 		HighConfidence   int `json:"high_confidence"`
 	}
-	
+
 	s.DB.QueryRow(`SELECT COUNT(*) FROM learned_roads WHERE status = 'pending'`).Scan(&stats.PendingRoads)
 	s.DB.QueryRow(`SELECT COUNT(*) FROM learned_places WHERE status = 'pending'`).Scan(&stats.PendingPlaces)
 	s.DB.QueryRow(`SELECT COUNT(*) FROM learned_airstrips WHERE status = 'pending'`).Scan(&stats.PendingAirstrips)
@@ -2813,7 +2759,7 @@ func (s *Server) HandleAPIPendingApprovals(w http.ResponseWriter, r *http.Reques
 			UNION ALL SELECT 1 FROM learned_airstrips WHERE status = 'pending' AND confidence_pct > 75
 		)
 	`).Scan(&stats.HighConfidence)
-	
+
 	// Per-park data coverage (time range + points behind the learned features)
 	coverage := make(map[string]interface{})
 	seenParks := make(map[string]bool)
@@ -2878,7 +2824,7 @@ func (s *Server) HandleAPILearnedFeatures(w http.ResponseWriter, r *http.Request
 		places, _ := q.GetLearnedPlacesByPark(ctx, parkID)
 		airstrips, _ := q.GetLearnedAirstripsByPark(ctx, parkID)
 		stats, _ := q.GetVehicleStatsByPark(ctx, parkID)
-		
+
 		response["roads"] = roads
 		response["places"] = places
 		response["airstrips"] = airstrips
@@ -3493,11 +3439,11 @@ func (s *Server) HandleAPIPatrolMCP(w http.ResponseWriter, r *http.Request) {
 		// Return empty MCP if none exists
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]interface{}{
-			"park_id": parkID,
-			"mcp_geojson": nil,
+			"park_id":      parkID,
+			"mcp_geojson":  nil,
 			"mcp_area_km2": 0,
-			"point_count": 0,
-			"message": "No patrol data available for MCP calculation",
+			"point_count":  0,
+			"message":      "No patrol data available for MCP calculation",
 		})
 		return
 	}
@@ -3591,7 +3537,7 @@ func (s *Server) HandleAPIRollbackFeature(w http.ResponseWriter, r *http.Request
 			http.Error(w, "History not found", http.StatusNotFound)
 			return
 		}
-		
+
 		// Find the specific history entry
 		var target *dbgen.LearnedRoadsHistory
 		for _, h := range history {
@@ -3604,14 +3550,14 @@ func (s *Server) HandleAPIRollbackFeature(w http.ResponseWriter, r *http.Request
 			http.Error(w, "History entry not found", http.StatusNotFound)
 			return
 		}
-		
+
 		// Record the rollback action
 		q.RecordRoadHistory(ctx, dbgen.RecordRoadHistoryParams{
 			Action:   "rollback",
 			ActionBy: &actionBy,
 			ID:       req.ID,
 		})
-		
+
 		// Restore values
 		status := "pending"
 		if target.IsApproved != nil && *target.IsApproved == 1 {
@@ -3619,7 +3565,7 @@ func (s *Server) HandleAPIRollbackFeature(w http.ResponseWriter, r *http.Request
 		} else if target.IsRejected != nil && *target.IsRejected == 1 {
 			status = "rejected"
 		}
-		
+
 		err = q.RollbackRoad(ctx, dbgen.RollbackRoadParams{
 			Geojson:       target.Geojson,
 			LengthM:       target.DistanceKm,
@@ -3692,20 +3638,19 @@ func (s *Server) HandleAPILearnedFeatureStats(w http.ResponseWriter, r *http.Req
 	})
 }
 
-
 // StarredItems represents the structure of starred items from the client
 type StarredItems struct {
-	Parks       []map[string]interface{} `json:"parks"`
-	Countries   []map[string]interface{} `json:"countries"`
-	Bboxes      []map[string]interface{} `json:"bboxes"`
-	Narratives  []map[string]interface{} `json:"narratives"`
-	Activities  []map[string]interface{} `json:"activities"`
+	Parks      []map[string]interface{} `json:"parks"`
+	Countries  []map[string]interface{} `json:"countries"`
+	Bboxes     []map[string]interface{} `json:"bboxes"`
+	Narratives []map[string]interface{} `json:"narratives"`
+	Activities []map[string]interface{} `json:"activities"`
 }
 
 // fetchParkNarrativeSummary fetches a brief narrative summary for RSS feeds
 func (s *Server) fetchParkNarrativeSummary(parkID string) string {
 	parts := []string{}
-	
+
 	// Fetch fire narrative from cache
 	var fireNarrativeJSON string
 	err := s.DB.QueryRow(`SELECT narrative_json FROM fire_narrative_cache WHERE park_id = ? LIMIT 1`, parkID).Scan(&fireNarrativeJSON)
@@ -3718,11 +3663,11 @@ func (s *Server) fetchParkNarrativeSummary(parkID string) string {
 				if len(summary) > 300 {
 					summary = summary[:300] + "..."
 				}
-				parts = append(parts, "FIRE: " + summary)
+				parts = append(parts, "FIRE: "+summary)
 			}
 		}
 	}
-	
+
 	// Fetch deforestation stats
 	var deforestKm2 float64
 	var deforestCount int
@@ -3736,7 +3681,7 @@ func (s *Server) fetchParkNarrativeSummary(parkID string) string {
 	if err == nil && deforestKm2 > 0 {
 		parts = append(parts, fmt.Sprintf("DEFORESTATION: %.2f km² lost across %d events", deforestKm2, deforestCount))
 	}
-	
+
 	// Fetch settlement stats
 	var settlementCount int
 	var totalPopulation int
@@ -3745,12 +3690,12 @@ func (s *Server) fetchParkNarrativeSummary(parkID string) string {
 			COUNT(*) as count,
 			COALESCE(SUM(population_est), 0) as population
 		FROM park_settlements
-		WHERE park_id = ?` + scannerInjectedSQLFilter("narrative") + `
+		WHERE park_id = ?`+scannerInjectedSQLFilter("narrative")+`
 	`, parkID).Scan(&settlementCount, &totalPopulation)
 	if err == nil && settlementCount > 0 {
 		parts = append(parts, fmt.Sprintf("SETTLEMENTS: %d settlements, est. population %d", settlementCount, totalPopulation))
 	}
-	
+
 	return strings.Join(parts, " | ")
 }
 
@@ -3759,7 +3704,7 @@ func (s *Server) fetchParkNarrativeSummary(parkID string) string {
 // GET /api/feed - RSS for recent notifications (main globe page)
 func (s *Server) HandleAPIFeed(w http.ResponseWriter, r *http.Request) {
 	starsParam := r.URL.Query().Get("stars")
-	
+
 	// If no stars parameter, return notifications feed
 	if starsParam == "" {
 		s.handleNotificationsFeed(w, r)
@@ -3794,7 +3739,7 @@ func (s *Server) HandleAPIFeed(w http.ResponseWriter, r *http.Request) {
 		name, _ := park["name"].(string)
 		id, _ := park["id"].(string)
 		country, _ := park["country"].(string)
-		
+
 		if name == "" || id == "" {
 			continue
 		}
@@ -3814,7 +3759,7 @@ func (s *Server) HandleAPIFeed(w http.ResponseWriter, r *http.Request) {
 			miningNotifSQLFilter() + ` 
 		               ORDER BY created_at DESC LIMIT 5`
 		notifRows, err := s.DB.Query(notifQuery, id, since.Format("2006-01-02 15:04:05"))
-		
+
 		updates := []string{}
 		if err == nil {
 			defer notifRows.Close()
@@ -3827,15 +3772,15 @@ func (s *Server) HandleAPIFeed(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Fetch full narrative data to include in RSS
-	narrative := s.fetchParkNarrativeSummary(id)
-	
-	description := fmt.Sprintf("Conservation monitoring for %s in %s", name, country)
-	if narrative != "" {
-		description += "\n\n" + narrative
-	}
-	if len(updates) > 0 {
-		description += "\n\nRecent updates:\n" + strings.Join(updates, "\n")
-	}
+		narrative := s.fetchParkNarrativeSummary(id)
+
+		description := fmt.Sprintf("Conservation monitoring for %s in %s", name, country)
+		if narrative != "" {
+			description += "\n\n" + narrative
+		}
+		if len(updates) > 0 {
+			description += "\n\nRecent updates:\n" + strings.Join(updates, "\n")
+		}
 
 		items = append(items, fmt.Sprintf(`
 	<item>
@@ -3844,7 +3789,7 @@ func (s *Server) HandleAPIFeed(w http.ResponseWriter, r *http.Request) {
 		<description>%s</description>
 		<pubDate>%s</pubDate>
 		<guid>park-%s-%d</guid>
-	</item>`, 
+	</item>`,
 			escapeXML(name), escapeXML(country),
 			escapeXML(link),
 			escapeXML(description),
@@ -3857,13 +3802,13 @@ func (s *Server) HandleAPIFeed(w http.ResponseWriter, r *http.Request) {
 		parkName, _ := narr["parkName"].(string)
 		parkId, _ := narr["parkId"].(string)
 		narrType, _ := narr["type"].(string)
-		
+
 		if parkName == "" || narrType == "" {
 			continue
 		}
 
 		title := fmt.Sprintf("%s - %s", parkName, narrType)
-		
+
 		link := baseURL
 		if parkId != "" {
 			if pwd != "" {
@@ -3894,9 +3839,9 @@ func (s *Server) HandleAPIFeed(w http.ResponseWriter, r *http.Request) {
 		if len(coords) != 4 {
 			continue
 		}
-		
+
 		bboxStr := fmt.Sprintf("%.2f,%.2f,%.2f,%.2f", coords[0], coords[1], coords[2], coords[3])
-		
+
 		link := baseURL
 		if pwd != "" {
 			link = baseURL + "&bbox=" + bboxStr
@@ -4127,8 +4072,8 @@ func (s *Server) HandleAPISettlementIntensity(w http.ResponseWriter, r *http.Req
 	}
 
 	type FeatureCollection struct {
-		Type     string               `json:"type"`
-		Features []SettlementFeature  `json:"features"`
+		Type     string              `json:"type"`
+		Features []SettlementFeature `json:"features"`
 	}
 
 	fc := FeatureCollection{
@@ -4192,7 +4137,7 @@ func (s *Server) HandleAPISettlementIntensity(w http.ResponseWriter, r *http.Req
 // HandleAPIParkClimate returns climate data for a park
 func (s *Server) HandleAPIParkClimate(w http.ResponseWriter, r *http.Request) {
 	parkID := r.PathValue("id")
-	
+
 	// Map WDPA ID to internal park_id if needed
 	internalID := parkID
 	if s.AreaStore != nil {
@@ -4203,7 +4148,7 @@ func (s *Server) HandleAPIParkClimate(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	
+
 	type ClimateData struct {
 		ParkID          string  `json:"park_id"`
 		TempAnnualC     float64 `json:"temp_annual_c"`
@@ -4216,27 +4161,27 @@ func (s *Server) HandleAPIParkClimate(w http.ResponseWriter, r *http.Request) {
 		RainySeason     string  `json:"rainy_season"`
 		DrySeason       string  `json:"dry_season"`
 	}
-	
+
 	var data ClimateData
 	data.ParkID = internalID
-	
+
 	err := s.DB.QueryRow(`
 		SELECT COALESCE(temp_annual_c, 0), COALESCE(temp_max_c, 0), COALESCE(temp_min_c, 0), 
 		       COALESCE(precip_annual_mm, 0), COALESCE(precip_wettest_mm, 0), COALESCE(precip_driest_mm, 0),
 		       COALESCE(climate_zone, ''), COALESCE(rainy_season, ''), COALESCE(dry_season, '')
 		FROM park_climate
 		WHERE park_id = ?
-	`, internalID).Scan(&data.TempAnnualC, &data.TempMaxC, &data.TempMinC, 
+	`, internalID).Scan(&data.TempAnnualC, &data.TempMaxC, &data.TempMinC,
 		&data.PrecipAnnualMM, &data.PrecipWettestMM, &data.PrecipDriestMM,
 		&data.ClimateZone, &data.RainySeason, &data.DrySeason)
-	
+
 	if err != nil {
 		// Return empty data if not found
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(ClimateData{ParkID: internalID})
 		return
 	}
-	
+
 	// Fill in defaults if not set
 	if data.ClimateZone == "" {
 		if data.PrecipAnnualMM > 2000 {
@@ -4249,7 +4194,7 @@ func (s *Server) HandleAPIParkClimate(w http.ResponseWriter, r *http.Request) {
 			data.ClimateZone = "Arid"
 		}
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(data)
 }
@@ -4257,7 +4202,7 @@ func (s *Server) HandleAPIParkClimate(w http.ResponseWriter, r *http.Request) {
 // HandleAPIParkSpecies returns IUCN Red List species for a park
 func (s *Server) HandleAPIParkSpecies(w http.ResponseWriter, r *http.Request) {
 	parkID := r.PathValue("id")
-	
+
 	// Map WDPA ID to internal park_id if needed
 	internalID := parkID
 	if s.AreaStore != nil {
@@ -4268,26 +4213,26 @@ func (s *Server) HandleAPIParkSpecies(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	
+
 	type Species struct {
-		Binomial     string `json:"binomial"`
-		CommonName   string `json:"common_name,omitempty"`
-		Status       string `json:"status"`
-		StatusName   string `json:"status_name"`
-		Order        string `json:"order"`
-		Family       string `json:"family"`
+		Binomial   string `json:"binomial"`
+		CommonName string `json:"common_name,omitempty"`
+		Status     string `json:"status"`
+		StatusName string `json:"status_name"`
+		Order      string `json:"order"`
+		Family     string `json:"family"`
 	}
-	
+
 	type SpeciesResponse struct {
-		ParkID      string    `json:"park_id"`
-		TotalCount  int       `json:"total_count"`
-		Threatened  int       `json:"threatened"`
-		Critical    int       `json:"critical"`
-		Endangered  int       `json:"endangered"`
-		Vulnerable  int       `json:"vulnerable"`
-		Species     []Species `json:"species"`
+		ParkID     string    `json:"park_id"`
+		TotalCount int       `json:"total_count"`
+		Threatened int       `json:"threatened"`
+		Critical   int       `json:"critical"`
+		Endangered int       `json:"endangered"`
+		Vulnerable int       `json:"vulnerable"`
+		Species    []Species `json:"species"`
 	}
-	
+
 	statusNames := map[string]string{
 		"CR": "Critically Endangered",
 		"EN": "Endangered",
@@ -4296,7 +4241,7 @@ func (s *Server) HandleAPIParkSpecies(w http.ResponseWriter, r *http.Request) {
 		"LC": "Least Concern",
 		"DD": "Data Deficient",
 	}
-	
+
 	rows, err := s.DB.Query(`
 		SELECT binomial, common_name, status, species_order, family
 		FROM park_species
@@ -4311,31 +4256,31 @@ func (s *Server) HandleAPIParkSpecies(w http.ResponseWriter, r *http.Request) {
 				ELSE 6 
 			END, binomial
 	`, internalID)
-	
+
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(SpeciesResponse{ParkID: internalID})
 		return
 	}
 	defer rows.Close()
-	
+
 	var resp SpeciesResponse
 	resp.ParkID = internalID
-	
+
 	for rows.Next() {
 		var sp Species
 		var commonName, status, order, family sql.NullString
 		rows.Scan(&sp.Binomial, &commonName, &status, &order, &family)
-		
+
 		sp.CommonName = commonName.String
 		sp.Status = status.String
 		sp.StatusName = statusNames[sp.Status]
 		sp.Order = order.String
 		sp.Family = family.String
-		
+
 		resp.Species = append(resp.Species, sp)
 		resp.TotalCount++
-		
+
 		switch sp.Status {
 		case "CR":
 			resp.Critical++
@@ -4348,7 +4293,7 @@ func (s *Server) HandleAPIParkSpecies(w http.ResponseWriter, r *http.Request) {
 			resp.Threatened++
 		}
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(resp)
 }
@@ -4394,7 +4339,7 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 	kml.WriteString("<Style id=\"place\"><IconStyle><color>ffffffff</color><scale>0.8</scale><Icon><href>http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href></Icon></IconStyle></Style>\n")
 	kml.WriteString("<Style id=\"water\"><IconStyle><color>ffff9933</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/water.png</href></Icon></IconStyle><LineStyle><color>ffff9933</color><width>2</width></LineStyle><PolyStyle><color>50ff9933</color></PolyStyle></Style>\n")
 	kml.WriteString("<Style id=\"patrol\"><IconStyle><scale>0</scale></IconStyle><PolyStyle><color>5022c55e</color></PolyStyle><LineStyle><color>8022c55e</color><width>1</width></LineStyle></Style>\n") // Semi-transparent green circles for patrol effort
-	kml.WriteString("<Style id=\"turbidity\"><IconStyle><color>ff2d52d9</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/caution.png</href></Icon></IconStyle></Style>\n") // Brown-red caution markers for turbidity onsets
+	kml.WriteString("<Style id=\"turbidity\"><IconStyle><color>ff2d52d9</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/caution.png</href></Icon></IconStyle></Style>\n")                   // Brown-red caution markers for turbidity onsets
 
 	// Boundary folder
 	if boundary != "" {
@@ -4406,7 +4351,7 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 	// Human Activity: settlements + deforestation grouped together (mirrors popup sections)
 	kml.WriteString("<Folder><name>Human Activity</name>\n")
 	kml.WriteString("<Folder><name>Settlements</name><visibility>0</visibility>\n")
-	
+
 	// Join feature_geometries with park_settlements using polygon_ids (same as tooltip logic)
 	settlementQuery := `
 		SELECT 
@@ -4429,10 +4374,10 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 			var featureID, geojson, props string
 			var narrative, classification, nearestPlace sql.NullString
 			settlementRows.Scan(&featureID, &geojson, &props, &narrative, &classification, &nearestPlace)
-			
+
 			var propMap map[string]interface{}
 			json.Unmarshal([]byte(props), &propMap)
-			
+
 			// Build name
 			name := "Settlement"
 			if classification.Valid && classification.String != "" {
@@ -4444,7 +4389,7 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 			if nearestPlace.Valid && nearestPlace.String != "" {
 				name = fmt.Sprintf("%s near %s", name, nearestPlace.String)
 			}
-			
+
 			// Use narrative from park_settlements if available
 			var description string
 			if n := publicSettlementNarrative(classification.String, narrative.String); narrative.Valid && n != "" {
@@ -4463,7 +4408,7 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 				}
 				description = strings.Join(descParts, " | ")
 			}
-			
+
 			writeGeoJSONToKMLWithDesc(&kml, geojson, "settlement", xmlEscape(name), description, "", "")
 		}
 	}
@@ -4471,7 +4416,7 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 
 	// Deforestation folder with narratives
 	kml.WriteString("<Folder><name>Deforestation</name><visibility>0</visibility>\n")
-	
+
 	// Join feature_geometries with deforestation_events using polygon_ids (same as tooltip logic)
 	defoQuery := `
 		SELECT 
@@ -4510,10 +4455,10 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 			var areaKm2 sql.NullFloat64
 			var year sql.NullInt64
 			defoRows.Scan(&featureID, &geojson, &props, &startDateStr, &narrative, &classification, &patternType, &areaKm2, &year)
-			
+
 			var propMap map[string]interface{}
 			json.Unmarshal([]byte(props), &propMap)
-			
+
 			// Build name
 			name := "Deforestation"
 			if classification.Valid && classification.String != "" {
@@ -4529,7 +4474,7 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 			} else if area, ok := propMap["area_km2"].(float64); ok {
 				name = fmt.Sprintf("%s - %.2f km²", name, area)
 			}
-			
+
 			// Use narrative from deforestation_events if available
 			var description string
 			if narrative.Valid && narrative.String != "" {
@@ -4548,14 +4493,14 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 				}
 				description = strings.Join(descParts, " | ")
 			}
-			
+
 			// Add timespan for year
 			var startDate, endDate string
 			if year.Valid {
 				startDate = fmt.Sprintf("%d-01-01", year.Int64)
 				endDate = fmt.Sprintf("%d-12-31", year.Int64)
 			}
-			
+
 			writeGeoJSONToKMLWithDesc(&kml, geojson, "deforestation", xmlEscape(name), description, startDate, endDate)
 		}
 	}
@@ -4564,7 +4509,7 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 
 	// Fire trajectories folder with narratives, grouped by year
 	kml.WriteString("<Folder><name>Fire Trajectories</name>\n")
-	
+
 	fireQuery := `SELECT geojson, properties_json, start_date, end_date FROM feature_geometries WHERE park_id = ? AND feature_type = 'fire_trajectory'`
 	fireArgs := []interface{}{parkID}
 	if fromDate != "" {
@@ -4591,7 +4536,7 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 			}
 			var propMap map[string]interface{}
 			json.Unmarshal([]byte(props), &propMap)
-			
+
 			// Build descriptive name from properties
 			name := "Fire Event"
 			if featureID, ok := propMap["feature_id"].(string); ok && featureID != "" {
@@ -4604,7 +4549,7 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 			if groupName, ok := propMap["group_name"].(string); ok && groupName != "" {
 				name = groupName
 			}
-			
+
 			// Get narrative directly from properties_json
 			description := ""
 			if narrative, ok := propMap["narrative"].(string); ok && narrative != "" {
@@ -4634,7 +4579,7 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 				}
 				description = strings.Join(descParts, " | ")
 			}
-			
+
 			year := "Undated"
 			if len(startDate.String) >= 4 {
 				year = startDate.String[:4]
@@ -4695,7 +4640,7 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 			var surface sql.NullString
 			var lengthKm sql.NullFloat64
 			heigitRows.Scan(&osmID, &hwType, &surface, &lengthKm, &geojson)
-			
+
 			// Build name
 			name := hwType
 			if surface.Valid && surface.String != "" {
@@ -4741,7 +4686,7 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 			var lat, lon float64
 			var geojson sql.NullString
 			lakeRows.Scan(&hylakID, &lakeName, &areaKm2, &depthAvg, &lat, &lon, &geojson)
-			
+
 			// Build name
 			name := "Lake"
 			if lakeName.Valid && lakeName.String != "" {
@@ -4753,7 +4698,7 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 			if depthAvg.Valid && depthAvg.Float64 > 0 {
 				name = fmt.Sprintf("%s [depth %.0fm]", name, depthAvg.Float64)
 			}
-			
+
 			var pmb strings.Builder
 			// Use actual geometry if available, else point
 			if geojson.Valid && geojson.String != "" {
@@ -4815,23 +4760,24 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 	// Patrol Effort folder - grid cells with 30km buffer, semi-transparent circles with timestamps
 	// Skipped when ?effort=0 (tooltip quick-export omits patrol effort; star report keeps it)
 	if r.URL.Query().Get("effort") != "0" {
-	var patrolPlacemarks []string
-	
-	// Calculate 30km buffer bbox around park
-	var patrolBBox [4]float64 // minLon, minLat, maxLon, maxLat
-	if boundary != "" {
-		var geom map[string]interface{}
-		if err := json.Unmarshal([]byte(boundary), &geom); err == nil {
-			var coords [][]float64
-			if geomType, ok := geom["type"].(string); ok {
-				if geomType == "Polygon" {
-					if coordsArr, ok := geom["coordinates"].([]interface{}); ok && len(coordsArr) > 0 {
-						if ring, ok := coordsArr[0].([]interface{}); ok {
-							for _, pt := range ring {
-								if p, ok := pt.([]interface{}); ok && len(p) >= 2 {
-									if lon, ok := p[0].(float64); ok {
-										if lat, ok := p[1].(float64); ok {
-											coords = append(coords, []float64{lon, lat})
+		var patrolPlacemarks []string
+
+		// Calculate 30km buffer bbox around park
+		var patrolBBox [4]float64 // minLon, minLat, maxLon, maxLat
+		if boundary != "" {
+			var geom map[string]interface{}
+			if err := json.Unmarshal([]byte(boundary), &geom); err == nil {
+				var coords [][]float64
+				if geomType, ok := geom["type"].(string); ok {
+					if geomType == "Polygon" {
+						if coordsArr, ok := geom["coordinates"].([]interface{}); ok && len(coordsArr) > 0 {
+							if ring, ok := coordsArr[0].([]interface{}); ok {
+								for _, pt := range ring {
+									if p, ok := pt.([]interface{}); ok && len(p) >= 2 {
+										if lon, ok := p[0].(float64); ok {
+											if lat, ok := p[1].(float64); ok {
+												coords = append(coords, []float64{lon, lat})
+											}
 										}
 									}
 								}
@@ -4839,37 +4785,36 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 						}
 					}
 				}
-			}
-			
-			if len(coords) > 0 {
-				// Find bounding box
-				minLon, maxLon := coords[0][0], coords[0][0]
-				minLat, maxLat := coords[0][1], coords[0][1]
-				for _, c := range coords {
-					if c[0] < minLon {
-						minLon = c[0]
+
+				if len(coords) > 0 {
+					// Find bounding box
+					minLon, maxLon := coords[0][0], coords[0][0]
+					minLat, maxLat := coords[0][1], coords[0][1]
+					for _, c := range coords {
+						if c[0] < minLon {
+							minLon = c[0]
+						}
+						if c[0] > maxLon {
+							maxLon = c[0]
+						}
+						if c[1] < minLat {
+							minLat = c[1]
+						}
+						if c[1] > maxLat {
+							maxLat = c[1]
+						}
 					}
-					if c[0] > maxLon {
-						maxLon = c[0]
-					}
-					if c[1] < minLat {
-						minLat = c[1]
-					}
-					if c[1] > maxLat {
-						maxLat = c[1]
-					}
+
+					// Add 30km buffer (~0.27 degrees)
+					bufferDeg := 30.0 / 111.0
+					patrolBBox = [4]float64{minLon - bufferDeg, minLat - bufferDeg, maxLon + bufferDeg, maxLat + bufferDeg}
 				}
-				
-				// Add 30km buffer (~0.27 degrees)
-				bufferDeg := 30.0 / 111.0
-				patrolBBox = [4]float64{minLon - bufferDeg, minLat - bufferDeg, maxLon + bufferDeg, maxLat + bufferDeg}
 			}
 		}
-	}
-	
-	if patrolBBox[0] != 0 || patrolBBox[1] != 0 { // Valid bbox
-		// Query effort data within bbox with date filters
-		patrolQuery := `
+
+		if patrolBBox[0] != 0 || patrolBBox[1] != 0 { // Valid bbox
+			// Query effort data within bbox with date filters
+			patrolQuery := `
 			SELECT 
 				e.grid_cell_id, 
 				e.year, 
@@ -4886,66 +4831,66 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 				AND g.lat_center BETWEEN ? AND ?
 				AND g.lon_center BETWEEN ? AND ?
 		`
-		patrolArgs := []interface{}{RequestEnv(r), patrolBBox[1], patrolBBox[3], patrolBBox[0], patrolBBox[2]}
-		
-		if fromDate != "" {
-			patrolQuery += " AND (e.year > ? OR (e.year = ? AND e.month >= ?))"
-			if t, err := time.Parse("2006-01-02", fromDate); err == nil {
-				patrolArgs = append(patrolArgs, t.Year(), t.Year(), int(t.Month()))
+			patrolArgs := []interface{}{RequestEnv(r), patrolBBox[1], patrolBBox[3], patrolBBox[0], patrolBBox[2]}
+
+			if fromDate != "" {
+				patrolQuery += " AND (e.year > ? OR (e.year = ? AND e.month >= ?))"
+				if t, err := time.Parse("2006-01-02", fromDate); err == nil {
+					patrolArgs = append(patrolArgs, t.Year(), t.Year(), int(t.Month()))
+				}
+			}
+			if toDate != "" {
+				patrolQuery += " AND (e.year < ? OR (e.year = ? AND e.month <= ?))"
+				if t, err := time.Parse("2006-01-02", toDate); err == nil {
+					patrolArgs = append(patrolArgs, t.Year(), t.Year(), int(t.Month()))
+				}
+			}
+
+			patrolQuery += " GROUP BY e.grid_cell_id, e.year, e.month, e.movement_type, g.lat_center, g.lon_center"
+			patrolQuery += " ORDER BY e.year DESC, e.month DESC LIMIT 1000"
+
+			patrolRows, _ := s.DB.Query(patrolQuery, patrolArgs...)
+			if patrolRows != nil {
+				defer patrolRows.Close()
+				for patrolRows.Next() {
+					var gridCellID, movementType string
+					var year, month int
+					var distanceKm float64
+					var points int
+					var latCenter, lonCenter float64
+					patrolRows.Scan(&gridCellID, &year, &month, &movementType, &distanceKm, &points, &latCenter, &lonCenter)
+
+					// Create circle polygon for grid cell (approximate 0.1 degree circle)
+					circlePoly := makeCircleKML(lonCenter, latCenter, 0.05) // ~5.5km radius for 0.1 degree grid
+
+					// Build name and description
+					name := fmt.Sprintf("Patrol %s - %04d-%02d", movementType, year, month)
+					description := fmt.Sprintf("Type: %s<br>Distance: %.1f km<br>Points: %d<br>Grid: %s",
+						movementType, distanceKm, points, gridCellID)
+
+					// TimeSpan for the month
+					startDate := fmt.Sprintf("%04d-%02d-01", year, month)
+					endDate := fmt.Sprintf("%04d-%02d-28", year, month) // Simplified
+
+					var pmb strings.Builder
+					pmb.WriteString(fmt.Sprintf("<Placemark><name>%s</name><styleUrl>#patrol</styleUrl>", xmlEscape(name)))
+					pmb.WriteString("<description><![CDATA[" + description + "]]></description>")
+					pmb.WriteString(fmt.Sprintf("<TimeSpan><begin>%s</begin><end>%s</end></TimeSpan>", startDate, endDate))
+					pmb.WriteString(circlePoly)
+					pmb.WriteString("</Placemark>\n")
+
+					patrolPlacemarks = append(patrolPlacemarks, pmb.String())
+				}
 			}
 		}
-		if toDate != "" {
-			patrolQuery += " AND (e.year < ? OR (e.year = ? AND e.month <= ?))"
-			if t, err := time.Parse("2006-01-02", toDate); err == nil {
-				patrolArgs = append(patrolArgs, t.Year(), t.Year(), int(t.Month()))
+
+		if len(patrolPlacemarks) > 0 {
+			kml.WriteString("<Folder><name>Patrol Effort (30km buffer)</name><visibility>0</visibility>\n")
+			for _, pm := range patrolPlacemarks {
+				kml.WriteString(pm)
 			}
+			kml.WriteString("</Folder>\n")
 		}
-		
-		patrolQuery += " GROUP BY e.grid_cell_id, e.year, e.month, e.movement_type, g.lat_center, g.lon_center"
-		patrolQuery += " ORDER BY e.year DESC, e.month DESC LIMIT 1000"
-		
-		patrolRows, _ := s.DB.Query(patrolQuery, patrolArgs...)
-		if patrolRows != nil {
-			defer patrolRows.Close()
-			for patrolRows.Next() {
-				var gridCellID, movementType string
-				var year, month int
-				var distanceKm float64
-				var points int
-				var latCenter, lonCenter float64
-				patrolRows.Scan(&gridCellID, &year, &month, &movementType, &distanceKm, &points, &latCenter, &lonCenter)
-				
-				// Create circle polygon for grid cell (approximate 0.1 degree circle)
-				circlePoly := makeCircleKML(lonCenter, latCenter, 0.05) // ~5.5km radius for 0.1 degree grid
-				
-				// Build name and description
-				name := fmt.Sprintf("Patrol %s - %04d-%02d", movementType, year, month)
-				description := fmt.Sprintf("Type: %s<br>Distance: %.1f km<br>Points: %d<br>Grid: %s", 
-					movementType, distanceKm, points, gridCellID)
-				
-				// TimeSpan for the month
-				startDate := fmt.Sprintf("%04d-%02d-01", year, month)
-				endDate := fmt.Sprintf("%04d-%02d-28", year, month) // Simplified
-				
-				var pmb strings.Builder
-				pmb.WriteString(fmt.Sprintf("<Placemark><name>%s</name><styleUrl>#patrol</styleUrl>", xmlEscape(name)))
-				pmb.WriteString("<description><![CDATA[" + description + "]]></description>")
-				pmb.WriteString(fmt.Sprintf("<TimeSpan><begin>%s</begin><end>%s</end></TimeSpan>", startDate, endDate))
-				pmb.WriteString(circlePoly)
-				pmb.WriteString("</Placemark>\n")
-				
-				patrolPlacemarks = append(patrolPlacemarks, pmb.String())
-			}
-		}
-	}
-	
-	if len(patrolPlacemarks) > 0 {
-		kml.WriteString("<Folder><name>Patrol Effort (30km buffer)</name><visibility>0</visibility>\n")
-		for _, pm := range patrolPlacemarks {
-			kml.WriteString(pm)
-		}
-		kml.WriteString("</Folder>\n")
-	}
 	} // end effort!=0
 
 	// Waterbodies folder - only create if data exists
@@ -5074,12 +5019,12 @@ func writeGeoJSONToKMLWithDesc(kml *strings.Builder, geojsonStr, styleID, name, 
 	coords := geom["coordinates"]
 
 	kml.WriteString(fmt.Sprintf("<Placemark><name>%s</name><styleUrl>#%s</styleUrl>", xmlEscape(name), styleID))
-	
+
 	// Add description if provided
 	if description != "" {
 		kml.WriteString("<description><![CDATA[" + description + "]]></description>")
 	}
-	
+
 	// Add TimeSpan for Google Earth time slider
 	if startDate != "" || endDate != "" {
 		kml.WriteString("<TimeSpan>")
@@ -5205,7 +5150,7 @@ func (s *Server) HandleAPIParksExport(w http.ResponseWriter, r *http.Request) {
 	dateTo := r.URL.Query().Get("to")
 	country := r.URL.Query().Get("country")
 	bboxStr := r.URL.Query().Get("bbox")
-	
+
 	type ParkExport struct {
 		ID                  string  `json:"id"`
 		WDPAID              string  `json:"wdpa_id"`
@@ -5227,9 +5172,9 @@ func (s *Server) HandleAPIParksExport(w http.ResponseWriter, r *http.Request) {
 		Lat                 float64 `json:"lat"`
 		Lon                 float64 `json:"lon"`
 	}
-	
+
 	var results []ParkExport
-	
+
 	// Build query with filters
 	query := `
 		WITH park_stats AS (
@@ -5286,23 +5231,23 @@ func (s *Server) HandleAPIParksExport(w http.ResponseWriter, r *http.Request) {
 		)
 		SELECT * FROM park_stats WHERE 1=1
 	`
-	
+
 	// For now, return data from loaded areas
 	if s.AreaStore == nil {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode([]ParkExport{})
 		return
 	}
-	
+
 	for _, area := range s.AreaStore.Areas {
 		if country != "" && area.Country != country {
 			continue
 		}
-		
+
 		// Get stats for this park
 		var fires, groups, defoEvents, settlements, pop, pixels, pubs int
 		var defoKm2, roadsKm, roadlessPct, patrolDist, intensity float64
-		
+
 		// protected_area_id is the canonical park assignment (nearest boundary
 		// <=100km via ParkAssigner since 2026-07; bbox-based before that).
 		s.DB.QueryRow(`SELECT COUNT(*) FROM fire_detections WHERE protected_area_id = ? AND (? = '' OR acq_date >= ?) AND (? = '' OR acq_date <= ?)`,
@@ -5324,7 +5269,7 @@ func (s *Server) HandleAPIParksExport(w http.ResponseWriter, r *http.Request) {
 			WHERE g.lat_center >= ? AND g.lat_center <= ? AND g.lon_center >= ? AND g.lon_center <= ?`,
 			RequestEnv(r), latMin, latMax, lonMin, lonMax).Scan(&pixels, &patrolDist)
 		s.DB.QueryRow(`SELECT COUNT(*) FROM pa_publications WHERE pa_id = ?`, area.WDPAID).Scan(&pubs)
-		
+
 		results = append(results, ParkExport{
 			ID:                  area.ID,
 			WDPAID:              area.WDPAID,
@@ -5347,10 +5292,10 @@ func (s *Server) HandleAPIParksExport(w http.ResponseWriter, r *http.Request) {
 			Lon:                 0,
 		})
 	}
-	
+
 	_ = bboxStr // TODO: implement bbox filtering
 	_ = query   // Complex query for future optimization
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(results)
 }
@@ -5362,22 +5307,22 @@ func (s *Server) HandleAPIClassifiedSettlements(w http.ResponseWriter, r *http.R
 		http.Error(w, "park id required", http.StatusBadRequest)
 		return
 	}
-	
+
 	settlements := s.GetCachedClassifiedSettlements(parkID)
-	
+
 	// Group by classification
 	byClass := make(map[string]int)
 	for _, st := range settlements {
 		byClass[st.Classification]++
 	}
-	
+
 	response := map[string]interface{}{
-		"park_id":       parkID,
-		"total":         len(settlements),
-		"by_class":      byClass,
-		"settlements":   settlements,
+		"park_id":     parkID,
+		"total":       len(settlements),
+		"by_class":    byClass,
+		"settlements": settlements,
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
@@ -5389,9 +5334,9 @@ func (s *Server) HandleAPIClassifiedDeforestation(w http.ResponseWriter, r *http
 		http.Error(w, "park id required", http.StatusBadRequest)
 		return
 	}
-	
+
 	events := s.GetCachedClassifiedDeforestation(parkID)
-	
+
 	// Group by classification
 	byClass := make(map[string]int)
 	totalArea := 0.0
@@ -5401,7 +5346,7 @@ func (s *Server) HandleAPIClassifiedDeforestation(w http.ResponseWriter, r *http
 		totalArea += ev.AreaKm2
 		areaByClass[ev.Classification] += ev.AreaKm2
 	}
-	
+
 	response := map[string]interface{}{
 		"park_id":        parkID,
 		"total_events":   len(events),
@@ -5410,7 +5355,7 @@ func (s *Server) HandleAPIClassifiedDeforestation(w http.ResponseWriter, r *http
 		"area_by_class":  areaByClass,
 		"events":         events,
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
@@ -5420,7 +5365,7 @@ func (s *Server) HandleAPIClassifiedDeforestation(w http.ResponseWriter, r *http
 func (s *Server) HandleAPIParkInfrastructure(w http.ResponseWriter, r *http.Request) {
 	parkID := r.PathValue("id")
 	ctx := r.Context()
-	
+
 	// Map WDPA ID to internal park_id if needed
 	internalID := parkID
 	if s.AreaStore != nil {
@@ -5431,7 +5376,7 @@ func (s *Server) HandleAPIParkInfrastructure(w http.ResponseWriter, r *http.Requ
 			}
 		}
 	}
-	
+
 	type River struct {
 		HyrivID      int64   `json:"hyriv_id"`
 		Name         string  `json:"name"`
@@ -5441,7 +5386,7 @@ func (s *Server) HandleAPIParkInfrastructure(w http.ResponseWriter, r *http.Requ
 		Relation     string  `json:"relation"` // inside, crosses, nearby
 		DistanceKm   float64 `json:"distance_km,omitempty"`
 	}
-	
+
 	type Road struct {
 		OsmID       string  `json:"osm_id"`
 		HighwayType string  `json:"highway_type"`
@@ -5449,35 +5394,35 @@ func (s *Server) HandleAPIParkInfrastructure(w http.ResponseWriter, r *http.Requ
 		Passability string  `json:"passability,omitempty"`
 		LengthKm    float64 `json:"length_km"`
 	}
-	
+
 	type Place struct {
 		Name      string  `json:"name"`
 		PlaceType string  `json:"place_type"`
 		Lat       float64 `json:"lat"`
 		Lon       float64 `json:"lon"`
 	}
-	
+
 	type InfraResponse struct {
-		Rivers       []River `json:"rivers"`
-		Roads        []Road  `json:"roads"`
-		Places       []Place `json:"places"`
-		Summary      struct {
-			TotalRivers     int     `json:"total_rivers"`
-			TotalRoads      int     `json:"total_roads"`
-			TotalPlaces     int     `json:"total_places"`
-			TotalRoadKm     float64 `json:"total_road_km"`
-			MajorRivers     []string `json:"major_rivers,omitempty"`
-			RoadSurfaces    map[string]int `json:"road_surfaces,omitempty"`
+		Rivers  []River `json:"rivers"`
+		Roads   []Road  `json:"roads"`
+		Places  []Place `json:"places"`
+		Summary struct {
+			TotalRivers  int            `json:"total_rivers"`
+			TotalRoads   int            `json:"total_roads"`
+			TotalPlaces  int            `json:"total_places"`
+			TotalRoadKm  float64        `json:"total_road_km"`
+			MajorRivers  []string       `json:"major_rivers,omitempty"`
+			RoadSurfaces map[string]int `json:"road_surfaces,omitempty"`
 		} `json:"summary"`
 	}
-	
+
 	response := InfraResponse{
 		Rivers: []River{},
 		Roads:  []Road{},
 		Places: []Place{},
 	}
 	response.Summary.RoadSurfaces = make(map[string]int)
-	
+
 	// Get rivers from park_rivers_hydro (top 20 by stream order)
 	rows, err := s.DB.QueryContext(ctx, `
 		SELECT hyriv_id, COALESCE(name, ''), COALESCE(length_km, 0), 
@@ -5494,7 +5439,7 @@ func (s *Server) HandleAPIParkInfrastructure(w http.ResponseWriter, r *http.Requ
 			var r River
 			var ordFlow int
 			if rows.Scan(&r.HyrivID, &r.Name, &r.LengthKm, &r.StreamOrder, &ordFlow) == nil {
-				r.Relation = "inside"  // hydro data is all park rivers
+				r.Relation = "inside" // hydro data is all park rivers
 				response.Rivers = append(response.Rivers, r)
 				if r.Name != "" && r.StreamOrder >= 4 {
 					majorRivers = append(majorRivers, r.Name)
@@ -5503,10 +5448,10 @@ func (s *Server) HandleAPIParkInfrastructure(w http.ResponseWriter, r *http.Requ
 		}
 		response.Summary.MajorRivers = majorRivers
 	}
-	
+
 	// Count total rivers
 	s.DB.QueryRowContext(ctx, `SELECT COUNT(*) FROM park_rivers_hydro WHERE park_id = ?`, internalID).Scan(&response.Summary.TotalRivers)
-	
+
 	// Get roads with HeiGIT attributes
 	roadRows, err := s.DB.QueryContext(ctx, `
 		SELECT osm_id, COALESCE(highway_type, ''), COALESCE(surface, ''), 
@@ -5531,10 +5476,10 @@ func (s *Server) HandleAPIParkInfrastructure(w http.ResponseWriter, r *http.Requ
 		}
 		response.Summary.TotalRoadKm = totalRoadKm
 	}
-	
+
 	// Count total roads
 	s.DB.QueryRowContext(ctx, `SELECT COUNT(*) FROM roads_heigit WHERE park_id = ?`, internalID).Scan(&response.Summary.TotalRoads)
-	
+
 	// Get OSM places (top 50)
 	placeRows, err := s.DB.QueryContext(ctx, `
 		SELECT name, place_type, lat, lon
@@ -5552,10 +5497,10 @@ func (s *Server) HandleAPIParkInfrastructure(w http.ResponseWriter, r *http.Requ
 			}
 		}
 	}
-	
+
 	// Count total places
 	s.DB.QueryRowContext(ctx, `SELECT COUNT(*) FROM osm_places WHERE park_id = ? AND place_type NOT IN ('river', 'stream', 'lake')`, internalID).Scan(&response.Summary.TotalPlaces)
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
@@ -5568,17 +5513,17 @@ func (s *Server) HandleAPIMergedKML(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "parks parameter required (comma-separated IDs)", http.StatusBadRequest)
 		return
 	}
-	
+
 	parkIDs := strings.Split(parksParam, ",")
 	if len(parkIDs) == 0 {
 		http.Error(w, "No park IDs provided", http.StatusBadRequest)
 		return
 	}
-	
+
 	// Parse date filters
 	fromDate := r.URL.Query().Get("from")
 	toDate := r.URL.Query().Get("to")
-	
+
 	// Build KML header
 	var kml strings.Builder
 	kml.WriteString("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
@@ -5586,7 +5531,7 @@ func (s *Server) HandleAPIMergedKML(w http.ResponseWriter, r *http.Request) {
 	kml.WriteString("<Document>\n")
 	kml.WriteString(fmt.Sprintf("<name>5MP Conservation Data - %d Parks</name>\n", len(parkIDs)))
 	kml.WriteString(fmt.Sprintf("<description>Fire, settlement, and deforestation data from 5MP Conservation Monitoring. Date range: %s to %s</description>\n", fromDate, toDate))
-	
+
 	// Define shared styles
 	kml.WriteString("<Style id=\"boundary\"><LineStyle><color>ff00ff00</color><width>3</width></LineStyle><PolyStyle><color>2000ff00</color></PolyStyle></Style>\n")
 	kml.WriteString("<Style id=\"fire\"><IconStyle><color>ff0000ff</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/firedept.png</href></Icon></IconStyle><LineStyle><color>ff0000ff</color><width>2</width></LineStyle></Style>\n")
@@ -5594,14 +5539,14 @@ func (s *Server) HandleAPIMergedKML(w http.ResponseWriter, r *http.Request) {
 	kml.WriteString("<Style id=\"deforestation\"><IconStyle><color>ffff00ff</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/triangle.png</href></Icon></IconStyle><PolyStyle><color>50ff00ff</color></PolyStyle></Style>\n")
 	kml.WriteString("<Style id=\"road\"><LineStyle><color>ff60a5fa</color><width>2</width></LineStyle></Style>\n")
 	kml.WriteString("<Style id=\"place\"><IconStyle><color>ffffffff</color><scale>0.8</scale><Icon><href>http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href></Icon></IconStyle></Style>\n")
-	
+
 	// Process each park as a folder
 	for _, parkID := range parkIDs {
 		parkID = strings.TrimSpace(parkID)
 		if parkID == "" {
 			continue
 		}
-		
+
 		// Get park info
 		parkName := parkID
 		var boundary string
@@ -5616,17 +5561,17 @@ func (s *Server) HandleAPIMergedKML(w http.ResponseWriter, r *http.Request) {
 				break
 			}
 		}
-		
+
 		// Start park folder
 		kml.WriteString(fmt.Sprintf("<Folder><name>%s</name>\n", xmlEscape(parkName)))
-		
+
 		// Boundary
 		if boundary != "" {
 			kml.WriteString("<Folder><name>Boundary</name>\n")
 			writeGeoJSONToKML(&kml, boundary, "boundary", parkName)
 			kml.WriteString("</Folder>\n")
 		}
-		
+
 		// Build date filter
 		dateFilter := ""
 		if fromDate != "" {
@@ -5635,7 +5580,7 @@ func (s *Server) HandleAPIMergedKML(w http.ResponseWriter, r *http.Request) {
 		if toDate != "" {
 			dateFilter += fmt.Sprintf(" AND (end_date <= '%s' OR end_date IS NULL)", toDate)
 		}
-		
+
 		// Fire trajectories
 		kml.WriteString("<Folder><name>Fire Activity</name>\n")
 		fireRows, _ := s.DB.Query(`SELECT geojson, properties_json, start_date, end_date 
@@ -5657,7 +5602,7 @@ func (s *Server) HandleAPIMergedKML(w http.ResponseWriter, r *http.Request) {
 			fireRows.Close()
 		}
 		kml.WriteString("</Folder>\n")
-		
+
 		// Settlements
 		kml.WriteString("<Folder><name>Settlements</name>\n")
 		settlementRows, _ := s.DB.Query(`SELECT geojson, properties_json FROM feature_geometries 
@@ -5677,7 +5622,7 @@ func (s *Server) HandleAPIMergedKML(w http.ResponseWriter, r *http.Request) {
 			settlementRows.Close()
 		}
 		kml.WriteString("</Folder>\n")
-		
+
 		// Deforestation
 		kml.WriteString("<Folder><name>Deforestation</name>\n")
 		deforestRows, _ := s.DB.Query(`SELECT geojson, properties_json FROM feature_geometries 
@@ -5697,13 +5642,13 @@ func (s *Server) HandleAPIMergedKML(w http.ResponseWriter, r *http.Request) {
 			deforestRows.Close()
 		}
 		kml.WriteString("</Folder>\n")
-		
+
 		// Close park folder
 		kml.WriteString("</Folder>\n")
 	}
-	
+
 	kml.WriteString("</Document>\n</kml>")
-	
+
 	w.Header().Set("Content-Type", "application/vnd.google-earth.kml+xml")
 	w.Header().Set("Content-Disposition", `attachment; filename="5mp_conservation_export.kml"`)
 	w.Write([]byte(kml.String()))
@@ -5729,15 +5674,15 @@ func (s *Server) handleSettlementFeatures(w http.ResponseWriter, parkID string, 
 		WHERE fg.park_id = ? AND fg.feature_type = 'settlement'
 	`
 	args := []interface{}{parkID}
-	
+
 	if featureID != "" {
 		query += " AND fg.feature_id = ?"
 		args = append(args, featureID)
 	}
-	
+
 	query += " LIMIT ?"
 	args = append(args, limit)
-	
+
 	rows, err := s.DB.Query(query, args...)
 	if err != nil {
 		http.Error(w, "Database error", http.StatusInternalServerError)
@@ -5782,7 +5727,7 @@ func (s *Server) handleSettlementFeatures(w http.ResponseWriter, parkID string, 
 		}
 		props["feature_type"] = "settlement"
 		props["feature_id"] = featureID
-		
+
 		// Add narrative and other fields from park_settlements
 		if narrative.Valid {
 			if n := publicSettlementNarrative(classification.String, narrative.String); n != "" {
@@ -5939,11 +5884,11 @@ func (s *Server) handleDeforestationFeatures(w http.ResponseWriter, parkID strin
 		if m, ok := defMeta[defMetaKey(featureID, props["year"])]; ok {
 			narrative, classification, patternType = m.narrative, m.classification, m.patternType
 		}
-		
+
 		if startDateStr.Valid {
 			props["start_date"] = startDateStr.String
 		}
-		
+
 		// Add narrative and other fields from deforestation_events
 		if narrative.Valid {
 			props["narrative"] = narrative.String
@@ -6019,7 +5964,7 @@ func (s *Server) HandleAPINearbyPlaces(w http.ResponseWriter, r *http.Request) {
 		rows, err := s.DB.QueryContext(r.Context(), `
 			SELECT DISTINCT name, place_type, lat, lon
 			FROM osm_places
-			WHERE lat BETWEEN ? AND ? AND lon BETWEEN ? AND ?` + aoiExcludeSQL("park_id") + `
+			WHERE lat BETWEEN ? AND ? AND lon BETWEEN ? AND ?`+aoiExcludeSQL("park_id")+`
 			LIMIT 100
 		`, lat-radius, lat+radius, lon-radius, lon+radius)
 		if err != nil {

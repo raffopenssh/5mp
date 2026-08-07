@@ -692,6 +692,31 @@ any new expensive narrative should take the `narrativeSourceRev` /
 `getCachedNarrative` / `putCachedNarrative` route rather than inventing a
 second cache.
 
+### Geography layers are served whole and cached
+
+`river`, `road`, `place` and `waterbody` on `/features` are **static per
+ingest**, carry no date filter, and are the whole answer or nothing — pinning
+"rivers" means the river network, not its 500 longest reaches. They used to cap
+at 500 default / 2,000 max, which for a park was invisible and for
+`XSA_Study_Area` silently dropped 17k of 19k rivers and 11k of 13k roads. It was
+never AOI-only: `DZA_Ahaggar` has 32,977 river reaches, `DZA_Djurdjura` 46,866
+roads, `COD_Virunga` 11,107 places — every enriched park was truncated too.
+
+Fixed 2026-08-07 in `srv/feature_geo_cache.go`: whole layer by default, gzipped
+into `narrative_cache` under `kind='features:<type>'` with the same
+self-invalidating `COUNT+MAX(id)` `source_rev`, plus an ETag so a re-pin is a
+304. XSA river: 34 MB, 2.2 s cold -> 0.47 s warm -> 0.004 s revalidated.
+
+* **`&limit=5000` means "everything"**, not a cap (`geoFeatureWholeLimit`). It
+  was only ever the old ceiling, and old share links and pinned-layer restores
+  still send it. Only a deliberately *small* limit bypasses the cache — caching
+  a truncated answer under the full key would poison it.
+* **`geoFeatureSources` maps a type to every table its output depends on.**
+  `place` lists three because it suppresses a place point whose name a river or
+  road line already carries (OSM records "Chinko" both as a waterway node and
+  on the reaches, so the map drew a village dot on the labelled river). A
+  roads re-ingest therefore changes the *places* answer.
+
 ### `polygon_ids` LIKE joins are the same trap as `ABS()`
 
 `park_settlements.polygon_ids` and `deforestation_events.polygon_ids` are
