@@ -1,3 +1,5 @@
+fbc0734 2026-08-07 08:41:10 aoi: the archive "blocker" was a non-sargable ABS(), and the OSM ingest was write-only
+98c23ee 2026-08-07 06:35:40 build: refresh version history for 63518c0
 63518c0 2026-08-07 06:35:34 aoi: re-key SYSTEM-owned aoi_progress at startup, not in a migration
 a45926d 2026-08-07 06:29:59 aoi: make the AOI a focus, and give it a hide button and an abort
 4b6d192 2026-08-07 05:50:36 build: refresh version history for cda0cc9
@@ -16,5 +18,3 @@ ba50ee4 2026-08-06 19:38:42 aoi: make interruption the normal exit -- stop, rele
 1766de5 2026-08-06 19:08:28 docs: AOI handover for the ghsl runner, preview supersession and the hover tip
 31158bf 2026-08-06 19:07:19 aoi: ghsl runner (tile cache), preview supersession, AOI hover tip
 9dbb893 2026-08-06 18:41:09 docs: AOI handover for the animator clip, share links and deforestation
-eb6271d 2026-08-06 18:39:20 aoi: derive deforestation from the GFW alerts we already fetched
-57297df 2026-08-06 18:32:55 aoi: animate the polygon, not its bounding box; ?aoi= share links
