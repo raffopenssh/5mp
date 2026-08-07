@@ -7452,8 +7452,10 @@
                     // An AOI is labelled by its analysis window, not "v3":
                     // that is what the user remembers about it, and it is the
                     // only thing that distinguishes two versions in practice.
+                    // “Hidden”, not “archived”: hiding is what the user did, and
+                    // search is the way back — the hide toast says so.
                     const chip = area.archived
-                        ? '<span class="loaded-badge" style="background:rgba(136,136,136,0.2);color:#888;">archived</span>'
+                        ? '<span class="loaded-badge" style="background:rgba(136,136,136,0.2);color:#888;">hidden</span>'
                         : '<span class="loaded-badge" style="background:rgba(251,191,36,0.18);color:#fbbf24;">area</span>';
                     return `
                     <div class="search-result-item" onclick="selectSearchResult(${JSON.stringify(area).replace(/"/g, '&quot;')})">
@@ -7713,6 +7715,21 @@
             toast.style.background = colors[type] || colors.info;
             toast.innerHTML = (opts.spinner ? '<span class="toast-spinner"></span>' : '') + '<span></span>';
             toast.lastChild.textContent = message;
+            // An optional inline action ({label, onClick}). This exists so a
+            // destructive-looking toggle can be undone *where it happened*
+            // rather than confirmed before it happens: a confirm() dialog asks
+            // the user to predict the result, an Undo lets them see it first.
+            if (opts.action && opts.action.label) {
+                const abtn = document.createElement('button');
+                abtn.className = 'toast-action';
+                abtn.textContent = opts.action.label;
+                abtn.onclick = (ev) => {
+                    ev.stopPropagation();
+                    try { opts.action.onClick && opts.action.onClick(); } catch (e) { console.warn(e); }
+                    if (key) dismissToast(key); else toast.remove();
+                };
+                toast.appendChild(abtn);
+            }
             // Reset auto-dismiss timer
             if (toast._dismissTimer) clearTimeout(toast._dismissTimer);
             if (!opts.sticky) {
@@ -7846,16 +7863,51 @@
                 const cov = window._aoiCoverage?.[a.id];
                 const covTxt = cov ? ` · ${cov.done}/${cov.total} layers` : '';
                 const focused = aoiFocusID === a.id;
+                // The tag is where an AOI is *managed*, so the same verbs as the
+                // popup's action bar in the same order: focus, zoom, edit,
+                // un-star. Rename is the name itself — double-click it, the way
+                // you rename a file.
                 return `<div class="aoi-tag${focused ? ' focused' : ''}" title="${escapeHtml(a.name)} — ${escapeHtml(win)}${km ? ' · ' + km : ''}${covTxt}">
-                    <span class="aoi-tag-name" onclick="openAOIPopupById('${escapeHtml(a.id)}')">◈ ${escapeHtml(a.name)}</span>
+                    <span class="aoi-tag-name" id="aoi-tagname-${escapeHtml(a.id)}" onclick="openAOIPopupById('${escapeHtml(a.id)}')" ondblclick="event.stopPropagation();renameAOITag('${escapeHtml(a.id)}')" title="Open · double-click to rename">◈ ${escapeHtml(a.name)}</span>
                     <span class="aoi-tag-win">${escapeHtml(win)}</span>
                     <button class="aoi-tag-zoom${focused ? ' on' : ''}" onclick="event.stopPropagation();toggleAOIFocus('${escapeHtml(a.id)}')" title="${focused ? 'Leave focus' : 'Focus on this area — parks outside it are dimmed, starred parks stay'}" aria-pressed="${focused}">◎</button>
                     <button class="aoi-tag-zoom" onclick="event.stopPropagation();zoomToAOI('${escapeHtml(a.id)}')" title="Zoom to this area">⌖</button>
-                    ${a.is_owner ? `<button class="aoi-tag-zoom" onclick="event.stopPropagation();archiveAOI('${escapeHtml(a.id)}')" title="Hide this area — nothing is deleted; search its name to bring it back">⊘</button>` : ''}
+                    ${a.is_owner ? `<button class="aoi-tag-zoom" onclick="event.stopPropagation();editAOI('${escapeHtml(a.id)}')" title="Edit shape or dates"><i class="icon-pencil-ruler"></i></button>
+                    <button class="aoi-tag-zoom star on" onclick="event.stopPropagation();toggleAOIStar('${escapeHtml(a.id)}')" title="Starred — shown on the map and included in your report. Un-star to hide it; nothing is deleted and search brings it back." aria-pressed="true">★</button>` : ''}
                 </div>`;
             }).join('');
         }
         window.updateAOITagsDisplay = updateAOITagsDisplay;
+
+        // Rename from the tag: the same inline edit as the popup, on whichever
+        // element the user reached for. One server call, no fork — see
+        // startAOIRename().
+        function renameAOITag(id) {
+            const span = document.getElementById(`aoi-tagname-${id}`);
+            if (!span || span.querySelector('input')) return;
+            const old = window._aois?.[id]?.name || id;
+            span.innerHTML = `<input class="aoi-name-input tag" value="${escapeHtml(old)}" maxlength="80">`;
+            const inp = span.querySelector('input');
+            inp.focus(); inp.select();
+            const done = async (save) => {
+                const val = inp.value.trim();
+                if (!save || !val || val === old) { updateAOITagsDisplay(); return; }
+                try {
+                    const r = await fetch(`/api/aois/${encodeURIComponent(id)}/rename?pwd=${encodeURIComponent(getPwd())}`,
+                        { method: 'POST', headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ name: val }) });
+                    if (!r.ok) throw new Error('HTTP ' + r.status);
+                } catch (e) { showToast('Could not rename', 'error'); }
+                await loadAOIs();
+                updateAOIFocusBanner();
+            };
+            inp.onkeydown = ev => { ev.stopPropagation();
+                if (ev.key === 'Enter') { ev.preventDefault(); done(true); }
+                if (ev.key === 'Escape') { ev.preventDefault(); done(false); } };
+            inp.onblur = () => done(true);
+            inp.onclick = ev => ev.stopPropagation();
+        }
+        window.renameAOITag = renameAOITag;
 
         function zoomToAOI(id) {
             const bb = window._aois?.[id]?.bbox;
@@ -8016,9 +8068,24 @@
         // the polygon off the map. The ingest keeps running in the background,
         // so unhiding shows an answer rather than a progress bar, and search
         // is the way back.
-        async function archiveAOI(id) {
+        // Hiding an AOI, the smooth way.
+        //
+        // This used to be a confirm() dialog behind a button labelled “Hide”
+        // with an archive-box icon — three different words (archive / hide /
+        // delete) for one action, and a modal asking the user to predict what
+        // it would do. It is now the star it always was: a starred AOI is on
+        // the map and in the report, un-starring takes it off both. Nothing is
+        // deleted, the ingest keeps running, and the way back is stated twice —
+        // once as an Undo on the toast (for the next few seconds) and once as
+        // “search its name” (for ever after).
+        //
+        // The polygon fades before the request rather than after it, so the
+        // action reads as immediate; if the request fails the polygon is still
+        // there because loadAOIs() re-renders from the server, not from the
+        // fade.
+        async function toggleAOIStar(id) {
             const name = window._aois?.[id]?.name || id;
-            if (!confirm(`Hide “${name}”?\n\nIt comes off the map and out of reports, but nothing is deleted: its data, its share links and its ingest all continue. Search for it by name to bring it back.`)) return;
+            fadeAOILayer(id, true);
             try {
                 const r = await fetch(`/api/aois/${encodeURIComponent(id)}/archive?pwd=${encodeURIComponent(getPwd())}`,
                                       { method: 'POST' });
@@ -8026,11 +8093,103 @@
                 if (aoiFocusID === id) await setAOIFocus(null);
                 if (currentAOIPopup) { currentAOIPopup.remove(); currentAOIPopup = null; }
                 await loadAOIs();
-                showToast(`“${name}” hidden — search its name to restore it`, 'success');
+                fadeAOILayer(id, false);
+                showToast(`“${name}” hidden — nothing deleted; find it again by searching its name`,
+                          'info', { key: 'aoi-hide', duration: 9000,
+                                    action: { label: 'Undo', onClick: () => unhideAOI(id) } });
             } catch (e) {
+                fadeAOILayer(id, false);
                 showToast('Could not hide this area', 'error');
             }
         }
+        window.toggleAOIStar = toggleAOIStar;
+
+        // Bring one back — the Undo path, and what the search result's ★ does.
+        async function unhideAOI(id) {
+            try {
+                const r = await fetch(`/api/aois/${encodeURIComponent(id)}/restore?pwd=${encodeURIComponent(getPwd())}`,
+                                      { method: 'POST' });
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                await loadAOIs();
+                const name = window._aois?.[id]?.name || id;
+                showToast(`“${name}” is back on the map`, 'success', { key: 'aoi-hide' });
+                zoomToAOI(id);
+            } catch (e) {
+                showToast('Could not restore this area', 'error');
+            }
+        }
+        window.unhideAOI = unhideAOI;
+
+        // Fade the polygon out while a hide is in flight, so the action reads
+        // as immediate instead of as a two-second nothing. Paint properties,
+        // not source.setData(): a data round-trip would flash every AOI, and
+        // MapLibre animates a paint change for free (~300 ms).
+        //
+        // The paint here is transient. Whatever it leaves behind is overwritten
+        // by applyAOIFocusPaint()/resetAOILayerPaint(), which own these two
+        // properties — the same reason resetAOILayerPaint() exists at all.
+        function fadeAOILayer(id, on) {
+            if (!map.getLayer || !map.getLayer('aois-fill')) return;
+            const isIt = ['==', ['get', 'id'], id];
+            try {
+                map.setPaintProperty('aois-fill', 'fill-opacity', ['case', isIt, on ? 0 : 0.04, 0.04]);
+                if (map.getLayer('aois-outline')) {
+                    map.setPaintProperty('aois-outline', 'line-opacity', ['case', isIt, on ? 0 : 0.9, 0.9]);
+                }
+            } catch (e) { /* the loadAOIs() repaint will settle it */ }
+        }
+
+        // Renaming is not editing. An edit forks the AOI because the *question*
+        // changed — the polygon or the window — and every derived row was
+        // computed for it. A name is the label on the question, so the server
+        // keeps the id and every share link, pin key and derived row survives.
+        //
+        // Which is why it is not a pencil beside the title: a pencil is a second
+        // edit affordance next to the real one, and it costs a button on the row
+        // this change exists to tidy. The name is the control — click it and it
+        // becomes a field, the way a file name does. Discoverability comes from
+        // a hover underline and a text cursor, not from an icon.
+        function startAOIRename(id) {
+            const span = document.getElementById(`aoi-name-${id}`);
+            if (!span || span.querySelector('input')) return;
+            const old = window._aois?.[id]?.name || span.textContent.trim();
+            span.classList.add('editing');
+            span.innerHTML = `<input class="aoi-name-input" value="${escapeHtml(old)}" maxlength="80" aria-label="Area name">`;
+            const inp = span.querySelector('input');
+            inp.focus(); inp.select();
+            let closed = false;
+            const commit = async (save) => {
+                if (closed) return;
+                closed = true;                    // blur fires after Enter too
+                const val = inp.value.trim();
+                span.classList.remove('editing');
+                if (!save || !val || val === old) { span.textContent = old; return; }
+                span.textContent = val;           // optimistic: the field is gone already
+                try {
+                    const r = await fetch(`/api/aois/${encodeURIComponent(id)}/rename?pwd=${encodeURIComponent(getPwd())}`,
+                        { method: 'POST', headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ name: val }) });
+                    if (!r.ok) throw new Error(await r.text() || ('HTTP ' + r.status));
+                    await loadAOIs();
+                    updateAOIFocusBanner();
+                } catch (e) {
+                    span.textContent = old;
+                    showToast('Could not rename: ' + (e.message || e), 'error');
+                }
+            };
+            inp.onkeydown = ev => {
+                if (ev.key === 'Enter') { ev.preventDefault(); commit(true); }
+                if (ev.key === 'Escape') { ev.preventDefault(); commit(false); }
+                ev.stopPropagation();
+            };
+            inp.onblur = () => commit(true);
+            inp.onclick = ev => ev.stopPropagation();
+        }
+        window.startAOIRename = startAOIRename;
+
+        // Old name, kept because share links, the versions list and the admin
+        // panel all still call it.
+        async function archiveAOI(id) { return toggleAOIStar(id); }
         window.archiveAOI = archiveAOI;
 
         // Starred monitored areas (bboxes), as tags in the same row.
@@ -8215,7 +8374,7 @@
                         <div class="maptip-body">${area}</div>
                         <div class="maptip-meta">Window ${escapeHtml(win)}</div>
                         <div class="maptip-dim">${escapeHtml(line)}</div>
-                        <div class="maptip-exports">${aoiExportButtonsHTML(p.id, p.name || p.id)}</div>`;
+                        <div class="maptip-exports">${aoiActionsHTML(p.id, p.name || p.id, { isOwner: !!p.is_owner })}</div>`;
                 }
             });
         }
@@ -8255,36 +8414,100 @@
             return `<div style="margin-top:8px">${rows}</div>`;
         }
 
-        // KML / Locus / MBTiles for an AOI.
+        // ── AOI actions: one component, two renderings ───────────────────
         //
-        // All three are the park handlers: KML and Locus resolve their
-        // boundary through resolveAreaGeom() and MBTiles its bbox through
-        // resolveAreaBBox(), both of which know an AOI is not in AreaStore. So
-        // the only thing missing was the buttons — an AOI is exactly the object
-        // a ranger wants on a device, and it was the one area of the map you
-        // could not take offline.
+        // The map tip used to carry a strip of bare download icons and the
+        // popup a three-group grid of nine buttons. Both were answering
+        // "everything you could possibly do" when the question on a hover tip
+        // is "what do I do with this now". So there is now one action bar, used
+        // in both places, with exactly five affordances:
         //
-        // The date range is the time slider, like everywhere else: the AOI's
-        // own analysis window bounds what data exists, and narrowing further is
-        // a filter the user has already expressed.
-        // Two renderings of the same three downloads. The map tip is a hover
-        // strip where space is the constraint, so it stays icon-only; the popup
-        // is where a user decides, so there the icon gets its noun. An icon
-        // whose meaning is only in a title= attribute does not exist on a phone.
-        function aoiExportButtonsHTML(id, name, opts) {
-            const labeled = !!(opts && opts.labeled);
-            const cls = labeled ? 'aoi-act' : 'pa-export-btn';
-            const lbl = t => labeled ? `<span class="aoi-act-label">${t}</span>` : '';
+        //   Focus / Hide  — the two halves of "is this the subject"
+        //   Animate       — already the app's verb for a time window
+        //   Export ▾      — one button, four downloads behind it; downloads are
+        //                   a category, not four peer decisions
+        //   Edit          — hands off to the draw panel (the filter menu's own
+        //                   edit), because editing is a mode, not a click
+        //
+        // Hide is rendered as a **star**, deliberately: everywhere else in this
+        // app a filled star means "this is mine, keep it in front of me and in
+        // my report", and an AOI's visibility already *is* its report
+        // membership (collectReportParks folds in every visible AOI). One
+        // metaphor, one control — un-starring hides, search brings it back.
+        function aoiExportMenuItems(id, name) {
             const pwd = encodeURIComponent(getPwd());
             const eid = encodeURIComponent(id);
             const dp = (dateFrom ? '&from=' + dateFrom : '') + (dateTo ? '&to=' + dateTo : '');
             const suffix = dateFrom && dateTo ? `_${dateFrom}_to_${dateTo}`
                          : dateFrom ? `_from_${dateFrom}` : dateTo ? `_to_${dateTo}` : '';
+            const safeName = escapeHtml(name).replace(/'/g, "\\'");
             return `
-                <a href="/api/aois/${eid}/export.kml?pwd=${pwd}&effort=0${dp}" download="${id}${suffix}.kml" title="KML — download for Google Earth" aria-label="Download KML" class="${cls}"><i class="icon-map"></i>${lbl('KML')}</a>
-                <a href="/api/aois/${eid}/export.locus?pwd=${pwd}${dp}" download="${id}_locus.zip" title="Locus — Locus Map 4 backup with every layer this area has (boundary, fires by year, settlements, deforestation, rivers, roads, places) plus field-device defaults. Restore via Locus Map → Backup → Restore" aria-label="Download Locus Map backup" class="${cls}"><i class="icon-smartphone"></i>${lbl('Locus')}</a>
-                <button onclick="event.stopPropagation();showMBTilesDialog('${id}', '${escapeHtml(name).replace(/'/g, "\\'")}')" title="MBTiles — offline satellite tiles for this area" aria-label="Download offline satellite tiles" class="${cls}" id="mbtiles-btn-${id}"><i class="icon-layers"></i>${lbl('Tiles')}</button>`;
+                <a class="aoi-menu-item" href="/api/aois/${eid}/export.geojson?pwd=${pwd}" download="${id}.geojson"><i class="icon-globe"></i><span>GeoJSON</span><em>the polygon itself</em></a>
+                <a class="aoi-menu-item" href="/api/aois/${eid}/export.kml?pwd=${pwd}&effort=0${dp}" download="${id}${suffix}.kml"><i class="icon-map"></i><span>KML</span><em>Google Earth</em></a>
+                <a class="aoi-menu-item" href="/api/aois/${eid}/export.locus?pwd=${pwd}${dp}" download="${id}_locus.zip"><i class="icon-smartphone"></i><span>Locus</span><em>field device backup</em></a>
+                <button class="aoi-menu-item" onclick="event.stopPropagation();closeAOIMenu();showMBTilesDialog('${id}', '${safeName}')"><i class="icon-layers"></i><span>Tiles</span><em>offline satellite</em></button>`;
         }
+
+        // The menu lives on <body>, not inside the tip: the map tip is a small
+        // overflow-hidden box that is re-rendered on every mousemove, so a
+        // child menu would be clipped and then destroyed under the cursor.
+        function toggleAOIMenu(btn, id, name) {
+            const open = document.getElementById('aoi-menu');
+            closeAOIMenu();
+            if (open && open.dataset.for === id) return;
+            const el = document.createElement('div');
+            el.id = 'aoi-menu';
+            el.className = 'aoi-menu';
+            el.dataset.for = id;
+            el.innerHTML = aoiExportMenuItems(id, name);
+            document.body.appendChild(el);
+            const r = btn.getBoundingClientRect();
+            const w = el.offsetWidth, h = el.offsetHeight;
+            el.style.left = Math.max(6, Math.min(window.innerWidth - w - 6, r.left)) + 'px';
+            el.style.top = (r.bottom + h + 6 > window.innerHeight ? r.top - h - 4 : r.bottom + 4) + 'px';
+            setTimeout(() => document.addEventListener('click', closeAOIMenu, { once: true }), 0);
+        }
+        function closeAOIMenu() {
+            const el = document.getElementById('aoi-menu');
+            if (el) el.remove();
+        }
+        window.toggleAOIMenu = toggleAOIMenu;
+        window.closeAOIMenu = closeAOIMenu;
+
+        // ── AOI actions ─────────────────────────────────────────
+        //
+        // Same shape as the park popup, because an AOI is the same kind of
+        // object on screen: a row of small square icon buttons at the right of
+        // the title, then the star. A park has three (KML / Locus / Tiles), an
+        // AOI has three (Focus / Export ▾ / Edit) — four downloads collapse
+        // into one menu because they are one category, not four decisions.
+        //
+        // Animate is deliberately absent: the ▶ chip lives in the time slider,
+        // where a time window is chosen.
+        //
+        // The star is the app's ordinary .star-btn, meaning what it means
+        // everywhere else — keep this in front of me and in my report. For an
+        // AOI those are the same fact, so un-starring is how you hide it.
+        function aoiActionsHTML(id, name, opts) {
+            const o = opts || {};
+            const nm = escapeHtml(name).replace(/'/g, "\\'");
+            const focused = (typeof aoiFocusID !== 'undefined') && aoiFocusID === id;
+            const parts = [
+                `<button onclick="event.stopPropagation();toggleAOIFocus('${id}')" title="Focus — parks outside this area are dimmed (starred parks stay bright) and the data layers switch to this area's own rows" aria-label="Focus on this area" aria-pressed="${focused}" class="pa-export-btn${focused ? ' active' : ''}" id="aoi-focus-btn-${id}"><i class="icon-focus"></i></button>`,
+                `<button onclick="event.stopPropagation();toggleAOIMenu(this,'${id}','${nm}')" title="Download — GeoJSON, KML, Locus or offline satellite tiles" aria-label="Download this area" class="pa-export-btn"><i class="icon-download"></i></button>`
+            ];
+            if (o.isOwner) {
+                parts.push(`<button onclick="event.stopPropagation();editAOI('${id}')" title="Edit shape or dates — opens the draw panel; saving keeps this version as history" aria-label="Edit this area" class="pa-export-btn"><i class="icon-pencil-ruler"></i></button>`);
+                parts.push(o.archived
+                    ? `<button onclick="event.stopPropagation();unhideAOI('${id}')" title="Hidden — star it to put it back on the map and in your report" aria-label="Star this area" aria-pressed="false" class="star-btn">☆</button>`
+                    : `<button onclick="event.stopPropagation();toggleAOIStar('${id}')" title="Starred — on the map and in your report. Un-star to hide it; nothing is deleted and search brings it back." aria-label="Un-star this area" aria-pressed="true" class="star-btn starred">★</button>`);
+            }
+            return parts.join('');
+        }
+        window.aoiActionsHTML = aoiActionsHTML;
+
+        // Old name; kept only because it is documented in AGENTS.md.
+        const aoiExportButtonsHTML = aoiActionsHTML;
         window.aoiExportButtonsHTML = aoiExportButtonsHTML;
 
         function showAOIPopup(props, lngLat) {
@@ -8304,36 +8527,19 @@
                     </div>
                 </div>`;
             const html = `
-                <div class="pa-popup" style="min-width:260px">
+                <div class="pa-popup" style="min-width:300px">
                     <div class="pa-popup-header">
-                        <div class="pa-popup-name">${escapeHtml(name)}</div>
+                        <div class="pa-popup-name" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                            <span style="min-width:0;overflow-wrap:break-word;" id="aoi-name-${id}"${props.is_owner ? ` class="aoi-editable-name" onclick="event.stopPropagation();startAOIRename('${id}')" title="Click to rename"` : ''}>${escapeHtml(name)}</span>
+                            <span style="display:flex;gap:4px;align-items:center;flex-shrink:0;">
+                                ${aoiActionsHTML(id, name, { isOwner: !!props.is_owner,
+                                                             archived: props.state === 'archived' })}
+                            </span>
+                        </div>
                         <div class="pa-popup-country">
                             <span class="pa-popup-country-name">Area of interest</span><span class="pa-popup-area">• ${area}</span>
                         </div>
                         <div style="font-size:10px;color:#888;margin-top:2px">Window ${escapeHtml(win)}</div>
-                        <div class="aoi-actions">
-                            <div class="aoi-act-group">
-                                <span class="aoi-act-group-label">View</span>
-                                <div class="aoi-act-row">
-                                    <button onclick="event.stopPropagation();toggleAOIFocus('${id}')" title="Focus on this area — parks outside it are dimmed (starred parks stay bright), and fire/settlement/deforestation layers switch to this area's own data" class="aoi-act${aoiFocusID === id ? ' active' : ''}" id="aoi-focus-btn-${id}"><i class="icon-focus"></i><span class="aoi-act-label">Focus</span></button>
-                                    <button onclick="event.stopPropagation();animateAOI('${id}')" title="Animate this area over its analysis window" class="aoi-act"><i class="icon-play"></i><span class="aoi-act-label">Animate</span></button>
-                                </div>
-                            </div>
-                            <div class="aoi-act-group">
-                                <span class="aoi-act-group-label">Download</span>
-                                <div class="aoi-act-row">
-                                    <a href="/api/aois/${encodeURIComponent(id)}/export.geojson?pwd=${encodeURIComponent(getPwd())}" download="${id}.geojson" title="GeoJSON — download the area polygon" class="aoi-act"><i class="icon-globe"></i><span class="aoi-act-label">GeoJSON</span></a>
-                                    ${aoiExportButtonsHTML(id, name, { labeled: true })}
-                                </div>
-                            </div>
-                            ${props.is_owner ? `<div class="aoi-act-group">
-                                <span class="aoi-act-group-label">Manage</span>
-                                <div class="aoi-act-row">
-                                    <button onclick="event.stopPropagation();editAOI('${id}')" title="Edit — creates a new version and keeps this one as history" class="aoi-act"><i class="icon-pencil-ruler"></i><span class="aoi-act-label">Edit</span></button>
-                                    <button onclick="event.stopPropagation();archiveAOI('${id}')" title="Hide this area — it comes off the map and out of reports, but nothing is deleted: data, share links and ingest all continue. Search its name to bring it back." class="aoi-act"><i class="icon-archive"></i><span class="aoi-act-label">Hide</span></button>
-                                </div>
-                            </div>` : ''}
-                        </div>
                     </div>
                     <div class="pa-popup-section open" id="aoi-overview-section-${id}" onclick="togglePopupSection(this)">
                         <div class="pa-popup-section-header">
@@ -12417,7 +12623,18 @@
     // Auto-load report data for all starred items
     function autoLoadStarredReportData() {
         let loadingCount = 0;
-        
+
+        // Areas of interest are in the report by virtue of being visible, so
+        // their data must be prefetched like a starred park's — otherwise the
+        // panel shows a permanent “Preparing report…” for the one subject the
+        // user actually drew.
+        for (const a of Object.values(window._aois || {})) {
+            if (!reportDataCache.parks.has(a.id) && !reportDataCache.loading.has(a.id)) {
+                prefetchParkReportData(a.id);
+                loadingCount++;
+            }
+        }
+
         // Load park reports
         for (const park of starredItems.parks) {
             if (!reportDataCache.parks.has(park.id) && !reportDataCache.loading.has(park.id)) {
@@ -12474,7 +12691,8 @@
     }
     
     function updateStarBadge() {
-        const total = Object.values(starredItems).reduce((sum, arr) => sum + arr.length, 0);
+        const total = Object.values(starredItems).reduce((sum, arr) => sum + arr.length, 0)
+                    + Object.keys(window._aois || {}).length;
         const badge = document.getElementById('star-count-badge');
         const btn = document.getElementById('toolbar-stars');
         
@@ -12765,13 +12983,19 @@
         // immediately see the report they'll get.
         if (!window._starExpandInit) {
             // Only latch once there's actually something starred (URL restore
-            // may render an empty modal first).
-            if (starredItems.parks.length) { window._starExpandInit = true; starExpandedState.add('park:' + starredItems.parks[0].id); }
+            // may render an empty modal first). An AOI outranks a park here for
+            // the same reason it leads the report: it is the question.
+            const firstAOI = Object.values(window._aois || {})[0];
+            if (firstAOI) { window._starExpandInit = true; starExpandedState.add('aoi:' + firstAOI.id); }
+            else if (starredItems.parks.length) { window._starExpandInit = true; starExpandedState.add('park:' + starredItems.parks[0].id); }
             else if (starredItems.bboxes.length) { window._starExpandInit = true; starExpandedState.add('bbox:' + starredItems.bboxes[0].bbox.join(',')); }
         }
         
         const body = document.getElementById('star-modal-body');
-        const total = Object.values(starredItems).reduce((sum, arr) => sum + arr.length, 0);
+        // AOIs count toward “is anything starred”: they are in the report, so an
+        // empty-state screen beside a rendered AOI report would be a lie.
+        const total = Object.values(starredItems).reduce((sum, arr) => sum + arr.length, 0)
+                    + Object.keys(window._aois || {}).length;
         
         if (total === 0) {
             body.innerHTML = `
@@ -12787,7 +13011,43 @@
         }
         
         let html = '';
-        
+
+        // Areas of interest, first.
+        //
+        // An AOI is starred by construction: visibility *is* report membership
+        // (collectReportParks folds in every visible one), and un-starring it
+        // hides it. Until now the report quietly contained AOIs that the star
+        // panel never showed, so the panel disagreed with its own export. It
+        // says out loud which sections an AOI can and cannot have, because a
+        // 485,000 km² entry with no species reads as broken data otherwise.
+        const aoiList = Object.values(window._aois || {});
+        if (aoiList.length > 0) {
+            html += renderStarredSection('Areas of Interest', 'aoi', aoiList, item => {
+                const cached = reportDataCache.parks.get(item.id);
+                let summaryPreview = '';
+                if (cached) {
+                    const summary = generateParkSummaryStats(cached);
+                    summaryPreview = `<div class="starred-item-preview" style="margin-top:6px;padding:6px 8px;background:rgba(251,191,36,0.06);border-left:2px solid #fbbf24;border-radius:4px;font-size:10px;color:#aaa;">${summary}</div>`;
+                }
+                const win = (item.from_date || '…') + ' → ' + (item.to_date || 'now');
+                return {
+                    id: item.id,
+                    parkId: item.id,
+                    name: item.name || item.id,
+                    meta: `${formatNumber(Math.round(item.area_km2 || 0))} km² · ${win}`,
+                    icon: '◈',
+                    hint: 'Includes: fire, deforestation, settlements, patrol · species/climate/legal come from the parks inside',
+                    status: cached ? '<div class="starred-report-ready">✓ Report ready</div>' + summaryPreview
+                                   : starLoadingPill('Preparing report…'),
+                    reportHtml: cached
+                        ? renderParkMarkdownInline({ id: item.id, name: item.name || item.id, isAOI: true,
+                                                     area_km2: item.area_km2 || 0,
+                                                     from_date: item.from_date || '', to_date: item.to_date || '' }, cached)
+                        : starSkeletonHtml()
+                };
+            }, 'Your drawn areas — always in the report while they are on the map');
+        }
+
         // Parks section - includes ALL nested data
         if (starredItems.parks.length > 0) {
             html += renderStarredSection('Parks', 'park', starredItems.parks, item => {
@@ -12972,7 +13232,7 @@
                                 </div>
                             </div>
                             <div class="starred-item-actions">
-                                ${['park','country','bbox','narrative'].includes(iconClass) ? `<button class="starred-item-map" title="Show on map"><i class="icon-map icon-color-info"></i></button>` : ''}
+                                ${['park','country','bbox','narrative','aoi'].includes(iconClass) ? `<button class="starred-item-map" title="Show on map"><i class="icon-map icon-color-info"></i></button>` : ''}
                                 <button class="starred-item-remove" title="Remove">×</button>
                                 <span class="starred-item-chevron${isOpen ? ' expanded' : ''}" aria-hidden="true">▼</span>
                             </div>
@@ -13011,6 +13271,7 @@
                     e.stopPropagation();
                     let itemData;
                     if (type === 'park') { itemData = starredItems.parks[idx]; if (itemData) flyToPark(itemData); }
+                    else if (type === 'aoi') { const a = Object.values(window._aois || {})[idx]; if (a) { zoomToAOI(a.id); itemData = a; } }
                     else if (type === 'country') { itemData = starredItems.countries[idx]; if (itemData) flyToCountry(itemData); }
                     else if (type === 'bbox') { itemData = starredItems.bboxes[idx]; if (itemData) flyToBbox(itemData.bbox); }
                     else if (type === 'narrative') { itemData = starredItems.narratives[idx]; if (itemData) flyToParkAndShowNarrative(itemData); }
@@ -13023,6 +13284,9 @@
                 e.stopPropagation();
                 let itemData;
                 if (type === 'park') { itemData = starredItems.parks[idx]; toggleStar('parks', itemData); }
+                // Un-starring an AOI is the hide path, Undo toast included — the
+                // same single control as the map tip and the filter tag.
+                else if (type === 'aoi') { const a = Object.values(window._aois || {})[idx]; if (a) toggleAOIStar(a.id).then(renderStarredItems); return; }
                 else if (type === 'country') { itemData = starredItems.countries[idx]; toggleStar('countries', itemData); }
                 else if (type === 'bbox') { itemData = starredItems.bboxes[idx]; toggleStar('bboxes', itemData); }
                 else if (type === 'notification') { itemData = starredItems.notifications[idx]; toggleStar('notifications', itemData); }

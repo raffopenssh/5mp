@@ -78,16 +78,19 @@
    show a button that cannot be clicked. */
 .maptip-exports {
     display: none; gap: 6px; margin-top: 8px; padding-top: 7px;
-    border-top: 1px solid rgba(255,255,255,0.08);
+    flex-wrap: wrap; border-top: 1px solid rgba(255,255,255,0.08);
 }
 .maptip.sticky .maptip-exports { display: flex; }
-.maptip-exports > * {
+/* A .star-btn brings its own (deliberately unframed) styling — same control,
+   same look as on a park popup. Everything else is a framed icon button. */
+.maptip-exports > *:not(.star-btn) {
     flex: 1; display: flex; align-items: center; justify-content: center;
     min-height: 34px; background: rgba(255,255,255,0.06);
     border: 1px solid rgba(255,255,255,0.14); border-radius: 6px;
     color: #d1d5db; font-size: 14px; cursor: pointer; text-decoration: none;
 }
 .maptip-exports > *:active { background: rgba(255,255,255,0.16); }
+.maptip-exports .star-btn { margin-left: auto; font-size: 16px; padding: 4px 2px; }
 /* Legacy inline-styled tip bodies (turbidity etc.) were written for a white
    popup; remap their light-theme greys so they stay readable on dark. */
 .maptip [style*="#374151"] { color: #d1d5db !important; }

@@ -268,6 +268,9 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("GET /api/aois/{id}/versions", s.HandleAPIAOIVersions)
 	mux.HandleFunc("POST /api/aois/{id}/edit", s.HandleAPIAOIEdit)
 	mux.HandleFunc("POST /api/aois/{id}/restore", s.HandleAPIAOIRestore)
+	// Rename is NOT an edit: a label is not the question, so it keeps the id
+	// (and every share link and derived row keyed by it) and forks nothing.
+	mux.HandleFunc("POST /api/aois/{id}/rename", s.HandleAPIAOIRename)
 	// Archive = hide the overlay, keep the data and the links. The button most
 	// users reach for when they mean "delete"; /restore is the way back.
 	mux.HandleFunc("POST /api/aois/{id}/archive", s.HandleAPIAOIArchive)
