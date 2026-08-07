@@ -613,6 +613,70 @@ def run_ghsl(conn, aoi, ds, deadline, budget):
     return True, f"{cur['polys']:,} built-up polygons, {n:,} settlements"
 
 
+def run_hansen(conn, aoi, ds, deadline, budget):
+    """Hansen lossyear (<=2023) -> deforestation polygons + events, one 2-deg
+    window per unit.
+
+    Why this exists at all: GFW integrated alerts start in 2024, so without it
+    an AOI has no deforestation history before then while every park it
+    overlaps has 2001-2024 polygons. Tiles are public COGs read through
+    /vsicurl -- no download, no quota, and therefore the one deforestation
+    source that cannot silently return empty because a rate limit was hit
+    (scripts/hansen_loss.py).
+
+    Fifth writer of (park_id=<aoi>, feature_type) and safe only because it
+    owns the disjoint `deforest_hansen_` prefix: it must never touch
+    deforest_gfw_% (the alerts unit), plain deforest_% (the clip preview) or
+    the settlement/fire prefixes. The events it clusters are scoped by the
+    same prefix, so the alerts unit's >=2024 events survive a Hansen rerun and
+    vice versa.
+    """
+    import hansen_loss
+
+    aid = aoi["id"]
+    geom = aoi_lib.aoi_geom(aoi)
+    bbox = aoi_lib.aoi_bbox(aoi)
+    cur = load_cursor(ds) or {"i": 0, "polys": 0}
+    total = len(hansen_loss.windows_for_bbox(*bbox))
+
+    def on_window(done, _t, written):
+        # ingest() flushes before each callback, so the rows for windows
+        # [start_window, cur['i']) are committed -- the cursor is a real
+        # resume point, not an optimistic one.
+        cur["i"] = start + done
+        cur["polys"] = base + written
+        progress(conn, aid, ds["dataset"], cur, cur["i"], total,
+                 detail=f"{cur['polys']:,} loss polygons, "
+                        f"{cur['i']}/{total} windows")
+        check_stop(deadline)
+
+    start, base = cur["i"], cur["polys"]
+    try:
+        hansen_loss.ingest(conn, aid, geom, bbox, log=log, deadline=deadline,
+                           start_window=start, progress_cb=on_window)
+    except Interrupted:
+        raise
+    if cur["i"] < total:
+        return False, f"{cur['polys']:,} loss polygons, {cur['i']}/{total} windows"
+
+    # Cluster + classify through the canonical EventRebuilder, prefix-scoped so
+    # this only ever owns its own events (the same shape as the ghsl unit
+    # handing settlement polygons to rebuild_settlements_for_park).
+    from rebuild_events_enhanced import EventRebuilder
+    rebuilder = EventRebuilder()
+    try:
+        n = rebuilder.rebuild_deforestation_for_park(
+            aid, id_prefix=f"{hansen_loss.PREFIX}{aid}_")
+    finally:
+        try:
+            rebuilder.conn.close()
+        except Exception:
+            pass
+    return True, (f"{cur['polys']:,} loss polygons "
+                  f"({hansen_loss.HANSEN_MIN_YEAR}-{hansen_loss.HANSEN_MAX_YEAR}), "
+                  f"{n:,} events")
+
+
 def run_osm(conn, aoi, ds, deadline, budget):
     """One country PBF per unit: download, extract the AOI bbox, fill the
     AOI's places/roads, then — while the PBF is on disk — backfill every park
@@ -663,6 +727,88 @@ def run_osm(conn, aoi, ds, deadline, budget):
     return cur["i"] >= total, f"{cur['i']}/{total} countries"
 
 
+def run_gsw(conn, aoi, ds, deadline, budget):
+    """JRC Global Surface Water occurrence -> park_waterbodies, one 1-deg
+    window per unit.
+
+    This unit was "blocked: needs occurrence tiles we do not hold" until
+    2026-08-07, when the tiles turned out not to need holding: they are public
+    COGs and /vsicurl reads a 1-degree window in 0.55 s, exactly the trade
+    Hansen made (scripts/gsw_water.py).
+
+    Sixth writer into a park-shaped table for this AOI, and safe for the same
+    reason as the rest: it owns the `gsw_` waterbody_id prefix and deletes
+    nothing else.
+    """
+    import gsw_water
+
+    aid = aoi["id"]
+    geom = aoi_lib.aoi_geom(aoi)
+    bbox = aoi_lib.aoi_bbox(aoi)
+    cur = load_cursor(ds) or {"i": 0, "bodies": 0}
+    total = len(gsw_water.windows_for_bbox(*bbox))
+    start, base = cur["i"], cur["bodies"]
+
+    def on_window(done, _t, written):
+        # ingest() flushes before each callback, so everything up to cur['i']
+        # is committed and the cursor is a real resume point.
+        cur["i"] = start + done
+        cur["bodies"] = base + written
+        progress(conn, aid, ds["dataset"], cur, cur["i"], total,
+                 detail=f"{cur['bodies']:,} waterbodies, {cur['i']}/{total} windows")
+        check_stop(deadline)
+
+    gsw_water.ingest(conn, aid, geom, bbox, log=log, deadline=deadline,
+                     start_window=start, progress_cb=on_window)
+    if cur["i"] < total:
+        return False, f"{cur['bodies']:,} waterbodies, {cur['i']}/{total} windows"
+    return True, f"{cur['bodies']:,} waterbodies (JRC GSW 1984-2021)"
+
+
+def run_hydro(conn, aoi, ds, deadline, budget):
+    """Rivers and lakes for the AOI, one country PBF per unit.
+
+    HydroSHEDS was the intended source and cannot be used: data.hydrosheds.org
+    serves a Cloudflare 403 to every unattended request (checked 2026-08-07).
+    The handover's own stopgap -- OSM waterways from the PBF the `osm` unit
+    already downloads -- is what runs here (scripts/osm_hydro.py), writing
+    park_rivers_hydro/park_lakes_hydro under a negative-id key space so an
+    imported HydroSHEDS row could never be clobbered if the download revives.
+
+    Note this is NOT the `basin` unit: that one is mghydro/MERIT and answers
+    "what drains through here". This one answers "what is this river called",
+    which is what the narratives and the KML folder names need.
+    """
+    import osm_hydro
+
+    aid = aoi["id"]
+    cur = load_cursor(ds)
+    if not cur:
+        cur = {"i": 0, "countries": aoi_countries(conn, aoi),
+               "rivers": 0, "lakes": 0}
+    countries, total = cur["countries"], len(cur["countries"])
+    bbox = aoi_lib.aoi_bbox(aoi)
+    while cur["i"] < total and time.time() < deadline:
+        if stopping():
+            break
+        iso = countries[cur["i"]]
+        try:
+            # replace only on the first country, or each would wipe the
+            # previous one's rows for the same AOI.
+            n_r, n_l = osm_hydro.ingest_country(
+                conn, aid, iso, bbox, replace=(cur["i"] == 0), log=log)
+            cur["rivers"] += n_r
+            cur["lakes"] += n_l
+        except Exception as ex:
+            cur.setdefault("failed", []).append([iso, str(ex)[:80]])
+        cur["i"] += 1
+        progress(conn, aid, ds["dataset"], cur, cur["i"], total,
+                 detail=f"{cur['rivers']:,} rivers, {cur['lakes']:,} lakes")
+    return (cur["i"] >= total,
+            f"{cur['rivers']:,} rivers, {cur['lakes']:,} lakes "
+            f"({cur['i']}/{total} countries, OSM)")
+
+
 def run_clip(conn, aoi, ds, deadline, budget):
     """Phase A preview. One unit, sub-second; aoi_clip writes its own
     aoi_datasets row (coverage = fraction of the polygon inside a park), which
@@ -687,7 +833,10 @@ RUNNERS = {
     "gfw": run_gfw,
     "ghsl": run_ghsl,
     "deforestation": run_deforestation,
+    "hansen": run_hansen,
     "osm": run_osm,
+    "gsw": run_gsw,
+    "hydro": run_hydro,
     "basin": run_basin,
 }
 

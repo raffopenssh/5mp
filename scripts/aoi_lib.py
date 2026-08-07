@@ -119,6 +119,12 @@ DEFAULT_DATASETS = [
     ("fire_v5",       20, "fire_gap"),
     ("gfw",           30, None),
     ("deforestation", 35, "gfw"),
+    # Hansen lossyear <=2023, streamed from public COGs (scripts/hansen_loss.py).
+    # GFW integrated alerts only start in 2024, so without this an AOI has no
+    # deforestation history before then while every park it overlaps has
+    # 2001-2024 polygons. Cutover matches the parks': Hansen <=2023, alerts
+    # >=2024, so the two never double count.
+    ("hansen",        36, None),
     ("ghsl",          40, None),
     ("osm",           50, None),
     ("gsw",           60, None),

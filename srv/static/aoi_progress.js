@@ -41,7 +41,8 @@
     const DS_LABEL = {
         clip: 'preview from nearby parks', fire_gap: 'fire detections',
         fire_v5: 'fire trajectories', gfw: 'forest-loss alerts',
-        deforestation: 'deforestation events', ghsl: 'settlements',
+        deforestation: 'deforestation events (2024+)',
+        hansen: 'forest loss 2001–2023', ghsl: 'settlements',
         osm: 'roads & places', gsw: 'surface water', hydro: 'rivers & lakes',
         basin: 'watershed'
     };

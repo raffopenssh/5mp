@@ -115,10 +115,12 @@ LINE_TABLES = ["roads_heigit"]
 # from neighbouring parks; the real ingest units derive the AOI's own rows into
 # the same tables, keyed by a distinct id prefix. Several writers, one table,
 # disjoint prefixes -- and that only holds if each scopes its delete.
-#   deforest_gfw_%   -> the `deforestation` unit (GFW alerts)
-#   settlement_ghsl_ -> the `ghsl` unit (built-up surface tiles)
+#   deforest_gfw_%    -> the `deforestation` unit (GFW alerts, >=2024)
+#   deforest_hansen_% -> the `hansen` unit (Hansen lossyear, <=2023)
+#   settlement_ghsl_  -> the `ghsl` unit (built-up surface tiles)
 DELETE_EXCLUDE = {
-    "deforestation_events": "polygon_ids LIKE 'deforest_gfw_%'",
+    "deforestation_events": "polygon_ids LIKE 'deforest_gfw_%' "
+                            "OR polygon_ids LIKE 'deforest_hansen_%'",
     "park_settlements": "polygon_ids LIKE 'settlement_ghsl_%'",
 }
 
@@ -128,18 +130,31 @@ DELETE_EXCLUDE = {
 # exactly the ground the preview stood in for. The clip still deletes its own
 # previous preview rows (that is what makes the handover atomic); DELETE_EXCLUDE
 # keeps the real ones.
+#
+# Deforestation needs BOTH real ingests before the preview may go: the GFW
+# unit only covers >=2024 and Hansen only <=2023, so retiring the preview on
+# either one alone would blank half the history the parks show.
 SUPERSEDED_BY = {
-    "park_settlements": "ghsl",
+    "park_settlements": ["ghsl"],
+    "deforestation_events": ["deforestation", "hansen"],
+    # clip_features() keys feature_geometries rows by their feature_type.
+    "deforestation": ["deforestation", "hansen"],
 }
 
 
 def superseded(conn, aoi_id, table):
-    ds = SUPERSEDED_BY.get(table)
-    if not ds:
+    names = SUPERSEDED_BY.get(table)
+    if not names:
         return False
-    row = conn.execute("SELECT state FROM aoi_datasets WHERE aoi_id=? AND dataset=?",
-                       (aoi_id, ds)).fetchone()
-    return bool(row) and row[0] == "done"
+    if isinstance(names, str):
+        names = [names]
+    for ds in names:
+        row = conn.execute(
+            "SELECT state FROM aoi_datasets WHERE aoi_id=? AND dataset=?",
+            (aoi_id, ds)).fetchone()
+        if not row or row[0] != "done":
+            return False
+    return True
 
 
 def columns(conn, table):
@@ -293,6 +308,7 @@ def clip_features(conn, aoi_id, geom, park_ids, lo, hi, dry=False):
     conn.execute("DELETE FROM feature_geometries WHERE park_id = ? AND "
                  "feature_type IN ('settlement', 'deforestation') AND "
                  "feature_id NOT LIKE 'deforest_gfw_%' AND "
+                 "feature_id NOT LIKE 'deforest_hansen_%' AND "
                  "feature_id NOT LIKE 'settlement_ghsl_%'", (aoi_id,))
     if out:
         conn.executemany("""

@@ -290,6 +290,8 @@ def main():
     ap.add_argument("--park")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--minutes", type=float, default=60)
+    ap.add_argument("--no-events", action="store_true",
+                    help="write polygons only, skip clustering into events")
     args = ap.parse_args()
     if not (args.aoi or args.park):
         ap.error("need --aoi or --park")
@@ -317,6 +319,25 @@ def main():
           f"({HANSEN_MIN_YEAR}-{HANSEN_MAX_YEAR})")
     for y in sorted(per_year):
         print(f"   {y}: {per_year[y]:,}")
+
+    if args.dry_run or args.no_events:
+        return
+    # Polygons on their own are invisible: the popup, the narratives and the
+    # star report all read deforestation_events. Cluster + classify through the
+    # canonical EventRebuilder -- prefix-scoped, so a Hansen rerun cannot touch
+    # the GFW-alert unit's >=2024 events for the same park (AGENTS.md: several
+    # writers, one table, disjoint prefixes).
+    from rebuild_events_enhanced import EventRebuilder
+    rebuilder = EventRebuilder()
+    try:
+        ev = rebuilder.rebuild_deforestation_for_park(
+            target, id_prefix=f"{PREFIX}{target}_")
+    finally:
+        try:
+            rebuilder.conn.close()
+        except Exception:
+            pass
+    print(f"{target}: {ev:,} deforestation events from those polygons")
 
 
 if __name__ == "__main__":

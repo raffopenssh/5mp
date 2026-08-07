@@ -27,10 +27,16 @@ python3 scripts/aoi_runner.py --status
 | `fire_gap` | done | 3,182,542 detections, 34/34 windows |
 | `gfw` | done | 2,225,511 alerts, 252/252 tiles |
 | `deforestation` | done | 696 events from those alerts (2024+ only) |
+| `hansen` | pending | **runner landed 2026-08-07** — loss 2001–2023, §4.3 |
 | `fire_v5` | **pending at step 3/4** | groups already built (48 MB json); resume with the runner |
 | `ghsl` | pending | never completed a tile |
 | `osm`, `basin` | pending | runners exist |
-| `gsw`, `hydro` | pending | **no runner** — §4 |
+| `gsw`, `hydro` | pending | **runners landed 2026-08-07** — §4.2 |
+
+Every dataset in `DEFAULT_DATASETS` now has a runner, so `aoiBlockedDatasets`
+is empty and nothing in the estimate is priced at zero. The map is kept: the
+next dataset sketched before it is built needs it, and the estimator's contract
+with the UI is that `blocked` means "listed, free, explained".
 
 ```bash
 python3 scripts/aoi_runner.py --aoi XSA_Study_Area --minutes 120
@@ -164,16 +170,48 @@ question nobody asked, with no way to tell, because the id did not change.
 
 ### 4.1 Finish the queue for XSA (cheap, unblocks everything else)
 
-`fire_v5` step 3/4, then `ghsl`, `osm`, `basin`. One unit at a time.
+Still the top item. `fire_v5` step 3/4, then `hansen`, `ghsl`, `osm`, `gsw`,
+`hydro`, `basin`. **One unit at a time** — the runners now all exist, which
+makes it tempting to fan them out, and that is precisely what stranded three
+leases on 2026-08-07.
 
-### 4.2 Two ingest units have no runner
+```bash
+python3 scripts/aoi_runner.py --aoi XSA_Study_Area --dataset gsw --minutes 60
+```
 
-* `gsw` — 3 missing 10×10° occurrence tiles (`occ_20E_0N`, `occ_30E_10N`,
-  `occ_30E_0N`). Try `/vsicurl` before assuming a download (it worked for
-  Hansen).
-* `hydro` — HydroRIVERS_v10_af + HydroLAKES. Stopgap: PBF waterways from `osm`.
+`seed_datasets()` is `INSERT OR IGNORE`, so an existing AOI picks up newly
+added datasets by re-seeding — already done for XSA's `hansen`.
 
-### 4.3 Hansen for pre-2024 deforestation — script written, **not wired**
+### 4.2 ~~Two ingest units have no runner~~ — both landed 2026-08-07
+
+* `gsw` → `scripts/gsw_water.py`. The three "missing" JRC occurrence tiles
+  never needed downloading: they are public COGs and `/vsicurl` reads a **1°
+  window in 0.55 s** — the same trade Hansen made, which is exactly what the
+  old note told the next reader to try. Occurrence ≥75% → `Inland perennial`,
+  25–75% → `Inland intermittent`: **the parks' own two `waterbody_type`
+  values**, so the popup, narratives and KML/Locus exports read an AOI's water
+  with no second code path. Scoped by the `gsw_` `waterbody_id` prefix.
+  Measured on COD_Virunga: 353 bodies from 3 windows in ~20 s.
+* `hydro` → `scripts/osm_hydro.py`. HydroSHEDS is **not usable unattended**:
+  `data.hydrosheds.org` returns a Cloudflare 403 challenge to every request,
+  browser UA or not (checked 2026-08-07). So the handover's own stopgap ships —
+  OSM waterways from the country PBF the `osm` unit already downloads, into
+  `park_rivers_hydro`/`park_lakes_hydro`.
+  Two conventions make sharing those tables safe:
+  **ids are negated OSM ids** (HydroSHEDS ids are all positive, so `< 0` is
+  provably ours and a real HydroSHEDS import could never be clobbered), and
+  **`stream_order` is a tag-derived band, not Strahler** (river 4, canal 3,
+  stream 2, ditch/drain 1) — OSM has no Strahler, and `stream_order >= 4`
+  still means "the big named ones" for every consumer.
+* **`hydro` is not `basin`, and mghydro is not the source here.** mghydro /
+  MERIT-Hydro stays the watershed layer (`fetch_park_basins.py`): it answers
+  "what drains through here". It is the wrong instrument for named rivers —
+  an order of magnitude sparser inside the area (CAF_Chinko: 417 MERIT reaches
+  vs 3,510 HydroRIVERS) and its reaches carry a `comid` but **no name**, while
+  "Near <X> river", the KML folder names and the settlement classifier all key
+  off the name. Both layers ship; they answer different questions.
+
+### 4.3 ~~Hansen for pre-2024 deforestation — script written, **not wired**~~ — wired 2026-08-07
 
 `scripts/hansen_loss.py` works (`--park CAF_Chinko --dry-run`; XSA is 20
 windows across 4 tiles). GFW integrated alerts only start in **2024**, so the
@@ -184,14 +222,33 @@ the parks exactly: Hansen ≤2023 (`deforest_hansen_` prefix), alerts ≥2024
 (`deforest_gfw_`). `HANSEN_MAX_YEAR = 2023` deliberately stops short of
 Hansen's own 2024 band so the two never double count.
 
-To wire it: add `("hansen", 36, None)` to **both** `aoi_lib.DEFAULT_DATASETS`
-and `defaultAOIDatasets` (a test enforces they agree); add `run_hansen` to
-`aoi_runner.RUNNERS` (one window per unit — `ingest(..., start_window=cur["i"])`
-is already resumable); add `deforest_hansen_%` to `aoi_clip.DELETE_EXCLUDE`
-and gate the `deforestation` preview in `SUPERSEDED_BY` on *both* real ingests
-being done; add a rate to `srv/aoi_estimate.go` (measure a real park run first
-and put the number in the test); add the label to `DS_LABEL` in both JS files
-and to `aoiCoverageHTML`.
+All of that is done: `("hansen", 36, None)` in both dataset lists, `run_hansen`
+in `RUNNERS` (one 2° window per unit, resumable via `start_window`),
+`deforest_hansen_%` in `DELETE_EXCLUDE`, `SUPERSEDED_BY` gating the
+deforestation preview on **both** real ingests (either alone would blank half
+the history), the rate in `aoi_estimate.go`, and the label in both JS files and
+`aoiCoverageHTML`.
+
+Two things the plan did not say, both measured:
+
+* **The rate is ~50 s per 2° window, not 0.6 s.** The /vsicurl *read* is 0.6 s;
+  the unit is dominated by polygonising the loss mask. Pricing the read would
+  under-quote the dataset by ~80×. XSA is 20 windows.
+* **Polygons alone are invisible.** The popup, the narratives and the star
+  report all read `deforestation_events`, so the unit finishes by clustering
+  through the canonical `EventRebuilder` — via a new
+  `rebuild_deforestation_for_park(park_id, id_prefix=…)`, the mirror of the
+  existing `rebuild_settlements_for_park` the `ghsl` unit uses. `id_prefix`
+  scopes both the read and the delete, so Hansen (≤2023) and the GFW-alert unit
+  (≥2024) own events in one table for one park without either erasing the
+  other. `rebuild_deforestation()` now calls it in a loop, so there is still
+  exactly one classifier.
+
+**Onboarding uses it too** (`scripts/onboard_park.py` step 4b). A newly
+onboarded park used to get GFW alerts only — two years of loss next to 161
+parks showing twenty-four — because Hansen needed the 26-tile `data/hansen/`
+download that is not on this machine. `hansen_loss.py --park X` streams, so
+onboarding just runs it.
 
 ⚠️ It is the **fifth writer** of `(park_id=<aoi>, feature_type)` and is only
 safe because it owns a disjoint id prefix. It must never touch
@@ -260,7 +317,9 @@ Not reachable today (ids are disjoint). Key them `aoi:<id>:<type>`.
 | `scripts/test_aoi_resume.py` | proves resumability — run after lease changes |
 | `scripts/aoi_lib.py` | connect, principal_ref, upsert, `DEFAULT_DATASETS` |
 | `scripts/aoi_clip.py` | Phase A preview; `DELETE_EXCLUDE`, `SUPERSEDED_BY` |
-| `scripts/hansen_loss.py` | streamed Hansen loss, no download — **unwired** |
+| `scripts/hansen_loss.py` | streamed Hansen loss (<=2023), no download |
+| `scripts/gsw_water.py` | streamed JRC surface water -> `park_waterbodies` |
+| `scripts/osm_hydro.py` | rivers & lakes from a country PBF (HydroSHEDS is 403) |
 | `scripts/ghsl_tiles.py` | GHSL tiles, cached by tile id, 1-indexed grid |
 | `srv/aoi.go` | read path, visibility, `aoiExcludeSQL`, `aoiNotifSQLFilter`, `resolveAreaGeom` |
 | `srv/aoi_write.go` | create/refresh/delete/progress/kick |

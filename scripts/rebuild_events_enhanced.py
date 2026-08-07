@@ -407,94 +407,106 @@ class EventRebuilder:
         
         return ' '.join(parts)
     
-    def rebuild_deforestation(self):
-        """Rebuild deforestation_events with enhanced classification"""
-        
-        print("=" * 60)
-        print("Rebuilding deforestation events (enhanced)")
-        print("=" * 60)
-        
-        # Get all deforestation polygons
-        cursor = self.conn.execute("""
+    def load_deforestation_polygons(self, park_id=None, id_prefix=None):
+        """{(park_id, year): [polygon dicts]} from feature_geometries.
+
+        id_prefix scopes the read to one writer's rows. feature_geometries
+        deforestation for a single park_id can come from several writers with
+        disjoint id prefixes (`deforest_` the original park run,
+        `deforest_hansen_` <=2023, `deforest_gfw_` >=2024), and a per-writer
+        rebuild must see only its own or it would re-cluster and duplicate
+        somebody else's events.
+        """
+        sql = """
             SELECT park_id, feature_id,
                    json_extract(properties_json, '$.year') as year,
                    json_extract(properties_json, '$.area_km2') as area_km2,
                    json_extract(properties_json, '$.lat') as lat,
                    json_extract(properties_json, '$.lon') as lon
             FROM feature_geometries
-            WHERE feature_type = 'deforestation'
-            ORDER BY park_id, year
-        """)
-        
-        # Group by park and year
+            WHERE feature_type = 'deforestation'"""
+        args = []
+        if park_id:
+            sql += " AND park_id = ?"
+            args.append(park_id)
+        if id_prefix:
+            sql += " AND feature_id LIKE ?"
+            args.append(id_prefix + '%')
+        sql += " ORDER BY park_id, year"
+
         park_year_polygons = defaultdict(list)
-        for row in cursor:
+        for row in self.conn.execute(sql, args):
             year = int(row['year']) if row['year'] else 0
             if year == 0:
                 continue
-            key = (row['park_id'], year)
-            park_year_polygons[key].append({
+            park_year_polygons[(row['park_id'], year)].append({
                 'feature_id': row['feature_id'],
                 'area_km2': float(row['area_km2']) if row['area_km2'] else 0,
                 'lat': float(row['lat']) if row['lat'] else 0,
-                'lon': float(row['lon']) if row['lon'] else 0
+                'lon': float(row['lon']) if row['lon'] else 0,
             })
-        
-        print(f"Found {len(park_year_polygons)} park-year combinations")
-        
-        # Get park names
-        park_names = {}
-        for row in self.conn.execute("SELECT DISTINCT park_id FROM feature_geometries WHERE feature_type = 'deforestation'"):
-            parts = row['park_id'].split('_')
-            park_names[row['park_id']] = ' '.join(parts[1:]).replace('_', ' ')
-        
-        # Clear existing events
-        self.conn.execute("DELETE FROM deforestation_events")
-        
-        # Process each park-year with clustering
-        count = 0
-        linear_count = 0
-        
-        processed_parks = set()
-        for (park_id, year), polygons in sorted(park_year_polygons.items()):
-            if park_id not in processed_parks:
-                processed_parks.add(park_id)
-                print(f"  Processing {park_id}...")
-            
-            # Cluster polygons spatially
+        return park_year_polygons
+
+    def rebuild_deforestation_for_park(self, park_id, polygons_by_year=None,
+                                       id_prefix=None, delete=True):
+        """Cluster + classify one park's (or AOI's) deforestation polygons.
+
+        The mirror of rebuild_settlements_for_park, and split out for the same
+        reason: a park onboarding and an AOI's Hansen unit both need ONE park's
+        events rebuilt through the canonical classifier rather than a second
+        copy of it (docs/PLAN_AOI_OVERLAY.md §4.3).
+
+        `id_prefix` makes the rebuild belong to a single writer: it both scopes
+        which polygons are read and which existing events are deleted, so the
+        Hansen unit (<=2023) and the GFW-alert unit (>=2024) can own rows in
+        the same table for the same park without either erasing the other.
+        `delete=False` for the global rebuild, which has already truncated.
+        """
+        if polygons_by_year is None:
+            polygons_by_year = self.load_deforestation_polygons(
+                park_id, id_prefix=id_prefix)
+        if delete:
+            # Before the empty-input early return, not after: a rebuild that
+            # now yields nothing must not leave the old rows immortal
+            # (AGENTS.md, "a park with zero groups is a real state").
+            if id_prefix:
+                self.conn.execute(
+                    "DELETE FROM deforestation_events WHERE park_id = ? "
+                    "AND polygon_ids LIKE ?", (park_id, id_prefix + '%'))
+            else:
+                self.conn.execute(
+                    "DELETE FROM deforestation_events WHERE park_id = ?",
+                    (park_id,))
+            self.conn.commit()
+        if not polygons_by_year:
+            return 0
+
+        places = self._load_park_places(park_id)
+        rivers = self._load_park_rivers(park_id)
+        roads = self._load_park_roads(park_id)
+        climate = self.climate.get(park_id, {})
+        park_name = ' '.join(park_id.split('_')[1:]).replace('_', ' ')
+
+        count, linear_count = 0, 0
+        for (_pid, year), polygons in sorted(polygons_by_year.items()):
             clusters = self._cluster_polygons(polygons, DEFORESTATION_CLUSTER_KM)
-            
-            # Load context
-            places = self._load_park_places(park_id)
-            rivers = self._load_park_rivers(park_id)
-            roads = self._load_park_roads(park_id)
-            climate = self.climate.get(park_id, {})
-            park_name = park_names.get(park_id, park_id)
-            
-            # Create event for each cluster
             for cluster in clusters:
                 avg_lat = sum(p['lat'] for p in cluster) / len(cluster)
                 avg_lon = sum(p['lon'] for p in cluster) / len(cluster)
-                
-                fires_near = self._get_fire_density(park_id, year, avg_lat, avg_lon, radius_km=10)
-                
+
+                fires_near = self._get_fire_density(park_id, year, avg_lat,
+                                                    avg_lon, radius_km=10)
                 classification = self._classify_deforestation(
-                    cluster, park_id, year, fires_near, roads
-                )
-                
+                    cluster, park_id, year, fires_near, roads)
                 if classification['is_linear']:
                     linear_count += 1
-                
+
                 nearest_place = self._get_nearest_place(avg_lat, avg_lon, places)
                 nearest_river = self._get_nearest_river(avg_lat, avg_lon, rivers)
-                
                 narrative = self._generate_deforestation_narrative(
                     park_name, year, classification,
-                    nearest_place, nearest_river, climate
-                )
-                
-                polygon_ids = ','.join(p['feature_id'] for p in cluster)
-                
+                    nearest_place, nearest_river, climate)
+
                 self.conn.execute("""
                     INSERT INTO deforestation_events
                     (park_id, year, area_km2, lat, lon, pattern_type, classification,
@@ -506,21 +518,44 @@ class EventRebuilder:
                     avg_lat, avg_lon, classification['pattern'],
                     classification['classification'], classification['confidence'],
                     narrative, fires_near, classification['fire_ratio'],
-                    polygon_ids, classification['num_polygons'],
+                    ','.join(p['feature_id'] for p in cluster),
+                    classification['num_polygons'],
                     datetime.now().isoformat()
                 ))
                 count += 1
-            
-            if count % 50 == 0:
-                print(f"  Processed {count} events ({linear_count} linear)...")
-                self.conn.commit()
-        
         self.conn.commit()
-        
-        # Print stats
+        self.linear_count = linear_count
+        return count
+
+    def rebuild_deforestation(self):
+        """Rebuild deforestation_events for every park at once."""
+
+        print("=" * 60)
+        print("Rebuilding deforestation events (enhanced)")
+        print("=" * 60)
+
+        park_year_polygons = self.load_deforestation_polygons()
+        print(f"Found {len(park_year_polygons)} park-year combinations")
+
+        by_park = defaultdict(dict)
+        for key, polys in park_year_polygons.items():
+            by_park[key[0]][key] = polys
+
+        # Clear existing events; the per-park calls then pass delete=False.
+        self.conn.execute("DELETE FROM deforestation_events")
+
+        count, linear_count = 0, 0
+        for park_id, polys in sorted(by_park.items()):
+            print(f"  Processing {park_id}...")
+            count += self.rebuild_deforestation_for_park(
+                park_id, polys, delete=False)
+            linear_count += getattr(self, 'linear_count', 0)
+
+        self.conn.commit()
+
         print(f"\nCreated {count} deforestation events")
         print(f"  Linear patterns (road-associated): {linear_count}")
-        
+
         cursor = self.conn.execute("""
             SELECT classification, COUNT(*), SUM(area_km2)
             FROM deforestation_events
@@ -530,9 +565,9 @@ class EventRebuilder:
         print("\nBy classification:")
         for row in cursor:
             print(f"  {row[0]}: {row[1]} events, {row[2]:.1f} km²")
-        
+
         return count
-    
+
     def load_settlement_polygons(self, park_id=None):
         """{park_id: [polygon dicts]} from feature_geometries."""
         cursor = self.conn.execute("""
