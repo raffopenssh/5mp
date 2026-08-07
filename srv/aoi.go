@@ -159,9 +159,13 @@ func aoiExcludeSQL(col string) string {
 	if n == 0 {
 		return ""
 	}
-	// The `aoi:` prefix covers scope keys the ingest uses for tables it shares
-	// with parks but writes per-AOI rather than per-park (osm_places,
-	// roads_heigit): scripts/aoi_runner.py run_osm passes "aoi:<id>".
+	// Every AOI-derived row in a park-shaped table is keyed by the bare AOI id,
+	// so the NOT IN over the tiny `aois` table covers all of them. The
+	// `NOT LIKE 'aoi:%'` clause is kept for pre-2026-08-07 rows: run_osm used to
+	// write osm_places/roads_heigit under an `aoi:<id>` scope key that NO read
+	// path resolved, so the AOI's real OSM ingest (12,956 roads, 432 places) was
+	// invisible to its own popup, narratives and exports
+	// (docs/AOI_HANDOVER_2.md §1). New writers use the bare id.
 	return " AND " + col + " NOT IN (SELECT id FROM aois) AND " + col +
 		" NOT LIKE 'aoi:%'"
 }

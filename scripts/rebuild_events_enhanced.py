@@ -46,6 +46,76 @@ def point_to_line_distance(px, py, x1, y1, x2, y2):
     proj_y = y1 + t * dy
     return math.sqrt((px - proj_x)**2 + (py - proj_y)**2)
 
+class _RoadIndex:
+    """Grid-bucketed road segments, for nearest-road queries.
+
+    A park has ~1,400 roads and a linear scan is fine; an AOI has 12,956 and it
+    is not, because the caller runs one query per deforestation polygon. This is
+    the same grid trick `_cluster_polygons` uses, for the same reason: it was
+    added when fixing the AOI's OSM key made the road count jump 92x
+    (docs/AOI_HANDOVER_2.md §1) and turned this into the new bottleneck.
+
+    A segment is registered in every cell its bbox touches, or a long way would
+    be missing from the cells it passes through. `nearest()` searches outward in
+    shells and only stops once the searched box provably extends past the best
+    hit, so it is exact, not approximate.
+    """
+
+    CELL = 0.05     # ~5.5 km
+    MAX_RING = 5    # search out to ~27 km, then give up
+
+    def __init__(self, roads):
+        self.roads = roads
+        self.cells = defaultdict(list)
+        for road in roads:
+            coords = road.get('coords', [])
+            for i in range(len(coords) - 1):
+                seg = (coords[i], coords[i + 1], road)
+                x1, y1 = coords[i]
+                x2, y2 = coords[i + 1]
+                for cy in range(int(min(y1, y2) // self.CELL),
+                                int(max(y1, y2) // self.CELL) + 1):
+                    for cx in range(int(min(x1, x2) // self.CELL),
+                                    int(max(x1, x2) // self.CELL) + 1):
+                        self.cells[(cy, cx)].append(seg)
+
+    def __len__(self):
+        return len(self.roads)
+
+    def nearest(self, lat, lon):
+        """(km, road) to the nearest road, or (None, None) beyond MAX_RING.
+
+        Exact within the searched radius: it keeps widening until the searched
+        box provably extends past the best hit found. Beyond ~27 km it returns
+        None, which the one consumer (_check_linear_pattern, threshold 0.5 km)
+        already treats as "no road near this polygon" — so the cap is invisible
+        to behaviour and is what keeps a remote polygon in a roadless park from
+        scanning the whole grid.
+        """
+        cy, cx = int(lat // self.CELL), int(lon // self.CELL)
+        best, best_road = float('inf'), None
+        for ring in range(0, self.MAX_RING + 1):
+            # Only the shell added by this ring, not the filled box.
+            if ring == 0:
+                shell = [(0, 0)]
+            else:
+                shell = [(dy, dx)
+                         for dy in range(-ring, ring + 1)
+                         for dx in range(-ring, ring + 1)
+                         if max(abs(dy), abs(dx)) == ring]
+            for dy, dx in shell:
+                for (p1, p2, road) in self.cells.get((cy + dy, cx + dx), ()):
+                    d = point_to_line_distance(lon, lat, p1[0], p1[1],
+                                               p2[0], p2[1])
+                    if d < best:
+                        best, best_road = d, road
+            if best_road is not None and best <= ring * self.CELL:
+                break
+        if best_road is None:
+            return None, None
+        return best * 111.0, best_road
+
+
 class EventRebuilder:
     def __init__(self):
         self.conn = sqlite3.connect(DB_PATH)
@@ -134,7 +204,17 @@ class EventRebuilder:
         return places
     
     def _load_park_roads(self, park_id):
-        """Load road geometries for road proximity detection"""
+        """Load road geometries for road proximity detection, with a spatial index.
+
+        The index is not an optimisation, it is what makes the AOI case finish.
+        `_get_nearest_road_distance` is called once per polygon and used to scan
+        every road's every segment; that was tolerable when a park had ~1,400
+        roads and fatal at 12,956 (which is what an AOI has once its OSM ingest
+        is keyed where the readers look — docs/AOI_HANDOVER_2.md §1). Bucketing
+        segments into ~0.05° cells confines the search to the 3x3 block around
+        the query point, the same trick `_cluster_polygons` uses and for the same
+        reason.
+        """
         if park_id in self.roads_cache:
             return self.roads_cache[park_id]
         
@@ -153,14 +233,17 @@ class EventRebuilder:
                     'type': row['highway_type'],
                     'coords': geojson.get('coordinates', [])
                 })
+        roads = _RoadIndex(roads)
         self.roads_cache[park_id] = roads
         return roads
     
     def _get_nearest_road_distance(self, lat, lon, roads):
-        """Get distance to nearest road in km"""
+        """Get distance to nearest road in km."""
         if not roads:
             return None, None
-        
+        if isinstance(roads, _RoadIndex):
+            return roads.nearest(lat, lon)
+
         min_dist_deg = float('inf')
         nearest_road = None
         
@@ -205,16 +288,29 @@ class EventRebuilder:
         return is_linear, fraction_near_road, nearest_road
     
     def _get_fire_density(self, park_id, year, lat, lon, radius_km=5):
-        """Get fire count near a location for a given year"""
+        """Get fire count near a location for a given year.
+
+        ⚠️ The bounds MUST stay as `latitude BETWEEN ? AND ?`, never
+        `ABS(latitude - ?) < ?`. Wrapping the indexed column in a function makes
+        the term non-sargable, so SQLite abandons idx_fire_location and does a
+        covering scan of all 42.9M rows: **5.0 s per call vs 0.04 s**, measured
+        2026-08-07. This is called once per deforestation cluster, which is what
+        made rebuild_deforestation_for_park hold SQLite's single writer for 2.5+
+        hours on the XSA AOI's 76,903 Hansen polygons and turned every
+        user-initiated write on the deployment into a 500 (the archive "blocker"
+        of docs/AOI_HANDOVER_2.md §0 was this query, not the handler).
+        """
         radius_deg = radius_km / 111.0
-        
+
         cursor = self.conn.execute("""
             SELECT COUNT(*) as cnt
             FROM fire_detections
-            WHERE ABS(latitude - ?) < ? AND ABS(longitude - ?) < ?
-            AND acq_date LIKE ?
-        """, (lat, radius_deg, lon, radius_deg, f"{year}%"))
-        
+            WHERE latitude BETWEEN ? AND ?
+              AND longitude BETWEEN ? AND ?
+              AND acq_date LIKE ?
+        """, (lat - radius_deg, lat + radius_deg,
+              lon - radius_deg, lon + radius_deg, f"{year}%"))
+
         row = cursor.fetchone()
         return row['cnt'] if row else 0
     
@@ -448,7 +544,8 @@ class EventRebuilder:
         return park_year_polygons
 
     def rebuild_deforestation_for_park(self, park_id, polygons_by_year=None,
-                                       id_prefix=None, delete=True):
+                                       id_prefix=None, delete=True,
+                                       on_batch=None, batch=200):
         """Cluster + classify one park's (or AOI's) deforestation polygons.
 
         The mirror of rebuild_settlements_for_park, and split out for the same
@@ -461,6 +558,19 @@ class EventRebuilder:
         Hansen unit (<=2023) and the GFW-alert unit (>=2024) can own rows in
         the same table for the same park without either erasing the other.
         `delete=False` for the global rebuild, which has already truncated.
+
+        **It commits every `batch` events and calls `on_batch(count)` between
+        batches**, the same way hansen_loss.ingest() flushes per window. One
+        transaction around the whole rebuild is what made an AOI-sized input
+        (76,903 polygons) hold SQLite's single writer for hours, so nothing
+        else on the deployment — not the nightly park refresh, not a user
+        flipping a toggle — could get a write slot (docs/AOI_HANDOVER_2.md §0).
+        Committing per batch is safe because a re-run is idempotent: the delete
+        above is prefix-scoped and re-derives the same clusters.
+
+        `on_batch` is also the interrupt point: raise from it (the AOI runner
+        raises Interrupted) to stop between batches with everything so far
+        committed.
         """
         if polygons_by_year is None:
             polygons_by_year = self.load_deforestation_polygons(
@@ -523,6 +633,11 @@ class EventRebuilder:
                     datetime.now().isoformat()
                 ))
                 count += 1
+                # Release the write lock between batches so cron jobs and user
+                # toggles can interleave; on_batch may raise to interrupt.
+                if on_batch and count % batch == 0:
+                    self.conn.commit()
+                    on_batch(count)
         self.conn.commit()
         self.linear_count = linear_count
         return count

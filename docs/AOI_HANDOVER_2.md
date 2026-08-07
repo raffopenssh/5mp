@@ -1,4 +1,4 @@
-# AOI — handover, rev 4 (2026-08-07)
+# AOI — handover, rev 5 (2026-08-07)
 
 `docs/PLAN_AOI_OVERLAY.md` is the design rationale and the record of *measured*
 facts — read its §1, §2 and §4 before touching ingest. This file is only "what
@@ -11,33 +11,29 @@ data we already hold.
 
 ---
 
-## 0. Read this first — the open blocker (rev 4)
+## 0. Read this first — rev 4's blocker was a missing index hint
 
-**`POST /api/aois/{id}/archive` is written, wired and unverified.** It returns
-500 while the AOI Hansen unit is running, and that is not a bug in the handler:
-`rebuild_deforestation_for_park` on a 76,903-polygon input holds SQLite's
-single writer **continuously for 35+ minutes**, so the request cannot get a
-write slot at all.
+**`archive` works. It was never a handler bug, and the fix was one SQL
+predicate.** rev 4 spent a session concluding that
+`rebuild_deforestation_for_park` "holds SQLite's single writer for 35+ minutes"
+and that the fix belonged "in the writer, not the handler". Half right: the
+writer *was* the problem, but not because of transaction shape. It was this, in
+`EventRebuilder._get_fire_density()`:
 
-What was tried, and why each was not enough:
+```sql
+WHERE ABS(latitude - ?) < ? AND ABS(longitude - ?) < ?   -- 5.04 s
+WHERE latitude BETWEEN ? AND ? AND longitude BETWEEN ? AND ?   -- 0.044 s
+```
 
-* `busy_timeout` 5 s → 30 s (`db/db.go`). Helps a request that arrives between
-  two short batch commits. Useless here.
-* `execUserToggle()` (`srv/errors.go`): retry the one-row UPDATE for ~40 s
-  around the driver's own wait. Still loses, for the same reason — there are no
-  gaps to retry into. **A 60 s curl came back 500.**
-* A 503 + Retry-After was written and then removed on the (correct) grounds
-  that a user flipping a toggle should not be told to come back later.
+Wrapping an indexed column in `ABS()` makes the term non-sargable, so SQLite
+abandons `idx_fire_location` and covering-scans all 42.9M `fire_detections`
+rows. **115× slower, once per deforestation cluster.** On XSA's 76,903 Hansen
+polygons that is hours of CPU inside one transaction — which is why every
+user-initiated write on the deployment returned 500, and why
+`daily_park_refresh` had been dying nightly with `database is locked`.
 
-So the honest framing of what is left: **the fix is not in the handler, it is
-in the writer.** The clustering step needs to commit in batches and release the
-lock between them, the same way the ingest half of the unit already does
-(`hansen_loss.ingest` flushes per window — that is why its cursor is a real
-resume point). Until that happens, any user-initiated write is hostage to
-whatever batch job is running.
-
-Verify with the *whole* sequence, on an idle database, or the result means
-nothing:
+With the predicate fixed, the whole §0 verification sequence passes **in 17 ms**
+on an idle database:
 
 ```bash
 P='$AOI_OWNER_PWD'
@@ -51,15 +47,42 @@ curl -s -o /dev/null -w '%{http_code}\n' \
   "localhost:8000/api/aois/XSA_Study_Area/fire-narrative?pwd=$P"          # 200 (links live)
 sqlite3 db.sqlite3 "SELECT count(*) FROM aoi_datasets
   WHERE aoi_id='XSA_Study_Area' AND enabled=0"                           # 0 — archive must
-                                                                         # NOT stop ingest
 curl -s -X POST "localhost:8000/api/aois/XSA_Study_Area/restore?pwd=$P"  # and back
 ```
+
+**Verified 2026-08-07: archive → count 0 → state archived → search finds it →
+narrative 200 → datasets untouched → restore.** All of it.
 
 That last assertion is the design decision most likely to be "fixed" by
 mistake: **archiving is a statement about the screen, not about the question.**
 An AOI with three days of ingest left should keep fetching while hidden, so
 unhiding shows an answer rather than a progress bar. (An *edit* does disable
 the old queue — there the question genuinely was superseded.)
+
+Three lessons worth more than the fix:
+
+1. **Before concluding "SQLite's single writer is the problem", check whether
+   the writer is CPU-bound.** `ps` showed 95% CPU and `State: R` for 2.5 hours.
+   A process genuinely waiting on a lock is `S`, not `R`. rev 4's `busy_timeout`
+   bump and `execUserToggle()` retry loop were both treatments for a diagnosis
+   that was wrong — they are harmless and can stay, but they fixed nothing.
+2. **A 500 from a write while a batch job runs is a performance bug until
+   proven otherwise.** The temptation is to make the handler more patient. The
+   right move is to ask why the batch is slow.
+3. `rebuild_deforestation_for_park` *also* now commits every 200 events and
+   calls `on_batch(count)` between batches (the AOI runner passes a callback
+   that reports progress and raises `Interrupted`). That is the fix rev 4
+   proposed, and it is worth having on its own — but it was the second-order
+   problem, not the first.
+
+### Still open from this: the clustering loop had no interrupt point
+
+`kill -TERM` on the hansen runner did nothing for 65 s because the clustering
+step never checked `stopping()`. `on_batch` closes that. But note that
+`--status` showed `running` with a live lease the whole time, so **a `SIGTERM`
+that appears ignored means the unit is inside a section with no check, not that
+the lease is stranded.** `--heal` only reclaims *dead-pid* leases; for a live
+pid you must `kill -9` and then `--heal`.
 
 ---
 
@@ -78,19 +101,55 @@ Every dataset has a runner and every one but `hansen` is `done` for XSA:
 + 2,530 lakes, 3 country PBFs. `basin` returns **0 rows and that is correct** —
 a 485,000 km² polygon has no single watershed.
 
-`hansen` (Hansen loss 2001–2023, 20 windows × ~50 s) **finished its ingest**
-(76,903 loss polygons, cursor `{"i": 20}`) and as of the end of rev 4's session
-was still inside the clustering step — `rebuild_deforestation_for_park`, 36+
-minutes and counting, holding the write lock the entire time (see §0). Check
-whether the events landed before assuming it is stuck:
+`hansen` (Hansen loss 2001–2023, 20 windows × ~50 s) finished its ingest
+(76,903 loss polygons, cursor `{"i": 20}`) and its clustering step now runs at a
+usable speed (§0). Check it landed:
 
 ```bash
 sqlite3 db.sqlite3 "SELECT count(*) FROM deforestation_events
-  WHERE park_id='XSA_Study_Area' AND event_id LIKE 'deforest_hansen_%'"
+  WHERE park_id='XSA_Study_Area' AND polygon_ids LIKE 'deforest_hansen_%'"
 python3 scripts/aoi_runner.py --status | grep hansen   # 'done' = it committed
 ```
 
-**Never run two units at once.** SQLite has one writer and the v5 chain holds
+⚠️ Note the column is **`polygon_ids`**, not `event_id` — rev 4's snippet named
+a column that does not exist, so it errored rather than reporting 0.
+
+### The `osm` unit was writing where nothing reads (fixed 2026-08-07)
+
+`run_osm` keyed `osm_places`/`roads_heigit` by an **`aoi:<id>` scope key** on the
+theory that AOI rows should stay out of the park id space. But that is what
+`aoiExcludeSQL()` is for, and **no read path resolved the prefix**: the
+`/infrastructure` handler, `/features?type=road|place`, the narratives and the
+KML/Locus exports all key on the bare id. So the AOI's real OSM ingest —
+**12,956 roads and 432 placenames** — was invisible to its own popup, which
+showed only the 141 roads the clip preview had copied from neighbouring parks.
+Days of ingest, unreachable. Exactly the same shape of bug as the animator's
+missing 38,725 trajectories in rev 3, and the same lesson: **an `aoi:` prefix
+that only the exclusion filter understands is a write-only key.**
+
+Fixed by writing the bare id like every other unit (ghsl, hansen, gsw, hydro
+all already did). After the re-key: roads 141 → 12,956, places 287 → 690,
+road km 864 → 2,766. `aoiExcludeSQL` keeps its `NOT LIKE 'aoi:%'` clause for
+any stragglers, and `DELETE` now removes both spellings — plus
+`roads_heigit`/`park_rivers_hydro`/`park_lakes_hydro`/`park_waterbodies`, which
+were **never in the delete list at all** (an AOI delete left them behind).
+
+### `enrich_park_infra` has three modes, and the default is wrong for an AOI
+
+It used to be "skip if this key already has rows", which is right for the
+opportunistic park backfill and silently wrong for an AOI: the clip preview
+always leaves rows, so the unit was a no-op end to end, and a multi-country AOI
+ingested only its first country. Now:
+
+* default — skip if rows exist (the park backfill; cheap, idempotent)
+* `replace=True` — the AOI's **first** country, so the real ingest supersedes
+  the clip preview atomically
+* `append=True` — the AOI's **later** countries, deduped by `osm_id` because
+  Geofabrik country extracts overlap at borders
+
+XSA spans 3 countries and had 432 placenames for 485,000 km²; that was the tell.
+
+**Never run two units at once.****Never run two units at once.** SQLite has one writer and the v5 chain holds
 it for minutes; that stranded three leases on 2026-08-07. Dead-pid leases
 self-heal (`--heal`, and at the start of every run).
 `python3 scripts/test_aoi_resume.py` proves interruption is a normal exit — run
@@ -334,38 +393,36 @@ tell, because the id did not change.
 
 ## 4. What is left, in priority order
 
-### 4.0 Verify `archive` — and fix the writer that blocks it
+### 4.0 ~~Verify `archive`~~ — done (§0)
 
-See §0. The handler, route, buttons (popup header + filter tag), toast and
-focus-teardown are all in; **not one successful call has been observed.** Do
-not "fix" it in the handler until you have run the §0 sequence on an idle
-database — the retry loop is already there and already loses.
+Verified end to end on an idle database, 17 ms. The batch writers now yield
+(`on_batch`, every 200 events). What is *not* done: the same treatment for the
+other long writers — `rebuild_settlements_for_park` and the v5 fire chain still
+hold the writer for their whole run. Neither has bitten yet because neither is
+CPU-pathological the way `_get_fire_density` was, but the pattern to copy is in
+`rebuild_deforestation_for_park`.
 
-The real work is making the batch writers yield:
-`EventRebuilder.rebuild_deforestation_for_park()` should commit per cluster
-batch the way `hansen_loss.ingest()` commits per window. That is one fix for a
-whole class of symptom — every user-initiated write on this deployment is
-currently hostage to whatever cron is running.
+**Grep for the bug class, not the bug.** `ABS(<indexed col> - ?)` is the
+signature; there may be more. Same for `strftime(acq_date)` and
+`substr(acq_date,...)` in a WHERE clause.
 
-### 4.1 Finish `hansen` for XSA
+### 4.1 Let `hansen` finish
 
-The only incomplete dataset. `~50 s` per 2° window × 20, resumable via
-`start_window`. It is the **fifth writer** of `(park_id=<aoi>, feature_type)`
-and safe only because it owns the disjoint `deforest_hansen_` prefix.
+Ingest is complete; clustering is running at a usable speed now. Just confirm
+`--status` reaches `done` and the event count settles.
 
-```bash
-python3 scripts/aoi_runner.py --aoi XSA_Study_Area --dataset hansen --minutes 90
-```
+### 4.2 ~~Confirm the aoi_progress re-key ran~~ — done
 
-`seed_datasets()` is `INSERT OR IGNORE`, so an existing AOI picks up newly
-added datasets by re-seeding.
+It converged on the first boot after the writer was freed (§0): both
+`aoi_progress` rows are now keyed by the AOI id and
+`/api/notifications?type=aoi_progress&pwd=test2026` returns **0**. Three
+sessions of "run this SQL by hand" were blocked by the same non-sargable query.
 
-### 4.2 Confirm the aoi_progress re-key ran
-
-Was §4.2 "run this SQL by hand" in rev 2 and rev 3 and never got run, so it is
-code now (`reownSystemAOIProgress`). One check, in §1. It had still not found a
-free write slot when rev 4 ended — the Hansen clustering step held the writer
-for the whole session.
+⚠️ **`db/migrations/044-aoi-progress-reown.sql` was still on disk** despite rev 4
+recording it as reverted, and it restart-looped the service at 06:30–06:34
+(`failed to run migrations: ... database is locked`) until it was removed. When a
+migration is downgraded to a startup fixup, **delete the file** — a doc note is
+not a revert. Highest applied migration is 043.
 
 ### 4.3 Verify the editor by hand
 
@@ -420,7 +477,12 @@ Not reachable today (ids are disjoint). Key them `aoi:<id>:<type>`.
   `cancel` is about the quota. Conflating them means unhiding shows a progress
   bar instead of an answer.
 * Telling the user "database busy, try again" when they flip a toggle — no,
-  that was written and removed. Fix the batch writer instead (§0).
+  that was written and removed. Fix the writer instead — and first check
+  whether it is *CPU*-bound rather than lock-bound (§0: it was, and 2.5 hours of
+  "lock contention" was one non-sargable `ABS()`).
+* An `aoi:<id>` scope key in a park-shaped table — no. Bare AOI id, and
+  `aoiExcludeSQL()` for privacy. A prefix only the exclusion filter understands
+  is a write-only key (§1).
 * AOI rows in bbox-keyed endpoints **by default** — no, `aoiExcludeSQL()`.
   With an explicit, visibility-checked `?aoi=` — yes, `aoiScopeSQL()`, and
   exclusively.
