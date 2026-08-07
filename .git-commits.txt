@@ -1,3 +1,7 @@
+cda0cc9 2026-08-07 05:50:21 docs: AOI handover rev 3 — strip what shipped, keep only the traps
+8a19ce5 2026-08-07 05:49:03 aoi: reach its own data — animate, report, KML/Locus/MBTiles
+35653cf 2026-08-07 05:48:29 aoi: reach its own data — animate, report, KML/Locus/MBTiles
+f9a9d7b 2026-08-07 05:19:38 build: refresh version history for f275e9e
 f275e9e 2026-08-07 05:19:23 aoi: give every dataset a runner -- Hansen, surface water, rivers & lakes
 0656798 2026-08-06 20:24:16 docs: fresh AOI handover (rev 2); retire the old one
 7fe947b 2026-08-06 20:22:52 aoi: give the AOI its own filter section, KML/Locus exports and area tags
@@ -14,7 +18,3 @@ eb6271d 2026-08-06 18:39:20 aoi: derive deforestation from the GFW alerts we alr
 81ecc96 2026-08-06 18:15:37 docs: AOI resume-here section; record the FIRMS product-availability trap
 1c3330a 2026-08-06 18:14:41 fire: ask FIRMS which product covers a date instead of guessing by age
 3163864 2026-08-06 18:11:20 docs: AOI handover updated for commits 5-7; AGENTS.md section on the two invariants
-44b2045 2026-08-06 18:09:01 aoi: map layer, popup and apiBase() routing (7/7)
-b6f690c 2026-08-06 17:59:20 aoi: Phase A — clip the overlapped parks' data into the AOI (6/7)
-f39b8a2 2026-08-06 17:55:22 aoi: keep AOI rows out of the unkeyed park-shaped queries (5/7)
-71e91a1 2026-08-06 17:45:53 docs: turn the AOI plan into a handover (status, measured facts, what's left)
