@@ -544,9 +544,9 @@ fixed analysis window, an owner, and data fetched *for it* over days by a cron.
 Instance #1 is `XSA_Study_Area` (485,150 km², owner `$AOI_OWNER_PWD`).
 Full handover: `docs/PLAN_AOI_OVERLAY.md`.
 
-**Current handover: `docs/AOI_HANDOVER_2.md`** (rev 4) — read its **§0** first:
-it is the one open blocker. `docs/PLAN_AOI_OVERLAY.md` remains the design
-rationale and the measured-facts record.
+**Current handover: `docs/AOI_HANDOVER.md`** (rev 7) — the first revision with
+nothing open. `docs/PLAN_AOI_OVERLAY.md` remains the design rationale and the
+measured-facts record.
 
 An AOI is a **power bounding box**: kept, owned, versioned, with data fetched
 *for it* over days — as opposed to "Select Area", which is a disposable filter
@@ -611,14 +611,19 @@ returns `null` — not `[]` — when the park list did not resolve, or the whole
 world greys out. `var aoiFocusID`, not `let`: `updatePAHighlighting()` reads it
 during map setup, thousands of lines above the declaration.
 
-**archive ≠ cancel ≠ delete.** `archive` hides the overlay and touches nothing
-else — ingest keeps running, so unhiding shows an answer rather than a progress
-bar. `cancel` disables unfinished datasets but keeps their **cursors**, so
-`refresh?resume=1` resumes without re-spending FIRMS quota. `delete` drops
-everything. ⚠️ `archive` is **shipped but never observed to succeed**: on a busy
-database it 500s because `rebuild_deforestation_for_park` holds SQLite's single
-writer for 35+ minutes. `docs/AOI_HANDOVER_2.md` §0 — the fix is in the batch
-writer, not the handler.
+**archive ≠ cancel ≠ delete ≠ supersede.** `archive` hides the overlay and
+touches nothing else — ingest keeps running, so unhiding shows an answer rather
+than a progress bar. `cancel` disables unfinished datasets but keeps their
+**cursors**, so `refresh?resume=1` resumes without re-spending FIRMS quota.
+`delete` drops everything. An **edit forks**: v1 is archived and its queue
+disabled, which looks identical to a cancel from outside — so `/progress`
+reports `state:"superseded"` and `refresh?resume=1` **409s**, because resuming it
+would re-spend days of quota on a question v2 already replaced.
+
+`archive` works, verified end to end in 17 ms. The earlier "blocker" was never a
+handler bug: `rebuild_deforestation_for_park` was **CPU**-bound on a
+non-sargable `ABS()`, not waiting on the write lock. Before blaming SQLite's
+single writer, check `ps` — a process waiting on a lock is `S`, not `R`.
 
 Old `aoi_progress` rows keyed `park_id='SYSTEM'` leaked every private AOI's name
 to every principal (`aoiNotifSQLFilter` reads visibility from `park_id`). Fixed
@@ -671,6 +676,24 @@ python3 scripts/aoi_runner.py --heal            # reclaim dead-pid leases
 python3 scripts/aoi_clip.py --aoi XSA_Study_Area  # Phase A preview, ~4s
 # cron: 0 12 * * *  aoi_runner.py --daily  (deliberately far from the 3am fire job)
 ```
+
+**Every long writer now yields.** `rebuild_{deforestation,settlements}_for_park`
+and the v5 fire chain (`load_fire_groups_to_db.py` every `BATCH_ROWS = 200`
+groups, `precompute_narratives_v5.py` every 25 cache blobs) commit in batches, so
+SQLite's one writer is free between them and a user toggle can always get a slot.
+Safe because both are idempotent: the run deletes its own rows first and every
+insert is an `INSERT OR REPLACE` keyed by id.
+
+**Admin → Access tab** (`srv/aoi_admin.go`, `GET /api/admin/access`,
+`POST /api/admin/aoi-dataset`) shows AOI ownership and per-dataset queue state,
+plus enable/disable and "Run now". It is **scoped to the caller's principal**, not
+global: `RequireAdmin` is satisfied by any valid password, so a global view would
+leak every tenant's polygons. `principals.label` (`pwd[:3]+"…"`) is never served —
+the handle is the non-secret `sha256(pwd)[:8]`.
+
+**`aois.state` is never `'ready'`** (only `archived`). Readiness is *derived* from
+the queue — `/progress` and the Access tab both do this. Printing the raw column
+labels a fully ingested AOI "pending" forever.
 
 ---
 

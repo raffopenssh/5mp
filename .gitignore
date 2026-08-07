@@ -111,3 +111,19 @@ scripts/histmaps/__pycache__/
 
 # GFW per-tile alert cache (regenerable; shared by park scans and AOI scans)
 data/gfw_tiles/
+
+# Pipeline heartbeats: rewritten by every cron run, served by /api/pipeline-status
+# and the admin Access tab. State, not source — a commit of one is noise.
+data/pipeline_status.json
+data/aoi_status.json
+
+# Rotated logs (5mp.logrotate -> /etc/logrotate.d/5mp)
+logs/
+
+# Mining scan scratch (the effort is retired — srv/mining_flag.go
+# MiningEnabled = false; docs/MINING_FINDINGS_2026-08.md §10). Contact sheets,
+# chips and per-run AUC dumps are reproducible from the eval scripts.
+analysis/out/adjudicate/
+analysis/out/tight/
+analysis/out/truth1/
+analysis/out/truth_eval.json

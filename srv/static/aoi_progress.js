@@ -75,9 +75,10 @@
             watched.delete(id);
             return;
         }
-        if (d && d.state === 'cancelled') {
+        if (d && (d.state === 'cancelled' || d.state === 'superseded')) {
             // Nothing will move until the user says so, so polling is pure
-            // waste; Resume re-arms the watcher through post().
+            // waste; Resume re-arms the watcher through post(). 'superseded'
+            // never moves at all -- a newer version owns the question.
             watched.delete(id);
             return;
         }
@@ -115,11 +116,20 @@
         const pct = Math.max(0, Math.min(100, d.percent || 0));
         const ready = d.state === 'ready';
         const cancelled = d.state === 'cancelled';
-        const colour = ready ? '#22c55e' : cancelled ? '#888'
+        // An edit forks: v1's queue is disabled, exactly as a Stop would leave
+        // it, but the *reason* is different and so is the remedy. Offering
+        // Resume here would re-spend days of quota answering a question the
+        // user has already replaced -- and the numbers v1 holds are still
+        // correct for the window it asked about, so there is nothing to fix.
+        const superseded = d.state === 'superseded';
+        const colour = ready ? '#22c55e' : (cancelled || superseded) ? '#888'
                      : d.state === 'running' ? '#3b82f6' : '#f59e0b';
         let line;
         if (ready) {
             line = `All ${d.datasets_total} data layers complete`;
+        } else if (superseded) {
+            line = `Replaced by a newer version · ${d.datasets_done} layer`
+                 + `${d.datasets_done === 1 ? '' : 's'} kept`;
         } else if (cancelled) {
             line = `Stopped · ${d.datasets_done} of ${d.datasets_done + (d.datasets_stopped || 0)} layers were fetched`;
         } else if (d.state === 'running') {
@@ -130,6 +140,10 @@
         } else {
             line = `Queued · first batch at 12:00 UTC`;
         }
+        // datasets_total is the *planned* count, so a stopped queue reports 0 --
+        // "0/0 layers" beside "0 of 11 were fetched" reads as a bug. Add the
+        // stopped ones back for the denominator only.
+        const total = d.datasets_total || (d.datasets_done + (d.datasets_stopped || 0));
         const blocked = d.datasets_blocked
             ? `<div class="aoi-prog-dim">${d.datasets_blocked} layer${d.datasets_blocked > 1 ? 's' : ''} not available yet</div>`
             : '';
@@ -138,7 +152,7 @@
         // the choices are "wait days for data you no longer want" or "delete",
         // which also throws away what already landed. Owner-only (the endpoint
         // 404s otherwise), and gone once there is nothing left to stop.
-        const stoppable = d.is_owner && !ready && !cancelled;
+        const stoppable = d.is_owner && !ready && !cancelled && !superseded;
         const actions = stoppable
             ? `<div class="aoi-prog-actions"><button class="aoi-prog-abort"
                  onclick="event.stopPropagation();AOIProgress.cancel('${esc(d.aoi_id)}')"
@@ -153,7 +167,7 @@
         return `
             <div class="aoi-prog-line">${esc(line)}</div>
             <div class="aoi-prog-bar"><div style="width:${pct}%;background:${colour}"></div></div>
-            <div class="aoi-prog-dim">${d.datasets_done}/${d.datasets_total} layers · ${Math.round(pct)}%</div>
+            <div class="aoi-prog-dim">${d.datasets_done}/${total} layers · ${Math.round(pct)}%</div>
             ${blocked}${actions}`;
     }
 

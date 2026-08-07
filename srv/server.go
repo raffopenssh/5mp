@@ -226,7 +226,7 @@ func (s *Server) Serve(addr string) error {
 	// what is here: species, climate, publications, legal and checklist are
 	// per-protected-area facts, and averaging them over 485,000 km2 would
 	// invent a number. The AOI popup points at the intersecting parks instead
-	// (docs/AOI_HANDOVER_2.md §"what an AOI is not").
+	// (docs/AOI_HANDOVER.md §"what an AOI is not").
 	mux.HandleFunc("GET /api/aois/{id}/feature-stats", s.aoiGate(s.HandleAPIParkFeatureStats))
 	mux.HandleFunc("GET /api/aois/{id}/classified-settlements", s.aoiGate(s.HandleAPIClassifiedSettlements))
 	mux.HandleFunc("GET /api/aois/{id}/classified-deforestation", s.aoiGate(s.HandleAPIClassifiedDeforestation))
@@ -370,6 +370,12 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("POST /api/admin/bulk-delete-uploads", s.RequireAdmin(s.HandleAPIBulkDeleteUploads))
 	mux.HandleFunc("GET /api/admin/upload-detail", s.HandleAPIUploadDetail)
 	mux.HandleFunc("POST /api/admin/hide-notification", s.RequireAdmin(s.HandleAPIHideNotification))
+
+	// Access tab: AOI ownership + per-dataset queue control. RequireAdmin is
+	// satisfied by any valid password here, so both handlers scope themselves to
+	// the caller's principal (srv/aoi_admin.go) rather than trusting the gate.
+	mux.HandleFunc("GET /api/admin/access", s.RequireAdmin(s.HandleAPIAdminAccess))
+	mux.HandleFunc("POST /api/admin/aoi-dataset", s.RequireAdmin(s.HandleAPIAdminAOIDataset))
 
 	// Automated fetch (EarthRanger/PAMDAS GPS sync)
 	mux.HandleFunc("GET /api/admin/autofetch", s.HandleAPIAutofetchList)

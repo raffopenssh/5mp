@@ -402,6 +402,17 @@ func (s *Server) HandleAPIAOIRefresh(w http.ResponseWriter, r *http.Request) {
 	}
 	only := r.URL.Query().Get("dataset")
 
+	// A superseded version must not be restartable. Its queue was disabled by
+	// the edit that forked it, which looks identical to a /cancel from the
+	// outside -- but re-enabling it would spend days of FIRMS quota answering a
+	// question the user has already replaced, and produce a second AOI competing
+	// for the runner with its own successor. Editing is the way forward from
+	// here; /restore is the way back.
+	if a.SupersededBy != "" {
+		http.Error(w, "superseded by "+a.SupersededBy, http.StatusConflict)
+		return
+	}
+
 	// resume=1 is the inverse of /cancel, and deliberately a different query
 	// rather than a mode of the default one. The default refresh re-runs the
 	// cheap *derived* layers of a queue that is still enabled (a "recompute
@@ -669,8 +680,17 @@ func (s *Server) HandleAPIAOIProgress(w http.ResponseWriter, r *http.Request) {
 	// Cancelled outranks everything except work actually in flight: if a runner
 	// still holds a lease the honest answer is "running", and the next slice
 	// will find the queue empty.
+	// A superseded version's queue is disabled too (an edit forks: v1 keeps its
+	// data and stops fetching). That is NOT the same sentence as the user
+	// pressing Stop, and conflating them offered a Resume button that would
+	// re-spend quota answering a question v2 already replaced. Report it so the
+	// card can say so instead.
+	superseded := a.SupersededBy != ""
 	if stopped > 0 && running == 0 {
 		state = "cancelled"
+		if superseded {
+			state = "superseded"
+		}
 	}
 	w.Header().Set("Cache-Control", "no-store")
 	writeJSON(w, http.StatusOK, map[string]any{
@@ -678,8 +698,9 @@ func (s *Server) HandleAPIAOIProgress(w http.ResponseWriter, r *http.Request) {
 		"datasets_done": done, "datasets_total": planned,
 		"datasets_blocked": blocked, "datasets_stopped": stopped,
 		"archived": a.State == "archived", "is_owner": a.IsOwner,
-		"percent": math.Round(pct*10) / 10,
-		"current": current, "detail": detail,
+		"superseded_by": a.SupersededBy,
+		"percent":       math.Round(pct*10) / 10,
+		"current":       current, "detail": detail,
 	})
 }
 

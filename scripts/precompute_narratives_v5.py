@@ -26,7 +26,7 @@ def log(msg):
 
 class NarrativeGeneratorV5:
     def __init__(self, aoi_id=None):
-        self.conn = sqlite3.connect(str(DB_PATH))
+        self.conn = sqlite3.connect(str(DB_PATH), timeout=120)
         self.conn.row_factory = sqlite3.Row
         self._load_context()
         self._load_park_info()
@@ -375,7 +375,7 @@ class NarrativeGeneratorV5:
         
         # Update cache
         log("Updating fire_narrative_cache...")
-        for park_id, data in narratives.items():
+        for i, (park_id, data) in enumerate(narratives.items(), 1):
             years = data.get('trend', {}).get('years', [])
             from_year = min(y['year'] for y in years) if years else None
             to_year = max(y['year'] for y in years) if years else None
@@ -384,6 +384,10 @@ class NarrativeGeneratorV5:
                 (park_id, narrative_json, computed_at, from_year, to_year) 
                 VALUES (?, ?, ?, ?, ?)
             ''', (park_id, json.dumps(data), datetime.now().isoformat(), from_year, to_year))
+            if i % 25 == 0:
+                # These blobs are megabytes; don't hold SQLite's one writer for
+                # all 163 of them (AOI_HANDOVER.md §1c).
+                self.conn.commit()
         self.conn.commit()
         
         # Parks that produced no narratives this run must not keep an old cache

@@ -165,7 +165,7 @@ func aoiExcludeSQL(col string) string {
 	// write osm_places/roads_heigit under an `aoi:<id>` scope key that NO read
 	// path resolved, so the AOI's real OSM ingest (12,956 roads, 432 places) was
 	// invisible to its own popup, narratives and exports
-	// (docs/AOI_HANDOVER_2.md §1). New writers use the bare id.
+	// (docs/AOI_HANDOVER.md §1). New writers use the bare id.
 	return " AND " + col + " NOT IN (SELECT id FROM aois) AND " + col +
 		" NOT LIKE 'aoi:%'"
 }
@@ -357,7 +357,7 @@ type aoiCtxKey struct{}
 // park_id, so 'SYSTEM' was treated as an ordinary park notification and served
 // to every principal -- message included, and that message named the AOI and
 // its ingest progress. The fact that someone is watching a piece of ground is
-// as much the secret as the polygon (docs/AOI_HANDOVER_2.md §2).
+// as much the secret as the polygon (docs/AOI_HANDOVER.md §2).
 //
 // The writer was fixed to pass park_id=<aoi id>; rows written before that are
 // still there. This runs at startup rather than as a hand-run statement because
