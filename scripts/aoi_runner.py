@@ -662,11 +662,21 @@ def run_hansen(conn, aoi, ds, deadline, budget):
     # Cluster + classify through the canonical EventRebuilder, prefix-scoped so
     # this only ever owns its own events (the same shape as the ghsl unit
     # handing settlement polygons to rebuild_settlements_for_park).
+    #
+    # on_batch is what keeps this from being a two-hour write lock: the
+    # rebuilder commits every 200 events and calls back, so SQLite's single
+    # writer is free between batches and Ctrl-C/SIGTERM/out-of-time is a normal
+    # exit here too (a re-run re-derives the same clusters).
     from rebuild_events_enhanced import EventRebuilder
     rebuilder = EventRebuilder()
     try:
+        def on_batch(n):
+            progress(conn, aid, ds["dataset"], cur, cur["i"], total,
+                     detail=f"{cur['polys']:,} loss polygons, clustering: "
+                            f"{n:,} events")
+            check_stop(deadline)
         n = rebuilder.rebuild_deforestation_for_park(
-            aid, id_prefix=f"{hansen_loss.PREFIX}{aid}_")
+            aid, id_prefix=f"{hansen_loss.PREFIX}{aid}_", on_batch=on_batch)
     finally:
         try:
             rebuilder.conn.close()
@@ -685,6 +695,17 @@ def run_osm(conn, aoi, ds, deadline, budget):
     That last clause is the point of §6: the AOI's download pays for park data
     too, and it is what keeps the enrichment mechanism alive now that the
     turbidity cron that used to call it is retired.
+
+    ⚠️ It writes `osm_places`/`roads_heigit` under the **bare AOI id**, like
+    every other unit (ghsl, hansen, gsw, hydro). It used to use an `aoi:<id>`
+    scope key on the theory that AOI rows should stay out of the park id space
+    — but that is already what aoiExcludeSQL() is for, and no read path knows
+    about the prefix. The result (found 2026-08-07) was that the AOI's real OSM
+    ingest — 12,956 roads and 432 placenames — was invisible to
+    /infrastructure, /features, the narratives and the KML/Locus exports, all
+    of which key on the bare id; the popup showed only the 141 roads the clip
+    preview had copied from neighbouring parks. Nothing but a leak-prevention
+    filter ever read the prefix, so there is no second consumer to keep happy.
     """
     import osm_pbf
 
@@ -692,7 +713,7 @@ def run_osm(conn, aoi, ds, deadline, budget):
     if not cur:
         cur = {"i": 0, "countries": aoi_countries(conn, aoi)}
     countries, total = cur["countries"], len(cur["countries"])
-    scope = f"aoi:{aoi['id']}"
+    scope = aoi["id"]
     x0, y0, x1, y1 = aoi_lib.aoi_bbox(aoi)
     while cur["i"] < total and time.time() < deadline:
         if stopping():
@@ -703,9 +724,14 @@ def run_osm(conn, aoi, ds, deadline, budget):
             try:
                 area = osm_pbf.extract_bbox(pbf, f"{scope}_{iso}", (x0, y0, x1, y1))
                 try:
-                    # force=False so several countries append rather than
-                    # overwrite each other's rows for the same AOI scope.
-                    osm_pbf.enrich_park_infra(area, scope)
+                    # First country replaces (superseding the clip preview's
+                    # copied park rows); the rest append, deduped by osm_id.
+                    # Neither may use the default "skip if rows exist" mode:
+                    # after the clip there are always rows, so the whole unit
+                    # was a no-op end to end.
+                    first = (cur["i"] == 0)
+                    osm_pbf.enrich_park_infra(area, scope, replace=first,
+                                              append=not first)
                 finally:
                     try: os.remove(area)
                     except OSError: pass

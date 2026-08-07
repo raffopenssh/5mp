@@ -182,24 +182,41 @@ def _road_class(props):
     return dl, f"{prefix}_{kind}"
 
 
-def enrich_park_infra(park_pbf, park_id, force=False):
+def enrich_park_infra(park_pbf, park_id, force=False, replace=False,
+                      append=False):
     """Fill osm_places (placenames + named rivers/streams as points) and
     roads_heigit for parks that have no rows yet. Runs opportunistically
     while the country PBF is on disk; no-op when data already present.
 
-    park_id is used verbatim as the table key, so AOI callers pass their
-    'aoi:<id>' scope key (see docs/PLAN_AOI_OVERLAY.md) and their rows stay
-    outside the park id space.
+    park_id is used verbatim as the table key. AOI callers pass their bare AOI
+    id (see docs/AOI_HANDOVER_2.md §1) — not an `aoi:<id>` scope key, which no
+    read path resolves.
+
+    Three modes, because "skip if rows exist" is right for a park and wrong for
+    an AOI:
+
+    * default — skip if the key already has rows. The park backfill: cheap,
+      idempotent, safe to call from any cron that happens to hold a PBF.
+    * ``replace=True`` — delete this key's rows first. What an AOI's FIRST
+      country does, so the real ingest supersedes the clip preview's copied
+      park rows atomically.
+    * ``append=True`` — insert without the emptiness check, skipping osm_ids
+      the key already has. What an AOI's LATER countries do. Without it a
+      multi-country AOI silently ingested only its first country (the default
+      mode saw non-empty tables and returned): XSA spans 3 countries and had
+      432 placenames for 485,000 km². Geofabrik country extracts overlap at
+      borders, hence the osm_id filter rather than a blind insert.
     """
     import sqlite3
-    db = sqlite3.connect(DB_PATH)
+    db = sqlite3.connect(DB_PATH, timeout=30)
     try:
         n_places = db.execute("SELECT COUNT(*) FROM osm_places WHERE park_id=?",
                               (park_id,)).fetchone()[0]
         n_roads = db.execute("SELECT COUNT(*) FROM roads_heigit WHERE park_id=?",
                              (park_id,)).fetchone()[0]
+        force = force or replace
 
-        if n_places == 0 or force:
+        if n_places == 0 or force or append:
             rows = []
             for f in _export_filtered(park_pbf, park_id,
                                       ["n/place=city,town,village,hamlet"], "point"):
@@ -237,16 +254,20 @@ def enrich_park_infra(park_pbf, park_id, force=False):
                 ptype = "mountain" if p.get("natural") == "peak" else "hill"
                 rows.append((park_id, ptype, name, la, lo,
                              f.get("id", ""), json.dumps(p, ensure_ascii=False)))
+            if force:
+                db.execute("DELETE FROM osm_places WHERE park_id=?", (park_id,))
+            elif append and rows:
+                have = {r[0] for r in db.execute(
+                    "SELECT osm_id FROM osm_places WHERE park_id=?", (park_id,))}
+                rows = [r for r in rows if r[5] not in have]
             if rows:
-                if force:
-                    db.execute("DELETE FROM osm_places WHERE park_id=?", (park_id,))
                 db.executemany("""INSERT INTO osm_places
                     (park_id, place_type, name, lat, lon, osm_id, osm_tags)
                     VALUES (?,?,?,?,?,?,?)""", rows)
                 db.commit()
                 print(f"  enriched osm_places: {park_id} +{len(rows)}", file=sys.stderr)
 
-        if n_roads == 0 or force:
+        if n_roads == 0 or force or append:
             rows = []
             for f in _export_filtered(park_pbf, park_id,
                     ["w/highway=motorway,trunk,primary,secondary,tertiary,"
@@ -260,9 +281,13 @@ def enrich_park_infra(park_pbf, park_id, force=False):
                              p.get("highway"), (p.get("surface") or "").split(";")[0],
                              round(length, 2), json.dumps(f["geometry"]),
                              dl_class, passability))
+            if force:
+                db.execute("DELETE FROM roads_heigit WHERE park_id=?", (park_id,))
+            elif append and rows:
+                have = {r[0] for r in db.execute(
+                    "SELECT osm_id FROM roads_heigit WHERE park_id=?", (park_id,))}
+                rows = [r for r in rows if r[1] not in have]
             if rows:
-                if force:
-                    db.execute("DELETE FROM roads_heigit WHERE park_id=?", (park_id,))
                 db.executemany("""INSERT INTO roads_heigit
                     (park_id, osm_id, name, highway_type, surface, length_km,
                      geojson, dl_class_2024, passability)

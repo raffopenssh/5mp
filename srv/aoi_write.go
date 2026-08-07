@@ -534,8 +534,14 @@ func (s *Server) HandleAPIAOIDelete(w http.ResponseWriter, r *http.Request) {
 		{`DELETE FROM aoi_datasets WHERE aoi_id = ?`, []any{a.ID}},
 		{`DELETE FROM aoi_grants WHERE aoi_id = ?`, []any{a.ID}},
 		{`DELETE FROM notifications WHERE park_id = ?`, []any{a.ID}},
-		// osm_places / roads_heigit use the 'aoi:<id>' scope key (run_osm).
-		{`DELETE FROM osm_places WHERE park_id = ?`, []any{"aoi:" + a.ID}},
+		// osm_places / roads_heigit are keyed by the bare AOI id like every
+		// other unit. Both spellings are deleted: rows written before
+		// 2026-08-07 used an `aoi:<id>` scope key (see aoiExcludeSQL).
+		{`DELETE FROM osm_places WHERE park_id IN (?, ?)`, []any{a.ID, "aoi:" + a.ID}},
+		{`DELETE FROM roads_heigit WHERE park_id IN (?, ?)`, []any{a.ID, "aoi:" + a.ID}},
+		{`DELETE FROM park_rivers_hydro WHERE park_id = ?`, []any{a.ID}},
+		{`DELETE FROM park_lakes_hydro WHERE park_id = ?`, []any{a.ID}},
+		{`DELETE FROM park_waterbodies WHERE park_id = ?`, []any{a.ID}},
 		{`DELETE FROM aois WHERE id = ?`, []any{a.ID}},
 	}
 	tx, err := s.DB.Begin()
