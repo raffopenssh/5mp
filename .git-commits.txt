@@ -1,3 +1,5 @@
+6874db4 2026-08-07 17:14:32 features: serve river/road/place/waterbody whole, cached, and drop duplicate place labels
+23f58cd 2026-08-07 17:02:03 build: refresh version history for 1edf2a6
 1edf2a6 2026-08-07 17:01:53 AOI popup: unbreak the layout, add the roads section, kill two O(n*m) LIKE joins
 583027a 2026-08-07 15:14:11 chore: rebuild version history
 b78fc95 2026-08-07 15:14:00 AOI: one action row like a park popup, star as the hide control, inline rename
@@ -16,5 +18,3 @@ d6b8e3d 2026-08-07 05:50:36 build: refresh version history for cda0cc9
 b220a00 2026-08-07 05:50:21 docs: AOI handover rev 3 — strip what shipped, keep only the traps
 e1a84aa 2026-08-07 05:49:03 aoi: reach its own data — animate, report, KML/Locus/MBTiles
 efe68b9 2026-08-07 05:48:29 aoi: reach its own data — animate, report, KML/Locus/MBTiles
-91df995 2026-08-07 05:19:38 build: refresh version history for f275e9e
-eb8c9e4 2026-08-07 05:19:23 aoi: give every dataset a runner -- Hansen, surface water, rivers & lakes
