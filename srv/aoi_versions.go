@@ -134,6 +134,50 @@ func (s *Server) HandleAPIAOIVersions(w http.ResponseWriter, r *http.Request) {
 		"lineage_id": lineage, "versions": vs, "current": a.ID})
 }
 
+// HandleAPIAOIRename — POST /api/aois/{id}/rename  {"name": "..."}
+//
+// Deliberately not an edit. A version exists because the *question* changed —
+// the polygon or the window — and every derived row was computed for that
+// question. A name is a label on the question, not part of it: renaming forks
+// nothing, re-fetches nothing, and above all keeps the id, so every share link,
+// every pin key and every park-shaped row keyed by that id keeps resolving.
+//
+// (The id is minted from the name at *creation* only, which is why a rename
+// cannot be expressed as an edit: slugAOIID would mint a second id for the same
+// data.)
+func (s *Server) HandleAPIAOIRename(w http.ResponseWriter, r *http.Request) {
+	a := s.requireAOIOwner(w, r)
+	if a == nil {
+		return
+	}
+	var req struct {
+		Name string `json:"name"`
+	}
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<16)).Decode(&req); err != nil {
+		http.Error(w, "bad JSON", http.StatusBadRequest)
+		return
+	}
+	name := strings.TrimSpace(req.Name)
+	if name == "" {
+		http.Error(w, "name required", http.StatusBadRequest)
+		return
+	}
+	if len(name) > 80 {
+		http.Error(w, "name too long", http.StatusBadRequest)
+		return
+	}
+	if name == a.Name {
+		writeJSON(w, http.StatusOK, map[string]any{"id": a.ID, "name": name, "unchanged": true})
+		return
+	}
+	if _, err := execUserToggle(r.Context(), s.DB,
+		`UPDATE aois SET name=? WHERE id=?`, name, a.ID); err != nil {
+		internalError(w, "could not rename", err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"id": a.ID, "name": name})
+}
+
 type aoiEditReq struct {
 	Name     string   `json:"name"`
 	Geometry *aoiGeom `json:"geometry"`

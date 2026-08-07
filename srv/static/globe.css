@@ -303,6 +303,12 @@
         .star-report-btn.busy { opacity: 0.7; cursor: progress; position: relative; padding-right: 30px; }
         .star-report-btn.busy::after { content: ''; position: absolute; right: 9px; top: 50%; margin-top: -6px; width: 12px; height: 12px; border: 2px solid rgba(255,255,255,0.25); border-top-color: currentColor; border-radius: 50%; animation: exportSpin 0.7s linear infinite; }
         .toast-spinner { width: 14px; height: 14px; flex: 0 0 auto; border: 2px solid rgba(255,255,255,0.35); border-top-color: #fff; border-radius: 50%; animation: exportSpin 0.7s linear infinite; }
+        /* Undo lives on the toast: a reversible action should be reversed where
+           it happened, rather than confirmed in a modal before it happens. */
+        .toast-action { flex: 0 0 auto; margin-left: 4px; padding: 4px 10px; background: rgba(255,255,255,0.18);
+            border: 1px solid rgba(255,255,255,0.35); border-radius: 5px; color: #fff;
+            font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
+        .toast-action:hover { background: rgba(255,255,255,0.3); }
         @keyframes exportSpin { to { transform: rotate(360deg); } }
 
         /* Report Builder Modal */
@@ -361,6 +367,8 @@
         .starred-item-icon.bbox { background: rgba(168,85,247,0.15); color: #a855f7; }
         .starred-item-icon.notification { background: rgba(251,191,36,0.15); color: #fbbf24; }
         .starred-item-icon.narrative { background: rgba(251,146,60,0.15); color: #fb923c; }
+        /* Amber = an AOI, everywhere: the filter section, the map tag and here. */
+        .starred-item-icon.aoi { background: rgba(251,191,36,0.18); color: #fbbf24; }
         .starred-item-name { font-size: 13px; color: #fff; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .starred-item-meta { font-size: 11px; color: #888; margin-top: 2px; }
         .starred-item-actions { display: flex; align-items: center; gap: 8px; }
@@ -1125,6 +1133,8 @@
         .aoi-tag-win { color: #9a7b2a; font-size: 9px; flex-shrink: 0; }
         .aoi-tag-zoom { background: none; border: none; color: #9a7b2a; cursor: pointer; font-size: 11px; padding: 0 0 0 2px; line-height: 1; flex-shrink: 0; }
         .aoi-tag-zoom:hover { color: #fbbf24; }
+        .aoi-tag-zoom.star { color: #fbbf24; }
+        .aoi-tag-zoom.star:hover { color: #6b7280; }
         /* Focus: the tag for the AOI that is currently the subject of the map.
            Filled rather than merely brighter, because the map itself is showing
            a big, unexplained change (158 dimmed parks) and the control that
@@ -1260,24 +1270,42 @@
         .pa-export-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
         .pa-export-btn i { font-size: 13px; line-height: 1; }
 
-        /* --- AOI popup actions ---------------------------------------
-           Eight bare icons in a row asked the user to guess, and squeezing
-           them beside the title crushed the name to one letter per line. So:
-           full-width block under the header, grouped by the question being
-           answered (what am I looking at / what do I take away / what do I
-           change), and every icon carries its noun. A title= attribute is not
-           a label on a phone — there is no hover. */
-        .aoi-actions { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
-        .aoi-act-group { display: flex; flex-direction: column; gap: 4px; }
-        .aoi-act-group-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em; color: #6b7280; }
-        .aoi-act-row { display: flex; flex-wrap: wrap; gap: 4px; }
-        .aoi-act { display: inline-flex; align-items: center; gap: 5px; padding: 5px 8px; min-height: 28px;
-            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px;
-            color: #a0a0a0; font-size: 11px; font-family: inherit; line-height: 1; cursor: pointer;
-            text-decoration: none; transition: all 0.15s; }
-        .aoi-act:hover { background: rgba(251,191,36,0.14); border-color: rgba(251,191,36,0.35); color: #fbbf24; }
-        .aoi-act i { font-size: 13px; line-height: 1; flex-shrink: 0; }
-        .aoi-act.active { background: rgba(251,191,36,0.25); border-color: #fbbf24; color: #fbbf24; }
+        /* --- AOI actions ---------------------------------------------
+           There is deliberately no AOI-specific button style left: the popup
+           and the map tip both use .pa-export-btn + .star-btn, the same
+           controls a park carries, in the same place. An AOI is the same kind
+           of object on screen, so it should not have its own vocabulary of
+           buttons — that was the actual cost of the old three-group, nine-button
+           block. What remains here is the export menu and the inline rename. */
+        .aoi-menu { position: fixed; z-index: 10000; min-width: 190px; padding: 4px;
+            background: rgba(17,19,23,0.98); border: 1px solid rgba(255,255,255,0.14);
+            border-radius: 8px; box-shadow: 0 10px 32px rgba(0,0,0,0.55);
+            animation: aoiMenuIn 0.12s ease; }
+        @keyframes aoiMenuIn { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: none; } }
+        .aoi-menu-item { display: flex; align-items: center; gap: 8px; width: 100%; padding: 7px 9px;
+            background: none; border: 0; border-radius: 5px; color: #d1d5db; font-family: inherit;
+            font-size: 12px; text-align: left; text-decoration: none; cursor: pointer; }
+        .aoi-menu-item:hover { background: rgba(251,191,36,0.14); color: #fbbf24; }
+        .aoi-menu-item i { font-size: 14px; flex-shrink: 0; }
+        .aoi-menu-item em { margin-left: auto; font-style: normal; font-size: 9px; color: #6b7280; }
+
+        /* Inline rename — a label edit, not a version fork, so it happens on
+           the name itself instead of opening the draw panel and minting a
+           version. Click the name, it becomes a field. No pencil: an icon would
+           be a second edit affordance beside the real Edit button. */
+        .aoi-editable-name { cursor: text; border-radius: 3px; padding: 0 3px; margin: 0 -3px;
+            box-shadow: inset 0 -1px 0 transparent; transition: box-shadow 0.15s, background 0.15s; }
+        .aoi-editable-name:hover { background: rgba(251,191,36,0.07); box-shadow: inset 0 -1px 0 rgba(251,191,36,0.5); }
+        .aoi-editable-name.editing { background: none; box-shadow: none; padding: 0; margin: 0; flex: 1; }
+        .aoi-name-input { width: 100%; min-width: 90px; background: rgba(0,0,0,0.35);
+            border: 1px solid rgba(251,191,36,0.55); border-radius: 4px; color: #fbbf24;
+            font-family: inherit; font-size: inherit; font-weight: inherit; padding: 1px 5px; outline: none; }
+        .aoi-name-input:focus { border-color: #fbbf24; box-shadow: 0 0 0 2px rgba(251,191,36,0.15); }
+        .aoi-name-input.tag { font-size: 11px; max-width: 130px; }
+
+        @media (max-width: 640px), (hover: none) {
+            .aoi-menu-item { padding: 10px 10px; font-size: 13px; }
+        }
 
         /* Enhanced PA Popup with Collapsible Sections */
         .pa-popup-section { margin-top: 8px; border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; }
@@ -1477,10 +1505,6 @@
                 min-height: 32px;
             }
             .pa-export-btn i { font-size: 15px; }
-            /* Labelled AOI actions keep their label — that is the point — but
-               grow to a 32px touch target. */
-            .aoi-act { min-height: 32px; padding: 6px 9px; }
-            .aoi-act i { font-size: 15px; }
 
             /* Popup section headers — accordion touch target */
             .pa-popup-section-header {

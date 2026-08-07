@@ -632,6 +632,7 @@ POST   /api/aois/{id}/mbtiles           + GET .../mbtiles/estimate
 POST   /api/aois/estimate               side-effect free; call it while dragging
 POST   /api/aois                        create + seed queue (runs nothing)
 POST   /api/aois/{id}/{edit,restore,refresh,kick,archive,cancel}
+POST   /api/aois/{id}/rename            label only: keeps the id, forks nothing
 POST   /api/aois/{id}/refresh?resume=1  the inverse of cancel
 DELETE /api/aois/{id}
 GET    /api/admin/access                Access tab: ownership + queue (scoped!)
@@ -850,13 +851,15 @@ labels a fully ingested AOI "pending" forever.
 |---|---|
 | routing | `apiBase(id)` in globe.html; `window.AOI_IDS` filled by `loadAOIs()` |
 | map layer + popup | globe.html `loadAOIs`/`showAOIPopup`/`aoiCoverageHTML` |
-| exports | `aoiExportButtonsHTML(id, name, opts)` — map tip icon-only, popup labelled |
+| actions | `aoiActionsHTML(id, name, {isOwner, archived})` — one row, used by tip *and* popup |
+| export menu | globe.html `toggleAOIMenu`/`aoiExportMenuItems` — `#aoi-menu` on `<body>` |
+| rename | globe.html `startAOIRename` / `renameAOITag` → `POST /api/aois/{id}/rename` |
 | filter section | globe.html `#aoi-section` — own heading, amber, own visibility toggle |
 | editor | `srv/static/aoi_draw.js` — `AOIDraw.start()` / `.startEdit(id, name, geom)` |
 | progress card | `srv/static/aoi_progress.js` — `AOIProgress.cardHTML(notif)` |
 | animation | `Animator.open({aoi})` clips to the **polygon**; loaders append `&aoi=` |
 | focus | globe.html `setAOIFocus`/`toggleAOIFocus`/`aoiFocusBrightIDs`/`applyAOIFocusPaint` |
-| report | `collectReportParks()` folds in every visible AOI, first, unstarred |
+| report | `collectReportParks()` folds in every visible AOI, first; visible = starred |
 | admin | globe.html `loadAccessTab`/`setAOIDataset`/`kickAOIRunner` → `srv/aoi_admin.go` |
 
 Things that will bite:
@@ -880,12 +883,38 @@ Things that will bite:
 * **Pins are namespaced for an AOI** (`aoi:<id>:<type>`). Ids are disjoint
   today; the flat park key `<id>_<type>` would have made a same-named AOI and
   park share one pin.
-* **Popup actions are labelled, and grouped View / Download / Manage**
-  (`.aoi-act`). Eight bare icons squeezed beside the title made the name wrap
-  one letter per line on a phone and gave no way to tell them apart — a
-  `title=` attribute is not a label where there is no hover. The map tip stays
-  icon-only (`aoiExportButtonsHTML(id, name)` without `{labeled:true}`), because
-  there space, not choice, is the constraint.
+* **An AOI wears the park popup's controls, not its own.** One row of
+  `.pa-export-btn` squares beside the title (Focus / Export ▾ / Edit) plus the
+  ordinary `.star-btn` — `aoiActionsHTML()` renders it once for both the map tip
+  and the popup. Two earlier versions were wrong in opposite directions: eight
+  bare icons crushed beside the title (name wrapped one letter per line), then
+  nine labelled buttons in three groups (View/Download/Manage), which is a form,
+  not a tip. The four downloads are **one** category, so they live behind one
+  button in `#aoi-menu`; the menu is appended to `<body>` because the map tip is
+  an `overflow:hidden` box rebuilt on every mousemove, which both clips a child
+  menu and destroys it under the cursor.
+* **Animate is not in the AOI's action row.** The ▶ chip lives in the time
+  slider, where a time window is chosen. `animateAOI()` still exists and is
+  still what focus uses.
+* **The star *is* the hide control.** For an AOI, visibility and report
+  membership are the same fact (`collectReportParks()` folds in every visible
+  AOI), so one ★ says both. Un-starring calls `/archive`; the polygon fades via
+  `fadeAOILayer()` before the request so the click reads as immediate, the toast
+  carries **Undo** (`showToast(..., {action})` → `unhideAOI()`) *and* names
+  search as the permanent way back. Deliberately no `confirm()`: a modal asks
+  the user to predict the result, an Undo lets them see it. "Hidden", not
+  "archived", in the search result chip — hiding is what they did.
+* **Renaming is not editing, and has no pencil.** `POST /api/aois/{id}/rename`
+  keeps the id, so every share link, pin key and park-shaped row keyed by it
+  survives; an *edit* forks because the question changed. Click the name and it
+  becomes a field (`.aoi-editable-name`, hover underline). A pencil icon would
+  be a second edit affordance beside the real one and would cost a slot on the
+  row this whole layout exists to free.
+* **`FloatUI.decoratePAPopup()` bails on `.pa-popup-name > span:last-child`.**
+  It was written as a "does this look like a PA popup" guard; the AOI header put
+  a second span after the name and the guard silently returned, taking the grab
+  bar, the minimise button and MapLibre's × with it. Now `> span`. Anything
+  added to a popup header must keep that selector matching.
 * **The focus banner positions itself from the measured slider height**
   (`positionAOIFocusBanner()` + a `ResizeObserver`). A hard-coded `bottom`
   covered the ▶ animate button once the preset tags wrapped on a narrow phone,
@@ -929,8 +958,14 @@ Nothing blocking. Two nice-to-haves:
   `aoiExcludeSQL()`.
 * AOI rows in bbox-keyed endpoints **by default** — no. With an explicit,
   visibility-checked `?aoi=` — yes, `aoiScopeSQL()`, and exclusively.
-* Starring an AOI to get it into the report — no. Visibility is the trigger;
-  requiring a star gave a user with one AOI and no stars an empty report.
+* Requiring a *separate* star before an AOI enters the report — no. Visibility
+  is the trigger, and the ★ in the UI **is** that visibility (un-starring hides
+  it). An extra opt-in gave a user with one AOI and no stars an empty report.
+  The star panel lists visible AOIs first, in their own section, and
+  `updateStarBadge()` counts them.
+* A separate "Hide" button beside the star — no, they were the same switch under
+  two names, and "archive"/"hide"/"delete" for one action is how the old popup
+  got to nine buttons.
 * A global admin view of all AOIs — no (it would leak every tenant's polygons).
 * Visibility-filtering `/api/fire-frames`, `/api/grid` — no. They serve raw
   geography that was always public within the app. **The polygon is the secret,

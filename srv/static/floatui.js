@@ -275,7 +275,12 @@
 
         const content = container.querySelector('.pa-popup');
         const header = container.querySelector('.pa-popup-header');
-        const nameRight = container.querySelector('.pa-popup-name > span:last-child');
+        // `> span` only, not `> span:last-child`: the AOI popup puts a rename
+        // pencil after the name, so the name span stopped being the last child
+        // and this guard silently returned — taking the grab bar, the minimise
+        // button and MapLibre's × with it. The guard only ever meant “does this
+        // look like a PA popup”.
+        const nameRight = container.querySelector('.pa-popup-name > span');
         if (!content || !header || !nameRight) return;
 
         const parkName = (container.querySelector('.pa-popup-name span')?.textContent || 'Park').trim();
