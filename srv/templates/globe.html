@@ -9772,16 +9772,24 @@
             const el = document.getElementById(`road-content-${paId}`);
             if (!el) return;
             try {
-                // Fetch infrastructure data from new API
+                // Fetch infrastructure data from new API.
+                // apiBase(), not a hardcoded /api/parks/: ParkIDMiddleware 404s
+                // on an AOI id, so this whole section (roads, rivers, places,
+                // watersheds) was empty for an AOI even though the rows exist
+                // under its bare id. `stats` stays park-only on purpose -- an
+                // AOI has no per-protected-area facts to average
+                // (docs/AOI_HANDOVER_2.md 2).
+                const base = apiBase(paId), pw = encodeURIComponent(getPwd());
                 const [statsResp, infraResp, learnedResp, basinResp] = await Promise.all([
-                    fetch(`/api/parks/${encodeURIComponent(paId)}/stats?pwd=${encodeURIComponent(getPwd())}`),
-                    fetch(`/api/parks/${encodeURIComponent(paId)}/infrastructure?pwd=${encodeURIComponent(getPwd())}`),
-                    fetch(`/api/admin/learned-features?park_id=${encodeURIComponent(paId)}&pwd=${encodeURIComponent(getPwd())}`),
-                    fetch(`/api/parks/${encodeURIComponent(paId)}/basin?pwd=${encodeURIComponent(getPwd())}`)
+                    isAOI(paId) ? Promise.resolve(null)
+                                : fetch(`/api/parks/${encodeURIComponent(paId)}/stats?pwd=${pw}`),
+                    fetch(`${base}/infrastructure?pwd=${pw}`),
+                    fetch(`/api/admin/learned-features?park_id=${encodeURIComponent(paId)}&pwd=${pw}`),
+                    fetch(`${base}/basin?pwd=${pw}`)
                 ]);
                 const basin = basinResp.ok ? await basinResp.json() : { basins: [] };
                 
-                const data = statsResp.ok ? await statsResp.json() : {};
+                const data = (statsResp && statsResp.ok) ? await statsResp.json() : {};
                 const infra = infraResp.ok ? await infraResp.json() : { rivers: [], roads: [], places: [], summary: {} };
                 const learned = (learnedResp.ok && (learnedResp.headers.get('content-type') || '').includes('json'))
                     ? await learnedResp.json() : { airstrips: [], places: [] };
@@ -9838,7 +9846,19 @@
                     const bits = [];
                     if (upstream && upstream.area_km2) {
                         let u = `Water arrives from <b>${Math.round(upstream.area_km2).toLocaleString()} km²</b> upstream`;
-                        if (basin.upstream_river_km) u += ` (${Math.round(basin.upstream_river_km).toLocaleString()} km of rivers)`;
+                        // Say how many SEPARATE watersheds, and name them. Most
+                        // areas drain by several rivers; "the watershed",
+                        // singular, was wrong for the majority of them and for
+                        // XSA (22) it was wrong by 21. basin.parts comes from
+                        // park_basin_parts (migration 044); pre-044 rows have
+                        // none and this degrades to the old sentence.
+                        const nUp = basin.upstream_count || 0;
+                        if (nUp > 1) {
+                            const rn = (basin.upstream_rivers || []).slice(0, 3).filter(Boolean);
+                            u += ` across <b>${nUp}</b> watersheds`;
+                            if (rn.length) u += ` (${rn.join(', ')}${nUp > rn.length ? '…' : ''})`;
+                        }
+                        if (basin.upstream_river_km) u += `, ${Math.round(basin.upstream_river_km).toLocaleString()} km of rivers`;
                         bits.push(u);
                     }
                     if (downstream && downstream.length_km) {
@@ -9851,8 +9871,10 @@
                     html += '<div class="road-pin-buttons" style="display: flex; gap: 8px; padding: 0 0 4px 0;">';
                     if (upstream) {
                         const a = Math.round(upstream.area_km2 || 0).toLocaleString();
-                        html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="basin" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${escapeHtml(parkName)}', 'basin', this)" style="flex: 1;" title="Contributing watershed upstream of this park's river exits (mghydro / MERIT-Hydro). Anything happening in here drains through the park.">
-                            <span style="color: #0ea5e9;">⌬</span> Upstream basin <span style="color:#888;font-size:9px;">${a} km²</span>
+                        const nUp = basin.upstream_count || 0;
+                        const label = nUp > 1 ? `Upstream basins (${nUp})` : 'Upstream basin';
+                        html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="basin" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${escapeHtml(parkName)}', 'basin', this)" style="flex: 1;" title="Every contributing watershed upstream of this area's river exits (mghydro / MERIT-Hydro), drawn separately and named by the river that carries it. Anything happening in one drains through the area.">
+                            <span style="color: #0ea5e9;">⌬</span> ${label} <span style="color:#888;font-size:9px;">${a} km²</span>
                         </button>`;
                     }
                     if (upstream && (basin.upstream_reaches || 0) > 0) {

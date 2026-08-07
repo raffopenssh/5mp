@@ -33,6 +33,13 @@ def rows():
     con = sqlite3.connect(DB)
     down = dict(con.execute(
         "SELECT park_id, length_km FROM park_basins WHERE kind='downstream'"))
+    # How many SEPARATE watersheds each area drains by (migration 044). `outlets`
+    # below counts outlets we ASKED about; this counts the ones that produced a
+    # distinct watershed. 0 = fetched before the parts table existed; re-run
+    # fetch_park_basins.py to backfill it from http_cache for free.
+    nparts = dict(con.execute(
+        "SELECT park_id, COUNT(*) FROM park_basin_parts WHERE kind='upstream'"
+        " GROUP BY park_id"))
     out = []
     for pid, area, gj, meta in con.execute(
             "SELECT park_id, area_km2, geojson, meta FROM park_basins "
@@ -54,6 +61,7 @@ def rows():
                     "downstream_km": down.get(pid),
                     "outlets": len(m.get("outlets") or []),
                     "how": o.get("how", "?"), "river": o.get("river"),
+                    "parts": nparts.get(pid, 0),
                     "precision": m.get("precision", "?"),
                     "n_reaches": m.get("n_reaches")})
     con.close()
@@ -74,11 +82,12 @@ def main():
         return 1
     show = rs if a.all else rs[:a.limit]
     print(f"{'park':34}{'basin_km2':>11}{'cov':>6}{'down_km':>9}{'out':>5}"
-          f"{'reach':>7}  how/precision")
+          f"{'wsh':>5}{'reach':>7}  how/precision")
     for r in show:
         print(f"{r['park_id']:34}{r['basin_km2']:>11.0f}{r['coverage']:>6.2f}"
               f"{(r['downstream_km'] or 0):>9.0f}{r['outlets']:>5}"
-              f"{(r['n_reaches'] or 0):>7}  {r['how']} {r['precision']}")
+              f"{r['parts']:>5}{(r['n_reaches'] or 0):>7}  "
+              f"{r['how']} {r['precision']}")
     covs = [r["coverage"] for r in rs]
     print(f"\nn={len(rs)}  coverage median {statistics.median(covs):.2f}  "
           f"<0.5: {sum(c < 0.5 for c in covs)}  <0.2: {sum(c < 0.2 for c in covs)}")
@@ -86,6 +95,12 @@ def main():
           f"{sum(r['basin_km2'] > TRUNK_KM2 for r in rs)}  "
           f"low-precision polygons: {sum(r['precision'] == 'low' for r in rs)}  "
           f"no upstream rivers: {sum(not r['n_reaches'] for r in rs)}")
+    multi = sum(1 for r in rs if r["parts"] > 1)
+    noparts = sum(1 for r in rs if not r["parts"])
+    print(f"areas draining by >1 watershed: {multi}  "
+          f"(mean {statistics.mean([r['parts'] for r in rs]):.1f} each)"
+          + (f"  -- {noparts} not yet split, re-run fetch_park_basins.py"
+             if noparts else ""))
     miss = sum(1 for r in rs if r["basin_km2"] <= 0)
     if miss:
         print(f"WARNING {miss} basins with no area")

@@ -1849,7 +1849,8 @@ func (s *Server) HandleAPIParkFeatures(w http.ResponseWriter, r *http.Request) {
 		} else if featureType == "basin_downstream" {
 			kind = "downstream"
 		}
-		s.handleBasinFeatures(w, internalID, kind)
+		s.handleBasinFeaturesOpt(w, internalID, kind,
+			r.URL.Query().Get("merged") == "1")
 		return
 	}
 

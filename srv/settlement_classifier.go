@@ -126,24 +126,39 @@ func (s *Server) loadSettlementContext(parkID string, st *ClassifiedSettlement) 
 			bearingTo(placeLat.Float64, placeLon.Float64, st.Lat, st.Lon))
 	}
 	
-	// Count fires at different distances
+	// Count fires at different distances.
+	//
+	// ⚠️ These bounds MUST stay `latitude BETWEEN ? AND ?`. `ABS(latitude - ?) <
+	// ?` wraps an indexed column in a function, which makes the term
+	// non-sargable: SQLite abandons idx_fire_location and covering-scans all
+	// 42.9M rows. Measured 2026-08-07: **19.8 s vs 0.02 s, ~1000x**. This runs
+	// twice per settlement and there are 10,390 of them, so the annual
+	// classification refresh and /api/refresh-park were both spending hours
+	// holding a read connection for work that takes seconds — the same bug
+	// class as _get_fire_density in scripts/rebuild_events_enhanced.py
+	// (docs/AOI_HANDOVER_2.md §0), which is why §4.0 says to grep for the class.
 	s.DB.QueryRow(`
 		SELECT 
-			COUNT(CASE WHEN ABS(latitude - ?) < 0.01 AND ABS(longitude - ?) < 0.01 THEN 1 END),
-			COUNT(CASE WHEN ABS(latitude - ?) < 0.05 AND ABS(longitude - ?) < 0.05 THEN 1 END)
+			COUNT(CASE WHEN latitude BETWEEN ? AND ? AND longitude BETWEEN ? AND ? THEN 1 END),
+			COUNT(CASE WHEN latitude BETWEEN ? AND ? AND longitude BETWEEN ? AND ? THEN 1 END)
 		FROM fire_detections
-		WHERE ABS(latitude - ?) < 0.1 AND ABS(longitude - ?) < 0.1
-	`, st.Lat, st.Lon, st.Lat, st.Lon, st.Lat, st.Lon).Scan(&st.FiresWithin1km, &st.FiresWithin5km)
+		WHERE latitude BETWEEN ? AND ? AND longitude BETWEEN ? AND ?
+	`, st.Lat-0.01, st.Lat+0.01, st.Lon-0.01, st.Lon+0.01,
+		st.Lat-0.05, st.Lat+0.05, st.Lon-0.05, st.Lon+0.05,
+		st.Lat-0.1, st.Lat+0.1, st.Lon-0.1, st.Lon+0.1,
+	).Scan(&st.FiresWithin1km, &st.FiresWithin5km)
 	
-	// Get fire seasonality (which months have most fires)
+	// Get fire seasonality (which months have most fires). SUBSTR on acq_date is
+	// fine — it is only ever evaluated on rows the sargable lat/lon bounds
+	// already selected.
 	var dryFires, wetFires int
 	s.DB.QueryRow(`
 		SELECT 
 			COUNT(CASE WHEN CAST(SUBSTR(acq_date, 6, 2) AS INT) IN (12, 1, 2, 3) THEN 1 END),
 			COUNT(CASE WHEN CAST(SUBSTR(acq_date, 6, 2) AS INT) IN (4, 5, 6, 7, 8, 9, 10, 11) THEN 1 END)
 		FROM fire_detections
-		WHERE ABS(latitude - ?) < 0.05 AND ABS(longitude - ?) < 0.05
-	`, st.Lat, st.Lon).Scan(&dryFires, &wetFires)
+		WHERE latitude BETWEEN ? AND ? AND longitude BETWEEN ? AND ?
+	`, st.Lat-0.05, st.Lat+0.05, st.Lon-0.05, st.Lon+0.05).Scan(&dryFires, &wetFires)
 	
 	if dryFires > wetFires*3 {
 		st.FireSeasonality = "dry_season"
@@ -153,13 +168,15 @@ func (s *Server) loadSettlementContext(parkID string, st *ClassifiedSettlement) 
 		st.FireSeasonality = "year_round"
 	}
 	
-	// Sum nearby deforestation
+	// Sum nearby deforestation (idx_de_park covers park_id; the lat/lon bounds
+	// are sargable for the same reason as above).
 	s.DB.QueryRow(`
 		SELECT COALESCE(SUM(area_km2), 0), GROUP_CONCAT(DISTINCT pattern_type)
 		FROM deforestation_events
 		WHERE park_id = ? 
-		AND ABS(lat - ?) < 0.2 AND ABS(lon - ?) < 0.2
-	`, parkID, st.Lat, st.Lon).Scan(&st.DeforestNearby, &st.DeforestPattern)
+		AND lat BETWEEN ? AND ? AND lon BETWEEN ? AND ?
+	`, parkID, st.Lat-0.2, st.Lat+0.2, st.Lon-0.2, st.Lon+0.2,
+	).Scan(&st.DeforestNearby, &st.DeforestPattern)
 	
 	// Get nearest road from roads_heigit (extract centroid from geojson)
 	var roadLon, roadLat sql.NullFloat64

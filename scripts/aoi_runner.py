@@ -604,7 +604,12 @@ def run_ghsl(conn, aoi, ds, deadline, budget):
     conn.commit()
     rebuilder = EventRebuilder()
     try:
-        n = rebuilder.rebuild_settlements_for_park(aid)
+        def on_batch(n):
+            progress(conn, aid, ds["dataset"], cur, cur["i"], total,
+                     detail=f"{cur['polys']:,} built-up polygons, "
+                            f"clustering: {n:,} settlements")
+            check_stop(deadline)
+        n = rebuilder.rebuild_settlements_for_park(aid, on_batch=on_batch)
     finally:
         try:
             rebuilder.conn.close()
@@ -845,11 +850,39 @@ def run_clip(conn, aoi, ds, deadline, budget):
 
 
 def run_basin(conn, aoi, ds, deadline, budget):
-    sh(["python3", "scripts/fetch_park_basins.py", "--park", aoi["id"]],
-       check=False)
+    """Contributing watersheds + downstream traces, via mghydro/MERIT.
+
+    This used to pass `--park <aoi-id>`, and fetch_park_basins.py resolved ids
+    only against keystones_with_boundaries.json -- which an AOI is deliberately
+    never in. So the filter matched zero areas, the loop body never ran, the
+    script exited 0, and this unit recorded **"0 basin rows" as a successful
+    `done`**. rev 5 of the handover even wrote that down as correct ("a 485,000
+    km2 polygon has no single watershed"); the true answer is that it has 22,
+    totalling 162,392 km2. A no-op that looks like a plausible answer is the
+    worst failure mode this queue has.
+
+    `--aoi` reads the geometry from the `aois` table. Outlet budget scales with
+    area, so a large AOI is allowed the outlets it actually drains by rather
+    than a park-sized 3.
+
+    Courtesy-paced (~5 s between calls on a $25/mo shared host), so a big AOI is
+    minutes of mostly-sleep. Every response is cached in http_cache, so a re-run
+    or an interrupted run costs nothing.
+    """
+    aid = aoi["id"]
+    sh(["python3", "scripts/fetch_park_basins.py", "--aoi", aid], check=False)
     n = conn.execute("SELECT COUNT(*) FROM park_basins WHERE park_id=?",
-                     (aoi["id"],)).fetchone()[0]
-    return True, f"{n} basin rows"
+                     (aid,)).fetchone()[0]
+    parts = conn.execute("SELECT COUNT(*) FROM park_basin_parts WHERE park_id=?",
+                         (aid,)).fetchone()[0]
+    reaches = conn.execute("SELECT COUNT(*) FROM park_basin_rivers WHERE"
+                           " park_id=?", (aid,)).fetchone()[0]
+    # Zero is a legitimate state for a park on a drainage divide, but for an
+    # area this size it means the fetch failed -- report it as unfinished so the
+    # queue retries rather than freezing a wrong answer as `done`.
+    ok = n > 0
+    return ok, (f"{parts} watersheds ({n} merged rows, {reaches} upstream "
+                f"reaches)" if ok else "no basin rows -- fetch failed")
 
 
 RUNNERS = {

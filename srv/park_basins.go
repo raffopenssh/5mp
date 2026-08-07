@@ -27,6 +27,9 @@ type basinRow struct {
 	Meta      json.RawMessage `json:"meta,omitempty"`
 	FetchedAt string          `json:"fetched_at"`
 	Geometry  json.RawMessage `json:"geometry,omitempty"`
+	// only set for rows from park_basin_parts (one per outlet watershed)
+	Index int    `json:"idx,omitempty"`
+	River string `json:"river,omitempty"`
 }
 
 func (s *Server) loadBasins(parkID string, withGeometry bool) ([]basinRow, error) {
@@ -46,6 +49,54 @@ func (s *Server) loadBasins(parkID string, withGeometry bool) ([]basinRow, error
 			&b.AreaKm2, &b.LengthKm, &meta, &b.FetchedAt, &geo); err != nil {
 			return nil, err
 		}
+		if meta != "" {
+			b.Meta = json.RawMessage(meta)
+		}
+		if withGeometry {
+			b.Geometry = json.RawMessage(geo)
+		}
+		out = append(out, b)
+	}
+	return out, rows.Err()
+}
+
+// loadBasinParts returns ONE ROW PER OUTLET WATERSHED (migration 044).
+//
+// park_basins is keyed (park_id, kind), so it can only ever hold the *union* of
+// an area's watersheds. Most areas have several genuinely separate ones
+// (CAF_Chinko drains via both the Chinko and the Mbari; the XSA AOI by two
+// dozen rivers), and the union throws away which outlet each lobe belongs to —
+// so the map could draw one amorphous MultiPolygon and nothing else, and a lobe
+// could not be attributed to the river that carries it.
+//
+// Empty for anything fetched before 044 existed; callers fall back to the
+// merged row, which is why this is additive rather than a rewrite of the table.
+func (s *Server) loadBasinParts(parkID, kind string, withGeometry bool) ([]basinRow, error) {
+	q := `SELECT kind, source, outlet_lat, outlet_lon, area_km2, length_km,
+	             COALESCE(river,''), COALESCE(meta,''), COALESCE(fetched_at,''),
+	             geojson, idx
+	      FROM park_basin_parts WHERE park_id = ?`
+	args := []any{parkID}
+	if kind != "" {
+		q += ` AND kind = ?`
+		args = append(args, kind)
+	}
+	q += ` ORDER BY kind, idx`
+	rows, err := s.DB.Query(q, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []basinRow
+	for rows.Next() {
+		var b basinRow
+		var river, meta, geo string
+		if err := rows.Scan(&b.Kind, &b.Source, &b.OutletLat, &b.OutletLon,
+			&b.AreaKm2, &b.LengthKm, &river, &meta, &b.FetchedAt, &geo,
+			&b.Index); err != nil {
+			return nil, err
+		}
+		b.River = river
 		if meta != "" {
 			b.Meta = json.RawMessage(meta)
 		}
@@ -80,6 +131,38 @@ func (s *Server) HandleAPIParkBasin(w http.ResponseWriter, r *http.Request) {
 		"attribution": "Upstream watersheds: mghydro Global Watersheds (Heberger 2022, " +
 			"MERIT-Hydro/MERIT-Basins, CC-BY-NC). Downstream traces: global-river-runner " +
 			"(Internet of Water / USGS, MERIT-Basins).",
+	}
+	// Per-outlet watersheds. `basins` stays the merged summary (it is what the
+	// area/length numbers are computed from); `parts` is how many separate
+	// watersheds this area actually drains by, with the river that carries each.
+	// A park on a divide has one; the XSA AOI has two dozen. Without this the
+	// UI could only ever say "the watershed", singular, which for most areas is
+	// wrong.
+	parts, perr := s.loadBasinParts(parkID, "", r.URL.Query().Get("geometry") == "1")
+	if perr == nil && len(parts) > 0 {
+		resp["parts"] = parts
+		up, down := 0, 0
+		names := []string{}
+		seen := map[string]bool{}
+		for _, p := range parts {
+			switch p.Kind {
+			case "upstream":
+				up++
+				// Named rivers each watershed drains through, biggest first:
+				// the human-readable form of "all watersheds".
+				if p.River != "" && !seen[p.River] {
+					seen[p.River] = true
+					names = append(names, p.River)
+				}
+			case "downstream":
+				down++
+			}
+		}
+		resp["upstream_count"] = up
+		resp["downstream_count"] = down
+		if len(names) > 0 {
+			resp["upstream_rivers"] = names
+		}
 	}
 	var nReach, nReach3 int
 	var reachKm, reachKm3 float64
@@ -182,9 +265,29 @@ func (s *Server) handleBasinRiverFeatures(w http.ResponseWriter, parkID string, 
 }
 
 // handleBasinFeatures serves the basin as GeoJSON for the map pin layer.
-// GET /api/parks/{id}/features?type=basin[&kind=upstream|downstream]
+// GET /api/parks/{id}/features?type=basin[&kind=upstream|downstream][&merged=1]
+//
+// **All** of the area's watersheds, one feature per outlet, from
+// park_basin_parts. Serving only the merged union (which is what this did until
+// 2026-08-07) meant the map drew a single amorphous polygon for an area that
+// drains by several separate rivers, with no way to tell which lobe was which.
+// `merged=1` asks for the old union explicitly; anything fetched before
+// migration 044 has no parts and falls back to it.
 func (s *Server) handleBasinFeatures(w http.ResponseWriter, parkID, kind string) {
-	basins, err := s.loadBasins(parkID, true)
+	s.handleBasinFeaturesOpt(w, parkID, kind, false)
+}
+
+func (s *Server) handleBasinFeaturesOpt(w http.ResponseWriter, parkID, kind string, merged bool) {
+	var basins []basinRow
+	var err error
+	split := false
+	if !merged {
+		basins, err = s.loadBasinParts(parkID, kind, true)
+		split = len(basins) > 0
+	}
+	if !split {
+		basins, err = s.loadBasins(parkID, true)
+	}
 	if err != nil {
 		http.Error(w, "Database error", http.StatusInternalServerError)
 		return
@@ -194,22 +297,42 @@ func (s *Server) handleBasinFeatures(w http.ResponseWriter, parkID, kind string)
 		if kind != "" && kind != b.Kind {
 			continue
 		}
+		// feature_id must stay unique per feature or pinning one lobe selects
+		// another: the merged row keeps the historical id, the parts suffix the
+		// outlet index.
+		fid := parkID + "_basin_" + b.Kind
+		if split {
+			fid = fmt.Sprintf("%s_%d", fid, b.Index)
+		}
 		props := map[string]any{
 			"feature_type": "basin_" + b.Kind,
-			"feature_id":   parkID + "_basin_" + b.Kind,
+			"feature_id":   fid,
 			"kind":         b.Kind,
 			"source":       b.Source,
 			"outlet_lat":   b.OutletLat,
 			"outlet_lon":   b.OutletLon,
 			"fetched_at":   b.FetchedAt,
+			"merged":       !split,
+		}
+		if split {
+			props["idx"] = b.Index
+			if b.River != "" {
+				props["river"] = b.River
+			}
 		}
 		if b.AreaKm2 != nil {
 			props["area_km2"] = *b.AreaKm2
 			props["name"] = "Contributing basin"
+			if b.River != "" {
+				props["name"] = b.River + " basin"
+			}
 		}
 		if b.LengthKm != nil {
 			props["length_km"] = *b.LengthKm
 			props["name"] = "Downstream trace"
+			if b.River != "" {
+				props["name"] = b.River + " downstream"
+			}
 		}
 		if b.Meta != nil {
 			var m map[string]any

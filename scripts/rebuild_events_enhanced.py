@@ -740,7 +740,8 @@ class EventRebuilder:
         
         return count
 
-    def rebuild_settlements_for_park(self, park_id, polygons=None, delete=True):
+    def rebuild_settlements_for_park(self, park_id, polygons=None, delete=True,
+                                     on_batch=None, batch=200):
         """Cluster + classify one park's (or AOI's) settlement polygons.
 
         Split out of rebuild_settlements so a single park can be refreshed
@@ -748,6 +749,17 @@ class EventRebuilder:
         rather than growing a second copy of it (docs/PLAN_AOI_OVERLAY.md).
         `delete` scopes the wipe to this park; the global rebuild has already
         truncated the table and passes False.
+
+        Commits every `batch` clusters and calls `on_batch(count)` between
+        batches, the mirror of rebuild_deforestation_for_park. One transaction
+        around the whole rebuild is what let a single AOI-sized input hold
+        SQLite's only writer for its entire run, so nothing else on the
+        deployment -- not the nightly refresh, not a user toggle -- could get a
+        write slot (docs/AOI_HANDOVER_2.md sections 0 and 4.0: this was the
+        pattern that section named as still-missing here). Safe because a re-run
+        is idempotent: the delete above is park-scoped and re-derives the same
+        clusters. `on_batch` is also the interrupt point -- raise from it (the
+        AOI runner raises Interrupted) to stop with everything so far committed.
         """
         if polygons is None:
             polygons = self.load_settlement_polygons(park_id).get(park_id, [])
@@ -822,6 +834,11 @@ class EventRebuilder:
                 classification, confidence, narrative, polygon_ids
             ))
             count += 1
+            # Release the write lock between batches so cron jobs and user
+            # toggles can interleave; on_batch may raise to interrupt.
+            if on_batch and count % batch == 0:
+                self.conn.commit()
+                on_batch(count)
     
         self.conn.commit()
         return count
