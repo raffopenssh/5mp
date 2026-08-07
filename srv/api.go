@@ -1,6 +1,7 @@
 package srv
 
 import (
+	"context"
 	"database/sql"
 	"encoding/base64"
 	"encoding/json"
@@ -2051,12 +2052,13 @@ func (s *Server) handleParkBoundary(w http.ResponseWriter, parkID string) {
 // handlePlaceFeatures returns GeoJSON features for osm_places
 func (s *Server) handlePlaceFeatures(w http.ResponseWriter, r *http.Request, parkID string, limitStr string) {
 	limit, limited := geoFeatureLimit(limitStr)
-	s.serveCachedGeoFeatures(w, r, parkID, "place", limited, func() ([]byte, error) {
-		return s.buildPlaceFeatures(parkID, limit)
+	detail := parseGeoDetail(r.URL.Query().Get("detail"))
+	s.serveCachedGeoFeatures(w, r, parkID, "place", detail, limited, func() ([]byte, error) {
+		return s.buildPlaceFeatures(parkID, limit, detail)
 	})
 }
 
-func (s *Server) buildPlaceFeatures(parkID string, limit int) ([]byte, error) {
+func (s *Server) buildPlaceFeatures(parkID string, limit int, detail string) ([]byte, error) {
 	// A place point whose name is already carried by a river or road line is a
 	// duplicate label, not a second thing: OSM records "Chinko" both as a
 	// waterway name node and on the reaches themselves, and the map then draws
@@ -2087,7 +2089,8 @@ func (s *Server) buildPlaceFeatures(parkID string, limit int) ([]byte, error) {
 	rows, err := s.DB.Query(`
 		SELECT id, place_type, name, lat, lon, osm_id, osm_tags
 		FROM osm_places
-		WHERE park_id = ? AND place_type NOT IN ('river', 'stream', 'lake')
+		WHERE park_id = ? AND place_type NOT IN ('river', 'stream', 'lake')`+
+		geoDetailSQL("place", detail)+`
 		ORDER BY
 			CASE place_type
 				WHEN 'city' THEN 1
@@ -2149,7 +2152,7 @@ func normPlaceName(n string) string {
 // handleWaterbodyFeatures returns waterbody features as GeoJSON
 func (s *Server) handleWaterbodyFeatures(w http.ResponseWriter, r *http.Request, parkID string, limitStr string) {
 	limit, limited := geoFeatureLimit(limitStr)
-	s.serveCachedGeoFeatures(w, r, parkID, "waterbody", limited, func() ([]byte, error) {
+	s.serveCachedGeoFeatures(w, r, parkID, "waterbody", geoDetailAll, limited, func() ([]byte, error) {
 		return s.buildWaterbodyFeatures(parkID, limit)
 	})
 }
@@ -2243,19 +2246,21 @@ func (s *Server) buildWaterbodyFeatures(parkID string, limit int) ([]byte, error
 // handleRiverFeatures returns GeoJSON features for HydroRIVERS data
 func (s *Server) handleRiverFeatures(w http.ResponseWriter, r *http.Request, parkID string, limitStr string) {
 	limit, limited := geoFeatureLimit(limitStr)
-	s.serveCachedGeoFeatures(w, r, parkID, "river", limited, func() ([]byte, error) {
-		return s.buildRiverFeatures(parkID, limit)
+	detail := parseGeoDetail(r.URL.Query().Get("detail"))
+	s.serveCachedGeoFeatures(w, r, parkID, "river", detail, limited, func() ([]byte, error) {
+		return s.buildRiverFeatures(parkID, limit, detail)
 	})
 }
 
-func (s *Server) buildRiverFeatures(parkID string, limit int) ([]byte, error) {
+func (s *Server) buildRiverFeatures(parkID string, limit int, detail string) ([]byte, error) {
 	fc := newGeoFC()
 
 	// Get rivers from park_rivers_hydro
 	rows, err := s.DB.Query(`
 		SELECT hyriv_id, COALESCE(name, ''), stream_order, ord_flow, length_km, lat, lon, geojson
 		FROM park_rivers_hydro
-		WHERE park_id = ? AND geojson IS NOT NULL
+		WHERE park_id = ? AND geojson IS NOT NULL`+
+		geoDetailSQL("river", detail)+`
 		ORDER BY stream_order DESC, length_km DESC
 		LIMIT ?
 	`, parkID, limit)
@@ -2293,12 +2298,13 @@ func (s *Server) buildRiverFeatures(parkID string, limit int) ([]byte, error) {
 // handleRoadFeatures returns GeoJSON features for HeiGIT roads
 func (s *Server) handleRoadFeatures(w http.ResponseWriter, r *http.Request, parkID string, limitStr string) {
 	limit, limited := geoFeatureLimit(limitStr)
-	s.serveCachedGeoFeatures(w, r, parkID, "road", limited, func() ([]byte, error) {
-		return s.buildRoadFeatures(parkID, limit)
+	detail := parseGeoDetail(r.URL.Query().Get("detail"))
+	s.serveCachedGeoFeatures(w, r, parkID, "road", detail, limited, func() ([]byte, error) {
+		return s.buildRoadFeatures(parkID, limit, detail)
 	})
 }
 
-func (s *Server) buildRoadFeatures(parkID string, limit int) ([]byte, error) {
+func (s *Server) buildRoadFeatures(parkID string, limit int, detail string) ([]byte, error) {
 	fc := newGeoFC()
 
 	// Get roads from roads_heigit
@@ -2306,7 +2312,8 @@ func (s *Server) buildRoadFeatures(parkID string, limit int) ([]byte, error) {
 		SELECT osm_id, COALESCE(name, ''), highway_type, COALESCE(surface, ''), 
 		       COALESCE(passability, ''), length_km, geojson
 		FROM roads_heigit
-		WHERE park_id = ? AND geojson IS NOT NULL
+		WHERE park_id = ? AND geojson IS NOT NULL`+
+		geoDetailSQL("road", detail)+`
 		ORDER BY length_km DESC
 		LIMIT ?
 	`, parkID, limit)
@@ -5413,6 +5420,12 @@ func (s *Server) HandleAPIParkInfrastructure(w http.ResponseWriter, r *http.Requ
 			TotalRoadKm  float64        `json:"total_road_km"`
 			MajorRivers  []string       `json:"major_rivers,omitempty"`
 			RoadSurfaces map[string]int `json:"road_surfaces,omitempty"`
+			// Detail holds the row count of each tier per layer, e.g.
+			// {"river":{"major":310,"main":4906,"all":18927}}. The UI needs
+			// them to label the tier selector honestly — a tier that would
+			// draw nothing must look unavailable before it is clicked, not
+			// after.
+			Detail map[string]map[string]int `json:"detail_counts,omitempty"`
 		} `json:"summary"`
 	}
 
@@ -5501,8 +5514,34 @@ func (s *Server) HandleAPIParkInfrastructure(w http.ResponseWriter, r *http.Requ
 	// Count total places
 	s.DB.QueryRowContext(ctx, `SELECT COUNT(*) FROM osm_places WHERE park_id = ? AND place_type NOT IN ('river', 'stream', 'lake')`, internalID).Scan(&response.Summary.TotalPlaces)
 
+	response.Summary.Detail = s.geoDetailCounts(ctx, internalID)
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
+}
+
+// geoDetailCounts returns rows-per-tier for the three tiered layers. One
+// indexed COUNT per (layer, tier); the tier predicate is the same
+// geoDetailSQL the feature builders use, so the number on the button is the
+// number of features the button draws.
+func (s *Server) geoDetailCounts(ctx context.Context, parkID string) map[string]map[string]int {
+	base := map[string]string{
+		"river": `SELECT COUNT(*) FROM park_rivers_hydro WHERE park_id = ? AND geojson IS NOT NULL`,
+		"road":  `SELECT COUNT(*) FROM roads_heigit WHERE park_id = ? AND geojson IS NOT NULL`,
+		"place": `SELECT COUNT(*) FROM osm_places WHERE park_id = ? AND place_type NOT IN ('river','stream','lake')`,
+	}
+	out := map[string]map[string]int{}
+	for layer, q := range base {
+		tiers := map[string]int{}
+		for _, tier := range []string{geoDetailMajor, geoDetailMain, geoDetailAll} {
+			var n int
+			if s.DB.QueryRowContext(ctx, q+geoDetailSQL(layer, tier), parkID).Scan(&n) == nil {
+				tiers[tier] = n
+			}
+		}
+		out[layer] = tiers
+	}
+	return out
 }
 
 // HandleAPIMergedKML exports multiple parks as a single KML with folders

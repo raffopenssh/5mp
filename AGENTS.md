@@ -717,6 +717,39 @@ self-invalidating `COUNT+MAX(id)` `source_rev`, plus an ETag so a re-pin is a
   on the reaches, so the map drew a village dot on the labelled river). A
   roads re-ingest therefore changes the *places* answer.
 
+### Detail tiers: `major` / `main` / `all`
+
+Serving the whole layer is honest but rarely what you want on screen: XSA's
+road layer is 6,458 footpaths and 3,642 tracks around 114 trunk/primary roads,
+and its river layer 14,011 order-1/2 headwater stubs around 549 major reaches.
+At continental zoom that is a blue smear that hides the things it is drawn to
+show. `?detail=` on `/features` picks a tier for `river`, `road` and `place`
+(`geoDetailSQL` in `srv/feature_geo_cache.go`); `/infrastructure` returns
+`summary.detail_counts` so a button can print the number of features it will
+actually draw.
+
+* **A tier is a WHERE clause, never a LIMIT.** It must be the *same* subset
+  every time and at every zoom, or a share link stops reproducing a picture.
+  That is also why there is no zoom-driven auto-tier.
+* **Rivers key on `stream_order`, not on having a name.** 78% of XSA's order-4
+  reaches are unnamed and an unnamed Nile tributary is still a major river.
+  Works across both sources because `osm_hydro.py` maps river=4/canal=3/
+  stream=2 onto the same scale as HydroRIVERS' Strahler.
+* **Roads key on `highway_type`**, the only classification present for every
+  row — HeiGIT's `surface`/`dl_class_2024` is null for the OSM-enriched
+  majority.
+* Each tier is a **separate cache row** (`params=<tier>`, `''` for `all` so the
+  pre-existing rows stay valid) with its own ETag.
+* Unknown or absent `detail` is `all`, never a 400: old share links and pinned
+  layer restores predate the param.
+* UI: one segmented control (`.geo-detail-seg`) above the Rivers/Roads/Places
+  buttons it governs — one, not three, because the tiers mean the same thing
+  for all three and the whole point is that two areas on screen agree. Global
+  (`window.geoDetail`, default **`main`**), rides in the share link as
+  `?detail=`, omitted at the default. `setGeoDetail()` re-pins affected layers
+  in place rather than making the user unpin and pin again, and
+  `restorePinnedFromURL()` reads `detail` **before** fetching any layer.
+
 ### `polygon_ids` LIKE joins are the same trap as `ABS()`
 
 `park_settlements.polygon_ids` and `deforestation_events.polygon_ids` are
@@ -1167,6 +1200,36 @@ Park tooltip icon buttons → `GET /api/parks/{id}/export.kml` (`srv/api.go`,
 
 ---
 
+## OSM detail: every park at Geofabrik level
+
+`roads_heigit` and `osm_places` are filled from Geofabrik country PBFs by
+`enrich_park_infra()` in `scripts/osm_pbf.py`. Until 2026-08-07 the only entry
+point was `--enrich-missing`, which fires **only for a park with zero rows** —
+so the 159 parks carrying the old HeiGIT import (major roads only: no `track`,
+`path` or `residential`) were permanently "not missing" and stayed thin. Five
+parks in the whole database had a single track or path, while an AOI ingested
+from the *same* PBFs had thousands. That is the mismatch you see when a park
+outline and an AOI drawn over it look like different maps. CAF_Chinko: 42 roads
+before, 3,164 after.
+
+```bash
+python3 scripts/osm_pbf.py --enrich-all --rotate 2   # nightly, 05:15 UTC
+python3 scripts/osm_pbf.py --enrich-all --iso CAF    # one country, ~75s
+```
+
+* **The unit of work is a COUNTRY, not a park** — the 50-750 MB PBF download is
+  the whole cost, so one download serves every park of that country and is then
+  deleted. 33 countries at 2/night = a full turnover every ~17 days.
+* State is `data/osm_enrich_state.json` (stalest country first), deliberately a
+  file and not a table: it is scheduling bookkeeping, and it must survive a
+  database restore.
+* `--enrich-all` passes `force=True` (a refresh, not a backfill), **but an
+  empty osmium export never deletes** — that is a transient failure, not "this
+  park has no villages", and deleting on it would make one bad run permanent.
+  It warns and keeps the existing rows for the next rotation.
+* Interruption is safe: each park commits before the next, and the state file
+  only advances per completed country.
+
 ## On-the-fly Park Onboarding
 
 Search for an unloaded-but-WDPA-matched park name, dwell 15s → offer to add it.
@@ -1262,6 +1325,7 @@ URL params encode full UI state for reproducible tests:
 | `popup` | `CAF_Chinko` | Open park popup |
 | `sections` | `fire,deforestation` | Open accordions |
 | `pinned` | `CAF_Chinko:fire_trajectory` | Pin layers |
+| `detail` | `major` \| `main` \| `all` | Geography detail tier (omitted at the `main` default) |
 | `starred_parks` | `CAF_Chinko,COD_Virunga` | Star parks |
 | `notif` | `1` | Open notification dropdown |
 | `notif_fire` | `CAF_Chinko:2026_grp_2caaa51b` | Zoom to fire + pin (see below) |
