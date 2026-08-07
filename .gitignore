@@ -101,8 +101,19 @@ data/fire_trends_v5/
 data/nrt_sp_audit.json
 
 # Historical map rasters (derived, large) - regenerate with scripts/histmaps/runall.sh
+# then scripts/histmaps/mosaic.sh. 669 MB of per-sheet GeoTIFFs + a 1.4 GB
+# MBTiles mosaic + the per-block intermediates it is merged from.
 data/histmaps/geo/
+data/histmaps/superseded/
+data/histmaps/work/
+data/histmaps/*.mbtiles
+data/histmaps/*.partial_tiles.db
+data/histmaps/*.log
 data/histmaps/*.jp2
+# Stale snapshots of the scripts that the run copied next to its output; the
+# live copies are in scripts/histmaps/. qa.json is NOT ignored -- it is the
+# per-sheet quality record for the shipped mosaic and is small.
+data/histmaps/*.py
 scripts/histmaps/*.jp2
 scripts/histmaps/qa.json
 scripts/histmaps/*_geo.tif
@@ -127,3 +138,10 @@ analysis/out/adjudicate/
 analysis/out/tight/
 analysis/out/truth1/
 analysis/out/truth_eval.json
+
+# Geology map overlays (scanned sources + derived rasters/vectors) - large,
+# regenerate with scripts/geomaps/. See scripts/geomaps/README.md.
+data/geomaps/src/
+data/geomaps/work/
+data/geomaps/*.mbtiles
+data/geomaps/*.pmtiles
