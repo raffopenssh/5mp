@@ -692,6 +692,27 @@ any new expensive narrative should take the `narrativeSourceRev` /
 `getCachedNarrative` / `putCachedNarrative` route rather than inventing a
 second cache.
 
+### `polygon_ids` LIKE joins are the same trap as `ABS()`
+
+`park_settlements.polygon_ids` and `deforestation_events.polygon_ids` are
+comma-separated lists of `feature_geometries.feature_id`. Joining on them in SQL
+means `(',' || polygon_ids || ',') LIKE ('%,' || fg.feature_id || ',%')`, which
+pairs *every* event with *every* polygon and runs a string search on each: park
+scale (hundreds x thousands) hid it, XSA scale did not. Pinning "all
+settlements" from the AOI popup took **29 s** (1,552 x 74,904) and all
+deforestation **13 s** (7,815 x 80,408) — the same class of failure as the
+non-sargable `ABS()` above, and with the same tell: fires, which don't join,
+were instant.
+
+Fixed 2026-08-07 in `srv/feature_meta.go` — one scan of the small events table,
+split in Go into a `feature_id -> meta` map. 0.08 s / 0.14 s, output
+**byte-identical** for CAF_Chinko, COD_Virunga and XSA. `event_id=` likewise
+resolves `polygon_ids` first and uses `IN (...)`. Don't reintroduce the join:
+
+```bash
+grep -rn "polygon_ids || ','" srv/
+```
+
 Two things that look like AOI bugs and are not: `settlement-intensity` returns
 an empty FeatureCollection (`settlement_intensity` has rows for 3 areas total —
 parks included), and `feature-stats.road_segments` is 0 because roads live in
@@ -850,7 +871,7 @@ labels a fully ingested AOI "pending" forever.
 | piece | where |
 |---|---|
 | routing | `apiBase(id)` in globe.html; `window.AOI_IDS` filled by `loadAOIs()` |
-| map layer + popup | globe.html `loadAOIs`/`showAOIPopup`/`aoiCoverageHTML` |
+| map layer + popup | globe.html `loadAOIs`/`showAOIPopup`/`aoiCoverageHTML`/`renderAOIOverviewHeader` |
 | actions | `aoiActionsHTML(id, name, {isOwner, archived})` — one row, used by tip *and* popup |
 | export menu | globe.html `toggleAOIMenu`/`aoiExportMenuItems` — `#aoi-menu` on `<body>` |
 | rename | globe.html `startAOIRename` / `renameAOITag` → `POST /api/aois/{id}/rename` |
@@ -910,6 +931,22 @@ Things that will bite:
   becomes a field (`.aoi-editable-name`, hover underline). A pencil icon would
   be a second edit affordance beside the real one and would cost a slot on the
   row this whole layout exists to free.
+* **`.maplibregl-popup-content` is capped at 280px** (globe.css). The AOI popup
+  carried `min-width:300px` on its `.pa-popup` child, so every section stuck
+  20px past the panel's right edge and the accordion rows looked sheared off.
+  It is 260px now. A popup's own min-width must stay under that cap.
+* **A sticky map tip and the popup are the same answer twice**, and the tip is
+  anchored at the cursor, i.e. on top of the popup it just opened.
+  `showAOIPopup()` calls `MapTip.hide()` first.
+* **Overview & coverage opens collapsed.** Once ingested it is a wall of 100%s,
+  and the popup was opened to see fires and settlements. The header carries
+  `{done}/{total}` and, only while work is outstanding,
+  `renderAOIOverviewHeader()` draws a slim amber aggregate bar (weighted by
+  `units_done/units_total`, so it moves during a long unit) plus "data below is
+  partial". No bar at 11/11 — a full green rule is decoration.
+* **The AOI popup has the Roads/Rivers/Places & Infrastructure section too.** It
+  was simply never added, though `fetchPopupRoadData()` had already been taught
+  `apiBase()`/`isAOI()` for it. `?aoi_sections=road` opens it.
 * **`FloatUI.decoratePAPopup()` bails on `.pa-popup-name > span:last-child`.**
   It was written as a "does this look like a PA popup" guard; the AOI header put
   a second span after the name and the guard silently returned, taking the grab
@@ -1002,6 +1039,44 @@ Nothing blocking. Two nice-to-haves:
 | `srv/static/aoi_progress.js` | the multi-day notification card |
 | `db/migrations/040..045` | overlays, parks, versions, pixel count, basin parts, narrative cache |
 | `docs/PLAN_AOI_OVERLAY.md` | design rationale + measured facts |
+
+---
+
+## Historical map overlay (Sudan Survey 1:250,000)
+
+76 scanned sheets (1915-1944) of the Anglo-Egyptian Sudan 1:250k series,
+georeferenced to their own printed 15-arcmin graticule and mosaicked into
+`data/histmaps/sudan250k.mbtiles` (1.4 GB, z4-14, **gitignored derived output**
+— rebuild with `scripts/histmaps/mosaic.sh`, don't commit).
+
+| Piece | Where |
+|---|---|
+| Fetch + georeference | `scripts/histmaps/sudan250k.py`, `select.py`, `runall.sh` |
+| Mosaic to MBTiles | `scripts/histmaps/mosaic.sh` (~2.5 h, resumable) |
+| Serving | `srv/histmap.go` — `GET /api/histmap`, `/api/histmap/sudan250k/{z}/{x}/{y}.png`, `/download` |
+| UI | admin panel -> Map Settings -> Historical Maps (`HistMap` in globe.html) |
+| Share link | `?histmap=sudan250k` |
+
+**White ink is a paint property, not a second tileset.** The archive holds one
+flat near-black (26,22,18) on transparent paper, so the layer sets
+`raster-brightness-min: 1` to lift RGB to white while leaving alpha alone. The
+**download stays black on purpose** — offline viewers (Locus, OsmAnd, QGIS)
+default to light backgrounds where white ink is invisible. Never "fix" this by
+generating a whitened archive; there would then be two copies to keep in sync.
+
+Layer order is load-bearing: inserted **before the first non-raster layer**, so
+above the basemap and below park/AOI outlines, trajectories and pins.
+`switchBasemap()` therefore **excludes** `histmap-lyr`/`histmap-src` from its
+generic custom-layer capture and calls `HistMap.reattach()` (which re-adds on
+`idle`) instead — replaying the captured spec appends the scan on top of
+everything, and re-adding during `styledata` is silently dropped because the
+`before` id has not landed yet.
+
+Tile misses return **204, not 404**: the series covers 8 of 22 1:1M blocks, so
+most of the bounding box legitimately has no sheet.
+
+Full detail, including why the mosaic is built per-block and why `tile_row` is
+TMS: `scripts/histmaps/README.md`.
 
 ---
 

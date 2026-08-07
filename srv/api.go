@@ -5718,20 +5718,14 @@ func (s *Server) handleSettlementFeatures(w http.ResponseWriter, parkID string, 
 		}
 	}
 
-	// Join feature_geometries with park_settlements to get narrative
-	// Use polygon_ids which contains comma-separated feature IDs
+	// The narrative/classification join used to be a correlated LIKE over
+	// polygon_ids -- O(settlements x polygons), which is invisible for a park
+	// (a few hundred x a few thousand) and 29 s for XSA_Study_Area
+	// (1,552 x 74,904). Same answer, built as a map in Go from one scan.
+	settleMeta := s.settlementMetaByPolygon(parkID)
 	query := `
-		SELECT 
-			fg.feature_id,
-			fg.geojson,
-			fg.properties_json,
-			ps.narrative,
-			ps.classification,
-			ps.nearest_place,
-			ps.distance_to_place_km
+		SELECT fg.feature_id, fg.geojson, fg.properties_json
 		FROM feature_geometries fg
-		LEFT JOIN park_settlements ps ON fg.park_id = ps.park_id 
-			AND (',' || ps.polygon_ids || ',') LIKE ('%,' || fg.feature_id || ',%')
 		WHERE fg.park_id = ? AND fg.feature_type = 'settlement'
 	`
 	args := []interface{}{parkID}
@@ -5770,11 +5764,15 @@ func (s *Server) handleSettlementFeatures(w http.ResponseWriter, parkID string, 
 	for rows.Next() {
 		var featureID, geojson string
 		var propsJSON sql.NullString
+
+		if err := rows.Scan(&featureID, &geojson, &propsJSON); err != nil {
+			continue
+		}
 		var narrative, classification, nearestPlace sql.NullString
 		var distanceToPlace sql.NullFloat64
-
-		if err := rows.Scan(&featureID, &geojson, &propsJSON, &narrative, &classification, &nearestPlace, &distanceToPlace); err != nil {
-			continue
+		if m, ok := settleMeta[featureID]; ok {
+			narrative, classification = m.narrative, m.classification
+			nearestPlace, distanceToPlace = m.nearestPlace, m.distanceKm
 		}
 
 		// Parse properties
@@ -5856,21 +5854,12 @@ func (s *Server) handleDeforestationFeatures(w http.ResponseWriter, parkID strin
 		}
 	}
 
-	// Build query with date filters
-	// Join on polygon_ids which contains comma-separated feature IDs
+	// Same de-join as settlements above: the correlated LIKE over polygon_ids
+	// was O(events x polygons) -- 13 s for XSA_Study_Area (7,815 x 80,408).
+	defMeta := s.deforestMetaByPolygon(parkID)
 	query := `
-		SELECT 
-			fg.feature_id,
-			fg.geojson,
-			fg.properties_json,
-			fg.start_date,
-			de.narrative,
-			de.classification,
-			de.pattern_type
+		SELECT fg.feature_id, fg.geojson, fg.properties_json, fg.start_date
 		FROM feature_geometries fg
-		LEFT JOIN deforestation_events de ON fg.park_id = de.park_id 
-			AND CAST(fg.properties_json->>'year' AS INTEGER) = de.year
-			AND (',' || de.polygon_ids || ',') LIKE ('%,' || fg.feature_id || ',%')
 		WHERE fg.park_id = ? AND fg.feature_type = 'deforestation'
 	`
 	args := []interface{}{parkID}
@@ -5881,9 +5870,18 @@ func (s *Server) handleDeforestationFeatures(w http.ResponseWriter, parkID strin
 	}
 	// Fetch ALL polygons of one deforestation event (for pinning multi-patch events)
 	if eventID != "" {
-		query += ` AND EXISTS (SELECT 1 FROM deforestation_events de2 WHERE de2.id = ? AND de2.park_id = fg.park_id
-			AND (',' || de2.polygon_ids || ',') LIKE ('%,' || fg.feature_id || ',%'))`
-		args = append(args, eventID)
+		var polyIDs sql.NullString
+		s.DB.QueryRow(`SELECT polygon_ids FROM deforestation_events WHERE id = ? AND park_id = ?`,
+			eventID, parkID).Scan(&polyIDs)
+		ids := splitPolygonIDs(polyIDs.String)
+		if len(ids) == 0 {
+			query += " AND 0"
+		} else {
+			query += " AND fg.feature_id IN (" + strings.TrimSuffix(strings.Repeat("?,", len(ids)), ",") + ")"
+			for _, id := range ids {
+				args = append(args, id)
+			}
+		}
 	}
 	if startDate != "" {
 		query += " AND (fg.start_date IS NULL OR fg.start_date >= ?)"
@@ -5923,11 +5921,11 @@ func (s *Server) handleDeforestationFeatures(w http.ResponseWriter, parkID strin
 	for rows.Next() {
 		var featureID, geojson string
 		var propsJSON, startDateStr sql.NullString
-		var narrative, classification, patternType sql.NullString
 
-		if err := rows.Scan(&featureID, &geojson, &propsJSON, &startDateStr, &narrative, &classification, &patternType); err != nil {
+		if err := rows.Scan(&featureID, &geojson, &propsJSON, &startDateStr); err != nil {
 			continue
 		}
+		var narrative, classification, patternType sql.NullString
 
 		// Parse properties
 		props := make(map[string]interface{})
@@ -5936,6 +5934,11 @@ func (s *Server) handleDeforestationFeatures(w http.ResponseWriter, parkID strin
 		}
 		props["feature_type"] = "deforestation"
 		props["feature_id"] = featureID
+		// The old SQL join matched on year as well as polygon_ids; keep that,
+		// since one feature_id can appear in several years' events.
+		if m, ok := defMeta[defMetaKey(featureID, props["year"])]; ok {
+			narrative, classification, patternType = m.narrative, m.classification, m.patternType
+		}
 		
 		if startDateStr.Valid {
 			props["start_date"] = startDateStr.String

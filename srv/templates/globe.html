@@ -1008,10 +1008,14 @@
             const customLayers = [];
             const style = map.getStyle();
             
-            // Identify custom sources (not the base 'osm' or 'satellite')
+            // Identify custom sources (not the base 'osm' or 'satellite').
+            // The historical-map source is excluded: HistMap.reattach() rebuilds
+            // it below, because replaying the captured spec would re-add it at
+            // the END of the layer list, i.e. on top of the park outlines and
+            // fire trajectories it is supposed to sit under.
             if (style && style.sources) {
                 Object.keys(style.sources).forEach(sourceId => {
-                    if (sourceId !== 'osm' && sourceId !== 'satellite') {
+                    if (sourceId !== 'osm' && sourceId !== 'satellite' && sourceId !== 'histmap-src') {
                         customSources.push({
                             id: sourceId,
                             spec: style.sources[sourceId]
@@ -1023,7 +1027,7 @@
             // Identify custom layers (not the base layer)
             if (style && style.layers) {
                 style.layers.forEach(layer => {
-                    if (layer.id !== 'osm' && layer.id !== 'satellite') {
+                    if (layer.id !== 'osm' && layer.id !== 'satellite' && layer.id !== 'histmap-lyr') {
                         customLayers.push(layer);
                     }
                 });
@@ -1059,11 +1063,198 @@
                 
                 // Adjust park polygon fill visibility based on basemap
                 updateParkFillForBasemap();
+
+                // The generic custom-layer restore above replays the historical
+                // overlay's captured spec, which puts it back on TOP of the park
+                // outlines it belongs under. Re-insert it at the right depth.
+                if (typeof HistMap !== 'undefined') HistMap.reattach();
                 
                 showToast('Basemap changed', `Switched to ${newStyle.name}`, null, null, 'success');
             });
         }
         
+        // ---------------------------------------------------------------
+        // Historical map overlay (scanned survey series served from MBTiles)
+        //
+        // One raster source, two appearances. The archive stores near-black
+        // ink on transparent paper; over dark satellite imagery that is
+        // unreadable, so the on-screen layer sets raster-brightness-min: 1,
+        // which pushes every RGB channel to white while leaving alpha alone.
+        // No second tileset, no server-side recolouring -- and the file you
+        // download stays black, which is what light-background offline
+        // viewers (Locus, OsmAnd, QGIS) need.
+        // ---------------------------------------------------------------
+        const HistMap = (function () {
+            const SRC = 'histmap-src', LYR = 'histmap-lyr';
+            let meta = null, on = false, opacity = 0.85, metaPromise = null;
+
+            function fetchMeta() {
+                if (!metaPromise) {
+                    metaPromise = fetch(histMapUrl('/api/histmap'))
+                        .then(r => r.json())
+                        .then(j => { meta = j; return j; })
+                        .catch(() => { meta = { available: false, reason: 'request failed' }; return meta; });
+                }
+                return metaPromise;
+            }
+
+            // The layer must sit directly above the basemap raster and below
+            // every vector overlay -- park and AOI outlines, fire trajectories,
+            // pinned features. Anchoring on the first non-raster layer (rather
+            // than appending) is what guarantees that: MapLibre draws in list
+            // order, and anything added *later* is appended above us anyway, so
+            // pins made after the overlay is enabled stay on top for free.
+            //
+            // 'background' is skipped too: it is the paper the basemap itself
+            // sits on, so inserting before it would hide the scan entirely.
+            function firstOverlayLayer() {
+                const st = map.getStyle();
+                if (!st || !st.layers) return undefined;
+                const l = st.layers.find(x => x.id !== LYR && x.type !== 'raster' && x.type !== 'background');
+                return l ? l.id : undefined;
+            }
+
+            function add() {
+                if (!meta || !meta.available || !map || !map.isStyleLoaded()) return;
+                if (!map.getSource(SRC)) {
+                    map.addSource(SRC, {
+                        type: 'raster',
+                        tiles: [window.location.origin + histMapUrl(meta.tiles)],
+                        tileSize: 256,
+                        minzoom: meta.minzoom || 0,
+                        maxzoom: meta.maxzoom || 14,
+                        // Clamp requests to the sheets' own envelope; the series
+                        // covers 8 of 22 blocks, so without this the client asks
+                        // for tens of thousands of tiles that can only 204.
+                        bounds: meta.bounds || undefined,
+                        attribution: meta.attribution || ''
+                    });
+                }
+                if (!map.getLayer(LYR)) {
+                    map.addLayer({
+                        id: LYR,
+                        type: 'raster',
+                        source: SRC,
+                        paint: {
+                            'raster-opacity': opacity,
+                            // White ink over imagery. brightness-min=1 lifts the
+                            // floor to full white; the ink is flat so there is no
+                            // tone to lose. Over the dark vector basemap the same
+                            // trick reads fine too, so it is unconditional.
+                            'raster-brightness-min': 1,
+                            'raster-fade-duration': 0,
+                            // Above z14 there is no more sheet detail; letting
+                            // MapLibre oversample keeps the strokes soft rather
+                            // than blocky against sub-metre imagery.
+                            'raster-resampling': 'linear'
+                        }
+                    }, firstOverlayLayer());
+                }
+            }
+
+            function remove() {
+                if (map.getLayer(LYR)) map.removeLayer(LYR);
+                if (map.getSource(SRC)) map.removeSource(SRC);
+            }
+
+            return {
+                isOn: () => on,
+                activeId: () => (meta && meta.id) || 'sudan250k',
+                meta: () => meta,
+                ensureMeta: fetchMeta,
+
+                async set(want, opts) {
+                    opts = opts || {};
+                    await fetchMeta();
+                    if (want && !(meta && meta.available)) {
+                        if (!opts.quiet) showToast('Historical maps unavailable', (meta && meta.reason) || 'archive not installed', null, null, 'warning');
+                        return false;
+                    }
+                    on = !!want;
+                    if (map && map.isStyleLoaded()) { on ? add() : remove(); }
+                    else if (on) { map.once('idle', add); }
+                    renderHistMapPanel();
+                    if (on && opts.fly && meta.center) {
+                        map.flyTo({ center: [meta.center[0], meta.center[1]], zoom: Math.max(map.getZoom(), meta.center[2] || 7) });
+                    }
+                    return on;
+                },
+
+                toggle() { return this.set(!on, { fly: !on }); },
+
+                setOpacity(v) {
+                    opacity = Math.max(0, Math.min(1, v));
+                    if (map.getLayer(LYR)) map.setPaintProperty(LYR, 'raster-opacity', opacity);
+                    const lbl = document.getElementById('histmap-opacity-val');
+                    if (lbl) lbl.textContent = Math.round(opacity * 100) + '%';
+                },
+
+                // switchBasemap() rebuilds the style. Its generic custom-layer
+                // capture is told to skip us (see the histmap exclusion there)
+                // precisely so we can re-insert at the right depth here rather
+                // than be appended on top of the park outlines.
+                //
+                // On 'idle', not inside the 'styledata' handler: styledata
+                // fires while the new style is still settling, and addLayer()
+                // with a `before` id that has not landed yet is silently
+                // dropped -- which made the overlay vanish on basemap change.
+                reattach() {
+                    if (!on) return;
+                    map.once('idle', () => { remove(); add(); });
+                },
+
+                opacity: () => opacity
+            };
+        })();
+        window.HistMap = HistMap;
+
+        // Password travels as a query param on every API call in this app
+        // (cookie is set too, but share links carry ?pwd=), and the tile URL
+        // template is handed straight to MapLibre, so it has to be baked in.
+        function histMapUrl(path) {
+            return path + (path.indexOf('?') >= 0 ? '&' : '?') + 'pwd=' + encodeURIComponent(getPwd());
+        }
+
+        function renderHistMapPanel() {
+            const box = document.getElementById('histmap-list');
+            if (!box) return;
+            const m = HistMap.meta();
+            if (!m) { return; }
+            if (!m.available) {
+                box.innerHTML = '<div style="color:#666;font-size:12px;">No historical map archive installed on this server.' +
+                    (m.reason ? ' <span style="color:#555;">(' + escapeHtml(m.reason) + ')</span>' : '') + '</div>';
+                return;
+            }
+            const on = HistMap.isOn();
+            const mb = m.size_bytes ? (m.size_bytes / 1048576).toFixed(0) + ' MB' : '';
+            box.innerHTML = `
+                <div style="border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px;background:rgba(255,255,255,0.02);">
+                    <div style="display:flex;align-items:flex-start;gap:12px;">
+                        <div style="flex:1;min-width:0;">
+                            <div style="color:#fff;font-size:13px;font-weight:600;">${escapeHtml(m.name || 'Historical map')}</div>
+                            <div style="color:#777;font-size:11px;margin-top:4px;line-height:1.5;">${escapeHtml(m.description || '')}</div>
+                        </div>
+                        <button id="histmap-toggle" onclick="HistMap.toggle()"
+                            class="star-report-btn${on ? '' : ' secondary'}"
+                            style="font-size:12px;white-space:nowrap;">${on ? 'Hide overlay' : 'Show overlay'}</button>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;margin-top:12px;${on ? '' : 'opacity:0.4;pointer-events:none;'}">
+                        <span style="color:#888;font-size:11px;">Opacity</span>
+                        <input type="range" min="10" max="100" value="${Math.round(HistMap.opacity() * 100)}"
+                               oninput="HistMap.setOpacity(this.value/100)" style="flex:1;accent-color:#3b82f6;">
+                        <span id="histmap-opacity-val" style="color:#aaa;font-size:11px;width:34px;text-align:right;">${Math.round(HistMap.opacity() * 100)}%</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap;">
+                        <a class="star-report-btn secondary" style="font-size:12px;text-decoration:none;"
+                           href="${histMapUrl(m.download)}" download
+                           title="Download the MBTiles archive (original black ink, z${m.minzoom}-${m.maxzoom}) for offline use in Locus Map, OsmAnd or QGIS">
+                           Download MBTiles${mb ? ' (' + mb + ')' : ''}</a>
+                        <span style="color:#666;font-size:11px;">black ink, for light backgrounds</span>
+                    </div>
+                    <div style="color:#555;font-size:10px;margin-top:10px;line-height:1.5;">${escapeHtml(m.attribution || '')}</div>
+                </div>`;
+        }
+
         // Update park fill visibility based on basemap (hide on satellite)
         function updateParkFillForBasemap() {
             if (!map || !map.getLayer || !map.getLayer('areas-fill')) return;
@@ -8513,6 +8704,10 @@
         function showAOIPopup(props, lngLat) {
             if (currentAOIPopup) currentAOIPopup.remove();
             if (currentPAPopup) currentPAPopup.remove();
+            // A sticky map tip is the *same* information in a smaller box, and
+            // it is positioned at the cursor -- i.e. right on top of the popup
+            // it just opened. One answer on screen at a time.
+            if (window.MapTip) MapTip.hide();
             const id = props.id, name = props.name || id;
             const area = props.area_km2 ? formatNumber(Math.round(props.area_km2)) + ' km²' : '--';
             const win = (props.from_date || '…') + ' → ' + (props.to_date || 'now');
@@ -8527,7 +8722,7 @@
                     </div>
                 </div>`;
             const html = `
-                <div class="pa-popup" style="min-width:300px">
+                <div class="pa-popup" style="min-width:260px">
                     <div class="pa-popup-header">
                         <div class="pa-popup-name" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
                             <span style="min-width:0;overflow-wrap:break-word;" id="aoi-name-${id}"${props.is_owner ? ` class="aoi-editable-name" onclick="event.stopPropagation();startAOIRename('${id}')" title="Click to rename"` : ''}>${escapeHtml(name)}</span>
@@ -8541,11 +8736,12 @@
                         </div>
                         <div style="font-size:10px;color:#888;margin-top:2px">Window ${escapeHtml(win)}</div>
                     </div>
-                    <div class="pa-popup-section open" id="aoi-overview-section-${id}" onclick="togglePopupSection(this)">
+                    <div class="pa-popup-section" id="aoi-overview-section-${id}" onclick="togglePopupSection(this)">
                         <div class="pa-popup-section-header">
-                            <div class="pa-popup-section-title"><span class="pa-popup-section-icon">◈</span> Overview &amp; coverage</div>
+                            <div class="pa-popup-section-title"><span class="pa-popup-section-icon">◈</span> Overview &amp; coverage<span id="aoi-overview-count-${id}" class="pa-popup-section-count"></span></div>
                             <span class="pa-popup-section-toggle">▼</span>
                         </div>
+                        <div id="aoi-overview-bar-${id}"></div>
                         <div class="pa-popup-section-content" id="aoi-overview-content-${id}">
                             <div class="pa-popup-section-loading">Loading...</div>
                         </div>
@@ -8553,6 +8749,7 @@
                     ${sec('fire', '◇', 'Fire Activity', 'fire')}
                     ${sec('ghsl', '◻', 'Settlements', 'settlement')}
                     ${sec('deforest', '△', 'Deforestation', 'deforestation')}
+                    ${sec('road', '⊡', 'Roads, Rivers, Places &amp; Infrastructure', 'road')}
                     <div class="pa-popup-section" id="aoi-versions-section-${id}" onclick="togglePopupSection(this); loadAOIVersions('${id}')">
                         <div class="pa-popup-section-header">
                             <div class="pa-popup-section-title"><span class="pa-popup-section-icon">⧉</span> Versions</div>
@@ -8576,6 +8773,7 @@
             fetchPopupFireData(id);
             fetchPopupGHSLData(id);
             fetchPopupDeforestData(id);
+            fetchPopupRoadData(id);
             fetchAOIOverview(id);
         }
         window.showAOIPopup = showAOIPopup;
@@ -8601,9 +8799,41 @@
                       <div style="color:#888;margin-top:4px">Species, research, legal and climate are recorded per protected area — open one of those for them.</div>
                     </div>
                     ${aoiCoverageHTML(d.datasets)}`;
+                renderAOIOverviewHeader(id, d.datasets);
             } catch (e) {
                 el.innerHTML = '<div style="color:#888;font-size:11px">Could not load coverage.</div>';
             }
+        }
+
+        // The section is collapsed by default — once an AOI is ingested its
+        // coverage table is a wall of 100%s, and the user opened the popup to
+        // see fires and settlements, not a progress report. So the *header*
+        // carries the one number that matters ({done}/{total} layers) and,
+        // while work is outstanding, a slim aggregate bar under it. When
+        // everything is done there is no bar at all: a full green rule is just
+        // decoration.
+        function renderAOIOverviewHeader(id, datasets) {
+            const bar = document.getElementById(`aoi-overview-bar-${id}`);
+            const cnt = document.getElementById(`aoi-overview-count-${id}`);
+            const ds = (datasets || []).filter(x => x.enabled);
+            if (!ds.length) { if (bar) bar.innerHTML = ''; return; }
+            const done = ds.filter(x => x.state === 'done').length;
+            const running = ds.filter(x => x.state === 'running').length;
+            // Weight by per-dataset progress so the bar moves during a long
+            // unit instead of jumping a whole layer at a time.
+            const frac = ds.reduce((a, x) => a + (x.state === 'done' ? 1
+                : (x.units_total ? Math.min(1, x.units_done / x.units_total) : 0)), 0) / ds.length;
+            const pct = Math.round(100 * frac);
+            if (cnt) cnt.textContent = `${done}/${ds.length}`;
+            if (!bar) return;
+            if (done === ds.length) { bar.innerHTML = ''; return; }
+            bar.innerHTML = `
+                <div style="padding:0 10px 8px">
+                  <div style="height:3px;background:#222;border-radius:2px;overflow:hidden">
+                    <div style="height:100%;width:${pct}%;background:#f59e0b;transition:width .3s"></div>
+                  </div>
+                  <div style="font-size:9px;color:#888;margin-top:3px">${pct}% ingested${running ? ` · ${running} running` : ''} — data below is partial</div>
+                </div>`;
         }
 
         // Share-link entry point: ?aoi=<id>[&aoi_sections=fire,ghsl].
@@ -8623,6 +8853,7 @@
             if (sections && sections.length) {
                 const secMap = { fire: 'fire', settlement: 'ghsl', ghsl: 'ghsl',
                                  deforestation: 'deforest', deforest: 'deforest',
+                                 road: 'road', roads: 'road', infrastructure: 'road',
                                  overview: 'aoi-overview', versions: 'aoi-versions' };
                 setTimeout(() => sections.forEach(s => {
                     const el = document.getElementById(`${secMap[s] || s}-section-${id}`);
@@ -18180,6 +18411,11 @@ ${starredItems.narratives.map(n => {
         else if (tabName === 'learning') loadLearningResults();
         else if (tabName === 'features') loadLearnedFeatures();
         else if (tabName === 'access') loadAccessTab();
+        else if (tabName === 'map-settings') {
+            // Meta fetch is memoised and the panel renders from that cache, so
+            // this is cheap on every revisit and correct on the first.
+            HistMap.ensureMeta().then(renderHistMapPanel);
+        }
         else if (tabName === 'autofetch') {
             loadAutofetchSources(); initAfSourceViewer();
             // Default backfill date to 30 days ago
@@ -19191,6 +19427,13 @@ ${starredItems.narratives.map(n => {
         if (currentBasemap && currentBasemap !== 'dark') {
             params.set('basemap', currentBasemap);
         }
+
+        // Historical map overlay. Shared as the archive id rather than a bare
+        // boolean so a second series can be added later without invalidating
+        // links already in circulation.
+        if (typeof HistMap !== 'undefined' && HistMap.isOn()) {
+            params.set('histmap', HistMap.activeId());
+        }
         
         // Add time range (use preset if active, otherwise explicit dates)
         var _preset = typeof window._activePresetTag === 'function' ? window._activePresetTag() : null;
@@ -19427,6 +19670,17 @@ ${starredItems.narratives.map(n => {
             // No basemap switch, just set position directly
             map.setCenter([lng, lat]);
             if (!isNaN(zoom)) map.setZoom(zoom);
+        }
+
+        // Restore the historical map overlay. Deliberately after the basemap:
+        // switchBasemap() rebuilds the style and would drop a layer added
+        // before it. quiet:true because a link shared from a server that has
+        // the archive, opened against one that doesn't, should degrade
+        // silently rather than greet the visitor with an error toast. No fly:
+        // the link already carries its own lat/lng/z and must not be overridden.
+        const histmap = params.get('histmap');
+        if (histmap && histmap !== '0' && typeof HistMap !== 'undefined') {
+            HistMap.set(true, { quiet: true, fly: false });
         }
         
         // Restore time range (skip if initTimeSlider already applied URL dates)
@@ -20183,7 +20437,7 @@ ${starredItems.narratives.map(n => {
                 <!-- Map Settings Tab -->
                 <div class="admin-tab-content" id="tab-map-settings" role="tabpanel" aria-labelledby="tab-map-settings">
                     <div style="max-width:600px;">
-                        <div style="margin-bottom:24px;">
+                        <div style="margin-bottom:24px;" data-mapsettings="basemap">
                             <h3 style="color:#fff;font-size:14px;font-weight:600;margin-bottom:12px;">Background Map</h3>
                             <p style="color:#888;font-size:12px;margin-bottom:16px;line-height:1.5;">Choose the basemap style for the globe view. Satellite imagery provides high-resolution aerial photos, useful for detailed analysis.</p>
                             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;">
@@ -20228,6 +20482,17 @@ ${starredItems.narratives.map(n => {
                                     <div style="font-size:11px;color:#666;margin-top:2px;">High-res imagery</div>
                                 </button>
                             </div>
+                        </div>
+
+                        <!-- Historical map overlay: scanned survey sheets draped on the basemap -->
+                        <div style="margin-bottom:24px;" id="histmap-block">
+                            <h3 style="color:#fff;font-size:14px;font-weight:600;margin-bottom:12px;">Historical Maps</h3>
+                            <p style="color:#888;font-size:12px;margin-bottom:16px;line-height:1.5;">
+                                Drape a scanned survey series over the current basemap. On screen the ink is
+                                inverted to white so the imagery underneath stays readable; the download keeps
+                                the original black ink, which is what offline viewers with light backgrounds need.
+                            </p>
+                            <div id="histmap-list"><div style="color:#666;font-size:12px;">Checking for installed archives&hellip;</div></div>
                         </div>
                     </div>
                 </div>
