@@ -2532,7 +2532,7 @@
             const actionBtn = document.getElementById('mbtiles-action-btn');
             
             try {
-                const resp = await fetch(`/api/parks/${currentMBTilesParkId}/mbtiles/estimate?pwd=${encodeURIComponent(getPwd())}&maxZoom=${mbtilesMaxZoom}`);
+                const resp = await fetch(`${apiBase(currentMBTilesParkId)}/mbtiles/estimate?pwd=${encodeURIComponent(getPwd())}&maxZoom=${mbtilesMaxZoom}`);
                 const data = await resp.json();
                 
                 const mins = Math.ceil(data.estimated_seconds / 60);
@@ -2602,7 +2602,7 @@
             btnText.textContent = 'Starting...';
             
             try {
-                const resp = await fetch(`/api/parks/${currentMBTilesParkId}/mbtiles?source=${source}&maxZoom=${mbtilesMaxZoom}&pwd=${encodeURIComponent(getPwd())}`, {
+                const resp = await fetch(`${apiBase(currentMBTilesParkId)}/mbtiles?source=${source}&maxZoom=${mbtilesMaxZoom}&pwd=${encodeURIComponent(getPwd())}`, {
                     method: 'POST'
                 });
                 
@@ -3253,8 +3253,40 @@
                     || { id: pid, name: n.park_name || n.parkName || pid };
                 add(park, 'starred sections', [n.type]);
             }
-            return [...byId.values()];
+            // Areas of interest, first and unstarred.
+            //
+            // An AOI is already a kept, owned object with days of ingest behind
+            // it — the *reason* someone drew it was to report on it — so
+            // visibility is the only sensible trigger: if this principal can
+            // see one, the report covers it. There is deliberately no "star an
+            // AOI" step, which would have meant a user with one AOI and no
+            // stars getting an empty report over the area they just spent three
+            // days fetching.
+            //
+            // It is section-limited on purpose. An AOI has fire, deforestation,
+            // settlements and infrastructure; it has no species, climate,
+            // legal or publications, because those are per-protected-area facts
+            // and averaging them over 485,000 km² would invent a number
+            // (docs/AOI_HANDOVER_2.md §2). The intersecting parks follow it in
+            // the same report and carry exactly those.
+            for (const a of Object.values(window._aois || {})) {
+                byId.set(a.id, {
+                    park: { id: a.id, name: a.name || a.id, country: '',
+                            area_km2: a.area_km2 || 0, isAOI: true,
+                            from_date: a.from_date || '', to_date: a.to_date || '' },
+                    source: 'area of interest',
+                    sections: new Set(AOI_REPORT_SECTIONS)
+                });
+            }
+            // AOIs lead: they are the question, the parks inside are context.
+            const entries = [...byId.values()];
+            entries.sort((x, y) => (y.park.isAOI ? 1 : 0) - (x.park.isAOI ? 1 : 0));
+            return entries;
         }
+
+        // What an AOI actually has data for. Kept next to collectReportParks
+        // because it is the same decision the popup and the route table make.
+        const AOI_REPORT_SECTIONS = ['fire', 'deforestation', 'settlement', 'road', 'patrol'];
 
         // ===== Shared export geo helpers =====
 
@@ -3311,11 +3343,22 @@
 
         // Fetch raw patrol grid cells for a park (bbox from its boundary, ~5km pad).
         // Returns {features, bbox, geom} or null.
+        // Geometry for a report subject, park or AOI. getParkFeature() reads
+        // the 'areas' source, which an AOI is deliberately never in, so the
+        // report map and the patrol-effort bbox both came back null for one.
+        function getReportGeom(id) {
+            const f = getParkFeature(id);
+            if (f?.geometry) return f.geometry;
+            return window._aois?.[id]?.geometry || null;
+        }
+        window.getReportGeom = getReportGeom;
+
         async function fetchParkGridFeatures(parkId, from, to) {
             await ensureAreasCache();
             const feat = getParkFeature(parkId);
-            const geom = feat?.geometry || null;
+            const geom = getReportGeom(parkId);
             let bbox = geom ? geometryBbox(geom) : null;
+            if (!bbox) bbox = window._aois?.[parkId]?.bbox || null;
             if (!bbox) {
                 const c = feat?.properties?.center;
                 const center = typeof c === 'string' ? JSON.parse(c) : c;
@@ -3421,9 +3464,8 @@
         async function _buildParkMapSvgUncached(parkId, parkName, layers) {
             const pwd = getPwd();
             await ensureAreasCache();
-            const feat = getParkFeature(parkId);
-            if (!feat?.geometry) return null;
-            const geom = feat.geometry;
+            const geom = getReportGeom(parkId);
+            if (!geom) return null;
             const bboxRaw = geometryBbox(geom);
             if (!bboxRaw) return null;
             const padLon = (bboxRaw[2] - bboxRaw[0]) * 0.05 + 0.02;
@@ -3589,7 +3631,18 @@
             const headMeta = [park.country, areaStr].filter(Boolean).join(', ');
             lines.push(`## ${park.name || park.id}${headMeta ? ` (${headMeta})` : ''}`);
             lines.push('');
-            if (sections) {
+            // An AOI leads the report and has to say what it is, or a reader
+            // sees a 485,000 km2 "park" with no species and assumes the data is
+            // broken. Its window is part of its identity (two versions of one
+            // area differ only by dates), and the missing sections are a
+            // decision, not a gap -- see docs/AOI_HANDOVER_2.md section 2.
+            if (park.isAOI) {
+                const win = (park.from_date || '...') + ' to ' + (park.to_date || 'now');
+                lines.push(`_Area of interest -- a user-drawn polygon with its own ingest. Analysis window ${win}._`);
+                lines.push('');
+                lines.push('_Species, climate, legal and publication records are per protected area and are reported for the intersecting areas below, not averaged over this polygon._');
+                lines.push('');
+            } else if (sections) {
                 lines.push(`_Starred sections only: ${[...sections].join(', ')}_`);
                 lines.push('');
             }
@@ -3873,12 +3926,14 @@
 
             const now = new Date();
             const rangeStr = `${dateFrom || '2018-01-01'} to ${dateTo || now.toISOString().slice(0, 10)}`;
+            const aoiCount = results.filter(r => r.park.isAOI).length;
             const doc = [];
             doc.push('# 5MP Conservation Report');
             doc.push('');
             doc.push(`- Generated: ${now.toISOString().slice(0, 16).replace('T', ' ')} UTC`);
             doc.push(`- Period: ${rangeStr}`);
-            doc.push(`- Protected areas: ${results.length}`);
+            doc.push(`- Protected areas: ${results.length - aoiCount}`);
+            if (aoiCount) doc.push(`- Areas of interest: ${aoiCount}`);
             doc.push(`- Source: 5MP.globe conservation monitoring (VIIRS fire detections, Hansen GFC forest loss, GHSL settlements, IUCN Red List, patrol GPX uploads)`);
             // Active report filters (config profile, sections, detail level)
             const cfgSecs = Object.keys(reportConfig.sections).filter(k => reportConfig.sections[k]);
@@ -4594,21 +4649,23 @@
             const pwd = getPwd();
             const dateParams = (dateFrom ? '&from=' + dateFrom : '') + (dateTo ? '&to=' + dateTo : '');
 
-            // All report parks: starred, in starred areas, or starred narratives
-            const parkIDs = new Set((await collectReportParks()).map(e => e.park.id).filter(Boolean));
+            // All report parks and AOIs: starred, in starred areas, starred
+            // narratives, or a visible AOI. apiBase() routes the AOI ids.
+            const ids = new Set((await collectReportParks()).map(e => e.park.id).filter(Boolean));
+            const parkIDs = ids;
 
             if (parkIDs.size === 0) {
                 showToast('No parks to export', 'error', { key: 'export' });
                 return;
             }
 
-            progress(`Preparing KML export for ${parkIDs.size} park${parkIDs.size > 1 ? 's' : ''}...`);
+            progress(`Preparing KML export for ${parkIDs.size} area${parkIDs.size > 1 ? 's' : ''}...`);
 
             // Fetch KML for each park from server (parallel, single updating toast)
             let processed = 0;
             const kmlDocs = (await Promise.all([...parkIDs].map(async (parkID) => {
                 try {
-                    const resp = await fetch(`/api/parks/${encodeURIComponent(parkID)}/export.kml?pwd=${encodeURIComponent(pwd)}${dateParams}`);
+                    const resp = await fetch(`${apiBase(parkID)}/export.kml?pwd=${encodeURIComponent(pwd)}${dateParams}`);
                     processed++;
                     progress(`Building KML ${processed}/${parkIDs.size}...`);
                     if (resp.ok) return { parkID, kml: await resp.text() };
@@ -4627,13 +4684,13 @@
             
             // Merge all KML documents
             const dateStr = dateFrom && dateTo ? `_${dateFrom}_to_${dateTo}` : dateFrom ? `_from_${dateFrom}` : dateTo ? `_to_${dateTo}` : '';
-            const mergedKML = mergeKMLDocuments(kmlDocs, `5MP Report - ${parkIDs.size} Parks`, dateStr);
+            const mergedKML = mergeKMLDocuments(kmlDocs, `5MP Report - ${parkIDs.size} Areas`, dateStr);
             
             // Download
             const blob = new Blob([mergedKML], {type: 'application/vnd.google-earth.kml+xml'});
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = `5MP_Report_${parkIDs.size}_parks${dateStr}.kml`.replace(/[\s\/\\:]/g, '_');
+            link.download = `5MP_Report_${parkIDs.size}_areas${dateStr}.kml`.replace(/[\s\/\\:]/g, '_');
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -7891,7 +7948,8 @@
                         <div class="maptip-title">${escapeHtml(p.name || p.id)}</div>
                         <div class="maptip-body">${area}</div>
                         <div class="maptip-meta">Window ${escapeHtml(win)}</div>
-                        <div class="maptip-dim">${escapeHtml(line)}</div>`;
+                        <div class="maptip-dim">${escapeHtml(line)}</div>
+                        <div class="maptip-exports">${aoiExportButtonsHTML(p.id, p.name || p.id)}</div>`;
                 }
             });
         }
@@ -7931,6 +7989,31 @@
             return `<div style="margin-top:8px">${rows}</div>`;
         }
 
+        // KML / Locus / MBTiles for an AOI.
+        //
+        // All three are the park handlers: KML and Locus resolve their
+        // boundary through resolveAreaGeom() and MBTiles its bbox through
+        // resolveAreaBBox(), both of which know an AOI is not in AreaStore. So
+        // the only thing missing was the buttons — an AOI is exactly the object
+        // a ranger wants on a device, and it was the one area of the map you
+        // could not take offline.
+        //
+        // The date range is the time slider, like everywhere else: the AOI's
+        // own analysis window bounds what data exists, and narrowing further is
+        // a filter the user has already expressed.
+        function aoiExportButtonsHTML(id, name) {
+            const pwd = encodeURIComponent(getPwd());
+            const eid = encodeURIComponent(id);
+            const dp = (dateFrom ? '&from=' + dateFrom : '') + (dateTo ? '&to=' + dateTo : '');
+            const suffix = dateFrom && dateTo ? `_${dateFrom}_to_${dateTo}`
+                         : dateFrom ? `_from_${dateFrom}` : dateTo ? `_to_${dateTo}` : '';
+            return `
+                <a href="/api/aois/${eid}/export.kml?pwd=${pwd}&effort=0${dp}" download="${id}${suffix}.kml" title="KML — download for Google Earth" aria-label="Download KML" class="pa-export-btn"><i class="icon-map"></i></a>
+                <a href="/api/aois/${eid}/export.locus?pwd=${pwd}${dp}" download="${id}_locus.zip" title="Locus — Locus Map 4 backup with every layer this area has (boundary, fires by year, settlements, deforestation, rivers, roads, places) plus field-device defaults. Restore via Locus Map → Backup → Restore" aria-label="Download Locus Map backup" class="pa-export-btn"><i class="icon-smartphone"></i></a>
+                <button onclick="event.stopPropagation();showMBTilesDialog('${id}', '${escapeHtml(name).replace(/'/g, "\\'")}')" title="MBTiles — offline satellite tiles for this area" aria-label="Download offline satellite tiles" class="pa-export-btn" id="mbtiles-btn-${id}"><i class="icon-layers"></i></button>`;
+        }
+        window.aoiExportButtonsHTML = aoiExportButtonsHTML;
+
         function showAOIPopup(props, lngLat) {
             if (currentAOIPopup) currentAOIPopup.remove();
             if (currentPAPopup) currentPAPopup.remove();
@@ -7955,6 +8038,7 @@
                             <span style="display:flex;gap:4px;align-items:center;flex-shrink:0">
                                 ${props.is_owner ? `<button onclick="event.stopPropagation();editAOI('${id}')" title="Edit — creates a new version and keeps this one as history" class="pa-export-btn"><i class="icon-pencil-ruler"></i></button>` : ''}
                                 <a href="/api/aois/${encodeURIComponent(id)}/export.geojson?pwd=${encodeURIComponent(getPwd())}" download="${id}.geojson" title="GeoJSON — download the area polygon" class="pa-export-btn"><i class="icon-globe"></i></a>
+                                ${aoiExportButtonsHTML(id, name)}
                                 <button onclick="animateAOI('${id}')" title="Animate this area over its analysis window" class="pa-export-btn"><i class="icon-play"></i></button>
                             </span>
                         </div>
@@ -14177,6 +14261,13 @@
     async function fetchParkReportData(parkId, options = {}) {
         const {from, to} = options;
         const pwd = getPwd();
+        // An AOI has no species/climate/legal/publications/stats: those are
+        // per-protected-area facts (docs/AOI_HANDOVER_2.md §2) and the routes
+        // deliberately do not exist under /api/aois, so asking would be five
+        // 404s per report. Resolve them empty; buildParkMarkdown already skips
+        // empty sections.
+        const forAOI = isAOI(parkId);
+        const none = () => Promise.resolve({});
         
         const result = {
             parkId,
@@ -14192,15 +14283,15 @@
                 fetchDeforestDataDirect(parkId, {pwd}),
                 fetchSettlementNarrativeDirect(parkId, {pwd}),
                 fetchRoadDataDirect(parkId, {pwd}),
-                fetchSpeciesDataDirect(parkId, {pwd}),
-                fetchClimateDataDirect(parkId, {pwd}),
-                fetchResearchDataDirect(parkId, {pwd}),
-                fetchLegalDataDirect(parkId, {pwd}),
+                forAOI ? none() : fetchSpeciesDataDirect(parkId, {pwd}),
+                forAOI ? none() : fetchClimateDataDirect(parkId, {pwd}),
+                forAOI ? none() : fetchResearchDataDirect(parkId, {pwd}),
+                forAOI ? none() : fetchLegalDataDirect(parkId, {pwd}),
                 fetchGridDataDirect(parkId, {from, to, pwd}),
-                fetchStatsDirect(parkId, {pwd}),
+                forAOI ? none() : fetchStatsDirect(parkId, {pwd}),
                 // mining/turbidity retired (§10): resolve empty rather than
                 // hitting the now-disabled endpoint
-                MINING_ENABLED ? fetchTurbidityDataDirect(parkId, {pwd}) : Promise.resolve({})
+                (MINING_ENABLED && !forAOI) ? fetchTurbidityDataDirect(parkId, {pwd}) : Promise.resolve({})
             ]);
             
             return {
@@ -14388,7 +14479,8 @@
     async function fetchRoadDataDirect(parkId, {pwd}) {
         try {
             const [infra, learned] = await Promise.all([
-                fetch(`/api/parks/${encodeURIComponent(parkId)}/infrastructure?pwd=${encodeURIComponent(pwd)}`).then(r => r.ok ? r.json() : {}),
+                fetch(`${apiBase(parkId)}/infrastructure?pwd=${encodeURIComponent(pwd)}`).then(r => r.ok ? r.json() : {}),
+                isAOI(parkId) ? Promise.resolve({}) :
                 fetch(`/api/admin/learned-features?park_id=${encodeURIComponent(parkId)}&pwd=${encodeURIComponent(pwd)}`)
                     .then(r => (r.ok && (r.headers.get('content-type') || '').includes('json')) ? r.json() : {})
                     .catch(() => ({}))
@@ -14549,6 +14641,14 @@
             let feature = null;
             if (window._cachedAreasGeoJSON?.features) {
                 feature = window._cachedAreasGeoJSON.features.find(f => f.properties.id === parkId);
+            }
+            // An AOI is never in the areas source (by design -- park_assigner
+            // would otherwise steal detections from the parks it overlaps), so
+            // its polygon comes from the AOI list instead. Patrol effort itself
+            // is public geography keyed by bbox, so /api/grid needs no change.
+            if (!feature && window._aois?.[parkId]?.geometry) {
+                feature = { geometry: window._aois[parkId].geometry,
+                            properties: { id: parkId } };
             }
             
             if (!feature || !feature.geometry) {

@@ -420,7 +420,7 @@ func (s *Server) HandleAPIFireAnimTrajectories(w http.ResponseWriter, r *http.Re
 		WHERE feature_type = 'fire_trajectory'
 		  AND start_date <= ? AND end_date >= ?
 		  AND bbox_maxx >= ? AND bbox_minx <= ? AND bbox_maxy >= ? AND bbox_miny <= ?`+
-		aoiExcludeSQL("park_id")+`
+		aoiScopeSQL("park_id", s.aoiScopeParam(r))+`
 		ORDER BY stat_value DESC
 		LIMIT ?`, to, from, bbox[0], bbox[2], bbox[1], bbox[3], limit)
 	if err != nil {

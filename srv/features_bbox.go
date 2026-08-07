@@ -52,7 +52,7 @@ func (s *Server) HandleAPIFeaturesInBBox(w http.ResponseWriter, r *http.Request)
 		WHERE feature_type = ?
 		  AND bbox_maxx >= ? AND bbox_minx <= ?
 		  AND bbox_maxy >= ? AND bbox_miny <= ?
-	` + aoiExcludeSQL("park_id")
+	` + aoiScopeSQL("park_id", s.aoiScopeParam(r))
 	args := []interface{}{featureType, bbox[0], bbox[2], bbox[1], bbox[3]}
 
 	// Date filters match UI narrative behavior: filter on start_date.
