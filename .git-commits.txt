@@ -1,3 +1,6 @@
+63518c0 2026-08-07 06:35:34 aoi: re-key SYSTEM-owned aoi_progress at startup, not in a migration
+a45926d 2026-08-07 06:29:59 aoi: make the AOI a focus, and give it a hide button and an abort
+4b6d192 2026-08-07 05:50:36 build: refresh version history for cda0cc9
 cda0cc9 2026-08-07 05:50:21 docs: AOI handover rev 3 — strip what shipped, keep only the traps
 8a19ce5 2026-08-07 05:49:03 aoi: reach its own data — animate, report, KML/Locus/MBTiles
 35653cf 2026-08-07 05:48:29 aoi: reach its own data — animate, report, KML/Locus/MBTiles
@@ -15,6 +18,3 @@ ba50ee4 2026-08-06 19:38:42 aoi: make interruption the normal exit -- stop, rele
 9dbb893 2026-08-06 18:41:09 docs: AOI handover for the animator clip, share links and deforestation
 eb6271d 2026-08-06 18:39:20 aoi: derive deforestation from the GFW alerts we already fetched
 57297df 2026-08-06 18:32:55 aoi: animate the polygon, not its bounding box; ?aoi= share links
-81ecc96 2026-08-06 18:15:37 docs: AOI resume-here section; record the FIRMS product-availability trap
-1c3330a 2026-08-06 18:14:41 fire: ask FIRMS which product covers a date instead of guessing by age
-3163864 2026-08-06 18:11:20 docs: AOI handover updated for commits 5-7; AGENTS.md section on the two invariants
