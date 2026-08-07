@@ -1,3 +1,5 @@
+1edf2a6 2026-08-07 17:01:53 AOI popup: unbreak the layout, add the roads section, kill two O(n*m) LIKE joins
+583027a 2026-08-07 15:14:11 chore: rebuild version history
 b78fc95 2026-08-07 15:14:00 AOI: one action row like a park popup, star as the hide control, inline rename
 8ebc70d 2026-08-07 14:43:00 build: refresh version history for 1f059ae
 1f059ae 2026-08-07 14:41:44 aoi: verify the whole surface, cache the narrative that timed out, retire the handover
@@ -16,5 +18,3 @@ e1a84aa 2026-08-07 05:49:03 aoi: reach its own data — animate, report, KML/Loc
 efe68b9 2026-08-07 05:48:29 aoi: reach its own data — animate, report, KML/Locus/MBTiles
 91df995 2026-08-07 05:19:38 build: refresh version history for f275e9e
 eb8c9e4 2026-08-07 05:19:23 aoi: give every dataset a runner -- Hansen, surface water, rivers & lakes
-d988ef5 2026-08-06 20:24:16 docs: fresh AOI handover (rev 2); retire the old one
-56974d4 2026-08-06 20:22:52 aoi: give the AOI its own filter section, KML/Locus exports and area tags
