@@ -244,6 +244,18 @@ TEST.getEntryCount('fire')               // Count entries
 |------|-------|
 | App Passwords | see `secrets.env` (gitignored; template: `secrets.env.example`). Docs/tests use `test2026`. |
 | Admin | see `secrets.env` |
+| AOI owner | `$AOI_OWNER_PWD` in `secrets.env` |
+
+**Never write a live password into a tracked file** — not into docs, not into a
+verification snippet, not into a comment. Add a named variable to `secrets.env`
+(+ a placeholder in `secrets.env.example`) and refer to it by name; snippets
+start with `source secrets.env`. Only `test2026`, the shared demo password, is
+written literally.
+
+```bash
+# before committing docs
+grep -rn "$AOI_OWNER_PWD" --include="*.md" --include="*.py" --include="*.go" .
+```
 
 ---
 
@@ -541,12 +553,149 @@ only a WHERE term on an indexed column matters.
 
 A user-drawn polygon promoted to a first-class object: arbitrary geometry, a
 fixed analysis window, an owner, and data fetched *for it* over days by a cron.
-Instance #1 is `XSA_Study_Area` (485,150 km², owner `$AOI_OWNER_PWD`).
+Instance #1 is `XSA_Study_Area` (485,150 km², owner `$AOI_OWNER_PWD`
+in `secrets.env` — never spell a live password into a tracked file).
 Full handover: `docs/PLAN_AOI_OVERLAY.md`.
 
-**Current handover: `docs/AOI_HANDOVER.md`** (rev 7) — the first revision with
-nothing open. `docs/PLAN_AOI_OVERLAY.md` remains the design rationale and the
-measured-facts record.
+**Current handover: none.** `docs/PLAN_AOI_OVERLAY.md` is the design rationale
+and the measured-facts record; everything operational is below. The AOI work is
+complete — read path, write path, queue, exports, animation, focus mode, abort,
+versioning, star report and the admin Access tab are live, and all 11 datasets
+for `XSA_Study_Area` are `done`:
+
+    3.18M detections -> 38,725 trajectories · 2.23M GFW alerts -> 696 events
+    76,903 Hansen polygons -> 7,079 events · 74,904 built-up polygons -> 1,552 settlements
+    3,169 waterbodies · 11,370 rivers + 2,530 lakes · 3 country PBFs
+    22 upstream watersheds + 24 downstream traces · 12,956 roads · 690 places
+
+`park_basin_parts` is backfilled for **all 164 areas** (883 rows, 0 unsplit).
+Highest migration is **045**.
+
+### Verification set — re-run after any AOI work
+
+```bash
+source secrets.env; P="$AOI_OWNER_PWD"   # never hard-code the password
+python3 scripts/aoi_runner.py --status                             # all done, no lease
+curl -s "localhost:8000/api/aois?pwd=test2026"    | jq '.count'    # 0
+curl -s "localhost:8000/api/aois?pwd=$P"          | jq '.count'    # 1
+curl -s -o /dev/null -w '%{http_code}\n' \
+  "localhost:8000/api/parks/XSA_Study_Area/stats?pwd=$P"           # 404 (park route must 404)
+curl -s "localhost:8000/api/aois/XSA_Study_Area/basin?pwd=$P" \
+  | jq '{upstream_count, downstream_count}'                        # 22, 24
+curl -s "localhost:8000/api/notifications?type=aoi_progress&pwd=test2026" \
+  | jq '.notifications|length'                                     # 0  <- privacy
+curl -s "localhost:8000/api/admin/access?pwd=test2026" | jq '.aois|length'   # 0  <- privacy
+python3 scripts/check_fire_consistency.py                          # Consistent.
+python3 scripts/test_aoi_resume.py                                 # proves resumability
+go test ./srv/ -run 'TestGeoMemo|TestNarrativeSourceRev'           # cache equivalence
+./tests/run_all.sh                                                 # db 37, api 45, ui 20
+```
+
+`go test ./srv/` fails on `TestServerSetupAndHandlers`
+(`035-test-env.sql: no such column: avg_speed_kmh`). **Pre-existing, unrelated
+to AOI** — verified by stashing. Do not chase it as an AOI regression.
+
+### The recurring failure mode: a no-op that reads as an answer
+
+Five times, days of ingest were silently unreachable or unfetched while every
+layer reported success. The tell is always **a number suspiciously round for its
+input size** (0 watersheds for 485,000 km²; 141 roads for three countries), and
+the cause is always a filter that matched nothing while exiting 0. Two rules
+fell out and are load-bearing:
+
+1. **A unit that produces nothing for a large input must report unfinished**, so
+   the queue retries instead of freezing a wrong answer as `done`
+   (`run_basin` returns `ok = (rows > 0)`).
+2. **An `aoi:` prefix only the exclusion filter understands is a write-only
+   key.** Bare AOI id in park-shaped tables, plus `aoiExcludeSQL()`.
+
+The sixth variant was a *timeout* reading as an empty section — see "Narrative
+caching" below.
+
+### API surface
+
+`/api/aois/{id}/*` = the park handlers wrapped in `aoiGate()`; one visibility
+check covers them all.
+
+```
+GET    /api/aois                       list (+ can_create)
+GET    /api/aois/search?q=              incl. archived; the only way back to one
+GET    /api/aois/{id}                   metadata + per-dataset coverage
+GET    /api/aois/{id}/versions          the lineage
+GET    /api/aois/{id}/progress          live, no-store
+GET    /api/aois/{id}/{fire-narrative,fire-trend,fire-realtime,features,
+        deforestation-narrative,settlement-narrative,feature-stats,
+        classified-settlements,classified-deforestation,
+        settlement-intensity,infrastructure,basin}
+GET    /api/aois/{id}/export.{geojson,kml,locus}
+POST   /api/aois/{id}/mbtiles           + GET .../mbtiles/estimate
+POST   /api/aois/estimate               side-effect free; call it while dragging
+POST   /api/aois                        create + seed queue (runs nothing)
+POST   /api/aois/{id}/{edit,restore,refresh,kick,archive,cancel}
+POST   /api/aois/{id}/refresh?resume=1  the inverse of cancel
+DELETE /api/aois/{id}
+GET    /api/admin/access                Access tab: ownership + queue (scoped!)
+POST   /api/admin/aoi-dataset           enable/disable one dataset (owner-only)
+```
+
+**Deliberately absent, a decision not a gap**: `stats`, `species`, `climate`,
+`publications`, `legal`, `checklist`, `turbidity`. Per-protected-area facts;
+averaging them over 485,000 km² would invent a number. The popup and the report
+say so and point at the intersecting parks; `fetchParkReportData()` and
+`fetchPopupRoadData()` skip them rather than eating 404s.
+
+More load-bearing details, each already got wrong once:
+
+* **No endpoint runs the ingest.** `scripts/aoi_runner.py` owns lease
+  discipline; `kick` shells out to it. One implementation of "work a unit".
+* **`DELETE` order**: the `aois` row goes *last* — while it exists,
+  `aoiExcludeSQL()` still masks derived rows not yet deleted. The delete list
+  must include `roads_heigit`, `park_rivers_hydro`, `park_lakes_hydro`,
+  `park_waterbodies`, `park_basins`, `park_basin_parts`, `park_basin_rivers`.
+* Non-owners get **404, not 403** (`requireAOIOwner`) — an id must not be an
+  oracle. Same reason `?aoi=` on a raw-geography endpoint is *ignored* when
+  invisible rather than refused.
+* `validateAOIGeom` caps at 2,000 vertices (re-parsed by every runner, traced by
+  the animator's canvas clip every frame).
+
+### Narrative caching — one approach for parks and AOIs
+
+`HandleAPIDeforestationNarrative` enriches **every** event with nearby places,
+rivers and roads: ~21 ms of queries per row. A park has hundreds of events
+(CAF_Chinko 273 → 1.0 s) so it was never visibly slow; XSA has 7,815 → **2 m
+27 s**, past the 120 s `WriteTimeout`, so the AOI popup's deforestation section
+rendered as if the area had no data. The AOI did not break the handler, it made
+an existing O(events) cost visible. Two fixes, both shared by parks and AOIs:
+
+1. **`narrative_cache`** (migration 045, `srv/narrative_cache.go`) — the same
+   cache-first shape as `fire_narrative_cache`, but **self-invalidating**:
+   `source_rev` is `COUNT + MAX(id)` of the source rows, so any rebuild
+   (python, the AOI runner, a manual reclassify) invalidates it without
+   knowing the table exists. That is deliberately *not* the fire cache's
+   Single Writer Rule: the fire cache holds v5 hash feature_ids only the python
+   builder can mint, whereas this holds a pure function of `deforestation_events`
+   that any reader can recompute. Keyed by `park_id`, and an AOI id **is** a
+   `park_id` in every park-shaped table, so one code path serves both.
+   `params` is the date window; only the 6 most recent per (park, kind) are
+   kept, or slider-dragging grows a 1.8 GB database by 10 MB a time.
+2. **`geoMemo`** — answers "what is near this point" per 0.25° cell instead of
+   per event, by fetching a superset window once and filtering in Go. **Exact,
+   not approximate**: `TestGeoMemoMatchesDirectQueries` compares 200 random
+   points across 4 areas against the direct queries. Where exactness cannot be
+   promised (the rivers query's `LIMIT`, if the superset itself truncates) the
+   memo *declines* and the caller runs the original query.
+
+Result: 2 m 27 s (timeout) → 10.5 s cold → 0.09 s warm, park output
+byte-identical. **Any new per-event enrichment must go through the memo**, and
+any new expensive narrative should take the `narrativeSourceRev` /
+`getCachedNarrative` / `putCachedNarrative` route rather than inventing a
+second cache.
+
+Two things that look like AOI bugs and are not: `settlement-intensity` returns
+an empty FeatureCollection (`settlement_intensity` has rows for 3 areas total —
+parks included), and `feature-stats.road_segments` is 0 because roads live in
+`roads_heigit`, not `feature_geometries` (CAF_Chinko reports 0 too). Both are
+pre-existing park behaviour, identical for AOIs.
 
 An AOI is a **power bounding box**: kept, owned, versioned, with data fetched
 *for it* over days — as opposed to "Select Area", which is a disposable filter
@@ -694,6 +843,130 @@ the handle is the non-secret `sha256(pwd)[:8]`.
 **`aois.state` is never `'ready'`** (only `archived`). Readiness is *derived* from
 the queue — `/progress` and the Access tab both do this. Printing the raw column
 labels a fully ingested AOI "pending" forever.
+
+### Frontend map
+
+| piece | where |
+|---|---|
+| routing | `apiBase(id)` in globe.html; `window.AOI_IDS` filled by `loadAOIs()` |
+| map layer + popup | globe.html `loadAOIs`/`showAOIPopup`/`aoiCoverageHTML` |
+| exports | `aoiExportButtonsHTML(id, name, opts)` — map tip icon-only, popup labelled |
+| filter section | globe.html `#aoi-section` — own heading, amber, own visibility toggle |
+| editor | `srv/static/aoi_draw.js` — `AOIDraw.start()` / `.startEdit(id, name, geom)` |
+| progress card | `srv/static/aoi_progress.js` — `AOIProgress.cardHTML(notif)` |
+| animation | `Animator.open({aoi})` clips to the **polygon**; loaders append `&aoi=` |
+| focus | globe.html `setAOIFocus`/`toggleAOIFocus`/`aoiFocusBrightIDs`/`applyAOIFocusPaint` |
+| report | `collectReportParks()` folds in every visible AOI, first, unstarred |
+| admin | globe.html `loadAccessTab`/`setAOIDataset`/`kickAOIRunner` → `srv/aoi_admin.go` |
+
+Things that will bite:
+
+* **`window.map` is the `<div id="map">` ELEMENT** (named access on window). Use
+  the bare lexical `map`. Symptom: `m.getSource is not a function`.
+* **A `const` in one `<script>` block is invisible to another.** globe.html has
+  several; `AOI_REPORT_SECTIONS` is mirrored onto `window` for that reason.
+* Focus paint is layered **on top of** selection paint, not woven into it;
+  `resetAOILayerPaint()` exists because the paint is not idempotent — re-apply
+  after a basemap change (`updateParkFillForBasemap` owns `fill-opacity` too).
+  Dim colour `#5b6b5f` / 0.55, **not** `#3f3f46` / 0.3, which erased 158 parks
+  at continental zoom.
+* `can_create` comes from the server — a password can arrive as a cookie, so
+  `getPwd()` cannot decide whether `POST /api/aois` 403s.
+* The progress card is **not client state** — it is a `notifications` row, so it
+  survives a laptop shut for a week. Polling is adaptive and *stops* at `ready`,
+  `cancelled` and `superseded`. `datasets_total` is the **planned** count, so a
+  stopped queue reports 0; the card adds `datasets_stopped` back for the
+  denominator, or it reads "0/0 layers" beside "0 of 11 were fetched".
+* **Pins are namespaced for an AOI** (`aoi:<id>:<type>`). Ids are disjoint
+  today; the flat park key `<id>_<type>` would have made a same-named AOI and
+  park share one pin.
+* **Popup actions are labelled, and grouped View / Download / Manage**
+  (`.aoi-act`). Eight bare icons squeezed beside the title made the name wrap
+  one letter per line on a phone and gave no way to tell them apart — a
+  `title=` attribute is not a label where there is no hover. The map tip stays
+  icon-only (`aoiExportButtonsHTML(id, name)` without `{labeled:true}`), because
+  there space, not choice, is the constraint.
+* **The focus banner positions itself from the measured slider height**
+  (`positionAOIFocusBanner()` + a `ResizeObserver`). A hard-coded `bottom`
+  covered the ▶ animate button once the preset tags wrapped on a narrow phone,
+  and the slider also grows when the animator opens.
+
+### Versioning
+
+An edit forks: version N+1 is created, N is archived (`state='archived'`, hidden
+from `ListAOIs`, still readable by id, queue disabled). Versions are labelled by
+their **analysis window**, not by number. An edit that changes nothing returns
+`unchanged: true`; an edit that did not move a vertex sends no geometry at all.
+Only the outer ring is editable — a hole or a multipolygon is `ringLocked` and
+carried through untouched, because flattening a donut would change what the AOI
+*means* while looking like a date-only edit.
+
+### What is left
+
+Nothing blocking. Two nice-to-haves:
+
+* **A second AOI has never existed.** Everything is written to be per-AOI, but
+  every measurement is n=1. The first thing a second one will exercise is tile
+  cache sharing (`data/ghsl/tiles/`, `data/gfw_tiles/`, `http_cache`) and the
+  runner's fairness across two pending queues — it currently takes them in
+  `(priority, dataset)` order with no round-robin, so a big AOI can starve a
+  small one for days.
+* **`aoi_grants` has no UI.** The table, the `aoiVisibleSQL` clause and the
+  Access tab's "Shared with" column all exist; nothing writes a grant. Sharing
+  an AOI today means sharing the password.
+
+### Do not re-litigate
+
+* Hiding parks outside a focused AOI instead of dimming them — no. Nor dimming
+  *starred* parks: a star is explicit and outranks an implicit scope.
+* Archiving stopping the ingest — no. Archive is about the screen, `cancel` is
+  about the quota.
+* Offering Resume on a superseded version — no. Editing is the way forward,
+  `/restore` the way back; `refresh?resume=1` 409s.
+* Telling the user "database busy, try again" — no, that was written and
+  removed. Fix the writer, and first check whether it is *CPU*-bound.
+* An `aoi:<id>` scope key in a park-shaped table — no. Bare id +
+  `aoiExcludeSQL()`.
+* AOI rows in bbox-keyed endpoints **by default** — no. With an explicit,
+  visibility-checked `?aoi=` — yes, `aoiScopeSQL()`, and exclusively.
+* Starring an AOI to get it into the report — no. Visibility is the trigger;
+  requiring a star gave a user with one AOI and no stars an empty report.
+* A global admin view of all AOIs — no (it would leak every tenant's polygons).
+* Visibility-filtering `/api/fire-frames`, `/api/grid` — no. They serve raw
+  geography that was always public within the app. **The polygon is the secret,
+  not the pixels.**
+* A privacy tidy-up as a migration — no. `reownSystemAOIProgress()` is a
+  warn-and-continue startup fixup. When a migration is downgraded to a fixup,
+  **delete the file** — a doc note is not a revert.
+* Recomputing an expensive narrative per request because "a park is fast" — no.
+  See "Narrative caching": park scale hid a 2m27s AOI timeout for months.
+
+### Files
+
+| file | role |
+|---|---|
+| `scripts/aoi_runner.py` | the queue: leases, cursors, interruption |
+| `scripts/test_aoi_resume.py` | proves resumability — run after lease changes |
+| `scripts/aoi_lib.py` | connect, principal_ref, upsert, `DEFAULT_DATASETS` |
+| `scripts/aoi_admin.py` | CLI: list/show/create an AOI |
+| `scripts/aoi_clip.py` | Phase A preview; `DELETE_EXCLUDE`, `SUPERSEDED_BY` |
+| `scripts/hansen_loss.py` | streamed Hansen loss (<=2023), no download |
+| `scripts/gsw_water.py` | streamed JRC surface water -> `park_waterbodies` |
+| `scripts/osm_hydro.py` | rivers & lakes from a country PBF (HydroSHEDS is 403) |
+| `scripts/ghsl_tiles.py` | GHSL tiles, cached by tile id, 1-indexed grid |
+| `scripts/fetch_park_basins.py` | watersheds per outlet; **`--aoi`**, `outlet_budget()` |
+| `srv/aoi.go` | read path, visibility, `aoiExcludeSQL`/`aoiScopeSQL`, `resolveAreaGeom`/`resolveAreaBBox`, `reownSystemAOIProgress` |
+| `srv/aoi_write.go` | create/refresh/delete/progress/kick/cancel |
+| `srv/aoi_versions.go` | edit-as-fork, restore, archive |
+| `srv/aoi_admin.go` | the Access tab: scoped ownership + queue control |
+| `srv/aoi_estimate.go` | measured cost model (test pins 252 GFW / 570 FIRMS / 4 GHSL) |
+| `srv/narrative_cache.go` | `narrative_cache` + `geoMemo` (parks and AOIs alike) |
+| `srv/errors.go` | `isDBLocked`, `execUserToggle` (not sufficient alone) |
+| `srv/park_basins.go` | `loadBasinParts` = all watersheds; merged is the fallback |
+| `srv/static/aoi_draw.js` | polygon editor + live estimate; `startEdit` forks |
+| `srv/static/aoi_progress.js` | the multi-day notification card |
+| `db/migrations/040..045` | overlays, parks, versions, pixel count, basin parts, narrative cache |
+| `docs/PLAN_AOI_OVERLAY.md` | design rationale + measured facts |
 
 ---
 

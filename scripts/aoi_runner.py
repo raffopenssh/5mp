@@ -1037,7 +1037,7 @@ def daily(conn, minutes, budget):
     # names the AOI, and aoiNotifSQLFilter() decides visibility from park_id.
     # A 'SYSTEM' row therefore announced every private AOI's id and progress to
     # every principal -- the fact that someone is watching an area is as much
-    # the secret as the polygon (docs/AOI_HANDOVER.md §2). One row per AOI
+    # the secret as the polygon (AGENTS.md "Areas of interest"). One row per AOI
     # rather than one per run, for the same reason.
     moved = [r for r in results if r.get("state") in ("done", "partial", "stopped")]
     by_aoi = {}

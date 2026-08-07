@@ -53,7 +53,7 @@ RELEVANCE_KM = 20
 
 # Commit every BATCH_ROWS inserts instead of once per park.
 #
-# Why: this is the last long writer in the v5 chain (AOI_HANDOVER.md §1c).
+# Why: this is the last long writer in the v5 chain (AGENTS.md "Areas of interest").
 # SQLite has exactly one writer, so a park -- or worse, a 485,000 km² AOI with
 # 38,725 groups -- loaded in a single transaction blocks every user-initiated
 # write for the whole run, and that is what made `archive` and `daily_park_refresh`

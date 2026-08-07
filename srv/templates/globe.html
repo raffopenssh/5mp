@@ -7967,9 +7967,28 @@
 
         // A dimmed map with no explanation is a bug report. The banner is the
         // one always-visible statement of why, and the way out.
+        //
+        // Its bottom offset is measured, not guessed: the time slider's height
+        // changes with wrapped preset tags, the animate button and the
+        // animator's own controls, so a hard-coded `bottom` covered the
+        // animate button on a narrow phone. Anchor above whatever the slider
+        // currently is.
+        function positionAOIFocusBanner() {
+            const el = document.getElementById('aoi-focus-banner');
+            if (!el) return;
+            const slider = document.getElementById('time-slider-container');
+            const h = slider ? slider.getBoundingClientRect().height : 70;
+            el.style.bottom = Math.round(h + 10) + 'px';
+        }
+        window.positionAOIFocusBanner = positionAOIFocusBanner;
+
         function updateAOIFocusBanner() {
             let el = document.getElementById('aoi-focus-banner');
-            if (!aoiFocusID) { if (el) el.remove(); return; }
+            if (!aoiFocusID) {
+                if (el) el.remove();
+                if (window._aoiFocusRO) { window._aoiFocusRO.disconnect(); window._aoiFocusRO = null; }
+                return;
+            }
             const name = window._aois?.[aoiFocusID]?.name || aoiFocusID;
             if (!el) {
                 el = document.createElement('div');
@@ -7981,6 +8000,14 @@
                 <span class="aoi-focus-banner-name">${escapeHtml(name)}</span>
                 <span class="aoi-focus-banner-hint">focus — other parks dimmed</span>
                 <button onclick="setAOIFocus(null)" title="Leave focus" aria-label="Leave focus">×</button>`;
+            positionAOIFocusBanner();
+            // The slider grows when the animator opens or preset tags wrap;
+            // both happen while focus is on.
+            const slider = document.getElementById('time-slider-container');
+            if (slider && !window._aoiFocusRO && window.ResizeObserver) {
+                window._aoiFocusRO = new ResizeObserver(positionAOIFocusBanner);
+                window._aoiFocusRO.observe(slider);
+            }
         }
         window.updateAOIFocusBanner = updateAOIFocusBanner;
 
@@ -8240,16 +8267,23 @@
         // The date range is the time slider, like everywhere else: the AOI's
         // own analysis window bounds what data exists, and narrowing further is
         // a filter the user has already expressed.
-        function aoiExportButtonsHTML(id, name) {
+        // Two renderings of the same three downloads. The map tip is a hover
+        // strip where space is the constraint, so it stays icon-only; the popup
+        // is where a user decides, so there the icon gets its noun. An icon
+        // whose meaning is only in a title= attribute does not exist on a phone.
+        function aoiExportButtonsHTML(id, name, opts) {
+            const labeled = !!(opts && opts.labeled);
+            const cls = labeled ? 'aoi-act' : 'pa-export-btn';
+            const lbl = t => labeled ? `<span class="aoi-act-label">${t}</span>` : '';
             const pwd = encodeURIComponent(getPwd());
             const eid = encodeURIComponent(id);
             const dp = (dateFrom ? '&from=' + dateFrom : '') + (dateTo ? '&to=' + dateTo : '');
             const suffix = dateFrom && dateTo ? `_${dateFrom}_to_${dateTo}`
                          : dateFrom ? `_from_${dateFrom}` : dateTo ? `_to_${dateTo}` : '';
             return `
-                <a href="/api/aois/${eid}/export.kml?pwd=${pwd}&effort=0${dp}" download="${id}${suffix}.kml" title="KML — download for Google Earth" aria-label="Download KML" class="pa-export-btn"><i class="icon-map"></i></a>
-                <a href="/api/aois/${eid}/export.locus?pwd=${pwd}${dp}" download="${id}_locus.zip" title="Locus — Locus Map 4 backup with every layer this area has (boundary, fires by year, settlements, deforestation, rivers, roads, places) plus field-device defaults. Restore via Locus Map → Backup → Restore" aria-label="Download Locus Map backup" class="pa-export-btn"><i class="icon-smartphone"></i></a>
-                <button onclick="event.stopPropagation();showMBTilesDialog('${id}', '${escapeHtml(name).replace(/'/g, "\\'")}')" title="MBTiles — offline satellite tiles for this area" aria-label="Download offline satellite tiles" class="pa-export-btn" id="mbtiles-btn-${id}"><i class="icon-layers"></i></button>`;
+                <a href="/api/aois/${eid}/export.kml?pwd=${pwd}&effort=0${dp}" download="${id}${suffix}.kml" title="KML — download for Google Earth" aria-label="Download KML" class="${cls}"><i class="icon-map"></i>${lbl('KML')}</a>
+                <a href="/api/aois/${eid}/export.locus?pwd=${pwd}${dp}" download="${id}_locus.zip" title="Locus — Locus Map 4 backup with every layer this area has (boundary, fires by year, settlements, deforestation, rivers, roads, places) plus field-device defaults. Restore via Locus Map → Backup → Restore" aria-label="Download Locus Map backup" class="${cls}"><i class="icon-smartphone"></i>${lbl('Locus')}</a>
+                <button onclick="event.stopPropagation();showMBTilesDialog('${id}', '${escapeHtml(name).replace(/'/g, "\\'")}')" title="MBTiles — offline satellite tiles for this area" aria-label="Download offline satellite tiles" class="${cls}" id="mbtiles-btn-${id}"><i class="icon-layers"></i>${lbl('Tiles')}</button>`;
         }
         window.aoiExportButtonsHTML = aoiExportButtonsHTML;
 
@@ -8272,21 +8306,34 @@
             const html = `
                 <div class="pa-popup" style="min-width:260px">
                     <div class="pa-popup-header">
-                        <div class="pa-popup-name" style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-                            <span style="min-width:0;overflow-wrap:break-word">${escapeHtml(name)}</span>
-                            <span style="display:flex;gap:4px;align-items:center;flex-shrink:0">
-                                <button onclick="event.stopPropagation();toggleAOIFocus('${id}')" title="Focus on this area — parks outside it are dimmed (starred parks stay bright), and fire/settlement/deforestation layers switch to this area's own data" class="pa-export-btn${aoiFocusID === id ? ' active' : ''}" id="aoi-focus-btn-${id}"><i class="icon-focus"></i></button>
-                                ${props.is_owner ? `<button onclick="event.stopPropagation();editAOI('${id}')" title="Edit — creates a new version and keeps this one as history" class="pa-export-btn"><i class="icon-pencil-ruler"></i></button>` : ''}
-                                <a href="/api/aois/${encodeURIComponent(id)}/export.geojson?pwd=${encodeURIComponent(getPwd())}" download="${id}.geojson" title="GeoJSON — download the area polygon" class="pa-export-btn"><i class="icon-globe"></i></a>
-                                ${aoiExportButtonsHTML(id, name)}
-                                <button onclick="animateAOI('${id}')" title="Animate this area over its analysis window" class="pa-export-btn"><i class="icon-play"></i></button>
-                                ${props.is_owner ? `<button onclick="event.stopPropagation();archiveAOI('${id}')" title="Hide this area — it comes off the map and out of reports, but nothing is deleted: data, share links and ingest all continue. Search its name to bring it back." class="pa-export-btn"><i class="icon-archive"></i></button>` : ''}
-                            </span>
-                        </div>
+                        <div class="pa-popup-name">${escapeHtml(name)}</div>
                         <div class="pa-popup-country">
                             <span class="pa-popup-country-name">Area of interest</span><span class="pa-popup-area">• ${area}</span>
                         </div>
                         <div style="font-size:10px;color:#888;margin-top:2px">Window ${escapeHtml(win)}</div>
+                        <div class="aoi-actions">
+                            <div class="aoi-act-group">
+                                <span class="aoi-act-group-label">View</span>
+                                <div class="aoi-act-row">
+                                    <button onclick="event.stopPropagation();toggleAOIFocus('${id}')" title="Focus on this area — parks outside it are dimmed (starred parks stay bright), and fire/settlement/deforestation layers switch to this area's own data" class="aoi-act${aoiFocusID === id ? ' active' : ''}" id="aoi-focus-btn-${id}"><i class="icon-focus"></i><span class="aoi-act-label">Focus</span></button>
+                                    <button onclick="event.stopPropagation();animateAOI('${id}')" title="Animate this area over its analysis window" class="aoi-act"><i class="icon-play"></i><span class="aoi-act-label">Animate</span></button>
+                                </div>
+                            </div>
+                            <div class="aoi-act-group">
+                                <span class="aoi-act-group-label">Download</span>
+                                <div class="aoi-act-row">
+                                    <a href="/api/aois/${encodeURIComponent(id)}/export.geojson?pwd=${encodeURIComponent(getPwd())}" download="${id}.geojson" title="GeoJSON — download the area polygon" class="aoi-act"><i class="icon-globe"></i><span class="aoi-act-label">GeoJSON</span></a>
+                                    ${aoiExportButtonsHTML(id, name, { labeled: true })}
+                                </div>
+                            </div>
+                            ${props.is_owner ? `<div class="aoi-act-group">
+                                <span class="aoi-act-group-label">Manage</span>
+                                <div class="aoi-act-row">
+                                    <button onclick="event.stopPropagation();editAOI('${id}')" title="Edit — creates a new version and keeps this one as history" class="aoi-act"><i class="icon-pencil-ruler"></i><span class="aoi-act-label">Edit</span></button>
+                                    <button onclick="event.stopPropagation();archiveAOI('${id}')" title="Hide this area — it comes off the map and out of reports, but nothing is deleted: data, share links and ingest all continue. Search its name to bring it back." class="aoi-act"><i class="icon-archive"></i><span class="aoi-act-label">Hide</span></button>
+                                </div>
+                            </div>` : ''}
+                        </div>
                     </div>
                     <div class="pa-popup-section open" id="aoi-overview-section-${id}" onclick="togglePopupSection(this)">
                         <div class="pa-popup-section-header">

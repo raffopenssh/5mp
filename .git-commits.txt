@@ -1,3 +1,4 @@
+38a3feb 2026-08-07 12:03:26 build: refresh version history for 70918ad
 70918ad 2026-08-07 12:03:12 aoi: finish the handover — Access tab, yielding v5 chain, namespaced pins
 eadf450 2026-08-07 09:37:41 build: refresh version history for 68245b5
 68245b5 2026-08-07 09:37:30 aoi: all watersheds, not one -- and "0 basin rows" was a silent no-op
@@ -17,4 +18,3 @@ f275e9e 2026-08-07 05:19:23 aoi: give every dataset a runner -- Hansen, surface 
 1e56d6f 2026-08-06 20:11:16 aoi: wire the write path into the UI; close the notification name leak
 934dc7a 2026-08-06 19:57:09 docs: point AGENTS.md at the AOI handover; record the resume guarantee and the Hansen reversal
 e46d114 2026-08-06 19:56:53 aoi: write path — draw, price, version; and Hansen for pre-2024 loss
-ba50ee4 2026-08-06 19:38:42 aoi: make interruption the normal exit -- stop, release, resume tomorrow

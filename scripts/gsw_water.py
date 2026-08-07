@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """JRC Global Surface Water occurrence -> park_waterbodies polygons, streamed.
 
-Why this exists (docs/AOI_HANDOVER.md §5): the `gsw` unit was blocked on
+Why this exists (AGENTS.md "Areas of interest"): the `gsw` unit was blocked on
 "3 missing 10x10 degree occurrence tiles". Measured 2026-08-07, the download is
 not needed at all -- the 2021 v1.4 tiles are public COGs on GCS and rasterio
 reads them through /vsicurl with HTTP range requests: opening a tile is 0.9 s

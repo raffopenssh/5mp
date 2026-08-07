@@ -5,7 +5,7 @@
     python3 scripts/aoi_admin.py show XSA_Study_Area
     python3 scripts/aoi_admin.py create --id XSA_Study_Area \
         --name "Study Area" --geojson data/study_areas/XSA_Study_Area.geojson \
-        --from 2024-01-01 --owner-pwd '$AOI_OWNER_PWD'
+        --from 2024-01-01 --owner-pwd "$AOI_OWNER_PWD"
 
 The owner password is turned into a principal keyed by sha256(pwd)[:16]; the
 secret itself is never stored (srv/aoi.go principalRef).

@@ -136,7 +136,7 @@ func (s *Server) loadSettlementContext(parkID string, st *ClassifiedSettlement) 
 	// classification refresh and /api/refresh-park were both spending hours
 	// holding a read connection for work that takes seconds — the same bug
 	// class as _get_fire_density in scripts/rebuild_events_enhanced.py
-	// (docs/AOI_HANDOVER.md §1b), which is why §4.0 says to grep for the class.
+	// (AGENTS.md "Areas of interest"), which is why §4.0 says to grep for the class.
 	s.DB.QueryRow(`
 		SELECT 
 			COUNT(CASE WHEN latitude BETWEEN ? AND ? AND longitude BETWEEN ? AND ? THEN 1 END),

@@ -226,7 +226,7 @@ func (s *Server) Serve(addr string) error {
 	// what is here: species, climate, publications, legal and checklist are
 	// per-protected-area facts, and averaging them over 485,000 km2 would
 	// invent a number. The AOI popup points at the intersecting parks instead
-	// (docs/AOI_HANDOVER.md §"what an AOI is not").
+	// (AGENTS.md "Areas of interest" an AOI is not").
 	mux.HandleFunc("GET /api/aois/{id}/feature-stats", s.aoiGate(s.HandleAPIParkFeatureStats))
 	mux.HandleFunc("GET /api/aois/{id}/classified-settlements", s.aoiGate(s.HandleAPIClassifiedSettlements))
 	mux.HandleFunc("GET /api/aois/{id}/classified-deforestation", s.aoiGate(s.HandleAPIClassifiedDeforestation))
