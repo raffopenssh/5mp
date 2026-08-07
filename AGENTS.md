@@ -519,8 +519,8 @@ fixed analysis window, an owner, and data fetched *for it* over days by a cron.
 Instance #1 is `XSA_Study_Area` (485,150 km², owner `$AOI_OWNER_PWD`).
 Full handover: `docs/PLAN_AOI_OVERLAY.md`.
 
-**Current handover: `docs/AOI_HANDOVER_2.md`** — what is done, what is left,
-and the verification set. `docs/PLAN_AOI_OVERLAY.md` remains the design
+**Current handover: `docs/AOI_HANDOVER_2.md`** (rev 4) — read its **§0** first:
+it is the one open blocker. `docs/PLAN_AOI_OVERLAY.md` remains the design
 rationale and the measured-facts record.
 
 An AOI is a **power bounding box**: kept, owned, versioned, with data fetched
@@ -576,6 +576,24 @@ not its bbox; share links use `?aoi=`/`aoi_sections=`/`anim_aoi`, deliberately
 separate from `?popup=`/`sections=` which resolve against the `areas` source an
 AOI is never in. Anything wanting a specific date window must go through
 `setTimeSliderRange()`, not `dateFrom`/`dateTo`.
+
+**Focus mode** (`?aoi_focus=`) makes the AOI the subject of the whole map: parks
+outside it are dimmed (never hidden — the outline shows the polygon crossing a
+boundary), **starred parks are never dimmed** (a star is explicit and outranks
+an implicit scope), and the bbox feature layers, the animator and the star
+report all switch to the AOI's own rows via `aoiScopeSQL`. `aoiFocusBrightIDs()`
+returns `null` — not `[]` — when the park list did not resolve, or the whole
+world greys out. `var aoiFocusID`, not `let`: `updatePAHighlighting()` reads it
+during map setup, thousands of lines above the declaration.
+
+**archive ≠ cancel ≠ delete.** `archive` hides the overlay and touches nothing
+else — ingest keeps running, so unhiding shows an answer rather than a progress
+bar. `cancel` disables unfinished datasets but keeps their **cursors**, so
+`refresh?resume=1` resumes without re-spending FIRMS quota. `delete` drops
+everything. ⚠️ `archive` is **shipped but never observed to succeed**: on a busy
+database it 500s because `rebuild_deforestation_for_park` holds SQLite's single
+writer for 35+ minutes. `docs/AOI_HANDOVER_2.md` §0 — the fix is in the batch
+writer, not the handler.
 
 The runner treats **interruption as its normal exit**: out of time, Ctrl-C or
 SIGTERM all release the lease and resume next run with no cooldown, dead-pid

@@ -1125,6 +1125,42 @@
         .aoi-tag-win { color: #9a7b2a; font-size: 9px; flex-shrink: 0; }
         .aoi-tag-zoom { background: none; border: none; color: #9a7b2a; cursor: pointer; font-size: 11px; padding: 0 0 0 2px; line-height: 1; flex-shrink: 0; }
         .aoi-tag-zoom:hover { color: #fbbf24; }
+        /* Focus: the tag for the AOI that is currently the subject of the map.
+           Filled rather than merely brighter, because the map itself is showing
+           a big, unexplained change (158 dimmed parks) and the control that
+           caused it has to be unmistakable. */
+        .aoi-tag.focused { background: rgba(251,191,36,0.26); border-color: #fbbf24; box-shadow: 0 0 0 1px rgba(251,191,36,0.25); }
+        .aoi-tag-zoom.on { color: #fbbf24; text-shadow: 0 0 6px rgba(251,191,36,0.8); }
+
+        /* Focus banner: bottom-centre, above the time slider, always visible
+           while focus is on. A dimmed map with no visible reason is a bug
+           report; this is the reason and the way out, in one line. */
+        .aoi-focus-banner {
+            position: fixed; left: 50%; transform: translateX(-50%);
+            bottom: 96px; z-index: 900;
+            display: flex; align-items: center; gap: 8px;
+            padding: 5px 8px 5px 10px;
+            background: rgba(20,18,10,0.92); backdrop-filter: blur(6px);
+            border: 1px solid rgba(251,191,36,0.45); border-radius: 999px;
+            font-size: 11px; color: #fbbf24; pointer-events: auto;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+            max-width: calc(100vw - 24px);
+        }
+        .aoi-focus-banner-dot { font-size: 12px; }
+        .aoi-focus-banner-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 40vw; }
+        .aoi-focus-banner-hint { color: #9a7b2a; font-size: 9px; white-space: nowrap; }
+        .aoi-focus-banner button {
+            background: rgba(251,191,36,0.15); border: none; color: #fbbf24;
+            border-radius: 50%; width: 18px; height: 18px; line-height: 1;
+            cursor: pointer; font-size: 13px; flex-shrink: 0;
+        }
+        .aoi-focus-banner button:hover { background: rgba(251,191,36,0.35); }
+        @media (max-width: 640px) {
+            .aoi-focus-banner { bottom: 84px; font-size: 10px; }
+            .aoi-focus-banner-hint { display: none; }
+        }
+        /* The focus toggle in the popup header, when on. */
+        .pa-export-btn.active { background: rgba(251,191,36,0.25); border-color: #fbbf24; color: #fbbf24; }
         .starred-area-tag { display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px; background: rgba(59,130,246,0.10); border: 1px solid rgba(59,130,246,0.25); border-radius: 4px; font-size: 11px; color: #93c5fd; cursor: pointer; max-width: 100%; }
         .starred-area-tag:hover { background: rgba(59,130,246,0.18); border-color: rgba(59,130,246,0.45); }
         .starred-area-tag-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
@@ -1174,6 +1210,13 @@
         .aoi-prog-bar { height: 3px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; margin: 5px 0 3px; }
         .aoi-prog-bar > div { height: 100%; transition: width 0.4s; }
         .aoi-prog-dim { font-size: 9px; color: #666; }
+        /* Abort / resume. Deliberately quiet: stopping a multi-day ingest is a
+           real decision but not a common one, and a loud red button next to a
+           progress bar reads as "something is wrong". */
+        .aoi-prog-actions { margin-top: 6px; }
+        .aoi-prog-abort { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); color: #999; border-radius: 4px; font-size: 9px; padding: 3px 8px; cursor: pointer; }
+        .aoi-prog-abort:hover { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.5); color: #f87171; }
+        .aoi-prog-abort.resume:hover { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.5); color: #4ade80; }
 
         /* Version list in the AOI popup. Archived rows are dimmed rather than
            hidden: getting back to an old version is the whole point of

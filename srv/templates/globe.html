@@ -1092,6 +1092,10 @@
                     map.setPaintProperty('areas-fill', 'fill-opacity', 0.2);
                 }
             }
+            // Focus dimming is also expressed in fill-opacity, so it has to be
+            // re-applied after any basemap change or switching to satellite
+            // silently drops it.
+            if (typeof applyAOIFocusPaint === 'function') applyAOIFocusPaint(isSatellite);
         }
         
         // Satellite hint for high zoom levels
@@ -3280,8 +3284,20 @@
             }
             // AOIs lead: they are the question, the parks inside are context.
             const entries = [...byId.values()];
-            entries.sort((x, y) => (y.park.isAOI ? 1 : 0) - (x.park.isAOI ? 1 : 0));
-            return entries;
+            // In focus, a report is about the focused AOI — so drop parks that
+            // are neither inside it, starred, nor explicitly selected. Exactly
+            // the bright set the map is already showing, because a report that
+            // silently covers ground the map is dimming is worse than either
+            // behaviour on its own. Not applied when the park list never
+            // resolved (aoiFocusBrightIDs() returns null), which would
+            // otherwise empty the report.
+            const bright = typeof aoiFocusBrightIDs === 'function' ? aoiFocusBrightIDs() : null;
+            const filtered = bright
+                ? entries.filter(e => e.park.isAOI ? e.park.id === aoiFocusID
+                                                   : bright.includes(e.park.id))
+                : entries;
+            filtered.sort((x, y) => (y.park.isAOI ? 1 : 0) - (x.park.isAOI ? 1 : 0));
+            return filtered;
         }
 
         // What an AOI actually has data for. Kept next to collectReportParks
@@ -5026,6 +5042,71 @@
                     2,  // Selected: thicker
                     1   // Not selected: normal
                 ]);
+            }
+            applyAOIFocusPaint(isSatellite);
+        }
+
+        // Focus dimming, applied AFTER the selection styling above rather than
+        // woven into it.
+        //
+        // Two independent things want to colour the same four paint properties
+        // (a PA selection, and an AOI focus), and interleaving them produced a
+        // nest of nested 'case' expressions that was wrong in the corners.
+        // Layering is honest instead: selection decides colour, focus then
+        // knocks back everything it does not cover. A park that is both
+        // selected and outside the AOI stays bright, because selection is an
+        // explicit act — aoiFocusBrightIDs() folds it into the bright set.
+        function applyAOIFocusPaint(isSatellite) {
+            if (!map || !map.getLayer('areas-fill')) return;
+            const bright = aoiFocusBrightIDs();
+            if (!bright) {
+                // No focus (or a park list that never resolved, which must not
+                // grey the world out). Undo only what focus itself sets; the
+                // selection styling above owns the rest.
+                map.setPaintProperty('areas-outline', 'line-opacity', 1);
+                resetAOILayerPaint();
+                return;
+            }
+            const inFocus = ['in', ['get', 'id'], ['literal', bright]];
+            // Grey, but not invisible. The first pass used #3f3f46 at 0.3
+            // outline opacity, which at continental zoom erased the other 158
+            // parks completely — and "my parks disappeared" is a worse
+            // misreading than "my parks look secondary". Dimming has to still
+            // read as a map.
+            map.setPaintProperty('areas-fill', 'fill-color',
+                ['case', inFocus, '#22c55e', '#5b6b5f']);
+            map.setPaintProperty('areas-fill', 'fill-opacity',
+                isSatellite ? 0 : ['case', inFocus, 0.28, 0.09]);
+            map.setPaintProperty('areas-outline', 'line-color',
+                ['case', inFocus, '#22c55e', '#6b7f70']);
+            map.setPaintProperty('areas-outline', 'line-opacity',
+                ['case', inFocus, 1, 0.55]);
+            map.setPaintProperty('areas-outline', 'line-width',
+                ['case', inFocus, 1.8, 0.8]);
+            // The AOI itself steps forward: it is the subject now, so the
+            // deliberately faint annotation styling (see the layer definition)
+            // is no longer the right restraint.
+            if (map.getLayer('aois-outline')) {
+                map.setPaintProperty('aois-outline', 'line-width',
+                    ['case', ['==', ['get', 'id'], aoiFocusID], 3, 2]);
+                map.setPaintProperty('aois-outline', 'line-opacity', 1);
+            }
+            if (map.getLayer('aois-fill')) {
+                map.setPaintProperty('aois-fill', 'fill-opacity',
+                    ['case', ['==', ['get', 'id'], aoiFocusID], 0.10, 0.04]);
+            }
+        }
+        window.applyAOIFocusPaint = applyAOIFocusPaint;
+
+        // Leaving focus has to put the AOI layer back where it was; the paint
+        // above is not idempotent on its own.
+        function resetAOILayerPaint() {
+            if (map.getLayer('aois-outline')) {
+                map.setPaintProperty('aois-outline', 'line-width', 2);
+                map.setPaintProperty('aois-outline', 'line-opacity', 0.9);
+            }
+            if (map.getLayer('aois-fill')) {
+                map.setPaintProperty('aois-fill', 'fill-opacity', 0.04);
             }
         }
 
@@ -7717,6 +7798,17 @@
                 window._aoiCanCreate = !!data.can_create;
                 initAOICreateButton();
                 updateAOITagsDisplay();
+                // Focus survives a list refresh, but only if its AOI still
+                // exists and is still visible: archiving or deleting the
+                // focused AOI must not leave the map dimmed against a polygon
+                // that is no longer there.
+                if (aoiFocusID && !window._aois[aoiFocusID]) setAOIFocus(null);
+                else if (aoiFocusID) updateAOIFocusBanner();
+                const pendFocus = window._pendingAOIFocus;
+                if (pendFocus) {
+                    window._pendingAOIFocus = null;
+                    setAOIFocus(pendFocus);
+                }
                 // A ?aoi= share link can only be honoured once the polygons
                 // are known (and only if this principal may see them — an
                 // invisible id simply does nothing, no error, no oracle).
@@ -7750,10 +7842,13 @@
                 const km = a.area_km2 ? formatNumber(Math.round(a.area_km2)) + ' km²' : '';
                 const cov = window._aoiCoverage?.[a.id];
                 const covTxt = cov ? ` · ${cov.done}/${cov.total} layers` : '';
-                return `<div class="aoi-tag" title="${escapeHtml(a.name)} — ${escapeHtml(win)}${km ? ' · ' + km : ''}${covTxt}">
+                const focused = aoiFocusID === a.id;
+                return `<div class="aoi-tag${focused ? ' focused' : ''}" title="${escapeHtml(a.name)} — ${escapeHtml(win)}${km ? ' · ' + km : ''}${covTxt}">
                     <span class="aoi-tag-name" onclick="openAOIPopupById('${escapeHtml(a.id)}')">◈ ${escapeHtml(a.name)}</span>
                     <span class="aoi-tag-win">${escapeHtml(win)}</span>
+                    <button class="aoi-tag-zoom${focused ? ' on' : ''}" onclick="event.stopPropagation();toggleAOIFocus('${escapeHtml(a.id)}')" title="${focused ? 'Leave focus' : 'Focus on this area — parks outside it are dimmed, starred parks stay'}" aria-pressed="${focused}">◎</button>
                     <button class="aoi-tag-zoom" onclick="event.stopPropagation();zoomToAOI('${escapeHtml(a.id)}')" title="Zoom to this area">⌖</button>
+                    ${a.is_owner ? `<button class="aoi-tag-zoom" onclick="event.stopPropagation();archiveAOI('${escapeHtml(a.id)}')" title="Hide this area — nothing is deleted; search its name to bring it back">⊘</button>` : ''}
                 </div>`;
             }).join('');
         }
@@ -7766,6 +7861,147 @@
             }
         }
         window.zoomToAOI = zoomToAOI;
+
+        // ── Focus mode ────────────────────────────────────────────────────
+        //
+        // An AOI is a *focus*: someone drew it because that is the ground they
+        // care about. Once it exists, the other 158 parks on the map are
+        // context at best and noise at worst — and worse than noise for the
+        // data layers, where a park just outside the polygon contributes
+        // trajectories and settlements that were never part of the question.
+        //
+        // So focus is one switch with one meaning — "this polygon is the
+        // subject" — applied consistently everywhere it can be:
+        //
+        //   * parks outside the AOI are greyed (not hidden: their outline is
+        //     how you see that the polygon crosses a boundary, and clicking
+        //     one must still work — dimming states a priority, hiding would
+        //     state a filter the user did not ask for);
+        //   * starred parks are NEVER dimmed, in focus or out. A star is an
+        //     explicit "keep this in front of me" and it outranks an implicit
+        //     scope; it is also the escape hatch that stops focus from hiding
+        //     the one park someone is comparing against;
+        //   * the bbox feature layers and the animator switch to the AOI's own
+        //     rows via ?aoi= (aoiScopeSQL), so the 38,725 trajectories its
+        //     ingest produced are what you see, rather than the park rows that
+        //     cover 11% of the same ground twice;
+        //   * the animator clips its canvas to the polygon.
+        //
+        // Only one AOI can be the focus at a time. Two focuses is not a
+        // sharper question, it is no question.
+        // `var`, not `let`: updatePAHighlighting() lives ~2,800 lines above
+        // this and reads focus through aoiFocusBrightIDs(). A `let` would put
+        // it in a temporal dead zone until this line executes, and the first
+        // highlight pass (which happens during map setup) would throw.
+        var aoiFocusID = null;
+        window._aoiFocusParks = {};   // aoi id -> [park ids] from aoi_parks
+
+        async function aoiFocusParkIDs(id) {
+            if (window._aoiFocusParks[id]) return window._aoiFocusParks[id];
+            try {
+                const r = await fetch(`/api/aois/${encodeURIComponent(id)}?geometry=0&pwd=${encodeURIComponent(getPwd())}`);
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                const d = await r.json();
+                window._aoiFocusParks[id] = (d.parks || []).map(p => p.park_id);
+            } catch (e) {
+                // A failed lookup must not silently dim every park on the map:
+                // with an empty list the "inside" set is empty and the whole
+                // world greys out, which looks exactly like a broken basemap.
+                console.warn('AOI focus: could not resolve parks', e);
+                window._aoiFocusParks[id] = null;
+            }
+            return window._aoiFocusParks[id];
+        }
+
+        // The ids that stay bright: the parks the AOI actually overlaps, plus
+        // every starred park, plus anything explicitly selected in the filter
+        // panel (an active selection is a live intent and outranks scope).
+        function aoiFocusBrightIDs() {
+            if (!aoiFocusID) return null;
+            const inside = window._aoiFocusParks[aoiFocusID];
+            if (!inside) return null;
+            const set = new Set(inside);
+            (starredItems?.parks || []).forEach(p => p.id && set.add(p.id));
+            if (typeof selectedPAIds !== 'undefined') selectedPAIds.forEach(id => set.add(id));
+            return Array.from(set);
+        }
+
+        async function setAOIFocus(id) {
+            if (id && !window._aois?.[id]) return false;
+            if (id) await aoiFocusParkIDs(id);
+            aoiFocusID = id || null;
+            window.aoiFocusID = aoiFocusID;
+            updatePAHighlighting();
+            updateAOITagsDisplay();
+            updateAOIFocusBanner();
+            // Data layers change scope, not just colour: reload whatever is on.
+            Object.keys(VIEW_LAYER_META).forEach(n => {
+                if (window.viewLayers?.[n]) loadViewFeatureLayer(n);
+            });
+            // An animation already running is showing the wrong scope now.
+            if (window.Animator?.isOpen?.()) {
+                const st = Animator.getState();
+                Animator.close();
+                Animator.open({ layers: st.layers, speed: st.speed, t: st.tISO,
+                                paused: !st.playing, aoi: aoiFocusID || undefined });
+            }
+            if (typeof updateShareURL === 'function') updateShareURL();
+            return true;
+        }
+        window.setAOIFocus = setAOIFocus;
+
+        function toggleAOIFocus(id) {
+            const on = aoiFocusID !== id;
+            setAOIFocus(on ? id : null).then(ok => {
+                if (!ok) return;
+                if (on) {
+                    zoomToAOI(id);
+                    showToast(`Focused on “${window._aois?.[id]?.name || id}” — parks outside it are dimmed, starred ones stay`, 'info', { key: 'aoi-focus' });
+                }
+            });
+        }
+        window.toggleAOIFocus = toggleAOIFocus;
+
+        // A dimmed map with no explanation is a bug report. The banner is the
+        // one always-visible statement of why, and the way out.
+        function updateAOIFocusBanner() {
+            let el = document.getElementById('aoi-focus-banner');
+            if (!aoiFocusID) { if (el) el.remove(); return; }
+            const name = window._aois?.[aoiFocusID]?.name || aoiFocusID;
+            if (!el) {
+                el = document.createElement('div');
+                el.id = 'aoi-focus-banner';
+                el.className = 'aoi-focus-banner';
+                document.body.appendChild(el);
+            }
+            el.innerHTML = `<span class="aoi-focus-banner-dot">◈</span>
+                <span class="aoi-focus-banner-name">${escapeHtml(name)}</span>
+                <span class="aoi-focus-banner-hint">focus — other parks dimmed</span>
+                <button onclick="setAOIFocus(null)" title="Leave focus" aria-label="Leave focus">×</button>`;
+        }
+        window.updateAOIFocusBanner = updateAOIFocusBanner;
+
+        // Hide (archive) an AOI. Deliberately not Delete: delete throws away
+        // days of ingest and breaks every share link, whereas this only takes
+        // the polygon off the map. The ingest keeps running in the background,
+        // so unhiding shows an answer rather than a progress bar, and search
+        // is the way back.
+        async function archiveAOI(id) {
+            const name = window._aois?.[id]?.name || id;
+            if (!confirm(`Hide “${name}”?\n\nIt comes off the map and out of reports, but nothing is deleted: its data, its share links and its ingest all continue. Search for it by name to bring it back.`)) return;
+            try {
+                const r = await fetch(`/api/aois/${encodeURIComponent(id)}/archive?pwd=${encodeURIComponent(getPwd())}`,
+                                      { method: 'POST' });
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                if (aoiFocusID === id) await setAOIFocus(null);
+                if (currentAOIPopup) { currentAOIPopup.remove(); currentAOIPopup = null; }
+                await loadAOIs();
+                showToast(`“${name}” hidden — search its name to restore it`, 'success');
+            } catch (e) {
+                showToast('Could not hide this area', 'error');
+            }
+        }
+        window.archiveAOI = archiveAOI;
 
         // Starred monitored areas (bboxes), as tags in the same row.
         //
@@ -8036,10 +8272,12 @@
                         <div class="pa-popup-name" style="display:flex;align-items:center;justify-content:space-between;gap:8px">
                             <span style="min-width:0;overflow-wrap:break-word">${escapeHtml(name)}</span>
                             <span style="display:flex;gap:4px;align-items:center;flex-shrink:0">
+                                <button onclick="event.stopPropagation();toggleAOIFocus('${id}')" title="Focus on this area — parks outside it are dimmed (starred parks stay bright), and fire/settlement/deforestation layers switch to this area's own data" class="pa-export-btn${aoiFocusID === id ? ' active' : ''}" id="aoi-focus-btn-${id}"><i class="icon-focus"></i></button>
                                 ${props.is_owner ? `<button onclick="event.stopPropagation();editAOI('${id}')" title="Edit — creates a new version and keeps this one as history" class="pa-export-btn"><i class="icon-pencil-ruler"></i></button>` : ''}
                                 <a href="/api/aois/${encodeURIComponent(id)}/export.geojson?pwd=${encodeURIComponent(getPwd())}" download="${id}.geojson" title="GeoJSON — download the area polygon" class="pa-export-btn"><i class="icon-globe"></i></a>
                                 ${aoiExportButtonsHTML(id, name)}
                                 <button onclick="animateAOI('${id}')" title="Animate this area over its analysis window" class="pa-export-btn"><i class="icon-play"></i></button>
+                                ${props.is_owner ? `<button onclick="event.stopPropagation();archiveAOI('${id}')" title="Hide this area — it comes off the map and out of reports, but nothing is deleted: data, share links and ingest all continue. Search its name to bring it back." class="pa-export-btn"><i class="icon-archive"></i></button>` : ''}
                             </span>
                         </div>
                         <div class="pa-popup-country">
@@ -10885,6 +11123,12 @@
                     '&limit=1500&pwd=' + encodeURIComponent(getPwd() || '');
                 if (dateFrom) url += '&from=' + dateFrom;
                 if (dateTo) url += '&to=' + dateTo;
+                // In focus, these layers show the AOI's OWN rows and only
+                // those (?aoi= -> aoiScopeSQL). Not an extra filter on top of
+                // the park rows: the AOI's ingest covered the whole polygon
+                // including the ~11% inside parks, so keeping both would paint
+                // that overlap twice. See docs/AOI_HANDOVER_2.md §2.
+                if (aoiFocusID) url += '&aoi=' + encodeURIComponent(aoiFocusID);
                 const res = await fetch(url, { signal: ctrl.signal });
                 if (!res.ok) throw new Error('HTTP ' + res.status);
                 const geojson = await res.json();
@@ -12238,7 +12482,14 @@
         
         saveStarredItems();
         updateStarBadge();
-        
+        // A star outranks AOI focus (see the focus-mode comment): starring or
+        // unstarring a park while focused has to repaint immediately, or the
+        // user stars the park they wanted to compare against and nothing
+        // visible happens.
+        if (type === 'parks' && typeof aoiFocusID !== 'undefined' && aoiFocusID) {
+            updatePAHighlighting();
+        }
+
         return isNowStarred;
     }
     
@@ -18514,6 +18765,17 @@ ${starredItems.narratives.map(n => {
         // Add open AOI popup, if any. Separate params from ?popup=/&sections=
         // because the restorer for those resolves the id against the 'areas'
         // source, which an AOI is deliberately never in.
+        //
+        // Focus is its own param and NOT implied by ?aoi=: opening an AOI's
+        // popup and declaring it the subject of the whole map are different
+        // acts, and a share link has to be able to say either one. It is also
+        // why focus is not folded into ?parks= — that list is a selection the
+        // user made park by park; focus is derived from the polygon, and
+        // baking the derived set into the URL would freeze it against an AOI
+        // whose geometry can be edited afterwards.
+        if (typeof aoiFocusID !== 'undefined' && aoiFocusID) {
+            params.set('aoi_focus', aoiFocusID);
+        }
         if (typeof currentAOIPopup !== 'undefined' && currentAOIPopup) {
             const aid = currentAOIPopup._aoiID;
             if (aid) {
@@ -18963,6 +19225,20 @@ ${starredItems.narratives.map(n => {
             const aoiSections = params.get('aoi_sections')?.split(',').filter(Boolean) || [];
             if (!(typeof openAOIPopupById === 'function' && openAOIPopupById(aoiParam, aoiSections))) {
                 window._pendingAOIPopup = { id: aoiParam, sections: aoiSections };
+            }
+        }
+
+        // Restore focus. Same deferral as the popup and for the same reason:
+        // it needs window._aois, which loadAOIs() fills asynchronously and
+        // never fills at all for an id this principal cannot see — in which
+        // case the link degrades to "no focus" rather than to an error, since
+        // an id must not be an oracle. loadAOIs() drains _pendingAOIFocus.
+        const aoiFocusParam = params.get('aoi_focus');
+        if (aoiFocusParam) {
+            if (typeof setAOIFocus !== 'function' || !window._aois?.[aoiFocusParam]) {
+                window._pendingAOIFocus = aoiFocusParam;
+            } else {
+                setAOIFocus(aoiFocusParam);
             }
         }
 

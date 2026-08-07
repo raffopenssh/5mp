@@ -1157,12 +1157,18 @@
             // fetch stays bbox-scoped (every frames endpoint is), but draw()
             // clips to the ring so nothing appears in the corners the AOI
             // does not cover. opts.aoi survives share links via getState().
+            //
+            // Focus mode is inherited when the caller did not say otherwise:
+            // if the user has declared an AOI to be the subject, an animation
+            // opened from the time slider must animate that subject, or the
+            // ▶ chip and the focus banner disagree about what is on screen.
             let clipGeom = null, aoiID = null;
-            if (opts.aoi && window._aois && window._aois[opts.aoi]) {
-                const a = window._aois[opts.aoi];
+            const wantAOI = opts.aoi !== undefined ? opts.aoi : (window.aoiFocusID || null);
+            if (wantAOI && window._aois && window._aois[wantAOI]) {
+                const a = window._aois[wantAOI];
                 if (a.geometry) {
                     clipGeom = a.geometry;
-                    aoiID = opts.aoi;
+                    aoiID = wantAOI;
                     const gb = geomBbox(a.geometry) || a.bbox;
                     if (gb) { bbox = gb.slice(); fixed = true; }
                 }
