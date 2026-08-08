@@ -16,10 +16,17 @@ Wants=network-online.target
 Type=oneshot
 User=exedev
 WorkingDirectory=/home/exedev/5mp/scripts/histmaps
-# One sheet at a time. The box has 2 cores and one must stay free for the app;
-# a second warp worker does not halve wall-clock anyway, because gdalwarp and
-# potrace are already memory-bandwidth bound on a 12000x9000 RGBA raster.
-Environment=JOBS=1
+# Sheets in flight. The box has 2 cores and one must stay free for the app;
+# the CPUQuota below is what enforces that, so the job count only decides how
+# much download latency is hidden behind compute.
+# Two sheets in flight, sharing the one core CPUQuota allows. This is about
+# overlapping the *download* with the *warp*, not about parallel compute: a
+# sheet is ~3 min of fetching a 20 MB JP2 from tile.loc.gov and ~4 min of
+# CPU-bound warping, and at JOBS=1 those serialise -- measured 7 min/sheet with
+# system load 0.00 for much of it. The cgroup (CPUQuota=100%, MemoryMax=4G) is
+# what makes this safe; the run that took the VM down was JOBS=3 with no caps
+# and GDAL's default block cache.
+Environment=JOBS=2
 # GDAL's block cache is per-process and is the single biggest lever on RSS.
 # 256 MB is ample for tiled reads at this raster size; the default (5% of RAM,
 # ~370 MB here) plus the warp's own buffers is what pushed a 2-worker run into
