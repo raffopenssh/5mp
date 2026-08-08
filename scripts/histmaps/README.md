@@ -1,6 +1,6 @@
 # Sudan Survey 1:250,000 — LOC g8310m.gct00289
 
-264 scanned sheets of the Anglo-Egyptian Sudan 1:250,000 series (Sudan Survey
+770 scanned sheets of the Anglo-Egyptian Sudan 1:250,000 series (Sudan Survey
 Dept., Khartoum), 1908–1976, covering Sudan / South Sudan and the CAR frontier.
 
 ## TL;DR
@@ -17,7 +17,7 @@ Dept., Khartoum), 1908–1976, covering Sudan / South Sudan and the CAR frontier
 ## Getting the images
 
 ```bash
-# catalogue (id, sheet, year, extent) for all 264 scans
+# catalogue (id, sheet, year, extent) for all 770 scans
 python3 sudan250k.py list
 python3 sudan250k.py list --filter hofrat
 python3 sudan250k.py list --json
@@ -78,10 +78,78 @@ number in parentheses and the parser prefers it, since the cell is identical.
 
 ### What this collection actually contains
 
-Blocks present: 33, 34, 35, 36, 45, 46, 54, 65 (+1 stray 51).
-**Blocks 53, 55, 64, 66, 77, 78 are not in this LOC item** — that is most of
-South Sudan proper and the western Darfur/CAR strip. For those, see the
-Durham Sudan Archive, AMS series N504/P502, and IGN's 1:200,000 AEF sheets.
+**770 scans, 195 sheet cells.** Blocks present: 33, 34, 35, 36, 43, 44, 45, 46,
+53, 54, 55, 56, 64, 65, 66, 67, 77, 78 (+1 stray 51) — i.e. essentially the
+whole Sudan/South Sudan series, including the South Sudanese blocks
+(64/66/77/78) and the CAR frontier.
+
+#### The 264-line truncation, and why nothing caught it
+
+The first run of this pipeline (2026-08-06) shipped **76 cells covering only
+northern Sudan**, and the AOI — the South Sudan / CAR frontier this whole
+overlay exists for — was empty. It was not a georeferencing offset. Every sheet
+that was built landed on its cell to 0.0 arcsec.
+
+`captions.txt` had been truncated at **264 of 770 lines** by an interrupted
+`curl -sSL -o`. The missing 506 lines were, almost exactly, the southern blocks.
+
+The reason this survived a full run, a QA pass and a visual check is worth
+internalising: **a short catalogue does not look like a broken catalogue, it
+looks like a small collection.** Every downstream stage behaved correctly on the
+input it was given — `select.py` reported "76 cells selected", `runall.sh`
+reported 76/76 georeferenced, `qa.json` showed a healthy quality distribution,
+the mosaic built, and the README (this file) then *documented the truncation as
+a property of the archive*: "Blocks 53, 55, 64, 66, 77, 78 are not in this LOC
+item" and go look at Durham instead. That sentence was false, and it was written
+with confidence because 76 sheets of real, correctly-registered map were sitting
+on disk. A wrong answer with no failures anywhere is the expensive kind.
+
+The tell was available and was not read: 264 is a suspiciously round stopping
+point, and the LOC item page states its own length. So:
+
+* `catalogue()` now checks the line count against `EXPECTED_SCANS = 770` on
+  every call and re-fetches a short file.
+* `fetch_captions()` downloads to `.part`, cross-checks the item's own
+  `resource.segment_count` from `?fo=json`, and refuses to install a file
+  shorter than that. `curl -f`, `--retry 5`, atomic `os.replace`.
+* The general form, which is the AGENTS.md "no-op that reads as an answer" rule
+  applied to an *input*: **a manifest is not trusted for its content until its
+  length is checked against the source.** Partial input is the failure mode that
+  produces no error and no gap — only a smaller world.
+
+Related: `mosaic.sh` step 1 now writes each `blk*.txt` sheet list and
+**invalidates the cached `blk*.mbtiles` when that list changes**. Without it,
+step 2's "exists, skip" would have happily reused the old northern-only tiles
+for a block that had just gained 12 sheets — a rerun that appears to work while
+re-shipping the identical partial coverage.
+
+#### Ordering is part of the product
+
+A 195-cell run is ~2 days of download+warp and *will* be interrupted (the first
+attempt at `JOBS=3` took the VM down; the second was OOM-throttled). So
+`select.py --priority-bbox W,S,E,N` emits the cells intersecting the area under
+study first, nearest-centre outwards, and marks them `"priority": true`;
+`sudan250k.py all --ids` preserves that order rather than collapsing it to a set.
+An interrupted run then has the sheets that matter, and "is the AOI covered yet"
+is answerable at any moment.
+
+```bash
+python3 select.py --priority-bbox 22.70,4.25,31.30,10.97   # the XSA study area
+```
+
+`rebuild_night.sh` + `histmap-rebuild.service` run the whole thing as a
+throttled, resumable systemd oneshot. Two things learned by doing it wrong:
+
+* **Retry before tiling, not after.** A failure list from a single run mixes real
+  defects with network noise — cs000643 (curl reset) and cs000694 (truncated
+  JP2) both succeeded on a second attempt, and both were AOI sheets. A sheet
+  missing at mosaic time is a hole that nothing downstream notices.
+* **The throttle was worth less than it cost.** At `CPUQuota=60%` the run took
+  13.5 min/sheet while load sat at 0.6 and app latency at 8 ms. A single warp
+  cannot exceed one core anyway (`GDAL_NUM_THREADS=1`), so 100% of one core —
+  still leaving a whole core free — is the right setting. `MemoryHigh` before
+  `MemoryMax` so a ballooning sheet is throttled into swap rather than
+  OOM-killed mid-warp.
 
 ## How the georeferencing works
 
@@ -124,12 +192,103 @@ python3 overlay.py geo/cs000029_geo.tif /tmp/check.png   # GADM CAF/SDN/SSD in c
 `qa.json` flags any sheet with aspect error > 2% or unmeasured interior rungs.
 Those are the ones worth eyeballing; the rest are fine.
 
+### Result of the first (truncated) run (2026-08-06/07) — superseded
+
+Kept because the numbers are a good calibration of what a *correct* run of a
+*wrong* input looks like: 76 of 76 sheet cells georeferenced, one edition each,
+no duplicate cells, every output landing on its IMW cell with **bounds error 0.0
+arcsec**. Blocks 45 (16/16), 54 (15/16), 35, 65, 34, 46, 33, 36. Editions
+1915-1944, median 1932. Flawless — and covering the wrong half of the country,
+for the catalogue reason above.
+
+One sheet was unrecoverable: **45-M Eilai (cs000192), "no neatline candidates"**.
+Its only other edition (cs000191, 1935) fails the same way, so the cell is
+genuinely absent rather than mis-selected. Two others (45-B, 65-K) failed on
+transient `curl` errors and succeeded on retry — the observation that is now
+automated as the retry pass in `rebuild_night.sh`.
+
+Quality distribution: 20/69 sheets exceeded the 2% aspect gate and 6 exceeded
+5%; non-affine deformation 628 m median, 1447 m max. Both are dominated by the
+modified-polyconic projection the TPS absorbs, **not** by registration error —
+see the caveat below. Three sheets (34-M, 36-I, 45-G) had interior rungs that
+could not be measured and were interpolated; they are marked as such in
+`qa.json` rather than silently faked.
+
 Caveat worth knowing: the 1:250k series was compiled from route traverses, so
 **the map's own interior geometry is the dominant error**, not the
 georeferencing. Rivers and hills on a 1909 sheet can sit kilometres off truth
 even when the graticule is registered perfectly. Georeference to the graticule
 (as here) and treat the content as the historical claim it is — do not
 rubber-sheet the content onto modern rivers, or you destroy the evidence.
+
+## The shipped product: one MBTiles
+
+`runall.sh` leaves one GeoTIFF per sheet cell in `data/histmaps/geo/`.
+Those are the archival artefact; the *usable* one is a single tile pyramid:
+
+```bash
+./mosaic.sh          # ~2.5 h, resumable -> data/histmaps/sudan250k.mbtiles
+```
+
+z0-14, EPSG:3857, transparent-background RGBA PNG. (The 76-sheet build was\n1.4 GB / 226k tiles; the 195-sheet build is correspondingly larger.)
+
+Three things about the merge are load-bearing:
+
+* **Per 1:1M block, then union the z14 tables.** The series covers 18 of 22
+  blocks, so the bounding box is still partly empty; tiling the whole envelope
+  in one `gdal_translate` walks millions of tiles that can only ever be blank.
+  Each block is dense and tiles in 3-17 min. The z0-13 pyramid is then built
+  *once* over the merged file, so overview tiles straddling a block seam are
+  averaged from both blocks rather than being built per-block and clobbering
+  each other. Step 1 invalidates a block's cached tiles when its sheet list
+  changes — see the truncation note above for why that is not optional.
+* **A few hundred z14 tiles are seam duplicates** — adjacent blocks share an
+  edge tile (672 of 155,579 in the 76-sheet build).
+  `insert or replace` keeps the last writer; the sheets are clipped
+  to their neatlines so either copy is correct.
+* **`tile_row` is TMS.** The bounds computed for the metadata must take the
+  *minimum* row as the SOUTH edge. Getting that backwards writes `south > north`
+  and GDAL answers `Invalid value for 'bounds' metadata` and silently falls back
+  — which is a warning, not an error, so it ships unless you read the log.
+
+Step 4 also deletes any partial pyramid before rebuilding: `gdaladdo` on this
+file takes ~40 min and has been interrupted, which leaves a half-populated
+zoom level that looks like a rendering bug rather than a truncated run.
+
+## How it reaches a user
+
+| Piece | Where |
+|---|---|
+| Meta (available? bounds? size?) | `GET /api/histmap` -> `srv/histmap.go` |
+| Tiles | `GET /api/histmap/sudan250k/{z}/{x}/{y}.png` |
+| Archive download | `GET /api/histmap/sudan250k/download` (Range-capable) |
+| UI | admin panel -> **Map Settings** -> Historical Maps (`HistMap` in globe.html) |
+| Share link | `?histmap=sudan250k` |
+
+Tiles are read out of the MBTiles rather than exploded to 226k files, so the
+online overlay and the file handed to a field device are literally the same
+bytes and cannot drift.
+
+**White ink is a client-side effect, not a second tileset.** `ink.py` writes one
+flat near-black (26,22,18) on transparent paper, so the map layer sets
+`raster-brightness-min: 1`, which lifts RGB to white and leaves alpha alone.
+The download deliberately stays black: offline viewers (Locus, OsmAnd, QGIS)
+default to light backgrounds, where white ink is invisible.
+
+Two ordering rules the UI depends on:
+
+* The layer is inserted **before the first non-raster layer**, so it sits above
+  the basemap and below park/AOI outlines, fire trajectories and pins. Anything
+  added later is appended above it, so pins made after enabling it stay on top
+  for free.
+* `switchBasemap()` rebuilds the style; its generic custom-layer capture
+  **excludes** `histmap-lyr`/`histmap-src` and calls `HistMap.reattach()`
+  instead, which re-adds on `idle`. Replaying the captured spec would append the
+  scan on top of everything, and re-adding during `styledata` silently drops the
+  layer because the `before` id has not landed yet. Both were observed.
+
+A tile miss returns **204, not 404**: most of the bounding box has no sheet, and
+204 keeps MapLibre's error path and the browser console quiet.
 
 ## Rights
 

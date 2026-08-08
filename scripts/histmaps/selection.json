@@ -3,183 +3,3298 @@
   1924,
   1936
  ],
- "n_cells": 76,
+ "n_cells": 195,
+ "priority_bbox": "22.70,4.25,31.30,10.97",
  "selected": [
   {
-   "cell": "33-I",
-   "id": "cs000034",
-   "year": 1928,
-   "title": "Aozi Sheet 33-I Sept 1928",
+   "cell": "77-B",
+   "id": "cs000598",
+   "year": 1933,
+   "title": "Deim Zubeir Sheet 77-B Sep 1933",
    "extent": [
-    18.0,
-    21.0,
-    19.5,
-    22.0
-   ],
-   "score": 0.1221,
-   "in_window": true,
-   "n_editions": 1,
-   "rejected": []
-  },
-  {
-   "cell": "33-J",
-   "id": "cs000035",
-   "year": 1928,
-   "title": "Wadi El Faregh Sheet 33-J Sept 1928",
-   "extent": [
-    19.5,
-    21.0,
-    21.0,
-    22.0
-   ],
-   "score": 0.024,
-   "in_window": true,
-   "n_editions": 1,
-   "rejected": []
-  },
-  {
-   "cell": "33-K",
-   "id": "cs000037",
-   "year": 1928,
-   "title": "Sarra Wells Sheet 33-K June 1928",
-   "extent": [
-    21.0,
-    21.0,
-    22.5,
-    22.0
-   ],
-   "score": 0.0294,
-   "in_window": true,
-   "n_editions": 1,
-   "rejected": []
-  },
-  {
-   "cell": "33-L",
-   "id": "cs000038",
-   "year": 1928,
-   "title": "Halfa Province Sheet 33-L July 1928",
-   "extent": [
-    22.5,
-    21.0,
-    24.0,
-    22.0
-   ],
-   "score": 0.0663,
-   "in_window": true,
-   "n_editions": 1,
-   "rejected": []
-  },
-  {
-   "cell": "33-O",
-   "id": "cs000036",
-   "year": 1928,
-   "title": "J. Hadid Sheet 33-O Aug 1928",
-   "extent": [
-    21.0,
-    20.0,
-    22.5,
-    21.0
-   ],
-   "score": 0.0225,
-   "in_window": true,
-   "n_editions": 1,
-   "rejected": []
-  },
-  {
-   "cell": "33-P",
-   "id": "cs000039",
-   "year": 1935,
-   "title": "Italian Libya Sheet 33-P May 1935",
-   "extent": [
-    22.5,
-    20.0,
-    24.0,
-    21.0
-   ],
-   "score": 0.0238,
-   "in_window": true,
-   "n_editions": 1,
-   "rejected": []
-  },
-  {
-   "cell": "34-I",
-   "id": "cs000041",
-   "year": 1934,
-   "title": "J. Uweinat Sheet 34-I Mar 1934",
-   "extent": [
-    24.0,
-    21.0,
     25.5,
-    22.0
+    7.0,
+    27.0,
+    8.0
+   ],
+   "score": 0.0901,
+   "in_window": true,
+   "n_editions": 3,
+   "rejected": [
+    {
+     "id": "cs000599",
+     "year": 1924,
+     "score": 0.0352
+    }
+   ],
+   "priority": true
+  },
+  {
+   "cell": "77-C",
+   "id": "cs000596",
+   "year": 1930,
+   "title": "Wau Sheet 77-C Dec 1930",
+   "extent": [
+    27.0,
+    7.0,
+    28.5,
+    8.0
+   ],
+   "score": 0.1136,
+   "in_window": true,
+   "n_editions": 4,
+   "rejected": [
+    {
+     "id": "cs000594",
+     "year": 1925,
+     "score": 0.1066
+    },
+    {
+     "id": "cs000597",
+     "year": 1930,
+     "score": 0.0422
+    }
+   ],
+   "priority": true
+  },
+  {
+   "cell": "65-N",
+   "id": "cs000754",
+   "year": 1933,
+   "title": "Raga Sheet 65-N Nov 1933",
+   "extent": [
+    25.5,
+    8.0,
+    27.0,
+    9.0
+   ],
+   "score": 0.0848,
+   "in_window": true,
+   "n_editions": 6,
+   "rejected": [],
+   "priority": true
+  },
+  {
+   "cell": "65-O",
+   "id": "cs000763",
+   "year": 1930,
+   "title": "Gogrial Sheet 65-O Sep 1930",
+   "extent": [
+    27.0,
+    8.0,
+    28.5,
+    9.0
+   ],
+   "score": 0.1116,
+   "in_window": true,
+   "n_editions": 6,
+   "rejected": [
+    {
+     "id": "cs000764",
+     "year": 1925,
+     "score": 0.102
+    }
+   ],
+   "priority": true
+  },
+  {
+   "cell": "77-F",
+   "id": "cs000588",
+   "year": 1932,
+   "title": "Qoz Dengwiri Sheet 77-F Dec 1932",
+   "extent": [
+    25.5,
+    6.0,
+    27.0,
+    7.0
+   ],
+   "score": 0.0579,
+   "in_window": true,
+   "n_editions": 4,
+   "rejected": [
+    {
+     "id": "cs000586",
+     "year": 1932,
+     "score": 0.0533
+    },
+    {
+     "id": "cs000587",
+     "year": 1924,
+     "score": 0.0146
+    }
+   ],
+   "priority": true
+  },
+  {
+   "cell": "77-G",
+   "id": "cs000608",
+   "year": 1932,
+   "title": "Raffili Sheet 77-G Sep 1932",
+   "extent": [
+    27.0,
+    6.0,
+    28.5,
+    7.0
+   ],
+   "score": 0.0763,
+   "in_window": true,
+   "n_editions": 4,
+   "rejected": [
+    {
+     "id": "cs000607",
+     "year": 1932,
+     "score": 0.0578
+    }
+   ],
+   "priority": true
+  },
+  {
+   "cell": "65-J",
+   "id": "cs000009",
+   "year": 1936,
+   "title": "Nyamlell Sheet 65-J May 1936",
+   "extent": [
+    25.5,
+    9.0,
+    27.0,
+    10.0
+   ],
+   "score": 0.0431,
+   "in_window": true,
+   "n_editions": 7,
+   "rejected": [
+    {
+     "id": "cs000013",
+     "year": 1936,
+     "score": 0.0426
+    },
+    {
+     "id": "cs000026",
+     "year": 1925,
+     "score": 0.0335
+    }
+   ],
+   "priority": true
+  },
+  {
+   "cell": "65-K",
+   "id": "cs000248",
+   "year": 1936,
+   "title": "Abyei Sheet NC-35-K ( Old Number 65-K) 1936",
+   "extent": [
+    27.0,
+    9.0,
+    28.5,
+    10.0
+   ],
+   "score": 0.1463,
+   "in_window": true,
+   "n_editions": 4,
+   "rejected": [
+    {
+     "id": "cs000012",
+     "year": 1936,
+     "score": 0.1087
+    },
+    {
+     "id": "cs000024",
+     "year": 1925,
+     "score": 0.0507
+    }
+   ],
+   "priority": true
+  },
+  {
+   "cell": "77-J",
+   "id": "cs000617",
+   "year": 1933,
+   "title": "Goubere Sheet 77-J May 1933",
+   "extent": [
+    25.5,
+    5.0,
+    27.0,
+    6.0
+   ],
+   "score": 0.1193,
+   "in_window": true,
+   "n_editions": 3,
+   "rejected": [
+    {
+     "id": "cs000618",
+     "year": 1933,
+     "score": 0.0945
+    },
+    {
+     "id": "cs000619",
+     "year": 1924,
+     "score": 0.0012
+    }
+   ],
+   "priority": true
+  },
+  {
+   "cell": "77-K",
+   "id": "cs000620",
+   "year": 1932,
+   "title": "Tambura Sheet 77-K Mar 1932",
+   "extent": [
+    27.0,
+    5.0,
+    28.5,
+    6.0
+   ],
+   "score": 0.1593,
+   "in_window": true,
+   "n_editions": 4,
+   "rejected": [
+    {
+     "id": "cs000621",
+     "year": 1932,
+     "score": 0.1409
+    },
+    {
+     "id": "cs000622",
+     "year": 1924,
+     "score": 0.0612
+    }
+   ],
+   "priority": true
+  },
+  {
+   "cell": "77-A",
+   "id": "cs000604",
+   "year": 1932,
+   "title": "Angoforo Sheet 77-A Dec 1932",
+   "extent": [
+    24.0,
+    7.0,
+    25.5,
+    8.0
+   ],
+   "score": 0.0576,
+   "in_window": true,
+   "n_editions": 2,
+   "rejected": [
+    {
+     "id": "cs000605",
+     "year": 1924,
+     "score": 0.0093
+    }
+   ],
+   "priority": true
+  },
+  {
+   "cell": "77-D",
+   "id": "cs000590",
+   "year": 1927,
+   "title": "Tonj Sheet 77-D Nov 1927",
+   "extent": [
+    28.5,
+    7.0,
+    30.0,
+    8.0
+   ],
+   "score": 0.1111,
+   "in_window": true,
+   "n_editions": 4,
+   "rejected": [
+    {
+     "id": "cs000591",
+     "year": 1925,
+     "score": 0.0543
+    },
+    {
+     "id": "cs000592",
+     "year": 1933,
+     "score": 0.0682
+    }
+   ],
+   "priority": true
+  },
+  {
+   "cell": "65-M",
+   "id": "cs000718",
+   "year": 1932,
+   "title": "Said Bundas Sheet 65-M Dec 1932",
+   "extent": [
+    24.0,
+    8.0,
+    25.5,
+    9.0
+   ],
+   "score": 0.1564,
+   "in_window": true,
+   "n_editions": 5,
+   "rejected": [
+    {
+     "id": "cs000724",
+     "year": 1932,
+     "score": 0.1466
+    },
+    {
+     "id": "cs000728",
+     "year": 1924,
+     "score": 0.0364
+    }
+   ],
+   "priority": true
+  },
+  {
+   "cell": "65-P",
+   "id": "cs000770",
+   "year": 1931,
+   "title": "Meshra' Er Req Sheet 65-P Oct 1931",
+   "extent": [
+    28.5,
+    8.0,
+    30.0,
+    9.0
    ],
    "score": 0.0837,
    "in_window": true,
-   "n_editions": 2,
-   "rejected": []
-  },
-  {
-   "cell": "34-J",
-   "id": "cs000044",
-   "year": 1934,
-   "title": "No title 34-J Mar 1934",
-   "extent": [
-    25.5,
-    21.0,
-    27.0,
-    22.0
+   "n_editions": 5,
+   "rejected": [
+    {
+     "id": "cs000741",
+     "year": 1931,
+     "score": 0.0743
+    }
    ],
-   "score": 0.0119,
-   "in_window": true,
-   "n_editions": 3,
-   "rejected": []
+   "priority": true
   },
   {
-   "cell": "34-K",
-   "id": "cs000048",
+   "cell": "77-H",
+   "id": "cs000614",
    "year": 1934,
-   "title": "Anglo-Egyptian Sudan Sheet 34-K Mar 1934",
-   "extent": [
-    27.0,
-    21.0,
-    28.5,
-    22.0
-   ],
-   "score": 0.014,
-   "in_window": true,
-   "n_editions": 4,
-   "rejected": []
-  },
-  {
-   "cell": "34-L",
-   "id": "cs000052",
-   "year": 1934,
-   "title": "Selima Sheet 34-L Mar 1934",
+   "title": "Rumbek Sheet 77-H Jun 1934",
    "extent": [
     28.5,
-    21.0,
+    6.0,
     30.0,
-    22.0
+    7.0
    ],
-   "score": 0.0226,
+   "score": 0.0832,
    "in_window": true,
-   "n_editions": 4,
-   "rejected": []
+   "n_editions": 6,
+   "rejected": [
+    {
+     "id": "cs000616",
+     "year": 1927,
+     "score": 0.0592
+    }
+   ],
+   "priority": true
   },
   {
-   "cell": "34-M",
-   "id": "cs000055",
-   "year": 1934,
-   "title": "Anglo-Egyptian Sudan Sheet 34-M Nov 1934",
+   "cell": "65-I",
+   "id": "cs000028",
+   "year": 1925,
+   "title": "Hofrat El Nahas Sheet 65-I Feb 1925",
    "extent": [
     24.0,
-    20.0,
+    9.0,
     25.5,
-    21.0
+    10.0
    ],
-   "score": 0.024,
+   "score": 0.1016,
+   "in_window": true,
+   "n_editions": 7,
+   "rejected": [
+    {
+     "id": "cs000029",
+     "year": 1934,
+     "score": 0.086
+    },
+    {
+     "id": "cs000760",
+     "year": 1934,
+     "score": 0.0755
+    }
+   ],
+   "priority": true
+  },
+  {
+   "cell": "65-L",
+   "id": "cs000249",
+   "year": 1936,
+   "title": "Ghabat El Arab Sheet 65-L Jun 1936",
+   "extent": [
+    28.5,
+    9.0,
+    30.0,
+    10.0
+   ],
+   "score": 0.19,
+   "in_window": true,
+   "n_editions": 6,
+   "rejected": [
+    {
+     "id": "cs000014",
+     "year": 1936,
+     "score": 0.141
+    },
+    {
+     "id": "cs000015",
+     "year": 1925,
+     "score": 0.0722
+    }
+   ],
+   "priority": true
+  },
+  {
+   "cell": "65-F",
+   "id": "cs000731",
+   "year": 1936,
+   "title": "Abu Matariq Sheet 65-F Jul 1936",
+   "extent": [
+    25.5,
+    10.0,
+    27.0,
+    11.0
+   ],
+   "score": 0.086,
+   "in_window": true,
+   "n_editions": 7,
+   "rejected": [
+    {
+     "id": "cs000007",
+     "year": 1936,
+     "score": 0.0842
+    },
+    {
+     "id": "cs000716",
+     "year": 1936,
+     "score": 0.0603
+    },
+    {
+     "id": "cs000717",
+     "year": 1932,
+     "score": 0.048
+    }
+   ],
+   "priority": true
+  },
+  {
+   "cell": "65-G",
+   "id": "cs000727",
+   "year": 1936,
+   "title": "Dar El Humr Sheet 65-G Dec 1936",
+   "extent": [
+    27.0,
+    10.0,
+    28.5,
+    11.0
+   ],
+   "score": 0.0633,
+   "in_window": true,
+   "n_editions": 7,
+   "rejected": [
+    {
+     "id": "cs000003",
+     "year": 1936,
+     "score": 0.0608
+    },
+    {
+     "id": "cs000021",
+     "year": 1931,
+     "score": 0.048
+    },
+    {
+     "id": "cs000732",
+     "year": 1936,
+     "score": 0.0394
+    }
+   ],
+   "priority": true
+  },
+  {
+   "cell": "77-L",
+   "id": "cs000627",
+   "year": 1925,
+   "title": "J. Angeleri Sheet 77-L Mar 1925",
+   "extent": [
+    28.5,
+    5.0,
+    30.0,
+    6.0
+   ],
+   "score": 0.1577,
+   "in_window": true,
+   "n_editions": 5,
+   "rejected": [
+    {
+     "id": "cs000624",
+     "year": 1936,
+     "score": 0.1095
+    },
+    {
+     "id": "cs000625",
+     "year": 1936,
+     "score": 0.1187
+    },
+    {
+     "id": "cs000626",
+     "year": 1930,
+     "score": 0.147
+    }
+   ],
+   "priority": true
+  },
+  {
+   "cell": "77-O",
+   "id": "cs000633",
+   "year": 1931,
+   "title": "Yambio Sheet 77-O Dec 1931",
+   "extent": [
+    27.0,
+    4.0,
+    28.5,
+    5.0
+   ],
+   "score": 0.0984,
+   "in_window": true,
+   "n_editions": 4,
+   "rejected": [],
+   "priority": true
+  },
+  {
+   "cell": "65-E",
+   "id": "cs000712",
+   "year": 1932,
+   "title": "Buram Sheet 65-E Jan 1932",
+   "extent": [
+    24.0,
+    10.0,
+    25.5,
+    11.0
+   ],
+   "score": 0.0811,
+   "in_window": true,
+   "n_editions": 7,
+   "rejected": [
+    {
+     "id": "cs000006",
+     "year": 1932,
+     "score": 0.0766
+    }
+   ],
+   "priority": true
+  },
+  {
+   "cell": "65-H",
+   "id": "cs000020",
+   "year": 1937,
+   "title": "Lake Keilak Sheet 65-H May 1937",
+   "extent": [
+    28.5,
+    10.0,
+    30.0,
+    11.0
+   ],
+   "score": 0.0842,
+   "in_window": false,
+   "n_editions": 4,
+   "rejected": [
+    {
+     "id": "cs000025",
+     "year": 1911,
+     "score": 0.0174
+    },
+    {
+     "id": "cs000247",
+     "year": 1937,
+     "score": 0.0767
+    },
+    {
+     "id": "cs000730",
+     "year": 1922,
+     "score": 0.0415
+    }
+   ],
+   "priority": true
+  },
+  {
+   "cell": "78-A",
+   "id": "cs000640",
+   "year": 1924,
+   "title": "Shambe Sheet 78-A Aug 1924",
+   "extent": [
+    30.0,
+    7.0,
+    31.5,
+    8.0
+   ],
+   "score": 0.0312,
+   "in_window": true,
+   "n_editions": 4,
+   "rejected": [],
+   "priority": true
+  },
+  {
+   "cell": "77-P",
+   "id": "cs000636",
+   "year": 1931,
+   "title": "Maridi Sheet 77-P Dec 1931",
+   "extent": [
+    28.5,
+    4.0,
+    30.0,
+    5.0
+   ],
+   "score": 0.1192,
+   "in_window": true,
+   "n_editions": 5,
+   "rejected": [],
+   "priority": true
+  },
+  {
+   "cell": "64-P",
+   "id": "cs000319",
+   "year": 1932,
+   "title": "J. Rumbukindi Sheet 64-P Dec 1932",
+   "extent": [
+    22.5,
+    8.0,
+    24.0,
+    9.0
+   ],
+   "score": 0.075,
+   "in_window": true,
+   "n_editions": 4,
+   "rejected": [
+    {
+     "id": "cs000318",
+     "year": 1932,
+     "score": 0.0522
+    },
+    {
+     "id": "cs000320",
+     "year": 1924,
+     "score": 0.0276
+    }
+   ],
+   "priority": true
+  },
+  {
+   "cell": "66-M",
+   "id": "cs000531",
+   "year": 1930,
+   "title": "Adok Sheet 66-M Mar 1930",
+   "extent": [
+    30.0,
+    8.0,
+    31.5,
+    9.0
+   ],
+   "score": 0.0839,
+   "in_window": true,
+   "n_editions": 6,
+   "rejected": [
+    {
+     "id": "cs000520",
+     "year": 1930,
+     "score": 0.0597
+    }
+   ],
+   "priority": true
+  },
+  {
+   "cell": "78-E",
+   "id": "cs000659",
+   "year": 1930,
+   "title": "Atwot Sheet 78-E Dec 1930",
+   "extent": [
+    30.0,
+    6.0,
+    31.5,
+    7.0
+   ],
+   "score": 0.0936,
+   "in_window": true,
+   "n_editions": 6,
+   "rejected": [
+    {
+     "id": "cs000657",
+     "year": 1924,
+     "score": 0.0702
+    }
+   ],
+   "priority": true
+  },
+  {
+   "cell": "65-B",
+   "id": "cs000711",
+   "year": 1932,
+   "title": "Abu Gabra Sheet 65-B Dec 1932",
+   "extent": [
+    25.5,
+    11.0,
+    27.0,
+    12.0
+   ],
+   "score": 0.0388,
+   "in_window": true,
+   "n_editions": 5,
+   "rejected": [],
+   "priority": true
+  },
+  {
+   "cell": "65-C",
+   "id": "cs000737",
+   "year": 1931,
+   "title": "Muglad Sheet 65-C Jul 1931",
+   "extent": [
+    27.0,
+    11.0,
+    28.5,
+    12.0
+   ],
+   "score": 0.0393,
+   "in_window": true,
+   "n_editions": 5,
+   "rejected": [],
+   "priority": true
+  },
+  {
+   "cell": "64-L",
+   "id": "cs000315",
+   "year": 1930,
+   "title": "Birka Khadra Sheet 64-L Dec 1930",
+   "extent": [
+    22.5,
+    9.0,
+    24.0,
+    10.0
+   ],
+   "score": 0.0904,
    "in_window": true,
    "n_editions": 3,
-   "rejected": []
+   "rejected": [
+    {
+     "id": "cs000316",
+     "year": 1924,
+     "score": 0.0865
+    }
+   ],
+   "priority": true
+  },
+  {
+   "cell": "66-I",
+   "id": "cs000552",
+   "year": 1936,
+   "title": "Lake No Sheet 66-I Dec 1936",
+   "extent": [
+    30.0,
+    9.0,
+    31.5,
+    10.0
+   ],
+   "score": 0.1488,
+   "in_window": true,
+   "n_editions": 5,
+   "rejected": [
+    {
+     "id": "cs000563",
+     "year": 1936,
+     "score": 0.1299
+    }
+   ],
+   "priority": true
+  },
+  {
+   "cell": "78-I",
+   "id": "cs000675",
+   "year": 1934,
+   "title": "Amadi Sheet 78-I Sep 1934",
+   "extent": [
+    30.0,
+    5.0,
+    31.5,
+    6.0
+   ],
+   "score": 0.0939,
+   "in_window": true,
+   "n_editions": 5,
+   "rejected": [
+    {
+     "id": "cs000676",
+     "year": 1925,
+     "score": 0.0486
+    }
+   ],
+   "priority": true
+  },
+  {
+   "cell": "65-A",
+   "id": "cs000755",
+   "year": 1936,
+   "title": "'Idd El Ghanam Sheet 65-A Dec 1936",
+   "extent": [
+    24.0,
+    11.0,
+    25.5,
+    12.0
+   ],
+   "score": 0.1371,
+   "in_window": true,
+   "n_editions": 5,
+   "rejected": [
+    {
+     "id": "cs000742",
+     "year": 1936,
+     "score": 0.1252
+    },
+    {
+     "id": "cs000743",
+     "year": 1931,
+     "score": 0.0834
+    }
+   ],
+   "priority": true
+  },
+  {
+   "cell": "65-D",
+   "id": "cs000723",
+   "year": 1936,
+   "title": "Kadugli Sheet 65-D Jun 1936",
+   "extent": [
+    28.5,
+    11.0,
+    30.0,
+    12.0
+   ],
+   "score": 0.1046,
+   "in_window": true,
+   "n_editions": 7,
+   "rejected": [
+    {
+     "id": "cs000001",
+     "year": 1936,
+     "score": 0.0496
+    },
+    {
+     "id": "cs000719",
+     "year": 1936,
+     "score": 0.0609
+    }
+   ],
+   "priority": true
+  },
+  {
+   "cell": "64-H",
+   "id": "cs000312",
+   "year": 1932,
+   "title": "Umm Dafog Sheet 64-H Dec 1932",
+   "extent": [
+    22.5,
+    10.0,
+    24.0,
+    11.0
+   ],
+   "score": 0.0331,
+   "in_window": true,
+   "n_editions": 3,
+   "rejected": [
+    {
+     "id": "cs000313",
+     "year": 1924,
+     "score": 0.0258
+    }
+   ],
+   "priority": true
+  },
+  {
+   "cell": "66-E",
+   "id": "cs000537",
+   "year": 1937,
+   "title": "Talodi Sheet 66-E Oct 1937",
+   "extent": [
+    30.0,
+    10.0,
+    31.5,
+    11.0
+   ],
+   "score": 0.109,
+   "in_window": false,
+   "n_editions": 5,
+   "rejected": [
+    {
+     "id": "cs000536",
+     "year": 1937,
+     "score": 0.0793
+    },
+    {
+     "id": "cs000542",
+     "year": 1910,
+     "score": 0.0701
+    },
+    {
+     "id": "cs000576",
+     "year": 1911,
+     "score": 0.0254
+    },
+    {
+     "id": "cs000577",
+     "year": 1919,
+     "score": 0.048
+    }
+   ],
+   "priority": true
+  },
+  {
+   "cell": "78-M",
+   "id": "cs000694",
+   "year": 1931,
+   "title": "Yei Sheet 78-M Mar 1931",
+   "extent": [
+    30.0,
+    4.0,
+    31.5,
+    5.0
+   ],
+   "score": 0.1084,
+   "in_window": true,
+   "n_editions": 4,
+   "rejected": [],
+   "priority": true
+  },
+  {
+   "cell": "78-B",
+   "id": "cs000643",
+   "year": 1932,
+   "title": "Khor Geni Sheet 78-B Jun 1932",
+   "extent": [
+    31.5,
+    7.0,
+    33.0,
+    8.0
+   ],
+   "score": 0.0678,
+   "in_window": true,
+   "n_editions": 5,
+   "rejected": [
+    {
+     "id": "cs000644",
+     "year": 1924,
+     "score": 0.0375
+    },
+    {
+     "id": "cs000645",
+     "year": 1930,
+     "score": 0.0567
+    },
+    {
+     "id": "cs000647",
+     "year": 1932,
+     "score": 0.0672
+    }
+   ],
+   "priority": true
+  },
+  {
+   "cell": "66-N",
+   "id": "cs000524",
+   "year": 1932,
+   "title": "Nyerol Sheet 66-N Oct 1932",
+   "extent": [
+    31.5,
+    8.0,
+    33.0,
+    9.0
+   ],
+   "score": 0.1068,
+   "in_window": true,
+   "n_editions": 6,
+   "rejected": [],
+   "priority": true
+  },
+  {
+   "cell": "78-F",
+   "id": "cs000662",
+   "year": 1933,
+   "title": "Bor Sheet 78-F Jun 1933",
+   "extent": [
+    31.5,
+    6.0,
+    33.0,
+    7.0
+   ],
+   "score": 0.1052,
+   "in_window": true,
+   "n_editions": 4,
+   "rejected": [
+    {
+     "id": "cs000663",
+     "year": 1933,
+     "score": 0.0862
+    },
+    {
+     "id": "cs000664",
+     "year": 1924,
+     "score": 0.022
+    }
+   ],
+   "priority": true
+  },
+  {
+   "cell": "64-D",
+   "id": "cs000310",
+   "year": 1924,
+   "title": "Kubbum Sheet 64-D Apr 1924",
+   "extent": [
+    22.5,
+    11.0,
+    24.0,
+    12.0
+   ],
+   "score": 0.0846,
+   "in_window": true,
+   "n_editions": 4,
+   "rejected": [
+    {
+     "id": "cs000308",
+     "year": 1932,
+     "score": 0.0707
+    }
+   ],
+   "priority": true
+  },
+  {
+   "cell": "66-A",
+   "id": "cs000496",
+   "year": 1936,
+   "title": "Rashad Sheet 66-A Dec 1936",
+   "extent": [
+    30.0,
+    11.0,
+    31.5,
+    12.0
+   ],
+   "score": 0.1607,
+   "in_window": true,
+   "n_editions": 6,
+   "rejected": [
+    {
+     "id": "cs000500",
+     "year": 1933,
+     "score": 0.1399
+    }
+   ],
+   "priority": true
+  },
+  {
+   "cell": "66-J",
+   "id": "cs000566",
+   "year": 1932,
+   "title": "Malakal Sheet 66-J Oct 1932",
+   "extent": [
+    31.5,
+    9.0,
+    33.0,
+    10.0
+   ],
+   "score": 0.0705,
+   "in_window": true,
+   "n_editions": 6,
+   "rejected": [
+    {
+     "id": "cs000565",
+     "year": 1925,
+     "score": 0.036
+    }
+   ],
+   "priority": true
+  },
+  {
+   "cell": "78-J",
+   "id": "cs000677",
+   "year": 1933,
+   "title": "Mongalla Sheet 78-J Jun 1933",
+   "extent": [
+    31.5,
+    5.0,
+    33.0,
+    6.0
+   ],
+   "score": 0.0833,
+   "in_window": true,
+   "n_editions": 5,
+   "rejected": [
+    {
+     "id": "cs000679",
+     "year": 1933,
+     "score": 0.08
+    },
+    {
+     "id": "cs000680",
+     "year": 1924,
+     "score": 0.0419
+    },
+    {
+     "id": "cs000681",
+     "year": 1927,
+     "score": 0.0582
+    }
+   ],
+   "priority": true
+  },
+  {
+   "cell": "66-F",
+   "id": "cs000543",
+   "year": 1935,
+   "title": "Melut Sheet 66-F Feb 1935",
+   "extent": [
+    31.5,
+    10.0,
+    33.0,
+    11.0
+   ],
+   "score": 0.1042,
+   "in_window": true,
+   "n_editions": 6,
+   "rejected": [
+    {
+     "id": "cs000549",
+     "year": 1927,
+     "score": 0.0994
+    }
+   ],
+   "priority": true
+  },
+  {
+   "cell": "78-N",
+   "id": "cs000699",
+   "year": 1935,
+   "title": "Juba Sheet 78-N Jun 1935",
+   "extent": [
+    31.5,
+    4.0,
+    33.0,
+    5.0
+   ],
+   "score": 0.1931,
+   "in_window": true,
+   "n_editions": 4,
+   "rejected": [
+    {
+     "id": "cs000700",
+     "year": 1924,
+     "score": 0.0604
+    }
+   ],
+   "priority": true
+  },
+  {
+   "cell": "64-C",
+   "id": "cs000305",
+   "year": 1932,
+   "title": "Sila Sheet 64-C Mar 1932",
+   "extent": [
+    21.0,
+    11.0,
+    22.5,
+    12.0
+   ],
+   "score": 0.0437,
+   "in_window": true,
+   "n_editions": 3,
+   "rejected": [
+    {
+     "id": "cs000306",
+     "year": 1924,
+     "score": 0.0059
+    }
+   ],
+   "priority": true
+  },
+  {
+   "cell": "66-B",
+   "id": "cs000507",
+   "year": 1936,
+   "title": "Er Renk Sheet 66-B Dec 1936",
+   "extent": [
+    31.5,
+    11.0,
+    33.0,
+    12.0
+   ],
+   "score": 0.0418,
+   "in_window": true,
+   "n_editions": 4,
+   "rejected": [],
+   "priority": true
+  },
+  {
+   "cell": "54-N",
+   "id": "cs000216",
+   "year": 1933,
+   "title": "Taweisha Sheet 54-N Oct 1933",
+   "extent": [
+    25.5,
+    12.0,
+    27.0,
+    13.0
+   ],
+   "score": 0.0475,
+   "in_window": true,
+   "n_editions": 5,
+   "rejected": [
+    {
+     "id": "cs000217",
+     "year": 1927,
+     "score": 0.0468
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "54-O",
+   "id": "cs000238",
+   "year": 1915,
+   "title": "El Nahud Sheet 54-O Aug 1915",
+   "extent": [
+    27.0,
+    12.0,
+    28.5,
+    13.0
+   ],
+   "score": 0.0733,
+   "in_window": false,
+   "n_editions": 3,
+   "rejected": [
+    {
+     "id": "cs000208",
+     "year": 1909,
+     "score": 0.0577
+    },
+    {
+     "id": "cs000221",
+     "year": 1920,
+     "score": 0.0517
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "54-M",
+   "id": "cs000212",
+   "year": 1944,
+   "title": "Nyala Sheet 54-M Dec 1944",
+   "extent": [
+    24.0,
+    12.0,
+    25.5,
+    13.0
+   ],
+   "score": 0.1617,
+   "in_window": false,
+   "n_editions": 4,
+   "rejected": [
+    {
+     "id": "cs000211",
+     "year": 1944,
+     "score": 0.1419
+    },
+    {
+     "id": "cs000213",
+     "year": 1921,
+     "score": 0.0888
+    },
+    {
+     "id": "cs000214",
+     "year": 1916,
+     "score": 0.0737
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "54-P",
+   "id": "cs000239",
+   "year": 1935,
+   "title": "Abu Zabad Sheet ND-35-P (Old Number 54-P) 1935",
+   "extent": [
+    28.5,
+    12.0,
+    30.0,
+    13.0
+   ],
+   "score": 0.2123,
+   "in_window": true,
+   "n_editions": 5,
+   "rejected": [
+    {
+     "id": "cs000240",
+     "year": 1935,
+     "score": 0.1444
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "54-J",
+   "id": "cs000265",
+   "year": 1927,
+   "title": "Abyad Sheet 54-J Dec 1927",
+   "extent": [
+    25.5,
+    13.0,
+    27.0,
+    14.0
+   ],
+   "score": 0.1061,
+   "in_window": true,
+   "n_editions": 6,
+   "rejected": [
+    {
+     "id": "cs000264",
+     "year": 1933,
+     "score": 0.08
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "54-K",
+   "id": "cs000268",
+   "year": 1935,
+   "title": "Kaja Serug Sheet ND-35-K (Old Number 54-K) Nov 1935",
+   "extent": [
+    27.0,
+    13.0,
+    28.5,
+    14.0
+   ],
+   "score": 0.1707,
+   "in_window": true,
+   "n_editions": 5,
+   "rejected": [
+    {
+     "id": "cs000270",
+     "year": 1935,
+     "score": 0.1107
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "53-P",
+   "id": "cs000293",
+   "year": 1924,
+   "title": "Zalingei Sheet 53-P Apr 1924",
+   "extent": [
+    22.5,
+    12.0,
+    24.0,
+    13.0
+   ],
+   "score": 0.204,
+   "in_window": true,
+   "n_editions": 3,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "55-M",
+   "id": "cs000462",
+   "year": 1936,
+   "title": "Jebel Ed Dair Sheet 55-M Dec 1936",
+   "extent": [
+    30.0,
+    12.0,
+    31.5,
+    13.0
+   ],
+   "score": 0.1465,
+   "in_window": true,
+   "n_editions": 4,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "54-I",
+   "id": "cs000259",
+   "year": 1937,
+   "title": "El Fasher Sheet 54-I Dec 1937",
+   "extent": [
+    24.0,
+    13.0,
+    25.5,
+    14.0
+   ],
+   "score": 0.2566,
+   "in_window": false,
+   "n_editions": 4,
+   "rejected": [
+    {
+     "id": "cs000258",
+     "year": null,
+     "score": 0.108
+    },
+    {
+     "id": "cs000260",
+     "year": 1922,
+     "score": 0.2031
+    },
+    {
+     "id": "cs000261",
+     "year": 1916,
+     "score": 0.0311
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "54-L",
+   "id": "cs000274",
+   "year": 1933,
+   "title": "El Quleit Sheet  54-L Dec 1933",
+   "extent": [
+    28.5,
+    13.0,
+    30.0,
+    14.0
+   ],
+   "score": 0.0784,
+   "in_window": true,
+   "n_editions": 7,
+   "rejected": [
+    {
+     "id": "cs000209",
+     "year": 1928,
+     "score": 0.0636
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "78-C",
+   "id": "cs000650",
+   "year": 1932,
+   "title": "Akobo Sheet 78-C Aug 1932",
+   "extent": [
+    33.0,
+    7.0,
+    34.5,
+    8.0
+   ],
+   "score": 0.1269,
+   "in_window": true,
+   "n_editions": 4,
+   "rejected": [
+    {
+     "id": "cs000649",
+     "year": 1932,
+     "score": 0.1077
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "66-O",
+   "id": "cs000504",
+   "year": 1966,
+   "title": "Nasir Sheet NC-36-O (Old Number 66-O; No Month) 1966",
+   "extent": [
+    33.0,
+    8.0,
+    34.5,
+    9.0
+   ],
+   "score": 0.1279,
+   "in_window": false,
+   "n_editions": 5,
+   "rejected": [
+    {
+     "id": "cs000505",
+     "year": 1937,
+     "score": 0.0906
+    },
+    {
+     "id": "cs000510",
+     "year": 1923,
+     "score": 0.0886
+    },
+    {
+     "id": "cs000512",
+     "year": 1913,
+     "score": 0.0604
+    },
+    {
+     "id": "cs000518",
+     "year": 1910,
+     "score": 0.1259
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "78-G",
+   "id": "cs000667",
+   "year": 1932,
+   "title": "Pibor Post Sheet 78-G Aug 1932",
+   "extent": [
+    33.0,
+    6.0,
+    34.5,
+    7.0
+   ],
+   "score": 0.0516,
+   "in_window": true,
+   "n_editions": 3,
+   "rejected": [
+    {
+     "id": "cs000666",
+     "year": 1924,
+     "score": 0.0427
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "54-F",
+   "id": "cs000281",
+   "year": 1936,
+   "title": "Tagabo Hills Sheet 54-F 1936",
+   "extent": [
+    25.5,
+    14.0,
+    27.0,
+    15.0
+   ],
+   "score": 0.0548,
+   "in_window": true,
+   "n_editions": 4,
+   "rejected": [
+    {
+     "id": "cs000282",
+     "year": 1936,
+     "score": 0.0526
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "54-G",
+   "id": "cs000246",
+   "year": 1934,
+   "title": "Umm Badr Sheet 54-G Oct 1934",
+   "extent": [
+    27.0,
+    14.0,
+    28.5,
+    15.0
+   ],
+   "score": 0.0761,
+   "in_window": true,
+   "n_editions": 5,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "53-L",
+   "id": "cs000290",
+   "year": 1924,
+   "title": "Kereinik Sheet 53-L Jan 1924",
+   "extent": [
+    22.5,
+    13.0,
+    24.0,
+    14.0
+   ],
+   "score": 0.1624,
+   "in_window": true,
+   "n_editions": 2,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "55-I",
+   "id": "cs000438",
+   "year": 1933,
+   "title": "El Obeid Sheet 55-I Dec 1933",
+   "extent": [
+    30.0,
+    13.0,
+    31.5,
+    14.0
+   ],
+   "score": 0.1214,
+   "in_window": true,
+   "n_editions": 5,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "66-K",
+   "id": "cs000546",
+   "year": 1932,
+   "title": "Daga Post Sheet 66-K Jun 1932",
+   "extent": [
+    33.0,
+    9.0,
+    34.5,
+    10.0
+   ],
+   "score": 0.0876,
+   "in_window": true,
+   "n_editions": 5,
+   "rejected": [
+    {
+     "id": "cs000545",
+     "year": 1927,
+     "score": 0.0494
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "78-K",
+   "id": "cs000684",
+   "year": 1930,
+   "title": "J. Kathangor Sheet 78-K Jun 1930",
+   "extent": [
+    33.0,
+    5.0,
+    34.5,
+    6.0
+   ],
+   "score": 0.0308,
+   "in_window": true,
+   "n_editions": 6,
+   "rejected": [
+    {
+     "id": "cs000687",
+     "year": 1930,
+     "score": 0.0277
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "53-O",
+   "id": "cs000289",
+   "year": 1930,
+   "title": "Mogororo Sheet 53-O Oct 1930",
+   "extent": [
+    21.0,
+    12.0,
+    22.5,
+    13.0
+   ],
+   "score": 0.1639,
+   "in_window": true,
+   "n_editions": 2,
+   "rejected": [
+    {
+     "id": "cs000291",
+     "year": 1924,
+     "score": 0.0769
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "55-N",
+   "id": "cs000465",
+   "year": 1937,
+   "title": "El Jebelein Sheet 55-N Apr 1937",
+   "extent": [
+    31.5,
+    12.0,
+    33.0,
+    13.0
+   ],
+   "score": 0.1527,
+   "in_window": false,
+   "n_editions": 3,
+   "rejected": [
+    {
+     "id": "cs000466",
+     "year": 1919,
+     "score": 0.0662
+    },
+    {
+     "id": "cs000467",
+     "year": 1913,
+     "score": 0.0471
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "54-E",
+   "id": "cs000237",
+   "year": 1930,
+   "title": "Kutum Sheet 54-E Aug 1930",
+   "extent": [
+    24.0,
+    14.0,
+    25.5,
+    15.0
+   ],
+   "score": 0.0898,
+   "in_window": true,
+   "n_editions": 5,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "54-H",
+   "id": "cs000253",
+   "year": 1934,
+   "title": "Sodiri Sheet 54-H Dec 1934",
+   "extent": [
+    28.5,
+    14.0,
+    30.0,
+    15.0
+   ],
+   "score": 0.0698,
+   "in_window": true,
+   "n_editions": 5,
+   "rejected": [
+    {
+     "id": "cs000254",
+     "year": 1928,
+     "score": 0.0266
+    },
+    {
+     "id": "cs000257",
+     "year": 1934,
+     "score": 0.0459
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "66-G",
+   "id": "cs000569",
+   "year": 1930,
+   "title": "Kurmuk Sheet 66-G Oct 1930",
+   "extent": [
+    33.0,
+    10.0,
+    34.5,
+    11.0
+   ],
+   "score": 0.1095,
+   "in_window": true,
+   "n_editions": 6,
+   "rejected": [
+    {
+     "id": "cs000557",
+     "year": 1930,
+     "score": 0.1085
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "78-O",
+   "id": "cs000704",
+   "year": 1930,
+   "title": "Didinga Sheet 78-O Jun 1930",
+   "extent": [
+    33.0,
+    4.0,
+    34.5,
+    5.0
+   ],
+   "score": 0.1849,
+   "in_window": true,
+   "n_editions": 5,
+   "rejected": [
+    {
+     "id": "cs000705",
+     "year": 1924,
+     "score": 0.0561
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "66-C",
+   "id": "cs000513",
+   "year": 1932,
+   "title": "Roseires Sheet 66-C Aug 1932",
+   "extent": [
+    33.0,
+    11.0,
+    34.5,
+    12.0
+   ],
+   "score": 0.1245,
+   "in_window": true,
+   "n_editions": 8,
+   "rejected": [
+    {
+     "id": "cs000514",
+     "year": 1932,
+     "score": 0.1208
+    },
+    {
+     "id": "cs000515",
+     "year": 1927,
+     "score": 0.0664
+    },
+    {
+     "id": "cs000516",
+     "year": 1932,
+     "score": 0.0861
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "53-H",
+   "id": "cs000301",
+   "year": 1932,
+   "title": "Undur Sheet 53-H Apr 1932",
+   "extent": [
+    22.5,
+    14.0,
+    24.0,
+    15.0
+   ],
+   "score": 0.0956,
+   "in_window": true,
+   "n_editions": 5,
+   "rejected": [
+    {
+     "id": "cs000303",
+     "year": 1924,
+     "score": 0.0717
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "55-E",
+   "id": "cs000413",
+   "year": 1929,
+   "title": "Kagmar Sheet 55-E Dec 1929",
+   "extent": [
+    30.0,
+    14.0,
+    31.5,
+    15.0
+   ],
+   "score": 0.0465,
+   "in_window": true,
+   "n_editions": 5,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "53-K",
+   "id": "cs000285",
+   "year": 1924,
+   "title": "Geneina Sheet 53-K Mar 1924",
+   "extent": [
+    21.0,
+    13.0,
+    22.5,
+    14.0
+   ],
+   "score": 0.094,
+   "in_window": true,
+   "n_editions": 3,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "55-J",
+   "id": "cs000445",
+   "year": 1932,
+   "title": "Aba Island Sheet 55-J Sep 1932",
+   "extent": [
+    31.5,
+    13.0,
+    33.0,
+    14.0
+   ],
+   "score": 0.1667,
+   "in_window": true,
+   "n_editions": 9,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "54-B",
+   "id": "cs000226",
+   "year": 1934,
+   "title": "Meidob Sheet 54-B  Dec 1934",
+   "extent": [
+    25.5,
+    15.0,
+    27.0,
+    16.0
+   ],
+   "score": 0.0895,
+   "in_window": true,
+   "n_editions": 4,
+   "rejected": [
+    {
+     "id": "cs000225",
+     "year": 1934,
+     "score": 0.0268
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "54-C",
+   "id": "cs000229",
+   "year": 1933,
+   "title": "Umm Sunta Sheet 54-C Oct 1933",
+   "extent": [
+    27.0,
+    15.0,
+    28.5,
+    16.0
+   ],
+   "score": 0.0565,
+   "in_window": true,
+   "n_editions": 3,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "54-A",
+   "id": "cs000223",
+   "year": 1934,
+   "title": "Musbat Sheet 54-A Sep 1934",
+   "extent": [
+    24.0,
+    15.0,
+    25.5,
+    16.0
+   ],
+   "score": 0.0308,
+   "in_window": true,
+   "n_editions": 3,
+   "rejected": [
+    {
+     "id": "cs000224",
+     "year": 1924,
+     "score": 0.0148
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "54-D",
+   "id": "cs000233",
+   "year": 1932,
+   "title": "Umm Suneita Sheet 54-D Dec 1932",
+   "extent": [
+    28.5,
+    15.0,
+    30.0,
+    16.0
+   ],
+   "score": 0.0406,
+   "in_window": true,
+   "n_editions": 4,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "78-D",
+   "id": "cs000653",
+   "year": 1930,
+   "title": "Mocha Sheet 78-D Dec 1930",
+   "extent": [
+    34.5,
+    7.0,
+    36.0,
+    8.0
+   ],
+   "score": 0.1047,
+   "in_window": true,
+   "n_editions": 3,
+   "rejected": [
+    {
+     "id": "cs000652",
+     "year": 1930,
+     "score": 0.101
+    },
+    {
+     "id": "cs000654",
+     "year": 1925,
+     "score": 0.016
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "66-P",
+   "id": "cs000499",
+   "year": 1933,
+   "title": "Gore Sheet 66-P May 1933",
+   "extent": [
+    34.5,
+    8.0,
+    36.0,
+    9.0
+   ],
+   "score": 0.1335,
+   "in_window": true,
+   "n_editions": 2,
+   "rejected": [
+    {
+     "id": "cs000503",
+     "year": 1933,
+     "score": 0.0883
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "78-H",
+   "id": "cs000671",
+   "year": 1935,
+   "title": "Maji Sheet 78-H Jun 1935",
+   "extent": [
+    34.5,
+    6.0,
+    36.0,
+    7.0
+   ],
+   "score": 0.1345,
+   "in_window": true,
+   "n_editions": 3,
+   "rejected": [
+    {
+     "id": "cs000670",
+     "year": 1935,
+     "score": 0.0735
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "55-O",
+   "id": "cs000469",
+   "year": 1934,
+   "title": "Karkoj Sheet 55-O Oct 1934",
+   "extent": [
+    33.0,
+    12.0,
+    34.5,
+    13.0
+   ],
+   "score": 0.0711,
+   "in_window": true,
+   "n_editions": 2,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "66-L",
+   "id": "cs000541",
+   "year": 1934,
+   "title": "Wallega Sheet 66-L Dec 1934",
+   "extent": [
+    34.5,
+    9.0,
+    36.0,
+    10.0
+   ],
+   "score": 0.1213,
+   "in_window": true,
+   "n_editions": 2,
+   "rejected": [
+    {
+     "id": "cs000558",
+     "year": 1934,
+     "score": 0.111
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "78-L",
+   "id": "cs000690",
+   "year": 1927,
+   "title": "Mt Naita Sheet 78-L Sep 1927",
+   "extent": [
+    34.5,
+    5.0,
+    36.0,
+    6.0
+   ],
+   "score": 0.1485,
+   "in_window": true,
+   "n_editions": 3,
+   "rejected": [
+    {
+     "id": "cs000691",
+     "year": 1924,
+     "score": 0.1117
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "53-G",
+   "id": "cs000298",
+   "year": 1932,
+   "title": "Kulbus Sheet ND-34-G (Old Number 53-G) 1932",
+   "extent": [
+    21.0,
+    14.0,
+    22.5,
+    15.0
+   ],
+   "score": 0.114,
+   "in_window": true,
+   "n_editions": 4,
+   "rejected": [
+    {
+     "id": "cs000297",
+     "year": 1924,
+     "score": 0.0554
+    },
+    {
+     "id": "cs000299",
+     "year": 1932,
+     "score": 0.0672
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "55-F",
+   "id": "cs000421",
+   "year": 1934,
+   "title": "El Geteina Sheet 55-F Oct 1934",
+   "extent": [
+    31.5,
+    14.0,
+    33.0,
+    15.0
+   ],
+   "score": 0.1627,
+   "in_window": true,
+   "n_editions": 7,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "53-D",
+   "id": "cs000294",
+   "year": 1931,
+   "title": "Karnoi Sheet 53-D Aug 1931",
+   "extent": [
+    22.5,
+    15.0,
+    24.0,
+    16.0
+   ],
+   "score": 0.1694,
+   "in_window": true,
+   "n_editions": 2,
+   "rejected": [
+    {
+     "id": "cs000295",
+     "year": 1924,
+     "score": 0.0908
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "55-A",
+   "id": "cs000395",
+   "year": 1934,
+   "title": "Es Safiya Sheet 55-A Dec 1934",
+   "extent": [
+    30.0,
+    15.0,
+    31.5,
+    16.0
+   ],
+   "score": 0.061,
+   "in_window": true,
+   "n_editions": 4,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "66-H",
+   "id": "cs000554",
+   "year": 1930,
+   "title": "Bani Shanqul Sheet 66-H Mar 1930",
+   "extent": [
+    34.5,
+    10.0,
+    36.0,
+    11.0
+   ],
+   "score": 0.1032,
+   "in_window": true,
+   "n_editions": 5,
+   "rejected": [
+    {
+     "id": "cs000556",
+     "year": 1930,
+     "score": 0.0729
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "78-P",
+   "id": "cs000709",
+   "year": 1924,
+   "title": "Mt Lubur Sheet 78-P Dec 1924",
+   "extent": [
+    34.5,
+    4.0,
+    36.0,
+    5.0
+   ],
+   "score": 0.0281,
+   "in_window": true,
+   "n_editions": 4,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "44-N",
+   "id": "cs000380",
+   "year": 1930,
+   "title": "J. Mafarit Sheet 44-N Apr 1930",
+   "extent": [
+    25.5,
+    16.0,
+    27.0,
+    17.0
+   ],
+   "score": 0.0133,
+   "in_window": true,
+   "n_editions": 4,
+   "rejected": [
+    {
+     "id": "cs000381",
+     "year": 1926,
+     "score": 0.0123
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "44-O",
+   "id": "cs000388",
+   "year": 1930,
+   "title": "J. Nagagir Sheet 44-O Jun 1930",
+   "extent": [
+    27.0,
+    16.0,
+    28.5,
+    17.0
+   ],
+   "score": 0.0185,
+   "in_window": true,
+   "n_editions": 5,
+   "rejected": [
+    {
+     "id": "cs000384",
+     "year": 1925,
+     "score": 0.0126
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "55-K",
+   "id": "cs000454",
+   "year": 1925,
+   "title": "Sennar Sheet 55-K Jun 1925",
+   "extent": [
+    33.0,
+    13.0,
+    34.5,
+    14.0
+   ],
+   "score": 0.147,
+   "in_window": true,
+   "n_editions": 7,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "66-D",
+   "id": "cs000533",
+   "year": 1930,
+   "title": "Fazughli Sheet 66-D Aug 1930",
+   "extent": [
+    34.5,
+    11.0,
+    36.0,
+    12.0
+   ],
+   "score": 0.0921,
+   "in_window": true,
+   "n_editions": 5,
+   "rejected": [
+    {
+     "id": "cs000530",
+     "year": 1930,
+     "score": 0.0554
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "44-M",
+   "id": "cs000376",
+   "year": 1925,
+   "title": "Libyan Desert Sheet 44-M Dec 1925",
+   "extent": [
+    24.0,
+    16.0,
+    25.5,
+    17.0
+   ],
+   "score": 0.017,
+   "in_window": true,
+   "n_editions": 4,
+   "rejected": [
+    {
+     "id": "cs000379",
+     "year": 1933,
+     "score": 0.0131
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "44-P",
+   "id": "cs000389",
+   "year": 1934,
+   "title": "J. El'ein Sheet 44-P Jul 1934",
+   "extent": [
+    28.5,
+    16.0,
+    30.0,
+    17.0
+   ],
+   "score": 0.0322,
+   "in_window": true,
+   "n_editions": 5,
+   "rejected": [
+    {
+     "id": "cs000392",
+     "year": 1934,
+     "score": 0.0229
+    },
+    {
+     "id": "cs000393",
+     "year": 1930,
+     "score": 0.024
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "55-B",
+   "id": "cs000403",
+   "year": 1927,
+   "title": "Khartoum Sheet 55-B Dec 1927",
+   "extent": [
+    31.5,
+    15.0,
+    33.0,
+    16.0
+   ],
+   "score": 0.1384,
+   "in_window": true,
+   "n_editions": 8,
+   "rejected": [
+    {
+     "id": "cs000402",
+     "year": 1933,
+     "score": 0.1328
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "55-P",
+   "id": "cs000474",
+   "year": 1925,
+   "title": "Khor Galegu Sheet 55-P Jun 1925",
+   "extent": [
+    34.5,
+    12.0,
+    36.0,
+    13.0
+   ],
+   "score": 0.0843,
+   "in_window": true,
+   "n_editions": 5,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "55-G",
+   "id": "cs000425",
+   "year": 1934,
+   "title": "Wad Medani Sheet 55-G Oct 1934",
+   "extent": [
+    33.0,
+    14.0,
+    34.5,
+    15.0
+   ],
+   "score": 0.2295,
+   "in_window": true,
+   "n_editions": 6,
+   "rejected": [
+    {
+     "id": "cs000427",
+     "year": 1930,
+     "score": 0.1718
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "45-M",
+   "id": "cs000192",
+   "year": 1928,
+   "title": "Eilai Sheet 45-M Jan 1928",
+   "extent": [
+    30.0,
+    16.0,
+    31.5,
+    17.0
+   ],
+   "score": 0.0371,
+   "in_window": true,
+   "n_editions": 5,
+   "rejected": [
+    {
+     "id": "cs000191",
+     "year": 1935,
+     "score": 0.026
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "44-J",
+   "id": "cs000359",
+   "year": 1933,
+   "title": "Zolat El Hammad Sheet 44-J Jun 1933",
+   "extent": [
+    25.5,
+    17.0,
+    27.0,
+    18.0
+   ],
+   "score": 0.0117,
+   "in_window": true,
+   "n_editions": 4,
+   "rejected": [
+    {
+     "id": "cs000364",
+     "year": 1926,
+     "score": 0.0115
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "44-K",
+   "id": "cs000369",
+   "year": 1930,
+   "title": "J. Rahib Sheet 44-K Aug 1930",
+   "extent": [
+    27.0,
+    17.0,
+    28.5,
+    18.0
+   ],
+   "score": 0.0099,
+   "in_window": true,
+   "n_editions": 6,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "55-L",
+   "id": "cs000459",
+   "year": 1925,
+   "title": "Doka Sheet 55-L Jun 1925",
+   "extent": [
+    34.5,
+    13.0,
+    36.0,
+    14.0
+   ],
+   "score": 0.1026,
+   "in_window": true,
+   "n_editions": 5,
+   "rejected": [
+    {
+     "id": "cs000458",
+     "year": 1931,
+     "score": 0.0403
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "44-I",
+   "id": "cs000361",
+   "year": 1934,
+   "title": "Libyan Desert Sheet 44-I Nov 1934",
+   "extent": [
+    24.0,
+    17.0,
+    25.5,
+    18.0
+   ],
+   "score": 0.015,
+   "in_window": true,
+   "n_editions": 3,
+   "rejected": [
+    {
+     "id": "cs000360",
+     "year": 1928,
+     "score": 0.0121
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "44-L",
+   "id": "cs000373",
+   "year": 1934,
+   "title": "Abu Tabari Sheet 44-L  Jul 1934",
+   "extent": [
+    28.5,
+    17.0,
+    30.0,
+    18.0
+   ],
+   "score": 0.0186,
+   "in_window": true,
+   "n_editions": 5,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "67-E",
+   "id": "cs000583",
+   "year": 1941,
+   "title": "Damot Sheet 67-E Jan 1941",
+   "extent": [
+    36.0,
+    10.0,
+    37.5,
+    11.0
+   ],
+   "score": 0.176,
+   "in_window": false,
+   "n_editions": 2,
+   "rejected": [
+    {
+     "id": "cs000584",
+     "year": 1940,
+     "score": 0.0844
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "45-N",
+   "id": "cs000195",
+   "year": 1933,
+   "title": "Sabaloka Sheet 45-N Nov 1933",
+   "extent": [
+    31.5,
+    16.0,
+    33.0,
+    17.0
+   ],
+   "score": 0.1318,
+   "in_window": true,
+   "n_editions": 5,
+   "rejected": [
+    {
+     "id": "cs000196",
+     "year": 1933,
+     "score": 0.0772
+    },
+    {
+     "id": "cs000197",
+     "year": 1928,
+     "score": 0.0753
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "55-C",
+   "id": "cs000406",
+   "year": 1934,
+   "title": "Kamlin Sheet 55-C Jul 1934",
+   "extent": [
+    33.0,
+    15.0,
+    34.5,
+    16.0
+   ],
+   "score": 0.1722,
+   "in_window": true,
+   "n_editions": 3,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "67-A",
+   "id": "cs000579",
+   "year": 1935,
+   "title": "Dangila Sheet 67-A Dec 1935",
+   "extent": [
+    36.0,
+    11.0,
+    37.5,
+    12.0
+   ],
+   "score": 0.1222,
+   "in_window": true,
+   "n_editions": 3,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "43-L",
+   "id": "cs000324",
+   "year": 1928,
+   "title": "Ein Aga Sheet 43-L Jun 1928",
+   "extent": [
+    22.5,
+    17.0,
+    24.0,
+    18.0
+   ],
+   "score": 0.05,
+   "in_window": true,
+   "n_editions": 2,
+   "rejected": [
+    {
+     "id": "cs000325",
+     "year": 1928,
+     "score": 0.0475
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "45-I",
+   "id": "cs000174",
+   "year": 1935,
+   "title": "Soteir Sheet 45-I Jun 1935",
+   "extent": [
+    30.0,
+    17.0,
+    31.5,
+    18.0
+   ],
+   "score": 0.0252,
+   "in_window": true,
+   "n_editions": 3,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "55-H",
+   "id": "cs000433",
+   "year": 1935,
+   "title": "Gedaref Sheet 55-H Nov 1935",
+   "extent": [
+    34.5,
+    14.0,
+    36.0,
+    15.0
+   ],
+   "score": 0.061,
+   "in_window": true,
+   "n_editions": 5,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "56-M",
+   "id": "cs000493",
+   "year": 1935,
+   "title": "Gallabat Sheet 56-M Nov 1935",
+   "extent": [
+    36.0,
+    12.0,
+    37.5,
+    13.0
+   ],
+   "score": 0.0834,
+   "in_window": true,
+   "n_editions": 4,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "44-F",
+   "id": "cs000349",
+   "year": 1933,
+   "title": "Bir En Natrun Sheet 44-F Jun 1933",
+   "extent": [
+    25.5,
+    18.0,
+    27.0,
+    19.0
+   ],
+   "score": 0.0118,
+   "in_window": true,
+   "n_editions": 4,
+   "rejected": [
+    {
+     "id": "cs000348",
+     "year": 1925,
+     "score": 0.0088
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "44-G",
+   "id": "cs000353",
+   "year": 1935,
+   "title": "J. Er Rub Sheet 44-G Jun 1935",
+   "extent": [
+    27.0,
+    18.0,
+    28.5,
+    19.0
+   ],
+   "score": 0.0168,
+   "in_window": true,
+   "n_editions": 5,
+   "rejected": [
+    {
+     "id": "cs000352",
+     "year": 1925,
+     "score": 0.0157
+    },
+    {
+     "id": "cs000354",
+     "year": 1925,
+     "score": 0.0019
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "44-E",
+   "id": "cs000345",
+   "year": 1934,
+   "title": "Libyan Desert Sheet 44-E Nov 1934",
+   "extent": [
+    24.0,
+    18.0,
+    25.5,
+    19.0
+   ],
+   "score": 0.0102,
+   "in_window": true,
+   "n_editions": 2,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "44-H",
+   "id": "cs000337",
+   "year": 1942,
+   "title": "Matassi Sheet 44-H Sep 1942",
+   "extent": [
+    28.5,
+    18.0,
+    30.0,
+    19.0
+   ],
+   "score": 0.0229,
+   "in_window": false,
+   "n_editions": 4,
+   "rejected": [
+    {
+     "id": "cs000336",
+     "year": 1910,
+     "score": 0.0147
+    },
+    {
+     "id": "cs000355",
+     "year": 1938,
+     "score": 0.0119
+    },
+    {
+     "id": "cs000356",
+     "year": 1942,
+     "score": 0.0129
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "45-O",
+   "id": "cs000201",
+   "year": 1933,
+   "title": "Shendi Sheet 45-O Apr 1933",
+   "extent": [
+    33.0,
+    16.0,
+    34.5,
+    17.0
+   ],
+   "score": 0.1803,
+   "in_window": true,
+   "n_editions": 5,
+   "rejected": [
+    {
+     "id": "cs000202",
+     "year": 1933,
+     "score": 0.0899
+    },
+    {
+     "id": "cs000203",
+     "year": 1933,
+     "score": 0.1195
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "45-J",
+   "id": "cs000176",
+   "year": 1933,
+   "title": "Baiyuda Sheet 45-J 1933",
+   "extent": [
+    31.5,
+    17.0,
+    33.0,
+    18.0
+   ],
+   "score": 0.0452,
+   "in_window": true,
+   "n_editions": 4,
+   "rejected": [
+    {
+     "id": "cs000177",
+     "year": 1933,
+     "score": 0.032
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "56-I",
+   "id": "cs000488",
+   "year": 1932,
+   "title": "Nogara Sheet 56-I May 1932",
+   "extent": [
+    36.0,
+    13.0,
+    37.5,
+    14.0
+   ],
+   "score": 0.0616,
+   "in_window": true,
+   "n_editions": 5,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "55-D",
+   "id": "cs000410",
+   "year": 1929,
+   "title": "Reira Sheet 55-D Feb 1929",
+   "extent": [
+    34.5,
+    15.0,
+    36.0,
+    16.0
+   ],
+   "score": 0.0641,
+   "in_window": true,
+   "n_editions": 3,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "43-H",
+   "id": "cs000323",
+   "year": 1928,
+   "title": "Erdi Well Sheet 43-H Jul 1928",
+   "extent": [
+    22.5,
+    18.0,
+    24.0,
+    19.0
+   ],
+   "score": 0.0369,
+   "in_window": true,
+   "n_editions": 1,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "45-E",
+   "id": "cs000158",
+   "year": 1932,
+   "title": "Debba Sheet 45-E May 1932",
+   "extent": [
+    30.0,
+    18.0,
+    31.5,
+    19.0
+   ],
+   "score": 0.0695,
+   "in_window": true,
+   "n_editions": 5,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "67-F",
+   "id": "cs000585",
+   "year": 1940,
+   "title": "Gojjam Sheet 67-F Jun 1940",
+   "extent": [
+    37.5,
+    10.0,
+    39.0,
+    11.0
+   ],
+   "score": 0.0914,
+   "in_window": false,
+   "n_editions": 1,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "67-B",
+   "id": "cs000582",
+   "year": 1941,
+   "title": "Bagemdir Sheet 67-B Jan 1941",
+   "extent": [
+    37.5,
+    11.0,
+    39.0,
+    12.0
+   ],
+   "score": 0.0935,
+   "in_window": false,
+   "n_editions": 2,
+   "rejected": [
+    {
+     "id": "cs000581",
+     "year": 1940,
+     "score": 0.0768
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "44-B",
+   "id": "cs000329",
+   "year": 1942,
+   "title": "Mukheila Oasis Sheet 44-B Aug 1942",
+   "extent": [
+    25.5,
+    19.0,
+    27.0,
+    20.0
+   ],
+   "score": 0.0432,
+   "in_window": false,
+   "n_editions": 3,
+   "rejected": [
+    {
+     "id": "cs000330",
+     "year": 1938,
+     "score": 0.0261
+    },
+    {
+     "id": "cs000333",
+     "year": 1942,
+     "score": 0.0186
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "44-C",
+   "id": "cs000335",
+   "year": 1933,
+   "title": "Laqiya Umran Sheet 44-C June 1933",
+   "extent": [
+    27.0,
+    19.0,
+    28.5,
+    20.0
+   ],
+   "score": 0.0158,
+   "in_window": true,
+   "n_editions": 5,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "56-E",
+   "id": "cs000481",
+   "year": 1941,
+   "title": "Umbrega Sheet 56-E Feb 1941",
+   "extent": [
+    36.0,
+    14.0,
+    37.5,
+    15.0
+   ],
+   "score": 0.1956,
+   "in_window": false,
+   "n_editions": 2,
+   "rejected": [
+    {
+     "id": "cs000482",
+     "year": 1917,
+     "score": 0.0983
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "45-K",
+   "id": "cs000183",
+   "year": 1930,
+   "title": "Atbara Sheet 45-K Feb 1930",
+   "extent": [
+    33.0,
+    17.0,
+    34.5,
+    18.0
+   ],
+   "score": 0.0825,
+   "in_window": true,
+   "n_editions": 3,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "45-F",
+   "id": "cs000162",
+   "year": 1933,
+   "title": "Merowe Sheet 45-F Dec 1933",
+   "extent": [
+    31.5,
+    18.0,
+    33.0,
+    19.0
+   ],
+   "score": 0.082,
+   "in_window": true,
+   "n_editions": 4,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "44-A",
+   "id": "cs000331",
+   "year": 1934,
+   "title": "Libyan Desert Sheet 44-A Nov 1934",
+   "extent": [
+    24.0,
+    19.0,
+    25.5,
+    20.0
+   ],
+   "score": 0.0126,
+   "in_window": true,
+   "n_editions": 3,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "44-D",
+   "id": "cs000340",
+   "year": 1933,
+   "title": "J. Abyad Sheet 44-D Dec 1933",
+   "extent": [
+    28.5,
+    19.0,
+    30.0,
+    20.0
+   ],
+   "score": 0.023,
+   "in_window": true,
+   "n_editions": 5,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "45-P",
+   "id": "cs000205",
+   "year": 1930,
+   "title": "Goz Regeb Sheet 45-P Oct 1930",
+   "extent": [
+    34.5,
+    16.0,
+    36.0,
+    17.0
+   ],
+   "score": 0.0349,
+   "in_window": true,
+   "n_editions": 4,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "56-N",
+   "id": "cs000495",
+   "year": 1940,
+   "title": "Belesa Sheet 56-N Jun 1940",
+   "extent": [
+    37.5,
+    12.0,
+    39.0,
+    13.0
+   ],
+   "score": 0.256,
+   "in_window": false,
+   "n_editions": 1,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "43-D",
+   "id": "cs000322",
+   "year": 1928,
+   "title": "Hagar Waqif 43-D Jun 1928",
+   "extent": [
+    22.5,
+    19.0,
+    24.0,
+    20.0
+   ],
+   "score": 0.012,
+   "in_window": true,
+   "n_editions": 1,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "45-A",
+   "id": "cs000144",
+   "year": 1933,
+   "title": "Dongola Sheet 45-A Nov 1933",
+   "extent": [
+    30.0,
+    19.0,
+    31.5,
+    20.0
+   ],
+   "score": 0.0939,
+   "in_window": true,
+   "n_editions": 4,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "56-A",
+   "id": "cs000476",
+   "year": 1935,
+   "title": "Kassala Sheet 56-A Jun 1935",
+   "extent": [
+    36.0,
+    15.0,
+    37.5,
+    16.0
+   ],
+   "score": 0.1624,
+   "in_window": true,
+   "n_editions": 3,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "56-J",
+   "id": "cs000490",
+   "year": 1940,
+   "title": "Semien Sheet 56-J Jun 1940",
+   "extent": [
+    37.5,
+    13.0,
+    39.0,
+    14.0
+   ],
+   "score": 0.205,
+   "in_window": false,
+   "n_editions": 1,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "43-F",
+   "id": "cs000326",
+   "year": 1928,
+   "title": "Bir Bao Sheet 43-F Jul 1928",
+   "extent": [
+    19.5,
+    18.0,
+    21.0,
+    19.0
+   ],
+   "score": 0.0548,
+   "in_window": true,
+   "n_editions": 1,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "45-G",
+   "id": "cs000165",
+   "year": 1931,
+   "title": "Berber Sheet NE-36-G (Old Number 45-G) 1931",
+   "extent": [
+    33.0,
+    18.0,
+    34.5,
+    19.0
+   ],
+   "score": 0.0639,
+   "in_window": true,
+   "n_editions": 4,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "45-L",
+   "id": "cs000187",
+   "year": 1931,
+   "title": "Adarama Sheet 45-L Apr 1931",
+   "extent": [
+    34.5,
+    17.0,
+    36.0,
+    18.0
+   ],
+   "score": 0.0331,
+   "in_window": true,
+   "n_editions": 5,
+   "rejected": [],
+   "priority": false
   },
   {
    "cell": "34-N",
@@ -195,7 +3310,8 @@
    "score": 0.0216,
    "in_window": true,
    "n_editions": 3,
-   "rejected": []
+   "rejected": [],
+   "priority": false
   },
   {
    "cell": "34-O",
@@ -211,7 +3327,42 @@
    "score": 0.0183,
    "in_window": true,
    "n_editions": 3,
-   "rejected": []
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "45-B",
+   "id": "cs000146",
+   "year": 1929,
+   "title": "El Kab Sheet 45-B Feb 1929",
+   "extent": [
+    31.5,
+    19.0,
+    33.0,
+    20.0
+   ],
+   "score": 0.0481,
+   "in_window": true,
+   "n_editions": 4,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "34-M",
+   "id": "cs000055",
+   "year": 1934,
+   "title": "Anglo-Egyptian Sudan Sheet 34-M Nov 1934",
+   "extent": [
+    24.0,
+    20.0,
+    25.5,
+    21.0
+   ],
+   "score": 0.024,
+   "in_window": true,
+   "n_editions": 3,
+   "rejected": [],
+   "priority": false
   },
   {
    "cell": "34-P",
@@ -227,55 +3378,301 @@
    "score": 0.0146,
    "in_window": true,
    "n_editions": 5,
-   "rejected": []
+   "rejected": [],
+   "priority": false
   },
   {
-   "cell": "35-D",
-   "id": "cs000067",
-   "year": 1929,
-   "title": "Bir Shalatein Sheet 35-D Dec 1929",
+   "cell": "56-F",
+   "id": "cs000483",
+   "year": 1940,
+   "title": "Aduwa Sheet 56-F Jul 1940",
    "extent": [
-    34.5,
-    23.0,
-    36.0,
-    24.0
+    37.5,
+    14.0,
+    39.0,
+    15.0
    ],
-   "score": 0.0662,
+   "score": 0,
+   "in_window": false,
+   "n_editions": 1,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "46-M",
+   "id": "cs000132",
+   "year": 1932,
+   "title": "Maman Sheet 46-M Apr 1932",
+   "extent": [
+    36.0,
+    16.0,
+    37.5,
+    17.0
+   ],
+   "score": 0.2301,
+   "in_window": true,
+   "n_editions": 5,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "33-P",
+   "id": "cs000039",
+   "year": 1935,
+   "title": "Italian Libya Sheet 33-P May 1935",
+   "extent": [
+    22.5,
+    20.0,
+    24.0,
+    21.0
+   ],
+   "score": 0.0238,
    "in_window": true,
    "n_editions": 1,
-   "rejected": []
+   "rejected": [],
+   "priority": false
   },
   {
-   "cell": "35-G",
-   "id": "cs000069",
-   "year": 1927,
-   "title": "Haimur Sheet 35-G Jun 1927",
+   "cell": "35-M",
+   "id": "cs000093",
+   "year": 1938,
+   "title": "Kosha Sheet 35-M May 1938",
+   "extent": [
+    30.0,
+    20.0,
+    31.5,
+    21.0
+   ],
+   "score": 0.1475,
+   "in_window": false,
+   "n_editions": 4,
+   "rejected": [
+    {
+     "id": "cs000090",
+     "year": 1911,
+     "score": 0.0731
+    },
+    {
+     "id": "cs000091",
+     "year": 1938,
+     "score": 0.0647
+    },
+    {
+     "id": "cs000092",
+     "year": 1938,
+     "score": 0.0707
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "45-H",
+   "id": "cs000171",
+   "year": 1918,
+   "title": "Talgwarab Sheet 45-H Oct 1918",
+   "extent": [
+    34.5,
+    18.0,
+    36.0,
+    19.0
+   ],
+   "score": 0.0566,
+   "in_window": false,
+   "n_editions": 4,
+   "rejected": [
+    {
+     "id": "cs000169",
+     "year": 1937,
+     "score": 0.0293
+    },
+    {
+     "id": "cs000170",
+     "year": 1922,
+     "score": 0.0562
+    },
+    {
+     "id": "cs000172",
+     "year": 1937,
+     "score": 0.0493
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "45-C",
+   "id": "cs000151",
+   "year": 1932,
+   "title": "Abu Hamed Sheet NE-36-C (Old Number 45-C ) 1932",
    "extent": [
     33.0,
-    22.0,
+    19.0,
     34.5,
-    23.0
+    20.0
    ],
-   "score": 0.1385,
+   "score": 0.0918,
    "in_window": true,
    "n_editions": 3,
-   "rejected": []
+   "rejected": [
+    {
+     "id": "cs000150",
+     "year": 1932,
+     "score": 0.087
+    }
+   ],
+   "priority": false
   },
   {
-   "cell": "35-H",
-   "id": "cs000072",
-   "year": 1931,
-   "title": "Mersa Shab Sheet 35-H Apr 1931",
+   "cell": "56-B",
+   "id": "cs000479",
+   "year": 1940,
+   "title": "Asmara Sheet 56-B Jul 1940",
    "extent": [
-    34.5,
-    22.0,
-    36.0,
-    23.0
+    37.5,
+    15.0,
+    39.0,
+    16.0
    ],
-   "score": 0.1557,
+   "score": 0.348,
+   "in_window": false,
+   "n_editions": 1,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "46-I",
+   "id": "cs000133",
+   "year": 1930,
+   "title": "Khor Langeb Sheet 46-I Sep 1930",
+   "extent": [
+    36.0,
+    17.0,
+    37.5,
+    18.0
+   ],
+   "score": 0.0994,
+   "in_window": true,
+   "n_editions": 3,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "34-J",
+   "id": "cs000044",
+   "year": 1934,
+   "title": "No title 34-J Mar 1934",
+   "extent": [
+    25.5,
+    21.0,
+    27.0,
+    22.0
+   ],
+   "score": 0.0119,
+   "in_window": true,
+   "n_editions": 3,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "34-K",
+   "id": "cs000048",
+   "year": 1934,
+   "title": "Anglo-Egyptian Sudan Sheet 34-K Mar 1934",
+   "extent": [
+    27.0,
+    21.0,
+    28.5,
+    22.0
+   ],
+   "score": 0.014,
+   "in_window": true,
+   "n_editions": 4,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "33-O",
+   "id": "cs000036",
+   "year": 1928,
+   "title": "J. Hadid Sheet 33-O Aug 1928",
+   "extent": [
+    21.0,
+    20.0,
+    22.5,
+    21.0
+   ],
+   "score": 0.0225,
+   "in_window": true,
+   "n_editions": 1,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "34-I",
+   "id": "cs000041",
+   "year": 1934,
+   "title": "J. Uweinat Sheet 34-I Mar 1934",
+   "extent": [
+    24.0,
+    21.0,
+    25.5,
+    22.0
+   ],
+   "score": 0.0837,
    "in_window": true,
    "n_editions": 2,
-   "rejected": []
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "34-L",
+   "id": "cs000052",
+   "year": 1934,
+   "title": "Selima Sheet 34-L Mar 1934",
+   "extent": [
+    28.5,
+    21.0,
+    30.0,
+    22.0
+   ],
+   "score": 0.0226,
+   "in_window": true,
+   "n_editions": 4,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "46-N",
+   "id": "cs000137",
+   "year": 1940,
+   "title": "Nacfa Sheet 46-N Sep 1940",
+   "extent": [
+    37.5,
+    16.0,
+    39.0,
+    17.0
+   ],
+   "score": 0.1788,
+   "in_window": false,
+   "n_editions": 1,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "33-L",
+   "id": "cs000038",
+   "year": 1928,
+   "title": "Halfa Province Sheet 33-L July 1928",
+   "extent": [
+    22.5,
+    21.0,
+    24.0,
+    22.0
+   ],
+   "score": 0.0663,
+   "in_window": true,
+   "n_editions": 1,
+   "rejected": [],
+   "priority": false
   },
   {
    "cell": "35-I",
@@ -291,7 +3688,103 @@
    "score": 0.0811,
    "in_window": true,
    "n_editions": 4,
-   "rejected": []
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "45-D",
+   "id": "cs000154",
+   "year": 1938,
+   "title": "Wadi Amur Sheet 45-D Nov 1938",
+   "extent": [
+    34.5,
+    19.0,
+    36.0,
+    20.0
+   ],
+   "score": 0.0536,
+   "in_window": false,
+   "n_editions": 4,
+   "rejected": [
+    {
+     "id": "cs000152",
+     "year": 1908,
+     "score": 0.0152
+    },
+    {
+     "id": "cs000153",
+     "year": 1922,
+     "score": 0.0352
+    },
+    {
+     "id": "cs000155",
+     "year": 1975,
+     "score": 0.0464
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "35-O",
+   "id": "cs000100",
+   "year": 1926,
+   "title": "J. Shigrib Sheet 35-O  Nov 1926",
+   "extent": [
+    33.0,
+    20.0,
+    34.5,
+    21.0
+   ],
+   "score": 0.0502,
+   "in_window": true,
+   "n_editions": 5,
+   "rejected": [
+    {
+     "id": "cs000099",
+     "year": 1930,
+     "score": 0.024
+    },
+    {
+     "id": "cs000101",
+     "year": 1935,
+     "score": 0.039
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "46-E",
+   "id": "cs000117",
+   "year": 1932,
+   "title": "Sinkat Sheet 46-E Sep 1932",
+   "extent": [
+    36.0,
+    18.0,
+    37.5,
+    19.0
+   ],
+   "score": 0.1938,
+   "in_window": true,
+   "n_editions": 4,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "33-K",
+   "id": "cs000037",
+   "year": 1928,
+   "title": "Sarra Wells Sheet 33-K June 1928",
+   "extent": [
+    21.0,
+    21.0,
+    22.5,
+    22.0
+   ],
+   "score": 0.0294,
+   "in_window": true,
+   "n_editions": 1,
+   "rejected": [],
+   "priority": false
   },
   {
    "cell": "35-J",
@@ -328,104 +3821,42 @@
      "year": 1942,
      "score": 0.0536
     }
-   ]
+   ],
+   "priority": false
   },
   {
-   "cell": "35-K",
-   "id": "cs000085",
-   "year": 1930,
-   "title": "Abu Tabag Sheet 35-K July 1930",
+   "cell": "46-J",
+   "id": "cs000140",
+   "year": 1934,
+   "title": "Karora Sheet 46-J Apr 1934",
    "extent": [
-    33.0,
-    21.0,
-    34.5,
-    22.0
+    37.5,
+    17.0,
+    39.0,
+    18.0
    ],
-   "score": 0.0788,
+   "score": 0.1321,
    "in_window": true,
    "n_editions": 4,
-   "rejected": []
+   "rejected": [],
+   "priority": false
   },
   {
-   "cell": "35-L",
-   "id": "cs000089",
-   "year": 1932,
-   "title": "Deraheib Sheet 35-L Sep 1932",
+   "cell": "56-C",
+   "id": "cs000480",
+   "year": 1940,
+   "title": "Massawa Sheet 56-C Oct 1940",
    "extent": [
-    34.5,
-    21.0,
-    36.0,
-    22.0
+    39.0,
+    15.0,
+    40.5,
+    16.0
    ],
-   "score": 0.1318,
-   "in_window": true,
-   "n_editions": 4,
-   "rejected": [
-    {
-     "id": "cs000088",
-     "year": 1927,
-     "score": 0.1002
-    }
-   ]
-  },
-  {
-   "cell": "35-M",
-   "id": "cs000093",
-   "year": 1938,
-   "title": "Kosha Sheet 35-M May 1938",
-   "extent": [
-    30.0,
-    20.0,
-    31.5,
-    21.0
-   ],
-   "score": 0.1475,
+   "score": 0.225,
    "in_window": false,
-   "n_editions": 4,
-   "rejected": [
-    {
-     "id": "cs000090",
-     "year": 1911,
-     "score": 0.0731
-    },
-    {
-     "id": "cs000091",
-     "year": 1938,
-     "score": 0.0647
-    },
-    {
-     "id": "cs000092",
-     "year": 1938,
-     "score": 0.0707
-    }
-   ]
-  },
-  {
-   "cell": "35-O",
-   "id": "cs000100",
-   "year": 1926,
-   "title": "J. Shigrib Sheet 35-O  Nov 1926",
-   "extent": [
-    33.0,
-    20.0,
-    34.5,
-    21.0
-   ],
-   "score": 0.0502,
-   "in_window": true,
-   "n_editions": 4,
-   "rejected": [
-    {
-     "id": "cs000099",
-     "year": 1930,
-     "score": 0.024
-    },
-    {
-     "id": "cs000101",
-     "year": 1935,
-     "score": 0.039
-    }
-   ]
+   "n_editions": 1,
+   "rejected": [],
+   "priority": false
   },
   {
    "cell": "35-P",
@@ -452,7 +3883,252 @@
      "year": 1936,
      "score": 0.0325
     }
-   ]
+   ],
+   "priority": false
+  },
+  {
+   "cell": "46-A",
+   "id": "cs000126",
+   "year": 1930,
+   "title": "Port Sudan Sheet 46-A Dec 1930",
+   "extent": [
+    36.0,
+    19.0,
+    37.5,
+    20.0
+   ],
+   "score": 0.1125,
+   "in_window": true,
+   "n_editions": 3,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "33-J",
+   "id": "cs000035",
+   "year": 1928,
+   "title": "Wadi El Faregh Sheet 33-J Sept 1928",
+   "extent": [
+    19.5,
+    21.0,
+    21.0,
+    22.0
+   ],
+   "score": 0.024,
+   "in_window": true,
+   "n_editions": 1,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "35-K",
+   "id": "cs000085",
+   "year": 1930,
+   "title": "Abu Tabag Sheet 35-K July 1930",
+   "extent": [
+    33.0,
+    21.0,
+    34.5,
+    22.0
+   ],
+   "score": 0.0788,
+   "in_window": true,
+   "n_editions": 4,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "46-O",
+   "id": "cs000138",
+   "year": 1940,
+   "title": "Marsa Gulbub Sheet 46-O Sep 1940",
+   "extent": [
+    39.0,
+    16.0,
+    40.5,
+    17.0
+   ],
+   "score": 0.0388,
+   "in_window": false,
+   "n_editions": 1,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "46-F",
+   "id": "cs000121",
+   "year": 1931,
+   "title": "Tokar Sheet 46-F July 1931",
+   "extent": [
+    37.5,
+    18.0,
+    39.0,
+    19.0
+   ],
+   "score": 0.0799,
+   "in_window": true,
+   "n_editions": 4,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "33-I",
+   "id": "cs000034",
+   "year": 1928,
+   "title": "Aozi Sheet 33-I Sept 1928",
+   "extent": [
+    18.0,
+    21.0,
+    19.5,
+    22.0
+   ],
+   "score": 0.1221,
+   "in_window": true,
+   "n_editions": 1,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "35-L",
+   "id": "cs000089",
+   "year": 1932,
+   "title": "Deraheib Sheet 35-L Sep 1932",
+   "extent": [
+    34.5,
+    21.0,
+    36.0,
+    22.0
+   ],
+   "score": 0.1318,
+   "in_window": true,
+   "n_editions": 4,
+   "rejected": [
+    {
+     "id": "cs000088",
+     "year": 1927,
+     "score": 0.1002
+    }
+   ],
+   "priority": false
+  },
+  {
+   "cell": "36-M",
+   "id": "cs000114",
+   "year": 1931,
+   "title": "Mohammed Gul Sheet 36-M Jul 1931",
+   "extent": [
+    36.0,
+    20.0,
+    37.5,
+    21.0
+   ],
+   "score": 0.1197,
+   "in_window": true,
+   "n_editions": 4,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "35-A",
+   "id": "cs000603",
+   "year": 1932,
+   "title": "Angoforo Sheet NB-35-A (Old Number 77-A) Dec 1932",
+   "extent": [
+    30.0,
+    23.0,
+    31.5,
+    24.0
+   ],
+   "score": 0.0598,
+   "in_window": true,
+   "n_editions": 1,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "35-G",
+   "id": "cs000069",
+   "year": 1927,
+   "title": "Haimur Sheet 35-G Jun 1927",
+   "extent": [
+    33.0,
+    22.0,
+    34.5,
+    23.0
+   ],
+   "score": 0.1385,
+   "in_window": true,
+   "n_editions": 3,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "35-B",
+   "id": "cs000601",
+   "year": 1968,
+   "title": "Deim Zubeir Sheet NB-35-B (Old Number 77-B; No Month) 1968",
+   "extent": [
+    31.5,
+    23.0,
+    33.0,
+    24.0
+   ],
+   "score": 0.1003,
+   "in_window": false,
+   "n_editions": 1,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "36-I",
+   "id": "cs000111",
+   "year": 1936,
+   "title": "Dungunab Sheet 36-I Mar 1936",
+   "extent": [
+    36.0,
+    21.0,
+    37.5,
+    22.0
+   ],
+   "score": 0.1801,
+   "in_window": true,
+   "n_editions": 2,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "35-H",
+   "id": "cs000072",
+   "year": 1931,
+   "title": "Mersa Shab Sheet 35-H Apr 1931",
+   "extent": [
+    34.5,
+    22.0,
+    36.0,
+    23.0
+   ],
+   "score": 0.1557,
+   "in_window": true,
+   "n_editions": 2,
+   "rejected": [],
+   "priority": false
+  },
+  {
+   "cell": "36-N",
+   "id": "cs000698",
+   "year": 1966,
+   "title": "Juba Sheet NB-36-N (Old Number 78-N; No Month) 1966",
+   "extent": [
+    37.5,
+    20.0,
+    39.0,
+    21.0
+   ],
+   "score": 0.1619,
+   "in_window": false,
+   "n_editions": 1,
+   "rejected": [],
+   "priority": false
   },
   {
    "cell": "36-E",
@@ -474,1029 +4150,93 @@
      "year": 1935,
      "score": 0.0345
     }
-   ]
+   ],
+   "priority": false
   },
   {
-   "cell": "36-I",
-   "id": "cs000111",
-   "year": 1936,
-   "title": "Dungunab Sheet 36-I Mar 1936",
+   "cell": "35-D",
+   "id": "cs000067",
+   "year": 1929,
+   "title": "Bir Shalatein Sheet 35-D Dec 1929",
    "extent": [
+    34.5,
+    23.0,
     36.0,
-    21.0,
-    37.5,
-    22.0
+    24.0
    ],
-   "score": 0.1801,
+   "score": 0.0662,
    "in_window": true,
    "n_editions": 2,
-   "rejected": []
+   "rejected": [],
+   "priority": false
   },
   {
-   "cell": "36-M",
-   "id": "cs000114",
-   "year": 1931,
-   "title": "Mohammed Gul Sheet 36-M Jul 1931",
+   "cell": "36-O",
+   "id": "cs000468",
+   "year": 1968,
+   "title": "Karkoj Sheet N-D-36-O (Old Number 55-O; No Month) 1968",
    "extent": [
-    36.0,
+    39.0,
     20.0,
-    37.5,
+    40.5,
     21.0
    ],
-   "score": 0.1197,
-   "in_window": true,
-   "n_editions": 3,
-   "rejected": []
+   "score": 0.0867,
+   "in_window": false,
+   "n_editions": 1,
+   "rejected": [],
+   "priority": false
   },
   {
-   "cell": "45-A",
-   "id": "cs000144",
-   "year": 1933,
-   "title": "Dongola Sheet 45-A Nov 1933",
-   "extent": [
-    30.0,
-    19.0,
-    31.5,
-    20.0
-   ],
-   "score": 0.0939,
-   "in_window": true,
-   "n_editions": 4,
-   "rejected": []
-  },
-  {
-   "cell": "45-B",
-   "id": "cs000146",
-   "year": 1929,
-   "title": "El Kab Sheet 45-B Feb 1929",
-   "extent": [
-    31.5,
-    19.0,
-    33.0,
-    20.0
-   ],
-   "score": 0.0481,
-   "in_window": true,
-   "n_editions": 4,
-   "rejected": []
-  },
-  {
-   "cell": "45-C",
-   "id": "cs000151",
-   "year": 1932,
-   "title": "Abu Hamed Sheet NE-36-C (Old Number 45-C ) 1932",
-   "extent": [
-    33.0,
-    19.0,
-    34.5,
-    20.0
-   ],
-   "score": 0.0918,
-   "in_window": true,
-   "n_editions": 3,
-   "rejected": [
-    {
-     "id": "cs000150",
-     "year": 1932,
-     "score": 0.087
-    }
-   ]
-  },
-  {
-   "cell": "45-D",
-   "id": "cs000154",
+   "cell": "36-A",
+   "id": "cs000602",
    "year": 1938,
-   "title": "Wadi Amur Sheet 45-D Nov 1938",
-   "extent": [
-    34.5,
-    19.0,
-    36.0,
-    20.0
-   ],
-   "score": 0.0536,
-   "in_window": false,
-   "n_editions": 4,
-   "rejected": [
-    {
-     "id": "cs000152",
-     "year": 1908,
-     "score": 0.0152
-    },
-    {
-     "id": "cs000153",
-     "year": 1922,
-     "score": 0.0352
-    },
-    {
-     "id": "cs000155",
-     "year": 1975,
-     "score": 0.0464
-    }
-   ]
-  },
-  {
-   "cell": "45-E",
-   "id": "cs000158",
-   "year": 1932,
-   "title": "Debba Sheet 45-E May 1932",
-   "extent": [
-    30.0,
-    18.0,
-    31.5,
-    19.0
-   ],
-   "score": 0.0695,
-   "in_window": true,
-   "n_editions": 5,
-   "rejected": []
-  },
-  {
-   "cell": "45-F",
-   "id": "cs000162",
-   "year": 1933,
-   "title": "Merowe Sheet 45-F Dec 1933",
-   "extent": [
-    31.5,
-    18.0,
-    33.0,
-    19.0
-   ],
-   "score": 0.082,
-   "in_window": true,
-   "n_editions": 4,
-   "rejected": []
-  },
-  {
-   "cell": "45-G",
-   "id": "cs000165",
-   "year": 1931,
-   "title": "Berber Sheet NE-36-G (Old Number 45-G) 1931",
-   "extent": [
-    33.0,
-    18.0,
-    34.5,
-    19.0
-   ],
-   "score": 0.0639,
-   "in_window": true,
-   "n_editions": 4,
-   "rejected": []
-  },
-  {
-   "cell": "45-H",
-   "id": "cs000171",
-   "year": 1918,
-   "title": "Talgwarab Sheet 45-H Oct 1918",
-   "extent": [
-    34.5,
-    18.0,
-    36.0,
-    19.0
-   ],
-   "score": 0.0566,
-   "in_window": false,
-   "n_editions": 4,
-   "rejected": [
-    {
-     "id": "cs000169",
-     "year": 1937,
-     "score": 0.0293
-    },
-    {
-     "id": "cs000170",
-     "year": 1922,
-     "score": 0.0562
-    },
-    {
-     "id": "cs000172",
-     "year": 1937,
-     "score": 0.0493
-    }
-   ]
-  },
-  {
-   "cell": "45-I",
-   "id": "cs000174",
-   "year": 1935,
-   "title": "Soteir Sheet 45-I Jun 1935",
-   "extent": [
-    30.0,
-    17.0,
-    31.5,
-    18.0
-   ],
-   "score": 0.0252,
-   "in_window": true,
-   "n_editions": 3,
-   "rejected": []
-  },
-  {
-   "cell": "45-J",
-   "id": "cs000176",
-   "year": 1933,
-   "title": "Baiyuda Sheet 45-J 1933",
-   "extent": [
-    31.5,
-    17.0,
-    33.0,
-    18.0
-   ],
-   "score": 0.0452,
-   "in_window": true,
-   "n_editions": 4,
-   "rejected": [
-    {
-     "id": "cs000177",
-     "year": 1933,
-     "score": 0.032
-    }
-   ]
-  },
-  {
-   "cell": "45-K",
-   "id": "cs000183",
-   "year": 1930,
-   "title": "Atbara Sheet 45-K Feb 1930",
-   "extent": [
-    33.0,
-    17.0,
-    34.5,
-    18.0
-   ],
-   "score": 0.0825,
-   "in_window": true,
-   "n_editions": 3,
-   "rejected": []
-  },
-  {
-   "cell": "45-L",
-   "id": "cs000187",
-   "year": 1931,
-   "title": "Adarama Sheet 45-L Apr 1931",
-   "extent": [
-    34.5,
-    17.0,
-    36.0,
-    18.0
-   ],
-   "score": 0.0331,
-   "in_window": true,
-   "n_editions": 5,
-   "rejected": []
-  },
-  {
-   "cell": "45-M",
-   "id": "cs000192",
-   "year": 1928,
-   "title": "Eilai Sheet 45-M Jan 1928",
-   "extent": [
-    30.0,
-    16.0,
-    31.5,
-    17.0
-   ],
-   "score": 0.0371,
-   "in_window": true,
-   "n_editions": 5,
-   "rejected": [
-    {
-     "id": "cs000191",
-     "year": 1935,
-     "score": 0.026
-    }
-   ]
-  },
-  {
-   "cell": "45-N",
-   "id": "cs000195",
-   "year": 1933,
-   "title": "Sabaloka Sheet 45-N Nov 1933",
-   "extent": [
-    31.5,
-    16.0,
-    33.0,
-    17.0
-   ],
-   "score": 0.1318,
-   "in_window": true,
-   "n_editions": 5,
-   "rejected": [
-    {
-     "id": "cs000196",
-     "year": 1933,
-     "score": 0.0772
-    },
-    {
-     "id": "cs000197",
-     "year": 1928,
-     "score": 0.0753
-    }
-   ]
-  },
-  {
-   "cell": "45-O",
-   "id": "cs000201",
-   "year": 1933,
-   "title": "Shendi Sheet 45-O Apr 1933",
-   "extent": [
-    33.0,
-    16.0,
-    34.5,
-    17.0
-   ],
-   "score": 0.1803,
-   "in_window": true,
-   "n_editions": 5,
-   "rejected": [
-    {
-     "id": "cs000202",
-     "year": 1933,
-     "score": 0.0899
-    },
-    {
-     "id": "cs000203",
-     "year": 1933,
-     "score": 0.1195
-    }
-   ]
-  },
-  {
-   "cell": "45-P",
-   "id": "cs000205",
-   "year": 1930,
-   "title": "Goz Regeb Sheet 45-P Oct 1930",
-   "extent": [
-    34.5,
-    16.0,
-    36.0,
-    17.0
-   ],
-   "score": 0.0349,
-   "in_window": true,
-   "n_editions": 4,
-   "rejected": []
-  },
-  {
-   "cell": "46-A",
-   "id": "cs000126",
-   "year": 1930,
-   "title": "Port Sudan Sheet 46-A Dec 1930",
+   "title": "Shambe Sheet NB-36-A (Old Number 78-A) Dec 1938",
    "extent": [
     36.0,
-    19.0,
+    23.0,
     37.5,
-    20.0
+    24.0
    ],
-   "score": 0.1125,
-   "in_window": true,
-   "n_editions": 3,
-   "rejected": []
-  },
-  {
-   "cell": "46-E",
-   "id": "cs000117",
-   "year": 1932,
-   "title": "Sinkat Sheet 46-E Sep 1932",
-   "extent": [
-    36.0,
-    18.0,
-    37.5,
-    19.0
-   ],
-   "score": 0.1938,
-   "in_window": true,
-   "n_editions": 4,
-   "rejected": []
-  },
-  {
-   "cell": "46-F",
-   "id": "cs000121",
-   "year": 1931,
-   "title": "Tokar Sheet 46-F July 1931",
-   "extent": [
-    37.5,
-    18.0,
-    39.0,
-    19.0
-   ],
-   "score": 0.0799,
-   "in_window": true,
-   "n_editions": 4,
-   "rejected": []
-  },
-  {
-   "cell": "46-I",
-   "id": "cs000133",
-   "year": 1930,
-   "title": "Khor Langeb Sheet 46-I Sep 1930",
-   "extent": [
-    36.0,
-    17.0,
-    37.5,
-    18.0
-   ],
-   "score": 0.0994,
-   "in_window": true,
-   "n_editions": 3,
-   "rejected": []
-  },
-  {
-   "cell": "46-J",
-   "id": "cs000140",
-   "year": 1934,
-   "title": "Karora Sheet 46-J Apr 1934",
-   "extent": [
-    37.5,
-    17.0,
-    39.0,
-    18.0
-   ],
-   "score": 0.1321,
-   "in_window": true,
-   "n_editions": 4,
-   "rejected": []
-  },
-  {
-   "cell": "46-M",
-   "id": "cs000132",
-   "year": 1932,
-   "title": "Maman Sheet 46-M Apr 1932",
-   "extent": [
-    36.0,
-    16.0,
-    37.5,
-    17.0
-   ],
-   "score": 0.2301,
-   "in_window": true,
-   "n_editions": 5,
-   "rejected": []
-  },
-  {
-   "cell": "46-N",
-   "id": "cs000137",
-   "year": 1940,
-   "title": "Nacfa Sheet 46-N Sep 1940",
-   "extent": [
-    37.5,
-    16.0,
-    39.0,
-    17.0
-   ],
-   "score": 0.1788,
+   "score": 0.152,
    "in_window": false,
    "n_editions": 1,
-   "rejected": []
+   "rejected": [],
+   "priority": false
   },
   {
-   "cell": "46-O",
-   "id": "cs000138",
-   "year": 1940,
-   "title": "Marsa Gulbub Sheet 46-O Sep 1940",
+   "cell": "36-G",
+   "id": "cs000668",
+   "year": 1966,
+   "title": "Pibor Post Sheet NB-36-G (Old Number 78-G; No Month) 1966",
    "extent": [
     39.0,
-    16.0,
+    22.0,
     40.5,
-    17.0
+    23.0
    ],
-   "score": 0.0388,
+   "score": 0.1005,
    "in_window": false,
    "n_editions": 1,
-   "rejected": []
+   "rejected": [],
+   "priority": false
   },
   {
-   "cell": "54-A",
-   "id": "cs000223",
-   "year": 1934,
-   "title": "Musbat Sheet 54-A Sep 1934",
+   "cell": "36-L",
+   "id": "cs000689",
+   "year": 1966,
+   "title": "Mt Naita Sheet NB-36-L (old Number 78-L; No Month) 1966",
    "extent": [
-    24.0,
-    15.0,
-    25.5,
-    16.0
+    40.5,
+    21.0,
+    42.0,
+    22.0
    ],
-   "score": 0.0308,
-   "in_window": true,
-   "n_editions": 3,
-   "rejected": [
-    {
-     "id": "cs000224",
-     "year": 1924,
-     "score": 0.0148
-    }
-   ]
-  },
-  {
-   "cell": "54-B",
-   "id": "cs000226",
-   "year": 1934,
-   "title": "Meidob Sheet 54-B  Dec 1934",
-   "extent": [
-    25.5,
-    15.0,
-    27.0,
-    16.0
-   ],
-   "score": 0.0895,
-   "in_window": true,
-   "n_editions": 4,
-   "rejected": [
-    {
-     "id": "cs000225",
-     "year": 1934,
-     "score": 0.0268
-    }
-   ]
-  },
-  {
-   "cell": "54-C",
-   "id": "cs000229",
-   "year": 1933,
-   "title": "Umm Sunta Sheet 54-C Oct 1933",
-   "extent": [
-    27.0,
-    15.0,
-    28.5,
-    16.0
-   ],
-   "score": 0.0565,
-   "in_window": true,
-   "n_editions": 3,
-   "rejected": []
-  },
-  {
-   "cell": "54-D",
-   "id": "cs000233",
-   "year": 1932,
-   "title": "Umm Suneita Sheet 54-D Dec 1932",
-   "extent": [
-    28.5,
-    15.0,
-    30.0,
-    16.0
-   ],
-   "score": 0.0406,
-   "in_window": true,
-   "n_editions": 4,
-   "rejected": []
-  },
-  {
-   "cell": "54-E",
-   "id": "cs000237",
-   "year": 1930,
-   "title": "Kutum Sheet 54-E Aug 1930",
-   "extent": [
-    24.0,
-    14.0,
-    25.5,
-    15.0
-   ],
-   "score": 0.0898,
-   "in_window": true,
-   "n_editions": 2,
-   "rejected": []
-  },
-  {
-   "cell": "54-F",
-   "id": "cs000244",
-   "year": 1916,
-   "title": "J. Tagabo Sheet 54-F Jan 1916",
-   "extent": [
-    25.5,
-    14.0,
-    27.0,
-    15.0
-   ],
-   "score": 0.0253,
+   "score": 0.2488,
    "in_window": false,
    "n_editions": 1,
-   "rejected": []
-  },
-  {
-   "cell": "54-G",
-   "id": "cs000246",
-   "year": 1934,
-   "title": "Umm Badr Sheet 54-G Oct 1934",
-   "extent": [
-    27.0,
-    14.0,
-    28.5,
-    15.0
-   ],
-   "score": 0.0761,
-   "in_window": true,
-   "n_editions": 5,
-   "rejected": []
-  },
-  {
-   "cell": "54-H",
-   "id": "cs000253",
-   "year": 1934,
-   "title": "Sodiri Sheet 54-H Dec 1934",
-   "extent": [
-    28.5,
-    14.0,
-    30.0,
-    15.0
-   ],
-   "score": 0.0698,
-   "in_window": true,
-   "n_editions": 5,
-   "rejected": [
-    {
-     "id": "cs000254",
-     "year": 1928,
-     "score": 0.0266
-    },
-    {
-     "id": "cs000257",
-     "year": 1934,
-     "score": 0.0459
-    }
-   ]
-  },
-  {
-   "cell": "54-I",
-   "id": "cs000259",
-   "year": 1937,
-   "title": "El Fasher Sheet 54-I Dec 1937",
-   "extent": [
-    24.0,
-    13.0,
-    25.5,
-    14.0
-   ],
-   "score": 0.2566,
-   "in_window": false,
-   "n_editions": 4,
-   "rejected": [
-    {
-     "id": "cs000258",
-     "year": null,
-     "score": 0.108
-    },
-    {
-     "id": "cs000260",
-     "year": 1922,
-     "score": 0.2031
-    },
-    {
-     "id": "cs000261",
-     "year": 1916,
-     "score": 0.0311
-    }
-   ]
-  },
-  {
-   "cell": "54-J",
-   "id": "cs000264",
-   "year": 1933,
-   "title": "Abyad Sheet 54-J Oct 1933",
-   "extent": [
-    25.5,
-    13.0,
-    27.0,
-    14.0
-   ],
-   "score": 0.08,
-   "in_window": true,
-   "n_editions": 3,
-   "rejected": []
-  },
-  {
-   "cell": "54-L",
-   "id": "cs000209",
-   "year": 1928,
-   "title": "El Quleit Sheet 54-L Mar 1928",
-   "extent": [
-    28.5,
-    13.0,
-    30.0,
-    14.0
-   ],
-   "score": 0.0636,
-   "in_window": true,
-   "n_editions": 2,
-   "rejected": []
-  },
-  {
-   "cell": "54-M",
-   "id": "cs000212",
-   "year": 1944,
-   "title": "Nyala Sheet 54-M Dec 1944",
-   "extent": [
-    24.0,
-    12.0,
-    25.5,
-    13.0
-   ],
-   "score": 0.1617,
-   "in_window": false,
-   "n_editions": 4,
-   "rejected": [
-    {
-     "id": "cs000211",
-     "year": 1944,
-     "score": 0.1419
-    },
-    {
-     "id": "cs000213",
-     "year": 1921,
-     "score": 0.0888
-    },
-    {
-     "id": "cs000214",
-     "year": 1916,
-     "score": 0.0737
-    }
-   ]
-  },
-  {
-   "cell": "54-N",
-   "id": "cs000216",
-   "year": 1933,
-   "title": "Taweisha Sheet 54-N Oct 1933",
-   "extent": [
-    25.5,
-    12.0,
-    27.0,
-    13.0
-   ],
-   "score": 0.0475,
-   "in_window": true,
-   "n_editions": 5,
-   "rejected": [
-    {
-     "id": "cs000217",
-     "year": 1927,
-     "score": 0.0468
-    }
-   ]
-  },
-  {
-   "cell": "54-O",
-   "id": "cs000238",
-   "year": 1915,
-   "title": "El Nahud Sheet 54-O Aug 1915",
-   "extent": [
-    27.0,
-    12.0,
-    28.5,
-    13.0
-   ],
-   "score": 0.0733,
-   "in_window": false,
-   "n_editions": 3,
-   "rejected": [
-    {
-     "id": "cs000208",
-     "year": 1909,
-     "score": 0.0577
-    },
-    {
-     "id": "cs000221",
-     "year": 1920,
-     "score": 0.0517
-    }
-   ]
-  },
-  {
-   "cell": "54-P",
-   "id": "cs000239",
-   "year": 1935,
-   "title": "Abu Zabad Sheet ND-35-P (Old Number 54-P) 1935",
-   "extent": [
-    28.5,
-    12.0,
-    30.0,
-    13.0
-   ],
-   "score": 0.2123,
-   "in_window": true,
-   "n_editions": 5,
-   "rejected": [
-    {
-     "id": "cs000240",
-     "year": 1935,
-     "score": 0.1444
-    }
-   ]
-  },
-  {
-   "cell": "65-D",
-   "id": "cs000001",
-   "year": 1936,
-   "title": "Kadugli Sheet 65-D Jun 1936",
-   "extent": [
-    28.5,
-    11.0,
-    30.0,
-    12.0
-   ],
-   "score": 0.0496,
-   "in_window": true,
-   "n_editions": 3,
-   "rejected": []
-  },
-  {
-   "cell": "65-E",
-   "id": "cs000006",
-   "year": 1932,
-   "title": "Buram Sheet 65-E Jan 1932",
-   "extent": [
-    24.0,
-    10.0,
-    25.5,
-    11.0
-   ],
-   "score": 0.0766,
-   "in_window": true,
-   "n_editions": 3,
-   "rejected": []
-  },
-  {
-   "cell": "65-F",
-   "id": "cs000007",
-   "year": 1936,
-   "title": "Abu Matariq Sheet 65-F Jul 1936",
-   "extent": [
-    25.5,
-    10.0,
-    27.0,
-    11.0
-   ],
-   "score": 0.0842,
-   "in_window": true,
-   "n_editions": 3,
-   "rejected": []
-  },
-  {
-   "cell": "65-G",
-   "id": "cs000003",
-   "year": 1936,
-   "title": "Dar El Humr Sheet 65-G Dec 1936",
-   "extent": [
-    27.0,
-    10.0,
-    28.5,
-    11.0
-   ],
-   "score": 0.0608,
-   "in_window": true,
-   "n_editions": 3,
-   "rejected": [
-    {
-     "id": "cs000021",
-     "year": 1931,
-     "score": 0.048
-    }
-   ]
-  },
-  {
-   "cell": "65-H",
-   "id": "cs000020",
-   "year": 1937,
-   "title": "Lake Keilak Sheet 65-H May 1937",
-   "extent": [
-    28.5,
-    10.0,
-    30.0,
-    11.0
-   ],
-   "score": 0.0842,
-   "in_window": false,
-   "n_editions": 3,
-   "rejected": [
-    {
-     "id": "cs000025",
-     "year": 1911,
-     "score": 0.0174
-    },
-    {
-     "id": "cs000247",
-     "year": 1937,
-     "score": null
-    }
-   ]
-  },
-  {
-   "cell": "65-I",
-   "id": "cs000028",
-   "year": 1925,
-   "title": "Hofrat El Nahas Sheet 65-I Feb 1925",
-   "extent": [
-    24.0,
-    9.0,
-    25.5,
-    10.0
-   ],
-   "score": 0.1016,
-   "in_window": true,
-   "n_editions": 5,
-   "rejected": [
-    {
-     "id": "cs000029",
-     "year": 1934,
-     "score": 0.086
-    }
-   ]
-  },
-  {
-   "cell": "65-J",
-   "id": "cs000009",
-   "year": 1936,
-   "title": "Nyamlell Sheet 65-J May 1936",
-   "extent": [
-    25.5,
-    9.0,
-    27.0,
-    10.0
-   ],
-   "score": 0.0431,
-   "in_window": true,
-   "n_editions": 5,
-   "rejected": [
-    {
-     "id": "cs000013",
-     "year": 1936,
-     "score": 0.0426
-    },
-    {
-     "id": "cs000026",
-     "year": 1925,
-     "score": 0.0276
-    }
-   ]
-  },
-  {
-   "cell": "65-K",
-   "id": "cs000248",
-   "year": 1936,
-   "title": "Abyei Sheet NC-35-K ( Old Number 65-K) 1936",
-   "extent": [
-    27.0,
-    9.0,
-    28.5,
-    10.0
-   ],
-   "score": 0.1463,
-   "in_window": true,
-   "n_editions": 3,
-   "rejected": [
-    {
-     "id": "cs000012",
-     "year": 1936,
-     "score": 0.1087
-    },
-    {
-     "id": "cs000024",
-     "year": 1925,
-     "score": 0.0507
-    }
-   ]
-  },
-  {
-   "cell": "65-L",
-   "id": "cs000249",
-   "year": 1936,
-   "title": "Ghabat El Arab Sheet 65-L Jun 1936",
-   "extent": [
-    28.5,
-    9.0,
-    30.0,
-    10.0
-   ],
-   "score": 0.19,
-   "in_window": true,
-   "n_editions": 4,
-   "rejected": [
-    {
-     "id": "cs000014",
-     "year": 1936,
-     "score": 0.141
-    },
-    {
-     "id": "cs000015",
-     "year": 1925,
-     "score": 0.0722
-    }
-   ]
-  },
-  {
-   "cell": "65-N",
-   "id": "cs000005",
-   "year": 1916,
-   "title": "Raga Sheet 65-N Jun 1916",
-   "extent": [
-    25.5,
-    8.0,
-    27.0,
-    9.0
-   ],
-   "score": 0.0508,
-   "in_window": false,
-   "n_editions": 1,
-   "rejected": []
+   "rejected": [],
+   "priority": false
   }
  ]
 }
