@@ -274,7 +274,27 @@ def fetch(cs, dest=None):
     if os.path.exists(dest) and os.path.getsize(dest) > 1e6:
         print(f"  {cs} cached"); return dest
     print(f"  downloading {cs} ...")
-    subprocess.check_call(["curl","-sSL","--retry","3","-o",dest,f"{STOR}/{cs}.jp2"])
+    # --retry alone does NOT cover a *stall*. Measured mid-run: one curl sat on
+    # an open-but-idle connection to tile.loc.gov for 22 minutes at 0% CPU with
+    # system load 0.00, while the surrounding sheets averaged 7 min each. curl
+    # only retries a connection that errors; one that hangs is, to curl, still
+    # working. So bound it on throughput instead:
+    #   --speed-limit/--speed-time  abort if under 10 KB/s for 60 s
+    #   --max-time                  hard ceiling (a 20 MB JP2 needs ~1-3 min)
+    #   --http1.1                   LOC's HTTP/2 resets streams (exit 92 seen
+    #                               on cs000643); select.py already does this
+    # A stalled sheet now fails fast, and rebuild_night.sh's retry pass picks it
+    # up -- which is strictly better than blocking the queue behind it.
+    subprocess.check_call(["curl", "-fsSL", "--http1.1",
+                           "--retry", "3", "--retry-all-errors",
+                           "--retry-delay", "5",
+                           "--connect-timeout", "30",
+                           "--speed-limit", "10000", "--speed-time", "60",
+                           "--max-time", "900",
+                           "-o", dest, f"{STOR}/{cs}.jp2"])
+    if os.path.getsize(dest) < 1e6:      # a truncated JP2 fails later, in gdalinfo,
+        os.remove(dest)                  # where it reads as a corrupt scan
+        raise RuntimeError(f"{cs}: short download")
     return dest
 
 def main():
