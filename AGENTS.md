@@ -1107,6 +1107,22 @@ georeferenced to their own printed 15-arcmin graticule and mosaicked into
 `data/histmaps/sudan250k.mbtiles` (1.4 GB, z4-14, **gitignored derived output**
 — rebuild with `scripts/histmaps/mosaic.sh`, don't commit).
 
+⚠️ **The first build covered the wrong half of the country.** `captions.txt` had
+been truncated at **264 of 770 lines** by an interrupted `curl`, which dropped
+every South Sudan block — exactly the AOI the overlay exists for. Nothing
+failed: 76/76 sheets georeferenced to 0.0 arcsec, QA was clean, the mosaic
+built, and this README then *documented the missing blocks as absent from the
+archive*. **A short manifest reads as a small collection, not as a broken
+download.** `catalogue()` now asserts 770 lines and cross-checks the LOC item's
+own `segment_count`; `mosaic.sh` invalidates a block's cached tiles when its
+sheet list changes. Same shape as the AOI "no-op that reads as an answer" rule,
+applied to an input. Full post-mortem: `scripts/histmaps/README.md`.
+
+Rebuild is a throttled resumable systemd oneshot
+(`scripts/histmaps/histmap-rebuild.service` → `rebuild_night.sh`), and
+`select.py --priority-bbox` orders the AOI's sheets first so an interrupted run
+still covers what matters.
+
 | Piece | Where |
 |---|---|
 | Fetch + georeference | `scripts/histmaps/sudan250k.py`, `select.py`, `runall.sh` |
@@ -1130,7 +1146,7 @@ generic custom-layer capture and calls `HistMap.reattach()` (which re-adds on
 everything, and re-adding during `styledata` is silently dropped because the
 `before` id has not landed yet.
 
-Tile misses return **204, not 404**: the series covers 8 of 22 1:1M blocks, so
+Tile misses return **204, not 404**: the series covers 18 of 22 1:1M blocks, so
 most of the bounding box legitimately has no sheet.
 
 Full detail, including why the mosaic is built per-block and why `tile_row` is

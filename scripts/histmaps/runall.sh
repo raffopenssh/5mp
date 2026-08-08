@@ -1,9 +1,9 @@
 #!/bin/bash
 # Fetch + georeference ONE scan per 1:250k sheet cell, chosen by select.py
-# (most detailed edition, preferring 1924-1936). 76 sheets, not 254 -- see
-# select.py for why the other 178 are near-duplicate editions of the same cells.
+# (most detailed edition, preferring 1924-1936). 195 sheets, not 759 -- see
+# select.py for why the other 564 are near-duplicate editions of the same cells.
 #
-#   python3 select.py            # (re)build selection.json, ~7 min
+#   python3 select.py --priority-bbox W,S,E,N   # (re)build selection.json, ~25 min
 #   ./runall.sh                  # georeference the selection
 #
 # Source JP2s are deleted after warping (see --keep-jp2); outputs land in

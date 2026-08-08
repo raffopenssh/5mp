@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Choose ONE scan per 1:250k sheet cell: the most detailed, preferring 1924-1936.
 
-Why this exists: the LOC item holds 254 placeable scans covering only 76 distinct
+Why this exists: the LOC item holds 759 placeable scans covering only 195 distinct
 sheet cells -- most cells have 3-5 editions (1908-1976) and some have two scans of
-the *same* edition. Georeferencing all of them costs ~17 hours and yields a stack
+the *same* edition. Georeferencing all of them costs days and yields a stack
 of near-duplicates. This picks one per cell.
 
 How "most detailed" is decided, in order:
@@ -29,7 +29,7 @@ How "most detailed" is decided, in order:
 
 Reads the same catalogue as sudan250k.py, writes a JSON plan + an --ids line.
 """
-import argparse, json, os, subprocess, sys, collections
+import argparse, json, os, subprocess, sys, collections, math
 import cv2, numpy as np
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -71,6 +71,11 @@ def main():
     a.add_argument("--out",  default=os.path.join(ROOT, "selection.json"))
     a.add_argument("--cache", default="/tmp", help="thumbnail cache dir")
     a.add_argument("--quiet", action="store_true")
+    a.add_argument("--priority-bbox", metavar="W,S,E,N",
+                   help="emit cells intersecting this bbox first (nearest-centre "
+                        "order), so an interrupted run has the sheets that matter")
+    a.add_argument("--priority-buffer", type=float, default=0.5,
+                   help="degrees of slack around --priority-bbox (default 0.5)")
     ns = a.parse_args()
 
     cells = collections.defaultdict(list)
@@ -101,7 +106,27 @@ def main():
             print(f"{cell:7} -> {best['id']} {str(best['year']):5} "
                   f"ink {rec['score']:.4f}  of {len(pool)} cand{flag}", flush=True)
 
-    json.dump(dict(window=[ns.y0, ns.y1], n_cells=len(plan), selected=plan),
+    # Order the plan. A 195-cell run is ~2 days of downloading and warping, and
+    # it WILL be interrupted, so the order is part of the product: put the cells
+    # covering the area under study first, nearest-centre outwards, and mark
+    # them so a partial run can be inspected for "is the AOI covered yet".
+    if ns.priority_bbox:
+        w, s, e, n = [float(v) for v in ns.priority_bbox.split(",")]
+        b = ns.priority_buffer
+        cx, cy = (w + e) / 2, (s + n) / 2
+        for r in plan:
+            x0, y0, x1, y1 = r["extent"]
+            r["priority"] = (x0 < e + b and x1 > w - b and y0 < n + b and y1 > s - b)
+            r["_d"] = math.hypot((x0 + x1) / 2 - cx, (y0 + y1) / 2 - cy)
+        plan.sort(key=lambda r: (not r["priority"], r["_d"]))
+        for r in plan:
+            r.pop("_d", None)
+        npri = sum(1 for r in plan if r["priority"])
+        print(f"\npriority: {npri} of {len(plan)} cells intersect "
+              f"{ns.priority_bbox} (+{b} deg) and are ordered first")
+
+    json.dump(dict(window=[ns.y0, ns.y1], n_cells=len(plan),
+                   priority_bbox=ns.priority_bbox, selected=plan),
               open(ns.out, "w"), indent=1)
     print(f"\n{len(plan)} cells selected -> {ns.out}")
     print(f"{len(plan)-len(fallback)} inside {ns.y0}-{ns.y1}, "

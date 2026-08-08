@@ -68,10 +68,53 @@ def parse_sheet(title, cs_id=None):
     return int(m.group(1)), letter.upper()
 
 # ------------------------------------------------------------------ catalogue
+# The item holds 770 scans. This number is asserted, not assumed: the first run
+# of this pipeline (2026-08-06) worked from a captions.txt that had been
+# truncated at 264 lines by an interrupted curl. Nothing failed -- the parser
+# happily produced 76 sheet cells, the mosaic built, the overlay shipped -- and
+# the missing 506 lines were exactly blocks 53/55/64/66/77/78, i.e. all of South
+# Sudan. A short file reads as a small collection. So: verify the length, and
+# cross-check it against the item's own segment_count when we can reach it.
+EXPECTED_SCANS = 770
+RESOURCE_JSON = "https://www.loc.gov/resource/g8310m.gct00289/?fo=json"
+
+
+def _remote_segment_count():
+    try:
+        out = subprocess.check_output(
+            ["curl", "-sS", "--http1.1", "--retry", "3", "-A",
+             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Chrome/120",
+             RESOURCE_JSON], timeout=120)
+        return int(json.loads(out)["resource"]["segment_count"])
+    except Exception:
+        return None
+
+
+def fetch_captions(path, verify=True):
+    """Download captions.txt atomically and refuse a short file."""
+    tmp = path + ".part"
+    subprocess.check_call(["curl", "-fsSL", "--http1.1", "--retry", "5",
+                           "--retry-all-errors", "--retry-delay", "2",
+                           "-o", tmp, CAPS])
+    n = sum(1 for _ in open(tmp, encoding="utf-8", errors="replace"))
+    want = (_remote_segment_count() if verify else None) or EXPECTED_SCANS
+    if n < want:
+        os.remove(tmp)
+        raise RuntimeError(f"captions.txt truncated: {n} lines, expected >= {want}")
+    os.replace(tmp, path)
+    return n
+
+
 def catalogue(refresh=False):
     p = os.path.join(ROOT, "captions.txt")
     if refresh or not os.path.exists(p):
-        subprocess.check_call(["curl","-sSL","-o",p,CAPS])
+        fetch_captions(p)
+    else:
+        n = sum(1 for _ in open(p, encoding="utf-8", errors="replace"))
+        if n < EXPECTED_SCANS:
+            print(f"captions.txt has {n} lines, expected {EXPECTED_SCANS} "
+                  f"-- re-fetching", file=sys.stderr)
+            fetch_captions(p)
     out = []
     for line in open(p, encoding="utf-8", errors="replace"):
         f = line.rstrip("\n").split("\t")
@@ -287,7 +330,13 @@ def main():
                     want = raw.split()
             else:
                 want = ns.ids.split(",")
-            want = {w.strip() for w in want if w.strip()}
+            # Keep the requested ORDER, not just the membership: a 195-sheet run
+            # is ~2 days, so selection.json puts the sheets that matter first
+            # (see select.py --priority-bbox) and an interrupted run must have
+            # georeferenced those, not an alphabetical prefix.
+            order = [w.strip() for w in want if w.strip()]
+            want = set(order)
+            rank = {cid: i for i, cid in enumerate(order)}
         sel = [c for c in cat if c["extent"] and
                (want is not None and c["id"] in want
                 or want is None and
@@ -296,6 +345,7 @@ def main():
                  or (ns.sheet and c["sheet"] == ns.sheet.upper())
                  or (ns.filter and ns.filter.lower() in c["title"].lower())))]
         if want is not None:
+            sel.sort(key=lambda c: rank.get(c["id"], 1 << 30))
             missing = want - {c["id"] for c in sel}
             if missing:
                 print(f"warning: {len(missing)} requested ids have no known extent: "

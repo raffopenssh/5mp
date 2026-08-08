@@ -1,0 +1,66 @@
+[Unit]
+# One-shot rebuild of the Sudan 1:250k mosaic (georeference + tile).
+#
+# A systemd unit rather than tmux because the first attempt took the whole VM
+# down (load 14.7 on 2 cores at JOBS=3, no swap) and left no way to notice or
+# resume. runall.sh is resumable, so a restart costs only the sheet in flight.
+#
+# THE POINT OF THIS UNIT IS THE THROTTLE. This job is never urgent; the web app
+# is always urgent. Every limit below is set so the app keeps its latency even
+# when that means the rebuild takes two nights instead of one.
+Description=Sudan 1:250k historical map rebuild (georeference + mosaic)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=exedev
+WorkingDirectory=/home/exedev/5mp/scripts/histmaps
+# One sheet at a time. The box has 2 cores and one must stay free for the app;
+# a second warp worker does not halve wall-clock anyway, because gdalwarp and
+# potrace are already memory-bandwidth bound on a 12000x9000 RGBA raster.
+Environment=JOBS=1
+# GDAL's block cache is per-process and is the single biggest lever on RSS.
+# 256 MB is ample for tiled reads at this raster size; the default (5% of RAM,
+# ~370 MB here) plus the warp's own buffers is what pushed a 2-worker run into
+# the OOM killer.
+Environment=GDAL_CACHEMAX=256
+# Keep GDAL/NumPy from spawning a thread per core underneath our own job count;
+# otherwise "1 job" is still 2-4 runnable threads.
+Environment=GDAL_NUM_THREADS=1
+Environment=OMP_NUM_THREADS=1
+Environment=OPENBLAS_NUM_THREADS=1
+ExecStart=/home/exedev/5mp/scripts/histmaps/rebuild_night.sh
+TimeoutStartSec=infinity
+RemainAfterExit=yes
+# Resume after a crash/OOM instead of silently stopping half-built.
+Restart=on-failure
+RestartSec=60
+
+# --- CPU -------------------------------------------------------------------
+# Hard ceiling at one full core of the two. Measured overnight at CPUQuota=60%:
+# 13.5 min/sheet, load 0.6, app latency 8 ms -- i.e. the throttle was costing
+# hours and buying nothing, because a single warp cannot use more than one core
+# anyway (GDAL_NUM_THREADS=1) and the app never contended. 100% still leaves a
+# whole core free, which is the property that actually matters.
+CPUQuota=100%
+CPUWeight=10
+Nice=19
+
+# --- I/O -------------------------------------------------------------------
+# The app's SQLite reads share this disk with 20 MB JP2 writes and a 1.4 GB
+# tile merge.
+IOWeight=10
+IOSchedulingClass=idle
+
+# --- Memory ----------------------------------------------------------------
+# MemoryHigh throttles and reclaims *before* MemoryMax kills, so a sheet that
+# balloons gets slowed into swap rather than OOM-killed mid-warp. 4 GB max on a
+# 7.4 GB box leaves the app, SQLite page cache and the OS a real margin.
+MemoryHigh=2G
+MemoryMax=4G
+# Let this job swap freely; the app should not have to.
+MemorySwapMax=3G
+
+[Install]
+WantedBy=multi-user.target

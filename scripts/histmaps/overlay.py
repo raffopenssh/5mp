@@ -13,10 +13,17 @@ sc=img.shape[1]/W
 def px(lon,lat):
     x=(lon-gt[0])/gt[1]; y=(lat-gt[3])/gt[5]
     return int(round(x*sc)), int(round(y*sc))
+# GADM outlines live beside this script (they are committed), not in whatever
+# scratch dir the first run happened to use. The old hardcoded /tmp path
+# combined with the `continue` below to make a missing file render a perfectly
+# plausible *un-annotated* image -- i.e. the check silently not happening.
+ROOT=os.path.dirname(os.path.abspath(__file__))
 cols={'gadm_CAF.json':(0,0,255),'gadm_SDN.json':(255,0,0),'gadm_SSD.json':(0,180,0)}
+missing=[f for f in cols if not os.path.exists(os.path.join(ROOT,f))]
+if missing:
+    sys.exit(f"missing GADM reference files in {ROOT}: {', '.join(missing)}")
 for f,col in cols.items():
-    p='/tmp/loc/'+f
-    if not os.path.exists(p): continue
+    p=os.path.join(ROOT,f)
     d=json.load(open(p))
     for ft in d['features']:
         g=ft['geometry']; polys=g['coordinates'] if g['type']=='MultiPolygon' else [g['coordinates']]
