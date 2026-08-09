@@ -1,0 +1,546 @@
+{
+ "sheet": "car",
+ "n_units": 20,
+ "merge_groups": [
+  [
+   "a1",
+   "a2"
+  ],
+  [
+   "Bi",
+   "CT",
+   "PB"
+  ],
+  [
+   "GC2",
+   "GO"
+  ],
+  [
+   "bA",
+   "bD"
+  ],
+  [
+   "Xi",
+   "Zeta"
+  ]
+ ],
+ "paper_like": [
+  "a2",
+  "M"
+ ],
+ "units": [
+  {
+   "code": "a2",
+   "name": "Formations alluviales recentes",
+   "group": "Quaternaire",
+   "box": [
+    20479,
+    1468,
+    177,
+    107
+   ],
+   "hex": "#ece8d5",
+   "rgb": [
+    236,
+    232,
+    213
+   ],
+   "commodities": [
+    {
+     "commodity": "diamond",
+     "weight": 2,
+     "why": "recent alluvium: the working alluvial diamond ground"
+    },
+    {
+     "commodity": "gold",
+     "weight": 1,
+     "why": "alluvial gold ground"
+    }
+   ]
+  },
+  {
+   "code": "a1",
+   "name": "Formations neo-tchadiennes: sables, sables argileux, argiles d'origine fluvio-lacustre",
+   "group": "Quaternaire",
+   "box": [
+    20478,
+    1667,
+    179,
+    113
+   ],
+   "hex": "#e2decc",
+   "rgb": [
+    226,
+    222,
+    204
+   ],
+   "commodities": [
+    {
+     "commodity": "diamond",
+     "weight": 2,
+     "why": "neo-Chadian alluvium: the working alluvial diamond ground"
+    },
+    {
+     "commodity": "gold",
+     "weight": 1,
+     "why": "alluvial gold ground"
+    }
+   ]
+  },
+  {
+   "code": "CT",
+   "name": "Formations paleo-tchadiennes, Continental Terminal: gres ferrugineux, sables beiges, cuirasses lateritiques",
+   "group": "Tertiaire",
+   "box": [
+    20475,
+    2057,
+    182,
+    109
+   ],
+   "hex": "#efe276",
+   "rgb": [
+    239,
+    226,
+    118
+   ],
+   "commodities": [
+    {
+     "commodity": "diamond",
+     "weight": 1,
+     "why": "Continental Terminal cover over the diamondiferous series"
+    }
+   ]
+  },
+  {
+   "code": "PB",
+   "name": "Formations des plateaux de Bambio: gres silicifies, sables beiges, limons sableux",
+   "group": "Tertiaire",
+   "box": [
+    21955,
+    2063,
+    182,
+    110
+   ],
+   "hex": "#efe074",
+   "rgb": [
+    239,
+    224,
+    116
+   ],
+   "commodities": []
+  },
+  {
+   "code": "GC2",
+   "name": "Gres de Carnot-Berberati: formations fluvio-lacustres (gres, gres kaoliniques, argiles, conglomerats)",
+   "group": "Secondaire",
+   "box": [
+    20473,
+    2647,
+    182,
+    114
+   ],
+   "hex": "#adb583",
+   "rgb": [
+    173,
+    181,
+    131
+   ],
+   "commodities": [
+    {
+     "commodity": "diamond",
+     "weight": 3,
+     "why": "Carnot-Berberati sandstone: the principal secondary diamond reservoir"
+    }
+   ]
+  },
+  {
+   "code": "GO",
+   "name": "Gres de Mouka-Ouadda: formations fluvio-lacustres (gres, gres kaoliniques, argiles, conglomerats)",
+   "group": "Secondaire",
+   "box": [
+    21952,
+    2651,
+    183,
+    115
+   ],
+   "hex": "#b2b97f",
+   "rgb": [
+    178,
+    185,
+    127
+   ],
+   "commodities": [
+    {
+     "commodity": "diamond",
+     "weight": 3,
+     "why": "Mouka-Ouadda sandstone: the eastern secondary diamond reservoir"
+    }
+   ]
+  },
+  {
+   "code": "GC1",
+   "name": "Formations fluvio-glaciaires (argilites a nodules calcaires, tillites)",
+   "group": "Primaire",
+   "box": [
+    20472,
+    2969,
+    184,
+    118
+   ],
+   "hex": "#7b8e7b",
+   "rgb": [
+    123,
+    142,
+    123
+   ],
+   "commodities": [
+    {
+     "commodity": "diamond",
+     "weight": 2,
+     "why": "fluvio-glacial formations underlying the diamondiferous gravels"
+    }
+   ]
+  },
+  {
+   "code": "Bi",
+   "name": "Complexe tillitique de la Bandja et series de Nola, Kouki, Bangui-Mbaiki, Ouadikei, Fourou-mbala, Banga, Tandja, Kosha, Moyen-Chinko, Markla, Coumbal",
+   "group": "Precambrien A - groupe superieur",
+   "box": [
+    20472,
+    3909,
+    181,
+    111
+   ],
+   "hex": "#e5da81",
+   "rgb": [
+    229,
+    218,
+    129
+   ],
+   "commodities": [
+    {
+     "commodity": "diamond",
+     "weight": 3,
+     "why": "the Bandja/Nola tillitic and sandstone series carry CAR's alluvial diamond field"
+    },
+    {
+     "commodity": "gold",
+     "weight": 2,
+     "why": "same series hosts the western gold workings"
+    }
+   ]
+  },
+  {
+   "code": "bA",
+   "name": "Intrusions basiques",
+   "group": "Precambrien A - groupe superieur",
+   "box": [
+    20471,
+    4303,
+    182,
+    114
+   ],
+   "hex": "#7c7d9f",
+   "rgb": [
+    124,
+    125,
+    159
+   ],
+   "commodities": [
+    {
+     "commodity": "cobalt",
+     "weight": 2,
+     "why": "basic intrusions: nickel-cobalt-chromium affinity"
+    },
+    {
+     "commodity": "copper",
+     "weight": 1,
+     "why": "mafic intrusion-hosted base metals"
+    }
+   ]
+  },
+  {
+   "code": "S",
+   "name": "Schistes epimetamorphiques dominants (a sericite, a chlorite), quartzites",
+   "group": "Precambrien D - facies cristallophyllien",
+   "box": [
+    20471,
+    4905,
+    182,
+    113
+   ],
+   "hex": "#e0ae94",
+   "rgb": [
+    224,
+    174,
+    148
+   ],
+   "commodities": [
+    {
+     "commodity": "gold",
+     "weight": 2,
+     "why": "epimetamorphic schist belt: orogenic gold host"
+    }
+   ]
+  },
+  {
+   "code": "Q",
+   "name": "Quartzites dominants (a sericite, a muscovite, a chlorite), quartzites vitreux, quartzites feldspathiques, conglomerats quartzeux, quartzito-schistes, micaschistes",
+   "group": "Precambrien D - facies cristallophyllien",
+   "box": [
+    20470,
+    5069,
+    183,
+    112
+   ],
+   "hex": "#dca874",
+   "rgb": [
+    220,
+    168,
+    116
+   ],
+   "commodities": [
+    {
+     "commodity": "gold",
+     "weight": 2,
+     "why": "quartzite and quartz-vein-bearing schist belt"
+    }
+   ]
+  },
+  {
+   "code": "Xi",
+   "name": "Micaschistes dominants (a muscovite, a deux micas, corbures, a grenat, a disthene), quartzites, amphibolo-schistes",
+   "group": "Precambrien D - facies cristallophyllien",
+   "box": [
+    20470,
+    5229,
+    183,
+    112
+   ],
+   "hex": "#cba189",
+   "rgb": [
+    203,
+    161,
+    137
+   ],
+   "commodities": [
+    {
+     "commodity": "gold",
+     "weight": 2,
+     "why": "micaschist belt adjacent to the gold workings"
+    },
+    {
+     "commodity": "lithium",
+     "weight": 1,
+     "why": "pegmatite affinity in micaschist"
+    }
+   ]
+  },
+  {
+   "code": "Zeta",
+   "name": "Gneiss a micas, amphibolites, a pyroxenes, leptynites",
+   "group": "Precambrien D - facies cristallophyllien",
+   "box": [
+    20468,
+    5384,
+    185,
+    121
+   ],
+   "hex": "#c09a84",
+   "rgb": [
+    192,
+    154,
+    132
+   ],
+   "commodities": [
+    {
+     "commodity": "uranium",
+     "weight": 1,
+     "why": "high-grade gneiss of the basement complex"
+    }
+   ]
+  },
+  {
+   "code": "A",
+   "name": "Amphibolites, amphibolopyroxenites, pyroxenites",
+   "group": "Precambrien D - facies cristallophyllien",
+   "box": [
+    20469,
+    5551,
+    183,
+    116
+   ],
+   "hex": "#637dac",
+   "rgb": [
+    99,
+    125,
+    172
+   ],
+   "commodities": [
+    {
+     "commodity": "cobalt",
+     "weight": 2,
+     "why": "amphibolite and pyroxenite: mafic-ultramafic affinity"
+    },
+    {
+     "commodity": "copper",
+     "weight": 1,
+     "why": "mafic-hosted base metals"
+    }
+   ]
+  },
+  {
+   "code": "C",
+   "name": "Formations charnockitiques ou a facies malgachitique",
+   "group": "Precambrien D - facies cristallophyllien",
+   "box": [
+    20469,
+    5712,
+    184,
+    114
+   ],
+   "hex": "#7e939c",
+   "rgb": [
+    126,
+    147,
+    156
+   ],
+   "commodities": [
+    {
+     "commodity": "cobalt",
+     "weight": 1,
+     "why": "charnockitic formations: mafic granulite affinity"
+    }
+   ]
+  },
+  {
+   "code": "D",
+   "name": "Complexe de base indifferencie",
+   "group": "Precambrien D - facies cristallophyllien",
+   "box": [
+    20469,
+    5871,
+    182,
+    114
+   ],
+   "hex": "#d8afb2",
+   "rgb": [
+    216,
+    175,
+    178
+   ],
+   "commodities": []
+  },
+  {
+   "code": "M",
+   "name": "Facies migmatitiques: embrechites (Me), anatexites (Ma)",
+   "group": "Precambrien D - facies cristallophyllien",
+   "box": [
+    21952,
+    5479,
+    177,
+    111
+   ],
+   "hex": "#f6f3e0",
+   "rgb": [
+    246,
+    243,
+    224
+   ],
+   "commodities": [
+    {
+     "commodity": "uranium",
+     "weight": 1,
+     "why": "migmatite of the basement complex"
+    }
+   ]
+  },
+  {
+   "code": "bD",
+   "name": "Intrusions basiques recristallisees",
+   "group": "Precambrien D - facies cristallin",
+   "box": [
+    20467,
+    6252,
+    185,
+    112
+   ],
+   "hex": "#767a9e",
+   "rgb": [
+    118,
+    122,
+    158
+   ],
+   "commodities": [
+    {
+     "commodity": "cobalt",
+     "weight": 2,
+     "why": "recrystallised basic intrusions"
+    }
+   ]
+  },
+  {
+   "code": "gamma_c",
+   "name": "Granites en massifs circonscrits: sub-alcalins, calco-alcalins, calco-sodiques",
+   "group": "Precambrien D - facies cristallin",
+   "box": [
+    20464,
+    6459,
+    188,
+    116
+   ],
+   "hex": "#c7694f",
+   "rgb": [
+    199,
+    105,
+    79
+   ],
+   "commodities": [
+    {
+     "commodity": "lithium",
+     "weight": 2,
+     "why": "circumscribed granite massifs: pegmatite and greisen affinity"
+    },
+    {
+     "commodity": "rare_earth",
+     "weight": 2,
+     "why": "evolved granite association"
+    },
+    {
+     "commodity": "gold",
+     "weight": 1,
+     "why": "granite-driven hydrothermal systems"
+    }
+   ]
+  },
+  {
+   "code": "gamma_h",
+   "name": "Granites heterogenes concordants: syncinematiques, d'anatexie",
+   "group": "Precambrien D - facies cristallin",
+   "box": [
+    20464,
+    6622,
+    189,
+    117
+   ],
+   "hex": "#ca7080",
+   "rgb": [
+    202,
+    112,
+    128
+   ],
+   "commodities": [
+    {
+     "commodity": "lithium",
+     "weight": 1,
+     "why": "anatectic granite: weaker pegmatite affinity"
+    },
+    {
+     "commodity": "uranium",
+     "weight": 1,
+     "why": "anatectic granite"
+    }
+   ]
+  }
+ ]
+}
