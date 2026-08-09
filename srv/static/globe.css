@@ -936,16 +936,23 @@
         .bbox-draw-hint.active { display: block; }
         
         /* Satellite Switch Hint */
+        /* The satellite hint fires at z>=13, i.e. exactly when the user is
+           deep in a map — so it must sit above the time slider (z 400), not
+           behind it. Its bottom is derived from the *measured* slider height
+           (--slider-h, published by trackSliderHeight()), because a hard-coded
+           110px lands inside the slider as soon as it grows: the animator's
+           layer chips, or preset tags wrapping to a second row on a narrow
+           phone, take it well past 110. Same rule as the AOI focus banner. */
         .satellite-hint {
             position: fixed;
-            bottom: 110px;
+            bottom: calc(var(--slider-h, 70px) + 40px);
             right: 20px;
             background: linear-gradient(135deg, rgba(34,197,94,0.95) 0%, rgba(22,163,74,0.95) 100%);
             border: 1px solid rgba(255,255,255,0.2);
             border-radius: 8px;
             padding: 12px;
             max-width: 320px;
-            z-index: 200;
+            z-index: 500;
             box-shadow: 0 6px 24px rgba(0,0,0,0.4);
             opacity: 0;
             transform: translateY(20px);
@@ -1432,6 +1439,15 @@
             
             /* FAB button */
             .fab { bottom: calc(var(--slider-h, 70px) + 10px); right: 10px; width: 48px; height: 48px; font-size: 20px; }
+
+            /* Satellite hint: clear the whole bottom furniture, not just the
+               slider — on mobile the toolbar and the FAB sit on top of it at
+               slider-h + 10, ~48px tall. Full width because a 320px card
+               beside a 48px FAB leaves no room for the "Switch" button. */
+            .satellite-hint {
+                bottom: calc(var(--slider-h, 70px) + 66px);
+                left: 10px; right: 10px; max-width: none;
+            }
             
             /* Hide MapLibre attribution on mobile - we show our own */
             .maplibregl-ctrl-attrib { display: none !important; }
@@ -1604,6 +1620,9 @@
             .filter-panel { max-height: 40vh; bottom: calc(var(--slider-h, 44px) + 56px); }
             #map-legend { bottom: calc(var(--slider-h, 44px) + 56px) !important; }
             .footer-attribution { bottom: calc(var(--slider-h, 44px) + 6px); }
+            /* Landscape has almost no vertical room: keep the hint one row
+               above the toolbar and let it stay a card, not a banner. */
+            .satellite-hint { bottom: calc(var(--slider-h, 44px) + 56px); left: auto; right: 10px; max-width: 300px; }
         }
 
         /* === SAFE AREA INSETS (iPhone notch/Dynamic Island) === */
