@@ -29,6 +29,22 @@
     const POLL_QUEUED = 300000;
 
     const watched = new Map();   // aoi_id -> { timer, last }
+    // Terminal payloads (ready / cancelled / superseded). Kept so the card can
+    // be re-rendered from memory without re-polling an AOI that will never
+    // move again — re-tracking it would poll forever for a fixed answer.
+    const finished = new Map();  // aoi_id -> last payload
+
+    // Published for the notification list's sort: a *running* ingest pins to
+    // the top, a finished one sorts by time like any other notification.
+    window.aoiProgressStates = window.aoiProgressStates || {};
+    const TERMINAL = { ready: 1, cancelled: 1, superseded: 1 };
+
+    // Ask the panel to re-sort once, when a card stops being "live".
+    function restack() {
+        if (typeof updateNotificationList === 'function') {
+            setTimeout(() => updateNotificationList(), 0);
+        }
+    }
 
     function pwd() { return (typeof getPwd === 'function' ? getPwd() : ''); }
 
@@ -55,7 +71,10 @@
             const d = await r.json();
             const w = watched.get(id);
             if (w) w.last = d;
+            const wasTerminal = !!TERMINAL[window.aoiProgressStates[id]];
+            window.aoiProgressStates[id] = d.state;
             paint(id, d);
+            if (!wasTerminal && TERMINAL[d.state]) { finished.set(id, d); restack(); }
             schedule(id, d);
             return d;
         } catch (e) {
@@ -72,6 +91,7 @@
             // Done. Stop polling forever — the card stays, rendered from the
             // last payload, and a reload re-reads it from the API once.
             announceReady(id, d);
+            finished.set(id, d);
             watched.delete(id);
             return;
         }
@@ -79,6 +99,7 @@
             // Nothing will move until the user says so, so polling is pure
             // waste; Resume re-arms the watcher through post(). 'superseded'
             // never moves at all -- a newer version owns the question.
+            finished.set(id, d);
             watched.delete(id);
             return;
         }
@@ -198,6 +219,8 @@
             // `watched` by a 'ready'-like schedule, and a resumed one needs to
             // start polling again.
             watched.delete(id);
+            finished.delete(id);
+            delete window.aoiProgressStates[id];
             track(id);
         } catch (e) {
             if (typeof showToast === 'function') showToast('That did not work — try again', 'error');
@@ -212,7 +235,7 @@
         const id = data.aoi_id || notif.reference_id || notif.park_id;
         const name = data.aoi_name || notif.title || id;
         const w = watched.get(id);
-        const cached = w && w.last;
+        const cached = (w && w.last) || finished.get(id);
         const initial = cached ? bodyHTML(cached) : `
             <div class="aoi-prog-line">${esc(data.human || notif.message || 'Queued')}</div>
             <div class="aoi-prog-bar"><div style="width:0%;background:#f59e0b"></div></div>
@@ -232,7 +255,7 @@
     }
 
     function track(id, estimate) {
-        if (!id || watched.has(id)) return;
+        if (!id || watched.has(id) || finished.has(id)) return;
         watched.set(id, { timer: null, last: null, announced: false });
         // First poll immediately: the panel may have been opened days later.
         poll(id);

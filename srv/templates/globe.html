@@ -6110,7 +6110,27 @@
                 // its own polling, so reshaping them here would lose fields.
                 if (aoiRes.ok) {
                     const data = await aoiRes.json();
-                    aoiProgressNotifications = data.notifications || [];
+                    // One card per AOI, not one per runner batch. The queue
+                    // writes an 'aoi_progress' row every time something moved,
+                    // so an AOI that ingested for days has several rows that
+                    // all render the *same* live card from /progress. Keep the
+                    // newest and prefer the one carrying aoi_name.
+                    const byAOI = new Map();
+                    (data.notifications || []).forEach(n => {
+                        const rd = n.reference_data || {};
+                        const id = rd.aoi_id || n.reference_id || n.park_id;
+                        const prev = byAOI.get(id);
+                        if (!prev) { byAOI.set(id, n); return; }
+                        const prd = prev.reference_data || {};
+                        // newest wins, but never lose the AOI's name
+                        const merged = (n.created_at || '') >= (prev.created_at || '') ? n : prev;
+                        if (!(merged.reference_data || {}).aoi_name) {
+                            const name = rd.aoi_name || prd.aoi_name;
+                            if (name) merged.reference_data = Object.assign({}, merged.reference_data, {aoi_name: name});
+                        }
+                        byAOI.set(id, merged);
+                    });
+                    aoiProgressNotifications = [...byAOI.values()];
                 } else {
                     aoiProgressNotifications = [];
                 }
@@ -6204,16 +6224,27 @@
                 });
             });
             
-            // Add AOI progress cards. Priority 0: an AOI ingest is the only
-            // thing in this panel the user personally started and is waiting
-            // days for, so it belongs at the top until it is done.
+            // Add AOI progress cards. Priority 0 *while it is running*: an AOI
+            // ingest is the only thing in this panel the user personally
+            // started and is waiting days for, so it belongs at the top until
+            // it is done. Once it reaches a terminal state (ready / cancelled /
+            // superseded) it is just another thing that happened and sorts by
+            // time with everything else — same as a finished MBTiles export.
+            // A card pinned to the top forever is an unread badge that can
+            // never be cleared. Terminal priority 1 = the same band as the
+            // other long-job system notifications (GFW scan, fire download),
+            // so it sorts among them by time.
+            const AOI_TERMINAL = { ready: 1, cancelled: 1, superseded: 1 };
             aoiProgressNotifications.forEach((notif, i) => {
+                const rd = notif.reference_data || {};
+                const aid = rd.aoi_id || notif.reference_id || notif.park_id;
+                const st = (window.aoiProgressStates || {})[aid];
                 allItems.push({
                     ...notif,
                     _index: i,
                     _source: 'aoi_progress',
                     _sortTime: new Date(notif.created_at).getTime(),
-                    _priority: 0
+                    _priority: AOI_TERMINAL[st] ? 1 : 0
                 });
             });
             
