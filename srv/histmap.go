@@ -33,6 +33,24 @@ type histMapStore struct {
 	meta map[string]string
 	err  error
 	path string
+	rev  string // archive revision, see histMapRev
+}
+
+// histMapRev identifies *this build* of the archive.
+//
+// Tiles are served `immutable, max-age=7d` because within one build they can
+// never change -- but the URL is a pure function of (z, x, y), so a *rebuild*
+// leaves every client pinned to the previous mosaic for a week. That is not
+// hypothetical: the 2026-08-06 truncated build (76 northern sheets) stayed on
+// screen after the 187-sheet rebuild, and only at the zoom levels the browser
+// happened to have cached -- the levels that had been a 204 refetched and
+// filled in. The result reads as "gaps at some zoom levels", i.e. as a tiling
+// bug, not as a stale cache.
+//
+// So the revision (mtime+size of the MBTiles) rides in the tile URL as ?v=.
+// A rebuild changes every tile URL exactly once; immutable stays honest.
+func histMapRev(st os.FileInfo) string {
+	return strconv.FormatInt(st.ModTime().Unix(), 36) + "-" + strconv.FormatInt(st.Size(), 36)
 }
 
 var histMaps = &histMapStore{path: histMapDefaultPath}
@@ -64,6 +82,9 @@ func (h *histMapStore) open() (*sql.DB, map[string]string, error) {
 				meta[k] = v
 			}
 		}
+		if st, serr := os.Stat(h.path); serr == nil {
+			h.rev = histMapRev(st)
+		}
 		h.db, h.meta = db, meta
 		slog.Info("histmap archive opened", "path", h.path, "name", meta["name"], "maxzoom", meta["maxzoom"])
 	})
@@ -89,7 +110,8 @@ func (s *Server) HandleAPIHistMapMeta(w http.ResponseWriter, r *http.Request) {
 		"description": meta["description"],
 		"attribution": meta["attribution"],
 		"format":      meta["format"],
-		"tiles":       "/api/histmap/sudan250k/{z}/{x}/{y}.png",
+		"tiles":       "/api/histmap/sudan250k/{z}/{x}/{y}.png?v=" + histMaps.rev,
+		"rev":         histMaps.rev,
 	}
 	if b := parseFloatCSV(meta["bounds"], 4); b != nil {
 		out["bounds"] = b
