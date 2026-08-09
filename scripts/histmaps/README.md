@@ -376,6 +376,18 @@ Two ordering rules the UI depends on:
 A tile miss returns **204, not 404**: most of the bounding box has no sheet, and
 204 keeps MapLibre's error path and the browser console quiet.
 
+**A rebuild must change the tile URLs.** Tiles are served
+`immutable, max-age=7d`, which is honest *within* one build — but the URL is a
+pure function of (z, x, y), so after a rebuild every client stays pinned to the
+previous mosaic for a week. That happened: the 76-sheet truncated build kept
+rendering after the 187-sheet rebuild, and only at the zoom levels the browser
+had actually cached — the levels that had been a 204 refetched and filled in.
+So it looked like *gaps at some zoom levels*, i.e. a tiling bug, not a stale
+cache. `GET /api/histmap` therefore returns `rev` (mtime+size of the MBTiles,
+`histMapRev`) and puts it in the `tiles` template as `?v=`; a rebuild changes
+every tile URL exactly once. Never hand-write the tile URL in the client —
+take `meta.tiles`.
+
 ## Rights
 
 LOC lists no known copyright restrictions for this item (US government

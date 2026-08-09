@@ -1168,6 +1168,13 @@ everything, and re-adding during `styledata` is silently dropped because the
 Tile misses return **204, not 404**: the series covers 18 of 22 1:1M blocks, so
 most of the bounding box legitimately has no sheet.
 
+**Tiles are `immutable, max-age=7d`, so a rebuild must change their URLs.**
+`GET /api/histmap` returns `rev` (mtime+size of the MBTiles) and bakes it into
+the `tiles` template as `?v=`. Without it the truncated 76-sheet build kept
+rendering after the 187-sheet rebuild, and only at the zoom levels the browser
+had cached — which reads as "gaps at some zoom levels", not as a stale cache.
+The client must use `meta.tiles`, never a hand-written tile path.
+
 Full detail, including why the mosaic is built per-block and why `tile_row` is
 TMS: `scripts/histmaps/README.md`.
 
