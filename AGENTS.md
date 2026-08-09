@@ -1102,31 +1102,50 @@ Nothing blocking. Two nice-to-haves:
 
 ## Historical map overlay (Sudan Survey 1:250,000)
 
-76 scanned sheets (1915-1944) of the Anglo-Egyptian Sudan 1:250k series,
-georeferenced to their own printed 15-arcmin graticule and mosaicked into
-`data/histmaps/sudan250k.mbtiles` (1.4 GB, z4-14, **gitignored derived output**
-— rebuild with `scripts/histmaps/mosaic.sh`, don't commit).
+**187 sheet cells** (editions 1915-1968, median 1933) of the Anglo-Egyptian
+Sudan 1:250k series across all 18 1:1M blocks, georeferenced to their own
+printed 15-arcmin graticule and mosaicked into `data/histmaps/sudan250k.mbtiles`
+(3.6 GB, z0-14, 574k tiles, **gitignored derived output** — rebuild with
+`scripts/histmaps/mosaic.sh`, don't commit). The 49 cells covering
+`XSA_Study_Area` are complete.
 
-⚠️ **The first build covered the wrong half of the country.** `captions.txt` had
+⚠️ **The first build (2026-08-06) covered the wrong half of the country.**
+`captions.txt` had
 been truncated at **264 of 770 lines** by an interrupted `curl`, which dropped
 every South Sudan block — exactly the AOI the overlay exists for. Nothing
 failed: 76/76 sheets georeferenced to 0.0 arcsec, QA was clean, the mosaic
-built, and this README then *documented the missing blocks as absent from the
+built, and the README then *documented the missing blocks as absent from the
 archive*. **A short manifest reads as a small collection, not as a broken
 download.** `catalogue()` now asserts 770 lines and cross-checks the LOC item's
 own `segment_count`; `mosaic.sh` invalidates a block's cached tiles when its
 sheet list changes. Same shape as the AOI "no-op that reads as an answer" rule,
 applied to an input. Full post-mortem: `scripts/histmaps/README.md`.
 
+The same shape bit twice more downstream, both fixed: `qa.json` was rewritten
+wholesale per run (so a final 8-sheet retry pass replaced the record for all
+187 — it is merged by id now), and a hardcoded `"76 sheets"` in the MBTiles
+description survived a rebuild that more than doubled coverage (`refresh_meta.py`
+derives it from `data/histmaps/geo/`). **Never type a count that describes a
+variable input.**
+
+8 cells fail to register and that is correct, not a gap: all are near-blank
+Libyan/Nubian Desert sheets (blocks 43/44/45, median ink 0.021 vs 0.085 corpus)
+with too little printed ink for the graticule detector to fit a ladder. It
+declines rather than guessing — a wrong warp on a blank sheet would be invisible
+and permanent.
+
 Rebuild is a throttled resumable systemd oneshot
-(`scripts/histmaps/histmap-rebuild.service` → `rebuild_night.sh`), and
-`select.py --priority-bbox` orders the AOI's sheets first so an interrupted run
-still covers what matters.
+(`scripts/histmaps/histmap-rebuild.service` → `rebuild_night.sh`, ~22 h for 128
+sheets + 4 h mosaic), and `select.py --priority-bbox` orders the AOI's sheets
+first so an interrupted run still covers what matters. JP2 fetches are bounded
+on *throughput* (`--speed-limit`/`--max-time`), because `--retry` does not cover
+a stall: one curl sat on an idle connection for 22 min at load 0.00.
 
 | Piece | Where |
 |---|---|
 | Fetch + georeference | `scripts/histmaps/sudan250k.py`, `select.py`, `runall.sh` |
-| Mosaic to MBTiles | `scripts/histmaps/mosaic.sh` (~2.5 h, resumable) |
+| Mosaic to MBTiles | `scripts/histmaps/mosaic.sh` (~4 h, resumable); `refresh_meta.py` for metadata only |
+| Overnight rebuild | `scripts/histmaps/rebuild_night.sh` + `histmap-rebuild.service` |
 | Serving | `srv/histmap.go` — `GET /api/histmap`, `/api/histmap/sudan250k/{z}/{x}/{y}.png`, `/download` |
 | UI | admin panel -> Map Settings -> Historical Maps (`HistMap` in globe.html) |
 | Share link | `?histmap=sudan250k` |

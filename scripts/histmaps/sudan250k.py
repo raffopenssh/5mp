@@ -443,8 +443,35 @@ def main():
                                       title=c["title"], error=str(err)))
                 else:
                     qa.append(r)
-        json.dump(dict(ok=qa, failed=fails), open(os.path.join(ROOT,"qa.json"),"w"), indent=1)
-        print(f"\n{len(qa)} georeferenced, {len(fails)} failed -> qa.json")
+        # qa.json is the QA record for the WHOLE corpus, not for this
+        # invocation. It used to be overwritten wholesale, so a --resume run
+        # covering 8 retried sheets replaced the stats for all 187 -- and the
+        # only thing that made that survivable was a hand-made /tmp backup,
+        # which a VM reboot then deleted. Same shape as the truncated
+        # captions.txt this whole rebuild exists to fix: a record that silently
+        # gets SMALLER while every step reports success.
+        #
+        # So: merge by id. This run wins for the sheets it touched, a sheet
+        # that now succeeds drops out of `failed`, and everything it did not
+        # touch is carried through untouched.
+        qa_path = os.path.join(ROOT, "qa.json")
+        prev = {"ok": [], "failed": []}
+        if os.path.exists(qa_path):
+            try:
+                prev = json.load(open(qa_path))
+            except Exception as ex:
+                print(f"warning: unreadable qa.json ({ex}); starting fresh")
+        merged_ok = {x["id"]: x for x in prev.get("ok", [])}
+        merged_ok.update({x["id"]: x for x in qa})
+        merged_fail = {x["id"]: x for x in prev.get("failed", [])}
+        merged_fail.update({x["id"]: x for x in fails})
+        for cid in merged_ok:                    # a success clears a past failure
+            merged_fail.pop(cid, None)
+        json.dump(dict(ok=sorted(merged_ok.values(), key=lambda x: x["id"]),
+                       failed=sorted(merged_fail.values(), key=lambda x: x["id"])),
+                  open(qa_path, "w"), indent=1)
+        print(f"\n{len(qa)} georeferenced, {len(fails)} failed this run; "
+              f"qa.json now {len(merged_ok)} ok / {len(merged_fail)} failed")
         # Ink coverage is the tracing QA: ~0.02-0.12 is a normal sheet. Near 0
         # means the trace ate the map (over-strict threshold / blank scan);
         # high means paper grain leaked through and survived speckle removal.
