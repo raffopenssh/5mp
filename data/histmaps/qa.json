@@ -1,0 +1,53 @@
+{
+ "ok": [],
+ "failed": [
+  {
+   "id": "cs000376",
+   "sheet": "44-M",
+   "title": "Libyan Desert Sheet 44-M Dec 1925",
+   "error": "no neatline candidates"
+  },
+  {
+   "id": "cs000389",
+   "sheet": "44-P",
+   "title": "J. El'ein Sheet 44-P Jul 1934",
+   "error": "no neatline candidates"
+  },
+  {
+   "id": "cs000192",
+   "sheet": "45-M",
+   "title": "Eilai Sheet 45-M Jan 1928",
+   "error": "no neatline candidates"
+  },
+  {
+   "id": "cs000373",
+   "sheet": "44-L",
+   "title": "Abu Tabari Sheet 44-L  Jul 1934",
+   "error": "no neatline candidates"
+  },
+  {
+   "id": "cs000324",
+   "sheet": "43-L",
+   "title": "Ein Aga Sheet 43-L Jun 1928",
+   "error": "no neatline candidates"
+  },
+  {
+   "id": "cs000349",
+   "sheet": "44-F",
+   "title": "Bir En Natrun Sheet 44-F Jun 1933",
+   "error": "no neatline candidates"
+  },
+  {
+   "id": "cs000340",
+   "sheet": "44-D",
+   "title": "J. Abyad Sheet 44-D Dec 1933",
+   "error": "OpenCV(5.0.0) /io/opencv/modules/imgproc/src/morph.dispatch.cpp:1207: error: (-215:Assertion failed) !_src.empty() in function 'morphologyEx'\n"
+  },
+  {
+   "id": "cs000322",
+   "sheet": "43-D",
+   "title": "Hagar Waqif 43-D Jun 1928",
+   "error": "no rectangle matched expected aspect"
+  }
+ ]
+}

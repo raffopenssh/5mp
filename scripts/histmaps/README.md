@@ -192,6 +192,82 @@ python3 overlay.py geo/cs000029_geo.tif /tmp/check.png   # GADM CAF/SDN/SSD in c
 `qa.json` flags any sheet with aspect error > 2% or unmeasured interior rungs.
 Those are the ones worth eyeballing; the rest are fine.
 
+### Result of the 195-cell run (2026-08-08)
+
+**187 of 195 sheet cells georeferenced**, one edition each, no duplicate cells,
+every output landing on its IMW cell with **bounds error 0.0 arcsec** and 35
+control points each. Editions 1915-1968, median 1933. All 18 blocks present:
+
+```
+33  6   34  8   35 12   36  8   43  2   44 11
+45 15   46  8   53  7   54 16   55 16   56  9
+64  5   65 16   66 16   67  4   77 12   78 16
+```
+
+**The 49 cells covering the XSA study area are complete (49/49)** — that was
+the point of the rebuild, and of `--priority-bbox`.
+
+Mosaic: 3.6 GB, z0-14, 574k tiles (398,893 at z14).
+
+#### The 8 failures are one failure, and it is honest
+
+| cell | sheet | ink |
+|---|---|---|
+| 43-D | Hagar Waqif | 0.012 |
+| 43-L | Ein Aga | 0.019 |
+| 44-D | J. Abyad | 0.017 |
+| 44-F | Bir En Natrun | 0.023 |
+| 44-L | Abu Tabari | 0.032 |
+| 44-M | Libyan Desert | 0.012 |
+| 44-P | J. El'ein | 0.037 |
+| 45-M | Eilai | 0.050 |
+
+Seven report `no neatline candidates`, one `no rectangle matched expected
+aspect`, one dies inside an OpenCV morphology call. They are **not** scattered:
+every one is in blocks 43/44/45, the Libyan and Nubian Desert, and their median
+ink coverage is **0.021 against a corpus median of 0.085** — four of them are in
+the twenty sparsest cells in the whole series. These are near-blank sheets of
+empty desert, and the graticule detector needs printed straight ink to fit its
+ladder to. There is not enough map on the paper to register the paper.
+
+This is the detector declining rather than guessing, which is the behaviour we
+want: a wrong warp on a blank sheet would be invisible in the mosaic and wrong
+forever. All 8 are far outside any area of interest. 45-M Eilai additionally
+fails identically on its other edition (cs000191, 1935), so that cell is
+genuinely unrecoverable by this method.
+
+If they are ever needed: they would have to be registered from the sheet corners
+(the extent is known a priori from the sheet number) rather than from detected
+graticule — i.e. `--method affine` with synthesised corner GCPs. Not done,
+because an unvalidated warp is worse than a hole.
+
+#### Caveat that outlives all of the above
+
+The 1:250k series was compiled from route traverses, so **the map's own interior
+geometry is the dominant error**, not the georeferencing. Rivers and hills on a
+1909 sheet can sit kilometres off truth even when the graticule is registered
+perfectly. Georeference to the graticule (as here) and treat the content as the
+historical claim it is — do not rubber-sheet the content onto modern rivers, or
+you destroy the evidence.
+
+#### qa.json is merged, not overwritten
+
+`sudan250k.py` merges `qa.json` **by id** across runs. It used to rewrite the
+file wholesale, so the final `--resume` pass over 8 retried sheets replaced the
+record for all 187 — and the only thing that had been making that survivable was
+a hand-made `/tmp/qa_full_backup.json`, which a VM reboot deleted. The QA record
+for a corpus must not depend on a file in `/tmp`, and it must not be able to
+shrink while every step reports success. (That is the *same* failure as the
+truncated `captions.txt` this rebuild exists to fix, one directory downstream.)
+
+The per-sheet quality fields (aspect error, non-affine deformation, rung counts)
+for the runs before the fix are gone; what is recoverable from the `.points`
+sidecars — bounds error and GCP count, both perfect — is in
+`data/histmaps/qa_bounds_recon.json`. Quality numbers from the earlier
+76-sheet run, which are representative: 20/69 sheets over the 2% aspect gate, 6
+over 5%, non-affine deformation 628 m median / 1447 m max, all dominated by the
+modified-polyconic projection the TPS absorbs rather than by registration error.
+
 ### Result of the first (truncated) run (2026-08-06/07) — superseded
 
 Kept because the numbers are a good calibration of what a *correct* run of a
@@ -227,10 +303,20 @@ rubber-sheet the content onto modern rivers, or you destroy the evidence.
 Those are the archival artefact; the *usable* one is a single tile pyramid:
 
 ```bash
-./mosaic.sh          # ~2.5 h, resumable -> data/histmaps/sudan250k.mbtiles
+./mosaic.sh          # ~4 h at 187 sheets, resumable -> data/histmaps/sudan250k.mbtiles
 ```
 
-z0-14, EPSG:3857, transparent-background RGBA PNG. (The 76-sheet build was\n1.4 GB / 226k tiles; the 195-sheet build is correspondingly larger.)
+3.6 GB, z0-14, 574k tiles (398,893 at z14), EPSG:3857, transparent-background
+RGBA PNG. (The earlier truncated 76-sheet build was 1.4 GB / 226k tiles.)
+
+`refresh_meta.py` rewrites the `metadata` table — name, bounds, and a
+**derived** sheet/block count — without touching tiles. It is separate from
+`mosaic.sh` step 4 on purpose: that step also deletes the overview pyramid (an
+interrupted `gdaladdo` otherwise leaves a half-populated zoom level), so on the
+3.6 GB file re-running it just to fix a string would throw away ~40 min of
+rebuilding. The counts are read from `data/histmaps/geo/`, never typed: a
+hardcoded `"76 sheets"` survived a rebuild that more than doubled the coverage
+and shipped inside the layer's own description.
 
 Three things about the merge are load-bearing:
 

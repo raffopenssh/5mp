@@ -193,6 +193,13 @@ func (s *Server) Serve(addr string) error {
 	// API routes
 	mux.HandleFunc("GET /api/version", s.HandleAPIVersion)
 	mux.HandleFunc("GET /api/pipeline-status", s.HandleAPIPipelineStatus)
+
+	// Historical map overlay (Sudan Survey 1:250k, 1908-1944). Not under
+	// /api/parks/* on purpose: it is a basemap-level raster keyed by tile
+	// coordinate, not by park id.
+	mux.HandleFunc("GET /api/histmap", s.HandleAPIHistMapMeta)
+	mux.HandleFunc("GET /api/histmap/sudan250k/download", s.HandleAPIHistMapDownload)
+	mux.HandleFunc("GET /api/histmap/sudan250k/{z}/{x}/{y}", s.HandleAPIHistMapTile)
 	mux.HandleFunc("GET /api/grid", s.HandleAPIGrid)
 	mux.HandleFunc("GET /api/nearby-places", s.HandleAPINearbyPlaces)
 	mux.HandleFunc("GET /api/grid/{id}/effort", s.HandleAPIGridCellEffort)

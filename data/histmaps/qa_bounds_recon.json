@@ -1,0 +1,1311 @@
+[
+ {
+  "id": "cs000009",
+  "sheet": "65-J",
+  "year": 1936,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000020",
+  "sheet": "65-H",
+  "year": 1937,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000028",
+  "sheet": "65-I",
+  "year": 1925,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000034",
+  "sheet": "33-I",
+  "year": 1928,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000035",
+  "sheet": "33-J",
+  "year": 1928,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000036",
+  "sheet": "33-O",
+  "year": 1928,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000037",
+  "sheet": "33-K",
+  "year": 1928,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000038",
+  "sheet": "33-L",
+  "year": 1928,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000039",
+  "sheet": "33-P",
+  "year": 1935,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000041",
+  "sheet": "34-I",
+  "year": 1934,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000044",
+  "sheet": "34-J",
+  "year": 1934,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000048",
+  "sheet": "34-K",
+  "year": 1934,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000052",
+  "sheet": "34-L",
+  "year": 1934,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000055",
+  "sheet": "34-M",
+  "year": 1934,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000058",
+  "sheet": "34-N",
+  "year": 1934,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000061",
+  "sheet": "34-O",
+  "year": 1934,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000066",
+  "sheet": "34-P",
+  "year": 1934,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000067",
+  "sheet": "35-D",
+  "year": 1929,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000069",
+  "sheet": "35-G",
+  "year": 1927,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000072",
+  "sheet": "35-H",
+  "year": 1931,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000076",
+  "sheet": "35-I",
+  "year": 1935,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000082",
+  "sheet": "35-J",
+  "year": 1942,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000085",
+  "sheet": "35-K",
+  "year": 1930,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000089",
+  "sheet": "35-L",
+  "year": 1932,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000093",
+  "sheet": "35-M",
+  "year": 1938,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000100",
+  "sheet": "35-O",
+  "year": 1926,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000103",
+  "sheet": "35-P",
+  "year": 1929,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000107",
+  "sheet": "36-E",
+  "year": 1935,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000111",
+  "sheet": "36-I",
+  "year": 1936,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000114",
+  "sheet": "36-M",
+  "year": 1931,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000117",
+  "sheet": "46-E",
+  "year": 1932,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000121",
+  "sheet": "46-F",
+  "year": 1931,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000126",
+  "sheet": "46-A",
+  "year": 1930,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000132",
+  "sheet": "46-M",
+  "year": 1932,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000133",
+  "sheet": "46-I",
+  "year": 1930,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000137",
+  "sheet": "46-N",
+  "year": 1940,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000138",
+  "sheet": "46-O",
+  "year": 1940,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000140",
+  "sheet": "46-J",
+  "year": 1934,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000144",
+  "sheet": "45-A",
+  "year": 1933,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000146",
+  "sheet": "45-B",
+  "year": 1929,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000151",
+  "sheet": "45-C",
+  "year": 1932,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000154",
+  "sheet": "45-D",
+  "year": 1938,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000158",
+  "sheet": "45-E",
+  "year": 1932,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000162",
+  "sheet": "45-F",
+  "year": 1933,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000165",
+  "sheet": "45-G",
+  "year": 1931,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000171",
+  "sheet": "45-H",
+  "year": 1918,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000174",
+  "sheet": "45-I",
+  "year": 1935,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000176",
+  "sheet": "45-J",
+  "year": 1933,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000183",
+  "sheet": "45-K",
+  "year": 1930,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000187",
+  "sheet": "45-L",
+  "year": 1931,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000195",
+  "sheet": "45-N",
+  "year": 1933,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000201",
+  "sheet": "45-O",
+  "year": 1933,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000205",
+  "sheet": "45-P",
+  "year": 1930,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000212",
+  "sheet": "54-M",
+  "year": 1944,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000216",
+  "sheet": "54-N",
+  "year": 1933,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000223",
+  "sheet": "54-A",
+  "year": 1934,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000226",
+  "sheet": "54-B",
+  "year": 1934,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000229",
+  "sheet": "54-C",
+  "year": 1933,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000233",
+  "sheet": "54-D",
+  "year": 1932,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000237",
+  "sheet": "54-E",
+  "year": 1930,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000238",
+  "sheet": "54-O",
+  "year": 1915,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000239",
+  "sheet": "54-P",
+  "year": 1935,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000246",
+  "sheet": "54-G",
+  "year": 1934,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000248",
+  "sheet": "65-K",
+  "year": 1936,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000249",
+  "sheet": "65-L",
+  "year": 1936,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000253",
+  "sheet": "54-H",
+  "year": 1934,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000259",
+  "sheet": "54-I",
+  "year": 1937,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000265",
+  "sheet": "54-J",
+  "year": 1927,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000268",
+  "sheet": "54-K",
+  "year": 1935,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000274",
+  "sheet": "54-L",
+  "year": 1933,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000281",
+  "sheet": "54-F",
+  "year": 1936,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000285",
+  "sheet": "53-K",
+  "year": 1924,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000289",
+  "sheet": "53-O",
+  "year": 1930,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000290",
+  "sheet": "53-L",
+  "year": 1924,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000293",
+  "sheet": "53-P",
+  "year": 1924,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000294",
+  "sheet": "53-D",
+  "year": 1931,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000298",
+  "sheet": "53-G",
+  "year": 1932,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000301",
+  "sheet": "53-H",
+  "year": 1932,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000305",
+  "sheet": "64-C",
+  "year": 1932,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000310",
+  "sheet": "64-D",
+  "year": 1924,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000312",
+  "sheet": "64-H",
+  "year": 1932,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000315",
+  "sheet": "64-L",
+  "year": 1930,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000319",
+  "sheet": "64-P",
+  "year": 1932,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000323",
+  "sheet": "43-H",
+  "year": 1928,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000326",
+  "sheet": "43-F",
+  "year": 1928,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000329",
+  "sheet": "44-B",
+  "year": 1942,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000331",
+  "sheet": "44-A",
+  "year": 1934,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000335",
+  "sheet": "44-C",
+  "year": 1933,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000337",
+  "sheet": "44-H",
+  "year": 1942,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000345",
+  "sheet": "44-E",
+  "year": 1934,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000353",
+  "sheet": "44-G",
+  "year": 1935,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000359",
+  "sheet": "44-J",
+  "year": 1933,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000361",
+  "sheet": "44-I",
+  "year": 1934,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000369",
+  "sheet": "44-K",
+  "year": 1930,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000380",
+  "sheet": "44-N",
+  "year": 1930,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000388",
+  "sheet": "44-O",
+  "year": 1930,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000395",
+  "sheet": "55-A",
+  "year": 1934,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000403",
+  "sheet": "55-B",
+  "year": 1927,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000406",
+  "sheet": "55-C",
+  "year": 1934,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000410",
+  "sheet": "55-D",
+  "year": 1929,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000413",
+  "sheet": "55-E",
+  "year": 1929,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000421",
+  "sheet": "55-F",
+  "year": 1934,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000425",
+  "sheet": "55-G",
+  "year": 1934,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000433",
+  "sheet": "55-H",
+  "year": 1935,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000438",
+  "sheet": "55-I",
+  "year": 1933,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000445",
+  "sheet": "55-J",
+  "year": 1932,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000454",
+  "sheet": "55-K",
+  "year": 1925,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000459",
+  "sheet": "55-L",
+  "year": 1925,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000462",
+  "sheet": "55-M",
+  "year": 1936,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000465",
+  "sheet": "55-N",
+  "year": 1937,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000468",
+  "sheet": "36-O",
+  "year": 1968,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000469",
+  "sheet": "55-O",
+  "year": 1934,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000474",
+  "sheet": "55-P",
+  "year": 1925,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000476",
+  "sheet": "56-A",
+  "year": 1935,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000479",
+  "sheet": "56-B",
+  "year": 1940,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000480",
+  "sheet": "56-C",
+  "year": 1940,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000481",
+  "sheet": "56-E",
+  "year": 1941,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000483",
+  "sheet": "56-F",
+  "year": 1940,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000488",
+  "sheet": "56-I",
+  "year": 1932,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000490",
+  "sheet": "56-J",
+  "year": 1940,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000493",
+  "sheet": "56-M",
+  "year": 1935,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000495",
+  "sheet": "56-N",
+  "year": 1940,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000496",
+  "sheet": "66-A",
+  "year": 1936,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000499",
+  "sheet": "66-P",
+  "year": 1933,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000504",
+  "sheet": "66-O",
+  "year": 1966,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000507",
+  "sheet": "66-B",
+  "year": 1936,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000513",
+  "sheet": "66-C",
+  "year": 1932,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000524",
+  "sheet": "66-N",
+  "year": 1932,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000531",
+  "sheet": "66-M",
+  "year": 1930,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000533",
+  "sheet": "66-D",
+  "year": 1930,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000537",
+  "sheet": "66-E",
+  "year": 1937,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000541",
+  "sheet": "66-L",
+  "year": 1934,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000543",
+  "sheet": "66-F",
+  "year": 1935,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000546",
+  "sheet": "66-K",
+  "year": 1932,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000552",
+  "sheet": "66-I",
+  "year": 1936,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000554",
+  "sheet": "66-H",
+  "year": 1930,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000566",
+  "sheet": "66-J",
+  "year": 1932,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000569",
+  "sheet": "66-G",
+  "year": 1930,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000579",
+  "sheet": "67-A",
+  "year": 1935,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000582",
+  "sheet": "67-B",
+  "year": 1941,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000583",
+  "sheet": "67-E",
+  "year": 1941,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000585",
+  "sheet": "67-F",
+  "year": 1940,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000588",
+  "sheet": "77-F",
+  "year": 1932,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000590",
+  "sheet": "77-D",
+  "year": 1927,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000596",
+  "sheet": "77-C",
+  "year": 1930,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000598",
+  "sheet": "77-B",
+  "year": 1933,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000601",
+  "sheet": "35-B",
+  "year": 1968,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000602",
+  "sheet": "36-A",
+  "year": 1938,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000603",
+  "sheet": "35-A",
+  "year": 1932,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000604",
+  "sheet": "77-A",
+  "year": 1932,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000608",
+  "sheet": "77-G",
+  "year": 1932,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000614",
+  "sheet": "77-H",
+  "year": 1934,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000617",
+  "sheet": "77-J",
+  "year": 1933,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000620",
+  "sheet": "77-K",
+  "year": 1932,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000627",
+  "sheet": "77-L",
+  "year": 1925,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000633",
+  "sheet": "77-O",
+  "year": 1931,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000636",
+  "sheet": "77-P",
+  "year": 1931,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000640",
+  "sheet": "78-A",
+  "year": 1924,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000643",
+  "sheet": "78-B",
+  "year": 1932,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000650",
+  "sheet": "78-C",
+  "year": 1932,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000653",
+  "sheet": "78-D",
+  "year": 1930,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000659",
+  "sheet": "78-E",
+  "year": 1930,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000662",
+  "sheet": "78-F",
+  "year": 1933,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000667",
+  "sheet": "78-G",
+  "year": 1932,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000668",
+  "sheet": "36-G",
+  "year": 1966,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000671",
+  "sheet": "78-H",
+  "year": 1935,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000675",
+  "sheet": "78-I",
+  "year": 1934,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000677",
+  "sheet": "78-J",
+  "year": 1933,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000684",
+  "sheet": "78-K",
+  "year": 1930,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000689",
+  "sheet": "36-L",
+  "year": 1966,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000690",
+  "sheet": "78-L",
+  "year": 1927,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000694",
+  "sheet": "78-M",
+  "year": 1931,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000698",
+  "sheet": "36-N",
+  "year": 1966,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000699",
+  "sheet": "78-N",
+  "year": 1935,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000704",
+  "sheet": "78-O",
+  "year": 1930,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000709",
+  "sheet": "78-P",
+  "year": 1924,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000711",
+  "sheet": "65-B",
+  "year": 1932,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000712",
+  "sheet": "65-E",
+  "year": 1932,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000718",
+  "sheet": "65-M",
+  "year": 1932,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000723",
+  "sheet": "65-D",
+  "year": 1936,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000727",
+  "sheet": "65-G",
+  "year": 1936,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000731",
+  "sheet": "65-F",
+  "year": 1936,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000737",
+  "sheet": "65-C",
+  "year": 1931,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000754",
+  "sheet": "65-N",
+  "year": 1933,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000755",
+  "sheet": "65-A",
+  "year": 1936,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000763",
+  "sheet": "65-O",
+  "year": 1930,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ },
+ {
+  "id": "cs000770",
+  "sheet": "65-P",
+  "year": 1931,
+  "bounds_err_arcsec": 0.0,
+  "n_gcps": 35
+ }
+]

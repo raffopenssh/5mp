@@ -24,20 +24,11 @@ while tmux has-session -t histfix 2>/dev/null; do say "waiting for histfix..."; 
 # the retry run (histfix) writes into the script dir and has no sweeper
 mv cs*_geo.tif cs*_geo.tif.points "$GEO"/ 2>/dev/null
 rm -f cs*.jp2
-# qa.json from the retry run only covers those 3 sheets -- merge, don't clobber
-python3 - <<'PY'
-import json,os
-full='/tmp/qa_full_backup.json'; new='/home/exedev/5mp/scripts/histmaps/qa.json'
-dst='/home/exedev/5mp/data/histmaps/qa.json'
-a=json.load(open(full)) if os.path.exists(full) else {'ok':[],'failed':[]}
-b=json.load(open(new))
-ok={x['id']:x for x in a['ok']}; ok.update({x['id']:x for x in b['ok']})
-fid={x['id'] for x in b['ok']}
-fail=[x for x in a['failed']+b['failed'] if x['id'] not in fid]
-seen=set(); fail=[x for x in fail if not (x['id'] in seen or seen.add(x['id']))]
-json.dump({'ok':sorted(ok.values(),key=lambda x:x['id']),'failed':fail}, open(dst,'w'), indent=1)
-print('qa merged: ok',len(ok),'failed',len(fail))
-PY
+# qa.json is merged by sudan250k.py itself now (by id, across runs), so this is
+# a plain copy. The old version reconstructed the full record from a hand-made
+# /tmp backup -- which a reboot deleted, leaving qa.json holding only the last
+# retry pass. A QA record must not depend on a file in /tmp.
+cp qa.json /home/exedev/5mp/data/histmaps/qa.json 2>/dev/null
 say "sheets: $(ls "$GEO"/*_geo.tif | wc -l)"
 
 # 1. group sheets by 1:1M block via the catalogue
@@ -114,31 +105,20 @@ fi
 
 # 4. bounds/metadata over the union, then the z0-13 pyramid
 python3 - <<'PY'
-import sqlite3, math
+import sqlite3
 p='/home/exedev/5mp/data/histmaps/sudan250k.mbtiles'
 c=sqlite3.connect(p)
-# Any partial pyramid from an interrupted gdaladdo must go: it would be kept as-is
-# and the file would ship with a half-populated zoom level.
+# Any partial pyramid from an interrupted gdaladdo must go: it would be kept
+# as-is and the file would ship with a half-populated zoom level.
 c.execute("delete from tiles where zoom_level < (select max(zoom_level) from tiles)")
 c.commit(); c.execute("vacuum"); c.commit()
-z,x0,x1,y0,y1=c.execute("select max(zoom_level),min(tile_column),max(tile_column),min(tile_row),max(tile_row) from tiles").fetchone()
-n=2**z
-# MBTiles tile_row is TMS (y increases NORTHWARD), so the minimum row is the
-# SOUTH edge. Getting this backwards writes a bounds string with south>north,
-# which GDAL rejects with "Invalid value for 'bounds' metadata".
-def lon(xt): return xt/n*360.0-180.0
-def lat(rt): return math.degrees(math.atan(math.sinh(math.pi*(2.0*rt/n-1.0))))
-w,e,s_,nn = lon(x0), lon(x1+1), lat(y0), lat(y1+1)
-meta={'name':'Sudan Survey 1:250,000 (1908-1944)','type':'overlay','version':'1.1',
- 'format':'png','minzoom':'0','maxzoom':str(z),
- 'bounds':f'{w:.6f},{s_:.6f},{e:.6f},{nn:.6f}',
- 'center':f'{(w+e)/2:.6f},{(s_+nn)/2:.6f},7',
- 'attribution':'Sudan Survey Dept., Khartoum / Library of Congress g8310m.gct00289 (no known copyright restrictions)',
- 'description':'Anglo-Egyptian Sudan 1:250,000 series, 76 sheets, one edition per sheet cell. Transparent traced-ink overlay, TPS-warped to the printed 15-arcmin graticule and clipped to the neatline. Interior geometry is the 1900s-1940s route-traverse survey, not modern truth.'}
-c.execute('delete from metadata')
-c.executemany('insert into metadata values (?,?)', meta.items())
-c.commit(); print('metadata', meta['bounds'], 'maxzoom', z)
+print('pyramid cleared')
 PY
+
+# Metadata is a separate script so it can be re-run to fix a string without
+# touching tiles -- the block above throws away ~40 min of gdaladdo, so it must
+# not be the only way to correct a description. Counts are derived from geo/.
+python3 refresh_meta.py
 
 say "building overviews"
 gdaladdo -r average "$OUT" 2 4 8 16 32 64 128 256 512 1024 -q
