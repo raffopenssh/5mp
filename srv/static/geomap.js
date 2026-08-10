@@ -49,7 +49,15 @@
     }
 
     function st(id) {
-        if (!state[id]) state[id] = { on: false, opacity: 0.55, hidden: new Set(), isolate: null };
+        if (!state[id]) state[id] = {
+            on: false, opacity: 0.55, hidden: new Set(), isolate: null,
+            // Commodity chips are a MULTI-select: the isolation is the UNION
+            // of the host sets of every selected commodity. "gold" alone and
+            // "gold + copper" are both ordinary questions, and a radio button
+            // makes the second one impossible without hand-picking codes out
+            // of a 47-row legend.
+            commodities: new Set()
+        };
         return state[id];
     }
 
@@ -214,18 +222,35 @@
         return new Set(codes.filter(c => known.has(c)));
     }
 
-    // If a restored isolation is exactly one commodity's host set, light that
-    // chip up again — otherwise the shared link shows the right polygons under
-    // a panel that claims nothing is selected.
-    function commodityMatching(id, codes) {
+    // Every commodity this sheet mentions -> the codes that can host it.
+    function hostMap(id) {
         const all = {};
         classesOf(id).forEach(c => (c.commodities || []).forEach(k => {
             (all[k] = all[k] || []).push(c.code);
         }));
-        for (const k of Object.keys(all)) {
-            if (all[k].length === codes.size && all[k].every(c => codes.has(c))) return k;
-        }
-        return null;
+        return all;
+    }
+
+    // Which chips a given isolation lights up. Derived rather than stored, so
+    // a chip stays honest after the user hand-hides one of its units from the
+    // legend: a commodity reads as selected only while ALL of its host units
+    // are actually drawn.
+    function commoditiesCovered(id, codes) {
+        const all = hostMap(id);
+        return new Set(Object.keys(all).filter(
+            k => all[k].length && all[k].every(c => codes.has(c))));
+    }
+
+    // isolate := union of the selected commodities' host sets. Empty selection
+    // is "no isolation" (show everything), never "show nothing" — an empty map
+    // is indistinguishable from a sheet with no data here.
+    function applyCommodities(id) {
+        const o = st(id);
+        if (!o.commodities.size) { o.isolate = null; return; }
+        const all = hostMap(id);
+        const codes = new Set();
+        o.commodities.forEach(k => (all[k] || []).forEach(c => codes.add(c)));
+        o.isolate = codes.size ? codes : null;
     }
 
     const GeoMap = {
@@ -272,33 +297,45 @@
             // Hiding while isolated means "drop this one from the isolation",
             // which is the only reading that does not silently discard the
             // isolation the user just built.
-            if (o.isolate) { o.isolate.delete(code); if (!o.isolate.size) o.isolate = null; }
+            if (o.isolate) {
+                o.isolate.delete(code);
+                if (!o.isolate.size) o.isolate = null;
+                // The chips describe the isolation, so re-derive them rather
+                // than leaving "gold" lit next to a gold-bearing unit the user
+                // just switched off.
+                o.commodities = o.isolate ? commoditiesCovered(id, o.isolate) : new Set();
+            }
             else if (o.hidden.has(code)) o.hidden.delete(code);
             else o.hidden.add(code);
             refresh(id);
             if (typeof renderGeoMapPanel === 'function') renderGeoMapPanel();
         },
 
-        // The headline interaction: "show me everything that can host gold".
-        // Isolation, not a hide-list, so it is one click to enter and one to
-        // leave, and it composes with nothing the user has to undo.
-        isolateCommodity(id, commodity) {
+        // The headline interaction: "show me everything that can host gold" —
+        // and, one more click, "...or copper". Each chip is an independent
+        // switch over the same isolation, so the map shows the union and the
+        // panel shows exactly which switches are down.
+        toggleCommodity(id, commodity) {
             const o = st(id);
-            const codes = classesOf(id)
-                .filter(c => (c.commodities || []).indexOf(commodity) >= 0)
-                .map(c => c.code);
-            const same = o.isolate && o.isolate.size === codes.length &&
-                codes.every(c => o.isolate.has(c));
-            o.isolate = same ? null : new Set(codes);
-            o.activeCommodity = same ? null : commodity;
+            // Hand-hidden units from the legend are a different question and
+            // would silently subtract from the union; drop them when a chip is
+            // used, the same way isolation already wins over `hidden`.
+            if (o.commodities.has(commodity)) o.commodities.delete(commodity);
+            else o.commodities.add(commodity);
+            applyCommodities(id);
             if (!o.on) { this.set(id, true, { quiet: true }); }
             refresh(id);
             if (typeof renderGeoMapPanel === 'function') renderGeoMapPanel();
         },
 
+        // Old name kept: share links and any caller predating the multi-select.
+        isolateCommodity(id, commodity) { return this.toggleCommodity(id, commodity); },
+
+        commodityOn(id, commodity) { return st(id).commodities.has(commodity); },
+
         showAll(id) {
             const o = st(id);
-            o.hidden = new Set(); o.isolate = null; o.activeCommodity = null;
+            o.hidden = new Set(); o.isolate = null; o.commodities = new Set();
             refresh(id);
             if (typeof renderGeoMapPanel === 'function') renderGeoMapPanel();
         },
@@ -321,13 +358,19 @@
             const on = order.filter(id => st(id).on);
             if (!on.length) return null;
             const p = { geomap: on.join(',') };
-            const only = [], hide = [], op = [];
+            const only = [], hide = [], op = [], host = [];
             on.forEach(id => {
                 const o = st(id);
-                if (o.isolate && o.isolate.size) only.push(id + ':' + [...o.isolate].join('|'));
+                // A commodity selection travels as the commodities, not as the
+                // codes they expand to: a rebuild can merge or rename units,
+                // and "everything that can host gold" is still answerable
+                // afterwards while a frozen code list is not.
+                if (o.commodities.size) host.push(id + ':' + [...o.commodities].join('|'));
+                else if (o.isolate && o.isolate.size) only.push(id + ':' + [...o.isolate].join('|'));
                 else if (o.hidden.size) hide.push(id + ':' + [...o.hidden].join('|'));
                 if (Math.abs(o.opacity - 0.55) > 0.01) op.push(id + ':' + Math.round(o.opacity * 100));
             });
+            if (host.length) p.geomap_host = host.join(',');
             if (only.length) p.geomap_only = only.join(',');
             if (hide.length) p.geomap_hide = hide.join(',');
             if (op.length) p.geomap_opacity = op.join(',');
@@ -361,7 +404,23 @@
                     return;
                 }
                 st(id).isolate = codes;
-                st(id).activeCommodity = commodityMatching(id, codes);
+                st(id).commodities = commoditiesCovered(id, codes);
+            });
+            // Commodity chips last: they are the authoritative selection and
+            // recompute `isolate` from the sheet as built.
+            parse(params.get('geomap_host'), (id, v) => {
+                const known = new Set(Object.keys(hostMap(id)));
+                const want = v.split('|').filter(k => known.has(k));
+                if (!want.length) {
+                    if (typeof showToast === 'function') {
+                        showToast('Geology selection is out of date',
+                            'That link names rock-type hosts this build of the sheet does not list \u2014 showing all units.',
+                            null, null, 'warning');
+                    }
+                    return;
+                }
+                st(id).commodities = new Set(want);
+                applyCommodities(id);
             });
             for (const id of want) await this.set(id, true, { quiet: true, fly: false });
         }
