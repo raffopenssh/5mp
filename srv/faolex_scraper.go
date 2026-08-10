@@ -140,7 +140,7 @@ var proxyGitHubSources = []string{
 func fetchProxies() []string {
 	var all []string
 	client := &http.Client{Timeout: 20 * time.Second}
-	
+
 	for _, source := range proxyGitHubSources {
 		resp, err := client.Get(source)
 		if err != nil {
@@ -151,7 +151,7 @@ func fetchProxies() []string {
 		if err != nil {
 			continue
 		}
-		
+
 		lines := strings.Split(string(body), "\n")
 		for _, line := range lines {
 			line = strings.TrimSpace(line)
@@ -160,7 +160,7 @@ func fetchProxies() []string {
 			}
 		}
 	}
-	
+
 	return all
 }
 
@@ -177,20 +177,20 @@ func testProxy(proxyAddr string, testURL string) bool {
 	if err != nil {
 		return false
 	}
-	
+
 	client := &http.Client{
 		Transport: &http.Transport{
 			Proxy: http.ProxyURL(proxyURL),
 		},
 		Timeout: 10 * time.Second,
 	}
-	
+
 	resp, err := client.Get(testURL)
 	if err != nil {
 		return false
 	}
 	resp.Body.Close()
-	
+
 	return resp.StatusCode < 400
 }
 
@@ -198,24 +198,24 @@ func testProxy(proxyAddr string, testURL string) bool {
 func getWorkingProxy(testURL string) string {
 	slog.Info("Fetching proxy lists from GitHub...")
 	proxies := fetchProxies()
-	
+
 	if len(proxies) == 0 {
 		slog.Warn("No proxies fetched from sources")
 		return ""
 	}
-	
+
 	// Shuffle proxies
 	rand := rand.New(rand.NewSource(time.Now().UnixNano()))
 	rand.Shuffle(len(proxies), func(i, j int) { proxies[i], proxies[j] = proxies[j], proxies[i] })
-	
+
 	slog.Info("Testing proxies", "count", len(proxies), "max_test", 30)
-	
+
 	// Test up to 30 proxies
 	maxTest := 30
 	if len(proxies) < maxTest {
 		maxTest = len(proxies)
 	}
-	
+
 	for i := 0; i < maxTest; i++ {
 		if testProxy(proxies[i], testURL) {
 			slog.Info("Found working proxy", "proxy", proxies[i])
@@ -225,7 +225,7 @@ func getWorkingProxy(testURL string) string {
 			slog.Debug("Testing proxies", "tested", i+1, "max", maxTest)
 		}
 	}
-	
+
 	slog.Warn("No working proxy found")
 	return ""
 }
@@ -240,7 +240,7 @@ func NewFAOLEXScraperWithProxy(proxyAddr string) *FAOLEXScraper {
 	transport := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: false},
 	}
-	
+
 	// If proxy provided, use it
 	if proxyAddr != "" {
 		if !strings.HasPrefix(proxyAddr, "http://") && !strings.HasPrefix(proxyAddr, "https://") {
@@ -252,7 +252,7 @@ func NewFAOLEXScraperWithProxy(proxyAddr string) *FAOLEXScraper {
 			slog.Info("Using proxy for FAOLEX", "proxy", proxyAddr)
 		}
 	}
-	
+
 	return &FAOLEXScraper{
 		client: &http.Client{
 			Transport: transport,
@@ -499,7 +499,7 @@ func (s *Server) RunFAOLEXSync(ctx context.Context) {
 		if countryCode != "" {
 			countries[countryCode] = true
 			parksByCountry[countryCode] = append(parksByCountry[countryCode], area.Name)
-			
+
 			// Add GADM region names for this park
 			regionNames := GetAllRegionNames(area.ID)
 			regionsByCountry[countryCode] = append(regionsByCountry[countryCode], regionNames...)
@@ -581,7 +581,7 @@ func (s *Server) storeLegalDocument(ctx context.Context, countryCode string, doc
 		slog.Debug("Document already exists", "id", doc.ID)
 		return // Already exists
 	}
-	
+
 	slog.Debug("Storing legal document", "id", doc.ID, "title", doc.Title, "country", countryCode)
 
 	// Insert new document using existing table schema

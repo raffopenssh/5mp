@@ -38,7 +38,7 @@ func analyzeFireStatus(position string, direction string, speedKmDay, pctInside 
 	if daysSince >= 2 {
 		return "Cooling", "❄️", "No new fires in 2 days", 70 // Low priority
 	}
-	
+
 	// Position-based status
 	if position == "contained" {
 		emoji = "📍"
@@ -91,7 +91,7 @@ func analyzeFireStatus(position string, direction string, speedKmDay, pctInside 
 			priority = 60
 		}
 	}
-	
+
 	// Add velocity info if not already included
 	if speedKmDay > 2 && status != "Approaching" {
 		detail += fmt.Sprintf(" at %.1fkm/day (fast)", speedKmDay)
@@ -105,7 +105,7 @@ func analyzeFireStatus(position string, direction string, speedKmDay, pctInside 
 	} else if speedKmDay == 0 && days > 1 {
 		detail += " (stationary)"
 	}
-	
+
 	return status, emoji, detail, priority
 }
 
@@ -131,21 +131,21 @@ type FireCluster struct {
 
 // FireGroup represents a tracked fire group
 type FireGroup struct {
-	Name          string                   `json:"name"`
-	FeatureID     string                   `json:"feature_id"`
-	Type          string                   `json:"type"`
-	IsActive      bool                     `json:"is_active"`
-	IsInside      bool                     `json:"is_inside"`
-	Status        string                   `json:"status"`
-	StatusEmoji   string                   `json:"status_emoji"`
-	StatusDetail  string                   `json:"status_detail"`
-	Priority      int                      `json:"priority"`
-	LastSeen      string                   `json:"last_seen"`
-	DaysSince     int                      `json:"days_since_last"`
-	DaysInside    int                      `json:"days_inside"`
-	Metrics       map[string]interface{}   `json:"metrics"`
-	Trajectory    []FireCluster            `json:"trajectory"`
-	PointsInside  []map[string]interface{} `json:"points_inside,omitempty"`
+	Name         string                   `json:"name"`
+	FeatureID    string                   `json:"feature_id"`
+	Type         string                   `json:"type"`
+	IsActive     bool                     `json:"is_active"`
+	IsInside     bool                     `json:"is_inside"`
+	Status       string                   `json:"status"`
+	StatusEmoji  string                   `json:"status_emoji"`
+	StatusDetail string                   `json:"status_detail"`
+	Priority     int                      `json:"priority"`
+	LastSeen     string                   `json:"last_seen"`
+	DaysSince    int                      `json:"days_since_last"`
+	DaysInside   int                      `json:"days_inside"`
+	Metrics      map[string]interface{}   `json:"metrics"`
+	Trajectory   []FireCluster            `json:"trajectory"`
+	PointsInside []map[string]interface{} `json:"points_inside,omitempty"`
 }
 
 // FireRealtimeResponse is the API response for real-time fire analysis
@@ -820,7 +820,6 @@ func (s *Server) updateFireGroupAlertsFromFeatures() error {
 	now := time.Now()
 	cutoff := now.AddDate(0, 0, -14).Format("2006-01-02") // 14 days for active alerts
 
-	
 	// Get recent active fire groups
 	rows, err := s.DB.Query(`
 		SELECT park_id, feature_id, properties_json, start_date, end_date
@@ -834,7 +833,7 @@ func (s *Server) updateFireGroupAlertsFromFeatures() error {
 		return err
 	}
 	defer rows.Close()
-	
+
 	alertsByPark := make(map[string]int)
 
 	// Buffer rows before nested queries (QueryRow/Exec inside an open rows
@@ -856,10 +855,10 @@ func (s *Server) updateFireGroupAlertsFromFeatures() error {
 	for _, ar := range alertRows {
 		parkID, featureID, propsJSON := ar.parkID, ar.featureID, ar.propsJSON
 		startDate, endDate := ar.startDate, ar.endDate
-		
+
 		var props map[string]interface{}
 		json.Unmarshal([]byte(propsJSON), &props)
-		
+
 		fires := 0
 		if f, ok := props["fires_total"].(float64); ok {
 			fires = int(f)
@@ -870,7 +869,7 @@ func (s *Server) updateFireGroupAlertsFromFeatures() error {
 		}
 		// groupType unused for now - could add column to alerts table
 		_ = props["group_type"]
-		
+
 		// Determine alert type
 		alertType := "active"
 		if endDate.Valid {
@@ -881,12 +880,12 @@ func (s *Server) updateFireGroupAlertsFromFeatures() error {
 				}
 			}
 		}
-		
+
 		// Check if alert already exists
 		var existingID int64
 		s.DB.QueryRow(`SELECT id FROM fire_group_alerts WHERE park_id = ? AND group_name = ?`,
 			parkID, featureID).Scan(&existingID)
-		
+
 		if existingID > 0 {
 			// Update existing
 			s.DB.Exec(`UPDATE fire_group_alerts SET 
@@ -908,19 +907,19 @@ func (s *Server) updateFireGroupAlertsFromFeatures() error {
 				fmt.Printf("Error inserting fire alert: %v\n", err)
 			}
 		}
-		
+
 		alertsByPark[parkID]++
 	}
-	
+
 	totalAlerts := 0
 	for _, count := range alertsByPark {
 		totalAlerts += count
 	}
 	fmt.Printf("[Fire Alerts] Created/updated %d alerts across %d parks\n", totalAlerts, len(alertsByPark))
-	
+
 	// Clean up old alerts
 	s.DB.Exec(`DELETE FROM fire_group_alerts WHERE left_at IS NOT NULL AND left_at < datetime('now', '-1 day')`)
-	
+
 	return nil
 }
 
@@ -1067,11 +1066,11 @@ func (s *Server) HandleAPIUpdateFireAlerts(w http.ResponseWriter, r *http.Reques
 
 // handleFireRealtimeFromFeatures serves fire-realtime data from feature_geometries
 // Used when fire_detections table is empty (pipeline-based approach)
-func (s *Server) handleFireRealtimeFromFeatures(w http.ResponseWriter, r *http.Request, 
-    parkID, parkName string, startDate, endDate time.Time, days int) {
-    
-    // Query recent fire trajectories from feature_geometries with persistent names
-    rows, err := s.DB.Query(`
+func (s *Server) handleFireRealtimeFromFeatures(w http.ResponseWriter, r *http.Request,
+	parkID, parkName string, startDate, endDate time.Time, days int) {
+
+	// Query recent fire trajectories from feature_geometries with persistent names
+	rows, err := s.DB.Query(`
         SELECT fg.feature_id, fg.geojson, fg.properties_json, fg.start_date, fg.end_date,
                COALESCE(fgn.friendly_name, fg.feature_id) as display_name,
                COALESCE(fg.dist_to_park_km, 0) as dist_to_park_km
@@ -1082,203 +1081,203 @@ func (s *Server) handleFireRealtimeFromFeatures(w http.ResponseWriter, r *http.R
           AND (fg.dist_to_park_km IS NULL OR fg.dist_to_park_km <= 20)
         ORDER BY fg.start_date DESC
     `, parkID, startDate.Format("2006-01-02"))
-    
-    if err != nil {
-        internalError(w, "request failed", err)
-        return
-    }
-    defer rows.Close()
-    
-    var groups []FireGroup
-    totalFires := 0
-    activeCount := 0
-    insideCount := 0
-    
-    groupIndex := 0
-    for rows.Next() {
-        var featureID, geojson, propsJSON, displayName string
-        var startDateStr, endDateStr sql.NullString
-        
-        var distToParkKm float64
-        if err := rows.Scan(&featureID, &geojson, &propsJSON, &startDateStr, &endDateStr, &displayName, &distToParkKm); err != nil {
-            continue
-        }
-        
-        var props map[string]interface{}
-        json.Unmarshal([]byte(propsJSON), &props)
-        
-        fires := int(props["fires_total"].(float64))
-        totalFires += fires
-        
-        daysActive := int(props["days"].(float64))
-        direction := ""
-        if d, ok := props["direction"].(string); ok {
-            direction = d
-        }
-        distKm := 0.0
-        if d, ok := props["distance_km"].(float64); ok {
-            distKm = d
-        }
-        avgSpeed := 0.0
-        if d, ok := props["avg_speed_km_day"].(float64); ok {
-            avgSpeed = d
-        }
-        groupType := "unknown"
-        if t, ok := props["group_type"].(string); ok {
-            groupType = t
-        }
-        narrative := ""
-        if n, ok := props["narrative"].(string); ok {
-            narrative = n
-        }
-        
-        // Determine if active (last seen within 3 days)
-        // Use fractional days to match notification API logic
-        lastSeen := endDateStr.String
-        daysSince := 0
-        daysSinceFractional := 0.0
-        if lastSeen != "" {
-            if t, err := time.Parse("2006-01-02", lastSeen); err == nil {
-                daysSinceFractional = time.Since(t).Hours() / 24.0
-                daysSince = int(daysSinceFractional)
-            }
-        }
-        isActive := daysSinceFractional <= 3.0
-        if isActive {
-            activeCount++
-        }
-        
-        // Parse trajectory from geojson
-        var geom struct {
-            Coordinates [][]float64 `json:"coordinates"`
-        }
-        json.Unmarshal([]byte(geojson), &geom)
-        
-        var trajectory []FireCluster
-        for i, coord := range geom.Coordinates {
-            if len(coord) >= 2 {
-                trajectory = append(trajectory, FireCluster{
-                    Date:  startDateStr.String,
-                    Lat:   coord[1],
-                    Lon:   coord[0],
-                    Fires: fires / max(1, len(geom.Coordinates)),
-                })
-                if i == 0 && startDateStr.Valid {
-                    trajectory[i].Date = startDateStr.String
-                }
-            }
-        }
-        
-        // Analyze fire status using enhanced logic
-        position := ""
-        if p, ok := props["position"].(string); ok {
-            position = p
-        }
-        pctInside := 0.0
-        if p, ok := props["pct_inside"].(float64); ok {
-            pctInside = p
-        }
-        
-        status, emoji, detail, priority := analyzeFireStatus(position, direction, avgSpeed, pctInside, daysSince, daysActive)
-        
-        // A group counts as "inside" only if it actually touches the park:
-        // dist_to_park_km == 0 (or NULL) or some fires fall inside. Groups up
-        // to 20 km outside are still returned (approaching-fire context) but
-        // must not inflate the "Currently Active (N)" inside count.
-        isInside := distToParkKm <= 0.001 || pctInside > 0
-        
-        group := FireGroup{
-            Name:         displayName,  // Use persistent friendly name from fire_group_names
-            FeatureID:    featureID,    // Include feature_id for stable identification
-            Type:         groupType,
-            IsActive:     isActive,
-            IsInside:     isInside,
-            Status:       status,
-            StatusEmoji:  emoji,
-            StatusDetail: detail,
-            Priority:     priority,
-            LastSeen:     lastSeen,
-            DaysSince:    daysSince,
-            DaysInside:   daysActive,
-            Metrics: map[string]interface{}{
-                "fires":        fires,
-                "days":         daysActive,
-                "distance_km":  distKm,
-                "avg_speed":    avgSpeed,
-                "direction":    direction,
-                "narrative":    narrative,
-            },
-            Trajectory: trajectory,
-        }
-        
-        groups = append(groups, group)
-        if isInside {
-            insideCount++
-        }
-        groupIndex++
-    }
-    
-    // Sort by active status first (active groups at top), then by priority, then by last seen
-    // This ensures that when we truncate to 100 groups, we keep all active groups
-    sort.Slice(groups, func(i, j int) bool {
-        // Active groups come first
-        if groups[i].IsActive != groups[j].IsActive {
-            return groups[i].IsActive
-        }
-        // Inside-park groups before nearby-outside (UI shows active+inside)
-        if groups[i].IsInside != groups[j].IsInside {
-            return groups[i].IsInside
-        }
-        // Then by priority (lowest number = highest priority)
-        if groups[i].Priority != groups[j].Priority {
-            return groups[i].Priority < groups[j].Priority
-        }
-        // Finally by last seen
-        return groups[i].LastSeen > groups[j].LastSeen
-    })
-    
-    // True counts before truncation (peak-season parks can have 100s of
-    // legitimately active groups; don't let payload capping distort counts).
-    trueTotalGroups := len(groups)
-    trueActiveCount := activeCount
 
-    // Limit payload to reasonable number (active groups sorted to top, so kept first)
-    if len(groups) > 100 {
-        groups = groups[:100]
-    }
-    
-    // Build active and inside lists
-    var activeGroups, groupsInside []FireGroup
-    for _, g := range groups {
-        if g.IsActive {
-            activeGroups = append(activeGroups, g)
-        }
-        if g.IsInside {
-            groupsInside = append(groupsInside, g)
-        }
-    }
-    
-    // Build narrative (use true counts, not payload-capped slice lengths)
-    narrative := fmt.Sprintf("In the past %d days, %s has %d tracked fire groups with %d total fire detections.",
-        days, parkName, trueTotalGroups, totalFires)
-    if trueActiveCount > 0 {
-        narrative += fmt.Sprintf(" %d groups are currently active.", trueActiveCount)
-    }
-    
-    resp := FireRealtimeResponse{
-        ParkID:            parkID,
-        ParkName:          parkName,
-        AnalysisPeriod:    fmt.Sprintf("%s to %s", startDate.Format("2006-01-02"), endDate.Format("2006-01-02")),
-        TotalFires:        totalFires,
-        TotalGroups:       trueTotalGroups,
-        ActiveGroupsCount: trueActiveCount,
-        GroupsInsideCount: insideCount,
-        Groups:            groups,
-        ActiveGroups:      activeGroups,
-        GroupsInside:      groupsInside,
-        Narrative:         narrative,
-    }
-    
-    w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(resp)
+	if err != nil {
+		internalError(w, "request failed", err)
+		return
+	}
+	defer rows.Close()
+
+	var groups []FireGroup
+	totalFires := 0
+	activeCount := 0
+	insideCount := 0
+
+	groupIndex := 0
+	for rows.Next() {
+		var featureID, geojson, propsJSON, displayName string
+		var startDateStr, endDateStr sql.NullString
+
+		var distToParkKm float64
+		if err := rows.Scan(&featureID, &geojson, &propsJSON, &startDateStr, &endDateStr, &displayName, &distToParkKm); err != nil {
+			continue
+		}
+
+		var props map[string]interface{}
+		json.Unmarshal([]byte(propsJSON), &props)
+
+		fires := int(props["fires_total"].(float64))
+		totalFires += fires
+
+		daysActive := int(props["days"].(float64))
+		direction := ""
+		if d, ok := props["direction"].(string); ok {
+			direction = d
+		}
+		distKm := 0.0
+		if d, ok := props["distance_km"].(float64); ok {
+			distKm = d
+		}
+		avgSpeed := 0.0
+		if d, ok := props["avg_speed_km_day"].(float64); ok {
+			avgSpeed = d
+		}
+		groupType := "unknown"
+		if t, ok := props["group_type"].(string); ok {
+			groupType = t
+		}
+		narrative := ""
+		if n, ok := props["narrative"].(string); ok {
+			narrative = n
+		}
+
+		// Determine if active (last seen within 3 days)
+		// Use fractional days to match notification API logic
+		lastSeen := endDateStr.String
+		daysSince := 0
+		daysSinceFractional := 0.0
+		if lastSeen != "" {
+			if t, err := time.Parse("2006-01-02", lastSeen); err == nil {
+				daysSinceFractional = time.Since(t).Hours() / 24.0
+				daysSince = int(daysSinceFractional)
+			}
+		}
+		isActive := daysSinceFractional <= 3.0
+		if isActive {
+			activeCount++
+		}
+
+		// Parse trajectory from geojson
+		var geom struct {
+			Coordinates [][]float64 `json:"coordinates"`
+		}
+		json.Unmarshal([]byte(geojson), &geom)
+
+		var trajectory []FireCluster
+		for i, coord := range geom.Coordinates {
+			if len(coord) >= 2 {
+				trajectory = append(trajectory, FireCluster{
+					Date:  startDateStr.String,
+					Lat:   coord[1],
+					Lon:   coord[0],
+					Fires: fires / max(1, len(geom.Coordinates)),
+				})
+				if i == 0 && startDateStr.Valid {
+					trajectory[i].Date = startDateStr.String
+				}
+			}
+		}
+
+		// Analyze fire status using enhanced logic
+		position := ""
+		if p, ok := props["position"].(string); ok {
+			position = p
+		}
+		pctInside := 0.0
+		if p, ok := props["pct_inside"].(float64); ok {
+			pctInside = p
+		}
+
+		status, emoji, detail, priority := analyzeFireStatus(position, direction, avgSpeed, pctInside, daysSince, daysActive)
+
+		// A group counts as "inside" only if it actually touches the park:
+		// dist_to_park_km == 0 (or NULL) or some fires fall inside. Groups up
+		// to 20 km outside are still returned (approaching-fire context) but
+		// must not inflate the "Currently Active (N)" inside count.
+		isInside := distToParkKm <= 0.001 || pctInside > 0
+
+		group := FireGroup{
+			Name:         displayName, // Use persistent friendly name from fire_group_names
+			FeatureID:    featureID,   // Include feature_id for stable identification
+			Type:         groupType,
+			IsActive:     isActive,
+			IsInside:     isInside,
+			Status:       status,
+			StatusEmoji:  emoji,
+			StatusDetail: detail,
+			Priority:     priority,
+			LastSeen:     lastSeen,
+			DaysSince:    daysSince,
+			DaysInside:   daysActive,
+			Metrics: map[string]interface{}{
+				"fires":       fires,
+				"days":        daysActive,
+				"distance_km": distKm,
+				"avg_speed":   avgSpeed,
+				"direction":   direction,
+				"narrative":   narrative,
+			},
+			Trajectory: trajectory,
+		}
+
+		groups = append(groups, group)
+		if isInside {
+			insideCount++
+		}
+		groupIndex++
+	}
+
+	// Sort by active status first (active groups at top), then by priority, then by last seen
+	// This ensures that when we truncate to 100 groups, we keep all active groups
+	sort.Slice(groups, func(i, j int) bool {
+		// Active groups come first
+		if groups[i].IsActive != groups[j].IsActive {
+			return groups[i].IsActive
+		}
+		// Inside-park groups before nearby-outside (UI shows active+inside)
+		if groups[i].IsInside != groups[j].IsInside {
+			return groups[i].IsInside
+		}
+		// Then by priority (lowest number = highest priority)
+		if groups[i].Priority != groups[j].Priority {
+			return groups[i].Priority < groups[j].Priority
+		}
+		// Finally by last seen
+		return groups[i].LastSeen > groups[j].LastSeen
+	})
+
+	// True counts before truncation (peak-season parks can have 100s of
+	// legitimately active groups; don't let payload capping distort counts).
+	trueTotalGroups := len(groups)
+	trueActiveCount := activeCount
+
+	// Limit payload to reasonable number (active groups sorted to top, so kept first)
+	if len(groups) > 100 {
+		groups = groups[:100]
+	}
+
+	// Build active and inside lists
+	var activeGroups, groupsInside []FireGroup
+	for _, g := range groups {
+		if g.IsActive {
+			activeGroups = append(activeGroups, g)
+		}
+		if g.IsInside {
+			groupsInside = append(groupsInside, g)
+		}
+	}
+
+	// Build narrative (use true counts, not payload-capped slice lengths)
+	narrative := fmt.Sprintf("In the past %d days, %s has %d tracked fire groups with %d total fire detections.",
+		days, parkName, trueTotalGroups, totalFires)
+	if trueActiveCount > 0 {
+		narrative += fmt.Sprintf(" %d groups are currently active.", trueActiveCount)
+	}
+
+	resp := FireRealtimeResponse{
+		ParkID:            parkID,
+		ParkName:          parkName,
+		AnalysisPeriod:    fmt.Sprintf("%s to %s", startDate.Format("2006-01-02"), endDate.Format("2006-01-02")),
+		TotalFires:        totalFires,
+		TotalGroups:       trueTotalGroups,
+		ActiveGroupsCount: trueActiveCount,
+		GroupsInsideCount: insideCount,
+		Groups:            groups,
+		ActiveGroups:      activeGroups,
+		GroupsInside:      groupsInside,
+		Narrative:         narrative,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(resp)
 }

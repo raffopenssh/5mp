@@ -31,10 +31,10 @@ var (
 
 // User represents an authenticated user.
 type User struct {
-	ID       string
-	Email    string
-	Name     string
-	Role     string
+	ID    string
+	Email string
+	Name  string
+	Role  string
 }
 
 // Manager handles authentication operations.

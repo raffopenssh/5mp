@@ -15,12 +15,12 @@ import (
 
 // OpenAlexWork represents a work from the OpenAlex API.
 type OpenAlexWork struct {
-	ID           string `json:"id"`
-	Title        string `json:"title"`
-	PublicationYear int `json:"publication_year"`
-	DOI          string `json:"doi"`
-	CitedByCount int    `json:"cited_by_count"`
-	Authorships  []struct {
+	ID              string `json:"id"`
+	Title           string `json:"title"`
+	PublicationYear int    `json:"publication_year"`
+	DOI             string `json:"doi"`
+	CitedByCount    int    `json:"cited_by_count"`
+	Authorships     []struct {
 		Author struct {
 			DisplayName string `json:"display_name"`
 		} `json:"author"`
@@ -62,7 +62,7 @@ func (s *Server) StartResearchWorker(ctx context.Context) {
 func (s *Server) runResearchSync(ctx context.Context) {
 	// Use the improved publication sync (OpenAlex)
 	s.RunImprovedPublicationSync(ctx)
-	
+
 	// Also run FAOLEX legal document sync (weekly)
 	// Check if it's Sunday (day 0) for weekly sync
 	if time.Now().Weekday() == time.Sunday {
@@ -108,13 +108,13 @@ func (s *Server) fetchPublicationsForPA(ctx context.Context, paID, name, country
 	// Build search queries with park name and country variants
 	// Use quoted name for exact phrase matching
 	quotedName := `"` + name + `"`
-	
+
 	// Also try with country name in different languages
 	countryVariants := []string{country}
 	if alts, ok := countryNameTranslations[country]; ok {
 		countryVariants = append(countryVariants, alts...)
 	}
-	
+
 	// Build search query: park name OR (park name + country variants)
 	searchQuery := url.QueryEscape(quotedName)
 	apiURL := fmt.Sprintf(
@@ -145,7 +145,7 @@ func (s *Server) fetchPublicationsForPA(ctx context.Context, paID, name, country
 
 	q := dbgen.New(s.DB)
 	count := 0
-	
+
 	// Normalize park name for matching (lowercase, no extra spaces)
 	nameNormalized := strings.ToLower(strings.TrimSpace(name))
 	// Also try without common suffixes for matching
@@ -156,19 +156,19 @@ func (s *Server) fetchPublicationsForPA(ctx context.Context, paID, name, country
 	for _, work := range data.Results {
 		// Reconstruct abstract from inverted index
 		abstract := reconstructAbstract(work.AbstractInvertedIndex)
-		
+
 		// Filter: park name must appear in title or abstract
 		titleLower := strings.ToLower(work.Title)
 		abstractLower := strings.ToLower(abstract)
-		
+
 		nameInTitle := strings.Contains(titleLower, nameNormalized) || strings.Contains(titleLower, nameShort)
 		nameInAbstract := strings.Contains(abstractLower, nameNormalized) || strings.Contains(abstractLower, nameShort)
-		
+
 		if !nameInTitle && !nameInAbstract {
 			// Skip papers that don't mention the park name
 			continue
 		}
-		
+
 		// Extract authors
 		authors := make([]string, 0, len(work.Authorships))
 		for _, a := range work.Authorships {

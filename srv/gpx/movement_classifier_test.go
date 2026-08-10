@@ -22,11 +22,11 @@ func makeElev(v float64) *float64 {
 func generateLinearTrack(lat, lon float64, speedKmh float64, intervalSec float64, numPoints int, elev *float64) []Point {
 	base := time.Date(2024, 6, 15, 8, 0, 0, 0, time.UTC)
 	points := make([]Point, numPoints)
-	
+
 	// Distance per interval in degrees lat (1 degree lat ≈ 111 km)
 	kmPerInterval := speedKmh * (intervalSec / 3600.0)
 	degPerInterval := kmPerInterval / 111.0
-	
+
 	for i := 0; i < numPoints; i++ {
 		t := makeTime(base, float64(i)*intervalSec)
 		var e *float64
@@ -47,10 +47,10 @@ func generateLinearTrack(lat, lon float64, speedKmh float64, intervalSec float64
 func generateErraticTrack(lat, lon float64, speedKmh float64, intervalSec float64, numPoints int) []Point {
 	base := time.Date(2024, 6, 15, 8, 0, 0, 0, time.UTC)
 	points := make([]Point, numPoints)
-	
+
 	kmPerInterval := speedKmh * (intervalSec / 3600.0)
 	degPerInterval := kmPerInterval / 111.0
-	
+
 	for i := 0; i < numPoints; i++ {
 		t := makeTime(base, float64(i)*intervalSec)
 		// Zigzag: alternate east-west while going north
@@ -73,18 +73,18 @@ func TestAnalyzeTrajectory_SamplingRate(t *testing.T) {
 	// 120s constant interval GPS tracker
 	points120 := generateLinearTrack(0, 36, 50, 120, 30, nil)
 	m120 := AnalyzeTrajectory(points120)
-	
+
 	if math.Abs(m120.MedianIntervalSec-120) > 1 {
 		t.Errorf("expected median interval ~120s for 120s tracker, got %.1f", m120.MedianIntervalSec)
 	}
 	if m120.IntervalConsistency > 0.05 {
 		t.Errorf("expected very low interval consistency (constant), got %.3f", m120.IntervalConsistency)
 	}
-	
+
 	// 600s InReach interval
 	points600 := generateLinearTrack(0, 36, 5, 600, 20, nil)
 	m600 := AnalyzeTrajectory(points600)
-	
+
 	if math.Abs(m600.MedianIntervalSec-600) > 1 {
 		t.Errorf("expected median interval ~600s for InReach, got %.1f", m600.MedianIntervalSec)
 	}
@@ -111,9 +111,9 @@ func TestAnalyzeTrajectory_Elevation(t *testing.T) {
 			Elevation: makeElev(elev),
 		}
 	}
-	
+
 	m := AnalyzeTrajectory(points)
-	
+
 	if !m.HasElevation {
 		t.Error("expected HasElevation = true")
 	}
@@ -134,7 +134,7 @@ func TestAnalyzeTrajectory_Elevation(t *testing.T) {
 func TestAnalyzeTrajectory_NoElevation(t *testing.T) {
 	points := generateLinearTrack(0, 36, 30, 120, 20, nil)
 	m := AnalyzeTrajectory(points)
-	
+
 	if m.HasElevation {
 		t.Error("expected HasElevation = false when no elevation data")
 	}
@@ -160,9 +160,9 @@ func TestAnalyzeTrajectory_SpeedPercentiles(t *testing.T) {
 			Time: t,
 		}
 	}
-	
+
 	m := AnalyzeTrajectory(points)
-	
+
 	// P90 should be close to the cruising speed, P10 should be much lower
 	if m.P90SpeedKmh < 30 {
 		t.Errorf("expected P90 speed > 30 km/h for vehicle with stops, got %.1f", m.P90SpeedKmh)
@@ -178,7 +178,7 @@ func TestClassifyMovement_HighSpeedAircraft(t *testing.T) {
 	// 200 km/h straight line = clearly aircraft
 	points := generateLinearTrack(-1, 36, 200, 120, 30, nil)
 	c := ClassifyMovementFull(points)
-	
+
 	if c.MovementType != "aircraft" {
 		t.Errorf("expected aircraft at 200 km/h, got %s", c.MovementType)
 	}
@@ -208,9 +208,9 @@ func TestClassifyMovement_AircraftByElevation(t *testing.T) {
 			Elevation: makeElev(elev),
 		}
 	}
-	
+
 	c := ClassifyMovementFull(points)
-	
+
 	if c.MovementType != "aircraft" {
 		t.Errorf("expected aircraft for high elevation range + cruise pattern, got %s (avg=%.1f, p90=%.1f, elevRange=%.0f, maxElev=%.0f)",
 			c.MovementType, c.Metrics.AvgSpeedKmh, c.Metrics.P90SpeedKmh, c.Metrics.ElevationRangeM, c.Metrics.MaxElevationM)
@@ -239,9 +239,9 @@ func TestClassifyMovement_VehicleByP90(t *testing.T) {
 			Time: t,
 		}
 	}
-	
+
 	c := ClassifyMovementFull(points)
-	
+
 	if c.MovementType != "vehicle" {
 		t.Errorf("expected vehicle for stop-and-go 50 km/h, got %s (avg=%.1f, p90=%.1f)",
 			c.MovementType, c.Metrics.AvgSpeedKmh, c.Metrics.P90SpeedKmh)
@@ -252,7 +252,7 @@ func TestClassifyMovement_SlowFootPatrol(t *testing.T) {
 	// 3 km/h erratic = foot patrol
 	points := generateErraticTrack(-1, 36, 3, 600, 25)
 	c := ClassifyMovementFull(points)
-	
+
 	if c.MovementType != "foot" {
 		t.Errorf("expected foot for 3 km/h erratic patrol, got %s (avg=%.1f, p90=%.1f)",
 			c.MovementType, c.Metrics.AvgSpeedKmh, c.Metrics.P90SpeedKmh)
@@ -263,7 +263,7 @@ func TestClassifyMovement_InReachFoot(t *testing.T) {
 	// 600s interval, 4 km/h = InReach foot patrol
 	points := generateLinearTrack(-2, 35, 4, 600, 20, nil)
 	c := ClassifyMovementFull(points)
-	
+
 	if c.MovementType != "foot" {
 		t.Errorf("expected foot for 4 km/h InReach (600s), got %s (avg=%.1f, median_interval=%.0fs)",
 			c.MovementType, c.Metrics.AvgSpeedKmh, c.Metrics.MedianIntervalSec)
@@ -274,7 +274,7 @@ func TestClassifyMovement_AmbiguousZone_VehicleSmooth(t *testing.T) {
 	// 10 km/h, very smooth, linear trajectory = vehicle (not foot)
 	points := generateLinearTrack(-1, 36, 10, 120, 30, nil)
 	c := ClassifyMovementFull(points)
-	
+
 	// At 10 km/h with smooth linear trajectory, should lean vehicle
 	if c.MovementType == "aircraft" {
 		t.Errorf("should not be aircraft at 10 km/h, got %s", c.MovementType)
@@ -290,7 +290,7 @@ func TestClassifyMovement_AmbiguousZone_FootErratic(t *testing.T) {
 	// 6 km/h, erratic trajectory = foot (exploring)
 	points := generateErraticTrack(-1, 36, 6, 300, 30)
 	c := ClassifyMovementFull(points)
-	
+
 	if c.MovementType == "aircraft" {
 		t.Errorf("should not be aircraft at 6 km/h erratic, got %s", c.MovementType)
 	}
@@ -305,7 +305,7 @@ func TestClassifyMovement_GPSTracker120s_MediumSpeed(t *testing.T) {
 	// 120s constant interval at 50 km/h = vehicle (GPS tracker)
 	points := generateLinearTrack(0, 36, 50, 120, 30, nil)
 	c := ClassifyMovementFull(points)
-	
+
 	if c.MovementType != "vehicle" {
 		t.Errorf("expected vehicle for 120s interval 50 km/h, got %s (median_interval=%.0f)",
 			c.MovementType, c.Metrics.MedianIntervalSec)
@@ -315,10 +315,10 @@ func TestClassifyMovement_GPSTracker120s_MediumSpeed(t *testing.T) {
 func TestClassifyMovement_HintPreservation(t *testing.T) {
 	// Test that authoritative hint (1.0) still overrides everything
 	points := generateLinearTrack(0, 36, 200, 120, 30, nil) // clearly aircraft by speed
-	
+
 	hint := MovementHint{Type: "vehicle", Confidence: 1.0, IsVehicle: true}
 	c := ClassifyMovementFullWithHint(points, hint)
-	
+
 	if c.MovementType != "vehicle" {
 		t.Errorf("authoritative hint should override: expected vehicle, got %s", c.MovementType)
 	}
@@ -330,10 +330,10 @@ func TestClassifyMovement_HintPreservation(t *testing.T) {
 func TestClassifyMovement_StrongHintPreservation(t *testing.T) {
 	// Strong hint (0.9) for foot, but speed > 20 => should upgrade to vehicle
 	points := generateLinearTrack(0, 36, 30, 120, 30, nil)
-	
+
 	hint := MovementHint{Type: "foot", Confidence: 0.9, IsFoot: true}
 	c := ClassifyMovementFullWithHint(points, hint)
-	
+
 	if c.MovementType != "vehicle" {
 		t.Errorf("strong foot hint but speed 30 should be vehicle, got %s", c.MovementType)
 	}
@@ -342,10 +342,10 @@ func TestClassifyMovement_StrongHintPreservation(t *testing.T) {
 func TestClassifyMovement_ModerateHintNudge(t *testing.T) {
 	// Speed ~10 km/h (ambiguous), moderate vehicle hint should nudge to vehicle
 	points := generateLinearTrack(-1, 36, 10, 120, 30, nil)
-	
+
 	hintVehicle := MovementHint{Type: "vehicle", Confidence: 0.6, IsVehicle: true}
 	c := ClassifyMovementFullWithHint(points, hintVehicle)
-	
+
 	if c.MovementType != "vehicle" {
 		t.Errorf("expected vehicle with moderate vehicle hint at 10 km/h, got %s", c.MovementType)
 	}
@@ -355,7 +355,7 @@ func TestClassifyMovement_BackwardCompat(t *testing.T) {
 	// ClassifyMovementAdvanced should still work
 	points := generateLinearTrack(0, 36, 3, 600, 20, nil)
 	mvType := ClassifyMovementAdvanced(points)
-	
+
 	if mvType != "foot" {
 		t.Errorf("ClassifyMovementAdvanced should return foot for 3 km/h, got %s", mvType)
 	}
@@ -370,7 +370,7 @@ func TestClassifyMovement_FewPoints(t *testing.T) {
 		{Lat: 0, Lon: 36, Time: t1},
 		{Lat: 0.001, Lon: 36, Time: t2},
 	}
-	
+
 	c := ClassifyMovementFull(points)
 	if c.MovementType != "foot" {
 		t.Errorf("expected foot for < 3 points, got %s", c.MovementType)
@@ -400,7 +400,7 @@ func TestClassifyMovement_HighAltitudeAircraft(t *testing.T) {
 			Elevation: makeElev(elev),
 		}
 	}
-	
+
 	c := ClassifyMovementFull(points)
 	if c.MovementType != "aircraft" {
 		t.Errorf("expected aircraft for high-altitude Ennedi-like track, got %s (avg=%.1f, p90=%.1f, elevRange=%.0f, maxElev=%.0f)",
@@ -422,7 +422,7 @@ func TestClassifyMovement_GroundVehicleWithElevation(t *testing.T) {
 			Elevation: makeElev(elev),
 		}
 	}
-	
+
 	c := ClassifyMovementFull(points)
 	if c.MovementType != "vehicle" {
 		t.Errorf("expected vehicle for ground-level 40 km/h, got %s (elevRange=%.0f, maxElev=%.0f)",
@@ -447,7 +447,7 @@ func TestAnalyzeTrajectory_PartialElevation(t *testing.T) {
 			Elevation: elev,
 		}
 	}
-	
+
 	m := AnalyzeTrajectory(points)
 	if m.HasElevation {
 		t.Error("expected HasElevation = false when only 30% of points have elevation")
@@ -475,7 +475,7 @@ func TestAnalyzeTrajectory_IrregularIntervals(t *testing.T) {
 			Time: t,
 		}
 	}
-	
+
 	m := AnalyzeTrajectory(points)
 	if m.IntervalConsistency < 0.3 {
 		t.Errorf("expected high IntervalConsistency for irregular intervals, got %.3f", m.IntervalConsistency)
@@ -491,9 +491,9 @@ func TestExtractAirstrips(t *testing.T) {
 		{Lat: 4.87, Lon: 31.60, Name: "Juba  3000m"},
 		{Lat: 6.19, Lon: 31.60, Name: "Bor 1.3 km"},
 		{Lat: 7.74, Lon: 31.40, Name: "Duk Fadiat 1200 m"},
-		{Lat: 7.15, Lon: 33.86, Name: "Otallo"},             // No runway = not an airstrip
+		{Lat: 7.15, Lon: 33.86, Name: "Otallo"},               // No runway = not an airstrip
 		{Lat: 4.76, Lon: 32.63, Name: "Torit-Lafon Rd., Ama"}, // Road = not an airstrip
-		{Lat: 5.0, Lon: 33.0, Name: "Loki airstrip"},           // Has "airstrip" keyword
+		{Lat: 5.0, Lon: 33.0, Name: "Loki airstrip"},          // Has "airstrip" keyword
 	}
 
 	airstrips := ExtractAirstrips(waypoints)
@@ -508,12 +508,12 @@ func TestExtractAirstrips(t *testing.T) {
 
 	// Check runway lengths
 	expected := map[string]float64{
-		"Kapoeta 1200m":      1200,
-		"Boma 900m":          900,
-		"Juba  3000m":        3000,
-		"Bor 1.3 km":         1300,
-		"Duk Fadiat 1200 m":  1200,
-		"Loki airstrip":      0,
+		"Kapoeta 1200m":     1200,
+		"Boma 900m":         900,
+		"Juba  3000m":       3000,
+		"Bor 1.3 km":        1300,
+		"Duk Fadiat 1200 m": 1200,
+		"Loki airstrip":     0,
 	}
 	for _, a := range airstrips {
 		exp, ok := expected[a.Name]
@@ -531,7 +531,7 @@ func TestExtractAirstrips_NotAirstrip(t *testing.T) {
 	// Names that should NOT be detected as airstrips
 	waypoints := []Waypoint{
 		{Lat: 0, Lon: 0, Name: "Camp Alpha"},
-		{Lat: 0, Lon: 0, Name: "River crossing 50m wide"},  // 50m is too short for runway
+		{Lat: 0, Lon: 0, Name: "River crossing 50m wide"},   // 50m is too short for runway
 		{Lat: 0, Lon: 0, Name: "Base camp elevation 1200m"}, // elevation, not runway
 	}
 
@@ -686,7 +686,7 @@ func TestClassifyActivityType_AircraftLogisticsHighAltitude(t *testing.T) {
 	points := make([]Point, 100)
 	for i := 0; i < 100; i++ {
 		tm := makeTime(base, float64(i)*15) // 15s intervals, ~25 min total
-		elev := 3000.0 + float64(i%3)*10.0 // Very steady cruise altitude
+		elev := 3000.0 + float64(i%3)*10.0  // Very steady cruise altitude
 		// ~200 km/h straight line
 		points[i] = Point{
 			Lat:       -8.0 + float64(i)*0.0045,

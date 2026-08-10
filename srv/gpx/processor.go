@@ -69,11 +69,11 @@ type Waypoint struct {
 
 // MovementHint provides context from waypoint messages to help classify movement type.
 type MovementHint struct {
-	IsVehicle   bool
-	IsAircraft  bool
-	IsFoot      bool
-	Type        string  // "vehicle", "aircraft", "foot", or ""
-	Confidence  float64 // 0.0 to 1.0
+	IsVehicle  bool
+	IsAircraft bool
+	IsFoot     bool
+	Type       string  // "vehicle", "aircraft", "foot", or ""
+	Confidence float64 // 0.0 to 1.0
 
 	// SubtypeHint provides finer-grained classification from ER metadata.
 	// Values: "boat", "helicopter", "fixed_wing", or "" (unknown).
@@ -84,10 +84,10 @@ type MovementHint struct {
 // AirstripWaypoint represents a waypoint identified as an airstrip,
 // typically from GPX files where waypoints have runway length info (e.g., "Kapoeta 1200m").
 type AirstripWaypoint struct {
-	Lat      float64
-	Lon      float64
-	Name     string
-	RunwayM  float64 // Runway length in meters (0 if unknown)
+	Lat     float64
+	Lon     float64
+	Name    string
+	RunwayM float64 // Runway length in meters (0 if unknown)
 }
 
 // ExtractAirstrips parses waypoints to find airstrip locations.
@@ -541,7 +541,7 @@ func SplitIntoSegments(data *GPXData, maxDuration time.Duration) []Segment {
 		// 5. Waypoint text analysis (lowest)
 		trackHint := hint
 		trackHint = mergeTrackActivityHint(trackHint, track.Activity)
-		trackHint = mergeTrackNameHint(trackHint, track.Name) // After Locus: user names override Locus auto-classification
+		trackHint = mergeTrackNameHint(trackHint, track.Name)                                                      // After Locus: user names override Locus auto-classification
 		trackHint = mergeERSubjectHint(trackHint, track.ERSubjectType, track.ERSubjectSubtype, track.ERPatrolType) // ER metadata is most authoritative
 
 		// If no strong hint yet, check airstrip proximity.
@@ -716,13 +716,13 @@ func ClassifyMovementType(segment Segment) string {
 //
 // Confidence levels and their meaning:
 //   - 1.0: Authoritative (EarthRanger device metadata — GPS tracker is physically on the aircraft/vehicle)
-//          Always trusted. A truck GPS says "vehicle" even when parked (speed=0).
+//     Always trusted. A truck GPS says "vehicle" even when parked (speed=0).
 //   - 0.95: Strong (Locus activity tag, ER patrol type)
-//          Trusted but sanity-checked against speed.
+//     Trusted but sanity-checked against speed.
 //   - 0.8-0.9: Good (waypoint text, ER ranger subtype)
-//          Used for ambiguous speed ranges.
+//     Used for ambiguous speed ranges.
 //   - 0.5-0.6: Weak (ER mobile phone — could be anywhere)
-//          Only nudges classification in truly ambiguous zones.
+//     Only nudges classification in truly ambiguous zones.
 func ClassifyMovementTypeWithHint(segment Segment, hint MovementHint) string {
 	speed := segment.AvgSpeedKmh
 

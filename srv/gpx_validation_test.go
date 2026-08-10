@@ -20,7 +20,7 @@ func TestValidateAndClassifyGPX_TimeBasedSegmentation(t *testing.T) {
 	// Create a track that spans 2 hours with points every 10 minutes
 	// This should be split into multiple segments by SplitIntoSegments
 	baseTime := time.Date(2024, 1, 1, 8, 0, 0, 0, time.UTC)
-	
+
 	var points []gpx.Point
 	for i := 0; i < 12; i++ { // 12 points over 2 hours (every 10 min)
 		pt := gpx.Point{
@@ -57,14 +57,14 @@ func TestValidateAndClassifyGPX_TimeBasedSegmentation(t *testing.T) {
 		t.Errorf("Patrol distance %v km seems too high for a 2-hour track with 12 points", result.PatrolKm)
 	}
 
-	t.Logf("Results: %d segments, %.2f patrol km, %d points", 
+	t.Logf("Results: %d segments, %.2f patrol km, %d points",
 		len(result.ClassifiedSegments), result.PatrolKm, result.TotalPoints)
 }
 
 // TestValidateAndClassifyGPX_ShortSegment tests that short tracks work correctly
 func TestValidateAndClassifyGPX_ShortSegment(t *testing.T) {
 	baseTime := time.Date(2024, 1, 1, 8, 0, 0, 0, time.UTC)
-	
+
 	var points []gpx.Point
 	for i := 0; i < 20; i++ { // 20 points over 20 minutes
 		pt := gpx.Point{
@@ -106,7 +106,7 @@ func TestValidateAndClassifyGPX_ShortSegment(t *testing.T) {
 func TestValidateAndClassifyGPX_MultiDayTrack(t *testing.T) {
 	// Simulate a track that spans 3 days with 8-hour gaps (overnight)
 	var points []gpx.Point
-	
+
 	for day := 0; day < 3; day++ {
 		baseTime := time.Date(2024, 1, 1+day, 8, 0, 0, 0, time.UTC)
 		for i := 0; i < 10; i++ { // 10 points per day
@@ -146,7 +146,7 @@ func TestValidateAndClassifyGPX_MultiDayTrack(t *testing.T) {
 		t.Errorf("Patrol distance %v km seems too high - may not be splitting days properly", result.PatrolKm)
 	}
 
-	t.Logf("Results: %d segments, %.2f patrol km for 3-day track", 
+	t.Logf("Results: %d segments, %.2f patrol km for 3-day track",
 		len(result.ClassifiedSegments), result.PatrolKm)
 }
 
@@ -182,20 +182,20 @@ func TestValidateAndClassifyGPX_RealisticDistances(t *testing.T) {
 	// Simulate 30 days of patrols with overnight gaps
 	// Each day: 4 hours of patrol at ~4km/h = ~16km/day
 	// Total expected: ~480km for 30 days
-	
+
 	var points []gpx.Point
-	
+
 	for day := 0; day < 30; day++ {
 		baseTime := time.Date(2024, 1, 1+day, 8, 0, 0, 0, time.UTC)
 		// Each day: patrol for 4 hours with GPS point every 5 minutes = 48 points
 		for i := 0; i < 48; i++ {
 			// Walk ~150m between points (0.0015 degrees ~= 167m at equator)
 			pt := gpx.Point{
-				Lat:  -1.0 + float64(i)*0.0015,
-				Lon:  29.0 + float64(i)*0.0015,
-				Time: func() *time.Time { 
+				Lat: -1.0 + float64(i)*0.0015,
+				Lon: 29.0 + float64(i)*0.0015,
+				Time: func() *time.Time {
 					t := baseTime.Add(time.Duration(i*5) * time.Minute)
-					return &t 
+					return &t
 				}(),
 			}
 			points = append(points, pt)
@@ -225,16 +225,16 @@ func TestValidateAndClassifyGPX_RealisticDistances(t *testing.T) {
 	// WITH time splitting, it should be similar but properly segmented
 	// The bug showed 90,000+ km which is clearly wrong
 	totalKm := result.PatrolKm + result.BoundaryKm + result.RoadKm
-	
+
 	// Each day ~8km (48 points * 167m), 30 days = ~240km
 	// Allow 2x margin for calculation differences
 	maxRealisticKm := 500.0
-	
+
 	if totalKm > maxRealisticKm {
 		t.Errorf("Total distance %.2f km exceeds realistic maximum %.2f km", totalKm, maxRealisticKm)
 	}
 
-	t.Logf("Results: %d segments, %.2f total km for 30-day track with %d points", 
+	t.Logf("Results: %d segments, %.2f total km for 30-day track with %d points",
 		len(result.ClassifiedSegments), totalKm, result.TotalPoints)
 }
 
@@ -243,9 +243,9 @@ func TestValidateAndClassifyGPX_RealisticDistances(t *testing.T) {
 // Until the logistics/survey classifier is reliable, all aircraft effort counts.
 func TestValidateAndClassifyGPX_AircraftSeparation(t *testing.T) {
 	baseTime := time.Date(2024, 1, 1, 8, 0, 0, 0, time.UTC)
-	
+
 	var points []gpx.Point
-	
+
 	// Simulate a flight: 500km in 2 hours = 250 km/h
 	// Points every 10 minutes = 12 points over 2 hours
 	for i := 0; i < 12; i++ {
@@ -257,24 +257,24 @@ func TestValidateAndClassifyGPX_AircraftSeparation(t *testing.T) {
 		}
 		points = append(points, pt)
 	}
-	
+
 	data := &gpx.GPXData{
 		Tracks: []gpx.Track{{
 			Segments: [][]gpx.Point{points},
 		}},
 	}
-	
+
 	result := ValidateAndClassifyGPX(segmentsFromGPX(data))
-	
+
 	if !result.IsValid {
 		t.Errorf("Expected valid GPX, got invalid: %v", result.ValidationErrors)
 	}
-	
+
 	// All aircraft effort should now be included in patrol km
 	if result.PatrolKm < 300 {
 		t.Errorf("Patrol km %.2f is too low - aircraft effort should be included", result.PatrolKm)
 	}
-	
+
 	// Check we have an aircraft segment
 	hasAircraft := false
 	for _, seg := range result.ClassifiedSegments {
@@ -286,7 +286,7 @@ func TestValidateAndClassifyGPX_AircraftSeparation(t *testing.T) {
 	if !hasAircraft {
 		t.Error("Expected aircraft classification for high-speed movement")
 	}
-	
+
 	t.Logf("Results: patrol=%.2f km, excluded=%.2f km", result.PatrolKm, result.ExcludedKm)
 }
 
@@ -295,7 +295,7 @@ func TestValidateAndClassifyGPX_AircraftSeparation(t *testing.T) {
 func TestMergeAdjacentSegments_OrphanAbsorption(t *testing.T) {
 	segs := []ClassifiedSegment{
 		{Classification: "aircraft", MovementType: "aircraft", DistanceKm: 35.0, EndIndex: 50, IncludeInEffort: true, OriginalIndices: []int{0}},
-		{Classification: "patrol", MovementType: "foot", DistanceKm: 0.05, EndIndex: 2, IncludeInEffort: true, OriginalIndices: []int{1}},  // orphan: 3 pts, 50m
+		{Classification: "patrol", MovementType: "foot", DistanceKm: 0.05, EndIndex: 2, IncludeInEffort: true, OriginalIndices: []int{1}}, // orphan: 3 pts, 50m
 		{Classification: "aircraft", MovementType: "aircraft", DistanceKm: 21.0, EndIndex: 100, IncludeInEffort: true, OriginalIndices: []int{2}},
 	}
 

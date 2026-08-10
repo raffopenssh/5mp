@@ -18,15 +18,15 @@ import (
 )
 
 type adminPageData struct {
-	Hostname        string
-	PendingUsers    []dbgen.User
-	ApprovedUsers   []dbgen.User
-	Stats           adminStats
-	Success         string
-	Error           string
-	DiskAvailable   string
-	NeededGHSLTiles []GHSLTileInfo
-	HaveGHSLTiles   []string
+	Hostname         string
+	PendingUsers     []dbgen.User
+	ApprovedUsers    []dbgen.User
+	Stats            adminStats
+	Success          string
+	Error            string
+	DiskAvailable    string
+	NeededGHSLTiles  []GHSLTileInfo
+	HaveGHSLTiles    []string
 	ProcessingStatus string
 }
 

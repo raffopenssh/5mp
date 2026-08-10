@@ -62,14 +62,14 @@ func (s *Server) PasswordMiddleware(next http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 			return
 		}
-		
+
 		// Check cookie first
 		cookie, err := r.Cookie("access_pwd")
 		if err == nil && isValidPassword(cookie.Value) {
 			next.ServeHTTP(w, r)
 			return
 		}
-		
+
 		// Check query param (for setting cookie)
 		pwd := r.URL.Query().Get("pwd")
 		if isValidPassword(pwd) {
@@ -100,7 +100,7 @@ func (s *Server) PasswordMiddleware(next http.Handler) http.Handler {
 			http.Redirect(w, r, cleanURL, http.StatusFound)
 			return
 		}
-		
+
 		// Show password form
 		s.showPasswordForm(w, r)
 	})

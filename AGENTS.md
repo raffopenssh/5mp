@@ -628,6 +628,7 @@ GET    /api/aois/{id}/{fire-narrative,fire-trend,fire-realtime,features,
         classified-settlements,classified-deforestation,
         settlement-intensity,infrastructure,basin}
 GET    /api/aois/{id}/export.{geojson,kml,locus}
+POST   /api/aois/{id}/export.gpkg       everything, typed + styled for QGIS (a job)
 POST   /api/aois/{id}/mbtiles           + GET .../mbtiles/estimate
 POST   /api/aois/estimate               side-effect free; call it while dragging
 POST   /api/aois                        create + seed queue (runs nothing)
@@ -1283,6 +1284,71 @@ from full history). Don't add a second weekly chart.
 
 ---
 
+## GeoPackage export (QGIS) — the fourth download
+
+One `.gpkg` with **every layer we hold for an area** (park or AOI), typed
+columns, QGIS styling and an embedded QGIS project. Full detail:
+`docs/GEOPACKAGE_EXPORT.md`. Files:
+`srv/gpkg{,_export,_style,_project,_inarea,_jobs,_test}.go`,
+`srv/static/gpkg_export.js`, migration **047**.
+
+It is the KML export's content plus what KML cannot carry honestly: raw fire
+detections, typed numerics, symbology. **A change that makes the file merely
+valid rather than usable is the wrong change.**
+
+* **The declared column type is the contract**, and a `DATE`/`DATETIME` column is
+  only honoured if the *value* parses as ISO-8601 — `"2024"` reads back as NULL
+  silently. Use `gpkgDate`/`gpkgDateTime`/`gpkgDateTimeParts`, never a raw
+  column; keep partial originals in their own INTEGER column (`loss_year`).
+* **QGIS temporal `mode` is not zero-based-by-convenience**: `0` is
+  *FixedTemporalRange* (ignores the fields). 1 = instant, 2 = start+end. The
+  wrong value yields a layer that claims to be temporal, shows the fields in the
+  dialog, and renders everything at every timestep.
+* **Styles alone are not enough.** A GeoPackage has no layer order or
+  visibility, so a styled-but-projectless export opens as an orange smear —
+  163k fire points on top of everything. The embedded project (`qgis_projects`,
+  a hex-encoded `.qgz`) ships the firehoses **off**. It references its own
+  container as `./<basename>.gpkg`, so the on-disk name must equal the download
+  name — hence one directory per job.
+* **A bbox is not an area.** Detections are coordinate-keyed, so the query is the
+  bbox: XSA's polygon holds 3.18M and its bbox 6.9M. They are kept (context out
+  to 20 km is deliberate) and **labelled** `in_area`, with the renderer
+  distinguishing them. An unusable boundary defaults to *inside* — silently
+  flagging every row 0 is worse than not knowing.
+* **The R-tree is not optional**: 1.1 s → 0.068 s per spatial query at 6.9M
+  points. Built inline per feature; the spec's maintenance triggers are omitted
+  because the file is never edited.
+* **Every layer is exported whole — no LIMIT** (same rule as the `/features`
+  geography layers; a truncated file is indistinguishable from a complete one
+  once it is in someone's QGIS project). Empty layers are dropped.
+* **The job is a cache, not a spool**: keyed by (area, window, effort, env),
+  file kept **21 days**, so asking twice returns the same file and a shared link
+  keeps working. `?refresh=1` rebuilds — and **keeps the old file alive**,
+  because a link someone was given must not break because the sender rebuilt it.
+* One build at a time; a queued job says *"waiting for another export"*, not 0%.
+  The card is written at queue time, and startup fails orphaned `running` jobs
+  rather than freezing a bar at 40%.
+* **Two variants, not a checkbox**: "all layers" and "no raw fire points"
+  (`?raw=0`). A gigabyte and several minutes apart, so it is a choice between
+  two downloads; `raw_fire` is in the cache key, the filename and the card
+  title, or one would be served the other's file.
+* **A park and an AOI share one ⬇ download menu** (`exportMenuItems()`), instead
+  of the park's old three guessable icons. `aoi_menu=` takes a park id, and
+  draining it retries on a decaying schedule — the anchoring button is drawn by
+  a popup that is itself waiting on a fetch.
+* **Raw fire detections ship switched OFF; trajectories ON.** Millions of
+  coincident points on top of everything are not a map, but a Fire group that
+  shows nothing until you go looking is its own wrong answer.
+* AOI exports are **404, not 403**, for non-owners, on status *and* download.
+* Share links: `aoi_menu=<id>`, `aoi_menu_item=gpkg` (a highlight, **never** an
+  action — a link that starts a 400 MB download on open is a trap),
+  `gpkg=<job id>` (opens the card, not the file).
+* No QGIS in CI. `go test ./srv/ -run 'GPKG|QGIS|GeoPackage|AreaHit'` covers the
+  byte-level contract; for styling changes install `python3-qgis` and **look at
+  the render** — the first version passed every automated check and was unusable.
+
+---
+
 ## Locus / KML Park Exports
 
 Park tooltip icon buttons → `GET /api/parks/{id}/export.kml` (`srv/api.go`,
@@ -1472,6 +1538,9 @@ URL params encode full UI state for reproducible tests:
 | `sections` | `fire,deforestation` | Open accordions |
 | `pinned` | `CAF_Chinko:fire_trajectory` | Pin layers |
 | `detail` | `major` \| `main` \| `all` | Geography detail tier (omitted at the `main` default) |
+| `aoi_menu` | `XSA_Study_Area` | Open that area's download menu |
+| `aoi_menu_item` | `gpkg`, `gpkg_light`, `kml`… | Highlight one entry in it (a hint, never an action) |
+| `gpkg` | `<job id>` | Open the bell on that GeoPackage export's card |
 | `starred_parks` | `CAF_Chinko,COD_Virunga` | Star parks |
 | `notif` | `1` | Open notification dropdown |
 | `notif_fire` | `CAF_Chinko:2026_grp_2caaa51b` | Zoom to fire + pin (see below) |

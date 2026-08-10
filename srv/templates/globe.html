@@ -5991,6 +5991,7 @@
         let publicationNotifications = [];
         let fireDownloadNotifications = [];
         let aoiProgressNotifications = [];
+        let gpkgNotifications = [];
         
         async function loadNotifications() {
             try {
@@ -5999,7 +6000,7 @@
                 const fireAlertsRes = await fetchRetry('/api/fire-alerts?limit=100');
                 const fireNotifRes = await fetchRetry('/api/notifications?type=fire_alert&active=1&limit=500');
                 // Non-critical: load in parallel batch (fewer concurrent)
-                const [uploadRes, mbtilesRes, pubRes, fireDownloadRes, aoiRes] = await Promise.all([
+                const [uploadRes, mbtilesRes, pubRes, fireDownloadRes, aoiRes, gpkgRes] = await Promise.all([
                     fetchRetry('/api/notifications?type=new_upload&limit=10'),
                     fetchRetry(`/api/mbtiles?pwd=${encodeURIComponent(getPwd())}`),
                     fetchRetry('/api/notifications?type=new_publication&limit=10'),
@@ -6012,7 +6013,12 @@
                     fetchRetry('/api/notifications?type=cron_status&limit=20'),
                     // AOI progress cards. Filtered server-side to this principal
                     // (aoiNotifSQLFilter) — an AOI's name is part of the secret.
-                    fetchRetry('/api/notifications?type=aoi_progress&limit=10')
+                    fetchRetry('/api/notifications?type=aoi_progress&limit=10'),
+                    // GeoPackage exports. One row per job, rewritten in place by
+                    // the server, so this is the durable record of a download the
+                    // user started — it outlives the tab, and the file behind it
+                    // outlives the session by 21 days.
+                    fetchRetry('/api/notifications?type=geopackage&limit=10')
                 ]);
                 
                 // Process upload notifications
@@ -6140,6 +6146,11 @@
                 } else {
                     aoiProgressNotifications = [];
                 }
+
+                // GeoPackage export cards. Kept raw: GeoPackageExport owns the
+                // live body and its own polling, the same contract as
+                // AOIProgress.
+                gpkgNotifications = gpkgRes.ok ? ((await gpkgRes.json()).notifications || []) : [];
                 
                 updateNotificationList();
                 showNotificationBadge();
@@ -6240,6 +6251,18 @@
             // never be cleared. Terminal priority 1 = the same band as the
             // other long-job system notifications (GFW scan, fire download),
             // so it sorts among them by time.
+            // GeoPackage exports. Priority 0 while building, for the same
+            // reason as an AOI ingest: the user started it and is waiting for
+            // it. A finished one sorts by time like any other download.
+            gpkgNotifications.forEach((notif, i) => {
+                const done = notif.notification_type !== 'geopackage_progress';
+                allItems.push({
+                    ...notif, _index: i, _source: 'gpkg',
+                    _sortTime: new Date(notif.created_at).getTime(),
+                    _priority: done ? 1 : 0
+                });
+            });
+
             const AOI_TERMINAL = { ready: 1, cancelled: 1, superseded: 1 };
             aoiProgressNotifications.forEach((notif, i) => {
                 const rd = notif.reference_data || {};
@@ -6333,7 +6356,7 @@
             const pubCount = allItems.filter(i => i._source === 'publication').length;
             // AOI progress counts as system: it is a long-running job like an
             // MBTiles export, not a park event.
-            const systemCount = allItems.filter(i => i._source === 'fire_download' || i._source === 'system' || i._source === 'mbtiles' || i._source === 'aoi_progress').length;
+            const systemCount = allItems.filter(i => i._source === 'fire_download' || i._source === 'system' || i._source === 'mbtiles' || i._source === 'aoi_progress' || i._source === 'gpkg').length;
             
             // Update filter buttons
             const fireBtn = document.querySelector('.notif-type-filter[data-type="fire"]');
@@ -6369,7 +6392,7 @@
                     } else if (notificationTypeFilter === 'research') {
                         return item._source === 'publication';
                     } else if (notificationTypeFilter === 'system') {
-                        return item._source === 'fire_download' || item._source === 'system' || item._source === 'mbtiles' || item._source === 'aoi_progress';
+                        return item._source === 'fire_download' || item._source === 'system' || item._source === 'mbtiles' || item._source === 'aoi_progress' || item._source === 'gpkg';
                     }
                     return true;
                 });
@@ -6385,6 +6408,8 @@
                     return renderMBTilesNotification(item);
                 } else if (item._source === 'aoi_progress') {
                     return window.AOIProgress ? AOIProgress.cardHTML(item) : '';
+                } else if (item._source === 'gpkg') {
+                    return window.GeoPackageExport ? GeoPackageExport.cardHTML(item) : '';
                 } else if (item._source === 'fire_notification') {
                     return renderFireAlertNotification(item);
                 } else if (item._source === 'fire') {
@@ -8128,6 +8153,7 @@
                     window._pendingAOIPopup = null;
                     openAOIPopupById(pend.id, pend.sections);
                 }
+                drainPendingAOIMenu();
             } catch (e) { console.warn('AOI load failed', e); }
         }
         window.loadAOIs = loadAOIs;
@@ -8726,45 +8752,166 @@
         // my report", and an AOI's visibility already *is* its report
         // membership (collectReportParks folds in every visible AOI). One
         // metaphor, one control — un-starring hides, search brings it back.
-        function aoiExportMenuItems(id, name) {
+        // One download menu for both a park and an AOI.
+        //
+        // They used to differ: an AOI had a ▾ menu, a park had three bare icons
+        // in its popup header (a globe for KML, a phone for Locus, layers for
+        // tiles). That was two answers to one question — the icons also had to
+        // be *guessed* (a globe reads as "web", not as "Google Earth"), they
+        // competed with the star for the same crowded row, and every new export
+        // format cost another slot. A park now gets the same ⬇ button and the
+        // same menu, so a download is one recognisable place in both.
+        //
+        // The route prefix is the only real difference, and isAOI() knows it.
+        function exportMenuItems(id, name) {
             const pwd = encodeURIComponent(getPwd());
             const eid = encodeURIComponent(id);
+            const aoi = typeof isAOI === 'function' && isAOI(id);
+            const base = `/api/${aoi ? 'aois' : 'parks'}/${eid}`;
             const dp = (dateFrom ? '&from=' + dateFrom : '') + (dateTo ? '&to=' + dateTo : '');
             const suffix = dateFrom && dateTo ? `_${dateFrom}_to_${dateTo}`
                          : dateFrom ? `_from_${dateFrom}` : dateTo ? `_to_${dateTo}` : '';
             const safeName = escapeHtml(name).replace(/'/g, "\\'");
+            // GeoJSON is the AOI's own polygon — a park's boundary is already
+            // public geography served elsewhere, so the entry would be noise.
+            const geojson = aoi
+                ? `<a class="aoi-menu-item" data-item="geojson" href="${base}/export.geojson?pwd=${pwd}" download="${id}.geojson"><i class="icon-globe"></i><span>GeoJSON</span><em>the polygon itself</em></a>`
+                : '';
+            // Two GeoPackages, not one with a checkbox. The difference is a
+            // gigabyte and several minutes, which is a choice between two
+            // downloads rather than a setting on one; and naming what is left
+            // out ("no raw points") is more honest than "lite".
             return `
-                <a class="aoi-menu-item" href="/api/aois/${eid}/export.geojson?pwd=${pwd}" download="${id}.geojson"><i class="icon-globe"></i><span>GeoJSON</span><em>the polygon itself</em></a>
-                <a class="aoi-menu-item" href="/api/aois/${eid}/export.kml?pwd=${pwd}&effort=0${dp}" download="${id}${suffix}.kml"><i class="icon-map"></i><span>KML</span><em>Google Earth</em></a>
-                <a class="aoi-menu-item" href="/api/aois/${eid}/export.locus?pwd=${pwd}${dp}" download="${id}_locus.zip"><i class="icon-smartphone"></i><span>Locus</span><em>field device backup</em></a>
-                <button class="aoi-menu-item" onclick="event.stopPropagation();closeAOIMenu();showMBTilesDialog('${id}', '${safeName}')"><i class="icon-layers"></i><span>Tiles</span><em>offline satellite</em></button>`;
+                ${geojson}
+                <a class="aoi-menu-item" data-item="kml" href="${base}/export.kml?pwd=${pwd}&effort=0${dp}" download="${id}${suffix}.kml"><i class="icon-map"></i><span>KML</span><em>Google Earth</em></a>
+                <button class="aoi-menu-item" data-item="gpkg" onclick="event.stopPropagation();startGeoPackageExport('${id}','${safeName}')"><i class="icon-database"></i><span>GeoPackage</span><em>all layers, QGIS</em></button>
+                <button class="aoi-menu-item" data-item="gpkg_light" onclick="event.stopPropagation();startGeoPackageExport('${id}','${safeName}',{raw:false})"><i class="icon-database"></i><span>GeoPackage</span><em>no raw fire points</em></button>
+                <a class="aoi-menu-item" data-item="locus" href="${base}/export.locus?pwd=${pwd}${dp}" download="${id}_locus.zip"><i class="icon-smartphone"></i><span>Locus</span><em>field device backup</em></a>
+                <button class="aoi-menu-item" data-item="tiles" onclick="event.stopPropagation();closeAOIMenu();showMBTilesDialog('${id}', '${safeName}')"><i class="icon-layers"></i><span>Tiles</span><em>offline satellite</em></button>`;
         }
+        // Kept as an alias: the name is wired into several call sites and the
+        // menu is no longer AOI-only.
+        const aoiExportMenuItems = exportMenuItems;
 
         // The menu lives on <body>, not inside the tip: the map tip is a small
         // overflow-hidden box that is re-rendered on every mousemove, so a
         // child menu would be clipped and then destroyed under the cursor.
-        function toggleAOIMenu(btn, id, name) {
+        //
+        // `highlight` names one item to point at. It exists for share links:
+        // "click Export ▾ then GeoPackage" is a sentence someone has to write in
+        // an email, and the link can say it instead. It is a hint, not an
+        // action — the recipient still chooses, because a link that downloads a
+        // 400 MB file on open is a trap.
+        function toggleAOIMenu(btn, id, name, highlight) {
             const open = document.getElementById('aoi-menu');
             closeAOIMenu();
-            if (open && open.dataset.for === id) return;
+            if (open && open.dataset.for === id && !highlight) return;
             const el = document.createElement('div');
             el.id = 'aoi-menu';
             el.className = 'aoi-menu';
             el.dataset.for = id;
-            el.innerHTML = aoiExportMenuItems(id, name);
+            el.innerHTML = exportMenuItems(id, name);
             document.body.appendChild(el);
             const r = btn.getBoundingClientRect();
             const w = el.offsetWidth, h = el.offsetHeight;
             el.style.left = Math.max(6, Math.min(window.innerWidth - w - 6, r.left)) + 'px';
             el.style.top = (r.bottom + h + 6 > window.innerHeight ? r.top - h - 4 : r.bottom + 4) + 'px';
-            setTimeout(() => document.addEventListener('click', closeAOIMenu, { once: true }), 0);
+            if (highlight) {
+                const item = el.querySelector(`.aoi-menu-item[data-item="${highlight}"]`);
+                if (item) {
+                    item.classList.add('highlight');
+                    item.setAttribute('tabindex', '0');
+                    item.focus({ preventScroll: true });
+                }
+            }
+            // The dismiss listener is armed on the NEXT tick and, when the menu
+            // was opened from a link rather than a click, not until the user has
+            // actually moved or pressed something: restoreStateFromURL runs
+            // during page setup, and a stray click anywhere would otherwise
+            // close a menu the link opened before it was ever seen.
+            setTimeout(() => document.addEventListener('click', closeAOIMenu, { once: true }), highlight ? 400 : 0);
+            aoiMenuState = { id, name, highlight: highlight || null };
         }
+
+        // What the share link carries. Null when no menu is open.
+        var aoiMenuState = null;
+        function getAOIMenuState() {
+            return document.getElementById('aoi-menu') ? aoiMenuState : null;
+        }
+        window.getAOIMenuState = getAOIMenuState;
+
+        // Share-link entry: ?aoi_menu=<id>[&aoi_menu_item=gpkg]. The menu hangs
+        // off a button that only exists once the popup or tip is rendered, so
+        // this is called after showAOIPopup and finds the popup's own button.
+        function openAOIMenuById(id, highlight) {
+            const btn = document.querySelector(`.pa-popup [onclick*="toggleAOIMenu"][onclick*="'${id}'"]`)
+                     || document.querySelector(`[onclick*="toggleAOIMenu"][onclick*="'${id}'"]`);
+            if (!btn) return false;
+            const a = window._aois?.[id];
+            // A park's name lives on the popup button's own onclick, an AOI's
+            // in _aois. Falling back to the id is fine — the name is only used
+            // for the notification's title, never for a request.
+            let nm = (a && a.name) || null;
+            if (!nm) {
+                const m = /toggleAOIMenu\(this,'[^']*','([^']*)'/.exec(btn.getAttribute('onclick') || '');
+                nm = (m && m[1]) || id;
+            }
+            toggleAOIMenu(btn, id, nm, highlight);
+            return true;
+        }
+        window.openAOIMenuById = openAOIMenuById;
+
         function closeAOIMenu() {
             const el = document.getElementById('aoi-menu');
             if (el) el.remove();
+            aoiMenuState = null;
         }
         window.toggleAOIMenu = toggleAOIMenu;
         window.closeAOIMenu = closeAOIMenu;
+
+        // One entry point for both a park and an AOI: which prefix to call is
+        // the only difference, and isAOI() already knows. The menu closes
+        // first — the answer arrives in the notification bell, and leaving a
+        // menu open over it suggests there is something more to click here.
+        function startGeoPackageExport(id, name, opts) {
+            closeAOIMenu();
+            if (window.GeoPackageExport) {
+                GeoPackageExport.start(id, name, {
+                    aoi: typeof isAOI === 'function' && isAOI(id),
+                    // undefined means "everything": the plain entry must keep
+                    // working for old share links and old call sites.
+                    raw: !opts || opts.raw !== false,
+                });
+            }
+        }
+        window.startGeoPackageExport = startGeoPackageExport;
+
+        // ?aoi_menu= / ?aoi_menu_item=. Called from both loadAOIs() and a
+        // timeout, whichever wins: the button it anchors to is drawn by the
+        // popup, which is itself deferred until the polygons resolve. Clears
+        // the pending state on success so the two callers cannot open it twice.
+        function drainPendingAOIMenu() {
+            const pend = window._pendingAOIMenu;
+            if (!pend) return;
+            if (typeof openAOIMenuById === 'function' && openAOIMenuById(pend.id, pend.item)) {
+                window._pendingAOIMenu = null;
+                return;
+            }
+            // Not drawn yet. The button is created by a popup that is itself
+            // waiting on tiles, an AOI fetch or a park's stats, and how long
+            // that takes is a property of the network — so retry on a decaying
+            // schedule instead of guessing one timeout. A share link whose
+            // whole payload is "click this entry" must not quietly do nothing
+            // because the map was half a second slow.
+            pend.tries = (pend.tries || 0) + 1;
+            if (pend.tries <= 12) setTimeout(drainPendingAOIMenu, 400 * pend.tries);
+            else window._pendingAOIMenu = null;
+            // Nothing to anchor to yet — the popup is drawn asynchronously, so
+            // the other caller (or the later timeout) will retry. Deliberately
+            // no fallback highlight: a park now has the same menu as an AOI, so
+            // "the button wasn't found" only ever means "not drawn yet".
+        }
+        window.drainPendingAOIMenu = drainPendingAOIMenu;
 
         // ── AOI actions ─────────────────────────────────────────
         //
@@ -8786,7 +8933,7 @@
             const focused = (typeof aoiFocusID !== 'undefined') && aoiFocusID === id;
             const parts = [
                 `<button onclick="event.stopPropagation();toggleAOIFocus('${id}')" title="Focus — parks outside this area are dimmed (starred parks stay bright) and the data layers switch to this area's own rows" aria-label="Focus on this area" aria-pressed="${focused}" class="pa-export-btn${focused ? ' active' : ''}" id="aoi-focus-btn-${id}"><i class="icon-focus"></i></button>`,
-                `<button onclick="event.stopPropagation();toggleAOIMenu(this,'${id}','${nm}')" title="Download — GeoJSON, KML, Locus or offline satellite tiles" aria-label="Download this area" class="pa-export-btn"><i class="icon-download"></i></button>`
+                `<button onclick="event.stopPropagation();toggleAOIMenu(this,'${id}','${nm}')" title="Download — GeoJSON, KML, GeoPackage for QGIS, Locus or offline satellite tiles" aria-label="Download this area" class="pa-export-btn"><i class="icon-download"></i></button>`
             ];
             if (o.isOwner) {
                 parts.push(`<button onclick="event.stopPropagation();editAOI('${id}')" title="Edit shape or dates — opens the draw panel; saving keeps this version as history" aria-label="Edit this area" class="pa-export-btn"><i class="icon-pencil-ruler"></i></button>`);
@@ -9021,9 +9168,7 @@
                         <div class="pa-popup-name" style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
                             <span style="min-width: 0; overflow-wrap: break-word;">${escapeHtml(name)}</span>
                             <span style="display: flex; gap: 4px; align-items: center; flex-shrink: 0;">
-                                <a href="/api/parks/${encodeURIComponent(paId)}/export.kml?pwd=${encodeURIComponent(getPwd())}&effort=0${dateFrom ? '&from=' + dateFrom : ''}${dateTo ? '&to=' + dateTo : ''}" download="${paId}${dateFrom ? '_from_' + dateFrom : ''}${dateTo ? '_to_' + dateTo : ''}.kml" title="KML — download for Google Earth" aria-label="Download KML" class="pa-export-btn"><i class="icon-globe"></i></a>
-                                <a href="/api/parks/${encodeURIComponent(paId)}/export.locus?pwd=${encodeURIComponent(getPwd())}${dateFrom ? '&from=' + dateFrom : ''}${dateTo ? '&to=' + dateTo : ''}" download="${paId}_locus.zip" title="Locus — download Locus Map 4 backup with all layers (boundary, rivers, roads, waterbodies, fires by year, settlements, deforestation, places, airstrips, turbidity) plus field-device default settings. Restore via Locus Map → Backup → Restore" aria-label="Download Locus Map backup" class="pa-export-btn"><i class="icon-smartphone"></i></a>
-                                <button onclick="showMBTilesDialog('${paId}', '${escapeHtml(name)}')" title="MBTiles — offline satellite tiles" aria-label="Download offline satellite tiles" class="pa-export-btn" id="mbtiles-btn-${paId}"><i class="icon-layers"></i></button>
+                                <button onclick="event.stopPropagation();toggleAOIMenu(this,'${paId}','${escapeHtml(name).replace(/'/g, "\\'")}')" title="Download — KML for Google Earth, GeoPackage for QGIS, a Locus field-device backup, or offline satellite tiles" aria-label="Download data for this park" class="pa-export-btn"><i class="icon-download"></i></button>
                                 ${createStarButton('parks', { id: paId, name: name, country: country, bbox: props.bbox, center: props.center ? (typeof props.center === 'string' ? JSON.parse(props.center) : props.center) : null })}
                             </span>
                         </div>
@@ -9149,7 +9294,11 @@
             
             // Make popup draggable/collapsible/dockable
             if (window.FloatUI) FloatUI.decoratePAPopup(currentPAPopup);
-            
+
+            // A ?aoi_menu= share link for a PARK can only be honoured once this
+            // popup exists — it is what draws the button the menu hangs off.
+            if (typeof drainPendingAOIMenu === 'function') setTimeout(drainPendingAOIMenu, 0);
+
             // Clear popup data when popup is closed
             currentPAPopup.on('close', () => {
                 currentPAPopupData = null;
@@ -19687,6 +19836,20 @@ ${starredItems.narratives.map(n => {
             }
         }
 
+        // The open download menu, and which entry it is pointing at.
+        //
+        // A share link's job is to reproduce what is on screen, and an open
+        // menu is on screen. It is also the one piece of UI whose whole purpose
+        // is a next click, so a link that restores it without saying WHICH
+        // entry leaves the recipient in exactly the state the sender was trying
+        // to explain past. aoi_menu_item highlights one row — a hint, never an
+        // action: a link that starts a 400 MB download on open is a trap.
+        const _menuState = typeof getAOIMenuState === 'function' ? getAOIMenuState() : null;
+        if (_menuState) {
+            params.set('aoi_menu', _menuState.id);
+            if (_menuState.highlight) params.set('aoi_menu_item', _menuState.highlight);
+        }
+
         // Add open popup PA if any
         if (currentPAPopup && currentPAPopup._lngLat) {
             // Find the PA at popup location
@@ -20135,6 +20298,40 @@ ${starredItems.narratives.map(n => {
             if (!(typeof openAOIPopupById === 'function' && openAOIPopupById(aoiParam, aoiSections))) {
                 window._pendingAOIPopup = { id: aoiParam, sections: aoiSections };
             }
+        }
+
+        // Restore the download menu, and optionally point at one entry. This
+        // has to run after the popup exists — the menu is anchored to a button
+        // the popup draws — so it is deferred behind the same _pending mechanism
+        // and drained by loadAOIs()/showAOIPopup(). A park id works too — a park
+        // has the same download button and the same menu.
+        const aoiMenuParam = params.get('aoi_menu');
+        if (aoiMenuParam) {
+            window._pendingAOIMenu = { id: aoiMenuParam, item: params.get('aoi_menu_item') || null };
+            setTimeout(drainPendingAOIMenu, 900);
+        }
+
+        // ?gpkg=<job id> — a link to a finished export. It opens the bell with
+        // that job's card, rather than downloading: the recipient should see
+        // what it is (size, layers, expiry) before hundreds of MB start moving,
+        // and the card is also where "it expired" can be said honestly.
+        const gpkgParam = params.get('gpkg');
+        if (gpkgParam && window.GeoPackageExport) {
+            GeoPackageExport.track(gpkgParam);
+            setTimeout(() => {
+                // toggleNotificationDropdown, not toggleNotifications: the
+                // latter does not exist. A share link that silently opens
+                // nothing is the failure this whole feature exists to avoid.
+                if (typeof toggleNotificationDropdown === 'function' &&
+                    !document.getElementById('notification-dropdown')?.classList.contains('open')) {
+                    toggleNotificationDropdown();
+                }
+                const el = document.querySelector(`[data-gpkg-id="${CSS.escape(gpkgParam)}"]`);
+                if (el) {
+                    el.classList.add('highlight-pulse');
+                    el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                }
+            }, 1200);
         }
 
         // Restore focus. Same deferral as the popup and for the same reason:
@@ -20910,5 +21107,6 @@ ${starredItems.narratives.map(n => {
          mode, and a poller that outlives any one panel render. -->
     <script src="/static/aoi_draw.js?v={{.Version}}"></script>
     <script src="/static/aoi_progress.js?v={{.Version}}"></script>
+    <script src="/static/gpkg_export.js?v={{.Version}}"></script>
     <script src="/static/floatui.js?v={{.Version}}"></script>
 </body></html>

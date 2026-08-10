@@ -118,5 +118,9 @@
  "COD_Garamba": {
   "scanned_at": "2026-08-05T06:01:30Z",
   "n_alerts": 2
+ },
+ "COD_Itombwe": {
+  "scanned_at": "2026-08-06T06:02:13Z",
+  "n_alerts": 0
  }
 }

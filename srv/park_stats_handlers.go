@@ -13,50 +13,50 @@ import (
 // ParkStats combines fire, settlement, and roadless data for a park
 type ParkStats struct {
 	ParkID string `json:"park_id"`
-	
+
 	// Fire infraction data
 	Fire *FireStats `json:"fire,omitempty"`
-	
+
 	// Settlement/GHSL data
 	Settlement *SettlementStats `json:"settlement,omitempty"`
-	
+
 	// Roadless data
 	Roadless *RoadlessStats `json:"roadless,omitempty"`
-	
+
 	// Deforestation data
 	Deforestation *DeforestationStats `json:"deforestation,omitempty"`
-	
+
 	// Narrative insights
 	Insights []string `json:"insights,omitempty"`
-	
+
 	// Fire timeline for charts
 	FireTimeline []FireDayCount `json:"fire_timeline,omitempty"`
-	
+
 	// Multi-year fire trends
 	FireTrend []YearlyFireSummary `json:"fire_trend,omitempty"`
 }
 
 type FireStats struct {
-	Year              int     `json:"year"`
-	GroupsEntered     int     `json:"groups_entered"`
-	GroupsStoppedInside int   `json:"groups_stopped_inside"`
-	GroupsTransited   int     `json:"groups_transited"`
-	ResponseRate      float64 `json:"response_rate"`
-	AvgDaysInside     float64 `json:"avg_days_inside"`
-	TotalFires        int     `json:"total_fires"`
-	PeakMonth         string  `json:"peak_month,omitempty"`
-	Trajectories      []FireGroupTrajectory `json:"trajectories,omitempty"`
+	Year                int                   `json:"year"`
+	GroupsEntered       int                   `json:"groups_entered"`
+	GroupsStoppedInside int                   `json:"groups_stopped_inside"`
+	GroupsTransited     int                   `json:"groups_transited"`
+	ResponseRate        float64               `json:"response_rate"`
+	AvgDaysInside       float64               `json:"avg_days_inside"`
+	TotalFires          int                   `json:"total_fires"`
+	PeakMonth           string                `json:"peak_month,omitempty"`
+	Trajectories        []FireGroupTrajectory `json:"trajectories,omitempty"`
 }
 
 type FireGroupTrajectory struct {
-	Year        int      `json:"year,omitempty"`
-	Origin      GeoPoint `json:"origin"`
-	Destination GeoPoint `json:"dest"`
-	EntryDate   string   `json:"entry_date"`
-	LastInside  string   `json:"last_inside"`
-	DaysInside  int      `json:"days_inside"`
-	FiresInside int      `json:"fires_inside"`
-	Outcome     string   `json:"outcome"`
+	Year        int                `json:"year,omitempty"`
+	Origin      GeoPoint           `json:"origin"`
+	Destination GeoPoint           `json:"dest"`
+	EntryDate   string             `json:"entry_date"`
+	LastInside  string             `json:"last_inside"`
+	DaysInside  int                `json:"days_inside"`
+	FiresInside int                `json:"fires_inside"`
+	Outcome     string             `json:"outcome"`
 	Path        []GeoPointWithDate `json:"path,omitempty"`
 }
 
@@ -84,10 +84,10 @@ type RoadlessStats struct {
 }
 
 type DeforestationStats struct {
-	TotalLossKm2 float64 `json:"total_loss_km2"`
-	WorstYear    int     `json:"worst_year"`
-	WorstYearKm2 float64 `json:"worst_year_km2"`
-	Trend        string  `json:"trend"` // "improving", "worsening", "stable"
+	TotalLossKm2 float64               `json:"total_loss_km2"`
+	WorstYear    int                   `json:"worst_year"`
+	WorstYearKm2 float64               `json:"worst_year_km2"`
+	Trend        string                `json:"trend"` // "improving", "worsening", "stable"
 	YearlyData   []YearlyDeforestation `json:"yearly_data,omitempty"`
 }
 
@@ -115,7 +115,7 @@ func (s *Server) HandleAPIParkStats(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Park ID required", http.StatusBadRequest)
 		return
 	}
-	
+
 	// Map WDPA ID to internal park_id if needed
 	internalID := parkID
 	parkName := parkID
@@ -128,15 +128,15 @@ func (s *Server) HandleAPIParkStats(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	
+
 	// Parse time filter parameters
 	yearStr := r.URL.Query().Get("year")
 	fromStr := r.URL.Query().Get("from")
 	toStr := r.URL.Query().Get("to")
-	
+
 	var fromYear, toYear int
 	now := time.Now()
-	
+
 	if yearStr != "" {
 		if y, err := strconv.Atoi(yearStr); err == nil {
 			fromYear = y
@@ -157,10 +157,10 @@ func (s *Server) HandleAPIParkStats(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	
+
 	stats := ParkStats{ParkID: parkID}
 	var insights []string
-	
+
 	// Query aggregated fire infraction data across year range.
 	// NOTE: an older version selected a trajectories_json column that no longer
 	// exists, which made this query error silently and left stats.Fire nil for
@@ -176,11 +176,11 @@ func (s *Server) HandleAPIParkStats(w http.ResponseWriter, r *http.Request) {
 		FROM park_group_infractions 
 		WHERE park_id = ? AND year >= ? AND year <= ?
 	`, internalID, fromYear, toYear).Scan(&fire.Year, &fire.GroupsEntered, &fire.GroupsStoppedInside, &fire.GroupsTransited, &fire.AvgDaysInside)
-	
+
 	if err == nil && fire.GroupsEntered > 0 {
 		fire.ResponseRate = float64(fire.GroupsStoppedInside) / float64(fire.GroupsEntered) * 100
 		stats.Fire = &fire
-		
+
 		// Generate fire insights with trajectory details
 		if fire.GroupsTransited > 0 {
 			// Find example of transited group with origin/destination
@@ -225,7 +225,7 @@ func (s *Server) HandleAPIParkStats(w http.ResponseWriter, r *http.Request) {
 			insights = append(insights, "⚠️ Low response rate may indicate gaps in patrol coverage or resources.")
 		}
 	}
-	
+
 	// Total fires, peak month, and per-year counts in a single scan over the
 	// (protected_area_id, acq_date) index. substr avoids per-row strftime,
 	// and one year-month GROUP BY replaces three separate table scans.
@@ -273,7 +273,7 @@ func (s *Server) HandleAPIParkStats(w http.ResponseWriter, r *http.Request) {
 				stats.Fire.PeakMonth))
 		}
 	}
-	
+
 	// Get fire timeline (last 90 days with data)
 	rows, err := s.DB.Query(`
 		SELECT acq_date, COUNT(*) as cnt
@@ -292,7 +292,7 @@ func (s *Server) HandleAPIParkStats(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	
+
 	// Get multi-year fire trend; per-year fire counts come from the year-month
 	// scan above (firesByYear), replacing a correlated strftime() subquery that
 	// took seconds on big parks.
@@ -312,7 +312,7 @@ func (s *Server) HandleAPIParkStats(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	
+
 	// Query GHSL settlement data
 	var settlement SettlementStats
 	err = s.DB.QueryRow(`
@@ -320,7 +320,7 @@ func (s *Server) HandleAPIParkStats(w http.ResponseWriter, r *http.Request) {
 		FROM ghsl_data
 		WHERE park_id = ?
 	`, internalID).Scan(&settlement.BuiltUpKm2, &settlement.SettlementCount)
-	
+
 	if err == nil {
 		stats.Settlement = &settlement
 		if settlement.SettlementCount > 0 {
@@ -331,7 +331,7 @@ func (s *Server) HandleAPIParkStats(w http.ResponseWriter, r *http.Request) {
 			insights = append(insights, "✓ No permanent settlements detected inside park boundaries.")
 		}
 	}
-	
+
 	// Query OSM roadless data
 	var roadless RoadlessStats
 	err = s.DB.QueryRow(`
@@ -339,7 +339,7 @@ func (s *Server) HandleAPIParkStats(w http.ResponseWriter, r *http.Request) {
 		FROM osm_roadless_data
 		WHERE park_id = ?
 	`, internalID).Scan(&roadless.RoadlessPercentage, &roadless.TotalRoadKm)
-	
+
 	if err == nil {
 		stats.Roadless = &roadless
 		if roadless.RoadlessPercentage >= 90 {
@@ -356,7 +356,7 @@ func (s *Server) HandleAPIParkStats(w http.ResponseWriter, r *http.Request) {
 				roadless.RoadlessPercentage))
 		}
 	}
-	
+
 	// Query deforestation data
 	var deforestation DeforestationStats
 	rows, err = s.DB.Query(`
@@ -375,7 +375,7 @@ func (s *Server) HandleAPIParkStats(w http.ResponseWriter, r *http.Request) {
 		var olderYearsTotal float64
 		var recentYearsCount int
 		var olderYearsCount int
-		
+
 		for rows.Next() {
 			var year int
 			var areaKm2 float64
@@ -396,13 +396,13 @@ func (s *Server) HandleAPIParkStats(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
-		
+
 		if len(yearlyData) > 0 {
 			deforestation.TotalLossKm2 = totalLoss
 			deforestation.WorstYear = worstYear
 			deforestation.WorstYearKm2 = worstYearKm2
 			deforestation.YearlyData = yearlyData
-			
+
 			// Calculate trend based on average loss per year
 			if recentYearsCount > 0 && olderYearsCount > 0 {
 				recentAvg := recentYearsTotal / float64(recentYearsCount)
@@ -417,14 +417,14 @@ func (s *Server) HandleAPIParkStats(w http.ResponseWriter, r *http.Request) {
 			} else {
 				deforestation.Trend = "insufficient_data"
 			}
-			
+
 			stats.Deforestation = &deforestation
-			
+
 			// Generate deforestation insights
 			insights = append(insights, fmt.Sprintf(
 				"🌳 Total forest loss: %.1f km² since 2001. Worst year was %d (%.1f km²).",
 				totalLoss, worstYear, worstYearKm2))
-			
+
 			if deforestation.Trend == "worsening" {
 				insights = append(insights, "⚠️ Deforestation trend is worsening - recent years show higher loss than 2015-2019.")
 			} else if deforestation.Trend == "improving" {
@@ -432,9 +432,9 @@ func (s *Server) HandleAPIParkStats(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	
+
 	stats.Insights = insights
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(stats)
 }
@@ -447,7 +447,7 @@ func (s *Server) HandleAPIParkFireLog(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Park ID required", http.StatusBadRequest)
 		return
 	}
-	
+
 	// Map to internal ID
 	internalID := parkID
 	if s.AreaStore != nil {
@@ -458,14 +458,14 @@ func (s *Server) HandleAPIParkFireLog(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	
+
 	type FireEvent struct {
-		Date      string  `json:"date"`
-		Fires     int     `json:"fires"`
-		AvgFRP    float64 `json:"avg_frp"`
-		MaxFRP    float64 `json:"max_frp"`
+		Date   string  `json:"date"`
+		Fires  int     `json:"fires"`
+		AvgFRP float64 `json:"avg_frp"`
+		MaxFRP float64 `json:"max_frp"`
 	}
-	
+
 	rows, err := s.DB.Query(`
 		SELECT acq_date, COUNT(*) as fires, AVG(frp) as avg_frp, MAX(frp) as max_frp
 		FROM fire_detections 
@@ -474,13 +474,13 @@ func (s *Server) HandleAPIParkFireLog(w http.ResponseWriter, r *http.Request) {
 		ORDER BY acq_date DESC
 		LIMIT 365
 	`, internalID)
-	
+
 	if err != nil {
 		internalError(w, "request failed", err)
 		return
 	}
 	defer rows.Close()
-	
+
 	var events []FireEvent
 	for rows.Next() {
 		var e FireEvent
@@ -491,19 +491,19 @@ func (s *Server) HandleAPIParkFireLog(w http.ResponseWriter, r *http.Request) {
 			events = append(events, e)
 		}
 	}
-	
+
 	// Generate narrative log entries
 	type LogEntry struct {
 		Date    string `json:"date"`
 		Message string `json:"message"`
 		Level   string `json:"level"` // info, warning, critical
 	}
-	
+
 	var log []LogEntry
 	for _, e := range events {
 		level := "info"
 		var msg string
-		
+
 		if e.Fires >= 100 {
 			level = "critical"
 			msg = fmt.Sprintf("🔥 Major fire event: %d active fires detected (avg intensity: %.1f MW)", e.Fires, e.AvgFRP)
@@ -518,7 +518,7 @@ func (s *Server) HandleAPIParkFireLog(w http.ResponseWriter, r *http.Request) {
 		} else {
 			msg = fmt.Sprintf("%d fire detections", e.Fires)
 		}
-		
+
 		// Format date nicely
 		dateParts := strings.Split(e.Date, "-")
 		if len(dateParts) == 3 {
@@ -529,10 +529,10 @@ func (s *Server) HandleAPIParkFireLog(w http.ResponseWriter, r *http.Request) {
 				e.Date = fmt.Sprintf("%s %s, %s", months[monthNum], dateParts[2], dateParts[0])
 			}
 		}
-		
+
 		log = append(log, LogEntry{Date: e.Date, Message: msg, Level: level})
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"events": events,

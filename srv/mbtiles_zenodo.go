@@ -45,10 +45,10 @@ func zenodoMBTilesMetadata(parkName, source string, minZoom, maxZoom int) zenodo
 // and stream-upload, up to maxMBTilesSize. The disk path is reserved for
 // non-test (prod-password) users; test users keep the RAM-only limit.
 const (
-	inMemoryRAMBudget = 7 * 1024 * 1024 * 1024        // peak RAM ceiling for in-memory builds
-	maxMBTilesSize    = 8 * 1024 * 1024 * 1024        // absolute file-size cap (disk-backed, Zenodo allows 50GB)
-	mbtilesDiskMargin = 1.2                           // require 1.2× estimated size free on disk
-	mbtilesMinFree    = 2 * 1024 * 1024 * 1024        // always leave 2 GB free
+	inMemoryRAMBudget = 7 * 1024 * 1024 * 1024 // peak RAM ceiling for in-memory builds
+	maxMBTilesSize    = 8 * 1024 * 1024 * 1024 // absolute file-size cap (disk-backed, Zenodo allows 50GB)
+	mbtilesDiskMargin = 1.2                    // require 1.2× estimated size free on disk
+	mbtilesMinFree    = 2 * 1024 * 1024 * 1024 // always leave 2 GB free
 )
 
 // ZenodoMBTilesJob represents a tile generation + Zenodo upload job.
@@ -90,13 +90,17 @@ type ZenodoMBTilesQueue struct {
 	zenodoManifest *zenodo.Manifest
 
 	maxCPU int
-	db     interface{ Exec(string, ...interface{}) (sql.Result, error) }
+	db     interface {
+		Exec(string, ...interface{}) (sql.Result, error)
+	}
 }
 
 var zenodoMBQueue *ZenodoMBTilesQueue
 
 // InitZenodoMBTilesQueue initializes the Zenodo-backed MBTiles queue.
-func InitZenodoMBTilesQueue(zenodoToken string, db interface{ Exec(string, ...interface{}) (sql.Result, error) }) error {
+func InitZenodoMBTilesQueue(zenodoToken string, db interface {
+	Exec(string, ...interface{}) (sql.Result, error)
+}) error {
 	if zenodoToken == "" {
 		slog.Warn("Zenodo MBTiles queue not initialized: no token provided")
 		return fmt.Errorf("zenodo token required")

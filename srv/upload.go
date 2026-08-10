@@ -30,36 +30,36 @@ type UploadResponse struct {
 	TotalDistanceKm float64          `json:"total_distance_km"`
 	Segments        []SegmentSummary `json:"segments"`
 	Error           string           `json:"error,omitempty"`
-	
+
 	// Validation results
-	Validation      *UploadValidationSummary `json:"validation,omitempty"`
+	Validation *UploadValidationSummary `json:"validation,omitempty"`
 }
 
 // UploadValidationSummary provides user-friendly validation feedback
 type UploadValidationSummary struct {
-	IsValid           bool     `json:"is_valid"`
-	ProtectedArea     string   `json:"protected_area,omitempty"`
-	PatrolKm          float64  `json:"patrol_km"`
-	RoadKm            float64  `json:"road_km"`
-	BoundaryKm        float64  `json:"boundary_km"`
-	ExcludedKm        float64  `json:"excluded_km"`
-	StaticSegments    int      `json:"static_segments"`
-	ExcludedSegments  int      `json:"excluded_segments"`
-	Warnings          []string `json:"warnings,omitempty"`
-	Errors            []string `json:"errors,omitempty"`
+	IsValid          bool     `json:"is_valid"`
+	ProtectedArea    string   `json:"protected_area,omitempty"`
+	PatrolKm         float64  `json:"patrol_km"`
+	RoadKm           float64  `json:"road_km"`
+	BoundaryKm       float64  `json:"boundary_km"`
+	ExcludedKm       float64  `json:"excluded_km"`
+	StaticSegments   int      `json:"static_segments"`
+	ExcludedSegments int      `json:"excluded_segments"`
+	Warnings         []string `json:"warnings,omitempty"`
+	Errors           []string `json:"errors,omitempty"`
 }
 
 // SegmentSummary represents a processed segment in the upload response.
 type SegmentSummary struct {
-	StartTime       *time.Time `json:"start_time,omitempty"`
-	EndTime         *time.Time `json:"end_time,omitempty"`
-	MovementType    string     `json:"movement_type,omitempty"`
-	MovementSubtype string     `json:"movement_subtype,omitempty"` // boat, fixed_wing, rotor_wing
-	DistanceKm      float64    `json:"distance_km"`
-	Points          int        `json:"points"`
-	Area            string     `json:"area"`
-	GridCellIDs     []string   `json:"grid_cells,omitempty"`
-	Analysis     *GPXAnalysis `json:"analysis,omitempty"`
+	StartTime       *time.Time   `json:"start_time,omitempty"`
+	EndTime         *time.Time   `json:"end_time,omitempty"`
+	MovementType    string       `json:"movement_type,omitempty"`
+	MovementSubtype string       `json:"movement_subtype,omitempty"` // boat, fixed_wing, rotor_wing
+	DistanceKm      float64      `json:"distance_km"`
+	Points          int          `json:"points"`
+	Area            string       `json:"area"`
+	GridCellIDs     []string     `json:"grid_cells,omitempty"`
+	Analysis        *GPXAnalysis `json:"analysis,omitempty"`
 }
 
 // uploadPageData is the data passed to the upload template.
@@ -133,7 +133,7 @@ func (s *Server) HandleUpload(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusConflict)
 		json.NewEncoder(w).Encode(map[string]interface{}{
-			"error": "duplicate_upload",
+			"error":   "duplicate_upload",
 			"message": "This file has already been uploaded",
 			"previous_upload": map[string]interface{}{
 				"id":          existing.ID,
@@ -534,7 +534,7 @@ func (s *Server) persistUpload(ctx context.Context, userID, userEmail, filename,
 		for _, seg := range segments {
 			totalDistKm += seg.DistanceKm
 		}
-		
+
 		// Calculate centroid from all points
 		var centroidLat, centroidLon float64
 		var pointCount int
@@ -549,13 +549,13 @@ func (s *Server) persistUpload(ctx context.Context, userID, userEmail, filename,
 			centroidLat /= float64(pointCount)
 			centroidLon /= float64(pointCount)
 		}
-		
+
 		// Determine location name and bounds
 		var locationName string
 		var notifParkID string
 		var minLat, maxLat, minLon, maxLon float64
 		var hasBounds bool
-		
+
 		if parkID != nil {
 			notifParkID = *parkID
 			locationName = *parkID
@@ -582,7 +582,7 @@ func (s *Server) persistUpload(ctx context.Context, userID, userEmail, filename,
 			}
 			locationName = fmt.Sprintf("%.2f°%s, %.2f°%s", math.Abs(centroidLat), latDir, math.Abs(centroidLon), lonDir)
 		}
-		
+
 		// Get grid cells for this upload and find the largest cluster
 		type cellInfo struct {
 			id  string
@@ -664,7 +664,7 @@ func (s *Server) persistUpload(ctx context.Context, userID, userEmail, filename,
 				}
 			}
 		}
-		
+
 		// Get date range from track points
 		var minDate, maxDate sql.NullString
 		s.DB.QueryRowContext(ctx, `
@@ -686,7 +686,7 @@ func (s *Server) persistUpload(ctx context.Context, userID, userEmail, filename,
 			refData["date_to"] = maxDate.String
 		}
 		refDataJSON, _ := json.Marshal(refData)
-		
+
 		_, err = s.DB.ExecContext(ctx, `
 			INSERT INTO notifications (park_id, notification_type, title, message, reference_id, reference_data, env, created_at)
 			VALUES (?, 'new_upload', ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
@@ -951,7 +951,7 @@ func (s *Server) updateEffortData(ctx context.Context, q *dbgen.Queries, segment
 				dt := p2.Time.Sub(*p1.Time).Hours()
 				if dt > 0 {
 					speed := segDist / dt // km/h
-					if speed < 500 {     // sanity: ignore GPS glitches
+					if speed < 500 {      // sanity: ignore GPS glitches
 						cellStats[key].SpeedSum += speed * segDist
 						cellStats[key].SpeedDistKm += segDist
 					}
@@ -1372,21 +1372,29 @@ func haversineDistanceKm(lat1, lon1, lat2, lon2 float64) float64 {
 func subcellIDForPoint(lat, lon float64) string {
 	// Get the grid cell bounds
 	latMin, _, lonMin, _ := gridCellBounds(lat, lon)
-	
+
 	// Calculate position within the cell (0-1 range)
 	latPos := (lat - latMin) / gridCellSize
 	lonPos := (lon - lonMin) / gridCellSize
-	
+
 	// Convert to subcell index (0-9)
 	row := int(latPos * 10)
 	col := int(lonPos * 10)
-	
+
 	// Clamp to valid range
-	if row < 0 { row = 0 }
-	if row > 9 { row = 9 }
-	if col < 0 { col = 0 }
-	if col > 9 { col = 9 }
-	
+	if row < 0 {
+		row = 0
+	}
+	if row > 9 {
+		row = 9
+	}
+	if col < 0 {
+		col = 0
+	}
+	if col > 9 {
+		col = 9
+	}
+
 	return fmt.Sprintf("%d_%d", row, col)
 }
 
@@ -1397,18 +1405,26 @@ func subcellIDForCell(cellID string, lat, lon float64) string {
 	// Parse cell ID to get the floor lat/lon
 	var cellLat, cellLon float64
 	fmt.Sscanf(cellID, "%f_%f", &cellLat, &cellLon)
-	
+
 	latPos := (lat - cellLat) / gridCellSize
 	lonPos := (lon - cellLon) / gridCellSize
-	
+
 	row := int(latPos * 10)
 	col := int(lonPos * 10)
-	
-	if row < 0 { row = 0 }
-	if row > 9 { row = 9 }
-	if col < 0 { col = 0 }
-	if col > 9 { col = 9 }
-	
+
+	if row < 0 {
+		row = 0
+	}
+	if row > 9 {
+		row = 9
+	}
+	if col < 0 {
+		col = 0
+	}
+	if col > 9 {
+		col = 9
+	}
+
 	return fmt.Sprintf("%d_%d", row, col)
 }
 
@@ -1422,26 +1438,26 @@ func (s *Server) trackSubcellVisits(ctx context.Context, q *dbgen.Queries, segme
 		lat, lon float64
 	}
 	visitedSubcells := make(map[string]subcellInfo)
-	
+
 	defaultDate := time.Date(int(defaultYear), time.Month(defaultMonth), 1, 0, 0, 0, 0, time.UTC)
-	
+
 	for _, seg := range segments {
 		var tracker gridCellTracker
 		for _, pt := range seg.Points {
 			gridCellID := tracker.Assign(pt.Lat, pt.Lon)
 			subcellID := subcellIDForCell(gridCellID, pt.Lat, pt.Lon)
-			
+
 			// Use point timestamp if available, otherwise default date
 			visitDate := defaultDate
 			if pt.Time != nil {
 				visitDate = time.Date(pt.Time.Year(), pt.Time.Month(), pt.Time.Day(), 0, 0, 0, 0, time.UTC)
 			}
-			
+
 			key := fmt.Sprintf("%s:%s:%s", gridCellID, subcellID, visitDate.Format("2006-01-02"))
 			visitedSubcells[key] = subcellInfo{lat: pt.Lat, lon: pt.Lon}
 		}
 	}
-	
+
 	// Collect unique grid cells that need to be created
 	gridCellsNeeded := make(map[string]subcellInfo)
 	for key, info := range visitedSubcells {
@@ -1452,12 +1468,12 @@ func (s *Server) trackSubcellVisits(ctx context.Context, q *dbgen.Queries, segme
 		gridCellID := parts[0]
 		gridCellsNeeded[gridCellID] = info
 	}
-	
+
 	// Ensure all grid cells exist before inserting subcell visits
 	for gridCellID, info := range gridCellsNeeded {
 		latCenter, lonCenter := gridCellCenter(info.lat, info.lon)
 		latMin, latMax, lonMin, lonMax := gridCellBounds(info.lat, info.lon)
-		
+
 		_, err := q.GetOrCreateGridCell(ctx, dbgen.GetOrCreateGridCellParams{
 			ID:        gridCellID,
 			LatCenter: latCenter,
@@ -1471,7 +1487,7 @@ func (s *Server) trackSubcellVisits(ctx context.Context, q *dbgen.Queries, segme
 			return fmt.Errorf("ensure grid cell %s exists: %w", gridCellID, err)
 		}
 	}
-	
+
 	// Store subcell visits with day granularity
 	for key := range visitedSubcells {
 		parts := strings.Split(key, ":")
@@ -1481,13 +1497,13 @@ func (s *Server) trackSubcellVisits(ctx context.Context, q *dbgen.Queries, segme
 		gridCellID := parts[0]
 		subcellID := parts[1]
 		visitDateStr := parts[2] // already "YYYY-MM-DD" format
-		
+
 		// Validate date format
 		visitTime, err := time.Parse("2006-01-02", visitDateStr)
 		if err != nil {
 			continue
 		}
-		
+
 		err = q.UpsertSubcellVisit(ctx, dbgen.UpsertSubcellVisitParams{
 			GridCellID: gridCellID,
 			SubcellID:  subcellID,
@@ -1498,7 +1514,7 @@ func (s *Server) trackSubcellVisits(ctx context.Context, q *dbgen.Queries, segme
 			return fmt.Errorf("upsert subcell visit: %w", err)
 		}
 	}
-	
+
 	return nil
 }
 
@@ -1511,12 +1527,12 @@ func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEm
 	// Run validation and classification on pre-processed segments
 	// (already split and gap-cleaned by caller)
 	validationResult := ValidateAndClassifyGPX(segments)
-	
+
 	// Find protected area per segment using median point (robust to transit).
 	// The overall upload is assigned to the park with the most segment distance.
-	parkDistKm := make(map[string]float64)      // park_id -> total km
-	parkNames := make(map[string]string)          // park_id -> name
-	segmentParks := make(map[int]string)          // segment_index -> park_id
+	parkDistKm := make(map[string]float64) // park_id -> total km
+	parkNames := make(map[string]string)   // park_id -> name
+	segmentParks := make(map[int]string)   // segment_index -> park_id
 	if s.AreaStore != nil {
 		for i, seg := range segments {
 			if len(seg.Points) == 0 {
@@ -1554,9 +1570,9 @@ func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEm
 		validationResult.ProtectedAreaID = bestPark
 		validationResult.ProtectedAreaName = parkNames[bestPark]
 	}
-	
+
 	q := dbgen.New(s.DB)
-	
+
 	// Determine processing status
 	processingStatus := "completed"
 	var rejectionReason *string
@@ -1569,12 +1585,12 @@ func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEm
 	} else if validationResult.PatrolKm == 0 {
 		processingStatus = "partial"
 	}
-	
+
 	// Convert arrays to JSON
 	errorsJSON, _ := json.Marshal(validationResult.ValidationErrors)
 	warningsJSON, _ := json.Marshal(validationResult.ValidationWarnings)
 	segmentsJSON, _ := json.Marshal(validationResult.ClassifiedSegments)
-	
+
 	// Count segments by type
 	patrolSegments := 0
 	for _, seg := range validationResult.ClassifiedSegments {
@@ -1582,74 +1598,74 @@ func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEm
 			patrolSegments++
 		}
 	}
-	
+
 	// Get upload_id - we'll update this after persisting
 	var uploadID *int64
 	var logID int64
 	var err error
-	
+
 	// Log the upload processing
 	ms := validationResult.MovementStats
 	logID, err = q.CreateGPXUploadLog(ctx, dbgen.CreateGPXUploadLogParams{
-		UploadID:              uploadID,
-		UserID:                userID,
-		UserEmail:             &userEmail,
-		Filename:              filename,
-		UploadTime:            time.Now(),
-		IsValid:               validationResult.IsValid,
-		TotalPoints:           int64(validationResult.TotalPoints),
-		ValidationErrors:      strPtr(string(errorsJSON)),
-		ValidationWarnings:    strPtr(string(warningsJSON)),
-		ProtectedAreaID:       strPtr(validationResult.ProtectedAreaID),
-		ProtectedAreaName:     strPtr(validationResult.ProtectedAreaName),
-		PatrolKm:              validationResult.PatrolKm,
-		RoadKm:                validationResult.RoadKm,
-		BoundaryKm:            validationResult.BoundaryKm,
-		ExcludedKm:            validationResult.ExcludedKm,
-		TotalSegments:         int64(len(validationResult.ClassifiedSegments)),
-		PatrolSegments:        int64(patrolSegments),
-		StaticSegments:        int64(validationResult.StaticSegments),
-		ExcludedSegments:      int64(validationResult.ExcludedSegments),
+		UploadID:               uploadID,
+		UserID:                 userID,
+		UserEmail:              &userEmail,
+		Filename:               filename,
+		UploadTime:             time.Now(),
+		IsValid:                validationResult.IsValid,
+		TotalPoints:            int64(validationResult.TotalPoints),
+		ValidationErrors:       strPtr(string(errorsJSON)),
+		ValidationWarnings:     strPtr(string(warningsJSON)),
+		ProtectedAreaID:        strPtr(validationResult.ProtectedAreaID),
+		ProtectedAreaName:      strPtr(validationResult.ProtectedAreaName),
+		PatrolKm:               validationResult.PatrolKm,
+		RoadKm:                 validationResult.RoadKm,
+		BoundaryKm:             validationResult.BoundaryKm,
+		ExcludedKm:             validationResult.ExcludedKm,
+		TotalSegments:          int64(len(validationResult.ClassifiedSegments)),
+		PatrolSegments:         int64(patrolSegments),
+		StaticSegments:         int64(validationResult.StaticSegments),
+		ExcludedSegments:       int64(validationResult.ExcludedSegments),
 		ClassifiedSegmentsJson: strPtr(string(segmentsJSON)),
-		ProcessingStatus:      &processingStatus,
-		RejectionReason:       rejectionReason,
+		ProcessingStatus:       &processingStatus,
+		RejectionReason:        rejectionReason,
 		// Movement type stats
-		FootSegments:          ptrInt64(int64(ms.FootSegments)),
-		FootKm:                ptrFloat64(ms.FootKm),
-		FootMinutes:           ptrFloat64(ms.FootMinutes),
-		VehicleSegments:       ptrInt64(int64(ms.VehicleSegments)),
-		VehicleKm:             ptrFloat64(ms.VehicleKm),
-		VehicleMinutes:        ptrFloat64(ms.VehicleMinutes),
-		AircraftSegments:      ptrInt64(int64(ms.AircraftSegments)),
-		AircraftKm:            ptrFloat64(ms.AircraftKm),
-		AircraftMinutes:       ptrFloat64(ms.AircraftMinutes),
+		FootSegments:     ptrInt64(int64(ms.FootSegments)),
+		FootKm:           ptrFloat64(ms.FootKm),
+		FootMinutes:      ptrFloat64(ms.FootMinutes),
+		VehicleSegments:  ptrInt64(int64(ms.VehicleSegments)),
+		VehicleKm:        ptrFloat64(ms.VehicleKm),
+		VehicleMinutes:   ptrFloat64(ms.VehicleMinutes),
+		AircraftSegments: ptrInt64(int64(ms.AircraftSegments)),
+		AircraftKm:       ptrFloat64(ms.AircraftKm),
+		AircraftMinutes:  ptrFloat64(ms.AircraftMinutes),
 		// Movement subtypes
-		BoatSegments:          ptrInt64(int64(ms.BoatSegments)),
-		BoatKm:                ptrFloat64(ms.BoatKm),
-		BoatMinutes:           ptrFloat64(ms.BoatMinutes),
-		FixedWingSegments:     ptrInt64(int64(ms.FixedWingSegments)),
-		FixedWingKm:           ptrFloat64(ms.FixedWingKm),
-		FixedWingMinutes:      ptrFloat64(ms.FixedWingMinutes),
-		RotorWingSegments:     ptrInt64(int64(ms.RotorWingSegments)),
-		RotorWingKm:           ptrFloat64(ms.RotorWingKm),
-		RotorWingMinutes:      ptrFloat64(ms.RotorWingMinutes),
+		BoatSegments:      ptrInt64(int64(ms.BoatSegments)),
+		BoatKm:            ptrFloat64(ms.BoatKm),
+		BoatMinutes:       ptrFloat64(ms.BoatMinutes),
+		FixedWingSegments: ptrInt64(int64(ms.FixedWingSegments)),
+		FixedWingKm:       ptrFloat64(ms.FixedWingKm),
+		FixedWingMinutes:  ptrFloat64(ms.FixedWingMinutes),
+		RotorWingSegments: ptrInt64(int64(ms.RotorWingSegments)),
+		RotorWingKm:       ptrFloat64(ms.RotorWingKm),
+		RotorWingMinutes:  ptrFloat64(ms.RotorWingMinutes),
 		// Special categories
-		ReconSegments:         ptrInt64(int64(ms.ReconSegments)),
-		ReconKm:               ptrFloat64(ms.ReconKm),
-		ReconMinutes:          ptrFloat64(ms.ReconMinutes),
-		FastVehicleSegments:   ptrInt64(int64(ms.FastVehicleSegments)),
-		FastVehicleKm:         ptrFloat64(ms.FastVehicleKm),
-		FastVehicleMinutes:    ptrFloat64(ms.FastVehicleMinutes),
+		ReconSegments:       ptrInt64(int64(ms.ReconSegments)),
+		ReconKm:             ptrFloat64(ms.ReconKm),
+		ReconMinutes:        ptrFloat64(ms.ReconMinutes),
+		FastVehicleSegments: ptrInt64(int64(ms.FastVehicleSegments)),
+		FastVehicleKm:       ptrFloat64(ms.FastVehicleKm),
+		FastVehicleMinutes:  ptrFloat64(ms.FastVehicleMinutes),
 		// Activity type stats
-		TransitSegments:       ptrInt64(int64(ms.TransitSegments)),
-		TransitKm:             ptrFloat64(ms.TransitKm),
-		LogisticsSegments:     ptrInt64(int64(ms.LogisticsSegments)),
-		LogisticsKm:           ptrFloat64(ms.LogisticsKm),
+		TransitSegments:   ptrInt64(int64(ms.TransitSegments)),
+		TransitKm:         ptrFloat64(ms.TransitKm),
+		LogisticsSegments: ptrInt64(int64(ms.LogisticsSegments)),
+		LogisticsKm:       ptrFloat64(ms.LogisticsKm),
 	})
 	if err != nil {
 		slog.Warn("failed to create gpx upload log", "error", err)
 	}
-	
+
 	// If valid, persist to the original upload tables using the raw segments.
 	// Include uploads with any patrol or aircraft effort (aerial surveys count).
 	totalEffortKm := validationResult.PatrolKm + validationResult.MovementStats.AircraftKm
@@ -1675,7 +1691,7 @@ func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEm
 			}
 		}
 		slog.Info("persisting patrol segments", "count", len(patrolOnlySegments), "filtered_from", len(segments))
-		
+
 		if len(patrolOnlySegments) > 0 {
 			persistID, err := s.persistUpload(ctx, userID, userEmail, filename, fileHash, patrolOnlySegments, env)
 			if err != nil {
@@ -1693,7 +1709,7 @@ func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEm
 			}
 		}
 	}
-	
+
 	// Queue for background learning — one job per park that has segments.
 	// This correctly handles multi-park GPX files (e.g. autofetch from EarthRanger).
 	// Test-environment uploads must not pollute learned features.
@@ -1720,7 +1736,7 @@ func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEm
 			ParkID:   strPtr(validationResult.ProtectedAreaID),
 		})
 	}
-	
+
 	return validationResult, nil
 }
 
@@ -1744,31 +1760,31 @@ func timePtr(t *time.Time) *time.Time {
 func (s *Server) trackSettlementVisits(ctx context.Context, q *dbgen.Queries, segments []gpx.Segment, uploadID int64, parkID string) error {
 	// Settlement detection radius in degrees (~500m at equator)
 	const settlementRadius = 0.005
-	
+
 	// Minimum duration to count as a "visit" (5 minutes)
 	const minVisitMinutes = 5.0
-	
+
 	// Track visits by settlement ID to aggregate
 	type visit struct {
-		SettlementID  int64
-		StartTime     *time.Time
-		EndTime       *time.Time
-		MovementType  string
-		Points        int
+		SettlementID int64
+		StartTime    *time.Time
+		EndTime      *time.Time
+		MovementType string
+		Points       int
 	}
-	
+
 	visits := make(map[int64]*visit)
-	
+
 	for _, seg := range segments {
 		if len(seg.Points) < 2 {
 			continue
 		}
-		
+
 		movementType := seg.MovementType
 		if movementType == "" {
 			movementType = "foot"
 		}
-		
+
 		for _, pt := range seg.Points {
 			// Find nearest settlement
 			settlement, err := q.FindNearestSettlement(ctx, dbgen.FindNearestSettlementParams{
@@ -1779,16 +1795,16 @@ func (s *Server) trackSettlementVisits(ctx context.Context, q *dbgen.Queries, se
 			if err != nil {
 				continue // No settlement nearby
 			}
-			
+
 			// Check if within radius
 			latDiff := pt.Lat - settlement.Lat
 			lonDiff := pt.Lon - settlement.Lon
 			distSq := latDiff*latDiff + lonDiff*lonDiff
-			
+
 			if distSq > settlementRadius*settlementRadius {
 				continue // Not close enough
 			}
-			
+
 			// Track visit
 			v, ok := visits[settlement.ID]
 			if !ok {
@@ -1798,7 +1814,7 @@ func (s *Server) trackSettlementVisits(ctx context.Context, q *dbgen.Queries, se
 				}
 				visits[settlement.ID] = v
 			}
-			
+
 			if pt.Time != nil {
 				if v.StartTime == nil || pt.Time.Before(*v.StartTime) {
 					v.StartTime = pt.Time
@@ -1810,14 +1826,14 @@ func (s *Server) trackSettlementVisits(ctx context.Context, q *dbgen.Queries, se
 			v.Points++
 		}
 	}
-	
+
 	// Record visits
 	now := time.Now()
 	for settlementID, v := range visits {
 		var durationMinutes float64
 		var visitDate time.Time
 		var year, month int
-		
+
 		if v.StartTime != nil && v.EndTime != nil {
 			durationMinutes = v.EndTime.Sub(*v.StartTime).Minutes()
 			visitDate = *v.StartTime
@@ -1830,11 +1846,11 @@ func (s *Server) trackSettlementVisits(ctx context.Context, q *dbgen.Queries, se
 			year = now.Year()
 			month = int(now.Month())
 		}
-		
+
 		if durationMinutes < minVisitMinutes {
 			continue // Too short to count as visit
 		}
-		
+
 		// Create visit record
 		_, err := q.CreateSettlementVisit(ctx, dbgen.CreateSettlementVisitParams{
 			SettlementID:    settlementID,
@@ -1852,7 +1868,7 @@ func (s *Server) trackSettlementVisits(ctx context.Context, q *dbgen.Queries, se
 			slog.Warn("failed to create settlement visit", "settlementID", settlementID, "error", err)
 			continue
 		}
-		
+
 		// Update intensity aggregation
 		footVisits := int64(0)
 		vehicleVisits := int64(0)
@@ -1865,7 +1881,7 @@ func (s *Server) trackSettlementVisits(ctx context.Context, q *dbgen.Queries, se
 		case "aircraft":
 			aircraftVisits = 1
 		}
-		
+
 		monthVal := int64(month)
 		zero := int64(0)
 		err = q.UpsertSettlementIntensity(ctx, dbgen.UpsertSettlementIntensityParams{
@@ -1885,7 +1901,7 @@ func (s *Server) trackSettlementVisits(ctx context.Context, q *dbgen.Queries, se
 			slog.Warn("failed to update settlement intensity", "settlementID", settlementID, "error", err)
 		}
 	}
-	
+
 	return nil
 }
 
@@ -1894,7 +1910,7 @@ func (s *Server) isNearBase(ctx context.Context, lat, lon, threshold float64) bo
 	if s.DB == nil {
 		return false
 	}
-	
+
 	// Query for nearby bases (settlements with is_likely_base=1)
 	var count int
 	err := s.DB.QueryRowContext(ctx, `
@@ -1904,7 +1920,7 @@ func (s *Server) isNearBase(ctx context.Context, lat, lon, threshold float64) bo
 		  AND ps.lat BETWEEN ? AND ?
 		  AND ps.lon BETWEEN ? AND ?
 	`, lat-threshold, lat+threshold, lon-threshold, lon+threshold).Scan(&count)
-	
+
 	if err != nil {
 		return false
 	}

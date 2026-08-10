@@ -11,7 +11,7 @@ import (
 
 // Notification represents a notification record
 type Notification struct {
-	ID               int64     `json:"id"`
+	ID               int64                  `json:"id"`
 	ParkID           string                 `json:"park_id"`
 	NotificationType string                 `json:"notification_type"`
 	Title            string                 `json:"title"`
@@ -39,11 +39,18 @@ type Notification struct {
 // one-off system types. New jobs are then displayed with no frontend change.
 // Deliberately excludes park-event types (fire_alert, new_upload,
 // new_publication) and aoi_progress, which have their own renderers.
+// A meta-type over every nightly job's status row, resolved here rather than
+// enumerated in the frontend (a job added later must appear with no frontend
+// change). The exclusions are types that have their own renderer: an MBTiles
+// job and a GeoPackage export are user-started downloads with progress and a
+// link, not a cron result, and rendering them twice — once as a card, once as
+// a "job failed" line — is how the panel stops being readable.
 func cronStatusSQL(col string) string {
 	return "((" + col + " LIKE '%\\_success' ESCAPE '\\'" +
 		" OR " + col + " LIKE '%\\_failed' ESCAPE '\\'" +
 		" OR " + col + " IN ('nrt_sp_drift','fire_ingest_errors','park_onboarding'))" +
-		" AND " + col + " NOT LIKE 'mbtiles\\_%' ESCAPE '\\')"
+		" AND " + col + " NOT LIKE 'mbtiles\\_%' ESCAPE '\\'" +
+		" AND " + col + " NOT LIKE 'geopackage\\_%' ESCAPE '\\')"
 }
 
 // HandleGetNotifications returns unread or filtered notifications
@@ -70,7 +77,7 @@ func (s *Server) HandleGetNotifications(w http.ResponseWriter, r *http.Request) 
 	// Env scoping: 'new_upload' and MBTiles notifications are tenant-scoped;
 	// all other notification types are shared across prod and test.
 	env := RequestEnv(r)
-	envCond := "(notification_type NOT IN ('new_upload','mbtiles_complete','mbtiles_failed') OR env = ?)"
+	envCond := "(notification_type NOT IN ('new_upload','mbtiles_complete','mbtiles_failed') AND notification_type NOT LIKE 'geopackage\\_%' ESCAPE '\\' OR env = ?)"
 	// Mining/turbidity notifications (4,267 mining_alert + scan-status rows) are
 	// retired but not deleted -- docs/MINING_FINDINGS_2026-08.md §10. Appended to
 	// envCond so every branch below (and the unread count) inherits it.
@@ -104,6 +111,15 @@ func (s *Server) HandleGetNotifications(w http.ResponseWriter, r *http.Request) 
 		query = `SELECT id, park_id, notification_type, title, message, reference_id, reference_url, reference_data, is_read, created_at
 		         FROM notifications WHERE ` + cronStatusSQL("notification_type") +
 			` AND ` + envCond + ` ORDER BY created_at DESC LIMIT ?`
+		args = append(append([]interface{}{}, envArgs...), limit)
+	} else if notifType == "geopackage" {
+		// Meta-type, same reasoning as cron_status: one job moves through
+		// geopackage_progress -> geopackage_ready|geopackage_failed, and the
+		// caller wants "my exports", not three enumerated types it would have
+		// to keep in sync with the server.
+		query = `SELECT id, park_id, notification_type, title, message, reference_id, reference_url, reference_data, is_read, created_at
+		         FROM notifications WHERE notification_type LIKE 'geopackage\_%' ESCAPE '\'
+		           AND ` + envCond + ` ORDER BY created_at DESC LIMIT ?`
 		args = append(append([]interface{}{}, envArgs...), limit)
 	} else if notifType != "" {
 		// comma-separated list of types supported (e.g. cron status types)
@@ -150,7 +166,7 @@ func (s *Server) HandleGetNotifications(w http.ResponseWriter, r *http.Request) 
 		n.ReferenceID = refID.String
 		n.ReferenceURL = refURL.String
 		n.IsRead = isRead == 1
-		
+
 		// Parse reference_data JSON if present
 		if refData.Valid && refData.String != "" {
 			var data map[string]interface{}
@@ -158,7 +174,7 @@ func (s *Server) HandleGetNotifications(w http.ResponseWriter, r *http.Request) 
 				n.ReferenceData = data
 			}
 		}
-		
+
 		// Try multiple time formats
 		if t, err := time.Parse("2006-01-02 15:04:05", createdAt); err == nil {
 			n.CreatedAt = t

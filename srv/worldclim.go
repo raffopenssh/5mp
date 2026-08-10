@@ -47,20 +47,20 @@ func (g *GridPrecipData) GetMonthlyPrecip(gridCellID string) []float64 {
 	if g == nil {
 		return nil
 	}
-	
+
 	// Try preloaded data first
 	g.mu.RLock()
 	precip, exists := g.data[gridCellID]
 	g.mu.RUnlock()
-	
+
 	if exists {
 		return precip
 	}
-	
+
 	// Not found - try on-demand query
 	slog.Info("grid cell not in cache, querying WorldClim on-demand", "cell_id", gridCellID)
 	precip = g.queryOnDemand(gridCellID)
-	
+
 	if precip != nil {
 		// Cache the result
 		g.mu.Lock()
@@ -68,7 +68,7 @@ func (g *GridPrecipData) GetMonthlyPrecip(gridCellID string) []float64 {
 		g.mu.Unlock()
 		slog.Info("cached WorldClim data on-demand", "cell_id", gridCellID, "precip", precip)
 	}
-	
+
 	return precip
 }
 
@@ -81,7 +81,7 @@ func (g *GridPrecipData) queryOnDemand(gridCellID string) []float64 {
 		slog.Warn("invalid grid cell ID format", "cell_id", gridCellID)
 		return nil
 	}
-	
+
 	var err error
 	if lon, err = strconv.ParseFloat(parts[0], 64); err != nil {
 		slog.Warn("invalid lon in grid cell ID", "cell_id", gridCellID, "error", err)
@@ -91,38 +91,38 @@ func (g *GridPrecipData) queryOnDemand(gridCellID string) []float64 {
 		slog.Warn("invalid lat in grid cell ID", "cell_id", gridCellID, "error", err)
 		return nil
 	}
-	
+
 	// Call Python script to query WorldClim
 	scriptPath := filepath.Join("scripts", "query_worldclim_point.py")
 	cmd := exec.Command("python3", scriptPath, fmt.Sprintf("%.2f", lat), fmt.Sprintf("%.2f", lon))
-	
+
 	output, err := cmd.Output()
 	if err != nil {
 		slog.Warn("failed to query WorldClim on-demand", "cell_id", gridCellID, "error", err)
 		return nil
 	}
-	
+
 	// Parse JSON response
 	var result struct {
 		Precip []float64 `json:"precip"`
 		Error  string    `json:"error"`
 	}
-	
+
 	if err := json.Unmarshal(output, &result); err != nil {
 		slog.Warn("failed to parse WorldClim response", "cell_id", gridCellID, "error", err)
 		return nil
 	}
-	
+
 	if result.Error != "" {
 		slog.Warn("WorldClim query error", "cell_id", gridCellID, "error", result.Error)
 		return nil
 	}
-	
+
 	if len(result.Precip) != 12 {
 		slog.Warn("invalid precipitation data length", "cell_id", gridCellID, "length", len(result.Precip))
 		return nil
 	}
-	
+
 	return result.Precip
 }
 
@@ -159,20 +159,20 @@ func (g *GridPrecipData) GetPrecipForLocation(lat, lon float64) []float64 {
 	if g == nil {
 		return nil
 	}
-	
+
 	// Match the grid generation logic:
 	// Grid cells centered at: -24.75, -24.25, -23.75, ... (min + res/2 + n*res)
 	// This creates cells at .2 and .8 when formatted to 1 decimal
 	resolution := 0.5
 	minLon, minLat := -25.0, -35.0
-	
+
 	// Find nearest grid cell center
 	gridLon := minLon + resolution/2 + resolution*math.Round((lon-minLon-resolution/2)/resolution)
 	gridLat := minLat + resolution/2 + resolution*math.Round((lat-minLat-resolution/2)/resolution)
-	
+
 	// Format grid cell ID (will be like 20.2_0.2)
 	gridCellID := fmt.Sprintf("%.1f_%.1f", gridLon, gridLat)
-	
+
 	return g.GetMonthlyPrecip(gridCellID)
 }
 
@@ -183,7 +183,7 @@ func (g *GridPrecipData) ClassifyDryRainyForLocation(lat, lon float64) (dryMonth
 		// Fallback to default
 		return []int{11, 12, 1, 2, 3, 4}, []int{5, 6, 7, 8, 9, 10}
 	}
-	
+
 	threshold := 50.0
 	for month := 1; month <= 12; month++ {
 		if precip[month-1] < threshold {
@@ -192,7 +192,7 @@ func (g *GridPrecipData) ClassifyDryRainyForLocation(lat, lon float64) (dryMonth
 			rainyMonths = append(rainyMonths, month)
 		}
 	}
-	
+
 	return dryMonths, rainyMonths
 }
 
@@ -200,12 +200,12 @@ func (g *GridPrecipData) ClassifyDryRainyForLocation(lat, lon float64) (dryMonth
 func (s *Server) HandleWorldClimTest(w http.ResponseWriter, r *http.Request) {
 	latStr := r.URL.Query().Get("lat")
 	lonStr := r.URL.Query().Get("lon")
-	
+
 	if latStr == "" || lonStr == "" {
 		http.Error(w, "Missing lat/lon parameters", http.StatusBadRequest)
 		return
 	}
-	
+
 	var lat, lon float64
 	if _, err := fmt.Sscanf(latStr, "%f", &lat); err != nil {
 		http.Error(w, "Invalid lat", http.StatusBadRequest)
@@ -215,22 +215,22 @@ func (s *Server) HandleWorldClimTest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid lon", http.StatusBadRequest)
 		return
 	}
-	
+
 	slog.Info("WorldClim test request", "lat", lat, "lon", lon, "globalGridPrecip", globalGridPrecip != nil)
-	
+
 	// Round to grid cell using same logic as GetPrecipForLocation
 	resolution := 0.5
 	minLon, minLat := -25.0, -35.0
 	gridLon := minLon + resolution/2 + resolution*math.Round((lon-minLon-resolution/2)/resolution)
 	gridLat := minLat + resolution/2 + resolution*math.Round((lat-minLat-resolution/2)/resolution)
 	gridCellID := fmt.Sprintf("%.1f_%.1f", gridLon, gridLat)
-	
+
 	// Get precipitation (will query on-demand if needed)
 	precip := globalGridPrecip.GetPrecipForLocation(lat, lon)
-	
+
 	// Classify seasons
 	dryMonths, rainyMonths := globalGridPrecip.ClassifyDryRainyForLocation(lat, lon)
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"location": map[string]float64{"lat": lat, "lon": lon},

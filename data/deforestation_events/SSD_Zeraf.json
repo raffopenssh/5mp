@@ -3080,7 +3080,7 @@
     "polygon_ids": "deforest_SSD_Zeraf_2023_320,deforest_SSD_Zeraf_2023_321"
   },
   {
-    "id": 32816,
+    "id": 32957,
     "park_id": "SSD_Zeraf",
     "year": 2025,
     "area_km2": 0.0009,
@@ -3095,10 +3095,10 @@
     "classification": "slash_burn",
     "classification_confidence": 0.85,
     "narrative": "Slash-and-burn clearing detected in 2025. Affected 0.00 km\u00b2 across 1 patch. Strong fire correlation indicates agricultural burning. Located 25.7km from Old Fangak. Near White Nile river.",
-    "fires_same_year": 40,
-    "fire_ratio": 4000.0,
+    "fires_same_year": 101,
+    "fire_ratio": 10100.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-07-29T07:30:23.578637",
+    "classified_at": "2026-08-06T07:35:46.265430",
     "polygon_ids": "deforest_gfw_SSD_Zeraf_2025_8.89_30.73"
   }
 ]

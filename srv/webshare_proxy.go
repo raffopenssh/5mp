@@ -24,7 +24,7 @@ type WebshareProxy struct {
 // GetWebshareProxies loads proxies from cached file or API
 func GetWebshareProxies() []WebshareProxy {
 	cacheFile := "data/proxy_cache/webshare_proxies.json"
-	
+
 	// Check cache
 	if info, err := os.Stat(cacheFile); err == nil {
 		if time.Since(info.ModTime()) < time.Hour {
@@ -36,7 +36,7 @@ func GetWebshareProxies() []WebshareProxy {
 			}
 		}
 	}
-	
+
 	// Fetch from API
 	tokenFile := ".secrets/webshare_token"
 	tokenData, err := os.ReadFile(tokenFile)
@@ -44,15 +44,15 @@ func GetWebshareProxies() []WebshareProxy {
 		slog.Debug("No Webshare token found", "file", tokenFile)
 		return nil
 	}
-	
+
 	token := strings.TrimSpace(string(tokenData))
-	
+
 	req, err := http.NewRequest("GET", "https://proxy.webshare.io/api/v2/proxy/list/?mode=direct&page=1&page_size=10", nil)
 	if err != nil {
 		return nil
 	}
 	req.Header.Set("Authorization", "Token "+token)
-	
+
 	client := &http.Client{Timeout: 30 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -60,12 +60,12 @@ func GetWebshareProxies() []WebshareProxy {
 		return nil
 	}
 	defer resp.Body.Close()
-	
+
 	if resp.StatusCode != 200 {
 		slog.Debug("Webshare API error", "status", resp.StatusCode)
 		return nil
 	}
-	
+
 	var apiResp struct {
 		Results []struct {
 			ProxyAddress string `json:"proxy_address"`
@@ -77,11 +77,11 @@ func GetWebshareProxies() []WebshareProxy {
 			Valid        bool   `json:"valid"`
 		} `json:"results"`
 	}
-	
+
 	if err := json.NewDecoder(resp.Body).Decode(&apiResp); err != nil {
 		return nil
 	}
-	
+
 	var proxies []WebshareProxy
 	for _, p := range apiResp.Results {
 		if p.Valid {
@@ -95,7 +95,7 @@ func GetWebshareProxies() []WebshareProxy {
 			})
 		}
 	}
-	
+
 	// Cache results
 	if len(proxies) > 0 {
 		os.MkdirAll(filepath.Dir(cacheFile), 0755)
@@ -103,7 +103,7 @@ func GetWebshareProxies() []WebshareProxy {
 			os.WriteFile(cacheFile, data, 0644)
 		}
 	}
-	
+
 	slog.Info("Fetched Webshare proxies", "count", len(proxies))
 	return proxies
 }
@@ -119,9 +119,9 @@ func GetWorkingWebshareProxy(testURL string) string {
 	if len(proxies) == 0 {
 		return ""
 	}
-	
+
 	slog.Info("Testing Webshare proxies", "count", len(proxies))
-	
+
 	for i, proxy := range proxies {
 		proxyURL := proxy.ToProxyURL()
 		if testProxy(proxyURL, testURL) {
@@ -132,6 +132,6 @@ func GetWorkingWebshareProxy(testURL string) string {
 			break // Don't test all 10, just first 5
 		}
 	}
-	
+
 	return ""
 }

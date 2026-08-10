@@ -21,24 +21,24 @@ type NarrativeContext struct {
 
 // ParkClimateData for seasonal context
 type ParkClimateData struct {
-	TempAnnual      float64
-	TempMax         float64
-	TempMin         float64
-	PrecipAnnual    int
-	PrecipWettest   int
-	PrecipDriest    int
-	ClimateZone     string
-	RainySeason     string
-	DrySeason       string
+	TempAnnual    float64
+	TempMax       float64
+	TempMin       float64
+	PrecipAnnual  int
+	PrecipWettest int
+	PrecipDriest  int
+	ClimateZone   string
+	RainySeason   string
+	DrySeason     string
 }
 
 // WaterbodyFeature for water proximity context
 type WaterbodyFeature struct {
-	ID    string
-	Name  string
-	Type  string
-	Lat   float64
-	Lon   float64
+	ID   string
+	Name string
+	Type string
+	Lat  float64
+	Lon  float64
 }
 
 // getNarrativeContext loads all contextual data for a park
@@ -47,7 +47,7 @@ func (s *Server) getNarrativeContext(parkID, parkName string) *NarrativeContext 
 		ParkID:   parkID,
 		ParkName: parkName,
 	}
-	
+
 	// Load climate data
 	var climate ParkClimateData
 	err := s.DB.QueryRow(`
@@ -63,7 +63,7 @@ func (s *Server) getNarrativeContext(parkID, parkName string) *NarrativeContext 
 	if err == nil {
 		ctx.Climate = &climate
 	}
-	
+
 	// Load rivers
 	rows, _ := s.DB.Query(`
 		SELECT name, lat, lon FROM osm_places 
@@ -77,7 +77,7 @@ func (s *Server) getNarrativeContext(parkID, parkName string) *NarrativeContext 
 			ctx.Rivers = append(ctx.Rivers, p)
 		}
 	}
-	
+
 	// Load places
 	rows2, _ := s.DB.Query(`
 		SELECT name, place_type, lat, lon FROM osm_places 
@@ -92,7 +92,7 @@ func (s *Server) getNarrativeContext(parkID, parkName string) *NarrativeContext 
 			ctx.Places = append(ctx.Places, p)
 		}
 	}
-	
+
 	// Load waterbodies
 	rows3, _ := s.DB.Query(`
 		SELECT waterbody_id, name, waterbody_type, lat, lon FROM park_waterbodies 
@@ -107,7 +107,7 @@ func (s *Server) getNarrativeContext(parkID, parkName string) *NarrativeContext 
 			ctx.Waterbodies = append(ctx.Waterbodies, w)
 		}
 	}
-	
+
 	return ctx
 }
 
@@ -116,13 +116,13 @@ func (ctx *NarrativeContext) getSeasonForDate(dateStr string) string {
 	if ctx.Climate == nil || ctx.Climate.DrySeason == "" {
 		return ""
 	}
-	
+
 	t, err := time.Parse("2006-01-02", dateStr)
 	if err != nil {
 		return ""
 	}
 	month := int(t.Month())
-	
+
 	drySeason := ctx.Climate.DrySeason
 	if drySeason == "None" || drySeason == "" {
 		return ""
@@ -130,7 +130,7 @@ func (ctx *NarrativeContext) getSeasonForDate(dateStr string) string {
 	if drySeason == "Year-round" {
 		return "dry"
 	}
-	
+
 	// Parse month range (e.g., "Dec-Feb", "Jun-Sep")
 	dryMonths := parseMonthRange(drySeason)
 	if dryMonths[month] {
@@ -145,19 +145,19 @@ func parseMonthRange(rangeStr string) map[int]bool {
 		"Jan": 1, "Feb": 2, "Mar": 3, "Apr": 4, "May": 5, "Jun": 6,
 		"Jul": 7, "Aug": 8, "Sep": 9, "Oct": 10, "Nov": 11, "Dec": 12,
 	}
-	
+
 	result := make(map[int]bool)
 	parts := strings.Split(rangeStr, "-")
 	if len(parts) != 2 {
 		return result
 	}
-	
+
 	start, ok1 := monthMap[strings.TrimSpace(parts[0])]
 	end, ok2 := monthMap[strings.TrimSpace(parts[1])]
 	if !ok1 || !ok2 {
 		return result
 	}
-	
+
 	// Handle wrap-around (e.g., Nov-Feb)
 	if start <= end {
 		for m := start; m <= end; m++ {
@@ -179,7 +179,7 @@ func parseMonthRange(rangeStr string) map[int]bool {
 func (ctx *NarrativeContext) findNearestRiver(lat, lon float64) (string, float64) {
 	var nearest string
 	minDist := math.MaxFloat64
-	
+
 	for _, r := range ctx.Rivers {
 		dist := haversineDistanceKm(lat, lon, r.Lat, r.Lon)
 		if dist < minDist {
@@ -187,7 +187,7 @@ func (ctx *NarrativeContext) findNearestRiver(lat, lon float64) (string, float64
 			nearest = r.Name
 		}
 	}
-	
+
 	return nearest, minDist
 }
 
@@ -195,7 +195,7 @@ func (ctx *NarrativeContext) findNearestRiver(lat, lon float64) (string, float64
 func (ctx *NarrativeContext) findNearestPlace(lat, lon float64) (string, string, float64) {
 	var nearestName, nearestType string
 	minDist := math.MaxFloat64
-	
+
 	for _, p := range ctx.Places {
 		dist := haversineDistanceKm(lat, lon, p.Lat, p.Lon)
 		if dist < minDist {
@@ -204,7 +204,7 @@ func (ctx *NarrativeContext) findNearestPlace(lat, lon float64) (string, string,
 			nearestType = p.PlaceType
 		}
 	}
-	
+
 	return nearestName, nearestType, minDist
 }
 
@@ -212,7 +212,7 @@ func (ctx *NarrativeContext) findNearestPlace(lat, lon float64) (string, string,
 func (ctx *NarrativeContext) findNearestWaterbody(lat, lon float64) (string, float64) {
 	var nearest string
 	minDist := math.MaxFloat64
-	
+
 	for _, w := range ctx.Waterbodies {
 		dist := haversineDistanceKm(lat, lon, w.Lat, w.Lon)
 		if dist < minDist {
@@ -220,14 +220,14 @@ func (ctx *NarrativeContext) findNearestWaterbody(lat, lon float64) (string, flo
 			nearest = w.Name
 		}
 	}
-	
+
 	return nearest, minDist
 }
 
 // describeLocationWithContext returns a location description using all context
 func (ctx *NarrativeContext) describeLocationWithContext(lat, lon float64) string {
 	var parts []string
-	
+
 	// Find nearest place
 	placeName, placeType, placeDist := ctx.findNearestPlace(lat, lon)
 	if placeName != "" && placeDist < 100 {
@@ -241,7 +241,7 @@ func (ctx *NarrativeContext) describeLocationWithContext(lat, lon float64) strin
 		}
 		parts = append(parts, fmt.Sprintf("%.0fkm %s of %s (%s)", placeDist, dir, placeName, placeType))
 	}
-	
+
 	// Find nearest river
 	riverName, riverDist := ctx.findNearestRiver(lat, lon)
 	if riverName != "" && riverDist < 50 {
@@ -251,7 +251,7 @@ func (ctx *NarrativeContext) describeLocationWithContext(lat, lon float64) strin
 			parts = append(parts, fmt.Sprintf("%.0fkm from %s River", riverDist, riverName))
 		}
 	}
-	
+
 	// Find nearest waterbody if no river
 	if riverName == "" {
 		wbName, wbDist := ctx.findNearestWaterbody(lat, lon)
@@ -259,11 +259,11 @@ func (ctx *NarrativeContext) describeLocationWithContext(lat, lon float64) strin
 			parts = append(parts, fmt.Sprintf("near %s", wbName))
 		}
 	}
-	
+
 	if len(parts) == 0 {
 		return fmt.Sprintf("at (%.3f°, %.3f°)", lat, lon)
 	}
-	
+
 	return strings.Join(parts, ", ")
 }
 
@@ -277,9 +277,9 @@ func getCardinalDirection(lat1, lon1, lat2, lon2 float64) string {
 	if angle < 0 {
 		angle += 360
 	}
-	
+
 	directions := []string{"north", "northeast", "east", "southeast", "south", "southwest", "west", "northwest"}
-	index := int((angle + 22.5) / 45) % 8
+	index := int((angle+22.5)/45) % 8
 	return directions[index]
 }
 
@@ -292,24 +292,24 @@ func (s *Server) EnhancedFireGroupNarrative(ctx *NarrativeContext, groupNum int,
 	daysInside := int(traj["days_inside"].(float64))
 	firesInside := int(traj["fires_inside"].(float64))
 	outcome := traj["outcome"].(string)
-	
+
 	originLat := origin["lat"].(float64)
 	originLon := origin["lon"].(float64)
 	destLat := dest["lat"].(float64)
 	destLon := dest["lon"].(float64)
-	
+
 	var narr strings.Builder
-	
+
 	// Seasonal context
 	season := ctx.getSeasonForDate(entryDate)
 	seasonStr := ""
 	if season != "" {
 		seasonStr = fmt.Sprintf(" (%s)", season)
 	}
-	
+
 	// Origin with context
 	originDesc := ctx.describeLocationWithContext(originLat, originLon)
-	
+
 	// Movement description
 	distance := haversineDistanceKm(originLat, originLon, destLat, destLon)
 	bearing := math.Atan2(destLon-originLon, destLat-originLat) * 180 / math.Pi
@@ -317,25 +317,25 @@ func (s *Server) EnhancedFireGroupNarrative(ctx *NarrativeContext, groupNum int,
 		bearing += 360
 	}
 	direction := getCardinalDirection(originLat, originLon, destLat, destLon)
-	
+
 	// Build narrative
 	narr.WriteString(fmt.Sprintf("Group %d: ", groupNum))
-	
+
 	if distance < 5 {
-		narr.WriteString(fmt.Sprintf("Localized burning %s%s, starting %s. ", 
+		narr.WriteString(fmt.Sprintf("Localized burning %s%s, starting %s. ",
 			originDesc, seasonStr, formatDateShort(entryDate)))
 	} else {
-		narr.WriteString(fmt.Sprintf("Originated %s%s on %s, moved %.0fkm %s. ", 
+		narr.WriteString(fmt.Sprintf("Originated %s%s on %s, moved %.0fkm %s. ",
 			originDesc, seasonStr, formatDateShort(entryDate), distance, direction))
 	}
-	
+
 	// Duration and outcome
 	if daysInside == 1 {
 		narr.WriteString(fmt.Sprintf("Active 1 day (%d fires). ", firesInside))
 	} else {
 		narr.WriteString(fmt.Sprintf("Active %d days (%d fires). ", daysInside, firesInside))
 	}
-	
+
 	// Outcome with context
 	destDesc := ctx.describeLocationWithContext(destLat, destLon)
 	switch outcome {
@@ -346,7 +346,7 @@ func (s *Server) EnhancedFireGroupNarrative(ctx *NarrativeContext, groupNum int,
 	default:
 		narr.WriteString(fmt.Sprintf("Last detected %s.", destDesc))
 	}
-	
+
 	return narr.String()
 }
 
@@ -362,10 +362,10 @@ func formatDateShort(dateStr string) string {
 // EnhancedDeforestationNarrative builds narrative for a deforestation event
 func (s *Server) EnhancedDeforestationNarrative(ctx *NarrativeContext, year int, areaKm2 float64, lat, lon float64, patternType string) string {
 	var narr strings.Builder
-	
+
 	// Location
 	locDesc := ctx.describeLocationWithContext(lat, lon)
-	
+
 	// Size classification
 	var sizeDesc string
 	switch {
@@ -378,7 +378,7 @@ func (s *Server) EnhancedDeforestationNarrative(ctx *NarrativeContext, year int,
 	default:
 		sizeDesc = "extensive loss"
 	}
-	
+
 	// Pattern interpretation
 	var patternDesc string
 	switch patternType {
@@ -393,20 +393,20 @@ func (s *Server) EnhancedDeforestationNarrative(ctx *NarrativeContext, year int,
 	default:
 		patternDesc = "mixed clearing pattern"
 	}
-	
-	narr.WriteString(fmt.Sprintf("%d: %.2f km² %s %s. %s.", 
+
+	narr.WriteString(fmt.Sprintf("%d: %.2f km² %s %s. %s.",
 		year, areaKm2, sizeDesc, locDesc, strings.Title(patternDesc)))
-	
+
 	return narr.String()
 }
 
 // EnhancedSettlementNarrative builds narrative for a settlement cluster
 func (s *Server) EnhancedSettlementNarrative(ctx *NarrativeContext, settlementType string, population int, areaM2 float64, lat, lon float64) string {
 	var narr strings.Builder
-	
+
 	// Location
 	locDesc := ctx.describeLocationWithContext(lat, lon)
-	
+
 	// Settlement characterization
 	var typeDesc string
 	switch {
@@ -421,7 +421,7 @@ func (s *Server) EnhancedSettlementNarrative(ctx *NarrativeContext, settlementTy
 	default:
 		typeDesc = "small settlement"
 	}
-	
+
 	// Area in readable units
 	var areaStr string
 	if areaM2 < 1000 {
@@ -429,10 +429,10 @@ func (s *Server) EnhancedSettlementNarrative(ctx *NarrativeContext, settlementTy
 	} else {
 		areaStr = fmt.Sprintf("%.1f ha", areaM2/10000)
 	}
-	
-	narr.WriteString(fmt.Sprintf("%s (~%d residents, %s) %s", 
+
+	narr.WriteString(fmt.Sprintf("%s (~%d residents, %s) %s",
 		strings.Title(typeDesc), population, areaStr, locDesc))
-	
+
 	return narr.String()
 }
 
@@ -447,7 +447,7 @@ type YearNarratives struct {
 // getYearlyFireNarratives generates year-grouped fire narratives
 func (s *Server) getYearlyFireNarratives(parkID, parkName string) []YearNarratives {
 	ctx := s.getNarrativeContext(parkID, parkName)
-	
+
 	// Get all years of data
 	rows, err := s.DB.Query(`
 		SELECT year, total_groups, trajectories_json
@@ -459,29 +459,29 @@ func (s *Server) getYearlyFireNarratives(parkID, parkName string) []YearNarrativ
 		return nil
 	}
 	defer rows.Close()
-	
+
 	var yearlyNarrs []YearNarratives
-	
+
 	for rows.Next() {
 		var year, totalGroups int
 		var trajJSON string
 		rows.Scan(&year, &totalGroups, &trajJSON)
-		
+
 		if trajJSON == "" {
 			continue
 		}
-		
+
 		// Parse trajectories
 		var trajs []map[string]interface{}
 		if err := json.Unmarshal([]byte(trajJSON), &trajs); err != nil {
 			continue
 		}
-		
+
 		yn := YearNarratives{
 			Year:       year,
 			FireGroups: len(trajs),
 		}
-		
+
 		// Sum fires and build stories (limit to top 5 by fires_inside)
 		type trajWithFires struct {
 			idx   int
@@ -494,12 +494,12 @@ func (s *Server) getYearlyFireNarratives(parkID, parkName string) []YearNarrativ
 			yn.FireCount += fires
 			sortedTrajs = append(sortedTrajs, trajWithFires{i + 1, t, fires})
 		}
-		
+
 		// Sort by fires descending
 		sort.Slice(sortedTrajs, func(i, j int) bool {
 			return sortedTrajs[i].fires > sortedTrajs[j].fires
 		})
-		
+
 		// Generate stories for top 5
 		for i, st := range sortedTrajs {
 			if i >= 5 {
@@ -508,9 +508,9 @@ func (s *Server) getYearlyFireNarratives(parkID, parkName string) []YearNarrativ
 			story := s.EnhancedFireGroupNarrative(ctx, st.idx, st.traj)
 			yn.Stories = append(yn.Stories, story)
 		}
-		
+
 		yearlyNarrs = append(yearlyNarrs, yn)
 	}
-	
+
 	return yearlyNarrs
 }

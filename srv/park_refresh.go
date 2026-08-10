@@ -75,7 +75,7 @@ func (s *Server) HandleAPIRefreshPark(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]any{
-		"park_id":                 parkID,
+		"park_id":                  parkID,
 		"settlements_reclassified": settCount,
 		"deforestation_classified": defoCount,
 		"fire_narrative_updated":   fireOK,

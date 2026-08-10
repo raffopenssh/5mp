@@ -15,7 +15,7 @@ type LegalFrameworks struct {
 
 // CountryLegal holds legal information for a country.
 type CountryLegal struct {
-	Name        string       `json:"name"`
+	Name        string        `json:"name"`
 	Legislation []Legislation `json:"legislation"`
 }
 
@@ -28,11 +28,11 @@ type Legislation struct {
 
 // PALegal holds legal information specific to a protected area.
 type PALegal struct {
-	Name                     string   `json:"name"`
-	LegalDesignation         string   `json:"legal_designation"`
-	EstablishmentYear        int      `json:"establishment_year"`
-	GoverningBody            string   `json:"governing_body"`
-	SpecificRegulations      []string `json:"specific_regulations"`
+	Name                      string   `json:"name"`
+	LegalDesignation          string   `json:"legal_designation"`
+	EstablishmentYear         int      `json:"establishment_year"`
+	GoverningBody             string   `json:"governing_body"`
+	SpecificRegulations       []string `json:"specific_regulations"`
 	InternationalDesignations []string `json:"international_designations,omitempty"`
 }
 
@@ -94,9 +94,9 @@ func (s *Server) HandleAPILegalByCountry(w http.ResponseWriter, r *http.Request)
 	}
 
 	response := map[string]interface{}{
-		"country_code":       countryCode,
-		"country":            country,
-		"protected_areas":    paEntries,
+		"country_code":    countryCode,
+		"country":         country,
+		"protected_areas": paEntries,
 	}
 
 	w.Header().Set("Content-Type", "application/json")

@@ -394,8 +394,8 @@ func TestMergeTrackActivityHint(t *testing.T) {
 		{"transport_car", "vehicle"},
 		{"walk", "foot"},
 		{"run", "foot"},
-		{"bike", ""},    // bike not mapped
-		{"", ""},         // empty stays empty
+		{"bike", ""}, // bike not mapped
+		{"", ""},     // empty stays empty
 	}
 
 	for _, tt := range tests {
