@@ -1352,6 +1352,52 @@ valid rather than usable is the wrong change.**
 
 ---
 
+## ⚠️ Gzip is decided AFTER the handler sets Content-Type
+
+`GzipMiddleware` used to set `Content-Encoding: gzip` and swap in a
+`gzip.Writer` *before* calling the handler — i.e. before anything knew what the
+body was. Every binary download was therefore compressed *and* carried
+`http.ServeContent`'s `Content-Length` taken from the file size. The browser is
+promised 101,113,856 bytes, receives 51,381,359, and reports **a network
+error** — "Die Netzwerkverbindung wurde unterbrochen" on a 100 MB GeoPackage
+that transferred perfectly. The tell: the file *looks* like a failed download
+and the server log shows a clean 200.
+
+It also gzipped 206 bodies while `Content-Range` still described the identity
+byte span (so a resumed 3.6 GB histmap fetch could not be reassembled), and
+burned CPU deflating SQLite/MBTiles/PNG/zip.
+
+Fixed 2026-08-10 in `srv/gzip.go`: the choice is made on the first `Write`
+(or `WriteHeader`), from the headers the handler has set. Compress text-ish
+types; pass everything else through **untouched, headers included** — which is
+what makes `Content-Length` and `Range` correct again. Skipped when the handler
+set its own `Content-Encoding`, on 204/304/206/`Content-Range`, and on any
+`Content-Disposition: attachment` (a download is a file on someone's disk:
+byte-exact and resumable beats a little bandwidth). Pinned by
+`go test ./srv/ -run Gzip`.
+
+**A middleware must not commit to a response encoding before the handler has
+described the response.**
+
+### A shared download link logs you in and then downloads
+
+`?pwd=` on an `/api/` path now **sets the cookie** before serving (it used to
+serve and set nothing), so someone who was sent
+`/api/geopackage/{id}/download?pwd=…` is logged in afterwards rather than
+re-prompted on their next click. Still no redirect for `/api/`: a download must
+arrive as the response to *this* request.
+
+Without a password the login form is shown as usual — it already carries every
+query param through as hidden fields and posts back to the same path, so
+submitting it returns the file. For a file link (`…/download`, `…/export.*`)
+the form reads "Sign in to download" and **drops the sandbox link**: `test2026`
+does not own that export, so "try it out" would land on a 404 that reads as a
+dead link. The filename is deliberately not shown — it carries the area's name,
+and an id must not be an oracle.
+
+---
+
+
 ## Locus / KML Park Exports
 
 Park tooltip icon buttons → `GET /api/parks/{id}/export.kml` (`srv/api.go`,
