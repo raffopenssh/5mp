@@ -9060,21 +9060,59 @@
             const safeName = escapeHtml(name).replace(/'/g, "\\'");
             // GeoJSON is the AOI's own polygon — a park's boundary is already
             // public geography served elsewhere, so the entry would be noise.
-            const geojson = aoi
-                ? `<a class="aoi-menu-item" data-item="geojson" href="${base}/export.geojson?pwd=${pwd}"><i class="icon-globe"></i><span>GeoJSON</span><em>the polygon itself</em></a>`
-                : '';
+            const geojsonURL = aoi ? `${base}/export.geojson?pwd=${pwd}` : '';
             // Two GeoPackages, not one with a checkbox. The difference is a
             // gigabyte and several minutes, which is a choice between two
             // downloads rather than a setting on one; and naming what is left
             // out ("no raw points") is more honest than "lite".
+            // Copy-link buttons, because Safari cannot be relied on for this.
+            //
+            // These rows are anchors so that right-click → Copy Link works with
+            // no extra UI. It does not, on Safari: with a `download` attribute
+            // it copies the attribute (the bare filename), and without one it
+            // still puts a RICH-TEXT link on the clipboard whose visible text
+            // is the row's own label — so pasting into Mail or Notes yields
+            // "KML", not a URL. Nothing in the markup changes that.
+            //
+            // So each row that has a real URL carries an explicit ⧉ that writes
+            // plain text. The anchors stay (⌘-click, middle-click and "open in
+            // new tab" are still worth having); the button is the reliable
+            // answer to "give me this link".
+            const row = (a, url) => `<div class="aoi-menu-row">${a}` + (url
+                ? `<button class="aoi-menu-copy" title="Copy this download link" aria-label="Copy this download link"`
+                  + ` onclick="return copyExportLink(event, this)" data-url="${escapeHtml(url)}"><i class="icon-copy"></i></button>`
+                : '') + `</div>`;
+            const kmlURL = `${base}/export.kml?pwd=${pwd}&effort=0${dp}`;
+            const locusURL = `${base}/export.locus?pwd=${pwd}${dp}`;
             return `
-                ${geojson}
-                <a class="aoi-menu-item" data-item="kml" href="${base}/export.kml?pwd=${pwd}&effort=0${dp}"><i class="icon-map"></i><span>KML</span><em>Google Earth</em></a>
-                <a class="aoi-menu-item" data-item="gpkg" href="${menuShareLink(id, 'gpkg')}" onclick="return startGeoPackageExportFromLink(event,'${id}','${safeName}',true)"><i class="icon-database"></i><span>GeoPackage</span><em>all layers, QGIS</em></a>
-                <a class="aoi-menu-item" data-item="gpkg_light" href="${menuShareLink(id, 'gpkg_light')}" onclick="return startGeoPackageExportFromLink(event,'${id}','${safeName}',false)"><i class="icon-database"></i><span>GeoPackage</span><em>no raw fire points</em></a>
-                <a class="aoi-menu-item" data-item="locus" href="${base}/export.locus?pwd=${pwd}${dp}"><i class="icon-smartphone"></i><span>Locus</span><em>field device backup</em></a>
-                <button class="aoi-menu-item" data-item="tiles" onclick="event.stopPropagation();closeAOIMenu();showMBTilesDialog('${id}', '${safeName}')"><i class="icon-layers"></i><span>Tiles</span><em>offline satellite</em></button>`;
+                ${geojsonURL ? row(`<a class="aoi-menu-item" data-item="geojson" href="${geojsonURL}"><i class="icon-globe"></i><span>GeoJSON</span><em>the polygon itself</em></a>`, geojsonURL) : ''}
+                ${row(`<a class="aoi-menu-item" data-item="kml" href="${kmlURL}"><i class="icon-map"></i><span>KML</span><em>Google Earth</em></a>`, kmlURL)}
+                ${row(`<a class="aoi-menu-item" data-item="gpkg" href="${menuShareLink(id, 'gpkg')}" onclick="return startGeoPackageExportFromLink(event,'${id}','${safeName}',true)"><i class="icon-database"></i><span>GeoPackage</span><em>all layers, QGIS</em></a>`, menuShareLink(id, 'gpkg'))}
+                ${row(`<a class="aoi-menu-item" data-item="gpkg_light" href="${menuShareLink(id, 'gpkg_light')}" onclick="return startGeoPackageExportFromLink(event,'${id}','${safeName}',false)"><i class="icon-database"></i><span>GeoPackage</span><em>no raw fire points</em></a>`, menuShareLink(id, 'gpkg_light'))}
+                ${row(`<a class="aoi-menu-item" data-item="locus" href="${locusURL}"><i class="icon-smartphone"></i><span>Locus</span><em>field device backup</em></a>`, locusURL)}
+                ${row(`<button class="aoi-menu-item" data-item="tiles" onclick="event.stopPropagation();closeAOIMenu();showMBTilesDialog('${id}', '${safeName}')"><i class="icon-layers"></i><span>Tiles</span><em>offline satellite</em></button>`, '')}`;
         }
+
+        // The clipboard write is plain text and absolute, and the menu stays
+        // open: copying a link is not choosing a download, and closing the menu
+        // under the cursor would read as "it downloaded something".
+        function copyExportLink(ev, btn) {
+            ev.preventDefault();
+            ev.stopPropagation();
+            const url = new URL(btn.dataset.url, window.location.href).toString();
+            const ok = () => {
+                btn.classList.add('copied');
+                setTimeout(() => btn.classList.remove('copied'), 1200);
+                showToast('Download link copied', 'success');
+            };
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(ok, () => prompt('Copy this link:', url));
+            } else {
+                prompt('Copy this link:', url);
+            }
+            return false;
+        }
+        window.copyExportLink = copyExportLink;
         // Kept as an alias: the name is wired into several call sites and the
         // menu is no longer AOI-only.
         const aoiExportMenuItems = exportMenuItems;

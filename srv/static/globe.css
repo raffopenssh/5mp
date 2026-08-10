@@ -1341,6 +1341,26 @@
         .aoi-menu-item i { font-size: 14px; flex-shrink: 0; }
         .aoi-menu-item em { margin-left: auto; font-style: normal; font-size: 9px; color: #6b7280; }
 
+        /* Each entry is a row: the link, plus an explicit copy-link button.
+           Safari's own "Copy Link" puts a rich-text link on the clipboard whose
+           text is the row's label, so pasting into Mail gives "KML" instead of
+           a URL -- the button is the only reliable way to hand someone the
+           address. It is dim until the row is hovered so the menu still reads
+           as five downloads, not ten controls. */
+        .aoi-menu-row { display: flex; align-items: stretch; border-radius: 5px; }
+        .aoi-menu-row:hover { background: rgba(251,191,36,0.14); }
+        .aoi-menu-row .aoi-menu-item { flex: 1; min-width: 0; }
+        .aoi-menu-row:hover .aoi-menu-item { color: #fbbf24; background: none; }
+        .aoi-menu-copy { flex-shrink: 0; width: 26px; display: flex; align-items: center;
+            justify-content: center; background: none; border: 0; border-radius: 5px;
+            color: #4b5563; cursor: pointer; opacity: 0; transition: opacity 0.12s, color 0.12s; }
+        .aoi-menu-copy i { font-size: 12px; }
+        .aoi-menu-row:hover .aoi-menu-copy, .aoi-menu-copy:focus-visible { opacity: 1; }
+        .aoi-menu-copy:hover { color: #fbbf24; background: rgba(251,191,36,0.18); }
+        .aoi-menu-copy.copied { opacity: 1; color: #22c55e; }
+        /* Touch has no hover, so the button must simply be there. */
+        @media (hover: none) { .aoi-menu-copy { opacity: 1; } }
+
         /* Inline rename — a label edit, not a version fork, so it happens on
            the name itself instead of opening the draw panel and minting a
            version. Click the name, it becomes a field. No pencil: an icon would
@@ -1357,6 +1377,7 @@
 
         @media (max-width: 640px), (hover: none) {
             .aoi-menu-item { padding: 10px 10px; font-size: 13px; }
+            .aoi-menu-copy { width: 34px; }
         }
 
         /* Enhanced PA Popup with Collapsible Sections */
