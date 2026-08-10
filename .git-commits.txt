@@ -1,3 +1,5 @@
+4f5a14a 2026-08-10 07:18:04 geology: a GeoPackage download beside the MBTiles
+fcd4d58 2026-08-10 07:17:56 Patrol data is scoped to the account it was uploaded in
 5980503 2026-08-10 06:38:58 chore: refresh version history
 81dded1 2026-08-10 06:38:46 geology: vector overlays for two scanned sheets, and the hold-out that caught a hole
 d689111 2026-08-10 06:31:32 A shared GeoPackage link downloads the file when the file already exists
@@ -16,5 +18,3 @@ b63e005 2026-08-09 07:01:54 Satellite hint clears the time slider on mobile
 66195d8 2026-08-09 06:45:38 chore: refresh .git-commits.txt from build
 c65d7d9 2026-08-09 06:45:19 histmaps: version tile URLs so a rebuild invalidates the 7-day immutable cache
 1d9fad5 2026-08-09 06:16:42 histmaps: 187/195 sheets, full AOI coverage; derive counts, merge qa.json
-27d781a 2026-08-09 05:56:15 geomaps: extract the printed legend of both geology sheets
-242e5df 2026-08-08 09:24:36 histmaps: bound JP2 downloads on throughput; overlap fetch with warp
