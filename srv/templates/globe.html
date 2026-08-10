@@ -11815,7 +11815,12 @@
                     }
                 }
                 if (geojson.truncated) {
-                    showToast('Showing largest 1500 ' + name + ' in view — zoom in for full detail', 'info');
+                    // The server now spreads a truncated answer across the
+                    // bbox instead of returning one corner of the ingest, so
+                    // say what is on screen rather than "the largest 1500".
+                    showToast('Showing ' + (geojson.count || 0).toLocaleString() + ' of ' +
+                              (geojson.total || 0).toLocaleString() + ' ' + name +
+                              ' spread across the view — zoom in for full detail', 'info');
                 }
             } catch (e) {
                 if (e.name !== 'AbortError') console.error('View layer ' + name + ' load failed:', e);
