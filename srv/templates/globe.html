@@ -1371,12 +1371,14 @@
                 byCommodity[k] = (byCommodity[k] || 0) + 1;
             }));
             const chips = Object.keys(byCommodity).sort().map(k => {
-                const active = o.activeCommodity === k;
-                return `<button onclick="GeoMap.isolateCommodity('${id}','${escapeHtml(k)}')"
+                const active = GeoMap.commodityOn(id, k);
+                return `<button onclick="GeoMap.toggleCommodity('${id}','${escapeHtml(k)}')"
                     class="preset-tag${active ? ' active' : ''}" style="font-size:11px;"
-                    title="Show only the units whose rock type can host ${escapeHtml(k)}">
+                    aria-pressed="${active}"
+                    title="${active ? 'Stop showing' : 'Also show'} the units whose rock type can host ${escapeHtml(k)}">
                     ${escapeHtml(k)} <span style="opacity:0.6;">${byCommodity[k]}</span></button>`;
             }).join('');
+            const activeChips = Object.keys(byCommodity).filter(k => GeoMap.commodityOn(id, k));
 
             const hiddenCount = o.isolate ? classes.length - o.isolate.size : o.hidden.size;
             const rows = classes.map(c => {
@@ -1403,9 +1405,17 @@
                         <span id="geomap-op-${id}" style="color:#aaa;font-size:11px;width:34px;text-align:right;">${Math.round(o.opacity * 100)}%</span>
                     </div>
                     ${chips ? `<div style="margin-top:12px;">
-                        <div style="color:#888;font-size:11px;margin-bottom:6px;">Rock types that can host</div>
+                        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px;">
+                            <span style="color:#888;font-size:11px;">Rock types that can host</span>
+                            ${activeChips.length ? `<button onclick="GeoMap.showAll('${id}')" class="star-report-btn secondary"
+                                style="font-size:10px;" title="Clear the selection and draw every unit again">clear</button>` : ''}
+                        </div>
                         <div style="display:flex;flex-wrap:wrap;gap:6px;">${chips}</div>
                         <div style="color:#666;font-size:10px;margin-top:6px;line-height:1.4;">
+                            ${activeChips.length
+                            ? 'Showing ' + (o.isolate ? o.isolate.size : classes.length) + ' unit(s) that can host '
+                              + activeChips.map(escapeHtml).join(' or ') + '. '
+                            : 'Pick any number \u2014 the map shows the union. '}
                             An inference from lithology, not an occurrence dataset &mdash; nothing here
                             counts, ranks or locates a deposit.</div>
                     </div>` : ''}
@@ -9041,13 +9051,18 @@
             const aoi = typeof isAOI === 'function' && isAOI(id);
             const base = `/api/${aoi ? 'aois' : 'parks'}/${eid}`;
             const dp = (dateFrom ? '&from=' + dateFrom : '') + (dateTo ? '&to=' + dateTo : '');
-            const suffix = dateFrom && dateTo ? `_${dateFrom}_to_${dateTo}`
-                         : dateFrom ? `_from_${dateFrom}` : dateTo ? `_to_${dateTo}` : '';
+            // No `download="…"` on these anchors, deliberately. Safari's
+            // context menu "Copy Link" on an <a download> copies the
+            // ATTRIBUTE (the bare filename) instead of the href, so the one
+            // gesture this menu exists to support — right-click, copy, paste
+            // into an email — yielded the string "XSA_Study_Area.kml". The
+            // filename now comes from the server's Content-Disposition, which
+            // every browser honours and which no copy gesture can mangle.
             const safeName = escapeHtml(name).replace(/'/g, "\\'");
             // GeoJSON is the AOI's own polygon — a park's boundary is already
             // public geography served elsewhere, so the entry would be noise.
             const geojson = aoi
-                ? `<a class="aoi-menu-item" data-item="geojson" href="${base}/export.geojson?pwd=${pwd}" download="${id}.geojson"><i class="icon-globe"></i><span>GeoJSON</span><em>the polygon itself</em></a>`
+                ? `<a class="aoi-menu-item" data-item="geojson" href="${base}/export.geojson?pwd=${pwd}"><i class="icon-globe"></i><span>GeoJSON</span><em>the polygon itself</em></a>`
                 : '';
             // Two GeoPackages, not one with a checkbox. The difference is a
             // gigabyte and several minutes, which is a choice between two
@@ -9055,10 +9070,10 @@
             // out ("no raw points") is more honest than "lite".
             return `
                 ${geojson}
-                <a class="aoi-menu-item" data-item="kml" href="${base}/export.kml?pwd=${pwd}&effort=0${dp}" download="${id}${suffix}.kml"><i class="icon-map"></i><span>KML</span><em>Google Earth</em></a>
+                <a class="aoi-menu-item" data-item="kml" href="${base}/export.kml?pwd=${pwd}&effort=0${dp}"><i class="icon-map"></i><span>KML</span><em>Google Earth</em></a>
                 <a class="aoi-menu-item" data-item="gpkg" href="${menuShareLink(id, 'gpkg')}" onclick="return startGeoPackageExportFromLink(event,'${id}','${safeName}',true)"><i class="icon-database"></i><span>GeoPackage</span><em>all layers, QGIS</em></a>
                 <a class="aoi-menu-item" data-item="gpkg_light" href="${menuShareLink(id, 'gpkg_light')}" onclick="return startGeoPackageExportFromLink(event,'${id}','${safeName}',false)"><i class="icon-database"></i><span>GeoPackage</span><em>no raw fire points</em></a>
-                <a class="aoi-menu-item" data-item="locus" href="${base}/export.locus?pwd=${pwd}${dp}" download="${id}_locus.zip"><i class="icon-smartphone"></i><span>Locus</span><em>field device backup</em></a>
+                <a class="aoi-menu-item" data-item="locus" href="${base}/export.locus?pwd=${pwd}${dp}"><i class="icon-smartphone"></i><span>Locus</span><em>field device backup</em></a>
                 <button class="aoi-menu-item" data-item="tiles" onclick="event.stopPropagation();closeAOIMenu();showMBTilesDialog('${id}', '${safeName}')"><i class="icon-layers"></i><span>Tiles</span><em>offline satellite</em></button>`;
         }
         // Kept as an alias: the name is wired into several call sites and the
