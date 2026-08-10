@@ -8540,7 +8540,8 @@
             if (!geom) {
                 try {
                     const r = await fetch(`/api/aois/${encodeURIComponent(id)}?geometry=1&pwd=${encodeURIComponent(getPwd())}`);
-                    if (r.ok) geom = (await r.json()).geometry;
+                    // GET /api/aois/{id} wraps the record: {aoi, datasets, parks}.
+                    if (r.ok) { const j = await r.json(); geom = (j.aoi || j).geometry; }
                 } catch (e) { /* fall through: startEdit reports it */ }
             }
             if (currentAOIPopup) currentAOIPopup.remove();

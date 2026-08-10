@@ -1200,7 +1200,22 @@ Animates all toggled/pinned map layers over the time-slider window.
 - Temporal semantics: fire grid/points flash + afterglow; trajectories build at true dated speed with glowing head, then **ashen out** (red→grey→gone over `TRAJ_FADE_DAYS`=21); effort ages to ash over 90d so refreshes flash green; deforestation accumulates (45d flash); settlements/infra static; turbidity accumulates.
 - Speed +/−: click steps ×1.35, press-and-hold ramps (mobile). Keyboard: space/←/→/Esc.
 - **Share links**: `anim=<layers>&anim_speed&anim_t&anim_paused` written by `shareCurrentView()` (via `Animator.getState()`); restored through `window._pendingAnim` set in `restoreStateFromURL()`, polled by anim.js until map ready.
-- `chooseStep()`: ≤92d→day, ≤800d→week, else month. GIF export via `gifenc` CDN (80 frames, 720px; hidden on mobile).
+- `chooseStep()`: ≤92d→day, ≤800d→week, else month. GIF export via `gifenc` CDN
+  (720px; hidden on mobile). **The GIF plays back at the on-screen speed**: its
+  duration is `spanDays / A.speed` seconds, frames are `10/s` capped at
+  `GIF_MAX_FRAMES`, and the per-frame `delay` is then stretched so a capped
+  export gets *choppier, not faster*. It used to be a fixed 80 frames × 100 ms,
+  i.e. always an 8 s clip regardless of the speed control the user had just set.
+- **An AOI animation must never silently fall back to its bbox.**
+  `Animator.open({aoi})` reads `window._aois`, which `loadAOIs()` fills
+  asynchronously — a share link carrying `anim_aoi=` can win that race. Without
+  the geometry no `&aoi=` is sent, `aoiExcludeSQL()` then hides the AOI's own
+  rows, and the animation plays *empty*. A missing entry is now treated as
+  not-loaded-yet and fetched from `/api/aois/{id}?geometry=1` (whose payload is
+  `{aoi, datasets, parks}` — unwrap `.aoi`).
+- **Opening paused at `t0` is legitimately blank** (no trajectory has started
+  yet), which reads as a broken layer. `frameHasContent(t)` drives a one-off
+  hint instead; it affects wording only, never drawing.
 
 **Server-side** (`fire_frames.go`):
 - `/api/fire-frames?bbox&from&to&step=day|week|month&res=0.1` reads pre-agg tables (never `fire_detections` — a raw scan took 3min for full-span; agg is ~3s). Coarser `res` re-binned in SQL; `from` aligned to bucket start. If >200k points, auto-doubles `res` up to 2× twice instead of truncating.
