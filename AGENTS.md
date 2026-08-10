@@ -1181,6 +1181,61 @@ TMS: `scripts/histmaps/README.md`.
 
 ---
 
+## Geology overlays (Sudan GRAS 2004, CAR BRGM 1964)
+
+Two scanned geological sheets turned into **vector** overlays: 46 classes for
+Sudan, 17 for CAR, served as vector tiles and toggled per class or per
+commodity. Full detail: `docs/GEOLOGY_HANDOVER.md`. Files:
+`scripts/geomaps/{sheets,gridfit,georef,legend,vectorize}.py` + `tiles.sh`,
+`srv/geomap.go`, `srv/static/geomap.js`, `renderGeoMapPanel()` in globe.html.
+UI: admin ▸ Map Settings ▸ Geology. Share link `?geomap=car`.
+
+Not the `?histmap=` raster overlay (1:250k topographic scans) — different data,
+different path. Vector because the units are *data*: the client recolours them,
+hides one, and isolates "everything that can host gold". A raster drape would
+need one tileset per combination of 46 classes.
+
+* ⚠️ **A hold-out measured on a whole legend swatch lies about the map body.**
+  It reported 0.95–1.00 while CAR's Mouka-Ouadda plateau — an area the size of
+  Belgium — rendered **white**. The classifier decides from a 17–33 px window,
+  where inks 0.13 apart in Bhattacharyya distance are noise; two such classes
+  do not *swap*, they **cancel**, both lose the `--min-margin` test, and the
+  formation vanishes instead of being mislabelled. Judge every change with
+  `window_holdout()` and read the **claim rate**, not the accuracy: 34% of CAR
+  inside its own cutline was unclaimed at accuracy 1.000. Merging what the
+  window genuinely cannot separate took it to 8.7% (Sudan 16% → 9.0%).
+* **`<sheet>_classes.json` is the catalogue the server reads, not
+  `legend_*.json`.** The legend is the sheet's *printed* unit list; the tiles
+  carry the *class* list, which merges inseparable units and drops ones that
+  never occur. Serving the legend offers toggles for classes that cannot be
+  drawn. Both are committed; `_units.geojson` and `*.mbtiles` are not.
+* **A merged class is labelled with every member code** (`GC2/GO`), never a
+  pick — the sheet does not say which one a patch is. Its affinities are the
+  **union** at the highest member weight, each `why` prefixed with the member
+  code so the union is not a quiet upgrade.
+* **Commodity affinity is an inference over lithology, never an occurrence
+  dataset**, and every surface that shows it says so. Same line as the mining
+  verdict below: inference from context ships, fabricated evidence does not.
+  Keyed by `(sheet, code)` — `S` is Silurian sandstone on Sudan and a
+  gold-bearing schist belt on CAR.
+* **Paper competes as a synthetic class and is then discarded**, which is how
+  `paper_like()` units are resolved by exclusion. Both failure directions land
+  on "unclaimed", never on a wrong formation.
+* Tiles: 204 on miss, `immutable` + `?v=<rev>` (a rebuild can change the class
+  list, so stale tiles would carry names the catalogue no longer has), every
+  class kept at every zoom — detail is dropped as *geometry*, never as a
+  missing unit.
+* `switchBasemap()` excludes `geomap-*` and calls `GeoMap.reattach()`, which
+  re-adds on `idle` — the same `before`-id trap as `HistMap`.
+
+**Open, and what the user asked for next: a `.gpkg` download of the sheets from
+the admin panel**, beside the MBTiles link — one layer per sheet, ink colours
+as styling, `codes`/`commodities` as columns. `srv/gpkg*.go` and
+`docs/GEOPACKAGE_EXPORT.md` already solve the hard parts; this one is a static
+file per sheet, so no job queue.
+
+---
+
 ## Time Animator ("▶ Animate" button next to slider presets)
 
 Animates all toggled/pinned map layers over the time-slider window.
@@ -1601,6 +1656,10 @@ URL params encode full UI state for reproducible tests:
 | `sections` | `fire,deforestation` | Open accordions |
 | `pinned` | `CAF_Chinko:fire_trajectory` | Pin layers |
 | `detail` | `major` \| `main` \| `all` | Geography detail tier (omitted at the `main` default) |
+| `geomap` | `sudan,car` | Show these geology sheets |
+| `geomap_only` | `car:GC2/GO\|S` | Isolate these classes (unknown codes dropped) |
+| `geomap_hide` | `car:Zeta` | Hide these classes |
+| `geomap_opacity` | `car:80` | Per-sheet opacity % (omitted at the 55 default) |
 | `aoi_menu` | `XSA_Study_Area` | Open that area's download menu |
 | `aoi_menu_item` | `gpkg`, `gpkg_light`, `kml`… | Highlight one entry in it. A **built** GeoPackage downloads immediately; an unbuilt one only explains itself — a link never starts a build |
 | `gpkg` | `<job id>` | Open the bell on that GeoPackage export's card |

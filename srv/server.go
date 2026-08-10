@@ -200,6 +200,12 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("GET /api/histmap", s.HandleAPIHistMapMeta)
 	mux.HandleFunc("GET /api/histmap/sudan250k/download", s.HandleAPIHistMapDownload)
 	mux.HandleFunc("GET /api/histmap/sudan250k/{z}/{x}/{y}", s.HandleAPIHistMapTile)
+	// Geology overlays (Sudan GRAS 2004, CAR BRGM 1964) -- vector tiles, not
+	// raster: the units are data the client recolours, hides and groups by
+	// commodity. Same 204-on-miss and ?v=<rev> conventions as the histmap.
+	mux.HandleFunc("GET /api/geomap", s.HandleAPIGeoMap)
+	mux.HandleFunc("GET /api/geomap/{sheet}/download", s.HandleAPIGeoMapDownload)
+	mux.HandleFunc("GET /api/geomap/{sheet}/{z}/{x}/{y}", s.HandleAPIGeoMapTile)
 	mux.HandleFunc("GET /api/grid", s.HandleAPIGrid)
 	mux.HandleFunc("GET /api/nearby-places", s.HandleAPINearbyPlaces)
 	mux.HandleFunc("GET /api/grid/{id}/effort", s.HandleAPIGridCellEffort)
