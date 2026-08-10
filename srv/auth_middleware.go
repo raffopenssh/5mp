@@ -42,23 +42,32 @@ func secretsEnv(key string) string {
 	return ""
 }
 
+// isPublicPath reports whether a path is served without the password gate, and
+// therefore whether its response can be identical for every visitor. One list,
+// read by PasswordMiddleware (may I skip auth?) and PrivateCacheMiddleware
+// (may a cache share this body?) -- two copies would drift, and the drift is
+// invisible: either a leak or a needlessly uncacheable asset.
+func isPublicPath(p string) bool {
+	return strings.HasSuffix(p, ".css") ||
+		strings.HasSuffix(p, ".js") ||
+		strings.HasSuffix(p, ".svg") ||
+		strings.HasPrefix(p, "/static/downloads/") ||
+		p == "/static/og-image.png" ||
+		p == "/static/og-image.svg" ||
+		p == "/healthz" ||
+		p == "/impressum" ||
+		p == "/datenschutz" ||
+		p == "/robots.txt" ||
+		p == "/sitemap.xml" ||
+		p == "/static/robots.txt" ||
+		p == "/static/sitemap.xml"
+}
+
 // PasswordMiddleware checks for valid password in cookie or query param
 func (s *Server) PasswordMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Allow static assets, downloads and SEO files without password
-		if strings.HasSuffix(r.URL.Path, ".css") ||
-			strings.HasSuffix(r.URL.Path, ".js") ||
-			strings.HasSuffix(r.URL.Path, ".svg") ||
-			strings.HasPrefix(r.URL.Path, "/static/downloads/") ||
-			r.URL.Path == "/static/og-image.png" ||
-			r.URL.Path == "/static/og-image.svg" ||
-			r.URL.Path == "/healthz" ||
-			r.URL.Path == "/impressum" ||
-			r.URL.Path == "/datenschutz" ||
-			r.URL.Path == "/robots.txt" ||
-			r.URL.Path == "/sitemap.xml" ||
-			r.URL.Path == "/static/robots.txt" ||
-			r.URL.Path == "/static/sitemap.xml" {
+		if isPublicPath(r.URL.Path) {
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -112,19 +121,22 @@ func (s *Server) PasswordMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// RequestEnv returns "test" if the request authenticated with the test
-// environment password (via pwd query param or access_pwd cookie), else "prod".
+// RequestEnv returns the env *tenant* this request belongs to: the scope in
+// which its patrol data (effort_data, subcell_visits, gpx_uploads,
+// track_points, upload_queue and the notifications about them) was created and
+// may be read. See srv/tenant.go — the mapping is PASSWORD_ENVS, and an
+// unlisted password gets its own empty tenant rather than the clients' one.
 func RequestEnv(r *http.Request) string {
 	if r == nil {
-		return "prod"
+		return clientTenant
 	}
-	if r.URL.Query().Get("pwd") == "test2026" {
-		return "test"
+	if pwd := r.URL.Query().Get("pwd"); isValidPassword(pwd) {
+		return tenantForPwd(pwd)
 	}
-	if c, err := r.Cookie("access_pwd"); err == nil && c.Value == "test2026" {
-		return "test"
+	if c, err := r.Cookie("access_pwd"); err == nil && isValidPassword(c.Value) {
+		return tenantForPwd(c.Value)
 	}
-	return "prod"
+	return clientTenant
 }
 
 // RequestPwd returns the access password used to authenticate this request

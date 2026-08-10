@@ -35,7 +35,7 @@ type gpkgExportOpts struct {
 	AreaName string
 	FromDate string
 	ToDate   string
-	Env      string // "test" | "prod" — suppresses client-derived layers in test
+	Env      string // tenant (RequestEnv); non-client tenants get no patrol layers
 	Effort   bool   // include patrol effort (expensive, and empty for most AOIs)
 	// RawFire includes the raw VIIRS detection points. They are the single
 	// biggest layer by an order of magnitude (XSA: 6.9M points, ~1.1 GB of a
@@ -757,7 +757,7 @@ func (s *Server) gpkgBasins(w *gpkgWriter, o gpkgExportOpts) error {
 // Patrol layers are client-derived: suppressed in the test tenant exactly as
 // the KML and Locus exports suppress them.
 func (s *Server) gpkgPatrol(w *gpkgWriter, o gpkgExportOpts, boundary string) error {
-	if o.Env == "test" {
+	if o.Env != clientTenant {
 		return nil
 	}
 	tl, err := w.AddLayer("patrol_tracks", "GEOMETRY",
@@ -846,7 +846,7 @@ func (s *Server) gpkgPatrolEffort(w *gpkgWriter, o gpkgExportOpts, boundary stri
 		FROM effort_data e JOIN grid_cells g ON e.grid_cell_id = g.id
 		WHERE e.movement_type = 'all' AND e.env = ?
 			AND g.lat_center BETWEEN ? AND ? AND g.lon_center BETWEEN ? AND ?`
-	args := []interface{}{strOr(o.Env, "prod"),
+	args := []interface{}{strOr(o.Env, clientTenant),
 		bbox[1] - bufferDeg, bbox[3] + bufferDeg, bbox[0] - bufferDeg, bbox[2] + bufferDeg}
 	if o.FromDate != "" {
 		if t, err := time.Parse("2006-01-02", o.FromDate); err == nil {

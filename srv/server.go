@@ -41,6 +41,12 @@ type pageData struct {
 	User     *auth.User
 	Version  string
 	IsTest   bool
+	// HasPatrol reports whether this request's TENANT owns any patrol effort
+	// at all (srv/tenant.go). Patrol pixels belong to the passwords they were
+	// uploaded under, so for every other tenant the layer is legitimately
+	// empty -- and an empty layer that still offers a toggle and an animator
+	// chip reads as a broken feature, not as "not yours". The UI dims them.
+	HasPatrol bool
 	// AuthLabel identifies the current session in the alpha UI chip.
 	// Today: the access password used. Later (user management): user email.
 	AuthLabel string
@@ -104,7 +110,8 @@ func (s *Server) HandleRoot(w http.ResponseWriter, r *http.Request) {
 		Hostname:  s.Hostname,
 		User:      user,
 		Version:   Version,
-		IsTest:    RequestEnv(r) == "test",
+		IsTest:    RequestEnv(r) == sandboxTenant,
+		HasPatrol: s.tenantHasPatrol(RequestEnv(r)),
 		AuthLabel: authLabel,
 	}
 
@@ -205,6 +212,7 @@ func (s *Server) Serve(addr string) error {
 	// commodity. Same 204-on-miss and ?v=<rev> conventions as the histmap.
 	mux.HandleFunc("GET /api/geomap", s.HandleAPIGeoMap)
 	mux.HandleFunc("GET /api/geomap/{sheet}/download", s.HandleAPIGeoMapDownload)
+	mux.HandleFunc("GET /api/geomap/{sheet}/geopackage", s.HandleAPIGeoMapGeoPackage)
 	mux.HandleFunc("GET /api/geomap/{sheet}/{z}/{x}/{y}", s.HandleAPIGeoMapTile)
 	mux.HandleFunc("GET /api/grid", s.HandleAPIGrid)
 	mux.HandleFunc("GET /api/nearby-places", s.HandleAPINearbyPlaces)
@@ -463,7 +471,7 @@ func (s *Server) Serve(addr string) error {
 	// Wrap with security headers, compression, and password protection
 	// ResponseCacheMiddleware sits inside Password (auth still enforced) and
 	// inside Gzip (caches uncompressed bodies; gzip recompresses per client).
-	protectedHandler := SecurityHeadersMiddleware(GzipMiddleware(s.PasswordMiddleware(s.ResponseCacheMiddleware(ParkIDMiddleware(AOIMiddleware(mux))))))
+	protectedHandler := SecurityHeadersMiddleware(PrivateCacheMiddleware(GzipMiddleware(s.PasswordMiddleware(s.ResponseCacheMiddleware(ParkIDMiddleware(AOIMiddleware(mux)))))))
 
 	s.httpServer = &http.Server{
 		Addr:         addr,

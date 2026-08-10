@@ -249,8 +249,11 @@ func (s *Server) serveFirePoints(w http.ResponseWriter, from, to string, south, 
 // renders both layers with identical grid-aligned pixels.
 // p entries: [xi, yi, distance_km, uploads].
 func (s *Server) serveEffortFrames(w http.ResponseWriter, env, from, to, step string, res, south, north, west, east float64) {
-	if env != "test" {
-		env = "prod"
+	// env is the caller's tenant (RequestEnv). Patrol effort is client data:
+	// the animator must draw only the pixels created in this scope, so the
+	// value is used as given -- never coerced to the client tenant.
+	if env == "" {
+		env = clientTenant
 	}
 	var bucketExpr string
 	dateExpr := "printf('%04d-%02d-%02d', e.year, e.month, COALESCE(e.day,1))"

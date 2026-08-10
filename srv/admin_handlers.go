@@ -106,41 +106,26 @@ func (s *Server) HandleAdminPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get global stats for current year
+	// Global patrol stats for the current year, scoped to the caller's TENANT:
+	// effort_data is client data (srv/tenant.go). Raw SQL rather than the
+	// generated GetGlobalStats, which has no env filter and would show every
+	// tenant's kilometres to every password.
 	currentYear := int64(time.Now().Year())
-	globalStats, err := q.GetGlobalStats(ctx, currentYear)
-	if err != nil {
-		slog.Warn("failed to get global stats", "error", err)
-		// Continue with zero stats
-	}
-
 	stats := adminStats{
 		TotalUsers:    len(pendingUsers) + len(approvedUsers),
 		PendingCount:  len(pendingUsers),
 		ApprovedCount: len(approvedUsers),
 	}
-
-	// Extract stats values (they come as interface{} from COALESCE)
-	if globalStats.TotalUploads != nil {
-		if v, ok := globalStats.TotalUploads.(int64); ok {
-			stats.TotalUploads = v
-		} else if v, ok := globalStats.TotalUploads.(float64); ok {
-			stats.TotalUploads = int64(v)
-		}
-	}
-	if globalStats.TotalDistanceKm != nil {
-		if v, ok := globalStats.TotalDistanceKm.(float64); ok {
-			stats.TotalDistanceKm = v
-		} else if v, ok := globalStats.TotalDistanceKm.(int64); ok {
-			stats.TotalDistanceKm = float64(v)
-		}
-	}
-	if globalStats.TotalPoints != nil {
-		if v, ok := globalStats.TotalPoints.(int64); ok {
-			stats.TotalPoints = v
-		} else if v, ok := globalStats.TotalPoints.(float64); ok {
-			stats.TotalPoints = int64(v)
-		}
+	if err := s.DB.QueryRowContext(ctx, `
+		SELECT COALESCE(SUM(e.total_distance_km), 0),
+		       COALESCE(SUM(e.total_points), 0),
+		       COALESCE(SUM(e.unique_uploads), 0)
+		FROM effort_data e
+		WHERE e.year = ? AND e.day IS NULL AND e.movement_type = 'all' AND e.env = ?`,
+		currentYear, RequestEnv(r)).Scan(&stats.TotalDistanceKm, &stats.TotalPoints,
+		&stats.TotalUploads); err != nil {
+		slog.Warn("failed to get global stats", "error", err)
+		// Continue with zero stats
 	}
 
 	// Build list of needed GHSL tiles with download URLs

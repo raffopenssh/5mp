@@ -71,7 +71,7 @@ type MBTilesJob struct {
 	CreatedAt       time.Time  `json:"created_at"`
 	CompletedAt     *time.Time `json:"completed_at,omitempty"`
 	UserID          string     `json:"user_id,omitempty"`
-	Env             string     `json:"env,omitempty"` // "test" or "prod" — scopes notifications
+	Env             string     `json:"env,omitempty"` // tenant (RequestEnv) — scopes notifications
 }
 
 // MBTilesQueue manages tile generation jobs
@@ -242,8 +242,8 @@ func (q *MBTilesQueue) createNotification(parkID, notifType, title, message, lin
 	if q.db == nil {
 		return
 	}
-	if env != "test" {
-		env = "prod"
+	if env == "" {
+		env = clientTenant
 	}
 	_, err := q.db.Exec(`
 		INSERT INTO notifications (park_id, notification_type, title, message, reference_url, env, created_at)

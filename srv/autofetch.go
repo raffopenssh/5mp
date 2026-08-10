@@ -13,6 +13,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"strconv"
@@ -120,10 +121,13 @@ func decryptPassword(ciphertext string) (string, error) {
 
 // HandleAPIAutofetchList returns configured sources (no credentials).
 func (s *Server) HandleAPIAutofetchList(w http.ResponseWriter, r *http.Request) {
+	// A subscription is the tenant's own: it names their tracking server, their
+	// username, the parks they operate in, and it feeds their patrol pixels.
+	// Scoped like every other client-derived table (srv/tenant.go).
 	rows, err := s.DB.QueryContext(r.Context(),
 		`SELECT id, api_type, service_url, username, enabled, interval_h,
 		        park_names, created_at, last_run_at, last_status, last_points
-		 FROM autofetch_sources ORDER BY created_at DESC`)
+		 FROM autofetch_sources WHERE env = ? ORDER BY created_at DESC`, RequestEnv(r))
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
@@ -207,9 +211,9 @@ func (s *Server) HandleAPIAutofetchAdd(w http.ResponseWriter, r *http.Request) {
 	}
 
 	result, err := s.DB.ExecContext(r.Context(),
-		`INSERT INTO autofetch_sources (api_type, service_url, username, password, interval_h, enabled, park_names)
-		 VALUES (?, ?, ?, ?, ?, 1, ?)`,
-		req.APIType, req.ServiceURL, req.Username, encrypted, req.IntervalH, parkNames)
+		`INSERT INTO autofetch_sources (api_type, service_url, username, password, interval_h, enabled, park_names, env)
+		 VALUES (?, ?, ?, ?, ?, 1, ?, ?)`,
+		req.APIType, req.ServiceURL, req.Username, encrypted, req.IntervalH, parkNames, RequestEnv(r))
 	if err != nil {
 		writeJSON(w, 500, map[string]string{"error": err.Error()})
 		return
@@ -238,7 +242,8 @@ func (s *Server) HandleAPIAutofetchDisable(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	_, err := s.DB.ExecContext(r.Context(),
-		`UPDATE autofetch_sources SET enabled = 0, password = '' WHERE id = ?`, id)
+		`UPDATE autofetch_sources SET enabled = 0, password = '' WHERE id = ? AND env = ?`,
+		id, RequestEnv(r))
 	if err != nil {
 		writeJSON(w, 500, map[string]string{"error": err.Error()})
 		return
@@ -265,7 +270,8 @@ func (s *Server) HandleAPIAutofetchEnable(w http.ResponseWriter, r *http.Request
 	// Validate credentials before re-enabling
 	var serviceURL, username string
 	err := s.DB.QueryRowContext(r.Context(),
-		`SELECT service_url, username FROM autofetch_sources WHERE id = ?`, req.ID).Scan(&serviceURL, &username)
+		`SELECT service_url, username FROM autofetch_sources WHERE id = ? AND env = ?`,
+		req.ID, RequestEnv(r)).Scan(&serviceURL, &username)
 	if err != nil {
 		writeJSON(w, 404, map[string]string{"error": "source not found"})
 		return
@@ -301,7 +307,7 @@ func (s *Server) HandleAPIAutofetchDelete(w http.ResponseWriter, r *http.Request
 		return
 	}
 	_, err := s.DB.ExecContext(r.Context(),
-		`DELETE FROM autofetch_sources WHERE id = ?`, id)
+		`DELETE FROM autofetch_sources WHERE id = ? AND env = ?`, id, RequestEnv(r))
 	if err != nil {
 		writeJSON(w, 500, map[string]string{"error": err.Error()})
 		return
@@ -315,6 +321,14 @@ func (s *Server) HandleAPIAutofetchRunNow(w http.ResponseWriter, r *http.Request
 	id, _ := strconv.ParseInt(r.FormValue("id"), 10, 64)
 	if id == 0 {
 		writeJSON(w, 400, map[string]string{"error": "id required"})
+		return
+	}
+	// Ownership is checked HERE, not in the worker: runAutofetchSource is also
+	// the scheduler's entry point and must not need a request to run.
+	var owned int
+	if s.DB.QueryRow(`SELECT 1 FROM autofetch_sources WHERE id = ? AND env = ?`,
+		id, RequestEnv(r)).Scan(&owned) != nil {
+		writeJSON(w, 404, map[string]string{"error": "source not found"})
 		return
 	}
 	go s.runAutofetchSource(context.Background(), id)
@@ -388,13 +402,13 @@ func (s *Server) runAutofetchDue(ctx context.Context) {
 
 // runAutofetchSource decrypts credentials and runs the Python fetch script.
 func (s *Server) runAutofetchSource(ctx context.Context, id int64) {
-	var apiType, serviceURL, username, encryptedPw string
+	var apiType, serviceURL, username, encryptedPw, env string
 	var intervalH int
 	var lastRunAt sql.NullString
 	err := s.DB.QueryRowContext(ctx,
-		`SELECT api_type, service_url, username, password, interval_h, last_run_at
+		`SELECT api_type, service_url, username, password, interval_h, last_run_at, env
 		 FROM autofetch_sources WHERE id = ? AND enabled = 1 AND password != ''`, id,
-	).Scan(&apiType, &serviceURL, &username, &encryptedPw, &intervalH, &lastRunAt)
+	).Scan(&apiType, &serviceURL, &username, &encryptedPw, &intervalH, &lastRunAt, &env)
 	if err != nil {
 		slog.Error("autofetch: source not found or disabled", "id", id, "error", err)
 		return
@@ -427,7 +441,20 @@ func (s *Server) runAutofetchSource(ctx context.Context, id int64) {
 
 	slog.Info("autofetch: running", "id", id, "url", serviceURL, "since", sinceArg)
 
-	uploadURL := fmt.Sprintf("http://localhost:%s/api/upload/async?pwd=%s", s.listenPort(), validPasswords[0])
+	// The fetched tracks are the subscribing tenant's patrol data, so they must
+	// land in THAT tenant -- not in whichever password happens to be first in
+	// ACCESS_PASSWORDS. The upload endpoint derives the tenant from the
+	// password, so the worker looks up a password for this source's env; if the
+	// mapping no longer names one (a password was removed from PASSWORD_ENVS),
+	// it refuses rather than silently filing the tracks under someone else.
+	pwd := pwdForTenant(env)
+	if pwd == "" {
+		slog.Error("autofetch: no access password maps to this source's tenant", "id", id, "env", env)
+		_, _ = s.DB.ExecContext(ctx,
+			`UPDATE autofetch_sources SET last_status = 'error: no password configured for this account' WHERE id = ?`, id)
+		return
+	}
+	uploadURL := fmt.Sprintf("http://localhost:%s/api/upload/async?pwd=%s", s.listenPort(), url.QueryEscape(pwd))
 
 	args := []string{"scripts/fetch_earthranger_gpx.py",
 		"--url", serviceURL,

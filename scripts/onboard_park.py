@@ -386,7 +386,9 @@ def main():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     q = ("SELECT * FROM park_onboarding_requests "
-         "WHERE status IN ('pending','failed','remove_requested') AND env='prod'")
+         # Any real tenant may request an onboarding (a park is global data);
+         # only the shared demo sandbox is skipped.
+         "WHERE status IN ('pending','failed','remove_requested') AND env <> 'test'")
     params = ()
     if args.request_id:
         q = "SELECT * FROM park_onboarding_requests WHERE id=?"

@@ -89,6 +89,10 @@
     })();
     </script>{{end}}
     {{if .IsTest}}<script>window.IS_TEST_ENV = true;</script>{{end}}
+    <!-- Patrol effort belongs to the tenant it was uploaded in (srv/tenant.go).
+         For any other password the layer is legitimately empty, so the UI says
+         so once instead of offering a toggle that does nothing. -->
+    <script>window.HAS_PATROL = {{if .HasPatrol}}true{{else}}false{{end}};</script>
 
     <div class="stats-panel" role="region" aria-label="Patrol and conservation statistics">
         <div class="stats-header">Patrol Activity</div>
@@ -1302,6 +1306,9 @@
                            href="${histMapUrl(m.download)}" download
                            title="Download the MBTiles archive (original black ink, z${m.minzoom}-${m.maxzoom}) for offline use in Locus Map, OsmAnd or QGIS">
                            Download MBTiles${mb ? ' (' + mb + ')' : ''}</a>
+                        <button class="star-report-btn secondary" style="font-size:12px;"
+                            onclick="copyMapSheetLink('histmap')"
+                            title="Copy a link that opens this archive's panel here">Copy link</button>
                         <span style="color:#666;font-size:11px;">black ink, for light backgrounds</span>
                     </div>
                     <div style="color:#555;font-size:10px;margin-top:10px;line-height:1.5;">${escapeHtml(m.attribution || '')}</div>
@@ -1351,7 +1358,7 @@
                 </div>`;
 
             if (!s.available) {
-                return `<div style="border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px;margin-bottom:12px;background:rgba(255,255,255,0.02);">
+                return `<div id="geomap-card-${id}" style="border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px;margin-bottom:12px;background:rgba(255,255,255,0.02);">
                     ${head}
                     <div style="color:#666;font-size:11px;margin-top:8px;">${escapeHtml(s.reason || '')}
                     &mdash; run <code>scripts/geomaps/vectorize.py ${id}</code> then <code>scripts/geomaps/tiles.sh ${id}</code>.</div>
@@ -1386,7 +1393,7 @@
             }).join('');
 
             const q = (cat.quality || {});
-            return `<div style="border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px;margin-bottom:12px;background:rgba(255,255,255,0.02);">
+            return `<div id="geomap-card-${id}" style="border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px;margin-bottom:12px;background:rgba(255,255,255,0.02);">
                 ${head}
                 <div style="${on ? '' : 'opacity:0.4;pointer-events:none;'}">
                     <div style="display:flex;align-items:center;gap:10px;margin-top:12px;">
@@ -1412,11 +1419,23 @@
                 </div>
                 <div style="display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap;">
                     <a class="star-report-btn secondary" style="font-size:12px;text-decoration:none;"
-                       href="${s.download}${s.download.indexOf('?') >= 0 ? '&' : '?'}pwd=${encodeURIComponent(getPwd())}" download
+                       href="${geoMapUrl(s.download)}" download
                        title="Vector MBTiles for QGIS or an offline viewer">Download MBTiles${s.size_bytes ? ' (' + (s.size_bytes / 1048576).toFixed(0) + ' MB)' : ''}</a>
+                    ${s.geopackage ? `<a class="star-report-btn secondary" id="geomap-gpkg-${id}"
+                        style="font-size:12px;text-decoration:none;"
+                        href="${geoMapUrl(s.geopackage)}" download
+                        onclick="return downloadGeoMapGPKG(event, '${id}')"
+                        title="The source polygons with typed columns and one w_&lt;commodity&gt; weight per commodity, styled in the sheet's own ink and with a QGIS project inside. The MBTiles above is the picture; this is the data.">Download GeoPackage${s.geopackage_bytes ? ' (' + (s.geopackage_bytes / 1048576).toFixed(0) + ' MB)' : ''}</a>` : ''}
+                    <button class="star-report-btn secondary" style="font-size:12px;"
+                        onclick="copyGeoMapSheetLink('${id}')"
+                        title="Copy a link that opens this sheet's panel here, with the overlay in its current state">Copy link</button>
                     ${cat.source_url ? `<a href="${escapeHtml(cat.source_url)}" target="_blank" rel="noopener"
                         style="color:#3b82f6;font-size:11px;text-decoration:none;">source scan &nearr;</a>` : ''}
                 </div>
+                <div style="color:#555;font-size:10px;margin-top:6px;line-height:1.5;">
+                    MBTiles = the sheet drawn, simplified per zoom, for an offline viewer.
+                    GeoPackage = the same units as polygons you can intersect, dissolve and
+                    filter (<code>"w_gold" IS NOT NULL</code>).</div>
                 ${q.window_px ? `<div style="color:#555;font-size:10px;margin-top:8px;line-height:1.5;">
                     Classified from the print screen at a ${q.window_px}px window; held-out accuracy
                     ${(q.accuracy * 100).toFixed(1)}% on the ${(q.claim_rate * 100).toFixed(1)}% of patches
@@ -1424,6 +1443,69 @@
                     ${(q.merged && q.merged.length) ? q.merged.length + ' pair(s) of units are merged because this sheet\'s print screen does not separate them.' : ''}
                 </div>` : ''}
             </div>`;
+        }
+
+        // Both downloads and the source-scan link need the password, and the
+        // catalogue hands back bare paths — one helper so a new link cannot
+        // quietly ship without it.
+        function geoMapUrl(path) {
+            if (!path) return '#';
+            return path + (path.indexOf('?') >= 0 ? '&' : '?') + 'pwd=' + encodeURIComponent(getPwd());
+        }
+
+        // The GeoPackage is built on first request (a few seconds for Sudan's
+        // 34 MB of polygons) and served straight — no job, no card, because it
+        // is a static file per sheet rather than a per-area export over a live
+        // database. What a plain <a download> gets wrong is that nothing
+        // happens on screen for those seconds, which reads as a dead link, so
+        // the anchor says so. The href still works with JS off.
+        function downloadGeoMapGPKG(ev, id) {
+            const a = document.getElementById('geomap-gpkg-' + id);
+            if (!a || a.classList.contains('busy')) return true;
+            const label = a.innerHTML;
+            a.classList.add('busy');
+            a.innerHTML = 'Preparing GeoPackage&hellip;';
+            // No progress to report and no completion event for a download, so
+            // this is a floor, not a measurement.
+            setTimeout(() => { a.classList.remove('busy'); a.innerHTML = label; }, 12000);
+            return true;
+        }
+
+        // Share a link straight to one sheet's entry in Map Settings.
+        //
+        // The overlay already has ?geomap= links, but those open the MAP — they
+        // say nothing about where the downloads, the class list and the
+        // provenance live, which is usually what someone is being pointed at
+        // ("grab the CAR geology as a GeoPackage"). map_sheet= opens the admin
+        // panel on Map Settings and highlights that card, and rides on top of
+        // the ordinary share URL so the map underneath is still the view being
+        // talked about.
+        function copyMapSheetLink(id) {
+            const url = new URL(buildShareUrl());
+            url.searchParams.set('panel', 'admin');
+            url.searchParams.set('admin_tab', 'map-settings');
+            url.searchParams.set('map_sheet', id);
+            const text = url.toString();
+            navigator.clipboard.writeText(text).then(
+                () => showToast('Link to this sheet copied', 'success'),
+                () => prompt('Copy this link:', text));
+        }
+        function copyGeoMapSheetLink(id) { copyMapSheetLink(id); }
+
+        // Resolve ?map_sheet= once Map Settings has actually rendered. The
+        // panel renders from a fetch, so the card can be seconds late; polling
+        // and then giving up is right, because a link naming a sheet this
+        // server does not have must not spin forever.
+        function highlightMapSheet(id, tries) {
+            tries = tries || 0;
+            const el = document.getElementById(id === 'histmap' ? 'histmap-block' : 'geomap-card-' + id);
+            if (!el) {
+                if (tries < 40) setTimeout(() => highlightMapSheet(id, tries + 1), 250);
+                return;
+            }
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el.classList.add('map-sheet-flash');
+            setTimeout(() => el.classList.remove('map-sheet-flash'), 2600);
         }
 
         // Update park fill visibility based on basemap (hide on satellite)
@@ -12063,6 +12145,22 @@
         };
         const GRID_PIXEL_LAYERS = ['grid-halo', 'grid-glow', 'grid-fill', 'grid-cells'];
 
+        // One place decides whether patrol UI is offered: the tenant owns
+        // pixels or it does not. Called after the map is up and again after an
+        // upload, so a first upload lights it up without a reload.
+        function applyPatrolAvailability() {
+            const has = window.HAS_PATROL !== false;
+            const pix = document.getElementById('stat-pixels');
+            if (pix) {
+                pix.classList.toggle('no-data', !has);
+                pix.title = has ? 'Click to show/hide patrol pixels'
+                                : 'No patrol tracks in this account — patrol pixels are only visible to the account they were uploaded in';
+            }
+            const dist = document.getElementById('stat-distance');
+            if (dist) dist.classList.toggle('no-data', !has);
+        }
+        window.applyPatrolAvailability = applyPatrolAvailability;
+
         function updateViewLayerUI() {
             const map2 = { pixels: 'stat-pixels', fires: 'stat-fires', deforest: 'stat-deforest', settlements: 'stat-settlements' };
             Object.keys(map2).forEach(k => {
@@ -12211,6 +12309,7 @@
 
         // Initialize toggle indicator state
         updateViewLayerUI();
+        applyPatrolAvailability();
 
         // Stats panel interactivity
         let activeStatMode = null;
@@ -20170,8 +20269,7 @@ ${starredItems.narratives.map(n => {
             if (activeTab) {
                 params.set('admin_tab', activeTab.dataset.tab);
             }
-        }
-        const uploadModal = document.getElementById('modal-upload');
+        }        const uploadModal = document.getElementById('modal-upload');
         if (uploadModal && uploadModal.classList.contains('active')) {
             params.set('panel', 'upload');
         }
@@ -20754,6 +20852,14 @@ ${starredItems.narratives.map(n => {
                         const adminTab = params.get('admin_tab');
                         if (adminTab) {
                             setTimeout(() => switchAdminTab(adminTab), 100);
+                        }
+                        // ?map_sheet= points at one card inside Map Settings
+                        // (a geology sheet id, or 'histmap'). The tab renders
+                        // from a fetch, so the highlight polls for the card
+                        // rather than assuming it is there.
+                        const mapSheet = params.get('map_sheet');
+                        if (mapSheet && typeof highlightMapSheet === 'function') {
+                            setTimeout(() => highlightMapSheet(mapSheet), 300);
                         }
                         break;
                     case 'upload':

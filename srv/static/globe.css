@@ -173,6 +173,13 @@
         .stats-item.layer-toggle.settlement.layer-on { border-left-color: #fbbf24; background: rgba(251,191,36,0.08); }
         .stats-item.layer-toggle:not(.layer-on) .stats-label { opacity: 0.55; }
         .stats-item.layer-toggle:not(.layer-on) .stats-value { opacity: 0.55; }
+        /* Patrol effort is owned by the account it was uploaded in
+           (srv/tenant.go). For another account the layer is legitimately
+           empty, so it is dimmed and inert rather than offering a toggle that
+           does nothing -- an empty layer reads as a bug, a dimmed one reads as
+           "not yours". Still hoverable: the title says why. */
+        .stats-item.no-data { opacity: 0.4; pointer-events: none; }
+        .stats-item.no-data:hover { pointer-events: auto; cursor: default; }
         .stats-item.layer-toggle.loading .stats-label::before { animation: layerPulse 0.8s ease-in-out infinite; }
         @keyframes layerPulse { 0%,100% { opacity: 0.9; } 50% { opacity: 0.25; } }
         .stats-item.active::after { background: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,0.6); }
@@ -302,6 +309,15 @@
         .star-report-btn.secondary:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); color: #e0e0e0; }
         .star-report-btn.busy { opacity: 0.7; cursor: progress; position: relative; padding-right: 30px; }
         .star-report-btn.busy::after { content: ''; position: absolute; right: 9px; top: 50%; margin-top: -6px; width: 12px; height: 12px; border: 2px solid rgba(255,255,255,0.25); border-top-color: currentColor; border-radius: 50%; animation: exportSpin 0.7s linear infinite; }
+        /* ?map_sheet= lands the reader on one card in a tab that has several.
+           A scroll alone is ambiguous once the tab is short enough to fit, so
+           the card names itself for a moment. Amber, not the selection green:
+           nothing has been selected, something is being pointed at. */
+        .map-sheet-flash { animation: mapSheetFlash 2.6s ease-out 1; }
+        @keyframes mapSheetFlash {
+            0%, 60% { box-shadow: 0 0 0 2px rgba(245,158,11,0.55); background: rgba(245,158,11,0.09); }
+            100% { box-shadow: 0 0 0 2px rgba(245,158,11,0); background: rgba(255,255,255,0.02); }
+        }
         .toast-spinner { width: 14px; height: 14px; flex: 0 0 auto; border: 2px solid rgba(255,255,255,0.35); border-top-color: #fff; border-radius: 50%; animation: exportSpin 0.7s linear infinite; }
         /* Undo lives on the toast: a reversible action should be reversed where
            it happened, rather than confirmed in a modal before it happens. */

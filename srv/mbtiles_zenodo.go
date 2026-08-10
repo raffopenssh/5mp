@@ -70,7 +70,7 @@ type ZenodoMBTilesJob struct {
 	Error           string     `json:"error,omitempty"`
 	CreatedAt       time.Time  `json:"created_at"`
 	CompletedAt     *time.Time `json:"completed_at,omitempty"`
-	Env             string     `json:"env,omitempty"` // "test" or "prod" — scopes notifications
+	Env             string     `json:"env,omitempty"` // tenant (RequestEnv) — scopes notifications
 
 	// Zenodo result fields
 	ZenodoDepoID int    `json:"zenodo_depo_id,omitempty"`
@@ -718,10 +718,10 @@ func (q *ZenodoMBTilesQueue) createNotification(job *ZenodoMBTilesJob) {
 
 // jobEnv returns the env a job was created under, defaulting to prod.
 func jobEnv(job *ZenodoMBTilesJob) string {
-	if job.Env == "test" {
-		return "test"
+	if job.Env == "" {
+		return clientTenant
 	}
-	return "prod"
+	return job.Env
 }
 
 func md5hex(data []byte) string {
@@ -847,9 +847,9 @@ func (s *Server) HandleAPIZenodoMBTilesCreate(w http.ResponseWriter, r *http.Req
 	tiles := calculateTiles(bbox, 1, maxZoom)
 	estimatedSize := estimateTileBytes(len(tiles))
 
-	// Test-password users keep the RAM-only limit; prod users get the
+	// The shared demo sandbox keeps the RAM-only limit; real tenants get the
 	// extended disk-backed path (larger files, but disk usage costs extra).
-	extended := RequestEnv(r) == "prod"
+	extended := RequestEnv(r) != sandboxTenant
 	if ok, reason := checkMBTilesCapacity(bbox, maxZoom, extended); !ok {
 		http.Error(w, reason, http.StatusRequestEntityTooLarge)
 		return
@@ -913,9 +913,9 @@ func (s *Server) HandleAPIZenodoMBTilesEstimate(w http.ResponseWriter, r *http.R
 	ramNeeded := estimateRAMRequired(bbox, 1, maxZoom)
 	estSeconds := len(tiles) / 100
 
-	// Test users are limited to in-memory builds; prod users get the
-	// extended disk-backed path up to maxMBTilesSize.
-	extended := RequestEnv(r) == "prod"
+	// The shared demo sandbox is limited to in-memory builds; real tenants get
+	// the extended disk-backed path up to maxMBTilesSize.
+	extended := RequestEnv(r) != sandboxTenant
 	sufficient, capacityReason := checkMBTilesCapacity(bbox, maxZoom, extended)
 
 	// Check if already uploaded to Zenodo

@@ -127,7 +127,10 @@ func (s *Server) HandleUpload(w http.ResponseWriter, r *http.Request) {
 
 	// Check for duplicate upload
 	q := dbgen.New(s.DB)
-	existing, err := q.GetGPXUploadByHash(ctx, dbgen.GetGPXUploadByHashParams{FileHash: &fileHash, Env: "prod"})
+	// Dedup within the uploader's own tenant: the same track uploaded by two
+	// different organisations is two uploads, and a cross-tenant hit would
+	// leak the other tenant's filename and date.
+	existing, err := q.GetGPXUploadByHash(ctx, dbgen.GetGPXUploadByHashParams{FileHash: &fileHash, Env: RequestEnv(r)})
 	if err == nil && existing.ID > 0 {
 		// Duplicate found - return info about previous upload
 		w.Header().Set("Content-Type", "application/json")
@@ -370,7 +373,7 @@ const (
 // - effort_data grid cell aggregates
 func (s *Server) persistUpload(ctx context.Context, userID, userEmail, filename, fileHash string, segments []gpx.Segment, env string) (int64, error) {
 	if env == "" {
-		env = "prod"
+		env = clientTenant
 	}
 	if len(segments) == 0 {
 		return 0, nil
@@ -1522,7 +1525,7 @@ func (s *Server) trackSubcellVisits(ctx context.Context, q *dbgen.Queries, segme
 // Returns the validation result for user feedback
 func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEmail, filename, fileHash string, segments []gpx.Segment, env string) (*GPXValidationResult, error) {
 	if env == "" {
-		env = "prod"
+		env = clientTenant
 	}
 	// Run validation and classification on pre-processed segments
 	// (already split and gap-cleaned by caller)
@@ -1712,8 +1715,10 @@ func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEm
 
 	// Queue for background learning — one job per park that has segments.
 	// This correctly handles multi-park GPX files (e.g. autofetch from EarthRanger).
-	// Test-environment uploads must not pollute learned features.
-	if env == "test" {
+	// Only the client tenant's uploads may feed the learned-feature tables
+	// (learned_roads/places/airstrips have no env column -- see
+	// srv/test_env_guard.go), so anything from another tenant stops here.
+	if env != clientTenant {
 		return validationResult, nil
 	}
 	queuedParks := make(map[string]bool)
@@ -1928,7 +1933,11 @@ func (s *Server) isNearBase(ctx context.Context, lat, lon, threshold float64) bo
 }
 
 // HandleAPIRebuildEffort triggers a full rebuild of effort_data from track_points.
+// It rewrites EVERY tenant's pixels, so only the client tenant may ask for it.
 func (s *Server) HandleAPIRebuildEffort(w http.ResponseWriter, r *http.Request) {
+	if refuseWriteInTestEnv(w, r) {
+		return
+	}
 	go s.rebuildAllEffortData()
 	writeJSON(w, 200, map[string]string{"ok": "rebuild started"})
 }

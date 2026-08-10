@@ -33,8 +33,10 @@ func (s *Server) HandleAPIRequestOnboard(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	// Test sessions can request but are tagged env=test; onboard_park.py only
-	// processes prod requests, so test dwells never trigger real ingestion.
+	// Onboarding adds a park for EVERY tenant, so the request is tagged with
+	// the caller's tenant only to route the notification back and to keep the
+	// shared sandbox out: onboard_park.py skips env='test', so a demo dwell
+	// never triggers a real multi-hour ingest.
 	env := RequestEnv(r)
 
 	// Must be a known WDPA area.

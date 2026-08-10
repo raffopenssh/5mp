@@ -312,7 +312,7 @@ func (s *Server) upsertGeoPackageNotification(id string, o gpkgExportOpts, typ, 
 	s.DB.Exec(`INSERT INTO notifications
 		(park_id, notification_type, title, message, reference_id, reference_url, env, created_at)
 		VALUES (?,?,?,?,?,?,?, datetime('now'))`,
-		o.AreaID, typ, title, msg, id, url, strOr(o.Env, "prod"))
+		o.AreaID, typ, title, msg, id, url, strOr(o.Env, clientTenant))
 }
 
 func humanBytes(n int64) string {
