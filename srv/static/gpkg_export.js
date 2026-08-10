@@ -81,6 +81,28 @@
         return d;
     }
 
+    // Is this exact export already a file? Side-effect free (`peek=1`), so it
+    // can be asked by a share link that merely *points* at an entry.
+    // Returns the job, or null (404 = nothing built for this window).
+    async function peek(areaId, opts) {
+        opts = opts || {};
+        const base = opts.aoi ? 'aois' : 'parks';
+        const qs = new URLSearchParams({ pwd: pwd(), peek: '1' });
+        if (typeof dateFrom !== 'undefined' && dateFrom) qs.set('from', dateFrom);
+        if (typeof dateTo !== 'undefined' && dateTo) qs.set('to', dateTo);
+        if (opts.raw === false) qs.set('raw', '0');
+        try {
+            const r = await fetch(`/api/${base}/${encodeURIComponent(areaId)}/export.gpkg?${qs}`,
+                                  { cache: 'no-store' });
+            if (!r.ok) return null;
+            const d = await r.json();
+            cache.set(d.id, d);
+            return d;
+        } catch (e) {
+            return null;
+        }
+    }
+
     // A hidden <a download>, not window.open().
     //
     // The common path is: click a menu entry → POST → the server answers "this
@@ -316,5 +338,5 @@
         }
     });
 
-    window.GeoPackageExport = { start, track, stop, poll, cardHTML, download, retry, remove, copyLink, cache };
+    window.GeoPackageExport = { start, peek, track, stop, poll, cardHTML, download, retry, remove, copyLink, cache };
 })();

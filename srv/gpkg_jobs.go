@@ -412,6 +412,12 @@ func (s *Server) sweepGeoPackages(startup bool) {
 // HandleAPIAreaGeoPackage — POST/GET /api/{parks|aois}/{id}/export.gpkg.
 // Returns the job, creating it if needed. Never blocks on the build: the
 // browser gets a card to watch, not a five-minute spinner.
+//
+// `?peek=1` is the same question WITHOUT the side effect: "is this exact export
+// already built?". It exists because a share link that opens the download menu
+// has to know whether the entry it points at is a file or a five-minute build,
+// and asking through the normal path would start the build merely by looking.
+// Answers 404 when nothing matches — a peek is a lookup, not an error.
 func (s *Server) HandleAPIAreaGeoPackage(w http.ResponseWriter, r *http.Request) {
 	areaID := r.PathValue("id")
 	if areaID == "" {
@@ -429,6 +435,18 @@ func (s *Server) HandleAPIAreaGeoPackage(w http.ResponseWriter, r *http.Request)
 		Effort:   q.Get("effort") != "0",
 		// Default on: "GeoPackage" means everything unless asked otherwise.
 		RawFire: q.Get("raw") != "0",
+	}
+	if q.Get("peek") == "1" {
+		j := s.findGeoPackageJob(gpkgCacheKey(o.AreaID, o.FromDate, o.ToDate, o.Effort, o.RawFire, o.Env))
+		if j == nil {
+			w.Header().Set("Cache-Control", "no-store")
+			http.Error(w, "no export for this area and window", http.StatusNotFound)
+			return
+		}
+		j.Cached = j.State == "ready"
+		w.Header().Set("Cache-Control", "no-store")
+		writeJSON(w, http.StatusOK, j)
+		return
 	}
 	job, err := s.startGeoPackageJob(o, IsAOIID(areaID), s.RequestPrincipalID(r), q.Get("refresh") == "1")
 	if err != nil {

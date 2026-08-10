@@ -207,7 +207,7 @@ elsewhere, so the entry would be noise.
 | Param | Meaning |
 |---|---|
 | `aoi_menu=<id>` | open that area's download menu |
-| `aoi_menu_item=gpkg` \| `gpkg_light` \| `kml` … | highlight one entry in it |
+| `aoi_menu_item=gpkg` \| `gpkg_light` \| `kml` … | highlight one entry in it — and download it if it is already built |
 | `gpkg=<job id>` | open the bell on that export's card |
 
 An open menu is on screen, so a share link should reproduce it — and it is the
@@ -215,10 +215,38 @@ one piece of UI whose entire purpose is a *next click*, so restoring it without
 saying **which** entry leaves the recipient exactly where the sender was trying
 to get them past.
 
-`aoi_menu_item` is a **hint, never an action**: a link that starts a 400 MB
-download on open is a trap. Same reason `?gpkg=` opens the card rather than the
-file — the recipient should see the size, the layer list and the expiry first,
-and the card is also where "it expired" can be said honestly.
+`aoi_menu_item` **never starts a build, but it does hand over a file that
+already exists.** The original rule was "a hint, never an action", aimed at one
+danger: a link that spends five minutes of server time and 400 MB the moment it
+is opened. That danger only exists when the export has to be *made*. When it is
+already built the link is simply a link to a file — the sender made it and is
+handing it over — and pointing at a row and waiting for a second click is
+ceremony dressed as safety.
+
+The two cases are told apart by `GET .../export.gpkg?peek=1`: the same cache-key
+lookup `startGeoPackageJob` would do, without the insert, 404 when nothing
+matches. It is pinned by `gpkg_peek_is_side_effect_free` in
+`tests/api_tests.sh`, because if a peek ever creates a job then every shared
+link becomes exactly the trap the rule was written to prevent.
+
+`resolveHighlightedExport()` (globe.html) then:
+
+| peek says | what happens |
+|---|---|
+| `ready` | menu closes, download starts, toast names the file |
+| `pending` / `running` | adopt the job and point at the bell — never start a second |
+| 404 | nothing happens; a toast says the highlighted entry has to be clicked to build it |
+
+The **time window is part of the identity** (a different `?from`/`?to` is a
+different file), so this runs after `restoreStateFromURL` has applied them and
+`peek()` reads the same `dateFrom`/`dateTo` globals the export would.
+
+Only the two GeoPackage entries need any of this. KML, GeoJSON and Locus are
+plain hrefs served inline — they have nothing to "already exist".
+
+`?gpkg=` still opens the card rather than the file: there the recipient has not
+asked for anything yet, and the card is where the size, the layer list and the
+expiry can be said honestly.
 
 `aoi_menu` takes a park id too, despite the name. Draining it **retries on a
 decaying schedule** (12 attempts) rather than firing once at 900 ms: the button
