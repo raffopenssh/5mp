@@ -145,8 +145,10 @@ data/geomaps/src/
 data/geomaps/work/
 data/geomaps/*.mbtiles
 data/geomaps/*.pmtiles
-# vectorizer output: 40 MB for Sudan alone, regenerate with vectorize.py.
+# vectorizer output: 34 MB for Sudan alone, regenerate with vectorize.py.
 # legend_*.json IS committed - it is measured input, not derived output.
+# <sheet>_classes.json IS committed too - it is the class catalogue the server
+# reads (small, and the record of which merges the hold-out forced on a build).
 data/geomaps/*_units.geojson
 
 # GeoPackage export cache (derived, 21-day TTL, one directory per job)

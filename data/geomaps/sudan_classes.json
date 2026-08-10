@@ -1,0 +1,1256 @@
+{
+ "sheet": "sudan",
+ "title": "Geological Map of the Sudan (2004)",
+ "short": "Sudan geology",
+ "year": 2004,
+ "publisher": "Geological Research Authority of the Sudan (GRAS)",
+ "scale": "1:2,000,000",
+ "source_url": "https://zenodo.org/records/19150268",
+ "countries": [
+  "SDN",
+  "SSD"
+ ],
+ "n_classes": 46,
+ "n_units": 53,
+ "quality": {
+  "window_px": 17,
+  "claim_rate": 0.998,
+  "accuracy": 1.0,
+  "stride": 2,
+  "min_margin": 0.02,
+  "merged": [
+   [
+    "MSq",
+    "TQ"
+   ],
+   [
+    "PLm",
+    "PMm"
+   ],
+   [
+    "PLq",
+    "TA"
+   ],
+   [
+    "PMg",
+    "C"
+   ],
+   [
+    "QE",
+    "QD"
+   ],
+   [
+    "MSm",
+    "PMm/PLm"
+   ]
+  ]
+ },
+ "groups": [
+  "Quaternary",
+  "Tertiary-Quaternary / Pan-African metasediments",
+  "Tertiary",
+  "Tertiary / Lower Proterozoic basement",
+  "Cretaceous",
+  "Jurassic-Cretaceous",
+  "Jurassic",
+  "Permo-Triassic",
+  "Carboniferous",
+  "Devonian",
+  "Silurian",
+  "Ordovician",
+  "Cambro-Ordovician",
+  "Cambrian / Middle Proterozoic basement",
+  "Palaeozoic",
+  "Pan-African igneous",
+  "Pan-African metasediments",
+  "Pan-African metasediments / Middle Proterozoic basement / Lower Proterozoic basement",
+  "Pan-African metavolcanics",
+  "Pan-African ophiolite",
+  "Pan-African gneiss/amphibolite",
+  "Middle Proterozoic basement",
+  "Lower Proterozoic basement",
+  "Archaean craton"
+ ],
+ "commodities": {
+  "cobalt": [
+   {
+    "code": "OP",
+    "weight": 3,
+    "why": "ophiolite: chromite, nickel and cobalt in ultramafics",
+    "area_km2": 4604.1
+   },
+   {
+    "code": "PMa",
+    "weight": 1,
+    "why": "amphibolite: metamorphosed mafic protolith",
+    "area_km2": 16523.9
+   },
+   {
+    "code": "GAm",
+    "weight": 1,
+    "why": "amphibolite: metamorphosed mafic protolith",
+    "area_km2": 6119.9
+   },
+   {
+    "code": "PLa",
+    "weight": 1,
+    "why": "amphibolite: metamorphosed mafic protolith",
+    "area_km2": 85.9
+   }
+  ],
+  "copper": [
+   {
+    "code": "MSv",
+    "weight": 2,
+    "why": "volcanogenic massive sulphide setting",
+    "area_km2": 103179.9
+   },
+   {
+    "code": "MVb",
+    "weight": 2,
+    "why": "mafic-intermediate metavolcanics",
+    "area_km2": 13244.2
+   },
+   {
+    "code": "MVa",
+    "weight": 2,
+    "why": "felsic volcanic-hosted massive sulphide",
+    "area_km2": 5514.2
+   },
+   {
+    "code": "IO",
+    "weight": 1,
+    "why": "older calc-alkaline intrusions",
+    "area_km2": 5808.6
+   }
+  ],
+  "gold": [
+   {
+    "code": "MSv",
+    "weight": 3,
+    "why": "volcano-sedimentary greenschist belt: the classic orogenic-gold host",
+    "area_km2": 103179.9
+   },
+   {
+    "code": "MVa",
+    "weight": 3,
+    "why": "acidic metavolcanics of the arc assemblage host Nubian Shield lode gold",
+    "area_km2": 5514.2
+   },
+   {
+    "code": "IU",
+    "weight": 2,
+    "why": "syn- to late-orogenic intrusions",
+    "area_km2": 81784.8
+   },
+   {
+    "code": "MSc",
+    "weight": 2,
+    "why": "metasedimentary belt rocks between the gold-bearing volcanics",
+    "area_km2": 16768.5
+   },
+   {
+    "code": "MVb",
+    "weight": 2,
+    "why": "arc metavolcanics adjacent to the mineralised belts",
+    "area_km2": 13244.2
+   },
+   {
+    "code": "IY",
+    "weight": 2,
+    "why": "late granites drive the hydrothermal systems",
+    "area_km2": 10296.1
+   },
+   {
+    "code": "OP",
+    "weight": 2,
+    "why": "listwaenite alteration along ophiolite thrusts is gold-bearing",
+    "area_km2": 4604.1
+   },
+   {
+    "code": "QE/QD",
+    "weight": 1,
+    "why": "QD: older alluvium: placer affinity downstream of lode hosts",
+    "area_km2": 446024.6
+   },
+   {
+    "code": "QF",
+    "weight": 1,
+    "why": "recent alluvium and wadi fill: artisanal placer ground",
+    "area_km2": 108457.9
+   },
+   {
+    "code": "TQ/MSq",
+    "weight": 1,
+    "why": "MSq: quartzite: silica-rich unit within the mineralised belt",
+    "area_km2": 74108.1
+   },
+   {
+    "code": "GAn",
+    "weight": 1,
+    "why": "gneissic basement of the arc roots",
+    "area_km2": 6015.5
+   },
+   {
+    "code": "IO",
+    "weight": 1,
+    "why": "granodiorite of the arc assemblage",
+    "area_km2": 5808.6
+   },
+   {
+    "code": "PLc",
+    "weight": 1,
+    "why": "BIF-hosted gold association",
+    "area_km2": 2633.3
+   },
+   {
+    "code": "TA/PLq",
+    "weight": 1,
+    "why": "PLq: quartzite: possible palaeoplacer host",
+    "area_km2": 1911.6
+   }
+  ],
+  "iron": [
+   {
+    "code": "PLr",
+    "weight": 3,
+    "why": "banded iron formation",
+    "area_km2": 1.1
+   },
+   {
+    "code": "PLc",
+    "weight": 2,
+    "why": "ferruginous chert associated with the iron formations",
+    "area_km2": 2633.3
+   }
+  ],
+  "lithium": [
+   {
+    "code": "IY",
+    "weight": 2,
+    "why": "evolved granite: pegmatite and greisen affinity",
+    "area_km2": 10296.1
+   },
+   {
+    "code": "IU",
+    "weight": 1,
+    "why": "granitic pegmatite affinity",
+    "area_km2": 81784.8
+   }
+  ],
+  "rare_earth": [
+   {
+    "code": "IY",
+    "weight": 2,
+    "why": "alkaline/younger granite association",
+    "area_km2": 10296.1
+   }
+  ],
+  "uranium": [
+   {
+    "code": "J",
+    "weight": 2,
+    "why": "Nubian-type massive fluviatile sandstone: roll-front host",
+    "area_km2": 25166.6
+   },
+   {
+    "code": "KU",
+    "weight": 2,
+    "why": "Nubian sandstone: roll-front uranium host",
+    "area_km2": 24707.8
+   },
+   {
+    "code": "PZs",
+    "weight": 2,
+    "why": "Palaeozoic sandstone: roll-front uranium host",
+    "area_km2": 3428.1
+   },
+   {
+    "code": "CO",
+    "weight": 2,
+    "why": "fluviatile sandstone: roll-front uranium host",
+    "area_km2": 3021.2
+   },
+   {
+    "code": "KM",
+    "weight": 1,
+    "why": "Nubian sandstone",
+    "area_km2": 114319.3
+   },
+   {
+    "code": "KL",
+    "weight": 1,
+    "why": "Nubian sandstone",
+    "area_km2": 14732.5
+   },
+   {
+    "code": "C/PMg",
+    "weight": 1,
+    "why": "C: Cambrian molasse sandstone",
+    "area_km2": 7654.1
+   },
+   {
+    "code": "ARg",
+    "weight": 1,
+    "why": "granulite-facies cratonic basement",
+    "area_km2": 4691.4
+   },
+   {
+    "code": "S",
+    "weight": 1,
+    "why": "Palaeozoic sandstone sequence",
+    "area_km2": 3640.7
+   },
+   {
+    "code": "D",
+    "weight": 1,
+    "why": "Devonian fluvial sandstone",
+    "area_km2": 667.1
+   },
+   {
+    "code": "DL",
+    "weight": 1,
+    "why": "Devonian fluvial sandstone",
+    "area_km2": 261.2
+   }
+  ]
+ },
+ "classes": [
+  {
+   "sheet": "sudan",
+   "code": "QF",
+   "codes": [
+    "QF"
+   ],
+   "name": "Recent alluvium and wadi deposits",
+   "group": "Quaternary",
+   "color": "#d6dec6",
+   "merged": false,
+   "commodities": [
+    "gold"
+   ],
+   "affinity": [
+    {
+     "commodity": "gold",
+     "weight": 1,
+     "why": "recent alluvium and wadi fill: artisanal placer ground"
+    }
+   ],
+   "area_km2": 108457.9
+  },
+  {
+   "sheet": "sudan",
+   "code": "QE/QD",
+   "codes": [
+    "QE",
+    "QD"
+   ],
+   "name": "Colluvium, sand sheets and amalgamated dunes / Older alluviums, raised terraces, younger gravel and sand plains",
+   "group": "Quaternary",
+   "color": "#f7efa5",
+   "merged": true,
+   "commodities": [
+    "gold"
+   ],
+   "affinity": [
+    {
+     "commodity": "gold",
+     "weight": 1,
+     "why": "QD: older alluvium: placer affinity downstream of lode hosts"
+    }
+   ],
+   "area_km2": 446024.6
+  },
+  {
+   "sheet": "sudan",
+   "code": "QC",
+   "codes": [
+    "QC"
+   ],
+   "name": "Lacustrine deposits, alluvial fans, dunes and dune fields",
+   "group": "Quaternary",
+   "color": "#d6e7a5",
+   "merged": false,
+   "commodities": [],
+   "affinity": [],
+   "area_km2": 187928.0
+  },
+  {
+   "sheet": "sudan",
+   "code": "QB",
+   "codes": [
+    "QB"
+   ],
+   "name": "Palaeolevees, old gravel and stabilized dunes",
+   "group": "Quaternary",
+   "color": "#d6e7a5",
+   "merged": false,
+   "commodities": [],
+   "affinity": [],
+   "area_km2": 360677.7
+  },
+  {
+   "sheet": "sudan",
+   "code": "QA",
+   "codes": [
+    "QA"
+   ],
+   "name": "Raised coral reef",
+   "group": "Quaternary",
+   "color": "#d6dec6",
+   "merged": false,
+   "commodities": [],
+   "affinity": [],
+   "area_km2": 14544.3
+  },
+  {
+   "sheet": "sudan",
+   "code": "TQ/MSq",
+   "codes": [
+    "TQ",
+    "MSq"
+   ],
+   "name": "Umm Ruwaba Formation: gravel, sand, silt and clay / Quartzite",
+   "group": "Tertiary-Quaternary / Pan-African metasediments",
+   "color": "#f7efa5",
+   "merged": true,
+   "commodities": [
+    "gold"
+   ],
+   "affinity": [
+    {
+     "commodity": "gold",
+     "weight": 1,
+     "why": "MSq: quartzite: silica-rich unit within the mineralised belt"
+    }
+   ],
+   "area_km2": 74108.1
+  },
+  {
+   "sheet": "sudan",
+   "code": "TD",
+   "codes": [
+    "TD"
+   ],
+   "name": "Undifferentiated Tertiary sandstone, Hudi chert and Miocene Red Sea sediments",
+   "group": "Tertiary",
+   "color": "#f7de5a",
+   "merged": false,
+   "commodities": [],
+   "affinity": [],
+   "area_km2": 2215.2
+  },
+  {
+   "sheet": "sudan",
+   "code": "TC",
+   "codes": [
+    "TC"
+   ],
+   "name": "Upper Abyad: cherty limestone, marine sand and laterite",
+   "group": "Tertiary",
+   "color": "#f7de18",
+   "merged": false,
+   "commodities": [],
+   "affinity": [],
+   "area_km2": 1159.9
+  },
+  {
+   "sheet": "sudan",
+   "code": "TB",
+   "codes": [
+    "TB"
+   ],
+   "name": "Abyad limestone",
+   "group": "Tertiary",
+   "color": "#f7de18",
+   "merged": false,
+   "commodities": [],
+   "affinity": [],
+   "area_km2": 3141.3
+  },
+  {
+   "sheet": "sudan",
+   "code": "TA/PLq",
+   "codes": [
+    "TA",
+    "PLq"
+   ],
+   "name": "Middle Abyad: siltstone, sandstone, marl, carbonate, clay and gypsum / Quartzite",
+   "group": "Tertiary / Lower Proterozoic basement",
+   "color": "#f7de18",
+   "merged": true,
+   "commodities": [
+    "gold"
+   ],
+   "affinity": [
+    {
+     "commodity": "gold",
+     "weight": 1,
+     "why": "PLq: quartzite: possible palaeoplacer host"
+    }
+   ],
+   "area_km2": 1911.6
+  },
+  {
+   "sheet": "sudan",
+   "code": "KU",
+   "codes": [
+    "KU"
+   ],
+   "name": "Basal Abyad: fluviatile or near-shore marine sandstone, partly shale near top",
+   "group": "Cretaceous",
+   "color": "#d6de21",
+   "merged": false,
+   "commodities": [
+    "uranium"
+   ],
+   "affinity": [
+    {
+     "commodity": "uranium",
+     "weight": 2,
+     "why": "Nubian sandstone: roll-front uranium host"
+    }
+   ],
+   "area_km2": 24707.8
+  },
+  {
+   "sheet": "sudan",
+   "code": "KM",
+   "codes": [
+    "KM"
+   ],
+   "name": "Fluviatile sandstone, lacustrine siltstone and mudstone",
+   "group": "Cretaceous",
+   "color": "#94ce31",
+   "merged": false,
+   "commodities": [
+    "uranium"
+   ],
+   "affinity": [
+    {
+     "commodity": "uranium",
+     "weight": 1,
+     "why": "Nubian sandstone"
+    }
+   ],
+   "area_km2": 114319.3
+  },
+  {
+   "sheet": "sudan",
+   "code": "KL",
+   "codes": [
+    "KL"
+   ],
+   "name": "Sandstone and siltstone",
+   "group": "Cretaceous",
+   "color": "#6bb531",
+   "merged": false,
+   "commodities": [
+    "uranium"
+   ],
+   "affinity": [
+    {
+     "commodity": "uranium",
+     "weight": 1,
+     "why": "Nubian sandstone"
+    }
+   ],
+   "area_km2": 14732.5
+  },
+  {
+   "sheet": "sudan",
+   "code": "JK",
+   "codes": [
+    "JK"
+   ],
+   "name": "Fluviatile sandstone",
+   "group": "Jurassic-Cretaceous",
+   "color": "#29a5a5",
+   "merged": false,
+   "commodities": [],
+   "affinity": [],
+   "area_km2": 1496.2
+  },
+  {
+   "sheet": "sudan",
+   "code": "J",
+   "codes": [
+    "J"
+   ],
+   "name": "Gilf Kebir sandstone: massive fluviatile sandstone and some mudstone",
+   "group": "Jurassic",
+   "color": "#21add6",
+   "merged": false,
+   "commodities": [
+    "uranium"
+   ],
+   "affinity": [
+    {
+     "commodity": "uranium",
+     "weight": 2,
+     "why": "Nubian-type massive fluviatile sandstone: roll-front host"
+    }
+   ],
+   "area_km2": 25166.6
+  },
+  {
+   "sheet": "sudan",
+   "code": "PT",
+   "codes": [
+    "PT"
+   ],
+   "name": "Lakia Formation: fluviatile sandstone, lacustrine siltstone and mudstone",
+   "group": "Permo-Triassic",
+   "color": "#a5a5c6",
+   "merged": false,
+   "commodities": [],
+   "affinity": [],
+   "area_km2": 48879.2
+  },
+  {
+   "sheet": "sudan",
+   "code": "CU",
+   "codes": [
+    "CU"
+   ],
+   "name": "Lacustrine sandstone, siltstone, gypsum and mudstone with thin lignite beds",
+   "group": "Carboniferous",
+   "color": "#b5c6c6",
+   "merged": false,
+   "commodities": [],
+   "affinity": [],
+   "area_km2": 10970.8
+  },
+  {
+   "sheet": "sudan",
+   "code": "CL",
+   "codes": [
+    "CL"
+   ],
+   "name": "Sandstone with Visean flora",
+   "group": "Carboniferous",
+   "color": "#a5a594",
+   "merged": false,
+   "commodities": [],
+   "affinity": [],
+   "area_km2": 16673.9
+  },
+  {
+   "sheet": "sudan",
+   "code": "D",
+   "codes": [
+    "D"
+   ],
+   "name": "Marine and fluvial sandstone, major shale and siltstone beds in lower part",
+   "group": "Devonian",
+   "color": "#d6a55a",
+   "merged": false,
+   "commodities": [
+    "uranium"
+   ],
+   "affinity": [
+    {
+     "commodity": "uranium",
+     "weight": 1,
+     "why": "Devonian fluvial sandstone"
+    }
+   ],
+   "area_km2": 667.1
+  },
+  {
+   "sheet": "sudan",
+   "code": "DL",
+   "codes": [
+    "DL"
+   ],
+   "name": "Fluvial sandstone, Uweinat area",
+   "group": "Devonian",
+   "color": "#d69c29",
+   "merged": false,
+   "commodities": [
+    "uranium"
+   ],
+   "affinity": [
+    {
+     "commodity": "uranium",
+     "weight": 1,
+     "why": "Devonian fluvial sandstone"
+    }
+   ],
+   "area_km2": 261.2
+  },
+  {
+   "sheet": "sudan",
+   "code": "S",
+   "codes": [
+    "S"
+   ],
+   "name": "Umm Ras Formation: sandstone with Cruziana accacensis, basal shale and some tillite",
+   "group": "Silurian",
+   "color": "#a59c94",
+   "merged": false,
+   "commodities": [
+    "uranium"
+   ],
+   "affinity": [
+    {
+     "commodity": "uranium",
+     "weight": 1,
+     "why": "Palaeozoic sandstone sequence"
+    }
+   ],
+   "area_km2": 3640.7
+  },
+  {
+   "sheet": "sudan",
+   "code": "O",
+   "codes": [
+    "O"
+   ],
+   "name": "Karkur Talh Formation, Uweinat area: sandstone with Cruziana rouaulti",
+   "group": "Ordovician",
+   "color": "#639c9c",
+   "merged": false,
+   "commodities": [],
+   "affinity": [],
+   "area_km2": 2850.8
+  },
+  {
+   "sheet": "sudan",
+   "code": "CO",
+   "codes": [
+    "CO"
+   ],
+   "name": "Cambro-Ordovician fluviatile sandstone and glacial deposits",
+   "group": "Cambro-Ordovician",
+   "color": "#638c8c",
+   "merged": false,
+   "commodities": [
+    "uranium"
+   ],
+   "affinity": [
+    {
+     "commodity": "uranium",
+     "weight": 2,
+     "why": "fluviatile sandstone: roll-front uranium host"
+    }
+   ],
+   "area_km2": 3021.2
+  },
+  {
+   "sheet": "sudan",
+   "code": "C/PMg",
+   "codes": [
+    "C",
+    "PMg"
+   ],
+   "name": "Amaki Series: molassic sandstone, conglomerate, greywacke and minor limestone / Gneiss",
+   "group": "Cambrian / Middle Proterozoic basement",
+   "color": "#a57b9c",
+   "merged": true,
+   "commodities": [
+    "uranium"
+   ],
+   "affinity": [
+    {
+     "commodity": "uranium",
+     "weight": 1,
+     "why": "C: Cambrian molasse sandstone"
+    }
+   ],
+   "area_km2": 7654.1
+  },
+  {
+   "sheet": "sudan",
+   "code": "PZs",
+   "codes": [
+    "PZs"
+   ],
+   "name": "Undifferentiated Palaeozoic sediments",
+   "group": "Palaeozoic",
+   "color": "#a59c94",
+   "merged": false,
+   "commodities": [
+    "uranium"
+   ],
+   "affinity": [
+    {
+     "commodity": "uranium",
+     "weight": 2,
+     "why": "Palaeozoic sandstone: roll-front uranium host"
+    }
+   ],
+   "area_km2": 3428.1
+  },
+  {
+   "sheet": "sudan",
+   "code": "IY",
+   "codes": [
+    "IY"
+   ],
+   "name": "Younger intrusions (IYg granite, IYs syenite, IYb gabbro)",
+   "group": "Pan-African igneous",
+   "color": "#f79c5a",
+   "merged": false,
+   "commodities": [
+    "gold",
+    "lithium",
+    "rare_earth"
+   ],
+   "affinity": [
+    {
+     "commodity": "gold",
+     "weight": 2,
+     "why": "late granites drive the hydrothermal systems"
+    },
+    {
+     "commodity": "lithium",
+     "weight": 2,
+     "why": "evolved granite: pegmatite and greisen affinity"
+    },
+    {
+     "commodity": "rare_earth",
+     "weight": 2,
+     "why": "alkaline/younger granite association"
+    }
+   ],
+   "area_km2": 10296.1
+  },
+  {
+   "sheet": "sudan",
+   "code": "IU",
+   "codes": [
+    "IU"
+   ],
+   "name": "Undifferentiated syn- to late-orogenic intrusions (granite, gabbro, syenite, diorite)",
+   "group": "Pan-African igneous",
+   "color": "#ff5a5a",
+   "merged": false,
+   "commodities": [
+    "gold",
+    "lithium"
+   ],
+   "affinity": [
+    {
+     "commodity": "gold",
+     "weight": 2,
+     "why": "syn- to late-orogenic intrusions"
+    },
+    {
+     "commodity": "lithium",
+     "weight": 1,
+     "why": "granitic pegmatite affinity"
+    }
+   ],
+   "area_km2": 81784.8
+  },
+  {
+   "sheet": "sudan",
+   "code": "IO",
+   "codes": [
+    "IO"
+   ],
+   "name": "Older intrusions (granite and granodiorite, gabbro, anorthosite, quartz porphyry)",
+   "group": "Pan-African igneous",
+   "color": "#ff3952",
+   "merged": false,
+   "commodities": [
+    "copper",
+    "gold"
+   ],
+   "affinity": [
+    {
+     "commodity": "copper",
+     "weight": 1,
+     "why": "older calc-alkaline intrusions"
+    },
+    {
+     "commodity": "gold",
+     "weight": 1,
+     "why": "granodiorite of the arc assemblage"
+    }
+   ],
+   "area_km2": 5808.6
+  },
+  {
+   "sheet": "sudan",
+   "code": "MSv",
+   "codes": [
+    "MSv"
+   ],
+   "name": "Volcano-sedimentary greenschist assemblage",
+   "group": "Pan-African metasediments",
+   "color": "#adc68c",
+   "merged": false,
+   "commodities": [
+    "gold",
+    "copper"
+   ],
+   "affinity": [
+    {
+     "commodity": "gold",
+     "weight": 3,
+     "why": "volcano-sedimentary greenschist belt: the classic orogenic-gold host"
+    },
+    {
+     "commodity": "copper",
+     "weight": 2,
+     "why": "volcanogenic massive sulphide setting"
+    }
+   ],
+   "area_km2": 103179.9
+  },
+  {
+   "sheet": "sudan",
+   "code": "MSc",
+   "codes": [
+    "MSc"
+   ],
+   "name": "Conglomerate and sandstone, slate, phyllite and schist",
+   "group": "Pan-African metasediments",
+   "color": "#d6ada5",
+   "merged": false,
+   "commodities": [
+    "gold"
+   ],
+   "affinity": [
+    {
+     "commodity": "gold",
+     "weight": 2,
+     "why": "metasedimentary belt rocks between the gold-bearing volcanics"
+    }
+   ],
+   "area_km2": 16768.5
+  },
+  {
+   "sheet": "sudan",
+   "code": "MSm/PMm/PLm",
+   "codes": [
+    "MSm",
+    "PMm",
+    "PLm"
+   ],
+   "name": "Marble / Marble and calc-silicate rocks",
+   "group": "Pan-African metasediments / Middle Proterozoic basement / Lower Proterozoic basement",
+   "color": "#63b5c6",
+   "merged": true,
+   "commodities": [],
+   "affinity": [],
+   "area_km2": 7209.7
+  },
+  {
+   "sheet": "sudan",
+   "code": "MVa",
+   "codes": [
+    "MVa"
+   ],
+   "name": "Acidic metavolcanics",
+   "group": "Pan-African metavolcanics",
+   "color": "#949452",
+   "merged": false,
+   "commodities": [
+    "gold",
+    "copper"
+   ],
+   "affinity": [
+    {
+     "commodity": "gold",
+     "weight": 3,
+     "why": "acidic metavolcanics of the arc assemblage host Nubian Shield lode gold"
+    },
+    {
+     "commodity": "copper",
+     "weight": 2,
+     "why": "felsic volcanic-hosted massive sulphide"
+    }
+   ],
+   "area_km2": 5514.2
+  },
+  {
+   "sheet": "sudan",
+   "code": "MVb",
+   "codes": [
+    "MVb"
+   ],
+   "name": "Intermediate-basic metavolcanics",
+   "group": "Pan-African metavolcanics",
+   "color": "#6b8c52",
+   "merged": false,
+   "commodities": [
+    "copper",
+    "gold"
+   ],
+   "affinity": [
+    {
+     "commodity": "copper",
+     "weight": 2,
+     "why": "mafic-intermediate metavolcanics"
+    },
+    {
+     "commodity": "gold",
+     "weight": 2,
+     "why": "arc metavolcanics adjacent to the mineralised belts"
+    }
+   ],
+   "area_km2": 13244.2
+  },
+  {
+   "sheet": "sudan",
+   "code": "OP",
+   "codes": [
+    "OP"
+   ],
+   "name": "Ophiolite: mafic oceanic upper sequence (OPm) and ultramafic mantle lower sequence (OPu)",
+   "group": "Pan-African ophiolite",
+   "color": "#6b3184",
+   "merged": false,
+   "commodities": [
+    "cobalt",
+    "gold"
+   ],
+   "affinity": [
+    {
+     "commodity": "cobalt",
+     "weight": 3,
+     "why": "ophiolite: chromite, nickel and cobalt in ultramafics"
+    },
+    {
+     "commodity": "gold",
+     "weight": 2,
+     "why": "listwaenite alteration along ophiolite thrusts is gold-bearing"
+    }
+   ],
+   "area_km2": 4604.1
+  },
+  {
+   "sheet": "sudan",
+   "code": "GAn",
+   "codes": [
+    "GAn"
+   ],
+   "name": "Gneiss (roots of the arc assemblage)",
+   "group": "Pan-African gneiss/amphibolite",
+   "color": "#d6ada5",
+   "merged": false,
+   "commodities": [
+    "gold"
+   ],
+   "affinity": [
+    {
+     "commodity": "gold",
+     "weight": 1,
+     "why": "gneissic basement of the arc roots"
+    }
+   ],
+   "area_km2": 6015.5
+  },
+  {
+   "sheet": "sudan",
+   "code": "GAm",
+   "codes": [
+    "GAm"
+   ],
+   "name": "Amphibolite (roots of the arc assemblage)",
+   "group": "Pan-African gneiss/amphibolite",
+   "color": "#ce7b9c",
+   "merged": false,
+   "commodities": [
+    "cobalt"
+   ],
+   "affinity": [
+    {
+     "commodity": "cobalt",
+     "weight": 1,
+     "why": "amphibolite: metamorphosed mafic protolith"
+    }
+   ],
+   "area_km2": 6119.9
+  },
+  {
+   "sheet": "sudan",
+   "code": "PMq",
+   "codes": [
+    "PMq"
+   ],
+   "name": "Quartzite",
+   "group": "Middle Proterozoic basement",
+   "color": "#f7de5a",
+   "merged": false,
+   "commodities": [],
+   "affinity": [],
+   "area_km2": 6363.2
+  },
+  {
+   "sheet": "sudan",
+   "code": "PMa",
+   "codes": [
+    "PMa"
+   ],
+   "name": "Amphibolite",
+   "group": "Middle Proterozoic basement",
+   "color": "#218c9c",
+   "merged": false,
+   "commodities": [
+    "cobalt"
+   ],
+   "affinity": [
+    {
+     "commodity": "cobalt",
+     "weight": 1,
+     "why": "amphibolite: metamorphosed mafic protolith"
+    }
+   ],
+   "area_km2": 16523.9
+  },
+  {
+   "sheet": "sudan",
+   "code": "PMs",
+   "codes": [
+    "PMs"
+   ],
+   "name": "Graphitic schist",
+   "group": "Middle Proterozoic basement",
+   "color": "#63ada5",
+   "merged": false,
+   "commodities": [],
+   "affinity": [],
+   "area_km2": 26954.2
+  },
+  {
+   "sheet": "sudan",
+   "code": "PLu",
+   "codes": [
+    "PLu"
+   ],
+   "name": "Undifferentiated metamorphic rocks, migmatite (PLt) and gneiss (PLg)",
+   "group": "Lower Proterozoic basement",
+   "color": "#d6b5b5",
+   "merged": false,
+   "commodities": [],
+   "affinity": [],
+   "area_km2": 454535.8
+  },
+  {
+   "sheet": "sudan",
+   "code": "PLp",
+   "codes": [
+    "PLp"
+   ],
+   "name": "Para schist",
+   "group": "Lower Proterozoic basement",
+   "color": "#29a5a5",
+   "merged": false,
+   "commodities": [],
+   "affinity": [],
+   "area_km2": 26812.9
+  },
+  {
+   "sheet": "sudan",
+   "code": "PLr",
+   "codes": [
+    "PLr"
+   ],
+   "name": "Banded iron formation",
+   "group": "Lower Proterozoic basement",
+   "color": "#de3931",
+   "merged": false,
+   "commodities": [
+    "iron"
+   ],
+   "affinity": [
+    {
+     "commodity": "iron",
+     "weight": 3,
+     "why": "banded iron formation"
+    }
+   ],
+   "area_km2": 1.1
+  },
+  {
+   "sheet": "sudan",
+   "code": "PLc",
+   "codes": [
+    "PLc"
+   ],
+   "name": "Ferruginous chert",
+   "group": "Lower Proterozoic basement",
+   "color": "#f79c5a",
+   "merged": false,
+   "commodities": [
+    "iron",
+    "gold"
+   ],
+   "affinity": [
+    {
+     "commodity": "iron",
+     "weight": 2,
+     "why": "ferruginous chert associated with the iron formations"
+    },
+    {
+     "commodity": "gold",
+     "weight": 1,
+     "why": "BIF-hosted gold association"
+    }
+   ],
+   "area_km2": 2633.3
+  },
+  {
+   "sheet": "sudan",
+   "code": "PLs",
+   "codes": [
+    "PLs"
+   ],
+   "name": "Graphitic schist",
+   "group": "Lower Proterozoic basement",
+   "color": "#63949c",
+   "merged": false,
+   "commodities": [],
+   "affinity": [],
+   "area_km2": 1391.8
+  },
+  {
+   "sheet": "sudan",
+   "code": "PLa",
+   "codes": [
+    "PLa"
+   ],
+   "name": "Amphibolite",
+   "group": "Lower Proterozoic basement",
+   "color": "#108c52",
+   "merged": false,
+   "commodities": [
+    "cobalt"
+   ],
+   "affinity": [
+    {
+     "commodity": "cobalt",
+     "weight": 1,
+     "why": "amphibolite: metamorphosed mafic protolith"
+    }
+   ],
+   "area_km2": 85.9
+  },
+  {
+   "sheet": "sudan",
+   "code": "ARg",
+   "codes": [
+    "ARg"
+   ],
+   "name": "Granulite with mylonitised and retrogressed equivalents",
+   "group": "Archaean craton",
+   "color": "#b54a29",
+   "merged": false,
+   "commodities": [
+    "uranium"
+   ],
+   "affinity": [
+    {
+     "commodity": "uranium",
+     "weight": 1,
+     "why": "granulite-facies cratonic basement"
+    }
+   ],
+   "area_km2": 4691.4
+  }
+ ]
+}
