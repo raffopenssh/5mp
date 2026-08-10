@@ -130,12 +130,30 @@ worse than not knowing.
 
 ## The R-tree is not optional
 
-Without the spec's R-tree, every pan in QGIS is a full table scan: a spatial
-query over 6.9M detections took **1.1 s**; with it, **0.068 s**. Rows are
-inserted alongside each feature (bulk-building would need either a SQL envelope
-function this driver lacks, or 7M envelopes in memory). The spec's five
-maintenance triggers are omitted on purpose: the file is written once and never
-edited, and re-exporting is how it changes.
+Without the spec's R-tree every pan is a full table scan of the layer. Measured
+on the two XSA builds (6.9M detections, identical apart from the index),
+rendering the `fire_detections` layer in QGIS 3.34:
+
+| view | no R-tree | R-tree |
+|---|---|---|
+| zoomed in (0.2° box, 3.5k points) | 1.96 s | **0.08 s** |
+| regional (2° box, ~2M points) | 4.97 s | 5.83 s |
+
+**It buys interactivity where interactivity is possible, and nothing where it
+is not.** Zoomed in, the cost was finding the points and is now gone — 25×, the
+difference between a map you can pan and one you wait for. At regional zoom the
+cost is *drawing two million points*, which no index can help with; the R-tree
+is then pure overhead (within noise here). That case is answered elsewhere: the
+detections layer ships switched **off**, and "no raw fire points" is a whole
+separate export.
+
+The index lookup itself is 0.003 s against a 1.17 s table scan; SQLite plans it
+as `SCAN r VIRTUAL TABLE INDEX` + `SEARCH f USING INTEGER PRIMARY KEY`.
+
+Rows are inserted alongside each feature — bulk-building at the end would need
+either a SQL envelope function this driver lacks, or 7M envelopes held in
+memory. The spec's five maintenance triggers are omitted on purpose: the file is
+written once and never edited, and re-exporting is how it changes.
 
 ## The job: cache, not spool
 
