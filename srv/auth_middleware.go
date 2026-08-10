@@ -73,12 +73,11 @@ func (s *Server) PasswordMiddleware(next http.Handler) http.Handler {
 		// Check query param (for setting cookie)
 		pwd := r.URL.Query().Get("pwd")
 		if isValidPassword(pwd) {
-			// For API endpoints, just serve directly (no redirect)
-			if strings.HasPrefix(r.URL.Path, "/api/") {
-				next.ServeHTTP(w, r)
-				return
-			}
-			// Set cookie for future requests
+			// Set cookie for future requests. This happens for API paths too:
+			// a shared download link (/api/geopackage/{id}/download) is a page
+			// someone opens in a browser, and after logging in through the form
+			// they should be logged in -- not have to type the password again
+			// the moment they click anything else.
 			http.SetCookie(w, &http.Cookie{
 				Name:     "access_pwd",
 				Value:    pwd,
@@ -88,6 +87,13 @@ func (s *Server) PasswordMiddleware(next http.Handler) http.Handler {
 				Secure:   true,
 				SameSite: http.SameSiteLaxMode,
 			})
+			// For API endpoints, serve directly: an XHR follows a redirect
+			// silently but a download must arrive as the response to *this*
+			// request, and RequestEnv/RequestPwd read the param anyway.
+			if strings.HasPrefix(r.URL.Path, "/api/") {
+				next.ServeHTTP(w, r)
+				return
+			}
 			// Redirect to remove pwd from URL
 			cleanURL := r.URL.Path
 			if r.URL.RawQuery != "" {
@@ -186,6 +192,34 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
 	tryoutQuery := r.URL.Query()
 	tryoutQuery.Set("pwd", "test2026")
 	tryoutHref := r.URL.Path + "?" + tryoutQuery.Encode()
+
+	// A shared file link is not the landing page. Someone who was sent
+	// /api/geopackage/{id}/download opened it to get a file, so the form says
+	// so -- and the sandbox link is dropped, because the demo password does not
+	// own that export and would land them on a 404 that reads as a dead link.
+	// The filename is deliberately NOT shown: it carries the area's name, and
+	// an id must not be an oracle to someone who merely guessed the URL.
+	isFileLink := strings.HasPrefix(r.URL.Path, "/api/") &&
+		(strings.HasSuffix(r.URL.Path, "/download") || strings.Contains(r.URL.Path, "/export."))
+	intro := `<p>Real-time fire detection, deforestation monitoring, and patrol tracking for 162 African keystone protected areas. Generate custom reports for managers, governments, and donors.</p>
+        <div class="feature-chips">
+            <span class="feature-chip"><span class="dot fire"></span>Live fire alerts</span>
+            <span class="feature-chip"><span class="dot forest"></span>Forest change</span>
+            <span class="feature-chip"><span class="dot patrol"></span>Patrol tracking</span>
+        </div>`
+	tryout := `<div style="margin-top:18px;display:flex;align-items:center;gap:10px;">
+            <span style="flex:1;height:1px;background:rgba(255,255,255,0.08);"></span>
+            <span style="color:#555;font-size:11px;letter-spacing:0.5px;">or</span>
+            <span style="flex:1;height:1px;background:rgba(255,255,255,0.08);"></span>
+        </div>
+        <a href="` + html.EscapeString(tryoutHref) + `" style="display:block;margin-top:14px;padding:11px 16px;border:1px solid rgba(34,197,94,0.35);border-radius:10px;color:#4ade80;font-size:14px;font-weight:500;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.background='rgba(34,197,94,0.1)';this.style.borderColor='rgba(34,197,94,0.6)'" onmouseout="this.style.background='transparent';this.style.borderColor='rgba(34,197,94,0.35)'">Just try it out — no password needed</a>
+        <div style="margin-top:6px;font-size:11px;color:#555;">Sandbox with sample data. Nothing you do affects the live system.</div>`
+	prompt := `Enter access password to continue`
+	if isFileLink {
+		intro = `<p>Someone shared a data export with you. Sign in with the access password you were given and the download starts right away.</p>`
+		tryout = ""
+		prompt = `Sign in to download`
+	}
 
 	html := `<!DOCTYPE html>
 <html lang="en">
@@ -584,13 +618,8 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
             <h1>5MP.globe</h1>
         </div>
         <div class="subtitle">Conservation Tracker</div>
-        <p>Real-time fire detection, deforestation monitoring, and patrol tracking for 162 African keystone protected areas. Generate custom reports for managers, governments, and donors.</p>
-        <div class="feature-chips">
-            <span class="feature-chip"><span class="dot fire"></span>Live fire alerts</span>
-            <span class="feature-chip"><span class="dot forest"></span>Forest change</span>
-            <span class="feature-chip"><span class="dot patrol"></span>Patrol tracking</span>
-        </div>
-        <div class="alpha-line"><span class="alpha-badge">Alpha</span><span>Enter access password to continue</span></div>
+        ` + intro + `
+        <div class="alpha-line"><span class="alpha-badge">Alpha</span><span>` + prompt + `</span></div>
         <form method="GET">
             ` + hiddenFields + `
             <div class="form-group">
@@ -598,13 +627,7 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
             </div>
             <button type="submit">Continue →</button>
         </form>
-        <div style="margin-top:18px;display:flex;align-items:center;gap:10px;">
-            <span style="flex:1;height:1px;background:rgba(255,255,255,0.08);"></span>
-            <span style="color:#555;font-size:11px;letter-spacing:0.5px;">or</span>
-            <span style="flex:1;height:1px;background:rgba(255,255,255,0.08);"></span>
-        </div>
-        <a href="` + html.EscapeString(tryoutHref) + `" style="display:block;margin-top:14px;padding:11px 16px;border:1px solid rgba(34,197,94,0.35);border-radius:10px;color:#4ade80;font-size:14px;font-weight:500;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.background='rgba(34,197,94,0.1)';this.style.borderColor='rgba(34,197,94,0.6)'" onmouseout="this.style.background='transparent';this.style.borderColor='rgba(34,197,94,0.35)'">Just try it out — no password needed</a>
-        <div style="margin-top:6px;font-size:11px;color:#555;">Sandbox with sample data. Nothing you do affects the live system.</div>
+        ` + tryout + `
         <div class="footer">
             <a href="/impressum">` + legalFooterLabels(r)[0] + `</a>
             <span class="footer-sep">&middot;</span>
