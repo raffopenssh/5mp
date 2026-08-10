@@ -170,6 +170,8 @@
                     <i class="icon-download"></i> Download .gpkg</button>
                   <button class="gpkg-btn" title="Copy a link that opens this download for anyone with access"
                     onclick="event.stopPropagation();GeoPackageExport.copyLink('${esc(d.id)}')"><i class="icon-link"></i></button>
+                  <button class="gpkg-btn danger" title="Delete this file now — it would otherwise be removed automatically after 21 days"
+                    onclick="event.stopPropagation();GeoPackageExport.remove('${esc(d.id)}')"><i class="icon-trash-2"></i></button>
                 </div>
                 ${until ? `<div class="gpkg-dim">Styled for QGIS · link valid until ${until}</div>` : ''}`;
         }
@@ -178,6 +180,8 @@
                 <div class="gpkg-line">${esc(d.state === 'expired' ? 'Expired' : (d.error || 'Export failed'))}</div>
                 <div class="gpkg-actions">
                   <button class="gpkg-btn" onclick="event.stopPropagation();GeoPackageExport.retry('${esc(d.id)}')">Try again</button>
+                  <button class="gpkg-btn danger" title="Remove this card"
+                    onclick="event.stopPropagation();GeoPackageExport.remove('${esc(d.id)}')"><i class="icon-trash-2"></i></button>
                 </div>`;
         }
         // The step is a full phrase from the server ("writing fire detections",
@@ -210,6 +214,49 @@
             track(nd.id);
             if (typeof loadNotifications === 'function') loadNotifications();
         }
+    }
+
+    // Delete the file now rather than waiting out the TTL.
+    //
+    // A confirm() would ask the user to predict the result; this shows it and
+    // offers no undo *because there is nothing to undo cheaply* — the answer to
+    // "I still want it" is the same click that made it the first time, and the
+    // export is a pure function of (area, window, options), so re-requesting
+    // reproduces exactly the same file. The toast says so.
+    //
+    // The card is removed optimistically so the click reads as immediate; a
+    // failure puts the list back the way the server sees it.
+    async function remove(id) {
+        const d = cache.get(id) || {};
+        const card = document.querySelector(`[data-gpkg-id="${cssEsc(id)}"]`);
+        if (card) card.style.opacity = '0.35';
+        stop(id);
+        let r;
+        try {
+            r = await fetch(`/api/geopackage/${encodeURIComponent(id)}?pwd=${encodeURIComponent(pwd())}`,
+                            { method: 'DELETE' });
+        } catch (e) {
+            r = null;
+        }
+        if (!r || !r.ok) {
+            if (card) card.style.opacity = '';
+            const msg = r && r.status === 409
+                ? 'Still building — it can be deleted once it finishes'
+                : 'Could not delete the export';
+            if (typeof showToast === 'function') showToast(msg, 'error');
+            return;
+        }
+        cache.delete(id);
+        if (card) card.remove();
+        if (typeof showToast === 'function') {
+            showToast(`Deleted${d.size_bytes ? ' ' + fmtBytes(d.size_bytes) : ''} — `
+                    + `ask for the export again any time to rebuild it`, 'success');
+        }
+        if (typeof loadNotifications === 'function') loadNotifications();
+    }
+
+    function cssEsc(v) {
+        return window.CSS && CSS.escape ? CSS.escape(v) : String(v).replace(/[^\w-]/g, '');
     }
 
     // A share link, not a raw download URL: it opens the app on the same area
@@ -269,5 +316,5 @@
         }
     });
 
-    window.GeoPackageExport = { start, track, stop, poll, cardHTML, download, retry, copyLink, cache };
+    window.GeoPackageExport = { start, track, stop, poll, cardHTML, download, retry, remove, copyLink, cache };
 })();

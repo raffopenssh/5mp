@@ -1,3 +1,4 @@
+2b52b5c 2026-08-10 05:42:13 GeoPackage export: every layer for an area, typed and styled for QGIS
 90ff63a 2026-08-10 04:30:10 anim/features: make settlements & deforestation fast and honest at AOI scale
 9b8b5a3 2026-08-10 03:53:13 cron health: make every nightly job visible, harden the OSM rotation
 a541ef7 2026-08-10 03:49:07 docs: geology overlay handover — legend + vectorizer measured, tiles/UI next
@@ -17,4 +18,3 @@ c65d7d9 2026-08-09 06:45:19 histmaps: version tile URLs so a rebuild invalidates
 53ab3d3 2026-08-07 18:01:56 build: refresh version history
 cf72ca7 2026-08-07 18:01:21 Geography detail tiers + full Geofabrik detail for every park
 d139e49 2026-08-07 17:14:41 build: refresh version history
-6874db4 2026-08-07 17:14:32 features: serve river/road/place/waterbody whole, cached, and drop duplicate place labels

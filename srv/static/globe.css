@@ -2290,6 +2290,11 @@ tr.selected td {
 .gpkg-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
 .gpkg-btn.primary { background: rgba(34,197,94,0.16); border-color: rgba(34,197,94,0.45); color: #86efac; }
 .gpkg-btn.primary:hover { background: rgba(34,197,94,0.26); color: #dcfce7; }
+/* Delete is muted until hovered: it sits beside the button the user came for,
+   and a red control shouting next to "Download" makes the card look like a
+   warning. It turns red on hover, i.e. once it is the thing being aimed at. */
+.gpkg-btn.danger { color: #9ca3af; }
+.gpkg-btn.danger:hover { background: rgba(239,68,68,0.18); border-color: rgba(239,68,68,0.5); color: #fca5a5; }
 
 .aoi-menu-item.highlight { background: rgba(251,191,36,0.2); color: #fbbf24;
     box-shadow: inset 0 0 0 1px rgba(251,191,36,0.55); animation: gpkgPulse 1.4s ease-in-out 3; }
