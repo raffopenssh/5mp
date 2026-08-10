@@ -2778,7 +2778,20 @@
 
             // Single unified hover/tap tooltip for every pinned/interactive layer.
             // (Replaces the per-layer maplibregl.Popup pile-up.)
-            if (window.MapTip) window.MapTip.init(map);
+            if (window.MapTip) {
+                window.MapTip.init(map);
+                // A park polygon is the more specific answer and has its own
+                // popup, so every BACKDROP tip (AOI, geology — anything with a
+                // negative priority) stands down over one. Stated once here
+                // rather than re-implemented per layer: the AOI tip did it and
+                // the geology overlay, added later, did not, so a tap inside
+                // the AOI on a park opened a geology card instead of the park.
+                window.MapTip.setBackdropGuard(function (e) {
+                    if (!e || !e.lngLat || !map.getLayer('areas-fill')) return false;
+                    return map.queryRenderedFeatures(e.point, { layers: ['areas-fill'] })
+                        .some(function (pf) { return pointInFeature(e.lngLat.lng, e.lngLat.lat, pf); });
+                });
+            }
 
             // Set up PA click handler immediately when areas-fill layer is ready
             // This is in the map.on('load') block so layer definitely exists
@@ -8884,24 +8897,30 @@
         }
         window.restoreAOIVersion = restoreAOIVersion;
 
-        // Hover tooltip. Registered through MapTip (one shared DOM tip) rather
+        // Tap tooltip. Registered through MapTip (one shared DOM tip) rather
         // than a maplibregl.Popup per layer — see srv/static/maptip.js for why.
         // It declines (returns '') wherever a park polygon covers the cursor,
         // mirroring the click rule: the park is always the more specific
         // answer, and an AOI tip over one would be noise across 485,000 km².
+        //
+        // `clickOnly` + a negative `priority` for the same reason: an AOI is a
+        // BACKDROP. XSA covers 485,000 km², so a hover tip on it is under the
+        // cursor almost everywhere — it never goes away, it hides whatever the
+        // user was reaching for, and it appeared *on top of* the AOI popup it
+        // had just opened. It answers a deliberate click instead, as a sticky
+        // tip carrying its own action row; and every pinned vector layer
+        // (priority 0) is asked first, so tapping a fire, a settlement or a
+        // geology unit inside the AOI gives you that feature, not the area.
         function registerAOITip() {
             if (!window.MapTip || !map.getLayer('aois-fill') || window._aoiTipRegistered) return;
             window._aoiTipRegistered = true;
             window._aoiCoverage = window._aoiCoverage || {};
             MapTip.register('aois-fill', {
                 actionLabel: 'Open area',
+                clickOnly: true,
+                priority: -20,
                 onActivate: (f, e) => showAOIPopup(f.properties, e.lngLat),
                 html: (p, f, e) => {
-                    if (e && map.getLayer('areas-fill')) {
-                        const over = map.queryRenderedFeatures(e.point, { layers: ['areas-fill'] })
-                            .some(pf => pointInFeature(e.lngLat.lng, e.lngLat.lat, pf));
-                        if (over) return '';
-                    }
                     const cov = window._aoiCoverage[p.id];
                     if (cov === undefined) {
                         window._aoiCoverage[p.id] = null;   // in flight; don't refetch
@@ -8915,7 +8934,8 @@
                                     running: ds.filter(x => x.state === 'running').length,
                                     parks: (d?.parks || []).length
                                 };
-                            }).catch(() => { window._aoiCoverage[p.id] = null; });
+                            }).catch(() => { window._aoiCoverage[p.id] = null; })
+                            .finally(() => { if (window.MapTip) MapTip.refresh('aois-fill'); });
                     }
                     const area = p.area_km2 ? formatNumber(Math.round(p.area_km2)) + ' km²' : '';
                     const win = (p.from_date || '…') + ' → ' + (p.to_date || 'now');
@@ -8923,11 +8943,27 @@
                         ? `${cov.done}/${cov.total} data layers ready${cov.running ? ' · ' + cov.running + ' running' : ''}`
                           + (cov.parks ? ` · ${cov.parks} protected area${cov.parks > 1 ? 's' : ''} inside` : '')
                         : 'coverage…';
+                    // Two backdrops can cover the same pixel: the AOI polygon
+                    // and the geology drape. The AOI wins (it is the smaller,
+                    // user-owned object), which would otherwise make geology
+                    // unclickable inside it — so the unit is named here rather
+                    // than lost. One tip, both answers.
+                    let geo = '';
+                    if (e && window.GeoMap) {
+                        const gl = map.getStyle().layers
+                            .filter(l => l.id.indexOf('geomap-fill-') === 0).map(l => l.id);
+                        if (gl.length) {
+                            const g = map.queryRenderedFeatures(e.point, { layers: gl })[0];
+                            if (g) geo = `<div class="maptip-dim">Geology · ${escapeHtml(g.properties.code || '')}`
+                                + (g.properties.name ? ' — ' + escapeHtml(g.properties.name) : '') + '</div>';
+                        }
+                    }
                     return `<div class="maptip-label">Area of interest</div>
                         <div class="maptip-title">${escapeHtml(p.name || p.id)}</div>
                         <div class="maptip-body">${area}</div>
                         <div class="maptip-meta">Window ${escapeHtml(win)}</div>
                         <div class="maptip-dim">${escapeHtml(line)}</div>
+                        ${geo}
                         <div class="maptip-exports">${aoiActionsHTML(p.id, p.name || p.id, { isOwner: !!p.is_owner })}</div>`;
                 }
             });
@@ -9521,6 +9557,9 @@
             if (currentPAPopup) {
                 currentPAPopup.remove();
             }
+            // Same rule as showAOIPopup: a sticky tip is anchored at the cursor,
+            // i.e. on top of the popup this click just opened.
+            if (window.MapTip) MapTip.hide();
             
             // Track current popup data for refresh on filter changes
             currentPAPopupData = { props, lngLat };

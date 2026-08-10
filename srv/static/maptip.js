@@ -18,8 +18,27 @@
  *       html: (props, feature, e) => '<b>hi</b>',  // required; falsy = decline
  *       onActivate: (feature, e) => {...},       // optional (click / "Details")
  *       actionLabel: 'Open in report',           // optional button label
+ *       priority: -20,                           // optional; see below
+ *       clickOnly: true,                         // optional; see below
  *   });
  *   MapTip.unregister(layerId);
+ *
+ * PRECEDENCE — why render order is not enough.
+ *
+ * Draw order answers "what is on top", which is not the same question as
+ * "what did the user mean". Two layers are *backdrops*: the AOI polygon
+ * (485,000 km²) and the geology drape (a whole country). Both sit under the
+ * cursor almost everywhere, so whichever happens to be drawn last would win
+ * every hit-test and bury the specific thing the user was actually pointing
+ * at. `priority` (default 0, higher wins, render order breaks ties) makes
+ * that explicit: backdrops declare themselves negative and are only reached
+ * when nothing more specific is there.
+ *
+ * `clickOnly` is the other half of the same idea. A backdrop that covers the
+ * whole viewport must not emit a hover tip — there is no "off it" to move to,
+ * so the tip would simply follow the cursor forever. Such a layer answers a
+ * deliberate click, and answers it as a sticky tip (with a close button) even
+ * for a mouse.
  */
 (function () {
     'use strict';
@@ -109,6 +128,13 @@
     var map = null;
     var el = null, closeBtn = null, actionBtn = null, bodyEl = null;
     var registry = new Map();      // layerId -> opts
+    // A predicate set by the app: "is there a more specific answer here that
+    // MapTip does not own?" (a park polygon, which has its own popup and its
+    // own click handler). Backdrop layers — the AOI, the geology drape — stand
+    // down where it is true, so a click reaches the park handler underneath
+    // instead of being swallowed by a country-sized fill. Each backdrop used to
+    // implement this itself, which is why geology, added later, did not.
+    var backdropGuard = null;
     var sticky = false;            // tap-opened tip that stays until dismissed
     var anchor = null;             // {lng, lat} used while sticky / after pan
     var current = null;            // {layerId, feature, opts}
@@ -188,7 +214,7 @@
     function show(html, point, lngLat, extra, opts, feature, layerId) {
         if (!el) build();
         if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
-        current = { layerId: layerId, feature: feature, opts: opts };
+        current = { layerId: layerId, feature: feature, opts: opts, extra: extra };
         anchor = lngLat ? { lng: lngLat.lng, lat: lngLat.lat } : anchor;
         lastPoint = point;
         var more = extra > 0
@@ -222,19 +248,32 @@
         }
     }
 
-    function tipFor(e) {
-        var layers = liveLayers();
+    function tipFor(e, forClick) {
+        var layers = liveLayers().filter(function (id) {
+            var o = registry.get(id);
+            return forClick || !(o && o.clickOnly);
+        });
         if (!layers.length) return null;
         var feats;
         try {
             feats = map.queryRenderedFeatures(e.point, { layers: layers });
         } catch (err) { return null; }
         if (!feats || !feats.length) return null;
-        // Prefer the topmost feature whose registration can render something.
-        for (var i = 0; i < feats.length; i++) {
-            var f = feats[i];
-            var opts = registry.get(f.layer && f.layer.id);
-            if (!opts || typeof opts.html !== 'function') continue;
+        // Topmost-first, but backdrops last regardless of where they are drawn.
+        // Stable sort on (priority desc), so within one priority the map's own
+        // render order still decides.
+        var cand = feats.map(function (f, i) {
+            var o = registry.get(f.layer && f.layer.id);
+            return { f: f, opts: o, i: i, pri: (o && typeof o.priority === 'number') ? o.priority : 0 };
+        }).filter(function (c) { return c.opts && typeof c.opts.html === 'function'; });
+        cand.sort(function (a, b) { return (b.pri - a.pri) || (a.i - b.i); });
+        for (var i = 0; i < cand.length; i++) {
+            var f = cand[i].f, opts = cand[i].opts;
+            if (cand[i].pri < 0 && backdropGuard) {
+                var blocked = false;
+                try { blocked = !!backdropGuard(e); } catch (err) { blocked = false; }
+                if (blocked) continue;
+            }
             var html;
             try { html = opts.html(f.properties || {}, f, e); } catch (err) { html = null; }
             // A registration may decline a feature by returning falsy — the
@@ -243,7 +282,14 @@
             // AOI layer uses this to stand down over a park polygon, which is
             // the same precedence rule the park click handler applies.
             if (!html) continue;
-            return { html: html, opts: opts, feature: f, layerId: f.layer.id, extra: feats.length - 1 };
+            // "+N more here" counts only peers, not the backdrop the feature
+            // happens to sit on: an AOI or a geology unit under a fire
+            // trajectory is context, not a second thing to zoom in and separate.
+            var extra = 0;
+            for (var j = 0; j < cand.length; j++) {
+                if (j !== i && cand[j].pri >= cand[i].pri) extra++;
+            }
+            return { html: html, opts: opts, feature: f, layerId: f.layer.id, extra: extra };
         }
         return null;
     }
@@ -262,7 +308,7 @@
     }
 
     function onClick(e) {
-        var t = tipFor(e);
+        var t = tipFor(e, true);
         if (!t) {
             if (sticky) hide(true);
             return;
@@ -272,7 +318,7 @@
         // feature must not also open the park report popup underneath.
         window._mapTipClicked = true;
         setTimeout(function () { window._mapTipClicked = false; }, 60);
-        if (pointerIsCoarse(e)) {
+        if (t.opts.clickOnly || pointerIsCoarse(e)) {
             // Tap = show the tip; the tip itself carries the "open report" action.
             show(t.html, e.point, e.lngLat, t.extra, t.opts, t.feature, t.layerId);
             sticky = true;
@@ -319,7 +365,21 @@
                 if (id.indexOf(prefix) === 0) MapTip.unregister(id);
             });
         },
+        setBackdropGuard: function (fn) { backdropGuard = fn; },
         hide: function () { hide(true); },
+        isSticky: function () { return !!sticky; },
+        /** Re-render the tip currently on screen (an async detail arrived). */
+        refresh: function (layerId) {
+            if (!current || !el || !el.classList.contains('visible')) return;
+            if (layerId && current.layerId !== layerId) return;
+            var html;
+            try {
+                html = current.opts.html(current.feature.properties || {}, current.feature,
+                                         { point: lastPoint, lngLat: anchor });
+            } catch (err) { return; }
+            if (html) show(html, lastPoint, anchor, current.extra, current.opts,
+                           current.feature, current.layerId);
+        },
         isTouch: function () { return (Date.now() - lastMoveAt) > TAP_WINDOW_MS; },
         count: function () { return registry.size; }
     };
