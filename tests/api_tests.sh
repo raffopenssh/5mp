@@ -239,6 +239,23 @@ for ep in "features-in-bbox?type=fire_trajectory&bbox=${XSA_BBOX}" \
     fi
 done
 
+# A GeoPackage peek must be a LOOKUP, not a build. ?aoi_menu_item=gpkg on a
+# share link asks "is this file already there?" so it can download instead of
+# making the recipient click -- if asking created a job, opening a shared link
+# would kick off a multi-minute export of an area you were only shown.
+# 404 = nothing built for this window; and the job count must not move.
+printf "%-50s" "gpkg_peek_is_side_effect_free"
+GPKG_BEFORE=$(sqlite3 db.sqlite3 "SELECT COUNT(*) FROM geopackage_jobs" 2>/dev/null || echo x)
+GPKG_CODE=$(curl -s -o /dev/null -w "%{http_code}" -b "$COOKIE_FILE" \
+    "${BASE_URL}/api/parks/CAF_Chinko/export.gpkg?peek=1&from=1999-01-01&to=1999-01-02")
+GPKG_AFTER=$(sqlite3 db.sqlite3 "SELECT COUNT(*) FROM geopackage_jobs" 2>/dev/null || echo y)
+if [[ "$GPKG_CODE" == "404" && "$GPKG_BEFORE" == "$GPKG_AFTER" ]]; then
+    green "✓"; PASSED=$((PASSED + 1))
+else
+    red "FAIL (code $GPKG_CODE, jobs $GPKG_BEFORE -> $GPKG_AFTER)"
+    FAILED=$((FAILED + 1)); ERRORS+=("gpkg peek side effect")
+fi
+
 echo
 echo "======================================="
 if [[ $FAILED -eq 0 ]]; then

@@ -1062,7 +1062,8 @@
             // fire trajectories it is supposed to sit under.
             if (style && style.sources) {
                 Object.keys(style.sources).forEach(sourceId => {
-                    if (sourceId !== 'osm' && sourceId !== 'satellite' && sourceId !== 'histmap-src') {
+                    if (sourceId !== 'osm' && sourceId !== 'satellite' && sourceId !== 'histmap-src'
+                        && sourceId.indexOf('geomap-') !== 0) {
                         customSources.push({
                             id: sourceId,
                             spec: style.sources[sourceId]
@@ -1074,7 +1075,8 @@
             // Identify custom layers (not the base layer)
             if (style && style.layers) {
                 style.layers.forEach(layer => {
-                    if (layer.id !== 'osm' && layer.id !== 'satellite' && layer.id !== 'histmap-lyr') {
+                    if (layer.id !== 'osm' && layer.id !== 'satellite' && layer.id !== 'histmap-lyr'
+                        && layer.id.indexOf('geomap-') !== 0) {
                         customLayers.push(layer);
                     }
                 });
@@ -1115,6 +1117,10 @@
                 // overlay's captured spec, which puts it back on TOP of the park
                 // outlines it belongs under. Re-insert it at the right depth.
                 if (typeof HistMap !== 'undefined') HistMap.reattach();
+                // Same reason, same mechanism: the geology overlay is excluded
+                // from the capture above so it can be re-inserted below the
+                // park outlines rather than appended on top of them.
+                if (typeof GeoMap !== 'undefined') GeoMap.reattach();
                 
                 showToast('Basemap changed', `Switched to ${newStyle.name}`, null, null, 'success');
             });
@@ -1300,6 +1306,124 @@
                     </div>
                     <div style="color:#555;font-size:10px;margin-top:10px;line-height:1.5;">${escapeHtml(m.attribution || '')}</div>
                 </div>`;
+        }
+
+        // ---------------------------------------------------------------
+        // Geology panel. The module is srv/static/geomap.js; this is only
+        // its rendering, kept here beside renderHistMapPanel() because the
+        // two share the Map Settings tab and the same overlay discipline.
+        //
+        // The legend is the interface, not a key: 47 classes is too many for
+        // a checkbox list nobody reads, so the commodity chips come FIRST
+        // (that is the question this overlay exists to answer) and the class
+        // list is collapsed behind a summary.
+        // ---------------------------------------------------------------
+        function renderGeoMapPanel() {
+            const box = document.getElementById('geomap-list');
+            if (!box || typeof GeoMap === 'undefined') return;
+            const sheets = GeoMap.sheets();
+            if (!sheets) return;
+            const ids = GeoMap.order();
+            if (!ids.length) {
+                box.innerHTML = '<div style="color:#666;font-size:12px;">No geology sheets built on this server.</div>';
+                return;
+            }
+            box.innerHTML = ids.map(id => geoMapSheetHTML(id, sheets[id])).join('');
+        }
+
+        function geoMapSheetHTML(id, s) {
+            const cat = s.catalogue || {};
+            const on = GeoMap.isOn(id);
+            const o = GeoMap.state(id);
+            const classes = GeoMap.classes(id);
+            const head = `
+                <div style="display:flex;align-items:flex-start;gap:12px;">
+                    <div style="flex:1;min-width:0;">
+                        <div style="color:#fff;font-size:13px;font-weight:600;">${escapeHtml(cat.title || id)}</div>
+                        <div style="color:#777;font-size:11px;margin-top:4px;line-height:1.5;">
+                            ${escapeHtml(cat.publisher || '')}${cat.scale ? ' &middot; ' + escapeHtml(cat.scale) : ''}
+                            ${classes.length ? ' &middot; ' + classes.length + ' units' : ''}</div>
+                    </div>
+                    ${s.available
+                    ? `<button onclick="GeoMap.toggle('${id}')" class="star-report-btn${on ? '' : ' secondary'}"
+                           style="font-size:12px;white-space:nowrap;">${on ? 'Hide' : 'Show'}</button>`
+                    : `<span style="color:#666;font-size:11px;white-space:nowrap;">not built</span>`}
+                </div>`;
+
+            if (!s.available) {
+                return `<div style="border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px;margin-bottom:12px;background:rgba(255,255,255,0.02);">
+                    ${head}
+                    <div style="color:#666;font-size:11px;margin-top:8px;">${escapeHtml(s.reason || '')}
+                    &mdash; run <code>scripts/geomaps/vectorize.py ${id}</code> then <code>scripts/geomaps/tiles.sh ${id}</code>.</div>
+                </div>`;
+            }
+
+            // Commodity chips: the grouped toggle the whole overlay is for.
+            const byCommodity = {};
+            classes.forEach(c => (c.commodities || []).forEach(k => {
+                byCommodity[k] = (byCommodity[k] || 0) + 1;
+            }));
+            const chips = Object.keys(byCommodity).sort().map(k => {
+                const active = o.activeCommodity === k;
+                return `<button onclick="GeoMap.isolateCommodity('${id}','${escapeHtml(k)}')"
+                    class="preset-tag${active ? ' active' : ''}" style="font-size:11px;"
+                    title="Show only the units whose rock type can host ${escapeHtml(k)}">
+                    ${escapeHtml(k)} <span style="opacity:0.6;">${byCommodity[k]}</span></button>`;
+            }).join('');
+
+            const hiddenCount = o.isolate ? classes.length - o.isolate.size : o.hidden.size;
+            const rows = classes.map(c => {
+                const shown = o.isolate ? o.isolate.has(c.code) : !o.hidden.has(c.code);
+                const codes = (c.codes || [c.code]);
+                return `<div onclick="GeoMap.toggleClass('${id}','${escapeHtml(c.code)}')"
+                    style="display:flex;align-items:center;gap:8px;padding:3px 4px;border-radius:4px;cursor:pointer;${shown ? '' : 'opacity:0.35;'}"
+                    title="${escapeHtml(c.name)}">
+                    <span style="width:12px;height:12px;border-radius:2px;flex:none;background:${escapeHtml(c.color)};border:1px solid rgba(0,0,0,0.4);"></span>
+                    <span style="color:#ddd;font-size:11px;font-family:monospace;flex:none;min-width:64px;">${escapeHtml(c.code)}</span>
+                    <span style="color:#888;font-size:11px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(c.name)}</span>
+                    ${codes.length > 1 ? '<span style="color:#f59e0b;font-size:10px;flex:none;" title="Printed in inks this sheet does not separate">merged</span>' : ''}
+                </div>`;
+            }).join('');
+
+            const q = (cat.quality || {});
+            return `<div style="border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px;margin-bottom:12px;background:rgba(255,255,255,0.02);">
+                ${head}
+                <div style="${on ? '' : 'opacity:0.4;pointer-events:none;'}">
+                    <div style="display:flex;align-items:center;gap:10px;margin-top:12px;">
+                        <span style="color:#888;font-size:11px;">Opacity</span>
+                        <input type="range" min="10" max="100" value="${Math.round(o.opacity * 100)}"
+                               oninput="GeoMap.setOpacity('${id}', this.value/100)" style="flex:1;accent-color:#3b82f6;">
+                        <span id="geomap-op-${id}" style="color:#aaa;font-size:11px;width:34px;text-align:right;">${Math.round(o.opacity * 100)}%</span>
+                    </div>
+                    ${chips ? `<div style="margin-top:12px;">
+                        <div style="color:#888;font-size:11px;margin-bottom:6px;">Rock types that can host</div>
+                        <div style="display:flex;flex-wrap:wrap;gap:6px;">${chips}</div>
+                        <div style="color:#666;font-size:10px;margin-top:6px;line-height:1.4;">
+                            An inference from lithology, not an occurrence dataset &mdash; nothing here
+                            counts, ranks or locates a deposit.</div>
+                    </div>` : ''}
+                    <details style="margin-top:12px;">
+                        <summary style="color:#aaa;font-size:11px;cursor:pointer;">
+                            ${classes.length} units${hiddenCount > 0 ? ' &middot; ' + hiddenCount + ' hidden' : ''}
+                            ${hiddenCount > 0 ? `<button onclick="event.preventDefault();GeoMap.showAll('${id}')" class="star-report-btn secondary" style="font-size:10px;margin-left:8px;">Show all</button>` : ''}
+                        </summary>
+                        <div style="max-height:260px;overflow-y:auto;margin-top:8px;">${rows}</div>
+                    </details>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap;">
+                    <a class="star-report-btn secondary" style="font-size:12px;text-decoration:none;"
+                       href="${s.download}${s.download.indexOf('?') >= 0 ? '&' : '?'}pwd=${encodeURIComponent(getPwd())}" download
+                       title="Vector MBTiles for QGIS or an offline viewer">Download MBTiles${s.size_bytes ? ' (' + (s.size_bytes / 1048576).toFixed(0) + ' MB)' : ''}</a>
+                    ${cat.source_url ? `<a href="${escapeHtml(cat.source_url)}" target="_blank" rel="noopener"
+                        style="color:#3b82f6;font-size:11px;text-decoration:none;">source scan &nearr;</a>` : ''}
+                </div>
+                ${q.window_px ? `<div style="color:#555;font-size:10px;margin-top:8px;line-height:1.5;">
+                    Classified from the print screen at a ${q.window_px}px window; held-out accuracy
+                    ${(q.accuracy * 100).toFixed(1)}% on the ${(q.claim_rate * 100).toFixed(1)}% of patches
+                    it claims. Contacts and lettering are left unclaimed rather than guessed.
+                    ${(q.merged && q.merged.length) ? q.merged.length + ' pair(s) of units are merged because this sheet\'s print screen does not separate them.' : ''}
+                </div>` : ''}
+            </div>`;
         }
 
         // Update park fill visibility based on basemap (hide on satellite)
@@ -8868,6 +8992,7 @@
                     item.setAttribute('tabindex', '0');
                     item.focus({ preventScroll: true });
                 }
+                resolveHighlightedExport(id, name, highlight);
             }
             // The dismiss listener is armed on the NEXT tick and, when the menu
             // was opened from a link rather than a click, not until the user has
@@ -8876,6 +9001,54 @@
             // close a menu the link opened before it was ever seen.
             setTimeout(() => document.addEventListener('click', closeAOIMenu, { once: true }), highlight ? 400 : 0);
             aoiMenuState = { id, name, highlight: highlight || null };
+        }
+
+        // What a highlighted GeoPackage entry does on arrival.
+        //
+        // "aoi_menu_item is a hint, never an action" was written for one
+        // specific danger: a link that starts a 400 MB *build* the moment it is
+        // opened. That rule does not cover the case where the file already
+        // exists — there the link is a link to a file, the sender is handing
+        // over something they already made, and pointing at a row and waiting
+        // for a second click is ceremony. So the two cases are told apart with
+        // `peek=1`, which asks "is it built?" without building it:
+        //
+        //   ready   → download starts, toast names what is coming
+        //   not yet → nothing happens; a toast explains that the highlighted
+        //             entry has to be clicked to build it first
+        //   building→ don't start a second one; point at the bell
+        //
+        // The window matters: the same area over a different date range is a
+        // different file, so this runs after restoreStateFromURL has applied
+        // ?from/&to and peek() reads the same globals the export would.
+        //
+        // Only GeoPackage needs this. KML, GeoJSON and Locus entries are plain
+        // hrefs served inline — they have nothing to "already exist".
+        async function resolveHighlightedExport(id, name, highlight) {
+            if (highlight !== 'gpkg' && highlight !== 'gpkg_light') return;
+            if (!window.GeoPackageExport) return;
+            const raw = highlight === 'gpkg';
+            const label = raw ? 'GeoPackage' : 'GeoPackage (no raw fire points)';
+            const d = await GeoPackageExport.peek(id, {
+                aoi: typeof isAOI === 'function' && isAOI(id),
+                raw: raw,
+            });
+            if (d && d.state === 'ready') {
+                closeAOIMenu();
+                showToast(`“${name || id}” ${label} is ready — downloading`, 'success',
+                          { key: 'gpkg-' + d.id });
+                GeoPackageExport.download(d.id);
+                return;
+            }
+            if (d && (d.state === 'pending' || d.state === 'running')) {
+                showToast(`That ${label} is still being built — watch the bell, `
+                        + `then download it from there`, 'info', { key: 'gpkg-' + d.id });
+                GeoPackageExport.track(d.id);
+                return;
+            }
+            showToast(`This ${label} hasn't been created yet — click the highlighted `
+                    + `entry to build it (a few minutes; it lands in the bell)`, 'info',
+                      { key: 'gpkg-hint', duration: 8000 });
         }
 
         // What the share link carries. Null when no menu is open.
@@ -18782,6 +18955,7 @@ ${starredItems.narratives.map(n => {
             // Meta fetch is memoised and the panel renders from that cache, so
             // this is cheap on every revisit and correct on the first.
             HistMap.ensureMeta().then(renderHistMapPanel);
+            if (typeof GeoMap !== 'undefined') GeoMap.ensureMeta().then(renderGeoMapPanel);
         }
         else if (tabName === 'autofetch') {
             loadAutofetchSources(); initAfSourceViewer();
@@ -19801,6 +19975,13 @@ ${starredItems.narratives.map(n => {
         if (typeof HistMap !== 'undefined' && HistMap.isOn()) {
             params.set('histmap', HistMap.activeId());
         }
+        // Geology: `geomap=sudan` is the common link. The class selection and
+        // opacity only ride along once the user has changed them, so a plain
+        // "here is the geology" link does not carry 47 codes.
+        if (typeof GeoMap !== 'undefined') {
+            const gp = GeoMap.getShareParams();
+            if (gp) Object.keys(gp).forEach(k => params.set(k, gp[k]));
+        }
         
         // Add time range (use preset if active, otherwise explicit dates)
         var _preset = typeof window._activePresetTag === 'function' ? window._activePresetTag() : null;
@@ -20062,6 +20243,11 @@ ${starredItems.narratives.map(n => {
         const histmap = params.get('histmap');
         if (histmap && histmap !== '0' && typeof HistMap !== 'undefined') {
             HistMap.set(true, { quiet: true, fly: false });
+        }
+        if (params.get('geomap') && typeof GeoMap !== 'undefined') {
+            // restoreFromParams reads the class selection BEFORE adding any
+            // layer, so the overlay never flashes at full extent first.
+            GeoMap.restoreFromParams(params);
         }
         
         // Restore time range (skip if initTimeSlider already applied URL dates)
@@ -20909,6 +21095,22 @@ ${starredItems.narratives.map(n => {
                             </p>
                             <div id="histmap-list"><div style="color:#666;font-size:12px;">Checking for installed archives&hellip;</div></div>
                         </div>
+
+                        <!-- Geology overlays: scanned sheets turned into polygons, so the
+                             classes can be toggled, isolated and recoloured. Below the
+                             historical maps because both answer "what does an older survey
+                             say about this ground", and above nothing else. -->
+                        <div style="margin-bottom:24px;" id="geomap-block">
+                            <h3 style="color:#fff;font-size:14px;font-weight:600;margin-bottom:12px;">Geology</h3>
+                            <p style="color:#888;font-size:12px;margin-bottom:16px;line-height:1.5;">
+                                Scanned regional geological maps, vectorized: every unit is a polygon, so
+                                you can hide one, isolate the rock types that can host a given commodity,
+                                and set opacity. Commodity groupings are an inference from lithology &mdash;
+                                &ldquo;rocks of this kind host gold&rdquo; &mdash; and are
+                                <em>not</em> a record of any deposit.
+                            </p>
+                            <div id="geomap-list"><div style="color:#666;font-size:12px;">Checking for installed sheets&hellip;</div></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -21153,5 +21355,9 @@ ${starredItems.narratives.map(n => {
     <script src="/static/aoi_draw.js?v={{.Version}}"></script>
     <script src="/static/aoi_progress.js?v={{.Version}}"></script>
     <script src="/static/gpkg_export.js?v={{.Version}}"></script>
+    <!-- Geology overlays. A file rather than inline for the same reason as the
+         AOI modules: it owns a map layer pair per sheet plus its own share-link
+         state, and none of that belongs in the page's global scope. -->
+    <script src="/static/geomap.js?v={{.Version}}"></script>
     <script src="/static/floatui.js?v={{.Version}}"></script>
 </body></html>

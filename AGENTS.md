@@ -1343,9 +1343,23 @@ valid rather than usable is the wrong change.**
   coincident points on top of everything are not a map, but a Fire group that
   shows nothing until you go looking is its own wrong answer.
 * AOI exports are **404, not 403**, for non-owners, on status *and* download.
-* Share links: `aoi_menu=<id>`, `aoi_menu_item=gpkg` (a highlight, **never** an
-  action — a link that starts a 400 MB download on open is a trap),
-  `gpkg=<job id>` (opens the card, not the file).
+* Share links: `aoi_menu=<id>`, `aoi_menu_item=gpkg` — **the highlight never
+  starts a BUILD, but it does download a file that already exists.** The rule
+  was written against one danger (a link that spends five minutes of server
+  time and 400 MB on open), and that danger only exists when the export has to
+  be made. When it is already built the link *is* a link to a file: the sender
+  made it and is handing it over, and pointing at a row and waiting for a
+  second click is ceremony. `?peek=1` on `export.gpkg` tells the two apart
+  without building — a pure lookup on the cache key, 404 when nothing matches
+  (pinned by `gpkg_peek_is_side_effect_free` in `tests/api_tests.sh`; if asking
+  ever creates a job, every shared link becomes the trap the rule forbids).
+  `resolveHighlightedExport()` in globe.html: ready → download; pending/running
+  → point at the bell and adopt the job, never start a second; absent → a toast
+  saying the highlighted entry has to be clicked to build it. The window is
+  part of the identity, so it runs after `restoreStateFromURL` has applied
+  `?from`/`?to`. Only the two GeoPackage entries need it — KML/GeoJSON/Locus
+  are plain hrefs served inline and have nothing to already exist.
+  `gpkg=<job id>` still opens the card, not the file.
 * No QGIS in CI. `go test ./srv/ -run 'GPKG|QGIS|GeoPackage|AreaHit'` covers the
   byte-level contract; for styling changes install `python3-qgis` and **look at
   the render** — the first version passed every automated check and was unusable.
@@ -1588,7 +1602,7 @@ URL params encode full UI state for reproducible tests:
 | `pinned` | `CAF_Chinko:fire_trajectory` | Pin layers |
 | `detail` | `major` \| `main` \| `all` | Geography detail tier (omitted at the `main` default) |
 | `aoi_menu` | `XSA_Study_Area` | Open that area's download menu |
-| `aoi_menu_item` | `gpkg`, `gpkg_light`, `kml`… | Highlight one entry in it (a hint, never an action) |
+| `aoi_menu_item` | `gpkg`, `gpkg_light`, `kml`… | Highlight one entry in it. A **built** GeoPackage downloads immediately; an unbuilt one only explains itself — a link never starts a build |
 | `gpkg` | `<job id>` | Open the bell on that GeoPackage export's card |
 | `starred_parks` | `CAF_Chinko,COD_Virunga` | Star parks |
 | `notif` | `1` | Open notification dropdown |
