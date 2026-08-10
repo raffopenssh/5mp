@@ -202,7 +202,7 @@ func (s *Server) computeFireNarrativeForCache(parkID, parkName string, fromYear,
 
 	// Get narrative context for enhanced location descriptions
 	ctx := s.getNarrativeContext(parkID, parkName)
-	
+
 	// Trajectory narratives - try JSON files first (has proper outcome calculation),
 	// then fall back to DB table
 	narrative.Narratives = s.getTrajectoryNarrativesFromJSON(parkID, fromYear, toYear, ctx)
@@ -224,19 +224,19 @@ func (s *Server) getSeasonalContext(parkID string, month int) string {
 	if err != nil {
 		return ""
 	}
-	
+
 	// Determine if the park has distinct seasons
 	if precipAnnual == 0 || precipWettest == 0 {
 		return ""
 	}
-	
+
 	// Calculate seasonality index (ratio of wettest to driest month)
 	seasonality := float64(precipWettest) / float64(precipDriest+1)
-	
+
 	if seasonality < 3 {
 		return "year-round rainfall"
 	}
-	
+
 	// Africa typically has rainy season in summer months
 	// Northern hemisphere: June-Sept
 	// Southern hemisphere: Nov-March
@@ -402,7 +402,7 @@ func (s *Server) analyzeFireTrendFast(parkID string, currentYear int) *FireTrend
 					ms.GroupsPerKm2 = float64(groups) / areaKm2
 				}
 				trend.Months = append(trend.Months, ms)
-				
+
 				// Track by calendar month for seasonality
 				if len(month) >= 7 {
 					var m int
@@ -411,7 +411,7 @@ func (s *Server) analyzeFireTrendFast(parkID string, currentYear int) *FireTrend
 				}
 			}
 		}
-		
+
 		// Determine peak months and seasonality
 		var maxGroups int
 		for _, g := range monthCounts {
@@ -426,7 +426,7 @@ func (s *Server) analyzeFireTrendFast(parkID string, currentYear int) *FireTrend
 				trend.PeakMonths = append(trend.PeakMonths, monthNames[m])
 			}
 		}
-		
+
 		// Generate seasonality description
 		if len(trend.PeakMonths) > 0 {
 			if len(trend.PeakMonths) <= 3 {
@@ -518,7 +518,7 @@ func (s *Server) getTrajectoryNarratives(parkID string, fromYear, toYear int, ct
 
 		// Build verbose narrative with enhanced context
 		var narr strings.Builder
-		
+
 		// Get seasonal context
 		seasonStr := ""
 		if ctx != nil {
@@ -526,7 +526,7 @@ func (s *Server) getTrajectoryNarratives(parkID string, fromYear, toYear int, ct
 				seasonStr = fmt.Sprintf(" (%s)", season)
 			}
 		}
-		
+
 		// Describe origin with enhanced context if available
 		if ctx != nil {
 			originLoc := ctx.describeLocationWithContext(t.Origin.Lat, t.Origin.Lon)
@@ -543,7 +543,7 @@ func (s *Server) getTrajectoryNarratives(parkID string, fromYear, toYear int, ct
 				story.OriginDesc = fmt.Sprintf("%s, %s", story.OriginDesc, movementDesc)
 			}
 		}
-		
+
 		// Describe destination with enhanced context
 		if ctx != nil {
 			story.DestDesc = ctx.describeLocationWithContext(t.Destination.Lat, t.Destination.Lon)
@@ -555,14 +555,14 @@ func (s *Server) getTrajectoryNarratives(parkID string, fromYear, toYear int, ct
 		}
 
 		// Build verbose narrative
-		narr.WriteString(fmt.Sprintf("Fire group %d originated %s on %s%s. ", 
+		narr.WriteString(fmt.Sprintf("Fire group %d originated %s on %s%s. ",
 			i+1, story.OriginDesc, t.EntryDate, seasonStr))
 
 		daysWord := "days"
 		if t.DaysInside == 1 {
 			daysWord = "day"
 		}
-		narr.WriteString(fmt.Sprintf("Burned inside the park for %d %s (%d fire detections). ", 
+		narr.WriteString(fmt.Sprintf("Burned inside the park for %d %s (%d fire detections). ",
 			t.DaysInside, daysWord, t.FiresInside))
 
 		switch t.Outcome {
@@ -751,12 +751,12 @@ func (s *Server) StartNarrativeCacheWorker(ctx context.Context) {
 	var fireCount, settCount int
 	s.DB.QueryRow("SELECT COUNT(*) FROM fire_narrative_cache").Scan(&fireCount)
 	s.DB.QueryRow("SELECT COUNT(*) FROM park_settlements WHERE classified_at IS NOT NULL").Scan(&settCount)
-	
+
 	if fireCount == 0 {
 		log.Println("[NarrativeCacheWorker] Fire cache empty, running initial computation (v5 python)")
 		s.runPrecomputeNarrativesV5(nil)
 	}
-	
+
 	if settCount == 0 {
 		log.Println("[NarrativeCacheWorker] Classifications empty, running initial computation")
 		s.PrecomputeAllClassifications(ctx)
@@ -773,19 +773,19 @@ func (s *Server) StartNarrativeCacheWorker(ctx context.Context) {
 			return
 		case <-ticker.C:
 			now := time.Now().UTC()
-			
+
 			// Daily at 3am UTC: fire narratives handled by scripts/daily_fire_update.py
 			// cron (runs precompute_narratives_v5.py --incremental). The old Go
 			// refresh (PrecomputeRecentFireNarratives / PrecomputeFireNarratives)
 			// used stale v2 JSON files with sequential _grp_N feature ids that
 			// broke fire pinning, so it is no longer scheduled here.
-			
+
 			// Weekly (Sunday 2am UTC): Full fire narrative refresh via canonical v5 python
 			if now.Weekday() == time.Sunday && now.Hour() == 2 {
 				log.Println("[NarrativeCacheWorker] Running weekly full fire refresh (v5 python)")
 				s.runPrecomputeNarrativesV5(nil)
 			}
-			
+
 			// Annually (January 1st, 4am UTC): Refresh settlement/deforestation classifications
 			if now.Month() == time.January && now.Day() == 1 && now.Hour() == 4 {
 				log.Println("[NarrativeCacheWorker] Running annual classification refresh")
@@ -810,21 +810,21 @@ func (s *Server) PrecomputeRecentFireNarratives(ctx context.Context, days int) {
 		return
 	}
 	defer rows.Close()
-	
+
 	var parksWithFires []string
 	for rows.Next() {
 		var parkID string
 		rows.Scan(&parkID)
 		parksWithFires = append(parksWithFires, parkID)
 	}
-	
+
 	if len(parksWithFires) == 0 {
 		log.Println("[FireNarrativeCache] No parks with recent fire activity")
 		return
 	}
-	
+
 	log.Printf("[FireNarrativeCache] Refreshing %d parks with recent fire activity", len(parksWithFires))
-	
+
 	for _, parkID := range parksWithFires {
 		select {
 		case <-ctx.Done():
@@ -863,11 +863,11 @@ func (s *Server) PrecomputeAllClassifications(ctx context.Context) {
 		log.Println("[Classification] No area store, skipping")
 		return
 	}
-	
+
 	log.Printf("[Classification] Starting for %d parks", len(s.AreaStore.Areas))
 	start := time.Now()
 	settCount, defoCount := 0, 0
-	
+
 	for i, area := range s.AreaStore.Areas {
 		select {
 		case <-ctx.Done():
@@ -875,16 +875,16 @@ func (s *Server) PrecomputeAllClassifications(ctx context.Context) {
 			return
 		default:
 		}
-		
+
 		if i > 0 && i%20 == 0 {
 			log.Printf("[Classification] Progress: %d/%d parks", i, len(s.AreaStore.Areas))
 		}
-		
+
 		sc, dc := s.classifyParkData(area.ID)
 		settCount += sc
 		defoCount += dc
 	}
-	
+
 	log.Printf("[Classification] Done in %v: %d settlements, %d deforestation events",
 		time.Since(start), settCount, defoCount)
 }
@@ -928,28 +928,28 @@ func (s *Server) classifyParkSettlementsImpl(parkID string, force bool) int {
 		return 0
 	}
 	defer rows.Close()
-	
+
 	count := 0
 	for rows.Next() {
 		var st ClassifiedSettlement
 		var nearestPlace sql.NullString
 		var distToPlace sql.NullFloat64
-		
+
 		err := rows.Scan(&st.ID, &st.Lat, &st.Lon, &st.AreaM2, &st.PopulationEst, &nearestPlace, &distToPlace)
 		if err != nil {
 			continue
 		}
-		
+
 		if nearestPlace.Valid {
 			st.NearestPlace = nearestPlace.String
 		}
 		if distToPlace.Valid {
 			st.DistanceToPlace = distToPlace.Float64
 		}
-		
+
 		st.ParkID = parkID
 		s.ClassifySettlement(parkID, &st)
-		
+
 		s.DB.Exec(`
 			UPDATE park_settlements SET
 				classification = ?,
@@ -992,7 +992,7 @@ func (s *Server) classifyParkDeforestation(parkID string) int {
 		return 0
 	}
 	defer rows.Close()
-	
+
 	count := 0
 	for rows.Next() {
 		var df ClassifiedDeforestation
@@ -1000,10 +1000,10 @@ func (s *Server) classifyParkDeforestation(parkID string) int {
 		if err != nil {
 			continue
 		}
-		
+
 		df.ParkID = parkID
 		s.ClassifyDeforestation(parkID, &df)
-		
+
 		s.DB.Exec(`
 			UPDATE deforestation_events SET
 				classification = ?,
@@ -1029,14 +1029,14 @@ func (s *Server) GetCachedClassifiedSettlements(parkID string) []ClassifiedSettl
 			COALESCE(narrative, ''), COALESCE(nearest_place, ''), COALESCE(distance_to_place_km, 0),
 			COALESCE(fires_5km, 0), COALESCE(fire_seasonality, ''), COALESCE(deforest_nearby_km2, 0)
 		FROM park_settlements
-		WHERE park_id = ?` + scannerInjectedSQLFilter("narrative") + `
+		WHERE park_id = ?`+scannerInjectedSQLFilter("narrative")+`
 		ORDER BY area_m2 DESC
 	`, parkID)
 	if err != nil {
 		return nil
 	}
 	defer rows.Close()
-	
+
 	var settlements []ClassifiedSettlement
 	for rows.Next() {
 		var st ClassifiedSettlement
@@ -1071,7 +1071,7 @@ func (s *Server) GetCachedClassifiedDeforestation(parkID string) []ClassifiedDef
 		return nil
 	}
 	defer rows.Close()
-	
+
 	var events []ClassifiedDeforestation
 	for rows.Next() {
 		var df ClassifiedDeforestation
@@ -1127,7 +1127,7 @@ func (s *Server) computeLatitudeComparison(parkID string, parkLat, avgGroupsPerK
 				FROM park_group_infractions 
 				WHERE park_id = ?
 			`, area.ID).Scan(&totalGroups)
-			
+
 			if totalGroups > 0 {
 				gpk := float64(totalGroups) / area.AreaKm2 / 7.0 // Average per year (approx 7 years of data)
 				parksInBand = append(parksInBand, struct {

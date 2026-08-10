@@ -27,16 +27,16 @@ import (
 
 // TurbidityAlert is one onset point from analysis/river_turbidity.py.
 type TurbidityAlert struct {
-	Lat                 float64 `json:"lat"`
-	Lon                 float64 `json:"lon"`
-	River               string  `json:"river"`
-	Waterway            string  `json:"waterway"`
-	Type                string  `json:"type"` // turbidity_onset | turbid_headwater
-	Red                 int     `json:"red"`
-	Ratio               float64 `json:"ratio"`
-	DownstreamTurbidKm  float64 `json:"downstream_turbid_km"`
-	Scene               string  `json:"scene"`
-	Date                string  `json:"date"`
+	Lat                float64 `json:"lat"`
+	Lon                float64 `json:"lon"`
+	River              string  `json:"river"`
+	Waterway           string  `json:"waterway"`
+	Type               string  `json:"type"` // turbidity_onset | turbid_headwater
+	Red                int     `json:"red"`
+	Ratio              float64 `json:"ratio"`
+	DownstreamTurbidKm float64 `json:"downstream_turbid_km"`
+	Scene              string  `json:"scene"`
+	Date               string  `json:"date"`
 }
 
 type turbidityFile struct {

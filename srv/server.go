@@ -244,6 +244,11 @@ func (s *Server) Serve(addr string) error {
 	// knows about AOIs -- an AOI is not in AreaStore by design.
 	mux.HandleFunc("GET /api/aois/{id}/export.kml", s.aoiGate(s.HandleAPIParkKML))
 	mux.HandleFunc("GET /api/aois/{id}/export.locus", s.aoiGate(s.HandleAPIParkLocus))
+	// GeoPackage: every layer, whole, typed and styled for QGIS. It cannot be
+	// served inline (millions of fire detections, well past WriteTimeout), so
+	// this returns a job and the file is fetched from /api/geopackage/{id}.
+	mux.HandleFunc("POST /api/aois/{id}/export.gpkg", s.aoiGate(s.HandleAPIAreaGeoPackage))
+	mux.HandleFunc("GET /api/aois/{id}/export.gpkg", s.aoiGate(s.HandleAPIAreaGeoPackage))
 	// Offline satellite tiles. A tile pyramid has nothing park-specific in it
 	// -- it is a rectangle of imagery -- so the only reason an AOI could not
 	// have one was that the handlers looked the id up in AreaStore, where an
@@ -319,6 +324,16 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("GET /api/parks/{id}/feature-stats", s.HandleAPIParkFeatureStats)
 	mux.HandleFunc("GET /api/parks/{id}/export.kml", s.HandleAPIParkKML)
 	mux.HandleFunc("GET /api/parks/{id}/export.locus", s.HandleAPIParkLocus)
+	mux.HandleFunc("POST /api/parks/{id}/export.gpkg", s.HandleAPIAreaGeoPackage)
+	mux.HandleFunc("GET /api/parks/{id}/export.gpkg", s.HandleAPIAreaGeoPackage)
+	// Job status + download are shared by parks and AOIs: the id is an opaque
+	// token and the handler re-checks AOI visibility on every hit.
+	mux.HandleFunc("GET /api/geopackage", s.HandleAPIGeoPackageList)
+	mux.HandleFunc("GET /api/geopackage/{id}", s.HandleAPIGeoPackageStatus)
+	mux.HandleFunc("GET /api/geopackage/{id}/download", s.HandleAPIGeoPackageDownload)
+	// Delete before the TTL expires: the 21 days are a promise about links, not
+	// an obligation to keep a gigabyte around after the file has been used.
+	mux.HandleFunc("DELETE /api/geopackage/{id}", s.HandleAPIGeoPackageDelete)
 	mux.HandleFunc("GET /api/export/merged.kml", s.HandleAPIMergedKML)
 
 	// MBTiles generation endpoints (Zenodo-backed, with legacy fallback)
@@ -422,6 +437,11 @@ func (s *Server) Serve(addr string) error {
 
 	// Initialize MBTiles queue (legacy disk-based, as fallback)
 	InitMBTilesQueue("data/mbtiles_output", s.DB)
+
+	// GeoPackage export cache: hourly expiry sweep + a startup pass that fails
+	// jobs a restart orphaned (a card frozen at 40% forever is worse than an
+	// error the user can retry).
+	s.StartGeoPackageSweeper()
 
 	// Initialize Zenodo-backed MBTiles queue (preferred)
 	if token := os.Getenv("ZENODO_TOKEN"); token != "" {

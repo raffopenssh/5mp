@@ -8,21 +8,21 @@ import (
 // GPXAnalysis contains analysis results for a GPX segment
 type GPXAnalysis struct {
 	// Speed metrics
-	AvgSpeedKmh    float64 `json:"avg_speed_kmh"`
-	MaxSpeedKmh    float64 `json:"max_speed_kmh"`
-	MovementType   string  `json:"movement_type"`
-	SpeedCategory  string  `json:"speed_category"` // slow_patrol, fast_patrol, vehicle, aircraft
-	
+	AvgSpeedKmh   float64 `json:"avg_speed_kmh"`
+	MaxSpeedKmh   float64 `json:"max_speed_kmh"`
+	MovementType  string  `json:"movement_type"`
+	SpeedCategory string  `json:"speed_category"` // slow_patrol, fast_patrol, vehicle, aircraft
+
 	// Pattern detection
-	HasCircling    bool    `json:"has_circling"`    // Detected circling patterns
-	CirclingCount  int     `json:"circling_count"`  // Number of circling events
+	HasCircling    bool    `json:"has_circling"`     // Detected circling patterns
+	CirclingCount  int     `json:"circling_count"`   // Number of circling events
 	IsStraightLine bool    `json:"is_straight_line"` // Mostly straight path (poor coverage)
-	Sinuosity      float64 `json:"sinuosity"`       // Path complexity (1 = straight, higher = more winding)
-	
+	Sinuosity      float64 `json:"sinuosity"`        // Path complexity (1 = straight, higher = more winding)
+
 	// Messages (from inReach/satellite devices)
-	MessageCount   int      `json:"message_count"`
-	Messages       []string `json:"messages,omitempty"`
-	
+	MessageCount int      `json:"message_count"`
+	Messages     []string `json:"messages,omitempty"`
+
 	// Quality assessment
 	CoverageQuality string  `json:"coverage_quality"` // poor, moderate, good, excellent
 	QualityScore    float64 `json:"quality_score"`    // 0-100
@@ -36,24 +36,24 @@ func AnalyzeGPXSegment(points []struct {
 	Desc      string
 }) GPXAnalysis {
 	analysis := GPXAnalysis{}
-	
+
 	if len(points) < 2 {
 		return analysis
 	}
-	
+
 	// Calculate speeds between consecutive points
 	var speeds []float64
 	var totalDistance float64
 	var totalTime float64
 	var bearings []float64
-	
+
 	for i := 1; i < len(points); i++ {
 		p1 := points[i-1]
 		p2 := points[i]
-		
+
 		dist := haversineDistanceKm(p1.Lat, p1.Lon, p2.Lat, p2.Lon)
 		totalDistance += dist
-		
+
 		if p1.Time != nil && p2.Time != nil {
 			duration := p2.Time.Sub(*p1.Time).Hours()
 			if duration > 0 && duration < 24 { // Sanity check
@@ -62,12 +62,12 @@ func AnalyzeGPXSegment(points []struct {
 				totalTime += duration
 			}
 		}
-		
+
 		// Calculate bearing for sinuosity
 		bearing := calculateBearing(p1.Lat, p1.Lon, p2.Lat, p2.Lon)
 		bearings = append(bearings, bearing)
 	}
-	
+
 	// Calculate average and max speed
 	if len(speeds) > 0 {
 		var sum float64
@@ -81,23 +81,23 @@ func AnalyzeGPXSegment(points []struct {
 	} else if totalTime > 0 {
 		analysis.AvgSpeedKmh = totalDistance / totalTime
 	}
-	
+
 	// Classify movement type based on speed
 	analysis.MovementType, analysis.SpeedCategory = classifyMovement(analysis.AvgSpeedKmh)
-	
+
 	// Calculate sinuosity (path complexity)
 	if totalDistance > 0 && len(points) >= 2 {
-		directDist := haversineDistanceKm(points[0].Lat, points[0].Lon, 
+		directDist := haversineDistanceKm(points[0].Lat, points[0].Lon,
 			points[len(points)-1].Lat, points[len(points)-1].Lon)
 		if directDist > 0.1 { // Avoid division by near-zero
 			analysis.Sinuosity = totalDistance / directDist
 		}
 		analysis.IsStraightLine = analysis.Sinuosity < 1.2
 	}
-	
+
 	// Detect circling patterns (large bearing changes in short segments)
 	analysis.HasCircling, analysis.CirclingCount = detectCircling(bearings, points)
-	
+
 	// Extract messages from desc fields
 	for _, p := range points {
 		if p.Desc != "" && !isDefaultMessage(p.Desc) {
@@ -107,10 +107,10 @@ func AnalyzeGPXSegment(points []struct {
 			}
 		}
 	}
-	
+
 	// Calculate quality score
 	analysis.QualityScore, analysis.CoverageQuality = calculateQuality(analysis)
-	
+
 	return analysis
 }
 
@@ -139,10 +139,10 @@ func calculateBearing(lat1, lon1, lat2, lon2 float64) float64 {
 	lat1Rad := lat1 * math.Pi / 180
 	lat2Rad := lat2 * math.Pi / 180
 	dLon := (lon2 - lon1) * math.Pi / 180
-	
+
 	y := math.Sin(dLon) * math.Cos(lat2Rad)
 	x := math.Cos(lat1Rad)*math.Sin(lat2Rad) - math.Sin(lat1Rad)*math.Cos(lat2Rad)*math.Cos(dLon)
-	
+
 	bearing := math.Atan2(y, x) * 180 / math.Pi
 	return math.Mod(bearing+360, 360)
 }
@@ -157,11 +157,11 @@ func detectCircling(bearings []float64, points []struct {
 	if len(bearings) < 10 {
 		return false, 0
 	}
-	
+
 	circlingCount := 0
 	windowSize := 5
 	threshold := 270.0 // Degrees of total bearing change for circling
-	
+
 	for i := 0; i <= len(bearings)-windowSize; i++ {
 		var totalChange float64
 		for j := i; j < i+windowSize-1; j++ {
@@ -176,7 +176,7 @@ func detectCircling(bearings []float64, points []struct {
 			i += windowSize - 1 // Skip ahead
 		}
 	}
-	
+
 	return circlingCount > 0, circlingCount
 }
 
@@ -198,7 +198,7 @@ func isDefaultMessage(desc string) bool {
 // calculateQuality computes overall coverage quality
 func calculateQuality(a GPXAnalysis) (float64, string) {
 	score := 50.0 // Base score
-	
+
 	// Speed factor: slow is better for coverage
 	switch a.SpeedCategory {
 	case "slow_patrol":
@@ -214,7 +214,7 @@ func calculateQuality(a GPXAnalysis) (float64, string) {
 	case "high_altitude":
 		score -= 10 // High altitude = poor observation
 	}
-	
+
 	// Sinuosity bonus (winding path = better coverage)
 	if a.Sinuosity > 2.0 {
 		score += 15
@@ -223,7 +223,7 @@ func calculateQuality(a GPXAnalysis) (float64, string) {
 	} else if a.IsStraightLine {
 		score -= 15
 	}
-	
+
 	// Circling bonus (detailed inspection)
 	if a.HasCircling {
 		score += float64(a.CirclingCount) * 3
@@ -231,7 +231,7 @@ func calculateQuality(a GPXAnalysis) (float64, string) {
 			score = 100
 		}
 	}
-	
+
 	// Cap score
 	if score < 0 {
 		score = 0
@@ -239,7 +239,7 @@ func calculateQuality(a GPXAnalysis) (float64, string) {
 	if score > 100 {
 		score = 100
 	}
-	
+
 	// Quality category
 	var quality string
 	switch {
@@ -252,6 +252,6 @@ func calculateQuality(a GPXAnalysis) (float64, string) {
 	default:
 		quality = "poor"
 	}
-	
+
 	return score, quality
 }

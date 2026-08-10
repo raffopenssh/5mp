@@ -21,18 +21,18 @@ func (s *Server) QueryGridDataWithWorldClim(ctx context.Context, params GridQuer
 		query += " AND e.env = ?"
 		args = append(args, params.Env)
 	}
-	
+
 	if params.BBox != nil {
 		query += ` AND g.lat_center BETWEEN ? AND ? AND g.lon_center BETWEEN ? AND ?`
 		args = append(args, params.BBox[1], params.BBox[3], params.BBox[0], params.BBox[2])
 	}
-	
+
 	rows, err := s.DB.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	
+
 	intensityMap := make(map[string]float64)
 
 	// Buffer rows before per-cell queries: nested queries while rows are open
@@ -49,14 +49,14 @@ func (s *Server) QueryGridDataWithWorldClim(ctx context.Context, params GridQuer
 	rows.Close()
 
 	for _, gridCellID := range cellIDs {
-		
+
 		// Get dry/rainy months for this specific grid cell using WorldClim
 		dryMonths, rainyMonths := s.getGridCellSeasons(gridCellID, parkID)
-		
+
 		// Build SQL to count visits in dry/rainy months
 		dryMonthsSQL := buildMonthINClause(dryMonths)
 		rainyMonthsSQL := buildMonthINClause(rainyMonths)
-		
+
 		visitQuery := fmt.Sprintf(`
 			SELECT 
 				COUNT(DISTINCT CASE WHEN e.month IN %s THEN e.year || '-' || e.month END) as dry_count,
@@ -67,12 +67,12 @@ func (s *Server) QueryGridDataWithWorldClim(ctx context.Context, params GridQuer
 			  AND e.year BETWEEN ? AND ?
 			  AND (? = '' OR e.env = ?)
 		`, dryMonthsSQL, rainyMonthsSQL)
-		
+
 		var dryCount, rainyCount int64
 		if err := s.DB.QueryRowContext(ctx, visitQuery, gridCellID, params.FromYear, params.ToYear, params.Env, params.Env).Scan(&dryCount, &rainyCount); err != nil {
 			continue
 		}
-		
+
 		// Calculate intensity using same formula as buildGridFeature
 		var intensity float64
 		if dryCount > 0 || rainyCount > 0 {
@@ -86,10 +86,10 @@ func (s *Server) QueryGridDataWithWorldClim(ctx context.Context, params GridQuer
 				intensity = 1.5
 			}
 		}
-		
+
 		intensityMap[gridCellID] = intensity
 	}
-	
+
 	return intensityMap, nil
 }
 
@@ -103,7 +103,7 @@ func (s *Server) getGridCellSeasons(gridCellID, parkID string) (dryMonths, rainy
 			return dry, rainy
 		}
 	}
-	
+
 	// Fallback to park climate data
 	var drySeason, rainySeason string
 	if err := s.DB.QueryRow(`SELECT dry_season, rainy_season FROM park_climate WHERE park_id = ?`, parkID).Scan(&drySeason, &rainySeason); err == nil {
@@ -113,7 +113,7 @@ func (s *Server) getGridCellSeasons(gridCellID, parkID string) (dryMonths, rainy
 			return dryMonths, rainyMonths
 		}
 	}
-	
+
 	// Default fallback
 	return []int{11, 12, 1, 2, 3, 4}, []int{5, 6, 7, 8, 9, 10}
 }

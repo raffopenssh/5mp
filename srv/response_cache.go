@@ -24,15 +24,15 @@ type responseCacheEntry struct {
 }
 
 type responseCache struct {
-	mu      sync.Mutex
-	entries map[string]*responseCacheEntry
+	mu       sync.Mutex
+	entries  map[string]*responseCacheEntry
 	inFlight map[string]*sync.WaitGroup
-	size    int
+	size     int
 }
 
 const (
 	respCacheTTL      = 5 * time.Minute
-	respCacheMaxEntry = 8 << 20  // 8 MB per response
+	respCacheMaxEntry = 8 << 20   // 8 MB per response
 	respCacheMaxTotal = 128 << 20 // 128 MB total
 )
 

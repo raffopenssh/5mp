@@ -20,13 +20,13 @@ type AsyncUploadResponse struct {
 
 // UploadStatusResponse is the response for checking upload status
 type UploadStatusResponse struct {
-	QueueID       int64                  `json:"queue_id"`
-	Status        string                 `json:"status"`
-	ErrorMessage  string                 `json:"error_message,omitempty"`
-	UploadID      int64                  `json:"upload_id,omitempty"`
-	Result        map[string]interface{} `json:"result,omitempty"`
-	CreatedAt     string                 `json:"created_at"`
-	CompletedAt   string                 `json:"completed_at,omitempty"`
+	QueueID      int64                  `json:"queue_id"`
+	Status       string                 `json:"status"`
+	ErrorMessage string                 `json:"error_message,omitempty"`
+	UploadID     int64                  `json:"upload_id,omitempty"`
+	Result       map[string]interface{} `json:"result,omitempty"`
+	CreatedAt    string                 `json:"created_at"`
+	CompletedAt  string                 `json:"completed_at,omitempty"`
 }
 
 // HandleAsyncUpload handles POST requests for async GPX file uploads.

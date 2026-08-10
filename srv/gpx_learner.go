@@ -40,16 +40,18 @@ func ptrUploadID(v int64) *int64 {
 	}
 	return &v
 }
-func ptrString(v string) *string    { return &v }
+func ptrString(v string) *string { return &v }
 
 // GPXLearner processes uploaded GPX data to learn roads, places, and patterns
 type GPXLearner struct {
 	db        *sql.DB
 	queries   *dbgen.Queries
-	areaStore interface{ FindArea(lat, lon float64) *areas.ProtectedArea }
-	mu        sync.Mutex
-	running   bool
-	stopCh    chan struct{}
+	areaStore interface {
+		FindArea(lat, lon float64) *areas.ProtectedArea
+	}
+	mu      sync.Mutex
+	running bool
+	stopCh  chan struct{}
 }
 
 // NewGPXLearner creates a new learner instance
@@ -62,7 +64,9 @@ func NewGPXLearner(db *sql.DB) *GPXLearner {
 }
 
 // SetAreaStore sets the area store used for filtering points by park.
-func (l *GPXLearner) SetAreaStore(as interface{ FindArea(lat, lon float64) *areas.ProtectedArea }) {
+func (l *GPXLearner) SetAreaStore(as interface {
+	FindArea(lat, lon float64) *areas.ProtectedArea
+}) {
 	l.areaStore = as
 }
 
@@ -406,7 +410,7 @@ func (l *GPXLearner) processJob(ctx context.Context, job dbgen.GpxLearningQueue)
 	if len(vehicleSpeeds) > 0 {
 		result.VehicleMedianSpeed = median(vehicleSpeeds)
 		result.VehicleMaxSpeed = maxFloat(vehicleSpeeds)
-		
+
 		// Store aggregate vehicle stats
 		l.queries.UpsertVehicleStats(ctx, dbgen.UpsertVehicleStatsParams{
 			ParkID:          parkID,
@@ -423,7 +427,7 @@ func (l *GPXLearner) processJob(ctx context.Context, job dbgen.GpxLearningQueue)
 	if len(footSpeeds) > 0 {
 		result.FootMedianSpeed = median(footSpeeds)
 		result.FootMaxSpeed = maxFloat(footSpeeds)
-		
+
 		l.queries.UpsertVehicleStats(ctx, dbgen.UpsertVehicleStatsParams{
 			ParkID:          parkID,
 			MovementType:    "foot",
@@ -517,12 +521,12 @@ func (l *GPXLearner) processRoadSegment(ctx context.Context, parkID string, uplo
 	// Check which portions match HeiGIT reference roads
 	// Only learn the portions that DON'T match existing roads
 	unmatchedSegments := l.findUnmatchedRoadPortions(ctx, parkID, simplified)
-	
+
 	for _, unmatchedCoords := range unmatchedSegments {
 		if len(unmatchedCoords) < 2 {
 			continue
 		}
-		
+
 		// Check if this unmatched portion matches existing learned vehicle tracks (±20m)
 		matched, matchID := l.findMatchingTrack(ctx, parkID, unmatchedCoords)
 
@@ -855,7 +859,7 @@ func (l *GPXLearner) detectStops(seg ClassifiedSegment) []StopPoint {
 func (l *GPXLearner) processStop(ctx context.Context, parkID string, stop StopPoint, result *LearningResult) {
 	// Check for nearby existing places
 	existing, err := l.queries.FindNearbyPlaces(ctx, dbgen.FindNearbyPlacesParams{
-		ParkID:  parkID,
+		ParkID: parkID,
 		Lat:    stop.Lat,
 		Lon:    stop.Lon,
 	})
@@ -1248,12 +1252,12 @@ func (l *GPXLearner) autoApproveAirstrip(ctx context.Context, parkID string, air
 
 	// Build properties JSON with approval info
 	properties := map[string]interface{}{
-		"approval_status":    "auto_approved",
-		"source":             "gpx_learner",
+		"approval_status":     "auto_approved",
+		"source":              "gpx_learner",
 		"learned_airstrip_id": airstripID,
-		"total_use":          totalUse,
-		"confidence_pct":     confidence,
-		"aircraft_type":      aircraftType,
+		"total_use":           totalUse,
+		"confidence_pct":      confidence,
+		"aircraft_type":       aircraftType,
 	}
 	if headingDeg != nil {
 		properties["heading_deg"] = *headingDeg
@@ -1475,10 +1479,10 @@ func (a *CrossTrackAnalyzer) cellToLatLon(row, col int) (float64, float64) {
 
 // DetectedRoad represents a road detected from cross-track analysis
 type DetectedRoad struct {
-	Points      [][]float64 // [[lon, lat], ...]
-	LengthM     float64
-	TrackCount  int // Number of different tracks that used this road
-	Confidence  float64
+	Points     [][]float64 // [[lon, lat], ...]
+	LengthM    float64
+	TrackCount int // Number of different tracks that used this road
+	Confidence float64
 }
 
 // DetectedAirstrip represents an airstrip detected from track patterns
@@ -1773,7 +1777,6 @@ func findStraightSegments(points []gpx.Point, minLengthM, maxDeviationDeg float6
 	return result
 }
 
-
 // normalizeAngle normalizes an angle to -180 to 180
 func normalizeAngle(angle float64) float64 {
 	for angle > 180 {
@@ -1846,8 +1849,8 @@ func detectBases(segments []ClassifiedSegment) []DetectedBase {
 
 	// Collect all track start and end points
 	type endpoint struct {
-		lat, lon   float64
-		isStart    bool
+		lat, lon    float64
+		isStart     bool
 		durationMin float64
 	}
 
@@ -1923,7 +1926,7 @@ func detectBases(segments []ClassifiedSegment) []DetectedBase {
 			}
 
 			avgDuration := sumDuration / float64(len(cluster))
-			
+
 			// Classify based on visit count and duration
 			placeType := "camp"
 			if len(cluster) >= 10 && avgDuration > 60 {
@@ -2161,7 +2164,9 @@ func countSegmentsWithPoints(segments []ClassifiedSegment) int {
 // segmentBelongsToPark checks if a segment's median point (or any sampled point)
 // falls within the specified park. Uses a generous check: the median point plus
 // first/last points are tested.
-func segmentBelongsToPark(seg ClassifiedSegment, parkID string, areaStore interface{ FindArea(lat, lon float64) *areas.ProtectedArea }) bool {
+func segmentBelongsToPark(seg ClassifiedSegment, parkID string, areaStore interface {
+	FindArea(lat, lon float64) *areas.ProtectedArea
+}) bool {
 	if len(seg.Points) == 0 {
 		return false
 	}
@@ -2534,7 +2539,7 @@ func (l *GPXLearner) findUnmatchedRoadPortions(ctx context.Context, parkID strin
 	// Extract contiguous unmatched segments
 	var segments [][][]float64
 	var currentSegment [][]float64
-	
+
 	for i, pt := range track {
 		if !matched[i] {
 			currentSegment = append(currentSegment, pt)
@@ -2546,7 +2551,7 @@ func (l *GPXLearner) findUnmatchedRoadPortions(ctx context.Context, parkID strin
 			currentSegment = nil
 		}
 	}
-	
+
 	// Don't forget the last segment
 	if len(currentSegment) >= 2 {
 		segments = append(segments, currentSegment)

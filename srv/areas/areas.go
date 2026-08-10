@@ -54,16 +54,16 @@ type boundingBox struct {
 
 // KeystonePA represents a protected area from keystones_basic.json.
 type KeystonePA struct {
-	ID          string  `json:"id"`
-	CountryCode string  `json:"country_code"`
-	Country     string  `json:"country"`
-	Name        string  `json:"name"`
-	Partner     *string `json:"partner"`
-	Staff       *int    `json:"staff"`
-	Budget      *int    `json:"budget"`
-	Donor       *string `json:"donor"`
-	Performance *string `json:"performance"`
-	WDPAID      string  `json:"wdpa_id"`
+	ID          string     `json:"id"`
+	CountryCode string     `json:"country_code"`
+	Country     string     `json:"country"`
+	Name        string     `json:"name"`
+	Partner     *string    `json:"partner"`
+	Staff       *int       `json:"staff"`
+	Budget      *int       `json:"budget"`
+	Donor       *string    `json:"donor"`
+	Performance *string    `json:"performance"`
+	WDPAID      string     `json:"wdpa_id"`
 	AreaKm2     *FlexFloat `json:"area_km2"`
 	Coordinates struct {
 		Lat float64 `json:"lat"`

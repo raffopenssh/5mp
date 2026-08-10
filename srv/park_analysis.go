@@ -31,7 +31,7 @@ func (s *Server) HandleParkAnalysis(w http.ResponseWriter, r *http.Request) {
 		for _, area := range s.AreaStore.Areas {
 			if area.ID == parkID {
 				parkData.Name = area.Name
-				
+
 				// Parse coordinates to get center and bbox
 				var coords interface{}
 				if err := json.Unmarshal(area.Geometry.Coordinates, &coords); err == nil {
@@ -59,7 +59,7 @@ func (s *Server) HandleParkAnalysis(w http.ResponseWriter, r *http.Request) {
 func extractBBox(geomType string, coords interface{}) []float64 {
 	var minLon, minLat, maxLon, maxLat float64
 	first := true
-	
+
 	var processCoord func(c interface{})
 	processCoord = func(c interface{}) {
 		switch v := c.(type) {
@@ -73,10 +73,18 @@ func extractBBox(geomType string, coords interface{}) []float64 {
 							minLat, maxLat = lat, lat
 							first = false
 						} else {
-							if lon < minLon { minLon = lon }
-							if lon > maxLon { maxLon = lon }
-							if lat < minLat { minLat = lat }
-							if lat > maxLat { maxLat = lat }
+							if lon < minLon {
+								minLon = lon
+							}
+							if lon > maxLon {
+								maxLon = lon
+							}
+							if lat < minLat {
+								minLat = lat
+							}
+							if lat > maxLat {
+								maxLat = lat
+							}
 						}
 						return
 					}
@@ -88,9 +96,9 @@ func extractBBox(geomType string, coords interface{}) []float64 {
 			}
 		}
 	}
-	
+
 	processCoord(coords)
-	
+
 	if first {
 		return nil
 	}

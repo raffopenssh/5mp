@@ -90,7 +90,7 @@ func (s *Server) handleParkFireAnalysis(w http.ResponseWriter, r *http.Request) 
 		var analysisJSON sql.NullString
 		var drySeasonFires, transhumanceFires, herderGroups, mgmtGroups, villageGroups sql.NullInt64
 		var avgSpeed sql.NullFloat64
-		
+
 		err := rows.Scan(&ya.Year, &ya.TotalFires, &drySeasonFires,
 			&ya.TranshumanceGroups, &transhumanceFires, &avgSpeed,
 			&herderGroups, &mgmtGroups, &villageGroups, &analysisJSON)
@@ -98,17 +98,29 @@ func (s *Server) handleParkFireAnalysis(w http.ResponseWriter, r *http.Request) 
 			log.Printf("Scan error: %v", err)
 			continue
 		}
-		
-		if drySeasonFires.Valid { ya.DrySeasonFires = int(drySeasonFires.Int64) }
-		if transhumanceFires.Valid { ya.TranshumanceFires = int(transhumanceFires.Int64) }
-		if avgSpeed.Valid { ya.AvgTranshumanceSpeed = avgSpeed.Float64 }
-		if herderGroups.Valid { ya.HerderGroups = int(herderGroups.Int64) }
-		if mgmtGroups.Valid { ya.ManagementGroups = int(mgmtGroups.Int64) }
-		if villageGroups.Valid { ya.VillageGroups = int(villageGroups.Int64) }
+
+		if drySeasonFires.Valid {
+			ya.DrySeasonFires = int(drySeasonFires.Int64)
+		}
+		if transhumanceFires.Valid {
+			ya.TranshumanceFires = int(transhumanceFires.Int64)
+		}
+		if avgSpeed.Valid {
+			ya.AvgTranshumanceSpeed = avgSpeed.Float64
+		}
+		if herderGroups.Valid {
+			ya.HerderGroups = int(herderGroups.Int64)
+		}
+		if mgmtGroups.Valid {
+			ya.ManagementGroups = int(mgmtGroups.Int64)
+		}
+		if villageGroups.Valid {
+			ya.VillageGroups = int(villageGroups.Int64)
+		}
 		if analysisJSON.Valid {
 			ya.Groups = json.RawMessage(analysisJSON.String)
 		}
-		
+
 		results = append(results, ya)
 	}
 

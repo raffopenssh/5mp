@@ -41,12 +41,12 @@ type GeoJSONFeature struct {
 
 // PA represents a Protected Area.
 type PA struct {
-	WDPAID       int            `json:"wdpa_id"`
-	Name         string         `json:"name"`
-	Country      string         `json:"country"`
+	WDPAID       int             `json:"wdpa_id"`
+	Name         string          `json:"name"`
+	Country      string          `json:"country"`
 	Geometry     *GeoJSONFeature `json:"geometry,omitempty"`
-	AreaKm2      float64        `json:"area_km2"`
-	IUCNCategory string         `json:"iucn_category"`
+	AreaKm2      float64         `json:"area_km2"`
+	IUCNCategory string          `json:"iucn_category"`
 }
 
 // Client is a Protected Planet API client.

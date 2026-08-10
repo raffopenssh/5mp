@@ -40,7 +40,7 @@ func TestPointInPolygon(t *testing.T) {
 	}{
 		{"center of park", -2.25, 34.75, true},
 		{"edge of park", -3.0, 34.0, true},
-		{"within buffer", -3.04, 34.0, true}, // ~4.4km outside, within 5km buffer
+		{"within buffer", -3.04, 34.0, true},  // ~4.4km outside, within 5km buffer
 		{"outside buffer", -3.1, 34.0, false}, // ~11km outside, beyond 5km buffer
 		{"far outside", -10.0, 40.0, false},
 	}
@@ -58,10 +58,10 @@ func TestPointInPolygon(t *testing.T) {
 func TestPointInIrregularPolygon(t *testing.T) {
 	// Test with a triangle-shaped polygon
 	rings := [][][]float64{{
-		{0.0, 0.0},   // bottom left
-		{2.0, 0.0},   // bottom right
-		{1.0, 2.0},   // top center
-		{0.0, 0.0},   // close
+		{0.0, 0.0}, // bottom left
+		{2.0, 0.0}, // bottom right
+		{1.0, 2.0}, // top center
+		{0.0, 0.0}, // close
 	}}
 	coords, _ := json.Marshal(rings)
 	triangle := ProtectedArea{

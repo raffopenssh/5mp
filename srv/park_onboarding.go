@@ -104,11 +104,11 @@ func (s *Server) HandleAPIRequestOnboard(w http.ResponseWriter, r *http.Request)
 // HandleAPICancelOnboard cancels a pending onboarding request or schedules
 // removal of an already-onboarded park. POST /api/onboarding/cancel?wdpa_id=NNN
 //
-// - status pending/failed  -> request row deleted immediately (undo toast path)
-// - status ready           -> status=remove_requested; scripts/onboard_park.py
-//                             removes the keystone + derived data on its next
-//                             nightly run (only onboarded parks can be removed;
-//                             original keystones are refused by the script).
+//   - status pending/failed  -> request row deleted immediately (undo toast path)
+//   - status ready           -> status=remove_requested; scripts/onboard_park.py
+//     removes the keystone + derived data on its next
+//     nightly run (only onboarded parks can be removed;
+//     original keystones are refused by the script).
 func (s *Server) HandleAPICancelOnboard(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	wdpaID, err := strconv.Atoi(r.URL.Query().Get("wdpa_id"))

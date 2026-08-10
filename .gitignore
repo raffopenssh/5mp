@@ -148,3 +148,10 @@ data/geomaps/*.pmtiles
 # vectorizer output: 40 MB for Sudan alone, regenerate with vectorize.py.
 # legend_*.json IS committed - it is measured input, not derived output.
 data/geomaps/*_units.geojson
+
+# GeoPackage export cache (derived, 21-day TTL, one directory per job)
+data/gpkg_output/
+
+# Historical-map fetch scratch: LOC contact thumbnails and rotated run logs
+data/histmaps/thumbs/
+data/histmaps/run_all.log.*

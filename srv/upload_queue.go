@@ -146,7 +146,7 @@ func (p *UploadQueueProcessor) processUpload(ctx context.Context, item dbgen.Get
 
 	// Persist upload using the server's method
 	fileHash := item.FileHash
-	
+
 	result, err := p.server.persistUploadWithValidation(
 		ctx,
 		item.UserID,
@@ -167,11 +167,11 @@ func (p *UploadQueueProcessor) processUpload(ctx context.Context, item dbgen.Get
 
 	// Build response JSON
 	response := map[string]interface{}{
-		"status":          "processed",
-		"total_points":    totalPoints,
-		"total_distance":  totalDistanceKm,
-		"segments_count":  len(segments),
-		"validation":      result,
+		"status":         "processed",
+		"total_points":   totalPoints,
+		"total_distance": totalDistanceKm,
+		"segments_count": len(segments),
+		"validation":     result,
 	}
 	responseJSON, _ := json.Marshal(response)
 

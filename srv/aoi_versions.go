@@ -92,7 +92,7 @@ func (s *Server) loadAOIVersions(lineage string, principalID int64) ([]aoiVersio
 			FromDate: a.FromDate, ToDate: a.ToDate, AreaKm2: a.AreaKm2,
 			State: a.State, Archived: a.State == "archived",
 			IsCurrent: a.State != "archived", CreatedAt: a.CreatedAt,
-			IsOwner:   principalID != 0 && a.OwnerID == principalID,
+			IsOwner: principalID != 0 && a.OwnerID == principalID,
 		}
 		// A geometry change is worth flagging because it is the one difference
 		// the window label cannot express.

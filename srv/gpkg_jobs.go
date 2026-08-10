@@ -1,0 +1,571 @@
+package srv
+
+// The GeoPackage export job: queue, cache, notification, download, expiry.
+//
+// Shape borrowed from the MBTiles queue and park onboarding, with two
+// deliberate differences (see db/migrations/047-geopackage-jobs.sql):
+//
+//  1. The table is the state, not an in-memory map. A download link that dies
+//     on the next deploy makes the notification a lie, and the whole point of
+//     the notification is that the user can walk away and come back.
+//  2. It is a cache keyed by (area, window, effort, env). Asking twice for the
+//     same file gets the same file — which is also what makes a shared link
+//     meaningful rather than a one-shot spool slot.
+
+import (
+	"crypto/rand"
+	"encoding/hex"
+	"encoding/json"
+	"fmt"
+	"log/slog"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
+	"sync"
+	"time"
+)
+
+const (
+	gpkgOutputDir = "data/gpkg_output"
+	gpkgTTL       = 21 * 24 * time.Hour
+)
+
+// One build at a time, process-wide. These are IO- and CPU-heavy over the same
+// SQLite file every other request uses; two in parallel would make the site
+// slow in a way that looks like a bug rather than like a download.
+var gpkgBuildSem = make(chan struct{}, 1)
+
+type GeoPackageJob struct {
+	ID        string          `json:"id"`
+	AreaID    string          `json:"area_id"`
+	AreaName  string          `json:"area_name"`
+	IsAOI     bool            `json:"is_aoi"`
+	FromDate  string          `json:"from_date,omitempty"`
+	ToDate    string          `json:"to_date,omitempty"`
+	Effort    bool            `json:"effort"`
+	RawFire   bool            `json:"raw_fire"`
+	State     string          `json:"state"`
+	Progress  float64         `json:"progress"`
+	Step      string          `json:"step,omitempty"`
+	SizeBytes int64           `json:"size_bytes"`
+	Layers    []gpkgLayerStat `json:"layers,omitempty"`
+	Error     string          `json:"error,omitempty"`
+	CreatedAt string          `json:"created_at"`
+	Finished  string          `json:"finished_at,omitempty"`
+	ExpiresAt string          `json:"expires_at,omitempty"`
+	Downloads int             `json:"downloads"`
+	URL       string          `json:"download_url,omitempty"`
+	Cached    bool            `json:"cached,omitempty"`
+}
+
+// The cache key IS the question. Anything that changes the bytes of the file
+// must appear here or a second, different request is served the first one's
+// answer — which is the worst failure this cache can have, because the file
+// looks perfectly valid.
+func gpkgCacheKey(areaID, from, to string, effort, rawFire bool, env string) string {
+	return strings.Join([]string{areaID, from, to, fmt.Sprint(effort), fmt.Sprint(rawFire), env}, "|")
+}
+
+func gpkgToken() string {
+	b := make([]byte, 8)
+	rand.Read(b)
+	return hex.EncodeToString(b)
+}
+
+const gpkgCols = `id, area_id, area_name, is_aoi, COALESCE(from_date,''), COALESCE(to_date,''),
+	effort, raw_fire, state, progress, COALESCE(step,''), COALESCE(size_bytes,0), COALESCE(layers_json,'[]'),
+	COALESCE(error,''), created_at, COALESCE(finished_at,''), COALESCE(expires_at,''),
+	COALESCE(downloads,0), COALESCE(file_path,'')`
+
+type gpkgRowScanner interface{ Scan(...interface{}) error }
+
+func scanGeoPackageJob(row gpkgRowScanner) (*GeoPackageJob, string, error) {
+	var j GeoPackageJob
+	var isAOI, effort, rawFire int
+	var layers, path string
+	if err := row.Scan(&j.ID, &j.AreaID, &j.AreaName, &isAOI, &j.FromDate, &j.ToDate,
+		&effort, &rawFire, &j.State, &j.Progress, &j.Step, &j.SizeBytes, &layers, &j.Error,
+		&j.CreatedAt, &j.Finished, &j.ExpiresAt, &j.Downloads, &path); err != nil {
+		return nil, "", err
+	}
+	j.IsAOI, j.Effort, j.RawFire = isAOI == 1, effort == 1, rawFire == 1
+	json.Unmarshal([]byte(layers), &j.Layers)
+	if j.State == "ready" {
+		j.URL = "/api/geopackage/" + j.ID + "/download"
+	}
+	return &j, path, nil
+}
+
+// findGeoPackageJob returns the newest usable job for a cache key: a ready
+// (unexpired, file still present) one, else one already building.
+func (s *Server) findGeoPackageJob(key string) *GeoPackageJob {
+	rows, err := s.DB.Query(`SELECT `+gpkgCols+` FROM geopackage_jobs
+		WHERE cache_key = ? AND state IN ('ready','pending','running')
+		ORDER BY created_at DESC LIMIT 5`, key)
+	if err != nil {
+		return nil
+	}
+	defer rows.Close()
+	for rows.Next() {
+		j, path, err := scanGeoPackageJob(rows)
+		if err != nil {
+			continue
+		}
+		if j.State == "ready" {
+			// A file removed by the sweeper (or by hand) must not be offered:
+			// the link would 404 after the user waited for nothing.
+			if st, err := os.Stat(path); err != nil || st.Size() == 0 {
+				s.DB.Exec(`UPDATE geopackage_jobs SET state='expired' WHERE id=?`, j.ID)
+				continue
+			}
+			if j.ExpiresAt != "" && j.ExpiresAt < time.Now().UTC().Format(time.RFC3339) {
+				continue
+			}
+		}
+		return j
+	}
+	return nil
+}
+
+// startGeoPackageJob creates (or reuses) a job and kicks off the build.
+func (s *Server) startGeoPackageJob(o gpkgExportOpts, isAOI bool, principalID int64, refresh bool) (*GeoPackageJob, error) {
+	key := gpkgCacheKey(o.AreaID, o.FromDate, o.ToDate, o.Effort, o.RawFire, o.Env)
+	if !refresh {
+		if j := s.findGeoPackageJob(key); j != nil {
+			j.Cached = j.State == "ready"
+			return j, nil
+		}
+	}
+	id := gpkgToken()
+	now := time.Now().UTC().Format(time.RFC3339)
+	// One directory per job so the file's basename can be the name the user
+	// downloads. That is not cosmetic: the embedded QGIS project references its
+	// own container as "./<basename>.gpkg", so if the served name and the
+	// stored name diverge, opening the project finds no layers — and an empty
+	// project reads as a broken export, not as a renamed file.
+	path := filepath.Join(gpkgOutputDir, id, gpkgDownloadName(o.AreaID, o.FromDate, o.ToDate, o.RawFire))
+	var pid interface{}
+	if principalID > 0 {
+		pid = principalID
+	}
+	if _, err := s.DB.Exec(`INSERT INTO geopackage_jobs
+		(id, cache_key, area_id, area_name, is_aoi, principal_id, env, from_date, to_date,
+		 effort, raw_fire, state, file_path, created_at)
+		VALUES (?,?,?,?,?,?,?,?,?,?,?, 'pending', ?, ?)`,
+		id, key, o.AreaID, o.AreaName, boolInt(isAOI), pid, o.Env, o.FromDate, o.ToDate,
+		boolInt(o.Effort), boolInt(o.RawFire), path, now); err != nil {
+		return nil, err
+	}
+	// The card is written HERE, not when the build starts. Only one export
+	// builds at a time, so a second request can sit in the semaphore for
+	// minutes — and during those minutes the user had clicked Download and got
+	// a toast, an empty bell, and no way to tell whether anything was happening.
+	// A queued job is a real state and has to say so.
+	s.upsertGeoPackageNotification(id, o, "geopackage_progress",
+		"Preparing GIS export: "+o.AreaName+gpkgTitleSuffix(o),
+		"Queued. You can close this — the download stays available for 21 days.")
+	go s.runGeoPackageJob(id, path, o, isAOI)
+	return &GeoPackageJob{ID: id, AreaID: o.AreaID, AreaName: o.AreaName, IsAOI: isAOI,
+		FromDate: o.FromDate, ToDate: o.ToDate, Effort: o.Effort, RawFire: o.RawFire,
+		State: "pending", CreatedAt: now}, nil
+}
+
+// Two exports of the same area differ by a gigabyte, so their cards have to be
+// tellable apart at a glance — otherwise the bell shows two identical rows and
+// the only way to know which is which is the file that lands.
+func gpkgTitleSuffix(o gpkgExportOpts) string {
+	if o.RawFire {
+		return ""
+	}
+	return " (no raw fire points)"
+}
+
+func boolInt(b bool) int {
+	if b {
+		return 1
+	}
+	return 0
+}
+
+// gpkgDownloadName is the user-facing filename AND the on-disk basename.
+// The filename says which of the two exports this is, because both will end up
+// in the same Downloads folder and they differ by a gigabyte, not by a detail.
+func gpkgDownloadName(areaID, from, to string, rawFire bool) string {
+	fn := sanitizeFileToken(areaID)
+	if from != "" || to != "" {
+		fn += "_" + sanitizeFileToken(strOr(from, "start")) + "_to_" + sanitizeFileToken(strOr(to, "now"))
+	}
+	if !rawFire {
+		fn += "_no_raw_fire"
+	}
+	return fn + ".gpkg"
+}
+
+func sanitizeFileToken(s string) string {
+	var b strings.Builder
+	for _, r := range s {
+		if r == '_' || r == '-' || (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9') {
+			b.WriteRune(r)
+		}
+	}
+	return b.String()
+}
+
+func (s *Server) runGeoPackageJob(id, path string, o gpkgExportOpts, isAOI bool) {
+	defer func() {
+		if rec := recover(); rec != nil {
+			slog.Error("geopackage build panicked", "id", id, "err", rec)
+			s.failGeoPackageJob(id, o, fmt.Sprint(rec))
+		}
+	}()
+	// Queued behind another build: only one runs at a time, and "waiting for
+	// another export to finish" is a different thing from "0%" — a progress bar
+	// that has not moved for four minutes reads as broken.
+	if len(gpkgBuildSem) > 0 {
+		s.DB.Exec(`UPDATE geopackage_jobs SET step='waiting for another export' WHERE id=?`, id)
+		s.upsertGeoPackageNotification(id, o, "geopackage_progress",
+			"Preparing GIS export: "+o.AreaName+gpkgTitleSuffix(o),
+			"Waiting for another export to finish first.")
+	}
+	gpkgBuildSem <- struct{}{}
+	defer func() { <-gpkgBuildSem }()
+
+	os.MkdirAll(filepath.Dir(path), 0o755)
+	s.DB.Exec(`UPDATE geopackage_jobs SET state='running', started_at=?, step='starting' WHERE id=?`,
+		time.Now().UTC().Format(time.RFC3339), id)
+	s.upsertGeoPackageNotification(id, o, "geopackage_progress",
+		"Preparing GIS export: "+o.AreaName+gpkgTitleSuffix(o),
+		"Collecting layers for QGIS. You can close this — the download stays available for 21 days.")
+
+	var lastWrite time.Time
+	o.Progress = func(frac float64, label string) {
+		// Throttled: the notification card polls, and a write per layer is
+		// enough to move a progress bar without contending for the one writer.
+		if time.Since(lastWrite) < 900*time.Millisecond && frac < 1 {
+			return
+		}
+		lastWrite = time.Now()
+		s.DB.Exec(`UPDATE geopackage_jobs SET progress=?, step=? WHERE id=?`, frac, "writing "+label, id)
+		s.upsertGeoPackageNotification(id, o, "geopackage_progress",
+			"Preparing GIS export: "+o.AreaName+gpkgTitleSuffix(o),
+			fmt.Sprintf("%d%% — writing %s", int(frac*100), label))
+	}
+
+	stats, err := s.buildAreaGeoPackage(path, o)
+	if err != nil {
+		os.Remove(path)
+		s.failGeoPackageJob(id, o, err.Error())
+		return
+	}
+	var size int64
+	if st, e := os.Stat(path); e == nil {
+		size = st.Size()
+	}
+	layersJSON, _ := json.Marshal(stats)
+	nowT := time.Now().UTC()
+	s.DB.Exec(`UPDATE geopackage_jobs SET state='ready', progress=1, step='', size_bytes=?,
+		layers_json=?, finished_at=?, expires_at=? WHERE id=?`,
+		size, string(layersJSON), nowT.Format(time.RFC3339), nowT.Add(gpkgTTL).Format(time.RFC3339), id)
+
+	total := 0
+	for _, l := range stats {
+		total += l.Count
+	}
+	s.upsertGeoPackageNotification(id, o, "geopackage_ready",
+		"GIS export ready: "+o.AreaName+gpkgTitleSuffix(o),
+		fmt.Sprintf("%s · %d layers · %s features · styled for QGIS. Link valid until %s.",
+			humanBytes(size), len(stats), formatThousands(total), nowT.Add(gpkgTTL).Format("2 Jan 2006")))
+	slog.Info("geopackage ready", "id", id, "area", o.AreaID, "bytes", size, "layers", len(stats))
+}
+
+func (s *Server) failGeoPackageJob(id string, o gpkgExportOpts, msg string) {
+	s.DB.Exec(`UPDATE geopackage_jobs SET state='failed', error=?, finished_at=? WHERE id=?`,
+		msg, time.Now().UTC().Format(time.RFC3339), id)
+	s.upsertGeoPackageNotification(id, o, "geopackage_failed",
+		"GIS export failed: "+o.AreaName, msg)
+}
+
+// One notification row per EXPORT QUESTION, rewritten in place — the card is
+// the job's status, not a log of it (same reasoning as the AOI progress card:
+// it is server state, so it survives a closed laptop).
+//
+// Keyed by cache_key, not by job id: a `refresh=1` mints a new job for the same
+// area and window, and four identical "GIS export ready: Chinko" cards is how a
+// notification panel stops being read. The superseded job's FILE is kept and
+// its link keeps working for the full 21 days — a link someone was given must
+// not break because the sender later rebuilt it — but its card gives way.
+func (s *Server) upsertGeoPackageNotification(id string, o gpkgExportOpts, typ, title, msg string) {
+	url := "?gpkg=" + id
+	key := gpkgCacheKey(o.AreaID, o.FromDate, o.ToDate, o.Effort, o.RawFire, o.Env)
+	res, err := s.DB.Exec(`UPDATE notifications
+		SET notification_type=?, title=?, message=?, reference_id=?, reference_url=?,
+		    is_read=0, created_at=datetime('now')
+		WHERE notification_type LIKE 'geopackage\_%' ESCAPE '\'
+		  AND reference_id IN (SELECT id FROM geopackage_jobs WHERE cache_key = ?)`,
+		typ, title, msg, id, url, key)
+	if err == nil {
+		if n, _ := res.RowsAffected(); n > 0 {
+			return
+		}
+	}
+	s.DB.Exec(`INSERT INTO notifications
+		(park_id, notification_type, title, message, reference_id, reference_url, env, created_at)
+		VALUES (?,?,?,?,?,?,?, datetime('now'))`,
+		o.AreaID, typ, title, msg, id, url, strOr(o.Env, "prod"))
+}
+
+func humanBytes(n int64) string {
+	switch {
+	case n >= 1<<30:
+		return fmt.Sprintf("%.1f GB", float64(n)/float64(1<<30))
+	case n >= 1<<20:
+		return fmt.Sprintf("%.0f MB", float64(n)/float64(1<<20))
+	case n >= 1<<10:
+		return fmt.Sprintf("%.0f KB", float64(n)/float64(1<<10))
+	}
+	return fmt.Sprintf("%d B", n)
+}
+
+func formatThousands(n int) string {
+	s := fmt.Sprint(n)
+	var out []byte
+	for i, c := range []byte(s) {
+		if i > 0 && (len(s)-i)%3 == 0 {
+			out = append(out, ',')
+		}
+		out = append(out, c)
+	}
+	return string(out)
+}
+
+// ---- expiry sweeper ------------------------------------------------------
+
+var gpkgSweepOnce sync.Once
+
+// StartGeoPackageSweeper deletes expired files and their rows hourly, and
+// reconciles jobs left 'running' by a restart — a job whose goroutine died is
+// not coming back, and leaving it at 40% forever is the "no-op that reads as an
+// answer" failure this codebase keeps re-learning.
+func (s *Server) StartGeoPackageSweeper() {
+	gpkgSweepOnce.Do(func() {
+		go func() {
+			s.sweepGeoPackages(true)
+			for range time.Tick(time.Hour) {
+				s.sweepGeoPackages(false)
+			}
+		}()
+	})
+}
+
+func (s *Server) sweepGeoPackages(startup bool) {
+	now := time.Now().UTC().Format(time.RFC3339)
+	rows, err := s.DB.Query(`SELECT id, COALESCE(file_path,'') FROM geopackage_jobs
+		WHERE (expires_at IS NOT NULL AND expires_at <> '' AND expires_at < ?)
+		   OR state = 'expired'`, now)
+	if err == nil {
+		var ids []string
+		for rows.Next() {
+			var id, path string
+			if rows.Scan(&id, &path) == nil {
+				if path != "" {
+					os.RemoveAll(filepath.Dir(path))
+				}
+				ids = append(ids, id)
+			}
+		}
+		rows.Close()
+		for _, id := range ids {
+			s.DB.Exec(`DELETE FROM geopackage_jobs WHERE id = ?`, id)
+			s.DB.Exec(`DELETE FROM notifications WHERE notification_type LIKE 'geopackage_%' AND reference_id = ?`, id)
+		}
+		if len(ids) > 0 {
+			slog.Info("geopackage sweeper removed expired exports", "count", len(ids))
+		}
+	}
+	if startup {
+		s.DB.Exec(`UPDATE geopackage_jobs SET state='failed',
+			error='interrupted by a server restart — start the export again'
+			WHERE state IN ('pending','running')`)
+	}
+	// Orphan directories: a row deleted by hand leaves bytes behind. Each job
+	// owns one directory named by its id, so the check is "is this id still a
+	// job" rather than a filename match.
+	entries, _ := os.ReadDir(gpkgOutputDir)
+	for _, e := range entries {
+		if !e.IsDir() {
+			continue
+		}
+		dir := filepath.Join(gpkgOutputDir, e.Name())
+		var n int
+		s.DB.QueryRow(`SELECT COUNT(*) FROM geopackage_jobs WHERE id = ?`, e.Name()).Scan(&n)
+		if n == 0 {
+			if st, err := os.Stat(dir); err == nil && time.Since(st.ModTime()) > time.Hour {
+				os.RemoveAll(dir)
+			}
+		}
+	}
+}
+
+// ---- handlers ------------------------------------------------------------
+
+// HandleAPIAreaGeoPackage — POST/GET /api/{parks|aois}/{id}/export.gpkg.
+// Returns the job, creating it if needed. Never blocks on the build: the
+// browser gets a card to watch, not a five-minute spinner.
+func (s *Server) HandleAPIAreaGeoPackage(w http.ResponseWriter, r *http.Request) {
+	areaID := r.PathValue("id")
+	if areaID == "" {
+		http.Error(w, "area id required", http.StatusBadRequest)
+		return
+	}
+	name, _ := s.resolveAreaGeom(areaID)
+	q := r.URL.Query()
+	o := gpkgExportOpts{
+		AreaID:   areaID,
+		AreaName: name,
+		FromDate: q.Get("from"),
+		ToDate:   q.Get("to"),
+		Env:      RequestEnv(r),
+		Effort:   q.Get("effort") != "0",
+		// Default on: "GeoPackage" means everything unless asked otherwise.
+		RawFire: q.Get("raw") != "0",
+	}
+	job, err := s.startGeoPackageJob(o, IsAOIID(areaID), s.RequestPrincipalID(r), q.Get("refresh") == "1")
+	if err != nil {
+		slog.Warn("geopackage job", "area", areaID, "err", err)
+		http.Error(w, "could not start export", http.StatusInternalServerError)
+		return
+	}
+	writeJSON(w, http.StatusOK, job)
+}
+
+// HandleAPIGeoPackageStatus — GET /api/geopackage/{id}. No-store: it is live.
+func (s *Server) HandleAPIGeoPackageStatus(w http.ResponseWriter, r *http.Request) {
+	j, _, ok := s.loadGeoPackageJob(w, r)
+	if !ok {
+		return
+	}
+	w.Header().Set("Cache-Control", "no-store")
+	writeJSON(w, http.StatusOK, j)
+}
+
+// HandleAPIGeoPackageList — GET /api/geopackage: this principal's exports, so
+// the UI can offer a ready file instead of rebuilding one.
+func (s *Server) HandleAPIGeoPackageList(w http.ResponseWriter, r *http.Request) {
+	pid := s.RequestPrincipalID(r)
+	args := []interface{}{RequestEnv(r), pid}
+	q := `SELECT ` + gpkgCols + ` FROM geopackage_jobs
+		WHERE env = ? AND (principal_id IS NULL OR principal_id = ?)`
+	if area := r.URL.Query().Get("area"); area != "" {
+		q += " AND area_id = ?"
+		args = append(args, area)
+	}
+	q += " ORDER BY created_at DESC LIMIT 50"
+	rows, err := s.DB.Query(q, args...)
+	if err != nil {
+		http.Error(w, "database error", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+	out := []*GeoPackageJob{}
+	for rows.Next() {
+		if j, _, err := scanGeoPackageJob(rows); err == nil {
+			out = append(out, j)
+		}
+	}
+	writeJSON(w, http.StatusOK, map[string]interface{}{"exports": out, "count": len(out)})
+}
+
+// loadGeoPackageJob resolves a job and enforces visibility. An AOI export is
+// only visible to a principal who can see the AOI — 404, not 403, so an id is
+// not an oracle (srv/aoi.go).
+func (s *Server) loadGeoPackageJob(w http.ResponseWriter, r *http.Request) (*GeoPackageJob, string, bool) {
+	id := r.PathValue("id")
+	row := s.DB.QueryRow(`SELECT `+gpkgCols+` FROM geopackage_jobs WHERE id = ?`, id)
+	j, path, err := scanGeoPackageJob(row)
+	if err != nil {
+		http.NotFound(w, r)
+		return nil, "", false
+	}
+	if j.IsAOI {
+		if _, err := s.GetAOI(j.AreaID, s.RequestPrincipalID(r), false); err != nil {
+			http.NotFound(w, r)
+			return nil, "", false
+		}
+	}
+	return j, path, true
+}
+
+// HandleAPIGeoPackageDownload — GET /api/geopackage/{id}/download.
+//
+// (Delete is below.)
+func (s *Server) HandleAPIGeoPackageDownload(w http.ResponseWriter, r *http.Request) {
+	j, path, ok := s.loadGeoPackageJob(w, r)
+	if !ok {
+		return
+	}
+	if j.State != "ready" {
+		http.Error(w, "export is "+j.State, http.StatusConflict)
+		return
+	}
+	f, err := os.Open(path)
+	if err != nil {
+		s.DB.Exec(`UPDATE geopackage_jobs SET state='expired' WHERE id=?`, j.ID)
+		http.Error(w, "export file is no longer available — start it again", http.StatusGone)
+		return
+	}
+	defer f.Close()
+	st, _ := f.Stat()
+	s.DB.Exec(`UPDATE geopackage_jobs SET downloads = downloads + 1, last_download_at = ? WHERE id = ?`,
+		time.Now().UTC().Format(time.RFC3339), j.ID)
+
+	fn := filepath.Base(path)
+	w.Header().Set("Content-Type", "application/geopackage+sqlite3")
+	w.Header().Set("Content-Disposition", `attachment; filename="`+fn+`"`)
+	if st != nil {
+		w.Header().Set("Content-Length", fmt.Sprint(st.Size()))
+	}
+	http.ServeContent(w, r, fn, time.Now(), f)
+}
+
+// HandleAPIGeoPackageDelete — DELETE /api/geopackage/{id}.
+//
+// The 21-day TTL is a promise that a shared link keeps working, not a rule that
+// a gigabyte has to sit on disk for three weeks after someone has downloaded it
+// and moved on. Without this the only ways to reclaim the space were to wait or
+// to touch the server, and the card offered "you can close this" — which hides
+// the row and keeps the file, i.e. exactly the kind of control that looks like
+// it did something and did not.
+//
+// It deletes the bytes, the row and the card together. Deliberately NOT a soft
+// delete: a row left behind is a cache entry, so the next identical request
+// would be answered with a file that is no longer there — the export would
+// report ready and then 410 on download.
+//
+// Visibility is the same check as status and download (404, not 403, for an
+// AOI the caller cannot see), so an id is not an oracle here either.
+func (s *Server) HandleAPIGeoPackageDelete(w http.ResponseWriter, r *http.Request) {
+	j, path, ok := s.loadGeoPackageJob(w, r)
+	if !ok {
+		return
+	}
+	// A build in flight owns the directory it is writing into. Removing it
+	// underneath the writer would produce a half-file that the job then marks
+	// ready, so cancellation is a different feature; say so rather than
+	// pretending.
+	if j.State == "pending" || j.State == "running" {
+		http.Error(w, "this export is still building — it can be deleted once it finishes",
+			http.StatusConflict)
+		return
+	}
+	if path != "" {
+		// One directory per job (the basename must match the download name),
+		// so the directory is the file.
+		if err := os.RemoveAll(filepath.Dir(path)); err != nil {
+			slog.Warn("geopackage delete", "id", j.ID, "err", err)
+		}
+	}
+	s.DB.Exec(`DELETE FROM geopackage_jobs WHERE id = ?`, j.ID)
+	s.DB.Exec(`DELETE FROM notifications WHERE notification_type LIKE 'geopackage_%' AND reference_id = ?`, j.ID)
+	writeJSON(w, http.StatusOK, map[string]interface{}{"deleted": true, "id": j.ID})
+}

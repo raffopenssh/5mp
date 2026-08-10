@@ -71,9 +71,9 @@ func (s *Server) HandleAPIGetParkChecklist(w http.ResponseWriter, r *http.Reques
 	}
 
 	response := map[string]interface{}{
-		"pa_id":    paID,
-		"schema":   checklistSchema,
-		"items":    itemStatus,
+		"pa_id":  paID,
+		"schema": checklistSchema,
+		"items":  itemStatus,
 	}
 
 	// Get stats

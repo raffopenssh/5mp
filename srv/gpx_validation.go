@@ -12,10 +12,10 @@ import (
 
 // GPXValidationResult contains the results of GPX file validation and classification
 type GPXValidationResult struct {
-	IsValid            bool                `json:"is_valid"`
-	TotalPoints        int                 `json:"total_points"`
-	ValidationErrors   []string            `json:"validation_errors,omitempty"`
-	ValidationWarnings []string            `json:"validation_warnings,omitempty"`
+	IsValid            bool     `json:"is_valid"`
+	TotalPoints        int      `json:"total_points"`
+	ValidationErrors   []string `json:"validation_errors,omitempty"`
+	ValidationWarnings []string `json:"validation_warnings,omitempty"`
 
 	// Classification
 	ClassifiedSegments []ClassifiedSegment `json:"classified_segments"`
@@ -29,7 +29,7 @@ type GPXValidationResult struct {
 	ExcludedKm       float64 `json:"excluded_km"`
 
 	// Detailed movement stats
-	MovementStats    MovementStats `json:"movement_stats"`
+	MovementStats MovementStats `json:"movement_stats"`
 
 	// Protected area detection
 	ProtectedAreaID   string `json:"protected_area_id,omitempty"`
@@ -50,7 +50,7 @@ type MovementStats struct {
 	AircraftMinutes  float64 `json:"aircraft_minutes"`
 
 	// Movement subtypes
-	BoatSegments      int     `json:"boat_segments"`       // Boat (subtype of vehicle)
+	BoatSegments      int     `json:"boat_segments"` // Boat (subtype of vehicle)
 	BoatKm            float64 `json:"boat_km"`
 	BoatMinutes       float64 `json:"boat_minutes"`
 	FixedWingSegments int     `json:"fixed_wing_segments"` // Fixed-wing (subtype of aircraft)
@@ -61,7 +61,7 @@ type MovementStats struct {
 	RotorWingMinutes  float64 `json:"rotor_wing_minutes"`
 
 	// Special categories for admin insights
-	ReconSegments       int     `json:"recon_segments"`       // Foot 0.5-4 km/h (reconnaissance)
+	ReconSegments       int     `json:"recon_segments"` // Foot 0.5-4 km/h (reconnaissance)
 	ReconKm             float64 `json:"recon_km"`
 	ReconMinutes        float64 `json:"recon_minutes"`
 	FastVehicleSegments int     `json:"fast_vehicle_segments"` // Vehicle >60 km/h (transit)
@@ -69,20 +69,20 @@ type MovementStats struct {
 	FastVehicleMinutes  float64 `json:"fast_vehicle_minutes"`
 
 	// By activity type
-	PatrolSegments      int     `json:"patrol_segments"`
-	PatrolKm            float64 `json:"patrol_km_total"`
-	TransitSegments     int     `json:"transit_segments"`
-	TransitKm           float64 `json:"transit_km"`
-	LogisticsSegments   int     `json:"logistics_segments"`
-	LogisticsKm         float64 `json:"logistics_km"`
+	PatrolSegments    int     `json:"patrol_segments"`
+	PatrolKm          float64 `json:"patrol_km_total"`
+	TransitSegments   int     `json:"transit_segments"`
+	TransitKm         float64 `json:"transit_km"`
+	LogisticsSegments int     `json:"logistics_segments"`
+	LogisticsKm       float64 `json:"logistics_km"`
 }
 
 // ClassifiedSegment represents a classified portion of a GPX track
 type ClassifiedSegment struct {
-	Classification  string        `json:"classification"` // patrol, boundary, road, poi, static, auto_generated, aircraft
-	MovementType    string        `json:"movement_type,omitempty"` // foot, vehicle, aircraft
+	Classification  string        `json:"classification"`             // patrol, boundary, road, poi, static, auto_generated, aircraft
+	MovementType    string        `json:"movement_type,omitempty"`    // foot, vehicle, aircraft
 	MovementSubtype string        `json:"movement_subtype,omitempty"` // boat, fixed_wing, rotor_wing
-	ActivityType    string        `json:"activity_type,omitempty"` // patrol, reconnaissance, transit, logistics
+	ActivityType    string        `json:"activity_type,omitempty"`    // patrol, reconnaissance, transit, logistics
 	StartIndex      int           `json:"start_index"`
 	EndIndex        int           `json:"end_index"`
 	DistanceKm      float64       `json:"distance_km"`
@@ -93,7 +93,7 @@ type ClassifiedSegment struct {
 	Reason          string        `json:"reason"`
 	IncludeInEffort bool          `json:"include_in_effort"`
 	GeoJSON         string        `json:"geojson,omitempty"`
-	Points          []gpx.Point   `json:"-"` // For internal processing
+	Points          []gpx.Point   `json:"-"`                          // For internal processing
 	OriginalIndices []int         `json:"original_indices,omitempty"` // Input segment indices covered by this classified segment (after merging)
 
 	// SampledPoints is a compact serialization of (up to ~300) evenly sampled
@@ -102,7 +102,7 @@ type ClassifiedSegment struct {
 	// This lets the background learner recover per-segment points exactly,
 	// instead of guessing indices into the (sampled, effort-only) track_points
 	// table — which broke for any upload with >1000 points or excluded segments.
-	SampledPoints   [][4]float64  `json:"sampled_points,omitempty"`
+	SampledPoints [][4]float64 `json:"sampled_points,omitempty"`
 }
 
 // sampledElevMissing is the sentinel elevation for points without elevation data.
@@ -478,12 +478,12 @@ func ValidateAndClassifyGPX(segments []gpx.Segment) *GPXValidationResult {
 // to determine it's aircraft. These phantom segments create wrong grid pixels.
 //
 // Strategy:
-// 1. Absorb orphans: A small segment (< 5 points AND < 200m) sitting between
-//    two segments of the same movement type gets absorbed into the preceding one.
-// 2. Merge consecutive: Adjacent segments with the same movement type and
-//    classification are merged into one.
-// 3. Idle segments from ER hints: If a segment is "idle" but has a strong
-//    ER hint, leave it idle (parked aircraft is still idle).
+//  1. Absorb orphans: A small segment (< 5 points AND < 200m) sitting between
+//     two segments of the same movement type gets absorbed into the preceding one.
+//  2. Merge consecutive: Adjacent segments with the same movement type and
+//     classification are merged into one.
+//  3. Idle segments from ER hints: If a segment is "idle" but has a strong
+//     ER hint, leave it idle (parked aircraft is still idle).
 func mergeAdjacentSegments(segs []ClassifiedSegment) []ClassifiedSegment {
 	if len(segs) < 3 {
 		return segs
@@ -825,16 +825,16 @@ func detectStaticSegments(points []gpx.Point) []ClassifiedSegment {
 				duration := points[i-1].Time.Sub(staticStartTime)
 				if duration > 30*time.Minute {
 					seg := ClassifiedSegment{
-					Classification:  "static",
-					StartIndex:      staticStart,
-					EndIndex:        i - 1,
-					DistanceKm:      0,
-					Duration:        duration,
-					DurationStr:     formatDuration(duration),
-					Reason:          fmt.Sprintf("Stationary for %s", formatDuration(duration)),
-					IncludeInEffort: false,
-				}
-				staticSegs = append(staticSegs, seg)
+						Classification:  "static",
+						StartIndex:      staticStart,
+						EndIndex:        i - 1,
+						DistanceKm:      0,
+						Duration:        duration,
+						DurationStr:     formatDuration(duration),
+						Reason:          fmt.Sprintf("Stationary for %s", formatDuration(duration)),
+						IncludeInEffort: false,
+					}
+					staticSegs = append(staticSegs, seg)
 				}
 			}
 			staticStart = -1
@@ -909,7 +909,7 @@ func isBoundaryTrace(points []gpx.Point) bool {
 		return false
 	}
 	ratio := areaKm2 / totalDistKm
-	
+
 	// Boundary traces: ratio < 5 (thin perimeter around large area)
 	// Patrol walks: ratio > 5 (lots of walking inside smaller area)
 	return ratio < 5.0

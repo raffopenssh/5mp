@@ -25,35 +25,35 @@ type GridQueryParams struct {
 
 // GridRow represents a row from the grid query result.
 type GridRow struct {
-	GridCellID      string
-	LatCenter       float64
-	LonCenter       float64
-	TotalDistanceKm float64
-	TotalPoints     int64
-	UniqueUploads   int64
-	CoveragePercent *float64
-	DryMonths       int64
-	RainyMonths     int64
-	VisitDays       int64   // distinct days with effort within the window
-	LastVisitDay    int64   // YYYYMMDD code of most recent effort day (0 if unknown)
-	SubcellCount    int64   // distinct subcells visited (from subcell_visits, 0-100)
-	FootKm           float64 // distance by movement type
-	VehicleKm        float64 // ground vehicles (excludes boat)
-	AircraftKm       float64 // all aircraft (sum of fixed+rotor+unclassified)
-	BoatKm           float64 // boat subtype of vehicle
-	FixedWingKm      float64 // fixed-wing subtype of aircraft
-	RotorWingKm      float64 // rotor-wing (helicopter) subtype of aircraft
-	AvgSpeedKmh      *float64 // distance-weighted avg speed (all types combined)
-	AvgAltitudeM     *float64 // distance-weighted avg altitude (aircraft cells)
-	FootSpeedKmh     *float64 // per-type distance-weighted avg speed
-	VehicleSpeedKmh  *float64
-	AircraftSpeedKmh *float64
-	BoatSpeedKmh      *float64
-	FixedWingSpeedKmh *float64
-	RotorWingSpeedKmh *float64
-	FootAltitudeM     *float64 // per-type distance-weighted avg altitude
-	VehicleAltitudeM  *float64
-	AircraftAltitudeM *float64
+	GridCellID         string
+	LatCenter          float64
+	LonCenter          float64
+	TotalDistanceKm    float64
+	TotalPoints        int64
+	UniqueUploads      int64
+	CoveragePercent    *float64
+	DryMonths          int64
+	RainyMonths        int64
+	VisitDays          int64    // distinct days with effort within the window
+	LastVisitDay       int64    // YYYYMMDD code of most recent effort day (0 if unknown)
+	SubcellCount       int64    // distinct subcells visited (from subcell_visits, 0-100)
+	FootKm             float64  // distance by movement type
+	VehicleKm          float64  // ground vehicles (excludes boat)
+	AircraftKm         float64  // all aircraft (sum of fixed+rotor+unclassified)
+	BoatKm             float64  // boat subtype of vehicle
+	FixedWingKm        float64  // fixed-wing subtype of aircraft
+	RotorWingKm        float64  // rotor-wing (helicopter) subtype of aircraft
+	AvgSpeedKmh        *float64 // distance-weighted avg speed (all types combined)
+	AvgAltitudeM       *float64 // distance-weighted avg altitude (aircraft cells)
+	FootSpeedKmh       *float64 // per-type distance-weighted avg speed
+	VehicleSpeedKmh    *float64
+	AircraftSpeedKmh   *float64
+	BoatSpeedKmh       *float64
+	FixedWingSpeedKmh  *float64
+	RotorWingSpeedKmh  *float64
+	FootAltitudeM      *float64 // per-type distance-weighted avg altitude
+	VehicleAltitudeM   *float64
+	AircraftAltitudeM  *float64
 	BoatAltitudeM      *float64
 	FixedWingAltitudeM *float64
 	RotorWingAltitudeM *float64
@@ -101,7 +101,7 @@ func (s *Server) QueryGridData(ctx context.Context, params GridQueryParams) ([]G
 		// their month overlaps the requested range.
 		conditions = append(conditions,
 			"((e.day IS NOT NULL AND (e.year * 10000 + e.month * 100 + e.day) BETWEEN ? AND ?) OR "+
-			" (e.day IS NULL AND (e.year * 100 + e.month) BETWEEN ? AND ?))")
+				" (e.day IS NULL AND (e.year * 100 + e.month) BETWEEN ? AND ?))")
 		args = append(args,
 			params.FromYear*10000+params.FromMonth*100+params.FromDay,
 			params.ToYear*10000+params.ToMonth*100+params.ToDay,
