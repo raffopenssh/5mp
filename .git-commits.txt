@@ -1,3 +1,4 @@
+a330358 2026-08-10 03:38:45 animator: GIF honours the on-screen speed; AOI animation never falls back to bbox
 b63e005 2026-08-09 07:01:54 Satellite hint clears the time slider on mobile
 5151832 2026-08-09 06:58:22 AOI progress notifications sort by time once complete
 66195d8 2026-08-09 06:45:38 chore: refresh .git-commits.txt from build
@@ -17,4 +18,3 @@ d139e49 2026-08-07 17:14:41 build: refresh version history
 583027a 2026-08-07 15:14:11 chore: rebuild version history
 b78fc95 2026-08-07 15:14:00 AOI: one action row like a park popup, star as the hide control, inline rename
 8ebc70d 2026-08-07 14:43:00 build: refresh version history for 1f059ae
-1f059ae 2026-08-07 14:41:44 aoi: verify the whole surface, cache the narrative that timed out, retire the handover
