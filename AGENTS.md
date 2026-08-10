@@ -1224,6 +1224,56 @@ Animates all toggled/pinned map layers over the time-slider window.
 
 **After bulk fire data changes**: rerun `python3 scripts/build_fire_grid_agg.py` (full) or `--since` — otherwise the animator shows stale fires. Daily cron keeps it fresh automatically.
 
+### Settlements & deforestation at AOI scale
+
+The animator's `deforest`/`settlements` layers and the stats-panel view layers
+all come from `/api/features-in-bbox` (`srv/features_bbox.go`). At park scale it
+was fine; over `XSA_Study_Area` (78,105 settlement polygons in one view) it
+returned a wrong picture slowly. Four fixes, all measured 2026-08-10:
+
+1. **`ORDER BY stat_value DESC LIMIT n` is not a sample, it is a corner.**
+   Every settlement carries `stat_value = 0`, so the tie-break fell through to
+   rowid and the 1,500 rows served were one contiguous *ingest block* — the
+   yellow stripe along the AOI's north edge, which reads as "the data is
+   wrong", not as "truncated". `spreadSelect()` buckets the bbox into ~limit
+   cells and keeps the best feature per cell. Deterministic; `&spread=0`
+   restores the old behaviour.
+2. **Don't read geometry for rows you are about to discard.** Pass 1 selects
+   ids + centroids only, pass 2 fetches geojson for the survivors (`IN` chunks
+   of 900). `mode=points` skips geometry entirely and returns
+   `[lon, lat, dayOffset, value]` against `from` — the animator draws dots, so
+   it was inflating ~1 MB of polygon rings to recover 1,500 centres. 947 KB →
+   118 KB gzipped, and the point budget rose 1,500 → 12,000, i.e. a real
+   sample instead of a corner.
+3. **Migration 046 (`idx_fg_bbox_scan`) makes pass 1 covering.** `idx_fg_stats`
+   lacked `park_id`, which `aoiExcludeSQL`/`aoiScopeSQL` always reads, so
+   SQLite fetched each candidate's full row — including up to 100 KB of
+   geojson — just to read one short string. `fire_trajectory` over a 3° window:
+   **3.0 s → 0.22 s**. Same shape as the `ABS()` and `polygon_ids LIKE` traps:
+   the index existed and was silently not enough.
+4. **Polygons are simplified to half a screen pixel** derived from the bbox
+   (radial-distance decimation + 6-decimal coords, `&simplify=0` to disable).
+   At continental zoom the *biggest* built-up polygon per cell ships 5 KB of
+   sub-pixel ring detail: 2.1 MB → 0.6 MB gzipped, unchanged when zoomed in.
+
+Rendering had the mirror problem — 12,000 arcs re-stroked at 60 fps for a
+picture that does not change with `t`. Static/settled layers rasterise into an
+offscreen canvas keyed on the view transform (`settlementSprite`,
+`deforestSprite`), and trajectory points project once per transform
+(`projectTrajs`, `Float32Array` + an off-screen flag) instead of once per frame.
+`invalidateSprites()` on refetch/close. **Any new dense static animator layer
+should do the same** — the cost is one screen of pixels regardless of N.
+
+**Deforestation ages over the window, and never vanishes.** A fire front is an
+event that ends; canopy loss is a state that persists. New clearings flash
+purple for 45 days, then grey towards ash over the *window span* (floor 90
+days) — not over a fixed number of years, because the loader only fetches
+events inside the window, so a fixed 10-year ramp puts every event in the first
+6% of a 7-month window and greys nothing. Alpha floors at 0.22 and the radius
+shrinks 40%: an old clearing is faint, not gone. Ageing is quantised into 24
+bands so the settled-prefix bitmap survives ~4% of the playback per redraw.
+
+
 ---
 
 **Popup fire chart**: single `areaSparkline` (globe.html) fed by `/api/parks/{id}/fire-trend`.

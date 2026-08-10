@@ -18,7 +18,7 @@
 //                        then "ashen out" — red → grey → gone
 //     patrol effort    : same glow language in green; ages to ash
 //                        over 90d so recency/refresh is visible
-//     deforestation    : accumulates, new events flash
+//     deforestation    : accumulates; new clearings flash, old ones ash over years
 //     settlements      : static context
 //     turbidity        : accumulates + flash; mines static
 //     pinned infra     : static context lines
@@ -31,6 +31,23 @@
     const EFFORT_FADE_DAYS = 90;   // effort ash-out horizon
     const TRAJ_FADE_DAYS = 21;     // trajectory ashening after group end
     const DEFOREST_FLASH_DAYS = 45;
+    // Deforestation ages on a different clock from fire. A fire front is an
+    // event that ends; canopy loss is a state that persists, so a patch greys
+    // out slowly and — unlike a trajectory — never disappears: it settles to a
+    // dim ash dot, because the trees are still gone.
+    //
+    // The horizon is the animation window itself (floor 90 days), not a fixed
+    // number of years. The loader only fetches events inside the window, so a
+    // fixed 10-year ramp greys nothing at all in a 7-month window — every
+    // event would sit in the first 6% of the ramp and the layer would read as
+    // one flat purple mass again, which is the thing the ageing is for. Over a
+    // multi-year window this is exactly "greys out over years"; over a short
+    // one it still separates the start of the window from its end.
+    const DEFOREST_AGE_MIN_MS = 90 * DAY;
+    // Age is quantised into bands so the settled-prefix bitmap stays valid for
+    // a whole band instead of being redrawn every frame (see deforestSprite);
+    // the band scales with the horizon so a short window still ages smoothly.
+    const DEFOREST_BANDS = 24;
     const POINTS_ZOOM = 6.5;       // default to real points at/above this zoom
     const POINTS_MAX_AREA = 40;    // deg², matches server cap
     const GIF_MAX_FRAMES = 160;    // size ceiling; duration is preserved by delay
@@ -43,7 +60,7 @@
         trajs:       { label: 'fire paths',    color: '#fda668', title: 'Fire movement trajectories (build up, then ashen out)' },
         effortGrid:  { label: 'patrol grid',   color: '#4ade80', title: 'Aggregated patrol effort (0.1° grid pixels)' },
         effortPts:   { label: 'patrol circles', color: '#86efac', title: 'Patrol effort circles (like the live map) — age and ashen over 90d' },
-        deforest:    { label: 'deforest',      color: '#a855f7', title: 'Deforestation events (accumulate)' },
+        deforest:    { label: 'deforest',      color: '#a855f7', title: 'Deforestation \u2014 new clearings flash purple, older ones grey out over years (never vanish)' },
         settlements: { label: 'settlements',   color: '#fbbf24', title: 'Settlements (static context)' },
         infra:       { label: 'infra',         color: '#60a5fa', title: 'Pinned roads/rivers/places (static)' }
     };
@@ -293,6 +310,16 @@
         return r.json();
     }
 
+    // Without geometry a feature costs ~26 bytes instead of ~1.6 KB, so the
+    // animator can afford a real sample of a continental AOI rather than the
+    // 1,500 it used to get. The server spreads a truncated answer over the
+    // bbox (see srv/features_bbox.go spreadSelect).
+    const FEATURE_POINT_LIMIT = 12000;
+    function truncNote(label, shown, total) {
+        toast('Showing ' + shown.toLocaleString() + ' of ' + total.toLocaleString() + ' ' + label +
+              ' spread across the view — zoom in for all of them', 'info', { key: 'anim-trunc-' + label });
+    }
+
     // ---------- per-layer lazy loaders ----------
     //
     // aoiQ: the raw-geography endpoints exclude every AOI's rows by default
@@ -347,19 +374,24 @@
                 break;
             }
             case 'deforest': {
-                const j = await fetchJSON(`/api/features-in-bbox?type=deforestation&bbox=${bb}&from=${fromISO}&to=${toISO}&limit=1500&pwd=${pwd}${aoiQ}`);
-                D.deforest = (j.features || []).map(f => {
-                    const p = f.properties || {};
-                    return { lon: p.lon, lat: p.lat, t: parseD(p.start_date || (p.year + '-06-15')), area: p.area_km2 || 0.1 };
-                }).filter(d => d.lon != null && !isNaN(d.t)).sort((a, b) => a.t - b.t);
+                // mode=points: the animator draws a dot per event, so asking for
+                // polygon rings meant parsing ~1 MB of geometry to recover
+                // 1,500 centroids. Points come back as [lon, lat, dayOffset,
+                // value] against j.from.
+                const j = await fetchJSON(`/api/features-in-bbox?type=deforestation&mode=points&bbox=${bb}&from=${fromISO}&to=${toISO}&limit=${FEATURE_POINT_LIMIT}&pwd=${pwd}${aoiQ}`);
+                const base = parseD(j.from || fromISO);
+                D.deforest = (j.points || []).map(p => ({
+                    lon: p[0], lat: p[1],
+                    t: p[2] >= 0 ? base + p[2] * DAY : NaN,
+                    area: p[3] || 0.1
+                })).filter(d => d.lon != null && !isNaN(d.t)).sort((a, b) => a.t - b.t);
+                if (j.truncated) truncNote('deforestation', j.count, j.total);
                 break;
             }
             case 'settlements': {
-                const j = await fetchJSON(`/api/features-in-bbox?type=settlement&bbox=${bb}&limit=1500&pwd=${pwd}${aoiQ}`);
-                D.settlements = (j.features || []).map(f => {
-                    const p = f.properties || {};
-                    return { lon: p.lon, lat: p.lat };
-                }).filter(d => d.lon != null);
+                const j = await fetchJSON(`/api/features-in-bbox?type=settlement&mode=points&bbox=${bb}&limit=${FEATURE_POINT_LIMIT}&pwd=${pwd}${aoiQ}`);
+                D.settlements = (j.points || []).map(p => ({ lon: p[0], lat: p[1] }));
+                if (j.truncated) truncNote('settlements', j.count, j.total);
                 break;
             }
             case 'turb': case 'infra': {
@@ -381,6 +413,9 @@
             toast(e.message, 'warning');
         }).finally(() => {
             delete A.loading[name];
+            // A refetch can return the same number of points for a different
+            // area, and the sprite keys count position — drop them explicitly.
+            invalidateSprites();
             if (chip) chip.classList.remove('loading');
             updateChips();
             if (A) draw(A.t);
@@ -404,6 +439,131 @@
         };
         resize();
         return { canvas: c, resize };
+    }
+
+    // Trajectory geometry is fixed; only the visible prefix moves with t.
+    // Cache screen coords per group, keyed on the view transform.
+    let _trajKey = '';
+    function projectTrajs(groups, proj, w, h) {
+        const c = map.getCenter();
+        const key = [w, h, c.lng.toFixed(5), c.lat.toFixed(5), map.getZoom().toFixed(3),
+                     map.getBearing().toFixed(1), map.getPitch().toFixed(1)].join('|');
+        if (key === _trajKey && groups.length && groups[0]._scr) return;
+        _trajKey = key;
+        for (const g of groups) {
+            const n = g.pts.length;
+            const scr = g._scr && g._scr.length === n * 2 ? g._scr : new Float32Array(n * 2);
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+            for (let i = 0; i < n; i++) {
+                const p = proj(g.pts[i][0], g.pts[i][1]);
+                scr[i * 2] = p.x; scr[i * 2 + 1] = p.y;
+                if (p.x < minX) minX = p.x;
+                if (p.x > maxX) maxX = p.x;
+                if (p.y < minY) minY = p.y;
+                if (p.y > maxY) maxY = p.y;
+            }
+            g._scr = scr;
+            g._off = maxX < -20 || maxY < -20 || minX > w + 20 || minY > h + 20;
+        }
+    }
+
+    function invalidateSprites() { _defSprite = null; _settSprite = null; _trajKey = ''; }
+
+    function deforestRadius(d, zoom) {
+        return Math.max(1.5, Math.min(8, Math.sqrt(d.area) * (zoom / 3)));
+    }
+
+    // purple → ash-grey for deforestation aging.
+    // k: 0 = fresh clearing, 1 = DEFOREST_AGE_YEARS old or more. The floor of
+    // 0.22 alpha is the point: an old clearing is faint, not absent — it is
+    // still deforested. Old patches also shrink (deforestAgeScale) so a fresh
+    // one next to them reads immediately.
+    function deforestColor(k, alpha) {
+        const r = Math.round(168 + (128 - 168) * k);
+        const g = Math.round(85 + (128 - 85) * k);
+        const b = Math.round(247 + (128 - 247) * k);
+        return `rgba(${r},${g},${b},${alpha})`;
+    }
+    function deforestAgeMs() {
+        const span = A ? (A.t1 - A.t0) : DEFOREST_AGE_MIN_MS;
+        return Math.max(DEFOREST_AGE_MIN_MS, span);
+    }
+    function deforestAge(t, tEvent) {
+        return Math.max(0, Math.min(1, (t - tEvent) / deforestAgeMs()));
+    }
+    function deforestAgeScale(k) { return 1 - 0.4 * k; }
+
+    // index of the first element with t > tt (arr sorted by t)
+    function upperBound(arr, tt) {
+        let lo = 0, hi = arr.length;
+        while (lo < hi) {
+            const mid = (lo + hi) >> 1;
+            if (arr[mid].t <= tt) lo = mid + 1; else hi = mid;
+        }
+        return lo;
+    }
+
+    // The settled (no longer flashing) deforestation prefix, rasterised.
+    // Scrubbing backwards shrinks the prefix, which invalidates the key — the
+    // bitmap is redrawn, never reused for a larger t than it was built for.
+    //
+    // Settled patches now age too, so the picture is no longer constant for a
+    // fixed prefix. It is quantised instead: age is evaluated at a band-aligned
+    // time (1/24th of the ageing horizon), so one bitmap serves ~4% of the
+    // window's playback rather than a single frame — tens of redraws over a
+    // whole play-through instead of 60 per second.
+    let _defSprite = null;
+    function deforestSprite(arr, n, t, proj, w, h, zoom) {
+        if (n <= 0 || w <= 0 || h <= 0) return null;
+        const bandMs = deforestAgeMs() / DEFOREST_BANDS;
+        const band = Math.floor(t / bandMs);
+        const tq = band * bandMs;
+        const c = map.getCenter();
+        const key = [n, band, w, h, c.lng.toFixed(5), c.lat.toFixed(5),
+                     map.getZoom().toFixed(3), map.getBearing().toFixed(1), map.getPitch().toFixed(1)].join('|');
+        if (_defSprite && _defSprite.key === key) return _defSprite.canvas;
+        const cv = (_defSprite && _defSprite.canvas) || document.createElement('canvas');
+        cv.width = w; cv.height = h;
+        const g = cv.getContext('2d');
+        g.clearRect(0, 0, w, h);
+        for (let i = 0; i < n; i++) {
+            const d = arr[i];
+            const p = proj(d.lon, d.lat);
+            if (p.x < -10 || p.y < -10 || p.x > w + 10 || p.y > h + 10) continue;
+            const k = deforestAge(tq, d.t);
+            g.fillStyle = deforestColor(k, 0.35 - 0.13 * k);
+            g.beginPath();
+            g.arc(p.x, p.y, deforestRadius(d, zoom) * deforestAgeScale(k), 0, 6.283);
+            g.fill();
+        }
+        _defSprite = { key, canvas: cv };
+        return cv;
+    }
+
+    // A static point layer is the same picture every frame; only the view
+    // transform can change it. Rasterise once into an offscreen canvas keyed on
+    // the map's centre/zoom/bearing so playback composites a single bitmap
+    // instead of re-stroking N arcs at 60 fps. Sized to the visible canvas, so
+    // memory is one screen regardless of the point count.
+    let _settSprite = null;
+    function settlementSprite(pts, proj, w, h) {
+        if (!pts.length || w <= 0 || h <= 0) return null;
+        const c = map.getCenter();
+        const key = [pts.length, w, h, c.lng.toFixed(5), c.lat.toFixed(5),
+                     map.getZoom().toFixed(3), map.getBearing().toFixed(1), map.getPitch().toFixed(1)].join('|');
+        if (_settSprite && _settSprite.key === key) return _settSprite.canvas;
+        const cv = (_settSprite && _settSprite.canvas) || document.createElement('canvas');
+        cv.width = w; cv.height = h;
+        const g = cv.getContext('2d');
+        g.clearRect(0, 0, w, h);
+        g.fillStyle = 'rgba(251,191,36,0.45)';
+        for (const s of pts) {
+            const p = proj(s.lon, s.lat);
+            if (p.x < -10 || p.y < -10 || p.x > w + 10 || p.y > h + 10) continue;
+            g.beginPath(); g.arc(p.x, p.y, 1.6, 0, 6.283); g.fill();
+        }
+        _settSprite = { key, canvas: cv };
+        return cv;
     }
 
     function drawGeom(ctx, geom, color, proj, w, h) {
@@ -530,25 +690,37 @@
         }
 
         // --- settlements (static) ---
+        //
+        // Settlements never change with t, so at 12,000 points they were
+        // 12,000 arcs per frame to redraw an identical picture. Cached into an
+        // offscreen canvas keyed on the view transform; the key changes only
+        // when the map moves, so a play-through composites one bitmap.
         if (on.settlements && D.settlements) {
-            ctx.fillStyle = 'rgba(251,191,36,0.45)';
-            for (const s of D.settlements) {
-                const p = proj(s.lon, s.lat);
-                if (p.x < -10 || p.y < -10 || p.x > w + 10 || p.y > h + 10) continue;
-                ctx.beginPath(); ctx.arc(p.x, p.y, 1.6, 0, 6.283); ctx.fill();
-            }
+            const sprite = settlementSprite(D.settlements, proj, w, h);
+            if (sprite) ctx.drawImage(sprite, 0, 0, w, h);
         }
 
         // --- deforestation (accumulate + flash) ---
+        //
+        // Everything older than DEFOREST_FLASH_DAYS draws with a constant
+        // style, so it is the same picture until the next event settles: cache
+        // that prefix as a bitmap keyed on (transform, settled count) and
+        // stroke only the handful still flashing. D.deforest is sorted by t, so
+        // the settled set is always a prefix.
         if (on.deforest && D.deforest) {
-            for (const d of D.deforest) {
-                if (d.t > t) break;
+            const arr = D.deforest;
+            const nowIdx = upperBound(arr, t);
+            const settledIdx = upperBound(arr, t - DEFOREST_FLASH_DAYS * DAY);
+            const sprite = deforestSprite(arr, settledIdx, t, proj, w, h, zoom);
+            if (sprite) ctx.drawImage(sprite, 0, 0, w, h);
+            for (let i = settledIdx; i < nowIdx; i++) {
+                const d = arr[i];
                 const p = proj(d.lon, d.lat);
                 if (p.x < -10 || p.y < -10 || p.x > w + 10 || p.y > h + 10) continue;
                 const age = (t - d.t) / DAY;
                 const flash = Math.max(0, 1 - age / DEFOREST_FLASH_DAYS);
-                const r = Math.max(1.5, Math.min(8, Math.sqrt(d.area) * (zoom / 3))) * (1 + flash * 0.8);
-                ctx.fillStyle = `rgba(168,85,247,${0.35 + flash * 0.55})`;
+                const r = deforestRadius(d, zoom) * (1 + flash * 0.8);
+                ctx.fillStyle = deforestColor(0, 0.35 + flash * 0.55);
                 ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, 6.283); ctx.fill();
             }
         }
@@ -703,8 +875,14 @@
 
         // --- fire trajectories: build up one-by-one, then ashen out (red → grey → gone) ---
         if (on.trajs && D.trajs) {
+            // Project each group's points once per view transform, not once per
+            // frame: at 800 groups x ~30 points that was ~24k projections at
+            // 60 fps, and the geometry does not depend on t — only how much of
+            // it is drawn does. Also skip groups whose extent is off screen.
+            projectTrajs(D.trajs, proj, w, h);
             for (const g of D.trajs) {
                 if (g.t0 > t) continue;
+                if (g._off) continue;
                 let alpha, ash;
                 if (t <= g.t1) {
                     alpha = 0.95; ash = 0;
@@ -719,13 +897,14 @@
                 ctx.lineJoin = 'round'; ctx.lineCap = 'round';
                 ctx.beginPath();
                 let started = false, headX = null, headY = null;
+                const scr = g._scr;
                 for (let i = 0; i < g.pts.length; i++) {
                     const pt = g.pts[i];
                     if (pt[2] <= t) {
-                        const p = proj(pt[0], pt[1]);
-                        if (!started) { ctx.moveTo(p.x, p.y); started = true; }
-                        else ctx.lineTo(p.x, p.y);
-                        headX = p.x; headY = p.y;
+                        const x = scr[i * 2], y = scr[i * 2 + 1];
+                        if (!started) { ctx.moveTo(x, y); started = true; }
+                        else ctx.lineTo(x, y);
+                        headX = x; headY = y;
                     } else {
                         if (started && i > 0) {
                             const prev = g.pts[i - 1];
@@ -733,11 +912,12 @@
                             if (span > 0) {
                                 const frac = (t - prev[2]) / span;
                                 if (frac > 0) {
-                                    const lon = prev[0] + (pt[0] - prev[0]) * frac;
-                                    const lat = prev[1] + (pt[1] - prev[1]) * frac;
-                                    const p = proj(lon, lat);
-                                    ctx.lineTo(p.x, p.y);
-                                    headX = p.x; headY = p.y;
+                                    // interpolate in screen space: the segment
+                                    // is a few km, so it is the same line.
+                                    const x = scr[(i - 1) * 2] + (scr[i * 2] - scr[(i - 1) * 2]) * frac;
+                                    const y = scr[(i - 1) * 2 + 1] + (scr[i * 2 + 1] - scr[(i - 1) * 2 + 1]) * frac;
+                                    ctx.lineTo(x, y);
+                                    headX = x; headY = y;
                                 }
                             }
                         }
@@ -1300,6 +1480,7 @@
             window._animBeginScrub = null;
             teardownUI();
             hideLoading();
+            invalidateSprites();
             A = null;
             syncBaseEffortVisibility(); // restore live patrol pixels per viewLayers.pixels
             if (typeof updateShareURL === 'function') updateShareURL();
