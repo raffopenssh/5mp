@@ -996,7 +996,10 @@ Things that will bite:
   It is 260px now. A popup's own min-width must stay under that cap.
 * **A sticky map tip and the popup are the same answer twice**, and the tip is
   anchored at the cursor, i.e. on top of the popup it just opened.
-  `showAOIPopup()` calls `MapTip.hide()` first.
+  `showAOIPopup()` calls `MapTip.hide()` first — and so does `showPAPopup()`.
+* **The AOI tip is `clickOnly`, and every backdrop must be.** See
+  "Hover tip precedence" below: a tip that follows the cursor across 485,000 km²
+  has no "off it" to move to, so it hid whatever the user was reaching for.
 * **Overview & coverage opens collapsed.** Once ingested it is a wall of 100%s,
   and the popup was opened to see fires and settlements. The header carries
   `{done}/{total}` and, only while work is outstanding,
@@ -1098,6 +1101,42 @@ Nothing blocking. Two nice-to-haves:
 | `srv/static/aoi_progress.js` | the multi-day notification card |
 | `db/migrations/040..045` | overlays, parks, versions, pixel count, basin parts, narrative cache |
 | `docs/PLAN_AOI_OVERLAY.md` | design rationale + measured facts |
+
+---
+
+## Hover tip precedence — draw order is not intent
+
+`srv/static/maptip.js` is the one hover/tap tooltip for every interactive map
+layer. Two things it arbitrates, both added 2026-08-10 after a tap produced
+three overlapping answers at once (geology popup + AOI popup + AOI map tip):
+
+* **`priority` (default 0, higher wins, render order breaks ties).** Draw order
+  answers "what is on top", not "what did the user mean". Two layers are
+  *backdrops* — the AOI polygon (`-20`) and the geology drape (`-30`) — and both
+  sit under the cursor almost everywhere, so whichever happened to be drawn last
+  won every hit-test and buried the specific feature underneath it. A pinned
+  fire/settlement/deforestation layer is priority 0 and is therefore always
+  asked first. `+N more here` counts peers only: a backdrop under a trajectory
+  is context, not a second thing to zoom in and separate.
+* **`clickOnly`.** A layer covering the whole viewport must not hover-tip —
+  there is no "off it" to move to, so the tip just follows the cursor forever.
+  Such a layer answers a deliberate click, as a **sticky** tip (close button +
+  action row) even for a mouse.
+* **`MapTip.setBackdropGuard(fn)`** — stated once, in the `map.on('load')`
+  block, not re-implemented per layer: a park polygon has its own popup and its
+  own click handler, so every negative-priority tip stands down over one. The
+  AOI tip used to do this itself, which is exactly why the geology overlay,
+  added later, did not — a tap on a park inside the AOI opened a geology card.
+* **Geology went through `maplibregl.Popup`**, so its click never reached the
+  shared arbitration at all. It is a MapTip registration now, and `remove(id)`
+  unregisters it — otherwise a switched-off sheet keeps swallowing clicks.
+  The raw-Popup path survives only as a fallback if `maptip.js` fails to load.
+* Where a backdrop wins but hides another, **name the other in the same tip**
+  rather than making it unreachable: the AOI tip carries a `Geology · <code>`
+  line. One tip, both answers.
+* `MapTip.refresh(layerId)` re-renders the tip on screen when an async detail
+  lands (AOI coverage), instead of leaving "coverage…" frozen on a sticky tip
+  that no longer gets a mousemove.
 
 ---
 
@@ -1227,6 +1266,9 @@ need one tileset per combination of 46 classes.
   missing unit.
 * `switchBasemap()` excludes `geomap-*` and calls `GeoMap.reattach()`, which
   re-adds on `idle` — the same `before`-id trap as `HistMap`.
+* **The unit card is a MapTip registration, `clickOnly` + `priority: -30`** —
+  see "Hover tip precedence". It is the deepest backdrop on the map: a park, an
+  AOI, and every pinned feature answer a click before it does.
 
 **Both downloads ship**: `?geomap=` renders the sheet, `Download MBTiles` is
 the picture, `Download GeoPackage` is the data (typed columns, one

@@ -163,6 +163,10 @@
     function remove(id) {
         [FILL(id), LINE(id)].forEach(l => { if (map.getLayer(l)) map.removeLayer(l); });
         if (map.getSource(SRC(id))) map.removeSource(SRC(id));
+        // Switching the sheet off must also take its tip away, or a click keeps
+        // being swallowed by a layer that is no longer on the map.
+        if (window.MapTip) window.MapTip.unregister(FILL(id));
+        bound[id] = false;
     }
 
     function refresh(id) {
@@ -175,21 +179,23 @@
 
     // Click a unit and it says what it is. Deliberately a click and not a
     // hover tip: the overlay covers the whole country, so a hover handler
-    // would fight every other tip on the map for the same pixel.
+    // would fight every other tip on the map for the same pixel — it would
+    // never have an "off it" to move to. That is what MapTip's `clickOnly`
+    // means, and `priority: -30` says the same thing about depth: geology is
+    // the backdrop *under* everything (even under the AOI polygon), so a
+    // trajectory, a settlement or an area always answers the click first.
+    //
+    // It used to open its own maplibregl.Popup, which is why a tap could
+    // produce three answers at once (geology popup + AOI popup + AOI map tip):
+    // its click never went through the shared arbitration. One tip, one owner.
     const bound = {};
-    function bindTip(id) {
-        if (bound[id]) return;
-        bound[id] = true;
-        map.on('click', FILL(id), e => {
-            const f = e.features && e.features[0];
-            if (!f) return;
-            const p = f.properties || {};
+    function tipHTML(id, p) {
             const cat = (sheets[id] && sheets[id].catalogue) || {};
             let aff = [];
             try { aff = JSON.parse(p.affinity || '[]'); } catch (err) { aff = []; }
             const codes = String(p.code || '').split('/');
             const merged = codes.length > 1;
-            const html = `
+            return `
                 <div style="font-family:inherit;max-width:260px;">
                     <div style="display:flex;align-items:center;gap:8px;">
                         <span style="width:14px;height:14px;border-radius:3px;flex:none;background:${escapeHtml(p.color || '#888')};border:1px solid rgba(0,0,0,0.3);"></span>
@@ -209,8 +215,25 @@
                             counts, ranks or locates an occurrence.</div>
                     </div>` : ''}
                 </div>`;
+    }
+
+    function bindTip(id) {
+        if (bound[id]) return;
+        bound[id] = true;
+        if (window.MapTip) {
+            window.MapTip.register(FILL(id), {
+                clickOnly: true,
+                priority: -30,
+                html: p => tipHTML(id, p)
+            });
+            return;
+        }
+        // No MapTip (shouldn't happen; keeps the overlay usable if it fails to load)
+        map.on('click', FILL(id), e => {
+            const f = e.features && e.features[0];
+            if (!f) return;
             new maplibregl.Popup({ closeButton: true, maxWidth: '280px' })
-                .setLngLat(e.lngLat).setHTML(html).addTo(map);
+                .setLngLat(e.lngLat).setHTML(tipHTML(id, f.properties || {})).addTo(map);
         });
         map.on('mouseenter', FILL(id), () => { map.getCanvas().style.cursor = 'pointer'; });
         map.on('mouseleave', FILL(id), () => { map.getCanvas().style.cursor = ''; });
