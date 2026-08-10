@@ -1373,10 +1373,9 @@
             const chips = Object.keys(byCommodity).sort().map(k => {
                 const active = GeoMap.commodityOn(id, k);
                 return `<button onclick="GeoMap.toggleCommodity('${id}','${escapeHtml(k)}')"
-                    class="preset-tag${active ? ' active' : ''}" style="font-size:11px;"
-                    aria-pressed="${active}"
+                    class="geo-chip" aria-pressed="${active}"
                     title="${active ? 'Stop showing' : 'Also show'} the units whose rock type can host ${escapeHtml(k)}">
-                    ${escapeHtml(k)} <span style="opacity:0.6;">${byCommodity[k]}</span></button>`;
+                    ${escapeHtml(k)} <span class="geo-chip-n">${byCommodity[k]}</span></button>`;
             }).join('');
             const activeChips = Object.keys(byCommodity).filter(k => GeoMap.commodityOn(id, k));
 

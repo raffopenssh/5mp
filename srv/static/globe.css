@@ -2328,3 +2328,17 @@ tr.selected td {
     0%, 100% { box-shadow: 0 0 0 0 rgba(251,191,36,0); }
     50%      { box-shadow: 0 0 0 3px rgba(251,191,36,0.35); }
 }
+
+/* Geology commodity chips — an independent switch each, not a radio group.
+   The map shows the UNION of the selected ones, so the styling has to read as
+   "several can be down at once": a filled amber chip, not the single-selection
+   green of the time-slider preset tags. */
+.geo-chip { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 999px; color: #cbd5e1; font-family: inherit; font-size: 11px;
+    cursor: pointer; user-select: none; transition: background 0.15s, border-color 0.15s, color 0.15s; }
+.geo-chip:hover { background: rgba(251,191,36,0.12); border-color: rgba(251,191,36,0.4); color: #fde68a; }
+.geo-chip .geo-chip-n { opacity: 0.55; font-variant-numeric: tabular-nums; }
+.geo-chip[aria-pressed="true"] { background: rgba(251,191,36,0.22); border-color: rgba(251,191,36,0.65); color: #fcd34d; font-weight: 600; }
+.geo-chip[aria-pressed="true"] .geo-chip-n { opacity: 0.8; }
+.geo-chip[aria-pressed="true"]::before { content: '\2713'; font-size: 10px; opacity: 0.9; }
