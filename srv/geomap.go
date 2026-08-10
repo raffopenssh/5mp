@@ -166,6 +166,17 @@ func (s *Server) HandleAPIGeoMap(w http.ResponseWriter, r *http.Request) {
 			e["size_bytes"] = st.Size()
 			e["download"] = "/api/geomap/" + id + "/download"
 		}
+		// The GeoPackage is built on first request from <id>_units.geojson, so
+		// it is only offered when that input is present -- otherwise the panel
+		// would show a button whose only possible outcome is a 404. Its size is
+		// reported only once a build exists; "(12 MB)" on a link that has not
+		// been built yet would be a number nobody measured.
+		if _, err := os.Stat(geoMapUnitsPath(id)); err == nil {
+			e["geopackage"] = "/api/geomap/" + id + "/geopackage"
+			if st, ok := geoMapGPKGReady(id); ok {
+				e["geopackage_bytes"] = st.Size()
+			}
+		}
 		out = append(out, e)
 	}
 	w.Header().Set("Content-Type", "application/json")
