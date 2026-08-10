@@ -1,3 +1,5 @@
+b924473 2026-08-10 07:20:58 docs: the geology GeoPackage and map_sheet= links are done, not open
+d7af57c 2026-08-10 07:18:36 chore: refresh version history
 4f5a14a 2026-08-10 07:18:04 geology: a GeoPackage download beside the MBTiles
 fcd4d58 2026-08-10 07:17:56 Patrol data is scoped to the account it was uploaded in
 5980503 2026-08-10 06:38:58 chore: refresh version history
@@ -16,5 +18,3 @@ a330358 2026-08-10 03:38:45 animator: GIF honours the on-screen speed; AOI anima
 b63e005 2026-08-09 07:01:54 Satellite hint clears the time slider on mobile
 5151832 2026-08-09 06:58:22 AOI progress notifications sort by time once complete
 66195d8 2026-08-09 06:45:38 chore: refresh .git-commits.txt from build
-c65d7d9 2026-08-09 06:45:19 histmaps: version tile URLs so a rebuild invalidates the 7-day immutable cache
-1d9fad5 2026-08-09 06:16:42 histmaps: 187/195 sheets, full AOI coverage; derive counts, merge qa.json
