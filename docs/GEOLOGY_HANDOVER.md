@@ -243,22 +243,75 @@ collapsed list of all classes with per-class hide.
   merge two classes and thereby rename both, and rendering nothing looks
   exactly like "this sheet has no data here".
 
+## GeoPackage download
+
+`GET /api/geomap/{sheet}/geopackage` → `<sheet>_geology.gpkg`, offered in the
+panel beside the MBTiles. `srv/geomap_gpkg.go`; measured 2026-08-10: CAR 2.9 MB
+in 0.5 s, Sudan 13.8 MB in 2.1 s.
+
+**The MBTiles is the picture; this is the data.** Tiles are simplified per
+zoom, coalesced across neighbours and carry no typing — right for an offline
+viewer, useless for intersecting the units with a concession boundary or asking
+how many km² of gold-hosting rock sit inside a park. This is the source
+polygons, whole, one MultiPolygon per class (the vectorizer's own shape;
+exploding to parts here would invent a feature count the source does not have).
+
+* **`"w_gold" IS NOT NULL` is why it exists.** Every commodity the sheet
+  mentions gets its own INTEGER column `w_<commodity>` holding the 1–3 weight,
+  so the headline question is an exact filter and a graduated renderer works on
+  it. A comma-joined `commodities` string would make it a `LIKE`. The column
+  set is **derived from this build**, never a fixed list — a merge changes the
+  union of affinities, and a hardcoded set would then either lie or drop one.
+  The readable list stays in `commodities`, the reasons in `affinity_note`,
+  each prefixed with the member code it came from.
+* **A unit with no affinity is NULL, not 0.** 0 reads as "measured, none" and
+  matches `>= 0`.
+* `area_km2` REAL, `merged` BOOLEAN, `sheet_year` INTEGER — the declared type is
+  the contract (`docs/GEOPACKAGE_EXPORT.md`); a number arriving as text cannot
+  be summed or graduated.
+* **Styles alone are not enough**, so the file embeds a QGIS project: without
+  it a 46-class country opens as one random pastel and the legend has to be
+  rebuilt by hand. The project references its container as
+  `./<basename>.gpkg`, so the on-disk name and the download name are the same
+  string.
+* Categorized on `code`, i.e. the **merged** code (`GC2/GO`) exactly as the
+  tiles and the UI carry it. The sheet does not say which member a patch is, so
+  the export must not pick one.
+* Built on first request from `<sheet>_units.geojson` and cached beside it
+  (gitignored). Staleness is mtime, compared with `>=`: a build finishing
+  inside its input's timestamp tick would otherwise rebuild on every request.
+  If the units are gone but a package survives, it is served — it is a snapshot
+  of a real build, and refusing it is a worse answer than an old one.
+* **No job queue**, deliberately, unlike the per-area export in
+  `gpkg_jobs.go`: that one is minutes over a live database and needs a card;
+  this is a static file per sheet. The panel's link does say "Preparing…"
+  though — two silent seconds after a click read as a dead link.
+* Verified by **rendering it**, not just `ogrinfo`: `QT_QPA_PLATFORM=offscreen`
+  + `QgsProject.read('geopackage:<abspath>?projectName=<name>')` (the project
+  name is required, and the path must be absolute — without either, `read()`
+  returns False and then hangs).
+
+## Share a link to the sheet's panel entry
+
+`?panel=admin&admin_tab=map-settings&map_sheet=car` opens Map Settings and
+flashes that sheet's card; `map_sheet=histmap` does the same for the historical
+archive. Both cards carry a **Copy link** button (`copyMapSheetLink()`), which
+builds on top of the ordinary share URL so the map underneath is still the view
+being discussed.
+
+`?geomap=` and `?map_sheet=` answer different questions and compose: the first
+puts the overlay on the map, the second points at where its downloads, class
+list and provenance live — which is usually what someone is being sent ("grab
+the CAR geology as a GeoPackage"). `highlightMapSheet()` polls for the card
+because the tab renders from a fetch, and **gives up after 10 s**: a link naming
+a sheet this server does not have must not spin forever.
+
 ## Next steps
 
-1. **GeoPackage download.** The user asked for the geology as `.gpkg` from the
-   admin panel, beside the MBTiles link. The `.gpkg` machinery already exists
-   and is well documented (`docs/GEOPACKAGE_EXPORT.md`, `srv/gpkg*.go`): typed
-   columns, QGIS styling, an embedded project that ships sensible layer
-   visibility. The honest shape here is **one layer per sheet, styled with the
-   printed ink colours**, plus the `codes`/`commodities` columns so a QGIS user
-   can filter by commodity themselves. Read the "declared column type is the
-   contract" and "styles alone are not enough" notes there first. It is a
-   static file per sheet, not a per-area job — so it can be built by
-   `tiles.sh`'s sibling and served straight, no job queue.
-2. **A commodity legend outside the admin panel.** Right now the only way in is
+1. **A commodity legend outside the admin panel.** Right now the only way in is
    admin ▸ Map Settings. If this is meant to be a user-facing question ("what
    could be under this park"), it wants a place in the filter panel too.
-3. **More sheets.** `sheets.py` is the whole per-sheet contract; a third sheet
+2. **More sheets.** `sheets.py` is the whole per-sheet contract; a third sheet
    is a legend measurement plus a graticule fit.
 4. Nothing else is blocking.
 

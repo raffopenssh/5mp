@@ -93,6 +93,7 @@ The app's share link encodes full UI state, making testing trivial:
 | `keystones` | `0` | Keystones toggle |
 | `panel` | `filter,star,admin,upload` | Open panel/modal |
 | `admin_tab` | `learning,features` | Active admin tab |
+| `map_sheet` | `car,sudan,histmap` | Highlight one card in Map Settings |
 
 ## TEST Helper API
 

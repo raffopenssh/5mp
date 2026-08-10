@@ -1228,11 +1228,28 @@ need one tileset per combination of 46 classes.
 * `switchBasemap()` excludes `geomap-*` and calls `GeoMap.reattach()`, which
   re-adds on `idle` — the same `before`-id trap as `HistMap`.
 
-**Open, and what the user asked for next: a `.gpkg` download of the sheets from
-the admin panel**, beside the MBTiles link — one layer per sheet, ink colours
-as styling, `codes`/`commodities` as columns. `srv/gpkg*.go` and
-`docs/GEOPACKAGE_EXPORT.md` already solve the hard parts; this one is a static
-file per sheet, so no job queue.
+**Both downloads ship**: `?geomap=` renders the sheet, `Download MBTiles` is
+the picture, `Download GeoPackage` is the data (typed columns, one
+`w_<commodity>` weight column, ink colours and a QGIS project inside). A link
+to the panel itself is `?panel=admin&admin_tab=map-settings&map_sheet=car`.
+`srv/geomap_gpkg.go`; details in `docs/GEOLOGY_HANDOVER.md`.
+
+* **`w_gold IS NOT NULL` is the point.** Commodities as one comma-joined string
+  would make the export's headline question a `LIKE` over text; one INTEGER
+  column per commodity makes it an exact filter and lets QGIS graduate on the
+  weight. The column set is derived per build, never fixed — a re-vectorized
+  sheet can merge classes and change the union of affinities.
+* **NULL, not 0, where a unit hosts nothing.** 0 reads as "measured, none" and
+  matches `>= 0`.
+* Built on first request and cached beside `<sheet>_units.geojson`, keyed on
+  mtime (`>=`, or a build finishing inside its input's timestamp tick rebuilds
+  forever). No job queue: it is a static file per sheet and takes ~2 s, unlike
+  the per-area export which is minutes over a live database.
+* The button only appears when `_units.geojson` is present, and the size only
+  once a build exists — a link whose only outcome is a 404, or a "(12 MB)"
+  nobody measured, are both worse than nothing.
+* Verified by rendering it in QGIS (`docs/GEOLOGY_HANDOVER.md` § GeoPackage),
+  not just by `ogrinfo`.
 
 ---
 
@@ -1660,6 +1677,7 @@ URL params encode full UI state for reproducible tests:
 | `geomap_only` | `car:GC2/GO\|S` | Isolate these classes (unknown codes dropped) |
 | `geomap_hide` | `car:Zeta` | Hide these classes |
 | `geomap_opacity` | `car:80` | Per-sheet opacity % (omitted at the 55 default) |
+| `map_sheet` | `car`, `sudan`, `histmap` | With `panel=admin&admin_tab=map-settings`: flash that sheet's card. Points at the downloads and provenance, not at the map — composes with `geomap=` |
 | `aoi_menu` | `XSA_Study_Area` | Open that area's download menu |
 | `aoi_menu_item` | `gpkg`, `gpkg_light`, `kml`… | Highlight one entry in it. A **built** GeoPackage downloads immediately; an unbuilt one only explains itself — a link never starts a build |
 | `gpkg` | `<job id>` | Open the bell on that GeoPackage export's card |
