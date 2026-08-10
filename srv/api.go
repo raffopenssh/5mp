@@ -5010,8 +5010,23 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 
 	kml.WriteString("</Document>\n</kml>")
 
+	// The filename carries the date window, because the window is part of what
+	// the file IS -- two exports of the same area over different windows are
+	// different files and must not land in a downloads folder under one name.
+	// It is set HERE and not by a `download` attribute on the link: Safari's
+	// "Copy Link" on an <a download> yields the attribute's filename instead of
+	// the URL, which turns a shareable download link into a dead string.
+	suffix := ""
+	switch {
+	case fromDate != "" && toDate != "":
+		suffix = "_" + fromDate + "_to_" + toDate
+	case fromDate != "":
+		suffix = "_from_" + fromDate
+	case toDate != "":
+		suffix = "_to_" + toDate
+	}
 	w.Header().Set("Content-Type", "application/vnd.google-earth.kml+xml")
-	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s.kml"`, parkID))
+	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s%s.kml"`, parkID, sanitizeFilenamePart(suffix)))
 	w.Write([]byte(kml.String()))
 }
 
@@ -5951,6 +5966,20 @@ func (s *Server) handleDeforestationFeatures(w http.ResponseWriter, parkID strin
 }
 
 // xmlEscape escapes special XML characters in strings for safe inclusion in XML/KML
+// sanitizeFilenamePart keeps a Content-Disposition filename to characters that
+// survive every OS and every quoting scheme. Date params arrive from the query
+// string, so they are user input even when they look like a date.
+func sanitizeFilenamePart(s string) string {
+	var b strings.Builder
+	for _, r := range s {
+		switch {
+		case r >= 'a' && r <= 'z', r >= 'A' && r <= 'Z', r >= '0' && r <= '9', r == '_', r == '-':
+			b.WriteRune(r)
+		}
+	}
+	return b.String()
+}
+
 func xmlEscape(s string) string {
 	s = strings.ReplaceAll(s, "&", "&amp;")
 	s = strings.ReplaceAll(s, "<", "&lt;")

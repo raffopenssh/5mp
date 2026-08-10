@@ -256,6 +256,29 @@ else
     FAILED=$((FAILED + 1)); ERRORS+=("gpkg peek side effect")
 fi
 
+# The download menu's direct-URL entries carry NO `download="..."` attribute --
+# Safari's "Copy Link" copies that attribute instead of the href, which is how a
+# shareable download link turned into the bare string "XSA_Study_Area.kml". The
+# filename therefore has to come from the server, date window included, or two
+# different windows land in a downloads folder under one name.
+printf "%-50s" "kml_filename_from_content_disposition"
+KML_CD=$(curl -sI -b "$COOKIE_FILE" \
+    "${BASE_URL}/api/parks/CAF_Chinko/export.kml?effort=0&from=2024-01-01&to=2024-06-30" \
+    | tr -d '\r' | grep -i '^content-disposition:')
+if [[ "$KML_CD" == *'filename="CAF_Chinko_2024-01-01_to_2024-06-30.kml"'* ]]; then
+    green "✓"; PASSED=$((PASSED + 1))
+else
+    red "FAIL ($KML_CD)"; FAILED=$((FAILED + 1)); ERRORS+=("kml content-disposition")
+fi
+
+printf "%-50s" "export_links_have_no_download_attr"
+if grep -q 'aoi-menu-item[^>]*download=' srv/templates/globe.html; then
+    red "FAIL (a download= attribute is back in the export menu)"
+    FAILED=$((FAILED + 1)); ERRORS+=("export menu download attr")
+else
+    green "✓"; PASSED=$((PASSED + 1))
+fi
+
 # The geology GeoPackage is built on first request and cached beside the units
 # it came from. Two things must hold or it is the wrong download: it has to be
 # a real GeoPackage (SQLite with the GPKG application_id), and it must carry a

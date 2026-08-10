@@ -1465,6 +1465,21 @@ byte-exact and resumable beats a little bandwidth). Pinned by
 **A middleware must not commit to a response encoding before the handler has
 described the response.**
 
+### `<a download>` breaks "Copy Link" in Safari
+
+Safari's context-menu **Copy Link** on an anchor carrying a `download`
+attribute copies the *attribute* — the bare filename — instead of the href. The
+export menu exists so that right-click → copy → paste into an email works
+without any extra UI, so every entry there is now a plain `<a href>` and the
+filename comes from the server's `Content-Disposition`. `HandleAPIParkKML` puts
+the date window in it (`CAF_Chinko_2024-01-01_to_2024-06-30.kml`), which is what
+the attribute used to do — the window is part of what the file *is*, and two
+windows must not share one name in a downloads folder. Pinned by
+`kml_filename_from_content_disposition` and `export_links_have_no_download_attr`
+in `tests/api_tests.sh`.
+
+**A filename is the server's job, not the link's.**
+
 ### A shared download link logs you in and then downloads
 
 `?pwd=` on an `/api/` path now **sets the cookie** before serving (it used to
