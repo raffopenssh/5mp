@@ -17,7 +17,7 @@ func main() {
 	}))
 	slog.SetDefault(logger)
 
-	fmt.Println("Testing FAOLEX scraper with Chrome headless...\n")
+	fmt.Println("Testing FAOLEX scraper with Chrome headless...")
 
 	// Use Chrome-based scraper
 	scraper := srv.NewFAOLEXScraperChrome()

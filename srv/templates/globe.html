@@ -6003,7 +6003,13 @@
                     fetchRetry('/api/notifications?type=new_upload&limit=10'),
                     fetchRetry(`/api/mbtiles?pwd=${encodeURIComponent(getPwd())}`),
                     fetchRetry('/api/notifications?type=new_publication&limit=10'),
-                    fetchRetry('/api/notifications?type=fire_download_success,fire_download_failed,gfw_scan_success,gfw_scan_failed,park_refresh_success,park_refresh_failed&limit=10'),
+                    // Every nightly-job status row, matched by shape server-side
+                    // (cronStatusSQL). This used to be a hardcoded list of six
+                    // types, so each new cron job wrote notifications nobody ever
+                    // saw — the OSM/Geofabrik rotation, park onboarding and the
+                    // fire pipeline's own drift/error rows were all invisible.
+                    // Never go back to enumerating types here.
+                    fetchRetry('/api/notifications?type=cron_status&limit=20'),
                     // AOI progress cards. Filtered server-side to this principal
                     // (aoiNotifSQLFilter) — an AOI's name is part of the secret.
                     fetchRetry('/api/notifications?type=aoi_progress&limit=10')
@@ -6536,14 +6542,30 @@
             `;
         }
 
+        // Icon per cron job family. Keyed on the notification_type prefix so a
+        // new job gets a sensible default rather than a missing case.
+        const CRON_ICONS = {
+            fire_download: 'flame', fire_rebuild: 'flame', fire_pipeline: 'flame',
+            fire_ingest_errors: 'flame', nrt_sp_drift: 'satellite',
+            gfw_scan: 'tree-pine', park_refresh: 'refresh-cw',
+            osm_enrich: 'map', park_onboarding: 'map-pin',
+        };
+
         function renderFireDownloadNotification(notif) {
-            // Cron status notification (fire download, turbidity/GFW scan, park refresh) - non-clickable
+            // Cron status notification (fire download, GFW scan, park refresh,
+            // OSM/Geofabrik detail refresh, onboarding...) - non-clickable.
+            // Deliberately generic: the bell fetches type=cron_status, so this
+            // must render a job it has never heard of.
             const message = notif.message || '';
-            const failed = (notif.notification_type || '').endsWith('_failed');
+            const ntype = notif.notification_type || '';
+            const failed = ntype.endsWith('_failed') || ntype === 'nrt_sp_drift'
+                           || ntype === 'fire_ingest_errors';
             const matches = message.match(/(\d+)\s+new fire detections from (\d+)\s+parks/);
             const fireCount = matches ? matches[1] : '';
             const parkCount = matches ? matches[2] : '';
-            const iconHtml = failed ? icon('x', 'fire') : icon('check', 'success');
+            const family = ntype.replace(/_(success|failed)$/, '');
+            const iconName = failed ? 'alert-triangle' : (CRON_ICONS[family] || 'check');
+            const iconHtml = icon(iconName, failed ? 'fire' : 'success');
             const iconStyle = failed ? 'background: rgba(239,68,68,0.15); color: #ef4444;'
                                      : 'background: rgba(34,197,94,0.15); color: #22c55e;';
             
