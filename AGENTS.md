@@ -1315,9 +1315,12 @@ valid rather than usable is the wrong change.**
   to 20 km is deliberate) and **labelled** `in_area`, with the renderer
   distinguishing them. An unusable boundary defaults to *inside* — silently
   flagging every row 0 is worse than not knowing.
-* **The R-tree is not optional**: 1.1 s → 0.068 s per spatial query at 6.9M
-  points. Built inline per feature; the spec's maintenance triggers are omitted
-  because the file is never edited.
+* **The R-tree is not optional** — and every layer gets one, raw detections
+  included. QGIS rendering 6.9M detections zoomed in: **1.96 s → 0.08 s**. At
+  regional zoom (2M points on screen) it is 4.97 s → 5.83 s: the cost there is
+  *drawing*, and no index touches it — which is why the layer ships off and
+  "no raw fire points" is a separate export. Built inline per feature; the
+  spec's maintenance triggers are omitted because the file is never edited.
 * **Every layer is exported whole — no LIMIT** (same rule as the `/features`
   geography layers; a truncated file is indistinguishable from a complete one
   once it is in someone's QGIS project). Empty layers are dropped.
