@@ -226,6 +226,22 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
         </div>
         <a href="` + html.EscapeString(tryoutHref) + `" style="display:block;margin-top:14px;padding:11px 16px;border:1px solid rgba(34,197,94,0.35);border-radius:10px;color:#4ade80;font-size:14px;font-weight:500;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.background='rgba(34,197,94,0.1)';this.style.borderColor='rgba(34,197,94,0.6)'" onmouseout="this.style.background='transparent';this.style.borderColor='rgba(34,197,94,0.35)'">Just try it out — no password needed</a>
         <div style="margin-top:6px;font-size:11px;color:#555;">Sandbox with sample data. Nothing you do affects the live system.</div>`
+	// A wrong password used to be indistinguishable from a fresh visit: the
+	// form came back looking exactly the same, which reads as "the page just
+	// reloaded", not as "that password is wrong". Only a *non-empty* attempt
+	// counts -- `?pwd=` empty is what an old share link or a stripped URL
+	// looks like, and accusing someone who typed nothing is noise.
+	attempted := r.URL.Query().Get("pwd") != ""
+	errorHint := ""
+	inputClass := ""
+	if attempted {
+		inputClass = " class=\"invalid\""
+		errorHint = `<div class="error-hint" role="alert" aria-live="assertive">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v5"></path><path d="M12 16.5v.01"></path></svg>
+                <span>That password isn&rsquo;t valid. Check for typos or trailing spaces &mdash; passwords are case-sensitive.</span>
+            </div>`
+	}
+
 	prompt := `Enter access password to continue`
 	if isFileLink {
 		intro = `<p>Someone shared a data export with you. Sign in with the access password you were given and the download starts right away.</p>`
@@ -511,6 +527,43 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
             color: #555; 
             letter-spacing: normal;
         }
+
+        input[type="password"].invalid {
+            border-color: rgba(239,68,68,0.65);
+            box-shadow: 0 0 0 3px rgba(239,68,68,0.08);
+            animation: shake 0.4s ease;
+        }
+        input[type="password"].invalid:focus {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239,68,68,0.14);
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-6px); }
+            40% { transform: translateX(5px); }
+            60% { transform: translateX(-3px); }
+            80% { transform: translateX(2px); }
+        }
+
+        .error-hint {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin: -6px 0 14px;
+            padding: 9px 11px;
+            border: 1px solid rgba(239,68,68,0.28);
+            background: rgba(239,68,68,0.08);
+            border-radius: 8px;
+            color: #fca5a5;
+            font-size: 12.5px;
+            line-height: 1.45;
+            text-align: left;
+            animation: hintIn 0.28s ease-out;
+        }
+        .error-hint svg { width: 15px; height: 15px; flex: 0 0 15px; margin-top: 1px; }
+
+        @keyframes hintIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
         
         button {
             width: 100%;
@@ -635,8 +688,9 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
         <form method="GET">
             ` + hiddenFields + `
             <div class="form-group">
-                <input type="password" name="pwd" placeholder="Enter password" autofocus required>
+                <input type="password" name="pwd" placeholder="Enter password" autofocus required` + inputClass + `>
             </div>
+            ` + errorHint + `
             <button type="submit">Continue →</button>
         </form>
         ` + tryout + `
@@ -651,6 +705,24 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
         var input = document.querySelector('input[name="pwd"]');
         var form = document.querySelector('form');
         if (!input || !form) return;
+        // Once they start correcting it, stop shouting: the hint describes the
+        // previous attempt, not what is in the box now.
+        var hint = document.querySelector('.error-hint');
+        input.addEventListener('input', function(){
+            input.classList.remove('invalid');
+            if (hint) { hint.style.transition = 'opacity .2s'; hint.style.opacity = '0'; setTimeout(function(){ if (hint) { hint.remove(); hint = null; } }, 200); }
+        }, { once: true });
+        // A failed attempt leaves ?pwd=<wrong> in the URL bar. Scrub it so the
+        // password is not left on screen or in a copied link.
+        if (window.history && history.replaceState) {
+            try {
+                var u = new URL(window.location.href);
+                if (u.searchParams.has('pwd')) {
+                    u.searchParams.delete('pwd');
+                    history.replaceState(null, '', u.pathname + (u.searchParams.toString() ? '?' + u.searchParams : '') + u.hash);
+                }
+            } catch (e) {}
+        }
         // When the keyboard appears, make sure the form (input + button) stays visible
         input.addEventListener('focus', function(){
             setTimeout(function(){
