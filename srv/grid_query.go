@@ -20,7 +20,7 @@ type GridQueryParams struct {
 	Month         *int64      // Optional: filter by specific month
 	MovementTypes []string    // Optional: filter by movement types (foot, vehicle, boat, fixed_wing, rotor_wing)
 	BBox          *[4]float64 // Optional: [minLng, minLat, maxLng, maxLat]
-	Env           string      // "prod" or "test" tenant; empty = no filter
+	Env           string      // tenant (RequestEnv); empty = no filter
 }
 
 // GridRow represents a row from the grid query result.

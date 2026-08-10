@@ -256,6 +256,96 @@ else
     FAILED=$((FAILED + 1)); ERRORS+=("gpkg peek side effect")
 fi
 
+# The geology GeoPackage is built on first request and cached beside the units
+# it came from. Two things must hold or it is the wrong download: it has to be
+# a real GeoPackage (SQLite with the GPKG application_id), and it must carry a
+# w_<commodity> column -- that column set is the reason it exists rather than
+# the MBTiles, and it is derived per build, so a vectorizer change that drops
+# every affinity would otherwise ship silently as a valid-but-useless file.
+printf "%-50s" "geomap_geopackage_typed_and_filterable"
+GEO_TMP=$(mktemp /tmp/geomapXXXX.gpkg)
+GEO_CODE=$(curl -s -m 300 -o "$GEO_TMP" -w "%{http_code}" -b "$COOKIE_FILE" \
+    "${BASE_URL}/api/geomap/car/geopackage")
+GEO_APP=$(sqlite3 "$GEO_TMP" "PRAGMA application_id" 2>/dev/null || echo 0)
+GEO_GOLD=$(sqlite3 "$GEO_TMP" 'SELECT COUNT(*) FROM geology_car WHERE "w_gold" IS NOT NULL' 2>/dev/null || echo 0)
+GEO_STYLE=$(sqlite3 "$GEO_TMP" "SELECT COUNT(*) FROM layer_styles WHERE useAsDefault=1" 2>/dev/null || echo 0)
+GEO_PROJ=$(sqlite3 "$GEO_TMP" "SELECT COUNT(*) FROM qgis_projects" 2>/dev/null || echo 0)
+rm -f "$GEO_TMP"
+if [[ "$GEO_CODE" == "200" && "$GEO_APP" == "1196444487" && "$GEO_GOLD" -gt 0 \
+      && "$GEO_STYLE" -gt 0 && "$GEO_PROJ" -gt 0 ]]; then
+    green "✓"; PASSED=$((PASSED + 1))
+else
+    red "FAIL (code $GEO_CODE, app_id $GEO_APP, gold units $GEO_GOLD, styles $GEO_STYLE, projects $GEO_PROJ)"
+    FAILED=$((FAILED + 1)); ERRORS+=("geomap geopackage")
+fi
+
+yellow "\n=== Patrol data tenants ==="
+# Patrol effort belongs to the account it was uploaded in (srv/tenant.go).
+# These assertions are the boundary: a client password sees the pixels, every
+# other password sees none -- and no cache may carry one answer to the other.
+# Derived from PASSWORD_ENVS, never from a hardcoded prefix: the mapping is the
+# definition of who owns the pixels, and a guessed pattern silently skips the
+# whole block when a client is renamed.
+CLIENT_PWD=$(grep -o '^PASSWORD_ENVS=.*' secrets.env 2>/dev/null | cut -d= -f2 \
+    | tr ',' '\n' | grep ':prod$' | head -1 | cut -d: -f1)
+if [[ -n "$CLIENT_PWD" ]]; then
+    TZ_BBOX="28,-6,40,4"
+    printf "%-50s" "patrol_pixels_visible_to_owning_tenant"
+    n=$(curl -s -m 60 --get --data-urlencode "pwd=$CLIENT_PWD" \
+        --data "bbox=$TZ_BBOX" "${BASE_URL}/api/grid" | jq -r '.features | length')
+    if [[ "$n" -gt 0 ]]; then
+        green "✓ ($n)"; PASSED=$((PASSED + 1))
+    else
+        red "FAIL (owner sees no pixels)"; FAILED=$((FAILED + 1)); ERRORS+=("patrol pixels missing for owner")
+    fi
+
+    # Every other password. Note the assertion is "does not see THESE pixels",
+    # not "sees nothing": the sandbox has its own uploads, and a tenant with
+    # its own patrols is the normal case. So compare over the client's bbox,
+    # where anything at all is a leak, and check the animator too -- a fix that
+    # only covers the map layer is not a fix.
+    CLIENT_KM=$(curl -s -m 30 --get --data-urlencode "pwd=$CLIENT_PWD" \
+        "${BASE_URL}/api/stats" | jq -r '.total_distance_km')
+    for other in "test2026" "$AOI_PWD"; do
+        [[ -z "$other" ]] && continue
+        printf "%-50s" "patrol_pixels_hidden_from_${other:0:4}"
+        n=$(curl -s -m 60 --get --data-urlencode "pwd=$other" \
+            --data "bbox=$TZ_BBOX" "${BASE_URL}/api/grid" | jq -r '.features | length')
+        km=$(curl -s -m 30 --get --data-urlencode "pwd=$other" "${BASE_URL}/api/stats" | jq -r '.total_distance_km')
+        f=$(curl -s -m 60 --get --data-urlencode "pwd=$other" \
+            --data "layer=effort&bbox=$TZ_BBOX&from=2025-01-01&to=2026-08-01&step=month" \
+            "${BASE_URL}/api/fire-frames" | jq -r '[.frames[]?.p[]?] | length')
+        if [[ "$n" == "0" && "$f" == "0" && "$km" != "$CLIENT_KM" ]]; then
+            green "✓"; PASSED=$((PASSED + 1))
+        else
+            red "FAIL (grid $n, anim $f, km $km vs $CLIENT_KM)"; FAILED=$((FAILED + 1))
+            ERRORS+=("patrol data leaked to $other")
+        fi
+    done
+
+    # An authenticated body must never be cacheable by a shared cache or by a
+    # browser's URL-keyed HTTP cache: that served the previous account's pixels
+    # after switching password in one browser (2026-08-10).
+    printf "%-50s" "authenticated_responses_are_private"
+    hdrs=$(curl -s -m 30 -D- -o /dev/null --get --data-urlencode "pwd=$CLIENT_PWD" \
+        --data "bbox=$TZ_BBOX" "${BASE_URL}/api/grid")
+    if ! grep -qi 'cache-control:.*public' <<< "$hdrs" && grep -qi '^vary:.*cookie' <<< "$hdrs"; then
+        green "✓"; PASSED=$((PASSED + 1))
+    else
+        red "FAIL"; FAILED=$((FAILED + 1)); ERRORS+=("authenticated response is publicly cacheable")
+    fi
+
+    # An EarthRanger subscription names a client's server, username and parks.
+    printf "%-50s" "autofetch_sources_scoped_to_tenant"
+    a=$(curl -s -m 30 --get --data-urlencode "pwd=$CLIENT_PWD" "${BASE_URL}/api/admin/autofetch" | jq -r '.sources | length')
+    b=$(curl -s -m 30 --get --data-urlencode "pwd=test2026" "${BASE_URL}/api/admin/autofetch" | jq -r '.sources | length // 0')
+    if [[ "$b" == "0" || "$b" == "null" ]]; then
+        green "✓ (owner $a, other $b)"; PASSED=$((PASSED + 1))
+    else
+        red "FAIL (leaked $b sources)"; FAILED=$((FAILED + 1)); ERRORS+=("autofetch sources leaked")
+    fi
+fi
+
 echo
 echo "======================================="
 if [[ $FAILED -eq 0 ]]; then

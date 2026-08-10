@@ -1160,10 +1160,19 @@
                 if (name === 'infra' && !snap.statics.length) chip.classList.add('unavailable');
             }
             // patrol layers: hidden entirely when the pixels toggle is off
-            // (unless a share link explicitly enabled them)
-            if ((name === 'effortGrid' || name === 'effortPts') &&
-                !(window.viewLayers && window.viewLayers.pixels) && !A.on[name]) {
-                chip.classList.add('hidden');
+            // (unless a share link explicitly enabled them). When the account
+            // owns no patrol data at all they are shown but inert -- patrol
+            // effort is scoped to the account it was uploaded in
+            // (srv/tenant.go), so animating it here would only ever play an
+            // empty layer, and a silently empty layer reads as a broken
+            // feature rather than as "not yours".
+            if (name === 'effortGrid' || name === 'effortPts') {
+                if (window.HAS_PATROL === false) {
+                    chip.classList.add('unavailable');
+                    chip.title = 'No patrol tracks in this account — patrol effort is only visible to the account it was uploaded in';
+                } else if (!(window.viewLayers && window.viewLayers.pixels) && !A.on[name]) {
+                    chip.classList.add('hidden');
+                }
             }
             chips.appendChild(chip);
         }
@@ -1416,14 +1425,20 @@
             // default layer set: current toggles + pins, grid vs points by zoom
             let initial;
             if (opts.layers && opts.layers.length) {
-                initial = opts.layers.filter(n => LAYERS[n]);
+                // A share link can name patrol layers the receiving account
+                // cannot see (patrol effort is scoped to the account it was
+                // uploaded in, srv/tenant.go). Drop them rather than switching
+                // them on: an "on" chip that draws nothing is the same wrong
+                // answer as an empty layer.
+                initial = opts.layers.filter(n => LAYERS[n] &&
+                    !(window.HAS_PATROL === false && (n === 'effortGrid' || n === 'effortPts')));
             } else {
                 initial = [];
                 const v = window.viewLayers || {};
                 const pins = pinnedTypes();
                 const hiZoom = map.getZoom() >= POINTS_ZOOM && bboxArea(bbox) <= POINTS_MAX_AREA;
                 if (v.fires || pins.has('fires')) { initial.push('trajs', hiZoom ? 'firePts' : 'fireGrid'); }
-                if (v.pixels) initial.push(hiZoom ? 'effortPts' : 'effortGrid');
+                if (v.pixels && window.HAS_PATROL !== false) initial.push(hiZoom ? 'effortPts' : 'effortGrid');
                 if (v.deforest || pins.has('deforest')) initial.push('deforest');
                 if (v.settlements || pins.has('settlements')) initial.push('settlements');
                 const snap = snapshotPinned();
