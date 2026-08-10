@@ -1492,6 +1492,27 @@
         }
         function copyGeoMapSheetLink(id) { copyMapSheetLink(id); }
 
+        // Same idea one level up: a link to the admin SECTION you are looking
+        // at. buildShareUrl() already captures panel=admin and the active tab
+        // when the panel is open, but only then — setting both explicitly
+        // means the button works regardless of how the panel got opened, and
+        // reads the tab from the DOM rather than from adminCurrentTab (which
+        // lives in another <script> block and so is not visible here anyway).
+        function copyAdminTabLink() {
+            const url = new URL(buildShareUrl());
+            const active = document.querySelector('.admin-tab.active');
+            url.searchParams.set('panel', 'admin');
+            url.searchParams.set('admin_tab', (active && active.dataset.tab) || 'uploads');
+            const text = url.toString();
+            const btn = document.getElementById('admin-copy-link');
+            const ok = () => {
+                showToast('Link to this admin section copied', 'success');
+                if (btn) { btn.classList.add('copied'); setTimeout(() => btn.classList.remove('copied'), 1500); }
+            };
+            navigator.clipboard.writeText(text).then(ok,
+                () => prompt('Copy this link:', text));
+        }
+
         // Resolve ?map_sheet= once Map Settings has actually rendered. The
         // panel renders from a fetch, so the card can be seconds late; polling
         // and then giving up is right, because a link naming a sheet this
@@ -20935,6 +20956,10 @@ ${starredItems.narratives.map(n => {
                 </div>
                 <div style="display:flex;align-items:center;gap:12px;">
                     <div id="pipeline-status-badge" class="pipeline-badge" style="display:none;" title="Nightly fire pipeline heartbeat"></div>
+                    <button class="admin-panel-link" id="admin-copy-link" onclick="copyAdminTabLink()"
+                            title="Copy a link that opens this admin section here" aria-label="Copy link to this admin section">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                    </button>
                     <button class="admin-panel-close" onclick="toggleAdminPanel()" aria-label="Close admin panel">&times;</button>
                 </div>
             </div>
