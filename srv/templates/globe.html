@@ -8752,6 +8752,51 @@
         // my report", and an AOI's visibility already *is* its report
         // membership (collectReportParks folds in every visible AOI). One
         // metaphor, one control — un-starring hides, search brings it back.
+        // Every menu entry is an <a href>, and the two GeoPackage entries' hrefs
+        // are their own share links.
+        //
+        // The share link for "the download menu, pointing at this entry" only
+        // existed if you opened the menu and then used the ⧉ share control —
+        // i.e. you had to already know the state was shareable. Spelling the URL
+        // out in the row's text would be worse: a link is not something to read.
+        //
+        // So the entries are anchors whose href IS that link. Right-click → Copy
+        // link address, ⌘/ctrl-click, middle-click and "open in new tab" all
+        // work exactly as they do everywhere else on the web, with no extra UI
+        // and nothing to explain — and a plain left-click still starts the
+        // export, because that is what the row is for. The two downloads that
+        // are direct URLs (KML, Locus) were already anchors; this makes the
+        // whole menu consistent.
+        function menuShareLink(id, item) {
+            const u = new URL(window.location.href);
+            u.search = '';
+            const p = u.searchParams;
+            const pwd = new URLSearchParams(window.location.search).get('pwd');
+            if (pwd) p.set('pwd', pwd);
+            const aoi = typeof isAOI === 'function' && isAOI(id);
+            p.set(aoi ? 'aoi' : 'popup', id);
+            p.set('aoi_menu', id);
+            p.set('aoi_menu_item', item);
+            // The time window is part of the question the export asks, so the
+            // link has to carry it — same param names the main share link uses.
+            if (dateFrom) p.set('from', dateFrom);
+            if (dateTo) p.set('to', dateTo);
+            return u.toString();
+        }
+
+        // Left-click means "do it here"; every modified click means "this is a
+        // link" and is left to the browser. Without that check, ⌘-click would
+        // both open a tab and kick off a build.
+        function startGeoPackageExportFromLink(ev, id, name, raw) {
+            if (ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey || ev.button === 1) return true;
+            ev.preventDefault();
+            ev.stopPropagation();
+            startGeoPackageExport(id, name, { raw: raw });
+            return false;
+        }
+        window.menuShareLink = menuShareLink;
+        window.startGeoPackageExportFromLink = startGeoPackageExportFromLink;
+
         // One download menu for both a park and an AOI.
         //
         // They used to differ: an AOI had a ▾ menu, a park had three bare icons
@@ -8784,8 +8829,8 @@
             return `
                 ${geojson}
                 <a class="aoi-menu-item" data-item="kml" href="${base}/export.kml?pwd=${pwd}&effort=0${dp}" download="${id}${suffix}.kml"><i class="icon-map"></i><span>KML</span><em>Google Earth</em></a>
-                <button class="aoi-menu-item" data-item="gpkg" onclick="event.stopPropagation();startGeoPackageExport('${id}','${safeName}')"><i class="icon-database"></i><span>GeoPackage</span><em>all layers, QGIS</em></button>
-                <button class="aoi-menu-item" data-item="gpkg_light" onclick="event.stopPropagation();startGeoPackageExport('${id}','${safeName}',{raw:false})"><i class="icon-database"></i><span>GeoPackage</span><em>no raw fire points</em></button>
+                <a class="aoi-menu-item" data-item="gpkg" href="${menuShareLink(id, 'gpkg')}" onclick="return startGeoPackageExportFromLink(event,'${id}','${safeName}',true)"><i class="icon-database"></i><span>GeoPackage</span><em>all layers, QGIS</em></a>
+                <a class="aoi-menu-item" data-item="gpkg_light" href="${menuShareLink(id, 'gpkg_light')}" onclick="return startGeoPackageExportFromLink(event,'${id}','${safeName}',false)"><i class="icon-database"></i><span>GeoPackage</span><em>no raw fire points</em></a>
                 <a class="aoi-menu-item" data-item="locus" href="${base}/export.locus?pwd=${pwd}${dp}" download="${id}_locus.zip"><i class="icon-smartphone"></i><span>Locus</span><em>field device backup</em></a>
                 <button class="aoi-menu-item" data-item="tiles" onclick="event.stopPropagation();closeAOIMenu();showMBTilesDialog('${id}', '${safeName}')"><i class="icon-layers"></i><span>Tiles</span><em>offline satellite</em></button>`;
         }
