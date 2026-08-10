@@ -1,18 +1,18 @@
 {
  "CAF_Chinko": {
-  "scanned_at": "2026-07-30T04:35:07Z",
-  "n_alerts": 601798,
-  "n_requests": 81
+  "scanned_at": "2026-08-07T04:35:57Z",
+  "n_alerts": 791644,
+  "n_requests": 97
  },
  "CAF_Bamingui-Bangoran": {
-  "scanned_at": "2026-07-31T04:32:10Z",
-  "n_alerts": 20305,
+  "scanned_at": "2026-08-08T04:31:56Z",
+  "n_alerts": 22934,
   "n_requests": 50
  },
  "CAF_Dzanga_Park": {
-  "scanned_at": "2026-08-01T04:43:21Z",
-  "n_alerts": 1835248,
-  "n_requests": 169
+  "scanned_at": "2026-08-09T04:42:08Z",
+  "n_alerts": 1895189,
+  "n_requests": 157
  },
  "CAF_Manovo_Gounda_St_Floris": {
   "scanned_at": "2026-08-02T04:32:22Z",
@@ -40,7 +40,7 @@
   "n_requests": 57
  },
  "SSD_Zeraf": {
-  "scanned_at": "2026-07-29T04:31:47Z",
+  "scanned_at": "2026-08-06T04:32:01Z",
   "n_alerts": 901,
   "n_requests": 43
  }

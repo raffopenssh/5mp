@@ -93,7 +93,22 @@ def ensure_pbf(iso, dest_dir="/tmp"):
     if not os.path.exists(pbf):
         url = f"https://download.geofabrik.de/africa/{region}-latest.osm.pbf"
         print(f"downloading {url}", file=sys.stderr)
-        subprocess.run(["curl", "-sfL", "--retry", "3", url, "-o", pbf], check=True)
+        # Bounded on THROUGHPUT, not just on retries: --retry does not cover a
+        # stall, and an idle connection would otherwise hold the nightly cron
+        # open indefinitely (same failure the histmap JP2 fetches hit).
+        # <10 kB/s for 120 s = dead; 90 min hard cap covers the 750 MB PBFs.
+        try:
+            subprocess.run(["curl", "-sfL", "--retry", "3",
+                            "--speed-limit", "10000", "--speed-time", "120",
+                            "--max-time", "5400", url, "-o", pbf], check=True)
+        except Exception:
+            # A truncated PBF is worse than no PBF: osmium would read it as a
+            # smaller country and every park of it would silently thin out.
+            try:
+                os.remove(pbf)
+            except OSError:
+                pass
+            raise
     return pbf, pbf.startswith("/tmp/")
 
 
@@ -395,12 +410,34 @@ def enrich_country(country, parks, buffer_km=50, dry_run=False):
     return done
 
 
+def _infra_counts(parks):
+    """(places, roads) row totals for a list of parks."""
+    import sqlite3
+    ids = [p["id"] for p in parks]
+    q = ",".join("?" * len(ids))
+    db = sqlite3.connect(f"file:{DB_PATH}?mode=ro", uri=True)
+    try:
+        pl = db.execute(f"SELECT COUNT(*) FROM osm_places WHERE park_id IN ({q})",
+                        ids).fetchone()[0]
+        rd = db.execute(f"SELECT COUNT(*) FROM roads_heigit WHERE park_id IN ({q})",
+                        ids).fetchone()[0]
+        return pl, rd
+    finally:
+        db.close()
+
+
 def enrich_all(iso=None, buffer_km=50, dry_run=False, rotate=0):
     """Refresh every park to full Geofabrik detail.
 
     rotate=N: only the N least-recently-refreshed countries this run (the
     nightly mode). rotate=0: all of them, which is the ~hours-long one-off.
+
+    Every country reports into the notification panel, success or failure --
+    a nightly job nobody can see is a nightly job nobody notices stopping.
     """
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from cron_notify import notify_status
+
     by_iso = _parks_by_country(iso)
     if not by_iso:
         print("no parks match")
@@ -412,11 +449,43 @@ def enrich_all(iso=None, buffer_km=50, dry_run=False, rotate=0):
     for country in order:
         parks = by_iso[country]
         print(f"== {country}: {len(parks)} parks", file=sys.stderr)
-        n = enrich_country(country, parks, buffer_km, dry_run)
         if dry_run:
+            enrich_country(country, parks, buffer_km, dry_run)
             continue
-        state[country] = {"at": _utcnow(), "parks": n}
+        before = _infra_counts(parks)
+        try:
+            n = enrich_country(country, parks, buffer_km, dry_run)
+        except Exception as ex:  # noqa: BLE001
+            # One country's PBF being unavailable must not cost the other
+            # country in tonight's rotation its turn.
+            print(f"{country} failed: {ex}", file=sys.stderr)
+            notify_status("osm_enrich_failed", "OSM Detail Refresh Failed",
+                          f"{country}: {str(ex)[:200]}")
+            continue
+        # A country that enriched no park did not succeed -- leave its state
+        # entry untouched so the rotation retries it tomorrow rather than
+        # freezing a wrong answer as fresh (AGENTS.md: the no-op that reads
+        # as an answer).
+        if n == 0:
+            notify_status("osm_enrich_failed", "OSM Detail Refresh Failed",
+                          f"{country}: 0 of {len(parks)} parks enriched "
+                          f"(PBF or extract failed); will retry next run")
+            continue
+        after = _infra_counts(parks)
+        state[country] = {"at": _utcnow(), "parks": n,
+                          "places": after[0], "roads": after[1]}
         _save_state(state)
+        # Counted over ALL countries, not the --iso subset: the point of the
+        # number is "how much of the corpus is still on the thin HeiGIT
+        # import", which a filtered run must not misreport as nearly done.
+        all_countries = _parks_by_country()
+        never = len([c for c in all_countries if c not in state])
+        notify_status(
+            "osm_enrich_success", "OSM Detail Refresh Complete",
+            f"{country}: {n}/{len(parks)} parks refreshed from Geofabrik - "
+            f"{after[1]:,} roads ({after[1] - before[1]:+,}), "
+            f"{after[0]:,} places ({after[0] - before[0]:+,}); "
+            f"{never}/{len(all_countries)} countries still never refreshed")
 
 
 # --------------------------------------------------------------------------

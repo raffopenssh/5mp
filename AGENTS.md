@@ -1286,6 +1286,45 @@ python3 scripts/osm_pbf.py --enrich-all --iso CAF    # one country, ~75s
   It warns and keeps the existing rows for the next rotation.
 * Interruption is safe: each park commits before the next, and the state file
   only advances per completed country.
+* **A country that enriched 0 parks does not advance the state file** and
+  reports `osm_enrich_failed` — otherwise a bad PBF freezes as "refreshed"
+  and that country never comes round again (AGENTS.md's recurring no-op).
+  One country failing does not cost the other its turn in the same night.
+* The PBF fetch is bounded on **throughput** (`--speed-limit 10000
+  --speed-time 120`, `--max-time 5400`) and a failed download is **deleted** —
+  `--retry` does not cover a stall, and a truncated PBF reads as a smaller
+  country, silently thinning every park in it.
+* Progress is visible: each country writes an `osm_enrich_success` /
+  `osm_enrich_failed` notification with road/place deltas and how many
+  countries are still on the thin HeiGIT import. It is a ~17-day rotation, so
+  without that there is nothing to look at between start and finish.
+
+## Cron jobs report into the notification bell — by SHAPE, not by a list
+
+Every nightly job writes a `<job>_success` / `<job>_failed` row via
+`scripts/cron_notify.py`. The bell fetches
+`/api/notifications?type=cron_status`, a **meta-type** resolved server-side by
+`cronStatusSQL()` (`srv/notifications.go`): `LIKE '%_success'`,
+`LIKE '%_failed'`, plus the few one-off system types.
+
+It used to be a hardcoded comma-separated list of six types in globe.html, so
+every job added after it wrote notifications **nobody ever saw** — the OSM
+rotation, park onboarding, and `daily_fire_update`'s own `nrt_sp_drift` /
+`fire_ingest_errors` / `fire_rebuild_failed` rows. Never go back to
+enumerating types there; a new job must appear with no frontend change.
+`renderFireDownloadNotification()` is likewise generic (`CRON_ICONS` keyed on
+the type prefix, sensible default) because it renders jobs it has not heard of.
+Excluded on purpose: `mbtiles_*`, `aoi_progress`, `fire_alert`, `new_upload`,
+`new_publication` — each has its own renderer; and the retired
+`turbidity_scan_*`, via `miningNotifSQLFilter()`.
+
+**Two systemd units were failing every night since March** —
+`fire-nrt-daily.timer` / `fire-backfill.timer` still ran
+`scripts/fire_nrt/cron_*.sh`, deleted in commit 087956d (203/EXEC), and were
+superseded by the crontab's `daily_fire_update.py`. Removed 2026-08-10.
+A duplicate scheduler is worse than none: check
+`systemctl list-timers --all` as well as `crontab -l`.
+
 
 ## On-the-fly Park Onboarding
 

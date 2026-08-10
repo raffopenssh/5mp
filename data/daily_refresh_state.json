@@ -1,18 +1,18 @@
 {
  "CAF_Chinko": {
-  "refreshed_at": "2026-07-30T07:38:49Z"
+  "refreshed_at": "2026-08-08T07:34:12Z"
  },
  "AGO_Cameia": {
   "refreshed_at": "2026-07-07T07:35:04Z"
  },
  "CAF_Bamingui-Bangoran": {
-  "refreshed_at": "2026-07-31T07:35:14Z"
+  "refreshed_at": "2026-08-08T07:32:16Z"
  },
  "AGO_Iona": {
   "refreshed_at": "2026-07-08T07:35:02Z"
  },
  "CAF_Dzanga_Park": {
-  "refreshed_at": "2026-08-01T07:40:34Z"
+  "refreshed_at": "2026-08-09T07:30:32Z"
  },
  "CAF_Manovo_Gounda_St_Floris": {
   "refreshed_at": "2026-08-02T07:35:24Z"
@@ -42,7 +42,7 @@
   "refreshed_at": "2026-07-13T07:35:02Z"
  },
  "SSD_Zeraf": {
-  "refreshed_at": "2026-07-29T07:35:26Z"
+  "refreshed_at": "2026-08-06T07:41:07Z"
  },
  "BWA_Central_Kalahari": {
   "refreshed_at": "2026-07-14T07:33:25Z"
@@ -103,5 +103,8 @@
  },
  "COD_Garamba": {
   "refreshed_at": "2026-08-05T07:35:03Z"
+ },
+ "COD_Itombwe": {
+  "refreshed_at": "2026-08-06T07:35:28Z"
  }
 }

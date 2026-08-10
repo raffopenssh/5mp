@@ -23,8 +23,34 @@ type Notification struct {
 	CreatedAt        time.Time              `json:"created_at"`
 }
 
+// cronStatusSQL matches every nightly-job status row, by SHAPE rather than by
+// an enumerated list.
+//
+// The bell used to fetch a hardcoded comma-separated list of six types, so a
+// new cron job reported into the notifications table and was never displayed:
+// osm_pbf's Geofabrik rotation, the onboarding worker and daily_fire_update's
+// own nrt_sp_drift / fire_ingest_errors / fire_rebuild_failed rows were all
+// invisible for exactly that reason. A job that cannot be seen is a job whose
+// silence nobody notices, which is the same failure as the AOI "no-op that
+// reads as an answer".
+//
+// The convention every writer already follows is `<job>_success` /
+// `<job>_failed` (scripts/cron_notify.py), so match that plus the handful of
+// one-off system types. New jobs are then displayed with no frontend change.
+// Deliberately excludes park-event types (fire_alert, new_upload,
+// new_publication) and aoi_progress, which have their own renderers.
+func cronStatusSQL(col string) string {
+	return "((" + col + " LIKE '%\\_success' ESCAPE '\\'" +
+		" OR " + col + " LIKE '%\\_failed' ESCAPE '\\'" +
+		" OR " + col + " IN ('nrt_sp_drift','fire_ingest_errors','park_onboarding'))" +
+		" AND " + col + " NOT LIKE 'mbtiles\\_%' ESCAPE '\\')"
+}
+
 // HandleGetNotifications returns unread or filtered notifications
 // GET /api/notifications?limit=50&park_id=XXX&type=new_publication
+//
+// type=cron_status is a meta-type: every nightly-job status row (see
+// cronStatusSQL). Prefer it over listing types by hand.
 func (s *Server) HandleGetNotifications(w http.ResponseWriter, r *http.Request) {
 	limit := 50
 	if l := r.URL.Query().Get("limit"); l != "" {
@@ -74,6 +100,11 @@ func (s *Server) HandleGetNotifications(w http.ResponseWriter, r *http.Request) 
 		query = `SELECT id, park_id, notification_type, title, message, reference_id, reference_url, reference_data, is_read, created_at
 		         FROM notifications WHERE park_id = ? AND ` + envCond + ` ORDER BY created_at DESC LIMIT ?`
 		args = append(append([]interface{}{parkID}, envArgs...), limit)
+	} else if notifType == "cron_status" {
+		query = `SELECT id, park_id, notification_type, title, message, reference_id, reference_url, reference_data, is_read, created_at
+		         FROM notifications WHERE ` + cronStatusSQL("notification_type") +
+			` AND ` + envCond + ` ORDER BY created_at DESC LIMIT ?`
+		args = append(append([]interface{}{}, envArgs...), limit)
 	} else if notifType != "" {
 		// comma-separated list of types supported (e.g. cron status types)
 		types := strings.Split(notifType, ",")
