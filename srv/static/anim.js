@@ -33,6 +33,7 @@
     const DEFOREST_FLASH_DAYS = 45;
     const POINTS_ZOOM = 6.5;       // default to real points at/above this zoom
     const POINTS_MAX_AREA = 40;    // deg², matches server cap
+    const GIF_MAX_FRAMES = 160;    // size ceiling; duration is preserved by delay
 
     let A = null; // active animator state
 
@@ -52,7 +53,7 @@
     const LAYER_ORDER = ['fireGrid', 'firePts', 'trajs', 'effortGrid', 'effortPts', 'deforest', 'settlements', 'infra'];
 
     function getPwdSafe() { return (typeof getPwd === 'function' ? getPwd() : '') || ''; }
-    function toast(msg, type) { if (typeof showToast === 'function') showToast(msg, type || 'info'); }
+    function toast(msg, type, opts) { if (typeof showToast === 'function') showToast(msg, type || 'info', opts); }
     function fmtDate(ms) { return new Date(ms).toISOString().slice(0, 10); }
     function fmtDateHuman(ms) {
         const d = new Date(ms);
@@ -777,6 +778,26 @@
         return [sp, ep];
     }
 
+    // Is there anything to draw at time t? A time animation legitimately
+    // starts empty — at t0 no trajectory has begun and no fire has been
+    // detected yet — but a share link that opens *paused* at t0 then shows a
+    // blank map, which reads as "the layer is broken", not as "the film has
+    // not started". Used only to word a hint; drawing is unaffected.
+    function frameHasContent(t) {
+        const D = A.data, on = A.on;
+        const has = arr => Array.isArray(arr) && arr.length;
+        if (on.trajs && has(D.trajs) && D.trajs.some(g => g.t0 <= t)) return true;
+        if (on.deforest && has(D.deforest) && D.deforest.some(d => d.t <= t)) return true;
+        if (on.settlements && has(D.settlements)) return true;
+        if (on.infra && has(D.infra)) return true;
+        if (on.firePts && has(D.firePts) && D.firePts.some(p => p[2] <= t)) return true;
+        for (const n of ['fireGrid', 'effortGrid', 'effortPts']) {
+            const g = on[n] && D[n];
+            if (g && g.frames && g.frames.some(f => f.t <= t)) return true;
+        }
+        return false;
+    }
+
     function drawAndSync() {
         draw(A.t);
         const el = document.getElementById('anim-date-lbl');
@@ -832,9 +853,19 @@
             const off = document.createElement('canvas');
             off.width = outW; off.height = outH;
             const octx = off.getContext('2d', { willReadFrequently: true });
-            const frames = 80, delayMs = 100;
+            // The GIF must play back at the speed set on screen: A.speed is
+            // days of simulated time per second of wall clock, so the whole
+            // window lasts spanDays / speed seconds. Frame count and delay are
+            // derived from that duration, never fixed — a fixed 80×100 ms made
+            // every export an 8 s clip regardless of the speed control, which
+            // is the one thing the user had just chosen.
             const enc = GIFEncoder();
             const span = A.t1 - A.t0;
+            const durSec = Math.max(1, (span / DAY) / Math.max(0.25, A.speed));
+            // 10 fps is the target; clamp frame count for size, then stretch
+            // the delay so the *duration* stays right (choppier, not faster).
+            const frames = Math.max(8, Math.min(GIF_MAX_FRAMES, Math.round(durSec * 10)));
+            const delayMs = Math.max(20, Math.min(500, Math.round(durSec * 1000 / frames)));
             for (let i = 0; i < frames; i++) {
                 const t = A.t0 + span * i / (frames - 1);
                 draw(t);
@@ -861,7 +892,8 @@
             a.download = `5mp_animation_${fmtDate(A.t0)}_${fmtDate(A.t1)}.gif`;
             a.click();
             setTimeout(() => URL.revokeObjectURL(a.href), 30000);
-            toast('GIF downloaded (' + Math.round(blob.size / 1024) + ' KB)', 'success');
+            toast('GIF downloaded — ' + frames + ' frames, ' + durSec.toFixed(0) + 's at '
+                + fmtSpeed() + ' (' + Math.round(blob.size / 1024) + ' KB)', 'success');
         } catch (e) {
             console.error('GIF export failed:', e);
             toast('GIF export failed: ' + e.message, 'error');
@@ -1164,9 +1196,22 @@
             // ▶ chip and the focus banner disagree about what is on screen.
             let clipGeom = null, aoiID = null;
             const wantAOI = opts.aoi !== undefined ? opts.aoi : (window.aoiFocusID || null);
-            if (wantAOI && window._aois && window._aois[wantAOI]) {
-                const a = window._aois[wantAOI];
-                if (a.geometry) {
+            if (wantAOI) {
+                // window._aois is filled by an async loadAOIs(); a share link
+                // that opens the animator can win that race, and then the AOI
+                // is silently *not* passed as &aoi=, so aoiExcludeSQL() hides
+                // the AOI's own trajectories and the animation plays empty.
+                // A missing geometry is a not-loaded-yet, never an answer:
+                // fetch it rather than degrade to a bbox animation.
+                let a = window._aois && window._aois[wantAOI];
+                if (!a || !a.geometry) {
+                    try {
+                        const r = await fetch(`/api/aois/${encodeURIComponent(wantAOI)}?geometry=1&pwd=`
+                            + encodeURIComponent(getPwdSafe()));
+                        if (r.ok) { const j = await r.json(); a = j.aoi || j; }
+                    } catch (e) { /* fall through: animate as bbox */ }
+                }
+                if (a && a.geometry) {
                     clipGeom = a.geometry;
                     aoiID = wantAOI;
                     const gb = geomBbox(a.geometry) || a.bbox;
@@ -1235,6 +1280,12 @@
 
             drawAndSync();
             if (opts.paused) { pause(); drawAndSync(); } else play();
+            // Opened paused on an empty first frame: say why rather than let
+            // the user conclude the layer failed to load.
+            if (any && opts.paused && !frameHasContent(A.t)) {
+                toast('Paused at ' + fmtDateHuman(A.t) + ' — nothing has happened yet in this window. Press ▶ to play.',
+                      'info', { key: 'anim-empty-start' });
+            }
             if (typeof updateShareURL === 'function') updateShareURL();
         },
         close() {
