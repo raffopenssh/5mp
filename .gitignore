@@ -145,3 +145,6 @@ data/geomaps/src/
 data/geomaps/work/
 data/geomaps/*.mbtiles
 data/geomaps/*.pmtiles
+# vectorizer output: 40 MB for Sudan alone, regenerate with vectorize.py.
+# legend_*.json IS committed - it is measured input, not derived output.
+data/geomaps/*_units.geojson
