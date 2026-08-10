@@ -1465,20 +1465,27 @@ byte-exact and resumable beats a little bandwidth). Pinned by
 **A middleware must not commit to a response encoding before the handler has
 described the response.**
 
-### `<a download>` breaks "Copy Link" in Safari
+### Safari cannot "Copy Link" from the export menu — give it a button
 
-Safari's context-menu **Copy Link** on an anchor carrying a `download`
-attribute copies the *attribute* — the bare filename — instead of the href. The
-export menu exists so that right-click → copy → paste into an email works
-without any extra UI, so every entry there is now a plain `<a href>` and the
-filename comes from the server's `Content-Disposition`. `HandleAPIParkKML` puts
-the date window in it (`CAF_Chinko_2024-01-01_to_2024-06-30.kml`), which is what
-the attribute used to do — the window is part of what the file *is*, and two
-windows must not share one name in a downloads folder. Pinned by
-`kml_filename_from_content_disposition` and `export_links_have_no_download_attr`
-in `tests/api_tests.sh`.
+The download menu's rows are anchors so that right-click → Copy Link needs no
+extra UI. On Safari it does not work, in **two** ways, and the second is not
+fixable in markup:
 
-**A filename is the server's job, not the link's.**
+1. With a `download="…"` attribute, Copy Link yields the **attribute** — the
+   bare filename (`XSA_Study_Area.kml`). The attribute is gone; the filename
+   now comes from the server's `Content-Disposition` (`HandleAPIParkKML` puts
+   the date window in it, which is what the attribute used to do — the window
+   is part of what the file *is*).
+2. Without it, Safari still writes a **rich-text** link whose visible text is
+   the row's own label, so pasting into Mail or Notes gives "KML".
+
+So every row with a real URL carries an explicit ⧉ (`copyExportLink`) that
+writes `clipboard.writeText` of the absolute URL, and the menu **stays open** —
+copying a link is not choosing a download. The anchors stay for ⌘-click and
+"open in new tab". Pinned by `kml_filename_from_content_disposition` and
+`export_links_have_no_download_attr` in `tests/api_tests.sh`.
+
+**A filename is the server's job; a copyable URL is a button's.**
 
 ### A shared download link logs you in and then downloads
 
