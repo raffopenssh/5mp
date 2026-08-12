@@ -26,12 +26,38 @@ data, different serving path; the georeferencing discipline and the
 | vectorized | done, **46 classes**, 34 MB GeoJSON | done, **17 classes**, 6.9 MB | fetched, **41 classes** / 596 polygons, 5.6 MB |
 | window hold-out | claim 0.998, accuracy 1.000 | claim 0.998, accuracy 1.000 | n/a — no classifier |
 | unclaimed inside cutline | 9.0% | 8.7% | n/a |
-| area claimed | 2.28M km² of ~2.5M | 564k km² of ~623k | 887k km² of ~947k (the rest is Victoria/Tanganyika/Nyasa) |
+| area claimed | 2.28M km² of ~2.5M | 564k km² of ~623k | 887k km² vs ~886k km² of land — see below |
 | tiles | `data/geomaps/sudan.mbtiles` 9.8 MB, z0–10 | `car.mbtiles` 3.1 MB, z0–10 | `tanzania.mbtiles` 2.2 MB, z0–10 |
 | server | done — `srv/geomap.go` | same | same |
 | UI | done — admin ▸ Map Settings ▸ Geology | same | same |
 
 Live: `/?pwd=test2026&geomap=car&lat=8&lng=22&z=6`
+
+### Tanzania's area, stated honestly
+
+The two scans report **area claimed** — how much of the country the classifier
+dared label, where the shortfall is the classifier's. Tanzania has no
+classifier, so the number means something else and is not comparable:
+
+| | km² |
+|---|---|
+| mapped geology (596 polygons, what we ship) | **887,107** |
+| the layer's own water polygons (25, dropped) | 44,851 |
+| the layer's unattributed polygons (2, dropped) | 25 |
+| — the layer, in total | 931,983 |
+| Tanzania's land area (CIA/UN) | ~885,800 |
+| Tanzania's total area (CIA/UN) | ~947,300 |
+
+So the geology matches the country's **land** area to within 0.2%, which is the
+check that matters. The layer as a whole is ~15,000 km² short of the total
+because its own water polygons (44,851 km²) do not add up to Tanzania's inland
+water (~61,500 km²) — **the sheet does not map every lake.** That is a fact
+about the sheet, not a bug in the fetch, and `quality.area_note` says so in the
+catalogue rather than leaving the totals looking like an error. Every dropped
+feature is accounted for by count *and* area under `quality.dropped`, keyed by
+the survey's own reason; the two unattributed polygons are recorded as "not
+attributed" rather than folded into the water count, because guessing what we
+threw away is worth less than saying the sheet does not say.
 
 ## The one thing to understand **about the two scans**
 
@@ -184,6 +210,15 @@ The GeoPackage cache invalidates itself from the input **set**, so step 5 needs
 no `rm` — but check the row count anyway: that sum against the country's real
 area is the one number that catches a half-downloaded sheet.
 
+**Compare it to a figure from outside the sheet, and report what you find even
+if it disagrees.** A geology layer's coverage is not the country's area and has
+no obligation to match it: lakes may be excluded, a survey may not map its own
+border region, an offshore strip may be included. Tanzania's geology matches
+the **land** area to 0.2% while the layer as a whole falls ~15,000 km² short of
+the total, because the sheet does not map every lake. Write that down
+(`quality.area_note`) rather than picking whichever comparison flatters the
+build — an unexplained 5% is how a half-downloaded sheet hides.
+
 ### If the source is a web service (WFS/WMS) — the four traps
 
 `scripts/geomaps/gmis_tanzania.py` is the worked example; copy its shape.
@@ -206,9 +241,11 @@ area is the one number that catches a half-downloaded sheet.
    `color` means "this is how the survey prints it", and the map does not
    depend on it (screen colour is ICS age).
 4. **Not every feature is rock.** The GST layer carries 26 water polygons and
-   one unattributed one. Drop them — and put the count and the reason in
-   `quality`. Dropping them silently is the failure shape this codebase keeps
-   paying for.
+   one unattributed one. Drop them — and record the count **and the area** per
+   reason in `quality.dropped`, using the survey's own word where it has one.
+   A bare count invites the reader to assume the remainder was negligible;
+   44,851 km² of lake is not. Dropping them silently is the failure shape this
+   codebase keeps paying for.
 
 Also: record what the licence page actually says, including when there is none.
 The GMIS capabilities state Fees NONE / AccessConstraints NONE and the site has
@@ -251,6 +288,35 @@ Every hyphenated span needs a **curated rule above both of its endpoints**, or
 rule order decides. `geoVocabAudit` reports any span you have not curated as
 `age_ambiguous` — that is not a nag, it is the only thing standing between you
 and a coin toss wearing a decision's face.
+
+**If you derive `group`, keep the verbatim string.** The tip prints an "as
+printed:" line, and it must be the survey's words — `chronostrat`, else
+`age_strat`, else `group`. A derived value under that label is a false claim
+about provenance, and it is invisible: it reads as the sheet being clearer than
+it was.
+
+### Sanity-check what the UI reads, not just what the tests pass
+
+The panel and the stats-panel Map strip (`srv/static/maplegend.js`) render from
+`age`, `ics_color` and `lith` on every class, all three added server-side by
+`geoMapStandardise`. They are derived, so a new sheet appears in both by itself
+— but only if the vocabulary covers it:
+
+```bash
+curl -s "localhost:8000/api/geomap?pwd=$PWD_TOKEN" | python3 -c '
+import json,sys
+for s in json.load(sys.stdin)["sheets"]:
+    c=s["catalogue"]; u=c["unmapped"]
+    bad=[x["code"] for x in c["classes"]
+         if x.get("age","unknown")=="unknown" or not x.get("ics_color") or not x.get("lith")]
+    print(c["sheet"], s["available"], len(c["classes"]), u["age"], u["lithology"],
+          u["age_ambiguous"], bad or "ok")'
+```
+
+A class with `age: "unknown"` or a missing `lith` is a **vocabulary gap to fix
+in `geomap_std.go`**, never something to default in the client: the strip would
+draw it grey with the generic hatch, which is how the map deliberately says
+"genuinely undated, genuinely undifferentiated".
 
 ### What a new sheet must NOT bring
 
@@ -399,9 +465,19 @@ collapsed list of all classes with per-class hide.
   `GeoMap.reattach()`, which re-adds on `idle` — re-adding during `styledata`
   is silently dropped because the `before` id has not landed yet. Same trap,
   same fix, as `HistMap`.
-* Click a unit → popup with code, name, group, the merged-units warning, and
-  the affinity list with its disclaimer. **Click, not hover**: the overlay
-  covers the whole country and a hover handler would fight every other tip.
+* Click a unit → popup with code, name, the survey's own rock description
+  (where the sheet has one), the derived age and lithology, the merged-units
+  warning, and the affinity list with its disclaimer. **Click, not hover**: the
+  overlay covers the whole country and a hover handler would fight every other
+  tip.
+* **"As printed:" must be the sheet's own words.** It shows `chronostrat`
+  verbatim, else the sheet's `age_strat`, else `group`. `group` was the whole
+  answer while both sheets were scans, where it *is* the printed string — on a
+  vector sheet it is derived, so the label was attributing our reading to the
+  survey. Tanzania's `cNP` prints "Neoproterozoic (NP2-3) - Cambrian(?)" and
+  our group drops both the codes and a question mark the survey meant; its
+  Cenozoic units print no age word at all, only "2.6 - 0 Ma". The derived
+  period still shows, above, as our legend rather than as theirs.
 * Share links: `?geomap=car` is the common case. `geomap_only=`, `geomap_hide=`,
   `geomap_color=`, `geomap_pattern=`, `geomap_lith=`, `geomap_opacity=` and
   `geomap_adv=` (the Advanced disclosure — a panel setting, so it travels even
