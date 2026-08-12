@@ -110,17 +110,23 @@
         </div>
         <div class="stats-divider"></div>
         <div class="stats-header">Conservation Data</div>
+        <!-- .stats-lod: what the layer is CURRENTLY drawing, on the control
+             that switches it on. Hidden until the layer is on, so the panel is
+             unchanged for anyone not using it (see setLayerLOD). -->
         <div class="stats-item fire layer-toggle" id="stat-fires" onclick="toggleViewLayer('fires')" title="Click to show/hide fires in view">
             <span class="stats-label">Fire Activity</span>
             <span class="stats-value"><span id="stats-fires">0</span><span class="stats-trend stable" id="stats-fire-trend"></span></span>
+            <span class="stats-lod" id="lod-fires"></span>
         </div>
         <div class="stats-item deforest layer-toggle" id="stat-deforest" onclick="toggleViewLayer('deforest')" title="Click to show/hide deforestation in view">
             <span class="stats-label">Deforestation</span>
             <span class="stats-value"><span id="stats-deforest">0 km²</span><span class="stats-trend stable" id="stats-deforest-trend"></span></span>
+            <span class="stats-lod" id="lod-deforest"></span>
         </div>
         <div class="stats-item settlement layer-toggle" id="stat-settlements" onclick="toggleViewLayer('settlements')" title="Click to show/hide settlements in view">
             <span class="stats-label">Settlements</span>
             <span class="stats-value" id="stats-settlements">0</span>
+            <span class="stats-lod" id="lod-settlements"></span>
         </div>
     </div>
 
@@ -12327,7 +12333,48 @@
 
         function removeViewFeatureLayer(name) {
             if (window.LODLayer) window.LODLayer.remove('view-' + name);
+            setLayerLOD(name, null);
         }
+
+        // What a viewport layer is drawing right now, shown on the row that
+        // switches it on (.stats-lod).
+        //
+        // WHY THIS EXISTS. The LOD loader swaps clickable vectors for dots when
+        // a view holds more features than are worth drawing as shapes. That is
+        // the right behaviour and it was invisible: zoom out and your fire
+        // trajectories "became dots", with nothing on screen saying they were
+        // still the same features, still hoverable, and still all there. A
+        // silent downgrade reads as data loss — which is exactly the failure
+        // this whole LOD work exists to avoid.
+        //
+        // Deliberately NOT a floating HUD: the question is about one layer, and
+        // that layer's control already has a row. A HUD would be a fourth thing
+        // competing with the toast, the pinned indicator and the time slider
+        // for the same corner of the screen.
+        const LOD_STAT_EL = { fires: 'lod-fires', deforest: 'lod-deforest', settlements: 'lod-settlements' };
+        function setLayerLOD(name, st) {
+            const el = document.getElementById(LOD_STAT_EL[name]);
+            if (!el) return;
+            if (!st) { el.textContent = ''; el.title = ''; delete el.dataset.render; return; }
+            const n = (st.count || 0).toLocaleString();
+            const shapes = st.render !== 'points';
+            const more = st.truncated ? ' of ' + (st.total || 0).toLocaleString() : '';
+            el.innerHTML = `<span class="lod-count">${n}${more} in view</span>`
+                         + `<span class="lod-mode ${shapes ? 'shapes' : 'dots'}">${shapes ? 'shapes' : 'dots'}</span>`;
+            el.title = shapes
+                ? `${n}${more} clickable ${name} in view — full geometry`
+                : `${n}${more} ${name} in view, drawn as points because there are too many `
+                  + `shapes to draw at this zoom. Hover one for its details, or zoom in for the shapes.`;
+            // Flash only when the MODE changed: a count ticking as you pan is
+            // not news, a change of rendering is.
+            if (el.dataset.render !== st.render) {
+                el.dataset.render = st.render;
+                el.classList.remove('changed');
+                void el.offsetWidth;
+                el.classList.add('changed');
+            }
+        }
+        window.setLayerLOD = setLayerLOD;
 
         // One loader, shared with pinned layers (srv/static/lodlayer.js). What
         // used to be here — a hard `limit=1500`, a refetch on every moveend,
@@ -12347,15 +12394,11 @@
                 dated: name !== 'settlements',
                 onLoading: (busy) => { if (statEl) statEl.classList.toggle('loading', busy); },
                 onCount: (count, total, render, truncated) => {
-                    if (!truncated) return;
-                    // The server spreads a truncated answer across the bbox, so
-                    // this is "a sample of the whole view", not "one corner".
-                    showToast('Showing ' + count.toLocaleString() + ' of ' +
-                              total.toLocaleString() + ' ' + name +
-                              ' spread across the view' +
-                              (render === 'points' ? ' — hover a dot for its details' : '') +
-                              ' — zoom in for full detail', 'info',
-                              { key: 'lod-trunc-' + name });
+                    // The row says what is on screen; this used to be a toast
+                    // per truncated fetch, which fired on every zoom and
+                    // covered the map to say something permanent about the
+                    // view. setLayerLOD writes it into the layer's own control.
+                    setLayerLOD(name, { count, total, render, truncated });
                 }
             });
         }
@@ -17740,9 +17783,9 @@ ${starredItems.narratives.map(n => {
                     parkName,
                     aoi: isAOI(parkId) ? parkId : null,
                     dated: featureType !== 'settlement',
-                    onCount: (count, total) => {
+                    onCount: (count, total, render) => {
                         const p = pinnedLayers[key];
-                        if (p) { p.featureCount = count; p.totalCount = total; }
+                        if (p) { p.featureCount = count; p.totalCount = total; p.render = render; }
                         if (typeof updatePinnedIndicator === 'function') updatePinnedIndicator();
                     }
                 });
@@ -18412,7 +18455,9 @@ ${starredItems.narratives.map(n => {
             const layer = pinnedLayers[key];
             const park = layer.parkName;
             if (!byPark[park]) byPark[park] = [];
-            byPark[park].push({ type: layer.type, count: layer.featureCount, key, isBulk: true });
+            byPark[park].push({ type: layer.type, count: layer.featureCount, key, isBulk: true,
+                                lod: layer.lod, render: layer.render,
+                                total: layer.totalCount });
         });
         singleKeys.forEach(key => {
             const pin = singlePinnedFeatures[key];
@@ -18470,9 +18515,21 @@ ${starredItems.narratives.map(n => {
                     // network or the drivable subset of 3,164.
                     const tierNote = GEO_DETAIL_LAYERS.includes(p.type)
                         ? ` (${window.geoDetail} detail)` : '';
-                    html += `<span class="pinned-layer-chip ${p.type}" style="cursor:pointer;" onclick="event.stopPropagation(); flyToPinnedLayer('${p.key}')" title="${typeLabels[p.type] || p.type}: ${count} features${tierNote} - Click to fly to">`;
+                    // An LOD pin follows the viewport, so its count is "here,
+                    // now" and its rendering can change under you. Both are
+                    // said on the chip itself: a ◇ for real shapes, a · for
+                    // points — the same distinction the stats rows make, in the
+                    // one character a chip can afford.
+                    let lodMark = '', lodNote = '';
+                    if (p.lod) {
+                        const shapes = p.render !== 'points';
+                        lodMark = `<span class="chip-lod ${shapes ? 'shapes' : 'dots'}">${shapes ? '◇' : '·'}</span>`;
+                        lodNote = shapes ? ' — full shapes in view'
+                                         : ` — drawn as points (${(p.total || count).toLocaleString()} in view); hover one, or zoom in for shapes`;
+                    }
+                    html += `<span class="pinned-layer-chip ${p.type}" style="cursor:pointer;" onclick="event.stopPropagation(); flyToPinnedLayer('${p.key}')" title="${typeLabels[p.type] || p.type}: ${count} features${tierNote}${lodNote} - Click to fly to">`;
                     html += `<span class="chip-icon">${icon}</span>`;
-                    html += `<span class="chip-count">${count}</span>`;
+                    html += `<span class="chip-count">${count}</span>${lodMark}`;
                     html += `<span class="chip-remove" onclick="event.stopPropagation(); removePinnedLayer('${p.key}')" title="Remove">×</span>`;
                     html += `</span>`;
                 } else if (p.isSingle) {
@@ -20442,6 +20499,10 @@ ${starredItems.narratives.map(n => {
                 params.set('anim_t', st.tISO);
                 if (st.aoi) params.set('anim_aoi', st.aoi);
                 if (!st.playing) params.set('anim_paused', '1');
+                // An open download menu, and which entry it points at. Same
+                // contract as aoi_menu_item: a hint the recipient clicks, never
+                // an export that starts itself.
+                if (st.exportItem && st.exportItem !== 'open') params.set('anim_export', st.exportItem);
             }
         }
         
@@ -20579,7 +20640,8 @@ ${starredItems.narratives.map(n => {
                 speed: parseFloat(params.get('anim_speed')) || undefined,
                 t: params.get('anim_t') || undefined,
                 aoi: params.get('anim_aoi') || undefined,
-                paused: params.get('anim_paused') === '1'
+                paused: params.get('anim_paused') === '1',
+                exportItem: params.get('anim_export') || undefined
             };
         }
         

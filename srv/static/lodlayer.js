@@ -32,13 +32,20 @@
     var reg = new Map();          // key -> layer state
     var detailCache = new Map();  // feature row id -> properties
     var detailPending = new Map();
-    var REFETCH_MS = 350;
+    var REFETCH_MS = 260;
     var FADE_MS = 220;
+    var FETCH_PAD = 0.25;   // fetch 25% beyond the view, so a small pan is free
     // The point budget is large on purpose: a centroid is ~26 bytes against
     // ~1.6 KB for its rings, so "as many as the view really holds" is
     // affordable in points mode and dishonest to refuse.
     var LIMIT_POINTS = 30000;
-    var LIMIT_GEOM = 6000;
+    // How many real vector features one view may carry. The server now ships
+    // SLIM properties above ~1200 features (srv/features_bbox.go), so a
+    // trajectory costs its coordinates and a row id rather than its coordinates
+    // plus 750 bytes of narrative: 14,350 fire paths in an 8° view are 2.6 MB
+    // and 0.25 s. That is why this is 12,000 rather than the 6,000 the
+    // properties, not the shapes, used to force.
+    var LIMIT_GEOM = 12000;
 
     function pwd() { return (typeof getPwd === 'function' ? getPwd() : '') || ''; }
 
@@ -58,11 +65,19 @@
                outer[2] >= inner[2] && outer[3] >= inner[3];
     }
 
+    function area(b) { return Math.abs((b[2] - b[0]) * (b[3] - b[1])); }
+
+    function padBBox(b, f) {
+        var w = (b[2] - b[0]) * f, h = (b[3] - b[1]) * f;
+        return [b[0] - w, b[1] - h, b[2] + w, b[3] + h];
+    }
+
     function ids(key) {
         return {
             src: 'lod-' + key,
             fill: 'lod-' + key + '-fill',
             line: 'lod-' + key + '-line',
+            arrow: 'lod-' + key + '-arrows',
             point: 'lod-' + key + '-point',
             dots: 'lod-' + key + '-dots'
         };
@@ -79,7 +94,7 @@
         if (s.abort) s.abort.abort();
         if (s.fadeTimer) clearTimeout(s.fadeTimer);
         var L = ids(key);
-        [L.fill, L.line, L.point, L.dots].forEach(removeLayer);
+        [L.fill, L.line, L.arrow, L.point, L.dots].forEach(removeLayer);
         try { if (map.getSource(L.src)) map.removeSource(L.src); } catch (e) {}
         reg.delete(key);
     }
@@ -89,10 +104,16 @@
     // Geometry and points are two renderings of ONE layer, so they share the
     // source id and cross-fade rather than being torn down and rebuilt:
     // crossing the threshold should read as focus, not as a reload.
-    function ensureLayers(key, render, color) {
+    function ensureLayers(key, render, color, count) {
         var L = ids(key), s = reg.get(key);
+        // Density first: addLayer below reads s.lineWidth / s.pointRadius, so
+        // a layer is born at the right weight instead of flashing at the
+        // default and being corrected a frame later.
+        applyDensity(key, count || 0);
+        var wantArrow = render !== 'points' && s.featureType === 'fire_trajectory';
         var want = render === 'points' ? [L.dots] : [L.fill, L.line, L.point];
-        var unwant = render === 'points' ? [L.fill, L.line, L.point] : [L.dots];
+        var unwant = render === 'points' ? [L.fill, L.line, L.arrow, L.point] : [L.dots];
+        if (wantArrow) want.push(L.arrow);
 
         if (render === 'points') {
             if (!map.getLayer(L.dots)) {
@@ -123,16 +144,34 @@
                 map.addLayer({
                     id: L.line, type: 'line', source: L.src,
                     filter: ['any', ['==', ['geometry-type'], 'LineString'], ['==', ['geometry-type'], 'MultiLineString']],
-                    paint: { 'line-color': color, 'line-width': 2, 'line-opacity': 0 }
+                    paint: { 'line-color': color, 'line-width': s.lineWidth || 2, 'line-opacity': 0 }
                 });
                 registerTip(key, L.line, false);
+            }
+            // Directional arrows: a fire trajectory is a MOVEMENT, and a line
+            // without them says where it burned but not which way it went.
+            // The legacy pin path drew these and the first LOD version lost
+            // them, which read as the vectors being a lesser rendering.
+            // Registered as no-tip: the line underneath answers the hover.
+            if (wantArrow && !map.getLayer(L.arrow) && map.hasImage && map.hasImage('arrow-right')) {
+                map.addLayer({
+                    id: L.arrow, type: 'symbol', source: L.src,
+                    filter: ['==', ['geometry-type'], 'LineString'],
+                    layout: {
+                        'symbol-placement': 'line', 'symbol-spacing': 100,
+                        'icon-image': 'arrow-right', 'icon-size': 0.5, 'icon-rotate': 90,
+                        'icon-rotation-alignment': 'map',
+                        'icon-allow-overlap': true, 'icon-ignore-placement': true
+                    },
+                    paint: { 'icon-color': color, 'icon-opacity': 0 }
+                });
             }
             if (!map.getLayer(L.point)) {
                 map.addLayer({
                     id: L.point, type: 'circle', source: L.src,
                     filter: ['==', ['geometry-type'], 'Point'],
                     paint: {
-                        'circle-radius': ['interpolate', ['linear'], ['zoom'], 4, 2, 8, 4, 12, 6],
+                        'circle-radius': s.pointRadius || 4,
                         'circle-color': color, 'circle-opacity': 0,
                         'circle-stroke-width': 1, 'circle-stroke-color': '#fff', 'circle-stroke-opacity': 0.5
                     }
@@ -140,23 +179,114 @@
                 registerTip(key, L.point, false);
             }
         }
+        var changed = s.render && s.render !== render;
         fade(key, want, unwant);
+        if (changed) focusPulse(key, render);
         s.render = render;
+    }
+
+    // ---- the transition, made visible ------------------------------------
+    //
+    // Crossing the threshold is the one moment the map changes WHAT IT IS
+    // showing rather than how much of it — dots become shapes you can click,
+    // or shapes collapse into dots that still answer a hover. Without a signal
+    // that reads as focus, a user zooming out sees their trajectories "turn
+    // into dots" and reasonably concludes the app threw the detail away.
+    //
+    // So the incoming rendering overshoots and settles: lines come in thick
+    // and thin down, dots come in large and shrink. It is ~380 ms of paint
+    // transition on layers that are being added anyway — no extra geometry, no
+    // extra request — and it is deliberately the same gesture in both
+    // directions, because the claim is that nothing was lost either way.
+    function focusPulse(key, render) {
+        var L = ids(key), s = reg.get(key) || {};
+        var steps = render === 'points'
+            ? [[L.dots, 'circle-radius', ['interpolate', ['linear'], ['zoom'], 2, 4.5, 6, 6, 10, 8],
+                                          ['interpolate', ['linear'], ['zoom'], 2, 1.6, 6, 2.6, 10, 4]]]
+            // Settle back to the DENSITY width, not to a constant: a
+            // hard-coded 2 here silently undid applyDensity and put the red
+            // sheet back every time the layer crossed the threshold.
+            : [[L.line, 'line-width', (s.lineWidth || 2) * 3, s.lineWidth || 2],
+               [L.point, 'circle-radius', (s.pointRadius || 4) * 2.2, s.pointRadius || 4]];
+        steps.forEach(function (st) {
+            if (!map.getLayer(st[0])) return;
+            try {
+                map.setPaintProperty(st[0], st[1] + '-transition', { duration: 0, delay: 0 });
+                map.setPaintProperty(st[0], st[1], st[2]);
+                setTimeout(function () {
+                    if (!map.getLayer(st[0])) return;
+                    map.setPaintProperty(st[0], st[1] + '-transition', { duration: 380, delay: 0 });
+                    map.setPaintProperty(st[0], st[1], st[3]);
+                }, 60);
+            } catch (e) {}
+        });
     }
 
     var OPACITY_PROP = {
         fill: ['fill-opacity', 0.25],
         line: ['line-opacity', 0.8],
-        circle: ['circle-opacity', 0.7]
+        circle: ['circle-opacity', 0.7],
+        symbol: ['icon-opacity', 0.7]
     };
 
-    function setOpacity(id, on) {
+    // DENSITY-AWARE PAINT.
+    //
+    // "As much detail as possible" is not the same as "as much ink as
+    // possible". 1,856 fire trajectories in one view at line-width 2 /
+    // opacity 0.8 is a solid red sheet: every path is there, none of them is
+    // legible, and the picture says less than the dots it replaced. Thin,
+    // translucent strokes at that density let the overlaps accumulate into
+    // structure — corridors and fronts become visible — while a handful of
+    // features stays bold and obviously clickable.
+    //
+    // Keyed on the COUNT ACTUALLY DRAWN, not on zoom, for the same reason the
+    // geometry/points switch is: two views at one zoom differ by orders of
+    // magnitude. Arrows go with it — a directional glyph every 100 px across
+    // 2,000 overlapping paths is noise, so they fade out as the lines thin.
+    function densityPaint(n) {
+        if (n <= 150) return { w: 2.4, o: 0.9, arrow: 0.75, r: 5, fill: 0.3 };
+        if (n <= 600) return { w: 1.8, o: 0.7, arrow: 0.5, r: 4, fill: 0.26 };
+        if (n <= 2000) return { w: 1.2, o: 0.42, arrow: 0.18, r: 3, fill: 0.22 };
+        if (n <= 6000) return { w: 0.9, o: 0.26, arrow: 0, r: 2.4, fill: 0.18 };
+        return { w: 0.7, o: 0.16, arrow: 0, r: 2, fill: 0.14 };
+    }
+
+    function applyDensity(key, n) {
+        var L = ids(key), d = densityPaint(n);
+        var s0 = reg.get(key);
+        if (s0) {
+            s0.lineOpacity = d.o; s0.arrowOpacity = d.arrow; s0.fillOpacity = d.fill;
+            s0.lineWidth = d.w; s0.pointRadius = d.r;
+        }
+        var set = function (id, prop, val) {
+            if (!map.getLayer(id)) return;
+            try {
+                map.setPaintProperty(id, prop + '-transition', { duration: FADE_MS, delay: 0 });
+                map.setPaintProperty(id, prop, val);
+            } catch (e) {}
+        };
+        set(L.line, 'line-width', d.w);
+        set(L.point, 'circle-radius', d.r);
+        // Opacity is only pushed for layers already visible; fade() owns the
+        // 0 -> target step for one being brought in, and reads the same
+        // remembered values (s.lineOpacity etc.) so the two never disagree.
+        if (map.getLayer(L.line) && map.getPaintProperty(L.line, 'line-opacity')) set(L.line, 'line-opacity', d.o);
+        if (map.getLayer(L.fill) && map.getPaintProperty(L.fill, 'fill-opacity')) set(L.fill, 'fill-opacity', d.fill);
+        if (map.getLayer(L.arrow) && map.getPaintProperty(L.arrow, 'icon-opacity')) set(L.arrow, 'icon-opacity', d.arrow);
+    }
+
+    function setOpacity(key, id, on) {
         if (!map.getLayer(id)) return;
         var type = map.getLayer(id).type;
         var p = OPACITY_PROP[type];
         if (!p) return;
+        var s = reg.get(key) || {};
+        var full = p[1];
+        if (id === ids(key).line && s.lineOpacity != null) full = s.lineOpacity;
+        else if (id === ids(key).arrow && s.arrowOpacity != null) full = s.arrowOpacity;
+        else if (id === ids(key).fill && s.fillOpacity != null) full = s.fillOpacity;
         // A dots layer is denser, so it carries less alpha each.
-        var target = on ? (id.endsWith('-dots') ? 0.75 : p[1]) : 0;
+        var target = on ? (id.endsWith('-dots') ? 0.75 : full) : 0;
         try {
             map.setPaintProperty(id, p[0], target);
             map.setPaintProperty(id, p[0] + '-transition', { duration: FADE_MS, delay: 0 });
@@ -165,8 +295,8 @@
 
     function fade(key, on, off) {
         var s = reg.get(key);
-        on.forEach(function (id) { setOpacity(id, true); });
-        off.forEach(function (id) { setOpacity(id, false); });
+        on.forEach(function (id) { setOpacity(key, id, true); });
+        off.forEach(function (id) { setOpacity(key, id, false); });
         if (s.fadeTimer) clearTimeout(s.fadeTimer);
         // Remove the losing rendering only once it is invisible; removing it
         // immediately is the "reload" flicker this whole cross-fade avoids.
@@ -175,18 +305,22 @@
 
     // ---- tips ------------------------------------------------------------
 
-    // A dot's properties are just its row id, so the tip has to go and get the
-    // rest — the same pattern the AOI coverage tip uses: render a placeholder
-    // now, MapTip.refresh() when it lands. Never an empty tip.
+    // A dot's properties are just its row id, and above geoSlimAbove features
+    // so are a VECTOR's — the server ships the shapes and keeps the narrative
+    // for whoever actually reads one (srv/features_bbox.go). Either way the tip
+    // goes and gets the rest: render a placeholder now, MapTip.refresh() when
+    // it lands. Never an empty tip, and never a feature that is only a picture.
     function registerTip(key, layerId, isPoint) {
         if (!window.MapTip) return;
         var s = reg.get(key);
         window.MapTip.register(layerId, {
             html: function (props) {
                 props = props || {};
-                if (!isPoint) return tipHTML(s, props);
                 var id = props.rid;
-                if (id == null) return tipHTML(s, props);
+                // Full properties already present (a small view): answer now.
+                if (id == null || props.narrative || props.group_type || props.classification) {
+                    return tipHTML(s, props);
+                }
                 if (detailCache.has(id)) return tipHTML(s, detailCache.get(id));
                 fetchDetail(id, layerId);
                 return '<div class="maptip-label">' + (s.tipType || 'Feature') + '</div>' +
@@ -247,15 +381,28 @@
     async function load(key, why) {
         var s = reg.get(key);
         if (!s) return;
-        var bbox = viewBBox();
-        if (!bbox) return;
+        var view = viewBBox();
+        if (!view) return;
+        // Fetch a padded box, compare against the unpadded view. A small pan is
+        // then answered from data already in the browser instead of a round
+        // trip — the same trick the animator uses for its fetch bbox, and the
+        // reason panning feels instant while zooming still re-asks.
+        var bbox = padBBox(view, FETCH_PAD);
 
         // Skip a request that cannot reveal anything: the last answer covered
         // a bigger box, was not truncated, and was already real geometry. This
         // is what makes toggling and panning cheap — the old stats-panel path
         // refetched on every moveend regardless.
         if (why === 'move' && s.lastBBox && s.render === 'geometry' && !s.lastTruncated &&
-            contains(s.lastBBox, bbox)) {
+            contains(s.lastBBox, view)) {
+            return;
+        }
+        // In points mode the same containment is not enough on its own —
+        // zooming IN is exactly what should promote it to geometry — but a pan
+        // or a zoom OUT inside a covered box cannot. Compare the area we would
+        // now ask for: only a meaningfully smaller one can change the answer.
+        if (why === 'move' && s.lastBBox && s.render === 'points' &&
+            contains(s.lastBBox, view) && area(view) > area(s.lastBBox) * 0.55) {
             return;
         }
 
@@ -292,12 +439,20 @@
             var L = ids(key);
             if (map.getSource(L.src)) map.getSource(L.src).setData(data);
             else map.addSource(L.src, { type: 'geojson', data: data });
-            ensureLayers(key, render, s.color);
+            ensureLayers(key, render, s.color, d.count || 0);
             s.lastBBox = bbox;
             s.lastTruncated = !!d.truncated;
             s.count = d.count || 0;
             s.total = d.total || 0;
             if (s.onCount) s.onCount(s.count, s.total, render, d.truncated);
+            // One event, so anything that shows this layer's state (the stats
+            // row, a pinned chip) is told rather than polling.
+            try {
+                window.dispatchEvent(new CustomEvent('lod:state', {
+                    detail: { key: key, render: render, count: s.count,
+                              total: s.total, truncated: !!d.truncated }
+                }));
+            } catch (e) {}
         } catch (e) {
             if (e.name !== 'AbortError') console.error('LOD layer ' + key + ':', e);
         } finally {

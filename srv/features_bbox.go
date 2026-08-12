@@ -205,7 +205,23 @@ func (s *Server) HandleAPIFeaturesInBBox(w http.ResponseWriter, r *http.Request)
 	if q.Get("simplify") != "0" {
 		tol = math.Abs(bbox[2]-bbox[0]) / 2800
 	}
-	features, err := s.fetchFeatureRows(r.Context(), cands, tol, featureType)
+	// SLIM PROPERTIES above a threshold, so "as much detail as possible" is
+	// about GEOMETRY rather than about text.
+	//
+	// A fire trajectory's properties_json is ~750 bytes, most of it a narrative
+	// sentence, against ~350 bytes of coordinates: 14,350 trajectories in one
+	// 8° view cost 4.1 MB gzipped, of which the shapes were a tenth. Nothing on
+	// screen reads those fields — they are for the hover tip, i.e. for exactly
+	// one feature at a time. So above geoSlimAbove the answer carries the
+	// identity fields and the row id, and the tip fetches the rest from
+	// /api/feature-detail on hover, which is what the points rendering already
+	// does. Same features, same geometry, same tip; the text arrives when it is
+	// read instead of when it is drawn.
+	//
+	// It also skips enrichFeatureProps, a per-park lookup a wide view otherwise
+	// pays for every park it touches.
+	slim := len(cands) > geoSlimAbove
+	features, err := s.fetchFeatureRows(r.Context(), cands, tol, featureType, slim)
 	if err != nil {
 		internalError(w, "request failed", err)
 		return
@@ -213,12 +229,18 @@ func (s *Server) HandleAPIFeaturesInBBox(w http.ResponseWriter, r *http.Request)
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"type":      "FeatureCollection",
 		"render":    "geometry",
+		"slim":      slim,
 		"features":  features,
 		"count":     len(features),
 		"total":     total,
 		"truncated": truncated,
 	})
 }
+
+// geoSlimAbove: how many features one answer may carry full properties for.
+// Below it a view is a handful of shapes and its tips should need no second
+// request; above it the text is 90% of the payload and 100% unread.
+const geoSlimAbove = 1200
 
 // HandleAPIFeatureDetail — GET /api/feature-detail?id=123
 //
@@ -430,7 +452,7 @@ func sortCands(c []bboxCand) {
 // feature fetched through the per-park endpoint — i.e. zooming in would *lose*
 // information. Looked up per park via the map-in-Go helpers in feature_meta.go,
 // never the polygon_ids LIKE join.
-func (s *Server) fetchFeatureRows(ctx context.Context, cands []bboxCand, tol float64, featureType string) ([]geoFeature, error) {
+func (s *Server) fetchFeatureRows(ctx context.Context, cands []bboxCand, tol float64, featureType string, slim bool) ([]geoFeature, error) {
 	features := make([]geoFeature, 0, len(cands))
 	const chunk = 900
 	byID := make(map[int64]int, len(cands))
@@ -465,7 +487,7 @@ func (s *Server) fetchFeatureRows(ctx context.Context, cands []bboxCand, tol flo
 				continue
 			}
 			props := make(map[string]interface{})
-			if propsJSON.Valid {
+			if propsJSON.Valid && !slim {
 				json.Unmarshal([]byte(propsJSON.String), &props)
 			}
 			props["feature_type"] = fType
@@ -477,7 +499,14 @@ func (s *Server) fetchFeatureRows(ctx context.Context, cands []bboxCand, tol flo
 			if endDate.Valid {
 				props["end_date"] = endDate.String
 			}
-			s.enrichFeatureProps(featureType, parkID, fID, props, &meta)
+			if slim {
+				// The row id is what makes a slim feature still a feature:
+				// hovering it fetches /api/feature-detail, exactly as a
+				// centroid does. Without it this would be a picture.
+				props["rid"] = id
+			} else {
+				s.enrichFeatureProps(featureType, parkID, fID, props, &meta)
+			}
 			if i, ok := byID[id]; ok {
 				ordered[i] = geoFeature{Type: "Feature", Geometry: simplifyGeometry(json.RawMessage(geojson), tol), Properties: props}
 				got[i] = true

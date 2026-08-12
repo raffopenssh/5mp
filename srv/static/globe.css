@@ -201,6 +201,51 @@
         .stats-item.settlement:hover .stats-value { color: var(--color-settlement-light); }
         @keyframes stats-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
         .stats-item.pulsing { animation: stats-pulse 0.6s ease-in-out; }
+
+        /* ---- LOD readout ---------------------------------------------------
+           What a viewport layer is drawing RIGHT NOW: "4,312 in view" on the
+           left, a "shapes"/"dots" pill on the right. It lives on the row that
+           switches the layer on, not in a floating HUD -- the question "why are
+           my fires dots?" is asked about that layer, and the answer belongs on
+           its control. It is a second line inside the existing row, aligned to
+           the same two columns as the line above it, so the panel reads as one
+           block rather than as a caption bolted underneath. Never overlaps a
+           toast (top-right panel, bottom-centre toast) or the footer. */
+        .stats-item { flex-wrap: wrap; }
+        .stats-lod { display: none; flex-basis: 100%; align-items: center; justify-content: space-between;
+            gap: 6px; margin-top: 3px; padding-top: 3px; font-size: 9px; line-height: 1.2;
+            border-top: 1px solid rgba(255,255,255,0.06); color: #6b7280;
+            font-variant-numeric: tabular-nums; }
+        .stats-item.layer-on .stats-lod { display: flex; }
+        .stats-lod .lod-count { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        /* The pill takes the ROW's own colour (currentColor, set per type
+           below) at low alpha, so the readout reads as part of the fire /
+           deforestation / settlement row it belongs to rather than as a fourth
+           palette. Deliberately dim: it answers a question the user has only
+           when they ask it. */
+        .stats-lod .lod-mode { flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px;
+            padding: 0 5px; border-radius: 8px; font-weight: 600; letter-spacing: 0.2px;
+            color: currentColor; opacity: 0.6; background: rgba(255,255,255,0.05); }
+        /* The glyph is the same distinction the pinned chips make: a stroke for
+           real geometry, a dot for points. */
+        .stats-lod .lod-mode::before { content: ''; width: 6px; height: 6px; flex: none;
+            border-radius: 50%; background: currentColor; }
+        .stats-lod .lod-mode.shapes::before { width: 9px; height: 2px; border-radius: 1px; }
+        .stats-lod .lod-mode.shapes { opacity: 0.8; }
+        .stats-item.fire .stats-lod { color: var(--color-fire); }
+        .stats-item.deforest .stats-lod { color: var(--color-deforestation); }
+        .stats-item.settlement .stats-lod { color: var(--color-settlement); }
+        .stats-item .stats-lod .lod-count { color: #6b7280; }
+        /* The same overshoot-and-settle the map layer does, so the label and
+           the picture read as one event. */
+        .stats-lod.changed .lod-mode { animation: lodFlip 0.7s ease-out; }
+        @keyframes lodFlip {
+            0% { transform: scale(1.2); opacity: 1; }
+            100% { transform: none; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .stats-lod.changed .lod-mode { animation: none; }
+        }
         .maplibregl-ctrl-attrib a { color: #999 !important; }
         .page-views { margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 10px; color: #888; text-align: center; }
 
@@ -793,6 +838,12 @@
         @keyframes pulse-glow { 0%,100% { box-shadow: 0 0 4px rgba(239,68,68,0.3); } 50% { box-shadow: 0 0 8px rgba(239,68,68,0.6); } }
         .pinned-layer-chip .chip-icon { font-size: 9px; }
         .pinned-layer-chip .chip-count { font-weight: 600; }
+        /* Rendering mark on an LOD pin: ◇ = real clickable shapes in view,
+           · = the same features drawn as points because there are too many
+           shapes for this zoom. One character, because a chip has room for one
+           and the title carries the sentence. */
+        .pinned-layer-chip .chip-lod { font-size: 9px; opacity: 0.75; margin-left: 1px; }
+        .pinned-layer-chip .chip-lod.dots { font-size: 13px; line-height: 0; opacity: 0.6; }
         .pinned-layer-chip .chip-remove { opacity: 0.5; margin-left: 2px; font-size: 12px; }
         .pinned-layer-chip:hover .chip-remove { opacity: 1; color: #fff; }
         .pinned-summary { font-size: 10px; color: #999; text-align: center; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.05); }
@@ -1475,6 +1526,14 @@
             .stats-item { text-align: center; padding: 2px 0; margin: 0; overflow: hidden; }
             .stats-label { font-size: 8px; white-space: nowrap; }
             .stats-value { font-size: 12px; white-space: nowrap; }
+            /* Mobile: the panel is a three-column grid at the top of the screen
+               and every millimetre is the map. The readout keeps only the mode
+               pill -- the count is already the row's own value -- so the row
+               grows by one small line instead of wrapping a sentence. */
+            .stats-lod { font-size: 7px; justify-content: center; margin-top: 1px;
+                padding-top: 1px; border-top: 0; }
+            .stats-lod .lod-count { display: none; }
+            .stats-lod .lod-mode { padding: 0 4px; }
             .stats-trend { font-size: 7px; }
             
             /* Legend repositioned to avoid toolbar */

@@ -6,11 +6,9 @@ import (
 	"fmt"
 	"math"
 	"net/http"
-	"os"
 	"sort"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 )
 
@@ -374,65 +372,27 @@ func (s *Server) serveEffortFrames(w http.ResponseWriter, env, from, to, step st
 
 // ---- Dated fire trajectories for animation ----
 //
-// GET /api/fire-anim-trajectories?bbox=w,s,e,n&from=&to=&limit=800
+// GET /api/fire-anim-trajectories?bbox=w,s,e,n&from=&to=&limit=4000
 //
 // Returns trajectories with per-point dates so the client can animate the
 // transect building up over time (true movement speed, not interpolation):
 //
 //	{"groups": [{"id": "...", "park": "...", "type": "transhumance",
-//	             "pts": [[lon,lat,"YYYY-MM-DD"], ...], "km": 310.9, "kmd": 5.7}]}
-
-var fireGroupTrajCache = struct {
-	sync.Mutex
-	m map[string]map[string][][3]interface{} // parkID -> featureID -> pts
-}{m: map[string]map[string][][3]interface{}{}}
-
-func loadParkDatedTrajectories(parkID string) map[string][][3]interface{} {
-	fireGroupTrajCache.Lock()
-	if v, ok := fireGroupTrajCache.m[parkID]; ok {
-		fireGroupTrajCache.Unlock()
-		return v
-	}
-	fireGroupTrajCache.Unlock()
-
-	if strings.ContainsAny(parkID, "/\\.") {
-		return nil
-	}
-	data, err := os.ReadFile("data/fire_groups_v5/" + parkID + ".json")
-	if err != nil {
-		return nil
-	}
-	var groups []struct {
-		FeatureID  string          `json:"feature_id"`
-		Trajectory [][]interface{} `json:"trajectory"`
-	}
-	if err := json.Unmarshal(data, &groups); err != nil {
-		return nil
-	}
-	out := make(map[string][][3]interface{}, len(groups))
-	for _, g := range groups {
-		if g.FeatureID == "" || len(g.Trajectory) == 0 {
-			continue
-		}
-		pts := make([][3]interface{}, 0, len(g.Trajectory))
-		for _, p := range g.Trajectory {
-			if len(p) < 3 {
-				continue
-			}
-			pts = append(pts, [3]interface{}{p[0], p[1], p[2]})
-		}
-		out[g.FeatureID] = pts
-	}
-
-	fireGroupTrajCache.Lock()
-	// Cap cache at ~40 parks to bound memory (~25MB worst case)
-	if len(fireGroupTrajCache.m) > 40 {
-		fireGroupTrajCache.m = map[string]map[string][][3]interface{}{}
-	}
-	fireGroupTrajCache.m[parkID] = out
-	fireGroupTrajCache.Unlock()
-	return out
-}
+//	             "pts": [[lon,lat,dayOffset], ...], "t0": "YYYY-MM-DD",
+//	             "km": 310.9, "kmd": 5.7}]}
+//
+// SPEED (rewritten 2026-08-12). This used to read data/fire_groups_v5/<park>.json
+// per park through a 40-park LRU to recover the DATE of each vertex — 816 MB of
+// JSON on disk, so a wide bbox parsed hundreds of MB per request: 7.8 s at
+// limit=800, 17 s at 4000, over 120 s for a continental view. The geometry was
+// in feature_geometries the whole time and answers the same window in 0.4 s;
+// only the dates were missing. They are a column now (migration 051,
+// `traj_days` — day offsets from start_date, one per coordinate), so this is a
+// single indexed query with no file I/O at all, and the client can afford the
+// limit that makes a continental animation an answer rather than a sample.
+//
+// Wire format is compact for the same reason: a point is [lon, lat, dayOffset]
+// against the group's own `t0`, not a repeated ISO date string.
 
 func (s *Server) HandleAPIFireAnimTrajectories(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
@@ -458,34 +418,70 @@ func (s *Server) HandleAPIFireAnimTrajectories(w http.ResponseWriter, r *http.Re
 	if to == "" {
 		to = time.Now().UTC().Format("2006-01-02")
 	}
-	limit := 800
-	if lv, err := strconv.Atoi(q.Get("limit")); err == nil && lv > 0 && lv <= 12000 {
+	limit := 4000
+	if lv, err := strconv.Atoi(q.Get("limit")); err == nil && lv > 0 && lv <= 40000 {
 		limit = lv
 	}
 
-	// Largest/most significant groups first (stat_value = distance for trajectories)
-	rows, err := s.DB.Query(`
-		SELECT feature_id, park_id, properties_json, COALESCE(start_date,''), COALESCE(end_date,'')
-		FROM feature_geometries
+	// Two passes, the same shape as /api/features-in-bbox:
+	//
+	//  1. index-only over idx_fg_bbox_scan (id, centroid, rank inputs), STREAMED
+	//     into the spread collector, so `total` is the true number of groups in
+	//     view at every zoom and memory is O(limit) rather than O(rows in view);
+	//  2. geometry + dates + properties for the survivors only.
+	//
+	// `ORDER BY stat_value DESC LIMIT n` alone is not a sample, it is a corner
+	// (AGENTS.md): at continental zoom the biggest N fire groups are whichever
+	// region was burning hardest, so half of Africa animates empty. The spread
+	// collector keeps the most significant group per grid cell, which is the
+	// same rule the feature layers use, and is deterministic.
+	//
+	// The date predicate is `start_date BETWEEN from-maxSpan AND to`, not
+	// `start_date <= to AND end_date >= from`: end_date is not in
+	// idx_fg_bbox_scan, so the overlap form drops the index and covering-scans.
+	// A group lasts at most 167 days in the whole table, so widening the lower
+	// bound by trajMaxSpanDays is exact; `end_date >= from` then drops the tail
+	// inside the query, which matters because it is what fills the LIMIT —
+	// dropping it in Go returned 2,409 of a requested 4,000 and read as a
+	// sparse map.
+	fromT, _ := parseISODate(from)
+	scanFrom := from
+	if !fromT.IsZero() {
+		scanFrom = fromT.AddDate(0, 0, -trajMaxSpanDays).Format("2006-01-02")
+	}
+	scan, err := s.DB.QueryContext(r.Context(), `
+		SELECT id, (bbox_minx + bbox_maxx) / 2, (bbox_miny + bbox_maxy) / 2,
+		       COALESCE(stat_value, 0), 0, start_date
+		FROM feature_geometries INDEXED BY idx_fg_bbox_scan
 		WHERE feature_type = 'fire_trajectory'
-		  AND start_date <= ? AND end_date >= ?
-		  AND bbox_maxx >= ? AND bbox_minx <= ? AND bbox_maxy >= ? AND bbox_miny <= ?`+
-		aoiScopeSQL("park_id", s.aoiScopeParam(r))+`
-		ORDER BY stat_value DESC
-		LIMIT ?`, to, from, bbox[0], bbox[2], bbox[1], bbox[3], limit)
+		  AND bbox_maxx >= ? AND bbox_minx <= ? AND bbox_maxy >= ? AND bbox_miny <= ?
+		  AND start_date >= ? AND start_date <= ?
+		  AND (end_date IS NULL OR end_date >= ?)`+
+		aoiScopeSQL("park_id", s.aoiScopeParam(r)),
+		bbox[0], bbox[2], bbox[1], bbox[3], scanFrom, to, from)
 	if err != nil {
-		http.Error(w, `{"error":"query failed"}`, http.StatusInternalServerError)
+		internalError(w, "query failed", err)
 		return
 	}
-	defer rows.Close()
+	col := newSpreadCollector(limit, bbox, q.Get("spread") != "0")
+	for scan.Next() {
+		var c bboxCand
+		if err := scan.Scan(&c.id, &c.cx, &c.cy, &c.stat, &c.area, &c.startDate); err != nil {
+			continue
+		}
+		col.add(c)
+	}
+	scan.Close()
+	cands := col.result()
 
 	type animGroup struct {
-		ID   string           `json:"id"`
-		Park string           `json:"park"`
-		Type string           `json:"type,omitempty"`
-		Km   float64          `json:"km,omitempty"`
-		Kmd  float64          `json:"kmd,omitempty"`
-		Pts  [][3]interface{} `json:"pts"`
+		ID   string       `json:"id"`
+		Park string       `json:"park"`
+		Type string       `json:"type,omitempty"`
+		Km   float64      `json:"km,omitempty"`
+		Kmd  float64      `json:"kmd,omitempty"`
+		T0   string       `json:"t0"`
+		Pts  [][3]float64 `json:"pts"`
 		// Everything below exists so a PAUSED animation can hand the same
 		// trajectory to the hover tip that a pinned layer would: pausing must
 		// turn the picture into features, not into a screenshot.
@@ -496,42 +492,134 @@ func (s *Server) HandleAPIFireAnimTrajectories(w http.ResponseWriter, r *http.Re
 		End   string  `json:"end,omitempty"`
 		Narr  string  `json:"narrative,omitempty"`
 	}
-	var out []animGroup
-	for rows.Next() {
-		var fid, park, propsJSON, sd, ed string
-		if err := rows.Scan(&fid, &park, &propsJSON, &sd, &ed); err != nil {
-			continue
+	out := make([]animGroup, 0, len(cands))
+	const chunk = 900
+	for start := 0; start < len(cands); start += chunk {
+		end := start + chunk
+		if end > len(cands) {
+			end = len(cands)
 		}
-		trajs := loadParkDatedTrajectories(park)
-		pts, ok := trajs[fid]
-		if !ok || len(pts) == 0 {
-			continue
+		ph := make([]string, 0, end-start)
+		args := make([]interface{}, 0, end-start)
+		for _, c := range cands[start:end] {
+			ph = append(ph, "?")
+			args = append(args, c.id)
 		}
-		g := animGroup{ID: fid, Park: park, Pts: pts, Start: sd, End: ed}
-		var props struct {
-			GroupType string  `json:"group_type"`
-			Km        float64 `json:"distance_km"`
-			Kmd       float64 `json:"avg_speed_km_day"`
-			Fires     int     `json:"fires_total"`
-			Days      int     `json:"days"`
-			FRP       float64 `json:"total_frp"`
-			Narrative string  `json:"narrative"`
+		rows, err := s.DB.QueryContext(r.Context(), `
+			SELECT feature_id, park_id, geojson, traj_days, properties_json,
+			       COALESCE(start_date,''), COALESCE(end_date,'')
+			FROM feature_geometries WHERE id IN (`+strings.Join(ph, ",")+`)`, args...)
+		if err != nil {
+			internalError(w, "query failed", err)
+			return
 		}
-		if json.Unmarshal([]byte(propsJSON), &props) == nil {
-			g.Type = props.GroupType
-			g.Km = props.Km
-			g.Kmd = props.Kmd
-			g.Fires = props.Fires
-			g.Days = props.Days
-			g.FRP = props.FRP
-			g.Narr = props.Narrative
+		for rows.Next() {
+			var fid, park, geojson, propsJSON, sd, ed string
+			var days sql.NullString
+			if err := rows.Scan(&fid, &park, &geojson, &days, &propsJSON, &sd, &ed); err != nil {
+				continue
+			}
+			pts := datedPoints(geojson, days.String, sd, ed)
+			if len(pts) == 0 {
+				continue
+			}
+			g := animGroup{ID: fid, Park: park, Pts: pts, Start: sd, End: ed, T0: sd}
+			var props struct {
+				GroupType string  `json:"group_type"`
+				Km        float64 `json:"distance_km"`
+				Kmd       float64 `json:"avg_speed_km_day"`
+				Fires     int     `json:"fires_total"`
+				Days      int     `json:"days"`
+				FRP       float64 `json:"total_frp"`
+				Narrative string  `json:"narrative"`
+			}
+			if json.Unmarshal([]byte(propsJSON), &props) == nil {
+				g.Type = props.GroupType
+				g.Km = props.Km
+				g.Kmd = props.Kmd
+				g.Fires = props.Fires
+				g.Days = props.Days
+				g.FRP = props.FRP
+				g.Narr = props.Narrative
+			}
+			out = append(out, g)
 		}
-		out = append(out, g)
+		rows.Close()
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Cache-Control", "public, max-age=600")
+	w.Header().Set("Cache-Control", "private, max-age=600")
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"from": from, "to": to, "groups": out,
+		"from": from, "to": to, "limit": limit,
+		"count": len(out), "total": col.total, "truncated": col.total > len(out),
+		"groups": out,
 	})
+}
+
+// trajMaxSpanDays is the longest a fire group lasts in the whole table (167 as
+// measured 2026-08-12), rounded up. It only ever widens a scan window, so a
+// longer group would cost recall at the edge of a date filter, never
+// correctness of what is returned.
+const trajMaxSpanDays = 200
+
+// datedPoints zips a trajectory's coordinates with its day offsets.
+//
+// traj_days is written per coordinate by load_fire_groups_to_db.py. When it is
+// missing (a row written before migration 051 and not yet backfilled) the
+// points are spread evenly across start_date..end_date: the trajectory is still
+// drawn and still clickable, only its internal timing is approximate. Dropping
+// the row instead would make a partially backfilled database look like a
+// half-empty map.
+func datedPoints(geojson, daysJSON, start, end string) [][3]float64 {
+	var g struct {
+		Type        string          `json:"type"`
+		Coordinates json.RawMessage `json:"coordinates"`
+	}
+	if json.Unmarshal([]byte(geojson), &g) != nil {
+		return nil
+	}
+	var coords [][]float64
+	switch g.Type {
+	case "LineString":
+		if json.Unmarshal(g.Coordinates, &coords) != nil {
+			return nil
+		}
+	case "Point":
+		var p []float64
+		if json.Unmarshal(g.Coordinates, &p) != nil || len(p) < 2 {
+			return nil
+		}
+		coords = [][]float64{p}
+	default:
+		return nil
+	}
+	if len(coords) == 0 {
+		return nil
+	}
+	var days []float64
+	if daysJSON != "" {
+		json.Unmarshal([]byte(daysJSON), &days)
+	}
+	span := 0.0
+	if len(days) < len(coords) {
+		if st, ok1 := parseISODate(start); ok1 {
+			if en, ok2 := parseISODate(end); ok2 {
+				span = en.Sub(st).Hours() / 24
+			}
+		}
+	}
+	out := make([][3]float64, 0, len(coords))
+	for i, c := range coords {
+		if len(c) < 2 {
+			continue
+		}
+		var d float64
+		if i < len(days) {
+			d = days[i]
+		} else if len(coords) > 1 {
+			d = span * float64(i) / float64(len(coords)-1)
+		}
+		out = append(out, [3]float64{c[0], c[1], math.Round(d*10) / 10})
+	}
+	return out
 }
