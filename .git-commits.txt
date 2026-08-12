@@ -1,3 +1,6 @@
+87c09ce 2026-08-12 14:48:08 Tapping a line, and a link you can send
+7646a43 2026-08-12 14:42:46 Geology: one data file, one control vocabulary, an opacity that adapts
+b36cef8 2026-08-12 14:18:44 chore: refresh version history
 9a70ba5 2026-08-12 14:18:40 A row the animation is drawing shows an eye, not a crossed-out one
 f4f3596 2026-08-12 14:15:11 chore: refresh version history
 947c17a 2026-08-12 14:15:03 Legend states every rendering, and a link opens where it says
@@ -15,6 +18,3 @@ a744392 2026-08-12 12:36:24 Animator: the fire grid is a heat field, not a pulse
 4d3753c 2026-08-12 10:16:42 Focus states itself in the stats panel, and its numbers obey it
 276df78 2026-08-12 09:45:50 chore: refresh version history
 5950557 2026-08-12 09:45:42 Fire fronts stay lines at every zoom; a pin can be filtered, scoped and forced
-66804b2 2026-08-12 08:50:50 chore: refresh version history
-6caa7d9 2026-08-12 08:50:35 LOD: dated trajectories from the database, density-aware ink, and a shareable animation download
-86a8367 2026-08-12 08:15:50 chore: refresh version history
