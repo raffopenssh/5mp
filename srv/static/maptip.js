@@ -872,6 +872,17 @@
     }
 
     function onClick(e) {
+        // A MODIFIER CLICK IS SOMEBODY ELSE'S GESTURE.
+        //
+        // shift/cmd/ctrl-click means "add to the app's selection" (parks, for
+        // multi-park filtering) and MapTip has no answer for it. Stand down
+        // whole: not just declining to answer, but not pinning and not
+        // stopping propagation, because a card that appears next to a
+        // multi-select the user just made is a second answer to a question
+        // they did not ask. A layer that WANTS the modifier can still read it
+        // from `e.originalEvent` in its own handler.
+        var oe = e.originalEvent;
+        if (oe && (oe.shiftKey || oe.metaKey || oe.ctrlKey)) return;
         // Every answer at the point, on both pointers: the pinned card lists
         // them as tabs, so a mouse user can reach what is underneath without
         // knowing a modifier key.
