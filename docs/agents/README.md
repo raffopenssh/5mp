@@ -8,13 +8,14 @@ lives here, one file per subsystem, loaded only when a task touches it.
 |---|---|
 | `fire.md` | Fire pipeline: SQLite-only source, v5/v7 builder, consistency, narrative-cache single-writer rule, FIRMS ingest |
 | `aoi.md` | Areas of interest: runner/queue, visibility, API surface, narrative + geography caching, detail tiers, frontend, versioning |
-| `map-ui.md` | Hover preview vs selection, tab stack, precedence, backdrop guard |
+| `map-ui.md` | Hover preview vs selection, tab stack, priority ladder (feature 0 / park -10 / AOI -20 / geology -30) |
 | `overlays.md` | Sudan 1:250k historical raster overlay; Sudan/CAR geology vector overlays |
 | `animator.md` | Time animator: heat field, sprites, indexed probe, chips, share links, `/api/fire-frames` |
 | `exports.md` | GeoPackage (QGIS), KML/Locus, gzip-vs-download rule, copy-link, shared download links |
 | `lod.md` | Level of detail: one loader, `/features-in-bbox`, chords, density paint, `?class=`, `?area=` |
 | `ops.md` | Remote backups, OSM enrichment rotation, cron→bell notifications, park onboarding, background workers |
 | `auth.md` | Passwords, per-password tenants, `Cache-Control` rule, admin-only endpoints |
+| `sharing.md` | Share links, `/s/{slug}`, guest capabilities |
 | `testing.md` | `?test=1` helpers, test suites, share-link params |
 | `reference.md` | Data files, key API examples, DB stats, Lucide icon system |
 | `mining.md` | Retired mining detection — read before proposing anything mining-related |
