@@ -239,6 +239,61 @@ whose units file is older than the package would otherwise ship a country short.
 A link to the panel itself is `?panel=admin&admin_tab=map-settings&map_sheet=car`.
 `srv/geomap_gpkg.go`; details in `docs/GEOLOGY.md`.
 
+### Contacts: the second table, and the panel that holds both
+
+The affinity model says *which rock*; a contact says *where two of them meet*,
+which is a property of the **boundary** — so it can never be an eleventh
+commodity row. It is the same table transposed onto itself: **rock down, rock
+across, cell = what that junction can host** (`junctionTableHTML()` in
+`maplegend.js`, `GeoMap.junctions()`).
+
+* **Upper triangle only.** A junction is unordered; a full square prints every
+  pair twice. The mirrored half is blank space, not a repeated cell.
+* **Only the lithologies these sheets actually join** (54 pairs of a possible
+  55, from the junction index) — a cell for a junction no sheet has would claim
+  it exists and is barren.
+* **One scale, one ink, both modes.** ●●● classic / ●● likely / ● weak, hollow
+  = graded but below the floor, faint dot = they meet and the model says
+  nothing. The strength ladder sits **above both tabs**: it is the legend for
+  the ink in both, and one piece of state may not have two controls.
+* **No control is repeated in the junction view.** The commodity is picked in
+  the Rocks table, where it *is* a row; the junction head only *names* what is
+  carried over ("graded for gold, likely"). Both axes there are rock, so that
+  view owes the reader a sentence, not another switch.
+* **The lines follow the table.** There is no "draw contact lines" checkbox —
+  opening the Junctions tab draws them (`MapLegend.mxMode`), and `autoContacts`
+  remembers whether *we* switched them on, so only our own doing is undone.
+  Picking a junction is a decision about the map and survives the tab switch.
+* **Every count is what the map paints**, from the same filters the paint uses
+  (`drawnUnitCount`, `drawnContactCount`, both gated on the sheet being **on**,
+  not merely installed). The counts are `not in view` — absent, not zero — when
+  no sheet reaches the viewport.
+* Share link: `?geomap_junction=intrusive|volcanic` (or a single lithology).
+  It travels as **lithology**, a server-owned vocabulary, so a re-tile cannot
+  strand it; an unknown one is refused with a toast rather than filtering the
+  layer to nothing.
+
+**The geology menu is a panel, not a popover.** It is a legend, read while
+panning and clicking, so a surface the next map click dismisses made the reader
+choose between seeing the map and seeing the key to it. It wears the app's own
+`.fui-bar` (grabber, settings, collapse, ×); position and collapsed state
+persist in `localStorage` (`fui.geomenu`), because the panel rebuilds on every
+gesture. Its width is **fixed** — it was `max-content`, so the two tables'
+different sentence lengths resized it on every tab switch. `Hide geology` and
+`Map settings` moved from the last two rows (below the disclaimer, where a
+thumb lands) into the bar.
+
+**`showToast(msg, type)` takes two arguments.** Every geology call site used a
+stale 5-argument form and therefore *threw* instead of warning — including the
+one guarding an out-of-date share link, which then took `restoreFromParams`
+down with it and left the layer off. If a refusal is not visible, check the
+signature before the logic.
+
+**A cell in the matrix could not show "checked".** `.mode-mark` filled only
+under `.mode-opt.on`, and the commodity rows are `.ml-mx-row.on` — so the row
+went amber, the map changed, and the only control on the row said "off"
+throughout.
+
 ### The panel: one switch, one legend, and everything else under Advanced
 
 Fixed 2026-08-12, same direction as the one-layer change above but for the

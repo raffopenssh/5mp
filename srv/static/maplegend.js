@@ -76,8 +76,10 @@
 
     /* What the geology layer is currently NOT showing, in words. A filtered
      * drape that reads as a complete one is the failure this line prevents. */
-    function geoFilterNote() {
-        if (typeof GeoMap === 'undefined' || !GeoMap.anyOn()) return '';
+    function geoFilterNote(said) {
+        if (typeof GeoMap === 'undefined' || !GeoMap.anyOn()) return { short: '', full: '' };
+        var alreadySaid = {};
+        (said || []).forEach(function (k) { alreadySaid[k] = 1; });
         var sh = GeoMap.shared ? GeoMap.shared() : null;
         var comms = new Set(), hidden = 0, isolated = false;
         (GeoMap.order() || []).forEach(function (id) {
@@ -91,36 +93,64 @@
         // hosts" and "classic gold hosts" are different maps.
         var min = (typeof GeoMap.minWeight === 'function') ? GeoMap.minWeight() : 1;
         var grade = min === 3 ? 'classic ' : (min === 2 ? 'likely ' : '');
-        // The contact layer is a second thing on screen and it is itself a
-        // subset (graded junctions, likely and up), so the chip names it. A
-        // reader who sees orange hairlines and no word for them has to guess
-        // whether the layer is complete — which is the same lie as an
-        // unannounced truncation.
-        var cont = (typeof GeoMap.contactsOn === 'function' && GeoMap.contactsOn())
-            ? (GeoMap.contactsGradedOnly && GeoMap.contactsGradedOnly()
-                ? '+ graded contacts' : '+ all contacts')
-            : '';
-        // Two filters running at once must BOTH be named. A cell tap sets a
-        // commodity AND a single period, and reporting only the commodity
-        // ("gold hosts") describes a map with far more on it than the one in
-        // front of the reader — the same lie as an unannounced truncation.
+
+        // ── ONE CLAUSE PER THING, AND NEVER THE SAME THING TWICE ────────
+        //
+        // The note used to be assembled by hand at four return points, each
+        // gluing the contact clause on with its own `join()`. The result read
+        // "copper hosts, + graded contacts" — a stray plus, a comma splice,
+        // and with a commodity picked the word "copper" was liable to appear
+        // in the chip AND in the bracket label under it. It is a LIST now:
+        // clauses are pushed in order of what they change about the map, the
+        // list is deduplicated, and the chip prints the first one with a "+n"
+        // for the rest rather than a sentence that no longer fits.
+        var parts = [];
+        // A commodity the key strip already brackets by name is dropped here:
+        // the bracket is the better statement of it (it points at the exact
+        // swatches and carries its own undo), so the chip carries whatever the
+        // bracket cannot say — the grade floor, the hidden periods, the
+        // contacts. With every selected commodity bracketed, the chip falls
+        // back to the grade alone, which is precisely the part the strip omits.
+        var named = Array.from(comms).filter(function (k) { return !alreadySaid[k]; });
+        if (named.length) parts.push(grade + named.join(' + ') + ' hosts');
+        else if (comms.size && grade) parts.push(grade.trim() + ' grade only');
+        // Every selected commodity is already bracketed by name in the strip
+        // below, and the floor is the default: there is nothing left for the
+        // chip to add. It says nothing rather than something vague — "some
+        // units" was a worse answer than the bracket that is already there.
+        else if (sh && sh.liths && sh.liths.size) {
+            parts.push(sh.liths.size + ' rock type' + (sh.liths.size === 1 ? '' : 's'));
+        }
+        // A hand-built isolation has no better name, so it says how many. It
+        // is only reached with NO commodity selected: an isolation derived
+        // from one is that commodity, and naming it twice is the repetition
+        // this note exists to avoid.
+        if (!comms.size && isolated) parts.push('picked units');
+        else if (!comms.size && hidden) {
+            parts.push(hidden + ' unit' + (hidden === 1 ? '' : 's') + ' hidden');
+        }
         var nOff = (sh && sh.agesOff) ? sh.agesOff.size : 0;
-        var join = function (t) { return cont ? t + ', ' + cont : t; };
-        if (comms.size) {
-            var t = grade + Array.from(comms).join(' + ') + ' hosts';
-            return join(nOff ? t + ', ' + nOff + ' period' + (nOff === 1 ? '' : 's') + ' hidden' : t);
+        if (nOff) parts.push(nOff + ' period' + (nOff === 1 ? '' : 's') + ' hidden');
+        // The contact layer is a second thing on screen and is itself a subset,
+        // so the chip names it — a reader who sees orange hairlines and no word
+        // for them has to guess whether that layer is complete. Its own
+        // narrowing (a picked junction) is said HERE and nowhere else, so the
+        // panel's state line and the chip cannot word it differently.
+        if (typeof GeoMap.contactsOn === 'function' && GeoMap.contactsOn()) {
+            var pick = GeoMap.contactPair && GeoMap.contactPair();
+            parts.push(pick ? junctionWords(pick) + ' contacts'
+                : (GeoMap.contactsGradedOnly && GeoMap.contactsGradedOnly()
+                    ? 'graded contacts' : 'every contact'));
         }
-        if (sh && sh.liths && sh.liths.size) {
-            return join(sh.liths.size + ' rock type' + (sh.liths.size === 1 ? '' : 's'));
-        }
-        // An age hidden from the key is a subset like any other, and the chip
-        // is the one place that says a drape is not the whole drape.
-        if (sh && sh.agesOff && sh.agesOff.size) {
-            return join(sh.agesOff.size + ' period' + (sh.agesOff.size === 1 ? '' : 's') + ' hidden');
-        }
-        if (isolated) return join('filtered');
-        if (hidden) return join(hidden + ' hidden');
-        return cont;
+        var seen = {}, uniq = [];
+        parts.forEach(function (p) { if (p && !seen[p]) { seen[p] = 1; uniq.push(p); } });
+        if (!uniq.length) return { short: '', full: '' };
+        return {
+            // The chip has room for one clause. "+2" is a truncation that says
+            // it is one; the whole list is in the tooltip and in the panel.
+            short: uniq[0] + (uniq.length > 1 ? ' +' + (uniq.length - 1) : ''),
+            full: uniq.join(', ')
+        };
     }
 
     /* ── How much of the view each age actually covers ──────────────────
@@ -371,7 +401,16 @@
         return out;
     }
 
+    /* Which commodities the key strip has just drawn a bracket (and a
+     * labelled way out) for. The chip beside it must not say the same word
+     * again: "copper hosts" in the chip over a "copper ×" bracket two rows
+     * below is one fact printed twice, and the reader has to work out whether
+     * they are two different narrowings. Set by ageSwatches(), read by
+     * render() — which is why render() builds the strip BEFORE the chips. */
+    var bracketed = [];
+
     function ageSwatches() {
+        bracketed = [];
         var list = ageEntries();
         if (!list.length) return '';
 
@@ -381,6 +420,7 @@
         // Drop a commodity that ends up bracketing nothing here: an empty
         // bracket row is a claim about this view that is not true.
         comms = comms.filter(function (k) { return Object.keys(cmap[k] || {}).length; });
+        bracketed = comms.slice();
 
         if (comms.length) {
             // Group by which commodities an age answers, so each bracket is a
@@ -644,18 +684,114 @@
         if (map.triggerRepaint) map.triggerRepaint();
     }
 
-    /* Anchored to the control, flipped above it when it would run off the
-     * bottom, and clamped to the viewport — the same placement the mode menu
-     * uses, factored out because the geology chip opens a second one. */
-    function place(el, btn) {
-        document.body.appendChild(el);
-        var r = btn.getBoundingClientRect();
+    /* ── Placement, and why the geology one is not a popover ────────────
+     *
+     * The basemap menu is a MENU: it asks one question, takes one answer and
+     * should vanish. The geology one stopped being that the day it became a
+     * table — it is a legend for the map, read WHILE panning, comparing and
+     * clicking units, and a popover that closes on the next click outside
+     * itself cannot be read that way. Every gesture in the table also moves
+     * the map underneath, so the reader was choosing between seeing the map
+     * and seeing the key to it.
+     *
+     * So the geology one is a floating panel with the app's own furniture
+     * (`.fui-bar`: grabber, collapse, close — the same bar the pinned-layers
+     * box and the park popup wear), and the layers menu stays a popover.
+     * Position and collapsed state persist, because a panel the user has
+     * dragged out of the way must stay out of the way across a rebuild — and
+     * this panel rebuilds on every gesture (refreshWhenDrawn).
+     */
+    var panelPos = null;        // {x,y} once dragged; null = anchored to the chip
+    var panelCollapsed = false;
+    var PANEL_LS = 'fui.geomenu';
+
+    (function restorePanelState() {
+        try {
+            var v = JSON.parse(localStorage.getItem(PANEL_LS) || 'null');
+            if (v && typeof v.x === 'number') panelPos = { x: v.x, y: v.y };
+            if (v && v.collapsed) panelCollapsed = true;
+        } catch (e) { /* a corrupt entry must not cost the reader the panel */ }
+    })();
+
+    function savePanelState() {
+        try {
+            localStorage.setItem(PANEL_LS, JSON.stringify(
+                panelPos ? { x: panelPos.x, y: panelPos.y, collapsed: panelCollapsed }
+                         : { collapsed: panelCollapsed }));
+        } catch (e) { }
+    }
+
+    function clampToViewport(el, x, y) {
         var w = el.offsetWidth, h = el.offsetHeight;
-        el.style.left = Math.max(6, Math.min(window.innerWidth - w - 6, r.right - w)) + 'px';
-        el.style.top = (r.bottom + h + 6 > window.innerHeight
-            ? Math.max(6, r.top - h - 4) : r.bottom + 4) + 'px';
+        return {
+            x: Math.max(6, Math.min(window.innerWidth - w - 6, x)),
+            // Only the BAR has to stay on screen: a tall panel clamped by its
+            // full height jumps upward the moment it grows, which reads as the
+            // panel moving on its own.
+            y: Math.max(6, Math.min(window.innerHeight - 28, y))
+        };
+    }
+
+    function place(el, btn, opts) {
+        document.body.appendChild(el);
+        var floating = opts && opts.floating;
+        if (floating && panelPos) {
+            var p = clampToViewport(el, panelPos.x, panelPos.y);
+            el.style.left = p.x + 'px';
+            el.style.top = p.y + 'px';
+        } else {
+            var r = btn.getBoundingClientRect();
+            var w = el.offsetWidth, h = el.offsetHeight;
+            el.style.left = Math.max(6, Math.min(window.innerWidth - w - 6, r.right - w)) + 'px';
+            el.style.top = (r.bottom + h + 6 > window.innerHeight
+                ? Math.max(6, r.top - h - 4) : r.bottom + 4) + 'px';
+        }
         menuEl = el;
+        if (floating) {
+            bindPanelBar(el);
+            return;     // a panel closes by its ×, not by the next click elsewhere
+        }
         setTimeout(function () { document.addEventListener('click', closeMenu); }, 0);
+    }
+
+    /* The bar: drag to move, tap to collapse, buttons for the rest. Pointer
+     * events (not mouse), so it works with a finger; the drag threshold is
+     * what lets one bar be both a handle and a target. */
+    function bindPanelBar(el) {
+        var bar = el.querySelector('.ml-bar');
+        if (!bar) return;
+        var sx = 0, sy = 0, ox = 0, oy = 0, active = false, moved = false;
+        bar.addEventListener('pointerdown', function (e) {
+            if (e.button !== undefined && e.button !== 0) return;
+            if (e.target.closest('button')) return;
+            active = true; moved = false;
+            sx = e.clientX; sy = e.clientY;
+            var r = el.getBoundingClientRect();
+            ox = r.left; oy = r.top;
+            try { bar.setPointerCapture(e.pointerId); } catch (err) { }
+        });
+        bar.addEventListener('pointermove', function (e) {
+            if (!active) return;
+            var dx = e.clientX - sx, dy = e.clientY - sy;
+            if (!moved && Math.hypot(dx, dy) < 6) return;
+            moved = true;
+            bar.classList.add('fui-dragging');
+            var p = clampToViewport(el, ox + dx, oy + dy);
+            el.style.left = p.x + 'px';
+            el.style.top = p.y + 'px';
+            panelPos = p;
+            e.preventDefault();
+        });
+        var end = function () {
+            if (!active) return;
+            active = false;
+            bar.classList.remove('fui-dragging');
+            if (moved) savePanelState();
+            else MapLegend.togglePanelCollapsed();
+            moved = false;
+        };
+        bar.addEventListener('pointerup', end);
+        bar.addEventListener('pointercancel', end);
     }
 
 
@@ -801,14 +937,179 @@
         return { g: g, n: unitN };
     }
 
+    /* ── Contacts, as the second mode of the same table ─────────────────
+     *
+     * The matrix is rock × commodity. A contact is a pair of ROCKS, so it is
+     * not an eleventh row and it is not another commodity: it is the same
+     * table transposed onto itself — rock across, rock down, and in the cell
+     * what that junction can host. Two modes of one object, one vocabulary,
+     * one grade scale, one set of gestures.
+     *
+     * `mxMode` is which of the two is on screen. It is deliberately NOT the
+     * same thing as whether the contact layer is drawn: a reader can look at
+     * the junction table to decide, and the layer is what they decide TO.
+     * Choosing a junction turns it on (GeoMap.setContactPair), because a cell
+     * that changes nothing visible is a control that reads as broken.
+     */
+    var mxMode = 'rock';        // 'rock' | 'junction'
+    // Did WE switch the contact layer on (by opening the junction tab), or did
+    // the reader? Only our own doing may be undone automatically — silently
+    // switching off a layer the reader turned on is the kind of "helpful"
+    // that costs them the map they built.
+    var autoContacts = false;
+
+    // The model's lithology vocabulary is the row/column label here. The
+    // legend's own words ("Unconsolidated sediment", "Ultramafic / ophiolite")
+    // are written for a legend row three times this wide and would force the
+    // menu wider than the panel it hangs off, so the table uses the SHORT form
+    // and the tooltip carries the legend's wording verbatim.
+    var LITH_SHORT = {
+        alluvium: 'alluvium', sandstone: 'sandstone', mudrock: 'mudrock',
+        carbonate: 'carbonate', intrusive: 'intrusive', volcanic: 'volcanic',
+        metamorphic: 'metamorph.', ultramafic: 'ultramafic',
+        ironstone: 'iron fm.', mixed: 'mixed'
+    };
+
+    function lithMeta(key) {
+        var std = (typeof GeoMap !== 'undefined' && GeoMap.std) ? GeoMap.std() : null;
+        var l = ((std && std.lithology) || []).filter(function (x) { return x.key === key; })[0];
+        return l || { key: key, label: key, desc: '' };
+    }
+
+    function lithLabel(key) { return LITH_SHORT[key] || key; }
+
+    /* Contacts as the strip and the menu need them: how many junction TYPES
+     * exist, how many the model grades, and how many lines are actually drawn
+     * right now. All three come from GeoMap, so no surface here derives a
+     * number the map could disagree with. */
+    function contactFacts() {
+        var f = { any: false, reason: '', on: false, graded: true, pair: null,
+                  types: 0, gradedTypes: 0, drawn: 0, junctions: {} };
+        if (typeof GeoMap === 'undefined' || !GeoMap.anyContacts) return f;
+        f.any = !!GeoMap.anyContacts();
+        f.reason = (GeoMap.contactsReason && GeoMap.contactsReason()) || '';
+        if (!f.any) return f;
+        f.on = !!(GeoMap.contactsOn && GeoMap.contactsOn());
+        f.graded = !!(GeoMap.contactsGradedOnly && GeoMap.contactsGradedOnly());
+        f.pair = (GeoMap.contactPair && GeoMap.contactPair()) || null;
+        f.junctions = (GeoMap.junctions && GeoMap.junctions()) || {};
+        Object.keys(f.junctions).forEach(function (k) {
+            f.types++;
+            if (f.junctions[k].best) f.gradedTypes++;
+        });
+        f.drawn = (GeoMap.drawnContactCount && GeoMap.drawnContactCount()) || 0;
+        return f;
+    }
+
+    /* The junction currently picked, in words — "granite against greenstone"
+     * for a cell, "intrusive junctions" for a header. One definition, used by
+     * the chip, the key strip and the table's own state line, so the three
+     * cannot describe the same filter differently. */
+    function junctionWords(key) {
+        if (!key) return '';
+        if (key.indexOf('|') < 0) return lithLabel(key) + ' junctions';
+        var p = key.split('|');
+        return lithLabel(p[0]) + '/' + lithLabel(p[1]);
+    }
+
+    /* ── The panel's bar ────────────────────────────────────────────────
+     *
+     * "Hide geology" and "Map settings" used to be the last two rows of the
+     * menu, BELOW the disclaimer — so the destructive action sat at the end of
+     * a surface that scrolls, in the place a thumb lands after reading, and
+     * after the sentence saying none of this is a deposit. They are chrome for
+     * the whole panel, not steps in the reasoning, so they belong in its title
+     * bar with the other window controls.
+     *
+     * It is the app's `.fui-bar` (grabber, then buttons) rather than a bar of
+     * this panel's own invention: the pinned-layers box and the park popup
+     * wear the same one, and a reader who has learned to drag one has learned
+     * to drag all three. Order is by consequence, left to right: settings,
+     * collapse, close.
+     */
+    function headRow() {
+        var units = (typeof GeoMap !== 'undefined' && GeoMap.drawnUnitCount)
+            ? GeoMap.drawnUnitCount() : 0;
+        var cOn = typeof GeoMap !== 'undefined' && GeoMap.contactsOn && GeoMap.contactsOn();
+        var lines = cOn && GeoMap.drawnContactCount ? GeoMap.drawnContactCount() : null;
+        // A COUNT MUST NOT SURVIVE ITS SUBJECT. These are what the filters
+        // leave in scope, which is the right number while a sheet is on
+        // screen — and a lie the moment none is: "36 units" over an empty
+        // Atlantic reads as a layer that is drawing and invisible. Three
+        // sheets cover three countries, so that is the ordinary case here.
+        var barCounts = geoOffView()
+            ? { html: 'not in view',
+                title: 'Geology is on, but no mapped sheet reaches this view \u2014 ' +
+                       'pan to Sudan, the CAR or Tanzania.' }
+            : { html: '<b>' + units + '</b> unit' + (units === 1 ? '' : 's') +
+                    (lines === null ? '' : ' \u00b7 <b>' + lines + '</b> line' + (lines === 1 ? '' : 's')),
+                title: units + ' unit(s) and ' +
+                    (lines === null ? 'no contact lines' : lines + ' contact line(s)') +
+                    ' pass the current filters \u2014 counted from what the map paints, not ' +
+                    'from the catalogue.' };
+        return '<div class="ml-bar fui-bar" role="toolbar" aria-label="Geology — drag to move, tap to collapse">' +
+            '<i class="icon-mountain ml-bar-ico"></i><span class="ml-bar-t">Geology</span>' +
+            // The panel is often collapsed or dragged aside, and then the bar
+            // is the ONLY thing on screen saying what the drape is doing. So
+            // it carries the two counts the tabs carry — units drawn, lines
+            // drawn — from the same filters the paint uses. The lines half is
+            // absent, not zero, when the layer is off: "0" is a measurement,
+            // and "off" is not one.
+            '<span class="ml-bar-n" title="' + esc(barCounts.title) + '">' +
+            barCounts.html + '</span>' +
+            '<span class="fui-grabber" aria-hidden="true"></span>' +
+            '<span class="fui-bar-btns">' +
+            '<button type="button" class="fui-bar-btn" title="Full legend, opacity and downloads"' +
+            ' aria-label="Map settings"' +
+            ' onclick="event.stopPropagation();MapLegend.openSettings()">' +
+            '<i class="icon-sliders-horizontal"></i></button>' +
+            '<button type="button" class="fui-bar-btn" title="Collapse / expand"' +
+            ' aria-label="Collapse the geology panel" aria-expanded="' + (!panelCollapsed) + '"' +
+            ' onclick="event.stopPropagation();MapLegend.togglePanelCollapsed()">' +
+            '<i class="icon-chevron-up"></i></button>' +
+            '<button type="button" class="fui-bar-btn ml-bar-x" title="Close (the layer stays on)"' +
+            ' aria-label="Close the geology panel"' +
+            ' onclick="event.stopPropagation();MapLegend.close()">\u00d7</button>' +
+            '</span></div>';
+    }
+
+    /* How many answers of each KIND a commodity has here — units that can
+     * host it, and junction types graded for it — at the current floor.
+     *
+     * It is what the rock table's commodity rows put in their tooltip, so a
+     * reader deciding between gold and copper can see that one is answered by
+     * ground and the other mostly by edges. Both halves are counted the same
+     * way the map filters them, never from the catalogue.
+     */
+    function commodityAnswers() {
+        var out = {};
+        var min = GeoMap.minWeight ? GeoMap.minWeight() : 1;
+        var idx = commodityIndex();          // units, already at the floor
+        Object.keys(idx).forEach(function (k) {
+            out[k] = { rocks: idx[k] || 0, junctions: 0 };
+        });
+        var J = (GeoMap.junctions && GeoMap.junctions()) || {};
+        Object.keys(J).forEach(function (key) {
+            (J[key].affinity || []).forEach(function (a) {
+                if (a.weight < min) return;
+                (out[a.commodity] = out[a.commodity] || { rocks: 0, junctions: 0 }).junctions++;
+            });
+        });
+        return out;
+    }
+
     function openGeoMenu(btn) {
         var already = menuEl && menuEl.dataset.kind === 'geo';
         closeMenu();
         if (already) return;
         var el = document.createElement('div');
-        el.className = 'aoi-menu mode-menu ml-menu ml-menu-geo';
+        el.className = 'aoi-menu mode-menu ml-menu ml-menu-geo ml-panel' +
+            (panelCollapsed ? ' ml-panel-collapsed' : '');
         el.dataset.kind = 'geo';
-        el.setAttribute('role', 'menu');
+        // A dialog, not a menu: it stays open while the reader works the map,
+        // and calling it a menu would promise a screen reader that Escape and
+        // the next click dismiss it.
+        el.setAttribute('role', 'dialog');
         el.setAttribute('aria-label', 'Geology');
 
         var idx = commodityIndex();
@@ -826,9 +1127,9 @@
         var ages = cols.map(function (c) { return c.key; });
         var A = affinityGrid(ages);
 
-        var html = '';
+        var html = headRow();
 
-        /* ── WHERE AM I, AND HOW DO I GET OUT ────────────────────────────
+        /* ── WHERE AM I, AND HOW DO I GET OUT ────────────────────────
          *
          * Every gesture in the matrix NARROWS (a cell picks one commodity on
          * one period, the floor drops grades, a column hides a period) and
@@ -844,6 +1145,7 @@
          * states, so it does not appear and disappear under the reader's
          * thumb.
          */
+        var CF = contactFacts();
         var narrowed = [];
         if (anyOn) {
             narrowed.push(Array.from(GeoMap.selectedCommodities())
@@ -857,6 +1159,10 @@
         // gesture ago — which is exactly the kind of number that reads as
         // truth and is not.
         if (offN) narrowed.push(offN + ' period' + (offN === 1 ? '' : 's') + ' hidden');
+        // A picked junction narrows the CONTACT layer, so it belongs in the
+        // same sentence — said ONCE, here, and never repeated by the tab, the
+        // switch or the chip.
+        if (CF.on && CF.pair) narrowed.push(junctionWords(CF.pair) + ' contacts');
         html += '<div class="ml-state' + (narrowed.length ? ' narrowed' : '') + '">' +
             '<i class="' + (narrowed.length ? 'icon-funnel' : 'icon-layers') + '"></i>' +
             '<span>' + (narrowed.length
@@ -864,15 +1170,15 @@
                 : 'Showing every mapped unit') + '</span>' +
             (narrowed.length
                 ? '<button type="button" title="Back to every mapped unit \u2014 clears the ' +
-                  'commodity, the grade and any period you hid" ' +
+                  'commodity, the grade, any period you hid and any junction you picked" ' +
                   'onclick="event.stopPropagation();MapLegend.geoAll()">' +
                   '<i class="icon-rotate-ccw"></i>show all</button>'
                 : '') + '</div>';
 
         if (!keys.length) {
             html += '<div class="mode-menu-note">No sheet installed here lists a commodity affinity.</div>';
-            el.innerHTML = html + tailRows();
-            place(el, btn);
+            el.innerHTML = html;
+            place(el, btn, { floating: true });
             return;
         }
 
@@ -882,8 +1188,70 @@
             // is on screen". Say the true thing instead.
             html += '<div class="mode-menu-note">No mapped sheet reaches this view, so there is ' +
                 'no rock here to describe. Pan to Sudan, the CAR or Tanzania.</div>';
-            el.innerHTML = html + tailRows();
-            place(el, btn);
+            el.innerHTML = html;
+            place(el, btn, { floating: true });
+            return;
+        }
+
+        /* ── Two modes of one table ─────────────────────────────────
+         *
+         * Rock × commodity, and rock × rock. They are the same object asked
+         * two ways ("what can this ground host" / "what can this junction
+         * host"), so they are one surface with a two-tab switch rather than a
+         * table plus a checkbox that produces a different table somewhere
+         * else. The tab says how many junction types the sheets have; it is
+         * NOT a second copy of the layer switch, which lives inside the
+         * junction view where its subject is.
+         */
+        // The strength floor comes before the tables: it is the legend for the
+        // ink in BOTH of them, and one control for one piece of state.
+        //
+        // The commodity does NOT sit here. In the rock table it is the row —
+        // the reader picks gold by tapping the gold row, which also shows them
+        // what gold is hosted by — so a chip strip above would be the same
+        // selection offered twice, six lines from itself. The junction table
+        // has both axes spent on rock and no row to tap, so it carries the
+        // chips (junctionTableHTML), and the selection is carried over between
+        // the two.
+        html += gradeLadderHTML(anyOn);
+
+        if (CF.any || CF.reason) {
+            // EACH TAB COUNTS WHAT IT DRAWS. The two halves of the drape are
+            // both on at once — fills and lines — so a tab that names its
+            // table but not its layer leaves the reader guessing which of the
+            // two the map is currently showing. Both numbers come from the
+            // same filters the paint uses (GeoMap.drawnUnitCount /
+            // drawnContactCount), so a count can never describe a map that is
+            // not on screen.
+            var unitsDrawn = (GeoMap.drawnUnitCount && GeoMap.drawnUnitCount()) || 0;
+            html += '<div class="ml-mode" role="tablist" aria-label="What the table describes">' +
+                '<button type="button" role="tab" class="ml-mode-b' +
+                    (mxMode === 'rock' ? ' on' : '') + '" aria-selected="' + (mxMode === 'rock') + '"' +
+                    ' title="' + esc('What each rock can host \u2014 ' + unitsDrawn +
+                        ' unit(s) drawn right now') + '"' +
+                    ' onclick="event.stopPropagation();MapLegend.mxMode(\'rock\')">' +
+                    '<i class="icon-table-2"></i>Rocks<em>' + unitsDrawn + '</em></button>' +
+                '<button type="button" role="tab" class="ml-mode-b' +
+                    (mxMode === 'junction' ? ' on' : '') + (CF.any ? '' : ' dead') +
+                    (CF.on ? ' lit' : '') +
+                    '" aria-selected="' + (mxMode === 'junction') + '"' +
+                    (CF.any ? '' : ' aria-disabled="true"') +
+                    ' title="' + esc(CF.any
+                        ? 'Where two rocks MEET \u2014 ' + CF.gradedTypes + ' of ' + CF.types +
+                          ' junction types on these sheets are a setting the model grades' +
+                          (CF.on ? '. ' + CF.drawn + ' contact line(s) drawn right now.'
+                                 : '. No contact lines are drawn; open this tab to pick some.')
+                        : 'Contact zones: ' + (CF.reason || 'not built on this server')) + '"' +
+                    ' onclick="event.stopPropagation();' +
+                    (CF.any ? 'MapLegend.mxMode(\'junction\')' : 'void 0') + '">' +
+                    '<i class="icon-git-merge"></i>Junctions' +
+                    '<em>' + (CF.any ? (CF.on ? CF.drawn : CF.types) : 'soon') + '</em></button>' +
+                '</div>';
+        }
+
+        if (mxMode === 'junction' && CF.any) {
+            el.innerHTML = html + junctionTableHTML(CF);
+            place(el, btn, { floating: true });
             return;
         }
 
@@ -931,6 +1299,7 @@
             return (b.best - a.best) || (b.cells - a.cells) || a.k.localeCompare(b.k);
         });
 
+        var ANS = commodityAnswers();
         rows.forEach(function (r) {
             var k = r.k, on = commodityOn(k);
             // A commodity with nothing on screen keeps its row, greyed: an
@@ -943,8 +1312,15 @@
                           : 'Show the ' + idx[k] + ' unit(s) that can host ' +
                             k.replace(/_/g, ' ')) +
                       ' \u2014 every period it has, on all sheets' +
+                      // The other half of the answer. A commodity is answered
+                      // by GROUND and by EDGES, and the junction count is the
+                      // only place a reader learns that the Junctions tab has
+                      // something to say about the commodity they are choosing.
+                      (ANS[k] && ANS[k].junctions
+                        ? '. ' + ANS[k].junctions + ' junction type(s) too \u2014 see the ' +
+                          'Junctions tab.' : '') +
                       (GeoMap.agesOff().size
-                        ? '. Clears the single-period narrowing you are in.' : '')
+                        ? ' Clears the single-period narrowing you are in.' : '')
                     : 'Nothing drawn in this view is graded a host for ' + k.replace(/_/g, ' ') +
                       ' at this strength') + '"' +
                 ' onclick="event.stopPropagation();MapLegend.geoCommodity(\'' + esc(k) + '\')">' +
@@ -972,13 +1348,28 @@
         });
         html += '</div>';
 
-        /* The floor, as a threshold on the ink the reader has just been
-         * looking at. Always present now, not only once something is
-         * selected: it is the legend for the cells (what a full dot means)
-         * as much as it is a control, and a grid whose ink is unexplained is
-         * the picture-of-a-legend failure again. */
+        html += '<div class="mode-menu-note">An inference from rock type \u2014 nothing here ' +
+            'counts, ranks or locates a deposit.</div>';
+
+        el.innerHTML = html;
+        place(el, btn, { floating: true });
+    }
+
+    /* The floor, as a threshold on the ink the reader has just been looking
+     * at. Always present, not only once something is selected: it is the
+     * legend for the cells (what a full dot means) as much as it is a control,
+     * and a grid whose ink is unexplained is the picture-of-a-legend failure
+     * again.
+     *
+     * ONE ladder for BOTH modes of the table. The floor is a property of the
+     * question ("count as a host"), not of the view, and a second copy under
+     * the junction table would be a second control for one piece of state \u2014
+     * the reader would then have to discover that they are the same.
+     */
+    function gradeLadderHTML(anyOn) {
+        var min = GeoMap.minWeight ? GeoMap.minWeight() : 1;
         var n = GeoMap.weightCounts ? GeoMap.weightCounts() : null;
-        html += '<div class="ml-grade" role="radiogroup" aria-label="Minimum strength of affinity">';
+        var html = '<div class="ml-grade" role="radiogroup" aria-label="Minimum strength of affinity">';
         html += '<span class="ml-grade-lbl">count as a host</span>';
         [[1, 'any'], [2, 'likely'], [3, 'classic']].forEach(function (lv) {
             var w = lv[0];
@@ -992,63 +1383,230 @@
                 '<span class="ml-grade-dot g' + w + '"><i></i></span>' + esc(lv[1]) +
                 (anyOn && n ? '<em>' + n[w] + '</em>' : '') + '</button>';
         });
-        html += '</div>';
-
-        /* ── Contacts ──────────────────────────────────────────────────
-         *
-         * The matrix answers "which rock"; a contact answers "where two of
-         * them MEET", which is a property of the BOUNDARY and therefore
-         * cannot be a row or a column here — granite against greenstone is
-         * the classic orogenic-gold setting and neither unit alone says so.
-         * So it is a switch beside the matrix, not an eleventh commodity.
-         *
-         * The row states what it draws AND what it leaves out, because the
-         * layer is filtered by construction: a sheet is mostly boundaries
-         * (882 junctions over three sheets), and drawing all of them turns
-         * the drape into a net that buries the fills it annotates. So it
-         * draws the junctions the model grades, at likely-and-up — and says
-         * so, because a subset that does not announce itself is the failure
-         * this whole surface exists to prevent.
-         */
-        var cOn = GeoMap.contactsOn && GeoMap.contactsOn();
-        var cAny = GeoMap.anyContacts && GeoMap.anyContacts();
-        var cN = 0, cG = 0;
-        (GeoMap.order() || []).forEach(function (sid) {
-            var cs = GeoMap.contactStats && GeoMap.contactStats(sid);
-            if (cs) { cN += cs.n_contacts; cG += cs.n_graded; }
-        });
-        html += '<button type="button" class="aoi-menu-item mode-opt ml-contact' +
-            (cAny ? (cOn ? ' on' : '') : ' refused') + '"' +
-            ' role="menuitemcheckbox" aria-checked="' + (!!cOn) + '"' +
-            (cAny ? '' : ' aria-disabled="true"') +
-            ' title="' + esc(cAny
-                ? 'Where two units meet. A granite/greenstone contact is the classic '
-                  + 'orogenic-gold setting, a carbonate/intrusive one the skarn setting — '
-                  + 'the prospectivity belongs to the boundary, not to either rock. '
-                  + cG + ' of ' + cN + ' mapped junctions are graded by the model; the layer '
-                  + 'draws the likely and classic ones, and follows the commodity you pick here.'
-                : 'Contact zones: not built on this server — run scripts/geomaps/contacts.py') + '"' +
-            ' onclick="event.stopPropagation();' +
-            (cAny ? 'MapLegend.toggleContacts()' : 'void 0') + '">' +
-            '<span class="mode-mark check"></span><i class="icon-git-merge ml-mi"></i>' +
-            'Contact zones<em class="ml-n">' + (cAny ? cG : 'soon') + '</em></button>';
-
-        html += '<div class="mode-menu-note">An inference from rock type \u2014 nothing here ' +
-            'counts, ranks or locates a deposit.</div>';
-
-        el.innerHTML = html + tailRows();
-        place(el, btn);
+        return html + '</div>';
     }
 
-    /* The two rows every version of this menu ends with. */
-    function tailRows() {
-        return '<button type="button" class="aoi-menu-item ml-more" ' +
-            'onclick="event.stopPropagation();MapLegend.toggleGeo()">' +
-            '<i class="icon-eye-off ml-mi"></i>Hide geology</button>' +
-            '<button type="button" class="aoi-menu-item ml-more" ' +
-            'onclick="event.stopPropagation();MapLegend.openSettings()">' +
-            '<i class="icon-sliders-horizontal ml-mi"></i>Map settings\u2026' +
-            '<em>full legend, opacity</em></button>';
+    /* ── THE JUNCTION TABLE ──────────────────────────────────────────────
+     *
+     * Rock down, rock across, and in the cell what that junction can host —
+     * the affinity matrix transposed onto itself, which is the shape the
+     * knowledge has ("intrusive against carbonate is the skarn setting") and
+     * the only shape that can state a property of a BOUNDARY. Neither unit
+     * alone says it, so it can never be an eleventh commodity row.
+     *
+     * Four decisions, each of which the brief asked for or a screenshot
+     * forced:
+     *
+     *  - UPPER TRIANGLE ONLY. A junction is unordered, so a full square
+     *    prints every pair twice — the "copper twice" this pass exists to
+     *    remove. The mirrored half is drawn as blank space, so the eye reads
+     *    the triangle as a triangle rather than as a table with holes.
+     *  - ONLY THE ROCKS THESE SHEETS ACTUALLY JOIN. The 10-lithology cross
+     *    product is 55 cells, most of them junctions no sheet has, and a cell
+     *    for a junction that does not exist is a claim that it exists and is
+     *    barren. Rows and columns come from the junction index, so the table
+     *    is as wide as the data and no wider.
+     *  - THE CELL IS THE INK, exactly as in the rock matrix: ●●● classic, ●●
+     *    likely, ● weak, hollow = graded but below the floor, a faint dot =
+     *    these two rocks meet and the model has nothing to say. One scale,
+     *    one rendering, in both modes.
+     *  - IT MUST NOT WIDEN THE MENU. Labels are the short lithology form and
+     *    the columns are fixed 20 px cells, so the table's width is a
+     *    function of the menu, not of the vocabulary.
+     */
+    function junctionTableHTML(CF) {
+        var J = CF.junctions;
+        var keys = Object.keys(J);
+        if (!keys.length) {
+            return '<div class="mode-menu-note">These sheets have no mapped junctions.</div>';
+        }
+
+        // The lithologies that actually take part in a junction here, ordered
+        // by how many junction types they are in (alphabetical breaks the tie,
+        // so the table does not reshuffle between renders).
+        var deg = {};
+        keys.forEach(function (k) {
+            var p = J[k];
+            deg[p.a] = (deg[p.a] || 0) + 1;
+            if (p.b !== p.a) deg[p.b] = (deg[p.b] || 0) + 1;
+        });
+        var min = GeoMap.minWeight ? GeoMap.minWeight() : 1;
+        var sel = GeoMap.selectedCommodities ? GeoMap.selectedCommodities() : new Set();
+        var pick = CF.pair;
+
+        // How strong the best junction each rock takes part in is, FOR THE
+        // COMMODITY IN QUESTION. With gold picked, the reader is asking which
+        // rocks are worth walking the edge of, so the strongest rocks go to
+        // the top and the diagonal of full dots reads down the leading edge
+        // instead of being scattered through an alphabet.
+        var bestOf = {};
+        keys.forEach(function (k) {
+            var p = J[k], w = 0;
+            (p.affinity || []).forEach(function (a) {
+                if (sel.size && !sel.has(a.commodity)) return;
+                if (a.weight > w) w = a.weight;
+            });
+            bestOf[p.a] = Math.max(bestOf[p.a] || 0, w);
+            bestOf[p.b] = Math.max(bestOf[p.b] || 0, w);
+        });
+        var liths = Object.keys(deg).sort(function (a, b) {
+            return ((bestOf[b] || 0) - (bestOf[a] || 0)) ||
+                   (deg[b] - deg[a]) || a.localeCompare(b);
+        });
+
+        // No sub-caption here. "rock across, commodity down" earns its place
+        // in the rock table because the two axes differ; both axes here are
+        // rock, the title says so, and the second line only wrapped the head
+        // onto three rows in a 330 px panel.
+        /* NO CONTROLS ARE REPEATED HERE.
+         *
+         * The commodity is picked in the rock table, where it is a ROW and
+         * tapping it also shows what hosts it; the strength floor sits above
+         * both tabs. Offering either again here would be one piece of state
+         * with two controls a few lines apart, which is how a reader ends up
+         * unsure which copy they just changed.
+         *
+         * What this view owes the reader is not another switch but a
+         * SENTENCE: this table has both axes spent on rock, so nothing in it
+         * says which commodity its ink is about. The head says it, and the
+         * panel's state line above says it again in full — one statement,
+         * read twice, rather than two controls.
+         */
+        var forWhat = sel.size
+            ? Array.from(sel).map(function (k) { return k.replace(/_/g, ' '); }).join(' + ')
+            : '';
+        var grade = min === 3 ? 'classic' : (min === 2 ? 'likely' : '');
+
+        var html = '<div class="mode-menu-head ml-mx-head">' +
+            '<i class="icon-git-merge"></i>Where two rocks meet' +
+            // The carried-over question, in the head, because the cells cannot
+            // carry it: without this, a full dot means "good for something"
+            // and the reader supplies their own guess as to what.
+            (forWhat || grade
+                ? '<em title="Set in the Rocks table \u2014 the same selection, carried over">' +
+                  'graded for ' + esc(forWhat || 'anything') +
+                  (grade ? ', ' + grade : '') + '</em>'
+                : '<em>graded for anything</em>') +
+            '</div>';
+
+        html += '<div class="ml-jx" style="grid-template-columns:minmax(52px,1fr) repeat(' +
+            liths.length + ',18px);">';
+
+        // Column heads: the lithology ornament, the same object the key strip
+        // and the rock matrix use. Tapping one asks for every junction that
+        // rock takes part in — the question no single cell can put.
+        html += '<span class="ml-mx-corner"></span>';
+        liths.forEach(function (l) {
+            var lm = lithMeta(l);
+            html += '<button type="button" class="ml-jx-col' + (pick === l ? ' on' : '') + '"' +
+                ' title="' + esc(lm.label + (lm.desc ? ' \u2014 ' + lm.desc : '') +
+                    ' \u2014 in ' + deg[l] + ' junction type(s) here. Tap to draw every contact ' +
+                    'it takes part in' + (pick === l ? ' (tap again to clear)' : '') + '.') + '"' +
+                ' aria-label="' + esc(lm.label) + ' junctions"' +
+                ' onclick="event.stopPropagation();MapLegend.geoJunction(\'' + esc(l) + '\')">' +
+                '<i style="' + swatchBG(l, '#9ca3af', 13) + '"></i></button>';
+        });
+
+        liths.forEach(function (ra, ri) {
+            var rm = lithMeta(ra);
+            html += '<button type="button" class="ml-jx-row' + (pick === ra ? ' on' : '') + '"' +
+                ' title="' + esc(rm.label + (rm.desc ? ' \u2014 ' + rm.desc : '') +
+                    ' \u2014 tap to draw every contact it takes part in' +
+                    (pick === ra ? ' (tap again to clear)' : '') + '.') + '"' +
+                ' onclick="event.stopPropagation();MapLegend.geoJunction(\'' + esc(ra) + '\')">' +
+                '<i style="' + swatchBG(ra, '#9ca3af', 13) + '"></i>' +
+                '<span>' + esc(lithLabel(ra)) + '</span></button>';
+            liths.forEach(function (rb, ci) {
+                if (ci < ri) {              // the mirrored half: never printed twice
+                    html += '<span class="ml-jx-cell mirror" aria-hidden="true"></span>';
+                    return;
+                }
+                var key = ra < rb ? ra + '|' + rb : rb + '|' + ra;
+                var p = J[key];
+                if (!p) {                   // these two rocks never meet on these sheets
+                    html += '<span class="ml-jx-cell none" aria-hidden="true"></span>';
+                    return;
+                }
+                // The grade shown follows the commodity selection, exactly as
+                // the layer's own filter does: with gold picked, a cell is its
+                // GOLD grade, not its best grade for anything at all.
+                var w = 0, why = [];
+                (p.affinity || []).forEach(function (a) {
+                    if (sel.size && !sel.has(a.commodity)) return;
+                    if (a.weight > w) w = a.weight;
+                    why.push('\u25cf'.repeat(a.weight) + ' ' + a.commodity.replace(/_/g, ' '));
+                });
+                var lbl = lithLabel(ra) + ' / ' + lithLabel(rb);
+                var km = p.km >= 1000 ? Math.round(p.km / 1000) + ',000 km'
+                                      : Math.round(p.km) + ' km';
+                var head = lbl + ' \u2014 ' + p.n + ' mapped junction' + (p.n === 1 ? '' : 's') +
+                    ', ' + km;
+                if (!w) {
+                    html += '<span class="ml-jx-cell ungraded" title="' +
+                        esc(head + '. ' + (sel.size
+                            ? 'Not a setting this model grades for ' +
+                              Array.from(sel).join(' or ').replace(/_/g, ' ') + '.'
+                            : 'These two rock types in contact are not a setting this model ' +
+                              'grades \u2014 a gap in the model, not evidence of absence.')) +
+                        '"></span>';
+                    return;
+                }
+                var faded = w < min;
+                html += '<button type="button" class="ml-jx-cell g' + w + (faded ? ' below' : '') +
+                    (pick === key ? ' on' : '') + '"' +
+                    ' title="' + esc(head + '. ' + why.join(', ') +
+                        (faded ? '. Below the strength floor, so it is not drawn.'
+                               : '. Tap to draw just this junction' +
+                                 (pick === key ? ' (tap again to clear)' : '') + '.')) + '"' +
+                    ' aria-label="' + esc(lbl + ', grade ' + w) + '"' +
+                    ' onclick="event.stopPropagation();MapLegend.geoJunction(\'' + esc(key) + '\')">' +
+                    '<i></i></button>';
+            });
+        });
+        html += '</div>';
+
+        /* What the map is drawing, and the one filter that is on by default.
+         *
+         * There is no "draw contact lines" checkbox any more. It was a switch
+         * under a table about contacts, so the reader read the table, saw
+         * nothing on the map, and had to find a second control saying
+         * yes-really; a table whose subject is not on screen is a catalogue,
+         * not a legend. Opening this view draws them (MapLegend.mxMode), and
+         * this line REPORTS that rather than asking for it.
+         *
+         * The count is what is DRAWN, from the same visiblePairs() the paint
+         * filter uses, so the number and the map cannot disagree — and when it
+         * is zero the line says so instead of leaving an empty layer to be
+         * read as "there are no contacts here" (invariant 1, at the reading
+         * end).
+         */
+        var drawn = CF.on ? CF.drawn : 0;
+        html += '<div class="ml-jx-foot' + (drawn ? '' : ' empty') + '">' +
+            '<i class="icon-git-merge"></i>' +
+            '<span>' + (CF.on
+                ? (drawn ? '<b>' + drawn + '</b> contact line' + (drawn === 1 ? '' : 's') +
+                           ' on the map' + (CF.pair ? ', ' + esc(junctionWords(CF.pair)) : '')
+                         : 'Nothing is drawn at this setting')
+                : 'Contact lines are off') + '</span>' +
+            '<button type="button" class="ml-jx-graded' + (CF.graded ? '' : ' on') + '"' +
+                ' aria-pressed="' + (!CF.graded) + '"' +
+                ' title="' + esc(CF.graded
+                    ? 'Drawing only the junctions the model grades. Tap to draw every mapped ' +
+                      'junction \u2014 a sheet is mostly boundaries, so that is a lot of lines.'
+                    : 'Drawing every mapped junction, graded or not. Tap to go back to the ' +
+                      'graded ones.') + '"' +
+                ' onclick="event.stopPropagation();MapLegend.toggleContactsGraded()">' +
+                (CF.graded ? 'graded only' : 'every junction') + '</button>' +
+            '</div>';
+
+        if (CF.on && !drawn) {
+            html += '<div class="mode-menu-note warn">Lower the strength floor, pick another ' +
+                'junction, or draw every junction.</div>';
+        }
+
+        html += '<div class="mode-menu-note">An inference from the two rock types either side ' +
+            '\u2014 nothing here counts, ranks or locates a deposit.</div>';
+        return html;
     }
 
     // ---------------------------------------------------------------
@@ -1067,6 +1625,12 @@
             '<i class="icon-layers"></i></button>';
 
         if (quiet) { host.innerHTML = opener; return; }
+
+        // THE KEY IS BUILT FIRST, and the chips are built knowing what it
+        // said. The strip's bracket labels name commodities; the chip must
+        // not name them again (see geoFilterNote). Order matters, so it is
+        // stated rather than implied by where the strings are concatenated.
+        var swatches = ageSwatches();
 
         var chips = '';
         if (b !== 'dark') {
@@ -1090,7 +1654,9 @@
             // report as broken; the sub-label wins over the filter note,
             // because "which units" is moot where none are drawn.
             var off = geoOffView();
-            var note = off ? 'not in view' : geoFilterNote();
+            var fn = off ? { short: 'not in view', full: 'not in view' }
+                         : geoFilterNote(bracketed);
+            var note = fn.short;
             // TWO TARGETS, ONE MEANING EACH — the strip's founding rule, which
             // geology broke the day its chip started opening a menu. The other
             // two chips destroy their layer on tap; this one configures, and
@@ -1102,8 +1668,8 @@
                 (off ? ' offview' : (note ? ' filtered' : '')) + '">' +
                 '<button type="button" class="ml-chip-main" title="' +
                 esc(off ? 'Geology is on, but no mapped sheet reaches this view \u2014 tap to choose what to show'
-                        : (note ? 'Geology, showing only ' + note + ' \u2014 tap for the rock/commodity table'
-                                : 'Geological units \u2014 tap for the rock/commodity table')) + '" ' +
+                        : (note ? 'Geology, showing only ' + fn.full + ' \u2014 tap for the rock and junction tables'
+                                : 'Geological units \u2014 tap for the rock and junction tables')) + '" ' +
                 'onclick="event.stopPropagation();MapLegend.geoMenu(this.parentNode)">' +
                 '<i class="icon-mountain"></i>Geology' +
                 (note ? '<em>' + esc(note) + '</em>' : '') +
@@ -1121,7 +1687,7 @@
             '<div class="stats-divider"></div>' +
             '<div class="stats-header">Map</div>' +
             '<div class="ml-row">' + chips + opener + '</div>' +
-            ageSwatches();
+            swatches;
         // Not animated here: render() runs on every map idle, and re-staggering
         // an already-open strip on each pan is a flicker, not a transition.
         syncSwatchExpansion(false);
@@ -1141,9 +1707,8 @@
             var shown = ageEntries().filter(function (e) { return e.on; });
             if (GeoMap.ageOn(key) && shown.length <= 1) {
                 if (typeof showToast === 'function') {
-                    showToast('That is the only period in view',
-                        'Hiding it would leave an empty map \u2014 hide something else first, or tap “all”.',
-                        null, null, 'warning');
+                    showToast('That is the only period in view \u2014 hiding it would leave an ' +
+                        'empty map. Hide something else first, or tap \u201call\u201d.', 'warning');
                 }
                 return;
             }
@@ -1158,9 +1723,8 @@
             if (typeof GeoMap === 'undefined' || !GeoMap.setMinWeight) return;
             if (!GeoMap.setMinWeight(w)) {
                 if (typeof showToast === 'function') {
-                    showToast('Nothing that strong here',
-                        'No unit in this selection is graded that highly \u2014 keeping the current setting.',
-                        null, null, 'warning');
+                    showToast('Nothing that strong here \u2014 no unit in this selection is graded ' +
+                        'that highly, so the current setting stands.', 'warning');
                 }
                 return;
             }
@@ -1270,6 +1834,89 @@
             GeoMap.setContacts(!GeoMap.contactsOn());
             if (typeof renderGeoMapPanel === 'function') renderGeoMapPanel();
             refreshWhenDrawn();
+        },
+
+        /* Graded-only off = every mapped junction, which is a lot of lines and
+         * is exactly why it is a second target rather than a mode nobody can
+         * see. The word on the button says which of the two is running. */
+        toggleContactsGraded: function () {
+            if (typeof GeoMap === 'undefined' || !GeoMap.setContactsGraded) return;
+            GeoMap.setContactsGraded(!GeoMap.contactsGradedOnly());
+            refreshWhenDrawn();
+        },
+
+        /* Which of the two tables is on screen. Not a filter, so it does not
+         * touch the map and does not wait for a paint — but the rebuild goes
+         * through the same path so the panel keeps its scroll and its place. */
+        /* ── THE LINES FOLLOW THE TABLE ───────────────────────────
+         *
+         * "Draw contact lines" was a checkbox under a table about contacts:
+         * the reader opened the junction view, read it, and saw nothing on the
+         * map until they found a second control saying yes-really. A table
+         * whose subject is not on screen is a catalogue, not a legend.
+         *
+         * So opening this tab draws them, and it is honest about who asked:
+         *  - opened the tab and browsed  -> the lines came with the view, and
+         *    they go when the view goes.
+         *  - PICKED a junction           -> that is a decision about the map,
+         *    so the lines stay when the reader goes back to the rock table
+         *    (and the chip says so). Clearing the pick, or "show all", takes
+         *    them away again — the same gesture that made them.
+         *  - switched them on by hand before -> never overridden.
+         */
+        mxMode: function (m) {
+            var want = (m === 'junction') ? 'junction' : 'rock';
+            if (want === mxMode) return;
+            mxMode = want;
+            if (typeof GeoMap !== 'undefined' && GeoMap.setContacts && GeoMap.anyContacts()) {
+                if (want === 'junction' && !GeoMap.contactsOn()) {
+                    autoContacts = true;
+                    GeoMap.setContacts(true);
+                } else if (want === 'rock' && autoContacts && !GeoMap.contactPair()) {
+                    autoContacts = false;
+                    GeoMap.setContacts(false);
+                }
+            }
+            if (typeof renderGeoMapPanel === 'function') renderGeoMapPanel();
+            refreshWhenDrawn();
+        },
+
+        /* A JUNCTION is the junction table's own gesture: "draw me where
+         * granite meets greenstone". A cell is a pair, a header is one rock
+         * against everything — and tapping the one already picked clears it,
+         * so the gesture is its own undo. GeoMap.setContactPair() turns the
+         * layer on when it has to: a cell that changes nothing visible is a
+         * control that reads as broken. */
+        geoJunction: function (key) {
+            if (typeof GeoMap === 'undefined' || !GeoMap.setContactPair) return;
+            GeoMap.setContactPair(key);
+            if (typeof renderGeoMapPanel === 'function') renderGeoMapPanel();
+            refreshWhenDrawn();
+        },
+
+        /* "anything" — grade each junction by the strongest thing it hosts.
+         * It clears the commodity selection and nothing else: the floor, the
+         * hidden periods and the picked junction are separate answers to
+         * separate questions, and a control that quietly reset them would be
+         * the "button that did more than it said" this surface keeps avoiding. */
+        geoCommodityClear: function () {
+            if (typeof GeoMap === 'undefined') return;
+            Array.from(GeoMap.selectedCommodities()).forEach(geoCommodityRaw);
+            if (typeof renderGeoMapPanel === 'function') renderGeoMapPanel();
+            refreshWhenDrawn();
+        },
+
+        /* Collapsed = the bar alone. The state persists, because a reader who
+         * collapsed the panel to see the map wants it collapsed after the next
+         * gesture rebuilds it, not open again. */
+        togglePanelCollapsed: function () {
+            panelCollapsed = !panelCollapsed;
+            savePanelState();
+            if (menuEl && menuEl.dataset.kind === 'geo') {
+                menuEl.classList.toggle('ml-panel-collapsed', panelCollapsed);
+                var b = menuEl.querySelector('.fui-bar-btn[aria-expanded]');
+                if (b) b.setAttribute('aria-expanded', String(!panelCollapsed));
+            }
         },
 
         pickBasemap: function (id) {
