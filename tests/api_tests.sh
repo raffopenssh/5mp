@@ -387,26 +387,49 @@ else
 fi
 
 # The geology GeoPackage is built on first request and cached beside the units
-# it came from. Two things must hold or it is the wrong download: it has to be
-# a real GeoPackage (SQLite with the GPKG application_id), and it must carry a
-# w_<commodity> column -- that column set is the reason it exists rather than
-# the MBTiles, and it is derived per build, so a vectorizer change that drops
-# every affinity would otherwise ship silently as a valid-but-useless file.
+# it came from. It is ONE file covering every sheet -- the map is one layer, so
+# the data behind it is not a per-country jigsaw -- and three things must hold
+# or it is the wrong download: it has to be a real GeoPackage (SQLite with the
+# GPKG application_id), it must carry a w_<commodity> column (that column set is
+# the reason it exists rather than the MBTiles, and it is derived per build, so
+# a vectorizer change dropping every affinity would otherwise ship silently as a
+# valid-but-useless file), and it must contain EVERY sheet the catalogue says it
+# does. A package one country short renders as a country with no geology, which
+# is indistinguishable from "no data here".
 printf "%-50s" "geomap_geopackage_typed_and_filterable"
 GEO_TMP=$(mktemp /tmp/geomapXXXX.gpkg)
-GEO_CODE=$(curl -s -m 300 -o "$GEO_TMP" -w "%{http_code}" -b "$COOKIE_FILE" \
-    "${BASE_URL}/api/geomap/car/geopackage")
+GEO_CODE=$(curl -s -m 300 -L -o "$GEO_TMP" -w "%{http_code}" -b "$COOKIE_FILE" \
+    "${BASE_URL}/api/geomap/geopackage")
 GEO_APP=$(sqlite3 "$GEO_TMP" "PRAGMA application_id" 2>/dev/null || echo 0)
-GEO_GOLD=$(sqlite3 "$GEO_TMP" 'SELECT COUNT(*) FROM geology_car WHERE "w_gold" IS NOT NULL' 2>/dev/null || echo 0)
+GEO_GOLD=$(sqlite3 "$GEO_TMP" 'SELECT COUNT(*) FROM geology_units WHERE "w_gold" IS NOT NULL' 2>/dev/null || echo 0)
 GEO_STYLE=$(sqlite3 "$GEO_TMP" "SELECT COUNT(*) FROM layer_styles WHERE useAsDefault=1" 2>/dev/null || echo 0)
 GEO_PROJ=$(sqlite3 "$GEO_TMP" "SELECT COUNT(*) FROM qgis_projects" 2>/dev/null || echo 0)
+GEO_SHEETS=$(sqlite3 "$GEO_TMP" "SELECT COUNT(DISTINCT sheet) FROM geology_units" 2>/dev/null || echo 0)
+# Derived from the catalogue, never typed here: a server with one sheet built
+# must pass, and a third sheet added later must be checked without an edit.
+GEO_WANT=$(curl -s -b "$COOKIE_FILE" "${BASE_URL}/api/geomap" \
+    | python3 -c 'import json,sys; print(len(json.load(sys.stdin).get("geopackage_sheets") or []))' 2>/dev/null || echo 0)
 rm -f "$GEO_TMP"
 if [[ "$GEO_CODE" == "200" && "$GEO_APP" == "1196444487" && "$GEO_GOLD" -gt 0 \
-      && "$GEO_STYLE" -gt 0 && "$GEO_PROJ" -gt 0 ]]; then
+      && "$GEO_STYLE" -gt 0 && "$GEO_PROJ" -gt 0 \
+      && "$GEO_WANT" -gt 0 && "$GEO_SHEETS" == "$GEO_WANT" ]]; then
     green "✓"; PASSED=$((PASSED + 1))
 else
-    red "FAIL (code $GEO_CODE, app_id $GEO_APP, gold units $GEO_GOLD, styles $GEO_STYLE, projects $GEO_PROJ)"
+    red "FAIL (code $GEO_CODE, app_id $GEO_APP, gold units $GEO_GOLD, styles $GEO_STYLE, projects $GEO_PROJ, sheets $GEO_SHEETS/$GEO_WANT)"
     FAILED=$((FAILED + 1)); ERRORS+=("geomap geopackage")
+fi
+
+# The per-sheet path is in shipped links, in the handover doc and in
+# render_gpkg.py. It must REDIRECT to the combined file, not 404: a 404 there
+# reads as "the export was removed", which is not what happened.
+printf "%-50s" "geomap_geopackage_legacy_sheet_path"
+GEO_LOC=$(curl -s -o /dev/null -w "%{http_code} %{redirect_url}" -b "$COOKIE_FILE" \
+    "${BASE_URL}/api/geomap/car/geopackage")
+if [[ "$GEO_LOC" == 308*"/api/geomap/geopackage"* ]]; then
+    green "✓"; PASSED=$((PASSED + 1))
+else
+    red "FAIL ($GEO_LOC)"
+    FAILED=$((FAILED + 1)); ERRORS+=("geomap geopackage legacy path")
 fi
 
 yellow "\n=== Patrol data tenants ==="

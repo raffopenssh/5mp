@@ -19,7 +19,7 @@ settlements, patrol tracking. ~17k-line single-page frontend + SQLite (1.8 GB).
 | Fire pipeline, trajectories, narrative cache, FIRMS ingest | `docs/agents/fire.md` (+ `docs/FIRE_PIPELINE.md`) |
 | AOIs: runner, queue, visibility, versions, AOI frontend | `docs/agents/aoi.md` (+ `docs/PLAN_AOI_OVERLAY.md`) |
 | Hover tips, click-to-select, map-tip precedence | `docs/agents/map-ui.md` |
-| Historical raster maps, geology vector overlays | `docs/agents/overlays.md` (+ `docs/GEOLOGY_HANDOVER.md`) |
+| Historical raster maps, geology vector overlays | `docs/agents/overlays.md` (+ `docs/GEOLOGY.md`) |
 | Time animator, fire heat field, frame probe | `docs/agents/animator.md` |
 | GeoPackage / KML / Locus exports, download links, gzip | `docs/agents/exports.md` (+ `docs/GEOPACKAGE_EXPORT.md`) |
 | Feature loading, LOD, `/features-in-bbox`, detail tiers | `docs/agents/lod.md` |

@@ -166,22 +166,27 @@ func (s *Server) HandleAPIGeoMap(w http.ResponseWriter, r *http.Request) {
 			e["size_bytes"] = st.Size()
 			e["download"] = "/api/geomap/" + id + "/download"
 		}
-		// The GeoPackage is built on first request from <id>_units.geojson, so
-		// it is only offered when that input is present -- otherwise the panel
-		// would show a button whose only possible outcome is a 404. Its size is
-		// reported only once a build exists; "(12 MB)" on a link that has not
-		// been built yet would be a number nobody measured.
-		if _, err := os.Stat(geoMapUnitsPath(id)); err == nil {
-			e["geopackage"] = "/api/geomap/" + id + "/geopackage"
-			if st, ok := geoMapGPKGReady(id); ok {
-				e["geopackage_bytes"] = st.Size()
-			}
-		}
 		out = append(out, e)
+	}
+	// The GeoPackage is ONE file covering every sheet, so it is a property of
+	// the catalogue and not of a sheet -- the map is one layer, and the data
+	// behind it must not arrive as a per-country jigsaw the user reassembles.
+	// It is offered only when at least one sheet's units are on disk (the
+	// input it is built from), otherwise the panel would show a button whose
+	// only possible outcome is a 404. Its size is reported only once a build
+	// exists; "(12 MB)" on a link that has not been built yet would be a
+	// number nobody measured.
+	res := map[string]any{"sheets": out}
+	if built := geoMapGPKGSheets(); len(built) > 0 {
+		res["geopackage"] = "/api/geomap/geopackage"
+		res["geopackage_sheets"] = built
+		if st, ok := geoMapGPKGReady(); ok {
+			res["geopackage_bytes"] = st.Size()
+		}
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Cache-Control", "no-cache")
-	json.NewEncoder(w).Encode(map[string]any{"sheets": out})
+	json.NewEncoder(w).Encode(res)
 }
 
 // HandleAPIGeoMapTile serves one vector tile.

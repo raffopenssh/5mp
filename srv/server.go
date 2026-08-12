@@ -212,7 +212,12 @@ func (s *Server) Serve(addr string) error {
 	// commodity. Same 204-on-miss and ?v=<rev> conventions as the histmap.
 	mux.HandleFunc("GET /api/geomap", s.HandleAPIGeoMap)
 	mux.HandleFunc("GET /api/geomap/{sheet}/download", s.HandleAPIGeoMapDownload)
-	mux.HandleFunc("GET /api/geomap/{sheet}/geopackage", s.HandleAPIGeoMapGeoPackage)
+	// One GeoPackage for every sheet: the map is one layer, so the data behind
+	// it is one file. The per-sheet path stays as a redirect because links to it
+	// are already in circulation (and in docs) -- a 404 there would read as "the
+	// export was removed", which is not what happened.
+	mux.HandleFunc("GET /api/geomap/geopackage", s.HandleAPIGeoMapGeoPackage)
+	mux.HandleFunc("GET /api/geomap/{sheet}/geopackage", s.HandleAPIGeoMapGeoPackageLegacy)
 	mux.HandleFunc("GET /api/geomap/{sheet}/{z}/{x}/{y}", s.HandleAPIGeoMapTile)
 	mux.HandleFunc("GET /api/grid", s.HandleAPIGrid)
 	mux.HandleFunc("GET /api/nearby-places", s.HandleAPINearbyPlaces)
