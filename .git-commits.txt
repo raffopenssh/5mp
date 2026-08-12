@@ -1,3 +1,5 @@
+5950557 2026-08-12 09:45:42 Fire fronts stay lines at every zoom; a pin can be filtered, scoped and forced
+66804b2 2026-08-12 08:50:50 chore: refresh version history
 6caa7d9 2026-08-12 08:50:35 LOD: dated trajectories from the database, density-aware ink, and a shareable animation download
 86a8367 2026-08-12 08:15:50 chore: refresh version history
 620a6a3 2026-08-12 08:15:30 LOD: one loader for every viewport layer; GeoPackage of a paused frame
@@ -16,5 +18,3 @@ b924473 2026-08-10 07:20:58 docs: the geology GeoPackage and map_sheet= links ar
 d7af57c 2026-08-10 07:18:36 chore: refresh version history
 4f5a14a 2026-08-10 07:18:04 geology: a GeoPackage download beside the MBTiles
 fcd4d58 2026-08-10 07:17:56 Patrol data is scoped to the account it was uploaded in
-5980503 2026-08-10 06:38:58 chore: refresh version history
-81dded1 2026-08-10 06:38:46 geology: vector overlays for two scanned sheets, and the hold-out that caught a hole
