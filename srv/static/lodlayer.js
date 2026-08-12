@@ -47,6 +47,31 @@
     // properties, not the shapes, used to force.
     var LIMIT_GEOM = 12000;
 
+    // THE CHEAP TIER FOR A PATH IS A SHORTER PATH, NOT A DOT.
+    //
+    // Collapsing a fire trajectory to its centroid destroys the one property
+    // that distinguishes a fire FRONT from a hotspot: the direction and
+    // distance it ran. A whole AOI of them was a red stipple that said less
+    // than the map it replaced. `seg=1` asks the server for a three-point
+    // chord per feature instead (first / middle / last vertex): ~50 bytes
+    // against ~350 for the full path, so an area with 38,725 trajectories
+    // still shows every one of them as a line — 3.4 MB, 1.0 s — instead of
+    // showing all of them as dots or 12,000 of them as paths.
+    //
+    // Polygons keep dots: a settlement's centroid IS the settlement, at the
+    // zoom where this tier applies.
+    var SEG_TYPES = { fire_trajectory: true };
+
+    // Per-layer detail preference, cycled from the layer's own readout:
+    //   'auto'   — the server decides from the true count in view (default)
+    //   'shapes' — always full geometry, whatever it costs
+    //   'fast'   — always the cheap tier, even when shapes would fit
+    // A preference is a statement about ONE layer and is remembered across
+    // pans and reloads; it is deliberately not global, because the whole
+    // point is that fires and settlements in one view can want different
+    // answers.
+    var DETAIL_MODES = ['auto', 'shapes', 'fast'];
+
     function pwd() { return (typeof getPwd === 'function' ? getPwd() : '') || ''; }
 
     function viewBBox() {
@@ -101,21 +126,27 @@
 
     // ---- rendering -------------------------------------------------------
 
-    // Geometry and points are two renderings of ONE layer, so they share the
-    // source id and cross-fade rather than being torn down and rebuilt:
-    // crossing the threshold should read as focus, not as a reload.
+    // Three renderings of ONE layer — full geometry, chords, dots — sharing a
+    // source id and cross-fading rather than being torn down and rebuilt:
+    // crossing a threshold should read as focus, not as a reload.
+    //
+    // `segments` deliberately reuses the LINE layer, so a chord is painted,
+    // hovered and arrowed by exactly the code that paints the full path. It
+    // is the same feature drawn shorter, and it must not become a special
+    // case anywhere downstream.
     function ensureLayers(key, render, color, count) {
         var L = ids(key), s = reg.get(key);
         // Density first: addLayer below reads s.lineWidth / s.pointRadius, so
         // a layer is born at the right weight instead of flashing at the
         // default and being corrected a frame later.
         applyDensity(key, count || 0);
-        var wantArrow = render !== 'points' && s.featureType === 'fire_trajectory';
-        var want = render === 'points' ? [L.dots] : [L.fill, L.line, L.point];
-        var unwant = render === 'points' ? [L.fill, L.line, L.arrow, L.point] : [L.dots];
+        var vector = render !== 'points';
+        var wantArrow = vector && s.featureType === 'fire_trajectory';
+        var want = vector ? [L.fill, L.line, L.point] : [L.dots];
+        var unwant = vector ? [L.dots] : [L.fill, L.line, L.arrow, L.point];
         if (wantArrow) want.push(L.arrow);
 
-        if (render === 'points') {
+        if (!vector) {
             if (!map.getLayer(L.dots)) {
                 map.addLayer({
                     id: L.dots, type: 'circle', source: L.src,
@@ -173,7 +204,8 @@
                     paint: {
                         'circle-radius': s.pointRadius || 4,
                         'circle-color': color, 'circle-opacity': 0,
-                        'circle-stroke-width': 1, 'circle-stroke-color': '#fff', 'circle-stroke-opacity': 0.5
+                        'circle-stroke-width': 1, 'circle-stroke-color': '#fff',
+                        'circle-stroke-opacity': s.pointRing == null ? 0.5 : s.pointRing
                     }
                 });
                 registerTip(key, L.point, false);
@@ -207,8 +239,7 @@
             // hard-coded 2 here silently undid applyDensity and put the red
             // sheet back every time the layer crossed the threshold.
             : [[L.line, 'line-width', (s.lineWidth || 2) * 3, s.lineWidth || 2],
-               [L.point, 'circle-radius', (s.pointRadius || 4) * 2.2, s.pointRadius || 4]];
-        steps.forEach(function (st) {
+               [L.point, 'circle-radius', (s.pointRadius || 4) * 2.2, s.pointRadius || 4]];        steps.forEach(function (st) {
             if (!map.getLayer(st[0])) return;
             try {
                 map.setPaintProperty(st[0], st[1] + '-transition', { duration: 0, delay: 0 });
@@ -244,11 +275,26 @@
     // magnitude. Arrows go with it — a directional glyph every 100 px across
     // 2,000 overlapping paths is noise, so they fade out as the lines thin.
     function densityPaint(n) {
-        if (n <= 150) return { w: 2.4, o: 0.9, arrow: 0.75, r: 5, fill: 0.3 };
-        if (n <= 600) return { w: 1.8, o: 0.7, arrow: 0.5, r: 4, fill: 0.26 };
-        if (n <= 2000) return { w: 1.2, o: 0.42, arrow: 0.18, r: 3, fill: 0.22 };
-        if (n <= 6000) return { w: 0.9, o: 0.26, arrow: 0, r: 2.4, fill: 0.18 };
-        return { w: 0.7, o: 0.16, arrow: 0, r: 2, fill: 0.14 };
+        // `r`/`ring` are the POINT rendering: a white ring is a "click me"
+        // affordance and is right for a handful of features; across a field of
+        // thousands it is the loudest thing on screen, so a hundred stationary
+        // fires out-shouted 14,700 moving ones (the white dots that survived
+        // the switch to line segments). Above a few hundred features a point
+        // wears the same ink as the lines: no ring, line alpha, line-ish size.
+        if (n <= 150) return { w: 2.4, o: 0.9, arrow: 0.75, r: 5, ring: 0.5, fill: 0.3 };
+        if (n <= 600) return { w: 1.8, o: 0.7, arrow: 0.5, r: 4, ring: 0.35, fill: 0.26 };
+        if (n <= 2000) return { w: 1.3, o: 0.5, arrow: 0.18, r: 2.6, ring: 0, fill: 0.22 };
+        if (n <= 6000) return { w: 1.0, o: 0.36, arrow: 0, r: 1.8, ring: 0, fill: 0.18 };
+        if (n <= 12000) return { w: 0.85, o: 0.26, arrow: 0, r: 1.4, ring: 0, fill: 0.14 };
+        // Tens of thousands of chords in one view. Thin and translucent is
+        // deliberate: what is legible at this density is where the ink
+        // ACCUMULATES — corridors, repeatedly-burnt ground — and any stroke
+        // heavy enough to read on its own turns the whole area into one flat
+        // red field, which is the failure this ramp exists to avoid. But the
+        // floor must still be visible on a dark basemap: 0.06 read as an empty
+        // map with a smudge on it.
+        if (n <= 25000) return { w: 0.75, o: 0.2, arrow: 0, r: 1.2, ring: 0, fill: 0.12 };
+        return { w: 0.7, o: 0.16, arrow: 0, r: 1.1, ring: 0, fill: 0.1 };
     }
 
     function applyDensity(key, n) {
@@ -257,6 +303,12 @@
         if (s0) {
             s0.lineOpacity = d.o; s0.arrowOpacity = d.arrow; s0.fillOpacity = d.fill;
             s0.lineWidth = d.w; s0.pointRadius = d.r;
+            // A point in a dense field is one dot of the same ink; on its own
+            // it is a feature you are meant to click. Same rule as the lines,
+            // one step brighter so a lone stationary fire in a field of moving
+            // ones is still findable.
+            s0.pointOpacity = d.ring > 0 ? 0.7 : Math.min(1, d.o * 1.6);
+            s0.pointRing = d.ring;
         }
         var set = function (id, prop, val) {
             if (!map.getLayer(id)) return;
@@ -267,12 +319,16 @@
         };
         set(L.line, 'line-width', d.w);
         set(L.point, 'circle-radius', d.r);
+        set(L.point, 'circle-stroke-opacity', d.ring);
         // Opacity is only pushed for layers already visible; fade() owns the
         // 0 -> target step for one being brought in, and reads the same
         // remembered values (s.lineOpacity etc.) so the two never disagree.
         if (map.getLayer(L.line) && map.getPaintProperty(L.line, 'line-opacity')) set(L.line, 'line-opacity', d.o);
         if (map.getLayer(L.fill) && map.getPaintProperty(L.fill, 'fill-opacity')) set(L.fill, 'fill-opacity', d.fill);
         if (map.getLayer(L.arrow) && map.getPaintProperty(L.arrow, 'icon-opacity')) set(L.arrow, 'icon-opacity', d.arrow);
+        if (map.getLayer(L.point) && map.getPaintProperty(L.point, 'circle-opacity')) {
+            set(L.point, 'circle-opacity', (reg.get(key) || {}).pointOpacity || 0.7);
+        }
     }
 
     function setOpacity(key, id, on) {
@@ -285,6 +341,7 @@
         if (id === ids(key).line && s.lineOpacity != null) full = s.lineOpacity;
         else if (id === ids(key).arrow && s.arrowOpacity != null) full = s.arrowOpacity;
         else if (id === ids(key).fill && s.fillOpacity != null) full = s.fillOpacity;
+        else if (id === ids(key).point && s.pointOpacity != null) full = s.pointOpacity;
         // A dots layer is denser, so it carries less alpha each.
         var target = on ? (id.endsWith('-dots') ? 0.75 : full) : 0;
         try {
@@ -366,12 +423,27 @@
     // ---- loading ---------------------------------------------------------
 
     function pointsToGeoJSON(d) {
-        var pts = d.points || [], rids = d.ids || [];
+        var pts = d.points || [], rids = d.ids || [], segs = d.segs || null;
         var feats = new Array(pts.length);
         for (var i = 0; i < pts.length; i++) {
+            var g;
+            if (segs && segs[i]) {
+                var c = segs[i];
+                // A degenerate chord (a Point trajectory, or a group that never
+                // moved) is left as a Point rather than a zero-length line:
+                // MapLibre draws nothing for the latter, so a stationary fire
+                // would vanish exactly in the rendering meant to show more.
+                if (c[0] === c[4] && c[1] === c[5] && c[0] === c[2] && c[1] === c[3]) {
+                    g = { type: 'Point', coordinates: [c[0], c[1]] };
+                } else {
+                    g = { type: 'LineString', coordinates: [[c[0], c[1]], [c[2], c[3]], [c[4], c[5]]] };
+                }
+            } else {
+                g = { type: 'Point', coordinates: [pts[i][0], pts[i][1]] };
+            }
             feats[i] = {
                 type: 'Feature',
-                geometry: { type: 'Point', coordinates: [pts[i][0], pts[i][1]] },
+                geometry: g,
                 properties: { rid: rids[i], value: pts[i][3] }
             };
         }
@@ -397,11 +469,12 @@
             contains(s.lastBBox, view)) {
             return;
         }
-        // In points mode the same containment is not enough on its own —
-        // zooming IN is exactly what should promote it to geometry — but a pan
-        // or a zoom OUT inside a covered box cannot. Compare the area we would
-        // now ask for: only a meaningfully smaller one can change the answer.
-        if (why === 'move' && s.lastBBox && s.render === 'points' &&
+        // In the cheap tiers the same containment is not enough on its own —
+        // zooming IN is exactly what should promote chords or dots to full
+        // geometry — but a pan or a zoom OUT inside a covered box cannot.
+        // Compare the area we would now ask for: only a meaningfully smaller
+        // one can change the answer.
+        if (why === 'move' && s.lastBBox && s.render !== 'geometry' &&
             contains(s.lastBBox, view) && area(view) > area(s.lastBBox) * 0.55) {
             return;
         }
@@ -411,21 +484,40 @@
         s.abort = ctrl;
         if (s.onLoading) s.onLoading(true);
 
+        // The detail preference is expressed as a BUDGET, so the server keeps
+        // making the decision from the true count in view and the client only
+        // says how much it is willing to draw. 'shapes' therefore still
+        // truncates honestly at a very large view rather than promising
+        // something the browser cannot parse.
+        var budget = LIMIT_GEOM;
+        if (s.detail === 'shapes') budget = 200000;
+        else if (s.detail === 'fast') budget = 0;
         var qs = new URLSearchParams({
             type: s.featureType,
             bbox: bbox.map(function (v) { return v.toFixed(4); }).join(','),
             mode: 'auto',
             limit: String(LIMIT_POINTS),
-            geom_budget: String(LIMIT_GEOM),
+            geom_budget: String(budget),
             pwd: pwd()
         });
+        // A path's cheap tier is a chord, not a centroid — see SEG_TYPES.
+        if (SEG_TYPES[s.featureType]) qs.set('seg', '1');
         if (s.dated !== false) {
             if (typeof dateFrom !== 'undefined' && dateFrom) qs.set('from', dateFrom);
             if (typeof dateTo !== 'undefined' && dateTo) qs.set('to', dateTo);
         }
         // A pin means "this area's fires". Without it, panning east would
         // quietly adopt the neighbouring park's rows under the same label.
-        if (s.park) qs.set('park', s.park);
+        //
+        // `area`, not `park`: an AOI id in ?park= is a hard 404 from
+        // ParkIDMiddleware, which is exactly how the first AOI fire pin came to
+        // fetch nothing and report "0 in view".
+        if (s.park) qs.set('area', s.park);
+        // The popup's classification filter, applied server-side. It used to be
+        // a client-side filter over feature properties, which is why a filtered
+        // pin could not use this loader at all: neither the chord nor the slim
+        // geometry rendering ships the property it filtered on.
+        if (s.classification) qs.set('class', s.classification);
         var scopeAOI = s.aoi || (typeof aoiFocusID !== 'undefined' ? aoiFocusID : null);
         if (scopeAOI) qs.set('aoi', scopeAOI);
 
@@ -435,7 +527,7 @@
             var d = await res.json();
             if (!reg.has(key)) return;   // removed while loading
             var render = d.render || (d.mode === 'points' ? 'points' : 'geometry');
-            var data = render === 'points' ? pointsToGeoJSON(d) : d;
+            var data = (render === 'points' || render === 'segments') ? pointsToGeoJSON(d) : d;
             var L = ids(key);
             if (map.getSource(L.src)) map.getSource(L.src).setData(data);
             else map.addSource(L.src, { type: 'geojson', data: data });
@@ -450,7 +542,8 @@
             try {
                 window.dispatchEvent(new CustomEvent('lod:state', {
                     detail: { key: key, render: render, count: s.count,
-                              total: s.total, truncated: !!d.truncated }
+                              total: s.total, truncated: !!d.truncated,
+                              detail_mode: s.detail || 'auto' }
                 }));
             } catch (e) {}
         } catch (e) {
@@ -501,6 +594,32 @@
         removeAll: function () { Array.from(reg.keys()).forEach(destroy); },
         has: function (key) { return reg.has(key); },
         state: function (key) { return reg.get(key) || null; },
+
+        /** The three detail preferences, in cycle order. */
+        DETAIL_MODES: DETAIL_MODES,
+
+        /**
+         * setDetail(key, mode) — 'auto' | 'shapes' | 'fast', or undefined to
+         * advance the cycle. Returns the mode now in force.
+         *
+         * The server still decides WHAT fits; this only says how much the user
+         * wants drawn. Forcing 'shapes' on a continental view is allowed and
+         * still truncates honestly rather than lying about the count.
+         */
+        setDetail: function (key, mode) {
+            var s = reg.get(key);
+            if (!s) return null;
+            if (!mode) {
+                var i = DETAIL_MODES.indexOf(s.detail || 'auto');
+                mode = DETAIL_MODES[(i + 1) % DETAIL_MODES.length];
+            }
+            if (DETAIL_MODES.indexOf(mode) < 0) mode = 'auto';
+            s.detail = mode;
+            s.lastBBox = null;   // the budget changed; the last answer is stale
+            load(key, 'detail');
+            return mode;
+        },
+        detail: function (key) { return (reg.get(key) || {}).detail || 'auto'; },
         /** Date window or focus changed: every layer's answer is now stale. */
         reload: function () {
             // Debounced: "the dates changed" is announced by several call

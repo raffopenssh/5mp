@@ -140,13 +140,20 @@
             50% { opacity: 0.7; }
         }
 
-        /* Session / TEST ENV chip */
-        .session-chip { position: fixed; top: 8px; left: 50%; transform: translateX(-50%); z-index: 2000; display: flex; align-items: center; gap: 8px; background: rgba(30,30,30,0.92); color: #ccc; font: 600 11px/1 'SF Mono',Menlo,Consolas,monospace; padding: 5px 6px 5px 10px; border-radius: 4px; letter-spacing: 1px; border: 1px solid rgba(255,255,255,0.12); }
+        /* Top chip row: session + view-scope chips, one line, same language.
+           They answer "what am I looking at": which account, which focus. */
+        .top-chips { position: fixed; top: 8px; left: 50%; transform: translateX(-50%); z-index: 2000;
+            display: flex; align-items: center; gap: 6px; max-width: calc(100vw - 20px); flex-wrap: wrap; justify-content: center; }
+        .session-chip { display: flex; align-items: center; gap: 8px; background: rgba(30,30,30,0.92); color: #ccc; font: 600 11px/1 'SF Mono',Menlo,Consolas,monospace; padding: 5px 6px 5px 10px; border-radius: 4px; letter-spacing: 1px; border: 1px solid rgba(255,255,255,0.12); }
         .session-chip.is-test { background: rgba(234,179,8,0.92); color: #1a1a00; border-color: rgba(0,0,0,0.15); }
+        /* The focus chip is the AOI amber everywhere else in the app uses, so
+           it reads as "this is about that area" without a legend. */
+        .aoi-focus-chip { background: rgba(40,32,8,0.92); color: #fbbf24; border-color: rgba(251,191,36,0.45); }
+        .aoi-focus-chip .session-chip-label { display: inline-flex; align-items: center; gap: 6px; max-width: 42vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; letter-spacing: 0.5px; }
         /* Hide the session chip while a full-screen modal is open (star report, login, upload, etc.) */
-        body:has(.modal-overlay.active) .session-chip,
-        body:has(.star-modal.active) .session-chip,
-        body:has(#version-modal[style*="flex"]) .session-chip { display: none; }
+        body:has(.modal-overlay.active) .top-chips,
+        body:has(.star-modal.active) .top-chips,
+        body:has(#version-modal[style*="flex"]) .top-chips { display: none; }
         .session-chip-logout { display: flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 3px; color: inherit; opacity: 0.65; text-decoration: none; font: 700 12px/1 sans-serif; }
         .session-chip-logout:hover { opacity: 1; background: rgba(0,0,0,0.15); }
 
@@ -223,14 +230,24 @@
            deforestation / settlement row it belongs to rather than as a fourth
            palette. Deliberately dim: it answers a question the user has only
            when they ask it. */
+        /* The rendering pill is a BUTTON: it says what is drawn and, clicked,
+           forces full shapes or the fast rendering for this layer. The stats
+           row and the pinned chip carry the same control with the same words —
+           one concept in the two places a layer can be reached from. */
         .stats-lod .lod-mode { flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px;
-            padding: 0 5px; border-radius: 8px; font-weight: 600; letter-spacing: 0.2px;
+            padding: 1px 6px; border-radius: 8px; font-weight: 600; letter-spacing: 0.2px;
+            font-size: 9px; line-height: 1.3; cursor: pointer; font-family: inherit;
+            border: 1px solid transparent;
             color: currentColor; opacity: 0.6; background: rgba(255,255,255,0.05); }
+        .stats-lod .lod-mode:hover { opacity: 1; background: rgba(255,255,255,0.12); }
+        .stats-lod .lod-mode.forced { opacity: 0.95; border-color: currentColor; }
         /* The glyph is the same distinction the pinned chips make: a stroke for
-           real geometry, a dot for points. */
+           real geometry, a short stroke for the chord rendering, a dot for
+           points. */
         .stats-lod .lod-mode::before { content: ''; width: 6px; height: 6px; flex: none;
             border-radius: 50%; background: currentColor; }
         .stats-lod .lod-mode.shapes::before { width: 9px; height: 2px; border-radius: 1px; }
+        .stats-lod .lod-mode.segments::before { width: 6px; height: 2px; border-radius: 1px; }
         .stats-lod .lod-mode.shapes { opacity: 0.8; }
         .stats-item.fire .stats-lod { color: var(--color-fire); }
         .stats-item.deforest .stats-lod { color: var(--color-deforestation); }
@@ -838,12 +855,22 @@
         @keyframes pulse-glow { 0%,100% { box-shadow: 0 0 4px rgba(239,68,68,0.3); } 50% { box-shadow: 0 0 8px rgba(239,68,68,0.6); } }
         .pinned-layer-chip .chip-icon { font-size: 9px; }
         .pinned-layer-chip .chip-count { font-weight: 600; }
-        /* Rendering mark on an LOD pin: ◇ = real clickable shapes in view,
-           · = the same features drawn as points because there are too many
-           shapes for this zoom. One character, because a chip has room for one
-           and the title carries the sentence. */
-        .pinned-layer-chip .chip-lod { font-size: 9px; opacity: 0.75; margin-left: 1px; }
-        .pinned-layer-chip .chip-lod.dots { font-size: 13px; line-height: 0; opacity: 0.6; }
+        /* Rendering control on an LOD pin: names what is drawn (shapes /
+           lines / dots) and, clicked, forces one. Same states and same words
+           as the stats row's .lod-mode — see there.
+           Sized to the chip's own line box (not its own font metrics) so the
+           pill sits on the same centre line as the count and the × instead of
+           riding above them. */
+        .pinned-layer-chip .chip-lod { flex: none; display: inline-flex; align-items: center;
+            height: 14px; margin-left: 3px; padding: 0 5px; border-radius: 7px;
+            font: 600 8px/1 inherit; font-family: inherit; letter-spacing: 0.2px;
+            cursor: pointer; color: inherit; opacity: 0.6;
+            background: rgba(255,255,255,0.08); border: 1px solid transparent; }
+        .pinned-layer-chip .chip-lod:hover { opacity: 1; background: rgba(255,255,255,0.18); }
+        .pinned-layer-chip .chip-lod.forced { opacity: 0.95; border-color: currentColor; }
+        .pinned-layer-chip .chip-icon,
+        .pinned-layer-chip .chip-count,
+        .pinned-layer-chip .chip-remove { display: inline-flex; align-items: center; line-height: 1; }
         .pinned-layer-chip .chip-remove { opacity: 0.5; margin-left: 2px; font-size: 12px; }
         .pinned-layer-chip:hover .chip-remove { opacity: 1; color: #fff; }
         .pinned-summary { font-size: 10px; color: #999; text-align: center; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.05); }
@@ -1210,49 +1237,27 @@
         .aoi-tag { display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px; background: rgba(251,191,36,0.10); border: 1px solid rgba(251,191,36,0.28); border-radius: 4px; font-size: 11px; color: #fbbf24; cursor: pointer; max-width: 100%; }
         .aoi-tag:hover { background: rgba(251,191,36,0.18); border-color: rgba(251,191,36,0.5); }
         .aoi-tag-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
+        .aoi-tag-name.aoi-editable-name { cursor: text; }
+        .aoi-tag-name.aoi-editable-name:hover { text-decoration: underline dotted; }
         .aoi-tag-win { color: #9a7b2a; font-size: 9px; flex-shrink: 0; }
-        .aoi-tag-zoom { background: none; border: none; color: #9a7b2a; cursor: pointer; font-size: 11px; padding: 0 0 0 2px; line-height: 1; flex-shrink: 0; }
-        .aoi-tag-zoom:hover { color: #fbbf24; }
-        .aoi-tag-zoom.star { color: #fbbf24; }
-        .aoi-tag-zoom.star:hover { color: #6b7280; }
+        /* One button family on the tag: focus, edit, star — the same three
+           verbs, icons and order as the AOI popup's action row. */
+        .aoi-tag-btn { background: none; border: none; color: #9a7b2a; cursor: pointer; font-size: 11px; padding: 0 0 0 2px; line-height: 1; flex-shrink: 0; }
+        .aoi-tag-btn:hover { color: #fbbf24; }
+        .aoi-tag-btn.star { color: #fbbf24; }
+        .aoi-tag-btn.star:hover { color: #6b7280; }
         /* Focus: the tag for the AOI that is currently the subject of the map.
            Filled rather than merely brighter, because the map itself is showing
            a big, unexplained change (158 dimmed parks) and the control that
            caused it has to be unmistakable. */
         .aoi-tag.focused { background: rgba(251,191,36,0.26); border-color: #fbbf24; box-shadow: 0 0 0 1px rgba(251,191,36,0.25); }
-        .aoi-tag-zoom.on { color: #fbbf24; text-shadow: 0 0 6px rgba(251,191,36,0.8); }
+        .aoi-tag-btn.on { color: #fbbf24; text-shadow: 0 0 6px rgba(251,191,36,0.8); }
 
-        /* Focus banner: bottom-centre, above the time slider, always visible
-           while focus is on. A dimmed map with no visible reason is a bug
-           report; this is the reason and the way out, in one line.
-           `bottom` here is only the pre-JS fallback — positionAOIFocusBanner()
-           measures the slider, whose height changes with wrapped preset tags
-           and the animator. A fixed offset covered the animate button on a
-           narrow phone. */
-        .aoi-focus-banner {
-            position: fixed; left: 50%; transform: translateX(-50%);
-            bottom: 96px; z-index: 900;
-            display: flex; align-items: center; gap: 8px;
-            padding: 5px 8px 5px 10px;
-            background: rgba(20,18,10,0.92); backdrop-filter: blur(6px);
-            border: 1px solid rgba(251,191,36,0.45); border-radius: 999px;
-            font-size: 11px; color: #fbbf24; pointer-events: auto;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.5);
-            max-width: calc(100vw - 24px);
-        }
-        .aoi-focus-banner-dot { font-size: 12px; }
-        .aoi-focus-banner-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 40vw; }
-        .aoi-focus-banner-hint { color: #9a7b2a; font-size: 9px; white-space: nowrap; }
-        .aoi-focus-banner button {
-            background: rgba(251,191,36,0.15); border: none; color: #fbbf24;
-            border-radius: 50%; width: 18px; height: 18px; line-height: 1;
-            cursor: pointer; font-size: 13px; flex-shrink: 0;
-        }
-        .aoi-focus-banner button:hover { background: rgba(251,191,36,0.35); }
-        @media (max-width: 640px) {
-            .aoi-focus-banner { bottom: 84px; font-size: 10px; }
-            .aoi-focus-banner-hint { display: none; }
-        }
+        /* The focus readout used to be a pill floating above the time slider,
+           measured against the slider's changing height. It is a chip in
+           .top-chips now, beside the session chip — same kind of fact ("what am
+           I looking at"), same clothes, and one fewer always-on overlay in the
+           middle of the map. See updateAOIFocusBanner(). */
         /* The focus toggle in the popup header, when on. */
         .pa-export-btn.active { background: rgba(251,191,36,0.25); border-color: #fbbf24; color: #fbbf24; }
         .starred-area-tag { display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px; background: rgba(59,130,246,0.10); border: 1px solid rgba(59,130,246,0.25); border-radius: 4px; font-size: 11px; color: #93c5fd; cursor: pointer; max-width: 100%; }
