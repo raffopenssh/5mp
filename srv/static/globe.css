@@ -269,6 +269,23 @@
             border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.05);
             color: #cbd5e1; font: inherit; font-size: 10px; line-height: 1.4; white-space: nowrap;
             transition: background 0.15s, border-color 0.15s, color 0.15s; }
+        /* The geology chip is a chip with TWO targets, because its body opens a
+           menu rather than switching the layer off — so "off" needs its own
+           target, or the strip's one-meaning-per-target rule holds for two
+           chips out of three. Body = configure, × = off. */
+        .ml-chip.geo { padding: 0; gap: 0; cursor: default; }
+        .ml-chip-main, .ml-chip-x { background: none; border: 0; color: inherit; font: inherit;
+            cursor: pointer; -webkit-tap-highlight-color: transparent;
+            display: inline-flex; align-items: center; transition: background 0.15s, color 0.15s; }
+        .ml-chip-main { gap: 4px; padding: 3px 4px 3px 8px; border-radius: 999px 0 0 999px;
+            max-width: 100%; overflow: hidden; }
+        .ml-chip-x { padding: 3px 8px 3px 5px; border-radius: 0 999px 999px 0; font-size: 13px;
+            line-height: 1; opacity: 0.5; margin-left: -1px;
+            border-left: 1px solid rgba(255,255,255,0.12); }
+        .ml-chip-main:hover, .ml-chip-main:focus-visible { background: rgba(255,255,255,0.09);
+            outline: none; }
+        .ml-chip-x:hover, .ml-chip-x:focus-visible { opacity: 1; background: rgba(239,68,68,0.2);
+            color: #fca5a5; outline: none; }
         .ml-chip i { font-size: 11px; opacity: 0.9; }
         .ml-chip em { font-style: normal; opacity: 0.75; font-size: 9px;
             overflow: hidden; text-overflow: ellipsis; max-width: 11ch; }
@@ -479,8 +496,28 @@
         .ml-grade-dot.g1 > i { opacity: 0.26; transform: scale(0.62); }
         .ml-grade-dot.g2 > i { opacity: 0.6;  transform: scale(0.82); }
 
+        /* ── Where am I, and how do I get out ───────────────────────────
+           Every gesture in the matrix narrows and none widened, so three taps
+           in the reader was looking at two units with no route back that was
+           visible from where they were. A subset must announce itself (the
+           app's standing rule) AND be escapable from the place it is
+           announced. Same object in both states, so it does not appear and
+           disappear under the thumb. */
+        .ml-state { display: flex; align-items: center; gap: 7px; padding: 7px 10px;
+            font-size: 11px; color: #9ca3af; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .ml-state > i { font-size: 12px; opacity: 0.7; flex: none; }
+        .ml-state > span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis;
+            white-space: nowrap; }
+        .ml-state.narrowed { color: #fcd34d; background: rgba(251,191,36,0.07); }
+        .ml-state button { display: inline-flex; align-items: center; gap: 4px; flex: none;
+            font: inherit; font-size: 10px; padding: 3px 8px; border-radius: 999px;
+            cursor: pointer; color: #fcd34d; background: rgba(251,191,36,0.12);
+            border: 1px solid rgba(251,191,36,0.4); -webkit-tap-highlight-color: transparent;
+            transition: background 0.15s, border-color 0.15s, color 0.15s; }
+        .ml-state button:hover, .ml-state button:focus-visible { background: rgba(251,191,36,0.24);
+            color: #fde68a; outline: none; }
+        .ml-mx-head > i { font-size: 11px; opacity: 0.7; margin-right: 1px; }
         .ml-menu .ml-contact .ml-n { color: #6b7280; font-style: normal; }
-        .ml-menu .ml-allrow { margin-bottom: 2px; }
 
         .ml-menu .ml-more { color: #9ca3af; border-top: 1px solid rgba(255,255,255,0.07); margin-top: 2px; gap: 7px; }
         .ml-menu .ml-more em { font-style: normal; color: #6b7280; margin-left: auto; font-size: 10px; }
@@ -1912,6 +1949,15 @@
             .ml-sw-more, .ml-sw-all { font-size: 10px; padding: 6px 8px; }
             /* The bracket label is a real tap target on touch, not a caption. */
             .ml-br-lbl { font-size: 10px; padding: 4px 7px; }
+            /* The matrix's cells are the smallest targets in the menu, so they
+               are what sets its width on a phone: 26 px each still fits eleven
+               commodity rows and seven periods inside 390 px. */
+            .ml-mx-cell { width: 26px; height: 26px; }
+            .ml-mx-cell > i { width: 14px; height: 14px; }
+            .ml-mx-col { padding: 4px 0 5px; }
+            .ml-mx-col > i { width: 18px; height: 12px; }
+            .ml-mx-row { font-size: 12px; padding: 6px 4px 6px 0; }
+            .ml-grade-b { padding: 5px 10px; font-size: 11px; }
             
             /* Legend repositioned to avoid toolbar */
             #map-legend { bottom: calc(var(--slider-h, 70px) + 70px) !important; left: 10px; max-width: calc(100vw - 80px); font-size: 11px; padding: 10px 12px; }
