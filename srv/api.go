@@ -274,7 +274,7 @@ func (s *Server) HandleAPIExportPatrolPixels(w http.ResponseWriter, r *http.Requ
 			FromYear: int64(2018),
 			ToYear:   int64(2026),
 			BBox:     &[4]float64{queryMinLon, queryMinLat, queryMaxLon, queryMaxLat},
-			Env:      RequestEnv(r),
+			Env:      PatrolEnv(r),
 		}
 		if fromStr != "" {
 			if t, err := time.Parse("2006-01-02", fromStr); err == nil {
@@ -311,7 +311,7 @@ func (s *Server) HandleAPIExportPatrolPixels(w http.ResponseWriter, r *http.Requ
 			  AND g.lat_center BETWEEN ? AND ?
 			  AND g.lon_center BETWEEN ? AND ?
 		`
-		args := []interface{}{RequestEnv(r), queryMinLat, queryMaxLat, queryMinLon, queryMaxLon}
+		args := []interface{}{PatrolEnv(r), queryMinLat, queryMaxLat, queryMinLon, queryMaxLon}
 
 		if fromStr != "" {
 			query += " AND (e.year > ? OR (e.year = ? AND e.month >= ?))"
@@ -445,7 +445,7 @@ func (s *Server) HandleAPIGridCellEffort(w http.ResponseWriter, r *http.Request)
 		  AND e.env = ?
 		  AND e.movement_type IN ('foot', 'vehicle', 'aircraft')
 	`
-	args := []interface{}{gridCellID, RequestEnv(r)}
+	args := []interface{}{gridCellID, PatrolEnv(r)}
 
 	if fromStr != "" {
 		query += " AND (e.year > ? OR (e.year = ? AND e.month >= ?))"
@@ -579,7 +579,7 @@ func (s *Server) HandleAPIGrid(w http.ResponseWriter, r *http.Request) {
 	bboxStr := r.URL.Query().Get("bbox")
 
 	// Build query params
-	params := GridQueryParams{Env: RequestEnv(r)}
+	params := GridQueryParams{Env: PatrolEnv(r)}
 	now := time.Now()
 
 	// Determine date range (year + month + day precision)
@@ -1115,7 +1115,7 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 		JOIN grid_cells g ON e.grid_cell_id = g.id
 		WHERE e.env = ?
 	`
-	args := []interface{}{RequestEnv(r)}
+	args := []interface{}{PatrolEnv(r)}
 	// Day-level filtering when day precision is available
 	if fromDay > 0 && toDay > 0 && fromMonth > 0 && toMonth > 0 {
 		statsQuery += " AND ((e.day IS NOT NULL AND (e.year * 10000 + e.month * 100 + e.day) BETWEEN ? AND ?) OR (e.day IS NULL AND (e.year * 100 + e.month) BETWEEN ? AND ?))"
@@ -1435,7 +1435,7 @@ func (s *Server) HandleAPIActivity(w http.ResponseWriter, r *http.Request) {
 		WHERE u.env = ?
 		GROUP BY u.id
 		ORDER BY u.upload_date DESC
-		LIMIT 10`, RequestEnv(r))
+		LIMIT 10`, PatrolEnv(r))
 	if err != nil {
 		slog.Error("failed to get activity", "error", err)
 		w.Header().Set("Content-Type", "application/json")
@@ -4873,7 +4873,7 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 				AND g.lat_center BETWEEN ? AND ?
 				AND g.lon_center BETWEEN ? AND ?
 		`
-			patrolArgs := []interface{}{RequestEnv(r), patrolBBox[1], patrolBBox[3], patrolBBox[0], patrolBBox[2]}
+			patrolArgs := []interface{}{PatrolEnv(r), patrolBBox[1], patrolBBox[3], patrolBBox[0], patrolBBox[2]}
 
 			if fromDate != "" {
 				patrolQuery += " AND (e.year > ? OR (e.year = ? AND e.month >= ?))"
@@ -5324,7 +5324,7 @@ func (s *Server) HandleAPIParksExport(w http.ResponseWriter, r *http.Request) {
 			FROM grid_cells g
 			JOIN effort_data e ON g.id = e.grid_cell_id AND e.env = ?
 			WHERE g.lat_center >= ? AND g.lat_center <= ? AND g.lon_center >= ? AND g.lon_center <= ?`,
-			RequestEnv(r), latMin, latMax, lonMin, lonMax).Scan(&pixels, &patrolDist)
+			PatrolEnv(r), latMin, latMax, lonMin, lonMax).Scan(&pixels, &patrolDist)
 		s.DB.QueryRow(`SELECT COUNT(*) FROM pa_publications WHERE pa_id = ?`, area.WDPAID).Scan(&pubs)
 
 		results = append(results, ParkExport{

@@ -27,6 +27,16 @@ import (
 	"time"
 )
 
+// patrolTenant is the tenant the patrol layers are read under. Defaults to Env
+// so every existing caller (the job queue, the CLI, the tests) keeps its old
+// behaviour; only a scope-restricted request sets it apart.
+func (o gpkgExportOpts) patrolTenant() string {
+	if o.PatrolEnv != "" {
+		return o.PatrolEnv
+	}
+	return strOr(o.Env, clientTenant)
+}
+
 // gpkgProgress reports which layer is being written, 0..1.
 type gpkgProgress func(frac float64, label string)
 
@@ -36,6 +46,14 @@ type gpkgExportOpts struct {
 	FromDate string
 	ToDate   string
 	Env      string // tenant (RequestEnv); non-client tenants get no patrol layers
+	// PatrolEnv is the tenant used for PATROL layers only, and it is not
+	// always Env: a read-only shared link that was made from a view with the
+	// patrol layer switched off carries no patrol capability, and gets a
+	// tenant that owns nothing (srv/guest.go). Separate from Env because
+	// everything else in the file is public geography the guest may have.
+	// It is part of the cache key, so a guest export can never be answered
+	// from a file built for the account itself.
+	PatrolEnv string
 	Effort   bool   // include patrol effort (expensive, and empty for most AOIs)
 	// RawFire includes the raw VIIRS detection points. They are the single
 	// biggest layer by an order of magnitude (XSA: 6.9M points, ~1.1 GB of a
@@ -762,7 +780,7 @@ func (s *Server) gpkgBasins(w *gpkgWriter, o gpkgExportOpts) error {
 // Patrol layers are client-derived: suppressed in the test tenant exactly as
 // the KML and Locus exports suppress them.
 func (s *Server) gpkgPatrol(w *gpkgWriter, o gpkgExportOpts, boundary string) error {
-	if o.Env != clientTenant {
+	if o.patrolTenant() != clientTenant {
 		return nil
 	}
 	tl, err := w.AddLayer("patrol_tracks", "GEOMETRY",
@@ -851,7 +869,7 @@ func (s *Server) gpkgPatrolEffort(w *gpkgWriter, o gpkgExportOpts, boundary stri
 		FROM effort_data e JOIN grid_cells g ON e.grid_cell_id = g.id
 		WHERE e.movement_type = 'all' AND e.env = ?
 			AND g.lat_center BETWEEN ? AND ? AND g.lon_center BETWEEN ? AND ?`
-	args := []interface{}{strOr(o.Env, clientTenant),
+	args := []interface{}{o.patrolTenant(),
 		bbox[1] - bufferDeg, bbox[3] + bufferDeg, bbox[0] - bufferDeg, bbox[2] + bufferDeg}
 	if o.FromDate != "" {
 		if t, err := time.Parse("2006-01-02", o.FromDate); err == nil {
