@@ -1566,6 +1566,74 @@ purple.
   a surface is a hit, so competing on distance would beat the trajectory the
   user is pointing at.
 
+### A paused frame's dot is the same feature a pinned layer draws
+
+Hovering a settlement or a clearing in the animator used to answer
+`4.9630, 25.0595` — coordinates and nothing else — while hovering *the same
+row* as a pinned layer answered with its narrative, classification and an
+"Open area overview" button. Same database row, two different answers, and the
+poorer one was the one the user was looking at. The animation was a picture.
+
+Fixed 2026-08-12. `/api/features-in-bbox?mode=points` already ships `ids`
+alongside `points` for exactly this reason (see "Level of detail" below); the
+animator simply threw them away. It keeps them as `rid` now and renders the tip
+**through LODLayer**, so there is one cache, one fetch per row ever, and one
+renderer:
+
+* `LODLayer.detailFor(rid)` / `.loadDetail(rid, refreshId)` / `.tipFor(props,
+  type, area)` are the shared surface. A dot hovered in the animation and the
+  same dot hovered as a pinned layer hit the same `detailCache` — hovering one
+  after the other costs zero requests, and the two cannot drift into
+  disagreeing about what a settlement is.
+* The placeholder is never empty: kind, date and size are known locally and
+  render immediately; `MapTip.refresh()` swaps in the full narrative when
+  `/api/feature-detail` lands. **A probe may now return `render(props)` instead
+  of a fixed `html` string** — that is what makes refresh work for a canvas
+  feature, which has no MapLibre properties to re-query.
+* Fire paths already carried their narrative in the trajectory payload; they
+  gained the **action button** (`openAreaOverview(park, 'fire', id)`), so ⏎ or
+  a double-click on a burning front opens the park's fire section like a pin.
+
+**A probe may answer with SEVERAL features, one per kind.** It used to return a
+single nearest hit across all layers, so a settlement under a fire path was
+unreachable — the exact "select behind" failure the card's tabs exist to fix
+for registered layers. `probeFrame` keeps one best per kind and hands MapTip a
+list; each becomes a candidate under a stable sub-id (`animator-frame:trajs`),
+so the tabs work **and** `?tip_layer=` still round-trips.
+
+### The probe is index-backed, because it runs on every mousemove
+
+The naive probe projected every loaded point per pointer event: 12,000
+settlements + 3,269 clearings + up to 6,000 trajectories x ~30 vertices, each a
+matrix multiply, at pointer rate. Measured on `XSA_Study_Area` at z7.5 that is
+**15,269 projections = 14.8 ms of pure `project()`** before a single distance
+test — a paused map that stutters under the cursor while doing nothing.
+
+Now: **project once per view transform, then bucket.** `screenIndex(name, arr,
+…)` holds a `Float32Array` of screen coordinates plus a 32 px uniform bucket
+grid (`heads`/`next` linked lists in `Int32Array`s); `idxNear()` visits ~9
+cells. Trajectory vertices get the same treatment in `trajIndex()`, built
+**lazily** — a play-through never pays for it. Everything screen-space is keyed
+on one `viewKey()` string, and `invalidateSprites()` clears it.
+
+* **The sprites use the same index.** `settlementSprite`/`deforestSprite` used
+  to project independently, so the same 15k points were projected twice per
+  view change. One projection now serves both the picture and the hit test.
+* `showHover()` **skips the innerHTML write when the answer has not changed**.
+  Moving across one feature is not a new answer, and rewriting the tip's DOM
+  60+ times a second for an identical string was most of what remained.
+
+| measured — XSA z7.5, 4 layers (12,000 settlements · 3,269 clearings · 6,000 fire paths) | before | after |
+|---|---|---|
+| `probeFrame()` alone | ~15 ms (15,269 projections) | **0.045 ms** |
+| mousemove, paused (probe + MapTip + DOM) | 6.33 ms | **1.84 ms** |
+| mousemove, playing (probe unregistered) | 0.21 ms | 0.20 ms |
+| playback | 11.1 fps | 11.9 fps |
+| tip content | `4.9630, 25.0595` | narrative + classification + action |
+
+Playback is untouched by design: the probe is registered on pause and dropped
+on play, so an animation is never asked to hit-test a frame that has moved on.
+
 **The `fire points` chip is disabled when the view cannot have it.**
 `GET /api/fire-frames?mode=estimate` is a ~10 ms SUM over `fire_grid_day`
 returning `{estimate, max, points_ok}`; the animator asks on open and on every

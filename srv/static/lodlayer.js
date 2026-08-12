@@ -643,6 +643,20 @@
                 reg.forEach(function (s, key) { s.lastBBox = null; load(key, 'reload'); });
             }, 80);
         },
+        /** The shared per-feature detail cache, so a hover never re-asks. */
+        detailFor: function (id) { return detailCache.get(id); },
+        /**
+         * Fetch a feature's full properties (narrative and all) and refresh
+         * whatever tip is on screen when they land. Shared with the animator's
+         * canvas probe: a paused frame's dots are the same rows as a pinned
+         * layer's, so they must be the same answer and the same cache.
+         */
+        loadDetail: function (id, refreshLayerId) { return fetchDetail(id, refreshLayerId); },
+        /** Render a feature tip the way a pinned layer would. */
+        tipFor: function (props, type, parkName) {
+            return tipHTML({ tipType: type, parkName: parkName }, props || {});
+        },
+
         layerIds: function (key) { var L = ids(key); return [L.fill, L.line, L.point, L.dots]; }
     };
 

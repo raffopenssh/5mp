@@ -473,17 +473,24 @@
                 // value] against j.from.
                 const j = await fetchJSON(`/api/features-in-bbox?type=deforestation&mode=points&bbox=${bb}&from=${fromISO}&to=${toISO}&limit=${FEATURE_POINT_LIMIT}&pwd=${pwd}${aoiQ}`);
                 const base = parseD(j.from || fromISO);
-                D.deforest = (j.points || []).map(p => ({
+                // The row id rides along so a dot stays a FEATURE: a paused
+                // frame's hover asks /api/feature-detail for the same narrative
+                // a pinned layer would show, through the same cache
+                // (LODLayer.loadDetail). Without it the animation is a picture.
+                const dIds = j.ids || [];
+                D.deforest = (j.points || []).map((p, i) => ({
                     lon: p[0], lat: p[1],
                     t: p[2] >= 0 ? base + p[2] * DAY : NaN,
-                    area: p[3] || 0.1
+                    area: p[3] || 0.1,
+                    rid: dIds[i]
                 })).filter(d => d.lon != null && !isNaN(d.t)).sort((a, b) => a.t - b.t);
                 if (j.truncated) truncNote('deforestation', 'deforest', j.count, j.total);
                 break;
             }
             case 'settlements': {
                 const j = await fetchJSON(`/api/features-in-bbox?type=settlement&mode=points&bbox=${bb}&limit=${FEATURE_POINT_LIMIT}&pwd=${pwd}${aoiQ}`);
-                D.settlements = (j.points || []).map(p => ({ lon: p[0], lat: p[1] }));
+                const sIds = j.ids || [];
+                D.settlements = (j.points || []).map((p, i) => ({ lon: p[0], lat: p[1], rid: sIds[i] }));
                 if (j.truncated) truncNote('settlements', 'settlements', j.count, j.total);
                 break;
             }
@@ -534,13 +541,80 @@
         return { canvas: c, resize };
     }
 
+    // The view transform, as a string. Everything that caches screen-space
+    // work (projected coordinates, sprites, the hit index) keys on this one
+    // value, so "the map moved" is stated once.
+    function viewKey(w, h) {
+        const c = map.getCenter();
+        return [w, h, c.lng.toFixed(5), c.lat.toFixed(5), map.getZoom().toFixed(3),
+                map.getBearing().toFixed(1), map.getPitch().toFixed(1)].join('|');
+    }
+
+    // ---------- screen-space point index -----------------------------------
+    //
+    // Both the sprites and the hover probe want the same thing: every point of
+    // a layer in screen coordinates. The probe additionally wants "which of
+    // them is under this pixel", and it is asked that on every mousemove.
+    //
+    // Naively that is one map.project() per point per mousemove — 12,000
+    // settlements + 12,000 clearings + up to 60,000 detections, each a matrix
+    // multiply, at pointer rate. So project once per view transform (shared
+    // with the sprites, which no longer project anything themselves) and hang
+    // a uniform 32 px bucket grid off it: a hover then touches ~9 cells.
+    //
+    // Off-screen points are indexed as bucket -1 and cost nothing.
+    const IDX_CELL = 32;
+    const _idx = new Map();     // layer name -> {key, src, xy, grid…}
+
+    function screenIndex(name, arr, lonOf, latOf, proj, w, h) {
+        const key = viewKey(w, h) + '|' + arr.length;
+        let e = _idx.get(name);
+        if (e && e.key === key && e.src === arr) return e;
+        const n = arr.length;
+        const xy = (e && e.xy && e.xy.length === n * 2) ? e.xy : new Float32Array(n * 2);
+        const nx = Math.max(1, Math.ceil((w + 128) / IDX_CELL));
+        const ny = Math.max(1, Math.ceil((h + 128) / IDX_CELL));
+        const heads = (e && e.heads && e.heads.length === nx * ny) ? e.heads : new Int32Array(nx * ny);
+        heads.fill(-1);
+        const next = (e && e.next && e.next.length === n) ? e.next : new Int32Array(n);
+        for (let i = 0; i < n; i++) {
+            const o = arr[i];
+            const p = proj(lonOf(o), latOf(o));
+            xy[i * 2] = p.x; xy[i * 2 + 1] = p.y;
+            const cx = Math.floor((p.x + 64) / IDX_CELL), cy = Math.floor((p.y + 64) / IDX_CELL);
+            if (cx < 0 || cy < 0 || cx >= nx || cy >= ny) { next[i] = -1; continue; }
+            const b = cy * nx + cx;
+            next[i] = heads[b];
+            heads[b] = i;
+        }
+        e = { key, src: arr, n, xy, nx, ny, heads, next };
+        _idx.set(name, e);
+        return e;
+    }
+
+    // Visit every point within `rad` px of (px, py). `fn(i, dist)`.
+    function idxNear(e, px, py, rad, fn) {
+        if (!e || !e.n) return;
+        const c0 = Math.floor((px + 64 - rad) / IDX_CELL), c1 = Math.floor((px + 64 + rad) / IDX_CELL);
+        const r0 = Math.floor((py + 64 - rad) / IDX_CELL), r1 = Math.floor((py + 64 + rad) / IDX_CELL);
+        const xy = e.xy;
+        for (let cy = Math.max(0, r0); cy <= Math.min(e.ny - 1, r1); cy++) {
+            for (let cx = Math.max(0, c0); cx <= Math.min(e.nx - 1, c1); cx++) {
+                for (let i = e.heads[cy * e.nx + cx]; i !== -1; i = e.next[i]) {
+                    const dx = xy[i * 2] - px, dy = xy[i * 2 + 1] - py;
+                    const d = Math.hypot(dx, dy);
+                    if (d <= rad) fn(i, d);
+                }
+            }
+        }
+    }
+
     // Trajectory geometry is fixed; only the visible prefix moves with t.
     // Cache screen coords per group, keyed on the view transform.
     let _trajKey = '';
+    let _trajIdx = null;    // vertex bucket grid, for the hover probe
     function projectTrajs(groups, proj, w, h) {
-        const c = map.getCenter();
-        const key = [w, h, c.lng.toFixed(5), c.lat.toFixed(5), map.getZoom().toFixed(3),
-                     map.getBearing().toFixed(1), map.getPitch().toFixed(1)].join('|');
+        const key = viewKey(w, h);
         if (key === _trajKey && groups.length && groups[0]._scr) return;
         _trajKey = key;
         for (const g of groups) {
@@ -558,9 +632,36 @@
             g._scr = scr;
             g._off = maxX < -20 || maxY < -20 || minX > w + 20 || minY > h + 20;
         }
+        _trajIdx = null;   // rebuilt lazily, and only if something hovers
     }
 
-    function invalidateSprites() { _defSprite = null; _settSprite = null; _trajKey = ''; }
+    // A bucket grid over every ON-SCREEN trajectory vertex. Built lazily (only
+    // a hover needs it) and once per view transform: 6,000 groups x ~30 points
+    // is ~180k distance tests per mousemove without it, which is exactly the
+    // kind of per-pointer-event work that makes a paused map feel stuck.
+    function trajIndex(groups, w, h) {
+        if (_trajIdx && _trajIdx.key === _trajKey) return _trajIdx;
+        const nx = Math.max(1, Math.ceil((w + 128) / IDX_CELL));
+        const ny = Math.max(1, Math.ceil((h + 128) / IDX_CELL));
+        const gi = [], pi = [], next = [];
+        const heads = new Int32Array(nx * ny).fill(-1);
+        for (let k = 0; k < groups.length; k++) {
+            const g = groups[k];
+            if (g._off || !g._scr) continue;
+            for (let i = 0; i < g.pts.length; i++) {
+                const x = g._scr[i * 2], y = g._scr[i * 2 + 1];
+                const cx = Math.floor((x + 64) / IDX_CELL), cy = Math.floor((y + 64) / IDX_CELL);
+                if (cx < 0 || cy < 0 || cx >= nx || cy >= ny) continue;
+                const b = cy * nx + cx, id = gi.length;
+                gi.push(k); pi.push(i); next.push(heads[b]); heads[b] = id;
+            }
+        }
+        _trajIdx = { key: _trajKey, nx, ny, heads,
+                     next: Int32Array.from(next), gi: Int32Array.from(gi), pi: Int32Array.from(pi) };
+        return _trajIdx;
+    }
+
+    function invalidateSprites() { _defSprite = null; _settSprite = null; _trajKey = ''; _idx.clear(); }
 
     function deforestRadius(d, zoom) {
         return Math.max(1.5, Math.min(8, Math.sqrt(d.area) * (zoom / 3)));
@@ -611,10 +712,9 @@
         const bandMs = deforestAgeMs() / DEFOREST_BANDS;
         const band = Math.floor(t / bandMs);
         const tq = band * bandMs;
-        const c = map.getCenter();
-        const key = [n, band, w, h, c.lng.toFixed(5), c.lat.toFixed(5),
-                     map.getZoom().toFixed(3), map.getBearing().toFixed(1), map.getPitch().toFixed(1)].join('|');
+        const key = [n, band, viewKey(w, h)].join('|');
         if (_defSprite && _defSprite.key === key) return _defSprite.canvas;
+        const e = screenIndex('deforest', arr, d => d.lon, d => d.lat, proj, w, h);
         const cv = (_defSprite && _defSprite.canvas) || document.createElement('canvas');
         cv.width = w; cv.height = h;
         const g = cv.getContext('2d');
@@ -625,17 +725,16 @@
         // also the only permanent one.
         const shown = [];
         for (let i = 0; i < n; i++) {
-            const d = arr[i];
-            const p = proj(d.lon, d.lat);
-            if (p.x < -10 || p.y < -10 || p.x > w + 10 || p.y > h + 10) continue;
-            const k = deforestAge(tq, d.t);
-            shown.push([p, k, deforestRadius(d, zoom) * deforestAgeScale(k)]);
+            const x = e.xy[i * 2], y = e.xy[i * 2 + 1];
+            if (x < -10 || y < -10 || x > w + 10 || y > h + 10) continue;
+            const k = deforestAge(tq, arr[i].t);
+            shown.push([x, y, k, deforestRadius(arr[i], zoom) * deforestAgeScale(k)]);
         }
         g.fillStyle = 'rgba(16,6,26,0.5)';
-        for (const s of shown) { g.beginPath(); g.arc(s[0].x, s[0].y, s[2] + 1.4, 0, 6.283); g.fill(); }
+        for (const s of shown) { g.beginPath(); g.arc(s[0], s[1], s[3] + 1.4, 0, 6.283); g.fill(); }
         for (const s of shown) {
-            g.fillStyle = deforestColor(s[1], 0.7 - 0.25 * s[1]);
-            g.beginPath(); g.arc(s[0].x, s[0].y, s[2], 0, 6.283); g.fill();
+            g.fillStyle = deforestColor(s[2], 0.7 - 0.25 * s[2]);
+            g.beginPath(); g.arc(s[0], s[1], s[3], 0, 6.283); g.fill();
         }
         _defSprite = { key, canvas: cv };
         return cv;
@@ -649,10 +748,9 @@
     let _settSprite = null;
     function settlementSprite(pts, proj, w, h) {
         if (!pts.length || w <= 0 || h <= 0) return null;
-        const c = map.getCenter();
-        const key = [pts.length, w, h, c.lng.toFixed(5), c.lat.toFixed(5),
-                     map.getZoom().toFixed(3), map.getBearing().toFixed(1), map.getPitch().toFixed(1)].join('|');
+        const key = [pts.length, viewKey(w, h)].join('|');
         if (_settSprite && _settSprite.key === key) return _settSprite.canvas;
+        const e = screenIndex('settlements', pts, s => s.lon, s => s.lat, proj, w, h);
         const cv = (_settSprite && _settSprite.canvas) || document.createElement('canvas');
         cv.width = w; cv.height = h;
         const g = cv.getContext('2d');
@@ -665,15 +763,15 @@
         // not per frame) and it makes the layer independent of whatever is
         // behind it, dark basemap or white-hot fire alike.
         const dots = [];
-        for (const s of pts) {
-            const p = proj(s.lon, s.lat);
-            if (p.x < -10 || p.y < -10 || p.x > w + 10 || p.y > h + 10) continue;
-            dots.push(p);
+        for (let i = 0; i < pts.length; i++) {
+            const x = e.xy[i * 2], y = e.xy[i * 2 + 1];
+            if (x < -10 || y < -10 || x > w + 10 || y > h + 10) continue;
+            dots.push([x, y]);
         }
         g.fillStyle = 'rgba(20,12,4,0.55)';
-        for (const p of dots) { g.beginPath(); g.arc(p.x, p.y, 3.0, 0, 6.283); g.fill(); }
+        for (const p of dots) { g.beginPath(); g.arc(p[0], p[1], 3.0, 0, 6.283); g.fill(); }
         g.fillStyle = 'rgba(253,224,71,0.95)';
-        for (const p of dots) { g.beginPath(); g.arc(p.x, p.y, 1.6, 0, 6.283); g.fill(); }
+        for (const p of dots) { g.beginPath(); g.arc(p[0], p[1], 1.6, 0, 6.283); g.fill(); }
         _settSprite = { key, canvas: cv };
         return cv;
     }
@@ -1707,74 +1805,159 @@
     const PROBE_ID = 'animator-frame';
     const PROBE_PX = 9;             // hit radius in screen pixels
 
+    // A dot the animator drew and a dot a pinned layer drew are the SAME ROW.
+    // So the tip must be the same tip — narrative, classification, area and
+    // all — and it must be reached the same way: /api/feature-detail through
+    // LODLayer's cache, so hovering the animation and hovering the map never
+    // disagree and never ask twice. Until it lands the tip says what it knows
+    // (kind, date, size) and marks the rest as loading; MapTip.refresh()
+    // re-renders in place when it does.
+    function areaTipRender(kind, tipType, extra, probeKey) {
+        // Returned to MapTip as `render`, so it is re-run on refresh.
+        return function (props) {
+            props = props || {};
+            const L = window.LODLayer;
+            const full = (L && props.rid != null) ? L.detailFor(props.rid) : null;
+            if (full && L && L.tipFor) {
+                return L.tipFor(full, tipType, full.park_name || full.park_id || '');
+            }
+            if (props.rid != null && L && L.loadDetail) L.loadDetail(props.rid, PROBE_ID + ':' + probeKey);
+            return '<div class="maptip-label">' + kind + '</div>' +
+                   extra.filter(Boolean).map(l => '<div class="maptip-meta">' + l + '</div>').join('') +
+                   (props.rid != null ? '<div class="maptip-dim">loading details…</div>' : '');
+        };
+    }
+
+    // Where the card's button goes. The area is only known once the detail has
+    // landed, so both are functions of the feature and both degrade quietly.
+    function areaOfFeature(f) {
+        const p = (f && f.properties) || {};
+        const L = window.LODLayer;
+        const full = (L && p.rid != null) ? L.detailFor(p.rid) : null;
+        return (full && full.park_id) || A.aoiID || null;
+    }
+    function areaAction(tipType) {
+        return {
+            actionLabel: function (f) {
+                const a = areaOfFeature(f);
+                return (a && typeof areaOverviewLabel === 'function')
+                    ? areaOverviewLabel(a) : 'Open overview';
+            },
+            onActivate: function (f) {
+                const a = areaOfFeature(f);
+                const p = (f && f.properties) || {};
+                const L = window.LODLayer;
+                const full = (L && p.rid != null) ? L.detailFor(p.rid) : null;
+                if (a && typeof openAreaOverview === 'function') {
+                    openAreaOverview(a, tipType, (full && full.feature_id) || null);
+                }
+            }
+        };
+    }
+
     function probeFrame(e) {
         if (!A || A.playing) return null;
         const pt = e && e.point;
         if (!pt) return null;
         const t = A.t, D = A.data, on = A.on;
+        const w = A.canvas.clientWidth, h = A.canvas.clientHeight;
         const proj = (lon, lat) => map.project([lon, lat]);
-        let best = null;
-
-        function consider(dist, make) {
+        // ONE BEST ANSWER PER KIND, not one overall. Three layers drawn in the
+        // same place are three different questions; collapsing them to the
+        // nearest dot made a settlement under a fire path unreachable, which
+        // is exactly the "select behind" failure the card's tabs exist to fix
+        // for registered layers. MapTip turns the list into tabs.
+        const best = new Map();     // kind -> {dist, make}
+        function considerIn(kind, dist, make) {
             if (dist > PROBE_PX) return;
-            if (best && best.dist <= dist) return;
-            best = { dist, make };
+            const b = best.get(kind);
+            if (b && b.dist <= dist) return;
+            best.set(kind, { dist, make });
         }
 
-        // Trajectories: nearest point of the part that has happened by t.
-        // _scr is already the projected geometry (projectTrajs), so this costs
-        // nothing beyond the walk.
+        // Trajectories: nearest vertex of the part that has happened by t.
+        // The vertices are already projected (projectTrajs) and bucketed
+        // (trajIndex), so a hover touches ~9 cells rather than every group.
         if (on.trajs && D.trajs) {
-            projectTrajs(D.trajs, proj, A.canvas.clientWidth, A.canvas.clientHeight);
-            for (const g of D.trajs) {
-                if (g.t0 > t || g._off || !g._scr) continue;
-                if (t > g.t1 + TRAJ_FADE_DAYS * DAY) continue;   // ashed away
-                for (let i = 0; i < g.pts.length; i++) {
-                    if (g.pts[i][2] > t) break;
-                    const dx = g._scr[i * 2] - pt.x, dy = g._scr[i * 2 + 1] - pt.y;
-                    consider(Math.hypot(dx, dy), () => trajTip(g, t));
+            projectTrajs(D.trajs, proj, w, h);
+            const ti = trajIndex(D.trajs, w, h);
+            const c0 = Math.floor((pt.x + 64 - PROBE_PX) / IDX_CELL), c1 = Math.floor((pt.x + 64 + PROBE_PX) / IDX_CELL);
+            const r0 = Math.floor((pt.y + 64 - PROBE_PX) / IDX_CELL), r1 = Math.floor((pt.y + 64 + PROBE_PX) / IDX_CELL);
+            for (let cy = Math.max(0, r0); cy <= Math.min(ti.ny - 1, r1); cy++) {
+                for (let cx = Math.max(0, c0); cx <= Math.min(ti.nx - 1, c1); cx++) {
+                    for (let id = ti.heads[cy * ti.nx + cx]; id !== -1; id = ti.next[id]) {
+                        const g = D.trajs[ti.gi[id]], i = ti.pi[id];
+                        if (g.t0 > t || g.pts[i][2] > t) continue;
+                        if (t > g.t1 + TRAJ_FADE_DAYS * DAY) continue;   // ashed away
+                        const dx = g._scr[i * 2] - pt.x, dy = g._scr[i * 2 + 1] - pt.y;
+                        considerIn('trajs', Math.hypot(dx, dy), () => ({
+                            key: 'trajs',
+                            html: trajTip(g, t).html,
+                            tabLabel: 'Fire path',
+                            // The group is a real feature with a real id, so
+                            // the card's button opens its area's overview
+                            // scrolled to it — exactly like a pinned fire.
+                            actionLabel: (g.park && typeof areaOverviewLabel === 'function')
+                                ? areaOverviewLabel(g.park) : null,
+                            onActivate: g.park && typeof openAreaOverview === 'function'
+                                ? () => openAreaOverview(g.park, 'fire', g.id) : null
+                        }));
+                    }
                 }
             }
         }
-        if (on.deforest && D.deforest) {
-            for (const d of D.deforest) {
-                if (d.t > t) break;
-                const p = proj(d.lon, d.lat);
-                consider(Math.hypot(p.x - pt.x, p.y - pt.y), () => ({
-                    label: 'Deforestation',
-                    lines: [fmtDateHuman(d.t),
-                            d.area ? d.area.toFixed(2) + ' km² cleared' : null]
+        // Deforestation and settlements are the SAME ROWS a pinned layer would
+        // serve, so they get the same tip and the same "open the area" button
+        // — via the row id the points endpoint already ships (`ids`).
+        if (on.deforest && D.deforest && D.deforest.length) {
+            const ix = screenIndex('deforest', D.deforest, d => d.lon, d => d.lat, proj, w, h);
+            idxNear(ix, pt.x, pt.y, PROBE_PX, (i, dist) => {
+                const d = D.deforest[i];
+                if (d.t > t) return;
+                considerIn('deforest', dist, () => ({
+                    key: 'deforest',
+                    properties: { rid: d.rid },
+                    tabLabel: 'Deforestation',
+                    render: areaTipRender('Deforestation · ' + fmtDateHuman(d.t), 'deforestation',
+                                          [d.area ? d.area.toFixed(2) + ' km² cleared' : null], 'deforest'),
+                    ...areaAction('deforestation')
                 }));
-            }
+            });
         }
-        if (on.settlements && D.settlements) {
-            for (const s of D.settlements) {
-                const p = proj(s.lon, s.lat);
-                consider(Math.hypot(p.x - pt.x, p.y - pt.y), () => ({
-                    label: 'Settlement',
-                    lines: [s.lat.toFixed(4) + ', ' + s.lon.toFixed(4)]
+        if (on.settlements && D.settlements && D.settlements.length) {
+            const ix = screenIndex('settlements', D.settlements, s => s.lon, s => s.lat, proj, w, h);
+            idxNear(ix, pt.x, pt.y, PROBE_PX, (i, dist) => {
+                const s = D.settlements[i];
+                considerIn('settlements', dist, () => ({
+                    key: 'settlements',
+                    properties: { rid: s.rid },
+                    tabLabel: 'Settlement',
+                    render: areaTipRender('Settlement', 'settlement',
+                                          [s.lat.toFixed(4) + ', ' + s.lon.toFixed(4)], 'settlements'),
+                    ...areaAction('settlement')
                 }));
-            }
+            });
         }
         const firePts = (on.firePts && D.firePts) ||
                         (on.fireGrid && D.fireGrid && D.fireGrid.asPoints && D.fireGrid.points);
-        if (firePts) {
-            for (const q of firePts) {
-                if (q[2] > t) break;
-                if (t - q[2] > DAY * 3) continue;    // faded out of the frame
-                const p = proj(q[0], q[1]);
-                consider(Math.hypot(p.x - pt.x, p.y - pt.y), () => ({
+        if (firePts && firePts.length) {
+            const ix = screenIndex('firePts', firePts, q => q[0], q => q[1], proj, w, h);
+            idxNear(ix, pt.x, pt.y, PROBE_PX, (i, dist) => {
+                const q = firePts[i];
+                if (q[2] > t || t - q[2] > DAY * 3) return;    // outside the frame
+                considerIn('firePts', dist, () => ({
+                    key: 'firePts',
                     label: 'Fire detection',
                     lines: [fmtDateHuman(q[2]),
                             q[3] ? 'Intensity ' + Math.round(q[3]) + ' MW' : null]
                 }));
-            }
+            });
         }
         // The heat field, last and only when nothing discrete answered. It is
         // a SURFACE: every pixel of it is a hit, so letting it compete on
         // distance would give it 0 and it would win over the trajectory the
         // user is pointing at. Same rule as the geology drape's priority -30.
-        if (!best && on.fireGrid && D.fireGrid && !D.fireGrid.asPoints && D.fireGrid._idx) {
+        if (!best.size && on.fireGrid && D.fireGrid && !D.fireGrid.asPoints && D.fireGrid._idx) {
             const ix = D.fireGrid._idx, res = D.fireGrid.res;
             if (!ix.empty && map.unproject) {
                 const ll = map.unproject([pt.x, pt.y]);
@@ -1785,8 +1968,10 @@
                     if (v > 0.02) {
                         const stepLbl = D.fireGrid.step === 'day' ? 'day'
                                       : D.fireGrid.step === 'week' ? 'week' : 'month';
-                        best = { dist: PROBE_PX, make: () => ({
+                        best.set('fireGrid', { dist: PROBE_PX, make: () => ({
+                            key: 'fireGrid',
                             label: 'Fire activity',
+                            peers: false,
                             // "≈" because this is the decayed sum the pixel is
                             // drawn from, not a count of anything: it mixes the
                             // current bucket with what is still cooling from
@@ -1796,18 +1981,28 @@
                                         + (Math.round(v) === 1 ? '' : 's') + ' burning here',
                                     'around ' + fmtDateHuman(t) + ' (' + stepLbl + ' buckets)',
                                     Math.round(res * 111) + ' km cell']
-                        }) };
+                        }) });
                     }
                 }
             }
         }
-        if (!best) return null;
-        const v = best.make();
-        if (v.html) return { html: v.html };
-        return {
-            html: '<div class="maptip-label">' + v.label + ' · ' + fmtDateHuman(t) + '</div>' +
-                  v.lines.filter(Boolean).map(l => '<div class="maptip-meta">' + l + '</div>').join('')
-        };
+        if (!best.size) return null;
+        // Nearest first, so the winner is still the thing the cursor is on and
+        // the rest are tabs behind it.
+        const hits = Array.from(best.values()).sort((a, b) => a.dist - b.dist).map(b => {
+            const v = b.make();
+            // A hit may be handed back as-is (it already carries `render`,
+            // `properties` and an action), or as the simple {label, lines}
+            // shape for the answers with nothing behind them to open.
+            if (v.render || v.html) return v;
+            return {
+                key: v.key,
+                html: '<div class="maptip-label">' + v.label + ' · ' + fmtDateHuman(t) + '</div>' +
+                      v.lines.filter(Boolean).map(l => '<div class="maptip-meta">' + l + '</div>').join(''),
+                tabLabel: v.label, peers: v.peers
+            };
+        });
+        return hits;
     }
 
     function trajTip(g, t) {
