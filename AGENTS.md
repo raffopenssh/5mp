@@ -173,7 +173,10 @@ These apply no matter what you touch. Each cost real time at least once.
     another link, or fingerprint as `anon` in the response cache. Read-only is
     not the same as harmless: patrol reads go through `PatrolEnv(r)`, never
     `RequestEnv(r)`, or a link shared to show a fire scar ships the ranger
-    tracks with it. See `docs/agents/sharing.md`.
+    tracks with it. A capability's **dates** are the same shape of question:
+    a window is clamped once in the middleware (`clampGuestQuery`), so a
+    handler whose range is not a `from`/`to` pair must call
+    `ClampGuestDates` itself. See `docs/agents/sharing.md`.
 
 14. Long writers **yield** (batched commits) so SQLite's single writer stays
     available. Before blaming the write lock, check `ps` — a lock wait is `S`,

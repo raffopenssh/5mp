@@ -261,6 +261,10 @@ func (s *Server) HandleAPIFireRealtime(w http.ResponseWriter, r *http.Request) {
 
 	endDate := time.Now()
 	startDate := endDate.AddDate(0, 0, -days)
+	// A date-locked shared link cannot reach past its window, and "the last 28
+	// days" is the one request that would walk out of it without ever naming a
+	// date the middleware could clamp (srv/guest.go).
+	startDate, endDate = ClampGuestDates(r, startDate, endDate)
 
 	// Always use feature_geometries (v5 trajectory data from pipeline)
 	// This ensures consistency between realtime and historical views
@@ -1070,6 +1074,9 @@ func (s *Server) handleFireRealtimeFromFeatures(w http.ResponseWriter, r *http.R
 	parkID, parkName string, startDate, endDate time.Time, days int) {
 
 	// Query recent fire trajectories from feature_geometries with persistent names
+	// The end bound is a no-op for an ordinary request (endDate is `now`) and
+	// the whole point for a date-locked shared link: without it, ClampGuestDates
+	// would narrow the window the answer CLAIMS and not the rows it returns.
 	rows, err := s.DB.Query(`
         SELECT fg.feature_id, fg.geojson, fg.properties_json, fg.start_date, fg.end_date,
                COALESCE(fgn.friendly_name, fg.feature_id) as display_name,
@@ -1077,10 +1084,10 @@ func (s *Server) handleFireRealtimeFromFeatures(w http.ResponseWriter, r *http.R
         FROM feature_geometries fg
         LEFT JOIN fire_group_names fgn ON fg.park_id = fgn.park_id AND fg.feature_id = fgn.feature_id
         WHERE fg.park_id = ? AND fg.feature_type = 'fire_trajectory'
-          AND fg.start_date >= ?
+          AND fg.start_date >= ? AND fg.start_date <= ?
           AND (fg.dist_to_park_km IS NULL OR fg.dist_to_park_km <= 20)
         ORDER BY fg.start_date DESC
-    `, parkID, startDate.Format("2006-01-02"))
+    `, parkID, startDate.Format("2006-01-02"), endDate.Format("2006-01-02"))
 
 	if err != nil {
 		internalError(w, "request failed", err)

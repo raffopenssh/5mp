@@ -597,6 +597,66 @@ if [[ -n "$CLIENT_PWD" ]]; then
         ERRORS+=("guest link does not expire or cannot be revoked")
     fi
 
+    # THE DATE LOCK. A frozen URL says what a key OPENS at; it says nothing
+    # about what the holder does next, and dragging the time slider is the
+    # first thing anyone does. Three things have to hold together, and each
+    # one alone would pass while the feature is broken:
+    #   * an ordinary key is NOT confined (or the lock is meaningless);
+    #   * a locked key cannot reach outside its window;
+    #   * it CLAMPS rather than refusing -- an error would be both a worse
+    #     experience and a worse secret ("403 for June" says June exists).
+    printf "%-50s" "guest_date_lock_confines_the_window"
+    LJ=$(curl -s -m 30 -X POST "${BASE_URL}/api/shortlink?pwd=${CLIENT_PWD}" \
+        -H 'Content-Type: application/json' \
+        -d '{"url":"/?from=2026-05-01&to=2026-06-30","guest":true,"lock_dates":true}')
+    L=$(jq -r '.slug // empty' <<< "$LJ")
+    [[ -n "$L" ]] && printf '%s\n' "$L" >> "$MINTED_LOG"
+    U=$(mint '{"url":"/?from=2026-05-01&to=2026-06-30","guest":true}')
+    JAR3=$(mktemp); curl -s -m 30 -o /dev/null -c "$JAR3" "${BASE_URL}/s/${L}"
+    JAR4=$(mktemp); curl -s -m 30 -o /dev/null -c "$JAR4" "${BASE_URL}/s/${U}"
+    wide="from=2020-01-01&to=2026-12-31"
+    trend() { curl -s -m 60 -b "$1" --get --data "$wide" \
+        "${BASE_URL}/api/parks/COD_Virunga/fire-trend" | jq -r '[.weeks[].week] | min // ""'; }
+    locked_min=$(trend "$JAR3"); open_min=$(trend "$JAR4")
+    lcode=$(curl -s -m 60 -o /dev/null -w "%{http_code}" -b "$JAR3" --get --data "$wide" \
+        "${BASE_URL}/api/parks/COD_Virunga/fire-trend")
+    stored=$(jq -r '.date_from + ".." + .date_to' <<< "$LJ")
+    # The locked key must start inside its window, the unlocked one before it
+    # (proving the window is what did the narrowing and not an empty table),
+    # and the narrowed request must still be a 200.
+    if [[ "$locked_min" > "2026-04-25" && -n "$open_min" && "$open_min" < "2026-04-25" \
+          && "$lcode" == "200" && "$stored" == "2026-05-01..2026-06-30" ]]; then
+        green "✓ (locked from $locked_min, open from $open_min)"; PASSED=$((PASSED + 1))
+    else
+        red "FAIL (locked '$locked_min', open '$open_min', code $lcode, stored '$stored')"
+        FAILED=$((FAILED + 1)); ERRORS+=("guest date lock does not confine the window")
+    fi
+
+    # A LOCK THAT LOCKS NOTHING IS THE WORST OUTCOME ON OFFER: the sender is
+    # told the key is confined, the key is not, and nothing records the
+    # difference. So a view with no dates is refused outright rather than
+    # stored with an empty window (which means "unrestricted").
+    printf "%-50s" "date_lock_refused_when_view_has_no_dates"
+    nj=$(curl -s -m 30 -X POST "${BASE_URL}/api/shortlink?pwd=${CLIENT_PWD}" \
+        -H 'Content-Type: application/json' -d '{"url":"/?z=4","guest":true,"lock_dates":true}')
+    nslug=$(jq -r '.slug // empty' <<< "$nj")
+    [[ -n "$nslug" ]] && printf '%s\n' "$nslug" >> "$MINTED_LOG"
+    # A named link is never confined either: the recipient signs in, and a
+    # signed-in session is not restricted by anything in this table.
+    namedlock=$(curl -s -m 30 -X POST "${BASE_URL}/api/shortlink?pwd=${CLIENT_PWD}" \
+        -H 'Content-Type: application/json' \
+        -d '{"url":"/?from=2026-05-01&to=2026-06-30&nl=1","lock_dates":true}')
+    nlslug=$(jq -r '.slug // empty' <<< "$namedlock")
+    [[ -n "$nlslug" ]] && printf '%s\n' "$nlslug" >> "$MINTED_LOG"
+    nlwin=$(jq -r '(.date_from // "") + (.date_to // "")' <<< "$namedlock")
+    if [[ -z "$nslug" && -n "$nlslug" && -z "$nlwin" ]]; then
+        green "✓"; PASSED=$((PASSED + 1))
+    else
+        red "FAIL (guest slug '$nslug', named window '$nlwin')"; FAILED=$((FAILED + 1))
+        ERRORS+=("date lock accepted where it cannot be enforced")
+    fi
+    rm -f "$JAR3" "$JAR4"
+
     # A NAME is not a credential: it resolves behind the ordinary gate, so a
     # stranger holding one still gets the password form.
     printf "%-50s" "named_link_is_not_a_way_in"
@@ -636,7 +696,7 @@ if [[ -n "$CLIENT_PWD" ]]; then
     # meaning anything the moment one is added or removed (AGENTS.md
     # invariant 2) -- it was wrong within a minute of being written.
     missing=0
-    for want in "$G" "$G2" "$N" "$expslug"; do
+    for want in "$G" "$G2" "$N" "$expslug" "$L" "$U" "$nlslug"; do
         [[ -z "$want" ]] && { missing=$((missing + 1)); continue; }
         printf '%s\n' "${MINTED[@]}" | grep -qx "$want" || missing=$((missing + 1))
     done

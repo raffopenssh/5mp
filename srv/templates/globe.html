@@ -20270,12 +20270,20 @@ ${starredItems.narratives.map(n => {
             ? ` · expires ${escapeHtml(safeDateStr(l.expires_at))}` : '';
         // What a key SHOWS is as much a property of it as when it dies.
         const patrol = l.guest && (l.scope || '').split(',').indexOf('patrol') >= 0;
+        // ...and WHEN. A key confined to a window is a different thing to have
+        // handed out than one that merely opens on it, and an operator asking
+        // "what did I actually give this person" must be able to read the
+        // answer here rather than reconstruct it from the target URL (which
+        // shows the same `from=&to=` either way).
+        const window_ = l.guest && l.date_from && l.date_to
+            ? `${safeDateStr(l.date_from)} \u2013 ${safeDateStr(l.date_to)} only` : '';
         const url = window.location.origin + '/s/' + l.slug;
         return `<div class="sh-row${l.guest ? ' is-key' : ''}${dead ? ' is-dead' : ''}">
             <div class="sh-main">
                 <code class="sh-slug">/s/${escapeHtml(l.slug)}</code>
                 ${l.guest ? '<span class="sh-badge">key</span>' : ''}
                 ${patrol ? '<span class="sh-badge sh-badge-warn">patrol tracks</span>' : ''}
+                ${window_ ? `<span class="sh-badge sh-badge-when">${escapeHtml(window_)}</span>` : ''}
                 ${state ? `<span class="sh-badge sh-badge-off">${state}</span>` : ''}
                 <span class="sh-kind">${escapeHtml(l.kind || 'view')}</span>
                 ${l.title ? `<span class="sh-title">${escapeHtml(l.title)}</span>` : ''}

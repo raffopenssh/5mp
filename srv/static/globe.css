@@ -2785,6 +2785,24 @@ body.sl-open { overflow: hidden; }
 #sl-mode-guest[aria-checked="true"] { background: rgba(251,191,36,0.11); border-color: rgba(251,191,36,0.5); color: #fcd34d; }
 #sl-mode-guest[aria-checked="true"] .sl-mode-name { color: #fde68a; }
 
+/* WHEN. Same two-button shape as WHO, one row above it, because it is the
+   same kind of decision: two named options, each carrying its consequence,
+   neither of them the unlabelled absence of the other. It is present only
+   when the shared view is on a rolling preset — a view already pinned to
+   explicit dates has nothing to decide, and two buttons with one possible
+   answer invent a decision rather than offering one.
+
+   Blue rather than green/amber: this choice is not about access at all, and
+   colouring it like the access switch would imply the two are variations of
+   one thing. */
+.sl-dates { margin-top: 12px; }
+#sl-date-rolling[aria-checked="true"],
+#sl-date-fixed[aria-checked="true"] {
+    background: rgba(96,165,250,0.11); border-color: rgba(96,165,250,0.5); color: #93c5fd;
+}
+#sl-date-rolling[aria-checked="true"] .sl-mode-name,
+#sl-date-fixed[aria-checked="true"] .sl-mode-name { color: #dbeafe; }
+
 /* Key properties: only meaningful once "opens for anyone" is chosen, so they
    are not there before it. Not disabled-and-greyed — a disabled control still
    asks to be read and understood; an absent one asks nothing.
@@ -2951,6 +2969,10 @@ body.is-guest .session-chip-label::before {
     font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
 .sh-badge-warn { background: rgba(239,68,68,0.16); border-color: rgba(239,68,68,0.45); color: #fca5a5; }
 .sh-badge-off { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.16); color: #9ca3af; }
+/* A date-locked key. Blue, matching the WHEN switch in the share dialog and
+   deliberately NOT the red of `patrol tracks`: a narrowed window is a
+   restriction the sender chose, not a risk they may have missed. */
+.sh-badge-when { background: rgba(96,165,250,0.14); border-color: rgba(96,165,250,0.4); color: #93c5fd; }
 .sh-kind { color: #6b7280; font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; }
 .sh-title { color: #9ca3af; font-size: 11px; }
 .sh-target { grid-area: target; color: #6b7280; font-size: 11px;

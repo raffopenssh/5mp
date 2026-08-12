@@ -25,6 +25,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 )
 
 const guestCookie = "guest_link"
@@ -90,7 +91,9 @@ func (s *Server) guestAuth(r *http.Request) (*http.Request, bool) {
 	if g == nil || !guestMayRead(r) {
 		return r, false
 	}
-	return withGuest(r, g), true
+	// The date clamp happens HERE, on the way in, so no handler has to know
+	// that a restricted window exists (see GuestWindow below).
+	return withGuest(clampGuestQuery(r, g), g), true
 }
 
 // ── WHAT A GUEST MAY SEE (as opposed to what it may do) ────────────────────
@@ -201,4 +204,181 @@ func PatrolEnv(r *http.Request) string {
 		return noSuchTenant
 	}
 	return RequestEnv(r)
+}
+
+// ── WHEN A GUEST MAY LOOK AT (as opposed to what it opens on) ─────────────
+//
+// A share URL always carries a time window, but carrying it is not the same as
+// RESTRICTING it: the recipient of "the Chinko fire season, May to August" can
+// drag the slider to last week the moment the map loads, and nothing in the
+// link ever suggested they could not. Usually that is right — an interactive
+// map that punishes exploration is a screenshot with extra steps (the same
+// argument that keeps fires and geology out of the scope list). Sometimes it
+// is exactly wrong: a link minted for one incident, one season, or one
+// reporting period is ABOUT those dates, and the sender means the key to open
+// nothing else.
+//
+// So the window is a property of the capability, stored on the row, decided
+// once at creation from the view being shared, and enforced HERE — once, in
+// the middleware — rather than at the forty-odd handlers that read `from`/`to`:
+//
+//	grep -c 'Query().Get("from")' srv/*.go
+//
+// Rewriting the query is legitimate precisely because it is the same shape of
+// answer: every one of those handlers already accepts any window the caller
+// asks for, so a narrowed window is an ordinary request, not a special case.
+// The alternative — a check per handler — is invariant 5's mistake in a new
+// costume: the one handler that forgets is the one that leaks, and nothing
+// says which one that is.
+//
+// IT CLAMPS, IT DOES NOT REFUSE. A guest who drags the slider outside the
+// window gets a map with less on it, not a screenful of failed panels: an
+// error would be a worse experience AND a worse secret, since "403 for June"
+// tells the holder there is a June worth having. Out-of-window entirely
+// collapses to a zero-length range, which every query answers empty.
+
+// ── DERIVING THE WINDOW FROM THE VIEW ───────────────────────────────
+//
+// Like scope, a locked window is taken from the picture being shared rather
+// than typed into a second form: the sender grants what they were looking at.
+//
+// A share URL says WHEN in one of two ways, and the difference is the whole
+// subject of this feature. `from=&to=` is a fact and always shows the same
+// map. `date_preset=90d` is a rule, resolved against whoever's clock opens it,
+// so it shows a different map next month — which is the right thing for a
+// standing bookmark and the wrong thing for a citation.
+//
+// A LOCK IS ONLY MEANINGFUL ON A FACT. The dialog therefore freezes the URL
+// before asking to lock it, and this function resolves a preset anyway rather
+// than storing an empty window: an empty window means "unrestricted", so
+// failing to parse would silently grant MORE than was asked for — the failure
+// direction 053 spent a paragraph forbidding.
+var presetDays = map[string]int{"td": 1, "3d": 3, "7d": 7, "14d": 14, "30d": 30, "90d": 90}
+
+func datesFromURL(raw string, now time.Time) (string, string) {
+	u, err := url.Parse(raw)
+	if err != nil {
+		return "", ""
+	}
+	q := u.Query()
+	iso := func(t time.Time) string { return t.Format("2006-01-02") }
+	valid := func(v string) string {
+		if _, err := time.Parse("2006-01-02", v); err != nil {
+			return ""
+		}
+		return v
+	}
+	from, to := valid(q.Get("from")), valid(q.Get("to"))
+	if from != "" || to != "" {
+		if from == "" {
+			from = "2020-01-01" // the slider's own floor (globe.html)
+		}
+		if to == "" {
+			to = iso(now)
+		}
+		if from > to {
+			from, to = to, from
+		}
+		return from, to
+	}
+	switch p := q.Get("date_preset"); {
+	case p == "cmo":
+		return iso(time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())), iso(now)
+	case presetDays[p] > 0:
+		return iso(now.AddDate(0, 0, -(presetDays[p] - 1))), iso(now)
+	}
+	return "", ""
+}
+
+// GuestWindow returns the dates this request's capability is confined to.
+// ok is false for an ordinary session and for a key that was not date-locked —
+// both of which may look at anything the account can see.
+func GuestWindow(r *http.Request) (from, to string, ok bool) {
+	g := GuestFromRequest(r)
+	if g == nil || g.DateFrom == "" || g.DateTo == "" {
+		return "", "", false
+	}
+	return g.DateFrom, g.DateTo, true
+}
+
+// clampISO narrows one requested ISO date into [lo, hi]. An absent request
+// means "the whole window", which is the widest thing a locked key may ask
+// for, not the widest thing the account can see.
+func clampISO(v, lo, hi string) string {
+	if v == "" {
+		return ""
+	}
+	if len(v) > 10 {
+		v = v[:10]
+	}
+	if v < lo {
+		return lo
+	}
+	if v > hi {
+		return hi
+	}
+	return v
+}
+
+// clampGuestQuery rewrites the date parameters of a request riding on a
+// date-locked key. Returns the request unchanged when there is nothing to do,
+// and never mutates the caller's URL in place — a middleware that edits the
+// request it was handed makes every later reader of r.URL a liar.
+func clampGuestQuery(r *http.Request, g *GuestSession) *http.Request {
+	if g == nil || g.DateFrom == "" || g.DateTo == "" {
+		return r
+	}
+	q := r.URL.Query()
+	from, to := q.Get("from"), q.Get("to")
+	// An unstated bound becomes the window's own edge: a handler defaulting
+	// "no from" to 2020 would walk straight out of the window, and the default
+	// is written in the handler, not here.
+	if from == "" {
+		from = g.DateFrom
+	}
+	if to == "" {
+		to = g.DateTo
+	}
+	from = clampISO(from, g.DateFrom, g.DateTo)
+	to = clampISO(to, g.DateFrom, g.DateTo)
+	if from > to {
+		from = to
+	}
+	if from == q.Get("from") && to == q.Get("to") {
+		return r
+	}
+	q.Set("from", from)
+	q.Set("to", to)
+	r2 := r.Clone(r.Context())
+	u := *r.URL
+	u.RawQuery = q.Encode()
+	r2.URL = &u
+	return r2
+}
+
+// ClampGuestDates narrows a window a handler computed for itself, for the
+// handlers whose time range is NOT a `from`/`to` pair the middleware can see —
+// today that is the NRT fire endpoint, whose `days=28` means "ending now".
+// "Now" is the one thing a locked key must not be able to reach past.
+func ClampGuestDates(r *http.Request, start, end time.Time) (time.Time, time.Time) {
+	from, to, ok := GuestWindow(r)
+	if !ok {
+		return start, end
+	}
+	lo, err1 := time.Parse("2006-01-02", from)
+	hi, err2 := time.Parse("2006-01-02", to)
+	if err1 != nil || err2 != nil {
+		return start, end
+	}
+	hi = hi.Add(24*time.Hour - time.Second)
+	if start.Before(lo) {
+		start = lo
+	}
+	if end.After(hi) {
+		end = hi
+	}
+	if start.After(end) {
+		start = end
+	}
+	return start, end
 }
