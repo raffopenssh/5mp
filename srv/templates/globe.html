@@ -12510,13 +12510,26 @@
         function setupPAClickHandler() {
             // Helper to handle PA feature interaction at a point
             function handlePAInteraction(point, lngLat, originalEvent) {
+                // MULTI-SELECT IS THIS HANDLER'S ALONE, AND IT IS CHECKED FIRST.
+                //
+                // shift/\u2318/ctrl-click means "add this park to the selection", a
+                // gesture MapTip has no part in \u2014 registerParkTip's html()
+                // deliberately DECLINES it. But declining only removes the park
+                // from the stack: an AOI or a geology unit at the same point
+                // still answers, MapTip still pins a card and still raises
+                // `_mapTipClicked`, and the guard below would then swallow the
+                // shift-click entirely. The modifier is unambiguous, so it is
+                // read before any stand-down flag.
+                const isMultiSelect = originalEvent &&
+                    (originalEvent.shiftKey || originalEvent.metaKey || originalEvent.ctrlKey);
+
                 // Skip if a grid pixel was just clicked (at zoom >=7 pixels win)
-                if (window._gridPixelClicked) {
+                if (window._gridPixelClicked && !isMultiSelect) {
                     return false;
                 }
 
                 // Skip if a pinned map feature's tip just handled this click
-                if (window._mapTipClicked) {
+                if (window._mapTipClicked && !isMultiSelect) {
                     return false;
                 }
 
@@ -12539,34 +12552,35 @@
                 const clickLat = lngLat.lat;
                 const containingFeature = paFeatures.find(f => pointInFeature(clickLng, clickLat, f));
                 
-                // A park inside an AOI wins the click. An AOI is typically far
-                // larger than the parks it contains (XSA: 485,000 km² around
-                // four of them), so the park is always the more specific
-                // answer; the AOI is only reachable where no park is.
-                if (!containingFeature && map.getLayer('aois-fill')) {
-                    const aoiHit = map.queryRenderedFeatures(point, { layers: ['aois-fill'] })
-                        .find(f => pointInFeature(clickLng, clickLat, f));
-                    if (aoiHit) {
-                        showAOIPopup(aoiHit.properties, lngLat);
-                        return true;
-                    }
-                }
-
-                if (containingFeature) {
-                    console.log('PA click handler - found PA:', containingFeature.properties?.name);
+                // AN AOI AND A PLAIN PARK CLICK ARE MAPTIP'S NOW.
+                //
+                // Both used to be answered here. They are registered MapTip
+                // layers with `activateOnClick` (park -10, AOI -20), so the
+                // sole-answer case opens exactly the same popup and the
+                // ambiguous case pins a card with a tab each \u2014 which is the
+                // whole point: the geology under a park stopped being
+                // unreachable. Answering again here would open a second popup
+                // behind the card.
+                //
+                // What is left is the one gesture MapTip declines: multi-select.
+                if (containingFeature && isMultiSelect) {
                     const props = containingFeature.properties;
-                    
-                    // Shift+click or Cmd+click (Mac): toggle park in multi-selection
-                    const isMultiSelect = originalEvent && (originalEvent.shiftKey || originalEvent.metaKey || originalEvent.ctrlKey);
-                    if (isMultiSelect) {
-                        console.log('Multi-select click triggered for:', props.id);
-                        handleShiftClickPark(props);
+                    console.log('Multi-select click triggered for:', props.id);
+                    handleShiftClickPark(props);
+                    return true;
+                }
+                // Fallback only: if MapTip failed to load, the map must still
+                // answer a click on a park or an area.
+                if (!window.MapTip) {
+                    if (!containingFeature && map.getLayer('aois-fill')) {
+                        const aoiHit = map.queryRenderedFeatures(point, { layers: ['aois-fill'] })
+                            .find(f => pointInFeature(clickLng, clickLat, f));
+                        if (aoiHit) { showAOIPopup(aoiHit.properties, lngLat); return true; }
+                    }
+                    if (containingFeature) {
+                        showPAPopup(containingFeature.properties, lngLat);
                         return true;
                     }
-                    
-                    // Normal click: show popup (no zoom - user controls the view)
-                    showPAPopup(props, lngLat);
-                    return true;
                 }
                 return false;
             }
@@ -12615,10 +12629,17 @@
                     const lngLat = map.unproject(point);
                     
                     // Use setTimeout to let the map's click handler fire first
-                    // If it doesn't work, this will be the backup
+                    // If it doesn't work, this will be the backup.
                     setTimeout(function() {
-                        // Only process if no popup was shown by the regular click handler
-                        if (!currentPAPopup) {
+                        // "Nothing answered" now includes MapTip's card: on a
+                        // finger the tap usually ends there rather than in a
+                        // popup, and a fallback that only looked for a popup
+                        // would re-answer a tap MapTip had already handled.
+                        const answered = currentPAPopup ||
+                            (typeof currentAOIPopup !== 'undefined' && currentAOIPopup) ||
+                            (window.MapTip && MapTip.isPinned && MapTip.isPinned()) ||
+                            window._mapTipClicked;
+                        if (!answered) {
                             console.log('Touch fallback handler triggered');
                             handlePAInteraction(point, lngLat);
                         }
