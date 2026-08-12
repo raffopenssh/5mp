@@ -21,9 +21,10 @@ A Go web application for conservation monitoring of 162 African keystone protect
 ## Documentation Index
 
 ### For AI Agents (Shelley)
-- [AGENTS.md](../AGENTS.md) - Quick context for AI coding assistants
-- [docs/SHELLEY_PROMPT_UI.md](SHELLEY_PROMPT_UI.md) - UI development instructions
-- [docs/SHELLEY_PROMPT_ADMIN_UI.md](SHELLEY_PROMPT_ADMIN_UI.md) - Admin panel development
+- [AGENTS.md](../AGENTS.md) - Index + cross-cutting invariants (kept short on purpose)
+- [agents/](agents/README.md) - Subsystem knowledge, one file per area; **load only what your task touches**
+- [SHELLEY_PROMPT_UI.md](SHELLEY_PROMPT_UI.md) - UI development instructions
+- [SHELLEY_PROMPT_ADMIN_UI.md](SHELLEY_PROMPT_ADMIN_UI.md) - Admin panel development
 
 ### For Humans
 - [INSTALL.md](INSTALL.md) - Installation and setup guide
@@ -32,7 +33,6 @@ A Go web application for conservation monitoring of 162 African keystone protect
 - [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture
 
 ### Project Status
-- [../TODO.md](../TODO.md) - Current sprint status
 - [CHANGELOG.md](CHANGELOG.md) - Recent changes
 
 ---

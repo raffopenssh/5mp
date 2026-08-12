@@ -1,0 +1,207 @@
+# Raster & vector map overlays (historical maps, geology)
+
+_Split out of AGENTS.md. Read when working on this area._
+
+## Historical map overlay (Sudan Survey 1:250,000)
+
+**187 sheet cells** (editions 1915-1968, median 1933) of the Anglo-Egyptian
+Sudan 1:250k series across all 18 1:1M blocks, georeferenced to their own
+printed 15-arcmin graticule and mosaicked into `data/histmaps/sudan250k.mbtiles`
+(3.6 GB, z0-14, 574k tiles, **gitignored derived output** — rebuild with
+`scripts/histmaps/mosaic.sh`, don't commit). The 49 cells covering
+`XSA_Study_Area` are complete.
+
+⚠️ **The first build (2026-08-06) covered the wrong half of the country.**
+`captions.txt` had
+been truncated at **264 of 770 lines** by an interrupted `curl`, which dropped
+every South Sudan block — exactly the AOI the overlay exists for. Nothing
+failed: 76/76 sheets georeferenced to 0.0 arcsec, QA was clean, the mosaic
+built, and the README then *documented the missing blocks as absent from the
+archive*. **A short manifest reads as a small collection, not as a broken
+download.** `catalogue()` now asserts 770 lines and cross-checks the LOC item's
+own `segment_count`; `mosaic.sh` invalidates a block's cached tiles when its
+sheet list changes. Same shape as the AOI "no-op that reads as an answer" rule,
+applied to an input. Full post-mortem: `scripts/histmaps/README.md`.
+
+The same shape bit twice more downstream, both fixed: `qa.json` was rewritten
+wholesale per run (so a final 8-sheet retry pass replaced the record for all
+187 — it is merged by id now), and a hardcoded `"76 sheets"` in the MBTiles
+description survived a rebuild that more than doubled coverage (`refresh_meta.py`
+derives it from `data/histmaps/geo/`). **Never type a count that describes a
+variable input.**
+
+8 cells fail to register and that is correct, not a gap: all are near-blank
+Libyan/Nubian Desert sheets (blocks 43/44/45, median ink 0.021 vs 0.085 corpus)
+with too little printed ink for the graticule detector to fit a ladder. It
+declines rather than guessing — a wrong warp on a blank sheet would be invisible
+and permanent.
+
+Rebuild is a throttled resumable systemd oneshot
+(`scripts/histmaps/histmap-rebuild.service` → `rebuild_night.sh`, ~22 h for 128
+sheets + 4 h mosaic), and `select.py --priority-bbox` orders the AOI's sheets
+first so an interrupted run still covers what matters. JP2 fetches are bounded
+on *throughput* (`--speed-limit`/`--max-time`), because `--retry` does not cover
+a stall: one curl sat on an idle connection for 22 min at load 0.00.
+
+| Piece | Where |
+|---|---|
+| Fetch + georeference | `scripts/histmaps/sudan250k.py`, `select.py`, `runall.sh` |
+| Mosaic to MBTiles | `scripts/histmaps/mosaic.sh` (~4 h, resumable); `refresh_meta.py` for metadata only |
+| Overnight rebuild | `scripts/histmaps/rebuild_night.sh` + `histmap-rebuild.service` |
+| Serving | `srv/histmap.go` — `GET /api/histmap`, `/api/histmap/sudan250k/{z}/{x}/{y}.png`, `/download` |
+| UI | admin panel -> Map Settings -> Historical Maps (`HistMap` in globe.html) |
+| Share link | `?histmap=sudan250k` |
+
+**White ink is a paint property, not a second tileset.** The archive holds one
+flat near-black (26,22,18) on transparent paper, so the layer sets
+`raster-brightness-min: 1` to lift RGB to white while leaving alpha alone. The
+**download stays black on purpose** — offline viewers (Locus, OsmAnd, QGIS)
+default to light backgrounds where white ink is invisible. Never "fix" this by
+generating a whitened archive; there would then be two copies to keep in sync.
+
+Layer order is load-bearing: inserted **before the first non-raster layer**, so
+above the basemap and below park/AOI outlines, trajectories and pins.
+`switchBasemap()` therefore **excludes** `histmap-lyr`/`histmap-src` from its
+generic custom-layer capture and calls `HistMap.reattach()` (which re-adds on
+`idle`) instead — replaying the captured spec appends the scan on top of
+everything, and re-adding during `styledata` is silently dropped because the
+`before` id has not landed yet.
+
+Tile misses return **204, not 404**: the series covers 18 of 22 1:1M blocks, so
+most of the bounding box legitimately has no sheet.
+
+**Tiles are `immutable, max-age=7d`, so a rebuild must change their URLs.**
+`GET /api/histmap` returns `rev` (mtime+size of the MBTiles) and bakes it into
+the `tiles` template as `?v=`. Without it the truncated 76-sheet build kept
+rendering after the 187-sheet rebuild, and only at the zoom levels the browser
+had cached — which reads as "gaps at some zoom levels", not as a stale cache.
+The client must use `meta.tiles`, never a hand-written tile path.
+
+Full detail, including why the mosaic is built per-block and why `tile_row` is
+TMS: `scripts/histmaps/README.md`.
+
+---
+
+## Geology overlays (Sudan GRAS 2004, CAR BRGM 1964)
+
+Two scanned geological sheets turned into **vector** overlays: 46 classes for
+Sudan, 17 for CAR, served as vector tiles and toggled per class or per
+commodity. Full detail: `docs/GEOLOGY_HANDOVER.md`. Files:
+`scripts/geomaps/{sheets,gridfit,georef,legend,vectorize}.py` + `tiles.sh`,
+`srv/geomap.go`, `srv/static/geomap.js`, `renderGeoMapPanel()` in globe.html.
+UI: admin ▸ Map Settings ▸ Geology. Share link `?geomap=car`.
+
+Not the `?histmap=` raster overlay (1:250k topographic scans) — different data,
+different path. Vector because the units are *data*: the client recolours them,
+hides one, and isolates "everything that can host gold". A raster drape would
+need one tileset per combination of 46 classes.
+
+* ⚠️ **A hold-out measured on a whole legend swatch lies about the map body.**
+  It reported 0.95–1.00 while CAR's Mouka-Ouadda plateau — an area the size of
+  Belgium — rendered **white**. The classifier decides from a 17–33 px window,
+  where inks 0.13 apart in Bhattacharyya distance are noise; two such classes
+  do not *swap*, they **cancel**, both lose the `--min-margin` test, and the
+  formation vanishes instead of being mislabelled. Judge every change with
+  `window_holdout()` and read the **claim rate**, not the accuracy: 34% of CAR
+  inside its own cutline was unclaimed at accuracy 1.000. Merging what the
+  window genuinely cannot separate took it to 8.7% (Sudan 16% → 9.0%).
+* **`<sheet>_classes.json` is the catalogue the server reads, not
+  `legend_*.json`.** The legend is the sheet's *printed* unit list; the tiles
+  carry the *class* list, which merges inseparable units and drops ones that
+  never occur. Serving the legend offers toggles for classes that cannot be
+  drawn. Both are committed; `_units.geojson` and `*.mbtiles` are not.
+* **A merged class is labelled with every member code** (`GC2/GO`), never a
+  pick — the sheet does not say which one a patch is. Its affinities are the
+  **union** at the highest member weight, each `why` prefixed with the member
+  code so the union is not a quiet upgrade.
+* **Commodity affinity is an inference over lithology, never an occurrence
+  dataset**, and every surface that shows it says so. Same line as the mining verdict (`docs/agents/mining.md`): inference from context ships, fabricated evidence does not.
+  Keyed by `(sheet, code)` — `S` is Silurian sandstone on Sudan and a
+  gold-bearing schist belt on CAR.
+* **Paper competes as a synthetic class and is then discarded**, which is how
+  `paper_like()` units are resolved by exclusion. Both failure directions land
+  on "unclaimed", never on a wrong formation.
+* Tiles: 204 on miss, `immutable` + `?v=<rev>` (a rebuild can change the class
+  list, so stale tiles would carry names the catalogue no longer has), every
+  class kept at every zoom — detail is dropped as *geometry*, never as a
+  missing unit.
+* `switchBasemap()` excludes `geomap-*` and calls `GeoMap.reattach()`, which
+  re-adds on `idle` — the same `before`-id trap as `HistMap`.
+* **The unit card is an ordinary hover tip at `priority: -30`** — the deepest
+  backdrop on the map: a park, an AOI and every pinned feature answer before it
+  does. It was `clickOnly` on the theory that a country-sized drape has no "off
+  it" to move to; that was over-thought (MapTip shows only ONE tip, so geology
+  simply loses to anything more specific) and it made the rock map heavier to
+  use than a fire. It also carries `peers: false`: a drape's 17 units are a
+  legend, not a pile-up to "zoom in and separate".
+
+### One layer, one legend, and the legend is the industry's
+
+The two sheets were printed 40 years apart by different surveys and digitised
+in *their own* inks. Presented as two cards (two toggles, two opacity sliders,
+two class lists) the user had to reconcile two colour languages for one
+question — and at the CAR/Sudan border the same rock changed colour. Several of
+both sheets' inks are also a desaturated blue-grey that on a dark basemap is
+indistinguishable from the waterbody layer, which is how a geology drape got
+read as **water**.
+
+Fixed 2026-08-12 (`srv/geomap_std.go`, `srv/static/geopatterns.js`):
+
+* **Colour = age**, ICS/CGMW International Chronostratigraphic Chart (v2023).
+  **Pattern = lithology**, FGDC-STD-013-2006 §37 (dots for sand, bricks for
+  carbonate, plus-signs for intrusives, wavy dashes for schist/gneiss…).
+  Both are *derived server-side from the sheet's own group/name strings* and
+  ride in `/api/geomap`'s catalogue, so **a legend change never invalidates a
+  tile** — the tiles carry `code`, the catalogue says what a code means.
+* **The ornament is load-bearing, not decoration.** Nothing else on the map is
+  hatched, so a hatched polygon is always the rock map — at any opacity, on any
+  basemap, and for a colour-blind reader. It also survives being turned down,
+  which a hue does not: `GeoPatterns.tile()` weights the ink far above the
+  background for exactly that reason. Default opacity 0.42.
+* **The printed ink is never discarded.** `color` stays on every class,
+  `setColorMode('ink')` draws the sheet as printed, and the GeoPackage keeps
+  `ink_color` beside `ics_color` plus an `as_printed` named style.
+* **The age scan is first-match and order-sensitive**: `"precambrien"` contains
+  `"cambrien"`, so the Cambrian rules must come *after* the Precambrian ones or
+  every CAR basement unit dates as Cambrian. Pinned by `TestGeoAgeOf`.
+  A group naming several ages is `age_mixed` and takes the **oldest** — never
+  a pick, same rule as a merged code.
+* **The sheet is demoted to provenance**: one Geology toggle, one legend, one
+  opacity; the per-sheet API stays (tiles, downloads, share links are per
+  sheet) but is no longer the user's unit of thought. A commodity chip acts on
+  **every** sheet — rock does not stop at a border.
+* **The QGIS export uses the same legend** (`styleGeoUnits`), because someone
+  who filters "gold" on the map and opens the download must be looking at the
+  same picture. Ornament is a real QGIS `LinePatternFill`/`PointPatternFill`,
+  not a raster texture. Two traps: `use_custom_dash` belongs on the *line*
+  layer (on the fill it is silently ignored and all nine ornaments come out
+  solid), and a sub-symbol name `@parent@N` must be **unique** within its
+  parent or QGIS drops one and a cross-hatch renders as half of itself.
+* **Contacts are drawn in a darkened ink, never the unit's own colour.** These
+  rings are traced off a scan, so 46 classes outlined at full saturation is a
+  net of bright magenta over a whole country.
+
+**Both downloads ship**: `?geomap=` renders the sheet, `Download MBTiles` is
+the picture, `Download GeoPackage` is the data (typed columns, one
+`w_<commodity>` weight column, ink colours and a QGIS project inside). A link
+to the panel itself is `?panel=admin&admin_tab=map-settings&map_sheet=car`.
+`srv/geomap_gpkg.go`; details in `docs/GEOLOGY_HANDOVER.md`.
+
+* **`w_gold IS NOT NULL` is the point.** Commodities as one comma-joined string
+  would make the export's headline question a `LIKE` over text; one INTEGER
+  column per commodity makes it an exact filter and lets QGIS graduate on the
+  weight. The column set is derived per build, never fixed — a re-vectorized
+  sheet can merge classes and change the union of affinities.
+* **NULL, not 0, where a unit hosts nothing.** 0 reads as "measured, none" and
+  matches `>= 0`.
+* Built on first request and cached beside `<sheet>_units.geojson`, keyed on
+  mtime (`>=`, or a build finishing inside its input's timestamp tick rebuilds
+  forever). No job queue: it is a static file per sheet and takes ~2 s, unlike
+  the per-area export which is minutes over a live database.
+* The button only appears when `_units.geojson` is present, and the size only
+  once a build exists — a link whose only outcome is a 404, or a "(12 MB)"
+  nobody measured, are both worse than nothing.
+* Verified by rendering it in QGIS (`docs/GEOLOGY_HANDOVER.md` § GeoPackage),
+  not just by `ogrinfo`.
+
+---
