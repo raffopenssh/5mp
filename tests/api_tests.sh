@@ -256,6 +256,28 @@ if [ -n "${AOI_OWNER_PWD:-}" ]; then
     fi
 fi
 
+# /api/stats takes the SAME ?aoi= scope the map layers do -- focus mode dims
+# the map to one area, and a panel above it still reporting the continent is a
+# contradiction the user has to notice. Two halves, and the second is the one
+# that matters: the scope must be visibility-checked, not taken on trust, or an
+# id becomes an oracle for a private polygon's totals.
+if [ -n "${AOI_OWNER_PWD:-}" ]; then
+    printf "%-50s" "stats_aoi_scope_narrows_for_owner"
+    glob=$(curl -s -m 60 --get --data-urlencode "pwd=$AOI_OWNER_PWD" "${BASE_URL}/api/stats" | jq -r '.total_settlements')
+    scoped=$(curl -s -m 60 --get --data-urlencode "pwd=$AOI_OWNER_PWD" --data-urlencode "aoi=XSA_Study_Area" "${BASE_URL}/api/stats")
+    n=$(echo "$scoped" | jq -r '.total_settlements'); sc=$(echo "$scoped" | jq -r '.scope')
+    if [ "$sc" = "XSA_Study_Area" ] && [ "$n" -gt 0 ] && [ "$n" -lt "$glob" ]; then
+        green "✓"; PASSED=$((PASSED + 1))
+    else
+        red "FAIL (scope=$sc, $n of $glob)"; FAILED=$((FAILED + 1)); ERRORS+=("stats_aoi_scope")
+    fi
+fi
+
+printf "%-50s" "stats_aoi_scope_ignored_for_non_owner"
+body=$(curl -s -m 60 -b "$COOKIE_FILE" "${BASE_URL}/api/stats?aoi=XSA_Study_Area")
+if [ "$(echo "$body" | jq -r '.scope')" = "null" ]; then green "✓"; PASSED=$((PASSED + 1))
+else red "FAIL (leaked scope)"; FAILED=$((FAILED + 1)); ERRORS+=("stats_aoi_scope_leak"); fi
+
 # ?park=<aoi id> must still 404 -- the fix is a second param, not a hole in the
 # middleware. (No password needed: the middleware runs before the handler.)
 printf "%-50s" "features_bbox_park_param_still_404s_aoi"
