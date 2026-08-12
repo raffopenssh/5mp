@@ -236,6 +236,63 @@
         .stats-value { color: #22c55e; font-weight: 600; font-variant-numeric: tabular-nums; transition: color 0.2s; }
         .stats-divider { height: 1px; background: rgba(255,255,255,0.08); margin: 8px -8px; }
         .stats-header { font-size: 9px; font-weight: 600; color: #999; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; padding: 0 8px; }
+
+        /* ── The Map strip (srv/static/maplegend.js) ───────────────────────
+           Basemap + drapes, reported where the numbers are, because a drape
+           that is on and unlabelled is a rendering the reader has to
+           reverse-engineer (and a FILTERED geology drape is indistinguishable
+           from a complete one).
+
+           .quiet is the default state — dark basemap, nothing draped. There is
+           then nothing true to say, so the section says nothing: no divider,
+           no header, no chip, just a ghost icon that is still a full-size
+           target. This is the only route to the basemap/overlay switches that
+           is not four clicks deep in admin, so it must never disappear
+           entirely; it just must not claim to be information. */
+        .stats-map { margin-top: 2px; }
+        .stats-map.quiet { display: flex; justify-content: flex-end; margin: 2px -6px -4px 0; }
+        .stats-map.quiet .ml-opener { opacity: 0.28; }
+        .stats-map.quiet .ml-opener:hover, .stats-map.quiet .ml-opener:focus-visible { opacity: 0.95; }
+        .ml-row { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; padding: 0 0 0 8px; margin: 0 -6px 0 -8px; }
+        .ml-opener { flex: none; margin-left: auto; width: 26px; height: 26px; display: inline-flex;
+            align-items: center; justify-content: center; border: 0; border-radius: 6px;
+            background: none; color: #9ca3af; font-size: 14px; cursor: pointer;
+            transition: background 0.15s, color 0.15s, opacity 0.15s; }
+        .ml-opener:hover, .ml-opener:focus-visible { background: rgba(255,255,255,0.08); color: #e5e7eb; outline: none; }
+
+        /* A chip is the STATE and the way to undo it: tapping it switches that
+           one thing off. Configuring is the opener beside it. Two targets,
+           one meaning each — the alternative (a chip that opens a menu that
+           contains the same chip) is the ambiguity this replaced. */
+        .ml-chip { display: inline-flex; align-items: center; gap: 4px; max-width: 100%;
+            padding: 3px 7px; border-radius: 999px; cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.05);
+            color: #cbd5e1; font: inherit; font-size: 10px; line-height: 1.4; white-space: nowrap;
+            transition: background 0.15s, border-color 0.15s, color 0.15s; }
+        .ml-chip i { font-size: 11px; opacity: 0.9; }
+        .ml-chip em { font-style: normal; opacity: 0.75; font-size: 9px;
+            overflow: hidden; text-overflow: ellipsis; max-width: 11ch; }
+        .ml-chip:hover { background: rgba(255,255,255,0.1); color: #fff; }
+        .ml-chip.base { border-color: rgba(96,165,250,0.35); color: #93c5fd; }
+        .ml-chip.hist { border-color: rgba(251,191,36,0.35); color: #fcd34d; }
+        .ml-chip.geo  { border-color: rgba(167,139,250,0.4); color: #c4b5fd; }
+        /* Amber, the colour this app uses everywhere for "you are looking at a
+           subset": a geology drape isolated to one commodity must not read as
+           the whole map. */
+        .ml-chip.geo.filtered { border-color: rgba(251,191,36,0.5); color: #fcd34d;
+            background: rgba(251,191,36,0.1); }
+
+        /* The age key: ICS colour wearing its FGDC ornament, so a swatch means
+           the same thing here as in the full legend and on the polygon. */
+        .ml-swatches { display: flex; align-items: center; gap: 3px; flex-wrap: wrap;
+            padding: 5px 8px 0; }
+        .ml-sw { width: 13px; height: 8px; border-radius: 2px; flex: none;
+            border: 1px solid rgba(0,0,0,0.45); background-size: 16px 16px; }
+        .ml-sw-more { font-size: 9px; color: #6b7280; }
+
+        .ml-menu .ml-mi { width: 14px; text-align: center; opacity: 0.85; margin-right: 2px; }
+        .ml-menu .ml-more { color: #9ca3af; border-top: 1px solid rgba(255,255,255,0.07); margin-top: 2px; gap: 7px; }
+        .ml-menu .ml-more em { font-style: normal; color: #6b7280; margin-left: auto; font-size: 10px; }
         .stats-trend { font-size: 10px; margin-left: 4px; }
         .stats-trend.up { color: #ef4444; }
         .stats-trend.down { color: #22c55e; }
@@ -1641,6 +1698,22 @@
                cost one step of a cycle. */
             .stats-lod .lod-mode { padding: 3px 6px; font-size: 8px; }
             .stats-trend { font-size: 7px; }
+
+            /* The Map strip spans the grid: it describes the ground under
+               every cell above it, and as a fourth cell it would read as a
+               fourth statistic. Quiet state is a single 32px tap target
+               tucked to the right of the last row — the smallest thing that
+               is still a real touch target. */
+            .stats-map { grid-column: 1 / -1; margin: 0; }
+            .stats-map.quiet { margin: -2px -2px -4px 0; }
+            .stats-map .stats-divider { display: block; margin: 4px 0 5px; }
+            .stats-map .stats-header { display: block; font-size: 8px; margin-bottom: 4px; padding: 0 2px; }
+            .ml-row { padding: 0 2px; margin: 0; gap: 5px; }
+            .ml-opener { width: 32px; height: 32px; font-size: 15px; }
+            .ml-chip { padding: 5px 9px; font-size: 10px; }
+            .ml-chip em { max-width: 9ch; }
+            .ml-swatches { padding: 5px 2px 0; }
+            .ml-sw { width: 15px; height: 9px; }
             
             /* Legend repositioned to avoid toolbar */
             #map-legend { bottom: calc(var(--slider-h, 70px) + 70px) !important; left: 10px; max-width: calc(100vw - 80px); font-size: 11px; padding: 10px 12px; }
@@ -1828,8 +1901,27 @@
                disappear with it — a dimmed map with no explanation is a bug
                report. Only the scope line survives. */
             .stats-panel:has(#stats-scope:not([hidden])) { display: block; padding: 0; background: none; border: 0; }
-            .stats-panel:has(#stats-scope:not([hidden])) > *:not(#stats-scope) { display: none; }
+            .stats-panel:has(#stats-scope:not([hidden])) > *:not(#stats-scope):not(#stats-map:not(.quiet)) { display: none; }
             .stats-panel #stats-scope { margin: 0; background: rgba(18,18,18,0.92); }
+            /* Landscape hides the numbers for room, but the map strip stays:
+               an overlay that is ON must be visible and switchable (an
+               unexplained hatched country is a bug report), and even in the
+               quiet state the ghost icon is the only route to the basemap
+               switch that is not four clicks deep. It is right-aligned and
+               sized to itself rather than spanning the panel's full width —
+               a chip pinned to the far left of a 667px viewport reads as a
+               separate widget, not as this panel's last row. */
+            .stats-panel:has(#stats-map) { display: block; padding: 0; background: none; border: 0; }
+            .stats-panel:has(#stats-map) > *:not(#stats-scope):not(#stats-map) { display: none; }
+            .stats-panel #stats-map { display: flex; flex-direction: column; align-items: flex-end;
+                margin-top: 4px; }
+            .stats-panel #stats-map.quiet { margin: 0; }
+            .stats-panel #stats-map .ml-row { margin: 0; padding: 3px 5px; border-radius: 8px;
+                background: rgba(18,18,18,0.92); }
+            .stats-panel #stats-map .ml-swatches { margin-top: 3px; padding: 3px 6px; border-radius: 6px;
+                background: rgba(18,18,18,0.92); }
+            .stats-panel #stats-map .stats-divider,
+            .stats-panel #stats-map .stats-header { display: none; }
             .map-toolbar { bottom: calc(var(--slider-h, 44px) + 8px); }
             .fab { bottom: calc(var(--slider-h, 44px) + 8px); }
             #map { bottom: 44px !important; }

@@ -104,6 +104,12 @@ test_url_param "geomap_all_settings" "&geomap=sudan,car&geomap_opacity=30&geomap
 test_url_param "geomap_auto_opacity" "&geomap=car" "" ""
 test_url_param "geomap_advanced_without_layer" "&panel=admin&admin_tab=map-settings&geomap_adv=1" "" ""
 test_url_param "geomap_stale_lithology" "&geomap=car&geomap_lith=nosuchrock" "" ""
+# The Map strip is a report OF those settings, so every state it can paint has
+# to be a loadable link: a non-default basemap alone, a drape alone, and a
+# drape that is filtered down to one commodity (the case that must not read as
+# the complete rock map).
+test_url_param "maplegend_basemap_only" "&basemap=satellite-esri" "" ""
+test_url_param "maplegend_filtered_geology" "&geomap=car&geomap_host=car:gold&basemap=satellite-esri" "" ""
 test_url_param "tip_selection" "&tip=22.62154,6.61277" "" ""
 test_url_param "tip_selection_layer" "&tip=22.62154,6.61277&tip_layer=geomap-fill-car" "" ""
 test_url_param "tip_selection_stale" "&tip=0,0&tip_layer=lod-nope-line" "" ""
@@ -156,6 +162,28 @@ src_guard "maplibre_close_not_reparented" absent  "fui-bar-btns'\).appendChild\(
 # A sheet that cannot be added yet is unfinished, not done (invariant 1):
 # ?geomap=sudan,car queued both on one idle and the second evaporated.
 src_guard "geomap_add_retries"            present "pendingAdd" "srv/static/geomap.js"
+
+# ── The Map strip (srv/static/maplegend.js) ───────────────────────────
+#
+# The strip reports the BASEMAP and the two drapes where the numbers are. Two
+# properties are load-bearing and both are structural, so grep can see them:
+#
+#  * it must vanish in the default state (dark basemap, no overlay) rather than
+#    print a "Basemap: Dark" row that is chrome, not information -- but the
+#    opener has to survive, because it is the only route to the basemap and
+#    overlay switches that is not four clicks deep in the admin panel;
+#  * a FILTERED geology drape must say so. "Everything that can host gold" looks
+#    exactly like the complete rock map, which is the same failure shape as a
+#    truncated layer that does not announce its truncation.
+src_guard "maplegend_quiet_state"         present "host.classList.toggle\('quiet'" "srv/static/maplegend.js"
+src_guard "maplegend_opener_always"       present "if \(quiet\) \{ host.innerHTML = opener" "srv/static/maplegend.js"
+src_guard "maplegend_says_filtered"       present "geoFilterNote" "srv/static/maplegend.js"
+# A sheet or archive that is not installed keeps its row and says why; an
+# absent row reads as "this map has no geology", a different claim.
+src_guard "maplegend_refusal_kept"        present "refused" "srv/static/maplegend.js"
+# Both overlay modules re-render the strip, so a share link or the admin panel
+# can turn a drape on and the strip follows without a second code path.
+src_guard "maplegend_hooked_geology"      present "MapLegend.refresh\(\);   // see renderHistMapPanel" "$GLOBE"
 
 echo
 echo "======================================="
