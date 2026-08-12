@@ -93,7 +93,7 @@ func (s *Server) HandleAPIFireFrames(w http.ResponseWriter, r *http.Request) {
 	// layer=effort: patrol effort (green pixels) from effort_data, bucketed the same way.
 	// Returns grid-indexed coords in p entries: [xi, yi, distance_km, uploads].
 	if q.Get("layer") == "effort" {
-		s.serveEffortFrames(w, RequestEnv(r), from, to, step, res, south, north, west, east)
+		s.serveEffortFrames(w, PatrolEnv(r), from, to, step, res, south, north, west, east)
 		return
 	}
 

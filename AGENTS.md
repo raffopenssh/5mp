@@ -170,8 +170,10 @@ These apply no matter what you touch. Each cost real time at least once.
 
 13. **A share link is a name; a guest link is a credential.** Never put an
     access password in a URL, and never let a guest capability write, mint
-    another link, or fingerprint as `anon` in the response cache.
-    See `docs/agents/sharing.md`.
+    another link, or fingerprint as `anon` in the response cache. Read-only is
+    not the same as harmless: patrol reads go through `PatrolEnv(r)`, never
+    `RequestEnv(r)`, or a link shared to show a fire scar ships the ranger
+    tracks with it. See `docs/agents/sharing.md`.
 
 14. Long writers **yield** (batched commits) so SQLite's single writer stays
     available. Before blaming the write lock, check `ps` — a lock wait is `S`,

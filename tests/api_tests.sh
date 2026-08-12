@@ -499,6 +499,155 @@ if [[ -n "$CLIENT_PWD" ]]; then
     fi
 fi
 
+# ── Shared links: names, capabilities, and what a capability may see ───────
+#
+# The four properties that make a guest link safe to send (docs/agents/
+# sharing.md). Each has been a real bug in something, somewhere: a capability
+# that could write, one that could mint more of itself, one that never expired,
+# and one that silently carried more data than the sender was looking at.
+if [[ -n "$CLIENT_PWD" ]]; then
+    # Every slug minted here is destroyed at the end of the block. A test that
+    # leaves live capabilities behind manufactures the exact thing this
+    # feature exists to keep countable -- after a dozen runs the admin sheet
+    # is a wall of keys nobody issued and nobody dares revoke.
+    #
+    # The ledger is a FILE, not a bash array: mint() is always called inside
+    # $(...), which runs in a subshell, and an array appended to there is
+    # discarded when the subshell exits. That silently "cleaned up" one slug of
+    # eleven and reported success -- a no-op reading as an answer, which is the
+    # recurring bug this repo warns about (AGENTS.md invariant 1).
+    MINTED_LOG=$(mktemp)
+    mint() {  # mint <json-body> -> slug
+        local sl
+        sl=$(curl -s -m 30 -X POST "${BASE_URL}/api/shortlink?pwd=${CLIENT_PWD}" \
+            -H 'Content-Type: application/json' -d "$1" | jq -r '.slug // empty')
+        [[ -n "$sl" ]] && printf '%s\n' "$sl" >> "$MINTED_LOG"
+        printf '%s' "$sl"
+    }
+    scope_of() {
+        local j
+        j=$(curl -s -m 30 -X POST "${BASE_URL}/api/shortlink?pwd=${CLIENT_PWD}" \
+            -H 'Content-Type: application/json' -d "$1")
+        local sl; sl=$(jq -r '.slug // empty' <<< "$j")
+        [[ -n "$sl" ]] && printf '%s\n' "$sl" >> "$MINTED_LOG"
+        jq -r '.scope // ""' <<< "$j"
+    }
+
+    printf "%-50s" "guest_link_reads_without_a_password"
+    G=$(mint '{"url":"/?layers=pixels,fires","guest":true}')
+    JAR=$(mktemp); curl -s -m 30 -o /dev/null -c "$JAR" "${BASE_URL}/s/${G}"
+    code=$(curl -s -m 60 -o /dev/null -w "%{http_code}" -b "$JAR" \
+        --get --data "bbox=$TZ_BBOX" "${BASE_URL}/api/grid")
+    if [[ "$code" == "200" ]]; then green "✓"; PASSED=$((PASSED + 1))
+    else red "FAIL ($code)"; FAILED=$((FAILED + 1)); ERRORS+=("guest link cannot read"); fi
+
+    printf "%-50s" "guest_is_refused_writes_and_admin"
+    w=$(curl -s -m 30 -o /dev/null -w "%{http_code}" -b "$JAR" -X POST "${BASE_URL}/api/aois")
+    a=$(curl -s -m 30 -o /dev/null -w "%{http_code}" -b "$JAR" "${BASE_URL}/api/admin/access")
+    m=$(curl -s -m 30 -o /dev/null -w "%{http_code}" -b "$JAR" -X POST "${BASE_URL}/api/shortlink" \
+        -H 'Content-Type: application/json' -d '{"url":"/","guest":true}')
+    if [[ "$w" != "200" && "$a" != "200" && "$m" != "200" ]]; then
+        green "✓ (write $w, admin $a, mint $m)"; PASSED=$((PASSED + 1))
+    else
+        red "FAIL (write $w, admin $a, mint $m)"; FAILED=$((FAILED + 1))
+        ERRORS+=("guest capability is not read-only")
+    fi
+
+    # THE POINT OF THE SCOPE. Patrol pixels are ranger movement, not public
+    # geography: a link made from a view that was not showing them must not
+    # carry them, or sharing a fire scar quietly ships the patrol history too.
+    printf "%-50s" "guest_scope_withholds_patrol_pixels"
+    G2=$(mint '{"url":"/?layers=fires","guest":true}')
+    JAR2=$(mktemp); curl -s -m 30 -o /dev/null -c "$JAR2" "${BASE_URL}/s/${G2}"
+    with=$(curl -s -m 60 -b "$JAR" --get --data "bbox=$TZ_BBOX" "${BASE_URL}/api/grid" | jq -r '.features | length')
+    without=$(curl -s -m 60 -b "$JAR2" --get --data "bbox=$TZ_BBOX" "${BASE_URL}/api/grid" | jq -r '.features | length')
+    # Both halves asserted: "0 and 0" would pass a one-sided check while
+    # meaning the feature is simply broken (AGENTS.md invariant 1).
+    if [[ "$with" -gt 0 && "$without" -eq 0 ]]; then
+        green "✓ (with $with, without $without)"; PASSED=$((PASSED + 1))
+    else
+        red "FAIL (with $with, without $without)"; FAILED=$((FAILED + 1))
+        ERRORS+=("guest scope does not gate patrol pixels")
+    fi
+
+    printf "%-50s" "guest_scope_cannot_be_widened_by_asking"
+    s1=$(scope_of '{"url":"/?layers=fires","guest":true,"patrol":false}')
+    s2=$(scope_of '{"url":"/?layers=fires","guest":true,"patrol":true}')
+    # An owner MAY add patrol to a link (they can see it); the check that
+    # matters is that a *guest* cannot -- and it is refused a POST outright.
+    if [[ "$s1" != *patrol* && "$s2" == *patrol* ]]; then
+        green "✓ (off='$s1' on='$s2')"; PASSED=$((PASSED + 1))
+    else
+        red "FAIL (off='$s1' on='$s2')"; FAILED=$((FAILED + 1))
+        ERRORS+=("explicit patrol scope not honoured")
+    fi
+
+    printf "%-50s" "guest_link_expires_and_is_revocable"
+    expjson=$(curl -s -m 30 -X POST "${BASE_URL}/api/shortlink?pwd=${CLIENT_PWD}" \
+        -H 'Content-Type: application/json' -d '{"url":"/?t=exp","guest":true,"days":7}')
+    exp=$(jq -r '.expires_at // ""' <<< "$expjson")
+    expslug=$(jq -r '.slug // empty' <<< "$expjson")
+    [[ -n "$expslug" ]] && printf '%s\n' "$expslug" >> "$MINTED_LOG"
+    curl -s -m 30 -o /dev/null -X DELETE "${BASE_URL}/api/shortlink/${G2}?pwd=${CLIENT_PWD}"
+    gone=$(curl -s -m 30 -o /dev/null -w "%{http_code}" "${BASE_URL}/s/${G2}")
+    if [[ -n "$exp" && "$gone" == "404" ]]; then
+        green "✓ (expires $exp, revoked $gone)"; PASSED=$((PASSED + 1))
+    else
+        red "FAIL (expires '$exp', revoked $gone)"; FAILED=$((FAILED + 1))
+        ERRORS+=("guest link does not expire or cannot be revoked")
+    fi
+
+    # A NAME is not a credential: it resolves behind the ordinary gate, so a
+    # stranger holding one still gets the password form.
+    printf "%-50s" "named_link_is_not_a_way_in"
+    N=$(mint '{"url":"/?layers=pixels"}')
+    code=$(curl -s -m 30 -o /dev/null -w "%{http_code}" "${BASE_URL}/s/${N}")
+    body=$(curl -s -m 30 -L "${BASE_URL}/s/${N}" | head -c 4000)
+    if [[ "$code" == "302" ]] && ! grep -q 'IS_GUEST = true' <<< "$body"; then
+        green "✓"; PASSED=$((PASSED + 1))
+    else
+        red "FAIL ($code)"; FAILED=$((FAILED + 1)); ERRORS+=("named link authenticates by itself")
+    fi
+    rm -f "$JAR" "$JAR2"
+
+    # Teardown. The API revokes a guest rather than deleting it (that is the
+    # point -- the sheet keeps the evidence), so the rows are removed directly
+    # afterwards: these are test fixtures, not history worth keeping. Scoped by
+    # exact slug, never by a LIKE over the url column, which would eventually
+    # match somebody's real link.
+    printf "%-50s" "shared_link_fixtures_cleaned_up"
+    mapfile -t MINTED < "$MINTED_LOG"
+    left=0
+    for sl in "${MINTED[@]}"; do
+        [[ -z "$sl" ]] && continue
+        curl -s -m 30 -o /dev/null -X DELETE "${BASE_URL}/api/shortlink/${sl}?pwd=${CLIENT_PWD}"
+        # The API revokes a guest rather than deleting it (that is the point --
+        # the sheet keeps the evidence), so the row goes directly afterwards:
+        # these are fixtures, not history. Scoped by exact slug, never by a
+        # LIKE over url, which would eventually match a real link.
+        sqlite3 db.sqlite3 "DELETE FROM short_links WHERE slug = '${sl}' OR alias_of = '${sl}'" 2>/dev/null
+        n=$(sqlite3 db.sqlite3 "SELECT COUNT(*) FROM short_links WHERE slug = '${sl}'" 2>/dev/null || echo 1)
+        left=$((left + n))
+    done
+    rm -f "$MINTED_LOG"
+    # The completeness check is DERIVED, not a typed-in count: every slug this
+    # block still holds a variable for must appear in the ledger. A literal
+    # "at least 8" would describe today's number of tests and quietly stop
+    # meaning anything the moment one is added or removed (AGENTS.md
+    # invariant 2) -- it was wrong within a minute of being written.
+    missing=0
+    for want in "$G" "$G2" "$N" "$expslug"; do
+        [[ -z "$want" ]] && { missing=$((missing + 1)); continue; }
+        printf '%s\n' "${MINTED[@]}" | grep -qx "$want" || missing=$((missing + 1))
+    done
+    if [[ "$left" == "0" && "$missing" == "0" ]]; then
+        green "✓ (${#MINTED[@]} removed)"; PASSED=$((PASSED + 1))
+    else
+        red "FAIL (${#MINTED[@]} minted, $left left, $missing untracked)"; FAILED=$((FAILED + 1))
+        ERRORS+=("test short links not cleaned up")
+    fi
+fi
+
 echo
 echo "======================================="
 if [[ $FAILED -eq 0 ]]; then

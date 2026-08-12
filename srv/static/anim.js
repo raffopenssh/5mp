@@ -2520,7 +2520,9 @@
             if (name === 'effortGrid' || name === 'effortPts') {
                 if (window.HAS_PATROL === false) {
                     chip.classList.add('unavailable');
-                    chip.title = 'No patrol tracks in this account — patrol effort is only visible to the account it was uploaded in';
+                    chip.title = window.IS_GUEST
+                        ? 'Patrol effort was not included in this shared link'
+                        : 'No patrol tracks in this account — patrol effort is only visible to the account it was uploaded in';
                 } else if (!(window.viewLayers && window.viewLayers.pixels) && !A.on[name]) {
                     chip.classList.add('hidden');
                 }

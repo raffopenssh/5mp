@@ -78,6 +78,12 @@ func gpkgCacheKey(areaID, from, to string, effort, rawFire bool, env string) str
 
 func gpkgKeyFor(o gpkgExportOpts) string {
 	k := gpkgCacheKey(o.AreaID, o.FromDate, o.ToDate, o.Effort, o.RawFire, o.Env)
+	// A scope-restricted export is a DIFFERENT file, not the same file for a
+	// lesser reader: without this it would be served the account's own cached
+	// copy, patrol layers included.
+	if pt := o.patrolTenant(); pt != strOr(o.Env, clientTenant) {
+		k += "|np"
+	}
 	if o.View != nil {
 		k += "|" + gpkgViewKey(o.View)
 	}
@@ -554,8 +560,9 @@ func (s *Server) HandleAPIAreaGeoPackage(w http.ResponseWriter, r *http.Request)
 		AreaName: name,
 		FromDate: q.Get("from"),
 		ToDate:   q.Get("to"),
-		Env:      RequestEnv(r),
-		Effort:   q.Get("effort") != "0",
+		Env:       RequestEnv(r),
+		PatrolEnv: PatrolEnv(r),
+		Effort:    q.Get("effort") != "0",
 		// Default on: "GeoPackage" means everything unless asked otherwise.
 		RawFire: q.Get("raw") != "0",
 	}

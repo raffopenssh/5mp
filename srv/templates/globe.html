@@ -64,7 +64,14 @@
     <link href="https://unpkg.com/lucide-static@0.577.0/font/lucide.css" rel="stylesheet">
     <link href="/static/globe.css?v={{.Version}}" rel="stylesheet">
 </head>
-<body>
+<body{{if .IsGuest}} class="is-guest"{{end}}>
+<script>
+// IS_GUEST: this page is being read through a read-only shared link
+// (srv/guest.go). Every write is refused by the middleware already; this flag
+// exists so the UI does not OFFER one, because an editor that 403s on save is
+// worse than an editor that was never there. Set before any module loads.
+window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
+</script>
     <!-- Skip to content -->
     <a href="#map" class="skip-link">Skip to map</a>
 
@@ -435,11 +442,16 @@
         <span class="footer-sep desktop-only">|</span>
         <a href="/datenschutz" target="_blank" class="maplibre-link desktop-only">Datenschutz</a>
         <span class="footer-sep desktop-only">|</span>
-        <button class="footer-btn share-btn" onclick="shareCurrentView()" title="Copy share link" aria-label="Copy share link">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <!-- Share. It used to be a 12px chain among six other 12px footer
+             glyphs, i.e. invisible, so it now says what it is and reads as a
+             button: a pill with a label that collapses to the icon on narrow
+             screens, where the footer has no room for words anyway. -->
+        <button class="footer-btn share-btn" onclick="shareCurrentView(event)" title="Copy a link to this exact view" aria-label="Copy a link to this view">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                 <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
                 <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
             </svg>
+            <span class="share-btn-label">Share</span>
         </button>
         <div class="methods-hint" id="methods-hint" onclick="showModal('manifest'); dismissMethodsHint();" role="button" tabindex="0">How this map works</div>
         <button class="footer-btn info-btn" onclick="showModal('manifest')" title="About 5MP" aria-label="About 5MP">
@@ -1409,7 +1421,7 @@
                            title="Download the MBTiles archive (original black ink, z${m.minzoom}-${m.maxzoom}) for offline use in Locus Map, OsmAnd or QGIS">
                            Download MBTiles${mb ? ' (' + mb + ')' : ''}</a>
                         <button class="star-report-btn secondary" style="font-size:12px;"
-                            onclick="copyMapSheetLink('histmap')"
+                            onclick="copyMapSheetLink('histmap', event)"
                             title="Copy a link that opens this archive's panel here">Copy link</button>
                         <span style="color:#666;font-size:11px;">black ink, for light backgrounds</span>
                     </div>
@@ -1755,7 +1767,7 @@
                        href="${geoMapUrl(s.download)}" download
                        title="Vector MBTiles of this sheet for QGIS or an offline viewer">MBTiles${s.size_bytes ? ' (' + (s.size_bytes / 1048576).toFixed(0) + ' MB)' : ''}</a>
                     <button class="star-report-btn secondary" style="font-size:11px;"
-                        onclick="copyGeoMapSheetLink('${id}')"
+                        onclick="copyGeoMapSheetLink('${id}', event)"
                         title="Copy a link that opens this sheet's panel here, with the overlay in its current state">Copy link</button>
                     ${cat.source_url ? `<a href="${escapeHtml(cat.source_url)}" target="_blank" rel="noopener"
                         style="color:#3b82f6;font-size:11px;text-decoration:none;">source scan &nearr;</a>` : ''}
@@ -1804,17 +1816,15 @@
         // panel on Map Settings and highlights that card, and rides on top of
         // the ordinary share URL so the map underneath is still the view being
         // talked about.
-        function copyMapSheetLink(id) {
+        function copyMapSheetLink(id, ev) {
             const url = new URL(buildShareUrl());
             url.searchParams.set('panel', 'admin');
             url.searchParams.set('admin_tab', 'map-settings');
             url.searchParams.set('map_sheet', id);
-            const text = url.toString();
-            navigator.clipboard.writeText(text).then(
-                () => showToast('Link to this sheet copied', 'success'),
-                () => prompt('Copy this link:', text));
+            return ShareLink.open(url.toString(),
+                { title: 'Map sheet ' + id, kind: 'view', event: ev });
         }
-        function copyGeoMapSheetLink(id) { copyMapSheetLink(id); }
+        function copyGeoMapSheetLink(id, ev) { return copyMapSheetLink(id, ev); }
 
         // Same idea one level up: a link to the admin SECTION you are looking
         // at. buildShareUrl() already captures panel=admin and the active tab
@@ -1822,19 +1832,16 @@
         // means the button works regardless of how the panel got opened, and
         // reads the tab from the DOM rather than from adminCurrentTab (which
         // lives in another <script> block and so is not visible here anyway).
-        function copyAdminTabLink() {
+        function copyAdminTabLink(ev) {
             const url = new URL(buildShareUrl());
             const active = document.querySelector('.admin-tab.active');
+            const tab = (active && active.dataset.tab) || 'uploads';
             url.searchParams.set('panel', 'admin');
-            url.searchParams.set('admin_tab', (active && active.dataset.tab) || 'uploads');
-            const text = url.toString();
-            const btn = document.getElementById('admin-copy-link');
-            const ok = () => {
-                showToast('Link to this admin section copied', 'success');
-                if (btn) { btn.classList.add('copied'); setTimeout(() => btn.classList.remove('copied'), 1500); }
-            };
-            navigator.clipboard.writeText(text).then(ok,
-                () => prompt('Copy this link:', text));
+            url.searchParams.set('admin_tab', tab);
+            return ShareLink.open(url.toString(), {
+                title: 'Admin · ' + tab, kind: 'view',
+                anchor: document.getElementById('admin-copy-link'), event: ev
+            });
         }
 
         // Resolve ?map_sheet= once Map Settings has actually rendered. The
@@ -9550,24 +9557,18 @@
                 ${row(`<button class="aoi-menu-item" data-item="tiles" onclick="event.stopPropagation();closeAOIMenu();showMBTilesDialog('${id}', '${safeName}')"><i class="icon-layers"></i><span>Tiles</span><em>offline satellite</em></button>`, '')}`;
         }
 
-        // The clipboard write is plain text and absolute, and the menu stays
-        // open: copying a link is not choosing a download, and closing the menu
-        // under the cursor would read as "it downloaded something".
+        // The menu stays open and the popup opens over it: copying a link is
+        // not choosing a download, and closing the menu under the cursor would
+        // read as "it downloaded something". kind:'download' so the admin
+        // sheet can tell a file link from a view link.
         function copyExportLink(ev, btn) {
             ev.preventDefault();
             ev.stopPropagation();
             const url = new URL(btn.dataset.url, window.location.href).toString();
-            const ok = () => {
-                btn.classList.add('copied');
-                setTimeout(() => btn.classList.remove('copied'), 1200);
-                showToast('Download link copied', 'success');
-            };
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(url).then(ok, () => prompt('Copy this link:', url));
-            } else {
-                prompt('Copy this link:', url);
-            }
-            return false;
+            return ShareLink.open(url, {
+                kind: 'download', anchor: btn,
+                title: (btn.closest('[data-item]') || btn).dataset.item || 'download'
+            });
         }
         window.copyExportLink = copyExportLink;
         // Kept as an alias: the name is wired into several call sites and the
@@ -12708,11 +12709,19 @@
         // upload, so a first upload lights it up without a reload.
         function applyPatrolAvailability() {
             const has = window.HAS_PATROL !== false;
+            // Two different absences, and they must not be told the same
+            // story. A tenant with no uploads has nothing to show; a guest
+            // whose link was made with the patrol layer off has been
+            // deliberately not shown something, and saying "no patrol tracks
+            // in this account" there would be a lie about somebody else's
+            // account. Every other layer stays fully playable for a guest.
+            const why = window.IS_GUEST
+                ? 'Patrol tracks were not included in this shared link — ask whoever sent it for one that shows them'
+                : 'No patrol tracks in this account — patrol pixels are only visible to the account they were uploaded in';
             const pix = document.getElementById('stat-pixels');
             if (pix) {
                 pix.classList.toggle('no-data', !has);
-                pix.title = has ? 'Click to show/hide patrol pixels'
-                                : 'No patrol tracks in this account — patrol pixels are only visible to the account they were uploaded in';
+                pix.title = has ? 'Click to show/hide patrol pixels' : why;
             }
             const dist = document.getElementById('stat-distance');
             if (dist) dist.classList.toggle('no-data', !has);
@@ -15886,7 +15895,7 @@
         `;
     }
     
-    function copyStarredLink() {
+    function copyStarredLink(ev) {
         const params = new URLSearchParams();
         
         // Always include password if present
@@ -15935,10 +15944,11 @@
         params.set('panel', 'star');
         
         const url = window.location.origin + window.location.pathname + '?' + params.toString();
-        navigator.clipboard.writeText(url).then(() => {
-            showToast('Share link copied with full state!');
-        }).catch(() => {
-            prompt('Copy this link:', url);
+        const n = starredItems.parks.length + starredItems.countries.length
+            + starredItems.bboxes.length + starredItems.narratives.length;
+        return ShareLink.open(url, {
+            kind: 'report', event: ev,
+            title: n + ' starred item' + (n === 1 ? '' : 's')
         });
     }
     
@@ -17737,6 +17747,11 @@ ${starredItems.narratives.map(n => {
     document.addEventListener('DOMContentLoaded', loadStarredItems);
     
     // Generate RSS feed URL for starred items
+    //
+    // NOT shortened: a feed URL is pasted into a reader, not sent to a person,
+    // and it must keep working when nobody is looking at it. /s/ answers 302
+    // with no-store and can be renamed or cleared — correct for a link you
+    // send, wrong for one a machine polls hourly for a year.
     function generateRssFeed() {
         // Build RSS feed URL for notifications
         const params = new URLSearchParams();
@@ -20177,6 +20192,7 @@ ${starredItems.narratives.map(n => {
         else if (tabName === 'learning') loadLearningResults();
         else if (tabName === 'features') loadLearnedFeatures();
         else if (tabName === 'access') loadAccessTab();
+        else if (tabName === 'sharing') loadSharingTab();
         else if (tabName === 'map-settings') {
             // Meta fetch is memoised and the panel renders from that cache, so
             // this is cheap on every revisit and correct on the first.
@@ -20194,6 +20210,109 @@ ${starredItems.narratives.map(n => {
         }
     }
     
+    // ===== Admin Sharing tab: every short link, grouped by password =====
+    //
+    // The list is a *report about credentials*, so it is written to make two
+    // questions answerable at a glance: which of these are keys, and has
+    // anyone used them. Hence guest rows look nothing like named rows (amber,
+    // monospace, KEY badge) and "never opened" is stated rather than left as
+    // a blank cell — a blank reads as "no data", which is the opposite of
+    // what an unopened key means.
+    async function loadSharingTab() {
+        const box = document.getElementById('sharing-body');
+        if (!box) return;
+        box.innerHTML = 'Loading&hellip;';
+        let d;
+        try {
+            const res = await fetch(`/api/shortlinks?pwd=${encodeURIComponent(window.getPwd() || '')}`);
+            if (!res.ok) throw new Error(res.status);
+            d = await res.json();
+        } catch (e) {
+            box.innerHTML = `<div style="color:#ef4444;font-size:12px;">Could not load links (${e.message})</div>`;
+            return;
+        }
+        const groups = (d && d.groups) || [];
+        if (!groups.length) {
+            box.innerHTML = `<div class="sh-empty">No links yet. Every &ldquo;Copy link&rdquo; in the app makes one.</div>`;
+            return;
+        }
+        box.innerHTML = groups.map(g => sharingGroupHTML(g, d.guest_ttl_days)).join('');
+    }
+
+    function sharingGroupHTML(g, ttlDays) {
+        const keys = g.links.filter(l => l.guest && !l.revoked && !l.expired).length;
+        return `<section class="sh-group">
+            <h4 class="sh-group-head">
+                <span class="sh-group-name">${escapeHtml(g.label || 'unknown')}</span>
+                ${g.mine ? '<span class="sh-mine">this login</span>' : ''}
+                <span class="sh-group-meta">${g.links.length} link${g.links.length === 1 ? '' : 's'}${keys ? ` · ${keys} live key${keys === 1 ? '' : 's'}` : ''}</span>
+            </h4>
+            <div class="sh-list">${g.links.map(l => sharingRowHTML(l, ttlDays)).join('')}</div>
+        </section>`;
+    }
+
+    function sharingRowHTML(l, ttlDays) {
+        // An alias is the ghost of a rename. It is shown, because a link that
+        // was already sent out still resolves through it, and hiding it would
+        // make "why does this old URL still work" unanswerable here.
+        if (l.alias_of) {
+            return `<div class="sh-row is-alias">
+                <code class="sh-slug">/s/${escapeHtml(l.slug)}</code>
+                <span class="sh-note">old name &rarr; <code>${escapeHtml(l.alias_of)}</code></span>
+            </div>`;
+        }
+        const dead = l.revoked || l.expired;
+        const state = l.revoked ? 'switched off' : (l.expired ? 'expired' : '');
+        const hits = l.hits
+            ? `opened ${l.hits}×${l.last_hit_at ? ' · last ' + escapeHtml(safeDateStr(l.last_hit_at)) : ''}`
+            : 'never opened';
+        const life = l.guest && l.expires_at && !dead
+            ? ` · expires ${escapeHtml(safeDateStr(l.expires_at))}` : '';
+        // What a key SHOWS is as much a property of it as when it dies.
+        const patrol = l.guest && (l.scope || '').split(',').indexOf('patrol') >= 0;
+        const url = window.location.origin + '/s/' + l.slug;
+        return `<div class="sh-row${l.guest ? ' is-key' : ''}${dead ? ' is-dead' : ''}">
+            <div class="sh-main">
+                <code class="sh-slug">/s/${escapeHtml(l.slug)}</code>
+                ${l.guest ? '<span class="sh-badge">key</span>' : ''}
+                ${patrol ? '<span class="sh-badge sh-badge-warn">patrol tracks</span>' : ''}
+                ${state ? `<span class="sh-badge sh-badge-off">${state}</span>` : ''}
+                <span class="sh-kind">${escapeHtml(l.kind || 'view')}</span>
+                ${l.title ? `<span class="sh-title">${escapeHtml(l.title)}</span>` : ''}
+            </div>
+            <div class="sh-target" title="${escapeHtml(l.url)}">${escapeHtml(l.url)}</div>
+            <div class="sh-meta">${hits}${life}</div>
+            <div class="sh-acts">
+                ${dead ? '' : `<button class="sh-btn" onclick="sharingCopy(this,'${escapeHtml(url)}')">Copy</button>`}
+                ${l.revoked ? '' : `<button class="sh-btn sh-btn-off" onclick="sharingClear('${escapeHtml(l.slug)}',${l.guest})">${l.guest ? 'Switch off' : 'Clear'}</button>`}
+            </div>
+        </div>`;
+    }
+
+    function sharingCopy(btn, url) {
+        ShareLink.copy(url, false);
+        btn.textContent = 'Copied';
+        setTimeout(() => { btn.textContent = 'Copy'; }, 1400);
+    }
+
+    // Guest links are revoked, named links deleted — the server decides which;
+    // the confirmation only has to name the consequence the operator chose.
+    async function sharingClear(slug, guest) {
+        const msg = guest
+            ? `Switch off /s/${slug}? Whoever holds it loses access immediately.`
+            : `Clear /s/${slug}? Anyone who has this link will get a “not found” page.`;
+        if (!confirm(msg)) return;
+        try {
+            const res = await fetch(`/api/shortlink/${encodeURIComponent(slug)}?pwd=${encodeURIComponent(window.getPwd() || '')}`,
+                { method: 'DELETE' });
+            if (!res.ok) throw new Error(res.status);
+            showToast(guest ? 'Shared link switched off' : 'Link cleared', 'info');
+            loadSharingTab();
+        } catch (e) {
+            showToast('Could not do that (' + e.message + ')', 'error');
+        }
+    }
+
     // ===== Admin Access tab: AOI ownership + ingest queue =====
     //
     // Deliberately a *report* plus two verbs. Everything the operator can do
@@ -21163,14 +21282,23 @@ ${starredItems.narratives.map(n => {
     
     // ========== END ADMIN PANEL ==========
 
-    // Share current view - creates URL with state parameters
-    function shareCurrentView() {
-        const url = buildShareUrl();
-        navigator.clipboard.writeText(url).then(() => {
-            showToast('Link copied to clipboard!');
-        }).catch(() => {
-            prompt('Copy this link:', url);
+    // Share current view — one popup, same as every other copyable link.
+    function shareCurrentView(ev) {
+        return ShareLink.open(buildShareUrl(), {
+            kind: 'view', title: shareViewTitle(), event: ev
         });
+    }
+
+    // A title is what the admin sheet shows next to the slug, so it should say
+    // what was on screen — derived, never a constant (a hardcoded label would
+    // describe a variable input, and every link would claim to be the same
+    // view).
+    function shareViewTitle() {
+        try {
+            if (typeof selectedParkId !== 'undefined' && selectedParkId) return selectedParkId;
+            if (typeof currentBbox !== 'undefined' && currentBbox && currentBbox.length === 4) return 'area in view';
+            return 'map view';
+        } catch (e) { return 'map view'; }
     }
 
     // Builds the share URL for the current view state. includePwd=false for
@@ -22117,7 +22245,7 @@ ${starredItems.narratives.map(n => {
                 </div>
                 <div style="display:flex;align-items:center;gap:12px;">
                     <div id="pipeline-status-badge" class="pipeline-badge" style="display:none;" title="Nightly fire pipeline heartbeat"></div>
-                    <button class="admin-panel-link" id="admin-copy-link" onclick="copyAdminTabLink()"
+                    <button class="admin-panel-link" id="admin-copy-link" onclick="copyAdminTabLink(event)"
                             title="Copy a link that opens this admin section here" aria-label="Copy link to this admin section">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
                     </button>
@@ -22149,6 +22277,10 @@ ${starredItems.narratives.map(n => {
                 <button class="admin-tab" data-tab="access" onclick="switchAdminTab('access')" role="tab" aria-selected="false" aria-controls="tab-access">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                     Access
+                </button>
+                <button class="admin-tab" data-tab="sharing" onclick="switchAdminTab('sharing')" role="tab" aria-selected="false" aria-controls="tab-sharing">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/></svg>
+                    Sharing
                 </button>
                 <button class="admin-tab" data-tab="map-settings" onclick="switchAdminTab('map-settings')" role="tab" aria-selected="false" aria-controls="tab-map-settings">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6m-5-7H1m6 0h6m6 0h6M7 7l-2-2m12 0l2-2M7 17l-2 2m12 0l2 2"/></svg>
@@ -22327,6 +22459,19 @@ ${starredItems.narratives.map(n => {
                     <div id="access-principals"></div>
                 </div>
 
+                <!-- Sharing Tab: every short link, grouped by the password it
+                     delegates. See docs/agents/sharing.md. -->
+                <div class="admin-tab-content" id="tab-sharing" role="tabpanel" aria-labelledby="tab-sharing">
+                    <p style="color:#888;font-size:12px;margin-bottom:16px;line-height:1.6;max-width:70ch;">
+                        Every short link this server has issued, grouped by the login it belongs to.
+                        A <strong style="color:#4ade80;">named link</strong> is only a short name for a view &mdash;
+                        it still asks for the password, so the name is safe to say out loud.
+                        A <strong style="color:#fcd34d;">shared key</strong> opens that view <em>without</em> a
+                        password: it is read-only, expires by itself, and Clear switches it off for whoever holds it.
+                    </p>
+                    <div id="sharing-body">Loading&hellip;</div>
+                </div>
+
                 <!-- Map Settings Tab -->
                 <div class="admin-tab-content" id="tab-map-settings" role="tabpanel" aria-labelledby="tab-map-settings">
                     <div style="max-width:600px;">
@@ -22438,7 +22583,7 @@ ${starredItems.narratives.map(n => {
                     Starred Items
                 </div>
                 <div class="star-modal-actions">
-                    <button class="star-modal-action-btn" onclick="copyStarredLink()" title="Copy share link" aria-label="Copy share link">
+                    <button class="star-modal-action-btn" onclick="copyStarredLink(event)" title="Copy share link" aria-label="Copy share link">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
                             <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
@@ -22659,4 +22804,8 @@ ${starredItems.narratives.map(n => {
     <script src="/static/geopatterns.js?v={{.Version}}"></script>
     <script src="/static/geomap.js?v={{.Version}}"></script>
     <script src="/static/floatui.js?v={{.Version}}"></script>
+    <!-- One share popup for every "copy link" in the app (srv/shortlink.go,
+         docs/agents/sharing.md). Loaded last because it only ever reacts to a
+         click; nothing on the page waits for it. -->
+    <script src="/static/sharelink.js?v={{.Version}}"></script>
 </body></html>

@@ -427,7 +427,7 @@ func (s *Server) gpkgViewPolygons(w *gpkgWriter, o gpkgExportOpts, featureType s
 
 func (s *Server) gpkgViewEffort(w *gpkgWriter, o gpkgExportOpts) error {
 	v := o.View
-	if !v.wants("patrol_effort") || o.Env != clientTenant {
+	if !v.wants("patrol_effort") || o.patrolTenant() != clientTenant {
 		return nil
 	}
 	l, err := w.AddLayer("patrol_effort", "POLYGON",
@@ -444,7 +444,7 @@ func (s *Server) gpkgViewEffort(w *gpkgWriter, o gpkgExportOpts) error {
 		FROM effort_data e JOIN grid_cells g ON e.grid_cell_id = g.id
 		WHERE e.movement_type = 'all' AND e.env = ?
 			AND g.lat_center BETWEEN ? AND ? AND g.lon_center BETWEEN ? AND ?`
-	args := []interface{}{strOr(o.Env, clientTenant), v.BBox[1], v.BBox[3], v.BBox[0], v.BBox[2]}
+	args := []interface{}{o.patrolTenant(), v.BBox[1], v.BBox[3], v.BBox[0], v.BBox[2]}
 	if t, err := time.Parse("2006-01-02", o.FromDate); err == nil {
 		q += " AND (e.year > ? OR (e.year = ? AND e.month >= ?))"
 		args = append(args, t.Year(), t.Year(), int(t.Month()))
@@ -736,10 +736,11 @@ func (s *Server) HandleAPIViewGeoPackage(w http.ResponseWriter, r *http.Request)
 		AreaName: name,
 		FromDate: q.Get("from"),
 		ToDate:   q.Get("to"),
-		Env:      RequestEnv(r),
-		Effort:   q.Get("effort") != "0",
-		RawFire:  q.Get("raw") != "0",
-		View:     v,
+		Env:       RequestEnv(r),
+		PatrolEnv: PatrolEnv(r),
+		Effort:    q.Get("effort") != "0",
+		RawFire:   q.Get("raw") != "0",
+		View:      v,
 	}
 	if q.Get("peek") == "1" {
 		j := s.findGeoPackageJob(gpkgKeyFor(o))

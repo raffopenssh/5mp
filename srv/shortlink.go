@@ -85,6 +85,46 @@ import (
 // an unrevoked link does not become a permanent second password.
 const guestTTL = 30 * 24 * time.Hour
 
+// guestMaxTTL caps what a caller may ask for. A capability that outlives the
+// reason it was issued is a second password with extra steps, and "never
+// expires" is the option that turns one careless share into a permanent one --
+// so it is not offered, and a request for more than a year is clamped rather
+// than refused (refusing would only teach the caller to ask for exactly 365).
+const guestMaxTTL = 365 * 24 * time.Hour
+
+// guestLife turns a requested number of days into a lifetime.
+func guestLife(days int) time.Duration {
+	if days <= 0 {
+		return guestTTL
+	}
+	d := time.Duration(days) * 24 * time.Hour
+	if d > guestMaxTTL {
+		return guestMaxTTL
+	}
+	return d
+}
+
+// withScope adds or removes one capability from a scope set, keeping it
+// sorted-by-construction so two identical grants produce one string.
+func withScope(scope, name string, on bool) string {
+	out := []string{}
+	for _, known := range []string{ScopePatrol} {
+		has := false
+		for _, s := range strings.Split(scope, ",") {
+			if strings.TrimSpace(s) == known {
+				has = true
+			}
+		}
+		if known == name {
+			has = on
+		}
+		if has {
+			out = append(out, known)
+		}
+	}
+	return strings.Join(out, ",")
+}
+
 // decodeJSONBody reads a small JSON body. Capped: these endpoints are behind
 // the password gate but not behind a rate limiter.
 func decodeJSONBody(r *http.Request, v interface{}) error {
@@ -196,6 +236,7 @@ type shortLink struct {
 	Kind        string
 	Title       string
 	Env         string
+	Scope       string
 	Guest       bool
 	PrincipalID int64
 	Expired     bool
@@ -210,9 +251,10 @@ func (s *Server) loadShortLink(slug string) (*shortLink, bool) {
 		var pid sql.NullInt64
 		var guest int
 		err := s.DB.QueryRow(`SELECT slug, url, COALESCE(alias_of,''), kind, title, env,
-			guest, principal_id, expires_at, revoked_at
+			COALESCE(scope,''), guest, principal_id, expires_at, revoked_at
 			FROM short_links WHERE slug = ?`, id).
-			Scan(&l.Slug, &l.URL, &alias, &l.Kind, &l.Title, &l.Env, &guest, &pid, &expires, &revoked)
+			Scan(&l.Slug, &l.URL, &alias, &l.Kind, &l.Title, &l.Env, &l.Scope,
+				&guest, &pid, &expires, &revoked)
 		if err != nil {
 			return nil, "", false
 		}
@@ -251,6 +293,9 @@ type GuestSession struct {
 	Title       string
 	Env         string
 	PrincipalID int64
+	// Scope: which restricted layers travel with this link (srv/guest.go).
+	// Read-only is not the same as harmless; this is the difference.
+	Scope string
 }
 
 // LookupGuest resolves a guest slug for the middleware. Returns nil for
@@ -264,7 +309,8 @@ func (s *Server) LookupGuest(slug string) *GuestSession {
 	if !ok || !l.Guest || l.Expired || l.Revoked {
 		return nil
 	}
-	return &GuestSession{Slug: l.Slug, Title: l.Title, Env: l.Env, PrincipalID: l.PrincipalID}
+	return &GuestSession{Slug: l.Slug, Title: l.Title, Env: l.Env,
+		PrincipalID: l.PrincipalID, Scope: l.Scope}
 }
 
 // HandleShortLink — GET /s/{slug}.
@@ -351,6 +397,7 @@ type shortLinkResp struct {
 	Kind    string `json:"kind,omitempty"`
 	Guest   bool   `json:"guest,omitempty"`
 	Expires string `json:"expires_at,omitempty"`
+	Scope   string `json:"scope,omitempty"` // restricted layers this link carries
 	Reuse   bool   `json:"reused,omitempty"`
 	Error   string `json:"error,omitempty"`
 }
@@ -372,6 +419,13 @@ func (s *Server) HandleAPIShortLinkCreate(w http.ResponseWriter, r *http.Request
 		Kind  string `json:"kind"`
 		Slug  string `json:"slug"`
 		Guest bool   `json:"guest"`
+		// Days: how long a guest link lives. Absent = guestTTLDays.
+		Days int `json:"days"`
+		// Patrol: whether this key carries patrol effort. A POINTER, because
+		// three states matter here and a bool has two: "include", "exclude",
+		// and "not stated" -- the last one means "whatever the shared view
+		// was showing", which is the default and the common case.
+		Patrol *bool `json:"patrol"`
 	}
 	if err := decodeJSONBody(r, &body); err != nil {
 		writeJSON(w, http.StatusBadRequest, shortLinkResp{Error: "bad request"})
@@ -405,7 +459,20 @@ func (s *Server) HandleAPIShortLinkCreate(w http.ResponseWriter, r *http.Request
 				Error: "only a signed-in session can create a shared link"})
 			return
 		}
-		expires = time.Now().Add(guestTTL).UTC().Format(time.RFC3339)
+		expires = time.Now().Add(guestLife(body.Days)).UTC().Format(time.RFC3339)
+	}
+
+	// The scope defaults to the VIEW -- a sender grants what they were looking
+	// at (srv/guest.go) -- and an explicit `patrol` overrides that, because
+	// somebody who is looking at patrol tracks and wants to share the fire
+	// scar underneath them should not have to go and toggle a layer off first.
+	//
+	// The override may only ever REMOVE, never add: the caller cannot ask for
+	// a capability their own session does not have, or a guest link would be
+	// a way to widen access rather than to delegate it.
+	scope := scopeFromURL(target)
+	if body.Patrol != nil {
+		scope = withScope(scope, ScopePatrol, *body.Patrol && GuestHasScope(r, ScopePatrol))
 	}
 
 	insert := func(slug string) error {
@@ -418,10 +485,10 @@ func (s *Server) HandleAPIShortLinkCreate(w http.ResponseWriter, r *http.Request
 			exp = expires
 		}
 		_, err := s.DB.Exec(`INSERT INTO short_links
-			(slug, url, kind, title, env, pwd_ref, guest, principal_id, expires_at, created_at)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			(slug, url, kind, title, env, pwd_ref, guest, principal_id, expires_at, created_at, scope)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 			slug, target, kind, strings.TrimSpace(body.Title), env, ref,
-			boolInt(body.Guest), pid, exp, time.Now().UTC().Format(time.RFC3339))
+			boolInt(body.Guest), pid, exp, time.Now().UTC().Format(time.RFC3339), scope)
 		return err
 	}
 
@@ -435,7 +502,7 @@ func (s *Server) HandleAPIShortLinkCreate(w http.ResponseWriter, r *http.Request
 				continue
 			}
 			writeJSON(w, http.StatusOK, shortLinkResp{Slug: slug, Short: "/s/" + slug,
-				URL: target, Kind: kind, Guest: true, Expires: expires})
+				URL: target, Kind: kind, Guest: true, Expires: expires, Scope: scope})
 			return
 		}
 		writeJSON(w, http.StatusInternalServerError, shortLinkResp{Error: "could not create a link"})
@@ -567,6 +634,7 @@ type shortLinkRow struct {
 	Created string `json:"created_at"`
 	Guest   bool   `json:"guest"`
 	Expires string `json:"expires_at,omitempty"`
+	Scope   string `json:"scope,omitempty"` // restricted layers this link carries
 	Expired bool   `json:"expired,omitempty"`
 	Revoked bool   `json:"revoked,omitempty"`
 	Mine    bool   `json:"mine"`
@@ -594,7 +662,7 @@ func (s *Server) HandleAPIShortLinkList(w http.ResponseWriter, r *http.Request) 
 	}
 	rows, err := s.DB.Query(`SELECT slug, url, COALESCE(alias_of,''), kind, title, env,
 		COALESCE(pwd_ref,''), guest, COALESCE(expires_at,''), COALESCE(revoked_at,''),
-		hits, COALESCE(last_hit_at,''), created_at
+		hits, COALESCE(last_hit_at,''), created_at, COALESCE(scope,'')
 		FROM short_links ORDER BY created_at DESC LIMIT 1000`)
 	if err != nil {
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "could not list links"})
@@ -610,7 +678,7 @@ func (s *Server) HandleAPIShortLinkList(w http.ResponseWriter, r *http.Request) 
 		var env, ref, revoked string
 		var guest int
 		if err := rows.Scan(&l.Slug, &l.URL, &l.AliasOf, &l.Kind, &l.Title, &env, &ref,
-			&guest, &l.Expires, &revoked, &l.Hits, &l.LastHit, &l.Created); err != nil {
+			&guest, &l.Expires, &revoked, &l.Hits, &l.LastHit, &l.Created, &l.Scope); err != nil {
 			continue
 		}
 		l.Guest = guest == 1
@@ -652,7 +720,9 @@ func (s *Server) HandleAPIShortLinkList(w http.ResponseWriter, r *http.Request) 
 			groups = append(groups, byRef[ref])
 		}
 	}
-	writeJSON(w, http.StatusOK, map[string]interface{}{"groups": groups, "guest_ttl_days": int(guestTTL / (24 * time.Hour))})
+	writeJSON(w, http.StatusOK, map[string]interface{}{"groups": groups,
+		"guest_ttl_days": int(guestTTL / (24 * time.Hour)),
+		"guest_max_days": int(guestMaxTTL / (24 * time.Hour))})
 }
 
 // shortRefLabels maps principalRef -> the label the Access tab shows.

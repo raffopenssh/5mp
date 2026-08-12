@@ -28,7 +28,15 @@ import (
 // password not mapped to the client tenant (srv/tenant.go) gets the same
 // treatment, because the question the callers ask is "may this request see
 // client-derived data", and that has exactly one answer per tenant.
-func isTestEnv(r *http.Request) bool { return RequestEnv(r) != clientTenant }
+//
+// It reads PatrolEnv rather than RequestEnv, and that is the whole enforcement
+// for a scope-restricted shared link (srv/guest.go): everything guarded here
+// — learned roads, airstrips, camps, the patrol MCP, upload logs — is derived
+// from the same GPX as the patrol pixels, so a link that does not carry the
+// patrol capability must not show it under another name. One line, because
+// the alternative is remembering to add a second check to fourteen call sites
+// and to every one added later.
+func isTestEnv(r *http.Request) bool { return PatrolEnv(r) != clientTenant }
 
 // blockLearnedInTestEnv writes `empty` as JSON and returns true when the
 // request is outside the client tenant, so the caller can return early.

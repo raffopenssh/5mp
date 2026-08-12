@@ -1,0 +1,36 @@
+-- 053: short_links.scope — what a guest link is allowed to SEE.
+--
+-- WHY THIS EXISTS. 052 made a guest link read-only. Read-only is not the same
+-- as harmless: a capability borrows the creator's principal, so a link shared
+-- to show a fire scar also showed the recipient every patrol track the account
+-- owns. Patrol effort is not public geography — it is where named rangers
+-- walked, uploaded by one account and scoped to it (srv/tenant.go) — and the
+-- sender never chose to include it, nor had any way to see that they had.
+--
+-- WHY A SCOPE SET AND NOT A `patrol` FLAG. The next restricted layer is a
+-- schema change if this column is a boolean, and a schema change is exactly
+-- what does not happen in a hurry — so the restriction gets bolted onto the
+-- flag that is already there, and then the column's name lies. `scope` is a
+-- comma-separated set of capability names the link CARRIES, so adding a second
+-- restricted layer is one constant in Go and no migration at all:
+--
+--     scope = ''              a guest sees no restricted layer   (default)
+--     scope = 'patrol'        …plus patrol effort
+--     scope = 'patrol,foo'    …and whatever foo turns out to be
+--
+-- IT IS AN ALLOW-LIST, AND THAT IS THE WHOLE POINT. A deny-list would make
+-- every layer added after today visible to every link minted before today,
+-- silently and retroactively — a link from March would gain sight of a
+-- sensitive layer shipped in September. With an allow-list the failure mode of
+-- forgetting to update anything is a guest who sees LESS than intended, which
+-- is noticed and complained about, rather than more, which is not.
+--
+-- Empty for a NAMED link and for every row that predates this migration, and
+-- that is correct rather than lazy: a named link has no bearer permission of
+-- its own (the recipient signs in and gets whatever their own password sees),
+-- so `scope` is only ever consulted when guest = 1.
+--
+-- The value is decided ONCE, at creation, from the view being shared — the
+-- link and its permission are one object, and neither can drift from the
+-- other. See srv/guest.go (GuestScope, scopeFromURL) and srv/shortlink.go.
+ALTER TABLE short_links ADD COLUMN scope TEXT NOT NULL DEFAULT '';
