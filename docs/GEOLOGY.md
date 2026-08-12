@@ -479,15 +479,20 @@ collapsed list of all classes with per-class hide.
   Cenozoic units print no age word at all, only "2.6 - 0 Ma". The derived
   period still shows, above, as our legend rather than as theirs.
 * Share links: `?geomap=car` is the common case. `geomap_only=`, `geomap_hide=`,
-  `geomap_color=`, `geomap_pattern=`, `geomap_lith=`, `geomap_opacity=` and
-  `geomap_adv=` (the Advanced disclosure — a panel setting, so it travels even
+  `geomap_color=`, `geomap_pattern=`, `geomap_lith=`, `geomap_age_off=`
+  (periods hidden from the key — carried as the EXCLUSION, so a link that hides
+  nothing carries nothing), `geomap_host_min=` (the affinity floor, 2 or 3;
+  absent = 1 = any host), `geomap_opacity=` and `geomap_adv=` (the Advanced disclosure — a panel setting, so it travels even
   with the layer off) only appear once changed, so a plain link does not
   carry 46 codes. **`geomap_opacity` absent means auto**, not 0.42: the value
   is picked per basemap, so freezing a computed number into a link would break
   the layer for whoever opens it on the other basemap. **A code the current build no longer has is dropped**, and an
   isolation that ends up empty shows all classes plus a toast — a rebuild can
   merge two classes and thereby rename both, and rendering nothing looks
-  exactly like "this sheet has no data here".
+  exactly like "this sheet has no data here". `geomap_age_off` is an exclusion,
+  so an unknown key there can only fail *safe* (it hides nothing) and is dropped
+  silently — but a link hiding every period the build has, or a floor no unit
+  meets, is refused with a toast for the same reason as an empty isolation.
 
 ## GeoPackage download
 

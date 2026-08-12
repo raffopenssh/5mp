@@ -210,14 +210,107 @@ design is the `.quiet` class:
   the filter (`gold hosts`, `3 rock types`, `filtered`, `n hidden`), derived
   from `GeoMap.state()` — amber is this app's colour for "you are looking at a
   subset" everywhere else, so it needs no legend of its own.
-* **The age key is derived, never listed.** `ageSwatches()` walks the catalogue
-  of the sheets actually drawn, honours `isolate`/`hidden`, sorts by ICS rank
-  and caps at 8 with a `+n`. Invariant 2: a new sheet or period adds a swatch
-  by itself. Full legend stays in Map Settings, one tap away.
+* **The age key is derived, never listed** — and every part of it is a
+  switch. See "The key is the interface" below.
 * The menu **reuses `.aoi-menu.mode-menu`** — radios for one-of, checks for
   any-of, `.refused` for a row that keeps its place and says why on hover. A
   sheet that is not built must read as "not installed here", never as "this map
   has no geology". No second control vocabulary; icons are Lucide only.
+
+### The key is the interface (`ageSwatches()`, `openGeoMenu()`)
+
+The key started as a picture of a key: eight swatches, none clickable, and a
+`+n` whose only advice was to open another panel. Everything below is the
+result of that being wrong in four different ways.
+
+**A sample is a corner, not an inventory.** The key was *built from* the ~200-
+point coverage grid, so a formation narrower than the grid spacing was painted
+on the map and absent from the legend beside it — the reader sees an orange
+belt with no orange swatch and cannot switch it off. Invariant 7 exactly. The
+**set** now comes from an unfiltered `queryRenderedFeatures` over the viewport
+(every feature actually rendered); the grid sample is demoted to what it can
+honestly do — say *how much* of the view each covers, for order and tooltip. An
+age with `hits === 0` is drawn but too thin to sample, and its tip says "a thin
+unit in this view" rather than "0%". `geoOffView()` keys off `drawn`, not
+`hits`.
+
+**A hidden thing must stay visible.** Coverage cannot see a unit that is no
+longer drawn, so a hidden period would vanish with the very gesture that hid
+it, taking the only way back. Hidden ages are appended from `GeoMap.agesOff()`,
+struck through, and carry **no** coverage claim.
+
+**Nothing may empty the drape silently.** Hiding the last visible period, a
+strength floor no unit meets, and a share link carrying either are all refused
+with a toast. An empty drape is indistinguishable from "no geology here".
+
+**Brackets: which colours answer which question.** With `cobalt + copper`
+selected the key is five colours and the chip says two words, with nothing
+joining them — and the interesting case, ground hosting *both*, was invisible.
+Each selected commodity gets a bracket under the swatches it covers; an overlap
+is two brackets over one swatch, which is the statement. `.ml-swatches` is a
+**grid** so a bracket lines up without measuring anything, ages are ordered so a
+bracket is normally one run, and a genuinely split bracket draws as two segments
+rather than lying about contiguity. The bracket label is also the way out of
+that *one* commodity — the chip's menu could only clear all of them.
+
+**Size decides whether the ornament is drawn.** The FGDC hatch is legible on a
+polygon and in a 13 px legend row. At 11×7 px it is not a pattern, it is dirt:
+it darkens the colour unevenly, so two units of the same age read as two
+different ages. Small swatches (menu rows) are **flat colour**; the ornament
+lives in the key strip, the panel's legend rows and the map.
+
+### The affinity matrix (`openGeoMenu()`)
+
+The chip's menu was three surfaces holding one clause each of the same sentence
+— a commodity list, a strength ladder, and the key strip outside the menu. It is
+now one object: **rock across the top, commodity down the side, affinity in the
+cell**, which is how this knowledge is written in every economic-geology text.
+
+* a **row** = which ground hosts cobalt; a **column** = what this rock is
+  prospective for (nothing in the app could answer that before); the **grid** =
+  where two commodities share ground.
+* the columns **are** the key strip's columns — same periods, same order, same
+  swatch — so the menu is a legend for the map in front of the reader, not a
+  catalogue of the dataset. No sheet in view ⇒ say so; a grid of empty cells
+  reads as "nothing is prospective".
+* a **cell** solos one commodity on one period, built out of the existing
+  commodity + `agesOff` state, so the chip, brackets and share link stay true.
+  No fourth kind of state.
+* the grade is the cell's **ink** (●●● full / ●● / ● faint), so the floor reads
+  as a threshold on the ink. An affinity below the floor is **hollow, not gone**:
+  "you told me not to count this" ≠ "there is nothing here", and the empty cell
+  already means the second.
+* rows are ordered by what answers *this view*, not alphabetically — a menu
+  sorted by the alphabet is a dictionary.
+
+### Affinity strength (`shared.minWeight`, `?geomap_host_min=`)
+
+The catalogue grades every affinity 1–3 (`legend.py`: 3 = classic host, 2 =
+plausible, 1 = weak/derived). "gold" is 36 units across three sheets and **21 of
+them are weight 1** — placer ground downstream of a lode, a quartzite inside the
+belt. Drawn flat, the map says "gold is everywhere", which is the opposite of
+the question. `GeoMap.setMinWeight()` is the floor; everything resolving a
+commodity to units goes through `hostMap()`, so the floor cannot apply to the
+map and not to the count describing it.
+
+⚠️ **An empty isolation and no isolation are different states.** They were the
+same value (`null`), so raising the floor to `classic` made CAR — which has no
+weight-3 gold host — fall back to drawing *all 17* of its units: the filter that
+matched nothing rendered as the whole sheet. `applyCommodities()` now keeps an
+empty `Set`, `visibleCodes()` treats it as "this sheet has no answer" (draws
+nothing), and emptying *every* sheet is refused in words. Invariant 1, in its
+purest form.
+
+### Contact zones (not built)
+
+The honest next question after "which rock" is "where do two of them **meet**" —
+a granite/greenstone contact is the classic orogenic-gold setting, and it is a
+property of the *boundary*, not of either unit. The polygons carry it already:
+528 unit pairs share an edge on the Sudan sheet alone (~33 s in shapely). The
+menu ships a `.refused` row that says so, because an absent row reads as "this
+map cannot do that". It must be derived **in the sheet build**
+(`scripts/geomaps/`) and served as an ordinary attribute — 500+ pairwise
+boundary intersections in the browser on every pan would ship as a hang.
 
 Wiring: `renderGeoMapPanel()` / `renderHistMapPanel()` / `switchBasemap()` all
 call `MapLegend.refresh()`, and both refresh **before** their own early return
