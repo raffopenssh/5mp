@@ -91,24 +91,36 @@
         // hosts" and "classic gold hosts" are different maps.
         var min = (typeof GeoMap.minWeight === 'function') ? GeoMap.minWeight() : 1;
         var grade = min === 3 ? 'classic ' : (min === 2 ? 'likely ' : '');
+        // The contact layer is a second thing on screen and it is itself a
+        // subset (graded junctions, likely and up), so the chip names it. A
+        // reader who sees orange hairlines and no word for them has to guess
+        // whether the layer is complete — which is the same lie as an
+        // unannounced truncation.
+        var cont = (typeof GeoMap.contactsOn === 'function' && GeoMap.contactsOn())
+            ? (GeoMap.contactsGradedOnly && GeoMap.contactsGradedOnly()
+                ? '+ graded contacts' : '+ all contacts')
+            : '';
         // Two filters running at once must BOTH be named. A cell tap sets a
         // commodity AND a single period, and reporting only the commodity
         // ("gold hosts") describes a map with far more on it than the one in
         // front of the reader — the same lie as an unannounced truncation.
         var nOff = (sh && sh.agesOff) ? sh.agesOff.size : 0;
+        var join = function (t) { return cont ? t + ', ' + cont : t; };
         if (comms.size) {
             var t = grade + Array.from(comms).join(' + ') + ' hosts';
-            return nOff ? t + ', ' + nOff + ' period' + (nOff === 1 ? '' : 's') + ' hidden' : t;
+            return join(nOff ? t + ', ' + nOff + ' period' + (nOff === 1 ? '' : 's') + ' hidden' : t);
         }
-        if (sh && sh.liths && sh.liths.size) return sh.liths.size + ' rock type' + (sh.liths.size === 1 ? '' : 's');
+        if (sh && sh.liths && sh.liths.size) {
+            return join(sh.liths.size + ' rock type' + (sh.liths.size === 1 ? '' : 's'));
+        }
         // An age hidden from the key is a subset like any other, and the chip
         // is the one place that says a drape is not the whole drape.
         if (sh && sh.agesOff && sh.agesOff.size) {
-            return sh.agesOff.size + ' period' + (sh.agesOff.size === 1 ? '' : 's') + ' hidden';
+            return join(sh.agesOff.size + ' period' + (sh.agesOff.size === 1 ? '' : 's') + ' hidden');
         }
-        if (isolated) return 'filtered';
-        if (hidden) return hidden + ' hidden';
-        return '';
+        if (isolated) return join('filtered');
+        if (hidden) return join(hidden + ' hidden');
+        return cont;
     }
 
     /* ── How much of the view each age actually covers ──────────────────
@@ -285,10 +297,23 @@
         return list.concat(offList);
     }
 
+    /* One swatch, one rule about ornament. `px` is the swatch's SMALLER side:
+     * GeoPatterns drops the hatch below its floor rather than shrinking it,
+     * because an ornament too small to resolve is not a key, it is dirt on
+     * the colour — and two units of one age then read as two ages. Every
+     * surface here goes through it, so the strip and the matrix cannot end up
+     * on different sides of that line. */
+    function swatchBG(lith, color, px) {
+        if (typeof GeoPatterns === 'undefined') return 'background:' + esc(color) + ';';
+        return GeoPatterns.swatchStyle(lith, color, px);
+    }
+
     function swatchHTML(e, collapsible) {
-        var bg = (typeof GeoPatterns !== 'undefined')
-            ? 'background-image:' + GeoPatterns.swatchCSS(e.lith, e.meta.color) + ';background-size:16px 16px;'
-            : 'background:' + esc(e.meta.color) + ';';
+        // 13 px tall (see .ml-sw > i), which is exactly the ornament floor:
+        // the key carries the hatch because lithology is half of what a
+        // swatch means here, and the box is sized to the pattern rather than
+        // the pattern squeezed into the box.
+        var bg = swatchBG(e.lith, e.meta.color, 13);
         // A share of the VIEW, not an area: the sample cannot support a km²
         // and the tooltip must not imply one.
         // A unit too thin for the ~40 px sample grid gets no percentage at
@@ -472,10 +497,19 @@
     // The menu
     // ---------------------------------------------------------------
     var menuEl = null;
+    // A rebuild waiting for MapLibre to paint; see refreshWhenDrawn() below.
+    // Declared here because closeMenu() cancels it, and a reader should not
+    // have to know about `var` hoisting to see that the two belong together.
+    var paintWait = null;
 
     function closeMenu() {
         if (menuEl) { menuEl.remove(); menuEl = null; }
         document.removeEventListener('click', closeMenu);
+        // A pending "rebuild once the map has drawn" outlives the menu it was
+        // for otherwise, and fires a timer against a menu nobody is looking
+        // at. rebuildGeoMenuNow() cancels first and then calls this, so the
+        // legitimate rebuild path is unaffected.
+        cancelPaintWait();
     }
 
     function row(cls, role, on, label, icon, title, onclick, mark) {
@@ -541,29 +575,73 @@
 
     /* ── The matrix has to wait for the map ─────────────────────────────
      *
-     * Its columns are the periods DRAWN in this view, which is measured off
-     * the rendered canvas — so a menu rebuilt in the same tick as the filter
-     * change shows the columns of the map as it was one gesture ago. Clearing
-     * a one-period narrowing and still seeing one column reads as "the button
-     * did nothing", which is the failure mode this whole surface exists to
-     * avoid.
+     * Its columns are the periods DRAWN in this view, and "drawn" is measured
+     * off the rendered canvas (`measureCoverage`, above). A menu rebuilt in
+     * the same tick as the filter change therefore shows the columns of the
+     * map as it was ONE GESTURE AGO: clear a one-period narrowing and the
+     * matrix still has one column, which reads as "the button did nothing" —
+     * the exact failure this whole surface exists to prevent.
      *
-     * So a gesture that changes what is drawn asks for a re-open on the next
-     * `idle`, once MapLibre has actually painted it. One-shot, and only while
-     * the geology menu is still the open one — the reader may well have
-     * closed it or opened another in the meantime.
+     * The first fix rebuilt the menu twice: once immediately (with the stale
+     * canvas) and again on `idle`. That is a flicker, it does the work twice,
+     * and for the width of one frame it shows the reader a wrong answer —
+     * which is worse than showing them the previous answer, because a wrong
+     * answer that corrects itself is indistinguishable from a control that
+     * bounces. So the menu is rebuilt EXACTLY ONCE, after MapLibre has
+     * painted, and until then it keeps the picture it already had.
+     *
+     * Two things this has to survive:
+     *
+     *  - `idle` MAY NOT COME. It fires when the map settles, and a filter
+     *    change that turns out to alter no tile in view can settle without a
+     *    repaint. A menu that waits forever for it is stuck showing the old
+     *    matrix, so the wait is bounded: `triggerRepaint()` asks for a frame,
+     *    and a timer answers if neither arrives.
+     *  - THE READER MOVES ON. They may close the menu, open the layers menu,
+     *    or fire a second gesture while the first is still settling. The
+     *    pending rebuild is one-shot, keyed on the menu still being the geology
+     *    one, and a second request replaces the first rather than queueing a
+     *    second rebuild behind it.
      */
-    function reopenGeoMenuWhenDrawn() {
-        if (typeof map === 'undefined' || !map || !map.once) return;
-        map.once('idle', function () {
-            if (!menuEl || menuEl.dataset.kind !== 'geo') return;
-            var btn = document.querySelector('#stats-map .ml-chip.geo');
-            if (!btn) return;
-            var sc = menuEl.scrollTop;
-            closeMenu();
-            openGeoMenu(btn);
-            if (menuEl) menuEl.scrollTop = sc;   // do not throw away their place
-        });
+    function cancelPaintWait() {
+        if (!paintWait) return;
+        clearTimeout(paintWait.timer);
+        paintWait = null;
+    }
+
+    function rebuildGeoMenuNow() {
+        if (!menuEl || menuEl.dataset.kind !== 'geo') return;
+        var btn = document.querySelector('#stats-map .ml-chip.geo');
+        if (!btn) return;
+        var sc = menuEl.scrollTop;
+        closeMenu();
+        openGeoMenu(btn);
+        if (menuEl) menuEl.scrollTop = sc;   // do not throw away their place
+    }
+
+    /* Re-measure the canvas and rebuild the strip + the open matrix, once the
+     * map has actually drawn the change. Everything that alters what is on
+     * screen ends with this instead of with a bare render(). */
+    function refreshWhenDrawn() {
+        render();                       // the strip's own state (chip, wording)
+        if (typeof map === 'undefined' || !map || !map.once) {
+            rebuildGeoMenuNow();
+            return;
+        }
+        cancelPaintWait();
+        var done = false;
+        var finish = function () {
+            if (done) return;
+            done = true;
+            cancelPaintWait();
+            render();                   // NOW the canvas says what is drawn
+            rebuildGeoMenuNow();
+        };
+        paintWait = { timer: setTimeout(finish, 700) };
+        map.once('idle', finish);
+        // A filter that changes no tile in view can settle without drawing;
+        // asking for a frame is what makes `idle` a promise rather than a hope.
+        if (map.triggerRepaint) map.triggerRepaint();
     }
 
     /* Anchored to the control, flipped above it when it would run off the
@@ -821,9 +899,12 @@
         // thing.
         html += '<span class="ml-mx-corner"></span>';
         cols.forEach(function (c) {
-            var bg = (typeof GeoPatterns !== 'undefined')
-                ? 'background-image:' + GeoPatterns.swatchCSS(c.lith, c.meta.color) + ';background-size:18px 18px;'
-                : 'background:' + esc(c.meta.color) + ';';
+            // The matrix's column head was 16x11 and drew the hatch anyway,
+            // which at 11 px is the failure this floor exists for: the same
+            // class read as one rock in the strip and another here. It is
+            // 16x13 now — the same swatch, the same size class, the same
+            // ornament as the key it mirrors.
+            var bg = swatchBG(c.lith, c.meta.color, 13);
             html += '<button type="button" class="ml-mx-col" title="' +
                 esc(c.meta.label + ' \u2014 tap to hide this period') + '"' +
                 ' aria-label="' + esc(c.meta.label) + ', hide"' +
@@ -915,29 +996,42 @@
 
         /* ── Contacts ──────────────────────────────────────────────────
          *
-         * The matrix answers "which rock", and the honest next question is
-         * "where do two of them MEET" — a granite/greenstone contact is the
-         * classic orogenic-gold setting, and it is a property of the BOUNDARY,
-         * not of either unit. The polygons carry those boundaries already
-         * (528 unit pairs share an edge on the Sudan sheet alone), so this is
-         * a real layer waiting to be built, not a wish.
+         * The matrix answers "which rock"; a contact answers "where two of
+         * them MEET", which is a property of the BOUNDARY and therefore
+         * cannot be a row or a column here — granite against greenstone is
+         * the classic orogenic-gold setting and neither unit alone says so.
+         * So it is a switch beside the matrix, not an eleventh commodity.
          *
-         * It ships DISABLED and says so, rather than being absent: the row is
-         * where the reader will look for it, and a `refused` row that explains
-         * itself is this menu's existing idiom for "real, not here yet". It
-         * will not be enabled until the contact geometry is derived in the
-         * build (scripts/geomaps/) and served like any other unit attribute —
-         * computing 500+ pairwise boundary intersections in the browser on
-         * every pan is exactly the sort of thing that would ship as a hang.
+         * The row states what it draws AND what it leaves out, because the
+         * layer is filtered by construction: a sheet is mostly boundaries
+         * (882 junctions over three sheets), and drawing all of them turns
+         * the drape into a net that buries the fills it annotates. So it
+         * draws the junctions the model grades, at likely-and-up — and says
+         * so, because a subset that does not announce itself is the failure
+         * this whole surface exists to prevent.
          */
-        html += '<button type="button" class="aoi-menu-item mode-opt refused ml-contact"' +
-            ' role="menuitemcheckbox" aria-checked="false" aria-disabled="true"' +
-            ' title="Where two units meet \u2014 a granite/greenstone contact is the classic' +
-            ' orogenic-gold setting, and it belongs to the boundary rather than to either rock.' +
-            ' Not built yet: the contacts have to be derived in the sheet build, not in the browser."' +
-            ' onclick="event.stopPropagation();">' +
+        var cOn = GeoMap.contactsOn && GeoMap.contactsOn();
+        var cAny = GeoMap.anyContacts && GeoMap.anyContacts();
+        var cN = 0, cG = 0;
+        (GeoMap.order() || []).forEach(function (sid) {
+            var cs = GeoMap.contactStats && GeoMap.contactStats(sid);
+            if (cs) { cN += cs.n_contacts; cG += cs.n_graded; }
+        });
+        html += '<button type="button" class="aoi-menu-item mode-opt ml-contact' +
+            (cAny ? (cOn ? ' on' : '') : ' refused') + '"' +
+            ' role="menuitemcheckbox" aria-checked="' + (!!cOn) + '"' +
+            (cAny ? '' : ' aria-disabled="true"') +
+            ' title="' + esc(cAny
+                ? 'Where two units meet. A granite/greenstone contact is the classic '
+                  + 'orogenic-gold setting, a carbonate/intrusive one the skarn setting — '
+                  + 'the prospectivity belongs to the boundary, not to either rock. '
+                  + cG + ' of ' + cN + ' mapped junctions are graded by the model; the layer '
+                  + 'draws the likely and classic ones, and follows the commodity you pick here.'
+                : 'Contact zones: not built on this server — run scripts/geomaps/contacts.py') + '"' +
+            ' onclick="event.stopPropagation();' +
+            (cAny ? 'MapLegend.toggleContacts()' : 'void 0') + '">' +
             '<span class="mode-mark check"></span><i class="icon-git-merge ml-mi"></i>' +
-            'Contact zones<em class="ml-n">soon</em></button>';
+            'Contact zones<em class="ml-n">' + (cAny ? cG : 'soon') + '</em></button>';
 
         html += '<div class="mode-menu-note">An inference from rock type \u2014 nothing here ' +
             'counts, ranks or locates a deposit.</div>';
@@ -1055,8 +1149,7 @@
             }
             GeoMap.toggleAge(key);
             if (typeof renderGeoMapPanel === 'function') renderGeoMapPanel();
-            render();
-            reopenGeoMenuWhenDrawn();
+            refreshWhenDrawn();
         },
 
         /* The strength floor. Refuses to empty the map — the standing rule
@@ -1072,13 +1165,11 @@
                 return;
             }
             if (typeof renderGeoMapPanel === 'function') renderGeoMapPanel();
-            render();
-            // The menu stays open: picking a floor is a comparison ("how much
-            // does 'classic' actually drop?"), and a menu that closes on each
-            // pick makes the comparison three round trips.
-            var btn = document.querySelector('#stats-map .ml-chip.geo');
-            if (btn && menuEl && menuEl.dataset.kind === 'geo') { closeMenu(); openGeoMenu(btn); }
-            reopenGeoMenuWhenDrawn();
+            // The menu stays open AND unchanged until the map has drawn:
+            // picking a floor is a comparison ("how much does 'classic'
+            // actually drop?"), and rebuilding it now would answer with the
+            // previous map. refreshWhenDrawn() rebuilds it once, after.
+            refreshWhenDrawn();
         },
 
         /* A CELL is the matrix's own gesture: "show me the cobalt-hosting
@@ -1106,18 +1197,14 @@
                 GeoMap.soloAge(age, ageEntries().map(function (e) { return e.key; }));
             }
             if (typeof renderGeoMapPanel === 'function') renderGeoMapPanel();
-            render();
-            var btn = document.querySelector('#stats-map .ml-chip.geo');
-            if (btn) { closeMenu(); openGeoMenu(btn); }
-            reopenGeoMenuWhenDrawn();
+            refreshWhenDrawn();
         },
 
         showAllAges: function () {
             if (typeof GeoMap === 'undefined' || !GeoMap.clearAges) return;
             GeoMap.clearAges();
             if (typeof renderGeoMapPanel === 'function') renderGeoMapPanel();
-            render();
-            reopenGeoMenuWhenDrawn();
+            refreshWhenDrawn();
         },
 
         /* "+n" is a truncation announcing itself; tapping it must therefore
@@ -1135,7 +1222,6 @@
          * module is not), fall back to GeoMap directly rather than doing
          * nothing — a menu item that silently no-ops is invariant 1's failure. */
         geoCommodity: function (k) {
-            closeMenu();
             // A ROW is "this commodity, on every ground it has". If a cell tap
             // left the map narrowed to one period, the row must lift that —
             // otherwise the reader taps the row the tooltip promised and gets
@@ -1143,7 +1229,6 @@
             // This is also the main way OUT of a cell: the trap was that every
             // gesture in the matrix narrowed and none widened.
             if (typeof GeoMap !== 'undefined' && GeoMap.agesOff().size) GeoMap.clearAges();
-            var wantMenu = true;
             if (typeof geoToggleCommodityAll === 'function') geoToggleCommodityAll(k);
             else if (typeof GeoMap !== 'undefined') {
                 var sheets = GeoMap.sheets() || {};
@@ -1156,15 +1241,11 @@
                     if (has && GeoMap.commodityOn(id, k) === on) GeoMap.toggleCommodity(id, k);
                 });
             }
-            render();
-            // Re-open where they were: choosing commodities is a comparison
-            // ("what does adding copper do?"), and a menu that closes on each
-            // pick makes that three round trips.
-            if (wantMenu) {
-                var b2 = document.querySelector('#stats-map .ml-chip.geo');
-                if (b2) openGeoMenu(b2);
-                reopenGeoMenuWhenDrawn();
-            }
+            // The menu stays where it is until the map has drawn. Choosing
+            // commodities is a comparison ("what does adding copper do?"), and
+            // the answer is the matrix's own columns — rebuilding it in this
+            // tick would show the columns of the map before the copper.
+            refreshWhenDrawn();
         },
 
         /* Back to the whole rock map. showEverything() clears the hand-hidden
@@ -1172,16 +1253,23 @@
          * on the tin — a row that cleared only the chips would leave the map
          * filtered while claiming otherwise. */
         geoAll: function () {
-            var btn = document.querySelector('#stats-map .ml-chip.geo');
-            closeMenu();
             if (typeof GeoMap !== 'undefined') GeoMap.showEverything();
             if (typeof renderGeoMapPanel === 'function') renderGeoMapPanel();
-            render();
-            // Reopen: "show all" is a step in an exploration, not the end of
-            // one, and closing the menu under the tap makes the reader find
-            // their way back in to try the next thing.
-            if (btn) openGeoMenu(document.querySelector('#stats-map .ml-chip.geo') || btn);
-            reopenGeoMenuWhenDrawn();
+            // Stays open: "show all" is a step in an exploration, not the end
+            // of one. Rebuilt once the map has drawn every period back, since
+            // the whole point of the gesture is the columns that come back.
+            refreshWhenDrawn();
+        },
+
+        /* Contacts on/off. Rebuilt after the map has drawn, like every other
+         * gesture here: the row's own count and the chip's wording describe
+         * what is on screen, and reading them from the canvas one tick early
+         * describes the map as it was before the tap. */
+        toggleContacts: function () {
+            if (typeof GeoMap === 'undefined' || !GeoMap.setContacts) return;
+            GeoMap.setContacts(!GeoMap.contactsOn());
+            if (typeof renderGeoMapPanel === 'function') renderGeoMapPanel();
+            refreshWhenDrawn();
         },
 
         pickBasemap: function (id) {

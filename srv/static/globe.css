@@ -311,11 +311,14 @@
            braces, and making the swatches the columns removes all measurement
            from that problem.
 
-           The swatch is 19x12 rather than 13x8 because it carries the FGDC
+           The swatch is 19x13 rather than 13x8 because it carries the FGDC
            ornament, and an ornament that cannot be resolved is not a key, it
            is dirt on the colour — two units of the same age then read as two
-           different ages. Below this size the ornament is dropped instead of
-           shrunk (see .ml-cs, the menu rows). */
+           different ages. 13 px is GeoPatterns.minSwatchPx, and BELOW it the
+           ornament is dropped rather than shrunk: the swatch is sized to the
+           pattern, never the pattern squeezed into the swatch. The
+           background-size is set inline by GeoPatterns.swatchStyle(), which
+           is the single place that decision is made. */
         .ml-swatches { display: grid; justify-content: start; align-items: center;
             gap: 4px; padding: 6px 8px 0; }
         .ml-swatches.braced { row-gap: 2px; padding-bottom: 3px; }
@@ -327,8 +330,8 @@
                         max-width 0.28s cubic-bezier(.34,1.4,.64,1),
                         padding 0.28s cubic-bezier(.34,1.4,.64,1),
                         margin 0.28s cubic-bezier(.34,1.4,.64,1); }
-        .ml-sw > i { width: 19px; height: 12px; border-radius: 3px; display: block;
-            border: 1px solid rgba(0,0,0,0.5); background-size: 19px 19px;
+        .ml-sw > i { width: 19px; height: 13px; border-radius: 3px; display: block;
+            border: 1px solid rgba(0,0,0,0.5);
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.18);
             transition: opacity 0.15s, filter 0.15s; }
         .ml-sw:hover, .ml-sw:focus-visible { background: rgba(255,255,255,0.13); outline: none; }
@@ -426,8 +429,8 @@
         .ml-mx-col { display: flex; align-items: center; justify-content: center;
             padding: 3px 0 4px; border: 0; background: none; cursor: pointer; border-radius: 4px;
             -webkit-tap-highlight-color: transparent; transition: background 0.15s, transform 0.15s; }
-        .ml-mx-col > i { width: 16px; height: 11px; border-radius: 3px; display: block;
-            border: 1px solid rgba(0,0,0,0.5); background-size: 18px 18px;
+        .ml-mx-col > i { width: 16px; height: 13px; border-radius: 3px; display: block;
+            border: 1px solid rgba(0,0,0,0.5);
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.18); }
         .ml-mx-col:hover { background: rgba(255,255,255,0.1); transform: translateY(-1px); }
         .ml-mx-col:focus-visible { outline: 2px solid #60a5fa; outline-offset: 1px; }

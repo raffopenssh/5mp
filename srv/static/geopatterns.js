@@ -218,9 +218,57 @@
         return 'url(' + cv.toDataURL() + ')';
     }
 
+    /* ── A KEY OR A SMUDGE: the ornament has a floor ──────────────────
+     *
+     * The hatch is a legend, and a legend has to be readable to be one. The
+     * FGDC families are drawn on a 32 px tile: at a 19x12 strip swatch that
+     * is barely two brick courses, at the matrix's 16x11 column head it is
+     * three plus-signs and a crop of a fourth, and at 11x7 it is texture with
+     * no identity at all. What the reader then sees is not "carbonate" and
+     * "intrusive", it is two dirty rectangles — and, worse, the SAME class
+     * comes out looking different in the strip and in the matrix depending on
+     * where the pattern's phase happens to crop. Two swatches of one age then
+     * read as two ages, which is the one thing a colour-is-age legend must
+     * never do.
+     *
+     * Scaling the ornament down with the box does not help: a brick course
+     * thinner than a pixel is a grey wash, so the swatch loses BOTH the
+     * pattern and the honesty of its colour.
+     *
+     * So below MIN_PX the ornament is DROPPED, not shrunk, and the swatch is
+     * the flat ICS colour — which is still true, still the age, and still
+     * matches the polygon's hue on the map. The ornament comes back the
+     * moment the swatch is big enough to carry it (the unit list, the map
+     * tip, the panel legend). Bigger is always allowed; smaller is a lie
+     * about the pattern, and the map itself is where the ornament does its
+     * real work.
+     */
+    var MIN_PX = 13;
+
+    /**
+     * The complete CSS for a swatch of `px` (its smaller side), ornament
+     * included only where it can be read.
+     *
+     * One function so every surface applies the same floor: the strip key,
+     * the matrix column heads, the panel's unit list and the map tip were
+     * each computing their own `background-size`, which is how three of them
+     * ended up under the floor without anyone deciding that.
+     */
+    function swatchStyle(lith, color, px) {
+        var n = Math.max(1, px || 0);
+        if (n < MIN_PX) return 'background:' + color + ';';
+        // The tile is drawn at 32 px; showing it at the swatch's own size
+        // plus a little keeps roughly one motif visible rather than a crop.
+        var size = Math.round(n + 8);
+        return 'background-image:' + swatchCSS(lith, color) +
+               ';background-size:' + size + 'px ' + size + 'px;';
+    }
+
     window.GeoPatterns = {
         tile: tile,
         swatchCSS: swatchCSS,
+        swatchStyle: swatchStyle,
+        minSwatchPx: MIN_PX,
         keys: function () { return Object.keys(DRAW); },
         tileSizeCSS: TILE
     };
