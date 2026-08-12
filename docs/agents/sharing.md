@@ -23,6 +23,44 @@ API: `POST /api/shortlink {url,title?,kind?,slug?,guest?,days?,patrol?,lock_date
 `POST /api/shortlink/{slug}/rename {slug}`; `DELETE /api/shortlink/{slug}`;
 `GET /api/shortlinks` → `{groups:[{ref,label,env,mine,links:[…]}],guest_ttl_days}`.
 
+## ⚠️ A link never carries the password (2026-08-12)
+
+`buildShareUrl()` defaulted to `includePwd = true`. So the first thing every
+"copy link" in the app put on the clipboard — the long URL, copied *inside* the
+click, before the shortener answers — was the shared access password in plain
+text. Four copies of the one mistake, each of which alone would have been
+enough:
+
+1. `buildShareUrl(includePwd = true)` — the long URL, and the `?pwd=` the
+   shortener then stored… no: `normaliseShortTarget()` strips it, so the stored
+   row was always clean. The **clipboard** was not.
+2. `shortURL()` appended `?pwd=` to the `/s/…` URL whenever the current session
+   was authenticated by query param.
+3. `HandleShortLink` forwarded a `?pwd=` on the short URL onto the redirect
+   target, so a named slug became a bearer token for the shared password.
+4. `PasswordMiddleware` only stripped `?pwd=` on the request that had **no
+   cookie yet**. Every later arrival carrying the param — most of all the
+   redirect in (3) — left it sitting in `location.search`, where (1) copied it
+   into the next link the user shared. **The credential leaked one share at a
+   time**, from a URL its owner had already authenticated past.
+
+Now: a password rides only to authenticate the request it arrives on. It is
+spent into the `access_pwd` cookie (`SetAccessPwdCookie`, one writer for the
+attributes) and scrubbed from the URL by a redirect (`urlWithoutPwd`, one writer
+for the scrub) on **both** middleware branches. `/s/{slug}?pwd=` still works —
+`/s/` sits outside the gate, so nothing else would honour it — but sets the
+cookie and redirects to the clean target.
+
+On the client, `absolute()` in `sharelink.js` is a **chokepoint**: every URL
+entering the module passes through it, including download hrefs deliberately
+built with `?pwd=` so a plain anchor works. Scrub there and the paths nobody
+thought about are covered too. `copyStarredLink()` had its own private copy of
+the same bug ("always include password if present"); gone.
+
+`buildShareUrl(includePwd)` keeps its parameter, defaulting to `false` and with
+no caller passing `true`. Deleting it would have made a future need silent;
+leaving it makes that need state itself.
+
 ## The two kinds, and why they are different objects
 
 **A named link** is a *name*. `pwd` is stripped from the stored URL, it

@@ -93,6 +93,39 @@ reasonably concludes the app threw the detail away. So:
   value). It replaced a toast fired per truncated fetch — i.e. on every zoom,
   covering the map to say something permanent about the view.
 
+### A count must name its unit (2026-08-12)
+
+**A settlement is a CLUSTER; `feature_geometries` holds its FOOTPRINTS.**
+`park_settlements` rows are clusters of adjacent GHSL built-up polygons
+(`rebuild_events_enhanced.py`); the polygons live in `feature_geometries` and
+are what the map draws. Chinko is **35 polygons and 27 settlements**.
+
+Every surface counted honestly and they still disagreed, because none of them
+said what it was counting: the stats panel and the popup count clusters, this
+loader counted the polygons it had drawn and printed the result beside the word
+"Settlements". Three numbers, one word — read as a data-quality problem, which
+is worse than a wrong number because it impugns everything next to it.
+
+`/api/features-in-bbox` now names its unit: `unit` (`footprints` for a
+settlement, `features` otherwise), plus `groups` and `group_unit`. The group
+count is over **everything in view**, not just the served sample, resolved
+through the same per-park map the hover tips use (`settlementGroupKey` in
+`feature_meta.go`) — **never** the `polygon_ids` LIKE join. A footprint no
+cluster claims is **its own group**, not dropped: it is on screen, so it must be
+in the number describing the screen (invariant 1).
+
+The readout leads with the number the rest of the app means by the word and
+names the drawn one after it — `27 in view (35 footprints)` — and **only when
+they differ**: "27 in view (27 footprints)" is noise, and a clustering that
+happens to be 1:1 in this view is not worth a parenthesis. `.lod-sub` is
+visibly subordinate, or the row reads as two competing counts again, which is
+the bug this exists to close.
+
+Suppressed while truncated (`!st.truncated`): `groups` describes everything in
+view but `count` describes the sample, so pairing them under truncation would
+put two different denominators side by side — the failure this section is
+about, one level up.
+
 ### Panning is free, zooming re-asks
 
 `lodlayer.js` fetches a **25%-padded** box and compares against the unpadded
