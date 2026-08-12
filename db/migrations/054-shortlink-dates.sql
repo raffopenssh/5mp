@@ -1,0 +1,39 @@
+-- 054: short_links.date_from / date_to — WHEN a link is about.
+--
+-- WHY THIS EXISTS. Every share URL already carries a time window, but it
+-- carries it in one of two incompatible ways, and the difference was invisible
+-- to the sender. `date_preset=90d` is a RULE ("the last ninety days") which
+-- resolves against the reader's clock, so the link a colleague opens in March
+-- shows March's fires. `from=…&to=…` is a FACT ("15 May to 12 August"), and
+-- shows the same picture forever. Both are legitimate — a monitoring bookmark
+-- wants the rule, a report footnote wants the fact — and picking the wrong one
+-- silently produces either a stale dashboard or a citation that no longer says
+-- what it said. So the dialog asks, and the answer is written into the URL.
+--
+-- That much needs no schema at all. THIS COLUMN IS THE SECOND QUESTION, and it
+-- only makes sense for a capability: a frozen URL says what the link OPENS at,
+-- not what the holder may look at. A recipient sent "the Chinko fire season,
+-- May to August" can drag the slider to last week the moment the map loads,
+-- and nothing about the link ever suggested they could not.
+--
+--     date_from = '' AND date_to = ''    the key opens on a window and the
+--                                        holder may then browse any dates
+--     date_from = '2026-05-15'           the key is ABOUT that window; every
+--     date_to   = '2026-08-12'           query it makes is clamped into it
+--
+-- It is a CLAMP, NOT A REFUSAL (srv/guest.go, clampGuestDates): a request for
+-- June 2024 comes back as the overlap with the window, and a request wholly
+-- outside it comes back empty rather than as an error. A guest who drags the
+-- slider must get a map that shows less, not a screenful of failed panels —
+-- the same principle as the scope column in 053, where the failure mode of a
+-- restriction has to be quiet.
+--
+-- Empty for every named link and every row predating this migration, which is
+-- correct rather than lazy: a named link is only a name, and whoever opens it
+-- signs in and gets whatever their own password may see, dates included.
+--
+-- Like scope, the value is decided ONCE at creation and can never be edited
+-- afterwards — changing your mind mints a NEW key — because the copy already
+-- sitting in somebody's inbox has to keep describing what they hold.
+ALTER TABLE short_links ADD COLUMN date_from TEXT NOT NULL DEFAULT '';
+ALTER TABLE short_links ADD COLUMN date_to   TEXT NOT NULL DEFAULT '';

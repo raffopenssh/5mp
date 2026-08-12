@@ -9,6 +9,7 @@ delegates access._
 |---|---|
 | The share dialog (the whole UI) | `srv/static/sharelink.js`, `.sl-*` in `globe.css` |
 | Scope: what a key may SEE | `db/migrations/053-shortlink-scope.sql`, `srv/guest.go` |
+| Dates: WHEN a link is about | `db/migrations/054-shortlink-dates.sql`, `srv/guest.go` |
 | Admin → Sharing tab | `loadSharingTab()` in `globe.html`, `.sh-*` in `globe.css` |
 | Table + the reasoning | `db/migrations/052-short-links.sql` |
 | Create / rename / list / revoke, `/s/{slug}` | `srv/shortlink.go` |
@@ -17,8 +18,8 @@ delegates access._
 | `RequestPrincipalID`, `visibilityFingerprint` | `srv/aoi.go` |
 | Routes, `pageData.IsGuest`, chip label | `srv/server.go` |
 
-API: `POST /api/shortlink {url,title?,kind?,slug?,guest?,days?,patrol?}` →
-`{slug,short,url,guest,expires_at,scope,reused}`;
+API: `POST /api/shortlink {url,title?,kind?,slug?,guest?,days?,patrol?,lock_dates?}` →
+`{slug,short,url,guest,expires_at,scope,date_from,date_to,reused}`;
 `POST /api/shortlink/{slug}/rename {slug}`; `DELETE /api/shortlink/{slug}`;
 `GET /api/shortlinks` → `{groups:[{ref,label,env,mine,links:[…]}],guest_ttl_days}`.
 
@@ -120,6 +121,65 @@ patrol tenant (`gpkgKeyFor`), or a scope-restricted export would be served the
 account's own cached file; and `visibilityFingerprint` already gives a guest its
 own response-cache slot keyed on slug, which is what makes the above safe.
 
+## The date columns: WHEN a link is about
+
+A share URL always carried a time window, but in one of two ways that look
+identical in the address bar and mean opposite things:
+
+* `date_preset=90d` is a **rule**, resolved against whoever's clock opens it —
+  right for a standing bookmark, so the map moves with time;
+* `from=&to=` is a **fact** — right for a report footnote, an incident, a
+  season, and the same picture forever.
+
+Sending the wrong one produces either a dashboard that quietly goes stale or a
+citation that no longer says what it said, and the sender finds out from the
+recipient months later. So when the shared view is on a preset, the dialog
+asks: **Always up to date** vs **These exact dates** (blue, one row above the
+WHO switch — not green/amber, because this is not an access decision). The two
+options are two *different URLs*, so choosing re-mints; `sl-dates` hides itself
+entirely when the view is already pinned, because two buttons with one possible
+answer invent a decision rather than offering one.
+
+The frozen dates are **read off the slider** (`window.dateFrom/dateTo`), never
+recomputed — a second implementation of "what does 90d mean" is a second answer
+waiting to disagree with the map on screen. `datesFromURL` in Go resolves a
+preset too, but only as the last resort at mint time.
+
+### The second question, and why it needs a column
+
+A frozen URL says what a link **opens at**, not what the holder may look at:
+the recipient of "the Chinko fire season" drags the slider to last week the
+moment the map loads, and nothing in the link ever suggested they could not.
+Usually that is right. Sometimes one season *is* the grant — hence
+`short_links.date_from/date_to`, the **Other dates** switch, and:
+
+1. **It clamps, it does not refuse** (`clampGuestQuery`, on the way in through
+   `guestAuth`). A guest who drags outside the window gets a map with less on
+   it, not a screenful of failed panels — and a 403 for June would tell the
+   holder there is a June worth having. Wholly-outside collapses to a
+   zero-length range, which every query answers empty.
+2. **One place, not forty.** `grep -c 'Query().Get("from")' srv/*.go` — a check
+   per handler is invariant 5's mistake in a new costume. Rewriting the query
+   is legitimate because every one of those handlers already accepts any window
+   a caller asks for.
+3. **The exception is a window with no dates in it.** `/fire-realtime?days=28`
+   means "ending now", and "now" is the one thing a locked key must not reach
+   past — hence `ClampGuestDates` there, plus an upper bound on the
+   `start_date` query (clamping only the *claimed* period would be a no-op
+   reading as an answer).
+4. **A lock that locks nothing is refused**, not stored empty: empty means
+   unrestricted, so a silently-empty lock tells the sender the key is confined
+   while it is not. Same reason a named link never gets one — the recipient
+   signs in, and a signed-in session is not confined by this table.
+5. Locking a *rolling* link is incoherent (a window that moves under the
+   holder), so asking for the lock takes the frozen URL with it rather than
+   refusing the click; un-freezing drops the lock.
+
+The dialog's note states the grant in the recipient's terms before it is sent
+("Only Jul 14 – Aug 12 — other dates come back empty"), and the admin sheet
+badges it in blue, distinct from the red `patrol tracks`: a narrowed window is a
+restriction the sender chose, not a risk they may have missed.
+
 ## The dialog
 
 One centred modal for every copyable link — it replaced a tooltip anchored to
@@ -170,10 +230,12 @@ does this URL still work" unanswerable.
 
 ## Tests
 
-`tests/api_tests.sh`, six checks: a guest reads, is refused writes/admin/
+`tests/api_tests.sh`, eight checks: a guest reads, is refused writes/admin/
 minting, is withheld patrol pixels (**both halves asserted** — "0 and 0" would
 pass a one-sided check while meaning the feature is broken), honours an explicit
-scope, expires and revokes, and a named link is not a way in. The block **mints
+scope, expires and revokes, is **confined by a date lock** (again both halves:
+the unlocked key must reach *before* the window, or an empty table would pass),
+is **refused a lock it cannot enforce**, and a named link is not a way in. The block **mints
 and then destroys** every slug: a test that leaves live capabilities behind
 manufactures the exact thing this feature exists to keep countable. The ledger
 is a *file* — `mint()` runs inside `$(...)`, and a bash array appended in that

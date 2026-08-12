@@ -237,6 +237,8 @@ type shortLink struct {
 	Title       string
 	Env         string
 	Scope       string
+	DateFrom    string
+	DateTo      string
 	Guest       bool
 	PrincipalID int64
 	Expired     bool
@@ -251,10 +253,11 @@ func (s *Server) loadShortLink(slug string) (*shortLink, bool) {
 		var pid sql.NullInt64
 		var guest int
 		err := s.DB.QueryRow(`SELECT slug, url, COALESCE(alias_of,''), kind, title, env,
-			COALESCE(scope,''), guest, principal_id, expires_at, revoked_at
+			COALESCE(scope,''), COALESCE(date_from,''), COALESCE(date_to,''),
+			guest, principal_id, expires_at, revoked_at
 			FROM short_links WHERE slug = ?`, id).
 			Scan(&l.Slug, &l.URL, &alias, &l.Kind, &l.Title, &l.Env, &l.Scope,
-				&guest, &pid, &expires, &revoked)
+				&l.DateFrom, &l.DateTo, &guest, &pid, &expires, &revoked)
 		if err != nil {
 			return nil, "", false
 		}
@@ -296,6 +299,11 @@ type GuestSession struct {
 	// Scope: which restricted layers travel with this link (srv/guest.go).
 	// Read-only is not the same as harmless; this is the difference.
 	Scope string
+	// DateFrom/DateTo: the window this key is confined to, or both empty for
+	// a key that merely OPENS on a window and then lets the holder browse.
+	// Enforced in one place (clampGuestQuery), never per handler.
+	DateFrom string
+	DateTo   string
 }
 
 // LookupGuest resolves a guest slug for the middleware. Returns nil for
@@ -310,7 +318,8 @@ func (s *Server) LookupGuest(slug string) *GuestSession {
 		return nil
 	}
 	return &GuestSession{Slug: l.Slug, Title: l.Title, Env: l.Env,
-		PrincipalID: l.PrincipalID, Scope: l.Scope}
+		PrincipalID: l.PrincipalID, Scope: l.Scope,
+		DateFrom: l.DateFrom, DateTo: l.DateTo}
 }
 
 // HandleShortLink — GET /s/{slug}.
@@ -398,8 +407,14 @@ type shortLinkResp struct {
 	Guest   bool   `json:"guest,omitempty"`
 	Expires string `json:"expires_at,omitempty"`
 	Scope   string `json:"scope,omitempty"` // restricted layers this link carries
-	Reuse   bool   `json:"reused,omitempty"`
-	Error   string `json:"error,omitempty"`
+	// DateFrom/DateTo: the window this key is CONFINED to, empty when the
+	// holder may browse. Echoed so the dialog states what it granted rather
+	// than what it asked for -- the server clamps, and a UI that shows its own
+	// request would keep showing a denied one as granted.
+	DateFrom string `json:"date_from,omitempty"`
+	DateTo   string `json:"date_to,omitempty"`
+	Reuse    bool   `json:"reused,omitempty"`
+	Error    string `json:"error,omitempty"`
 }
 
 // HandleAPIShortLinkCreate — POST /api/shortlink
@@ -426,6 +441,10 @@ func (s *Server) HandleAPIShortLinkCreate(w http.ResponseWriter, r *http.Request
 		// and "not stated" -- the last one means "whatever the shared view
 		// was showing", which is the default and the common case.
 		Patrol *bool `json:"patrol"`
+		// LockDates: may the holder look outside the shared window? Only ever
+		// asked of a guest link -- a named link is a name, and whoever opens
+		// it signs in and sees what their own password sees, dates included.
+		LockDates bool `json:"lock_dates"`
 	}
 	if err := decodeJSONBody(r, &body); err != nil {
 		writeJSON(w, http.StatusBadRequest, shortLinkResp{Error: "bad request"})
@@ -475,6 +494,28 @@ func (s *Server) HandleAPIShortLinkCreate(w http.ResponseWriter, r *http.Request
 		scope = withScope(scope, ScopePatrol, *body.Patrol && GuestHasScope(r, ScopePatrol))
 	}
 
+	// The date lock, same rule: derived from the view, never widened by the
+	// caller, and only ever attached to a capability. A locked window on a
+	// named link would be decoration -- the recipient signs in, and a signed-in
+	// session is not confined by anything in this table.
+	//
+	// A guest minting is already refused above, so the "clamp downward" case
+	// that scope needs has no analogue here: the only session that reaches this
+	// line unrestricted is a real one. If that ever changes, intersect with
+	// GuestWindow(r) before storing.
+	var dFrom, dTo string
+	if body.Guest && body.LockDates {
+		dFrom, dTo = datesFromURL(target, time.Now())
+		if dFrom == "" || dTo == "" {
+			// A lock that silently locked nothing would be the worst outcome
+			// on offer: the sender is told the key is confined, the key is not,
+			// and nothing anywhere records the difference.
+			writeJSON(w, http.StatusBadRequest, shortLinkResp{
+				Error: "this view has no date range to lock"})
+			return
+		}
+	}
+
 	insert := func(slug string) error {
 		var pid interface{}
 		if body.Guest && principal != 0 {
@@ -485,10 +526,12 @@ func (s *Server) HandleAPIShortLinkCreate(w http.ResponseWriter, r *http.Request
 			exp = expires
 		}
 		_, err := s.DB.Exec(`INSERT INTO short_links
-			(slug, url, kind, title, env, pwd_ref, guest, principal_id, expires_at, created_at, scope)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			(slug, url, kind, title, env, pwd_ref, guest, principal_id, expires_at, created_at,
+			 scope, date_from, date_to)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 			slug, target, kind, strings.TrimSpace(body.Title), env, ref,
-			boolInt(body.Guest), pid, exp, time.Now().UTC().Format(time.RFC3339), scope)
+			boolInt(body.Guest), pid, exp, time.Now().UTC().Format(time.RFC3339),
+			scope, dFrom, dTo)
 		return err
 	}
 
@@ -502,7 +545,8 @@ func (s *Server) HandleAPIShortLinkCreate(w http.ResponseWriter, r *http.Request
 				continue
 			}
 			writeJSON(w, http.StatusOK, shortLinkResp{Slug: slug, Short: "/s/" + slug,
-				URL: target, Kind: kind, Guest: true, Expires: expires, Scope: scope})
+				URL: target, Kind: kind, Guest: true, Expires: expires, Scope: scope,
+				DateFrom: dFrom, DateTo: dTo})
 			return
 		}
 		writeJSON(w, http.StatusInternalServerError, shortLinkResp{Error: "could not create a link"})
@@ -635,9 +679,15 @@ type shortLinkRow struct {
 	Guest   bool   `json:"guest"`
 	Expires string `json:"expires_at,omitempty"`
 	Scope   string `json:"scope,omitempty"` // restricted layers this link carries
-	Expired bool   `json:"expired,omitempty"`
-	Revoked bool   `json:"revoked,omitempty"`
-	Mine    bool   `json:"mine"`
+	// The window this key is confined to, if any. The sheet must show it:
+	// "read-only, expiring, and only May-August" is a different thing to have
+	// handed out than "read-only and expiring", and an operator deciding
+	// whether to revoke needs to see which one they issued.
+	DateFrom string `json:"date_from,omitempty"`
+	DateTo   string `json:"date_to,omitempty"`
+	Expired  bool   `json:"expired,omitempty"`
+	Revoked  bool   `json:"revoked,omitempty"`
+	Mine     bool   `json:"mine"`
 }
 
 type shortLinkGroup struct {
@@ -662,7 +712,8 @@ func (s *Server) HandleAPIShortLinkList(w http.ResponseWriter, r *http.Request) 
 	}
 	rows, err := s.DB.Query(`SELECT slug, url, COALESCE(alias_of,''), kind, title, env,
 		COALESCE(pwd_ref,''), guest, COALESCE(expires_at,''), COALESCE(revoked_at,''),
-		hits, COALESCE(last_hit_at,''), created_at, COALESCE(scope,'')
+		hits, COALESCE(last_hit_at,''), created_at, COALESCE(scope,''),
+		COALESCE(date_from,''), COALESCE(date_to,'')
 		FROM short_links ORDER BY created_at DESC LIMIT 1000`)
 	if err != nil {
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "could not list links"})
@@ -678,7 +729,8 @@ func (s *Server) HandleAPIShortLinkList(w http.ResponseWriter, r *http.Request) 
 		var env, ref, revoked string
 		var guest int
 		if err := rows.Scan(&l.Slug, &l.URL, &l.AliasOf, &l.Kind, &l.Title, &env, &ref,
-			&guest, &l.Expires, &revoked, &l.Hits, &l.LastHit, &l.Created, &l.Scope); err != nil {
+			&guest, &l.Expires, &revoked, &l.Hits, &l.LastHit, &l.Created, &l.Scope,
+			&l.DateFrom, &l.DateTo); err != nil {
 			continue
 		}
 		l.Guest = guest == 1
