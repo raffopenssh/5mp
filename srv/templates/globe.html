@@ -166,6 +166,16 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             <span class="stats-value" id="stats-settlements">0</span>
             <span class="stats-lod" id="lod-settlements"></span>
         </div>
+        <!-- MAP: what the ground under the data is. Written by
+             srv/static/maplegend.js, which renders NOTHING but one ghost icon
+             while the basemap is the default and no overlay is on — a
+             permanent "Basemap: Dark" row is chrome that is wrong to read.
+             Once a drape is on it grows a header, a chip per non-default
+             thing, and the age swatches that make the drape legible. The
+             icon is always a real target, because this strip is the only
+             route to the basemap/overlay switches that is not four clicks
+             deep in the admin panel. -->
+        <div class="stats-map quiet" id="stats-map"></div>
     </div>
 
     
@@ -1239,6 +1249,7 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                 // from the capture above so it can be re-inserted below the
                 // park outlines rather than appended on top of them.
                 if (typeof GeoMap !== 'undefined') { GeoMap.reattach(); GeoMap.basemapChanged(); }
+                if (window.MapLegend) MapLegend.refresh();
                 
                 showToast('Basemap changed', `Switched to ${newStyle.name}`, null, null, 'success');
             });
@@ -1387,6 +1398,10 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
         }
 
         function renderHistMapPanel() {
+            // The strip mirrors this layer's state and is drawn whether or not
+            // the admin panel exists in the DOM yet, so it is refreshed BEFORE
+            // the early return below.
+            if (window.MapLegend) MapLegend.refresh();
             const box = document.getElementById('histmap-list');
             if (!box) return;
             const m = HistMap.meta();
@@ -1450,6 +1465,7 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
         // two sheets is not a checkbox list anybody reads.
         // ---------------------------------------------------------------
         function renderGeoMapPanel() {
+            if (window.MapLegend) MapLegend.refresh();   // see renderHistMapPanel
             const box = document.getElementById('geomap-list');
             if (!box || typeof GeoMap === 'undefined') return;
             const sheets = GeoMap.sheets();
@@ -22811,6 +22827,10 @@ ${starredItems.narratives.map(n => {
          geology polygon look like a lake. -->
     <script src="/static/geopatterns.js?v={{.Version}}"></script>
     <script src="/static/geomap.js?v={{.Version}}"></script>
+    <!-- The stats panel's "Map" strip. After geomap.js/HistMap because it
+         only reports what those two are doing; it owns no map layer of its
+         own and adds nothing to the page when both are off. -->
+    <script src="/static/maplegend.js?v={{.Version}}"></script>
     <script src="/static/floatui.js?v={{.Version}}"></script>
     <!-- One share popup for every "copy link" in the app (srv/shortlink.go,
          docs/agents/sharing.md). Loaded last because it only ever reacts to a
