@@ -4,6 +4,7 @@ import (
 	"crypto/subtle"
 	"html"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 )
@@ -63,6 +64,37 @@ func isPublicPath(p string) bool {
 		p == "/static/sitemap.xml"
 }
 
+// urlWithoutPwd returns the same path+query with `pwd` removed. One writer, so
+// the two places that scrub the address bar cannot drift.
+func urlWithoutPwd(u *url.URL) string {
+	clean := u.Path
+	if u.RawQuery != "" {
+		q := u.Query()
+		q.Del("pwd")
+		if encoded := q.Encode(); encoded != "" {
+			clean += "?" + encoded
+		}
+	}
+	if clean == "" {
+		clean = "/"
+	}
+	return clean
+}
+
+// SetAccessPwdCookie stores the access password for subsequent requests. One
+// writer for the cookie's attributes, so the gate and /s/ cannot drift.
+func SetAccessPwdCookie(w http.ResponseWriter, pwd string) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     "access_pwd",
+		Value:    pwd,
+		Path:     "/",
+		MaxAge:   86400 * 30, // 30 days
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+	})
+}
+
 // PasswordMiddleware checks for valid password in cookie or query param
 func (s *Server) PasswordMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -85,6 +117,20 @@ func (s *Server) PasswordMiddleware(next http.Handler) http.Handler {
 		// Check cookie first
 		cookie, err := r.Cookie("access_pwd")
 		if err == nil && isValidPassword(cookie.Value) {
+			// A PASSWORD MUST NOT SURVIVE IN THE ADDRESS BAR. The cookie
+			// branch used to serve the page as-is, so `?pwd=` was only ever
+			// stripped on the ONE request that had no cookie yet. Every later
+			// arrival carrying the param -- most of all /s/{slug}?pwd=, which
+			// redirected the password straight into the target URL -- left it
+			// sitting in location.search, where buildShareUrl() then copied it
+			// into the next link the user shared. The credential leaked one
+			// share at a time, from a URL its owner had already authenticated
+			// past and no longer needed.
+			if r.URL.Query().Get("pwd") != "" && !strings.HasPrefix(r.URL.Path, "/api/") &&
+				(r.Method == http.MethodGet || r.Method == http.MethodHead) {
+				http.Redirect(w, r, urlWithoutPwd(r.URL), http.StatusFound)
+				return
+			}
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -106,15 +152,7 @@ func (s *Server) PasswordMiddleware(next http.Handler) http.Handler {
 			// someone opens in a browser, and after logging in through the form
 			// they should be logged in -- not have to type the password again
 			// the moment they click anything else.
-			http.SetCookie(w, &http.Cookie{
-				Name:     "access_pwd",
-				Value:    pwd,
-				Path:     "/",
-				MaxAge:   86400 * 30, // 30 days
-				HttpOnly: true,
-				Secure:   true,
-				SameSite: http.SameSiteLaxMode,
-			})
+			SetAccessPwdCookie(w, pwd)
 			// For API endpoints, serve directly: an XHR follows a redirect
 			// silently but a download must arrive as the response to *this*
 			// request, and RequestEnv/RequestPwd read the param anyway.
@@ -123,15 +161,7 @@ func (s *Server) PasswordMiddleware(next http.Handler) http.Handler {
 				return
 			}
 			// Redirect to remove pwd from URL
-			cleanURL := r.URL.Path
-			if r.URL.RawQuery != "" {
-				q := r.URL.Query()
-				q.Del("pwd")
-				if encoded := q.Encode(); encoded != "" {
-					cleanURL += "?" + encoded
-				}
-			}
-			http.Redirect(w, r, cleanURL, http.StatusFound)
+			http.Redirect(w, r, urlWithoutPwd(r.URL), http.StatusFound)
 			return
 		}
 

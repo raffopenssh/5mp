@@ -564,6 +564,11 @@
         .stats-item.layer-animated:not(.layer-on) .stats-label,
         .stats-item.layer-animated:not(.layer-on) .stats-value { opacity: 0.85; }
         .stats-lod .lod-count { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        /* The secondary unit ("(35 footprints)") sits BEHIND the number the
+           rest of the app means by the word. It has to be visibly subordinate
+           or the row reads as two competing counts again, which is the bug
+           this whole readout exists to close. */
+        .stats-lod .lod-count .lod-sub { opacity: 0.6; font-size: 0.92em; }
         /* The pill takes the ROW's own colour (currentColor, set per type
            below) at low alpha, so the readout reads as part of the fire /
            deforestation / settlement row it belongs to rather than as a fourth
@@ -1547,6 +1552,12 @@
         .park-tag-country { color: #888; font-size: 9px; flex-shrink: 0; }
         .park-tag-remove { background: none; border: none; color: #888; cursor: pointer; font-size: 12px; padding: 0 0 0 2px; line-height: 1; flex-shrink: 0; }
         .park-tag-remove:hover { color: #ef4444; }
+        /* Focus, on a park tag. Same control as .aoi-tag-btn, in the park
+           row's own violet rather than the AOI's amber: the gesture is one
+           gesture, the colour says which kind of area it is on. */
+        .park-tag-btn { background: none; border: none; color: #8b5fbf; cursor: pointer; font-size: 11px; padding: 0 0 0 2px; line-height: 1; flex-shrink: 0; }
+        .park-tag-btn:hover { color: #d8b4fe; }
+        .park-tag-btn.on { color: #d8b4fe; text-shadow: 0 0 6px rgba(216,180,254,0.8); }
         .parks-selector { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
         .bbox-select-btn { display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 6px 8px; background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.25); border-radius: 4px; color: #60a5fa; font-size: 12px; cursor: pointer; transition: all 0.2s; flex: 1; min-height: 32px; }
         .bbox-select-btn:hover { background: rgba(59,130,246,0.2); border-color: rgba(59,130,246,0.4); }

@@ -218,6 +218,26 @@ func aoiScopeSQL(col, aoiID string) string {
 		" OR " + col + " = " + quoteSQLString("aoi:"+aoiID) + ")"
 }
 
+// areaScopeSQL scopes a park-keyed column to ONE area, park or AOI.
+//
+// aoiScopeSQL answers this for an AOI; a park needs the same thing and could
+// not have it, which is why the stats panel had no way to say "these numbers
+// are Chinko's". The two cases differ only in the alias: an AOI's derived rows
+// exist under both `<id>` and `aoi:<id>`, a park's only under its own id.
+//
+// The empty id keeps aoiExcludeSQL's default — unscoped means "every park, and
+// no AOI", because summing an AOI's rows next to the parks it overlaps counts
+// the overlap twice (srv/aoi.go).
+func areaScopeSQL(col, areaID string) string {
+	if areaID == "" {
+		return aoiExcludeSQL(col)
+	}
+	if IsAOIID(areaID) {
+		return aoiScopeSQL(col, areaID)
+	}
+	return " AND " + col + " = " + quoteSQLString(areaID)
+}
+
 // quoteSQLString is only ever fed an id already validated by ValidAOIID (no
 // quotes possible); the doubling is belt and braces because the result is
 // concatenated into SQL rather than bound, which aoiExcludeSQL's shape forces.
@@ -237,6 +257,49 @@ func (s *Server) aoiScopeParam(r *http.Request) string {
 		return ""
 	}
 	return id
+}
+
+// areaScopeParam reads ?aoi= or ?park_focus= and returns the id only if this
+// request may see it. Same contract as aoiScopeParam in both directions: an
+// unknown or invisible id yields "", so the endpoint answers exactly as it did
+// before and an id is never an oracle.
+//
+// `park_focus=`, not `park=`: ParkIDMiddleware validates every `?park=` in the
+// app and 404s an AOI id in one, so reusing it would make "focus on this area"
+// a hard failure for half its inputs. One parameter that accepts both kinds of
+// id is the point — focus is one idea, and the panel says the same sentence
+// whichever kind of area is in it.
+func (s *Server) areaScopeParam(r *http.Request) string {
+	if id := s.aoiScopeParam(r); id != "" {
+		return id
+	}
+	id := strings.TrimSpace(r.URL.Query().Get("park_focus"))
+	if id == "" || !ValidParkID(id) || IsAOIID(id) {
+		return ""
+	}
+	if s.AreaStore == nil || s.AreaStore.GetByID(id) == nil {
+		return ""
+	}
+	return id
+}
+
+// areaScopeName is what the panel prints for a scope id.
+func (s *Server) areaScopeName(r *http.Request, areaID string) string {
+	if areaID == "" {
+		return ""
+	}
+	if IsAOIID(areaID) {
+		if a, err := s.GetAOI(areaID, s.RequestPrincipalID(r), false); err == nil {
+			return a.Name
+		}
+		return areaID
+	}
+	if s.AreaStore != nil {
+		if a := s.AreaStore.GetByID(areaID); a != nil && a.Name != "" {
+			return a.Name
+		}
+	}
+	return areaID
 }
 
 // aoiNotifSQLFilter keeps another principal's AOI out of the notification

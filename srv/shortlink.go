@@ -359,25 +359,21 @@ func (s *Server) HandleShortLink(w http.ResponseWriter, r *http.Request) {
 	}
 
 	target := l.URL
-	// The recipient's own credentials travel with the request; a `pwd` on the
-	// SHORT url is passed through, so a link copied while authenticated by
-	// query param still works.
-	if pwd := r.URL.Query().Get("pwd"); pwd != "" && !l.Guest {
-		target = shortWithPwd(target, pwd)
+	// A `pwd` arriving ON the short link authenticates THIS request — /s/ sits
+	// outside PasswordMiddleware, so nothing else would honour it — but it is
+	// spent into a cookie and never written into the redirect target.
+	//
+	// It used to be forwarded, "so a link copied while authenticated by query
+	// param still works". That turned every named slug into a bearer token for
+	// the shared password and left the password in the recipient's address bar
+	// for their next "share this page": the credential leaked one share at a
+	// time. A named link is a NAME (see the header of this file); the reader
+	// authenticates as themselves.
+	if pwd := r.URL.Query().Get("pwd"); pwd != "" && !l.Guest && isValidPassword(pwd) {
+		SetAccessPwdCookie(w, pwd)
 	}
 	go s.bumpShortLinkHit(l.Slug)
 	http.Redirect(w, r, target, http.StatusFound)
-}
-
-func shortWithPwd(target, pwd string) string {
-	u, err := url.Parse(target)
-	if err != nil {
-		return target
-	}
-	q := u.Query()
-	q.Set("pwd", pwd)
-	u.RawQuery = q.Encode()
-	return u.String()
 }
 
 func (s *Server) shortLinkGone(w http.ResponseWriter, head, body string) {

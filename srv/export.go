@@ -65,10 +65,13 @@ func (s *Server) HandleAPIExportParks(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Query park_settlements: count per park
+	// Query park_settlements: count per park. Same filter as every other
+	// settlement count in the app (srv/mining_flag.go) -- a CSV export that
+	// disagreed with the panel above it would be read as the authoritative one.
 	settlementRows, err := s.DB.Query(`
 		SELECT park_id, COUNT(*) as settlement_count 
 		FROM park_settlements 
+		WHERE 1=1` + settlementFilterSQL("narrative", "polygon_ids") + `
 		GROUP BY park_id
 	`)
 	if err == nil {

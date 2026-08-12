@@ -92,7 +92,7 @@ func (s *Server) HandleAPIFeaturesInBBox(w http.ResponseWriter, r *http.Request)
 		WHERE feature_type = ?
 		  AND bbox_maxx >= ? AND bbox_minx <= ?
 		  AND bbox_maxy >= ? AND bbox_miny <= ?
-	` + aoiScopeSQL("park_id", s.aoiScopeParam(r))
+	` + areaScopeSQL("park_id", s.areaScopeParam(r))
 	args := []interface{}{featureType, bbox[0], bbox[2], bbox[1], bbox[3]}
 
 	// ?area= scopes the answer to one area's rows. A pinned layer is a
@@ -174,18 +174,33 @@ func (s *Server) HandleAPIFeaturesInBBox(w http.ResponseWriter, r *http.Request)
 	scanQ := `SELECT id, (bbox_minx + bbox_maxx) / 2, (bbox_miny + bbox_maxy) / 2,
 		         COALESCE(stat_value, 0),
 		         COALESCE((bbox_maxx - bbox_minx) * (bbox_maxy - bbox_miny), 0),
-		         start_date, feature_id` + where
+		         start_date, feature_id, park_id` + where
 
 	rows, err := s.DB.QueryContext(r.Context(), scanQ, args...)
 	if err != nil {
 		internalError(w, "request failed", err)
 		return
 	}
+	// A SETTLEMENT IS A CLUSTER; feature_geometries holds its FOOTPRINTS.
+	//
+	// Chinko's 35 built-up polygons are 27 settlements, and until now the two
+	// were reported by different surfaces under the same word: the stats panel
+	// and the popup counted park_settlements rows, the viewport readout counted
+	// the polygons it had drawn, and nothing said they were different units.
+	// Two numbers that disagree are a bug report; two numbers that disagree
+	// *and* claim the same noun is a data-quality accusation.
+	//
+	// So the answer carries both, and the unit it is drawing. Counted over
+	// everything in view (not just the served sample) via the same per-park map
+	// the hover tips use -- never the polygon_ids LIKE join (feature_meta.go).
+	groupKeys := map[string]bool{}
+	countGroups := featureType == "settlement"
+	var groupMeta featureMetaCache
 	col := newSpreadCollector(limit, bbox, spread)
 	for rows.Next() {
 		var c bboxCand
-		var featureID string
-		if err := rows.Scan(&c.id, &c.cx, &c.cy, &c.stat, &c.area, &c.startDate, &featureID); err != nil {
+		var featureID, rowPark string
+		if err := rows.Scan(&c.id, &c.cx, &c.cy, &c.stat, &c.area, &c.startDate, &featureID, &rowPark); err != nil {
 			continue
 		}
 		// The filter is applied BEFORE the collector, so `total` counts what
@@ -195,6 +210,9 @@ func (s *Server) HandleAPIFeaturesInBBox(w http.ResponseWriter, r *http.Request)
 		if classFilter != "" && !classIDs[featureID] {
 			continue
 		}
+		if countGroups {
+			groupKeys[s.settlementGroupKey(rowPark, featureID, &groupMeta)] = true
+		}
 		col.add(c)
 	}
 	rows.Close()
@@ -202,6 +220,22 @@ func (s *Server) HandleAPIFeaturesInBBox(w http.ResponseWriter, r *http.Request)
 	cands := col.result()
 	total := col.total
 	truncated := total > len(cands)
+	// What the count is a count OF. `total` is polygons because polygons are
+	// what is drawn; `groups` is the number of settlements those polygons
+	// belong to, which is the number every other surface in the app says.
+	// Named in the response rather than left to the client to infer.
+	unit, groups := "features", 0
+	if countGroups {
+		unit, groups = "footprints", len(groupKeys)
+	}
+	addCounts := func(out map[string]interface{}) map[string]interface{} {
+		out["unit"] = unit
+		if countGroups {
+			out["groups"] = groups
+			out["group_unit"] = "settlements"
+		}
+		return out
+	}
 
 	// mode=auto: geometry while the view holds few enough features to be worth
 	// drawing as shapes, centroids beyond that. The switch is on the TRUE
@@ -236,7 +270,7 @@ func (s *Server) HandleAPIFeaturesInBBox(w http.ResponseWriter, r *http.Request)
 			})
 			ids = append(ids, c.id)
 		}
-		out := map[string]interface{}{
+		out := addCounts(map[string]interface{}{
 			"mode":      "points",
 			"render":    "points",
 			"type":      featureType,
@@ -246,7 +280,7 @@ func (s *Server) HandleAPIFeaturesInBBox(w http.ResponseWriter, r *http.Request)
 			"count":     len(pts),
 			"total":     total,
 			"truncated": truncated,
-		}
+		})
 		// A FIRE IS A MOVEMENT, AND A DOT IS THE ONE THING IT IS NOT.
 		//
 		// The cheap rendering used to collapse each trajectory to its
@@ -305,7 +339,7 @@ func (s *Server) HandleAPIFeaturesInBBox(w http.ResponseWriter, r *http.Request)
 		internalError(w, "request failed", err)
 		return
 	}
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	json.NewEncoder(w).Encode(addCounts(map[string]interface{}{
 		"type":      "FeatureCollection",
 		"render":    "geometry",
 		"slim":      slim,
@@ -313,7 +347,7 @@ func (s *Server) HandleAPIFeaturesInBBox(w http.ResponseWriter, r *http.Request)
 		"count":     len(features),
 		"total":     total,
 		"truncated": truncated,
-	})
+	}))
 }
 
 // geoSlimAbove: how many features one answer may carry full properties for.

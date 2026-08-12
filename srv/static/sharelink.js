@@ -83,17 +83,30 @@
     }
 
     // ── server ───────────────────────────────────────────────────────────
-    function absolute(u) {
-        try { return new URL(u, window.location.href).toString(); } catch (e) { return u; }
+    //
+    // stripPwd is the CHOKEPOINT for the app's one credential. Every URL that
+    // enters this module — the long URL copied inside the click, a download
+    // href built with `?pwd=` so the anchor works, anything a caller hands to
+    // open() — passes through absolute(), so scrubbing here covers the paths
+    // no one thought about. A share link is a name; the reader authenticates
+    // as themselves (docs/agents/sharing.md).
+    function stripPwd(u) {
+        try {
+            var url = new URL(u, window.location.href);
+            url.searchParams.delete('pwd');
+            return url.toString();
+        } catch (e) { return u; }
     }
-    // shortURL builds what the user sees and copies. `pwd` rides along only
-    // when the current session itself is authenticated by query param —
-    // otherwise the recipient's own cookie answers for them, and a password in
-    // a URL is exactly what the guest link exists to avoid.
+    function absolute(u) {
+        try { return stripPwd(new URL(u, window.location.href).toString()); } catch (e) { return u; }
+    }
+    // shortURL builds what the user sees and copies. It never carries `pwd`:
+    // it used to, for a session authenticated by query param, on the theory
+    // that the recipient might need it — which is precisely backwards. The
+    // recipient's own cookie, password form or guest key answers for them, and
+    // a password in a URL is exactly what the guest link exists to avoid.
     function shortURL(slug, guest) {
-        var u = window.location.origin + '/s/' + slug;
-        if (!guest && pwd()) u += '?pwd=' + encodeURIComponent(pwd());
-        return u;
+        return window.location.origin + '/s/' + slug;
     }
 
     function create(url, opts) {

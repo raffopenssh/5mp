@@ -530,8 +530,19 @@
         // pin could not use this loader at all: neither the chord nor the slim
         // geometry rendering ships the property it filtered on.
         if (s.classification) qs.set('class', s.classification);
+        // The focus scope, so the layer draws what the panel counts. An AOI
+        // needs `aoi=` (it is excluded by default, for privacy and to stop it
+        // double-counting the parks it overlaps); a park needs `park_focus=`,
+        // NOT `park=`, which ParkIDMiddleware 404s for an AOI id — one
+        // parameter name per kind, chosen by focusScopeParam in globe.html so
+        // this cannot drift from what the stats call sends.
         var scopeAOI = s.aoi || (typeof aoiFocusID !== 'undefined' ? aoiFocusID : null);
-        if (scopeAOI) qs.set('aoi', scopeAOI);
+        if (scopeAOI) {
+            var isAoiScope = typeof focusIsAOI === 'function'
+                ? focusIsAOI(scopeAOI)
+                : true;   // pre-park-focus behaviour, if globe.html is older
+            qs.set(isAoiScope ? 'aoi' : 'park_focus', scopeAOI);
+        }
 
         try {
             var res = await fetch('/api/features-in-bbox?' + qs, { signal: ctrl.signal });
@@ -548,6 +559,18 @@
             s.lastTruncated = !!d.truncated;
             s.count = d.count || 0;
             s.total = d.total || 0;
+            // WHAT THE COUNT IS A COUNT OF. A settlement is a cluster of
+            // built-up footprints, and feature_geometries holds the
+            // footprints: Chinko is 35 polygons and 27 settlements. The
+            // readout used to print the polygon count beside the word
+            // "settlements", disagreeing by a third with the panel and the
+            // popup, both of which count clusters. The server now names its
+            // unit and ships both numbers; carrying them here is what lets the
+            // row say "27 settlements (35 footprints)" instead of picking one
+            // and hoping.
+            s.unit = d.unit || 'features';
+            s.groups = (typeof d.groups === 'number') ? d.groups : null;
+            s.groupUnit = d.group_unit || '';
             if (s.onCount) s.onCount(s.count, s.total, render, d.truncated);
             // One event, so anything that shows this layer's state (the stats
             // row, a pinned chip) is told rather than polling.
@@ -555,6 +578,7 @@
                 window.dispatchEvent(new CustomEvent('lod:state', {
                     detail: { key: key, render: render, count: s.count,
                               total: s.total, truncated: !!d.truncated,
+                              unit: s.unit, groups: s.groups, group_unit: s.groupUnit,
                               detail_mode: s.detail || 'auto' }
                 }));
             } catch (e) {}
