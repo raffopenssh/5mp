@@ -299,10 +299,13 @@ func (s *Server) runGeoPackageJob(id, path string, o gpkgExportOpts, isAOI bool)
 			fmt.Sprintf("%d%% — writing %s", int(frac*100), label))
 	}
 
-	stats, err := s.buildAreaGeoPackage(path, o)
+	// A view export answers a different question with the same machinery; it is
+	// not the area export plus a filter, so it is a different builder.
+	build := s.buildAreaGeoPackage
 	if o.View != nil {
-		stats, err = s.buildViewGeoPackage(path, o)
+		build = s.buildViewGeoPackage
 	}
+	stats, err := build(path, o)
 	if err != nil {
 		os.Remove(path)
 		s.failGeoPackageJob(id, o, err.Error())
