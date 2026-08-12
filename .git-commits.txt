@@ -1,3 +1,5 @@
+b5ee215 2026-08-12 13:13:43 Animator: one heat field for fire and patrol, a spread that is spread, and a viewport that re-asks
+5d28eff 2026-08-12 12:36:47 chore: refresh version history
 a744392 2026-08-12 12:36:24 Animator: the fire grid is a heat field, not a pulse
 0630e5f 2026-08-12 11:48:04 chore: refresh version history
 430d16c 2026-08-12 11:47:50 A click selects; the selection is a place, and it is in the link
@@ -16,5 +18,3 @@ a4d2381 2026-08-12 07:28:20 docs: handover for the LOD / paused-animation-export
 f8438b8 2026-08-12 07:22:04 Viewport features: streamed spread-select, LOD auto mode, view GeoPackage
 4eddac4 2026-08-10 08:28:50 maptip: arbitrate backdrop tips by priority, not draw order
 fe6edbe 2026-08-10 08:09:36 Export menu: an explicit copy-link button per row
-e950555 2026-08-10 07:57:22 geology: commodity chips are independent toggles, union of hosts, in share link
-e6edbeb 2026-08-10 07:56:30 Export menu: drop <a download>, name files from Content-Disposition
