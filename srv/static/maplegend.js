@@ -61,6 +61,15 @@
             });
     }
 
+    /* The catalogue's 1-3 affinity grade in words. One definition for the
+     * matrix, the floor and the tips: three wordings for one scale is how a
+     * reader concludes they are three scales. */
+    var WEIGHT_WHY = {
+        1: 'a weak or derived association \u2014 placer ground downstream of a lode, or a unit that merely sits inside the belt',
+        2: 'a plausible host',
+        3: 'the classic host rock'
+    };
+
     function histOn() { return typeof HistMap !== 'undefined' && HistMap.isOn(); }
     function histMeta() { return (typeof HistMap !== 'undefined' && HistMap.meta()) || null; }
     function geoOn() { return typeof GeoMap !== 'undefined' && GeoMap.anyOn(); }
@@ -130,43 +139,82 @@
         var cv = map.getCanvas();
         var w = cv.clientWidth || cv.width, h = cv.clientHeight || cv.height;
         if (!w || !h) { coverage = null; return; }
-        // ~200 samples whatever the viewport. Sampling error can move a swatch
-        // one place at the tail; it cannot move one at the head, which is the
-        // part of the order anybody reads.
+
+        // ── WHAT IS DRAWN, exhaustively ──────────────────────────────────
+        //
+        // The key used to be BUILT from the sample, and a sample is a corner,
+        // not an inventory: a formation narrower than the ~40 px grid spacing
+        // was painted on the map and absent from the legend beside it — the
+        // reader sees an orange belt with no orange swatch and cannot switch
+        // it off, which is the app's standing "a truncated answer must
+        // announce itself" failure in its purest form.
+        //
+        // So the SET comes from an unfiltered queryRenderedFeatures over the
+        // whole viewport, which returns every feature actually rendered, and
+        // the grid sample is demoted to what it can honestly do: say how much
+        // of the view each one covers, for ORDER and for the tooltip.
+        var present = {}, lithHits = {};
+        try {
+            (map.queryRenderedFeatures({ layers: layers }) || []).forEach(function (f) {
+                var sheet = String((f.layer && f.layer.id) || '').replace('geomap-fill-', '');
+                var cls = GeoMap.classOf(sheet, (f.properties || {}).code);
+                if (!cls) return;
+                var age = cls.age || 'unknown';
+                present[age] = (present[age] || 0) + 1;
+                var lk = age + '|' + (cls.lith || 'mixed');
+                lithHits[lk] = (lithHits[lk] || 0) + 1;
+            });
+        } catch (e) { coverage = null; return; }
+
+        // ── HOW MUCH of the view each covers ─────────────────────────────
+        //
+        // ~200 point queries, which is cheap on `idle` and wasteful per frame.
+        // Sampling error can move a swatch one place at the tail; it cannot
+        // move one at the head, which is the part of the order anybody reads.
+        // It can no longer DROP one, which is the part that mattered.
         var step = Math.max(24, Math.ceil(Math.sqrt((w * h) / 200)));
-        var byAge = {}, lithHits = {}, hits = 0, samples = 0;
+        var byAge = {}, hits = 0, samples = 0;
         for (var y = step / 2; y < h; y += step) {
             for (var x = step / 2; x < w; x += step) {
                 samples++;
                 var f;
                 try { f = map.queryRenderedFeatures([x, y], { layers: layers })[0]; }
-                catch (e) { coverage = null; return; }
+                catch (e2) { break; }
                 if (!f) continue;
-                var sheet = String((f.layer && f.layer.id) || '').replace('geomap-fill-', '');
-                var cls = GeoMap.classOf(sheet, (f.properties || {}).code);
-                if (!cls) continue;
-                var age = cls.age || 'unknown';
-                byAge[age] = (byAge[age] || 0) + 1;
+                var sh2 = String((f.layer && f.layer.id) || '').replace('geomap-fill-', '');
+                var c2 = GeoMap.classOf(sh2, (f.properties || {}).code);
+                if (!c2) continue;
+                byAge[c2.age || 'unknown'] = (byAge[c2.age || 'unknown'] || 0) + 1;
                 hits++;
                 // The ornament shown for an age is the lithology covering most
-                // of the view under it, not the first class that happened to
-                // be listed — same rule as the order itself.
-                var lk = age + '|' + (cls.lith || 'mixed');
-                lithHits[lk] = (lithHits[lk] || 0) + 1;
+                // of the view under it, weighted by the sample where we have
+                // one — falling back to the feature count for a unit too thin
+                // to be sampled at all.
+                var lk2 = (c2.age || 'unknown') + '|' + (c2.lith || 'mixed');
+                lithHits[lk2] = (lithHits[lk2] || 0) + 200;
             }
         }
+        // Every age that is drawn gets an entry, sampled or not. A zero here
+        // means "too thin for the sample", never "not on the map" — the
+        // difference the old code could not express.
+        Object.keys(present).forEach(function (a) { if (!byAge[a]) byAge[a] = 0; });
+
         var lith = {};
         Object.keys(lithHits).forEach(function (k) {
             var i = k.indexOf('|'), age = k.slice(0, i), l = k.slice(i + 1);
             if (!lith[age] || lithHits[k] > lithHits[age + '|' + lith[age]]) lith[age] = l;
         });
-        coverage = { byAge: byAge, lith: lith, hits: hits, samples: samples };
+        coverage = { byAge: byAge, lith: lith, hits: hits, samples: samples,
+                     drawn: Object.keys(present).length };
     }
 
     /* The layer is on but none of it is in this view — the ordinary case for
      * most of Africa, since three sheets cover three countries. A chip with no
-     * key beside it otherwise reads as a broken layer, so the strip says so. */
-    function geoOffView() { return !!(geoOn() && coverage && coverage.hits === 0); }
+     * key beside it otherwise reads as a broken layer, so the strip says so.
+     * "Nothing drawn", not "nothing sampled": a single thin unit in the corner
+     * is in view, and saying otherwise would be wrong in the same direction as
+     * the missing swatch. */
+    function geoOffView() { return !!(geoOn() && coverage && !coverage.drawn); }
 
     /* ── The key, made operable ──────────────────────────────────────────
      *
@@ -188,7 +236,13 @@
      *  - CLAIM COMPLETENESS. "+n" is still a truncation, so it expands
      *    rather than only pointing at Map settings.
      */
-    var MAX = 8;
+    // How many periods the key shows before it collapses the rest behind "+n".
+    // Ten, not eight: the strip spans the panel and the row was ending well
+    // short of it, so the cap was throwing away swatches for space that was
+    // there. Ten still fits a 360 px phone (26 px targets, wrapping to two
+    // rows at worst) and covers every view we have measured except the widest
+    // three-sheet zoom-outs, where "+n" is the honest answer anyway.
+    var MAX = 10;
     var expanded = false;      // "+n" opened: show every age, not just the head
     var swTimers = [];
     function cancelSwTimers() { swTimers.forEach(clearTimeout); swTimers = []; }
@@ -197,11 +251,11 @@
         if (typeof GeoMap === 'undefined' || !GeoMap.anyOn()) return [];
         var cov = coverage;
         var list = [];
-        if (cov && cov.hits) {
+        if (cov && cov.drawn) {
             list = Object.keys(cov.byAge).map(function (k) {
                 return { key: k, hits: cov.byAge[k], meta: GeoMap.age(k),
                          lith: cov.lith[k] || 'mixed', on: true,
-                         pct: Math.round(100 * cov.byAge[k] / cov.samples) };
+                         pct: cov.samples ? Math.round(100 * cov.byAge[k] / cov.samples) : 0 };
             });
             // Coverage descending; ICS rank breaks a tie, so two ages sampled
             // the same do not swap places between renders.
@@ -229,9 +283,13 @@
             : 'background:' + esc(e.meta.color) + ';';
         // A share of the VIEW, not an area: the sample cannot support a km²
         // and the tooltip must not imply one.
-        var where = e.on
-            ? (e.pct >= 1 ? ' \u2014 about ' + e.pct + '% of this view' : ' \u2014 under 1% of this view')
-            : ' \u2014 hidden';
+        // A unit too thin for the ~40 px sample grid gets no percentage at
+        // all rather than "0%" or a rounded-up "1%": it IS drawn (the set
+        // comes from the rendered features), we simply cannot say how much.
+        var where = !e.on ? ' \u2014 hidden'
+            : (e.hits === 0 ? ' \u2014 a thin unit in this view'
+            : (e.pct >= 1 ? ' \u2014 about ' + e.pct + '% of this view'
+                          : ' \u2014 under 1% of this view'));
         var title = e.meta.label + where + (e.on ? ' \u2014 tap to hide' : ' \u2014 tap to show again');
         return '<button type="button" class="ml-sw' + (e.on ? '' : ' off') +
             (collapsible ? ' ml-sw-x' : '') + '" aria-pressed="' + (!e.on) +
@@ -241,14 +299,80 @@
             '<i style="' + bg + '"></i></button>';
     }
 
+    /* ── Which of these colours answers which question ──────────────────
+     *
+     * With "cobalt + copper" selected, the key is a row of five colours and
+     * the chip says the two words — but nothing joins them. The reader cannot
+     * tell which of those five is the cobalt ground and which the copper, and
+     * where they OVERLAP (which is the interesting part: a unit that hosts
+     * both is the one worth walking) there is nothing to see at all.
+     *
+     * So each selected commodity gets a bracket under the swatches it covers,
+     * the way a printed legend braces a group. Overlaps are visible as two
+     * brackets over the same swatch, which is exactly the statement.
+     *
+     * The ages are ordered so a commodity's swatches sit TOGETHER (grouped by
+     * which set of commodities they answer, coverage breaking the tie), so a
+     * bracket is normally one run; where it genuinely is not, it draws as two
+     * segments rather than lying about contiguity.
+     */
+    function commodityAgeMap(keys) {
+        var out = {};
+        if (typeof GeoMap === 'undefined' || !GeoMap.sheets()) return out;
+        var sheets = GeoMap.sheets(), min = GeoMap.minWeight ? GeoMap.minWeight() : 1;
+        keys.forEach(function (k) { out[k] = {}; });
+        (GeoMap.order() || []).forEach(function (id) {
+            if (!(sheets[id] || {}).available) return;
+            var stt = GeoMap.state(id);
+            (GeoMap.classes(id) || []).forEach(function (c) {
+                // Only units actually DRAWN: a bracket over a colour the map
+                // is not painting would be a legend for a different map.
+                var drawn = stt.isolate ? stt.isolate.has(c.code) : !stt.hidden.has(c.code);
+                if (!drawn || !GeoMap.ageOn(c.age)) return;
+                keys.forEach(function (k) {
+                    var w = GeoMap.commodityWeight(id, c.code, k);
+                    if (w >= min) out[k][c.age] = Math.max(out[k][c.age] || 0, w);
+                });
+            });
+        });
+        return out;
+    }
+
     function ageSwatches() {
         var list = ageEntries();
         if (!list.length) return '';
+
+        var comms = (typeof GeoMap !== 'undefined' && GeoMap.selectedCommodities)
+            ? Array.from(GeoMap.selectedCommodities()).sort() : [];
+        var cmap = comms.length ? commodityAgeMap(comms) : {};
+        // Drop a commodity that ends up bracketing nothing here: an empty
+        // bracket row is a claim about this view that is not true.
+        comms = comms.filter(function (k) { return Object.keys(cmap[k] || {}).length; });
+
+        if (comms.length) {
+            // Group by which commodities an age answers, so each bracket is a
+            // run. Coverage still orders inside a group, and the sample-blind
+            // (hits 0) ones stay where their group is rather than being
+            // scattered.
+            var sig = function (e) {
+                var m = 0;
+                comms.forEach(function (k, i) { if (cmap[k][e.key]) m |= (1 << i); });
+                return m;
+            };
+            list = list.slice().sort(function (a, b) {
+                return (sig(b) - sig(a)) || (b.hits - a.hits) ||
+                       ((a.meta.rank || 99) - (b.meta.rank || 99));
+            });
+        }
+
         var head = list.slice(0, MAX), tail = list.slice(MAX);
-        var html = head.map(function (e) { return swatchHTML(e, false); }).join('') +
-                   tail.map(function (e) { return swatchHTML(e, true); }).join('');
+        var cells = head.map(function (e) { return swatchHTML(e, false); }).join('') +
+                    tail.map(function (e) { return swatchHTML(e, true); }).join('');
+        var nCols = list.length;          // swatch columns, collapsed ones included
+        var extras = 0;
         if (tail.length) {
-            html += '<button type="button" class="ml-sw-more" id="ml-sw-more"' +
+            extras++;
+            cells += '<button type="button" class="ml-sw-more" id="ml-sw-more"' +
                 ' aria-expanded="' + expanded + '"' +
                 ' title="' + (expanded ? 'Show fewer periods'
                     : tail.length + ' more period(s), each covering less of this view \u2014 tap to show them') + '"' +
@@ -258,11 +382,55 @@
         // The way back. Only present once something is hidden, so the default
         // key carries no chrome — same rule as the strip itself.
         if (typeof GeoMap !== 'undefined' && GeoMap.agesOff && GeoMap.agesOff().size) {
-            html += '<button type="button" class="ml-sw-all" title="Show every period again"' +
+            extras++;
+            cells += '<button type="button" class="ml-sw-all" title="Show every period again"' +
                 ' onclick="event.stopPropagation();MapLegend.showAllAges()">all</button>';
         }
-        return '<div class="ml-swatches" aria-label="Geology legend, most of this view first \u2014 tap a period to hide it">' +
-            html + '</div>';
+
+        var rows = '';
+        comms.forEach(function (k, ri) {
+            // Only over columns the reader can actually see: a bracket across
+            // a collapsed (zero-width) swatch would point at nothing.
+            var visN = expanded ? nCols : Math.min(nCols, MAX);
+            var members = [];
+            for (var i = 0; i < visN; i++) if (cmap[k][list[i].key]) members.push(i);
+            if (!members.length) return;
+            var segs = [], start = members[0], prev = members[0];
+            members.slice(1).forEach(function (i) {
+                if (i !== prev + 1) { segs.push([start, prev]); start = i; }
+                prev = i;
+            });
+            segs.push([start, prev]);
+            var best = 0;
+            members.forEach(function (i) { best = Math.max(best, cmap[k][list[i].key]); });
+            var gr = ri + 2;
+            rows += segs.map(function (sg) {
+                return '<span class="ml-br g' + best + '" style="grid-row:' + gr +
+                    ';grid-column:' + (sg[0] + 1) + '/' + (sg[1] + 2) + '"></span>';
+            }).join('');
+            var lastCol = segs[segs.length - 1][1] + 2;
+            // The label is also the way OUT of that commodity. With two
+            // selected, "show me the copper too" needs an undo that does not
+            // mean "clear everything": the chip's menu could only offer the
+            // whole selection, and the bracket is where the reader is already
+            // looking when they decide one of the two was a mistake.
+            rows += '<button type="button" class="ml-br-lbl" style="grid-row:' + gr +
+                ';grid-column:' + lastCol + '/-1" title="' +
+                esc(k.replace(/_/g, ' ') + ': ' + members.length + ' period(s) drawn here' +
+                    (best === 3 ? ', classic host' : best === 2 ? ', likely host' : '') +
+                    ' \u2014 tap to stop showing ' + k.replace(/_/g, ' ')) + '"' +
+                ' aria-label="Stop showing ' + esc(k.replace(/_/g, ' ')) + ' hosts"' +
+                ' onclick="event.stopPropagation();MapLegend.geoCommodity(\'' + esc(k) + '\')">' +
+                esc(k.replace(/_/g, ' ')) + '<i>\u00d7</i></button>';
+        });
+
+        // One grid, so a bracket lines up with the swatch it braces without
+        // measuring anything: the swatches are the columns.
+        var style = 'grid-template-columns:repeat(' + nCols + ',auto)' +
+            (extras ? ' repeat(' + extras + ',max-content)' : '') + ';';
+        return '<div class="ml-swatches' + (rows ? ' braced' : '') + '" style="' + style + '"' +
+            ' aria-label="Geology legend, most of this view first \u2014 tap a period to hide it">' +
+            cells + rows + '</div>';
     }
 
     /* Collapsed swatches animate in the way the date-preset tags do: width and
@@ -410,6 +578,36 @@
         return out;
     }
 
+    /* ── What a commodity would actually DRAW ────────────────────────────
+     *
+     * The menu named eleven commodities and a count, which is a table of
+     * contents, not a legend: "gold 36" says nothing about what the map turns
+     * into, and the reader had to pick one to find out. Each row now carries
+     * the swatches of the ground it would draw — age colour wearing its FGDC
+     * ornament, exactly as on the polygon and in the key below — so the menu
+     * IS the legend for the choice it is offering.
+     *
+     * It follows the strength floor, because that is the whole point: raising
+     * the floor to `classic` drops gold from a dozen colours to the two
+     * greenstone units, and seeing that happen is what makes the control
+     * legible. Distinct by (age, lithology), most units first, capped like the
+     * strip's key with a +n rather than growing without bound.
+     */
+    /* Toggle one commodity without redrawing the world — geoCell() changes
+     * several at once and renders after. */
+    function geoCommodityRaw(k) {
+        if (typeof geoToggleCommodityAll === 'function') { geoToggleCommodityAll(k); return; }
+        if (typeof GeoMap === 'undefined') return;
+        var sheets = GeoMap.sheets() || {}, on = commodityOn(k);
+        (GeoMap.order() || []).forEach(function (id) {
+            if (!(sheets[id] || {}).available) return;
+            var has = (GeoMap.classes(id) || []).some(function (c) {
+                return (c.commodities || []).indexOf(k) >= 0;
+            });
+            if (has && GeoMap.commodityOn(id, k) === on) GeoMap.toggleCommodity(id, k);
+        });
+    }
+
     function commodityOn(k) {
         if (typeof GeoMap === 'undefined') return false;
         var sheets = GeoMap.sheets() || {};
@@ -418,12 +616,72 @@
         });
     }
 
+    /* ── THE AFFINITY MATRIX ─────────────────────────────────────────────
+     *
+     * The menu used to be three surfaces describing one thing: a list of
+     * eleven commodities, a strength ladder under it, and — in the strip
+     * outside — the age key with its brackets. Each held a piece of the same
+     * sentence ("cobalt is hosted by THIS ground, at THIS grade"), and the
+     * reader had to hold the other two in their head while reading one.
+     *
+     * So it is one object: rock across the top, commodity down the side, and
+     * the affinity in the cell. That is how this knowledge is written down in
+     * every economic-geology text, and it answers in one glance the three
+     * questions the three surfaces answered one at a time:
+     *
+     *   read a ROW    -> which ground hosts cobalt, and how well
+     *   read a COLUMN -> what this rock is prospective for (nothing else in
+     *                    the app could answer this at all)
+     *   read the GRID -> where two commodities share ground, which is the
+     *                    interesting case and was previously invisible
+     *
+     * The columns ARE the key strip's columns — the periods actually drawn in
+     * this view, in the same order, wearing the same swatch. The menu is
+     * therefore a legend for the map in front of the reader, not a catalogue
+     * of the dataset: a period not on screen is not a column, because "what is
+     * cobalt hosted by, in Sudan, in general" is not a question the map is
+     * being asked.
+     *
+     * Interaction, one meaning per target:
+     *   cell   -> show that commodity on that ground (and only that ground)
+     *   row    -> show that commodity on every ground it has
+     *   column -> hide that period, exactly as tapping its swatch in the key
+     *
+     * The grade is the cell's INK, not a number: ●●● full, ●● two-thirds, ●
+     * faint. The floor then reads as what it is — a threshold on the ink —
+     * and raising it visibly empties the weak half of the grid rather than
+     * changing a count somewhere else.
+     */
+
+    /* (age, commodity) -> best grade among the units actually drawn. */
+    function affinityGrid(ages) {
+        var g = {}, unitN = {};
+        if (typeof GeoMap === 'undefined' || !GeoMap.sheets()) return { g: g, n: unitN };
+        var sheets = GeoMap.sheets();
+        var want = {};
+        ages.forEach(function (a) { want[a] = true; });
+        (GeoMap.order() || []).forEach(function (id) {
+            if (!(sheets[id] || {}).available) return;
+            (GeoMap.classes(id) || []).forEach(function (c) {
+                if (!want[c.age]) return;
+                (c.commodities || []).forEach(function (k) {
+                    var w = GeoMap.commodityWeight(id, c.code, k);
+                    if (!w) return;
+                    var kk = k + '|' + c.age;
+                    g[kk] = Math.max(g[kk] || 0, w);
+                    unitN[kk] = (unitN[kk] || 0) + 1;
+                });
+            });
+        });
+        return { g: g, n: unitN };
+    }
+
     function openGeoMenu(btn) {
         var already = menuEl && menuEl.dataset.kind === 'geo';
         closeMenu();
         if (already) return;
         var el = document.createElement('div');
-        el.className = 'aoi-menu mode-menu ml-menu';
+        el.className = 'aoi-menu mode-menu ml-menu ml-menu-geo';
         el.dataset.kind = 'geo';
         el.setAttribute('role', 'menu');
         el.setAttribute('aria-label', 'Geology');
@@ -431,13 +689,23 @@
         var idx = commodityIndex();
         var keys = Object.keys(idx).sort();
         var anyOn = keys.some(commodityOn);
+        var min = GeoMap.minWeight ? GeoMap.minWeight() : 1;
 
-        var html = '<div class="mode-menu-head">Show only rock that can host</div>';
-        // "All units" is the cleared state and therefore a row, not a button:
-        // the absence of a filter is one of the states this menu chooses
-        // between, and hiding it behind a "clear" link makes it look like a
-        // repair rather than a choice.
-        html += '<button type="button" class="aoi-menu-item mode-opt' + (anyOn ? '' : ' on') +
+        // The columns are the key strip's columns: the periods DRAWN in this
+        // view, most of it first. Capped, because a matrix wider than the menu
+        // is a horizontal scroll nobody finds — and the cap announces itself.
+        var COLS = 7;
+        var drawn = ageEntries().filter(function (e) { return e.on; });
+        var cols = drawn.slice(0, COLS);
+        var colExtra = drawn.length - cols.length;
+        var ages = cols.map(function (c) { return c.key; });
+        var A = affinityGrid(ages);
+
+        var html = '';
+
+        // "All units" stays a row, not a "clear" link: the absence of a filter
+        // is one of the states this menu chooses between.
+        html += '<button type="button" class="aoi-menu-item mode-opt ml-allrow' + (anyOn ? '' : ' on') +
             '" role="menuitemradio" aria-checked="' + (!anyOn) + '" ' +
             'title="Draw every mapped unit" ' +
             'onclick="event.stopPropagation();MapLegend.geoAll()">' +
@@ -445,70 +713,163 @@
 
         if (!keys.length) {
             html += '<div class="mode-menu-note">No sheet installed here lists a commodity affinity.</div>';
+            el.innerHTML = html + tailRows();
+            place(el, btn);
+            return;
         }
-        keys.forEach(function (k) {
-            var on = commodityOn(k);
-            html += '<button type="button" class="aoi-menu-item mode-opt' + (on ? ' on' : '') +
-                '" role="menuitemcheckbox" aria-checked="' + on + '" ' +
-                'title="' + esc((on ? 'Stop showing' : 'Also show') + ' the ' + idx[k] +
-                    ' unit(s) whose rock type can host ' + k.replace(/_/g, ' ')) + '" ' +
-                'onclick="event.stopPropagation();MapLegend.geoCommodity(\'' + esc(k) + '\')">' +
-                '<span class="mode-mark check"></span><i class="icon-gem ml-mi"></i>' +
-                esc(k.replace(/_/g, ' ')) + '<em class="ml-n">' + idx[k] + '</em></button>';
+
+        if (!cols.length) {
+            // Nothing drawn here: the matrix would be a grid of empty cells,
+            // which reads as "nothing is prospective" rather than as "no rock
+            // is on screen". Say the true thing instead.
+            html += '<div class="mode-menu-note">No mapped sheet reaches this view, so there is ' +
+                'no rock here to describe. Pan to Sudan, the CAR or Tanzania.</div>';
+            el.innerHTML = html + tailRows();
+            place(el, btn);
+            return;
+        }
+
+        html += '<div class="mode-menu-head ml-mx-head">What each rock can host' +
+            '<em>rock across, commodity down</em></div>';
+        html += '<div class="ml-mx" style="grid-template-columns:minmax(66px,1fr) repeat(' +
+            cols.length + ',22px) auto;">';
+
+        // Column headers: the age swatch itself, so the matrix and the key
+        // strip are visibly the same columns. Tapping one hides that period —
+        // the same gesture as tapping it in the strip, because it is the same
+        // thing.
+        html += '<span class="ml-mx-corner"></span>';
+        cols.forEach(function (c) {
+            var bg = (typeof GeoPatterns !== 'undefined')
+                ? 'background-image:' + GeoPatterns.swatchCSS(c.lith, c.meta.color) + ';background-size:18px 18px;'
+                : 'background:' + esc(c.meta.color) + ';';
+            html += '<button type="button" class="ml-mx-col" title="' +
+                esc(c.meta.label + ' \u2014 tap to hide this period') + '"' +
+                ' aria-label="' + esc(c.meta.label) + ', hide"' +
+                ' onclick="event.stopPropagation();MapLegend.toggleAge(\'' + esc(c.key) + '\')">' +
+                '<i style="' + bg + '"></i></button>';
+        });
+        html += '<span class="ml-mx-corner">' +
+            (colExtra ? '<b title="' + colExtra + ' more period(s) drawn here than fit this table \u2014 ' +
+                'the key strip below the chip lists them all">+' + colExtra + '</b>' : '') + '</span>';
+
+        // One row per commodity. Ordered by how much of THIS view answers it
+        // (cells present, then grade), not alphabetically: a menu sorted by
+        // the alphabet is a dictionary, and the reader is asking what is under
+        // them, not what starts with 'c'.
+        var rows = keys.map(function (k) {
+            var cells = 0, best = 0;
+            ages.forEach(function (a) {
+                var w = A.g[k + '|' + a] || 0;
+                if (w >= min) { cells++; best = Math.max(best, w); }
+            });
+            return { k: k, cells: cells, best: best };
+        });
+        rows.sort(function (a, b) {
+            return (b.best - a.best) || (b.cells - a.cells) || a.k.localeCompare(b.k);
         });
 
-        // The disclaimer is not optional and not a footnote elsewhere: this is
-        // an inference over lithology, and every surface that offers it says
-        // so. See docs/agents/overlays.md.
-        /* ── How strong an affinity has to count ───────────────────────────
-         *
-         * Only once something is selected, because a floor with nothing to
-         * filter is a control with no referent. "gold" is 36 units across
-         * three sheets and 21 of them are weight 1 — placer ground downstream
-         * of a lode, a quartzite that happens to sit in the belt. Shown flat,
-         * the map says "gold is everywhere", which is the opposite of the
-         * question. The floor is the one gesture that drops them.
-         *
-         * The counts are DERIVED (never typed): each level says how many units
-         * it would leave, so the reader sees the cost of the choice before
-         * making it, and a level that would leave nothing is refused rather
-         * than offered.
-         */
-        if (anyOn && typeof GeoMap !== 'undefined' && GeoMap.weightCounts) {
-            var n = GeoMap.weightCounts();
-            var cur = GeoMap.minWeight();
-            var LV = [[1, 'any', 'Every unit whose rock type is associated with it at all, including weak and derived ones (placer ground downstream of a lode).'],
-                      [2, 'likely', 'Plausible hosts and better \u2014 drops weak and derived associations.'],
-                      [3, 'classic', 'Only the textbook host rock for it.']];
-            html += '<div class="mode-menu-head">How strong an affinity counts</div>';
-            html += '<div class="ml-wrow" role="group" aria-label="Minimum strength of affinity">';
-            LV.forEach(function (lv) {
-                var dead = !n[lv[0]];
-                html += '<button type="button" class="ml-wlv' + (cur === lv[0] ? ' on' : '') +
-                    (dead ? ' dead' : '') + '" aria-pressed="' + (cur === lv[0]) + '"' +
-                    ' title="' + esc(lv[2] + (dead ? ' \u2014 no unit in this selection qualifies.'
-                                                   : ' ' + n[lv[0]] + ' unit(s).')) + '"' +
-                    ' onclick="event.stopPropagation();MapLegend.geoMinWeight(' + lv[0] + ')">' +
-                    esc(lv[1]) + '<em>' + n[lv[0]] + '</em></button>';
+        rows.forEach(function (r) {
+            var k = r.k, on = commodityOn(k);
+            // A commodity with nothing on screen keeps its row, greyed: an
+            // absent row reads as "no sheet here mentions cobalt", which is a
+            // different and wrong statement.
+            html += '<button type="button" class="ml-mx-row' + (on ? ' on' : '') +
+                (r.cells ? '' : ' dead') + '" role="menuitemcheckbox" aria-checked="' + on + '"' +
+                ' title="' + esc(r.cells
+                    ? (on ? 'Stop showing' : 'Show') + ' every unit that can host ' +
+                      k.replace(/_/g, ' ') + ' (' + idx[k] + ' unit(s) on these sheets)'
+                    : 'Nothing drawn in this view is graded a host for ' + k.replace(/_/g, ' ') +
+                      ' at this strength') + '"' +
+                ' onclick="event.stopPropagation();MapLegend.geoCommodity(\'' + esc(k) + '\')">' +
+                '<span class="mode-mark check"></span>' + esc(k.replace(/_/g, ' ')) + '</button>';
+            ages.forEach(function (a) {
+                var w = A.g[k + '|' + a] || 0;
+                var n = A.n[k + '|' + a] || 0;
+                var faded = w && w < min;
+                if (!w) {
+                    html += '<span class="ml-mx-cell empty" aria-hidden="true"></span>';
+                    return;
+                }
+                var meta = GeoMap.age(a);
+                html += '<button type="button" class="ml-mx-cell g' + w + (faded ? ' below' : '') +
+                    (on ? ' on' : '') + '"' +
+                    ' title="' + esc(meta.label + ' \u2014 ' + WEIGHT_WHY[w] + ' for ' +
+                        k.replace(/_/g, ' ') + ' (' + n + ' unit(s))' +
+                        (faded ? '. Below the strength floor, so it is not drawn.'
+                               : '. Tap to show just this ground.')) + '"' +
+                    ' aria-label="' + esc(k.replace(/_/g, ' ') + ', ' + meta.label + ', grade ' + w) + '"' +
+                    ' onclick="event.stopPropagation();MapLegend.geoCell(\'' + esc(k) + '\',\'' +
+                        esc(a) + '\',' + w + ')"><i></i></button>';
             });
-            html += '</div>';
-        }
+            html += '<em class="ml-mx-n">' + idx[k] + '</em>';
+        });
+        html += '</div>';
 
-        if (keys.length) {
-            html += '<div class="mode-menu-note">An inference from rock type \u2014 nothing here ' +
-                'counts, ranks or locates a deposit.</div>';
-        }
+        /* The floor, as a threshold on the ink the reader has just been
+         * looking at. Always present now, not only once something is
+         * selected: it is the legend for the cells (what a full dot means)
+         * as much as it is a control, and a grid whose ink is unexplained is
+         * the picture-of-a-legend failure again. */
+        var n = GeoMap.weightCounts ? GeoMap.weightCounts() : null;
+        html += '<div class="ml-grade" role="radiogroup" aria-label="Minimum strength of affinity">';
+        html += '<span class="ml-grade-lbl">count as a host</span>';
+        [[1, 'any'], [2, 'likely'], [3, 'classic']].forEach(function (lv) {
+            var w = lv[0];
+            var dead = anyOn && n && !n[w];
+            html += '<button type="button" class="ml-grade-b' + (min === w ? ' on' : '') +
+                (dead ? ' dead' : '') + '" role="radio" aria-checked="' + (min === w) + '"' +
+                ' title="' + esc(WEIGHT_WHY[w] + (anyOn && n
+                    ? (dead ? '. No unit in this selection is graded that highly.'
+                            : '. Leaves ' + n[w] + ' unit(s).') : '')) + '"' +
+                ' onclick="event.stopPropagation();MapLegend.geoMinWeight(' + w + ')">' +
+                '<span class="ml-grade-dot g' + w + '"><i></i></span>' + esc(lv[1]) +
+                (anyOn && n ? '<em>' + n[w] + '</em>' : '') + '</button>';
+        });
+        html += '</div>';
 
-        html += '<button type="button" class="aoi-menu-item ml-more" ' +
+        /* ── Contacts ──────────────────────────────────────────────────
+         *
+         * The matrix answers "which rock", and the honest next question is
+         * "where do two of them MEET" — a granite/greenstone contact is the
+         * classic orogenic-gold setting, and it is a property of the BOUNDARY,
+         * not of either unit. The polygons carry those boundaries already
+         * (528 unit pairs share an edge on the Sudan sheet alone), so this is
+         * a real layer waiting to be built, not a wish.
+         *
+         * It ships DISABLED and says so, rather than being absent: the row is
+         * where the reader will look for it, and a `refused` row that explains
+         * itself is this menu's existing idiom for "real, not here yet". It
+         * will not be enabled until the contact geometry is derived in the
+         * build (scripts/geomaps/) and served like any other unit attribute —
+         * computing 500+ pairwise boundary intersections in the browser on
+         * every pan is exactly the sort of thing that would ship as a hang.
+         */
+        html += '<button type="button" class="aoi-menu-item mode-opt refused ml-contact"' +
+            ' role="menuitemcheckbox" aria-checked="false" aria-disabled="true"' +
+            ' title="Where two units meet \u2014 a granite/greenstone contact is the classic' +
+            ' orogenic-gold setting, and it belongs to the boundary rather than to either rock.' +
+            ' Not built yet: the contacts have to be derived in the sheet build, not in the browser."' +
+            ' onclick="event.stopPropagation();">' +
+            '<span class="mode-mark check"></span><i class="icon-git-merge ml-mi"></i>' +
+            'Contact zones<em class="ml-n">soon</em></button>';
+
+        html += '<div class="mode-menu-note">An inference from rock type \u2014 nothing here ' +
+            'counts, ranks or locates a deposit.</div>';
+
+        el.innerHTML = html + tailRows();
+        place(el, btn);
+    }
+
+    /* The two rows every version of this menu ends with. */
+    function tailRows() {
+        return '<button type="button" class="aoi-menu-item ml-more" ' +
             'onclick="event.stopPropagation();MapLegend.toggleGeo()">' +
-            '<i class="icon-eye-off ml-mi"></i>Hide geology</button>';
-        html += '<button type="button" class="aoi-menu-item ml-more" ' +
+            '<i class="icon-eye-off ml-mi"></i>Hide geology</button>' +
+            '<button type="button" class="aoi-menu-item ml-more" ' +
             'onclick="event.stopPropagation();MapLegend.openSettings()">' +
             '<i class="icon-sliders-horizontal ml-mi"></i>Map settings\u2026' +
             '<em>full legend, opacity</em></button>';
-
-        el.innerHTML = html;
-        place(el, btn);
     }
 
     // ---------------------------------------------------------------
@@ -616,6 +977,36 @@
             // pick makes the comparison three round trips.
             var btn = document.querySelector('#stats-map .ml-chip.geo');
             if (btn && menuEl && menuEl.dataset.kind === 'geo') { closeMenu(); openGeoMenu(btn); }
+        },
+
+        /* A CELL is the matrix's own gesture: "show me the cobalt-hosting
+         * ground, but only the Palaeoproterozoic of it". Neither of the other
+         * two targets can express it — the row is every period, the column is
+         * every commodity — and it is the question a reader actually has once
+         * they can see that cobalt spans four periods at three grades.
+         *
+         * It is built out of the pieces that already exist, deliberately: the
+         * commodity selection is replaced with this one commodity (so the
+         * chip, the brackets and the share link all stay true), and the age
+         * filter is set to that single period. No fourth kind of state. */
+        geoCell: function (k, age, w) {
+            if (typeof GeoMap === 'undefined') return;
+            var cur = GeoMap.selectedCommodities();
+            var soloAlready = cur.size === 1 && cur.has(k) &&
+                GeoMap.agesOff().size && GeoMap.ageOn(age) &&
+                ageEntries().filter(function (e) { return e.on; }).length === 1;
+            if (soloAlready) {          // second tap on the same cell = back out
+                GeoMap.showEverything();
+            } else {
+                if (w < GeoMap.minWeight()) GeoMap.setMinWeight(w);
+                cur.forEach(function (c) { if (c !== k) geoCommodityRaw(c); });
+                if (!commodityOn(k)) geoCommodityRaw(k);
+                GeoMap.soloAge(age, ageEntries().map(function (e) { return e.key; }));
+            }
+            if (typeof renderGeoMapPanel === 'function') renderGeoMapPanel();
+            render();
+            var btn = document.querySelector('#stats-map .ml-chip.geo');
+            if (btn) { closeMenu(); openGeoMenu(btn); }
         },
 
         showAllAges: function () {

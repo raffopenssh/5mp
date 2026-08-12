@@ -289,37 +289,48 @@
 
         /* The age key: ICS colour wearing its FGDC ornament, so a swatch means
            the same thing here as in the full legend and on the polygon. */
-        .ml-swatches { display: flex; align-items: center; gap: 3px; flex-wrap: wrap;
-            padding: 5px 8px 0; }
-        /* Each swatch is a SWITCH, not a picture: tapping a period hides it.
-           A hidden one stays in the strip, struck through and greyed — it is
-           the only way back, and the coverage sample cannot see a unit that is
-           no longer drawn. 15x12 here, 26px on touch (below). */
-        .ml-sw { position: relative; width: 15px; height: 12px; padding: 2px 1px; flex: none;
+        /* ── The key ────────────────────────────────────────────────────
+           A GRID, not a flex row: a bracket has to line up with the swatch it
+           braces, and making the swatches the columns removes all measurement
+           from that problem.
+
+           The swatch is 19x12 rather than 13x8 because it carries the FGDC
+           ornament, and an ornament that cannot be resolved is not a key, it
+           is dirt on the colour — two units of the same age then read as two
+           different ages. Below this size the ornament is dropped instead of
+           shrunk (see .ml-cs, the menu rows). */
+        .ml-swatches { display: grid; justify-content: start; align-items: center;
+            gap: 4px; padding: 6px 8px 0; }
+        .ml-swatches.braced { row-gap: 2px; padding-bottom: 3px; }
+        .ml-sw { position: relative; width: 21px; height: 16px; padding: 2px 1px; flex: none;
             border: 0; background: none; cursor: pointer; display: inline-flex;
-            align-items: center; justify-content: center; border-radius: 3px;
+            align-items: center; justify-content: center; border-radius: 4px;
             -webkit-tap-highlight-color: transparent;
-            transition: background 0.15s, opacity 0.2s ease,
-                        max-width 0.25s cubic-bezier(.4,0,.2,1),
-                        padding 0.25s cubic-bezier(.4,0,.2,1),
-                        margin 0.25s cubic-bezier(.4,0,.2,1); }
-        .ml-sw > i { width: 13px; height: 8px; border-radius: 2px; display: block;
-            border: 1px solid rgba(0,0,0,0.45); background-size: 16px 16px;
+            transition: background 0.15s, opacity 0.2s ease, transform 0.15s ease,
+                        max-width 0.28s cubic-bezier(.34,1.4,.64,1),
+                        padding 0.28s cubic-bezier(.34,1.4,.64,1),
+                        margin 0.28s cubic-bezier(.34,1.4,.64,1); }
+        .ml-sw > i { width: 19px; height: 12px; border-radius: 3px; display: block;
+            border: 1px solid rgba(0,0,0,0.5); background-size: 19px 19px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.18);
             transition: opacity 0.15s, filter 0.15s; }
-        .ml-sw:hover, .ml-sw:focus-visible { background: rgba(255,255,255,0.12); outline: none; }
-        .ml-sw.off > i { opacity: 0.32; filter: grayscale(1); }
+        .ml-sw:hover, .ml-sw:focus-visible { background: rgba(255,255,255,0.13); outline: none; }
+        .ml-sw:hover { transform: translateY(-1px); }
+        .ml-sw:active { transform: translateY(0) scale(0.94); }
+        /* Hidden: greyed, shrunk and struck through. Three signals because
+           this one has to survive a colour-blind reader and a phone in
+           sunlight — it is the only way back to a period they switched off. */
+        .ml-sw.off > i { opacity: 0.25; filter: grayscale(1); transform: scaleY(0.72); }
         .ml-sw.off::after { content: ''; position: absolute; left: 1px; right: 1px; top: 50%;
-            height: 1px; background: rgba(255,255,255,0.5); transform: rotate(-15deg); }
-        /* Swatches past the head of the list are collapsed behind "+n" and
-           animate open the way the date-preset tags do: width and opacity,
-           staggered, so the strip grows instead of jumping. */
+            height: 1px; background: rgba(255,255,255,0.45); transform: rotate(-14deg); }
+        /* Collapsed behind "+n", opening with the date-preset tags' stagger. */
         .ml-sw.ml-sw-x { max-width: 0; padding: 0; opacity: 0; overflow: hidden;
-            pointer-events: none; margin: 0 -1.5px; }
-        .ml-sw.ml-sw-x.visible { max-width: 15px; padding: 2px 1px; opacity: 1;
+            pointer-events: none; margin: 0 -2px; }
+        .ml-sw.ml-sw-x.visible { max-width: 21px; padding: 2px 1px; opacity: 1;
             pointer-events: auto; margin: 0; }
         .ml-sw-more, .ml-sw-all { font-size: 9px; color: #6b7280; font-family: inherit;
             background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12);
-            border-radius: 3px; padding: 1px 4px; line-height: 1.3; cursor: pointer; flex: none;
+            border-radius: 4px; padding: 2px 5px; line-height: 1.3; cursor: pointer; flex: none;
             -webkit-tap-highlight-color: transparent;
             transition: background 0.15s, border-color 0.15s, color 0.15s; }
         .ml-sw-more:hover, .ml-sw-all:hover,
@@ -327,6 +338,36 @@
             background: rgba(251,191,36,0.12); border-color: rgba(251,191,36,0.4);
             color: #fcd34d; outline: none; }
         .ml-sw-all { color: #fcd34d; border-color: rgba(251,191,36,0.35); }
+
+        /* ── Which colours answer which question ───────────────────────────
+           With "cobalt + copper" selected the key is five colours and the chip
+           says two words, with nothing joining them — and the interesting
+           case, ground that hosts BOTH, was invisible. A bracket per commodity
+           under the swatches it covers, the way a printed legend braces a
+           group; an overlap is two brackets over the same swatch, which is
+           exactly the statement. The end ticks make a one-swatch bracket read
+           as a bracket rather than as a dash. Colour is the affinity grade —
+           the same scale as the ladder's dots and the unit list's. */
+        .ml-br { position: relative; height: 5px; align-self: start; min-width: 8px;
+            border: 1px solid rgba(251,191,36,0.6); border-top: 0;
+            border-radius: 0 0 4px 4px; animation: mlBrIn 0.28s cubic-bezier(.34,1.3,.64,1) both; }
+        .ml-br.g1 { border-color: rgba(156,163,175,0.5); }
+        .ml-br.g2 { border-color: rgba(217,119,6,0.7); }
+        .ml-br.g3 { border-color: rgba(251,191,36,0.9); }
+        @keyframes mlBrIn { from { opacity: 0; transform: scaleX(0.6); } to { opacity: 1; transform: scaleX(1); } }
+        /* The label is also the way out of that ONE commodity — with two
+           selected, the chip's menu could only offer to clear both. */
+        .ml-br-lbl { display: inline-flex; align-items: center; gap: 3px; font: inherit;
+            font-size: 9px; letter-spacing: 0.2px; color: #fcd34d; white-space: nowrap;
+            margin-left: 5px; padding: 1px 4px; align-self: center; border-radius: 4px;
+            background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.22);
+            cursor: pointer; -webkit-tap-highlight-color: transparent;
+            animation: mlBrIn 0.28s ease both;
+            transition: background 0.15s, border-color 0.15s, color 0.15s; }
+        .ml-br-lbl > i { font-style: normal; font-size: 10px; line-height: 1; opacity: 0.55; }
+        .ml-br-lbl:hover, .ml-br-lbl:focus-visible { background: rgba(251,191,36,0.18);
+            border-color: rgba(251,191,36,0.5); color: #fde68a; outline: none; }
+        .ml-br-lbl:hover > i { opacity: 1; }
 
         /* The geology chip opens a menu, so it carries a caret: the two other
            chips destroy their layer on tap and this one does not, and that
@@ -341,24 +382,106 @@
         .ml-menu .ml-mi { width: 14px; text-align: center; opacity: 0.85; margin-right: 2px; }
         .ml-menu .ml-n { font-style: normal; margin-left: auto; color: #6b7280; font-size: 10px;
             font-variant-numeric: tabular-nums; }
-        /* The strength floor: how good an affinity has to be to count. A
-           segmented control, because it is a choice of ONE (a floor), unlike
-           the commodity rows above it which are any-of. Each level carries the
-           number of units it would leave — derived, never typed — so the cost
-           of the choice is visible before the tap, and a level that would
-           leave nothing is dead rather than absent. */
-        .ml-menu .ml-wrow { display: flex; gap: 4px; padding: 4px 10px 6px; }
-        .ml-menu .ml-wlv { flex: 1; display: inline-flex; align-items: center; justify-content: center;
-            gap: 4px; padding: 5px 4px; border-radius: 6px; cursor: pointer; font: inherit;
-            font-size: 10px; color: #9ca3af; background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.12); -webkit-tap-highlight-color: transparent;
+        /* ── THE AFFINITY MATRIX ────────────────────────────────────────
+           Rock across the top, commodity down the side, affinity in the cell.
+           It replaced three surfaces that each held one clause of the same
+           sentence (a commodity list, a strength ladder, and the key strip
+           outside the menu), and it is the shape this knowledge has in every
+           economic-geology text. A row answers "what hosts cobalt", a column
+           answers "what is this rock prospective for" — which nothing in the
+           app could answer before — and the grid answers "where do two
+           commodities share ground", which is the interesting case.
+
+           The columns ARE the key strip's columns: same periods, same order,
+           same swatch, so the menu is a legend for the map in front of the
+           reader rather than a catalogue of the dataset. */
+        .ml-menu-geo { min-width: 288px; }
+        .ml-mx-head { display: flex; align-items: baseline; gap: 6px; }
+        .ml-mx-head em { font-style: normal; font-weight: 400; letter-spacing: 0;
+            text-transform: none; color: #6b7280; font-size: 9px; }
+        .ml-mx { display: grid; align-items: center; gap: 2px; padding: 2px 10px 8px; }
+        .ml-mx-corner { display: flex; align-items: center; justify-content: center; }
+        .ml-mx-corner b { font-weight: 400; font-size: 9px; color: #6b7280; padding-left: 3px; }
+
+        /* A column header is the age swatch itself — the same object as in the
+           key strip, so the two are visibly one thing — and tapping it does
+           the same thing there as here: hide that period. */
+        .ml-mx-col { display: flex; align-items: center; justify-content: center;
+            padding: 3px 0 4px; border: 0; background: none; cursor: pointer; border-radius: 4px;
+            -webkit-tap-highlight-color: transparent; transition: background 0.15s, transform 0.15s; }
+        .ml-mx-col > i { width: 16px; height: 11px; border-radius: 3px; display: block;
+            border: 1px solid rgba(0,0,0,0.5); background-size: 18px 18px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.18); }
+        .ml-mx-col:hover { background: rgba(255,255,255,0.1); transform: translateY(-1px); }
+        .ml-mx-col:focus-visible { outline: 2px solid #60a5fa; outline-offset: 1px; }
+
+        .ml-mx-row { display: flex; align-items: center; gap: 6px; padding: 4px 4px 4px 0;
+            border: 0; background: none; border-radius: 5px; cursor: pointer; font: inherit;
+            font-size: 11px; color: #cbd5e1; text-align: left; overflow: hidden;
+            text-overflow: ellipsis; white-space: nowrap;
+            -webkit-tap-highlight-color: transparent; transition: background 0.15s, color 0.15s; }
+        .ml-mx-row:hover { background: rgba(255,255,255,0.07); color: #fff; }
+        .ml-mx-row.on { color: #fcd34d; font-weight: 600; }
+        .ml-mx-row.dead { opacity: 0.4; }
+        .ml-mx-row .mode-mark { flex: none; }
+        .ml-mx-n { font-style: normal; font-size: 9px; color: #6b7280; text-align: right;
+            padding-left: 4px; font-variant-numeric: tabular-nums; }
+
+        /* The grade is the cell's INK, not a number: ●●● full, ●● two-thirds,
+           ● faint. The floor then reads as what it is — a threshold on the ink
+           — and raising it visibly empties the weak half of the grid instead
+           of changing a count somewhere else. */
+        .ml-mx-cell { display: flex; align-items: center; justify-content: center;
+            width: 22px; height: 20px; padding: 0; border: 0; background: none; cursor: pointer;
+            border-radius: 5px; -webkit-tap-highlight-color: transparent;
+            transition: background 0.15s, transform 0.12s; }
+        .ml-mx-cell > i { display: block; width: 12px; height: 12px; border-radius: 3px;
+            background: #fbbf24; transition: opacity 0.2s, transform 0.2s, background 0.2s; }
+        .ml-mx-cell.g1 > i { opacity: 0.26; transform: scale(0.62); }
+        .ml-mx-cell.g2 > i { opacity: 0.6;  transform: scale(0.82); }
+        .ml-mx-cell.g3 > i { opacity: 1; }
+        .ml-mx-cell.on > i { box-shadow: 0 0 0 2px rgba(251,191,36,0.25); }
+        /* Present in the data, below the floor: hollow, not gone. "There is an
+           association here and you told me not to count it" is a different
+           statement from "there is nothing here", and the empty cell already
+           means the second one. */
+        .ml-mx-cell.below > i { background: none; border: 1px solid rgba(251,191,36,0.4);
+            opacity: 0.5; }
+        .ml-mx-cell:hover { background: rgba(255,255,255,0.1); }
+        .ml-mx-cell:hover > i { transform: scale(1.12); }
+        .ml-mx-cell:active > i { transform: scale(0.9); }
+        .ml-mx-cell:focus-visible { outline: 2px solid #60a5fa; outline-offset: 1px; }
+        .ml-mx-cell.empty { cursor: default; }
+        .ml-mx-cell.empty::after { content: ''; width: 3px; height: 3px; border-radius: 50%;
+            background: rgba(255,255,255,0.09); }
+
+        /* The floor, as a threshold on the ink just above it — so it is the
+           legend for the cells as much as it is a control. */
+        .ml-grade { display: flex; align-items: center; gap: 4px; padding: 2px 10px 8px;
+            flex-wrap: wrap; }
+        .ml-grade-lbl { font-size: 9px; color: #6b7280; letter-spacing: 0.3px;
+            text-transform: uppercase; margin-right: 2px; }
+        .ml-grade-b { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px;
+            border-radius: 999px; cursor: pointer; font: inherit; font-size: 10px; color: #9ca3af;
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12);
+            -webkit-tap-highlight-color: transparent;
             transition: background 0.15s, border-color 0.15s, color 0.15s; }
-        .ml-menu .ml-wlv em { font-style: normal; font-size: 9px; opacity: 0.7;
+        .ml-grade-b em { font-style: normal; font-size: 9px; opacity: 0.6;
             font-variant-numeric: tabular-nums; }
-        .ml-menu .ml-wlv:hover { color: #e5e7eb; border-color: rgba(255,255,255,0.28); }
-        .ml-menu .ml-wlv.on { background: rgba(251,191,36,0.16); border-color: rgba(251,191,36,0.5);
+        .ml-grade-b:hover { color: #e5e7eb; border-color: rgba(255,255,255,0.3); }
+        .ml-grade-b.on { background: rgba(251,191,36,0.15); border-color: rgba(251,191,36,0.5);
             color: #fcd34d; font-weight: 600; }
-        .ml-menu .ml-wlv.dead { opacity: 0.35; }
+        .ml-grade-b.dead { opacity: 0.38; }
+        .ml-grade-dot { display: inline-flex; align-items: center; justify-content: center;
+            width: 12px; height: 12px; }
+        .ml-grade-dot > i { display: block; width: 10px; height: 10px; border-radius: 3px;
+            background: #fbbf24; }
+        .ml-grade-dot.g1 > i { opacity: 0.26; transform: scale(0.62); }
+        .ml-grade-dot.g2 > i { opacity: 0.6;  transform: scale(0.82); }
+
+        .ml-menu .ml-contact .ml-n { color: #6b7280; font-style: normal; }
+        .ml-menu .ml-allrow { margin-bottom: 2px; }
+
         .ml-menu .ml-more { color: #9ca3af; border-top: 1px solid rgba(255,255,255,0.07); margin-top: 2px; gap: 7px; }
         .ml-menu .ml-more em { font-style: normal; color: #6b7280; margin-left: auto; font-size: 10px; }
         .stats-trend { font-size: 10px; margin-left: 4px; }
@@ -1783,10 +1906,12 @@
             /* A swatch is a tap target on touch, so it gets a real one: the
                ink stays 15x9 but the button around it is 26px tall. */
             .ml-swatches { padding: 5px 2px 0; gap: 4px; }
-            .ml-sw { width: 22px; height: 26px; padding: 2px 3px; }
-            .ml-sw > i { width: 15px; height: 9px; }
-            .ml-sw.ml-sw-x.visible { max-width: 22px; padding: 2px 3px; }
-            .ml-sw-more, .ml-sw-all { font-size: 10px; padding: 5px 7px; }
+            .ml-sw { width: 26px; height: 28px; padding: 2px 3px; }
+            .ml-sw > i { width: 20px; height: 13px; }
+            .ml-sw.ml-sw-x.visible { max-width: 26px; padding: 2px 3px; }
+            .ml-sw-more, .ml-sw-all { font-size: 10px; padding: 6px 8px; }
+            /* The bracket label is a real tap target on touch, not a caption. */
+            .ml-br-lbl { font-size: 10px; padding: 4px 7px; }
             
             /* Legend repositioned to avoid toolbar */
             #map-legend { bottom: calc(var(--slider-h, 70px) + 70px) !important; left: 10px; max-width: calc(100vw - 80px); font-size: 11px; padding: 10px 12px; }
