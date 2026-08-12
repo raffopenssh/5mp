@@ -3095,17 +3095,18 @@
             // (Replaces the per-layer maplibregl.Popup pile-up.)
             if (window.MapTip) {
                 window.MapTip.init(map);
-                // A park polygon is the more specific answer and has its own
-                // popup, so every BACKDROP tip (AOI, geology — anything with a
-                // negative priority) stands down over one. Stated once here
-                // rather than re-implemented per layer: the AOI tip did it and
-                // the geology overlay, added later, did not, so a tap inside
-                // the AOI on a park opened a geology card instead of the park.
-                window.MapTip.setBackdropGuard(function (e) {
-                    if (!e || !e.lngLat || !map.getLayer('areas-fill')) return false;
-                    return map.queryRenderedFeatures(e.point, { layers: ['areas-fill'] })
-                        .some(function (pf) { return pointInFeature(e.lngLat.lng, e.lngLat.lat, pf); });
-                });
+                // NO BACKDROP GUARD ANY MORE. There used to be one here: "if a
+                // park polygon covers this point, every negative-priority tip
+                // stands down", because the park owned the click outright and
+                // two answers would have appeared at once. Its cost was that
+                // inside a park — i.e. across most of what this map is about —
+                // geology and the AOI were not merely outranked, they were
+                // SILENCED: no tab, no card, no way down the stack.
+                //
+                // The park is now an ordinary MapTip registration at priority
+                // -10 (see registerParkTip), so ordering does the same job
+                // without deleting anything: park beats AOI beats geology, and
+                // all three are tabs on one card.
             }
 
             // One loader for every viewport feature layer (stats toggles and
@@ -5597,6 +5598,7 @@
             // this resolves would go to /api/parks/{aoi} and 404 by design.
             loadAOIs();
             registerAOITip();
+            registerParkTip();
             // Wait for areas source to load before fetching grid data
             // This prevents concurrent requests that overwhelm slow connections
             function onAreasLoaded(e) {
@@ -9336,6 +9338,58 @@
             });
         }
         window.registerAOITip = registerAOITip;
+
+        // A PARK IS A REGION, SO IT ARBITRATES LIKE ONE.
+        //
+        // The park polygon used to own the click outright (setupPAClickHandler)
+        // and every MapTip backdrop stood down over it (`setBackdropGuard`).
+        // That made a park a HOLE in the interaction model: inside one, the
+        // geology sheet — and anything else at negative priority — could not be
+        // reached at all, because the park swallowed the tap and answered with
+        // its own popup. A tap on gold-hosting basement inside Chinko opened
+        // Chinko, every time, with no way down the stack.
+        //
+        // So the park joins the same arbitration as the AOI, one step MORE
+        // specific than it:
+        //
+        //     feature layers   0   fires, settlements, roads, trajectories
+        //     PARK           -10   <- a region, but the smaller of the two
+        //     AOI            -20   usually far larger, so it loses to a park
+        //     geology        -30   a whole country's drape
+        //
+        // `activateOnClick`, exactly as the AOI: when the park is the ONLY
+        // answer the click opens its overview popup directly, which is the
+        // behaviour that was always there. When something else also answers
+        // (geology, a fire path), the card pins with one tab per answer, Park
+        // selected and carrying the same button. Nothing becomes unreachable
+        // and nothing needs a modifier key.
+        function registerParkTip() {
+            if (!window.MapTip || !map.getLayer('areas-fill') || window._parkTipRegistered) return;
+            window._parkTipRegistered = true;
+            MapTip.register('areas-fill', {
+                actionLabel: 'Open park overview',
+                clickOnly: true,      // a park fills the viewport once you are inside one
+                activateOnClick: true,
+                priority: -10,
+                peers: false,         // overlapping designations are not a pile-up to zoom into
+                tabLabel: 'Park',
+                tabColor: '#22c55e',
+                onActivate: (f, e) => showPAPopup(f.properties, e.lngLat),
+                html: (p, f, e) => {
+                    // Shift/Cmd/Ctrl-click is the multi-select gesture and that
+                    // belongs to the park click handler. Decline, so MapTip
+                    // neither pins a card nor swallows the event.
+                    const oe = e && e.originalEvent;
+                    if (oe && (oe.shiftKey || oe.metaKey || oe.ctrlKey)) return '';
+                    const area = p.area_km2 ? formatNumber(Math.round(p.area_km2)) + ' km\u00b2' : '';
+                    const sub = [escapeHtml(p.country || ''), area].filter(Boolean).join(' \u2022 ');
+                    return `<div class="maptip-label">Protected area</div>
+                        <div class="maptip-title">${escapeHtml(p.name || p.id || 'Protected area')}</div>
+                        <div class="maptip-body">${sub}</div>`;
+                }
+            });
+        }
+        window.registerParkTip = registerParkTip;
 
         function aoiCoverageHTML(datasets) {
             if (!datasets || !datasets.length) return '';

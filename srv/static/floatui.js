@@ -291,10 +291,32 @@
         // --- slim grab-bar above the header (distinct from export buttons) ---
         const bar = makeBar(parkName);
         content.insertBefore(bar, content.firstChild);
-        // Move MapLibre's × close button into the bar so all controls sit
-        // neatly inside the popup outline (subtle, same size as bar buttons).
+        // THE CLOSE BUTTON IS OURS, NOT A RELOCATED ONE.
+        //
+        // MapLibre's \u00d7 used to be *moved* into the bar and left to its own
+        // internal listener. Two things then had to hold that we do not
+        // control: that the listener survives re-parenting, and that the
+        // browser still resolves a click on it to it \u2014 the bar is a drag
+        // handle that calls setPointerCapture, and a captured pointer is
+        // exactly where browsers disagree about the click target (Safari
+        // charges it to the capturing element, so the \u00d7 did nothing and the
+        // card could not be dismissed). MapLibre's \u00d7 is hidden and the bar
+        // gets a real button of its own, next to collapse and minimise, closed
+        // by the same code path the app already calls (`popup.remove()`).
         const mlClose = container.querySelector('.maplibregl-popup-close-button');
-        if (mlClose) bar.querySelector('.fui-bar-btns').appendChild(mlClose);
+        if (mlClose) mlClose.style.display = 'none';
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'fui-bar-btn';
+        closeBtn.setAttribute('data-act', 'close');
+        closeBtn.title = 'Close';
+        closeBtn.setAttribute('aria-label', 'Close ' + parkName);
+        closeBtn.innerHTML = '<i class="icon-x"></i>';
+        bar.querySelector('.fui-bar-btns').appendChild(closeBtn);
+        closeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            try { popup.remove(); } catch (err) { }
+        });
 
         function setCollapsed(on) {
             if (on) { savedScroll = content.scrollTop; container.classList.add('fui-collapsed'); }

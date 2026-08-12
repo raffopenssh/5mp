@@ -315,9 +315,29 @@
         return l ? l.id : undefined;
     }
 
+    // A SHEET THAT CANNOT BE ADDED YET IS UNFINISHED, NOT DONE.
+    //
+    // This used to `return` when the style was mid-update, which turned "try
+    // again in a moment" into "never". It bit exactly where two sheets are
+    // switched on at once (?geomap=sudan,car): both queued on the same `idle`,
+    // the first one's addSource/addLayer put the style back into a loading
+    // state, and the second silently evaporated. The map then looked right --
+    // there WAS geology on screen -- while half of it was missing, and a click
+    // over the missing half fell through to the park underneath.
+    //
+    // So: no answer means retry on the next idle, once, and only for a sheet
+    // we know is available.
     function add(id) {
         const s = sheets && sheets[id];
-        if (!s || !s.available || !map || !map.isStyleLoaded()) return;
+        if (!s || !s.available || !map) return;
+        if (!map.isStyleLoaded()) {
+            if (!pendingAdd.has(id)) {
+                pendingAdd.add(id);
+                map.once('idle', () => { pendingAdd.delete(id); if (st(id).on) add(id); });
+            }
+            return;
+        }
+        pendingAdd.delete(id);
         const o = st(id);
         if (!map.getSource(SRC(id))) {
             map.addSource(SRC(id), {
@@ -356,6 +376,7 @@
     }
 
     function remove(id) {
+        pendingAdd.delete(id);   // a queued re-add must not resurrect a sheet just switched off
         [FILL(id), LINE(id)].forEach(l => { if (map.getLayer(l)) map.removeLayer(l); });
         if (map.getSource(SRC(id))) map.removeSource(SRC(id));
         // Switching the sheet off must also take its tip away, or a click keeps
@@ -392,6 +413,8 @@
     // produce three answers at once (geology popup + AOI popup + AOI map tip):
     // its click never went through the shared arbitration. One tip, one owner.
     const bound = {};
+    // Sheets waiting for the style to settle before they can be added; see add().
+    const pendingAdd = new Set();
     function tipHTML(id, p) {
             const cat = (sheets[id] && sheets[id].catalogue) || {};
             let aff = [];
