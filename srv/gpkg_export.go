@@ -42,7 +42,12 @@ type gpkgExportOpts struct {
 	// 1.4 GB file) while fire_trajectories tells the same story in 38k
 	// features, so leaving them out is a legitimate, much smaller export —
 	// not a degraded one.
-	RawFire  bool
+	RawFire bool
+	// View is set for the "export what is on my screen" variant (gpkg_view.go).
+	// It is on the shared opts struct so the job queue, the cache key, the
+	// notification card and the download all work unchanged — a view export is
+	// a different question, not a different mechanism.
+	View     *gpkgViewOpts
 	Progress gpkgProgress
 }
 
