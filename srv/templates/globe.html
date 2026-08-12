@@ -9376,11 +9376,11 @@
                 tabColor: '#22c55e',
                 onActivate: (f, e) => showPAPopup(f.properties, e.lngLat),
                 html: (p, f, e) => {
-                    // Shift/Cmd/Ctrl-click is the multi-select gesture and that
-                    // belongs to the park click handler. Decline, so MapTip
-                    // neither pins a card nor swallows the event.
-                    const oe = e && e.originalEvent;
-                    if (oe && (oe.shiftKey || oe.metaKey || oe.ctrlKey)) return '';
+                    // No modifier check here: MapTip stands down for the whole
+                    // click when shift/cmd/ctrl is held (see onClick), so
+                    // multi-select reaches setupPAClickHandler untouched. A
+                    // per-layer decline would only have removed the park from
+                    // the stack and let the AOI under it answer instead.
                     const area = p.area_km2 ? formatNumber(Math.round(p.area_km2)) + ' km\u00b2' : '';
                     const sub = [escapeHtml(p.country || ''), area].filter(Boolean).join(' \u2022 ');
                     return `<div class="maptip-label">Protected area</div>
@@ -12513,13 +12513,15 @@
                 // MULTI-SELECT IS THIS HANDLER'S ALONE, AND IT IS CHECKED FIRST.
                 //
                 // shift/\u2318/ctrl-click means "add this park to the selection", a
-                // gesture MapTip has no part in \u2014 registerParkTip's html()
-                // deliberately DECLINES it. But declining only removes the park
-                // from the stack: an AOI or a geology unit at the same point
-                // still answers, MapTip still pins a card and still raises
-                // `_mapTipClicked`, and the guard below would then swallow the
-                // shift-click entirely. The modifier is unambiguous, so it is
-                // read before any stand-down flag.
+                // gesture MapTip stands down for entirely (see its onClick).
+                // The check is nevertheless before `_mapTipClicked` and
+                // `_gridPixelClicked`: those flags say "something else just
+                // answered a plain click", which is a different question, and
+                // an unambiguous modifier needs no stand-down. The first
+                // version declined per-layer instead, which only dropped the
+                // PARK from MapTip's stack \u2014 the AOI under it then answered,
+                // pinned a card, raised `_mapTipClicked`, and the shift-click
+                // was swallowed anywhere the drape was on.
                 const isMultiSelect = originalEvent &&
                     (originalEvent.shiftKey || originalEvent.metaKey || originalEvent.ctrlKey);
 
