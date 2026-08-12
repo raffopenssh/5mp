@@ -175,6 +175,55 @@ GET /api/parks/{id}/feature-stats
 }
 ```
 
+### Viewport Features (the LOD loader)
+```
+GET /api/features-in-bbox?type=fire_trajectory|deforestation|settlement
+    &bbox=minLng,minLat,maxLng,maxLat
+    &from=YYYY-MM-DD&to=YYYY-MM-DD
+    &area={park or AOI id}      scope to one area's rows (see below)
+    &class={classification}     e.g. slash_burn, agricultural, fishing
+    &mode=auto|points           auto = the server picks the rendering
+    &geom_budget=12000          how many real shapes the client will draw
+    &limit=30000                how many features the answer may carry
+    &seg=1                      cheap tier for a path = a chord, not a dot
+    &spread=0                   escape hatch: biggest-N instead of spread
+    &simplify=0                 escape hatch: full-precision rings
+```
+
+One endpoint behind `srv/static/lodlayer.js`, used by the stats-panel layer
+toggles, pinned layers and the animator. `mode=auto` decides from the **true
+count in view** — never from zoom — whether the answer is clickable geometry
+(`render: "geometry"`), short direction chords (`render: "segments"`, with
+`seg=1`) or bare centroids (`render: "points"`). Every rendering carries the
+row id (`rid`), so `/api/feature-detail?id=` gives the same hover tip.
+
+* **`area=`, not `park=`.** An AOI id in `?park=` is a hard 404 from
+  `ParkIDMiddleware`. `park=` is still accepted for real parks.
+* **`class=` is applied server-side**, before the selection, so `total` counts
+  what passes it. It needs `area=`; a type with no classification
+  (fire_trajectory) ignores it rather than returning nothing.
+* **`spread=0`** turns off spread-select and returns the `limit` biggest
+  features anywhere in the bbox. That is a *corner*, not a sample — every
+  settlement has `stat_value = 0`, so the tie-break falls through to rowid and
+  you get one contiguous ingest block. Only useful for reproducing a pre-2026-08
+  answer or debugging the collector.
+* **`simplify=0`** returns full-precision rings. The default decimates to half
+  a screen pixel derived from the bbox (2.1 MB → 0.6 MB gzipped at continental
+  zoom, byte-identical picture). Use it when the coordinates themselves are the
+  output — an export or a diff — never for drawing.
+
+Both escape hatches are deliberately undocumented in the UI: they exist so a
+developer can prove the defaults are the same answer, and neither should be in
+a share link.
+
+### Feature Detail
+```
+GET /api/feature-detail?id={feature_geometries.id}
+```
+One row, geometry and properties, enriched exactly as the bbox endpoint
+enriches it. This is what makes a cheap rendering still a feature rather than a
+picture. An AOI's row is 404 for a non-owner.
+
 ### Export KML
 ```
 GET /api/parks/{id}/export.kml?from={date}&to={date}

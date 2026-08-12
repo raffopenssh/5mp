@@ -1014,10 +1014,26 @@ Things that will bite:
   a second span after the name and the guard silently returned, taking the grab
   bar, the minimise button and MapLibre's × with it. Now `> span`. Anything
   added to a popup header must keep that selector matching.
-* **The focus banner positions itself from the measured slider height**
-  (`positionAOIFocusBanner()` + a `ResizeObserver`). A hard-coded `bottom`
-  covered the ▶ animate button once the preset tags wrapped on a narrow phone,
-  and the slider also grows when the animator opens.
+* **The focus state is a chip in `#top-chips`, beside the session chip** — not
+  a banner over the map. It was a pill floating above the time slider, measured
+  against the slider's changing height (`positionAOIFocusBanner()` + a
+  `ResizeObserver`) because a hard-coded `bottom` covered the ▶ animate button
+  once preset tags wrapped on a narrow phone. That is the wrong fix to a
+  self-inflicted problem: "you are focused on X" is the same kind of fact as
+  "you are signed in as X" — scope, not data — so it belongs in the same row,
+  in the same clothes, with the same ×. One fewer always-on overlay in the
+  middle of the map it is talking about, and mobile placement comes free from
+  the row. `updateAOIFocusBanner()` keeps its name and still removes any
+  `#aoi-focus-banner` a cached page is holding; `positionAOIFocusBanner()` is a
+  no-op kept for old call sites.
+* **The AOI tag in the filter panel carries three verbs, not five.** It had
+  ◎ focus, ⌖ zoom, ✎ edit and ★ — four glyph families, two of which look
+  like the same idea. Now: focus (`icon-focus`, the same icon as the popup's
+  action row and the focus chip), edit, star. Zoom is the tag's own dead space
+  (one tap, works on a phone); **renaming is clicking the name**, exactly as in
+  the popup, instead of the old double-click-here / single-click-there split —
+  and double-clicking the name zooms, so an impatient double-tap never lands in
+  an edit box. A non-owner sees no rename affordance and the whole tag zooms.
 
 ### Versioning
 
@@ -1790,10 +1806,86 @@ is a different *question* (only what is on screen), not a different mechanism.
 
 ### Still open, deliberately
 
-* A **classification filter** on a pin still uses the old whole-park fetch:
-  that filter reads feature properties client-side, and both points mode and
-  slim geometry ship none. A filtered pin is a small deliberate subset anyway.
-* `?spread=0` and `?simplify=0` remain undocumented escape hatches with no UI.
+Nothing. The three that were listed here are done — see "The cheap tier for a
+path is a chord" below for what closing them changed.
+
+### The cheap tier for a path is a chord, not a dot
+
+Collapsing a fire trajectory to its centroid destroys the one property that
+distinguishes a fire *front* from a hotspot: the direction and distance it ran.
+A whole AOI of them was a red stipple that said less than the map it replaced.
+`?seg=1` on `/features-in-bbox` returns a three-point chord per feature (first /
+middle / last vertex) alongside `points`/`ids`, and `render` becomes
+`"segments"`: ~50 bytes against ~350 for the full path, so `XSA_Study_Area`
+draws **all 38,725** trajectories as lines (3.4 MB, 1.0 s) instead of 12,000 as
+paths or all of them as dots.
+
+* **The chord reuses the LINE layer.** It is the same feature drawn shorter —
+  same paint, same hover, same arrows — and must not become a special case
+  anywhere downstream. Only `pointsToGeoJSON()` knows the difference.
+* **The middle point is the middle VERTEX**, not the average of the ends: a
+  fire that ran out and doubled back would otherwise draw a straight line
+  through ground it never touched.
+* **`scanCoordPairs` is a byte scan, not `json_extract`.** Six `json_extract`
+  calls per row (two with a concatenated path, so the document is re-parsed)
+  measured 30 us/row = **1.2 s** for one continental view; the byte scan is
+  ~1 us. Same class of trap as `ABS()` in a WHERE clause: the obvious SQL is
+  the slow one.
+* A degenerate chord stays a **Point**, not a zero-length LineString —
+  MapLibre draws nothing for the latter, so a stationary fire would vanish in
+  the rendering meant to show more.
+
+**Points wear the layer's ink above ~600 features.** A white `circle-stroke`
+ring is a "click me" affordance and is right for a handful; across a field of
+thousands it is the loudest thing on screen — 103 stationary fires out-shouted
+14,700 moving ones. `densityPaint()` returns `ring` and `pointOpacity` and
+drops the ring past 2,000.
+
+### `?class=` is server-side, and a filtered pin follows the viewport
+
+The popup's classification filter used to be applied in the browser over a
+whole-park fetch, which is why a filtered pin could not use the LOD loader at
+all: neither the chord nor the slim-geometry rendering ships the property it
+filtered on. It is `?class=` now, resolved through the same Go-side map as the
+hover tips (`featureIDsWithClass` in `feature_meta.go`) — never the
+`polygon_ids` LIKE join.
+
+* Applied **before** the spread collector, so `total` counts what passes it and
+  the selection spreads over the filtered set. A filter that changed the
+  picture but not the number reads as broken.
+* Needs `?area=`. A type with **no** classification (fire_trajectory) serves
+  the unfiltered superset: *cannot apply* is not *excludes everything*.
+
+### `?area=`, because `?park=<aoi>` is a 404 by design
+
+`ParkIDMiddleware` 404s an AOI id in `?park=` on every request — correctly, an
+AOI is not a park. The viewport-first pin sent it anyway, so **every** AOI fire
+pin fetched nothing and reported "0 features in view" with a toast telling the
+user to pan. The recurring failure mode, once more: a no-op that reads as an
+answer. `?area=` carries the same scope and accepts either id; `?park=` still
+works for parks and still 404s for an AOI (pinned by
+`features_bbox_park_param_still_404s_aoi`).
+
+### The detail control moved onto the layer, and is now a choice
+
+`.stats-lod`'s readout is a **button** (`cycleLayerDetail`), and every pinned
+LOD chip carries the same one (`cyclePinDetail`): `auto → shapes → fast`,
+per layer. Deliberately not global — 12,000 fire fronts are worth waiting for
+as shapes, 78,000 built-up polygons never are. The preference is expressed as
+`geom_budget`, so the **server** still decides what fits and a forced answer
+still truncates honestly instead of promising something the browser cannot
+parse. (`geom_budget`'s ceiling was 20,000, silently clamped, which made
+"forced shapes" a no-op on exactly the views that wanted it.)
+
+`?spread=0` and `?simplify=0` are documented in `docs/API.md` as what they are:
+developer escape hatches for proving the defaults are the same answer. Neither
+belongs in a share link.
+
+The detail preference itself is deliberately **not** in the share link either:
+it is a statement about this screen's patience, not about what is being looked
+at, and `?detail=` already means the *geography* tier (`major`/`main`/`all`),
+which is a different thing entirely — that one is a WHERE clause and must
+reproduce, this one is a budget.
 
 ## Documentation
 

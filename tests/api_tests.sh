@@ -239,6 +239,57 @@ for ep in "features-in-bbox?type=fire_trajectory&bbox=${XSA_BBOX}" \
     fi
 done
 
+# A pinned layer is a statement about ONE area, and for an AOI that scope has
+# to travel as ?area= -- ?park=<aoi> is a hard 404 from ParkIDMiddleware, which
+# is exactly how the first viewport-first AOI pin came to fetch nothing and
+# report "0 features in view" while every layer claimed success.
+#
+# The AOI half needs the owner's password, which is not in a tracked file; skip
+# rather than fail on a fresh checkout (`source secrets.env` first to run it).
+if [ -n "${AOI_OWNER_PWD:-}" ]; then
+    printf "%-50s" "features_bbox_area_param_scopes_to_aoi"
+    body=$(curl -s -m 60 "${BASE_URL}/api/features-in-bbox?type=fire_trajectory&bbox=${XSA_BBOX}&limit=50&area=XSA_Study_Area&aoi=XSA_Study_Area&pwd=${AOI_OWNER_PWD}")
+    if echo "$body" | grep -q '"total":0' || [ -z "$body" ]; then
+        red "FAIL (AOI pin scope returned nothing)"; FAILED=$((FAILED + 1)); ERRORS+=("features_bbox_area_param")
+    else
+        green "✓"; PASSED=$((PASSED + 1))
+    fi
+fi
+
+# ?park=<aoi id> must still 404 -- the fix is a second param, not a hole in the
+# middleware. (No password needed: the middleware runs before the handler.)
+printf "%-50s" "features_bbox_park_param_still_404s_aoi"
+code=$(curl -s -o /dev/null -w '%{http_code}' -m 60 -b "$COOKIE_FILE" "${BASE_URL}/api/features-in-bbox?type=fire_trajectory&bbox=${XSA_BBOX}&park=XSA_Study_Area")
+if [ "$code" = "404" ]; then green "✓"; PASSED=$((PASSED + 1))
+else red "FAIL (got $code)"; FAILED=$((FAILED + 1)); ERRORS+=("features_bbox_park_param_404"); fi
+
+# The classification filter is server-side now (the cheap renderings ship no
+# properties to filter on client-side). Two invariants: it really filters, and
+# a type that HAS no classification serves the unfiltered superset rather than
+# an empty answer -- "cannot apply" is not "excludes everything".
+printf "%-50s" "features_bbox_class_filter"
+all=$(curl -s -m 60 -b "$COOKIE_FILE" "${BASE_URL}/api/features-in-bbox?type=deforestation&bbox=23,5,27,9&limit=3000&area=CAF_Chinko" | grep -o '"total":[0-9]*' | head -1)
+sub=$(curl -s -m 60 -b "$COOKIE_FILE" "${BASE_URL}/api/features-in-bbox?type=deforestation&bbox=23,5,27,9&limit=3000&area=CAF_Chinko&class=slash_burn" | grep -o '"total":[0-9]*' | head -1)
+fire=$(curl -s -m 60 -b "$COOKIE_FILE" "${BASE_URL}/api/features-in-bbox?type=fire_trajectory&bbox=23,5,27,9&limit=3000&area=CAF_Chinko&class=slash_burn" | grep -o '"total":[0-9]*' | head -1)
+fireall=$(curl -s -m 60 -b "$COOKIE_FILE" "${BASE_URL}/api/features-in-bbox?type=fire_trajectory&bbox=23,5,27,9&limit=3000&area=CAF_Chinko" | grep -o '"total":[0-9]*' | head -1)
+av=${all#*:}; sv=${sub#*:}; fv=${fire#*:}; fav=${fireall#*:}
+if [ "${sv:-0}" -gt 0 ] && [ "${sv:-0}" -lt "${av:-0}" ] && [ "${fv:-0}" = "${fav:-1}" ]; then
+    green "✓"; PASSED=$((PASSED + 1))
+else
+    red "FAIL (all=$av filtered=$sv fire=$fv/$fav)"; FAILED=$((FAILED + 1)); ERRORS+=("features_bbox_class_filter")
+fi
+
+# The cheap tier for a PATH is a shorter path. seg=1 must return one chord per
+# feature, parallel to points/ids -- a fire front collapsed to a centroid loses
+# the only property that distinguishes it from a hotspot.
+printf "%-50s" "features_bbox_seg_returns_chords"
+body=$(curl -s -m 60 -b "$COOKIE_FILE" "${BASE_URL}/api/features-in-bbox?type=fire_trajectory&bbox=23,5,27,9&mode=points&seg=1&limit=50&area=CAF_Chinko")
+if echo "$body" | grep -q '"render":"segments"' && echo "$body" | grep -q '"segs":'; then
+    green "✓"; PASSED=$((PASSED + 1))
+else
+    red "FAIL (no segments)"; FAILED=$((FAILED + 1)); ERRORS+=("features_bbox_seg")
+fi
+
 # A GeoPackage peek must be a LOOKUP, not a build. ?aoi_menu_item=gpkg on a
 # share link asks "is this file already there?" so it can download instead of
 # making the recipient click -- if asking created a job, opening a shared link

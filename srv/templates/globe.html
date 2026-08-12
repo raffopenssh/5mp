@@ -74,12 +74,21 @@
     <div id="map" role="application" aria-label="Interactive conservation map"></div>
     <!-- Alpha session chip: shows current credential (pwd for now, user identity
          once user management lands) with an x to log out. -->
-    {{if .AuthLabel}}<div id="session-chip" class="session-chip {{if .IsTest}}is-test{{end}}"><span class="session-chip-label">{{if .IsTest}}TEST ENV · {{end}}{{.AuthLabel}}</span><a href="/logout" title="Log out" aria-label="Log out" class="session-chip-logout">&times;</a></div>
-    <script>
-    // Keep the session chip clear of the stats panel (mobile: panel spans full width at top)
+    <!-- Top chip row: the things that describe the CURRENT SESSION AND VIEW,
+         in one line at the top, in one visual language. Today that is the
+         credential and, when it is on, the focused area. The AOI focus state
+         used to be a banner floating above the time slider, i.e. a second
+         always-on overlay competing with the animate button on a narrow phone,
+         and sitting in the middle of the map it is a statement about. It is
+         the same kind of fact as "you are logged in as X": scope, not data. -->
+    <div id="top-chips" class="top-chips">
+    {{if .AuthLabel}}<div id="session-chip" class="session-chip {{if .IsTest}}is-test{{end}}"><span class="session-chip-label">{{if .IsTest}}TEST ENV · {{end}}{{.AuthLabel}}</span><a href="/logout" title="Log out" aria-label="Log out" class="session-chip-logout">&times;</a></div>{{end}}
+    </div>
+    {{if .AuthLabel}}<script>
+    // Keep the chip row clear of the stats panel (mobile: panel spans full width at top)
     (function(){
         function place(){
-            var chip=document.getElementById('session-chip'); if(!chip) return;
+            var chip=document.getElementById('top-chips'); if(!chip) return;
             if(window.innerWidth>768){ chip.style.top=''; return; }
             var sp=document.querySelector('.stats-panel');
             var top=100;
@@ -8444,25 +8453,45 @@
                 const cov = window._aoiCoverage?.[a.id];
                 const covTxt = cov ? ` · ${cov.done}/${cov.total} layers` : '';
                 const focused = aoiFocusID === a.id;
-                // The tag is where an AOI is *managed*, so the same verbs as the
-                // popup's action bar in the same order: focus, zoom, edit,
-                // un-star. Rename is the name itself — double-click it, the way
-                // you rename a file.
-                return `<div class="aoi-tag${focused ? ' focused' : ''}" title="${escapeHtml(a.name)} — ${escapeHtml(win)}${km ? ' · ' + km : ''}${covTxt}">
-                    <span class="aoi-tag-name" id="aoi-tagname-${escapeHtml(a.id)}" onclick="openAOIPopupById('${escapeHtml(a.id)}')" ondblclick="event.stopPropagation();renameAOITag('${escapeHtml(a.id)}')" title="Open · double-click to rename">◈ ${escapeHtml(a.name)}</span>
+                // THREE controls, not five. The tag used to carry ◎ focus,
+                // ⌖ zoom, ✎ edit and ★ — four glyphs from four different
+                // families, two of which (◎ and ⌖) look like the same idea and
+                // are not.
+                //
+                // The tag itself is the zoom: tapping ANY of its dead space
+                // flies the map here, which is what ⌖ did, on a phone too.
+                // RENAMING IS CLICKING THE NAME, exactly as in the AOI popup
+                // (`.aoi-editable-name` → startAOIRename) — one gesture for one
+                // thing wherever the AOI is reached from, instead of the old
+                // double-click here and single click there. A non-owner cannot
+                // rename, so for them the name is just more of the tag and
+                // zooms like the rest of it. Double-clicking the name zooms
+                // too, so an impatient double-tap never lands in an edit box.
+                //
+                // What is left is one verb each: focus (the same icon-focus as
+                // the popup's action row and the focus chip), edit, and the
+                // star that is also the hide control — same icons, same order
+                // as the popup.
+                const nameAct = a.is_owner
+                    ? `class="aoi-tag-name aoi-editable-name" title="Click to rename"
+                       onclick="event.stopPropagation();renameAOITag('${escapeHtml(a.id)}')"
+                       ondblclick="event.stopPropagation();zoomToAOI('${escapeHtml(a.id)}')"`
+                    : `class="aoi-tag-name"`;
+                return `<div class="aoi-tag${focused ? ' focused' : ''}" onclick="zoomToAOI('${escapeHtml(a.id)}')" title="${escapeHtml(a.name)} — ${escapeHtml(win)}${km ? ' · ' + km : ''}${covTxt} — click to zoom here">
+                    <span id="aoi-tagname-${escapeHtml(a.id)}" ${nameAct}>${escapeHtml(a.name)}</span>
                     <span class="aoi-tag-win">${escapeHtml(win)}</span>
-                    <button class="aoi-tag-zoom${focused ? ' on' : ''}" onclick="event.stopPropagation();toggleAOIFocus('${escapeHtml(a.id)}')" title="${focused ? 'Leave focus' : 'Focus on this area — parks outside it are dimmed, starred parks stay'}" aria-pressed="${focused}">◎</button>
-                    <button class="aoi-tag-zoom" onclick="event.stopPropagation();zoomToAOI('${escapeHtml(a.id)}')" title="Zoom to this area">⌖</button>
-                    ${a.is_owner ? `<button class="aoi-tag-zoom" onclick="event.stopPropagation();editAOI('${escapeHtml(a.id)}')" title="Edit shape or dates"><i class="icon-pencil-ruler"></i></button>
-                    <button class="aoi-tag-zoom star on" onclick="event.stopPropagation();toggleAOIStar('${escapeHtml(a.id)}')" title="Starred — shown on the map and included in your report. Un-star to hide it; nothing is deleted and search brings it back." aria-pressed="true">★</button>` : ''}
+                    <button class="aoi-tag-btn${focused ? ' on' : ''}" onclick="event.stopPropagation();toggleAOIFocus('${escapeHtml(a.id)}')" title="${focused ? 'Leave focus' : 'Focus on this area — the map zooms here, parks outside it are dimmed (starred ones stay bright) and the data layers switch to this area\u2019s own rows'}" aria-pressed="${focused}"><i class="icon-focus"></i></button>
+                    ${a.is_owner ? `<button class="aoi-tag-btn" onclick="event.stopPropagation();editAOI('${escapeHtml(a.id)}')" title="Edit shape or dates — saving keeps this version as history"><i class="icon-pencil-ruler"></i></button>
+                    <button class="aoi-tag-btn star on" onclick="event.stopPropagation();toggleAOIStar('${escapeHtml(a.id)}')" title="Starred — shown on the map and included in your report. Un-star to hide it; nothing is deleted and search brings it back." aria-pressed="true">★</button>` : ''}
                 </div>`;
             }).join('');
         }
         window.updateAOITagsDisplay = updateAOITagsDisplay;
 
-        // Rename from the tag: the same inline edit as the popup, on whichever
-        // element the user reached for. One server call, no fork — see
-        // startAOIRename().
+        // Rename from the tag: the same inline edit as the popup title, on
+        // whichever element the user reached for. One server call, no fork —
+        // an edit forks because the question changed; a rename keeps the id, so
+        // every share link, pin key and park-shaped row survives.
         function renameAOITag(id) {
             const span = document.getElementById(`aoi-tagname-${id}`);
             if (!span || span.querySelector('input')) return;
@@ -8598,49 +8627,46 @@
         }
         window.toggleAOIFocus = toggleAOIFocus;
 
-        // A dimmed map with no explanation is a bug report. The banner is the
-        // one always-visible statement of why, and the way out.
+        // WHERE THE FOCUS STATE LIVES.
         //
-        // Its bottom offset is measured, not guessed: the time slider's height
-        // changes with wrapped preset tags, the animate button and the
-        // animator's own controls, so a hard-coded `bottom` covered the
-        // animate button on a narrow phone. Anchor above whatever the slider
-        // currently is.
-        function positionAOIFocusBanner() {
-            const el = document.getElementById('aoi-focus-banner');
-            if (!el) return;
-            const slider = document.getElementById('time-slider-container');
-            const h = slider ? slider.getBoundingClientRect().height : 70;
-            el.style.bottom = Math.round(h + 10) + 'px';
-        }
+        // A dimmed map with no explanation is a bug report, so focus must say
+        // itself somewhere permanent. It used to be a pill floating above the
+        // time slider: an extra always-on overlay in the middle of the map it
+        // was talking about, measured against the slider's changing height,
+        // and one more thing competing for the bottom of a phone screen.
+        //
+        // It is a chip beside the session chip now. Both answer "what am I
+        // looking at right now" — one names the account, the other the scope —
+        // so they are the same kind of fact and wear the same clothes. The
+        // toggle itself lives where an AOI is managed (the filter panel's
+        // Areas of Interest section and the AOI popup); this is the readout
+        // and the way out, exactly as the session chip is a readout with an ×.
+        function positionAOIFocusBanner() { /* kept: called by old share-link paths */ }
         window.positionAOIFocusBanner = positionAOIFocusBanner;
 
         function updateAOIFocusBanner() {
-            let el = document.getElementById('aoi-focus-banner');
-            if (!aoiFocusID) {
-                if (el) el.remove();
-                if (window._aoiFocusRO) { window._aoiFocusRO.disconnect(); window._aoiFocusRO = null; }
-                return;
-            }
+            // Remove the old floating banner if a cached page still has one.
+            const old = document.getElementById('aoi-focus-banner');
+            if (old) old.remove();
+            if (window._aoiFocusRO) { window._aoiFocusRO.disconnect(); window._aoiFocusRO = null; }
+
+            let el = document.getElementById('aoi-focus-chip');
+            if (!aoiFocusID) { if (el) el.remove(); return; }
+            const row = document.getElementById('top-chips');
+            if (!row) return;
             const name = window._aois?.[aoiFocusID]?.name || aoiFocusID;
             if (!el) {
                 el = document.createElement('div');
-                el.id = 'aoi-focus-banner';
-                el.className = 'aoi-focus-banner';
-                document.body.appendChild(el);
+                el.id = 'aoi-focus-chip';
+                el.className = 'session-chip aoi-focus-chip';
+                row.appendChild(el);
             }
-            el.innerHTML = `<span class="aoi-focus-banner-dot">◈</span>
-                <span class="aoi-focus-banner-name">${escapeHtml(name)}</span>
-                <span class="aoi-focus-banner-hint">focus — other parks dimmed</span>
-                <button onclick="setAOIFocus(null)" title="Leave focus" aria-label="Leave focus">×</button>`;
-            positionAOIFocusBanner();
-            // The slider grows when the animator opens or preset tags wrap;
-            // both happen while focus is on.
-            const slider = document.getElementById('time-slider-container');
-            if (slider && !window._aoiFocusRO && window.ResizeObserver) {
-                window._aoiFocusRO = new ResizeObserver(positionAOIFocusBanner);
-                window._aoiFocusRO.observe(slider);
-            }
+            el.title = `Focused on “${name}” — parks outside it are dimmed (starred ones stay bright) `
+                     + `and the data layers show this area's own rows. Click the × to leave focus.`;
+            el.innerHTML = `<span class="session-chip-label" onclick="openAOIPopupById('${escapeHtml(aoiFocusID)}')" `
+                + `style="cursor:pointer"><i class="icon-focus"></i> ${escapeHtml(name)}</span>`
+                + `<a href="#" onclick="event.preventDefault();setAOIFocus(null)" title="Leave focus" `
+                + `aria-label="Leave focus" class="session-chip-logout">&times;</a>`;
         }
         window.updateAOIFocusBanner = updateAOIFocusBanner;
 
@@ -12352,19 +12378,32 @@
         // competing with the toast, the pinned indicator and the time slider
         // for the same corner of the screen.
         const LOD_STAT_EL = { fires: 'lod-fires', deforest: 'lod-deforest', settlements: 'lod-settlements' };
+        // What each detail preference promises, in the words the control uses.
+        // 'auto' names what it is CURRENTLY drawing, because that is the
+        // question ('why are my trajectories dots?'); the other two name what
+        // was asked for, because that is now the answer.
+        const LOD_MODE_LABEL = {
+            auto: r => (r === 'geometry' ? 'shapes' : r === 'segments' ? 'lines' : 'dots'),
+            shapes: () => 'shapes · forced',
+            fast: r => (r === 'geometry' ? 'fast' : r === 'segments' ? 'lines · fast' : 'dots · fast')
+        };
+        function lodModeClass(render) {
+            return render === 'geometry' ? 'shapes' : render === 'segments' ? 'segments' : 'dots';
+        }
         function setLayerLOD(name, st) {
             const el = document.getElementById(LOD_STAT_EL[name]);
             if (!el) return;
             if (!st) { el.textContent = ''; el.title = ''; delete el.dataset.render; return; }
             const n = (st.count || 0).toLocaleString();
-            const shapes = st.render !== 'points';
+            const mode = st.detail || (window.LODLayer ? LODLayer.detail('view-' + name) : 'auto');
             const more = st.truncated ? ' of ' + (st.total || 0).toLocaleString() : '';
+            const cls = lodModeClass(st.render);
+            const label = (LOD_MODE_LABEL[mode] || LOD_MODE_LABEL.auto)(st.render);
             el.innerHTML = `<span class="lod-count">${n}${more} in view</span>`
-                         + `<span class="lod-mode ${shapes ? 'shapes' : 'dots'}">${shapes ? 'shapes' : 'dots'}</span>`;
-            el.title = shapes
-                ? `${n}${more} clickable ${name} in view — full geometry`
-                : `${n}${more} ${name} in view, drawn as points because there are too many `
-                  + `shapes to draw at this zoom. Hover one for its details, or zoom in for the shapes.`;
+                         + `<button type="button" class="lod-mode ${cls}${mode !== 'auto' ? ' forced' : ''}" `
+                         + `onclick="event.stopPropagation();cycleLayerDetail('${name}')" `
+                         + `title="${escapeHtml(lodModeTitle(name, mode, st, n + more))}">${label}</button>`;
+            el.title = `${n}${more} ${name} in view`;
             // Flash only when the MODE changed: a count ticking as you pan is
             // not news, a change of rendering is.
             if (el.dataset.render !== st.render) {
@@ -12374,6 +12413,41 @@
                 el.classList.add('changed');
             }
         }
+
+        // One sentence per state, saying what is drawn, why, and what the next
+        // click does. The control is the same in the stats row and on a pinned
+        // chip, so the wording is too.
+        function lodModeTitle(what, mode, st, countTxt) {
+            const drawn = st.render === 'geometry'
+                ? `${countTxt} ${what} drawn as full clickable shapes`
+                : st.render === 'segments'
+                ? `${countTxt} ${what} drawn as short direction lines (start → middle → end); hover one for its details`
+                : `${countTxt} ${what} drawn as points; hover one for its details`;
+            const next = mode === 'auto' ? 'always draw full shapes here'
+                       : mode === 'shapes' ? 'always use the fast rendering here'
+                       : 'go back to letting the view decide';
+            const now = mode === 'auto' ? 'Detail follows the view'
+                      : mode === 'shapes' ? 'Full shapes forced for this layer'
+                      : 'Fast rendering forced for this layer';
+            return `${drawn}.\n${now}. Click to ${next}.`;
+        }
+
+        // Cycle one viewport layer's detail preference: auto → shapes → fast.
+        //
+        // DELIBERATELY PER LAYER, not global: fires and settlements in the same
+        // view legitimately want different answers — 12,000 fire fronts are
+        // worth the wait for shapes, 78,000 built-up polygons never are.
+        function cycleLayerDetail(name) {
+            if (!window.LODLayer) return;
+            const mode = LODLayer.setDetail('view-' + name);
+            const st = LODLayer.state('view-' + name) || {};
+            setLayerLOD(name, { count: st.count, total: st.total, render: st.render,
+                                truncated: st.lastTruncated, detail: mode });
+        }
+        window.cycleLayerDetail = cycleLayerDetail;
+        window.lodModeTitle = lodModeTitle;
+        window.lodModeClass = lodModeClass;
+        window.LOD_MODE_LABEL = LOD_MODE_LABEL;
         window.setLayerLOD = setLayerLOD;
 
         // One loader, shared with pinned layers (srv/static/lodlayer.js). What
@@ -17767,14 +17841,17 @@ ${starredItems.narratives.map(n => {
             // read "1,500 of 328,167 fires" and stay that way forever.
             //
             // `park` keeps the pin's identity — it is a statement about THIS
-            // area, so panning east must not adopt the neighbour's rows.
+            // area, so panning east must not adopt the neighbour's rows. The
+            // loader sends it as `area=`, because an AOI id in `park=` is a
+            // hard 404 from ParkIDMiddleware.
             //
-            // Not used when a classification filter is active: that filter is
-            // applied to feature properties client-side, and the points
-            // rendering deliberately does not ship properties. A filtered pin
-            // is a small deliberate subset anyway, so the whole-park fetch is
-            // the right shape for it.
-            if (window.LODLayer && window.LODLayer.supports(featureType) && !filterClassification) {
+            // A classification filter rides along as `class=` and is applied
+            // server-side. It used to force the whole-park path instead, since
+            // the filter read feature properties the cheap renderings do not
+            // ship — so "only agricultural clearings" quietly stopped following
+            // the viewport, and above the LOD threshold would have emptied the
+            // layer.
+            if (window.LODLayer && window.LODLayer.supports(featureType)) {
                 await window.LODLayer.add(key, {
                     featureType,
                     color: { fire_trajectory: '#ef4444', deforestation: '#a855f7', settlement: '#fbbf24' }[featureType],
@@ -17782,6 +17859,7 @@ ${starredItems.narratives.map(n => {
                     park: parkId,
                     parkName,
                     aoi: isAOI(parkId) ? parkId : null,
+                    classification: filterClassification || null,
                     dated: featureType !== 'settlement',
                     onCount: (count, total, render) => {
                         const p = pinnedLayers[key];
@@ -17795,14 +17873,16 @@ ${starredItems.narratives.map(n => {
                     featureCount: st.count || 0,
                     totalCount: st.total || 0,
                     lod: true,
+                    classification: filterClassification || null,
                     layerId, sourceId: 'lod-' + key
                 };
+                const what = filterClassification ? `${filterClassification} ${type}` : type;
                 if (!st.count) {
-                    showToast(`No ${type} features in view for ${parkName} — the pin follows the map, so pan or widen the dates`, 'info');
+                    showToast(`No ${what} features in view for ${parkName} — the pin follows the map, so pan or widen the dates`, 'info');
                 } else if (st.total > st.count) {
-                    showToast(`Pinned ${st.count.toLocaleString()} of ${st.total.toLocaleString()} ${type} in view — zoom in for more detail`, 'success');
+                    showToast(`Pinned ${st.count.toLocaleString()} of ${st.total.toLocaleString()} ${what} in view — zoom in for more detail`, 'success');
                 } else {
-                    showToast(`Pinned ${st.count.toLocaleString()} ${type} features from ${parkName}`, 'success');
+                    showToast(`Pinned ${st.count.toLocaleString()} ${what} features from ${parkName}`, 'success');
                 }
                 return;
             }
@@ -18266,6 +18346,15 @@ ${starredItems.narratives.map(n => {
         return true;
     }
 
+    // The detail control on a pinned chip. Same three states, same words as
+    // the stats row's — one concept, two places it can be reached.
+    function cyclePinDetail(key) {
+        if (!window.LODLayer || !LODLayer.has(key)) return;
+        LODLayer.setDetail(key);
+        updatePinnedIndicator();
+    }
+    window.cyclePinDetail = cyclePinDetail;
+
     function flyToPinnedLayer(key) {
         const layer = pinnedLayers[key];
         if (!layer) return;
@@ -18457,6 +18546,8 @@ ${starredItems.narratives.map(n => {
             if (!byPark[park]) byPark[park] = [];
             byPark[park].push({ type: layer.type, count: layer.featureCount, key, isBulk: true,
                                 lod: layer.lod, render: layer.render,
+                                detail: layer.lod && window.LODLayer ? LODLayer.detail(key) : null,
+                                classification: layer.classification || null,
                                 total: layer.totalCount });
         });
         singleKeys.forEach(key => {
@@ -18516,18 +18607,25 @@ ${starredItems.narratives.map(n => {
                     const tierNote = GEO_DETAIL_LAYERS.includes(p.type)
                         ? ` (${window.geoDetail} detail)` : '';
                     // An LOD pin follows the viewport, so its count is "here,
-                    // now" and its rendering can change under you. Both are
-                    // said on the chip itself: a ◇ for real shapes, a · for
-                    // points — the same distinction the stats rows make, in the
-                    // one character a chip can afford.
-                    let lodMark = '', lodNote = '';
+                    // now" and its rendering can change under you. The chip
+                    // carries the same control the stats row does — a small
+                    // pill naming what is drawn, clickable to force shapes or
+                    // the fast rendering for THIS pin. It lives here rather
+                    // than in the stats legend because a pin is where a
+                    // pinned layer is managed, and the stats row does not
+                    // exist for one.
+                    let lodMark = '';
                     if (p.lod) {
-                        const shapes = p.render !== 'points';
-                        lodMark = `<span class="chip-lod ${shapes ? 'shapes' : 'dots'}">${shapes ? '◇' : '·'}</span>`;
-                        lodNote = shapes ? ' — full shapes in view'
-                                         : ` — drawn as points (${(p.total || count).toLocaleString()} in view); hover one, or zoom in for shapes`;
+                        const cls = lodModeClass(p.render);
+                        const label = (LOD_MODE_LABEL[p.detail || 'auto'] || LOD_MODE_LABEL.auto)(p.render);
+                        const title = lodModeTitle(typeLabels[p.type] || p.type, p.detail || 'auto',
+                            { render: p.render }, (p.total || count).toLocaleString());
+                        lodMark = `<button type="button" class="chip-lod ${cls}${(p.detail && p.detail !== 'auto') ? ' forced' : ''}" `
+                                + `onclick="event.stopPropagation();cyclePinDetail('${p.key}')" `
+                                + `title="${escapeHtml(title)}">${label}</button>`;
                     }
-                    html += `<span class="pinned-layer-chip ${p.type}" style="cursor:pointer;" onclick="event.stopPropagation(); flyToPinnedLayer('${p.key}')" title="${typeLabels[p.type] || p.type}: ${count} features${tierNote}${lodNote} - Click to fly to">`;
+                    const clsNote = p.classification ? ` · ${p.classification} only` : '';
+                    html += `<span class="pinned-layer-chip ${p.type}" style="cursor:pointer;" onclick="event.stopPropagation(); flyToPinnedLayer('${p.key}')" title="${typeLabels[p.type] || p.type}: ${count} features${tierNote}${clsNote} - Click to fly to">`;
                     html += `<span class="chip-icon">${icon}</span>`;
                     html += `<span class="chip-count">${count}</span>${lodMark}`;
                     html += `<span class="chip-remove" onclick="event.stopPropagation(); removePinnedLayer('${p.key}')" title="Remove">×</span>`;

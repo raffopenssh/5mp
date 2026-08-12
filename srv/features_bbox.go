@@ -75,7 +75,11 @@ func (s *Server) HandleAPIFeaturesInBBox(w http.ResponseWriter, r *http.Request)
 	geomBudget := 0
 	if mode == "auto" {
 		geomBudget = 3000
-		if b, err := strconv.Atoi(q.Get("geom_budget")); err == nil && b >= 0 && b <= 20000 {
+		// The ceiling is the client's "draw shapes whatever it costs"
+		// preference (LODLayer.setDetail 'shapes'), not a safety limit: the
+		// answer is bounded by ?limit= either way, and a budget the server
+		// silently ignored made the forced-shapes control a no-op above 20k.
+		if b, err := strconv.Atoi(q.Get("geom_budget")); err == nil && b >= 0 && b <= 200000 {
 			geomBudget = b
 		}
 	}
@@ -91,15 +95,35 @@ func (s *Server) HandleAPIFeaturesInBBox(w http.ResponseWriter, r *http.Request)
 	` + aoiScopeSQL("park_id", s.aoiScopeParam(r))
 	args := []interface{}{featureType, bbox[0], bbox[2], bbox[1], bbox[3]}
 
-	// ?park= scopes the answer to one area's rows. A pinned layer is a
+	// ?area= scopes the answer to one area's rows. A pinned layer is a
 	// statement about an area ("Chinko's fires"), so when the pin is rendered
 	// viewport-first — fetching what is on screen instead of the whole park at
 	// once — panning to a neighbouring park must not quietly adopt its rows.
-	// An AOI id is a park_id in this table, so the same param serves both; the
-	// visibility check still comes from aoiScopeSQL/aoiExcludeSQL above.
-	if park := q.Get("park"); park != "" {
+	//
+	// It is `area`, not `park`, because an AOI id in `?park=` is a hard 404:
+	// ParkIDMiddleware rejects one on every request, by design (an AOI is not a
+	// park and /api/parks/{aoi} must not serve it). The first viewport-first
+	// pin sent `park=XSA_Study_Area` and every fetch 404'd, so an AOI fire pin
+	// silently drew nothing and reported "0 in view" — see AGENTS.md, the
+	// no-op that reads as an answer. `park=` is still accepted for parks so old
+	// share links and any cached client keep working.
+	//
+	// An AOI id IS a park_id in this table, so one column serves both; the
+	// visibility check is aoiScopeSQL/aoiExcludeSQL above plus the explicit
+	// check here — an invisible id is ignored rather than refused, so an id is
+	// never an oracle.
+	area := q.Get("area")
+	if area == "" {
+		area = q.Get("park")
+	}
+	if area != "" && IsAOIID(area) {
+		if _, err := s.GetAOI(area, s.RequestPrincipalID(r), false); err != nil {
+			area = ""
+		}
+	}
+	if area != "" {
 		where += " AND park_id = ?"
-		args = append(args, park)
+		args = append(args, area)
 	}
 
 	// Date filters match UI narrative behavior: filter on start_date.
@@ -111,6 +135,31 @@ func (s *Server) HandleAPIFeaturesInBBox(w http.ResponseWriter, r *http.Request)
 	if to := q.Get("to"); to != "" {
 		where += " AND (start_date IS NULL OR start_date <= ?)"
 		args = append(args, to)
+	}
+
+	// ?class= — the popup's classification filter ("only agricultural
+	// clearings", "only fishing camps"), applied HERE rather than in the
+	// browser.
+	//
+	// It used to be client-side over a whole-park fetch, which is why a
+	// filtered pin was the one thing the LOD loader could not serve: the
+	// points and slim-geometry renderings ship no properties to filter on, so
+	// the filter would have silently emptied the layer. The classification is
+	// not in feature_geometries at all — it lives in park_settlements /
+	// deforestation_events keyed by the polygon_ids list — so it is resolved
+	// through the same Go-side map as the hover tips (feature_meta.go), never
+	// the polygon_ids LIKE join.
+	//
+	// Requires ?area=: without it the candidate set spans every park in view,
+	// and the filter only ever comes from one area's popup. Ignored rather
+	// than refused otherwise — the unfiltered answer is the honest superset.
+	classFilter := strings.TrimSpace(q.Get("class"))
+	var classIDs map[string]bool
+	if classFilter != "" && area != "" {
+		classIDs = s.featureIDsWithClass(featureType, area, classFilter)
+	}
+	if classIDs == nil {
+		classFilter = ""
 	}
 
 	// Pass 1 is index-only: id, centroid, rank inputs. No geojson, so the rows
@@ -125,7 +174,7 @@ func (s *Server) HandleAPIFeaturesInBBox(w http.ResponseWriter, r *http.Request)
 	scanQ := `SELECT id, (bbox_minx + bbox_maxx) / 2, (bbox_miny + bbox_maxy) / 2,
 		         COALESCE(stat_value, 0),
 		         COALESCE((bbox_maxx - bbox_minx) * (bbox_maxy - bbox_miny), 0),
-		         start_date` + where
+		         start_date, feature_id` + where
 
 	rows, err := s.DB.QueryContext(r.Context(), scanQ, args...)
 	if err != nil {
@@ -135,7 +184,15 @@ func (s *Server) HandleAPIFeaturesInBBox(w http.ResponseWriter, r *http.Request)
 	col := newSpreadCollector(limit, bbox, spread)
 	for rows.Next() {
 		var c bboxCand
-		if err := rows.Scan(&c.id, &c.cx, &c.cy, &c.stat, &c.area, &c.startDate); err != nil {
+		var featureID string
+		if err := rows.Scan(&c.id, &c.cx, &c.cy, &c.stat, &c.area, &c.startDate, &featureID); err != nil {
+			continue
+		}
+		// The filter is applied BEFORE the collector, so `total` counts what
+		// passes it and a spread selection spreads over the filtered set. A
+		// filter that changed the picture but not the number would read as a
+		// broken filter.
+		if classFilter != "" && !classIDs[featureID] {
 			continue
 		}
 		col.add(c)
@@ -179,12 +236,7 @@ func (s *Server) HandleAPIFeaturesInBBox(w http.ResponseWriter, r *http.Request)
 			})
 			ids = append(ids, c.id)
 		}
-		// The row id rides along so a dot stays a *feature*: hovering one asks
-		// /api/feature-detail for the same tip the geometry mode shows. Eight
-		// bytes per point against ~1.6 KB for its rings — the whole reason
-		// points mode exists — and without it a zoomed-out map is a picture
-		// rather than data.
-		json.NewEncoder(w).Encode(map[string]interface{}{
+		out := map[string]interface{}{
 			"mode":      "points",
 			"render":    "points",
 			"type":      featureType,
@@ -194,7 +246,34 @@ func (s *Server) HandleAPIFeaturesInBBox(w http.ResponseWriter, r *http.Request)
 			"count":     len(pts),
 			"total":     total,
 			"truncated": truncated,
-		})
+		}
+		// A FIRE IS A MOVEMENT, AND A DOT IS THE ONE THING IT IS NOT.
+		//
+		// The cheap rendering used to collapse each trajectory to its
+		// centroid, so a zoomed-out view of 38,725 fire fronts was a red
+		// stipple: it showed *where* fires were and destroyed the only
+		// property that distinguishes a fire front from a hotspot — the
+		// direction and length it ran. ?seg=1 asks for a three-point chord
+		// instead (first, middle, last vertex), read straight out of the
+		// stored GeoJSON by index, so the field of arrows still reads as
+		// movement at continental zoom. ~50 bytes a feature against ~350 for
+		// the full path and ~26 for a dot.
+		//
+		// Parallel to `points`, not instead of it: a client that has not
+		// heard of segments still gets the dots it expects, and the tip,
+		// the day offset and the row id are all still keyed by index.
+		if q.Get("seg") == "1" && lineLikeFeature(featureType) {
+			if segs := s.fetchChords(r.Context(), cands); segs != nil {
+				out["segs"] = segs
+				out["render"] = "segments"
+			}
+		}
+		// The row id rides along so a dot stays a *feature*: hovering one asks
+		// /api/feature-detail for the same tip the geometry mode shows. Eight
+		// bytes per point against ~1.6 KB for its rings — the whole reason
+		// points mode exists — and without it a zoomed-out map is a picture
+		// rather than data.
+		json.NewEncoder(w).Encode(out)
 		return
 	}
 
@@ -650,6 +729,127 @@ func roundPts(pts [][]float64) [][]float64 {
 	out := make([][]float64, 0, len(pts))
 	for _, p := range pts {
 		out = append(out, roundPt(p))
+	}
+	return out
+}
+// lineLikeFeature: types whose geometry is a path, i.e. types for which a
+// centroid throws away the thing the feature is about.
+func lineLikeFeature(t string) bool { return t == "fire_trajectory" }
+
+// fetchChords reads a three-point chord (first, middle, last vertex) per
+// candidate, in the SAME index order as the caller's points array.
+//
+// SQLite's json_extract with a fixed path is an O(1)-ish read into the stored
+// geojson string, so this is ~40 ms for 30,000 rows — an order of magnitude
+// cheaper than shipping and parsing the full coordinate lists, which is the
+// whole point of the cheap rendering. A row whose geometry is not a LineString
+// (a Point trajectory) yields nulls and is served as a degenerate chord, so the
+// arrays stay parallel and the client never has to re-index.
+func (s *Server) fetchChords(ctx context.Context, cands []bboxCand) [][6]float64 {
+	if len(cands) == 0 {
+		return nil
+	}
+	idx := make(map[int64]int, len(cands))
+	for i, c := range cands {
+		idx[c.id] = i
+	}
+	out := make([][6]float64, len(cands))
+	for i, c := range cands {
+		out[i] = [6]float64{round6(c.cx), round6(c.cy), round6(c.cx), round6(c.cy), round6(c.cx), round6(c.cy)}
+	}
+	const chunk = 900
+	for start := 0; start < len(cands); start += chunk {
+		end := start + chunk
+		if end > len(cands) {
+			end = len(cands)
+		}
+		ph := make([]string, 0, end-start)
+		args := make([]interface{}, 0, end-start)
+		for _, c := range cands[start:end] {
+			ph = append(ph, "?")
+			args = append(args, c.id)
+		}
+		rows, err := s.DB.QueryContext(ctx, `
+			SELECT id, geojson FROM feature_geometries
+			WHERE id IN (`+strings.Join(ph, ",")+`)`, args...)
+		if err != nil {
+			return nil
+		}
+		buf := make([][2]float64, 0, 256)
+		for rows.Next() {
+			var id int64
+			var gj string
+			if err := rows.Scan(&id, &gj); err != nil {
+				continue
+			}
+			i, ok := idx[id]
+			if !ok {
+				continue
+			}
+			pts := scanCoordPairs(gj, buf[:0])
+			if len(pts) == 0 {
+				continue
+			}
+			a, b := pts[0], pts[len(pts)-1]
+			// The middle point is the actual middle VERTEX, not the average of
+			// the ends: a fire that ran out and doubled back would otherwise
+			// draw as a straight line through ground it never touched.
+			m := pts[len(pts)/2]
+			out[i] = [6]float64{round6(a[0]), round6(a[1]),
+				round6(m[0]), round6(m[1]), round6(b[0]), round6(b[1])}
+		}
+		rows.Close()
+	}
+	return out
+}
+
+// scanCoordPairs pulls every [x, y] pair out of a GeoJSON geometry string.
+//
+// Deliberately a byte scan rather than json.Unmarshal or SQLite's json_extract:
+// this runs for tens of thousands of rows in one request and only ever needs
+// three of the ~15 points. Six `json_extract` calls per row (two of them with a
+// concatenated path, so the document is re-parsed each time) measured 30 us a
+// row — 1.2 s for one continental view; this is ~1 us. Nesting is irrelevant
+// because every geometry we serve is a flat list of positions or a list of
+// rings of them, and a chord across the ring order is what we want either way.
+func scanCoordPairs(s string, out [][2]float64) [][2]float64 {
+	i := strings.Index(s, `"coordinates"`)
+	if i < 0 {
+		return out
+	}
+	for ; i < len(s); i++ {
+		c := s[i]
+		if c != '[' {
+			continue
+		}
+		// A pair opens with a number, an array-of-arrays with another '['.
+		j := i + 1
+		for j < len(s) && (s[j] == ' ' || s[j] == '\n') {
+			j++
+		}
+		if j >= len(s) || s[j] == '[' {
+			continue
+		}
+		end := strings.IndexByte(s[j:], ']')
+		if end < 0 {
+			break
+		}
+		body := s[j : j+end]
+		comma := strings.IndexByte(body, ',')
+		if comma < 0 {
+			i = j + end
+			continue
+		}
+		x, err1 := strconv.ParseFloat(strings.TrimSpace(body[:comma]), 64)
+		yStr := body[comma+1:]
+		if k := strings.IndexByte(yStr, ','); k >= 0 { // z or m, ignored
+			yStr = yStr[:k]
+		}
+		y, err2 := strconv.ParseFloat(strings.TrimSpace(yStr), 64)
+		if err1 == nil && err2 == nil {
+			out = append(out, [2]float64{x, y})
+		}
+		i = j + end
 	}
 	return out
 }

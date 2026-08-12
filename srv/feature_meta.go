@@ -180,3 +180,42 @@ func (s *Server) enrichFeatureProps(featureType, parkID, featureID string,
 		}
 	}
 }
+
+// featureIDsWithClass returns the feature_ids of one area whose classification
+// matches, for the viewport endpoint's ?class= filter.
+//
+// nil means "this feature type has no classification" (fire trajectories), and
+// the caller must then serve the UNFILTERED answer rather than an empty one: a
+// filter that cannot apply is not a filter that excludes everything. An empty
+// (non-nil) map means the class is real and nothing in this area carries it,
+// which legitimately draws nothing.
+//
+// Same rule as everywhere else in this file: one scan of the small events
+// table, split in Go. Never the polygon_ids LIKE join.
+func (s *Server) featureIDsWithClass(featureType, areaID, class string) map[string]bool {
+	out := map[string]bool{}
+	switch featureType {
+	case "settlement":
+		for id, m := range s.settlementMetaByPolygon(areaID) {
+			if m.classification.Valid && publicSettlementClass(m.classification.String) == class {
+				out[id] = true
+			}
+		}
+	case "deforestation":
+		// Keyed by "<feature_id>|<year>" for the tip lookup; the filter is
+		// about the polygon, so the year is dropped here.
+		for key, m := range s.deforestMetaByPolygon(areaID) {
+			if !m.classification.Valid || m.classification.String != class {
+				continue
+			}
+			if i := strings.LastIndexByte(key, '|'); i >= 0 {
+				out[key[:i]] = true
+			} else {
+				out[key] = true
+			}
+		}
+	default:
+		return nil
+	}
+	return out
+}
