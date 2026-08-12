@@ -183,16 +183,20 @@ answer. `?area=` carries the same scope and accepts either id; `?park=` still
 works for parks and still 404s for an AOI (pinned by
 `features_bbox_park_param_still_404s_aoi`).
 
-### The detail control moved onto the layer, and is now a choice
+### The detail control moved onto the layer, and is now a MENU of renderings
 
-`.stats-lod`'s readout is a **button** (`cycleLayerDetail`), and every pinned
-LOD chip carries the same one (`cyclePinDetail`): `auto → shapes → fast`,
-per layer. Deliberately not global — 12,000 fire fronts are worth waiting for
-as shapes, 78,000 built-up polygons never are. The preference is expressed as
-`geom_budget`, so the **server** still decides what fits and a forced answer
-still truncates honestly instead of promising something the browser cannot
-parse. (`geom_budget`'s ceiling was 20,000, silently clamped, which made
-"forced shapes" a no-op on exactly the views that wanted it.)
+`.stats-lod`'s readout is a **dropdown** (`openLayerModeMenu`), and every pinned
+LOD chip carries the same one (`openPinModeMenu` → `openModeMenu`), reusing the
+`.aoi-menu` component the downloads already use. It was a cycle button
+(`cycleLayerDetail`/`cyclePinDetail`, both kept for old call sites) through
+`auto → shapes → fast`, which stopped working the moment the list stopped being
+three items and one dimension — see "The legend states every rendering" in
+`animator.md`. Deliberately per layer, not global — 12,000 fire fronts are worth
+waiting for as shapes, 78,000 built-up polygons never are. The preference is
+expressed as `geom_budget`, so the **server** still decides what fits and a
+forced answer still truncates honestly instead of promising something the
+browser cannot parse. (`geom_budget`'s ceiling was 20,000, silently clamped,
+which made "forced shapes" a no-op on exactly the views that wanted it.)
 
 `?spread=0` and `?simplify=0` are documented in `docs/API.md` as what they are:
 developer escape hatches for proving the defaults are the same answer. Neither

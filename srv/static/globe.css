@@ -255,7 +255,16 @@
             gap: 6px; margin-top: 3px; padding-top: 3px; font-size: 9px; line-height: 1.2;
             border-top: 1px solid rgba(255,255,255,0.06); color: #6b7280;
             font-variant-numeric: tabular-nums; }
-        .stats-item.layer-on .stats-lod { display: flex; }
+        /* The readout shows whenever the row is drawing something — including
+           an ANIMATED rendering of a row whose own map layer is off. A legend
+           that hides what is on the map is the failure this line exists to
+           prevent. */
+        .stats-item.layer-on .stats-lod, .stats-item.has-modes .stats-lod { display: flex; }
+        /* A row drawn only by the animation is still a row about something on
+           screen: keep its label legible rather than at the 0.55 the "off"
+           state uses. The accent bar stays off — the map layer really is off. */
+        .stats-item.layer-animated:not(.layer-on) .stats-label,
+        .stats-item.layer-animated:not(.layer-on) .stats-value { opacity: 0.85; }
         .stats-lod .lod-count { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         /* The pill takes the ROW's own colour (currentColor, set per type
            below) at low alpha, so the readout reads as part of the fire /
@@ -281,6 +290,12 @@
         .stats-lod .lod-mode.shapes::before { width: 9px; height: 2px; border-radius: 1px; }
         .stats-lod .lod-mode.segments::before { width: 6px; height: 2px; border-radius: 1px; }
         .stats-lod .lod-mode.shapes { opacity: 0.8; }
+        /* An animated rendering: the same dotted-field glyph the animator's
+           heat layer is, so the pill's mark and the map agree. */
+        .stats-lod .lod-mode.anim::before { width: 7px; height: 7px; border-radius: 2px;
+            background: currentColor; box-shadow: 0 0 4px currentColor; }
+        .stats-lod .lod-mode.anim { opacity: 0.95; }
+        .lod-caret { margin-left: 3px; font-size: 8px; opacity: 0.7; }
         .stats-item.fire .stats-lod { color: var(--color-fire); }
         .stats-item.deforest .stats-lod { color: var(--color-deforestation); }
         .stats-item.settlement .stats-lod { color: var(--color-settlement); }
@@ -1449,6 +1464,34 @@
         /* Touch has no hover, so the button must simply be there. */
         @media (hover: none) { .aoi-menu-copy { opacity: 1; } }
 
+        /* ── The rendering menu (stats-panel legend) ───────────────────────
+           The download menu's component, reused: same box, same touch sizing,
+           same body-level placement. It differs only in being a menu of STATES
+           rather than of actions, so each row carries a mark saying whether it
+           is on, and the two groups are labelled because they behave
+           differently — map detail is one-of (radio), animation renderings are
+           any-of (checkbox), because a fire really can be a heat field and a
+           set of paths at the same time. */
+        .mode-menu { min-width: 172px; }
+        .mode-menu-head { padding: 6px 9px 3px; font-size: 9px; font-weight: 700; letter-spacing: 0.6px;
+            text-transform: uppercase; color: #6b7280; }
+        .mode-menu-head + .mode-menu-head, .mode-menu .aoi-menu-item + .mode-menu-head {
+            margin-top: 2px; border-top: 1px solid rgba(255,255,255,0.07); }
+        .mode-menu-note { padding: 6px 9px 7px; font-size: 10px; line-height: 1.35; color: #6b7280;
+            border-top: 1px solid rgba(255,255,255,0.07); margin-top: 2px; }
+        .mode-menu .aoi-menu-item { gap: 7px; }
+        .mode-menu .mode-mark { flex: none; width: 11px; height: 11px; border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.28); position: relative; }
+        .mode-menu .mode-mark.check { border-radius: 3px; }
+        .mode-menu .mode-opt.on { color: #fbbf24; }
+        .mode-menu .mode-opt.on .mode-mark { border-color: currentColor; }
+        .mode-menu .mode-opt.on .mode-mark::after { content: ''; position: absolute; inset: 2px;
+            border-radius: inherit; background: currentColor; }
+        /* A refused rendering keeps its row and says why on hover — the same
+           rule as the animator's dimmed chips: a refusal must be answerable,
+           not invisible. */
+        .mode-menu .mode-opt.refused { opacity: 0.45; }
+
         /* Inline rename — a label edit, not a version fork, so it happens on
            the name itself instead of opening the draw panel and minting a
            version. Click the name, it becomes a field. No pencil: an icon would
@@ -1583,7 +1626,10 @@
             .stats-lod { flex-basis: auto; width: 100%; justify-content: flex-start;
                 font-size: 7px; margin-top: 1px; padding-top: 0; border-top: 0; }
             .stats-lod .lod-count { display: none; }
-            .stats-lod .lod-mode { padding: 0 4px; }
+            /* The pill is now a menu opener, so it must be a real tap target:
+               the desktop cycle button could be small because a mistap only
+               cost one step of a cycle. */
+            .stats-lod .lod-mode { padding: 3px 6px; font-size: 8px; }
             .stats-trend { font-size: 7px; }
             
             /* Legend repositioned to avoid toolbar */

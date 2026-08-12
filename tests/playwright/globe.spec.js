@@ -242,3 +242,63 @@ test.describe('TEST Helper', () => {
         expect(result.failed).toBe(0);
     });
 });
+
+// The shared viewport is the first thing a link means. Every one of these
+// URLs also names something whose restorer calls fitBounds/flyTo — a country,
+// a park popup, an animation — and each of them used to be able to win the
+// race and land the recipient somewhere the sender never was.
+test.describe('Shared viewport', () => {
+    const cases = [
+        ['country + popup', '&lat=24.9331&lng=2.6151&z=6.1&country=Kenya&popup=CAF_Chinko', 2.6151, 24.9331, 6.1],
+        ['animation',       '&lat=6.5&lng=24.5&z=7&date_preset=90d&anim=fireGrid,trajs&anim_paused=1', 24.5, 6.5, 7],
+        ['popup only',      '&lat=6.5&lng=24.5&z=6.5&popup=CAF_Chinko&sections=fire', 24.5, 6.5, 6.5],
+    ];
+    for (const [name, params, lng, lat, z] of cases) {
+        test(`opens at the named viewport: ${name}`, async ({ page }) => {
+            await page.goto(url(params));
+            await page.waitForSelector('#map', { timeout: 15000 });
+            // Long enough to cover every deferred restorer (popup at 2s,
+            // animator at ~1.8s, sourcedata retries out to ~8s).
+            await page.waitForTimeout(11000);
+            const v = await page.evaluate(() => {
+                const c = map.getCenter();
+                return { lng: c.lng, lat: c.lat, z: map.getZoom() };
+            });
+            expect(Math.abs(v.lng - lng)).toBeLessThan(0.01);
+            expect(Math.abs(v.lat - lat)).toBeLessThan(0.01);
+            expect(Math.abs(v.z - z)).toBeLessThan(0.05);
+        });
+    }
+});
+
+// The stats panel is the map's legend, so with the animator open it must
+// state the ANIMATED renderings too — including for a row whose own map layer
+// is switched off, which is on screen exactly because the animation draws it.
+test.describe('Legend reflects the animation', () => {
+    test('an animated row states its rendering and can switch it', async ({ page }) => {
+        await page.goto(url('&lat=6.5&lng=24.5&z=7&date_preset=90d&anim=fireGrid,deforest&anim_paused=1'));
+        await page.waitForSelector('#anim-chips', { timeout: 20000 });
+        await page.waitForTimeout(6000);
+
+        // deforest is OFF as a map layer but ON in the animation.
+        await expect(page.locator('#stat-deforest')).toHaveClass(/layer-animated/);
+        await expect(page.locator('#lod-deforest .lod-mode')).toBeVisible();
+        await expect(page.locator('#lod-fires .lod-mode')).toContainText('grid');
+
+        // The menu is the same switch as the chip, in the other place.
+        await page.locator('#lod-fires .lod-mode').click();
+        await expect(page.locator('.mode-menu')).toBeVisible();
+        await page.locator('.mode-menu .mode-opt', { hasText: 'Paths' }).click();
+        await page.waitForTimeout(2500);
+        await expect(page.locator('.anim-chip[data-layer="trajs"]')).toHaveClass(/on/);
+        await expect(page.locator('#lod-fires .lod-mode')).toContainText('paths');
+    });
+
+    test('with the animator closed the menu says where animation lives', async ({ page }) => {
+        await page.goto(url('&lat=6.5&lng=24.5&z=7&layers=pixels,fires'));
+        await page.waitForSelector('#map', { timeout: 15000 });
+        await page.waitForTimeout(8000);
+        await page.locator('#lod-fires .lod-mode').click();
+        await expect(page.locator('.mode-menu-note')).toContainText('Animate');
+    });
+});

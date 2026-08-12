@@ -86,6 +86,48 @@ purple.
   a surface is a hit, so competing on distance would beat the trajectory the
   user is pointing at.
 
+### The legend states every rendering, and switches them
+
+The stats panel's rows are the map's legend. With the animator open they were
+lying twice over: a row switched *off* in the panel was being drawn by the
+animation anyway ("Fire Activity 👁̸ 302" over a screen full of animated fire),
+and a row switched *on* reported `1,448 in view · shapes` over a map showing an
+animated heat grid and no shapes at all. The animation's own switches lived
+somewhere else entirely — chips under the time slider, in a different
+vocabulary.
+
+Fixed 2026-08-12. `anim.js` emits **`anim:layers`** (`announceLayers()`, fired
+from `updateChips()` and on close) and exposes `Animator.layers()`,
+`isLayerOn()`, `layerRefusal()` and `setLayer(name, on)`. globe.html maps rows
+to animation layers (`ANIM_ROW_LAYERS`) and renders both in one control.
+
+* **One vocabulary, one control.** `auto/shapes/fast` (map detail) and
+  `grid/points/paths/circles/dots` (animation) are all *renderings of this row*,
+  so they are one dropdown — `.aoi-menu` again, the download menu's component,
+  already touch-sized and already body-level so nothing clips it. The old cycle
+  button could not survive the list growing: cycling six states makes changing
+  one thing five taps, and on a phone a cycle button never shows what the other
+  states are.
+* **Map detail is one-of, animation is any-of** — radio marks and checkbox
+  marks, because a fire legitimately *is* a heat field and a set of paths at
+  once. That is why the animator's chips are chips; the menu must not
+  re-describe them as alternatives.
+* **The animation group appears only while the animator is open.** Otherwise
+  choosing "grid" would have to silently open the animator — changing the time
+  slider, the map and the share link from a control that said one word. When it
+  is closed the menu *says* so instead of hiding the possibility.
+* **The row's readout shows whenever the row is drawing anything**
+  (`.has-modes`, not just `.layer-on`), and a row drawn only by the animation
+  keeps its label legible (`.layer-animated`) while its accent bar stays off —
+  the map layer really is off; the animation is what is on screen.
+* **One direction only.** The chips remain the animator's own state; the legend
+  is a second way to reach the same switch, exactly as the detail control lives
+  on both a stats row and a pinned chip. A pinned chip's menu has **no**
+  animation group — the animator's renderings are of the viewport, not of a
+  named pin.
+* The pill names up to two renderings and then says `3 modes`: a pill is not a
+  legend, and the list is one tap away.
+
 ### A paused frame's dot is the same feature a pinned layer draws
 
 Hovering a settlement or a clearing in the animator used to answer
