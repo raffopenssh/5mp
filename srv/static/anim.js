@@ -1006,17 +1006,29 @@
             // 60 fps, and the geometry does not depend on t — only how much of
             // it is drawn does. Also skip groups whose extent is off screen.
             projectTrajs(D.trajs, proj, w, h);
-            // DENSITY-AWARE INK. The limit is now 6,000 paths rather than 800,
-            // and 6,000 opaque 2.5px strokes is a red sheet: every path present,
-            // none legible. Thin and translucent at density, the overlaps
-            // accumulate (the canvas is in 'lighter' composite here) so
-            // corridors and repeatedly-burnt ground glow by themselves, while a
-            // sparse view stays bold. Same rule, and the same reason, as
-            // densityPaint() in lodlayer.js.
-            const nT = D.trajs.length;
-            const inkW = nT > 3000 ? 0.7 : nT > 1200 ? 1.0 : nT > 400 ? 1.6 : 2.5;
-            const inkA = nT > 3000 ? 0.30 : nT > 1200 ? 0.45 : nT > 400 ? 0.7 : 0.95;
-            const headR = nT > 1200 ? 4 : 7;
+            // DENSITY-AWARE INK, KEYED ON WHAT IS ON SCREEN *AT t*.
+            //
+            // The map draws every feature in the view at once, so its ramp
+            // keys on the loaded count. An ANIMATION does not: a group is
+            // drawn only between its own t0 and its ash-out, so a window
+            // holding 6,000 trajectories typically shows a few hundred in
+            // parallel. Keying the ramp on D.trajs.length therefore thinned
+            // and de-opacified a frame that was nearly empty — the original
+            // thick, opaque strokes were simply better, and that is why.
+            //
+            // So count the live ones (cheap: one pass over already-projected
+            // groups, and off-screen ones are pre-flagged) and only start
+            // thinning when a FRAME really is a red sheet. Same rule as
+            // densityPaint() in lodlayer.js, applied to the right number.
+            let nLive = 0;
+            for (const g of D.trajs) {
+                if (g._off || g.t0 > t) continue;
+                if (t > g.t1 && (t - g.t1) >= TRAJ_FADE_DAYS * DAY) continue;
+                nLive++;
+            }
+            const inkW = nLive > 4000 ? 1.0 : nLive > 2000 ? 1.4 : nLive > 800 ? 1.9 : 2.5;
+            const inkA = nLive > 4000 ? 0.45 : nLive > 2000 ? 0.6 : nLive > 800 ? 0.8 : 0.95;
+            const headR = nLive > 2000 ? 4 : 7;
             for (const g of D.trajs) {
                 if (g.t0 > t) continue;
                 if (g._off) continue;

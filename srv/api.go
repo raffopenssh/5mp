@@ -1037,6 +1037,33 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// SCOPE: an explicit, visibility-checked ?aoi=.
+	//
+	// aoi.go's rule is that endpoints which SUM must keep using
+	// aoiExcludeSQL -- that is about the DEFAULT answer, where adding an
+	// AOI's rows to the parks it overlaps would count the overlap twice.
+	// With an explicit ?aoi= the question is different: "how much fire is in
+	// THIS area", and the AOI's own chain was computed over the whole
+	// polygon, so its rows are the complete answer and the park rows would
+	// be the double count. Same reasoning, and the same aoiScopeSQL, as the
+	// bbox-keyed feature endpoints; without it, focus mode dimmed the map to
+	// one area while the panel above it kept reporting the continent.
+	aoiID := s.aoiScopeParam(r)
+	scopeSQL := func(col string) string { return aoiScopeSQL(col, aoiID) }
+	var scopeName string
+	if aoiID != "" {
+		if a, err := s.GetAOI(aoiID, s.RequestPrincipalID(r), false); err == nil {
+			scopeName = a.Name
+			// Patrol effort is grid-keyed, not park-keyed, so the only way
+			// to scope it is geographically. The AOI's own bbox is the
+			// widest honest answer; an explicit bbox (a drawn box, or the
+			// viewport) stays the more specific one and wins.
+			if len(bbox) != 4 && (a.BBox[2] != 0 || a.BBox[3] != 0) {
+				bbox = []float64{a.BBox[0], a.BBox[1], a.BBox[2], a.BBox[3]}
+			}
+		}
+	}
+
 	// Default to current year if no dates provided
 	now := time.Now()
 	fromYear := int64(now.Year())
@@ -1133,7 +1160,7 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 	// Uses precomputed stat_value column (= fires_total) for fast aggregation
 	{
 		fireQuery := `SELECT COALESCE(SUM(stat_value), 0) FROM feature_geometries
-			WHERE feature_type = 'fire_trajectory'` + aoiExcludeSQL("park_id")
+			WHERE feature_type = 'fire_trajectory'` + scopeSQL("park_id")
 		var fireArgs []interface{}
 		if fromStr != "" {
 			fireQuery += " AND start_date >= ?"
@@ -1159,7 +1186,7 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 			prevFrom := fromTime.Add(-duration).Format("2006-01-02")
 			prevTo := fromTime.Add(-24 * time.Hour).Format("2006-01-02")
 			prevQuery := `SELECT COALESCE(SUM(stat_value), 0) FROM feature_geometries
-				WHERE feature_type = 'fire_trajectory' AND start_date >= ? AND start_date <= ?` + aoiExcludeSQL("park_id")
+				WHERE feature_type = 'fire_trajectory' AND start_date >= ? AND start_date <= ?` + scopeSQL("park_id")
 			prevArgs := []interface{}{prevFrom, prevTo}
 			if len(bbox) == 4 {
 				prevQuery += " AND bbox_maxx >= ? AND bbox_minx <= ? AND bbox_maxy >= ? AND bbox_miny <= ?"
@@ -1175,7 +1202,7 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 	// Uses precomputed stat_value column (= area_km2) for fast aggregation
 	{
 		deforestQuery := `SELECT COALESCE(SUM(stat_value), 0) FROM feature_geometries
-			WHERE feature_type = 'deforestation'` + aoiExcludeSQL("park_id")
+			WHERE feature_type = 'deforestation'` + scopeSQL("park_id")
 		var deforestArgs []interface{}
 		if fromStr != "" {
 			deforestQuery += " AND start_date >= ?"
@@ -1199,7 +1226,7 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 			prevFrom := fromTime.Add(-duration).Format("2006-01-02")
 			prevTo := fromTime.Add(-24 * time.Hour).Format("2006-01-02")
 			prevQuery := `SELECT COALESCE(SUM(stat_value), 0) FROM feature_geometries
-				WHERE feature_type = 'deforestation' AND start_date >= ? AND start_date <= ?` + aoiExcludeSQL("park_id")
+				WHERE feature_type = 'deforestation' AND start_date >= ? AND start_date <= ?` + scopeSQL("park_id")
 			prevArgs := []interface{}{prevFrom, prevTo}
 			if len(bbox) == 4 {
 				prevQuery += " AND bbox_maxx >= ? AND bbox_minx <= ? AND bbox_maxy >= ? AND bbox_miny <= ?"
@@ -1214,12 +1241,12 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 		s.DB.QueryRow(`
 			SELECT COUNT(*) FROM park_settlements
 			WHERE lon >= ? AND lon <= ? AND lat >= ? AND lat <= ?`+scannerInjectedSQLFilter("narrative")+
-			aoiExcludeSQL("park_id")+`
+			scopeSQL("park_id")+`
 		`, bbox[0], bbox[2], bbox[1], bbox[3]).Scan(&totalSettlements)
 	} else {
 		s.DB.QueryRow(`SELECT COUNT(*) FROM park_settlements WHERE 1=1` +
 			scannerInjectedSQLFilter("narrative") +
-			aoiExcludeSQL("park_id")).Scan(&totalSettlements)
+			scopeSQL("park_id")).Scan(&totalSettlements)
 	}
 
 	// Calculate trends
@@ -1245,7 +1272,7 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Cache-Control", "no-cache")
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	out := map[string]interface{}{
 		"active_pixels":       activePixels,
 		"total_distance_km":   totalDistanceKm,
 		"total_patrols":       totalUploads,
@@ -1254,7 +1281,15 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 		"total_deforestation": totalDeforestation,
 		"deforest_trend":      deforestTrend,
 		"total_settlements":   totalSettlements,
-	})
+	}
+	if aoiID != "" {
+		// Echoed so the panel can SAY what it is counting. A number that
+		// silently changed meaning is exactly the failure this scope exists
+		// to avoid.
+		out["scope"] = aoiID
+		out["scope_name"] = scopeName
+	}
+	json.NewEncoder(w).Encode(out)
 }
 
 // HandleAPIAreasSearch searches protected areas, countries, and regions by name.

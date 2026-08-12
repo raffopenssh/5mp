@@ -75,12 +75,13 @@
     <!-- Alpha session chip: shows current credential (pwd for now, user identity
          once user management lands) with an x to log out. -->
     <!-- Top chip row: the things that describe the CURRENT SESSION AND VIEW,
-         in one line at the top, in one visual language. Today that is the
-         credential and, when it is on, the focused area. The AOI focus state
-         used to be a banner floating above the time slider, i.e. a second
-         always-on overlay competing with the animate button on a narrow phone,
-         and sitting in the middle of the map it is a statement about. It is
-         the same kind of fact as "you are logged in as X": scope, not data. -->
+    <!-- Top chip row. Today it carries the credential only.
+         AOI focus used to live here as a second chip, and before that as a
+         banner above the time slider. Both were an always-on overlay stating a
+         scope in one place while the stats panel reported the whole continent
+         in another. It is the stats panel's scope line now (.stats-scope):
+         the numbers are the thing focus silently changes, so the statement
+         and the way out belong on top of them. -->
     <div id="top-chips" class="top-chips">
     {{if .AuthLabel}}<div id="session-chip" class="session-chip {{if .IsTest}}is-test{{end}}"><span class="session-chip-label">{{if .IsTest}}TEST ENV · {{end}}{{.AuthLabel}}</span><a href="/logout" title="Log out" aria-label="Log out" class="session-chip-logout">&times;</a></div>{{end}}
     </div>
@@ -99,6 +100,19 @@
         window.addEventListener('load',place);
         document.addEventListener('DOMContentLoaded',place);
         setTimeout(place,1000);
+        // The panel grows a row when a focus scope appears, so the chip has to
+        // follow it. Measured, not predicted — the scope line wraps at some
+        // widths.
+        (function(){
+            function watch(){
+                var sp=document.querySelector('.stats-panel');
+                if(sp && window.ResizeObserver) new ResizeObserver(place).observe(sp);
+            }
+            // This script block sits ABOVE the stats panel in the document, so
+            // the element does not exist yet at parse time.
+            if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',watch);
+            else watch();
+        })();
     })();
     </script>{{end}}
     {{if .IsTest}}<script>window.IS_TEST_ENV = true;</script>{{end}}
@@ -108,6 +122,13 @@
     <script>window.HAS_PATROL = {{if .HasPatrol}}true{{else}}false{{end}};</script>
 
     <div class="stats-panel" role="region" aria-label="Patrol and conservation statistics">
+        <!-- Focus scope. The numbers in this panel are the ONE thing focus mode
+             changes that has no colour on the map to show it: dimmed parks say
+             "this area is the subject", and a panel still reporting the
+             continent beside them is a contradiction the user has to notice.
+             Written by loadStats() from the server's own `scope_name`, so it
+             can only appear when the query really was scoped. -->
+        <div class="stats-scope" id="stats-scope" hidden></div>
         <div class="stats-header">Patrol Activity</div>
         <div class="stats-item layer-toggle" id="stat-pixels" onclick="toggleViewLayer('pixels')" title="Click to show/hide patrol pixels">
             <span class="stats-label">Active Pixels</span>
@@ -3602,6 +3623,14 @@
                     }
                 }
                 if (bboxToUse) params.push('bbox=' + bboxToUse.join(','));
+
+                // Focus mode is a scope, and a scope that the map obeys but
+                // the numbers do not is worse than no scope at all. The server
+                // re-checks visibility (aoiScopeParam), so this is a request,
+                // not an assertion — an id we may not see is simply ignored.
+                if (typeof aoiFocusID !== 'undefined' && aoiFocusID) {
+                    params.push('aoi=' + encodeURIComponent(aoiFocusID));
+                }
                 
                 // Add movement type filter
                 var types = getActiveMovementTypes();
@@ -3644,6 +3673,21 @@
                     }
                     
                     setIfExists('stats-settlements', formatNumber(stats.total_settlements || 0));
+
+                    // The scope line is written by updateAOIFocusBanner (one
+                    // writer, so the readout and the toggle cannot disagree).
+                    // What the response adds is CONFIRMATION: the server
+                    // re-checks visibility, so a focus the client believes in
+                    // but the server dropped would otherwise leave a chip
+                    // claiming a scope these numbers do not have.
+                    const scopeEl = document.getElementById('stats-scope');
+                    if (scopeEl && !scopeEl.hidden) {
+                        scopeEl.classList.toggle('unscoped', !stats.scope);
+                        if (!stats.scope) {
+                            scopeEl.title = 'These totals are NOT scoped to this area — '
+                                + 'the server did not accept the scope. The map paint is focused, the numbers are global.';
+                        }
+                    }
                 }
 
             } catch (err) {
@@ -8599,9 +8643,16 @@
             updatePAHighlighting();
             updateAOITagsDisplay();
             updateAOIFocusBanner();
-            // Data layers change scope, not just colour: reload whatever is on.
+            // The panel's totals are scoped too (see loadStats' ?aoi=), so
+            // they are as stale as the map paint until this runs.
+            if (typeof loadStats === 'function') loadStats();
+            // Data layers change scope, not just colour: reload whatever is
+            // on. Entering focus can also make a row and a pin the same
+            // answer, and leaving it makes them different again — reconcile
+            // first, then reload only what is still drawing for itself.
+            reconcileViewLayerDuplicates();
             Object.keys(VIEW_LAYER_META).forEach(n => {
-                if (window.viewLayers?.[n]) loadViewFeatureLayer(n);
+                if (window.viewLayers?.[n] && !duplicatePinKey(n)) loadViewFeatureLayer(n);
             });
             // An animation already running is showing the wrong scope now.
             if (window.Animator?.isOpen?.()) {
@@ -8629,44 +8680,44 @@
 
         // WHERE THE FOCUS STATE LIVES.
         //
-        // A dimmed map with no explanation is a bug report, so focus must say
-        // itself somewhere permanent. It used to be a pill floating above the
-        // time slider: an extra always-on overlay in the middle of the map it
-        // was talking about, measured against the slider's changing height,
-        // and one more thing competing for the bottom of a phone screen.
+        // In the stats panel, as its scope line. Two earlier homes were both
+        // wrong in the same way: a pill floating above the time slider, and
+        // then a chip beside the session chip — each an extra always-on
+        // overlay saying "you are looking at X" while the panel a few
+        // centimetres away kept reporting the whole continent.
         //
-        // It is a chip beside the session chip now. Both answer "what am I
-        // looking at right now" — one names the account, the other the scope —
-        // so they are the same kind of fact and wear the same clothes. The
-        // toggle itself lives where an AOI is managed (the filter panel's
-        // Areas of Interest section and the AOI popup); this is the readout
-        // and the way out, exactly as the session chip is a readout with an ×.
+        // Focus's one invisible effect IS those numbers, so the statement
+        // belongs on top of them: the panel says what it is counting, and the
+        // way out of a scope is where the scope is stated. That also buys a
+        // row back on a phone, where the panel is already pinned to the top of
+        // the screen and the chip row was competing with it.
         function positionAOIFocusBanner() { /* kept: called by old share-link paths */ }
         window.positionAOIFocusBanner = positionAOIFocusBanner;
 
         function updateAOIFocusBanner() {
-            // Remove the old floating banner if a cached page still has one.
-            const old = document.getElementById('aoi-focus-banner');
-            if (old) old.remove();
+            // Remove the two previous homes if a cached page still holds one.
+            document.getElementById('aoi-focus-banner')?.remove();
+            document.getElementById('aoi-focus-chip')?.remove();
             if (window._aoiFocusRO) { window._aoiFocusRO.disconnect(); window._aoiFocusRO = null; }
 
-            let el = document.getElementById('aoi-focus-chip');
-            if (!aoiFocusID) { if (el) el.remove(); return; }
-            const row = document.getElementById('top-chips');
-            if (!row) return;
-            const name = window._aois?.[aoiFocusID]?.name || aoiFocusID;
-            if (!el) {
-                el = document.createElement('div');
-                el.id = 'aoi-focus-chip';
-                el.className = 'session-chip aoi-focus-chip';
-                row.appendChild(el);
+            const el = document.getElementById('stats-scope');
+            if (!el) return;
+            if (!aoiFocusID) {
+                el.hidden = true;
+                el.innerHTML = '';
+                delete el.dataset.scoped;
+                return;
             }
-            el.title = `Focused on “${name}” — parks outside it are dimmed (starred ones stay bright) `
-                     + `and the data layers show this area's own rows. Click the × to leave focus.`;
-            el.innerHTML = `<span class="session-chip-label" onclick="openAOIPopupById('${escapeHtml(aoiFocusID)}')" `
-                + `style="cursor:pointer"><i class="icon-focus"></i> ${escapeHtml(name)}</span>`
-                + `<a href="#" onclick="event.preventDefault();setAOIFocus(null)" title="Leave focus" `
-                + `aria-label="Leave focus" class="session-chip-logout">&times;</a>`;
+            const name = window._aois?.[aoiFocusID]?.name || aoiFocusID;
+            el.hidden = false;
+            el.title = `Focused on “${name}” — these totals, the map layers and the animation `
+                     + `cover this area only. Parks outside it are dimmed (starred ones stay bright). `
+                     + `Click the name to open it, × to leave focus.`;
+            el.innerHTML = `<i class="icon-focus"></i>`
+                + `<span class="stats-scope-name" onclick="event.stopPropagation();openAOIPopupById('${escapeHtml(aoiFocusID)}')">`
+                + `${escapeHtml(name)}</span>`
+                + `<button type="button" class="stats-scope-x" title="Leave focus" aria-label="Leave focus" `
+                + `onclick="event.stopPropagation();setAOIFocus(null)">&times;</button>`;
         }
         window.updateAOIFocusBanner = updateAOIFocusBanner;
 
@@ -12318,7 +12369,14 @@
             const map2 = { pixels: 'stat-pixels', fires: 'stat-fires', deforest: 'stat-deforest', settlements: 'stat-settlements' };
             Object.keys(map2).forEach(k => {
                 const el = document.getElementById(map2[k]);
-                if (el) el.classList.toggle('layer-on', !!viewLayers[k]);
+                if (el) {
+                    el.classList.toggle('layer-on', !!viewLayers[k]);
+                    // A mirrored row is drawn by a pin, not by itself. Marked
+                    // so the row can say whose layer it is showing rather
+                    // than looking like an ordinary toggle whose × removes
+                    // something the user pinned by name.
+                    el.classList.toggle('layer-pinned', !!(mirroredPins && mirroredPins[k]));
+                }
             });
         }
 
@@ -12330,6 +12388,27 @@
         }
 
         function toggleViewLayer(name) {
+            // A stats row that MIRRORS a pin is the pin's second switch, not a
+            // second layer: switching it off removes the pin, because the pin
+            // is the only thing drawing. Same idea as the detail control
+            // living in both places — one layer, two ways to reach it.
+            const dup = duplicatePinKey(name);
+            if (dup && viewLayers[name]) {
+                // Off BEFORE the pin is removed: removePinnedLayer reconciles
+                // on its way out, and a row still marked on would be handed
+                // back its own layer at exactly that moment.
+                viewLayers[name] = false;
+                // removePinnedLayer lives in the pinning script block; it is a
+                // top-level declaration, so it is global by the time a click
+                // can happen — guarded anyway because this row must never
+                // become inert if that changes.
+                if (typeof removePinnedLayer === 'function') removePinnedLayer(dup);
+                removeViewFeatureLayer(name);
+                updateViewLayerUI();
+                reconcileViewLayerDuplicates();
+                if (typeof updateShareURL === 'function') updateShareURL();
+                return;
+            }
             viewLayers[name] = !viewLayers[name];
             updateViewLayerUI();
             applyViewLayer(name);
@@ -12351,11 +12430,86 @@
                 return;
             }
             if (viewLayers[name]) {
+                // Don't draw the same answer twice — see reconcileViewLayerDuplicates.
+                if (duplicatePinKey(name)) { reconcileViewLayerDuplicates(); return; }
                 loadViewFeatureLayer(name);
             } else {
                 removeViewFeatureLayer(name);
             }
         }
+
+        // ONE ANSWER, ONE LAYER.
+        //
+        // A pin ("XSA's fires") and a stats-panel toggle ("fires in view")
+        // are different questions in general — the pin is scoped to an area,
+        // the toggle to the viewport — but under FOCUS they become the same
+        // one: the viewport layer is scoped to the focused AOI too (?aoi=), so
+        // both fetch the identical rows, draw them on top of each other at
+        // double ink, and answer the same hover twice. It is also two fetches
+        // of a 3 MB continental answer for one picture.
+        //
+        // So when a pin already covers a stats row's exact scope, the row does
+        // not add a second layer: it MIRRORS the pin — shows on, shows the
+        // pin's count and rendering, and switching it off removes the pin.
+        // Deliberately not the reverse (pinning does not silently steal the
+        // row's layer and rename it): the pin is the more specific, named,
+        // shareable object, so it is the one that survives.
+        //
+        // A pin under NO focus is a subset of the view, not a duplicate of it,
+        // so nothing is mirrored there.
+        function duplicatePinKey(name) {
+            const meta = VIEW_LAYER_META[name];
+            if (!meta) return null;
+            const scope = (typeof aoiFocusID !== 'undefined' && aoiFocusID) ? aoiFocusID : null;
+            if (!scope) return null;
+            const pins = window.pinnedLayers || {};
+            return Object.keys(pins).find(k => {
+                const p = pins[k];
+                if (!p || !p.lod || p.parkId !== scope) return false;
+                if (p.classification) return false;   // a filtered pin is a different answer
+                const ft = p.type === 'fire' ? 'fire_trajectory' : p.type;
+                return ft === meta.featureType;
+            }) || null;
+        }
+        window.duplicatePinKey = duplicatePinKey;
+
+        // Called whenever pins or the focus scope change: a row that was
+        // drawing its own copy hands over to the pin, and one that was
+        // mirroring a pin that has gone draws its own again.
+        // `var`, not `let`: updateViewLayerUI() reads it and is declared
+        // hundreds of lines above this — the same trap as aoiFocusID.
+        var mirroredPins = {};   // stats layer name -> pin key it is mirroring
+        function reconcileViewLayerDuplicates() {
+            Object.keys(VIEW_LAYER_META).forEach(name => {
+                const dup = duplicatePinKey(name);
+                const was = mirroredPins[name] || null;
+                if (dup) {
+                    if (window.LODLayer) window.LODLayer.remove('view-' + name);
+                    mirroredPins[name] = dup;
+                    viewLayers[name] = true;          // it IS on screen; say so
+                    const st = (window.LODLayer && LODLayer.state(dup)) || {};
+                    setLayerLOD(name, { count: st.count, total: st.total, render: st.render,
+                                        truncated: st.lastTruncated, mirror: dup });
+                } else if (was) {
+                    delete mirroredPins[name];
+                    // The pin went away. The row stays on — the user never
+                    // switched it off — so it goes back to loading its own.
+                    if (viewLayers[name]) loadViewFeatureLayer(name);
+                    else setLayerLOD(name, null);
+                }
+            });
+            updateViewLayerUI();
+        }
+        window.reconcileViewLayerDuplicates = reconcileViewLayerDuplicates;
+
+        // A mirrored row's numbers come from the pin's own loader.
+        window.addEventListener('lod:state', (e) => {
+            const d = e.detail || {};
+            const name = Object.keys(mirroredPins).find(n => mirroredPins[n] === d.key);
+            if (!name) return;
+            setLayerLOD(name, { count: d.count, total: d.total, render: d.render,
+                                truncated: d.truncated, detail: d.detail_mode, mirror: d.key });
+        });
 
         function removeViewFeatureLayer(name) {
             if (window.LODLayer) window.LODLayer.remove('view-' + name);
@@ -12395,15 +12549,23 @@
             if (!el) return;
             if (!st) { el.textContent = ''; el.title = ''; delete el.dataset.render; return; }
             const n = (st.count || 0).toLocaleString();
-            const mode = st.detail || (window.LODLayer ? LODLayer.detail('view-' + name) : 'auto');
+            // A mirrored row is the PIN's readout, so its detail preference and
+            // its cycle button are the pin's too — one layer cannot have two
+            // detail settings that disagree.
+            const lodKey = st.mirror || ('view-' + name);
+            const mode = st.detail || (window.LODLayer ? LODLayer.detail(lodKey) : 'auto');
             const more = st.truncated ? ' of ' + (st.total || 0).toLocaleString() : '';
             const cls = lodModeClass(st.render);
             const label = (LOD_MODE_LABEL[mode] || LOD_MODE_LABEL.auto)(st.render);
-            el.innerHTML = `<span class="lod-count">${n}${more} in view</span>`
+            const cycle = st.mirror ? `cyclePinDetail('${st.mirror}')` : `cycleLayerDetail('${name}')`;
+            const pinned = st.mirror ? '<i class="icon-pin" title="Drawn by the pinned layer"></i> ' : '';
+            el.innerHTML = `<span class="lod-count">${pinned}${n}${more} in view</span>`
                          + `<button type="button" class="lod-mode ${cls}${mode !== 'auto' ? ' forced' : ''}" `
-                         + `onclick="event.stopPropagation();cycleLayerDetail('${name}')" `
+                         + `onclick="event.stopPropagation();${cycle}" `
                          + `title="${escapeHtml(lodModeTitle(name, mode, st, n + more))}">${label}</button>`;
-            el.title = `${n}${more} ${name} in view`;
+            el.title = st.mirror
+                ? `${n}${more} ${name} in view — drawn by the pinned layer, so this row switches that pin off`
+                : `${n}${more} ${name} in view`;
             // Flash only when the MODE changed: a count ticking as you pan is
             // not news, a change of rendering is.
             if (el.dataset.render !== st.render) {
@@ -18511,6 +18673,13 @@ ${starredItems.narratives.map(n => {
     }
     
     function updatePinnedIndicator() {
+        // Pins and the stats rows can draw the same answer; one place decides
+        // which of them owns it (see reconcileViewLayerDuplicates). Guarded
+        // because reconciling can remove a pin, which calls back in here.
+        if (!window._reconcilingPins && typeof reconcileViewLayerDuplicates === 'function') {
+            window._reconcilingPins = true;
+            try { reconcileViewLayerDuplicates(); } finally { window._reconcilingPins = false; }
+        }
         const indicator = document.getElementById('pinned-indicator');
         const itemsContainer = document.getElementById('pinned-items');
         const categoryKeys = Object.keys(pinnedLayers);

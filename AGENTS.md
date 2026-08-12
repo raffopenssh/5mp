@@ -841,6 +841,36 @@ returns `null` — not `[]` — when the park list did not resolve, or the whole
 world greys out. `var aoiFocusID`, not `let`: `updatePAHighlighting()` reads it
 during map setup, thousands of lines above the declaration.
 
+**The stats panel is where focus states itself, and its numbers obey it.**
+`/api/stats` takes the same visibility-checked `?aoi=` as the feature endpoints
+(`aoiScopeParam` → `aoiScopeSQL`) and echoes `scope`/`scope_name`. That is not a
+contradiction of aoi.go's "endpoints that SUM must use `aoiExcludeSQL`" — that
+rule is about the *default* answer, where adding an AOI's rows to the parks it
+overlaps double-counts the overlap; with an explicit scope the AOI's own rows
+*are* the complete answer for that geometry and the park rows would be the
+double count. Non-owners get the global answer and no `scope` key (pinned by
+`stats_aoi_scope_ignored_for_non_owner`).
+
+The focus readout lives in that panel too (`.stats-scope`, written by
+`updateAOIFocusBanner()` — name kept), *not* in `#top-chips` and not in a banner
+over the slider. Both earlier homes were an always-on overlay announcing a scope
+while the panel a few centimetres away reported the whole continent. The numbers
+are the one thing focus changes invisibly, so the statement and the × belong on
+top of them. `loadStats()` only decorates it with the server's confirmation
+(`.unscoped` when the scope was declined); one writer, so the readout and the
+toggle cannot disagree.
+
+**A stats row and a pin can be the same layer.** Under focus the viewport layers
+are scoped to the AOI too, so "XSA's fires" (a pin) and "fires in view" (the
+row) fetch identical rows — two 3 MB requests, doubled ink, and one hover
+answered twice. `duplicatePinKey()`/`reconcileViewLayerDuplicates()` make the
+row **mirror** the pin instead: it shows on, shows the pin's count and its
+detail control, and switching it off removes the pin. Deliberately one
+direction — the pin is the named, shareable object, so it survives; a filtered
+pin (`classification`) is a different answer and is never mirrored; without
+focus a pin is a subset of the view, not a duplicate. `var mirroredPins`, not
+`let` (`updateViewLayerUI()` is declared far above it).
+
 **archive ≠ cancel ≠ delete ≠ supersede.** `archive` hides the overlay and
 touches nothing else — ingest keeps running, so unhiding shows an answer rather
 than a progress bar. `cancel` disables unfinished datasets but keeps their
@@ -1751,6 +1781,15 @@ accumulate into structure — corridors and repeatedly-burnt ground glow on thei
 own — while a sparse view stays bold and obviously clickable. Arrows fade out
 with them: a glyph every 100 px across 2,000 overlapping paths is noise.
 **Never judge this by feature count alone; look at the render.**
+
+⚠️ **The animator's ramp keys on what is drawn AT `t`, not on what was
+loaded.** The map draws every feature in the view at once; an animation draws a
+group only between its own `t0` and its ash-out, so a window holding 6,000
+trajectories typically shows a few hundred in parallel. Keying `inkW`/`inkA` on
+`D.trajs.length` therefore thinned a frame that was nearly empty, and the
+original thick opaque strokes were simply better. It counts the live ones per
+frame (cheap: off-screen groups are pre-flagged) and only thins past ~800
+simultaneous paths.
 
 The animator's fire-grid blob radius must also **cover its cell**
 (`cellPx * (0.8 + 0.6*inten)`), or the layer draws a halftone lattice — a
