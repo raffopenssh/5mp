@@ -109,15 +109,43 @@ three overlapping answers at once (geology popup + AOI popup + AOI map tip):
   multipolygon AOI reported "+3 more" about *itself* and a dissolved geology
   class "+96". Identity is the feature id, or the properties themselves when a
   vector tile carries none (`featureKey()`).
-* **`MapTip.setBackdropGuard(fn)`** — stated once, in the `map.on('load')`
-  block, not re-implemented per layer: a park polygon has its own popup and its
-  own click handler, so every negative-priority tip stands down over one. The
-  AOI tip used to do this itself, which is exactly why the geology overlay,
-  added later, did not — a tap on a park inside the AOI opened a geology card.
+* **A park is a REGION, not an exception** (`registerParkTip`, priority -10).
+  It used to own the click outright, and `MapTip.setBackdropGuard(fn)` silenced
+  every negative-priority tip over a park polygon so the two would not both
+  answer. The guard is **gone**. Its cost was that inside a park — most of what
+  this map is about — geology and the AOI were not merely outranked, they were
+  *erased*: no tab, no card, no way down the stack, and a tap on gold-hosting
+  basement inside Chinko opened Chinko. The full ladder is now just numbers:
+
+  | priority | layer |
+  |---|---|
+  | `0` | fires, settlements, roads, trajectories, probes |
+  | `-10` | **park** (`areas-fill`) — a region, but the smaller one |
+  | `-20` | AOI (`aois-fill`) — usually far larger, so it loses to a park |
+  | `-30` | geology drape — a whole country |
+
+  The park carries `activateOnClick` for the same reason the AOI does: sole
+  answer → its overview popup opens directly (the old behaviour); several
+  answers → one card, one tab each, Park selected and carrying the same button.
+  Its `html` **declines** on shift/⌘/ctrl-click, because that gesture is
+  multi-select and belongs to `setupPAClickHandler`, which still runs and still
+  stands down on `window._mapTipClicked`.
+
+  Anything that reads "if a park covers this point, stand down" is this bug
+  coming back. Rank it; do not delete it.
 * **Geology went through `maplibregl.Popup`**, so its click never reached the
   shared arbitration at all. It is a MapTip registration now, and `remove(id)`
   unregisters it — otherwise a switched-off sheet keeps swallowing clicks.
   The raw-Popup path survives only as a fallback if `maptip.js` fails to load.
+* **The popup's × is FloatUI's own button, not MapLibre's relocated one**
+  (`decoratePAPopup`). MapLibre's × used to be re-parented into the grab bar
+  and left to MapLibre's internal listener — inside an element that calls
+  `setPointerCapture` to drag. Browsers disagree about which element owns a
+  click made under pointer capture (Safari charges it to the capturing bar), so
+  on Safari the × did nothing and the card could not be dismissed at all.
+  MapLibre's × is now `display:none` and the bar builds its own button calling
+  `popup.remove()`. Never move a foreign library's control into a drag handle
+  and keep its listener.
 * Where a backdrop wins but hides another, **name the other in the same tip**
   rather than making it unreachable: the AOI tip carries a `Geology · <code>`
   line. One tip, both answers.

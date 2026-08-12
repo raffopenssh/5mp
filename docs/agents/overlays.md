@@ -127,13 +127,29 @@ need one tileset per combination of 46 classes.
   missing unit.
 * `switchBasemap()` excludes `geomap-*` and calls `GeoMap.reattach()`, which
   re-adds on `idle` — the same `before`-id trap as `HistMap`.
+* **`add(id)` retries; it does not give up.** It used to `return` when
+  `map.isStyleLoaded()` was false, which turns "try again in a moment" into
+  "never". With two sheets on at once (`?geomap=sudan,car`) both queued on the
+  same `idle`, the first one's `addSource`/`addLayer` put the style back into a
+  loading state, and the second silently evaporated. The failure is invisible
+  by construction — there IS geology on screen, over the other country — and it
+  reads as a *click* bug: over the missing half a tap falls through to whatever
+  is underneath. It now queues itself on the next `idle` (`pendingAdd`, cleared
+  by `remove()` so a sheet switched off is not resurrected). Cross-cutting
+  invariant 1: a unit that produces nothing for a valid input must report
+  unfinished, not success.
 * **The unit card is an ordinary hover tip at `priority: -30`** — the deepest
-  backdrop on the map: a park, an AOI and every pinned feature answer before it
-  does. It was `clickOnly` on the theory that a country-sized drape has no "off
-  it" to move to; that was over-thought (MapTip shows only ONE tip, so geology
-  simply loses to anything more specific) and it made the rock map heavier to
-  use than a fire. It also carries `peers: false`: a drape's 17 units are a
-  legend, not a pile-up to "zoom in and separate".
+  backdrop on the map: a park (-10), an AOI (-20) and every pinned feature (0)
+  answer before it does. It was `clickOnly` on the theory that a country-sized
+  drape has no "off it" to move to; that was over-thought (MapTip shows only ONE
+  tip, so geology simply loses to anything more specific) and it made the rock
+  map heavier to use than a fire. It also carries `peers: false`: a drape's 17
+  units are a legend, not a pile-up to "zoom in and separate".
+
+  Until 2026-08-12 the -30 was academic inside a protected area: a park
+  polygon silenced every backdrop outright (`setBackdropGuard`), so geology was
+  unreachable exactly where this map is used. The park is a ranked layer now —
+  see `docs/agents/map-ui.md`.
 
 ### One layer, one legend, and the legend is the industry's
 
