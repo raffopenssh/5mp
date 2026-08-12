@@ -1,0 +1,13 @@
+-- 050: geopackage_jobs.view_json — what a VIEW export was a view OF.
+--
+-- The area export's question is fully described by the columns that already
+-- exist (area, window, effort, raw_fire). A view export's is not: it is a
+-- bbox, an animation instant and a set of animator chips, and those live only
+-- inside cache_key, which is a hash-shaped string nobody should parse.
+--
+-- Without this, a card that outlives the tab it was started in cannot say what
+-- it is ("GIS export ready: Map view") and its "Try again" button would
+-- silently rebuild the WRONG thing — an area export for the same window. The
+-- notification card is explicitly designed to survive a closed laptop, so its
+-- buttons have to work from the server's state alone.
+ALTER TABLE geopackage_jobs ADD COLUMN view_json TEXT NOT NULL DEFAULT '';

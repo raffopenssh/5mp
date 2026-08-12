@@ -81,6 +81,66 @@
         return d;
     }
 
+    // The viewport export: "a GeoPackage of exactly what is on my screen".
+    //
+    // Same job, same card, same 21-day link, same delete button as the area
+    // export — a view export is a different QUESTION, not a different
+    // mechanism (srv/gpkg_view.go). The one behavioural difference is that it
+    // is usually small enough to be a download rather than a notification, so
+    // it asks the server to hold the request briefly (`wait`) and only falls
+    // back to the bell if the build is genuinely long. Both outcomes are
+    // announced, because "nothing appeared to happen" is the failure this is
+    // guarding against in either direction.
+    //
+    // opts: {bbox:[w,s,e,n], from, to, at, layers:[], aoi, area, label, wait}
+    async function startView(opts) {
+        opts = opts || {};
+        if (!opts.bbox || opts.bbox.length !== 4) return null;
+        const qs = new URLSearchParams({ pwd: pwd() });
+        qs.set('bbox', opts.bbox.map(v => Number(v).toFixed(4)).join(','));
+        if (opts.from) qs.set('from', opts.from);
+        if (opts.to) qs.set('to', opts.to);
+        if (opts.at) qs.set('at', opts.at);
+        if (opts.layers && opts.layers.length) qs.set('layers', opts.layers.join(','));
+        if (opts.aoi) qs.set('aoi', opts.aoi);
+        if (opts.area) qs.set('area', opts.area);
+        if (opts.refresh) qs.set('refresh', '1');
+        // Long enough that the common case (one screen, a few MB) lands as a
+        // download; short enough that it can never be why a request times out.
+        qs.set('wait', String(opts.wait || 8));
+        const what = opts.label || 'this view';
+        let d;
+        try {
+            const r = await fetch(`/api/view/export.gpkg?${qs}`, { method: 'POST' });
+            if (!r.ok) throw new Error(await r.text());
+            d = await r.json();
+        } catch (e) {
+            if (typeof showToast === 'function') showToast('Could not start the export: ' + e.message, 'error');
+            return null;
+        }
+        cache.set(d.id, d);
+        if (d.state === 'ready') {
+            if (typeof showToast === 'function') {
+                showToast(`GeoPackage of ${what} is ready — downloading`
+                        + (d.size_bytes ? ` (${fmtBytes(d.size_bytes)})` : ''), 'success',
+                          { key: 'gpkg-' + d.id });
+            }
+            download(d.id);
+            if (typeof loadNotifications === 'function') setTimeout(loadNotifications, 700);
+        } else if (d.state === 'failed') {
+            if (typeof showToast === 'function') showToast('Export failed: ' + (d.error || 'unknown'), 'error');
+        } else {
+            if (typeof showToast === 'function') {
+                showToast(`This view is a big one — building the GeoPackage in the background. `
+                        + `Watch the bell; the download stays available for 21 days, `
+                        + `or delete it there when you're done.`, 'info', { key: 'gpkg-' + d.id });
+            }
+            track(d.id);
+            if (typeof loadNotifications === 'function') setTimeout(loadNotifications, 700);
+        }
+        return d;
+    }
+
     // Is this exact export already a file? Side-effect free (`peek=1`), so it
     // can be asked by a share link that merely *points* at an entry.
     // Returns the job, or null (404 = nothing built for this window).
@@ -220,10 +280,23 @@
 
     // Restart the same question. Uses the job's own parameters rather than the
     // current UI state: the user is retrying *this* export, and the time slider
-    // may well have moved since.
+    // may well have moved since. A view export retries as a view export — its
+    // bbox/instant/chips ride on the job row (`view_json`), so a card reloaded
+    // tomorrow still retries the right thing rather than quietly falling back
+    // to an area export for the same window.
     async function retry(id) {
         const d = cache.get(id);
         if (!d) return;
+        if (d.view) {
+            const nd = await startView({
+                bbox: d.view.bbox, from: d.from_date, to: d.to_date, at: d.view.at,
+                layers: d.view.layers, aoi: d.view.aoi,
+                area: d.is_aoi ? '' : d.area_id,
+                label: d.area_name || 'this view', refresh: true,
+            });
+            if (nd && typeof loadNotifications === 'function') loadNotifications();
+            return;
+        }
         const qs = new URLSearchParams({ pwd: pwd(), refresh: '1' });
         if (d.from_date) qs.set('from', d.from_date);
         if (d.to_date) qs.set('to', d.to_date);
@@ -338,5 +411,5 @@
         }
     });
 
-    window.GeoPackageExport = { start, peek, track, stop, poll, cardHTML, download, retry, remove, copyLink, cache };
+    window.GeoPackageExport = { start, startView, peek, track, stop, poll, cardHTML, download, retry, remove, copyLink, cache };
 })();

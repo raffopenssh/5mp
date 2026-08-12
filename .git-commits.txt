@@ -1,3 +1,14 @@
+52204a7 2026-08-12 07:28:33 AGENTS.md: point at the active LOD handover
+a4d2381 2026-08-12 07:28:20 docs: handover for the LOD / paused-animation-export work
+45e77d8 2026-08-12 07:27:21 gpkg jobs: pick the builder, don't run both
+f8438b8 2026-08-12 07:22:04 Viewport features: streamed spread-select, LOD auto mode, view GeoPackage
+4eddac4 2026-08-10 08:28:50 maptip: arbitrate backdrop tips by priority, not draw order
+fe6edbe 2026-08-10 08:09:36 Export menu: an explicit copy-link button per row
+e950555 2026-08-10 07:57:22 geology: commodity chips are independent toggles, union of hosts, in share link
+e6edbeb 2026-08-10 07:56:30 Export menu: drop <a download>, name files from Content-Disposition
+70da37b 2026-08-10 07:51:33 login: inline hint when the password is wrong
+af59c0d 2026-08-10 07:30:25 admin: copy-link icon in the panel header for the section on screen
+70c6b09 2026-08-10 07:21:14 chore: refresh version history
 b924473 2026-08-10 07:20:58 docs: the geology GeoPackage and map_sheet= links are done, not open
 d7af57c 2026-08-10 07:18:36 chore: refresh version history
 4f5a14a 2026-08-10 07:18:04 geology: a GeoPackage download beside the MBTiles
@@ -7,14 +18,3 @@ fcd4d58 2026-08-10 07:17:56 Patrol data is scoped to the account it was uploaded
 d689111 2026-08-10 06:31:32 A shared GeoPackage link downloads the file when the file already exists
 71215a0 2026-08-10 05:58:54 Fix truncated binary downloads: decide gzip after the handler sets Content-Type
 d6ab109 2026-08-10 05:48:39 docs: measure the GeoPackage R-tree on the file that needed it
-de86551 2026-08-10 05:45:46 GeoPackage export: one download menu, two variants, and links you can copy
-2b52b5c 2026-08-10 05:42:13 GeoPackage export: every layer for an area, typed and styled for QGIS
-90ff63a 2026-08-10 04:30:10 anim/features: make settlements & deforestation fast and honest at AOI scale
-9b8b5a3 2026-08-10 03:53:13 cron health: make every nightly job visible, harden the OSM rotation
-a541ef7 2026-08-10 03:49:07 docs: geology overlay handover — legend + vectorizer measured, tiles/UI next
-e9afe6b 2026-08-10 03:48:05 geomaps: vectorize a scanned sheet by reading its print screen, not its colour
-3d9cf6a 2026-08-10 03:38:59 chore: refresh version history
-a330358 2026-08-10 03:38:45 animator: GIF honours the on-screen speed; AOI animation never falls back to bbox
-b63e005 2026-08-09 07:01:54 Satellite hint clears the time slider on mobile
-5151832 2026-08-09 06:58:22 AOI progress notifications sort by time once complete
-66195d8 2026-08-09 06:45:38 chore: refresh .git-commits.txt from build

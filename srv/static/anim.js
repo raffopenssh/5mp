@@ -78,6 +78,12 @@
         return d.getUTCDate() + ' ' + months[d.getUTCMonth()] + ' ' + d.getUTCFullYear();
     }
     function parseD(s) { return Date.parse(s + 'T00:00:00Z'); }
+    function fmtCount(n) {
+        n = Number(n) || 0;
+        if (n >= 1e6) return (n / 1e6).toFixed(1).replace(/\.0$/, '') + 'M';
+        if (n >= 1e4) return Math.round(n / 1e3) + 'k';
+        return n.toLocaleString();
+    }
 
     // ---------- CSS ----------
     const CSS = `
@@ -296,11 +302,36 @@
         if (spanDays <= 800) return 'week';
         return 'month';
     }
+    // The grid resolution has to keep getting finer as the user zooms in, or
+    // the picture stops meaning anything: below ~10° of width it used to clamp
+    // at 0.1°, which over a 1:250k historical sheet is a fat blob per ~11 km
+    // cell. 0.1° is the pre-agg base (fire_grid_day) and the server clamps
+    // below it, so this asks for the base as soon as the view is small enough
+    // to want it — and at that point `wantPoints()` usually takes over anyway.
     function chooseRes(bbox) {
         const w = Math.abs(bbox[2] - bbox[0]);
         if (w > 30) return 0.25;
-        if (w > 10) return 0.1;
         return 0.1;
+    }
+
+    // When is the grid the wrong answer? When a cell has grown big enough on
+    // screen that the user is looking at something FINER than it — at which
+    // point the lattice of blobs is a picture of our binning, not of the
+    // fires. That is a question about screen pixels per cell, not about a zoom
+    // level or a bbox area, because it depends on the viewport too.
+    //
+    // Asking is free-ish and never wrong: the server's own gate is the
+    // estimated number of detections in view (~10 ms over fire_grid_day), so a
+    // wide-but-quiet view gets its points and a wide-and-burning one is told
+    // no and falls back here. The client must not pre-judge that — 40 deg² of
+    // Namibian desert and 40 deg² of an Angolan dry season differ by three
+    // orders of magnitude.
+    const GRID_CELL_PX_MAX = 10;
+    function wantPoints(bbox, res) {
+        const w = Math.abs(bbox[2] - bbox[0]);
+        if (!(w > 0)) return false;
+        const vw = (map.getCanvas && map.getCanvas().clientWidth) || 1280;
+        return (vw * (res || 0.1) / w) > GRID_CELL_PX_MAX;
     }
     function bucketMs(step) { return step === 'day' ? DAY : step === 'week' ? 7 * DAY : 30 * DAY; }
 
@@ -341,23 +372,59 @@
         const D = A.data;
         switch (name) {
             case 'fireGrid': {
+                // Level of detail, decided from the data and not from a zoom
+                // number: zoomed in far enough that a 0.1° cell is bigger than
+                // what is being looked at, ask for the detections themselves.
+                // The server refuses (and says how many there are) when that
+                // would be too much, and we fall through to the grid — so the
+                // layer means the same thing at every zoom and only its
+                // rendering changes.
+                if (wantPoints(A.fetchBbox, res)) {
+                    try {
+                        const p = await fetchJSON(`/api/fire-frames?mode=points&bbox=${bb}&from=${fromISO}&to=${toISO}&step=day&pwd=${pwd}`);
+                        if (p.mode === 'points') {
+                            const p0 = parseD(p.from);
+                            D.fireGrid = { asPoints: true, res: 0, step: 'day',
+                                points: (p.points || []).map(q => [q[0], q[1], p0 + q[2] * DAY, q[3]]) };
+                            break;
+                        }
+                    } catch (e) { /* fall through to the grid */ }
+                }
                 const j = await fetchJSON(`/api/fire-frames?bbox=${bb}&from=${fromISO}&to=${toISO}&step=${step}&res=${res}&pwd=${pwd}`);
                 D.fireGrid = { frames: (j.frames || []).map(f => ({ t: parseD(f.d), pts: f.p })), res: j.res || res, step: j.step || step };
                 break;
             }
             case 'firePts': {
-                if (bboxArea(A.fetchBbox) > POINTS_MAX_AREA) { D.firePts = null; throw new Error('zoom in for fire points'); }
+                // No local bbox-area refusal any more. The server's gate is an
+                // ESTIMATE of the detections in view (it sums fire_grid_day in
+                // ~10 ms), which is the number that actually matters — 40 deg²
+                // of Namibian desert and 40 deg² of an Angolan dry season are
+                // three orders of magnitude apart. Ask, then say what it said.
                 const j = await fetchJSON(`/api/fire-frames?mode=points&bbox=${bb}&from=${fromISO}&to=${toISO}&step=day&pwd=${pwd}`);
-                if (j.mode !== 'points') { D.firePts = null; throw new Error('too many fires here — use fire grid'); }
+                if (j.mode !== 'points') {
+                    D.firePts = null;
+                    const u = j.points_unavailable || {};
+                    throw new Error(u.estimate
+                        ? `${fmtCount(u.estimate)} detections in view — showing the density grid instead`
+                        : 'too many fires here — use the fire grid');
+                }
                 const f0 = parseD(j.from);
                 D.firePts = (j.points || []).map(p => [p[0], p[1], f0 + p[2] * DAY, p[3]]);
                 break;
             }
             case 'trajs': {
+                // NOTE (2026-08-12): the limit is deliberately back at 800.
+                // The endpoint's cap was raised to 12000 server-side, but the
+                // cost is ~linear in it: the same view took 7.8 s at 800 and
+                // 17.0 s at 4000. Raising it is the right direction and needs
+                // the endpoint made cheaper FIRST — see the handover.
                 const j = await fetchJSON(`/api/fire-anim-trajectories?bbox=${bb}&from=${fromISO}&to=${toISO}&limit=800&pwd=${pwd}${aoiQ}`);
                 D.trajs = (j.groups || []).map(g => {
                     const pts = g.pts.map(p => [p[0], p[1], parseD(p[2])]).sort((a, b) => a[2] - b[2]);
-                    return { pts, t0: pts[0][2], t1: pts[pts.length - 1][2], type: g.type, kmd: g.kmd };
+                    // fires/days/frp/narrative are carried so a PAUSED frame
+                    // can answer a hover without a second request (probeFrame).
+                    return { pts, t0: pts[0][2], t1: pts[pts.length - 1][2], type: g.type, kmd: g.kmd,
+                             fires: g.fires, days: g.days, frp: g.frp, narrative: g.narrative };
                 }).filter(g => g.pts.length >= 2);
                 break;
             }
@@ -614,6 +681,31 @@
         return `rgba(${r},${g},${b},${alpha})`;
     }
 
+    // Individual VIIRS detections, flashing then fading. Shared by the
+    // `firePts` chip and by `fireGrid` once it is zoomed in far enough to have
+    // swapped itself for real detections — one rendering, so the two chips
+    // cannot drift into disagreeing about what a fire looks like.
+    function drawFirePoints(ctx, pts, t, proj, w, h, zoom) {
+        if (!pts || !pts.length) return;
+        const fadeMs = DAY * 3;
+        for (const pt of pts) {
+            if (pt[2] > t) break;
+            const age = t - pt[2];
+            if (age > fadeMs) continue;
+            const k = 1 - age / fadeMs;
+            const p = proj(pt[0], pt[1]);
+            if (p.x < -15 || p.y < -15 || p.x > w + 15 || p.y > h + 15) continue;
+            const frp = pt[3] || 1;
+            const r = (2 + Math.min(6, Math.log2(1 + frp))) * Math.max(0.6, zoom / 7);
+            const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
+            g.addColorStop(0, `rgba(255,${Math.round(150 + 80 * k)},50,${0.6 * k + 0.1})`);
+            g.addColorStop(0.5, `rgba(239,68,68,${0.35 * k})`);
+            g.addColorStop(1, 'rgba(239,68,68,0)');
+            ctx.fillStyle = g;
+            ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, 6.283); ctx.fill();
+        }
+    }
+
     // ---------- draw ----------
     function draw(t) {
         if (!A) return;
@@ -827,8 +919,27 @@
         }
         ctx.globalCompositeOperation = 'lighter';
 
-        // --- fire grid: flash + afterglow ---
-        if (on.fireGrid && D.fireGrid) {
+        // --- fire grid ---
+        //
+        // Three renderings of one layer, and which one you get is decided by
+        // the cell's size in SCREEN PIXELS — never by a zoom number, because
+        // the same zoom over a different viewport is a different picture:
+        //
+        //   small cell   -> a soft blob (the classic heat look)
+        //   large cell   -> the cell itself, like the patrol grid, because a
+        //                   blob at the centre of a visibly large cell claims
+        //                   a peak the pre-agg tables never asserted
+        //   zoomed right in -> `loadLayer` has already swapped the whole layer
+        //                   for real detections (`asPoints`)
+        //
+        // The old code sized the blob from `zoom/5`, so blobs grew faster than
+        // the ground they cover and the layer got *less* informative exactly
+        // when the user zoomed in for more. The effort layer has always done
+        // this from `cellPx`; this did not, and that was the visible bug over
+        // a 1:250k historical sheet.
+        if (on.fireGrid && D.fireGrid && D.fireGrid.asPoints) {
+            drawFirePoints(ctx, D.fireGrid.points, t, proj, w, h, zoom);
+        } else if (on.fireGrid && D.fireGrid) {
             const fadeMs = bMs * 2.2;
             const res = D.fireGrid.res;
             for (const f of D.fireGrid.frames) {
@@ -841,7 +952,22 @@
                     const p = proj(lon, lat);
                     if (p.x < -20 || p.y < -20 || p.x > w + 20 || p.y > h + 20) continue;
                     const n = pt[2];
-                    const r = Math.max(2.5, Math.min(22, 2 + Math.log2(1 + n) * 2.4)) * Math.max(0.5, zoom / 5);
+                    const cellPx = Math.abs(proj(lon + res, lat).x - p.x);
+                    const inten = Math.min(1, Math.log2(1 + n) / 6);
+                    if (cellPx > GRID_CELL_PX_MAX) {
+                        // The cell is a visible AREA now, so draw the area.
+                        // We only reach this instead of real points when the
+                        // server refused points for this view — i.e. when there
+                        // are genuinely too many detections to ship. Ceil the
+                        // size so float rounding cannot leave 1px seams.
+                        const p1 = proj(lon + res, lat - res);
+                        const x0 = p.x - (p1.x - p.x) / 2, y0 = p.y - (p1.y - p.y) / 2;
+                        ctx.fillStyle = `rgba(255,${Math.round(90 + 110 * (1 - inten))},40,${(0.18 + 0.5 * inten) * k})`;
+                        ctx.fillRect(x0, y0, Math.max(1.5, Math.ceil(p1.x - p.x)),
+                                             Math.max(1.5, Math.ceil(p1.y - p.y)));
+                        continue;
+                    }
+                    const r = Math.max(2.5, Math.min(60, cellPx * (0.35 + 0.75 * inten)));
                     const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
                     g.addColorStop(0, `rgba(255,${Math.round(140 + 90 * k)},40,${0.55 * k + 0.1})`);
                     g.addColorStop(0.5, `rgba(239,68,68,${0.3 * k})`);
@@ -852,25 +978,7 @@
             }
         }
         // --- fire points: individual detections flash + afterglow ---
-        if (on.firePts && D.firePts) {
-            const fadeMs = DAY * 3;
-            for (const pt of D.firePts) {
-                if (pt[2] > t) break;
-                const age = t - pt[2];
-                if (age > fadeMs) continue;
-                const k = 1 - age / fadeMs;
-                const p = proj(pt[0], pt[1]);
-                if (p.x < -15 || p.y < -15 || p.x > w + 15 || p.y > h + 15) continue;
-                const frp = pt[3] || 1;
-                const r = (2 + Math.min(6, Math.log2(1 + frp))) * Math.max(0.6, zoom / 7);
-                const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
-                g.addColorStop(0, `rgba(255,${Math.round(150 + 80 * k)},50,${0.6 * k + 0.1})`);
-                g.addColorStop(0.5, `rgba(239,68,68,${0.35 * k})`);
-                g.addColorStop(1, 'rgba(239,68,68,0)');
-                ctx.fillStyle = g;
-                ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, 6.283); ctx.fill();
-            }
-        }
+        if (on.firePts && D.firePts) drawFirePoints(ctx, D.firePts, t, proj, w, h, zoom);
         ctx.globalCompositeOperation = 'source-over';
 
         // --- fire trajectories: build up one-by-one, then ashen out (red → grey → gone) ---
@@ -945,7 +1053,10 @@
         const dt = Math.min(100, now - (A.lastNow || now));
         A.lastNow = now;
         A.t += A.speed * DAY * dt / 1000;
-        if (A.t >= A.t1) { A.t = A.t1; A.playing = false; updatePlayBtn(); }
+        // Reaching the end IS a pause, so it must get the hover probe too —
+        // otherwise a run that finished on its own is silently uninspectable
+        // while one the user stopped by hand is not.
+        if (A.t >= A.t1) { A.t = A.t1; A.playing = false; updatePlayBtn(); syncProbe(); }
         drawAndSync();
         if (A.playing) A.raf = requestAnimationFrame(loop);
     }
@@ -971,6 +1082,9 @@
         if (on.settlements && has(D.settlements)) return true;
         if (on.infra && has(D.infra)) return true;
         if (on.firePts && has(D.firePts) && D.firePts.some(p => p[2] <= t)) return true;
+        // fireGrid can be serving real detections at high zoom (asPoints).
+        if (on.fireGrid && D.fireGrid && has(D.fireGrid.points) &&
+            D.fireGrid.points.some(p => p[2] <= t)) return true;
         for (const n of ['fireGrid', 'effortGrid', 'effortPts']) {
             const g = on[n] && D[n];
             if (g && g.frames && g.frames.some(f => f.t <= t)) return true;
@@ -1007,14 +1121,137 @@
         if (b) b.textContent = A.playing ? '⏸' : '▶';
     }
 
+    // ---------- interaction while paused ----------
+    //
+    // A paused animation is a map, and a map you cannot ask questions of is a
+    // screenshot. The canvas is `pointer-events: none` (so pan and zoom keep
+    // working), and none of what it draws is a MapLibre feature, so the shared
+    // tooltip cannot see it — it hit-tests rendered layers. `registerProbe`
+    // lets the animator answer for its own arrays instead, and the answer then
+    // competes in the same priority ordering as everything else: a pinned
+    // vector the user deliberately put there still wins.
+    //
+    // Only while PAUSED. A tip that follows a moving animation is noise: the
+    // thing under the cursor is gone by the time it is read.
+    const PROBE_ID = 'animator-frame';
+    const PROBE_PX = 9;             // hit radius in screen pixels
+
+    function probeFrame(e) {
+        if (!A || A.playing) return null;
+        const pt = e && e.point;
+        if (!pt) return null;
+        const t = A.t, D = A.data, on = A.on;
+        const proj = (lon, lat) => map.project([lon, lat]);
+        let best = null;
+
+        function consider(dist, make) {
+            if (dist > PROBE_PX) return;
+            if (best && best.dist <= dist) return;
+            best = { dist, make };
+        }
+
+        // Trajectories: nearest point of the part that has happened by t.
+        // _scr is already the projected geometry (projectTrajs), so this costs
+        // nothing beyond the walk.
+        if (on.trajs && D.trajs) {
+            projectTrajs(D.trajs, proj, A.canvas.clientWidth, A.canvas.clientHeight);
+            for (const g of D.trajs) {
+                if (g.t0 > t || g._off || !g._scr) continue;
+                if (t > g.t1 + TRAJ_FADE_DAYS * DAY) continue;   // ashed away
+                for (let i = 0; i < g.pts.length; i++) {
+                    if (g.pts[i][2] > t) break;
+                    const dx = g._scr[i * 2] - pt.x, dy = g._scr[i * 2 + 1] - pt.y;
+                    consider(Math.hypot(dx, dy), () => trajTip(g, t));
+                }
+            }
+        }
+        if (on.deforest && D.deforest) {
+            for (const d of D.deforest) {
+                if (d.t > t) break;
+                const p = proj(d.lon, d.lat);
+                consider(Math.hypot(p.x - pt.x, p.y - pt.y), () => ({
+                    label: 'Deforestation',
+                    lines: [fmtDateHuman(d.t),
+                            d.area ? d.area.toFixed(2) + ' km² cleared' : null]
+                }));
+            }
+        }
+        if (on.settlements && D.settlements) {
+            for (const s of D.settlements) {
+                const p = proj(s.lon, s.lat);
+                consider(Math.hypot(p.x - pt.x, p.y - pt.y), () => ({
+                    label: 'Settlement',
+                    lines: [s.lat.toFixed(4) + ', ' + s.lon.toFixed(4)]
+                }));
+            }
+        }
+        const firePts = (on.firePts && D.firePts) ||
+                        (on.fireGrid && D.fireGrid && D.fireGrid.asPoints && D.fireGrid.points);
+        if (firePts) {
+            for (const q of firePts) {
+                if (q[2] > t) break;
+                if (t - q[2] > DAY * 3) continue;    // faded out of the frame
+                const p = proj(q[0], q[1]);
+                consider(Math.hypot(p.x - pt.x, p.y - pt.y), () => ({
+                    label: 'Fire detection',
+                    lines: [fmtDateHuman(q[2]),
+                            q[3] ? 'Intensity ' + Math.round(q[3]) + ' MW' : null]
+                }));
+            }
+        }
+        if (!best) return null;
+        const v = best.make();
+        if (v.html) return { html: v.html };
+        return {
+            html: '<div class="maptip-label">' + v.label + ' · ' + fmtDateHuman(t) + '</div>' +
+                  v.lines.filter(Boolean).map(l => '<div class="maptip-meta">' + l + '</div>').join('')
+        };
+    }
+
+    function trajTip(g, t) {
+        const active = t <= g.t1;
+        const bits = [
+            fmtDateHuman(g.t0) + ' – ' + fmtDateHuman(g.t1),
+            g.fires ? g.fires + ' detections' : null,
+            g.days ? g.days + ' days' : null,
+            g.frp ? 'Intensity ' + Math.round(g.frp) + ' MW' : null,
+            g.kmd ? g.kmd.toFixed(1) + ' km/day' : null
+        ];
+        return {
+            html: '<div class="maptip-label">Fire path · ' +
+                      (active ? '<span class="maptip-hot">burning</span>' : 'ended') +
+                      ' at ' + fmtDateHuman(t) + '</div>' +
+                  (g.narrative ? '<div class="maptip-body">' + g.narrative + '</div>' : '') +
+                  '<div class="maptip-meta">' + bits.filter(Boolean).join(' · ') + '</div>'
+        };
+    }
+
+    // Registered on pause, dropped on play — so the probe is never asked to
+    // hit-test a frame that has already moved on.
+    function syncProbe() {
+        if (!window.MapTip || !window.MapTip.registerProbe) return;
+        if (A && !A.playing) {
+            window.MapTip.registerProbe(PROBE_ID, { probe: probeFrame, priority: 0 });
+        } else {
+            window.MapTip.unregisterProbe(PROBE_ID);
+        }
+    }
+
     function play() {
         if (!A) return;
         if (A.t >= A.t1 - 1) A.t = A.t0;
         A.playing = true; A.lastNow = null;
         updatePlayBtn();
+        syncProbe();
         A.raf = requestAnimationFrame(loop);
     }
-    function pause() { if (A) { A.playing = false; updatePlayBtn(); if (A.raf) cancelAnimationFrame(A.raf); } }
+    function pause() {
+        if (!A) return;
+        A.playing = false;
+        updatePlayBtn();
+        if (A.raf) cancelAnimationFrame(A.raf);
+        syncProbe();
+    }
 
     // ---------- GIF export ----------
     async function exportGIF() {
@@ -1084,6 +1321,63 @@
         }
     }
 
+    // ---------- GeoPackage of the paused frame ----------
+    //
+    // Beside the GIF, and for the same reason the GIF exists: pausing an
+    // animation produces a specific, hard-won picture — this window, this
+    // viewport, these layers, this instant — and until now the only way to keep
+    // it was as pixels. This hands over the same thing as DATA.
+    //
+    // Three things it must get right:
+    //
+    //  * PAUSE FIRST. The instant is the question; it must not move between
+    //    the click and the request (the GIF does the same).
+    //  * It exports only WHAT IS ON SCREEN — the fetch bbox, the chips that
+    //    are on, the window up to the playhead — which is the whole difference
+    //    from the area/AOI download menu, where the file is everything we hold
+    //    for that area. Two different questions, deliberately two buttons.
+    //  * The instant goes in the label, or two cards in the bell are
+    //    indistinguishable. The server puts it in the title and the filename;
+    //    this only has to name it in the toast.
+    //
+    // Small views come back as an immediate download; big ones become a
+    // notification card with a progress bar, a delete button and a 21-day
+    // link. GPKGExport owns all of that — there is exactly one job watcher.
+    async function exportGPKG() {
+        if (!A || A.exporting) return;
+        if (!window.GeoPackageExport) { toast('Export module not loaded', 'error'); return; }
+        pause();
+        const btn = document.getElementById('anim-gpkg');
+        const on = LAYER_ORDER.filter(n => A.on[n]);
+        if (!on.length) {
+            toast('No layers are switched on — turn on at least one chip to export it', 'warning');
+            return;
+        }
+        A.exporting = true;
+        if (btn) { btn.textContent = '⏳'; btn.disabled = true; }
+        try {
+            await window.GeoPackageExport.startView({
+                bbox: A.fetchBbox,
+                from: A.fromISO,
+                // The paused frame shows what had happened BY the playhead, so
+                // the instant is the upper bound of the window, not a label on
+                // top of the full range. The server enforces this too; sending
+                // both keeps the cache key honest about which frame it was.
+                to: A.toISO,
+                at: fmtDate(A.t),
+                layers: on,
+                aoi: A.aoiID || '',
+                label: 'this view at ' + fmtDateHuman(A.t),
+            });
+        } catch (e) {
+            console.error('GPKG export failed:', e);
+            toast('GeoPackage export failed: ' + e.message, 'error');
+        } finally {
+            A.exporting = false;
+            if (btn) { btn.textContent = 'GPKG'; btn.disabled = false; }
+        }
+    }
+
     // ---------- chips ----------
     function updateChips() {
         if (!A) return;
@@ -1135,6 +1429,7 @@
             <span id="anim-speed-lbl"></span>
             <button id="anim-faster" class="anim-btn" title="Faster (hold to ramp)">+</button>
             <button id="anim-gif" class="anim-btn" title="Download animated GIF">GIF</button>
+            <button id="anim-gpkg" class="anim-btn" title="Download a GeoPackage (QGIS) of exactly this frame — this viewport, these layers, up to this date">GPKG</button>
             <button id="anim-close" class="anim-btn" title="Close animator (Esc)">✕</button>`;
         dateRow.appendChild(inline);
         // staggered expansion, same behaviour as the date preset tags
@@ -1305,6 +1600,7 @@
         document.getElementById('anim-play').onclick = () => A.playing ? pause() : play();
         document.getElementById('anim-close').onclick = () => window.Animator.close();
         document.getElementById('anim-gif').onclick = exportGIF;
+        document.getElementById('anim-gpkg').onclick = exportGPKG;
 
         // speed: click steps, press-and-hold ramps (mobile friendly)
         const speedBtn = (id, factor) => {
@@ -1349,7 +1645,20 @@
     // refetch point layers when the viewport leaves the fetched bbox (pan/zoom during play)
     function onMoveEnd() {
         if (!A || A.bboxFixed) return;
-        if (viewportInside(A.fetchBbox)) return;
+        // Two reasons to refetch, and only the first one used to exist:
+        //
+        //  1. the viewport has left the padded box we fetched, so there is
+        //     data on screen we simply do not have; or
+        //  2. the LEVEL OF DETAIL the view now deserves has changed — zooming
+        //     from a continent to a district stays well inside the fetched
+        //     box, but a 0.1° grid there is a lattice of squares where real
+        //     detections would fit. Without this the layer froze at whatever
+        //     detail the view had when the animator opened, which is exactly
+        //     the "a cheap rendering quietly becomes a picture" failure this
+        //     work exists to remove.
+        const lodChanged = A.on.fireGrid && A.data.fireGrid !== undefined &&
+            wantPoints(activeBbox().bbox, chooseRes(A.fetchBbox)) !== !!A.data.fireGrid.asPoints;
+        if (viewportInside(A.fetchBbox) && !lodChanged) return;
         clearTimeout(A._refetchTimer);
         A._refetchTimer = setTimeout(() => {
             if (!A) return;
@@ -1463,7 +1772,8 @@
 
             const any = LAYER_ORDER.some(n => A.on[n] && A.data[n] && (
                 Array.isArray(A.data[n]) ? A.data[n].length :
-                (A.data[n].frames ? A.data[n].frames.length : true)));
+                (A.data[n].frames ? A.data[n].frames.length :
+                 (A.data[n].points ? A.data[n].points.length : true))));
             if (!any) toast('No animatable data in view for this window — toggle layers or adjust dates', 'warning');
 
             A.mapHandler = () => { if (A) draw(A.t); };
@@ -1497,6 +1807,7 @@
             hideLoading();
             invalidateSprites();
             A = null;
+            if (window.MapTip && window.MapTip.unregisterProbe) window.MapTip.unregisterProbe(PROBE_ID);
             syncBaseEffortVisibility(); // restore live patrol pixels per viewLayers.pixels
             if (typeof updateShareURL === 'function') updateShareURL();
         },

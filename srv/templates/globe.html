@@ -55,6 +55,10 @@
     <link href="https://unpkg.com/maplibre-gl@4.1.2/dist/maplibre-gl.css" rel="stylesheet">
     <script src="https://unpkg.com/maplibre-gl@4.1.2/dist/maplibre-gl.js"></script>
     <script src="/static/maptip.js?v={{.Version}}"></script>
+    <!-- One loader for every viewport feature layer (stats toggles + pins):
+         mode=auto, geometry or centroids decided by the server from the true
+         count in view, cross-faded. See srv/static/lodlayer.js. -->
+    <script src="/static/lodlayer.js?v={{.Version}}"></script>
     
     <!-- Lucide Icons -->
     <link href="https://unpkg.com/lucide-static@0.577.0/font/lucide.css" rel="stylesheet">
@@ -2792,6 +2796,11 @@
                         .some(function (pf) { return pointInFeature(e.lngLat.lng, e.lngLat.lat, pf); });
                 });
             }
+
+            // One loader for every viewport feature layer (stats toggles and
+            // pins alike). Registered here, with MapTip, because it owns a
+            // 'moveend' handler and needs the map before either can be used.
+            if (window.LODLayer) window.LODLayer.init(map);
 
             // Set up PA click handler immediately when areas-fill layer is ready
             // This is in the map.on('load') block so layer definitely exists
@@ -12317,107 +12326,47 @@
         }
 
         function removeViewFeatureLayer(name) {
-            ['-fill', '-line', '-point'].forEach(sfx => {
-                const id = 'viewlayer-' + name + sfx;
-                if (window.MapTip) window.MapTip.unregister(id);
-                if (map.getLayer(id)) map.removeLayer(id);
-            });
-            const srcId = 'viewlayer-' + name;
-            if (map.getSource(srcId)) map.removeSource(srcId);
+            if (window.LODLayer) window.LODLayer.remove('view-' + name);
         }
 
-        let viewLayerAbort = {};
-        async function loadViewFeatureLayer(name) {
+        // One loader, shared with pinned layers (srv/static/lodlayer.js). What
+        // used to be here — a hard `limit=1500`, a refetch on every moveend,
+        // and geometry only — is now the server's decision from the true count
+        // in view, so zooming in genuinely reveals more instead of returning
+        // the same 1,500 shapes.
+        function loadViewFeatureLayer(name) {
             const meta = VIEW_LAYER_META[name];
-            if (!meta) return;
-            const bbox = currentViewBbox();
-            if (!bbox) return;
+            if (!meta || !window.LODLayer) return Promise.resolve();
             const statEl = document.getElementById(meta.statId);
-            if (statEl) statEl.classList.add('loading');
-            if (viewLayerAbort[name]) viewLayerAbort[name].abort();
-            const ctrl = new AbortController();
-            viewLayerAbort[name] = ctrl;
-            try {
-                let url = '/api/features-in-bbox?type=' + meta.featureType +
-                    '&bbox=' + bbox.map(v => v.toFixed(4)).join(',') +
-                    '&limit=1500&pwd=' + encodeURIComponent(getPwd() || '');
-                if (dateFrom) url += '&from=' + dateFrom;
-                if (dateTo) url += '&to=' + dateTo;
-                // In focus, these layers show the AOI's OWN rows and only
-                // those (?aoi= -> aoiScopeSQL). Not an extra filter on top of
-                // the park rows: the AOI's ingest covered the whole polygon
-                // including the ~11% inside parks, so keeping both would paint
-                // that overlap twice. See docs/AOI_HANDOVER.md §2.
-                if (aoiFocusID) url += '&aoi=' + encodeURIComponent(aoiFocusID);
-                const res = await fetch(url, { signal: ctrl.signal });
-                if (!res.ok) throw new Error('HTTP ' + res.status);
-                const geojson = await res.json();
-                if (!viewLayers[name]) return; // toggled off while loading
-                const srcId = 'viewlayer-' + name;
-                const existing = map.getSource(srcId);
-                if (existing) {
-                    existing.setData(geojson);
-                } else {
-                    map.addSource(srcId, { type: 'geojson', data: geojson });
-                    map.addLayer({
-                        id: srcId + '-fill', type: 'fill', source: srcId,
-                        filter: ['any', ['==', ['geometry-type'], 'Polygon'], ['==', ['geometry-type'], 'MultiPolygon']],
-                        paint: { 'fill-color': meta.color, 'fill-opacity': 0.25, 'fill-outline-color': meta.color }
-                    });
-                    map.addLayer({
-                        id: srcId + '-line', type: 'line', source: srcId,
-                        filter: ['any', ['==', ['geometry-type'], 'LineString'], ['==', ['geometry-type'], 'MultiLineString']],
-                        paint: { 'line-color': meta.color, 'line-width': 2, 'line-opacity': 0.8 }
-                    });
-                    map.addLayer({
-                        id: srcId + '-point', type: 'circle', source: srcId,
-                        filter: ['==', ['geometry-type'], 'Point'],
-                        paint: {
-                            'circle-radius': ['interpolate', ['linear'], ['zoom'], 4, 2, 8, 4, 12, 6],
-                            'circle-color': meta.color, 'circle-opacity': 0.7,
-                            'circle-stroke-width': 1, 'circle-stroke-color': '#fff', 'circle-stroke-opacity': 0.5
-                        }
-                    });
-                    // Same unified tip as pinned layers
-                    if (window.MapTip) {
-                        ['-fill', '-line', '-point'].forEach(sfx => window.MapTip.register(srcId + sfx, {
-                            html: (props) => featureTipHTML(props, meta.tipType || name,
-                                                           (props && (props.park_name || props.park_id)) || ''),
-                            actionLabel: 'Open in report',
-                            onActivate: (feature) => {
-                                const p = feature.properties || {};
-                                if (p.park_id) openFeatureInReport(p.park_id, meta.tipType || name, p.feature_id || null);
-                            }
-                        }));
-                    }
+            return window.LODLayer.add('view-' + name, {
+                featureType: meta.featureType,
+                color: meta.color,
+                tipType: meta.tipType || name,
+                // Settlements carry no dates worth filtering on and the server
+                // passes NULLs through anyway; the other two are date-scoped.
+                dated: name !== 'settlements',
+                onLoading: (busy) => { if (statEl) statEl.classList.toggle('loading', busy); },
+                onCount: (count, total, render, truncated) => {
+                    if (!truncated) return;
+                    // The server spreads a truncated answer across the bbox, so
+                    // this is "a sample of the whole view", not "one corner".
+                    showToast('Showing ' + count.toLocaleString() + ' of ' +
+                              total.toLocaleString() + ' ' + name +
+                              ' spread across the view' +
+                              (render === 'points' ? ' — hover a dot for its details' : '') +
+                              ' — zoom in for full detail', 'info',
+                              { key: 'lod-trunc-' + name });
                 }
-                if (geojson.truncated) {
-                    // The server now spreads a truncated answer across the
-                    // bbox instead of returning one corner of the ingest, so
-                    // say what is on screen rather than "the largest 1500".
-                    showToast('Showing ' + (geojson.count || 0).toLocaleString() + ' of ' +
-                              (geojson.total || 0).toLocaleString() + ' ' + name +
-                              ' spread across the view — zoom in for full detail', 'info');
-                }
-            } catch (e) {
-                if (e.name !== 'AbortError') console.error('View layer ' + name + ' load failed:', e);
-            } finally {
-                if (statEl) statEl.classList.remove('loading');
-            }
+            });
         }
 
-        // Refresh active feature layers on map move / date change (debounced)
-        let viewLayerRefreshTimeout = null;
+        // Refresh active feature layers on date change. Map movement is the
+        // loader's own business (it skips a refetch that cannot reveal
+        // anything), so this is only for the things it cannot see.
         function refreshViewLayers() {
-            if (viewLayerRefreshTimeout) clearTimeout(viewLayerRefreshTimeout);
-            viewLayerRefreshTimeout = setTimeout(function() {
-                Object.keys(VIEW_LAYER_META).forEach(name => {
-                    if (viewLayers[name]) loadViewFeatureLayer(name);
-                });
-            }, 600);
+            if (window.LODLayer) window.LODLayer.reload();
         }
         window.refreshViewLayers = refreshViewLayers;
-        if (typeof map !== 'undefined') map.on('moveend', refreshViewLayers);
 
         // Initialize toggle indicator state
         updateViewLayerUI();
@@ -12797,6 +12746,7 @@
             if (typeof refreshPinnedLayers === 'function') {
                 refreshPinnedLayers();
             }
+            if (typeof window.refreshViewLayers === 'function') window.refreshViewLayers();
 
             // If the animator is open, restart it over the new window
             if (window.Animator && Animator.isOpen && Animator.isOpen()) Animator.onDateRangeChanged();
@@ -13352,6 +13302,7 @@
             reloadGridData();
             if (typeof refreshPopupData === 'function') refreshPopupData();
             if (typeof refreshPinnedLayers === 'function') refreshPinnedLayers();
+            if (typeof window.refreshViewLayers === 'function') window.refreshViewLayers();
 
             // If the animator is open, restart it over the new window
             if (window.Animator && Animator.isOpen && Animator.isOpen()) Animator.onDateRangeChanged();
@@ -17765,6 +17716,54 @@ ${starredItems.narratives.map(n => {
             
             let geojson;
             
+            // Fire / deforestation / settlement pins go through the shared LOD
+            // loader (srv/static/lodlayer.js): the view is fetched with
+            // mode=auto and refetched as the map moves, so a pin reveals more
+            // as you zoom in instead of being frozen at whatever `limit=5000`
+            // happened to return the first time. A continental pin used to
+            // read "1,500 of 328,167 fires" and stay that way forever.
+            //
+            // `park` keeps the pin's identity — it is a statement about THIS
+            // area, so panning east must not adopt the neighbour's rows.
+            //
+            // Not used when a classification filter is active: that filter is
+            // applied to feature properties client-side, and the points
+            // rendering deliberately does not ship properties. A filtered pin
+            // is a small deliberate subset anyway, so the whole-park fetch is
+            // the right shape for it.
+            if (window.LODLayer && window.LODLayer.supports(featureType) && !filterClassification) {
+                await window.LODLayer.add(key, {
+                    featureType,
+                    color: { fire_trajectory: '#ef4444', deforestation: '#a855f7', settlement: '#fbbf24' }[featureType],
+                    tipType: normalizedType,
+                    park: parkId,
+                    parkName,
+                    aoi: isAOI(parkId) ? parkId : null,
+                    dated: featureType !== 'settlement',
+                    onCount: (count, total) => {
+                        const p = pinnedLayers[key];
+                        if (p) { p.featureCount = count; p.totalCount = total; }
+                        if (typeof updatePinnedIndicator === 'function') updatePinnedIndicator();
+                    }
+                });
+                const st = window.LODLayer.state(key) || {};
+                pinnedLayers[key] = {
+                    parkId, parkName, type,
+                    featureCount: st.count || 0,
+                    totalCount: st.total || 0,
+                    lod: true,
+                    layerId, sourceId: 'lod-' + key
+                };
+                if (!st.count) {
+                    showToast(`No ${type} features in view for ${parkName} — the pin follows the map, so pan or widen the dates`, 'info');
+                } else if (st.total > st.count) {
+                    showToast(`Pinned ${st.count.toLocaleString()} of ${st.total.toLocaleString()} ${type} in view — zoom in for more detail`, 'success');
+                } else {
+                    showToast(`Pinned ${st.count.toLocaleString()} ${type} features from ${parkName}`, 'success');
+                }
+                return;
+            }
+            
             // Turbidity alerts + mining sites + plume points (time-filtered)
             if (type === 'turbidity') {
                 if (!MINING_ENABLED) return;  // retired (§10); ignore stale pins
@@ -18209,9 +18208,30 @@ ${starredItems.narratives.map(n => {
         }
     }
     
+    // The bounds of a park or AOI by id, for the LOD pins: they hold what is
+    // on screen, so "fly to this pin" means "fly to the area it is about".
+    function flyToAreaBounds(areaId) {
+        let bb = null;
+        const a = (window._aois || {})[areaId];
+        if (a && a.bbox && a.bbox.length === 4) bb = a.bbox;
+        if (!bb) {
+            const p = (window.keystoneAreas || []).find(k => k.id === areaId);
+            if (p && p.bbox && p.bbox.length === 4) bb = p.bbox;
+        }
+        if (!bb) return false;
+        map.fitBounds([[bb[0], bb[1]], [bb[2], bb[3]]], { padding: 50, maxZoom: 12, duration: 1500 });
+        return true;
+    }
+
     function flyToPinnedLayer(key) {
         const layer = pinnedLayers[key];
         if (!layer) return;
+
+        // An LOD pin is a view of an area, not a fixed set of features: its
+        // source holds what is on screen right now, so its bounds are just the
+        // current viewport. Fly to the AREA instead — the pin then refetches
+        // there, which is the whole point of it following the map.
+        if (layer.lod && flyToAreaBounds(layer.parkId)) return;
         
         // Get the source and compute bounds
         const source = map.getSource(layer.sourceId);
@@ -18250,6 +18270,18 @@ ${starredItems.narratives.map(n => {
     function removePinnedLayer(key) {
         const layer = pinnedLayers[key];
         if (!layer) return;
+
+        // An LOD pin owns its own layers, source and tip registrations
+        // (srv/static/lodlayer.js). Everything below is the legacy per-type
+        // stack and does not apply to it.
+        if (layer.lod) {
+            if (window.LODLayer) window.LODLayer.remove(key);
+            delete pinnedLayers[key];
+            updatePinnedIconState(layer.parkId, layer.type);
+            updatePinnedIndicator();
+            savePinnedToURL();
+            return;
+        }
         
         // Drop tooltip registrations first (stale tips must not outlive layers)
         if (window.MapTip) (layer.tipLayers || [layer.layerId]).forEach(id => window.MapTip.unregister(id));
@@ -18296,35 +18328,40 @@ ${starredItems.narratives.map(n => {
         delete pinnedLayers[key];
         
         // Update icon state if popup is open for this park
-        if (parkId && type) {
-            // Update the specific type icon if it exists
-            const iconEl = document.querySelector(`.pa-popup-section-icon[data-park-id="${parkId}"][data-type="${type}"]`);
-            if (iconEl) {
-                iconEl.classList.remove('pinned');
-                updateIconSymbol(iconEl, type, false);
-            }
-            
-            // If this is an infrastructure type, also update the road icon
-            const infraTypes = ['road', 'river', 'place', 'infrastructure', 'visits'];
-            if (infraTypes.includes(type)) {
-                const roadIconEl = document.querySelector(`.pa-popup-section-icon[data-park-id="${parkId}"][data-type="road"]`);
-                if (roadIconEl) {
-                    // Check if any infrastructure types are still pinned
-                    const anyPinned = infraTypes.some(t => isPinned(parkId, t));
-                    if (anyPinned) {
-                        roadIconEl.classList.add('pinned');
-                        updateIconSymbol(roadIconEl, 'road', true);
-                    } else {
-                        roadIconEl.classList.remove('pinned');
-                        updateIconSymbol(roadIconEl, 'road', false);
-                    }
-                }
-            }
-        }
+        updatePinnedIconState(parkId, type);
         
         // Update badge and URL
         updatePinnedIndicator();
         savePinnedToURL();
+    }
+
+    // The popup's pin icons reflect what is pinned, so they have to be reset
+    // by every unpin path — including the LOD one, which returns early.
+    function updatePinnedIconState(parkId, type) {
+        if (!parkId || !type) return;
+        // Update the specific type icon if it exists
+        const iconEl = document.querySelector(`.pa-popup-section-icon[data-park-id="${parkId}"][data-type="${type}"]`);
+        if (iconEl) {
+            iconEl.classList.remove('pinned');
+            updateIconSymbol(iconEl, type, false);
+        }
+
+        // If this is an infrastructure type, also update the road icon
+        const infraTypes = ['road', 'river', 'place', 'infrastructure', 'visits'];
+        if (infraTypes.includes(type)) {
+            const roadIconEl = document.querySelector(`.pa-popup-section-icon[data-park-id="${parkId}"][data-type="road"]`);
+            if (roadIconEl) {
+                // Check if any infrastructure types are still pinned
+                const anyPinned = infraTypes.some(t => isPinned(parkId, t));
+                if (anyPinned) {
+                    roadIconEl.classList.add('pinned');
+                    updateIconSymbol(roadIconEl, 'road', true);
+                } else {
+                    roadIconEl.classList.remove('pinned');
+                    updateIconSymbol(roadIconEl, 'road', false);
+                }
+            }
+        }
     }
     
     function clearAllPinnedLayers() {
@@ -18470,6 +18507,10 @@ ${starredItems.narratives.map(n => {
         for (const key of keys) {
             const layer = pinnedLayers[key];
             if (!layer || !layer.parkId || !layer.type) continue;
+            // LOD pins are refetched by their own loader (one reload() for all
+            // of them), so re-fetching here would duplicate the request and
+            // fight the in-flight one for the same source.
+            if (layer.lod) continue;
             
             try {
                 let geojson;
