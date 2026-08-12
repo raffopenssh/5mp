@@ -1356,13 +1356,24 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                     if (map && map.isStyleLoaded()) { on ? add() : remove(); }
                     else if (on) { map.once('idle', add); }
                     renderHistMapPanel();
+                    // NO CAMERA MOVE on add — an overlay is drawn on the view
+                    // the user has, not a reason to leave it. If the sheet
+                    // series does not reach the viewport the trip is offered
+                    // as a toast action (offerZoomTo). opts.fly stays for
+                    // explicit "go to the sheets" callers.
                     if (on && opts.fly && meta.center) {
                         map.flyTo({ center: [meta.center[0], meta.center[1]], zoom: Math.max(map.getZoom(), meta.center[2] || 7) });
+                    } else if (on && !opts.quiet && typeof offerZoomTo === 'function') {
+                        const bb = (meta.bounds && meta.bounds.length === 4) ? meta.bounds
+                            : (meta.center ? [meta.center[0] - 2, meta.center[1] - 2,
+                                              meta.center[0] + 2, meta.center[1] + 2] : null);
+                        offerZoomTo(meta.name || 'Historical maps', bb, 'hist-offscreen');
                     }
                     return on;
                 },
 
-                toggle() { return this.set(!on, { fly: !on }); },
+                // Turning it on does NOT fly; see set().
+                toggle() { return this.set(!on, { fly: false }); },
 
                 setOpacity(v) {
                     opacity = Math.max(0, Math.min(1, v));
@@ -8453,7 +8464,7 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
         // Toast with an inline Undo button (10s window).
         function showUndoToast(message, onUndo) {
             const toast = document.createElement('div');
-            toast.style.cssText = 'position:fixed;bottom:100px;left:50%;transform:translateX(-50%);' +
+            toast.style.cssText = 'position:fixed;bottom:' + toastBottomPx() + 'px;left:50%;transform:translateX(-50%);' +
                 'background:rgba(34,197,94,0.95);color:white;padding:12px 20px;border-radius:8px;' +
                 'font-size:14px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.3);' +
                 'animation:toastFadeIn 0.3s ease;display:flex;align-items:center;gap:14px;';
@@ -8463,12 +8474,14 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             undoBtn.textContent = 'Undo';
             undoBtn.style.cssText = 'background:rgba(255,255,255,0.25);border:none;color:white;' +
                 'padding:5px 14px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;';
-            undoBtn.onclick = () => { clearTimeout(timer); toast.remove(); onUndo(); };
+            undoBtn.onclick = () => { clearTimeout(timer); toast.remove(); repositionToasts(); onUndo(); };
             toast.appendChild(span); toast.appendChild(undoBtn);
+            toast.classList.add('app-toast');
             document.body.appendChild(toast);
+            repositionToasts();
             const timer = setTimeout(() => {
                 toast.style.animation = 'toastFadeOut 0.3s ease';
-                setTimeout(() => toast.remove(), 300);
+                setTimeout(() => { toast.remove(); repositionToasts(); }, 300);
             }, 10000);
         }
 
@@ -8718,6 +8731,50 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
         // reuse one toast instead of stacking); opts.sticky keeps it until
         // replaced or dismissToast(key) is called; opts.spinner shows a spinner.
         const _toastRegistry = new Map();
+
+        // WHERE A TOAST SITS IS MEASURED, NOT ASSUMED.
+        //
+        // `bottom: 100px` was fine while the footer was one slider row. Open
+        // the animator and the time-slider container grows a control row (and
+        // the date tags wrap on a narrow screen), so the toast — the thing
+        // carrying the "Zoom there" action — slid underneath it and its button
+        // became unclickable. Same lesson as the docked map tip
+        // (`bottomChromePx()` in maptip.js): measure the chrome.
+        function toastBottomPx() {
+            let bottom = 24;
+            const n = document.getElementById('time-slider-container');
+            if (n && getComputedStyle(n).display !== 'none') {
+                const r = n.getBoundingClientRect();
+                if (r.height) bottom = Math.max(bottom, window.innerHeight - r.top + 16);
+            }
+            // Never push a toast off the top of a short screen.
+            return Math.min(bottom, Math.max(24, window.innerHeight - 120));
+        }
+
+        // Every live toast follows the footer as it grows/shrinks: the
+        // animator can open (or close) while a toast is still on screen.
+        // Two at once stack upward instead of printing on top of each other
+        // (turning on geology AND a historical sheet off-screen offers two
+        // trips, and one unreadable pile is worse than either offer).
+        function repositionToasts() {
+            const base = toastBottomPx();
+            let b = base;
+            document.querySelectorAll('.app-toast').forEach(t => {
+                t.style.bottom = b + 'px';
+                b += (t.offsetHeight || 44) + 8;
+            });
+        }
+        window.repositionToasts = repositionToasts;
+        window.addEventListener('resize', repositionToasts);
+        (function watchFooterHeight() {
+            const attach = () => {
+                const n = document.getElementById('time-slider-container');
+                if (!n || !window.ResizeObserver) return false;
+                new ResizeObserver(repositionToasts).observe(n);
+                return true;
+            };
+            if (!attach()) document.addEventListener('DOMContentLoaded', attach);
+        })();
         function showToast(message, type = 'info', opts = {}) {
             const colors = {
                 info: 'rgba(59, 130, 246, 0.95)',
@@ -8732,7 +8789,7 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                 toast = document.createElement('div');
                 toast.style.cssText = `
                     position: fixed;
-                    bottom: 100px;
+                    bottom: ${toastBottomPx()}px;
                     left: 50%;
                     transform: translateX(-50%);
                     color: white;
@@ -8747,6 +8804,7 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                     gap: 10px;
                 `;
                 document.body.appendChild(toast);
+                toast.classList.add('app-toast');
                 if (key) _toastRegistry.set(key, toast);
             }
             toast.style.background = colors[type] || colors.info;
@@ -8772,18 +8830,52 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             if (!opts.sticky) {
                 toast._dismissTimer = setTimeout(() => {
                     toast.style.animation = 'toastFadeOut 0.3s ease';
-                    setTimeout(() => { toast.remove(); if (key) _toastRegistry.delete(key); }, 300);
+                    setTimeout(() => { toast.remove(); if (key) _toastRegistry.delete(key); repositionToasts(); }, 300);
                 }, opts.duration || 4000);
             }
+            // After the content is in place: the stack's offsets depend on
+            // each toast's rendered height, and a re-used toast may have been
+            // placed before the animator opened.
+            repositionToasts();
             return toast;
         }
+
+        // ADDING A LAYER IS NOT A REQUEST TO GO SOMEWHERE.
+        //
+        // Turning on geology, a historical sheet, or a focus used to fly the
+        // camera. Every one of those gestures is "show me this here", and a
+        // camera move answers a question nobody asked while throwing away the
+        // view the user had built. The calm version: apply the change in
+        // place, and only if the thing is genuinely NOT on screen offer the
+        // trip as an *action on a toast* — the user decides.
+        //
+        // Silence when it overlaps the viewport is deliberate: a toast that
+        // fires on every toggle is the hectic thing in another costume.
+        function offerZoomTo(label, bounds, key) {
+            try {
+                if (!bounds || bounds.length !== 4 || !map) return;
+                const v = map.getBounds();
+                const overlaps = bounds[0] <= v.getEast() && bounds[2] >= v.getWest()
+                              && bounds[1] <= v.getNorth() && bounds[3] >= v.getSouth();
+                if (overlaps) return;
+                showToast(`${label} is outside the current view`, 'info', {
+                    key: key || 'layer-offscreen',
+                    action: {
+                        label: 'Zoom there',
+                        onClick: () => map.fitBounds([[bounds[0], bounds[1]], [bounds[2], bounds[3]]],
+                                                     { padding: 60, duration: 900 })
+                    }
+                });
+            } catch (e) { /* a missing hint is smaller than a thrown toggle */ }
+        }
+        window.offerZoomTo = offerZoomTo;
 
         function dismissToast(key) {
             const toast = _toastRegistry.get(key);
             if (!toast) return;
             if (toast._dismissTimer) clearTimeout(toast._dismissTimer);
             toast.style.animation = 'toastFadeOut 0.3s ease';
-            setTimeout(() => toast.remove(), 300);
+            setTimeout(() => { toast.remove(); repositionToasts(); }, 300);
             _toastRegistry.delete(key);
         }
 
@@ -9003,6 +9095,43 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
         }
         window.zoomToPark = zoomToPark;
 
+        // The bbox of whichever kind of area an id names, without a fetch: an
+        // AOI carries one, a park is read off the geometry the map already
+        // drew. Used only to decide whether a camera move is worth OFFERING —
+        // null means "cannot tell", which is treated as on screen, i.e. quiet.
+        function focusBBox(id) {
+            if (!id) return null;
+            if (focusIsAOI(id)) {
+                const bb = window._aois?.[id]?.bbox;
+                return (bb && bb.length === 4) ? bb : null;
+            }
+            try {
+                const feats = map.querySourceFeatures('areas', { filter: ['==', ['get', 'id'], id] });
+                if (!feats.length) return null;
+                let minX = 180, minY = 90, maxX = -180, maxY = -90;
+                const walk = c => {
+                    if (typeof c[0] === 'number') {
+                        minX = Math.min(minX, c[0]); maxX = Math.max(maxX, c[0]);
+                        minY = Math.min(minY, c[1]); maxY = Math.max(maxY, c[1]);
+                    } else c.forEach(walk);
+                };
+                feats.forEach(f => f.geometry && walk(f.geometry.coordinates));
+                if (minX > maxX || minY > maxY) return null;
+                return [minX, minY, maxX, maxY];
+            } catch (e) { return null; }
+        }
+        window.focusBBox = focusBBox;
+
+        function bboxOnScreen(bb) {
+            try {
+                if (!bb || bb.length !== 4 || !map) return true;
+                const v = map.getBounds();
+                return bb[0] <= v.getEast() && bb[2] >= v.getWest()
+                    && bb[1] <= v.getNorth() && bb[3] >= v.getSouth();
+            } catch (e) { return true; }
+        }
+        window.bboxOnScreen = bboxOnScreen;
+
         // ── Focus mode ────────────────────────────────────────────────────
         //
         // An AREA is a *focus*: someone drew a polygon, or clicked a park,
@@ -9170,11 +9299,22 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             setAOIFocus(on ? id : null).then(ok => {
                 if (!ok) return;
                 if (on) {
-                    if (focusIsAOI(id)) zoomToAOI(id);
-                    else if (typeof zoomToPark === 'function') zoomToPark(id);
+                    // No fly. Focus is a change of SCOPE, not of place: the
+                    // panel's numbers and the dimming say it, in the view the
+                    // user already chose. If the area is off screen the toast
+                    // carries the trip as an offer (see offerZoomTo).
+                    const bb = focusBBox(id);
+                    const off = bb && !bboxOnScreen(bb);
                     showToast(`Focused on “${focusName(id)}” — the panel counts this area only;`
                               + ` other parks are dimmed, starred ones stay`,
-                              'info', { key: 'aoi-focus' });
+                              'info', {
+                                  key: 'aoi-focus',
+                                  action: off ? {
+                                      label: 'Zoom there',
+                                      onClick: () => map.fitBounds([[bb[0], bb[1]], [bb[2], bb[3]]],
+                                                                   { padding: 60, duration: 900 })
+                                  } : null
+                              });
                 }
             });
         }
