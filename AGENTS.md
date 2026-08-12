@@ -569,7 +569,7 @@ for `XSA_Study_Area` are `done`:
     22 upstream watersheds + 24 downstream traces · 12,956 roads · 690 places
 
 `park_basin_parts` is backfilled for **all 164 areas** (883 rows, 0 unsplit).
-Highest migration is **045**.
+Highest migration is **051**.
 
 ### Verification set — re-run after any AOI work
 
@@ -1678,29 +1678,124 @@ python3 scripts/daily_fire_update.py --days 7
 
 ---
 
-## Documentation
+## Level of detail: one loader, and the same feature at every zoom
 
-### ⚠️ Active handover: `docs/HANDOVER_LOD_FEATURES.md`
+**No active handover.** `docs/HANDOVER_LOD_FEATURES.md` is done and deleted;
+what follows is the record.
 
-Smooth zoom to clickable vectors + the paused-animation GeoPackage. Server and
-**most of the frontend** are live: `srv/static/lodlayer.js` is now the one
-loader for the stats-panel toggles *and* pinned fire/deforestation/settlement
-layers (`mode=auto`, geometry vs centroids decided by the server from the true
-count in view, cross-faded, a centroid still hovers via `/api/feature-detail`);
-the animator has `#anim-gpkg` beside the GIF button; `MapTip.registerProbe()`
-lets the paused animation answer a hover from its canvas arrays.
+The rule the whole thing enforces: **the same feature is the same feature at
+every zoom, and a cheap rendering may not quietly become a picture.**
 
-**One measured problem is open and blocks the rest**:
-`/api/fire-anim-trajectories` costs 7.8 s at `limit=800` and 17 s at 4000 for
-one 8° bbox (it parses `data/fire_groups_v5/*.json` per park). The client is
-deliberately pinned back at 800 with a comment. Read the handover before
-touching pinned layers, `anim.js` or the feature endpoints.
+`srv/static/lodlayer.js` is the one loader for the stats-panel toggles *and*
+pinned fire/deforestation/settlement layers. It asks
+`/api/features-in-bbox?mode=auto` and the **server** decides geometry vs
+centroids from the true count in view — never from a zoom number, because two
+views at one zoom differ by three orders of magnitude. A centroid carries its
+row id, so hovering it fetches `/api/feature-detail` and shows the same tip the
+geometry would have.
 
-**A view GeoPackage is immediate when fast, a notification when not**:
+### The four measured costs, and what each one was
+
+1. **`/api/fire-anim-trajectories` parsed 816 MB of JSON per request.** It read
+   `data/fire_groups_v5/<park>.json` through a 40-park LRU for one thing the
+   database did not have: the **date of each vertex**. 7.8 s at `limit=800`,
+   17 s at 4000, >120 s continental. That date is a column now — migration
+   **051** `feature_geometries.traj_days`, a compact array of day offsets from
+   `start_date`, always the same length as the coordinate list (a Point is
+   `[0]`). Written by `load_fire_groups_to_db.py` (`day_offsets()`), backfilled
+   once by `scripts/backfill_traj_days.py` for all 757,754 rows. The endpoint is
+   now two indexed passes with no file I/O: **continental 12,000 paths in 1.7 s**
+   (was >120 s for 800). NULL `traj_days` is handled, not skipped — points are
+   spread evenly across `start_date..end_date`, so a partial backfill degrades
+   the *timing* of an animation rather than emptying the map.
+2. **`end_date >= ?` is not in `idx_fg_bbox_scan`**, so the natural overlap
+   predicate dropped the index. Ask `start_date BETWEEN from-trajMaxSpanDays
+   AND to` (200 days; the longest group in the table is 167) and keep the
+   `end_date` term as a filter. Dropping the tail *in Go* instead returned 2,409
+   of a requested 4,000 — a sparse map that looks like missing data.
+3. **`ORDER BY stat_value DESC LIMIT n` is a corner, not a sample** (the same
+   trap as the settlements stripe). The trajectory endpoint now streams into
+   `spreadCollector` like `/features-in-bbox`, so a truncated continental answer
+   is spread across the view and `total` is the true count.
+4. **Properties, not shapes, were the payload.** A fire trajectory carries ~350
+   bytes of coordinates and ~750 bytes of properties, mostly a narrative
+   sentence nothing on screen reads. Above `geoSlimAbove` (1200 features) the
+   answer ships identity fields + `rid` and skips `enrichFeatureProps`; the tip
+   fetches the rest on hover, exactly as points mode does. 14,350 fire paths in
+   an 8° view: **4.1 MB → 2.6 MB and 1.3 s → 0.25 s**, which is what let the
+   client's vector budget go 6,000 → 12,000 and the animator's 800 → 6,000.
+
+### Detail is ink, not just count
+
+Drawing 5,837 trajectories at the old width/opacity is a **solid red sheet**:
+every path present, none legible, and less informative than the dots it
+replaced. `densityPaint()` (lodlayer.js) and the `inkW`/`inkA` ramp in
+`anim.js` thin and de-opacify strokes as the count rises, so overlaps
+accumulate into structure — corridors and repeatedly-burnt ground glow on their
+own — while a sparse view stays bold and obviously clickable. Arrows fade out
+with them: a glyph every 100 px across 2,000 overlapping paths is noise.
+**Never judge this by feature count alone; look at the render.**
+
+The animator's fire-grid blob radius must also **cover its cell**
+(`cellPx * (0.8 + 0.6*inten)`), or the layer draws a halftone lattice — a
+picture of our 0.1° binning rather than of the fires.
+
+### The transition is shown, not hidden
+
+Crossing the threshold is the one moment the map changes *what* it is showing.
+Unannounced, a user zooming out watches their trajectories "become dots" and
+reasonably concludes the app threw the detail away. So:
+
+* the two renderings share one source id and **cross-fade** (220 ms);
+* the incoming one **overshoots and settles** (`focusPulse`, 380 ms) — the same
+  gesture in both directions, because the claim is that nothing was lost either
+  way. `focusPulse` must settle back to the **density** width, not a constant,
+  or it silently undoes `densityPaint` on every crossing;
+* the state is written into the control that switches the layer on —
+  `.stats-lod` inside the stats row (`setLayerLOD`), and a ◇/· mark on the
+  pinned chip. **Not a floating HUD**: the question is about one layer, and a
+  HUD would be a fourth thing competing with the toast, the pinned indicator
+  and the time slider for the same corner. It takes the row's own colour at low
+  alpha; on mobile only the pill survives (the count is already the row's
+  value). It replaced a toast fired per truncated fetch — i.e. on every zoom,
+  covering the map to say something permanent about the view.
+
+### Panning is free, zooming re-asks
+
+`lodlayer.js` fetches a **25%-padded** box and compares against the unpadded
+view, so a small pan is answered from memory. It skips a refetch that cannot
+reveal anything (contained + untruncated + already geometry), and in points
+mode also skips a pan or zoom-out inside a covered box — only a meaningfully
+smaller view can promote it to geometry.
+
+### The animator's two downloads are share links
+
+GIF and GeoPackage were two bare buttons that could not be handed to anyone,
+which is backwards: the whole point of both is that you found a frame worth
+keeping. They are now one ⬇ opening the **same `.aoi-menu` component** the park
+and AOI downloads use — one row each, each with a ⧉ that copies a link
+reproducing this exact animation (window, viewport, layers, speed, playhead)
+and pointing at that row. `?anim_export=gif|gpkg` **highlights, never runs**:
+same rule as `aoi_menu_item=`, because opening a link must not spend minutes of
+CPU. The GIF row hides itself on mobile (encoding is minutes and a hot
+battery). Reusing the menu also inherits its Safari copy-link workaround and
+its touch sizing for free.
+
+### A view GeoPackage is immediate when fast, a notification when not
+
 `?wait=<s>` on `POST /api/view/export.gpkg` (capped 20 s), migration **050**
 (`view_json`) so a card that outlives its tab can still describe and retry
 itself. Same job, cache, 21-day link and delete button as the area export — it
 is a different *question* (only what is on screen), not a different mechanism.
+
+### Still open, deliberately
+
+* A **classification filter** on a pin still uses the old whole-park fetch:
+  that filter reads feature properties client-side, and both points mode and
+  slim geometry ship none. A filtered pin is a small deliberate subset anyway.
+* `?spread=0` and `?simplify=0` remain undocumented escape hatches with no UI.
+
+## Documentation
 
 See `docs/` directory:
 - `README.md` - Overview

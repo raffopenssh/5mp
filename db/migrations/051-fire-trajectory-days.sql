@@ -1,0 +1,14 @@
+-- Dated trajectory points, in the database instead of in 816 MB of JSON files.
+--
+-- /api/fire-anim-trajectories needs one thing feature_geometries did not have:
+-- the DATE of each vertex, so the animator can build a fire front up at its
+-- true speed. It got it by parsing data/fire_groups_v5/<park>.json per park
+-- through a 40-park LRU, so one wide bbox parsed hundreds of MB per request:
+-- 7.8 s at limit=800, 17 s at 4000, >120 s for a continental view. The geometry
+-- itself was already here and answers the same window in 0.39 s.
+--
+-- traj_days is the missing 5%: a compact JSON array of DAY OFFSETS from
+-- start_date, one per coordinate in geojson (so it is always the same length
+-- as the coordinate list, and a Point trajectory is "[0]"). ~40 bytes a row
+-- against ~1.6 KB of JSON file per group.
+ALTER TABLE feature_geometries ADD COLUMN traj_days TEXT;

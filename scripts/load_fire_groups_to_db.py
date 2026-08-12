@@ -70,6 +70,31 @@ KEYSTONES_FILE = BASE_DIR / "data" / "keystones_with_boundaries.json"
 def log(msg):
     print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}", flush=True)
 
+def day_offsets(trajectory, start_date):
+    """Day offset of each trajectory vertex from start_date.
+
+    Written to feature_geometries.traj_days (migration 051) as a compact JSON
+    array, ALWAYS the same length as the stored coordinate list, so the server
+    can zip the two without a second source of truth. An unparseable date
+    contributes the previous offset rather than shortening the array -- a
+    shorter array would silently truncate a trajectory's animation.
+    """
+    try:
+        base = datetime.strptime((start_date or '')[:10], '%Y-%m-%d')
+    except ValueError:
+        base = None
+    out, last = [], 0
+    for pt in trajectory:
+        d = last
+        if base is not None and len(pt) > 2 and isinstance(pt[2], str):
+            try:
+                d = (datetime.strptime(pt[2][:10], '%Y-%m-%d') - base).days
+            except ValueError:
+                d = last
+        out.append(d)
+        last = d
+    return out
+
 def haversine(lon1, lat1, lon2, lat2):
     """Distance in km between two points"""
     R = 6371
@@ -538,17 +563,24 @@ class FireGroupLoader:
             if dist_to_park is None and group.get('pct_inside', 0) > 0:
                 dist_to_park = 0.0
             
+            # Day offset of each vertex from start_date, same length as the
+            # coordinate list (migration 051). This is the only thing the
+            # animator needed from data/fire_groups_v5/*.json; storing it here
+            # turned a 7.8 s endpoint into a 0.4 s one.
+            traj_days = json.dumps(day_offsets(trajectory, start_date),
+                                   separators=(',', ':'))
+
             # Insert into feature_geometries (OR REPLACE for duplicates)
             self.conn.execute("""
                 INSERT OR REPLACE INTO feature_geometries 
                 (feature_type, feature_id, park_id, geojson, 
                  bbox_minx, bbox_miny, bbox_maxx, bbox_maxy,
-                 start_date, end_date, properties_json, dist_to_park_km)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 start_date, end_date, properties_json, dist_to_park_km, traj_days)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 'fire_trajectory', feature_id, park_id, geojson,
                 min(lons), min(lats), max(lons), max(lats),
-                start_date, end_date, json.dumps(props), dist_to_park
+                start_date, end_date, json.dumps(props), dist_to_park, traj_days
             ))
             
             # Per-park stats: only count groups relevant to the park

@@ -175,7 +175,8 @@
         .anim-chip { font-size: 8px; }
         .anim-chip.visible { max-width: 100px; padding: 1px 5px 1px 4px; }
         #anim-chips { gap: 2px; }
-        #anim-gif { display: none; }
+        /* GIF encoding a phone's viewport is minutes of CPU; the row stays,
+           the GIF entry hides itself (see exportMenuHTML). */
         /* bigger touch targets: keep badge look, extend invisible hit area */
         .anim-btn { padding: 3px 8px; font-size: 11px; }
         #anim-inline > .anim-btn.visible { padding: 3px 8px; max-width: 60px;
@@ -346,6 +347,11 @@
     // 1,500 it used to get. The server spreads a truncated answer over the
     // bbox (see srv/features_bbox.go spreadSelect).
     const FEATURE_POINT_LIMIT = 12000;
+    // Fire paths the browser draws per frame. The endpoint is now a single
+    // indexed query (0.5 s for a park window, 1.7 s continental), so this is a
+    // rendering budget, not a database one — projectTrajs caches screen coords
+    // per view transform, which is what makes 6,000 of them affordable.
+    const TRAJ_LIMIT = 6000;
     function truncNote(label, shown, total) {
         toast('Showing ' + shown.toLocaleString() + ' of ' + total.toLocaleString() + ' ' + label +
               ' spread across the view — zoom in for all of them', 'info', { key: 'anim-trunc-' + label });
@@ -413,19 +419,25 @@
                 break;
             }
             case 'trajs': {
-                // NOTE (2026-08-12): the limit is deliberately back at 800.
-                // The endpoint's cap was raised to 12000 server-side, but the
-                // cost is ~linear in it: the same view took 7.8 s at 800 and
-                // 17.0 s at 4000. Raising it is the right direction and needs
-                // the endpoint made cheaper FIRST — see the handover.
-                const j = await fetchJSON(`/api/fire-anim-trajectories?bbox=${bb}&from=${fromISO}&to=${toISO}&limit=800&pwd=${pwd}${aoiQ}`);
+                // Wire format (2026-08-12): pts are [lon, lat, dayOffset] against
+                // the group's own t0, and the endpoint reads feature_geometries
+                // + traj_days instead of parsing data/fire_groups_v5/*.json.
+                // A continental view went from >120 s to 1.7 s, so the limit is
+                // no longer a apology for the endpoint: TRAJ_LIMIT of them is
+                // what the browser can draw at 60 fps, and the server spreads
+                // the selection across the view so a truncated answer is still
+                // a picture of the whole area rather than of its hottest corner.
+                const j = await fetchJSON(`/api/fire-anim-trajectories?bbox=${bb}&from=${fromISO}&to=${toISO}&limit=${TRAJ_LIMIT}&pwd=${pwd}${aoiQ}`);
                 D.trajs = (j.groups || []).map(g => {
-                    const pts = g.pts.map(p => [p[0], p[1], parseD(p[2])]).sort((a, b) => a[2] - b[2]);
+                    const base = parseD(g.t0 || g.start);
+                    const pts = g.pts.map(p => [p[0], p[1], base + p[2] * DAY]);
                     // fires/days/frp/narrative are carried so a PAUSED frame
                     // can answer a hover without a second request (probeFrame).
                     return { pts, t0: pts[0][2], t1: pts[pts.length - 1][2], type: g.type, kmd: g.kmd,
+                             id: g.id, park: g.park, km: g.km,
                              fires: g.fires, days: g.days, frp: g.frp, narrative: g.narrative };
                 }).filter(g => g.pts.length >= 2);
+                if (j.truncated) truncNote('fire paths', j.count, j.total);
                 break;
             }
             case 'effortGrid': {
@@ -967,7 +979,13 @@
                                              Math.max(1.5, Math.ceil(p1.y - p.y)));
                         continue;
                     }
-                    const r = Math.max(2.5, Math.min(60, cellPx * (0.35 + 0.75 * inten)));
+                    // Blob radius must at least COVER its cell, or the layer
+                    // draws a halftone lattice of separated dots — a picture of
+                    // our 0.1° binning rather than of the fires. Overlapping
+                    // neighbours is the point: where fire is continuous the
+                    // blobs merge into a front, and additive blending then
+                    // makes the hot core brighter on its own.
+                    const r = Math.max(3, Math.min(60, cellPx * (0.8 + 0.6 * inten)));
                     const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
                     g.addColorStop(0, `rgba(255,${Math.round(140 + 90 * k)},40,${0.55 * k + 0.1})`);
                     g.addColorStop(0.5, `rgba(239,68,68,${0.3 * k})`);
@@ -988,20 +1006,31 @@
             // 60 fps, and the geometry does not depend on t — only how much of
             // it is drawn does. Also skip groups whose extent is off screen.
             projectTrajs(D.trajs, proj, w, h);
+            // DENSITY-AWARE INK. The limit is now 6,000 paths rather than 800,
+            // and 6,000 opaque 2.5px strokes is a red sheet: every path present,
+            // none legible. Thin and translucent at density, the overlaps
+            // accumulate (the canvas is in 'lighter' composite here) so
+            // corridors and repeatedly-burnt ground glow by themselves, while a
+            // sparse view stays bold. Same rule, and the same reason, as
+            // densityPaint() in lodlayer.js.
+            const nT = D.trajs.length;
+            const inkW = nT > 3000 ? 0.7 : nT > 1200 ? 1.0 : nT > 400 ? 1.6 : 2.5;
+            const inkA = nT > 3000 ? 0.30 : nT > 1200 ? 0.45 : nT > 400 ? 0.7 : 0.95;
+            const headR = nT > 1200 ? 4 : 7;
             for (const g of D.trajs) {
                 if (g.t0 > t) continue;
                 if (g._off) continue;
                 let alpha, ash;
                 if (t <= g.t1) {
-                    alpha = 0.95; ash = 0;
+                    alpha = inkA; ash = 0;
                 } else {
                     const fade = (t - g.t1) / (TRAJ_FADE_DAYS * DAY);
                     if (fade >= 1) continue;               // fully gone
                     ash = Math.min(1, fade * 1.6);         // grey out first…
-                    alpha = 0.95 * (1 - fade);             // …then vanish
+                    alpha = inkA * (1 - fade);             // …then vanish
                 }
                 ctx.strokeStyle = ashColor(ash, alpha);
-                ctx.lineWidth = t <= g.t1 ? 2.5 : 1.5;
+                ctx.lineWidth = t <= g.t1 ? inkW : inkW * 0.6;
                 ctx.lineJoin = 'round'; ctx.lineCap = 'round';
                 ctx.beginPath();
                 let started = false, headX = null, headY = null;
@@ -1034,12 +1063,12 @@
                 }
                 if (started) ctx.stroke();
                 if (headX !== null && t <= g.t1 + 2 * DAY) {
-                    const gr = ctx.createRadialGradient(headX, headY, 0, headX, headY, 7);
+                    const gr = ctx.createRadialGradient(headX, headY, 0, headX, headY, headR);
                     gr.addColorStop(0, 'rgba(255,220,120,0.95)');
                     gr.addColorStop(0.4, 'rgba(255,120,50,0.7)');
                     gr.addColorStop(1, 'rgba(255,120,50,0)');
                     ctx.fillStyle = gr;
-                    ctx.beginPath(); ctx.arc(headX, headY, 7, 0, 6.283); ctx.fill();
+                    ctx.beginPath(); ctx.arc(headX, headY, headR, 0, 6.283); ctx.fill();
                 }
             }
         }
@@ -1258,7 +1287,8 @@
         if (!A || A.recording) return;
         A.recording = true;
         pause();
-        const btn = document.getElementById('anim-gif');
+        const btn = document.getElementById('anim-export');
+        const label = btn && btn.textContent;
         try {
             btn.textContent = '⏳0%';
             const gifenc = await import('https://unpkg.com/gifenc@1.0.3/dist/gifenc.esm.js');
@@ -1316,7 +1346,7 @@
             toast('GIF export failed: ' + e.message, 'error');
         } finally {
             A.recording = false;
-            btn.textContent = 'GIF';
+            if (btn) btn.textContent = label;
             drawAndSync();
         }
     }
@@ -1347,13 +1377,14 @@
         if (!A || A.exporting) return;
         if (!window.GeoPackageExport) { toast('Export module not loaded', 'error'); return; }
         pause();
-        const btn = document.getElementById('anim-gpkg');
+        const btn = document.getElementById('anim-export');
         const on = LAYER_ORDER.filter(n => A.on[n]);
         if (!on.length) {
             toast('No layers are switched on — turn on at least one chip to export it', 'warning');
             return;
         }
         A.exporting = true;
+        const label = btn && btn.textContent;
         if (btn) { btn.textContent = '⏳'; btn.disabled = true; }
         try {
             await window.GeoPackageExport.startView({
@@ -1374,8 +1405,112 @@
             toast('GeoPackage export failed: ' + e.message, 'error');
         } finally {
             A.exporting = false;
-            if (btn) { btn.textContent = 'GPKG'; btn.disabled = false; }
+            if (btn) { btn.textContent = label; btn.disabled = false; }
         }
+    }
+
+    // ---------- the download menu ----------
+    //
+    // The GIF and the GeoPackage used to be two bare buttons in the slider
+    // header, and neither could be handed to anyone: the whole point of both is
+    // that you have found a picture worth keeping, and "open the animator, set
+    // these layers, scrub to this date, press GPKG" is a paragraph where a URL
+    // would do.
+    //
+    // So they are one ⬇ that opens the SAME menu component the park and AOI
+    // downloads use (.aoi-menu / .aoi-menu-row / copyExportLink in globe.html):
+    // one row per download, each with a ⧉ that copies a link which reproduces
+    // this exact animation — window, viewport, layers, speed, playhead — and
+    // points at that row. One menu pattern for every download in the app,
+    // including its Safari copy-link workaround and its mobile sizing.
+    //
+    // A highlighted row is a HINT, not an action, for the same reason as the
+    // area exports: opening a link must not spend minutes of CPU or hundreds of
+    // MB. The recipient lands on the frame with the row pointed at, and clicks.
+    const EXPORT_ITEMS = {
+        gif:  { icon: 'icon-film',     label: 'GIF',        note: 'the animation', run: () => exportGIF() },
+        gpkg: { icon: 'icon-database', label: 'GeoPackage', note: 'this frame, QGIS', run: () => exportGPKG() }
+    };
+
+    // The link that reproduces this animation and points at one download.
+    // buildShareUrl() already writes anim/anim_speed/anim_t/anim_aoi and the
+    // viewport; this only adds which entry to point at, and forces the paused
+    // flag, because a download is about a frame.
+    function exportShareLink(item) {
+        let url;
+        try {
+            url = typeof buildShareUrl === 'function' ? buildShareUrl() : window.location.href;
+        } catch (e) { url = window.location.href; }
+        const u = new URL(url, window.location.href);
+        u.searchParams.set('anim_paused', '1');
+        u.searchParams.set('anim_export', item);
+        return u.toString();
+    }
+
+    function exportMenuHTML() {
+        const mobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
+        return Object.keys(EXPORT_ITEMS).map(k => {
+            // Encoding a GIF is tens of seconds of main-thread canvas work per
+            // export; on a phone it is minutes and a hot battery. The row is
+            // hidden there rather than offered and then apologised for.
+            if (k === 'gif' && mobile) return '';
+            const it = EXPORT_ITEMS[k];
+            const link = exportShareLink(k);
+            return `<div class="aoi-menu-row">`
+                 + `<button class="aoi-menu-item" data-item="${k}" data-anim-export="${k}">`
+                 + `<i class="${it.icon}"></i><span>${it.label}</span><em>${it.note}</em></button>`
+                 + `<button class="aoi-menu-copy" title="Copy a link to this frame and this download"`
+                 + ` aria-label="Copy a link to this frame and this download"`
+                 + ` data-url="${link.replace(/"/g, '&quot;')}"><i class="icon-copy"></i></button>`
+                 + `</div>`;
+        }).join('');
+    }
+
+    function closeExportMenu() {
+        const el = document.getElementById('anim-export-menu');
+        if (el) el.remove();
+    }
+
+    function toggleExportMenu(btn, highlight) {
+        const open = document.getElementById('anim-export-menu');
+        closeExportMenu();
+        if (open && !highlight) return;
+        if (!A) return;
+        pause();     // the frame is the question; it must not move under the menu
+        const el = document.createElement('div');
+        el.id = 'anim-export-menu';
+        el.className = 'aoi-menu';
+        el.innerHTML = exportMenuHTML();
+        document.body.appendChild(el);
+        el.querySelectorAll('[data-anim-export]').forEach(b => {
+            b.onclick = (e) => {
+                e.stopPropagation();
+                closeExportMenu();
+                const it = EXPORT_ITEMS[b.dataset.animExport];
+                if (it) it.run();
+            };
+        });
+        el.querySelectorAll('.aoi-menu-copy').forEach(b => {
+            b.onclick = (e) => (typeof copyExportLink === 'function')
+                ? copyExportLink(e, b)
+                : (e.preventDefault(), prompt('Copy this link:', b.dataset.url), false);
+        });
+        // Above the slider, not below it: the button lives in the bottom
+        // furniture, so a menu dropped downwards would be off screen.
+        const r = btn.getBoundingClientRect();
+        const w = el.offsetWidth, h = el.offsetHeight;
+        el.style.left = Math.max(6, Math.min(window.innerWidth - w - 6, r.left - w / 2 + r.width / 2)) + 'px';
+        el.style.top = (r.top - h - 6 > 6 ? r.top - h - 6 : r.bottom + 6) + 'px';
+        if (highlight) {
+            const item = el.querySelector(`.aoi-menu-item[data-item="${highlight}"]`);
+            if (item) {
+                item.classList.add('highlight');
+                item.setAttribute('tabindex', '0');
+                item.focus({ preventScroll: true });
+            }
+        }
+        setTimeout(() => document.addEventListener('click', closeExportMenu, { once: true }),
+                   highlight ? 400 : 0);
     }
 
     // ---------- chips ----------
@@ -1428,8 +1563,7 @@
             <button id="anim-slower" class="anim-btn" title="Slower (hold to ramp)">−</button>
             <span id="anim-speed-lbl"></span>
             <button id="anim-faster" class="anim-btn" title="Faster (hold to ramp)">+</button>
-            <button id="anim-gif" class="anim-btn" title="Download animated GIF">GIF</button>
-            <button id="anim-gpkg" class="anim-btn" title="Download a GeoPackage (QGIS) of exactly this frame — this viewport, these layers, up to this date">GPKG</button>
+            <button id="anim-export" class="anim-btn" title="Download this animation — GIF, or a GeoPackage of this frame">⬇</button>
             <button id="anim-close" class="anim-btn" title="Close animator (Esc)">✕</button>`;
         dateRow.appendChild(inline);
         // staggered expansion, same behaviour as the date preset tags
@@ -1599,8 +1733,10 @@
         // controls
         document.getElementById('anim-play').onclick = () => A.playing ? pause() : play();
         document.getElementById('anim-close').onclick = () => window.Animator.close();
-        document.getElementById('anim-gif').onclick = exportGIF;
-        document.getElementById('anim-gpkg').onclick = exportGPKG;
+        document.getElementById('anim-export').onclick = (e) => {
+            e.stopPropagation();
+            toggleExportMenu(e.currentTarget);
+        };
 
         // speed: click steps, press-and-hold ramps (mobile friendly)
         const speedBtn = (id, factor) => {
@@ -1792,9 +1928,22 @@
                       'info', { key: 'anim-empty-start' });
             }
             if (typeof updateShareURL === 'function') updateShareURL();
+
+            // ?anim_export= — the shared frame points at a download. It opens
+            // the menu with that row highlighted; it never starts the export.
+            // Same rule, and the same reason, as ?aoi_menu_item=: a link whose
+            // only outcome is minutes of encoding (or a few hundred MB) must be
+            // a click the recipient makes, not a consequence of opening a URL.
+            if (opts.exportItem && EXPORT_ITEMS[opts.exportItem]) {
+                setTimeout(() => {
+                    const btn = document.getElementById('anim-export');
+                    if (btn) toggleExportMenu(btn, opts.exportItem);
+                }, 450);
+            }
         },
         close() {
             if (!A) return;
+            closeExportMenu();
             pause();
             map.off('move', A.mapHandler);
             map.off('moveend', A.moveEndHandler);
@@ -1840,7 +1989,17 @@
                 speed: A.speed,
                 tISO: fmtDate(A.t),
                 playing: A.playing,
-                aoi: A.aoiID || null
+                aoi: A.aoiID || null,
+                // Which download the open menu is pointing at, so the share
+                // link reproduces what is on screen — an open menu IS on
+                // screen, and it is the one piece of UI whose whole purpose is
+                // the next click.
+                exportItem: (function () {
+                    const el = document.getElementById('anim-export-menu');
+                    if (!el) return null;
+                    const hi = el.querySelector('.aoi-menu-item.highlight');
+                    return hi ? hi.dataset.item : 'open';
+                })()
             };
         }
     };
