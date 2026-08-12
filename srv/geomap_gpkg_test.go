@@ -3,8 +3,10 @@ package srv
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -179,5 +181,185 @@ func TestGeoMapGeoPackageCacheFollowsTheUnits(t *testing.T) {
 	}
 	if _, ok := geoMapGPKGReady("tst"); ok {
 		t.Error("units newer than the package must invalidate it")
+	}
+}
+
+// ---- the ornament, as QGIS actually draws it -------------------------------
+//
+// These pin what RENDERING the file taught us (2026-08-12,
+// scripts/geomaps/render_gpkg.py; findings in docs/GEOLOGY_HANDOVER.md). Every
+// one of them describes a way an ornament came out WRONG while the XML we
+// wrote was exactly what we intended — which is why the byte-level test above
+// could not see any of it, and why nine families shipped as six.
+
+// THE ONE THAT COST THE MOST. QGIS renders a LinePatternFill by building a
+// small repeating tile and stamping it; on an axis-aligned angle (0/90/180/270)
+// the tile is only as long as the line spacing, so a custom dash whose period
+// exceeds the spacing is clipped to nothing or to a solid rule. Measured on
+// 3.34.4: the carbonate brick's vertical course (dash 2;6 at 90°, spacing
+// 3.6 mm) rendered ZERO pixels, so "bricks" was flat horizontal rules and read
+// as mudrock. `use_custom_dash` was set, and set on the LINE layer, which is
+// the trap already documented — it was right, and it still did nothing.
+//
+// The rule that survives it, measured rather than reasoned: the dash period
+// must not exceed 1.5x the line spacing. Every ornament at or below that ratio
+// rendered as a correct dash at every angle we ship; everything at 1.76x and
+// above came out blank or solid. The bound is applied at every angle, not only
+// the axis-aligned ones, because the same clipping bites off-axis for a long
+// enough period and a per-angle exception is a rule nobody will remember.
+func TestGeoOrnamentDashesSurviveTheQGISPatternTile(t *testing.T) {
+	// Measured on QGIS 3.34.4 (see the ratio table in
+	// docs/GEOLOGY_HANDOVER.md). Ratios of 1.00-1.50 rendered correctly;
+	// 1.76, 2.17, 2.22, 2.31, 3.12, 3.24 and 3.27 all rendered blank or solid.
+	const maxRatio = 1.5
+	for lith, layers := range geoOrnaments {
+		for i, l := range layers {
+			if l.marker != "" || l.dash == "" {
+				continue
+			}
+			spacing, err := strconv.ParseFloat(l.b, 64)
+			if err != nil {
+				t.Errorf("%s[%d]: spacing %q unparseable", lith, i, l.b)
+				continue
+			}
+			period := 0.0
+			for _, seg := range strings.Split(l.dash, ";") {
+				v, err := strconv.ParseFloat(seg, 64)
+				if err != nil {
+					t.Errorf("%s[%d]: dash segment %q unparseable", lith, i, seg)
+					continue
+				}
+				period += v
+			}
+			if period > spacing*maxRatio+1e-9 {
+				t.Errorf("%s[%d]: dash %q has period %.2f mm, %.2fx the line spacing "+
+					"%.2f mm (max %.2fx). QGIS clips the dash to its pattern tile and "+
+					"this ornament will render SOLID or BLANK, not dashed. Shorten the "+
+					"dash or widen the spacing, then re-render and LOOK at it: "+
+					"QT_QPA_PLATFORM=offscreen python3 scripts/geomaps/render_gpkg.py",
+					lith, i, l.dash, period, period/spacing, spacing, maxRatio)
+			}
+		}
+	}
+}
+
+// Nine families exist to be TOLD APART. Two lithologies drawn with the same
+// angle, spacing and dash are one family wearing two names — and because the
+// fill colour is the age, two units of the same age and different rock would
+// then be pixel-identical. (This is how the old volcanic ornament, a dashed
+// 45° hatch, was indistinguishable from `mixed`.)
+func TestGeoOrnamentFamiliesAreDistinct(t *testing.T) {
+	seen := map[string]string{}
+	for _, l := range geoLithologies {
+		orn := geoOrnamentOf(l.Key)
+		if len(orn) == 0 {
+			t.Errorf("%s: no ornament — it would render as a flat colour, i.e. "+
+				"as something that is not the geology layer", l.Key)
+			continue
+		}
+		key := fmt.Sprint(orn)
+		if prev, dup := seen[key]; dup {
+			t.Errorf("%s and %s have the SAME ornament (%v): at one age they are "+
+				"the same pixels", l.Key, prev, orn)
+		}
+		seen[key] = l.Key
+	}
+	// `mixed` means "the sheet does not say" and must stay QUIET: it must not
+	// out-shout a family that does say something. Ink coverage cannot be
+	// computed from the table — a marker's coverage and a dashed hatch's are
+	// not the same arithmetic, and the first attempt at a formula here ranked
+	// `mixed` above the stipples, which the render flatly contradicts. So these
+	// are MEASURED, off the render, at 96 dpi:
+	//
+	//	QT_QPA_PLATFORM=offscreen python3 scripts/geomaps/render_gpkg.py
+	//
+	// If you change a spacing, re-render and update the number. A stale number
+	// here is exactly the failure this whole exercise was about, so the check
+	// below is deliberately loose: it asserts the ORDERING that matters, not
+	// the values.
+	inkPct := map[string]float64{
+		"sandstone": 5, "mixed": 6, "volcanic": 8, "alluvium": 9,
+		"ironstone": 12, "metamorphic": 15, "mudrock": 17,
+		"intrusive": 18, "carbonate": 26, "ultramafic": 33,
+	}
+	for _, l := range geoLithologies {
+		if _, ok := inkPct[l.Key]; !ok {
+			t.Errorf("%s has no measured ink coverage — render it and record it, "+
+				"do not guess", l.Key)
+		}
+	}
+	// Below the median: quieter than most, without pretending an ornament that
+	// must remain VISIBLE can be the faintest thing on the sheet.
+	louder := 0
+	for k, v := range inkPct {
+		if k != "mixed" && v > inkPct["mixed"] {
+			louder++
+		}
+	}
+	if louder < len(inkPct)/2 {
+		t.Errorf("`mixed` is louder than half the families (%d of %d are louder): "+
+			"the ornament meaning 'the sheet does not say' must not dominate the map",
+			louder, len(inkPct)-1)
+	}
+	// And it must still be visible: an invisible "mixed" is a flat colour, i.e.
+	// a polygon that does not read as the geology layer at all.
+	if inkPct["mixed"] < 2 {
+		t.Error("`mixed` is too faint to read as an ornament")
+	}
+}
+
+// A sub-symbol name must be "@<parent>@<n>" and UNIQUE within its parent: two
+// layers called @3@1 make QGIS drop one, and a cross-hatch then renders as half
+// of itself. Already documented, never checked against every family.
+func TestGeoOrnamentSubSymbolNamesAreUnique(t *testing.T) {
+	for _, l := range geoLithologies {
+		xml := qmlGeoUnitSymbol("7", "200,100,50", l.Key)
+		names := map[string]int{}
+		for _, part := range strings.Split(xml, `name="@`)[1:] {
+			names["@"+part[:strings.Index(part, `"`)]]++
+		}
+		for n, c := range names {
+			if c > 1 {
+				t.Errorf("%s: sub-symbol %q appears %d times; QGIS keeps one and "+
+					"the ornament renders as part of itself", l.Key, n, c)
+			}
+		}
+		if len(names) != len(geoOrnamentOf(l.Key)) {
+			t.Errorf("%s: %d sub-symbols for %d ornament layers",
+				l.Key, len(names), len(geoOrnamentOf(l.Key)))
+		}
+		// A stroke-only marker (a plus, a cross) has no interior, so a fill
+		// colour alone leaves it INVISIBLE — it must carry the stroke.
+		for _, o := range geoOrnamentOf(l.Key) {
+			if o.marker == "cross" || o.marker == "cross2" {
+				if !strings.Contains(xml, `"outline_style" type="QString" value="solid"`) {
+					t.Errorf("%s: a %q marker needs a stroke or it renders as nothing",
+						l.Key, o.marker)
+				}
+			}
+		}
+	}
+}
+
+// Contacts are drawn in a darkened ink, never black and never the unit's own
+// colour: 46 classes outlined at full saturation is a net of bright magenta
+// over a country, and black reads as a political border. Confirmed by looking
+// at the render.
+func TestGeoHatchInkIsDarkenedNotBlack(t *testing.T) {
+	for _, rgb := range []string{"249,249,127", "240,4,127", "52,178,201", "189,189,189"} {
+		got := geoHatchInk(rgb)
+		if got == rgb {
+			t.Errorf("%s: ink equals the fill — the ornament would be invisible", rgb)
+		}
+		var r, g, b int
+		fmt.Sscanf(got, "%d,%d,%d", &r, &g, &b)
+		if r+g+b == 0 {
+			t.Errorf("%s -> black: reads as a border, not as an ornament", rgb)
+		}
+		var fr, fg, fb int
+		fmt.Sscanf(rgb, "%d,%d,%d", &fr, &fg, &fb)
+		if r > fr || g > fg || b > fb {
+			t.Errorf("%s -> %s is not darker than its fill", rgb, got)
+		}
 	}
 }

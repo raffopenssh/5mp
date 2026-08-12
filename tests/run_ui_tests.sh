@@ -90,6 +90,13 @@ test_url_param "map_position" "&lat=0&lng=25&z=5" "" ""
 test_url_param "keystones_off" "&keystones=0" "" ""
 test_url_param "movement_types" "&types=foot,vehicle" "" ""
 test_url_param "time_range" "&from=2024-01-01&to=2024-12-31" "" ""
+# The selected map feature rides in the link as a PLACE (?tip=lng,lat), with
+# ?tip_layer= only picking within the stack found there. Restoring re-asks the
+# live map, so a stale link must degrade to "nothing selected", never to an
+# error page.
+test_url_param "tip_selection" "&tip=22.62154,6.61277" "" ""
+test_url_param "tip_selection_layer" "&tip=22.62154,6.61277&tip_layer=geomap-fill-car" "" ""
+test_url_param "tip_selection_stale" "&tip=0,0&tip_layer=lod-nope-line" "" ""
 test_url_param "complex_combined" "&popup=TZA_Serengeti&sections=fire,species&panel=star&starred_parks=TZA_Serengeti&lat=-2&lng=35&z=8" "" ""
 
 echo

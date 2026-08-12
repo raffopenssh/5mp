@@ -387,13 +387,21 @@
                 return '<div class="maptip-label">' + (s.tipType || 'Feature') + '</div>' +
                        '<div class="maptip-dim">loading details…</div>';
             },
-            actionLabel: 'Open in report',
+            // The destination is the AREA's overview popup, and which kind of
+            // area it is is only known per feature (a pinned AOI layer serves
+            // AOI rows), so the label is a function of the feature.
+            actionLabel: function (feature) {
+                var p = (feature && feature.properties) || {};
+                var area = p.park_id || s.park;
+                return (typeof areaOverviewLabel === 'function')
+                    ? areaOverviewLabel(area) : 'Open overview';
+            },
             onActivate: function (feature) {
                 var p = (feature && feature.properties) || {};
                 if (p.rid != null && detailCache.has(p.rid)) p = detailCache.get(p.rid);
-                var park = p.park_id || s.park;
-                if (park && typeof openFeatureInReport === 'function') {
-                    openFeatureInReport(park, s.tipType, p.feature_id || null);
+                var area = p.park_id || s.park;
+                if (area && typeof openAreaOverview === 'function') {
+                    openAreaOverview(area, s.tipType, p.feature_id || null);
                 }
             }
         });
