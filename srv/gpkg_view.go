@@ -43,10 +43,10 @@ import (
 // gpkgViewOpts is the view export's question. It is folded into gpkgExportOpts
 // (which the job queue understands) via viewOpts.
 type gpkgViewOpts struct {
-	BBox   [4]float64 // minLng, minLat, maxLng, maxLat
-	At     string     // animation instant (YYYY-MM-DD), "" for a static view
-	Layers []string   // animator chip names that were on
-	AOIID  string     // when the view is scoped to an AOI (aoiScopeSQL)
+	BBox   [4]float64 `json:"bbox"`   // minLng, minLat, maxLng, maxLat
+	At     string     `json:"at,omitempty"`     // animation instant (YYYY-MM-DD), "" for a static view
+	Layers []string   `json:"layers,omitempty"` // animator chip names that were on
+	AOIID  string     `json:"aoi,omitempty"`    // when the view is scoped to an AOI (aoiScopeSQL)
 }
 
 // viewLayerTables maps an animator chip to the export tables it implies. The
@@ -757,6 +757,22 @@ func (s *Server) HandleAPIViewGeoPackage(w http.ResponseWriter, r *http.Request)
 		slog.Warn("view geopackage job", "err", err)
 		http.Error(w, "could not start export", http.StatusInternalServerError)
 		return
+	}
+	// "Immediate when fast, a notification when it is not."
+	//
+	// A view export is usually a few MB of one screen — ready before the user
+	// has looked at the bell — but the same button over a continental view with
+	// raw detections on is minutes. The client cannot know which it asked for,
+	// and neither can the server before it has tried, so ?wait= lets it hold the
+	// request briefly and answer with whatever is true then. Nothing about the
+	// job changes: the card is written at queue time either way, so a fast
+	// export is still in the bell, still deletable, still expires in 21 days.
+	if ws := q.Get("wait"); ws != "" && job.State != "ready" {
+		if secs, err := strconv.ParseFloat(ws, 64); err == nil && secs > 0 {
+			if j := s.waitForGeoPackageJob(job.ID, time.Duration(secs*float64(time.Second))); j != nil {
+				job = j
+			}
+		}
 	}
 	writeJSON(w, http.StatusOK, job)
 }

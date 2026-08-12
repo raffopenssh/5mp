@@ -128,6 +128,16 @@
     var map = null;
     var el = null, closeBtn = null, actionBtn = null, bodyEl = null;
     var registry = new Map();      // layerId -> opts
+    // Probes are the same idea for things that are NOT MapLibre layers: the
+    // animator draws to its own canvas, so `queryRenderedFeatures` cannot see
+    // a single one of its trajectories. A probe answers "is there a feature at
+    // this point?" from whatever arrays it already keeps, and its result then
+    // competes in exactly the same priority ordering as a real layer.
+    //
+    // Deliberately not a second tooltip: a paused animation that grew its own
+    // popup would be the pile-up this file was written to end, and it would
+    // not know to stand down over a pinned fire or a park polygon.
+    var probes = new Map();        // probeId -> {probe(e) -> {html, ...}|null, priority}
     // A predicate set by the app: "is there a more specific answer here that
     // MapTip does not own?" (a park polygon, which has its own popup and its
     // own click handler). Backdrop layers — the AOI, the geology drape — stand
@@ -249,23 +259,46 @@
     }
 
     function tipFor(e, forClick) {
+        var cand = [];
         var layers = liveLayers().filter(function (id) {
             var o = registry.get(id);
             return forClick || !(o && o.clickOnly);
         });
-        if (!layers.length) return null;
-        var feats;
-        try {
-            feats = map.queryRenderedFeatures(e.point, { layers: layers });
-        } catch (err) { return null; }
-        if (!feats || !feats.length) return null;
-        // Topmost-first, but backdrops last regardless of where they are drawn.
-        // Stable sort on (priority desc), so within one priority the map's own
-        // render order still decides.
-        var cand = feats.map(function (f, i) {
-            var o = registry.get(f.layer && f.layer.id);
-            return { f: f, opts: o, i: i, pri: (o && typeof o.priority === 'number') ? o.priority : 0 };
-        }).filter(function (c) { return c.opts && typeof c.opts.html === 'function'; });
+        if (layers.length) {
+            var feats;
+            try {
+                feats = map.queryRenderedFeatures(e.point, { layers: layers });
+            } catch (err) { feats = null; }
+            // Topmost-first, but backdrops last regardless of where they are
+            // drawn. Stable sort on (priority desc), so within one priority the
+            // map's own render order still decides.
+            (feats || []).forEach(function (f, i) {
+                var o = registry.get(f.layer && f.layer.id);
+                cand.push({ f: f, opts: o, i: i,
+                            pri: (o && typeof o.priority === 'number') ? o.priority : 0 });
+            });
+        }
+        // Canvas-drawn features join the same ordering. They come after the
+        // real layers at equal priority, which is right: a pinned vector the
+        // user deliberately put there outranks an animation frame.
+        probes.forEach(function (p, id) {
+            if (!forClick && p.clickOnly) return;
+            var hit;
+            try { hit = p.probe(e); } catch (err) { hit = null; }
+            if (!hit) return;
+            cand.push({
+                f: hit.feature || { properties: hit.properties || {}, layer: { id: id } },
+                opts: { html: function () { return hit.html; },
+                        onActivate: hit.onActivate || p.onActivate,
+                        actionLabel: hit.actionLabel || p.actionLabel,
+                        priority: p.priority, clickOnly: p.clickOnly },
+                i: cand.length,
+                pri: (typeof p.priority === 'number') ? p.priority : 0,
+                probeId: id
+            });
+        });
+        cand = cand.filter(function (c) { return c.opts && typeof c.opts.html === 'function'; });
+        if (!cand.length) return null;
         cand.sort(function (a, b) { return (b.pri - a.pri) || (a.i - b.i); });
         for (var i = 0; i < cand.length; i++) {
             var f = cand[i].f, opts = cand[i].opts;
@@ -289,7 +322,8 @@
             for (var j = 0; j < cand.length; j++) {
                 if (j !== i && cand[j].pri >= cand[i].pri) extra++;
             }
-            return { html: html, opts: opts, feature: f, layerId: f.layer.id, extra: extra };
+            return { html: html, opts: opts, feature: f,
+                     layerId: cand[i].probeId || f.layer.id, extra: extra };
         }
         return null;
     }
@@ -364,6 +398,19 @@
             Array.from(registry.keys()).forEach(function (id) {
                 if (id.indexOf(prefix) === 0) MapTip.unregister(id);
             });
+        },
+        /**
+         * A non-MapLibre source of features (the animator's canvas). `probe(e)`
+         * returns {html, properties?, onActivate?} or null; the result joins
+         * the same priority arbitration as a registered layer.
+         */
+        registerProbe: function (id, opts) {
+            if (!id || !opts || typeof opts.probe !== 'function') return;
+            probes.set(id, opts);
+        },
+        unregisterProbe: function (id) {
+            probes.delete(id);
+            if (current && current.layerId === id) hide(true);
         },
         setBackdropGuard: function (fn) { backdropGuard = fn; },
         hide: function () { hide(true); },

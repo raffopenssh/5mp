@@ -58,6 +58,10 @@ type GeoPackageJob struct {
 	Downloads int             `json:"downloads"`
 	URL       string          `json:"download_url,omitempty"`
 	Cached    bool            `json:"cached,omitempty"`
+	// View is present only for a viewport export. It is what makes the card
+	// self-describing after a reload ("1 Mar 2025 · fire paths, settlements"
+	// rather than "Map view"), and it is what Try-again re-sends.
+	View *gpkgViewOpts `json:"view,omitempty"`
 }
 
 // The cache key IS the question. Anything that changes the bytes of the file
@@ -98,18 +102,24 @@ func gpkgToken() string {
 const gpkgCols = `id, area_id, area_name, is_aoi, COALESCE(from_date,''), COALESCE(to_date,''),
 	effort, raw_fire, state, progress, COALESCE(step,''), COALESCE(size_bytes,0), COALESCE(layers_json,'[]'),
 	COALESCE(error,''), created_at, COALESCE(finished_at,''), COALESCE(expires_at,''),
-	COALESCE(downloads,0), COALESCE(file_path,'')`
+	COALESCE(downloads,0), COALESCE(file_path,''), COALESCE(view_json,'')`
 
 type gpkgRowScanner interface{ Scan(...interface{}) error }
 
 func scanGeoPackageJob(row gpkgRowScanner) (*GeoPackageJob, string, error) {
 	var j GeoPackageJob
 	var isAOI, effort, rawFire int
-	var layers, path string
+	var layers, path, viewJSON string
 	if err := row.Scan(&j.ID, &j.AreaID, &j.AreaName, &isAOI, &j.FromDate, &j.ToDate,
 		&effort, &rawFire, &j.State, &j.Progress, &j.Step, &j.SizeBytes, &layers, &j.Error,
-		&j.CreatedAt, &j.Finished, &j.ExpiresAt, &j.Downloads, &path); err != nil {
+		&j.CreatedAt, &j.Finished, &j.ExpiresAt, &j.Downloads, &path, &viewJSON); err != nil {
 		return nil, "", err
+	}
+	if viewJSON != "" {
+		var v gpkgViewOpts
+		if json.Unmarshal([]byte(viewJSON), &v) == nil {
+			j.View = &v
+		}
 	}
 	j.IsAOI, j.Effort, j.RawFire = isAOI == 1, effort == 1, rawFire == 1
 	json.Unmarshal([]byte(layers), &j.Layers)
@@ -174,12 +184,21 @@ func (s *Server) startGeoPackageJob(o gpkgExportOpts, isAOI bool, principalID in
 	if principalID > 0 {
 		pid = principalID
 	}
+	// A view export's question does not fit the columns (bbox, instant, chips),
+	// and cache_key is not something a client should have to parse. Stored so a
+	// card reloaded tomorrow can still say what it is and retry the same thing.
+	viewJSON := ""
+	if o.View != nil {
+		if b, err := json.Marshal(o.View); err == nil {
+			viewJSON = string(b)
+		}
+	}
 	if _, err := s.DB.Exec(`INSERT INTO geopackage_jobs
 		(id, cache_key, area_id, area_name, is_aoi, principal_id, env, from_date, to_date,
-		 effort, raw_fire, state, file_path, created_at)
-		VALUES (?,?,?,?,?,?,?,?,?,?,?, 'pending', ?, ?)`,
+		 effort, raw_fire, state, file_path, view_json, created_at)
+		VALUES (?,?,?,?,?,?,?,?,?,?,?, 'pending', ?, ?, ?)`,
 		id, key, o.AreaID, o.AreaName, boolInt(isAOI), pid, o.Env, o.FromDate, o.ToDate,
-		boolInt(o.Effort), boolInt(o.RawFire), path, now); err != nil {
+		boolInt(o.Effort), boolInt(o.RawFire), path, viewJSON, now); err != nil {
 		return nil, err
 	}
 	// The card is written HERE, not when the build starts. Only one export
@@ -193,7 +212,47 @@ func (s *Server) startGeoPackageJob(o gpkgExportOpts, isAOI bool, principalID in
 	go s.runGeoPackageJob(id, path, o, isAOI)
 	return &GeoPackageJob{ID: id, AreaID: o.AreaID, AreaName: o.AreaName, IsAOI: isAOI,
 		FromDate: o.FromDate, ToDate: o.ToDate, Effort: o.Effort, RawFire: o.RawFire,
-		State: "pending", CreatedAt: now}, nil
+		State: "pending", CreatedAt: now, View: o.View}, nil
+}
+
+// waitForGeoPackageJob gives a small export the chance to be a DOWNLOAD rather
+// than a notification.
+//
+// A viewport export of a paused animation is usually seconds — the same click
+// on the same button over a continent is minutes. Making the user watch the
+// bell for a 2 MB file that was ready before they looked away is ceremony;
+// blocking the request until a 400 MB one finishes is a timeout. So the
+// handler waits a *bounded* moment and then answers honestly with whichever
+// state the job is in — the job itself is unaffected either way, and the card
+// is written at queue time regardless, so a fast export is still deletable
+// from the bell and still expires with everything else.
+//
+// Deliberately short (and hard-capped) relative to WriteTimeout: this must
+// never be the reason a request dies.
+func (s *Server) waitForGeoPackageJob(id string, d time.Duration) *GeoPackageJob {
+	if d > 20*time.Second {
+		d = 20 * time.Second
+	}
+	deadline := time.Now().Add(d)
+	for {
+		j := s.loadGeoPackageJobByID(id)
+		if j == nil || j.State == "ready" || j.State == "failed" || j.State == "expired" {
+			return j
+		}
+		if time.Now().After(deadline) {
+			return j
+		}
+		time.Sleep(250 * time.Millisecond)
+	}
+}
+
+func (s *Server) loadGeoPackageJobByID(id string) *GeoPackageJob {
+	row := s.DB.QueryRow(`SELECT `+gpkgCols+` FROM geopackage_jobs WHERE id = ?`, id)
+	j, _, err := scanGeoPackageJob(row)
+	if err != nil {
+		return nil
+	}
+	return j
 }
 
 // Two exports of the same area differ by a gigabyte, so their cards have to be
@@ -202,7 +261,10 @@ func (s *Server) startGeoPackageJob(o gpkgExportOpts, isAOI bool, principalID in
 func gpkgTitleSuffix(o gpkgExportOpts) string {
 	if o.View != nil {
 		if o.View.At != "" {
-			return " (view at " + o.View.At + ")"
+			// Human, because two paused frames of the same animation are two
+			// cards in one bell and the instant is the only thing that tells
+			// them apart.
+			return " (view at " + gpkgHumanDate(o.View.At) + ")"
 		}
 		return " (current view)"
 	}
@@ -210,6 +272,14 @@ func gpkgTitleSuffix(o gpkgExportOpts) string {
 		return ""
 	}
 	return " (no raw fire points)"
+}
+
+func gpkgHumanDate(iso string) string {
+	t, err := time.Parse("2006-01-02", iso)
+	if err != nil {
+		return iso
+	}
+	return t.Format("2 Jan 2006")
 }
 
 // A view export's filename has to say WHICH view: several of them land in the

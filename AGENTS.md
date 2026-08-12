@@ -1682,14 +1682,25 @@ python3 scripts/daily_fire_update.py --days 7
 
 ### ⚠️ Active handover: `docs/HANDOVER_LOD_FEATURES.md`
 
-Server side of "smooth zoom to clickable vectors + paused-animation GeoPackage"
-is **done and live**; the frontend is **not started**. New endpoints already
-shipped: `/api/features-in-bbox?mode=auto` (server picks geometry vs centroids
-from the true count in view, returns `render:`), `/api/feature-detail?id=`,
-`POST /api/view/export.gpkg` (export exactly what is on screen, `?at=` = the
-playhead). `mode=points` on `/api/fire-frames` is now gated on estimated
-detections, not bbox area. Read the handover before touching pinned layers,
-`anim.js` or the feature endpoints.
+Smooth zoom to clickable vectors + the paused-animation GeoPackage. Server and
+**most of the frontend** are live: `srv/static/lodlayer.js` is now the one
+loader for the stats-panel toggles *and* pinned fire/deforestation/settlement
+layers (`mode=auto`, geometry vs centroids decided by the server from the true
+count in view, cross-faded, a centroid still hovers via `/api/feature-detail`);
+the animator has `#anim-gpkg` beside the GIF button; `MapTip.registerProbe()`
+lets the paused animation answer a hover from its canvas arrays.
+
+**One measured problem is open and blocks the rest**:
+`/api/fire-anim-trajectories` costs 7.8 s at `limit=800` and 17 s at 4000 for
+one 8° bbox (it parses `data/fire_groups_v5/*.json` per park). The client is
+deliberately pinned back at 800 with a comment. Read the handover before
+touching pinned layers, `anim.js` or the feature endpoints.
+
+**A view GeoPackage is immediate when fast, a notification when not**:
+`?wait=<s>` on `POST /api/view/export.gpkg` (capped 20 s), migration **050**
+(`view_json`) so a card that outlives its tab can still describe and retry
+itself. Same job, cache, 21-day link and delete button as the area export — it
+is a different *question* (only what is on screen), not a different mechanism.
 
 See `docs/` directory:
 - `README.md` - Overview
