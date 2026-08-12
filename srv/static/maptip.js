@@ -526,7 +526,18 @@
     function showHover(tip, point) {
         if (!hovEl) build();
         if (hoverHideTimer) { clearTimeout(hoverHideTimer); hoverHideTimer = null; }
-        hov = { tip: tip, key: featureKey(tip.feature) + '@' + tip.layerId };
+        var key = featureKey(tip.feature) + '@' + tip.layerId;
+        // Moving the cursor ACROSS one feature is not a new answer. Re-writing
+        // innerHTML on every mousemove reflows the tip 60-120 times a second
+        // for an identical string, which is most of the cost of hovering a
+        // dense layer; only the position actually changed.
+        if (hov && hov.key === key && hov.tip.html === tip.html &&
+            hov.tip.extra === tip.extra) {
+            hov.tip = tip;
+            position(hovEl, point);
+            return;
+        }
+        hov = { tip: tip, key: key };
         hovBody.innerHTML = tip.html + moreHTML(tip.extra);
         hovEl.classList.add('visible');
         position(hovEl, point);
@@ -581,17 +592,33 @@
             var hit;
             try { hit = p.probe(e); } catch (err) { hit = null; }
             if (!hit) return;
-            cand.push({
-                f: hit.feature || { properties: hit.properties || {}, layer: { id: id } },
-                opts: { html: function () { return hit.html; },
-                        onActivate: hit.onActivate || p.onActivate,
-                        actionLabel: hit.actionLabel || p.actionLabel,
-                        tabLabel: hit.tabLabel || p.tabLabel,
-                        tabColor: hit.tabColor || p.tabColor,
-                        priority: p.priority, clickOnly: p.clickOnly },
-                i: cand.length,
-                pri: (typeof p.priority === 'number') ? p.priority : 0,
-                probeId: id
+            // A probe may answer with SEVERAL features at the point (an
+            // animation frame draws a settlement, a clearing and a fire path
+            // in the same place). Each becomes its own candidate under a
+            // sub-id, so the card shows them as tabs instead of the nearest
+            // one silently winning — the same rule as registered layers.
+            (Array.isArray(hit) ? hit : [hit]).forEach(function (h, k) {
+                if (!h) return;
+                var sub = h.key ? (id + ':' + h.key) : (k ? id + ':' + k : id);
+                cand.push({
+                    f: h.feature || { properties: h.properties || {}, layer: { id: sub } },
+                    // A probe may return `render(props)` instead of a fixed
+                    // `html` string. That is what makes MapTip.refresh() work
+                    // for canvas features: when an async detail lands the
+                    // stored properties are re-rendered, rather than a frozen
+                    // string being redrawn.
+                    opts: { html: (typeof h.render === 'function') ? h.render
+                                                                  : function () { return h.html; },
+                            onActivate: h.onActivate || p.onActivate,
+                            actionLabel: h.actionLabel || p.actionLabel,
+                            tabLabel: h.tabLabel || p.tabLabel,
+                            tabColor: h.tabColor || p.tabColor,
+                            peers: (h.peers !== undefined) ? h.peers : p.peers,
+                            priority: p.priority, clickOnly: p.clickOnly },
+                    i: cand.length,
+                    pri: (typeof p.priority === 'number') ? p.priority : 0,
+                    probeId: sub
+                });
             });
         });
         cand = cand.filter(function (c) { return c.opts && typeof c.opts.html === 'function'; });
