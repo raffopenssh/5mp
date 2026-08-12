@@ -1,3 +1,5 @@
+4d3753c 2026-08-12 10:16:42 Focus states itself in the stats panel, and its numbers obey it
+276df78 2026-08-12 09:45:50 chore: refresh version history
 5950557 2026-08-12 09:45:42 Fire fronts stay lines at every zoom; a pin can be filtered, scoped and forced
 66804b2 2026-08-12 08:50:50 chore: refresh version history
 6caa7d9 2026-08-12 08:50:35 LOD: dated trajectories from the database, density-aware ink, and a shareable animation download
@@ -16,5 +18,3 @@ af59c0d 2026-08-10 07:30:25 admin: copy-link icon in the panel header for the se
 70c6b09 2026-08-10 07:21:14 chore: refresh version history
 b924473 2026-08-10 07:20:58 docs: the geology GeoPackage and map_sheet= links are done, not open
 d7af57c 2026-08-10 07:18:36 chore: refresh version history
-4f5a14a 2026-08-10 07:18:04 geology: a GeoPackage download beside the MBTiles
-fcd4d58 2026-08-10 07:17:56 Patrol data is scoped to the account it was uploaded in
