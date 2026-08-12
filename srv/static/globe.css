@@ -211,6 +211,16 @@
             mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 17v5'/%3E%3Cpath d='M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1z'/%3E%3C/svg%3E");
         }
         .stats-lod .lod-count .icon-pin { font-size: 8px; opacity: 0.8; margin-right: 2px; }
+        /* Drawn by the ANIMATION, not by this row — same rule as .layer-pinned
+           above, and for the sharper reason: the crossed-out eye states "not
+           visible" about something that is plainly on screen. The glyph is the
+           ▷ the readout uses, so the icon and the words agree, and the accent
+           bar stays off because this row's own map layer really is off. */
+        .stats-item.layer-toggle.layer-animated:not(.layer-on) .stats-label::before {
+            -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolygon points='6 3 20 12 6 21 6 3'/%3E%3C/svg%3E");
+            mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolygon points='6 3 20 12 6 21 6 3'/%3E%3C/svg%3E");
+            opacity: 0.9;
+        }
         .stats-item.layer-toggle:not(.layer-on) .stats-value { opacity: 0.55; }
         /* Patrol effort is owned by the account it was uploaded in
            (srv/tenant.go). For another account the layer is legitimately

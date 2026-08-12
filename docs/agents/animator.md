@@ -120,6 +120,11 @@ to animation layers (`ANIM_ROW_LAYERS`) and renders both in one control.
   (`.has-modes`, not just `.layer-on`), and a row drawn only by the animation
   keeps its label legible (`.layer-animated`) while its accent bar stays off —
   the map layer really is off; the animation is what is on screen.
+* **Its eye becomes a ▷.** A crossed-out eye states *not visible* about
+  something plainly on screen, which is the same lie the whole change exists to
+  fix, one glyph smaller. Same rule as `.layer-pinned` (eye → pin), and the row
+  then has to say what its own switch still does — hence the tooltip "Drawn by
+  the animation. Click to also show this layer on the map.
 * **One direction only.** The chips remain the animator's own state; the legend
   is a second way to reach the same switch, exactly as the detail control lives
   on both a stats row and a pinned chip. A pinned chip's menu has **no**
