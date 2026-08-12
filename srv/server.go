@@ -308,6 +308,13 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("POST /api/upload", RateLimitMiddleware(uploadRL, s.HandleAPIUpload))
 	mux.HandleFunc("GET /api/stats", s.HandleAPIStats)
 	mux.HandleFunc("GET /api/features-in-bbox", s.HandleAPIFeaturesInBBox)
+	// One feature by row id: what a zoomed-out point dot resolves to when the
+	// user hovers it (srv/features_bbox.go).
+	mux.HandleFunc("GET /api/feature-detail", s.HandleAPIFeatureDetail)
+	// "Export what is on my screen" — a viewport, not an area, because the
+	// common case is a paused animation over several countries (srv/gpkg_view.go).
+	mux.HandleFunc("POST /api/view/export.gpkg", s.HandleAPIViewGeoPackage)
+	mux.HandleFunc("GET /api/view/export.gpkg", s.HandleAPIViewGeoPackage)
 	mux.HandleFunc("GET /api/parks/export", s.HandleAPIParksExport)
 	mux.HandleFunc("GET /api/activity", s.HandleAPIActivity)
 

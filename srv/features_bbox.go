@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"math"
 	"net/http"
 	"sort"
@@ -64,10 +63,23 @@ func (s *Server) HandleAPIFeaturesInBBox(w http.ResponseWriter, r *http.Request)
 	}
 
 	limit := 1500
-	if l, err := strconv.Atoi(q.Get("limit")); err == nil && l > 0 && l <= 20000 {
+	if l, err := strconv.Atoi(q.Get("limit")); err == nil && l > 0 && l <= 200000 {
 		limit = l
 	}
-	pointsMode := q.Get("mode") == "points"
+	// mode=auto is the zoom transition, decided by the server because only the
+	// server knows how many features are actually in the view: below
+	// geom_budget the answer is real clickable geometry, above it the same
+	// selection as bare centroids. The client renders both, so crossing the
+	// threshold is a cross-fade rather than a different feature.
+	mode := q.Get("mode")
+	geomBudget := 0
+	if mode == "auto" {
+		geomBudget = 3000
+		if b, err := strconv.Atoi(q.Get("geom_budget")); err == nil && b >= 0 && b <= 20000 {
+			geomBudget = b
+		}
+	}
+	pointsMode := mode == "points"
 	// spread=0 opts back into the old "biggest N anywhere" behaviour.
 	spread := q.Get("spread") != "0"
 
@@ -78,6 +90,17 @@ func (s *Server) HandleAPIFeaturesInBBox(w http.ResponseWriter, r *http.Request)
 		  AND bbox_maxy >= ? AND bbox_miny <= ?
 	` + aoiScopeSQL("park_id", s.aoiScopeParam(r))
 	args := []interface{}{featureType, bbox[0], bbox[2], bbox[1], bbox[3]}
+
+	// ?park= scopes the answer to one area's rows. A pinned layer is a
+	// statement about an area ("Chinko's fires"), so when the pin is rendered
+	// viewport-first — fetching what is on screen instead of the whole park at
+	// once — panning to a neighbouring park must not quietly adopt its rows.
+	// An AOI id is a park_id in this table, so the same param serves both; the
+	// visibility check still comes from aoiScopeSQL/aoiExcludeSQL above.
+	if park := q.Get("park"); park != "" {
+		where += " AND park_id = ?"
+		args = append(args, park)
+	}
 
 	// Date filters match UI narrative behavior: filter on start_date.
 	// Settlements mostly lack dates, so NULL start_date always passes.
@@ -92,35 +115,44 @@ func (s *Server) HandleAPIFeaturesInBBox(w http.ResponseWriter, r *http.Request)
 
 	// Pass 1 is index-only: id, centroid, rank inputs. No geojson, so the rows
 	// that lose the selection cost nothing to read.
+	//
+	// It is also STREAMED into the selector rather than collected: a
+	// continental view of fire_trajectory is 711k candidate rows, and the old
+	// `LIMIT featureScanCap` into a slice both allocated tens of MB and
+	// silently biased the sample towards low ids once it bit — a cap that
+	// reads as an answer. The collector keeps O(limit) rows and counts the
+	// rest, so `total` is the true number in view at every zoom.
 	scanQ := `SELECT id, (bbox_minx + bbox_maxx) / 2, (bbox_miny + bbox_maxy) / 2,
 		         COALESCE(stat_value, 0),
 		         COALESCE((bbox_maxx - bbox_minx) * (bbox_maxy - bbox_miny), 0),
-		         start_date` + where + fmt.Sprintf(" LIMIT %d", featureScanCap)
+		         start_date` + where
 
 	rows, err := s.DB.QueryContext(r.Context(), scanQ, args...)
 	if err != nil {
 		internalError(w, "request failed", err)
 		return
 	}
-	cands := make([]bboxCand, 0, 4096)
+	col := newSpreadCollector(limit, bbox, spread)
 	for rows.Next() {
 		var c bboxCand
 		if err := rows.Scan(&c.id, &c.cx, &c.cy, &c.stat, &c.area, &c.startDate); err != nil {
 			continue
 		}
-		cands = append(cands, c)
+		col.add(c)
 	}
 	rows.Close()
 
-	total := len(cands)
-	truncated := total > limit
-	if truncated {
-		if spread {
-			cands = spreadSelect(cands, limit, bbox)
-		} else {
-			sortCands(cands)
-			cands = cands[:limit]
-		}
+	cands := col.result()
+	total := col.total
+	truncated := total > len(cands)
+
+	// mode=auto: geometry while the view holds few enough features to be worth
+	// drawing as shapes, centroids beyond that. The switch is on the TRUE
+	// count in view, not on zoom — two views at the same zoom can differ by
+	// three orders of magnitude, and the thing that must stay bounded is the
+	// number of rings the browser parses.
+	if mode == "auto" {
+		pointsMode = total > geomBudget
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -134,6 +166,7 @@ func (s *Server) HandleAPIFeaturesInBBox(w http.ResponseWriter, r *http.Request)
 		}
 		baseT, haveBase := parseISODate(base)
 		pts := make([][4]float64, 0, len(cands))
+		ids := make([]int64, 0, len(cands))
 		for _, c := range cands {
 			day := -1.0
 			if haveBase && c.startDate.Valid {
@@ -144,12 +177,20 @@ func (s *Server) HandleAPIFeaturesInBBox(w http.ResponseWriter, r *http.Request)
 			pts = append(pts, [4]float64{
 				round6(c.cx), round6(c.cy), day, round6(c.stat),
 			})
+			ids = append(ids, c.id)
 		}
+		// The row id rides along so a dot stays a *feature*: hovering one asks
+		// /api/feature-detail for the same tip the geometry mode shows. Eight
+		// bytes per point against ~1.6 KB for its rings — the whole reason
+		// points mode exists — and without it a zoomed-out map is a picture
+		// rather than data.
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"mode":      "points",
+			"render":    "points",
 			"type":      featureType,
 			"from":      base,
 			"points":    pts,
+			"ids":       ids,
 			"count":     len(pts),
 			"total":     total,
 			"truncated": truncated,
@@ -164,13 +205,14 @@ func (s *Server) HandleAPIFeaturesInBBox(w http.ResponseWriter, r *http.Request)
 	if q.Get("simplify") != "0" {
 		tol = math.Abs(bbox[2]-bbox[0]) / 2800
 	}
-	features, err := s.fetchFeatureRows(r.Context(), cands, tol)
+	features, err := s.fetchFeatureRows(r.Context(), cands, tol, featureType)
 	if err != nil {
 		internalError(w, "request failed", err)
 		return
 	}
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"type":      "FeatureCollection",
+		"render":    "geometry",
 		"features":  features,
 		"count":     len(features),
 		"total":     total,
@@ -178,9 +220,179 @@ func (s *Server) HandleAPIFeaturesInBBox(w http.ResponseWriter, r *http.Request)
 	})
 }
 
-// featureScanCap bounds pass 1's memory. 400k x ~56 B is ~22 MB worst case and
-// covers every real view (the largest today is 78k settlements over XSA).
-const featureScanCap = 400000
+// HandleAPIFeatureDetail — GET /api/feature-detail?id=123
+//
+// One feature_geometries row, geometry and all, enriched exactly as the bbox
+// endpoint enriches it. It exists so the zoomed-out *points* rendering is not a
+// dead picture: a dot carries its row id, and hovering it fetches the same tip
+// the zoomed-in geometry would have shown. Without this the LOD transition
+// would silently trade interactivity for speed, which is the trade this whole
+// change is meant to avoid.
+func (s *Server) HandleAPIFeatureDetail(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(r.URL.Query().Get("id"), 10, 64)
+	if err != nil {
+		http.Error(w, "id required", http.StatusBadRequest)
+		return
+	}
+	var fType, fID, parkID, geojson string
+	var startDate, endDate, propsJSON sql.NullString
+	err = s.DB.QueryRowContext(r.Context(), `SELECT feature_type, feature_id, park_id, geojson,
+		start_date, end_date, properties_json FROM feature_geometries WHERE id = ?`, id).
+		Scan(&fType, &fID, &parkID, &geojson, &startDate, &endDate, &propsJSON)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	// An AOI's rows are private. 404, not 403 — an id must not be an oracle
+	// (srv/aoi.go).
+	if IsAOIID(parkID) {
+		if _, err := s.GetAOI(parkID, s.RequestPrincipalID(r), false); err != nil {
+			http.NotFound(w, r)
+			return
+		}
+	}
+	props := map[string]interface{}{}
+	if propsJSON.Valid {
+		json.Unmarshal([]byte(propsJSON.String), &props)
+	}
+	props["feature_type"] = fType
+	props["feature_id"] = fID
+	props["park_id"] = parkID
+	if startDate.Valid {
+		props["start_date"] = startDate.String
+	}
+	if endDate.Valid {
+		props["end_date"] = endDate.String
+	}
+	var meta featureMetaCache
+	s.enrichFeatureProps(fType, parkID, fID, props, &meta)
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Cache-Control", "private, max-age=300")
+	json.NewEncoder(w).Encode(geoFeature{
+		Type: "Feature", Geometry: json.RawMessage(geojson), Properties: props,
+	})
+}
+
+// spreadCollector is spreadSelect turned inside out: it consumes candidates as
+// they stream off the cursor and keeps at most ~limit of them, so a continental
+// view (711k fire trajectories) costs the same memory as a park view.
+//
+// The selection rule is unchanged and still deterministic: the bbox is divided
+// into ~limit cells and each cell keeps its single most significant feature
+// (sortCands' order: stat, then area, then lowest id). Because "most
+// significant" is a total order, deciding it per cell as rows arrive gives the
+// same set as sorting everything first — which is what makes this a
+// pure optimisation and not a different answer.
+//
+// Overflow (features that lost their cell) is kept only up to `limit` so a
+// sparse view still fills its budget; beyond that it is counted, not stored.
+type spreadCollector struct {
+	limit  int
+	bbox   [4]float64
+	spread bool
+	cols   int
+	rows   int
+	w, h   float64
+	cells  map[int]bboxCand
+	over   []bboxCand
+	total  int
+}
+
+func newSpreadCollector(limit int, bbox [4]float64, spread bool) *spreadCollector {
+	c := &spreadCollector{limit: limit, bbox: bbox, spread: spread,
+		w: bbox[2] - bbox[0], h: bbox[3] - bbox[1]}
+	if !spread || c.w <= 0 || c.h <= 0 {
+		c.spread = false
+		return c
+	}
+	c.cols = int(math.Round(math.Sqrt(float64(limit) * c.w / c.h)))
+	if c.cols < 1 {
+		c.cols = 1
+	}
+	c.rows = (limit + c.cols - 1) / c.cols
+	if c.rows < 1 {
+		c.rows = 1
+	}
+	c.cells = make(map[int]bboxCand, limit)
+	return c
+}
+
+func betterCand(a, b bboxCand) bool {
+	if a.stat != b.stat {
+		return a.stat > b.stat
+	}
+	if a.area != b.area {
+		return a.area > b.area
+	}
+	return a.id < b.id
+}
+
+func (c *spreadCollector) add(f bboxCand) {
+	c.total++
+	if !c.spread {
+		// "biggest N anywhere": keep a bounded buffer and sort at the end.
+		if len(c.over) < c.limit*4 {
+			c.over = append(c.over, f)
+		} else {
+			sortCands(c.over)
+			c.over = c.over[:c.limit]
+			c.over = append(c.over, f)
+		}
+		return
+	}
+	cx := int(float64(c.cols) * (f.cx - c.bbox[0]) / c.w)
+	cy := int(float64(c.rows) * (f.cy - c.bbox[1]) / c.h)
+	if cx < 0 {
+		cx = 0
+	} else if cx >= c.cols {
+		cx = c.cols - 1
+	}
+	if cy < 0 {
+		cy = 0
+	} else if cy >= c.rows {
+		cy = c.rows - 1
+	}
+	key := cy*c.cols + cx
+	cur, ok := c.cells[key]
+	if !ok {
+		c.cells[key] = f
+		return
+	}
+	if betterCand(f, cur) {
+		c.cells[key] = f
+		f = cur
+	}
+	if len(c.over) < c.limit {
+		c.over = append(c.over, f)
+	}
+}
+
+func (c *spreadCollector) result() []bboxCand {
+	if !c.spread {
+		sortCands(c.over)
+		if len(c.over) > c.limit {
+			c.over = c.over[:c.limit]
+		}
+		return c.over
+	}
+	out := make([]bboxCand, 0, c.limit)
+	for _, f := range c.cells {
+		out = append(out, f)
+	}
+	sortCands(out)
+	if len(out) > c.limit {
+		out = out[:c.limit]
+	}
+	if len(out) < c.limit && len(c.over) > 0 {
+		sortCands(c.over)
+		need := c.limit - len(out)
+		if need > len(c.over) {
+			need = len(c.over)
+		}
+		out = append(out, c.over[:need]...)
+	}
+	return out
+}
 
 type bboxCand struct {
 	id         int64
@@ -207,70 +419,18 @@ func sortCands(c []bboxCand) {
 	})
 }
 
-// spreadSelect keeps the most significant feature in each of ~limit grid cells
-// covering the bbox, then tops the answer up with the next-ranked leftovers.
-//
-// Why not just LIMIT: every settlement carries stat_value 0, so the ORDER BY
-// degenerated to insertion order and a truncated answer was one contiguous
-// corner of the ingest — 1,500 dots in a stripe along one edge of a
-// 485,000 km² AOI, which reads as "the data is wrong", not as "truncated".
-func spreadSelect(c []bboxCand, limit int, bbox [4]float64) []bboxCand {
-	sortCands(c)
-	w := bbox[2] - bbox[0]
-	h := bbox[3] - bbox[1]
-	if w <= 0 || h <= 0 {
-		return c[:limit]
-	}
-	// cols*rows ≈ limit, cells roughly square in degrees.
-	cols := int(math.Round(math.Sqrt(float64(limit) * w / h)))
-	if cols < 1 {
-		cols = 1
-	}
-	rows := (limit + cols - 1) / cols
-	if rows < 1 {
-		rows = 1
-	}
-	seen := make(map[int]bool, limit)
-	out := make([]bboxCand, 0, limit)
-	taken := make([]bool, len(c))
-	for i, f := range c {
-		if len(out) >= limit {
-			break
-		}
-		cx := int(float64(cols) * (f.cx - bbox[0]) / w)
-		cy := int(float64(rows) * (f.cy - bbox[1]) / h)
-		if cx < 0 {
-			cx = 0
-		} else if cx >= cols {
-			cx = cols - 1
-		}
-		if cy < 0 {
-			cy = 0
-		} else if cy >= rows {
-			cy = rows - 1
-		}
-		key := cy*cols + cx
-		if seen[key] {
-			continue
-		}
-		seen[key] = true
-		taken[i] = true
-		out = append(out, f)
-	}
-	for i, f := range c {
-		if len(out) >= limit {
-			break
-		}
-		if !taken[i] {
-			out = append(out, f)
-		}
-	}
-	return out
-}
-
 // fetchFeatureRows reads geometry + properties for the selected ids, in id
 // chunks so the IN list stays under SQLite's variable limit.
-func (s *Server) fetchFeatureRows(ctx context.Context, cands []bboxCand, tol float64) ([]geoFeature, error) {
+// fetchFeatureRows reads geometry + properties for the selected ids.
+//
+// featureType drives narrative/classification enrichment: a settlement or
+// deforestation polygon carries none of that in properties_json (it lives in
+// park_settlements / deforestation_events, keyed by the polygon_ids list), and
+// without it a viewport-fetched feature's hover tip is emptier than the same
+// feature fetched through the per-park endpoint — i.e. zooming in would *lose*
+// information. Looked up per park via the map-in-Go helpers in feature_meta.go,
+// never the polygon_ids LIKE join.
+func (s *Server) fetchFeatureRows(ctx context.Context, cands []bboxCand, tol float64, featureType string) ([]geoFeature, error) {
 	features := make([]geoFeature, 0, len(cands))
 	const chunk = 900
 	byID := make(map[int64]int, len(cands))
@@ -279,6 +439,7 @@ func (s *Server) fetchFeatureRows(ctx context.Context, cands []bboxCand, tol flo
 	}
 	ordered := make([]geoFeature, len(cands))
 	got := make([]bool, len(cands))
+	var meta featureMetaCache
 	for start := 0; start < len(cands); start += chunk {
 		end := start + chunk
 		if end > len(cands) {
@@ -316,6 +477,7 @@ func (s *Server) fetchFeatureRows(ctx context.Context, cands []bboxCand, tol flo
 			if endDate.Valid {
 				props["end_date"] = endDate.String
 			}
+			s.enrichFeatureProps(featureType, parkID, fID, props, &meta)
 			if i, ok := byID[id]; ok {
 				ordered[i] = geoFeature{Type: "Feature", Geometry: simplifyGeometry(json.RawMessage(geojson), tol), Properties: props}
 				got[i] = true

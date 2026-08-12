@@ -104,3 +104,79 @@ func (s *Server) deforestMetaByPolygon(parkID string) map[string]deforestMeta {
 	}
 	return out
 }
+
+// ---- viewport enrichment -------------------------------------------------
+
+// featureMetaCache memoises the per-park meta maps for one request. A viewport
+// answer can span several parks (and an AOI), so the lookup is keyed by park,
+// but a full scan per feature would be the polygon_ids trap wearing a hat.
+type featureMetaCache struct {
+	settlements map[string]map[string]settlementMeta
+	deforest    map[string]map[string]deforestMeta
+}
+
+// enrichFeatureProps adds the narrative/classification a hover tip needs.
+//
+// The bbox endpoint reads feature_geometries only, whose properties_json for a
+// settlement is {area_m2, population_est, lat, lon} and for a deforestation
+// polygon {year, area_km2} — nothing to say in a tip. The text lives in
+// park_settlements / deforestation_events. Fire trajectories already carry
+// their narrative inline, so they need nothing here.
+func (s *Server) enrichFeatureProps(featureType, parkID, featureID string,
+	props map[string]interface{}, c *featureMetaCache) {
+	switch featureType {
+	case "settlement":
+		if c.settlements == nil {
+			c.settlements = map[string]map[string]settlementMeta{}
+		}
+		m, ok := c.settlements[parkID]
+		if !ok {
+			m = s.settlementMetaByPolygon(parkID)
+			c.settlements[parkID] = m
+		}
+		e, ok := m[featureID]
+		if !ok {
+			return
+		}
+		if e.classification.Valid {
+			props["classification"] = publicSettlementClass(e.classification.String)
+		}
+		if e.narrative.Valid {
+			cls := ""
+			if e.classification.Valid {
+				cls = publicSettlementClass(e.classification.String)
+			}
+			if n := publicSettlementNarrative(cls, e.narrative.String); n != "" {
+				props["narrative"] = n
+			}
+		}
+		if e.nearestPlace.Valid {
+			props["nearest_place"] = e.nearestPlace.String
+		}
+		if e.distanceKm.Valid {
+			props["distance_to_place_km"] = e.distanceKm.Float64
+		}
+	case "deforestation":
+		if c.deforest == nil {
+			c.deforest = map[string]map[string]deforestMeta{}
+		}
+		m, ok := c.deforest[parkID]
+		if !ok {
+			m = s.deforestMetaByPolygon(parkID)
+			c.deforest[parkID] = m
+		}
+		e, ok := m[defMetaKey(featureID, props["year"])]
+		if !ok {
+			return
+		}
+		if e.narrative.Valid {
+			props["narrative"] = e.narrative.String
+		}
+		if e.classification.Valid {
+			props["classification"] = e.classification.String
+		}
+		if e.patternType.Valid {
+			props["pattern_type"] = e.patternType.String
+		}
+	}
+}

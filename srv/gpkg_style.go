@@ -280,3 +280,26 @@ func styleAOI() string {
 		qmlOpt("outline_width", "0.9"),
 		qmlOpt("outline_width_unit", "MM"))))
 }
+
+// The exported viewport: a dashed outline with no fill. It is a frame, not a
+// feature — filling it would tint everything the export is about.
+func styleViewFrame() string {
+	return qmlDoc(qmlSingle(qmlSymbol("fill", "0",
+		qmlOpt("color", "0,0,0,0"),
+		qmlOpt("style", "no"),
+		qmlOpt("outline_color", "148,163,184,255"),
+		qmlOpt("outline_style", "dash"),
+		qmlOpt("outline_width", "0.5"),
+		qmlOpt("outline_width_unit", "MM"))))
+}
+
+// Detections in a VIEW export have no in_area column to categorise on (a view
+// is a rectangle, not an area), so they get one ember symbol.
+func styleViewDetections() string {
+	return qmlDoc(qmlSingle(qmlSymbol("marker", "0",
+		qmlOpt("color", colFireDetect+",210"),
+		qmlOpt("name", "circle"),
+		qmlOpt("outline_style", "no"),
+		qmlOpt("size", "1.2"),
+		qmlOpt("size_unit", "MM"))))
+}

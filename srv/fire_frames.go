@@ -1,6 +1,7 @@
 package srv
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -89,6 +90,7 @@ func (s *Server) HandleAPIFireFrames(w http.ResponseWriter, r *http.Request) {
 	}
 
 	const maxPoints = 200000
+	pointsFallback := 0
 
 	// layer=effort: patrol effort (green pixels) from effort_data, bucketed the same way.
 	// Returns grid-indexed coords in p entries: [xi, yi, distance_km, uploads].
@@ -98,12 +100,24 @@ func (s *Server) HandleAPIFireFrames(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// mode=points: individual fire detections (for high-zoom animation).
-	// Only allowed for reasonably small bboxes; falls back to grid if too many.
-	if q.Get("mode") == "points" && (east-west)*(north-south) <= 40 {
-		if s.serveFirePoints(w, from, to, south, north, west, east) {
-			return
+	//
+	// The gate is the ESTIMATED NUMBER OF DETECTIONS, not the size of the box.
+	// A 40 deg² cap refused points over the Sahara (where a whole country holds
+	// a few hundred fires) and allowed them over an Angolan dry season (where
+	// one degree holds a million), so the user was told "zoom in" in exactly the
+	// views where zooming in would not have helped. fire_grid_day answers
+	// "how many are in this window" in milliseconds — ask it, then decide.
+	if q.Get("mode") == "points" {
+		est := s.estimateFireCount(from, to, south, north, west, east)
+		if est <= firePointsMax {
+			if s.serveFirePoints(w, from, to, south, north, west, east) {
+				return
+			}
 		}
-		// too many points -> fall through to grid response
+		// Too many: fall through to the grid, but say what the number was.
+		// "Zoom in" with no number is advice the user cannot evaluate.
+		w.Header().Set("X-Fire-Points-Estimate", strconv.Itoa(est))
+		pointsFallback = est
 	}
 
 	// Query pre-aggregated grid (built by scripts/build_fire_grid_agg.py,
@@ -182,14 +196,47 @@ func (s *Server) HandleAPIFireFrames(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Cache-Control", "public, max-age=3600")
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	resp := map[string]interface{}{
 		"res":       res,
 		"step":      step,
 		"from":      from,
 		"to":        to,
 		"frames":    frames,
 		"truncated": truncated,
-	})
+	}
+	// The client asked for points and is getting the grid: tell it how many
+	// detections are actually here, so it can say "1.2M detections in view —
+	// showing the density grid" instead of "zoom in", which is what it used to
+	// say in views where zooming in was not the problem.
+	if pointsFallback > 0 {
+		resp["points_unavailable"] = map[string]interface{}{
+			"estimate": pointsFallback,
+			"max":      firePointsMax,
+		}
+	}
+	json.NewEncoder(w).Encode(resp)
+}
+
+// firePointsMax is how many individual detections the animator will draw. The
+// browser, not the database, is the limit: each one is a radial gradient.
+const firePointsMax = 120000
+
+// estimateFireCount sums the pre-aggregated daily grid over the window. Exact
+// for whole 0.1° cells, approximate only at the bbox edge — which is all the
+// precision a "can we draw these individually" decision needs, and it costs
+// ~10 ms against minutes for a COUNT(*) over 42.9M raw detections.
+func (s *Server) estimateFireCount(from, to string, south, north, west, east float64) int {
+	const baseRes = 0.1
+	var n sql.NullInt64
+	err := s.DB.QueryRow(`SELECT SUM(n) FROM fire_grid_day
+		WHERE d >= ? AND d <= ? AND xi BETWEEN ? AND ? AND yi BETWEEN ? AND ?`,
+		from, to,
+		int(math.Floor(west/baseRes)), int(math.Ceil(east/baseRes)),
+		int(math.Floor(south/baseRes)), int(math.Ceil(north/baseRes))).Scan(&n)
+	if err != nil || !n.Valid {
+		return 0
+	}
+	return int(n.Int64)
 }
 
 // serveFirePoints returns individual fire detections for high-zoom animation.
@@ -197,7 +244,7 @@ func (s *Server) HandleAPIFireFrames(w http.ResponseWriter, r *http.Request) {
 // Returns false (and writes nothing) if the result would exceed the cap, so the
 // caller can fall back to the gridded response.
 func (s *Server) serveFirePoints(w http.ResponseWriter, from, to string, south, north, west, east float64) bool {
-	const maxPts = 60000
+	const maxPts = firePointsMax
 	fromT, err := time.Parse("2006-01-02", from)
 	if err != nil {
 		return false
@@ -412,13 +459,13 @@ func (s *Server) HandleAPIFireAnimTrajectories(w http.ResponseWriter, r *http.Re
 		to = time.Now().UTC().Format("2006-01-02")
 	}
 	limit := 800
-	if lv, err := strconv.Atoi(q.Get("limit")); err == nil && lv > 0 && lv <= 3000 {
+	if lv, err := strconv.Atoi(q.Get("limit")); err == nil && lv > 0 && lv <= 12000 {
 		limit = lv
 	}
 
 	// Largest/most significant groups first (stat_value = distance for trajectories)
 	rows, err := s.DB.Query(`
-		SELECT feature_id, park_id, properties_json
+		SELECT feature_id, park_id, properties_json, COALESCE(start_date,''), COALESCE(end_date,'')
 		FROM feature_geometries
 		WHERE feature_type = 'fire_trajectory'
 		  AND start_date <= ? AND end_date >= ?
@@ -439,11 +486,20 @@ func (s *Server) HandleAPIFireAnimTrajectories(w http.ResponseWriter, r *http.Re
 		Km   float64          `json:"km,omitempty"`
 		Kmd  float64          `json:"kmd,omitempty"`
 		Pts  [][3]interface{} `json:"pts"`
+		// Everything below exists so a PAUSED animation can hand the same
+		// trajectory to the hover tip that a pinned layer would: pausing must
+		// turn the picture into features, not into a screenshot.
+		Fires int     `json:"fires,omitempty"`
+		Days  int     `json:"days,omitempty"`
+		FRP   float64 `json:"frp,omitempty"`
+		Start string  `json:"start,omitempty"`
+		End   string  `json:"end,omitempty"`
+		Narr  string  `json:"narrative,omitempty"`
 	}
 	var out []animGroup
 	for rows.Next() {
-		var fid, park, propsJSON string
-		if err := rows.Scan(&fid, &park, &propsJSON); err != nil {
+		var fid, park, propsJSON, sd, ed string
+		if err := rows.Scan(&fid, &park, &propsJSON, &sd, &ed); err != nil {
 			continue
 		}
 		trajs := loadParkDatedTrajectories(park)
@@ -451,16 +507,24 @@ func (s *Server) HandleAPIFireAnimTrajectories(w http.ResponseWriter, r *http.Re
 		if !ok || len(pts) == 0 {
 			continue
 		}
-		g := animGroup{ID: fid, Park: park, Pts: pts}
+		g := animGroup{ID: fid, Park: park, Pts: pts, Start: sd, End: ed}
 		var props struct {
 			GroupType string  `json:"group_type"`
 			Km        float64 `json:"distance_km"`
 			Kmd       float64 `json:"avg_speed_km_day"`
+			Fires     int     `json:"fires_total"`
+			Days      int     `json:"days"`
+			FRP       float64 `json:"total_frp"`
+			Narrative string  `json:"narrative"`
 		}
 		if json.Unmarshal([]byte(propsJSON), &props) == nil {
 			g.Type = props.GroupType
 			g.Km = props.Km
 			g.Kmd = props.Kmd
+			g.Fires = props.Fires
+			g.Days = props.Days
+			g.FRP = props.FRP
+			g.Narr = props.Narrative
 		}
 		out = append(out, g)
 	}

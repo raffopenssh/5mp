@@ -21,6 +21,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -63,8 +64,29 @@ type GeoPackageJob struct {
 // must appear here or a second, different request is served the first one's
 // answer — which is the worst failure this cache can have, because the file
 // looks perfectly valid.
+//
+// A view export's question includes its viewport, its instant and its layer
+// set, so those go in too (gpkgViewKey) — two paused frames of the same
+// animation are different files and must not share a cache slot.
 func gpkgCacheKey(areaID, from, to string, effort, rawFire bool, env string) string {
 	return strings.Join([]string{areaID, from, to, fmt.Sprint(effort), fmt.Sprint(rawFire), env}, "|")
+}
+
+func gpkgKeyFor(o gpkgExportOpts) string {
+	k := gpkgCacheKey(o.AreaID, o.FromDate, o.ToDate, o.Effort, o.RawFire, o.Env)
+	if o.View != nil {
+		k += "|" + gpkgViewKey(o.View)
+	}
+	return k
+}
+
+func gpkgViewKey(v *gpkgViewOpts) string {
+	// Coordinates are rounded to ~10 m: a pixel of pan is the same view, and
+	// without rounding every mousemove would mint a new 200 MB file.
+	ls := append([]string{}, v.Layers...)
+	sort.Strings(ls)
+	return fmt.Sprintf("view:%.4f,%.4f,%.4f,%.4f@%s/%s/%s",
+		v.BBox[0], v.BBox[1], v.BBox[2], v.BBox[3], v.At, strings.Join(ls, "."), v.AOIID)
 }
 
 func gpkgToken() string {
@@ -130,7 +152,7 @@ func (s *Server) findGeoPackageJob(key string) *GeoPackageJob {
 
 // startGeoPackageJob creates (or reuses) a job and kicks off the build.
 func (s *Server) startGeoPackageJob(o gpkgExportOpts, isAOI bool, principalID int64, refresh bool) (*GeoPackageJob, error) {
-	key := gpkgCacheKey(o.AreaID, o.FromDate, o.ToDate, o.Effort, o.RawFire, o.Env)
+	key := gpkgKeyFor(o)
 	if !refresh {
 		if j := s.findGeoPackageJob(key); j != nil {
 			j.Cached = j.State == "ready"
@@ -145,6 +167,9 @@ func (s *Server) startGeoPackageJob(o gpkgExportOpts, isAOI bool, principalID in
 	// stored name diverge, opening the project finds no layers — and an empty
 	// project reads as a broken export, not as a renamed file.
 	path := filepath.Join(gpkgOutputDir, id, gpkgDownloadName(o.AreaID, o.FromDate, o.ToDate, o.RawFire))
+	if o.View != nil {
+		path = filepath.Join(gpkgOutputDir, id, gpkgViewDownloadName(o))
+	}
 	var pid interface{}
 	if principalID > 0 {
 		pid = principalID
@@ -175,10 +200,32 @@ func (s *Server) startGeoPackageJob(o gpkgExportOpts, isAOI bool, principalID in
 // tellable apart at a glance — otherwise the bell shows two identical rows and
 // the only way to know which is which is the file that lands.
 func gpkgTitleSuffix(o gpkgExportOpts) string {
+	if o.View != nil {
+		if o.View.At != "" {
+			return " (view at " + o.View.At + ")"
+		}
+		return " (current view)"
+	}
 	if o.RawFire {
 		return ""
 	}
 	return " (no raw fire points)"
+}
+
+// A view export's filename has to say WHICH view: several of them land in the
+// same Downloads folder during one session and they differ only by an instant
+// and a rectangle.
+func gpkgViewDownloadName(o gpkgExportOpts) string {
+	fn := "5mp_view"
+	if o.AreaID != "" {
+		fn = sanitizeFileToken(o.AreaID) + "_view"
+	}
+	if o.View.At != "" {
+		fn += "_" + sanitizeFileToken(o.View.At)
+	} else if o.ToDate != "" {
+		fn += "_" + sanitizeFileToken(o.ToDate)
+	}
+	return fn + ".gpkg"
 }
 
 func boolInt(b bool) int {
@@ -253,6 +300,9 @@ func (s *Server) runGeoPackageJob(id, path string, o gpkgExportOpts, isAOI bool)
 	}
 
 	stats, err := s.buildAreaGeoPackage(path, o)
+	if o.View != nil {
+		stats, err = s.buildViewGeoPackage(path, o)
+	}
 	if err != nil {
 		os.Remove(path)
 		s.failGeoPackageJob(id, o, err.Error())
@@ -297,7 +347,7 @@ func (s *Server) failGeoPackageJob(id string, o gpkgExportOpts, msg string) {
 // not break because the sender later rebuilt it — but its card gives way.
 func (s *Server) upsertGeoPackageNotification(id string, o gpkgExportOpts, typ, title, msg string) {
 	url := "?gpkg=" + id
-	key := gpkgCacheKey(o.AreaID, o.FromDate, o.ToDate, o.Effort, o.RawFire, o.Env)
+	key := gpkgKeyFor(o)
 	res, err := s.DB.Exec(`UPDATE notifications
 		SET notification_type=?, title=?, message=?, reference_id=?, reference_url=?,
 		    is_read=0, created_at=datetime('now')
@@ -437,7 +487,7 @@ func (s *Server) HandleAPIAreaGeoPackage(w http.ResponseWriter, r *http.Request)
 		RawFire: q.Get("raw") != "0",
 	}
 	if q.Get("peek") == "1" {
-		j := s.findGeoPackageJob(gpkgCacheKey(o.AreaID, o.FromDate, o.ToDate, o.Effort, o.RawFire, o.Env))
+		j := s.findGeoPackageJob(gpkgKeyFor(o))
 		if j == nil {
 			w.Header().Set("Cache-Control", "no-store")
 			http.Error(w, "no export for this area and window", http.StatusNotFound)
