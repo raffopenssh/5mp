@@ -102,14 +102,28 @@ var geoAgeByKey = func() map[string]geoAge {
 // A sheet's own stratigraphic group string is the input, not the unit name: the
 // name describes rock, the group describes time, and conflating them is how
 // "Umm Ruwaba Formation" ends up dated by the word "Formation".
+// A hyphenated SPAN ("Mesoproterozoic - Neoproterozoic", "Uppermost
+// Carboniferous - Lower Jurassic") is one unit the survey dates across a
+// boundary. Each such term is curated to one period BELOW, above both of its
+// endpoints; `geoVocabAudit` reports any span a sheet prints that we have not.
 var geoAgeRules = []struct{ needle, key string }{
-	{"tertiary-quaternary", "quaternary"}, // span; see above
+	{"tertiary-quaternary", "quaternary"},  // span; see above
+	{"neogene - quaternary", "quaternary"}, // span; see the span note below
 	{"quaternai", "quaternary"}, {"quaternar", "quaternary"}, {"neo-tchadien", "quaternary"},
 	{"neogene", "neogene"}, {"miocene", "neogene"}, {"pliocene", "neogene"},
 	{"paleogene", "paleogene"}, {"eocene", "paleogene"}, {"oligocene", "paleogene"},
 	{"tertiaire", "tertiary"}, {"tertiary", "tertiary"},
+	// The Karoo, as the GST's own chronostratigraphy words it. Dated Triassic:
+	// the span's own middle, and where the bulk of the succession sits. Either
+	// endpoint alone would be a worse answer than the middle, and the tip keeps
+	// printing the sheet's full string, so the colour is a summary of a span the
+	// reader can still see whole.
+	{"uppermost carboniferous - lower jurassic", "triassic"},
 	{"jurassic-cretaceous", "cretaceous"},
 	{"cretace", "cretaceous"}, {"cretaceous", "cretaceous"},
+	// The GST sheet's own spelling. Kept as the survey prints it rather than
+	// corrected in the data: the catalogue is a record of what the sheet says.
+	{"cretacous", "cretaceous"},
 	{"jurassic", "jurassic"}, {"jurassique", "jurassic"},
 	{"permo-trias", "triassic"}, {"trias", "triassic"},
 	{"secondaire", "mesozoic"}, {"mesozoic", "mesozoic"},
@@ -129,12 +143,26 @@ var geoAgeRules = []struct{ needle, key string }{
 	{"palaeozoic", "paleozoic"}, {"paleozoic", "paleozoic"}, {"primaire", "paleozoic"},
 	// Pan-African is the Neoproterozoic-to-earliest-Cambrian orogenic cycle;
 	// on the Sudan sheet every "Pan-African …" group is Neoproterozoic ground.
+	// Precambrian spans, curated ABOVE their endpoints for the reason given at
+	// the Cambro-Ordovician note: a reworked basement unit that the survey dates
+	// across two eras must not be dated by which of the two rules sits higher in
+	// this list. Each is dated at its YOUNGER endpoint, which for every one of
+	// them is the orogeny the survey names as having made the rock what it is
+	// (Neoarchaean protoliths in a Neoproterozoic granulite belt are mapped as
+	// the belt). The full span stays in the group string the tip prints.
+	{"neoproterozoic - cambrian", "neoproterozoic"}, // Bukoban; the sheet marks the Cambrian top "(?)"
+	{"neoarchaean - neoproterozoic", "neoproterozoic"},
+	{"mesoproterozoic - neoproterozoic", "neoproterozoic"},
+	{"paleoproterozoic - mesoproterozoic", "mesoproterozoic"},
+	{"neoarchaean - paleoproterozoic", "paleoproterozoic"},
 	{"pan-african", "neoproterozoic"},
 	{"neoproterozoic", "neoproterozoic"},
+	{"neoprozerozoic", "neoproterozoic"}, // the GST sheet's own spelling, again
 	{"precambrien a", "neoproterozoic"},
 	{"upper proterozoic", "neoproterozoic"},
 	{"middle proterozoic", "mesoproterozoic"}, {"mesoproterozoic", "mesoproterozoic"},
 	{"lower proterozoic", "paleoproterozoic"}, {"paleoproterozoic", "paleoproterozoic"},
+	{"palaeoproterozoic", "paleoproterozoic"}, // British spelling; the GST sheet uses both
 	// The BRGM sheet's "Précambrien D" is its crystalline basement — the
 	// Congo craton's Palaeoproterozoic-and-older core. Dated no finer here
 	// than the sheet dates it.
@@ -240,6 +268,14 @@ var geoLithRules = []struct{ needle, key string }{
 	{"banded iron", "ironstone"}, {"ferruginous", "ironstone"}, {"laterite", "ironstone"},
 	{"ophiolite", "ultramafic"}, {"ultramafic", "ultramafic"}, {"peridotit", "ultramafic"},
 	{"pyroxenit", "ultramafic"}, {"anorthosit", "ultramafic"},
+	// ABOVE {"sediment", "mixed"} at the bottom of this list, and that placement
+	// is the rule. A meta-sediment is a METAMORPHIC rock — the sheet has told us
+	// what happened to it — whereas the "sediment" rule down there means "the
+	// sheet declines to say which sediment". Read in the other order, five of
+	// the GST's belt units ("Meta-sediment - meta-igneous complex") came back
+	// with the undifferentiated hatch while the sheet was being perfectly
+	// specific.
+	{"meta-sediment", "metamorphic"}, {"metasediment", "metamorphic"},
 	{"granulite", "metamorphic"}, {"charnockit", "metamorphic"}, {"migmatit", "metamorphic"},
 	{"anatexite", "metamorphic"}, {"embrechite", "metamorphic"},
 	// BEFORE the bare "schist": every one of these contains it, so a rule
@@ -259,6 +295,14 @@ var geoLithRules = []struct{ needle, key string }{
 	{"granite", "intrusive"}, {"granodiorit", "intrusive"}, {"syenit", "intrusive"},
 	{"gabbro", "intrusive"}, {"intrusion", "intrusive"}, {"intrusive", "intrusive"},
 	{"diorit", "intrusive"}, {"basique", "intrusive"}, {"dolerit", "intrusive"},
+	// "Granitoid" is the survey's word for a granite-family plutonic rock it
+	// declines to name more precisely, and "felsic igneous" likewise — both are
+	// still statements that the rock is felsic and igneous, so they resolve
+	// rather than falling off the end into the mixed hatch. Neither infers an
+	// intrusive setting the sheet did not give: the GST prints these on plutons
+	// ("Synorogenic (foliated) granitoides"), and where it means lava it says
+	// rhyolite, nephelinite or pyroclastics, all of which match above.
+	{"granitoid", "intrusive"}, {"granitoide", "intrusive"}, {"felsic igneous", "intrusive"},
 	{"marble", "carbonate"}, {"marbre", "carbonate"}, {"limestone", "carbonate"},
 	{"calcaire", "carbonate"}, {"dolomit", "carbonate"}, {"calc-silicate", "carbonate"},
 	{"chert", "carbonate"}, {"coral", "carbonate"}, {"carbonate", "carbonate"},
@@ -296,12 +340,15 @@ func geoLithHit(s string) (string, int) {
 }
 
 // geoLithOf classifies a unit by name, falling back to its group.
-//
-// A class that merges units of DIFFERENT lithologies is "mixed" and gets the
-// mixed hatch — the same rule as a mixed age, for the same reason: the sheet
-// does not say, so the map must not either.
 func geoLithOf(name, group string, codes []string) string {
 	key, _ := geoLithResolve(name, group, codes)
+	return key
+}
+
+// geoLithOfHint is geoLithOf for a sheet that ships a lithology column of its
+// own; see geoLithResolveHint for why the column is consulted LAST.
+func geoLithOfHint(name, group, lithHint string, codes []string) string {
+	key, _ := geoLithResolveHint(name, group, lithHint, codes)
 	return key
 }
 
@@ -316,6 +363,27 @@ func geoLithOf(name, group string, codes []string) string {
 // shape this codebase keeps paying for: a no-op that reads as an answer.
 // `resolved` is false only in the second case, and geoVocabAudit reports it.
 func geoLithResolve(name, group string, codes []string) (key string, resolved bool) {
+	return geoLithResolveHint(name, group, "", codes)
+}
+
+// geoLithResolveHint is the scan proper: name, then group, then the sheet's own
+// lithology column if it has one.
+//
+// A class that merges units of DIFFERENT lithologies is "mixed" and gets the
+// mixed hatch — the same rule as a mixed age, for the same reason: the sheet
+// does not say, so the map must not either.
+//
+// THE HINT IS CONSULTED LAST, and that order is the whole design. A vector
+// sheet like the GST's carries a `lithology` field listing EVERY constituent of
+// a unit in no particular order ("Syenite, gabbro, pyroxenite, nepheline
+// syenite"), so a first-match scan over it answers with whichever minor phase
+// happens to be spelled first — the Mbozi syenite-gabbro ring complex comes
+// back `ultramafic` off the word "pyroxenite". The unit's NAME is the survey's
+// own summary of what the rock is, and it wins for the same reason it wins on
+// the scanned sheets. The hint only rescues names that are pure geography or
+// pure structure ("Mafic complex Nyabuyonza"), where the column is the only
+// place the survey states a rock at all.
+func geoLithResolveHint(name, group, lithHint string, codes []string) (key string, resolved bool) {
 	hit := func(s string) string { k, _ := geoLithHit(s); return k }
 	// A merged class prints its members separated by "/" in the name too.
 	if len(codes) > 1 && strings.Contains(name, "/") {
@@ -336,6 +404,9 @@ func geoLithResolve(name, group string, codes []string) (key string, resolved bo
 		return k, true
 	}
 	if k := hit(group); k != "" {
+		return k, true
+	}
+	if k := hit(lithHint); k != "" {
 		return k, true
 	}
 	return "mixed", false
@@ -418,6 +489,9 @@ type geoVocabClass struct {
 	Name  string
 	Group string
 	Codes []string
+	// Lithology is the sheet's own rock-description column, where it has one.
+	// Empty for a scanned sheet, which has only what is printed on it.
+	Lithology string
 }
 
 // geoVocabAuditClasses is the audit proper. It calls the SAME functions the
@@ -473,7 +547,7 @@ func geoVocabAuditClasses(sheet string, classes []geoVocabClass) geoVocabReport 
 				}
 			}
 		}
-		if _, ok := geoLithResolve(c.Name, c.Group, c.Codes); !ok {
+		if _, ok := geoLithResolveHint(c.Name, c.Group, c.Lithology, c.Codes); !ok {
 			rep.Lith++
 			text := strings.TrimSpace(c.Name)
 			if text == "" {
@@ -494,10 +568,11 @@ func geoVocabAuditClasses(sheet string, classes []geoVocabClass) geoVocabReport 
 func geoVocabAudit(sheet string, blob []byte) (geoVocabReport, error) {
 	var doc struct {
 		Classes []struct {
-			Code  string   `json:"code"`
-			Name  string   `json:"name"`
-			Group string   `json:"group"`
-			Codes []string `json:"codes"`
+			Code      string   `json:"code"`
+			Name      string   `json:"name"`
+			Group     string   `json:"group"`
+			Codes     []string `json:"codes"`
+			Lithology string   `json:"lithology"`
 		} `json:"classes"`
 	}
 	if err := json.Unmarshal(blob, &doc); err != nil {
@@ -505,7 +580,7 @@ func geoVocabAudit(sheet string, blob []byte) (geoVocabReport, error) {
 	}
 	cs := make([]geoVocabClass, 0, len(doc.Classes))
 	for _, c := range doc.Classes {
-		cs = append(cs, geoVocabClass{c.Code, c.Name, c.Group, c.Codes})
+		cs = append(cs, geoVocabClass{c.Code, c.Name, c.Group, c.Codes, c.Lithology})
 	}
 	return geoVocabAuditClasses(sheet, cs), nil
 }
@@ -575,7 +650,7 @@ func geoMapStandardise(blob []byte) []byte {
 		c["age_rank"] = age.Rank
 		c["age_mixed"] = mixed
 		c["ics_color"] = age.Color
-		lith, lithOK := geoLithResolve(str(c, "name"), str(c, "group"), codes)
+		lith, lithOK := geoLithResolveHint(str(c, "name"), str(c, "group"), str(c, "lithology"), codes)
 		c["lith"] = lith
 		// Per class, so a tip or a legend row can mark ITSELF as unrendered
 		// rather than only the sheet totalling its gaps. Absent (not false)
@@ -587,7 +662,7 @@ func geoMapStandardise(blob []byte) []byte {
 		if !lithOK {
 			c["lith_unmapped"] = true
 		}
-		vocab = append(vocab, geoVocabClass{str(c, "code"), str(c, "name"), str(c, "group"), codes})
+		vocab = append(vocab, geoVocabClass{str(c, "code"), str(c, "name"), str(c, "group"), codes, str(c, "lithology")})
 	}
 	doc["std"] = geoStdLegend()
 	// The gap ships with the data it is a gap in. A maintainer looking at the

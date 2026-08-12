@@ -510,3 +510,71 @@ func TestGeoHatchInkIsDarkenedNotBlack(t *testing.T) {
 		}
 	}
 }
+
+// A vector sheet ships the survey's OWN polygons, so one class is many rows
+// (Tanzania: 596 rows, 41 classes). The QGIS legend is per class, and this was
+// invisible while both sheets were scans: the vectorizer dissolves each class
+// to one multipart row, so rows and classes coincided and a per-row legend
+// looked correct. On a WFS sheet it lists "aQ - Predominantly alluvial and
+// eluvial sediments" 89 times — the same symbol, keyed identically, repeated
+// until the legend is unusable.
+func TestGeoPackageLegendIsPerClassNotPerPolygon(t *testing.T) {
+	dir := t.TempDir()
+	useTestSheets(t, dir, "many")
+
+	// Three polygons, two classes: exactly the shape a per-feature legend
+	// cannot tell from three classes.
+	feat := func(code, name string, x float64) map[string]any {
+		return map[string]any{
+			"type": "Feature",
+			"properties": map[string]any{
+				"sheet": "many", "code": code, "name": name,
+				"group": "Quaternary", "color": "#cccccc", "area_km2": 5,
+			},
+			"geometry": map[string]any{
+				"type": "MultiPolygon",
+				"coordinates": [][][][]float64{{{
+					{x, 20}, {x + 1, 20}, {x + 1, 21}, {x, 21}, {x, 20}}}},
+			},
+		}
+	}
+	b, _ := json.Marshal(map[string]any{"type": "FeatureCollection", "features": []any{
+		feat("aQ", "Alluvium", 10), feat("aQ", "Alluvium", 12), feat("mK", "Sandstone", 14),
+	}})
+	if err := os.WriteFile(filepath.Join(dir, "many_units.geojson"), b, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	cat, _ := json.Marshal(map[string]any{"sheet": "many", "title": "Many", "year": 2015})
+	if err := os.WriteFile(filepath.Join(dir, "many_classes.json"), cat, 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	path := geoMapGPKGPath()
+	if err := buildGeoMapGeoPackage(path, geoMapGPKGSheets()); err != nil {
+		t.Fatal(err)
+	}
+	db, err := sql.Open("sqlite", "file:"+path+"?mode=ro")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	// Every polygon is still a row: the export must not dissolve the survey's
+	// own geometry to make its legend tidy.
+	var rows int
+	if err := db.QueryRow(`SELECT COUNT(*) FROM geology_units`).Scan(&rows); err != nil {
+		t.Fatal(err)
+	}
+	if rows != 3 {
+		t.Errorf("rows = %d, want 3 — every source polygon is a feature", rows)
+	}
+	var qml string
+	if err := db.QueryRow(`SELECT styleQML FROM layer_styles WHERE useAsDefault=1`).Scan(&qml); err != nil {
+		t.Fatal(err)
+	}
+	// 2 classes + the trailing "other" catch-all.
+	if got := strings.Count(qml, "<category "); got != 3 {
+		t.Errorf("legend categories = %d, want 3 (2 classes + other); a duplicated "+
+			"category is one symbol listed twice, i.e. a legend that cannot be read", got)
+	}
+}

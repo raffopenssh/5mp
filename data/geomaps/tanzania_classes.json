@@ -1,0 +1,1893 @@
+{
+ "sheet": "tanzania",
+ "title": "Geological map of Tanzania (Minerogenic Map of Tanzania, 2015)",
+ "short": "Tanzania geology",
+ "year": 2015,
+ "publisher": "Geological Survey of Tanzania (GST), Dodoma - Geological and Mineral Information System (GMIS), implemented by Beak Consultants GmbH; Minerogenic Map of Tanzania 1:1,500,000 (2015)",
+ "scale": "1:1,500,000",
+ "source_url": "https://gmis-tanzania.com/",
+ "countries": [
+  "TZA"
+ ],
+ "n_classes": 41,
+ "n_units": 41,
+ "quality": {
+  "source": "vector WFS, not a vectorized scan - no classification step",
+  "wfs_matched": 623,
+  "features_written": 596,
+  "dropped_non_geology": 27,
+  "bbox": [
+   29.5917,
+   -11.7621,
+   40.4452,
+   -0.9821
+  ],
+  "area_km2_total": 887107.5,
+  "fetched": "2026-08-12"
+ },
+ "groups": [
+  "Cretacous",
+  "Jurassic",
+  "Uppermost Carboniferous - Lower Jurassic",
+  "Neoproterozoic - Cambrian",
+  "Neoproterozoic",
+  "Mesoproterozoic - Neoproterozoic",
+  "Neoarchaean - Neoproterozoic",
+  "Neoprozerozoic",
+  "Mesoproterozoic",
+  "Paleoproterozoic - Mesoproterozoic",
+  "Palaeoproterozoic",
+  "Paleoproterozoic",
+  "Neoarchaean - Paleoproterozoic",
+  "Neoarchaean",
+  "Meso-Neoarchaean",
+  "Quaternary",
+  "Neogene - Quaternary",
+  "Neogene",
+  "Paleogene"
+ ],
+ "commodities": {
+  "coal": [
+   {
+    "code": "tC2-J1K",
+    "weight": 3,
+    "why": "Karoo Supergroup terrestrial clastics with coal measures: the country's coal-bearing sequence",
+    "area_km2": 55050.6
+   }
+  ],
+  "cobalt": [
+   {
+    "code": "s?MP",
+    "weight": 3,
+    "why": "layered mafic-ultramafic intrusion (peridotite, dunite, norite): the classic magmatic nickel-copper-cobalt host",
+    "area_km2": 330.5
+   },
+   {
+    "code": "gnPP-MP",
+    "weight": 2,
+    "why": "gneiss with meta-gabbro, anorthosite and ultramafic rocks: magmatic nickel-cobalt affinity",
+    "area_km2": 3271.6
+   },
+   {
+    "code": "sMP",
+    "weight": 2,
+    "why": "gabbroic lopolith: mafic intrusion-hosted nickel-cobalt affinity",
+    "area_km2": 680.5
+   },
+   {
+    "code": "s?NA-NP",
+    "weight": 2,
+    "why": "meta-gabbro and anorthosite: magmatic nickel-cobalt affinity",
+    "area_km2": 451.0
+   },
+   {
+    "code": "tN-Q",
+    "weight": 1,
+    "why": "laterite and alterite over mafic-ultramafic ground: nickel-cobalt laterite affinity",
+    "area_km2": 23603.6
+   },
+   {
+    "code": "gsNA",
+    "weight": 1,
+    "why": "komatiitic and mafic volcanics: nickel-cobalt affinity",
+    "area_km2": 18510.7
+   },
+   {
+    "code": "gtPP-NP",
+    "weight": 1,
+    "why": "charnockite-enderbite: mafic granulite affinity",
+    "area_km2": 5933.4
+   },
+   {
+    "code": "xNP",
+    "weight": 1,
+    "why": "pyroxenite and gabbro of the same complex",
+    "area_km2": 259.7
+   }
+  ],
+  "copper": [
+   {
+    "code": "gsNA",
+    "weight": 2,
+    "why": "mafic metavolcanic pile: volcanogenic massive sulphide setting",
+    "area_km2": 18510.7
+   },
+   {
+    "code": "s?MP",
+    "weight": 2,
+    "why": "magmatic sulphide affinity in the same intrusion",
+    "area_km2": 330.5
+   },
+   {
+    "code": "vNP",
+    "weight": 1,
+    "why": "amygdaloidal basalt with dolomite: basalt-hosted copper affinity",
+    "area_km2": 12878.9
+   },
+   {
+    "code": "cNP",
+    "weight": 1,
+    "why": "detrital red beds: sediment-hosted copper affinity",
+    "area_km2": 8869.6
+   },
+   {
+    "code": "gnPP-MP",
+    "weight": 1,
+    "why": "mafic-hosted base metals",
+    "area_km2": 3271.6
+   },
+   {
+    "code": "sMP",
+    "weight": 1,
+    "why": "mafic intrusion-hosted base metals",
+    "area_km2": 680.5
+   },
+   {
+    "code": "s?NA-NP",
+    "weight": 1,
+    "why": "mafic intrusion-hosted base metals",
+    "area_km2": 451.0
+   }
+  ],
+  "diamond": [
+   {
+    "code": "gn-grMA-NA",
+    "weight": 2,
+    "why": "Meso-Neoarchaean cratonic core (Dodoman): the thick, cold lithosphere kimberlite emplacement requires",
+    "area_km2": 65480.2
+   },
+   {
+    "code": "miNA",
+    "weight": 1,
+    "why": "Archaean cratonic basement: the thick, cold lithosphere kimberlite emplacement requires",
+    "area_km2": 124286.7
+   },
+   {
+    "code": "aQ",
+    "weight": 1,
+    "why": "alluvial gravels: secondary diamond affinity",
+    "area_km2": 97951.3
+   }
+  ],
+  "gemstone": [
+   {
+    "code": "miNP",
+    "weight": 3,
+    "why": "marble and calc-silicate within the same complex: the host lithology for corundum, spinel and garnet gems",
+    "area_km2": 38464.9
+   },
+   {
+    "code": "mbNP",
+    "weight": 3,
+    "why": "crystalline limestone (marble): corundum and spinel gem affinity",
+    "area_km2": 1779.5
+   },
+   {
+    "code": "gtNA-NP",
+    "weight": 2,
+    "why": "granulite with marble and calc-silicate: gem corundum and garnet affinity",
+    "area_km2": 33676.0
+   },
+   {
+    "code": "gtPP",
+    "weight": 2,
+    "why": "high-grade meta-sediments with eclogite: garnet and corundum gem affinity",
+    "area_km2": 5538.3
+   },
+   {
+    "code": "aQ",
+    "weight": 1,
+    "why": "alluvial gem gravels shed off the gem-bearing metamorphics",
+    "area_km2": 97951.3
+   }
+  ],
+  "gold": [
+   {
+    "code": "gsNA",
+    "weight": 3,
+    "why": "Archaean greenstone belt (Nyanzian mafic volcanics, meta-basalts, phyllite): the classic orogenic-gold host lithology",
+    "area_km2": 18510.7
+   },
+   {
+    "code": "miNA",
+    "weight": 2,
+    "why": "granitoid-migmatite basement enclosing the greenstone belts; its late structures host lode gold",
+    "area_km2": 124286.7
+   },
+   {
+    "code": "msPPUB",
+    "weight": 2,
+    "why": "Palaeoproterozoic meta-sedimentary and meta-igneous belt rocks: orogenic gold affinity",
+    "area_km2": 39671.3
+   },
+   {
+    "code": "msPPUS",
+    "weight": 2,
+    "why": "Palaeoproterozoic meta-igneous and meta-sedimentary belt rocks: orogenic gold affinity",
+    "area_km2": 5188.8
+   },
+   {
+    "code": "aQ",
+    "weight": 1,
+    "why": "alluvial and eluvial sediments: placer ground downstream of lode hosts",
+    "area_km2": 97951.3
+   },
+   {
+    "code": "msNA-NP",
+    "weight": 1,
+    "why": "meta-igneous belt rocks: orogenic gold affinity",
+    "area_km2": 86735.2
+   },
+   {
+    "code": "gn-grMA-NA",
+    "weight": 1,
+    "why": "Archaean gneiss-granite-migmatite basement of the goldfield",
+    "area_km2": 65480.2
+   },
+   {
+    "code": "?NA",
+    "weight": 1,
+    "why": "synorogenic granitoids of the greenstone-belt basement",
+    "area_km2": 25758.5
+   },
+   {
+    "code": "tN-Q",
+    "weight": 1,
+    "why": "eluvial cover over the basement: residual placer affinity",
+    "area_km2": 23603.6
+   },
+   {
+    "code": "?dPP-MP",
+    "weight": 1,
+    "why": "late-orogenic intrusions drive hydrothermal systems",
+    "area_km2": 23222.9
+   },
+   {
+    "code": "?dNA-PP",
+    "weight": 1,
+    "why": "late granites drive the hydrothermal systems of the craton margin",
+    "area_km2": 11784.7
+   },
+   {
+    "code": "?PP",
+    "weight": 1,
+    "why": "felsic igneous formation of the Ubendian belt",
+    "area_km2": 5719.1
+   },
+   {
+    "code": "?-miMP",
+    "weight": 1,
+    "why": "granitoid and migmatite complex: granite-driven hydrothermal systems",
+    "area_km2": 3999.7
+   },
+   {
+    "code": "pqMP",
+    "weight": 1,
+    "why": "quartzitic meta-sediment: quartz-vein gold affinity",
+    "area_km2": 2386.4
+   },
+   {
+    "code": "?MP-NP",
+    "weight": 1,
+    "why": "granite-driven hydrothermal systems",
+    "area_km2": 930.9
+   }
+  ],
+  "graphite": [
+   {
+    "code": "miNP",
+    "weight": 3,
+    "why": "granulite- to amphibolite-facies para-gneiss of the Mozambique Belt: the classic flake-graphite host",
+    "area_km2": 38464.9
+   },
+   {
+    "code": "gtNA-NP",
+    "weight": 3,
+    "why": "mafic-felsic granulite complex with meta-sediments: flake-graphite affinity",
+    "area_km2": 33676.0
+   },
+   {
+    "code": "gtPP",
+    "weight": 3,
+    "why": "granulite-facies meta-sedimentary complex: flake-graphite affinity",
+    "area_km2": 5538.3
+   },
+   {
+    "code": "msNA-NP",
+    "weight": 2,
+    "why": "meta-sedimentary complex of the Mozambique Belt: flake-graphite affinity",
+    "area_km2": 86735.2
+   },
+   {
+    "code": "msPPUB",
+    "weight": 2,
+    "why": "granulite-facies meta-sediments: flake-graphite affinity",
+    "area_km2": 39671.3
+   },
+   {
+    "code": "gtPP-NP",
+    "weight": 2,
+    "why": "granulite-facies gneiss: flake-graphite affinity",
+    "area_km2": 5933.4
+   },
+   {
+    "code": "msPPUS",
+    "weight": 2,
+    "why": "granulite-facies meta-sediments: flake-graphite affinity",
+    "area_km2": 5188.8
+   }
+  ],
+  "iron": [
+   {
+    "code": "gsNA",
+    "weight": 3,
+    "why": "banded iron formation within the greenstone succession",
+    "area_km2": 18510.7
+   }
+  ],
+  "lithium": [
+   {
+    "code": "?MP-NP",
+    "weight": 3,
+    "why": "Kibaran tin granite (Sn-G4): the type setting for cassiterite- and columbite-tantalite-bearing pegmatite and greisen",
+    "area_km2": 930.9
+   },
+   {
+    "code": "?dPP-MP",
+    "weight": 2,
+    "why": "late-orogenic granite and granodiorite: pegmatite affinity",
+    "area_km2": 23222.9
+   },
+   {
+    "code": "?dNA-PP",
+    "weight": 2,
+    "why": "late-postorogenic granite: pegmatite and greisen affinity",
+    "area_km2": 11784.7
+   },
+   {
+    "code": "miNA",
+    "weight": 1,
+    "why": "granitoid basement: pegmatite affinity",
+    "area_km2": 124286.7
+   },
+   {
+    "code": "lN-Q",
+    "weight": 1,
+    "why": "closed-basin lacustrine sediments and evaporites: brine affinity",
+    "area_km2": 57195.3
+   },
+   {
+    "code": "?NA",
+    "weight": 1,
+    "why": "granitoid: pegmatite affinity",
+    "area_km2": 25758.5
+   },
+   {
+    "code": "dMP",
+    "weight": 1,
+    "why": "Kibaran meta-sediments intruded by the tin granites: cassiterite-bearing vein and greisen affinity",
+    "area_km2": 20157.0
+   },
+   {
+    "code": "pqMP",
+    "weight": 1,
+    "why": "phyllitic-quartzitic meta-sediments of the tin-granite aureole: cassiterite and wolframite affinity",
+    "area_km2": 2386.4
+   }
+  ],
+  "rare_earth": [
+   {
+    "code": "xNP",
+    "weight": 3,
+    "why": "alkaline syenite-gabbro ring complex: the carbonatite-syenite setting that carries niobium and rare earths",
+    "area_km2": 259.7
+   },
+   {
+    "code": "vN-Q",
+    "weight": 2,
+    "why": "alkaline nephelinite-phonolite lavas: the volcanic expression of the carbonatite province that carries niobium and rare earths",
+    "area_km2": 20127.2
+   },
+   {
+    "code": "?MP-NP",
+    "weight": 2,
+    "why": "evolved Sn granite: niobium-tantalum affinity",
+    "area_km2": 930.9
+   },
+   {
+    "code": "?dPP-MP",
+    "weight": 1,
+    "why": "evolved granite association",
+    "area_km2": 23222.9
+   },
+   {
+    "code": "?dNA-PP",
+    "weight": 1,
+    "why": "evolved granite association",
+    "area_km2": 11784.7
+   },
+   {
+    "code": "vpN-Q",
+    "weight": 1,
+    "why": "alkaline pyroclastics of the same volcanic province",
+    "area_km2": 8039.5
+   },
+   {
+    "code": "?PP",
+    "weight": 1,
+    "why": "felsic igneous association",
+    "area_km2": 5719.1
+   }
+  ],
+  "uranium": [
+   {
+    "code": "tC2-J1K",
+    "weight": 2,
+    "why": "Karoo fluviatile sandstone: roll-front uranium host",
+    "area_km2": 55050.6
+   },
+   {
+    "code": "mK",
+    "weight": 1,
+    "why": "Cretaceous continental sandstone: roll-front uranium affinity",
+    "area_km2": 9374.4
+   }
+  ]
+ },
+ "classes": [
+  {
+   "sheet": "tanzania",
+   "code": "mK",
+   "codes": [
+    "mK"
+   ],
+   "name": "Continental-marine deposits (sandstones, clays, marls, limestones)",
+   "group": "Cretacous",
+   "merged": false,
+   "commodities": [
+    "uranium"
+   ],
+   "affinity": [
+    {
+     "commodity": "uranium",
+     "weight": 1,
+     "why": "Cretaceous continental sandstone: roll-front uranium affinity"
+    }
+   ],
+   "area_km2": 9374.4,
+   "lithology": "Sandstones, clays, marls, limestones",
+   "chronostrat": "Cretacous",
+   "age_ma": null,
+   "age_strat": "145 - 66 Ma",
+   "tectonic_unit": null,
+   "tectonic_setting": "Cretaceous marine and continental sedimentary formations",
+   "stratigraphy": null,
+   "metamorphism": "non-metamorphic",
+   "leg_id": 6,
+   "n_polygons": 18,
+   "color": "#80ff40"
+  },
+  {
+   "sheet": "tanzania",
+   "code": "mJ2-3",
+   "codes": [
+    "mJ2-3"
+   ],
+   "name": "Marine deposits (detrital and reef limestones, marls, sandstones, ooliths)",
+   "group": "Jurassic",
+   "merged": false,
+   "commodities": [],
+   "affinity": [],
+   "area_km2": 7670.2,
+   "lithology": "Reef limestones, marls, sandstones, oolithic sediments",
+   "chronostrat": "Jurassic",
+   "age_ma": null,
+   "age_strat": "174 - 145 Ma",
+   "tectonic_unit": null,
+   "tectonic_setting": "Jurassic marine and continental sedimentary formations",
+   "stratigraphy": null,
+   "metamorphism": "non-metamorphic",
+   "leg_id": 7,
+   "n_polygons": 12,
+   "color": "#33fff2"
+  },
+  {
+   "sheet": "tanzania",
+   "code": "tC2-J1K",
+   "codes": [
+    "tC2-J1K"
+   ],
+   "name": "Terrestric clastic sediments, partly with coals (Karoo Supergroup)",
+   "group": "Uppermost Carboniferous - Lower Jurassic",
+   "merged": false,
+   "commodities": [
+    "coal",
+    "uranium"
+   ],
+   "affinity": [
+    {
+     "commodity": "coal",
+     "weight": 3,
+     "why": "Karoo Supergroup terrestrial clastics with coal measures: the country's coal-bearing sequence"
+    },
+    {
+     "commodity": "uranium",
+     "weight": 2,
+     "why": "Karoo fluviatile sandstone: roll-front uranium host"
+    }
+   ],
+   "area_km2": 55050.6,
+   "lithology": "Clastic and coal sediments",
+   "chronostrat": "Uppermost Carboniferous - Lower Jurassic",
+   "age_ma": null,
+   "age_strat": "323 - 174 Ma",
+   "tectonic_unit": null,
+   "tectonic_setting": "Late Palaeozoic - Early Mesozoic terrestrial and coal sediments (Karoo Supergroup)",
+   "stratigraphy": "Karoo",
+   "metamorphism": "non-metamorphic",
+   "leg_id": 8,
+   "n_polygons": 30,
+   "color": "#99e6cc"
+  },
+  {
+   "sheet": "tanzania",
+   "code": "cNP",
+   "codes": [
+    "cNP"
+   ],
+   "name": "Detrital clastic sediments (Manyovu Red Beds, Ikorongo Group,Kigonero flags, Igamba sandstone)",
+   "group": "Neoproterozoic - Cambrian",
+   "merged": false,
+   "commodities": [
+    "copper"
+   ],
+   "affinity": [
+    {
+     "commodity": "copper",
+     "weight": 1,
+     "why": "detrital red beds: sediment-hosted copper affinity"
+    }
+   ],
+   "area_km2": 8869.6,
+   "lithology": "Fine-coarse clastic sediments",
+   "chronostrat": "Neoproterozoic (NP2-3) - Cambrian(?)",
+   "age_ma": null,
+   "age_strat": "850 - 485 Ma",
+   "tectonic_unit": "Tabular Bukoban Supergroup (Nyamori Supergroup)",
+   "tectonic_setting": "Neoproterozoic tabular sediments and sedimentary rock sequences: Bukoban Supergroup (Nyamori Supergroup)",
+   "stratigraphy": "Manyovu Red Beds, Ikorongo Group",
+   "metamorphism": "non-metamorphic",
+   "leg_id": 9,
+   "n_polygons": 11,
+   "color": "#ffb34d"
+  },
+  {
+   "sheet": "tanzania",
+   "code": "xNP",
+   "codes": [
+    "xNP"
+   ],
+   "name": "Mbozi syenite-gabbro ring complex",
+   "group": "Neoproterozoic",
+   "merged": false,
+   "commodities": [
+    "rare_earth",
+    "cobalt"
+   ],
+   "affinity": [
+    {
+     "commodity": "rare_earth",
+     "weight": 3,
+     "why": "alkaline syenite-gabbro ring complex: the carbonatite-syenite setting that carries niobium and rare earths"
+    },
+    {
+     "commodity": "cobalt",
+     "weight": 1,
+     "why": "pyroxenite and gabbro of the same complex"
+    }
+   ],
+   "area_km2": 259.7,
+   "lithology": "Syenite, nepheline-bearing rocks, gabbro, pyroxenite",
+   "chronostrat": "Neoproterozoic (NP2)",
+   "age_ma": "ca. 755 Ma",
+   "age_strat": "850 - 635 Ma",
+   "tectonic_unit": "Ubendian Belt",
+   "tectonic_setting": "Palaeoproterozoic meta-igneous and meta-sedimentary rocks (Ubendian Belt)",
+   "stratigraphy": null,
+   "metamorphism": "anchimetamorphic",
+   "leg_id": 10,
+   "n_polygons": 2,
+   "color": "#ff6600"
+  },
+  {
+   "sheet": "tanzania",
+   "code": "vNP",
+   "codes": [
+    "vNP"
+   ],
+   "name": "Volcano-sedimentary formation (Gagwe lavas, Ilagala dolomites)",
+   "group": "Neoproterozoic",
+   "merged": false,
+   "commodities": [
+    "copper"
+   ],
+   "affinity": [
+    {
+     "commodity": "copper",
+     "weight": 1,
+     "why": "amygdaloidal basalt with dolomite: basalt-hosted copper affinity"
+    }
+   ],
+   "area_km2": 12878.9,
+   "lithology": "Volcano-sedimentary formations",
+   "chronostrat": "Neoproterozoic (NP2)",
+   "age_ma": "ca. 795 Ma",
+   "age_strat": "850 - 635 Ma",
+   "tectonic_unit": "Tabular Bukoban Supergroup (Nyamori Supergroup)",
+   "tectonic_setting": "Neoproterozoic tabular sediments and sedimentary rock sequences: Bukoban Supergroup (Nyamori Supergroup)",
+   "stratigraphy": "Gagwe amygdaloidal lavas, Uha Group",
+   "metamorphism": "anchimetamorphic",
+   "leg_id": 11,
+   "n_polygons": 1,
+   "color": "#ffb34d"
+  },
+  {
+   "sheet": "tanzania",
+   "code": "sNP",
+   "codes": [
+    "sNP"
+   ],
+   "name": "Shale - sandstone formation (Masontwa-Busondo Groups)",
+   "group": "Mesoproterozoic - Neoproterozoic",
+   "merged": false,
+   "commodities": [],
+   "affinity": [],
+   "area_km2": 15087.4,
+   "lithology": "Shales and sandstones",
+   "chronostrat": "Mesoproterozoic - Neoproterozoic (MP-NP1)",
+   "age_ma": "ca. 800 Ma",
+   "age_strat": "1600 - 850 Ma",
+   "tectonic_unit": "Tabular Bukoban Supergroup (Nyamori Supergroup)",
+   "tectonic_setting": "Neoproterozoic tabular sediments and sedimentary rock sequences: Bukoban Supergroup (Nyamori Supergroup)",
+   "stratigraphy": "Masontwa and Busondo Groups",
+   "metamorphism": "anchimetamorphic",
+   "leg_id": 13,
+   "n_polygons": 7,
+   "color": "#ffb34d"
+  },
+  {
+   "sheet": "tanzania",
+   "code": "msNA-NP",
+   "codes": [
+    "msNA-NP"
+   ],
+   "name": "Meta-sediment - meta-igneous complex",
+   "group": "Neoarchaean - Neoproterozoic",
+   "merged": false,
+   "commodities": [
+    "graphite",
+    "gold"
+   ],
+   "affinity": [
+    {
+     "commodity": "graphite",
+     "weight": 2,
+     "why": "meta-sedimentary complex of the Mozambique Belt: flake-graphite affinity"
+    },
+    {
+     "commodity": "gold",
+     "weight": 1,
+     "why": "meta-igneous belt rocks: orogenic gold affinity"
+    }
+   ],
+   "area_km2": 86735.2,
+   "lithology": "Meta-igneous, meta-sedimentary rocks",
+   "chronostrat": "Neoarchaean - Neoproterozoic (NA-NP)",
+   "age_ma": null,
+   "age_strat": "2800 - 541 Ma",
+   "tectonic_unit": "Mozambique Belt",
+   "tectonic_setting": "Palaeo-Neoproterozoic East African Orogen (Mozambique Belt)",
+   "stratigraphy": null,
+   "metamorphism": "Almandine-amphibolite facies",
+   "leg_id": 14,
+   "n_polygons": 5,
+   "color": "#ffb34d"
+  },
+  {
+   "sheet": "tanzania",
+   "code": "miNP",
+   "codes": [
+    "miNP"
+   ],
+   "name": "Migmatite - granite - meta-sediment (marble, quartzite) complex",
+   "group": "Neoprozerozoic",
+   "merged": false,
+   "commodities": [
+    "gemstone",
+    "graphite"
+   ],
+   "affinity": [
+    {
+     "commodity": "gemstone",
+     "weight": 3,
+     "why": "marble and calc-silicate within the same complex: the host lithology for corundum, spinel and garnet gems"
+    },
+    {
+     "commodity": "graphite",
+     "weight": 3,
+     "why": "granulite- to amphibolite-facies para-gneiss of the Mozambique Belt: the classic flake-graphite host"
+    }
+   ],
+   "area_km2": 38464.9,
+   "lithology": "Paragneisses, marble, quartzites, schist, orthogneiss, migmatite, amphibolites, granite",
+   "chronostrat": "Neoprozerozoic (NP1-3)",
+   "age_ma": null,
+   "age_strat": "1000 - 541 Ma",
+   "tectonic_unit": "Mozambique Belt",
+   "tectonic_setting": "Palaeo-Neoproterozoic East African Orogen (Mozambique Belt)",
+   "stratigraphy": null,
+   "metamorphism": "Almandine-amphibolite facies",
+   "leg_id": 15,
+   "n_polygons": 28,
+   "color": "#ffb34d"
+  },
+  {
+   "sheet": "tanzania",
+   "code": "mbNP",
+   "codes": [
+    "mbNP"
+   ],
+   "name": "Marble formation",
+   "group": "Neoproterozoic",
+   "merged": false,
+   "commodities": [
+    "gemstone"
+   ],
+   "affinity": [
+    {
+     "commodity": "gemstone",
+     "weight": 3,
+     "why": "crystalline limestone (marble): corundum and spinel gem affinity"
+    }
+   ],
+   "area_km2": 1779.5,
+   "lithology": "Crystalline limestone",
+   "chronostrat": "Neoproterozoic (NP1-2?)",
+   "age_ma": null,
+   "age_strat": "1000 - 635 Ma",
+   "tectonic_unit": "Mozambique Belt",
+   "tectonic_setting": "Palaeo-Neoproterozoic East African Orogen (Mozambique Belt)",
+   "stratigraphy": null,
+   "metamorphism": "Almandine-amphibolite facies",
+   "leg_id": 16,
+   "n_polygons": 28,
+   "color": "#ddb70d"
+  },
+  {
+   "sheet": "tanzania",
+   "code": "s?NA-NP",
+   "codes": [
+    "s?NA-NP"
+   ],
+   "name": "Meta-gabbro - anorthosite complex",
+   "group": "Neoproterozoic",
+   "merged": false,
+   "commodities": [
+    "cobalt",
+    "copper"
+   ],
+   "affinity": [
+    {
+     "commodity": "cobalt",
+     "weight": 2,
+     "why": "meta-gabbro and anorthosite: magmatic nickel-cobalt affinity"
+    },
+    {
+     "commodity": "copper",
+     "weight": 1,
+     "why": "mafic intrusion-hosted base metals"
+    }
+   ],
+   "area_km2": 451.0,
+   "lithology": "Meta-anorthosite, meta-gabbro, granulite, gneiss",
+   "chronostrat": "Neoproterozoic (NP1)",
+   "age_ma": "ca. 640 Ma",
+   "age_strat": "1000 - 850 Ma",
+   "tectonic_unit": "Mozambique Belt",
+   "tectonic_setting": "Palaeo-Neoproterozoic East African Orogen (Mozambique Belt)",
+   "stratigraphy": null,
+   "metamorphism": "Granulite facies",
+   "leg_id": 18,
+   "n_polygons": 5,
+   "color": "#00a600"
+  },
+  {
+   "sheet": "tanzania",
+   "code": "gtNA-NP",
+   "codes": [
+    "gtNA-NP"
+   ],
+   "name": "Mafic - felsic granulite complex",
+   "group": "Neoarchaean - Neoproterozoic",
+   "merged": false,
+   "commodities": [
+    "graphite",
+    "gemstone"
+   ],
+   "affinity": [
+    {
+     "commodity": "graphite",
+     "weight": 3,
+     "why": "mafic-felsic granulite complex with meta-sediments: flake-graphite affinity"
+    },
+    {
+     "commodity": "gemstone",
+     "weight": 2,
+     "why": "granulite with marble and calc-silicate: gem corundum and garnet affinity"
+    }
+   ],
+   "area_km2": 33676.0,
+   "lithology": "Granulite, gneiss, migmatite, amphibolite, marble, quartzite, schist, mylonite",
+   "chronostrat": "Neoarchaean (NA) - Neoproterozoic (NP1)",
+   "age_ma": "ca. 640 Ma",
+   "age_strat": "2800 - 850 Ma",
+   "tectonic_unit": "Mozambique Belt",
+   "tectonic_setting": "Palaeo-Neoproterozoic East African Orogen (Mozambique Belt)",
+   "stratigraphy": null,
+   "metamorphism": "Granulite facies",
+   "leg_id": 19,
+   "n_polygons": 18,
+   "color": "#ffb34d"
+  },
+  {
+   "sheet": "tanzania",
+   "code": "?-miMP",
+   "codes": [
+    "?-miMP"
+   ],
+   "name": "Granitoides and migmatite complex",
+   "group": "Mesoproterozoic - Neoproterozoic",
+   "merged": false,
+   "commodities": [
+    "gold"
+   ],
+   "affinity": [
+    {
+     "commodity": "gold",
+     "weight": 1,
+     "why": "granitoid and migmatite complex: granite-driven hydrothermal systems"
+    }
+   ],
+   "area_km2": 3999.7,
+   "lithology": "Granitoids, migmatites",
+   "chronostrat": "Mesoproterozoic - Neoproterozoic (MP3-NP2)",
+   "age_ma": null,
+   "age_strat": "1200 - 635 Ma",
+   "tectonic_unit": "Karagwe-Ankolean System(?)",
+   "tectonic_setting": "Mesoproterozoic Kibaran Karagwe-Ankolean Orogen (Bukoban, Itiaso, Ukingan and Mporokoseo Group)",
+   "stratigraphy": null,
+   "metamorphism": "Anatexites(?)",
+   "leg_id": 20,
+   "n_polygons": 1,
+   "color": "#ffb373"
+  },
+  {
+   "sheet": "tanzania",
+   "code": "?MP-NP",
+   "codes": [
+    "?MP-NP"
+   ],
+   "name": "Syn- to late-stage Kibaran granite complex",
+   "group": "Mesoproterozoic - Neoproterozoic",
+   "merged": false,
+   "commodities": [
+    "lithium",
+    "rare_earth",
+    "gold"
+   ],
+   "affinity": [
+    {
+     "commodity": "lithium",
+     "weight": 3,
+     "why": "Kibaran tin granite (Sn-G4): the type setting for cassiterite- and columbite-tantalite-bearing pegmatite and greisen"
+    },
+    {
+     "commodity": "rare_earth",
+     "weight": 2,
+     "why": "evolved Sn granite: niobium-tantalum affinity"
+    },
+    {
+     "commodity": "gold",
+     "weight": 1,
+     "why": "granite-driven hydrothermal systems"
+    }
+   ],
+   "area_km2": 930.9,
+   "lithology": "Sn-Granite (G4)",
+   "chronostrat": "Mesoproterozoic - Neoproterozoic (MP3-NP1)",
+   "age_ma": "ca. 985 - 950 Ma",
+   "age_strat": "1200 - 850 Ma",
+   "tectonic_unit": "Karagwe-Ankolean System",
+   "tectonic_setting": "Mesoproterozoic Kibaran Karagwe-Ankolean Orogen (Bukoban, Itiaso, Ukingan and Mporokoseo Group)",
+   "stratigraphy": null,
+   "metamorphism": "non-metamorphic",
+   "leg_id": 21,
+   "n_polygons": 4,
+   "color": "#ff3399"
+  },
+  {
+   "sheet": "tanzania",
+   "code": "gnMP",
+   "codes": [
+    "gnMP"
+   ],
+   "name": "Orthogneiss complex (Songea, Kimambi)",
+   "group": "Mesoproterozoic - Neoproterozoic",
+   "merged": false,
+   "commodities": [],
+   "affinity": [],
+   "area_km2": 18413.6,
+   "lithology": "Orthogneiss",
+   "chronostrat": "Mesoproterozoic - Neoproterozoic (MP3-NP2)",
+   "age_ma": "ca. 1,190 - 945 Ma",
+   "age_strat": "1200 - 635 Ma",
+   "tectonic_unit": "Mozambique Belt",
+   "tectonic_setting": "Mesoproterozoic Kibaran Karagwe-Ankolean Orogen (Bukoban, Itiaso, Ukingan and Mporokoseo Group)",
+   "stratigraphy": "Songea and Kimambi Groups",
+   "metamorphism": "high-grade metamorphism",
+   "leg_id": 22,
+   "n_polygons": 9,
+   "color": "#ffb373"
+  },
+  {
+   "sheet": "tanzania",
+   "code": "sMP",
+   "codes": [
+    "sMP"
+   ],
+   "name": "Mafic complex Nyabuyonza",
+   "group": "Mesoproterozoic",
+   "merged": false,
+   "commodities": [
+    "cobalt",
+    "copper"
+   ],
+   "affinity": [
+    {
+     "commodity": "cobalt",
+     "weight": 2,
+     "why": "gabbroic lopolith: mafic intrusion-hosted nickel-cobalt affinity"
+    },
+    {
+     "commodity": "copper",
+     "weight": 1,
+     "why": "mafic intrusion-hosted base metals"
+    }
+   ],
+   "area_km2": 680.5,
+   "lithology": "Gabbroic rocks",
+   "chronostrat": "Mesoproterozoic (MP)",
+   "age_ma": null,
+   "age_strat": "1600 - 1000 Ma",
+   "tectonic_unit": "Karagwe-Ankolean System",
+   "tectonic_setting": "Mesoproterozoic Kibaran Karagwe-Ankolean Orogen (Bukoban, Itiaso, Ukingan and Mporokoseo Group)",
+   "stratigraphy": "Nyabuyonza mafic lopolith",
+   "metamorphism": "anchimetamorphic",
+   "leg_id": 23,
+   "n_polygons": 3,
+   "color": "#40ff00"
+  },
+  {
+   "sheet": "tanzania",
+   "code": "s?MP",
+   "codes": [
+    "s?MP"
+   ],
+   "name": "Mafic-ultramafic layered intrusive complex (Kabanga-Musongati)",
+   "group": "Mesoproterozoic",
+   "merged": false,
+   "commodities": [
+    "cobalt",
+    "copper"
+   ],
+   "affinity": [
+    {
+     "commodity": "cobalt",
+     "weight": 3,
+     "why": "layered mafic-ultramafic intrusion (peridotite, dunite, norite): the classic magmatic nickel-copper-cobalt host"
+    },
+    {
+     "commodity": "copper",
+     "weight": 2,
+     "why": "magmatic sulphide affinity in the same intrusion"
+    }
+   ],
+   "area_km2": 330.5,
+   "lithology": "Peridotite, dunite, lherzolite, gabbro, norite, anorthosite",
+   "chronostrat": "Mesoproterozoic (MP2)",
+   "age_ma": "ca. 1,370 Ma",
+   "age_strat": "1400 - 1200 Ma",
+   "tectonic_unit": "Karagwe-Ankolean System",
+   "tectonic_setting": "Mesoproterozoic Kibaran Karagwe-Ankolean Orogen (Bukoban, Itiaso, Ukingan and Mporokoseo Group)",
+   "stratigraphy": "Kabanga-Musongati complex",
+   "metamorphism": "Greenschist facies?",
+   "leg_id": 25,
+   "n_polygons": 5,
+   "color": "#40ff00"
+  },
+  {
+   "sheet": "tanzania",
+   "code": "dMP",
+   "codes": [
+    "dMP"
+   ],
+   "name": "Detrital meta-sediments (includ. newly defined Bukoban Group)",
+   "group": "Mesoproterozoic",
+   "merged": false,
+   "commodities": [
+    "lithium"
+   ],
+   "affinity": [
+    {
+     "commodity": "lithium",
+     "weight": 1,
+     "why": "Kibaran meta-sediments intruded by the tin granites: cassiterite-bearing vein and greisen affinity"
+    }
+   ],
+   "area_km2": 20157.0,
+   "lithology": "Meta-sediments",
+   "chronostrat": "Mesoproterozoic (MP1-2)",
+   "age_ma": ">/= 1,370 Ma",
+   "age_strat": "1600 - 1200 Ma",
+   "tectonic_unit": "Karagwe-Ankolean System",
+   "tectonic_setting": "Mesoproterozoic Kibaran Karagwe-Ankolean Orogen (Bukoban, Itiaso, Ukingan and Mporokoseo Group)",
+   "stratigraphy": "newly defined Bukoban Group",
+   "metamorphism": "Greenschist facies?",
+   "leg_id": 26,
+   "n_polygons": 28,
+   "color": "#ff7373"
+  },
+  {
+   "sheet": "tanzania",
+   "code": "pqMP",
+   "codes": [
+    "pqMP"
+   ],
+   "name": "Phyllitic-quartzitic meta-sediments (Itiaso Group)",
+   "group": "Mesoproterozoic",
+   "merged": false,
+   "commodities": [
+    "gold",
+    "lithium"
+   ],
+   "affinity": [
+    {
+     "commodity": "gold",
+     "weight": 1,
+     "why": "quartzitic meta-sediment: quartz-vein gold affinity"
+    },
+    {
+     "commodity": "lithium",
+     "weight": 1,
+     "why": "phyllitic-quartzitic meta-sediments of the tin-granite aureole: cassiterite and wolframite affinity"
+    }
+   ],
+   "area_km2": 2386.4,
+   "lithology": "Shales, sandstones, quartzites",
+   "chronostrat": "Mesoproterozoic (MP1-2)",
+   "age_ma": ">/= 1,370 Ma",
+   "age_strat": "1600 - 1200 Ma",
+   "tectonic_unit": "Karagwe-Ankolean System",
+   "tectonic_setting": "Mesoproterozoic Kibaran Karagwe-Ankolean Orogen (Bukoban, Itiaso, Ukingan and Mporokoseo Group)",
+   "stratigraphy": "Itaso Group",
+   "metamorphism": "Greenschist facies?",
+   "leg_id": 28,
+   "n_polygons": 3,
+   "color": "#ff7373"
+  },
+  {
+   "sheet": "tanzania",
+   "code": "msMP",
+   "codes": [
+    "msMP"
+   ],
+   "name": "Meta-sediment - crystalline rock complex (Ukingan Group)",
+   "group": "Mesoproterozoic",
+   "merged": false,
+   "commodities": [],
+   "affinity": [],
+   "area_km2": 1752.5,
+   "lithology": "Meta-sediments, migmatite, orthogneiss",
+   "chronostrat": "Mesoproterozoic (MP?)",
+   "age_ma": null,
+   "age_strat": "1600 - 1000 Ma",
+   "tectonic_unit": "Karagwe-Ankolean System(?)",
+   "tectonic_setting": "Mesoproterozoic Kibaran Karagwe-Ankolean Orogen (Bukoban, Itiaso, Ukingan and Mporokoseo Group)",
+   "stratigraphy": "Ukingan Group",
+   "metamorphism": "high-grade metamorphism",
+   "leg_id": 29,
+   "n_polygons": 1,
+   "color": "#ff7373"
+  },
+  {
+   "sheet": "tanzania",
+   "code": "?dPP-MP",
+   "codes": [
+    "?dPP-MP"
+   ],
+   "name": "Late-orogenic granites and granodiorites",
+   "group": "Paleoproterozoic - Mesoproterozoic",
+   "merged": false,
+   "commodities": [
+    "lithium",
+    "gold",
+    "rare_earth"
+   ],
+   "affinity": [
+    {
+     "commodity": "lithium",
+     "weight": 2,
+     "why": "late-orogenic granite and granodiorite: pegmatite affinity"
+    },
+    {
+     "commodity": "gold",
+     "weight": 1,
+     "why": "late-orogenic intrusions drive hydrothermal systems"
+    },
+    {
+     "commodity": "rare_earth",
+     "weight": 1,
+     "why": "evolved granite association"
+    }
+   ],
+   "area_km2": 23222.9,
+   "lithology": "Granite, granodiorite",
+   "chronostrat": "Paleoproterozoic - Mesoproterozoic (PP-MP)",
+   "age_ma": "1,950 Ma",
+   "age_strat": "2500 - 1000 Ma",
+   "tectonic_unit": "Usagaran Belt",
+   "tectonic_setting": "Palaeoproterozoic meta-igneous, meta-sedimentary and sedimentary rocks (Usagaran Belt)",
+   "stratigraphy": null,
+   "metamorphism": null,
+   "leg_id": 30,
+   "n_polygons": 1,
+   "color": "#ff1973"
+  },
+  {
+   "sheet": "tanzania",
+   "code": "gtPP-NP",
+   "codes": [
+    "gtPP-NP"
+   ],
+   "name": "Charnockite - enderbitic granulite-gneiss",
+   "group": "Paleoproterozoic - Mesoproterozoic",
+   "merged": false,
+   "commodities": [
+    "graphite",
+    "cobalt"
+   ],
+   "affinity": [
+    {
+     "commodity": "graphite",
+     "weight": 2,
+     "why": "granulite-facies gneiss: flake-graphite affinity"
+    },
+    {
+     "commodity": "cobalt",
+     "weight": 1,
+     "why": "charnockite-enderbite: mafic granulite affinity"
+    }
+   ],
+   "area_km2": 5933.4,
+   "lithology": "Gneiss, granulite, charnockite, enderbite",
+   "chronostrat": "Paleoproterozoic(?) - Mesoproterozoic (PP-MP)",
+   "age_ma": null,
+   "age_strat": "2050 - 1000 Ma",
+   "tectonic_unit": "Usagaran Belt",
+   "tectonic_setting": "Palaeoproterozoic meta-igneous, meta-sedimentary and sedimentary rocks (Usagaran Belt)",
+   "stratigraphy": null,
+   "metamorphism": "high-grade metamorphism",
+   "leg_id": 31,
+   "n_polygons": 2,
+   "color": "#ff40b3"
+  },
+  {
+   "sheet": "tanzania",
+   "code": "?PP",
+   "codes": [
+    "?PP"
+   ],
+   "name": "Felsic igneous formation",
+   "group": "Palaeoproterozoic",
+   "merged": false,
+   "commodities": [
+    "gold",
+    "rare_earth"
+   ],
+   "affinity": [
+    {
+     "commodity": "gold",
+     "weight": 1,
+     "why": "felsic igneous formation of the Ubendian belt"
+    },
+    {
+     "commodity": "rare_earth",
+     "weight": 1,
+     "why": "felsic igneous association"
+    }
+   ],
+   "area_km2": 5719.1,
+   "lithology": "Felsic igneous rocks",
+   "chronostrat": "Palaeoproterozoic (PP3-4)",
+   "age_ma": null,
+   "age_strat": "2050 - 1600 Ma",
+   "tectonic_unit": "Ubendian Belt",
+   "tectonic_setting": "Palaeoproterozoic meta-igneous and meta-sedimentary rocks (Ubendian Belt)",
+   "stratigraphy": null,
+   "metamorphism": "?",
+   "leg_id": 32,
+   "n_polygons": 10,
+   "color": "#ff1973"
+  },
+  {
+   "sheet": "tanzania",
+   "code": "msPPUB",
+   "codes": [
+    "msPPUB"
+   ],
+   "name": "Meta-sediment - meta-igneous complex",
+   "group": "Palaeoproterozoic",
+   "merged": false,
+   "commodities": [
+    "gold",
+    "graphite"
+   ],
+   "affinity": [
+    {
+     "commodity": "gold",
+     "weight": 2,
+     "why": "Palaeoproterozoic meta-sedimentary and meta-igneous belt rocks: orogenic gold affinity"
+    },
+    {
+     "commodity": "graphite",
+     "weight": 2,
+     "why": "granulite-facies meta-sediments: flake-graphite affinity"
+    }
+   ],
+   "area_km2": 39671.3,
+   "lithology": "Meta-sediments, meta-igneous rocks, gneiss, granulite, migmatite, amphibolite, quartzite",
+   "chronostrat": "Palaeoproterozoic (PP3-4)",
+   "age_ma": null,
+   "age_strat": "2050 - 1600 Ma",
+   "tectonic_unit": "Ubendian Belt",
+   "tectonic_setting": "Palaeoproterozoic meta-igneous and meta-sedimentary rocks (Ubendian Belt)",
+   "stratigraphy": null,
+   "metamorphism": "high-grade metamorphism",
+   "leg_id": 33,
+   "n_polygons": 14,
+   "color": "#ff40b3"
+  },
+  {
+   "sheet": "tanzania",
+   "code": "msPPUS",
+   "codes": [
+    "msPPUS"
+   ],
+   "name": "Meta-sediment - meta-igneous complex",
+   "group": "Paleoproterozoic",
+   "merged": false,
+   "commodities": [
+    "gold",
+    "graphite"
+   ],
+   "affinity": [
+    {
+     "commodity": "gold",
+     "weight": 2,
+     "why": "Palaeoproterozoic meta-igneous and meta-sedimentary belt rocks: orogenic gold affinity"
+    },
+    {
+     "commodity": "graphite",
+     "weight": 2,
+     "why": "granulite-facies meta-sediments: flake-graphite affinity"
+    }
+   ],
+   "area_km2": 5188.8,
+   "lithology": "Meta-igneous, meta-sedimentary rocks",
+   "chronostrat": "Paleoproterozoic (PP3-4)",
+   "age_ma": null,
+   "age_strat": "2050 - 1600 Ma",
+   "tectonic_unit": "Usagaran Belt",
+   "tectonic_setting": "Palaeoproterozoic meta-igneous, meta-sedimentary and sedimentary rocks (Usagaran Belt)",
+   "stratigraphy": null,
+   "metamorphism": "Granulite facies",
+   "leg_id": 34,
+   "n_polygons": 11,
+   "color": "#ff40b3"
+  },
+  {
+   "sheet": "tanzania",
+   "code": "fMP",
+   "codes": [
+    "fMP"
+   ],
+   "name": "Fluviatil - shallow marine siliclastic sediments (Mporokoso Group)",
+   "group": "Mesoproterozoic",
+   "merged": false,
+   "commodities": [],
+   "affinity": [],
+   "area_km2": 1950.0,
+   "lithology": "Siliciclastic sedimentary rocks",
+   "chronostrat": "Mesoproterozoic (MP?)",
+   "age_ma": null,
+   "age_strat": "1600 - 1000 Ma",
+   "tectonic_unit": "Ubendian Belt",
+   "tectonic_setting": "Mesoproterozoic Kibaran Karagwe-Ankolean Orogen (Bukoban, Itiaso, Ukingan and Mporokoseo Group)",
+   "stratigraphy": "Mporokoso Group",
+   "metamorphism": "low-grade metamorphism(?)",
+   "leg_id": 35,
+   "n_polygons": 1,
+   "color": "#ff7373"
+  },
+  {
+   "sheet": "tanzania",
+   "code": "gtPP",
+   "codes": [
+    "gtPP"
+   ],
+   "name": "Granulite - gneiss - meta-sediment complex including eclogite (Isimani Group)",
+   "group": "Paleoproterozoic",
+   "merged": false,
+   "commodities": [
+    "graphite",
+    "gemstone"
+   ],
+   "affinity": [
+    {
+     "commodity": "graphite",
+     "weight": 3,
+     "why": "granulite-facies meta-sedimentary complex: flake-graphite affinity"
+    },
+    {
+     "commodity": "gemstone",
+     "weight": 2,
+     "why": "high-grade meta-sediments with eclogite: garnet and corundum gem affinity"
+    }
+   ],
+   "area_km2": 5538.3,
+   "lithology": "Meta-sedimentary rocks, orthogneiss, granulite, metagabbro, amphibolite, marble, eclogite",
+   "chronostrat": "Paleoproterozoic (PP1-3)",
+   "age_ma": null,
+   "age_strat": "2500 - 1800 Ma",
+   "tectonic_unit": "Usagaran Belt",
+   "tectonic_setting": "Palaeoproterozoic meta-igneous, meta-sedimentary and sedimentary rocks (Usagaran Belt)",
+   "stratigraphy": "Isimani Group",
+   "metamorphism": "high-grade metamorphism",
+   "leg_id": 38,
+   "n_polygons": 1,
+   "color": "#ff40b3"
+  },
+  {
+   "sheet": "tanzania",
+   "code": "gnPP-MP",
+   "codes": [
+    "gnPP-MP"
+   ],
+   "name": "Gneiss - mafic rock complex (e.g. Buanji Group)",
+   "group": "Paleoproterozoic - Mesoproterozoic",
+   "merged": false,
+   "commodities": [
+    "cobalt",
+    "copper"
+   ],
+   "affinity": [
+    {
+     "commodity": "cobalt",
+     "weight": 2,
+     "why": "gneiss with meta-gabbro, anorthosite and ultramafic rocks: magmatic nickel-cobalt affinity"
+    },
+    {
+     "commodity": "copper",
+     "weight": 1,
+     "why": "mafic-hosted base metals"
+    }
+   ],
+   "area_km2": 3271.6,
+   "lithology": "Gneiss, meta-gabbro, anorthosite, ultramafic rocks",
+   "chronostrat": "Paleoproterozoic - Mesoproterozoic (PP-MP)",
+   "age_ma": null,
+   "age_strat": "2500 - 1000 Ma",
+   "tectonic_unit": "Ubendian Belt",
+   "tectonic_setting": "Palaeoproterozoic meta-igneous and meta-sedimentary rocks (Ubendian Belt)",
+   "stratigraphy": null,
+   "metamorphism": "Almandine-amphibolite facies",
+   "leg_id": 39,
+   "n_polygons": 7,
+   "color": "#ff40b3"
+  },
+  {
+   "sheet": "tanzania",
+   "code": "?dNA-PP",
+   "codes": [
+    "?dNA-PP"
+   ],
+   "name": "Late-postorogenic granites and granodiorites",
+   "group": "Neoarchaean - Paleoproterozoic",
+   "merged": false,
+   "commodities": [
+    "lithium",
+    "gold",
+    "rare_earth"
+   ],
+   "affinity": [
+    {
+     "commodity": "lithium",
+     "weight": 2,
+     "why": "late-postorogenic granite: pegmatite and greisen affinity"
+    },
+    {
+     "commodity": "gold",
+     "weight": 1,
+     "why": "late granites drive the hydrothermal systems of the craton margin"
+    },
+    {
+     "commodity": "rare_earth",
+     "weight": 1,
+     "why": "evolved granite association"
+    }
+   ],
+   "area_km2": 11784.7,
+   "lithology": "Granites",
+   "chronostrat": "Neoarchaean - Paleoproterozoic (NA-PP)",
+   "age_ma": null,
+   "age_strat": "2800 - 1600 Ma",
+   "tectonic_unit": "Tanzania Craton",
+   "tectonic_setting": "Neoarchaean granitic complex (Kavirondian-Nyanzian Supergroup)",
+   "stratigraphy": null,
+   "metamorphism": "?",
+   "leg_id": 40,
+   "n_polygons": 17,
+   "color": "#ff1973"
+  },
+  {
+   "sheet": "tanzania",
+   "code": "?NA",
+   "codes": [
+    "?NA"
+   ],
+   "name": "Synorogenic (foliated) granitoides",
+   "group": "Neoarchaean",
+   "merged": false,
+   "commodities": [
+    "gold",
+    "lithium"
+   ],
+   "affinity": [
+    {
+     "commodity": "gold",
+     "weight": 1,
+     "why": "synorogenic granitoids of the greenstone-belt basement"
+    },
+    {
+     "commodity": "lithium",
+     "weight": 1,
+     "why": "granitoid: pegmatite affinity"
+    }
+   ],
+   "area_km2": 25758.5,
+   "lithology": "Granitoids",
+   "chronostrat": "Neoarchaean (NA)",
+   "age_ma": null,
+   "age_strat": "2800 - 2500 Ma",
+   "tectonic_unit": "Tanzania Craton",
+   "tectonic_setting": "Neoarchaean granitic complex (Kavirondian-Nyanzian Supergroup)",
+   "stratigraphy": null,
+   "metamorphism": "non-metamorphic",
+   "leg_id": 41,
+   "n_polygons": 14,
+   "color": "#ff1973"
+  },
+  {
+   "sheet": "tanzania",
+   "code": "gsNA",
+   "codes": [
+    "gsNA"
+   ],
+   "name": "Volcano-sedimentary complex (Greenstone Belt with BIF)",
+   "group": "Neoarchaean",
+   "merged": false,
+   "commodities": [
+    "gold",
+    "iron",
+    "copper",
+    "cobalt"
+   ],
+   "affinity": [
+    {
+     "commodity": "gold",
+     "weight": 3,
+     "why": "Archaean greenstone belt (Nyanzian mafic volcanics, meta-basalts, phyllite): the classic orogenic-gold host lithology"
+    },
+    {
+     "commodity": "iron",
+     "weight": 3,
+     "why": "banded iron formation within the greenstone succession"
+    },
+    {
+     "commodity": "copper",
+     "weight": 2,
+     "why": "mafic metavolcanic pile: volcanogenic massive sulphide setting"
+    },
+    {
+     "commodity": "cobalt",
+     "weight": 1,
+     "why": "komatiitic and mafic volcanics: nickel-cobalt affinity"
+    }
+   ],
+   "area_km2": 18510.7,
+   "lithology": "Mafic volcanics, meta-basalts, phyllite, BIF",
+   "chronostrat": "Neoarchaean (NA)",
+   "age_ma": "2,900 - 2,750 Ma",
+   "age_strat": "2800 - 2500 Ma",
+   "tectonic_unit": "Tanzania Craton",
+   "tectonic_setting": "Neoarchaean greenstone belts",
+   "stratigraphy": "Nyanzian Supergroup",
+   "metamorphism": "Greenschist facies",
+   "leg_id": 44,
+   "n_polygons": 58,
+   "color": "#73b373"
+  },
+  {
+   "sheet": "tanzania",
+   "code": "miNA",
+   "codes": [
+    "miNA"
+   ],
+   "name": "Migmatite - granitoide - meta-sediment complex",
+   "group": "Neoarchaean",
+   "merged": false,
+   "commodities": [
+    "gold",
+    "diamond",
+    "lithium"
+   ],
+   "affinity": [
+    {
+     "commodity": "gold",
+     "weight": 2,
+     "why": "granitoid-migmatite basement enclosing the greenstone belts; its late structures host lode gold"
+    },
+    {
+     "commodity": "diamond",
+     "weight": 1,
+     "why": "Archaean cratonic basement: the thick, cold lithosphere kimberlite emplacement requires"
+    },
+    {
+     "commodity": "lithium",
+     "weight": 1,
+     "why": "granitoid basement: pegmatite affinity"
+    }
+   ],
+   "area_km2": 124286.7,
+   "lithology": "Granitoids, migmatite, mafic and ultramafics, meta-sediments",
+   "chronostrat": "Neoarchaean (NA)",
+   "age_ma": null,
+   "age_strat": "2800 - 2500 Ma",
+   "tectonic_unit": "Tanzania Craton",
+   "tectonic_setting": "Neoarchaean granitic complex (Kavirondian-Nyanzian Supergroup)",
+   "stratigraphy": "Kavirondian Supergroup",
+   "metamorphism": "Greenschist facies",
+   "leg_id": 45,
+   "n_polygons": 59,
+   "color": "#ff99f2"
+  },
+  {
+   "sheet": "tanzania",
+   "code": "gn-grMA-NA",
+   "codes": [
+    "gn-grMA-NA"
+   ],
+   "name": "Gneiss-granite-migmatite complex (Dodoman and Isangan Group)",
+   "group": "Meso-Neoarchaean",
+   "merged": false,
+   "commodities": [
+    "diamond",
+    "gold"
+   ],
+   "affinity": [
+    {
+     "commodity": "diamond",
+     "weight": 2,
+     "why": "Meso-Neoarchaean cratonic core (Dodoman): the thick, cold lithosphere kimberlite emplacement requires"
+    },
+    {
+     "commodity": "gold",
+     "weight": 1,
+     "why": "Archaean gneiss-granite-migmatite basement of the goldfield"
+    }
+   ],
+   "area_km2": 65480.2,
+   "lithology": "Granitoids, migmatite, mafic dykes, lamprophyre, cataclasite",
+   "chronostrat": "Meso-Neoarchaean (MA-NA)",
+   "age_ma": "ca. 2,900 - 2,500 Ma",
+   "age_strat": "3200 - 2500 Ma",
+   "tectonic_unit": "Tanzania Craton",
+   "tectonic_setting": "Meso-Neoarchaen Dodoma crystalline complex",
+   "stratigraphy": "Dodoman Group",
+   "metamorphism": "?",
+   "leg_id": 46,
+   "n_polygons": 1,
+   "color": "#ff66f2"
+  },
+  {
+   "sheet": "tanzania",
+   "code": "aQ",
+   "codes": [
+    "aQ"
+   ],
+   "name": "Predominantly alluvial and eluvial sediments",
+   "group": "Quaternary",
+   "merged": false,
+   "commodities": [
+    "diamond",
+    "gemstone",
+    "gold"
+   ],
+   "affinity": [
+    {
+     "commodity": "diamond",
+     "weight": 1,
+     "why": "alluvial gravels: secondary diamond affinity"
+    },
+    {
+     "commodity": "gemstone",
+     "weight": 1,
+     "why": "alluvial gem gravels shed off the gem-bearing metamorphics"
+    },
+    {
+     "commodity": "gold",
+     "weight": 1,
+     "why": "alluvial and eluvial sediments: placer ground downstream of lode hosts"
+    }
+   ],
+   "area_km2": 97951.3,
+   "lithology": "Sandy, gravelly, silty sediments",
+   "chronostrat": null,
+   "age_ma": null,
+   "age_strat": "2.6 - 0 Ma",
+   "tectonic_unit": null,
+   "tectonic_setting": "Quaternary deposits, predominantly alluvial and eluvial sediments",
+   "stratigraphy": null,
+   "metamorphism": null,
+   "leg_id": 49,
+   "n_polygons": 89,
+   "color": "#ffff80"
+  },
+  {
+   "sheet": "tanzania",
+   "code": "tN-Q",
+   "codes": [
+    "tN-Q"
+   ],
+   "name": "Terrestric coarse clastic sediments, higher coastal terrace, laterite and alterite",
+   "group": "Neogene - Quaternary",
+   "merged": false,
+   "commodities": [
+    "cobalt",
+    "gold"
+   ],
+   "affinity": [
+    {
+     "commodity": "cobalt",
+     "weight": 1,
+     "why": "laterite and alterite over mafic-ultramafic ground: nickel-cobalt laterite affinity"
+    },
+    {
+     "commodity": "gold",
+     "weight": 1,
+     "why": "eluvial cover over the basement: residual placer affinity"
+    }
+   ],
+   "area_km2": 23603.6,
+   "lithology": "Coarse clastic sediments, laterite and alterite",
+   "chronostrat": null,
+   "age_ma": null,
+   "age_strat": "23 - 0 Ma",
+   "tectonic_unit": null,
+   "tectonic_setting": "Neogene-Quarternary continental and lacustrine sedimentary formations",
+   "stratigraphy": null,
+   "metamorphism": null,
+   "leg_id": 50,
+   "n_polygons": 25,
+   "color": "#ffe619"
+  },
+  {
+   "sheet": "tanzania",
+   "code": "lN-Q",
+   "codes": [
+    "lN-Q"
+   ],
+   "name": "Predominantly fine clastic lacustrine sediments and evaporites",
+   "group": "Neogene - Quaternary",
+   "merged": false,
+   "commodities": [
+    "lithium"
+   ],
+   "affinity": [
+    {
+     "commodity": "lithium",
+     "weight": 1,
+     "why": "closed-basin lacustrine sediments and evaporites: brine affinity"
+    }
+   ],
+   "area_km2": 57195.3,
+   "lithology": "Fine clastic sediments",
+   "chronostrat": null,
+   "age_ma": null,
+   "age_strat": "23 - 0 Ma",
+   "tectonic_unit": null,
+   "tectonic_setting": "Neogene-Quarternary continental and lacustrine sedimentary formations",
+   "stratigraphy": null,
+   "metamorphism": null,
+   "leg_id": 51,
+   "n_polygons": 7,
+   "color": "#ffe619"
+  },
+  {
+   "sheet": "tanzania",
+   "code": "f-mN",
+   "codes": [
+    "f-mN"
+   ],
+   "name": "Marine and fluvio-marine sandy-clayey sediments",
+   "group": "Neogene",
+   "merged": false,
+   "commodities": [],
+   "affinity": [],
+   "area_km2": 15757.1,
+   "lithology": "Sandy-clayey sediments",
+   "chronostrat": null,
+   "age_ma": null,
+   "age_strat": "23 - 2.6 Ma",
+   "tectonic_unit": null,
+   "tectonic_setting": "Paleogene-Neogene marine, lacustrine and fluvio-marino sedimentary formations",
+   "stratigraphy": null,
+   "metamorphism": null,
+   "leg_id": 52,
+   "n_polygons": 23,
+   "color": "#ffe619"
+  },
+  {
+   "sheet": "tanzania",
+   "code": "mPG",
+   "codes": [
+    "mPG"
+   ],
+   "name": "Marine sandy-carbonatic-clayey sediments",
+   "group": "Paleogene",
+   "merged": false,
+   "commodities": [],
+   "affinity": [],
+   "area_km2": 1129.7,
+   "lithology": "Sandy-carbonatic clayey sediments",
+   "chronostrat": null,
+   "age_ma": null,
+   "age_strat": "66 - 23 Ma",
+   "tectonic_unit": null,
+   "tectonic_setting": "Paleogene-Neogene marine, lacustrine and fluvio-marino sedimentary formations",
+   "stratigraphy": null,
+   "metamorphism": null,
+   "leg_id": 53,
+   "n_polygons": 5,
+   "color": "#ff9966"
+  },
+  {
+   "sheet": "tanzania",
+   "code": "vtN-Q",
+   "codes": [
+    "vtN-Q"
+   ],
+   "name": "Volcanic ashes, tephra, calcareous tuffs",
+   "group": "Neogene - Quaternary",
+   "merged": false,
+   "commodities": [],
+   "affinity": [],
+   "area_km2": 8039.1,
+   "lithology": "Volcanic ashes, tephra, calcareous tuffs",
+   "chronostrat": null,
+   "age_ma": null,
+   "age_strat": "23 - 0 Ma",
+   "tectonic_unit": null,
+   "tectonic_setting": "Neogene-Quaternary volcanic formations",
+   "stratigraphy": null,
+   "metamorphism": null,
+   "leg_id": 54,
+   "n_polygons": 1,
+   "color": "#ffe619"
+  },
+  {
+   "sheet": "tanzania",
+   "code": "vpN-Q",
+   "codes": [
+    "vpN-Q"
+   ],
+   "name": "Predominantly pyroclastics with alkaline volcanic lavas",
+   "group": "Neogene - Quaternary",
+   "merged": false,
+   "commodities": [
+    "rare_earth"
+   ],
+   "affinity": [
+    {
+     "commodity": "rare_earth",
+     "weight": 1,
+     "why": "alkaline pyroclastics of the same volcanic province"
+    }
+   ],
+   "area_km2": 8039.5,
+   "lithology": "Pyroclastics, alkaline volcanic lavas",
+   "chronostrat": null,
+   "age_ma": null,
+   "age_strat": "23 - 0 Ma",
+   "tectonic_unit": null,
+   "tectonic_setting": "Neogene-Quaternary volcanic formations",
+   "stratigraphy": null,
+   "metamorphism": null,
+   "leg_id": 55,
+   "n_polygons": 13,
+   "color": "#ffe619"
+  },
+  {
+   "sheet": "tanzania",
+   "code": "vN-Q",
+   "codes": [
+    "vN-Q"
+   ],
+   "name": "Predominantly volcanic lavas (nephelinite, phonolithe, alkalibasalts)",
+   "group": "Neogene - Quaternary",
+   "merged": false,
+   "commodities": [
+    "rare_earth"
+   ],
+   "affinity": [
+    {
+     "commodity": "rare_earth",
+     "weight": 2,
+     "why": "alkaline nephelinite-phonolite lavas: the volcanic expression of the carbonatite province that carries niobium and rare earths"
+    }
+   ],
+   "area_km2": 20127.2,
+   "lithology": "Volcanic lavas (nephelinite, phonolithe, alkalibasalts)",
+   "chronostrat": null,
+   "age_ma": null,
+   "age_strat": "23 - 0 Ma",
+   "tectonic_unit": null,
+   "tectonic_setting": "Neogene-Quaternary volcanic formations",
+   "stratigraphy": null,
+   "metamorphism": null,
+   "leg_id": 57,
+   "n_polygons": 18,
+   "color": "#ffe619"
+  }
+ ]
+}
