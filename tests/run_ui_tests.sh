@@ -115,6 +115,48 @@ test_url_param "complex_combined" "&popup=TZA_Serengeti&sections=fire,species&pa
 test_url_param "viewport_wins_over_country" "&lat=24.9331&lng=2.6151&z=6.1&country=Kenya&popup=CAF_Chinko" "" ""
 test_url_param "viewport_with_animation" "&lat=6.5&lng=24.5&z=7&date_preset=90d&anim=fireGrid,trajs,deforest&anim_paused=1" "" ""
 
+# ── Source guards: a click must not be swallowed ──────────────────────
+#
+# These are grep assertions, not DOM ones, because the bug they guard is a
+# STRUCTURAL one and grep can see it where a screenshot cannot: something that
+# covers the viewport taking an answer away instead of ranking below it. Each
+# line below was a real defect (2026-08-12) in which the map still looked
+# perfectly right while a whole layer had become unclickable.
+yellow "=== Testing map-click arbitration (source guards) ==="
+
+src_guard() {
+    local name="$1" mode="$2" pattern="$3" file="$4"
+    printf "%-50s" "$name"
+    if grep -qE "$pattern" "$file"; then found=1; else found=0; fi
+    if [[ "$mode" == "present" && $found -eq 1 ]] || [[ "$mode" == "absent" && $found -eq 0 ]]; then
+        green "PASS"; PASSED=$((PASSED + 1))
+    else
+        red "FAIL ($mode: $pattern)"; FAILED=$((FAILED + 1))
+    fi
+}
+
+GLOBE="srv/templates/globe.html"
+
+# The park is a RANKED layer, not an exception. setBackdropGuard silenced every
+# negative-priority tip over a park polygon, so inside a park -- most of what
+# this map is for -- geology and the AOI were erased, not outranked.
+src_guard "park_is_a_maptip_layer"        present "MapTip.register\('areas-fill'" "$GLOBE"
+src_guard "no_backdrop_guard"             absent  "setBackdropGuard\(function" "$GLOBE"
+# The ladder itself: park between feature layers (0) and the AOI (-20).
+src_guard "park_priority_minus_10"        present "priority: -10" "$GLOBE"
+src_guard "aoi_priority_minus_20"         present "priority: -20" "$GLOBE"
+src_guard "geology_priority_minus_30"     present "priority: -30" "srv/static/geomap.js"
+# A modifier click belongs to the app's multi-select, so MapTip stands down for
+# the whole click -- declining per layer only let the AOI answer instead.
+src_guard "maptip_defers_to_modifier"     present "shiftKey \|\| oe.metaKey" "srv/static/maptip.js"
+# The popup's x is ours. MapLibre's, re-parented into a drag handle that calls
+# setPointerCapture, did nothing on Safari.
+src_guard "popup_close_is_ours"           present "data-act', 'close'" "srv/static/floatui.js"
+src_guard "maplibre_close_not_reparented" absent  "fui-bar-btns'\).appendChild\(mlClose\)" "srv/static/floatui.js"
+# A sheet that cannot be added yet is unfinished, not done (invariant 1):
+# ?geomap=sudan,car queued both on one idle and the second evaporated.
+src_guard "geomap_add_retries"            present "pendingAdd" "srv/static/geomap.js"
+
 echo
 echo "======================================="
 if [[ $FAILED -eq 0 ]]; then
