@@ -278,10 +278,19 @@
 
     /** Contacts across every installed sheet — the user's unit of thought,
      *  exactly like allClasses(). */
-    function allContacts() {
+    function allContacts(installed) {
         const out = [];
         order.forEach(id => {
+            // ON, not merely installed. ?geomap=car with Sudan built but off
+            // otherwise reports the junctions of a sheet that is not on the
+            // map — a count describing a map nobody is looking at.
+            //
+            // `installed` asks the other question ("does this build HAVE such
+            // a junction"), which is what validating a share link needs: the
+            // link is parsed before the sheets it names are switched on, so
+            // asking the drawn set there rejects every junction as unknown.
             if (!(sheets[id] || {}).available) return;
+            if (!installed && !st(id).on) return;
             contactsOf(id).forEach(c => out.push(c));
         });
         return out;
@@ -359,9 +368,9 @@
      * table, the filter, the paint and the share link cannot disagree about
      * what "intrusive|volcanic" means.
      */
-    function junctionIndex() {
+    function junctionIndex(installed) {
         const out = {};
-        allContacts().forEach(c => {
+        allContacts(installed).forEach(c => {
             const k = lithPairKey(c.lithA, c.lithB);
             const row = out[k] || (out[k] = {
                 pair: k, a: k.split('|')[0], b: k.split('|')[1],
@@ -656,6 +665,13 @@
      * of the unit it bounds) and still below `before`, so pins, trajectories
      * and park outlines stay on top — same rule as everything else here. */
     function syncContactLayer(id, before) {
+        // THE SOURCE MAY NOT BE THERE YET. A sheet is added on `idle` (see
+        // add()), so a gesture that switches contacts on while a sheet is
+        // still queueing would addLayer against a source that does not exist —
+        // MapLibre throws, the layer never lands, and the map is quietly one
+        // sheet of contacts short. Not an error condition: add() calls this
+        // again with the source in place, so the right answer is to wait.
+        if (!map.getSource(SRC(id))) return;
         const want = shared.contacts && hasContacts(id);
         const have = !!map.getLayer(CONT(id));
         if (want && !have) {
@@ -995,8 +1011,7 @@
             const avail = order.filter(id => sheets[id] && sheets[id].available);
             if (want && !avail.length) {
                 if (!opts.quiet) {
-                    showToast('Geology unavailable', 'no sheets are built on this server',
-                              null, null, 'warning');
+                    showToast('Geology unavailable \u2014 no sheets are built on this server', 'warning');
                 }
                 return false;
             }
@@ -1023,8 +1038,8 @@
             const s = sheets && sheets[id];
             if (want && !(s && s.available)) {
                 if (!opts.quiet) {
-                    showToast('Geology sheet unavailable',
-                        (s && s.reason) || 'not built on this server', null, null, 'warning');
+                    showToast('Geology sheet unavailable \u2014 ' +
+                        ((s && s.reason) || 'not built on this server'), 'warning');
                 }
                 return false;
             }
@@ -1147,9 +1162,23 @@
          *  count for a surface that must not offer an empty layer as if it
          *  were a full one. Derived from the same visiblePairs() the paint
          *  filter uses, so the number and the map cannot disagree. */
-        drawnContactCount() {
+        /** How many UNIT classes the drape would draw right now — the same
+         *  visibleCodes() the fill filter uses, so the count and the map cannot
+         *  disagree. Classes, not polygons: a class is what the legend, the
+         *  matrix and the panel all count. */
+        drawnUnitCount() {
             return order.reduce((n, id) => n +
-                (((sheets[id] || {}).available && hasContacts(id)) ? visiblePairs(id).length : 0), 0);
+                (((sheets[id] || {}).available && st(id).on) ? visibleCodes(id).length : 0), 0);
+        },
+        /* Only sheets that are actually ON. `available && hasContacts` counts
+         * a sheet the reader never switched on — with ?geomap=car that
+         * reported 452 lines over a map drawing 97, which is the exact shape
+         * of failure this count exists to prevent. */
+        drawnContactCount() {
+            if (!shared.contacts) return 0;
+            return order.reduce((n, id) => n +
+                ((st(id).on && (sheets[id] || {}).available && hasContacts(id))
+                    ? visiblePairs(id).length : 0), 0);
         },
         contacts: contactsOf,
         allContacts: allContacts,
@@ -1431,13 +1460,12 @@
             // than as a stale link — same rule as every other selection above.
             const jn = params.get('geomap_junction');
             if (jn && shared.contacts) {
-                const known = junctionIndex();
+                const known = junctionIndex(true);
                 const liths = new Set(Object.keys(known).flatMap(k => k.split('|')));
                 if (known[jn] || (jn.indexOf('|') < 0 && liths.has(jn))) shared.contactPair = jn;
                 else if (typeof showToast === 'function') {
-                    showToast('Geology selection is out of date',
-                        'That link names a rock junction these sheets do not have \u2014 showing every contact.',
-                        null, null, 'warning');
+                    showToast('Geology selection is out of date \u2014 that link names a rock ' +
+                        'junction these sheets do not have; showing every contact.', 'warning');
                 }
             }
             if (params.get('geomap_color') === 'ink') shared.colorMode = 'ink';
@@ -1451,9 +1479,8 @@
                 // from "no data here". Drop it and say so.
                 if (keys.length) shared.liths = new Set(keys);
                 else if (typeof showToast === 'function') {
-                    showToast('Geology selection is out of date',
-                        'That link names rock types this legend no longer has \u2014 showing all of them.',
-                        null, null, 'warning');
+                    showToast('Geology selection is out of date \u2014 that link names rock types ' +
+                        'this legend no longer has; showing all of them.', 'warning');
                 }
             }
             const ageRaw = params.get('geomap_age_off') || '';
@@ -1467,9 +1494,8 @@
                 const keys = ageRaw.split('|').filter(k => all.has(k));
                 if (keys.length && keys.length < all.size) shared.agesOff = new Set(keys);
                 else if (keys.length && typeof showToast === 'function') {
-                    showToast('Geology selection is out of date',
-                        'That link hides every period this build of the legend has \u2014 showing all of them.',
-                        null, null, 'warning');
+                    showToast('Geology selection is out of date \u2014 that link hides every period ' +
+                        'this build of the legend has; showing all of them.', 'warning');
                 }
             }
             parse(params.get('geomap_hide'), (id, v) => { st(id).hidden = keep(id, v.split('|')); });
@@ -1483,9 +1509,8 @@
                 // so instead.
                 if (!codes.size) {
                     if (typeof showToast === 'function') {
-                        showToast('Geology selection is out of date',
-                            'That link names units this build of the sheet no longer has — showing all of them.',
-                            null, null, 'warning');
+                        showToast('Geology selection is out of date \u2014 that link names units this ' +
+                            'build of the sheet no longer has; showing all of them.', 'warning');
                     }
                     return;
                 }
@@ -1506,9 +1531,8 @@
                 const want = v.split('|').filter(k => known.has(k));
                 if (!want.length) {
                     if (typeof showToast === 'function') {
-                        showToast('Geology selection is out of date',
-                            'That link names rock-type hosts this build of the sheet does not list \u2014 showing all units.',
-                            null, null, 'warning');
+                        showToast('Geology selection is out of date \u2014 that link names rock-type ' +
+                            'hosts this build of the sheet does not list; showing all units.', 'warning');
                     }
                     return;
                 }
@@ -1527,9 +1551,9 @@
                 shared.minWeight = 1;
                 order.forEach(id => { if (st(id).commodities.size) applyCommodities(id); });
                 if (had && typeof showToast === 'function') {
-                    showToast('Geology selection is out of date',
-                        'That link keeps only the strongest hosts, and this build of the sheets has none \u2014 showing every host.',
-                        null, null, 'warning');
+                    showToast('Geology selection is out of date \u2014 that link keeps only the ' +
+                        'strongest hosts and this build of the sheets has none; showing every host.',
+                        'warning');
                 }
             }
             for (const id of want) await this.set(id, true, { quiet: true, fly: false });

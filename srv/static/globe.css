@@ -415,7 +415,14 @@
            The columns ARE the key strip's columns: same periods, same order,
            same swatch, so the menu is a legend for the map in front of the
            reader rather than a catalogue of the dataset. */
-        .ml-menu-geo { min-width: 288px; }
+        /* A FIXED WIDTH, and it is load-bearing. The panel is shrink-to-fit,
+           so its width was max-content: the disclaimer sentence set it, and
+           the junction table (a longer sentence) opened 100 px wider than the
+           rock table — the panel resized under the reader every time they
+           switched tabs, which reads as two different panels. Everything
+           inside is now sized to this: the tables' first column is a
+           minmax(_,1fr), the swatch columns are fixed, and the notes wrap. */
+        .ml-menu-geo { width: 330px; min-width: 0; max-width: calc(100vw - 12px); }
         .ml-mx-head { display: flex; align-items: baseline; gap: 6px; }
         .ml-mx-head em { font-style: normal; font-weight: 400; letter-spacing: 0;
             text-transform: none; color: #6b7280; font-size: 9px; }
@@ -477,7 +484,7 @@
 
         /* The floor, as a threshold on the ink just above it — so it is the
            legend for the cells as much as it is a control. */
-        .ml-grade { display: flex; align-items: center; gap: 4px; padding: 2px 10px 8px;
+        .ml-grade { display: flex; align-items: center; gap: 4px; padding: 2px 10px 7px;
             flex-wrap: wrap; }
         .ml-grade-lbl { font-size: 9px; color: #6b7280; letter-spacing: 0.3px;
             text-transform: uppercase; margin-right: 2px; }
@@ -521,6 +528,146 @@
             color: #fde68a; outline: none; }
         .ml-mx-head > i { font-size: 11px; opacity: 0.7; margin-right: 1px; }
         .ml-menu .ml-contact .ml-n { color: #6b7280; font-style: normal; }
+
+        /* ── The geology panel is a panel, not a menu ─────────────────
+           It is a LEGEND for the map, read while panning and clicking, so it
+           cannot be a popover that the next click on the map dismisses — the
+           reader was choosing between seeing the map and seeing the key to it.
+           It wears the app's own window furniture (.fui-bar), so a reader who
+           has learned to drag the pinned-layers box has learned this too. */
+        .ml-panel { box-shadow: 0 10px 34px rgba(0,0,0,0.6); }
+        .ml-panel .ml-bar { height: 22px; padding: 3px 4px 3px 9px; gap: 6px;
+            justify-content: flex-start; margin: 0;
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+            position: sticky; top: 0; z-index: 3; background: rgba(20,20,22,0.98); }
+        .ml-panel .ml-bar-ico { font-size: 11px; color: #c4b5fd; opacity: 0.9; }
+        .ml-panel .ml-bar-t { font-size: 10px; font-weight: 700; letter-spacing: 0.6px;
+            text-transform: uppercase; color: #9ca3af; }
+        /* Collapsed or dragged aside, the bar is the only thing saying what
+           the drape is doing — so it carries the counts. */
+        .ml-panel .ml-bar-n { font-size: 9px; color: #6b7280; white-space: nowrap;
+            font-variant-numeric: tabular-nums; }
+        .ml-panel .ml-bar-n b { color: #9ca3af; font-weight: 600; }
+        .ml-panel .ml-bar .fui-grabber { flex: 1; width: auto; max-width: none; margin: 0 4px; }
+        .ml-panel .ml-bar .fui-bar-btns { position: static; transform: none; opacity: 0.7; }
+        /* The close × does NOT hide the layer — that is the eye button in the
+           strip's chip and in Map settings. Two targets, one meaning each. */
+        .ml-panel .ml-bar-x { font-size: 13px; line-height: 1; }
+        /* Collapsed: the bar alone, so the panel can be parked over the map
+           without being closed and re-found. */
+        .ml-panel-collapsed > *:not(.ml-bar) { display: none; }
+        .ml-panel-collapsed .fui-bar-btn[aria-expanded] i { transform: rotate(180deg); }
+
+        /* ── Two modes of one table ───────────────────────────────
+           Rock × commodity and rock × rock are the same object asked two ways,
+           so they are one surface with a two-tab switch — not a table plus a
+           checkbox that produces a different table somewhere else. */
+        .ml-mode { display: flex; gap: 4px; padding: 7px 10px 4px; }
+        .ml-mode-b { flex: 1; display: inline-flex; align-items: center; justify-content: center;
+            gap: 5px; padding: 5px 6px; border-radius: 6px; cursor: pointer; font: inherit;
+            font-size: 10px; letter-spacing: 0.3px; color: #9ca3af;
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+            -webkit-tap-highlight-color: transparent;
+            transition: background 0.15s, border-color 0.15s, color 0.15s; }
+        .ml-mode-b i { font-size: 11px; opacity: 0.85; }
+        .ml-mode-b em { font-style: normal; font-size: 9px; opacity: 0.55;
+            font-variant-numeric: tabular-nums; }
+        .ml-mode-b:hover { color: #e5e7eb; border-color: rgba(255,255,255,0.26); }
+        .ml-mode-b.on { background: rgba(196,181,253,0.14); border-color: rgba(167,139,250,0.5);
+            color: #ddd6fe; font-weight: 600; }
+        /* Not built on this server keeps its tab and says why on hover — an
+           absent tab reads as "this map has no contacts", which is never true
+           of a geological sheet. */
+        .ml-mode-b.dead { opacity: 0.4; cursor: default; }
+        /* The junction tab's layer is on: the dot says so from the rock view,
+           where the lines are on the map but the table describing them is not
+           on screen. */
+        .ml-mode-b.lit:not(.on) { border-color: rgba(251,191,36,0.4); color: #fcd34d; }
+        .ml-mode-b.lit em { opacity: 0.9; }
+
+        /* ── THE JUNCTION TABLE ─────────────────────────────────
+           The affinity matrix transposed onto itself: rock down, rock across,
+           and in the cell what that junction can host. UPPER TRIANGLE ONLY — a
+           junction is unordered, so a full square prints every pair twice, and
+           the mirrored half is blank space rather than a repeated cell. Columns
+           are fixed 20 px, so the vocabulary can never widen the panel. */
+        .ml-jx { display: grid; align-items: center; gap: 2px; padding: 2px 10px 8px; }
+        .ml-jx-col > i, .ml-jx-row > i { width: 14px; }
+        .ml-jx-col { display: flex; align-items: center; justify-content: center;
+            padding: 3px 0 4px; border: 0; background: none; cursor: pointer; border-radius: 4px;
+            -webkit-tap-highlight-color: transparent; transition: background 0.15s, transform 0.15s; }
+        .ml-jx-col > i { width: 15px; height: 13px; border-radius: 3px; display: block;
+            border: 1px solid rgba(0,0,0,0.5); }
+        .ml-jx-col:hover { background: rgba(255,255,255,0.1); transform: translateY(-1px); }
+        .ml-jx-col.on { background: rgba(251,191,36,0.2); }
+        .ml-jx-col:focus-visible, .ml-jx-row:focus-visible, .ml-jx-cell:focus-visible {
+            outline: 2px solid #60a5fa; outline-offset: 1px; }
+        .ml-jx-row { display: flex; align-items: center; gap: 5px; padding: 3px 3px 3px 0;
+            border: 0; background: none; border-radius: 5px; cursor: pointer; font: inherit;
+            font-size: 10px; color: #cbd5e1; text-align: left; overflow: hidden;
+            -webkit-tap-highlight-color: transparent; transition: background 0.15s, color 0.15s; }
+        .ml-jx-row > i { width: 15px; height: 13px; border-radius: 3px; flex: none; display: block;
+            border: 1px solid rgba(0,0,0,0.5); }
+        .ml-jx-row > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .ml-jx-row:hover { background: rgba(255,255,255,0.07); color: #fff; }
+        .ml-jx-row.on { color: #fcd34d; font-weight: 600; background: rgba(251,191,36,0.1); }
+
+        /* Same ink, same scale, same meaning as the rock matrix's cells: one
+           reader learning one thing twice is how a scale becomes two scales. */
+        .ml-jx-cell { display: flex; align-items: center; justify-content: center;
+            width: 18px; height: 19px; padding: 0; border: 0; background: none; cursor: pointer;
+            border-radius: 5px; -webkit-tap-highlight-color: transparent;
+            transition: background 0.15s, transform 0.12s; }
+        .ml-jx-cell > i { display: block; width: 11px; height: 11px; border-radius: 3px;
+            background: #fbbf24; transition: opacity 0.2s, transform 0.2s; }
+        .ml-jx-cell.g1 > i { opacity: 0.26; transform: scale(0.62); }
+        .ml-jx-cell.g2 > i { opacity: 0.6;  transform: scale(0.82); }
+        .ml-jx-cell.g3 > i { opacity: 1; }
+        .ml-jx-cell.below > i { background: none; border: 1px solid rgba(251,191,36,0.4);
+            opacity: 0.5; }
+        .ml-jx-cell.on { background: rgba(251,191,36,0.22); }
+        .ml-jx-cell:hover { background: rgba(255,255,255,0.1); }
+        .ml-jx-cell:hover > i { transform: scale(1.12); }
+        /* These two rocks meet and the model says nothing: a faint dot, the
+           same glyph the rock matrix uses for it. */
+        .ml-jx-cell.ungraded::after { content: ''; width: 3px; height: 3px; border-radius: 50%;
+            background: rgba(255,255,255,0.16); }
+        /* These two rocks never meet on these sheets: nothing at all. A cell
+           for a junction that does not exist would claim it exists and is
+           barren. */
+        .ml-jx-cell.none, .ml-jx-cell.mirror { cursor: default; }
+
+        /* Reports what the map is drawing; it does not ask. The lines follow
+           the view (MapLegend.mxMode) — a table whose subject is not on screen
+           is a catalogue, not a legend. It is a caption, so it is caption-sized:
+           unstyled it inherited the menu's 12 px and set a headline under a
+           10 px table. */
+        .ml-jx-foot { display: flex; align-items: center; gap: 7px; padding: 5px 10px;
+            font-size: 10px; line-height: 1.35; color: #9ca3af;
+            border-top: 1px solid rgba(255,255,255,0.06); }
+        .ml-jx-foot > i { font-size: 11px; color: #fbbf24; opacity: 0.85; flex: none; }
+        .ml-jx-foot > span { flex: 1; min-width: 0; overflow: hidden;
+            text-overflow: ellipsis; white-space: nowrap; }
+        .ml-jx-foot b { color: #fcd34d; font-weight: 600; font-variant-numeric: tabular-nums; }
+        .ml-jx-foot.empty > i { color: #6b7280; }
+
+        /* The junction head names the CARRIED-OVER selection ("graded for
+           gold, likely"). No control is repeated in that view: the commodity
+           is picked in the Rocks table, where it is a row, and the floor sits
+           above both tabs. This table spends both axes on rock, so it owes the
+           reader a sentence rather than another switch. */
+        .ml-jx-head-for { color: #fcd34d; }
+        .ml-jx-graded { flex: none; font: inherit; font-size: 9px; letter-spacing: 0.2px;
+            padding: 3px 7px; border-radius: 999px; cursor: pointer; color: #9ca3af;
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12);
+            -webkit-tap-highlight-color: transparent;
+            transition: background 0.15s, border-color 0.15s, color 0.15s; }
+        .ml-jx-graded:hover { color: #e5e7eb; border-color: rgba(255,255,255,0.3); }
+        .ml-jx-graded.on { background: rgba(251,191,36,0.14); border-color: rgba(251,191,36,0.45);
+            color: #fcd34d; }
+        /* An empty layer must say it is empty, or it is indistinguishable from
+           "there are no contacts here". */
+        .mode-menu-note.warn { color: #fcd34d; background: rgba(251,191,36,0.07); }
 
         .ml-menu .ml-more { color: #9ca3af; border-top: 1px solid rgba(255,255,255,0.07); margin-top: 2px; gap: 7px; }
         .ml-menu .ml-more em { font-style: normal; color: #6b7280; margin-left: auto; font-size: 10px; }
@@ -1793,8 +1940,16 @@
             border: 1px solid rgba(255,255,255,0.28); position: relative; }
         .mode-menu .mode-mark.check { border-radius: 3px; }
         .mode-menu .mode-opt.on { color: #fbbf24; }
-        .mode-menu .mode-opt.on .mode-mark { border-color: currentColor; }
-        .mode-menu .mode-opt.on .mode-mark::after { content: ''; position: absolute; inset: 2px;
+        /* The fill used to be scoped to `.mode-opt.on` alone, and the matrix's
+           commodity rows are `.ml-mx-row.on` — so they drew the empty box and
+           never filled it. A checkbox that cannot show "checked" is worse than
+           no checkbox: the row went amber, the map changed, and the one
+           control on the row said "off" throughout. Any row in this menu that
+           is `.on` fills its mark. */
+        .mode-menu .mode-opt.on .mode-mark,
+        .mode-menu .ml-mx-row.on .mode-mark { border-color: currentColor; }
+        .mode-menu .mode-opt.on .mode-mark::after,
+        .mode-menu .ml-mx-row.on .mode-mark::after { content: ''; position: absolute; inset: 2px;
             border-radius: inherit; background: currentColor; }
         /* A refused rendering keeps its row and says why on hover — the same
            rule as the animator's dimmed chips: a refusal must be answerable,
