@@ -89,6 +89,26 @@
         opacityAuto: true,
         opacity: 0.52,
         liths: new Set(),       // lithology filter; empty = all
+        // HOW STRONG an affinity has to be to count.
+        //
+        // A commodity chip answers "what ground can host gold", and the
+        // catalogue grades that 1-3: 3 = the classic host, 2 = a plausible
+        // one, 1 = a weak or derived association (placer downstream of a lode,
+        // a quartzite inside the belt). Selecting gold on Sudan+CAR+Tanzania
+        // lights 36 units, and 21 of them are weight 1 — the map then reads as
+        // "gold is everywhere", which is the opposite of what the reader
+        // asked. So the selection carries a floor: 1 = any affinity (the
+        // default, nothing dropped), 3 = classic hosts only.
+        //
+        // It is a property of the SELECTION, not of a sheet: an affinity grade
+        // means the same thing on every sheet by construction (legend.py).
+        minWeight: 1,
+        // Ages the reader has switched OFF from the key. Stored as the
+        // EXCLUDED set, not as the kept one, because the default is "all" and
+        // a kept-set would have to be rebuilt every time a sheet is added or
+        // the view moves over a period nobody has an opinion about. Empty =
+        // nothing hidden, which is also what a share link omits.
+        agesOff: new Set(),
         // Whether the Advanced block is open. A setting, so it travels in the
         // share link with the rest — "look at this" should reproduce the panel
         // the sender was reading, not just the map.
@@ -212,9 +232,18 @@
         const s = st(id);
         const cls = classesOf(id);
         let keep = cls;
-        if (s.isolate && s.isolate.size) keep = keep.filter(c => s.isolate.has(c.code));
+        // An isolation that is EMPTY means "this sheet has nothing that
+        // answers", not "no isolation". They used to be the same value (null),
+        // so raising the strength floor to `classic` made CAR — which has no
+        // weight-3 gold host — fall back to drawing all 17 of its units, i.e.
+        // the filter that matched nothing rendered as the whole sheet. A
+        // sheet with no answer draws nothing; setMinWeight() separately
+        // refuses a floor that would empty EVERY sheet, so the map can never
+        // go blank without saying so.
+        if (s.isolate) keep = keep.filter(c => s.isolate.has(c.code));
         else keep = keep.filter(c => !s.hidden.has(c.code));
         if (shared.liths.size) keep = keep.filter(c => shared.liths.has(c.lith));
+        if (shared.agesOff.size) keep = keep.filter(c => !shared.agesOff.has(c.age));
         return keep.map(c => c.code);
     }
 
@@ -506,13 +535,73 @@
         return new Set(codes.filter(c => known.has(c)));
     }
 
-    // Every commodity this sheet mentions -> the codes that can host it.
+    // Every commodity this sheet mentions -> the codes that can host it,
+    // ONLY at or above the current strength floor. Everything that resolves a
+    // commodity to units goes through here, so the floor cannot apply to the
+    // map and not to the chip that describes it.
     function hostMap(id) {
         const all = {};
-        classesOf(id).forEach(c => (c.commodities || []).forEach(k => {
-            (all[k] = all[k] || []).push(c.code);
-        }));
+        const w = hostWeights(id);
+        Object.keys(w).forEach(k => {
+            const codes = Object.keys(w[k]).filter(c => w[k][c] >= shared.minWeight);
+            // A commodity whose every host is below the floor keeps its KEY
+            // with an empty list rather than disappearing: the chip has to be
+            // offerable (and refusable) rather than silently absent, and
+            // restoreFromParams tests membership against these keys.
+            all[k] = codes;
+        });
         return all;
+    }
+
+    // commodity -> {code: weight}, ungraded by the floor. The affinity array
+    // is the graded form; `commodities` is only its key set.
+    function hostWeights(id) {
+        const out = {};
+        classesOf(id).forEach(c => {
+            let aff = c.affinity;
+            if (!Array.isArray(aff)) {
+                try { aff = JSON.parse(aff || '[]'); } catch (e) { aff = []; }
+            }
+            if (aff && aff.length) {
+                aff.forEach(a => {
+                    if (!a || !a.commodity) return;
+                    const w = Math.max(1, Math.min(3, a.weight || 1));
+                    (out[a.commodity] = out[a.commodity] || {})[c.code] =
+                        Math.max(out[a.commodity][c.code] || 0, w);
+                });
+            } else {
+                // A catalogue that ships `commodities` without the graded
+                // `affinity` must not lose its commodities: an ungraded
+                // affinity counts as the weakest, which is the only reading
+                // that cannot overstate it.
+                (c.commodities || []).forEach(k => {
+                    (out[k] = out[k] || {})[c.code] = Math.max(out[k][c.code] || 0, 1);
+                });
+            }
+        });
+        return out;
+    }
+
+    /** How many units each strength floor would leave, over a commodity set. */
+    function weightCounts(comms) {
+        const n = { 1: 0, 2: 0, 3: 0 };
+        order.forEach(id => {
+            if (!(sheets && sheets[id] && sheets[id].available)) return;
+            const w = hostWeights(id);
+            const best = {};
+            comms.forEach(k => Object.keys(w[k] || {}).forEach(c => {
+                best[c] = Math.max(best[c] || 0, w[k][c]);
+            }));
+            Object.keys(best).forEach(c => { for (let lv = 1; lv <= best[c]; lv++) n[lv]++; });
+        });
+        return n;
+    }
+
+    /** Every commodity currently selected, across sheets. */
+    function selectedCommodities() {
+        const out = new Set();
+        order.forEach(id => st(id).commodities.forEach(k => out.add(k)));
+        return out;
     }
 
     // Which chips a given isolation lights up. Derived rather than stored, so
@@ -530,11 +619,14 @@
     // is indistinguishable from a sheet with no data here.
     function applyCommodities(id) {
         const o = st(id);
+        // No selection is the only thing that clears the isolation. An empty
+        // RESULT is a different statement — "nothing here answers" — and it
+        // is kept as an empty Set; see visibleCodes().
         if (!o.commodities.size) { o.isolate = null; return; }
         const all = hostMap(id);
         const codes = new Set();
         o.commodities.forEach(k => (all[k] || []).forEach(c => codes.add(c)));
-        o.isolate = codes.size ? codes : null;
+        o.isolate = codes;
     }
 
     const GeoMap = {
@@ -669,6 +761,33 @@
         lithOn: key => shared.liths.has(key),
         clearLiths() { shared.liths.clear(); refreshAll(); },
 
+        // "Not that period" — the map key made operable. Age is the one
+        // dimension the legend showed but could not act on, which made the
+        // swatch strip a picture of a legend. Stored as an exclusion so the
+        // default state carries no state at all.
+        toggleAge(key) {
+            if (shared.agesOff.has(key)) shared.agesOff.delete(key);
+            else shared.agesOff.add(key);
+            refreshAll();
+            if (window.MapLegend) MapLegend.refresh();
+        },
+        /** Hide every age EXCEPT this one — the key's "only this" gesture. */
+        soloAge(key, allKeys) {
+            const all = (allKeys && allKeys.length) ? allKeys
+                : Array.from(new Set(allClasses().map(c => c.age)));
+            const already = shared.agesOff.size === all.length - 1 && !shared.agesOff.has(key);
+            shared.agesOff = new Set(already ? [] : all.filter(k => k !== key));
+            refreshAll();
+            if (window.MapLegend) MapLegend.refresh();
+        },
+        ageOn: key => !shared.agesOff.has(key),
+        agesOff: () => new Set(shared.agesOff),
+        clearAges() {
+            shared.agesOff.clear();
+            refreshAll();
+            if (window.MapLegend) MapLegend.refresh();
+        },
+
         toggleClass(id, code) {
             const o = st(id);
             // Hiding while isolated means "drop this one from the isolation",
@@ -676,6 +795,10 @@
             // isolation the user just built.
             if (o.isolate) {
                 o.isolate.delete(code);
+                // Dropping the last isolated unit is "show everything again",
+                // not "show nothing": the user is un-picking by hand here,
+                // unlike a commodity selection that simply has no answer on
+                // this sheet.
                 if (!o.isolate.size) o.isolate = null;
                 // The chips describe the isolation, so re-derive them rather
                 // than leaving "gold" lit next to a gold-bearing unit the user
@@ -710,10 +833,37 @@
 
         commodityOn(id, commodity) { return st(id).commodities.has(commodity); },
 
+        /* ── Strength of affinity ─────────────────────────────────────────
+         * "Gold" is 36 units only because 21 of them are placer ground and
+         * quartzite inside the belt. The floor lets the reader drop those in
+         * one gesture instead of hunting 21 rows in the unit list.
+         *
+         * Refuses to empty the map, for the standing reason: an empty drape
+         * is indistinguishable from "no geology here". The caller gets false
+         * and says so. */
+        setMinWeight(w) {
+            const want = Math.max(1, Math.min(3, parseInt(w, 10) || 1));
+            const comms = selectedCommodities();
+            if (comms.size && !weightCounts(comms)[want]) return false;
+            shared.minWeight = want;
+            order.forEach(id => { if (st(id).commodities.size) applyCommodities(id); });
+            refreshAll();
+            if (window.MapLegend) MapLegend.refresh();
+            return true;
+        },
+        minWeight: () => shared.minWeight,
+        /** {1:n,2:n,3:n} — how many units each floor leaves for the selection. */
+        weightCounts: comms => weightCounts(comms || selectedCommodities()),
+        selectedCommodities: selectedCommodities,
+        /** What a class is worth for a commodity (0 = no affinity). */
+        commodityWeight(id, code, commodity) {
+            return (hostWeights(id)[commodity] || {})[code] || 0;
+        },
+
         showAll(id) {
             const o = st(id);
             o.hidden = new Set(); o.isolate = null; o.commodities = new Set();
-            shared.liths.clear();
+            shared.liths.clear(); shared.agesOff.clear(); shared.minWeight = 1;
             refresh(id);
             if (typeof renderGeoMapPanel === 'function') renderGeoMapPanel();
         },
@@ -724,13 +874,14 @@
                 const o = st(id);
                 o.hidden = new Set(); o.isolate = null; o.commodities = new Set();
             });
-            shared.liths.clear();
+            shared.liths.clear(); shared.agesOff.clear(); shared.minWeight = 1;
             refreshAll();
+            if (window.MapLegend) MapLegend.refresh();
         },
 
         /** Is anything filtered out right now, on any sheet? */
         anyFiltered() {
-            if (shared.liths.size) return true;
+            if (shared.liths.size || shared.agesOff.size) return true;
             return order.some(id => {
                 const o = st(id);
                 return o.hidden.size > 0 || (o.isolate && o.isolate.size);
@@ -772,6 +923,9 @@
                 else if (o.hidden.size) hide.push(id + ':' + [...o.hidden].join('|'));
             });
             if (host.length) p.geomap_host = host.join(',');
+            // Only when it is not the default: a plain "here is the gold
+            // ground" link stays short, and 1 means nothing was dropped.
+            if (host.length && shared.minWeight > 1) p.geomap_host_min = String(shared.minWeight);
             if (only.length) p.geomap_only = only.join(',');
             if (hide.length) p.geomap_hide = hide.join(',');
             // Legend-wide state, so no sheet prefix. Each is omitted at its
@@ -784,6 +938,9 @@
             if (shared.colorMode !== 'age') p.geomap_color = shared.colorMode;
             if (!shared.pattern) p.geomap_pattern = '0';
             if (shared.liths.size) p.geomap_lith = [...shared.liths].join('|');
+            // Ages travel as what is HIDDEN, matching how they are stored: a
+            // link that hides nothing must not carry a list of everything.
+            if (shared.agesOff.size) p.geomap_age_off = [...shared.agesOff].join('|');
             if (shared.advOpen) p.geomap_adv = '1';
             return p;
         },
@@ -838,6 +995,22 @@
                         null, null, 'warning');
                 }
             }
+            const ageRaw = params.get('geomap_age_off') || '';
+            if (ageRaw) {
+                // An exclusion cannot empty the map by being out of date — an
+                // unknown key hides nothing — so unknown keys are dropped
+                // silently. But a link that hides EVERY age this build has
+                // would render an empty drape, which is indistinguishable from
+                // "no data here": that one is refused and said out loud.
+                const all = new Set(allClasses().map(c => c.age));
+                const keys = ageRaw.split('|').filter(k => all.has(k));
+                if (keys.length && keys.length < all.size) shared.agesOff = new Set(keys);
+                else if (keys.length && typeof showToast === 'function') {
+                    showToast('Geology selection is out of date',
+                        'That link hides every period this build of the legend has \u2014 showing all of them.',
+                        null, null, 'warning');
+                }
+            }
             parse(params.get('geomap_hide'), (id, v) => { st(id).hidden = keep(id, v.split('|')); });
             parse(params.get('geomap_only'), (id, v) => {
                 const codes = keep(id, v.split('|'));
@@ -858,6 +1031,13 @@
                 st(id).isolate = codes;
                 st(id).commodities = commoditiesCovered(id, codes);
             });
+            // The strength floor is read BEFORE the chips, because the chips
+            // expand to units through it. A floor that leaves the link's
+            // commodities with no unit at all is dropped rather than obeyed:
+            // the alternative is an empty drape that reads as "no data here".
+            const minRaw = parseInt(params.get('geomap_host_min') || '', 10);
+            if (minRaw >= 2 && minRaw <= 3) shared.minWeight = minRaw;
+
             // Commodity chips last: they are the authoritative selection and
             // recompute `isolate` from the sheet as built.
             parse(params.get('geomap_host'), (id, v) => {
@@ -874,6 +1054,23 @@
                 st(id).commodities = new Set(want);
                 applyCommodities(id);
             });
+            // A sheet with no answer at this floor drawing nothing is correct
+            // (see visibleCodes); EVERY sheet drawing nothing is not — that is
+            // a blank map, and a blank map is indistinguishable from "no
+            // geology here". Checked once, after every sheet has been parsed,
+            // because a floor that empties Sudan may still be answerable on
+            // Tanzania.
+            if (shared.minWeight > 1 &&
+                !order.some(id => st(id).commodities.size && st(id).isolate && st(id).isolate.size)) {
+                const had = order.some(id => st(id).commodities.size);
+                shared.minWeight = 1;
+                order.forEach(id => { if (st(id).commodities.size) applyCommodities(id); });
+                if (had && typeof showToast === 'function') {
+                    showToast('Geology selection is out of date',
+                        'That link keeps only the strongest hosts, and this build of the sheets has none \u2014 showing every host.',
+                        null, null, 'warning');
+                }
+            }
             for (const id of want) await this.set(id, true, { quiet: true, fly: false });
         }
     };
