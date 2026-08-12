@@ -1,10 +1,15 @@
 # Geology overlays
 
-Two scanned geological maps turned into **vector** overlays: Sudan (GRAS 2004,
-1:2M) and CAR (BRGM 1964, 1:1.5M). A park or AOI facing a gold rush should be
-able to switch on every unit relevant to gold in one click, and still hide or
-isolate individual units and set opacity. Everything outside the mapped country
-— paper, collar, legend boxes, neighbouring-country fill, insets — is dropped.
+Three geological maps as **vector** overlays: Sudan (GRAS 2004, 1:2M), CAR
+(BRGM 1964, 1:1.5M) and Tanzania (GST/GMIS 2015, 1:1.5M). A park or AOI facing
+a gold rush should be able to switch on every unit relevant to gold in one
+click, and still hide or isolate individual units and set opacity.
+
+The first two are **scans** we vectorized: everything outside the mapped
+country — paper, collar, legend boxes, neighbouring-country fill, insets — is
+dropped. The third is **already vector**, served by the survey's own WFS, so
+most of this document (halftone screens, hold-outs, claim rates, merged
+classes) does not apply to it. The two paths are marked throughout.
 
 Not to be confused with the **raster** `?histmap=` overlay (Sudan Survey
 1:250k topographic sheets, `scripts/histmaps/`, `srv/histmap.go`). Different
@@ -13,21 +18,24 @@ data, different serving path; the georeferencing discipline and the
 
 ## State
 
-| Stage | Sudan | CAR |
-|---|---|---|
-| georeference | done, 29 GCPs, rms 1.01 px / 260 m | done, 42 GCPs, rms 5.17 px / 330 m |
-| legend extracted | done, 53 units | done, 20 units |
-| vectorized | done, **46 classes**, 34 MB GeoJSON | done, **17 classes**, 6.9 MB |
-| window hold-out | claim 0.998, accuracy 1.000 | claim 0.998, accuracy 1.000 |
-| unclaimed inside cutline | 9.0% | 8.7% |
-| area claimed | 2.28M km² of ~2.5M | 564k km² of ~623k |
-| tiles | `data/geomaps/sudan.mbtiles` 9.8 MB, z0–10 | `car.mbtiles` 3.1 MB, z0–10 |
-| server | done — `srv/geomap.go` | same |
-| UI | done — admin ▸ Map Settings ▸ Geology | same |
+| Stage | Sudan | CAR | Tanzania |
+|---|---|---|---|
+| source | scan, georeferenced | scan, georeferenced | **WFS, already vector** |
+| georeference | done, 29 GCPs, rms 1.01 px / 260 m | done, 42 GCPs, rms 5.17 px / 330 m | n/a — the server reprojects |
+| legend extracted | done, 53 units | done, 20 units | n/a — the layer carries `leg_id` |
+| vectorized | done, **46 classes**, 34 MB GeoJSON | done, **17 classes**, 6.9 MB | fetched, **41 classes** / 596 polygons, 5.6 MB |
+| window hold-out | claim 0.998, accuracy 1.000 | claim 0.998, accuracy 1.000 | n/a — no classifier |
+| unclaimed inside cutline | 9.0% | 8.7% | n/a |
+| area claimed | 2.28M km² of ~2.5M | 564k km² of ~623k | 887k km² of ~947k (the rest is Victoria/Tanganyika/Nyasa) |
+| tiles | `data/geomaps/sudan.mbtiles` 9.8 MB, z0–10 | `car.mbtiles` 3.1 MB, z0–10 | `tanzania.mbtiles` 2.2 MB, z0–10 |
+| server | done — `srv/geomap.go` | same | same |
+| UI | done — admin ▸ Map Settings ▸ Geology | same | same |
 
 Live: `/?pwd=test2026&geomap=car&lat=8&lng=22&z=6`
 
-## The one thing to understand
+## The one thing to understand **about the two scans**
+
+(Tanzania is vector; skip to "Adding a sheet" for that path.)
 
 **Neither sheet is printed in flat ink. Both are halftone screens**, and the
 legend colour is only the screen's average. Averaging destroys the signal: 12
@@ -95,19 +103,166 @@ accuracy left on the table.
 
 | file | role |
 |---|---|
-| `scripts/geomaps/sheets.py` | the two sheets: provenance, graticule, seed affine |
+| `scripts/geomaps/sheets.py` | the two **scanned** sheets: provenance, graticule, seed affine |
 | `scripts/geomaps/gridfit.py` | finds the printed graticule intersections |
 | `scripts/geomaps/georef.py` | GCPs → TPS warp → `work/<id>_geo.tif`, cut to country |
 | `scripts/geomaps/legend.py` | the printed legend, measured off the scan; `AFFINITY` |
 | `scripts/geomaps/vectorize.py` | classifier → `<id>_units.geojson` + `<id>_classes.json` |
-| `scripts/geomaps/tiles.sh` | tippecanoe → `<id>.mbtiles` (z0–10) |
+| `scripts/geomaps/gmis_tanzania.py` | **WFS path**: fetch → the same two files, no classifier |
+| `scripts/geomaps/tiles.sh` | tippecanoe → `<id>.mbtiles` (z0–10), whichever built them |
 | `srv/geomap.go` | `/api/geomap`, tile route, download |
+| `srv/geomap_std.go` | the shared legend: ICS age + FGDC lithology, and the vocabulary audit |
 | `srv/static/geomap.js` | `window.GeoMap` — layers, isolation, share links |
 | `srv/templates/globe.html` | `renderGeoMapPanel()` / `geoMapSheetHTML()` |
-| `data/geomaps/legend_{sudan,car}.json` | **committed** — measured input |
-| `data/geomaps/{sudan,car}_classes.json` | **committed** — the class catalogue |
+| `data/geomaps/legend_{sudan,car}.json` | **committed** — measured input (scans only) |
+| `data/geomaps/{sudan,car,tanzania}_classes.json` | **committed** — the class catalogue |
 | `data/geomaps/*_units.geojson`, `*.mbtiles` | gitignored derived output |
 | `data/geomaps/{src,work}/` | gitignored, ~1.9 GB |
+
+## Adding a sheet — the whole contract
+
+**Read this first; it is the shortest path and it is the same for a scan and
+for a web service.** Everything downstream is derived from the sheet list, so
+adding a sheet is: produce two files, register the id, teach the vocabulary any
+words it does not know, build tiles. If it takes an edit anywhere else, that is
+a bug.
+
+### The two files, and the only schema that matters
+
+Whatever the source, a sheet is **exactly two files** in `data/geomaps/`:
+
+* `<sheet>_units.geojson` — gitignored. Polygons in **EPSG:4326**, each with a
+  `properties` block the GeoPackage builder reads: `sheet, code, codes, name,
+  group, color, merged, commodities, affinity[], area_km2`, plus optional
+  `lithology` (see below). `area_km2` is **per polygon**, never the class
+  total — the export sums the column, and a class total repeated on 89
+  alluvium polygons multiplies the country by 89.
+* `<sheet>_classes.json` — **committed**. `sheet, title, short, year,
+  publisher, scale, source_url, countries[], n_classes, n_units, quality{},
+  groups[], commodities{}, classes[]`, where each class repeats the same
+  per-unit fields. This is the catalogue the API serves and the UI renders
+  from; it is small on purpose.
+
+The tiles carry **only `code`**. Everything else is joined from the catalogue
+at render time, which is why a legend or affinity change never invalidates a
+tile.
+
+One polygon per class or many is **your source's business, not a contract**:
+the vectorizer dissolves each class to one multipart feature, the WFS sheet
+ships the survey's own 596 polygons, and both work. Anything that must be
+per-class (the QGIS legend) deduplicates on `(sheet, code)`.
+
+### The steps
+
+```bash
+# 1. produce the two files
+python3 scripts/geomaps/vectorize.py <sheet>        # a scan
+python3 scripts/geomaps/gmis_tanzania.py            # a WFS; write one per source
+
+# 2. register the id
+#    srv/geomap.go: geoMapSheets = []string{..., "<sheet>"}
+#    scripts/geomaps/tiles.sh: the default list at the bottom
+
+# 3. the vocabulary must be clean BEFORE you look at the map
+go test ./srv/ -run TestShippedCataloguesHaveNoUnmappedVocabulary -v
+#    it prints every unmapped string; each is a line to add to geoAgeRules or
+#    geoLithRules in srv/geomap_std.go. Do not relax the test.
+
+# 4. tiles, then restart
+scripts/geomaps/tiles.sh <sheet>
+make build && sudo systemctl restart 5mp
+
+# 5. verify from the API, not by eye
+curl -s "localhost:8000/api/geomap?pwd=$PWD_TOKEN" | jq '.sheets[]|{sheet,available,unmapped:.catalogue.unmapped}'
+curl -s -o /dev/null -w '%{http_code} %{size_download}\n' \
+  "localhost:8000/api/geomap/<sheet>/8/152/129.pbf?pwd=$PWD_TOKEN"   # 200 + bytes, not 204
+curl -s "localhost:8000/api/geomap/geopackage?pwd=$PWD_TOKEN" -o /tmp/g.gpkg
+sqlite3 /tmp/g.gpkg "select sheet,count(*),round(sum(area_km2)) from geology_units group by sheet"
+```
+
+The GeoPackage cache invalidates itself from the input **set**, so step 5 needs
+no `rm` — but check the row count anyway: that sum against the country's real
+area is the one number that catches a half-downloaded sheet.
+
+### If the source is a web service (WFS/WMS) — the four traps
+
+`scripts/geomaps/gmis_tanzania.py` is the worked example; copy its shape.
+
+1. **A short download looks exactly like a small layer.** Ask the server
+   `resultType=hits` FIRST and treat `numberMatched` as the truth; page with
+   `count`/`startIndex`; abort without writing anything if the totals disagree.
+   An unpaged request silently truncated at an unknown `maxFeatures` returns
+   valid JSON. `scripts/histmaps/` shipped half a country this way once.
+2. **`srsName=EPSG:4326` may hand back lat/lon.** WFS 1.0.0 does, by spec.
+   Tanzania then lands in the Indian Ocean and still renders as a plausible
+   map. **Assert the envelope against the country** (the server's own
+   `LatLonBoundingBox` is a good source for it) and stop on failure — never
+   clip, never swap the numbers by hand: a national grid is usually a different
+   *datum* too (Tanzania's is Arc 1960, ~200 m off WGS84), so if you must
+   reproject, ogr2ogr does it and you do not.
+3. **Take the publisher's own ink; do not invent one.** `WMS
+   request=GetStyles` returns the SLD with a fill per legend id. A class with
+   no rule gets **no `color` field at all** rather than a plausible grey —
+   `color` means "this is how the survey prints it", and the map does not
+   depend on it (screen colour is ICS age).
+4. **Not every feature is rock.** The GST layer carries 26 water polygons and
+   one unattributed one. Drop them — and put the count and the reason in
+   `quality`. Dropping them silently is the failure shape this codebase keeps
+   paying for.
+
+Also: record what the licence page actually says, including when there is none.
+The GMIS capabilities state Fees NONE / AccessConstraints NONE and the site has
+no terms page, so the catalogue attributes in full and links the portal rather
+than claiming a licence nobody granted.
+
+### The `lithology` hint, and why it is read LAST
+
+A vector sheet usually ships a rock-description column. It is offered to
+`geoLithResolveHint` **after** the unit's name and group, and that order is
+load-bearing: the column lists every constituent in no particular order, so a
+first-match scan over it calls the Mbozi syenite-gabbro ring complex
+`ultramafic` off the word "pyroxenite". The **name** is the survey's own
+summary of what the rock is. The column only rescues names that are pure
+geography ("Mafic complex Nyabuyonza" + "Gabbroic rocks" → intrusive).
+
+A scanned sheet has no such column and passes `""`; nothing changes for it.
+
+### Ages: use the sheet's own words, and its own numbers
+
+`group` is what `geoAgeOf` reads. Prefer the survey's chronostratigraphy
+verbatim — **including its typos** (the GST prints "Cretacous" and
+"Neoprozerozoic"; the catalogue records what the sheet says and
+`geoAgeRules` learns both). Two derivations are legitimate and both are
+documented in the fetch script:
+
+* **Strip parenthetical sub-era codes** from the group string
+  (`"Neoarchaean (NA) - Neoproterozoic (NP1)"` → `"Neoarchaean -
+  Neoproterozoic"`). The scan matches substrings, and an interpolated `(NA)`
+  breaks the curated span term in half so the answer falls back to rule order.
+  The verbatim string stays in the class as `chronostrat`.
+* **Read a bare Ma span through the ICS chart** when the sheet gives numbers
+  and no words (`"23 - 0 Ma"` → `"Neogene - Quaternary"`). That is a lookup in
+  the same chart `geomap_std.go` encodes, not a guess — the sheet *has* stated
+  an age. Keep `age_strat` beside it so the derivation is checkable, and allow
+  a small tolerance or `"2.6 - 0 Ma"` claims 0.02 Ma of Neogene and alluvium
+  prints as a span.
+
+Every hyphenated span needs a **curated rule above both of its endpoints**, or
+rule order decides. `geoVocabAudit` reports any span you have not curated as
+`age_ambiguous` — that is not a nag, it is the only thing standing between you
+and a coin toss wearing a decision's face.
+
+### What a new sheet must NOT bring
+
+* **No mineral occurrences, no licences, no concessions.** See
+  `docs/agents/mining.md`. Most national portals serve them next to the
+  geology; affinity here is an inference over lithology with an honest `why`,
+  and a specific deposit stated as located data is the line that does not get
+  crossed.
+* **No invented colours, no invented ages, no guessed lithology.** "Age not
+  stated" is an answer real sheets give.
+* **No hardcoded count** describing the sheet anywhere in code — the class
+  list, the commodity columns and the stamp are all derived.
 
 ## `_classes.json` is the catalogue, and the server reads it — not the legend
 
@@ -127,9 +282,12 @@ secondary diamond reservoir"`) so the union is not a quiet upgrade.
 
 ## Commodity affinity
 
-`AFFINITY` (in `legend.py`) is keyed by **`(sheet, code)`, not `code`**. The
-sheets reuse letters for unrelated things — `S` is Silurian sandstone on Sudan
-and a gold-bearing schist belt on CAR.
+`AFFINITY` is keyed by **`(sheet, code)`, not `code`**. The sheets reuse
+letters for unrelated things — `S` is Silurian sandstone on Sudan and a
+gold-bearing schist belt on CAR. It lives in `legend.py` for the scanned
+sheets and in the fetch script for a WFS sheet (`gmis_tanzania.AFFINITY`),
+because it is written against that sheet's own unit codes and there is nothing
+to gain by moving it away from them.
 
 It is an **inference over lithology** ("rocks of this kind host X"), never an
 occurrence dataset, and **must be labelled as such wherever it surfaces** —
@@ -138,9 +296,17 @@ mining verdict in `AGENTS.md`: inference from context ships, fabricated
 evidence does not. Nothing here counts, ranks or locates a deposit.
 `weight` is 1–3 (3 = classic host).
 
+Where a `why` names something — the Nyanzian greenstones, the Kabanga-Musongati
+layered intrusion, the Karoo Supergroup — it is naming the **rock unit the
+survey itself names**, not a discovery. That distinction is the whole licence
+for this feature to exist.
+
 Present commodities: Sudan — cobalt 4, copper 4, gold 14, iron 2, lithium 2,
 rare_earth 1, uranium 11. CAR — cobalt 3, copper 2, diamond 6, gold 7,
-lithium 3, rare_earth 1, uranium 3.
+lithium 3, rare_earth 1, uranium 3. Tanzania — coal, cobalt, copper, diamond,
+gemstone, gold, graphite, iron, lithium, rare_earth, uranium (**coal, graphite,
+gemstone are new keys**; the panel builds its chips from the catalogue, so they
+needed no frontend change).
 
 ## Vectorizer
 
@@ -148,7 +314,7 @@ lithium 3, rare_earth 1, uranium 3.
 python3 scripts/geomaps/vectorize.py sudan                 # ~5 min
 python3 scripts/geomaps/vectorize.py car                   # ~4 min, peak 3.5 GB
 python3 scripts/geomaps/vectorize.py sudan --repolygonize  # ~30 s, reuses the label raster
-scripts/geomaps/tiles.sh                                   # both sheets, ~50 s
+scripts/geomaps/tiles.sh                                   # every sheet, ~50 s
 ```
 
 `--repolygonize` reuses the warped label raster and only redoes polygonisation
@@ -251,7 +417,7 @@ collapsed list of all classes with per-class hide.
 
 `GET /api/geomap/geopackage` → `geology.gpkg`, **one file covering every
 sheet**, offered in the panel's *Data* row. `srv/geomap_gpkg.go`; measured
-2026-08-12: 16 MB in 2.6 s for Sudan + CAR.
+2026-08-12: 19 MB for Sudan + CAR + Tanzania.
 
 **One file, one layer, the sheet as a column** (2026-08-12). It used to be one
 GeoPackage per scan, which made the download mirror our storage rather than the
@@ -281,8 +447,13 @@ URLs are in shipped links and a 404 would read as "the export was removed".
 zoom, coalesced across neighbours and carry no typing — right for an offline
 viewer, useless for intersecting the units with a concession boundary or asking
 how many km² of gold-hosting rock sit inside a park. This is the source
-polygons, whole, one MultiPolygon per class (the vectorizer's own shape;
-exploding to parts here would invent a feature count the source does not have).
+polygons, whole, in whatever shape the source has them: one MultiPolygon per
+class for a vectorized scan (exploding to parts would invent a feature count
+the source does not have), the survey's own 596 polygons for Tanzania
+(dissolving them would destroy one the source does have). The **legend**
+deduplicates to one category per `(sheet, code)` — it did not have to before,
+because on a scan the two counts coincided, and without it a vector sheet lists
+one alluvium symbol 89 times.
 
 * **`"w_gold" IS NOT NULL` is why it exists.** Every commodity the sheet
   mentions gets its own INTEGER column `w_<commodity>` holding the 1–3 weight,
@@ -413,10 +584,11 @@ PNGs are not committed. Re-run the command above.
 ## The vocabulary is the silent failure mode, so it reports itself
 
 `geoAgeOf` / `geoLithOf` in `srv/geomap_std.go` are **first-match string scans
-over the words the two sheets happen to print** — English (GRAS 2004) and
-French (BRGM 1964). That is fine for two sheets and a liability for a third.
+over the words the sheets happen to print** — English (GRAS 2004), French
+(BRGM 1964), and the GST's own English-with-typos (2015). That is fine for the
+sheets we have and a liability for the next one.
 
-A third sheet does not error. Its classes come back age `unknown` (a flat grey
+A new sheet does not error. Its classes come back age `unknown` (a flat grey
 polygon, legend "Age not stated") and lithology `mixed` (the generic sparse
 hatch) — which is **exactly** how the map deliberately renders a unit that is
 genuinely undated and genuinely undifferentiated. A missing rule and a
@@ -430,8 +602,10 @@ So the gap is loud:
   is precisely what a maintainer pastes into `geoAgeRules`. A count alone sends
   them back to the printed sheet.
 * **`TestShippedCataloguesHaveNoUnmappedVocabulary`** audits the committed
-  `data/geomaps/*_classes.json` and fails listing every unmapped string. Both
-  shipped sheets pass at **0 unmapped** (46 Sudan classes, 17 CAR). It skips
+  `data/geomaps/*_classes.json` and fails listing every unmapped string. It
+  walks **`geoMapSheets`**, not a literal list, so a sheet added to the server
+  cannot arrive unaudited. All three shipped sheets pass at **0 unmapped**
+  (46 Sudan classes, 17 CAR, 41 Tanzania). It skips
   cleanly if a catalogue is absent, and fails if one parses to zero classes —
   an audit over nothing passes trivially, which is the same failure shape one
   level up.
@@ -466,13 +640,24 @@ now fails on that shape. Two were already in the list:
 "Cambro-Ordovician" is **not** a merged class: the sheet is not declining to
 say which unit a patch is, it is saying one unit straddles a boundary. So
 `age_mixed` ("the map does not say") is the wrong flag and oldest-wins is
-answering a question nobody asked. Three curated lines, each above **both** of
-its endpoints, each a judgement written down rather than left to list order:
+answering a question nobody asked. So each span is a curated line above **both**
+of its endpoints, each a judgement written down rather than left to list order:
 `cambro-ordovician` → Ordovician (the unit's own name says glacial deposits,
 i.e. the Hirnantian glaciation), `jurassic-cretaceous` → Cretaceous (Nubian
 sandstone), `tertiary-quaternary` → Quaternary (Umm Ruwaba).
 
-Any span we have *not* curated is reported as `age_ambiguous`: a third sheet's
+Tanzania added eight more, and they generalise the rule the first three only
+hinted at. Its Precambrian spans (`neoarchaean - neoproterozoic`,
+`paleoproterozoic - mesoproterozoic`, …) all resolve to their **younger**
+endpoint, because for every one of them that is the orogeny the survey names as
+having made the rock what it is — Neoarchaean protoliths in a Neoproterozoic
+granulite belt are mapped as the belt. `uppermost carboniferous - lower
+jurassic` (the Karoo) resolves to Triassic, the span's own middle, where the
+bulk of the succession sits; either endpoint alone would be worse. In all cases
+the tip still prints the survey's full string, so the colour summarises a span
+the reader can still see whole.
+
+Any span we have *not* curated is reported as `age_ambiguous`: a new sheet's
 "Silurian-Devonian" would resolve to whichever rule sits higher, and rule order
 is not a decision.
 
@@ -493,8 +678,8 @@ a sheet this server does not have must not spin forever.
 
 ## Done, and what a future change would look like
 
-The overlay is **finished**: both sheets vectorized, served, rendered in one
-industry legend, downloadable as a picture (MBTiles per sheet) and as data (one
+The overlay is **finished**: three sheets served, rendered in one industry
+legend, downloadable as a picture (MBTiles per sheet) and as data (one
 GeoPackage), with the panel simplified to one switch, one legend, one adaptive
 opacity and an Advanced block. Nothing here is waiting on anything.
 
@@ -503,16 +688,33 @@ Two things that would be *additions* rather than unfinished work:
 * **A commodity legend outside the admin panel.** The only way in is admin ▸ Map
   Settings. If "what could be under this park" becomes a user-facing question
   rather than an analyst's, it wants a place in the filter panel too.
-* **More sheets.** `sheets.py` is the whole per-sheet contract; a third sheet is
-  a legend measurement plus a graticule fit. Everything downstream is derived
-  from the sheet list — the class catalogue, the GeoPackage's commodity columns,
-  its input stamp, the panel's counts — so adding one should need no edit
-  anywhere else. If it does, that is the bug.
+* **More sheets.** See "Adding a sheet" above — it is the whole contract, and
+  Tanzania was the proof that it holds for a source that is not a scan.
+  Everything downstream is derived from the sheet list (the class catalogue, the
+  GeoPackage's commodity columns, its input stamp, the panel's counts), so
+  adding one needs no edit anywhere else. If it does, that is the bug.
+  `gmis:minerogenictectonics` — the GST's structural lines (faults, fold axes,
+  shear zones) — is deliberately **not** shipped: it is line geometry, and the
+  whole overlay's contract is polygons with an age and a lithology. It would be
+  a second layer with its own legend, not a fourth sheet.
 
 ## Traps already paid for
 
 * **A perfect hold-out with a hole in the map.** See above — measure at the
   window size, and read the *claim rate*.
+* **A short WFS download is valid JSON.** Cross-check against the server's own
+  `numberMatched` and abort; see "Adding a sheet".
+* **`srsName=EPSG:4326` is not a promise of lon/lat.** Assert the envelope
+  against the country and stop, rather than swapping numbers by hand — the
+  national grid is usually a different datum too.
+* **A rule that fires on the sheet's own summary must sit above one that fires
+  on its parts.** `meta-sediment` → metamorphic has to beat `sediment` →
+  mixed, which means the *opposite* thing ("the sheet declines to say which
+  sediment"); read in the wrong order, five Tanzanian belt units claimed to be
+  undifferentiated while the survey was being specific.
+* **A per-feature legend looks correct until the features outnumber the
+  classes.** Both scans dissolve one class to one row; the first vector sheet
+  put 89 identical categories in the QGIS legend.
 * `str.replace()` with an empty needle splices a module between every character
   of itself. Use the patch tool.
 * Oversized temp PNGs killed an earlier conversation with HTTP 413. Crop small,

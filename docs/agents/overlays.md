@@ -82,14 +82,28 @@ TMS: `scripts/histmaps/README.md`.
 
 ---
 
-## Geology overlays (Sudan GRAS 2004, CAR BRGM 1964)
+## Geology overlays (Sudan GRAS 2004, CAR BRGM 1964, Tanzania GST/GMIS 2015)
 
-Two scanned geological sheets turned into **vector** overlays: 46 classes for
-Sudan, 17 for CAR, served as vector tiles and toggled per class or per
-commodity. Full detail: `docs/GEOLOGY.md`. Files:
+Three geological sheets as **vector** overlays: 46 classes for Sudan, 17 for
+CAR, 41 for Tanzania, served as vector tiles and toggled per class or per
+commodity. Full detail: `docs/GEOLOGY.md`, whose **"Adding a sheet"** section is
+the whole contract for a fourth — read that before anything else here. Files:
 `scripts/geomaps/{sheets,gridfit,georef,legend,vectorize}.py` + `tiles.sh`,
-`srv/geomap.go`, `srv/static/geomap.js`, `renderGeoMapPanel()` in globe.html.
+`srv/geomap.go`, `srv/geomap_std.go`, `srv/static/geomap.js`,
+`renderGeoMapPanel()` in globe.html.
 UI: admin ▸ Map Settings ▸ Geology. Share link `?geomap=car`.
+
+Sudan and CAR are **scans we vectorized**; Tanzania comes from the survey's own
+WFS (`scripts/geomaps/gmis_tanzania.py`) and so has no georeferencing, no
+classifier, no hold-out and no merged classes. Both paths end at the same two
+files (`<sheet>_units.geojson` gitignored, `<sheet>_classes.json` committed) and
+nothing downstream knows which one produced them. A sheet id goes in
+`geoMapSheets` (`srv/geomap.go`) and the default list in `tiles.sh`; everything
+else — catalogue, GeoPackage commodity columns, cache stamp, panel counts — is
+derived. The vocabulary audit
+(`TestShippedCataloguesHaveNoUnmappedVocabulary`) walks `geoMapSheets`, so a new
+sheet's wording cannot arrive unaudited: it must reach 0 unmapped ages, 0
+unmapped lithologies and 0 answered-by-rule-order before it ships.
 
 Not the `?histmap=` raster overlay (1:250k topographic scans) — different data,
 different path. Vector because the units are *data*: the client recolours them,
@@ -153,13 +167,14 @@ need one tileset per combination of 46 classes.
 
 ### One layer, one legend, and the legend is the industry's
 
-The two sheets were printed 40 years apart by different surveys and digitised
-in *their own* inks. Presented as two cards (two toggles, two opacity sliders,
-two class lists) the user had to reconcile two colour languages for one
-question — and at the CAR/Sudan border the same rock changed colour. Several of
-both sheets' inks are also a desaturated blue-grey that on a dark basemap is
-indistinguishable from the waterbody layer, which is how a geology drape got
-read as **water**.
+The first two sheets were printed 40 years apart by different surveys and
+digitised in *their own* inks (the third arrives with the GST's own GeoServer
+inks, which is a third colour language, not a solution). Presented as separate
+cards (a toggle, an opacity slider and a class list each) the user had to
+reconcile them for one question — and at the CAR/Sudan border the same rock
+changed colour. Several of the sheets' inks are also a desaturated blue-grey
+that on a dark basemap is indistinguishable from the waterbody layer, which is
+how a geology drape got read as **water**.
 
 Fixed 2026-08-12 (`srv/geomap_std.go`, `srv/static/geopatterns.js`):
 
@@ -181,7 +196,15 @@ Fixed 2026-08-12 (`srv/geomap_std.go`, `srv/static/geopatterns.js`):
   `"cambrien"`, so the Cambrian rules must come *after* the Precambrian ones or
   every CAR basement unit dates as Cambrian. Pinned by `TestGeoAgeOf`.
   A group naming several ages is `age_mixed` and takes the **oldest** — never
-  a pick, same rule as a merged code.
+  a pick, same rule as a merged code. A hyphenated **span** is different: one
+  unit straddling a boundary, so it gets a curated rule above *both* endpoints,
+  and an uncurated one is reported as `age_ambiguous` rather than answered by
+  rule order.
+* **A sheet's own lithology column, where it has one, is read LAST** — after
+  name and group (`geoLithResolveHint`). Such a column lists every constituent
+  in no order, so a first-match scan over it calls a syenite-gabbro ring
+  complex `ultramafic` off the word "pyroxenite". The name is the survey's own
+  summary; the column only rescues names that are pure geography.
 * **The sheet is demoted to provenance**: one Geology toggle, one legend, one
   opacity; the per-sheet API stays (tiles, downloads, share links are per
   sheet) but is no longer the user's unit of thought. A commodity chip acts on
@@ -207,7 +230,10 @@ does. `/api/geomap/{sheet}/geopackage` **308s** to it — those URLs are in
 shipped links, and a 404 reads as "the export was removed".
 A unit is `(sheet, code)`, carried as `key`, and the QGIS renderer categorises
 on that: `code` alone collides (`S` = Silurian sandstone on Sudan, gold-bearing
-schist on CAR) and would date half a country from the other's legend.
+schist on CAR) and would date half a country from the other's legend. The
+legend is **one category per class**, deduplicated — a vector sheet has many
+polygons per class (Tanzania: 596 rows, 41 classes) and a per-row legend lists
+the same symbol 89 times.
 Cache staleness is a **stamp of the input set**, not one mtime — adding a sheet
 whose units file is older than the package would otherwise ship a country short.
 A link to the panel itself is `?panel=admin&admin_tab=map-settings&map_sheet=car`.
