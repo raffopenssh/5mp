@@ -72,6 +72,10 @@ type geoMapUnitProps struct {
 	Commodities []string         `json:"commodities"`
 	Affinity    []geoMapAffinity `json:"affinity"`
 	AreaKm2     float64          `json:"area_km2"`
+	// Lithology is the sheet's own rock-description column, where it has one
+	// (a vector sheet like the GST's); empty for a scanned sheet, which has
+	// only what is printed on it. Consulted last — see geoLithResolveHint.
+	Lithology string `json:"lithology"`
 }
 
 type geoMapCatalogue struct {
@@ -144,7 +148,7 @@ func styleGeoUnits(classes []geoMapUnitProps) string {
 		}
 		ageKey, _ := geoAgeOf(c.Group)
 		age := geoAgeByKey[ageKey]
-		lith := geoLithOf(c.Name, c.Group, c.Codes)
+		lith := geoLithOfHint(c.Name, c.Group, c.Lithology, c.Codes)
 		// Keyed on `key` = (sheet, code), NOT on code alone. One layer now
 		// holds every sheet, and a code is only unique within its own sheet
 		// ("S" is Silurian sandstone on Sudan and a gold-bearing schist belt
@@ -296,24 +300,24 @@ func geoOrnamentOf(lith string) []geoOrnamentLayer {
 // hard constraints that came out of that, both of them QGIS 3.34 behaviour
 // rather than anything in the standard:
 //
-//	1. A CUSTOM DASH ON AN AXIS-ALIGNED PATTERN LINE (angle 0/90/180/270)
-//	   IS DISCARDED. QGIS renders a LinePatternFill by building a small
-//	   repeating tile; on an axis-aligned angle the tile is only as long as
-//	   the line spacing, so a dash whose period exceeds it is clipped to
-//	   either nothing or a solid rule. Measured: a `2;6` dash at angle 90,
-//	   spacing 3.6 mm — the vertical course of the carbonate brick — rendered
-//	   ZERO pixels, so "brick" shipped for two years as plain horizontal
-//	   rules. `use_custom_dash` was set correctly and on the right layer; the
-//	   dash was simply thrown away downstream. So: on an axis-aligned line
-//	   the dash period must stay at or below the spacing (checked by
-//	   TestGeoOrnamentDashesSurviveTheQGISPatternTile).
-//	2. OFF-AXIS IS NOT SAFE EITHER — the same clipping bites at 45°/135° for
-//	   a long enough period, which is what made the intrusive cross-hatch
-//	   render at a third of its intended density. Where FGDC wants a
-//	   discrete SHAPE (a plus, a cross, a "v") the honest primitive is a
-//	   PointPatternFill marker, not a pair of coarsely dashed hatches
-//	   pretending to be one: the marker is what the shape actually is, and it
-//	   is not subject to the dash tile at all.
+//  1. A CUSTOM DASH ON AN AXIS-ALIGNED PATTERN LINE (angle 0/90/180/270)
+//     IS DISCARDED. QGIS renders a LinePatternFill by building a small
+//     repeating tile; on an axis-aligned angle the tile is only as long as
+//     the line spacing, so a dash whose period exceeds it is clipped to
+//     either nothing or a solid rule. Measured: a `2;6` dash at angle 90,
+//     spacing 3.6 mm — the vertical course of the carbonate brick — rendered
+//     ZERO pixels, so "brick" shipped for two years as plain horizontal
+//     rules. `use_custom_dash` was set correctly and on the right layer; the
+//     dash was simply thrown away downstream. So: on an axis-aligned line
+//     the dash period must stay at or below the spacing (checked by
+//     TestGeoOrnamentDashesSurviveTheQGISPatternTile).
+//  2. OFF-AXIS IS NOT SAFE EITHER — the same clipping bites at 45°/135° for
+//     a long enough period, which is what made the intrusive cross-hatch
+//     render at a third of its intended density. Where FGDC wants a
+//     discrete SHAPE (a plus, a cross, a "v") the honest primitive is a
+//     PointPatternFill marker, not a pair of coarsely dashed hatches
+//     pretending to be one: the marker is what the shape actually is, and it
+//     is not subject to the dash tile at all.
 func qmlGeoUnitSymbol(name, rgb, lith string) string {
 	ink := geoHatchInk(rgb)
 	base := fmt.Sprintf(`<layer class="SimpleFill" enabled="1" locked="0" pass="0">
@@ -622,13 +626,24 @@ func buildGeoMapGeoPackage(path string, sheets []string) error {
 		return err
 	}
 
+	// One QML category per CLASS, not per feature. The scanned sheets dissolve
+	// each class to a single multipart row, so the two counts coincided there
+	// and this deduplication was invisible; a WFS sheet ships the survey's own
+	// polygons (Tanzania: 596 rows, 41 classes), and without this the QGIS
+	// legend lists "aQ — Predominantly alluvial and eluvial sediments" 89
+	// times. The renderer categorises on `key`, so the duplicates were never
+	// different symbols — only a legend nobody could read.
 	classes := make([]geoMapUnitProps, 0, len(units))
+	seenClass := map[string]bool{}
 	for _, u := range units {
 		p := u.props
 		if p.Sheet == "" {
 			p.Sheet = u.cat.Sheet
 		}
-		classes = append(classes, p)
+		if k := geoMapUnitKey(p.Sheet, p.Code); !seenClass[k] {
+			seenClass[k] = true
+			classes = append(classes, p)
+		}
 		ageKey, ageMixed := geoAgeOf(p.Group)
 		age := geoAgeByKey[ageKey]
 		byComm := map[string]geoMapAffinity{}
@@ -641,7 +656,7 @@ func buildGeoMapGeoPackage(path string, sheets []string) error {
 			geoMapUnitKey(p.Sheet, p.Code),
 			p.Code, gpkgStr(p.Name), gpkgStr(p.Group),
 			ageKey, age.Label, age.Rank, gpkgBool(ageMixed),
-			geoLithOf(p.Name, p.Group, p.Codes), age.Color,
+			geoLithOfHint(p.Name, p.Group, p.Lithology, p.Codes), age.Color,
 			strings.Join(p.Codes, ","), gpkgBool(p.Merged), gpkgStr(p.Color),
 			p.AreaKm2, gpkgStr(strings.Join(p.Commodities, ",")),
 			gpkgStr(strings.Join(whys, "; ")),

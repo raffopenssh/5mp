@@ -33,6 +33,20 @@ func TestGeoAgeOf(t *testing.T) {
 		{"Cambro-Ordovician", "ordovician", false},
 		{"Jurassic-Cretaceous", "cretaceous", false},
 		{"Tertiary-Quaternary", "quaternary", false},
+		// The GST sheet's spans, spelled the way that survey spells them (spaced
+		// hyphen, and its own two typos kept as printed in the catalogue). Each
+		// is dated at one endpoint by a curated rule; if one of these ever comes
+		// back as the OTHER endpoint, a generic rule has drifted above the
+		// curated one and the answer is rule order again.
+		{"Uppermost Carboniferous - Lower Jurassic", "triassic", false},
+		{"Neoarchaean - Neoproterozoic", "neoproterozoic", false},
+		{"Paleoproterozoic - Mesoproterozoic", "mesoproterozoic", false},
+		{"Neoarchaean - Paleoproterozoic", "paleoproterozoic", false},
+		{"Neoproterozoic - Cambrian", "neoproterozoic", false},
+		{"Cretacous", "cretaceous", false},
+		{"Neoprozerozoic", "neoproterozoic", false},
+		{"Palaeoproterozoic", "paleoproterozoic", false},
+		{"Meso-Neoarchaean", "archean", false},
 		// A merged class names several ages; it takes the OLDEST and says so.
 		{"Tertiary / Lower Proterozoic basement", "paleoproterozoic", true},
 		{"Tertiary-Quaternary / Pan-African metasediments", "neoproterozoic", true},
@@ -66,6 +80,15 @@ func TestGeoLithOf(t *testing.T) {
 		{"Graphitic schist", "Lower Proterozoic basement", "metamorphic"},
 		// argillite with carbonate nodules is a mudrock, not a carbonate
 		{"Formations fluvio-glaciaires (argilites a nodules calcaires)", "Primaire", "mudrock"},
+		// A meta-sediment is metamorphic. It has to beat the {"sediment",
+		// "mixed"} rule at the bottom of the list, which means the OPPOSITE
+		// thing ("the sheet declines to say which sediment"); read in the wrong
+		// order the GST's belt units claimed to be undifferentiated while the
+		// survey was being specific.
+		{"Meta-sediment - meta-igneous complex", "Palaeoproterozoic", "metamorphic"},
+		{"Detrital meta-sediments", "Mesoproterozoic", "metamorphic"},
+		// ...and a sheet that really does decline still lands on mixed.
+		{"Terrestric clastic sediments, partly with coals", "Triassic", "mixed"},
 	}
 	for _, c := range cases {
 		if got := geoLithOf(c.name, c.group, nil); got != c.want {
@@ -75,6 +98,30 @@ func TestGeoLithOf(t *testing.T) {
 	// A merged class spanning two lithologies must not pick one.
 	if got := geoLithOf("Marble / Quartzite", "x", []string{"A", "B"}); got != "mixed" {
 		t.Errorf("merged lithology = %q; want mixed", got)
+	}
+}
+
+// A vector sheet ships a lithology column of its own. It is read LAST, and the
+// order is the point: the column lists every constituent of a unit in no
+// particular order, so a first-match scan over it answers with whichever minor
+// phase is spelled first.
+func TestGeoLithHintIsALastResort(t *testing.T) {
+	// The unit's own name says what it is. The column also mentions
+	// pyroxenite, which is a real part of the complex and not the rock the
+	// survey named it for - hint-first would call this ultramafic.
+	if got := geoLithOfHint("Mbozi syenite-gabbro ring complex", "Neoproterozoic",
+		"Syenite, nepheline-bearing rocks, gabbro, pyroxenite", nil); got != "intrusive" {
+		t.Errorf("named unit + noisy hint = %q; want intrusive (the NAME wins)", got)
+	}
+	// ...and the hint only speaks where the name is pure geography, which is
+	// the one case it exists for.
+	if got := geoLithOfHint("Mafic complex Nyabuyonza", "Mesoproterozoic",
+		"Gabbroic rocks", nil); got != "intrusive" {
+		t.Errorf("geographic name + hint = %q; want intrusive (the HINT rescues it)", got)
+	}
+	// A hint that says nothing we know is still a gap, not an answer.
+	if k, ok := geoLithResolveHint("Nyabuyonza", "Mesoproterozoic", "unknown rocks", nil); k != "mixed" || ok {
+		t.Errorf("unreadable hint = %q,%v; want mixed,false - still a GAP", k, ok)
 	}
 }
 
@@ -133,7 +180,10 @@ func TestGeoStandardiseCoversInstalledSheets(t *testing.T) {
 // — "Age not stated" is an answer some units honestly have (Sudan's PZs), and
 // the whole value here is that a missing rule stays distinguishable from it.
 func TestShippedCataloguesHaveNoUnmappedVocabulary(t *testing.T) {
-	for _, s := range []string{"sudan", "car"} {
+	// geoMapSheets, not a literal list: a sheet added to the server without
+	// being added here would ship unaudited, and the whole point is that a
+	// third sheet's wording cannot arrive silently.
+	for _, s := range geoMapSheets {
 		blob, err := os.ReadFile("../data/geomaps/" + s + "_classes.json")
 		if err != nil {
 			// A fresh checkout has the committed catalogues, but CI that
@@ -162,15 +212,15 @@ func TestVocabAuditSeesAGap(t *testing.T) {
 		// A plausible third sheet (southern Africa): neither string is in
 		// either rule list, and neither renders as an error — grey and
 		// generically hatched, which is why this has to be reported.
-		{"Ka", "Bushveld layered complex", "Karoo Supergroup", nil},
+		{Code: "Ka", Name: "Bushveld layered complex", Group: "Karoo Supergroup"},
 		// Covered — must NOT be reported.
-		{"QF", "Recent alluvium", "Quaternary", nil},
+		{Code: "QF", Name: "Recent alluvium", Group: "Quaternary"},
 		// The distinction the whole audit exists for. This lands on lith
 		// "mixed" like the Bushveld line above, but for the opposite reason:
 		// {"sediment", "mixed"} is a RULE that fired, i.e. the sheet itself
 		// says undifferentiated. Same pixel, different meaning, and only one
 		// of the two is a defect.
-		{"PZs", "Undifferentiated Palaeozoic sediments", "Palaeozoic", nil},
+		{Code: "PZs", Name: "Undifferentiated Palaeozoic sediments", Group: "Palaeozoic"},
 	})
 	if rep.Age != 1 || rep.Lith != 1 {
 		t.Fatalf("age gaps = %d, lith gaps = %d; want 1 and 1\n%s", rep.Age, rep.Lith, rep)
@@ -225,7 +275,7 @@ func TestVocabAuditFlagsAnUncuratedSpan(t *testing.T) {
 	defer func() { geoAgeRules = orig }()
 
 	rep := geoVocabAuditClasses("probe", []geoVocabClass{
-		{"JK", "Fluviatile sandstone", "Jurassic-Cretaceous", nil},
+		{Code: "JK", Name: "Fluviatile sandstone", Group: "Jurassic-Cretaceous"},
 	})
 	if rep.Ambiguous != 1 {
 		t.Fatalf("an uncurated span must be flagged; got %s", rep)
@@ -235,12 +285,13 @@ func TestVocabAuditFlagsAnUncuratedSpan(t *testing.T) {
 	// reporting it would drown the real gaps.
 	geoAgeRules = orig
 	rep = geoVocabAuditClasses("probe", []geoVocabClass{
-		{"TA/PLq", "Middle Abyad / Quartzite", "Tertiary / Lower Proterozoic basement",
-			[]string{"TA", "PLq"}},
+		{Code: "TA/PLq", Name: "Middle Abyad / Quartzite",
+			Group: "Tertiary / Lower Proterozoic basement", Codes: []string{"TA", "PLq"}},
 		// Specific-beats-generic, the pattern this whole file rests on:
 		// "precambrien d" contains "precambrien" contains "cambrien". Curated,
 		// not accidental — must not be reported.
-		{"D", "Complexe de base indifferencie", "Precambrien D - facies cristallophyllien", nil},
+		{Code: "D", Name: "Complexe de base indifferencie",
+			Group: "Precambrien D - facies cristallophyllien"},
 	})
 	if rep.Ambiguous != 0 {
 		t.Errorf("a merged class and a curated containment must not be flagged: %s", rep)

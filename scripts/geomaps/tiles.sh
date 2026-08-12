@@ -2,7 +2,7 @@
 # Vectorized geology sheet -> MBTiles of vector tiles, served by srv/geomap.go.
 #
 #   scripts/geomaps/tiles.sh sudan
-#   scripts/geomaps/tiles.sh            # both sheets
+#   scripts/geomaps/tiles.sh            # every installed sheet
 #
 # Why vector and not raster (unlike the 1:250k topographic scans in
 # scripts/histmaps/): the units are *data*, not a picture.  The UI has to
@@ -25,7 +25,16 @@ OUT=data/geomaps
 build() {
   local sheet="$1"
   local src="$OUT/${sheet}_units.geojson"
-  [ -f "$src" ] || { echo "$src missing - run vectorize.py $sheet first" >&2; return 1; }
+  # Which builder produced it depends on the sheet: a scan goes through
+  # vectorize.py, a WFS sheet through its own fetch script.  Both write the
+  # same two files, and this only cares that they are there.
+  if [ ! -f "$src" ]; then
+    case "$sheet" in
+      tanzania) echo "$src missing - run scripts/geomaps/gmis_tanzania.py first" >&2 ;;
+      *)        echo "$src missing - run scripts/geomaps/vectorize.py $sheet first" >&2 ;;
+    esac
+    return 1
+  fi
   local tmp="$OUT/.${sheet}.mbtiles.tmp"
   rm -f "$tmp"
   # -z10: at 1:1.5M-1:2M the source line work is ~500 m, which z10 already
@@ -45,5 +54,5 @@ build() {
 if [ $# -gt 0 ]; then
   for s in "$@"; do build "$s"; done
 else
-  for s in sudan car; do build "$s"; done
+  for s in sudan car tanzania; do build "$s"; done
 fi

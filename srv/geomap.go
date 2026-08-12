@@ -43,7 +43,7 @@ const geoMapDir = "data/geomaps"
 // geoMapSheets is the order they appear in the UI; a sheet whose files are not
 // installed is reported unavailable rather than omitted, so the panel can say
 // why instead of silently showing one map.
-var geoMapSheets = []string{"sudan", "car"}
+var geoMapSheets = []string{"sudan", "car", "tanzania"}
 
 type geoMapSheet struct {
 	db      *sql.DB
