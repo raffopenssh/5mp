@@ -131,12 +131,28 @@
          */
         contacts: false,
         contactsGraded: true,
-        /* One junction of the matrix, picked from the junction table:
-         * "intrusive|volcanic" — show me only where granite meets the
-         * greenstone. Stored as the LITHOLOGY pair, not as unit codes,
-         * because that is what the model is keyed on and what survives a
-         * re-vectorize that merges two units. null = every junction. */
-        contactPair: null,
+        /* ── WHAT THE READER PICKED, NOT WHAT THEY NARROWED TO ─────────
+         *
+         * Junctions picked in the table: "intrusive|volcanic" (one cell) or
+         * "intrusive" (one header = every junction that rock takes part in).
+         * Stored as LITHOLOGY, not as unit codes, because that is what the
+         * model is keyed on and what survives a re-vectorize that merges two
+         * units.
+         *
+         * A SET, not one value. Picking was a radio — a second cell replaced
+         * the first — so the table could only ever ask about one junction,
+         * and the gesture that reads as "and this one too" silently threw the
+         * first away. Empty = every junction, which is also what a share link
+         * omits.
+         */
+        contactPairs: new Set(),
+        /* Cells picked in the rock matrix, as "commodity|age". Same story:
+         * a cell used to REPLACE the commodity selection and solo its period,
+         * so every gesture in the table narrowed and the table then described
+         * a map with one column left in it. Now a cell is a pick, the map
+         * draws the UNION of the picks, and the table keeps its full width so
+         * the next pick is still reachable. Empty = no cell narrowing. */
+        picks: new Set(),
         // Whether the Advanced block is open. A setting, so it travels in the
         // share link with the rest — "look at this" should reproduce the panel
         // the sender was reading, not just the map.
@@ -328,7 +344,7 @@
         // keeps paying for.
         const min = Math.max(shared.minWeight, shared.contactsGraded ? 2 : 0);
         return contactsOf(id).filter(c => {
-            // The junction picked in the table is a filter on TOP of the
+            // The junctions picked in the table are a filter on TOP of the
             // rest, never instead of it: "granite against greenstone, for
             // gold, classic only" is one question and each clause narrows.
             if (!junctionMatches(c)) return false;
@@ -339,21 +355,29 @@
         }).map(c => c.pair);
     }
 
-    /* ── The junction picked in the table ───────────────────────────────
+    /* ── The junctions picked in the table ───────────────────────────────
      *
-     * `shared.contactPair` is either one cell of the triangle ("a|b", both
-     * lithologies) or one of its headers ("a", every junction that lithology
-     * takes part in). Two shapes, because a reader who taps "intrusive" means
-     * "anywhere granite meets anything" and that question has no cell.
+     * Each entry of `shared.contactPairs` is either one cell of the triangle
+     * ("a|b", both lithologies) or one of its headers ("a", every junction
+     * that lithology takes part in). Two shapes, because a reader who taps
+     * "intrusive" means "anywhere granite meets anything" and that question
+     * has no cell.
+     *
+     * The picks are ORed: the reader is building the map out of cells, so a
+     * contact matched by ANY pick is drawn. Empty = every junction.
      *
      * It is stored as LITHOLOGY, never as unit codes: the model is keyed that
      * way, and a re-vectorize that merges two units must not silently empty a
      * share link. */
     function junctionMatches(c) {
-        const want = shared.contactPair;
-        if (!want) return true;
-        if (want.indexOf('|') >= 0) return lithPairKey(c.lithA, c.lithB) === want;
-        return c.lithA === want || c.lithB === want;
+        const want = shared.contactPairs;
+        if (!want.size) return true;
+        const cell = lithPairKey(c.lithA, c.lithB);
+        for (const w of want) {
+            if (w.indexOf('|') >= 0) { if (cell === w) return true; }
+            else if (c.lithA === w || c.lithB === w) return true;
+        }
+        return false;
     }
 
     /* ── The junction table's own data ──────────────────────────────────
@@ -967,19 +991,52 @@
             k => all[k].length && all[k].every(c => codes.has(c))));
     }
 
-    // isolate := union of the selected commodities' host sets. Empty selection
-    // is "no isolation" (show everything), never "show nothing" — an empty map
-    // is indistinguishable from a sheet with no data here.
+    /* ── isolate := the UNION of everything the reader picked ────────────
+     *
+     * Two kinds of pick, one answer:
+     *
+     *   a COMMODITY row  -> every unit that can host it, at the floor
+     *   a matrix CELL    -> that commodity, on that period only
+     *
+     * They add. That is the whole point of the pass that introduced cells as
+     * picks: the table used to NARROW with every gesture (a cell replaced the
+     * commodity selection and soloed its period), so a reader building "the
+     * Palaeoproterozoic gold ground AND the Archaean copper ground" could
+     * only ever hold the last thing they tapped, and the table shrank to one
+     * column while they did it. The map is now assembled FROM the table
+     * instead of being carved out of it, and the table keeps its full width
+     * so the next pick is still reachable.
+     *
+     * An empty selection is "no isolation" (show everything), never "show
+     * nothing" — an empty map is indistinguishable from a sheet with no data
+     * here. An empty RESULT is a different statement ("nothing here answers")
+     * and is kept as an empty Set; see visibleCodes().
+     */
     function applyCommodities(id) {
         const o = st(id);
-        // No selection is the only thing that clears the isolation. An empty
-        // RESULT is a different statement — "nothing here answers" — and it
-        // is kept as an empty Set; see visibleCodes().
-        if (!o.commodities.size) { o.isolate = null; return; }
+        if (!o.commodities.size && !shared.picks.size) { o.isolate = null; return; }
         const all = hostMap(id);
         const codes = new Set();
         o.commodities.forEach(k => (all[k] || []).forEach(c => codes.add(c)));
+        // A cell is (commodity, age): the same host set as the row, kept to
+        // the one period the reader tapped. Resolved against THIS sheet's
+        // classes, so a period a sheet does not have simply contributes
+        // nothing rather than emptying it.
+        shared.picks.forEach(pk => {
+            const i = pk.indexOf('|');
+            if (i < 0) return;
+            const comm = pk.slice(0, i), age = pk.slice(i + 1);
+            (all[comm] || []).forEach(c => {
+                const cls = classOf(id, c);
+                if (cls && cls.age === age) codes.add(c);
+            });
+        });
         o.isolate = codes;
+    }
+
+    /** Every sheet's isolation, recomputed — picks are legend-wide. */
+    function applyAllSelections() {
+        order.forEach(id => applyCommodities(id));
     }
 
     const GeoMap = {
@@ -1134,20 +1191,26 @@
         },
         contactsGradedOnly: () => shared.contactsGraded,
 
-        /* ── One junction of the table ──────────────────────────────
-         * `key` is a lithology pair ("intrusive|volcanic") or one lithology
-         * ("intrusive" = every junction it takes part in); null clears it.
-         * Tapping the one already picked clears it, so the gesture is its own
+        /* ── The junctions picked in the table ──────────────────
+         * `key` is a lithology pair ("intrusive|volcanic" = one cell) or one
+         * lithology ("intrusive" = every junction it takes part in). Tapping
+         * one ADDS it; tapping it again removes it, so the gesture is its own
          * undo — the standing rule that every narrowing must be escapable
-         * from where it is visible.
+         * from where it is visible. null clears the lot.
          *
-         * Picking a junction implies the layer: a reader who taps a cell in
-         * the junction table has asked to see those lines, and leaving the
-         * layer off would be a control that visibly does nothing. */
+         * ADDS, because a table of cells is a thing to build a map out of.
+         * As a radio it could only ever ask one junction at a time: picking
+         * "intrusive/volcanic" and then "intrusive/carbonate" silently threw
+         * the first away, which reads as a control that forgets.
+         *
+         * Picking implies the layer: a reader who taps a cell has asked to
+         * see those lines, and leaving the layer off would be a control that
+         * visibly does nothing. */
         setContactPair(key) {
-            const next = (key && key !== shared.contactPair) ? key : null;
-            shared.contactPair = next;
-            if (next && !shared.contacts) {
+            if (!key) shared.contactPairs.clear();
+            else if (shared.contactPairs.has(key)) shared.contactPairs.delete(key);
+            else shared.contactPairs.add(key);
+            if (shared.contactPairs.size && !shared.contacts) {
                 this.setContacts(true);      // repaints and re-renders
                 return;
             }
@@ -1155,7 +1218,13 @@
             if (typeof renderGeoMapPanel === 'function') renderGeoMapPanel();
             if (window.MapLegend) MapLegend.refresh();
         },
-        contactPair: () => shared.contactPair,
+        /** Is this cell/header one of the picks? */
+        junctionPicked: key => shared.contactPairs.has(key),
+        /** Every junction picked, as a Set (a copy: state is not a handle). */
+        contactPairs: () => new Set(shared.contactPairs),
+        /** The first pick, for callers that still want one word for it. */
+        contactPair: () => (shared.contactPairs.size
+            ? Array.from(shared.contactPairs)[0] : null),
         /** The junction table: one row per lithology pair the sheets contain. */
         junctions: junctionIndex,
         /** How many junctions the layer would draw right now — the honest
@@ -1299,7 +1368,7 @@
             const comms = selectedCommodities();
             if (comms.size && !weightCounts(comms)[want]) return false;
             shared.minWeight = want;
-            order.forEach(id => { if (st(id).commodities.size) applyCommodities(id); });
+            applyAllSelections();
             refreshAll();
             if (window.MapLegend) MapLegend.refresh();
             return true;
@@ -1313,10 +1382,56 @@
             return (hostWeights(id)[commodity] || {})[code] || 0;
         },
 
+        /* ── A CELL OF THE MATRIX, AS A PICK ───────────────────────
+         *
+         * "commodity|age" \u2014 the gold ground, but only its Palaeoproterozoic.
+         * Tapping adds, tapping again removes: the map is the UNION of the
+         * cells the reader has chosen, so the table is a thing they build a
+         * map out of rather than a thing that shrinks under them.
+         *
+         * A cell used to REPLACE the commodity selection and solo its period.
+         * That made the second pick destroy the first, and \u2014 because the
+         * matrix's columns are the periods actually drawn \u2014 collapsed the
+         * table to one column, hiding the very cells the reader would pick
+         * next. The narrowing on the MAP is the same; what changed is that
+         * the table stays whole. */
+        toggleCell(commodity, age) {
+            const key = commodity + '|' + age;
+            if (shared.picks.has(key)) shared.picks.delete(key);
+            else shared.picks.add(key);
+            applyAllSelections();
+            refreshAll();
+            if (typeof renderGeoMapPanel === 'function') renderGeoMapPanel();
+            if (window.MapLegend) MapLegend.refresh();
+        },
+        cellPicked: (commodity, age) => shared.picks.has(commodity + '|' + age),
+        /** Drop every cell of one commodity — what the ROW gesture means:
+         *  "this commodity, on all of its ground" supersedes "this commodity,
+         *  on these two periods", and leaving both would show the row's units
+         *  while the table still lit two cells as if they were the narrowing. */
+        clearPicksFor(commodity) {
+            let hit = false;
+            shared.picks.forEach(k => {
+                if (k.slice(0, k.indexOf('|')) === commodity) { shared.picks.delete(k); hit = true; }
+            });
+            return hit;
+        },
+        /** Every cell picked, as a Set of "commodity|age" (a copy). */
+        picks: () => new Set(shared.picks),
+        clearPicks() {
+            if (!shared.picks.size) return;
+            shared.picks.clear();
+            applyAllSelections();
+            refreshAll();
+            if (typeof renderGeoMapPanel === 'function') renderGeoMapPanel();
+            if (window.MapLegend) MapLegend.refresh();
+        },
+
         showAll(id) {
             const o = st(id);
             o.hidden = new Set(); o.isolate = null; o.commodities = new Set();
             shared.liths.clear(); shared.agesOff.clear(); shared.minWeight = 1;
+            shared.picks.clear();
             refresh(id);
             if (typeof renderGeoMapPanel === 'function') renderGeoMapPanel();
         },
@@ -1328,12 +1443,16 @@
                 o.hidden = new Set(); o.isolate = null; o.commodities = new Set();
             });
             shared.liths.clear(); shared.agesOff.clear(); shared.minWeight = 1;
+            // Cells are picks, and a pick is a narrowing: "show all" lifts
+            // them with the rest, or the map stays isolated to the union of
+            // what the reader tapped while the button claims otherwise.
+            shared.picks.clear();
             // A picked junction is a narrowing like any other, so "show all"
             // has to lift it — a button that leaves the contact layer showing
             // one pair out of 26 while claiming to show everything is the
             // failure the escape hatch exists to prevent. Whether the contact
             // LAYER is on is not a narrowing, so it is left alone.
-            shared.contactPair = null;
+            shared.contactPairs.clear();
             refreshAll();
             order.forEach(id => { if (st(id).on && map.getLayer(CONT(id))) paintContacts(id); });
             if (window.MapLegend) MapLegend.refresh();
@@ -1341,7 +1460,8 @@
 
         /** Is anything filtered out right now, on any sheet? */
         anyFiltered() {
-            if (shared.liths.size || shared.agesOff.size || shared.contactPair) return true;
+            if (shared.liths.size || shared.agesOff.size ||
+                shared.contactPairs.size || shared.picks.size) return true;
             return order.some(id => {
                 const o = st(id);
                 return o.hidden.size > 0 || (o.isolate && o.isolate.size);
@@ -1379,6 +1499,12 @@
                 // and "everything that can host gold" is still answerable
                 // afterwards while a frozen code list is not.
                 if (o.commodities.size) host.push(id + ':' + [...o.commodities].join('|'));
+                // An isolation the PICKS produced is described by the picks,
+                // and describing it twice is how a link comes back with a
+                // frozen code list beside the question that generated it: the
+                // codes would then win on a build where a unit was merged,
+                // which is exactly what geomap_cells exists to survive.
+                else if (shared.picks.size) { /* said by geomap_cells */ }
                 else if (o.isolate && o.isolate.size) only.push(id + ':' + [...o.isolate].join('|'));
                 else if (o.hidden.size) hide.push(id + ':' + [...o.hidden].join('|'));
             });
@@ -1401,6 +1527,10 @@
             // Ages travel as what is HIDDEN, matching how they are stored: a
             // link that hides nothing must not carry a list of everything.
             if (shared.agesOff.size) p.geomap_age_off = [...shared.agesOff].join('|');
+            // Cells picked in the matrix, as commodity|age pairs. Legend-wide
+            // (a period and a commodity mean the same thing on every sheet),
+            // so no sheet prefix, and absent when nothing is picked.
+            if (shared.picks.size) p.geomap_cells = [...shared.picks].join(',');
             if (shared.advOpen) p.geomap_adv = '1';
             // The contact layer is off by default, so it only travels when
             // asked for. `graded` is its default, so only its ABSENCE is
@@ -1410,7 +1540,12 @@
                 // The junction, when one is picked. It travels as lithology,
                 // which is a vocabulary the server owns (geomap_std.go) rather
                 // than a sheet's unit codes, so the link survives a re-tile.
-                if (shared.contactPair) p.geomap_junction = shared.contactPair;
+                // Every junction picked, not just the first: the picks are a
+                // set now, and a link that carried one of three would restore
+                // a map the sender was not looking at.
+                if (shared.contactPairs.size) {
+                    p.geomap_junction = Array.from(shared.contactPairs).join(',');
+                }
             }
             return p;
         },
@@ -1462,10 +1597,19 @@
             if (jn && shared.contacts) {
                 const known = junctionIndex(true);
                 const liths = new Set(Object.keys(known).flatMap(k => k.split('|')));
-                if (known[jn] || (jn.indexOf('|') < 0 && liths.has(jn))) shared.contactPair = jn;
-                else if (typeof showToast === 'function') {
-                    showToast('Geology selection is out of date \u2014 that link names a rock ' +
-                        'junction these sheets do not have; showing every contact.', 'warning');
+                // A link carries every junction the sender had picked; the
+                // ones this build still has are kept and the rest dropped.
+                // Partial is the right answer: keeping the known picks
+                // reproduces most of what was shared, where refusing the lot
+                // would silently show every contact instead.
+                const asked = jn.split(',').filter(Boolean);
+                const want = asked.filter(
+                    k => known[k] || (k.indexOf('|') < 0 && liths.has(k)));
+                if (want.length) shared.contactPairs = new Set(want);
+                if (want.length < asked.length && typeof showToast === 'function') {
+                    showToast('Geology selection is out of date — that link names a rock ' +
+                        'junction these sheets do not have; showing ' +
+                        (want.length ? 'the rest' : 'every contact') + '.', 'warning');
                 }
             }
             if (params.get('geomap_color') === 'ink') shared.colorMode = 'ink';
@@ -1539,6 +1683,27 @@
                 st(id).commodities = new Set(want);
                 applyCommodities(id);
             });
+            // Cells picked in the matrix. Validated against the ages and
+            // commodities this build actually has: a cell that resolves to
+            // nothing would contribute nothing to the union, which is
+            // indistinguishable from a link that never had it.
+            const cellRaw = params.get('geomap_cells') || '';
+            if (cellRaw) {
+                const ages = new Set(allClasses().map(c => c.age));
+                const comms = new Set(allClasses().flatMap(c => c.commodities || []));
+                const asked = cellRaw.split(',').filter(Boolean);
+                const want = asked.filter(k => {
+                    const i = k.indexOf('|');
+                    return i > 0 && comms.has(k.slice(0, i)) && ages.has(k.slice(i + 1));
+                });
+                if (want.length) shared.picks = new Set(want);
+                if (want.length < asked.length && typeof showToast === 'function') {
+                    showToast('Geology selection is out of date — that link picks rock/commodity ' +
+                        'cells this build does not have; showing ' +
+                        (want.length ? 'the rest' : 'every unit') + '.', 'warning');
+                }
+                if (want.length) applyAllSelections();
+            }
             // A sheet with no answer at this floor drawing nothing is correct
             // (see visibleCodes); EVERY sheet drawing nothing is not — that is
             // a blank map, and a blank map is indistinguishable from "no
@@ -1549,7 +1714,7 @@
                 !order.some(id => st(id).commodities.size && st(id).isolate && st(id).isolate.size)) {
                 const had = order.some(id => st(id).commodities.size);
                 shared.minWeight = 1;
-                order.forEach(id => { if (st(id).commodities.size) applyCommodities(id); });
+                applyAllSelections();
                 if (had && typeof showToast === 'function') {
                     showToast('Geology selection is out of date \u2014 that link keeps only the ' +
                         'strongest hosts and this build of the sheets has none; showing every host.',
