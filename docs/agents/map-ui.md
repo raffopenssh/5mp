@@ -183,6 +183,35 @@ there is here.
 
 ---
 
+## Adding a layer or a focus does NOT move the camera
+
+Three gestures used to fly: focusing a park/AOI (`toggleAOIFocus` →
+`zoomToPark`/`zoomToAOI`) and turning on geology (`GeoMap.toggle/toggleAll`) or
+a historical sheet (`HistMap.toggle`). Each is *"show me this here"* — a drape
+is drawn on the view the reader built, and focus changes **scope**, not place.
+Moving the camera answers a question nobody asked and throws that view away;
+back-to-back toggles make the whole UI feel hectic.
+
+The calm rule: **apply in place; offer the trip only when the thing is not on
+screen at all**, as an action on the toast the gesture already shows
+(`offerZoomTo(label, bounds, key)` in globe.html; `focusBBox()`/`bboxOnScreen()`
+for areas). Overlapping the viewport = silence — a toast on every toggle is
+the same hecticness in another costume. `opts.fly` still exists on
+`HistMap.set` / `GeoMap.set` for a caller that genuinely means "go there"; the
+toggles pass `fly:false`. `zoomToPark`/`zoomToAOI` remain for explicit
+gestures (search results, starred tags).
+
+**Toast placement is measured, not assumed.** The footer
+(`#time-slider-container`) grows when the animator opens and when the date tags
+wrap, so the old `bottom: 100px` put the toast — and its *Zoom there* button —
+under the footer. `toastBottomPx()` measures it, a `ResizeObserver` +
+`resize` listener re-runs `repositionToasts()` so live toasts follow the footer,
+and multiple toasts stack upward instead of printing on top of each other
+(geology + histmap off-screen offers two trips at once). Same lesson as
+`bottomChromePx()` for the docked map tip.
+
+---
+
 ## The Map strip in the stats panel (`srv/static/maplegend.js`)
 
 Basemap and the two drapes (`HistMap`, `GeoMap`) used to be reachable only from

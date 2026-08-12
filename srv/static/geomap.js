@@ -131,6 +131,12 @@
          */
         contacts: false,
         contactsGraded: true,
+        /* One junction of the matrix, picked from the junction table:
+         * "intrusive|volcanic" — show me only where granite meets the
+         * greenstone. Stored as the LITHOLOGY pair, not as unit codes,
+         * because that is what the model is keyed on and what survives a
+         * re-vectorize that merges two units. null = every junction. */
+        contactPair: null,
         // Whether the Advanced block is open. A setting, so it travels in the
         // share link with the rest — "look at this" should reproduce the panel
         // the sender was reading, not just the map.
@@ -313,11 +319,59 @@
         // keeps paying for.
         const min = Math.max(shared.minWeight, shared.contactsGraded ? 2 : 0);
         return contactsOf(id).filter(c => {
+            // The junction picked in the table is a filter on TOP of the
+            // rest, never instead of it: "granite against greenstone, for
+            // gold, classic only" is one question and each clause narrows.
+            if (!junctionMatches(c)) return false;
             if (!shared.contactsGraded) return true;
             if (!c.rule) return false;
             if (!sel.size) return c.best >= min;
             return c.rule.affinity.some(a => sel.has(a.commodity) && a.weight >= min);
         }).map(c => c.pair);
+    }
+
+    /* ── The junction picked in the table ───────────────────────────────
+     *
+     * `shared.contactPair` is either one cell of the triangle ("a|b", both
+     * lithologies) or one of its headers ("a", every junction that lithology
+     * takes part in). Two shapes, because a reader who taps "intrusive" means
+     * "anywhere granite meets anything" and that question has no cell.
+     *
+     * It is stored as LITHOLOGY, never as unit codes: the model is keyed that
+     * way, and a re-vectorize that merges two units must not silently empty a
+     * share link. */
+    function junctionMatches(c) {
+        const want = shared.contactPair;
+        if (!want) return true;
+        if (want.indexOf('|') >= 0) return lithPairKey(c.lithA, c.lithB) === want;
+        return c.lithA === want || c.lithB === want;
+    }
+
+    /* ── The junction table's own data ──────────────────────────────────
+     *
+     * One row per (lithology, lithology) junction that the installed sheets
+     * ACTUALLY contain, aggregated across them — a junction is a statement
+     * about two rock types, so "intrusive against volcanic" is one row whether
+     * it occurs on one sheet or three. Never the full 10x10 cross product: a
+     * cell for a junction no sheet has is a claim that it exists and is barren.
+     *
+     * Keyed and returned by the same normalised pair key the rules use, so the
+     * table, the filter, the paint and the share link cannot disagree about
+     * what "intrusive|volcanic" means.
+     */
+    function junctionIndex() {
+        const out = {};
+        allContacts().forEach(c => {
+            const k = lithPairKey(c.lithA, c.lithB);
+            const row = out[k] || (out[k] = {
+                pair: k, a: k.split('|')[0], b: k.split('|')[1],
+                n: 0, km: 0, best: 0, affinity: (c.rule && c.rule.affinity) || []
+            });
+            row.n++;
+            row.km += c.km || 0;
+            row.best = Math.max(row.best, c.best || 0);
+        });
+        return out;
     }
 
     /** Every class of every sheet, as one list — the user's unit of thought. */
@@ -948,6 +1002,17 @@
             }
             for (const id of avail) await this.set(id, want, { quiet: true, fly: false });
             if (typeof renderGeoMapPanel === 'function') renderGeoMapPanel();
+            // One offer for the whole gesture, not one per sheet (see set()).
+            if (want && !opts.quiet && typeof offerZoomTo === 'function') {
+                let bb = null;
+                avail.forEach(id => {
+                    const b = sheets[id] && sheets[id].bounds;
+                    if (!b || b.length !== 4) return;
+                    bb = bb ? [Math.min(bb[0], b[0]), Math.min(bb[1], b[1]),
+                               Math.max(bb[2], b[2]), Math.max(bb[3], b[3])] : b.slice();
+                });
+                offerZoomTo('Geology', bb, 'geo-offscreen');
+            }
             return want && avail.length > 0;
         },
         toggleAll() { return this.setAll(!this.anyOn()); },
@@ -978,7 +1043,8 @@
             return st(id).on;
         },
 
-        toggle(id) { return this.set(id, !st(id).on, { fly: !st(id).on }); },
+        // Turning a sheet on does NOT move the camera; see set().
+        toggle(id) { return this.set(id, !st(id).on, { fly: false }); },
 
         // Opacity, colour mode and the lithology filter are legend-wide: two
         // sheets at 40% and 80% of one legend is not a picture anybody asked
@@ -1052,6 +1118,39 @@
             if (window.MapLegend) MapLegend.refresh();
         },
         contactsGradedOnly: () => shared.contactsGraded,
+
+        /* ── One junction of the table ──────────────────────────────
+         * `key` is a lithology pair ("intrusive|volcanic") or one lithology
+         * ("intrusive" = every junction it takes part in); null clears it.
+         * Tapping the one already picked clears it, so the gesture is its own
+         * undo — the standing rule that every narrowing must be escapable
+         * from where it is visible.
+         *
+         * Picking a junction implies the layer: a reader who taps a cell in
+         * the junction table has asked to see those lines, and leaving the
+         * layer off would be a control that visibly does nothing. */
+        setContactPair(key) {
+            const next = (key && key !== shared.contactPair) ? key : null;
+            shared.contactPair = next;
+            if (next && !shared.contacts) {
+                this.setContacts(true);      // repaints and re-renders
+                return;
+            }
+            order.forEach(id => { if (st(id).on && map.getLayer(CONT(id))) paintContacts(id); });
+            if (typeof renderGeoMapPanel === 'function') renderGeoMapPanel();
+            if (window.MapLegend) MapLegend.refresh();
+        },
+        contactPair: () => shared.contactPair,
+        /** The junction table: one row per lithology pair the sheets contain. */
+        junctions: junctionIndex,
+        /** How many junctions the layer would draw right now — the honest
+         *  count for a surface that must not offer an empty layer as if it
+         *  were a full one. Derived from the same visiblePairs() the paint
+         *  filter uses, so the number and the map cannot disagree. */
+        drawnContactCount() {
+            return order.reduce((n, id) => n +
+                (((sheets[id] || {}).available && hasContacts(id)) ? visiblePairs(id).length : 0), 0);
+        },
         contacts: contactsOf,
         allContacts: allContacts,
         hasContacts: hasContacts,
@@ -1064,6 +1163,17 @@
         },
         contactRule: (sheetId, a, b) => contactRuleFor(sheetId, a, b),
         anyContacts: () => order.some(id => (sheets[id] || {}).available && hasContacts(id)),
+        /** Why there is no contact layer, in the server's own words. Named
+         *  rather than inferred: "not built on this server" and "this sheet's
+         *  units do not touch" are different statements and only one of them
+         *  is ever true. */
+        contactsReason() {
+            for (const id of order) {
+                const s = sheets && sheets[id];
+                if (s && s.available && s.contacts_reason) return s.contacts_reason;
+            }
+            return '';
+        },
 
         // "Show me the intrusives" — a legend-wide question, ANDed with
         // whatever commodity selection is running, never replacing it.
@@ -1189,13 +1299,20 @@
                 o.hidden = new Set(); o.isolate = null; o.commodities = new Set();
             });
             shared.liths.clear(); shared.agesOff.clear(); shared.minWeight = 1;
+            // A picked junction is a narrowing like any other, so "show all"
+            // has to lift it — a button that leaves the contact layer showing
+            // one pair out of 26 while claiming to show everything is the
+            // failure the escape hatch exists to prevent. Whether the contact
+            // LAYER is on is not a narrowing, so it is left alone.
+            shared.contactPair = null;
             refreshAll();
+            order.forEach(id => { if (st(id).on && map.getLayer(CONT(id))) paintContacts(id); });
             if (window.MapLegend) MapLegend.refresh();
         },
 
         /** Is anything filtered out right now, on any sheet? */
         anyFiltered() {
-            if (shared.liths.size || shared.agesOff.size) return true;
+            if (shared.liths.size || shared.agesOff.size || shared.contactPair) return true;
             return order.some(id => {
                 const o = st(id);
                 return o.hidden.size > 0 || (o.isolate && o.isolate.size);
@@ -1261,6 +1378,10 @@
             // carried — same rule as every other parameter here.
             if (shared.contacts) {
                 p.geomap_contacts = shared.contactsGraded ? '1' : 'all';
+                // The junction, when one is picked. It travels as lithology,
+                // which is a vocabulary the server owns (geomap_std.go) rather
+                // than a sheet's unit codes, so the link survives a re-tile.
+                if (shared.contactPair) p.geomap_junction = shared.contactPair;
             }
             return p;
         },
@@ -1303,6 +1424,21 @@
             if (ct) {
                 shared.contacts = true;
                 shared.contactsGraded = ct !== 'all';
+            }
+            // A junction from a link is checked against the junctions these
+            // sheets actually have. An unknown one would filter the layer to
+            // nothing, and an empty layer reads as "no contacts here" rather
+            // than as a stale link — same rule as every other selection above.
+            const jn = params.get('geomap_junction');
+            if (jn && shared.contacts) {
+                const known = junctionIndex();
+                const liths = new Set(Object.keys(known).flatMap(k => k.split('|')));
+                if (known[jn] || (jn.indexOf('|') < 0 && liths.has(jn))) shared.contactPair = jn;
+                else if (typeof showToast === 'function') {
+                    showToast('Geology selection is out of date',
+                        'That link names a rock junction these sheets do not have \u2014 showing every contact.',
+                        null, null, 'warning');
+                }
             }
             if (params.get('geomap_color') === 'ink') shared.colorMode = 'ink';
             if (params.get('geomap_pattern') === '0') shared.pattern = false;
