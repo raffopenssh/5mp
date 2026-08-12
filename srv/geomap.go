@@ -89,7 +89,7 @@ func (g *geoMapStore) load() map[string]*geoMapSheet {
 				sh.err = fmt.Errorf("catalogue %s is not valid JSON", cat)
 				continue
 			}
-			sh.classes = json.RawMessage(blob)
+			sh.classes = json.RawMessage(geoMapStandardise(blob))
 
 			tiles := filepath.Join(g.dir, id+".mbtiles")
 			if _, err := os.Stat(tiles); err != nil {

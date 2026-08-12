@@ -709,12 +709,135 @@
             if (p.x < -15 || p.y < -15 || p.x > w + 15 || p.y > h + 15) continue;
             const frp = pt[3] || 1;
             const r = (2 + Math.min(6, Math.log2(1 + frp))) * Math.max(0.6, zoom / 7);
+            // Same thermal ramp as the grid: a detection and the cell that
+            // aggregates it must not be two different colours, or crossing the
+            // points/grid threshold reads as a change in the data.
+            const rgb = heatRGB(Math.min(1, Math.log2(1 + frp) / 7) * (0.5 + 0.5 * k));
             const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
-            g.addColorStop(0, `rgba(255,${Math.round(150 + 80 * k)},50,${0.6 * k + 0.1})`);
+            g.addColorStop(0, `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${0.6 * k + 0.1})`);
             g.addColorStop(0.5, `rgba(239,68,68,${0.35 * k})`);
             g.addColorStop(1, 'rgba(239,68,68,0)');
             ctx.fillStyle = g;
             ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, 6.283); ctx.fill();
+        }
+    }
+
+    // A real heat ramp, rather than one channel swept between two numbers.
+    //
+    // The old ramp was `rgb(255, 90..200, 40)`: at low intensity that is a
+    // dull yellow-green which, at 20% alpha over a near-black basemap, comes
+    // out OLIVE. A field of olive squares beside blue lakes reads as land
+    // cover, not as fire — which is exactly how the screenshots looked. This
+    // is the conventional thermal ramp instead (dark red → red → orange →
+    // amber → near-white), so even a single faint cell is unmistakably heat.
+    const HEAT = [
+        [120, 20, 12],    // barely anything burnt here
+        [200, 40, 20],
+        [239, 68, 38],
+        [249, 130, 40],
+        [252, 190, 70],
+        [255, 244, 200]   // the hot core
+    ];
+    function heatRGB(v) {
+        const x = Math.max(0, Math.min(0.999, v)) * (HEAT.length - 1);
+        const i = Math.floor(x), f = x - i;
+        const a = HEAT[i], b = HEAT[i + 1] || a;
+        return [Math.round(a[0] + (b[0] - a[0]) * f),
+                Math.round(a[1] + (b[1] - a[1]) * f),
+                Math.round(a[2] + (b[2] - a[2]) * f)];
+    }
+
+    // A scratch canvas for the blurred-field rendering, kept across frames.
+    // Allocating a viewport-sized canvas 60 times a second is the one way to
+    // make this cost anything.
+    let gridScratch = null;
+    function scratchFor(w, h) {
+        if (!gridScratch) gridScratch = document.createElement('canvas');
+        if (gridScratch.width !== w || gridScratch.height !== h) {
+            gridScratch.width = w; gridScratch.height = h;
+        }
+        return gridScratch;
+    }
+
+    /**
+     * The aggregated fire grid.
+     *
+     * Two renderings, chosen by the cell's size in screen pixels:
+     *
+     * SMALL CELL — a soft blob per cell, drawn straight to the map. The radius
+     * covers the cell, so where fire is continuous the blobs merge into a
+     * front and additive blending finds the hot core on its own.
+     *
+     * LARGE CELL — the cells are areas now, and drawing them as flat rects is
+     * what produced the checkerboard of hard-edged tiles: a picture of our
+     * 0.1° binning, with a visible step at every cell edge that the data does
+     * not have (a fire front does not stop at a tenth of a degree). So they
+     * are painted into an offscreen canvas and composited back through a blur
+     * of about a third of a cell. The result is one continuous heat surface
+     * whose *shape* still comes from the data, and every intensity step is now
+     * a gradient rather than a wall. A blob is deliberately NOT used here: at
+     * this size a circle at the cell's centre asserts a peak the pre-agg
+     * tables never measured.
+     *
+     * The blur runs once per frame over one screen of pixels regardless of how
+     * many cells there are — the same trick as the settled-layer sprites.
+     */
+    function drawFireGrid(ctx, G, t, proj, w, h, fadeMs) {
+        const res = G.res;
+        // Cell size in px, measured once from the frame's own resolution.
+        const c0 = proj(0, 0), c1 = proj(res, 0);
+        const cellPx = Math.abs(c1.x - c0.x);
+        const field = cellPx > GRID_CELL_PX_MAX;
+        let target = ctx, scratch = null;
+        if (field) {
+            scratch = scratchFor(Math.max(1, Math.round(w)), Math.max(1, Math.round(h)));
+            target = scratch.getContext('2d');
+            target.clearRect(0, 0, scratch.width, scratch.height);
+            // Inside the scratch the cells must ADD, exactly as they do on the
+            // map, or an overlapping older frame would punch a hole in a newer
+            // one instead of brightening it.
+            target.globalCompositeOperation = 'lighter';
+        }
+        for (const f of G.frames) {
+            if (f.t > t) break;
+            const age = t - f.t;
+            if (age > fadeMs) continue;
+            const k = 1 - age / fadeMs;
+            for (const pt of f.pts) {
+                const lon = pt[0] * res, lat = pt[1] * res;
+                const p = proj(lon, lat);
+                if (p.x < -cellPx - 20 || p.y < -cellPx - 20 ||
+                    p.x > w + cellPx + 20 || p.y > h + cellPx + 20) continue;
+                const inten = Math.min(1, Math.log2(1 + pt[2]) / 6);
+                const rgb = heatRGB(inten * (0.45 + 0.55 * k));
+                if (field) {
+                    // Half a cell of overlap on each side: the blur eats the
+                    // outer edge, and without the overlap the field develops
+                    // dark seams along every cell boundary.
+                    const p1 = proj(lon + res, lat - res);
+                    const cw = Math.max(1.5, p1.x - p.x), ch = Math.max(1.5, p1.y - p.y);
+                    target.fillStyle = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${(0.30 + 0.55 * inten) * k})`;
+                    target.fillRect(p.x - cw / 2, p.y - ch / 2, cw, ch);
+                    continue;
+                }
+                const r = Math.max(3, Math.min(60, cellPx * (0.8 + 0.6 * inten)));
+                const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
+                g.addColorStop(0, `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${0.55 * k + 0.1})`);
+                g.addColorStop(0.5, `rgba(239,68,68,${0.3 * k})`);
+                g.addColorStop(1, 'rgba(239,68,68,0)');
+                ctx.fillStyle = g;
+                ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, 6.283); ctx.fill();
+            }
+        }
+        if (field) {
+            // `filter` is not universally supported on a 2D context; without
+            // it the field still draws, just with the old hard edges. Never
+            // let a missing filter mean a missing layer.
+            const prev = ctx.filter;
+            try { ctx.filter = 'blur(' + Math.min(24, cellPx * 0.34).toFixed(1) + 'px)'; }
+            catch (err) { /* no filter support */ }
+            ctx.drawImage(scratch, 0, 0, scratch.width, scratch.height, 0, 0, w, h);
+            try { ctx.filter = prev || 'none'; } catch (err) { /* ignore */ }
         }
     }
 
@@ -938,9 +1061,10 @@
         // the same zoom over a different viewport is a different picture:
         //
         //   small cell   -> a soft blob (the classic heat look)
-        //   large cell   -> the cell itself, like the patrol grid, because a
-        //                   blob at the centre of a visibly large cell claims
-        //                   a peak the pre-agg tables never asserted
+        //   large cell   -> a FIELD: the cells are painted as areas into an
+        //                   offscreen canvas and blurred back together, so
+        //                   they read as one continuous heat surface instead
+        //                   of a checkerboard of tiles (see below)
         //   zoomed right in -> `loadLayer` has already swapped the whole layer
         //                   for real detections (`asPoints`)
         //
@@ -952,48 +1076,7 @@
         if (on.fireGrid && D.fireGrid && D.fireGrid.asPoints) {
             drawFirePoints(ctx, D.fireGrid.points, t, proj, w, h, zoom);
         } else if (on.fireGrid && D.fireGrid) {
-            const fadeMs = bMs * 2.2;
-            const res = D.fireGrid.res;
-            for (const f of D.fireGrid.frames) {
-                if (f.t > t) break;
-                const age = t - f.t;
-                if (age > fadeMs) continue;
-                const k = 1 - age / fadeMs;
-                for (const pt of f.pts) {
-                    const lon = pt[0] * res, lat = pt[1] * res;
-                    const p = proj(lon, lat);
-                    if (p.x < -20 || p.y < -20 || p.x > w + 20 || p.y > h + 20) continue;
-                    const n = pt[2];
-                    const cellPx = Math.abs(proj(lon + res, lat).x - p.x);
-                    const inten = Math.min(1, Math.log2(1 + n) / 6);
-                    if (cellPx > GRID_CELL_PX_MAX) {
-                        // The cell is a visible AREA now, so draw the area.
-                        // We only reach this instead of real points when the
-                        // server refused points for this view — i.e. when there
-                        // are genuinely too many detections to ship. Ceil the
-                        // size so float rounding cannot leave 1px seams.
-                        const p1 = proj(lon + res, lat - res);
-                        const x0 = p.x - (p1.x - p.x) / 2, y0 = p.y - (p1.y - p.y) / 2;
-                        ctx.fillStyle = `rgba(255,${Math.round(90 + 110 * (1 - inten))},40,${(0.18 + 0.5 * inten) * k})`;
-                        ctx.fillRect(x0, y0, Math.max(1.5, Math.ceil(p1.x - p.x)),
-                                             Math.max(1.5, Math.ceil(p1.y - p.y)));
-                        continue;
-                    }
-                    // Blob radius must at least COVER its cell, or the layer
-                    // draws a halftone lattice of separated dots — a picture of
-                    // our 0.1° binning rather than of the fires. Overlapping
-                    // neighbours is the point: where fire is continuous the
-                    // blobs merge into a front, and additive blending then
-                    // makes the hot core brighter on its own.
-                    const r = Math.max(3, Math.min(60, cellPx * (0.8 + 0.6 * inten)));
-                    const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
-                    g.addColorStop(0, `rgba(255,${Math.round(140 + 90 * k)},40,${0.55 * k + 0.1})`);
-                    g.addColorStop(0.5, `rgba(239,68,68,${0.3 * k})`);
-                    g.addColorStop(1, 'rgba(239,68,68,0)');
-                    ctx.fillStyle = g;
-                    ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, 6.283); ctx.fill();
-                }
-            }
+            drawFireGrid(ctx, D.fireGrid, t, proj, w, h, bMs * 2.2);
         }
         // --- fire points: individual detections flash + afterglow ---
         if (on.firePts && D.firePts) drawFirePoints(ctx, D.firePts, t, proj, w, h, zoom);

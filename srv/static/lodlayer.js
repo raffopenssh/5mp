@@ -371,6 +371,10 @@
         if (!window.MapTip) return;
         var s = reg.get(key);
         window.MapTip.register(layerId, {
+            // Names the tab when several answers share a point (see maptip.js).
+            // The layer's own type, so "Fire" and "Settlement" under one click
+            // are told apart by what they are, not by which is on top.
+            tabLabel: (s.tipType || 'Feature').replace(/^./, function (c) { return c.toUpperCase(); }),
             html: function (props) {
                 props = props || {};
                 var id = props.rid;
