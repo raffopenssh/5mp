@@ -1680,6 +1680,17 @@ python3 scripts/daily_fire_update.py --days 7
 
 ## Documentation
 
+### ⚠️ Active handover: `docs/HANDOVER_LOD_FEATURES.md`
+
+Server side of "smooth zoom to clickable vectors + paused-animation GeoPackage"
+is **done and live**; the frontend is **not started**. New endpoints already
+shipped: `/api/features-in-bbox?mode=auto` (server picks geometry vs centroids
+from the true count in view, returns `render:`), `/api/feature-detail?id=`,
+`POST /api/view/export.gpkg` (export exactly what is on screen, `?at=` = the
+playhead). `mode=points` on `/api/fire-frames` is now gated on estimated
+detections, not bbox area. Read the handover before touching pinned layers,
+`anim.js` or the feature endpoints.
+
 See `docs/` directory:
 - `README.md` - Overview
 - `INSTALL.md` - Setup guide
