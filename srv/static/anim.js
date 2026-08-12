@@ -139,7 +139,13 @@
     .anim-chip.loading i { animation: animChipPulse 0.8s infinite alternate; }
     @keyframes animChipPulse { 0% { opacity: .3; } 100% { opacity: 1; } }
     .anim-chip:hover { border-color: rgba(34,197,94,0.35); color: #ccc; }
-    .anim-chip.unavailable { opacity: .35; pointer-events: none; }
+    /* A disabled chip must still be HOVERABLE. pointer-events:none made it
+       invisible to the cursor, so the one thing it has to do -- explain why it
+       is off -- could not happen, and it read as broken rather than as
+       refused. Clicks are refused in toggleChip() instead, where the reason is
+       known and can be said out loud. */
+    .anim-chip.unavailable { opacity: .38; cursor: not-allowed; }
+    .anim-chip.unavailable:hover { border-color: rgba(255,255,255,0.15); color: #999; }
     .anim-chip.hidden { display: none; }
 
     /* playhead + progress inside the slider track */
@@ -385,7 +391,11 @@
                 // would be too much, and we fall through to the grid — so the
                 // layer means the same thing at every zoom and only its
                 // rendering changes.
-                if (wantPoints(A.fetchBbox, res)) {
+                // The feasibility probe (refreshFirePtsFeasibility) may
+                // already know the answer is no — in which case do not spend a
+                // request proving it again. Unknown still asks: a missing
+                // probe must never cost the user the better rendering.
+                if (wantPoints(A.fetchBbox, res) && !(A.ptsFeas && A.ptsFeas.ok === false)) {
                     try {
                         const p = await fetchJSON(`/api/fire-frames?mode=points&bbox=${bb}&from=${fromISO}&to=${toISO}&step=day&pwd=${pwd}`);
                         if (p.mode === 'points') {
@@ -605,15 +615,23 @@
         cv.width = w; cv.height = h;
         const g = cv.getContext('2d');
         g.clearRect(0, 0, w, h);
+        // Same halo rule as the settlement sprite: the heat field is drawn
+        // under these, and purple on amber is barely a colour difference.
+        // Aged clearings need it most — they are the faintest thing here and
+        // also the only permanent one.
+        const shown = [];
         for (let i = 0; i < n; i++) {
             const d = arr[i];
             const p = proj(d.lon, d.lat);
             if (p.x < -10 || p.y < -10 || p.x > w + 10 || p.y > h + 10) continue;
             const k = deforestAge(tq, d.t);
-            g.fillStyle = deforestColor(k, 0.35 - 0.13 * k);
-            g.beginPath();
-            g.arc(p.x, p.y, deforestRadius(d, zoom) * deforestAgeScale(k), 0, 6.283);
-            g.fill();
+            shown.push([p, k, deforestRadius(d, zoom) * deforestAgeScale(k)]);
+        }
+        g.fillStyle = 'rgba(16,6,26,0.5)';
+        for (const s of shown) { g.beginPath(); g.arc(s[0].x, s[0].y, s[2] + 1.4, 0, 6.283); g.fill(); }
+        for (const s of shown) {
+            g.fillStyle = deforestColor(s[1], 0.7 - 0.25 * s[1]);
+            g.beginPath(); g.arc(s[0].x, s[0].y, s[2], 0, 6.283); g.fill();
         }
         _defSprite = { key, canvas: cv };
         return cv;
@@ -635,12 +653,23 @@
         cv.width = w; cv.height = h;
         const g = cv.getContext('2d');
         g.clearRect(0, 0, w, h);
-        g.fillStyle = 'rgba(251,191,36,0.45)';
+        // Each dot carries its own dark halo. Settlement yellow (#fbbf24) is
+        // the same hue as the top of the fire ramp, and the heat field is now
+        // drawn UNDERNEATH these dots — so over a burning dry season a bare
+        // yellow dot on amber is invisible exactly where a settlement matters
+        // most. The halo is cheap here (this bitmap is built once per view,
+        // not per frame) and it makes the layer independent of whatever is
+        // behind it, dark basemap or white-hot fire alike.
+        const dots = [];
         for (const s of pts) {
             const p = proj(s.lon, s.lat);
             if (p.x < -10 || p.y < -10 || p.x > w + 10 || p.y > h + 10) continue;
-            g.beginPath(); g.arc(p.x, p.y, 1.6, 0, 6.283); g.fill();
+            dots.push(p);
         }
+        g.fillStyle = 'rgba(20,12,4,0.55)';
+        for (const p of dots) { g.beginPath(); g.arc(p.x, p.y, 3.0, 0, 6.283); g.fill(); }
+        g.fillStyle = 'rgba(253,224,71,0.95)';
+        for (const p of dots) { g.beginPath(); g.arc(p.x, p.y, 1.6, 0, 6.283); g.fill(); }
         _settSprite = { key, canvas: cv };
         return cv;
     }
@@ -727,16 +756,25 @@
     // The old ramp was `rgb(255, 90..200, 40)`: at low intensity that is a
     // dull yellow-green which, at 20% alpha over a near-black basemap, comes
     // out OLIVE. A field of olive squares beside blue lakes reads as land
-    // cover, not as fire — which is exactly how the screenshots looked. This
-    // is the conventional thermal ramp instead (dark red → red → orange →
-    // amber → near-white), so even a single faint cell is unmistakably heat.
+    // cover, not as fire.
+    //
+    // The replacement (dark red → orange → amber → near-white) fixed the
+    // colour and then failed the same way for a different reason: over a
+    // continental dry season MOST cells land mid-ramp, and a whole country of
+    // mid-ramp orange at 30% alpha is again a brown smear that reads as land
+    // cover. A heat scale used as a FIELD has to spend most of its length in
+    // the deep reds and keep orange and white rare enough to mean something —
+    // which is what the scientific inferno/magma ramps do, and why they are
+    // the convention for exactly this kind of surface.
     const HEAT = [
-        [120, 20, 12],    // barely anything burnt here
-        [200, 40, 20],
-        [239, 68, 38],
-        [249, 130, 40],
-        [252, 190, 70],
-        [255, 244, 200]   // the hot core
+        [ 60,  10,  40],   // barely anything burnt here — near-black plum
+        [110,  18,  50],
+        [160,  30,  45],
+        [205,  50,  35],   // ordinary savanna burning
+        [235,  95,  30],
+        [250, 160,  40],   // a serious front
+        [255, 225, 130],
+        [255, 250, 220]    // the hot core, rare on purpose
     ];
     function heatRGB(v) {
         const x = Math.max(0, Math.min(0.999, v)) * (HEAT.length - 1);
@@ -759,86 +797,345 @@
         return gridScratch;
     }
 
-    /**
-     * The aggregated fire grid.
-     *
-     * Two renderings, chosen by the cell's size in screen pixels:
-     *
-     * SMALL CELL — a soft blob per cell, drawn straight to the map. The radius
-     * covers the cell, so where fire is continuous the blobs merge into a
-     * front and additive blending finds the hot core on its own.
-     *
-     * LARGE CELL — the cells are areas now, and drawing them as flat rects is
-     * what produced the checkerboard of hard-edged tiles: a picture of our
-     * 0.1° binning, with a visible step at every cell edge that the data does
-     * not have (a fire front does not stop at a tenth of a degree). So they
-     * are painted into an offscreen canvas and composited back through a blur
-     * of about a third of a cell. The result is one continuous heat surface
-     * whose *shape* still comes from the data, and every intensity step is now
-     * a gradient rather than a wall. A blob is deliberately NOT used here: at
-     * this size a circle at the cell's centre asserts a peak the pre-agg
-     * tables never measured.
-     *
-     * The blur runs once per frame over one screen of pixels regardless of how
-     * many cells there are — the same trick as the settled-layer sprites.
-     */
-    function drawFireGrid(ctx, G, t, proj, w, h, fadeMs) {
-        const res = G.res;
-        // Cell size in px, measured once from the frame's own resolution.
-        const c0 = proj(0, 0), c1 = proj(res, 0);
-        const cellPx = Math.abs(c1.x - c0.x);
-        const field = cellPx > GRID_CELL_PX_MAX;
-        let target = ctx, scratch = null;
-        if (field) {
-            scratch = scratchFor(Math.max(1, Math.round(w)), Math.max(1, Math.round(h)));
-            target = scratch.getContext('2d');
-            target.clearRect(0, 0, scratch.width, scratch.height);
-            // Inside the scratch the cells must ADD, exactly as they do on the
-            // map, or an overlapping older frame would punch a hole in a newer
-            // one instead of brightening it.
-            target.globalCompositeOperation = 'lighter';
-        }
+    // ---------- the fire heat field ----------
+    //
+    // WHY THIS IS NOT A PULSE ANY MORE.
+    //
+    // The old rendering drew every frame still inside a fade window straight
+    // onto the map with `globalCompositeOperation = 'lighter'`. Two things
+    // followed, and both are visible in a 2.5-year AOI animation:
+    //
+    //  1. ALPHA STACKED INSTEAD OF INTENSITY ADDING. Each bucket painted its
+    //     own translucent layer, so three quiet months on top of each other
+    //     came out brighter than one busy one, and over 485,000 km² of dry
+    //     season the whole polygon washed to a flat pink sheet with the
+    //     structure — where it is actually burning — buried in it.
+    //  2. EVERY CELL STROBED ONCE PER BUCKET. A bucket is an impulse: the cell
+    //     flashed on its bucket boundary and decayed, so ground that burns
+    //     continuously all season flickered monthly. That is a picture of our
+    //     bucketing, not of the fire — the same class of mistake as the
+    //     checkerboard the blur was added to hide.
+    //
+    // So the field is computed as a NUMBER per cell and coloured once:
+    //
+    //     heat(cell, t) = Σ_bucket  n · ramp(t) · exp(−age / τ)
+    //
+    //   * `ramp` rises across the bucket's own duration instead of landing all
+    //     at once. We do not know when inside a month a detection burnt, so
+    //     spreading it across the month is the least-wrong statement — and it
+    //     is what removes the strobe: a continuously-burning cell now holds
+    //     steady instead of sawtoothing.
+    //   * `exp(−age/τ)`, τ ≈ 1.2 buckets, is the cooling memory: a front
+    //     leaves a trail that fades, so movement reads as movement.
+    //   * decay reaches zero. Deliberately NO permanent burn scar: over a
+    //     multi-year window every cell in a savanna AOI has burnt at some
+    //     point, so a scar layer is a solid rectangle that says nothing. The
+    //     persistent record of loss is the deforestation layer, in purple.
+    //
+    // And it is rasterised in CELL SPACE — one texel per 0.1° cell — then
+    // upscaled by the GPU with bilinear smoothing. That is what makes it fast
+    // *and* continuous: the cost is (cells in view) writes plus a handful of
+    // drawImage calls, regardless of how many buckets are alive, instead of
+    // one fillRect per cell per bucket plus a full-screen CSS blur.
+    const HEAT_TAU_BUCKETS = 1.2;    // cooling time constant
+    const HEAT_WINDOW_TAUS = 3.0;    // how far back a bucket still contributes
+    const HEAT_MAX_CELLS = 1200000;  // sanity ceiling on the texel buffer
+
+    function heatIndex(G) {
+        if (G._idx) return G._idx;
+        let xi0 = Infinity, xi1 = -Infinity, yi0 = Infinity, yi1 = -Infinity;
         for (const f of G.frames) {
-            if (f.t > t) break;
-            const age = t - f.t;
-            if (age > fadeMs) continue;
-            const k = 1 - age / fadeMs;
             for (const pt of f.pts) {
-                const lon = pt[0] * res, lat = pt[1] * res;
-                const p = proj(lon, lat);
-                if (p.x < -cellPx - 20 || p.y < -cellPx - 20 ||
-                    p.x > w + cellPx + 20 || p.y > h + cellPx + 20) continue;
-                const inten = Math.min(1, Math.log2(1 + pt[2]) / 6);
-                const rgb = heatRGB(inten * (0.45 + 0.55 * k));
-                if (field) {
-                    // Half a cell of overlap on each side: the blur eats the
-                    // outer edge, and without the overlap the field develops
-                    // dark seams along every cell boundary.
-                    const p1 = proj(lon + res, lat - res);
-                    const cw = Math.max(1.5, p1.x - p.x), ch = Math.max(1.5, p1.y - p.y);
-                    target.fillStyle = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${(0.30 + 0.55 * inten) * k})`;
-                    target.fillRect(p.x - cw / 2, p.y - ch / 2, cw, ch);
-                    continue;
-                }
-                const r = Math.max(3, Math.min(60, cellPx * (0.8 + 0.6 * inten)));
-                const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
-                g.addColorStop(0, `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${0.55 * k + 0.1})`);
-                g.addColorStop(0.5, `rgba(239,68,68,${0.3 * k})`);
-                g.addColorStop(1, 'rgba(239,68,68,0)');
-                ctx.fillStyle = g;
-                ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, 6.283); ctx.fill();
+                if (pt[0] < xi0) xi0 = pt[0];
+                if (pt[0] > xi1) xi1 = pt[0];
+                if (pt[1] < yi0) yi0 = pt[1];
+                if (pt[1] > yi1) yi1 = pt[1];
             }
         }
-        if (field) {
-            // `filter` is not universally supported on a 2D context; without
-            // it the field still draws, just with the old hard edges. Never
-            // let a missing filter mean a missing layer.
-            const prev = ctx.filter;
-            try { ctx.filter = 'blur(' + Math.min(24, cellPx * 0.34).toFixed(1) + 'px)'; }
-            catch (err) { /* no filter support */ }
-            ctx.drawImage(scratch, 0, 0, scratch.width, scratch.height, 0, 0, w, h);
-            try { ctx.filter = prev || 'none'; } catch (err) { /* ignore */ }
+        if (!isFinite(xi0)) return (G._idx = { empty: true });
+        const nx = xi1 - xi0 + 1, ny = yi1 - yi0 + 1;
+        if (nx * ny > HEAT_MAX_CELLS) return (G._idx = { empty: true });
+        G._idx = {
+            xi0, yi0, xi1, yi1, nx, ny,
+            acc: new Float32Array(nx * ny),
+            canvas: null, img: null,
+            // frame start times, so the contributing window is a binary search
+            // rather than a scan of every bucket in the animation.
+            times: G.frames.map(f => f.t)
+        };
+        // THE SCALE IS MEASURED ON THE QUANTITY ACTUALLY DRAWN.
+        //
+        // A fixed "N detections = white" cannot work across this range. In a
+        // Sahelian dry season the AVERAGE 0.1° cell holds ~40 detections a
+        // month, so a constant chosen to make one park's fires visible paints
+        // half a continent white — which is what the screenshots showed. And a
+        // per-FRAME normalisation is worse: the picture would brighten as the
+        // season ends, i.e. the colour would stop meaning anything over time.
+        //
+        // So: one scale for the whole animation, measured once by running the
+        // real accumulation (`accumulate`) at a handful of sample times and
+        // taking the 99th percentile of what comes out. Deriving it from the
+        // raw bucket counts instead needed a fudge factor for the decay tail,
+        // and that factor is data-dependent — three consecutive burning days
+        // stack, three scattered ones do not — so it came out wrong in
+        // opposite directions at park and continental scale. Measuring costs a
+        // few passes over the grid, once.
+        // ... and taken from the BUSIEST sample, not from all of them pooled.
+        // Pooling mixes a quiet July into the percentile, which drags the top
+        // of the ramp down until January saturates to white over half the AOI
+        // — the very frame the scale exists to keep readable. The busiest
+        // moment is the one at risk, so it sets the scale, and every quieter
+        // frame then reads as genuinely quieter. (Still ONE scale for the
+        // whole animation: measured once, not per frame.)
+        let hot = 0;
+        const SAMPLES = 11;
+        const ft0 = G.frames[0].t, ft1 = G.frames[G.frames.length - 1].t;
+        const sBMs = G.frames.length > 1
+            ? Math.max(DAY, (ft1 - ft0) / (G.frames.length - 1))
+            : DAY;
+        for (let s = 0; s < SAMPLES; s++) {
+            const st = ft0 + (ft1 - ft0) * (s + 0.5) / SAMPLES + sBMs;
+            if (!accumulate(G._idx, G.frames, st, sBMs)) continue;
+            // Sample the cells rather than sorting the whole grid every time.
+            const acc = G._idx.acc;
+            const stride = Math.max(1, Math.floor(acc.length / 4000));
+            const vals = [];
+            for (let i = 0; i < acc.length; i += stride) if (acc[i] > 0.02) vals.push(acc[i]);
+            if (!vals.length) continue;
+            vals.sort((a, b) => a - b);
+            hot = Math.max(hot, vals[Math.min(vals.length - 1, Math.floor(0.98 * vals.length))]);
         }
+        G._idx.hot = Math.max(3, hot || 8);
+
+        // HOW HARD TO CURVE THE INK IS A QUESTION ABOUT COVERAGE, not about a
+        // zoom level — the same rule as densityPaint() in lodlayer.js.
+        //
+        // A continental dry season has fire in nearly every cell, and there a
+        // gentle ramp is a brown sheet: the curve has to be hard so only the
+        // top decile reads. A single park in the same season has a handful of
+        // hot cells in a mostly-empty grid, and there that same hard curve
+        // under-inks the very thing the user zoomed in to see. So measure it:
+        // what fraction of the grid's cells carry fire in its busiest bucket?
+        const busiest = G.frames.reduce((m, f) => Math.max(m, f.pts.length), 0);
+        const cover = Math.max(0, Math.min(1, busiest / (nx * ny)));
+        // 2% of cells -> bold (1.4); 60%+ -> hard (2.8). Linear between.
+        const lerp = Math.max(0, Math.min(1, (cover - 0.02) / 0.58));
+        G._idx.aGamma = 1.4 + 1.4 * lerp;
+        G._idx.cGamma = 1.0 + 0.9 * lerp;
+        return G._idx;
+    }
+
+    // heat(cell, t) = Σ_bucket n · ramp · exp(−age/τ), into ix.acc. Returns the
+    // peak, or 0 when nothing is alive at t.
+    function accumulate(ix, frames, t, bMs) {
+        const tau = HEAT_TAU_BUCKETS * bMs;
+        const acc = ix.acc;
+        acc.fill(0);
+        const lo = lowerBoundNum(ix.times, t - HEAT_WINDOW_TAUS * tau - bMs);
+        let peak = 0;
+        for (let fi = lo; fi < frames.length; fi++) {
+            const f = frames[fi];
+            if (f.t > t) break;
+            // ramp-in across the bucket's own duration, then exponential
+            // cooling: we do not know WHEN inside a month a detection burnt,
+            // so spreading it over the month is the least-wrong statement —
+            // and it is what removes the strobe.
+            const since = t - f.t;
+            const ramp = Math.min(1, since / bMs);
+            const age = Math.max(0, since - bMs);
+            const wgt = ramp * Math.exp(-age / tau);
+            if (wgt < 0.004) continue;
+            for (const pt of f.pts) {
+                const i = (ix.yi1 - pt[1]) * ix.nx + (pt[0] - ix.xi0);
+                if (i < 0 || i >= acc.length) continue;
+                const v = acc[i] + pt[2] * wgt;
+                acc[i] = v;
+                if (v > peak) peak = v;
+            }
+        }
+        return peak;
+    }
+
+    // first index with times[i] >= tt
+    function lowerBoundNum(times, tt) {
+        let lo = 0, hi = times.length;
+        while (lo < hi) { const m = (lo + hi) >> 1; if (times[m] < tt) lo = m + 1; else hi = m; }
+        return lo;
+    }
+
+    // Paint the heat numbers into the cell-space texel buffer. Returns the
+    // buffer's canvas, or null when the frame is empty.
+    function heatBuffer(G, t, bMs) {
+        const ix = heatIndex(G);
+        if (ix.empty) return null;
+        const acc = ix.acc;
+        if (!accumulate(ix, G.frames, t, bMs)) return null;
+
+        // THE BUFFER'S ROWS ARE MERCATOR, NOT LATITUDE.
+        //
+        // Cell rows are equally spaced in *latitude*; screen rows are equally
+        // spaced in *mercator y*. Blitting one as the other puts the field
+        // visibly north of its fires over a continental span, and stitching it
+        // back in horizontal bands (the first attempt) drew every band edge
+        // twice through a translucent alpha, i.e. bright horizontal seams
+        // across the map. Resampling here instead makes the draw ONE exact
+        // `drawImage` again, with the GPU's bilinear filter doing the
+        // smoothing it is for.
+        // x3 rows: enough that the mercator row lookup never skips a cell row
+        // (the worst-case latitude stretch across an area this size is well
+        // under 2), and small enough that the whole buffer stays a few tens of
+        // thousands of texels — this loop runs every frame. Sub-cell smoothing
+        // is the GPU's job on the way out, not this buffer's.
+        const my = Math.min(1024, Math.max(ix.ny, ix.ny * 3));
+        if (!ix.canvas || ix.canvas.height !== my) {
+            ix.canvas = ix.canvas || document.createElement('canvas');
+            ix.canvas.width = ix.nx; ix.canvas.height = my;
+            ix.ctx = ix.canvas.getContext('2d');
+            ix.img = ix.ctx.createImageData(ix.nx, my);
+            ix.my = my;
+            // Row lookup is fixed for a given grid: cache it.
+            ix.rowOf = new Int32Array(my);
+            const latN = (ix.yi1 + 0.5) * G.res, latS = (ix.yi0 - 0.5) * G.res;
+            const mY = lat => Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360));
+            const yN = mY(latN), yS = mY(latS);
+            for (let j = 0; j < my; j++) {
+                const ym = yN + (yS - yN) * (j + 0.5) / my;
+                const lat = (Math.atan(Math.exp(ym)) - Math.PI / 4) * 360 / Math.PI;
+                let r = ix.yi1 - Math.round(lat / G.res);
+                if (r < 0) r = 0; else if (r >= ix.ny) r = ix.ny - 1;
+                ix.rowOf[j] = r;
+            }
+        }
+        const data = ix.img.data;
+        // One scale for the whole animation, from the data's own distribution
+        // (see heatIndex). log2 so a single detection stays visible beside a
+        // 500-detection front.
+        const denom = Math.log2(1 + ix.hot);
+        for (let j = 0, o = 0; j < my; j++) {
+            const base = ix.rowOf[j] * ix.nx;
+            for (let i = 0; i < ix.nx; i++, o += 4) {
+                const v = acc[base + i];
+                if (v <= 0.02) { data[o + 3] = 0; continue; }
+                const raw = Math.min(1, Math.log2(1 + v) / denom);
+                // COLOUR AND ALPHA GAMMA, on top of the log, and both keyed on
+                // how much of the view burns (see heatIndex). A log scale
+                // compresses the top, but the DENSITY of this data is at the
+                // bottom: over a December dry season the bulk of the AOI sits
+                // around 0.6-0.7 of the ramp, which reads orange — so the
+                // picture came out as a continent of orange with the real
+                // fronts indistinguishable inside it. Curving pushes the
+                // ordinary into the deep reds and keeps orange and white for
+                // the cells that earn them; it also settles the clash with the
+                // yellow settlement dots and purple clearings, which have to
+                // stay legible ON TOP of this. Over a sparse park the same
+                // curve flattens towards linear, because there the hot cells
+                // are the point and nothing is crowding them out.
+                const inten = Math.pow(raw, ix.cGamma);
+                const rgb = heatRGB(inten);
+                data[o] = rgb[0]; data[o + 1] = rgb[1]; data[o + 2] = rgb[2];
+                data[o + 3] = Math.round(255 * Math.min(0.82, Math.pow(raw, ix.aGamma)));
+            }
+        }
+        ix.ctx.putImageData(ix.img, 0, 0);
+        return ix.canvas;
+    }
+
+    /**
+     * The aggregated fire grid, drawn as a continuous heat FIELD.
+     *
+     * `heatBuffer` has already reduced every live bucket to one number per
+     * 0.1° cell and coloured it, in cell space. All that is left is to put
+     * that little image on the map — one `drawImage`, bilinearly upscaled by
+     * the GPU, instead of a fillRect per cell per bucket plus a full-screen
+     * CSS blur. For the reference view (XSA, 2.5 years, 32 monthly buckets,
+     * 127k cell-buckets) that is ~4k texel writes and one blit per frame.
+     *
+     * Three details that are not decoration:
+     *
+     *  * WEB MERCATOR IS NOT LINEAR IN LATITUDE. The buffer is resampled onto
+     *    mercator rows in `heatBuffer`, so the blit is exact and stays a
+     *    single `drawImage`. Stitching bands instead (the first attempt) drew
+     *    each band edge twice through a translucent alpha and left bright
+     *    horizontal seams across the map.
+     *  * UNDER ROTATION OR PITCH an axis-aligned blit is simply wrong, so that
+     *    case falls back to projecting each cell. Same numbers, same colours,
+     *    just slower — a wrong picture is not an acceptable fast path.
+     *  * SMOOTHING IS THE POINT. The 0.1° grid is our binning, not the fire's
+     *    edge; bilinear upscaling plus a light blur (a quarter of a cell)
+     *    turns each intensity step into a gradient. Missing `ctx.filter`
+     *    support degrades to hard-edged cells, never to a missing layer.
+     */
+    function drawFireGrid(ctx, G, t, proj, w, h, bMs) {
+        const res = G.res;
+        const ix = heatIndex(G);
+        if (ix.empty) return;
+        const buf = heatBuffer(G, t, bMs);
+        if (!buf) return;
+        const prevOp = ctx.globalCompositeOperation;
+        ctx.globalCompositeOperation = 'source-over';
+
+        const c0 = proj(0, 0), c1 = proj(res, 0);
+        const cellPx = Math.abs(c1.x - c0.x);
+
+        const bearing = (map.getBearing && map.getBearing()) || 0;
+        const pitch = (map.getPitch && map.getPitch()) || 0;
+        if (Math.abs(bearing) > 0.5 || pitch > 0.5) {
+            drawHeatCells(ctx, ix, res, proj, w, h, cellPx);
+            ctx.globalCompositeOperation = prevOp;
+            return;
+        }
+
+        const lonW = (ix.xi0 - 0.5) * res, lonE = (ix.xi1 + 0.5) * res;
+        const latN = (ix.yi1 + 0.5) * res, latS = (ix.yi0 - 0.5) * res;
+        const pNW = proj(lonW, latN), pSE = proj(lonE, latS);
+        const dx = pNW.x, dw = pSE.x - pNW.x;
+        if (!(dw > 0)) { ctx.globalCompositeOperation = prevOp; return; }
+        // Nothing on screen: skip the blit entirely (a panned-away AOI).
+        if (pSE.x < -8 || dx > w + 8) { ctx.globalCompositeOperation = prevOp; return; }
+
+        const prevSmooth = ctx.imageSmoothingEnabled;
+        ctx.imageSmoothingEnabled = true;
+        try { ctx.imageSmoothingQuality = 'high'; } catch (e) { /* not everywhere */ }
+        const prevFilter = ctx.filter;
+        if (cellPx > 3) {
+            try { ctx.filter = 'blur(' + Math.min(10, cellPx * 0.26).toFixed(1) + 'px)'; }
+            catch (e) { /* hard edges, still the right shape */ }
+        }
+
+        // One exact blit. The buffer's rows are already mercator-spaced
+        // (heatBuffer), and screen y is linear in mercator y whenever the map
+        // is neither rotated nor pitched -- which is the case guarded above.
+        ctx.drawImage(buf, 0, 0, buf.width, buf.height, dx, pNW.y, dw, pSE.y - pNW.y);
+        try { ctx.filter = prevFilter || 'none'; } catch (e) { /* ignore */ }
+        ctx.imageSmoothingEnabled = prevSmooth;
+        ctx.globalCompositeOperation = prevOp;
+    }
+
+    // Rotated/pitched fallback: the same accumulated heat, projected per cell.
+    function drawHeatCells(ctx, ix, res, proj, w, h, cellPx) {
+        const acc = ix.acc;
+        const scratch = scratchFor(Math.max(1, Math.round(w)), Math.max(1, Math.round(h)));
+        const g = scratch.getContext('2d');
+        g.clearRect(0, 0, scratch.width, scratch.height);
+        for (let i = 0; i < acc.length; i++) {
+            const v = acc[i];
+            if (v <= 0.02) continue;
+            const cx = i % ix.nx, cy = (i / ix.nx) | 0;
+            const lon = (ix.xi0 + cx) * res, lat = (ix.yi1 - cy) * res;
+            const p = proj(lon, lat);
+            if (p.x < -cellPx - 20 || p.y < -cellPx - 20 ||
+                p.x > w + cellPx + 20 || p.y > h + cellPx + 20) continue;
+            const inten = Math.min(1, Math.log2(1 + v) / 6);
+            const rgb = heatRGB(inten);
+            const s = Math.max(1.5, cellPx * 1.2);
+            g.fillStyle = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${Math.min(0.88, 0.18 + 0.82 * Math.pow(inten, 0.8))})`;
+            g.fillRect(p.x - s / 2, p.y - s / 2, s, s);
+        }
+        const prev = ctx.filter;
+        try { ctx.filter = 'blur(' + Math.min(12, Math.max(1, cellPx * 0.3)).toFixed(1) + 'px)'; }
+        catch (e) { /* ignore */ }
+        ctx.drawImage(scratch, 0, 0, scratch.width, scratch.height, 0, 0, w, h);
+        try { ctx.filter = prev || 'none'; } catch (e) { /* ignore */ }
     }
 
     // ---------- draw ----------
@@ -916,6 +1213,25 @@
             }
         }
 
+        // --- fire heat field (backdrop) ---
+        //
+        // ORDER IS THE POINT. The heat field is a SURFACE — it covers ground
+        // rather than marking a thing — so it belongs under the discrete
+        // layers, exactly like the geology drape under the map tips. Drawn
+        // above them (which it was) a busy dry season painted a sheet over
+        // every settlement and clearing in the AOI, and the user's answer to
+        // "where has it been cleared" became "somewhere under the pink".
+        //
+        // It also composites `source-over`, not `lighter`: the buckets were
+        // already summed as NUMBERS in heatBuffer, so adding the finished
+        // pixels a second time would double-count them and re-create the
+        // washed-out sheet in a different way. Individual detections and
+        // trajectories stay additive — they are sparse, and that is what makes
+        // a cluster of them glow.
+        if (on.fireGrid && D.fireGrid && !D.fireGrid.asPoints) {
+            drawFireGrid(ctx, D.fireGrid, t, proj, w, h, bMs);
+        }
+
         // --- settlements (static) ---
         //
         // Settlements never change with t, so at 12,000 points they were
@@ -947,7 +1263,9 @@
                 const age = (t - d.t) / DAY;
                 const flash = Math.max(0, 1 - age / DEFOREST_FLASH_DAYS);
                 const r = deforestRadius(d, zoom) * (1 + flash * 0.8);
-                ctx.fillStyle = deforestColor(0, 0.35 + flash * 0.55);
+                ctx.fillStyle = 'rgba(16,6,26,0.5)';   // halo, as in the sprite
+                ctx.beginPath(); ctx.arc(p.x, p.y, r + 1.4, 0, 6.283); ctx.fill();
+                ctx.fillStyle = deforestColor(0, 0.5 + flash * 0.5);
                 ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, 6.283); ctx.fill();
             }
         }
@@ -1054,31 +1372,17 @@
         }
         ctx.globalCompositeOperation = 'lighter';
 
-        // --- fire grid ---
+        // --- fire detections (additive) ---
         //
-        // Three renderings of one layer, and which one you get is decided by
-        // the cell's size in SCREEN PIXELS — never by a zoom number, because
-        // the same zoom over a different viewport is a different picture:
-        //
-        //   small cell   -> a soft blob (the classic heat look)
-        //   large cell   -> a FIELD: the cells are painted as areas into an
-        //                   offscreen canvas and blurred back together, so
-        //                   they read as one continuous heat surface instead
-        //                   of a checkerboard of tiles (see below)
-        //   zoomed right in -> `loadLayer` has already swapped the whole layer
-        //                   for real detections (`asPoints`)
-        //
-        // The old code sized the blob from `zoom/5`, so blobs grew faster than
-        // the ground they cover and the layer got *less* informative exactly
-        // when the user zoomed in for more. The effort layer has always done
-        // this from `cellPx`; this did not, and that was the visible bug over
-        // a 1:250k historical sheet.
+        // `fireGrid` swaps itself for real detections when the view is zoomed
+        // in far enough (`asPoints`, decided by the server from the true count
+        // in view) — one rendering shared with the `firePts` chip, so the two
+        // cannot drift into disagreeing about what a fire looks like. The
+        // aggregated FIELD form of the same layer was drawn earlier, as a
+        // backdrop; see there for why.
         if (on.fireGrid && D.fireGrid && D.fireGrid.asPoints) {
             drawFirePoints(ctx, D.fireGrid.points, t, proj, w, h, zoom);
-        } else if (on.fireGrid && D.fireGrid) {
-            drawFireGrid(ctx, D.fireGrid, t, proj, w, h, bMs * 2.2);
         }
-        // --- fire points: individual detections flash + afterglow ---
         if (on.firePts && D.firePts) drawFirePoints(ctx, D.firePts, t, proj, w, h, zoom);
         ctx.globalCompositeOperation = 'source-over';
 
@@ -1321,6 +1625,37 @@
                     lines: [fmtDateHuman(q[2]),
                             q[3] ? 'Intensity ' + Math.round(q[3]) + ' MW' : null]
                 }));
+            }
+        }
+        // The heat field, last and only when nothing discrete answered. It is
+        // a SURFACE: every pixel of it is a hit, so letting it compete on
+        // distance would give it 0 and it would win over the trajectory the
+        // user is pointing at. Same rule as the geology drape's priority -30.
+        if (!best && on.fireGrid && D.fireGrid && !D.fireGrid.asPoints && D.fireGrid._idx) {
+            const ix = D.fireGrid._idx, res = D.fireGrid.res;
+            if (!ix.empty && map.unproject) {
+                const ll = map.unproject([pt.x, pt.y]);
+                const cx = Math.round(ll.lng / res) - ix.xi0;
+                const cy = ix.yi1 - Math.round(ll.lat / res);
+                if (cx >= 0 && cy >= 0 && cx < ix.nx && cy < ix.ny) {
+                    const v = ix.acc[cy * ix.nx + cx];
+                    if (v > 0.02) {
+                        const stepLbl = D.fireGrid.step === 'day' ? 'day'
+                                      : D.fireGrid.step === 'week' ? 'week' : 'month';
+                        best = { dist: PROBE_PX, make: () => ({
+                            label: 'Fire activity',
+                            // "≈" because this is the decayed sum the pixel is
+                            // drawn from, not a count of anything: it mixes the
+                            // current bucket with what is still cooling from
+                            // the previous ones. An exact-looking number here
+                            // would be precision the picture does not have.
+                            lines: ['≈' + fmtCount(Math.round(v)) + ' detection'
+                                        + (Math.round(v) === 1 ? '' : 's') + ' burning here',
+                                    'around ' + fmtDateHuman(t) + ' (' + stepLbl + ' buckets)',
+                                    Math.round(res * 111) + ' km cell']
+                        }) };
+                    }
+                }
             }
         }
         if (!best) return null;
@@ -1609,14 +1944,62 @@
     }
 
     // ---------- chips ----------
+    // ---------- can we draw individual detections here? ----------
+    //
+    // The `fire points` chip can only ever be honoured when the number of
+    // detections in the window is under the server's ceiling. Offering it
+    // regardless meant a user clicked it, waited for a request, and was told
+    // "1.4M detections in view — showing the density grid instead": an offer
+    // the app already knew was refused, and a spinner spent proving it.
+    //
+    // `mode=estimate` is ~10 ms over fire_grid_day, so the answer is fetched
+    // WITH the layers and refreshed whenever the view or the window changes.
+    // The chip is then disabled *with the number in its hover hint* — a
+    // refusal that says how much too much it is, which is the difference
+    // between "broken" and "zoom in and it will work".
+    //
+    // Unknown is never a refusal: if the probe fails, the chip stays live and
+    // the old ask-then-fall-back path answers.
+    async function refreshFirePtsFeasibility() {
+        if (!A) return;
+        const bb = A.fetchBbox.map(v => v.toFixed(4)).join(',');
+        const key = bb + '|' + A.fromISO + '|' + A.toISO;
+        if (A.ptsFeas && A.ptsFeas.key === key) return;
+        const my = (A._feasSeq = (A._feasSeq || 0) + 1);
+        try {
+            const j = await fetchJSON(`/api/fire-frames?mode=estimate&bbox=${bb}&from=${A.fromISO}&to=${A.toISO}`
+                + `&pwd=${encodeURIComponent(getPwdSafe())}`);
+            if (!A || my !== A._feasSeq) return;
+            A.ptsFeas = { key, ok: !!j.points_ok, estimate: j.estimate || 0, max: j.max || 0 };
+        } catch (e) {
+            if (!A || my !== A._feasSeq) return;
+            A.ptsFeas = { key, ok: true, unknown: true };   // never refuse on a failed probe
+        }
+        updateChips();
+    }
+
+    function firePtsRefusal() {
+        const f = A && A.ptsFeas;
+        if (!f || f.ok) return null;
+        if (!f.estimate) return 'No fire detections in this view and window.';
+        return fmtCount(f.estimate) + ' detections in this view — too many to draw one by one '
+             + '(limit ' + fmtCount(f.max) + '). Zoom in, or shorten the window; '
+             + 'the fire grid shows all of them as a heat field.';
+    }
+
     function updateChips() {
         if (!A) return;
+        const refusal = firePtsRefusal();
         document.querySelectorAll('.anim-chip').forEach(chip => {
             const name = chip.dataset.layer;
             chip.classList.toggle('on', !!A.on[name]);
             const dot = chip.querySelector('i');
             if (dot) dot.style.background = A.on[name] ? LAYERS[name].color : '#555';
             if (A.on[name]) chip.style.color = '';
+            if (name === 'firePts') {
+                chip.classList.toggle('unavailable', !!refusal && !A.on[name]);
+                chip.title = refusal || LAYERS.firePts.title;
+            }
         });
     }
 
@@ -1634,6 +2017,15 @@
 
     async function toggleChip(name) {
         if (!A) return;
+        // A refused layer answers the click with its reason instead of doing
+        // nothing: the chip is dimmed, so a click on it is a question.
+        if (!A.on[name]) {
+            const chip = document.querySelector(`.anim-chip[data-layer="${name}"]`);
+            if (chip && chip.classList.contains('unavailable')) {
+                toast(chip.title, 'info', { key: 'anim-chip-' + name });
+                return;
+            }
+        }
         A.on[name] = !A.on[name];
         updateChips();
         syncBaseEffortVisibility();
@@ -1895,6 +2287,7 @@
             if (!A) return;
             const { bbox } = activeBbox();
             A.fetchBbox = bbox;
+            refreshFirePtsFeasibility();
             for (const name of LAYER_ORDER) {
                 if (A.on[name] && A.data[name] !== undefined && name !== 'turb' && name !== 'infra') {
                     delete A.data[name];
@@ -1992,6 +2385,22 @@
             syncBaseEffortVisibility();
 
             // load initial layers with progress modal
+            //
+            // The feasibility probe runs FIRST and is awaited: it costs ~10 ms
+            // (one SUM over fire_grid_day) and it decides two things the
+            // loaders would otherwise get wrong — whether `fireGrid` should
+            // even try for individual detections, and whether a share link
+            // naming `firePts` is asking for something this view cannot have.
+            // A link is not an override: it can carry a viewport its author
+            // never had, so an impossible layer is dropped WITH its reason
+            // rather than switched on to draw nothing.
+            await refreshFirePtsFeasibility();
+            if (A.on.firePts && A.ptsFeas && A.ptsFeas.ok === false) {
+                A.on.firePts = false;
+                initial = initial.filter(n => n !== 'firePts');
+                updateChips();
+                toast(firePtsRefusal(), 'info', { key: 'anim-chip-firePts' });
+            }
             const active = initial.slice();
             let done = 0;
             showLoading('Loading ' + active.length + ' layers…', 5);

@@ -193,6 +193,40 @@ else
     red "FAIL ($a vs $b)"; FAILED=$((FAILED + 1)); ERRORS+=("detail_unknown_falls_back_to_all")
 fi
 
+yellow "\n=== Animator: fire points feasibility ==="
+# The animator asks BEFORE offering the "fire points" chip, so a user is never
+# invited to click something the server will refuse. mode=estimate is a pure
+# read over fire_grid_day (~10 ms) and must be side-effect free.
+test_api "fire_frames_estimate_shape" \
+    "/api/fire-frames?mode=estimate&bbox=22,4,32,11&from=2024-01-01&to=2026-08-12" "200" \
+    "(.estimate | type == \"number\") and (.points_ok | type == \"boolean\") and .max > 0"
+# A continental multi-year window is far past the ceiling: the refusal is the
+# whole point of the endpoint, and it must carry the NUMBER so the chip's hint
+# can say how much too much it is.
+test_api "fire_frames_estimate_refuses_continental" \
+    "/api/fire-frames?mode=estimate&bbox=22,4,32,11&from=2024-01-01&to=2026-08-12" "200" \
+    ".points_ok == false and .estimate > .max"
+# A small window over one park is allowed -- if this ever fails closed, the
+# chip is permanently dead and the high-zoom rendering unreachable.
+test_api "fire_frames_estimate_allows_small" \
+    "/api/fire-frames?mode=estimate&bbox=24.2,6.4,24.6,6.8&from=2025-12-01&to=2025-12-08" "200" \
+    ".points_ok == true"
+# The estimate must agree with what mode=points actually does, or the chip
+# refuses views that would have worked (or offers ones that fall back).
+printf "%-50s" "fire_frames_estimate_matches_points"
+est_ok=$(curl -s -m 60 -b "$COOKIE_FILE" \
+    "${BASE_URL}/api/fire-frames?mode=estimate&bbox=24.2,6.4,24.6,6.8&from=2025-12-01&to=2025-12-08" \
+    | jq -r '.points_ok')
+real_mode=$(curl -s -m 60 -b "$COOKIE_FILE" \
+    "${BASE_URL}/api/fire-frames?mode=points&bbox=24.2,6.4,24.6,6.8&from=2025-12-01&to=2025-12-08" \
+    | jq -r '.mode')
+if [[ "$est_ok" == "true" && "$real_mode" == "points" ]]; then
+    green "✓"; PASSED=$((PASSED + 1))
+else
+    red "FAIL (estimate says $est_ok, points returned $real_mode)"
+    FAILED=$((FAILED + 1)); ERRORS+=("fire_frames_estimate_matches_points")
+fi
+
 yellow "\n=== Areas of interest (AOI) ==="
 # Visibility is the whole point: an AOI owned by another principal must be
 # invisible AND must 404 (never 403 — an id must not be an oracle).
