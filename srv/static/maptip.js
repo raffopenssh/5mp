@@ -37,8 +37,28 @@
  * `clickOnly` is the other half of the same idea. A backdrop that covers the
  * whole viewport must not emit a hover tip — there is no "off it" to move to,
  * so the tip would simply follow the cursor forever. Such a layer answers a
- * deliberate click, and answers it as a sticky tip (with a close button) even
- * for a mouse.
+ * deliberate click. Use it sparingly: MapTip only ever shows ONE tip, so a
+ * backdrop already loses to anything more specific under the cursor, and
+ * `clickOnly` is only warranted when the layer owns the click too (the AOI
+ * polygon, which opens its own popup). The geology drape does not: it is an
+ * ordinary hover tip at priority -30.
+ *
+ * A CLICK OPENS THE REAL THING, NOT A COPY OF IT.
+ *
+ * Where a layer has an `onActivate`, a click on a fine pointer runs it — the
+ * AOI opens its popup, a fire opens its report. A sticky tip must never stand
+ * in for that: it reproduced the first three lines of the AOI popup without
+ * the grab bar, the minimise button or the rest of the content, so clicking an
+ * area got you less than it used to.
+ *
+ * ON A COARSE POINTER, THE TIP CARRIES EVERY ANSWER AT THE POINT AS TABS.
+ *
+ * There is no hover on a finger, so the one tap has to serve both "what is
+ * this?" and "open it". The sticky tip answers the first (with the action
+ * button for the second), and because a place genuinely holds several answers
+ * — a fire path, over an area, over a geological unit — it lists them in
+ * priority order with the winner selected. On a mouse those same answers are
+ * reachable by moving the cursor, which is why the tabs are not needed there.
  */
 (function () {
     'use strict';
@@ -75,6 +95,32 @@
     margin-top: 6px; padding-top: 5px; border-top: 1px solid rgba(255,255,255,0.08);
     color: #6b7280; font-size: 10px;
 }
+/* Tabs: every answer at this point, in priority order. Only ever on a sticky
+   (clicked/tapped) tip — a hover has one moving question and one answer. */
+.maptip-tabs {
+    display: none; gap: 4px; margin: -2px -3px 7px -3px; padding-bottom: 6px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    overflow-x: auto; scrollbar-width: none;
+}
+.maptip-tabs::-webkit-scrollbar { display: none; }
+.maptip.sticky .maptip-tabs.available { display: flex; }
+.maptip-tab {
+    flex: 0 0 auto; display: flex; align-items: center; gap: 5px;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.10);
+    color: #9ca3af; font: inherit; font-size: 10.5px; font-weight: 600;
+    letter-spacing: .02em; padding: 4px 8px; border-radius: 999px; cursor: pointer;
+    white-space: nowrap;
+}
+.maptip-tab:hover { color: #e5e7eb; background: rgba(255,255,255,0.10); }
+.maptip-tab.active {
+    color: #f3f4f6; background: rgba(255,255,255,0.16);
+    border-color: rgba(255,255,255,0.28);
+}
+.maptip-tab .maptip-tab-dot {
+    width: 7px; height: 7px; border-radius: 2px; flex: none;
+    background: currentColor; opacity: .8;
+}
+.maptip-hint { color: #6b7280; font-size: 10px; margin-top: 6px; }
 .maptip-close {
     position: absolute; top: 3px; right: 4px; width: 22px; height: 22px;
     display: none; align-items: center; justify-content: center;
@@ -122,11 +168,14 @@
 @media (max-width: 640px), (hover: none) {
     .maptip { max-width: min(84vw, 340px); font-size: 13px; padding: 11px 13px; }
     .maptip-close { width: 30px; height: 30px; font-size: 19px; }
+    /* A tab is a tap target, not a label. */
+    .maptip-tab { font-size: 11.5px; padding: 7px 11px; }
+    .maptip-tabs { gap: 6px; padding-bottom: 8px; }
 }
 `;
 
     var map = null;
-    var el = null, closeBtn = null, actionBtn = null, bodyEl = null;
+    var el = null, closeBtn = null, actionBtn = null, bodyEl = null, tabsEl = null;
     var registry = new Map();      // layerId -> opts
     // Probes are the same idea for things that are NOT MapLibre layers: the
     // animator draws to its own canvas, so `queryRenderedFeatures` cannot see
@@ -178,11 +227,19 @@
         el.className = 'maptip';
         el.innerHTML =
             '<button class="maptip-close" aria-label="Close">&times;</button>' +
+            '<div class="maptip-tabs"></div>' +
             '<div class="maptip-body"></div>' +
             '<button class="maptip-action"></button>';
         closeBtn = el.querySelector('.maptip-close');
+        tabsEl = el.querySelector('.maptip-tabs');
         bodyEl = el.querySelector('.maptip-body');
         actionBtn = el.querySelector('.maptip-action');
+        tabsEl.addEventListener('click', function (ev) {
+            var b = ev.target.closest ? ev.target.closest('.maptip-tab') : null;
+            if (!b) return;
+            ev.stopPropagation();
+            selectTab(parseInt(b.getAttribute('data-i'), 10) || 0);
+        });
         closeBtn.addEventListener('click', function (ev) { ev.stopPropagation(); hide(true); });
         actionBtn.addEventListener('click', function (ev) {
             ev.stopPropagation();
@@ -221,6 +278,41 @@
         el.style.top = Math.round(y) + 'px';
     }
 
+    // The answers at the anchored point, and which one is being read. Only
+    // meaningful while sticky.
+    var stack = null, stackIdx = 0;
+
+    function renderTabs() {
+        if (!tabsEl) return;
+        if (!sticky || !stack || stack.length < 2) {
+            tabsEl.classList.remove('available');
+            tabsEl.innerHTML = '';
+            return;
+        }
+        tabsEl.innerHTML = stack.map(function (t, i) {
+            return '<button class="maptip-tab' + (i === stackIdx ? ' active' : '') +
+                   '" data-i="' + i + '">' +
+                   (t.opts && t.opts.tabColor
+                        ? '<span class="maptip-tab-dot" style="background:' + t.opts.tabColor + '"></span>'
+                        : '') +
+                   escapeTab(t.tab) + '</button>';
+        }).join('');
+        tabsEl.classList.add('available');
+    }
+
+    function escapeTab(s) {
+        return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+        });
+    }
+
+    function selectTab(i) {
+        if (!stack || !stack[i]) return;
+        stackIdx = i;
+        var t = stack[i];
+        show(t.html, lastPoint, anchor, t.extra, t.opts, t.feature, t.layerId);
+    }
+
     function show(html, point, lngLat, extra, opts, feature, layerId) {
         if (!el) build();
         if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
@@ -231,6 +323,7 @@
             ? '<div class="maptip-more">+' + extra + ' more feature' + (extra > 1 ? 's' : '') + ' here — zoom in to separate</div>'
             : '';
         bodyEl.innerHTML = html + more;
+        renderTabs();
         var label = opts && opts.actionLabel ? opts.actionLabel : 'Open in report';
         if (opts && typeof opts.onActivate === 'function') {
             actionBtn.textContent = label;
@@ -246,8 +339,10 @@
         if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
         sticky = false;
         current = null;
+        stack = null; stackIdx = 0;
         if (!el) return;
         el.classList.remove('sticky');
+        if (tabsEl) { tabsEl.classList.remove('available'); tabsEl.innerHTML = ''; }
         if (immediate) {
             el.classList.remove('visible');
         } else {
@@ -258,7 +353,15 @@
         }
     }
 
-    function tipFor(e, forClick) {
+    /**
+     * Every answer at this point, best first.
+     *
+     * `all` = false stops at the winner (a hover asks one question). `all` =
+     * true keeps going, which is what a click gets: see the header note — a
+     * place holds several answers and losing the priority contest must not
+     * mean being unreachable.
+     */
+    function tipsFor(e, forClick, all) {
         var cand = [];
         var layers = liveLayers().filter(function (id) {
             var o = registry.get(id);
@@ -300,13 +403,19 @@
         cand = cand.filter(function (c) { return c.opts && typeof c.opts.html === 'function'; });
         if (!cand.length) return null;
         cand.sort(function (a, b) { return (b.pri - a.pri) || (a.i - b.i); });
+        var guardBlocked = null;   // evaluated at most once per event
+        var out = [];
+        var seen = {};             // one row per layer: 12 fire paths are one answer
         for (var i = 0; i < cand.length; i++) {
             var f = cand[i].f, opts = cand[i].opts;
             if (cand[i].pri < 0 && backdropGuard) {
-                var blocked = false;
-                try { blocked = !!backdropGuard(e); } catch (err) { blocked = false; }
-                if (blocked) continue;
+                if (guardBlocked === null) {
+                    try { guardBlocked = !!backdropGuard(e); } catch (err) { guardBlocked = false; }
+                }
+                if (guardBlocked) continue;
             }
+            var layerId = cand[i].probeId || (f.layer && f.layer.id);
+            if (all && seen[layerId]) continue;
             var html;
             try { html = opts.html(f.properties || {}, f, e); } catch (err) { html = null; }
             // A registration may decline a feature by returning falsy — the
@@ -315,17 +424,80 @@
             // AOI layer uses this to stand down over a park polygon, which is
             // the same precedence rule the park click handler applies.
             if (!html) continue;
-            // "+N more here" counts only peers, not the backdrop the feature
-            // happens to sit on: an AOI or a geology unit under a fire
-            // trajectory is context, not a second thing to zoom in and separate.
-            var extra = 0;
-            for (var j = 0; j < cand.length; j++) {
-                if (j !== i && cand[j].pri >= cand[i].pri) extra++;
+            seen[layerId] = true;
+            // "+N more here" means "there are other features of THIS KIND
+            // under the cursor that you would have to zoom in to tell apart".
+            //
+            // Three things it must not count. Other LAYERS — a geology unit
+            // under a fire trajectory is a different question, and it is now a
+            // tab, i.e. already reachable, so advising a zoom would be wrong
+            // twice over. Other PARTS of the same feature: MapLibre returns
+            // one result per tile per part, so a multipolygon AOI reported
+            // "+3 more features here" about itself and a geology unit — one
+            // dissolved multipart per class — reported "+96". And repeats of
+            // an identical feature across tile seams.
+            //
+            // Identity is the feature id when there is one, and otherwise the
+            // properties themselves: a vector tile carrying no id is exactly
+            // the case where two results with identical attributes ARE one
+            // thing (that is how the source dissolved them).
+            var extra = 0, mine = {};
+            mine[featureKey(f)] = true;
+            // A backdrop opts out entirely (`peers: false`). "Zoom in to
+            // separate" is advice for picking between things you were trying
+            // to click; nobody clicks a country-sized drape to choose one of
+            // its 17 units, and at low zoom the count is an artefact of tile
+            // simplification (overlapping simplified rings) rather than of the
+            // map. The tab already says the layer is there.
+            if (opts.peers !== false) {
+                for (var j = 0; j < cand.length; j++) {
+                    if (j === i) continue;
+                    var of = cand[j].f;
+                    if ((cand[j].probeId || (of.layer && of.layer.id)) !== layerId) continue;
+                    var k = featureKey(of);
+                    if (mine[k]) continue;
+                    mine[k] = true;
+                    extra++;
+                }
             }
-            return { html: html, opts: opts, feature: f,
-                     layerId: cand[i].probeId || f.layer.id, extra: extra };
+            out.push({ html: html, opts: opts, feature: f,
+                       layerId: layerId, extra: extra,
+                       tab: tabLabelFor(opts, f, layerId) });
+            if (!all) break;
         }
-        return null;
+        return out.length ? out : null;
+    }
+
+    // See the "+N more here" note in tipsFor().
+    function featureKey(f) {
+        if (!f) return '?';
+        var p = f.properties || {};
+        if (f.id != null) return 'i:' + f.id;
+        if (p.rid != null) return 'r:' + p.rid;
+        if (p.feature_id != null) return 'f:' + p.feature_id;
+        if (p.id != null) return 'p:' + p.id;
+        try { return 'j:' + JSON.stringify(p); } catch (err) { return 'x:' + Math.random(); }
+    }
+
+    function tipFor(e, forClick) {
+        var t = tipsFor(e, forClick, false);
+        return t ? t[0] : null;
+    }
+
+    // What a tab is called. A registration says so (`tabLabel`, string or
+    // function); otherwise fall back to something derived from the layer id,
+    // because an unnamed tab is worse than no tab.
+    function tabLabelFor(opts, f, layerId) {
+        var l = opts && opts.tabLabel;
+        if (typeof l === 'function') {
+            try { l = l((f && f.properties) || {}, f); } catch (err) { l = null; }
+        }
+        if (l) return String(l);
+        var id = String(layerId || '');
+        if (id.indexOf('geomap-') === 0) return 'Geology';
+        if (id.indexOf('aois') === 0) return 'Area';
+        return id.replace(/^lod-|-(fill|line|circle|point|arrow|front|glow)$/g, '')
+                 .replace(/[-_:]+/g, ' ').trim() || 'Feature';
     }
 
     function onMouseMove(e) {
@@ -342,26 +514,54 @@
     }
 
     function onClick(e) {
-        var t = tipFor(e, true);
-        if (!t) {
+        // Only a coarse pointer needs every answer: a mouse can hover for
+        // them, and a click there means "open this".
+        var coarse = pointerIsCoarse(e);
+        var all = tipsFor(e, true, coarse);
+        if (!all) {
             if (sticky) hide(true);
             return;
         }
+        var t = all[0];
         if (e.originalEvent) e.originalEvent.stopPropagation();
         // Tell the park-polygon click handler to stand down: a tap on a pinned
         // feature must not also open the park report popup underneath.
         window._mapTipClicked = true;
         setTimeout(function () { window._mapTipClicked = false; }, 60);
-        if (t.opts.clickOnly || pointerIsCoarse(e)) {
-            // Tap = show the tip; the tip itself carries the "open report" action.
-            show(t.html, e.point, e.lngLat, t.extra, t.opts, t.feature, t.layerId);
-            sticky = true;
-            el.classList.add('sticky');
-            position(e.point);
-        } else if (typeof t.opts.onActivate === 'function') {
+        // A click on a fine pointer does the DIRECT thing whenever the layer
+        // has one, backdrop or not. That is what a click on an area has always
+        // meant: it opens the area's popup — with its grab bar, its minimise
+        // button and its full content — not a card that reproduces the first
+        // three lines of it. `clickOnly` is about not emitting a HOVER tip; it
+        // was never meant to turn a click into a tooltip.
+        //
+        // The tabbed sticky tip is for a coarse pointer, where there is no
+        // hover at all and a tap is the only way to reach anything underneath.
+        if (!coarse && typeof t.opts.onActivate === 'function') {
             hide(true);
             try { t.opts.onActivate(t.feature, e); } catch (err) { console.error(err); }
+            return;
         }
+        // A mouse click on a layer with nothing to open (geology, and any
+        // other purely informative layer) leaves the HOVER tip exactly as it
+        // is. Freezing it into a sticky card with a close button would demand
+        // a dismissal for something the user dismisses by moving the mouse —
+        // and it is how a click on the rock map ended up feeling heavier than
+        // a click on a fire.
+        if (!coarse) {
+            // ...and if a previous tap left one on screen, this click dismisses
+            // it, so the sticky state cannot outlive the thing it described.
+            if (sticky) { sticky = false; el.classList.remove('sticky'); renderTabs(); }
+            return;
+        }
+        anchor = e.lngLat ? { lng: e.lngLat.lng, lat: e.lngLat.lat } : anchor;
+        lastPoint = e.point;
+        if (!el) build();
+        sticky = true;
+        stack = all; stackIdx = 0;
+        el.classList.add('sticky');
+        show(t.html, e.point, e.lngLat, t.extra, t.opts, t.feature, t.layerId);
+        position(e.point);
     }
 
     function onMapMove() {
@@ -424,8 +624,12 @@
                 html = current.opts.html(current.feature.properties || {}, current.feature,
                                          { point: lastPoint, lngLat: anchor });
             } catch (err) { return; }
-            if (html) show(html, lastPoint, anchor, current.extra, current.opts,
-                           current.feature, current.layerId);
+            if (!html) return;
+            // Keep the stack in step, or switching away and back shows the
+            // stale placeholder the async detail just replaced.
+            if (stack && stack[stackIdx]) stack[stackIdx].html = html;
+            show(html, lastPoint, anchor, current.extra, current.opts,
+                 current.feature, current.layerId);
         },
         isTouch: function () { return (Date.now() - lastMoveAt) > TAP_WINDOW_MS; },
         count: function () { return registry.size; }

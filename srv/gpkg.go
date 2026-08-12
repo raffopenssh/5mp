@@ -458,13 +458,30 @@ func (w *gpkgWriter) checkpoint() {
 
 // SetStyle stores a QGIS QML style for a layer, applied automatically on open.
 func (w *gpkgWriter) SetStyle(table, qml, description string) {
+	w.SetStyleNamed(table, table, qml, description, true)
+}
+
+// SetStyleNamed stores an ADDITIONAL named style. QGIS lists every row of
+// layer_styles under Layer Properties → Style → Load, so a second style is how
+// a file offers a legitimate alternative rendering (the geology export ships
+// "as printed" beside the standard age/lithology legend) without a second
+// download or a .qml sidecar that can go missing.
+//
+// `useAsDefault` must be true for exactly one style per table: QGIS applies the
+// first default it finds, so two would make which legend you get depend on
+// insertion order.
+func (w *gpkgWriter) SetStyleNamed(table, name, qml, description string, useAsDefault bool) {
 	if qml == "" || w.tx == nil {
 		return
 	}
+	def := 0
+	if useAsDefault {
+		def = 1
+	}
 	w.tx.Exec(`INSERT INTO layer_styles
 		(f_table_catalog, f_table_schema, f_table_name, f_geometry_column, styleName, styleQML, styleSLD, useAsDefault, description, owner, ui)
-		VALUES ('', '', ?, 'geom', ?, ?, NULL, 1, ?, '5MP', NULL)`,
-		table, table, qml, description)
+		VALUES ('', '', ?, 'geom', ?, ?, NULL, ?, ?, '5MP', NULL)`,
+		table, name, qml, def, description)
 }
 
 // Finish updates extents, drops empty layers (an empty table in QGIS's browser

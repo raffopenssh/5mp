@@ -1166,8 +1166,25 @@ three overlapping answers at once (geology popup + AOI popup + AOI map tip):
   is context, not a second thing to zoom in and separate.
 * **`clickOnly`.** A layer covering the whole viewport must not hover-tip —
   there is no "off it" to move to, so the tip just follows the cursor forever.
-  Such a layer answers a deliberate click, as a **sticky** tip (close button +
-  action row) even for a mouse.
+  Use it **sparingly**: only where the layer also owns the click (the AOI
+  polygon, which opens its own popup). Geology is not such a layer.
+* **A click opens the real thing, never a copy of it.** On a fine pointer a
+  click runs `onActivate` — the AOI opens its *popup*, with the grab bar, the
+  minimise button and the whole content. A sticky tip standing in for it
+  reproduced the first three lines and lost the rest, i.e. clicking an area
+  gave you *less* than before. A click on a layer with no `onActivate`
+  (geology) leaves the hover tip alone: the user dismisses it by moving the
+  mouse, so demanding a × is heavier than the thing being described.
+* **On a coarse pointer the sticky tip carries every answer at the point as
+  tabs** (`tabLabel` / `tabColor`, priority order, winner selected). There is
+  no hover on a finger, so one tap has to serve both "what is this" and "open
+  it"; on a mouse those same answers are reachable by moving the cursor, which
+  is why the tabs are not drawn there.
+* **`+N more here` counts peers of the same feature, not tile parts.**
+  `queryRenderedFeatures` returns one result per tile per part, so a
+  multipolygon AOI reported "+3 more" about *itself* and a dissolved geology
+  class "+96". Identity is the feature id, or the properties themselves when a
+  vector tile carries none (`featureKey()`).
 * **`MapTip.setBackdropGuard(fn)`** — stated once, in the `map.on('load')`
   block, not re-implemented per layer: a park polygon has its own popup and its
   own click handler, so every negative-priority tip stands down over one. The
@@ -1312,9 +1329,59 @@ need one tileset per combination of 46 classes.
   missing unit.
 * `switchBasemap()` excludes `geomap-*` and calls `GeoMap.reattach()`, which
   re-adds on `idle` — the same `before`-id trap as `HistMap`.
-* **The unit card is a MapTip registration, `clickOnly` + `priority: -30`** —
-  see "Hover tip precedence". It is the deepest backdrop on the map: a park, an
-  AOI, and every pinned feature answer a click before it does.
+* **The unit card is an ordinary hover tip at `priority: -30`** — the deepest
+  backdrop on the map: a park, an AOI and every pinned feature answer before it
+  does. It was `clickOnly` on the theory that a country-sized drape has no "off
+  it" to move to; that was over-thought (MapTip shows only ONE tip, so geology
+  simply loses to anything more specific) and it made the rock map heavier to
+  use than a fire. It also carries `peers: false`: a drape's 17 units are a
+  legend, not a pile-up to "zoom in and separate".
+
+### One layer, one legend, and the legend is the industry's
+
+The two sheets were printed 40 years apart by different surveys and digitised
+in *their own* inks. Presented as two cards (two toggles, two opacity sliders,
+two class lists) the user had to reconcile two colour languages for one
+question — and at the CAR/Sudan border the same rock changed colour. Several of
+both sheets' inks are also a desaturated blue-grey that on a dark basemap is
+indistinguishable from the waterbody layer, which is how a geology drape got
+read as **water**.
+
+Fixed 2026-08-12 (`srv/geomap_std.go`, `srv/static/geopatterns.js`):
+
+* **Colour = age**, ICS/CGMW International Chronostratigraphic Chart (v2023).
+  **Pattern = lithology**, FGDC-STD-013-2006 §37 (dots for sand, bricks for
+  carbonate, plus-signs for intrusives, wavy dashes for schist/gneiss…).
+  Both are *derived server-side from the sheet's own group/name strings* and
+  ride in `/api/geomap`'s catalogue, so **a legend change never invalidates a
+  tile** — the tiles carry `code`, the catalogue says what a code means.
+* **The ornament is load-bearing, not decoration.** Nothing else on the map is
+  hatched, so a hatched polygon is always the rock map — at any opacity, on any
+  basemap, and for a colour-blind reader. It also survives being turned down,
+  which a hue does not: `GeoPatterns.tile()` weights the ink far above the
+  background for exactly that reason. Default opacity 0.42.
+* **The printed ink is never discarded.** `color` stays on every class,
+  `setColorMode('ink')` draws the sheet as printed, and the GeoPackage keeps
+  `ink_color` beside `ics_color` plus an `as_printed` named style.
+* **The age scan is first-match and order-sensitive**: `"precambrien"` contains
+  `"cambrien"`, so the Cambrian rules must come *after* the Precambrian ones or
+  every CAR basement unit dates as Cambrian. Pinned by `TestGeoAgeOf`.
+  A group naming several ages is `age_mixed` and takes the **oldest** — never
+  a pick, same rule as a merged code.
+* **The sheet is demoted to provenance**: one Geology toggle, one legend, one
+  opacity; the per-sheet API stays (tiles, downloads, share links are per
+  sheet) but is no longer the user's unit of thought. A commodity chip acts on
+  **every** sheet — rock does not stop at a border.
+* **The QGIS export uses the same legend** (`styleGeoUnits`), because someone
+  who filters "gold" on the map and opens the download must be looking at the
+  same picture. Ornament is a real QGIS `LinePatternFill`/`PointPatternFill`,
+  not a raster texture. Two traps: `use_custom_dash` belongs on the *line*
+  layer (on the fill it is silently ignored and all nine ornaments come out
+  solid), and a sub-symbol name `@parent@N` must be **unique** within its
+  parent or QGIS drops one and a cross-hatch renders as half of itself.
+* **Contacts are drawn in a darkened ink, never the unit's own colour.** These
+  rings are traced off a scan, so 46 classes outlined at full saturation is a
+  net of bright magenta over a whole country.
 
 **Both downloads ship**: `?geomap=` renders the sheet, `Download MBTiles` is
 the picture, `Download GeoPackage` is the data (typed columns, one
@@ -1352,6 +1419,20 @@ Animates all toggled/pinned map layers over the time-slider window.
 | Dated trajectories API | `GET /api/fire-anim-trajectories` → same file (reads `data/fire_groups_v5/*.json`, ~40-park LRU cache) |
 | Pre-agg tables | `fire_grid_day/week/month` (base 0.1°, PK `(d, xi, yi)` WITHOUT ROWID; cell center = `xi*res, yi*res`) |
 | Agg builder | `scripts/build_fire_grid_agg.py` (full ~100s; `--since YYYY-MM-DD` incremental; called by `daily_fire_update.py` step 2c) |
+
+**Fire grid rendering** (`drawFireGrid`, `heatRGB` in anim.js, 2026-08-12): the
+old ramp swept one channel, `rgb(255, 90..200, 40)`, which at low intensity and
+20% alpha over a near-black basemap comes out **olive** — a field of olive
+squares beside blue lakes reads as land cover, not fire. It is a conventional
+thermal ramp now (dark red → red → orange → amber → near-white), shared with
+`drawFirePoints` so crossing the points/grid threshold is not a colour change.
+And when a cell is bigger than `GRID_CELL_PX_MAX` the cells are painted into an
+offscreen canvas and composited back through a **blur of ~⅓ of a cell**, so the
+layer reads as one continuous heat surface instead of a checkerboard of
+hard-edged tiles — a picture of our 0.1° binning that the data does not have.
+Cells overlap by half a cell (the blur eats the outer edge, and without it the
+field grows dark seams), the scratch canvas is kept across frames, and a
+missing `ctx.filter` degrades to the old hard edges rather than to no layer.
 
 **Key behaviors** (all in `anim.js`, v2 — integrated into the time slider):
 - UI lives **inside** the time-slider header: play/date/speed/GIF/close inline, playhead + progress rendered in the slider track (playhead is pointer-draggable to scrub; pauses while dragging, resumes after). `#anim-open-btn` is a preset-tag-styled chip.

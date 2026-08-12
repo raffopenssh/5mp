@@ -1360,10 +1360,20 @@
         // its rendering, kept here beside renderHistMapPanel() because the
         // two share the Map Settings tab and the same overlay discipline.
         //
-        // The legend is the interface, not a key: 47 classes is too many for
-        // a checkbox list nobody reads, so the commodity chips come FIRST
-        // (that is the question this overlay exists to answer) and the class
-        // list is collapsed behind a summary.
+        // ONE CARD, ONE LEGEND. It used to render one card per scanned sheet:
+        // two toggles, two opacity sliders, two class lists and two colour
+        // languages for one question ("what rock is under here?"). A user in
+        // South Sudan cannot be expected to know that the 2004 GRAS sheet is
+        // the one covering them, and at the CAR/Sudan border the same rock
+        // changed colour. So the sheet is demoted to what it is — provenance —
+        // and the legend is the industry's: colour = age (ICS/CGMW chart),
+        // ornament = lithology (FGDC-STD-013-2006 §37).
+        //
+        // The legend is the interface, not a key. Age and lithology come
+        // first (they are what a geological map IS), the commodity chips
+        // second (the question this overlay exists to answer), and the full
+        // class list stays collapsed behind a summary because 63 units across
+        // two sheets is not a checkbox list anybody reads.
         // ---------------------------------------------------------------
         function renderGeoMapPanel() {
             const box = document.getElementById('geomap-list');
@@ -1375,117 +1385,238 @@
                 box.innerHTML = '<div style="color:#666;font-size:12px;">No geology sheets built on this server.</div>';
                 return;
             }
-            box.innerHTML = ids.map(id => geoMapSheetHTML(id, sheets[id])).join('');
+            box.innerHTML = geoMapCardHTML(ids, sheets);
         }
 
-        function geoMapSheetHTML(id, s) {
-            const cat = s.catalogue || {};
-            const on = GeoMap.isOn(id);
-            const o = GeoMap.state(id);
-            const classes = GeoMap.classes(id);
+        /** A legend swatch: the age colour wearing its lithology ornament. */
+        function geoSwatch(lith, color, px) {
+            const size = px || 14;
+            const bg = (typeof GeoPatterns !== 'undefined')
+                ? `background-image:${GeoPatterns.swatchCSS(lith || 'mixed', color)};background-size:${size + 8}px ${size + 8}px;`
+                : `background:${escapeHtml(color)};`;
+            return `<span style="width:${size}px;height:${size}px;border-radius:3px;flex:none;${bg}border:1px solid rgba(0,0,0,0.45);"></span>`;
+        }
+
+        function geoMapCardHTML(ids, sheets) {
+            const on = GeoMap.anyOn();
+            const avail = ids.filter(id => sheets[id] && sheets[id].available);
+            const classes = GeoMap.allClasses().filter(c => (sheets[c.sheet] || {}).available);
+            const std = GeoMap.std();
+            const shared = GeoMap.shared();
+
             const head = `
                 <div style="display:flex;align-items:flex-start;gap:12px;">
                     <div style="flex:1;min-width:0;">
-                        <div style="color:#fff;font-size:13px;font-weight:600;">${escapeHtml(cat.title || id)}</div>
+                        <div style="color:#fff;font-size:13px;font-weight:600;">Geological units</div>
                         <div style="color:#777;font-size:11px;margin-top:4px;line-height:1.5;">
-                            ${escapeHtml(cat.publisher || '')}${cat.scale ? ' &middot; ' + escapeHtml(cat.scale) : ''}
-                            ${classes.length ? ' &middot; ' + classes.length + ' units' : ''}</div>
+                            ${classes.length} units from ${avail.length} survey sheet${avail.length === 1 ? '' : 's'}
+                            &middot; colour = age, pattern = rock type</div>
                     </div>
-                    ${s.available
-                    ? `<button onclick="GeoMap.toggle('${id}')" class="star-report-btn${on ? '' : ' secondary'}"
+                    ${avail.length
+                    ? `<button onclick="GeoMap.toggleAll()" class="star-report-btn${on ? '' : ' secondary'}"
                            style="font-size:12px;white-space:nowrap;">${on ? 'Hide' : 'Show'}</button>`
                     : `<span style="color:#666;font-size:11px;white-space:nowrap;">not built</span>`}
                 </div>`;
 
-            if (!s.available) {
-                return `<div id="geomap-card-${id}" style="border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px;margin-bottom:12px;background:rgba(255,255,255,0.02);">
+            if (!avail.length) {
+                return `<div style="border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px;background:rgba(255,255,255,0.02);">
                     ${head}
-                    <div style="color:#666;font-size:11px;margin-top:8px;">${escapeHtml(s.reason || '')}
-                    &mdash; run <code>scripts/geomaps/vectorize.py ${id}</code> then <code>scripts/geomaps/tiles.sh ${id}</code>.</div>
+                    ${ids.map(id => `<div id="geomap-card-${id}" style="color:#666;font-size:11px;margin-top:8px;">
+                        ${escapeHtml((sheets[id].catalogue || {}).short || id)}: ${escapeHtml(sheets[id].reason || 'not built')}
+                        &mdash; run <code>scripts/geomaps/vectorize.py ${id}</code> then <code>scripts/geomaps/tiles.sh ${id}</code>.</div>`).join('')}
                 </div>`;
             }
 
-            // Commodity chips: the grouped toggle the whole overlay is for.
+            // --- age legend: the chart, ordered as a chart is (young to old),
+            // and only the periods these sheets actually contain. Printing the
+            // full ICS chart would offer 20 rows for a legend with 8 in it.
+            const byAge = {};
+            classes.forEach(c => { byAge[c.age] = (byAge[c.age] || 0) + 1; });
+            const ages = (std.ages || []).filter(a => byAge[a.key]);
+            const ageRows = ages.map(a => `
+                <div style="display:flex;align-items:center;gap:7px;padding:2px 0;">
+                    <span style="width:13px;height:13px;border-radius:3px;flex:none;background:${escapeHtml(a.color)};border:1px solid rgba(0,0,0,0.45);"></span>
+                    <span style="color:#bbb;font-size:11px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(a.label)}</span>
+                    <span style="color:#666;font-size:10px;">${byAge[a.key]}</span>
+                </div>`).join('');
+
+            // --- lithology legend, and also a filter. Same control does both:
+            // a legend nobody can act on is a picture of a legend.
+            const byLith = {};
+            classes.forEach(c => { byLith[c.lith] = (byLith[c.lith] || 0) + 1; });
+            const lithRows = (std.lithology || []).filter(l => byLith[l.key]).map(l => {
+                const active = GeoMap.lithOn(l.key);
+                return `<div onclick="GeoMap.toggleLith('${l.key}')" title="${escapeHtml(l.desc)} &mdash; click to show only these"
+                    style="display:flex;align-items:center;gap:7px;padding:3px 4px;border-radius:4px;cursor:pointer;${active ? 'background:rgba(251,191,36,0.14);' : ''}">
+                    ${geoSwatch(l.key, active ? '#fbbf24' : '#9ca3af', 13)}
+                    <span style="color:${active ? '#fcd34d' : '#bbb'};font-size:11px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(l.label)}</span>
+                    <span style="color:#666;font-size:10px;">${byLith[l.key]}</span>
+                </div>`;
+            }).join('');
+
+            // --- commodity chips, unioned across sheets. A commodity is a
+            // property of rock, not of a scan, so "everything that can host
+            // gold" must not stop at a border.
             const byCommodity = {};
             classes.forEach(c => (c.commodities || []).forEach(k => {
                 byCommodity[k] = (byCommodity[k] || 0) + 1;
             }));
             const chips = Object.keys(byCommodity).sort().map(k => {
-                const active = GeoMap.commodityOn(id, k);
-                return `<button onclick="GeoMap.toggleCommodity('${id}','${escapeHtml(k)}')"
+                const active = avail.some(id => GeoMap.commodityOn(id, k));
+                return `<button onclick="geoToggleCommodityAll('${escapeHtml(k)}')"
                     class="geo-chip" aria-pressed="${active}"
                     title="${active ? 'Stop showing' : 'Also show'} the units whose rock type can host ${escapeHtml(k)}">
                     ${escapeHtml(k)} <span class="geo-chip-n">${byCommodity[k]}</span></button>`;
             }).join('');
-            const activeChips = Object.keys(byCommodity).filter(k => GeoMap.commodityOn(id, k));
+            const activeChips = Object.keys(byCommodity).filter(
+                k => avail.some(id => GeoMap.commodityOn(id, k)));
 
-            const hiddenCount = o.isolate ? classes.length - o.isolate.size : o.hidden.size;
-            const rows = classes.map(c => {
-                const shown = o.isolate ? o.isolate.has(c.code) : !o.hidden.has(c.code);
+            // --- the full unit list, one row per class, sheet named on it.
+            const shownCount = avail.reduce((n, id) => n + geoVisibleCount(id), 0);
+            const rows = classes.slice().sort((a, b) =>
+                (GeoMap.age(a.age).rank - GeoMap.age(b.age).rank) || a.code.localeCompare(b.code)
+            ).map(c => {
+                const o = GeoMap.state(c.sheet);
+                const shown = (o.isolate ? o.isolate.has(c.code) : !o.hidden.has(c.code)) &&
+                              (!shared.liths.size || shared.liths.has(c.lith));
                 const codes = (c.codes || [c.code]);
-                return `<div onclick="GeoMap.toggleClass('${id}','${escapeHtml(c.code)}')"
+                return `<div onclick="GeoMap.toggleClass('${c.sheet}','${escapeHtml(c.code)}')"
                     style="display:flex;align-items:center;gap:8px;padding:3px 4px;border-radius:4px;cursor:pointer;${shown ? '' : 'opacity:0.35;'}"
-                    title="${escapeHtml(c.name)}">
-                    <span style="width:12px;height:12px;border-radius:2px;flex:none;background:${escapeHtml(c.color)};border:1px solid rgba(0,0,0,0.4);"></span>
+                    title="${escapeHtml(c.name)} &mdash; ${escapeHtml(GeoMap.age(c.age).label)}">
+                    ${geoSwatch(c.lith, GeoMap.classColor(c), 12)}
                     <span style="color:#ddd;font-size:11px;font-family:monospace;flex:none;min-width:64px;">${escapeHtml(c.code)}</span>
                     <span style="color:#888;font-size:11px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(c.name)}</span>
                     ${codes.length > 1 ? '<span style="color:#f59e0b;font-size:10px;flex:none;" title="Printed in inks this sheet does not separate">merged</span>' : ''}
+                    <span style="color:#555;font-size:10px;flex:none;">${escapeHtml((sheets[c.sheet].catalogue || {}).short || c.sheet)}</span>
                 </div>`;
             }).join('');
 
-            const q = (cat.quality || {});
-            return `<div id="geomap-card-${id}" style="border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px;margin-bottom:12px;background:rgba(255,255,255,0.02);">
+            return `<div style="border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px;margin-bottom:12px;background:rgba(255,255,255,0.02);">
                 ${head}
                 <div style="${on ? '' : 'opacity:0.4;pointer-events:none;'}">
                     <div style="display:flex;align-items:center;gap:10px;margin-top:12px;">
                         <span style="color:#888;font-size:11px;">Opacity</span>
-                        <input type="range" min="10" max="100" value="${Math.round(o.opacity * 100)}"
-                               oninput="GeoMap.setOpacity('${id}', this.value/100)" style="flex:1;accent-color:#3b82f6;">
-                        <span id="geomap-op-${id}" style="color:#aaa;font-size:11px;width:34px;text-align:right;">${Math.round(o.opacity * 100)}%</span>
+                        <input type="range" min="10" max="100" value="${Math.round(shared.opacity * 100)}"
+                               oninput="GeoMap.setOpacity(this.value/100)" style="flex:1;accent-color:#3b82f6;">
+                        <span id="geomap-op" style="color:#aaa;font-size:11px;width:34px;text-align:right;">${Math.round(shared.opacity * 100)}%</span>
                     </div>
-                    ${chips ? `<div style="margin-top:12px;">
+                    <div style="display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap;">
+                        <span style="color:#888;font-size:11px;">Colour</span>
+                        <div class="geo-seg">
+                            <button onclick="GeoMap.setColorMode('age')" aria-pressed="${shared.colorMode === 'age'}"
+                                title="International Chronostratigraphic Chart colours — the legend every geological map uses, so two sheets agree at a border">by age</button>
+                            <button onclick="GeoMap.setColorMode('ink')" aria-pressed="${shared.colorMode === 'ink'}"
+                                title="The ink measured off each scan — the sheet as it was printed">as printed</button>
+                        </div>
+                        <label style="display:flex;align-items:center;gap:5px;color:#888;font-size:11px;cursor:pointer;margin-left:4px;"
+                               title="Rock-type ornament (FGDC-STD-013-2006). Keep it on: a flat translucent fill on a dark map is easily mistaken for water.">
+                            <input type="checkbox" ${shared.pattern ? 'checked' : ''}
+                                   onchange="GeoMap.setPattern(this.checked)" style="accent-color:#f59e0b;">
+                            rock pattern
+                        </label>
+                    </div>
+                    ${chips ? `<div style="margin-top:14px;">
                         <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px;">
                             <span style="color:#888;font-size:11px;">Rock types that can host</span>
-                            ${activeChips.length ? `<button onclick="GeoMap.showAll('${id}')" class="star-report-btn secondary"
-                                style="font-size:10px;" title="Clear the selection and draw every unit again">clear</button>` : ''}
+                            ${GeoMap.anyFiltered() ? `<button onclick="GeoMap.showEverything()" class="star-report-btn secondary"
+                                style="font-size:10px;" title="Clear every selection and draw all units again">clear</button>` : ''}
                         </div>
                         <div style="display:flex;flex-wrap:wrap;gap:6px;">${chips}</div>
                         <div style="color:#666;font-size:10px;margin-top:6px;line-height:1.4;">
                             ${activeChips.length
-                            ? 'Showing ' + (o.isolate ? o.isolate.size : classes.length) + ' unit(s) that can host '
+                            ? 'Showing ' + shownCount + ' unit(s) that can host '
                               + activeChips.map(escapeHtml).join(' or ') + '. '
                             : 'Pick any number \u2014 the map shows the union. '}
                             An inference from lithology, not an occurrence dataset &mdash; nothing here
                             counts, ranks or locates a deposit.</div>
                     </div>` : ''}
+                    <div style="display:flex;gap:16px;margin-top:14px;flex-wrap:wrap;">
+                        <div style="flex:1;min-width:150px;">
+                            <div style="color:#888;font-size:11px;margin-bottom:5px;">Age (colour)</div>
+                            ${ageRows}
+                            <div style="color:#555;font-size:10px;margin-top:5px;">ICS/CGMW chart</div>
+                        </div>
+                        <div style="flex:1;min-width:150px;">
+                            <div style="color:#888;font-size:11px;margin-bottom:5px;">Rock type (pattern)</div>
+                            ${lithRows}
+                            <div style="color:#555;font-size:10px;margin-top:5px;">FGDC-STD-013-2006 &middot; click to filter</div>
+                        </div>
+                    </div>
                     <details style="margin-top:12px;">
                         <summary style="color:#aaa;font-size:11px;cursor:pointer;">
-                            ${classes.length} units${hiddenCount > 0 ? ' &middot; ' + hiddenCount + ' hidden' : ''}
-                            ${hiddenCount > 0 ? `<button onclick="event.preventDefault();GeoMap.showAll('${id}')" class="star-report-btn secondary" style="font-size:10px;margin-left:8px;">Show all</button>` : ''}
+                            All ${classes.length} units${shownCount < classes.length ? ' &middot; ' + (classes.length - shownCount) + ' hidden' : ''}
+                            ${GeoMap.anyFiltered() ? `<button onclick="event.preventDefault();GeoMap.showEverything()" class="star-report-btn secondary" style="font-size:10px;margin-left:8px;">Show all</button>` : ''}
                         </summary>
                         <div style="max-height:260px;overflow-y:auto;margin-top:8px;">${rows}</div>
                     </details>
                 </div>
-                <div style="display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap;">
-                    <a class="star-report-btn secondary" style="font-size:12px;text-decoration:none;"
+                <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.07);">
+                    <div style="color:#888;font-size:11px;margin-bottom:8px;">Source sheets</div>
+                    ${ids.map(id => geoMapSheetRowHTML(id, sheets[id])).join('')}
+                </div>
+            </div>`;
+        }
+
+        function geoVisibleCount(id) {
+            const o = GeoMap.state(id);
+            const shared = GeoMap.shared();
+            return GeoMap.classes(id).filter(c =>
+                (o.isolate ? o.isolate.has(c.code) : !o.hidden.has(c.code)) &&
+                (!shared.liths.size || shared.liths.has(c.lith))).length;
+        }
+
+        // A commodity is a property of rock, so the chip acts on every sheet
+        // at once. Anything else stops "show me the gold-bearing ground" at a
+        // national border, which is exactly the seam this card removes.
+        function geoToggleCommodityAll(commodity) {
+            const sheets = GeoMap.sheets() || {};
+            const ids = GeoMap.order().filter(id => (sheets[id] || {}).available);
+            const anyOn = ids.some(id => GeoMap.commodityOn(id, commodity));
+            ids.forEach(id => {
+                // Only the sheets that HAVE this commodity, and only in the
+                // direction we decided globally — asking a sheet that never
+                // mentions cobalt to isolate cobalt empties it.
+                const has = GeoMap.classes(id).some(c => (c.commodities || []).includes(commodity));
+                if (!has) return;
+                if (GeoMap.commodityOn(id, commodity) === !anyOn) return;
+                GeoMap.toggleCommodity(id, commodity);
+            });
+            renderGeoMapPanel();
+        }
+
+        // Provenance, not a control surface: one line per scan with its
+        // publisher, its quality note and its two downloads. The sheet is
+        // still where a download and a share link live — it is just no longer
+        // how the user thinks about "geology".
+        function geoMapSheetRowHTML(id, s) {
+            const cat = s.catalogue || {};
+            if (!s.available) {
+                return `<div id="geomap-card-${id}" style="color:#666;font-size:11px;margin-bottom:8px;line-height:1.5;">
+                    ${escapeHtml(cat.title || id)} &mdash; ${escapeHtml(s.reason || 'not built')}</div>`;
+            }
+            const q = cat.quality || {};
+            return `<div id="geomap-card-${id}" style="margin-bottom:12px;">
+                <div style="color:#ccc;font-size:11px;line-height:1.5;">${escapeHtml(cat.title || id)}</div>
+                <div style="color:#777;font-size:10px;margin-top:2px;">
+                    ${escapeHtml(cat.publisher || '')}${cat.scale ? ' &middot; ' + escapeHtml(cat.scale) : ''}
+                    ${cat.year ? ' &middot; ' + cat.year : ''}
+                    &middot; ${GeoMap.classes(id).length} units</div>
+                <div style="display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap;">
+                    <a class="star-report-btn secondary" style="font-size:11px;text-decoration:none;"
                        href="${geoMapUrl(s.download)}" download
-                       title="Vector MBTiles for QGIS or an offline viewer">Download MBTiles${s.size_bytes ? ' (' + (s.size_bytes / 1048576).toFixed(0) + ' MB)' : ''}</a>
+                       title="Vector MBTiles for QGIS or an offline viewer">MBTiles${s.size_bytes ? ' (' + (s.size_bytes / 1048576).toFixed(0) + ' MB)' : ''}</a>
                     ${s.geopackage ? `<a class="star-report-btn secondary" id="geomap-gpkg-${id}"
-                        style="font-size:12px;text-decoration:none;"
+                        style="font-size:11px;text-decoration:none;"
                         href="${geoMapUrl(s.geopackage)}" download
                         onclick="return downloadGeoMapGPKG(event, '${id}')"
-                        title="The source polygons with typed columns and one w_&lt;commodity&gt; weight per commodity, styled in the sheet's own ink and with a QGIS project inside. The MBTiles above is the picture; this is the data.">Download GeoPackage${s.geopackage_bytes ? ' (' + (s.geopackage_bytes / 1048576).toFixed(0) + ' MB)' : ''}</a>` : ''}
-                    <button class="star-report-btn secondary" style="font-size:12px;"
+                        title="The source polygons with typed columns, one w_&lt;commodity&gt; weight per commodity, and the same age/rock-type legend as the map — styled for QGIS with a project inside. The MBTiles is the picture; this is the data.">GeoPackage${s.geopackage_bytes ? ' (' + (s.geopackage_bytes / 1048576).toFixed(0) + ' MB)' : ''}</a>` : ''}
+                    <button class="star-report-btn secondary" style="font-size:11px;"
                         onclick="copyGeoMapSheetLink('${id}')"
                         title="Copy a link that opens this sheet's panel here, with the overlay in its current state">Copy link</button>
                     ${cat.source_url ? `<a href="${escapeHtml(cat.source_url)}" target="_blank" rel="noopener"
                         style="color:#3b82f6;font-size:11px;text-decoration:none;">source scan &nearr;</a>` : ''}
                 </div>
-                <div style="color:#555;font-size:10px;margin-top:6px;line-height:1.5;">
-                    MBTiles = the sheet drawn, simplified per zoom, for an offline viewer.
-                    GeoPackage = the same units as polygons you can intersect, dissolve and
-                    filter (<code>"w_gold" IS NOT NULL</code>).</div>
-                ${q.window_px ? `<div style="color:#555;font-size:10px;margin-top:8px;line-height:1.5;">
+                ${q.window_px ? `<div style="color:#555;font-size:10px;margin-top:6px;line-height:1.5;">
                     Classified from the print screen at a ${q.window_px}px window; held-out accuracy
                     ${(q.accuracy * 100).toFixed(1)}% on the ${(q.claim_rate * 100).toFixed(1)}% of patches
                     it claims. Contacts and lettering are left unclaimed rather than guessed.
@@ -9011,6 +9142,8 @@
                 actionLabel: 'Open area',
                 clickOnly: true,
                 priority: -20,
+                tabLabel: 'Area',
+                tabColor: '#f59e0b',
                 onActivate: (f, e) => showAOIPopup(f.properties, e.lngLat),
                 html: (p, f, e) => {
                     const cov = window._aoiCoverage[p.id];
@@ -9035,27 +9168,18 @@
                         ? `${cov.done}/${cov.total} data layers ready${cov.running ? ' · ' + cov.running + ' running' : ''}`
                           + (cov.parks ? ` · ${cov.parks} protected area${cov.parks > 1 ? 's' : ''} inside` : '')
                         : 'coverage…';
-                    // Two backdrops can cover the same pixel: the AOI polygon
-                    // and the geology drape. The AOI wins (it is the smaller,
-                    // user-owned object), which would otherwise make geology
-                    // unclickable inside it — so the unit is named here rather
-                    // than lost. One tip, both answers.
-                    let geo = '';
-                    if (e && window.GeoMap) {
-                        const gl = map.getStyle().layers
-                            .filter(l => l.id.indexOf('geomap-fill-') === 0).map(l => l.id);
-                        if (gl.length) {
-                            const g = map.queryRenderedFeatures(e.point, { layers: gl })[0];
-                            if (g) geo = `<div class="maptip-dim">Geology · ${escapeHtml(g.properties.code || '')}`
-                                + (g.properties.name ? ' — ' + escapeHtml(g.properties.name) : '') + '</div>';
-                        }
-                    }
+                    // Geology answers for itself now — it is an ordinary hover
+                    // tip at priority -30, so moving off the AOI's own reach
+                    // shows it, and on a phone it is a tab on this tip. It used
+                    // to be echoed here as a dim line because a `clickOnly`
+                    // geology layer was genuinely unreachable inside an AOI;
+                    // that is fixed at the source, so the echo is now just a
+                    // second copy of an answer the user can get directly.
                     return `<div class="maptip-label">Area of interest</div>
                         <div class="maptip-title">${escapeHtml(p.name || p.id)}</div>
                         <div class="maptip-body">${area}</div>
                         <div class="maptip-meta">Window ${escapeHtml(win)}</div>
                         <div class="maptip-dim">${escapeHtml(line)}</div>
-                        ${geo}
                         <div class="maptip-exports">${aoiActionsHTML(p.id, p.name || p.id, { isOwner: !!p.is_owner })}</div>`;
                 }
             });
@@ -21695,11 +21819,13 @@ ${starredItems.narratives.map(n => {
                         <div style="margin-bottom:24px;" id="geomap-block">
                             <h3 style="color:#fff;font-size:14px;font-weight:600;margin-bottom:12px;">Geology</h3>
                             <p style="color:#888;font-size:12px;margin-bottom:16px;line-height:1.5;">
-                                Scanned regional geological maps, vectorized: every unit is a polygon, so
-                                you can hide one, isolate the rock types that can host a given commodity,
-                                and set opacity. Commodity groupings are an inference from lithology &mdash;
-                                &ldquo;rocks of this kind host gold&rdquo; &mdash; and are
-                                <em>not</em> a record of any deposit.
+                                Scanned regional geological maps, vectorized into one layer: every unit is a
+                                polygon, coloured by age (ICS/CGMW chart) and patterned by rock type
+                                (FGDC-STD-013-2006), so two sheets printed 40 years apart read as one map.
+                                Hide a unit, filter by rock type, isolate what can host a given commodity,
+                                or switch back to each sheet&rsquo;s printed ink. Commodity groupings are an
+                                inference from lithology &mdash; &ldquo;rocks of this kind host gold&rdquo;
+                                &mdash; and are <em>not</em> a record of any deposit.
                             </p>
                             <div id="geomap-list"><div style="color:#666;font-size:12px;">Checking for installed sheets&hellip;</div></div>
                         </div>
@@ -21949,7 +22075,11 @@ ${starredItems.narratives.map(n => {
     <script src="/static/gpkg_export.js?v={{.Version}}"></script>
     <!-- Geology overlays. A file rather than inline for the same reason as the
          AOI modules: it owns a map layer pair per sheet plus its own share-link
-         state, and none of that belongs in the page's global scope. -->
+         state, and none of that belongs in the page's global scope.
+         geopatterns.js must come FIRST: geomap.js asks it for a fill pattern
+         the moment a sheet is added, and a missing texture is what makes a
+         geology polygon look like a lake. -->
+    <script src="/static/geopatterns.js?v={{.Version}}"></script>
     <script src="/static/geomap.js?v={{.Version}}"></script>
     <script src="/static/floatui.js?v={{.Version}}"></script>
 </body></html>
