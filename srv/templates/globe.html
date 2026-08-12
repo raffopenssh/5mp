@@ -12760,8 +12760,17 @@
             // silent LOD downgrade.
             const item = document.getElementById(VIEW_LAYER_META[name]?.statId || ('stat-' + name));
             if (item) {
+                if (!item.dataset.baseTitle) item.dataset.baseTitle = item.title || '';
                 item.classList.toggle('has-modes', !!(st || anim.length));
                 item.classList.toggle('layer-animated', !!anim.length);
+                // The eye becomes a ▷ when the animation is drawing this row
+                // (see .layer-animated in globe.css) — so the row must say what
+                // its own switch still does, or the glyph reads as a toggle
+                // that has stopped working.
+                item.title = (anim.length && !viewLayers[name])
+                    ? 'Drawn by the animation. Click to also show this layer on the map;'
+                      + ' use the menu below to change how it is drawn.'
+                    : item.dataset.baseTitle;
             }
             if (!st && !anim.length) { el.textContent = ''; el.title = ''; delete el.dataset.render; return; }
 
@@ -12772,7 +12781,9 @@
                 pinned = st.mirror ? '<i class="icon-pin" title="Drawn by the pinned layer"></i> ' : '';
                 countTxt = n + more + ' in view';
             } else if (anim.length) {
-                countTxt = '<i class="icon-play"></i> animated';
+                // The row's own icon is already the ▷ (.layer-animated), so
+                // the readout says the word and not the glyph twice.
+                countTxt = 'animated';
             }
 
             const summary = rowModeSummary(name, st, anim);
