@@ -1494,19 +1494,98 @@ Animates all toggled/pinned map layers over the time-slider window.
 | Pre-agg tables | `fire_grid_day/week/month` (base 0.1°, PK `(d, xi, yi)` WITHOUT ROWID; cell center = `xi*res, yi*res`) |
 | Agg builder | `scripts/build_fire_grid_agg.py` (full ~100s; `--since YYYY-MM-DD` incremental; called by `daily_fire_update.py` step 2c) |
 
-**Fire grid rendering** (`drawFireGrid`, `heatRGB` in anim.js, 2026-08-12): the
-old ramp swept one channel, `rgb(255, 90..200, 40)`, which at low intensity and
-20% alpha over a near-black basemap comes out **olive** — a field of olive
-squares beside blue lakes reads as land cover, not fire. It is a conventional
-thermal ramp now (dark red → red → orange → amber → near-white), shared with
-`drawFirePoints` so crossing the points/grid threshold is not a colour change.
-And when a cell is bigger than `GRID_CELL_PX_MAX` the cells are painted into an
-offscreen canvas and composited back through a **blur of ~⅓ of a cell**, so the
-layer reads as one continuous heat surface instead of a checkerboard of
-hard-edged tiles — a picture of our 0.1° binning that the data does not have.
-Cells overlap by half a cell (the blur eats the outer edge, and without it the
-field grows dark seams), the scratch canvas is kept across frames, and a
-missing `ctx.filter` degrades to the old hard edges rather than to no layer.
+**Fire grid rendering** (`heatIndex`/`heatBuffer`/`drawFireGrid` in anim.js,
+rewritten 2026-08-12): the grid is a **heat FIELD**, not a set of pulses.
+
+What it replaced: every bucket still inside a fade window was painted straight
+onto the map with `globalCompositeOperation = 'lighter'`. Two consequences,
+both visible over a 2.5-year AOI window and neither of them about colour:
+
+1. **Alpha stacked instead of intensity adding.** Three quiet months on top of
+   each other came out brighter than one busy one, so 485,000 km² of dry season
+   washed to a flat pink sheet with the structure buried in it.
+2. **Every cell strobed once per bucket.** A bucket landed as an impulse and
+   decayed, so ground that burns continuously all season flickered monthly —
+   a picture of our *bucketing*, not of the fire.
+
+So **pulsing was the wrong model**. Heat is computed as a *number* per cell and
+coloured once:
+
+    heat(cell, t) = Σ_bucket  n · ramp(t) · exp(−age / τ)      τ ≈ 1.2 buckets
+
+`ramp` rises across the bucket's own duration (we do not know *when* inside a
+month a detection burnt, so spreading it is the least-wrong statement, and it
+is what removes the strobe); the exponential is cooling memory, so a moving
+front leaves a fading trail. Decay reaches zero deliberately — **no permanent
+burn scar**: over a multi-year window every cell in a savanna has burnt, so a
+scar layer is a solid rectangle. Persistent loss is the deforestation layer, in
+purple.
+
+* **Rasterised in CELL SPACE**, one texel per 0.1° cell, then upscaled by the
+  GPU with bilinear filtering. Cost is (cells in view) writes + one
+  `drawImage`, independent of how many buckets are alive — it used to be one
+  `fillRect` per cell *per bucket* plus a full-screen CSS blur. XSA
+  continental, three layers: **~25 ms/frame** including the deforestation and
+  settlement sprites.
+* **The buffer's rows are mercator, not latitude.** Cell rows are equally
+  spaced in latitude, screen rows in mercator y. `heatBuffer` resamples so the
+  blit stays a single exact `drawImage`. Stitching horizontal bands instead
+  (the first attempt) drew every band edge twice through a translucent alpha =
+  bright seams across the map. Rotation/pitch falls back to per-cell
+  projection — a wrong picture is not an acceptable fast path.
+* **The scale is measured on the quantity actually drawn**, once per load:
+  `accumulate()` is run at 7 sample times and the 99th percentile of the result
+  is the top of the ramp. Deriving it from raw bucket counts needs a fudge
+  factor for the decay tail, and that factor is data-dependent (three
+  consecutive burning days stack, three scattered ones do not) — it came out
+  wrong in *opposite* directions at park and continental scale. Never
+  per-frame-normalise: the picture would brighten as the season ends, i.e. the
+  colour would stop meaning anything over time.
+* **Ink gamma is keyed on COVERAGE**, the same rule as `densityPaint()`: what
+  fraction of cells carry fire in the busiest bucket. A continental dry season
+  (>60%) curves hard, so only the top decile reads; a single park (~2%) is
+  nearly linear, because there the hot cells *are* the point. One constant
+  cannot serve both — 5.3M detections over ~4,000 cells means the *median* cell
+  holds 17 a month, so a linear ramp paints a whole country at a third opacity.
+* **The ramp spends most of its length in the deep reds** (inferno/magma
+  convention). The previous dark-red→orange→amber→white ramp was right for
+  sparse blobs and wrong for a field: over a continent most cells land
+  mid-ramp, and a country of mid-ramp orange is a brown smear that reads as
+  land cover — the same failure as the olive ramp before it, one step along.
+* **It draws UNDER the discrete layers and composites `source-over`.** It is a
+  surface, so it belongs below settlements, clearings, trajectories and
+  detections (the same rule as the geology drape). Additive would double-count
+  buckets that were already summed as numbers. Detections and trajectories stay
+  additive — they are sparse, and that is what makes a cluster glow.
+* **Settlement and deforestation sprites carry a dark halo**, because the field
+  is now behind them and settlement yellow is the top of the fire ramp. Free:
+  those bitmaps are built once per view transform, not per frame.
+* Hovering the paused field answers `≈N detections burning here` from `acc` —
+  approximate on purpose, since it mixes the current bucket with what is still
+  cooling. It answers **last**, only when nothing discrete did: every pixel of
+  a surface is a hit, so competing on distance would beat the trajectory the
+  user is pointing at.
+
+**The `fire points` chip is disabled when the view cannot have it.**
+`GET /api/fire-frames?mode=estimate` is a ~10 ms SUM over `fire_grid_day`
+returning `{estimate, max, points_ok}`; the animator asks on open and on every
+refetch. Over the ceiling the chip dims and its **hover hint carries the
+number** ("10.8M detections in this view — too many to draw one by one (limit
+120k). Zoom in, or shorten the window…"). It used to be always live, so the
+user clicked, waited for a request, and was told it had fallen back to the
+grid — an offer the app already knew was refused. Load-bearing details:
+
+* `.anim-chip.unavailable` keeps `pointer-events`. `pointer-events: none` made
+  the chip invisible to the cursor, i.e. the one thing it exists to do — say
+  why it is off — could not happen, and it read as broken rather than refused.
+  The click is refused in `toggleChip()` instead, where the reason is known and
+  is spoken as a toast.
+* **A share link is not an override**: it can carry a viewport its author never
+  had, so `anim=…,firePts` on an impossible view is dropped *with its reason*
+  rather than switched on to draw nothing. The probe is therefore `await`ed
+  before the loaders run, and `fireGrid` uses it to skip a doomed points ask.
+* A failed probe is **unknown, never a refusal** — the chip stays live and the
+  old ask-then-fall-back path answers.
 
 **Key behaviors** (all in `anim.js`, v2 — integrated into the time slider):
 - UI lives **inside** the time-slider header: play/date/speed/GIF/close inline, playhead + progress rendered in the slider track (playhead is pointer-draggable to scrub; pauses while dragging, resumes after). `#anim-open-btn` is a preset-tag-styled chip.
@@ -1537,6 +1616,10 @@ missing `ctx.filter` degrades to the old hard edges rather than to no layer.
 - `/api/fire-frames?bbox&from&to&step=day|week|month&res=0.1` reads pre-agg tables (never `fire_detections` — a raw scan took 3min for full-span; agg is ~3s). Coarser `res` re-binned in SQL; `from` aligned to bucket start. If >200k points, auto-doubles `res` up to 2× twice instead of truncating.
 - `layer=effort` returns `[xi, yi, km, uploads]` on the same grid (from `effort_data`+`grid_cells`, `movement_type='all', env='prod'`).
 - Frame point format: `p: [[xi, yi, count, frp], ...]`, `d` = bucket start date.
+- `mode=estimate` returns `{estimate, max, points_ok}` and nothing else: the
+  same ~10 ms SUM the `mode=points` gate uses, exposed so the UI can refuse
+  *before* offering (see the fire-points chip above). Side-effect free; pinned
+  by `fire_frames_estimate_*` in `tests/api_tests.sh`.
 
 **After bulk fire data changes**: rerun `python3 scripts/build_fire_grid_agg.py` (full) or `--since` — otherwise the animator shows stale fires. Daily cron keeps it fresh automatically.
 

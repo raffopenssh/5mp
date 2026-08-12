@@ -97,6 +97,25 @@ func (s *Server) HandleAPIFireFrames(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// mode=estimate: how many detections are in this window, and would the
+	// points rendering be allowed? ~10 ms against fire_grid_day.
+	//
+	// This exists so the UI can say NO BEFORE the user clicks. Offering a
+	// "fire points" chip that can only ever answer "1.4M detections in view,
+	// showing the grid instead" is an offer the app knows is refused; the chip
+	// is disabled with that number in its hint instead.
+	if q.Get("mode") == "estimate" {
+		est := s.estimateFireCount(from, to, south, north, west, east)
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Cache-Control", "public, max-age=300")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"mode": "estimate", "estimate": est, "max": firePointsMax,
+			"points_ok": est > 0 && est <= firePointsMax,
+			"from": from, "to": to,
+		})
+		return
+	}
+
 	// mode=points: individual fire detections (for high-zoom animation).
 	//
 	// The gate is the ESTIMATED NUMBER OF DETECTIONS, not the size of the box.
