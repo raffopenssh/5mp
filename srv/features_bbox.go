@@ -379,24 +379,46 @@ func (s *Server) HandleAPIFeatureDetail(w http.ResponseWriter, r *http.Request) 
 // view (711k fire trajectories) costs the same memory as a park view.
 //
 // The selection rule is unchanged and still deterministic: the bbox is divided
-// into ~limit cells and each cell keeps its single most significant feature
-// (sortCands' order: stat, then area, then lowest id). Because "most
-// significant" is a total order, deciding it per cell as rows arrive gives the
-// same set as sorting everything first — which is what makes this a
-// pure optimisation and not a different answer.
+// into ~limit cells and each cell keeps its most significant features
+// (sortCands' order: stat, then area, then lowest id).
 //
-// Overflow (features that lost their cell) is kept only up to `limit` so a
-// sparse view still fills its budget; beyond that it is counted, not stored.
+// THE OVERFLOW HAS TO BE SPREAD TOO. The first version kept one feature per
+// cell plus a flat "best of the rest" list to top the budget back up. That list
+// is where the settlement layer's blotchy picture came from: every settlement
+// carries stat_value = 0 and area is a near-tie, so the rest-list collapsed to
+// *lowest id*, i.e. one contiguous ingest block — the same corner-of-the-map
+// bias that ORDER BY stat_value DESC had, re-introduced through the back door.
+// On a polygon AOI it is worse than at bbox scale, because every grid cell
+// outside the polygon comes back empty and hands its budget to that block: the
+// user sees a dense yellow patch in one district and a thin scatter everywhere
+// else, which reads as "the data is wrong", not as "this is a sample".
+//
+// So leftovers are kept PER CELL (bounded), and the budget is filled
+// round-robin by depth: every cell's first feature, then every cell's second,
+// and so on. Density variation between cells then comes from the data — a cell
+// with three settlements contributes three before a cell with one contributes
+// a second — while no region can monopolise the budget. Deterministic:
+// depth-major, then the same total order within a depth.
+//
+// What is left over after that is a genuinely spatial problem, not an ordering
+// one: over an AOI most cells of the bounding box are outside the polygon and
+// donate nothing, so ~25% of the budget goes unspent while 66,000 features are
+// dropped. Topping it up from a "best of the rest" list is exactly the bug
+// above. It is topped up by a HASH sample instead (`fnvID`): a deterministic,
+// spatially uniform 1-in-k of the rest, so the extra density lands in
+// proportion to where the features actually are.
 type spreadCollector struct {
-	limit  int
-	bbox   [4]float64
-	spread bool
-	cols   int
-	rows   int
-	w, h   float64
-	cells  map[int]bboxCand
-	over   []bboxCand
-	total  int
+	limit   int
+	bbox    [4]float64
+	spread  bool
+	cols    int
+	rows    int
+	w, h    float64
+	cells   map[int][]bboxCand
+	perCell int
+	sample  []bboxCand // hash-sampled rest, for topping the budget up
+	over    []bboxCand
+	total   int
 }
 
 func newSpreadCollector(limit int, bbox [4]float64, spread bool) *spreadCollector {
@@ -406,6 +428,8 @@ func newSpreadCollector(limit int, bbox [4]float64, spread bool) *spreadCollecto
 		c.spread = false
 		return c
 	}
+	// ~limit cells, so the common case is still one feature per cell; the
+	// per-cell depth is what absorbs an area whose features are concentrated.
 	c.cols = int(math.Round(math.Sqrt(float64(limit) * c.w / c.h)))
 	if c.cols < 1 {
 		c.cols = 1
@@ -414,7 +438,17 @@ func newSpreadCollector(limit int, bbox [4]float64, spread bool) *spreadCollecto
 	if c.rows < 1 {
 		c.rows = 1
 	}
-	c.cells = make(map[int]bboxCand, limit)
+	// DEPTH IS THE LEVER, not the top-up. Over an AOI most cells of the
+	// bounding box are outside the polygon and stay empty, so the depth rounds
+	// have to be able to fill the whole budget from the occupied ones:
+	// XSA_Study_Area occupies ~a fifth of its bbox, i.e. depth 5. Ending the
+	// rounds early and taking the difference from the hash sample gives a
+	// dense cluster two thirds of the budget, because the dropped features it
+	// samples from are exactly the ones a cluster produces. 24 keeps memory
+	// bounded (~2x limit worst case, and only cells that are actually that
+	// deep pay it) while covering every real shape we serve.
+	c.perCell = 24
+	c.cells = make(map[int][]bboxCand, limit)
 	return c
 }
 
@@ -454,18 +488,54 @@ func (c *spreadCollector) add(f bboxCand) {
 		cy = c.rows - 1
 	}
 	key := cy*c.cols + cx
-	cur, ok := c.cells[key]
-	if !ok {
-		c.cells[key] = f
+	list := c.cells[key]
+	// Insertion sort into the cell's bounded top-k. k is 8, so this is a
+	// handful of comparisons per row and no allocation once warm.
+	pos := len(list)
+	for i, cur := range list {
+		if betterCand(f, cur) {
+			pos = i
+			break
+		}
+	}
+	if pos >= c.perCell {
+		c.addSample(f)
 		return
 	}
-	if betterCand(f, cur) {
-		c.cells[key] = f
-		f = cur
+	if len(list) < c.perCell {
+		list = append(list, f)
+	} else {
+		c.addSample(list[len(list)-1])
 	}
-	if len(c.over) < c.limit {
-		c.over = append(c.over, f)
+	copy(list[pos+1:], list[pos:len(list)-1])
+	list[pos] = f
+	c.cells[key] = list
+}
+
+// A deterministic, spatially unbiased reservoir: keep the `limit` candidates
+// with the smallest hash of their id. Hashing the id (not using the id itself)
+// is the point — ids are assigned in ingest order, which is geographic, so
+// "lowest id" is a corner of the map and "lowest hash" is nowhere in
+// particular. Bounded by a single compaction pass, so no heap.
+func (c *spreadCollector) addSample(f bboxCand) {
+	if len(c.sample) < c.limit*2 {
+		c.sample = append(c.sample, f)
+		return
 	}
+	sort.Slice(c.sample, func(i, j int) bool { return fnvID(c.sample[i].id) < fnvID(c.sample[j].id) })
+	c.sample = c.sample[:c.limit]
+	c.sample = append(c.sample, f)
+}
+
+// splitmix64's finalizer: a full avalanche, so consecutive ids land nowhere
+// near each other. FNV alone is not enough here — for small ids the top seven
+// bytes are zero, so its output stayed largely monotonic in the id and the
+// sample drifted back towards ingest order, which is the bias being avoided.
+func fnvID(id int64) uint64 {
+	h := uint64(id) + 0x9E3779B97F4A7C15
+	h = (h ^ (h >> 30)) * 0xBF58476D1CE4E5B9
+	h = (h ^ (h >> 27)) * 0x94D049BB133111EB
+	return h ^ (h >> 31)
 }
 
 func (c *spreadCollector) result() []bboxCand {
@@ -476,21 +546,47 @@ func (c *spreadCollector) result() []bboxCand {
 		}
 		return c.over
 	}
+	// Depth-major: one from every occupied cell, then a second from every
+	// cell that has one, and so on until the budget is spent. Within a depth
+	// the order is the same total order as everywhere else, so the answer is
+	// a pure function of the input rows.
 	out := make([]bboxCand, 0, c.limit)
-	for _, f := range c.cells {
-		out = append(out, f)
-	}
-	sortCands(out)
-	if len(out) > c.limit {
-		out = out[:c.limit]
-	}
-	if len(out) < c.limit && len(c.over) > 0 {
-		sortCands(c.over)
-		need := c.limit - len(out)
-		if need > len(c.over) {
-			need = len(c.over)
+	for depth := 0; depth < c.perCell && len(out) < c.limit; depth++ {
+		level := make([]bboxCand, 0, len(c.cells))
+		for _, list := range c.cells {
+			if depth < len(list) {
+				level = append(level, list[depth])
+			}
 		}
-		out = append(out, c.over[:need]...)
+		if len(level) == 0 {
+			continue
+		}
+		sortCands(level)
+		if n := c.limit - len(out); len(level) > n {
+			level = level[:n]
+		}
+		out = append(out, level...)
+	}
+	// Budget left after the depth rounds: top up from the hash sample, which
+	// is uniform over whatever was dropped rather than over the ingest order.
+	//
+	// CAPPED, because the dropped set is not spatially neutral: it is exactly
+	// what a dense cluster produces, so an uncapped top-up hands a single
+	// cluster two thirds of the budget and re-creates the blotch from the
+	// other side. Past this point an unspent budget is the honest answer — it
+	// means every cell has already contributed 24 features and there is
+	// nothing spatially new left to add, only more of the same cluster.
+	if need := c.limit - len(out); need > 0 && len(c.sample) > 0 {
+		if room := c.limit / 4; need > room {
+			need = room
+		}
+		sort.Slice(c.sample, func(i, j int) bool { return fnvID(c.sample[i].id) < fnvID(c.sample[j].id) })
+		if need > len(c.sample) {
+			need = len(c.sample)
+		}
+		extra := append([]bboxCand(nil), c.sample[:need]...)
+		sortCands(extra)
+		out = append(out, extra...)
 	}
 	return out
 }
