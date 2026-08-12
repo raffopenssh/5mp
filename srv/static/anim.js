@@ -2339,6 +2339,28 @@
                 chip.title = refusal || LAYERS.firePts.title;
             }
         });
+        announceLayers();
+    }
+
+    // The stats panel's layer rows are the map's legend, and while the
+    // animator is open the animation IS what those rows describe (see
+    // ANIM_ROW_CHIPS in globe.html). One announcement, so the legend can never
+    // disagree with the chips about what is on screen — the same shape as the
+    // `lod:state` event a pinned layer emits for a mirrored row.
+    function announceLayers() {
+        try {
+            window.dispatchEvent(new CustomEvent('anim:layers', {
+                detail: {
+                    open: !!A,
+                    layers: A ? LAYER_ORDER.filter(n => A.on[n]) : [],
+                    unavailable: A ? LAYER_ORDER.filter(n => chipUnavailable(n)) : []
+                }
+            }));
+        } catch (e) {}
+    }
+    function chipUnavailable(name) {
+        const chip = document.querySelector(`.anim-chip[data-layer="${name}"]`);
+        return !!(chip && chip.classList.contains('unavailable'));
     }
 
     // Hide the live map's patrol pixel layers while the animator renders effort
@@ -2353,8 +2375,9 @@
         });
     }
 
-    async function toggleChip(name) {
+    async function toggleChip(name, want) {
         if (!A) return;
+        if (want !== undefined && !!A.on[name] === !!want) return;
         // A refused layer answers the click with its reason instead of doing
         // nothing: the chip is dimmed, so a click on it is a question.
         if (!A.on[name]) {
@@ -2851,9 +2874,27 @@
             A = null;
             if (window.MapTip && window.MapTip.unregisterProbe) window.MapTip.unregisterProbe(PROBE_ID);
             syncBaseEffortVisibility(); // restore live patrol pixels per viewLayers.pixels
+            announceLayers();           // the legend must not keep offering animation modes
             if (typeof updateShareURL === 'function') updateShareURL();
         },
         isOpen() { return !!A; },
+        /** Which animation renderings are on right now. */
+        layers() { return A ? LAYER_ORDER.filter(n => A.on[n]) : []; },
+        isLayerOn(name) { return !!(A && A.on[name]); },
+        /** Why a rendering is refused here, or null. Used by the legend menu. */
+        layerRefusal(name) {
+            if (!A) return null;
+            if (name === 'firePts') return firePtsRefusal();
+            const chip = document.querySelector(`.anim-chip[data-layer="${name}"]`);
+            if (chip && chip.classList.contains('unavailable')) return chip.title || 'Not available here';
+            return null;
+        },
+        /**
+         * The same switch the chip is, reachable from the stats-panel legend:
+         * one layer, two places it can be reached, exactly like the LOD detail
+         * control. `on` omitted toggles.
+         */
+        setLayer(name, on) { return toggleChip(name, on); },
         toggle() { A ? this.close() : this.open(); },
         // Called by the time slider whenever the date window changes
         // (preset tap like td/90d, slider drag, or precise date edit).

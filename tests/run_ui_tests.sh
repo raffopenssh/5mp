@@ -98,6 +98,12 @@ test_url_param "tip_selection" "&tip=22.62154,6.61277" "" ""
 test_url_param "tip_selection_layer" "&tip=22.62154,6.61277&tip_layer=geomap-fill-car" "" ""
 test_url_param "tip_selection_stale" "&tip=0,0&tip_layer=lod-nope-line" "" ""
 test_url_param "complex_combined" "&popup=TZA_Serengeti&sections=fire,species&panel=star&starred_parks=TZA_Serengeti&lat=-2&lng=35&z=8" "" ""
+# A link carrying BOTH a viewport and something that flies somewhere (a
+# country, a park popup, an AOI) must open at the viewport it names -- the
+# restorers used to win that race. The DOM assertion lives in the Playwright
+# spec; here we only pin that the combination is a valid page.
+test_url_param "viewport_wins_over_country" "&lat=24.9331&lng=2.6151&z=6.1&country=Kenya&popup=CAF_Chinko" "" ""
+test_url_param "viewport_with_animation" "&lat=6.5&lng=24.5&z=7&date_preset=90d&anim=fireGrid,trajs,deforest&anim_paused=1" "" ""
 
 echo
 echo "======================================="

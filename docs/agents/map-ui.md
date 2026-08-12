@@ -128,3 +128,27 @@ three overlapping answers at once (geology popup + AOI popup + AOI map tip):
   switching away and back shows the placeholder the detail just replaced.
 
 ---
+
+## A share link opens at the viewport it names
+
+`?lat/?lng/?z` used to be applied by `restoreStateFromURL()` on map `load` —
+after Africa had already been drawn, and *while* a dozen other restorers were
+still landing asynchronously. Any one of them calls `fitBounds`/`flyTo`
+(`selectCountry` on a `?country=`, the `?bbox=` restorer, a park fly-to, an AOI
+popup, `animateAOI`), several of them on `sourcedata` retries seconds later — so
+a link carrying both a viewport and anything else could land somewhere its
+sender never was, with nothing on screen saying so.
+
+Two changes in globe.html, both small and both load-bearing:
+
+1. **The URL's viewport is the map's INITIAL viewport** (`_urlView`, read before
+   `new maplibregl.Map`). No flash of the default view, and no race to lose.
+2. **It is then held** for ~6 s on a decaying schedule (`_holdURLView`), unless
+   a real gesture has happened — a drag, wheel, pinch, key, or any capturing
+   `pointerdown`. A person always outranks a link; a restorer never does.
+
+The hold is `jumpTo`, not `flyTo`: it is correcting something that should not
+have happened, and animating the correction would draw attention to it.
+Call sites are deliberately untouched — there is no way to tell "the user asked
+to fly here" from "a link merely mentioned this park" *at* the call site, but
+there is here.

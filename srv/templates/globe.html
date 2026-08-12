@@ -133,6 +133,7 @@
         <div class="stats-item layer-toggle" id="stat-pixels" onclick="toggleViewLayer('pixels')" title="Click to show/hide patrol pixels">
             <span class="stats-label">Active Pixels</span>
             <span class="stats-value" id="stats-pixels">15</span>
+            <span class="stats-lod" id="lod-pixels"></span>
         </div>
         <div class="stats-item" id="stat-distance" onclick="handleStatClick('distance')" title="Click to show patrol intensity">
             <span class="stats-label">Total Distance</span>
@@ -1053,11 +1054,33 @@
         
         let currentBasemap = 'dark';  // Track current basemap
 
+        // THE SHARED VIEWPORT IS THE FIRST THING THE LINK MEANS.
+        //
+        // ?lat/?lng/?z used to be applied by restoreStateFromURL() on map
+        // 'load' — i.e. after the map had already drawn Africa, and, worse,
+        // while a dozen other restorers (country filter, bbox, starred parks,
+        // an AOI popup, the animator) were still landing asynchronously. Any
+        // one of them calls fitBounds/flyTo, and the recipient of a link ends
+        // up somewhere the sender never was, with nothing saying so.
+        //
+        // So: the URL's viewport is the map's INITIAL viewport (no flash, no
+        // race), and it is re-asserted once the async restorers have settled
+        // unless the user has meanwhile moved the map themselves — a human
+        // gesture always outranks a link.
+        const _urlView = (function () {
+            const p = new URLSearchParams(window.location.search);
+            const lat = parseFloat(p.get('lat')), lng = parseFloat(p.get('lng'));
+            const z = parseFloat(p.get('z'));
+            if (isNaN(lat) || isNaN(lng)) return null;
+            return { center: [lng, lat], zoom: isNaN(z) ? 3 : z };
+        })();
+        window._urlView = _urlView;
+
         const map = new maplibregl.Map({
             container: 'map',
             style: darkStyle,
-            center: [20, 0],
-            zoom: 3,
+            center: _urlView ? _urlView.center : [20, 0],
+            zoom: _urlView ? _urlView.zoom : 3,
             antialias: true,
             preserveDrawingBuffer: true,  // Helps with Safari
             failIfMajorPerformanceCaveat: false,  // Don't fail on software rendering
@@ -1068,6 +1091,45 @@
         map.on('error', function(e) {
             console.error('MapLibre error:', e.error || e.message || e);
         });
+
+        // A shared link's viewport, held against the async restorers.
+        //
+        // Everything that runs after `load` — selectCountry(), the bbox
+        // restorer, an AOI popup, a park fly-to — legitimately moves the map
+        // when the USER asks for it, and illegitimately when a link merely
+        // *mentions* the thing they move to. There is no way to tell those
+        // apart at the call site (they are the same functions), so the link's
+        // viewport is simply re-asserted for a few seconds unless a real
+        // pointer/keyboard gesture has happened. A drag, a wheel, a pinch or a
+        // zoom button all count — `originalEvent` is present exactly when the
+        // movement came from a person.
+        if (_urlView) {
+            let _userMoved = false;
+            const _mark = (e) => { if (e && e.originalEvent) _userMoved = true; };
+            map.on('movestart', _mark);
+            map.on('zoomstart', _mark);
+            map.on('dragstart', () => { _userMoved = true; });
+            map.on('wheel', () => { _userMoved = true; });
+            // ANY deliberate input stands the hold down, not just one on the
+            // map: clicking a park tag, a search result or a starred item is a
+            // request to go somewhere, and it runs through the same flyTo the
+            // restorers use. There is no way to tell those apart at the call
+            // site — but there is here, and a person always outranks a link.
+            ['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(ev =>
+                document.addEventListener(ev, () => { _userMoved = true; }, { capture: true, once: true }));
+            const _hold = () => {
+                if (_userMoved) return;
+                const c = map.getCenter();
+                const off = Math.abs(c.lng - _urlView.center[0]) + Math.abs(c.lat - _urlView.center[1]);
+                if (off < 1e-4 && Math.abs(map.getZoom() - _urlView.zoom) < 0.01) return;
+                map.jumpTo({ center: _urlView.center, zoom: _urlView.zoom });
+            };
+            // The restorers land over ~5s (sourcedata retries, a popup at 2s,
+            // the animator at ~1.8s). Checking on a decaying schedule is
+            // cheaper and less jarring than an interval, and it stops.
+            [400, 900, 1600, 2600, 4000, 6000].forEach(ms => setTimeout(_hold, ms));
+            window._holdURLView = _hold;
+        }
         
         // Basemap switching function
         function switchBasemap(basemapId) {
@@ -12664,7 +12726,7 @@
         // that layer's control already has a row. A HUD would be a fourth thing
         // competing with the toast, the pinned indicator and the time slider
         // for the same corner of the screen.
-        const LOD_STAT_EL = { fires: 'lod-fires', deforest: 'lod-deforest', settlements: 'lod-settlements' };
+        const LOD_STAT_EL = { pixels: 'lod-pixels', fires: 'lod-fires', deforest: 'lod-deforest', settlements: 'lod-settlements' };
         // What each detail preference promises, in the words the control uses.
         // 'auto' names what it is CURRENTLY drawing, because that is the
         // question ('why are my trajectories dots?'); the other two name what
@@ -12677,54 +12739,138 @@
         function lodModeClass(render) {
             return render === 'geometry' ? 'shapes' : render === 'segments' ? 'segments' : 'dots';
         }
+        // The row's LOD state, kept so the readout can be re-rendered when
+        // something OTHER than a fetch changes what the row is drawing — the
+        // animator opening, a chip being switched on. One writer for the
+        // `.stats-lod` line, or the legend and the map disagree.
+        const lodState = {};
         function setLayerLOD(name, st) {
+            if (st) lodState[name] = st; else delete lodState[name];
+            renderRowModes(name);
+        }
+
+        function renderRowModes(name) {
             const el = document.getElementById(LOD_STAT_EL[name]);
             if (!el) return;
-            if (!st) { el.textContent = ''; el.title = ''; delete el.dataset.render; return; }
-            const n = (st.count || 0).toLocaleString();
-            // A mirrored row is the PIN's readout, so its detail preference and
-            // its cycle button are the pin's too — one layer cannot have two
-            // detail settings that disagree.
-            const lodKey = st.mirror || ('view-' + name);
-            const mode = st.detail || (window.LODLayer ? LODLayer.detail(lodKey) : 'auto');
-            const more = st.truncated ? ' of ' + (st.total || 0).toLocaleString() : '';
-            const cls = lodModeClass(st.render);
-            const label = (LOD_MODE_LABEL[mode] || LOD_MODE_LABEL.auto)(st.render);
-            const cycle = st.mirror ? `cyclePinDetail('${st.mirror}')` : `cycleLayerDetail('${name}')`;
-            const pinned = st.mirror ? '<i class="icon-pin" title="Drawn by the pinned layer"></i> ' : '';
-            el.innerHTML = `<span class="lod-count">${pinned}${n}${more} in view</span>`
-                         + `<button type="button" class="lod-mode ${cls}${mode !== 'auto' ? ' forced' : ''}" `
-                         + `onclick="event.stopPropagation();${cycle}" `
-                         + `title="${escapeHtml(lodModeTitle(name, mode, st, n + more))}">${label}</button>`;
-            el.title = st.mirror
-                ? `${n}${more} ${name} in view — drawn by the pinned layer, so this row switches that pin off`
-                : `${n}${more} ${name} in view`;
-            // Flash only when the MODE changed: a count ticking as you pan is
+            const st = lodState[name] || null;
+            const anim = animRowLayers(name);          // animation renderings on for this row
+            // The readout is shown whenever the row is drawing SOMETHING. A row
+            // switched off in the panel but animated on the map is still on
+            // screen, and a legend that hides it is the same wrong answer as a
+            // silent LOD downgrade.
+            const item = document.getElementById(VIEW_LAYER_META[name]?.statId || ('stat-' + name));
+            if (item) {
+                item.classList.toggle('has-modes', !!(st || anim.length));
+                item.classList.toggle('layer-animated', !!anim.length);
+            }
+            if (!st && !anim.length) { el.textContent = ''; el.title = ''; delete el.dataset.render; return; }
+
+            let countTxt = '', pinned = '';
+            if (st) {
+                const n = (st.count || 0).toLocaleString();
+                const more = st.truncated ? ' of ' + (st.total || 0).toLocaleString() : '';
+                pinned = st.mirror ? '<i class="icon-pin" title="Drawn by the pinned layer"></i> ' : '';
+                countTxt = n + more + ' in view';
+            } else if (anim.length) {
+                countTxt = '<i class="icon-play"></i> animated';
+            }
+
+            const summary = rowModeSummary(name, st, anim);
+            el.innerHTML = `<span class="lod-count">${pinned}${countTxt}</span>`
+                         + `<button type="button" class="lod-mode ${summary.cls}${summary.forced ? ' forced' : ''}" `
+                         + `aria-haspopup="true" `
+                         + `onclick="event.stopPropagation();openLayerModeMenu(this,'${name}')" `
+                         + `title="${escapeHtml(summary.title)}">${summary.label}<span class="lod-caret">\u25be</span></button>`;
+            el.title = summary.title;            // Flash only when the MODE changed: a count ticking as you pan is
             // not news, a change of rendering is.
-            if (el.dataset.render !== st.render) {
-                el.dataset.render = st.render;
+            if (el.dataset.render !== summary.key) {
+                el.dataset.render = summary.key;
                 el.classList.remove('changed');
                 void el.offsetWidth;
                 el.classList.add('changed');
             }
         }
+        window.renderRowModes = renderRowModes;
 
-        // One sentence per state, saying what is drawn, why, and what the next
-        // click does. The control is the same in the stats row and on a pinned
-        // chip, so the wording is too.
+        // ── One vocabulary of renderings ──────────────────────────────────
+        //
+        // A row can be drawn in more ways than the LOD loader's three: with the
+        // animator open, the same subject is also a heat field, a cloud of
+        // detections, a set of moving paths. Those were switched in a different
+        // place (the chips under the time slider), named differently, and
+        // invisible in the legend that claims to say what is on screen — so the
+        // panel could report "1,448 in view · shapes" over a map showing an
+        // animated grid and no shapes at all.
+        //
+        // So every rendering a row can have is one list, opened from one
+        // control. A dropdown rather than the old cycle button because the list
+        // is no longer three items long and no longer one dimension: cycling
+        // through "auto → shapes → fast → grid → points → paths" would make the
+        // common case (change one thing) take five taps, and on a phone a cycle
+        // button gives no way to see what the other states even are.
+        const ANIM_ROW_LAYERS = {
+            pixels:      ['effortGrid', 'effortPts'],
+            fires:       ['fireGrid', 'firePts', 'trajs'],
+            deforest:    ['deforest'],
+            settlements: ['settlements']
+        };
+        const ANIM_MODE_LABEL = {
+            fireGrid: 'grid', firePts: 'points', trajs: 'paths',
+            effortGrid: 'grid', effortPts: 'circles',
+            deforest: 'dots', settlements: 'dots'
+        };
+        const ANIM_MODE_DESC = {
+            fireGrid: 'Heat field over a 0.1° grid — every detection in the window, summed and cooled over time',
+            firePts:  'Individual VIIRS detections, one dot each',
+            trajs:    'Fire paths — trajectories building at true dated speed, then ashing out',
+            effortGrid: 'Patrol effort as grid pixels',
+            effortPts:  'Patrol effort as circles, ageing over 90 days',
+            deforest: 'Clearings appear when they happened and grey out with age',
+            settlements: 'Settlements as static context'
+        };
+        function animOpen() { return !!(window.Animator && Animator.isOpen && Animator.isOpen()); }
+        function animRowLayers(name) {
+            if (!animOpen()) return [];
+            return (ANIM_ROW_LAYERS[name] || []).filter(l => Animator.isLayerOn(l));
+        }
+        window.animRowLayers = animRowLayers;
+
+        // The pill says what is on screen, in as few words as fit. Two
+        // renderings are named; more than two is "3 modes" — the list is one
+        // tap away and a pill is not a legend.
+        function rowModeSummary(name, st, anim) {
+            const parts = [];
+            let cls = 'dots', forced = false;
+            if (st) {
+                const lodKey = st.mirror || ('view-' + name);
+                const mode = st.detail || (window.LODLayer ? LODLayer.detail(lodKey) : 'auto');
+                forced = mode !== 'auto';
+                cls = lodModeClass(st.render);
+                parts.push((LOD_MODE_LABEL[mode] || LOD_MODE_LABEL.auto)(st.render));
+            }
+            anim.forEach(l => parts.push(ANIM_MODE_LABEL[l] || l));
+            if (anim.length) cls = 'anim';
+            const label = parts.length === 0 ? 'off'
+                        : parts.length <= 2 ? parts.join(' · ')
+                        : parts.length + ' modes';
+            const title = (parts.length ? 'Drawn as ' + parts.join(', ') + '. ' : '')
+                        + 'Click to choose how this layer is drawn.';
+            return { label, cls, forced, title, key: parts.join('|') };
+        }
+
+        // One sentence per state, saying what is drawn and how to change it.
+        // The control is the same in the stats row and on a pinned chip, so
+        // the wording is too.
         function lodModeTitle(what, mode, st, countTxt) {
             const drawn = st.render === 'geometry'
                 ? `${countTxt} ${what} drawn as full clickable shapes`
                 : st.render === 'segments'
                 ? `${countTxt} ${what} drawn as short direction lines (start → middle → end); hover one for its details`
                 : `${countTxt} ${what} drawn as points; hover one for its details`;
-            const next = mode === 'auto' ? 'always draw full shapes here'
-                       : mode === 'shapes' ? 'always use the fast rendering here'
-                       : 'go back to letting the view decide';
             const now = mode === 'auto' ? 'Detail follows the view'
                       : mode === 'shapes' ? 'Full shapes forced for this layer'
                       : 'Fast rendering forced for this layer';
-            return `${drawn}.\n${now}. Click to ${next}.`;
+            return `${drawn}.\n${now}. Click to choose how this layer is drawn.`;
         }
 
         // Cycle one viewport layer's detail preference: auto → shapes → fast.
@@ -12744,6 +12890,155 @@
         window.lodModeClass = lodModeClass;
         window.LOD_MODE_LABEL = LOD_MODE_LABEL;
         window.setLayerLOD = setLayerLOD;
+
+        // ── The rendering menu ────────────────────────────────────────
+        //
+        // Reuses `.aoi-menu` — the same component as the download menus — for
+        // the same reasons it exists there: it is already sized for touch, it
+        // is appended to <body> so no clipping ancestor can eat it, and a user
+        // who has met one has met the other. Two groups, because they are two
+        // different questions over the same subject:
+        //
+        //   Map detail   — exclusive (radio): one budget per layer.
+        //   Animation    — multi-select (checkbox): a fire is legitimately a
+        //                  heat field AND a set of paths at once, which is why
+        //                  the animator's chips are chips and not a segmented
+        //                  control. The menu must not lie about that by
+        //                  offering them as alternatives.
+        //
+        // Animation entries appear only while the animator is open: an offer to
+        // switch on a rendering that does not exist yet would have to silently
+        // open the animator, i.e. change the time slider, the map and the share
+        // link from a control that said "grid".
+        let modeMenuEl = null;
+        function closeLayerModeMenu() {
+            if (modeMenuEl) { modeMenuEl.remove(); modeMenuEl = null; }
+            document.removeEventListener('click', closeLayerModeMenu);
+        }
+        window.closeLayerModeMenu = closeLayerModeMenu;
+
+        // openLayerModeMenu(btn, name)      — a stats-panel row
+        // openPinModeMenu(btn, key)          — a pinned chip
+        //
+        // Same component, same words, same marks: a pinned layer and a
+        // viewport layer are the same kind of thing seen from two places, and
+        // the old split (a cycle button on each, with its own call site) is
+        // how the two would drift apart. A pin has no Animation group — the
+        // animator's renderings are of the viewport, not of a named pin.
+        function openLayerModeMenu(btn, name) {
+            const st = lodState[name] || null;
+            openModeMenu(btn, {
+                id: 'row:' + name,
+                lodKey: st ? (st.mirror || ('view-' + name)) : null,
+                render: st ? st.render : null,
+                detail: st ? st.detail : null,
+                onDetail: m => `setRowDetail('${name}','${m}')`,
+                animRow: name
+            });
+        }
+        window.openLayerModeMenu = openLayerModeMenu;
+
+        function openPinModeMenu(btn, key) {
+            if (!window.LODLayer || !LODLayer.has(key)) return;
+            const s = LODLayer.state(key) || {};
+            openModeMenu(btn, {
+                id: 'pin:' + key,
+                lodKey: key,
+                render: s.render,
+                detail: s.detail,
+                onDetail: m => `setPinDetail('${key}','${m}')`,
+                animRow: null
+            });
+        }
+        window.openPinModeMenu = openPinModeMenu;
+
+        function openModeMenu(btn, o) {
+            const already = modeMenuEl && modeMenuEl.dataset.for === o.id;
+            closeLayerModeMenu();
+            if (already) return;
+            const el = document.createElement('div');
+            el.className = 'aoi-menu mode-menu';
+            el.dataset.for = o.id;
+            let html = '';
+
+            if (o.lodKey) {
+                const cur = o.detail || (window.LODLayer ? LODLayer.detail(o.lodKey) : 'auto');
+                html += `<div class="mode-menu-head">Map detail</div>`;
+                [['auto', 'Automatic', 'Let the view decide — shapes when they fit, faster renderings when they do not'],
+                 ['shapes', 'Full shapes', 'Always draw clickable geometry here, even when it is slow'],
+                 ['fast', 'Fast', 'Always use the cheap rendering here (lines or dots)']
+                ].forEach(([m, label, desc]) => {
+                    const on = cur === m;
+                    const sub = (m === 'auto' && on) ? ' — now ' + LOD_MODE_LABEL.auto(o.render) : '';
+                    html += `<button type="button" class="aoi-menu-item mode-opt${on ? ' on' : ''}" role="menuitemradio" `
+                          + `aria-checked="${on}" title="${escapeHtml(desc)}" `
+                          + `onclick="event.stopPropagation();${o.onDetail(m)}">`
+                          + `<span class="mode-mark radio"></span>${label}${sub}</button>`;
+                });
+            }
+
+            const animLayers = o.animRow ? (ANIM_ROW_LAYERS[o.animRow] || []) : [];
+            if (animOpen() && animLayers.length) {
+                html += `<div class="mode-menu-head">Animation</div>`;
+                animLayers.forEach(l => {
+                    const on = Animator.isLayerOn(l);
+                    const refusal = Animator.layerRefusal ? Animator.layerRefusal(l) : null;
+                    const label = (ANIM_MODE_LABEL[l] || l);
+                    const desc = refusal || ANIM_MODE_DESC[l] || '';
+                    html += `<button type="button" class="aoi-menu-item mode-opt${on ? ' on' : ''}`
+                          + `${refusal && !on ? ' refused' : ''}" role="menuitemcheckbox" aria-checked="${on}" `
+                          + `title="${escapeHtml(desc)}" `
+                          + `onclick="event.stopPropagation();setRowAnimLayer('${o.animRow}','${l}')">`
+                          + `<span class="mode-mark check"></span>${label.charAt(0).toUpperCase() + label.slice(1)}</button>`;
+                });
+            } else if (animLayers.length) {
+                // Not an offer — a statement, so the absence of the animation
+                // group does not read as "this layer cannot be animated".
+                html += `<div class="mode-menu-note">Open ▶ Animate in the time slider for animated renderings.</div>`;
+            }
+            if (!html) return;
+
+            el.innerHTML = html;
+            document.body.appendChild(el);
+            const r = btn.getBoundingClientRect();
+            const w = el.offsetWidth, h = el.offsetHeight;
+            el.style.left = Math.max(6, Math.min(window.innerWidth - w - 6, r.right - w)) + 'px';
+            el.style.top = (r.bottom + h + 6 > window.innerHeight ? Math.max(6, r.top - h - 4) : r.bottom + 4) + 'px';
+            modeMenuEl = el;
+            setTimeout(() => document.addEventListener('click', closeLayerModeMenu), 0);
+        }
+
+        // A mirrored row's detail belongs to the PIN that is drawing it — one
+        // layer cannot have two detail settings that disagree.
+        function setRowDetail(name, mode) {
+            closeLayerModeMenu();
+            if (!window.LODLayer) return;
+            const st = lodState[name] || {};
+            const key = st.mirror || ('view-' + name);
+            if (!LODLayer.has(key)) return;
+            LODLayer.setDetail(key, mode);
+            if (st.mirror) { updatePinnedIndicator(); return; }
+            const s = LODLayer.state(key) || {};
+            setLayerLOD(name, { count: s.count, total: s.total, render: s.render,
+                                truncated: s.lastTruncated, detail: mode });
+        }
+        window.setRowDetail = setRowDetail;
+
+        function setRowAnimLayer(name, layer) {
+            closeLayerModeMenu();
+            if (!animOpen()) return;
+            Animator.setLayer(layer);
+        }
+        window.setRowAnimLayer = setRowAnimLayer;
+
+        // The animator announces its layer set; the legend re-renders. One
+        // direction only: the chips remain the animator's own state, the
+        // legend is a second way to reach the same switch (exactly like the
+        // detail control living on both a stats row and a pinned chip).
+        window.addEventListener('anim:layers', () => {
+            Object.keys(LOD_STAT_EL).forEach(renderRowModes);
+            closeLayerModeMenu();
+        });
 
         // One loader, shared with pinned layers (srv/static/lodlayer.js). What
         // used to be here — a hard `limit=1500`, a refetch on every moveend,
@@ -18683,8 +18978,17 @@ ${starredItems.narratives.map(n => {
         return true;
     }
 
-    // The detail control on a pinned chip. Same three states, same words as
-    // the stats row's — one concept, two places it can be reached.
+    // The detail control on a pinned chip. Same menu, same words as the stats
+    // row's — one concept, two places it can be reached.
+    function setPinDetail(key, mode) {
+        if (typeof closeLayerModeMenu === 'function') closeLayerModeMenu();
+        if (!window.LODLayer || !LODLayer.has(key)) return;
+        LODLayer.setDetail(key, mode);
+        updatePinnedIndicator();
+    }
+    window.setPinDetail = setPinDetail;
+
+    // Kept: old call sites and share links may still cycle.
     function cyclePinDetail(key) {
         if (!window.LODLayer || !LODLayer.has(key)) return;
         LODLayer.setDetail(key);
@@ -18965,8 +19269,9 @@ ${starredItems.narratives.map(n => {
                         const title = lodModeTitle(typeLabels[p.type] || p.type, p.detail || 'auto',
                             { render: p.render }, (p.total || count).toLocaleString());
                         lodMark = `<button type="button" class="chip-lod ${cls}${(p.detail && p.detail !== 'auto') ? ' forced' : ''}" `
-                                + `onclick="event.stopPropagation();cyclePinDetail('${p.key}')" `
-                                + `title="${escapeHtml(title)}">${label}</button>`;
+                                + `aria-haspopup="true" `
+                                + `onclick="event.stopPropagation();openPinModeMenu(this,'${p.key}')" `
+                                + `title="${escapeHtml(title)}">${label}<span class="lod-caret">\u25be</span></button>`;
                     }
                     const clsNote = p.classification ? ` · ${p.classification} only` : '';
                     html += `<span class="pinned-layer-chip ${p.type}" style="cursor:pointer;" onclick="event.stopPropagation(); flyToPinnedLayer('${p.key}')" title="${typeLabels[p.type] || p.type}: ${count} features${tierNote}${clsNote} - Click to fly to">`;
