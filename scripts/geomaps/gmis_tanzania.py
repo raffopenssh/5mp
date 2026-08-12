@@ -482,17 +482,23 @@ def build_classes(feats, inks):
     every polygon, so every class it declares is a class we can draw, and
     `merged` is false for all of them.
 
-    Features with no legend entry are dropped and COUNTED (see `quality`):
-    the layer includes water bodies (`remarks: "Water"`, no abbreviation) and
-    they are not rock.  Dropping them silently is the shape this codebase keeps
-    paying for, so the number is in the catalogue.
+    Features with no legend entry are dropped and ACCOUNTED FOR (see the
+    `dropped` block in `quality`): the layer includes the great lakes
+    (`tectonic_n: "Water"`, no abbreviation) and they are not rock.  Dropping
+    them silently is the shape this codebase keeps paying for, so what went and
+    how much of the map it was are both in the catalogue.
     """
     by_leg = {}
-    dropped = 0
+    dropped = []
     for f in feats:
         p = f["properties"]
         if not (p.get("abbr") or "").strip():
-            dropped += 1
+            # The survey's own word for it, where it has one.  The remaining
+            # unlabelled polygons are recorded as exactly that rather than
+            # assumed to be more water: a guess about what we threw away is
+            # worth less than an honest "the sheet does not say".
+            why = (p.get("remarks") or p.get("tectonic_n") or "").strip() or "not attributed"
+            dropped.append((why, area_km2(f["geometry"])))
             continue
         by_leg.setdefault(p["leg_id"], []).append(f)
 
@@ -605,14 +611,34 @@ def write_outputs(feats, classes, dropped, bbox, expect):
     # There is no classifier here, and saying nothing would let a reader assume
     # the same hold-out numbers apply. So it records what this build actually
     # checked instead: the count the server itself declared, the count written,
-    # the envelope, and the non-rock features dropped.
+    # the envelope, and an ACCOUNTING of everything dropped.
+    #
+    # The area is stated as the sheet's own coverage and compared to a figure
+    # from somewhere else, because those are different claims and a reader
+    # deserves to see both. Tanzania is 947,300 km2 in total and 885,800 km2 of
+    # land (CIA World Factbook / UN); this layer maps 887,107 km2 of geology,
+    # i.e. the land area within ~0.2%. Its own water polygons come to 44,851
+    # km2 against 61,500 km2 of inland water, so the SHEET does not map every
+    # lake - which is a fact about the sheet, not an error in this script, and
+    # is exactly why the comparison is recorded rather than asserted.
+    by_reason = {}
+    for why, a in dropped:
+        e = by_reason.setdefault(why, {"features": 0, "area_km2": 0.0})
+        e["features"] += 1
+        e["area_km2"] = round(e["area_km2"] + a, 1)
     quality = dict(
         source="vector WFS, not a vectorized scan - no classification step",
         wfs_matched=expect,
         features_written=len(out_feats),
-        dropped_non_geology=dropped,
+        dropped_non_geology=len(dropped),
+        dropped=by_reason,
         bbox=[round(v, 4) for v in bbox],
         area_km2_total=round(sum(c["area_km2"] for c in classes), 1),
+        area_note=("geodesic area of the mapped geology polygons (WGS84). "
+                   "Tanzania's land area is ~885,800 km2 and its total area "
+                   "~947,300 km2 (CIA/UN); the difference is inland water, "
+                   "which this layer carries as separate unattributed polygons "
+                   "and does not map in full."),
         fetched=time.strftime("%Y-%m-%d"),
     )
     cat = dict(SHEET_META)
@@ -683,10 +709,12 @@ def main(argv=None):
         print("WARNING: no SLD ink for %s - `color` left absent rather than invented"
               % ", ".join(missing_ink))
     gj, cat, quality = write_outputs(feats, classes, dropped, bbox, expect)
-    print("%d classes, %d polygons written (%d non-geology dropped: water bodies)"
-          % (len(classes), quality["features_written"], dropped))
-    print("mapped area %.0f km2 (Tanzania is ~947,300 km2 incl. inland water)"
+    print("%d classes, %d polygons written" % (len(classes), quality["features_written"]))
+    for why, e in sorted(quality["dropped"].items()):
+        print("  dropped %3d features, %9.1f km2 - %s" % (e["features"], e["area_km2"], why))
+    print("mapped geology %.0f km2 (Tanzania: ~885,800 km2 land, ~947,300 km2 total;"
           % quality["area_km2_total"])
+    print("  the balance is inland water, which this layer does not map in full)")
     print(gj)
     print(cat)
     print("next: scripts/geomaps/tiles.sh %s" % SHEET)
