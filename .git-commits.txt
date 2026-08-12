@@ -1,3 +1,5 @@
+9a70ba5 2026-08-12 14:18:40 A row the animation is drawing shows an eye, not a crossed-out one
+f4f3596 2026-08-12 14:15:11 chore: refresh version history
 947c17a 2026-08-12 14:15:03 Legend states every rendering, and a link opens where it says
 ca17fcb 2026-08-12 13:47:26 chore: refresh version history
 e3c4c0b 2026-08-12 13:47:13 docs: split AGENTS.md into an index + on-demand subsystem files
@@ -16,5 +18,3 @@ a744392 2026-08-12 12:36:24 Animator: the fire grid is a heat field, not a pulse
 66804b2 2026-08-12 08:50:50 chore: refresh version history
 6caa7d9 2026-08-12 08:50:35 LOD: dated trajectories from the database, density-aware ink, and a shareable animation download
 86a8367 2026-08-12 08:15:50 chore: refresh version history
-620a6a3 2026-08-12 08:15:30 LOD: one loader for every viewport layer; GeoPackage of a paused frame
-52204a7 2026-08-12 07:28:33 AGENTS.md: point at the active LOD handover
