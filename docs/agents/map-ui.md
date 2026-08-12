@@ -180,3 +180,53 @@ have happened, and animating the correction would draw attention to it.
 Call sites are deliberately untouched — there is no way to tell "the user asked
 to fly here" from "a link merely mentioned this park" *at* the call site, but
 there is here.
+
+---
+
+## The Map strip in the stats panel (`srv/static/maplegend.js`)
+
+Basemap and the two drapes (`HistMap`, `GeoMap`) used to be reachable only from
+admin ▸ Map Settings, and once a drape was on **nothing on the map said so**.
+Two failures in one: a hatched country-sized polygon with no legend is a
+rendering the reader has to reverse-engineer, and a geology layer isolated to
+*"everything that can host gold"* is pixel-for-pixel a *complete* rock map.
+That second one is invariant 7's shape applied to a filter — a partial answer
+that does not announce itself.
+
+The strip is the last section of `.stats-panel` (`#stats-map`), and its whole
+design is the `.quiet` class:
+
+* **Default state = dark basemap, no overlay = nothing true to say**, so it
+  says nothing: no divider, no header, no chip, one `icon-layers` at 28%
+  opacity. The opener never disappears — it is the only route to these
+  switches that is not four clicks deep — it just stops claiming to be
+  information. A permanent "Basemap: Dark" row is chrome that is *wrong to
+  read*.
+* **A chip is the state and the way out.** Tapping a chip switches that one
+  thing off; the opener beside it configures. Two targets, one meaning each —
+  the alternative (a chip that opens a menu containing the same chip) is the
+  ambiguity this replaced.
+* **A filtered geology chip is amber** (`.ml-chip.geo.filtered`) and *names*
+  the filter (`gold hosts`, `3 rock types`, `filtered`, `n hidden`), derived
+  from `GeoMap.state()` — amber is this app's colour for "you are looking at a
+  subset" everywhere else, so it needs no legend of its own.
+* **The age key is derived, never listed.** `ageSwatches()` walks the catalogue
+  of the sheets actually drawn, honours `isolate`/`hidden`, sorts by ICS rank
+  and caps at 8 with a `+n`. Invariant 2: a new sheet or period adds a swatch
+  by itself. Full legend stays in Map Settings, one tap away.
+* The menu **reuses `.aoi-menu.mode-menu`** — radios for one-of, checks for
+  any-of, `.refused` for a row that keeps its place and says why on hover. A
+  sheet that is not built must read as "not installed here", never as "this map
+  has no geology". No second control vocabulary; icons are Lucide only.
+
+Wiring: `renderGeoMapPanel()` / `renderHistMapPanel()` / `switchBasemap()` all
+call `MapLegend.refresh()`, and both refresh **before** their own early return
+on a missing admin DOM node — the strip exists whether or not the admin panel
+has ever been opened, so a share link that turns geology on paints the chip.
+
+Mobile: the strip spans the stats grid (`grid-column: 1 / -1`) because it
+describes the ground under every cell, not a fourth statistic; targets go to
+32 px. In **landscape**, where the panel is hidden for vertical room, only the
+strip survives — right-aligned and sized to itself, with its own backing on the
+`.ml-row`, since an overlay that is on must stay visible and switchable there
+too.
