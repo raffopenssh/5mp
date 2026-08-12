@@ -27,12 +27,57 @@ plume could mint a label), the sediment-plume narrative sentence, and the two
 cron rotations. `/api/parks/{id}/turbidity` returns `{"disabled": true}`.
 `analysis/gfw_alerts.py --rotate` **stays** (real canopy-loss data).
 
-⚠️ **2,562 `park_settlements` rows are detector output, not settlements** —
+⚠️ **3,019 `park_settlements` rows are detector output, not settlements** —
 `RegisterMiningCandidate` wrote pit/turbidity hits into the settlements table,
-inflating the global count 10,390 → 12,952. They're excluded by
-`scannerInjectedSQLFilter()`, keyed on the `[Pit detection …]`/`[Turbidity …]`
-narrative prefix (not classification — they're spread across all six classes).
-**Any new settlement query must apply that filter.**
+inflating the global count 11,485 → 14,504. **Any new settlement query must
+apply `settlementFilterSQL(narrativeCol, polygonCol)`.**
+
+### The note was not provenance, and something rewrote it (2026-08-12)
+
+The filter used to be `scannerInjectedSQLFilter()` alone, keyed on the
+`[Pit detection …]`/`[Turbidity …]` narrative prefix (not classification —
+they're spread across all six classes). **A note is a string, and a string can
+be rewritten.** It was:
+
+`/api/refresh-park` runs `ClassifyParkSettlementsForce` nightly
+(`scripts/daily_park_refresh.py`, cron 07:30), which regenerates `narrative`
+from scratch. It skipped rows beginning `[Turbidity alert` — and **nothing** for
+the 2,457 beginning `[Pit detection `. So every night the force pass rewrote a
+pit detection's narrative into ordinary classifier prose ("Agricultural
+settlement 16km north of Safari Ht Chinko") and the row walked straight through
+the filter that existed to stop it. **495 rows had already been laundered**,
+including all 79 in `CMR_Nki` — the park this repo's own test list calls
+"pristine, 0 settlements", which is exactly the kind of check that should have
+caught it and did not, because the number it produced was plausible.
+
+The test is now the row's **ORIGIN**, which prose cannot rewrite:
+
+| column | meaning |
+|---|---|
+| `polygon_ids` non-empty | clustered from observed GHSL built-up footprints in `feature_geometries` — this is a settlement |
+| `polygon_ids` empty | inserted as a bare lat/lon by `RegisterMiningCandidate` — there was no observed built-up polygon to point at |
+
+Verified exhaustively against `data/mining_pits/*.json` and
+`data/turbidity/*.json`: of the 3,019 rows with no footprints, 2,483 still wear
+the note, 495 were laundered, and 4 are pit-adjacent rows whose note was lost
+the same way. **Zero** GHSL-derived rows lack footprints.
+
+* `settlementSourceSQL(col)` — the origin test.
+* `settlementFilterSQL(narrative, polygon_ids)` — origin **AND** note, and what
+  call sites should use. Both are kept because they fail in opposite
+  directions: a laundered note slips past the note check, and a legitimate
+  cluster whose `polygon_ids` a future refactor dropped would slip past the
+  origin check. A settlement should satisfy both.
+* `scannerInjectedRow(narrative, polygonIDs)` — the Go predicate, where both
+  columns are to hand.
+* `classifyParkSettlementsImpl` now **excludes footprint-less rows from
+  reclassification entirely**, so the laundry cannot run again. Fixing only the
+  serving filter would have left the corruption accumulating behind it.
+
+The general lesson, worth more than the mining context: **a derived flag must
+be a property the pipeline cannot overwrite as a side effect.** If provenance
+lives in a field some other job regenerates, it is not provenance, it is a
+comment.
 
 What survives and validates: the **basin layer** (`docs/agents/aoi.md`). Worth trying only
 with new resources, per §10.2: Sentinel-1 SAR, sub-metre commercial imagery over

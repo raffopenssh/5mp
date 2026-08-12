@@ -285,22 +285,64 @@ separate from `?popup=`/`sections=` which resolve against the `areas` source an
 AOI is never in. Anything wanting a specific date window must go through
 `setTimeSliderRange()`, not `dateFrom`/`dateTo`.
 
-**Focus mode** (`?aoi_focus=`) makes the AOI the subject of the whole map: parks
+**Focus mode** (`?aoi_focus=`) makes an area the subject of the whole map: parks
 outside it are dimmed (never hidden — the outline shows the polygon crossing a
 boundary), **starred parks are never dimmed** (a star is explicit and outranks
 an implicit scope), and the bbox feature layers, the animator and the star
-report all switch to the AOI's own rows via `aoiScopeSQL`. `aoiFocusBrightIDs()`
+report all switch to that area's own rows. `aoiFocusBrightIDs()`
 returns `null` — not `[]` — when the park list did not resolve, or the whole
 world greys out. `var aoiFocusID`, not `let`: `updatePAHighlighting()` reads it
 during map setup, thousands of lines above the declaration.
 
+### A PARK IS AN AREA TOO (2026-08-12)
+
+Focus was AOI-only. The cost was that the object this map is mostly made of had
+no gesture that made its numbers agree: with Chinko on screen the stats panel
+counted the continent, the popup counted Chinko's 27 settlement clusters, and
+the viewport readout counted the 35 built-up polygons it had drawn — **three
+numbers for one word**, none of them wrong, none of them saying what it was
+counting.
+
+`aoiFocusID` now holds **either kind of id** and everything branches on
+`focusIsAOI()`. The variable keeps its name: ~25 call sites and one share-link
+parameter (`?aoi_focus=`) already say it, and generalising a thing is not the
+same as renaming it.
+
+| | AOI | park |
+|---|---|---|
+| scope param | `?aoi=` | `?park_focus=` |
+| server | `aoiScopeParam`/`aoiScopeSQL` | `areaScopeParam`/`areaScopeSQL` (accepts both) |
+| bright set | `aoi_parks` lookup, async, may fail | just the park itself |
+| camera | `zoomToAOI()` (stored bbox) | `zoomToPark()` (measured off the `areas` source) |
+| animator | clips its canvas to the polygon | scopes its fetches only |
+
+⚠️ **`?park_focus=`, never `?park=`.** `ParkIDMiddleware` validates every
+`?park=` in the app and **404s an AOI id in one**. Reusing it would make "focus
+on this area" a hard failure for half its inputs — the same trap `?area=` exists
+for on the bbox endpoint. One parameter name per kind, chosen in one place
+(`focusScopeParam()` in globe.html), so the stats call and the LOD loader cannot
+drift.
+
+⚠️ **A focused park is not in `window._aois`.** `loadAOIs()` clears a focus
+whose AOI has vanished; that guard must ask `focusIsAOI()` first, or every list
+refresh silently drops a park focus. Same shape as the restore path: the
+share-link restorer defers until `AOI_IDS` is populated, because before that
+`focusIsAOI()` would misread an AOI id as a park and scope the session with the
+wrong parameter.
+
+The control appears wherever the AOI's does, with the same `icon-focus` and the
+same `aria-pressed`: the park tag in the filter panel (`.park-tag-btn`, violet
+rather than the AOI's amber — one gesture, and the colour says which kind of
+area), the park popup header, and the scope line, whose name now opens
+`showPAPopup` or the AOI popup as appropriate.
+
 **The stats panel is where focus states itself, and its numbers obey it.**
-`/api/stats` takes the same visibility-checked `?aoi=` as the feature endpoints
-(`aoiScopeParam` → `aoiScopeSQL`) and echoes `scope`/`scope_name`. That is not a
+`/api/stats` takes the same visibility-checked scope as the feature endpoints
+(`areaScopeParam` → `areaScopeSQL`) and echoes `scope`/`scope_name`. That is not a
 contradiction of aoi.go's "endpoints that SUM must use `aoiExcludeSQL`" — that
 rule is about the *default* answer, where adding an AOI's rows to the parks it
-overlaps double-counts the overlap; with an explicit scope the AOI's own rows
-*are* the complete answer for that geometry and the park rows would be the
+overlaps double-counts the overlap; with an explicit scope the area's own rows
+*are* the complete answer for that geometry and the others would be the
 double count. Non-owners get the global answer and no `scope` key (pinned by
 `stats_aoi_scope_ignored_for_non_owner`).
 

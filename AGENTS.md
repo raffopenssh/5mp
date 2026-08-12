@@ -29,6 +29,7 @@ settlements, patrol tracking. ~17k-line single-page frontend + SQLite (1.8 GB).
 | Writing/running tests, share-link params, `TEST` helper | `docs/agents/testing.md` (+ `docs/TEST_HELPERS.md`) |
 | Data files, API examples, DB stats, Lucide icons | `docs/agents/reference.md` |
 | Mining detection (retired — do not rebuild) | `docs/agents/mining.md` |
+| Geological contact zones (open brief, not built) | `docs/agents/HANDOVER_CONTACTS.md` |
 
 Other human docs: `docs/API.md`, `docs/DATABASE.md`, `docs/SCRIPTS.md`,
 `docs/ARCHITECTURE.md`, `docs/QUICK_TASKS.md`, `docs/DATA_FLOW.md`.
@@ -139,37 +140,52 @@ These apply no matter what you touch. Each cost real time at least once.
 
 5. **Park-shaped tables hold AOI rows too.** Any query without an explicit
    `park_id` must apply `aoiExcludeSQL(col)` (`srv/aoi.go`), and any settlement
-   query must apply `scannerInjectedSQLFilter()` (2,562 rows there are retired
-   detector output, not settlements).
+   query must apply `settlementFilterSQL(narrative, polygon_ids)` (3,019 rows
+   there are retired detector output, not settlements). **Provenance must be a
+   property the pipeline cannot overwrite as a side effect**: that filter tested
+   a narrative *prefix* until the nightly reclassify started regenerating
+   narratives, laundering 495 detector rows into settlements — including all 79
+   in `CMR_Nki`, the park the test list calls "pristine". A flag some other job
+   rewrites is not a flag, it is a comment. See `docs/agents/mining.md`.
 
 6. **An AOI is not a park.** `/api/parks/{aoi}/*` 404s by design; use
    `/api/aois/*` (frontend: `apiBase(id)`, `?area=` not `?park=`). Non-owners
    get **404, not 403** — an id must not be an oracle.
 
-7. **Serve a layer whole, or say you truncated.** A truncated answer is
+7. **A number must name its unit, and two surfaces saying one word must say
+   one number.** A settlement is a *cluster*; `feature_geometries` holds its
+   *footprints* (Chinko: 27 and 35). Three surfaces counted honestly, disagreed,
+   and none said what it counted — which reads as broken data, not as two units.
+   `/api/features-in-bbox` names `unit`/`groups`; focus (`?park_focus=`/`?aoi=`)
+   is the gesture that makes the panel, the map and the popup agree.
+
+8. **Serve a layer whole, or say you truncated.** A truncated answer is
    indistinguishable from a complete one. `ORDER BY … LIMIT n` is a *corner*,
    not a sample — use `spreadSelect`.
 
-8. **Middleware must not commit to an encoding before the handler describes the
+9. **Middleware must not commit to an encoding before the handler describes the
    response** (`srv/gzip.go`), and an authenticated response must never be
    `Cache-Control: public` (`PrivateCacheMiddleware`, `Vary: Cookie`).
 
-9. **Fire narrative cache has one writer:**
+10. **Fire narrative cache has one writer:**
    `scripts/precompute_narratives_v5.py`. The Go path is DEPRECATED — never
    re-wire it. See `docs/agents/fire.md`.
 
-10. **Expensive narratives go through `narrative_cache` + `geoMemo`**
+11. **Expensive narratives go through `narrative_cache` + `geoMemo`**
     (`srv/narrative_cache.go`), not a second cache. Park scale hides costs that
     time out at AOI scale (2 m 27 s → 10.5 s cold → 0.09 s warm).
 
-11. **Never tune the fire algorithm by eye** — `scripts/eval_fire_trajectories.py`.
+12. **Never tune the fire algorithm by eye** — `scripts/eval_fire_trajectories.py`.
     Never judge a detection-filtering change on `coverage_pct`.
 
-12. **Mining detection is retired** (`MiningEnabled = false`). Do not rebuild
+13. **Mining detection is retired** (`MiningEnabled = false`). Do not rebuild
     it; read `docs/agents/mining.md` before proposing anything mining-related.
 
-13. **A share link is a name; a guest link is a credential.** Never put an
-    access password in a URL, and never let a guest capability write, mint
+14. **A share link is a name; a guest link is a credential.** Never put an
+    access password in a URL — not in the link a button copies, not in a
+    redirect target, and not left in the address bar for the *next* link to
+    copy (that last one is how it leaked for weeks). A `pwd=` authenticates the
+    request it arrives on, becomes a cookie, and is scrubbed by a redirect; and never let a guest capability write, mint
     another link, or fingerprint as `anon` in the response cache. Read-only is
     not the same as harmless: patrol reads go through `PatrolEnv(r)`, never
     `RequestEnv(r)`, or a link shared to show a fire scar ships the ranger
@@ -178,6 +194,6 @@ These apply no matter what you touch. Each cost real time at least once.
     handler whose range is not a `from`/`to` pair must call
     `ClampGuestDates` itself. See `docs/agents/sharing.md`.
 
-14. Long writers **yield** (batched commits) so SQLite's single writer stays
+15. Long writers **yield** (batched commits) so SQLite's single writer stays
     available. Before blaming the write lock, check `ps` — a lock wait is `S`,
     not `R`.

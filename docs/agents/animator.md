@@ -224,10 +224,21 @@ grid — an offer the app already knew was refused. Load-bearing details:
 
 **Key behaviors** (all in `anim.js`, v2 — integrated into the time slider):
 - UI lives **inside** the time-slider header: play/date/speed/GIF/close inline, playhead + progress rendered in the slider track (playhead is pointer-draggable to scrub; pauses while dragging, resumes after). `#anim-open-btn` is a preset-tag-styled chip.
-- **Layer chips** (`.anim-chip`, staggered reveal like date tags — all always shown so users see what's available): fireGrid / firePts / trajs / effortGrid / effortPts / deforest / settlements / turb / infra. Lazy-load on first enable (`ensureLayer`); toggleable mid-play. turb/infra greyed (`.unavailable`) when nothing pinned.
+- **Layer chips** (`.anim-chip`, staggered reveal like date tags — all always shown so users see what's available): fireGrid / firePts / trajs / effortGrid / effortPts / deforest / settlements. Lazy-load on first enable (`ensureLayer`); toggleable mid-play.
+
+  ⚠️ **`infra` removed 2026-08-12.** It was a chip for something the animator
+  does not animate: a re-drawing, onto the animation canvas, of pinned
+  roads/rivers/places **the map is already drawing underneath it**. Nothing
+  about it was dated, so it looked identical in every frame — and the chip row's
+  whole subject is time, so a static entry in it invites the reading that the
+  others are static too. Worse, it was a *second* switch for a layer whose real
+  switch is elsewhere (the pin, reached from the map tip / AOI tip), so
+  switching it off here left the lines on screen and read as a broken control.
+  One switch, one meaning. `turb` was removed earlier (§10) and its remaining
+  branches are inert.
 - Defaults from `viewLayers` toggles + pins; zoom ≥ `POINTS_ZOOM` (6.5) and bbox ≤ 40 deg² prefers real points. `firePts` = `/api/fire-frames?mode=points` (individual VIIRS detections, ≤60k, server falls back to grid). `effortPts` = patrol-effort **circles**: same aggregated frames as effortGrid, drawn as fire-style green glow + recency ring, newest visit per cell wins.
 - Map stays fully interactive (canvas pointer-events:none); pan/zoom outside the 30%-padded fetch bbox triggers debounced refetch (`onMoveEnd`), unless a drawn bbox is fixed (then canvas is clipped to it).
-- Temporal semantics: fire grid/points flash + afterglow; trajectories build at true dated speed with glowing head, then **ashen out** (red→grey→gone over `TRAJ_FADE_DAYS`=21); effort ages to ash over 90d so refreshes flash green; deforestation accumulates (45d flash); settlements/infra static; turbidity accumulates.
+- Temporal semantics: fire grid/points flash + afterglow; trajectories build at true dated speed with glowing head, then **ashen out** (red→grey→gone over `TRAJ_FADE_DAYS`=21); effort ages to ash over 90d so refreshes flash green; deforestation accumulates (45d flash); settlements static; turbidity accumulates.
 - Speed +/−: click steps ×1.35, press-and-hold ramps (mobile). Keyboard: space/←/→/Esc.
 - **Share links**: `anim=<layers>&anim_speed&anim_t&anim_paused` written by `shareCurrentView()` (via `Animator.getState()`); restored through `window._pendingAnim` set in `restoreStateFromURL()`, polled by anim.js until map ready.
 - `chooseStep()`: ≤92d→day, ≤800d→week, else month. GIF export via `gifenc` CDN

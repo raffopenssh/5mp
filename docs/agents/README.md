@@ -19,6 +19,7 @@ lives here, one file per subsystem, loaded only when a task touches it.
 | `testing.md` | `?test=1` helpers, test suites, share-link params |
 | `reference.md` | Data files, key API examples, DB stats, Lucide icon system |
 | `mining.md` | Retired mining detection — read before proposing anything mining-related |
+| `HANDOVER_CONTACTS.md` | Open brief: geological contact zones. Delete when the work lands. |
 
 ## Where a new note goes
 
