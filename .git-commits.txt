@@ -1,3 +1,6 @@
+430d16c 2026-08-12 11:47:50 A click selects; the selection is a place, and it is in the link
+339f37e 2026-08-12 10:54:02 Geology as one standard-legend layer; fire grid as a heat field; fix tip precedence
+04b31f3 2026-08-12 10:16:50 chore: refresh version history
 4d3753c 2026-08-12 10:16:42 Focus states itself in the stats panel, and its numbers obey it
 276df78 2026-08-12 09:45:50 chore: refresh version history
 5950557 2026-08-12 09:45:42 Fire fronts stay lines at every zoom; a pin can be filtered, scoped and forced
@@ -15,6 +18,3 @@ e950555 2026-08-10 07:57:22 geology: commodity chips are independent toggles, un
 e6edbeb 2026-08-10 07:56:30 Export menu: drop <a download>, name files from Content-Disposition
 70da37b 2026-08-10 07:51:33 login: inline hint when the password is wrong
 af59c0d 2026-08-10 07:30:25 admin: copy-link icon in the panel header for the section on screen
-70c6b09 2026-08-10 07:21:14 chore: refresh version history
-b924473 2026-08-10 07:20:58 docs: the geology GeoPackage and map_sheet= links are done, not open
-d7af57c 2026-08-10 07:18:36 chore: refresh version history
