@@ -908,19 +908,32 @@ func (s *Server) ClassifyParkSettlementsForce(parkID string) int {
 }
 
 func (s *Server) classifyParkSettlementsImpl(parkID string, force bool) int {
+	// A row with no polygon_ids was never observed in GHSL built-up data --
+	// it is retired pit/turbidity detector output (srv/mining_flag.go). It must
+	// not be reclassified, because reclassifying is exactly how 495 of them
+	// stopped looking like detector output: the force pass regenerates
+	// `narrative` from scratch, erasing the "[Pit detection …]" note that the
+	// serving filter matched on, and the row walked out as an "Agricultural
+	// settlement". Excluding them here is what stops the laundry running again;
+	// settlementFilterSQL is what stops the already-laundered rows being served.
 	query := `
 		SELECT id, lat, lon, area_m2, population_est, nearest_place, distance_to_place_km
 		FROM park_settlements
-		WHERE park_id = ? AND (classified_at IS NULL OR classified_at < datetime('now', '-365 days'))
+		WHERE park_id = ?` + settlementSourceSQL("polygon_ids") + `
+		  AND (classified_at IS NULL OR classified_at < datetime('now', '-365 days'))
 	`
 	if force {
 		// Skip mining candidates whose narrative carries a prepended
-		// turbidity-alert note (see RegisterMiningCandidate) — reclassifying
-		// would erase the note.
+		// turbidity-alert note (see RegisterMiningCandidate) -- reclassifying
+		// would erase the note. With the origin filter above this is now
+		// belt-and-braces, which is the point: the note check alone was the
+		// bug, since it named only ONE of the two prefixes the scanner writes.
 		query = `
 		SELECT id, lat, lon, area_m2, population_est, nearest_place, distance_to_place_km
 		FROM park_settlements
-		WHERE park_id = ? AND (narrative IS NULL OR narrative NOT LIKE '[Turbidity alert%')
+		WHERE park_id = ?` + settlementSourceSQL("polygon_ids") + `
+		  AND (narrative IS NULL OR (narrative NOT LIKE '[Turbidity alert%'
+		                             AND narrative NOT LIKE '[Pit detection %'))
 	`
 	}
 	rows, err := s.DB.Query(query, parkID)
@@ -1029,7 +1042,7 @@ func (s *Server) GetCachedClassifiedSettlements(parkID string) []ClassifiedSettl
 			COALESCE(narrative, ''), COALESCE(nearest_place, ''), COALESCE(distance_to_place_km, 0),
 			COALESCE(fires_5km, 0), COALESCE(fire_seasonality, ''), COALESCE(deforest_nearby_km2, 0)
 		FROM park_settlements
-		WHERE park_id = ?`+scannerInjectedSQLFilter("narrative")+`
+		WHERE park_id = ?`+settlementFilterSQL("narrative", "polygon_ids")+`
 		ORDER BY area_m2 DESC
 	`, parkID)
 	if err != nil {

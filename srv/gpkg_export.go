@@ -486,7 +486,7 @@ func (s *Server) gpkgSettlements(w *gpkgWriter, o gpkgExportOpts) error {
 		distance_to_place_km, COALESCE(direction_from_place,''), fires_1km, fires_5km,
 		COALESCE(fire_seasonality,''), deforest_nearby_km2, in_buffer, COALESCE(narrative,''),
 		COALESCE(detected_at,''), COALESCE(classified_at,'')
-		FROM park_settlements WHERE park_id = ?` + scannerInjectedSQLFilter("narrative")
+		FROM park_settlements WHERE park_id = ?` + settlementFilterSQL("narrative", "polygon_ids")
 	mrows, _ := s.DB.Query(mq, o.AreaID)
 	if mrows != nil {
 		defer mrows.Close()

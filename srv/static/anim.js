@@ -5,8 +5,8 @@
 //   rendered inside the slider track (draggable to scrub).
 // - Layer chips (styled like date preset tags) let the user toggle
 //   exactly what animates: fire grid / fire points / fire paths /
-//   patrol grid / patrol points / deforestation / settlements /
-//   turbidity / pinned infrastructure. Lazy-loaded on first enable.
+//   patrol grid / patrol points / deforestation / settlements.
+//   Lazy-loaded on first enable.
 // - Grid aggregates for wide views, real per-detection points for
 //   high zoom (server falls back to grid if the bbox is too big).
 // - Map stays fully interactive while animating (canvas is
@@ -20,8 +20,6 @@
 //                        over 90d so recency/refresh is visible
 //     deforestation    : accumulates; new clearings flash, old ones ash over years
 //     settlements      : static context
-//     turbidity        : accumulates + flash; mines static
-//     pinned infra     : static context lines
 // - Share links: anim=<layers>&anim_speed&anim_t&anim_paused.
 // ============================================================
 (function () {
@@ -61,13 +59,26 @@
         effortGrid:  { label: 'patrol grid',   color: '#4ade80', title: 'Aggregated patrol effort (0.1° grid pixels)' },
         effortPts:   { label: 'patrol circles', color: '#86efac', title: 'Patrol effort circles (like the live map) — age and ashen over 90d' },
         deforest:    { label: 'deforest',      color: '#a855f7', title: 'Deforestation \u2014 new clearings flash purple, older ones grey out over years (never vanish)' },
-        settlements: { label: 'settlements',   color: '#fbbf24', title: 'Settlements (static context)' },
-        infra:       { label: 'infra',         color: '#60a5fa', title: 'Pinned roads/rivers/places (static)' }
+        settlements: { label: 'settlements',   color: '#fbbf24', title: 'Settlements (static context)' }
     };
     // 'turb' (turbidity plume + mining sites) removed 2026-08-06 --
     // docs/MINING_FINDINGS_2026-08.md §10. The turbidity endpoint is disabled, so
     // there is nothing to animate. Remaining turb branches below are inert.
-    const LAYER_ORDER = ['fireGrid', 'firePts', 'trajs', 'effortGrid', 'effortPts', 'deforest', 'settlements', 'infra'];
+    //
+    // 'infra' (pinned roads/rivers/places) removed 2026-08-12. It was a chip
+    // for something the animator does not animate: a re-drawing, onto the
+    // animation canvas, of vector layers the MAP IS ALREADY DRAWING
+    // underneath it. Nothing about it was dated, so it looked identical in
+    // every frame, and the chip row is a statement about TIME — a static entry
+    // in it invites the reading that the others are static too. Worse, it was
+    // a second switch for a layer whose real switch is elsewhere (the pin, and
+    // the map tip / AOI tip that owns pinning), so switching it off here left
+    // the lines on screen and read as a broken control.
+    //
+    // One switch, one meaning: infrastructure is pinned from the tip, and the
+    // animator neither hides nor duplicates it. The snapshotPinned() statics
+    // and the D.infra draw branch are gone with it.
+    const LAYER_ORDER = ['fireGrid', 'firePts', 'trajs', 'effortGrid', 'effortPts', 'deforest', 'settlements'];
 
     function getPwdSafe() { return (typeof getPwd === 'function' ? getPwd() : '') || ''; }
     function toast(msg, type, opts) { if (typeof showToast === 'function') showToast(msg, type || 'info', opts); }
@@ -494,10 +505,9 @@
                 if (j.truncated) truncNote('settlements', 'settlements', j.count, j.total);
                 break;
             }
-            case 'turb': case 'infra': {
+            case 'turb': {
                 const snap = snapshotPinned();
                 D.turb = snap.turb;
-                D.infra = snap.statics;
                 break;
             }
         }
@@ -1447,8 +1457,8 @@
             clipped = true;
         }
 
-        // --- infra (static) ---
-        if (on.infra && D.infra) for (const s of D.infra) drawGeom(ctx, s.geom, s.color, proj, w, h);
+        // --- infra: removed 2026-08-12 (see LAYER_ORDER). The map draws
+        // pinned roads/rivers/places itself, underneath this canvas.
 
         // --- turbidity ---
         if (on.turb && D.turb) {
@@ -1780,7 +1790,6 @@
         if (on.trajs && has(D.trajs) && D.trajs.some(g => g.t0 <= t)) return true;
         if (on.deforest && has(D.deforest) && D.deforest.some(d => d.t <= t)) return true;
         if (on.settlements && has(D.settlements)) return true;
-        if (on.infra && has(D.infra)) return true;
         if (on.firePts && has(D.firePts) && D.firePts.some(p => p[2] <= t)) return true;
         // fireGrid can be serving real detections at high zoom (asPoints).
         if (on.fireGrid && D.fireGrid && has(D.fireGrid.points) &&
@@ -2505,10 +2514,9 @@
             chip.innerHTML = `<i></i>${def.label}`;
             chip.onclick = () => toggleChip(name);
             // hide chips with no possible data
-            if ((name === 'turb' || name === 'infra')) {
+            if (name === 'turb') {
                 const snap = A.snapPreview || (A.snapPreview = snapshotPinned());
-                if (name === 'turb' && !(snap.turb.plume.length || snap.turb.mines.length)) chip.classList.add('unavailable');
-                if (name === 'infra' && !snap.statics.length) chip.classList.add('unavailable');
+                if (!(snap.turb.plume.length || snap.turb.mines.length)) chip.classList.add('unavailable');
             }
             // patrol layers: hidden entirely when the pixels toggle is off
             // (unless a share link explicitly enabled them). When the account
@@ -2753,7 +2761,7 @@
             A.trunc = {};
             refreshFirePtsFeasibility();
             for (const name of LAYER_ORDER) {
-                if (A.on[name] && A.data[name] !== undefined && name !== 'turb' && name !== 'infra') {
+                if (A.on[name] && A.data[name] !== undefined && name !== 'turb') {
                     delete A.data[name];
                     ensureLayer(name);
                 }
@@ -2862,9 +2870,6 @@
                 if (v.pixels && window.HAS_PATROL !== false) initial.push(hiZoom ? 'effortPts' : 'effortGrid');
                 if (v.deforest || pins.has('deforest')) initial.push('deforest');
                 if (v.settlements || pins.has('settlements')) initial.push('settlements');
-                const snap = snapshotPinned();
-                A.snapPreview = snap;
-                if (snap.statics.length) initial.push('infra');
                 if (!initial.length) initial = ['fireGrid', 'trajs'];
             }
             initial.forEach(n => { A.on[n] = true; });

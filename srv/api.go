@@ -1037,29 +1037,44 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// SCOPE: an explicit, visibility-checked ?aoi=.
+	// SCOPE: an explicit, visibility-checked ?aoi= or ?park_focus=.
 	//
 	// aoi.go's rule is that endpoints which SUM must keep using
 	// aoiExcludeSQL -- that is about the DEFAULT answer, where adding an
 	// AOI's rows to the parks it overlaps would count the overlap twice.
-	// With an explicit ?aoi= the question is different: "how much fire is in
-	// THIS area", and the AOI's own chain was computed over the whole
-	// polygon, so its rows are the complete answer and the park rows would
-	// be the double count. Same reasoning, and the same aoiScopeSQL, as the
-	// bbox-keyed feature endpoints; without it, focus mode dimmed the map to
-	// one area while the panel above it kept reporting the continent.
-	aoiID := s.aoiScopeParam(r)
-	scopeSQL := func(col string) string { return aoiScopeSQL(col, aoiID) }
+	// With an explicit area the question is different: "how much fire is in
+	// THIS area", and its own chain was computed over the whole polygon, so
+	// its rows are the complete answer and the others would be the double
+	// count. Same reasoning, and the same scope SQL, as the bbox-keyed
+	// feature endpoints; without it, focus mode dimmed the map to one area
+	// while the panel above it kept reporting the continent.
+	//
+	// A PARK IS AN AREA TOO. This used to accept an AOI only, so the same
+	// gesture on the thing this map is mostly made of -- a protected area --
+	// had no answer at all: with Chinko selected the panel kept counting the
+	// continent, the popup counted Chinko's clusters, and the legend counted
+	// what was in the viewport. Three numbers for one word.
+	aoiID := s.areaScopeParam(r)
+	scopeSQL := func(col string) string { return areaScopeSQL(col, aoiID) }
 	var scopeName string
 	if aoiID != "" {
-		if a, err := s.GetAOI(aoiID, s.RequestPrincipalID(r), false); err == nil {
-			scopeName = a.Name
-			// Patrol effort is grid-keyed, not park-keyed, so the only way
-			// to scope it is geographically. The AOI's own bbox is the
-			// widest honest answer; an explicit bbox (a drawn box, or the
-			// viewport) stays the more specific one and wins.
-			if len(bbox) != 4 && (a.BBox[2] != 0 || a.BBox[3] != 0) {
-				bbox = []float64{a.BBox[0], a.BBox[1], a.BBox[2], a.BBox[3]}
+		scopeName = s.areaScopeName(r, aoiID)
+		// Patrol effort is grid-keyed, not park-keyed, so the only way
+		// to scope it is geographically. The area's own bbox is the
+		// widest honest answer; an explicit bbox (a drawn box, or the
+		// viewport) stays the more specific one and wins.
+		if IsAOIID(aoiID) {
+			if a, err := s.GetAOI(aoiID, s.RequestPrincipalID(r), false); err == nil {
+				if len(bbox) != 4 && (a.BBox[2] != 0 || a.BBox[3] != 0) {
+					bbox = []float64{a.BBox[0], a.BBox[1], a.BBox[2], a.BBox[3]}
+				}
+			}
+		} else if s.AreaStore != nil {
+			if a := s.AreaStore.GetByID(aoiID); a != nil {
+				latMin, latMax, lonMin, lonMax := a.GetBoundingBox()
+				if len(bbox) != 4 && (lonMin != 0 || lonMax != 0) {
+					bbox = []float64{lonMin, latMin, lonMax, latMax}
+				}
 			}
 		}
 	}
@@ -1240,12 +1255,12 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 	if len(bbox) == 4 {
 		s.DB.QueryRow(`
 			SELECT COUNT(*) FROM park_settlements
-			WHERE lon >= ? AND lon <= ? AND lat >= ? AND lat <= ?`+scannerInjectedSQLFilter("narrative")+
+			WHERE lon >= ? AND lon <= ? AND lat >= ? AND lat <= ?`+settlementFilterSQL("narrative", "polygon_ids")+
 			scopeSQL("park_id")+`
 		`, bbox[0], bbox[2], bbox[1], bbox[3]).Scan(&totalSettlements)
 	} else {
 		s.DB.QueryRow(`SELECT COUNT(*) FROM park_settlements WHERE 1=1` +
-			scannerInjectedSQLFilter("narrative") +
+			settlementFilterSQL("narrative", "polygon_ids") +
 			scopeSQL("park_id")).Scan(&totalSettlements)
 	}
 
@@ -2458,7 +2473,7 @@ func (s *Server) HandleAPIParkFeatureStats(w http.ResponseWriter, r *http.Reques
 	rows2, err := s.DB.Query(`
 		SELECT classification, COUNT(*) 
 		FROM park_settlements 
-		WHERE park_id = ? AND classification != 'unclassified'`+scannerInjectedSQLFilter("narrative")+`
+		WHERE park_id = ? AND classification != 'unclassified'`+settlementFilterSQL("narrative", "polygon_ids")+`
 		GROUP BY classification
 	`, internalID)
 	if err == nil {
@@ -3732,7 +3747,7 @@ func (s *Server) fetchParkNarrativeSummary(parkID string) string {
 			COUNT(*) as count,
 			COALESCE(SUM(population_est), 0) as population
 		FROM park_settlements
-		WHERE park_id = ?`+scannerInjectedSQLFilter("narrative")+`
+		WHERE park_id = ?`+settlementFilterSQL("narrative", "polygon_ids")+`
 	`, parkID).Scan(&settlementCount, &totalPopulation)
 	if err == nil && settlementCount > 0 {
 		parts = append(parts, fmt.Sprintf("SETTLEMENTS: %d settlements, est. population %d", settlementCount, totalPopulation))
@@ -5271,7 +5286,7 @@ func (s *Server) HandleAPIParksExport(w http.ResponseWriter, r *http.Request) {
 			) d ON a.id = d.park_id
 			LEFT JOIN (
 				SELECT park_id, COUNT(*) as settlement_count, SUM(population_est) as total_pop 
-				FROM park_settlements WHERE 1=1` + scannerInjectedSQLFilter("narrative") + ` GROUP BY park_id
+				FROM park_settlements WHERE 1=1` + settlementFilterSQL("narrative", "polygon_ids") + ` GROUP BY park_id
 			) st ON a.id = st.park_id
 			LEFT JOIN (
 				SELECT park_id, road_length_km as road_km, roadless_percentage as roadless_pct 
@@ -5312,7 +5327,7 @@ func (s *Server) HandleAPIParksExport(w http.ResponseWriter, r *http.Request) {
 		s.DB.QueryRow(`SELECT COUNT(DISTINCT group_name) FROM fire_group_alerts WHERE park_id = ?`, area.ID).Scan(&groups)
 		s.DB.QueryRow(`SELECT COALESCE(SUM(area_km2), 0), COUNT(*) FROM deforestation_events WHERE park_id = ?`, area.ID).Scan(&defoKm2, &defoEvents)
 		s.DB.QueryRow(`SELECT COUNT(*), COALESCE(SUM(population_est), 0) FROM park_settlements WHERE park_id = ?`+
-			scannerInjectedSQLFilter("narrative"), area.ID).Scan(&settlements, &pop)
+			settlementFilterSQL("narrative", "polygon_ids"), area.ID).Scan(&settlements, &pop)
 		s.DB.QueryRow(`SELECT COALESCE(road_length_km, 0), COALESCE(roadless_percentage, 0) FROM osm_roadless_data WHERE park_id = ?`, area.ID).Scan(&roadsKm, &roadlessPct)
 		// Count patrolled grid cells within park bounds.
 		// Pixel count must respect the request's env tenant (test2026 -> 'test'):
@@ -5846,14 +5861,17 @@ func (s *Server) handleSettlementFeatures(w http.ResponseWriter, parkID string, 
 	if len(fc.Features) == 0 && strings.HasPrefix(featureID, "settlement_") {
 		if sid, err := strconv.ParseInt(strings.TrimPrefix(featureID, "settlement_"), 10, 64); err == nil {
 			var lat, lon float64
-			var narrative, classification sql.NullString
+			var narrative, classification, polygonIDs sql.NullString
 			err := s.DB.QueryRow(`
-				SELECT lat, lon, narrative, classification
+				SELECT lat, lon, narrative, classification, polygon_ids
 				FROM park_settlements WHERE id = ? AND park_id = ?`,
-				sid, parkID).Scan(&lat, &lon, &narrative, &classification)
+				sid, parkID).Scan(&lat, &lon, &narrative, &classification, &polygonIDs)
 			// Scanner-injected rows (retired pit/turbidity detector) are not
-			// settlements and must not resolve as map features -- §10.
-			if err == nil && !scannerInjectedSettlement(narrative.String) {
+			// settlements and must not resolve as map features -- §10. Tested by
+			// ORIGIN as well as by note: the nightly force-reclassify rewrites a
+			// pit detection's narrative into ordinary classifier prose, so the
+			// note alone lets a laundered row through (see mining_flag.go).
+			if err == nil && !scannerInjectedRow(narrative.String, polygonIDs.String) {
 				props := map[string]interface{}{
 					"feature_type":  "settlement",
 					"feature_id":    featureID,

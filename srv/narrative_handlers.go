@@ -1224,7 +1224,7 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 		SELECT COUNT(*) as count,
 		       COALESCE(SUM(population_est), 0) as total_pop
 		FROM park_settlements
-		WHERE park_id = ?`+scannerInjectedSQLFilter("narrative")+`
+		WHERE park_id = ?`+settlementFilterSQL("narrative", "polygon_ids")+`
 	`, internalID).Scan(&settlementCount, &totalPopulation)
 
 	if err != nil {
@@ -1238,7 +1238,10 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 	narrative.SettlementCount = settlementCount
 	narrative.TotalPopulation = int64(totalPopulation.Float64)
 
-	// Get polygon count from feature_geometries (for map display)
+	// Get polygon count from feature_geometries (for map display). This is the
+	// number of built-up FOOTPRINTS, which is larger than settlement_count
+	// because a settlement is a cluster of them — the two are different units
+	// and the field names say so.
 	var polygonCount int
 	s.DB.QueryRow(`SELECT COUNT(*) FROM feature_geometries WHERE park_id = ? AND feature_type = 'settlement'`, internalID).Scan(&polygonCount)
 	narrative.PolygonCount = polygonCount
@@ -1275,7 +1278,7 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 			COALESCE(s.direction_from_place, '') as direction,
 			COALESCE(s.distance_to_place_km, 0) as distance_km
 		FROM park_settlements s
-		WHERE s.park_id = ?`+scannerInjectedSQLFilter("s.narrative")+`
+		WHERE s.park_id = ?`+settlementFilterSQL("s.narrative", "s.polygon_ids")+`
 		ORDER BY s.area_m2 DESC
 	`, internalID)
 
@@ -1332,7 +1335,7 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 	classRows, err := s.DB.Query(`
 		SELECT COALESCE(classification, 'unclassified'), COUNT(*)
 		FROM park_settlements
-		WHERE park_id = ?`+scannerInjectedSQLFilter("narrative")+`
+		WHERE park_id = ?`+settlementFilterSQL("narrative", "polygon_ids")+`
 		GROUP BY classification
 	`, internalID)
 	if err == nil {
@@ -2889,7 +2892,7 @@ func (s *Server) handleSettlementNarrativeStats(w http.ResponseWriter, parkID, p
 			COALESCE(SUM(population_2030), 0),
 			AVG(distance_to_road_m)
 		FROM park_settlements
-		WHERE park_id = ?`+scannerInjectedSQLFilter("narrative")+`
+		WHERE park_id = ?`+settlementFilterSQL("narrative", "polygon_ids")+`
 	`, parkID).Scan(&count, &totalArea, &avgArea, &popEst, &pop2030, &avgDistRoad)
 
 	if err != nil && err != sql.ErrNoRows {
@@ -2918,7 +2921,7 @@ func (s *Server) handleSettlementNarrativeStats(w http.ResponseWriter, parkID, p
 	classRows, err := s.DB.Query(`
 		SELECT COALESCE(classification, 'unclassified'), COUNT(*)
 		FROM park_settlements
-		WHERE park_id = ?`+scannerInjectedSQLFilter("narrative")+`
+		WHERE park_id = ?`+settlementFilterSQL("narrative", "polygon_ids")+`
 		GROUP BY classification
 	`, parkID)
 	if err == nil {
@@ -2946,7 +2949,7 @@ func (s *Server) handleSettlementNarrativeStats(w http.ResponseWriter, parkID, p
 			s.distance_to_road_m
 		FROM park_settlements s
 		LEFT JOIN feature_geometries fg ON fg.feature_id = 'settlement_' || s.id AND fg.feature_type = 'settlement'
-		WHERE s.park_id = ?`+scannerInjectedSQLFilter("s.narrative")+`
+		WHERE s.park_id = ?`+settlementFilterSQL("s.narrative", "s.polygon_ids")+`
 		ORDER BY s.area_m2 DESC
 		LIMIT 500
 	`, parkID)

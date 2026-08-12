@@ -38,15 +38,24 @@ func splitPolygonIDs(s string) []string {
 type settlementMeta struct {
 	narrative, classification, nearestPlace sql.NullString
 	distanceKm                              sql.NullFloat64
+	// groupID is the park_settlements row this footprint belongs to — the
+	// identity of the SETTLEMENT, as opposed to of the polygon. See
+	// settlementGroupKey.
+	groupID int64
 }
 
 // settlementMetaByPolygon maps feature_id -> the settlement row that lists it.
+//
+// Scanner-injected rows are excluded here as everywhere else
+// (srv/mining_flag.go): a footprint must not inherit a narrative, a
+// classification or a group identity from retired detector output.
 func (s *Server) settlementMetaByPolygon(parkID string) map[string]settlementMeta {
 	out := map[string]settlementMeta{}
 	rows, err := s.DB.Query(`
-		SELECT polygon_ids, narrative, classification, nearest_place, distance_to_place_km
+		SELECT polygon_ids, narrative, classification, nearest_place, distance_to_place_km, id
 		FROM park_settlements
-		WHERE park_id = ? AND polygon_ids IS NOT NULL AND polygon_ids != ''`, parkID)
+		WHERE park_id = ? AND polygon_ids IS NOT NULL AND polygon_ids != ''`+
+		scannerInjectedSQLFilter("narrative"), parkID)
 	if err != nil {
 		return out
 	}
@@ -54,7 +63,7 @@ func (s *Server) settlementMetaByPolygon(parkID string) map[string]settlementMet
 	for rows.Next() {
 		var polyIDs string
 		var m settlementMeta
-		if err := rows.Scan(&polyIDs, &m.narrative, &m.classification, &m.nearestPlace, &m.distanceKm); err != nil {
+		if err := rows.Scan(&polyIDs, &m.narrative, &m.classification, &m.nearestPlace, &m.distanceKm, &m.groupID); err != nil {
 			continue
 		}
 		for _, id := range splitPolygonIDs(polyIDs) {
@@ -179,6 +188,34 @@ func (s *Server) enrichFeatureProps(featureType, parkID, featureID string,
 			props["pattern_type"] = e.patternType.String
 		}
 	}
+}
+
+// settlementGroupKey maps one built-up FOOTPRINT to the settlement it belongs
+// to, as a stable string ident.
+//
+// A settlement is a cluster of adjacent GHSL built-up polygons
+// (rebuild_events_enhanced.py); feature_geometries holds the polygons and
+// park_settlements holds the clusters. Chinko is 35 polygons and 27
+// settlements. Counting the polygons and calling them settlements is how the
+// viewport readout came to disagree with the panel and the popup by a third.
+//
+// A footprint no cluster claims is its own group rather than being dropped: it
+// is on screen, so it has to be in the number describing the screen, and
+// invariant 1 says a lookup that matched nothing must not silently subtract.
+// Prefixed so a park_id can never collide with a settlement row id.
+func (s *Server) settlementGroupKey(parkID, featureID string, c *featureMetaCache) string {
+	if c.settlements == nil {
+		c.settlements = map[string]map[string]settlementMeta{}
+	}
+	m, ok := c.settlements[parkID]
+	if !ok {
+		m = s.settlementMetaByPolygon(parkID)
+		c.settlements[parkID] = m
+	}
+	if e, ok := m[featureID]; ok && e.groupID != 0 {
+		return fmt.Sprintf("g:%s:%d", parkID, e.groupID)
+	}
+	return "u:" + parkID + ":" + featureID
 }
 
 // featureIDsWithClass returns the feature_ids of one area whose classification

@@ -492,7 +492,7 @@ func (s *Server) GetClassifiedSettlements(parkID string) []ClassifiedSettlement 
 	rows, err := s.DB.Query(`
 		SELECT id, park_id, lat, lon, area_m2, population_est, nearest_place, distance_to_place_km
 		FROM park_settlements
-		WHERE park_id = ?`+scannerInjectedSQLFilter("narrative")+`
+		WHERE park_id = ?`+settlementFilterSQL("narrative", "polygon_ids")+`
 		ORDER BY area_m2 DESC
 	`, parkID)
 	if err != nil {

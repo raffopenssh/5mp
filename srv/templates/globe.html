@@ -4026,10 +4026,13 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
 
                 // Focus mode is a scope, and a scope that the map obeys but
                 // the numbers do not is worse than no scope at all. The server
-                // re-checks visibility (aoiScopeParam), so this is a request,
+                // re-checks visibility (areaScopeParam), so this is a request,
                 // not an assertion — an id we may not see is simply ignored.
-                if (typeof aoiFocusID !== 'undefined' && aoiFocusID) {
-                    params.push('aoi=' + encodeURIComponent(aoiFocusID));
+                // One writer for the parameter (focusScopeParam), because a
+                // park takes `park_focus=` and an AOI takes `aoi=`.
+                if (typeof focusScopeParam === 'function') {
+                    const fp = focusScopeParam();
+                    if (fp) params.push(fp);
                 }
                 
                 // Add movement type filter
@@ -8855,8 +8858,10 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                 // Focus survives a list refresh, but only if its AOI still
                 // exists and is still visible: archiving or deleting the
                 // focused AOI must not leave the map dimmed against a polygon
-                // that is no longer there.
-                if (aoiFocusID && !window._aois[aoiFocusID]) setAOIFocus(null);
+                // that is no longer there. A focused PARK is not in this list
+                // at all and must not be cleared by its absence — the guard is
+                // about an AOI that went away, not about "not an AOI".
+                if (aoiFocusID && focusIsAOI() && !window._aois[aoiFocusID]) setAOIFocus(null);
                 else if (aoiFocusID) updateAOIFocusBanner();
                 const pendFocus = window._pendingAOIFocus;
                 if (pendFocus) {
@@ -8972,18 +8977,56 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
         }
         window.zoomToAOI = zoomToAOI;
 
+        // The park equivalent, so focus has one gesture whichever kind of area
+        // it is on. Reads the geometry off the `areas` source rather than
+        // fetching: it is what the map already drew, so this cannot disagree
+        // with what the user is looking at. Silent when the source has not
+        // landed — focus is still applied, and a missing camera move is a much
+        // smaller wrong than a camera move to the wrong place.
+        function zoomToPark(id) {
+            try {
+                const feats = map.querySourceFeatures('areas', {
+                    filter: ['==', ['get', 'id'], id]
+                });
+                if (!feats.length) return;
+                let minX = 180, minY = 90, maxX = -180, maxY = -90;
+                const walk = c => {
+                    if (typeof c[0] === 'number') {
+                        minX = Math.min(minX, c[0]); maxX = Math.max(maxX, c[0]);
+                        minY = Math.min(minY, c[1]); maxY = Math.max(maxY, c[1]);
+                    } else c.forEach(walk);
+                };
+                feats.forEach(f => f.geometry && walk(f.geometry.coordinates));
+                if (minX > maxX || minY > maxY) return;
+                map.fitBounds([[minX, minY], [maxX, maxY]], { padding: 60, duration: 900 });
+            } catch (e) { /* nothing to fly to is not an error */ }
+        }
+        window.zoomToPark = zoomToPark;
+
         // ── Focus mode ────────────────────────────────────────────────────
         //
-        // An AOI is a *focus*: someone drew it because that is the ground they
-        // care about. Once it exists, the other 158 parks on the map are
-        // context at best and noise at worst — and worse than noise for the
-        // data layers, where a park just outside the polygon contributes
+        // An AREA is a *focus*: someone drew a polygon, or clicked a park,
+        // because that is the ground they care about. Once one is chosen, the
+        // other 158 parks on the map are context at best and noise at worst —
+        // and worse than noise for the numbers, where a neighbour contributes
         // trajectories and settlements that were never part of the question.
         //
-        // So focus is one switch with one meaning — "this polygon is the
+        // A PARK IS AN AREA TOO. Focus was AOI-only, which left the thing this
+        // map is mostly made of unable to answer "how many settlements are in
+        // Chinko?" with one number: the panel counted the continent, the popup
+        // counted Chinko's 27 clusters, and the viewport readout counted the
+        // 35 built-up polygons it had drawn. Three numbers, one word, and no
+        // gesture that made them agree. `aoiFocusID` therefore holds a park id
+        // or an AOI id; everything below branches on isAOI(), and the server
+        // takes `?aoi=` or `?park_focus=` accordingly (srv/aoi.go
+        // areaScopeParam). The variable keeps its name because ~25 call sites
+        // and one share-link parameter already say it, and renaming a thing is
+        // not the same as generalising it.
+        //
+        // So focus is one switch with one meaning — "this area is the
         // subject" — applied consistently everywhere it can be:
         //
-        //   * parks outside the AOI are greyed (not hidden: their outline is
+        //   * parks outside the focus are greyed (not hidden: their outline is
         //     how you see that the polygon crosses a boundary, and clicking
         //     one must still work — dimming states a priority, hiding would
         //     state a filter the user did not ask for);
@@ -8991,13 +9034,11 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
         //     explicit "keep this in front of me" and it outranks an implicit
         //     scope; it is also the escape hatch that stops focus from hiding
         //     the one park someone is comparing against;
-        //   * the bbox feature layers and the animator switch to the AOI's own
-        //     rows via ?aoi= (aoiScopeSQL), so the 38,725 trajectories its
-        //     ingest produced are what you see, rather than the park rows that
-        //     cover 11% of the same ground twice;
-        //   * the animator clips its canvas to the polygon.
+        //   * the bbox feature layers and the animator switch to the focused
+        //     area's own rows, so what is counted is what is drawn;
+        //   * the animator clips its canvas to an AOI polygon.
         //
-        // Only one AOI can be the focus at a time. Two focuses is not a
+        // Only one area can be the focus at a time. Two focuses is not a
         // sharper question, it is no question.
         // `var`, not `let`: updatePAHighlighting() lives ~2,800 lines above
         // this and reads focus through aoiFocusBrightIDs(). A `let` would put
@@ -9005,6 +9046,43 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
         // highlight pass (which happens during map setup) would throw.
         var aoiFocusID = null;
         window._aoiFocusParks = {};   // aoi id -> [park ids] from aoi_parks
+
+        // Is the current focus (or a candidate id) an AOI, as opposed to a
+        // park? One reader, so the branches cannot drift.
+        function focusIsAOI(id) {
+            const v = id === undefined ? aoiFocusID : id;
+            return !!v && typeof isAOI === 'function' && isAOI(v);
+        }
+        window.focusIsAOI = focusIsAOI;
+
+        // The query parameter that scopes a server call to the focused area.
+        // Returns '' when nothing is focused. `?aoi=` for an AOI (visibility
+        // checked), `?park_focus=` for a park — NOT `?park=`, which
+        // ParkIDMiddleware validates and 404s for an AOI id.
+        function focusScopeParam(id) {
+            const v = id === undefined ? aoiFocusID : id;
+            if (!v) return '';
+            return (focusIsAOI(v) ? 'aoi=' : 'park_focus=') + encodeURIComponent(v);
+        }
+        window.focusScopeParam = focusScopeParam;
+
+        // The focused area's display name, whichever kind it is. A park's name
+        // is read off the `areas` source — the same features the map draws —
+        // and falls back to the id, which is a legible name in this app
+        // (CAF_Chinko) rather than an opaque one.
+        function focusName(id) {
+            const v = id === undefined ? aoiFocusID : id;
+            if (!v) return '';
+            if (focusIsAOI(v)) return window._aois?.[v]?.name || v;
+            try {
+                const f = map.querySourceFeatures('areas', {
+                    filter: ['==', ['get', 'id'], v]
+                })[0];
+                if (f && f.properties && f.properties.name) return f.properties.name;
+            } catch (e) { /* source not ready — the id is a fine name */ }
+            return v;
+        }
+        window.focusName = focusName;
 
         async function aoiFocusParkIDs(id) {
             if (window._aoiFocusParks[id]) return window._aoiFocusParks[id];
@@ -9023,13 +9101,23 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             return window._aoiFocusParks[id];
         }
 
-        // The ids that stay bright: the parks the AOI actually overlaps, plus
+        // The ids that stay bright: the parks the focused area covers, plus
         // every starred park, plus anything explicitly selected in the filter
         // panel (an active selection is a live intent and outranks scope).
+        //
+        // For a focused PARK that set is just the park itself — no lookup, and
+        // in particular no async one that could fail: a focused park is always
+        // resolvable, so unlike the AOI case there is no "never resolved" state
+        // to guard against.
         function aoiFocusBrightIDs() {
             if (!aoiFocusID) return null;
-            const inside = window._aoiFocusParks[aoiFocusID];
-            if (!inside) return null;
+            let inside;
+            if (focusIsAOI()) {
+                inside = window._aoiFocusParks[aoiFocusID];
+                if (!inside) return null;
+            } else {
+                inside = [aoiFocusID];
+            }
             const set = new Set(inside);
             (starredItems?.parks || []).forEach(p => p.id && set.add(p.id));
             if (typeof selectedPAIds !== 'undefined') selectedPAIds.forEach(id => set.add(id));
@@ -9037,15 +9125,20 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
         }
 
         async function setAOIFocus(id) {
-            if (id && !window._aois?.[id]) return false;
-            if (id) await aoiFocusParkIDs(id);
+            // An AOI must be one we know about; a park id is accepted as-is
+            // (the server re-checks it, and an id we cannot resolve simply
+            // yields an unscoped answer rather than an error).
+            if (id && focusIsAOI(id)) {
+                if (!window._aois?.[id]) return false;
+                await aoiFocusParkIDs(id);
+            }
             aoiFocusID = id || null;
             window.aoiFocusID = aoiFocusID;
             updatePAHighlighting();
             updateAOITagsDisplay();
             updateAOIFocusBanner();
-            // The panel's totals are scoped too (see loadStats' ?aoi=), so
-            // they are as stale as the map paint until this runs.
+            // The panel's totals are scoped too (see loadStats' focus param),
+            // so they are as stale as the map paint until this runs.
             if (typeof loadStats === 'function') loadStats();
             // Data layers change scope, not just colour: reload whatever is
             // on. Entering focus can also make a row and a pin the same
@@ -9056,28 +9149,37 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                 if (window.viewLayers?.[n] && !duplicatePinKey(n)) loadViewFeatureLayer(n);
             });
             // An animation already running is showing the wrong scope now.
+            // Only an AOI clips the animator's canvas; a park scopes its
+            // fetches through the same layer state as everything else.
             if (window.Animator?.isOpen?.()) {
                 const st = Animator.getState();
                 Animator.close();
                 Animator.open({ layers: st.layers, speed: st.speed, t: st.tISO,
-                                paused: !st.playing, aoi: aoiFocusID || undefined });
+                                paused: !st.playing,
+                                aoi: focusIsAOI() ? aoiFocusID : undefined });
             }
             if (typeof updateShareURL === 'function') updateShareURL();
             return true;
         }
         window.setAOIFocus = setAOIFocus;
+        // The name focus is reached by from a park: same function, said once.
+        window.setAreaFocus = setAOIFocus;
 
         function toggleAOIFocus(id) {
             const on = aoiFocusID !== id;
             setAOIFocus(on ? id : null).then(ok => {
                 if (!ok) return;
                 if (on) {
-                    zoomToAOI(id);
-                    showToast(`Focused on “${window._aois?.[id]?.name || id}” — parks outside it are dimmed, starred ones stay`, 'info', { key: 'aoi-focus' });
+                    if (focusIsAOI(id)) zoomToAOI(id);
+                    else if (typeof zoomToPark === 'function') zoomToPark(id);
+                    showToast(`Focused on “${focusName(id)}” — the panel counts this area only;`
+                              + ` other parks are dimmed, starred ones stay`,
+                              'info', { key: 'aoi-focus' });
                 }
             });
         }
         window.toggleAOIFocus = toggleAOIFocus;
+        window.toggleAreaFocus = toggleAOIFocus;
 
         // WHERE THE FOCUS STATE LIVES.
         //
@@ -9109,13 +9211,20 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                 delete el.dataset.scoped;
                 return;
             }
-            const name = window._aois?.[aoiFocusID]?.name || aoiFocusID;
+            const name = focusName();
+            const isAoi = focusIsAOI();
             el.hidden = false;
             el.title = `Focused on “${name}” — these totals, the map layers and the animation `
-                     + `cover this area only. Parks outside it are dimmed (starred ones stay bright). `
+                     + `cover this ${isAoi ? 'area' : 'park'} only. Other parks are dimmed (starred ones stay bright). `
                      + `Click the name to open it, × to leave focus.`;
+            // The name opens the area's own overview — an AOI popup or a park
+            // popup. Same gesture, same destination-shaped answer, which is
+            // the rule the map tip's action button follows too.
+            const open = isAoi
+                ? `openAOIPopupById('${escapeHtml(aoiFocusID)}')`
+                : `showPAPopup('${escapeHtml(aoiFocusID)}')`;
             el.innerHTML = `<i class="icon-focus"></i>`
-                + `<span class="stats-scope-name" onclick="event.stopPropagation();openAOIPopupById('${escapeHtml(aoiFocusID)}')">`
+                + `<span class="stats-scope-name" onclick="event.stopPropagation();${open}">`
                 + `${escapeHtml(name)}</span>`
                 + `<button type="button" class="stats-scope-x" title="Leave focus" aria-label="Leave focus" `
                 + `onclick="event.stopPropagation();setAOIFocus(null)">&times;</button>`;
@@ -10121,6 +10230,7 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                         <div class="pa-popup-name" style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
                             <span style="min-width: 0; overflow-wrap: break-word;">${escapeHtml(name)}</span>
                             <span style="display: flex; gap: 4px; align-items: center; flex-shrink: 0;">
+                                <button onclick="event.stopPropagation();toggleAreaFocus('${paId}')" title="Focus — the stats panel counts THIS park only, other parks are dimmed (starred ones stay bright) and the data layers switch to its rows" aria-label="Focus on this park" aria-pressed="${(typeof aoiFocusID !== 'undefined') && aoiFocusID === paId}" class="pa-export-btn${((typeof aoiFocusID !== 'undefined') && aoiFocusID === paId) ? ' active' : ''}" id="park-focus-btn-${paId}"><i class="icon-focus"></i></button>
                                 <button onclick="event.stopPropagation();toggleAOIMenu(this,'${paId}','${escapeHtml(name).replace(/'/g, "\\'")}')" title="Download — KML for Google Earth, GeoPackage for QGIS, a Locus field-device backup, or offline satellite tiles" aria-label="Download data for this park" class="pa-export-btn"><i class="icon-download"></i></button>
                                 ${createStarButton('parks', { id: paId, name: name, country: country, bbox: props.bbox, center: props.center ? (typeof props.center === 'string' ? JSON.parse(props.center) : props.center) : null })}
                             </span>
@@ -12495,9 +12605,17 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                 const tag = document.createElement('div');
                 tag.className = 'park-tag';
                 const countryCode = getCountryCode(park.country);
+                // A park carries the SAME focus control as an AOI tag, and for
+                // the same reason: focus is the only gesture that makes the
+                // panel, the map and the popup say one number, and it had no
+                // home for the 162 objects this map is mostly made of. Same
+                // icon, same aria-pressed, same wording — two controls that do
+                // one thing must not look like two things.
+                const focused = (typeof aoiFocusID !== 'undefined') && aoiFocusID === park.id;
                 tag.innerHTML = `
                     <span class="park-tag-name" onclick="flyToSelectedPark('${escapeHtml(park.id)}')" title="${escapeHtml(park.name)}">${escapeHtml(park.name)}</span>
                     ${countryCode ? `<span class="park-tag-country">${countryCode}</span>` : ''}
+                    <button class="park-tag-btn${focused ? ' on' : ''}" onclick="event.stopPropagation();toggleAreaFocus('${escapeHtml(park.id)}')" title="${focused ? 'Leave focus' : 'Focus on this park — the panel counts this park only, other parks are dimmed (starred ones stay bright) and the data layers switch to its rows'}" aria-pressed="${focused}"><i class="icon-focus"></i></button>
                     <button class="park-tag-remove" onclick="removeSelectedPark('${escapeHtml(park.id)}')" title="Remove">×</button>
                 `;
                 container.appendChild(tag);
@@ -12988,7 +13106,8 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             const name = Object.keys(mirroredPins).find(n => mirroredPins[n] === d.key);
             if (!name) return;
             setLayerLOD(name, { count: d.count, total: d.total, render: d.render,
-                                truncated: d.truncated, detail: d.detail_mode, mirror: d.key });
+                                truncated: d.truncated, detail: d.detail_mode, mirror: d.key,
+                                unit: d.unit, groups: d.groups, groupUnit: d.group_unit });
         });
 
         function removeViewFeatureLayer(name) {
@@ -13059,12 +13178,34 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             }
             if (!st && !anim.length) { el.textContent = ''; el.title = ''; delete el.dataset.render; return; }
 
-            let countTxt = '', pinned = '';
+            let countTxt = '', pinned = '', countTitle = '';
             if (st) {
                 const n = (st.count || 0).toLocaleString();
                 const more = st.truncated ? ' of ' + (st.total || 0).toLocaleString() : '';
                 pinned = st.mirror ? '<i class="icon-pin" title="Drawn by the pinned layer"></i> ' : '';
                 countTxt = n + more + ' in view';
+                // A SETTLEMENT IS A CLUSTER OF FOOTPRINTS, and this row draws
+                // the footprints. Chinko is 35 built-up polygons and 27
+                // settlements, so printing the polygon count next to the label
+                // "Settlements" put a third number on screen beside the
+                // panel's and the popup's — three answers to one question,
+                // with nothing saying they were different units.
+                //
+                // The row now leads with the number the rest of the app means
+                // by the word, and names the drawn one after it. Only when
+                // they actually differ: "27 settlements (27 footprints)" is
+                // noise, and a clustering that happened to be 1:1 in this view
+                // is not worth a parenthesis.
+                if (st.groups != null && st.unit === 'footprints' && !st.truncated) {
+                    const g = st.groups.toLocaleString();
+                    countTxt = (st.groups === st.count)
+                        ? g + ' in view'
+                        : `${g} in view <span class="lod-sub">(${n} footprints)</span>`;
+                    countTitle = st.groups === st.count ? ''
+                        : `${g} settlements in view, drawn as their ${n} built-up footprints — `
+                        + `a settlement is a cluster of adjacent GHSL built-up polygons, `
+                        + `and the map draws the polygons.`;
+                }
             } else if (anim.length) {
                 // The row's own icon is already the ▷ (.layer-animated), so
                 // the readout says the word and not the glyph twice.
@@ -13072,12 +13213,12 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             }
 
             const summary = rowModeSummary(name, st, anim);
-            el.innerHTML = `<span class="lod-count">${pinned}${countTxt}</span>`
+            el.innerHTML = `<span class="lod-count"${countTitle ? ` title="${escapeHtml(countTitle)}"` : ''}>${pinned}${countTxt}</span>`
                          + `<button type="button" class="lod-mode ${summary.cls}${summary.forced ? ' forced' : ''}" `
                          + `aria-haspopup="true" `
                          + `onclick="event.stopPropagation();openLayerModeMenu(this,'${name}')" `
                          + `title="${escapeHtml(summary.title)}">${summary.label}<span class="lod-caret">\u25be</span></button>`;
-            el.title = summary.title;            // Flash only when the MODE changed: a count ticking as you pan is
+            el.title = countTitle || summary.title;            // Flash only when the MODE changed: a count ticking as you pan is
             // not news, a change of rendering is.
             if (el.dataset.render !== summary.key) {
                 el.dataset.render = summary.key;
@@ -13358,7 +13499,16 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                     // per truncated fetch, which fired on every zoom and
                     // covered the map to say something permanent about the
                     // view. setLayerLOD writes it into the layer's own control.
-                    setLayerLOD(name, { count, total, render, truncated });
+                    //
+                    // The unit/group figures come off the loader's own state
+                    // rather than being threaded through onCount's positional
+                    // arguments: three call sites already pass four positional
+                    // values, and a fifth and sixth would be unreadable at
+                    // every one of them.
+                    const st = (window.LODLayer.state('view-' + name)) || {};
+                    setLayerLOD(name, { count, total, render, truncated,
+                                        unit: st.unit, groups: st.groups,
+                                        groupUnit: st.groupUnit });
                 }
             });
         }
@@ -22078,14 +22228,23 @@ ${starredItems.narratives.map(n => {
             }, 1200);
         }
 
-        // Restore focus. Same deferral as the popup and for the same reason:
-        // it needs window._aois, which loadAOIs() fills asynchronously and
-        // never fills at all for an id this principal cannot see — in which
-        // case the link degrades to "no focus" rather than to an error, since
-        // an id must not be an oracle. loadAOIs() drains _pendingAOIFocus.
+        // Restore focus. An AOI needs window._aois, which loadAOIs() fills
+        // asynchronously and never fills at all for an id this principal
+        // cannot see — in which case the link degrades to "no focus" rather
+        // than to an error, since an id must not be an oracle. loadAOIs()
+        // drains _pendingAOIFocus.
+        //
+        // A PARK id needs none of that: it is public, and setAOIFocus accepts
+        // it directly. But it must not be applied before AOI_IDS is populated,
+        // or focusIsAOI() would misread an AOI id as a park and scope the whole
+        // session with the wrong parameter. So the deferral is keyed on
+        // "do we yet know what kind of id this is", not on the kind itself.
         const aoiFocusParam = params.get('aoi_focus');
         if (aoiFocusParam) {
-            if (typeof setAOIFocus !== 'function' || !window._aois?.[aoiFocusParam]) {
+            const known = typeof isAOI === 'function' && (window.AOI_IDS?.size || window._aois);
+            if (typeof setAOIFocus !== 'function' || !known) {
+                window._pendingAOIFocus = aoiFocusParam;
+            } else if (isAOI(aoiFocusParam) && !window._aois?.[aoiFocusParam]) {
                 window._pendingAOIFocus = aoiFocusParam;
             } else {
                 setAOIFocus(aoiFocusParam);
