@@ -1,3 +1,5 @@
+6caa7d9 2026-08-12 08:50:35 LOD: dated trajectories from the database, density-aware ink, and a shareable animation download
+86a8367 2026-08-12 08:15:50 chore: refresh version history
 620a6a3 2026-08-12 08:15:30 LOD: one loader for every viewport layer; GeoPackage of a paused frame
 52204a7 2026-08-12 07:28:33 AGENTS.md: point at the active LOD handover
 a4d2381 2026-08-12 07:28:20 docs: handover for the LOD / paused-animation-export work
@@ -16,5 +18,3 @@ d7af57c 2026-08-10 07:18:36 chore: refresh version history
 fcd4d58 2026-08-10 07:17:56 Patrol data is scoped to the account it was uploaded in
 5980503 2026-08-10 06:38:58 chore: refresh version history
 81dded1 2026-08-10 06:38:46 geology: vector overlays for two scanned sheets, and the hold-out that caught a hole
-d689111 2026-08-10 06:31:32 A shared GeoPackage link downloads the file when the file already exists
-71215a0 2026-08-10 05:58:54 Fix truncated binary downloads: decide gzip after the handler sets Content-Type
