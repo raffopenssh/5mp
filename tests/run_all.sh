@@ -1,13 +1,14 @@
 #!/bin/bash
 # Run all tests for 5MP Conservation Globe
 #
-# Usage: ./tests/run_all.sh [db|api|ui|all]
+# Usage: ./tests/run_all.sh [db|api|ui|docs|all]
 #
 # Examples:
 #   ./tests/run_all.sh          # Run all tests
 #   ./tests/run_all.sh db       # Run only database tests
 #   ./tests/run_all.sh api      # Run only API tests
 #   ./tests/run_all.sh ui       # Run only UI URL tests
+#   ./tests/run_all.sh docs     # Run only docs budget tests
 
 set -e
 
@@ -47,6 +48,16 @@ run_api_tests() {
     fi
 }
 
+run_docs_tests() {
+    yellow "\n>>> Running Docs Budget Tests...\n"
+    if ./tests/docs_tests.sh; then
+        green "Docs tests: PASSED"
+    else
+        red "Docs tests: FAILED"
+        EXIT_CODE=1
+    fi
+}
+
 run_ui_tests() {
     yellow "\n>>> Running UI URL Tests...\n"
     if ./tests/run_ui_tests.sh; then
@@ -67,13 +78,17 @@ case "$TEST_TYPE" in
     ui)
         run_ui_tests
         ;;
+    docs)
+        run_docs_tests
+        ;;
     all)
         run_db_tests
         run_api_tests
         run_ui_tests
+        run_docs_tests
         ;;
     *)
-        echo "Usage: $0 [db|api|ui|all]"
+        echo "Usage: $0 [db|api|ui|docs|all]"
         exit 1
         ;;
 esac
