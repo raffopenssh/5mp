@@ -16,6 +16,16 @@
   "wfs_matched": 623,
   "features_written": 596,
   "dropped_non_geology": 27,
+  "dropped": {
+   "Water": {
+    "features": 25,
+    "area_km2": 44850.7
+   },
+   "not attributed": {
+    "features": 2,
+    "area_km2": 24.7
+   }
+  },
   "bbox": [
    29.5917,
    -11.7621,
@@ -23,6 +33,7 @@
    -0.9821
   ],
   "area_km2_total": 887107.5,
+  "area_note": "geodesic area of the mapped geology polygons (WGS84). Tanzania's land area is ~885,800 km2 and its total area ~947,300 km2 (CIA/UN); the difference is inland water, which this layer carries as separate unattributed polygons and does not map in full.",
   "fetched": "2026-08-12"
  },
  "groups": [

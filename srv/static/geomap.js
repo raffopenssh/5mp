@@ -428,6 +428,22 @@
             const cls = classOf(id, p.code) || {};
             const age = ageMeta(cls.age);
             const lith = (stdLegend().lithology || []).find(l => l.key === cls.lith);
+            // "As printed" has to be the sheet's OWN words, or the label is a
+            // lie about provenance. `group` is what the age scan reads and it
+            // is sometimes derived: a vector sheet's chronostratigraphy has its
+            // sub-era codes stripped ("Neoproterozoic (NP2-3) - Cambrian(?)"
+            // loses a question mark the survey meant), and its Cenozoic units
+            // state an age only as a span of Ma, from which we READ a period
+            // name. So prefer the verbatim string the catalogue carries, then
+            // the sheet's own numbers, and fall back to `group` for the
+            // scanned sheets, where `group` IS the printed words.
+            const printed = cls.chronostrat || cls.age_strat || p.group || '';
+            // The survey's own rock description, where the sheet has one. It is
+            // far more specific than the FGDC family the ornament encodes
+            // ("Peridotite, dunite, lherzolite, gabbro, norite, anorthosite" vs
+            // "Ultramafic / ophiolite"), and the pattern is a legend key, not a
+            // description.
+            const rock = cls.lithology || '';
             const swatch = window.GeoPatterns
                 ? `background-image:${window.GeoPatterns.swatchCSS(cls.lith || 'mixed', classColor(cls))};background-size:22px 22px;`
                 : `background:${escapeHtml(classColor(cls))};`;
@@ -438,11 +454,12 @@
                         <b style="color:#fff;font-size:13px;">${escapeHtml(p.code || '')}</b>
                     </div>
                     <div style="color:#ddd;font-size:12px;margin-top:6px;line-height:1.45;">${escapeHtml(p.name || '')}</div>
+                    ${rock ? `<div style="color:#9ca3af;font-size:11px;margin-top:4px;line-height:1.45;">${escapeHtml(rock)}</div>` : ''}
                     <div style="color:#9ca3af;font-size:11px;margin-top:6px;">
                         ${escapeHtml(age.label)}${cls.age_mixed ? ' (undifferentiated)' : ''}
                         ${lith ? ' &middot; ' + escapeHtml(lith.label) : ''}</div>
                     <div style="color:#777;font-size:10px;margin-top:3px;">
-                        as printed: ${escapeHtml(p.group || '')} &middot; ${escapeHtml(cat.short || id)}${cat.year ? ', ' + cat.year : ''}</div>
+                        as printed: ${escapeHtml(printed)} &middot; ${escapeHtml(cat.short || id)}${cat.year ? ', ' + cat.year : ''}</div>
                     ${merged ? `<div style="color:#f59e0b;font-size:11px;margin-top:6px;line-height:1.4;">
                         Printed as ${codes.length} units (${escapeHtml(codes.join(', '))}) in inks this sheet's
                         print screen does not separate &mdash; which one a given patch is, the map does not say.</div>` : ''}
