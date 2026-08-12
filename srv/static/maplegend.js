@@ -91,7 +91,15 @@
         // hosts" and "classic gold hosts" are different maps.
         var min = (typeof GeoMap.minWeight === 'function') ? GeoMap.minWeight() : 1;
         var grade = min === 3 ? 'classic ' : (min === 2 ? 'likely ' : '');
-        if (comms.size) return grade + Array.from(comms).join(' + ') + ' hosts';
+        // Two filters running at once must BOTH be named. A cell tap sets a
+        // commodity AND a single period, and reporting only the commodity
+        // ("gold hosts") describes a map with far more on it than the one in
+        // front of the reader — the same lie as an unannounced truncation.
+        var nOff = (sh && sh.agesOff) ? sh.agesOff.size : 0;
+        if (comms.size) {
+            var t = grade + Array.from(comms).join(' + ') + ' hosts';
+            return nOff ? t + ', ' + nOff + ' period' + (nOff === 1 ? '' : 's') + ' hidden' : t;
+        }
         if (sh && sh.liths && sh.liths.size) return sh.liths.size + ' rock type' + (sh.liths.size === 1 ? '' : 's');
         // An age hidden from the key is a subset like any other, and the chip
         // is the one place that says a drape is not the whole drape.
@@ -381,10 +389,22 @@
         }
         // The way back. Only present once something is hidden, so the default
         // key carries no chrome — same rule as the strip itself.
-        if (typeof GeoMap !== 'undefined' && GeoMap.agesOff && GeoMap.agesOff().size) {
+        if (typeof GeoMap !== 'undefined' && GeoMap.anyFiltered && GeoMap.anyFiltered()) {
             extras++;
-            cells += '<button type="button" class="ml-sw-all" title="Show every period again"' +
-                ' onclick="event.stopPropagation();MapLegend.showAllAges()">all</button>';
+            // Clears EVERYTHING, not just the periods. A button labelled "all"
+            // that leaves the map filtered by commodity is the failure this
+            // whole pass is about: the reader taps it, the map barely changes,
+            // and they conclude the control is broken rather than that it did
+            // one third of what it said.
+            var offN2 = GeoMap.agesOff().size;
+            var selN = GeoMap.selectedCommodities().size;
+            var bits = [];
+            if (selN) bits.push('the commodity selection');
+            if (GeoMap.minWeight() > 1) bits.push('the grade floor');
+            if (offN2) bits.push(offN2 + ' hidden period' + (offN2 === 1 ? '' : 's'));
+            cells += '<button type="button" class="ml-sw-all" title="' +
+                esc('Back to every mapped unit \u2014 clears ' + bits.join(', ')) + '"' +
+                ' onclick="event.stopPropagation();MapLegend.geoAll()">all</button>';
         }
 
         var rows = '';
@@ -517,6 +537,33 @@
 
         el.innerHTML = html;
         place(el, btn);
+    }
+
+    /* ── The matrix has to wait for the map ─────────────────────────────
+     *
+     * Its columns are the periods DRAWN in this view, which is measured off
+     * the rendered canvas — so a menu rebuilt in the same tick as the filter
+     * change shows the columns of the map as it was one gesture ago. Clearing
+     * a one-period narrowing and still seeing one column reads as "the button
+     * did nothing", which is the failure mode this whole surface exists to
+     * avoid.
+     *
+     * So a gesture that changes what is drawn asks for a re-open on the next
+     * `idle`, once MapLibre has actually painted it. One-shot, and only while
+     * the geology menu is still the open one — the reader may well have
+     * closed it or opened another in the meantime.
+     */
+    function reopenGeoMenuWhenDrawn() {
+        if (typeof map === 'undefined' || !map || !map.once) return;
+        map.once('idle', function () {
+            if (!menuEl || menuEl.dataset.kind !== 'geo') return;
+            var btn = document.querySelector('#stats-map .ml-chip.geo');
+            if (!btn) return;
+            var sc = menuEl.scrollTop;
+            closeMenu();
+            openGeoMenu(btn);
+            if (menuEl) menuEl.scrollTop = sc;   // do not throw away their place
+        });
     }
 
     /* Anchored to the control, flipped above it when it would run off the
@@ -703,13 +750,46 @@
 
         var html = '';
 
-        // "All units" stays a row, not a "clear" link: the absence of a filter
-        // is one of the states this menu chooses between.
-        html += '<button type="button" class="aoi-menu-item mode-opt ml-allrow' + (anyOn ? '' : ' on') +
-            '" role="menuitemradio" aria-checked="' + (!anyOn) + '" ' +
-            'title="Draw every mapped unit" ' +
-            'onclick="event.stopPropagation();MapLegend.geoAll()">' +
-            '<span class="mode-mark radio"></span><i class="icon-layers ml-mi"></i>All units</button>';
+        /* ── WHERE AM I, AND HOW DO I GET OUT ────────────────────────────
+         *
+         * Every gesture in the matrix NARROWS (a cell picks one commodity on
+         * one period, the floor drops grades, a column hides a period) and
+         * none of them widened. Three taps in, the reader is looking at two
+         * units and the only route back was a row buried in the list. That is
+         * a trap, and it is this app's "a subset must announce itself" rule
+         * owed one step further: a subset must also be *escapable* from where
+         * it is visible.
+         *
+         * So the menu opens with a line that says what is being drawn, in
+         * words, and — whenever that is not everything — carries the way back
+         * as the primary action in the same row. It is the same object in both
+         * states, so it does not appear and disappear under the reader's
+         * thumb.
+         */
+        var narrowed = [];
+        if (anyOn) {
+            narrowed.push(Array.from(GeoMap.selectedCommodities())
+                .map(function (c) { return c.replace(/_/g, ' '); }).join(' + ') + ' hosts');
+        }
+        if (min > 1) narrowed.push(min === 3 ? 'classic grade only' : 'likely grade and up');
+        var offN = GeoMap.agesOff ? GeoMap.agesOff().size : 0;
+        // Counted from STATE, not from the rendered sample: the menu is built
+        // the instant the filter changes, before MapLibre has re-rendered, so
+        // a count read off the canvas here would report the map as it was one
+        // gesture ago — which is exactly the kind of number that reads as
+        // truth and is not.
+        if (offN) narrowed.push(offN + ' period' + (offN === 1 ? '' : 's') + ' hidden');
+        html += '<div class="ml-state' + (narrowed.length ? ' narrowed' : '') + '">' +
+            '<i class="' + (narrowed.length ? 'icon-funnel' : 'icon-layers') + '"></i>' +
+            '<span>' + (narrowed.length
+                ? 'Showing ' + esc(narrowed.join(', '))
+                : 'Showing every mapped unit') + '</span>' +
+            (narrowed.length
+                ? '<button type="button" title="Back to every mapped unit \u2014 clears the ' +
+                  'commodity, the grade and any period you hid" ' +
+                  'onclick="event.stopPropagation();MapLegend.geoAll()">' +
+                  '<i class="icon-rotate-ccw"></i>show all</button>'
+                : '') + '</div>';
 
         if (!keys.length) {
             html += '<div class="mode-menu-note">No sheet installed here lists a commodity affinity.</div>';
@@ -729,7 +809,8 @@
             return;
         }
 
-        html += '<div class="mode-menu-head ml-mx-head">What each rock can host' +
+        html += '<div class="mode-menu-head ml-mx-head">' +
+            '<i class="icon-table-2"></i>What each rock can host' +
             '<em>rock across, commodity down</em></div>';
         html += '<div class="ml-mx" style="grid-template-columns:minmax(66px,1fr) repeat(' +
             cols.length + ',22px) auto;">';
@@ -777,8 +858,12 @@
             html += '<button type="button" class="ml-mx-row' + (on ? ' on' : '') +
                 (r.cells ? '' : ' dead') + '" role="menuitemcheckbox" aria-checked="' + on + '"' +
                 ' title="' + esc(r.cells
-                    ? (on ? 'Stop showing' : 'Show') + ' every unit that can host ' +
-                      k.replace(/_/g, ' ') + ' (' + idx[k] + ' unit(s) on these sheets)'
+                    ? (on ? 'Stop showing ' + k.replace(/_/g, ' ') + ' hosts'
+                          : 'Show the ' + idx[k] + ' unit(s) that can host ' +
+                            k.replace(/_/g, ' ')) +
+                      ' \u2014 every period it has, on all sheets' +
+                      (GeoMap.agesOff().size
+                        ? '. Clears the single-period narrowing you are in.' : '')
                     : 'Nothing drawn in this view is graded a host for ' + k.replace(/_/g, ' ') +
                       ' at this strength') + '"' +
                 ' onclick="event.stopPropagation();MapLegend.geoCommodity(\'' + esc(k) + '\')">' +
@@ -912,15 +997,30 @@
             // because "which units" is moot where none are drawn.
             var off = geoOffView();
             var note = off ? 'not in view' : geoFilterNote();
-            chips += '<button type="button" class="ml-chip geo' +
-                (off ? ' offview' : (note ? ' filtered' : '')) + '" title="' +
-                esc(off ? 'Geology is on, but no mapped sheet reaches this view \u2014 tap to choose what to show, or to hide it'
-                        : (note ? 'Geology, showing only ' + note + ' \u2014 tap to change what is shown'
-                                : 'Geological units \u2014 tap to show only what can host a commodity')) + '" ' +
-                'onclick="event.stopPropagation();MapLegend.geoMenu(this)">' +
+            // TWO TARGETS, ONE MEANING EACH — the strip's founding rule, which
+            // geology broke the day its chip started opening a menu. The other
+            // two chips destroy their layer on tap; this one configures, and
+            // "switch the whole thing off" was then reachable only from inside
+            // the menu, two taps and a scroll away. The × restores the
+            // symmetry: chip body = configure, × = off, exactly as everywhere
+            // else in the app.
+            chips += '<span class="ml-chip geo' +
+                (off ? ' offview' : (note ? ' filtered' : '')) + '">' +
+                '<button type="button" class="ml-chip-main" title="' +
+                esc(off ? 'Geology is on, but no mapped sheet reaches this view \u2014 tap to choose what to show'
+                        : (note ? 'Geology, showing only ' + note + ' \u2014 tap for the rock/commodity table'
+                                : 'Geological units \u2014 tap for the rock/commodity table')) + '" ' +
+                'onclick="event.stopPropagation();MapLegend.geoMenu(this.parentNode)">' +
                 '<i class="icon-mountain"></i>Geology' +
                 (note ? '<em>' + esc(note) + '</em>' : '') +
-                '<i class="icon-chevron-down ml-caret"></i></button>';
+                // The caret said "this opens something"; the table icon says
+                // WHAT — a matrix of rock against commodity, not another list
+                // of switches. It is the only chip in the strip whose menu is
+                // an object rather than a list, and that is worth one glyph.
+                '<i class="icon-table-2 ml-caret"></i></button>' +
+                '<button type="button" class="ml-chip-x" aria-label="Hide the geology layer" ' +
+                'title="Hide the geology layer" ' +
+                'onclick="event.stopPropagation();MapLegend.toggleGeo()">\u00d7</button></span>';
         }
 
         host.innerHTML =
@@ -956,6 +1056,7 @@
             GeoMap.toggleAge(key);
             if (typeof renderGeoMapPanel === 'function') renderGeoMapPanel();
             render();
+            reopenGeoMenuWhenDrawn();
         },
 
         /* The strength floor. Refuses to empty the map — the standing rule
@@ -977,6 +1078,7 @@
             // pick makes the comparison three round trips.
             var btn = document.querySelector('#stats-map .ml-chip.geo');
             if (btn && menuEl && menuEl.dataset.kind === 'geo') { closeMenu(); openGeoMenu(btn); }
+            reopenGeoMenuWhenDrawn();
         },
 
         /* A CELL is the matrix's own gesture: "show me the cobalt-hosting
@@ -1007,6 +1109,7 @@
             render();
             var btn = document.querySelector('#stats-map .ml-chip.geo');
             if (btn) { closeMenu(); openGeoMenu(btn); }
+            reopenGeoMenuWhenDrawn();
         },
 
         showAllAges: function () {
@@ -1014,6 +1117,7 @@
             GeoMap.clearAges();
             if (typeof renderGeoMapPanel === 'function') renderGeoMapPanel();
             render();
+            reopenGeoMenuWhenDrawn();
         },
 
         /* "+n" is a truncation announcing itself; tapping it must therefore
@@ -1032,6 +1136,14 @@
          * nothing — a menu item that silently no-ops is invariant 1's failure. */
         geoCommodity: function (k) {
             closeMenu();
+            // A ROW is "this commodity, on every ground it has". If a cell tap
+            // left the map narrowed to one period, the row must lift that —
+            // otherwise the reader taps the row the tooltip promised and gets
+            // a map that is still one period wide, with nothing saying why.
+            // This is also the main way OUT of a cell: the trap was that every
+            // gesture in the matrix narrowed and none widened.
+            if (typeof GeoMap !== 'undefined' && GeoMap.agesOff().size) GeoMap.clearAges();
+            var wantMenu = true;
             if (typeof geoToggleCommodityAll === 'function') geoToggleCommodityAll(k);
             else if (typeof GeoMap !== 'undefined') {
                 var sheets = GeoMap.sheets() || {};
@@ -1045,6 +1157,14 @@
                 });
             }
             render();
+            // Re-open where they were: choosing commodities is a comparison
+            // ("what does adding copper do?"), and a menu that closes on each
+            // pick makes that three round trips.
+            if (wantMenu) {
+                var b2 = document.querySelector('#stats-map .ml-chip.geo');
+                if (b2) openGeoMenu(b2);
+                reopenGeoMenuWhenDrawn();
+            }
         },
 
         /* Back to the whole rock map. showEverything() clears the hand-hidden
@@ -1052,10 +1172,16 @@
          * on the tin — a row that cleared only the chips would leave the map
          * filtered while claiming otherwise. */
         geoAll: function () {
+            var btn = document.querySelector('#stats-map .ml-chip.geo');
             closeMenu();
             if (typeof GeoMap !== 'undefined') GeoMap.showEverything();
             if (typeof renderGeoMapPanel === 'function') renderGeoMapPanel();
             render();
+            // Reopen: "show all" is a step in an exploration, not the end of
+            // one, and closing the menu under the tap makes the reader find
+            // their way back in to try the next thing.
+            if (btn) openGeoMenu(document.querySelector('#stats-map .ml-chip.geo') || btn);
+            reopenGeoMenuWhenDrawn();
         },
 
         pickBasemap: function (id) {

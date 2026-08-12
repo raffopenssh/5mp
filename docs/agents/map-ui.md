@@ -301,6 +301,38 @@ empty `Set`, `visibleCodes()` treats it as "this sheet has no answer" (draws
 nothing), and emptying *every* sheet is refused in words. Invariant 1, in its
 purest form.
 
+### Every gesture narrowed; none widened (`.ml-state`)
+
+The matrix was a trap. A cell picks one commodity on one period, the floor drops
+grades, a column hides a period — three taps in, the reader is looking at two
+units, and the only route back was a row buried in the list. The app's standing
+rule (*a subset must announce itself*) needed one more clause: **a subset must
+also be escapable from where it is announced.**
+
+* the menu opens with `.ml-state`, a line saying what is drawn in words, which
+  in the narrowed case carries "show all" as the primary action. Same object in
+  both states, so it does not appear and disappear under the thumb.
+* a **row** tap now clears an age narrowing (`GeoMap.clearAges()`): a row means
+  "this commodity, on every ground it has", and the tooltip promised that.
+* the strip's `all` button calls `geoAll()`, not `showAllAges()` — it used to
+  clear only the periods while the map stayed commodity-filtered, which reads as
+  a broken button rather than as one that did a third of its job. Its tooltip
+  lists what it will clear.
+* the chip names **both** filters (`gold hosts, 16 periods hidden`), counted from
+  state, never from the canvas.
+
+⚠️ **The matrix must wait for the map.** Its columns are the periods *drawn*,
+measured off the rendered canvas, so a menu rebuilt in the same tick as the
+filter change shows the columns of the map as it was one gesture ago — clearing a
+one-period narrowing and still seeing one column reads as "the button did
+nothing". `reopenGeoMenuWhenDrawn()` re-opens it on the next `idle`, one-shot,
+preserving `scrollTop`, and only while the geology menu is still the open one.
+
+The chip is also two targets now (`.ml-chip-main` + `.ml-chip-x`): its body
+opens the matrix rather than switching the layer off, so "off" needs its own
+target or the strip's one-meaning-per-target rule holds for two chips out of
+three.
+
 ### Contact zones (not built)
 
 The honest next question after "which rock" is "where do two of them **meet**" —
