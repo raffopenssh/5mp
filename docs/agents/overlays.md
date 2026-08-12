@@ -268,10 +268,75 @@ across, cell = what that junction can host** (`junctionTableHTML()` in
   (`drawnUnitCount`, `drawnContactCount`, both gated on the sheet being **on**,
   not merely installed). The counts are `not in view` — absent, not zero — when
   no sheet reaches the viewport.
-* Share link: `?geomap_junction=intrusive|volcanic` (or a single lithology).
+* Share link: `?geomap_junction=intrusive|volcanic,metamorphic` (a
+  comma-separated list; each entry is a lithology pair or a single lithology).
   It travels as **lithology**, a server-owned vocabulary, so a re-tile cannot
-  strand it; an unknown one is refused with a toast rather than filtering the
-  layer to nothing.
+  strand it; the entries this build still has are kept and the rest refused
+  with a toast, rather than filtering the layer to nothing.
+
+**PICKS ADD; THEY DO NOT REPLACE.** Both tables used to be radios: a matrix
+cell replaced the commodity selection and soloed its period, a junction cell
+replaced the previous junction. So every tap destroyed the previous answer, and
+"the cobalt Archaean *and* the copper Palaeoproterozoic" — the obvious use of a
+grid — could not be said at all. Worse, the matrix's columns are the periods
+actually **drawn**, so soloing one collapsed the table to a single column and
+took the cells the reader would pick next off the screen with it: *a surface
+that offers choices must not be narrowed by the choice it just took.*
+
+State is `shared.picks` (`"commodity|age"`) and `shared.contactPairs`, both
+Sets; `applyCommodities()` unions the rows' host sets with the picks'
+(row ∪ cells), so there is still exactly one isolation per sheet. Consequences
+that are easy to get wrong:
+
+* the table's columns come from `querySourceFeatures` (`columnEntries()` in
+  maplegend.js), i.e. what the loaded tiles **have** here, not what is painted;
+  a period the picks exclude stays as a dimmed column, because it is the next
+  choice. The key strip stays keyed on what is *painted* — it is a legend for
+  the picture, not a menu.
+* a **row supersedes its own cells** (`GeoMap.clearPicksFor`), or the map draws
+  the whole row while the table still lights two cells as the narrowing.
+* `showEverything()` clears both sets; `anyFiltered()` counts both.
+* a pick beats a hidden period (`geoCell` un-hides it) — the cell says "draw
+  this ground" and the age filter says "draw none of it", and the tap must show
+  what it promised.
+* `geomap_cells=diamond|tertiary,copper|paleoproterozoic` in the share link,
+  and `geomap_only` is then **omitted**: the picks already describe that
+  isolation, and a frozen code list beside them would win on a build where a
+  unit was merged.
+
+**A TABLE MUST NOT MOVE UNDER THE GESTURE IT IS TAKING.** Both tables order
+themselves by how strongly *this view* answers the current question — columns
+by coverage, rows and the junction axis by grade for the selected commodity —
+and every pick changes that. So picking three cells along the gold row
+re-sorted the grid between taps and the third tap landed on a cell that had
+swapped places: the app choosing for the reader. The order is now **frozen for
+as long as the reader is working** (`mxFrozen`, keyed on a coarse view stamp:
+sheets on + zoom/centre to 1 dp) and only the cells' *state* is live. One frozen
+record covers the rock table and the junction table (`mxOrder`, `jxOrder`) —
+they are two views of one object, so a tab switch must not be the thing that
+reshuffles.
+
+**Settling is feedback, so it is watched, not discovered.** The freeze lifts
+when the reader **moves on** — the other tab, the map (`movestart`/`click`), a
+pointerdown anywhere outside the panel, or a 4 s backstop — and the rebuild
+then plays as a **FLIP**: `mxRects()` measures every `data-mx` element
+(`cell:gold|archean`, `row:`, `col:`, `jcell:`, `jrow:`, `jcol:`) before the
+rebuild, `mxFlip()` inverts and releases them in one 0.42 s transform
+transition (`.ml-mx-moving`; new elements fade with `.ml-mx-in`;
+`prefers-reduced-motion` skips it). Transforms only, so nothing fights the
+grid. Without this the panel — which is re-rendered from scratch on every
+gesture — simply *blinks* into a different grid, and whether anything moved is
+something the reader has to reconstruct from memory.
+
+**The key strip may not set the panel's width.** Ten swatches at 21 px is
+250 px of intrinsic width in a shrink-to-fit stats panel, so turning geology on
+widened the panel over the map and moved every number above it. `.ml-swatches`
+is `width:0; min-width:100%`, and `fitCols()` derives the column count from the
+width that leaves (measuring one swatch rather than hardcoding 21/26 px, and
+reserving for "+n"/"all" only when they will be drawn). The overflow opens as
+its own wrapping grid below (`.ml-sw-rest`), never as more columns in the
+braced one. A clipped swatch is a period the reader can see half of and cannot
+tap; "+3" is a truncation that says it is one.
 
 **The geology menu is a panel, not a popover.** It is a legend, read while
 panning and clicking, so a surface the next map click dismisses made the reader

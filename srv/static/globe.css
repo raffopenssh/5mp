@@ -319,9 +319,19 @@
            pattern, never the pattern squeezed into the swatch. The
            background-size is set inline by GeoPatterns.swatchStyle(), which
            is the single place that decision is made. */
+        /* WIDTH ZERO, MIN-WIDTH 100%: the strip fills the panel and never
+           widens it. The stats panel is shrink-to-fit, so a 10-swatch key was
+           250 px of intrinsic width that pushed the panel out over the map and
+           moved every number above it the moment geology came on. A legend is
+           an annotation on the panel, not a claim on its layout. maplegend.js
+           derives the column count from the width this leaves (fitCols), so
+           the key TRUNCATES behind its "+n" rather than being clipped — a
+           half-visible swatch is a period the reader cannot tap. */
         .ml-swatches { display: grid; justify-content: start; align-items: center;
-            gap: 4px; padding: 6px 8px 0; }
+            gap: 4px; padding: 6px 8px 0; width: 0; min-width: 100%; box-sizing: border-box; }
         .ml-swatches.braced { row-gap: 2px; padding-bottom: 3px; }
+        /* The "+n" overflow: its own grid, wrapping under the head row. */
+        .ml-sw-rest { padding-top: 3px; }
         .ml-sw { position: relative; width: 21px; height: 16px; padding: 2px 1px; flex: none;
             border: 0; background: none; cursor: pointer; display: inline-flex;
             align-items: center; justify-content: center; border-radius: 4px;
@@ -468,6 +478,35 @@
         .ml-mx-cell.g2 > i { opacity: 0.6;  transform: scale(0.82); }
         .ml-mx-cell.g3 > i { opacity: 1; }
         .ml-mx-cell.on > i { box-shadow: 0 0 0 2px rgba(251,191,36,0.25); }
+        /* ── The tables settle, they do not blink ────────────────────
+           Both tables are re-rendered from scratch on every gesture, so a
+           reorder used to arrive as a different grid the reader had to
+           re-read. maplegend.js FLIPs the keyed elements (data-mx) and this is
+           the transition it releases them into: transform only, so nothing
+           here can fight the grid, and one duration for everything so a
+           reorder reads as ONE settling rather than several movements.
+           `.ml-mx-in` is for an element that was not there before — it fades
+           rather than sliding from a position it never had. */
+        .ml-mx-moving { transition: transform 0.42s cubic-bezier(.22,1,.36,1); z-index: 1; }
+        .ml-mx-in { animation: mlMxIn 0.34s ease both; }
+        @keyframes mlMxIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: none; } }
+        @media (prefers-reduced-motion: reduce) {
+            .ml-mx-moving, .ml-mx-in { transition: none; animation: none; }
+        }
+
+        /* A column that exists on the sheets in view but is not in what the
+           reader picked. Dim, not gone: it is the next choice, and dropping it
+           is what used to collapse the table to one column. */
+        .ml-mx-col.dim > i { opacity: 0.32; filter: grayscale(0.7); }
+        /* PICKED: this cell is on the map because the reader tapped it.
+           Cells add now, so a reader assembling a map out of four of them has
+           to be able to see which four at a glance — a ring on the ink is too
+           quiet for that, so the whole cell is filled and outlined. Distinct
+           from `.on` (which only means "this commodity's row is selected"),
+           because the two answer different questions. */
+        .ml-mx-cell.picked { background: rgba(251,191,36,0.22);
+            box-shadow: inset 0 0 0 1px rgba(251,191,36,0.6); }
+        .ml-mx-cell.picked > i { opacity: 1; transform: scale(1); background: #fde68a; }
         /* Present in the data, below the floor: hollow, not gone. "There is an
            association here and you told me not to count it" is a different
            statement from "there is nothing here", and the empty cell already
@@ -625,7 +664,11 @@
         .ml-jx-cell.g3 > i { opacity: 1; }
         .ml-jx-cell.below > i { background: none; border: 1px solid rgba(251,191,36,0.4);
             opacity: 0.5; }
-        .ml-jx-cell.on { background: rgba(251,191,36,0.22); }
+        /* Picked. The junction table adds too, so several cells are lit at
+           once and each must read as a choice rather than as a highlight. */
+        .ml-jx-cell.on { background: rgba(251,191,36,0.22);
+            box-shadow: inset 0 0 0 1px rgba(251,191,36,0.6); }
+        .ml-jx-cell.on > i { opacity: 1; transform: scale(1); }
         .ml-jx-cell:hover { background: rgba(255,255,255,0.1); }
         .ml-jx-cell:hover > i { transform: scale(1.12); }
         /* These two rocks meet and the model says nothing: a faint dot, the

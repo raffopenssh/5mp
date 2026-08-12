@@ -111,6 +111,10 @@
         // bracket cannot say — the grade floor, the hidden periods, the
         // contacts. With every selected commodity bracketed, the chip falls
         // back to the grade alone, which is precisely the part the strip omits.
+        // Cells first: a pick is the most specific thing the reader did, and
+        // it is the one narrowing no bracket in the strip can express.
+        var picked = (GeoMap.picks && GeoMap.picks()) || new Set();
+        if (picked.size) parts.push(cellWords(picked));
         var named = Array.from(comms).filter(function (k) { return !alreadySaid[k]; });
         if (named.length) parts.push(grade + named.join(' + ') + ' hosts');
         else if (comms.size && grade) parts.push(grade.trim() + ' grade only');
@@ -137,8 +141,8 @@
         // narrowing (a picked junction) is said HERE and nowhere else, so the
         // panel's state line and the chip cannot word it differently.
         if (typeof GeoMap.contactsOn === 'function' && GeoMap.contactsOn()) {
-            var pick = GeoMap.contactPair && GeoMap.contactPair();
-            parts.push(pick ? junctionWords(pick) + ' contacts'
+            var pick = (GeoMap.contactPairs && GeoMap.contactPairs()) || new Set();
+            parts.push(pick.size ? junctionsWords(pick) + ' contacts'
                 : (GeoMap.contactsGradedOnly && GeoMap.contactsGradedOnly()
                     ? 'graded contacts' : 'every contact'));
         }
@@ -256,6 +260,167 @@
         });
         coverage = { byAge: byAge, lith: lith, hits: hits, samples: samples,
                      drawn: Object.keys(present).length };
+    }
+
+    /* ── WHAT THE READER COULD PICK, NOT WHAT THEY ALREADY DID ─────────
+     *
+     * The matrix's columns were the periods RENDERED, and its cells narrow
+     * the render — so picking one collapsed the table to that one column and
+     * took every other cell off the screen with it. A table you cannot make a
+     * second choice in is not a table, and the reader who wanted "the cobalt
+     * Archaean AND the copper Palaeoproterozoic" could not express the second
+     * half of that sentence.
+     *
+     * So the TABLE is keyed on what the sheets have HERE, independent of the
+     * selection, while the KEY STRIP stays keyed on what is painted (its job
+     * is to be a legend for the picture). The filtering happens on the map,
+     * not on the surface that offers the filters.
+     *
+     * Measured with querySourceFeatures, which reads the loaded tiles and so
+     * ignores every layer filter. That is a superset of the viewport (tiles
+     * overhang it), which is the right side to err on for a menu of what
+     * could be picked — and it is never printed as a count or an area.
+     */
+    var srcAges = null;         // {age: lith} present in the loaded tiles | null
+
+    function measureSourceAges() {
+        if (typeof GeoMap === 'undefined' || typeof map === 'undefined' || !map) {
+            srcAges = null; return;
+        }
+        var out = {};
+        (GeoMap.order() || []).forEach(function (id) {
+            var s = GeoMap.state(id);
+            if (!s || !s.on) return;
+            var src = 'geomap-src-' + id;
+            try { if (!map.getSource(src)) return; } catch (e) { return; }
+            var feats;
+            try { feats = map.querySourceFeatures(src, { sourceLayer: 'units' }) || []; }
+            catch (e2) { return; }
+            feats.forEach(function (f) {
+                var cls = GeoMap.classOf(id, (f.properties || {}).code);
+                if (!cls) return;
+                if (!out[cls.age || 'unknown']) out[cls.age || 'unknown'] = cls.lith || 'mixed';
+            });
+        });
+        srcAges = out;
+    }
+
+    /* The periods the table offers: everything the sheets have in view, drawn
+     * or filtered out, ordered by how much of the view each covers (the ones
+     * currently filtered out have no coverage, so they follow, oldest first). */
+    function columnEntries() {
+        var drawn = ageEntries().filter(function (e) { return e.on; });
+        if (!srcAges) return drawn;
+        var have = {};
+        drawn.forEach(function (e) { have[e.key] = true; });
+        var rest = Object.keys(srcAges).filter(function (k) { return !have[k]; })
+            .map(function (k) {
+                return { key: k, hits: 0, meta: GeoMap.age(k), lith: srcAges[k] || 'mixed',
+                         on: true, offSelection: true, pct: 0 };
+            });
+        rest.sort(function (a, b) { return (a.meta.rank || 99) - (b.meta.rank || 99); });
+        return drawn.concat(rest);
+    }
+
+    /* ── THE TABLE MUST HOLD STILL WHILE IT IS BEING USED ─────────────
+     *
+     * Picking three cells of the gold row is one gesture in three taps, and it
+     * only works if the third cell is still where the reader saw it after the
+     * first two. Everything in the layout wanted to move under them: columns
+     * are ordered by how much of the view each period covers, and a pick
+     * changes what is painted; rows are ordered by how strongly this view
+     * answers each commodity, and the grade floor changes that. So the table
+     * re-sorted between taps and the reader hit a cell that had swapped with
+     * its neighbour — which reads as the app choosing for them.
+     *
+     * The ORDER is therefore frozen for as long as the reader is working in
+     * one view, and only the cells' STATE is live. It is recomputed when the
+     * subject actually changes — the map moved, a sheet came or went — and
+     * not when the selection does, because the selection is what the reader is
+     * building out of this table.
+     *
+     * Frozen as KEYS, never as rendered entries: a stale entry would carry a
+     * stale coverage number and a stale swatch into a view it is not from.
+     */
+    var mxFrozen = null;         // {stamp, cols:[ageKey], rows:[commodity]}
+
+    /* Working = the reader is mid-gesture in this table. The order holds
+     * still while this is true, and settles — visibly — when the gesture is
+     * over. "Over" is not a timer: it is the reader moving on (the other tab,
+     * the map, anything outside the panel), which is exactly when a reorder
+     * stops being a surface moving under their thumb and becomes an answer.
+     * A timeout is the backstop for a reader who simply stopped, and it is
+     * long enough (4 s) not to fire between two taps of one gesture. */
+    var mxWorking = false;
+    var mxSettleTimer = null;
+
+    function mxTouch() {
+        mxWorking = true;
+        clearTimeout(mxSettleTimer);
+        mxSettleTimer = setTimeout(function () { MapLegend.mxSettle(); }, 4000);
+    }
+
+    function mxStamp() {
+        var sheets = (typeof GeoMap !== 'undefined' && GeoMap.order)
+            ? (GeoMap.order() || []).filter(function (id) {
+                var st = GeoMap.state(id); return st && st.on;
+              }).join(',') : '';
+        if (typeof map === 'undefined' || !map || !map.getCenter) return sheets;
+        var c = map.getCenter();
+        // Coarse on purpose: nudging the map by a pixel is not a new subject,
+        // and re-sorting the table under a reader who is panning to see what
+        // they just picked is the same failure by another route.
+        return sheets + '|' + map.getZoom().toFixed(1) + '|' +
+            c.lng.toFixed(1) + '|' + c.lat.toFixed(1);
+    }
+
+    /* The frozen order, recomputed only when the view is a different one.
+     * `liveCols` and `liveRows` are this render's answer; the frozen list is
+     * intersected with them, so a period that has genuinely left the view
+     * drops out rather than being drawn from a stale swatch. */
+    function mxOrder(liveCols, liveRows) {
+        var stamp = mxStamp();
+        var have = {};
+        liveCols.forEach(function (k) { have[k] = true; });
+        var haveRow = {};
+        liveRows.forEach(function (k) { haveRow[k] = true; });
+        // A NEW VIEW IS A NEW SUBJECT, but not while the reader is mid-
+        // gesture: refreshWhenDrawn() runs on the map's `idle`, and a pick
+        // that changes what is painted can move the centre by a hair. Re-
+        // sorting then would be the very reshuffle this exists to prevent.
+        if (!mxFrozen || (mxFrozen.stamp !== stamp && !mxWorking)) {
+            mxFrozen = { stamp: stamp, cols: liveCols.slice(), rows: liveRows.slice() };
+            return mxFrozen;
+        }
+        // Same view, so keep the order the reader is looking at: what is still
+        // there stays put, and anything new (a tile that finished loading)
+        // goes on the end rather than displacing what they are aiming at.
+        var cols = mxFrozen.cols.filter(function (k) { return have[k]; });
+        liveCols.forEach(function (k) { if (cols.indexOf(k) < 0) cols.push(k); });
+        var rows = mxFrozen.rows.filter(function (k) { return haveRow[k]; });
+        liveRows.forEach(function (k) { if (rows.indexOf(k) < 0) rows.push(k); });
+        mxFrozen.cols = cols;
+        mxFrozen.rows = rows;
+        return mxFrozen;
+    }
+
+    /* The junction table's axis, held still the same way and for the same
+     * reason. One frozen record for both tables: they are two views of one
+     * object, the reader moves between them, and a settle must settle both or
+     * the tab switch becomes the thing that reshuffles. */
+    function jxOrder(live) {
+        var stamp = mxStamp();
+        if (!mxFrozen || (mxFrozen.stamp !== stamp && !mxWorking)) {
+            mxFrozen = { stamp: stamp, cols: [], rows: [], liths: live.slice() };
+            return mxFrozen.liths;
+        }
+        if (!mxFrozen.liths) { mxFrozen.liths = live.slice(); return mxFrozen.liths; }
+        var have = {};
+        live.forEach(function (k) { have[k] = true; });
+        var out = mxFrozen.liths.filter(function (k) { return have[k]; });
+        live.forEach(function (k) { if (out.indexOf(k) < 0) out.push(k); });
+        mxFrozen.liths = out;
+        return out;
     }
 
     /* The layer is on but none of it is in this view — the ordinary case for
@@ -438,19 +603,36 @@
             });
         }
 
-        var head = list.slice(0, MAX), tail = list.slice(MAX);
-        var cells = head.map(function (e) { return swatchHTML(e, false); }).join('') +
-                    tail.map(function (e) { return swatchHTML(e, true); }).join('');
-        var nCols = list.length;          // swatch columns, collapsed ones included
+        /* ── THE KEY MUST NOT SET THE PANEL'S WIDTH ───────────────
+         *
+         * Ten swatches at 21 px is 250 px of grid, and the stats panel is
+         * shrink-to-fit: turning geology on therefore WIDENED the panel over
+         * the map, and every number above it moved. A legend is an annotation
+         * on the panel, not a claim on its layout.
+         *
+         * Two halves to the fix, and both are needed:
+         *  - CSS makes the strip contribute NO intrinsic width (`width:0;
+         *    min-width:100%`), so the panel is sized by the rows that carry
+         *    numbers and the strip fills whatever that leaves.
+         *  - here, the number of columns is derived from that measured width,
+         *    so the strip TRUNCATES honestly behind its "+n" instead of being
+         *    clipped by the overflow. A clipped swatch is a period the reader
+         *    can see half of and cannot tap; "+3" is a truncation that says
+         *    it is one.
+         */
+        var cap = fitCols(list.length);
+        var head = list.slice(0, cap), tail = list.slice(cap);
+        var cells = head.map(function (e) { return swatchHTML(e, false); }).join('');
+        var nCols = Math.min(list.length, cap);
         var extras = 0;
         if (tail.length) {
             extras++;
             cells += '<button type="button" class="ml-sw-more" id="ml-sw-more"' +
                 ' aria-expanded="' + expanded + '"' +
                 ' title="' + (expanded ? 'Show fewer periods'
-                    : tail.length + ' more period(s), each covering less of this view \u2014 tap to show them') + '"' +
+                    : tail.length + ' more period(s), each covering less of this view — tap to show them') + '"' +
                 ' onclick="event.stopPropagation();MapLegend.toggleMore()">' +
-                (expanded ? '\u00d7' : '+' + tail.length) + '</button>';
+                (expanded ? '×' : '+' + tail.length) + '</button>';
         }
         // The way back. Only present once something is hidden, so the default
         // key carries no chrome — same rule as the strip itself.
@@ -476,7 +658,11 @@
         comms.forEach(function (k, ri) {
             // Only over columns the reader can actually see: a bracket across
             // a collapsed (zero-width) swatch would point at nothing.
-            var visN = expanded ? nCols : Math.min(nCols, MAX);
+            // The head row only: the overflow lives in its own grid below
+            // and a bracket cannot span two grids. A commodity whose ground
+            // is all in the overflow simply has no bracket, which is honest —
+            // it also has no swatch up here to brace.
+            var visN = nCols;
             var members = [];
             for (var i = 0; i < visN; i++) if (cmap[k][list[i].key]) members.push(i);
             if (!members.length) return;
@@ -513,9 +699,53 @@
         // measuring anything: the swatches are the columns.
         var style = 'grid-template-columns:repeat(' + nCols + ',auto)' +
             (extras ? ' repeat(' + extras + ',max-content)' : '') + ';';
-        return '<div class="ml-swatches' + (rows ? ' braced' : '') + '" style="' + style + '"' +
-            ' aria-label="Geology legend, most of this view first \u2014 tap a period to hide it">' +
+        var html = '<div class="ml-swatches' + (rows ? ' braced' : '') + '" style="' + style + '"' +
+            ' aria-label="Geology legend, most of this view first — tap a period to hide it">' +
             cells + rows + '</div>';
+
+        /* The overflow, when "+n" is open: its OWN grid, wrapping at the same
+         * column count. It is a separate element rather than more columns in
+         * the first one because the first one is width-constrained by the
+         * panel — adding columns there would widen the panel again, which is
+         * the whole thing this pass removed. */
+        if (expanded && tail.length) {
+            html += '<div class="ml-swatches ml-sw-rest" style="grid-template-columns:repeat(' +
+                nCols + ',auto);" aria-label="The rest of the periods drawn here">' +
+                tail.map(function (e) { return swatchHTML(e, true); }).join('') + '</div>';
+        }
+        return html;
+    }
+
+    /* ── How many swatches fit ──────────────────────────────
+     *
+     * MEASURED off the panel, never assumed: the stats panel is a different
+     * width with a park selected than with an AOI, and on a phone it is the
+     * viewport. A fixed cap is how the strip came to be 250 px wide inside a
+     * 180 px panel.
+     *
+     * The reserve is the chrome the strip can carry in the same row: the
+     * "+n" (only when there IS an overflow) and the "all" escape (only once
+     * something is filtered). Reserving for a button that is not there is how
+     * a 5-swatch key becomes a 4-swatch key for no reason, so each is counted
+     * only when it will be drawn. Floor of 4, because a key of one swatch and
+     * a "+9" is not a key.
+     */
+    function fitCols(n) {
+        var host = document.getElementById('stats-map');
+        var w = host ? host.clientWidth : 0;
+        if (!w) return MAX;
+        // The swatch is 21 px on the desktop panel and 26 px on a phone, and
+        // that is a CSS decision: measure one rather than keeping a second
+        // copy of it here.
+        var one = host.querySelector('.ml-sw');
+        var SW = (one && one.offsetWidth ? one.offsetWidth : 21) + 4;
+        var filtered = typeof GeoMap !== 'undefined' && GeoMap.anyFiltered && GeoMap.anyFiltered();
+        var reserve = (filtered ? 30 : 0);
+        var fits = function (r) { return Math.floor((w - 16 - r) / SW); };
+        // Does the "+n" have to exist? Only if the key does not fit without it.
+        var cap = fits(reserve);
+        if (n > cap) cap = fits(reserve + 30);
+        return Math.max(4, Math.min(MAX, cap));
     }
 
     /* Collapsed swatches animate in the way the date-preset tags do: width and
@@ -649,23 +879,79 @@
         paintWait = null;
     }
 
-    function rebuildGeoMenuNow() {
+    /* ── THE PANEL IS REBUILT; IT MUST NOT LOOK REBUILT ────────────
+     *
+     * Every gesture re-renders this panel from scratch, so without help the
+     * table BLINKS: the reader taps a cell, 700 ms later a new grid appears,
+     * and whether anything moved (and which thing) is something they have to
+     * work out by comparing two pictures from memory.
+     *
+     * FLIP, keyed on `data-mx` (`cell:gold|archean`, `row:gold`, `col:archean`).
+     * Measure every keyed element before the rebuild, measure again after, and
+     * play the difference backwards: a row that changed place SLIDES there, so
+     * the reorder is something the reader watches happen rather than something
+     * they discover. An element that did not move is not touched, so the
+     * ordinary rebuild costs nothing and does not flicker.
+     *
+     * Transforms only — no layout is animated, so this cannot fight the
+     * grid, and `prefers-reduced-motion` skips straight to the end state.
+     */
+    function mxRects() {
+        var out = {};
+        if (!menuEl) return out;
+        menuEl.querySelectorAll('[data-mx]').forEach(function (el) {
+            out[el.dataset.mx] = el.getBoundingClientRect();
+        });
+        return out;
+    }
+
+    function mxFlip(before) {
+        if (!menuEl || !before) return;
+        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        menuEl.querySelectorAll('[data-mx]').forEach(function (el) {
+            var b = before[el.dataset.mx];
+            if (!b) {
+                // New here: fade it in rather than having it appear
+                // mid-animation as though it had always been there.
+                el.classList.add('ml-mx-in');
+                return;
+            }
+            var a = el.getBoundingClientRect();
+            var dx = b.left - a.left, dy = b.top - a.top;
+            if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return;
+            el.style.transition = 'none';
+            el.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+            el.classList.add('ml-mx-moving');
+        });
+        // One reflow, then release everything at once: staggering a reorder
+        // would read as several separate movements rather than one settling.
+        void menuEl.offsetWidth;
+        menuEl.querySelectorAll('.ml-mx-moving').forEach(function (el) {
+            el.style.transition = '';
+            el.style.transform = '';
+            setTimeout(function () { el.classList.remove('ml-mx-moving'); }, 420);
+        });
+    }
+
+    function rebuildGeoMenuNow(opts) {
         if (!menuEl || menuEl.dataset.kind !== 'geo') return;
         var btn = document.querySelector('#stats-map .ml-chip.geo');
         if (!btn) return;
         var sc = menuEl.scrollTop;
+        var before = (opts && opts.animate) ? mxRects() : null;
         closeMenu();
         openGeoMenu(btn);
         if (menuEl) menuEl.scrollTop = sc;   // do not throw away their place
+        if (before) mxFlip(before);
     }
 
     /* Re-measure the canvas and rebuild the strip + the open matrix, once the
      * map has actually drawn the change. Everything that alters what is on
      * screen ends with this instead of with a bare render(). */
-    function refreshWhenDrawn() {
+    function refreshWhenDrawn(opts) {
         render();                       // the strip's own state (chip, wording)
         if (typeof map === 'undefined' || !map || !map.once) {
-            rebuildGeoMenuNow();
+            rebuildGeoMenuNow(opts);
             return;
         }
         cancelPaintWait();
@@ -675,7 +961,7 @@
             done = true;
             cancelPaintWait();
             render();                   // NOW the canvas says what is drawn
-            rebuildGeoMenuNow();
+            rebuildGeoMenuNow(opts);
         };
         paintWait = { timer: setTimeout(finish, 700) };
         map.once('idle', finish);
@@ -984,14 +1270,15 @@
      * number the map could disagree with. */
     function contactFacts() {
         var f = { any: false, reason: '', on: false, graded: true, pair: null,
-                  types: 0, gradedTypes: 0, drawn: 0, junctions: {} };
+                  pairs: new Set(), types: 0, gradedTypes: 0, drawn: 0, junctions: {} };
         if (typeof GeoMap === 'undefined' || !GeoMap.anyContacts) return f;
         f.any = !!GeoMap.anyContacts();
         f.reason = (GeoMap.contactsReason && GeoMap.contactsReason()) || '';
         if (!f.any) return f;
         f.on = !!(GeoMap.contactsOn && GeoMap.contactsOn());
         f.graded = !!(GeoMap.contactsGradedOnly && GeoMap.contactsGradedOnly());
-        f.pair = (GeoMap.contactPair && GeoMap.contactPair()) || null;
+        f.pairs = (GeoMap.contactPairs && GeoMap.contactPairs()) || new Set();
+        f.pair = f.pairs.size ? Array.from(f.pairs)[0] : null;
         f.junctions = (GeoMap.junctions && GeoMap.junctions()) || {};
         Object.keys(f.junctions).forEach(function (k) {
             f.types++;
@@ -1005,6 +1292,44 @@
      * for a cell, "intrusive junctions" for a header. One definition, used by
      * the chip, the key strip and the table's own state line, so the three
      * cannot describe the same filter differently. */
+    /* The picked junctions in one phrase. Two are named; beyond that it says
+     * how many, because a chip is one line and a list of five pairs is not a
+     * phrase. One definition, used by the chip, the state line and the
+     * junction table's foot, so the three cannot word one filter differently. */
+    function junctionsWords(set) {
+        var a = Array.from(set || []);
+        if (!a.length) return '';
+        if (a.length <= 2) return a.map(junctionWords).join(' + ');
+        return a.length + ' junction types';
+    }
+
+    /* Picked cells in words. Same rule as the junctions: two are named in
+     * full, more are counted — a chip is one line, and "cobalt in the
+     * Archaean + copper in the Palaeoproterozoic + …" is not a line. */
+    function cellWords(set) {
+        var a = Array.from(set || []);
+        if (!a.length) return '';
+        var name = function (k) {
+            var i = k.indexOf('|');
+            var m = (typeof GeoMap !== 'undefined' && GeoMap.age) ? GeoMap.age(k.slice(i + 1)) : null;
+            return { comm: k.slice(0, i).replace(/_/g, ' '),
+                     age: (m && m.label) || k.slice(i + 1) };
+        };
+        var parts = a.map(name);
+        // One commodity across several periods is the ordinary shape of this
+        // gesture (three taps along the gold row), and "3 picked cells" throws
+        // away the only word the reader cares about. Say the commodity and
+        // count the periods.
+        var comms = {};
+        parts.forEach(function (p) { comms[p.comm] = 1; });
+        var only = Object.keys(comms);
+        if (only.length === 1 && parts.length > 2) {
+            return only[0] + ' in ' + parts.length + ' periods';
+        }
+        if (parts.length > 2) return parts.length + ' picked cells';
+        return parts.map(function (p) { return p.comm + ' in the ' + p.age; }).join(' + ');
+    }
+
     function junctionWords(key) {
         if (!key) return '';
         if (key.indexOf('|') < 0) return lithLabel(key) + ' junctions';
@@ -1121,7 +1446,16 @@
         // view, most of it first. Capped, because a matrix wider than the menu
         // is a horizontal scroll nobody finds — and the cap announces itself.
         var COLS = 7;
-        var drawn = ageEntries().filter(function (e) { return e.on; });
+        var drawn = columnEntries();
+        var byAgeKey = {};
+        drawn.forEach(function (e) { byAgeKey[e.key] = e; });
+        // The order is frozen for this view (mxOrder); only the state of each
+        // column is live, so a pick cannot move the next cell the reader is
+        // reaching for.
+        var frozen = mxOrder(drawn.map(function (e) { return e.key; }),
+                             Object.keys(commodityIndex()).sort());
+        drawn = frozen.cols.map(function (k) { return byAgeKey[k]; })
+                           .filter(function (e) { return !!e; });
         var cols = drawn.slice(0, COLS);
         var colExtra = drawn.length - cols.length;
         var ages = cols.map(function (c) { return c.key; });
@@ -1147,6 +1481,8 @@
          */
         var CF = contactFacts();
         var narrowed = [];
+        var pickedCells = (GeoMap.picks && GeoMap.picks()) || new Set();
+        if (pickedCells.size) narrowed.push(cellWords(pickedCells));
         if (anyOn) {
             narrowed.push(Array.from(GeoMap.selectedCommodities())
                 .map(function (c) { return c.replace(/_/g, ' '); }).join(' + ') + ' hosts');
@@ -1162,7 +1498,7 @@
         // A picked junction narrows the CONTACT layer, so it belongs in the
         // same sentence — said ONCE, here, and never repeated by the tab, the
         // switch or the chip.
-        if (CF.on && CF.pair) narrowed.push(junctionWords(CF.pair) + ' contacts');
+        if (CF.on && CF.pairs.size) narrowed.push(junctionsWords(CF.pairs) + ' contacts');
         html += '<div class="ml-state' + (narrowed.length ? ' narrowed' : '') + '">' +
             '<i class="' + (narrowed.length ? 'icon-funnel' : 'icon-layers') + '"></i>' +
             '<span>' + (narrowed.length
@@ -1273,8 +1609,16 @@
             // 16x13 now — the same swatch, the same size class, the same
             // ornament as the key it mirrors.
             var bg = swatchBG(c.lith, c.meta.color, 13);
-            html += '<button type="button" class="ml-mx-col" title="' +
-                esc(c.meta.label + ' \u2014 tap to hide this period') + '"' +
+            // A column the current picks leave off the map keeps its place,
+            // dimmed: it is what the reader would pick NEXT, and dropping it
+            // is what made the table collapse to one column in the first
+            // place. Dim rather than absent, so the header reads as "this is
+            // on the sheets here, not on your map".
+            html += '<button type="button" data-mx="col:' + esc(c.key) + '" class="ml-mx-col' +
+                (c.offSelection ? ' dim' : '') + '" title="' +
+                esc(c.meta.label + (c.offSelection
+                    ? ' — on these sheets here, but not in what you have picked'
+                    : ' — tap to hide this period')) + '"' +
                 ' aria-label="' + esc(c.meta.label) + ', hide"' +
                 ' onclick="event.stopPropagation();MapLegend.toggleAge(\'' + esc(c.key) + '\')">' +
                 '<i style="' + bg + '"></i></button>';
@@ -1287,17 +1631,26 @@
         // (cells present, then grade), not alphabetically: a menu sorted by
         // the alphabet is a dictionary, and the reader is asking what is under
         // them, not what starts with 'c'.
-        var rows = keys.map(function (k) {
-            var cells = 0, best = 0;
-            ages.forEach(function (a) {
-                var w = A.g[k + '|' + a] || 0;
-                if (w >= min) { cells++; best = Math.max(best, w); }
+        // Ordered by how much of THIS view answers each commodity — but
+        // ordered ONCE per view (mxOrder), because the grade floor and the
+        // picks both change that measure, and a row that moves between two
+        // taps of the same gesture is the reader's aim thrown away.
+        var rows = frozen.rows.filter(function (k) { return keys.indexOf(k) >= 0; })
+            .map(function (k) {
+                var cells = 0, best = 0;
+                ages.forEach(function (a) {
+                    var w = A.g[k + '|' + a] || 0;
+                    if (w >= min) { cells++; best = Math.max(best, w); }
+                });
+                return { k: k, cells: cells, best: best };
             });
-            return { k: k, cells: cells, best: best };
-        });
-        rows.sort(function (a, b) {
-            return (b.best - a.best) || (b.cells - a.cells) || a.k.localeCompare(b.k);
-        });
+        if (!frozen.sorted) {
+            rows.sort(function (a, b) {
+                return (b.best - a.best) || (b.cells - a.cells) || a.k.localeCompare(b.k);
+            });
+            frozen.rows = rows.map(function (r) { return r.k; });
+            frozen.sorted = true;
+        }
 
         var ANS = commodityAnswers();
         rows.forEach(function (r) {
@@ -1305,7 +1658,7 @@
             // A commodity with nothing on screen keeps its row, greyed: an
             // absent row reads as "no sheet here mentions cobalt", which is a
             // different and wrong statement.
-            html += '<button type="button" class="ml-mx-row' + (on ? ' on' : '') +
+            html += '<button type="button" data-mx="row:' + esc(k) + '" class="ml-mx-row' + (on ? ' on' : '') +
                 (r.cells ? '' : ' dead') + '" role="menuitemcheckbox" aria-checked="' + on + '"' +
                 ' title="' + esc(r.cells
                     ? (on ? 'Stop showing ' + k.replace(/_/g, ' ') + ' hosts'
@@ -1334,12 +1687,17 @@
                     return;
                 }
                 var meta = GeoMap.age(a);
-                html += '<button type="button" class="ml-mx-cell g' + w + (faded ? ' below' : '') +
-                    (on ? ' on' : '') + '"' +
-                    ' title="' + esc(meta.label + ' \u2014 ' + WEIGHT_WHY[w] + ' for ' +
+                var picked = GeoMap.cellPicked && GeoMap.cellPicked(k, a);
+                html += '<button type="button" data-mx="cell:' + esc(k) + '|' + esc(a) +
+                    '" class="ml-mx-cell g' + w + (faded ? ' below' : '') +
+                    (picked ? ' picked' : (on ? ' on' : '')) + '"' +
+                    ' aria-pressed="' + (!!picked) + '"' +
+                    ' title="' + esc(meta.label + ' — ' + WEIGHT_WHY[w] + ' for ' +
                         k.replace(/_/g, ' ') + ' (' + n + ' unit(s))' +
-                        (faded ? '. Below the strength floor, so it is not drawn.'
-                               : '. Tap to show just this ground.')) + '"' +
+                        (picked ? '. Picked — tap to drop it from the map.'
+                                : faded
+                            ? '. Below the strength floor; tapping lowers the floor and adds it.'
+                            : '. Tap to ADD this ground to what the map draws.')) + '"' +
                     ' aria-label="' + esc(k.replace(/_/g, ' ') + ', ' + meta.label + ', grade ' + w) + '"' +
                     ' onclick="event.stopPropagation();MapLegend.geoCell(\'' + esc(k) + '\',\'' +
                         esc(a) + '\',' + w + ')"><i></i></button>';
@@ -1432,7 +1790,9 @@
         });
         var min = GeoMap.minWeight ? GeoMap.minWeight() : 1;
         var sel = GeoMap.selectedCommodities ? GeoMap.selectedCommodities() : new Set();
-        var pick = CF.pair;
+        // Every junction picked, not just one: the table adds now.
+        var picks = (GeoMap.contactPairs && GeoMap.contactPairs()) || new Set();
+        var isPicked = function (k) { return picks.has(k); };
 
         // How strong the best junction each rock takes part in is, FOR THE
         // COMMODITY IN QUESTION. With gold picked, the reader is asking which
@@ -1449,10 +1809,18 @@
             bestOf[p.a] = Math.max(bestOf[p.a] || 0, w);
             bestOf[p.b] = Math.max(bestOf[p.b] || 0, w);
         });
+        /* SAME RULE AS THE ROCK TABLE: the order is a property of the view,
+         * not of the selection. Both axes here are ordered by how strongly
+         * each rock answers the CURRENT commodity, so picking a junction (or
+         * a commodity in the other tab) re-sorts them — which, mid-gesture,
+         * moves the next cell out from under the reader's finger. It holds
+         * still while they are working and settles, visibly, when they move
+         * on (mxSettle → mxFlip). */
         var liths = Object.keys(deg).sort(function (a, b) {
             return ((bestOf[b] || 0) - (bestOf[a] || 0)) ||
                    (deg[b] - deg[a]) || a.localeCompare(b);
         });
+        liths = jxOrder(liths);
 
         // No sub-caption here. "rock across, commodity down" earns its place
         // in the rock table because the two axes differ; both axes here are
@@ -1498,10 +1866,12 @@
         html += '<span class="ml-mx-corner"></span>';
         liths.forEach(function (l) {
             var lm = lithMeta(l);
-            html += '<button type="button" class="ml-jx-col' + (pick === l ? ' on' : '') + '"' +
+            html += '<button type="button" data-mx="jcol:' + esc(l) + '" class="ml-jx-col' +
+                (isPicked(l) ? ' on' : '') + '"' +
+                ' aria-pressed="' + isPicked(l) + '"' +
                 ' title="' + esc(lm.label + (lm.desc ? ' \u2014 ' + lm.desc : '') +
                     ' \u2014 in ' + deg[l] + ' junction type(s) here. Tap to draw every contact ' +
-                    'it takes part in' + (pick === l ? ' (tap again to clear)' : '') + '.') + '"' +
+                    'it takes part in' + (isPicked(l) ? ' (tap again to drop it)' : '') + '.') + '"' +
                 ' aria-label="' + esc(lm.label) + ' junctions"' +
                 ' onclick="event.stopPropagation();MapLegend.geoJunction(\'' + esc(l) + '\')">' +
                 '<i style="' + swatchBG(l, '#9ca3af', 13) + '"></i></button>';
@@ -1509,10 +1879,12 @@
 
         liths.forEach(function (ra, ri) {
             var rm = lithMeta(ra);
-            html += '<button type="button" class="ml-jx-row' + (pick === ra ? ' on' : '') + '"' +
+            html += '<button type="button" data-mx="jrow:' + esc(ra) + '" class="ml-jx-row' +
+                (isPicked(ra) ? ' on' : '') + '"' +
+                ' aria-pressed="' + isPicked(ra) + '"' +
                 ' title="' + esc(rm.label + (rm.desc ? ' \u2014 ' + rm.desc : '') +
                     ' \u2014 tap to draw every contact it takes part in' +
-                    (pick === ra ? ' (tap again to clear)' : '') + '.') + '"' +
+                    (isPicked(ra) ? ' (tap again to drop it)' : '') + '.') + '"' +
                 ' onclick="event.stopPropagation();MapLegend.geoJunction(\'' + esc(ra) + '\')">' +
                 '<i style="' + swatchBG(ra, '#9ca3af', 13) + '"></i>' +
                 '<span>' + esc(lithLabel(ra)) + '</span></button>';
@@ -1542,7 +1914,7 @@
                 var head = lbl + ' \u2014 ' + p.n + ' mapped junction' + (p.n === 1 ? '' : 's') +
                     ', ' + km;
                 if (!w) {
-                    html += '<span class="ml-jx-cell ungraded" title="' +
+                    html += '<span data-mx="jcell:' + esc(key) + '" class="ml-jx-cell ungraded" title="' +
                         esc(head + '. ' + (sel.size
                             ? 'Not a setting this model grades for ' +
                               Array.from(sel).join(' or ').replace(/_/g, ' ') + '.'
@@ -1552,12 +1924,16 @@
                     return;
                 }
                 var faded = w < min;
-                html += '<button type="button" class="ml-jx-cell g' + w + (faded ? ' below' : '') +
-                    (pick === key ? ' on' : '') + '"' +
+                html += '<button type="button" data-mx="jcell:' + esc(key) +
+                    '" class="ml-jx-cell g' + w + (faded ? ' below' : '') +
+                    (isPicked(key) ? ' on' : '') + '"' +
+                    ' aria-pressed="' + isPicked(key) + '"' +
                     ' title="' + esc(head + '. ' + why.join(', ') +
                         (faded ? '. Below the strength floor, so it is not drawn.'
                                : '. Tap to draw just this junction' +
-                                 (pick === key ? ' (tap again to clear)' : '') + '.')) + '"' +
+                                 (isPicked(key) ? ' (tap again to drop it)'
+                                                : ' — it ADDS to the junctions already picked') +
+                                 '.')) + '"' +
                     ' aria-label="' + esc(lbl + ', grade ' + w) + '"' +
                     ' onclick="event.stopPropagation();MapLegend.geoJunction(\'' + esc(key) + '\')">' +
                     '<i></i></button>';
@@ -1585,7 +1961,7 @@
             '<i class="icon-git-merge"></i>' +
             '<span>' + (CF.on
                 ? (drawn ? '<b>' + drawn + '</b> contact line' + (drawn === 1 ? '' : 's') +
-                           ' on the map' + (CF.pair ? ', ' + esc(junctionWords(CF.pair)) : '')
+                           ' on the map' + (CF.pairs.size ? ', ' + esc(junctionsWords(CF.pairs)) : '')
                          : 'Nothing is drawn at this setting')
                 : 'Contact lines are off') + '</span>' +
             '<button type="button" class="ml-jx-graded' + (CF.graded ? '' : ' on') + '"' +
@@ -1616,6 +1992,7 @@
         var host = document.getElementById('stats-map');
         if (!host) return;
         measureCoverage();
+        measureSourceAges();
         var b = bm(), quiet = (b === 'dark') && !histOn() && !geoOn();
         host.classList.toggle('quiet', quiet);
 
@@ -1736,32 +2113,62 @@
             refreshWhenDrawn();
         },
 
-        /* A CELL is the matrix's own gesture: "show me the cobalt-hosting
-         * ground, but only the Palaeoproterozoic of it". Neither of the other
-         * two targets can express it — the row is every period, the column is
-         * every commodity — and it is the question a reader actually has once
-         * they can see that cobalt spans four periods at three grades.
+        /* ── A CELL IS A PICK, AND PICKS ADD ────────────────────────
          *
-         * It is built out of the pieces that already exist, deliberately: the
-         * commodity selection is replaced with this one commodity (so the
-         * chip, the brackets and the share link all stay true), and the age
-         * filter is set to that single period. No fourth kind of state. */
+         * "The Palaeoproterozoic of the cobalt ground" — and then, one tap
+         * later, "…and the Archaean of the copper ground". The map draws the
+         * UNION of the cells the reader has tapped.
+         *
+         * It used to be the opposite gesture: a cell REPLACED the commodity
+         * selection and soloed its period, so every tap threw the previous
+         * answer away. Two things went wrong with that. The reader could not
+         * assemble a map out of the table — the obvious use of a grid of
+         * cells — and, because the matrix's columns are the periods actually
+         * DRAWN, soloing one collapsed the table to a single column, hiding
+         * the cells they would have picked next. The narrowing on the map is
+         * the same kind of thing; what changed is that the table stays whole
+         * and the selection accumulates.
+         *
+         * The floor gives way to the pick: tapping a weight-1 cell while the
+         * floor says "classic" would otherwise select nothing, which is a
+         * control that reads as broken. Tapping a picked cell removes it, so
+         * the gesture is its own undo. */
         geoCell: function (k, age, w) {
-            if (typeof GeoMap === 'undefined') return;
-            var cur = GeoMap.selectedCommodities();
-            var soloAlready = cur.size === 1 && cur.has(k) &&
-                GeoMap.agesOff().size && GeoMap.ageOn(age) &&
-                ageEntries().filter(function (e) { return e.on; }).length === 1;
-            if (soloAlready) {          // second tap on the same cell = back out
-                GeoMap.showEverything();
-            } else {
-                if (w < GeoMap.minWeight()) GeoMap.setMinWeight(w);
-                cur.forEach(function (c) { if (c !== k) geoCommodityRaw(c); });
-                if (!commodityOn(k)) geoCommodityRaw(k);
-                GeoMap.soloAge(age, ageEntries().map(function (e) { return e.key; }));
-            }
+            if (typeof GeoMap === 'undefined' || !GeoMap.toggleCell) return;
+            if (!GeoMap.cellPicked(k, age) && w < GeoMap.minWeight()) GeoMap.setMinWeight(w);
+            // A pick and a hidden period are contradictory answers to one
+            // question: the cell says "draw this ground", the age filter says
+            // "draw nothing of that period". The pick wins, so the reader sees
+            // what they just tapped.
+            if (!GeoMap.cellPicked(k, age) && !GeoMap.ageOn(age)) GeoMap.toggleAge(age);
+            mxTouch();      // mid-gesture: the order holds still until they stop
+            GeoMap.toggleCell(k, age);
             if (typeof renderGeoMapPanel === 'function') renderGeoMapPanel();
-            refreshWhenDrawn();
+            refreshWhenDrawn({ animate: true });
+        },
+
+        /* ── THE GESTURE IS OVER ─────────────────────────────
+         *
+         * The reader moved on — to the Junctions tab, to the map, to anything
+         * outside this panel — so the selection is a decision now rather than
+         * something they are still assembling. That is the moment the table
+         * may re-sort: it puts what they picked where the table says the
+         * strongest answers go, and it does it as a movement they WATCH (FLIP,
+         * see mxFlip) instead of as a grid that has silently become a
+         * different grid the next time they look at it.
+         *
+         * Deliberately not a timer alone: settling under a reader who is still
+         * choosing is the failure; settling when they have stopped choosing is
+         * the feedback. The timer is only the backstop for "stopped without
+         * going anywhere". */
+        mxSettle: function () {
+            clearTimeout(mxSettleTimer);
+            if (!mxWorking) return;
+            mxWorking = false;
+            mxFrozen = null;            // next render re-derives the order
+            if (menuEl && menuEl.dataset.kind === 'geo') {
+                rebuildGeoMenuNow({ animate: true });
+            }
         },
 
         showAllAges: function () {
@@ -1786,13 +2193,12 @@
          * module is not), fall back to GeoMap directly rather than doing
          * nothing — a menu item that silently no-ops is invariant 1's failure. */
         geoCommodity: function (k) {
-            // A ROW is "this commodity, on every ground it has". If a cell tap
-            // left the map narrowed to one period, the row must lift that —
-            // otherwise the reader taps the row the tooltip promised and gets
-            // a map that is still one period wide, with nothing saying why.
-            // This is also the main way OUT of a cell: the trap was that every
-            // gesture in the matrix narrowed and none widened.
-            if (typeof GeoMap !== 'undefined' && GeoMap.agesOff().size) GeoMap.clearAges();
+            // A ROW is "this commodity, on every ground it has", so it
+            // SUPERSEDES that commodity's cells: leaving both would draw the
+            // whole row while the table still lit two cells as though they
+            // were the narrowing, and un-picking the row would then leave the
+            // cells behind as a filter nobody remembers setting.
+            if (typeof GeoMap !== 'undefined' && GeoMap.clearPicksFor) GeoMap.clearPicksFor(k);
             if (typeof geoToggleCommodityAll === 'function') geoToggleCommodityAll(k);
             else if (typeof GeoMap !== 'undefined') {
                 var sheets = GeoMap.sheets() || {};
@@ -1867,6 +2273,10 @@
         mxMode: function (m) {
             var want = (m === 'junction') ? 'junction' : 'rock';
             if (want === mxMode) return;
+            // Leaving the rock table IS moving on, so whatever was being
+            // assembled there is a decision now and the table settles behind
+            // the reader rather than surprising them on the way back.
+            this.mxSettle();
             mxMode = want;
             if (typeof GeoMap !== 'undefined' && GeoMap.setContacts && GeoMap.anyContacts()) {
                 if (want === 'junction' && !GeoMap.contactsOn()) {
@@ -1889,9 +2299,10 @@
          * control that reads as broken. */
         geoJunction: function (key) {
             if (typeof GeoMap === 'undefined' || !GeoMap.setContactPair) return;
+            mxTouch();      // same rule as a cell: the table holds still
             GeoMap.setContactPair(key);
             if (typeof renderGeoMapPanel === 'function') renderGeoMapPanel();
-            refreshWhenDrawn();
+            refreshWhenDrawn({ animate: true });
         },
 
         /* "anything" — grade each junction by the strongest thing it hosts.
@@ -1960,11 +2371,31 @@
     function watchMap() {
         if (typeof map === 'undefined' || !map || !map.on) return;
         map.on('idle', function () { if (geoOn()) render(); });
+        // MOVING ON, in the map's own words. A reader who drags the map has
+        // finished choosing in the table; the selection becomes a decision and
+        // the table settles behind them. `movestart` rather than `moveend`, so
+        // the settling happens while they are looking at the map — not as a
+        // grid that has silently rearranged itself by the time they look back.
+        map.on('movestart', function () { MapLegend.mxSettle(); });
+        map.on('click', function () { MapLegend.mxSettle(); });
+    }
+
+    /* The same statement for the rest of the page: any pointer that lands
+     * outside the geology panel is the reader moving on. Capture phase, so a
+     * handler that stops propagation cannot swallow it, and passive because
+     * this never prevents anything. */
+    function watchOutside() {
+        document.addEventListener('pointerdown', function (e) {
+            if (!menuEl || menuEl.dataset.kind !== 'geo') return;
+            if (menuEl.contains(e.target)) return;
+            MapLegend.mxSettle();
+        }, { capture: true, passive: true });
     }
 
     function boot() {
         render();
         watchMap();
+        watchOutside();
         if (typeof HistMap !== 'undefined') HistMap.ensureMeta().then(render).catch(function () {});
         if (typeof GeoMap !== 'undefined') GeoMap.ensureMeta().then(render).catch(function () {});
     }
