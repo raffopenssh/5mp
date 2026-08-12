@@ -9128,19 +9128,26 @@
         //
         // `clickOnly` + a negative `priority` for the same reason: an AOI is a
         // BACKDROP. XSA covers 485,000 km², so a hover tip on it is under the
-        // cursor almost everywhere — it never goes away, it hides whatever the
-        // user was reaching for, and it appeared *on top of* the AOI popup it
-        // had just opened. It answers a deliberate click instead, as a sticky
-        // tip carrying its own action row; and every pinned vector layer
-        // (priority 0) is asked first, so tapping a fire, a settlement or a
-        // geology unit inside the AOI gives you that feature, not the area.
+        // cursor almost everywhere — it never goes away, and it hides whatever
+        // the user was reaching for. Every pinned vector layer (priority 0) is
+        // asked first, so clicking a fire, a settlement or a geology unit
+        // inside the AOI gives you that feature, not the area.
+        //
+        // `activateOnClick`: where the AOI is the ONLY answer at the point,
+        // the click opens its popup directly rather than selecting a card that
+        // reproduces its first three lines. Where something else also answers,
+        // MapTip pins the stack and the Area tab carries this same button —
+        // see the note in maptip.js onClick().
         function registerAOITip() {
             if (!window.MapTip || !map.getLayer('aois-fill') || window._aoiTipRegistered) return;
             window._aoiTipRegistered = true;
             window._aoiCoverage = window._aoiCoverage || {};
             MapTip.register('aois-fill', {
-                actionLabel: 'Open area',
+                // Same wording as every other action button: it names the
+                // popup it opens, and an AOI's popup is the area's overview.
+                actionLabel: 'Open area overview',
                 clickOnly: true,
+                activateOnClick: true,
                 priority: -20,
                 tabLabel: 'Area',
                 tabColor: '#f59e0b',
@@ -9577,9 +9584,11 @@
         function showAOIPopup(props, lngLat) {
             if (currentAOIPopup) currentAOIPopup.remove();
             if (currentPAPopup) currentPAPopup.remove();
-            // A sticky map tip is the *same* information in a smaller box, and
-            // it is positioned at the cursor -- i.e. right on top of the popup
-            // it just opened. One answer on screen at a time.
+            // The popup IS the area's card, in full. A selected MapTip card is
+            // the same information in a smaller box, anchored at the point the
+            // user just clicked -- i.e. on top of the popup it opened. One
+            // answer on screen at a time, so the selection and the hover
+            // preview both stand down.
             if (window.MapTip) MapTip.hide();
             const id = props.id, name = props.name || id;
             const area = props.area_km2 ? formatNumber(Math.round(props.area_km2)) + ' km²' : '--';
@@ -9773,8 +9782,8 @@
             if (currentPAPopup) {
                 currentPAPopup.remove();
             }
-            // Same rule as showAOIPopup: a sticky tip is anchored at the cursor,
-            // i.e. on top of the popup this click just opened.
+            // Same rule as showAOIPopup: a selected card is anchored at the
+            // point clicked, i.e. on top of the popup this click just opened.
             if (window.MapTip) MapTip.hide();
             
             // Track current popup data for refresh on filter changes
@@ -17452,8 +17461,8 @@ ${starredItems.narratives.map(n => {
                     h += `<div class="maptip-dim">Live trajectory from the current fire window</div>`;
                     return h;
                 },
-                actionLabel: 'Open park report',
-                onActivate: () => openFeatureInReport(parkId, 'fire', null)
+                actionLabel: areaOverviewLabel(parkId),
+                onActivate: () => openAreaOverview(parkId, 'fire', null)
             }));
         }
         updatePinnedIndicator();
@@ -17530,10 +17539,46 @@ ${starredItems.narratives.map(n => {
         updatePinnedIndicator();
     }
     
-    // Open the park report popup, expand the relevant section and scroll to the
-    // entry for a given feature. Shared by MapTip's "Open in report" action for
-    // both single pins and category pins.
-    async function openFeatureInReport(parkId, type, featureId) {
+    // Open an AREA's overview popup (park or AOI), expand the relevant section
+    // and scroll to the entry for a given feature. Shared by MapTip's action
+    // button for single pins, category pins and LOD layers alike.
+    //
+    // It is called "overview", not "report": the star report is a different
+    // thing (several areas, a printable document), and a button that says
+    // "Open in report" while opening a popup names the wrong destination. The
+    // popup is the area's overview, so the button says so — "Open park
+    // overview" / "Open area overview", per `areaOverviewLabel()`.
+    //
+    // An AOI is not a park (own id space, own route prefix), but its popup
+    // uses the SAME section ids (`fire-section-<id>`), so everything after the
+    // popup opens is shared. Only the lookup and which popup to open differ.
+    async function openAreaOverview(areaId, type, featureId) {
+        if (isAOI(areaId)) {
+            // `window._aois` is a map keyed by id, filled by loadAOIs().
+            const a = (window._aois || {})[areaId];
+            if (!a) { console.warn('AOI not found:', areaId); return; }
+            if (currentAOIPopup) currentAOIPopup.remove();
+            const c = a.bbox ? [(a.bbox[0] + a.bbox[2]) / 2, (a.bbox[1] + a.bbox[3]) / 2] : null;
+            showAOIPopup({ id: a.id, name: a.name, area_km2: a.area_km2,
+                           from_date: a.from_date || '', to_date: a.to_date || '',
+                           state: a.state, is_owner: !!a.is_owner },
+                         c ? { lng: c[0], lat: c[1] } : map.getCenter());
+            await new Promise(r => setTimeout(r, 1200));
+            return scrollAreaOverviewTo(areaId, type, featureId);
+        }
+        return openParkOverview(areaId, type, featureId);
+    }
+    window.openAreaOverview = openAreaOverview;
+
+    // What the action button says. The destination is the thing named, and a
+    // park and an area of interest are different things to the user even
+    // though the code path is one.
+    function areaOverviewLabel(areaId) {
+        return isAOI(areaId) ? 'Open area overview' : 'Open park overview';
+    }
+    window.areaOverviewLabel = areaOverviewLabel;
+
+    async function openParkOverview(parkId, type, featureId) {
         // `keystoneAreas` is not always populated; the map's own 'areas' source is
         // the reliable lookup (same trick the ?popup= share-link restore uses).
         let park = (window.keystoneAreas || []).find(p => p.id === parkId);
@@ -17561,7 +17606,13 @@ ${starredItems.narratives.map(n => {
         if (currentPAPopup) currentPAPopup.remove();
         showPAPopup(park, { lng: center[0], lat: center[1] });
         await new Promise(r => setTimeout(r, 1200));
+        return scrollAreaOverviewTo(parkId, type, featureId);
+    }
 
+    // The half that is identical for a park and an AOI: both popups use the
+    // same section ids and the same `data-park`/`data-type`/`data-feature`
+    // entry markup, so once one is open, finding the entry is one code path.
+    async function scrollAreaOverviewTo(parkId, type, featureId) {
         const sectionMap = { fire: 'fire', fire_trajectory: 'fire', settlement: 'ghsl', deforestation: 'deforest',
                              turbidity: 'mining', road: 'road', place: 'road' };
         const sectionId = sectionMap[type] || type;
@@ -17598,7 +17649,7 @@ ${starredItems.narratives.map(n => {
             await new Promise(r => setTimeout(r, 400));
         }
         if (!entry) {
-            showToast('This feature has no matching entry in the report list', 'info');
+            showToast('This feature has no matching entry in the overview list', 'info');
             return;
         }
         entry.style.background = 'rgba(59, 130, 246, 0.3)';
@@ -17858,8 +17909,8 @@ ${starredItems.narratives.map(n => {
                         }
                         return label;
                     },
-                    actionLabel: 'Open in report',
-                    onActivate: () => openFeatureInReport(parkId, type, featureId)
+                    actionLabel: areaOverviewLabel(parkId),
+                    onActivate: () => openAreaOverview(parkId, type, featureId)
                 }));
             }
             
@@ -18601,10 +18652,10 @@ ${starredItems.narratives.map(n => {
             if (window.MapTip) {
                 tipLayers.forEach(id => window.MapTip.register(id, {
                     html: (props) => featureTipHTML(props, type, parkName),
-                    actionLabel: 'Open in report',
+                    actionLabel: areaOverviewLabel(parkId),
                     onActivate: (feature) => {
                         const p = feature.properties || {};
-                        openFeatureInReport(parkId, type, p.feature_id || p.id || null);
+                        openAreaOverview(parkId, type, p.feature_id || p.id || null);
                     }
                 }));
             }
@@ -20806,6 +20857,19 @@ ${starredItems.narratives.map(n => {
         if (window._currentPixelPopup && window._currentPixelId) {
             params.set('pixel', window._currentPixelId);
         }
+
+        // The selected map feature (the pinned MapTip card). Shared as a
+        // PLACE, not a feature id: ids are not stable across a rebuild, the
+        // layer may come back at a different level of detail, and "what is at
+        // this point" is the question the link is reproducing anyway.
+        // `tip_layer` only picks within the stack found there.
+        if (window.MapTip && typeof MapTip.getState === 'function') {
+            const tipState = MapTip.getState();
+            if (tipState) {
+                params.set('tip', tipState.lng + ',' + tipState.lat);
+                if (tipState.layer) params.set('tip_layer', tipState.layer);
+            }
+        }
         
         // Add pinned layers (category pins - all features of a type)
         const pinnedKeys = Object.keys(pinnedLayers || {});
@@ -21437,6 +21501,43 @@ ${starredItems.narratives.map(n => {
         
         // Restore single pinned features from URL
         setTimeout(restoreSinglePinnedFromURL, 2000);
+
+        // Restore the selected map feature (?tip=lng,lat[&tip_layer=]).
+        //
+        // Deliberately a re-ask, not a replay: MapTip.pinAt() hit-tests the
+        // live map at that point and selects whatever answers there. So it
+        // must run AFTER the layers the same link carries (pins, geology, the
+        // AOI source) have landed, and it retries on a decaying schedule
+        // because "landed" is several independent fetches. It gives up
+        // quietly — a link to a feature that no longer exists should open the
+        // view it describes, not an error.
+        const tipParam = params.get('tip');
+        if (tipParam) {
+            const [tLng, tLat] = tipParam.split(',').map(parseFloat);
+            const tipLayer = params.get('tip_layer') || null;
+            if (!isNaN(tLng) && !isNaN(tLat)) {
+                let tipTries = 0;
+                const tryPinTip = () => {
+                    tipTries++;
+                    // Keep asking while the answer can still GROW. The stack is
+                    // frozen at pin time, so accepting the first hit selects the
+                    // fire and silently loses the Geology tab that was in the
+                    // link's picture -- the tiles simply had not rendered yet.
+                    // `tip_layer` names the answer the sender was reading, so
+                    // its presence is the signal that the map is ready; without
+                    // one, wait for the map to go idle first.
+                    const ready = map.loaded() && !map.isMoving();
+                    if (window.MapTip && (ready || tipTries > 8)) {
+                        if (MapTip.pinAt({ lng: tLng, lat: tLat }, tipLayer)) {
+                            const got = MapTip.getState();
+                            if (!tipLayer || (got && got.layer === tipLayer) || tipTries > 8) return;
+                        }
+                    }
+                    if (tipTries < 14) setTimeout(tryPinTip, 400 + tipTries * 200);
+                };
+                setTimeout(tryPinTip, 2200);
+            }
+        }
         
         // Restore panel states
         const panelParam = params.get('panel');

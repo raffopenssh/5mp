@@ -186,19 +186,115 @@ func geoHatchInk(rgb string) string {
 	return fmt.Sprintf("%d,%d,%d", int(float64(r)*(1-k)), int(float64(g)*(1-k)), int(float64(b)*(1-k)))
 }
 
+// geoOrnamentLayer is one pattern-fill layer of a lithology's ornament.
+// A line layer uses (a=angle, b=spacing mm, dash); a marker layer uses
+// (a=distance_x, b=distance_y, marker, size, angle).
+type geoOrnamentLayer struct {
+	a, b   string
+	dash   string
+	marker string
+	size   string
+	angle  string
+}
+
+// geoOrnaments is the FGDC-STD-013-2006 §37 families as QGIS pattern layers.
+//
+// Each choice, and why it is this and not the obvious thing:
+//
+//	alluvium/sandstone  Stipple, coarse and fine. FGDC dots; the only two
+//	                    families that differ from each other by density
+//	                    alone, which is what the standard does too.
+//	mudrock             Fine horizontal dashes. Dash period == spacing, so
+//	                    the axis-aligned tile cannot clip it (trap 1 above).
+//	carbonate           REAL brick courses: solid horizontal rules at 2.4 mm
+//	                    plus a vertical dashed at 4.8 mm whose dash period
+//	                    equals its own spacing, which puts one vertical tick
+//	                    per course and offsets it every other row — a brick.
+//	                    Was `90° dashed 2;6 at 3.6mm`, which rendered ZERO
+//	                    pixels, so carbonate was flat horizontal rules and
+//	                    indistinguishable from mudrock at a glance.
+//	intrusive           A PLUS-SIGN MARKER, not two dashed hatches. FGDC's
+//	                    intrusive ornament is a field of discrete plus-signs;
+//	                    drawing it as two coarsely dashed 45°/135° hatches
+//	                    needed the dashes to line up, which QGIS's tile does
+//	                    not guarantee, and it rendered as a sparse mesh.
+//	                    1.7 mm at 3.4 mm spacing is the size at which the arms
+//	                    of the plus are legible at 96 dpi — 0.9 mm, the first
+//	                    attempt, rendered as a smudged dot indistinguishable
+//	                    from the alluvium stipple.
+//	volcanic            A FILLED TRIANGLE MARKER. FGDC uses a "v"; a triangle
+//	                    is the nearest primitive, and it is a discrete shape,
+//	                    which a dashed diagonal is not. This was a dashed 45°
+//	                    hatch that at real scale was indistinguishable from
+//	                    `mixed`. Filled rather than hollow: at 1.3 mm a hollow
+//	                    outline is three hairlines and reads as noise.
+//	metamorphic         Dashes at 20° — off-axis, off every other family's
+//	                    angle, and the standard's wavy schistosity dash.
+//	ultramafic          Solid 45°+135° cross-hatch, no dash anywhere: the one
+//	                    family the standard draws as a full mesh, and solid
+//	                    lines are the case QGIS's tile always gets right.
+//	ironstone           Long-short horizontal dashes, again period<=spacing.
+//	mixed               Sparse plain 45° dashes — deliberately the LIGHTEST
+//	                    ornament, because it is the one that means "the sheet
+//	                    does not say", and it must not out-shout a family
+//	                    that does say something.
+var geoOrnaments = map[string][]geoOrnamentLayer{
+	"alluvium":    {{a: "3.2", b: "3.2", marker: "circle", size: "0.7", angle: "0"}},
+	"sandstone":   {{a: "1.8", b: "1.8", marker: "circle", size: "0.4", angle: "0"}},
+	"mudrock":     {{a: "0", b: "1.6", dash: "1.2;1.2"}},
+	"carbonate":   {{a: "0", b: "2.4"}, {a: "90", b: "4.8", dash: "2.4;2.4"}},
+	"intrusive":   {{a: "3.4", b: "3.4", marker: "cross", size: "1.7", angle: "0"}},
+	"volcanic":    {{a: "3.4", b: "3.4", marker: "triangle", size: "1.3", angle: "0"}},
+	"metamorphic": {{a: "20", b: "2.0", dash: "1.5;1.5"}},
+	"ultramafic":  {{a: "45", b: "2.2"}, {a: "135", b: "2.2"}},
+	"ironstone":   {{a: "0", b: "2.2", dash: "2.2;1.1"}},
+	"mixed":       {{a: "45", b: "3.4", dash: "2.5;2.5"}},
+}
+
+// geoOrnamentOf falls back to the `mixed` ornament, which is the same thing
+// geoLithOf's own fallback means — and a lithology key with no ornament would
+// otherwise render as a flat colour, i.e. as a unit that is not geology.
+func geoOrnamentOf(lith string) []geoOrnamentLayer {
+	if o, ok := geoOrnaments[lith]; ok {
+		return o
+	}
+	return geoOrnaments["mixed"]
+}
+
 // qmlGeoUnitSymbol = age colour + the lithology's FGDC ornament, as a
-// two-layer QGIS fill symbol.
+// multi-layer QGIS fill symbol.
 //
 // The ornament families map onto QGIS's own pattern fill layers:
 //
-//	LinePatternFill   at 0°/45°/90°/cross, dashed or solid  — the hatches
-//	PointPatternFill  with a marker sub-symbol                — the stipples
+//	LinePatternFill   at an angle, dashed or solid  — the hatches and bricks
+//	PointPatternFill  with a marker sub-symbol       — the stipples, plusses,
+//	                                                  crosses and "v"s
 //
-// A carbonate "brick" and a volcanic "v" have no primitive in QGIS, so they
-// are approximated by the closest standard pattern (crossed courses; a dense
-// dashed 45°) rather than by an SVG that would have to ship beside the file
-// and would go missing. The web map draws them properly; the export is honest
-// about being an approximation of the same idea rather than pretending.
+// EVERYTHING BELOW WAS CHOSEN BY RENDERING IT, not by reading QGIS's docs.
+// `scripts/geomaps/render_gpkg.py` opens the shipped GeoPackage through its own
+// embedded project and draws every symbol; three of the nine families were
+// wrong in ways no byte-level test could see (see the handover doc). The two
+// hard constraints that came out of that, both of them QGIS 3.34 behaviour
+// rather than anything in the standard:
+//
+//	1. A CUSTOM DASH ON AN AXIS-ALIGNED PATTERN LINE (angle 0/90/180/270)
+//	   IS DISCARDED. QGIS renders a LinePatternFill by building a small
+//	   repeating tile; on an axis-aligned angle the tile is only as long as
+//	   the line spacing, so a dash whose period exceeds it is clipped to
+//	   either nothing or a solid rule. Measured: a `2;6` dash at angle 90,
+//	   spacing 3.6 mm — the vertical course of the carbonate brick — rendered
+//	   ZERO pixels, so "brick" shipped for two years as plain horizontal
+//	   rules. `use_custom_dash` was set correctly and on the right layer; the
+//	   dash was simply thrown away downstream. So: on an axis-aligned line
+//	   the dash period must stay at or below the spacing (checked by
+//	   TestGeoOrnamentDashesSurviveTheQGISPatternTile).
+//	2. OFF-AXIS IS NOT SAFE EITHER — the same clipping bites at 45°/135° for
+//	   a long enough period, which is what made the intrusive cross-hatch
+//	   render at a third of its intended density. Where FGDC wants a
+//	   discrete SHAPE (a plus, a cross, a "v") the honest primitive is a
+//	   PointPatternFill marker, not a pair of coarsely dashed hatches
+//	   pretending to be one: the marker is what the shape actually is, and it
+//	   is not subject to the dash tile at all.
 func qmlGeoUnitSymbol(name, rgb, lith string) string {
 	ink := geoHatchInk(rgb)
 	base := fmt.Sprintf(`<layer class="SimpleFill" enabled="1" locked="0" pass="0">
@@ -260,24 +356,36 @@ func qmlGeoUnitSymbol(name, rgb, lith string) string {
 			qmlOpt("distance_unit", "MM"),
 			symXML)
 	}
-	pointPat := func(distX, distY, size string) string {
+	pointPat := func(distX, distY, shape, size, angle string) string {
 		sub++
+		markerOpts := []string{
+			qmlOpt("name", shape),
+			qmlOpt("color", ink+",255"),
+			qmlOpt("size", size),
+			qmlOpt("size_unit", "MM"),
+			qmlOpt("angle", angle),
+		}
+		// A stroke-only shape (a plus, a cross) has no interior to fill, so
+		// `color` alone leaves it INVISIBLE; it needs the stroke, and the
+		// stroke needs a width in MM or it hairlines away at print scale. A
+		// closed shape (circle, triangle) is filled and needs no stroke.
+		switch shape {
+		case "cross", "cross2", "line":
+			markerOpts = append(markerOpts,
+				qmlOpt("outline_style", "solid"),
+				qmlOpt("outline_color", ink+",255"),
+				qmlOpt("outline_width", "0.26"),
+				qmlOpt("outline_width_unit", "MM"))
+		default:
+			markerOpts = append(markerOpts, qmlOpt("outline_style", "no"))
+		}
 		symXML := fmt.Sprintf(`<symbol type="marker" name="@%s@%d" alpha="1" clip_to_extent="1" force_rhr="0" frame_rate="10" is_animated="0">
         <layer class="SimpleMarker" enabled="1" locked="0" pass="0">
           <Option type="Map">
             %s
-            %s
-            %s
-            %s
-            %s
           </Option>
         </layer>
-      </symbol>`, name, sub,
-			qmlOpt("name", "circle"),
-			qmlOpt("color", ink+",255"),
-			qmlOpt("outline_style", "no"),
-			qmlOpt("size", size),
-			qmlOpt("size_unit", "MM"))
+      </symbol>`, name, sub, strings.Join(markerOpts, "\n            "))
 		return fmt.Sprintf(`<layer class="PointPatternFill" enabled="1" locked="0" pass="0">
       <Option type="Map">
         %s
@@ -294,30 +402,17 @@ func qmlGeoUnitSymbol(name, rgb, lith string) string {
 			symXML)
 	}
 
-	var orn string
-	switch lith {
-	case "alluvium":
-		orn = pointPat("3.2", "3.2", "0.7")
-	case "sandstone":
-		orn = pointPat("1.8", "1.8", "0.4")
-	case "mudrock":
-		orn = linePat("0", "1.6", "3;2")
-	case "carbonate":
-		// Brick courses: horizontal rules plus a coarse vertical, which is
-		// as close as two primitive pattern layers get to FGDC 627.
-		orn = linePat("0", "1.8", "") + linePat("90", "3.6", "2;6")
-	case "intrusive":
-		orn = linePat("45", "2.6", "1;5") + linePat("135", "2.6", "1;5")
-	case "volcanic":
-		orn = linePat("45", "2.4", "1.2;4")
-	case "metamorphic":
-		orn = linePat("20", "1.7", "3;2.5")
-	case "ultramafic":
-		orn = linePat("45", "1.6", "") + linePat("135", "1.6", "")
-	case "ironstone":
-		orn = linePat("0", "2.2", "4;1.5;0.6;1.5")
-	default: // mixed / unknown
-		orn = linePat("45", "3.4", "2;4")
+	// The nine families. Every line here has been rendered and looked at; the
+	// spacings are the ones that came out legible at 96 dpi rather than the
+	// ones that read well in source. `geoOrnaments` is the same table in data
+	// form, so a test can check the dash/spacing rule without parsing XML.
+	orn := ""
+	for _, o := range geoOrnamentOf(lith) {
+		if o.marker != "" {
+			orn += pointPat(o.a, o.b, o.marker, o.size, o.angle)
+		} else {
+			orn += linePat(o.a, o.b, o.dash)
+		}
 	}
 
 	return fmt.Sprintf(`<symbol type="fill" name=%q alpha="1" clip_to_extent="1" force_rhr="0" frame_rate="10" is_animated="0">

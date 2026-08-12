@@ -286,10 +286,164 @@ exploding to parts here would invent a feature count the source does not have).
   `gpkg_jobs.go`: that one is minutes over a live database and needs a card;
   this is a static file per sheet. The panel's link does say "Preparing…"
   though — two silent seconds after a click read as a dead link.
-* Verified by **rendering it**, not just `ogrinfo`: `QT_QPA_PLATFORM=offscreen`
-  + `QgsProject.read('geopackage:<abspath>?projectName=<name>')` (the project
-  name is required, and the path must be absolute — without either, `read()`
-  returns False and then hangs).
+* Rendered and looked at, not just `ogrinfo`'d — see the section below. Until
+  2026-08-12 the only thing testing the cartography was a byte-level Go test,
+  which asserted the XML we *wrote* and could not notice that QGIS ignored it.
+  Three of the nine ornaments were wrong.
+
+## What the GeoPackage actually looks like in QGIS (rendered 2026-08-12)
+
+```bash
+sudo apt-get install -y python3-qgis                     # 3.34, big download
+# The export is built on first request and cached beside <sheet>_units.geojson,
+# so ask the server for it rather than calling the builder directly:
+curl -s "localhost:8000/api/geomap/car/geopackage?pwd=test2026"   -o /dev/null
+curl -s "localhost:8000/api/geomap/sudan/geopackage?pwd=test2026" -o /dev/null
+QT_QPA_PLATFORM=offscreen python3 scripts/geomaps/render_gpkg.py  # ~60 s
+# -> /tmp/geomap_render/{car,sudan}_{full,zoom_*,swatches}.png
+```
+
+`render_gpkg.py` opens each file through **its own embedded QGIS project**
+(`geopackage:<abspath>?projectName=<name>` — the name is required and the path
+must be absolute, or `read()` returns False and then hangs) and renders with
+`QgsMapSettings` + `QgsMapRendererParallelJob`. It deliberately does **not**
+apply a style of its own: a renderer that wrote its own QML would have the same
+blind spot as the byte-level test, one level up. The `_swatches.png` draws one
+representative symbol per lithology at 240 px — the map views cannot answer
+"are the nine families distinguishable" because at 1:1.5M a 2 mm hatch spacing
+is sub-pixel.
+
+**What the first render showed. Three of nine ornaments were wrong, and the
+byte-level test passed the whole time.**
+
+| family | intended | what QGIS drew |
+|---|---|---|
+| carbonate | brick courses | **flat horizontal rules** — the vertical course rendered **zero pixels** |
+| intrusive | field of plus-signs | a sparse, uneven diagonal mesh |
+| volcanic | field of "v"s | a dashed 45° hatch, indistinguishable from `mixed` |
+| the other six | — | correct |
+
+Contacts *were* drawn in the darkened ink as intended, and nothing was solid
+that should have been patterned. Colour = age was right on both sheets.
+
+### The trap: QGIS clips a custom dash to its pattern tile
+
+`use_custom_dash` on the LINE layer (the trap already documented) was set, and
+set correctly, and **it still did nothing**. QGIS renders a `LinePatternFill`
+by building a small repeating tile and stamping it. The tile is only about as
+long as the line spacing, so a dash whose period is much longer than the
+spacing gets clipped — to a solid rule, or to nothing at all.
+
+Measured on 3.34.4, dash period as a multiple of line spacing:
+
+| ratio | result |
+|---|---|
+| 1.00 – 1.50 | correct dash, at every angle |
+| 1.76 and above | **blank or solid** |
+
+The carbonate brick's vertical course was `2;6` at 3.6 mm = **2.22x**, which
+rendered 0 px. So "bricks" shipped as plain horizontal rules and read as
+mudrock. `TestGeoOrnamentDashesSurviveTheQGISPatternTile` now fails on any
+ratio above 1.5x, and it was confirmed to fail on the old carbonate values.
+
+Axis-aligned angles (0/90/180/270) are the worst case, but off-axis is not
+safe: 45°/135° clipped too, which is what made the intrusive cross-hatch
+sparse. The bound is applied at every angle — a per-angle exception is a rule
+nobody will remember.
+
+### Where FGDC wants a shape, use a marker, not two hatches
+
+intrusive (plus-signs) and volcanic ("v") were pairs of coarsely dashed
+hatches whose dashes had to line up to make a shape, which QGIS's tile does not
+guarantee. They are `PointPatternFill` markers now — a `cross` and a filled
+`triangle`. A marker is what the shape actually *is*, and it is not subject to
+the dash tile at all. Two things that only a render tells you:
+
+* **A stroke-only marker (cross/plus) needs `outline_style=solid`.** It has no
+  interior, so a fill colour alone leaves it invisible.
+* **Size, not just spacing, decides legibility.** The first attempt used
+  0.9 mm markers at 2.8 mm; at 96 dpi that is a smudged dot indistinguishable
+  from the alluvium stipple. 1.7 mm at 3.4 mm is where the arms of the plus
+  became readable.
+
+**After the fix, re-rendered: all nine families are visibly distinct**,
+carbonate is a real brick, the ultramafic cross-hatch is complete (both
+diagonals, solid — solid lines are the one case the tile always gets right),
+and at map scale the ornament is legible without burying the age colour.
+Measured ink coverage, which `TestGeoOrnamentFamiliesAreDistinct` records
+because it cannot be computed from the table: sandstone 5%, mixed 6%,
+volcanic 8%, alluvium 9%, ironstone 12%, metamorphic 15%, mudrock 17%,
+intrusive 18%, carbonate 26%, ultramafic 33%. `mixed` stays near the quiet end
+on purpose — it means "the sheet does not say" and must not out-shout a family
+that does say something.
+
+PNGs are not committed. Re-run the command above.
+
+## The vocabulary is the silent failure mode, so it reports itself
+
+`geoAgeOf` / `geoLithOf` in `srv/geomap_std.go` are **first-match string scans
+over the words the two sheets happen to print** — English (GRAS 2004) and
+French (BRGM 1964). That is fine for two sheets and a liability for a third.
+
+A third sheet does not error. Its classes come back age `unknown` (a flat grey
+polygon, legend "Age not stated") and lithology `mixed` (the generic sparse
+hatch) — which is **exactly** how the map deliberately renders a unit that is
+genuinely undated and genuinely undifferentiated. A missing rule and a
+cartographic statement are the same pixels. Nobody gets a log line. This is the
+recurring shape in this codebase: **a no-op that reads as an answer.**
+
+So the gap is loud:
+
+* **`geoVocabAudit(sheet, blob)`** walks a catalogue and returns the strings
+  that produced no rule. The **raw group/name string is the deliverable** — it
+  is precisely what a maintainer pastes into `geoAgeRules`. A count alone sends
+  them back to the printed sheet.
+* **`TestShippedCataloguesHaveNoUnmappedVocabulary`** audits the committed
+  `data/geomaps/*_classes.json` and fails listing every unmapped string. Both
+  shipped sheets pass at **0 unmapped** (46 Sudan classes, 17 CAR). It skips
+  cleanly if a catalogue is absent, and fails if one parses to zero classes —
+  an audit over nothing passes trivially, which is the same failure shape one
+  level up.
+* **`/api/geomap` ships an `unmapped` summary** beside `std`: counts plus the
+  offending strings, so the admin legend can say "3 classes on this sheet have
+  no age rule" instead of drawing three grey polygons. Unmapped classes are
+  also flagged in place (`age_unmapped` / `lith_unmapped`), **absent rather
+  than false** when healthy — 63 `false` keys would bury the two that matter.
+  No UI was added; the data is simply present instead of absent.
+* **It never guesses.** There is no rule inferring an age from a unit's *name*,
+  and there must not be. "Age not stated" is an answer the sheets really do
+  give (Sudan's `PZs` is undifferentiated Palaeozoic because the survey could
+  not date it). Papering over a missing rule with a plausible age destroys the
+  only distinction that matters: **what the sheet does not say vs. what we have
+  not taught it to read.** `geoLithResolve` returns that bit explicitly, so
+  `mixed`-as-an-answer and `mixed`-as-a-gap stay separable.
+
+### Two dead rules the audit found immediately
+
+A rule sitting below a needle that contains it **can never fire**, and it looks
+exactly like a decision that has been made. `TestGeoRuleOrderHasNoDeadRules`
+now fails on that shape. Two were already in the list:
+
+* **`{"greenschist", "volcanic"}` sat below `{"schist", "metamorphic"}`.** Real
+  bug: Sudan's `MSv`, "Volcano-sedimentary greenschist assemblage", is a
+  metavolcanic pile and was drawn with the metamorphic wavy dash.
+* **`{"cambro-ordovician"}` sat below `{"ordovician"}`.** Harmless only because
+  both answers agreed — invisible, and one edit from mattering.
+
+### Hyphenated spans are curated, not merged
+
+"Cambro-Ordovician" is **not** a merged class: the sheet is not declining to
+say which unit a patch is, it is saying one unit straddles a boundary. So
+`age_mixed` ("the map does not say") is the wrong flag and oldest-wins is
+answering a question nobody asked. Three curated lines, each above **both** of
+its endpoints, each a judgement written down rather than left to list order:
+`cambro-ordovician` → Ordovician (the unit's own name says glacial deposits,
+i.e. the Hirnantian glaciation), `jurassic-cretaceous` → Cretaceous (Nubian
+sandstone), `tertiary-quaternary` → Quaternary (Umm Ruwaba).
+
+Any span we have *not* curated is reported as `age_ambiguous`: a third sheet's
+"Silurian-Devonian" would resolve to whichever rule sits higher, and rule order
+is not a decision.
 
 ## Share a link to the sheet's panel entry
 
