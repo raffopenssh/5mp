@@ -281,6 +281,11 @@
            the whole map. */
         .ml-chip.geo.filtered { border-color: rgba(251,191,36,0.5); color: #fcd34d;
             background: rgba(251,191,36,0.1); }
+        /* On, but no sheet reaches this view. Dimmed rather than amber: it is
+           not a subset of an answer, it is the absence of one, and it must not
+           compete with the filtered state for the reader's attention. */
+        .ml-chip.geo.offview { border-color: rgba(255,255,255,0.12); color: #7c8291;
+            background: rgba(255,255,255,0.03); }
 
         /* The age key: ICS colour wearing its FGDC ornament, so a swatch means
            the same thing here as in the full legend and on the polygon. */
@@ -290,7 +295,19 @@
             border: 1px solid rgba(0,0,0,0.45); background-size: 16px 16px; }
         .ml-sw-more { font-size: 9px; color: #6b7280; }
 
+        /* The geology chip opens a menu, so it carries a caret: the two other
+           chips destroy their layer on tap and this one does not, and that
+           difference has to be visible before the tap, not after it. */
+        .ml-chip .ml-caret { font-size: 9px; opacity: 0.55; margin-left: -1px; }
+        /* The commodity list is as long as the installed sheets make it (11
+           today, more with a fourth sheet), so the menu scrolls rather than
+           running off a landscape phone. Capped against the viewport, not a
+           fixed px: place() already flips it above the chip when it has to. */
+        .ml-menu { max-height: min(72vh, 560px); overflow-y: auto; overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch; }
         .ml-menu .ml-mi { width: 14px; text-align: center; opacity: 0.85; margin-right: 2px; }
+        .ml-menu .ml-n { font-style: normal; margin-left: auto; color: #6b7280; font-size: 10px;
+            font-variant-numeric: tabular-nums; }
         .ml-menu .ml-more { color: #9ca3af; border-top: 1px solid rgba(255,255,255,0.07); margin-top: 2px; gap: 7px; }
         .ml-menu .ml-more em { font-style: normal; color: #6b7280; margin-left: auto; font-size: 10px; }
         .stats-trend { font-size: 10px; margin-left: 4px; }
