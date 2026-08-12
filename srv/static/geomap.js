@@ -3,7 +3,7 @@
 //
 // Sudan (GRAS 2004, 1:2M) and CAR (BRGM 1964, 1:1.5M), turned into
 // polygons by scripts/geomaps/ and served as vector tiles by
-// srv/geomap.go. See docs/GEOLOGY_HANDOVER.md.
+// srv/geomap.go. See docs/GEOLOGY.md.
 //
 // Vector, not raster — and that IS the feature. The whole point of
 // this overlay is that a park facing a gold rush can switch on
@@ -68,6 +68,7 @@
 
     let sheets = null;          // id -> catalogue entry from /api/geomap
     let order = [];             // sheet ids in server order
+    let gpkg = null;            // the ONE combined GeoPackage: {url, bytes, sheets}
     let metaPromise = null;
     const state = {};           // id -> {on, opacity, hidden:Set, isolate:Set|null}
 
@@ -79,9 +80,29 @@
     const shared = {
         colorMode: 'age',       // 'age' (ICS) | 'ink' (as printed)
         pattern: true,          // FGDC ornament on/off
-        opacity: 0.42,
-        liths: new Set()        // lithology filter; empty = all
+        // Opacity ADAPTS to the basemap by default. The right value is not a
+        // constant: 0.42 reads well over the dark basemap and all but
+        // disappears over satellite imagery, which is exactly how a working
+        // geology layer gets reported as "not showing anything". Auto re-picks
+        // whenever the basemap changes; moving the slider is what turns it
+        // off, so a hand-set value is never silently overwritten.
+        opacityAuto: true,
+        opacity: 0.52,
+        liths: new Set(),       // lithology filter; empty = all
+        // Whether the Advanced block is open. A setting, so it travels in the
+        // share link with the rest — "look at this" should reproduce the panel
+        // the sender was reading, not just the map.
+        advOpen: false
     };
+
+    // Per basemap, the opacity at which a hatched drape is legible without
+    // burying what is under it. Satellite imagery is bright, busy and
+    // mid-toned, so it needs distinctly more ink than the near-black basemap;
+    // both were picked by looking at the map, not by halving a number.
+    function autoOpacity() {
+        const b = (typeof currentBasemap === 'string') ? currentBasemap : 'dark';
+        return b.indexOf('satellite') === 0 ? 0.72 : 0.52;
+    }
 
     function api(path) {
         return path + (path.indexOf('?') >= 0 ? '&' : '?') +
@@ -109,9 +130,17 @@
                     sheets = {};
                     order = [];
                     (j.sheets || []).forEach(s => { sheets[s.id] = s; order.push(s.id); });
+                    // ONE GeoPackage for every sheet — a property of the
+                    // catalogue, not of a sheet, because the map is one layer
+                    // and the data behind it must not arrive as a per-country
+                    // jigsaw for the user to reassemble.
+                    gpkg = j.geopackage
+                        ? { url: j.geopackage, bytes: j.geopackage_bytes || 0,
+                            sheets: j.geopackage_sheets || [] }
+                        : null;
                     return sheets;
                 })
-                .catch(() => { sheets = {}; order = []; return sheets; });
+                .catch(() => { sheets = {}; order = []; gpkg = null; return sheets; });
         }
         return metaPromise;
     }
@@ -472,6 +501,7 @@
         ensureMeta: fetchMeta,
         sheets: () => sheets,
         order: () => order,
+        geopackage: () => gpkg,
         classes: classesOf,
         allClasses: allClasses,
         classOf: classOf,
@@ -518,6 +548,11 @@
                 }
                 return false;
             }
+            // Auto opacity is evaluated at the moment the layer goes on, not
+            // only when the basemap changes: switching to satellite and THEN
+            // turning geology on would otherwise draw it at the dark
+            // basemap's value, i.e. almost invisibly.
+            if (want && shared.opacityAuto) shared.opacity = autoOpacity();
             st(id).on = !!want;
             if (map && map.isStyleLoaded()) { want ? add(id) : remove(id); }
             else if (want) { map.once('idle', () => add(id)); }
@@ -533,12 +568,40 @@
         // Opacity, colour mode and the lithology filter are legend-wide: two
         // sheets at 40% and 80% of one legend is not a picture anybody asked
         // for, and at a border it reads as a data difference.
-        setOpacity(v) {
+        // Moving the slider is what leaves auto mode: an explicit value the
+        // user chose must not be recomputed behind their back on the next
+        // basemap switch.
+        setOpacity(v, opts) {
+            opts = opts || {};
             shared.opacity = Math.max(0, Math.min(1, v));
+            if (!opts.auto) shared.opacityAuto = false;
             order.forEach(id => { if (st(id).on) refresh(id); });
             const lbl = document.getElementById('geomap-op');
             if (lbl) lbl.textContent = Math.round(shared.opacity * 100) + '%';
+            if (!opts.quiet && typeof renderGeoMapPanel === 'function') renderGeoMapPanel();
         },
+
+        /** Back to "whatever this basemap needs". */
+        setAutoOpacity(on) {
+            shared.opacityAuto = !!on;
+            if (shared.opacityAuto) this.setOpacity(autoOpacity(), { auto: true });
+            else if (typeof renderGeoMapPanel === 'function') renderGeoMapPanel();
+        },
+        autoOpacityOn: () => shared.opacityAuto,
+
+        // Called by switchBasemap(). A drape tuned for the dark basemap is
+        // nearly invisible over satellite imagery, so "auto" has to actually
+        // re-pick rather than being a one-time default.
+        basemapChanged() {
+            if (!shared.opacityAuto) return;
+            // quiet: the panel is re-rendered once below rather than from
+            // inside setOpacity, which also runs on every drag of the slider.
+            this.setOpacity(autoOpacity(), { auto: true, quiet: true });
+            if (typeof renderGeoMapPanel === 'function') renderGeoMapPanel();
+        },
+
+        setAdvancedOpen(on) { shared.advOpen = !!on; },
+        advancedOpen: () => shared.advOpen,
 
         // 'age' = the ICS chart (two sheets agree, and a geologist reads it
         // without a legend); 'ink' = the sheet as printed, which is the right
@@ -650,7 +713,12 @@
         // so a plain "here is the geology" link does not carry 47 codes.
         getShareParams() {
             const on = order.filter(id => st(id).on);
-            if (!on.length) return null;
+            // With the layer off there is no overlay to describe — except the
+            // panel's own disclosure, which is a setting the sender may well
+            // be pointing at ("open the unit list"). Nothing else survives:
+            // an opacity or a lithology filter for a layer that is not drawn
+            // would restore invisibly and then surprise whoever switched it on.
+            if (!on.length) return shared.advOpen ? { geomap_adv: '1' } : null;
             const p = { geomap: on.join(',') };
             const only = [], hide = [], host = [];
             on.forEach(id => {
@@ -668,14 +736,25 @@
             if (hide.length) p.geomap_hide = hide.join(',');
             // Legend-wide state, so no sheet prefix. Each is omitted at its
             // default, so a plain "here is the geology" link stays short.
-            if (Math.abs(shared.opacity - 0.42) > 0.01) p.geomap_opacity = String(Math.round(shared.opacity * 100));
+            // A number means "the user chose this"; auto is the default and
+            // is therefore the absence of the parameter. Carrying the computed
+            // number instead would freeze one basemap's value into a link that
+            // may well be opened on another.
+            if (!shared.opacityAuto) p.geomap_opacity = String(Math.round(shared.opacity * 100));
             if (shared.colorMode !== 'age') p.geomap_color = shared.colorMode;
             if (!shared.pattern) p.geomap_pattern = '0';
             if (shared.liths.size) p.geomap_lith = [...shared.liths].join('|');
+            if (shared.advOpen) p.geomap_adv = '1';
             return p;
         },
 
         async restoreFromParams(params) {
+            // The Advanced disclosure is a panel setting, not a layer setting,
+            // so it is honoured even in a link that does not turn geology on
+            // (?panel=admin&admin_tab=map-settings&geomap_adv=1 — "look at the
+            // unit list"). Everything below it needs the catalogue and a
+            // layer, so it stays behind the early return.
+            if (params.get('geomap_adv') === '1') shared.advOpen = true;
             const want = (params.get('geomap') || '').split(',').filter(Boolean);
             if (!want.length) return;
             await fetchMeta();
@@ -688,10 +767,20 @@
             // new one, and a prefixed list takes the first sheet's value
             // rather than dropping the user's setting on the floor.
             const opRaw = params.get('geomap_opacity') || '';
-            if (opRaw) {
+            if (opRaw === 'auto') {
+                shared.opacityAuto = true;
+                shared.opacity = autoOpacity();
+            } else if (opRaw) {
                 const first = opRaw.split(',')[0];
                 const n = parseInt(first.indexOf(':') > 0 ? first.split(':')[1] : first, 10);
-                if (!isNaN(n)) shared.opacity = Math.max(0, Math.min(1, n / 100));
+                if (!isNaN(n)) {
+                    shared.opacity = Math.max(0, Math.min(1, n / 100));
+                    shared.opacityAuto = false;
+                }
+            } else {
+                // No parameter = auto, evaluated against the basemap this link
+                // actually opens on (which restoreFromParams runs after).
+                shared.opacity = autoOpacity();
             }
             if (params.get('geomap_color') === 'ink') shared.colorMode = 'ink';
             if (params.get('geomap_pattern') === '0') shared.pattern = false;

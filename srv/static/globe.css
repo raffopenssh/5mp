@@ -2549,3 +2549,91 @@ tr.selected td {
 .geo-seg button + button { border-left: 1px solid rgba(255,255,255,0.14); }
 .geo-seg button:hover { color: #e5e7eb; background: rgba(255,255,255,0.06); }
 .geo-seg button[aria-pressed="true"] { background: rgba(59,130,246,0.22); color: #93c5fd; font-weight: 600; }
+
+/* ── Geology panel controls ──────────────────────────────────────────────
+   One vocabulary for every toggle in this section, because the section had
+   four: a green "Show"/"Hide" text button, amber pill chips, a blue segmented
+   control and a bare <input type=checkbox>. Four appearances for "this is a
+   switch" makes the user re-learn the control at every row, and the checkbox
+   in particular did not look like anything else in the app.
+
+   The rule here: a switch that is DOWN is filled in its family's colour, a
+   switch that is UP is the same shape in outline. Shape carries meaning —
+   a pill is multi-select (several can be down), a segment is a choice of one,
+   a slider-switch is a single on/off. */
+
+/* The one on/off for the whole layer. Same slider as .toggle-switch elsewhere
+   in the app, wrapped in a row that states what it switches. */
+.geo-head { display: flex; align-items: center; gap: 12px; }
+.geo-head-txt { flex: 1; min-width: 0; }
+
+/* A labelled switch: the app's toggle slider with its label as one click
+   target. Used for the layer itself and for the ornament. */
+.geo-switch { display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+    user-select: none; color: #9ca3af; font-size: 11px; }
+.geo-switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+.geo-switch .geo-switch-track { position: relative; width: 34px; height: 19px; flex: none;
+    background: rgba(255,255,255,0.15); border-radius: 19px; transition: background 0.2s; }
+.geo-switch .geo-switch-track::before { content: ''; position: absolute; left: 3px; top: 3px;
+    width: 13px; height: 13px; border-radius: 50%; background: #888; transition: transform 0.2s, background 0.2s; }
+.geo-switch input:checked + .geo-switch-track { background: rgba(59,130,246,0.45); }
+.geo-switch input:checked + .geo-switch-track::before { transform: translateX(15px); background: #93c5fd; }
+.geo-switch input:focus-visible + .geo-switch-track { outline: 2px solid #60a5fa; outline-offset: 2px; }
+.geo-switch input:checked ~ .geo-switch-lbl { color: #e5e7eb; }
+.geo-switch.amber input:checked + .geo-switch-track { background: rgba(245,158,11,0.45); }
+.geo-switch.amber input:checked + .geo-switch-track::before { background: #fbbf24; }
+
+/* A legend row that is also a filter. Rock type and unit rows share it, so
+   "clickable" looks the same in both lists. */
+.geo-row { display: flex; align-items: center; gap: 8px; padding: 3px 6px; border-radius: 5px;
+    cursor: pointer; border: 1px solid transparent; transition: background 0.12s, border-color 0.12s; }
+.geo-row:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.10); }
+/* Amber fill = "this row is a filter and it is DOWN". Only the rock-type rows
+   are that; a unit row's aria-pressed says whether it is DRAWN, which is the
+   normal state for nearly all 63 of them — styling that as selected lit the
+   whole list amber and made "everything is on" look like "everything is
+   picked". A unit that is off is dimmed instead. */
+.geo-row.filter[aria-pressed="true"] { background: rgba(251,191,36,0.14); border-color: rgba(251,191,36,0.45); }
+.geo-row.off { opacity: 0.4; }
+.geo-row-lbl { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis;
+    white-space: nowrap; color: #bbb; font-size: 11px; }
+.geo-row.filter[aria-pressed="true"] .geo-row-lbl { color: #fcd34d; }
+.geo-row-n { color: #666; font-size: 10px; font-variant-numeric: tabular-nums; }
+/* Static legend rows (age) must NOT look clickable — nothing filters by age. */
+.geo-row.static { cursor: default; border-color: transparent; }
+.geo-row.static:hover { background: transparent; border-color: transparent; }
+
+/* Advanced settings. Everything an expert changes once and a first-time user
+   should not have to read past: colour mode, ornament, the 63-row unit list.
+   Collapsed by default, and its open state rides in the share link like every
+   other setting, so "look at this" reproduces the panel as well as the map. */
+.geo-adv { border: 1px solid rgba(255,255,255,0.08); border-radius: 7px;
+    background: rgba(255,255,255,0.02); margin-top: 14px; }
+.geo-adv > summary { list-style: none; cursor: pointer; padding: 8px 10px;
+    color: #9ca3af; font-size: 11px; display: flex; align-items: center; gap: 7px; }
+.geo-adv > summary::-webkit-details-marker { display: none; }
+.geo-adv > summary::before { content: '\25B8'; font-size: 9px; transition: transform 0.15s; opacity: 0.7; }
+.geo-adv[open] > summary::before { transform: rotate(90deg); }
+.geo-adv > summary:hover { color: #e5e7eb; }
+.geo-adv-body { padding: 2px 10px 12px; }
+.geo-adv-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+.geo-adv-lbl { color: #888; font-size: 11px; min-width: 74px; }
+
+/* Opacity, with an AUTO mode. The right opacity is not a constant: the same
+   drape that reads well over the dark basemap disappears over satellite
+   imagery, which is how a geology layer gets reported as "not working". Auto
+   picks per basemap and re-picks when the basemap changes; touching the slider
+   is what turns it off, so the manual value is never silently overwritten. */
+.geo-op { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+.geo-op input[type=range] { flex: 1; accent-color: #3b82f6; }
+.geo-op-val { color: #aaa; font-size: 11px; width: 34px; text-align: right;
+    font-variant-numeric: tabular-nums; }
+.geo-auto { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 999px; color: #9ca3af; font-family: inherit; font-size: 10px;
+    padding: 2px 9px; cursor: pointer; transition: background 0.15s, color 0.15s, border-color 0.15s; }
+.geo-auto:hover { color: #e5e7eb; border-color: rgba(255,255,255,0.28); }
+.geo-auto[aria-pressed="true"] { background: rgba(59,130,246,0.22); border-color: rgba(59,130,246,0.55);
+    color: #93c5fd; font-weight: 600; }
+
+/* Provenance block: the source scans and their original downloads. */
+.geo-src { margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.07); }

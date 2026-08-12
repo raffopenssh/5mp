@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
-"""Render the shipped geology GeoPackages headlessly, THROUGH THEIR OWN
-EMBEDDED QGIS PROJECT, and write PNGs.
+"""Render the shipped geology GeoPackage headlessly, THROUGH ITS OWN EMBEDDED
+QGIS PROJECT, and write PNGs.
+
+ONE FILE, EVERY SHEET (since 2026-08-12). The export used to be one GeoPackage
+per scan; it is now data/geomaps/geology.gpkg with the sheet as a COLUMN, in one
+`geology_units` layer, because the map is one layer and rock does not stop at a
+border. A `sheet` argument here therefore selects a VIEW of that file (its zoom
+windows and its swatch rows), not a file.
 
 WHY IT LOADS THE EMBEDDED PROJECT AND NOT A STYLE OF ITS OWN
 ------------------------------------------------------------
@@ -34,6 +40,7 @@ from qgis.PyQt.QtGui import QColor
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 OUT = "/tmp/geomap_render"
+GPKG = os.path.join(REPO, "data", "geomaps", "geology.gpkg")
 
 # Zoom windows, in EPSG:4326 degrees, chosen to sit inside the mapped body of
 # each sheet and to catch as many different ornament families as one frame can.
@@ -84,10 +91,14 @@ def swatches(project, sheet):
     r = layer.renderer()
     # One representative category per lithology, read back off the file.
     import sqlite3, os
-    gpkg = os.path.join(REPO, "data", "geomaps", f"{sheet}_geology.gpkg")
-    con = sqlite3.connect(gpkg)
+    con = sqlite3.connect(GPKG)
+    # `key` = (sheet, code), which is what the renderer categorises on: a code
+    # is unique only within its own sheet ("S" is Silurian sandstone on Sudan
+    # and a gold-bearing schist belt on CAR), so matching on code alone would
+    # pick the wrong sheet's symbol for half the swatches.
     rows = con.execute(
-        f"SELECT lithology, code, age_label FROM geology_{sheet} GROUP BY lithology").fetchall()
+        "SELECT lithology, key, age_label FROM geology_units WHERE sheet=? GROUP BY lithology",
+        (sheet,)).fetchall()
     con.close()
     cell, pad = 240, 34
     cols = 5
@@ -97,10 +108,10 @@ def swatches(project, sheet):
     img.fill(Qt.white)
     pnt = QPainter(img)
     pnt.setRenderHint(QPainter.Antialiasing, True)
-    for i, (lith, code, agelbl) in enumerate(sorted(rows)):
+    for i, (lith, key, agelbl) in enumerate(sorted(rows)):
         sym = None
         for c in r.categories():
-            if c.value() == code:
+            if c.value() == key:
                 sym = c.symbol().clone()
         if sym is None:
             continue
@@ -120,7 +131,7 @@ def swatches(project, sheet):
         pnt.restore()
         pnt.setPen(Qt.black)
         f = QFont(); f.setPointSize(9); pnt.setFont(f)
-        pnt.drawText(x, y + cell + 18, f"{lith}  ({code})")
+        pnt.drawText(x, y + cell + 18, f"{lith}  ({key})")
     pnt.end()
     path = os.path.join(OUT, f"{sheet}_swatches.png")
     img.save(path)
@@ -134,36 +145,48 @@ def main():
     app.initQgis()
 
     sheets = sys.argv[1:] or ["car", "sudan"]
+    if not os.path.exists(GPKG):
+        print(f"!! {GPKG} missing - request /api/geomap/geopackage first")
+        app.exitQgis()
+        return
+    # The project name is REQUIRED and the path must be ABSOLUTE: without
+    # either, read() returns False and then hangs. Already paid for once,
+    # documented in docs/GEOLOGY.md.
+    import sqlite3
+    con = sqlite3.connect(GPKG)
+    pname = con.execute("SELECT name FROM qgis_projects").fetchone()[0]
+    con.close()
+    uri = f"geopackage:{GPKG}?projectName={pname}"
+    proj = QgsProject.instance()
+    proj.clear()
+    if not proj.read(uri):
+        print("!! project read failed", uri)
+        app.exitQgis()
+        return
+    layers = list(proj.mapLayers().values())
+    print(f"== {pname}")
+    for l in layers:
+        print(f"   layer {l.name()} valid={l.isValid()} features={l.featureCount()}")
+        r = l.renderer()
+        print(f"   renderer {type(r).__name__} categories={len(r.categories()) if hasattr(r,'categories') else '-'}")
+    layer = layers[0]
     for sheet in sheets:
-        gpkg = os.path.join(REPO, "data", "geomaps", f"{sheet}_geology.gpkg")
-        if not os.path.exists(gpkg):
-            print(f"!! {gpkg} missing - request /api/geomap/{sheet}/geopackage first")
-            continue
-        # The project name is REQUIRED and the path must be ABSOLUTE: without
-        # either, read() returns False and then hangs. Already paid for once,
-        # documented in docs/GEOLOGY_HANDOVER.md.
-        import sqlite3
-        con = sqlite3.connect(gpkg)
-        pname = con.execute("SELECT name FROM qgis_projects").fetchone()[0]
-        con.close()
-        uri = f"geopackage:{gpkg}?projectName={pname}"
-        proj = QgsProject.instance()
-        proj.clear()
-        if not proj.read(uri):
-            print("!! project read failed", uri)
-            continue
-        layers = list(proj.mapLayers().values())
-        print(f"== {sheet}: {pname}")
-        for l in layers:
-            print(f"   layer {l.name()} valid={l.isValid()} features={l.featureCount()}")
-            r = l.renderer()
-            print(f"   renderer {type(r).__name__} categories={len(r.categories()) if hasattr(r,'categories') else '-'}")
-        ext = layers[0].extent()
+        # One file, so a per-sheet view is a SUBSET STRING, not another
+        # datasource. Reset it afterwards or the next sheet renders through the
+        # previous filter and the full extent comes out one country short.
+        layer.setSubsetString(f"sheet = '{sheet}'")
+        ext = layer.extent()
         render(proj, f"{sheet}_full",
                (ext.xMinimum(), ext.yMinimum(), ext.xMaximum(), ext.yMaximum()))
         for name, box in ZOOMS.get(sheet, []):
             render(proj, f"{sheet}_{name}", box)
         swatches(proj, sheet)
+    layer.setSubsetString("")
+    # And the whole thing, which is the picture the file is FOR: two sheets in
+    # one legend, and the seam between them is the thing to look at.
+    ext = layer.extent()
+    render(proj, "combined_full",
+           (ext.xMinimum(), ext.yMinimum(), ext.xMaximum(), ext.yMaximum()))
     app.exitQgis()
 
 

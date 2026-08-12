@@ -86,7 +86,7 @@ TMS: `scripts/histmaps/README.md`.
 
 Two scanned geological sheets turned into **vector** overlays: 46 classes for
 Sudan, 17 for CAR, served as vector tiles and toggled per class or per
-commodity. Full detail: `docs/GEOLOGY_HANDOVER.md`. Files:
+commodity. Full detail: `docs/GEOLOGY.md`. Files:
 `scripts/geomaps/{sheets,gridfit,georef,legend,vectorize}.py` + `tiles.sh`,
 `srv/geomap.go`, `srv/static/geomap.js`, `renderGeoMapPanel()` in globe.html.
 UI: admin ▸ Map Settings ▸ Geology. Share link `?geomap=car`.
@@ -181,11 +181,53 @@ Fixed 2026-08-12 (`srv/geomap_std.go`, `srv/static/geopatterns.js`):
   rings are traced off a scan, so 46 classes outlined at full saturation is a
   net of bright magenta over a whole country.
 
-**Both downloads ship**: `?geomap=` renders the sheet, `Download MBTiles` is
-the picture, `Download GeoPackage` is the data (typed columns, one
-`w_<commodity>` weight column, ink colours and a QGIS project inside). A link
-to the panel itself is `?panel=admin&admin_tab=map-settings&map_sheet=car`.
-`srv/geomap_gpkg.go`; details in `docs/GEOLOGY_HANDOVER.md`.
+**Both downloads ship, at different granularity, and that is not an
+inconsistency**: `MBTiles` is per sheet (a picture of one scan, with its own
+zoom range and envelope — an offline viewer loads the one covering where it is
+going), `GeoPackage` is **one file for every sheet** (`GET
+/api/geomap/geopackage` → `geology.gpkg`, one `geology_units` layer, the scan as
+a `sheet` column). The data has no reason to be cut along a border; the picture
+does. `/api/geomap/{sheet}/geopackage` **308s** to it — those URLs are in
+shipped links, and a 404 reads as "the export was removed".
+A unit is `(sheet, code)`, carried as `key`, and the QGIS renderer categorises
+on that: `code` alone collides (`S` = Silurian sandstone on Sudan, gold-bearing
+schist on CAR) and would date half a country from the other's legend.
+Cache staleness is a **stamp of the input set**, not one mtime — adding a sheet
+whose units file is older than the package would otherwise ship a country short.
+A link to the panel itself is `?panel=admin&admin_tab=map-settings&map_sheet=car`.
+`srv/geomap_gpkg.go`; details in `docs/GEOLOGY.md`.
+
+### The panel: one switch, one legend, and everything else under Advanced
+
+Fixed 2026-08-12, same direction as the one-layer change above but for the
+*controls*. The card had **four** idioms for "this is a switch" — a green
+`Show`/`Hide` text button (the shape of an *action*, for a *state*), amber pill
+chips, a blue segmented control and a bare `<input type=checkbox>` — so the user
+re-learned the control at every row. Now:
+
+* One vocabulary. **A switch that is down is filled; up is the same shape in
+  outline**, and the shape carries the arity: a pill is multi-select, a segment
+  is one-of, the app's slider switch is a single on/off (`.geo-switch`,
+  `.geo-row`, `.geo-chip`, `.geo-seg` in `globe.css`).
+* **Amber fill means "this row is a filter and it is down"**, which only the
+  rock-type rows are. A unit row's `aria-pressed` says whether it is *drawn* —
+  the normal state for 63 of 63 — so styling that as selected lit the whole list
+  and made "everything is on" look like "everything is picked". `.geo-row.filter`
+  gates the highlight; a unit that is off is dimmed instead. Age rows are
+  `.static`: nothing filters by period, so they must not look clickable.
+* **Advanced** (`<details class="geo-adv">`) holds colour mode, the ornament
+  switch and the 63-row unit list — answers to "how should it be drawn", not to
+  "what rock is under here". Its open state is a **setting**, so it rides in the
+  share link (`geomap_adv=1`) and is honoured even with the layer off.
+* **Opacity adapts.** 0.52 over the dark basemap, **0.72 over satellite**; the
+  same drape tuned for one is nearly invisible on the other, which is how a
+  working layer gets reported as "not showing anything". `autoOpacity()` is
+  re-evaluated by `GeoMap.basemapChanged()` (called from `switchBasemap()`) *and*
+  when the layer is switched on, since going satellite-then-on would otherwise
+  draw at the dark value. **Dragging the slider leaves auto** — a hand-set value
+  is never recomputed behind the user's back — and `geomap_opacity` is therefore
+  *absent* in auto: baking the computed number into a link would break the layer
+  for whoever opens it on the other basemap.
 
 * **`w_gold IS NOT NULL` is the point.** Commodities as one comma-joined string
   would make the export's headline question a `LIKE` over text; one INTEGER
@@ -201,7 +243,7 @@ to the panel itself is `?panel=admin&admin_tab=map-settings&map_sheet=car`.
 * The button only appears when `_units.geojson` is present, and the size only
   once a build exists — a link whose only outcome is a 404, or a "(12 MB)"
   nobody measured, are both worse than nothing.
-* Verified by rendering it in QGIS (`docs/GEOLOGY_HANDOVER.md` § GeoPackage),
+* Verified by rendering it in QGIS (`docs/GEOLOGY.md` § GeoPackage),
   not just by `ogrinfo`.
 
 ---

@@ -87,8 +87,16 @@ type geoMapCatalogue struct {
 // geoMapGPKGPath is also the DOWNLOAD name. The embedded QGIS project
 // references its own container as "./<basename>.gpkg", so if the two ever
 // diverge the project opens with every layer unresolvable.
-func geoMapGPKGPath(sheet string) string {
-	return filepath.Join(geoMaps.dir, sheet+"_geology.gpkg")
+//
+// ONE FILE, EVERY SHEET. It used to be one GeoPackage per scanned sheet, which
+// made the download mirror our storage layout rather than the user's question:
+// "the geology" does not stop at a border, and anyone intersecting units with a
+// concession or a park had to open two files, reconcile two column sets and
+// union them by hand. The sheet survives as a COLUMN (`sheet`, `sheet_title`,
+// `sheet_year`), which is what it is — provenance — exactly as the web map
+// demoted it. Same reasoning as the single Geology toggle; see geomap.js note 4.
+func geoMapGPKGPath() string {
+	return filepath.Join(geoMaps.dir, "geology.gpkg")
 }
 
 func geoMapUnitsPath(sheet string) string {
@@ -137,17 +145,25 @@ func styleGeoUnits(classes []geoMapUnitProps) string {
 		ageKey, _ := geoAgeOf(c.Group)
 		age := geoAgeByKey[ageKey]
 		lith := geoLithOf(c.Name, c.Group, c.Codes)
-		// Categorised by AGE in the legend text but keyed on `code`, because
-		// code is what identifies a row; the label carries the age so the
-		// QGIS legend reads like a stratigraphic column.
+		// Keyed on `key` = (sheet, code), NOT on code alone. One layer now
+		// holds every sheet, and a code is only unique within its own sheet
+		// ("S" is Silurian sandstone on Sudan and a gold-bearing schist belt
+		// on CAR): categorising on `code` would give the two one symbol and
+		// silently date half of one country from the other's legend.
+		// The label carries the age so the QGIS legend reads like a
+		// stratigraphic column.
 		label = label + "  [" + age.Label + "]"
-		fmt.Fprintf(&catXML, `<category render="1" value=%q label=%q symbol="%d"/>`+"\n", c.Code, label, i)
+		if c.Sheet != "" {
+			label = label + " · " + c.Sheet
+		}
+		key := geoMapUnitKey(c.Sheet, c.Code)
+		fmt.Fprintf(&catXML, `<category render="1" value=%q label=%q symbol="%d"/>`+"\n", key, label, i)
 		symXML.WriteString(qmlGeoUnitSymbol(fmt.Sprint(i), hexRGB(age.Color), lith) + "\n")
-		cats = append(cats, qmlCat{Value: c.Code, Label: label, RGB: hexRGB(age.Color)})
+		cats = append(cats, qmlCat{Value: key, Label: label, RGB: hexRGB(age.Color)})
 	}
 	fmt.Fprintf(&catXML, `<category render="1" value="" label="other" symbol="%d"/>`+"\n", len(classes))
 	symXML.WriteString(qmlGeoUnitSymbol(fmt.Sprint(len(classes)), "136,136,136", "mixed") + "\n")
-	renderer := fmt.Sprintf(`<renderer-v2 type="categorizedSymbol" attr="code" forceraster="0" symbollevels="0" enableorderby="0">
+	renderer := fmt.Sprintf(`<renderer-v2 type="categorizedSymbol" attr="key" forceraster="0" symbollevels="0" enableorderby="0">
   <categories>
 %s  </categories>
   <symbols>
@@ -167,9 +183,12 @@ func styleGeoUnitsAsPrinted(classes []geoMapUnitProps) string {
 		if c.Name != "" {
 			label = c.Code + " — " + c.Name
 		}
-		cats = append(cats, qmlCat{Value: c.Code, Label: label, RGB: hexRGB(c.Color)})
+		if c.Sheet != "" {
+			label = label + " · " + c.Sheet
+		}
+		cats = append(cats, qmlCat{Value: geoMapUnitKey(c.Sheet, c.Code), Label: label, RGB: hexRGB(c.Color)})
 	}
-	return qmlDoc(qmlCategorized("code", "fill", cats, "136,136,136", 0.2, 190))
+	return qmlDoc(qmlCategorized("key", "fill", cats, "136,136,136", 0.2, 190))
 }
 
 // geoHatchInk is the ornament colour: a darkened version of the fill, exactly
@@ -421,48 +440,128 @@ func qmlGeoUnitSymbol(name, rgb, lith string) string {
   </symbol>`, name, base, orn)
 }
 
-// buildGeoMapGeoPackage writes the sheet's polygons to path.
+// geoMapGPKGSheets is the sheets that can go into the combined package: every
+// configured sheet whose vectorized units are on disk, in catalogue order.
+// Derived, never a fixed list — a server with only one sheet built must ship a
+// package containing that one sheet, not fail, and a third sheet added later
+// must appear without an edit here.
+func geoMapGPKGSheets() []string {
+	out := make([]string, 0, len(geoMapSheets))
+	for _, id := range geoMapSheets {
+		if _, err := os.Stat(geoMapUnitsPath(id)); err == nil {
+			out = append(out, id)
+		}
+	}
+	return out
+}
+
+// geoMapGPKGStamp records exactly which inputs a cached package was built
+// from. mtime alone is not enough here, because the input is now a SET: adding
+// a sheet whose units file happens to be older than the package (a restore, a
+// copy that preserved timestamps) would otherwise leave the old two-sheet file
+// looking fresh, and the user would download a country short of what the map
+// draws. A no-op must not read as an answer.
+type geoMapGPKGStamp struct {
+	Sheets []geoMapGPKGInput `json:"sheets"`
+}
+
+type geoMapGPKGInput struct {
+	Sheet string `json:"sheet"`
+	MTime int64  `json:"mtime"`
+	Size  int64  `json:"size"`
+}
+
+func geoMapGPKGStampPath() string { return geoMapGPKGPath() + ".stamp" }
+
+func geoMapGPKGInputs() geoMapGPKGStamp {
+	var st geoMapGPKGStamp
+	for _, id := range geoMapGPKGSheets() {
+		fi, err := os.Stat(geoMapUnitsPath(id))
+		if err != nil {
+			continue
+		}
+		st.Sheets = append(st.Sheets, geoMapGPKGInput{id, fi.ModTime().Unix(), fi.Size()})
+	}
+	return st
+}
+
+// buildGeoMapGeoPackage writes every sheet's polygons into ONE layer.
 //
 // Every unit is one MultiPolygon feature covering the whole country, i.e. the
-// layer has ~20-50 rows. That is the vectorizer's own output shape (one
+// layer has ~20-70 rows. That is the vectorizer's own output shape (one
 // dissolved multipart per class) and it is kept: exploding to parts here would
 // invent a feature count the source does not have, and QGIS's "Multipart to
 // singleparts" is one menu item away for anyone who wants it.
-func buildGeoMapGeoPackage(sheet, path string) error {
-	blob, err := os.ReadFile(geoMapUnitsPath(sheet))
-	if err != nil {
-		return fmt.Errorf("vectorized units not built: %w", err)
-	}
-	var fc struct {
-		Features []struct {
-			Properties geoMapUnitProps `json:"properties"`
-			Geometry   json.RawMessage `json:"geometry"`
-		} `json:"features"`
-	}
-	if err := json.Unmarshal(blob, &fc); err != nil {
-		return fmt.Errorf("units geojson: %w", err)
-	}
-	if len(fc.Features) == 0 {
-		return fmt.Errorf("units geojson has no features")
-	}
-	var cat geoMapCatalogue
-	if b, err := os.ReadFile(filepath.Join(geoMaps.dir, sheet+"_classes.json")); err == nil {
-		_ = json.Unmarshal(b, &cat)
-	}
-	if cat.Title == "" {
-		cat.Title = sheet + " geology"
+//
+// One layer, not one per sheet, for the same reason the map has one toggle: the
+// question is "what rock is under here", and a border is not part of it. The
+// scan is a column. Two consequences that are load-bearing:
+//
+//   - `code` is only unique WITHIN a sheet ("S" is Silurian sandstone on Sudan
+//     and a gold-bearing schist belt on CAR), so anything that identifies a row
+//     uses (sheet, code). The QGIS legend is categorised on `key`, which is
+//     exactly that pair, or two sheets' "S" would share one symbol and one
+//     commodity affinity.
+//   - the commodity columns are the UNION over all sheets, so `"w_gold" IS NOT
+//     NULL` answers across the whole area rather than per file.
+func buildGeoMapGeoPackage(path string, sheets []string) error {
+	if len(sheets) == 0 {
+		return fmt.Errorf("no vectorized sheets are built")
 	}
 
-	// The commodity columns are derived from what this build of the sheet
-	// actually mentions, never from a fixed list: a re-vectorized sheet can
-	// merge two classes and thereby change the union of affinities, and a
-	// hardcoded column set would then either lie or drop one.
+	type unit struct {
+		props geoMapUnitProps
+		geom  json.RawMessage
+		cat   geoMapCatalogue
+	}
+	var units []unit
+	var titles []string
 	commodities := map[string]bool{}
-	for _, f := range fc.Features {
-		for _, a := range f.Properties.Affinity {
-			commodities[a.Commodity] = true
+
+	for _, sheet := range sheets {
+		blob, err := os.ReadFile(geoMapUnitsPath(sheet))
+		if err != nil {
+			return fmt.Errorf("vectorized units not built for %s: %w", sheet, err)
+		}
+		var fc struct {
+			Features []struct {
+				Properties geoMapUnitProps `json:"properties"`
+				Geometry   json.RawMessage `json:"geometry"`
+			} `json:"features"`
+		}
+		if err := json.Unmarshal(blob, &fc); err != nil {
+			return fmt.Errorf("units geojson %s: %w", sheet, err)
+		}
+		// A sheet that contributes nothing is a broken input, not an empty
+		// country: fail rather than quietly shipping a package that is one
+		// country short of the map.
+		if len(fc.Features) == 0 {
+			return fmt.Errorf("units geojson for %s has no features", sheet)
+		}
+		var cat geoMapCatalogue
+		if b, err := os.ReadFile(filepath.Join(geoMaps.dir, sheet+"_classes.json")); err == nil {
+			_ = json.Unmarshal(b, &cat)
+		}
+		if cat.Title == "" {
+			cat.Title = sheet + " geology"
+		}
+		if cat.Short == "" {
+			cat.Short = sheet
+		}
+		cat.Sheet = sheet
+		titles = append(titles, cat.Title)
+		for _, f := range fc.Features {
+			units = append(units, unit{f.Properties, f.Geometry, cat})
+			for _, a := range f.Properties.Affinity {
+				commodities[a.Commodity] = true
+			}
 		}
 	}
+
+	// The commodity columns are derived from what these builds of the sheets
+	// actually mention, never from a fixed list: a re-vectorized sheet can
+	// merge two classes and thereby change the union of affinities, and a
+	// hardcoded column set would then either lie or drop one.
 	comms := make([]string, 0, len(commodities))
 	for c := range commodities {
 		comms = append(comms, c)
@@ -482,8 +581,12 @@ func buildGeoMapGeoPackage(sheet, path string) error {
 		}
 	}()
 
-	table := "geology_" + sheet
+	table := "geology_units"
 	cols := []gpkgCol{
+		// (sheet, code) is the identity of a unit; `key` is that pair as one
+		// string so a QGIS categorised renderer (which takes ONE field) can
+		// key on it without two sheets' identical codes colliding.
+		{"key", "TEXT"},
 		{"code", "TEXT"},
 		{"unit_name", "TEXT"},
 		{"unit_group", "TEXT"},
@@ -509,18 +612,22 @@ func buildGeoMapGeoPackage(sheet, path string) error {
 	for _, c := range comms {
 		cols = append(cols, gpkgCol{"w_" + c, "INTEGER"})
 	}
-	desc := cat.Title + " — units vectorized from the printed sheet. " +
+	desc := "Geological units vectorized from " + strings.Join(titles, " + ") + ". " +
 		"Coloured by ICS/CGMW age with FGDC-STD-013-2006 lithology ornament; " +
-		"ink_color keeps the sheet's own printed ink. " +
+		"ink_color keeps each sheet's own printed ink. " +
+		"A unit is identified by (sheet, code) — the same code can mean different rock on another sheet. " +
 		"w_<commodity> is an inference from lithology (1-3, 3 = classic host), not a record of any deposit."
 	l, err := w.AddLayer(table, "MULTIPOLYGON", desc, cols)
 	if err != nil {
 		return err
 	}
 
-	classes := make([]geoMapUnitProps, 0, len(fc.Features))
-	for _, f := range fc.Features {
-		p := f.Properties
+	classes := make([]geoMapUnitProps, 0, len(units))
+	for _, u := range units {
+		p := u.props
+		if p.Sheet == "" {
+			p.Sheet = u.cat.Sheet
+		}
 		classes = append(classes, p)
 		ageKey, ageMixed := geoAgeOf(p.Group)
 		age := geoAgeByKey[ageKey]
@@ -531,13 +638,14 @@ func buildGeoMapGeoPackage(sheet, path string) error {
 			whys = append(whys, fmt.Sprintf("%s (%d): %s", a.Commodity, a.Weight, a.Why))
 		}
 		vals := []interface{}{
+			geoMapUnitKey(p.Sheet, p.Code),
 			p.Code, gpkgStr(p.Name), gpkgStr(p.Group),
 			ageKey, age.Label, age.Rank, gpkgBool(ageMixed),
 			geoLithOf(p.Name, p.Group, p.Codes), age.Color,
 			strings.Join(p.Codes, ","), gpkgBool(p.Merged), gpkgStr(p.Color),
 			p.AreaKm2, gpkgStr(strings.Join(p.Commodities, ",")),
 			gpkgStr(strings.Join(whys, "; ")),
-			sheet, cat.Title, cat.Year,
+			p.Sheet, u.cat.Title, u.cat.Year,
 		}
 		for _, c := range comms {
 			if a, ok := byComm[c]; ok {
@@ -546,83 +654,100 @@ func buildGeoMapGeoPackage(sheet, path string) error {
 				vals = append(vals, nil)
 			}
 		}
-		l.Add(string(f.Geometry), vals...)
+		l.Add(string(u.geom), vals...)
 	}
 	if l.Count() == 0 {
 		return fmt.Errorf("no unit geometry could be written")
 	}
 	qml := styleGeoUnits(classes)
 	w.SetStyle(table, qml, "Age (ICS/CGMW) with FGDC lithology ornament")
-	// A second, non-default style: the sheet in its own printed inks. QGIS
+	// A second, non-default style: each sheet in its own printed inks. QGIS
 	// lists every row of layer_styles under Style → Load, so "what did the
 	// scan look like" stays one click away instead of needing the ink_color
 	// column and a hand-built renderer.
 	w.SetStyleNamed(table, "as_printed", styleGeoUnitsAsPrinted(classes),
-		"The sheet's own printed ink per unit", false)
+		"Each sheet's own printed ink per unit", false)
 
 	grow := math.Max(0.05, (l.maxx-l.minx)*0.03)
 	ext := [4]float64{l.minx - grow, l.miny - grow, l.maxx + grow, l.maxy + grow}
-	title := cat.Title + " (5MP)"
-	if err := w.writeQGISProject(title, filepath.Base(path), []gpkgLayerSpec{{
-		Table: table, Title: cat.Short + " units", Group: "Geology",
+	if err := w.writeQGISProject("Geology (5MP)", filepath.Base(path), []gpkgLayerSpec{{
+		Table: table, Title: "Geological units", Group: "Geology",
 		Geometry: "Polygon", WKBType: "MultiPolygon", QML: qml, Visible: true, Opacity: 0.75,
 	}}, ext); err != nil {
-		slog.Warn("geomap gpkg project", "sheet", sheet, "err", err)
+		slog.Warn("geomap gpkg project", "err", err)
 	}
 	if err := w.Finish(); err != nil {
 		return err
+	}
+	if b, err := json.Marshal(geoMapGPKGInputs()); err == nil {
+		_ = os.WriteFile(geoMapGPKGStampPath(), b, 0o644)
 	}
 	done = true
 	return os.Rename(tmp, path)
 }
 
-// geoMapGPKGReady reports the cached file if it is newer than the units it was
-// built from. Anything else (missing, stale) means "build on demand".
-func geoMapGPKGReady(sheet string) (os.FileInfo, bool) {
-	st, err := os.Stat(geoMapGPKGPath(sheet))
+// geoMapUnitKey is the identity of a unit across sheets. Deliberately the same
+// "<sheet>:<code>" the web map's share links use, so a code copied out of QGIS
+// pastes back into the map.
+func geoMapUnitKey(sheet, code string) string { return sheet + ":" + code }
+
+// geoMapGPKGReady reports the cached file if it was built from exactly the
+// inputs on disk now. Anything else (missing, an input rewritten, a sheet
+// added or removed) means "build on demand" — the same stale-artefact trap as
+// the tile ?v= revision, one level up.
+func geoMapGPKGReady() (os.FileInfo, bool) {
+	st, err := os.Stat(geoMapGPKGPath())
 	if err != nil {
 		return nil, false
 	}
-	src, err := os.Stat(geoMapUnitsPath(sheet))
-	if err != nil {
+	want := geoMapGPKGInputs()
+	if len(want.Sheets) == 0 {
 		// Units gone (gitignored derived output can be cleaned) but a built
 		// package survives: serve it. It is a snapshot of a real build, and
 		// refusing it would be a worse answer than a slightly old one.
 		return st, true
 	}
-	// >=, not >: the two files are usually written seconds apart, but a build
-	// that finishes inside the same filesystem timestamp tick as its input
-	// would otherwise rebuild on every single request forever. A re-vectorize
-	// takes minutes, so equality means "built from this", never "stale".
-	return st, !st.ModTime().Before(src.ModTime())
+	blob, err := os.ReadFile(geoMapGPKGStampPath())
+	if err != nil {
+		return nil, false
+	}
+	var have geoMapGPKGStamp
+	if err := json.Unmarshal(blob, &have); err != nil {
+		return nil, false
+	}
+	if len(have.Sheets) != len(want.Sheets) {
+		return nil, false
+	}
+	for i := range want.Sheets {
+		if have.Sheets[i] != want.Sheets[i] {
+			return nil, false
+		}
+	}
+	return st, true
 }
 
-// HandleAPIGeoMapGeoPackage serves the sheet as a GeoPackage, building it on
-// first request. One build at a time, globally: the two sheets together take a
+// HandleAPIGeoMapGeoPackage serves every sheet as ONE GeoPackage, building it
+// on first request. One build at a time, globally: the sheets together take a
 // few seconds and a second concurrent request would only duplicate the work.
 //
 // Synchronous, deliberately — unlike the per-area export in gpkg_jobs.go. That
 // one takes minutes over a live database and must therefore be a job with a
-// progress card; this is a static file per sheet, so a job queue would add a
-// notification, a poll and a card to a two-second wait.
+// progress card; this is one static file, so a job queue would add a
+// notification, a poll and a card to a few seconds' wait.
 func (s *Server) HandleAPIGeoMapGeoPackage(w http.ResponseWriter, r *http.Request) {
-	sheet := r.PathValue("sheet")
-	if geoMaps.load()[sheet] == nil {
-		http.Error(w, "unknown sheet", http.StatusNotFound)
-		return
-	}
-	path := geoMapGPKGPath(sheet)
-	if _, ok := geoMapGPKGReady(sheet); !ok {
+	path := geoMapGPKGPath()
+	if _, ok := geoMapGPKGReady(); !ok {
 		geoMapGPKGMu.Lock()
-		if _, ok := geoMapGPKGReady(sheet); !ok {
+		if _, ok := geoMapGPKGReady(); !ok {
 			t0 := time.Now()
-			if err := buildGeoMapGeoPackage(sheet, path); err != nil {
+			sheets := geoMapGPKGSheets()
+			if err := buildGeoMapGeoPackage(path, sheets); err != nil {
 				geoMapGPKGMu.Unlock()
-				slog.Warn("geomap gpkg build failed", "sheet", sheet, "err", err)
+				slog.Warn("geomap gpkg build failed", "err", err)
 				http.Error(w, "GeoPackage not available: "+err.Error(), http.StatusNotFound)
 				return
 			}
-			slog.Info("geomap gpkg built", "sheet", sheet, "took", time.Since(t0))
+			slog.Info("geomap gpkg built", "sheets", sheets, "took", time.Since(t0))
 		}
 		geoMapGPKGMu.Unlock()
 	}
@@ -641,4 +766,24 @@ func (s *Server) HandleAPIGeoMapGeoPackage(w http.ResponseWriter, r *http.Reques
 	w.Header().Set("Content-Type", "application/geopackage+sqlite3")
 	w.Header().Set("Content-Disposition", `attachment; filename="`+name+`"`)
 	http.ServeContent(w, r, name, st.ModTime(), f)
+}
+
+// HandleAPIGeoMapGeoPackageLegacy keeps /api/geomap/{sheet}/geopackage working.
+//
+// The export used to be per sheet and those URLs are in shipped share links,
+// in docs/GEOLOGY.md and in scripts/geomaps/render_gpkg.py. There is
+// now one file covering every sheet, so the honest answer to "give me CAR's
+// GeoPackage" is that file — a 404 would read as "the export was removed",
+// which is not what happened. 308 rather than 302 so a client that followed it
+// with a range request keeps its method and its Range header.
+func (s *Server) HandleAPIGeoMapGeoPackageLegacy(w http.ResponseWriter, r *http.Request) {
+	if geoMaps.load()[r.PathValue("sheet")] == nil {
+		http.Error(w, "unknown sheet", http.StatusNotFound)
+		return
+	}
+	target := "/api/geomap/geopackage"
+	if q := r.URL.RawQuery; q != "" {
+		target += "?" + q
+	}
+	http.Redirect(w, r, target, http.StatusPermanentRedirect)
 }

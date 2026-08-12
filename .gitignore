@@ -150,8 +150,12 @@ data/geomaps/*.pmtiles
 # <sheet>_classes.json IS committed too - it is the class catalogue the server
 # reads (small, and the record of which merges the hold-out forced on a build).
 data/geomaps/*_units.geojson
-# built on first request from *_units.geojson (a cache, not an input)
+# built on first request from *_units.geojson (a cache, not an input).
+# geology.gpkg is the current combined one; *_geology.gpkg was the per-sheet
+# form and is still ignored so an old checkout's leftovers stay untracked.
 data/geomaps/*_geology.gpkg
+data/geomaps/geology.gpkg
+data/geomaps/geology.gpkg.stamp
 
 # GeoPackage export cache (derived, 21-day TTL, one directory per job)
 data/gpkg_output/

@@ -1,4 +1,4 @@
-# Geology overlays — handover
+# Geology overlays
 
 Two scanned geological maps turned into **vector** overlays: Sudan (GRAS 2004,
 1:2M) and CAR (BRGM 1964, 1:1.5M). A park or AOI facing a gold rush should be
@@ -236,18 +236,46 @@ collapsed list of all classes with per-class hide.
 * Click a unit → popup with code, name, group, the merged-units warning, and
   the affinity list with its disclaimer. **Click, not hover**: the overlay
   covers the whole country and a hover handler would fight every other tip.
-* Share links: `?geomap=car` is the common case. `geomap_only=`, `geomap_hide=`
-  and `geomap_opacity=` only appear once changed, so a plain link does not
-  carry 46 codes. **A code the current build no longer has is dropped**, and an
+* Share links: `?geomap=car` is the common case. `geomap_only=`, `geomap_hide=`,
+  `geomap_color=`, `geomap_pattern=`, `geomap_lith=`, `geomap_opacity=` and
+  `geomap_adv=` (the Advanced disclosure — a panel setting, so it travels even
+  with the layer off) only appear once changed, so a plain link does not
+  carry 46 codes. **`geomap_opacity` absent means auto**, not 0.42: the value
+  is picked per basemap, so freezing a computed number into a link would break
+  the layer for whoever opens it on the other basemap. **A code the current build no longer has is dropped**, and an
   isolation that ends up empty shows all classes plus a toast — a rebuild can
   merge two classes and thereby rename both, and rendering nothing looks
   exactly like "this sheet has no data here".
 
 ## GeoPackage download
 
-`GET /api/geomap/{sheet}/geopackage` → `<sheet>_geology.gpkg`, offered in the
-panel beside the MBTiles. `srv/geomap_gpkg.go`; measured 2026-08-10: CAR 2.9 MB
-in 0.5 s, Sudan 13.8 MB in 2.1 s.
+`GET /api/geomap/geopackage` → `geology.gpkg`, **one file covering every
+sheet**, offered in the panel's *Data* row. `srv/geomap_gpkg.go`; measured
+2026-08-12: 16 MB in 2.6 s for Sudan + CAR.
+
+**One file, one layer, the sheet as a column** (2026-08-12). It used to be one
+GeoPackage per scan, which made the download mirror our storage rather than the
+user's question: rock does not stop at a border, and anyone intersecting units
+with a park or a concession had to open two files, reconcile two column sets and
+union them by hand. Exactly the seam the single Geology toggle removed on the
+map. `sheet`, `sheet_title` and `sheet_year` are columns; `GET
+/api/geomap/{sheet}/geopackage` **308s** to the combined file, because those
+URLs are in shipped links and a 404 would read as "the export was removed".
+
+* **A unit is identified by `(sheet, code)`, and `key` is that pair.** `code` is
+  unique only *within* a sheet — `S` is Silurian sandstone on Sudan and a
+  gold-bearing schist belt on CAR. The categorised renderer keys on `key`; on
+  `code` the two would share one symbol and half a country would be dated from
+  the other's legend. `scripts/geomaps/render_gpkg.py` matches on `key` too.
+* **The commodity columns are the union over every sheet**, so `"w_gold" IS NOT
+  NULL` answers across the whole area rather than per file.
+* **Staleness is a stamp of the input SET** (`geology.gpkg.stamp`: sheet, mtime,
+  size), not one mtime. Adding a sheet whose units file is *older* than the
+  package — a restore, a copy that preserved timestamps — would otherwise leave
+  the old file looking fresh, and the user downloads a country short of what
+  the map draws. Same shape as the no-op-reading-as-an-answer rule, applied to
+  a set of inputs. A sheet contributing zero features **fails the build**
+  rather than shipping a package missing a country.
 
 **The MBTiles is the picture; this is the data.** Tiles are simplified per
 zoom, coalesced across neighbours and carry no typing — right for an offline
@@ -274,18 +302,17 @@ exploding to parts here would invent a feature count the source does not have).
   rebuilt by hand. The project references its container as
   `./<basename>.gpkg`, so the on-disk name and the download name are the same
   string.
-* Categorized on `code`, i.e. the **merged** code (`GC2/GO`) exactly as the
-  tiles and the UI carry it. The sheet does not say which member a patch is, so
-  the export must not pick one.
-* Built on first request from `<sheet>_units.geojson` and cached beside it
-  (gitignored). Staleness is mtime, compared with `>=`: a build finishing
-  inside its input's timestamp tick would otherwise rebuild on every request.
-  If the units are gone but a package survives, it is served — it is a snapshot
-  of a real build, and refusing it is a worse answer than an old one.
+* Categorized on `key`, whose code half is the **merged** code (`GC2/GO`)
+  exactly as the tiles and the UI carry it. The sheet does not say which member
+  a patch is, so the export must not pick one.
+* Built on first request from every `<sheet>_units.geojson` present and cached
+  beside them (gitignored) with a `.stamp` naming those inputs. If the units are
+  gone but a package survives, it is served — it is a snapshot of a real build,
+  and refusing it is a worse answer than an old one.
 * **No job queue**, deliberately, unlike the per-area export in
   `gpkg_jobs.go`: that one is minutes over a live database and needs a card;
-  this is a static file per sheet. The panel's link does say "Preparing…"
-  though — two silent seconds after a click read as a dead link.
+  this is one static file. The panel's link does say "Preparing…" though — two
+  silent seconds after a click read as a dead link.
 * Rendered and looked at, not just `ogrinfo`'d — see the section below. Until
   2026-08-12 the only thing testing the cartography was a byte-level Go test,
   which asserted the XML we *wrote* and could not notice that QGIS ignored it.
@@ -295,15 +322,19 @@ exploding to parts here would invent a feature count the source does not have).
 
 ```bash
 sudo apt-get install -y python3-qgis                     # 3.34, big download
-# The export is built on first request and cached beside <sheet>_units.geojson,
+# The export is built on first request and cached beside the *_units.geojson,
 # so ask the server for it rather than calling the builder directly:
-curl -s "localhost:8000/api/geomap/car/geopackage?pwd=test2026"   -o /dev/null
-curl -s "localhost:8000/api/geomap/sudan/geopackage?pwd=test2026" -o /dev/null
+curl -s "localhost:8000/api/geomap/geopackage?pwd=test2026" -o /dev/null
 QT_QPA_PLATFORM=offscreen python3 scripts/geomaps/render_gpkg.py  # ~60 s
-# -> /tmp/geomap_render/{car,sudan}_{full,zoom_*,swatches}.png
+# -> /tmp/geomap_render/{car,sudan}_{full,zoom_*,swatches}.png + combined_full.png
 ```
 
-`render_gpkg.py` opens each file through **its own embedded QGIS project**
+There is one file now, so a sheet argument selects a **view** of it (a subset
+string on `sheet`), not another datasource — and the subset is cleared again
+afterwards, or the next sheet renders through the previous filter and the
+combined extent comes out one country short.
+
+`render_gpkg.py` opens the file through **its own embedded QGIS project**
 (`geopackage:<abspath>?projectName=<name>` — the name is required and the path
 must be absolute, or `read()` returns False and then hangs) and renders with
 `QgsMapSettings` + `QgsMapRendererParallelJob`. It deliberately does **not**
@@ -460,14 +491,23 @@ the CAR geology as a GeoPackage"). `highlightMapSheet()` polls for the card
 because the tab renders from a fetch, and **gives up after 10 s**: a link naming
 a sheet this server does not have must not spin forever.
 
-## Next steps
+## Done, and what a future change would look like
 
-1. **A commodity legend outside the admin panel.** Right now the only way in is
-   admin ▸ Map Settings. If this is meant to be a user-facing question ("what
-   could be under this park"), it wants a place in the filter panel too.
-2. **More sheets.** `sheets.py` is the whole per-sheet contract; a third sheet
-   is a legend measurement plus a graticule fit.
-4. Nothing else is blocking.
+The overlay is **finished**: both sheets vectorized, served, rendered in one
+industry legend, downloadable as a picture (MBTiles per sheet) and as data (one
+GeoPackage), with the panel simplified to one switch, one legend, one adaptive
+opacity and an Advanced block. Nothing here is waiting on anything.
+
+Two things that would be *additions* rather than unfinished work:
+
+* **A commodity legend outside the admin panel.** The only way in is admin ▸ Map
+  Settings. If "what could be under this park" becomes a user-facing question
+  rather than an analyst's, it wants a place in the filter panel too.
+* **More sheets.** `sheets.py` is the whole per-sheet contract; a third sheet is
+  a legend measurement plus a graticule fit. Everything downstream is derived
+  from the sheet list — the class catalogue, the GeoPackage's commodity columns,
+  its input stamp, the panel's counts — so adding one should need no edit
+  anywhere else. If it does, that is the bug.
 
 ## Traps already paid for
 

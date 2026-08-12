@@ -94,6 +94,16 @@ test_url_param "time_range" "&from=2024-01-01&to=2024-12-31" "" ""
 # ?tip_layer= only picking within the stack found there. Restoring re-asks the
 # live map, so a stale link must degrade to "nothing selected", never to an
 # error page.
+# Every geology setting is shareable, and the panel's own Advanced disclosure is
+# one of them: "look at this" should reproduce what the sender was reading, not
+# just the map. Opacity is the exception that has to be TESTED as an absence —
+# no parameter means "adapt to the basemap", because a value tuned over the dark
+# basemap is nearly invisible over satellite imagery, so freezing the computed
+# number into a link would break the layer for whoever opens it elsewhere.
+test_url_param "geomap_all_settings" "&geomap=sudan,car&geomap_opacity=30&geomap_color=ink&geomap_pattern=0&geomap_lith=sandstone&geomap_adv=1" "" ""
+test_url_param "geomap_auto_opacity" "&geomap=car" "" ""
+test_url_param "geomap_advanced_without_layer" "&panel=admin&admin_tab=map-settings&geomap_adv=1" "" ""
+test_url_param "geomap_stale_lithology" "&geomap=car&geomap_lith=nosuchrock" "" ""
 test_url_param "tip_selection" "&tip=22.62154,6.61277" "" ""
 test_url_param "tip_selection_layer" "&tip=22.62154,6.61277&tip_layer=geomap-fill-car" "" ""
 test_url_param "tip_selection_stale" "&tip=0,0&tip_layer=lod-nope-line" "" ""

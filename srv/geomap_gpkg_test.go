@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	_ "modernc.org/sqlite"
 )
@@ -68,15 +69,23 @@ func writeTestSheet(t *testing.T, dir string) {
 	}
 }
 
+// The package is built from the sheets this server has, so a test has to say
+// which sheets exist — otherwise geoMapGPKGSheets() looks for sudan/car in a
+// temp dir, finds nothing, and the staleness check has no inputs to compare.
+func useTestSheets(t *testing.T, dir string, ids ...string) {
+	t.Helper()
+	oldDir, oldSheets := geoMaps.dir, geoMapSheets
+	geoMaps.dir, geoMapSheets = dir, ids
+	t.Cleanup(func() { geoMaps.dir, geoMapSheets = oldDir, oldSheets })
+}
+
 func TestGeoMapGeoPackageIsQueryableByCommodity(t *testing.T) {
 	dir := t.TempDir()
-	old := geoMaps.dir
-	geoMaps.dir = dir
-	defer func() { geoMaps.dir = old }()
+	useTestSheets(t, dir, "tst")
 	writeTestSheet(t, dir)
 
-	path := geoMapGPKGPath("tst")
-	if err := buildGeoMapGeoPackage("tst", path); err != nil {
+	path := geoMapGPKGPath()
+	if err := buildGeoMapGeoPackage(path, []string{"tst"}); err != nil {
 		t.Fatal(err)
 	}
 	db, err := sql.Open("sqlite", "file:"+path+"?mode=ro")
@@ -89,7 +98,7 @@ func TestGeoMapGeoPackageIsQueryableByCommodity(t *testing.T) {
 	// fixed column list would silently drop a commodity a re-vectorized sheet
 	// introduced, or invent one it dropped.
 	cols := map[string]string{}
-	rows, err := db.Query(`SELECT name, type FROM pragma_table_info('geology_tst')`)
+	rows, err := db.Query(`SELECT name, type FROM pragma_table_info('geology_units')`)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -112,7 +121,7 @@ func TestGeoMapGeoPackageIsQueryableByCommodity(t *testing.T) {
 	}
 
 	var n int
-	if err := db.QueryRow(`SELECT COUNT(*) FROM geology_tst WHERE "w_gold" IS NOT NULL`).Scan(&n); err != nil {
+	if err := db.QueryRow(`SELECT COUNT(*) FROM geology_units WHERE "w_gold" IS NOT NULL`).Scan(&n); err != nil {
 		t.Fatal(err)
 	}
 	if n != 1 {
@@ -121,7 +130,7 @@ func TestGeoMapGeoPackageIsQueryableByCommodity(t *testing.T) {
 	// A unit with no affinity at all must be NULL, not 0: 0 would read as
 	// "measured, none", and would also match a `>= 0` filter.
 	var w sql.NullInt64
-	db.QueryRow(`SELECT "w_gold" FROM geology_tst WHERE code='Qz'`).Scan(&w)
+	db.QueryRow(`SELECT "w_gold" FROM geology_units WHERE code='Qz'`).Scan(&w)
 	if w.Valid {
 		t.Error("a unit with no gold affinity must be NULL, not a number")
 	}
@@ -129,7 +138,7 @@ func TestGeoMapGeoPackageIsQueryableByCommodity(t *testing.T) {
 	// The merged class keeps BOTH codes and is labelled with both — the sheet
 	// does not say which member a patch is, so the export must not pick one.
 	var code, codes, note string
-	db.QueryRow(`SELECT code, codes, affinity_note FROM geology_tst WHERE merged=1`).Scan(&code, &codes, &note)
+	db.QueryRow(`SELECT code, codes, affinity_note FROM geology_units WHERE merged=1`).Scan(&code, &codes, &note)
 	if code != "Au/Bx" || codes != "Au,Bx" {
 		t.Errorf("merged class = %q / %q, want Au/Bx and Au,Bx", code, codes)
 	}
@@ -137,7 +146,7 @@ func TestGeoMapGeoPackageIsQueryableByCommodity(t *testing.T) {
 		t.Errorf("affinity_note %q must attribute each reason to its member code", note)
 	}
 
-	if err := db.QueryRow(`SELECT COUNT(*) FROM layer_styles WHERE f_table_name='geology_tst' AND useAsDefault=1`).Scan(&n); err != nil || n != 1 {
+	if err := db.QueryRow(`SELECT COUNT(*) FROM layer_styles WHERE f_table_name='geology_units' AND useAsDefault=1`).Scan(&n); err != nil || n != 1 {
 		t.Errorf("default style rows = %d (err %v), want 1", n, err)
 	}
 	// The project's datasource is relative to the file it lives in, so the
@@ -149,8 +158,8 @@ func TestGeoMapGeoPackageIsQueryableByCommodity(t *testing.T) {
 	if len(content) == 0 {
 		t.Fatal("no embedded QGIS project")
 	}
-	if got := filepath.Base(path); got != "tst_geology.gpkg" {
-		t.Errorf("basename = %q, want tst_geology.gpkg", got)
+	if got := filepath.Base(path); got != "geology.gpkg" {
+		t.Errorf("basename = %q, want geology.gpkg", got)
 	}
 }
 
@@ -159,35 +168,173 @@ func TestGeoMapGeoPackageIsQueryableByCommodity(t *testing.T) {
 // tile ?v= revision.
 func TestGeoMapGeoPackageCacheFollowsTheUnits(t *testing.T) {
 	dir := t.TempDir()
-	old := geoMaps.dir
-	geoMaps.dir = dir
-	defer func() { geoMaps.dir = old }()
+	useTestSheets(t, dir, "tst")
 	writeTestSheet(t, dir)
 
-	if _, ok := geoMapGPKGReady("tst"); ok {
+	if _, ok := geoMapGPKGReady(); ok {
 		t.Fatal("nothing built yet, must not report ready")
 	}
-	if err := buildGeoMapGeoPackage("tst", geoMapGPKGPath("tst")); err != nil {
+	if err := buildGeoMapGeoPackage(geoMapGPKGPath(), []string{"tst"}); err != nil {
 		t.Fatal(err)
 	}
-	if _, ok := geoMapGPKGReady("tst"); !ok {
+	if _, ok := geoMapGPKGReady(); !ok {
 		t.Fatal("freshly built package must be ready")
 	}
 	// Touch the units into the future = a re-vectorize.
-	st, _ := os.Stat(geoMapGPKGPath("tst"))
+	st, _ := os.Stat(geoMapGPKGPath())
 	future := st.ModTime().Add(2 * 1e9)
 	if err := os.Chtimes(geoMapUnitsPath("tst"), future, future); err != nil {
 		t.Fatal(err)
 	}
-	if _, ok := geoMapGPKGReady("tst"); ok {
+	if _, ok := geoMapGPKGReady(); ok {
 		t.Error("units newer than the package must invalidate it")
+	}
+}
+
+// ---- one file, every sheet ------------------------------------------------
+//
+// The export used to be one GeoPackage per scanned sheet, which made the
+// download mirror our storage rather than the user's question: rock does not
+// stop at a border, and anyone intersecting units with a concession had to
+// open two files and union two column sets by hand. These pin the two things
+// that can silently go wrong once they share a layer.
+
+func writeSecondTestSheet(t *testing.T, dir string) {
+	t.Helper()
+	units := map[string]any{
+		"type": "FeatureCollection",
+		"features": []any{
+			// SAME code as the first sheet's quartzite, different rock and a
+			// different age — which is the real case (Sudan's "S" is Silurian
+			// sandstone, CAR's is a gold-bearing schist belt).
+			map[string]any{
+				"type": "Feature",
+				"properties": map[string]any{
+					"sheet": "two", "code": "Qz", "name": "Basalt flow",
+					"group": "Neogene", "color": "#334455", "area_km2": 55,
+					"commodities": []string{"copper"},
+					"affinity": []any{
+						map[string]any{"commodity": "copper", "weight": 2, "why": "basalt-hosted"},
+					},
+				},
+				"geometry": map[string]any{
+					"type":        "MultiPolygon",
+					"coordinates": [][][][]float64{{{{20, 5}, {21, 5}, {21, 6}, {20, 6}, {20, 5}}}},
+				},
+			},
+		},
+	}
+	b, _ := json.Marshal(units)
+	if err := os.WriteFile(filepath.Join(dir, "two_units.geojson"), b, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	cat, _ := json.Marshal(map[string]any{
+		"sheet": "two", "title": "Second sheet", "short": "Two", "year": 2004,
+	})
+	if err := os.WriteFile(filepath.Join(dir, "two_classes.json"), cat, 0o644); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestGeoMapGeoPackageHoldsEverySheetInOneLayer(t *testing.T) {
+	dir := t.TempDir()
+	useTestSheets(t, dir, "tst", "two")
+	writeTestSheet(t, dir)
+	writeSecondTestSheet(t, dir)
+
+	path := geoMapGPKGPath()
+	if err := buildGeoMapGeoPackage(path, geoMapGPKGSheets()); err != nil {
+		t.Fatal(err)
+	}
+	db, err := sql.Open("sqlite", "file:"+path+"?mode=ro")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	var n int
+	if err := db.QueryRow(`SELECT COUNT(DISTINCT sheet) FROM geology_units`).Scan(&n); err != nil {
+		t.Fatal(err)
+	}
+	if n != 2 {
+		t.Errorf("sheets in the package = %d, want 2 — a download short of a country reads as a country with no geology", n)
+	}
+	// The commodity columns are the UNION over sheets, so the headline filter
+	// answers across the whole area rather than per file.
+	for _, want := range []string{"w_gold", "w_copper"} {
+		var c int
+		db.QueryRow(`SELECT COUNT(*) FROM pragma_table_info('geology_units') WHERE name=?`, want).Scan(&c)
+		if c != 1 {
+			t.Errorf("missing %s: commodity columns must be the union over every sheet", want)
+		}
+	}
+	// A code is unique only WITHIN a sheet. If the legend keyed on `code`,
+	// two sheets' "Qz" would share one symbol and half a country would be
+	// dated from the other's legend.
+	if err := db.QueryRow(`SELECT COUNT(*) FROM geology_units WHERE code='Qz'`).Scan(&n); err != nil {
+		t.Fatal(err)
+	}
+	if n != 2 {
+		t.Fatalf("expected the same code on both sheets, got %d rows", n)
+	}
+	rows, err := db.Query(`SELECT key FROM geology_units WHERE code='Qz' ORDER BY key`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer rows.Close()
+	var keys []string
+	for rows.Next() {
+		var k string
+		rows.Scan(&k)
+		keys = append(keys, k)
+	}
+	if len(keys) != 2 || keys[0] == keys[1] {
+		t.Errorf("keys = %v, want one per (sheet, code)", keys)
+	}
+	var qml string
+	if err := db.QueryRow(`SELECT styleQML FROM layer_styles WHERE useAsDefault=1`).Scan(&qml); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(qml, `attr="key"`) {
+		t.Error(`the categorised renderer must key on "key" (sheet, code), not on code`)
+	}
+	for _, k := range keys {
+		if !strings.Contains(qml, `value="`+k+`"`) {
+			t.Errorf("legend has no category for %q", k)
+		}
+	}
+}
+
+// Adding a sheet must invalidate the cache even though nothing the package was
+// already built from changed. mtime alone cannot see this: the new sheet's
+// units file can legitimately be OLDER than the package (a restore, a copy
+// that preserved timestamps), and the user would then download a country short
+// of what the map draws — a no-op reading as an answer.
+func TestGeoMapGeoPackageCacheNoticesANewSheet(t *testing.T) {
+	dir := t.TempDir()
+	useTestSheets(t, dir, "tst", "two")
+	writeTestSheet(t, dir)
+
+	if err := buildGeoMapGeoPackage(geoMapGPKGPath(), geoMapGPKGSheets()); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := geoMapGPKGReady(); !ok {
+		t.Fatal("freshly built package must be ready")
+	}
+	writeSecondTestSheet(t, dir)
+	old := time.Now().Add(-72 * time.Hour)
+	if err := os.Chtimes(geoMapUnitsPath("two"), old, old); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := geoMapGPKGReady(); ok {
+		t.Error("a sheet the package does not contain must invalidate it, even if its units are older")
 	}
 }
 
 // ---- the ornament, as QGIS actually draws it -------------------------------
 //
 // These pin what RENDERING the file taught us (2026-08-12,
-// scripts/geomaps/render_gpkg.py; findings in docs/GEOLOGY_HANDOVER.md). Every
+// scripts/geomaps/render_gpkg.py; findings in docs/GEOLOGY.md). Every
 // one of them describes a way an ornament came out WRONG while the XML we
 // wrote was exactly what we intended — which is why the byte-level test above
 // could not see any of it, and why nine families shipped as six.
@@ -209,7 +356,7 @@ func TestGeoMapGeoPackageCacheFollowsTheUnits(t *testing.T) {
 // enough period and a per-angle exception is a rule nobody will remember.
 func TestGeoOrnamentDashesSurviveTheQGISPatternTile(t *testing.T) {
 	// Measured on QGIS 3.34.4 (see the ratio table in
-	// docs/GEOLOGY_HANDOVER.md). Ratios of 1.00-1.50 rendered correctly;
+	// docs/GEOLOGY.md). Ratios of 1.00-1.50 rendered correctly;
 	// 1.76, 2.17, 2.22, 2.31, 3.12, 3.24 and 3.27 all rendered blank or solid.
 	const maxRatio = 1.5
 	for lith, layers := range geoOrnaments {
