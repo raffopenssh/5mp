@@ -72,10 +72,29 @@ func (s *Server) PasswordMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
+		// /s/{slug} resolves before the gate, because a guest arriving on a
+		// capability link has no cookie yet -- that request is exactly how
+		// they get one. It is NOT in isPublicPath: the handler answers
+		// no-store and, for a named link, only ever redirects to a target
+		// that is itself gated, so nothing is exposed that was not already.
+		if r.URL.Path == "/s" || strings.HasPrefix(r.URL.Path, "/s/") {
+			next.ServeHTTP(w, r)
+			return
+		}
+
 		// Check cookie first
 		cookie, err := r.Cookie("access_pwd")
 		if err == nil && isValidPassword(cookie.Value) {
 			next.ServeHTTP(w, r)
+			return
+		}
+
+		// A capability short link (srv/guest.go). Consulted BEFORE the
+		// password form and AFTER a real password, so a signed-in user who
+		// also holds a guest cookie stays themselves -- the strongest
+		// credential present wins, and a guest never downgrades a session.
+		if gr, ok := s.guestAuth(r); ok {
+			next.ServeHTTP(w, gr)
 			return
 		}
 
@@ -135,6 +154,12 @@ func RequestEnv(r *http.Request) string {
 	}
 	if c, err := r.Cookie("access_pwd"); err == nil && isValidPassword(c.Value) {
 		return tenantForPwd(c.Value)
+	}
+	// A guest capability reads inside the tenant of the password that issued
+	// it -- that IS the delegation. Deliberately below the two password
+	// checks: a real session is never reinterpreted as its own guest link.
+	if g := GuestFromRequest(r); g != nil && g.Env != "" {
+		return g.Env
 	}
 	return clientTenant
 }

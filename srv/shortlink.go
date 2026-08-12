@@ -1,0 +1,708 @@
+package srv
+
+// Short links: the shareable NAME of a view — and, where the sender needs it,
+// a read-only capability that opens that view without handing over the
+// password.
+//
+// ---------------------------------------------------------------------------
+// PART ONE: THE NAME
+// ---------------------------------------------------------------------------
+//
+// Every "Copy link" in this app produced 300-500 characters of state
+// (lat/lng/z, dates, layer set, pinned ids, the selected place, which panel,
+// which admin tab). That is a correct link and an unusable one: it cannot be
+// read aloud, footnoted in a report, or typed off a second screen, and in a
+// phone's clipboard preview it wraps to six lines. /s/{slug} is the same view
+// with a name, and the name is editable, because you copy a link while looking
+// at the thing and name it a second later while sending it.
+//
+// A named slug is not a credential: `url` is stored with `pwd` STRIPPED and
+// /s/{slug} resolves behind the ordinary password gate. Slugs are meant to be
+// guessable ("virunga-fires"), so a named slug that carried a way in would
+// make guessing the name a way in.
+//
+// ---------------------------------------------------------------------------
+// PART TWO: SHARING WITHOUT SHARING THE PASSWORD
+// ---------------------------------------------------------------------------
+//
+// The request behind "put the password in the link" is: let a donor, a
+// ministry or a colleague see this AOI without becoming us. Sending them the
+// access password does the opposite of what is wanted — it is the same secret
+// for everyone, it grants writing as well as reading, it cannot be taken back
+// from one recipient, and after two forwards nobody can say who holds it.
+//
+// A six-digit PIN on top of a password-carrying link does not repair any of
+// that. The link and the digits travel through the same chat window, six
+// digits is a million guesses, and what is behind them is still the password.
+// It would add a page and change nothing that matters, so it is not here.
+//
+// What is here is the thing the principals/aoi_grants tables were built for
+// ("a principal is a password today, a user or an NGO tomorrow"): a GUEST
+// link, a capability with five properties a shared password cannot have.
+//
+//	  the slug IS the secret   16 chars of crypto/rand over a 27-symbol
+//	                           alphabet (~76 bits). Never renameable: a
+//	                           memorable capability is a guessable one.
+//	  read only                enforced in PasswordMiddleware, not by
+//	                           convention: GET/HEAD only, and no /admin,
+//	                           /api/admin, upload, AOI write or link minting.
+//	                           A capability that can mint capabilities is a
+//	                           password.
+//	  scoped                   acts as the creator's principal within the
+//	                           creator's tenant, so exactly what they can see
+//	                           becomes visible, and nothing else.
+//	  expiring                 a default life, because a link nobody revokes
+//	                           is a password with extra steps.
+//	  revocable + counted      one Clear button per link, plus hits and
+//	                           last-seen, so "has anyone opened it" and "stop
+//	                           this one" are both answerable.
+//
+// The guest never learns the password: it is not in this table, not in the
+// URL, and the session chip names the link instead of a password.
+//
+// HONEST LIMIT. A guest slug is a bearer token held in cleartext, because the
+// admin sheet must be able to show and re-copy it. A database leak therefore
+// leaks these links — but that same database holds the data they grant sight
+// of, so the token adds no exposure. What it must never do is grant MORE than
+// that, which is why the read-only rule lives in the middleware.
+//
+// See db/migrations/052-short-links.sql.
+
+import (
+	"crypto/rand"
+	"database/sql"
+	"encoding/json"
+	"io"
+	"math/big"
+	"net/http"
+	"net/url"
+	"regexp"
+	"strings"
+	"time"
+)
+
+// guestTTL: long enough for a report to be read next week, short enough that
+// an unrevoked link does not become a permanent second password.
+const guestTTL = 30 * 24 * time.Hour
+
+// decodeJSONBody reads a small JSON body. Capped: these endpoints are behind
+// the password gate but not behind a rate limiter.
+func decodeJSONBody(r *http.Request, v interface{}) error {
+	return json.NewDecoder(io.LimitReader(r.Body, 1<<16)).Decode(v)
+}
+
+// A slug is lowercase because links get typed and said out loud, and case is
+// neither audible nor reliably preserved by chat clients. 64 chars fits
+// "chinko-fire-season-2025-report" and still stays on one line.
+var shortSlugRe = regexp.MustCompile(`^[a-z0-9][a-z0-9-]{0,63}$`)
+var shortNonSlug = regexp.MustCompile(`[^a-z0-9]+`)
+
+// Reserved: a slug must never shadow a real route, or renaming a link could
+// take the site's own paths away from it.
+var shortSlugReserved = map[string]bool{
+	"api": true, "static": true, "admin": true, "login": true, "logout": true,
+	"register": true, "upload": true, "s": true, "healthz": true, "new": true,
+	"robots.txt": true, "sitemap.xml": true, "impressum": true, "datenschutz": true,
+}
+
+// shortSlugify turns whatever a person typed into a legal slug, or "".
+// Deliberately lossy and silent: the field shows the result immediately, so
+// the rule is demonstrated rather than explained.
+func shortSlugify(s string) string {
+	s = strings.ToLower(strings.TrimSpace(s))
+	s = shortNonSlug.ReplaceAllString(s, "-")
+	s = strings.Trim(s, "-")
+	if len(s) > 64 {
+		s = strings.Trim(s[:64], "-")
+	}
+	if !shortSlugRe.MatchString(s) || shortSlugReserved[s] {
+		return ""
+	}
+	return s
+}
+
+// The alphabet has no vowels (cannot spell a word by accident) and no 0/o/1/l
+// (cannot be misread off a screen by someone on the phone).
+const shortAlpha = "23456789bcdfghjkmnpqrstvwxz"
+
+func shortRandom(n int) string {
+	out := make([]byte, n)
+	max := big.NewInt(int64(len(shortAlpha)))
+	for i := range out {
+		v, err := rand.Int(rand.Reader, max)
+		if err != nil {
+			return ""
+		}
+		out[i] = shortAlpha[v.Int64()]
+	}
+	return string(out)
+}
+
+// A NAME is 7 characters: short, and only ever an alias for something the
+// password gate protects anyway.
+func shortToken() string { return shortRandom(7) }
+
+// A CAPABILITY is 16: ~76 bits, because here the slug is the whole secret.
+// The "g-" prefix is not decoration — it tells an operator reading a log or a
+// referrer that this URL is a credential, and it keeps the two kinds visibly
+// distinct in the admin sheet.
+func guestToken() string { return "g-" + shortRandom(16) }
+
+// shortNormalizeURL accepts what the browser sends (absolute URL or path) and
+// returns the path+query we will store, with `pwd` removed.
+//
+// The pwd strip is the security-relevant line in this file; everything else is
+// convenience. An absolute URL pointing anywhere but this host is refused
+// rather than silently rewritten — a silently rewritten link goes somewhere
+// the sender never looked at.
+func shortNormalizeURL(raw string, r *http.Request) (string, bool) {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return "", false
+	}
+	u, err := url.Parse(raw)
+	if err != nil {
+		return "", false
+	}
+	if u.Host != "" && r != nil && u.Host != r.Host {
+		return "", false
+	}
+	if !strings.HasPrefix(u.Path, "/") || strings.HasPrefix(u.Path, "//") {
+		return "", false
+	}
+	// A short link may not point at another short link: two hops is a loop
+	// waiting to happen and buys nothing.
+	if u.Path == "/s" || strings.HasPrefix(u.Path, "/s/") {
+		return "", false
+	}
+	q := u.Query()
+	q.Del("pwd")
+	out := u.Path
+	if enc := q.Encode(); enc != "" {
+		out += "?" + enc
+	}
+	if u.Fragment != "" {
+		out += "#" + u.Fragment
+	}
+	if len(out) > 4000 {
+		return "", false
+	}
+	return out, true
+}
+
+type shortLink struct {
+	Slug        string
+	URL         string
+	Kind        string
+	Title       string
+	Env         string
+	Guest       bool
+	PrincipalID int64
+	Expired     bool
+	Revoked     bool
+}
+
+// loadShortLink follows at most one alias hop.
+func (s *Server) loadShortLink(slug string) (*shortLink, bool) {
+	get := func(id string) (*shortLink, string, bool) {
+		var l shortLink
+		var alias, expires, revoked sql.NullString
+		var pid sql.NullInt64
+		var guest int
+		err := s.DB.QueryRow(`SELECT slug, url, COALESCE(alias_of,''), kind, title, env,
+			guest, principal_id, expires_at, revoked_at
+			FROM short_links WHERE slug = ?`, id).
+			Scan(&l.Slug, &l.URL, &alias, &l.Kind, &l.Title, &l.Env, &guest, &pid, &expires, &revoked)
+		if err != nil {
+			return nil, "", false
+		}
+		l.Guest = guest == 1
+		l.PrincipalID = pid.Int64
+		l.Revoked = revoked.Valid && revoked.String != ""
+		if expires.Valid && expires.String != "" {
+			if t, err := time.Parse(time.RFC3339, expires.String); err == nil {
+				l.Expired = time.Now().After(t)
+			}
+		}
+		return &l, alias.String, true
+	}
+	l, alias, ok := get(slug)
+	if !ok {
+		return nil, false
+	}
+	if alias != "" {
+		if l2, _, ok2 := get(alias); ok2 {
+			l = l2
+		} else {
+			return nil, false
+		}
+	}
+	if l.URL == "" {
+		return nil, false
+	}
+	return l, true
+}
+
+// GuestSession is what a guest slug authenticates as. Deliberately tiny: a
+// tenant to read within, a principal whose visibility to borrow, and a name to
+// put in the session chip so the guest can see what they are holding.
+type GuestSession struct {
+	Slug        string
+	Title       string
+	Env         string
+	PrincipalID int64
+}
+
+// LookupGuest resolves a guest slug for the middleware. Returns nil for
+// anything that is not a live capability — expired, revoked, or merely a
+// named link, all of which must fall through to the password gate.
+func (s *Server) LookupGuest(slug string) *GuestSession {
+	if s == nil || s.DB == nil || slug == "" {
+		return nil
+	}
+	l, ok := s.loadShortLink(slug)
+	if !ok || !l.Guest || l.Expired || l.Revoked {
+		return nil
+	}
+	return &GuestSession{Slug: l.Slug, Title: l.Title, Env: l.Env, PrincipalID: l.PrincipalID}
+}
+
+// HandleShortLink — GET /s/{slug}.
+//
+// 302, not 301: a slug can be renamed and a target is not eternal, and a
+// permanently-cached redirect in every visitor's browser would outlive both.
+func (s *Server) HandleShortLink(w http.ResponseWriter, r *http.Request) {
+	slug := strings.ToLower(strings.Trim(r.PathValue("slug"), "/"))
+	l, ok := s.loadShortLink(slug)
+	if !ok {
+		s.shortLinkGone(w, "That short link does not exist",
+			"It may have been cleared, or the name mistyped &mdash; they are lowercase letters, digits and hyphens.")
+		return
+	}
+	w.Header().Set("Cache-Control", "private, no-store")
+
+	if l.Guest {
+		if l.Revoked {
+			s.shortLinkGone(w, "This shared link has been switched off",
+				"Whoever sent it revoked access. Ask them for a new link.")
+			return
+		}
+		if l.Expired {
+			s.shortLinkGone(w, "This shared link has expired",
+				"Shared links are time-limited on purpose. Ask whoever sent it for a fresh one.")
+			return
+		}
+		// The capability becomes a cookie so it survives the dozens of /api
+		// requests the page makes next, and so the slug leaves the URL bar —
+		// a token in the address bar ends up in screenshots and in the next
+		// person's "share this page".
+		http.SetCookie(w, &http.Cookie{
+			Name: guestCookie, Value: l.Slug, Path: "/",
+			MaxAge: int(guestTTL / time.Second), HttpOnly: true, Secure: true,
+			SameSite: http.SameSiteLaxMode,
+		})
+	}
+
+	target := l.URL
+	// The recipient's own credentials travel with the request; a `pwd` on the
+	// SHORT url is passed through, so a link copied while authenticated by
+	// query param still works.
+	if pwd := r.URL.Query().Get("pwd"); pwd != "" && !l.Guest {
+		target = shortWithPwd(target, pwd)
+	}
+	go s.bumpShortLinkHit(l.Slug)
+	http.Redirect(w, r, target, http.StatusFound)
+}
+
+func shortWithPwd(target, pwd string) string {
+	u, err := url.Parse(target)
+	if err != nil {
+		return target
+	}
+	q := u.Query()
+	q.Set("pwd", pwd)
+	u.RawQuery = q.Encode()
+	return u.String()
+}
+
+func (s *Server) shortLinkGone(w http.ResponseWriter, head, body string) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Set("Cache-Control", "private, no-store")
+	w.WriteHeader(http.StatusNotFound)
+	w.Write([]byte(`<!doctype html><meta charset="utf-8"><title>` + head + `</title>` +
+		`<body style="font:15px/1.6 -apple-system,system-ui,sans-serif;background:#0a0a0a;color:#e0e0e0;padding:14vh 8vw">` +
+		`<h1 style="font-size:20px;color:#fff">` + head + `</h1>` +
+		`<p style="color:#888">` + body + `</p>` +
+		`<p><a style="color:#4ade80" href="/">Open the map</a></p></body>`))
+}
+
+func (s *Server) bumpShortLinkHit(slug string) {
+	defer func() { recover() }()
+	s.DB.Exec(`UPDATE short_links SET hits = hits + 1, last_hit_at = ? WHERE slug = ?`,
+		time.Now().UTC().Format(time.RFC3339), slug)
+}
+
+// ── create / rename / list / revoke ───────────────────────────────────────
+
+type shortLinkResp struct {
+	Slug    string `json:"slug"`
+	Short   string `json:"short"` // the path: /s/<slug>
+	URL     string `json:"url"`   // what it points at (pwd stripped)
+	Kind    string `json:"kind,omitempty"`
+	Guest   bool   `json:"guest,omitempty"`
+	Expires string `json:"expires_at,omitempty"`
+	Reuse   bool   `json:"reused,omitempty"`
+	Error   string `json:"error,omitempty"`
+}
+
+// HandleAPIShortLinkCreate — POST /api/shortlink
+//
+//	{url, title?, kind?, slug?, guest?: bool}
+//
+// Idempotent by URL within a tenant: sharing the same view twice returns the
+// same slug rather than minting a second name for one picture. That is what
+// makes "shorten every link" affordable — the table grows with distinct views,
+// not with clicks. A guest link is never deduped into: it is a credential
+// issued to one recipient, not a name for a view, and two recipients must be
+// revocable separately.
+func (s *Server) HandleAPIShortLinkCreate(w http.ResponseWriter, r *http.Request) {
+	var body struct {
+		URL   string `json:"url"`
+		Title string `json:"title"`
+		Kind  string `json:"kind"`
+		Slug  string `json:"slug"`
+		Guest bool   `json:"guest"`
+	}
+	if err := decodeJSONBody(r, &body); err != nil {
+		writeJSON(w, http.StatusBadRequest, shortLinkResp{Error: "bad request"})
+		return
+	}
+	target, ok := shortNormalizeURL(body.URL, r)
+	if !ok {
+		writeJSON(w, http.StatusBadRequest, shortLinkResp{Error: "that URL cannot be shortened"})
+		return
+	}
+	env, pwd := RequestEnv(r), RequestPwd(r)
+	ref := ""
+	if pwd != "" {
+		ref = principalRef(pwd)
+	}
+	kind := body.Kind
+	if kind != "download" && kind != "report" {
+		kind = "view"
+	}
+
+	var expires string
+	principal := s.RequestPrincipalID(r)
+	if body.Guest {
+		// A guest link delegates the CALLER's sight. A caller who is itself a
+		// guest must therefore be refused, or one shared link would breed
+		// others that nobody can find and revoke. (The middleware already
+		// blocks POST for guests; this is the second lock on the same door,
+		// because this is the door that matters.)
+		if pwd == "" || GuestFromRequest(r) != nil {
+			writeJSON(w, http.StatusForbidden, shortLinkResp{
+				Error: "only a signed-in session can create a shared link"})
+			return
+		}
+		expires = time.Now().Add(guestTTL).UTC().Format(time.RFC3339)
+	}
+
+	insert := func(slug string) error {
+		var pid interface{}
+		if body.Guest && principal != 0 {
+			pid = principal
+		}
+		var exp interface{}
+		if expires != "" {
+			exp = expires
+		}
+		_, err := s.DB.Exec(`INSERT INTO short_links
+			(slug, url, kind, title, env, pwd_ref, guest, principal_id, expires_at, created_at)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			slug, target, kind, strings.TrimSpace(body.Title), env, ref,
+			boolInt(body.Guest), pid, exp, time.Now().UTC().Format(time.RFC3339))
+		return err
+	}
+
+	if body.Guest {
+		for i := 0; i < 6; i++ {
+			slug := guestToken()
+			if slug == "" || s.shortSlugTaken(slug) {
+				continue
+			}
+			if err := insert(slug); err != nil {
+				continue
+			}
+			writeJSON(w, http.StatusOK, shortLinkResp{Slug: slug, Short: "/s/" + slug,
+				URL: target, Kind: kind, Guest: true, Expires: expires})
+			return
+		}
+		writeJSON(w, http.StatusInternalServerError, shortLinkResp{Error: "could not create a link"})
+		return
+	}
+
+	// A caller may propose a name (the rename field, before anything is
+	// saved). If it is taken, fall through to a token rather than failing:
+	// the user gets a link now and can rename it afterwards.
+	if want := shortSlugify(body.Slug); want != "" && !s.shortSlugTaken(want) {
+		if err := insert(want); err == nil {
+			writeJSON(w, http.StatusOK, shortLinkResp{Slug: want, Short: "/s/" + want,
+				URL: target, Kind: kind})
+			return
+		}
+	}
+
+	var existing string
+	if err := s.DB.QueryRow(`SELECT slug FROM short_links
+		WHERE url = ? AND env = ? AND guest = 0
+		  AND (alias_of IS NULL OR alias_of = '')
+		ORDER BY created_at DESC LIMIT 1`, target, env).Scan(&existing); err == nil && existing != "" {
+		writeJSON(w, http.StatusOK, shortLinkResp{Slug: existing, Short: "/s/" + existing,
+			URL: target, Kind: kind, Reuse: true})
+		return
+	}
+
+	for i := 0; i < 6; i++ {
+		slug := shortToken()
+		if slug == "" || s.shortSlugTaken(slug) {
+			continue
+		}
+		if err := insert(slug); err != nil {
+			continue
+		}
+		writeJSON(w, http.StatusOK, shortLinkResp{Slug: slug, Short: "/s/" + slug,
+			URL: target, Kind: kind})
+		return
+	}
+	writeJSON(w, http.StatusInternalServerError, shortLinkResp{Error: "could not create a link"})
+}
+
+func (s *Server) shortSlugTaken(slug string) bool {
+	var one int
+	return s.DB.QueryRow(`SELECT 1 FROM short_links WHERE slug = ?`, slug).Scan(&one) == nil
+}
+
+// HandleAPIShortLinkRename — POST /api/shortlink/{slug}/rename {slug}
+//
+// The old name stays as an alias. Renaming is the normal case (copy first,
+// name second), so by then the old link may already have been sent — freeing
+// the name would break exactly the link this feature exists to make sendable.
+func (s *Server) HandleAPIShortLinkRename(w http.ResponseWriter, r *http.Request) {
+	old := strings.ToLower(strings.Trim(r.PathValue("slug"), "/"))
+	var body struct {
+		Slug string `json:"slug"`
+	}
+	if err := decodeJSONBody(r, &body); err != nil {
+		writeJSON(w, http.StatusBadRequest, shortLinkResp{Error: "bad request"})
+		return
+	}
+	want := shortSlugify(body.Slug)
+	if want == "" {
+		writeJSON(w, http.StatusBadRequest, shortLinkResp{
+			Error: "use lowercase letters, digits and hyphens"})
+		return
+	}
+	var target, kind string
+	var guest int
+	var alias sql.NullString
+	if err := s.DB.QueryRow(`SELECT url, kind, guest, alias_of FROM short_links WHERE slug = ?`, old).
+		Scan(&target, &kind, &guest, &alias); err != nil {
+		writeJSON(w, http.StatusNotFound, shortLinkResp{Error: "no such link"})
+		return
+	}
+	if alias.Valid && alias.String != "" {
+		writeJSON(w, http.StatusConflict, shortLinkResp{Error: "that link is already an alias"})
+		return
+	}
+	// A guest slug is the secret itself. A memorable capability is a guessable
+	// one, and an alias would leave the old secret live besides.
+	if guest == 1 {
+		writeJSON(w, http.StatusConflict, shortLinkResp{
+			Error: "a shared link keeps its name — the name is the key"})
+		return
+	}
+	if want == old {
+		writeJSON(w, http.StatusOK, shortLinkResp{Slug: old, Short: "/s/" + old, URL: target, Kind: kind})
+		return
+	}
+	if s.shortSlugTaken(want) {
+		writeJSON(w, http.StatusConflict, shortLinkResp{Error: "that name is taken"})
+		return
+	}
+	tx, err := s.DB.Begin()
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, shortLinkResp{Error: "could not rename"})
+		return
+	}
+	defer tx.Rollback()
+	if _, err := tx.Exec(`UPDATE short_links SET slug = ? WHERE slug = ?`, want, old); err != nil {
+		writeJSON(w, http.StatusConflict, shortLinkResp{Error: "that name is taken"})
+		return
+	}
+	// The alias keeps `url` empty so the dedupe query cannot pair one view
+	// with two live names; resolution follows alias_of.
+	if _, err := tx.Exec(`INSERT INTO short_links (slug, url, alias_of, kind, env, pwd_ref, created_at)
+		VALUES (?, '', ?, ?, ?, ?, ?)`,
+		old, want, kind, RequestEnv(r), principalRef(RequestPwd(r)),
+		time.Now().UTC().Format(time.RFC3339)); err != nil {
+		writeJSON(w, http.StatusInternalServerError, shortLinkResp{Error: "could not rename"})
+		return
+	}
+	if err := tx.Commit(); err != nil {
+		writeJSON(w, http.StatusInternalServerError, shortLinkResp{Error: "could not rename"})
+		return
+	}
+	writeJSON(w, http.StatusOK, shortLinkResp{Slug: want, Short: "/s/" + want, URL: target, Kind: kind})
+}
+
+type shortLinkRow struct {
+	Slug    string `json:"slug"`
+	URL     string `json:"url"`
+	AliasOf string `json:"alias_of,omitempty"`
+	Kind    string `json:"kind"`
+	Title   string `json:"title,omitempty"`
+	Hits    int    `json:"hits"`
+	LastHit string `json:"last_hit_at,omitempty"`
+	Created string `json:"created_at"`
+	Guest   bool   `json:"guest"`
+	Expires string `json:"expires_at,omitempty"`
+	Expired bool   `json:"expired,omitempty"`
+	Revoked bool   `json:"revoked,omitempty"`
+	Mine    bool   `json:"mine"`
+}
+
+type shortLinkGroup struct {
+	Ref   string         `json:"ref"`   // non-secret sha256 handle
+	Label string         `json:"label"` // "tes…" — what the Access tab shows
+	Env   string         `json:"env"`
+	Mine  bool           `json:"mine"`
+	Links []shortLinkRow `json:"links"`
+}
+
+// HandleAPIShortLinkList — GET /api/shortlinks. The admin sheet.
+//
+// GROUPED BY PASSWORD, not flat. A guest link grants sight of exactly what one
+// password can see, so "whose access does this delegate" is the question being
+// asked here, and a flat list would answer it only by accident. The password
+// itself is never in the response — a group is identified by `pwd_ref`, the
+// same non-secret handle the Access tab already prints.
+func (s *Server) HandleAPIShortLinkList(w http.ResponseWriter, r *http.Request) {
+	mine := ""
+	if pwd := RequestPwd(r); pwd != "" {
+		mine = principalRef(pwd)
+	}
+	rows, err := s.DB.Query(`SELECT slug, url, COALESCE(alias_of,''), kind, title, env,
+		COALESCE(pwd_ref,''), guest, COALESCE(expires_at,''), COALESCE(revoked_at,''),
+		hits, COALESCE(last_hit_at,''), created_at
+		FROM short_links ORDER BY created_at DESC LIMIT 1000`)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "could not list links"})
+		return
+	}
+	defer rows.Close()
+	order := []string{}
+	byRef := map[string]*shortLinkGroup{}
+	labels := shortRefLabels()
+	now := time.Now()
+	for rows.Next() {
+		var l shortLinkRow
+		var env, ref, revoked string
+		var guest int
+		if err := rows.Scan(&l.Slug, &l.URL, &l.AliasOf, &l.Kind, &l.Title, &env, &ref,
+			&guest, &l.Expires, &revoked, &l.Hits, &l.LastHit, &l.Created); err != nil {
+			continue
+		}
+		l.Guest = guest == 1
+		l.Revoked = revoked != ""
+		if l.Expires != "" {
+			if t, err := time.Parse(time.RFC3339, l.Expires); err == nil {
+				l.Expired = now.After(t)
+			}
+		}
+		l.Mine = ref != "" && ref == mine
+		g := byRef[ref]
+		if g == nil {
+			label := labels[ref]
+			if label == "" {
+				// A link made by a password since removed from the config.
+				// Say so rather than inventing a name: an unattributed key is
+				// exactly what an operator needs to notice.
+				label = "unknown password"
+				if ref == "" {
+					label = "no password recorded"
+				}
+			}
+			g = &shortLinkGroup{Ref: ref, Label: label, Env: env, Mine: ref != "" && ref == mine}
+			byRef[ref] = g
+			order = append(order, ref)
+		}
+		g.Links = append(g.Links, l)
+	}
+	// The reader's own password first: those are the links they can act on
+	// without asking anybody.
+	groups := make([]*shortLinkGroup, 0, len(order))
+	for _, ref := range order {
+		if byRef[ref].Mine {
+			groups = append(groups, byRef[ref])
+		}
+	}
+	for _, ref := range order {
+		if !byRef[ref].Mine {
+			groups = append(groups, byRef[ref])
+		}
+	}
+	writeJSON(w, http.StatusOK, map[string]interface{}{"groups": groups, "guest_ttl_days": int(guestTTL / (24 * time.Hour))})
+}
+
+// shortRefLabels maps principalRef -> the label the Access tab shows.
+func shortRefLabels() map[string]string {
+	out := map[string]string{}
+	for _, pwd := range validPasswords {
+		pwd = strings.TrimSpace(pwd)
+		if pwd == "" {
+			continue
+		}
+		out[principalRef(pwd)] = pwd[:min(3, len(pwd))] + "\u2026"
+	}
+	return out
+}
+
+// HandleAPIShortLinkDelete — DELETE /api/shortlink/{slug}
+//
+// Revocation, and the reason the list exists.
+//
+// A GUEST link is revoked, not deleted: the row stays with `revoked_at` set,
+// so the recipient gets "this was switched off" instead of "no such link", and
+// so the sheet can still show that it was opened four times before you pulled
+// it. A NAMED link has no such history worth keeping and is deleted outright,
+// together with the aliases pointing at it — an alias outliving its target is
+// a 404 with a name, which reads as a bug rather than as a revoked link.
+func (s *Server) HandleAPIShortLinkDelete(w http.ResponseWriter, r *http.Request) {
+	slug := strings.ToLower(strings.Trim(r.PathValue("slug"), "/"))
+	if slug == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "no slug"})
+		return
+	}
+	var guest int
+	if err := s.DB.QueryRow(`SELECT guest FROM short_links WHERE slug = ?`, slug).Scan(&guest); err != nil {
+		writeJSON(w, http.StatusNotFound, map[string]string{"error": "no such link"})
+		return
+	}
+	if guest == 1 {
+		if _, err := s.DB.Exec(`UPDATE short_links SET revoked_at = ? WHERE slug = ?`,
+			time.Now().UTC().Format(time.RFC3339), slug); err != nil {
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "could not revoke"})
+			return
+		}
+		writeJSON(w, http.StatusOK, map[string]interface{}{"revoked": slug})
+		return
+	}
+	res, err := s.DB.Exec(`DELETE FROM short_links WHERE slug = ? OR alias_of = ?`, slug, slug)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "could not clear link"})
+		return
+	}
+	n, _ := res.RowsAffected()
+	writeJSON(w, http.StatusOK, map[string]interface{}{"deleted": n})
+}

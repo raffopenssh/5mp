@@ -558,6 +558,119 @@
     }
 
     /**
+     * HOW CLOSE COUNTS AS ON IT.
+     *
+     * MapLibre hit-tests the drawn pixel. That is the right answer for a
+     * country-sized polygon and the wrong one for everything this map is made
+     * of: a fire trajectory is drawn at line-width 0.7-2.4 px (densityPaint),
+     * a detection dot at radius 1.1-5. Human pointing error is a few px with a
+     * mouse and, by both platform guidelines, ~9-11 mm - about 24 CSS px -
+     * with a finger, whose contact patch also HIDES the target it is aiming
+     * at. A 1 px line is therefore not a small target, it is not a target at
+     * all, and "tap exactly on the line" is not a skill anyone has.
+     *
+     * So: a slop ring around the point, sized to the POINTER rather than to
+     * the feature. This is Leaflet's `tolerance` and OpenLayers'
+     * `hitTolerance`, and it changes nothing about what is DRAWN - only about
+     * what answers.
+     */
+    var PAD_MOUSE = 6, PAD_TOUCH = 18, PAD_CLICK_BONUS = 4;
+    function hitPad(e, forClick) {
+        var p = pointerIsCoarse(e) ? PAD_TOUCH : PAD_MOUSE;
+        // A click is a commitment and gets a little more room than a hover: a
+        // preview that grabs early is noise, a click that misses is a dead end.
+        return forClick ? p + PAD_CLICK_BONUS : p;
+    }
+
+    /** queryRenderedFeatures over a box of radius `r` px (r = 0 -> the point). */
+    function qrf(point, r, layers) {
+        if (!point) return [];
+        var geom = r > 0
+            ? [[point.x - r, point.y - r], [point.x + r, point.y + r]]
+            : point;
+        try { return map.queryRenderedFeatures(geom, { layers: layers }) || []; }
+        catch (err) { return []; }
+    }
+
+    /**
+     * Distance in screen px from `point` to a feature's geometry.
+     *
+     * The box query is a BOX: at pad 22 its corners are 31 px away, so a
+     * feature merely clipping a corner would otherwise beat one 5 px from the
+     * cursor. Measuring turns the box back into a disc, and gives the ordering
+     * that decides which tab is selected - nearest first, which is what "the
+     * thing I was pointing at" means.
+     *
+     * A polygon containing the point is distance 0 (it IS under the finger).
+     * Anything unprojectable declines rather than guessing.
+     */
+    function screenDist(f, point) {
+        var g = f && f.geometry;
+        if (!g || !point) return null;
+        var best = Infinity, px = point.x, py = point.y;
+        function proj(c) {
+            try { return map.project(c); } catch (err) { return null; }
+        }
+        function seg(a, b) {
+            var vx = b.x - a.x, vy = b.y - a.y;
+            var L = vx * vx + vy * vy;
+            var t = L ? Math.max(0, Math.min(1, ((px - a.x) * vx + (py - a.y) * vy) / L)) : 0;
+            var dx = a.x + t * vx - px, dy = a.y + t * vy - py;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+        function line(coords) {
+            var prev = null;
+            for (var i = 0; i < coords.length; i++) {
+                var p = proj(coords[i]);
+                if (!p) continue;
+                if (prev) best = Math.min(best, seg(prev, p));
+                else best = Math.min(best, Math.sqrt((p.x - px) * (p.x - px) + (p.y - py) * (p.y - py)));
+                prev = p;
+            }
+        }
+        function ring(coords) {
+            var pts = [], i, j;
+            for (i = 0; i < coords.length; i++) {
+                var p = proj(coords[i]);
+                if (p) pts.push(p);
+            }
+            var inside = false;
+            for (i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+                if ((pts[i].y > py) !== (pts[j].y > py) &&
+                    px < (pts[j].x - pts[i].x) * (py - pts[i].y) / (pts[j].y - pts[i].y) + pts[i].x) {
+                    inside = !inside;
+                }
+            }
+            if (inside) { best = 0; return; }
+            for (i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+                best = Math.min(best, seg(pts[j], pts[i]));
+            }
+        }
+        var c = g.coordinates;
+        try {
+            switch (g.type) {
+                case 'Point': {
+                    var p0 = proj(c);
+                    if (p0) best = Math.sqrt((p0.x - px) * (p0.x - px) + (p0.y - py) * (p0.y - py));
+                    break;
+                }
+                case 'MultiPoint':
+                    c.forEach(function (q) {
+                        var p = proj(q);
+                        if (p) best = Math.min(best, Math.sqrt((p.x - px) * (p.x - px) + (p.y - py) * (p.y - py)));
+                    });
+                    break;
+                case 'LineString': line(c); break;
+                case 'MultiLineString': c.forEach(line); break;
+                case 'Polygon': c.forEach(ring); break;
+                case 'MultiPolygon': c.forEach(function (poly) { poly.forEach(ring); }); break;
+                default: return null;
+            }
+        } catch (err) { return null; }
+        return isFinite(best) ? best : null;
+    }
+
+    /**
      * Every answer at this point, best first.
      *
      * `all` = false stops at the winner (a hover asks one question). `all` =
@@ -566,23 +679,42 @@
      */
     function tipsFor(e, forClick, all) {
         var cand = [];
+        var pad = hitPad(e, forClick);
         var layers = liveLayers().filter(function (id) {
             var o = registry.get(id);
             return forClick || !(o && o.clickOnly);
         });
         if (layers.length) {
-            var feats;
-            try {
-                feats = map.queryRenderedFeatures(e.point, { layers: layers });
-            } catch (err) { feats = null; }
+            var feats = qrf(e.point, 0, layers), seenExact = {};
             // Topmost-first, but backdrops last regardless of where they are
-            // drawn. Stable sort on (priority desc), so within one priority the
-            // map's own render order still decides.
-            (feats || []).forEach(function (f, i) {
+            // drawn. Stable sort on (priority desc, distance asc), so within
+            // one priority the nearest wins and the map's own render order
+            // breaks the remaining ties.
+            feats.forEach(function (f, i) {
                 var o = registry.get(f.layer && f.layer.id);
-                cand.push({ f: f, opts: o, i: i,
+                seenExact[(f.layer && f.layer.id) + '/' + featureKey(f)] = true;
+                cand.push({ f: f, opts: o, i: i, dist: 0,
                             pri: (o && typeof o.priority === 'number') ? o.priority : 0 });
             });
+            // THE SLOP RING. Everything above is what MapLibre calls a hit,
+            // which is the rendered pixel and nothing else — and a fire
+            // trajectory at line-width 0.7 (densityPaint's floor) is a target
+            // you cannot reliably put a mouse on and cannot put a finger on at
+            // all. So ask again over a box around the point and keep whatever
+            // lands within `pad` of it, measured properly in screen space.
+            // Exact hits stay at distance 0, so widening the target can only
+            // ADD answers behind the one already under the cursor.
+            if (pad > 0) {
+                qrf(e.point, pad, layers).forEach(function (f, i) {
+                    var lid = f.layer && f.layer.id;
+                    if (seenExact[lid + '/' + featureKey(f)]) return;
+                    var d = screenDist(f, e.point);
+                    if (d == null || d > pad) return;
+                    var o = registry.get(lid);
+                    cand.push({ f: f, opts: o, i: feats.length + i, dist: d,
+                                pri: (o && typeof o.priority === 'number') ? o.priority : 0 });
+                });
+            }
         }
         // Canvas-drawn features join the same ordering. They come after the
         // real layers at equal priority, which is right: a pinned vector the
@@ -590,7 +722,12 @@
         probes.forEach(function (p, id) {
             if (!forClick && p.clickOnly) return;
             var hit;
-            try { hit = p.probe(e); } catch (err) { hit = null; }
+            // The probe is told how much slop the pointer is entitled to, so a
+            // canvas layer's hit radius is the same physical size as a vector
+            // layer's rather than a number it invented for a mouse.
+            try { hit = p.probe({ point: e.point, lngLat: e.lngLat,
+                                  originalEvent: e.originalEvent, hitPad: pad }); }
+            catch (err) { hit = null; }
             if (!hit) return;
             // A probe may answer with SEVERAL features at the point (an
             // animation frame draws a settlement, a clearing and a fire path
@@ -616,6 +753,7 @@
                             peers: (h.peers !== undefined) ? h.peers : p.peers,
                             priority: p.priority, clickOnly: p.clickOnly },
                     i: cand.length,
+                    dist: (typeof h.dist === 'number') ? h.dist : 0,
                     pri: (typeof p.priority === 'number') ? p.priority : 0,
                     probeId: sub
                 });
@@ -623,7 +761,13 @@
         });
         cand = cand.filter(function (c) { return c.opts && typeof c.opts.html === 'function'; });
         if (!cand.length) return null;
-        cand.sort(function (a, b) { return (b.pri - a.pri) || (a.i - b.i); });
+        // Priority first (a backdrop never buries a feature), then DISTANCE:
+        // inside the slop ring several things answer, and "the one I was
+        // pointing at" is the nearest, not the one the renderer happened to
+        // draw last. Render order only breaks the remaining ties.
+        cand.sort(function (a, b) {
+            return (b.pri - a.pri) || ((a.dist || 0) - (b.dist || 0)) || (a.i - b.i);
+        });
         var guardBlocked = null;   // evaluated at most once per event
         var out = [];
         var seen = {};             // one row per layer: 12 fire paths are one answer

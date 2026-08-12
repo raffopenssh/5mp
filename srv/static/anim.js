@@ -635,25 +635,56 @@
         _trajIdx = null;   // rebuilt lazily, and only if something hovers
     }
 
-    // A bucket grid over every ON-SCREEN trajectory vertex. Built lazily (only
+    // A bucket grid over every ON-SCREEN trajectory SEGMENT. Built lazily (only
     // a hover needs it) and once per view transform: 6,000 groups x ~30 points
     // is ~180k distance tests per mousemove without it, which is exactly the
     // kind of per-pointer-event work that makes a paused map feel stuck.
+    //
+    // SEGMENTS, NOT VERTICES. The first version indexed the points and
+    // answered with the nearest one, which is how a trajectory could be drawn
+    // straight under the cursor and still not answer: a fire path's vertices
+    // are consecutive detections, kilometres and therefore often hundreds of
+    // screen pixels apart, so the middle of a long leg was nowhere near a
+    // vertex. What is drawn is the LINE, and the line is what the user is
+    // pointing at. Each segment is registered in every cell it crosses, so a
+    // leg spanning the viewport is found from anywhere along it.
     function trajIndex(groups, w, h) {
         if (_trajIdx && _trajIdx.key === _trajKey) return _trajIdx;
         const nx = Math.max(1, Math.ceil((w + 128) / IDX_CELL));
         const ny = Math.max(1, Math.ceil((h + 128) / IDX_CELL));
         const gi = [], pi = [], next = [];
         const heads = new Int32Array(nx * ny).fill(-1);
+        const put = (b, k, i) => {
+            const id = gi.length;
+            gi.push(k); pi.push(i); next.push(heads[b]); heads[b] = id;
+        };
         for (let k = 0; k < groups.length; k++) {
             const g = groups[k];
             if (g._off || !g._scr) continue;
-            for (let i = 0; i < g.pts.length; i++) {
+            const n = g.pts.length;
+            for (let i = 0; i < n; i++) {
                 const x = g._scr[i * 2], y = g._scr[i * 2 + 1];
-                const cx = Math.floor((x + 64) / IDX_CELL), cy = Math.floor((y + 64) / IDX_CELL);
-                if (cx < 0 || cy < 0 || cx >= nx || cy >= ny) continue;
-                const b = cy * nx + cx, id = gi.length;
-                gi.push(k); pi.push(i); next.push(heads[b]); heads[b] = id;
+                let cx = Math.floor((x + 64) / IDX_CELL), cy = Math.floor((y + 64) / IDX_CELL);
+                if (cx >= 0 && cy >= 0 && cx < nx && cy < ny) put(cy * nx + cx, k, i);
+                if (i + 1 >= n) continue;
+                // Walk the cells between this vertex and the next. Stepping in
+                // half-cells is a deliberate approximation: a segment is a
+                // straight line, so sampling it finer than the bucket it is
+                // being filed into buys nothing, and the probe re-measures the
+                // true point-to-segment distance anyway.
+                const x2 = g._scr[(i + 1) * 2], y2 = g._scr[(i + 1) * 2 + 1];
+                const dx = x2 - x, dy = y2 - y;
+                const steps = Math.min(512, Math.ceil(Math.hypot(dx, dy) / (IDX_CELL / 2)));
+                let lastB = (cy >= 0 && cx >= 0 && cx < nx && cy < ny) ? cy * nx + cx : -1;
+                for (let s = 1; s <= steps; s++) {
+                    const px = x + dx * (s / steps), py = y + dy * (s / steps);
+                    cx = Math.floor((px + 64) / IDX_CELL); cy = Math.floor((py + 64) / IDX_CELL);
+                    if (cx < 0 || cy < 0 || cx >= nx || cy >= ny) continue;
+                    const b = cy * nx + cx;
+                    if (b === lastB) continue;
+                    put(b, k, i);
+                    lastB = b;
+                }
             }
         }
         _trajIdx = { key: _trajKey, nx, ny, heads,
@@ -1803,7 +1834,11 @@
     // Only while PAUSED. A tip that follows a moving animation is noise: the
     // thing under the cursor is gone by the time it is read.
     const PROBE_ID = 'animator-frame';
-    const PROBE_PX = 9;             // hit radius in screen pixels
+    // Hit radius in screen pixels. MapTip decides it from the POINTER (a
+    // fingertip is ~18 px, a mouse ~6) and passes it in, so a trajectory drawn
+    // on canvas is exactly as easy to hit as a vector one drawn by MapLibre;
+    // the constant is only the fallback for a caller that says nothing.
+    const PROBE_PX = 9;
 
     // A dot the animator drew and a dot a pinned layer drew are the SAME ROW.
     // So the tip must be the same tip — narrative, classification, area and
@@ -1867,29 +1902,64 @@
         // nearest dot made a settlement under a fire path unreachable, which
         // is exactly the "select behind" failure the card's tabs exist to fix
         // for registered layers. MapTip turns the list into tabs.
+        // The hit radius is the POINTER's, not the layer's: MapTip measures it
+        // once (a fingertip is ~18 px of contact, a mouse a few) and hands it
+        // to every probe, so a canvas trajectory is exactly as easy to hit as
+        // a vector one. PROBE_PX is only the fallback.
+        const rad = (e && typeof e.hitPad === 'number' && e.hitPad > 0) ? e.hitPad : PROBE_PX;
         const best = new Map();     // kind -> {dist, make}
         function considerIn(kind, dist, make) {
-            if (dist > PROBE_PX) return;
+            if (dist > rad) return;
             const b = best.get(kind);
             if (b && b.dist <= dist) return;
             best.set(kind, { dist, make });
         }
 
-        // Trajectories: nearest vertex of the part that has happened by t.
-        // The vertices are already projected (projectTrajs) and bucketed
-        // (trajIndex), so a hover touches ~9 cells rather than every group.
+        // Trajectories: distance to the drawn LINE of the part that has
+        // happened by t -- not to the nearest vertex. A group's vertices are
+        // consecutive detections, often hundreds of screen pixels apart, so a
+        // vertex test refuses a path the cursor is sitting exactly on top of.
+        // Segments are pre-projected (projectTrajs) and bucketed into every
+        // cell they cross (trajIndex), so a hover touches a handful of cells.
         if (on.trajs && D.trajs) {
             projectTrajs(D.trajs, proj, w, h);
             const ti = trajIndex(D.trajs, w, h);
-            const c0 = Math.floor((pt.x + 64 - PROBE_PX) / IDX_CELL), c1 = Math.floor((pt.x + 64 + PROBE_PX) / IDX_CELL);
-            const r0 = Math.floor((pt.y + 64 - PROBE_PX) / IDX_CELL), r1 = Math.floor((pt.y + 64 + PROBE_PX) / IDX_CELL);
+            const c0 = Math.floor((pt.x + 64 - rad) / IDX_CELL), c1 = Math.floor((pt.x + 64 + rad) / IDX_CELL);
+            const r0 = Math.floor((pt.y + 64 - rad) / IDX_CELL), r1 = Math.floor((pt.y + 64 + rad) / IDX_CELL);
+            const seen = new Set();
             for (let cy = Math.max(0, r0); cy <= Math.min(ti.ny - 1, r1); cy++) {
                 for (let cx = Math.max(0, c0); cx <= Math.min(ti.nx - 1, c1); cx++) {
                     for (let id = ti.heads[cy * ti.nx + cx]; id !== -1; id = ti.next[id]) {
-                        const g = D.trajs[ti.gi[id]], i = ti.pi[id];
-                        if (g.t0 > t || g.pts[i][2] > t) continue;
-                        if (t > g.t1 + TRAJ_FADE_DAYS * DAY) continue;   // ashed away
-                        const dx = g._scr[i * 2] - pt.x, dy = g._scr[i * 2 + 1] - pt.y;
+                        const gk = ti.gi[id], i = ti.pi[id];
+                        const g = D.trajs[gk];
+                        if (g.t0 > t) continue;
+                        // AN ASHED PATH IS STILL A FEATURE. It is drawn (grey,
+                        // thin) for TRAJ_FADE_DAYS after the fire ended, and
+                        // "why is that grey line there" is precisely the
+                        // question a faded thing provokes -- so it answers for
+                        // exactly as long as it is on screen, and the tip says
+                        // it has ended. Only what is gone declines.
+                        if (t > g.t1 + TRAJ_FADE_DAYS * DAY) continue;
+                        // The segment i->i+1, clipped to what has been drawn:
+                        // its start must have happened, and its end is either
+                        // drawn or interpolated at t exactly as draw() does.
+                        const skey = gk * 4096 + i;
+                        if (seen.has(skey)) continue;
+                        seen.add(skey);
+                        if (g.pts[i][2] > t) continue;
+                        const ax = g._scr[i * 2], ay = g._scr[i * 2 + 1];
+                        let bx = ax, by = ay;
+                        if (i + 1 < g.pts.length) {
+                            const t0 = g.pts[i][2], t1 = g.pts[i + 1][2];
+                            const f = (t1 > t) ? (t1 > t0 ? (t - t0) / (t1 - t0) : 0) : 1;
+                            if (f > 0) {
+                                bx = ax + (g._scr[(i + 1) * 2] - ax) * f;
+                                by = ay + (g._scr[(i + 1) * 2 + 1] - ay) * f;
+                            }
+                        }
+                        const vx = bx - ax, vy = by - ay, L = vx * vx + vy * vy;
+                        const u = L ? Math.max(0, Math.min(1, ((pt.x - ax) * vx + (pt.y - ay) * vy) / L)) : 0;
+                        const dx = ax + u * vx - pt.x, dy = ay + u * vy - pt.y;
                         considerIn('trajs', Math.hypot(dx, dy), () => ({
                             key: 'trajs',
                             html: trajTip(g, t).html,
@@ -1911,7 +1981,7 @@
         // — via the row id the points endpoint already ships (`ids`).
         if (on.deforest && D.deforest && D.deforest.length) {
             const ix = screenIndex('deforest', D.deforest, d => d.lon, d => d.lat, proj, w, h);
-            idxNear(ix, pt.x, pt.y, PROBE_PX, (i, dist) => {
+            idxNear(ix, pt.x, pt.y, rad, (i, dist) => {
                 const d = D.deforest[i];
                 if (d.t > t) return;
                 considerIn('deforest', dist, () => ({
@@ -1926,7 +1996,7 @@
         }
         if (on.settlements && D.settlements && D.settlements.length) {
             const ix = screenIndex('settlements', D.settlements, s => s.lon, s => s.lat, proj, w, h);
-            idxNear(ix, pt.x, pt.y, PROBE_PX, (i, dist) => {
+            idxNear(ix, pt.x, pt.y, rad, (i, dist) => {
                 const s = D.settlements[i];
                 considerIn('settlements', dist, () => ({
                     key: 'settlements',
@@ -1942,7 +2012,7 @@
                         (on.fireGrid && D.fireGrid && D.fireGrid.asPoints && D.fireGrid.points);
         if (firePts && firePts.length) {
             const ix = screenIndex('firePts', firePts, q => q[0], q => q[1], proj, w, h);
-            idxNear(ix, pt.x, pt.y, PROBE_PX, (i, dist) => {
+            idxNear(ix, pt.x, pt.y, rad, (i, dist) => {
                 const q = firePts[i];
                 if (q[2] > t || t - q[2] > DAY * 3) return;    // outside the frame
                 considerIn('firePts', dist, () => ({
@@ -1968,7 +2038,7 @@
                     if (v > 0.02) {
                         const stepLbl = D.fireGrid.step === 'day' ? 'day'
                                       : D.fireGrid.step === 'week' ? 'week' : 'month';
-                        best.set('fireGrid', { dist: PROBE_PX, make: () => ({
+                        best.set('fireGrid', { dist: rad, make: () => ({
                             key: 'fireGrid',
                             label: 'Fire activity',
                             peers: false,
@@ -1988,15 +2058,19 @@
         }
         if (!best.size) return null;
         // Nearest first, so the winner is still the thing the cursor is on and
-        // the rest are tabs behind it.
+        // the rest are tabs behind it. The distance rides along: MapTip sorts
+        // canvas answers against VECTOR ones by the same measure, or a probe
+        // hit 17 px away would outrank a trajectory 2 px away just for being a
+        // probe.
         const hits = Array.from(best.values()).sort((a, b) => a.dist - b.dist).map(b => {
             const v = b.make();
             // A hit may be handed back as-is (it already carries `render`,
             // `properties` and an action), or as the simple {label, lines}
             // shape for the answers with nothing behind them to open.
-            if (v.render || v.html) return v;
+            if (v.render || v.html) return { ...v, dist: b.dist };
             return {
                 key: v.key,
+                dist: b.dist,
                 html: '<div class="maptip-label">' + v.label + ' · ' + fmtDateHuman(t) + '</div>' +
                       v.lines.filter(Boolean).map(l => '<div class="maptip-meta">' + l + '</div>').join(''),
                 tabLabel: v.label, peers: v.peers

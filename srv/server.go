@@ -49,7 +49,13 @@ type pageData struct {
 	HasPatrol bool
 	// AuthLabel identifies the current session in the alpha UI chip.
 	// Today: the access password used. Later (user management): user email.
+	// For a guest capability it is the LINK's name (srv/guest.go).
 	AuthLabel string
+	// IsGuest: this page is being read through a read-only shared link. The
+	// server already refuses every write; the UI hides the controls that
+	// would produce one, because an editor that 403s on save is worse than an
+	// editor that was never offered.
+	IsGuest bool
 }
 
 func New(dbPath, hostname string) (*Server, error) {
@@ -105,6 +111,17 @@ func (s *Server) HandleRoot(w http.ResponseWriter, r *http.Request) {
 	if user != nil && user.Email != "" {
 		authLabel = user.Email
 	}
+	// A guest holds a link, not a password, and the chip must say so: showing
+	// a password there would be showing them one they were never given, and
+	// showing nothing would leave them unable to tell a shared view from a
+	// signed-in one. IsGuest also switches the UI to read-only.
+	guest := GuestFromRequest(r)
+	if guest != nil {
+		authLabel = guest.Title
+		if authLabel == "" {
+			authLabel = "shared link"
+		}
+	}
 
 	data := pageData{
 		Hostname:  s.Hostname,
@@ -113,6 +130,7 @@ func (s *Server) HandleRoot(w http.ResponseWriter, r *http.Request) {
 		IsTest:    RequestEnv(r) == sandboxTenant,
 		HasPatrol: s.tenantHasPatrol(RequestEnv(r)),
 		AuthLabel: authLabel,
+		IsGuest:   guest != nil,
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -196,6 +214,14 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("POST /admin/upload/fire", s.RequireAdmin(s.HandleUploadFire))
 	mux.HandleFunc("POST /admin/upload/ghsl", s.RequireAdmin(s.HandleUploadGHSL))
 	mux.HandleFunc("GET /admin/status", s.RequireAdmin(s.HandleProcessingStatus))
+
+	// Short links (srv/shortlink.go). /s/{slug} is either a name for a long
+	// URL or a read-only capability; both resolve here.
+	mux.HandleFunc("GET /s/{slug}", s.HandleShortLink)
+	mux.HandleFunc("POST /api/shortlink", s.HandleAPIShortLinkCreate)
+	mux.HandleFunc("POST /api/shortlink/{slug}/rename", s.HandleAPIShortLinkRename)
+	mux.HandleFunc("DELETE /api/shortlink/{slug}", s.HandleAPIShortLinkDelete)
+	mux.HandleFunc("GET /api/shortlinks", s.HandleAPIShortLinkList)
 
 	// API routes
 	mux.HandleFunc("GET /api/version", s.HandleAPIVersion)

@@ -68,6 +68,14 @@ func (s *Server) SeedPrincipals() error {
 func (s *Server) RequestPrincipalID(r *http.Request) int64 {
 	pwd := RequestPwd(r)
 	if pwd == "" {
+		// A guest capability acts AS the principal that issued it: the point
+		// of a shared link is that the recipient sees the sender's private
+		// AOI without becoming the sender. Everything downstream --
+		// GetAOI(..., principalID), aoiGate, aoi_grants -- then needs no
+		// notion of "guest" at all. See srv/shortlink.go.
+		if g := GuestFromRequest(r); g != nil {
+			return g.PrincipalID
+		}
 		return 0
 	}
 	var id int64
@@ -86,6 +94,15 @@ func (s *Server) RequestPrincipalID(r *http.Request) int64 {
 func visibilityFingerprint(r *http.Request) string {
 	pwd := RequestPwd(r)
 	if pwd == "" {
+		// A GUEST IS NOT ANONYMOUS. It borrows a principal and therefore sees
+		// that principal's private AOIs; fingerprinting it as "anon" would
+		// file those bodies in the slot every unauthenticated reader draws
+		// from -- the exact leak this function exists to prevent, arriving by
+		// the back door. Its own slot, keyed on the slug: two guests of the
+		// same principal legitimately share a body, but only with each other.
+		if g := GuestFromRequest(r); g != nil {
+			return "g" + g.Slug[:min(7, len(g.Slug))]
+		}
 		return "anon"
 	}
 	return principalRef(pwd)[:8]

@@ -25,6 +25,7 @@ settlements, patrol tracking. ~17k-line single-page frontend + SQLite (1.8 GB).
 | Feature loading, LOD, `/features-in-bbox`, detail tiers | `docs/agents/lod.md` |
 | Backups, cron/notifications, OSM enrichment, onboarding, workers | `docs/agents/ops.md` |
 | Passwords, tenants, caching headers | `docs/agents/auth.md` |
+| Share links, `/s/{slug}`, guest capabilities | `docs/agents/sharing.md` |
 | Writing/running tests, share-link params, `TEST` helper | `docs/agents/testing.md` (+ `docs/TEST_HELPERS.md`) |
 | Data files, API examples, DB stats, Lucide icons | `docs/agents/reference.md` |
 | Mining detection (retired — do not rebuild) | `docs/agents/mining.md` |
@@ -167,6 +168,11 @@ These apply no matter what you touch. Each cost real time at least once.
 12. **Mining detection is retired** (`MiningEnabled = false`). Do not rebuild
     it; read `docs/agents/mining.md` before proposing anything mining-related.
 
-13. Long writers **yield** (batched commits) so SQLite's single writer stays
+13. **A share link is a name; a guest link is a credential.** Never put an
+    access password in a URL, and never let a guest capability write, mint
+    another link, or fingerprint as `anon` in the response cache.
+    See `docs/agents/sharing.md`.
+
+14. Long writers **yield** (batched commits) so SQLite's single writer stays
     available. Before blaming the write lock, check `ps` — a lock wait is `S`,
     not `R`.
