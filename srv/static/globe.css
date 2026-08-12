@@ -291,9 +291,42 @@
            the same thing here as in the full legend and on the polygon. */
         .ml-swatches { display: flex; align-items: center; gap: 3px; flex-wrap: wrap;
             padding: 5px 8px 0; }
-        .ml-sw { width: 13px; height: 8px; border-radius: 2px; flex: none;
-            border: 1px solid rgba(0,0,0,0.45); background-size: 16px 16px; }
-        .ml-sw-more { font-size: 9px; color: #6b7280; }
+        /* Each swatch is a SWITCH, not a picture: tapping a period hides it.
+           A hidden one stays in the strip, struck through and greyed — it is
+           the only way back, and the coverage sample cannot see a unit that is
+           no longer drawn. 15x12 here, 26px on touch (below). */
+        .ml-sw { position: relative; width: 15px; height: 12px; padding: 2px 1px; flex: none;
+            border: 0; background: none; cursor: pointer; display: inline-flex;
+            align-items: center; justify-content: center; border-radius: 3px;
+            -webkit-tap-highlight-color: transparent;
+            transition: background 0.15s, opacity 0.2s ease,
+                        max-width 0.25s cubic-bezier(.4,0,.2,1),
+                        padding 0.25s cubic-bezier(.4,0,.2,1),
+                        margin 0.25s cubic-bezier(.4,0,.2,1); }
+        .ml-sw > i { width: 13px; height: 8px; border-radius: 2px; display: block;
+            border: 1px solid rgba(0,0,0,0.45); background-size: 16px 16px;
+            transition: opacity 0.15s, filter 0.15s; }
+        .ml-sw:hover, .ml-sw:focus-visible { background: rgba(255,255,255,0.12); outline: none; }
+        .ml-sw.off > i { opacity: 0.32; filter: grayscale(1); }
+        .ml-sw.off::after { content: ''; position: absolute; left: 1px; right: 1px; top: 50%;
+            height: 1px; background: rgba(255,255,255,0.5); transform: rotate(-15deg); }
+        /* Swatches past the head of the list are collapsed behind "+n" and
+           animate open the way the date-preset tags do: width and opacity,
+           staggered, so the strip grows instead of jumping. */
+        .ml-sw.ml-sw-x { max-width: 0; padding: 0; opacity: 0; overflow: hidden;
+            pointer-events: none; margin: 0 -1.5px; }
+        .ml-sw.ml-sw-x.visible { max-width: 15px; padding: 2px 1px; opacity: 1;
+            pointer-events: auto; margin: 0; }
+        .ml-sw-more, .ml-sw-all { font-size: 9px; color: #6b7280; font-family: inherit;
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 3px; padding: 1px 4px; line-height: 1.3; cursor: pointer; flex: none;
+            -webkit-tap-highlight-color: transparent;
+            transition: background 0.15s, border-color 0.15s, color 0.15s; }
+        .ml-sw-more:hover, .ml-sw-all:hover,
+        .ml-sw-more:focus-visible, .ml-sw-all:focus-visible {
+            background: rgba(251,191,36,0.12); border-color: rgba(251,191,36,0.4);
+            color: #fcd34d; outline: none; }
+        .ml-sw-all { color: #fcd34d; border-color: rgba(251,191,36,0.35); }
 
         /* The geology chip opens a menu, so it carries a caret: the two other
            chips destroy their layer on tap and this one does not, and that
@@ -308,6 +341,24 @@
         .ml-menu .ml-mi { width: 14px; text-align: center; opacity: 0.85; margin-right: 2px; }
         .ml-menu .ml-n { font-style: normal; margin-left: auto; color: #6b7280; font-size: 10px;
             font-variant-numeric: tabular-nums; }
+        /* The strength floor: how good an affinity has to be to count. A
+           segmented control, because it is a choice of ONE (a floor), unlike
+           the commodity rows above it which are any-of. Each level carries the
+           number of units it would leave — derived, never typed — so the cost
+           of the choice is visible before the tap, and a level that would
+           leave nothing is dead rather than absent. */
+        .ml-menu .ml-wrow { display: flex; gap: 4px; padding: 4px 10px 6px; }
+        .ml-menu .ml-wlv { flex: 1; display: inline-flex; align-items: center; justify-content: center;
+            gap: 4px; padding: 5px 4px; border-radius: 6px; cursor: pointer; font: inherit;
+            font-size: 10px; color: #9ca3af; background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.12); -webkit-tap-highlight-color: transparent;
+            transition: background 0.15s, border-color 0.15s, color 0.15s; }
+        .ml-menu .ml-wlv em { font-style: normal; font-size: 9px; opacity: 0.7;
+            font-variant-numeric: tabular-nums; }
+        .ml-menu .ml-wlv:hover { color: #e5e7eb; border-color: rgba(255,255,255,0.28); }
+        .ml-menu .ml-wlv.on { background: rgba(251,191,36,0.16); border-color: rgba(251,191,36,0.5);
+            color: #fcd34d; font-weight: 600; }
+        .ml-menu .ml-wlv.dead { opacity: 0.35; }
         .ml-menu .ml-more { color: #9ca3af; border-top: 1px solid rgba(255,255,255,0.07); margin-top: 2px; gap: 7px; }
         .ml-menu .ml-more em { font-style: normal; color: #6b7280; margin-left: auto; font-size: 10px; }
         .stats-trend { font-size: 10px; margin-left: 4px; }
@@ -1729,8 +1780,13 @@
             .ml-opener { width: 32px; height: 32px; font-size: 15px; }
             .ml-chip { padding: 5px 9px; font-size: 10px; }
             .ml-chip em { max-width: 9ch; }
-            .ml-swatches { padding: 5px 2px 0; }
-            .ml-sw { width: 15px; height: 9px; }
+            /* A swatch is a tap target on touch, so it gets a real one: the
+               ink stays 15x9 but the button around it is 26px tall. */
+            .ml-swatches { padding: 5px 2px 0; gap: 4px; }
+            .ml-sw { width: 22px; height: 26px; padding: 2px 3px; }
+            .ml-sw > i { width: 15px; height: 9px; }
+            .ml-sw.ml-sw-x.visible { max-width: 22px; padding: 2px 3px; }
+            .ml-sw-more, .ml-sw-all { font-size: 10px; padding: 5px 7px; }
             
             /* Legend repositioned to avoid toolbar */
             #map-legend { bottom: calc(var(--slider-h, 70px) + 70px) !important; left: 10px; max-width: calc(100vw - 80px); font-size: 11px; padding: 10px 12px; }
@@ -2708,6 +2764,17 @@ tr.selected td {
     white-space: nowrap; color: #bbb; font-size: 11px; }
 .geo-row.filter[aria-pressed="true"] .geo-row-lbl { color: #fcd34d; }
 .geo-row-n { color: #666; font-size: 10px; font-variant-numeric: tabular-nums; }
+/* The affinity grade, as the tip's own dots: ●●● classic host, ●● plausible,
+   ● weak/derived. Same glyph and same scale everywhere it appears. */
+.geo-w { flex: none; font-size: 8px; letter-spacing: 1px; color: #f59e0b; }
+.geo-w.w1 { color: #6b7280; }
+.geo-w.w2 { color: #d97706; }
+
+/* The strength floor. A segmented control (choice of ONE) rather than pills,
+   because it is a floor, not a multi-select. */
+.geo-strength { display: flex; align-items: center; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+.geo-strength .geo-seg button[disabled] { opacity: 0.35; cursor: not-allowed; }
+
 /* Static legend rows (age) must NOT look clickable — nothing filters by age. */
 .geo-row.static { cursor: default; border-color: transparent; }
 .geo-row.static:hover { background: transparent; border-color: transparent; }

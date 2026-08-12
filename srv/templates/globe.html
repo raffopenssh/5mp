@@ -1478,6 +1478,15 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             box.innerHTML = geoMapCardHTML(ids, sheets);
         }
 
+        // The catalogue's 1-3 prospectivity grade, in words. One definition,
+        // used by the panel, the strip and the tip: three wordings for one
+        // scale is how a reader concludes they are three scales.
+        const GEO_WEIGHT_WHY = {
+            1: 'Weak or derived association \u2014 e.g. placer ground downstream of a lode host.',
+            2: 'A plausible host for it.',
+            3: 'The classic host rock for it.'
+        };
+
         /** A legend swatch: the age colour wearing its lithology ornament. */
         function geoSwatch(lith, color, px) {
             const size = px || 14;
@@ -1531,20 +1540,46 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             // Age is a KEY, not a filter (nothing filters by period), so its
             // rows are `.static` — they must not look clickable next to the
             // rock-type rows, which are.
+            //
+            // A SELECTION SUBSETS THE LEGEND. With "gold" picked, a legend
+            // that still counts all 104 units describes a map nobody is
+            // looking at: the reader asked what gold-hosting ground is made
+            // of, and the answer is the ages and rock types OF THAT SUBSET.
+            // So the counts come from the units a commodity/unit selection
+            // leaves in scope (the age and lithology filters themselves are
+            // NOT applied here — a row must not remove itself from the list
+            // that switches it back on). The card says which set it is
+            // counting; a legend that silently changed its denominator would
+            // be the "truncated answer that reads as a complete one".
+            const wSel = GeoMap.selectedCommodities();
+            const wCounts = wSel.size ? GeoMap.weightCounts(wSel) : null;
+
+            const scope = geoScopedClasses(classes);
+            const subset = scope.length !== classes.length;
+
             const byAge = {};
-            classes.forEach(c => { byAge[c.age] = (byAge[c.age] || 0) + 1; });
+            scope.forEach(c => { byAge[c.age] = (byAge[c.age] || 0) + 1; });
             const ages = (std.ages || []).filter(a => byAge[a.key]);
-            const ageRows = ages.map(a => `
-                <div class="geo-row static">
+            // Age is a FILTER now, not a caption. It was `.static` on the
+            // theory that nothing filters by period; that was the gap — over a
+            // craton two periods cover the whole view and there was no way to
+            // look under them. Same idiom as a unit row: dimmed when off,
+            // aria-pressed = "is it drawn".
+            const ageRows = ages.map(a => {
+                const on = GeoMap.ageOn(a.key);
+                return `<div class="geo-row${on ? '' : ' off'}" role="button" aria-pressed="${on}"
+                    onclick="geoToggleAge('${escapeHtml(a.key)}')"
+                    title="${escapeHtml(a.label)} &mdash; click to ${on ? 'hide' : 'show'} these ${byAge[a.key]} unit(s)">
                     <span style="width:13px;height:13px;border-radius:3px;flex:none;background:${escapeHtml(a.color)};border:1px solid rgba(0,0,0,0.45);"></span>
                     <span class="geo-row-lbl">${escapeHtml(a.label)}</span>
                     <span class="geo-row-n">${byAge[a.key]}</span>
-                </div>`).join('');
+                </div>`;
+            }).join('');
 
             // --- lithology legend, and also a filter. Same control does both:
             // a legend nobody can act on is a picture of a legend.
             const byLith = {};
-            classes.forEach(c => { byLith[c.lith] = (byLith[c.lith] || 0) + 1; });
+            scope.forEach(c => { byLith[c.lith] = (byLith[c.lith] || 0) + 1; });
             const lithRows = (std.lithology || []).filter(l => byLith[l.key]).map(l => {
                 const active = GeoMap.lithOn(l.key);
                 return `<div class="geo-row filter" role="button" aria-pressed="${active}"
@@ -1580,14 +1615,23 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             ).map(c => {
                 const o = GeoMap.state(c.sheet);
                 const shown = (o.isolate ? o.isolate.has(c.code) : !o.hidden.has(c.code)) &&
-                              (!shared.liths.size || shared.liths.has(c.lith));
+                              (!shared.liths.size || shared.liths.has(c.lith)) &&
+                              GeoMap.ageOn(c.age);
                 const codes = (c.codes || [c.code]);
+                // With a commodity selected, each unit says HOW GOOD a host it
+                // is for it — the same 1-3 the tip shows as dots. Without it,
+                // "36 gold units" is a flat list in which the classic
+                // greenstone host and a downstream placer look identical.
+                const wBest = wSel.size ? Math.max(0, ...Array.from(wSel).map(
+                    k => GeoMap.commodityWeight(c.sheet, c.code, k))) : 0;
+                const wDots = wBest ? `<span class="geo-w w${wBest}" title="${escapeHtml(GEO_WEIGHT_WHY[wBest])}">${'\u25CF'.repeat(wBest)}</span>` : '';
                 return `<div class="geo-row${shown ? '' : ' off'}" role="button" aria-pressed="${shown}"
                     onclick="GeoMap.toggleClass('${c.sheet}','${escapeHtml(c.code)}')"
                     title="${escapeHtml(c.name)} &mdash; ${escapeHtml(GeoMap.age(c.age).label)}">
                     ${geoSwatch(c.lith, GeoMap.classColor(c), 12)}
                     <span style="color:#ddd;font-size:11px;font-family:monospace;flex:none;min-width:64px;">${escapeHtml(c.code)}</span>
                     <span class="geo-row-lbl" style="color:#888;">${escapeHtml(c.name)}</span>
+                    ${wDots}
                     ${codes.length > 1 ? '<span style="color:#f59e0b;font-size:10px;flex:none;" title="Printed in inks this sheet does not separate">merged</span>' : ''}
                     <span style="color:#555;font-size:10px;flex:none;">${escapeHtml((sheets[c.sheet].catalogue || {}).short || c.sheet)}</span>
                 </div>`;
@@ -1601,6 +1645,12 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             // picks per basemap and re-picks on every switch; dragging the
             // slider is what leaves auto, so a hand-set value is never
             // silently overwritten.
+            // The legend must never quietly change what it is counting: with a
+            // selection running these are the ages and rock types OF THE
+            // SELECTION, and the header says so.
+            const subsetNote = subset
+                ? ` <span style="color:#f59e0b;font-size:10px;">of ${scope.length} selected</span>` : '';
+
             const opPct = Math.round(shared.opacity * 100);
             const opacityBlock = `
                 <div class="geo-op">
@@ -1614,6 +1664,20 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                         title="Pick the opacity from the basemap: a drape legible over the dark basemap is nearly invisible over satellite imagery.">auto</button>
                 </div>`;
 
+            // The strength floor, mirroring the map strip's control. Only once
+            // something is selected: a floor with nothing to filter is a
+            // control with no referent. Counts are derived per level so the
+            // reader sees what each one costs.
+            const strengthBlock = wCounts ? `<div class="geo-strength">
+                    <span class="geo-adv-lbl">Affinity at least</span>
+                    <div class="geo-seg">
+                        ${[[1, 'any'], [2, 'likely'], [3, 'classic']].map(([lv, lbl]) => `
+                        <button onclick="GeoMap.setMinWeight(${lv}) || showToast('Nothing that strong here','No unit in this selection is graded that highly \u2014 keeping the current setting.',null,null,'warning')"
+                            aria-pressed="${GeoMap.minWeight() === lv}" ${wCounts[lv] ? '' : 'disabled'}
+                            title="${escapeHtml(GEO_WEIGHT_WHY[lv])} ${wCounts[lv]} unit(s).">${lbl} <span style="opacity:0.6;">${wCounts[lv]}</span></button>`).join('')}
+                    </div>
+                </div>` : '';
+
             const commodityBlock = chips ? `<div style="margin-top:14px;">
                         <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px;">
                             <span style="color:#888;font-size:11px;">Rock types that can host</span>
@@ -1621,6 +1685,7 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                                 style="font-size:10px;" title="Clear every selection and draw all units again">clear</button>` : ''}
                         </div>
                         <div style="display:flex;flex-wrap:wrap;gap:6px;">${chips}</div>
+                        ${strengthBlock}
                         <div style="color:#666;font-size:10px;margin-top:6px;line-height:1.4;">
                             ${activeChips.length
                             ? 'Showing ' + shownCount + ' unit(s) that can host '
@@ -1684,12 +1749,12 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                     ${commodityBlock}
                     <div style="display:flex;gap:16px;margin-top:14px;flex-wrap:wrap;">
                         <div style="flex:1;min-width:150px;">
-                            <div style="color:#888;font-size:11px;margin-bottom:5px;">Age (colour)</div>
+                            <div style="color:#888;font-size:11px;margin-bottom:5px;">Age (colour)${subsetNote}</div>
                             ${ageRows}
-                            <div style="color:#555;font-size:10px;margin-top:5px;">ICS/CGMW chart</div>
+                            <div style="color:#555;font-size:10px;margin-top:5px;">ICS/CGMW chart &middot; click to filter</div>
                         </div>
                         <div style="flex:1;min-width:150px;">
-                            <div style="color:#888;font-size:11px;margin-bottom:5px;">Rock type (pattern)</div>
+                            <div style="color:#888;font-size:11px;margin-bottom:5px;">Rock type (pattern)${subsetNote}</div>
                             ${lithRows}
                             <div style="color:#555;font-size:10px;margin-top:5px;">FGDC-STD-013-2006 &middot; click to filter</div>
                         </div>
@@ -1734,7 +1799,36 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             const shared = GeoMap.shared();
             return GeoMap.classes(id).filter(c =>
                 (o.isolate ? o.isolate.has(c.code) : !o.hidden.has(c.code)) &&
-                (!shared.liths.size || shared.liths.has(c.lith))).length;
+                (!shared.liths.size || shared.liths.has(c.lith)) &&
+                GeoMap.ageOn(c.age)).length;
+        }
+
+        // Which units a commodity (or hand-built) selection leaves in scope.
+        // Deliberately ignores the age and lithology filters: those two are
+        // what the legend rows switch, and a row that filtered itself out of
+        // its own list could never be switched back on.
+        function geoScopedClasses(classes) {
+            return classes.filter(c => {
+                const o = GeoMap.state(c.sheet);
+                return o.isolate ? o.isolate.has(c.code) : !o.hidden.has(c.code);
+            });
+        }
+
+        // The age filter from the panel. Refuses to empty the map for the same
+        // reason the strip does: an empty drape reads as "no data here", not
+        // as a filter. The strip is re-rendered too, so the key and the panel
+        // cannot disagree about what is drawn.
+        function geoToggleAge(key) {
+            const scope = geoScopedClasses(GeoMap.allClasses());
+            const on = new Set(scope.filter(c => GeoMap.ageOn(c.age)).map(c => c.age));
+            if (GeoMap.ageOn(key) && on.size <= 1) {
+                showToast('That is the only period left',
+                    'Hiding it would leave an empty map \u2014 use "Show all" to start over.',
+                    null, null, 'warning');
+                return;
+            }
+            GeoMap.toggleAge(key);
+            renderGeoMapPanel();
         }
 
         // A commodity is a property of rock, so the chip acts on every sheet
