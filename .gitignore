@@ -150,6 +150,10 @@ data/geomaps/*.pmtiles
 # <sheet>_classes.json IS committed too - it is the class catalogue the server
 # reads (small, and the record of which merges the hold-out forced on a build).
 data/geomaps/*_units.geojson
+# Contact GEOMETRY is derived output (60 MB for Sudan); the geometry-free pair
+# list beside it (<sheet>_contacts.json, ~30 KB) IS committed - the server
+# reads it to build the catalogue. Rebuild both with scripts/geomaps/contacts.py.
+data/geomaps/*_contacts.geojson
 # built on first request from *_units.geojson (a cache, not an input).
 # geology.gpkg is the current combined one; *_geology.gpkg was the per-sheet
 # form and is still ignored so an old checkout's leftovers stay untracked.

@@ -35,18 +35,33 @@ build() {
     esac
     return 1
   fi
+  # Contacts (where two units meet) ride in the SAME tileset as a second
+  # named layer, not in a tileset of their own.  One source is one tile
+  # request per tile per pan instead of two, and the units and the boundaries
+  # between them are never a version apart -- a contact drawn against a
+  # rebuilt unit list would be a hairline between two rocks that are no
+  # longer there.  Missing contacts are not fatal (the layer degrades to
+  # "not built"), but they are announced: a silently unit-only tileset is
+  # indistinguishable from a sheet whose units never touch.
+  local contacts="$OUT/${sheet}_contacts.geojson"
+  local layers=(-L "units:$src")
+  if [ -f "$contacts" ]; then
+    layers+=(-L "contacts:$contacts")
+  else
+    echo "  ! $contacts missing - run scripts/geomaps/contacts.py $sheet; building units only" >&2
+  fi
   local tmp="$OUT/.${sheet}.mbtiles.tmp"
   rm -f "$tmp"
   # -z10: at 1:1.5M-1:2M the source line work is ~500 m, which z10 already
   # over-resolves; beyond it the client overzooms and shows the same edges
   # bigger, which is honest about the sheet's precision.
-  tippecanoe -q -o "$tmp" -l units -n "${sheet} geology" \
+  tippecanoe -q -o "$tmp" -n "${sheet} geology" \
     -Z0 -z10 \
     --coalesce --reorder --detect-shared-borders \
     --simplification=4 --no-tiny-polygon-reduction \
     --no-feature-limit --no-tile-size-limit \
     --attribution "$(python3 -c "import json,sys;d=json.load(open('$OUT/${sheet}_classes.json'));print(d['publisher']+', '+str(d['year'])+', '+d['scale'])")" \
-    "$src"
+    "${layers[@]}"
   mv -f "$tmp" "$OUT/${sheet}.mbtiles"
   echo "$sheet -> $OUT/${sheet}.mbtiles ($(du -h "$OUT/${sheet}.mbtiles" | cut -f1))"
 }

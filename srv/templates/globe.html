@@ -1487,11 +1487,18 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             3: 'The classic host rock for it.'
         };
 
-        /** A legend swatch: the age colour wearing its lithology ornament. */
+        /** A legend swatch: the age colour wearing its lithology ornament.
+         *
+         * The ornament has a floor (GeoPatterns.minSwatchPx): below it the
+         * hatch is DROPPED rather than shrunk, because a pattern too small to
+         * resolve is not a key, it is dirt on the colour — and two units of
+         * one age then read as two ages. The lithology row passes 13 for that
+         * reason; anything smaller here would have been silently patternless
+         * before the floor existed and silently unreadable after it. */
         function geoSwatch(lith, color, px) {
             const size = px || 14;
             const bg = (typeof GeoPatterns !== 'undefined')
-                ? `background-image:${GeoPatterns.swatchCSS(lith || 'mixed', color)};background-size:${size + 8}px ${size + 8}px;`
+                ? GeoPatterns.swatchStyle(lith || 'mixed', color, size)
                 : `background:${escapeHtml(color)};`;
             return `<span style="width:${size}px;height:${size}px;border-radius:3px;flex:none;${bg}border:1px solid rgba(0,0,0,0.45);"></span>`;
         }
@@ -1628,7 +1635,7 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                 return `<div class="geo-row${shown ? '' : ' off'}" role="button" aria-pressed="${shown}"
                     onclick="GeoMap.toggleClass('${c.sheet}','${escapeHtml(c.code)}')"
                     title="${escapeHtml(c.name)} &mdash; ${escapeHtml(GeoMap.age(c.age).label)}">
-                    ${geoSwatch(c.lith, GeoMap.classColor(c), 12)}
+                    ${geoSwatch(c.lith, GeoMap.classColor(c), 13)}
                     <span style="color:#ddd;font-size:11px;font-family:monospace;flex:none;min-width:64px;">${escapeHtml(c.code)}</span>
                     <span class="geo-row-lbl" style="color:#888;">${escapeHtml(c.name)}</span>
                     ${wDots}
@@ -16007,10 +16014,11 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
     
     function copyStarredLink(ev) {
         const params = new URLSearchParams();
-        
-        // Always include password if present
-        const pwd = new URLSearchParams(window.location.search).get('pwd');
-        if (pwd) params.set('pwd', pwd);
+
+        // NO PASSWORD. This used to "always include password if present" —
+        // the same leak buildShareUrl() carried, in a second copy. A report
+        // link names a set of starred items; the reader authenticates as
+        // themselves.
         
         // Encode starred items in URL
         if (starredItems.parks.length > 0) {
@@ -21421,12 +21429,28 @@ ${starredItems.narratives.map(n => {
 
     // Builds the share URL for the current view state. includePwd=false for
     // report embedding (viewers authenticate themselves).
-    function buildShareUrl(includePwd = true) {
+    // buildShareUrl NEVER carries the password.
+    //
+    // It used to default to includePwd=true, so the FIRST thing every "copy
+    // link" put on the clipboard — the long URL, copied inside the click,
+    // before the shortener answers — was the shared password in plain text.
+    // The short URL that replaced it a moment later carried it too
+    // (sharelink.js shortURL()), and /s/{slug} forwarded it onto the target.
+    // Three copies of one mistake: a link is a NAME, the password is a
+    // CREDENTIAL, and the only thing that may carry a credential is a guest
+    // capability, which carries its own (docs/agents/sharing.md).
+    //
+    // The recipient authenticates as themselves — own cookie, own password
+    // form, or their own guest key. The argument survives only so the one
+    // caller that wants an explicitly credential-free string (the markdown
+    // export, buildShareUrl(false)) still reads as deliberate.
+    function buildShareUrl(includePwd = false) {
         const params = new URLSearchParams();
-        
-        // Add password if present
+
+        // `includePwd` is opt-in and no caller in this file opts in. Kept as a
+        // parameter rather than deleted so a future need has to state itself.
         const pwd = new URLSearchParams(window.location.search).get('pwd');
-        if (includePwd && pwd) params.set('pwd', pwd);
+        if (includePwd === true && pwd) params.set('pwd', pwd);
         
         // Add map center and zoom
         if (typeof map !== 'undefined') {

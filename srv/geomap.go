@@ -51,6 +51,13 @@ type geoMapSheet struct {
 	classes json.RawMessage // the catalogue file, passed through verbatim
 	rev     string
 	err     error
+
+	// contacts is the unit-pair catalogue (srv/geomap_contacts.go), nil when
+	// the sheet has not had scripts/geomaps/contacts.py run over it. A sheet
+	// without contacts still serves its units: the layer reports itself as not
+	// built rather than the sheet reporting itself as broken.
+	contacts    *geoContactDoc
+	contactsErr error
 }
 
 type geoMapStore struct {
@@ -90,6 +97,16 @@ func (g *geoMapStore) load() map[string]*geoMapSheet {
 				continue
 			}
 			sh.classes = json.RawMessage(geoMapStandardise(blob))
+
+			// Contacts are OPTIONAL and their absence is not the sheet's
+			// failure: units are what the sheet is. The error is kept, though,
+			// and surfaced on the layer — "not built" is a different statement
+			// from "these units never meet", and only one of them is ever true.
+			if cd, cerr := geoLoadContacts(g.dir, id, sh.classes); cerr == nil {
+				sh.contacts = cd
+			} else {
+				sh.contactsErr = cerr
+			}
 
 			tiles := filepath.Join(g.dir, id+".mbtiles")
 			if _, err := os.Stat(tiles); err != nil {
@@ -151,6 +168,17 @@ func (s *Server) HandleAPIGeoMap(w http.ResponseWriter, r *http.Request) {
 		e["catalogue"] = sh.classes
 		e["rev"] = sh.rev
 		e["tiles"] = "/api/geomap/" + id + "/{z}/{x}/{y}.pbf?v=" + sh.rev
+		// Contacts ride in the SAME tileset (tiles.sh builds `units` and
+		// `contacts` as two layers of one MBTiles), so there is no second tile
+		// URL and no second request per pan. What the catalogue adds is the
+		// pair list: which two codes each hairline joins, and how long it is.
+		if sh.contacts != nil {
+			e["contacts"] = sh.contacts
+		} else if sh.contactsErr != nil {
+			// Named, not omitted — an absent key reads as "this sheet's units
+			// do not touch", which is never true of a geological map.
+			e["contacts_reason"] = "not built: run scripts/geomaps/contacts.py " + id
+		}
 		for _, k := range []string{"minzoom", "maxzoom"} {
 			if n, err := strconv.Atoi(sh.meta[k]); err == nil {
 				e[k] = n

@@ -64,6 +64,11 @@
     const SRC = id => 'geomap-src-' + id;
     const FILL = id => 'geomap-fill-' + id;
     const LINE = id => 'geomap-line-' + id;
+    // Contacts ride in the SAME source (tiles.sh builds `units` and `contacts`
+    // as two layers of one tileset), so this is a second LAYER, never a second
+    // source: one tile request per tile per pan, and the boundaries can never
+    // be a build apart from the units they separate.
+    const CONT = id => 'geomap-contact-' + id;
     const PAT = (lith, age) => 'geopat-' + lith + '-' + age;
 
     let sheets = null;          // id -> catalogue entry from /api/geomap
@@ -109,6 +114,23 @@
         // the view moves over a period nobody has an opinion about. Empty =
         // nothing hidden, which is also what a share link omits.
         agesOff: new Set(),
+        /* ── Contacts: where two units MEET ────────────────────────────
+         *
+         * OFF by default, and that is not timidity. A geological sheet is
+         * mostly boundaries — 882 unit pairs over three sheets — so drawing
+         * every one of them turns the drape into a net and buries the fills it
+         * is supposed to be a legend for. The layer earns its place by
+         * answering a question ("where does granite meet greenstone"), so it
+         * arrives when the reader asks it.
+         *
+         * `contactsGraded` is the one filter that is on from the start: a
+         * contact with no commodity affinity is a line between two rocks that
+         * the model has nothing to say about, and 501 of those under the 381
+         * that mean something is the same net by another route. Switching it
+         * off shows every mapped junction, and the strip says which it is.
+         */
+        contacts: false,
+        contactsGraded: true,
         // Whether the Advanced block is open. A setting, so it travels in the
         // share link with the rest — "look at this" should reproduce the panel
         // the sender was reading, not just the map.
@@ -187,6 +209,115 @@
     function ageMeta(key) {
         return (stdLegend().ages || []).find(a => a.key === key) ||
                { key: key, label: key, color: '#BDBDBD', rank: 99 };
+    }
+
+    /* ── The contact model, indexed once ───────────────────────────────
+     *
+     * The server ships ~26 rules keyed by LITHOLOGY pair, once, in the shared
+     * legend — not per contact, because "intrusive against carbonate is the
+     * skarn setting" is one sentence whether it applies to two junctions or
+     * two hundred. Here it becomes a plain object keyed "lithA|lithB", built
+     * on first use and thrown away when the catalogue changes.
+     *
+     * Everything downstream (the line paint, the tip, the matrix's contact
+     * mode) reads grades out of this map. It matters that it is O(1): the
+     * paint expression below is evaluated per feature per frame, so a scan
+     * over the rules there would be a scan on the render thread.
+     */
+    let contactIdx = null;
+    function contactRules() {
+        if (contactIdx) return contactIdx;
+        contactIdx = {};
+        (stdLegend().contact_rules || []).forEach(r => { contactIdx[r.pair] = r; });
+        return contactIdx;
+    }
+
+    function lithPairKey(a, b) {
+        a = a || 'mixed'; b = b || 'mixed';
+        return a < b ? a + '|' + b : b + '|' + a;
+    }
+
+    /** What the junction of two CLASSES can host: the rule for their two
+     *  lithologies, or null where the model says nothing. */
+    function contactRuleFor(sheet, codeA, codeB) {
+        const a = classOf(sheet, codeA), b = classOf(sheet, codeB);
+        if (!a || !b) return null;
+        return contactRules()[lithPairKey(a.lith, b.lith)] || null;
+    }
+
+    /** Every contact pair of a sheet, each with its rule resolved. Cached per
+     *  sheet: the pair list is static for a build, and the matrix asks for it
+     *  on every rebuild. */
+    const contactCache = {};
+    function contactsOf(id) {
+        if (contactCache[id]) return contactCache[id];
+        const s = sheets && sheets[id];
+        const raw = (s && s.contacts && s.contacts.pairs) || [];
+        contactCache[id] = raw.map(p => {
+            const rule = contactRuleFor(id, p.a, p.b);
+            const ca = classOf(id, p.a), cb = classOf(id, p.b);
+            return {
+                sheet: id, a: p.a, b: p.b, km: p.km,
+                pair: p.a + '|' + p.b,
+                lithA: (ca && ca.lith) || 'mixed', lithB: (cb && cb.lith) || 'mixed',
+                ageA: (ca && ca.age) || 'unknown', ageB: (cb && cb.age) || 'unknown',
+                nameA: (ca && ca.name) || p.a, nameB: (cb && cb.name) || p.b,
+                rule: rule,
+                best: rule ? rule.best : 0,
+                commodities: rule ? rule.affinity.map(x => x.commodity) : []
+            };
+        });
+        return contactCache[id];
+    }
+
+    /** Contacts across every installed sheet — the user's unit of thought,
+     *  exactly like allClasses(). */
+    function allContacts() {
+        const out = [];
+        order.forEach(id => {
+            if (!(sheets[id] || {}).available) return;
+            contactsOf(id).forEach(c => out.push(c));
+        });
+        return out;
+    }
+
+    /** Does this sheet have a contact layer at all? */
+    function hasContacts(id) {
+        const s = sheets && sheets[id];
+        return !!(s && s.contacts && s.contacts.n_contacts);
+    }
+
+    /* Which contact pairs are drawn right now.
+     *
+     * Same discipline as visibleCodes(): the answer is a LIST OF PAIR KEYS
+     * that goes into one `in` filter, because a filter with a function in it
+     * runs per feature per frame. A commodity selection narrows contacts the
+     * same way it narrows units — the question "where can gold be" does not
+     * change its meaning because the answer is a line rather than an area. */
+    function visiblePairs(id) {
+        const sel = selectedCommodities();
+        // The contact layer carries its own floor, and it is 2 rather than 1.
+        //
+        // Measured, not guessed: at CAR's country zoom every graded junction
+        // (97 of 113) draws as a net of orange over the whole sheet and the
+        // fills stop being readable at all — the layer buries the map it is
+        // annotating. "Likely and up" is 71 lines and reads as a map; the
+        // classic-only 20 read as a recommendation. A weight-1 contact is a
+        // derived association (alluvium off a granite), which is the least
+        // worth drawing over a country and the first thing to drop.
+        //
+        // It is a FLOOR, not a cap: raising the grade floor raises this with
+        // it, and switching "graded only" off shows every mapped junction
+        // including the ungraded ones. The strip says which of those it is —
+        // a subset that does not announce itself is the failure this app
+        // keeps paying for.
+        const min = Math.max(shared.minWeight, shared.contactsGraded ? 2 : 0);
+        return contactsOf(id).filter(c => {
+            if (!shared.contactsGraded) return true;
+            if (!c.rule) return false;
+            if (!sel.size) return c.best >= min;
+            return c.rule.affinity.some(a => sel.has(a.commodity) && a.weight >= min);
+        }).map(c => c.pair);
     }
 
     /** Every class of every sheet, as one list — the user's unit of thought. */
@@ -332,6 +463,63 @@
         return ['in', ['get', 'code'], ['literal', visibleCodes(id)]];
     }
 
+    /* ── Drawing a contact ──────────────────────────────────────
+     *
+     * A contact is NOT another unit outline. The units already have a
+     * hairline in their own darkened ink (LINE), and a second line in the same
+     * language on top of it would be invisible where it matters and confusing
+     * everywhere else. So a contact is drawn as what it is: a thing worth
+     * walking. Warm, brighter than the drape, and WIDER WITH ITS GRADE — the
+     * classic setting is the fat line, the weak association is the thin one,
+     * which is the same 1-3 scale as everywhere else expressed in the only
+     * dimension a line has.
+     *
+     * The colour does not encode the commodity. Eight commodities is eight
+     * hues nobody can hold, they would collide with the ICS age colours
+     * underneath, and a junction routinely hosts two — so grade is the ink
+     * and the identity is in the tip and the matrix.
+     */
+    function contactFilterExpr(id) {
+        return ['in', ['get', 'pair'], ['literal', visiblePairs(id)]];
+    }
+
+    // pair -> grade, as a `match` expression: one lookup per feature on the
+    // render thread, rather than a rule scan.
+    function contactGradeExpr(id, out1, out2, out3, fallback) {
+        const e = ['match', ['get', 'pair']];
+        const byGrade = { 1: [], 2: [], 3: [] };
+        contactsOf(id).forEach(c => { if (c.best) byGrade[c.best].push(c.pair); });
+        const outs = { 1: out1, 2: out2, 3: out3 };
+        let any = false;
+        [3, 2, 1].forEach(g => {
+            if (!byGrade[g].length) return;
+            any = true;
+            e.push(byGrade[g], outs[g]);
+        });
+        if (!any) return fallback;
+        e.push(fallback);
+        return e;
+    }
+
+    function paintContacts(id) {
+        if (!map.getLayer(CONT(id))) return;
+        map.setFilter(CONT(id), contactFilterExpr(id));
+        // Width by grade, and by zoom: at z3 a 3 px line over a continent is a
+        // scribble, at z9 a 1 px line over a 50 km junction is invisible.
+        map.setPaintProperty(CONT(id), 'line-width', [
+            'interpolate', ['linear'], ['zoom'],
+            3, contactGradeExpr(id, 0.6, 1.0, 1.6, 0.6),
+            9, contactGradeExpr(id, 1.6, 2.6, 4.0, 1.6)
+        ]);
+        map.setPaintProperty(CONT(id), 'line-color',
+            contactGradeExpr(id, '#fcd34d', '#fbbf24', '#f59e0b', '#9ca3af'));
+        // Opaque enough to read over a 72% satellite drape, and it does NOT
+        // follow the drape's opacity slider: turning the rock map down is how
+        // a reader looks at the ground under it, and the contact is the thing
+        // they turned it down to see.
+        map.setPaintProperty(CONT(id), 'line-opacity', 0.9);
+    }
+
     // See the HistMap note: anchor above the basemap raster and below the
     // first vector layer, so anything added later (a pin, a trajectory) lands
     // on top for free. 'background' is skipped — it is the paper the basemap
@@ -400,23 +588,53 @@
                 }
             }, before);
         }
+        // The contact layer is added only when asked for, and REMOVED when
+        // switched off rather than filtered to nothing: an empty layer still
+        // costs a filter evaluation per tile per frame, and a sheet is mostly
+        // boundaries.
+        syncContactLayer(id, before);
         paintFill(id);
         bindTip(id);
     }
 
+    /* Add or drop the contact layer for a sheet, to match shared.contacts.
+     * Above the unit line work (a junction must not be hidden by the hairline
+     * of the unit it bounds) and still below `before`, so pins, trajectories
+     * and park outlines stay on top — same rule as everything else here. */
+    function syncContactLayer(id, before) {
+        const want = shared.contacts && hasContacts(id);
+        const have = !!map.getLayer(CONT(id));
+        if (want && !have) {
+            map.addLayer({
+                id: CONT(id), type: 'line', source: SRC(id), 'source-layer': 'contacts',
+                layout: { 'line-cap': 'round', 'line-join': 'round' },
+                filter: contactFilterExpr(id),
+                paint: { 'line-color': '#fbbf24', 'line-width': 1.2, 'line-opacity': 0.9 }
+            }, before || firstOverlayLayer());
+            bindContactTip(id);
+        } else if (!want && have) {
+            map.removeLayer(CONT(id));
+            if (window.MapTip) window.MapTip.unregister(CONT(id));
+            contactBound[id] = false;
+        }
+        if (map.getLayer(CONT(id))) paintContacts(id);
+    }
+
     function remove(id) {
         pendingAdd.delete(id);   // a queued re-add must not resurrect a sheet just switched off
-        [FILL(id), LINE(id)].forEach(l => { if (map.getLayer(l)) map.removeLayer(l); });
+        [FILL(id), LINE(id), CONT(id)].forEach(l => { if (map.getLayer(l)) map.removeLayer(l); });
         if (map.getSource(SRC(id))) map.removeSource(SRC(id));
         // Switching the sheet off must also take its tip away, or a click keeps
         // being swallowed by a layer that is no longer on the map.
-        if (window.MapTip) window.MapTip.unregister(FILL(id));
+        if (window.MapTip) { window.MapTip.unregister(FILL(id)); window.MapTip.unregister(CONT(id)); }
         bound[id] = false;
+        contactBound[id] = false;
     }
 
     function refresh(id) {
         if (!map.getLayer(FILL(id))) return;
         [FILL(id), LINE(id)].forEach(l => map.setFilter(l, filterExpr(id)));
+        syncContactLayer(id);
         paintFill(id);
     }
 
@@ -442,6 +660,7 @@
     // produce three answers at once (geology popup + AOI popup + AOI map tip):
     // its click never went through the shared arbitration. One tip, one owner.
     const bound = {};
+    const contactBound = {};
     // Sheets waiting for the style to settle before they can be added; see add().
     const pendingAdd = new Set();
     function tipHTML(id, p) {
@@ -473,8 +692,11 @@
             // "Ultramafic / ophiolite"), and the pattern is a legend key, not a
             // description.
             const rock = cls.lithology || '';
+            // 16 px, comfortably over the ornament floor: this is the one
+            // swatch that has room to be a proper key, and it is where the
+            // reader learns what the hatch on the polygon means.
             const swatch = window.GeoPatterns
-                ? `background-image:${window.GeoPatterns.swatchCSS(cls.lith || 'mixed', classColor(cls))};background-size:22px 22px;`
+                ? window.GeoPatterns.swatchStyle(cls.lith || 'mixed', classColor(cls), 16)
                 : `background:${escapeHtml(classColor(cls))};`;
             return `
                 <div style="font-family:inherit;max-width:260px;">
@@ -501,6 +723,67 @@
                             counts, ranks or locates an occurrence.</div>
                     </div>` : ''}
                 </div>`;
+    }
+
+    /* ── A contact's own tip ─────────────────────────────────────
+     *
+     * A hairline is a hard target, so the tip has to be worth hitting: it
+     * names BOTH rocks (that is the whole content of a contact — "granite
+     * against greenstone"), the setting it implies, and the same 1-3 dots the
+     * unit tip, the matrix and the key already use.
+     *
+     * priority -25: above the unit drape (-30), because a reader whose cursor
+     * is on a 2 px line meant the line and not the country-sized polygon under
+     * it; still below every real feature. `peers: false` for the same reason
+     * the drape sets it — a boundary is a legend, not a pile-up.
+     */
+    function contactTipHTML(id, p) {
+        const c = (contactsOf(id) || []).find(x => x.pair === p.pair);
+        const cat = (sheets[id] && sheets[id].catalogue) || {};
+        const sw = cls => window.GeoPatterns
+            ? window.GeoPatterns.swatchStyle(cls.lith || 'mixed', classColor(cls), 16)
+            : `background:${escapeHtml(classColor(cls))};`;
+        const ca = classOf(id, (c && c.a) || p.code_a) || {};
+        const cb = classOf(id, (c && c.b) || p.code_b) || {};
+        const side = (cls, code) => `
+            <div style="display:flex;align-items:center;gap:7px;margin-top:5px;">
+                <span style="width:15px;height:15px;border-radius:3px;flex:none;${sw(cls)}border:1px solid rgba(0,0,0,0.45);"></span>
+                <span style="color:#fff;font-size:12px;">${escapeHtml(code || '')}</span>
+                <span style="color:#9ca3af;font-size:11px;">${escapeHtml(ageMeta(cls.age).label)}</span>
+            </div>
+            <div style="color:#bbb;font-size:11px;margin-left:22px;line-height:1.4;">${escapeHtml(cls.name || '')}</div>`;
+        const km = (c && c.km) || Number(p.km) || 0;
+        const aff = (c && c.rule && c.rule.affinity) || [];
+        return `
+            <div style="font-family:inherit;max-width:280px;">
+                <div style="color:#fbbf24;font-size:11px;font-weight:600;letter-spacing:0.04em;">
+                    CONTACT &middot; ${km >= 10 ? Math.round(km) : km.toFixed(1)} km</div>
+                ${side(ca, (c && c.a) || p.code_a)}
+                <div style="color:#666;font-size:10px;margin:3px 0 0 22px;">against</div>
+                ${side(cb, (c && c.b) || p.code_b)}
+                ${aff.length ? `<div style="margin-top:8px;border-top:1px solid rgba(255,255,255,0.08);padding-top:6px;">
+                    <div style="color:#aaa;font-size:11px;font-weight:600;">What this junction can host</div>
+                    ${aff.map(a => `<div style="color:#ccc;font-size:11px;margin-top:4px;line-height:1.4;">
+                        ${'&#9679;'.repeat(a.weight)} <b style="color:#fff;">${escapeHtml(a.commodity.replace(/_/g, ' '))}</b>
+                        &mdash; ${escapeHtml(a.why)}</div>`).join('')}
+                </div>` : `<div style="color:#777;font-size:11px;margin-top:8px;line-height:1.4;">
+                    These two rock types in contact are not a setting this model grades.
+                    That is a gap in the model, not evidence of absence.</div>`}
+                <div style="color:#777;font-size:10px;margin-top:6px;line-height:1.4;">
+                    An inference from the two rock types either side, not a record of any
+                    deposit &mdash; nothing here counts, ranks or locates an occurrence.
+                    ${escapeHtml(cat.short || id)}${cat.year ? ', ' + cat.year : ''}</div>
+            </div>`;
+    }
+
+    function bindContactTip(id) {
+        if (contactBound[id] || !window.MapTip) return;
+        contactBound[id] = true;
+        window.MapTip.register(CONT(id), {
+            priority: -25, peers: false,
+            tabLabel: 'Contact', tabColor: '#fbbf24',
+            html: p => contactTipHTML(id, p)
+        });
     }
 
     function bindTip(id) {
@@ -751,6 +1034,37 @@
         setPattern(on) { shared.pattern = !!on; refreshAll(); },
         patternOn: () => shared.pattern,
 
+        /* ── Contacts ────────────────────────────────────────
+         * The layer is added and removed rather than filtered to empty: a
+         * sheet is mostly boundaries, and an invisible layer still costs a
+         * filter per tile per frame. */
+        setContacts(on) {
+            shared.contacts = !!on;
+            order.forEach(id => { if (st(id).on) syncContactLayer(id); });
+            if (typeof renderGeoMapPanel === 'function') renderGeoMapPanel();
+            if (window.MapLegend) MapLegend.refresh();
+        },
+        contactsOn: () => shared.contacts,
+        /** Graded-only is the default; off shows every mapped junction. */
+        setContactsGraded(on) {
+            shared.contactsGraded = !!on;
+            order.forEach(id => { if (st(id).on && map.getLayer(CONT(id))) paintContacts(id); });
+            if (window.MapLegend) MapLegend.refresh();
+        },
+        contactsGradedOnly: () => shared.contactsGraded,
+        contacts: contactsOf,
+        allContacts: allContacts,
+        hasContacts: hasContacts,
+        /** How many contacts a sheet has, and how many the model grades — the
+         *  server's own counts, so the panel never reports a number it derived
+         *  differently from the map. */
+        contactStats(id) {
+            const s = sheets && sheets[id];
+            return (s && s.contacts) || null;
+        },
+        contactRule: (sheetId, a, b) => contactRuleFor(sheetId, a, b),
+        anyContacts: () => order.some(id => (sheets[id] || {}).available && hasContacts(id)),
+
         // "Show me the intrusives" — a legend-wide question, ANDed with
         // whatever commodity selection is running, never replacing it.
         toggleLith(key) {
@@ -942,6 +1256,12 @@
             // link that hides nothing must not carry a list of everything.
             if (shared.agesOff.size) p.geomap_age_off = [...shared.agesOff].join('|');
             if (shared.advOpen) p.geomap_adv = '1';
+            // The contact layer is off by default, so it only travels when
+            // asked for. `graded` is its default, so only its ABSENCE is
+            // carried — same rule as every other parameter here.
+            if (shared.contacts) {
+                p.geomap_contacts = shared.contactsGraded ? '1' : 'all';
+            }
             return p;
         },
 
@@ -978,6 +1298,11 @@
                 // No parameter = auto, evaluated against the basemap this link
                 // actually opens on (which restoreFromParams runs after).
                 shared.opacity = autoOpacity();
+            }
+            const ct = params.get('geomap_contacts');
+            if (ct) {
+                shared.contacts = true;
+                shared.contactsGraded = ct !== 'all';
             }
             if (params.get('geomap_color') === 'ink') shared.colorMode = 'ink';
             if (params.get('geomap_pattern') === '0') shared.pattern = false;

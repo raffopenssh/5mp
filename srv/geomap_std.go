@@ -603,6 +603,12 @@ func geoStdLegend() map[string]any {
 		"lithology":  liths,
 		"color_std":  "ICS/CGMW International Chronostratigraphic Chart (v2023)",
 		"patternstd": "FGDC-STD-013-2006 §37 geologic map symbolization",
+		// The contact model, shipped ONCE rather than per pair: a junction's
+		// meaning is a property of the two LITHOLOGIES, so the client indexes
+		// these by lithology pair and every contact on every sheet reads its
+		// grade out of the same table. See srv/geomap_contacts.go.
+		"contact_rules":       geoContactRulesJSON(),
+		"contact_commodities": geoContactCommodities(),
 	}
 }
 
