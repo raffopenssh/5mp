@@ -1486,25 +1486,28 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                             <div style="color:#fff;font-size:13px;font-weight:600;">${escapeHtml(m.name || 'Historical map')}</div>
                             <div style="color:#777;font-size:11px;margin-top:4px;line-height:1.5;">${escapeHtml(m.description || '')}</div>
                         </div>
-                        <button id="histmap-toggle" onclick="HistMap.toggle()"
-                            class="star-report-btn${on ? '' : ' secondary'}"
-                            style="font-size:12px;white-space:nowrap;">${on ? 'Hide overlay' : 'Show overlay'}</button>
+                        <label class="geo-switch" title="Drape the scanned sheet series over the basemap">
+                            <input type="checkbox" ${on ? 'checked' : ''} onchange="HistMap.set(this.checked)">
+                            <span class="geo-switch-track"></span>
+                            <span class="geo-switch-lbl">${on ? 'On' : 'Off'}</span>
+                        </label>
                     </div>
-                    <div style="display:flex;align-items:center;gap:10px;margin-top:12px;${on ? '' : 'opacity:0.4;pointer-events:none;'}">
+                    <div class="geo-op" style="${on ? '' : 'opacity:0.4;pointer-events:none;'}">
                         <span style="color:#888;font-size:11px;">Opacity</span>
                         <input type="range" min="10" max="100" value="${Math.round(HistMap.opacity() * 100)}"
-                               oninput="HistMap.setOpacity(this.value/100)" style="flex:1;accent-color:#3b82f6;">
-                        <span id="histmap-opacity-val" style="color:#aaa;font-size:11px;width:34px;text-align:right;">${Math.round(HistMap.opacity() * 100)}%</span>
+                               aria-label="Historical map overlay opacity"
+                               oninput="HistMap.setOpacity(this.value/100)">
+                        <span id="histmap-opacity-val" class="geo-op-val">${Math.round(HistMap.opacity() * 100)}%</span>
                     </div>
                     <div style="display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap;">
-                        <a class="star-report-btn secondary" style="font-size:12px;text-decoration:none;"
-                           href="${histMapUrl(m.download)}" download
-                           title="Download the MBTiles archive (original black ink, z${m.minzoom}-${m.maxzoom}) for offline use in Locus Map, OsmAnd or QGIS">
-                           Download MBTiles${mb ? ' (' + mb + ')' : ''}</a>
-                        <button class="star-report-btn secondary" style="font-size:12px;"
+                        <button type="button" class="geo-cardbtn" id="histmap-dl"
+                            aria-haspopup="menu" aria-label="Download the archive"
+                            title="The mosaicked sheet series as MBTiles, for Locus Map, OsmAnd or QGIS"
+                            onclick="event.stopPropagation();MapLegend.histDownloadMenu(this)">
+                            <i class="icon-download"></i>Download${mb ? ' (' + mb + ')' : ''}</button>
+                        <button type="button" class="geo-cardbtn"
                             onclick="copyMapSheetLink('histmap', event)"
-                            title="Copy a link that opens this archive's panel here">Copy link</button>
-                        <span style="color:#666;font-size:11px;">black ink, for light backgrounds</span>
+                            title="Copy a link that opens this archive's panel here"><i class="icon-link"></i>Copy link</button>
                     </div>
                     <div style="color:#555;font-size:10px;margin-top:10px;line-height:1.5;">${escapeHtml(m.attribution || '')}</div>
                 </div>`;
@@ -1551,7 +1554,12 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
         // visible — a stale surface contradicting the map, which is the
         // failure this file is full of warnings about. Skip, remember, flush
         // on open (geoMapPanelFlush).
+        /* Held from the share link until a paint can honour it; see
+         * geoMapPanelPaint(). */
+        let geoAdminExport = '';
         let geoMapPanelDirty = false;
+        let geoMapPanelFrame = 0;
+        let geoAnswerSeen = '';       // see geoMapPanelCanvasChanged()
 
         function geoMapPanelVisible() {
             const box = document.getElementById('geomap-list');
@@ -1561,23 +1569,109 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
         function geoMapPanelPaint(box) {
             const sheets = GeoMap.sheets();
             if (!sheets) return;
+            // A REBUILD UNDER AN OPEN MENU IS A MENU THAT VANISHES. The
+            // download menu hangs off a button inside this card, so rebuilding
+            // the card destroys its anchor while the reader is choosing between
+            // two files. The card stays dirty and paints when the menu closes
+            // — the same "skip, remember" discipline as the closed tab.
+            if (document.querySelector('.ml-menu-dl')) { geoMapPanelDirty = true; return; }
             geoMapPanelDirty = false;
             const ids = GeoMap.order();
             box.innerHTML = ids.length
                 ? geoMapCardHTML(ids, sheets)
                 : '<div style="color:#666;font-size:12px;">No geology sheets built on this server.</div>';
+            // WHAT THIS BUILD IS AN ANSWER TO, recorded by the build itself.
+            // Two paths reach here on one gesture — the state change (via
+            // refreshWhenDrawn, after the paint) and the map's own idle — and
+            // they arrive with the same canvas. Recording the signature here
+            // rather than in the idle handler makes the second one a no-op
+            // instead of an identical 118 KB rebuild.
+            geoAnswerSeen = (window.MapLegend && MapLegend.geoAnswerSig)
+                ? MapLegend.geoAnswerSig() : '';
+            // The link's request arrives before the first paint, so it is
+            // collected on every paint until one can honour it.
+            if (!geoAdminExport && window.MapLegend && MapLegend.takeAdminExport) {
+                geoAdminExport = MapLegend.takeAdminExport();
+            }
+            // A share link may have named a download row (?geo_export= with
+            // panel=admin). Pointed at, never run: a link whose only outcome is
+            // a build must be a click the recipient makes.
+            //
+            // AND NOT UNTIL THE CARD IS AN ANSWER. This card is built from the
+            // canvas, so the first paint after a cold load is the one that says
+            // "no mapped sheet reaches this view" over a map still fetching its
+            // first tile — and the menu, once open, holds the card still
+            // (above), freezing exactly that sentence under it. So the pointing
+            // waits for a paint that drew a table, which is the same condition
+            // the floating panel's own link opener polls on. The request is
+            // kept, not dropped: it is consumed by the paint that can honour it.
+            if (geoAdminExport && box.querySelector('.ml-mx, .ml-jx')) {
+                const want = geoAdminExport;
+                geoAdminExport = '';
+                geoPointAtDownload(want);
+            }
+        }
+
+
+        /* The download row a link asked for, in the card's own menu. The BUTTON
+         * is highlighted first and the menu opened from it, because the menu is
+         * transient and the button is the thing the reader has to find again. */
+        function geoPointAtDownload(item) {
+            const btn = document.getElementById('geomap-dl');
+            if (!btn) return;
+            btn.classList.add('highlight');
+            btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setTimeout(() => {
+                if (window.MapLegend) MapLegend.downloadMenu(btn, item);
+            }, 260);
+        }
+
+        /* ── ONE PAINT PER GESTURE, AND IT IS THE ONE AFTER THE MAP DREW ────
+         *
+         * Two rules meet here, and both are already written down elsewhere in
+         * this file:
+         *
+         *  1. A card nobody can see must not be built (the dirty flag, below).
+         *  2. A surface built in the same tick as the gesture shows the map as
+         *     it was ONE GESTURE AGO — the mixer's columns are the periods
+         *     actually DRAWN, measured off the canvas. That is why the floating
+         *     panel waits for the paint (refreshWhenDrawn), and this card shows
+         *     the same mixer, so it has to wait for the same one.
+         *
+         * So a state change never paints: it marks the card dirty and asks for
+         * a frame. The frame declines while MapLibre still owes us a paint
+         * (MapLegend.paintPending) — refreshWhenDrawn ends by calling back in
+         * here, and by then the canvas is the answer. This also coalesces the
+         * ~24 call sites into one build per gesture rather than two. */
+        function geoMapPanelSchedule() {
+            if (geoMapPanelFrame) return;
+            geoMapPanelFrame = requestAnimationFrame(() => {
+                geoMapPanelFrame = 0;
+                if (!geoMapPanelDirty || !geoMapPanelVisible()) return;
+                if (window.MapLegend && MapLegend.paintPending && MapLegend.paintPending()) return;
+                geoMapPanelPaint(document.getElementById('geomap-list'));
+            });
         }
 
         function renderGeoMapPanel() {
             if (window.MapLegend) MapLegend.refresh();   // see renderHistMapPanel
+            geoMapPanelDirtied();
+        }
+
+        /* The card's state changed. Marks it dirty and asks for the frame; the
+         * strip is NOT refreshed here, because the callers that come from
+         * MapLegend have just refreshed it themselves. */
+        function geoMapPanelDirtied() {
             const box = document.getElementById('geomap-list');
             if (!box || typeof GeoMap === 'undefined') return;
-            // The strip and the floating geology panel are SEPARATE surfaces
-            // and were just refreshed by MapLegend.refresh() above; this card
-            // is the one inside Map Settings, and it is usually closed.
-            if (box.offsetParent === null) { geoMapPanelDirty = true; return; }
-            geoMapPanelPaint(box);
+            // The strip and the floating geology panel are SEPARATE surfaces;
+            // this card is the one inside Map Settings, and it is usually
+            // closed.
+            geoMapPanelDirty = true;
+            if (box.offsetParent === null) return;
+            geoMapPanelSchedule();
         }
+        window.geoMapPanelDirtied = geoMapPanelDirtied;
 
         /** Call when the card BECOMES visible. Idempotent, and free when the
          *  card is already current: the expensive build happens once, here,
@@ -1588,6 +1682,29 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             geoMapPanelPaint(document.getElementById('geomap-list'));
         }
         window.geoMapPanelFlush = geoMapPanelFlush;
+
+        /* The canvas changed without anybody touching a control — a tile
+         * landed, the style settled, the reader panned onto another country.
+         * The mixer is built from that canvas, so this is a state change as far
+         * as this card is concerned, and MapLegend calls it on every map idle.
+         *
+         * Guarded on the SIGNATURE of the measurement rather than on the idle,
+         * for the reason the panel guards its own rebuild on skillScope: an
+         * unconditional rebuild on every idle would reshuffle a table the
+         * reader is working in, on every pan, forever. */
+        function geoMapPanelCanvasChanged() {
+            if (!window.MapLegend || !MapLegend.geoAnswerSig) return;
+            if (!geoMapPanelVisible()) return;      // the dirty flag covers the closed case
+            if (MapLegend.geoAnswerSig() === geoAnswerSeen) return;
+            // Through the SAME scheduler as a state change, not a paint of its
+            // own. Both reach here on one gesture — the map settles, which is
+            // both "the canvas changed" and the moment refreshWhenDrawn hands
+            // the state change on — and one rAF is what makes that one build
+            // instead of two identical 118 KB ones.
+            geoMapPanelDirty = true;
+            geoMapPanelSchedule();
+        }
+        window.geoMapPanelCanvasChanged = geoMapPanelCanvasChanged;
 
         // The catalogue's 1-3 prospectivity grade, in words. One definition,
         // used by the panel, the strip and the tip: three wordings for one
@@ -1612,6 +1729,38 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                 ? GeoPatterns.swatchStyle(lith || 'mixed', color, size)
                 : `background:${escapeHtml(color)};`;
             return `<span style="width:${size}px;height:${size}px;border-radius:3px;flex:none;${bg}border:1px solid rgba(0,0,0,0.45);"></span>`;
+        }
+
+        /* ── The card's bar: the panel's bar, without the window furniture ──
+         *
+         * The floating panel over the map carries a `.fui-bar` with a download
+         * arrow, a settings button, collapse and close. Three of those four are
+         * meaningless here (this card IS the settings, and it is a section of a
+         * page rather than a window), and the fourth — the download — was the
+         * one thing admin offered by a completely different route: a bare
+         * `GeoPackage (55 MB)` link for the whole catalogue, with no way to get
+         * the view the reader had just built and no ⧉ to copy the link with.
+         *
+         * So the card gets the SAME arrow, opening the SAME menu, plus the two
+         * gestures that only make sense here: a link to this card, and the way
+         * back to the map with the panel open. */
+        function geoCardBarHTML(avail) {
+            if (!avail.length) return '';
+            const dlTitle = (window.MapLegend && MapLegend.downloadTitle)
+                ? MapLegend.downloadTitle() : 'Download as a GeoPackage';
+            return `<div class="geo-cardbar">
+                <button type="button" class="geo-cardbtn" id="geomap-dl"
+                    aria-haspopup="menu" aria-label="Download the geology"
+                    title="${escapeHtml(dlTitle)}"
+                    onclick="event.stopPropagation();MapLegend.downloadMenu(this)">
+                    <i class="icon-download"></i>Download</button>
+                <button type="button" class="geo-cardbtn"
+                    title="Copy a link that opens this card, with the layer exactly as you have it"
+                    onclick="copyGeoSettingsLink(event)"><i class="icon-link"></i>Copy link</button>
+                <button type="button" class="geo-cardbtn"
+                    title="Close the admin panel and open the same tables beside the map, where you can pan while you read them"
+                    onclick="openGeologyBesideMap()"><i class="icon-mountain"></i>Show beside the map</button>
+            </div>`;
         }
 
         function geoMapCardHTML(ids, sheets) {
@@ -1709,26 +1858,41 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                 </div>`;
             }).join('');
 
-            // --- commodity chips, unioned across sheets. A commodity is a
-            // property of rock, not of a scan, so "everything that can host
-            // gold" must not stop at a border.
+            // --- commodity chips? NO. See the mixer below.
+            //
+            // This card used to carry its own commodity chips and its own
+            // strength ladder: a second chooser for the state the map strip's
+            // panel already chooses, six lines of markup from a THIRD copy of
+            // the same numbers. It could not express half of what the panel
+            // could (picked cells, junctions, the measured lift), so a reader
+            // who narrowed the map in the panel and then opened admin found a
+            // surface that quietly disagreed with the map in front of them.
+            // The mixer is one object now (MapLegend.geoBody), shown here and
+            // over the map, and the chips are the rock table's rows.
             const byCommodity = {};
             classes.forEach(c => (c.commodities || []).forEach(k => {
                 byCommodity[k] = (byCommodity[k] || 0) + 1;
             }));
-            const chips = Object.keys(byCommodity).sort().map(k => {
-                const active = avail.some(id => GeoMap.commodityOn(id, k));
-                return `<button onclick="geoToggleCommodityAll('${escapeHtml(k)}')"
-                    class="geo-chip" aria-pressed="${active}"
-                    title="${active ? 'Stop showing' : 'Also show'} the units whose rock type can host ${escapeHtml(k)}">
-                    ${escapeHtml(k)} <span class="geo-chip-n">${byCommodity[k]}</span></button>`;
-            }).join('');
-            const activeChips = Object.keys(byCommodity).filter(
-                k => avail.some(id => GeoMap.commodityOn(id, k)));
 
             // --- the full unit list, one row per class, sheet named on it.
+            //
+            // BUILT ONLY WHEN THE DISCLOSURE IS OPEN, and that is not a
+            // micro-optimisation. MEASURED: these 104 rows are 335 KB of the
+            // card's 374 KB — nine tenths of it — and the disclosure they live
+            // in is closed by default, so on the ordinary gesture every byte of
+            // it was written into a `<details>` nobody had opened. It is the
+            // same failure as the card itself being built behind a closed tab
+            // (see the dirty flag above), one level in: work proportional to
+            // something other than what the reader changed.
+            //
+            // Safe because `advOpen` is real state (it rides in the share link
+            // as geomap_adv=1) and the summary is what the reader acts on: the
+            // toggle sets the state and re-renders, so the list is present
+            // whenever it can be seen. The COUNT is not deferred — "All 104
+            // units" is the summary's own claim and must be true whether or not
+            // anybody opened it.
             const shownCount = avail.reduce((n, id) => n + geoVisibleCount(id), 0);
-            const rows = classes.slice().sort((a, b) =>
+            const rows = !shared.advOpen ? '' : classes.slice().sort((a, b) =>
                 (GeoMap.age(a.age).rank - GeoMap.age(b.age).rank) || a.code.localeCompare(b.code)
             ).map(c => {
                 const o = GeoMap.state(c.sheet);
@@ -1782,36 +1946,10 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                         title="Pick the opacity from the basemap: a drape legible over the dark basemap is nearly invisible over satellite imagery.">auto</button>
                 </div>`;
 
-            // The strength floor, mirroring the map strip's control. Only once
-            // something is selected: a floor with nothing to filter is a
-            // control with no referent. Counts are derived per level so the
-            // reader sees what each one costs.
-            const strengthBlock = wCounts ? `<div class="geo-strength">
-                    <span class="geo-adv-lbl">Affinity at least</span>
-                    <div class="geo-seg">
-                        ${[[1, 'any'], [2, 'likely'], [3, 'classic']].map(([lv, lbl]) => `
-                        <button onclick="GeoMap.setMinWeight(${lv}) || showToast('Nothing that strong here','No unit in this selection is graded that highly \u2014 keeping the current setting.',null,null,'warning')"
-                            aria-pressed="${GeoMap.minWeight() === lv}" ${wCounts[lv] ? '' : 'disabled'}
-                            title="${escapeHtml(GEO_WEIGHT_WHY[lv])} ${wCounts[lv]} unit(s).">${lbl} <span style="opacity:0.6;">${wCounts[lv]}</span></button>`).join('')}
-                    </div>
-                </div>` : '';
-
-            const commodityBlock = chips ? `<div style="margin-top:14px;">
-                        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px;">
-                            <span style="color:#888;font-size:11px;">Rock types that can host</span>
-                            ${GeoMap.anyFiltered() ? `<button onclick="GeoMap.showEverything()" class="star-report-btn secondary"
-                                style="font-size:10px;" title="Clear every selection and draw all units again">clear</button>` : ''}
-                        </div>
-                        <div style="display:flex;flex-wrap:wrap;gap:6px;">${chips}</div>
-                        ${strengthBlock}
-                        <div style="color:#666;font-size:10px;margin-top:6px;line-height:1.4;">
-                            ${activeChips.length
-                            ? 'Showing ' + shownCount + ' unit(s) that can host '
-                              + activeChips.map(escapeHtml).join(' or ') + '. '
-                            : 'Pick any number \u2014 the map shows the union. '}
-                            An inference from lithology, not an occurrence dataset &mdash; nothing here
-                            counts, ranks or locates a deposit.</div>
-                    </div>` : '';
+            // The strength floor and the commodity chooser are the MIXER's,
+            // not this card's. See the note where the chips used to be built.
+            const mixer = (window.MapLegend && MapLegend.geoBody)
+                ? `<div class="geo-mixer ml-menu-geo-embed">${MapLegend.geoBody()}</div>` : '';
 
             // --- ADVANCED.
             //
@@ -1824,7 +1962,7 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             // spread across the card as three different-looking controls.
             const advanced = `
                 <details class="geo-adv" ${shared.advOpen ? 'open' : ''}
-                         ontoggle="GeoMap.setAdvancedOpen(this.open)">
+                         ontoggle="geoSetAdvancedOpen(this.open)">
                     <summary>Advanced${GeoMap.anyFiltered() || shared.colorMode !== 'age' || !shared.pattern
                         ? ' <span style="color:#f59e0b;">&middot; changed</span>' : ''}</summary>
                     <div class="geo-adv-body">
@@ -1857,14 +1995,16 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                             </div>
                             <div style="max-height:240px;overflow-y:auto;margin-top:8px;">${rows}</div>
                         </div>
+                        ${geoAnchorBlockHTML()}
                     </div>
                 </details>`;
 
             return `<div style="border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px;margin-bottom:12px;background:rgba(255,255,255,0.02);">
                 ${head}
+                ${geoCardBarHTML(avail)}
                 <div style="${on ? '' : 'opacity:0.4;pointer-events:none;'}">
                     ${opacityBlock}
-                    ${commodityBlock}
+                    ${mixer}
                     <div style="display:flex;gap:16px;margin-top:14px;flex-wrap:wrap;">
                         <div style="flex:1;min-width:150px;">
                             <div style="color:#888;font-size:11px;margin-bottom:5px;">Age (colour)${subsetNote}</div>
@@ -1879,7 +2019,6 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                     </div>
                     ${advanced}
                 </div>
-                ${geoMapDataRowHTML()}
                 <div class="geo-src">
                     <div style="color:#888;font-size:11px;margin-bottom:8px;">Source sheets</div>
                     ${ids.map(id => geoMapSheetRowHTML(id, sheets[id])).join('')}
@@ -1887,30 +2026,105 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             </div>`;
         }
 
-        // The data download: ONE GeoPackage covering every sheet, because the
-        // map is one layer and rock does not stop at a border. It used to be
-        // one file per scan, which made the download mirror our storage rather
-        // than the user's question — anyone intersecting units with a park had
-        // to open two files and union two column sets by hand. The scan
-        // survives as a column (`sheet`), exactly as it does on the map.
-        //
-        // It sits above the source-sheet list, not inside it, because it is
-        // not a property of any one sheet.
-        function geoMapDataRowHTML() {
-            const g = GeoMap.geopackage();
-            if (!g) return '';
-            const mb = g.bytes ? ' (' + (g.bytes / 1048576).toFixed(0) + ' MB)' : '';
-            return `<div class="geo-src">
-                <div style="color:#888;font-size:11px;margin-bottom:8px;">Data</div>
-                <a class="star-report-btn secondary" id="geomap-gpkg"
-                   style="font-size:11px;text-decoration:none;"
-                   href="${geoMapUrl(g.url)}" download
-                   onclick="return downloadGeoMapGPKG(event)"
-                   title="Every sheet's source polygons in one layer, with typed columns, one w_&lt;commodity&gt; weight per commodity, and the same age/rock-type legend as the map — styled for QGIS with a project inside. The MBTiles below are the pictures; this is the data.">GeoPackage${mb}</a>
-                <span style="color:#666;font-size:10px;margin-left:8px;">
-                    one layer, ${g.sheets.length} sheet${g.sheets.length === 1 ? '' : 's'} &middot; typed columns, QGIS project inside</span>
+        /* ── The evidence, named where the settings are ──────────────────
+         *
+         * Every affinity grade in this app was scored against published mining
+         * records, and both GeoPackages ship them as `mining_anchors`. The
+         * download menu says that in one sentence, which is the right amount
+         * there — but the reader who wants to know WHICH lists, under what
+         * terms, observed how, and what we deliberately left out had nowhere to
+         * look but the source. That is exactly the material Advanced is for.
+         *
+         * Rules this block keeps:
+         *  - **A withheld list is named, not omitted.** ACLED's terms forbid
+         *    redistributing its rows, and it was never a mining list anyway (it
+         *    measures how far our truth sets could reach). Dropping it silently
+         *    would make the evidence look tidier than it is.
+         *  - **`terms` is a property of each publisher, not of this app.**
+         *    'unstated' means nobody granted a licence; it is shown as those
+         *    words, because "open" and "nobody said" are different states and
+         *    only one of them is permission.
+         *  - **Nothing here is counted by us.** Every number is the count the
+         *    catalogue reports (`/api/geomap` → `anchors`), which is read off
+         *    the file scripts/mining_anchors.py writes.
+         *  - **The anchors are never filtered by the map's selection**, here or
+         *    in the file, and the block says so: a list that agreed with our
+         *    own filter would be a picture of the filter. */
+        const GEO_OBSERVED_WORDS = {
+            field_visit: 'visited in the field',
+            survey_register: 'a survey\u2019s own register',
+            imagery_census: 'counted from imagery',
+            imagery_footprint: 'mapped from imagery',
+            industry_database: 'an industry database',
+            community_report: 'recovered from incident reports',
+            osm_tag: 'tagged in OpenStreetMap',
+            named_deposit: 'a named deposit compilation'
+        };
+
+        function geoAnchorBlockHTML() {
+            const a = (typeof GeoMap !== 'undefined' && GeoMap.anchors) ? GeoMap.anchors() : null;
+            if (!a) return '';
+            if (!a.available) {
+                // ABSENT IS NOT ZERO, and "we could not ship it" is not
+                // "nothing was ever checked".
+                return `<div class="geo-anch">
+                    <div class="geo-adv-lbl" style="min-width:0;">Reference mining sites</div>
+                    <div class="geo-anch-note warn">Not installed on this server${a.reason
+                        ? ' \u2014 ' + escapeHtml(a.reason) : ''}. The affinity grades were still
+                        measured against them; this server just cannot ship the evidence with a
+                        download. Rebuild with <code>scripts/mining_anchors.py</code>.</div>
+                </div>`;
+            }
+            const src = (a.sources || []).slice().sort((x, y) => (y.sites || 0) - (x.sites || 0));
+            const rows = src.map(s => `
+                <div class="geo-anch-row">
+                    <a href="${escapeHtml(s.landing || '#')}" target="_blank" rel="noopener"
+                       class="geo-anch-lbl" title="${escapeHtml((s.attribution || s.label || '') +
+                           (s.note ? ' \u2014 ' + s.note : ''))}">${escapeHtml(s.label || s.source)}</a>
+                    <span class="geo-anch-obs" title="How the sites in this list were observed \u2014 a mill counted from imagery and a pit somebody stood in are not the same evidence">${escapeHtml(GEO_OBSERVED_WORDS[s.observed] || s.observed || '')}</span>
+                    <span class="geo-anch-terms t-${escapeHtml(s.terms || 'unstated')}"
+                          title="${escapeHtml(s.licence || 'not stated')}${s.terms === 'unstated'
+                              ? ' \u2014 the publisher granted no licence: attribute them, and check before redistributing further'
+                              : ''}">${escapeHtml(s.terms || 'unstated')}</span>
+                    <span class="geo-anch-n">${(s.sites || 0).toLocaleString()}</span>
+                </div>`).join('');
+            const withheld = (a.withheld || []).map(w => `
+                <div class="geo-anch-row withheld">
+                    <a href="${escapeHtml(w.landing || '#')}" target="_blank" rel="noopener"
+                       class="geo-anch-lbl" title="${escapeHtml(w.why || '')}">${escapeHtml(w.label || w.source)}</a>
+                    <span class="geo-anch-obs">not redistributable</span>
+                    <span class="geo-anch-terms t-restricted"
+                          title="${escapeHtml(w.why || '')}">withheld</span>
+                    <span class="geo-anch-n">\u2014</span>
+                </div>`).join('');
+            return `<div class="geo-anch">
+                <div style="display:flex;align-items:baseline;gap:8px;">
+                    <span class="geo-adv-lbl" style="min-width:0;">Reference mining sites</span>
+                    <span style="color:#666;font-size:10px;">${a.n.toLocaleString()} published workings,
+                        ${src.length} list${src.length === 1 ? '' : 's'}</span>
+                </div>
+                <div class="geo-anch-note">The ground this model was scored against \u2014 five fields
+                    per point (coordinate, year, resource, the publisher\u2019s own id and where it
+                    resolves), which is a citation, not a substitute for anybody\u2019s dataset. Both
+                    GeoPackages carry all of them, <b>never</b> narrowed to the commodity or the
+                    sheets you have picked: a file where every working agreed with the layer would
+                    be a picture of our own filter. They are evidence the layer was checked, not a
+                    prediction, a ranking, or a claim that other ground is barren.</div>
+                <div class="geo-anch-tbl">${rows}${withheld}</div>
             </div>`;
         }
+
+        /* Opening Advanced is what BUILDS its unit list (see `rows`), so the
+         * toggle has to re-render rather than only record the state — or the
+         * disclosure opens on an empty box the first time. Closing re-renders
+         * too, which is how the 335 KB goes away again. */
+        function geoSetAdvancedOpen(open) {
+            if (typeof GeoMap === 'undefined') return;
+            if (GeoMap.advancedOpen() === !!open) return;
+            GeoMap.setAdvancedOpen(open);
+            renderGeoMapPanel();
+        }
+        window.geoSetAdvancedOpen = geoSetAdvancedOpen;
 
         function geoVisibleCount(id) {
             const o = GeoMap.state(id);
@@ -2017,23 +2231,56 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             return path + (path.indexOf('?') >= 0 ? '&' : '?') + 'pwd=' + encodeURIComponent(getPwd());
         }
 
-        // The GeoPackage is built on first request (a few seconds for Sudan's
-        // 34 MB of polygons plus CAR's) and served straight — no job, no card,
-        // because it is one static file rather than a per-area export over a
-        // live database. What a plain <a download> gets wrong is that nothing
-        // happens on screen for those seconds, which reads as a dead link, so
-        // the anchor says so. The href still works with JS off.
-        function downloadGeoMapGPKG(ev) {
-            const a = document.getElementById('geomap-gpkg');
-            if (!a || a.classList.contains('busy')) return true;
-            const label = a.innerHTML;
-            a.classList.add('busy');
-            a.innerHTML = 'Preparing GeoPackage&hellip;';
-            // No progress to report and no completion event for a download, so
-            // this is a floor, not a measurement.
-            setTimeout(() => { a.classList.remove('busy'); a.innerHTML = label; }, 12000);
-            return true;
+        // The whole-catalogue download used to be a bare anchor here, four
+        // clicks from the map and unable to give the reader the view they had
+        // just built. It is now the app's download menu (MapLegend.downloadMenu
+        // — same two rows, same ⧉, same wording as the panel's arrow), so
+        // downloadGeoMapGPKG() and its #geomap-gpkg anchor are gone. The
+        // "Preparing…" floor for the whole-catalogue link lives in
+        // MapLegend.downloadAllStarted(), which is the one implementation now.
+
+        /* A link to this card, with the layer as it stands.
+         *
+         * Not the same object as the map's share link and not a third one
+         * either: buildShareUrl() already carries the drape's whole state, and
+         * the two params added here are the ones that say WHERE it was being
+         * read. Same shape as copyMapSheetLink(), which points at one sheet's
+         * row in this card. */
+        function copyGeoSettingsLink(ev) {
+            const url = new URL(buildShareUrl());
+            url.searchParams.set('panel', 'admin');
+            url.searchParams.set('admin_tab', 'map-settings');
+            return ShareLink.open(url.toString(),
+                { title: 'Geology settings', kind: 'view', event: ev });
         }
+        window.copyGeoSettingsLink = copyGeoSettingsLink;
+
+        /* The way back to the map.
+         *
+         * The mixer works identically in both homes, but the MAP does not: the
+         * tables' columns are the periods actually drawn in the current view,
+         * and here the view is behind a full-screen admin panel. So a reader
+         * narrowing the layer in admin is choosing against a map they cannot
+         * see. This closes the panel and opens the same tables floating beside
+         * the map — one gesture, no state change, and the panel restores the
+         * selection because there is only one selection. */
+        function openGeologyBesideMap() {
+            const p = document.getElementById('admin-panel');
+            if (p && p.classList.contains('active') && typeof toggleAdminPanel === 'function') {
+                toggleAdminPanel();
+            }
+            // After the panel is out of the way: the floating panel anchors off
+            // the geology chip in the stats strip, and that chip is only there
+            // when the layer is on.
+            setTimeout(() => {
+                if (typeof GeoMap !== 'undefined' && !GeoMap.anyOn()) GeoMap.setAll(true);
+                setTimeout(() => {
+                    const chip = document.querySelector('#stats-map .ml-chip.geo');
+                    if (chip && window.MapLegend) MapLegend.geoMenu(chip);
+                }, 120);
+            }, 60);
+        }
+        window.openGeologyBesideMap = openGeologyBesideMap;
 
         // Share a link straight to one sheet's entry in Map Settings.
         //

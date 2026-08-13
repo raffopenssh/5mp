@@ -1,11 +1,16 @@
 package srv
 
 import (
+	"archive/zip"
+	"bytes"
 	"database/sql"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -618,11 +623,22 @@ func writeTestContacts(t *testing.T, dir, sheet string, pairs ...[2]string) {
 // directory. A test that wants them present (or absent) has to say so, and has
 // to put the once back — otherwise the first test to touch them decides for
 // every later one.
+//
+// A sync.Once is RESTORED BY REPLAYING IT, never by copying it: a Once holds a
+// noCopy and `go vet` fails the assignment. "Already loaded" is reproduced by
+// running a fresh Once with an empty function — the same state, without the
+// copy.
 func useTestAnchors(t *testing.T, dir string, n int) {
 	t.Helper()
-	oldOnce, oldDoc, oldErr := geoAnchorOnce, geoAnchors, geoAnchorErr
+	oldDoc, oldErr := geoAnchors, geoAnchorErr
+	oldLoaded := oldDoc != nil || oldErr != nil
 	geoAnchorOnce, geoAnchors, geoAnchorErr = sync.Once{}, nil, nil
-	t.Cleanup(func() { geoAnchorOnce, geoAnchors, geoAnchorErr = oldOnce, oldDoc, oldErr })
+	t.Cleanup(func() {
+		geoAnchorOnce, geoAnchors, geoAnchorErr = sync.Once{}, oldDoc, oldErr
+		if oldLoaded {
+			geoAnchorOnce.Do(func() {})
+		}
+	})
 	if n <= 0 {
 		return
 	}
@@ -1010,4 +1026,130 @@ func TestGeoViewFileNameIsReadableAndNeverTheCatalogues(t *testing.T) {
 		t.Error("a view file must never be named geology.gpkg: the cached catalogue " +
 			"lives under that name and the two have different contents")
 	}
+}
+
+// The disclaimer must survive the route we tell people to use.
+//
+// Every layer's description says what it is not ("an inference ... NOT a record
+// of any deposit", "OTHER ORGANISATIONS' observations", "a VIEW rather than the
+// catalogue"). GDAL surfaces gpkg_contents.description as the layer abstract —
+// but the embedded QGIS project's <maplayer> supplies its own metadata, and an
+// ABSENT <resourceMetadata> does not fall back to the provider's: it blanks it.
+// Rendering the file through its own project (scripts/geomaps/render_gpkg.py)
+// printed "abstract: (none)" for all three layers while ogrinfo printed the
+// paragraph, which is exactly the shape of bug that pass exists to catch.
+func TestGeoMapProjectCarriesEachLayersDisclaimer(t *testing.T) {
+	dir := t.TempDir()
+	useTestSheets(t, dir, "tst")
+	useTestAnchors(t, dir, 3)
+	writeTestSheet(t, dir)
+	writeTestContacts(t, dir, "tst", [2]string{"Au/Bx", "Qz"})
+
+	path := filepath.Join(dir, "geology.gpkg")
+	if err := buildGeoMapGeoPackage(path, []string{"tst"}); err != nil {
+		t.Fatal(err)
+	}
+	qgs := readProjectXML(t, path)
+	for _, want := range []struct{ table, phrase string }{
+		{"geology_units", "not a record of any deposit"},
+		{"geology_contacts", "NOT a record of any deposit"},
+		{"mining_anchors", "OTHER ORGANISATIONS"},
+	} {
+		if !strings.Contains(qgs, "<identifier>"+want.table+"</identifier>") {
+			t.Errorf("%s has no <resourceMetadata> in the embedded project: QGIS shows "+
+				"an empty abstract, and the abstract is where the disclaimer lives", want.table)
+			continue
+		}
+		if !strings.Contains(qgs, want.phrase) && !strings.Contains(qgs,
+			strings.ReplaceAll(want.phrase, "'", "&#39;")) {
+			t.Errorf("%s's abstract in the project does not carry %q", want.table, want.phrase)
+		}
+	}
+}
+
+// Nine lists, nine distinguishable dots — and none of them the fallback.
+//
+// The anchors land on a saturated FGDC pattern fill covering the whole canvas,
+// so this layer's contrast budget is not the export's usual one. Two ways the
+// first palette failed it, both invisible in an XML assertion: source #1 was
+// pure white (a white dot on a pale unit fill is nothing), and source #9 was
+// byte-identical to the "other" fallback, so the ninth real list and the
+// catch-all were one symbol in the legend.
+func TestGeoAnchorSymbolsAreDistinctVisibleAndNotTheFallback(t *testing.T) {
+	srcs := []string{"a", "b", "c", "d", "e", "f", "g", "h", "i"}
+	qml := styleGeoAnchors(srcs)
+
+	re := regexp.MustCompile(`<Option name="color" type="QString" value="([0-9,]+)"/>`)
+	m := re.FindAllStringSubmatch(qml, -1)
+	if len(m) != len(srcs)+1 {
+		t.Fatalf("want %d symbols (%d sources + fallback), got %d", len(srcs)+1, len(srcs), len(m))
+	}
+	seen := map[string]int{}
+	for i, g := range m {
+		c := g[1]
+		if j, dup := seen[c]; dup {
+			t.Errorf("symbol %d repeats symbol %d (%s): two lists, or a list and the "+
+				"fallback, reading as one provenance", i, j, c)
+		}
+		seen[c] = i
+		var r, gg, b, a int
+		if n, _ := fmt.Sscanf(c, "%d,%d,%d,%d", &r, &gg, &b, &a); n < 3 {
+			t.Fatalf("unparseable colour %q", c)
+		}
+		if r > 235 && gg > 235 && b > 235 {
+			t.Errorf("symbol %d is %s — near-white, which disappears into a pale unit "+
+				"fill and onto paper; the anchors are the evidence layer", i, c)
+		}
+	}
+	// The outline must be opaque: the shared default is 0,0,0,80, a 69%
+	// transparent hairline that dissolves into a cross-hatch.
+	for _, g := range regexp.MustCompile(
+		`<Option name="outline_color" type="QString" value="([0-9,]+)"/>`).FindAllStringSubmatch(qml, -1) {
+		p := strings.Split(g[1], ",")
+		if len(p) == 4 {
+			if a, _ := strconv.Atoi(p[3]); a < 200 {
+				t.Errorf("anchor outline %s is translucent; over a pattern fill that is no outline", g[1])
+			}
+		}
+	}
+}
+
+// readProjectXML unhexes and unzips the embedded .qgz back to its .qgs text.
+// The project is stored the way QGIS stores it (hex of a zip), so any test
+// asserting what the project SAYS has to go the same way back.
+func readProjectXML(t *testing.T, path string) string {
+	t.Helper()
+	db, err := sql.Open("sqlite", path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	var content string
+	if err := db.QueryRow(`SELECT content FROM qgis_projects`).Scan(&content); err != nil {
+		t.Fatal(err)
+	}
+	raw, err := hex.DecodeString(content)
+	if err != nil {
+		t.Fatal(err)
+	}
+	zr, err := zip.NewReader(bytes.NewReader(raw), int64(len(raw)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, f := range zr.File {
+		if strings.HasSuffix(f.Name, ".qgs") {
+			rc, err := f.Open()
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer rc.Close()
+			b, err := io.ReadAll(rc)
+			if err != nil {
+				t.Fatal(err)
+			}
+			return string(b)
+		}
+	}
+	t.Fatal("no .qgs inside the embedded project")
+	return ""
 }

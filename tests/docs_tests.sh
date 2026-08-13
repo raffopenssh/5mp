@@ -15,8 +15,14 @@ PASS=0; FAIL=0
 ok()   { echo "  PASS: $1"; PASS=$((PASS+1)); }
 bad()  { echo "  FAIL: $1"; FAIL=$((FAIL+1)); }
 
-# 1. The root file must stay cheap. 12000 bytes ~= 3k tokens.
-LIMIT=12000
+# 1. The root file must stay cheap. 20000 bytes ~= 5k tokens, raised from
+#    12000 by the owner: the invariant list is the file's whole value and it
+#    grows by one hard-won paragraph every few passes, so the budget that
+#    matters is "cheap enough to load on every task", not a byte count from
+#    when there were ten invariants. Still a CEILING, not a target — anything
+#    naming a specific file, table or handler is subsystem knowledge and goes
+#    in docs/agents/.
+LIMIT=20000
 SIZE=$(wc -c < AGENTS.md)
 if [[ $SIZE -le $LIMIT ]]; then
     ok "AGENTS.md is ${SIZE} bytes (limit ${LIMIT})"
