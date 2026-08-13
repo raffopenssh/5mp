@@ -456,6 +456,19 @@
            inside is now sized to this: the tables' first column is a
            minmax(_,1fr), the swatch columns are fixed, and the notes wrap. */
         .ml-menu-geo { width: 330px; min-width: 0; max-width: calc(100vw - 12px); }
+        /* The download menu is the app's download menu (.aoi-menu-row rows, the
+           same ⧉), so it must READ like one: two rows and two notes. Without a
+           width the notes set it, and a shrink-to-fit box 1,200 px wide got
+           clamped to the screen edge — the same menu, unrecognisable, and
+           nowhere near the arrow that opened it. Sized to the panel it belongs
+           to. */
+        .ml-menu-dl { width: 300px; min-width: 0; max-width: calc(100vw - 12px); }
+        .ml-menu-dl .mode-menu-note { padding: 6px 9px; }
+        /* Two rows both named "GeoPackage" (as in the park menu, where the
+           difference is a gigabyte): the ‘em’ is the only thing telling them
+           apart, so it must not wrap into the label. */
+        .ml-menu-dl .aoi-menu-item em { flex: none; white-space: nowrap; }
+        .ml-menu-dl .aoi-menu-item span { min-width: 0; }
         .ml-mx-head { display: flex; align-items: baseline; gap: 6px; }
         .ml-mx-head em { font-style: normal; font-weight: 400; letter-spacing: 0;
             text-transform: none; color: #6b7280; font-size: 9px; }
@@ -3323,7 +3336,14 @@ tr.selected td {
    everywhere else in this app, and the pencil confirms it without competing.
    ───────────────────────────────────────────────────────────────────────── */
 .sl-scrim {
-    position: fixed; inset: 0; z-index: 2600; display: none;
+    /* ABOVE THE MENUS. A download menu is `.aoi-menu` (z-index 10000) and the
+       geology panel wears the same box, so a scrim at 2600 dimmed the map and
+       left the panel and its menu bright on top of the dialog they had just
+       opened — a modal with two live things in front of it. The dialog is
+       opened FROM one of those menus (copyExportLink deliberately leaves it
+       open behind, because copying a link is not choosing a download), so it
+       has to out-rank them rather than close them. */
+    position: fixed; inset: 0; z-index: 10600; display: none;
     align-items: center; justify-content: center; padding: 20px;
     background: rgba(0,0,0,0.72);
     -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);

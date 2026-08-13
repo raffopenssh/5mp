@@ -598,6 +598,10 @@ func (s *geoMapSelection) selLabel() string {
 	return strings.TrimSpace(s.Label)
 }
 
+// geoRowsToken is a placeholder in the layer description for a count that is
+// only known after the write. Never a hardcoded number: invariant 2.
+const geoRowsToken = "\x00rows\x00"
+
 func buildGeoMapGeoPackage(path string, sheets []string) error {
 	return buildGeoMapGeoPackageSel(path, sheets, nil)
 }
@@ -762,8 +766,14 @@ func buildGeoMapGeoPackageSel(path string, sheets []string, sel *geoMapSelection
 		for _, u := range units {
 			nClass[geoMapUnitKey(u.props.Sheet, u.props.Code)] = true
 		}
-		desc = fmt.Sprintf("A VIEW, not the whole catalogue — %s, %d unit(s) of these sheets. ",
-			viewOf, len(nClass)) + desc
+		// TWO NUMBERS, BOTH NAMED (invariant 7). The panel counts CLASSES (104
+		// "units") and a vector sheet ships the survey's own polygons (659 rows
+		// for the same view), so a description saying only "104 unit(s)" over a
+		// layer of 659 features reads as a file that does not match the picture
+		// it was built from. The polygon count is filled in after the write,
+		// where it is known.
+		desc = fmt.Sprintf("A VIEW, not the whole catalogue — %s: %d map unit(s) "+
+			"(classes) of these sheets, as %s polygon(s). ", viewOf, len(nClass), geoRowsToken) + desc
 		if sel.Link != "" {
 			desc += " The map that produced it: " + sel.Link
 		}
@@ -820,6 +830,17 @@ func buildGeoMapGeoPackageSel(path string, sheets []string, sel *geoMapSelection
 	}
 	if l.Count() == 0 {
 		return fmt.Errorf("no unit geometry could be written")
+	}
+	// The polygon count is only known NOW, and it is a different unit from the
+	// class count the panel shows (104 classes, 659 polygons for the same view —
+	// a vector sheet ships the survey's own geometry). Both ride in the
+	// description, each naming what it counts, so the file and the picture
+	// cannot look like they disagree about one word.
+	if strings.Contains(desc, geoRowsToken) {
+		if _, err := w.tx.Exec(`UPDATE gpkg_contents SET description=? WHERE table_name=?`,
+			strings.ReplaceAll(desc, geoRowsToken, fmt.Sprint(l.Count())), table); err != nil {
+			return err
+		}
 	}
 	qml := styleGeoUnits(classes)
 	w.SetStyle(table, qml, "Age (ICS/CGMW) with FGDC lithology ornament")

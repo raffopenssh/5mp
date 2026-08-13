@@ -632,3 +632,92 @@ re-learned the control at every row. Now:
   not just by `ogrinfo`.
 
 ---
+### The download in the panel: the view you built, whole or filtered
+
+Added 2026-08-13. The panel is where a reader *builds* a view — gold hosts,
+likely and up, these two junctions, that period hidden — so the question that
+follows it is "can I have this in QGIS". Until then the only download was the
+whole catalogue, four clicks away in admin ▸ Map Settings.
+
+**Two paths, deliberately different shapes** (`downloadFacts`,
+`openDownloadMenu`, `downloadView` in `maplegend.js`):
+
+| | route | shape |
+|---|---|---|
+| **this view** | `POST /api/geomap/geopackage` | body is the resolved selection; built per request, temp file, `private, no-store`, served once |
+| **every sheet** | `GET /api/geomap/geopackage` | the stamped cached `geology.gpkg`, a plain `<a>` so it works with JS off |
+
+* **The selection is resolved by the CLIENT** and travels as unit keys +
+  contact pairs (`GeoMap.selection()` → `geoMapSelection` in
+  `srv/geomap_gpkg.go`). The panel's filter is five clauses deep (commodity
+  chips expanded through the host map at a strength floor, matrix cells, hidden
+  units, hidden periods, a lithology filter); re-implementing it in Go would put
+  two filters between the reader and their own download, which is the shape of
+  bug where the picture and the file disagree and neither says so. It sends the
+  same `visibleCodes()`/`visiblePairs()` that feed the MapLibre filter, so **the
+  file is the picture by construction**. A snapshot of codes is fine here (it
+  lives for one request) and wrong in a share link, which is why
+  `getShareParams` travels as commodities and lithologies instead.
+* **The selection is applied before the commodity columns are derived**, so a
+  filtered file's `w_*` columns describe *the file*: a `w_uranium` column on a
+  gold-only export is a claim that uranium was considered and found absent.
+  Only the sheets that actually contributed are named in the description.
+* **A selection matching nothing is an ERROR** (409, not 500 — the usual cause
+  is a stale page and the message says to reload), never an empty layer. Same
+  for a pair set that matches no line. Invariant 1.
+* **A filtered export announces itself** — `A VIEW, not the whole catalogue…`
+  in the layer description, and in the QGIS project title. Two files with one
+  name and different contents is the truncation trap, so the filename carries
+  the reader's own words for the view (`geoViewFileName`, never `geology.gpkg`).
+* **It never touches `geology.gpkg`.** Writing one reader's subset into the
+  cached file would hand the next visitor a subset with a *fresh stamp* — the
+  staleness trap in its worst form, because the file would look correct. No
+  cache either: a view is one of ~2⁴⁶ combinations.
+* **The view export is not in admin ▸ Map Settings, and should not be.** A view
+  only exists while the panel is open; admin offers the catalogue. Two surfaces
+  for one download would be a third path to keep in sync.
+
+**Two more layers, in both files** (`srv/geomap_gpkg_layers.go`):
+
+* `geology_contacts` (MULTILINESTRING) — graded from the lithology pair by the
+  *same* `geoContactRuleIndex` the map paints from, in the map's own amber ramp,
+  because someone who filters junctions on screen and opens the file is looking
+  at the same lines. `grade` is a word (`classic`/`likely`/`weak`/`ungraded`);
+  `ungraded` means **the model says nothing** and carries NULL, not 0.
+* `mining_anchors` (POINT) — the published workings the model was scored
+  against, **never filtered by the reader's commodity or by the sheets**.
+  `resource` is a column, so the reader narrows it and knows *they* did; a file
+  where every anchor agrees with the layer is a picture of our own filter. An
+  anchor outside the cutline is exactly the row that shows where the evidence
+  stops. A server without the file gets **no layer and a project title that says
+  so** — "we could not ship it" and "nothing was ever checked" are different
+  statements.
+
+**The cache stamp covers units, contacts AND anchors.** A re-derived contacts
+file leaves units that are still right and hairlines a generation old — the same
+staleness one layer down, invisible *because* the polygons are correct. A
+missing input is recorded as absent, not skipped.
+
+**The menu is the app's download menu.** Same `.aoi-menu-row` markup, same ⧉
+copy-link button and same `copyExportLink()` as the park/AOI menu
+(`exportMenuItems` in globe.html) and the animator's (`anim.js`) — including the
+reason the ⧉ exists at all, which is that Safari's own "Copy Link" copies the
+row's *label*. The link carries `geo_export=view|all` and, like `?anim_export=`
+and `?aoi_menu_item=`, **points at a row without running it**: a link whose only
+outcome is a build must be a click the recipient makes. `restoreFromParams`
+implies `geo_panel` from it, since the arrow lives in the panel's bar.
+`.ml-menu-dl` is width-fixed for the same reason the panel is — the notes would
+otherwise set a 1,200 px shrink-to-fit box that gets clamped to the screen edge.
+
+**`.sl-scrim` is z-index 10600, above `.aoi-menu`'s 10000.** The share dialog is
+opened *from* one of these menus and deliberately leaves it open behind
+(copying a link is not choosing a download), so it has to out-rank the menu
+rather than close it. At 2600 it dimmed the map and left the geology panel and
+its menu bright on top of the modal they had just opened.
+
+Tests: `srv/geomap_gpkg_test.go` (the four filtered-export cases, the stamp, the
+filename). Both rows have been **clicked through** and their files opened; the
+contact style has *not* had a `scripts/geomaps/render_gpkg.py` pass, and three
+of nine unit ornaments were once wrong in ways no byte-level test could see.
+
+---

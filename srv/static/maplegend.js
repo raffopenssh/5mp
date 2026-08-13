@@ -1366,18 +1366,56 @@
 
     /* What the reader would call the view, for the file name and the layer
      * description inside it. The same phrase the chip shows, so the file and
-     * the map are not named differently. */
+     * the map are not named differently.
+     *
+     * geoFilterNote() ALREADY names the contact layer and its own narrowing
+     * ("graded contacts", "granite against greenstone contacts"), so this must
+     * not append a second contact clause: the first file out of this path was
+     * called `geology-gold-hosts-graded-contacts-graded-junctions.gpkg`, which
+     * says one thing twice and reads as two different filters. */
     function viewLabel() {
         var fn = geoFilterNote([]);
         var base = (fn && fn.full) || '';
-        if (mxMode === 'junction' && contactFacts().on) {
-            var j = junctionsWords(contactFacts().pairs);
-            base = base ? base + ', ' + (j || 'graded junctions') : (j || 'graded junctions');
+        if (!base && mxMode === 'junction' && contactFacts().on) {
+            base = junctionsWords(contactFacts().pairs) || 'graded junctions';
         }
         return base || 'the whole legend, as drawn';
     }
 
-    function openDownloadMenu(btn) {
+    /* The link that reproduces this view and points at one download row.
+     *
+     * Copied from anim.js's exportShareLink(), and deliberately the same shape:
+     * a download link in this app is a SHARE LINK that points at a row, never a
+     * URL that spends minutes of CPU on open. `geo_panel` already rides along
+     * (getShareParams), so the recipient lands on the same panel, same tab,
+     * same filter — with the menu open and the row pointed at. */
+    function exportShareLink(item) {
+        var url;
+        try {
+            url = (typeof buildShareUrl === 'function') ? buildShareUrl() : window.location.href;
+        } catch (e) { url = window.location.href; }
+        try {
+            var u = new URL(url, window.location.href);
+            u.searchParams.set('geo_export', item);
+            return u.toString();
+        } catch (e) { return url; }
+    }
+
+    /* One row, the app's own download-row markup: the entry, plus an explicit
+     * copy-link button. Same component as the park/AOI menu (globe.html
+     * exportMenuItems) and the animator's (anim.js exportMenuHTML) — including
+     * the reason the ⧉ exists at all, which is that Safari's own "Copy Link"
+     * copies the row's LABEL rather than the address. */
+    function dlRow(inner, url, item) {
+        return '<div class="aoi-menu-row">' + inner +
+            (url ? '<button class="aoi-menu-copy" title="Copy a link to this view and this download" ' +
+                'aria-label="Copy a link to this view and this download" ' +
+                'onclick="return copyExportLink(event, this)" ' +
+                'data-item="' + esc(item || '') + '" data-url="' + esc(url) + '"><i class="icon-copy"></i></button>'
+                : '') + '</div>';
+    }
+
+    function openDownloadMenu(btn, highlight) {
         var already = dlEl;
         // The geology PANEL must survive this: it is what is being exported,
         // and closing it to show a two-row menu would take the counts the
@@ -1404,27 +1442,29 @@
         // for. Its counts are the bar's own counts, from the same filters the
         // paint uses, so the reader can see what they are about to get.
         var canView = f.units > 0;
-        html += '<button type="button" class="aoi-menu-item ml-more' + (canView ? '' : ' refused') + '" ' +
+        html += dlRow('<button type="button" class="aoi-menu-item" data-item="view"' +
+            (canView ? '' : ' disabled') + ' ' +
             'title="' + esc(canView
                 ? 'The units and junctions on screen right now, with the same age/rock-type ' +
                   'legend and a QGIS project inside. Filtered exactly as the map is.'
                 : 'Nothing is drawn here, so there is no view to export — pan onto a sheet ' +
                   'or widen the filter.') + '" ' +
             'onclick="event.stopPropagation();' + (canView ? 'MapLegend.downloadView()' : 'void 0') + '">' +
-            '<i class="icon-crop ml-mi"></i>This view' +
+            '<i class="icon-crop"></i><span>GeoPackage</span>' +
             '<em>' + (canView
-                ? f.units + ' unit' + (f.units === 1 ? '' : 's') +
-                  (f.lines ? ' · ' + f.lines + ' junction type' + (f.lines === 1 ? '' : 's')
-                           : ' · no junction layer')
-                : 'nothing drawn here') + '</em></button>';
-        html += '<a class="aoi-menu-item ml-more" id="ml-dl-all" download ' +
+                ? 'this view, ' + f.units + ' unit' + (f.units === 1 ? '' : 's') +
+                  (f.lines ? ' + ' + f.lines + ' line type' + (f.lines === 1 ? '' : 's') : '')
+                : 'nothing drawn here') + '</em></button>',
+            canView ? exportShareLink('view') : '', 'view');
+        html += dlRow('<a class="aoi-menu-item" data-item="all" id="ml-dl-all" ' +
             'href="' + esc(dlUrl(f.whole)) + '" ' +
             'title="' + esc('Every unit of every sheet, unfiltered — one geology_units layer with ' +
                 'the sheet as a column, typed area and one w_<commodity> weight per commodity.') + '" ' +
             'onclick="MapLegend.downloadAllStarted()">' +
-            '<i class="icon-database ml-mi"></i>Everything' +
-            '<em>' + f.sheets + ' sheet' + (f.sheets === 1 ? '' : 's') + ', unfiltered' +
-            (f.bytes ? ' · ' + Math.round(f.bytes / 1048576) + ' MB' : '') + '</em></a>';
+            '<i class="icon-database"></i><span>GeoPackage</span>' +
+            '<em>all ' + f.sheets + ' sheets' +
+            (f.bytes ? ', ' + Math.round(f.bytes / 1048576) + ' MB' : '') + '</em></a>',
+            exportShareLink('all'), 'all');
 
         // THE EVIDENCE RIDES IN BOTH FILES, and the reader is told so here
         // rather than discovering an unexplained point layer in QGIS. Its
@@ -1451,7 +1491,19 @@
             'layer description too, so the disclaimer travels with the file.</div>';
         el.innerHTML = html;
         dlEl = el;
-        placeDl(el, btn);
+        placeDl(el, btn, highlight);
+        // A HINT, NOT AN ACTION — the same rule as ?anim_export= and
+        // ?aoi_menu_item=: a link whose only outcome is a build and a few tens
+        // of MB must be a click the recipient makes, not a consequence of
+        // opening a URL. So the row is pointed at and focused, never run.
+        if (highlight) {
+            var row = el.querySelector('.aoi-menu-item[data-item="' + highlight + '"]');
+            if (row) {
+                row.classList.add('highlight');
+                row.setAttribute('tabindex', '0');
+                try { row.focus({ preventScroll: true }); } catch (e) { }
+            }
+        }
         return;
     }
 
@@ -1460,14 +1512,17 @@
      * make this little menu "the menu", and the next rebuild would rebuild the
      * wrong element. It closes on the next click anywhere else — including
      * inside the panel, which is the reader going back to adjusting the view. */
-    function placeDl(el, btn) {
+    function placeDl(el, btn, highlight) {
         document.body.appendChild(el);
         var r = btn.getBoundingClientRect();
         var w = el.offsetWidth, h = el.offsetHeight;
         el.style.left = Math.max(6, Math.min(window.innerWidth - w - 6, r.right - w)) + 'px';
         el.style.top = (r.bottom + h + 6 > window.innerHeight
             ? Math.max(6, r.top - h - 4) : r.bottom + 4) + 'px';
-        setTimeout(function () { document.addEventListener('click', closeDlMenu); }, 0);
+        // A pointed-at row gets a moment before the next click can dismiss the
+        // menu: a share link's landing click would otherwise close it.
+        setTimeout(function () { document.addEventListener('click', closeDlMenu); },
+                   highlight ? 400 : 0);
     }
 
     function closeDlMenu(e) {
@@ -1522,7 +1577,7 @@
         var row = dlEl && dlEl.querySelector('.icon-crop');
         var label = row && row.parentNode;
         var was = label ? label.innerHTML : null;
-        if (label) label.innerHTML = '<i class="icon-loader ml-mi"></i>Building your view\u2026' +
+        if (label) label.innerHTML = '<i class="icon-loader"></i><span>Building your view\u2026</span>' +
             '<em>' + f.units + ' unit(s)</em>';
         fetch(dlUrl(f.view), {
             method: 'POST',
@@ -2015,7 +2070,7 @@
             barCounts.html + '</span>' +
             '<span class="fui-grabber" aria-hidden="true"></span>' +
             '<span class="fui-bar-btns">' +
-            '<button type="button" class="fui-bar-btn" title="' +
+            '<button type="button" class="fui-bar-btn" data-geodl="1" title="' +
             esc(downloadBtnTitle()) + '"' +
             ' aria-label="Download the geology" aria-haspopup="menu"' +
             ' onclick="event.stopPropagation();MapLegend.downloadMenu(this)">' +
@@ -3176,7 +3231,7 @@
             if (!a || a.classList.contains('busy')) return true;
             var was = a.innerHTML;
             a.classList.add('busy');
-            a.innerHTML = '<i class="icon-loader ml-mi"></i>Preparing\u2026' +
+            a.innerHTML = '<i class="icon-loader"></i><span>Preparing\u2026</span>' +
                 '<em>building the whole catalogue</em>';
             setTimeout(function () { a.classList.remove('busy'); a.innerHTML = was; }, 12000);
             return true;
@@ -3467,6 +3522,9 @@
             // re-truncates shows fewer periods than the picture it claims to
             // reproduce.
             if (expanded) p.geo_key = 'all';
+            // Which download the link points at, when it was copied from a row
+            // of the download menu (copyExportLink writes it into the URL it
+            // hands ShareLink). Never set by an ordinary share.
             return p;
         },
 
@@ -3474,6 +3532,13 @@
             if (params.get('geo_key') === 'all') expanded = true;
             var want = params.get('geo_panel');
             if (params.get('geo_tab') === 'junction') mxMode = 'junction';
+            // ?geo_export= points at a download row. It needs the panel, since
+            // the arrow lives in the panel's bar, so a link that names a
+            // download implies one — otherwise the recipient gets a map and no
+            // sign of what the link was about.
+            var wantDL = params.get('geo_export');
+            if (wantDL !== 'view' && wantDL !== 'all') wantDL = '';
+            if (wantDL && !want) want = '1';
             if (!want) return;
             panelCollapsed = (want === 'collapsed');
             // TWO THINGS HAVE TO EXIST FIRST, and only one of them is the
@@ -3507,6 +3572,14 @@
                     return setTimeout(open, 250);
                 }
                 openGeoMenu(btn);
+                // The download menu, with the row pointed at — opened after the
+                // panel exists, since the arrow is in the panel's own bar.
+                if (wantDL) {
+                    setTimeout(function () {
+                        var arrow = menuEl && menuEl.querySelector('.fui-bar-btn[data-geodl]');
+                        if (arrow) openDownloadMenu(arrow, wantDL);
+                    }, 250);
+                }
             };
             setTimeout(open, 300);
         },
