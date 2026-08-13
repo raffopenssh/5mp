@@ -137,6 +137,57 @@ cluster's provenance rather than as absent. Verified on `CAF_Chinko`: 28
 footprints, 28 NULL `settlement_type`, 0 NULL `population_source`, 0 NULL
 `extent_m2`.
 
+## Persistence: the measurement settlement_type was waiting for (WP1)
+
+`persistence` (migration 057) is the measured answer to the question
+`settlement_type` could not answer. `scripts/ghsl_epochs.py` reads the
+**E2000 and E2015** GHS_BUILT_S rasters (same R2023A release, same 100 m
+Mollweide grid) over the **same mask pixels** as the current E2030 surface and
+writes one of three words per cluster:
+
+* `permanent` — built surface in E2000 ≥ 25% of today's (E2030) surface
+* `established` — ≥ 25% in E2015 but not in E2000
+* `recent` — below 25% in both back-epochs
+* `NULL` + `persistence_source='tile_missing'` — an epoch tile could not be
+  fetched. A pixel absent from an old epoch and a tile absent from the
+  download are different states (invariant 1); ANY polygon of a cluster with
+  a missing epoch makes the whole cluster unmeasured, because a partial sum
+  presented as a total is a lie.
+
+Mechanics that matter:
+
+* **The E2030 window's affine is the authority** — back-epochs are read
+  through `_read_window_like` against it (the one-pixel-offset defence, see
+  "Two reader bugs"). The script also **re-derives the E2030 surface** over
+  its rasterized masks and refuses to write (UNFINISHED, non-zero exit) if
+  that disagrees >5% with what `properties_json` stores — epoch numbers for
+  different ground are worse than none.
+* `surface_e2000_m2`/`surface_e2015_m2` ride on the row so the 25% rule is
+  auditable without re-reading rasters; `persistence_source='ghsl_E2000+E2015'`
+  names the instrument (invariant 5).
+* **The recluster wipes it.** `rebuild_settlements_for_park` deletes and
+  reinserts cluster rows, so `backfill_settlement_surface.py` `convert()`
+  calls `ghsl_epochs.derive_for_area` *after* every recluster; a failed derive
+  fails the whole area. `PIPELINE_VERSION` bumped to `2026-08-13d` to re-queue
+  all 157 areas.
+* Stamp: `data/ghsl_epoch_state.json` — per-area breakdown + per-tile SHA256
+  of every raster used (R3); a db test compares stamp counts to DB rows.
+* Surfaced in `/settlement-narrative` (`by_persistence`,
+  `persistence_unmeasured`, a summary sentence naming its denominator),
+  `classified_settlements[].persistence`, the GPKG export (4 columns), and the
+  globe.html settlement panel.
+
+**The WP1 answer:** of XSA_Study_Area's 1,374 `temporary_camp` clusters, 1,332
+(97%) already had built surface in 2000 — they are persistent small
+settlements the size heuristic mislabelled, not camps. CAF_Chinko: 19/20
+permanent; the one `recent` is also the largest (2.0 ha), plausibly the
+Chinko HQ complex (built ~2014+, 12% of its surface existed in 2000).
+
+Unrelated fix made in the same commit: `GET /api/geomap/structural/{layer}`
+conflicted with `GET /api/geomap/{sheet}/download` in Go's ServeMux (both
+match `structural/download`, neither more specific) and crash-looped the
+server; the structural linework route is now `/api/geomap-structural/{layer}`.
+
 ## Traps that still apply
 
 * **`polygons_in` yields `(poly, dict)`**, not `(poly, area_m2)`. `ingest_tile`
