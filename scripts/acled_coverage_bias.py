@@ -252,6 +252,14 @@ def main():
 
     # Field-observed armed presence AT the mine: mining-specific, independent of
     # ACLED, and the one number here that is about mining rather than coverage.
+    #
+    # ONLY field visits. Crisis Tracker's sites also carry `site_armed_actor`,
+    # and it would be 100% -- every one of those sites entered the list BECAUSE
+    # an armed group attacked it. That is a selection rule, not an observation:
+    # pooling it with IPIS's would turn "28% of visited mines had an armed
+    # actor" into a number about how the list was built. A surveyor who visits
+    # a mine and records no one there is making a measurement; a reporting
+    # network that only hears about attacks cannot make the negative one.
     armed = Counter()
     tot = Counter()
     for s in ref["sites"]:

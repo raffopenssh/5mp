@@ -29,7 +29,7 @@ settlements, patrol tracking. ~17k-line single-page frontend + SQLite (1.8 GB).
 | Writing/running tests, share-link params, `TEST` helper | `docs/agents/testing.md` (+ `docs/TEST_HELPERS.md`) |
 | Data files, API examples, DB stats, Lucide icons | `docs/agents/reference.md` |
 | Mining detection (retired — do not rebuild) | `docs/agents/mining.md` |
-| Mining reference lists, ACLED coverage bias, reach strata | `docs/agents/acled.md` |
+| Mining reference lists, ACLED + Crisis Tracker, coverage bias, reach strata | `docs/agents/acled.md` |
 | Geological contact zones (open brief, not built) | `docs/agents/HANDOVER_CONTACTS.md` |
 
 Other human docs: `docs/API.md`, `docs/DATABASE.md`, `docs/SCRIPTS.md`,

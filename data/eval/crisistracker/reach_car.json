@@ -1,0 +1,91 @@
+{
+ "generated_by": "scripts/eval_crisistracker.py",
+ "sheet": "car",
+ "source": "Crisis Tracker, a project of Invisible Children. https://crisistracker.org (public map records)",
+ "notice": "Incident reports are Crisis Tracker's. The mine/commodity labels, the clustering into sites and any downstream geological score are OURS, produced by a language model over the public display notes, and must not be attributed to Crisis Tracker or Invisible Children. Commodity provenance is preserved: 'commodities' are materials the note says the site yields; materials that appear only as looted goods are held separately in 'commodities_looted' and are not evidence about the rock at that coordinate.",
+ "unit": "site (mine working), clustered from incident reports",
+ "claim_scored": "UNLABELLED OCCURRENCE: does a reported mine sit on ground the sheet grades for gold or diamond? This is a weaker claim than a per-commodity lift and must not be quoted as one.",
+ "baseline": "random ground inside the convex hull of the sites, clipped to mapped units (16.9% of the sheet)",
+ "graded_area_share_whole_sheet": 0.583,
+ "sites_total": 41,
+ "sites_off_mapped_sheet": 3,
+ "reach": {
+  "ipis_sites": 914,
+  "ipis_lon_range": [
+   14.635,
+   17.894
+  ],
+  "ct_lon_range": [
+   21.227,
+   24.868
+  ],
+  "nearest_ipis_km": {
+   "median": 617.3,
+   "min": 390.9,
+   "max": 794.9
+  },
+  "within_25km_of_an_ipis_mine": 0,
+  "adm1_reported": {
+   "Mbomou": 14,
+   "Haute-Kotto": 25,
+   "Ouaka": 1,
+   "Basse-Kotto": 1
+  }
+ },
+ "unlabelled_occurrence": {
+  "all": {
+   "label": "all Crisis Tracker CAR mine sites",
+   "sites": 38,
+   "capture": 0.6053,
+   "area_share": 0.6823,
+   "lift": 0.887,
+   "p_two_sided": 0.38343,
+   "min_detectable_lift": {
+    "above": 1.234,
+    "below": 0.733,
+    "alpha": 0.05
+   },
+   "note": "capture = share of mines on ground the sheet grades for gold or diamond; area_share = the same share of random ground inside the list's own hull"
+  },
+  "well_located_only": {
+   "label": "sites with a reported coordinate",
+   "sites": 31,
+   "capture": 0.6129,
+   "area_share": 0.6823,
+   "lift": 0.898,
+   "p_two_sided": 0.44149,
+   "min_detectable_lift": {
+    "above": 1.277,
+    "below": 0.709,
+    "alpha": 0.05
+   },
+   "note": "capture = share of mines on ground the sheet grades for gold or diamond; area_share = the same share of random ground inside the list's own hull"
+  },
+  "approximate_only": {
+   "label": "sites whose coordinate is approximate (sensitivity check)",
+   "sites": 7,
+   "verdict": "n<8: no lift computed"
+  }
+ },
+ "by_commodity": {
+  "gold": {
+   "sites": 4,
+   "verdict": "n<8: no lift computed",
+   "named_at": [
+    "Gali",
+    "Kpangou",
+    "Ammoungombi",
+    "Akosso and Pipidemotro"
+   ]
+  },
+  "diamond": {
+   "sites": 2,
+   "verdict": "n<8: no lift computed",
+   "named_at": [
+    "Kpangou",
+    "Akosso and Pipidemotro"
+   ]
+  }
+ },
+ "caveat": "A community early-warning network reports where its communities are. These mines are where somebody was attacked and somebody could report it -- not a survey. The hull baseline controls for the network's footprint at map scale, not for which mines inside it get raided."
+}
