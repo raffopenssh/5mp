@@ -1,4 +1,17 @@
-# Nightlights (VNP46A3 Black Marble) — WP3
+# Nightlights (VNP46A3 Black Marble) — WP3 — FOLDED 2026-08-13
+
+**Status: measured once, then retired.** The XSA_Study_Area run (71 mine
+sites, 355 hull controls, 174 months × 3 tiles) returned verdict **dark**:
+every site's median radiance is 0.00 nW/(cm² sr); only 7 of 71 sites ever
+cross the 1.0 lit threshold, each for a single month. A secondary
+mean-statistic look shows a faint population-level glow (0.022 vs 0.015,
+lift 1.44, p≈0.03) — real but ~50× below the lit threshold, unusable for
+per-site inference. Given the expense (≈33 GB transfer per area-history,
+Earthdata token rotation every 60 days), the nightly rotation and monthly
+append crons were **removed** and no UI layer ships. The finding is committed
+in `data/eval/nightlights_sites.json` (R4: the measured skill IS the
+deliverable). Do not rebuild without a reason to expect a different answer
+(e.g. a question about towns/roads rather than pits).
 
 Site-anchored radiance at reported mine sites, **not** a raster layer. The
 deliverable is a measured lift (mine sites vs random hull controls) in
@@ -54,13 +67,11 @@ the site set grows, delete that tile's extracts and re-run.
 
 ## Schedule
 
-```
-20 2 * * *  nightlight_sites.py --rotate 1    # one stalest pending area/night
-40 2 5 * *  nightlight_sites.py --append      # newest composite months, all areas
-```
-
-AOIs sort before parks on a fresh queue. A run with failed months keeps the
-area pending and notifies `nightlights_failed`; only a clean run stamps
-`PIPELINE_VERSION` (bump it to re-queue everything). `--list`, `--area X`,
-`--eval-only` for manual use. Raw extracts are gitignored
-(`data/nightlights/`); the eval JSON is committed.
+**None — crons removed 2026-08-13 when the layer was folded.** For a manual
+re-run: `--area X`, `--rotate N`, `--append`, `--list`, `--eval-only`. A run
+with failed months keeps the area pending and notifies `nightlights_failed`;
+only a clean run stamps `PIPELINE_VERSION`. Raw extracts are gitignored
+(`data/nightlights/`, ~150 MB for XSA, kept on disk); the eval JSON is
+committed. `CAF_Chinko` reads `unmeasured` because its mine sites fall inside
+XSA's extracts but its own controls were never fetched — that word is
+correct, leave it.
