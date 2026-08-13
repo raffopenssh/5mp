@@ -200,6 +200,14 @@
     // Its own variable, not a field of `coverage`, because it has to survive
     // the paths where there is no fill to measure at all.
     var contactHits = 0;
+    // Which layers the numbers above were measured from, and whether the
+    // contact number is trustworthy yet. See reMeasure().
+    var measuredSig = '';
+    var contactsPending = false;
+
+    function geoLayerSig() {
+        return geoFillLayers().join(',') + '|' + geoContactLayers().join(',');
+    }
 
     function geoFillLayers() {
         if (typeof GeoMap === 'undefined' || typeof map === 'undefined' || !map) return [];
@@ -240,6 +248,12 @@
         // return below sets `coverage = null` and the contact layer can be
         // the ONLY geology on screen (see geoOffView).
         contactHits = contactsInView();
+        measuredSig = geoLayerSig();
+        // A layer that EXISTS but has painted nothing yet answers 0 to
+        // queryRenderedFeatures, which is indistinguishable from "there is
+        // nothing here". That zero is not a measurement, so it is flagged and
+        // re-taken (reMeasure below) instead of being frozen into a label.
+        contactsPending = contactHits === 0 && geoContactLayers().length > 0;
         var layers = geoFillLayers();
         if (!layers.length) { coverage = null; return; }
         var cv = map.getCanvas();
@@ -494,6 +508,10 @@
     function geoOffView() {
         if (!geoOn()) return false;
         if (contactHits > 0) return false;
+        // An unproven zero is not an absence: the contact layers are on the
+        // map and have not painted yet, so "not in view" would contradict the
+        // canvas a frame later. See reMeasure().
+        if (contactsPending) return false;
         return !!(coverage && !coverage.drawn);
     }
 
@@ -1122,12 +1140,333 @@
             cancelPaintWait();
             render();                   // NOW the canvas says what is drawn
             rebuildGeoMenuNow(opts);
+            // ONE `idle` IS NOT ENOUGH WHEN A LAYER WAS JUST ADDED. The gesture
+            // that adds the contact layers (mxMode('junction'), a junction pick)
+            // can reach idle before they have painted, and the 0 measured here
+            // would then be frozen into the bar. See reMeasure().
+            reMeasure();
         };
         paintWait = { timer: setTimeout(finish, 700) };
         map.once('idle', finish);
         // A filter that changes no tile in view can settle without drawing;
         // asking for a frame is what makes `idle` a promise rather than a hope.
         if (map.triggerRepaint) map.triggerRepaint();
+    }
+
+    /* ── A COUNT MEASURED BEFORE THE LAYER PAINTED IS NOT A MEASUREMENT ──
+     *
+     * The failure this exists for, in full, because it cost an afternoon:
+     * with three sheets on and the Junctions tab opened, `drawnContactCount()`
+     * said 452, `queryRenderedFeatures` said 439 — and the panel bar said
+     * "104 units · no lines here" over a map visibly drawing hundreds of
+     * them, and stayed wrong through `idle`, `triggerRepaint` and a manual
+     * refresh. Closing and reopening the panel fixed it.
+     *
+     * Why: `mxMode('junction')` ADDS the contact layers and then asks for a
+     * refresh in the same tick. refreshWhenDrawn() waits for one `idle`, and
+     * MapLibre can reach idle before a layer added this tick has rendered
+     * anything — so contactsInView() honestly returned 0, render() froze it,
+     * and nothing re-measured, because watchMap's idle handler only rebuilds
+     * when the SKILL SCOPE changes.
+     *
+     * Two halves to the fix, and the second matters more than the first:
+     *
+     *  1. RE-MEASURE while a zero is still unproven — on the next `idle`, up
+     *     to a few times, stopping the moment the number moves or the layer
+     *     set changes under us. A timeout would be a guess about paint
+     *     latency; `idle` is the map's own word for "I have finished drawing".
+     *  2. SAY NOTHING rather than "no lines here" in the meantime. `0` and
+     *     "not yet known" are different states and only one of them is a
+     *     claim about the canvas. A label that contradicts the canvas is
+     *     worse than no label — the rule geoOffView() was written for, and
+     *     this is the same rule arriving from the timing side.
+     */
+    var reMeasureTimer = null;
+    var reMeasureLeft = 0;
+    var reMeasureGen = 0;
+
+    function cancelReMeasure() {
+        if (reMeasureTimer) { clearTimeout(reMeasureTimer); reMeasureTimer = null; }
+        reMeasureLeft = 0;
+        reMeasureGen++;      // any pending `idle` from an older pass is stale
+    }
+
+    /* Call after anything that ADDS or REMOVES a geology layer. Cheap when
+     * nothing is pending: one queryRenderedFeatures and a string compare. */
+    function reMeasure(tries) {
+        cancelReMeasure();
+        reMeasureLeft = tries || 3;
+        var gen = reMeasureGen;
+
+        function again() {
+            if (gen !== reMeasureGen) return;    // superseded
+            if (reMeasureTimer) { clearTimeout(reMeasureTimer); reMeasureTimer = null; }
+            step();
+        }
+
+        function step() {
+            if (typeof map === 'undefined' || !map || !map.once) return;
+            var wasHits = contactHits, wasSig = measuredSig;
+            measureCoverage();
+            if (contactHits !== wasHits || measuredSig !== wasSig) {
+                render();
+                // The bar with the counts lives in the geology PANEL, not in
+                // the strip, so a re-measure that does not rebuild it fixes a
+                // number nobody is looking at.
+                if (menuEl && menuEl.dataset.kind === 'geo') rebuildGeoMenuNow();
+            }
+            // Only an UNPROVEN zero is worth another pass. A real "nothing
+            // here" settles on the first one, so panning over empty ocean
+            // costs a single query.
+            if (!contactsPending || reMeasureLeft-- <= 0) return;
+            reMeasureTimer = setTimeout(again, 250);
+            map.once('idle', again);
+            if (map.triggerRepaint) map.triggerRepaint();
+        }
+
+        step();
+    }
+
+    /* ── THE DOWNLOAD, AND WHY IT OFFERS TWO THINGS ─────────────────────
+     *
+     * The panel is where a reader BUILDS a view — gold hosts, likely and up,
+     * these two junctions, that period hidden. The question that follows is
+     * "can I have this in QGIS", and until now the only download was the whole
+     * catalogue, four clicks away in admin ▸ Map Settings. A single arrow that
+     * silently gave them everything would answer a question they did not ask,
+     * and one that silently gave them only their filter would be a truncation
+     * that does not announce itself. So it offers BOTH and says which is which,
+     * with the counts each one would carry.
+     *
+     * It lives in the panel BAR rather than in a tab, because the view being
+     * exported is made in both tabs (rocks and junctions) and the bar is the
+     * one piece of chrome that belongs to neither.
+     *
+     * Two paths, deliberately different shapes:
+     *   - "everything" is GET /api/geomap/geopackage, the stamped cached file.
+     *     It is a plain link (it works with JS off) and shares the same
+     *     "Preparing…" state as the admin one.
+     *   - "this view" is POST /api/geomap/geopackage with the selection
+     *     GeoMap.selection() resolved. It cannot be a link: the body is a list
+     *     of keys, and the answer is built for this request only.
+     */
+    function downloadFacts() {
+        var f = { ok: false, units: 0, lines: 0, anchors: null, whole: null, view: null };
+        if (typeof GeoMap === 'undefined' || !GeoMap.geopackage) return f;
+        var g = GeoMap.geopackage();
+        if (!g) return f;
+        f.ok = true;
+        f.whole = g.url;
+        f.view = g.viewUrl || g.url;
+        f.bytes = g.bytes || 0;
+        f.sheets = (g.sheets || []).length;
+        f.units = (GeoMap.drawnUnitCount && GeoMap.drawnUnitCount()) || 0;
+        f.lines = (GeoMap.contactsOn && GeoMap.contactsOn() && GeoMap.drawnContactCount)
+            ? GeoMap.drawnContactCount() : 0;
+        f.anchors = (GeoMap.anchors && GeoMap.anchors()) || null;
+        return f;
+    }
+
+    function downloadBtnTitle() {
+        var f = downloadFacts();
+        if (!f.ok) return 'No GeoPackage is built on this server';
+        return 'Download as a GeoPackage — this view (' + f.units + ' unit(s)' +
+            (f.lines ? ', ' + f.lines + ' junction type(s)' : '') + ') or every sheet';
+    }
+
+    /* What the reader would call the view, for the file name and the layer
+     * description inside it. The same phrase the chip shows, so the file and
+     * the map are not named differently. */
+    function viewLabel() {
+        var fn = geoFilterNote([]);
+        var base = (fn && fn.full) || '';
+        if (mxMode === 'junction' && contactFacts().on) {
+            var j = junctionsWords(contactFacts().pairs);
+            base = base ? base + ', ' + (j || 'graded junctions') : (j || 'graded junctions');
+        }
+        return base || 'the whole legend, as drawn';
+    }
+
+    function openDownloadMenu(btn) {
+        var already = dlEl;
+        // The geology PANEL must survive this: it is what is being exported,
+        // and closing it to show a two-row menu would take the counts the
+        // reader is checking off the screen. So this menu is its own element
+        // and does not go through closeMenu().
+        closeDlMenu();
+        if (already) return;
+        var f = downloadFacts();
+        var el = document.createElement('div');
+        el.className = 'aoi-menu mode-menu ml-menu ml-menu-dl';
+        el.dataset.kind = 'geodl';
+        el.setAttribute('role', 'menu');
+        el.setAttribute('aria-label', 'Download the geology');
+        var html = '<div class="mode-menu-head">Download as GeoPackage</div>';
+        if (!f.ok) {
+            html += '<div class="mode-menu-note">No vectorized sheet is built on this ' +
+                'server, so there is nothing to package.</div>';
+            el.innerHTML = html;
+            dlEl = el;
+            placeDl(el, btn);
+            return;
+        }
+        // THIS VIEW FIRST: it is the answer to the question the panel exists
+        // for. Its counts are the bar's own counts, from the same filters the
+        // paint uses, so the reader can see what they are about to get.
+        var canView = f.units > 0;
+        html += '<button type="button" class="aoi-menu-item ml-more' + (canView ? '' : ' refused') + '" ' +
+            'title="' + esc(canView
+                ? 'The units and junctions on screen right now, with the same age/rock-type ' +
+                  'legend and a QGIS project inside. Filtered exactly as the map is.'
+                : 'Nothing is drawn here, so there is no view to export — pan onto a sheet ' +
+                  'or widen the filter.') + '" ' +
+            'onclick="event.stopPropagation();' + (canView ? 'MapLegend.downloadView()' : 'void 0') + '">' +
+            '<i class="icon-crop ml-mi"></i>This view' +
+            '<em>' + (canView
+                ? f.units + ' unit' + (f.units === 1 ? '' : 's') +
+                  (f.lines ? ' · ' + f.lines + ' junction type' + (f.lines === 1 ? '' : 's')
+                           : ' · no junction layer')
+                : 'nothing drawn here') + '</em></button>';
+        html += '<a class="aoi-menu-item ml-more" id="ml-dl-all" download ' +
+            'href="' + esc(dlUrl(f.whole)) + '" ' +
+            'title="' + esc('Every unit of every sheet, unfiltered — one geology_units layer with ' +
+                'the sheet as a column, typed area and one w_<commodity> weight per commodity.') + '" ' +
+            'onclick="MapLegend.downloadAllStarted()">' +
+            '<i class="icon-database ml-mi"></i>Everything' +
+            '<em>' + f.sheets + ' sheet' + (f.sheets === 1 ? '' : 's') + ', unfiltered' +
+            (f.bytes ? ' · ' + Math.round(f.bytes / 1048576) + ' MB' : '') + '</em></a>';
+
+        // THE EVIDENCE RIDES IN BOTH FILES, and the reader is told so here
+        // rather than discovering an unexplained point layer in QGIS. Its
+        // absence is named for the same reason: "we could not ship it" is not
+        // "nothing was ever checked".
+        var a = f.anchors;
+        if (a && a.available) {
+            var withheld = (a.withheld || []).map(function (x) { return x.label; }).join(', ');
+            html += '<div class="mode-menu-note">Both files carry <b>' +
+                a.n.toLocaleString() + '</b> published workings from ' +
+                (a.sources || []).length + ' lists — the ground this model was scored ' +
+                'against, five fields each (coordinate, year, resource, the publisher\u2019s ' +
+                'own id and where it resolves).' +
+                (withheld ? ' Used in the scoring but not redistributable: ' +
+                    esc(withheld) + '.' : '') +
+                '</div>';
+        } else if (a && a.reason) {
+            html += '<div class="mode-menu-note warn">The reference workings are not ' +
+                'installed on this server, so neither file can carry the evidence the ' +
+                'model was scored against.</div>';
+        }
+        html += '<div class="mode-menu-note">An affinity is an inference from rock type — ' +
+            'nothing in either file counts, ranks or locates a deposit. It says so in the ' +
+            'layer description too, so the disclaimer travels with the file.</div>';
+        el.innerHTML = html;
+        dlEl = el;
+        placeDl(el, btn);
+        return;
+    }
+
+    /* Placed WITHOUT touching menuEl, because the thing it hangs off is the
+     * geology panel and that panel is what is being exported: place() would
+     * make this little menu "the menu", and the next rebuild would rebuild the
+     * wrong element. It closes on the next click anywhere else — including
+     * inside the panel, which is the reader going back to adjusting the view. */
+    function placeDl(el, btn) {
+        document.body.appendChild(el);
+        var r = btn.getBoundingClientRect();
+        var w = el.offsetWidth, h = el.offsetHeight;
+        el.style.left = Math.max(6, Math.min(window.innerWidth - w - 6, r.right - w)) + 'px';
+        el.style.top = (r.bottom + h + 6 > window.innerHeight
+            ? Math.max(6, r.top - h - 4) : r.bottom + 4) + 'px';
+        setTimeout(function () { document.addEventListener('click', closeDlMenu); }, 0);
+    }
+
+    function closeDlMenu(e) {
+        // A click INSIDE this menu must not close it mid-download: the row
+        // replaces its own label with "Building your view…", and losing the
+        // element would lose the only progress the reader has.
+        if (e && dlEl && dlEl.contains(e.target)) return;
+        if (dlEl) { dlEl.remove(); dlEl = null; }
+        document.removeEventListener('click', closeDlMenu);
+    }
+
+    function dlUrl(path) {
+        if (!path) return '#';
+        var pwd = (typeof window.getPwd === 'function') ? (window.getPwd() || '') : '';
+        if (!pwd) return path;
+        return path + (path.indexOf('?') >= 0 ? '&' : '?') + 'pwd=' + encodeURIComponent(pwd);
+    }
+
+    var dlEl = null;
+    var dlBusy = false;
+
+    /* The filtered build. A POST, so it cannot be an <a>: the body is the
+     * resolved selection, and the answer is a file built for this one request.
+     *
+     * NOTHING HAPPENS ON SCREEN for the seconds a build takes, which reads as
+     * a dead control — the same failure downloadGeoMapGPKG() exists for. So the
+     * row says so, and a FAILURE is said out loud rather than swallowed: a
+     * stale selection comes back 409 with the server\u2019s own sentence, which
+     * tells the reader to reload rather than leaving them with no file and no
+     * reason. */
+    function downloadView() {
+        if (dlBusy) return;
+        if (typeof GeoMap === 'undefined' || !GeoMap.selection) return;
+        var f = downloadFacts();
+        var sel = GeoMap.selection();
+        if (!sel.units.length) {
+            if (typeof showToast === 'function') {
+                showToast('Nothing is drawn here', 'Pan onto a sheet or widen the filter — ' +
+                    'an export of an empty view would be an empty file.', null, null, 'warning');
+            }
+            return;
+        }
+        sel.label = viewLabel();
+        // The share link goes INTO the file, so a colleague who receives the
+        // GeoPackage can get back to the map that produced it. buildShareUrl()
+        // never carries the password (srv/guest.go, invariant 14).
+        try {
+            if (typeof buildShareUrl === 'function') sel.link = buildShareUrl();
+        } catch (e) { /* a link we cannot build must not cost the download */ }
+
+        dlBusy = true;
+        var row = dlEl && dlEl.querySelector('.icon-crop');
+        var label = row && row.parentNode;
+        var was = label ? label.innerHTML : null;
+        if (label) label.innerHTML = '<i class="icon-loader ml-mi"></i>Building your view\u2026' +
+            '<em>' + f.units + ' unit(s)</em>';
+        fetch(dlUrl(f.view), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(sel)
+        }).then(function (r) {
+            if (!r.ok) return r.text().then(function (t) { throw new Error(t || ('HTTP ' + r.status)); });
+            var name = 'geology-view.gpkg';
+            var cd = r.headers.get('Content-Disposition') || '';
+            var m = /filename="?([^";]+)/.exec(cd);
+            if (m) name = m[1];
+            return r.blob().then(function (b) { return { b: b, name: name }; });
+        }).then(function (res) {
+            var u = URL.createObjectURL(res.b);
+            var a = document.createElement('a');
+            a.href = u; a.download = res.name;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(function () { URL.revokeObjectURL(u); }, 30000);
+            if (typeof showToast === 'function') {
+                showToast('Your view is downloading', res.name + ' — ' + f.units +
+                    ' unit(s)' + (f.lines ? ', ' + f.lines + ' junction type(s)' : '') +
+                    ', plus the published workings it was scored against.', null, null, 'success');
+            }
+        }).catch(function (e) {
+            if (typeof showToast === 'function') {
+                showToast('That view could not be packaged',
+                    String(e.message || e).slice(0, 300), null, null, 'error');
+            }
+        }).then(function () {
+            dlBusy = false;
+            if (label && was !== null) label.innerHTML = was;
+        });
     }
 
     /* ── Placement, and why the geology one is not a popover ────────────
@@ -1535,6 +1874,10 @@
             ? GeoMap.drawnUnitCount() : 0;
         var lines = cOn && GeoMap.drawnContactCount ? GeoMap.drawnContactCount() : null;
         if (!k.units && !k.contacts) {
+            if (cOn && contactsPending) {
+                return { html: 'counting\u2026', short: 'counting\u2026',
+                    title: 'The contact layer has just been added and has not painted yet.' };
+            }
             return { html: 'not in view', short: 'not in view',
                 title: 'Geology is on, but no mapped sheet reaches this view — ' +
                        'pan to Sudan, the CAR or Tanzania.' };
@@ -1553,6 +1896,12 @@
         if (k.contacts && lines !== null) {
             parts.push('<b>' + lines + '</b> line' + (lines === 1 ? '' : 's'));
             words.push(lines + ' contact line(s)');
+        } else if (cOn && contactsPending) {
+            // NOT ZERO — not measured yet. The layer exists and has not
+            // painted, so "no lines here" would be a claim about a canvas we
+            // have not read. reMeasure() replaces this within a frame or two.
+            parts.push('counting lines\u2026');
+            words.push('the contact layer has just been added and has not painted yet');
         } else if (cOn) {
             parts.push('no lines here');
             words.push('no contact lines in this view');
@@ -1576,6 +1925,11 @@
             barCounts.html + '</span>' +
             '<span class="fui-grabber" aria-hidden="true"></span>' +
             '<span class="fui-bar-btns">' +
+            '<button type="button" class="fui-bar-btn" title="' +
+            esc(downloadBtnTitle()) + '"' +
+            ' aria-label="Download the geology" aria-haspopup="menu"' +
+            ' onclick="event.stopPropagation();MapLegend.downloadMenu(this)">' +
+            '<i class="icon-download"></i></button>' +
             '<button type="button" class="fui-bar-btn" title="Full legend, opacity and downloads"' +
             ' aria-label="Map settings"' +
             ' onclick="event.stopPropagation();MapLegend.openSettings()">' +
@@ -2702,6 +3056,24 @@
         menu: openMenu,
         histMenu: openHistMenu,
         geoMenu: openGeoMenu,
+        /** The panel bar's download arrow: this view, or every sheet. */
+        downloadMenu: openDownloadMenu,
+        downloadView: downloadView,
+        /** The whole-catalogue link is a plain <a download>, so there is no
+         *  completion event — the row says "Preparing…" for a floor rather
+         *  than pretending to measure a build it cannot see. Same floor and
+         *  same wording as the admin link (downloadGeoMapGPKG in globe.html):
+         *  one behaviour, not a third path. */
+        downloadAllStarted: function () {
+            var a = document.getElementById('ml-dl-all');
+            if (!a || a.classList.contains('busy')) return true;
+            var was = a.innerHTML;
+            a.classList.add('busy');
+            a.innerHTML = '<i class="icon-loader ml-mi"></i>Preparing\u2026' +
+                '<em>building the whole catalogue</em>';
+            setTimeout(function () { a.classList.remove('busy'); a.innerHTML = was; }, 12000);
+            return true;
+        },
         close: closeMenu,
 
         /* A swatch is a switch. Hiding the LAST visible period would empty the
@@ -3090,6 +3462,11 @@
         map.on('idle', function () {
             if (!(geoOn() || histOn())) return;
             render();
+            // A zero that was never proven gets another pass here too: `idle`
+            // is exactly when a layer added a moment ago has finished
+            // painting, and the panel bar must not be left saying "no lines
+            // here" over a map drawing hundreds. See reMeasure().
+            if (contactsPending) reMeasure(2);
             // A VERDICT KEYED TO THE VIEWPORT MUST NOT SURVIVE THE VIEWPORT.
             // The panel stays open while the reader pans, and the scores are
             // measured on one country's ground: pan off it and "measured 0.63x
