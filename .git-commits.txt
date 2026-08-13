@@ -1,3 +1,6 @@
+b82fb39 2026-08-13 15:06:45 F10 audit: protected_area_id is a catchment, not a park
+7bbf363 2026-08-13 13:28:56 Geology download: the app's own menu, six tests, and two counts that name their units
+0bcfbd1 2026-08-13 13:07:13 Settlement surface: 157 areas re-derived, and two bugs a label could not catch
 2c9a253 2026-08-13 12:40:02 Geology panel: the junction toggle answers in 95ms instead of four seconds
 c90a111 2026-08-13 12:11:16 Handover: what the geology export now does, and what nobody has clicked yet
 604006e 2026-08-13 12:10:36 Geology export: the view you built, its contacts, and the workings it was scored against
@@ -15,6 +18,3 @@ b318eae 2026-08-13 09:28:47 Mining reference for all four countries, with a meas
 b1ac4dc 2026-08-13 06:31:09 Geology: the affinity model carries its own measured score
 78b45ac 2026-08-13 05:36:14 A map feature names the id its list uses: settlement clusters, deforestation events
 6ee14ad 2026-08-13 05:28:56 Geology: contacts count as drawn; share links carry the whole map view
-104b043 2026-08-12 21:52:11 Geology: the legend fits the panel, and both tables are things you pick FROM
-3ef1b86 2026-08-12 21:23:10 Geology: a junction table beside the rock table, in a panel you can keep open
-16535f8 2026-08-12 20:58:20 Calm map: focus and drapes apply in place, never fly

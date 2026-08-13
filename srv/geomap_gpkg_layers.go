@@ -143,17 +143,44 @@ func styleGeoContacts() string {
 // point is is the whole reason it is in the file. Not per commodity: half the
 // rows record none, and a legend whose largest class is "NULL" teaches the
 // reader nothing about provenance.
+//
+// The symbol is built here rather than via qmlCategorized's marker default
+// because of what these points sit ON. Every other point layer in the export
+// lands on a basemap or on nothing; these land on a saturated FGDC pattern
+// fill covering the entire canvas, and the shared default (1.6 mm, outline
+// 0,0,0,80) is a 68%-transparent hairline that dissolves into a cross-hatch.
+// An evidence layer you cannot see over the layer it is evidence ABOUT is the
+// same nothing as a style QGIS ignored. Checked by rendering the markers over
+// real unit fills cloned off the units renderer
+// (scripts/geomaps/render_gpkg.py, anchor_symbols pass).
 func styleGeoAnchors(sources []string) string {
-	cats := make([]qmlCat, 0, len(sources))
 	// A fixed palette by index rather than a hash of the name: nine lists, and
 	// two of them must not come out the same colour because their names happen
-	// to collide.
-	pal := []string{"255,255,255", "147,197,253", "134,239,172", "252,165,165",
-		"253,224,71", "216,180,254", "94,234,212", "251,146,60", "203,213,225"}
+	// to collide. Two entries used to break that rule from the other side:
+	// index 0 was pure WHITE (invisible on paper, and the lowest-contrast dot
+	// there is over a pale fill), and index 8 was byte-identical to the
+	// fallback below, so the ninth real list and the "anything else" catch-all
+	// were one symbol. Every colour here is now distinct from every other AND
+	// from the fallback.
+	pal := []string{"239,68,68", "59,130,246", "34,197,94", "168,85,247",
+		"234,179,8", "236,72,153", "20,184,166", "249,115,22", "120,53,15"}
+	const fallback = "203,213,225" // grey-blue: no list claims it
+	const outline = "17,24,39,255" // opaque near-black, not the 80-alpha default
+	const size = 1.8
+
+	var catXML, symXML strings.Builder
 	for i, s := range sources {
-		cats = append(cats, qmlCat{Value: s, Label: s, RGB: pal[i%len(pal)]})
+		fmt.Fprintf(&catXML, `<category render="1" value=%q label=%q symbol="%d"/>`+"\n", s, s, i)
+		symXML.WriteString(qmlPointSymbol(fmt.Sprint(i), pal[i%len(pal)], size, outline) + "\n")
 	}
-	return qmlDoc(qmlCategorized("source", "marker", cats, "203,213,225", 1.6, 255))
+	fmt.Fprintf(&catXML, `<category render="1" value="" label="other" symbol="%d"/>`+"\n", len(sources))
+	symXML.WriteString(qmlPointSymbol(fmt.Sprint(len(sources)), fallback, size, outline) + "\n")
+	return qmlDoc(fmt.Sprintf(`<renderer-v2 type="categorizedSymbol" attr="source" forceraster="0" symbollevels="0" enableorderby="0">
+  <categories>
+%s  </categories>
+  <symbols>
+%s  </symbols>
+</renderer-v2>`, catXML.String(), symXML.String()))
 }
 
 // addGeoContactLayer writes the contact geometry for `sheets`, filtered to the

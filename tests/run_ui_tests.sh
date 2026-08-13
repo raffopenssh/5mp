@@ -176,8 +176,34 @@ src_guard "geomap_add_retries"            present "pendingAdd" "srv/static/geoma
 #    exactly like the complete rock map, which is the same failure shape as a
 #    truncated layer that does not announce its truncation.
 src_guard "maplegend_quiet_state"         present "host.classList.toggle\('quiet'" "srv/static/maplegend.js"
-src_guard "maplegend_opener_always"       present "if \(quiet\) \{ host.innerHTML = opener" "srv/static/maplegend.js"
+# The opener survives the quiet state. Matched on the ASSIGNMENT, not on a
+# one-line shape of it: the previous pattern spelled the whole statement
+# including its braces, so the perf pass that split it over three lines turned
+# a behavioural guard into a formatting guard and it failed for a fortnight
+# without the behaviour ever changing.
+src_guard "maplegend_opener_always"       present "host.innerHTML = opener" "srv/static/maplegend.js"
 src_guard "maplegend_says_filtered"       present "geoFilterNote" "srv/static/maplegend.js"
+# ── The resting strip ──────────────────────────────────────────────────────
+# An untouched strip folds back to its icons (globe.css .ml-rest). Three
+# things must stay true or the fold is a truncation that does not announce
+# itself, which is the failure the strip exists to prevent:
+#  * it FOLDS, it does not remove -- max-width/max-height, never display:none,
+#    so every target keeps its accessible name and its title while folded;
+#  * it says how much it folded (the swatch count on the chip), and that count
+#    is DERIVED from the rendered swatches, never typed;
+#  * it never rests while a menu is open or the pointer/focus is inside it.
+src_guard "maplegend_rest_folds"          present "ml-rest" "srv/static/globe.css"
+src_guard "maplegend_rest_not_display"    absent  "ml-rest .ml-swatches { display: none" "srv/static/globe.css"
+src_guard "maplegend_rest_counts_derived" present "ml-sw:not" "srv/static/maplegend.js"
+src_guard "maplegend_rest_blocked"        present "function restBlocked" "srv/static/maplegend.js"
+# ── A zero must be provable ────────────────────────────────────────────────
+# "the contact layer has not painted yet" and "it painted and there is nothing
+# in this viewport" are two states. One flag for both froze `counting lines...`
+# forever at z10.5 over one sheet. The second state is settled by the map's own
+# word for "I have drawn" (idle since the layer set changed + sources loaded),
+# never by a timeout.
+src_guard "maplegend_zero_provable"       present "function contactsSettled" "srv/static/maplegend.js"
+src_guard "maplegend_zero_not_timer"      present "idleNonce <= contactIdleAt" "srv/static/maplegend.js"
 # A sheet or archive that is not installed keeps its row and says why; an
 # absent row reads as "this map has no geology", a different claim.
 src_guard "maplegend_refusal_kept"        present "refused" "srv/static/maplegend.js"
