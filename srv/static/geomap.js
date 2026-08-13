@@ -893,7 +893,16 @@
         // follow the drape's opacity slider: turning the rock map down is how
         // a reader looks at the ground under it, and the contact is the thing
         // they turned it down to see.
-        map.setPaintProperty(CONT(id), 'line-opacity', 0.9);
+        //
+        // ZERO WHEN THE LAYER IS OFF. The layer stays on the map while the
+        // reader has junctions switched off, so that the 4.1 s bucket build is
+        // already done when they switch them on (see syncContactLayer). This
+        // line is what "off" means for it, and it is the ONLY thing that
+        // means it: nothing infers the state from the layer's presence —
+        // GeoMap.contactsOn() is the flag, and maplegend's geoContactLayers()
+        // consults it before counting anything.
+        map.setPaintProperty(CONT(id), 'line-opacity',
+            (shared.contacts && hasContacts(id)) ? 0.9 : 0);
     }
 
     // See the HistMap note: anchor above the basemap raster and below the
@@ -976,7 +985,39 @@
     /* Add or drop the contact layer for a sheet, to match shared.contacts.
      * Above the unit line work (a junction must not be hidden by the hairline
      * of the unit it bounds) and still below `before`, so pins, trajectories
-     * and park outlines stay on top — same rule as everything else here. */
+     * and park outlines stay on top — same rule as everything else here.
+     *
+     * ── WHY THE LAYER IS NOT REMOVED WHEN IT IS OFF ───────────────────
+     *
+     * It used to be, with this reasoning: "an empty layer still costs a filter
+     * evaluation per tile per frame, and a sheet is mostly boundaries." That
+     * is true and it is the smaller of the two costs, which was never
+     * measured against the larger one.
+     *
+     * MEASURED (three sheets, z3, 2026-08-13). `contacts` is a source-layer
+     * MapLibre has no reason to look at while no style layer references it,
+     * so the tiles in memory are parsed for `units` only. ADDING the layer is
+     * therefore not "start drawing" — it is "re-parse every loaded tile and
+     * build a new bucket", and that took **4.1 seconds** on the main thread
+     * before a single line appeared. It is the same 4.1 s whether the layer
+     * is added visible, added with visibility:none, or added with a filter
+     * that matches nothing: none of those stop the bucket being built, and
+     * none of them make it start earlier. That was the whole of the delay
+     * between clicking Junctions and the map answering — the app's headline
+     * gesture, four seconds of nothing.
+     *
+     * So the bucket is built ONCE, when the sheet is added and the map is
+     * otherwise idle, and the toggle becomes what it looks like: a paint
+     * property. line-opacity 0 is not a lie about the state (nothing reads it
+     * as "on": contactsOn() is the flag, and maplegend's geoContactLayers()
+     * asks contactsOn() before it counts) — it is the layer standing by.
+     *
+     * The cost this pays back with is the one the old comment named, and it
+     * is bounded: a fully transparent line layer is skipped by the renderer
+     * per frame, and its filter is the same 'match nothing' the off state
+     * always had. Four seconds of stall, once per toggle, is not a trade
+     * against that.
+     */
     function syncContactLayer(id, before) {
         // THE SOURCE MAY NOT BE THERE YET. A sheet is added on `idle` (see
         // add()), so a gesture that switches contacts on while a sheet is
@@ -985,22 +1026,30 @@
         // sheet of contacts short. Not an error condition: add() calls this
         // again with the source in place, so the right answer is to wait.
         if (!map.getSource(SRC(id))) return;
-        const want = shared.contacts && hasContacts(id);
-        const have = !!map.getLayer(CONT(id));
-        if (want && !have) {
+        const able = hasContacts(id);
+        const want = shared.contacts && able;
+        if (!map.getLayer(CONT(id))) {
+            // A sheet with no contacts at all gets no layer: there is no
+            // bucket to warm and an empty one would be the filter-per-frame
+            // cost with nothing to show for it.
+            if (!able) return;
             map.addLayer({
                 id: CONT(id), type: 'line', source: SRC(id), 'source-layer': 'contacts',
                 layout: { 'line-cap': 'round', 'line-join': 'round' },
                 filter: contactFilterExpr(id),
-                paint: { 'line-color': '#fbbf24', 'line-width': 1.2, 'line-opacity': 0.9 }
+                // Standing by, not drawn. paintContacts() raises it.
+                paint: { 'line-color': '#fbbf24', 'line-width': 1.2, 'line-opacity': 0 }
             }, before || firstOverlayLayer());
+        }
+        // The TIP follows the switch, not the layer: a line nobody can see
+        // must not answer a hover, or the map has an invisible hit target.
+        if (want) {
             bindContactTip(id);
-        } else if (!want && have) {
-            map.removeLayer(CONT(id));
+        } else if (contactBound[id]) {
             if (window.MapTip) window.MapTip.unregister(CONT(id));
             contactBound[id] = false;
         }
-        if (map.getLayer(CONT(id))) paintContacts(id);
+        paintContacts(id);
     }
 
     function remove(id) {
