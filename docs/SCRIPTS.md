@@ -174,6 +174,30 @@ the v5 rebuild for the affected parks — edited detections do not propagate.
 
 ---
 
+### `scripts/audit_fire_containment.py`
+**Purpose:** Measure the gap between `protected_area_id` (the nearest park
+within 100 km — a *catchment*) and actual containment, per park (F10).
+
+Read-only; it writes nothing, because the F10 fix is in the queries, not the
+data. It exists so that change can be measured before and after, and so a
+boundary-file edit shows up as a delta rather than silently moving published
+counts.
+
+```bash
+python3 scripts/audit_fire_containment.py                    # all 163 parks, ~12 min
+python3 scripts/audit_fire_containment.py --csv /tmp/f10.csv
+python3 scripts/audit_fire_containment.py --park CAF_Chinko CMR_Nki
+python3 scripts/audit_fire_containment.py --sample 20000     # labelled ESTIMATE
+```
+
+Reports three quantities that are routinely confused: `tagged` (the column),
+`flagged` (`+ in_protected_area = 1`, a stored ingest-time answer) and `inside`
+(point-in-polygon, measured now). 2026-08-13: 42,092,853 / 8,055,317 /
+7,585,655, median 9.8× per park. A park with no polygon reports `unmeasured`,
+not 0. See `docs/agents/fire.md` § F10.
+
+---
+
 ## Historical Data Scripts
 
 ### `scripts/build_unified_fire_dataset.py`
