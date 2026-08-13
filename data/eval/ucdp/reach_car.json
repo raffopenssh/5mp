@@ -1,0 +1,109 @@
+{
+ "generated_by": "scripts/eval_ucdp.py",
+ "sheet": "car",
+ "source": "UCDP Georeferenced Event Dataset (GED) 26.1, GEDEvent_v26_1.csv",
+ "accessed": "2026-08-13",
+ "citation": "Davies, Shawn, Garoun Engstr\u00f6m, Therese Pettersson & Magnus \u00d6berg (2026); Sundberg, Ralph & Erik Melander (2013) 'Introducing the UCDP Georeferenced Event Dataset', Journal of Peace Research 50(4).",
+ "terms": "https://ucdp.uu.se (free to use with citation; no formal licence document)",
+ "notice": "Event records are UCDP's (Uppsala Conflict Data Program, https://ucdp.uu.se). The mine/commodity labels, the clustering into sites and any downstream geological score are OURS, produced by a language model over GED's location descriptions and source strings, and must not be attributed to UCDP. Commodity provenance is preserved: 'commodities' are materials the text says the site yields; materials that appear only as looted/taxed goods are held separately in 'commodities_looted' and are not evidence about the rock at that coordinate. Every site is here because organised violence occurred at it -- conflict presence is the SELECTION RULE of this list, never an observation to pool with survey flags (docs/agents/acled.md).",
+ "unit": "site (mine working), clustered from GED events at 1.0 km single-link or identical site name",
+ "claim_scored": "UNLABELLED OCCURRENCE: does a reported mine sit on ground the sheet grades for gold or diamond? This is a weaker claim than a per-commodity lift and must not be quoted as one.",
+ "baseline": "random ground inside the convex hull of the sites, clipped to mapped units (47.3% of the sheet)",
+ "sites_total_car": 27,
+ "sites_off_mapped_sheet": 1,
+ "reach": {
+  "by_country_all_sites": {
+   "CAF": 27,
+   "COD": 61,
+   "SDN": 7,
+   "TZA": 1
+  },
+  "ipis_sites": 914,
+  "nearest_ipis_km": {
+   "median": 78.7,
+   "min": 0.6,
+   "max": 714.2
+  },
+  "within_25km_of_an_ipis_mine": 8,
+  "adm1_reported": {
+   "Ouham-Pend\u00e9 province": 1,
+   "Nana-Gr\u00e9bizi province": 1,
+   "Mbomou province": 1,
+   "Ouaka province": 2,
+   "Haute-Kotto province": 2,
+   "Basse-Kotto province": 1,
+   "Nana-Gr\u00e9bizi prefecture": 1,
+   "Haute-Kotto prefecture": 1,
+   "Ouaka prefecture": 2,
+   "Nana-Mamb\u00e9r\u00e9 prefecture": 4,
+   "Vakaga prefecture": 1,
+   "Ouham prefecture": 4,
+   "Ouham-Pend\u00e9 prefecture": 4,
+   "Ombella-M'Poko prefecture": 1,
+   "Ouham-Fafa prefecture": 1
+  },
+  "crisistracker_car_sites": 41,
+  "nearest_crisistracker_km": {
+   "median": 429.2,
+   "min": 11.0,
+   "max": 763.1
+  },
+  "within_25km_of_a_crisistracker_mine": 1,
+  "new_ground": 18
+ },
+ "unlabelled_occurrence": {
+  "all": {
+   "label": "all GED CAR mine sites",
+   "sites": 26,
+   "capture": 0.3846,
+   "area_share": 0.5458,
+   "lift": 0.705,
+   "p_two_sided": 0.11593,
+   "min_detectable_lift": {
+    "above": 1.409,
+    "below": 0.634,
+    "alpha": 0.05
+   },
+   "note": "capture = share of mines on ground the sheet grades for gold or diamond; area_share = the same share of random ground inside the list's own hull"
+  },
+  "well_located_only": {
+   "label": "sites with where_prec 1 and a tight cluster",
+   "sites": 7,
+   "verdict": "n<8: no lift computed"
+  },
+  "approximate_only": {
+   "label": "sites whose coordinate is approximate (sensitivity check)",
+   "sites": 19,
+   "capture": 0.3684,
+   "area_share": 0.5458,
+   "lift": 0.675,
+   "p_two_sided": 0.16573,
+   "min_detectable_lift": {
+    "above": 1.446,
+    "below": 0.482,
+    "alpha": 0.05
+   },
+   "note": "capture = share of mines on ground the sheet grades for gold or diamond; area_share = the same share of random ground inside the list's own hull"
+  }
+ },
+ "by_commodity": {
+  "gold": {
+   "sites": 5,
+   "verdict": "n<8: no lift computed",
+   "named_at": [
+    "Kajbi",
+    "Ndassima",
+    "Chimbolo",
+    "Kouki"
+   ]
+  },
+  "diamond": {
+   "sites": 1,
+   "verdict": "n<8: no lift computed",
+   "named_at": [
+    "Bria"
+   ]
+  }
+ },
+ "caveat": "A news-wire-derived event list reports where journalists and monitors looked. These mines are where organised violence was recorded -- not a survey. The hull baseline controls for the list's footprint at map scale, not for which mines inside it get fought over."
+}
