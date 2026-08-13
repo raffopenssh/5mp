@@ -2,12 +2,28 @@
 """Fetch ACLED event data for the mining reference countries (CAR, South Sudan,
 Sudan, Tanzania) into data/acled/.
 
+Purpose: conflict-event context for evaluating our geological mining-affinity
+interpreter. ACLED data is REFERENCE CONTEXT ONLY -- see the licence notes in
+docs/agents/acled.md before using it in any published figure, and note that
+ACLED's Content Usage Terms forbid attributing our own analysis or derived
+scores to ACLED.
+
 ACLED retired static API keys in 2025; access is now a myACLED account plus an
 OAuth password grant (https://acleddata.com/api-documentation/getting-started).
+API access requires a Research/Partner/Enterprise access level -- an Open
+myACLED account authenticates fine but gets HTTP 403 from the read endpoints
+(request an upgrade at access@acleddata.com).
+
 Credentials come from secrets.env (never hardcode them):
 
     ACLED_USERNAME=...      # myACLED login e-mail
     ACLED_PASSWORD=...
+
+STATUS 2026-08-13: our account is Open tier, so this script authenticates and
+then gets HTTP 403 from every read endpoint. Until ACLED grants a higher access
+level, the working path is scripts/acled_download.py + acled_aggregate.py
+(weekly admin1 aggregates). Keep this script: it is what to run the day the
+upgrade lands.
 
 Usage:
     set -a; source secrets.env; set +a
@@ -28,6 +44,17 @@ READ_URL = "https://acleddata.com/api/acled/read"
 CLIENT_ID = "acled"
 OUT_DIR = Path(__file__).resolve().parent.parent / "data" / "acled"
 # ISO3 in this repo -> ACLED country name
+# ACLED Attribution Policy (https://acleddata.com/attribution-policy) requires
+# that a data file presenting ACLED data to another party acknowledge ACLED in a
+# source column/field, with full name and link, plus the access date. These are
+# written into every output file and into each event row's `source_dataset`.
+ATTRIBUTION = "ACLED (Armed Conflict Location & Event Data). www.acleddata.com"
+CITATION = ('Clionadh Raleigh, Roudabeh Kishi, and Andrew Linke, "Political '
+            'instability patterns are obscured by conflict dataset scope '
+            'conditions, sources, and coding choices," Humanities and Social '
+            'Sciences Communications, 25 February 2023. '
+            'https://doi.org/10.1057/s41599-023-01559-4')
+TERMS_URL = "https://acleddata.com/contentusage"
 COUNTRIES = {
     "CAF": "Central African Republic",
     "SSD": "South Sudan",
@@ -79,6 +106,13 @@ def fetch_country(token, country, date_from, date_to, hard_limit=None):
             with urllib.request.urlopen(req, timeout=300) as r:
                 payload = json.load(r)
         except urllib.error.HTTPError as e:
+            if e.code == 403:
+                print("  ! HTTP 403: this myACLED account authenticates but is "
+                      "not authorised for event-level API access (Open tier). "
+                      "Request Research/Partner access via access@acleddata.com, "
+                      "or use scripts/acled_download.py for weekly aggregates.",
+                      file=sys.stderr)
+                return rows, False
             print(f"  ! {country} page {page}: HTTP {e.code} "
                   f"{e.read().decode('utf-8','replace')[:200]}", file=sys.stderr)
             return rows, False
