@@ -16,11 +16,11 @@
    "polygons_with_extent": 83,
    "population_measured": 89758
   },
-  "at": "2026-08-13T12:35:19Z",
+  "at": "2026-08-13T18:36:58Z",
   "clusters": 52,
   "extent_over_surface": 6.05010615369283,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 83,
   "stale_removed": 0,
   "tiles": [
@@ -44,11 +44,11 @@
    "polygons_with_extent": 254,
    "population_measured": 4428
   },
-  "at": "2026-08-13T12:37:12Z",
+  "at": "2026-08-13T18:40:26Z",
   "clusters": 144,
   "extent_over_surface": 36.54165573913804,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 254,
   "stale_removed": 0,
   "tiles": [
@@ -187,11 +187,11 @@
    "polygons_with_extent": 51,
    "population_measured": 515
   },
-  "at": "2026-08-13T12:34:49Z",
+  "at": "2026-08-13T18:36:11Z",
   "clusters": 32,
   "extent_over_surface": 19.179592913140418,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 51,
   "stale_removed": 0,
   "tiles": [
@@ -214,11 +214,11 @@
    "polygons_with_extent": 60,
    "population_measured": 398
   },
-  "at": "2026-08-13T12:35:00Z",
+  "at": "2026-08-13T18:36:23Z",
   "clusters": 40,
   "extent_over_surface": 22.553211483343514,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 60,
   "stale_removed": 0,
   "tiles": [
@@ -240,11 +240,11 @@
    "polygons_with_extent": 121,
    "population_measured": 16
   },
-  "at": "2026-08-13T12:35:54Z",
+  "at": "2026-08-13T18:38:05Z",
   "clusters": 48,
   "extent_over_surface": 72.13790519018175,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 121,
   "stale_removed": 0,
   "tiles": [
@@ -269,11 +269,11 @@
    "polygons_with_extent": 14,
    "population_measured": 180
   },
-  "at": "2026-08-13T12:33:58Z",
+  "at": "2026-08-13T18:34:27Z",
   "clusters": 11,
   "extent_over_surface": 37.77025266996614,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 14,
   "stale_removed": 0,
   "tiles": [
@@ -299,11 +299,11 @@
    "polygons_with_extent": 28,
    "population_measured": 826
   },
-  "at": "2026-08-13T12:34:23Z",
+  "at": "2026-08-13T17:18:40Z",
   "clusters": 20,
   "extent_over_surface": 18.220910316679422,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 28,
   "stale_removed": 0,
   "tiles": [
@@ -325,11 +325,11 @@
    "polygons_with_extent": 4,
    "population_measured": 30
   },
-  "at": "2026-08-13T12:33:47Z",
+  "at": "2026-08-13T18:33:54Z",
   "clusters": 4,
   "extent_over_surface": 29.673590504451038,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 4,
   "stale_removed": 0,
   "tiles": [
@@ -352,11 +352,11 @@
    "polygons_with_extent": 24,
    "population_measured": 876
   },
-  "at": "2026-08-13T12:34:15Z",
+  "at": "2026-08-13T18:35:02Z",
   "clusters": 20,
   "extent_over_surface": 16.875738313551217,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 24,
   "stale_removed": 0,
   "tiles": [
@@ -381,11 +381,11 @@
    "polygons_with_extent": 81,
    "population_measured": 9839
   },
-  "at": "2026-08-13T12:35:15Z",
+  "at": "2026-08-13T18:36:51Z",
   "clusters": 56,
   "extent_over_surface": 7.890809494130496,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 81,
   "stale_removed": 0,
   "tiles": [
@@ -408,11 +408,11 @@
    "polygons_with_extent": 41,
    "population_measured": 465
   },
-  "at": "2026-08-13T12:34:38Z",
+  "at": "2026-08-13T18:35:48Z",
   "clusters": 27,
   "extent_over_surface": 28.83859127851088,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 41,
   "stale_removed": 0,
   "tiles": [
@@ -436,11 +436,11 @@
    "polygons_with_extent": 23,
    "population_measured": 712
   },
-  "at": "2026-08-13T12:34:11Z",
+  "at": "2026-08-13T18:34:57Z",
   "clusters": 10,
   "extent_over_surface": 23.471278567016675,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 23,
   "stale_removed": 0,
   "tiles": [
@@ -464,11 +464,11 @@
    "polygons_with_extent": 23,
    "population_measured": 712
   },
-  "at": "2026-08-13T12:34:12Z",
+  "at": "2026-08-13T18:34:58Z",
   "clusters": 10,
   "extent_over_surface": 23.471278567016675,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 23,
   "stale_removed": 0,
   "tiles": [
@@ -491,11 +491,11 @@
    "polygons_with_extent": 8,
    "population_measured": 156
   },
-  "at": "2026-08-13T12:33:50Z",
+  "at": "2026-08-13T18:34:05Z",
   "clusters": 4,
   "extent_over_surface": 23.125843129697436,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 8,
   "stale_removed": 0,
   "tiles": [
@@ -517,11 +517,11 @@
    "polygons_with_extent": 2,
    "population_measured": 1
   },
-  "at": "2026-08-13T12:33:41Z",
+  "at": "2026-08-13T18:33:33Z",
   "clusters": 2,
   "extent_over_surface": 49.83388704318937,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 2,
   "stale_removed": 0,
   "tiles": [
@@ -544,11 +544,11 @@
    "polygons_with_extent": 18,
    "population_measured": 250
   },
-  "at": "2026-08-13T12:34:06Z",
+  "at": "2026-08-13T18:34:51Z",
   "clusters": 10,
   "extent_over_surface": 24.302180252742673,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 18,
   "stale_removed": 0,
   "tiles": [
@@ -571,11 +571,11 @@
    "polygons_with_extent": 1,
    "population_measured": 32
   },
-  "at": "2026-08-13T12:33:40Z",
+  "at": "2026-08-13T18:33:26Z",
   "clusters": 1,
   "extent_over_surface": 23.820867079561697,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 1,
   "stale_removed": 0,
   "tiles": [
@@ -597,11 +597,11 @@
    "polygons_with_extent": 2,
    "population_measured": 0
   },
-  "at": "2026-08-13T12:33:42Z",
+  "at": "2026-08-13T18:33:34Z",
   "clusters": 1,
   "extent_over_surface": 69.44444444444444,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 2,
   "stale_removed": 0,
   "tiles": [
@@ -624,11 +624,11 @@
    "polygons_with_extent": 16,
    "population_measured": 180
   },
-  "at": "2026-08-13T12:34:02Z",
+  "at": "2026-08-13T18:34:47Z",
   "clusters": 10,
   "extent_over_surface": 27.699046637464573,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 16,
   "stale_removed": 0,
   "tiles": [
@@ -652,11 +652,11 @@
    "polygons_with_extent": 26,
    "population_measured": 647
   },
-  "at": "2026-08-13T12:34:20Z",
+  "at": "2026-08-13T18:35:14Z",
   "clusters": 6,
   "extent_over_surface": 24.025542945658014,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 26,
   "stale_removed": 0,
   "tiles": [
@@ -680,11 +680,11 @@
    "polygons_with_extent": 32,
    "population_measured": 1218
   },
-  "at": "2026-08-13T12:34:24Z",
+  "at": "2026-08-13T18:35:22Z",
   "clusters": 13,
   "extent_over_surface": 12.651621779766893,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 32,
   "stale_removed": 0,
   "tiles": [
@@ -708,11 +708,11 @@
    "polygons_with_extent": 35,
    "population_measured": 3618
   },
-  "at": "2026-08-13T12:34:28Z",
+  "at": "2026-08-13T18:35:28Z",
   "clusters": 23,
   "extent_over_surface": 15.375481435247911,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 35,
   "stale_removed": 0,
   "tiles": [
@@ -763,11 +763,11 @@
    "polygons_with_extent": 222,
    "population_measured": 339
   },
-  "at": "2026-08-13T12:36:30Z",
+  "at": "2026-08-13T18:39:09Z",
   "clusters": 59,
   "extent_over_surface": 116.29024507448342,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 222,
   "stale_removed": 0,
   "tiles": [
@@ -876,11 +876,11 @@
    "polygons_with_extent": 5,
    "population_measured": 14
   },
-  "at": "2026-08-13T12:33:50Z",
+  "at": "2026-08-13T18:34:05Z",
   "clusters": 5,
   "extent_over_surface": 88.60759493670886,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 5,
   "stale_removed": 0,
   "tiles": [
@@ -903,11 +903,11 @@
    "polygons_with_extent": 39,
    "population_measured": 1426
   },
-  "at": "2026-08-13T12:34:33Z",
+  "at": "2026-08-13T18:35:39Z",
   "clusters": 32,
   "extent_over_surface": 20.56710360335655,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 39,
   "stale_removed": 0,
   "tiles": [
@@ -933,11 +933,11 @@
    "polygons_with_extent": 194,
    "population_measured": 8134
   },
-  "at": "2026-08-13T12:36:11Z",
+  "at": "2026-08-13T18:38:32Z",
   "clusters": 69,
   "extent_over_surface": 11.741355682867349,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 194,
   "stale_removed": 0,
   "tiles": [
@@ -962,11 +962,11 @@
    "polygons_with_extent": 41,
    "population_measured": 5064
   },
-  "at": "2026-08-13T12:34:40Z",
+  "at": "2026-08-13T18:35:50Z",
   "clusters": 31,
   "extent_over_surface": 12.113055181695827,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 41,
   "stale_removed": 0,
   "tiles": [
@@ -1019,11 +1019,11 @@
    "polygons_with_extent": 229,
    "population_measured": 132637
   },
-  "at": "2026-08-13T12:36:52Z",
+  "at": "2026-08-13T18:39:46Z",
   "clusters": 91,
   "extent_over_surface": 9.49376418904974,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 229,
   "stale_removed": 0,
   "tiles": [
@@ -1079,11 +1079,11 @@
    "polygons_with_extent": 201,
    "population_measured": 2056
   },
-  "at": "2026-08-13T12:36:15Z",
+  "at": "2026-08-13T18:38:40Z",
   "clusters": 48,
   "extent_over_surface": 23.34125186453787,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 201,
   "stale_removed": 0,
   "tiles": [
@@ -1107,11 +1107,11 @@
    "polygons_with_extent": 34,
    "population_measured": 75019
   },
-  "at": "2026-08-13T12:34:25Z",
+  "at": "2026-08-13T18:35:23Z",
   "clusters": 21,
   "extent_over_surface": 9.746823838222024,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 34,
   "stale_removed": 0,
   "tiles": [
@@ -1137,11 +1137,11 @@
    "polygons_with_extent": 177,
    "population_measured": 1853
   },
-  "at": "2026-08-13T12:36:08Z",
+  "at": "2026-08-13T18:38:28Z",
   "clusters": 53,
   "extent_over_surface": 11.288454365196223,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 177,
   "stale_removed": 0,
   "tiles": [
@@ -1165,11 +1165,11 @@
    "polygons_with_extent": 21,
    "population_measured": 360
   },
-  "at": "2026-08-13T12:34:10Z",
+  "at": "2026-08-13T18:34:55Z",
   "clusters": 17,
   "extent_over_surface": 10.011298465410963,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 21,
   "stale_removed": 0,
   "tiles": [
@@ -1194,11 +1194,11 @@
    "polygons_with_extent": 50,
    "population_measured": 5669
   },
-  "at": "2026-08-13T12:34:47Z",
+  "at": "2026-08-13T18:36:09Z",
   "clusters": 33,
   "extent_over_surface": 10.02782722053699,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 50,
   "stale_removed": 0,
   "tiles": [
@@ -1314,11 +1314,11 @@
    "polygons_with_extent": 13,
    "population_measured": 13879
   },
-  "at": "2026-08-13T12:33:53Z",
+  "at": "2026-08-13T18:34:10Z",
   "clusters": 7,
   "extent_over_surface": 30.031948881789138,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 13,
   "stale_removed": 0,
   "tiles": [
@@ -1342,11 +1342,11 @@
    "polygons_with_extent": 3,
    "population_measured": 52
   },
-  "at": "2026-08-13T12:33:43Z",
+  "at": "2026-08-13T18:33:42Z",
   "clusters": 3,
   "extent_over_surface": 12.638801119436671,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 3,
   "stale_removed": 0,
   "tiles": [
@@ -1370,11 +1370,11 @@
    "polygons_with_extent": 27,
    "population_measured": 105
   },
-  "at": "2026-08-13T12:34:21Z",
+  "at": "2026-08-13T18:35:20Z",
   "clusters": 20,
   "extent_over_surface": 33.646594732567586,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 27,
   "stale_removed": 0,
   "tiles": [
@@ -1400,11 +1400,11 @@
    "polygons_with_extent": 40,
    "population_measured": 2739
   },
-  "at": "2026-08-13T12:34:34Z",
+  "at": "2026-08-13T18:35:40Z",
   "clusters": 19,
   "extent_over_surface": 14.118366990121514,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 40,
   "stale_removed": 0,
   "tiles": [
@@ -1426,11 +1426,11 @@
    "polygons_with_extent": 3,
    "population_measured": 24
   },
-  "at": "2026-08-13T12:33:44Z",
+  "at": "2026-08-13T18:33:43Z",
   "clusters": 3,
   "extent_over_surface": 22.779043280182233,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 3,
   "stale_removed": 0,
   "tiles": [
@@ -1452,11 +1452,11 @@
    "polygons_with_extent": 1,
    "population_measured": 26
   },
-  "at": "2026-08-13T12:33:40Z",
+  "at": "2026-08-13T18:33:32Z",
   "clusters": 1,
   "extent_over_surface": 47.44958481613286,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 1,
   "stale_removed": 0,
   "tiles": [
@@ -1478,11 +1478,11 @@
    "polygons_with_extent": 3,
    "population_measured": 6
   },
-  "at": "2026-08-13T12:33:45Z",
+  "at": "2026-08-13T18:33:43Z",
   "clusters": 1,
   "extent_over_surface": 11.060111707128241,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 3,
   "stale_removed": 0,
   "tiles": [
@@ -1505,11 +1505,11 @@
    "polygons_with_extent": 19,
    "population_measured": 71
   },
-  "at": "2026-08-13T12:34:08Z",
+  "at": "2026-08-13T18:34:53Z",
   "clusters": 7,
   "extent_over_surface": 25.675772056201414,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 19,
   "stale_removed": 0,
   "tiles": [
@@ -1531,11 +1531,11 @@
    "polygons_with_extent": 10,
    "population_measured": 98
   },
-  "at": "2026-08-13T12:33:51Z",
+  "at": "2026-08-13T18:34:06Z",
   "clusters": 7,
   "extent_over_surface": 29.16514764855997,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 10,
   "stale_removed": 0,
   "tiles": [
@@ -1560,11 +1560,11 @@
    "polygons_with_extent": 108,
    "population_measured": 2099
   },
-  "at": "2026-08-13T12:35:41Z",
+  "at": "2026-08-13T18:37:40Z",
   "clusters": 29,
   "extent_over_surface": 25.116774933820007,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 108,
   "stale_removed": 0,
   "tiles": [
@@ -1590,11 +1590,11 @@
    "polygons_with_extent": 113,
    "population_measured": 11839
   },
-  "at": "2026-08-13T12:35:44Z",
+  "at": "2026-08-13T18:37:45Z",
   "clusters": 58,
   "extent_over_surface": 8.309698331430255,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 113,
   "stale_removed": 0,
   "tiles": [
@@ -1618,11 +1618,11 @@
    "polygons_with_extent": 41,
    "population_measured": 1110
   },
-  "at": "2026-08-13T12:34:41Z",
+  "at": "2026-08-13T18:35:51Z",
   "clusters": 22,
   "extent_over_surface": 10.413344090661763,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 41,
   "stale_removed": 0,
   "tiles": [
@@ -1647,11 +1647,11 @@
    "polygons_with_extent": 25,
    "population_measured": 461
   },
-  "at": "2026-08-13T12:34:17Z",
+  "at": "2026-08-13T18:35:05Z",
   "clusters": 13,
   "extent_over_surface": 20.52309156884199,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 25,
   "stale_removed": 0,
   "tiles": [
@@ -1675,11 +1675,11 @@
    "polygons_with_extent": 225,
    "population_measured": 5214
   },
-  "at": "2026-08-13T12:36:44Z",
+  "at": "2026-08-13T18:39:33Z",
   "clusters": 55,
   "extent_over_surface": 20.921748535706758,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 225,
   "stale_removed": 0,
   "tiles": [
@@ -1733,11 +1733,11 @@
    "polygons_with_extent": 135,
    "population_measured": 13315
   },
-  "at": "2026-08-13T12:36:01Z",
+  "at": "2026-08-13T18:38:16Z",
   "clusters": 49,
   "extent_over_surface": 17.152588694792016,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 135,
   "stale_removed": 0,
   "tiles": [
@@ -1763,11 +1763,11 @@
    "polygons_with_extent": 236,
    "population_measured": 6889
   },
-  "at": "2026-08-13T12:36:58Z",
+  "at": "2026-08-13T18:39:55Z",
   "clusters": 73,
   "extent_over_surface": 24.804247011006375,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 236,
   "stale_removed": 0,
   "tiles": [
@@ -1789,11 +1789,11 @@
    "polygons_with_extent": 4,
    "population_measured": 35
   },
-  "at": "2026-08-13T12:33:47Z",
+  "at": "2026-08-13T18:33:55Z",
   "clusters": 4,
   "extent_over_surface": 43.51610095735422,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 4,
   "stale_removed": 0,
   "tiles": [
@@ -1817,11 +1817,11 @@
    "polygons_with_extent": 157,
    "population_measured": 1173
   },
-  "at": "2026-08-13T12:36:04Z",
+  "at": "2026-08-13T18:38:20Z",
   "clusters": 93,
   "extent_over_surface": 20.775953676996814,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 157,
   "stale_removed": 0,
   "tiles": [
@@ -1846,11 +1846,11 @@
    "polygons_with_extent": 235,
    "population_measured": 5649
   },
-  "at": "2026-08-13T12:36:56Z",
+  "at": "2026-08-13T18:39:51Z",
   "clusters": 90,
   "extent_over_surface": 12.868885690109886,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 235,
   "stale_removed": 0,
   "tiles": [
@@ -1872,11 +1872,11 @@
    "polygons_with_extent": 2,
    "population_measured": 21
   },
-  "at": "2026-08-13T12:33:42Z",
+  "at": "2026-08-13T18:33:41Z",
   "clusters": 2,
   "extent_over_surface": 49.504950495049506,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 2,
   "stale_removed": 0,
   "tiles": [
@@ -1958,11 +1958,11 @@
    "polygons_with_extent": 224,
    "population_measured": 1929
   },
-  "at": "2026-08-13T12:36:39Z",
+  "at": "2026-08-13T18:39:25Z",
   "clusters": 67,
   "extent_over_surface": 25.242607385941163,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 224,
   "stale_removed": 0,
   "tiles": [
@@ -1984,11 +1984,11 @@
    "polygons_with_extent": 93,
    "population_measured": 282
   },
-  "at": "2026-08-13T12:35:29Z",
+  "at": "2026-08-13T18:37:11Z",
   "clusters": 26,
   "extent_over_surface": 57.81336987709306,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 93,
   "stale_removed": 0,
   "tiles": [
@@ -2011,11 +2011,11 @@
    "polygons_with_extent": 14,
    "population_measured": 56
   },
-  "at": "2026-08-13T12:34:00Z",
+  "at": "2026-08-13T18:34:36Z",
   "clusters": 7,
   "extent_over_surface": 34.117749978129645,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 14,
   "stale_removed": 0,
   "tiles": [
@@ -2158,11 +2158,11 @@
    "polygons_with_extent": 224,
    "population_measured": 965
   },
-  "at": "2026-08-13T12:36:42Z",
+  "at": "2026-08-13T18:39:29Z",
   "clusters": 41,
   "extent_over_surface": 36.03543595550523,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 224,
   "stale_removed": 0,
   "tiles": [
@@ -2186,11 +2186,11 @@
    "polygons_with_extent": 97,
    "population_measured": 6248
   },
-  "at": "2026-08-13T12:35:32Z",
+  "at": "2026-08-13T18:37:15Z",
   "clusters": 14,
   "extent_over_surface": 27.464703752865933,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 97,
   "stale_removed": 0,
   "tiles": [
@@ -2214,11 +2214,11 @@
    "polygons_with_extent": 81,
    "population_measured": 1897
   },
-  "at": "2026-08-13T12:35:16Z",
+  "at": "2026-08-13T18:36:54Z",
   "clusters": 24,
   "extent_over_surface": 18.813083553980608,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 81,
   "stale_removed": 0,
   "tiles": [
@@ -2242,11 +2242,11 @@
    "polygons_with_extent": 210,
    "population_measured": 810
   },
-  "at": "2026-08-13T12:36:26Z",
+  "at": "2026-08-13T18:39:04Z",
   "clusters": 56,
   "extent_over_surface": 31.601492694207927,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 210,
   "stale_removed": 0,
   "tiles": [
@@ -2270,11 +2270,11 @@
    "polygons_with_extent": 55,
    "population_measured": 441
   },
-  "at": "2026-08-13T12:34:54Z",
+  "at": "2026-08-13T18:36:15Z",
   "clusters": 25,
   "extent_over_surface": 13.472236018674879,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 55,
   "stale_removed": 0,
   "tiles": [
@@ -2299,11 +2299,11 @@
    "polygons_with_extent": 194,
    "population_measured": 5859
   },
-  "at": "2026-08-13T12:36:13Z",
+  "at": "2026-08-13T18:38:36Z",
   "clusters": 42,
   "extent_over_surface": 15.947180187164363,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 194,
   "stale_removed": 0,
   "tiles": [
@@ -2327,11 +2327,11 @@
    "polygons_with_extent": 97,
    "population_measured": 1897
   },
-  "at": "2026-08-13T12:35:34Z",
+  "at": "2026-08-13T18:37:23Z",
   "clusters": 47,
   "extent_over_surface": 10.541378273995093,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 97,
   "stale_removed": 0,
   "tiles": [
@@ -2355,11 +2355,11 @@
    "polygons_with_extent": 248,
    "population_measured": 610
   },
-  "at": "2026-08-13T12:37:06Z",
+  "at": "2026-08-13T18:40:12Z",
   "clusters": 99,
   "extent_over_surface": 15.844112847920165,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 248,
   "stale_removed": 0,
   "tiles": [
@@ -2384,11 +2384,11 @@
    "polygons_with_extent": 120,
    "population_measured": 1075
   },
-  "at": "2026-08-13T12:35:51Z",
+  "at": "2026-08-13T18:37:54Z",
   "clusters": 41,
   "extent_over_surface": 50.48198883815322,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 120,
   "stale_removed": 0,
   "tiles": [
@@ -2444,11 +2444,11 @@
    "polygons_with_extent": 46,
    "population_measured": 13335
   },
-  "at": "2026-08-13T12:34:44Z",
+  "at": "2026-08-13T18:35:55Z",
   "clusters": 26,
   "extent_over_surface": 11.644809386035401,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 46,
   "stale_removed": 0,
   "tiles": [
@@ -2531,11 +2531,11 @@
    "polygons_with_extent": 71,
    "population_measured": 17175
   },
-  "at": "2026-08-13T12:35:09Z",
+  "at": "2026-08-13T18:36:35Z",
   "clusters": 14,
   "extent_over_surface": 9.689656120289177,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 71,
   "stale_removed": 0,
   "tiles": [
@@ -2558,11 +2558,11 @@
    "polygons_with_extent": 34,
    "population_measured": 125
   },
-  "at": "2026-08-13T12:34:26Z",
+  "at": "2026-08-13T18:35:24Z",
   "clusters": 21,
   "extent_over_surface": 26.2582056892779,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 34,
   "stale_removed": 0,
   "tiles": [
@@ -2585,11 +2585,11 @@
    "polygons_with_extent": 23,
    "population_measured": 254
   },
-  "at": "2026-08-13T12:34:13Z",
+  "at": "2026-08-13T18:35:00Z",
   "clusters": 17,
   "extent_over_surface": 28.63473666268962,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 23,
   "stale_removed": 0,
   "tiles": [
@@ -2612,11 +2612,11 @@
    "polygons_with_extent": 4,
    "population_measured": 302
   },
-  "at": "2026-08-13T12:33:49Z",
+  "at": "2026-08-13T18:34:03Z",
   "clusters": 3,
   "extent_over_surface": 19.902800277713492,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 4,
   "stale_removed": 0,
   "tiles": [
@@ -2670,11 +2670,11 @@
    "polygons_with_extent": 107,
    "population_measured": 2640
   },
-  "at": "2026-08-13T12:35:37Z",
+  "at": "2026-08-13T18:37:35Z",
   "clusters": 44,
   "extent_over_surface": 18.62699022226298,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 107,
   "stale_removed": 0,
   "tiles": [
@@ -2698,11 +2698,11 @@
    "polygons_with_extent": 124,
    "population_measured": 2319
   },
-  "at": "2026-08-13T12:35:56Z",
+  "at": "2026-08-13T18:38:09Z",
   "clusters": 13,
   "extent_over_surface": 24.950791494552412,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 124,
   "stale_removed": 0,
   "tiles": [
@@ -2726,11 +2726,11 @@
    "polygons_with_extent": 64,
    "population_measured": 26425
   },
-  "at": "2026-08-13T12:35:07Z",
+  "at": "2026-08-13T18:36:33Z",
   "clusters": 9,
   "extent_over_surface": 47.664840908140654,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 64,
   "stale_removed": 0,
   "tiles": [
@@ -2753,11 +2753,11 @@
    "polygons_with_extent": 60,
    "population_measured": 5459
   },
-  "at": "2026-08-13T12:35:03Z",
+  "at": "2026-08-13T18:36:26Z",
   "clusters": 29,
   "extent_over_surface": 59.87611837577426,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 60,
   "stale_removed": 0,
   "tiles": [
@@ -2871,11 +2871,11 @@
    "polygons_with_extent": 207,
    "population_measured": 17061
   },
-  "at": "2026-08-13T12:36:20Z",
+  "at": "2026-08-13T18:38:57Z",
   "clusters": 71,
   "extent_over_surface": 31.58362455116427,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 207,
   "stale_removed": 0,
   "tiles": [
@@ -2901,11 +2901,11 @@
    "polygons_with_extent": 16,
    "population_measured": 1060
   },
-  "at": "2026-08-13T12:34:04Z",
+  "at": "2026-08-13T18:34:49Z",
   "clusters": 9,
   "extent_over_surface": 24.56081924902173,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 16,
   "stale_removed": 0,
   "tiles": [
@@ -2959,11 +2959,11 @@
    "polygons_with_extent": 90,
    "population_measured": 6084
   },
-  "at": "2026-08-13T12:35:24Z",
+  "at": "2026-08-13T18:37:03Z",
   "clusters": 42,
   "extent_over_surface": 9.78741445097208,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 90,
   "stale_removed": 0,
   "tiles": [
@@ -2988,11 +2988,11 @@
    "polygons_with_extent": 72,
    "population_measured": 6095
   },
-  "at": "2026-08-13T12:35:10Z",
+  "at": "2026-08-13T18:36:37Z",
   "clusters": 34,
   "extent_over_surface": 19.359617039894538,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 72,
   "stale_removed": 0,
   "tiles": [
@@ -3014,11 +3014,11 @@
    "polygons_with_extent": 13,
    "population_measured": 70
   },
-  "at": "2026-08-13T12:33:55Z",
+  "at": "2026-08-13T18:34:17Z",
   "clusters": 11,
   "extent_over_surface": 28.400597907324364,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 13,
   "stale_removed": 0,
   "tiles": [
@@ -3043,11 +3043,11 @@
    "polygons_with_extent": 45,
    "population_measured": 1342
   },
-  "at": "2026-08-13T12:34:42Z",
+  "at": "2026-08-13T18:35:53Z",
   "clusters": 15,
   "extent_over_surface": 14.945569850342334,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 45,
   "stale_removed": 0,
   "tiles": [
@@ -3098,11 +3098,11 @@
    "polygons_with_extent": 20,
    "population_measured": 38
   },
-  "at": "2026-08-13T12:34:09Z",
+  "at": "2026-08-13T18:34:54Z",
   "clusters": 15,
   "extent_over_surface": 63.71271358239212,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 20,
   "stale_removed": 0,
   "tiles": [
@@ -3124,11 +3124,11 @@
    "polygons_with_extent": 12,
    "population_measured": 159
   },
-  "at": "2026-08-13T12:33:52Z",
+  "at": "2026-08-13T18:34:07Z",
   "clusters": 1,
   "extent_over_surface": 30.664395229982965,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 12,
   "stale_removed": 0,
   "tiles": [
@@ -3151,11 +3151,11 @@
    "polygons_with_extent": 36,
    "population_measured": 466
   },
-  "at": "2026-08-13T12:34:31Z",
+  "at": "2026-08-13T18:35:37Z",
   "clusters": 11,
   "extent_over_surface": 27.015498364851414,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 36,
   "stale_removed": 0,
   "tiles": [
@@ -3178,11 +3178,11 @@
    "polygons_with_extent": 57,
    "population_measured": 653
   },
-  "at": "2026-08-13T12:34:57Z",
+  "at": "2026-08-13T18:36:19Z",
   "clusters": 31,
   "extent_over_surface": 27.229556049318173,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 57,
   "stale_removed": 0,
   "tiles": [
@@ -3205,11 +3205,11 @@
    "polygons_with_extent": 51,
    "population_measured": 42
   },
-  "at": "2026-08-13T12:34:52Z",
+  "at": "2026-08-13T18:36:14Z",
   "clusters": 25,
   "extent_over_surface": 70.09776793949456,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 51,
   "stale_removed": 0,
   "tiles": [
@@ -3231,11 +3231,11 @@
    "polygons_with_extent": 3,
    "population_measured": 219
   },
-  "at": "2026-08-13T12:33:46Z",
+  "at": "2026-08-13T18:33:54Z",
   "clusters": 1,
   "extent_over_surface": 11.4992664261073,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 3,
   "stale_removed": 0,
   "tiles": [
@@ -3349,11 +3349,11 @@
    "polygons_with_extent": 85,
    "population_measured": 4730
   },
-  "at": "2026-08-13T12:35:21Z",
+  "at": "2026-08-13T18:37:00Z",
   "clusters": 28,
   "extent_over_surface": 16.4020185889544,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 85,
   "stale_removed": 0,
   "tiles": [
@@ -3434,11 +3434,11 @@
    "polygons_with_extent": 173,
    "population_measured": 2510
   },
-  "at": "2026-08-13T12:36:06Z",
+  "at": "2026-08-13T18:38:24Z",
   "clusters": 61,
   "extent_over_surface": 23.95178059116153,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 173,
   "stale_removed": 0,
   "tiles": [
@@ -3462,11 +3462,11 @@
    "polygons_with_extent": 14,
    "population_measured": 864
   },
-  "at": "2026-08-13T12:34:01Z",
+  "at": "2026-08-13T18:34:38Z",
   "clusters": 12,
   "extent_over_surface": 11.06024205611713,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 14,
   "stale_removed": 0,
   "tiles": [
@@ -3489,11 +3489,11 @@
    "polygons_with_extent": 97,
    "population_measured": 186
   },
-  "at": "2026-08-13T12:35:36Z",
+  "at": "2026-08-13T18:37:26Z",
   "clusters": 44,
   "extent_over_surface": 68.94570525711002,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 97,
   "stale_removed": 0,
   "tiles": [
@@ -3516,11 +3516,11 @@
    "polygons_with_extent": 24,
    "population_measured": 288
   },
-  "at": "2026-08-13T12:34:16Z",
+  "at": "2026-08-13T18:35:04Z",
   "clusters": 8,
   "extent_over_surface": 46.33920296570899,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 24,
   "stale_removed": 0,
   "tiles": [
@@ -3545,11 +3545,11 @@
    "polygons_with_extent": 34,
    "population_measured": 3865
   },
-  "at": "2026-08-13T12:34:27Z",
+  "at": "2026-08-13T18:35:26Z",
   "clusters": 12,
   "extent_over_surface": 12.587729890735577,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 34,
   "stale_removed": 0,
   "tiles": [
@@ -3574,11 +3574,11 @@
    "polygons_with_extent": 40,
    "population_measured": 4079
   },
-  "at": "2026-08-13T12:34:35Z",
+  "at": "2026-08-13T18:35:42Z",
   "clusters": 16,
   "extent_over_surface": 16.761239136497384,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 40,
   "stale_removed": 0,
   "tiles": [
@@ -3601,11 +3601,11 @@
    "polygons_with_extent": 62,
    "population_measured": 1132
   },
-  "at": "2026-08-13T12:35:04Z",
+  "at": "2026-08-13T18:36:28Z",
   "clusters": 35,
   "extent_over_surface": 22.42689858248305,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 62,
   "stale_removed": 0,
   "tiles": [
@@ -3630,11 +3630,11 @@
    "polygons_with_extent": 131,
    "population_measured": 54832
   },
-  "at": "2026-08-13T12:35:58Z",
+  "at": "2026-08-13T18:38:12Z",
   "clusters": 42,
   "extent_over_surface": 22.05392884653893,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 131,
   "stale_removed": 0,
   "tiles": [
@@ -3659,11 +3659,11 @@
    "polygons_with_extent": 242,
    "population_measured": 13817
   },
-  "at": "2026-08-13T12:37:01Z",
+  "at": "2026-08-13T18:40:01Z",
   "clusters": 76,
   "extent_over_surface": 15.579034067963535,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 242,
   "stale_removed": 0,
   "tiles": [
@@ -3688,11 +3688,11 @@
    "polygons_with_extent": 242,
    "population_measured": 24043
   },
-  "at": "2026-08-13T12:37:03Z",
+  "at": "2026-08-13T18:40:06Z",
   "clusters": 40,
   "extent_over_surface": 23.293895154408542,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 242,
   "stale_removed": 0,
   "tiles": [
@@ -3717,11 +3717,11 @@
    "polygons_with_extent": 225,
    "population_measured": 18120
   },
-  "at": "2026-08-13T12:36:48Z",
+  "at": "2026-08-13T18:39:39Z",
   "clusters": 68,
   "extent_over_surface": 12.794956804036975,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 225,
   "stale_removed": 0,
   "tiles": [
@@ -3744,11 +3744,11 @@
    "polygons_with_extent": 18,
    "population_measured": 231
   },
-  "at": "2026-08-13T12:34:07Z",
+  "at": "2026-08-13T18:34:52Z",
   "clusters": 13,
   "extent_over_surface": 45.16258530710558,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 18,
   "stale_removed": 0,
   "tiles": [
@@ -3805,11 +3805,11 @@
    "polygons_with_extent": 91,
    "population_measured": 361
   },
-  "at": "2026-08-13T12:35:25Z",
+  "at": "2026-08-13T18:37:05Z",
   "clusters": 54,
   "extent_over_surface": 18.393022096150546,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 91,
   "stale_removed": 0,
   "tiles": [
@@ -3892,11 +3892,11 @@
    "polygons_with_extent": 58,
    "population_measured": 46
   },
-  "at": "2026-08-13T12:34:58Z",
+  "at": "2026-08-13T18:36:20Z",
   "clusters": 38,
   "extent_over_surface": 25.432225564277505,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 58,
   "stale_removed": 0,
   "tiles": [
@@ -3921,11 +3921,11 @@
    "polygons_with_extent": 47,
    "population_measured": 1754
   },
-  "at": "2026-08-13T12:34:45Z",
+  "at": "2026-08-13T18:36:05Z",
   "clusters": 17,
   "extent_over_surface": 9.944722156100399,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 47,
   "stale_removed": 0,
   "tiles": [
@@ -3947,11 +3947,11 @@
    "polygons_with_extent": 95,
    "population_measured": 219
   },
-  "at": "2026-08-13T12:35:31Z",
+  "at": "2026-08-13T18:37:13Z",
   "clusters": 34,
   "extent_over_surface": 51.13573201912032,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 95,
   "stale_removed": 0,
   "tiles": [
@@ -4005,11 +4005,11 @@
    "polygons_with_extent": 222,
    "population_measured": 2056
   },
-  "at": "2026-08-13T12:36:37Z",
+  "at": "2026-08-13T18:39:20Z",
   "clusters": 105,
   "extent_over_surface": 19.505642990544178,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 222,
   "stale_removed": 0,
   "tiles": [
@@ -4180,11 +4180,11 @@
    "polygons_with_extent": 40,
    "population_measured": 148
   },
-  "at": "2026-08-13T12:34:36Z",
+  "at": "2026-08-13T18:35:45Z",
   "clusters": 25,
   "extent_over_surface": 32.14181357748125,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 40,
   "stale_removed": 0,
   "tiles": [
@@ -4209,11 +4209,11 @@
    "polygons_with_extent": 56,
    "population_measured": 2619
   },
-  "at": "2026-08-13T12:34:55Z",
+  "at": "2026-08-13T18:36:17Z",
   "clusters": 13,
   "extent_over_surface": 13.328870452942512,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 56,
   "stale_removed": 0,
   "tiles": [
@@ -4236,11 +4236,11 @@
    "polygons_with_extent": 119,
    "population_measured": 241
   },
-  "at": "2026-08-13T12:35:47Z",
+  "at": "2026-08-13T18:37:50Z",
   "clusters": 64,
   "extent_over_surface": 30.458275985114952,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 119,
   "stale_removed": 0,
   "tiles": [
@@ -4264,11 +4264,11 @@
    "polygons_with_extent": 72,
    "population_measured": 2158
   },
-  "at": "2026-08-13T12:35:12Z",
+  "at": "2026-08-13T18:36:39Z",
   "clusters": 13,
   "extent_over_surface": 24.959574504048184,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 72,
   "stale_removed": 0,
   "tiles": [
@@ -4292,11 +4292,11 @@
    "polygons_with_extent": 48,
    "population_measured": 1016
   },
-  "at": "2026-08-13T12:34:46Z",
+  "at": "2026-08-13T18:36:07Z",
   "clusters": 16,
   "extent_over_surface": 24.68863863726057,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 48,
   "stale_removed": 0,
   "tiles": [
@@ -4321,11 +4321,11 @@
    "polygons_with_extent": 107,
    "population_measured": 4454
   },
-  "at": "2026-08-13T12:35:39Z",
+  "at": "2026-08-13T18:37:37Z",
   "clusters": 49,
   "extent_over_surface": 25.44154962773764,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 107,
   "stale_removed": 0,
   "tiles": [
@@ -4349,11 +4349,11 @@
    "polygons_with_extent": 92,
    "population_measured": 1273
   },
-  "at": "2026-08-13T12:35:28Z",
+  "at": "2026-08-13T18:37:09Z",
   "clusters": 52,
   "extent_over_surface": 17.746885051946613,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 92,
   "stale_removed": 0,
   "tiles": [
@@ -4377,11 +4377,11 @@
    "polygons_with_extent": 35,
    "population_measured": 502
   },
-  "at": "2026-08-13T12:34:30Z",
+  "at": "2026-08-13T18:35:36Z",
   "clusters": 15,
   "extent_over_surface": 22.02982838763686,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 35,
   "stale_removed": 0,
   "tiles": [
@@ -4406,11 +4406,11 @@
    "polygons_with_extent": 62,
    "population_measured": 1362
   },
-  "at": "2026-08-13T12:35:06Z",
+  "at": "2026-08-13T18:36:30Z",
   "clusters": 34,
   "extent_over_surface": 15.158900631531585,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 62,
   "stale_removed": 0,
   "tiles": [
@@ -4433,11 +4433,11 @@
    "polygons_with_extent": 25,
    "population_measured": 210
   },
-  "at": "2026-08-13T12:34:19Z",
+  "at": "2026-08-13T18:35:13Z",
   "clusters": 19,
   "extent_over_surface": 19.859935193895684,
   "ok": true,
-  "pipeline": "2026-08-13c",
+  "pipeline": "2026-08-13d",
   "polygons": 25,
   "stale_removed": 0,
   "tiles": [
