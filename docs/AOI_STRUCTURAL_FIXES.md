@@ -4,6 +4,12 @@ Each item is a *data-correctness* defect that made a published number wrong, not
 a feature request. Ordered by how badly it misleads a reader. Evidence commands
 included so none of this has to be re-derived.
 
+> **All twelve are fixed and deployed** (F1–F9, F12 on 2026-08-13; F10 and F11
+> later the same day). This file is kept as the *evidence*, not as a queue — the
+> numbers below are what was wrong and how it was measured. Where the work
+> lives now: settlements in `docs/agents/settlements.md`, fire containment
+> (F10) and the satellite-fleet step (F11) in `docs/agents/fire.md`.
+
 ---
 
 ## F1 — GHSL "built-up area" is the mask, not the surface (~24× overstatement)
@@ -153,6 +159,26 @@ Most likely a Hansen baseline/definition change or a large fire scar scored as
 loss. **Fix:** flag any (park, year) whose loss exceeds ~50× its 5-year median
 as `needs_review` and let the UI say so, rather than drawing a spike.
 
+**DONE 2026-08-13 — and the first implementation scored zero on this very
+example.** Written park-wide only, `flag_anomalous_years()` returned 0 for
+`XSA_Study_Area`: 313.6 km² against a 48.9 km² five-year median is **6.4×**,
+nowhere near 50×. Across all 81 areas it flagged two rows, and a corpus-wide
+"almost nothing is anomalous" is exactly the shape invariant 1 warns about —
+the detector had exited 0, not measured anything. The step is *local*: the
+anomaly lives in one block, and a park-wide median averages it away. The test
+now also runs per ~0.5° (~55 km) cell (`ANOMALY_CELL_DEG`), where the same
+year is a 1,000× step against a 0.0–0.1 km²/yr history, and flags the events
+**in that cell** rather than the whole park-year — the reader is told which
+ground is questioned, not handed a suspicious park. A cell must also clear
+`ANOMALY_MIN_KM2 = 5.0` absolutely, because "100× of 0.01 km²" is not a
+finding.
+
+Result: **19 flags across 8 of 81 areas, 99 event rows** — `XSA_Study_Area`
+2023 carries 227.6 km², including the four cells at 10–11 °N that are the
+198.6 km² northern block this section is about. `tests/db_tests.sh` asserts
+that block stays flagged *and* that flags stay under 5 % of the corpus, so
+neither a silent zero nor a flag-everything regression passes.
+
 ## F10 — `protected_area_id` on `fire_detections` is a 100 km buffer, not the park
 
 `ASSIGN_MAX_DIST_KM = 100` in `park_assigner.py`. Detections tagged
@@ -165,6 +191,13 @@ Chinko vs **559,798** carrying its id — a **10×** difference.
 make every user-facing "in park" count use it. At minimum, rename the column so
 no one reads it as containment.
 
+**DONE 2026-08-13** — and the flag that already existed turned out to be the
+better half of the answer. Eleven call sites now carry `fireInsideSQL`
+(`AND +in_protected_area = 1`, `srv/fire_containment.go`), and the flag itself
+was re-derived against today's boundaries because 5.83% of it was a stored
+answer from a rule that no longer runs (469,692 cleared, 30 set). `CMR_Nki`
+goes 2,518 → 0. See `docs/agents/fire.md` "F10".
+
 ## F11 — Sensor-count change at 2024-01-01 is invisible in every time series
 
 One VIIRS sensor before 2024, three after. Every raw fire chart in the app has a
@@ -173,6 +206,13 @@ One VIIRS sensor before 2024, three after. Every raw fire chart in the app has a
 **Fix:** either normalise (per-sensor rate) or draw the discontinuity. The
 per-sensor query is cheap:
 `select satellite, strftime('%Y',acq_date), count(*) ... group by 1,2`.
+
+**DONE 2026-08-13** — the discontinuity is drawn. The fleet is *measured* into
+`fire_sensor_epochs` (that cheap query, monthly, by
+`scripts/build_sensor_epochs.py`) rather than typed as a constant, and
+`/fire-trend` ships it per week so the sparkline cuts the line where the fleet
+changes. The prior-years reference also stops comparing across fleets. See
+`docs/agents/fire.md` "F11".
 
 ## F12 — `settlement_type` is 100 % `permanent` here
 
@@ -186,9 +226,20 @@ camps, the column says there are none.
 classify on **inter-epoch persistence** rather than size. Until then the column
 should be `NULL`, not `permanent`.
 
+**DONE 2026-08-13** — the column is `NULL`. Size cannot answer this question at
+all (the two candidate rules straddle the ingest floor), and persistence between
+GHSL epochs is not ingested, so the honest value is *unmeasured* — not a
+threshold nudged until it emits both words. The 3,019 surviving `temporary` rows
+are retired detector output, excluded by `settlementFilterSQL` (invariant 5).
+The GeoPackage export now writes it as SQL `NULL` rather than `''`, alongside
+`extent_m2`, `area_source`, `population_source` and `epoch`: a download is the
+most published artefact there is, so F1's surface-vs-extent distinction and
+F2's measured-or-absent population have to travel *in the file*, where there is
+no panel to explain them.
+
 ---
 
-## Cheap wins, in order
+## Cheap wins, in order (all taken — kept for the ordering argument)
 
 1. **F5** (one function, ~10 lines) — removes a false sentence from 9,366 rows.
 2. **F4** (delete a `LIMIT`) — fixes 1,323 wrong distances.
@@ -196,6 +247,18 @@ should be `NULL`, not `permanent`.
 4. **F1 → F2** (zonal sum, then GHS_POP) — the big one; unlocks the settlement
    layer for publication.
 5. **F3, F12, F10, F6, F9** — pipeline changes, each self-contained.
+
+One correction from doing it: **F11 was not labelling.** Drawing the break was
+indeed a few lines, but the *fleet* had to be measured into a table first, or
+the label would have been a hardcoded "three since 2024" describing an ingest
+history that grows nightly (invariant 2). A labelling fix that has to name a
+number is a pipeline fix wearing a label's clothes.
+
+And a second: **F9 was not self-contained — its threshold was.** Flagging a
+step against a five-year median is a dozen lines, but at park scale that
+threshold answered "no" to the very block that prompted the item. The cheap
+part was real; the *scale* the cheap part ran at was the whole fix — which is
+the invariant below, arriving one item later than expected.
 
 ## Suggested invariant for `AGENTS.md`
 

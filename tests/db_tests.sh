@@ -185,6 +185,23 @@ test_query "method values are the two known ones" \
       WHERE area_method NOT IN ('hansen_canopy_loss','gfw_alert_count')" "0"
 test_query "both methods are present" \
     "SELECT COUNT(DISTINCT area_method) FROM deforestation_events" "2"
+# F9's anomaly flagger scored ZERO on XSA_Study_Area -- the area it was written
+# for -- because a park-wide median hides a local step: 203 km2 appearing in one
+# block is 1,000x there and 6.4x park-wide. It exited 0 and read as "nothing is
+# anomalous" (invariant 1). It now also tests ~55 km cells, and this asserts the
+# motivating case is caught. The year is fixed (a Hansen vintage, not a moving
+# window), so a literal is safe here; the COUNT is not asserted because the
+# event rows are rebuilt.
+test_query "the block F9 was written about is flagged" \
+    "SELECT CASE WHEN COUNT(*) > 0 THEN 'ok' ELSE 'unflagged' END
+       FROM deforestation_events
+      WHERE park_id='XSA_Study_Area' AND year=2023 AND needs_review=1" "ok"
+# ...and the flag must stay a statement about specific ground. If it ever
+# covered most of the corpus it would be noise nobody reads.
+test_query "review flags stay a minority" \
+    "SELECT CASE WHEN (SELECT COUNT(*) FROM deforestation_events WHERE needs_review=1)
+                      < (SELECT COUNT(*) FROM deforestation_events) / 20
+                 THEN 'ok' ELSE 'too-many' END" "ok"
 
 yellow "\n=== Fire containment (F10) ==="
 # protected_area_id is the nearest park within park_assigner.ASSIGN_MAX_DIST_KM
@@ -214,6 +231,47 @@ test_query "every tagged detection has a containment flag" \
 test_index_used "containment clause keeps the park index" \
     "SELECT COUNT(*) FROM fire_detections WHERE protected_area_id='CAF_Chinko' AND +in_protected_area=1" \
     "idx_fire_pa_date"
+# The flag is DERIVED from data/keystones_with_boundaries.json, so it is only as
+# current as the boundary file it was derived against. The state file records
+# that file's digest; when a boundary is edited the two diverge and
+# scripts/rederive_fire_containment.py is due. A stamp nobody compares is a
+# comment (invariant 5), so this compares it.
+printf "%-55s" "containment flag was derived from today's boundaries"
+if [[ -f data/fire_containment_state.json ]] && command -v sha256sum >/dev/null; then
+    want=$(python3 -c "import json;print(json.load(open('data/fire_containment_state.json'))['boundary_sha256'])")
+    have=$(sha256sum data/keystones_with_boundaries.json | cut -d' ' -f1)
+    if [[ "$want" == "$have" ]]; then
+        green "✓"; PASSED=$((PASSED + 1))
+    else
+        red "FAIL (boundaries changed since re-derivation; run scripts/rederive_fire_containment.py)"
+        FAILED=$((FAILED + 1)); ERRORS+=("containment flag is stale against keystones_with_boundaries.json")
+    fi
+else
+    red "FAIL (data/fire_containment_state.json missing; the flag's provenance is unknown)"
+    FAILED=$((FAILED + 1)); ERRORS+=("fire_containment_state.json missing")
+fi
+
+yellow "\n=== Sensor epochs (F11) ==="
+# One VIIRS sensor flies before 2024, three after, so every raw detection chart
+# steps ~3x at 2024-01-01 for reasons that are instrument, not landscape. The
+# fleet is MEASURED into fire_sensor_epochs by scripts/build_sensor_epochs.py
+# and never typed as a constant (invariant 2) -- these tests check the
+# measurement exists and still shows the step, not that it says "three".
+test_query "sensor epochs are measured" \
+    "SELECT COUNT(*) FROM fire_sensor_epochs" "nonempty"
+# Directional, like the containment test: the fleet after the cutover must be
+# strictly larger than before it. If these ever equalise, either a sensor was
+# retired (the chart should say so) or the builder wrote a fleet it did not see.
+test_query "the fleet grows at the 2024 cutover" \
+    "SELECT CASE WHEN
+       (SELECT MAX(sensor_count) FROM fire_sensor_epochs WHERE month < '2024-01')
+       < (SELECT MIN(sensor_count) FROM fire_sensor_epochs WHERE month >= '2024-02' AND month < '2026-01')
+     THEN 'ok' ELSE 'no-step' END" "ok"
+# Every month with detections must name a fleet: a NULL or empty sensor list
+# would read to the client as "no change here" and silently rejoin the line.
+test_query "every epoch month names its sensors" \
+    "SELECT COUNT(*) FROM fire_sensor_epochs
+      WHERE sensors IS NULL OR sensors = '' OR sensor_count < 1 OR detections < 1" "0"
 
 yellow "\n=== Index Usage (Query Plans) ==="
 test_index_used "feature by park" "SELECT * FROM feature_geometries WHERE park_id='CAF_Chinko' LIMIT 10" "idx_feat"

@@ -126,11 +126,12 @@ func (s *Server) computeFireNarrativeForCache(parkID, parkName string, fromYear,
 		return nil
 	}
 
-	// Get total fires using date range (uses index)
+	// Get total fires using date range (uses idx_fire_pa_date). Inside the
+	// boundary only — srv/fire_containment.go.
 	var totalFires int
 	s.DB.QueryRow(`
 		SELECT COUNT(*) FROM fire_detections 
-		WHERE protected_area_id = ? 
+		WHERE protected_area_id = ?`+fireInsideSQL+`
 		  AND acq_date >= ? AND acq_date <= ?
 	`, parkID,
 		fmt.Sprintf("%d-01-01", fromYear),
@@ -177,7 +178,7 @@ func (s *Server) computeFireNarrativeForCache(parkID, parkName string, fromYear,
 	s.DB.QueryRow(`
 		SELECT strftime('%m', acq_date) as month
 		FROM fire_detections 
-		WHERE protected_area_id = ? 
+		WHERE protected_area_id = ?`+fireInsideSQL+`
 		  AND acq_date >= ? AND acq_date <= ?
 		GROUP BY month ORDER BY COUNT(*) DESC LIMIT 1
 	`, parkID,
@@ -737,6 +738,14 @@ func (s *Server) GetCachedFireNarrative(parkID string) (*FireNarrative, time.Tim
 	if err := json.Unmarshal([]byte(jsonData), &narrative); err != nil {
 		return nil, time.Time{}, err
 	}
+	// The cached number is a sum over fire GROUPS (v5 trajectories), not a count
+	// of detections inside the boundary the way /stats counts them. Naming the
+	// basis at read time keeps it true for rows the python writer produced
+	// before this field existed — invariant 7, and the reason Chinko reads
+	// 302,900 here and 145,743 there.
+	if narrative.TotalFiresBasis == "" {
+		narrative.TotalFiresBasis = "detections in fire groups near or inside the park (v5 trajectories)"
+	}
 
 	return &narrative, computedAt, nil
 }
@@ -795,67 +804,13 @@ func (s *Server) StartNarrativeCacheWorker(ctx context.Context) {
 	}
 }
 
-// PrecomputeRecentFireNarratives updates fire narratives only for parks with recent fire activity
-func (s *Server) PrecomputeRecentFireNarratives(ctx context.Context, days int) {
-	// Find parks with fires in the last N days
-	cutoff := time.Now().AddDate(0, 0, -days).Format("2006-01-02")
-	rows, err := s.DB.Query(`
-		SELECT DISTINCT park_id 
-		FROM fire_detections 
-		WHERE acq_date >= ?
-		GROUP BY park_id
-		HAVING COUNT(*) > 0`, cutoff)
-	if err != nil {
-		log.Printf("[FireNarrativeCache] Error finding recent fire parks: %v", err)
-		return
-	}
-	defer rows.Close()
-
-	var parksWithFires []string
-	for rows.Next() {
-		var parkID string
-		rows.Scan(&parkID)
-		parksWithFires = append(parksWithFires, parkID)
-	}
-
-	if len(parksWithFires) == 0 {
-		log.Println("[FireNarrativeCache] No parks with recent fire activity")
-		return
-	}
-
-	log.Printf("[FireNarrativeCache] Refreshing %d parks with recent fire activity", len(parksWithFires))
-
-	for _, parkID := range parksWithFires {
-		select {
-		case <-ctx.Done():
-			return
-		default:
-		}
-		// Compute and cache for this single park
-		fromYear := time.Now().Year() - 25
-		toYear := time.Now().Year()
-		parkName := parkID
-		for _, area := range s.AreaStore.Areas {
-			if area.ID == parkID {
-				parkName = area.Name
-				break
-			}
-		}
-		narrative := s.computeFireNarrativeForCache(parkID, parkName, fromYear, toYear)
-		if narrative != nil {
-			narrativeJSON, _ := json.Marshal(narrative)
-			s.DB.Exec(`
-				INSERT INTO fire_narrative_cache (park_id, narrative_json, computed_at, from_year, to_year)
-				VALUES (?, ?, CURRENT_TIMESTAMP, ?, ?)
-				ON CONFLICT(park_id) DO UPDATE SET
-					narrative_json = excluded.narrative_json,
-					computed_at = CURRENT_TIMESTAMP,
-					from_year = excluded.from_year,
-					to_year = excluded.to_year`,
-				parkID, string(narrativeJSON), fromYear, toYear)
-		}
-	}
-}
+// PrecomputeRecentFireNarratives WAS HERE, and it was a SECOND WRITER to
+// fire_narrative_cache — the exact thing invariant 10 forbids (the one writer
+// is scripts/precompute_narratives_v5.py). It was also unreachable and could
+// not have run: nothing in the tree called it, and it selected `park_id FROM
+// fire_detections`, a column that table does not have. Removed 2026-08-13
+// rather than fixed, because fixing it would have restored the deprecated Go
+// path. See docs/agents/fire.md.
 
 // PrecomputeAllClassifications classifies settlements and deforestation for all parks
 func (s *Server) PrecomputeAllClassifications(ctx context.Context) {
