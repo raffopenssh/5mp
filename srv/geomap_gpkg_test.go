@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -576,5 +577,437 @@ func TestGeoPackageLegendIsPerClassNotPerPolygon(t *testing.T) {
 	if got := strings.Count(qml, "<category "); got != 3 {
 		t.Errorf("legend categories = %d, want 3 (2 classes + other); a duplicated "+
 			"category is one symbol listed twice, i.e. a legend that cannot be read", got)
+	}
+}
+
+// ---- the FILTERED export: the view, its hairlines, and the evidence --------
+//
+// The download in the geology panel's bar builds what the reader is LOOKING AT
+// (srv/geomap_gpkg.go, geoMapSelection): the unit keys and contact pairs the
+// client is painting. Three failures are specific to that path and none of them
+// is visible from the whole-catalogue tests above.
+
+// writeTestContacts gives a sheet the contacts file scripts/geomaps/contacts.py
+// produces. Two junctions whose lithologies the rule table actually grades, so
+// `grade` is a measured word rather than "ungraded" everywhere.
+func writeTestContacts(t *testing.T, dir, sheet string, pairs ...[2]string) {
+	t.Helper()
+	feats := []any{}
+	x := 10.0
+	for _, p := range pairs {
+		feats = append(feats, map[string]any{
+			"type": "Feature",
+			"properties": map[string]any{
+				"sheet": sheet, "code_a": p[0], "code_b": p[1],
+				"pair": p[0] + "|" + p[1], "km": 12.5,
+			},
+			"geometry": map[string]any{
+				"type":        "MultiLineString",
+				"coordinates": [][][]float64{{{x, 20}, {x + 0.5, 20.5}}},
+			},
+		})
+		x += 1
+	}
+	b, _ := json.Marshal(map[string]any{"type": "FeatureCollection", "features": feats})
+	if err := os.WriteFile(geoContactsGeoJSONPath(sheet), b, 0o644); err != nil {
+		t.Fatal(err)
+	}
+}
+
+// The anchors are read once, process-wide, from a path derived from the sheet
+// directory. A test that wants them present (or absent) has to say so, and has
+// to put the once back — otherwise the first test to touch them decides for
+// every later one.
+func useTestAnchors(t *testing.T, dir string, n int) {
+	t.Helper()
+	oldOnce, oldDoc, oldErr := geoAnchorOnce, geoAnchors, geoAnchorErr
+	geoAnchorOnce, geoAnchors, geoAnchorErr = sync.Once{}, nil, nil
+	t.Cleanup(func() { geoAnchorOnce, geoAnchors, geoAnchorErr = oldOnce, oldDoc, oldErr })
+	if n <= 0 {
+		return
+	}
+	if err := os.MkdirAll(filepath.Dir(geoAnchorFile()), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	feats := make([]any, 0, n)
+	for i := 0; i < n; i++ {
+		feats = append(feats, map[string]any{
+			"type": "Feature",
+			"properties": map[string]any{
+				"source": "testlist", "source_id": fmt.Sprintf("t%d", i),
+				"source_url": "https://example.invalid/t", "iso3": "CAF",
+				"year": 2019, "resource": []string{"gold", "diamond"}[i%2],
+				"observed": "2019", "licence": "CC-BY", "terms": "open",
+				"attribution": "Test list",
+			},
+			// Deliberately far from the units above (which sit at 10-13 E,
+			// 20-21 N): an anchor outside the sheets must still ship.
+			"geometry": map[string]any{"type": "Point", "coordinates": []float64{30 + float64(i), -5}},
+		})
+	}
+	b, _ := json.Marshal(map[string]any{
+		"notice":   "test",
+		"sources":  []any{map[string]any{"source": "testlist", "label": "Test list", "terms": "open", "sites": n}},
+		"features": feats,
+	})
+	if err := os.WriteFile(geoAnchorFile(), b, 0o644); err != nil {
+		t.Fatal(err)
+	}
+}
+
+// A SELECTION THAT MATCHES NOTHING IS A BROKEN FILTER, NOT AN EMPTY MAP.
+// The client sends the same key set it paints, so an empty match means the two
+// have drifted (a re-vectorize between page load and click, a hand-made
+// request). A GeoPackage with one empty layer is indistinguishable from a
+// country with no geology — invariant 1, and the reason the handler answers 409
+// rather than serving a file.
+func TestGeoMapViewExportRefusesASelectionThatMatchesNothing(t *testing.T) {
+	dir := t.TempDir()
+	useTestSheets(t, dir, "tst")
+	useTestAnchors(t, dir, 0)
+	writeTestSheet(t, dir)
+
+	path := filepath.Join(dir, "view.gpkg")
+	sel := &geoMapSelection{Units: []string{"tst:NotACode", "car:Au"}, Label: "gold hosts"}
+	err := buildGeoMapGeoPackageSel(path, []string{"tst"}, sel)
+	if err == nil {
+		t.Fatal("a selection matching no unit must be an ERROR; an empty layer " +
+			"reads as a country with no geology")
+	}
+	if !strings.Contains(err.Error(), "reload") {
+		t.Errorf("error %q must tell the reader what to do — a stale selection is "+
+			"the usual cause and reloading is the fix", err)
+	}
+	if _, e := os.Stat(path); e == nil {
+		t.Error("a refused build must leave no file: a half-written .gpkg served " +
+			"once is the truncation trap")
+	}
+
+	// And the same selection with ONE real key is fine — otherwise the check
+	// above would pass on a build that simply never works.
+	if err := buildGeoMapGeoPackageSel(path, []string{"tst"},
+		&geoMapSelection{Units: []string{"tst:Qz", "tst:NotACode"}, Label: "quartzite"}); err != nil {
+		t.Fatalf("a selection with one real key must build: %v", err)
+	}
+	db, err := sql.Open("sqlite", "file:"+path+"?mode=ro")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	var n int
+	db.QueryRow(`SELECT COUNT(*) FROM geology_units`).Scan(&n)
+	if n != 1 {
+		t.Errorf("filtered units = %d, want 1", n)
+	}
+	// The commodity columns describe THE FILE. Qz has no affinity at all, so a
+	// w_gold column here would claim gold was considered and found absent in a
+	// file built from the one unit that says nothing about it.
+	var c int
+	db.QueryRow(`SELECT COUNT(*) FROM pragma_table_info('geology_units') WHERE name='w_gold'`).Scan(&c)
+	if c != 0 {
+		t.Error("a filtered export's w_<commodity> columns must be derived AFTER " +
+			"the selection, or they describe units the file does not contain")
+	}
+	// A FILTERED EXPORT MUST ANNOUNCE ITSELF: two files with one name and
+	// different contents is the truncation trap (invariant 8).
+	var desc string
+	db.QueryRow(`SELECT description FROM gpkg_contents WHERE table_name='geology_units'`).Scan(&desc)
+	if !strings.Contains(desc, "A VIEW") || !strings.Contains(desc, "quartzite") {
+		t.Errorf("layer description %q must say it is a view and say which one", desc)
+	}
+	// TWO SURFACES OF ONE WORD (invariant 7). The panel counts CLASSES, the
+	// layer holds POLYGONS, and on a vector sheet those differ (104 vs 659 for
+	// one real view). Both numbers must be there and both must name their unit,
+	// or the file reads as not matching the picture it came from.
+	if !strings.Contains(desc, "map unit(s)") || !strings.Contains(desc, "polygon(s)") {
+		t.Errorf("description %q must name BOTH counts and their units: a class "+
+			"count over a layer of polygons reads as a mismatch", desc)
+	}
+	if strings.Contains(desc, geoRowsToken) {
+		t.Error("the polygon count placeholder survived into the file")
+	}
+}
+
+// THE EVIDENCE IS NOT FILTERED. A file in which every anchor agrees with the
+// layer is a picture of our own filter and reads as a prediction that came
+// true; `resource` is a column, so the reader narrows it and knows THEY did.
+// The anchors also sit outside the sheets on purpose here — an anchor beyond the
+// cutline is exactly the kind of row that shows a reader where the evidence
+// stops.
+func TestGeoMapViewExportShipsEveryAnchorRegardlessOfTheSelection(t *testing.T) {
+	dir := t.TempDir()
+	useTestSheets(t, dir, "tst")
+	useTestAnchors(t, dir, 7)
+	writeTestSheet(t, dir)
+
+	count := func(path string) (units, anchors int, resources int) {
+		db, err := sql.Open("sqlite", "file:"+path+"?mode=ro")
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer db.Close()
+		db.QueryRow(`SELECT COUNT(*) FROM geology_units`).Scan(&units)
+		db.QueryRow(`SELECT COUNT(*) FROM mining_anchors`).Scan(&anchors)
+		db.QueryRow(`SELECT COUNT(DISTINCT resource) FROM mining_anchors`).Scan(&resources)
+		return
+	}
+
+	whole := filepath.Join(dir, "whole.gpkg")
+	if err := buildGeoMapGeoPackage(whole, []string{"tst"}); err != nil {
+		t.Fatal(err)
+	}
+	wu, wa, _ := count(whole)
+
+	// A gold-only view: one unit of two, and the same 7 anchors — including the
+	// diamond ones, which the reader's filter says nothing about.
+	view := filepath.Join(dir, "view.gpkg")
+	if err := buildGeoMapGeoPackageSel(view, []string{"tst"},
+		&geoMapSelection{Units: []string{"tst:Au/Bx"}, Label: "gold hosts"}); err != nil {
+		t.Fatal(err)
+	}
+	vu, va, vres := count(view)
+
+	if vu >= wu {
+		t.Fatalf("the view holds %d units and the catalogue %d — the filter did nothing, "+
+			"so this test proves nothing about the anchors", vu, wu)
+	}
+	if va != wa || va != 7 {
+		t.Errorf("anchors: view %d, catalogue %d, file %d — the evidence must ship WHOLE. "+
+			"An anchor layer that agrees with the commodity filter is a picture of "+
+			"our own filter, not a check on it", va, wa, 7)
+	}
+	if vres < 2 {
+		t.Errorf("distinct resources in a gold view = %d, want both — `resource` is a "+
+			"column so the READER narrows it and knows they did", vres)
+	}
+}
+
+// A SERVER WITHOUT THE ANCHOR FILE SAYS SO. "We could not ship it" and "nothing
+// was ever checked" are different statements (srv/geomap_gpkg_layers.go), and
+// the project title is where a reader looks.
+func TestGeoMapExportNamesMissingAnchorsInsteadOfOmittingThem(t *testing.T) {
+	dir := t.TempDir()
+	useTestSheets(t, dir, "tst")
+	useTestAnchors(t, dir, 0) // not installed
+	writeTestSheet(t, dir)
+
+	path := filepath.Join(dir, "no-anchors.gpkg")
+	if err := buildGeoMapGeoPackage(path, []string{"tst"}); err != nil {
+		t.Fatalf("a missing anchor file must not fail the export: %v", err)
+	}
+	db, err := sql.Open("sqlite", "file:"+path+"?mode=ro")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	var n int
+	db.QueryRow(`SELECT COUNT(*) FROM gpkg_contents WHERE table_name='mining_anchors'`).Scan(&n)
+	if n != 0 {
+		t.Error("no anchor file, yet an anchor layer exists")
+	}
+	// The project's NAME, not its content: the content is a hex-encoded gzip of
+	// the .qgs, so a substring search over it would pass or fail for reasons
+	// that have nothing to do with the title.
+	var title string
+	if err := db.QueryRow(`SELECT name FROM qgis_projects`).Scan(&title); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(title, "no reference workings installed") {
+		t.Error("the project title must NAME the absent evidence; an unexplained " +
+			"omission reads as a model nobody checked")
+	}
+}
+
+// The contact layer follows the SWITCH, not the geometry.
+//
+// `pairs` empty on a real selection means the reader had the junction layer off,
+// which is a different statement from "every contact" — a contacts-off view must
+// not ship the whole hairline set. And a selection whose pairs match no line is
+// the same broken filter as a selection with no units: the reader can see
+// hundreds of lines on screen and would receive an empty layer.
+func TestGeoMapViewExportContactsFollowTheReadersSwitch(t *testing.T) {
+	dir := t.TempDir()
+	useTestSheets(t, dir, "tst")
+	useTestAnchors(t, dir, 0)
+	writeTestSheet(t, dir)
+	// Au/Bx resolves to a schist belt (metamorphic), Qz to quartzite; the pair
+	// is whatever the lithology index makes of them — the grading is asserted
+	// below from the rule table rather than assumed.
+	writeTestContacts(t, dir, "tst", [2]string{"Au/Bx", "Qz"})
+
+	has := func(path string) (bool, int) {
+		db, err := sql.Open("sqlite", "file:"+path+"?mode=ro")
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer db.Close()
+		var listed int
+		db.QueryRow(`SELECT COUNT(*) FROM gpkg_contents WHERE table_name='geology_contacts'`).Scan(&listed)
+		if listed == 0 {
+			return false, 0
+		}
+		var n int
+		db.QueryRow(`SELECT COUNT(*) FROM geology_contacts`).Scan(&n)
+		return true, n
+	}
+
+	// (1) The whole catalogue takes every line: nil selection, not an empty one.
+	whole := filepath.Join(dir, "whole.gpkg")
+	if err := buildGeoMapGeoPackage(whole, []string{"tst"}); err != nil {
+		t.Fatal(err)
+	}
+	if ok, n := has(whole); !ok || n != 1 {
+		t.Errorf("catalogue: contacts layer=%v rows=%d, want 1 line", ok, n)
+	}
+
+	// (2) Junctions OFF: units selected, no pairs. No layer at all — not an
+	// empty one, which QGIS would show as a checkbox over nothing.
+	off := filepath.Join(dir, "off.gpkg")
+	if err := buildGeoMapGeoPackageSel(off, []string{"tst"},
+		&geoMapSelection{Units: []string{"tst:Au/Bx", "tst:Qz"}, Label: "rocks only"}); err != nil {
+		t.Fatal(err)
+	}
+	if ok, _ := has(off); ok {
+		t.Error("a contacts-OFF view must ship no contact layer: an empty selection " +
+			"is not 'every contact'")
+	}
+
+	// (3) Junctions ON, one pair: that line, and its grade in the app's own
+	// vocabulary rather than a number.
+	on := filepath.Join(dir, "on.gpkg")
+	if err := buildGeoMapGeoPackageSel(on, []string{"tst"}, &geoMapSelection{
+		Units: []string{"tst:Au/Bx", "tst:Qz"},
+		Pairs: []string{"tst:Au/Bx|Qz"},
+		Label: "gold hosts, graded junctions",
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if ok, n := has(on); !ok || n != 1 {
+		t.Fatalf("junctions ON: layer=%v rows=%d, want 1", ok, n)
+	}
+	db, err := sql.Open("sqlite", "file:"+on+"?mode=ro")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	var grade, litha, lithb string
+	var weight sql.NullInt64
+	db.QueryRow(`SELECT grade, lith_a, lith_b, weight FROM geology_contacts`).Scan(&grade, &litha, &lithb, &weight)
+	want := geoContactGrade(0)
+	if rules := geoContactRuleIndex[geoLithPairKey(litha, lithb)]; len(rules) > 0 {
+		want = geoContactGrade(rules[0].Weight)
+	}
+	if grade != want {
+		t.Errorf("grade = %q, want %q for a %s|%s junction — the export and the map "+
+			"read the SAME rule table", grade, want, litha, lithb)
+	}
+	// `ungraded` is "the model says nothing", not weight 0: a number there would
+	// be a measurement nobody made (invariant 12).
+	if grade == "ungraded" && weight.Valid {
+		t.Error("an ungraded junction must carry NULL, not 0 — 0 is a measurement")
+	}
+
+	// (4) Pairs that match nothing: the reader is looking at lines and would
+	// receive an empty layer. Same refusal as a unit selection that misses.
+	bad := filepath.Join(dir, "bad.gpkg")
+	err = buildGeoMapGeoPackageSel(bad, []string{"tst"}, &geoMapSelection{
+		Units: []string{"tst:Qz"},
+		Pairs: []string{"tst:Nope|AlsoNope"},
+		Label: "stale",
+	})
+	if err == nil {
+		t.Error("a pair selection matching no line must be an ERROR, not an empty layer")
+	}
+}
+
+// The stamp watches EVERY input, not only the units.
+//
+// A contacts file re-derived after the package was built leaves units that are
+// still correct and hairlines that are a generation old — the same staleness as
+// the ?v= tile revision, one layer down, and invisible precisely because the
+// polygons in it are right. Same for the anchors.
+func TestGeoMapGPKGStampCoversContactsAndAnchors(t *testing.T) {
+	dir := t.TempDir()
+	useTestSheets(t, dir, "tst")
+	useTestAnchors(t, dir, 3)
+	writeTestSheet(t, dir)
+	writeTestContacts(t, dir, "tst", [2]string{"Au/Bx", "Qz"})
+
+	if err := buildGeoMapGeoPackage(geoMapGPKGPath(), []string{"tst"}); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := geoMapGPKGReady(); !ok {
+		t.Fatal("freshly built package must be ready")
+	}
+
+	// (1) A rewritten contacts file. Written with a FUTURE mtime for the same
+	// reason the units test does: a re-derivation seconds after the build would
+	// otherwise be indistinguishable from the build itself at 1 s resolution.
+	writeTestContacts(t, dir, "tst", [2]string{"Au/Bx", "Qz"}, [2]string{"Qz", "Au/Bx"})
+	future := time.Now().Add(2 * time.Hour)
+	if err := os.Chtimes(geoContactsGeoJSONPath("tst"), future, future); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := geoMapGPKGReady(); ok {
+		t.Error("a re-derived contacts file must invalidate the package: the units " +
+			"in it would still be right, which is what makes this invisible")
+	}
+
+	// Rebuild, then (2) a rewritten anchor file.
+	if err := buildGeoMapGeoPackage(geoMapGPKGPath(), []string{"tst"}); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := geoMapGPKGReady(); !ok {
+		t.Fatal("rebuilt package must be ready")
+	}
+	if err := os.Chtimes(geoAnchorFile(), future, future); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := geoMapGPKGReady(); ok {
+		t.Error("a rewritten anchor file must invalidate the package")
+	}
+
+	// (3) A DELETED contacts file changes what the package should hold too. An
+	// input recorded as absent is the point: skipping it would leave the old
+	// package looking fresh.
+	if err := buildGeoMapGeoPackage(geoMapGPKGPath(), []string{"tst"}); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := geoMapGPKGReady(); !ok {
+		t.Fatal("rebuilt package must be ready")
+	}
+	if err := os.Remove(geoContactsGeoJSONPath("tst")); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := geoMapGPKGReady(); ok {
+		t.Error("a contacts file that DISAPPEARED must invalidate the package")
+	}
+}
+
+// The download name is what a folder of three downloads reads as. It is derived
+// from the reader's own words for the view, and it must never collide with the
+// cached whole-catalogue file — two files with one name and different contents
+// is the trap this whole path is arranged around.
+func TestGeoViewFileNameIsReadableAndNeverTheCatalogues(t *testing.T) {
+	for _, c := range []struct{ in, want string }{
+		{"gold hosts, likely+", "geology-gold-hosts-likely.gpkg"},
+		{"gold hosts on CAR: classic junctions", "geology-gold-hosts-on-car-classic-junctions.gpkg"},
+		{"", "geology-view.gpkg"},
+		{"   ", "geology-view.gpkg"},
+		{"////", "geology-view.gpkg"},
+	} {
+		if got := geoViewFileName(c.in); got != c.want {
+			t.Errorf("geoViewFileName(%q) = %q, want %q", c.in, got, c.want)
+		}
+	}
+	// A 200-character label must not produce a 200-character filename, and must
+	// not end in a dash.
+	long := geoViewFileName(strings.Repeat("gold hosts ", 40))
+	if len(long) > 64 || strings.Contains(long, "--") || strings.HasSuffix(long, "-.gpkg") {
+		t.Errorf("long label -> %q", long)
+	}
+	if geoViewFileName("") == filepath.Base(geoMapGPKGPath()) {
+		t.Error("a view file must never be named geology.gpkg: the cached catalogue " +
+			"lives under that name and the two have different contents")
 	}
 }
