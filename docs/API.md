@@ -371,6 +371,49 @@ Ink is **black** in the download and white only on screen: the whitening is a
 client-side `raster-brightness-min`, applied because the globe's basemap is dark.
 Offline viewers default to light backgrounds, where white ink would be invisible.
 
+### Query Labels (OCR'd toponyms, by coordinate)
+```
+GET /api/histmap/sudan250k/labels?lon=25.78&lat=9.81&radius_km=15
+GET /api/histmap/sudan250k/labels?bbox=22,3,32,12
+```
+
+Every text label on the scanned sheets, machine-transcribed and geocoded
+(`scripts/histmaps/ocr_labels.py`), so "what does the 1930s map say here" is
+answerable without opening a sheet. One of `bbox=W,S,E,N` or `lon=&lat=`
+(with optional `radius_km=`, default 10, max 500) is required.
+
+**Optional filters:**
+- `q=` — text search (FTS5 prefix match: `q=hagar` finds "HAGAR MASUDI")
+- `kind=` — one of `place|water|hill|route|boundary|other`
+- `limit=` — default 500, max 5000
+
+**Response:**
+```json
+{
+  "available": true,
+  "source": "labels",
+  "labels": [
+    {"text": "HAGAR MASUDI", "kind": "place", "lon": 25.7814, "lat": 9.8088, "sheet": "cs000009"}
+  ],
+  "count": 1,
+  "truncated": false,
+  "complete": false,
+  "progress": {"tiles_done": 2756, "tiles_total": 5093, "labels_total": 44583},
+  "attribution": "OCR of Sudan Survey 1:250,000 ... verify against the sheet before citing"
+}
+```
+
+Results are nearest-first when `lon`/`lat` given. `source` is `labels` (raw;
+overlapping OCR windows may yield near-duplicates) or `labels_dedup` once
+`ocr_labels.py dedupe` has been run. **`complete: false` means the OCR run is
+still in flight** — an empty result then means "not extracted yet", not "the
+map is silent here". `truncated: true` means `limit` cut the answer. These are
+machine transcriptions of 1908–1976 letterpress: treat spellings as claims,
+not facts.
+
+`/api/histmap` advertises the endpoint as `labels`, with `labels_count` and
+`labels_complete`, when the label database exists.
+
 ---
 
 ## Upload
