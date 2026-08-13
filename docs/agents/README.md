@@ -21,6 +21,7 @@ lives here, one file per subsystem, loaded only when a task touches it.
 | `mining.md` | Retired mining detection — read before proposing anything mining-related |
 | `acled.md` | Mining occurrence reference; what ACLED and Crisis Tracker may say about our truth sets' reach |
 | `settlements.md` | Settlement surface vs extent, measured population and its provenance, the GHSL backfill rotation, the classifier's inputs |
+| `nightlights.md` | VNP46A3 Black Marble — measured once (mine sites are dark), folded; read before any nightlight work |
 
 ## Where a new note goes
 
