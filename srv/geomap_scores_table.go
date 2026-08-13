@@ -8,12 +8,12 @@ const geoAffinityMinSites = 8
 
 var geoAffinityTruth = map[string]geoTruthSet{
 	"car/crisistracker": {Place: "eastern Central African Republic, community incident reports", Caveat: "Mine sites recovered from Crisis Tracker incident reports, not a survey: every site is here because somebody was attacked and somebody could report it, and the commodity is whatever the note happened to name - 5 of 41 sites. It reaches the eastern half of the country that IPIS never visited (391 km to the nearest IPIS mine), which is why it is scored even though every commodity here falls under the floor.", StratumOf: "", Stratum: "", Baseline: "the hull of the reporting network's mine sites, 17.1% of the sheet"},
-	"car/ipis":          {Place: "the Central African Republic, 2019 survey", Caveat: "One sheet, one country, one survey's reachable sites - a lift here is evidence the rule is not noise, not a probability of finding anything. THE CAR GOLD LIFT IS CONFOUNDED: it is measurably higher at mines where the surveyors recorded an armed actor, so this pooled number must be read beside the two strata below, never instead of them.", StratumOf: "", Stratum: "", Baseline: "the mapped sheet"},
-	"car/ipis_armed":    {Place: "the Central African Republic, 2019 survey — mines where the surveyors recorded an armed actor", Caveat: "One stratum of one survey, scored against random ground in its own hull. It is not an independent list and cannot corroborate the pooled number; it exists to show that the pooled number moves with who could reach the ground.", StratumOf: "ipis", Stratum: "armed", Baseline: "the convex hull of the sites, 18% of the sheet"},
-	"car/ipis_calm":     {Place: "the Central African Republic, 2019 survey — mines where they recorded none", Caveat: "One stratum of one survey, scored against random ground in its own hull. It is not an independent list and cannot corroborate the pooled number; it exists to show that the pooled number moves with who could reach the ground.", StratumOf: "ipis", Stratum: "calm", Baseline: "the convex hull of the sites, 18% of the sheet"},
-	"car/tearline":      {Place: "the Central African Republic, 2021 imagery census", Caveat: "40 mine systems traced off satellite imagery inside eight mining permits, not a national survey: the search area was chosen for who holds the licence, so random ground here means random ground INSIDE those permits, and gold is the mineral named in the permit rather than one seen at the pit.", StratumOf: "", Stratum: "", Baseline: "the 3 mapped Lobaye Invest permits, 0.6% of the sheet"},
-	"sudan/osm":         {Place: "Sudan and South Sudan, OSM mine tags (2025)", Caveat: "OpenStreetMap mine and quarry tags, not a field survey: 91% of the gold sites come from one mapper's campaign, so the baseline is the sites' own hull rather than the sheet, and this measures gold only - no other commodity reaches a countable number here.", StratumOf: "", Stratum: "", Baseline: "the convex hull of the sites, 76% of the sheet"},
-	"tanzania/gst":      {Place: "Tanzania, the survey's 2015 occurrence register", Caveat: "The Geological Survey of Tanzania's own register, from the same Minerogenic Map programme as the units it scores - a unit boundary may have been drawn to enclose a known deposit, so this is not arm's length the way the CAR is.", StratumOf: "", Stratum: "", Baseline: "the mapped sheet"},
+	"car/ipis": {Place: "the Central African Republic, 2019 survey", Caveat: "One sheet, one country, one survey's reachable sites - a lift here is evidence the rule is not noise, not a probability of finding anything. THE CAR GOLD LIFT IS CONFOUNDED: it is measurably higher at mines where the surveyors recorded an armed actor, so this pooled number must be read beside the two strata below, never instead of them.", StratumOf: "", Stratum: "", Baseline: "the mapped sheet"},
+	"car/ipis_armed": {Place: "the Central African Republic, 2019 survey — mines where the surveyors recorded an armed actor", Caveat: "One stratum of one survey, scored against random ground in its own hull. It is not an independent list and cannot corroborate the pooled number; it exists to show that the pooled number moves with who could reach the ground.", StratumOf: "ipis", Stratum: "armed", Baseline: "the convex hull of the sites, 18% of the sheet"},
+	"car/ipis_calm": {Place: "the Central African Republic, 2019 survey — mines where they recorded none", Caveat: "One stratum of one survey, scored against random ground in its own hull. It is not an independent list and cannot corroborate the pooled number; it exists to show that the pooled number moves with who could reach the ground.", StratumOf: "ipis", Stratum: "calm", Baseline: "the convex hull of the sites, 18% of the sheet"},
+	"car/tearline": {Place: "the Central African Republic, 2021 imagery census", Caveat: "40 mine systems traced off satellite imagery inside eight mining permits, not a national survey: the search area was chosen for who holds the licence, so random ground here means random ground INSIDE those permits, and gold is the mineral named in the permit rather than one seen at the pit.", StratumOf: "", Stratum: "", Baseline: "the 3 mapped Lobaye Invest permits, 0.6% of the sheet"},
+	"sudan/osm": {Place: "Sudan and South Sudan, OSM mine tags (2025)", Caveat: "OpenStreetMap mine and quarry tags, not a field survey: 91% of the gold sites come from one mapper's campaign, so the baseline is the sites' own hull rather than the sheet, and this measures gold only - no other commodity reaches a countable number here.", StratumOf: "", Stratum: "", Baseline: "the convex hull of the sites, 76% of the sheet"},
+	"tanzania/gst": {Place: "Tanzania, the survey's 2015 occurrence register", Caveat: "The Geological Survey of Tanzania's own register, from the same Minerogenic Map programme as the units it scores - a unit boundary may have been drawn to enclose a known deposit, so this is not arm's length the way the CAR is.", StratumOf: "", Stratum: "", Baseline: "the mapped sheet"},
 }
 
 // geoAffinityStrataSpread: how far apart one survey's strata scored the
@@ -25,8 +25,8 @@ var geoAffinityStrataSpread = map[string]map[string]float64{
 
 var geoAffinityTooFew = map[string]map[string]int{
 	"car/crisistracker": {"diamond": 2, "gold": 4},
-	"sudan/osm":         {"diamond": 0},
-	"tanzania/gst":      {"coal": 5, "cobalt": 2, "graphite": 6, "iron": 5, "lithium": 1},
+	"sudan/osm": {"diamond": 0},
+	"tanzania/gst": {"coal": 5, "cobalt": 2, "graphite": 6, "iron": 5, "lithium": 1},
 }
 
 // geoAffinityScores contains 68 measurements from 7 truth sets.
@@ -108,10 +108,11 @@ var geoAffinityScores = []geoAffinityScore{
 // must say so rather than borrow the number.
 var geoStructuralSkill = map[string]map[string]geoStructuralLift{
 	"active_faults": {"cassiterite": {Near: 0.349746, MedianKM: 32.9, Lift: 2.534393, N: 1970}, "coltan": {Near: 0.376147, MedianKM: 41.3, Lift: 2.725701, N: 545}, "gold": {Near: 0.226710, MedianKM: 63.7, Lift: 1.642828, N: 4283}},
-	"craton_edge":   {"cassiterite": {Near: 0.158883, MedianKM: 92.8, Lift: 1.815809, N: 1970}, "coltan": {Near: 0.034862, MedianKM: 94.4, Lift: 0.398427, N: 545}, "gold": {Near: 0.255662, MedianKM: 80.5, Lift: 2.921851, N: 4283}},
+	"craton_edge": {"cassiterite": {Near: 0.158883, MedianKM: 92.8, Lift: 1.815809, N: 1970}, "coltan": {Near: 0.034862, MedianKM: 94.4, Lift: 0.398427, N: 545}, "gold": {Near: 0.255662, MedianKM: 80.5, Lift: 2.921851, N: 4283}},
 }
 
 // geoStructuralSkillScope: the truth set those lifts were measured
 // against, with the counts the eval reported (invariant 2: derived,
 // never typed).
 const geoStructuralSkillScope = "6,798 IPIS mine visits in eastern DR Congo, random baseline 2,000 points in the visits' own convex hull, within 25 km"
+const geoStructuralNearKm = 25

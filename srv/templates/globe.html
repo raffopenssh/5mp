@@ -22665,9 +22665,11 @@ ${starredItems.narratives.map(n => {
             const ho = parseInt(params.get('histmap_opacity') || '', 10);
             if (!isNaN(ho) && ho >= 0 && ho <= 100) HistMap.setOpacity(ho / 100);
         }
-        if (params.get('geomap') && typeof GeoMap !== 'undefined') {
+        if ((params.get('geomap') || params.get('geomap_structural')) && typeof GeoMap !== 'undefined') {
             // restoreFromParams reads the class selection BEFORE adding any
             // layer, so the overlay never flashes at full extent first.
+            // geomap_structural alone is a valid link too: the structural
+            // lines are continental and need no sheet.
             GeoMap.restoreFromParams(params);
         }
         // The geology panel, after the drape: it anchors on the chip, and the

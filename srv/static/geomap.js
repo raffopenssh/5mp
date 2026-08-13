@@ -1107,17 +1107,22 @@
      * are continental, so they stay when a sheet is switched off and they
      * draw over ground no sheet covers.
      *
-     * INK: fault red-brown short dash, craton margin violet long dash.
-     * Deliberately nowhere near the contact amber ramp — the contacts are
-     * GRADED and these are not, and a graded ink on an ungraded line would
-     * claim a grade nobody computed (invariant 12's shape). The GPKG export
-     * uses the same two inks (styleGeoStructural, geomap_gpkg_layers.go).
+     * INK: fault red-brown short dash; craton margin a soft violet BAND —
+     * solid, wide, blurred, translucent. Not dashed, on purpose twice over:
+     * the AOI outline is a dashed cool-toned line (#60a5fa [3,2]) and a
+     * dashed violet at the same width read as "another boundary somebody
+     * drew", which a tectonic margin is not. A blurred band says "zone",
+     * and the tip on it says whose zone. Deliberately nowhere near the
+     * contact amber ramp — the contacts are GRADED and these are not, and
+     * a graded ink on an ungraded line would claim a grade nobody computed
+     * (invariant 12's shape). The GPKG export uses the same two inks
+     * (styleGeoStructural, geomap_gpkg_layers.go).
      */
     const STRUCT_SRC = id => 'geomap-struct-src-' + id;
     const STRUCT = id => 'geomap-structural-' + id;
     const STRUCT_INK = {
-        active_faults: { color: '#b93c28', dash: [2, 1.5], width: 1.1 },
-        craton_edges: { color: '#7c3aed', dash: [5, 2.5], width: 1.6 }
+        active_faults: { color: '#b93c28', dash: [2, 1.5], width: 1.1, opacity: 0.85 },
+        craton_edges: { color: '#8b5cf6', width: 5, blur: 3, opacity: 0.35 }
     };
 
     function structuralAvailable(id) {
@@ -1143,19 +1148,22 @@
         if (!map.getLayer(STRUCT(id))) {
             // Above the contacts (context lines must not vanish under a
             // sheet's own linework), still below pins and park outlines.
+            const paint = {
+                'line-color': ink.color,
+                'line-width': ['interpolate', ['linear'], ['zoom'],
+                    3, ink.width * 0.7, 8, ink.width * 1.6],
+                // Standing by; paintStructural raises it.
+                'line-opacity': 0
+            };
+            if (ink.dash) paint['line-dasharray'] = ink.dash;
+            if (ink.blur) paint['line-blur'] = ink.blur;
             map.addLayer({
                 id: STRUCT(id), type: 'line', source: STRUCT_SRC(id),
                 layout: { 'line-cap': 'butt', 'line-join': 'round' },
-                paint: {
-                    'line-color': ink.color,
-                    'line-dasharray': ink.dash,
-                    'line-width': ['interpolate', ['linear'], ['zoom'],
-                        3, ink.width * 0.7, 8, ink.width * 1.6],
-                    // Standing by; paintStructural raises it.
-                    'line-opacity': 0
-                }
+                paint: paint
             }, firstOverlayLayer());
         }
+        bindStructuralTip(id);
         paintStructural(id);
     }
 
@@ -1164,7 +1172,7 @@
     function paintStructural(id) {
         if (!map || !map.getLayer(STRUCT(id))) return;
         map.setPaintProperty(STRUCT(id), 'line-opacity',
-            shared.structural.has(id) ? 0.85 : 0);
+            shared.structural.has(id) ? (STRUCT_INK[id].opacity || 0.85) : 0);
     }
 
     function syncStructural() {
@@ -1192,6 +1200,7 @@
     // its click never went through the shared arbitration. One tip, one owner.
     const bound = {};
     const contactBound = {};
+    const structuralBound = {};
     // Sheets waiting for the style to settle before they can be added; see add().
     const pendingAdd = new Set();
     /** A one-line score badge under an affinity claim, in the same tip.
@@ -1366,6 +1375,66 @@
             priority: -25, peers: false,
             tabLabel: 'Contact', tabColor: '#fbbf24',
             html: p => contactTipHTML(id, p)
+        });
+    }
+
+    /* The tip is the reason the craton band earns its place on the map: the
+     * ink alone was mistaken for an AOI boundary, so the line must say what
+     * it is and why anyone would draw it. The lifts come from the CATALOGUE
+     * (generated from the eval, never typed here — invariant 12), and the
+     * sentence stays a measurement about where known workings cluster, not a
+     * prediction: "gold rush" ground is the reader's inference to make, with
+     * the number and its scope in front of them. */
+    function structuralTipHTML(id, p) {
+        const e = structural && structural[id];
+        if (!e) return '';
+        const ink = STRUCT_INK[id] || {};
+        const title = id === 'craton_edges' ? 'CRATON MARGIN' : 'ACTIVE FAULT';
+        const what = p.name || p.type || '';
+        const ref = p.reference || p.source || '';
+        let skill = '';
+        const lifts = e.skill && e.skill.lifts;
+        if (lifts) {
+            const rows = Object.keys(lifts).sort((a, b) => lifts[b].lift - lifts[a].lift)
+                .map(c => {
+                    const l = lifts[c].lift;
+                    const good = l >= 1.5;
+                    const near = `within ${Math.round(e.skill.near_km || 25)}\u00a0km of ${id === 'craton_edges' ? 'a margin' : 'a fault'}`;
+                    return `<div style="color:${good ? '#ccc' : '#8a8a8a'};font-size:11px;margin-top:3px;line-height:1.4;">
+                        <b style="color:${good ? '#fff' : '#9ca3af'};">${escapeHtml(c.replace(/_/g, ' '))}</b>
+                        &mdash; known workings ${l >= 1
+                            ? `<b>${l.toFixed(1)}&times;</b> more likely ${near} than on random ground`
+                            : `<b>LESS</b> likely (${l.toFixed(1)}&times;) ${near} than on random ground`}</div>`;
+                }).join('');
+            skill = `<div style="margin-top:8px;border-top:1px solid rgba(255,255,255,0.08);padding-top:6px;">
+                <div style="color:#aaa;font-size:11px;font-weight:600;">Where mining concentrates</div>
+                ${rows}
+                <div style="color:#666;font-size:10px;margin-top:5px;line-height:1.4;">Measured on ${escapeHtml(e.skill.scope || '')}. A measurement about known ground, not a prediction.</div>
+            </div>`;
+        } else {
+            skill = `<div style="color:#777;font-size:11px;margin-top:8px;">Skill against known workings: unmeasured.</div>`;
+        }
+        return `
+            <div style="font-family:inherit;max-width:280px;">
+                <div style="color:${escapeHtml(ink.color || '#ccc')};font-size:11px;font-weight:600;letter-spacing:0.04em;">${title}</div>
+                ${what ? `<div style="color:#fff;font-size:13px;margin-top:3px;">${escapeHtml(what)}</div>` : ''}
+                <div style="color:#9ca3af;font-size:11px;margin-top:4px;line-height:1.5;">${escapeHtml(e.notice || '')}</div>
+                ${skill}
+                ${ref ? `<div style="color:#666;font-size:10px;margin-top:6px;">${escapeHtml(ref)}</div>` : ''}
+            </div>`;
+    }
+
+    function bindStructuralTip(id) {
+        if (structuralBound[id] || !window.MapTip) return;
+        structuralBound[id] = true;
+        window.MapTip.register(STRUCT(id), {
+            // Below the AOI/park tabs (-20): when a margin runs under an AOI
+            // outline the drawn boundary answers first, and the tab row is
+            // where the margin still gets its say.
+            priority: -28, peers: false,
+            tabLabel: id === 'craton_edges' ? 'Craton' : 'Fault',
+            tabColor: STRUCT_INK[id] && STRUCT_INK[id].color,
+            html: p => shared.structural.has(id) ? structuralTipHTML(id, p) : ''
         });
     }
 

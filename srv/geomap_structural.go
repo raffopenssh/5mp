@@ -172,7 +172,8 @@ func geoStructuralSummary() map[string]any {
 		// UI's instruction to print "unmeasured" (R4): the absence of a
 		// measurement must reach the reader as a word, not as a blank.
 		if per, ok := geoStructuralSkill[spec.SkillKey]; ok && len(per) > 0 {
-			e["skill"] = map[string]any{"lifts": per, "scope": geoStructuralSkillScope}
+			e["skill"] = map[string]any{"lifts": per, "scope": geoStructuralSkillScope,
+				"near_km": geoStructuralNearKm}
 		}
 		out[id] = e
 	}

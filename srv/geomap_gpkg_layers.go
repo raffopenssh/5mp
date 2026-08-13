@@ -480,19 +480,19 @@ func addGeoStructuralLayer(w *gpkgWriter, id string) (*gpkgLayer, string, error)
 }
 
 // styleGeoStructural draws the same ink the web map uses (see geomap.js
-// paintStructural): fault red-brown short dash, craton margin violet long
-// dash. Deliberately nowhere near the contact amber ramp — these lines are
-// ungraded context, and graded ink would claim a grade nobody computed.
+// paintStructural): fault red-brown short dash; craton margin a soft violet
+// BAND — solid, wide, translucent. Not dashed, on purpose: a dashed violet
+// line reads as "a boundary somebody drew" (the AOI outline is a dashed
+// line), and a tectonic margin is a zone, not a claim. Deliberately nowhere
+// near the contact amber ramp — these lines are ungraded context, and graded
+// ink would claim a grade nobody computed.
 func styleGeoStructural(id string) string {
 	if id == "craton_edges" {
 		return qmlSingle(qmlSymbol("line", "0",
-			qmlOpt("line_color", "124,58,237,255"),
-			qmlOpt("line_width", "0.6"),
+			qmlOpt("line_color", "139,92,246,90"),
+			qmlOpt("line_width", "1.8"),
 			qmlOpt("line_width_unit", "MM"),
-			qmlOpt("line_style", "dash"),
-			qmlOpt("use_custom_dash", "1"),
-			qmlOpt("customdash", "6;3"),
-			qmlOpt("customdash_unit", "MM"),
+			qmlOpt("line_style", "solid"),
 			qmlOpt("capstyle", "flat"),
 			qmlOpt("joinstyle", "round")))
 	}

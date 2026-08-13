@@ -165,8 +165,10 @@ def main():
                  f"random baseline {sites.get('random', 0):,} points "
                  f"in the visits' own convex hull, within {near:g} km")
         w(f"const geoStructuralSkillScope = {gostr(scope)}")
+        w(f"const geoStructuralNearKm = {near:g}")
     else:
         w('const geoStructuralSkillScope = ""')
+        w("const geoStructuralNearKm = 0")
     w("")
     open(OUT, "w").write("\n".join(L))
     print(f"wrote {OUT}: {len(rows)} measurements from {len(truths)} truth sets")

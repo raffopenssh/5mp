@@ -896,6 +896,32 @@
            "there are no contacts here". */
         .mode-menu-note.warn { color: #fcd34d; background: rgba(251,191,36,0.07); }
 
+        /* Structural context rows in the mixer: faults and craton margins as
+           geology-panel rows like everything else geological, wearing the
+           SAME ink the map paints (a fault is a red dash, a margin a violet
+           band) so the row is its own legend. Deliberately not amber — these
+           are ungraded context, and amber is the grade ramp's colour. */
+        .ml-strx-head { display: flex; align-items: center; gap: 6px; }
+        .ml-strx-head i { font-size: 11px; color: #9ca3af; }
+        .ml-strx-head em { font-style: normal; color: #6b7280; margin-left: auto;
+            font-size: 9px; letter-spacing: 0.2px; }
+        .ml-strx-row { display: flex; align-items: center; gap: 7px; width: 100%;
+            font: inherit; font-size: 11px; color: #d1d5db; text-align: left;
+            background: none; border: 0; padding: 5px 10px; cursor: pointer;
+            white-space: nowrap;
+            -webkit-tap-highlight-color: transparent; }
+        .ml-strx-row:hover { background: rgba(255,255,255,0.05); }
+        .ml-strx-row .ml-mx-n { margin-left: 2px; }
+        .ml-strx-sw { flex: none; width: 18px; height: 8px; border-radius: 2px; }
+        .ml-strx-sw.dash { background: repeating-linear-gradient(90deg,
+            #b93c28 0 5px, transparent 5px 9px); height: 3px; margin: 2.5px 0; }
+        .ml-strx-sw.band { background: rgba(139,92,246,0.4);
+            box-shadow: 0 0 4px rgba(139,92,246,0.5); }
+        .ml-strx-lift { margin-left: auto; flex: none; font-size: 9.5px;
+            color: #9ca3af; font-variant-numeric: tabular-nums;
+            overflow: hidden; text-overflow: ellipsis; max-width: 55%; }
+        .ml-strx-lift.unm { color: #6b7280; font-style: italic; }
+
         .ml-menu .ml-more { color: #9ca3af; border-top: 1px solid rgba(255,255,255,0.07); margin-top: 2px; gap: 7px; }
         .ml-menu .ml-more em { font-style: normal; color: #6b7280; margin-left: auto; font-size: 10px; }
         .stats-trend { font-size: 10px; margin-left: 4px; }
@@ -2174,8 +2200,10 @@
            control on the row said "off" throughout. Any row in this menu that
            is `.on` fills its mark. */
         .mode-menu .mode-opt.on .mode-mark,
+        .mode-menu .ml-strx-row.on .mode-mark,
         .mode-menu .ml-mx-row.on .mode-mark { border-color: currentColor; }
         .mode-menu .mode-opt.on .mode-mark::after,
+        .mode-menu .ml-strx-row.on .mode-mark::after,
         .mode-menu .ml-mx-row.on .mode-mark::after { content: ''; position: absolute; inset: 2px;
             border-radius: inherit; background: currentColor; }
         /* A refused rendering keeps its row and says why on hover — the same
