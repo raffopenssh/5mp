@@ -29,6 +29,7 @@ settlements, patrol tracking. ~17k-line single-page frontend + SQLite (1.8 GB).
 | Writing/running tests, share-link params, `TEST` helper | `docs/agents/testing.md` (+ `docs/TEST_HELPERS.md`) |
 | Data files, API examples, DB stats, Lucide icons | `docs/agents/reference.md` |
 | Mining detection (retired — do not rebuild) | `docs/agents/mining.md` |
+| Settlement surface/population provenance; AOI data-correctness fixes (**open**) | `docs/agents/HANDOVER_AOI_FIXES.md` (+ `docs/AOI_STRUCTURAL_FIXES.md`) |
 | Mining reference lists, ACLED + Crisis Tracker, coverage bias, reach strata | `docs/agents/acled.md` |
 | Geological contact zones (open brief, not built) | `docs/agents/HANDOVER_CONTACTS.md` |
 | Geology export + mining anchors (open brief, half built) | `docs/agents/HANDOVER_GEOLOGY_EXPORT.md` |
@@ -217,6 +218,21 @@ These apply no matter what you touch. Each cost real time at least once.
     handler whose range is not a `from`/`to` pair must call
     `ClampGuestDates` itself. See `docs/agents/sharing.md`.
 
-15. Long writers **yield** (batched commits) so SQLite's single writer stays
+15. **A derived quantity must not outlive the scale it was calibrated at.**
+    Single-linkage clustering with no diameter bound, a `LIMIT 100`
+    nearest-neighbour list, a "return the biggest one" stub and
+    mask-area-as-surface were all invisible at park scale (10²–10³ features)
+    and all produced confidently wrong *published* numbers at AOI scale
+    (10⁴–10⁵): one "town" of 52,454 polygons spanning 270 km, a nearest place
+    overstated by a median of 67 km, 9,366 rows naming a river up to 700 km
+    away, 85 million people in one AOI. When a code path first runs on an input
+    an order of magnitude larger, **its constants are the bug, not its logic**.
+    Corollary from the same place: a settlement's built-up *surface* and its
+    mask *extent* differ by ~24× and must never share a column name, and a
+    population is **measured or absent** — never a density constant
+    (`srv/settlement_provenance.go`). Two surfaces of one word, again
+    (invariant 7). See `docs/agents/HANDOVER_AOI_FIXES.md`.
+
+16. Long writers **yield** (batched commits) so SQLite's single writer stays
     available. Before blaming the write lock, check `ps` — a lock wait is `S`,
     not `R`.
