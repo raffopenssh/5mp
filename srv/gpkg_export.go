@@ -457,6 +457,16 @@ func (s *Server) gpkgSettlements(w *gpkgWriter, o gpkgExportOpts) error {
 			{"classification", "TEXT"},
 			{"classification_confidence", "REAL"},
 			{"settlement_type", "TEXT"},
+			// Persistence is MEASURED from GHSL back-epochs (E2000/E2015
+			// built surface over the same mask pixels, scripts/ghsl_epochs.py):
+			// permanent / established / recent, or NULL where an epoch tile
+			// was missing (`persistence_source` says which — 'tile_missing'
+			// vs 'ghsl_E2000+E2015'). The two epoch surfaces ride along so
+			// the 25% rule is auditable in the file itself.
+			{"persistence", "TEXT"},
+			{"persistence_source", "TEXT"},
+			{"surface_e2000_m2", "REAL"},
+			{"surface_e2015_m2", "REAL"},
 			// A DOWNLOAD IS THE MOST PUBLISHED ARTEFACT THERE IS: it leaves the
 			// app and is joined to other data with no panel beside it to explain
 			// anything. So the provenance travels in the file. `area_m2` is the
@@ -489,8 +499,8 @@ func (s *Server) gpkgSettlements(w *gpkgWriter, o gpkgExportOpts) error {
 	}
 	type setMeta struct {
 		class, sType, place, dir, seasonality, narrative, detected, classified string
-		areaSrc, popSrc, epoch                                                 string
-		conf, distPlace, defoNearby, extent                                    sql.NullFloat64
+		areaSrc, popSrc, epoch, persistence, persistenceSrc                     string
+		conf, distPlace, defoNearby, extent, e2000, e2015                      sql.NullFloat64
 		pop, hh, f1, f5, inBuf                                                 sql.NullInt64
 	}
 	meta := map[string]*setMeta{}
@@ -499,7 +509,8 @@ func (s *Server) gpkgSettlements(w *gpkgWriter, o gpkgExportOpts) error {
 		distance_to_place_km, COALESCE(direction_from_place,''), fires_1km, fires_5km,
 		COALESCE(fire_seasonality,''), deforest_nearby_km2, in_buffer, COALESCE(narrative,''),
 		COALESCE(detected_at,''), COALESCE(classified_at,''),
-		extent_m2, COALESCE(area_source,''), COALESCE(population_source,''), COALESCE(epoch,'')
+		extent_m2, COALESCE(area_source,''), COALESCE(population_source,''), COALESCE(epoch,''),
+		COALESCE(persistence,''), COALESCE(persistence_source,''), surface_e2000_m2, surface_e2015_m2
 		FROM park_settlements WHERE park_id = ?` + settlementFilterSQL("narrative", "polygon_ids")
 	mrows, _ := s.DB.Query(mq, o.AreaID)
 	if mrows != nil {
@@ -510,7 +521,8 @@ func (s *Server) gpkgSettlements(w *gpkgWriter, o gpkgExportOpts) error {
 			if mrows.Scan(&ids, &m.class, &m.conf, &m.sType, &m.pop, &m.hh, &m.place, &m.distPlace,
 				&m.dir, &m.f1, &m.f5, &m.seasonality, &m.defoNearby, &m.inBuf, &m.narrative,
 				&m.detected, &m.classified,
-				&m.extent, &m.areaSrc, &m.popSrc, &m.epoch) != nil {
+				&m.extent, &m.areaSrc, &m.popSrc, &m.epoch,
+				&m.persistence, &m.persistenceSrc, &m.e2000, &m.e2015) != nil {
 				continue
 			}
 			m.class = publicSettlementClass(m.class)
@@ -541,33 +553,38 @@ func (s *Server) gpkgSettlements(w *gpkgWriter, o gpkgExportOpts) error {
 		// from; the cluster row is the sum over all of them. Prefer the
 		// per-feature value and fall back to the cluster's, so a missing
 		// property reads as the cluster's provenance rather than as absent.
+		// Persistence is a CLUSTER property (measured over the cluster's summed
+		// epoch surfaces), so it fills only from the cluster row.
 		vals := []interface{}{fid, nil, nil, nil,
+			nil, nil, nil, nil,
 			gpkgJSONNum(p, "area_m2"), gpkgJSONNum(p, "extent_m2"), gpkgJSONStr(p, "source"),
 			gpkgJSONInt(p, "population_est"), gpkgJSONStr(p, "population_source"), gpkgJSONStr(p, "epoch"),
 			nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil}
 		if m != nil {
 			vals[1], vals[2], vals[3] = gpkgStr(m.class), gpkgNF(m.conf), gpkgStr(m.sType)
-			if vals[5] == nil {
-				vals[5] = gpkgNF(m.extent)
-			}
-			if vals[6] == nil {
-				vals[6] = gpkgStr(m.areaSrc)
-			}
-			if vals[7] == nil {
-				vals[7] = gpkgNI(m.pop)
-			}
-			if vals[8] == nil {
-				vals[8] = gpkgStr(m.popSrc)
-			}
+			vals[4], vals[5] = gpkgStr(m.persistence), gpkgStr(m.persistenceSrc)
+			vals[6], vals[7] = gpkgNF(m.e2000), gpkgNF(m.e2015)
 			if vals[9] == nil {
-				vals[9] = gpkgStr(m.epoch)
+				vals[9] = gpkgNF(m.extent)
 			}
-			vals[10] = gpkgNI(m.hh)
-			vals[11], vals[12], vals[13] = gpkgStr(m.place), gpkgNF(m.distPlace), gpkgStr(m.dir)
-			vals[14], vals[15], vals[16] = gpkgNI(m.f1), gpkgNI(m.f5), gpkgStr(m.seasonality)
-			vals[17], vals[18] = gpkgNF(m.defoNearby), gpkgNI(m.inBuf)
-			vals[19] = gpkgStr(m.narrative)
-			vals[20], vals[21] = gpkgDateTime(m.detected), gpkgDateTime(m.classified)
+			if vals[10] == nil {
+				vals[10] = gpkgStr(m.areaSrc)
+			}
+			if vals[11] == nil {
+				vals[11] = gpkgNI(m.pop)
+			}
+			if vals[12] == nil {
+				vals[12] = gpkgStr(m.popSrc)
+			}
+			if vals[13] == nil {
+				vals[13] = gpkgStr(m.epoch)
+			}
+			vals[14] = gpkgNI(m.hh)
+			vals[15], vals[16], vals[17] = gpkgStr(m.place), gpkgNF(m.distPlace), gpkgStr(m.dir)
+			vals[18], vals[19], vals[20] = gpkgNI(m.f1), gpkgNI(m.f5), gpkgStr(m.seasonality)
+			vals[21], vals[22] = gpkgNF(m.defoNearby), gpkgNI(m.inBuf)
+			vals[23] = gpkgStr(m.narrative)
+			vals[24], vals[25] = gpkgDateTime(m.detected), gpkgDateTime(m.classified)
 		}
 		l.Add(geojson, vals...)
 	}

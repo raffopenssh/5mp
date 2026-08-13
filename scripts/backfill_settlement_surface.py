@@ -312,6 +312,21 @@ def convert(conn, t, sleep, dry):
         log(f"  UNFINISHED: 0 clusters where {before['clusters']:,} existed")
         return False, {"before": before, "after": after,
                        "error": "recluster yielded nothing"}
+    # Persistence from GHSL back-epochs (WP1, docs/PLAN_NEW_DATA_LAYERS.md).
+    # After the recluster on purpose: the rebuild deletes and reinserts every
+    # cluster row, so persistence written before it would not survive. A
+    # failed epoch derive fails the AREA -- half-converted must not read as
+    # done (invariant 1) -- and the rotation retries the whole unit, which is
+    # idempotent.
+    import ghsl_epochs
+    ep_ok, ep_summary = ghsl_epochs.derive_for_area(conn, aid, t["geom"],
+                                                    log=log)
+    if not ep_ok:
+        log(f"  UNFINISHED: persistence derive failed "
+            f"({ep_summary.get('error')})")
+        return False, {"before": before, "after": after,
+                       "error": f"epochs: {ep_summary.get('error')}"}
+    ghsl_epochs.stamp(aid, ep_summary)
     ratio = (after["extent_m2"] / after["area_m2"]) if after["area_m2"] else None
     log(f"  {aid}: {polys:,} polygons ({stale:,} stale removed), "
         f"{clusters:,} clusters"

@@ -1003,6 +1003,7 @@ func (s *Server) GetCachedClassifiedSettlements(parkID string) []ClassifiedSettl
 			COALESCE(`+settlementExtentSQL("")+`, 0),
 			COALESCE(`+settlementPopulationSQL("")+`, 0),
 			COALESCE(classification, 'unknown'), COALESCE(classification_confidence, 0),
+			COALESCE(persistence, ''),
 			COALESCE(narrative, ''), COALESCE(nearest_place, ''), COALESCE(distance_to_place_km, 0),
 			COALESCE(fires_5km, 0), COALESCE(fire_seasonality, ''), COALESCE(deforest_nearby_km2, 0)
 		FROM park_settlements
@@ -1018,7 +1019,7 @@ func (s *Server) GetCachedClassifiedSettlements(parkID string) []ClassifiedSettl
 	for rows.Next() {
 		var st ClassifiedSettlement
 		err := rows.Scan(&st.ID, &st.ParkID, &st.Lat, &st.Lon, &st.AreaM2, &st.PopulationEst,
-			&st.Classification, &st.Confidence, &st.Narrative,
+			&st.Classification, &st.Confidence, &st.Persistence, &st.Narrative,
 			&st.NearestPlace, &st.DistanceToPlace,
 			&st.FiresWithin5km, &st.FireSeasonality, &st.DeforestNearby)
 		if err != nil {

@@ -2009,6 +2009,7 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                             </div>
                             <div style="max-height:240px;overflow-y:auto;margin-top:8px;">${rows}</div>
                         </div>
+                        ${geoStructuralBlockHTML()}
                         ${geoAnchorBlockHTML()}
                     </div>
                 </details>`;
@@ -2074,6 +2075,57 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             osm_tag: 'tagged in OpenStreetMap',
             named_deposit: 'a named deposit compilation'
         };
+
+        /* The continental structural context (JRC AKP): two line layers with
+         * their own toggles and, beside each, its MEASURED skill or the word
+         * "unmeasured" — a lift with no number beside it would read as a
+         * ranking (cross-cutting invariant 12). The numbers come from the
+         * server's generated table via the catalogue, never typed here. */
+        function geoStructuralBlockHTML() {
+            const s = (typeof GeoMap !== 'undefined' && GeoMap.structural) ? GeoMap.structural() : null;
+            if (!s) return '';
+            const rows = ['active_faults', 'craton_edges'].map(id => {
+                const e = s[id];
+                if (!e) return '';
+                if (!e.available) {
+                    return `<div class="geo-adv-row">
+                        <span class="geo-adv-lbl">${escapeHtml(e.label || id)}</span>
+                        <span style="color:#888;font-size:10px;">not installed—${escapeHtml(e.reason || '')}</span>
+                    </div>`;
+                }
+                // Measured or the word. The scope matters as much as the
+                // number: these lifts were measured on DRC visit data, which
+                // none of the three sheets covers.
+                let skill;
+                if (e.skill && e.skill.lifts) {
+                    const parts = ['gold', 'cassiterite', 'coltan']
+                        .filter(c => e.skill.lifts[c])
+                        .map(c => `${c} ${e.skill.lifts[c].lift.toFixed(1)}×`);
+                    skill = `<span style="color:#888;font-size:10px;" title="Share of published workings within 25 km vs the same count of random points — measured against ${escapeHtml(e.skill.scope || '')}. Above 1× concentrates them; below 1× is worse than random ground.">${parts.join(', ')}</span>`;
+                } else {
+                    skill = `<span style="color:#888;font-size:10px;">unmeasured</span>`;
+                }
+                return `<div class="geo-adv-row">
+                    <label class="geo-switch amber" title="${escapeHtml(e.notice || '')}">
+                        <input type="checkbox" ${GeoMap.structuralOn(id) ? 'checked' : ''}
+                               onchange="GeoMap.setStructural('${id}', this.checked)">
+                        <span class="geo-switch-track"></span>
+                        <span class="geo-switch-lbl">${escapeHtml(e.label || id)} (${e.n})</span>
+                    </label>
+                    ${skill}
+                </div>`;
+            }).join('');
+            if (!rows) return '';
+            return `<div style="margin-top:12px;">
+                <div class="geo-adv-lbl" style="min-width:0;">Structural context</div>
+                <div class="geo-anch-note">Continental linework (JRC Africa Knowledge Platform,
+                    Macgregor). Ungraded context, not part of the rock matrix: proximity to a
+                    fault or a craton margin is an inference about setting, not a record of any
+                    deposit. The lift beside each layer is measured on eastern DR Congo — ground
+                    none of these sheets covers.</div>
+                ${rows}
+            </div>`;
+        }
 
         function geoAnchorBlockHTML() {
             const a = (typeof GeoMap !== 'undefined' && GeoMap.anchors) ? GeoMap.anchors() : null;
@@ -11389,6 +11441,10 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                         ${data.conflict_risk ? `<div class="pa-popup-mini-stat">
                             <span class="pa-popup-mini-stat-label">Conflict risk</span>
                             <span class="pa-popup-mini-stat-value${riskClass}">${escapeHtml(data.conflict_risk)}</span>
+                        </div>` : ''}
+                        ${data.by_persistence ? `<div class="pa-popup-mini-stat" title="Measured from GHSL built-up epochs (E2000/E2015): permanent = built by 2000, established = by 2015, recent = after 2015${data.persistence_unmeasured ? `; ${formatNumber(data.persistence_unmeasured)} unmeasured (missing epoch tile)` : ''}">
+                            <span class="pa-popup-mini-stat-label">Persistence</span>
+                            <span class="pa-popup-mini-stat-value">${['permanent','established','recent'].filter(k => data.by_persistence[k]).map(k => `${formatNumber(data.by_persistence[k])} ${k}`).join(', ')}${data.persistence_unmeasured ? ` <span style="color:#888">(+${formatNumber(data.persistence_unmeasured)} unmeasured)</span>` : ''}</span>
                         </div>` : ''}
 
                         
