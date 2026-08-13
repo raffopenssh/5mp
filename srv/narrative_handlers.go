@@ -1300,11 +1300,18 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 		}
 	}
 
-	// Get regional breakdown by quadrant
+	// Get regional breakdown by quadrant.
+	//
+	// The filter belongs on BOTH halves. The centroid is not decoration: it is
+	// the origin the four quadrants are measured from, so an unfiltered centre
+	// moves every row's quadrant label. And an unfiltered outer query made this
+	// table the one surface still counting retired detector output -- 241 rows
+	// where the summary above it said 172 (COD_Bili-Uere, 2026-08-13). See
+	// srv/mining_flag.go.
 	regionRows, err := s.DB.Query(`
 		WITH park_center AS (
 			SELECT AVG(lat) as center_lat, AVG(lon) as center_lon
-			FROM park_settlements WHERE park_id = ?
+			FROM park_settlements WHERE park_id = ?`+settlementFilterSQL("narrative", "polygon_ids")+`
 		)
 		SELECT 
 			CASE 
@@ -1316,7 +1323,7 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 			COUNT(*) as count,
 			COALESCE(SUM(population_est), 0) as population
 		FROM park_settlements s, park_center pc
-		WHERE s.park_id = ?
+		WHERE s.park_id = ?`+settlementFilterSQL("s.narrative", "s.polygon_ids")+`
 		GROUP BY region
 		ORDER BY population DESC
 	`, internalID, internalID)
