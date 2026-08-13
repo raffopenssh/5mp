@@ -1,20 +1,20 @@
-e343bd2 2026-08-12 17:04:39 A share link you can read, and a key that only opens what you were looking at
-ff0c5a4 2026-08-12 15:41:15 Guard the click-arbitration structure in tests; index sharing.md
-0a00cb9 2026-08-12 15:37:36 MapTip stands down for the whole click when a modifier is held
-567b3c0 2026-08-12 15:35:56 Park click handler keeps only what MapTip declines: multi-select
-10d66dd 2026-08-12 15:29:23 Map interaction: a park arbitrates like a region, and the popup owns its ×
-9a88aeb 2026-08-12 14:51:28 chore: refresh version history
-87c09ce 2026-08-12 14:48:08 Tapping a line, and a link you can send
-7646a43 2026-08-12 14:42:46 Geology: one data file, one control vocabulary, an opacity that adapts
-b36cef8 2026-08-12 14:18:44 chore: refresh version history
-9a70ba5 2026-08-12 14:18:40 A row the animation is drawing shows an eye, not a crossed-out one
-f4f3596 2026-08-12 14:15:11 chore: refresh version history
-947c17a 2026-08-12 14:15:03 Legend states every rendering, and a link opens where it says
-ca17fcb 2026-08-12 13:47:26 chore: refresh version history
-e3c4c0b 2026-08-12 13:47:13 docs: split AGENTS.md into an index + on-demand subsystem files
-e4efbd6 2026-08-12 13:40:06 Animator: a paused frame's dots are features, and hit-testing is indexed
-27267dd 2026-08-12 13:14:03 chore: refresh version history
-b5ee215 2026-08-12 13:13:43 Animator: one heat field for fire and patrol, a spread that is spread, and a viewport that re-asks
-5d28eff 2026-08-12 12:36:47 chore: refresh version history
-a744392 2026-08-12 12:36:24 Animator: the fire grid is a heat field, not a pulse
-0630e5f 2026-08-12 11:48:04 chore: refresh version history
+2c9a253 2026-08-13 12:40:02 Geology panel: the junction toggle answers in 95ms instead of four seconds
+c90a111 2026-08-13 12:11:16 Handover: what the geology export now does, and what nobody has clicked yet
+604006e 2026-08-13 12:10:36 Geology export: the view you built, its contacts, and the workings it was scored against
+dc19614 2026-08-13 11:43:28 AOI structural fixes: surface is not extent, and a population is measured or absent
+a4ecf0e 2026-08-13 11:41:58 Mining anchors: every list we scored, reduced to a citation
+e62efd3 2026-08-13 11:40:23 histmaps: OCR + geocode map labels via vision LLM (ocr_labels.py)
+4437c18 2026-08-13 11:17:26 AOI XSA: manager-facing report + structural data-correctness findings
+320e8d2 2026-08-13 11:00:23 gofmt: eight files that had drifted
+090e98a 2026-08-13 11:00:17 Protected Planet token comes from secrets.env, and two tests stop lying
+c1d42d0 2026-08-13 11:00:04 Affinity across the whole geology: seven truth sets, and lists that disagree
+b7c8084 2026-08-13 10:38:00 Provenance holds on the five settlement reads fff3dd0 missed
+f9a9017 2026-08-13 10:08:17 Crisis Tracker: 50 mine sites in the half of the CAR nobody surveyed
+b318eae 2026-08-13 09:28:47 Mining reference for all four countries, with a measured reach bias
+5a34d8d 2026-08-13 08:50:38 Add ACLED event fetcher for mining reference countries (CAF/SSD/SDN/TZA)
+b1ac4dc 2026-08-13 06:31:09 Geology: the affinity model carries its own measured score
+78b45ac 2026-08-13 05:36:14 A map feature names the id its list uses: settlement clusters, deforestation events
+6ee14ad 2026-08-13 05:28:56 Geology: contacts count as drawn; share links carry the whole map view
+104b043 2026-08-12 21:52:11 Geology: the legend fits the panel, and both tables are things you pick FROM
+3ef1b86 2026-08-12 21:23:10 Geology: a junction table beside the rock table, in a panel you can keep open
+16535f8 2026-08-12 20:58:20 Calm map: focus and drapes apply in place, never fly

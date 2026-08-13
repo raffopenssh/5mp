@@ -792,7 +792,7 @@
     "polygon_ids": "deforest_SSD_Badingilo_2023_104"
   },
   {
-    "id": 32932,
+    "id": 41405,
     "park_id": "SSD_Badingilo",
     "year": 2025,
     "area_km2": 0.0009,
@@ -807,14 +807,14 @@
     "classification": "slash_burn",
     "classification_confidence": 0.85,
     "narrative": "Slash-and-burn clearing detected in 2025. Affected 0.00 km\u00b2 across 1 patch. Strong fire correlation indicates agricultural burning. Located 3.8km from Km 3.2. Near Bahr al Jabal (Mountain Nile) river.",
-    "fires_same_year": 306,
-    "fire_ratio": 30600.0,
+    "fires_same_year": 793,
+    "fire_ratio": 79300.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-08-03T07:35:13.565986",
+    "classified_at": "2026-08-11T07:30:08.211406",
     "polygon_ids": "deforest_gfw_SSD_Badingilo_2025_4.84_31.64"
   },
   {
-    "id": 32933,
+    "id": 41406,
     "park_id": "SSD_Badingilo",
     "year": 2025,
     "area_km2": 0.0004,
@@ -829,10 +829,10 @@
     "classification": "slash_burn",
     "classification_confidence": 0.85,
     "narrative": "Slash-and-burn clearing detected in 2025. Affected 0.00 km\u00b2 across 1 patch. Strong fire correlation indicates agricultural burning. Located 2.8km from Tiyang 1. Near Bahr al Jabal (Mountain Nile) river.",
-    "fires_same_year": 196,
-    "fire_ratio": 19600.0,
+    "fires_same_year": 529,
+    "fire_ratio": 52900.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-08-03T07:35:16.055236",
+    "classified_at": "2026-08-11T07:30:08.246550",
     "polygon_ids": "deforest_gfw_SSD_Badingilo_2025_5.34_31.76"
   }
 ]

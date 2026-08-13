@@ -923,8 +923,13 @@ class EventRebuilder:
         park_polygons = self.load_settlement_polygons()
         print(f"Found polygons for {len(park_polygons)} parks")
         
-        # Clear existing settlements
-        self.conn.execute("DELETE FROM park_settlements")
+        # Clear existing settlements -- but only the ones this rebuild can
+        # recreate. A row with no polygon_ids came from the retired pit/
+        # turbidity detector (3,019 of them, AGENTS.md invariant 5), has no
+        # GHSL polygon behind it, and would be destroyed rather than rebuilt.
+        # A rebuild is not a purge.
+        self.conn.execute("DELETE FROM park_settlements WHERE "
+                          "polygon_ids IS NOT NULL AND polygon_ids != ''")
         
         count = 0
         for park_id, polygons in sorted(park_polygons.items()):
@@ -972,7 +977,14 @@ class EventRebuilder:
         if delete:
             # Before the empty-input early return, not after: a rebuild that
             # now yields nothing must not leave the old rows immortal.
-            self.conn.execute("DELETE FROM park_settlements WHERE park_id = ?",
+            # Scoped to rows derived from GHSL polygons: a row with no
+            # polygon_ids is retired detector output (invariant 5) that this
+            # clusterer cannot recreate, so deleting it destroys data instead
+            # of refreshing it. scripts/backfill_settlement_surface.py runs
+            # this over all 160 areas, which is how a purge would have gone
+            # unnoticed until the rows were gone.
+            self.conn.execute("DELETE FROM park_settlements WHERE park_id = ? "
+                              "AND polygon_ids IS NOT NULL AND polygon_ids != ''",
                               (park_id,))
             self.conn.commit()
         if not polygons:

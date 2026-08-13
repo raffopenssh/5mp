@@ -40,6 +40,21 @@ const settlementPopulationLegacy = "legacy_density_200_per_ha"
 // settlementAreaLegacy marks a row whose area_m2 is mask extent, not surface.
 const settlementAreaLegacy = "ghsl_mask_extent"
 
+// A measured quantity NAMES ITS INSTRUMENT, and there are only two here:
+// `ghsl_<product id>` for a raster zonal sum (scripts/ghsl_tiles.py) and
+// `ghsl_built_s_surface` for the surface column the clusterer writes.
+//
+// ⚠️ This is a POSITIVE list on purpose. It was a deny-list of the two legacy
+// markers for half a day, which made every *other* string a measurement —
+// including `retired_detector`, the label migration 055 gives the 3,019
+// pit/turbidity rows precisely to say they are NOT settlement observations
+// (AGENTS.md invariant 5). A deny-list answers "is this one of the two wrong
+// things I know about"; the question is "was this measured", and only the
+// measuring code can answer yes. A future writer that forgets to set a source
+// then reads as unmeasured, which is the safe direction to be wrong in.
+const settlementRasterPrefix = "ghsl_"
+const settlementSurfaceSource = "ghsl_built_s_surface"
+
 // settlementPopulationSQL is a SELECT expression yielding the population when it
 // was measured and NULL when it was not. `alias` is "" or a table alias with no
 // trailing dot ("s").
@@ -49,26 +64,33 @@ const settlementAreaLegacy = "ghsl_mask_extent"
 // so a caller wanting a total must also ask how many rows had no number
 // (settlementPopulationMeasuredSQL).
 func settlementPopulationSQL(alias string) string {
+	return fmt.Sprintf("CASE WHEN %s THEN %spopulation_est END",
+		settlementPopulationMeasuredCond(alias), colPrefix(alias))
+}
+
+// settlementPopulationMeasuredCond is the boolean "this row's population is a
+// raster measurement", shared by the value and the count so the two cannot
+// disagree about which rows they mean.
+func settlementPopulationMeasuredCond(alias string) string {
 	p := colPrefix(alias)
-	return fmt.Sprintf("CASE WHEN COALESCE(%[1]spopulation_source,'') NOT IN ('', %[2]s) "+
-		"THEN %[1]spopulation_est END", p, sqlQuote(settlementPopulationLegacy))
+	return fmt.Sprintf("%[1]spopulation_source LIKE %[2]s AND %[1]spopulation_source != %[3]s",
+		p, sqlQuote(settlementRasterPrefix+"%"), sqlQuote(settlementSurfaceSource))
 }
 
 // settlementPopulationMeasuredSQL counts the rows whose population is real, so
 // a caller can say "1,140 of 1,552 settlements" instead of presenting a partial
 // sum as a total.
 func settlementPopulationMeasuredSQL(alias string) string {
-	p := colPrefix(alias)
-	return fmt.Sprintf("SUM(CASE WHEN COALESCE(%[1]spopulation_source,'') NOT IN ('', %[2]s) "+
-		"THEN 1 ELSE 0 END)", p, sqlQuote(settlementPopulationLegacy))
+	return fmt.Sprintf("SUM(CASE WHEN %s THEN 1 ELSE 0 END)",
+		settlementPopulationMeasuredCond(alias))
 }
 
 // settlementSurfaceSQL is the built-up SURFACE in m², or NULL where the row
-// still holds mask extent.
+// still holds mask extent — or came from an instrument that measured neither.
 func settlementSurfaceSQL(alias string) string {
 	p := colPrefix(alias)
-	return fmt.Sprintf("CASE WHEN COALESCE(%[1]sarea_source,'') NOT IN ('', %[2]s) "+
-		"THEN %[1]sarea_m2 END", p, sqlQuote(settlementAreaLegacy))
+	return fmt.Sprintf("CASE WHEN %[1]sarea_source = %[2]s THEN %[1]sarea_m2 END",
+		p, sqlQuote(settlementSurfaceSource))
 }
 
 // settlementExtentSQL is the mask footprint in m², which every row has under

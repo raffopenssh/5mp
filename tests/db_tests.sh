@@ -128,6 +128,64 @@ test_query "settlements with polygon_ids" "SELECT COUNT(*) FROM park_settlements
 test_query "deforestation with polygon_ids" "SELECT COUNT(*) FROM deforestation_events WHERE polygon_ids IS NOT NULL AND polygon_ids != ''" "nonempty"
 test_query "feature_geometries have feature_ids" "SELECT COUNT(DISTINCT feature_id) FROM feature_geometries WHERE feature_id IS NOT NULL" "nonempty"
 
+yellow "\n=== Settlement provenance (migration 055 / F1-F2) ==="
+# A settlement's SURFACE and its mask EXTENT differ by ~24x and must not share a
+# column name (AGENTS.md invariant 7); a population is measured or absent, never
+# a density constant (invariant 15). These tests are about the SHAPE of the
+# claim, not about how far the backfill has got, so none of them counts rows.
+test_query "every settlement names its area source" \
+    "SELECT COUNT(*) FROM park_settlements WHERE COALESCE(area_source,'')=''" "0"
+test_query "every settlement names its population source" \
+    "SELECT COUNT(*) FROM park_settlements WHERE COALESCE(population_source,'')=''" "0"
+# The ordering is physics: the ground a mask covers cannot be smaller than the
+# surface built on it. 1% tolerance for the rounding in properties_json.
+test_query "surface never exceeds extent" \
+    "SELECT COUNT(*) FROM park_settlements WHERE area_source='ghsl_built_s_surface'
+       AND extent_m2 IS NOT NULL AND area_m2 > extent_m2 * 1.01" "0"
+# A population without a raster behind it must be absent, not small.
+test_query "measured population implies a GHS_POP source" \
+    "SELECT COUNT(*) FROM park_settlements WHERE population_est IS NOT NULL
+       AND population_est > 0 AND population_source NOT LIKE 'ghsl_GHS_POP%'
+       AND population_source != 'legacy_density_200_per_ha'" "0"
+test_query "converted rows carry a measured population" \
+    "SELECT COUNT(*) FROM park_settlements WHERE area_source='ghsl_built_s_surface'
+       AND population_source NOT LIKE 'ghsl_GHS_POP%'" "0"
+# F12: settlement_type said 'permanent' for every row because 'temporary'
+# required an area below the ingest floor -- unreachable by construction. A
+# column with one value is a comment, so the converted rows write NULL until
+# something actually measures persistence between epochs. (The unconverted rows
+# still say 'permanent'; that is what the backfill queue is for.)
+test_query "converted rows do not guess settlement_type" \
+    "SELECT COUNT(*) FROM park_settlements
+      WHERE area_source='ghsl_built_s_surface' AND settlement_type IS NOT NULL" "0"
+# F6: 0 fires within 5 km is a real state ONLY if something looked. The four
+# context columns default to 0 and were filled for parks by the Go classifier
+# and by nothing at all for AOIs, so 1,552 XSA rows asserted "no fire" for
+# settlements whose median is 1,594 detections within 5 km. Scoped to converted
+# rows: an unconverted one is the backfill's queue, not a regression
+# (scripts/backfill_settlement_surface.py --list).
+test_query "fire context zeros are dated" \
+    "SELECT COUNT(*) FROM park_settlements WHERE fires_5km = 0
+       AND fire_context_at IS NULL AND classified_at IS NULL
+       AND area_source = 'ghsl_built_s_surface'" "0"
+# The retired pit/turbidity rows measured neither surface nor population and say
+# so; they must never acquire a GHSL label (invariant 5 -- provenance is not a
+# flag another job can rewrite).
+test_query "retired detector rows keep their own label" \
+    "SELECT COUNT(*) FROM park_settlements WHERE (polygon_ids IS NULL OR polygon_ids='')
+       AND area_source != 'retired_detector'" "0"
+
+yellow "\n=== Deforestation area method (F8-F9) ==="
+# Hansen canopy loss (km2 mapped) and GFW alert counts x KM2_PER_ALERT are
+# different units drawn as one series; a row must say which.
+test_query "every deforestation row names its method" \
+    "SELECT COUNT(*) FROM deforestation_events WHERE COALESCE(area_method,'')=''" "0"
+test_query "method values are the two known ones" \
+    "SELECT COUNT(*) FROM deforestation_events
+      WHERE area_method NOT IN ('hansen_canopy_loss','gfw_alert_count')" "0"
+test_query "both methods are present" \
+    "SELECT COUNT(DISTINCT area_method) FROM deforestation_events" "2"
+
 yellow "\n=== Index Usage (Query Plans) ==="
 test_index_used "feature by park" "SELECT * FROM feature_geometries WHERE park_id='CAF_Chinko' LIMIT 10" "idx_feat"
 test_index_used "settlements by park" "SELECT * FROM park_settlements WHERE park_id='CAF_Chinko' LIMIT 10" "idx"
