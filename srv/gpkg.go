@@ -241,9 +241,14 @@ type gpkgCol struct {
 }
 
 type gpkgLayer struct {
-	w                      *gpkgWriter
-	name                   string
-	geomType               string
+	w        *gpkgWriter
+	name     string
+	geomType string
+	// desc is the gpkg_contents description — what GDAL and QGIS show as the
+	// layer's abstract. Kept on the layer so a caller building the embedded
+	// project does not have to re-derive (or, worse, re-type) the sentence the
+	// table already carries; the two must not be able to disagree.
+	desc                   string
 	cols                   []gpkgCol
 	stmt                   *sql.Stmt
 	rtree                  *sql.Stmt
@@ -251,8 +256,17 @@ type gpkgLayer struct {
 	count                  int
 }
 
-func (l *gpkgLayer) Name() string { return l.name }
-func (l *gpkgLayer) Count() int   { return l.count }
+func (l *gpkgLayer) Name() string        { return l.name }
+func (l *gpkgLayer) Count() int          { return l.count }
+func (l *gpkgLayer) Description() string { return l.desc }
+
+// SetDescription rewrites the stored description, for the case where part of
+// it is only knowable after the rows are written (a count).
+func (l *gpkgLayer) SetDescription(d string) error {
+	l.desc = d
+	_, err := l.w.tx.Exec(`UPDATE gpkg_contents SET description=? WHERE table_name=?`, d, l.name)
+	return err
+}
 
 type gpkgWriter struct {
 	db     *sql.DB
@@ -381,7 +395,7 @@ func (w *gpkgWriter) AddLayer(name, geomType, description string, cols []gpkgCol
 		name); err != nil {
 		return nil, err
 	}
-	l := &gpkgLayer{w: w, name: name, geomType: geomType, cols: cols,
+	l := &gpkgLayer{w: w, name: name, geomType: geomType, desc: description, cols: cols,
 		minx: math.Inf(1), miny: math.Inf(1), maxx: math.Inf(-1), maxy: math.Inf(-1)}
 	stmt, err := w.tx.Prepare(w.insertSQL(l))
 	if err != nil {

@@ -837,8 +837,7 @@ func buildGeoMapGeoPackageSel(path string, sheets []string, sel *geoMapSelection
 	// description, each naming what it counts, so the file and the picture
 	// cannot look like they disagree about one word.
 	if strings.Contains(desc, geoRowsToken) {
-		if _, err := w.tx.Exec(`UPDATE gpkg_contents SET description=? WHERE table_name=?`,
-			strings.ReplaceAll(desc, geoRowsToken, fmt.Sprint(l.Count())), table); err != nil {
+		if err := l.SetDescription(strings.ReplaceAll(desc, geoRowsToken, fmt.Sprint(l.Count()))); err != nil {
 			return err
 		}
 	}
@@ -858,6 +857,7 @@ func buildGeoMapGeoPackageSel(path string, sheets []string, sel *geoMapSelection
 	specs := []gpkgLayerSpec{{
 		Table: table, Title: "Geological units", Group: "Geology",
 		Geometry: "Polygon", WKBType: "MultiPolygon", QML: qml, Visible: true, Opacity: 0.75,
+		Abstract: l.Description(),
 	}}
 	cl, cqml, err := addGeoContactLayer(w, sheets, sel)
 	if err != nil {
@@ -867,6 +867,7 @@ func buildGeoMapGeoPackageSel(path string, sheets []string, sel *geoMapSelection
 		specs = append(specs, gpkgLayerSpec{
 			Table: cl.Name(), Title: "Unit contacts (graded)", Group: "Geology",
 			Geometry: "Line", WKBType: "MultiLineString", QML: cqml, Visible: true, Opacity: 1,
+			Abstract: cl.Description(),
 		})
 		w.SetStyle(cl.Name(), cqml, "Junction grade (3 = classic setting)")
 	}
@@ -878,6 +879,7 @@ func buildGeoMapGeoPackageSel(path string, sheets []string, sel *geoMapSelection
 		specs = append(specs, gpkgLayerSpec{
 			Table: al.Name(), Title: "Published workings (reference)", Group: "Reference",
 			Geometry: "Point", WKBType: "Point", QML: aqml, Visible: true, Opacity: 1,
+			Abstract: al.Description(),
 		})
 		w.SetStyle(al.Name(), aqml, "Which list the working comes from")
 	}

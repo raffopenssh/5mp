@@ -37,6 +37,14 @@ type gpkgLayerSpec struct {
 	QML      string
 	Visible  bool
 	Opacity  float64
+	// Abstract is what the layer SAYS ABOUT ITSELF. GDAL maps a GeoPackage
+	// `gpkg_contents.description` onto the layer abstract, so a user who adds
+	// the table by hand sees it — but a project's <maplayer> overrides the
+	// layer's metadata with the project's own, and an empty element there
+	// SILENTLY BLANKS IT. The embedded project is the path we tell people to
+	// use, so without this the disclaimer ("an affinity is an inference", "this
+	// file is a view") survives only on the route nobody takes.
+	Abstract string
 	// TemporalField turns on QGIS's temporal controller for the layer, so the
 	// time slider animates it with no setup. Only set where a single instant
 	// per feature is meaningful (a detection); a trajectory has a range.
@@ -158,9 +166,10 @@ func buildQGISProject(projectName, gpkgName string, layers []gpkgLayerSpec, bbox
   <layerOpacity>%g</layerOpacity>
   <blendMode>0</blendMode>
   <featureBlendMode>0</featureBlendMode>
+  %s
 </maplayer>
 `, l.Geometry, l.WKBType, qgsLayerID(l.Table), gpkgName, l.Table, xmlEscape(l.Title),
-			qgsSRS, qgsTemporal(l), qmlBody(l.QML), op)
+			qgsSRS, qgsTemporal(l), qmlBody(l.QML), op, qgsLayerMetadata(l))
 	}
 
 	return fmt.Sprintf(`<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
@@ -198,6 +207,28 @@ func buildQGISProject(projectName, gpkgName string, layers []gpkgLayerSpec, bbox
 </qgis>
 `, xmlEscape(projectName), xmlEscape(projectName), qgsSRS, tree.String(),
 		bbox[0], bbox[1], bbox[2], bbox[3], maps.String())
+}
+
+// qgsLayerMetadata carries the layer's own abstract INTO the project.
+//
+// Opening the file through its embedded project is the route the docs and the
+// download page point at, and QGIS reads the <maplayer>'s <resourceMetadata>
+// in preference to the provider's. Omitting the element does not fall back:
+// the abstract comes out empty, and the abstract is where every disclaimer in
+// this export lives ("grade is this app's own inference ... NOT a record of
+// any deposit", "OTHER ORGANISATIONS' observations"). Verified by rendering,
+// not by reading the spec.
+func qgsLayerMetadata(l gpkgLayerSpec) string {
+	if l.Abstract == "" {
+		return ""
+	}
+	return fmt.Sprintf(`<resourceMetadata>
+    <identifier>%s</identifier>
+    <title>%s</title>
+    <type>dataset</type>
+    <language>ENG</language>
+    <abstract>%s</abstract>
+  </resourceMetadata>`, xmlEscape(l.Table), xmlEscape(l.Title), xmlEscape(l.Abstract))
 }
 
 // qgzBytes zips a .qgs into the .qgz container QGIS expects.

@@ -219,6 +219,33 @@ Fixed 2026-08-12 (`srv/geomap_std.go`, `srv/static/geopatterns.js`):
 * **Contacts are drawn in a darkened ink, never the unit's own colour.** These
   rings are traced off a scan, so 46 classes outlined at full saturation is a
   net of bright magenta over a whole country.
+* **The two newer layers have now been LOOKED AT** (2026-08-13), through the
+  file's own embedded project, and `scripts/geomaps/render_gpkg.py` renders
+  every layer rather than `layers[0]`: the units, the graded contacts and the
+  anchors stacked in the project's order, plus a contact-grade legend pass and
+  an anchor-symbol-over-real-unit-fill pass, plus two ~50 km detail views. Two
+  things the byte-level Go test could not see, both fixed in the writer:
+  * **A `<maplayer>` with no `<resourceMetadata>` BLANKS the abstract** rather
+    than falling back to the provider's. `ogrinfo` printed every disclaimer;
+    QGIS, opening the file the way the docs tell people to, showed none of
+    them (`qgsLayerMetadata`, `gpkgLayerSpec.Abstract`,
+    `gpkgLayer.Description()`). A disclaimer that only survives on the route
+    nobody takes is not shipped.
+  * **The anchors' palette was written for a different background.** The
+    evidence points land on a saturated FGDC pattern fill covering the whole
+    canvas, and index 0 was pure white (invisible over a pale unit) while
+    index 8 was byte-identical to the "other" fallback (the ninth list and the
+    catch-all were one symbol). Now nine distinct saturated fills with an
+    opaque outline; the shared 0,0,0,80 default outline dissolves into a
+    cross-hatch.
+  Judged RIGHT and not to be redone: the four grades are distinguishable at
+  map scale, the amber ramp runs the same direction as the map's (classic
+  strongest), `ungraded` is grey and visibly OFF the ramp so a NULL never
+  reads as "measured, weakest", draw order is anchors > contacts > units, all
+  three layers valid, and the counts match `ogrinfo` (659 / 882 / 3687).
+  One renderer trap worth keeping: `layer.extent()` on a project-loaded layer
+  with a subset string returns NULL and the render job then never finishes,
+  which looks like a hang with no error — the script reads the R-tree instead.
 
 **Both downloads ship, at different granularity, and that is not an
 inconsistency**: `MBTiles` is per sheet (a picture of one scan, with its own
@@ -716,8 +743,161 @@ rather than close it. At 2600 it dimmed the map and left the geology panel and
 its menu bright on top of the modal they had just opened.
 
 Tests: `srv/geomap_gpkg_test.go` (the four filtered-export cases, the stamp, the
-filename). Both rows have been **clicked through** and their files opened; the
-contact style has *not* had a `scripts/geomaps/render_gpkg.py` pass, and three
-of nine unit ornaments were once wrong in ways no byte-level test could see.
+filename). Both rows have been **clicked through** and their files opened, and
+the two newer layers have now had a `render_gpkg.py` pass (see § the raster
+section above for what it found).
 
 ---
+
+### One mixer, two homes: the panel over the map and the admin card
+
+Added 2026-08-13. Admin ▸ Map Settings ▸ Geology used to be a **second, older
+chooser for the same layer**: amber pill chips, its own strength ladder, its own
+unit list, and no junction table at all. Two surfaces for one piece of state is
+the shape of bug where a reader narrows the map in the panel, opens admin, and
+finds a card that quietly disagrees with the map in front of them — and the old
+one *could not express* half the current state (picked cells, junctions, the
+measured lift). It is one object now.
+
+* **`MapLegend.geoBody()` is the mixer's body as a string**, with no furniture
+  around it: the state line, the grade ladder, both tables. `openGeoMenu()`
+  wraps it in `headRow()` + `.ml-panel`; the admin card wraps it in
+  `.geo-mixer`. Same handlers, same `GeoMap` reads, so the two cannot disagree
+  by construction. The width stays fixed in both for the reason `.ml-menu-geo`
+  is fixed — the two tables set different max-content widths.
+* **The card's bar is the panel's bar minus the window furniture**: the same
+  download arrow opening the same `MapLegend.downloadMenu`, a copy-link, and
+  *Show beside the map* (the one gesture only this home needs — the mixer's
+  columns are the periods **drawn**, and here the map is behind a fullscreen
+  panel). No close/collapse: this is a section of a page, not a window.
+* **The whole-catalogue `<a>` and `downloadGeoMapGPKG()` are gone.** One
+  download surface, two rows, `MapLegend.downloadAllStarted()` for the
+  "Preparing…" floor.
+* **Historical Maps got the same treatment**: the app's toggle slider instead
+  of a green Show/Hide *action* button for a *state*, `.geo-op` opacity, and
+  `MapLegend.histDownloadMenu` — one row, but the app's row, so the two drapes
+  in one section do not offer their downloads two different ways (and the ⧉,
+  which is the only reliable way to get a link out of Safari, exists on both).
+* **The download menu FOLLOWS its anchor now** (`followDl`), and does not close
+  on scroll. Closing was tried first and is wrong twice: the gesture that
+  brings the button into view *is* a smooth scroll, so a share link pointing at
+  a row closed the menu it had just opened.
+* **A rebuild under an open menu is a menu that vanishes** — the card stays
+  dirty while `.ml-menu-dl` is up and paints when it closes.
+
+**The card is built from the CANVAS, so it needs the canvas's own events.**
+This is where the cost was, and both halves are load-bearing:
+
+* A state change never paints; it marks dirty and asks for a frame, and the
+  frame **declines while `MapLegend.paintPending()`** — `refreshWhenDrawn` calls
+  back in after the paint. Without it the card built twice per gesture and the
+  first of the two described the map as it was one gesture ago.
+* `watchMap`'s idle handler calls `geoMapPanelCanvasChanged()`, guarded on
+  `MapLegend.geoAnswerSig()` (layer set + contact hits + drawn columns + skill
+  scope, deliberately **not** the viewport, so panning inside one country does
+  not reshuffle a table the reader is working in). Without it, opening
+  `?panel=admin&admin_tab=map-settings` cold painted the card before the first
+  tile landed and it said *"No mapped sheet reaches this view"* over three
+  countries, permanently — nothing after that was a state change. Same failure
+  as the frozen `counting lines…` bar, one surface over.
+* **The 104-row unit list is built only when Advanced is open.** Measured: 335
+  KB of the card's 374 KB, nine tenths of it, written into a `<details>` nobody
+  had opened. `geoSetAdvancedOpen()` re-renders, so opening the disclosure is
+  what builds it. Same rule as the card behind a closed tab, one level in.
+
+Net on the junction click with three sheets: card 374 → 116 KB, two builds →
+one, 258 → 140 KB of HTML per gesture; the floating panel is unchanged at ~89
+KB / ~113 ms and pays nothing for the card.
+
+**The share link says which home it came from.** `geo_export=view|all` alone is
+ambiguous once there are two surfaces, so the link relies on the
+`panel=admin` + `admin_tab=map-settings` pair `buildShareUrl()` already carries:
+with it the admin card points at the row, without it the floating panel opens.
+One row is pointed at, in one place. The request is **held until a paint can
+honour it** (`geoAdminExport`), because the first paint after a cold load is the
+one that says "nothing reaches this view" — and the menu, once open, freezes
+exactly that sentence under it.
+
+**Reference mining sites are named under Advanced** (`geoAnchorBlockHTML`). The
+download menu says it in one sentence; this is the reader who wants to know
+*which* lists, under what terms, observed how. A withheld list is **named, not
+omitted** (ACLED, whose terms forbid redistributing its rows and which was never
+a mining list anyway); `terms: unstated` is shown as those words and is
+deliberately not styled as a warning — "open" and "nobody said" are different
+states and only one of them is permission; and every number is the catalogue's
+(`/api/geomap` → `anchors`), never counted here.
+
+---
+
+### A zero must be provable, and a legend nobody has touched is furniture
+
+Two closing passes on the geology strip, one about honesty and one about space.
+
+**`counting lines…` never settled when the honest answer was zero.**
+`contactsPending` was `contactHits === 0 && geoContactLayers().length > 0` — one
+flag for **two states**. "The layer has not painted yet" and "the layer painted
+and there is nothing in this viewport" are different claims, and only the first
+is unmeasured; `barCountText()` was right to refuse to print a number it had
+been told was unproven, so a genuine zero sat at `counting lines…` for good.
+Invisible at z3 over three sheets (some contact is always in view); reproducible
+at `?geomap=car&geo_panel=1&lat=6.5&lng=21.2&z=10.5`, where 71 line *types* pass
+the filter and none of their geometry reaches a ~50 km viewport.
+
+The fix is not a timeout and not a `paintNonce` bump — that was the earlier
+attempt, and it failed because `paintNonce` counts *events that could change the
+picture* (a `sourcedata` fires while the frame is still ahead of us), which is
+not the same question as "has this layer had its chance to paint". `idle` is
+different in kind: it is MapLibre's own word for *I have finished drawing*. So
+idles are counted separately (`idleNonce`), the contact layer set records the
+idle it first appeared at (`contactIdleAt`, reset whenever the set changes), and
+`contactsSettled()` calls a zero **measured** only when the map has gone idle
+since the layers appeared *and* every source they read is loaded. Then "no lines
+here" is a reading of the canvas.
+
+Measured after the fix, and the answer to the second open item — the contact
+half of the zoomed-in gesture, which the previous pass could not time because
+the count was stuck:
+
+| gesture | sync | bar settles | max frame gap | HTML | qRF |
+|---|---|---|---|---|---|
+| Junctions, z9, one sheet | 58 ms | 535 ms | 510 ms | 49.8 KB | 129 ms / 606 calls |
+| Junctions, z3.2, three sheets | 12 ms | 12 ms | 1620 ms | 67.1 KB | 184 ms / 404 calls |
+
+Per idle, the ~200-point grid dominates and does **not** grow with zoom (z9: 51
+ms for 200 point queries + 5.4 ms for the whole-viewport contact read, 439
+features at z3 for 26 ms). The viewport bounds the work, as the earlier pass
+guessed; the grid is the cost, and it is the same cost everywhere.
+
+**The strip now rests.** It states what is draped, which is worth its width
+while someone is reading it and is a banner the rest of the time — on a 412 px
+phone the header, the chips and an eleven-swatch key took a third of the
+readout, over the map. After 4 s untouched it folds back to its icons
+(`.ml-rest`): words, sub-label, caret, × and key fold; the coloured tappable
+chip and the opener stay. Rules, each a bug if broken:
+
+* it **folds, it does not remove** — `max-width`/`max-height` and opacity, never
+  `display:none`, so every target keeps its accessible name and title while
+  folded, and it grows back rather than jumping;
+* it **says how much it folded** (the swatch count rides on the chip as
+  `data-rest`), derived from the rendered swatches, never typed — a key that
+  silently disappears is a truncation that does not announce itself;
+* it **never rests while a menu or the geology panel is open**, or while the
+  pointer or focus is inside it (`restBlocked`) — a surface the reader is
+  working in must not shrink under their hand;
+* `fitCols()` measures the **last awake width**, not the current one: while
+  folded the strip sits in the readout's spare grid cell, and sizing the key to
+  that would wake a full-width strip carrying four swatches and a "+7".
+
+Waking is one class toggle, so it is wired to `pointerenter`/`pointerdown`/
+`focusin`/`wheel` on the **host** (render() replaces the strip's innerHTML on
+every idle, so a listener on a chip would be thrown away with it) and to every
+public `MapLegend` method except the quiet ones — `refresh` (it *is* render(),
+called on every map idle, so waking there means never resting), the reads the
+app makes of itself (`geoAnswerSig`, `geoBody`, `getShareParams`), and
+`mxSettle`, which fires on a click **anywhere outside** the panel and would
+otherwise unfold the legend on every click on the map.
+
+On a phone the rested strip takes the readout's empty sixth cell
+(`grid-column: auto`) instead of a full row: five stats in a three-column grid
+always leave one, and a rested strip is exactly chip-sized. Woken, it spans
+`1 / -1` again, because eleven periods do not fit in a third of a phone.

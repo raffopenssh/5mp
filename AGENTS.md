@@ -31,8 +31,6 @@ settlements, patrol tracking. ~17k-line single-page frontend + SQLite (1.8 GB).
 | Mining detection (retired — do not rebuild) | `docs/agents/mining.md` |
 | Settlement surface/population provenance; AOI data-correctness fixes (**open**) | `docs/agents/HANDOVER_AOI_FIXES.md` (+ `docs/AOI_STRUCTURAL_FIXES.md`) |
 | Mining reference lists, ACLED + Crisis Tracker, coverage bias, reach strata | `docs/agents/acled.md` |
-| Geological contact zones (open brief, not built) | `docs/agents/HANDOVER_CONTACTS.md` |
-| Geology export + mining anchors (open brief, half built) | `docs/agents/HANDOVER_GEOLOGY_EXPORT.md` |
 
 Other human docs: `docs/API.md`, `docs/DATABASE.md`, `docs/SCRIPTS.md`,
 `docs/ARCHITECTURE.md`, `docs/QUICK_TASKS.md`, `docs/DATA_FLOW.md`.
@@ -52,8 +50,9 @@ of it. Only three kinds of edit belong in this file:
 3. a change to a **hard rule** (database, secrets, build, tests).
 
 Anything longer than three lines, or naming a specific file/table/handler, is
-subsystem knowledge → `docs/agents/`. Keep this file under ~8 KB; when it grows
-past that, move a section out rather than trimming the invariants. Delete a
+subsystem knowledge → `docs/agents/`. Keep this file under **20 KB**
+(`tests/docs_tests.sh` fails over it); when it grows past that, move a section
+out rather than trimming the invariants. Delete a
 handover section once its work is done. See `docs/agents/README.md`.
 
 Source comments citing `AGENTS.md "<section>"` predate the split — those
@@ -193,13 +192,12 @@ These apply no matter what you touch. Each cost real time at least once.
     *units* score 0.63× (worse than random ground), and both were the same
     amber dots. `nil` means **unmeasured** and must print that word — and
     **a measurement's absence, its refusal and its contradiction are three
-    different states.** Seven truth sets now score three sheets
-    (`srv/geomap_scores_table.go`, *generated* — never edit it, never type a
-    lift). Two independent lists can disagree about one claim (CAR gold
-    junctions: IPIS 2.18×, Tearline 0.00×): that is `mixed`, it must reach the
-    reader as a word, and a caller taking one row takes the **lowest**. A
-    stratum of one survey is **not** corroboration, and a score may only
-    describe a layer that is actually **drawn**.
+    different states.** `srv/geomap_scores_table.go` is *generated* — never
+    edit it, never type a lift. Two lists can disagree about one claim (CAR
+    gold junctions: IPIS 2.18×, Tearline 0.00×): that is `mixed`, it must
+    reach the reader as a word, and a caller taking one row takes the
+    **lowest**. A stratum of one survey is **not** corroboration, and a score
+    may only describe a layer that is actually **drawn**.
     See `docs/agents/overlays.md`.
 
 13. **Mining detection is retired** (`MiningEnabled = false`). Do not rebuild

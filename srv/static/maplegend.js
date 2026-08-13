@@ -267,6 +267,49 @@
 
     function bumpPaint() { paintNonce++; }
 
+    /* ── THE MAP'S OWN WORD FOR "I HAVE DRAWN THIS" ────────────────────
+     *
+     * `paintNonce` counts EVENTS THAT COULD CHANGE THE PICTURE — a tile
+     * arriving, a style settling — and that is the wrong question for
+     * "has this layer had its chance to paint?". A `sourcedata` fires while
+     * the frame is still ahead of us; a zero that "survived a paintNonce
+     * bump" may have survived nothing but a network event. That is why the
+     * reverted attempt (see contactsPending) did not clear the label.
+     *
+     * `idle` is different in kind: MapLibre only says it after it has
+     * finished rendering everything it can. So idles are counted separately,
+     * and an unproven zero becomes a proven one only when the map has gone
+     * idle AT LEAST ONCE SINCE THE LAYER SET CHANGED. */
+    var idleNonce = 0;
+    var contactSig = '';        // the contact layers this settle-state is about
+    var contactIdleAt = -1;     // idleNonce when that set was first seen
+
+    function bumpIdle() { idleNonce++; }
+
+    /* Has the contact layer been given a frame to paint in? Two conditions,
+     * both necessary and neither sufficient:
+     *
+     *  - the map has gone idle since these layers appeared (a layer added
+     *    this tick can reach `map.loaded()` before rendering anything — the
+     *    failure reMeasure() was written for), and
+     *  - the tiles the layers read from are in (`isSourceLoaded`), or a zero
+     *    is just "the vector tile has not landed".
+     *
+     * When both hold, `0` is a MEASUREMENT: there are no contact lines in
+     * this viewport, and the bar is free to say so. */
+    function contactsSettled(layers) {
+        if (typeof map === 'undefined' || !map) return false;
+        if (contactIdleAt < 0 || idleNonce <= contactIdleAt) return false;
+        try { if (map.loaded && !map.loaded()) return false; } catch (e) { return false; }
+        for (var i = 0; i < layers.length; i++) {
+            var src;
+            try { src = (map.getLayer(layers[i]) || {}).source; } catch (e) { return false; }
+            if (!src) return false;
+            try { if (!map.isSourceLoaded(src)) return false; } catch (e) { return false; }
+        }
+        return true;
+    }
+
     /* The filters are part of the picture: a commodity chip changes what is
      * painted without moving the map or loading a tile, and a memo keyed only
      * on the viewport would then hand back the previous selection's counts. */
@@ -289,6 +332,34 @@
             '|' + geoLayerSig() + '|' + geoFilterSig() + '|' + paintNonce;
     }
 
+    /* ── WHAT THE CARD IS AN ANSWER TO ─────────────────────────────────
+     *
+     * The mixer's two tables are built from the CANVAS: their columns are the
+     * periods actually drawn, the tabs count what is painted, and the state
+     * line describes the current view. So the mixer is not a function of
+     * GeoMap's state alone — it is a function of state AND of what MapLibre has
+     * finished drawing, and the second half changes without anybody touching a
+     * control (a tile lands, the style settles, the reader pans).
+     *
+     * The floating panel already handles that: watchMap's idle handler
+     * re-measures, syncBar restates the counts and a changed skill scope
+     * rebuilds it. The admin card had no such path, and its symptom was
+     * precise: opening `?panel=admin&admin_tab=map-settings` on a cold load
+     * painted the card BEFORE the first tile arrived, so it said "No mapped
+     * sheet reaches this view" over a map that was drawing three countries —
+     * and it stayed wrong, because nothing after that was a state change.
+     * Same failure as the frozen "counting lines…" bar, one surface over.
+     *
+     * This is the signature of the measurement the card is built from. Cheap
+     * (no queryRenderedFeatures of its own: it reads what the idle pass just
+     * measured), and it deliberately does NOT include the viewport, so panning
+     * inside one country does not rebuild a card the reader is working in. */
+    function geoAnswerSig() {
+        var cols = columnEntries().map(function (e) { return e.key; }).join(',');
+        return measuredSig + '|' + contactHits + '|' + cols + '|' +
+            (typeof GeoMap !== 'undefined' && GeoMap.skillScope ? GeoMap.skillScope() : '');
+    }
+
     function measureCoverage(force) {
         var key = geoViewKey();
         if (!force && key === measureKey && measureKey !== '') return;
@@ -296,13 +367,34 @@
         // Measured first and kept outside `coverage`, because every early
         // return below sets `coverage = null` and the contact layer can be
         // the ONLY geology on screen (see geoOffView).
+        /* A layer that EXISTS but has painted nothing yet answers 0 to
+         * queryRenderedFeatures, which is indistinguishable from "there is
+         * nothing here". That zero is not a measurement UNTIL THE LAYER HAS
+         * HAD ITS FRAME, so it is flagged and re-taken (reMeasure below).
+         *
+         * `contactHits === 0` alone was one flag for TWO STATES — "unproven"
+         * and "measured, none" — so a genuine zero stayed pending forever and
+         * the bar said `counting lines…` indefinitely (invisible at z3 over
+         * three sheets, where some contact is always in view; reproducible at
+         * z10.5 over one sheet, where 71 line TYPES pass the filter and none
+         * of their geometry reaches a ~50 km viewport). The second state is
+         * now decided by contactsSettled(): the map has gone idle since these
+         * layers appeared AND their sources are loaded. Then "no lines here"
+         * is a reading of the canvas, not a guess about paint latency, and
+         * the bar can say it. */
+        var cLayers = geoContactLayers();
+        var cSig = cLayers.join(',');
+        if (cSig !== contactSig) {
+            // A NEW SET OF LAYERS RESETS THE CLOCK. This is the moment the
+            // layer was added (or the reader switched contacts off and on),
+            // and nothing measured before the next idle is about it.
+            contactSig = cSig;
+            contactIdleAt = cSig ? idleNonce : -1;
+        }
         contactHits = contactsInView();
         measuredSig = geoLayerSig();
-        // A layer that EXISTS but has painted nothing yet answers 0 to
-        // queryRenderedFeatures, which is indistinguishable from "there is
-        // nothing here". That zero is not a measurement, so it is flagged and
-        // re-taken (reMeasure below) instead of being frozen into a label.
-        contactsPending = contactHits === 0 && geoContactLayers().length > 0;
+        contactsPending = contactHits === 0 && cLayers.length > 0 &&
+            !contactsSettled(cLayers);
         var layers = geoFillLayers();
         if (!layers.length) { coverage = null; return; }
         var cv = map.getCanvas();
@@ -601,6 +693,97 @@
     var expanded = false;      // "+n" opened: show every age, not just the head
     var swTimers = [];
     function cancelSwTimers() { swTimers.forEach(clearTimeout); swTimers = []; }
+
+    /* ── RESTING: THE STRIP IS A STATEMENT, NOT A BANNER ──────────────────
+     *
+     * The strip earns its width when the reader is looking at it and spends
+     * it the rest of the time: on a 412 px phone the header, two chips and an
+     * eleven-swatch key took a third of the readout, over the map. So after a
+     * few seconds untouched it folds back to its icons (CSS: .ml-rest), and
+     * anything that looks like attention unfolds it again.
+     *
+     * Three rules, each of which is a bug if broken:
+     *  - it NEVER rests while a menu or the geology panel is open, or a
+     *    surface the reader is working in shrinks under their hand;
+     *  - it NEVER rests while the pointer or keyboard focus is inside it;
+     *  - a rested strip still SAYS what it folded (the swatch count on the
+     *    chip), because a key that silently disappears is a truncation that
+     *    does not announce itself.
+     * Waking is free and idempotent — one class toggle, no re-render — so it
+     * can be wired to hover, focus, pointerdown and every public action.
+     */
+    var REST_MS = 4000;
+    var resting = false;
+    var restTimer = null;
+    var restWired = false;
+    var lastFitW = 0;          // the strip's width when it was last awake
+
+    function stripHost() { return document.getElementById('stats-map'); }
+
+    function restBlocked(host) {
+        if (menuEl) return true;                       // a menu or the geology panel is open
+        if (!host) return true;
+        try {
+            if (host.matches(':hover')) return true;
+            if (host.contains(document.activeElement) &&
+                document.activeElement !== document.body) return true;
+        } catch (e) { /* :hover is unsupported nowhere we ship, but never throw here */ }
+        return false;
+    }
+
+    function applyRest() {
+        var host = stripHost();
+        if (!host) return;
+        host.classList.toggle('ml-rest', resting && !host.classList.contains('quiet'));
+        if (!resting) return;
+        // WHAT IT FOLDED, in the fold's own words. Derived from the swatches
+        // actually rendered, never typed: the key's length is a property of
+        // the view (invariant 2).
+        var n = host.querySelectorAll('.ml-sw:not(.ml-sw-more):not(.ml-sw-all)').length;
+        var main = host.querySelector('.ml-chip.geo .ml-chip-main') ||
+                   host.querySelector('.ml-chip .ml-chip-main');
+        Array.prototype.forEach.call(host.querySelectorAll('[data-rest]'), function (el) {
+            if (el !== main) el.removeAttribute('data-rest');
+        });
+        if (!main) return;
+        if (n > 0) main.setAttribute('data-rest', String(n));
+        else main.removeAttribute('data-rest');
+    }
+
+    function scheduleRest() {
+        if (restTimer) { clearTimeout(restTimer); restTimer = null; }
+        restTimer = setTimeout(function () {
+            restTimer = null;
+            if (restBlocked(stripHost())) { scheduleRest(); return; }
+            resting = true;
+            applyRest();
+        }, REST_MS);
+    }
+
+    /* Unfold, and start the clock again. Called from every public entry point
+     * and from the strip's own pointer/focus handlers. */
+    function wake() {
+        if (resting) { resting = false; applyRest(); }
+        scheduleRest();
+    }
+
+    function wireRest(host) {
+        if (restWired || !host) return;
+        restWired = true;
+        // On the HOST rather than on the buttons: render() replaces the
+        // strip's innerHTML on every idle, so a listener on a chip would be
+        // thrown away with it. pointerenter covers mouse and pen; touch
+        // arrives as pointerdown, which is also the first half of the tap
+        // that opens a menu — so a phone user's first tap unfolds and their
+        // second chooses, and the chip they aimed at has not moved, because
+        // the chip is the one thing that does not move when it unfolds.
+        ['pointerenter', 'pointerdown', 'focusin', 'wheel'].forEach(function (ev) {
+            host.addEventListener(ev, wake, { passive: true });
+        });
+        host.addEventListener('pointerleave', scheduleRest, { passive: true });
+        host.addEventListener('focusout', scheduleRest, { passive: true });
+        scheduleRest();
+    }
 
     function ageEntries() {
         if (typeof GeoMap === 'undefined' || !GeoMap.anyOn()) return [];
@@ -910,6 +1093,13 @@
     function fitCols(n) {
         var host = document.getElementById('stats-map');
         var w = host ? host.clientWidth : 0;
+        // A RESTED STRIP IS THE WRONG RULER. While folded it sits in the
+        // readout's spare grid cell (~a third of a phone), so measuring it
+        // would size the key for a box it is not going to be shown in, and
+        // the reader would wake a full-width strip carrying four swatches and
+        // a "+7". The last width it actually had awake is the honest one.
+        if (resting && lastFitW) w = lastFitW;
+        else if (w) lastFitW = w;
         if (!w) return MAX;
         // The swatch is 21 px on the desktop panel and 26 px on a phone, and
         // that is a CSS decision: measure one rather than keeping a second
@@ -1214,6 +1404,7 @@
         render();                       // the strip's own state (chip, wording)
         if (typeof map === 'undefined' || !map || !map.once) {
             rebuildGeoMenuNow(opts);
+            if (typeof geoMapPanelDirtied === 'function') geoMapPanelDirtied();
             return;
         }
         cancelPaintWait();
@@ -1224,6 +1415,12 @@
             cancelPaintWait();
             render();                   // NOW the canvas says what is drawn
             rebuildGeoMenuNow(opts);
+            // THE OTHER HOME OF THE SAME MIXER. The admin card is built from
+            // the same canvas measurement as the panel, so it waits for the
+            // same paint. Not renderGeoMapPanel(): that begins with a
+            // MapLegend.refresh(), and render() ran two lines ago — the card's
+            // own scheduler is what we want, without a second strip pass.
+            if (typeof geoMapPanelDirtied === 'function') geoMapPanelDirtied();
             syncBar();                  // the bar the rebuild just re-emitted, from the fresh measurement
             // ONE `idle` IS NOT ENOUGH WHEN A LAYER WAS JUST ADDED. The gesture
             // that adds the contact layers (mxMode('junction'), a junction pick)
@@ -1507,6 +1704,52 @@
         return;
     }
 
+    /* The historical archive's download, in the SAME menu component as the
+     * geology one. There is only one file, so this could have stayed the bare
+     * link it was — but then the two drapes in one admin section would offer
+     * their downloads two different ways, and only one of them would carry the
+     * ⧉ that is the reliable way to get a link out of Safari (see dlRow).
+     * One row, the app's row. */
+    function openHistDownloadMenu(btn) {
+        var already = dlEl;
+        closeDlMenu();
+        if (already) return;
+        var m = histMeta() || {};
+        var el = document.createElement('div');
+        el.className = 'aoi-menu mode-menu ml-menu ml-menu-dl';
+        el.dataset.kind = 'histdl';
+        el.setAttribute('role', 'menu');
+        el.setAttribute('aria-label', 'Download the historical maps');
+        var html = '<div class="mode-menu-head">Download the archive</div>';
+        if (!m.available || !m.download) {
+            html += '<div class="mode-menu-note">No archive is installed on this server' +
+                (m.reason ? ' (' + esc(m.reason) + ')' : '') + ', so there is nothing to download.</div>';
+            el.innerHTML = html;
+            dlEl = el;
+            placeDl(el, btn);
+            return;
+        }
+        var mb = m.size_bytes ? Math.round(m.size_bytes / 1048576) + ' MB' : '';
+        html += dlRow('<a class="aoi-menu-item" data-item="mbtiles" ' +
+            'href="' + esc(dlUrl(m.download)) + '" ' +
+            'title="' + esc('The mosaicked sheet series as MBTiles, z' + (m.minzoom || 0) + '–' +
+                (m.maxzoom || 0) + ', for Locus Map, OsmAnd or QGIS.') + '">' +
+            '<i class="icon-scroll-text"></i><span>MBTiles</span>' +
+            '<em>' + esc(m.name || 'archive') + (mb ? ', ' + mb : '') + '</em></a>',
+            dlUrl(m.download), 'mbtiles');
+        // The one thing about this file a reader has to be told BEFORE they
+        // open it somewhere it looks empty. On screen the ink is lifted to
+        // white so imagery stays readable; the file keeps the archive's own
+        // near-black, because offline viewers default to light backgrounds.
+        html += '<div class="mode-menu-note">Black ink, as printed — the white you see on ' +
+            'the map is a paint property of the overlay, not a second archive. On a light ' +
+            'background (the default in Locus, OsmAnd and QGIS) black is what you want.</div>';
+        if (m.attribution) html += '<div class="mode-menu-note">' + esc(m.attribution) + '</div>';
+        el.innerHTML = html;
+        dlEl = el;
+        placeDl(el, btn);
+    }
+
     /* Placed WITHOUT touching menuEl, because the thing it hangs off is the
      * geology panel and that panel is what is being exported: place() would
      * make this little menu "the menu", and the next rebuild would rebuild the
@@ -1523,15 +1766,54 @@
         // menu: a share link's landing click would otherwise close it.
         setTimeout(function () { document.addEventListener('click', closeDlMenu); },
                    highlight ? 400 : 0);
+        // AND IT MUST NOT COME ADRIFT OF ITS ANCHOR. Over the map the arrow
+        // cannot move under it; on the admin card the button sits in a
+        // scrolling page section, and a fixed-position menu is then left
+        // hanging off nothing.
+        //
+        // It FOLLOWS rather than closes. Closing would have been simpler and is
+        // wrong twice over: the gesture that brings the button into view is
+        // itself a scroll (`scrollIntoView`, smooth, still running when the
+        // menu opens), so a share link pointing at a row closed the menu it had
+        // just opened; and a reader who nudges the page while reading two
+        // download descriptions has not asked for anything to go away. Capture,
+        // so the section's own scroll reaches us; passive, because this never
+        // prevents the scroll it is following.
+        dlAnchor = btn;
+        window.addEventListener('scroll', followDl, { capture: true, passive: true });
+        window.addEventListener('resize', followDl);
+    }
+
+    /* Keep the menu on its button, and give up only when the button is gone
+     * from the screen entirely — at which point the menu is pointing at
+     * something the reader cannot see, which is the one case where staying
+     * open is worse than closing. */
+    function followDl() {
+        if (!dlEl || !dlAnchor || !dlAnchor.isConnected) return closeDlMenu();
+        var r = dlAnchor.getBoundingClientRect();
+        if (r.bottom < 0 || r.top > window.innerHeight) return closeDlMenu();
+        var w = dlEl.offsetWidth, h = dlEl.offsetHeight;
+        dlEl.style.left = Math.max(6, Math.min(window.innerWidth - w - 6, r.right - w)) + 'px';
+        dlEl.style.top = (r.bottom + h + 6 > window.innerHeight
+            ? Math.max(6, r.top - h - 4) : r.bottom + 4) + 'px';
     }
 
     function closeDlMenu(e) {
         // A click INSIDE this menu must not close it mid-download: the row
         // replaces its own label with "Building your view…", and losing the
         // element would lose the only progress the reader has.
-        if (e && dlEl && dlEl.contains(e.target)) return;
+        if (e && e.type === 'click' && dlEl && dlEl.contains(e.target)) return;
         if (dlEl) { dlEl.remove(); dlEl = null; }
+        dlAnchor = null;
+        // The card may have gone stale while the menu held it still.
+        if (typeof geoMapPanelFlush === 'function') setTimeout(geoMapPanelFlush, 0);
         document.removeEventListener('click', closeDlMenu);
+        window.removeEventListener('scroll', followDl, { capture: true });
+        window.removeEventListener('resize', followDl);
+        // The button a share link pointed at stops being the pointed-at one
+        // the moment the reader dismisses the menu it opened.
+        var hl = document.querySelector('.geo-cardbtn.highlight');
+        if (hl) hl.classList.remove('highlight');
     }
 
     function dlUrl(path) {
@@ -1542,7 +1824,13 @@
     }
 
     var dlEl = null;
+    var dlAnchor = null;      // the button this menu hangs off; see followDl()
     var dlBusy = false;
+    /* A download row the SHARE LINK asked the admin card to point at, held
+     * until that card actually paints (it is built from a fetch and from the
+     * rendered canvas, so it can be seconds late). Read once — pointing at a
+     * row is a thing that happens on arrival, not a setting. */
+    var geoAdminExport = '';
 
     /* The filtered build. A POST, so it cannot be an <a>: the body is the
      * resolved selection, and the answer is a file built for this one request.
@@ -2393,20 +2681,23 @@
             '<span title="' + esc(why) + '">' + msg + '</span>' + act + '</div>';
     }
 
-    function openGeoMenu(btn) {
-        var already = menuEl && menuEl.dataset.kind === 'geo';
-        closeMenu();
-        if (already) return;
-        var el = document.createElement('div');
-        el.className = 'aoi-menu mode-menu ml-menu ml-menu-geo ml-panel' +
-            (panelCollapsed ? ' ml-panel-collapsed' : '');
-        el.dataset.kind = 'geo';
-        // A dialog, not a menu: it stays open while the reader works the map,
-        // and calling it a menu would promise a screen reader that Escape and
-        // the next click dismiss it.
-        el.setAttribute('role', 'dialog');
-        el.setAttribute('aria-label', 'Geology');
-
+    /* ── ONE MIXER, TWO PLACES IT CAN BE READ ────────────────────────────
+     *
+     * This is the body of the geology chooser — the state line, the strength
+     * ladder, the two tables — with NO furniture around it. It is a string,
+     * because it has two homes: the floating panel over the map (openGeoMenu,
+     * below) and the Geology card in admin ▸ Map Settings.
+     *
+     * It is ONE function rather than two similar ones on purpose. The card in
+     * admin used to be a second, older chooser for the same layer: amber pill
+     * chips, a 63-row unit list, its own opacity slider and no junction table
+     * at all. Two surfaces for one piece of state is the shape of bug where a
+     * reader changes one, looks at the other, and concludes the app has lost
+     * their selection — and the older one silently could not express half the
+     * current state (picked cells, junctions, the measured lift). Everything
+     * here reads GeoMap, so both homes show the same answer by construction.
+     */
+    function geoBodyHTML() {
         var idx = commodityIndex();
         var keys = Object.keys(idx).sort();
         var anyOn = keys.some(commodityOn);
@@ -2431,7 +2722,7 @@
         var ages = cols.map(function (c) { return c.key; });
         var A = affinityGrid(ages);
 
-        var html = headRow();
+        var html = '';
 
         /* ── WHERE AM I, AND HOW DO I GET OUT ────────────────────────
          *
@@ -2482,21 +2773,15 @@
                 : '') + '</div>';
 
         if (!keys.length) {
-            html += '<div class="mode-menu-note">No sheet installed here lists a commodity affinity.</div>';
-            el.innerHTML = html;
-            place(el, btn, { floating: true });
-            return;
+            return html + '<div class="mode-menu-note">No sheet installed here lists a commodity affinity.</div>';
         }
 
         if (!cols.length && !(CF.on && contactHits)) {
             // Nothing drawn here: the matrix would be a grid of empty cells,
             // which reads as "nothing is prospective" rather than as "no rock
             // is on screen". Say the true thing instead.
-            html += '<div class="mode-menu-note">No mapped sheet reaches this view, so there is ' +
+            return html + '<div class="mode-menu-note">No mapped sheet reaches this view, so there is ' +
                 'no rock here to describe. Pan to Sudan, the CAR or Tanzania.</div>';
-            el.innerHTML = html;
-            place(el, btn, { floating: true });
-            return;
         }
 
         // NO GROUND, BUT EDGES: the fills are filtered or off-sheet here and
@@ -2577,9 +2862,7 @@
         }
 
         if (viewMode === 'junction' && CF.any) {
-            el.innerHTML = html + junctionTableHTML(CF);
-            place(el, btn, { floating: true });
-            return;
+            return html + junctionTableHTML(CF);
         }
 
         html += '<div class="mode-menu-head ml-mx-head">' +
@@ -2755,7 +3038,28 @@
         html += '<div class="mode-menu-note">An inference from rock type \u2014 nothing here ' +
             'counts, ranks or locates a deposit.</div>';
 
-        el.innerHTML = html;
+        return html;
+    }
+
+    /* The floating panel over the map: the mixer, wearing the app's own
+     * window furniture (`.fui-bar` — grabber, download arrow, collapse,
+     * close). The bar belongs to THIS home only; the admin card has the
+     * admin panel's own chrome, and giving it a second close button would
+     * offer to close a card that is a section of a page. */
+    function openGeoMenu(btn) {
+        var already = menuEl && menuEl.dataset.kind === 'geo';
+        closeMenu();
+        if (already) return;
+        var el = document.createElement('div');
+        el.className = 'aoi-menu mode-menu ml-menu ml-menu-geo ml-panel' +
+            (panelCollapsed ? ' ml-panel-collapsed' : '');
+        el.dataset.kind = 'geo';
+        // A dialog, not a menu: it stays open while the reader works the map,
+        // and calling it a menu would promise a screen reader that Escape and
+        // the next click dismiss it.
+        el.setAttribute('role', 'dialog');
+        el.setAttribute('aria-label', 'Geology');
+        el.innerHTML = headRow() + geoBodyHTML();
         place(el, btn, { floating: true });
     }
 
@@ -3086,6 +3390,7 @@
         measureSourceAges();
         var b = bm(), quiet = (b === 'dark') && !histOn() && !geoOn();
         host.classList.toggle('quiet', quiet);
+        wireRest(host);
 
         var opener = '<button type="button" class="ml-opener" id="ml-opener" ' +
             'aria-haspopup="menu" aria-label="Basemap and overlays" ' +
@@ -3094,6 +3399,7 @@
 
         if (quiet) {
             if (host.innerHTML !== opener) host.innerHTML = opener;
+            applyRest();
             return;
         }
 
@@ -3117,7 +3423,7 @@
                 '<button type="button" class="ml-chip-main" title="' + esc(e[3]) +
                 ' \u2014 tap to choose the basemap" ' +
                 'onclick="event.stopPropagation();MapLegend.menu(this.parentNode)">' +
-                '<i class="' + e[2] + '"></i>' + esc(e[1]) +
+                '<i class="' + e[2] + '"></i><span class="ml-chip-label">' + esc(e[1]) + '</span>' +
                 '<i class="icon-chevron-down ml-caret"></i></button>' +
                 '<button type="button" class="ml-chip-x" aria-label="Back to the dark basemap" ' +
                 'title="Back to the dark basemap" ' +
@@ -3138,7 +3444,7 @@
                 esc((hOff ? 'The sheet series does not reach this view — tap for opacity and the way there'
                           : ((hm && hm.name) || 'Historical map overlay') + ' — tap for opacity and the archive')) + '" ' +
                 'onclick="event.stopPropagation();MapLegend.histMenu(this.parentNode)">' +
-                '<i class="icon-scroll-text"></i>Historical' +
+                '<i class="icon-scroll-text"></i><span class="ml-chip-label">Historical</span>' +
                 (hOff ? '<em>not in view</em>' : '') +
                 '<i class="icon-chevron-down ml-caret"></i></button>' +
                 '<button type="button" class="ml-chip-x" aria-label="Hide the historical map overlay" ' +
@@ -3177,7 +3483,7 @@
                         : (note ? 'Geology, showing only ' + fn.full + ' \u2014 tap for the rock and junction tables'
                                 : 'Geological units \u2014 tap for the rock and junction tables')) + '" ' +
                 'onclick="event.stopPropagation();MapLegend.geoMenu(this.parentNode)">' +
-                '<i class="icon-mountain"></i>Geology' +
+                '<i class="icon-mountain"></i><span class="ml-chip-label">Geology</span>' +
                 (note ? '<em>' + esc(note) + '</em>' : '') +
                 // The caret said "this opens something"; the table icon says
                 // WHAT — a matrix of rock against commodity, not another list
@@ -3208,6 +3514,10 @@
             '<div class="ml-row">' + chips + opener + '</div>' +
             swatches;
         if (host.innerHTML !== html) host.innerHTML = html;
+        // The fold is a CLASS plus one derived attribute, and the write above
+        // may have just replaced the element carrying it. Re-applied
+        // unconditionally, for the same reason syncSwatchExpansion is.
+        applyRest();
         // Not animated here: render() runs on every map idle, and re-staggering
         // an already-open strip on each pan is a flicker, not a transition.
         syncSwatchExpansion(false);
@@ -3218,9 +3528,31 @@
         menu: openMenu,
         histMenu: openHistMenu,
         geoMenu: openGeoMenu,
+        /** The mixer's body, for the OTHER surface that shows it: the Geology
+         *  card in admin ▸ Map Settings. Same string, same handlers, so the
+         *  two cannot disagree — see geoBodyHTML(). */
+        /** The signature of the canvas measurement the mixer is built from,
+         *  for the admin card, which has no idle handler of its own. */
+        geoAnswerSig: geoAnswerSig,
+        geoBody: geoBodyHTML,
+        /** "A repaint is on its way." The matrix's columns are the periods
+         *  DRAWN, so a surface rebuilt in the same tick as the gesture shows
+         *  the map as it was one gesture ago; the floating panel waits for the
+         *  paint (refreshWhenDrawn) and the admin card has to wait for the
+         *  same one. Without this the card painted twice per gesture, and the
+         *  first of the two was wrong. */
+        paintPending: function () { return !!paintWait; },
         /** The panel bar's download arrow: this view, or every sheet. */
         downloadMenu: openDownloadMenu,
+        /** The same arrow on the Historical Maps card in admin. */
+        histDownloadMenu: openHistDownloadMenu,
+        /** Which download row a share link asked the admin card to point at,
+         *  consumed once. '' when the link named none. */
+        takeAdminExport: function () { var v = geoAdminExport; geoAdminExport = ''; return v; },
         downloadView: downloadView,
+        /** The download arrow's tooltip, so the admin card's button and the
+         *  panel's arrow say one sentence about one file. */
+        downloadTitle: downloadBtnTitle,
         /** The whole-catalogue link is a plain <a download>, so there is no
          *  completion event — the row says "Preparing…" for a floor rather
          *  than pretending to measure a build it cannot see. Same floor and
@@ -3538,6 +3870,26 @@
             // sign of what the link was about.
             var wantDL = params.get('geo_export');
             if (wantDL !== 'view' && wantDL !== 'all') wantDL = '';
+            // WHICH HOME THE LINK CAME FROM. The same mixer is readable in two
+            // places, so `geo_export` alone is ambiguous: a link copied from
+            // the admin card that opened the floating panel would answer with
+            // a surface the sender was not looking at. buildShareUrl() already
+            // carries panel=admin + admin_tab when the admin panel is open, so
+            // that pair IS the answer, and the panel is only implied when it
+            // is absent. Admin's own restore (?admin_tab=map-settings) opens
+            // the tab; this only has to point at the row there.
+            var toAdmin = wantDL && params.get('panel') === 'admin' &&
+                params.get('admin_tab') === 'map-settings';
+            if (toAdmin) {
+                // ONE ROW IS POINTED AT, IN ONE PLACE. A sender with both
+                // surfaces open produces a link naming both; opening two
+                // download menus would be the app answering a question twice.
+                // Admin wins when the link names it, and the floating panel is
+                // still restored if `geo_panel` asked for it — just without a
+                // second menu on top of it.
+                geoAdminExport = wantDL;      // the card points at it when it paints
+                wantDL = '';
+            }
             if (wantDL && !want) want = '1';
             if (!want) return;
             panelCollapsed = (want === 'collapsed');
@@ -3630,6 +3982,32 @@
             if (typeof switchAdminTab === 'function') setTimeout(function () { switchAdminTab('map-settings'); }, 60);
         }
     };
+    /* ── ANY DELIBERATE ACT WAKES THE STRIP ────────────────────────────
+     *
+     * Every method here is something the reader did on purpose, so each one
+     * is a reason to unfold and to restart the clock. Wrapping the table is
+     * how that stays true for methods added later — a new control that forgot
+     * to call wake() would fold itself mid-gesture, which is the kind of bug
+     * that gets reported as "it flickers".
+     *
+     * `refresh` is the exception and has to be: it is render(), and watchMap
+     * calls it on every map idle. Waking there would mean the strip never
+     * rests while anything on the map is moving — i.e. never. The others in
+     * QUIET are the same shape of thing: reads the app makes of itself (the
+     * admin card asks geoAnswerSig()/geoBody() on every idle, a share link
+     * asks getShareParams()), and gestures that mean the reader is LEAVING —
+     * mxSettle() fires on a click anywhere outside the panel, so waking on it
+     * would mean every click on the map unfolds the legend.
+     */
+    var QUIET = { refresh: 1, geoAnswerSig: 1, geoBody: 1, paintPending: 1,
+        downloadTitle: 1, takeAdminExport: 1, getShareParams: 1,
+        restoreFromParams: 1, mxSettle: 1, close: 1 };
+    Object.keys(MapLegend).forEach(function (k) {
+        if (QUIET[k] || typeof MapLegend[k] !== 'function') return;
+        var fn = MapLegend[k];
+        MapLegend[k] = function () { wake(); return fn.apply(this, arguments); };
+    });
+
     window.MapLegend = MapLegend;
 
     // The overlays are asked about once, on load, so the strip can say
@@ -3648,6 +4026,7 @@
         // onto the sheets, or it is the contradiction it exists to prevent.
         map.on('idle', function () {
             bumpPaint();               // the canvas changed; the memo must not survive it
+            bumpIdle();                // ...and the map has now had its frame (contactsSettled)
             if (!(geoOn() || histOn())) return;
             render();
             // THE BAR IS RESTATED ON EVERY IDLE, unconditionally, and not only
@@ -3657,6 +4036,12 @@
             // and the label it wanted to fix stayed on screen for good. Two
             // text writes that usually change nothing; see syncBar().
             syncBar();
+            // THE ADMIN CARD SHOWS THE SAME MIXER and has no idle handler of
+            // its own; without this it keeps whatever the canvas said when it
+            // was built, which on a cold `?panel=admin` load is "no mapped
+            // sheet reaches this view" over three countries. Free when the tab
+            // is closed, and a no-op when the answer has not changed.
+            if (typeof geoMapPanelCanvasChanged === 'function') geoMapPanelCanvasChanged();
             // A zero that was never proven gets another pass here too: `idle`
             // is exactly when a layer added a moment ago has finished
             // painting, and the panel bar must not be left saying "no lines

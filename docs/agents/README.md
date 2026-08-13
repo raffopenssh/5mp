@@ -20,8 +20,6 @@ lives here, one file per subsystem, loaded only when a task touches it.
 | `reference.md` | Data files, key API examples, DB stats, Lucide icon system |
 | `mining.md` | Retired mining detection — read before proposing anything mining-related |
 | `acled.md` | Mining occurrence reference; what ACLED and Crisis Tracker may say about our truth sets' reach |
-| `HANDOVER_CONTACTS.md` | Open brief: geological contact zones. Delete when the work lands. |
-| `HANDOVER_GEOLOGY_EXPORT.md` | Open brief: geology export + mining anchors, half built. Delete when the work lands. |
 | `HANDOVER_AOI_FIXES.md` | AOI structural data-correctness fixes (F1–F12): surface vs extent, measured population, the backfill rotation. Delete when the queue is empty. |
 
 ## Where a new note goes
@@ -38,8 +36,9 @@ belong in the root file:
 If a note is longer than three lines, or names a specific file/table/handler, it
 is subsystem knowledge — put it here.
 
-Keep the root file under ~8 KB. When it grows past that, the fix is to move a
-section out, never to trim the invariants.
+Keep the root file under **20 KB** (`tests/docs_tests.sh` enforces it). When it
+grows past that, the fix is to move a section out, never to trim the
+invariants.
 
 ## Style
 

@@ -254,6 +254,58 @@
         .stats-map.quiet .ml-opener { opacity: 0.28; }
         .stats-map.quiet .ml-opener:hover, .stats-map.quiet .ml-opener:focus-visible { opacity: 0.95; }
         .ml-row { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; padding: 0 0 0 8px; margin: 0 -6px 0 -8px; }
+
+        /* ── THE RESTING STATE: a key nobody has touched is furniture ──────
+           The strip states what is draped, which is worth its width WHILE the
+           reader is reading it and is a banner the rest of the time — on a
+           412px phone the header, the chips and the key ate a third of the
+           panel, and the panel is over the map. So an untouched strip settles
+           back to its ICONS: the words, the sub-label, the caret, the × and
+           the colour key fold away; the coloured, tappable chip stays, and so
+           does the opener. Nothing is REMOVED — every target keeps its title
+           and its accessible name, and a chip you tap opens the same menu as
+           before. It is the same strip, narrower.
+
+           Width/height + opacity, never display:none, so it grows back rather
+           than jumping. Hover, focus or a tap wakes it (MapLegend.wake), and
+           it never rests while a menu or the geology panel is open — a
+           surface the reader is working in must not shrink under them.
+           prefers-reduced-motion gets the two states without the tween. */
+        .ml-chip-label, .ml-chip em, .ml-chip .ml-caret {
+            display: inline-block; overflow: hidden; white-space: nowrap; vertical-align: middle;
+            transition: max-width 260ms cubic-bezier(0.22,1,0.36,1), opacity 150ms ease,
+                        margin 260ms cubic-bezier(0.22,1,0.36,1); max-width: 22ch; }
+        .stats-map.ml-rest .ml-chip-label,
+        .stats-map.ml-rest .ml-chip em,
+        .stats-map.ml-rest .ml-chip .ml-caret { max-width: 0; opacity: 0; margin-left: 0; margin-right: 0; }
+        .ml-chip-x { max-width: 3ch; overflow: hidden;
+            transition: max-width 260ms cubic-bezier(0.22,1,0.36,1), opacity 150ms ease,
+                        padding 260ms cubic-bezier(0.22,1,0.36,1); }
+        .stats-map.ml-rest .ml-chip-x { max-width: 0; padding-left: 0; padding-right: 0; opacity: 0; }
+        .stats-map.ml-rest .ml-chip-main { padding: 3px 7px; border-radius: 999px; }
+        .stats-map.ml-rest .ml-chip i { opacity: 1; }
+        /* The key folds from the bottom. max-height is a CAP, not a size: the
+           key's height is data-dependent (one row, or a braced matrix of
+           five), and a number here would clip a tall key on the way back. */
+        .ml-swatches { overflow: hidden;
+            transition: max-height 280ms cubic-bezier(0.22,1,0.36,1), opacity 170ms ease,
+                        padding 280ms cubic-bezier(0.22,1,0.36,1); max-height: 520px; }
+        .stats-map.ml-rest .ml-swatches { max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0; }
+        .stats-map .stats-divider, .stats-map .stats-header {
+            overflow: hidden; max-height: 24px;
+            transition: max-height 280ms cubic-bezier(0.22,1,0.36,1), opacity 170ms ease,
+                        margin 280ms cubic-bezier(0.22,1,0.36,1); }
+        .stats-map.ml-rest .stats-divider, .stats-map.ml-rest .stats-header {
+            max-height: 0; opacity: 0; margin-top: 0; margin-bottom: 0; }
+        /* A rested strip still says HOW MUCH it folded, or it is a truncation
+           that does not announce itself: the swatch count rides on the chip
+           in place of the words it dropped. Written by render(), derived. */
+        .stats-map.ml-rest .ml-chip-main[data-rest]::after {
+            content: attr(data-rest); font-size: 8px; opacity: 0.75; margin-left: 3px; }
+        @media (prefers-reduced-motion: reduce) {
+            .ml-chip-label, .ml-chip em, .ml-chip .ml-caret, .ml-chip-x,
+            .ml-swatches, .stats-map .stats-divider, .stats-map .stats-header { transition: none; }
+        }
         .ml-opener { flex: none; margin-left: auto; width: 26px; height: 26px; display: inline-flex;
             align-items: center; justify-content: center; border: 0; border-radius: 6px;
             background: none; color: #9ca3af; font-size: 14px; cursor: pointer;
@@ -466,9 +518,18 @@
         .ml-menu-dl .mode-menu-note { padding: 6px 9px; }
         /* Two rows both named "GeoPackage" (as in the park menu, where the
            difference is a gigabyte): the ‘em’ is the only thing telling them
-           apart, so it must not wrap into the label. */
-        .ml-menu-dl .aoi-menu-item em { flex: none; white-space: nowrap; }
-        .ml-menu-dl .aoi-menu-item span { min-width: 0; }
+           apart, so it must not wrap into the label.
+
+           BUT IT MUST ALSO NOT SIT ON TOP OF IT. `flex:none` + `nowrap` on a
+           row whose label had `min-width:0` and no overflow rule meant the
+           label OVERFLOWED under the description as soon as the description
+           grew — "this view, 104 units + 452 line types" printed the two on
+           top of each other, and the row that says WHICH file this is became
+           the unreadable one. The em is capped instead: it ellipsises (its
+           full text is the button's title), and the label keeps its width. */
+        .ml-menu-dl .aoi-menu-item em { flex: 0 1 auto; white-space: nowrap;
+            overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+        .ml-menu-dl .aoi-menu-item span { flex: none; min-width: 0; }
         .ml-mx-head { display: flex; align-items: baseline; gap: 6px; }
         .ml-mx-head em { font-style: normal; font-weight: 400; letter-spacing: 0;
             text-transform: none; color: #6b7280; font-size: 9px; }
@@ -2269,6 +2330,16 @@
                is still a real touch target. */
             .stats-map { grid-column: 1 / -1; margin: 0; }
             .stats-map.quiet { margin: -2px -2px -4px 0; }
+            /* THE EMPTY CELL IS THE STRIP'S HOME WHILE IT IS RESTING. The
+               readout is a 3-column grid of 5 stats, so there is always a
+               sixth cell with nothing in it — and a rested strip is exactly
+               chip-sized. Spanning the full width for two icons pushed the
+               map down a row for nothing. Woken, it goes back to 1/-1,
+               because a key of eleven periods does not fit in a third of a
+               phone. */
+            .stats-map.ml-rest:not(.quiet) { grid-column: auto; align-self: center;
+                justify-self: end; margin: 0; }
+            .stats-map.ml-rest .ml-row { justify-content: flex-end; flex-wrap: nowrap; }
             .stats-map .stats-divider { display: block; margin: 4px 0 5px; }
             .stats-map .stats-header { display: block; font-size: 8px; margin-bottom: 4px; padding: 0 2px; }
             .ml-row { padding: 0 2px; margin: 0; gap: 5px; }
@@ -3319,6 +3390,67 @@ tr.selected td {
 
 /* Provenance block: the source scans and their original downloads. */
 .geo-src { margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.07); }
+
+/* ── THE MIXER, EMBEDDED IN THE ADMIN CARD ──────────────────────────────
+   The same string as the floating panel over the map (MapLegend.geoBody), so
+   these rules only give it the box it no longer inherits: over the map it is
+   inside `.aoi-menu`, which supplies the dark panel, the 330 px width and the
+   scroll cap. Here it sits in a page section, and it must NOT wear the panel's
+   own furniture — no shadow, no fixed positioning, no close button. The width
+   stays fixed for the reason .ml-menu-geo is fixed: the two tables set
+   different max-content widths, so a shrink-to-fit box resizes under the reader
+   on every tab switch and reads as two different surfaces. */
+.geo-mixer { width: 330px; max-width: 100%; margin-top: 14px;
+    border: 1px solid rgba(255,255,255,0.10); border-radius: 8px;
+    background: rgba(17,19,23,0.75); padding: 2px 0 4px; }
+/* The card is a page, not a popover, so nothing here scrolls inside itself:
+   an inner scroll region inside an outer one is the pattern where a reader's
+   wheel lands in whichever box the pointer happens to be over. */
+.geo-mixer .ml-mx, .geo-mixer .ml-jx { padding-left: 8px; padding-right: 8px; }
+
+/* The card's own bar: the panel's buttons without the window furniture. */
+.geo-cardbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.geo-cardbtn { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 6px; color: #9ca3af; font-size: 11px; cursor: pointer;
+    font-family: inherit; }
+.geo-cardbtn:hover { color: #e5e7eb; border-color: rgba(255,255,255,0.28);
+    background: rgba(255,255,255,0.09); }
+.geo-cardbtn:focus-visible { outline: 2px solid #60a5fa; outline-offset: 2px; }
+.geo-cardbtn i { font-size: 13px; opacity: 0.85; }
+/* The share link can point at a download row; the row it points at is in a
+   menu, and the BUTTON that opens it is what the reader has to find first. */
+.geo-cardbtn.highlight { border-color: rgba(251,191,36,0.65); color: #fcd34d;
+    background: rgba(251,191,36,0.16); }
+
+/* ── The reference workings, under Advanced ─────────────────────────────
+   A citation list, so it reads as one: publisher, how it was observed, the
+   terms the publisher granted, the count. `unstated` is deliberately NOT
+   styled as a warning — it is the ordinary case for a public dataset with no
+   licence file, and colouring it red would read as "do not use this", which is
+   not what it says. `withheld` is dimmed, because the row is there to record
+   that the list exists and is not in the file. */
+.geo-anch { margin-top: 14px; padding-top: 12px;
+    border-top: 1px solid rgba(255,255,255,0.07); }
+.geo-anch-note { color: #6b7280; font-size: 10px; line-height: 1.5; margin-top: 6px; }
+.geo-anch-note b { color: #9ca3af; font-weight: 600; }
+.geo-anch-note.warn { color: #fcd34d; }
+.geo-anch-note code { font-size: 10px; color: #9ca3af; }
+.geo-anch-tbl { margin-top: 8px; display: flex; flex-direction: column; gap: 1px; }
+.geo-anch-row { display: grid; grid-template-columns: minmax(0,1fr) auto auto 40px;
+    align-items: center; gap: 8px; padding: 4px 6px; border-radius: 5px; }
+.geo-anch-row:hover { background: rgba(255,255,255,0.05); }
+.geo-anch-lbl { color: #bbb; font-size: 11px; text-decoration: none;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.geo-anch-lbl:hover { color: #93c5fd; text-decoration: underline; }
+.geo-anch-obs { color: #6b7280; font-size: 10px; white-space: nowrap; }
+.geo-anch-terms { font-size: 9px; padding: 1px 6px; border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.14); color: #9ca3af; white-space: nowrap; }
+.geo-anch-terms.t-open { color: #86efac; border-color: rgba(134,239,172,0.4); }
+.geo-anch-terms.t-restricted { color: #fca5a5; border-color: rgba(252,165,165,0.4); }
+.geo-anch-n { color: #888; font-size: 10px; text-align: right;
+    font-variant-numeric: tabular-nums; }
+.geo-anch-row.withheld { opacity: 0.6; }
 
 /* ─────────────────────────────────────────────────────────────────────────
    ShareLink dialog (srv/static/sharelink.js)
