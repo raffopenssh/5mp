@@ -18526,7 +18526,15 @@ ${starredItems.narratives.map(n => {
         if (!featureId) return;
 
         const t = type === 'fire_trajectory' ? 'fire' : type;
-        const sel = `[data-park="${parkId}"][data-type="${t}"][data-feature="${featureId}"]`;
+        // `featureId` may be a LIST of candidate ids, best first — see
+        // overviewFeatureIDs(). The map's unit and the list's unit differ for
+        // two layers, and for deforestation the list itself has two shapes.
+        const ids = Array.isArray(featureId) ? featureId.filter(Boolean) : [featureId];
+        const sels = ids.map(id => `[data-park="${parkId}"][data-type="${t}"][data-feature="${id}"]`);
+        const find = () => {
+            for (const s of sels) { const e = document.querySelector(s); if (e) return e; }
+            return null;
+        };
         const moreBtnIds = { fire: `fire-load-more-${parkId}`, deforestation: `deforest-more-btn-${parkId}`,
                              settlement: `settlements-more-btn-${parkId}` };
         let entry = null;
@@ -18534,7 +18542,7 @@ ${starredItems.narratives.map(n => {
         // clicking "load more" until the entry appears or the button is gone.
         for (let round = 0; round < 25; round++) {
             for (let i = 0; i < 8 && !entry; i++) {
-                entry = document.querySelector(sel);
+                entry = find();
                 if (!entry) await new Promise(r => setTimeout(r, 150));
             }
             if (entry) break;
@@ -19550,7 +19558,7 @@ ${starredItems.narratives.map(n => {
                     actionLabel: areaOverviewLabel(parkId),
                     onActivate: (feature) => {
                         const p = feature.properties || {};
-                        openAreaOverview(parkId, type, overviewFeatureID(type, p));
+                        openAreaOverview(parkId, type, overviewFeatureIDs(type, p));
                     }
                 }));
             }
@@ -19969,21 +19977,48 @@ ${starredItems.narratives.map(n => {
     // stacks of orphaned popups when features overlap.
     // Which id the OVERVIEW LIST knows this map feature by.
     //
-    // A settlement is a cluster; the map draws its built-up footprints. The
-    // list is a list of clusters (`settlement_<park_settlements.id>`), the map
-    // carries footprint ids (`settlement_ghsl_<area>_<lat>_<lon>`), and asking
-    // the list for a footprint id can only ever answer "no matching entry" —
-    // which is what a click on a settlement in XSA_Study_Area did. The server
-    // ships the cluster id as `settlement_id` (srv/feature_meta.go); use it.
-    // Anything else keeps its own id.
+    // Two of the three narrative layers count in a different unit on the map
+    // than in the list, and the list's unit is the one to ask for:
+    //
+    //   settlement    cluster (`settlement_<park_settlements.id>`)   vs footprints
+    //   deforestation event   (`event:<deforestation_events.id>`)    vs patches
+    //
+    // Asking the list for a polygon id can only ever answer "no matching
+    // entry" — which is exactly what a click on a settlement or a clearing
+    // did. The server ships the list's id as a property (`settlement_id` /
+    // `event_id`, srv/feature_meta.go); use it, and fall back to the feature's
+    // own id for the layers where the two units coincide (fires, roads).
     function overviewFeatureID(type, props) {
-        const p = props || {};
-        if (type === 'settlement' && p.settlement_id != null && p.settlement_id !== '') {
-            return `settlement_${p.settlement_id}`;
-        }
-        return p.feature_id || p.id || null;
+        return overviewFeatureIDs(type, props)[0] || null;
     }
     window.overviewFeatureID = overviewFeatureID;
+
+    // EVERY id this feature might be listed under, best first. A list is the
+    // honest answer because the same layer is rendered by more than one list
+    // shape: deforestation falls back to one row per YEAR
+    // (`deforestation_year_<y>`) when no event is classified, and that row is a
+    // legitimate destination for a click on a patch. Trying the alternatives
+    // costs one extra querySelector and turns a "no matching entry" into the
+    // coarser-but-true answer.
+    function overviewFeatureIDs(type, props) {
+        const p = props || {};
+        const out = [];
+        if (type === 'settlement' && p.settlement_id != null && p.settlement_id !== '') {
+            out.push(`settlement_${p.settlement_id}`);
+        }
+        if (type === 'deforestation') {
+            // `event_id` is derived from the polygon_ids join (srv/feature_meta.go);
+            // `deforest_id` is baked into properties_json by
+            // scripts/import_events_from_json.py and covers rows the join misses.
+            const ev = (p.event_id != null && p.event_id !== '') ? p.event_id : p.deforest_id;
+            if (ev != null && ev !== '') out.push(`event:${ev}`);
+            if (p.year != null && p.year !== '') out.push(`deforestation_year_${p.year}`);
+        }
+        const own = p.feature_id || p.id || null;
+        if (own) out.push(own);
+        return out;
+    }
+    window.overviewFeatureIDs = overviewFeatureIDs;
 
     function featureTipHTML(props, type, parkName) {
         props = props || {};

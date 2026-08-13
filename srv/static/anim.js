@@ -1894,8 +1894,8 @@
                 const full = (L && p.rid != null) ? L.detailFor(p.rid) : null;
                 if (a && typeof openAreaOverview === 'function') {
                     const props = full || p;
-                    const fid = (typeof overviewFeatureID === 'function')
-                        ? overviewFeatureID(tipType, props) : (props.feature_id || null);
+                    const fid = (typeof overviewFeatureIDs === 'function')
+                        ? overviewFeatureIDs(tipType, props) : (props.feature_id || null);
                     openAreaOverview(a, tipType, fid);
                 }
             }

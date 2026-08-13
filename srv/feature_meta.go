@@ -75,6 +75,11 @@ func (s *Server) settlementMetaByPolygon(parkID string) map[string]settlementMet
 
 type deforestMeta struct {
 	narrative, classification, patternType sql.NullString
+	// eventID is the deforestation_events row this patch belongs to. One event
+	// is one row in the overview list and several polygons on the map
+	// (`[n patches]` in the list entry), so this is the identity the LIST uses
+	// — see overviewFeatureID() in globe.html.
+	eventID int64
 }
 
 // defMetaKey mirrors the old join's ON clause: polygon id AND year.
@@ -93,7 +98,7 @@ func defMetaKey(featureID string, year interface{}) string {
 func (s *Server) deforestMetaByPolygon(parkID string) map[string]deforestMeta {
 	out := map[string]deforestMeta{}
 	rows, err := s.DB.Query(`
-		SELECT polygon_ids, year, narrative, classification, pattern_type
+		SELECT polygon_ids, year, narrative, classification, pattern_type, id
 		FROM deforestation_events
 		WHERE park_id = ? AND polygon_ids IS NOT NULL AND polygon_ids != ''`, parkID)
 	if err != nil {
@@ -104,7 +109,7 @@ func (s *Server) deforestMetaByPolygon(parkID string) map[string]deforestMeta {
 		var polyIDs string
 		var year int
 		var m deforestMeta
-		if err := rows.Scan(&polyIDs, &year, &m.narrative, &m.classification, &m.patternType); err != nil {
+		if err := rows.Scan(&polyIDs, &year, &m.narrative, &m.classification, &m.patternType, &m.eventID); err != nil {
 			continue
 		}
 		for _, id := range splitPolygonIDs(polyIDs) {
@@ -187,6 +192,12 @@ func (s *Server) enrichFeatureProps(featureType, parkID, featureID string,
 		e, ok := m[defMetaKey(featureID, props["year"])]
 		if !ok {
 			return
+		}
+		// The EVENT this patch belongs to — the identity the overview list is
+		// keyed by (`event:<id>`), as opposed to the polygon's own id. Same
+		// two-units problem as settlement_id above.
+		if e.eventID != 0 {
+			props["event_id"] = e.eventID
 		}
 		if e.narrative.Valid {
 			props["narrative"] = e.narrative.String

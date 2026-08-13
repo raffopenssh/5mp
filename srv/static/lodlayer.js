@@ -401,10 +401,10 @@
                 if (p.rid != null && detailCache.has(p.rid)) p = detailCache.get(p.rid);
                 var area = p.park_id || s.park;
                 if (area && typeof openAreaOverview === 'function') {
-                    // The list is keyed by the settlement CLUSTER, not the
-                    // footprint under the cursor — see overviewFeatureID().
-                    var fid = (typeof overviewFeatureID === 'function')
-                        ? overviewFeatureID(s.tipType, p) : (p.feature_id || null);
+                    // The list is keyed by the CLUSTER / EVENT, not the polygon
+                    // under the cursor — see overviewFeatureIDs().
+                    var fid = (typeof overviewFeatureIDs === 'function')
+                        ? overviewFeatureIDs(s.tipType, p) : (p.feature_id || null);
                     openAreaOverview(area, s.tipType, fid);
                 }
             }
