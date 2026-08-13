@@ -92,6 +92,47 @@ hand-picked indices are dead), §9 (the AMW learned model and its 0.781),
 `docs/MINING_REBUILD_HANDOVER.md` (rebuild history). Data source catalogue:
 `docs/MINING_DATA_SOURCES.md`.
 
+## GSW new-water (WP4, 2026-08-13): measured, no signal, no layer
+
+The one shape-based pit idea allowed to walk the retired detector's edge:
+JRC Global Surface Water v1.4 `transitions` classes 2/5 (new permanent /
+new seasonal water, 1984–2021), pit-lake scale (0.1–50 ha), >200 m from any
+`park_rivers_hydro`/`park_basin_rivers` reach (river migration is the
+confuser). A NEW permanent water body is a far narrower claim than "turbid
+pixel" — but on XSA it still measured **nothing**:
+
+* 5,548 candidates in `XSA_Study_Area` (52 new_permanent, 5,496 new_seasonal)
+* capture of 39 reported mine sites within 2 km: **0.0** vs hull baseline
+  0.008, permutation p=1.0, power ceiling 0.035 — with 39 sites only a
+  capture delta ≥ 3.5 pp was detectable. Truth caveat: XSA rows are
+  community reports + OSM tags, not field visits; coordinates may be village
+  label positions.
+* Verdict (in `data/eval/gsw_new_water.json`, committed): **no map layer
+  ships**. Nothing enters `park_settlements` or any narrative.
+
+Pipeline (`scripts/gsw_new_water.py` + `scripts/gsw_eval.py`,
+`scripts/fetch_gsw.py` for local tile cache in `data/gsw/`):
+
+* `--aoi <id>` / `--park <id>` → `data/gsw_new_water/<id>.json` (gitignored,
+  up to 16 MB/area) with per-candidate nearest-river/mine/settlement
+  distances, R7 provenance, and `raster_end_year` **derived from the tile
+  URL** — the layer ends 2021 and every artefact says so (a 2021-ending layer
+  must not be read as "no new pits since").
+* `--rotate 1` — cron 05:45, one area/night over all 164 parks+AOIs, stalest
+  first, state in `data/gsw_new_water/state.json`. An `unfinished` area
+  (deadline, unreadable tile, failed window) keeps its stale rank and is
+  retried the next night (R1); reports `gsw_water_scan_{success,failed}` to
+  the bell. Read-only against the DB. Verified: AGO_Cameia deadline-hit run
+  recorded `unfinished` and the next rotation re-picked and finished it.
+* `--eval` refuses a partial extraction and refuses 0 truth sites (both are
+  UNFINISHED, not nulls). Re-run it if the truth sets grow — the current
+  null is at community-report precision, and field-visit-grade coordinates
+  inside XSA would change the question's power, not just its answer.
+
+Db test: "gsw eval artefact carries verdict + power" (`tests/db_tests.sh`).
+
+---
+
 The 2026-08 rebuild produced a **negative result** for every hand-picked index:
 mine pixels vs *confuser* pixels (villages, burn scars, river water, bare
 savanna) score AUC 0.45–0.56 — rb is inverted. The earlier 0.75–0.81 AUCs only

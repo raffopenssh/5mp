@@ -90,11 +90,19 @@ data/eval/*
 # language model over GED's location descriptions, same reasoning as Crisis
 # Tracker above. The GED zip and candidate cache stay out (data/ucdp/ below).
 !data/eval/ucdp/
+# ...and the GSW new-water skill eval (2K): the WP4 stop-gate verdict
+# (no signal at 0.035 power ceiling). The per-area candidate inventory is
+# regenerable from the GSW tiles and stays out (data/gsw_new_water/ below).
+!data/eval/gsw_new_water.json
 data/viirs_backfill_state.json
 
 # Mining analysis: bulk downloads & intermediate rasters (re-fetchable)
 data/osm_geofabrik/
 data/gsw/
+# GSW new-water candidate inventory (WP4 rotation): regenerable from the
+# tiles above, up to ~16 MB per area. Only the eval verdict is committed
+# (data/eval/gsw_new_water.json, whitelisted above).
+data/gsw_new_water/
 analysis/out/*.png
 analysis/out/*.npy
 
@@ -201,3 +209,4 @@ data/crisistracker/
 # scripts/ucdp_fetch.py; committed artefacts are the derived labels/sites in
 # data/eval/ucdp/.
 data/ucdp/
+data/nightlights/
