@@ -138,6 +138,13 @@ test_api "species_serengeti" "/api/parks/TZA_Serengeti/species" "200" ".species 
 yellow "\n=== Narratives ==="
 test_api "deforestation_narrative" "/api/parks/COD_Virunga/deforestation-narrative" "200" "true"
 test_api "settlement_narrative" "/api/parks/COD_Virunga/settlement-narrative" "200" "true"
+# WP1: persistence measured from GHSL back-epochs. Chinko is a converted area
+# (scripts/ghsl_epochs.py ran); the sum over by_persistence must equal the
+# clusters the stamp measured, and the summary must say the sentence (derived
+# counts, invariant 2 -- we assert presence and internal consistency, not a
+# typed number).
+test_api "settlement_persistence_chinko" "/api/parks/CAF_Chinko/settlement-narrative" "200" \
+    '(.by_persistence | to_entries | map(.value) | add) == .settlement_count and (.summary | contains("GHSL built-up epochs"))'
 test_api "classified_settlements" "/api/parks/COD_Virunga/classified-settlements" "200" "true"
 test_api "classified_deforestation" "/api/parks/COD_Virunga/classified-deforestation" "200" "true"
 
@@ -449,6 +456,49 @@ if [[ "$GEO_LOC" == 308*"/api/geomap/geopackage"* ]]; then
 else
     red "FAIL ($GEO_LOC)"
     FAILED=$((FAILED + 1)); ERRORS+=("geomap geopackage legacy path")
+fi
+
+# Structural context (JRC AKP faults + craton margins): the catalogue's own
+# count must equal what the layer endpoint serves — a truncated layer is
+# indistinguishable from a complete one, so the count is derived twice from
+# the server itself and compared, never typed here. The skill block, when
+# present, must carry lifts (generated numbers) and a scope naming the truth
+# set; a layer without one must be exactly the word the UI prints: unmeasured.
+printf "%-50s" "geomap_structural_served_whole"
+STRUCT_OK="ok"
+STRUCT_META=$(curl -s -b "$COOKIE_FILE" "${BASE_URL}/api/geomap" | python3 -c '
+import json, sys
+s = (json.load(sys.stdin).get("structural") or {})
+for lid, e in s.items():
+    if e.get("available"):
+        sk = e.get("skill")
+        skill_ok = 1 if (sk is None or (sk.get("lifts") and sk.get("scope"))) else 0
+        print(lid, e["n"], e["url"], skill_ok)
+    elif not e.get("reason"):
+        print(lid, -1, "-", 0)' 2>/dev/null)
+if [[ -z "$STRUCT_META" ]]; then STRUCT_OK="no structural block in catalogue"; fi
+while read -r SL_ID SL_N SL_URL SL_SKILL; do
+    [[ -z "$SL_ID" ]] && continue
+    if [[ "$SL_N" == "-1" ]]; then STRUCT_OK="$SL_ID unavailable with no reason"; break; fi
+    if [[ "$SL_SKILL" != "1" ]]; then STRUCT_OK="$SL_ID skill block without lifts or scope"; break; fi
+    SL_GOT=$(curl -s --compressed -b "$COOKIE_FILE" "${BASE_URL}${SL_URL}" | python3 -c '
+import json, sys
+d = json.load(sys.stdin)
+miss = [k for k in ("source","citation","terms","accessed") if not d.get(k)]
+print(len(d.get("features") or []), ",".join(miss) or "-")' 2>/dev/null)
+    if [[ "$SL_GOT" != "$SL_N -" ]]; then STRUCT_OK="$SL_ID: catalogue says $SL_N, endpoint served '$SL_GOT'"; break; fi
+done <<< "$STRUCT_META"
+if [[ "$STRUCT_OK" == "ok" ]]; then
+    green "✓"; PASSED=$((PASSED + 1))
+else
+    red "FAIL ($STRUCT_OK)"
+    FAILED=$((FAILED + 1)); ERRORS+=("geomap structural")
+fi
+if [[ "$STRUCT_OK" == "ok" ]]; then
+    green "✓"; PASSED=$((PASSED + 1))
+else
+    red "FAIL ($STRUCT_OK)"
+    FAILED=$((FAILED + 1)); ERRORS+=("geomap structural")
 fi
 
 yellow "\n=== Patrol data tenants ==="

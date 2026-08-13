@@ -245,6 +245,13 @@ type SettlementNarrative struct {
 	LargestSettlements    []SettlementDetail     `json:"largest_settlements"`
 	RegionalBreakdown     []RegionSettlement     `json:"regional_breakdown,omitempty"`
 	ByClassification      map[string]int         `json:"by_classification,omitempty"`
+	// ByPersistence is MEASURED from GHSL back-epochs (scripts/ghsl_epochs.py):
+	// permanent (built by 2000) / established (by 2015) / recent (after 2015).
+	// Rows whose epoch tiles were unavailable are counted in
+	// PersistenceUnmeasured rather than silently omitted — an unmeasured
+	// cluster is a different state than a recent one (invariant 12).
+	ByPersistence         map[string]int         `json:"by_persistence,omitempty"`
+	PersistenceUnmeasured int                    `json:"persistence_unmeasured,omitempty"`
 	ClassifiedList        []ClassifiedSettlement `json:"classified_settlements,omitempty"`
 }
 
@@ -1436,6 +1443,36 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 		}
 	}
 
+	// Persistence breakdown, MEASURED from GHSL back-epochs
+	// (scripts/ghsl_epochs.py). 'unmeasured' (tile_missing) is counted apart:
+	// a cluster whose epoch tile never downloaded is not a recent one
+	// (invariant 1 — a pixel absent from an old epoch and a tile absent from
+	// the download are different states).
+	persRows, err := s.DB.Query(`
+		SELECT COALESCE(persistence, ''), COUNT(*)
+		FROM park_settlements
+		WHERE park_id = ?`+settlementFilterSQL("narrative", "polygon_ids")+`
+		GROUP BY 1
+	`, internalID)
+	if err == nil {
+		defer persRows.Close()
+		persMap := make(map[string]int)
+		for persRows.Next() {
+			var p string
+			var cnt int
+			if persRows.Scan(&p, &cnt) == nil {
+				if p == "" {
+					narrative.PersistenceUnmeasured += cnt
+				} else {
+					persMap[p] += cnt
+				}
+			}
+		}
+		if len(persMap) > 0 {
+			narrative.ByPersistence = persMap
+		}
+	}
+
 	// Get classified settlements with individual narratives
 	narrative.ClassifiedList = s.GetCachedClassifiedSettlements(internalID)
 
@@ -1451,9 +1488,53 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 	narrative.Status = "complete"
 	narrative.Summary = generateSettlementNarrative(parkName, settlementCount, narrative.TotalPopulation,
 		narrative.PopulationDensity, narrative.ConflictRisk, narrative.LargestSettlements, narrative.RegionalBreakdown)
+	if s := persistenceSentence(narrative.ByPersistence, narrative.PersistenceUnmeasured, settlementCount); s != "" {
+		narrative.Summary += " " + s
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(narrative)
+}
+
+// persistenceSentence summarises GHSL back-epoch persistence for the
+// settlement narrative: "Of the N settlements, X already existed in 2000, Y
+// appeared between 2000 and 2015, and Z are recent (after 2015)." Counts are
+// derived from the measured breakdown, never typed (invariant 2). Returns ""
+// when nothing was measured — an absent measurement is not a sentence about
+// zero (invariant 12); when only some clusters were measurable the sentence
+// names its denominator.
+func persistenceSentence(byPersistence map[string]int, unmeasured, total int) string {
+	if len(byPersistence) == 0 {
+		return ""
+	}
+	measured := 0
+	for _, n := range byPersistence {
+		measured += n
+	}
+	plural := func(n int, sing, pl string) string {
+		if n == 1 {
+			return sing
+		}
+		return pl
+	}
+	var parts []string
+	if n := byPersistence["permanent"]; n > 0 {
+		parts = append(parts, fmt.Sprintf("%d already existed in 2000", n))
+	}
+	if n := byPersistence["established"]; n > 0 {
+		parts = append(parts, fmt.Sprintf("%d appeared between 2000 and 2015", n))
+	}
+	if n := byPersistence["recent"]; n > 0 {
+		parts = append(parts, fmt.Sprintf("%d %s recent (no built surface before 2015)", n, plural(n, "is", "are")))
+	}
+	if len(parts) == 0 {
+		return ""
+	}
+	subject := fmt.Sprintf("Of the %d settlements", measured)
+	if unmeasured > 0 {
+		subject = fmt.Sprintf("Of the %d settlements with epoch coverage (%d unmeasured)", measured, unmeasured)
+	}
+	return subject + ", " + strings.Join(parts, ", ") + " — measured from GHSL built-up epochs (E2000/E2015)."
 }
 
 // assessConflictRisk determines human-wildlife conflict risk level

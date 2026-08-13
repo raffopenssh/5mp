@@ -257,6 +257,13 @@ func (s *Server) Serve(addr string) error {
 	// must not be able to make the server build things.
 	mux.HandleFunc("POST /api/geomap/geopackage", s.HandleAPIGeoMapGeoPackageView)
 	mux.HandleFunc("GET /api/geomap/{sheet}/geopackage", s.HandleAPIGeoMapGeoPackageLegacy)
+	// Continental structural linework (JRC AKP faults + craton margins) —
+	// whole GeoJSON, not tiles: 415 features. Its own prefix, NOT
+	// /api/geomap/structural/{layer}: that pattern conflicts with
+	// GET /api/geomap/{sheet}/download in Go's ServeMux (both match
+	// "structural/download", neither is more specific) and the server
+	// panics at startup.
+	mux.HandleFunc("GET /api/geomap-structural/{layer}", s.HandleAPIGeoMapStructural)
 	mux.HandleFunc("GET /api/geomap/{sheet}/{z}/{x}/{y}", s.HandleAPIGeoMapTile)
 	mux.HandleFunc("GET /api/grid", s.HandleAPIGrid)
 	mux.HandleFunc("GET /api/nearby-places", s.HandleAPINearbyPlaces)

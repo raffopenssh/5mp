@@ -59,7 +59,10 @@ POP_SOURCE = f"ghsl_{POP_PRODUCT}"
 # in the database could say "re-derive me" -- which is what this constant is
 # for: scripts/backfill_settlement_surface.py re-queues any area whose recorded
 # version is not this one.
-PIPELINE_VERSION = "2026-08-13c"
+#   2026-08-13d: settlement persistence measured from E2000/E2015 back-epochs
+#   (scripts/ghsl_epochs.py, WP1) -- the backfill now derives it per area, so
+#   every area must pass through the queue again.
+PIPELINE_VERSION = "2026-08-13d"
 
 # GHSL Mollweide tile grid: 1000 km squares, origin at the top-left of R1_C1.
 # Rows and columns are 1-INDEXED. Verified against the tile's own affine:
