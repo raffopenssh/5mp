@@ -2708,7 +2708,11 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                     const btnIds = {
                         fire: `fire-load-more-${parkId}`,
                         deforestation: `deforest-more-btn-${parkId}`,
-                        settlement: `settlement-more-btn-${parkId}`,
+                        // NB plural: the button the settlement list renders is
+                        // `settlements-more-btn-`. The singular spelling was a
+                        // getElementById that always returned null, i.e. a
+                        // paging step that silently never happened.
+                        settlement: `settlements-more-btn-${parkId}`,
                         legal: `legal-more-btn-${parkId}`
                     };
                     const btnId = btnIds[section];
@@ -10975,19 +10979,22 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                         </div>` : ''}
                     `;
                     
-                    // Attach click handler for "Show more" button
+                    // Attach click handler for "Show more" button. The remaining
+                    // entries are ALREADY in the DOM (inside the hidden div) —
+                    // re-rendering them here produced a second copy of every row,
+                    // so `[data-feature=...]` matched two elements, one of them
+                    // permanently invisible. Reveal, do not re-render.
                     if (remaining.length > 0) {
                         const btn = document.getElementById(btnId);
                         if (btn) {
                             btn.addEventListener('click', () => {
                                 const container = document.getElementById(containerId);
-                                if (container) {
-                                    const beforeCount = container.children.length;
-                                    container.innerHTML += remaining.map((s, i) => useClassified ? formatClassifiedSettlement(s, paId, parkName, initial.length + i) : formatSettlement(s, paId, parkName, initial.length + i)).join('');
-                                    // Number new entries
+                                const hidden = document.getElementById(hiddenId);
+                                if (container && hidden) {
+                                    while (hidden.firstChild) container.insertBefore(hidden.firstChild, hidden);
+                                    hidden.style.display = 'none';
                                     if (window.TEST) {
-                                        const entries = container.querySelectorAll('.narrative-row');
-                                        entries.forEach((entry, i) => {
+                                        container.querySelectorAll('.narrative-row').forEach((entry, i) => {
                                             const badge = entry.querySelector('.test-entry-id');
                                             if (badge) {
                                                 badge.textContent = i;
@@ -18521,7 +18528,7 @@ ${starredItems.narratives.map(n => {
         const t = type === 'fire_trajectory' ? 'fire' : type;
         const sel = `[data-park="${parkId}"][data-type="${t}"][data-feature="${featureId}"]`;
         const moreBtnIds = { fire: `fire-load-more-${parkId}`, deforestation: `deforest-more-btn-${parkId}`,
-                             settlement: `settlement-more-btn-${parkId}` };
+                             settlement: `settlements-more-btn-${parkId}` };
         let entry = null;
         // Narrative lists are paginated (10 at a time out of hundreds), so keep
         // clicking "load more" until the entry appears or the button is gone.
@@ -19543,7 +19550,7 @@ ${starredItems.narratives.map(n => {
                     actionLabel: areaOverviewLabel(parkId),
                     onActivate: (feature) => {
                         const p = feature.properties || {};
-                        openAreaOverview(parkId, type, p.feature_id || p.id || null);
+                        openAreaOverview(parkId, type, overviewFeatureID(type, p));
                     }
                 }));
             }
@@ -19960,6 +19967,24 @@ ${starredItems.narratives.map(n => {
     // (hover on desktop, tap on touch) — see srv/static/maptip.js. Do NOT
     // create per-layer maplibregl.Popup instances for hover; that produced
     // stacks of orphaned popups when features overlap.
+    // Which id the OVERVIEW LIST knows this map feature by.
+    //
+    // A settlement is a cluster; the map draws its built-up footprints. The
+    // list is a list of clusters (`settlement_<park_settlements.id>`), the map
+    // carries footprint ids (`settlement_ghsl_<area>_<lat>_<lon>`), and asking
+    // the list for a footprint id can only ever answer "no matching entry" —
+    // which is what a click on a settlement in XSA_Study_Area did. The server
+    // ships the cluster id as `settlement_id` (srv/feature_meta.go); use it.
+    // Anything else keeps its own id.
+    function overviewFeatureID(type, props) {
+        const p = props || {};
+        if (type === 'settlement' && p.settlement_id != null && p.settlement_id !== '') {
+            return `settlement_${p.settlement_id}`;
+        }
+        return p.feature_id || p.id || null;
+    }
+    window.overviewFeatureID = overviewFeatureID;
+
     function featureTipHTML(props, type, parkName) {
         props = props || {};
         // Normalize type names
@@ -21748,6 +21773,13 @@ ${starredItems.narratives.map(n => {
             params.set('lat', center.lat.toFixed(4));
             params.set('lng', center.lng.toFixed(4));
             params.set('z', map.getZoom().toFixed(1));
+            // Rotation and tilt. Omitted at their defaults (north up, flat),
+            // which is the overwhelming majority of links — but a view tilted
+            // to read a valley is a view, and restoring it flat is restoring a
+            // different picture with the same coordinates.
+            const _bearing = map.getBearing(), _pitch = map.getPitch();
+            if (Math.abs(_bearing) > 0.5) params.set('bearing', _bearing.toFixed(1));
+            if (_pitch > 0.5) params.set('pitch', _pitch.toFixed(1));
         }
         
         // Add basemap selection
@@ -21760,6 +21792,12 @@ ${starredItems.narratives.map(n => {
         // links already in circulation.
         if (typeof HistMap !== 'undefined' && HistMap.isOn()) {
             params.set('histmap', HistMap.activeId());
+            // Opacity only once it is not the default: a plain "look at the
+            // 1960s sheet" link stays short, and a value the sender dragged is
+            // part of the picture they are pointing at (at 20% the ink is a
+            // hint, at 100% it is the map).
+            const ho = Math.round(HistMap.opacity() * 100);
+            if (ho !== 85) params.set('histmap_opacity', String(ho));
         }
         // Geology: `geomap=sudan` is the common link. The class selection and
         // opacity only ride along once the user has changed them, so a plain
@@ -21767,6 +21805,14 @@ ${starredItems.narratives.map(n => {
         if (typeof GeoMap !== 'undefined') {
             const gp = GeoMap.getShareParams();
             if (gp) Object.keys(gp).forEach(k => params.set(k, gp[k]));
+        }
+        // The geology PANEL is a second object: which table was on screen, and
+        // whether the key was expanded. GeoMap answers for the drape, MapLegend
+        // for the surface the reader read it through, and a link that carries
+        // one without the other arrives with lines nobody has a table for.
+        if (window.MapLegend && typeof MapLegend.getShareParams === 'function') {
+            const mp = MapLegend.getShareParams();
+            if (mp) Object.keys(mp).forEach(k => params.set(k, mp[k]));
         }
         
         // Add time range (use preset if active, otherwise explicit dates)
@@ -22008,6 +22054,16 @@ ${starredItems.narratives.map(n => {
         const lat = parseFloat(params.get('lat'));
         const lng = parseFloat(params.get('lng'));
         const zoom = parseFloat(params.get('z'));
+        // Rotation and tilt. Parsed once here and applied on both branches
+        // below (basemap switch or not) — switchBasemap() rebuilds the style
+        // and re-applies the camera it captured, so setting these before it
+        // would be overwritten by the pre-link view.
+        const _bearing = parseFloat(params.get('bearing'));
+        const _pitch = parseFloat(params.get('pitch'));
+        const applyCam = function () {
+            if (!isNaN(_bearing)) map.setBearing(_bearing);
+            if (!isNaN(_pitch)) map.setPitch(_pitch);
+        };
         
         if (basemap && typeof switchBasemap === 'function') {
             // Map short aliases to actual basemap IDs
@@ -22028,12 +22084,18 @@ ${starredItems.narratives.map(n => {
                 map.once('styledata', function() {
                     map.setCenter([lng, lat]);
                     if (!isNaN(zoom)) map.setZoom(zoom);
+                    applyCam();
                 });
+            } else {
+                map.once('styledata', applyCam);
             }
         } else if (!isNaN(lat) && !isNaN(lng) && typeof map !== 'undefined') {
             // No basemap switch, just set position directly
             map.setCenter([lng, lat]);
             if (!isNaN(zoom)) map.setZoom(zoom);
+            applyCam();
+        } else if (typeof map !== 'undefined') {
+            applyCam();
         }
 
         // Restore the historical map overlay. Deliberately after the basemap:
@@ -22045,11 +22107,18 @@ ${starredItems.narratives.map(n => {
         const histmap = params.get('histmap');
         if (histmap && histmap !== '0' && typeof HistMap !== 'undefined') {
             HistMap.set(true, { quiet: true, fly: false });
+            const ho = parseInt(params.get('histmap_opacity') || '', 10);
+            if (!isNaN(ho) && ho >= 0 && ho <= 100) HistMap.setOpacity(ho / 100);
         }
         if (params.get('geomap') && typeof GeoMap !== 'undefined') {
             // restoreFromParams reads the class selection BEFORE adding any
             // layer, so the overlay never flashes at full extent first.
             GeoMap.restoreFromParams(params);
+        }
+        // The geology panel, after the drape: it anchors on the chip, and the
+        // chip only exists once the layer reports itself on.
+        if (window.MapLegend && typeof MapLegend.restoreFromParams === 'function') {
+            MapLegend.restoreFromParams(params);
         }
         
         // Restore time range (skip if initTimeSlider already applied URL dates)
