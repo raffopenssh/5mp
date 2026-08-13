@@ -930,8 +930,38 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             const ys = v => h - pad - (v / max) * (h - 2*pad);
             const ys2 = v => h - pad - (v / max2) * (h - 2*pad);
             const line = (vals, yfn) => vals.map((v, i) => `${i ? 'L' : 'M'}${xs(i).toFixed(1)},${yfn(v).toFixed(1)}`).join('');
-            const main = line(series.map(d => d.v), ys);
-            const area = `${main} L${xs(series.length-1).toFixed(1)},${h-pad} L${xs(0).toFixed(1)},${h-pad} Z`;
+            // A BREAK IS NOT A DIP. Where consecutive points measure different
+            // quantities the line must not join them: deforestation area is
+            // Hansen mapped canopy loss up to 2023 and GFW alert-count x
+            // KM2_PER_ALERT from 2024, and one continuous path showed 313.6 km²
+            // -> 0.7 km², which reads as a 99.8% collapse in deforestation and
+            // is purely a unit change (docs/AOI_STRUCTURAL_FIXES.md F8,
+            // AGENTS.md invariant 7). `d.brk` on a point means "a different
+            // method starts here": the path is cut, and a dashed rule plus a
+            // label says so, because an invisible break is only a smaller lie.
+            const brkAt = series.map(d => !!d.brk);
+            const segLine = (vals, yfn) => {
+                let out = '', pen = true;
+                vals.forEach((v, i) => {
+                    if (i && brkAt[i]) pen = true;
+                    out += `${pen ? 'M' : 'L'}${xs(i).toFixed(1)},${yfn(v).toFixed(1)}`;
+                    pen = false;
+                });
+                return out;
+            };
+            const anyBreak = brkAt.some((b, i) => b && i > 0);
+            const main = anyBreak ? segLine(series.map(d => d.v), ys)
+                                  : line(series.map(d => d.v), ys);
+            const area = anyBreak ? '' : `${main} L${xs(series.length-1).toFixed(1)},${h-pad} L${xs(0).toFixed(1)},${h-pad} Z`;
+            // The rules and the flags. A `needs_review` point is drawn as a ring
+            // rather than dropped: the reader is told the number is questioned,
+            // not shown a different number (F9).
+            const breakMarks = series.map((d, i) => (i > 0 && d.brk)
+                ? `<line x1="${((xs(i)+xs(i-1))/2).toFixed(1)}" y1="0" x2="${((xs(i)+xs(i-1))/2).toFixed(1)}" y2="${h}" stroke="#888" stroke-width="1" stroke-dasharray="2,2" opacity="0.8"><title>Method changes here: ${d.methodLabel || 'different measurement'} \u2014 the two sides are not comparable</title></line>`
+                : '').join('');
+            const reviewMarks = series.map((d, i) => d.review
+                ? `<circle cx="${xs(i).toFixed(1)}" cy="${ys(d.v).toFixed(1)}" r="2.6" fill="none" stroke="#f59e0b" stroke-width="1.2"><title>${d.label}: flagged for provenance review \u2014 a step change against its own history</title></circle>`
+                : '').join('');
             const overlay = (hasV2
                 ? `<path d="${line(series.map(d => d.v2 || 0), ys2)}" fill="none" stroke="${opts.v2Color}" stroke-width="1.2" opacity="0.9"/>` : '')
                 + (hasV3
@@ -950,8 +980,9 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                 <svg width="${w}" height="${h}" style="display:block;" viewBox="0 0 ${w} ${h}">
                     <path d="${area}" fill="${color}" opacity="0.18"/>
                     <path d="${main}" fill="none" stroke="${color}" stroke-width="1.4"/>
-                    ${overlay}${axisLabels}${strips}
+                    ${breakMarks}${reviewMarks}${overlay}${axisLabels}${strips}
                 </svg>
+                ${anyBreak ? `<div style="font-size:8px;color:#888;margin-top:2px;">\u258f measurement method changes at the dashed rule \u2014 the two sides are different quantities, not a trend</div>` : ''}
                 <div style="display:flex;justify-content:space-between;font-size:8px;color:#666;"><span>${series[0].label}</span><span>${series[series.length-1].label}</span></div>
             </div>`;
         }
@@ -10598,7 +10629,16 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                 
                 if (data.total_fires > 0 || (data.narratives && data.narratives.length > 0)) {
                     const trendData = data.trend || {};
-                    const avgRate = Math.round(trendData.avg_response_rate || 0);
+                    // CONTAINMENT ONLY MEANS SOMETHING AT A DEFENDED BOUNDARY.
+                    // A fire group is "stopped inside" relative to the polygon
+                    // its trajectory was built for; an AOI is a box the user
+                    // drew, so every group is contained by construction and the
+                    // popup read "Avg response rate 100%" for an area nobody
+                    // patrols (docs/AOI_STRUCTURAL_FIXES.md F7). The server
+                    // removes the fields (containment_meaningful=false); this
+                    // removes the rows, rather than drawing 0% or 100%.
+                    const containment = data.containment_meaningful !== false && !isAOI(paId);
+                    const avgRate = containment ? Math.round(trendData.avg_response_rate || 0) : 0;
                     const rateClass = avgRate >= 60 ? ' good' : avgRate >= 40 ? ' warning' : ' bad';
                     
                     // Filter narratives by date range (cache returns all, we filter client-side)
@@ -10694,7 +10734,9 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                     
                     // Generate summary based on filtered data
                     let filteredSummary = '';
-                    if (filteredGroupCount > 0) {
+                    if (filteredGroupCount > 0 && !containment) {
+                        filteredSummary = `In ${rangeLabel}, ${filteredFireCount.toLocaleString()} fire detections across ${filteredGroupCount} fire groups.`;
+                    } else if (filteredGroupCount > 0) {
                         const stoppedCount = allNarratives.filter(n => isFireStopped(n)).length;
                         const transitedCount = filteredGroupCount - stoppedCount;
                         const responseRate = Math.round((stoppedCount / filteredGroupCount) * 100);
@@ -10721,6 +10763,8 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                         
                         ${(() => {
                             if (filteredGroupCount === 0) return `<div style="margin-top: 8px; font-size: 10px; color: #aaa;">${filteredSummary}</div>`;
+                            if (!containment) return `<div style="margin-top: 8px; font-size: 10px; color: #aaa;">${filteredSummary}</div>
+                                <div style="font-size: 9px; color: #777; margin-top: 4px;">Containment is not measured for a drawn area: every trajectory is inside the polygon by construction, so "stopped inside" would say 100% and mean nothing.</div>`;
                             const stoppedCount = allNarratives.filter(n => isFireStopped(n)).length;
                             const transitedCount = filteredGroupCount - stoppedCount;
                             const responseRate = Math.round((stoppedCount / filteredGroupCount) * 100);
@@ -11504,12 +11548,40 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                         })()}
                         ${(() => {
                             const byYear = {};
-                            (data.yearly_stories || []).forEach(y => { byYear[y.year] = (byYear[y.year] || 0) + (y.area_km2 || 0); });
+                            // Which quantity each year holds, and whether the
+                            // pipeline questioned it (docs/AOI_STRUCTURAL_FIXES.md
+                            // F8/F9). A year mixing two methods keeps both names
+                            // so the tooltip can say so rather than pick one.
+                            const methodByYear = {}, reviewByYear = {};
+                            (data.yearly_stories || []).forEach(y => {
+                                byYear[y.year] = (byYear[y.year] || 0) + (y.area_km2 || 0);
+                                if (y.area_method) (methodByYear[y.year] = methodByYear[y.year] || new Set()).add(y.area_method);
+                                if (y.needs_review) reviewByYear[y.year] = true;
+                            });
                             const years = Object.keys(byYear).map(Number).sort((a,b)=>a-b);
                             if (years.length < 2) return '';
+                            const METHOD_LABELS = {
+                                hansen_canopy_loss: 'Hansen mapped canopy loss',
+                                gfw_alert_count: 'GFW alert count × 0.0001 km²'
+                            };
+                            const methodKey = y => {
+                                const set = methodByYear[y];
+                                return set ? [...set].sort().join('+') : '';
+                            };
                             const series = [];
-                            for (let y = years[0]; y <= years[years.length-1]; y++)
-                                series.push({label: String(y), from: `${y}-01-01`, to: `${y}-12-31`, v: byYear[y] || 0});
+                            let prevMethod = null;
+                            for (let y = years[0]; y <= years[years.length-1]; y++) {
+                                const m = methodKey(y);
+                                // Only a KNOWN, CHANGED method breaks the line.
+                                // An unlabelled year (a row predating the column)
+                                // must not manufacture a break out of ignorance.
+                                const brk = !!(m && prevMethod && m !== prevMethod);
+                                series.push({label: String(y), from: `${y}-01-01`, to: `${y}-12-31`,
+                                             v: byYear[y] || 0, brk,
+                                             methodLabel: METHOD_LABELS[m] || m,
+                                             review: !!reviewByYear[y]});
+                                if (m) prevMethod = m;
+                            }
                             return areaSparkline(series, '#a855f7', ' km²', {title: 'Forest loss per year · click to filter'});
                         })()}
                         

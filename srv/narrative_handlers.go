@@ -25,18 +25,23 @@ type OSMPlace struct {
 
 // FireNarrative contains rich textual description of fire movements
 type FireNarrative struct {
-	ParkID       string             `json:"park_id"`
-	ParkName     string             `json:"park_name"`
-	Year         int                `json:"year"`
-	Summary      string             `json:"summary"`
-	Narratives   []FireGroupStory   `json:"narratives"`
-	KeyPlaces    []OSMPlace         `json:"key_places"`
-	Hotspots     []FireHotspot      `json:"hotspots,omitempty"`
-	Trend        *FireTrendAnalysis `json:"trend,omitempty"`
-	ResponseRate float64            `json:"response_rate"`
-	TotalFires   int                `json:"total_fires"`
-	TotalFRP     float64            `json:"total_frp,omitempty"` // Total Fire Radiative Power
-	PeakMonth    string             `json:"peak_month,omitempty"`
+	ParkID     string             `json:"park_id"`
+	ParkName   string             `json:"park_name"`
+	Year       int                `json:"year"`
+	Summary    string             `json:"summary"`
+	Narratives []FireGroupStory   `json:"narratives"`
+	KeyPlaces  []OSMPlace         `json:"key_places"`
+	Hotspots   []FireHotspot      `json:"hotspots,omitempty"`
+	Trend      *FireTrendAnalysis `json:"trend,omitempty"`
+	// ContainmentMeaningful is false for an AOI, and every containment figure
+	// below it is then absent rather than zero. See suppressContainmentForAOI.
+	ContainmentMeaningful bool `json:"containment_meaningful"`
+	// omitempty on purpose: for an AOI the field is REMOVED, not zeroed, so a
+	// reader cannot mistake "not applicable" for "nothing was stopped".
+	ResponseRate float64 `json:"response_rate,omitempty"`
+	TotalFires   int     `json:"total_fires"`
+	TotalFRP     float64 `json:"total_frp,omitempty"` // Total Fire Radiative Power
+	PeakMonth    string  `json:"peak_month,omitempty"`
 	// v3 aggregate fields
 	TotalGroups         int `json:"total_groups,omitempty"`
 	ManagementFires     int `json:"management_fires,omitempty"`
@@ -70,7 +75,7 @@ type FireTrendAnalysis struct {
 	Months             []FireMonthSummary  `json:"months,omitempty"`
 	Weeks              []FireWeekSummary   `json:"weeks,omitempty"`
 	TrendDirection     string              `json:"trend_direction"` // increasing, decreasing, stable
-	AvgResponseRate    float64             `json:"avg_response_rate"`
+	AvgResponseRate    float64             `json:"avg_response_rate,omitempty"`
 	WorstYear          int                 `json:"worst_year"`
 	WorstYearGroups    int                 `json:"worst_year_groups"`
 	BestYear           int                 `json:"best_year"`
@@ -111,9 +116,9 @@ type FireYearSummary struct {
 	Year            int     `json:"year"`
 	TotalGroups     int     `json:"total_groups"`
 	GroupsPerKm2    float64 `json:"groups_per_km2,omitempty"`
-	StoppedInside   int     `json:"stopped_inside"`
-	Transited       int     `json:"transited"`
-	ResponseRate    float64 `json:"response_rate"`
+	StoppedInside   int     `json:"stopped_inside,omitempty"`
+	Transited       int     `json:"transited,omitempty"`
+	ResponseRate    float64 `json:"response_rate,omitempty"`
 	TotalFires      int     `json:"total_fires"`
 	TotalFRP        float64 `json:"total_frp,omitempty"` // Fire Radiative Power (MW)
 	AvgDaysBurning  float64 `json:"avg_days_burning"`
@@ -190,6 +195,15 @@ type DeforestationYearStory struct {
 	PolygonIDs     string   `json:"polygon_ids,omitempty"`
 	Narrative      string   `json:"narrative"`
 	NearbyPlaces   []string `json:"nearby_places"`
+	// AreaMethod names the quantity AreaKm2 holds: 'hansen_canopy_loss' is
+	// mapped canopy loss, 'gfw_alert_count' is an alert count times
+	// KM2_PER_ALERT. Plotted as one series they showed 313.6 km² in 2023 → 0.7
+	// in 2024, which reads as a 99.8% collapse and is a unit change
+	// (docs/AOI_STRUCTURAL_FIXES.md F8; AGENTS.md invariant 7).
+	AreaMethod string `json:"area_method,omitempty"`
+	// NeedsReview marks a (park, year) whose loss is ≥50× its 5-year median
+	// within the same method — a provenance question, not a spike to draw (F9).
+	NeedsReview bool `json:"needs_review,omitempty"`
 }
 
 // DeforestationHotspot describes a significant cluster of deforestation
@@ -205,38 +219,50 @@ type DeforestationHotspot struct {
 
 // SettlementNarrative contains description of settlements and human-wildlife interface
 type SettlementNarrative struct {
-	ParkID             string                 `json:"park_id"`
-	ParkName           string                 `json:"park_name"`
-	Summary            string                 `json:"summary"`
-	Status             string                 `json:"status"`
-	SettlementCount    int                    `json:"settlement_count"`
-	PolygonCount       int                    `json:"polygon_count,omitempty"`
-	TotalPopulation    int64                  `json:"total_population"`
-	Population2030     int64                  `json:"population_2030,omitempty"`
-	PopulationDensity  float64                `json:"population_density_per_km2"`
-	ParkAreaKm2        float64                `json:"park_area_km2"`
-	ConflictRisk       string                 `json:"conflict_risk"`
-	LargestSettlements []SettlementDetail     `json:"largest_settlements"`
-	RegionalBreakdown  []RegionSettlement     `json:"regional_breakdown,omitempty"`
-	ByClassification   map[string]int         `json:"by_classification,omitempty"`
-	ClassifiedList     []ClassifiedSettlement `json:"classified_settlements,omitempty"`
+	ParkID          string `json:"park_id"`
+	ParkName        string `json:"park_name"`
+	Summary         string `json:"summary"`
+	Status          string `json:"status"`
+	SettlementCount int    `json:"settlement_count"`
+	PolygonCount    int    `json:"polygon_count,omitempty"`
+	TotalPopulation int64  `json:"total_population"`
+	// How many of SettlementCount contributed to TotalPopulation. A population
+	// that was never measured must not read as a population of zero
+	// (AGENTS.md invariant 12; docs/AOI_STRUCTURAL_FIXES.md F2).
+	PopulationMeasuredFor int                    `json:"population_measured_for"`
+	Population2030        int64                  `json:"population_2030,omitempty"`
+	PopulationDensity     float64                `json:"population_density_per_km2"`
+	ParkAreaKm2           float64                `json:"park_area_km2"`
+	ConflictRisk          string                 `json:"conflict_risk"`
+	LargestSettlements    []SettlementDetail     `json:"largest_settlements"`
+	RegionalBreakdown     []RegionSettlement     `json:"regional_breakdown,omitempty"`
+	ByClassification      map[string]int         `json:"by_classification,omitempty"`
+	ClassifiedList        []ClassifiedSettlement `json:"classified_settlements,omitempty"`
 }
 
 // SettlementDetail describes a single settlement
 type SettlementDetail struct {
-	ID                int64   `json:"id,omitempty"`
-	GeoJSONID         int64   `json:"geojson_id,omitempty"`
-	PolygonIDs        string  `json:"polygon_ids,omitempty"`
-	Name              string  `json:"name"`
-	Classification    string  `json:"classification,omitempty"`
-	Narrative         string  `json:"narrative,omitempty"`
-	AreaM2            float64 `json:"area_m2"`
-	PopulationEst     int64   `json:"population_est,omitempty"`
-	Population2030    int64   `json:"population_2030,omitempty"`
-	Lat               float64 `json:"lat"`
-	Lon               float64 `json:"lon"`
-	Direction         string  `json:"direction"`
-	NearestBoundaryKm float64 `json:"nearest_boundary_km,omitempty"`
+	ID             int64  `json:"id,omitempty"`
+	GeoJSONID      int64  `json:"geojson_id,omitempty"`
+	PolygonIDs     string `json:"polygon_ids,omitempty"`
+	Name           string `json:"name"`
+	Classification string `json:"classification,omitempty"`
+	Narrative      string `json:"narrative,omitempty"`
+	// AreaM2 is built-up SURFACE (Σ of the fractional raster) and is 0 for a
+	// row the backfill has not reached; ExtentM2 is the mask footprint, which
+	// every row has. They differ by ~24× and must never share a name
+	// (AGENTS.md invariant 7; docs/AOI_STRUCTURAL_FIXES.md F1).
+	AreaM2   float64 `json:"area_m2"`
+	ExtentM2 float64 `json:"extent_m2,omitempty"`
+	// PopulationMeasured false means UNMEASURED, so PopulationEst's zero is not
+	// a count of people.
+	PopulationMeasured bool    `json:"population_measured"`
+	PopulationEst      int64   `json:"population_est,omitempty"`
+	Population2030     int64   `json:"population_2030,omitempty"`
+	Lat                float64 `json:"lat"`
+	Lon                float64 `json:"lon"`
+	Direction          string  `json:"direction"`
+	NearestBoundaryKm  float64 `json:"nearest_boundary_km,omitempty"`
 }
 
 // RegionSettlement groups settlements by geographic region within the park
@@ -459,6 +485,7 @@ func (s *Server) HandleAPIFireNarrative(w http.ResponseWriter, r *http.Request) 
 		if cached.Trend != nil && len(cached.Trend.Weeks) == 0 {
 			s.addWeeklyDataToTrend(internalID, cached.Trend)
 		}
+		suppressContainmentForAOI(internalID, cached)
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set("X-Cache", "HIT")
 		w.Header().Set("X-Cache-Date", computedAt.Format(time.RFC3339))
@@ -558,6 +585,7 @@ func (s *Server) HandleAPIFireNarrative(w http.ResponseWriter, r *http.Request) 
 			// Build summary
 			narrative.Summary = s.buildFireSummary(parkName, fromYear, toYear, 1, narrative.TotalFires, totalGroups, stoppedInside, transited, narrative.ResponseRate, "", 0)
 			narrative.Trend = s.analyzeFireTrendFast(internalID, toYear)
+			suppressContainmentForAOI(internalID, &narrative)
 			// NOTE: do NOT save to fire_narrative_cache here — this fallback is
 			// v2-JSON-derived (sequential _grp_N ids) and would overwrite the
 			// canonical v5 cache written by scripts/precompute_narratives_v5.py.
@@ -824,6 +852,8 @@ func (s *Server) HandleAPIFireNarrative(w http.ResponseWriter, r *http.Request) 
 		}
 	}
 
+	suppressContainmentForAOI(internalID, &narrative)
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(narrative)
 }
@@ -937,7 +967,8 @@ func (s *Server) HandleAPIDeforestationNarrative(w http.ResponseWriter, r *http.
 	// Query deforestation events with time filter, including geojson_id
 	rows, err := s.DB.Query(`
 		SELECT de.year, de.area_km2, de.pattern_type, de.lat, de.lon, de.narrative,
-		       de.id, COALESCE(de.classification, '')
+		       de.id, COALESCE(de.classification, ''),
+		       COALESCE(de.area_method, ''), COALESCE(de.needs_review, 0)
 		FROM deforestation_events de
 		WHERE de.park_id = ? AND de.year >= ? AND de.year <= ?
 		ORDER BY de.year ASC
@@ -974,12 +1005,14 @@ func (s *Server) HandleAPIDeforestationNarrative(w http.ResponseWriter, r *http.
 		lat, lon       float64
 		geojsonID      sql.NullInt64
 		classification string
+		areaMethod     string
+		needsReview    bool
 	}
 	var defRows []defRow
 	for rows.Next() {
 		var dr defRow
 		var description sql.NullString
-		if err := rows.Scan(&dr.year, &dr.area, &dr.patternType, &dr.lat, &dr.lon, &description, &dr.geojsonID, &dr.classification); err != nil {
+		if err := rows.Scan(&dr.year, &dr.area, &dr.patternType, &dr.lat, &dr.lon, &description, &dr.geojsonID, &dr.classification, &dr.areaMethod, &dr.needsReview); err != nil {
 			continue
 		}
 		defRows = append(defRows, dr)
@@ -1019,6 +1052,12 @@ func (s *Server) HandleAPIDeforestationNarrative(w http.ResponseWriter, r *http.
 			AreaKm2:        area,
 			PatternType:    actualPattern,
 			Classification: clsKey,
+			// F8/F9: which quantity `area_km2` is, and whether this year is a
+			// step change the pipeline flagged for provenance review. Both
+			// travel with the row so a chart cannot join two units into one
+			// line, or draw a spike as if it were landscape.
+			AreaMethod:  dr.areaMethod,
+			NeedsReview: dr.needsReview,
 		}
 		if geojsonID.Valid {
 			story.GeoJSONID = geojsonID.Int64
@@ -1217,15 +1256,23 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 		ParkAreaKm2: parkAreaKm2,
 	}
 
-	// Get settlement statistics from park_settlements table
+	// Get settlement statistics from park_settlements table.
+	//
+	// Population is served only where it was MEASURED (a GHS_POP zonal sum);
+	// a row still carrying the 200 people/ha constant contributes nothing and
+	// is counted separately, so the total names the rows it is a total OF
+	// rather than presenting a partial sum as a whole one
+	// (srv/settlement_provenance.go, docs/AOI_STRUCTURAL_FIXES.md F2).
 	var settlementCount int
 	var totalPopulation sql.NullFloat64
+	var popMeasured sql.NullInt64
 	err := s.DB.QueryRow(`
 		SELECT COUNT(*) as count,
-		       COALESCE(SUM(population_est), 0) as total_pop
+		       SUM(`+settlementPopulationSQL("")+`) as total_pop,
+		       `+settlementPopulationMeasuredSQL("")+` as measured
 		FROM park_settlements
 		WHERE park_id = ?`+settlementFilterSQL("narrative", "polygon_ids")+`
-	`, internalID).Scan(&settlementCount, &totalPopulation)
+	`, internalID).Scan(&settlementCount, &totalPopulation, &popMeasured)
 
 	if err != nil {
 		narrative.Status = "error"
@@ -1236,7 +1283,13 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 	}
 
 	narrative.SettlementCount = settlementCount
-	narrative.TotalPopulation = int64(totalPopulation.Float64)
+	if totalPopulation.Valid {
+		narrative.TotalPopulation = int64(totalPopulation.Float64)
+	}
+	// `population_measured_for` is the denominator of TotalPopulation. 0 with a
+	// non-zero settlement_count means NOT MEASURED, not "nobody lives there" —
+	// the frontend prints that distinction rather than a confident zero.
+	narrative.PopulationMeasuredFor = int(popMeasured.Int64)
 
 	// Get polygon count from feature_geometries (for map display). This is the
 	// number of built-up FOOTPRINTS, which is larger than settlement_count
@@ -1272,14 +1325,15 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 			COALESCE(s.classification, '') as classification,
 			COALESCE(s.narrative, '') as narrative,
 			COALESCE(s.polygon_ids, '') as polygon_ids,
-			COALESCE(s.area_m2, 0) as area_m2,
-			COALESCE(s.population_est, 0) as pop_est,
+			COALESCE(`+settlementSurfaceSQL("s")+`, 0) as area_m2,
+			`+settlementExtentSQL("s")+` as extent_m2,
+			`+settlementPopulationSQL("s")+` as pop_est,
 			s.lat, s.lon,
 			COALESCE(s.direction_from_place, '') as direction,
 			COALESCE(s.distance_to_place_km, 0) as distance_km
 		FROM park_settlements s
 		WHERE s.park_id = ?`+settlementFilterSQL("s.narrative", "s.polygon_ids")+`
-		ORDER BY s.area_m2 DESC
+		ORDER BY `+settlementExtentSQL("s")+` DESC
 	`, internalID)
 
 	if err == nil {
@@ -1288,7 +1342,12 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 			var sd SettlementDetail
 			var distKm float64
 			var settNarrative, polygonIDs string
-			if err := largestRows.Scan(&sd.ID, &sd.Name, &sd.Classification, &settNarrative, &polygonIDs, &sd.AreaM2, &sd.PopulationEst, &sd.Lat, &sd.Lon, &sd.Direction, &distKm); err == nil {
+			var popEst sql.NullInt64
+			if err := largestRows.Scan(&sd.ID, &sd.Name, &sd.Classification, &settNarrative, &polygonIDs, &sd.AreaM2, &sd.ExtentM2, &popEst, &sd.Lat, &sd.Lon, &sd.Direction, &distKm); err == nil {
+				if popEst.Valid {
+					sd.PopulationEst = popEst.Int64
+					sd.PopulationMeasured = true
+				}
 				sd.NearestBoundaryKm = distKm
 				// mining labels + their "suspected alluvial extraction" prose are
 				// retired (docs/MINING_FINDINGS_2026-08.md §10)
@@ -1321,7 +1380,7 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 				ELSE 'Southwest'
 			END as region,
 			COUNT(*) as count,
-			COALESCE(SUM(population_est), 0) as population
+			COALESCE(SUM(`+settlementPopulationSQL("s")+`), 0) as population
 		FROM park_settlements s, park_center pc
 		WHERE s.park_id = ?`+settlementFilterSQL("s.narrative", "s.polygon_ids")+`
 		GROUP BY region
@@ -2893,9 +2952,9 @@ func (s *Server) handleSettlementNarrativeStats(w http.ResponseWriter, parkID, p
 	err := s.DB.QueryRow(`
 		SELECT 
 			COUNT(*),
-			COALESCE(SUM(area_m2), 0) / 1000000.0,
-			COALESCE(AVG(area_m2), 0),
-			COALESCE(SUM(population_est), 0),
+			COALESCE(SUM(`+settlementExtentSQL("")+`), 0) / 1000000.0,
+			COALESCE(AVG(`+settlementExtentSQL("")+`), 0),
+			COALESCE(SUM(`+settlementPopulationSQL("")+`), 0),
 			COALESCE(SUM(population_2030), 0),
 			AVG(distance_to_road_m)
 		FROM park_settlements
@@ -2948,8 +3007,8 @@ func (s *Server) handleSettlementNarrativeStats(w http.ResponseWriter, parkID, p
 		SELECT 
 			s.id, fg.id as geojson_id,
 			COALESCE(s.classification, 'unclassified'),
-			COALESCE(s.area_m2, 0),
-			COALESCE(s.population_est, 0),
+			COALESCE(`+settlementExtentSQL("s")+`, 0),
+			COALESCE(`+settlementPopulationSQL("s")+`, 0),
 			COALESCE(s.population_2030, 0),
 			s.lat, s.lon,
 			s.nearest_place,
@@ -2957,7 +3016,7 @@ func (s *Server) handleSettlementNarrativeStats(w http.ResponseWriter, parkID, p
 		FROM park_settlements s
 		LEFT JOIN feature_geometries fg ON fg.feature_id = 'settlement_' || s.id AND fg.feature_type = 'settlement'
 		WHERE s.park_id = ?`+settlementFilterSQL("s.narrative", "s.polygon_ids")+`
-		ORDER BY s.area_m2 DESC
+		ORDER BY `+settlementExtentSQL("s")+` DESC
 		LIMIT 500
 	`, parkID)
 

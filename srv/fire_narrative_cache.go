@@ -917,7 +917,9 @@ func (s *Server) classifyParkSettlementsImpl(parkID string, force bool) int {
 	// settlement". Excluding them here is what stops the laundry running again;
 	// settlementFilterSQL is what stops the already-laundered rows being served.
 	query := `
-		SELECT id, lat, lon, area_m2, population_est, nearest_place, distance_to_place_km
+		SELECT id, lat, lon, COALESCE(` + settlementExtentSQL("") + `, 0),
+		       COALESCE(` + settlementPopulationSQL("") + `, 0),
+		       nearest_place, distance_to_place_km
 		FROM park_settlements
 		WHERE park_id = ?` + settlementSourceSQL("polygon_ids") + `
 		  AND (classified_at IS NULL OR classified_at < datetime('now', '-365 days'))
@@ -929,7 +931,9 @@ func (s *Server) classifyParkSettlementsImpl(parkID string, force bool) int {
 		// belt-and-braces, which is the point: the note check alone was the
 		// bug, since it named only ONE of the two prefixes the scanner writes.
 		query = `
-		SELECT id, lat, lon, area_m2, population_est, nearest_place, distance_to_place_km
+		SELECT id, lat, lon, COALESCE(` + settlementExtentSQL("") + `, 0),
+		       COALESCE(` + settlementPopulationSQL("") + `, 0),
+		       nearest_place, distance_to_place_km
 		FROM park_settlements
 		WHERE park_id = ?` + settlementSourceSQL("polygon_ids") + `
 		  AND (narrative IS NULL OR (narrative NOT LIKE '[Turbidity alert%'
@@ -971,6 +975,9 @@ func (s *Server) classifyParkSettlementsImpl(parkID string, force bool) int {
 				fires_5km = ?,
 				fire_seasonality = ?,
 				deforest_nearby_km2 = ?,
+				-- F6: a 0 in the four columns above means "no fire near this
+				-- settlement" only if something looked. This says when.
+				fire_context_at = CURRENT_TIMESTAMP,
 				nearest_place = COALESCE(NULLIF(?, ''), nearest_place),
 				distance_to_place_km = CASE WHEN ? > 0 THEN ? ELSE distance_to_place_km END,
 				direction_from_place = COALESCE(NULLIF(?, ''), direction_from_place),
@@ -1037,13 +1044,15 @@ func (s *Server) classifyParkDeforestation(parkID string) int {
 // GetCachedClassifiedSettlements returns pre-computed classifications from DB
 func (s *Server) GetCachedClassifiedSettlements(parkID string) []ClassifiedSettlement {
 	rows, err := s.DB.Query(`
-		SELECT id, park_id, lat, lon, area_m2, population_est,
+		SELECT id, park_id, lat, lon,
+			COALESCE(`+settlementExtentSQL("")+`, 0),
+			COALESCE(`+settlementPopulationSQL("")+`, 0),
 			COALESCE(classification, 'unknown'), COALESCE(classification_confidence, 0),
 			COALESCE(narrative, ''), COALESCE(nearest_place, ''), COALESCE(distance_to_place_km, 0),
 			COALESCE(fires_5km, 0), COALESCE(fire_seasonality, ''), COALESCE(deforest_nearby_km2, 0)
 		FROM park_settlements
 		WHERE park_id = ?`+settlementFilterSQL("narrative", "polygon_ids")+`
-		ORDER BY area_m2 DESC
+		ORDER BY `+settlementExtentSQL("")+` DESC
 	`, parkID)
 	if err != nil {
 		return nil

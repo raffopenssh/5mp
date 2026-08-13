@@ -27,6 +27,19 @@ DEFOREST_DIR = Path('data/deforestation_events')
 SETTLEMENT_CLUSTER_KM = 2.0
 DEFORESTATION_CLUSTER_KM = 5.0
 
+# Maximum bbox diagonal of one cluster, in km. Single linkage has no diameter
+# bound: at park scale nothing chained, at AOI scale 52,454 built-up polygons
+# chained into ONE "town" spanning 270 x 275 km (docs/AOI_STRUCTURAL_FIXES.md
+# F3). A settlement larger than this is not a settlement, so a cluster that
+# exceeds it is split on a grid until every part fits. 15 km comfortably holds
+# the largest real town in these landscapes and is an order of magnitude below
+# the runaway.
+MAX_CLUSTER_DIAMETER_KM = 15.0
+
+# Distance beyond which "Near <river>" is not said at all. A river 700 km away
+# is not context (F5).
+RIVER_CONTEXT_MAX_KM = 10.0
+
 def haversine(lat1, lon1, lat2, lon2):
     """Calculate distance in km between two points"""
     R = 6371
@@ -116,6 +129,130 @@ class _RoadIndex:
         return best * 111.0, best_road
 
 
+def _area_method_for(id_prefix, year):
+    """Which quantity a deforestation row's `area_km2` holds.
+
+    `deforestation_events.area_km2` carries mapped canopy loss for Hansen rows
+    (2001-2023) and `alerts x KM2_PER_ALERT` for GFW rows (2024+). Drawn as one
+    series that showed 313.6 km² in 2023 -> 0.7 km² in 2024, which reads as a
+    99.8% collapse and is purely a unit change
+    (docs/AOI_STRUCTURAL_FIXES.md F8, AGENTS.md invariant 7).
+
+    The writer's id prefix is the fact; the year is the fallback for the
+    original 2026-02 run, whose rows carry the bare `deforest_` prefix and are
+    Hansen by definition (the cutover is Hansen <=2023 / alerts >=2024).
+    """
+    if id_prefix and 'gfw' in id_prefix:
+        return 'gfw_alert_count'
+    if id_prefix and 'hansen' in id_prefix:
+        return 'hansen_canopy_loss'
+    return 'gfw_alert_count' if year and year >= 2024 else 'hansen_canopy_loss'
+
+
+def _cluster_diameter_km(cluster):
+    """Diagonal of a cluster's bounding box, in km."""
+    if len(cluster) < 2:
+        return 0.0
+    lats = [p['lat'] for p in cluster]
+    lons = [p['lon'] for p in cluster]
+    return haversine(min(lats), min(lons), max(lats), max(lons))
+
+
+def _split_oversized(cluster, max_km):
+    """Split a cluster whose bbox diagonal exceeds max_km into grid tiles.
+
+    Single linkage has no diameter bound, so with a 2 km link distance a chain
+    of villages 2 km apart becomes one 270 km "town"
+    (docs/AOI_STRUCTURAL_FIXES.md F3). A cluster bigger than the largest real
+    settlement in the region is a bug the pipeline can see for itself, and this
+    is it seeing it: bucket the members onto a max_km/sqrt(2) grid so every
+    part provably fits inside max_km, and recurse only until it does.
+
+    Deliberately a *grid*, not another linkage pass: the members are already
+    known to be mutually reachable, so any re-linkage would reproduce the same
+    chain. The grid is the only thing that bounds the extent, and it is
+    deterministic, so a re-run reproduces the same split.
+    """
+    if len(cluster) < 2 or _cluster_diameter_km(cluster) <= max_km:
+        return [cluster]
+    # A cell of side s has diagonal s*sqrt(2); pick s so that is <= max_km.
+    side_deg = (max_km / 1.4143) / 111.0
+    buckets = defaultdict(list)
+    for p in cluster:
+        lat_cell = int(p['lat'] // side_deg)
+        # Longitude degrees shrink with latitude; widen the cell so a cell is
+        # square on the ground rather than square in degrees.
+        lon_deg = side_deg / max(math.cos(math.radians(p['lat'])), 0.1)
+        buckets[(lat_cell, int(p['lon'] // lon_deg))].append(p)
+    if len(buckets) == 1:
+        # Everything landed in one cell yet the bbox is too big: only possible
+        # from a degenerate coordinate. Return as-is rather than recursing
+        # forever -- an infinite loop is a worse answer than a wide cluster.
+        return [cluster]
+    return [part
+            for b in buckets.values()
+            for part in _split_oversized(b, max_km)]
+
+
+class _PointIndex:
+    """Grid-bucketed points, for exact nearest-point queries.
+
+    `_load_park_places` used to carry `LIMIT 100` after an ORDER BY on place
+    *type*, so "nearest place" was really "nearest of the 100 biggest places".
+    For a park that is most of them; for XSA_Study_Area it was 100 of 971, all
+    cities and towns, and the stored distance was overstated by a median of
+    67 km (docs/AOI_STRUCTURAL_FIXES.md F4). Dropping the LIMIT makes the query
+    honest and makes a linear scan per event the new cost, hence this index --
+    the same shape as _RoadIndex, and exact for the same reason: it widens
+    until the searched box provably extends past the best hit.
+    """
+
+    CELL = 0.1      # ~11 km
+    MAX_RING = 30   # ~330 km; beyond that a "nearest place" is not context
+
+    def __init__(self, points):
+        self.points = points
+        self.cells = defaultdict(list)
+        for p in points:
+            self.cells[(int(p['lat'] // self.CELL),
+                        int(p['lon'] // self.CELL))].append(p)
+
+    def __len__(self):
+        return len(self.points)
+
+    def __bool__(self):
+        return bool(self.points)
+
+    def __iter__(self):
+        return iter(self.points)
+
+    def nearest(self, lat, lon):
+        """(point, km) or (None, None)."""
+        cy, cx = int(lat // self.CELL), int(lon // self.CELL)
+        best, best_p = float('inf'), None
+        for ring in range(0, self.MAX_RING + 1):
+            if ring == 0:
+                shell = [(0, 0)]
+            else:
+                shell = [(dy, dx)
+                         for dy in range(-ring, ring + 1)
+                         for dx in range(-ring, ring + 1)
+                         if max(abs(dy), abs(dx)) == ring]
+            for dy, dx in shell:
+                for p in self.cells.get((cy + dy, cx + dx), ()):
+                    d = haversine(lat, lon, p['lat'], p['lon'])
+                    if d < best:
+                        best, best_p = d, p
+            # A ring's inner boundary is `ring * CELL` degrees away; convert
+            # with the tighter of the two axes (lat, 111 km/deg) so the bound
+            # is conservative.
+            if best_p is not None and best <= ring * self.CELL * 111.0:
+                break
+        if best_p is None:
+            return None, None
+        return best_p, best
+
+
 class EventRebuilder:
     def __init__(self):
         self.conn = sqlite3.connect(DB_PATH)
@@ -133,27 +270,47 @@ class EventRebuilder:
         return {}
     
     def _load_park_rivers(self, park_id):
-        """Load rivers from park_rivers_hydro"""
+        """Named rivers from park_rivers_hydro, as a segment index.
+
+        No LIMIT. It used to take the 20 longest and `_get_nearest_river`
+        returned `rivers[0]` without looking at the point, so 1,552 of 1,552
+        XSA settlements and 7,814 of 7,815 deforestation events said "Near
+        Mbomou river" -- including events 700 km from it
+        (docs/AOI_STRUCTURAL_FIXES.md F5). The nearest river is now a real
+        nearest-segment query, which needs every river, which needs an index.
+        """
         if park_id in self.rivers_cache:
             return self.rivers_cache[park_id]
-        
-        rivers = []
+
+        segs = []
         cursor = self.conn.execute("""
             SELECT name, stream_order, length_km, geojson
             FROM park_rivers_hydro
             WHERE park_id = ? AND name IS NOT NULL AND name != ''
+              AND geojson IS NOT NULL
             ORDER BY stream_order DESC, length_km DESC
-            LIMIT 20
         """, (park_id,))
         for row in cursor:
-            rivers.append({
-                'name': row['name'],
-                'order': row['stream_order'],
-                'length_km': row['length_km'],
-                'geojson': json.loads(row['geojson']) if row['geojson'] else None
-            })
-        self.rivers_cache[park_id] = rivers
-        return rivers
+            try:
+                gj = json.loads(row['geojson'])
+            except Exception:
+                continue
+            if not gj:
+                continue
+            if gj.get('type') == 'LineString':
+                parts = [gj.get('coordinates', [])]
+            elif gj.get('type') == 'MultiLineString':
+                parts = gj.get('coordinates', [])
+            else:
+                continue
+            river = {'name': row['name'], 'order': row['stream_order'],
+                     'length_km': row['length_km']}
+            for coords in parts:
+                if len(coords) >= 2:
+                    segs.append({**river, 'coords': coords})
+        index = _RoadIndex(segs)
+        self.rivers_cache[park_id] = index
+        return index
     
     def _load_park_lakes(self, park_id):
         """Load lakes from park_lakes_hydro"""
@@ -179,19 +336,17 @@ class EventRebuilder:
         return lakes
     
     def _load_park_places(self, park_id):
-        """Load OSM places"""
+        """Every named OSM place, as a spatial index (no LIMIT -- see
+        _PointIndex and docs/AOI_STRUCTURAL_FIXES.md F4)."""
         if park_id in self.places_cache:
             return self.places_cache[park_id]
-        
+
         places = []
         cursor = self.conn.execute("""
             SELECT name, place_type, lat, lon
             FROM osm_places
             WHERE park_id = ? AND name IS NOT NULL AND name != ''
-            ORDER BY CASE place_type 
-                WHEN 'city' THEN 1 WHEN 'town' THEN 2 
-                WHEN 'village' THEN 3 ELSE 4 END
-            LIMIT 100
+              AND lat IS NOT NULL AND lon IS NOT NULL
         """, (park_id,))
         for row in cursor:
             places.append({
@@ -200,8 +355,9 @@ class EventRebuilder:
                 'lat': row['lat'],
                 'lon': row['lon']
             })
-        self.places_cache[park_id] = places
-        return places
+        index = _PointIndex(places)
+        self.places_cache[park_id] = index
+        return index
     
     def _load_park_roads(self, park_id):
         """Load road geometries for road proximity detection, with a spatial index.
@@ -315,10 +471,12 @@ class EventRebuilder:
         return row['cnt'] if row else 0
     
     def _get_nearest_place(self, lat, lon, places):
-        """Find nearest place"""
+        """(place, km) or (None, None)."""
         if not places:
             return None, None
-        
+        if isinstance(places, _PointIndex):
+            return places.nearest(lat, lon)
+
         nearest = None
         min_dist = float('inf')
         for p in places:
@@ -327,12 +485,33 @@ class EventRebuilder:
                 min_dist = dist
                 nearest = p
         return nearest, min_dist
-    
-    def _get_nearest_river(self, lat, lon, rivers):
-        """Find nearest named river"""
-        if rivers:
-            return rivers[0]  # Already sorted by importance
-        return None
+
+    def _get_nearest_river(self, lat, lon, rivers,
+                           max_km=RIVER_CONTEXT_MAX_KM):
+        """The nearest named river WITHIN max_km, or None.
+
+        It used to be `return rivers[0]` -- the longest river anywhere in the
+        area, regardless of the point it was asked about
+        (docs/AOI_STRUCTURAL_FIXES.md F5). Returning None beyond the threshold
+        is the point: the caller then omits the sentence instead of asserting a
+        river that is 700 km away.
+        """
+        if not rivers:
+            return None
+        if isinstance(rivers, _RoadIndex):
+            dist_km, river = rivers.nearest(lat, lon)
+            if river is None or dist_km is None or dist_km > max_km:
+                return None
+            return {**river, 'distance_km': dist_km}
+        # A plain list (legacy callers): nearest by centroid, same threshold.
+        best, best_r = float('inf'), None
+        for r in rivers:
+            if r.get('lat') is None:
+                continue
+            d = haversine(lat, lon, r['lat'], r['lon'])
+            if d < best:
+                best, best_r = d, r
+        return best_r if best_r is not None and best <= max_km else None
     
     def _cluster_polygons(self, polygons, max_dist_km):
         """Single-linkage clustering: polygons within max_dist_km chain together.
@@ -381,7 +560,9 @@ class EventRebuilder:
                                 queue.append(j)
             clusters.append(cluster)
 
-        return clusters
+        return [part
+                for c in clusters
+                for part in _split_oversized(c, MAX_CLUSTER_DIAMETER_KM)]
     
     def _classify_deforestation(self, polygons, park_id, year, fires_near, roads):
         """Classify deforestation with enhanced road detection"""
@@ -499,7 +680,12 @@ class EventRebuilder:
             parts.append(f"Located {dist:.1f}km from {place['name']}.")
         
         if nearest_river:
-            parts.append(f"Near {nearest_river['name']} river.")
+            # Distance included, and the sentence omitted entirely beyond
+            # RIVER_CONTEXT_MAX_KM by _get_nearest_river -- it used to name the
+            # longest river in the whole area for every event, including ones
+            # 700 km away (docs/AOI_STRUCTURAL_FIXES.md F5).
+            parts.append(f"Near {nearest_river['name']} river "
+                         f"({nearest_river.get('distance_km', 0):.1f}km).")
         
         return ' '.join(parts)
     
@@ -621,8 +807,8 @@ class EventRebuilder:
                     INSERT INTO deforestation_events
                     (park_id, year, area_km2, lat, lon, pattern_type, classification,
                      classification_confidence, narrative, fires_same_year, fire_ratio,
-                     polygon_ids, pixel_count, classified_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                     polygon_ids, pixel_count, classified_at, area_method)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, (
                     park_id, year, classification['total_area_km2'],
                     avg_lat, avg_lon, classification['pattern'],
@@ -630,7 +816,11 @@ class EventRebuilder:
                     narrative, fires_near, classification['fire_ratio'],
                     ','.join(p['feature_id'] for p in cluster),
                     classification['num_polygons'],
-                    datetime.now().isoformat()
+                    datetime.now().isoformat(),
+                    # F8: Hansen mapped canopy loss and GFW alert counts scaled
+                    # by KM2_PER_ALERT are different quantities in one column.
+                    # Derived from the writer's own id prefix, never typed.
+                    _area_method_for(id_prefix, year)
                 ))
                 count += 1
                 # Release the write lock between batches so cron jobs and user
@@ -684,11 +874,22 @@ class EventRebuilder:
         return count
 
     def load_settlement_polygons(self, park_id=None):
-        """{park_id: [polygon dicts]} from feature_geometries."""
+        """{park_id: [polygon dicts]} from feature_geometries.
+
+        `population_est` is absent from a polygon written after
+        docs/AOI_STRUCTURAL_FIXES.md F2 when GHS_POP could not be read, and
+        that absence is carried through as **None**, not 0 -- a settlement of
+        unknown population is not a settlement of nobody. `extent_m2` is only
+        present on polygons written after F1; older ones have the mask area in
+        `area_m2`, which is what `area_source` on the cluster then records.
+        """
         cursor = self.conn.execute("""
             SELECT park_id, feature_id,
                    json_extract(properties_json, '$.area_m2') as area_m2,
+                   json_extract(properties_json, '$.extent_m2') as extent_m2,
                    json_extract(properties_json, '$.population_est') as population_est,
+                   json_extract(properties_json, '$.population_source') as population_source,
+                   json_extract(properties_json, '$.epoch') as epoch,
                    json_extract(properties_json, '$.lat') as lat,
                    json_extract(properties_json, '$.lon') as lon
             FROM feature_geometries
@@ -698,10 +899,15 @@ class EventRebuilder:
 
         park_polygons = defaultdict(list)
         for row in cursor:
+            pop = row['population_est']
             park_polygons[row['park_id']].append({
                 'feature_id': row['feature_id'],
                 'area_m2': float(row['area_m2']) if row['area_m2'] else 0,
-                'population_est': int(row['population_est']) if row['population_est'] else 0,
+                'extent_m2': (float(row['extent_m2'])
+                              if row['extent_m2'] is not None else None),
+                'population_est': None if pop is None else int(pop),
+                'population_source': row['population_source'],
+                'epoch': row['epoch'],
                 'lat': float(row['lat']) if row['lat'] else 0,
                 'lon': float(row['lon']) if row['lon'] else 0
             })
@@ -785,13 +991,33 @@ class EventRebuilder:
             avg_lat = sum(p['lat'] for p in cluster) / len(cluster)
             avg_lon = sum(p['lon'] for p in cluster) / len(cluster)
             total_area = sum(p['area_m2'] for p in cluster)
-            total_pop = sum(p['population_est'] for p in cluster)
-            
-            # Simple classification based on size and population
-            if total_pop > 1000:
+            # Extent is only present on polygons written after F1; when it is
+            # not, area_m2 IS the mask extent and area_source says so, so the
+            # two columns still each mean one thing.
+            has_extent = any(p.get('extent_m2') is not None for p in cluster)
+            total_extent = (sum(p.get('extent_m2') or 0 for p in cluster)
+                            if has_extent else total_area)
+            area_source = ('ghsl_built_s_surface' if has_extent
+                           else 'ghsl_mask_extent')
+            # A population is measured or it is absent. One polygon without a
+            # GHS_POP reading makes the CLUSTER's total unmeasured, because a
+            # partial sum presented as a total is the same lie in a smaller
+            # font (AGENTS.md invariant 1).
+            pop_sources = {p.get('population_source') for p in cluster}
+            measured = (all(p.get('population_est') is not None for p in cluster)
+                        and pop_sources - {None} and None not in pop_sources)
+            total_pop = (sum(p['population_est'] for p in cluster)
+                         if measured else None)
+            pop_source = sorted(s for s in pop_sources if s)[0] if measured else None
+            epoch = next((p.get('epoch') for p in cluster if p.get('epoch')), None)
+
+            # Classification keys on POPULATION where it exists and on built
+            # SURFACE otherwise -- never on the mask extent, which is ~24x the
+            # surface and made every cluster look like a town.
+            if total_pop is not None and total_pop > 1000:
                 classification = 'town'
                 confidence = 0.7
-            elif total_pop > 200:
+            elif total_pop is not None and total_pop > 200:
                 classification = 'village'
                 confidence = 0.7
             elif total_area > 50000:
@@ -803,35 +1029,63 @@ class EventRebuilder:
             else:
                 classification = 'settlement'
                 confidence = 0.5
-            
+
             nearest_place, place_dist = self._get_nearest_place(avg_lat, avg_lon, places)
             nearest_river = self._get_nearest_river(avg_lat, avg_lon, rivers)
-            
+
             # Generate narrative
             narrative_parts = [f"{classification.replace('_', ' ').title()} in {park_name}."]
-            narrative_parts.append(f"Area: {total_area/10000:.2f} ha, estimated population: {total_pop}.")
+            if total_pop is not None:
+                narrative_parts.append(
+                    f"Built-up surface: {total_area/10000:.2f} ha, "
+                    f"estimated population: {total_pop}.")
+            else:
+                # "estimated population: 0" for an unmeasured quantity is the
+                # `nil` problem of invariant 12: say the word instead.
+                narrative_parts.append(
+                    f"Built-up surface: {total_area/10000:.2f} ha, "
+                    f"population not measured.")
             if nearest_place:
                 narrative_parts.append(f"Located {place_dist:.1f}km from {nearest_place['name']}.")
             if nearest_river:
-                narrative_parts.append(f"Near {nearest_river['name']} river.")
+                narrative_parts.append(
+                    f"Near {nearest_river['name']} river "
+                    f"({nearest_river.get('distance_km', 0):.1f}km).")
             narrative = ' '.join(narrative_parts)
-            
+
             polygon_ids = ','.join(p['feature_id'] for p in cluster)
             place_name = nearest_place['name'] if nearest_place else ''
-            
-            sett_type = 'temporary' if classification in ('temporary_camp', 'pastoral') else 'permanent'
-            
+
+            # F12: `temporary` required total_area < 5,000 m², below the
+            # MIN_AREA_M2 = 5,000 ingest floor, so it was unreachable BY
+            # CONSTRUCTION and every row in a landscape of seasonal pastoral
+            # camps said `permanent`. Size cannot answer this question at all
+            # -- persistence between epochs can, and is not ingested -- so the
+            # column is NULL until something measures it. A column that always
+            # says the same word is not a classification.
+            sett_type = None
+
+            fires_1km, fires_5km, seasonality, defo_km2 = \
+                self._settlement_fire_context(park_id, avg_lat, avg_lon)
+
             self.conn.execute("""
                 INSERT INTO park_settlements
-                (park_id, lat, lon, area_m2, population_est, households_est,
+                (park_id, lat, lon, area_m2, extent_m2, area_source,
+                 population_est, population_source, epoch, households_est,
                  nearest_place, distance_to_place_km, settlement_type,
-                 classification, classification_confidence, narrative, polygon_ids)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 classification, classification_confidence, narrative, polygon_ids,
+                 fires_1km, fires_5km, fire_seasonality, deforest_nearby_km2,
+                 fire_context_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                        ?, ?, ?, ?, ?)
             """, (
-                park_id, avg_lat, avg_lon, total_area, total_pop,
-                int(total_pop / 4.5),
+                park_id, avg_lat, avg_lon, total_area, total_extent,
+                area_source, total_pop, pop_source, epoch,
+                None if total_pop is None else int(total_pop / 4.5),
                 place_name, place_dist if place_dist else 0, sett_type,
-                classification, confidence, narrative, polygon_ids
+                classification, confidence, narrative, polygon_ids,
+                fires_1km, fires_5km, seasonality, defo_km2,
+                datetime.now().isoformat()
             ))
             count += 1
             # Release the write lock between batches so cron jobs and user
@@ -843,6 +1097,46 @@ class EventRebuilder:
         self.conn.commit()
         return count
     
+    def _settlement_fire_context(self, park_id, lat, lon):
+        """(fires_1km, fires_5km, seasonality, deforest_nearby_km2).
+
+        F6: these four columns were populated for parks by the Go classifier
+        (/api/refresh-park) and by nothing at all for AOIs, so all 1,552 XSA
+        rows carried 0 -- which reads as "no fire near this settlement" for
+        settlements whose median is 1,594 detections within 5 km. Computing
+        them here means the ONE clusterer fills them for parks and AOIs alike,
+        and `fire_context_at` then distinguishes a measured zero from a never
+        measured one.
+
+        ⚠️ The bounds MUST stay `BETWEEN`, never `ABS(col - ?) < ?` -- see
+        _get_fire_density and AGENTS.md invariant 3.
+        """
+        row = self.conn.execute("""
+            SELECT
+              COUNT(CASE WHEN latitude BETWEEN ? AND ? AND longitude BETWEEN ? AND ? THEN 1 END),
+              COUNT(*),
+              COUNT(CASE WHEN CAST(SUBSTR(acq_date, 6, 2) AS INT) IN (12,1,2,3) THEN 1 END)
+            FROM fire_detections
+            WHERE latitude BETWEEN ? AND ? AND longitude BETWEEN ? AND ?
+        """, (lat - 0.01, lat + 0.01, lon - 0.01, lon + 0.01,
+              lat - 0.05, lat + 0.05, lon - 0.05, lon + 0.05)).fetchone()
+        f1, f5, dry = (row[0] or 0), (row[1] or 0), (row[2] or 0)
+        wet = f5 - dry
+        if dry > wet * 3:
+            seasonality = 'dry_season'
+        elif wet > dry * 3:
+            seasonality = 'wet_season'
+        elif f5 > 0:
+            seasonality = 'year_round'
+        else:
+            seasonality = None
+
+        defo = self.conn.execute("""
+            SELECT COALESCE(SUM(area_km2), 0) FROM deforestation_events
+            WHERE park_id = ? AND lat BETWEEN ? AND ? AND lon BETWEEN ? AND ?
+        """, (park_id, lat - 0.2, lat + 0.2, lon - 0.2, lon + 0.2)).fetchone()[0]
+        return f1, f5, seasonality, float(defo or 0)
+
     def export_json(self):
         """Export events to JSON files"""
         print("\n" + "=" * 60)

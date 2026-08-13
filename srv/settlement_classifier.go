@@ -490,10 +490,13 @@ func (s *Server) buildSettlementNarrativeText(st *ClassifiedSettlement) string {
 // GetClassifiedSettlements returns all settlements for a park with classifications
 func (s *Server) GetClassifiedSettlements(parkID string) []ClassifiedSettlement {
 	rows, err := s.DB.Query(`
-		SELECT id, park_id, lat, lon, area_m2, population_est, nearest_place, distance_to_place_km
+		SELECT id, park_id, lat, lon,
+		       COALESCE(`+settlementExtentSQL("")+`, 0),
+		       COALESCE(`+settlementPopulationSQL("")+`, 0),
+		       nearest_place, distance_to_place_km
 		FROM park_settlements
 		WHERE park_id = ?`+settlementFilterSQL("narrative", "polygon_ids")+`
-		ORDER BY area_m2 DESC
+		ORDER BY `+settlementExtentSQL("")+` DESC
 	`, parkID)
 	if err != nil {
 		return nil
