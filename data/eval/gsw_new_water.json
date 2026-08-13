@@ -1,0 +1,38 @@
+{
+ "generated_by": "scripts/gsw_eval.py (via gsw_new_water.py --eval)",
+ "generated_at": "2026-08-13T17:17:46Z",
+ "source": "JRC Global Surface Water v1.4, `transitions` layer",
+ "citation": "Jean-Francois Pekel, Andrew Cottam, Noel Gorelick, Alan S. Belward, \"High-resolution mapping of global surface water and its long-term changes\", Nature 540, 418-422 (2016). doi:10.1038/nature20584",
+ "terms": "https://global-surface-water.appspot.com/download \u2014 free for any use with attribution (EC JRC/Google)",
+ "notice": "Candidate pit lakes are UNADJUDICATED shape/context inferences drawn by this repo from GSW transition classes; they are ours, not JRC's.",
+ "raster_period": "1984-2021",
+ "raster_end_year": 2021,
+ "end_year_caveat": "the transitions layer ends 2021; absence of a candidate says nothing about water appearing after 2021",
+ "constants": {
+  "min_area_ha": 0.1,
+  "max_area_ha": 50.0,
+  "river_exclude_m": 200,
+  "calibrated_at": "AOI scale (invariant 15)"
+ },
+ "question": "do reported mine sites in XSA_Study_Area have a GSW new-water candidate within 2.0 km more often than random points in the sites' own hull?",
+ "aoi": "XSA_Study_Area",
+ "candidates_evaluated": 5548,
+ "capture_km": 2.0,
+ "n_sites": 39,
+ "site_observed_mix": {
+  "osm_tag": 6,
+  "community_report": 33
+ },
+ "site_mix_caveat": "XSA truth rows are community reports and OSM tags, not field visits; coordinates may be village label positions (acled.md trap)",
+ "n_random": 500,
+ "baseline_frame": "convex hull of the truth sites, clipped to the AOI",
+ "capture_sites": 0.0,
+ "capture_random": 0.008,
+ "lift": 0.0,
+ "lift_note": null,
+ "permutation_p": 1.0,
+ "n_permutations": 20000,
+ "min_detectable_delta": 0.035,
+ "power_note": "with 39 sites this eval can only detect a capture delta >= 0.035; a smaller true effect reads as null",
+ "verdict": "NO SIGNAL at this power: commit this eval, ship no map layer (WP4 stop gate; mirrors mining.md)"
+}

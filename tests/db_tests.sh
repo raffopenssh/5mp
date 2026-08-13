@@ -174,6 +174,57 @@ test_query "fire context zeros are dated" \
 test_query "retired detector rows keep their own label" \
     "SELECT COUNT(*) FROM park_settlements WHERE (polygon_ids IS NULL OR polygon_ids='')
        AND area_source != 'retired_detector'" "0"
+# WP1: persistence is MEASURED from GHSL back-epochs (scripts/ghsl_epochs.py)
+# and only for real GHSL clusters -- a retired detector row has no mask to
+# read an epoch over. persistence_source names the instrument per row
+# (invariant 5): 'ghsl_E2000+E2015' where measured, 'tile_missing' where an
+# epoch tile could not be fetched (persistence then NULL -- a missing tile is
+# not a recent settlement, invariant 1). The epoch surfaces travel with the
+# word so the 25% rule is auditable.
+test_query "persistence only on rows with a mask" \
+    "SELECT COUNT(*) FROM park_settlements WHERE persistence IS NOT NULL
+       AND (polygon_ids IS NULL OR polygon_ids='')" "0"
+test_query "persistence names its instrument" \
+    "SELECT COUNT(*) FROM park_settlements WHERE persistence IS NOT NULL
+       AND persistence_source != 'ghsl_E2000+E2015'" "0"
+test_query "tile_missing rows have no persistence word" \
+    "SELECT COUNT(*) FROM park_settlements WHERE persistence_source='tile_missing'
+       AND persistence IS NOT NULL" "0"
+test_query "a measured persistence carries its epoch surfaces" \
+    "SELECT COUNT(*) FROM park_settlements WHERE persistence IS NOT NULL
+       AND (surface_e2000_m2 IS NULL OR surface_e2015_m2 IS NULL)" "0"
+# R3: the derived flag must name its input and be compared to it. The stamp
+# file records which areas were derived and their breakdowns; a stamped area
+# whose rows lost their persistence (e.g. a recluster that forgot to re-derive)
+# is drift.
+if [ -f "data/ghsl_epoch_state.json" ]; then
+    printf "%-55s" "epoch stamp matches db persistence counts"
+    stamped_ok=$(python3 - <<'PYEOF'
+import json, sqlite3
+state = json.loads(open('data/ghsl_epoch_state.json').read())
+conn = sqlite3.connect('file:db.sqlite3?mode=ro', uri=True)
+bad = []
+for area, e in state.items():
+    if not e.get('breakdown'):
+        continue
+    want = sum(n for k, n in e['breakdown'].items() if not k.startswith('unmeasured'))
+    got = conn.execute(
+        "SELECT COUNT(*) FROM park_settlements WHERE park_id=? AND persistence IS NOT NULL",
+        (area,)).fetchone()[0]
+    if got != want:
+        bad.append(f"{area}: stamp says {want}, db has {got}")
+print('; '.join(bad) if bad else 'OK')
+PYEOF
+)
+    if [ "$stamped_ok" = "OK" ]; then
+        green "✓"
+        PASSED=$((PASSED + 1))
+    else
+        red "FAIL ($stamped_ok)"
+        FAILED=$((FAILED + 1))
+        ERRORS+=("epoch stamp vs db: $stamped_ok")
+    fi
+fi
 
 yellow "\n=== Deforestation area method (F8-F9) ==="
 # Hansen canopy loss (km2 mapped) and GFW alert counts x KM2_PER_ALERT are
@@ -322,6 +373,28 @@ test_query "fire narrative cache" "SELECT COUNT(*) FROM fire_narrative_cache WHE
 test_query "osm places for Chinko" "SELECT COUNT(*) FROM osm_places WHERE park_id='CAF_Chinko'" "nonempty"
 test_query "rivers for Chinko" "SELECT COUNT(*) FROM park_rivers_hydro WHERE park_id='CAF_Chinko'" "nonempty"
 test_query "species for Virunga" "SELECT COUNT(*) FROM park_species WHERE park_id='COD_Virunga'" "nonempty"
+
+# --- GSW new-water (WP4) — the eval artefact is the deliverable ------------
+# The stop-gate JSON must carry its verdict, its power ceiling (a null
+# without its power is a shrug wearing a result's clothes), and must have
+# been measured on a FINISHED extraction (R1).
+printf "%-55s" "gsw eval artefact carries verdict + power"
+if python3 - <<'PYEOF' 2>/dev/null
+import json, sys
+e = json.load(open('data/eval/gsw_new_water.json'))
+assert e['verdict'], 'no verdict'
+assert e['min_detectable_delta'] is not None or 'incomputable' in e['power_note']
+assert e['raster_end_year'] >= 2021
+assert e['n_sites'] > 0 and e['candidates_evaluated'] > 0
+PYEOF
+then
+    green "\u2713"
+    PASSED=$((PASSED + 1))
+else
+    red "FAIL"
+    FAILED=$((FAILED + 1))
+    ERRORS+=("gsw eval artefact malformed or missing")
+fi
 
 echo
 echo "======================================="
