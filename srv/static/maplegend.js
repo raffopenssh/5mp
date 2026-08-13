@@ -243,7 +243,56 @@
         catch (e) { return 0; }
     }
 
-    function measureCoverage() {
+    /* ── MEASURING TWICE PER TICK IS MEASURING ONCE, SLOWLY ─────────────
+     *
+     * measureCoverage() is ~120 ms with three sheets on: one unfiltered
+     * queryRenderedFeatures over the contact layers (~40 ms at 452 lines),
+     * one over the fills, and a ~200-point grid. render() calls it, and
+     * render() is called from six places — a single gesture (a junction pick:
+     * setFilter, refreshWhenDrawn, render, rebuildGeoMenuNow, reMeasure)
+     * therefore paid for it three or four times over, all on the same
+     * unchanged canvas, all on the main thread, all between the reader's
+     * click and the panel redrawing.
+     *
+     * So the measurement is memoised on WHAT IT IS A MEASUREMENT OF: the
+     * viewport, the layer set, the filters those layers carry, and a nonce
+     * the map bumps whenever it paints or a tile lands. Anything that could
+     * change the picture changes the key; nothing else does. This is a cache
+     * over a pure read of the canvas, not a staleness bet — a caller that
+     * needs a genuinely fresh read (reMeasure, after a layer was added) says
+     * so with `force`.
+     */
+    var measureKey = '';        // what `coverage`/`contactHits` describe
+    var paintNonce = 0;         // bumped by the map: idle, tiles, style
+
+    function bumpPaint() { paintNonce++; }
+
+    /* The filters are part of the picture: a commodity chip changes what is
+     * painted without moving the map or loading a tile, and a memo keyed only
+     * on the viewport would then hand back the previous selection's counts. */
+    function geoFilterSig() {
+        if (typeof map === 'undefined' || !map) return '';
+        var out = '';
+        geoFillLayers().concat(geoContactLayers()).forEach(function (l) {
+            try { out += l + '=' + JSON.stringify(map.getFilter(l)) + ';'; }
+            catch (e) { out += l + '=?;'; }
+        });
+        return out;
+    }
+
+    function geoViewKey() {
+        if (typeof map === 'undefined' || !map) return '';
+        var c = map.getCenter(), cv = map.getCanvas();
+        return map.getZoom().toFixed(3) + ',' + c.lng.toFixed(5) + ',' + c.lat.toFixed(5) +
+            ',' + map.getBearing().toFixed(1) + ',' + map.getPitch().toFixed(1) +
+            ',' + (cv.clientWidth || 0) + 'x' + (cv.clientHeight || 0) +
+            '|' + geoLayerSig() + '|' + geoFilterSig() + '|' + paintNonce;
+    }
+
+    function measureCoverage(force) {
+        var key = geoViewKey();
+        if (!force && key === measureKey && measureKey !== '') return;
+        measureKey = key;
         // Measured first and kept outside `coverage`, because every early
         // return below sets `coverage = null` and the contact layer can be
         // the ONLY geology on screen (see geoOffView).
@@ -1123,6 +1172,41 @@
         if (before) mxFlip(before);
     }
 
+    /* ── THE BAR IS A LIVE SURFACE, NOT A SNAPSHOT ─────────────────────
+     *
+     * THE BUG THIS FIXES, because it survived the whole reMeasure() apparatus
+     * below and looked exactly like it: with three sheets on and Junctions
+     * picked, the panel bar said "104 units · counting lines…" for as long as
+     * you cared to watch, over a map drawing 452 of them — and
+     * queryRenderedFeatures, asked from the console at that moment, said 439.
+     * The measurement was RIGHT and the label was stale.
+     *
+     * Why: contactHits/contactsPending are module state, and the label is
+     * HTML built once by headRow(). watchMap's idle handler calls render(),
+     * which re-measures — so the pending flag was cleared by the very pass
+     * that should have redrawn the bar, and the follow-up
+     * `if (contactsPending) reMeasure(2)` then found nothing pending and did
+     * nothing. The state healed; the pixels did not. The panel is only rebuilt
+     * when the SKILL SCOPE changes, so "counting lines…" was frozen until the
+     * reader closed and reopened the panel — which is exactly what "closing
+     * and reopening fixed it" meant, and it was read as a paint-timing bug.
+     *
+     * The fix is that whatever re-measures also re-STATES, in place: one
+     * innerHTML and one title, no teardown. rebuildGeoMenuNow() would also
+     * have worked and is the wrong tool — it closes and reopens the panel,
+     * throwing away focus, hover, scroll and any half-made choice, ~20 ms of
+     * DOM for two numbers, on every idle. A surface that contradicts the
+     * canvas must be CHEAP to correct, or it will end up corrected rarely.
+     */
+    function syncBar() {
+        if (!menuEl || menuEl.dataset.kind !== 'geo') return;
+        var el = menuEl.querySelector('.ml-bar-n');
+        if (!el) return;
+        var c = barCountText();
+        if (el.innerHTML !== c.html) el.innerHTML = c.html;
+        if (el.title !== c.title) el.title = c.title;
+    }
+
     /* Re-measure the canvas and rebuild the strip + the open matrix, once the
      * map has actually drawn the change. Everything that alters what is on
      * screen ends with this instead of with a bare render(). */
@@ -1140,6 +1224,7 @@
             cancelPaintWait();
             render();                   // NOW the canvas says what is drawn
             rebuildGeoMenuNow(opts);
+            syncBar();                  // the bar the rebuild just re-emitted, from the fresh measurement
             // ONE `idle` IS NOT ENOUGH WHEN A LAYER WAS JUST ADDED. The gesture
             // that adds the contact layers (mxMode('junction'), a junction pick)
             // can reach idle before they have painted, and the 0 measured here
@@ -1207,13 +1292,18 @@
         function step() {
             if (typeof map === 'undefined' || !map || !map.once) return;
             var wasHits = contactHits, wasSig = measuredSig;
-            measureCoverage();
+            // FORCED: this pass exists precisely because the last one may have
+            // read a layer that had not painted, and the memo's key cannot see
+            // that difference — same viewport, same layers, same filters.
+            measureCoverage(true);
             if (contactHits !== wasHits || measuredSig !== wasSig) {
                 render();
                 // The bar with the counts lives in the geology PANEL, not in
-                // the strip, so a re-measure that does not rebuild it fixes a
-                // number nobody is looking at.
-                if (menuEl && menuEl.dataset.kind === 'geo') rebuildGeoMenuNow();
+                // the strip, so a re-measure that does not restate it fixes a
+                // number nobody is looking at. In place — rebuilding the panel
+                // here would throw away the reader's scroll and hover for the
+                // sake of two digits. See syncBar().
+                syncBar();
             }
             // Only an UNPROVEN zero is worth another pass. A real "nothing
             // here" settles on the first one, so panning over empty ocean
@@ -2947,7 +3037,10 @@
             'title="Basemap and overlays" onclick="event.stopPropagation();MapLegend.menu(this)">' +
             '<i class="icon-layers"></i></button>';
 
-        if (quiet) { host.innerHTML = opener; return; }
+        if (quiet) {
+            if (host.innerHTML !== opener) host.innerHTML = opener;
+            return;
+        }
 
         // THE KEY IS BUILT FIRST, and the chips are built knowing what it
         // said. The strip's bracket labels name commodities; the chip must
@@ -3041,11 +3134,25 @@
                 'onclick="event.stopPropagation();MapLegend.toggleGeo()">\u00d7</button></span>';
         }
 
-        host.innerHTML =
+        // ── AN IDENTICAL REPAINT IS NOT A REPAINT, IT IS A RESET ──────────
+        //
+        // render() is called from six places and MapLegend.refresh() from two
+        // dozen more, so one junction pick rebuilt this strip four times —
+        // and three of those produced byte-identical HTML. Writing it anyway
+        // is not merely wasted layout: innerHTML destroys and recreates the
+        // buttons, which drops focus, cancels the :hover the reader is
+        // pointing at, and restarts the swatch stagger. So the write is
+        // conditional on the markup actually differing.
+        //
+        // Safe because this string is a pure function of the state the strip
+        // shows: equal HTML means an equal strip. Anything NOT in the string
+        // (the swatch expansion below) is re-applied either way.
+        var html =
             '<div class="stats-divider"></div>' +
             '<div class="stats-header">Map</div>' +
             '<div class="ml-row">' + chips + opener + '</div>' +
             swatches;
+        if (host.innerHTML !== html) host.innerHTML = html;
         // Not animated here: render() runs on every map idle, and re-staggering
         // an already-open strip on each pan is a flicker, not a transition.
         syncSwatchExpansion(false);
@@ -3387,10 +3494,17 @@
             var open = function () {
                 var btn = document.querySelector('#stats-map .ml-chip.geo');
                 if (menuEl && menuEl.dataset.kind === 'geo') return;
-                var drawn = btn && (measureCoverage(), drawnKinds());
-                if (!btn || (!(drawn.units || drawn.contacts) && tries < 60)) {
+                // FORCED, and this is the one caller that must be: the whole
+                // question here is "has it painted YET", which is exactly the
+                // difference the memo's key cannot see (same viewport, same
+                // layers, same filters, one frame later). Sixty forced passes
+                // at ~120 ms would be seven seconds of main thread during page
+                // load, so it polls at 250 ms and gives up after ~9 s as
+                // before — same wall clock, a third of the work.
+                var drawn = btn && (measureCoverage(true), drawnKinds());
+                if (!btn || (!(drawn.units || drawn.contacts) && tries < 36)) {
                     tries++;
-                    return setTimeout(open, 150);
+                    return setTimeout(open, 250);
                 }
                 openGeoMenu(btn);
             };
@@ -3460,8 +3574,16 @@
         // that says "not in view" has to stop saying it when the reader pans
         // onto the sheets, or it is the contradiction it exists to prevent.
         map.on('idle', function () {
+            bumpPaint();               // the canvas changed; the memo must not survive it
             if (!(geoOn() || histOn())) return;
             render();
+            // THE BAR IS RESTATED ON EVERY IDLE, unconditionally, and not only
+            // when a zero is unproven. render() above has just re-measured, so
+            // by the time the old code asked `if (contactsPending)` the flag it
+            // was testing had already been cleared by that very measurement —
+            // and the label it wanted to fix stayed on screen for good. Two
+            // text writes that usually change nothing; see syncBar().
+            syncBar();
             // A zero that was never proven gets another pass here too: `idle`
             // is exactly when a layer added a moment ago has finished
             // painting, and the panel bar must not be left saying "no lines
@@ -3488,6 +3610,15 @@
         // grid that has silently rearranged itself by the time they look back.
         map.on('movestart', function () { MapLegend.mxSettle(); });
         map.on('click', function () { MapLegend.mxSettle(); });
+        // A TILE THAT LANDS CHANGES THE PICTURE WITHOUT MOVING THE MAP, and so
+        // does a style change. Both must invalidate the measurement memo, or a
+        // reader who sits still while Tanzania finishes loading keeps the
+        // counts taken before it arrived. Cheap: an integer, no measurement.
+        map.on('sourcedata', function (e) {
+            if (e && e.sourceId && String(e.sourceId).indexOf('geomap-src-') !== 0) return;
+            bumpPaint();
+        });
+        map.on('styledata', bumpPaint);
     }
 
     /* The same statement for the rest of the page: any pointer that lands
