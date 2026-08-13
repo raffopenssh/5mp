@@ -223,6 +223,11 @@ src_guard "geo_structural_unmeasured"     present ">unmeasured</span>" "$GLOBE"
 # The lifts are the catalogue's (generated server-side), never typed into the
 # template — a hardcoded lift would survive a re-evaluation silently.
 src_guard "geo_structural_no_typed_lift"  absent  "[0-9]\.[0-9]+×" "$GLOBE"
+# The structural layers are geology and live in the geology mixer (both tabs,
+# via structuralFootHTML) — not only in the admin Advanced disclosure. Their
+# lifts there come from the catalogue too, never typed.
+src_guard "geo_structural_in_mixer"       present "function structuralFootHTML" "srv/static/maplegend.js"
+src_guard "geo_structural_mixer_no_lift"  absent  "[0-9]\.[0-9]+×" "srv/static/maplegend.js"
 
 echo
 echo "======================================="

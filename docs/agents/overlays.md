@@ -436,7 +436,10 @@ The two AKP layers the survey below recommended are ingested and served:
 linework of the craton polygons, never the fill; see the survey for why the
 interior means nothing). They are **ungraded context lines outside the
 rock/junction matrix**: no affinity rows, no amber ramp — fault red-brown
-short dash, craton violet long dash, same inks in the GPKG QML.
+short dash, craton a **solid wide blurred translucent violet band** (never a
+dash: the AOI outline is a dashed cool-toned line, and a dashed violet line
+at similar width read as "a boundary somebody drew" — a band reads as a
+zone). Same inks in the GPKG QML (`styleGeoStructural`).
 
 * **Fetch:** `scripts/geomaps/fetch_akp.py` → `data/akp/*.geojson` with R7
   attribution embedded; fails writing nothing when counts fall short.
@@ -459,6 +462,23 @@ short dash, craton violet long dash, same inks in the GPKG QML.
   globe.html prints the catalogue's lifts (never typed — a src_guard greps
   for hardcoded `×` numbers) incl. coltan/craton 0.4×, which is a mixed
   result and stays visible.
+* **Mixer rows + MapTips (2026-08-13):** the layers are operated from the
+  geology mixer like everything else geological — `structuralFootHTML()` in
+  maplegend.js renders a "Structural setting" row pair under BOTH tabs (rock
+  and junction views), each row wearing its map ink as its swatch
+  (`.ml-strx-sw`) and its catalogue lifts (src_guard
+  `geo_structural_mixer_no_lift` keeps typed lifts out of maplegend.js too);
+  toggle via `MapLegend.toggleStructural(id)` → `GeoMap.setStructural` (a
+  hand gesture, clears autoStructural). Hover/click tips:
+  `bindStructuralTip`/`structuralTipHTML` in geomap.js register on the line
+  layers (priority −28, below AOI/park −20 — the drawn boundary answers
+  first, the margin is a peer tab "Craton"/"Fault"); the tip names the
+  feature, the notice, and the lifts+scope from the catalogue, with sub-1×
+  spelled "LESS likely". `near_km` ships in the catalogue skill block
+  (generated — `geoStructuralNearKm` in geomap_scores_table.go) so the tip
+  derives its "within N km" instead of typing 25. globe.html's restore gate
+  accepts `geomap_structural=` without `geomap=` (structural lines need no
+  sheet).
 * **GPKG:** two tables `structural_active_faults`/`structural_craton_edges`;
   whole catalogue ships both `Visible:false`, view export ships exactly
   `sel.Structural` with `Visible:true`; stamp covers both input files
