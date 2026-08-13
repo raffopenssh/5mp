@@ -3035,10 +3035,74 @@
         html += skillRouteHTML(GeoMap.selectedCommodities
             ? GeoMap.selectedCommodities() : new Set(), min, 'rock');
 
+        // The continental setting, under both tables (this one and the
+        // junction view): a fault or a margin is not a rock and not a sheet
+        // junction, so it sits outside the matrix — but it is geology, and
+        // this panel is where geology is operated.
+        html += structuralFootHTML();
+
         html += '<div class="mode-menu-note">An inference from rock type \u2014 nothing here ' +
             'counts, ranks or locates a deposit.</div>';
 
         return html;
+    }
+
+    /* ── Structural context rows ─────────────────────────────────
+     *
+     * Faults and craton margins in the SAME panel as the rest of the
+     * geology: they lived only in admin ▸ Map Settings ▸ Advanced, which
+     * made them a different kind of thing from the contacts — and they are
+     * not; they are the continental-scale version of the junction question.
+     *
+     * Deliberately OUTSIDE the matrix and the amber ramp: these lines are
+     * ungraded context, and a graded cell would claim a grade nobody
+     * computed (invariant 12). Each row wears its own map ink as its swatch
+     * (a fault is a red dash, a margin is a violet band — the same ink
+     * geomap.js paints), and carries its measured lifts from the CATALOGUE,
+     * never typed: the gold-near-a-margin lift is the number a reader choosing
+     * these layers is owed, and "unmeasured" is a word, not a blank.
+     */
+    function structuralFootHTML() {
+        var s = (typeof GeoMap !== 'undefined' && GeoMap.structural) ? GeoMap.structural() : null;
+        if (!s) return '';
+        var rows = '';
+        ['active_faults', 'craton_edges'].forEach(function (id) {
+            var e = s[id];
+            if (!e || !e.available) return;   // admin's Advanced block names the reason
+            var on = GeoMap.structuralOn(id);
+            var sw = id === 'craton_edges'
+                ? '<i class="ml-strx-sw band"></i>'
+                : '<i class="ml-strx-sw dash"></i>';
+            var lifts = e.skill && e.skill.lifts;
+            var liftTxt, title;
+            if (lifts) {
+                var parts = Object.keys(lifts).sort(function (a, b) {
+                    return lifts[b].lift - lifts[a].lift;
+                }).map(function (c) {
+                    return c.replace(/_/g, ' ') + ' ' + lifts[c].lift.toFixed(1) + '\u00d7';
+                });
+                liftTxt = parts.join(', ');
+                title = (e.notice || '') + ' \u2014 Share of known workings within ' +
+                    Math.round(e.skill.near_km || 25) + ' km vs random ground, measured on ' +
+                    (e.skill.scope || '') + '. Above 1\u00d7 concentrates them; below 1\u00d7 is ' +
+                    'worse than random ground. Measured on eastern DR Congo \u2014 ground none ' +
+                    'of these sheets covers.';
+            } else {
+                liftTxt = 'unmeasured';
+                title = (e.notice || '') + ' \u2014 never scored against a workings list.';
+            }
+            rows += '<button type="button" class="ml-strx-row' + (on ? ' on' : '') + '"' +
+                ' role="menuitemcheckbox" aria-checked="' + on + '"' +
+                ' title="' + esc(title) + '"' +
+                ' onclick="event.stopPropagation();MapLegend.toggleStructural(\'' + id + '\')">' +
+                '<span class="mode-mark check"></span>' + sw +
+                esc(e.label || id) +
+                '<span class="ml-strx-lift' + (lifts ? '' : ' unm') + '">' + esc(liftTxt) + '</span>' +
+                '<em class="ml-mx-n">' + (e.n || 0) + '</em></button>';
+        });
+        if (!rows) return '';
+        return '<div class="mode-menu-head ml-strx-head"><i class="icon-git-merge"></i>' +
+            'Structural setting<em>continental, ungraded</em></div>' + rows;
     }
 
     /* The floating panel over the map: the mixer, wearing the app's own
@@ -3375,6 +3439,10 @@
          * as a low score. srv/geomap_scores.go, scripts/geomaps/eval_affinity.py.
          */
         html += skillRouteHTML(sel, min, 'junction');
+        // The continental version of this table's question: a craton margin
+        // or a fault is a SETTING, like a junction, at the scale above the
+        // sheets. Same rows as the rock view — one surface, two doors.
+        html += structuralFootHTML();
         html += '<div class="mode-menu-note">An inference from the two rock types either side ' +
             '\u2014 nothing here counts, ranks or locates a deposit.</div>';
         return html;
@@ -3742,6 +3810,15 @@
         toggleContactsGraded: function () {
             if (typeof GeoMap === 'undefined' || !GeoMap.setContactsGraded) return;
             GeoMap.setContactsGraded(!GeoMap.contactsGradedOnly());
+            refreshWhenDrawn();
+        },
+
+        /* A structural layer on/off, from its row in the mixer. The reader's
+         * own gesture, so it goes through setStructural (which clears the
+         * autoStructural flag — a hand-made choice is never auto-undone). */
+        toggleStructural: function (id) {
+            if (typeof GeoMap === 'undefined' || !GeoMap.setStructural) return;
+            GeoMap.setStructural(id, !GeoMap.structuralOn(id));
             refreshWhenDrawn();
         },
 
