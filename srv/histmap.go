@@ -128,6 +128,15 @@ func (s *Server) HandleAPIHistMapMeta(w http.ResponseWriter, r *http.Request) {
 		out["size_bytes"] = st.Size()
 		out["download"] = "/api/histmap/sudan250k/download"
 	}
+	// OCR'd labels, if the extraction has (even partially) run. Partiality is
+	// advertised, not hidden: labels_complete=false means the OCR run is still
+	// in flight and a coordinate query may legitimately find nothing *yet*.
+	if db, err := histLabels.open(); err == nil {
+		done, total, nLabels := histLabelsProgress(db)
+		out["labels"] = "/api/histmap/sudan250k/labels"
+		out["labels_count"] = nLabels
+		out["labels_complete"] = total > 0 && done == total
+	}
 	enc.Encode(out)
 }
 

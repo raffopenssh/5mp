@@ -94,9 +94,26 @@ def init_db(c):
           lon REAL NOT NULL, lat REAL NOT NULL,
           model TEXT);
         CREATE INDEX IF NOT EXISTS idx_labels_lonlat ON labels(lon, lat);
-        CREATE INDEX IF NOT EXISTS idx_labels_text ON labels(text);
+        CREATE INDEX IF NOT EXISTS idx_labels_text ON labels(text COLLATE NOCASE);
+        -- Full-text index for fast text search (the API's q= filter would
+        -- otherwise be a LIKE '%..%' scan). Kept in sync by triggers, so the
+        -- long-running OCR writer maintains it for free once it exists.
+        CREATE VIRTUAL TABLE IF NOT EXISTS labels_fts USING fts5(
+          text, content='labels', content_rowid='id', tokenize='unicode61');
+        CREATE TRIGGER IF NOT EXISTS labels_ai AFTER INSERT ON labels BEGIN
+          INSERT INTO labels_fts(rowid, text) VALUES (new.id, new.text);
+        END;
+        CREATE TRIGGER IF NOT EXISTS labels_ad AFTER DELETE ON labels BEGIN
+          INSERT INTO labels_fts(labels_fts, rowid, text) VALUES('delete', old.id, old.text);
+        END;
         """
     )
+    # Backfill the FTS index for rows inserted before it existed. 'rebuild'
+    # re-derives the whole index from the content table; cheap at this size.
+    n_raw = c.execute("SELECT count(*) FROM labels").fetchone()[0]
+    n_fts = c.execute("SELECT count(*) FROM labels_fts").fetchone()[0]
+    if n_fts != n_raw:
+        c.execute("INSERT INTO labels_fts(labels_fts) VALUES('rebuild')")
     c.commit()
 
 
@@ -359,6 +376,11 @@ def cmd_dedupe(args):
         c.execute(
             "INSERT INTO labels_dedup(text,kind,lon,lat,n_src,sheets) VALUES(?,?,?,?,?,?)",
             (text, kind, cl["lon"], cl["lat"], cl["n"], ",".join(sorted(cl["sheets"]))))
+    c.executescript(
+        """
+        CREATE INDEX IF NOT EXISTS idx_dedup_lonlat ON labels_dedup(lon, lat);
+        CREATE INDEX IF NOT EXISTS idx_dedup_text ON labels_dedup(text COLLATE NOCASE);
+        """)
     c.commit()
     n = c.execute("SELECT count(*) FROM labels_dedup").fetchone()[0]
     print(f"labels_dedup: {n} (from {len(rows)} raw)")
