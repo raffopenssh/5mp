@@ -1,4 +1,156 @@
 {
+ "AGO_Cameia": {
+  "at": "2026-08-13T18:36:58Z",
+  "breakdown": {
+   "established": 3,
+   "permanent": 42,
+   "recent": 7
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 52,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R11_C21": {
+    "E2000": "9067805a92cf3591651fda904018953cb8e079f259bb79dd5e6fb13ceed447fc",
+    "E2015": "44b51ecf1b158b891b1dac04bafc849c2f17d3f999308164b9a0c99c61ea5e93",
+    "E2030": "afa734d6b435ac825d5678b82357a3a75328b38c89fc9748901afbd057c12258"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "AGO_Iona": {
+  "at": "2026-08-13T18:40:26Z",
+  "breakdown": {
+   "established": 1,
+   "permanent": 142,
+   "recent": 1
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 144,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R11_C20": {
+    "E2000": "ee85482e83890ade0ae3c2d4fece30f6541be3eebfb7c287b626409791471e9c",
+    "E2015": "252762ef266c0068648ec08d1eb96db73360fc02b9a5eb87d96d17b4483f7616",
+    "E2030": "4dd99e9b3c34a8bac59aaa3bddcff943188f6ce3b56fa8d434c4d841b2376a43"
+   },
+   "R12_C20": {
+    "E2000": "226f58dc64d0f87577f6eb80e00eebbb2ecc9ba8ca6610ce0784119ceea0cd95",
+    "E2015": "015093a431b4254265f80f27c91b62e60ebd197c89cd2e354f38a3424d09f8e8",
+    "E2030": "f8c9e6af38406e01c2793007c290ba367345a8cbc48c35c1e3b542f8bbdf3e93"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "BWA_Central_Kalahari": {
+  "at": "2026-08-13T18:36:11Z",
+  "breakdown": {
+   "established": 6,
+   "permanent": 26
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 32,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R12_C21": {
+    "E2000": "06bdee7a95a39b97127674f19cda4e648bc9743a52d87862765b8ea396778034",
+    "E2015": "c3e09fbf2f73397da008c01d2af95725ff38bd42b21a3fec1b8a6a25c024edca",
+    "E2030": "8d3a9e65edc478bf3ac43916ac7d0bffa546c104fa6eb8a2815b0f3a5d1ea22c"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "BWA_Chobe": {
+  "at": "2026-08-13T18:36:23Z",
+  "breakdown": {
+   "established": 2,
+   "permanent": 36,
+   "recent": 2
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 40,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R12_C21": {
+    "E2000": "06bdee7a95a39b97127674f19cda4e648bc9743a52d87862765b8ea396778034",
+    "E2015": "c3e09fbf2f73397da008c01d2af95725ff38bd42b21a3fec1b8a6a25c024edca",
+    "E2030": "8d3a9e65edc478bf3ac43916ac7d0bffa546c104fa6eb8a2815b0f3a5d1ea22c"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "BWA_Gemsbok": {
+  "at": "2026-08-13T18:38:05Z",
+  "breakdown": {
+   "established": 3,
+   "permanent": 43,
+   "recent": 2
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 48,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R12_C20": {
+    "E2000": "226f58dc64d0f87577f6eb80e00eebbb2ecc9ba8ca6610ce0784119ceea0cd95",
+    "E2015": "015093a431b4254265f80f27c91b62e60ebd197c89cd2e354f38a3424d09f8e8",
+    "E2030": "f8c9e6af38406e01c2793007c290ba367345a8cbc48c35c1e3b542f8bbdf3e93"
+   },
+   "R12_C21": {
+    "E2000": "06bdee7a95a39b97127674f19cda4e648bc9743a52d87862765b8ea396778034",
+    "E2015": "c3e09fbf2f73397da008c01d2af95725ff38bd42b21a3fec1b8a6a25c024edca",
+    "E2030": "8d3a9e65edc478bf3ac43916ac7d0bffa546c104fa6eb8a2815b0f3a5d1ea22c"
+   },
+   "R13_C20": {
+    "E2000": "177c78a28975eb98ecd649ddc191959750a2397899e924516bd795e05c804014",
+    "E2015": "fbde4cc916af7c4db6e0bb30de1ce1bd57861def1a4bc8cebc39b062d5219726",
+    "E2030": "40f5c0c8916534ace740efb7a8f0a8de902a8302389eaffb80bfcffb3997e9ba"
+   },
+   "R13_C21": {
+    "E2000": "86d090f4f6ad7c2c7438d793709dea4047425e843eb2243810d16c9d6d227745",
+    "E2015": "10c7fbab7856fc211ae599698f07189f2a8bfa55c63cf824c16168d3ec99a088",
+    "E2030": "9ce7b7b0ea79aa46275d83cffabcc8985967b8817e60cd086b1b0ee8f03ae464"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "CAF_Bamingui-Bangoran": {
+  "at": "2026-08-13T18:34:27Z",
+  "breakdown": {
+   "permanent": 11
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 11,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R8_C20": {
+    "E2000": "21d8bab4da8eaf0fef60918310ef9703fdfa854a463c067e60d69b4bbe8368d3",
+    "E2015": "7f937ad4f5958ab8a77a8643094ccddc421ddf8a0506d6e350a2d73423bf2d41",
+    "E2030": "598cd07422f8dac16dda0aaed746a26af46068542027bfa3f1308a20ddaa7fbc"
+   },
+   "R8_C21": {
+    "E2000": "497e99dc71cd102c02a0bf88c1e61059045c059e078fd21c3933cf6e80c37304",
+    "E2015": "de8a10d53ff5f1201eb51e353aa0619cd0b3ef9b76fe4273823c5485bc13dea3",
+    "E2030": "a1d2a772348dc03e19c0101998885ad30e0fcd2f086067a5dc1e038ad63ad900"
+   },
+   "R9_C20": {
+    "E2000": "7dc8d944104df2ca9437e3bd1491a5abdaaf318508bee724ea2549735181954c",
+    "E2015": "93819e5719866921edb553adb4969ae06ffdf21a0465d0991c6be4fcb6e0ce8e",
+    "E2030": "14ec0f15ddfad41f817e47b36922779eb59b423bf061b4098c9ec80ca625ef46"
+   },
+   "R9_C21": {
+    "E2000": "2fca432b351f89e0b3875b4ef08066bb5140bda14faeb98e69a802a3bf7d9b74",
+    "E2015": "95a3271073d330eafe95d76bb47052626c9177774fb72cf89b2dfd026a12b4d6",
+    "E2030": "20658f1eba28e8b7095ddad7343e0d9e66db3acdcc62a73ea3d62e5a631c0ca7"
+   }
+  },
+  "version": "2026-08-13a"
+ },
  "CAF_Chinko": {
   "at": "2026-08-13T17:18:40Z",
   "breakdown": {
@@ -14,6 +166,1870 @@
     "E2000": "2fca432b351f89e0b3875b4ef08066bb5140bda14faeb98e69a802a3bf7d9b74",
     "E2015": "95a3271073d330eafe95d76bb47052626c9177774fb72cf89b2dfd026a12b4d6",
     "E2030": "20658f1eba28e8b7095ddad7343e0d9e66db3acdcc62a73ea3d62e5a631c0ca7"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "CAF_Dzanga_Park": {
+  "at": "2026-08-13T18:33:54Z",
+  "breakdown": {
+   "permanent": 4
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 4,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R9_C20": {
+    "E2000": "7dc8d944104df2ca9437e3bd1491a5abdaaf318508bee724ea2549735181954c",
+    "E2015": "93819e5719866921edb553adb4969ae06ffdf21a0465d0991c6be4fcb6e0ce8e",
+    "E2030": "14ec0f15ddfad41f817e47b36922779eb59b423bf061b4098c9ec80ca625ef46"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "CAF_Manovo_Gounda_St_Floris": {
+  "at": "2026-08-13T18:35:02Z",
+  "breakdown": {
+   "permanent": 20
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 20,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R8_C21": {
+    "E2000": "497e99dc71cd102c02a0bf88c1e61059045c059e078fd21c3933cf6e80c37304",
+    "E2015": "de8a10d53ff5f1201eb51e353aa0619cd0b3ef9b76fe4273823c5485bc13dea3",
+    "E2030": "a1d2a772348dc03e19c0101998885ad30e0fcd2f086067a5dc1e038ad63ad900"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "CIV_Comoe": {
+  "at": "2026-08-13T18:36:51Z",
+  "breakdown": {
+   "established": 5,
+   "permanent": 25,
+   "recent": 26
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 56,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R8_C18": {
+    "E2000": "814774142a15080a307fdcd1b0c499bff943eaeccc807b922e95d80f16098894",
+    "E2015": "25c3f79c9a9cfb8917299e07c05bcbaf1b954f52b8a5039951f1bdb9087e341f",
+    "E2030": "210a33b7b735a7c57242ff5d1eb7c04682741151e6b3f0a08b07d0558d9fc525"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "CIV_Ta\u00ef": {
+  "at": "2026-08-13T18:35:48Z",
+  "breakdown": {
+   "permanent": 9,
+   "recent": 18
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 27,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R9_C18": {
+    "E2000": "bae418d8a92e65e6759189372db31910cca3763d297ed28b9ae80f89db5e974d",
+    "E2015": "9df34a2ff761543bbcd6af63bd3952804ffddb006da0a5cd7574a96f544e89c5",
+    "E2030": "97211db0a74ac370a82c7558306dff12b9a576b8b91d58f8a233ce8fb04f98f5"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "CMR_Bouba_Ndjida": {
+  "at": "2026-08-13T18:34:57Z",
+  "breakdown": {
+   "established": 1,
+   "permanent": 3,
+   "recent": 6
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 10,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R8_C20": {
+    "E2000": "21d8bab4da8eaf0fef60918310ef9703fdfa854a463c067e60d69b4bbe8368d3",
+    "E2015": "7f937ad4f5958ab8a77a8643094ccddc421ddf8a0506d6e350a2d73423bf2d41",
+    "E2030": "598cd07422f8dac16dda0aaed746a26af46068542027bfa3f1308a20ddaa7fbc"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "CMR_Boumba-Djombi": {
+  "at": "2026-08-13T18:34:58Z",
+  "breakdown": {
+   "established": 1,
+   "permanent": 3,
+   "recent": 6
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 10,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R8_C20": {
+    "E2000": "21d8bab4da8eaf0fef60918310ef9703fdfa854a463c067e60d69b4bbe8368d3",
+    "E2015": "7f937ad4f5958ab8a77a8643094ccddc421ddf8a0506d6e350a2d73423bf2d41",
+    "E2030": "598cd07422f8dac16dda0aaed746a26af46068542027bfa3f1308a20ddaa7fbc"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "CMR_Campo-Ma'an": {
+  "at": "2026-08-13T18:34:05Z",
+  "breakdown": {
+   "permanent": 4
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 4,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R9_C20": {
+    "E2000": "7dc8d944104df2ca9437e3bd1491a5abdaaf318508bee724ea2549735181954c",
+    "E2015": "93819e5719866921edb553adb4969ae06ffdf21a0465d0991c6be4fcb6e0ce8e",
+    "E2030": "14ec0f15ddfad41f817e47b36922779eb59b423bf061b4098c9ec80ca625ef46"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "CMR_Dja": {
+  "at": "2026-08-13T18:33:33Z",
+  "breakdown": {
+   "recent": 2
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 2,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R9_C20": {
+    "E2000": "7dc8d944104df2ca9437e3bd1491a5abdaaf318508bee724ea2549735181954c",
+    "E2015": "93819e5719866921edb553adb4969ae06ffdf21a0465d0991c6be4fcb6e0ce8e",
+    "E2030": "14ec0f15ddfad41f817e47b36922779eb59b423bf061b4098c9ec80ca625ef46"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "CMR_Faro": {
+  "at": "2026-08-13T18:34:51Z",
+  "breakdown": {
+   "established": 1,
+   "permanent": 9
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 10,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R8_C20": {
+    "E2000": "21d8bab4da8eaf0fef60918310ef9703fdfa854a463c067e60d69b4bbe8368d3",
+    "E2015": "7f937ad4f5958ab8a77a8643094ccddc421ddf8a0506d6e350a2d73423bf2d41",
+    "E2030": "598cd07422f8dac16dda0aaed746a26af46068542027bfa3f1308a20ddaa7fbc"
+   },
+   "R9_C20": {
+    "E2000": "7dc8d944104df2ca9437e3bd1491a5abdaaf318508bee724ea2549735181954c",
+    "E2015": "93819e5719866921edb553adb4969ae06ffdf21a0465d0991c6be4fcb6e0ce8e",
+    "E2030": "14ec0f15ddfad41f817e47b36922779eb59b423bf061b4098c9ec80ca625ef46"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "CMR_Lob\u00e9k\u00e9": {
+  "at": "2026-08-13T18:33:26Z",
+  "breakdown": {
+   "recent": 1
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 1,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R9_C20": {
+    "E2000": "7dc8d944104df2ca9437e3bd1491a5abdaaf318508bee724ea2549735181954c",
+    "E2015": "93819e5719866921edb553adb4969ae06ffdf21a0465d0991c6be4fcb6e0ce8e",
+    "E2030": "14ec0f15ddfad41f817e47b36922779eb59b423bf061b4098c9ec80ca625ef46"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "CMR_Mbam_et_Djerem": {
+  "at": "2026-08-13T18:33:34Z",
+  "breakdown": {
+   "recent": 1
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 1,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R9_C20": {
+    "E2000": "7dc8d944104df2ca9437e3bd1491a5abdaaf318508bee724ea2549735181954c",
+    "E2015": "93819e5719866921edb553adb4969ae06ffdf21a0465d0991c6be4fcb6e0ce8e",
+    "E2030": "14ec0f15ddfad41f817e47b36922779eb59b423bf061b4098c9ec80ca625ef46"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "CMR_Mont_Cameroun": {
+  "at": "2026-08-13T18:34:47Z",
+  "breakdown": {
+   "established": 1,
+   "permanent": 8,
+   "recent": 1
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 10,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R9_C19": {
+    "E2000": "16e116ab1e533ec6cd227fe1a7806e997846d585fb7dfac0492597c9ec4fbdd4",
+    "E2015": "fef206600f80d3beddb033996c525fd876c9036118b0a1e0effee9de209963bc",
+    "E2030": "03d212c334ad50243de6456801d8c037158da9facbb013cee9f5778309b646d2"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "CMR_Takamanda": {
+  "at": "2026-08-13T18:35:14Z",
+  "breakdown": {
+   "permanent": 6
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 6,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R9_C19": {
+    "E2000": "16e116ab1e533ec6cd227fe1a7806e997846d585fb7dfac0492597c9ec4fbdd4",
+    "E2015": "fef206600f80d3beddb033996c525fd876c9036118b0a1e0effee9de209963bc",
+    "E2030": "03d212c334ad50243de6456801d8c037158da9facbb013cee9f5778309b646d2"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "CMR_Waza": {
+  "at": "2026-08-13T18:35:22Z",
+  "breakdown": {
+   "established": 1,
+   "permanent": 11,
+   "recent": 1
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 13,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R8_C20": {
+    "E2000": "21d8bab4da8eaf0fef60918310ef9703fdfa854a463c067e60d69b4bbe8368d3",
+    "E2015": "7f937ad4f5958ab8a77a8643094ccddc421ddf8a0506d6e350a2d73423bf2d41",
+    "E2030": "598cd07422f8dac16dda0aaed746a26af46068542027bfa3f1308a20ddaa7fbc"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "COD_Abumonbazi": {
+  "at": "2026-08-13T18:35:28Z",
+  "breakdown": {
+   "permanent": 23
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 23,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R9_C21": {
+    "E2000": "2fca432b351f89e0b3875b4ef08066bb5140bda14faeb98e69a802a3bf7d9b74",
+    "E2015": "95a3271073d330eafe95d76bb47052626c9177774fb72cf89b2dfd026a12b4d6",
+    "E2030": "20658f1eba28e8b7095ddad7343e0d9e66db3acdcc62a73ea3d62e5a631c0ca7"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "COD_Garamba": {
+  "at": "2026-08-13T18:39:09Z",
+  "breakdown": {
+   "permanent": 58,
+   "recent": 1
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 59,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R9_C21": {
+    "E2000": "2fca432b351f89e0b3875b4ef08066bb5140bda14faeb98e69a802a3bf7d9b74",
+    "E2015": "95a3271073d330eafe95d76bb47052626c9177774fb72cf89b2dfd026a12b4d6",
+    "E2030": "20658f1eba28e8b7095ddad7343e0d9e66db3acdcc62a73ea3d62e5a631c0ca7"
+   },
+   "R9_C22": {
+    "E2000": "60f8377159f9ebc55fc42ff0bee224e501e426d349b9322c81ea297d4faad304",
+    "E2015": "7efbaa23f4900d458307b9c256ddb8442ffe7943919905aab3257690b507d49f",
+    "E2030": "39c7b13a1620bb1f20b166373f31c30b586b66d70776c2d27032182da8053a48"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "COD_Lomami": {
+  "at": "2026-08-13T18:34:05Z",
+  "breakdown": {
+   "permanent": 5
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 5,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R10_C21": {
+    "E2000": "aa2c70f3418476c583d5074ed3233edc8c6a2edb7b322e56a66fb30c2280deea",
+    "E2015": "3ea840f28054e20594bb952321fe499dcc60653e871666ba1fbbbb95eca7f2ba",
+    "E2030": "1b825389fc1814d401f70078a273075cb3f4ddbe9a2ba0771259dd23d384254a"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "COD_Maiko": {
+  "at": "2026-08-13T18:35:39Z",
+  "breakdown": {
+   "permanent": 31,
+   "recent": 1
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 32,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R10_C21": {
+    "E2000": "aa2c70f3418476c583d5074ed3233edc8c6a2edb7b322e56a66fb30c2280deea",
+    "E2015": "3ea840f28054e20594bb952321fe499dcc60653e871666ba1fbbbb95eca7f2ba",
+    "E2030": "1b825389fc1814d401f70078a273075cb3f4ddbe9a2ba0771259dd23d384254a"
+   },
+   "R9_C21": {
+    "E2000": "2fca432b351f89e0b3875b4ef08066bb5140bda14faeb98e69a802a3bf7d9b74",
+    "E2015": "95a3271073d330eafe95d76bb47052626c9177774fb72cf89b2dfd026a12b4d6",
+    "E2030": "20658f1eba28e8b7095ddad7343e0d9e66db3acdcc62a73ea3d62e5a631c0ca7"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "COD_Okapis": {
+  "at": "2026-08-13T18:38:32Z",
+  "breakdown": {
+   "established": 3,
+   "permanent": 31,
+   "recent": 35
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 69,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R9_C21": {
+    "E2000": "2fca432b351f89e0b3875b4ef08066bb5140bda14faeb98e69a802a3bf7d9b74",
+    "E2015": "95a3271073d330eafe95d76bb47052626c9177774fb72cf89b2dfd026a12b4d6",
+    "E2030": "20658f1eba28e8b7095ddad7343e0d9e66db3acdcc62a73ea3d62e5a631c0ca7"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "COD_Salonga": {
+  "at": "2026-08-13T18:35:50Z",
+  "breakdown": {
+   "established": 1,
+   "permanent": 28,
+   "recent": 2
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 31,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R10_C21": {
+    "E2000": "aa2c70f3418476c583d5074ed3233edc8c6a2edb7b322e56a66fb30c2280deea",
+    "E2015": "3ea840f28054e20594bb952321fe499dcc60653e871666ba1fbbbb95eca7f2ba",
+    "E2030": "1b825389fc1814d401f70078a273075cb3f4ddbe9a2ba0771259dd23d384254a"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "COD_Upemba": {
+  "at": "2026-08-13T18:39:46Z",
+  "breakdown": {
+   "established": 6,
+   "permanent": 84,
+   "recent": 1
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 91,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R11_C21": {
+    "E2000": "9067805a92cf3591651fda904018953cb8e079f259bb79dd5e6fb13ceed447fc",
+    "E2015": "44b51ecf1b158b891b1dac04bafc849c2f17d3f999308164b9a0c99c61ea5e93",
+    "E2030": "afa734d6b435ac825d5678b82357a3a75328b38c89fc9748901afbd057c12258"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "COG_Conkouati-Douli": {
+  "at": "2026-08-13T18:38:40Z",
+  "breakdown": {
+   "established": 2,
+   "permanent": 45,
+   "recent": 1
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 48,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R10_C20": {
+    "E2000": "2779f7f1ec332d555997b2f70126252751d457088042e636341bfc2e34d788c1",
+    "E2015": "583213f7b04e12e841f03534a9c79b19a9d31f55c49a6a0d5f2607602f840d6c",
+    "E2030": "9ae6466d9f074bd57bad4cb32081e5701ffad9780ba1c905e62b0a9c6a26a3db"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "COG_Lac_T\u00e9l\u00e9": {
+  "at": "2026-08-13T18:35:23Z",
+  "breakdown": {
+   "established": 2,
+   "permanent": 19
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 21,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R9_C20": {
+    "E2000": "7dc8d944104df2ca9437e3bd1491a5abdaaf318508bee724ea2549735181954c",
+    "E2015": "93819e5719866921edb553adb4969ae06ffdf21a0465d0991c6be4fcb6e0ce8e",
+    "E2030": "14ec0f15ddfad41f817e47b36922779eb59b423bf061b4098c9ec80ca625ef46"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "COG_L\u00e9fini": {
+  "at": "2026-08-13T18:38:28Z",
+  "breakdown": {
+   "established": 3,
+   "permanent": 47,
+   "recent": 3
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 53,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R10_C20": {
+    "E2000": "2779f7f1ec332d555997b2f70126252751d457088042e636341bfc2e34d788c1",
+    "E2015": "583213f7b04e12e841f03534a9c79b19a9d31f55c49a6a0d5f2607602f840d6c",
+    "E2030": "9ae6466d9f074bd57bad4cb32081e5701ffad9780ba1c905e62b0a9c6a26a3db"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "COG_Ntokou-Pikounda": {
+  "at": "2026-08-13T18:34:55Z",
+  "breakdown": {
+   "permanent": 17
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 17,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R9_C20": {
+    "E2000": "7dc8d944104df2ca9437e3bd1491a5abdaaf318508bee724ea2549735181954c",
+    "E2015": "93819e5719866921edb553adb4969ae06ffdf21a0465d0991c6be4fcb6e0ce8e",
+    "E2030": "14ec0f15ddfad41f817e47b36922779eb59b423bf061b4098c9ec80ca625ef46"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "COG_Odzala_Kokoua": {
+  "at": "2026-08-13T18:36:09Z",
+  "breakdown": {
+   "established": 4,
+   "permanent": 27,
+   "recent": 2
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 33,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R9_C20": {
+    "E2000": "7dc8d944104df2ca9437e3bd1491a5abdaaf318508bee724ea2549735181954c",
+    "E2015": "93819e5719866921edb553adb4969ae06ffdf21a0465d0991c6be4fcb6e0ce8e",
+    "E2030": "14ec0f15ddfad41f817e47b36922779eb59b423bf061b4098c9ec80ca625ef46"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "ETH_Gambella": {
+  "at": "2026-08-13T18:34:10Z",
+  "breakdown": {
+   "established": 1,
+   "permanent": 5,
+   "recent": 1
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 7,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R8_C22": {
+    "E2000": "65c08c09d078680c06c91f2b8eaef744ecce2fbc07573c7e98b09c305c65ef7a",
+    "E2015": "abecda0cf46327e56bffed1451d02a50e80d9c6bf55faaca3e430bf0cf2ffea0",
+    "E2030": "d19dbc1da70aee7dce7f0c7f1aaaf74d270c48e1e9441b524636a2e66bd5bc5c"
+   },
+   "R9_C22": {
+    "E2000": "60f8377159f9ebc55fc42ff0bee224e501e426d349b9322c81ea297d4faad304",
+    "E2015": "7efbaa23f4900d458307b9c256ddb8442ffe7943919905aab3257690b507d49f",
+    "E2030": "39c7b13a1620bb1f20b166373f31c30b586b66d70776c2d27032182da8053a48"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "GAB_Ivindo": {
+  "at": "2026-08-13T18:33:42Z",
+  "breakdown": {
+   "permanent": 3
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 3,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R10_C20": {
+    "E2000": "2779f7f1ec332d555997b2f70126252751d457088042e636341bfc2e34d788c1",
+    "E2015": "583213f7b04e12e841f03534a9c79b19a9d31f55c49a6a0d5f2607602f840d6c",
+    "E2030": "9ae6466d9f074bd57bad4cb32081e5701ffad9780ba1c905e62b0a9c6a26a3db"
+   },
+   "R9_C20": {
+    "E2000": "7dc8d944104df2ca9437e3bd1491a5abdaaf318508bee724ea2549735181954c",
+    "E2015": "93819e5719866921edb553adb4969ae06ffdf21a0465d0991c6be4fcb6e0ce8e",
+    "E2030": "14ec0f15ddfad41f817e47b36922779eb59b423bf061b4098c9ec80ca625ef46"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "GAB_Loango": {
+  "at": "2026-08-13T18:35:20Z",
+  "breakdown": {
+   "permanent": 17,
+   "recent": 3
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 20,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R10_C19": {
+    "E2000": "66f723206036b9f76ea56f7731373223299b19d26653a98bb2570fa207e009b2",
+    "E2015": "b8a74f7e872ea39be3790f50ac70b1e44ce9182125329be4a29f705a0f775e15",
+    "E2030": "c03135ef1cf2f3d90ec8f6c9b84120a35a110f51ba27d8e58e9db73357f8ddc7"
+   },
+   "R10_C20": {
+    "E2000": "2779f7f1ec332d555997b2f70126252751d457088042e636341bfc2e34d788c1",
+    "E2015": "583213f7b04e12e841f03534a9c79b19a9d31f55c49a6a0d5f2607602f840d6c",
+    "E2030": "9ae6466d9f074bd57bad4cb32081e5701ffad9780ba1c905e62b0a9c6a26a3db"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "GAB_Lop\u00e9": {
+  "at": "2026-08-13T18:35:40Z",
+  "breakdown": {
+   "established": 1,
+   "permanent": 17,
+   "recent": 1
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 19,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R10_C20": {
+    "E2000": "2779f7f1ec332d555997b2f70126252751d457088042e636341bfc2e34d788c1",
+    "E2015": "583213f7b04e12e841f03534a9c79b19a9d31f55c49a6a0d5f2607602f840d6c",
+    "E2030": "9ae6466d9f074bd57bad4cb32081e5701ffad9780ba1c905e62b0a9c6a26a3db"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "GAB_Minkebe": {
+  "at": "2026-08-13T18:33:43Z",
+  "breakdown": {
+   "permanent": 2,
+   "recent": 1
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 3,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R9_C20": {
+    "E2000": "7dc8d944104df2ca9437e3bd1491a5abdaaf318508bee724ea2549735181954c",
+    "E2015": "93819e5719866921edb553adb4969ae06ffdf21a0465d0991c6be4fcb6e0ce8e",
+    "E2030": "14ec0f15ddfad41f817e47b36922779eb59b423bf061b4098c9ec80ca625ef46"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "GAB_Monts_Birougou": {
+  "at": "2026-08-13T18:33:32Z",
+  "breakdown": {
+   "permanent": 1
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 1,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R10_C20": {
+    "E2000": "2779f7f1ec332d555997b2f70126252751d457088042e636341bfc2e34d788c1",
+    "E2015": "583213f7b04e12e841f03534a9c79b19a9d31f55c49a6a0d5f2607602f840d6c",
+    "E2030": "9ae6466d9f074bd57bad4cb32081e5701ffad9780ba1c905e62b0a9c6a26a3db"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "GAB_Monts_de_Cristal": {
+  "at": "2026-08-13T18:33:43Z",
+  "breakdown": {
+   "permanent": 1
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 1,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R9_C20": {
+    "E2000": "7dc8d944104df2ca9437e3bd1491a5abdaaf318508bee724ea2549735181954c",
+    "E2015": "93819e5719866921edb553adb4969ae06ffdf21a0465d0991c6be4fcb6e0ce8e",
+    "E2030": "14ec0f15ddfad41f817e47b36922779eb59b423bf061b4098c9ec80ca625ef46"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "GAB_Moukalaba-Doudou": {
+  "at": "2026-08-13T18:34:53Z",
+  "breakdown": {
+   "established": 1,
+   "permanent": 3,
+   "recent": 3
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 7,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R10_C20": {
+    "E2000": "2779f7f1ec332d555997b2f70126252751d457088042e636341bfc2e34d788c1",
+    "E2015": "583213f7b04e12e841f03534a9c79b19a9d31f55c49a6a0d5f2607602f840d6c",
+    "E2030": "9ae6466d9f074bd57bad4cb32081e5701ffad9780ba1c905e62b0a9c6a26a3db"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "GAB_Plateaux_Bat\u00e9k": {
+  "at": "2026-08-13T18:34:06Z",
+  "breakdown": {
+   "permanent": 7
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 7,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R10_C20": {
+    "E2000": "2779f7f1ec332d555997b2f70126252751d457088042e636341bfc2e34d788c1",
+    "E2015": "583213f7b04e12e841f03534a9c79b19a9d31f55c49a6a0d5f2607602f840d6c",
+    "E2030": "9ae6466d9f074bd57bad4cb32081e5701ffad9780ba1c905e62b0a9c6a26a3db"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "GAB_Wonga-Wongu\u00e9": {
+  "at": "2026-08-13T18:37:40Z",
+  "breakdown": {
+   "established": 2,
+   "permanent": 19,
+   "recent": 8
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 29,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R10_C19": {
+    "E2000": "66f723206036b9f76ea56f7731373223299b19d26653a98bb2570fa207e009b2",
+    "E2015": "b8a74f7e872ea39be3790f50ac70b1e44ce9182125329be4a29f705a0f775e15",
+    "E2030": "c03135ef1cf2f3d90ec8f6c9b84120a35a110f51ba27d8e58e9db73357f8ddc7"
+   },
+   "R10_C20": {
+    "E2000": "2779f7f1ec332d555997b2f70126252751d457088042e636341bfc2e34d788c1",
+    "E2015": "583213f7b04e12e841f03534a9c79b19a9d31f55c49a6a0d5f2607602f840d6c",
+    "E2030": "9ae6466d9f074bd57bad4cb32081e5701ffad9780ba1c905e62b0a9c6a26a3db"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "GHA_Mole": {
+  "at": "2026-08-13T18:37:45Z",
+  "breakdown": {
+   "established": 2,
+   "permanent": 53,
+   "recent": 3
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 58,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R8_C18": {
+    "E2000": "814774142a15080a307fdcd1b0c499bff943eaeccc807b922e95d80f16098894",
+    "E2015": "25c3f79c9a9cfb8917299e07c05bcbaf1b954f52b8a5039951f1bdb9087e341f",
+    "E2030": "210a33b7b735a7c57242ff5d1eb7c04682741151e6b3f0a08b07d0558d9fc525"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "GNQ_Monte_Al\u00e9n": {
+  "at": "2026-08-13T18:35:51Z",
+  "breakdown": {
+   "established": 1,
+   "permanent": 13,
+   "recent": 8
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 22,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R9_C20": {
+    "E2000": "7dc8d944104df2ca9437e3bd1491a5abdaaf318508bee724ea2549735181954c",
+    "E2015": "93819e5719866921edb553adb4969ae06ffdf21a0465d0991c6be4fcb6e0ce8e",
+    "E2030": "14ec0f15ddfad41f817e47b36922779eb59b423bf061b4098c9ec80ca625ef46"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "KEN_Aberdare": {
+  "at": "2026-08-13T18:35:05Z",
+  "breakdown": {
+   "established": 2,
+   "permanent": 7,
+   "recent": 4
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 13,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R10_C22": {
+    "E2000": "f91f9eceb1af95d0204ab73f4f0adc42d3c3182626b3a12ddfcab87c3518acce",
+    "E2015": "ff1e72def9448b6d65d0582a65667445620de4e1775d868872e80a769b897612",
+    "E2030": "9356464240f015ecbe231666f604847db1103a29fab5bae130911300a7dba8fc"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "KEN_Masai_Mara": {
+  "at": "2026-08-13T18:39:33Z",
+  "breakdown": {
+   "established": 5,
+   "permanent": 43,
+   "recent": 7
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 55,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R10_C22": {
+    "E2000": "f91f9eceb1af95d0204ab73f4f0adc42d3c3182626b3a12ddfcab87c3518acce",
+    "E2015": "ff1e72def9448b6d65d0582a65667445620de4e1775d868872e80a769b897612",
+    "E2030": "9356464240f015ecbe231666f604847db1103a29fab5bae130911300a7dba8fc"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "KEN_Mount_Kenya": {
+  "at": "2026-08-13T18:38:16Z",
+  "breakdown": {
+   "established": 13,
+   "permanent": 26,
+   "recent": 10
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 49,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R10_C22": {
+    "E2000": "f91f9eceb1af95d0204ab73f4f0adc42d3c3182626b3a12ddfcab87c3518acce",
+    "E2015": "ff1e72def9448b6d65d0582a65667445620de4e1775d868872e80a769b897612",
+    "E2030": "9356464240f015ecbe231666f604847db1103a29fab5bae130911300a7dba8fc"
+   },
+   "R9_C22": {
+    "E2000": "60f8377159f9ebc55fc42ff0bee224e501e426d349b9322c81ea297d4faad304",
+    "E2015": "7efbaa23f4900d458307b9c256ddb8442ffe7943919905aab3257690b507d49f",
+    "E2030": "39c7b13a1620bb1f20b166373f31c30b586b66d70776c2d27032182da8053a48"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "KEN_Sera_Community_Conservancy": {
+  "at": "2026-08-13T18:39:55Z",
+  "breakdown": {
+   "established": 5,
+   "permanent": 47,
+   "recent": 21
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 73,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R9_C22": {
+    "E2000": "60f8377159f9ebc55fc42ff0bee224e501e426d349b9322c81ea297d4faad304",
+    "E2015": "7efbaa23f4900d458307b9c256ddb8442ffe7943919905aab3257690b507d49f",
+    "E2030": "39c7b13a1620bb1f20b166373f31c30b586b66d70776c2d27032182da8053a48"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "KEN_Sibiloi": {
+  "at": "2026-08-13T18:33:55Z",
+  "breakdown": {
+   "permanent": 2,
+   "recent": 2
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 4,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R9_C22": {
+    "E2000": "60f8377159f9ebc55fc42ff0bee224e501e426d349b9322c81ea297d4faad304",
+    "E2015": "7efbaa23f4900d458307b9c256ddb8442ffe7943919905aab3257690b507d49f",
+    "E2030": "39c7b13a1620bb1f20b166373f31c30b586b66d70776c2d27032182da8053a48"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "KEN_Tsavo_East": {
+  "at": "2026-08-13T18:38:20Z",
+  "breakdown": {
+   "established": 4,
+   "permanent": 82,
+   "recent": 7
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 93,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R10_C22": {
+    "E2000": "f91f9eceb1af95d0204ab73f4f0adc42d3c3182626b3a12ddfcab87c3518acce",
+    "E2015": "ff1e72def9448b6d65d0582a65667445620de4e1775d868872e80a769b897612",
+    "E2030": "9356464240f015ecbe231666f604847db1103a29fab5bae130911300a7dba8fc"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "KEN_Tsavo_West": {
+  "at": "2026-08-13T18:39:51Z",
+  "breakdown": {
+   "established": 4,
+   "permanent": 83,
+   "recent": 3
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 90,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R10_C22": {
+    "E2000": "f91f9eceb1af95d0204ab73f4f0adc42d3c3182626b3a12ddfcab87c3518acce",
+    "E2015": "ff1e72def9448b6d65d0582a65667445620de4e1775d868872e80a769b897612",
+    "E2030": "9356464240f015ecbe231666f604847db1103a29fab5bae130911300a7dba8fc"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "LBR_Sapo": {
+  "at": "2026-08-13T18:33:41Z",
+  "breakdown": {
+   "permanent": 2
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 2,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R9_C18": {
+    "E2000": "bae418d8a92e65e6759189372db31910cca3763d297ed28b9ae80f89db5e974d",
+    "E2015": "9df34a2ff761543bbcd6af63bd3952804ffddb006da0a5cd7574a96f544e89c5",
+    "E2030": "97211db0a74ac370a82c7558306dff12b9a576b8b91d58f8a233ce8fb04f98f5"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "MOZ_Banhine": {
+  "at": "2026-08-13T18:39:25Z",
+  "breakdown": {
+   "established": 9,
+   "permanent": 27,
+   "recent": 31
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 67,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R12_C22": {
+    "E2000": "5c71d72e4f3cfca99c0ecad350201a10a5fb6e89b3f332b1676c77e7246fadcd",
+    "E2015": "c15932d0010fabe7239bbe359994f42e6289a1ab9868316d1269b899a8aba7bb",
+    "E2030": "396a8dc610bfd3668a84c97656c8f28af607e3223bc690d1fdb1f86d12fcafa2"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "MOZ_Chimanimani": {
+  "at": "2026-08-13T18:37:11Z",
+  "breakdown": {
+   "permanent": 26
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 26,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R12_C22": {
+    "E2000": "5c71d72e4f3cfca99c0ecad350201a10a5fb6e89b3f332b1676c77e7246fadcd",
+    "E2015": "c15932d0010fabe7239bbe359994f42e6289a1ab9868316d1269b899a8aba7bb",
+    "E2030": "396a8dc610bfd3668a84c97656c8f28af607e3223bc690d1fdb1f86d12fcafa2"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "MOZ_Gil\u00e9": {
+  "at": "2026-08-13T18:34:36Z",
+  "breakdown": {
+   "permanent": 3,
+   "recent": 4
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 7,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R11_C22": {
+    "E2000": "c69d1ee16e69382e6b9b124376848d5459ce06a09cebbd4c46f0e71b3bc1b995",
+    "E2015": "00b56e9a9f300b7bc9245c34f1a30fa09b61759a01e39d0888c09ba819b54c82",
+    "E2030": "a3539fc7901454520cdcbe75b8ef793f26702ad6220289dc88cd900fd8acf79a"
+   },
+   "R12_C22": {
+    "E2000": "5c71d72e4f3cfca99c0ecad350201a10a5fb6e89b3f332b1676c77e7246fadcd",
+    "E2015": "c15932d0010fabe7239bbe359994f42e6289a1ab9868316d1269b899a8aba7bb",
+    "E2030": "396a8dc610bfd3668a84c97656c8f28af607e3223bc690d1fdb1f86d12fcafa2"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "MOZ_Zinave": {
+  "at": "2026-08-13T18:39:29Z",
+  "breakdown": {
+   "established": 7,
+   "permanent": 33,
+   "recent": 1
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 41,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R12_C22": {
+    "E2000": "5c71d72e4f3cfca99c0ecad350201a10a5fb6e89b3f332b1676c77e7246fadcd",
+    "E2015": "c15932d0010fabe7239bbe359994f42e6289a1ab9868316d1269b899a8aba7bb",
+    "E2030": "396a8dc610bfd3668a84c97656c8f28af607e3223bc690d1fdb1f86d12fcafa2"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "MWI_Liwonde": {
+  "at": "2026-08-13T18:37:15Z",
+  "breakdown": {
+   "established": 4,
+   "permanent": 9,
+   "recent": 1
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 14,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R11_C22": {
+    "E2000": "c69d1ee16e69382e6b9b124376848d5459ce06a09cebbd4c46f0e71b3bc1b995",
+    "E2015": "00b56e9a9f300b7bc9245c34f1a30fa09b61759a01e39d0888c09ba819b54c82",
+    "E2030": "a3539fc7901454520cdcbe75b8ef793f26702ad6220289dc88cd900fd8acf79a"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "MWI_Mulanje_mountain": {
+  "at": "2026-08-13T18:36:54Z",
+  "breakdown": {
+   "permanent": 21,
+   "recent": 3
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 24,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R11_C22": {
+    "E2000": "c69d1ee16e69382e6b9b124376848d5459ce06a09cebbd4c46f0e71b3bc1b995",
+    "E2015": "00b56e9a9f300b7bc9245c34f1a30fa09b61759a01e39d0888c09ba819b54c82",
+    "E2030": "a3539fc7901454520cdcbe75b8ef793f26702ad6220289dc88cd900fd8acf79a"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "MWI_Nyika": {
+  "at": "2026-08-13T18:39:04Z",
+  "breakdown": {
+   "established": 6,
+   "permanent": 49,
+   "recent": 1
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 56,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R11_C22": {
+    "E2000": "c69d1ee16e69382e6b9b124376848d5459ce06a09cebbd4c46f0e71b3bc1b995",
+    "E2015": "00b56e9a9f300b7bc9245c34f1a30fa09b61759a01e39d0888c09ba819b54c82",
+    "E2030": "a3539fc7901454520cdcbe75b8ef793f26702ad6220289dc88cd900fd8acf79a"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "NAM_Ai-Ais_Hot_Springs": {
+  "at": "2026-08-13T18:36:15Z",
+  "breakdown": {
+   "established": 2,
+   "permanent": 23
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 25,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R13_C20": {
+    "E2000": "177c78a28975eb98ecd649ddc191959750a2397899e924516bd795e05c804014",
+    "E2015": "fbde4cc916af7c4db6e0bb30de1ce1bd57861def1a4bc8cebc39b062d5219726",
+    "E2030": "40f5c0c8916534ace740efb7a8f0a8de902a8302389eaffb80bfcffb3997e9ba"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "NAM_Bwabwata": {
+  "at": "2026-08-13T18:38:36Z",
+  "breakdown": {
+   "established": 9,
+   "permanent": 31,
+   "recent": 2
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 42,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R12_C21": {
+    "E2000": "06bdee7a95a39b97127674f19cda4e648bc9743a52d87862765b8ea396778034",
+    "E2015": "c3e09fbf2f73397da008c01d2af95725ff38bd42b21a3fec1b8a6a25c024edca",
+    "E2030": "8d3a9e65edc478bf3ac43916ac7d0bffa546c104fa6eb8a2815b0f3a5d1ea22c"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "NAM_Etosha": {
+  "at": "2026-08-13T18:37:23Z",
+  "breakdown": {
+   "established": 2,
+   "permanent": 44,
+   "recent": 1
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 47,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R12_C20": {
+    "E2000": "226f58dc64d0f87577f6eb80e00eebbb2ecc9ba8ca6610ce0784119ceea0cd95",
+    "E2015": "015093a431b4254265f80f27c91b62e60ebd197c89cd2e354f38a3424d09f8e8",
+    "E2030": "f8c9e6af38406e01c2793007c290ba367345a8cbc48c35c1e3b542f8bbdf3e93"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "NAM_Namib-Naukluft": {
+  "at": "2026-08-13T18:40:12Z",
+  "breakdown": {
+   "established": 6,
+   "permanent": 89,
+   "recent": 4
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 99,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R12_C20": {
+    "E2000": "226f58dc64d0f87577f6eb80e00eebbb2ecc9ba8ca6610ce0784119ceea0cd95",
+    "E2015": "015093a431b4254265f80f27c91b62e60ebd197c89cd2e354f38a3424d09f8e8",
+    "E2030": "f8c9e6af38406e01c2793007c290ba367345a8cbc48c35c1e3b542f8bbdf3e93"
+   },
+   "R13_C20": {
+    "E2000": "177c78a28975eb98ecd649ddc191959750a2397899e924516bd795e05c804014",
+    "E2015": "fbde4cc916af7c4db6e0bb30de1ce1bd57861def1a4bc8cebc39b062d5219726",
+    "E2030": "40f5c0c8916534ace740efb7a8f0a8de902a8302389eaffb80bfcffb3997e9ba"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "NAM_Skeleton_Coast": {
+  "at": "2026-08-13T18:37:54Z",
+  "breakdown": {
+   "established": 1,
+   "permanent": 40
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 41,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R12_C20": {
+    "E2000": "226f58dc64d0f87577f6eb80e00eebbb2ecc9ba8ca6610ce0784119ceea0cd95",
+    "E2015": "015093a431b4254265f80f27c91b62e60ebd197c89cd2e354f38a3424d09f8e8",
+    "E2030": "f8c9e6af38406e01c2793007c290ba367345a8cbc48c35c1e3b542f8bbdf3e93"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "NGA_Cross_River": {
+  "at": "2026-08-13T18:35:55Z",
+  "breakdown": {
+   "established": 1,
+   "permanent": 17,
+   "recent": 8
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 26,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R9_C19": {
+    "E2000": "16e116ab1e533ec6cd227fe1a7806e997846d585fb7dfac0492597c9ec4fbdd4",
+    "E2015": "fef206600f80d3beddb033996c525fd876c9036118b0a1e0effee9de209963bc",
+    "E2030": "03d212c334ad50243de6456801d8c037158da9facbb013cee9f5778309b646d2"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "NGA_Yankari": {
+  "at": "2026-08-13T18:36:35Z",
+  "breakdown": {
+   "established": 1,
+   "permanent": 6,
+   "recent": 7
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 14,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R8_C20": {
+    "E2000": "21d8bab4da8eaf0fef60918310ef9703fdfa854a463c067e60d69b4bbe8368d3",
+    "E2015": "7f937ad4f5958ab8a77a8643094ccddc421ddf8a0506d6e350a2d73423bf2d41",
+    "E2030": "598cd07422f8dac16dda0aaed746a26af46068542027bfa3f1308a20ddaa7fbc"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "RWA_Akagera": {
+  "at": "2026-08-13T18:35:24Z",
+  "breakdown": {
+   "permanent": 19,
+   "recent": 2
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 21,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R10_C22": {
+    "E2000": "f91f9eceb1af95d0204ab73f4f0adc42d3c3182626b3a12ddfcab87c3518acce",
+    "E2015": "ff1e72def9448b6d65d0582a65667445620de4e1775d868872e80a769b897612",
+    "E2030": "9356464240f015ecbe231666f604847db1103a29fab5bae130911300a7dba8fc"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "RWA_Nyungwe": {
+  "at": "2026-08-13T18:35:00Z",
+  "breakdown": {
+   "established": 3,
+   "recent": 14
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 17,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R10_C21": {
+    "E2000": "aa2c70f3418476c583d5074ed3233edc8c6a2edb7b322e56a66fb30c2280deea",
+    "E2015": "3ea840f28054e20594bb952321fe499dcc60653e871666ba1fbbbb95eca7f2ba",
+    "E2030": "1b825389fc1814d401f70078a273075cb3f4ddbe9a2ba0771259dd23d384254a"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "RWA_Volcans": {
+  "at": "2026-08-13T18:34:03Z",
+  "breakdown": {
+   "permanent": 3
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 3,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R10_C21": {
+    "E2000": "aa2c70f3418476c583d5074ed3233edc8c6a2edb7b322e56a66fb30c2280deea",
+    "E2015": "3ea840f28054e20594bb952321fe499dcc60653e871666ba1fbbbb95eca7f2ba",
+    "E2030": "1b825389fc1814d401f70078a273075cb3f4ddbe9a2ba0771259dd23d384254a"
+   },
+   "R10_C22": {
+    "E2000": "f91f9eceb1af95d0204ab73f4f0adc42d3c3182626b3a12ddfcab87c3518acce",
+    "E2015": "ff1e72def9448b6d65d0582a65667445620de4e1775d868872e80a769b897612",
+    "E2030": "9356464240f015ecbe231666f604847db1103a29fab5bae130911300a7dba8fc"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "SEN_Niokolo_Koba": {
+  "at": "2026-08-13T18:37:35Z",
+  "breakdown": {
+   "established": 5,
+   "permanent": 34,
+   "recent": 5
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 44,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R8_C17": {
+    "E2000": "1434a925330889782b604c895e0923a5ba19942d0c30ef85f41fd3c5278bcede",
+    "E2015": "90696fafeb603d1d71d3212f1710444f67c82c4bb219a2eb0c9db378b914e101",
+    "E2030": "a1d4dfc0627d4cb3b147945e2aca64fd8dc5e810251c8aef25e7c0d448cbbeff"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "SSD_Badingilo": {
+  "at": "2026-08-13T18:38:09Z",
+  "breakdown": {
+   "established": 1,
+   "permanent": 9,
+   "recent": 3
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 13,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R9_C22": {
+    "E2000": "60f8377159f9ebc55fc42ff0bee224e501e426d349b9322c81ea297d4faad304",
+    "E2015": "7efbaa23f4900d458307b9c256ddb8442ffe7943919905aab3257690b507d49f",
+    "E2030": "39c7b13a1620bb1f20b166373f31c30b586b66d70776c2d27032182da8053a48"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "SSD_Boma": {
+  "at": "2026-08-13T18:36:33Z",
+  "breakdown": {
+   "permanent": 9
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 9,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R9_C22": {
+    "E2000": "60f8377159f9ebc55fc42ff0bee224e501e426d349b9322c81ea297d4faad304",
+    "E2015": "7efbaa23f4900d458307b9c256ddb8442ffe7943919905aab3257690b507d49f",
+    "E2030": "39c7b13a1620bb1f20b166373f31c30b586b66d70776c2d27032182da8053a48"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "SSD_Southern": {
+  "at": "2026-08-13T18:36:26Z",
+  "breakdown": {
+   "permanent": 29
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 29,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R9_C21": {
+    "E2000": "2fca432b351f89e0b3875b4ef08066bb5140bda14faeb98e69a802a3bf7d9b74",
+    "E2015": "95a3271073d330eafe95d76bb47052626c9177774fb72cf89b2dfd026a12b4d6",
+    "E2030": "20658f1eba28e8b7095ddad7343e0d9e66db3acdcc62a73ea3d62e5a631c0ca7"
+   },
+   "R9_C22": {
+    "E2000": "60f8377159f9ebc55fc42ff0bee224e501e426d349b9322c81ea297d4faad304",
+    "E2015": "7efbaa23f4900d458307b9c256ddb8442ffe7943919905aab3257690b507d49f",
+    "E2030": "39c7b13a1620bb1f20b166373f31c30b586b66d70776c2d27032182da8053a48"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "TCD_Ouadi_Rim\u00e9-Ouadi_Achim": {
+  "at": "2026-08-13T18:38:57Z",
+  "breakdown": {
+   "permanent": 71
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 71,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R7_C20": {
+    "E2000": "08da4d3437b16805c7c595db853b982a296dfbfbcc6c6b6da5a4ee14a78a9baf",
+    "E2015": "a943a442d944b62ed66074490f954c63a1d54a265c3ba1cc530b26e7f7abe983",
+    "E2030": "46413411364b70a0494ee93cfc630292221c6bc3c5d595b1658a95454674acab"
+   },
+   "R7_C21": {
+    "E2000": "20ae4457300d5cb608469a4804b1b88e6491a510441637da04968043f4c44203",
+    "E2015": "fb5b27b3809b138d5dcd7f6e31f40a9e3e596e854ba5f63a869aefad678e2fc4",
+    "E2030": "b260b2895b24d5eb73b0c8cf9d0126aad123a93fbbef0debd3a4f9582422d8c0"
+   },
+   "R8_C20": {
+    "E2000": "21d8bab4da8eaf0fef60918310ef9703fdfa854a463c067e60d69b4bbe8368d3",
+    "E2015": "7f937ad4f5958ab8a77a8643094ccddc421ddf8a0506d6e350a2d73423bf2d41",
+    "E2030": "598cd07422f8dac16dda0aaed746a26af46068542027bfa3f1308a20ddaa7fbc"
+   },
+   "R8_C21": {
+    "E2000": "497e99dc71cd102c02a0bf88c1e61059045c059e078fd21c3933cf6e80c37304",
+    "E2015": "de8a10d53ff5f1201eb51e353aa0619cd0b3ef9b76fe4273823c5485bc13dea3",
+    "E2030": "a1d2a772348dc03e19c0101998885ad30e0fcd2f086067a5dc1e038ad63ad900"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "TCD_Zakouma": {
+  "at": "2026-08-13T18:34:49Z",
+  "breakdown": {
+   "established": 1,
+   "permanent": 5,
+   "recent": 3
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 9,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R8_C20": {
+    "E2000": "21d8bab4da8eaf0fef60918310ef9703fdfa854a463c067e60d69b4bbe8368d3",
+    "E2015": "7f937ad4f5958ab8a77a8643094ccddc421ddf8a0506d6e350a2d73423bf2d41",
+    "E2030": "598cd07422f8dac16dda0aaed746a26af46068542027bfa3f1308a20ddaa7fbc"
+   },
+   "R8_C21": {
+    "E2000": "497e99dc71cd102c02a0bf88c1e61059045c059e078fd21c3933cf6e80c37304",
+    "E2015": "de8a10d53ff5f1201eb51e353aa0619cd0b3ef9b76fe4273823c5485bc13dea3",
+    "E2030": "a1d2a772348dc03e19c0101998885ad30e0fcd2f086067a5dc1e038ad63ad900"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "TZA_Katavi": {
+  "at": "2026-08-13T18:37:03Z",
+  "breakdown": {
+   "established": 1,
+   "permanent": 39,
+   "recent": 2
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 42,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R10_C22": {
+    "E2000": "f91f9eceb1af95d0204ab73f4f0adc42d3c3182626b3a12ddfcab87c3518acce",
+    "E2015": "ff1e72def9448b6d65d0582a65667445620de4e1775d868872e80a769b897612",
+    "E2030": "9356464240f015ecbe231666f604847db1103a29fab5bae130911300a7dba8fc"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "TZA_Kilimanjaro": {
+  "at": "2026-08-13T18:36:37Z",
+  "breakdown": {
+   "established": 3,
+   "permanent": 28,
+   "recent": 3
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 34,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R10_C22": {
+    "E2000": "f91f9eceb1af95d0204ab73f4f0adc42d3c3182626b3a12ddfcab87c3518acce",
+    "E2015": "ff1e72def9448b6d65d0582a65667445620de4e1775d868872e80a769b897612",
+    "E2030": "9356464240f015ecbe231666f604847db1103a29fab5bae130911300a7dba8fc"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "TZA_Kilombero": {
+  "at": "2026-08-13T18:34:17Z",
+  "breakdown": {
+   "permanent": 11
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 11,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R10_C22": {
+    "E2000": "f91f9eceb1af95d0204ab73f4f0adc42d3c3182626b3a12ddfcab87c3518acce",
+    "E2015": "ff1e72def9448b6d65d0582a65667445620de4e1775d868872e80a769b897612",
+    "E2030": "9356464240f015ecbe231666f604847db1103a29fab5bae130911300a7dba8fc"
+   },
+   "R11_C22": {
+    "E2000": "c69d1ee16e69382e6b9b124376848d5459ce06a09cebbd4c46f0e71b3bc1b995",
+    "E2015": "00b56e9a9f300b7bc9245c34f1a30fa09b61759a01e39d0888c09ba819b54c82",
+    "E2030": "a3539fc7901454520cdcbe75b8ef793f26702ad6220289dc88cd900fd8acf79a"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "TZA_Kitulo_Plateau": {
+  "at": "2026-08-13T18:35:53Z",
+  "breakdown": {
+   "established": 1,
+   "permanent": 9,
+   "recent": 5
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 15,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R11_C22": {
+    "E2000": "c69d1ee16e69382e6b9b124376848d5459ce06a09cebbd4c46f0e71b3bc1b995",
+    "E2015": "00b56e9a9f300b7bc9245c34f1a30fa09b61759a01e39d0888c09ba819b54c82",
+    "E2030": "a3539fc7901454520cdcbe75b8ef793f26702ad6220289dc88cd900fd8acf79a"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "TZA_Luasi": {
+  "at": "2026-08-13T18:34:54Z",
+  "breakdown": {
+   "permanent": 15
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 15,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R10_C22": {
+    "E2000": "f91f9eceb1af95d0204ab73f4f0adc42d3c3182626b3a12ddfcab87c3518acce",
+    "E2015": "ff1e72def9448b6d65d0582a65667445620de4e1775d868872e80a769b897612",
+    "E2030": "9356464240f015ecbe231666f604847db1103a29fab5bae130911300a7dba8fc"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "TZA_Luganzo-Tongwe": {
+  "at": "2026-08-13T18:34:07Z",
+  "breakdown": {
+   "established": 1
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 1,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R10_C22": {
+    "E2000": "f91f9eceb1af95d0204ab73f4f0adc42d3c3182626b3a12ddfcab87c3518acce",
+    "E2015": "ff1e72def9448b6d65d0582a65667445620de4e1775d868872e80a769b897612",
+    "E2030": "9356464240f015ecbe231666f604847db1103a29fab5bae130911300a7dba8fc"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "TZA_Mahale_Mts": {
+  "at": "2026-08-13T18:35:37Z",
+  "breakdown": {
+   "permanent": 10,
+   "recent": 1
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 11,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R10_C22": {
+    "E2000": "f91f9eceb1af95d0204ab73f4f0adc42d3c3182626b3a12ddfcab87c3518acce",
+    "E2015": "ff1e72def9448b6d65d0582a65667445620de4e1775d868872e80a769b897612",
+    "E2030": "9356464240f015ecbe231666f604847db1103a29fab5bae130911300a7dba8fc"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "TZA_Mkomazi": {
+  "at": "2026-08-13T18:36:19Z",
+  "breakdown": {
+   "permanent": 30,
+   "recent": 1
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 31,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R10_C22": {
+    "E2000": "f91f9eceb1af95d0204ab73f4f0adc42d3c3182626b3a12ddfcab87c3518acce",
+    "E2015": "ff1e72def9448b6d65d0582a65667445620de4e1775d868872e80a769b897612",
+    "E2030": "9356464240f015ecbe231666f604847db1103a29fab5bae130911300a7dba8fc"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "TZA_Moyowosi": {
+  "at": "2026-08-13T18:36:14Z",
+  "breakdown": {
+   "established": 2,
+   "permanent": 3,
+   "recent": 20
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 25,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R10_C22": {
+    "E2000": "f91f9eceb1af95d0204ab73f4f0adc42d3c3182626b3a12ddfcab87c3518acce",
+    "E2015": "ff1e72def9448b6d65d0582a65667445620de4e1775d868872e80a769b897612",
+    "E2030": "9356464240f015ecbe231666f604847db1103a29fab5bae130911300a7dba8fc"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "TZA_Mpanga_Kipengere": {
+  "at": "2026-08-13T18:33:54Z",
+  "breakdown": {
+   "permanent": 1
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 1,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R10_C22": {
+    "E2000": "f91f9eceb1af95d0204ab73f4f0adc42d3c3182626b3a12ddfcab87c3518acce",
+    "E2015": "ff1e72def9448b6d65d0582a65667445620de4e1775d868872e80a769b897612",
+    "E2030": "9356464240f015ecbe231666f604847db1103a29fab5bae130911300a7dba8fc"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "TZA_Saadani": {
+  "at": "2026-08-13T18:37:00Z",
+  "breakdown": {
+   "established": 3,
+   "permanent": 15,
+   "recent": 10
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 28,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R10_C22": {
+    "E2000": "f91f9eceb1af95d0204ab73f4f0adc42d3c3182626b3a12ddfcab87c3518acce",
+    "E2015": "ff1e72def9448b6d65d0582a65667445620de4e1775d868872e80a769b897612",
+    "E2030": "9356464240f015ecbe231666f604847db1103a29fab5bae130911300a7dba8fc"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "TZA_Tarangire": {
+  "at": "2026-08-13T18:38:24Z",
+  "breakdown": {
+   "established": 6,
+   "permanent": 55
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 61,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R10_C22": {
+    "E2000": "f91f9eceb1af95d0204ab73f4f0adc42d3c3182626b3a12ddfcab87c3518acce",
+    "E2015": "ff1e72def9448b6d65d0582a65667445620de4e1775d868872e80a769b897612",
+    "E2030": "9356464240f015ecbe231666f604847db1103a29fab5bae130911300a7dba8fc"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "TZA_Udzungwa_Mountain": {
+  "at": "2026-08-13T18:34:38Z",
+  "breakdown": {
+   "established": 1,
+   "permanent": 2,
+   "recent": 9
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 12,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R10_C22": {
+    "E2000": "f91f9eceb1af95d0204ab73f4f0adc42d3c3182626b3a12ddfcab87c3518acce",
+    "E2015": "ff1e72def9448b6d65d0582a65667445620de4e1775d868872e80a769b897612",
+    "E2030": "9356464240f015ecbe231666f604847db1103a29fab5bae130911300a7dba8fc"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "TZA_Ugalla": {
+  "at": "2026-08-13T18:37:26Z",
+  "breakdown": {
+   "established": 1,
+   "permanent": 30,
+   "recent": 13
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 44,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R10_C22": {
+    "E2000": "f91f9eceb1af95d0204ab73f4f0adc42d3c3182626b3a12ddfcab87c3518acce",
+    "E2015": "ff1e72def9448b6d65d0582a65667445620de4e1775d868872e80a769b897612",
+    "E2030": "9356464240f015ecbe231666f604847db1103a29fab5bae130911300a7dba8fc"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "TZA_Uluguru": {
+  "at": "2026-08-13T18:35:04Z",
+  "breakdown": {
+   "established": 1,
+   "permanent": 6,
+   "recent": 1
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 8,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R10_C22": {
+    "E2000": "f91f9eceb1af95d0204ab73f4f0adc42d3c3182626b3a12ddfcab87c3518acce",
+    "E2015": "ff1e72def9448b6d65d0582a65667445620de4e1775d868872e80a769b897612",
+    "E2030": "9356464240f015ecbe231666f604847db1103a29fab5bae130911300a7dba8fc"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "TZA_Uzungwa_Scarp": {
+  "at": "2026-08-13T18:35:26Z",
+  "breakdown": {
+   "established": 2,
+   "permanent": 9,
+   "recent": 1
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 12,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R11_C22": {
+    "E2000": "c69d1ee16e69382e6b9b124376848d5459ce06a09cebbd4c46f0e71b3bc1b995",
+    "E2015": "00b56e9a9f300b7bc9245c34f1a30fa09b61759a01e39d0888c09ba819b54c82",
+    "E2030": "a3539fc7901454520cdcbe75b8ef793f26702ad6220289dc88cd900fd8acf79a"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "UGA_Bwindi_Impenetrable": {
+  "at": "2026-08-13T18:35:42Z",
+  "breakdown": {
+   "established": 4,
+   "permanent": 5,
+   "recent": 7
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 16,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R10_C22": {
+    "E2000": "f91f9eceb1af95d0204ab73f4f0adc42d3c3182626b3a12ddfcab87c3518acce",
+    "E2015": "ff1e72def9448b6d65d0582a65667445620de4e1775d868872e80a769b897612",
+    "E2030": "9356464240f015ecbe231666f604847db1103a29fab5bae130911300a7dba8fc"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "UGA_Kidepo_Valley": {
+  "at": "2026-08-13T18:36:28Z",
+  "breakdown": {
+   "permanent": 27,
+   "recent": 8
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 35,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R9_C22": {
+    "E2000": "60f8377159f9ebc55fc42ff0bee224e501e426d349b9322c81ea297d4faad304",
+    "E2015": "7efbaa23f4900d458307b9c256ddb8442ffe7943919905aab3257690b507d49f",
+    "E2030": "39c7b13a1620bb1f20b166373f31c30b586b66d70776c2d27032182da8053a48"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "UGA_Mount_Elgon": {
+  "at": "2026-08-13T18:38:12Z",
+  "breakdown": {
+   "established": 9,
+   "permanent": 11,
+   "recent": 22
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 42,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R9_C22": {
+    "E2000": "60f8377159f9ebc55fc42ff0bee224e501e426d349b9322c81ea297d4faad304",
+    "E2015": "7efbaa23f4900d458307b9c256ddb8442ffe7943919905aab3257690b507d49f",
+    "E2030": "39c7b13a1620bb1f20b166373f31c30b586b66d70776c2d27032182da8053a48"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "UGA_Murchison_Falls": {
+  "at": "2026-08-13T18:40:01Z",
+  "breakdown": {
+   "established": 10,
+   "permanent": 47,
+   "recent": 19
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 76,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R9_C22": {
+    "E2000": "60f8377159f9ebc55fc42ff0bee224e501e426d349b9322c81ea297d4faad304",
+    "E2015": "7efbaa23f4900d458307b9c256ddb8442ffe7943919905aab3257690b507d49f",
+    "E2030": "39c7b13a1620bb1f20b166373f31c30b586b66d70776c2d27032182da8053a48"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "UGA_Pian_Upe": {
+  "at": "2026-08-13T18:40:06Z",
+  "breakdown": {
+   "established": 1,
+   "permanent": 35,
+   "recent": 4
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 40,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R9_C22": {
+    "E2000": "60f8377159f9ebc55fc42ff0bee224e501e426d349b9322c81ea297d4faad304",
+    "E2015": "7efbaa23f4900d458307b9c256ddb8442ffe7943919905aab3257690b507d49f",
+    "E2030": "39c7b13a1620bb1f20b166373f31c30b586b66d70776c2d27032182da8053a48"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "UGA_Queen_Elizabeth": {
+  "at": "2026-08-13T18:39:39Z",
+  "breakdown": {
+   "established": 3,
+   "permanent": 49,
+   "recent": 16
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 68,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R10_C22": {
+    "E2000": "f91f9eceb1af95d0204ab73f4f0adc42d3c3182626b3a12ddfcab87c3518acce",
+    "E2015": "ff1e72def9448b6d65d0582a65667445620de4e1775d868872e80a769b897612",
+    "E2030": "9356464240f015ecbe231666f604847db1103a29fab5bae130911300a7dba8fc"
+   },
+   "R9_C22": {
+    "E2000": "60f8377159f9ebc55fc42ff0bee224e501e426d349b9322c81ea297d4faad304",
+    "E2015": "7efbaa23f4900d458307b9c256ddb8442ffe7943919905aab3257690b507d49f",
+    "E2030": "39c7b13a1620bb1f20b166373f31c30b586b66d70776c2d27032182da8053a48"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "UGA_Rwenzori_Mountains": {
+  "at": "2026-08-13T18:34:52Z",
+  "breakdown": {
+   "established": 1,
+   "permanent": 10,
+   "recent": 2
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 13,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R9_C22": {
+    "E2000": "60f8377159f9ebc55fc42ff0bee224e501e426d349b9322c81ea297d4faad304",
+    "E2015": "7efbaa23f4900d458307b9c256ddb8442ffe7943919905aab3257690b507d49f",
+    "E2030": "39c7b13a1620bb1f20b166373f31c30b586b66d70776c2d27032182da8053a48"
    }
   },
   "version": "2026-08-13a"
@@ -49,6 +2065,308 @@
     "E2000": "60f8377159f9ebc55fc42ff0bee224e501e426d349b9322c81ea297d4faad304",
     "E2015": "7efbaa23f4900d458307b9c256ddb8442ffe7943919905aab3257690b507d49f",
     "E2030": "39c7b13a1620bb1f20b166373f31c30b586b66d70776c2d27032182da8053a48"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "ZAF_Kalahari_Gemsbok": {
+  "at": "2026-08-13T18:37:05Z",
+  "breakdown": {
+   "established": 2,
+   "permanent": 51,
+   "recent": 1
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 54,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R13_C20": {
+    "E2000": "177c78a28975eb98ecd649ddc191959750a2397899e924516bd795e05c804014",
+    "E2015": "fbde4cc916af7c4db6e0bb30de1ce1bd57861def1a4bc8cebc39b062d5219726",
+    "E2030": "40f5c0c8916534ace740efb7a8f0a8de902a8302389eaffb80bfcffb3997e9ba"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "ZAF_Namaqua": {
+  "at": "2026-08-13T18:36:20Z",
+  "breakdown": {
+   "established": 1,
+   "permanent": 5,
+   "recent": 32
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 38,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R13_C20": {
+    "E2000": "177c78a28975eb98ecd649ddc191959750a2397899e924516bd795e05c804014",
+    "E2015": "fbde4cc916af7c4db6e0bb30de1ce1bd57861def1a4bc8cebc39b062d5219726",
+    "E2030": "40f5c0c8916534ace740efb7a8f0a8de902a8302389eaffb80bfcffb3997e9ba"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "ZAF_Richtersveld": {
+  "at": "2026-08-13T18:36:05Z",
+  "breakdown": {
+   "permanent": 17
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 17,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R13_C20": {
+    "E2000": "177c78a28975eb98ecd649ddc191959750a2397899e924516bd795e05c804014",
+    "E2015": "fbde4cc916af7c4db6e0bb30de1ce1bd57861def1a4bc8cebc39b062d5219726",
+    "E2030": "40f5c0c8916534ace740efb7a8f0a8de902a8302389eaffb80bfcffb3997e9ba"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "ZAF_Sederberg": {
+  "at": "2026-08-13T18:37:13Z",
+  "breakdown": {
+   "established": 2,
+   "permanent": 31,
+   "recent": 1
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 34,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R13_C20": {
+    "E2000": "177c78a28975eb98ecd649ddc191959750a2397899e924516bd795e05c804014",
+    "E2015": "fbde4cc916af7c4db6e0bb30de1ce1bd57861def1a4bc8cebc39b062d5219726",
+    "E2030": "40f5c0c8916534ace740efb7a8f0a8de902a8302389eaffb80bfcffb3997e9ba"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "ZMB_Kafue": {
+  "at": "2026-08-13T18:39:20Z",
+  "breakdown": {
+   "established": 7,
+   "permanent": 25,
+   "recent": 73
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 105,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R11_C21": {
+    "E2000": "9067805a92cf3591651fda904018953cb8e079f259bb79dd5e6fb13ceed447fc",
+    "E2015": "44b51ecf1b158b891b1dac04bafc849c2f17d3f999308164b9a0c99c61ea5e93",
+    "E2030": "afa734d6b435ac825d5678b82357a3a75328b38c89fc9748901afbd057c12258"
+   },
+   "R12_C21": {
+    "E2000": "06bdee7a95a39b97127674f19cda4e648bc9743a52d87862765b8ea396778034",
+    "E2015": "c3e09fbf2f73397da008c01d2af95725ff38bd42b21a3fec1b8a6a25c024edca",
+    "E2030": "8d3a9e65edc478bf3ac43916ac7d0bffa546c104fa6eb8a2815b0f3a5d1ea22c"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "ZMB_North_Luangwa": {
+  "at": "2026-08-13T18:35:45Z",
+  "breakdown": {
+   "permanent": 22,
+   "recent": 3
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 25,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R11_C22": {
+    "E2000": "c69d1ee16e69382e6b9b124376848d5459ce06a09cebbd4c46f0e71b3bc1b995",
+    "E2015": "00b56e9a9f300b7bc9245c34f1a30fa09b61759a01e39d0888c09ba819b54c82",
+    "E2030": "a3539fc7901454520cdcbe75b8ef793f26702ad6220289dc88cd900fd8acf79a"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "ZMB_Nsumbu": {
+  "at": "2026-08-13T18:36:17Z",
+  "breakdown": {
+   "permanent": 13
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 13,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R11_C22": {
+    "E2000": "c69d1ee16e69382e6b9b124376848d5459ce06a09cebbd4c46f0e71b3bc1b995",
+    "E2015": "00b56e9a9f300b7bc9245c34f1a30fa09b61759a01e39d0888c09ba819b54c82",
+    "E2030": "a3539fc7901454520cdcbe75b8ef793f26702ad6220289dc88cd900fd8acf79a"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "ZMB_South_Luangwa": {
+  "at": "2026-08-13T18:37:50Z",
+  "breakdown": {
+   "established": 4,
+   "permanent": 5,
+   "recent": 55
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 64,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R11_C22": {
+    "E2000": "c69d1ee16e69382e6b9b124376848d5459ce06a09cebbd4c46f0e71b3bc1b995",
+    "E2015": "00b56e9a9f300b7bc9245c34f1a30fa09b61759a01e39d0888c09ba819b54c82",
+    "E2030": "a3539fc7901454520cdcbe75b8ef793f26702ad6220289dc88cd900fd8acf79a"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "ZWE_Chimanimani": {
+  "at": "2026-08-13T18:36:39Z",
+  "breakdown": {
+   "established": 1,
+   "permanent": 10,
+   "recent": 2
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 13,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R12_C22": {
+    "E2000": "5c71d72e4f3cfca99c0ecad350201a10a5fb6e89b3f332b1676c77e7246fadcd",
+    "E2015": "c15932d0010fabe7239bbe359994f42e6289a1ab9868316d1269b899a8aba7bb",
+    "E2030": "396a8dc610bfd3668a84c97656c8f28af607e3223bc690d1fdb1f86d12fcafa2"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "ZWE_Chizarira": {
+  "at": "2026-08-13T18:36:07Z",
+  "breakdown": {
+   "established": 2,
+   "permanent": 10,
+   "recent": 4
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 16,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R12_C21": {
+    "E2000": "06bdee7a95a39b97127674f19cda4e648bc9743a52d87862765b8ea396778034",
+    "E2015": "c3e09fbf2f73397da008c01d2af95725ff38bd42b21a3fec1b8a6a25c024edca",
+    "E2030": "8d3a9e65edc478bf3ac43916ac7d0bffa546c104fa6eb8a2815b0f3a5d1ea22c"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "ZWE_Gonarezhou": {
+  "at": "2026-08-13T18:37:37Z",
+  "breakdown": {
+   "established": 3,
+   "permanent": 45,
+   "recent": 1
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 49,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R12_C22": {
+    "E2000": "5c71d72e4f3cfca99c0ecad350201a10a5fb6e89b3f332b1676c77e7246fadcd",
+    "E2015": "c15932d0010fabe7239bbe359994f42e6289a1ab9868316d1269b899a8aba7bb",
+    "E2030": "396a8dc610bfd3668a84c97656c8f28af607e3223bc690d1fdb1f86d12fcafa2"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "ZWE_Hwange": {
+  "at": "2026-08-13T18:37:09Z",
+  "breakdown": {
+   "established": 6,
+   "permanent": 45,
+   "recent": 1
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 52,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R12_C21": {
+    "E2000": "06bdee7a95a39b97127674f19cda4e648bc9743a52d87862765b8ea396778034",
+    "E2015": "c3e09fbf2f73397da008c01d2af95725ff38bd42b21a3fec1b8a6a25c024edca",
+    "E2030": "8d3a9e65edc478bf3ac43916ac7d0bffa546c104fa6eb8a2815b0f3a5d1ea22c"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "ZWE_Mana_Pools": {
+  "at": "2026-08-13T18:35:36Z",
+  "breakdown": {
+   "permanent": 15
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 15,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R11_C21": {
+    "E2000": "9067805a92cf3591651fda904018953cb8e079f259bb79dd5e6fb13ceed447fc",
+    "E2015": "44b51ecf1b158b891b1dac04bafc849c2f17d3f999308164b9a0c99c61ea5e93",
+    "E2030": "afa734d6b435ac825d5678b82357a3a75328b38c89fc9748901afbd057c12258"
+   },
+   "R12_C21": {
+    "E2000": "06bdee7a95a39b97127674f19cda4e648bc9743a52d87862765b8ea396778034",
+    "E2015": "c3e09fbf2f73397da008c01d2af95725ff38bd42b21a3fec1b8a6a25c024edca",
+    "E2030": "8d3a9e65edc478bf3ac43916ac7d0bffa546c104fa6eb8a2815b0f3a5d1ea22c"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "ZWE_Matetsi": {
+  "at": "2026-08-13T18:36:30Z",
+  "breakdown": {
+   "established": 2,
+   "permanent": 29,
+   "recent": 3
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 34,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R12_C21": {
+    "E2000": "06bdee7a95a39b97127674f19cda4e648bc9743a52d87862765b8ea396778034",
+    "E2015": "c3e09fbf2f73397da008c01d2af95725ff38bd42b21a3fec1b8a6a25c024edca",
+    "E2030": "8d3a9e65edc478bf3ac43916ac7d0bffa546c104fa6eb8a2815b0f3a5d1ea22c"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "ZWE_Matusadona": {
+  "at": "2026-08-13T18:35:13Z",
+  "breakdown": {
+   "permanent": 18,
+   "recent": 1
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 19,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R12_C21": {
+    "E2000": "06bdee7a95a39b97127674f19cda4e648bc9743a52d87862765b8ea396778034",
+    "E2015": "c3e09fbf2f73397da008c01d2af95725ff38bd42b21a3fec1b8a6a25c024edca",
+    "E2030": "8d3a9e65edc478bf3ac43916ac7d0bffa546c104fa6eb8a2815b0f3a5d1ea22c"
    }
   },
   "version": "2026-08-13a"

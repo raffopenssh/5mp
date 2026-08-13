@@ -1,3 +1,11 @@
+a4e34bd 2026-08-13 18:34:21 WP2: JRC AKP structural context — active faults + craton margins
+ffa03dd 2026-08-13 18:32:45 WP1: settlement persistence measured from GHSL back-epochs (E2000/E2015)
+19e28c6 2026-08-13 18:30:20 WP4: GSW new-water pit-lake candidates — measured, no signal, no layer
+d80b405 2026-08-13 17:13:58 WP5: UCDP GED mine sites join the geology anchors
+9135d7d 2026-08-13 16:43:49 docs: implementation plan for six new data layers (GHSL epochs, JRC AKP, nightlights, GSW water, UCDP, Soviet 200k histmap)
+366b504 2026-08-13 16:25:23 AGENTS.md: add effort-budget working style; fix stale DB size (1.8GB -> 18GB)
+acec612 2026-08-13 16:20:28 Record 344155a in the commit log
+344155a 2026-08-13 16:20:22 022: restore lost park_settlements columns so 055 runs on a fresh database
 acb3fd0 2026-08-13 15:59:54 Record c69b8e9 in the commit log
 c69b8e9 2026-08-13 15:57:12 Close AOI_STRUCTURAL_FIXES: F10 containment, F11 the fleet, and F9's blind spot
 7d06517 2026-08-13 15:14:40 Geology strip: a zero that can be proven, and a legend that gets out of the way
@@ -10,11 +18,3 @@ c90a111 2026-08-13 12:11:16 Handover: what the geology export now does, and what
 dc19614 2026-08-13 11:43:28 AOI structural fixes: surface is not extent, and a population is measured or absent
 a4ecf0e 2026-08-13 11:41:58 Mining anchors: every list we scored, reduced to a citation
 e62efd3 2026-08-13 11:40:23 histmaps: OCR + geocode map labels via vision LLM (ocr_labels.py)
-4437c18 2026-08-13 11:17:26 AOI XSA: manager-facing report + structural data-correctness findings
-320e8d2 2026-08-13 11:00:23 gofmt: eight files that had drifted
-090e98a 2026-08-13 11:00:17 Protected Planet token comes from secrets.env, and two tests stop lying
-c1d42d0 2026-08-13 11:00:04 Affinity across the whole geology: seven truth sets, and lists that disagree
-b7c8084 2026-08-13 10:38:00 Provenance holds on the five settlement reads fff3dd0 missed
-f9a9017 2026-08-13 10:08:17 Crisis Tracker: 50 mine sites in the half of the CAR nobody surveyed
-b318eae 2026-08-13 09:28:47 Mining reference for all four countries, with a measured reach bias
-5a34d8d 2026-08-13 08:50:38 Add ACLED event fetcher for mining reference countries (CAF/SSD/SDN/TZA)
