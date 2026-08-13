@@ -556,10 +556,10 @@ func (s *Server) HandleAPIAreaGeoPackage(w http.ResponseWriter, r *http.Request)
 	name, _ := s.resolveAreaGeom(areaID)
 	q := r.URL.Query()
 	o := gpkgExportOpts{
-		AreaID:   areaID,
-		AreaName: name,
-		FromDate: q.Get("from"),
-		ToDate:   q.Get("to"),
+		AreaID:    areaID,
+		AreaName:  name,
+		FromDate:  q.Get("from"),
+		ToDate:    q.Get("to"),
 		Env:       RequestEnv(r),
 		PatrolEnv: PatrolEnv(r),
 		Effort:    q.Get("effort") != "0",

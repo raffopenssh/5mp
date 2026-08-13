@@ -111,7 +111,7 @@ func (s *Server) HandleAPIFireFrames(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"mode": "estimate", "estimate": est, "max": firePointsMax,
 			"points_ok": est > 0 && est <= firePointsMax,
-			"from": from, "to": to,
+			"from":      from, "to": to,
 		})
 		return
 	}

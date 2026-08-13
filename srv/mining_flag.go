@@ -95,12 +95,12 @@ func scannerInjectedSQLFilter(col string) string {
 //
 // So the test is the row's ORIGIN, which cannot be rewritten by prose:
 //
-//   polygon_ids  the feature_geometries settlement footprints this cluster was
-//                built from. Every GHSL-derived row has them
-//                (scripts/process_settlement_polygons.py writes the polygons,
-//                rebuild_events_enhanced.py clusters them and records the ids).
-//                RegisterMiningCandidate, which inserts a bare lat/lon, cannot
-//                have them: there is no observed built-up polygon to point at.
+//	polygon_ids  the feature_geometries settlement footprints this cluster was
+//	             built from. Every GHSL-derived row has them
+//	             (scripts/process_settlement_polygons.py writes the polygons,
+//	             rebuild_events_enhanced.py clusters them and records the ids).
+//	             RegisterMiningCandidate, which inserts a bare lat/lon, cannot
+//	             have them: there is no observed built-up polygon to point at.
 //
 // 11,485 rows carry footprints; 3,019 do not, and every one of those 3,019 was
 // inserted by the retired scanner (verified against data/mining_pits/*.json and

@@ -19,7 +19,7 @@ type GPXFile struct {
 }
 
 type GPXTrack struct {
-	Name     string           `xml:"name"`
+	Name     string            `xml:"name"`
 	Segments []GPXTrackSegment `xml:"trkseg"`
 }
 

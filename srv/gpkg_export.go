@@ -54,7 +54,7 @@ type gpkgExportOpts struct {
 	// It is part of the cache key, so a guest export can never be answered
 	// from a file built for the account itself.
 	PatrolEnv string
-	Effort   bool   // include patrol effort (expensive, and empty for most AOIs)
+	Effort    bool // include patrol effort (expensive, and empty for most AOIs)
 	// RawFire includes the raw VIIRS detection points. They are the single
 	// biggest layer by an order of magnitude (XSA: 6.9M points, ~1.1 GB of a
 	// 1.4 GB file) while fire_trajectories tells the same story in 38k

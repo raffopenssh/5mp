@@ -862,6 +862,7 @@ func roundPts(pts [][]float64) [][]float64 {
 	}
 	return out
 }
+
 // lineLikeFeature: types whose geometry is a path, i.e. types for which a
 // centroid throws away the thing the feature is about.
 func lineLikeFeature(t string) bool { return t == "fire_trajectory" }
