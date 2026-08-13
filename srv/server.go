@@ -247,6 +247,15 @@ func (s *Server) Serve(addr string) error {
 	// are already in circulation (and in docs) -- a 404 there would read as "the
 	// export was removed", which is not what happened.
 	mux.HandleFunc("GET /api/geomap/geopackage", s.HandleAPIGeoMapGeoPackage)
+	// The CURRENT VIEW as a GeoPackage. POST because the body is the selection
+	// the client resolved (unit keys + contact pairs), which is too long for a
+	// URL and is not a name for anything: it is one reader's filter, built per
+	// request and never cached. The GET above stays the whole catalogue and
+	// keeps its stamped cache; a filtered build must not overwrite it.
+	// A guest link cannot reach this (guestMayRead is GET/HEAD only), which is
+	// correct — not because the geology is private, but because a capability
+	// must not be able to make the server build things.
+	mux.HandleFunc("POST /api/geomap/geopackage", s.HandleAPIGeoMapGeoPackageView)
 	mux.HandleFunc("GET /api/geomap/{sheet}/geopackage", s.HandleAPIGeoMapGeoPackageLegacy)
 	mux.HandleFunc("GET /api/geomap/{sheet}/{z}/{x}/{y}", s.HandleAPIGeoMapTile)
 	mux.HandleFunc("GET /api/grid", s.HandleAPIGrid)

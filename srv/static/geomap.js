@@ -74,6 +74,10 @@
     let sheets = null;          // id -> catalogue entry from /api/geomap
     let order = [];             // sheet ids in server order
     let gpkg = null;            // the ONE combined GeoPackage: {url, bytes, sheets}
+    // The reference workings the affinity model was scored against, as the
+    // catalogue describes them: {available, n, sources[], withheld[], notice}
+    // or {available:false, reason}. Never the points — they are export payload.
+    let anchors = null;
     let metaPromise = null;
     const state = {};           // id -> {on, opacity, hidden:Set, isolate:Set|null}
 
@@ -200,11 +204,16 @@
                     // jigsaw for the user to reassemble.
                     gpkg = j.geopackage
                         ? { url: j.geopackage, bytes: j.geopackage_bytes || 0,
+                            viewUrl: j.geopackage_view || j.geopackage,
                             sheets: j.geopackage_sheets || [] }
                         : null;
+                    // The published workings the model was scored against.
+                    // Counts and provenance only — the points are export
+                    // payload, and there is no anchor layer on the map.
+                    anchors = j.anchors || null;
                     return sheets;
                 })
-                .catch(() => { sheets = {}; order = []; gpkg = null; return sheets; });
+                .catch(() => { sheets = {}; order = []; gpkg = null; anchors = null; return sheets; });
         }
         return metaPromise;
     }
@@ -1376,6 +1385,11 @@
         sheets: () => sheets,
         order: () => order,
         geopackage: () => gpkg,
+        /** The reference workings, as counts and provenance. Its ABSENCE is
+         *  reported by the server (`available:false` + a reason) rather than
+         *  omitted: "nothing was checked" and "this server has no anchor file"
+         *  are very different claims. */
+        anchors: () => anchors,
         classes: classesOf,
         allClasses: allClasses,
         classOf: classOf,
@@ -1597,6 +1611,41 @@
             return order.reduce((n, id) => n +
                 ((st(id).on && (sheets[id] || {}).available && hasContacts(id))
                     ? visiblePairs(id).length : 0), 0);
+        },
+
+        /* ── THE VIEW, AS THE SERVER CAN BUILD IT ─────────────────────
+         *
+         * What the filtered GeoPackage export sends: the unit keys and contact
+         * pairs this map is PAINTING, from the very same visibleCodes() and
+         * visiblePairs() that build the MapLibre filters.
+         *
+         * Resolved here rather than re-derived on the server, and that is the
+         * load-bearing decision: the chooser's filter is five clauses deep
+         * (commodity chips expanded through the host map at a strength floor,
+         * matrix cells, hidden units, hidden periods, a lithology filter), so a
+         * second implementation in Go would put two filters between the reader
+         * and their own download — the shape of bug where the picture and the
+         * file quietly disagree and neither says so. The file is the picture by
+         * construction.
+         *
+         * A snapshot of codes is fine HERE (it lives for one request) and wrong
+         * in a share link, which travels as commodities and lithologies for
+         * exactly that reason — see getShareParams().
+         *
+         * `pairs` EMPTY means the contact layer is off, which is a different
+         * statement from "every contact": a contacts-off view must not ship 882
+         * lines nobody asked for. The server reads it that way.
+         */
+        selection() {
+            const units = [], pairs = [];
+            order.forEach(id => {
+                if (!(sheets[id] || {}).available || !st(id).on) return;
+                visibleCodes(id).forEach(c => units.push(id + ':' + c));
+                if (shared.contacts && hasContacts(id)) {
+                    visiblePairs(id).forEach(p => pairs.push(id + ':' + p));
+                }
+            });
+            return { units, pairs };
         },
         contacts: contactsOf,
         allContacts: allContacts,

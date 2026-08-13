@@ -205,9 +205,22 @@ func (s *Server) HandleAPIGeoMap(w http.ResponseWriter, r *http.Request) {
 	// exists; "(12 MB)" on a link that has not been built yet would be a
 	// number nobody measured.
 	res := map[string]any{"sheets": out}
+	// The published workings the affinity model was scored against. In the
+	// CATALOGUE rather than as a layer, because the panel's job here is to say
+	// "checked against 3,687 published workings" beside the download — the
+	// points themselves are export payload, and the map has no anchor layer.
+	// It reports its own absence (`available: false` + a reason) rather than
+	// being omitted: a missing key reads as "nothing was checked", which is a
+	// different and much worse claim than "this server does not have the file".
+	res["anchors"] = geoAnchorSummary()
 	if built := geoMapGPKGSheets(); len(built) > 0 {
 		res["geopackage"] = "/api/geomap/geopackage"
 		res["geopackage_sheets"] = built
+		// The filtered export is a different VERB on the same path, and it is
+		// named here so the client never hardcodes it. No size: a view's size
+		// is not known until it is built, and a number nobody measured is
+		// worse than no number.
+		res["geopackage_view"] = "/api/geomap/geopackage"
 		if st, ok := geoMapGPKGReady(); ok {
 			res["geopackage_bytes"] = st.Size()
 		}

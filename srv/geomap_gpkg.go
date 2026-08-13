@@ -465,11 +465,20 @@ func geoMapGPKGSheets() []string {
 // copy that preserved timestamps) would otherwise leave the old two-sheet file
 // looking fresh, and the user would download a country short of what the map
 // draws. A no-op must not read as an answer.
+//
+// The set is EVERY file the build reads, which since the contacts and the
+// anchors joined the package means three kinds of input, not one. A stamp that
+// still watched only the units would serve a package whose hairlines are a
+// re-derivation old — the same staleness, one layer down, and invisible
+// because the units in it would be right.
 type geoMapGPKGStamp struct {
 	Sheets []geoMapGPKGInput `json:"sheets"`
 }
 
 type geoMapGPKGInput struct {
+	// Sheet is the input's name, not necessarily a sheet id: "car",
+	// "car:contacts", "anchors". Kept as one list so the comparison below
+	// stays a single ordered walk.
 	Sheet string `json:"sheet"`
 	MTime int64  `json:"mtime"`
 	Size  int64  `json:"size"`
@@ -479,12 +488,24 @@ func geoMapGPKGStampPath() string { return geoMapGPKGPath() + ".stamp" }
 
 func geoMapGPKGInputs() geoMapGPKGStamp {
 	var st geoMapGPKGStamp
-	for _, id := range geoMapGPKGSheets() {
-		fi, err := os.Stat(geoMapUnitsPath(id))
+	add := func(name, path string) {
+		fi, err := os.Stat(path)
 		if err != nil {
-			continue
+			// An input that is NOT THERE is recorded as absent rather than
+			// skipped: a contacts file that disappears changes what the
+			// package should hold, and a skipped entry would make the old
+			// package look fresh.
+			st.Sheets = append(st.Sheets, geoMapGPKGInput{name, 0, -1})
+			return
 		}
-		st.Sheets = append(st.Sheets, geoMapGPKGInput{id, fi.ModTime().Unix(), fi.Size()})
+		st.Sheets = append(st.Sheets, geoMapGPKGInput{name, fi.ModTime().Unix(), fi.Size()})
+	}
+	for _, id := range geoMapGPKGSheets() {
+		add(id, geoMapUnitsPath(id))
+		add(id+":contacts", geoContactsGeoJSONPath(id))
+	}
+	if len(st.Sheets) > 0 {
+		add("anchors", geoAnchorFile())
 	}
 	return st
 }
@@ -566,6 +587,17 @@ func (s *geoMapSelection) pairSet() map[string]bool {
 	return m
 }
 
+// selLabel is what the file should call itself. "Every unit on every sheet"
+// for the whole catalogue; the reader's own words for a filtered view — and
+// never a silent "Geology" for both, because the two files have the same name
+// and different contents.
+func (s *geoMapSelection) selLabel() string {
+	if s == nil {
+		return ""
+	}
+	return strings.TrimSpace(s.Label)
+}
+
 func buildGeoMapGeoPackage(path string, sheets []string) error {
 	return buildGeoMapGeoPackageSel(path, sheets, nil)
 }
@@ -583,6 +615,12 @@ func buildGeoMapGeoPackageSel(path string, sheets []string, sel *geoMapSelection
 	var units []unit
 	var titles []string
 	commodities := map[string]bool{}
+	// WHAT THE READER IS LOOKING AT, or everything. `want == nil` is the
+	// whole-catalogue export; a non-nil set is the client's own visibleCodes(),
+	// which is the same function that feeds the MapLibre filter — so the file
+	// is the picture by construction rather than by two implementations
+	// agreeing. See the geoMapSelection note above.
+	want := sel.unitSet()
 
 	for _, sheet := range sheets {
 		blob, err := os.ReadFile(geoMapUnitsPath(sheet))
@@ -615,13 +653,41 @@ func buildGeoMapGeoPackageSel(path string, sheets []string, sel *geoMapSelection
 			cat.Short = sheet
 		}
 		cat.Sheet = sheet
-		titles = append(titles, cat.Title)
+		kept := 0
 		for _, f := range fc.Features {
-			units = append(units, unit{f.Properties, f.Geometry, cat})
-			for _, a := range f.Properties.Affinity {
+			p := f.Properties
+			if p.Sheet == "" {
+				p.Sheet = sheet
+			}
+			// The selection is applied HERE, before the commodity columns are
+			// derived, so a filtered file's columns describe the file: a
+			// `w_uranium` column on a gold-only export is a claim that
+			// uranium was considered and found absent.
+			if want != nil && !want[geoMapUnitKey(p.Sheet, p.Code)] {
+				continue
+			}
+			units = append(units, unit{p, f.Geometry, cat})
+			kept++
+			for _, a := range p.Affinity {
 				commodities[a.Commodity] = true
 			}
 		}
+		// PROVENANCE DESCRIBES WHAT IS IN THE FILE. A sheet the selection
+		// excludes entirely must not be named in the layer description: "units
+		// vectorized from Sudan + CAR + Tanzania" over a CAR-only view is a
+		// claim about two countries this file does not contain.
+		if kept > 0 {
+			titles = append(titles, cat.Title)
+		}
+	}
+
+	// A SELECTION THAT MATCHES NOTHING IS A BROKEN FILTER, NOT AN EMPTY MAP.
+	// The client sends the same key set it paints, so an empty match means the
+	// two have drifted (a re-vectorize between the page load and the click, a
+	// hand-made request) — and a GeoPackage with one empty layer is
+	// indistinguishable from a country with no geology. Invariant 1.
+	if want != nil && len(units) == 0 {
+		return fmt.Errorf("the selection names %d unit(s) and none of them is in these sheets; reload the map and try again", len(sel.Units))
 	}
 
 	// The commodity columns are derived from what these builds of the sheets
@@ -683,6 +749,25 @@ func buildGeoMapGeoPackageSel(path string, sheets []string, sel *geoMapSelection
 		"ink_color keeps each sheet's own printed ink. " +
 		"A unit is identified by (sheet, code) — the same code can mean different rock on another sheet. " +
 		"w_<commodity> is an inference from lithology (1-3, 3 = classic host), not a record of any deposit."
+	// A FILTERED EXPORT MUST SAY IT IS ONE. The whole catalogue and one
+	// reader's view are the same file name with different contents, and a
+	// subset that does not announce itself is indistinguishable from the lot —
+	// the standing "serve a layer whole, or say you truncated" rule.
+	if want != nil {
+		viewOf := "the geology as filtered in the app"
+		if s := sel.selLabel(); s != "" {
+			viewOf = s
+		}
+		nClass := map[string]bool{}
+		for _, u := range units {
+			nClass[geoMapUnitKey(u.props.Sheet, u.props.Code)] = true
+		}
+		desc = fmt.Sprintf("A VIEW, not the whole catalogue — %s, %d unit(s) of these sheets. ",
+			viewOf, len(nClass)) + desc
+		if sel.Link != "" {
+			desc += " The map that produced it: " + sel.Link
+		}
+	}
 	l, err := w.AddLayer(table, "MULTIPOLYGON", desc, cols)
 	if err != nil {
 		return err
@@ -745,19 +830,65 @@ func buildGeoMapGeoPackageSel(path string, sheets []string, sel *geoMapSelection
 	w.SetStyleNamed(table, "as_printed", styleGeoUnitsAsPrinted(classes),
 		"Each sheet's own printed ink per unit", false)
 
-	grow := math.Max(0.05, (l.maxx-l.minx)*0.03)
-	ext := [4]float64{l.minx - grow, l.miny - grow, l.maxx + grow, l.maxy + grow}
-	if err := w.writeQGISProject("Geology (5MP)", filepath.Base(path), []gpkgLayerSpec{{
+	// THE HAIRLINES, AND THE EVIDENCE. Both are part of the picture the reader
+	// is looking at: on some sheets the junctions are the half of this model
+	// that scores above random ground, and the anchors are the only reason
+	// anybody should believe either half. See srv/geomap_gpkg_layers.go.
+	specs := []gpkgLayerSpec{{
 		Table: table, Title: "Geological units", Group: "Geology",
 		Geometry: "Polygon", WKBType: "MultiPolygon", QML: qml, Visible: true, Opacity: 0.75,
-	}}, ext); err != nil {
+	}}
+	cl, cqml, err := addGeoContactLayer(w, sheets, sel)
+	if err != nil {
+		return err
+	}
+	if cl != nil {
+		specs = append(specs, gpkgLayerSpec{
+			Table: cl.Name(), Title: "Unit contacts (graded)", Group: "Geology",
+			Geometry: "Line", WKBType: "MultiLineString", QML: cqml, Visible: true, Opacity: 1,
+		})
+		w.SetStyle(cl.Name(), cqml, "Junction grade (3 = classic setting)")
+	}
+	al, aqml, adoc, err := addGeoAnchorLayer(w)
+	if err != nil {
+		return err
+	}
+	if al != nil {
+		specs = append(specs, gpkgLayerSpec{
+			Table: al.Name(), Title: "Published workings (reference)", Group: "Reference",
+			Geometry: "Point", WKBType: "Point", QML: aqml, Visible: true, Opacity: 1,
+		})
+		w.SetStyle(al.Name(), aqml, "Which list the working comes from")
+	}
+
+	// The extent is the UNITS', not the union of every layer. The anchors reach
+	// four countries and two of them have no sheet here, so opening on their
+	// envelope would frame a project mostly of empty ground beside the map the
+	// reader asked for.
+	grow := math.Max(0.05, (l.maxx-l.minx)*0.03)
+	ext := [4]float64{l.minx - grow, l.miny - grow, l.maxx + grow, l.maxy + grow}
+	title := "Geology (5MP)"
+	if s := sel.selLabel(); s != "" {
+		title = "Geology — " + s
+	}
+	// A server without the anchor file cannot offer the evidence, and the
+	// project title is where a reader will look for it. Named, not omitted:
+	// "we did not ship it" and "we never had it" are different statements.
+	if adoc == nil {
+		title += " (no reference workings installed)"
+	}
+	if err := w.writeQGISProject(title, filepath.Base(path), specs, ext); err != nil {
 		slog.Warn("geomap gpkg project", "err", err)
 	}
 	if err := w.Finish(); err != nil {
 		return err
 	}
-	if b, err := json.Marshal(geoMapGPKGInputs()); err == nil {
-		_ = os.WriteFile(geoMapGPKGStampPath(), b, 0o644)
+	// The stamp is only for the CACHED whole-catalogue file. A filtered build
+	// is per request and must never claim to be the cache (nor overwrite it).
+	if sel == nil {
+		if b, err := json.Marshal(geoMapGPKGInputs()); err == nil {
+			_ = os.WriteFile(geoMapGPKGStampPath(), b, 0o644)
+		}
 	}
 	done = true
 	return os.Rename(tmp, path)
@@ -843,6 +974,113 @@ func (s *Server) HandleAPIGeoMapGeoPackage(w http.ResponseWriter, r *http.Reques
 	w.Header().Set("Content-Type", "application/geopackage+sqlite3")
 	w.Header().Set("Content-Disposition", `attachment; filename="`+name+`"`)
 	http.ServeContent(w, r, name, st.ModTime(), f)
+}
+
+// HandleAPIGeoMapGeoPackageView builds the CURRENT VIEW as a GeoPackage.
+//
+// POST, and the body is the selection the client resolved (see geoMapSelection):
+// the unit keys and contact pairs it is painting, plus the reader's own words
+// for it and the share link that reproduces it.
+//
+// Three things this deliberately does NOT do:
+//
+//   - It never touches geology.gpkg. That file is the cached whole-catalogue
+//     export with a stamp of its inputs; writing one reader's filtered view
+//     into it would hand the next visitor a subset with a fresh stamp, i.e.
+//     the staleness trap in its worst form (the file would look correct).
+//     A filtered build is per request, to a temp file, served once, removed.
+//   - It does not cache. A view is one of ~2^46 combinations; a cache keyed on
+//     it would grow without bound and hit approximately never.
+//   - It does not queue. Same reasoning as the whole-catalogue path: a filtered
+//     build reads a SUBSET of the same files, so it is never slower than the
+//     export the user can already trigger synchronously.
+func (s *Server) HandleAPIGeoMapGeoPackageView(w http.ResponseWriter, r *http.Request) {
+	var sel geoMapSelection
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<20)).Decode(&sel); err != nil {
+		http.Error(w, "bad selection: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+	// AN EMPTY SELECTION IS NOT "EVERYTHING". nil means the whole catalogue
+	// inside the builder, and a request that arrives with no units is a client
+	// bug or a hand-made call — answering it with the entire package would be a
+	// filter that matched nothing reading as an answer.
+	if len(sel.Units) == 0 {
+		http.Error(w, "that view has no units in it; use /api/geomap/geopackage for the whole catalogue",
+			http.StatusBadRequest)
+		return
+	}
+	sheets := geoMapGPKGSheets()
+	if len(sheets) == 0 {
+		http.Error(w, "no vectorized sheets are built", http.StatusNotFound)
+		return
+	}
+	tmp, err := os.CreateTemp("", "geology-view-*.gpkg")
+	if err != nil {
+		http.Error(w, "cannot write a temporary file", http.StatusInternalServerError)
+		return
+	}
+	path := tmp.Name()
+	tmp.Close()
+	// newGPKGWriter creates its own file; an existing empty one would be a
+	// SQLite database with no tables, which it refuses.
+	os.Remove(path)
+	defer os.Remove(path)
+
+	t0 := time.Now()
+	if err := buildGeoMapGeoPackageSel(path, sheets, &sel); err != nil {
+		slog.Warn("geomap gpkg view build failed", "err", err, "units", len(sel.Units))
+		// 409, not 500: the usual cause is a stale selection (the page was
+		// loaded before a re-vectorize), which is the client's to fix by
+		// reloading — and the message says so.
+		http.Error(w, err.Error(), http.StatusConflict)
+		return
+	}
+	f, err := os.Open(path)
+	if err != nil {
+		http.Error(w, "GeoPackage not available", http.StatusInternalServerError)
+		return
+	}
+	defer f.Close()
+	st, err := f.Stat()
+	if err != nil {
+		http.Error(w, "stat failed", http.StatusInternalServerError)
+		return
+	}
+	slog.Info("geomap gpkg view built", "units", len(sel.Units), "pairs", len(sel.Pairs),
+		"bytes", st.Size(), "took", time.Since(t0))
+	name := geoViewFileName(sel.selLabel())
+	w.Header().Set("Content-Type", "application/geopackage+sqlite3")
+	w.Header().Set("Content-Disposition", `attachment; filename="`+name+`"`)
+	// Built for this request and for this reader's filter: never a shared cache
+	// entry (see PrivateCacheMiddleware and cross-cutting invariant 9).
+	w.Header().Set("Cache-Control", "private, no-store")
+	http.ServeContent(w, r, name, st.ModTime(), f)
+}
+
+// geoViewFileName turns the reader's own words for their view into a file name,
+// so a folder of three downloads is three readable names rather than
+// geology(2).gpkg. Falls back to a plain name rather than to an empty one.
+func geoViewFileName(label string) string {
+	slug := strings.Map(func(r rune) rune {
+		switch {
+		case r >= 'a' && r <= 'z', r >= '0' && r <= '9':
+			return r
+		case r >= 'A' && r <= 'Z':
+			return r + 32
+		}
+		return '-'
+	}, label)
+	for strings.Contains(slug, "--") {
+		slug = strings.ReplaceAll(slug, "--", "-")
+	}
+	slug = strings.Trim(slug, "-")
+	if len(slug) > 48 {
+		slug = strings.Trim(slug[:48], "-")
+	}
+	if slug == "" {
+		return "geology-view.gpkg"
+	}
+	return "geology-" + slug + ".gpkg"
 }
 
 // HandleAPIGeoMapGeoPackageLegacy keeps /api/geomap/{sheet}/geopackage working.
