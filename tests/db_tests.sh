@@ -186,6 +186,35 @@ test_query "method values are the two known ones" \
 test_query "both methods are present" \
     "SELECT COUNT(DISTINCT area_method) FROM deforestation_events" "2"
 
+yellow "\n=== Fire containment (F10) ==="
+# protected_area_id is the nearest park within park_assigner.ASSIGN_MAX_DIST_KM
+# (100 km) -- a catchment, not the park. Tagged rows exceed contained rows by a
+# median of 9.8x per park, so any user-facing "fires in park X" count built on
+# that column alone is an overstatement (docs/agents/fire.md "F10").
+# The invariant is directional and cheap: containment is a SUBSET of tagging,
+# and it is a strict one -- if these ever became equal, either the buffer was
+# removed (say so) or the flag was clobbered.
+test_query "containment is a strict subset of tagging" \
+    "SELECT CASE WHEN
+       (SELECT COUNT(*) FROM fire_detections WHERE protected_area_id='CAF_Chinko'
+          AND +in_protected_area=1)
+       < (SELECT COUNT(*) FROM fire_detections WHERE protected_area_id='CAF_Chinko')
+     THEN 'ok' ELSE 'equal-or-greater' END" "ok"
+# in_protected_area is written at ingest as dist_km==0.0 and never backfilled,
+# so it must never be NULL: an unset flag would read as "outside" and silently
+# shrink every count that adopts the clause.
+test_query "every tagged detection has a containment flag" \
+    "SELECT COUNT(*) FROM fire_detections
+      WHERE protected_area_id IS NOT NULL AND protected_area_id != ''
+        AND in_protected_area IS NULL" "0"
+# The clause has a planner trap: idx_fire_infraction (in_protected_area, acq_date)
+# looks attractive and turns a 0.2s park lookup into an 18s scan of 8M rows.
+# The '+' keeps the park index. If this ever reports idx_fire_infraction, every
+# count that took the fix just got 20x slower.
+test_index_used "containment clause keeps the park index" \
+    "SELECT COUNT(*) FROM fire_detections WHERE protected_area_id='CAF_Chinko' AND +in_protected_area=1" \
+    "idx_fire_pa_date"
+
 yellow "\n=== Index Usage (Query Plans) ==="
 test_index_used "feature by park" "SELECT * FROM feature_geometries WHERE park_id='CAF_Chinko' LIMIT 10" "idx_feat"
 test_index_used "settlements by park" "SELECT * FROM park_settlements WHERE park_id='CAF_Chinko' LIMIT 10" "idx"

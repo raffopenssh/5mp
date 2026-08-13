@@ -112,13 +112,27 @@ Two things the backfill exposed that were not in the original list:
 
 ## Still open
 
-**F10 — `protected_area_id` is a 100 km buffer.** The column F10 asks for
-already exists: `in_protected_area` already means `dist_km == 0`, i.e. inside
-the boundary (8,055,317 rows set, 34,037,536 with an id but outside, 5,532,890
-unassigned). The work is **auditing which user-facing "fires in park X" counts
-use `protected_area_id` alone** and adding `AND in_protected_area = 1`.
-Nothing has been changed, so nothing has regressed — but a 10× overstatement
-is live wherever such a count exists.
+**F10 — `protected_area_id` is a 100 km buffer. The audit is done; the edits
+are not.** Full results, the eleven call sites, and the two traps are in
+`docs/agents/fire.md` § "`protected_area_id` is a catchment, not a park (F10)".
+Headline: 42,092,853 tagged vs 7,585,655 actually inside, **median 9.8×** per
+park, and **seven parks have detections tagged and none inside** — including
+`CMR_Nki`, which the test list calls pristine and which `/api/parks/.../stats`
+credits with 2,518 fires. Eleven user-facing counts are affected (stats panel,
+fire log, both CSV exports, fire-trend, hotspots, peak month, alerts).
+
+The measurement is a script, not a number:
+`scripts/audit_fire_containment.py [--csv f.csv] [--sample N]` recomputes
+containment from `keystones_with_boundaries.json`, so a boundary edit shows up
+as a delta instead of silently moving published counts.
+
+What is left is the *edit*: add `AND +in_protected_area = 1` (the `+` matters —
+without it the planner picks `idx_fire_infraction` and a 0.2 s lookup becomes
+18 s) to those eleven sites, and decide separately whether to re-derive the
+flag: it is 5.83% stale, almost all of it one identifiable batch
+(2026-02-26 → 2026-07-03, written by the bbox+0.5° `_find_park` that
+`ParkAssigner` replaced in `858eb69`). Nothing has been changed, so nothing has
+regressed — the overstatement is live and was live before.
 
 **F11 — sensor count changes at 2024-01-01.** One VIIRS sensor before 2024,
 three after (2026: `N` 2,381,805 · `N20` 4,097,180 · `N21` 2,440,808). Every

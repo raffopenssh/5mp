@@ -77,6 +77,94 @@ handle it explicitly or the old rows become immortal:
 
 ---
 
+## `protected_area_id` is a catchment, not a park (F10)
+
+**Every user-facing "fires in park X" count in `srv/` is a fires-within-100-km
+count.** `park_assigner.ASSIGN_MAX_DIST_KM = 100`, so
+`WHERE protected_area_id = ?` selects every detection whose *nearest* park
+boundary is X and is within 100 km. Measured across all 163 parks, 42.9M rows
+(`scripts/audit_fire_containment.py`, 2026-08-13):
+
+```
+tagged   protected_area_id = X                    42,092,853
+flagged  ... AND in_protected_area = 1            8,055,317   5.2x smaller
+inside   point-in-polygon, measured now           7,585,655   5.5x smaller
+per-park tagged/inside: median 9.8x, max 24,329x
+```
+
+The median park overstates by **9.8×**, and the tail is not a tail: seven parks
+have detections tagged and **none inside** — `CMR_Nki` (2,518 tagged, 0 inside),
+`COG_Nouabalé-Ndoki`, `CMR_Lobéké`, `CMR_Boumba-Djombi`, `GAB_Monts_Birougou`,
+`GAB_Monts_de_Cristal`, `RWA_Volcans`. These are the rainforest parks; their
+"fire count" is entirely someone else's savanna. `CMR_Nki` is on the test-park
+list *as the pristine one*, and `/api/parks/CMR_Nki/stats` says 2,518 fires.
+The same shape as invariant 5: the park chosen to prove the app reports zero is
+the one whose zero was loudest when it broke.
+
+Re-run the measurement rather than trusting these numbers — they describe one
+boundary file and one ingest history:
+
+```bash
+python3 scripts/audit_fire_containment.py --csv /tmp/f10.csv     # ~12 min
+python3 scripts/audit_fire_containment.py --park CAF_Chinko --sample 20000
+```
+
+### The call sites (audited 2026-08-13, none changed)
+
+All of these count `protected_area_id` alone. Nothing here has regressed —
+these figures have always been the buffer — but each is live and wrong:
+
+| Surface | File | Reads as |
+|---|---|---|
+| `/api/parks/{id}/stats` → stats panel "fires" | `park_stats_handlers.go:247` | total fires in the park |
+| ...its fire timeline + per-year series | `:290` | daily/annual fires in the park |
+| `/api/parks/{id}/fire-log` | `:508` | daily fires + FRP in the park |
+| `/api/export/parks?format=csv`, column `fire_count` | `export.go:50` | a published per-park total |
+| `/api/parks/export` (the parks table + report) | `api.go:5324` | per-park fires, date-filtered |
+| `/api/parks/{id}/fire-trend` weekly series | `fire_trend.go:53` | "fires inside park per ISO week" (comment says inside) |
+| fire-narrative `total_fires` (Go fallback path) | `narrative_handlers.go:627, 2835`; `fire_narrative_cache.go:133` | total detections behind the narrative |
+| peak month | `narrative_handlers.go:639, 2844`; `fire_narrative_cache.go:180` | the park's fire season |
+| hotspots (0.1° buckets) | `narrative_handlers.go:2305` | "geographic concentrations" up to 100 km outside |
+| year join in `analyzeFireTrend` | `narrative_handlers.go:2394` | fires per year |
+| `updateParkFireAlerts` 28-day window | `fire_realtime_handlers.go:935` | which fires can raise an alert |
+
+Not affected, and worth knowing why: the **v5 trajectory chain** counts fires
+per *group* and computes `pct_inside` / `dist_to_park_km` by point-in-polygon
+(`rebuild_fire_trajectories_v5.py:809`), and the narrative/realtime readers gate
+on `dist_to_park_km <= 20`. So `/fire-narrative`'s `total_fires` from the **v5
+cache** is a sum over groups near or inside the park (Chinko: 302,900) while
+`/stats` says 962,444 — one word, two numbers, 3.2× apart. Two surfaces saying
+one word must say one number (invariant 7). AOIs are already right: they select
+by polygon through `aoi_fires` and never appear in this column.
+
+### `in_protected_area` is nearly right, and 5.83% stale
+
+It is not a buffer — it is `dist_km == 0.0` recorded **at ingest time**, so it
+is a stored answer from whatever rule ran that night. 469,692 flagged rows
+(5.83%) are not inside today's polygon. Two distinct causes:
+
+* **433,632 rows from the Feb–Jul 2026 batch** (`id < 8e6`, dates 2026-02-26 →
+  2026-07-03, 84.5% of that batch's flags wrong): written by the pre-`ParkAssigner`
+  `_find_park`, a **bbox + 0.5°** first-match (removed in `858eb69`, 2026-07-05).
+  Verified: of a 30k sample of those flagged rows, 100% fall inside
+  `bbox ± 0.5°` and only 15% inside the polygon.
+* **~36k rows spread thinly across 2018–2026** — genuine
+  polygon-vs-`ParkAssigner` disagreement (boundary edits, shapely vs the
+  assigner's prepared geometry, edge cases).
+
+So `AND in_protected_area = 1` is the cheap fix and is ~94% accurate; a
+re-derivation of the flag would take it to 100% but is a separate change with
+its own risk (42.9M-row `UPDATE`, and every count in the app moves at once).
+Either way the audit script is the before/after instrument.
+
+**Performance trap when you add the clause.** `idx_fire_infraction`
+is `(in_protected_area, acq_date)` and the planner prefers it — turning a 0.2 s
+lookup into an 18 s scan of 8M rows (Kafue: 14.2 s). Force the park index:
+`AND +in_protected_area = 1` (0.96 s) or `INDEXED BY idx_fire_pa_date` (0.61 s).
+Same family as invariant 3.
+
+---
+
 ## Fire pipeline health & consistency
 
 Three artefacts must agree or the popup silently breaks ("Feature not found"
