@@ -63,7 +63,10 @@ MIN_HIGH_CONF = 1
 BBOX_BUFFER_KM = 10.0
 # GFW starts where Hansen ends
 MIN_GFW_YEAR = 2024
-# ~10m pixels: 1 alert ~ 0.0001 km2
+# ~10m pixels: 1 alert ~ 0.0001 km2. ⚠️ This is an ALERT COUNT scaled to an
+# area, not mapped canopy loss like Hansen's -- the two live in one column and
+# every row now says which it is via `area_method`
+# (docs/AOI_STRUCTURAL_FIXES.md F8).
 KM2_PER_ALERT = 0.0001
 CELL_HALF_DEG = 0.005  # cell is 0.01 deg
 
@@ -245,8 +248,8 @@ def ingest_gfw_deforestation(conn, rebuilder, park_id, dry_run=False,
                 INSERT INTO deforestation_events
                 (park_id, year, area_km2, lat, lon, pattern_type, classification,
                  classification_confidence, narrative, fires_same_year, fire_ratio,
-                 polygon_ids, classified_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 polygon_ids, classified_at, area_method)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'gfw_alert_count')
             """, (park_id, year, classification['total_area_km2'], avg_lat, avg_lon,
                   classification['pattern'], classification['classification'],
                   classification['confidence'], narrative, fires_near,
@@ -328,6 +331,71 @@ def reclassify_deforestation(conn, rebuilder, park_id, dry_run=False):
         conn.commit()
     log(f"  reclassified {updated} deforestation events (python canonical style)")
     return updated
+
+
+def flag_anomalous_years(conn, park_id, dry_run=False):
+    """Mark a (park, year) whose loss is a step change as `needs_review`.
+
+    F9: 203 of 2023's 313.6 km² over XSA_Study_Area sits north of 9.5 °N, where
+    the series recorded ~0.2 km²/yr for 22 years -- a 1,000x step in one year,
+    in savanna, in the block where GFW alerts see essentially nothing. Most
+    likely a Hansen baseline/definition change or a fire scar scored as loss.
+    Either way it is a provenance question, and drawing it as a spike answers
+    it for the reader without asking anybody.
+
+    Compared **within one `area_method`**: an alert-count year against a
+    canopy-loss year differs by construction (F8), and comparing them would
+    flag every park at the 2024 cutover.
+    """
+    rows = conn.execute("""
+        SELECT COALESCE(area_method, 'hansen_canopy_loss') AS m, year,
+               SUM(area_km2) AS km2
+        FROM deforestation_events
+        WHERE park_id = ?
+        GROUP BY m, year ORDER BY m, year
+    """, (park_id,)).fetchall()
+    by_method = {}
+    for r in rows:
+        by_method.setdefault(r['m'], []).append((r['year'], float(r['km2'] or 0)))
+
+    flagged = []
+    for method, series in by_method.items():
+        for i, (year, km2) in enumerate(series):
+            # The five preceding years of the SAME method. Fewer than three is
+            # not a baseline, and a ratio against a baseline that does not
+            # exist is exactly the kind of confident number this flag is for.
+            prior = [v for _, v in series[max(0, i - 5):i]]
+            if len(prior) < 3:
+                continue
+            med = sorted(prior)[len(prior) // 2]
+            if med <= 0:
+                # A step out of nothing is still a step, but "50x zero" is not
+                # a ratio; require an absolute floor instead.
+                if km2 >= 50.0:
+                    flagged.append((method, year, km2, med))
+                continue
+            if km2 / med >= 50.0:
+                flagged.append((method, year, km2, med))
+
+    if dry_run:
+        for m, y, km2, med in flagged:
+            log(f"  [dry-run] would flag {y} ({m}): {km2:.1f} km² vs median {med:.1f}")
+        return len(flagged)
+
+    # Recompute from scratch every run: a year that stops being anomalous
+    # (because the surrounding years were rebuilt) must lose the flag, or the
+    # flag becomes a permanent scar rather than a statement about the data.
+    conn.execute("UPDATE deforestation_events SET needs_review = 0 "
+                 "WHERE park_id = ? AND needs_review = 1", (park_id,))
+    for m, y, km2, med in flagged:
+        conn.execute("""
+            UPDATE deforestation_events SET needs_review = 1
+            WHERE park_id = ? AND year = ?
+              AND COALESCE(area_method, 'hansen_canopy_loss') = ?
+        """, (park_id, y, m))
+        log(f"  needs_review: {y} ({m}) {km2:.1f} km² vs 5-yr median {med:.1f}")
+    conn.commit()
+    return len(flagged)
 
 
 def reload_fire_groups(park_id, dry_run=False):
@@ -413,6 +481,7 @@ def main():
             name_rivers(conn, park_id, args.dry_run)
             ingest_gfw_deforestation(conn, rebuilder, park_id, args.dry_run)
             reclassify_deforestation(conn, rebuilder, park_id, args.dry_run)
+            flag_anomalous_years(conn, park_id, args.dry_run)
             reload_fire_groups(park_id, args.dry_run)
             call_refresh_endpoint(park_id, args.dry_run)
             export_park_json(park_id, args.dry_run)

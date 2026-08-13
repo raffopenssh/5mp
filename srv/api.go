@@ -3745,7 +3745,7 @@ func (s *Server) fetchParkNarrativeSummary(parkID string) string {
 	err = s.DB.QueryRow(`
 		SELECT 
 			COUNT(*) as count,
-			COALESCE(SUM(population_est), 0) as population
+			COALESCE(SUM(`+settlementPopulationSQL("")+`), 0) as population
 		FROM park_settlements
 		WHERE park_id = ?`+settlementFilterSQL("narrative", "polygon_ids")+`
 	`, parkID).Scan(&settlementCount, &totalPopulation)
@@ -5284,7 +5284,7 @@ func (s *Server) HandleAPIParksExport(w http.ResponseWriter, r *http.Request) {
 				GROUP BY park_id
 			) d ON a.id = d.park_id
 			LEFT JOIN (
-				SELECT park_id, COUNT(*) as settlement_count, SUM(population_est) as total_pop 
+				SELECT park_id, COUNT(*) as settlement_count, SUM(` + settlementPopulationSQL("") + `) as total_pop 
 				FROM park_settlements WHERE 1=1` + settlementFilterSQL("narrative", "polygon_ids") + ` GROUP BY park_id
 			) st ON a.id = st.park_id
 			LEFT JOIN (
@@ -5325,7 +5325,7 @@ func (s *Server) HandleAPIParksExport(w http.ResponseWriter, r *http.Request) {
 			area.ID, dateFrom, dateFrom, dateTo, dateTo).Scan(&fires)
 		s.DB.QueryRow(`SELECT COUNT(DISTINCT group_name) FROM fire_group_alerts WHERE park_id = ?`, area.ID).Scan(&groups)
 		s.DB.QueryRow(`SELECT COALESCE(SUM(area_km2), 0), COUNT(*) FROM deforestation_events WHERE park_id = ?`, area.ID).Scan(&defoKm2, &defoEvents)
-		s.DB.QueryRow(`SELECT COUNT(*), COALESCE(SUM(population_est), 0) FROM park_settlements WHERE park_id = ?`+
+		s.DB.QueryRow(`SELECT COUNT(*), COALESCE(SUM(`+settlementPopulationSQL("")+`), 0) FROM park_settlements WHERE park_id = ?`+
 			settlementFilterSQL("narrative", "polygon_ids"), area.ID).Scan(&settlements, &pop)
 		s.DB.QueryRow(`SELECT COALESCE(road_length_km, 0), COALESCE(roadless_percentage, 0) FROM osm_roadless_data WHERE park_id = ?`, area.ID).Scan(&roadsKm, &roadlessPct)
 		// Count patrolled grid cells within park bounds.
