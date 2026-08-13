@@ -124,10 +124,10 @@ func (s *Server) HandleRoot(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := pageData{
-		Hostname:  s.Hostname,
-		User:      user,
-		Version:   Version,
-		IsTest:    RequestEnv(r) == sandboxTenant,
+		Hostname: s.Hostname,
+		User:     user,
+		Version:  Version,
+		IsTest:   RequestEnv(r) == sandboxTenant,
 		// PatrolEnv, not RequestEnv: a shared link that does not carry the
 		// patrol capability owns no patrol data as far as this page is
 		// concerned, so the UI dims the layer for exactly the reason it dims

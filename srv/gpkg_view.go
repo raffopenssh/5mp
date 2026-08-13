@@ -43,7 +43,7 @@ import (
 // gpkgViewOpts is the view export's question. It is folded into gpkgExportOpts
 // (which the job queue understands) via viewOpts.
 type gpkgViewOpts struct {
-	BBox   [4]float64 `json:"bbox"`   // minLng, minLat, maxLng, maxLat
+	BBox   [4]float64 `json:"bbox"`             // minLng, minLat, maxLng, maxLat
 	At     string     `json:"at,omitempty"`     // animation instant (YYYY-MM-DD), "" for a static view
 	Layers []string   `json:"layers,omitempty"` // animator chip names that were on
 	AOIID  string     `json:"aoi,omitempty"`    // when the view is scoped to an AOI (aoiScopeSQL)
@@ -732,10 +732,10 @@ func (s *Server) HandleAPIViewGeoPackage(w http.ResponseWriter, r *http.Request)
 	}
 
 	o := gpkgExportOpts{
-		AreaID:   areaID,
-		AreaName: name,
-		FromDate: q.Get("from"),
-		ToDate:   q.Get("to"),
+		AreaID:    areaID,
+		AreaName:  name,
+		FromDate:  q.Get("from"),
+		ToDate:    q.Get("to"),
 		Env:       RequestEnv(r),
 		PatrolEnv: PatrolEnv(r),
 		Effort:    q.Get("effort") != "0",
