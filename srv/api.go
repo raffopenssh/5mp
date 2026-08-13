@@ -4409,19 +4409,15 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 	kml.WriteString("<Folder><name>Human Activity</name>\n")
 	kml.WriteString("<Folder><name>Settlements</name><visibility>0</visibility>\n")
 
-	// Join feature_geometries with park_settlements using polygon_ids (same as tooltip logic)
+	// Footprint -> settlement metadata comes from settlementMetaByPolygon,
+	// which resolves polygon_ids in Go (invariant 4: a LIKE join on that column
+	// pairs every footprint with every cluster) and applies the provenance
+	// filter, so retired detector rows cannot lend a name to a polygon here.
+	settleMeta := s.settlementMetaByPolygon(parkID)
 	settlementQuery := `
-		SELECT 
-			fg.feature_id,
-			fg.geojson,
-			fg.properties_json,
-			ps.narrative,
-			ps.classification,
-			ps.nearest_place
-		FROM feature_geometries fg
-		LEFT JOIN park_settlements ps ON fg.park_id = ps.park_id 
-			AND (',' || ps.polygon_ids || ',') LIKE ('%,' || fg.feature_id || ',%')
-		WHERE fg.park_id = ? AND fg.feature_type = 'settlement'
+		SELECT feature_id, geojson, properties_json
+		FROM feature_geometries
+		WHERE park_id = ? AND feature_type = 'settlement'
 		LIMIT 1000
 	`
 	settlementRows, _ := s.DB.Query(settlementQuery, parkID)
@@ -4430,7 +4426,10 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 		for settlementRows.Next() {
 			var featureID, geojson, props string
 			var narrative, classification, nearestPlace sql.NullString
-			settlementRows.Scan(&featureID, &geojson, &props, &narrative, &classification, &nearestPlace)
+			settlementRows.Scan(&featureID, &geojson, &props)
+			if m, ok := settleMeta[featureID]; ok {
+				narrative, classification, nearestPlace = m.narrative, m.classification, m.nearestPlace
+			}
 
 			var propMap map[string]interface{}
 			json.Unmarshal([]byte(props), &propMap)

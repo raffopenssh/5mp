@@ -654,19 +654,23 @@ func (s *Server) buildLocusContent(tdb, wdb *locusDB, parkID, parkName, boundary
 		tdb.visible = kept
 	}
 
-	// Settlements (closed rings, hidden by default)
+	// Settlements (closed rings, hidden by default). Footprint -> cluster via
+	// settlementMetaByPolygon: resolved in Go (invariant 4) and provenance-
+	// filtered, so a retired detector row cannot name a polygon.
+	settleMeta := s.settlementMetaByPolygon(parkID)
 	settlementRows, _ := s.DB.Query(`
-		SELECT fg.feature_id, fg.geojson, ps.classification, ps.nearest_place
-		FROM feature_geometries fg
-		LEFT JOIN park_settlements ps ON fg.park_id = ps.park_id
-			AND (',' || ps.polygon_ids || ',') LIKE ('%,' || fg.feature_id || ',%')
-		WHERE fg.park_id = ? AND fg.feature_type = 'settlement' LIMIT 1000`, parkID)
+		SELECT feature_id, geojson
+		FROM feature_geometries
+		WHERE park_id = ? AND feature_type = 'settlement' LIMIT 1000`, parkID)
 	if settlementRows != nil {
 		defer settlementRows.Close()
 		for settlementRows.Next() {
 			var featureID, geojson string
 			var classification, nearestPlace sql.NullString
-			settlementRows.Scan(&featureID, &geojson, &classification, &nearestPlace)
+			settlementRows.Scan(&featureID, &geojson)
+			if m, ok := settleMeta[featureID]; ok {
+				classification, nearestPlace = m.classification, m.nearestPlace
+			}
 			// mining labels retired (docs/MINING_FINDINGS_2026-08.md §10)
 			name := strOr(publicSettlementClass(classification.String), "Settlement")
 			if nearestPlace.Valid && nearestPlace.String != "" {

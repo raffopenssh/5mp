@@ -2315,12 +2315,14 @@ func (l *GPXLearner) enrichWithContext(ctx context.Context, parkID string, segme
 		}
 	}
 
-	// Find nearby settlements
+	// Find nearby settlements. Filtered like every other settlement read --
+	// a learned road/place must not be described as running past a retired
+	// pit detection (srv/mining_flag.go).
 	settlementRows, err := l.db.QueryContext(ctx, `
 		SELECT COALESCE(nearest_place, 'Unnamed'), lat, lon, population_est,
 		       (ABS(lat - ?) + ABS(lon - ?)) * 111 as approx_dist
 		FROM park_settlements
-		WHERE park_id = ?
+		WHERE park_id = ?`+settlementFilterSQL("narrative", "polygon_ids")+`
 		  AND lat BETWEEN ? AND ?
 		  AND lon BETWEEN ? AND ?
 		ORDER BY approx_dist

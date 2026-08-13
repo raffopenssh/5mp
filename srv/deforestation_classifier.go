@@ -111,13 +111,19 @@ func (s *Server) loadDeforestContext(parkID string, df *ClassifiedDeforestation)
 		df.DistanceToPlace = haversineDistance(df.Lat, df.Lon, placeLat.Float64, placeLon.Float64)
 	}
 
-	// Distance to nearest settlement (GHSL)
+	// Distance to nearest settlement (GHSL).
+	//
+	// Filtered like every other settlement read: an unfiltered MIN() lets a
+	// retired pit/turbidity detection stand in as the "nearest settlement",
+	// which sets IsNearSettlement and steers this event's classification and
+	// narrative. Detector output must not be evidence about a clearing any more
+	// than it may be drawn as a village. See srv/mining_flag.go.
 	var settDist sql.NullFloat64
 	s.DB.QueryRow(`
 		SELECT MIN(
 			SQRT(POW((lat - ?) * 111, 2) + POW((lon - ?) * 111 * COS(? * 3.14159/180), 2))
 		)
-		FROM park_settlements WHERE park_id = ?
+		FROM park_settlements WHERE park_id = ?`+settlementFilterSQL("narrative", "polygon_ids")+`
 	`, df.Lat, df.Lon, df.Lat, parkID).Scan(&settDist)
 
 	if settDist.Valid {
