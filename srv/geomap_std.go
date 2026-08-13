@@ -609,6 +609,10 @@ func geoStdLegend() map[string]any {
 		// grade out of the same table. See srv/geomap_contacts.go.
 		"contact_rules":       geoContactRulesJSON(),
 		"contact_commodities": geoContactCommodities(),
+		// What the model is WORTH, measured, beside what it claims. See
+		// srv/geomap_scores.go: a grade with no score beside it reads as a
+		// ranking, because three dots cannot read as anything else.
+		"affinity_skill": geoAffinityScoresJSON(),
 	}
 }
 

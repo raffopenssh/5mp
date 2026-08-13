@@ -228,6 +228,53 @@
         return { ages: [], lithology: [] };
     }
 
+    /* ── What the model is WORTH, beside what it claims ──────────────────
+     *
+     * The server measures the affinity model against an occurrence dataset
+     * (srv/geomap_scores.go, scripts/geomaps/eval_affinity.py) and ships the
+     * table in the shared legend. Every surface that draws a grade can then
+     * say how that grade scored, which is the difference between a legend and
+     * a ranking: three amber dots cannot help reading as "more likely", so a
+     * grade with no measurement beside it is a claim the UI invented.
+     *
+     * `null` means UNMEASURED and callers must print that word. Eight of ten
+     * commodities are unmeasured — we hold an occurrence list for two — and an
+     * absent number beside a 2.3× reads as a low score, not as no score.
+     */
+    let skillIdx = null;
+    function skillTable() {
+        if (skillIdx) return skillIdx;
+        const s = stdLegend().affinity_skill || {};
+        skillIdx = { eval: s.eval || null, rows: s.scores || [] };
+        return skillIdx;
+    }
+
+    /** The score to quote for one claim: the measurement at the highest floor
+     *  at or below the one the reader is looking at, so "any" is never
+     *  annotated with the flattering "classic" number. */
+    function skillFor(commodity, kind, minWeight) {
+        let best = null;
+        skillTable().rows.forEach(r => {
+            if (r.commodity !== commodity || r.kind !== kind) return;
+            if (r.min_weight > (minWeight || 1)) return;
+            if (!best || r.min_weight > best.min_weight) best = r;
+        });
+        return best;
+    }
+
+    /** One short phrase for a score. The LIFT is the only number worth a
+     *  reader's attention: a capture of 53% is impressive until you know the
+     *  baseline is 23%. */
+    function skillPhrase(r) {
+        if (!r) return 'not measured against any occurrence dataset';
+        const x = (r.lift >= 10 ? Math.round(r.lift) : r.lift.toFixed(1)) + '\u00d7';
+        return r.verdict === 'concentrates'
+            ? 'holds ' + x + ' more of the known workings than the same amount of ground '
+              + 'picked at random (' + r.scope + ', n=' + r.n + ')'
+            : 'no better than picking that much ground at random (' + x + ', '
+              + r.scope + ', n=' + r.n + ')';
+    }
+
     function ageMeta(key) {
         return (stdLegend().ages || []).find(a => a.key === key) ||
                { key: key, label: key, color: '#BDBDBD', rank: 99 };
@@ -757,6 +804,25 @@
     const contactBound = {};
     // Sheets waiting for the style to settle before they can be added; see add().
     const pendingAdd = new Set();
+    /** A one-line score badge under an affinity claim, in the same tip.
+     *
+     * Deliberately not a colour: a green badge would be a second grade, and
+     * the reader already has three dots to read. It is a sentence, because the
+     * finding it carries is a sentence — "this rule was measured and it is not
+     * better than picking area at random" has no swatch.
+     */
+    function skillBadgeHTML(commodity, kind, weight) {
+        const r = skillFor(commodity, kind, weight);
+        const col = !r ? '#6b7280' : (r.verdict === 'concentrates' ? '#86efac' : '#fca5a5');
+        const txt = !r ? 'skill unmeasured for ' + commodity.replace(/_/g, ' ')
+            : (r.verdict === 'concentrates' ? 'measured ' : 'measured ')
+              + (r.lift >= 10 ? Math.round(r.lift) : r.lift.toFixed(1)) + '\u00d7 vs random ground'
+              + (r.verdict === 'concentrates' ? '' : ' \u2014 i.e. no better')
+              + ' (' + r.scope + ')';
+        return `<div style="color:${col};font-size:10px;margin:2px 0 0 14px;line-height:1.35;"
+            title="${escapeHtml(skillPhrase(r))}">${escapeHtml(txt)}</div>`;
+    }
+
     function tipHTML(id, p) {
             const cat = (sheets[id] && sheets[id].catalogue) || {};
             let aff = [];
@@ -811,10 +877,12 @@
                     ${aff.length ? `<div style="margin-top:8px;border-top:1px solid rgba(255,255,255,0.08);padding-top:6px;">
                         <div style="color:#aaa;font-size:11px;font-weight:600;">Commodities this rock type can host</div>
                         ${aff.map(a => `<div style="color:#ccc;font-size:11px;margin-top:4px;line-height:1.4;">
-                            ${'&#9679;'.repeat(a.weight)} <b style="color:#fff;">${escapeHtml(a.commodity)}</b> &mdash; ${escapeHtml(a.why)}</div>`).join('')}
+                            ${'&#9679;'.repeat(a.weight)} <b style="color:#fff;">${escapeHtml(a.commodity)}</b> &mdash; ${escapeHtml(a.why)}</div>
+                            ${skillBadgeHTML(a.commodity, 'unit', a.weight)}`).join('')}
                         <div style="color:#777;font-size:10px;margin-top:6px;line-height:1.4;">
                             An inference from lithology, not a record of any deposit. Nothing here
-                            counts, ranks or locates an occurrence.</div>
+                            counts, ranks or locates an occurrence &mdash; and where it has been
+                            scored against one, the score is printed above.</div>
                     </div>` : ''}
                 </div>`;
     }
@@ -859,7 +927,8 @@
                     <div style="color:#aaa;font-size:11px;font-weight:600;">What this junction can host</div>
                     ${aff.map(a => `<div style="color:#ccc;font-size:11px;margin-top:4px;line-height:1.4;">
                         ${'&#9679;'.repeat(a.weight)} <b style="color:#fff;">${escapeHtml(a.commodity.replace(/_/g, ' '))}</b>
-                        &mdash; ${escapeHtml(a.why)}</div>`).join('')}
+                        &mdash; ${escapeHtml(a.why)}</div>
+                        ${skillBadgeHTML(a.commodity, 'junction', a.weight)}`).join('')}
                 </div>` : `<div style="color:#777;font-size:11px;margin-top:8px;line-height:1.4;">
                     These two rock types in contact are not a setting this model grades.
                     That is a gap in the model, not evidence of absence.</div>`}
@@ -1050,6 +1119,13 @@
         classColor: classColor,
         std: stdLegend,
         age: ageMeta,
+        /** The measured skill of one claim, or null for "never measured".
+         *  See skillTable() above: a grade drawn without this is a ranking
+         *  the UI invented. */
+        skill: skillFor,
+        skillPhrase: skillPhrase,
+        /** Provenance of the measurement, for a surface that quotes it. */
+        skillEval: () => skillTable().eval,
         shared: () => shared,
         state: st,
         isOn: id => st(id).on,

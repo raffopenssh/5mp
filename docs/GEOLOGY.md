@@ -145,6 +145,28 @@ accuracy left on the table.
 | `data/geomaps/*_units.geojson`, `*.mbtiles` | gitignored derived output |
 | `data/geomaps/{src,work}/` | gitignored, ~1.9 GB |
 
+## Is the model any good? Measure it.
+
+`scripts/geomaps/eval_affinity.py` scores the commodity chooser and the
+Junctions tab against occurrence datasets and writes
+`data/eval/geo_affinity_car.json`; `srv/geomap_scores.go` quotes the numbers and
+the UI prints them beside every grade.
+
+```bash
+python3 scripts/geomaps/eval_affinity.py                 # CAR/IPIS + USGS sheets, ~2 min
+python3 scripts/geomaps/eval_affinity.py --continental    # + JRC AKP layers vs IPIS DRC
+go test ./srv/ -run TestAffinity                          # the table may not disagree with the file
+```
+
+Headline: on CAR the gold **junctions** hold 2.32× more of the known workings
+than the same amount of ground picked at random (and 2.33× against diamond
+workings, so it is gold the lines find), while the gold **units** score 0.63× —
+worse than random ground. Full discussion, the three baseline disciplines, the
+survey of other continental sources, and the six unread Tanzania columns:
+`docs/agents/overlays.md` § "The model has a score now".
+
+**The score is not a tuning target** (same rule as the fire trajectories eval).
+
 ## Adding a sheet — the whole contract
 
 **Read this first; it is the shortest path and it is the same for a scan and

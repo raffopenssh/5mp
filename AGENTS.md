@@ -177,6 +177,13 @@ These apply no matter what you touch. Each cost real time at least once.
 
 12. **Never tune the fire algorithm by eye** — `scripts/eval_fire_trajectories.py`.
     Never judge a detection-filtering change on `coverage_pct`.
+    The same rule covers geology: the commodity/junction model has a measured
+    skill (`scripts/geomaps/eval_affinity.py`) and it is **not a tuning
+    target**. A grade drawn without its score beside it reads as a ranking —
+    on CAR the gold *junctions* concentrate known workings 2.3×, the gold
+    *units* score 0.63× (worse than random ground), and both were the same
+    amber dots. `nil` means **unmeasured** and must print that word.
+    See `docs/agents/overlays.md`.
 
 13. **Mining detection is retired** (`MiningEnabled = false`). Do not rebuild
     it; read `docs/agents/mining.md` before proposing anything mining-related.

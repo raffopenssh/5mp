@@ -1615,6 +1615,25 @@
         return out;
     }
 
+    /* The MEASURED skill of a commodity's rules, as one short phrase.
+     *
+     * The panel's three amber dots are a grade, and a grade with no
+     * measurement beside it reads as a ranking — which is exactly what a
+     * reader hunting "where is the next gold rush" wants it to be. So every
+     * row that offers a commodity says, in words, how that commodity's rules
+     * scored against an occurrence dataset, and says "not measured" when they
+     * never were (eight of ten: we hold an occurrence list for two).
+     *
+     * Kept as a TITLE and a footnote rather than a badge per row: it is a
+     * sentence with a scope and an n, and a coloured pill next to a grade
+     * would be a second grade to decode. srv/geomap_scores.go.
+     */
+    function skillNote(commodity, kind, min) {
+        if (!GeoMap.skill) return '';
+        var r = GeoMap.skill(commodity, kind, min || 1);
+        return GeoMap.skillPhrase(r);
+    }
+
     function openGeoMenu(btn) {
         var already = menuEl && menuEl.dataset.kind === 'geo';
         closeMenu();
@@ -1888,7 +1907,14 @@
                       (GeoMap.agesOff().size
                         ? ' Clears the single-period narrowing you are in.' : '')
                     : 'Nothing drawn in this view is graded a host for ' + k.replace(/_/g, ' ') +
-                      ' at this strength') + '"' +
+                      ' at this strength') +
+                    // MEASURED, not claimed. Both kinds, because they score
+                    // differently and the reader is about to pick one: on CAR
+                    // the gold JUNCTIONS concentrate 2.3x and the gold UNITS
+                    // do worse than random ground, and a row that offers the
+                    // units without saying so is selling the junctions' number.
+                    ' \u2014 rocks: ' + esc(skillNote(k, 'unit', min)) +
+                    '; junctions: ' + esc(skillNote(k, 'junction', min)) + '"' +
                 ' onclick="event.stopPropagation();MapLegend.geoCommodity(\'' + esc(k) + '\')">' +
                 '<span class="mode-mark check"></span>' + esc(k.replace(/_/g, ' ')) + '</button>';
             ages.forEach(function (a) {
@@ -2193,8 +2219,23 @@
                 'junction, or draw every junction.</div>';
         }
 
+        /* THE DISCLAIMER IS NOT THE SCORE.
+         *
+         * "An inference, not a record" tells the reader this is not evidence.
+         * It does not tell them whether it WORKS, and the two are different
+         * questions: on CAR the gold-graded junctions hold 2.3x more of the
+         * known workings than the same amount of ground picked at random, and
+         * the gold-graded UNITS hold fewer than random ground does. Both were
+         * drawn in the same amber under the same disclaimer. So the measured
+         * number rides beside the claim, and where nothing has been measured
+         * it says that word rather than leaving a gap that reads as a low
+         * score. srv/geomap_scores.go, scripts/geomaps/eval_affinity.py.
+         */
+        var jSkill = forWhat && sel.size === 1
+            ? skillNote(Array.from(sel)[0], 'junction', min) : '';
         html += '<div class="mode-menu-note">An inference from the two rock types either side ' +
-            '\u2014 nothing here counts, ranks or locates a deposit.</div>';
+            '\u2014 nothing here counts, ranks or locates a deposit.' +
+            (jSkill ? ' Measured: ' + esc(jSkill) + '.' : '') + '</div>';
         return html;
     }
 
