@@ -1,0 +1,56 @@
+{
+ "CAF_Chinko": {
+  "at": "2026-08-13T17:18:40Z",
+  "breakdown": {
+   "permanent": 19,
+   "recent": 1
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 20,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R9_C21": {
+    "E2000": "2fca432b351f89e0b3875b4ef08066bb5140bda14faeb98e69a802a3bf7d9b74",
+    "E2015": "95a3271073d330eafe95d76bb47052626c9177774fb72cf89b2dfd026a12b4d6",
+    "E2030": "20658f1eba28e8b7095ddad7343e0d9e66db3acdcc62a73ea3d62e5a631c0ca7"
+   }
+  },
+  "version": "2026-08-13a"
+ },
+ "XSA_Study_Area": {
+  "at": "2026-08-13T17:44:43Z",
+  "breakdown": {
+   "established": 208,
+   "permanent": 1665,
+   "recent": 248
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 2121,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R8_C21": {
+    "E2000": "497e99dc71cd102c02a0bf88c1e61059045c059e078fd21c3933cf6e80c37304",
+    "E2015": "de8a10d53ff5f1201eb51e353aa0619cd0b3ef9b76fe4273823c5485bc13dea3",
+    "E2030": "a1d2a772348dc03e19c0101998885ad30e0fcd2f086067a5dc1e038ad63ad900"
+   },
+   "R8_C22": {
+    "E2000": "65c08c09d078680c06c91f2b8eaef744ecce2fbc07573c7e98b09c305c65ef7a",
+    "E2015": "abecda0cf46327e56bffed1451d02a50e80d9c6bf55faaca3e430bf0cf2ffea0",
+    "E2030": "d19dbc1da70aee7dce7f0c7f1aaaf74d270c48e1e9441b524636a2e66bd5bc5c"
+   },
+   "R9_C21": {
+    "E2000": "2fca432b351f89e0b3875b4ef08066bb5140bda14faeb98e69a802a3bf7d9b74",
+    "E2015": "95a3271073d330eafe95d76bb47052626c9177774fb72cf89b2dfd026a12b4d6",
+    "E2030": "20658f1eba28e8b7095ddad7343e0d9e66db3acdcc62a73ea3d62e5a631c0ca7"
+   },
+   "R9_C22": {
+    "E2000": "60f8377159f9ebc55fc42ff0bee224e501e426d349b9322c81ea297d4faad304",
+    "E2015": "7efbaa23f4900d458307b9c256ddb8442ffe7943919905aab3257690b507d49f",
+    "E2030": "39c7b13a1620bb1f20b166373f31c30b586b66d70776c2d27032182da8053a48"
+   }
+  },
+  "version": "2026-08-13a"
+ }
+}

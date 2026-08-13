@@ -31,6 +31,10 @@ type ClassifiedSettlement struct {
 	Classification string  `json:"classification"`
 	Confidence     float64 `json:"confidence"`
 	Narrative      string  `json:"narrative"`
+	// Persistence is measured from GHSL back-epochs (E2000/E2015 built surface
+	// over the same mask pixels): permanent / established / recent, or empty
+	// where an epoch tile was missing — unmeasured, not recent.
+	Persistence string `json:"persistence,omitempty"`
 
 	// Context data used for classification
 	NearestPlace    string  `json:"nearest_place,omitempty"`
