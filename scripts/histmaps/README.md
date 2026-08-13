@@ -350,6 +350,7 @@ zoom level that looks like a rendering bug rather than a truncated run.
 | Archive download | `GET /api/histmap/sudan250k/download` (Range-capable) |
 | UI | admin panel -> **Map Settings** -> Historical Maps (`HistMap` in globe.html) |
 | Share link | `?histmap=sudan250k` |
+| OCR'd labels | `ocr_labels.py` -> `data/histmaps/labels.sqlite3`; `GET /api/histmap/sudan250k/labels` (see `docs/API.md`) |
 
 Tiles are read out of the MBTiles rather than exploded to 226k files, so the
 online overlay and the file handed to a field device are literally the same
