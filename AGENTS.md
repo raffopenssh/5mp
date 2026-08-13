@@ -2,7 +2,7 @@
 
 Go web app: conservation monitoring of 162 African protected areas + user-drawn
 AOIs. Interactive 3D globe (MapLibre), fire detection, deforestation,
-settlements, patrol tracking. ~17k-line single-page frontend + SQLite (1.8 GB).
+settlements, patrol tracking. ~17k-line single-page frontend + SQLite (~18 GB).
 
 **Live:** https://five-megapixel-conservation.exe.xyz:8000/?pwd=test2026
 
@@ -61,9 +61,31 @@ interest" → `aoi.md`, "Single Writer Rule" → `fire.md`, and so on).
 
 ---
 
+## Working style — budget your effort
+
+The historical failure mode in this repo is **over-work**: re-running full test
+suites to "confirm" unchanged results, updating three docs for one change,
+unrequested refactors. Rules:
+
+- **Tests: scoped, then once.** While iterating, run only the suite(s) your
+  change touches (`tests/api_tests.sh`, `tests/ui_tests.sh`, …) or a single
+  test via `grep`-able name; `go test ./<pkg>` only if Go changed. Run
+  `./tests/run_all.sh` **at most once**, at the very end. A suite that passed
+  and whose inputs didn't change does not need re-running.
+- **Docs: one pass, one file.** After the work is done, update the *single*
+  `docs/agents/<subsystem>.md` your change touches — once. Touch AGENTS.md
+  only for the three edit kinds listed above. Never restate a change in
+  multiple docs; never reorganize docs unprompted.
+- **No "while I'm here".** No refactors, comment sweeps, renames, or cleanup
+  beyond the ask. Note candidates in one line to the user instead.
+- **Report tersely.** A few lines of outcome + how it was verified. Don't
+  narrate each command or re-explain the codebase back to the user.
+
+---
+
 ## Hard rules
 
-**Database.** 42.9M fire rows, 1.8 GB. No `DELETE`/`DROP`/unscoped `UPDATE`
+**Database.** 42.9M fire rows, ~18 GB. No `DELETE`/`DROP`/unscoped `UPDATE`
 without confirmation. Use `LIMIT` when exploring. `cp db.sqlite3 db.sqlite3.bak`
 before schema changes.
 
@@ -120,7 +142,7 @@ was fixed 2026-08-13 by restoring lost `park_settlements` columns in
 | `srv/features_bbox.go`, `srv/static/lodlayer.js` | Viewport feature loading |
 | `srv/static/{anim,maptip,aoi_draw,geomap}.js` | Animator, tips, AOI editor, geology |
 | `srv/upload.go`, `srv/upload_queue.go` | GPX upload + async processor |
-| `db.sqlite3` | SQLite database (~1.8 GB) |
+| `db.sqlite3` | SQLite database (~18 GB) |
 
 ---
 
