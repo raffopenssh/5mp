@@ -238,13 +238,14 @@ func (s *Server) HandleAPIParkStats(w http.ResponseWriter, r *http.Request) {
 	// Total fires, peak month, and per-year counts in a single scan over the
 	// (protected_area_id, acq_date) index. substr avoids per-row strftime,
 	// and one year-month GROUP BY replaces three separate table scans.
+	// fireInsideSQL: the panel says "fires", which reads as inside the park.
 	var totalFires int
 	monthCounts := map[string]int{}
 	firesByYear := map[int]int{}
 	ymRows, ymErr := s.DB.Query(`
 		SELECT substr(acq_date, 1, 7) as ym, COUNT(*) as cnt
 		FROM fire_detections 
-		WHERE protected_area_id = ?
+		WHERE protected_area_id = ?`+fireInsideSQL+`
 		GROUP BY ym
 	`, internalID)
 	if ymErr == nil {
@@ -287,7 +288,7 @@ func (s *Server) HandleAPIParkStats(w http.ResponseWriter, r *http.Request) {
 	rows, err := s.DB.Query(`
 		SELECT acq_date, COUNT(*) as cnt
 		FROM fire_detections 
-		WHERE protected_area_id = ?
+		WHERE protected_area_id = ?`+fireInsideSQL+`
 		GROUP BY acq_date
 		ORDER BY acq_date DESC
 		LIMIT 90
@@ -505,7 +506,7 @@ func (s *Server) HandleAPIParkFireLog(w http.ResponseWriter, r *http.Request) {
 	rows, err := s.DB.Query(`
 		SELECT acq_date, COUNT(*) as fires, AVG(frp) as avg_frp, MAX(frp) as max_frp
 		FROM fire_detections 
-		WHERE protected_area_id = ?
+		WHERE protected_area_id = ?`+fireInsideSQL+`
 		GROUP BY acq_date
 		ORDER BY acq_date DESC
 		LIMIT 365

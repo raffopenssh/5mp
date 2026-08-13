@@ -12,20 +12,20 @@ Three quantities exist and only one of them is containment:
     inside   point-in-polygon against data/keystones_with_boundaries.json
              — containment, measured now, by this script.
 
-`tagged` is the number every user-facing "fires in park X" count in srv/ is
-built from, and it is a median 9.8x overstatement. `flagged` is close but not
-free: it is a stored answer from whatever rule was current when the row was
-written, so it drifts from the boundary file the app draws (invariant: a
-provenance label names the instrument, not the code that read it). This script
-is the instrument; it recomputes `inside` from the same polygons the map uses,
-so a boundary edit shows up here as a delta rather than as silence.
+`tagged` is what every user-facing "fires in park X" count in srv/ was built
+from until 2026-08-13, and it is a median 9.8x overstatement; those queries now
+say `AND +in_protected_area = 1` (srv/fire_containment.go). `flagged` was close
+but not free: it was a stored answer from whatever rule was current when the
+row was written, so it drifted from the boundary file the app draws (invariant:
+a provenance label names the instrument, not the code that read it). It has
+since been re-derived, and this script is how you know that is still true.
 
-WHY IT DOES NOT WRITE. The fix for F10 is in the *queries* (add
-`AND in_protected_area = 1`, or select by polygon), not in the data. Re-deriving
-the flag is a separate, larger change with its own risk — see
-docs/agents/fire.md "F10". This script exists so that change can be measured
-before and after, and so a boundary update cannot silently move published
-counts without anyone noticing.
+WHY IT DOES NOT WRITE. The writer is scripts/rederive_fire_containment.py, and
+this is deliberately NOT that code: it re-measures containment from the
+boundary file rather than trusting the re-derivation's own stamp, so a bug in
+the writer shows up here as a disagreement instead of as agreement with itself.
+Run it after any boundary edit — `flagged but NOT inside` should be 0, and a
+non-zero value means the flag is stale and the re-derivation is due.
 
 Usage:
     python3 scripts/audit_fire_containment.py                 # all parks

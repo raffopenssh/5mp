@@ -29,7 +29,7 @@ settlements, patrol tracking. ~17k-line single-page frontend + SQLite (1.8 GB).
 | Writing/running tests, share-link params, `TEST` helper | `docs/agents/testing.md` (+ `docs/TEST_HELPERS.md`) |
 | Data files, API examples, DB stats, Lucide icons | `docs/agents/reference.md` |
 | Mining detection (retired — do not rebuild) | `docs/agents/mining.md` |
-| Settlement surface/population provenance; AOI data-correctness fixes (**open**) | `docs/agents/HANDOVER_AOI_FIXES.md` (+ `docs/AOI_STRUCTURAL_FIXES.md`) |
+| Settlement surface/extent/population provenance, GHSL backfill | `docs/agents/settlements.md` (+ `docs/AOI_STRUCTURAL_FIXES.md`) |
 | Mining reference lists, ACLED + Crisis Tracker, coverage bias, reach strata | `docs/agents/acled.md` |
 
 Other human docs: `docs/API.md`, `docs/DATABASE.md`, `docs/SCRIPTS.md`,
@@ -154,7 +154,13 @@ These apply no matter what you touch. Each cost real time at least once.
    a narrative *prefix* until the nightly reclassify started regenerating
    narratives, laundering 495 detector rows into settlements — including all 79
    in `CMR_Nki`, the park the test list calls "pristine". A flag some other job
-   rewrites is not a flag, it is a comment. See `docs/agents/mining.md`.
+   rewrites is not a flag, it is a comment; and **a stored answer nothing
+   re-checks drifts from the question**. `in_protected_area` was ingest-time
+   point-in-polygon and 5.83% of it disagreed with today's boundary, so eleven
+   fire counts credited `CMR_Nki` with 2,518 fires (0 inside). A derived flag
+   must name its input and be compared to it by a test
+   (`data/fire_containment_state.json`, `docs/agents/fire.md` F10). See
+   `docs/agents/mining.md`.
 
 6. **An AOI is not a park.** `/api/parks/{aoi}/*` 404s by design; use
    `/api/aois/*` (frontend: `apiBase(id)`, `?area=` not `?park=`). Non-owners
@@ -165,7 +171,14 @@ These apply no matter what you touch. Each cost real time at least once.
    *footprints* (Chinko: 27 and 35). Three surfaces counted honestly, disagreed,
    and none said what it counted — which reads as broken data, not as two units.
    `/api/features-in-bbox` names `unit`/`groups`; focus (`?park_focus=`/`?aoi=`)
-   is the gesture that makes the panel, the map and the popup agree.
+   is the gesture that makes the panel, the map and the popup agree. Where two
+   surfaces genuinely count two things they must say **two words**: fire
+   "detections" is 302,900 in a narrative (detections in *groups* near the park)
+   and 132,570 in the stats panel (detections *inside* the boundary), so each
+   now names its basis (`total_fires_basis`). And a series must not join two
+   quantities with one line: the deforestation method changes in 2024 and the
+   satellite fleet triples on 2024-01-01, so both cut the sparkline and caption
+   why (`d.brk`; `docs/agents/fire.md` F11).
 
 8. **Serve a layer whole, or say you truncated.** A truncated answer is
    indistinguishable from a complete one. `ORDER BY … LIMIT n` is a *corner*,
@@ -229,7 +242,7 @@ These apply no matter what you touch. Each cost real time at least once.
     mask *extent* differ by ~24× and must never share a column name, and a
     population is **measured or absent** — never a density constant
     (`srv/settlement_provenance.go`). Two surfaces of one word, again
-    (invariant 7). See `docs/agents/HANDOVER_AOI_FIXES.md`.
+    (invariant 7). See `docs/agents/settlements.md`.
 
 16. Long writers **yield** (batched commits) so SQLite's single writer stays
     available. Before blaming the write lock, check `ps` — a lock wait is `S`,

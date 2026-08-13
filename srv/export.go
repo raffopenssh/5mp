@@ -45,11 +45,13 @@ func (s *Server) HandleAPIExportParks(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Query fire_detections: count per park
+	// Query fire_detections: count per park. Inside the boundary only —
+	// `protected_area_id` alone is a 100 km catchment (srv/fire_containment.go),
+	// and a published CSV is the figure people quote.
 	fireRows, err := s.DB.Query(`
 		SELECT protected_area_id, COUNT(*) as fire_count 
 		FROM fire_detections 
-		WHERE protected_area_id IS NOT NULL AND protected_area_id != ''
+		WHERE protected_area_id IS NOT NULL AND protected_area_id != ''` + fireInsideOnlySQL + `
 		GROUP BY protected_area_id
 	`)
 	if err == nil {

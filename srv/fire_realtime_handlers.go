@@ -931,8 +931,10 @@ func (s *Server) updateParkFireAlerts(parkID string) {
 	now := time.Now()
 	startDate := now.AddDate(0, 0, -28)
 
+	// Only detections inside the boundary can raise a park alert;
+	// protected_area_id alone reaches 100 km out (srv/fire_containment.go).
 	rows, err := s.DB.Query(`SELECT latitude, longitude, acq_date FROM fire_detections
-		WHERE protected_area_id = ? AND acq_date >= ? ORDER BY acq_date`,
+		WHERE protected_area_id = ?`+fireInsideSQL+` AND acq_date >= ? ORDER BY acq_date`,
 		parkID, startDate.Format("2006-01-02"))
 	if err != nil {
 		return

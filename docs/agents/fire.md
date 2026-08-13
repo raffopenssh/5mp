@@ -77,93 +77,128 @@ handle it explicitly or the old rows become immortal:
 
 ---
 
-## `protected_area_id` is a catchment, not a park (F10)
+## `protected_area_id` is a catchment, not a park (F10 — fixed 2026-08-13)
 
-**Every user-facing "fires in park X" count in `srv/` is a fires-within-100-km
-count.** `park_assigner.ASSIGN_MAX_DIST_KM = 100`, so
-`WHERE protected_area_id = ?` selects every detection whose *nearest* park
-boundary is X and is within 100 km. Measured across all 163 parks, 42.9M rows
-(`scripts/audit_fire_containment.py`, 2026-08-13):
+`park_assigner.ASSIGN_MAX_DIST_KM = 100`, so `WHERE protected_area_id = ?`
+selects every detection whose *nearest* park boundary is X and is within
+100 km. Until 2026-08-13 that was the whole predicate behind **every**
+user-facing "fires in park X" count — a median **9.8× overstatement**, and for
+seven rainforest parks a count made entirely of somebody else's savanna.
+`CMR_Nki` is on the test-park list *as the pristine one* and `/stats` credited
+it with 2,518 fires.
+
+Two edits closed it, and they are separable on purpose:
+
+1. **The queries name containment.** Eleven sites now append
+   `srv/fire_containment.go`'s `fireInsideSQL` — `AND +in_protected_area = 1`
+   — to their `protected_area_id = ?` predicate: `park_stats_handlers.go`
+   (stats total, timeline, per-year, fire-log), `export.go` (`fire_count` CSV),
+   `api.go` (`/api/parks/export`), `fire_trend.go`, `narrative_handlers.go`
+   (Go-fallback total, peak month, hotspots, `analyzeFireTrend`'s year join),
+   `fire_narrative_cache.go` (total + peak month), and
+   `fire_realtime_handlers.go` (the 28-day alert window). **The `+` is
+   load-bearing**: without it the planner takes `idx_fire_infraction`
+   `(in_protected_area, acq_date)` and a 0.2 s park lookup becomes an 18 s scan
+   of 8M rows (Kafue: 14.2 s). `tests/db_tests.sh` asserts the plan still names
+   `idx_fire_pa_date` — same family as invariant 3.
+2. **The flag was re-derived.** It was a stored ingest-time answer and 5.83%
+   of it was wrong (433,632 rows from the bbox+0.5° `_find_park` that
+   `ParkAssigner` replaced in `858eb69`). `scripts/rederive_fire_containment.py`
+   recomputed point-in-polygon against `data/keystones_with_boundaries.json`
+   for all 163 parks in 149 s: **469,692 cleared, 30 set**, flagged now
+   7,585,655 = inside exactly. It corrects **both directions** — clearing only
+   the false positives would move every count one way and read as a trend — and
+   commits per park so the writer stays available (invariant 16).
 
 ```
-tagged   protected_area_id = X                    42,092,853
-flagged  ... AND in_protected_area = 1            8,055,317   5.2x smaller
-inside   point-in-polygon, measured now           7,585,655   5.5x smaller
-per-park tagged/inside: median 9.8x, max 24,329x
+                          before        after
+tagged   protected_area_id = X       42,092,853   (unchanged — still a catchment)
+flagged  + in_protected_area = 1      8,055,317    7,585,655
+inside   point-in-polygon                          7,585,655   (identical)
+CMR_Nki /stats "fires"                     2,518            0
+CAF_Chinko                               962,444      132,570
 ```
 
-The median park overstates by **9.8×**, and the tail is not a tail: seven parks
-have detections tagged and **none inside** — `CMR_Nki` (2,518 tagged, 0 inside),
-`COG_Nouabalé-Ndoki`, `CMR_Lobéké`, `CMR_Boumba-Djombi`, `GAB_Monts_Birougou`,
-`GAB_Monts_de_Cristal`, `RWA_Volcans`. These are the rainforest parks; their
-"fire count" is entirely someone else's savanna. `CMR_Nki` is on the test-park
-list *as the pristine one*, and `/api/parks/CMR_Nki/stats` says 2,518 fires.
-The same shape as invariant 5: the park chosen to prove the app reports zero is
-the one whose zero was loudest when it broke.
-
-Re-run the measurement rather than trusting these numbers — they describe one
-boundary file and one ingest history:
+**A derived flag must say what it was derived from.**
+`data/fire_containment_state.json` records the boundary file's SHA-256; a db
+test compares it against the file and fails when a boundary edit makes the flag
+stale, which is the whole point — the old flag drifted for months precisely
+because nothing compared it to anything (invariant 5: a stamp nobody checks is
+a comment). Re-run after any boundary change:
 
 ```bash
-python3 scripts/audit_fire_containment.py --csv /tmp/f10.csv     # ~12 min
-python3 scripts/audit_fire_containment.py --park CAF_Chinko --sample 20000
+python3 scripts/rederive_fire_containment.py --dry-run     # counts, writes nothing
+python3 scripts/rederive_fire_containment.py               # ~150 s, all parks
+python3 scripts/audit_fire_containment.py --park CAF_Chinko   # the independent check
 ```
 
-### The call sites (audited 2026-08-13, none changed)
+`audit_fire_containment.py` is deliberately **not** the same code: it
+re-measures containment instead of trusting the stamp, so a bug in the
+re-derivation shows up as a disagreement rather than as agreement with itself.
 
-All of these count `protected_area_id` alone. Nothing here has regressed —
-these figures have always been the buffer — but each is live and wrong:
+**Still true, and not a bug:** `/fire-narrative`'s `total_fires` (302,900 for
+Chinko) and `/stats`'s (132,570) are **different units** — the first sums
+detections belonging to fire *groups* near or inside the park (the v5 chain,
+`pct_inside` by point-in-polygon), the second counts detections inside the
+boundary. Both now **name their basis**: the narrative carries
+`total_fires_basis`, the popup label reads "Fire detections in groups", and the
+stats panel says "Fire Activity (inside)". Invariant 7 asks two surfaces saying
+one word to say one number; where they genuinely count two things, they must
+say two words.
 
-| Surface | File | Reads as |
-|---|---|---|
-| `/api/parks/{id}/stats` → stats panel "fires" | `park_stats_handlers.go:247` | total fires in the park |
-| ...its fire timeline + per-year series | `:290` | daily/annual fires in the park |
-| `/api/parks/{id}/fire-log` | `:508` | daily fires + FRP in the park |
-| `/api/export/parks?format=csv`, column `fire_count` | `export.go:50` | a published per-park total |
-| `/api/parks/export` (the parks table + report) | `api.go:5324` | per-park fires, date-filtered |
-| `/api/parks/{id}/fire-trend` weekly series | `fire_trend.go:53` | "fires inside park per ISO week" (comment says inside) |
-| fire-narrative `total_fires` (Go fallback path) | `narrative_handlers.go:627, 2835`; `fire_narrative_cache.go:133` | total detections behind the narrative |
-| peak month | `narrative_handlers.go:639, 2844`; `fire_narrative_cache.go:180` | the park's fire season |
-| hotspots (0.1° buckets) | `narrative_handlers.go:2305` | "geographic concentrations" up to 100 km outside |
-| year join in `analyzeFireTrend` | `narrative_handlers.go:2394` | fires per year |
-| `updateParkFireAlerts` 28-day window | `fire_realtime_handlers.go:935` | which fires can raise an alert |
-
-Not affected, and worth knowing why: the **v5 trajectory chain** counts fires
-per *group* and computes `pct_inside` / `dist_to_park_km` by point-in-polygon
-(`rebuild_fire_trajectories_v5.py:809`), and the narrative/realtime readers gate
-on `dist_to_park_km <= 20`. So `/fire-narrative`'s `total_fires` from the **v5
-cache** is a sum over groups near or inside the park (Chinko: 302,900) while
-`/stats` says 962,444 — one word, two numbers, 3.2× apart. Two surfaces saying
-one word must say one number (invariant 7). AOIs are already right: they select
-by polygon through `aoi_fires` and never appear in this column.
-
-### `in_protected_area` is nearly right, and 5.83% stale
-
-It is not a buffer — it is `dist_km == 0.0` recorded **at ingest time**, so it
-is a stored answer from whatever rule ran that night. 469,692 flagged rows
-(5.83%) are not inside today's polygon. Two distinct causes:
-
-* **433,632 rows from the Feb–Jul 2026 batch** (`id < 8e6`, dates 2026-02-26 →
-  2026-07-03, 84.5% of that batch's flags wrong): written by the pre-`ParkAssigner`
-  `_find_park`, a **bbox + 0.5°** first-match (removed in `858eb69`, 2026-07-05).
-  Verified: of a 30k sample of those flagged rows, 100% fall inside
-  `bbox ± 0.5°` and only 15% inside the polygon.
-* **~36k rows spread thinly across 2018–2026** — genuine
-  polygon-vs-`ParkAssigner` disagreement (boundary edits, shapely vs the
-  assigner's prepared geometry, edge cases).
-
-So `AND in_protected_area = 1` is the cheap fix and is ~94% accurate; a
-re-derivation of the flag would take it to 100% but is a separate change with
-its own risk (42.9M-row `UPDATE`, and every count in the app moves at once).
-Either way the audit script is the before/after instrument.
-
-**Performance trap when you add the clause.** `idx_fire_infraction`
-is `(in_protected_area, acq_date)` and the planner prefers it — turning a 0.2 s
-lookup into an 18 s scan of 8M rows (Kafue: 14.2 s). Force the park index:
-`AND +in_protected_area = 1` (0.96 s) or `INDEXED BY idx_fire_pa_date` (0.61 s).
-Same family as invariant 3.
+Two dead things were removed while auditing the call sites, both of which would
+have re-introduced the buffer if revived: a 56-line `park_stats` CTE in
+`HandleAPIParksExport` assigned to `query` and discarded with
+`_ = query // for future optimization` (it joined `fire_detections` on a
+`park_id` column that table does not have, so it had never run), and
+`PrecomputeRecentFireNarratives`, an uncalled **second writer** to
+`fire_narrative_cache` with the same phantom column (invariant 10).
 
 ---
+
+## The 2024 step is the satellite fleet, not the fire (F11 — fixed 2026-08-13)
+
+One VIIRS sensor flies before 2024-01 (`N`, Suomi-NPP); three fly after (`N`,
+`N20`, `N21`). Every raw detection series therefore has a ~3× step on
+2024-01-01 that is **instrument, not landscape** — CAF_Chinko goes 61,509
+detections in 2023 to 203,223 in 2024 without an extra hectare burning. Same
+failure as F8's Hansen→GFW switch, so it reuses F8's mechanism: the sparkline's
+`d.brk` **cuts the line** and captions why, rather than drawing a rise.
+
+The fleet is **measured, never typed** (invariant 2): "three sensors since
+2024" describes an ingest history that grows nightly and would be wrong the day
+a sensor is added or a differently-sourced CSV is imported.
+
+```
+db/migrations/056-fire-sensor-epochs.sql   fire_sensor_epochs(month, sensors,
+                                           sensor_count, detections, computed_at)
+scripts/build_sensor_epochs.py             the writer — full scan, ~90 s, cron 04:30 on the 1st
+srv/fire_sensor_epochs.go                  hourly-cached reader, sensorsOn()
+/api/parks/{id}/fire-trend                 each week carries `sensors`/`sensor_count`
+                                           + `sensor_epochs_measured`
+```
+
+Monthly and **global** on purpose: per-park-per-week distinct-satellite counts
+are a sampling artefact — a quiet week in a small park shows one sensor because
+only one fire burned. `detections` travels with each month so a reader can tell
+a real single-sensor month from a thin one.
+
+Three consequences in the frontend, each a separate lie avoided:
+
+* **An unmeasured fleet is not a constant one.** When `fire_sensor_epochs` is
+  empty the API says `sensor_epochs_measured: false`, no breaks are drawn, and
+  the caption says the fleet is unmeasured — an unbroken line silently asserts
+  continuity (invariant 12).
+* **Do not compare across fleets.** The sparkline's "prior years average"
+  reference now drops prior years flown by a *different* fleet. Comparing a
+  2024 week against one-satellite years made every park read as a fire
+  emergency at the cutover — the same rule F9 applies to `area_method`.
+* **A null reference is a gap, not a zero.** `v3 || 0` drew the reference line
+  down to the axis wherever it was unmeasured, which says "no fire in prior
+  years"; `gapLine` now breaks the path instead.
+
+Only a **known, changed** fleet breaks the line: a week with no epoch row must
+not manufacture a break out of ignorance (the same guard F8's `methodKey` uses).
 
 ## Fire pipeline health & consistency
 

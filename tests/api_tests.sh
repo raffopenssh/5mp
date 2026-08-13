@@ -104,6 +104,25 @@ test_api "fire_narrative" "/api/parks/CAF_Chinko/fire-narrative" "200" ".park_id
 test_api "fire_realtime_7d" "/api/parks/CAF_Chinko/fire-realtime" "200" "true"
 test_api "fire_realtime_28d" "/api/parks/COD_Virunga/fire-realtime" "200" "true"
 
+# F10 — protected_area_id is a 100 km catchment, not the park. CMR_Nki is on the
+# test-park list AS THE PRISTINE ONE and /stats credited it with 2,518 fires,
+# every one of them outside the boundary (docs/agents/fire.md "F10"). The
+# assertion is directional rather than a literal: the count moves with each
+# night's ingest, but a rainforest park cannot plausibly out-burn a savanna one.
+test_api "fire_stats_nki_is_not_a_savanna" "/api/parks/CMR_Nki/stats" "200" \
+    "(.fire.total_fires // 0) < 5000"
+test_api "fire_stats_chinko_still_burns" "/api/parks/CAF_Chinko/stats" "200" \
+    "(.fire.total_fires // 0) > 10000"
+
+# F11 — the weekly series must carry the satellite fleet, so the client can cut
+# the line where three sensors replace one instead of drawing a 3x rise. The
+# flag distinguishes "fleet never changed" from "nobody measured": if
+# fire_sensor_epochs is empty this is false and the chart says so.
+test_api "fire_trend_names_its_fleet" "/api/parks/CAF_Chinko/fire-trend" "200" \
+    ".sensor_epochs_measured == true and ([.weeks[] | select(.sensors != null)] | length) > 100"
+test_api "fire_trend_fleet_changes_at_2024" "/api/parks/CAF_Chinko/fire-trend" "200" \
+    "([.weeks[] | select(.week >= \"2023-12-01\" and .week < \"2024-01-01\") | .sensor_count] | max) < ([.weeks[] | select(.week >= \"2024-02-01\" and .week < \"2024-04-01\") | .sensor_count] | min)"
+
 yellow "\n=== Features API ==="
 test_api "features_fire_trajectory" "/api/parks/CAF_Chinko/features" "200" ".type == \"FeatureCollection\""
 test_api "features_chinko_settlement" "/api/parks/CAF_Chinko/features" "200" ".type == \"FeatureCollection\""
