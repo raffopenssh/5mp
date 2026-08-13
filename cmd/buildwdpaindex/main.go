@@ -12,10 +12,15 @@ import (
 )
 
 const (
-	apiURL = "https://api.protectedplanet.net/v3/protected_areas/search"
-	apiKey = "dea58ea0389007e386776c4f583f4425"
+	apiURL  = "https://api.protectedplanet.net/v3/protected_areas/search"
 	perPage = 50 // API max is 50
 )
+
+// apiKey comes from the environment (PROTECTEDPLANET_TOKEN in secrets.env), not
+// from a literal here. The value that used to sit on this line is in this
+// repository's history and must be considered public — see the note in
+// srv/protectedplanet/client.go.
+func apiKey() string { return os.Getenv("PROTECTEDPLANET_TOKEN") }
 
 // African countries ISO3 codes
 var africanCountries = []string{
@@ -63,7 +68,7 @@ func fetchCountry(client *http.Client, country string, seen map[int]bool) ([]WDP
 
 	for {
 		url := fmt.Sprintf("%s?token=%s&country=%s&per_page=%d&page=%d",
-			apiURL, apiKey, country, perPage, page)
+			apiURL, apiKey(), country, perPage, page)
 
 		resp, err := client.Get(url)
 		if err != nil {
@@ -131,6 +136,15 @@ func fetchCountry(client *http.Client, country string, seen map[int]bool) ([]WDP
 }
 
 func main() {
+	// ABSENT IS NOT REFUSED. Without the token every request returns HTTP 401
+	// and the loop below logs "Error: HTTP 401" per country, then writes an
+	// index built from nothing — a file that looks like a result (invariant 1).
+	if apiKey() == "" {
+		log.Fatal("PROTECTEDPLANET_TOKEN is unset. Run:\n" +
+			"  set -a; source secrets.env; set +a\n" +
+			"then re-run. (See secrets.env.example; the token used to be " +
+			"hardcoded here and is in the repo history — treat it as public.)")
+	}
 	client := &http.Client{Timeout: 60 * time.Second}
 
 	var allPAs []WDPAIndexEntry

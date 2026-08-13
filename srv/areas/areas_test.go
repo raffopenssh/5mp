@@ -249,9 +249,29 @@ func TestLoadKeystones(t *testing.T) {
 		t.Fatalf("LoadKeystones failed: %v", err)
 	}
 
-	// Should have 162 keystones
-	if len(store.Areas) != 162 {
-		t.Errorf("expected 162 keystones, got %d", len(store.Areas))
+	// THE COUNT IS DERIVED FROM THE FILE, NOT TYPED.
+	//
+	// This assertion said 162 and the file holds 163 (DZA_Djurdjura was
+	// onboarded and nobody edited the test), so it had been failing — which is
+	// worse than useless: a red test that everyone knows is red stops being
+	// read, and the next real regression lands under it. A number describing a
+	// variable input must be derived (cross-cutting invariant 2). What is worth
+	// asserting is that the loader lost nothing between the file and the store.
+	blob, err := os.ReadFile("../../data/keystones_with_boundaries.json")
+	if err != nil {
+		t.Fatalf("cannot read the keystones file the loader just read: %v", err)
+	}
+	var raw []map[string]any
+	if err := json.Unmarshal(blob, &raw); err != nil {
+		t.Fatalf("keystones file unreadable: %v", err)
+	}
+	if len(raw) == 0 {
+		t.Fatal("the keystones file holds no areas; an empty store would " +
+			"otherwise pass every check below")
+	}
+	if len(store.Areas) != len(raw) {
+		t.Errorf("the file holds %d areas, the store %d — the loader dropped %d",
+			len(raw), len(store.Areas), len(raw)-len(store.Areas))
 	}
 
 	// Check first area has expected fields

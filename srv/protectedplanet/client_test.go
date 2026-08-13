@@ -4,7 +4,27 @@ import (
 	"testing"
 )
 
+// requireToken skips the tests that call the live API when no credential is
+// present.
+//
+// These three tests hit api.protectedplanet.net, so they were only ever passing
+// because the token was a literal in the package. With the token in secrets.env
+// a fresh clone has none, and a FAILURE there would say "the Protected Planet
+// client is broken" when the truth is "this machine has no key" — the missing
+// input / wrong answer distinction (invariant 1), pointed at a test. Skip
+// names the variable, so a run that quietly tested nothing still says why.
+//
+// Run them with:  set -a; source secrets.env; set +a; go test ./srv/protectedplanet/
+func requireToken(t *testing.T) {
+	t.Helper()
+	if apiKey() == "" {
+		t.Skip("PROTECTEDPLANET_TOKEN unset — this test calls the live API; " +
+			"`set -a; source secrets.env; set +a` to run it")
+	}
+}
+
 func TestSearchByName(t *testing.T) {
+	requireToken(t)
 	client := NewClient()
 
 	// Search for Serengeti in Tanzania (TZA)
@@ -42,6 +62,7 @@ func TestSearchByName(t *testing.T) {
 }
 
 func TestGetByWDPAID(t *testing.T) {
+	requireToken(t)
 	client := NewClient()
 
 	// Get Serengeti National Park by WDPA ID
@@ -70,6 +91,7 @@ func TestGetByWDPAID(t *testing.T) {
 }
 
 func TestGetGeometry(t *testing.T) {
+	requireToken(t)
 	client := NewClient()
 
 	// Get Serengeti geometry
