@@ -100,3 +100,18 @@ var geoAffinityScores = []geoAffinityScore{
 	{Commodity: "uranium", Kind: "junction", MinWeight: 2, Capture: 0.000000, Baseline: 0.021000, Lift: 0.000000, Control: 0.000000, N: 8, Scope: "Tanzania, the survey's 2015 occurrence register", Caveat: "The Geological Survey of Tanzania's own register, from the same Minerogenic Map programme as the units it scores - a unit boundary may have been drawn to enclose a known deposit, so this is not arm's length the way the CAR is.", Verdict: "no better than area", ScopeSheet: "tanzania", EvidenceID: "tanzania/gst", StratumOf: "", Stratum: ""},
 	{Commodity: "uranium", Kind: "junction", MinWeight: 3, Capture: 0.000000, Baseline: 0.011667, Lift: 0.000000, Control: 0.000000, N: 8, Scope: "Tanzania, the survey's 2015 occurrence register", Caveat: "The Geological Survey of Tanzania's own register, from the same Minerogenic Map programme as the units it scores - a unit boundary may have been drawn to enclose a known deposit, so this is not arm's length the way the CAR is.", Verdict: "no better than area", ScopeSheet: "tanzania", EvidenceID: "tanzania/gst", StratumOf: "", Stratum: ""},
 }
+
+// geoStructuralSkill: measured lifts of the continental structural
+// layers (eval_affinity.py --continental), keyed layer -> commodity.
+// Measured against IPIS DRC visits inside the visits' own convex hull;
+// no sheet of ours covers that ground, so a viewport over our sheets
+// must say so rather than borrow the number.
+var geoStructuralSkill = map[string]map[string]geoStructuralLift{
+	"active_faults": {"cassiterite": {Near: 0.349746, MedianKM: 32.9, Lift: 2.534393, N: 1970}, "coltan": {Near: 0.376147, MedianKM: 41.3, Lift: 2.725701, N: 545}, "gold": {Near: 0.226710, MedianKM: 63.7, Lift: 1.642828, N: 4283}},
+	"craton_edge":   {"cassiterite": {Near: 0.158883, MedianKM: 92.8, Lift: 1.815809, N: 1970}, "coltan": {Near: 0.034862, MedianKM: 94.4, Lift: 0.398427, N: 545}, "gold": {Near: 0.255662, MedianKM: 80.5, Lift: 2.921851, N: 4283}},
+}
+
+// geoStructuralSkillScope: the truth set those lifts were measured
+// against, with the counts the eval reported (invariant 2: derived,
+// never typed).
+const geoStructuralSkillScope = "6,798 IPIS mine visits in eastern DR Congo, random baseline 2,000 points in the visits' own convex hull, within 25 km"

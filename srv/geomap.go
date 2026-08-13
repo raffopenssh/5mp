@@ -213,6 +213,11 @@ func (s *Server) HandleAPIGeoMap(w http.ResponseWriter, r *http.Request) {
 	// being omitted: a missing key reads as "nothing was checked", which is a
 	// different and much worse claim than "this server does not have the file".
 	res["anchors"] = geoAnchorSummary()
+	// The continental structural linework (faults, craton margins) is a
+	// property of the catalogue, not of any sheet: the lines cross all three
+	// and cover ground none of them maps. Each entry carries its measured
+	// skill or none (the UI's word for none is "unmeasured").
+	res["structural"] = geoStructuralSummary()
 	if built := geoMapGPKGSheets(); len(built) > 0 {
 		res["geopackage"] = "/api/geomap/geopackage"
 		res["geopackage_sheets"] = built

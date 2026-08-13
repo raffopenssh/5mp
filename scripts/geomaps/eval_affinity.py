@@ -776,7 +776,10 @@ def continental():
             rand.append(p)
     named = [("gold", sites["Or"]), ("cassiterite", sites["Cassit\u00e9rite"]),
              ("coltan", sites["Coltan"]), ("random", rand)]
-    out = {"hull_deg2": hull.area, "sites": {n: len(v) for n, v in named}}
+    out = {"hull_deg2": hull.area, "sites": {n: len(v) for n, v in named},
+           # The proximity threshold, recorded so a consumer (gen_scores_go.py)
+           # derives it instead of typing it (invariant 2).
+           "near_km": 25.0}
     print("\nCONTINENTAL CROSS-CHECK - JRC AKP layers vs IPIS DRC visits")
     for n, v in named:
         print(f"  {n:12} {len(v):5}")

@@ -126,6 +126,48 @@ def main():
               gostr(r["stratum_of"]), gostr(r["stratum"])))
     w("}")
     w("")
+
+    # THE CONTINENTAL STRUCTURAL LAYERS (WP2). Faults and craton edges are
+    # served as ungraded linework (srv/geomap_structural.go); their measured
+    # skill lives HERE so the UI can only ever quote a number the eval
+    # printed. Absent section => empty table => every surface says
+    # "unmeasured", which is the honest default, not an error.
+    cont = d.get("continental") or {}
+    prox = cont.get("proximity") or {}
+    sites = cont.get("sites") or {}
+    w("// geoStructuralSkill: measured lifts of the continental structural")
+    w("// layers (eval_affinity.py --continental), keyed layer -> commodity.")
+    w("// Measured against IPIS DRC visits inside the visits' own convex hull;")
+    w("// no sheet of ours covers that ground, so a viewport over our sheets")
+    w("// must say so rather than borrow the number.")
+    w("var geoStructuralSkill = map[string]map[string]geoStructuralLift{")
+    for layer, per in sorted(prox.items()):
+        inner = []
+        for com, m in sorted(per.items()):
+            lift = m.get("lift")
+            if lift is None or not math.isfinite(lift):
+                continue
+            inner.append(
+                f"{gostr(com)}: {{Near: {m['near']:.6f}, "
+                f"MedianKM: {m['median_km']:.1f}, Lift: {lift:.6f}, "
+                f"N: {sites.get(com, 0)}}}")
+        if inner:
+            w(f"\t{gostr(layer)}: {{" + ", ".join(inner) + "},")
+    w("}")
+    w("")
+    w("// geoStructuralSkillScope: the truth set those lifts were measured")
+    w("// against, with the counts the eval reported (invariant 2: derived,")
+    w("// never typed).")
+    if prox:
+        n_sites = sum(n for c, n in sites.items() if c != "random")
+        near = cont.get("near_km", 25)
+        scope = (f"{n_sites:,} IPIS mine visits in eastern DR Congo, "
+                 f"random baseline {sites.get('random', 0):,} points "
+                 f"in the visits' own convex hull, within {near:g} km")
+        w(f"const geoStructuralSkillScope = {gostr(scope)}")
+    else:
+        w('const geoStructuralSkillScope = ""')
+    w("")
     open(OUT, "w").write("\n".join(L))
     print(f"wrote {OUT}: {len(rows)} measurements from {len(truths)} truth sets")
 

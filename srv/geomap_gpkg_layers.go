@@ -406,3 +406,105 @@ func gpkgInt(n int) interface{} {
 	}
 	return n
 }
+
+// addGeoStructuralLayer writes ONE continental structural layer (faults or
+// craton margins) as its own table. Two tables rather than one with a `layer`
+// column: the two carry different attributes (a fault has a type, a craton
+// margin has a name), and a union table would be half NULLs with one legend.
+//
+// Filtered only by the reader's SWITCH, never by their commodity or viewport:
+// like the anchors, a continental context line clipped to a selection would
+// stop exactly where it becomes informative. sel != nil and the layer not in
+// sel.Structural means the reader had it off, and off means off.
+//
+// The description carries the artefact's own notice and citation (R7): the
+// craton file's notice is the sentence explaining why there is no craton
+// FILL, and a QGIS reader ten months from now needs it more than we do.
+func addGeoStructuralLayer(w *gpkgWriter, id string) (*gpkgLayer, string, error) {
+	spec := geoStructuralLayers[id]
+	sl := loadGeoStructural()[id]
+	if sl == nil || sl.err != nil {
+		return nil, "", nil // not installed on this server; the caller names it
+	}
+	blob, err := os.ReadFile(geoStructuralPath(spec.File))
+	if err != nil {
+		return nil, "", nil
+	}
+	var doc struct {
+		Features []struct {
+			Properties map[string]string `json:"properties"`
+			Geometry   json.RawMessage   `json:"geometry"`
+		} `json:"features"`
+	}
+	if err := json.Unmarshal(blob, &doc); err != nil {
+		return nil, "", fmt.Errorf("%s: %w", spec.File, err)
+	}
+	desc := spec.Label + ". " + sl.Notice + " Source: " + sl.Source +
+		" (accessed " + sl.Accessed + "). " + sl.Citation
+	if s, ok := geoStructuralSkill[spec.SkillKey]; ok {
+		parts := make([]string, 0, len(s))
+		for _, c := range []string{"gold", "cassiterite", "coltan"} {
+			if m, ok := s[c]; ok {
+				parts = append(parts, fmt.Sprintf("%s %.1fx", c, m.Lift))
+			}
+		}
+		if len(parts) > 0 {
+			desc += " Measured proximity lift (" + geoStructuralSkillScope + "): " +
+				strings.Join(parts, ", ") + "."
+		}
+	} else {
+		desc += " Skill: unmeasured."
+	}
+	l, err := w.AddLayer("structural_"+id, "MULTILINESTRING", desc, []gpkgCol{
+		{"name", "TEXT"},      // craton name; NULL on faults
+		{"fault_type", "TEXT"}, // fault kinematics; NULL on craton margins
+		{"reference", "TEXT"},
+	})
+	if err != nil {
+		return nil, "", err
+	}
+	for _, f := range doc.Features {
+		p := f.Properties
+		ref := p["reference"]
+		if ref == "" {
+			ref = p["source"]
+		}
+		l.Add(string(f.Geometry), gpkgStr(p["name"]), gpkgStr(p["type"]), gpkgStr(ref))
+	}
+	// Invariant 1, same as contacts: the file loaded, so zero written rows is
+	// a conversion failure and must not ship as an empty layer.
+	if l.Count() == 0 {
+		return nil, "", fmt.Errorf("no %s geometry could be written", id)
+	}
+	return l, styleGeoStructural(id), nil
+}
+
+// styleGeoStructural draws the same ink the web map uses (see geomap.js
+// paintStructural): fault red-brown short dash, craton margin violet long
+// dash. Deliberately nowhere near the contact amber ramp — these lines are
+// ungraded context, and graded ink would claim a grade nobody computed.
+func styleGeoStructural(id string) string {
+	if id == "craton_edges" {
+		return qmlSingle(qmlSymbol("line", "0",
+			qmlOpt("line_color", "124,58,237,255"),
+			qmlOpt("line_width", "0.6"),
+			qmlOpt("line_width_unit", "MM"),
+			qmlOpt("line_style", "dash"),
+			qmlOpt("use_custom_dash", "1"),
+			qmlOpt("customdash", "6;3"),
+			qmlOpt("customdash_unit", "MM"),
+			qmlOpt("capstyle", "flat"),
+			qmlOpt("joinstyle", "round")))
+	}
+	return qmlSingle(qmlSymbol("line", "0",
+		qmlOpt("line_color", "185,60,40,255"),
+		qmlOpt("line_width", "0.4"),
+		qmlOpt("line_width_unit", "MM"),
+		qmlOpt("line_style", "dash"),
+		qmlOpt("use_custom_dash", "1"),
+		qmlOpt("customdash", "2;1.5"),
+		qmlOpt("customdash_unit", "MM"),
+		qmlOpt("capstyle", "flat"),
+		qmlOpt("joinstyle", "round")))
+}
+

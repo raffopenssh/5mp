@@ -3781,6 +3781,14 @@
                     GeoMap.setContacts(false);
                 }
             }
+            // The structural context follows the same tab with the same
+            // contract (GeoMap.setStructuralAuto keeps its own autoStructural
+            // flag): the junction view is about SETTINGS, and a fault or a
+            // craton margin is the continental-scale version of the same
+            // question the contacts answer at sheet scale.
+            if (typeof GeoMap !== 'undefined' && GeoMap.setStructuralAuto) {
+                GeoMap.setStructuralAuto(want === 'junction');
+            }
             if (typeof renderGeoMapPanel === 'function') renderGeoMapPanel();
             refreshWhenDrawn();
         },
