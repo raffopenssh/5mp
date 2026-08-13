@@ -1,0 +1,723 @@
+{
+ "generated_by": "scripts/crisistracker_mines.py",
+ "source": "Crisis Tracker, a project of Invisible Children. https://crisistracker.org (public map records)",
+ "notice": "Incident reports are Crisis Tracker's. The mine/commodity labels, the clustering into sites and any downstream geological score are OURS, produced by a language model over the public display notes, and must not be attributed to Crisis Tracker or Invisible Children. Commodity provenance is preserved: 'commodities' are materials the note says the site yields; materials that appear only as looted goods are held separately in 'commodities_looted' and are not evidence about the rock at that coordinate.",
+ "unit": "community (settlement) whose Crisis Tracker profile carries presence_of_artisanal_mining. A mining TOWN is not a mine: the coordinate is the settlement centre and the workings are around it. Use as a coverage/context layer, never as a mine occurrence.",
+ "count": 49,
+ "by_country": {
+  "CAR": 29,
+  "DRC": 20
+ },
+ "communities": [
+  {
+   "id": 1011,
+   "name": "Aigbando",
+   "region": "Haute-Kotto",
+   "country": "CAR",
+   "latitude": 6.87597,
+   "longitude": 21.7488,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_transhumance_pastoralism",
+    "presence_of_artisanal_mining",
+    "presence_of_regional_markets"
+   ],
+   "iso3": "CAF"
+  },
+  {
+   "id": 504,
+   "name": "Akosso",
+   "region": "Haute-Kotto",
+   "country": "CAR",
+   "latitude": 8.2118,
+   "longitude": 22.4339,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_artisanal_mining"
+   ],
+   "iso3": "CAF"
+  },
+  {
+   "id": 309,
+   "name": "Amadi",
+   "region": "Bas Uele",
+   "country": "DRC",
+   "latitude": 3.63,
+   "longitude": 26.766,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_transhumance_pastoralism",
+    "presence_of_artisanal_mining"
+   ],
+   "iso3": "COD"
+  },
+  {
+   "id": 451,
+   "name": "Ammoungombi",
+   "region": "Mbomou",
+   "country": "CAR",
+   "latitude": 5.646,
+   "longitude": 23.1604,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_artisanal_mining"
+   ],
+   "iso3": "CAF"
+  },
+  {
+   "id": 332,
+   "name": "Awe (Near Dungu)",
+   "region": "Haut Uele",
+   "country": "DRC",
+   "latitude": 3.5856,
+   "longitude": 29.0225,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_artisanal_mining"
+   ],
+   "iso3": "COD"
+  },
+  {
+   "id": 19,
+   "name": "Aza (CAR)",
+   "region": "Haute-Kotto",
+   "country": "CAR",
+   "latitude": 6.766957,
+   "longitude": 22.34047,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_artisanal_mining",
+    "presence_of_intercommunal_violence"
+   ],
+   "iso3": "CAF"
+  },
+  {
+   "id": 799,
+   "name": "Bakpolo",
+   "region": "Bas Uele",
+   "country": "DRC",
+   "latitude": 4.634303,
+   "longitude": 24.064953,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_transhumance_pastoralism",
+    "presence_of_artisanal_mining",
+    "bordering_active_conservation_area",
+    "presence_of_wildlife_trafficking"
+   ],
+   "iso3": "COD"
+  },
+  {
+   "id": 66,
+   "name": "Banal\u00e9",
+   "region": "Mbomou",
+   "country": "CAR",
+   "latitude": 6.1772,
+   "longitude": 23.3403,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_artisanal_mining"
+   ],
+   "iso3": "CAF"
+  },
+  {
+   "id": 622,
+   "name": "Bani",
+   "region": "Haute-Kotto",
+   "country": "CAR",
+   "latitude": 7.1271,
+   "longitude": 22.8268,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_artisanal_mining"
+   ],
+   "iso3": "CAF"
+  },
+  {
+   "id": 867,
+   "name": "Baye",
+   "region": "Bas Uele",
+   "country": "DRC",
+   "latitude": 4.4078,
+   "longitude": 23.65994,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_artisanal_mining",
+    "presence_of_intercommunal_violence"
+   ],
+   "iso3": "COD"
+  },
+  {
+   "id": 974,
+   "name": "Bika",
+   "region": "Bas Uele",
+   "country": "DRC",
+   "latitude": 3.96765,
+   "longitude": 24.39162,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_transhumance_pastoralism",
+    "presence_of_artisanal_mining",
+    "bordering_active_conservation_area"
+   ],
+   "iso3": "COD"
+  },
+  {
+   "id": 760,
+   "name": "Bria",
+   "region": "Haute-Kotto",
+   "country": "CAR",
+   "latitude": 6.5388,
+   "longitude": 21.9882,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_transhumance_pastoralism",
+    "presence_of_artisanal_mining",
+    "bordering_active_conservation_area",
+    "presence_of_intercommunal_violence"
+   ],
+   "iso3": "CAF"
+  },
+  {
+   "id": 187,
+   "name": "Buye (Bas Uele)",
+   "region": "Bas Uele",
+   "country": "DRC",
+   "latitude": 3.9362,
+   "longitude": 27.0319,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_transhumance_pastoralism",
+    "presence_of_artisanal_mining"
+   ],
+   "iso3": "COD"
+  },
+  {
+   "id": 820,
+   "name": "CAWA Hunting Grounds",
+   "region": "Mbomou",
+   "country": "CAR",
+   "latitude": 5.984,
+   "longitude": 24.206,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_artisanal_mining"
+   ],
+   "iso3": "CAF"
+  },
+  {
+   "id": 658,
+   "name": "Dembia",
+   "region": "Mbomou",
+   "country": "CAR",
+   "latitude": 5.1106,
+   "longitude": 24.4679,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_artisanal_mining"
+   ],
+   "iso3": "CAF"
+  },
+  {
+   "id": 975,
+   "name": "Dengu",
+   "region": "Bas Uele",
+   "country": "DRC",
+   "latitude": 4.458294,
+   "longitude": 24.009622,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_transhumance_pastoralism",
+    "presence_of_artisanal_mining",
+    "bordering_active_conservation_area"
+   ],
+   "iso3": "COD"
+  },
+  {
+   "id": 692,
+   "name": "Derbissaka",
+   "region": "Mbomou",
+   "country": "CAR",
+   "latitude": 5.7789,
+   "longitude": 24.8519,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_artisanal_mining",
+    "bordering_active_conservation_area"
+   ],
+   "iso3": "CAF"
+  },
+  {
+   "id": 976,
+   "name": "Duranga",
+   "region": "Nord-Ubangi",
+   "country": "DRC",
+   "latitude": 3.981184,
+   "longitude": 22.565593,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_transhumance_pastoralism",
+    "presence_of_artisanal_mining",
+    "presence_of_regional_markets",
+    "presence_of_intercommunal_violence"
+   ],
+   "iso3": "COD"
+  },
+  {
+   "id": 663,
+   "name": "Fode",
+   "region": "Mbomou",
+   "country": "CAR",
+   "latitude": 5.4827,
+   "longitude": 23.3017,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_artisanal_mining",
+    "bordering_active_conservation_area"
+   ],
+   "iso3": "CAF"
+  },
+  {
+   "id": 305,
+   "name": "Gangala na Bodio",
+   "region": "Haut Uele",
+   "country": "DRC",
+   "latitude": 3.6797,
+   "longitude": 29.1357,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_artisanal_mining",
+    "bordering_active_conservation_area",
+    "presence_of_intercommunal_violence"
+   ],
+   "iso3": "COD"
+  },
+  {
+   "id": 977,
+   "name": "Gbiavo",
+   "region": "Bas Uele",
+   "country": "DRC",
+   "latitude": 4.530442,
+   "longitude": 23.916719,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_transhumance_pastoralism",
+    "presence_of_artisanal_mining",
+    "border_crossing_point",
+    "bordering_active_conservation_area",
+    "presence_of_intercommunal_violence"
+   ],
+   "iso3": "COD"
+  },
+  {
+   "id": 887,
+   "name": "Kono",
+   "region": "Mbomou",
+   "country": "CAR",
+   "latitude": 6.1402,
+   "longitude": 23.093,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_artisanal_mining",
+    "bordering_active_conservation_area"
+   ],
+   "iso3": "CAF"
+  },
+  {
+   "id": 933,
+   "name": "Kpete (DRC)",
+   "region": "Bas Uele",
+   "country": "DRC",
+   "latitude": 4.041636,
+   "longitude": 23.84639,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_transhumance_pastoralism",
+    "presence_of_artisanal_mining",
+    "border_crossing_point",
+    "bordering_active_conservation_area",
+    "presence_of_wildlife_trafficking"
+   ],
+   "iso3": "COD"
+  },
+  {
+   "id": 940,
+   "name": "Kpokpo (CAR)",
+   "region": "Haute-Kotto",
+   "country": "CAR",
+   "latitude": 6.41951,
+   "longitude": 22.32455,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_artisanal_mining"
+   ],
+   "iso3": "CAF"
+  },
+  {
+   "id": 935,
+   "name": "Lengo (near Yalinga)",
+   "region": "Haute-Kotto",
+   "country": "CAR",
+   "latitude": 6.920942,
+   "longitude": 23.170522,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_artisanal_mining"
+   ],
+   "iso3": "CAF"
+  },
+  {
+   "id": 981,
+   "name": "Lisala",
+   "region": "Bas Uele",
+   "country": "DRC",
+   "latitude": 3.557794,
+   "longitude": 25.382547,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_transhumance_pastoralism",
+    "presence_of_artisanal_mining",
+    "bordering_active_conservation_area"
+   ],
+   "iso3": "COD"
+  },
+  {
+   "id": 982,
+   "name": "Lobi",
+   "region": "Bas Uele",
+   "country": "DRC",
+   "latitude": 4.159033,
+   "longitude": 23.09295,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_artisanal_mining",
+    "bordering_active_conservation_area",
+    "presence_of_wildlife_trafficking",
+    "presence_of_intercommunal_violence"
+   ],
+   "iso3": "COD"
+  },
+  {
+   "id": 68,
+   "name": "Malacha",
+   "region": "Haute-Kotto",
+   "country": "CAR",
+   "latitude": 6.987691,
+   "longitude": 22.535794,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_artisanal_mining"
+   ],
+   "iso3": "CAF"
+  },
+  {
+   "id": 409,
+   "name": "Monga",
+   "region": "Bas Uele",
+   "country": "DRC",
+   "latitude": 4.197951,
+   "longitude": 22.810836,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_transhumance_pastoralism",
+    "presence_of_artisanal_mining",
+    "bordering_active_conservation_area",
+    "presence_of_wildlife_trafficking"
+   ],
+   "iso3": "COD"
+  },
+  {
+   "id": 443,
+   "name": "Mouka",
+   "region": "Haute-Kotto",
+   "country": "CAR",
+   "latitude": 7.28949,
+   "longitude": 21.88543,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_transhumance_pastoralism",
+    "presence_of_artisanal_mining",
+    "border_crossing_point",
+    "bordering_active_conservation_area",
+    "presence_of_intercommunal_violence"
+   ],
+   "iso3": "CAF"
+  },
+  {
+   "id": 959,
+   "name": "Nambala - Bondo",
+   "region": "Bas Uele",
+   "country": "DRC",
+   "latitude": 4.3961,
+   "longitude": 25.532855,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_artisanal_mining",
+    "bordering_active_conservation_area"
+   ],
+   "iso3": "COD"
+  },
+  {
+   "id": 990,
+   "name": "Nambia (Bas-Uele)",
+   "region": "Bas Uele",
+   "country": "DRC",
+   "latitude": 4.87406,
+   "longitude": 25.17934,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_transhumance_pastoralism",
+    "presence_of_artisanal_mining",
+    "bordering_active_conservation_area",
+    "presence_of_intercommunal_violence"
+   ],
+   "iso3": "COD"
+  },
+  {
+   "id": 926,
+   "name": "Ndje",
+   "region": "Haute-Kotto",
+   "country": "CAR",
+   "latitude": 6.740847,
+   "longitude": 22.380023,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_artisanal_mining"
+   ],
+   "iso3": "CAF"
+  },
+  {
+   "id": 184,
+   "name": "Nzako (Near Yalinga)",
+   "region": "Mbomou",
+   "country": "CAR",
+   "latitude": 6.137611,
+   "longitude": 22.864256,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_transhumance_pastoralism",
+    "presence_of_artisanal_mining",
+    "bordering_active_conservation_area",
+    "presence_of_intercommunal_violence"
+   ],
+   "iso3": "CAF"
+  },
+  {
+   "id": 992,
+   "name": "Nzopi",
+   "region": "Haut Uele",
+   "country": "DRC",
+   "latitude": 3.3608,
+   "longitude": 29.64723,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_artisanal_mining",
+    "bordering_active_conservation_area"
+   ],
+   "iso3": "COD"
+  },
+  {
+   "id": 669,
+   "name": "Ouadda",
+   "region": "Haute-Kotto",
+   "country": "CAR",
+   "latitude": 8.0704,
+   "longitude": 22.3958,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_transhumance_pastoralism",
+    "presence_of_artisanal_mining",
+    "border_crossing_point",
+    "bordering_active_conservation_area",
+    "presence_of_intercommunal_violence"
+   ],
+   "iso3": "CAF"
+  },
+  {
+   "id": 387,
+   "name": "Ouanda Djalle",
+   "region": "Vakaga",
+   "country": "CAR",
+   "latitude": 8.90034,
+   "longitude": 22.80315,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_transhumance_pastoralism",
+    "presence_of_artisanal_mining",
+    "border_crossing_point",
+    "presence_of_intercommunal_violence"
+   ],
+   "iso3": "CAF"
+  },
+  {
+   "id": 936,
+   "name": "Pambayamba",
+   "region": "Haute-Kotto",
+   "country": "CAR",
+   "latitude": 7.76488,
+   "longitude": 23.393962,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_artisanal_mining"
+   ],
+   "iso3": "CAF"
+  },
+  {
+   "id": 153,
+   "name": "Sambia",
+   "region": "Haut Uele",
+   "country": "DRC",
+   "latitude": 3.4,
+   "longitude": 29.27,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_artisanal_mining",
+    "bordering_active_conservation_area",
+    "presence_of_intercommunal_violence"
+   ],
+   "iso3": "COD"
+  },
+  {
+   "id": 661,
+   "name": "Sam Ouandja",
+   "region": "Haute-Kotto",
+   "country": "CAR",
+   "latitude": 8.529,
+   "longitude": 23.249,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_transhumance_pastoralism",
+    "presence_of_artisanal_mining",
+    "presence_of_regional_markets",
+    "border_crossing_point",
+    "bordering_active_conservation_area"
+   ],
+   "iso3": "CAF"
+  },
+  {
+   "id": 653,
+   "name": "Soungou",
+   "region": "Vakaga",
+   "country": "CAR",
+   "latitude": 9.182,
+   "longitude": 22.802,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_artisanal_mining"
+   ],
+   "iso3": "CAF"
+  },
+  {
+   "id": 762,
+   "name": "Tomati",
+   "region": "Haut Uele",
+   "country": "DRC",
+   "latitude": 3.3956,
+   "longitude": 29.5857,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_artisanal_mining",
+    "bordering_active_conservation_area"
+   ],
+   "iso3": "COD"
+  },
+  {
+   "id": 995,
+   "name": "Tumbale",
+   "region": "Bas Uele",
+   "country": "DRC",
+   "latitude": 4.233978,
+   "longitude": 25.295281,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_transhumance_pastoralism",
+    "presence_of_artisanal_mining",
+    "bordering_active_conservation_area"
+   ],
+   "iso3": "COD"
+  },
+  {
+   "id": 939,
+   "name": "Voungou Ziti",
+   "region": "Haute-Kotto",
+   "country": "CAR",
+   "latitude": 8.627485,
+   "longitude": 22.70891,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_artisanal_mining"
+   ],
+   "iso3": "CAF"
+  },
+  {
+   "id": 782,
+   "name": "Yalinga",
+   "region": "Haute-Kotto",
+   "country": "CAR",
+   "latitude": 6.5186,
+   "longitude": 23.2488,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_transhumance_pastoralism",
+    "presence_of_artisanal_mining",
+    "presence_of_intercommunal_violence"
+   ],
+   "iso3": "CAF"
+  },
+  {
+   "id": 958,
+   "name": "Yangou Daba",
+   "region": "Ouaka",
+   "country": "CAR",
+   "latitude": 7.410245,
+   "longitude": 21.227474,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_artisanal_mining"
+   ],
+   "iso3": "CAF"
+  },
+  {
+   "id": 943,
+   "name": "Yangou Droundja",
+   "region": "Haute-Kotto",
+   "country": "CAR",
+   "latitude": 7.41421,
+   "longitude": 21.52084,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_transhumance_pastoralism",
+    "presence_of_artisanal_mining",
+    "bordering_active_conservation_area"
+   ],
+   "iso3": "CAF"
+  },
+  {
+   "id": 489,
+   "name": "Yangou-P\u00e9nd\u00e9r\u00e9",
+   "region": "Haute-Kotto",
+   "country": "CAR",
+   "latitude": 8.0167,
+   "longitude": 23.4664,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_artisanal_mining"
+   ],
+   "iso3": "CAF"
+  },
+  {
+   "id": 1005,
+   "name": "Zime",
+   "region": "Mbomou",
+   "country": "CAR",
+   "latitude": 5.739165,
+   "longitude": 22.814004,
+   "primary_indicator_type": "community",
+   "characteristics": [
+    "presence_of_artisanal_mining",
+    "bordering_active_conservation_area"
+   ],
+   "iso3": "CAF"
+  }
+ ]
+}

@@ -1,0 +1,1941 @@
+{
+ "generated_by": "scripts/crisistracker_mines.py",
+ "source": "Crisis Tracker, a project of Invisible Children. https://crisistracker.org (public map records)",
+ "notice": "Incident reports are Crisis Tracker's. The mine/commodity labels, the clustering into sites and any downstream geological score are OURS, produced by a language model over the public display notes, and must not be attributed to Crisis Tracker or Invisible Children. Commodity provenance is preserved: 'commodities' are materials the note says the site yields; materials that appear only as looted goods are held separately in 'commodities_looted' and are not evidence about the rock at that coordinate.",
+ "labelled_by": "llm_one_shot, model gpt-5.6-sol, prompt scripts/crisistracker_label_prompt.py",
+ "unit": "site (mine working), clustered from incidents at 1.0 km single-link or identical site name",
+ "totals": {
+  "incidents_fetched": 164,
+  "incidents_at_mine": 65,
+  "sites": 50,
+  "sites_with_commodity": 5,
+  "sites_approximate": 8,
+  "sites_with_name_conflict": 8,
+  "by_country": {
+   "CAF": 41,
+   "COD": 8,
+   "SDN": 1
+  },
+  "by_commodity": {
+   "gold": 5,
+   "diamond": 2
+  },
+  "excluded": {
+   "miners": 12,
+   "no": 66,
+   "mine_named": 19,
+   "no_coordinates": 2
+  },
+  "evidence_not_verbatim": 0
+ },
+ "sites": [
+  {
+   "site_id": "ct_003",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 23.3017,
+   "lat": 5.4827,
+   "name": "Fode",
+   "adm1_reported": "Mbomou",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-5463"
+   ],
+   "first_incident": "2014-12-10",
+   "last_incident": "2014-12-10",
+   "site_armed_actor": [
+    "Unidentified Armed Group"
+   ],
+   "max_verification_rating": 2,
+   "min_label_confidence": 0.99
+  },
+  {
+   "site_id": "ct_004",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 24.69,
+   "lat": 5.602,
+   "name": "Gali",
+   "adm1_reported": "Mbomou",
+   "commodities": [
+    "gold"
+   ],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "approximate",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-5581"
+   ],
+   "first_incident": "2015-03-21",
+   "last_incident": "2015-03-21",
+   "site_armed_actor": [
+    "Unidentified Armed Group"
+   ],
+   "max_verification_rating": 2,
+   "min_label_confidence": 1.0,
+   "name_conflict": [
+    "ct_025"
+   ]
+  },
+  {
+   "site_id": "ct_005",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 23.413773,
+   "lat": 8.31885,
+   "name": "Yangou-Pendere",
+   "adm1_reported": "Haute-Kotto",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 5,
+   "incident_irns": [
+    "IRN-4821",
+    "IRN-5928",
+    "IRN-5938",
+    "IRN-6789",
+    "IRN-6837"
+   ],
+   "first_incident": "2014-04-02",
+   "last_incident": "2016-12-13",
+   "site_armed_actor": [
+    "LRA"
+   ],
+   "max_verification_rating": 4,
+   "min_label_confidence": 1.0,
+   "name_conflict": [
+    "ct_044"
+   ]
+  },
+  {
+   "site_id": "ct_006",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 23.3403,
+   "lat": 6.1772,
+   "name": null,
+   "adm1_reported": "Mbomou",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-5948"
+   ],
+   "first_incident": "2015-08-06",
+   "last_incident": "2015-08-06",
+   "site_armed_actor": [
+    "LRA"
+   ],
+   "max_verification_rating": 4,
+   "min_label_confidence": 0.9
+  },
+  {
+   "site_id": "ct_007",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 23.466571,
+   "lat": 8.293527,
+   "name": "Kotto 1",
+   "adm1_reported": "Haute-Kotto",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-6130"
+   ],
+   "first_incident": "2015-11-09",
+   "last_incident": "2015-11-09",
+   "site_armed_actor": [
+    "LRA"
+   ],
+   "max_verification_rating": 3,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ct_008",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 23.170522,
+   "lat": 6.920942,
+   "name": "Lengo",
+   "adm1_reported": "Haute-Kotto",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 3,
+   "incident_irns": [
+    "IRN-6184",
+    "IRN-6200",
+    "IRN-6239"
+   ],
+   "first_incident": "2015-11-30",
+   "last_incident": "2016-01-16",
+   "site_armed_actor": [
+    "LRA",
+    "Unidentified Armed Group"
+   ],
+   "max_verification_rating": 4,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ct_009",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 22.060881,
+   "lat": 7.422182,
+   "name": "Houya",
+   "adm1_reported": "Haute-Kotto",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-6238"
+   ],
+   "first_incident": "2016-01-16",
+   "last_incident": "2016-01-16",
+   "site_armed_actor": [
+    "LRA"
+   ],
+   "max_verification_rating": 3,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ct_010",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 23.225907,
+   "lat": 7.711499,
+   "name": null,
+   "adm1_reported": "Haute-Kotto",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-6259"
+   ],
+   "first_incident": "2016-01-20",
+   "last_incident": "2016-01-20",
+   "site_armed_actor": [
+    "LRA"
+   ],
+   "max_verification_rating": 3,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ct_011",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 22.535794,
+   "lat": 6.987691,
+   "name": "Malatcha",
+   "adm1_reported": "Haute-Kotto",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 2,
+   "incident_irns": [
+    "IRN-6282",
+    "IRN-6328"
+   ],
+   "first_incident": "2015-12-23",
+   "last_incident": "2016-01-16",
+   "site_armed_actor": [
+    "LRA"
+   ],
+   "max_verification_rating": 4,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ct_012",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 23.2314,
+   "lat": 7.5257,
+   "name": "Nguerngou",
+   "adm1_reported": "Haute-Kotto",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 2,
+   "incident_irns": [
+    "IRN-6285",
+    "IRN-7528"
+   ],
+   "first_incident": "2016-01-27",
+   "last_incident": "2017-12-31",
+   "site_armed_actor": [
+    "LRA"
+   ],
+   "max_verification_rating": 3,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ct_013",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 23.15401,
+   "lat": 7.71824,
+   "name": "Koumou",
+   "adm1_reported": "Haute-Kotto",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-6286"
+   ],
+   "first_incident": "2016-01-28",
+   "last_incident": "2016-01-28",
+   "site_armed_actor": [
+    "LRA"
+   ],
+   "max_verification_rating": 3,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ct_014",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 24.868379,
+   "lat": 5.366132,
+   "name": null,
+   "adm1_reported": "Mbomou",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-6401"
+   ],
+   "first_incident": "2016-03-22",
+   "last_incident": "2016-03-22",
+   "site_armed_actor": [
+    "Unidentified Armed Group"
+   ],
+   "max_verification_rating": 3,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ct_016",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 23.430052,
+   "lat": 6.431099,
+   "name": "Drombeko",
+   "adm1_reported": "Mbomou",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-6428"
+   ],
+   "first_incident": "2016-04-13",
+   "last_incident": "2016-04-13",
+   "site_armed_actor": [
+    "Unidentified Armed Group"
+   ],
+   "max_verification_rating": 4,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ct_017",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 22.3958,
+   "lat": 8.0704,
+   "name": null,
+   "adm1_reported": "Haute-Kotto",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-6446"
+   ],
+   "first_incident": "2013-03-22",
+   "last_incident": "2013-03-22",
+   "site_armed_actor": [
+    "LRA"
+   ],
+   "max_verification_rating": 4,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ct_018",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 23.764237,
+   "lat": 7.816954,
+   "name": "Voudou",
+   "adm1_reported": "Haute-Kotto",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-6001"
+   ],
+   "first_incident": "2015-08-26",
+   "last_incident": "2015-08-26",
+   "site_armed_actor": [
+    "Unidentified Armed Group"
+   ],
+   "max_verification_rating": 4,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ct_019",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 22.688357,
+   "lat": 8.095767,
+   "name": "Yangou Waka",
+   "adm1_reported": "Haute-Kotto",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 3,
+   "incident_irns": [
+    "IRN-6655",
+    "IRN-6834",
+    "IRN-7495"
+   ],
+   "first_incident": "2016-08-20",
+   "last_incident": "2017-10-29",
+   "site_armed_actor": [
+    "LRA"
+   ],
+   "max_verification_rating": 3,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ct_020",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 23.374555,
+   "lat": 8.360114,
+   "name": "Kotto Zero",
+   "adm1_reported": "Haute-Kotto",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-6848"
+   ],
+   "first_incident": "2016-12-29",
+   "last_incident": "2016-12-29",
+   "site_armed_actor": [
+    "LRA"
+   ],
+   "max_verification_rating": 3,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ct_021",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 22.965748,
+   "lat": 5.879551,
+   "name": "Bakoua",
+   "adm1_reported": "Mbomou",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-6849"
+   ],
+   "first_incident": "2016-12-14",
+   "last_incident": "2016-12-14",
+   "site_armed_actor": [
+    "LRA"
+   ],
+   "max_verification_rating": 3,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ct_022",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 23.351769,
+   "lat": 6.37924,
+   "name": "Kpangou",
+   "adm1_reported": "Mbomou",
+   "commodities": [
+    "diamond",
+    "gold"
+   ],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-6853"
+   ],
+   "first_incident": "2016-12-19",
+   "last_incident": "2016-12-19",
+   "site_armed_actor": [
+    "Unidentified Armed Group"
+   ],
+   "max_verification_rating": 2,
+   "min_label_confidence": 1.0,
+   "name_conflict": [
+    "ct_042"
+   ]
+  },
+  {
+   "site_id": "ct_023",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 22.537162,
+   "lat": 6.926353,
+   "name": "Gbodio",
+   "adm1_reported": "Haute-Kotto",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-6878"
+   ],
+   "first_incident": "2017-01-19",
+   "last_incident": "2017-01-19",
+   "site_armed_actor": [
+    "LRA"
+   ],
+   "max_verification_rating": 3,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ct_024",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 22.904557,
+   "lat": 7.527067,
+   "name": "Yangou Bayoka",
+   "adm1_reported": "Haute-Kotto",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-6905"
+   ],
+   "first_incident": "2017-02-06",
+   "last_incident": "2017-02-06",
+   "site_armed_actor": [
+    "LRA"
+   ],
+   "max_verification_rating": 3,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ct_025",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 24.60862,
+   "lat": 5.38435,
+   "name": "Gali",
+   "adm1_reported": "Mbomou",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 3,
+   "incident_irns": [
+    "IRN-6560",
+    "IRN-6572",
+    "IRN-6755"
+   ],
+   "first_incident": "2016-06-23",
+   "last_incident": "2016-10-22",
+   "site_armed_actor": [
+    "LRA"
+   ],
+   "max_verification_rating": 4,
+   "min_label_confidence": 0.96,
+   "name_conflict": [
+    "ct_004"
+   ]
+  },
+  {
+   "site_id": "ct_027",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 23.930152,
+   "lat": 8.016664,
+   "name": "Yangou Dacko",
+   "adm1_reported": "Haute-Kotto",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-7353"
+   ],
+   "first_incident": "2017-08-16",
+   "last_incident": "2017-08-16",
+   "site_armed_actor": [
+    "LRA"
+   ],
+   "max_verification_rating": 3,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ct_029",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 24.62864,
+   "lat": 5.26847,
+   "name": "Zangale",
+   "adm1_reported": "Mbomou",
+   "commodities": [],
+   "commodities_looted": [
+    "other"
+   ],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-9513"
+   ],
+   "first_incident": "2020-03-28",
+   "last_incident": "2020-03-28",
+   "site_armed_actor": [
+    "LRA"
+   ],
+   "max_verification_rating": 3,
+   "min_label_confidence": 0.98
+  },
+  {
+   "site_id": "ct_030",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 23.30495,
+   "lat": 7.72978,
+   "name": "Chantier Confluent",
+   "adm1_reported": "Haute-Kotto",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-8312"
+   ],
+   "first_incident": "2019-02-21",
+   "last_incident": "2019-02-21",
+   "site_armed_actor": [
+    "LRA"
+   ],
+   "max_verification_rating": 3,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ct_031",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 23.66605,
+   "lat": 8.54359,
+   "name": "Yangou Brindi",
+   "adm1_reported": "Haute-Kotto",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-8324"
+   ],
+   "first_incident": "2019-02-07",
+   "last_incident": "2019-02-07",
+   "site_armed_actor": [
+    "LRA"
+   ],
+   "max_verification_rating": 3,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ct_032",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 22.24662,
+   "lat": 6.35419,
+   "name": "Ngoulia",
+   "adm1_reported": "Haute-Kotto",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-7950"
+   ],
+   "first_incident": "2018-07-20",
+   "last_incident": "2018-07-20",
+   "site_armed_actor": [
+    "LRA"
+   ],
+   "max_verification_rating": 4,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ct_033",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 23.56842,
+   "lat": 8.03067,
+   "name": "Yangou Issi",
+   "adm1_reported": "Haute-Kotto",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-8001"
+   ],
+   "first_incident": "2018-08-20",
+   "last_incident": "2018-08-20",
+   "site_armed_actor": [
+    "LRA"
+   ],
+   "max_verification_rating": 3,
+   "min_label_confidence": 1.0,
+   "name_conflict": [
+    "ct_034"
+   ]
+  },
+  {
+   "site_id": "ct_034",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 23.56155,
+   "lat": 8.12041,
+   "name": "Yangou Issi",
+   "adm1_reported": "Haute-Kotto",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 2,
+   "incident_irns": [
+    "IRN-8003",
+    "IRN-8004"
+   ],
+   "first_incident": "2018-08-20",
+   "last_incident": "2018-08-20",
+   "site_armed_actor": [
+    "LRA"
+   ],
+   "max_verification_rating": 3,
+   "min_label_confidence": 0.96,
+   "name_conflict": [
+    "ct_033"
+   ]
+  },
+  {
+   "site_id": "ct_035",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 23.49662,
+   "lat": 8.23347,
+   "name": "Kotto 2",
+   "adm1_reported": "Haute-Kotto",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 3,
+   "incident_irns": [
+    "IRN-8005",
+    "IRN-8006",
+    "IRN-8007"
+   ],
+   "first_incident": "2018-08-20",
+   "last_incident": "2018-08-21",
+   "site_armed_actor": [
+    "LRA"
+   ],
+   "max_verification_rating": 3,
+   "min_label_confidence": 0.96
+  },
+  {
+   "site_id": "ct_036",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 21.227474,
+   "lat": 7.410245,
+   "name": "Yangou Ndaba",
+   "adm1_reported": "Ouaka",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-6583"
+   ],
+   "first_incident": "2016-06-28",
+   "last_incident": "2016-06-28",
+   "site_armed_actor": [
+    "LRA"
+   ],
+   "max_verification_rating": 3,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ct_037",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 23.1604,
+   "lat": 5.646,
+   "name": "Ammoungombi",
+   "adm1_reported": "Mbomou",
+   "commodities": [
+    "gold"
+   ],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-3399"
+   ],
+   "first_incident": "2012-11-22",
+   "last_incident": "2012-11-22",
+   "site_armed_actor": [
+    "LRA"
+   ],
+   "max_verification_rating": 4,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ct_039",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 22.4339,
+   "lat": 8.2118,
+   "name": "Akosso and Pipidemotro",
+   "adm1_reported": "Haute-Kotto",
+   "commodities": [
+    "diamond",
+    "gold"
+   ],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-4034"
+   ],
+   "first_incident": "2013-06-09",
+   "last_incident": "2013-06-09",
+   "site_armed_actor": [
+    "LRA"
+   ],
+   "max_verification_rating": 3,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ct_040",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 23.249,
+   "lat": 8.529,
+   "name": "Lakotto",
+   "adm1_reported": "Haute-Kotto",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "approximate",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-5102"
+   ],
+   "first_incident": "2014-02-17",
+   "last_incident": "2014-02-17",
+   "site_armed_actor": [
+    "LRA"
+   ],
+   "max_verification_rating": 2,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ct_041",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 22.82,
+   "lat": 5.962,
+   "name": "Limit",
+   "adm1_reported": "Mbomou",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "approximate",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-5103"
+   ],
+   "first_incident": "2014-06-15",
+   "last_incident": "2014-06-15",
+   "site_armed_actor": [
+    "LRA"
+   ],
+   "max_verification_rating": 4,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ct_042",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 23.128,
+   "lat": 6.127,
+   "name": "Kpangou",
+   "adm1_reported": "Mbomou",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "approximate",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-5119"
+   ],
+   "first_incident": "2014-07-10",
+   "last_incident": "2014-07-10",
+   "site_armed_actor": [
+    "LRA"
+   ],
+   "max_verification_rating": 3,
+   "min_label_confidence": 1.0,
+   "name_conflict": [
+    "ct_022"
+   ]
+  },
+  {
+   "site_id": "ct_043",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 21.888,
+   "lat": 5.3017,
+   "name": "Lima",
+   "adm1_reported": "Basse-Kotto",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "approximate",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-5123"
+   ],
+   "first_incident": "2014-08-06",
+   "last_incident": "2014-08-06",
+   "site_armed_actor": [
+    "LRA"
+   ],
+   "max_verification_rating": 3,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ct_044",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 23.8419,
+   "lat": 7.92901,
+   "name": "Yangou-Pendere",
+   "adm1_reported": "Haute-Kotto",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-8294"
+   ],
+   "first_incident": "2019-02-07",
+   "last_incident": "2019-02-07",
+   "site_armed_actor": [
+    "LRA"
+   ],
+   "max_verification_rating": 3,
+   "min_label_confidence": 1.0,
+   "name_conflict": [
+    "ct_005"
+   ]
+  },
+  {
+   "site_id": "ct_046",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 22.34047,
+   "lat": 6.766957,
+   "name": null,
+   "adm1_reported": "Haute-Kotto",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "approximate",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-10869"
+   ],
+   "first_incident": "2021-07-12",
+   "last_incident": "2021-07-12",
+   "site_armed_actor": [
+    "Unidentified Armed Group"
+   ],
+   "max_verification_rating": 3,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ct_048",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 24.4679,
+   "lat": 5.1106,
+   "name": "Kofoura",
+   "adm1_reported": "Mbomou",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "approximate",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-13859"
+   ],
+   "first_incident": "2026-02-27",
+   "last_incident": "2026-02-27",
+   "site_armed_actor": [
+    "Unidentified Armed Group"
+   ],
+   "max_verification_rating": 3,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ct_049",
+   "source": "crisistracker",
+   "iso3": "CAF",
+   "lon": 23.296561,
+   "lat": 5.728569,
+   "name": "Animogoli",
+   "adm1_reported": "Mbomou",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "approximate",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-13983"
+   ],
+   "first_incident": "2026-05-19",
+   "last_incident": "2026-05-19",
+   "site_armed_actor": [
+    "LRA"
+   ],
+   "max_verification_rating": 4,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ct_000",
+   "source": "crisistracker",
+   "iso3": "COD",
+   "lon": 28.856919,
+   "lat": 3.894383,
+   "name": "Nakubu",
+   "adm1_reported": "Haut Uele",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-7157"
+   ],
+   "first_incident": "2017-05-31",
+   "last_incident": "2017-05-31",
+   "site_armed_actor": [
+    "LRA"
+   ],
+   "max_verification_rating": 3,
+   "min_label_confidence": 0.98
+  },
+  {
+   "site_id": "ct_001",
+   "source": "crisistracker",
+   "iso3": "COD",
+   "lon": 29.16419,
+   "lat": 3.615634,
+   "name": null,
+   "adm1_reported": "Haut Uele",
+   "commodities": [],
+   "commodities_looted": [
+    "diamond",
+    "gold"
+   ],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-7162"
+   ],
+   "first_incident": "2017-06-06",
+   "last_incident": "2017-06-06",
+   "site_armed_actor": [
+    "LRA"
+   ],
+   "max_verification_rating": 3,
+   "min_label_confidence": 0.99
+  },
+  {
+   "site_id": "ct_002",
+   "source": "crisistracker",
+   "iso3": "COD",
+   "lon": 29.069095,
+   "lat": 3.561495,
+   "name": null,
+   "adm1_reported": "Haut Uele",
+   "commodities": [],
+   "commodities_looted": [
+    "diamond",
+    "gold"
+   ],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-7185"
+   ],
+   "first_incident": "2017-06-18",
+   "last_incident": "2017-06-18",
+   "site_armed_actor": [
+    "LRA"
+   ],
+   "max_verification_rating": 4,
+   "min_label_confidence": 0.99
+  },
+  {
+   "site_id": "ct_026",
+   "source": "crisistracker",
+   "iso3": "COD",
+   "lon": 27.33082,
+   "lat": 4.66919,
+   "name": "Dingilo",
+   "adm1_reported": "Haut Uele",
+   "commodities": [],
+   "commodities_looted": [
+    "gold"
+   ],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-8373"
+   ],
+   "first_incident": "2019-03-10",
+   "last_incident": "2019-03-10",
+   "site_armed_actor": [
+    "LRA"
+   ],
+   "max_verification_rating": 4,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ct_028",
+   "source": "crisistracker",
+   "iso3": "COD",
+   "lon": 23.987924,
+   "lat": 4.610606,
+   "name": "Mabia",
+   "adm1_reported": "Bas Uele",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-8589"
+   ],
+   "first_incident": "2019-06-03",
+   "last_incident": "2019-06-03",
+   "site_armed_actor": [
+    "LRA"
+   ],
+   "max_verification_rating": 4,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ct_038",
+   "source": "crisistracker",
+   "iso3": "COD",
+   "lon": 29.0225,
+   "lat": 3.5856,
+   "name": "Awe",
+   "adm1_reported": "Haut Uele",
+   "commodities": [
+    "gold"
+   ],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-3848"
+   ],
+   "first_incident": "2013-04-19",
+   "last_incident": "2013-04-19",
+   "site_armed_actor": [
+    "Unidentified Armed Group"
+   ],
+   "max_verification_rating": 3,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ct_045",
+   "source": "crisistracker",
+   "iso3": "COD",
+   "lon": 28.949694,
+   "lat": 3.811335,
+   "name": null,
+   "adm1_reported": "Haut Uele",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-10740"
+   ],
+   "first_incident": "2021-05-02",
+   "last_incident": "2021-05-02",
+   "site_armed_actor": [
+    "Unidentified Armed Group"
+   ],
+   "max_verification_rating": 3,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ct_047",
+   "source": "crisistracker",
+   "iso3": "COD",
+   "lon": 29.347164,
+   "lat": 2.944323,
+   "name": null,
+   "adm1_reported": "Haut Uele",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-11541"
+   ],
+   "first_incident": "2022-08-15",
+   "last_incident": "2022-08-15",
+   "site_armed_actor": [
+    "Unidentified Armed Group"
+   ],
+   "max_verification_rating": 3,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ct_015",
+   "source": "crisistracker",
+   "iso3": "SDN",
+   "lon": 24.250888,
+   "lat": 9.78426,
+   "name": null,
+   "adm1_reported": null,
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "community_report",
+   "precision": "reported",
+   "cluster_spread_km": 0.0,
+   "incidents": 1,
+   "incident_irns": [
+    "IRN-6427"
+   ],
+   "first_incident": "2016-01-01",
+   "last_incident": "2016-01-01",
+   "site_armed_actor": [
+    "LRA"
+   ],
+   "max_verification_rating": 3,
+   "min_label_confidence": 1.0
+  }
+ ],
+ "excluded": [
+  {
+   "id": 198320,
+   "irn": "IRN-7211",
+   "reason": "miners",
+   "note": "The last 4 artisanal miners who were abducted by an LRA group southwest of Gangala na Bodio, DRC, were released after spending the night in captivity."
+  },
+  {
+   "id": 293571,
+   "irn": "IRN-7187",
+   "reason": "no",
+   "note": "A group of suspected LRA ambushed a series of travelers, 22 in total, on a road leading to Magbanga, DRC. The assailants wore military clothing resembling UPDF and FARDC uniforms, carried AK-47s, and "
+  },
+  {
+   "id": 293574,
+   "irn": "IRN-7190",
+   "reason": "mine_named",
+   "note": "4 of the 8 artisanal miners who were abducted by an LRA group southwest of Gangala na Bodio, DRC, were released after being forced to participate the looting of a mining camp near the Kibali River."
+  },
+  {
+   "id": 343298,
+   "irn": "IRN-7072",
+   "reason": "miners",
+   "note": "4 armed men attacked a miner in Bria, CAR, and looted 6 million CFA in his safe."
+  },
+  {
+   "id": 343341,
+   "irn": "IRN-7138",
+   "reason": "no",
+   "note": "Unidentified armed men attacked a Peuhl camp northeast of Gu\u00e9r\u00e9kindo, CAR.  During this attack, the assailants killed the cattle. According to a survivor, the group is composed of women, children, and"
+  },
+  {
+   "id": 361721,
+   "irn": "IRN-5611",
+   "reason": "no",
+   "note": "The 2 motoryclists abducted and looted by 9 suspected LRA forces between Tadu and  Sambia, DRC, were reportedly released the following day, after having been used as porters. They reportedly carried t"
+  },
+  {
+   "id": 361742,
+   "irn": "IRN-5648",
+   "reason": "miners",
+   "note": "3 armed men with AK-type guns reportedly looted a mine worker from Mbago,CAR, as he was on his way to Bakouma, CAR. They reportedly wore turbans and spoke an unknown language. They then asked him for "
+  },
+  {
+   "id": 361745,
+   "irn": "IRN-5654",
+   "reason": "no",
+   "note": "10 suspected LRA forces, composed of 8 armed men and 2 women, reportedly looted  and abducted 4 Congolese women west of Bitima, DRC. The assailants are reportedly carrying an HF radio and the leader o"
+  },
+  {
+   "id": 361805,
+   "irn": "IRN-5758",
+   "reason": "no_coordinates",
+   "note": "A group of suspected LRA forces attacked and looted a mining site in M'bres, along the Bria-Yalinga axis, CAR."
+  },
+  {
+   "id": 361853,
+   "irn": "IRN-5830",
+   "reason": "no",
+   "note": "Between 24-38 LRA forces established a camp near Ngoundja, CAR for several weeks before reportedly meeting with another LRA group. They reportedly had one abductee from Nzako, CAR acting as a translat"
+  },
+  {
+   "id": 361859,
+   "irn": "IRN-5848",
+   "reason": "miners",
+   "note": "An LRA group looted 1 diamond miner of 6 million FCFA near Daba, along the Bria-Yalinga axis, CAR."
+  },
+  {
+   "id": 361860,
+   "irn": "IRN-5850",
+   "reason": "no",
+   "note": "11 LRA men, over a dozen women, and some children entered Ndje, CAR and started looting people. Many were armed. They took tarps, boots, cassava, salt, sugar, jackets, and some diamonds and gold."
+  },
+  {
+   "id": 361880,
+   "irn": "IRN-5870",
+   "reason": "no",
+   "note": "20 armed LRA forces came to the community of Aza along the Bria-Mbangana axis, CAR, and interacted with the population, exchanging food. Later, the assailant group looted the community. The assailants"
+  },
+  {
+   "id": 361906,
+   "irn": "IRN-5912",
+   "reason": "no",
+   "note": "1 motorcyclist was ambushed by 5 LRA forces near Bahr, CAR. The armed assailants looted money, gold, and cigarettes. The assailants wore a mix of civilian and military clothing."
+  },
+  {
+   "id": 361928,
+   "irn": "IRN-5949",
+   "reason": "no",
+   "note": "1 of the victims abducted the day before by 13 LRA forces was released after spending the night in captivity near Banale, CAR. He reportedly suffered from a medical issue."
+  },
+  {
+   "id": 361939,
+   "irn": "IRN-5961",
+   "reason": "no",
+   "note": "5 civilians were looted by 5 LRA forces near Kpaika, DRC. The group of assailants comprised 5 armed men in civilian clothing who spoke a poor Lingala. The group that carried this attack could be the s"
+  },
+  {
+   "id": 361992,
+   "irn": "IRN-6128",
+   "reason": "no",
+   "note": "2 traders (1 man and 1 woman) were abducted by 3 unidentified armed forces near Tomati, DRC. The armed assailants wore military clothing and spoke a poor Lingala. They looted 80 grams of gold and abou"
+  },
+  {
+   "id": 362004,
+   "irn": "IRN-6147",
+   "reason": "no_coordinates",
+   "note": "4 LRA forces attacked and looted the mining camp of Yangouwissi, about 67 km south east of Sam Ouandja, CAR. The assailants looted sugar, salt and cassava flour."
+  },
+  {
+   "id": 362054,
+   "irn": "IRN-6235",
+   "reason": "no",
+   "note": "40 LRA forces looted Voungou Ziti, CAR. The assailants had AK-type weapons and PKMs,\u00a0wore a mix of civilian and military clothing\u00a0and\u00a0included\u00a0women and children. They looted nuts, sugar and cassava f"
+  },
+  {
+   "id": 362060,
+   "irn": "IRN-6240",
+   "reason": "no",
+   "note": "The 5 men abducted to carry looted goods near Lengo, CAR were released after walking for about 30 km."
+  },
+  {
+   "id": 362061,
+   "irn": "IRN-6241",
+   "reason": "no",
+   "note": "LRA members and the community of Kpokpo, CAR exchanged fire. 3 LRA were killed and 3 civilians were injured. The assailants had AK-type weapons and PKMs, they wore a mix of civilian and military cloth"
+  },
+  {
+   "id": 362069,
+   "irn": "IRN-6260",
+   "reason": "no",
+   "note": "3 of the 10 civilians abducted by LRA forces at the confluence of the Koumou and Kotto rivers, CAR were released after spending the night in captivity."
+  },
+  {
+   "id": 362084,
+   "irn": "IRN-6283",
+   "reason": "no",
+   "note": "The 7 men who were abducted by 14 LRA forces in Malatcha, CAR were released after spending 3 days in captivity."
+  },
+  {
+   "id": 362107,
+   "irn": "IRN-6315",
+   "reason": "no",
+   "note": "5 travelers were ambushed by 3 unidentified armed forces near Ndanda, CAR. The assailants were wearing military uniforms and carried AK-type weapons."
+  },
+  {
+   "id": 362114,
+   "irn": "IRN-6323",
+   "reason": "no",
+   "note": "Dozens of people were looted by 13 LRA forces 1km from Aza, CAR. The assailants looted gold, diamonds, phones, money, and food. They abducted 7 boys/men and allowed the rest of the victims to go."
+  },
+  {
+   "id": 362116,
+   "irn": "IRN-6325",
+   "reason": "no",
+   "note": "9 civilians (including 8 men and 1 girl) were abducted by LRA forces in Aza, CAR. The assailants also looted the community of 9 grams of gold, several small diamonds, and 40,000 CFA."
+  },
+  {
+   "id": 362120,
+   "irn": "IRN-6329",
+   "reason": "mine_named",
+   "note": "The 7 civilians abducted by LRA forces and forced to carry looted goods from a mining camp near Malacha, CAR were released after spending 11 days in captivity."
+  },
+  {
+   "id": 362123,
+   "irn": "IRN-6332",
+   "reason": "no",
+   "note": "9 civilians (including 3 men, 3 boys and 3 girls) were abducted by LRA forces in Dolo, CAR. The assailants also looted food, diamonds, gold, money, and phones from the community."
+  },
+  {
+   "id": 362174,
+   "irn": "IRN-6410",
+   "reason": "no",
+   "note": "7 unidentified armed forces attacked a camp near Kono, CAR and looted 2 cows."
+  },
+  {
+   "id": 362182,
+   "irn": "IRN-6421",
+   "reason": "mine_named",
+   "note": "A 25-year-old Sudanese man escaped LRA captivity in Sam Ouandja, CAR. He was reportedly abducted in January 2016 in a mining camp in Sudan. He spent a month in captivity and a month with nomadic herde"
+  },
+  {
+   "id": 362217,
+   "irn": "IRN-5996",
+   "reason": "no",
+   "note": "A LRA armed group carried out a series of abductions near Kpaika, DRC. 4 men and 2 women were abducted and a number of people were looted. The assailants spoke Acholi and are reportedly part of a larg"
+  },
+  {
+   "id": 362247,
+   "irn": "IRN-6039",
+   "reason": "mine_named",
+   "note": "A 14-year-old girl escaped after 4 months in LRA captivity near the Mayeka mine. She was transported by a civilian to Bria, CAR. She reported 2 other girls were still in captivity."
+  },
+  {
+   "id": 362283,
+   "irn": "IRN-6639",
+   "reason": "no",
+   "note": "4 LRA forces looted 3 civilians in Bilikwa, DRC. The victims were looted of clothes, palm oil, peanuts, chickens, salt, soap, cigarettes and money. The assailants carried AK-type weapons and wore civi"
+  },
+  {
+   "id": 362294,
+   "irn": "IRN-6656",
+   "reason": "no",
+   "note": "A group comprised of men, women and children was sighted, crossing the road from west to east approximately 76km from Sam Ouandja, CAR. Some of them were armed with AK-type weapons, they wore a mix of"
+  },
+  {
+   "id": 362378,
+   "irn": "IRN-6828",
+   "reason": "no",
+   "note": "One of the woman abducted by suspected LRA forces in Kpokpo, CAR managed to escape after a few hours in captivity."
+  },
+  {
+   "id": 362395,
+   "irn": "IRN-6850",
+   "reason": "no",
+   "note": "The 11 civilians abducted by LRA forces in Bakoua, CAR were released after spending 2 days in captivity."
+  },
+  {
+   "id": 362426,
+   "irn": "IRN-6902",
+   "reason": "miners",
+   "note": "An LRA group abducted 9 men working as artisanal miners in Dingilo, DRC."
+  },
+  {
+   "id": 362427,
+   "irn": "IRN-6903",
+   "reason": "miners",
+   "note": "6 of the 9 miners abducted in Dingilo, DRC, by an LRA group were released after spending the night in captivity."
+  },
+  {
+   "id": 363461,
+   "irn": "IRN-6756",
+   "reason": "no",
+   "note": "10 men abducted as porters by the Achaye LRA splinter group in Karmadar, CAR were released after spending a few hours in captivity."
+  },
+  {
+   "id": 363476,
+   "irn": "IRN-7039",
+   "reason": "mine_named",
+   "note": "The LRA splinter group led by Achaye Doctor abducted a 20-year-old man on his way back from the mining camp of Bakangu near Baye, DRC."
+  },
+  {
+   "id": 364590,
+   "irn": "IRN-8362",
+   "reason": "mine_named",
+   "note": "A group of approximately 20 LRA members with AK-47s and in military attire ambushed 10 civilian traders near the Yangou-Bakoya mine, 68 km east of Sam Ouandja. The assailants looted food and valuables"
+  },
+  {
+   "id": 364628,
+   "irn": "IRN-8441",
+   "reason": "mine_named",
+   "note": "Approximately 20 LRA combatants ambushed 9 men and 1 woman traveling near the Yangou Pendere mine. They held them temporarily captive without physically harming them and punctured their motorcycle tir"
+  },
+  {
+   "id": 368890,
+   "irn": "IRN-5357",
+   "reason": "no",
+   "note": "2 hunters encountered a very sick 16-year-old Congolese boy in their camp near Mboki, CAR. The victim had reportedly been abducted by LRA forces  in October 2009 from Dikuma/Banda, DRC. The Congolese "
+  },
+  {
+   "id": 368891,
+   "irn": "IRN-5358",
+   "reason": "miners",
+   "note": "4 hunters and 19 miners were attacked by LRA forces  near Rafai, CAR, and looted of all their goods. The assailants were reportedly composed of 16 men and 1 woman, all armed.The assailants also abduct"
+  },
+  {
+   "id": 368939,
+   "irn": "IRN-7303",
+   "reason": "no",
+   "note": "An LRA group attacked Ndenguilo, CAR. They looted sugar, cassava, rice, and other non-food items. The men were armed with AK-47s. A man who escaped reported that 32 men and children (including him) ha"
+  },
+  {
+   "id": 368940,
+   "irn": "IRN-7304",
+   "reason": "no",
+   "note": "A young man escaped LRA captivity during an attack on Ndenguilo/Denguiro, CAR. The man reported that 32 civilians had been abducted by the assailants in the days prior to the Denguiro attack."
+  },
+  {
+   "id": 368942,
+   "irn": "IRN-7306",
+   "reason": "no",
+   "note": "Following an attack on Denguiro, CAR, by an LRA group, security forces pursued the assailants and clashed with them. 27 abductees were able to escape. 3 victims remain unaccounted for."
+  },
+  {
+   "id": 368954,
+   "irn": "IRN-7352",
+   "reason": "no",
+   "note": "Around 10:00, a truck leaving Nabiapai, DRC, fell into an ambush carried out by 2 unidentified armed men. The assailants wore civilian clothing and were carrying 3 AK-47s. They looted 90 USD, 5000 FC,"
+  },
+  {
+   "id": 371851,
+   "irn": "IRN-8625",
+   "reason": "no",
+   "note": "3 armed men, carrying AK-47's, looted a merchant in Durba. The assailants, who spoke Lingala and Kiganda, looted gold, money, and other belongings from the victim. They then shot and injured a man and"
+  },
+  {
+   "id": 372648,
+   "irn": "IRN-8295",
+   "reason": "mine_named",
+   "note": "An armed LRA group of men, women, and children who reportedly spoke Acholi and broken Sango ambushed 2 merchants traveling near the Yangou Brindi mining site, 43 km southeast of Sam Ouandja. They loot"
+  },
+  {
+   "id": 372837,
+   "irn": "IRN-7977",
+   "reason": "miners",
+   "note": "LRA forces released a woman and a girl they had abducted near Kpokpo along with 4 male hunters and 5 male miners, after keeping her a few hours in captivity. Both the woman and the girl were pregnant."
+  },
+  {
+   "id": 372838,
+   "irn": "IRN-7978",
+   "reason": "mine_named",
+   "note": "LRA forces released the 5 miners and 4 hunters they had abducted as porters near Kpokpo and its Ngoulia mining site on July 20. The group leader reportedly gave them a written message addressed to the"
+  },
+  {
+   "id": 372937,
+   "irn": "IRN-8150",
+   "reason": "no",
+   "note": "8 armed men speaking a broken Lingala and in civilian attire attacked 5 men 29 km north of Mugalie, killing 4 and injuring 1. The latter reported that the attack had been perpetrated by Peuhls, which "
+  },
+  {
+   "id": 373014,
+   "irn": "IRN-8276",
+   "reason": "mine_named",
+   "note": "9 armed men ambushed a man as he was coming home from the Nakubu mine, 25 km east of Limai. They looted him of his gold, food, and other belongings before they released him and departed east."
+  },
+  {
+   "id": 373529,
+   "irn": "IRN-0567",
+   "reason": "no",
+   "note": "LRA forces were carried were active near Dakwa, DRC. No further details are known."
+  },
+  {
+   "id": 373592,
+   "irn": "IRN-0664",
+   "reason": "no",
+   "note": "5 LRA forces were spotted as they carried out a raid near Duru, DRC. The outcome of this raid is unknown."
+  },
+  {
+   "id": 373806,
+   "irn": "IRN-6485",
+   "reason": "no",
+   "note": "A 14-year-old boy was abducted by the LRA in Koumou, CAR."
+  },
+  {
+   "id": 373878,
+   "irn": "IRN-6587",
+   "reason": "no",
+   "note": "20 forces from the Achaye LRA splinter group attacked Karmadar, CAR. The men were armed with AK-type weapons. They gave 2 letters to the victims to give to the leaders in Dembia, CAR and Derbissaka, C"
+  },
+  {
+   "id": 373901,
+   "irn": "IRN-6615",
+   "reason": "no",
+   "note": "3 men were abducted by suspected LRA forces in Camp Tchadien, CAR."
+  },
+  {
+   "id": 374231,
+   "irn": "IRN-1633",
+   "reason": "no",
+   "note": "6 traders heard whistling in the forest while they carried their goods to a local market just south of Nambia, DRC. LRA forces soon surrounded them and looted all their goods. Each trader ran in a sep"
+  },
+  {
+   "id": 374311,
+   "irn": "IRN-1775",
+   "reason": "no",
+   "note": "1 person was killed and an undetermined number were abducted in an attack on Samongo, DRC. Around 678 people fled south (including 413 children) and were displaced as a result of this attack."
+  },
+  {
+   "id": 374462,
+   "irn": "IRN-2073",
+   "reason": "no",
+   "note": "6 suspected LRA, 4 men holding guns and 2 women holding sticks, reportedly shot a woman in the leg, looted 3 households and abducted several people to act as carriers for the goods. This attack happen"
+  },
+  {
+   "id": 374571,
+   "irn": "IRN-2275",
+   "reason": "no",
+   "note": "5 LRA members released 2 civilians, who had been abducted on March 8th. The LRA members then looted food from the home of a prominent community member in Nangbalama, DRC."
+  },
+  {
+   "id": 374819,
+   "irn": "IRN-2672",
+   "reason": "no",
+   "note": "On September 30, 2009, suspected LRA forces carried out attacks on  Ngouli and Hele, CAR. A total 6 civilians were killed and 3 civilians were abducted, including the former mayor of Obo. The victim n"
+  },
+  {
+   "id": 374888,
+   "irn": "IRN-2807",
+   "reason": "miners",
+   "note": "In the week of March 20th, LRA forces brutally beat to death 13 gold miners in the CAWA Safari Camp which is northeast of Bakouma, CAR. The  victims were beat to death with pieces of wood and stripped"
+  },
+  {
+   "id": 374889,
+   "irn": "IRN-2812",
+   "reason": "no",
+   "note": "From February 27 to March 3, 2009, LRA forces carried out attacks on Nakorda, DRC, that resulted in 43 people being abducted."
+  },
+  {
+   "id": 374925,
+   "irn": "IRN-2880",
+   "reason": "no",
+   "note": "5 LRA men looted food and medicine from a small health care center and abducted a man and his wife to act as carriers of the looted goods. This happened east of Dungu in Bagulupa, DRC."
+  },
+  {
+   "id": 375048,
+   "irn": "IRN-3124",
+   "reason": "miners",
+   "note": "An unidentified armed group attacked an unknown number of miners near Boboto, DRC, which is near the town of Dungu. 1 miner was killed, and 2 others were injured in the attack."
+  },
+  {
+   "id": 375122,
+   "irn": "IRN-3293",
+   "reason": "mine_named",
+   "note": "A man, who was abducted by LRA forces during an attack on a gold mine at Ammoungombi, CAR, escaped near Bakouma, CAR."
+  },
+  {
+   "id": 375272,
+   "irn": "IRN-3495",
+   "reason": "no",
+   "note": "LRA forces killed 5 civilians and abducted 45 more people from Bani and Nzako, CAR. They also looted a large amount of money from one of the abducted individuals, who was a diamond collector."
+  },
+  {
+   "id": 375374,
+   "irn": "IRN-3652",
+   "reason": "mine_named",
+   "note": "On March 3rd, 2013, 6 suspected and armed LRA forces, comprised of 5 men and 1 woman,  ambushed 3 men near Fode, CAR, as the men were on their way to a gold quarry. 2 of the 3 men were shot dead, the "
+  },
+  {
+   "id": 375464,
+   "irn": "IRN-3835",
+   "reason": "no",
+   "note": "3 armed LRA forces accompanied by several boys looted a truck along the Dungu-Faradje road in the DRC. The assailants looted a tarp, money, bread, and the clothes of the driver. The boys carried the l"
+  },
+  {
+   "id": 375626,
+   "irn": "IRN-4109",
+   "reason": "no",
+   "note": "On September 30, 2009, suspected LRA forces carried out attacks on Ngilingili and Hele, CAR. A total of 6 civilians were killed and 3 civilians were abducted, including the former mayor of Obo. The vi"
+  },
+  {
+   "id": 375632,
+   "irn": "IRN-4117",
+   "reason": "no",
+   "note": "Suspected LRA forces carried out two attacks along the road between Ouadda and Sam Ouandja, CAR, that resulted in 37 people being abducted and 5 people being killed, including a man and a mother who w"
+  },
+  {
+   "id": 375704,
+   "irn": "IRN-4205",
+   "reason": "no",
+   "note": "7 armed LRA forces ambushed 5 men and 1 woman near Kpatanabu, DRC. The assailants looted all the goods that were being carried including 2 boxes of soap, matches and other various goods. A woman and m"
+  },
+  {
+   "id": 375732,
+   "irn": "IRN-4263",
+   "reason": "no",
+   "note": "LRA forces reportedly carried out an attack 30 km from Ango, DRC. No further details are known."
+  },
+  {
+   "id": 375741,
+   "irn": "IRN-4273",
+   "reason": "no",
+   "note": "An unidentified armed group ambushed 2 people on motorcycles near Modoue, CAR. 1 man was shot and killed. The assailants then proceeded to loot all the victim's goods including gold."
+  },
+  {
+   "id": 375801,
+   "irn": "IRN-4371",
+   "reason": "mine_named",
+   "note": "6 suspected and armed LRA forces made contact with Seleka forces and civilians and expressed a desire to peacefully defect near the mining site of Banal\u00e9, CAR."
+  },
+  {
+   "id": 375837,
+   "irn": "IRN-4469",
+   "reason": "no",
+   "note": "9 armed and suspected LRA men who had recently attacked Bilikwa, DRC, and abducted 3 men and a woman, released the woman and 2 of the men. 1 man remains in captivity. The released individuals claimed "
+  },
+  {
+   "id": 375915,
+   "irn": "IRN-4585",
+   "reason": "no",
+   "note": "An undetermined number of armed suspected  LRA forces went to pray in the church with the population of Nzako, CAR. They then bought food and non-food items. The LRA forces said that they are scared o"
+  },
+  {
+   "id": 375955,
+   "irn": "IRN-4662",
+   "reason": "mine_named",
+   "note": "The day following an attack on a nearby mining site, LRA forces looted civilians 20 km from Sam Ouandja, CAR, and abducted 1 girl and 3 boys. They then reportedly turned around and spent the night 45 "
+  },
+  {
+   "id": 375960,
+   "irn": "IRN-4669",
+   "reason": "no",
+   "note": "Of the 30 civilians abducted by LRA forces sometime between February 17th and 24th near Sam Ouandja, CAR, 20 were released a few hours after their abduction. The remaining 10 carried the looted goods "
+  },
+  {
+   "id": 376115,
+   "irn": "IRN-4946",
+   "reason": "no",
+   "note": "A Congolese man from Dikuma, DRC, was gathering straw when 5 suspected LRA forces surprised him and forced him to carry a bag of corn flour. The assailants reportedly carried AK-type weapons and autom"
+  },
+  {
+   "id": 376116,
+   "irn": "IRN-4947",
+   "reason": "no",
+   "note": "The Congolese man from Dikuma, DRC, abducted and used a porter by 5 suspected LRA forces carried this bag on a distance of about 7 km going east - feeling tired, he threw the bag and refused to contin"
+  },
+  {
+   "id": 376156,
+   "irn": "IRN-5025",
+   "reason": "no",
+   "note": "Suspected LRA forces reportedly killed 3 civilians and abducted 25 others in Wagou, CAR. This attack led to a displacement  of the population towards Bakouma, CAR."
+  },
+  {
+   "id": 376216,
+   "irn": "IRN-5137",
+   "reason": "no",
+   "note": "8 men of the 11 civilians abducted in Lima, near Mingala, CAR, were reportedly released 2 days later by suspected LRA forces."
+  },
+  {
+   "id": 376224,
+   "irn": "IRN-5153",
+   "reason": "no",
+   "note": "The Congolese fisherman abducted by LRA forces west of Diagbe, DRC, was released the next day south of Diagbe. These assailants reportedly carried a lot of luggage with 3 batteries, a solar panel, and"
+  },
+  {
+   "id": 376244,
+   "irn": "IRN-5194",
+   "reason": "mine_named",
+   "note": "Security forces reportedly freed the community of Bani, CAR, from LRA occupation. The presence of LRA had prevented civilians from working in the local mine. The assailants reportedly left the communi"
+  },
+  {
+   "id": 376265,
+   "irn": "IRN-5235",
+   "reason": "no",
+   "note": "A large unidentified armed group reportedly ambushed 7 civilians north of Ngilima, DRC. All the food carried by the victims was looted by the assailants."
+  },
+  {
+   "id": 376398,
+   "irn": "IRN-8978",
+   "reason": "mine_named",
+   "note": "An LRA group ambushed and looted 3 men near the Dingilo mine, 12 km north of Banzey. The assailants took them into the bush, where they killed 1 of the men. The assailants then abducted the other 2 me"
+  },
+  {
+   "id": 376428,
+   "irn": "IRN-9062",
+   "reason": "mine_named",
+   "note": "An LRA group, containing women and children, was observed near the Yangou Dafo mine. The group was heading west of Sam Ouandja."
+  },
+  {
+   "id": 376455,
+   "irn": "IRN-9156",
+   "reason": "no",
+   "note": "A hunter was ambushed by 2 unidentified armed men near Gbanguere, who looted his artisanal rifle and hunting goods."
+  },
+  {
+   "id": 376532,
+   "irn": "IRN-9435",
+   "reason": "mine_named",
+   "note": "4 LRA combatants ambushed and abducted 2 boys on the road from the Banale mine to Nzako. The assailants forced the boys to porter goods."
+  },
+  {
+   "id": 377634,
+   "irn": "IRN-11620",
+   "reason": "mine_named",
+   "note": "4 men armed with machetes ambushed and looted 2 women near the Diadali mining site, located 12 km east of Naparka. A few hours later the assailants ambushed and looted a man in the same area. Police r"
+  },
+  {
+   "id": 377736,
+   "irn": "IRN-11745",
+   "reason": "miners",
+   "note": "3 armed men ambushed and looted a miner as he was travelling from Ouadda to Bria. The assailants looted money and a diamond before releasing the man."
+  },
+  {
+   "id": 377814,
+   "irn": "IRN-11828",
+   "reason": "no",
+   "note": "During the night an LRA group carried out lootings and abducted 38 people, including 21 children from Banda, and the neighboring communities of Zamoi and Nambagu. The group was comprised of approximat"
+  },
+  {
+   "id": 378486,
+   "irn": "IRN-12906",
+   "reason": "no",
+   "note": "An unidentified armed group raided a Peuhl cattle camp near Bangu and looted several cows and other valuable items. The victims alerted the security forces who carried out patrols and investigations."
+  },
+  {
+   "id": 378881,
+   "irn": "IRN-13853",
+   "reason": "no",
+   "note": "An unidentified armed group ambushed approximately 30 travelers on the Nambia Ngbangala - Banda axis. The assailants looted all of their belongings including money, gold, market goods, phones, and clo"
+  },
+  {
+   "id": 378906,
+   "irn": "IRN-13961",
+   "reason": "miners",
+   "note": "A Chadian armed group robbed artisanal miners of their valuables 15 km from Yangou Pendere. The assailants also assaulted a female miner."
+  }
+ ]
+}

@@ -298,8 +298,53 @@ def src_icmm():
     return out
 
 
+def src_crisistracker():
+    """Crisis Tracker community reports, labelled into sites.
+
+    Why this list earns its place: it reaches the EAST of the CAR (Haute-Kotto,
+    Mbomou), where no other list we hold has a single site -- the nearest IPIS
+    mine to a Crisis Tracker mine is 617 km away, median
+    (scripts/eval_crisistracker.py). It is the first out-of-sample ground for
+    the CAR sheet, not a bigger sample of the same ground.
+
+    A fifth country (DRC) appears in this list; the main loop keeps only the
+    four we hold sheets for, and the DRC rows are reported as out-of-scope
+    rather than treated as an error.
+
+    Note the commodity rule: only materials the report says the site YIELDS
+    reach `commodities`. Gold that was merely looted stays in
+    `commodities_looted` on the source file and is not carried here -- loot
+    travels, and a supply chain scored as a lithology is exactly the mistake
+    invariant 12 is about.
+    """
+    path = EVAL / "crisistracker" / "mine_sites.json"
+    if not path.exists():
+        return None
+    out = []
+    for s in json.loads(path.read_text())["sites"]:
+        if not s["iso3"]:
+            continue
+        out.append({
+            "source": "crisistracker", "iso3": s["iso3"],
+            "lon": s["lon"], "lat": s["lat"],
+            "commodities": s["commodities"],
+            "observed": "community_report",
+            # WHICH armed group was at the mine. Not comparable with IPIS's
+            # armed flag: there, a surveyor could record "nobody"; here every
+            # row is an attack, so armed presence is how the site got onto the
+            # list. Kept as actor identity, never counted as a rate.
+            "site_armed_actor": ("; ".join(s["site_armed_actor"])
+                                 if s["site_armed_actor"] else None),
+            "precision": s["precision"],
+            "incidents": s["incidents"],
+            "reported_admin1": s.get("adm1_reported"),
+            "site_name": s.get("name"),
+        })
+    return out
+
+
 SOURCES = [src_ipis_caf, src_ipis_tza, src_gmis_tza, src_tearline_caf,
-           src_osm, src_tang_werner, src_icmm]
+           src_osm, src_tang_werner, src_icmm, src_crisistracker]
 
 
 def main():

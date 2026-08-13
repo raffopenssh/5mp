@@ -176,3 +176,153 @@ Prohibited, each a live constraint here:
 
 Interpretation is at ACLED's sole discretion — when in doubt, ask them rather
 than reason about it here.
+
+---
+
+# Crisis Tracker: the second site-resolution list, and the half of the CAR nobody surveyed
+
+_Read with `scripts/crisistracker_*.py`, `scripts/eval_crisistracker.py`,
+`data/eval/crisistracker/`._
+
+ACLED's event level is closed to us (403, above), so the reach question was
+stuck at ADM1 — a 50,000 km² bucket. **Crisis Tracker** (Invisible Children)
+answers the same question at site resolution and, unexpectedly, contributes
+mines: its public map is the incident database for the CAR/DRC/South
+Sudan/Darfur border region, and every record carries coordinates,
+`location_specifics` (whose values include *In a Mine*), a
+`livelihood_activity_at_time_of_incident` of *Mining*, and — on the community
+profiles — `presence_of_artisanal_mining`.
+
+## Access is open, and that is not the same as unrestricted
+
+No key, no login. The JSON behind the map: `/incidents.json`,
+`/communities.json`, `/incidents/{id}.json`. `returnees.json` and
+`combatant_locations.json` **401 and must stay that way** — those records are
+withheld deliberately, for the safety of sources and victims (codebook p.6,
+p.13). Do not add a login to `scripts/crisistracker_fetch.py`.
+
+Traps, each paid for once:
+
+* **`request_type=max_records` caps at 5000 and does not say so.** The whole
+  archive is 5,168 incidents — right on the cap. A single full pull returns a
+  number that looks complete and is 168 short. The fetcher pages in two-year
+  windows, unions by id, and **aborts** if any window comes back at the cap
+  (invariant 1).
+* A filter param takes a **bare value, not `key[]=`**. `key[]=` yields a 500
+  whose body is HTML, which `json.load` reports as a parse error — easy to
+  misread as "the endpoint is broken" rather than "the syntax is wrong".
+* Community characteristics are only obtainable one filtered pull at a time
+  (`characteristics=presence_of_artisanal_mining`, joined back by id); the
+  list endpoint returns no attributes. A filter that matches *all 910*
+  communities means it was ignored — the fetcher treats that as an error.
+* `python3 -c` with a `curl` piped in gets **403 without a User-Agent**;
+  `urllib`'s default UA is blocked, curl's is not.
+* An un-located incident is written `coordinates: "-,-"` and arrives as
+  **0.0/0.0**. Null island is in the Gulf of Guinea; a truth point there scores
+  the model against the sea.
+
+## The commodity is only ever in the prose, so an LLM extracts it
+
+"the Kpangou **gold and diamond mine**" (a working — geology evidence),
+"they took … **some diamonds and gold**" (loot — a supply chain), "a **mining
+site** in M'bres" (a working, no commodity). A keyword match cannot separate
+those three, and the separation is the entire value of this source.
+
+`scripts/crisistracker_label_prompt.py` builds the prompt; one
+`llm_one_shot --model gpt-5.6-sol` pass writes
+`data/eval/crisistracker/note_labels.json`, which is **committed as an
+artefact** (a re-run would not be identical, so it is not a cache). The model
+is asked only for extraction — what the sentence *says* — with a **verbatim
+span** for every commodity claim, and `scripts/crisistracker_mines.py` checks
+each span appears character-for-character in the note it came from. A model
+that paraphrases its evidence has stopped extracting and started summarising.
+On 164 records: 0 non-verbatim (one near miss — the evidence was in
+`other_looting_types`, not the display note, so the check searches all three
+text fields).
+
+**`extracted` vs `looted` is provenance, and it is load-bearing.** Only
+`extracted` reaches `commodities`; looted materials stay in
+`commodities_looted`, which no geology score may consume. Of 24 commodity
+mentions, **16 are loot**. Score those as lithology and you have scored a
+supply chain.
+
+## Unit: incidents are not sites
+
+164 candidates → 65 `at_mine` → **50 sites**. The same mine is attacked
+repeatedly (Yangou Waka ×3), so an incident count published as a site count is
+a truth set of duplicates all sitting on one rock (invariant 7).
+
+Clustering is 1 km single-link, **plus an identical name but only within
+10 km**: "Yangou-Pendere" is reported from points **64 km apart** (a note may be
+pinned to the mine, to the nearest community, or to the axis). At 1:1,500,000 a
+64 km centroid sits on neither pit and crosses several map units, so beyond
+10 km both rows stay and each carries `name_conflict` naming the other. A
+cluster spread over 5 km, or an incident flagged
+`exact_location_of_incident_unknown`, gets `precision: "approximate"` — scored
+as a separate stratum, never dropped, because dropping it biases the list
+toward places that are easy to pin.
+
+## What it is worth: 41 CAR mines where we had none
+
+`scripts/eval_crisistracker.py` (writes `data/eval/crisistracker/reach_car.json`):
+
+| | |
+|---|---|
+| IPIS's 914 CAR sites span | lon **14.6–17.9** (west) |
+| Crisis Tracker's 41 span | lon **21.2–24.9** (east: Haute-Kotto, Mbomou) |
+| nearest IPIS mine, median | **617 km** — and **0** within 25 km |
+
+**Every CAR lift we have ever published was measured on one half of the
+country.** This is the first out-of-sample ground for that sheet, not a bigger
+sample of the same ground.
+
+It cannot be scored the way IPIS is: only 5 sites carry an extracted
+commodity, so per-commodity lifts are **declined at `n<8`**, the same floor
+`eval_affinity` uses. What it *can* answer is the weaker, honest question —
+does a reported mine sit on ground the sheet grades for gold **or** diamond?
+
+    n=38  capture 60.5%  area 68.2%  lift 0.89  p=0.38
+          (this n could only have shown lift ≥1.23 or ≤0.73)
+
+A null **with its power printed beside it**. On the east's rocks the model is
+not distinguishable from random ground, and the ceiling says how weak a claim
+that is. Note also that the network's hull is **68.2% graded vs 58.3% of the
+whole sheet** — context, never a denominator: a capture measured in the hull
+over an area measured over the sheet is a ratio of two different questions.
+
+## The one thing this list must NOT be used for
+
+Every site is here **because an armed group attacked it**. So
+`site_armed_actor` is 100% by construction — it is the *selection rule*, not an
+observation, and it is not comparable with IPIS's flag, where a surveyor
+standing in a pit could record *nobody*. Pooling them would turn "28% of
+visited mines had an armed actor" into a statement about how a list was built.
+`scripts/acled_coverage_bias.py` therefore counts armed presence over
+`observed == "field_visit"` rows only; Crisis Tracker's field keeps the actor
+**identity** (LRA vs unidentified), which is a different claim.
+
+Likewise a **mining town is not a mine**: the 49 communities flagged
+`presence_of_artisanal_mining` (29 CAR, 20 DRC) land in
+`communities_mining.json` as a context layer, with the settlement centre as
+their coordinate and the workings somewhere around it.
+
+## Attribution
+
+Source field on every file we write: *Crisis Tracker, a project of Invisible
+Children*, <https://crisistracker.org>, with the access date. Methodology:
+`https://crisistracker.org/codebook.pdf`. Bulk/extended data has a request form
+(About → Request Data Export) — that is the route if we ever need the
+non-public fields, not a scraper.
+
+The labels, the clustering and every score derived from them are **ours**, and
+the `notice` field in each output says so. Do not attribute them to Crisis
+Tracker or Invisible Children.
+
+```bash
+python3 scripts/crisistracker_fetch.py --details      # -> data/crisistracker/ (gitignored)
+python3 scripts/crisistracker_label_prompt.py         # -> label_prompt.txt
+# llm_one_shot --model gpt-5.6-sol label_prompt.txt -> data/eval/crisistracker/note_labels.json
+python3 scripts/crisistracker_mines.py                # -> mine_sites.json, communities_mining.json
+python3 scripts/eval_crisistracker.py                 # -> reach_car.json
+python3 scripts/mining_reference.py                   # crisistracker joins the merged reference
+```
