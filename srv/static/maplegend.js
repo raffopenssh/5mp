@@ -74,6 +74,24 @@
     function histMeta() { return (typeof HistMap !== 'undefined' && HistMap.meta()) || null; }
     function geoOn() { return typeof GeoMap !== 'undefined' && GeoMap.anyOn(); }
 
+    /* The scanned series covers 8 of 22 blocks of one country, so "on, but not
+     * here" is the ordinary case — the same trap as the geology chip's
+     * `not in view`: a chip with nothing drawn beside it reads as a broken
+     * layer. Measured off the archive's own envelope (the same `bounds` the
+     * source is clamped to), not off the canvas: a raster has no queryable
+     * features, and an envelope is the honest statement of where sheets exist.
+     * Coarser than the geology answer and deliberately so — inside the
+     * envelope a given sheet cell may still be blank, which is why the words
+     * are about the view, not about a pixel. */
+    function histOffView() {
+        if (!histOn()) return false;
+        var m = histMeta();
+        var bb = m && m.bounds;
+        if (!bb || bb.length !== 4) return false;
+        if (typeof bboxOnScreen !== 'function') return false;
+        return !bboxOnScreen(bb);
+    }
+
     /* What the geology layer is currently NOT showing, in words. A filtered
      * drape that reads as a complete one is the failure this line prevents. */
     function geoFilterNote(said) {
@@ -178,6 +196,10 @@
      * much; it is never printed as an area.
      */
     var coverage = null;   // {byAge:{key:hits}, lith:{key:lith}, hits, samples} | null
+    // Contact features painted in this viewport, measured alongside coverage.
+    // Its own variable, not a field of `coverage`, because it has to survive
+    // the paths where there is no fill to measure at all.
+    var contactHits = 0;
 
     function geoFillLayers() {
         if (typeof GeoMap === 'undefined' || typeof map === 'undefined' || !map) return [];
@@ -187,7 +209,37 @@
             .filter(function (l) { try { return !!map.getLayer(l); } catch (e) { return false; } });
     }
 
+    /* The contact layers on screen. Separate from the fills because a contact
+     * is a different KIND of thing (an edge, not a ground) and is counted and
+     * keyed separately — but it is still geology being drawn, which is the
+     * only question geoOffView() asks. */
+    function geoContactLayers() {
+        if (typeof GeoMap === 'undefined' || typeof map === 'undefined' || !map) return [];
+        if (!(GeoMap.contactsOn && GeoMap.contactsOn())) return [];
+        return (GeoMap.order() || [])
+            .filter(function (id) { var s = GeoMap.state(id); return s && s.on; })
+            .map(function (id) { return 'geomap-contact-' + id; })
+            .filter(function (l) { try { return !!map.getLayer(l); } catch (e) { return false; } });
+    }
+
+    /* How many contact features are actually painted in this viewport.
+     *
+     * NOT the same number as GeoMap.drawnContactCount(), which counts PAIR
+     * TYPES passing the filter (a property of the selection, true anywhere).
+     * This one is about the picture: it is what decides whether the layer has
+     * anything to say about the place on screen. */
+    function contactsInView() {
+        var layers = geoContactLayers();
+        if (!layers.length) return 0;
+        try { return (map.queryRenderedFeatures({ layers: layers }) || []).length; }
+        catch (e) { return 0; }
+    }
+
     function measureCoverage() {
+        // Measured first and kept outside `coverage`, because every early
+        // return below sets `coverage = null` and the contact layer can be
+        // the ONLY geology on screen (see geoOffView).
+        contactHits = contactsInView();
         var layers = geoFillLayers();
         if (!layers.length) { coverage = null; return; }
         var cv = map.getCanvas();
@@ -428,8 +480,29 @@
      * key beside it otherwise reads as a broken layer, so the strip says so.
      * "Nothing drawn", not "nothing sampled": a single thin unit in the corner
      * is in view, and saying otherwise would be wrong in the same direction as
-     * the missing swatch. */
-    function geoOffView() { return !!(geoOn() && coverage && !coverage.drawn); }
+     * the missing swatch.
+     *
+     * CONTACTS COUNT AS DRAWN. They used not to, and the result was the exact
+     * failure this function exists to prevent, one layer over: with the units
+     * filtered down to nothing here but the junction lines painting orange
+     * across the whole screen, the chip said "not in view" and the panel bar
+     * said it too — over a map visibly drawing 67 of them. A label that
+     * contradicts the canvas is worse than no label. So the question is "is
+     * ANY geology painted here", and the fills and the edges each answer for
+     * themselves below (drawnKinds).
+     */
+    function geoOffView() {
+        if (!geoOn()) return false;
+        if (contactHits > 0) return false;
+        return !!(coverage && !coverage.drawn);
+    }
+
+    /* Which KINDS of geology are painted here — the two are counted
+     * separately because they are different units (a ground and an edge), the
+     * standing rule that a number must name its unit. */
+    function drawnKinds() {
+        return { units: !!(coverage && coverage.drawn), contacts: contactHits > 0 };
+    }
 
     /* ── The key, made operable ──────────────────────────────────────────
      *
@@ -574,10 +647,44 @@
      * render() — which is why render() builds the strip BEFORE the chips. */
     var bracketed = [];
 
+    /* ── The contact layer's own swatch ─────────────────────────────────
+     *
+     * The key was a key to the FILLS only, so a view drawing nothing but
+     * junction lines had a legend with nothing in it — orange hairlines all
+     * over the map and no swatch, no word, and no way to switch them off
+     * without opening the panel. An edge is not a period, so it is not one of
+     * the age swatches; it is one extra cell at the end, drawn as a line, and
+     * (like every swatch here) it is a switch.
+     *
+     * Only when contacts are actually PAINTED in this view: a legend entry for
+     * something not on screen is the same lie as a missing one, in reverse. */
+    function contactSwatchHTML() {
+        if (!(typeof GeoMap !== 'undefined' && GeoMap.contactsOn && GeoMap.contactsOn())) return '';
+        if (!contactHits) return '';
+        var n = (GeoMap.drawnContactCount && GeoMap.drawnContactCount()) || 0;
+        var pick = (GeoMap.contactPairs && GeoMap.contactPairs()) || new Set();
+        var what = pick.size ? junctionsWords(pick)
+            : (GeoMap.contactsGradedOnly && GeoMap.contactsGradedOnly()
+                ? 'graded junctions' : 'every mapped junction');
+        var title = 'Contacts — ' + what + ', ' + n + ' junction type(s) in scope' +
+            ' — tap to hide the lines';
+        return '<button type="button" class="ml-sw ml-sw-cont" aria-pressed="false"' +
+            ' aria-label="Contact lines, shown" title="' + esc(title) + '"' +
+            ' onclick="event.stopPropagation();MapLegend.toggleContacts()"><i></i></button>';
+    }
+
     function ageSwatches() {
         bracketed = [];
         var list = ageEntries();
-        if (!list.length) return '';
+        var contactSw = contactSwatchHTML();
+        // No fills here but lines painted: the strip is the contact swatch
+        // alone, which is a legend for what IS on the screen.
+        if (!list.length) {
+            return contactSw
+                ? '<div class="ml-swatches" style="grid-template-columns:repeat(1,max-content);"' +
+                  ' aria-label="Geology legend — contact lines">' + contactSw + '</div>'
+                : '';
+        }
 
         var comms = (typeof GeoMap !== 'undefined' && GeoMap.selectedCommodities)
             ? Array.from(GeoMap.selectedCommodities()).sort() : [];
@@ -625,6 +732,9 @@
         var cells = head.map(function (e) { return swatchHTML(e, false); }).join('');
         var nCols = Math.min(list.length, cap);
         var extras = 0;
+        // The contact line goes right after the periods and before the chrome:
+        // it is part of the key, not a control on it.
+        if (contactSw) { extras++; cells += contactSw; }
         if (tail.length) {
             extras++;
             cells += '<button type="button" class="ml-sw-more" id="ml-sw-more"' +
@@ -839,6 +949,56 @@
             '<i class="icon-sliders-horizontal ml-mi"></i>Map settings\u2026' +
             '<em>legend, opacity, downloads</em></button>';
 
+        el.innerHTML = html;
+        place(el, btn);
+    }
+
+    /* ── The historical chip's own menu ──────────────────────────────────
+     *
+     * Small on purpose. A scanned sheet series has exactly three questions:
+     * how strongly is it drawn, where are the sheets, and where is the file.
+     * Everything else (the description, the attribution, the black-ink
+     * download blurb) belongs to Map Settings, and the last row goes there.
+     *
+     * The opacity slider is the reason this menu exists. A traced-ink overlay
+     * over satellite imagery is either invisible or obliterating, so "a bit
+     * less" is the commonest thing a reader wants and it was four clicks deep
+     * in the admin panel; the chip in front of them could only destroy the
+     * layer. Live `oninput` — the whole point is watching the ink fade against
+     * the ground, and a commit-on-release slider makes that a guessing game.
+     */
+    function openHistMenu(btn) {
+        var already = menuEl && menuEl.dataset.kind === 'hist';
+        closeMenu();
+        if (already) return;
+        var hm = histMeta() || {};
+        var el = document.createElement('div');
+        el.className = 'aoi-menu mode-menu ml-menu';
+        el.dataset.kind = 'hist';
+        el.setAttribute('role', 'menu');
+        el.setAttribute('aria-label', 'Historical map overlay');
+        var pct = (typeof HistMap !== 'undefined') ? Math.round(HistMap.opacity() * 100) : 85;
+        var html = '<div class="mode-menu-head">' + esc(hm.name || 'Historical maps') + '</div>';
+        html += '<div class="ml-op"><span class="ml-op-l">Opacity</span>' +
+            '<input type="range" min="10" max="100" value="' + pct + '" ' +
+            'aria-label="Overlay opacity" ' +
+            'onclick="event.stopPropagation()" ' +
+            'oninput="MapLegend.histOpacity(this.value)">' +
+            '<b id="ml-op-v">' + pct + '%</b></div>';
+        // Where the sheets are is only worth a row when the answer is "not
+        // here": inside the envelope the map itself is the answer, and a
+        // permanent "go to the sheets" row would move a reader who is already
+        // looking at them. Same rule as the calm-map toasts.
+        if (histOffView()) {
+            html += '<button type="button" class="aoi-menu-item ml-more" ' +
+                'onclick="event.stopPropagation();MapLegend.histGoTo()">' +
+                '<i class="icon-locate-fixed ml-mi"></i>Go to the sheets' +
+                '<em>none reach this view</em></button>';
+        }
+        html += '<button type="button" class="aoi-menu-item ml-more" ' +
+            'onclick="event.stopPropagation();MapLegend.openSettings()">' +
+            '<i class="icon-sliders-horizontal ml-mi"></i>Map settings\u2026' +
+            '<em>provenance, download</em></button>';
         el.innerHTML = html;
         place(el, btn);
     }
@@ -1352,26 +1512,58 @@
      * to drag all three. Order is by consequence, left to right: settings,
      * collapse, close.
      */
-    function headRow() {
+    /* What the bar and the chip say the drape is doing, in one place so the
+     * two cannot word one map differently.
+     *
+     * A COUNT MUST NOT SURVIVE ITS SUBJECT: these are what the filters leave
+     * in scope, which is right while a sheet is on screen and a lie the moment
+     * none is ("36 units" over an empty Atlantic reads as a layer drawing
+     * invisibly). Three sheets cover three countries, so "nothing here" is
+     * ordinary.
+     *
+     * But EACH HALF ANSWERS FOR ITSELF. Units and contacts are drawn by
+     * different filters and go out of view at different zooms, so a single
+     * "not in view" for both was wrong exactly when it mattered: filtered down
+     * to no units, with 67 junction lines painted across the screen, the bar
+     * claimed nothing was there. Now the half with nothing to show says so and
+     * the half that is drawing keeps its number.
+     */
+    function barCountText() {
+        var k = drawnKinds();
+        var cOn = typeof GeoMap !== 'undefined' && GeoMap.contactsOn && GeoMap.contactsOn();
         var units = (typeof GeoMap !== 'undefined' && GeoMap.drawnUnitCount)
             ? GeoMap.drawnUnitCount() : 0;
-        var cOn = typeof GeoMap !== 'undefined' && GeoMap.contactsOn && GeoMap.contactsOn();
         var lines = cOn && GeoMap.drawnContactCount ? GeoMap.drawnContactCount() : null;
-        // A COUNT MUST NOT SURVIVE ITS SUBJECT. These are what the filters
-        // leave in scope, which is the right number while a sheet is on
-        // screen — and a lie the moment none is: "36 units" over an empty
-        // Atlantic reads as a layer that is drawing and invisible. Three
-        // sheets cover three countries, so that is the ordinary case here.
-        var barCounts = geoOffView()
-            ? { html: 'not in view',
-                title: 'Geology is on, but no mapped sheet reaches this view \u2014 ' +
-                       'pan to Sudan, the CAR or Tanzania.' }
-            : { html: '<b>' + units + '</b> unit' + (units === 1 ? '' : 's') +
-                    (lines === null ? '' : ' \u00b7 <b>' + lines + '</b> line' + (lines === 1 ? '' : 's')),
-                title: units + ' unit(s) and ' +
-                    (lines === null ? 'no contact lines' : lines + ' contact line(s)') +
-                    ' pass the current filters \u2014 counted from what the map paints, not ' +
-                    'from the catalogue.' };
+        if (!k.units && !k.contacts) {
+            return { html: 'not in view', short: 'not in view',
+                title: 'Geology is on, but no mapped sheet reaches this view — ' +
+                       'pan to Sudan, the CAR or Tanzania.' };
+        }
+        var parts = [], words = [];
+        if (k.units) {
+            parts.push('<b>' + units + '</b> unit' + (units === 1 ? '' : 's'));
+            words.push(units + ' unit(s)');
+        } else if (cOn) {
+            // The units half is the one that is absent, and it is absent HERE
+            // rather than switched off — different statements, and only the
+            // second would be a reason to reach for the "all" escape.
+            parts.push('no units here');
+            words.push('no mapped units in this view');
+        }
+        if (k.contacts && lines !== null) {
+            parts.push('<b>' + lines + '</b> line' + (lines === 1 ? '' : 's'));
+            words.push(lines + ' contact line(s)');
+        } else if (cOn) {
+            parts.push('no lines here');
+            words.push('no contact lines in this view');
+        }
+        return { html: parts.join(' · '), short: parts.join(' · ').replace(/<\/?b>/g, ''),
+            title: words.join(' and ') +
+                ' — counted from what the map paints, not from the catalogue.' };
+    }
+
+    function headRow() {
+        var barCounts = barCountText();
         return '<div class="ml-bar fui-bar" role="toolbar" aria-label="Geology — drag to move, tap to collapse">' +
             '<i class="icon-mountain ml-bar-ico"></i><span class="ml-bar-t">Geology</span>' +
             // The panel is often collapsed or dragged aside, and then the bar
@@ -1518,7 +1710,7 @@
             return;
         }
 
-        if (!cols.length) {
+        if (!cols.length && !(CF.on && contactHits)) {
             // Nothing drawn here: the matrix would be a grid of empty cells,
             // which reads as "nothing is prospective" rather than as "no rock
             // is on screen". Say the true thing instead.
@@ -1528,6 +1720,15 @@
             place(el, btn, { floating: true });
             return;
         }
+
+        // NO GROUND, BUT EDGES: the fills are filtered or off-sheet here and
+        // the junction lines are painting anyway. The reader tapped the chip
+        // to find out what those orange lines are, and the rock table cannot
+        // answer — it would be a grid of empty cells over a map that is
+        // visibly drawing something. So the table opens on the half that has
+        // an answer. Not a preference change: the reader's own tab choice is
+        // restored the moment a unit is back in view.
+        var viewMode = (!cols.length && CF.any) ? 'junction' : mxMode;
 
         /* ── Two modes of one table ─────────────────────────────────
          *
@@ -1560,17 +1761,29 @@
             // drawnContactCount), so a count can never describe a map that is
             // not on screen.
             var unitsDrawn = (GeoMap.drawnUnitCount && GeoMap.drawnUnitCount()) || 0;
+            // A tab that cannot answer says so rather than opening an empty
+            // grid: with no unit in view the rock table has nothing to
+            // describe, and a live-looking tab that does nothing on tap is the
+            // "control that reads as broken" this surface keeps avoiding.
+            var rockDead = !cols.length;
             html += '<div class="ml-mode" role="tablist" aria-label="What the table describes">' +
                 '<button type="button" role="tab" class="ml-mode-b' +
-                    (mxMode === 'rock' ? ' on' : '') + '" aria-selected="' + (mxMode === 'rock') + '"' +
-                    ' title="' + esc('What each rock can host \u2014 ' + unitsDrawn +
-                        ' unit(s) drawn right now') + '"' +
-                    ' onclick="event.stopPropagation();MapLegend.mxMode(\'rock\')">' +
-                    '<i class="icon-table-2"></i>Rocks<em>' + unitsDrawn + '</em></button>' +
+                    (viewMode === 'rock' ? ' on' : '') + (rockDead ? ' dead' : '') +
+                    '" aria-selected="' + (viewMode === 'rock') + '"' +
+                    (rockDead ? ' aria-disabled="true"' : '') +
+                    ' title="' + esc(rockDead
+                        ? 'No mapped unit reaches this view, so there is no rock here to describe \u2014 ' +
+                          'pan to Sudan, the CAR or Tanzania, or clear the filters.'
+                        : 'What each rock can host \u2014 ' + unitsDrawn +
+                          ' unit(s) drawn right now') + '"' +
+                    ' onclick="event.stopPropagation();' +
+                    (rockDead ? 'void 0' : 'MapLegend.mxMode(\'rock\')') + '">' +
+                    '<i class="icon-table-2"></i>Rocks<em>' +
+                    (rockDead ? 'none here' : unitsDrawn) + '</em></button>' +
                 '<button type="button" role="tab" class="ml-mode-b' +
-                    (mxMode === 'junction' ? ' on' : '') + (CF.any ? '' : ' dead') +
+                    (viewMode === 'junction' ? ' on' : '') + (CF.any ? '' : ' dead') +
                     (CF.on ? ' lit' : '') +
-                    '" aria-selected="' + (mxMode === 'junction') + '"' +
+                    '" aria-selected="' + (viewMode === 'junction') + '"' +
                     (CF.any ? '' : ' aria-disabled="true"') +
                     ' title="' + esc(CF.any
                         ? 'Where two rocks MEET \u2014 ' + CF.gradedTypes + ' of ' + CF.types +
@@ -1585,7 +1798,7 @@
                 '</div>';
         }
 
-        if (mxMode === 'junction' && CF.any) {
+        if (viewMode === 'junction' && CF.any) {
             el.innerHTML = html + junctionTableHTML(CF);
             place(el, btn, { floating: true });
             return;
@@ -2012,17 +2225,44 @@
         var chips = '';
         if (b !== 'dark') {
             var e = bmEntry(b);
-            chips += '<button type="button" class="ml-chip base" title="' + esc(e[3]) +
-                ' \u2014 tap to go back to the dark basemap" ' +
-                'onclick="event.stopPropagation();MapLegend.pickBasemap(\'dark\')">' +
-                '<i class="' + e[2] + '"></i>' + esc(e[1]) + '</button>';
+            // TWO TARGETS, ONE MEANING EACH — the same reason the geology chip
+            // has an ×. "Google" is the only word on screen naming the ground
+            // under the data, so it is also the place a reader will tap to ask
+            // "which imagery am I on, and what else is there": a single-target
+            // chip answered that question by throwing the imagery away. Body =
+            // choose the basemap (the same one menu the opener shows, with the
+            // current one checked), × = back to dark, deliberately.
+            chips += '<span class="ml-chip base">' +
+                '<button type="button" class="ml-chip-main" title="' + esc(e[3]) +
+                ' \u2014 tap to choose the basemap" ' +
+                'onclick="event.stopPropagation();MapLegend.menu(this.parentNode)">' +
+                '<i class="' + e[2] + '"></i>' + esc(e[1]) +
+                '<i class="icon-chevron-down ml-caret"></i></button>' +
+                '<button type="button" class="ml-chip-x" aria-label="Back to the dark basemap" ' +
+                'title="Back to the dark basemap" ' +
+                'onclick="event.stopPropagation();MapLegend.pickBasemap(\'dark\')">\u00d7</button></span>';
         }
         if (histOn()) {
             var hm = histMeta();
-            chips += '<button type="button" class="ml-chip hist" title="' +
-                esc((hm && hm.name) || 'Historical map overlay') + ' \u2014 tap to hide" ' +
-                'onclick="event.stopPropagation();MapLegend.toggleHist()">' +
-                '<i class="icon-scroll-text"></i>Historical</button>';
+            // Same two targets as geology and the basemap: body = configure
+            // (which is where the opacity lives, the one control this drape
+            // genuinely needs — a traced-ink sheet over imagery is unreadable
+            // at the wrong opacity, and that slider was four clicks deep in
+            // admin), × = hide it, deliberately. A single-target chip made
+            // "I want to see through it a bit" and "throw it away" the same
+            // gesture.
+            var hOff = histOffView();
+            chips += '<span class="ml-chip hist' + (hOff ? ' offview' : '') + '">' +
+                '<button type="button" class="ml-chip-main" title="' +
+                esc((hOff ? 'The sheet series does not reach this view — tap for opacity and the way there'
+                          : ((hm && hm.name) || 'Historical map overlay') + ' — tap for opacity and the archive')) + '" ' +
+                'onclick="event.stopPropagation();MapLegend.histMenu(this.parentNode)">' +
+                '<i class="icon-scroll-text"></i>Historical' +
+                (hOff ? '<em>not in view</em>' : '') +
+                '<i class="icon-chevron-down ml-caret"></i></button>' +
+                '<button type="button" class="ml-chip-x" aria-label="Hide the historical map overlay" ' +
+                'title="Hide the historical map overlay" ' +
+                'onclick="event.stopPropagation();MapLegend.toggleHist()">\u00d7</button></span>';
         }
         if (geoOn()) {
             // Three sheets cover three countries, so "on, but not here" is the
@@ -2031,8 +2271,16 @@
             // report as broken; the sub-label wins over the filter note,
             // because "which units" is moot where none are drawn.
             var off = geoOffView();
+            var kinds = drawnKinds();
+            // "Contacts only" is its own state and needs its own words. The
+            // chip used to fall back to "not in view" here — over a map
+            // drawing 67 orange junction lines — because the whole layer was
+            // judged by whether a FILL was painted. What the reader can see is
+            // what the chip has to describe.
             var fn = off ? { short: 'not in view', full: 'not in view' }
-                         : geoFilterNote(bracketed);
+                : (!kinds.units && kinds.contacts
+                    ? { short: 'contacts only', full: 'contact lines — no mapped unit reaches this view' }
+                    : geoFilterNote(bracketed));
             var note = fn.short;
             // TWO TARGETS, ONE MEANING EACH — the strip's founding rule, which
             // geology broke the day its chip started opening a menu. The other
@@ -2073,6 +2321,7 @@
     var MapLegend = {
         refresh: render,
         menu: openMenu,
+        histMenu: openHistMenu,
         geoMenu: openGeoMenu,
         close: closeMenu,
 
@@ -2336,10 +2585,96 @@
             setTimeout(render, 0);
         },
 
+        /* ── What this module contributes to a share link ─────────────────
+         *
+         * GeoMap.getShareParams() describes the DRAPE; this describes the
+         * surface the reader was reading it through, which is a different
+         * object and was previously lost entirely. A link sent from the
+         * junction table, with the panel open beside the map, arrived with a
+         * closed panel on the rock tab — so the recipient saw orange lines
+         * and no table explaining them, i.e. the exact question the sender was
+         * pointing at was the one thing the link dropped.
+         *
+         * Each is omitted at its default, so an ordinary link stays short.
+         * The panel POSITION is deliberately not carried: it is furniture the
+         * recipient's own window decides, and a coordinate from a 27-inch
+         * screen restores off the edge of a laptop. */
+        getShareParams: function () {
+            var p = {};
+            var open = !!(menuEl && menuEl.dataset.kind === 'geo');
+            if (open) p.geo_panel = panelCollapsed ? 'collapsed' : '1';
+            // The tab is a property of the panel, so it only travels with it.
+            if (open && mxMode === 'junction') p.geo_tab = 'junction';
+            // "+n" opened is a truncation the reader lifted — a link that
+            // re-truncates shows fewer periods than the picture it claims to
+            // reproduce.
+            if (expanded) p.geo_key = 'all';
+            return p;
+        },
+
+        restoreFromParams: function (params) {
+            if (params.get('geo_key') === 'all') expanded = true;
+            var want = params.get('geo_panel');
+            if (params.get('geo_tab') === 'junction') mxMode = 'junction';
+            if (!want) return;
+            panelCollapsed = (want === 'collapsed');
+            // TWO THINGS HAVE TO EXIST FIRST, and only one of them is the
+            // chip. The panel anchors off the chip (a missing anchor put it in
+            // the corner of the screen), and its whole body is derived from
+            // the LOADED TILES — so a panel opened the moment the chip appears
+            // is built from an empty canvas and says "not in view" over a map
+            // that is about to draw. It does not correct itself either: the
+            // rebuild is a repaint away, and by then MapLibre has been idle
+            // once already.
+            //
+            // So the link waits for geology to actually be PAINTED (a fill or
+            // a contact line), polling the same measurement the strip uses,
+            // and gives up after ~9 s by opening anyway — a panel that says
+            // "not in view" over a view that really has none is correct, and
+            // silently not opening a panel the link asked for is not.
+            var tries = 0;
+            var open = function () {
+                var btn = document.querySelector('#stats-map .ml-chip.geo');
+                if (menuEl && menuEl.dataset.kind === 'geo') return;
+                var drawn = btn && (measureCoverage(), drawnKinds());
+                if (!btn || (!(drawn.units || drawn.contacts) && tries < 60)) {
+                    tries++;
+                    return setTimeout(open, 150);
+                }
+                openGeoMenu(btn);
+            };
+            setTimeout(open, 300);
+        },
+
         toggleHist: function () {
             closeMenu();
             if (typeof HistMap === 'undefined') return;
             Promise.resolve(HistMap.toggle()).then(render);
+        },
+
+        /* Live, and the menu stays open: the reader is comparing ink against
+         * ground, and a re-render on every input event would tear the slider
+         * out from under the finger. Only the number beside it is updated. */
+        histOpacity: function (v) {
+            if (typeof HistMap === 'undefined') return;
+            var pct = Math.max(10, Math.min(100, parseInt(v, 10) || 0));
+            HistMap.setOpacity(pct / 100);
+            var lbl = menuEl && menuEl.querySelector('#ml-op-v');
+            if (lbl) lbl.textContent = pct + '%';
+        },
+
+        /* The one place this app moves the camera for an overlay: the reader
+         * asked "where are the sheets" by tapping a row that says none are
+         * here. Everywhere else a drape applies in place. */
+        histGoTo: function () {
+            closeMenu();
+            var m = histMeta();
+            if (!m || typeof map === 'undefined' || !map) return;
+            if (m.bounds && m.bounds.length === 4) {
+                map.fitBounds([[m.bounds[0], m.bounds[1]], [m.bounds[2], m.bounds[3]]], { padding: 40 });
+            } else if (m.center) {
+                map.flyTo({ center: [m.center[0], m.center[1]], zoom: m.center[2] || 7 });
+            }
         },
 
         toggleGeo: function () {
@@ -2370,7 +2705,11 @@
     // which do not move the map.
     function watchMap() {
         if (typeof map === 'undefined' || !map || !map.on) return;
-        map.on('idle', function () { if (geoOn()) render(); });
+        // Both drapes describe THIS view: geology by what it painted, the
+        // scanned series by whether its envelope reaches the screen. A chip
+        // that says "not in view" has to stop saying it when the reader pans
+        // onto the sheets, or it is the contradiction it exists to prevent.
+        map.on('idle', function () { if (geoOn() || histOn()) render(); });
         // MOVING ON, in the map's own words. A reader who drags the map has
         // finished choosing in the table; the selection becomes a decision and
         // the table settles behind them. `movestart` rather than `moveend`, so

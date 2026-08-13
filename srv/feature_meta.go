@@ -147,6 +147,16 @@ func (s *Server) enrichFeatureProps(featureType, parkID, featureID string,
 		if !ok {
 			return
 		}
+		// The CLUSTER this footprint belongs to. The overview list is a list of
+		// settlements (park_settlements rows, keyed `settlement_<id>`); the map
+		// draws footprints (feature_geometries, keyed
+		// `settlement_ghsl_<area>_<lat>_<lon>`). Without this a click on the map
+		// asked the list for an id the list has never used, and the honest
+		// "no matching entry" toast was the only visible result. Invariant 7:
+		// two units, and the answer names which one it is.
+		if e.groupID != 0 {
+			props["settlement_id"] = e.groupID
+		}
 		if e.classification.Valid {
 			props["classification"] = publicSettlementClass(e.classification.String)
 		}

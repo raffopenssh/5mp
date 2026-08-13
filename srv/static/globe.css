@@ -260,10 +260,11 @@
             transition: background 0.15s, color 0.15s, opacity 0.15s; }
         .ml-opener:hover, .ml-opener:focus-visible { background: rgba(255,255,255,0.08); color: #e5e7eb; outline: none; }
 
-        /* A chip is the STATE and the way to undo it: tapping it switches that
-           one thing off. Configuring is the opener beside it. Two targets,
-           one meaning each — the alternative (a chip that opens a menu that
-           contains the same chip) is the ambiguity this replaced. */
+        /* A chip is the STATE and the route to changing it. Where a layer has
+           anything to configure the body opens its menu and the × switches it
+           off (two targets, one meaning each); the alternative — one target
+           that destroys the layer — makes "what am I looking at?" and "get rid
+           of it" the same gesture. */
         .ml-chip { display: inline-flex; align-items: center; gap: 4px; max-width: 100%;
             padding: 3px 7px; border-radius: 999px; cursor: pointer;
             border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.05);
@@ -273,7 +274,11 @@
            menu rather than switching the layer off — so "off" needs its own
            target, or the strip's one-meaning-per-target rule holds for two
            chips out of three. Body = configure, × = off. */
-        .ml-chip.geo { padding: 0; gap: 0; cursor: default; }
+        /* A chip whose body opens a menu has TWO targets — all three of them do
+           now (geology: rock/junction tables; basemap: which imagery; historical:
+           opacity and the archive). Body = configure, × = off, and the × is why a
+           layer is never destroyed by the tap that was meant to inspect it. */
+        .ml-chip.geo, .ml-chip.base, .ml-chip.hist { padding: 0; gap: 0; cursor: default; }
         .ml-chip-main, .ml-chip-x { background: none; border: 0; color: inherit; font: inherit;
             cursor: pointer; -webkit-tap-highlight-color: transparent;
             display: inline-flex; align-items: center; transition: background 0.15s, color 0.15s; }
@@ -290,6 +295,9 @@
         .ml-chip em { font-style: normal; opacity: 0.75; font-size: 9px;
             overflow: hidden; text-overflow: ellipsis; max-width: 11ch; }
         .ml-chip:hover { background: rgba(255,255,255,0.1); color: #fff; }
+        /* …except the two-target chips, whose halves light up individually — a
+           whole-chip hover on those reads as one target. */
+        .ml-chip.geo:hover, .ml-chip.base:hover, .ml-chip.hist:hover { background: rgba(255,255,255,0.05); }
         .ml-chip.base { border-color: rgba(96,165,250,0.35); color: #93c5fd; }
         .ml-chip.hist { border-color: rgba(251,191,36,0.35); color: #fcd34d; }
         .ml-chip.geo  { border-color: rgba(167,139,250,0.4); color: #c4b5fd; }
@@ -301,8 +309,16 @@
         /* On, but no sheet reaches this view. Dimmed rather than amber: it is
            not a subset of an answer, it is the absence of one, and it must not
            compete with the filtered state for the reader's attention. */
-        .ml-chip.geo.offview { border-color: rgba(255,255,255,0.12); color: #7c8291;
+        .ml-chip.geo.offview, .ml-chip.hist.offview { border-color: rgba(255,255,255,0.12); color: #7c8291;
             background: rgba(255,255,255,0.03); }
+
+        /* The opacity row inside a chip's menu: a menu item's height and
+           padding, but a control rather than a choice — so it does not get the
+           hover/selected treatment the rows around it have. */
+        .ml-op { display: flex; align-items: center; gap: 8px; padding: 7px 9px; }
+        .ml-op-l { font-size: 10px; color: #9ca3af; }
+        .ml-op input[type=range] { flex: 1; min-width: 76px; accent-color: #fcd34d; }
+        .ml-op b { font-weight: 600; font-size: 10px; color: #cbd5e1; width: 30px; text-align: right; }
 
         /* The age key: ICS colour wearing its FGDC ornament, so a swatch means
            the same thing here as in the full legend and on the polygon. */
@@ -368,6 +384,14 @@
             background: rgba(251,191,36,0.12); border-color: rgba(251,191,36,0.4);
             color: #fcd34d; outline: none; }
         .ml-sw-all { color: #fcd34d; border-color: rgba(251,191,36,0.35); }
+        /* The contact layer's swatch. It is a LINE, not a ground, so it is
+           drawn as one — an orange hairline across an empty box, in the
+           layer's own colour ramp. A filled square here would read as one more
+           period and put an edge in a key of areas. */
+        .ml-sw.ml-sw-cont > i { background: none; border: 1px solid rgba(251,191,36,0.35);
+            position: relative; overflow: hidden; box-shadow: none;
+            background-image: linear-gradient(to bottom right, transparent calc(50% - 1px),
+                #fbbf24 calc(50% - 1px), #fbbf24 calc(50% + 1px), transparent calc(50% + 1px)); }
 
         /* ── Which colours answer which question ───────────────────────────
            With "cobalt + copper" selected the key is five colours and the chip
@@ -399,9 +423,8 @@
             border-color: rgba(251,191,36,0.5); color: #fde68a; outline: none; }
         .ml-br-lbl:hover > i { opacity: 1; }
 
-        /* The geology chip opens a menu, so it carries a caret: the two other
-           chips destroy their layer on tap and this one does not, and that
-           difference has to be visible before the tap, not after it. */
+        /* A chip that opens a menu carries a caret. All three do; the glyph
+           differs where the menu is not a list (geology's is a table). */
         .ml-chip .ml-caret { font-size: 9px; opacity: 0.55; margin-left: -1px; }
         /* The commodity list is as long as the installed sheets make it (11
            today, more with a fourth sheet), so the menu scrolls rather than

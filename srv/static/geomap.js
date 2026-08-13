@@ -1509,9 +1509,14 @@
                 else if (o.hidden.size) hide.push(id + ':' + [...o.hidden].join('|'));
             });
             if (host.length) p.geomap_host = host.join(',');
-            // Only when it is not the default: a plain "here is the gold
-            // ground" link stays short, and 1 means nothing was dropped.
-            if (host.length && shared.minWeight > 1) p.geomap_host_min = String(shared.minWeight);
+            // The floor is not only the commodity chips' business: visiblePairs()
+            // applies it to the CONTACT layer too, so "classic hosts only" with
+            // no chip selected is still a different map. Emitting it only
+            // alongside geomap_host lost exactly that link — the reader shared
+            // 20 classic junctions and the recipient opened 97. Carried
+            // whenever it is not the default, which is the same rule every
+            // other parameter here follows.
+            if (shared.minWeight > 1) p.geomap_host_min = String(shared.minWeight);
             if (only.length) p.geomap_only = only.join(',');
             if (hide.length) p.geomap_hide = hide.join(',');
             // Legend-wide state, so no sheet prefix. Each is omitted at its
@@ -1710,12 +1715,16 @@
             // geology here". Checked once, after every sheet has been parsed,
             // because a floor that empties Sudan may still be answerable on
             // Tanzania.
-            if (shared.minWeight > 1 &&
+            //
+            // Only when a COMMODITY was selected, though: the floor also grades
+            // the contact layer, and a contacts-only link ("classic junctions
+            // here") has no isolation to test — dropping the floor for want of
+            // one silently handed the recipient every graded junction instead.
+            if (shared.minWeight > 1 && order.some(id => st(id).commodities.size) &&
                 !order.some(id => st(id).commodities.size && st(id).isolate && st(id).isolate.size)) {
-                const had = order.some(id => st(id).commodities.size);
                 shared.minWeight = 1;
                 applyAllSelections();
-                if (had && typeof showToast === 'function') {
+                if (typeof showToast === 'function') {
                     showToast('Geology selection is out of date \u2014 that link keeps only the ' +
                         'strongest hosts and this build of the sheets has none; showing every host.',
                         'warning');

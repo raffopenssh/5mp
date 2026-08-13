@@ -1893,7 +1893,10 @@
                 const L = window.LODLayer;
                 const full = (L && p.rid != null) ? L.detailFor(p.rid) : null;
                 if (a && typeof openAreaOverview === 'function') {
-                    openAreaOverview(a, tipType, (full && full.feature_id) || null);
+                    const props = full || p;
+                    const fid = (typeof overviewFeatureID === 'function')
+                        ? overviewFeatureID(tipType, props) : (props.feature_id || null);
+                    openAreaOverview(a, tipType, fid);
                 }
             }
         };
