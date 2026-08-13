@@ -428,6 +428,44 @@ Two bugs this found, both of which had printed a plausible wrong number:
   everywhere" — invariant 1, in the report whose job is honesty. `at_floor()`
   accepts both, and "nothing comparable" now prints as a result.
 
+### Structural context layers (WP2, shipped 2026-08-13)
+
+The two AKP layers the survey below recommended are ingested and served:
+`active_faults` (406, Macgregor 2014) and `craton_edges` (9 — the **boundary**
+linework of the craton polygons, never the fill; see the survey for why the
+interior means nothing). They are **ungraded context lines outside the
+rock/junction matrix**: no affinity rows, no amber ramp — fault red-brown
+short dash, craton violet long dash, same inks in the GPKG QML.
+
+* **Fetch:** `scripts/geomaps/fetch_akp.py` → `data/akp/*.geojson` with R7
+  attribution embedded; fails writing nothing when counts fall short.
+* **Serve:** `srv/geomap_structural.go`, `GET /api/geomap-structural/{layer}`
+  (NOT `/api/geomap/structural/…` — that pattern conflicts with
+  `/{sheet}/download` in Go's ServeMux). Gzipped once at load, immutable +
+  `?v=` rev. Catalogue block `structural` in `/api/geomap`; an empty file is
+  `available:false` + reason, never an empty layer (invariant 1/8).
+* **Skill:** `geoStructuralSkill`/`geoStructuralSkillScope` in
+  `geomap_scores_table.go` are **generated** by `gen_scores_go.py` from the
+  eval's `continental.proximity` block (which records its own `near_km`).
+  Absent block ⇒ empty table ⇒ the UI prints "unmeasured". Skill keys keep
+  the eval's words (`craton_edge` vs served `craton_edges`) so a mismatch is
+  visible, and `TestStructuralSkillMatchesEvalOutput` compares the two.
+* **Frontend:** `shared.structural` Set in geomap.js; add-once layers, toggle
+  is a paint property (`paintStructural`); share param `geomap_structural=`
+  (only reader-drawn state travels); auto-drawn with the junction tab via
+  `GeoMap.setStructuralAuto()` under the autoContacts contract
+  (`shared.autoStructural`). Panel block `geoStructuralBlockHTML()` in
+  globe.html prints the catalogue's lifts (never typed — a src_guard greps
+  for hardcoded `×` numbers) incl. coltan/craton 0.4×, which is a mixed
+  result and stays visible.
+* **GPKG:** two tables `structural_active_faults`/`structural_craton_edges`;
+  whole catalogue ships both `Visible:false`, view export ships exactly
+  `sel.Structural` with `Visible:true`; stamp covers both input files
+  (`geoMapGPKGInputs`), tested.
+* **Tests:** `srv/geomap_structural_test.go` (served == file, empty refusal,
+  `?v=`, stamp, view selection), `TestStructuralSkillMatchesEvalOutput`,
+  api `geomap_structural_served_whole`, ui share params + src_guards.
+
 ### Other geology data, weighed: what is worth ingesting and what is not
 
 Surveyed 2026-08-13, all measured against the same IPIS/USGS truth rather than

@@ -506,6 +506,11 @@ func geoMapGPKGInputs() geoMapGPKGStamp {
 	}
 	if len(st.Sheets) > 0 {
 		add("anchors", geoAnchorFile())
+		// The structural linework rides in the same file, so its inputs are
+		// part of the same stamp: a re-fetched fault file must stale the
+		// package exactly like a re-derived contact file does.
+		add("faults", geoStructuralPath(geoStructuralLayers["active_faults"].File))
+		add("cratons", geoStructuralPath(geoStructuralLayers["craton_edges"].File))
 	}
 	return st
 }
@@ -556,6 +561,10 @@ type geoMapSelection struct {
 	// the contact layer OFF, which is different from "every contact": a
 	// contacts-off view must not ship 882 lines nobody asked for.
 	Pairs []string `json:"pairs"`
+	// Structural layer ids ("active_faults", "craton_edges") the reader had
+	// drawn. Same OFF-means-off rule as Pairs; the whole-catalogue export
+	// (sel == nil) ships every installed one.
+	Structural []string `json:"structural"`
 	// What the reader would call this, for the layer description and the QGIS
 	// project title ("gold hosts, likely+"). Never used as a filter.
 	Label string `json:"label"`
@@ -882,6 +891,41 @@ func buildGeoMapGeoPackageSel(path string, sheets []string, sel *geoMapSelection
 			Abstract: al.Description(),
 		})
 		w.SetStyle(al.Name(), aqml, "Which list the working comes from")
+	}
+
+	// THE CONTINENTAL STRUCTURAL LINES. In the whole-catalogue file every
+	// installed one ships (they are context, like the anchors); in a filtered
+	// view only the ones the reader had drawn (sel.Structural), because a
+	// switched-off layer arriving in the download would be a picture of our
+	// defaults, not of their view. Visible: matches how they arrived — drawn
+	// in a view export, standing by (off) in the catalogue file, where the
+	// reader never asked for them.
+	for _, sid := range []string{"active_faults", "craton_edges"} {
+		wantStructural := sel == nil
+		if sel != nil {
+			for _, x := range sel.Structural {
+				if x == sid {
+					wantStructural = true
+				}
+			}
+		}
+		if !wantStructural {
+			continue
+		}
+		sl, sqml, err := addGeoStructuralLayer(w, sid)
+		if err != nil {
+			return err
+		}
+		if sl == nil {
+			continue // not installed here; the catalogue names the absence
+		}
+		specs = append(specs, gpkgLayerSpec{
+			Table: sl.Name(), Title: geoStructuralLayers[sid].Label + " (context)",
+			Group: "Reference", Geometry: "Line", WKBType: "MultiLineString",
+			QML: sqml, Visible: sel != nil, Opacity: 1,
+			Abstract: sl.Description(),
+		})
+		w.SetStyle(sl.Name(), sqml, "Ungraded structural context")
 	}
 
 	// The extent is the UNITS', not the union of every layer. The anchors reach

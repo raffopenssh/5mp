@@ -84,6 +84,10 @@ tile cache pattern. Batch-commit per area (R6).
 
 ## WP2 — JRC Africa Knowledge Platform: faults + craton edges as a scored layer
 
+> **DONE 2026-08-13** — see `docs/agents/overlays.md` "Structural context
+layers (WP2)". Note: served at `/api/geomap-structural/{layer}` (ServeMux
+conflict), skill measured on DRC only and every surface says so.
+
 **Question answered:** structural context for mining ground in eastern CAR,
 where the sheet affinity model measures null (overlays.md "Other geology data,
 weighed"). The eval **already measured** these layers: `active_faults` 1.6–2.7×
