@@ -508,7 +508,69 @@ func geoMapGPKGInputs() geoMapGPKGStamp {
 //     commodity affinity.
 //   - the commodity columns are the UNION over all sheets, so `"w_gold" IS NOT
 //     NULL` answers across the whole area rather than per file.
+//
+// geoMapSelection is WHAT THE READER IS LOOKING AT, resolved by the client.
+//
+// It is a list of unit keys and contact pairs rather than a copy of the
+// chooser's filters, and that is deliberate. The panel's filter is five
+// clauses deep (commodity chips expanded through the host map at a strength
+// floor, matrix cells, hidden units, hidden periods, a lithology filter) and
+// re-implementing it here would put two implementations between the reader and
+// their own download — which is the shape of bug where the picture and the
+// file quietly disagree and neither says so. The client already computes the
+// exact set it paints (visibleCodes/visiblePairs, the same functions that feed
+// the MapLibre filter), so it sends that. The file IS the picture, by
+// construction rather than by two things agreeing.
+//
+// The cost is that a selection is a snapshot: it names codes, and a re-tile
+// that merges two units would make it stale. That is fine HERE and nowhere
+// else — the selection lives for the duration of one request. Share links
+// still travel as commodities and lithologies (geomap.js getShareParams), for
+// exactly the reason this does not.
+type geoMapSelection struct {
+	// Units, as "<sheet>:<code>" — the same key the layer and the QGIS
+	// renderer are keyed on.
+	Units []string `json:"units"`
+	// Contact pairs, as "<sheet>:<codeA>|<codeB>". Empty means the reader had
+	// the contact layer OFF, which is different from "every contact": a
+	// contacts-off view must not ship 882 lines nobody asked for.
+	Pairs []string `json:"pairs"`
+	// What the reader would call this, for the layer description and the QGIS
+	// project title ("gold hosts, likely+"). Never used as a filter.
+	Label string `json:"label"`
+	// The share link that reproduces the view. It goes INTO the file, because
+	// a colleague who receives the GeoPackage should be able to get back to
+	// the map that produced it.
+	Link string `json:"link"`
+}
+
+func (s *geoMapSelection) unitSet() map[string]bool {
+	if s == nil {
+		return nil
+	}
+	m := make(map[string]bool, len(s.Units))
+	for _, k := range s.Units {
+		m[k] = true
+	}
+	return m
+}
+
+func (s *geoMapSelection) pairSet() map[string]bool {
+	if s == nil {
+		return nil
+	}
+	m := make(map[string]bool, len(s.Pairs))
+	for _, k := range s.Pairs {
+		m[k] = true
+	}
+	return m
+}
+
 func buildGeoMapGeoPackage(path string, sheets []string) error {
+	return buildGeoMapGeoPackageSel(path, sheets, nil)
+}
+
+func buildGeoMapGeoPackageSel(path string, sheets []string, sel *geoMapSelection) error {
 	if len(sheets) == 0 {
 		return fmt.Errorf("no vectorized sheets are built")
 	}
