@@ -1,3 +1,4 @@
+acb3fd0 2026-08-13 15:59:54 Record c69b8e9 in the commit log
 c69b8e9 2026-08-13 15:57:12 Close AOI_STRUCTURAL_FIXES: F10 containment, F11 the fleet, and F9's blind spot
 7d06517 2026-08-13 15:14:40 Geology strip: a zero that can be proven, and a legend that gets out of the way
 b82fb39 2026-08-13 15:06:45 F10 audit: protected_area_id is a catchment, not a park
@@ -17,4 +18,3 @@ b7c8084 2026-08-13 10:38:00 Provenance holds on the five settlement reads fff3dd
 f9a9017 2026-08-13 10:08:17 Crisis Tracker: 50 mine sites in the half of the CAR nobody surveyed
 b318eae 2026-08-13 09:28:47 Mining reference for all four countries, with a measured reach bias
 5a34d8d 2026-08-13 08:50:38 Add ACLED event fetcher for mining reference countries (CAF/SSD/SDN/TZA)
-b1ac4dc 2026-08-13 06:31:09 Geology: the affinity model carries its own measured score
