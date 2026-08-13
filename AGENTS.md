@@ -31,6 +31,7 @@ settlements, patrol tracking. ~17k-line single-page frontend + SQLite (1.8 GB).
 | Mining detection (retired — do not rebuild) | `docs/agents/mining.md` |
 | Mining reference lists, ACLED + Crisis Tracker, coverage bias, reach strata | `docs/agents/acled.md` |
 | Geological contact zones (open brief, not built) | `docs/agents/HANDOVER_CONTACTS.md` |
+| Geology export + mining anchors (open brief, half built) | `docs/agents/HANDOVER_GEOLOGY_EXPORT.md` |
 
 Other human docs: `docs/API.md`, `docs/DATABASE.md`, `docs/SCRIPTS.md`,
 `docs/ARCHITECTURE.md`, `docs/QUICK_TASKS.md`, `docs/DATA_FLOW.md`.
