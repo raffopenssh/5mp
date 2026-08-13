@@ -57,6 +57,8 @@ STRIDE = 1792        # 256 px overlap so edge labels appear whole in one tile
 SEND = 1024          # downscaled size sent to the model
 INK_MIN = 0.0015     # fraction of dark pixels below which a tile is 'blank'
 MAX_TOKENS = 6000
+RETRY_WAIT = 600     # s between no-progress passes (allocation empty, gateway down)
+MAX_STALLED = 12     # give up after this many consecutive no-progress passes (~2 h)
 
 XSA_BBOX = (22.70, 4.25, 31.30, 10.97)  # W,S,E,N -- study area first
 
@@ -261,8 +263,63 @@ def cmd_run(args):
             [(sid, tx, ty) for tx, ty in tile_grid(size)])
     c.commit()
 
+    # Self-healing loop: a pass sweeps everything pending or errored; errored
+    # tiles are transient by construction (402 allocation-empty, 502, TLS
+    # resets -- the model itself never marks a tile terminal), so the run
+    # keeps sweeping until the queue is clean. A pass that fixes *nothing*
+    # means the failure is environmental (allocation still empty, gateway
+    # down), so we wait RETRY_WAIT and try again rather than hammering; after
+    # MAX_STALLED consecutive no-progress passes we stop and say so loudly --
+    # exiting 0 with work outstanding would be a no-op reading as an answer.
+    stalled = 0
+    while True:
+        attempted, succeeded = run_pass(c, sheets, args)
+        if args.limit:  # bounded test run: one pass, no healing
+            break
+        remaining = c.execute(
+            "SELECT count(*) FROM tiles WHERE state IN ('pending','error')"
+            + (" AND sheet=?" if args.sheet else ""),
+            (args.sheet,) if args.sheet else ()).fetchone()[0]
+        if remaining == 0:
+            print("queue clean: all tiles done or blank", flush=True)
+            break
+        if succeeded == 0:
+            stalled += 1
+            if stalled >= MAX_STALLED:
+                print(f"STALLED: {remaining} tiles still failing after "
+                      f"{MAX_STALLED} no-progress passes -- giving up. "
+                      f"Check token allocation / gateway, then re-run.",
+                      flush=True)
+                sys.exit(1)
+            print(f"pass fixed nothing ({remaining} left); waiting "
+                  f"{RETRY_WAIT}s before retry {stalled}/{MAX_STALLED}",
+                  flush=True)
+            time.sleep(RETRY_WAIT)
+        else:
+            stalled = 0
+            print(f"pass done: {succeeded}/{attempted} ok, "
+                  f"{remaining} remaining; sweeping again", flush=True)
+
+    c.commit()
+    # Finalize the queryable artefacts. The FTS index is trigger-maintained
+    # (always current), but labels_dedup is a batch product and would
+    # otherwise lag every new label until someone remembered to run `dedupe`
+    # by hand -- the API prefers labels_dedup when non-empty, so a stale one
+    # silently hides new sheets. Rebuild it whenever this run added anything.
+    if not args.limit:
+        print("rebuilding labels_dedup + optimizing indexes...", flush=True)
+        cmd_dedupe(args)
+        c.execute("INSERT INTO labels_fts(labels_fts) VALUES('optimize')")
+        c.execute("ANALYZE")
+        c.commit()
+    cmd_status(args)
+
+
+def run_pass(c, sheets, args):
+    """One sweep over pending+error tiles. Returns (attempted, succeeded)."""
     lock = threading.Lock()
     done = [0]
+    ok = [0]
     t0 = time.time()
 
     for sid, path, gt, size, pri in sheets:
@@ -298,6 +355,8 @@ def cmd_run(args):
                         "INSERT INTO labels(sheet,tx,ty,text,kind,partial,px,py,lon,lat,model)"
                         " VALUES(?,?,?,?,?,?,?,?,?,?,?)", res["labels"])
                 done[0] += 1
+                if res["state"] != "error":
+                    ok[0] += 1
                 if done[0] % 10 == 0:
                     c.commit()
                     el = time.time() - t0
@@ -314,7 +373,7 @@ def cmd_run(args):
             break
 
     c.commit()
-    cmd_status(args)
+    return done[0], ok[0]
 
 
 def cmd_status(args):
