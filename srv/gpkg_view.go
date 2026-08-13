@@ -303,13 +303,18 @@ func (s *Server) gpkgViewDetections(w *gpkgWriter, o gpkgExportOpts) error {
 			{"latitude", "REAL"}, {"longitude", "REAL"}, {"brightness_k", "REAL"},
 			{"frp_mw", "REAL"}, {"confidence", "TEXT"}, {"daynight", "TEXT"},
 			{"satellite", "TEXT"}, {"protected_area_id", "TEXT"},
+			// `protected_area_id` is the NEAREST park within 100 km, not the park
+			// the detection is in (srv/fire_containment.go). Exporting it alone
+			// hands a GIS user a column that reads as containment and is a
+			// catchment; the flag travels with it so a filter is possible.
+			{"in_protected_area", "BOOLEAN"},
 		})
 	if err != nil {
 		return err
 	}
 	q := `SELECT latitude, longitude, acq_date, COALESCE(acq_time,''), brightness, frp,
 		COALESCE(confidence,''), COALESCE(daynight,''), COALESCE(satellite,''),
-		COALESCE(protected_area_id,'')
+		COALESCE(protected_area_id,''), COALESCE(in_protected_area,0)
 		FROM fire_detections
 		WHERE latitude BETWEEN ? AND ? AND longitude BETWEEN ? AND ?`
 	args := []interface{}{v.BBox[1], v.BBox[3], v.BBox[0], v.BBox[2]}
@@ -330,13 +335,14 @@ func (s *Server) gpkgViewDetections(w *gpkgWriter, o gpkgExportOpts) error {
 		var lat, lon float64
 		var bright, frp sql.NullFloat64
 		var date, atime, conf, dn, sat, paID string
-		if rows.Scan(&lat, &lon, &date, &atime, &bright, &frp, &conf, &dn, &sat, &paID) != nil {
+		var inPA int
+		if rows.Scan(&lat, &lon, &date, &atime, &bright, &frp, &conf, &dn, &sat, &paID, &inPA) != nil {
 			continue
 		}
 		l.Add(fmt.Sprintf(`{"type":"Point","coordinates":[%g,%g]}`, lon, lat),
 			gpkgDateTimeParts(date, atime), gpkgDate(date), gpkgStr(atime),
 			lat, lon, gpkgNF(bright), gpkgNF(frp), gpkgStr(conf), gpkgStr(dn),
-			gpkgStr(sat), gpkgStr(paID))
+			gpkgStr(sat), gpkgStr(paID), inPA)
 	}
 	w.SetStyle("fire_detections", styleViewDetections(),
 		"One point per satellite overpass detection")

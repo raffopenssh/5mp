@@ -151,8 +151,8 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
         <!-- .stats-lod: what the layer is CURRENTLY drawing, on the control
              that switches it on. Hidden until the layer is on, so the panel is
              unchanged for anyone not using it (see setLayerLOD). -->
-        <div class="stats-item fire layer-toggle" id="stat-fires" onclick="toggleViewLayer('fires')" title="Click to show/hide fires in view">
-            <span class="stats-label">Fire Activity</span>
+        <div class="stats-item fire layer-toggle" id="stat-fires" onclick="toggleViewLayer('fires')" title="Detections inside the park boundary. Click to show/hide fires in view.">
+            <span class="stats-label" title="VIIRS detections whose ingest placed them inside the boundary. The fire popup counts detections belonging to fire GROUPS near or inside the park, which is a larger number for the same word.">Fire Activity <span style="opacity:0.5;font-size:0.85em;">(inside)</span></span>
             <span class="stats-value"><span id="stats-fires">0</span><span class="stats-trend stable" id="stats-fire-trend"></span></span>
             <span class="stats-lod" id="lod-fires"></span>
         </div>
@@ -981,21 +981,35 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             // rather than dropped: the reader is told the number is questioned,
             // not shown a different number (F9).
             const breakMarks = series.map((d, i) => (i > 0 && d.brk)
-                ? `<line x1="${((xs(i)+xs(i-1))/2).toFixed(1)}" y1="0" x2="${((xs(i)+xs(i-1))/2).toFixed(1)}" y2="${h}" stroke="#888" stroke-width="1" stroke-dasharray="2,2" opacity="0.8"><title>Method changes here: ${d.methodLabel || 'different measurement'} \u2014 the two sides are not comparable</title></line>`
+                ? `<line x1="${((xs(i)+xs(i-1))/2).toFixed(1)}" y1="0" x2="${((xs(i)+xs(i-1))/2).toFixed(1)}" y2="${h}" stroke="#888" stroke-width="1" stroke-dasharray="2,2" opacity="0.8"><title>${d.brkTitle || `Method changes here: ${d.methodLabel || 'different measurement'} \u2014 the two sides are not comparable`}</title></line>`
                 : '').join('');
             const reviewMarks = series.map((d, i) => d.review
                 ? `<circle cx="${xs(i).toFixed(1)}" cy="${ys(d.v).toFixed(1)}" r="2.6" fill="none" stroke="#f59e0b" stroke-width="1.2"><title>${d.label}: flagged for provenance review \u2014 a step change against its own history</title></circle>`
                 : '').join('');
+            // A NULL REFERENCE IS A GAP, NOT A ZERO. `v3 || 0` drew the
+            // prior-years average down to the axis wherever it was unmeasured
+            // (F11 drops prior years flown by a different satellite fleet), and
+            // a line touching zero says "no fire in prior years" — the opposite
+            // of "we cannot compare" (invariant 12).
+            const gapLine = (vals, yfn) => {
+                let out = '', pen = true;
+                vals.forEach((v, i) => {
+                    if (v == null) { pen = true; return; }
+                    out += `${pen ? 'M' : 'L'}${xs(i).toFixed(1)},${yfn(v).toFixed(1)}`;
+                    pen = false;
+                });
+                return out;
+            };
             const overlay = (hasV2
                 ? `<path d="${line(series.map(d => d.v2 || 0), ys2)}" fill="none" stroke="${opts.v2Color}" stroke-width="1.2" opacity="0.9"/>` : '')
                 + (hasV3
-                ? `<path d="${line(series.map(d => d.v3 || 0), ys)}" fill="none" stroke="#9ca3af" stroke-width="1" stroke-dasharray="3,2" opacity="0.8"/>` : '');
+                ? `<path d="${gapLine(series.map(d => d.v3 == null ? null : d.v3), ys)}" fill="none" stroke="#9ca3af" stroke-width="1" stroke-dasharray="3,2" opacity="0.8"/>` : '');
             const axisLabels = `<text x="1" y="8" font-size="7" fill="${color}" opacity="0.85">${max.toLocaleString()}</text>`
                 + (hasV2 ? `<text x="${w-1}" y="8" font-size="7" text-anchor="end" fill="${opts.v2Color}" opacity="0.85">${max2.toLocaleString()}</text>` : '');
             // Invisible hover/click strips
             const bw = (w - 2*pad) / (series.length - 1);
             const strips = series.map((d, i) =>
-                `<rect x="${(xs(i) - bw/2).toFixed(1)}" y="0" width="${bw.toFixed(1)}" height="${h}" fill="transparent" style="cursor:pointer;" onclick="event.stopPropagation(); sparkClick('${sid}', ${i})"><title>${d.label}: ${d.v.toLocaleString(undefined,{maximumFractionDigits:2})}${unit}${d.v2 != null && opts.v2Label ? ` · ${d.v2.toLocaleString()} ${opts.v2Label}` : ''}${d.v3 != null && opts.v3Label ? ` · ${d.v3.toLocaleString(undefined,{maximumFractionDigits:1})} ${opts.v3Label}` : ''}\nClick to filter time range</title></rect>`
+                `<rect x="${(xs(i) - bw/2).toFixed(1)}" y="0" width="${bw.toFixed(1)}" height="${h}" fill="transparent" style="cursor:pointer;" onclick="event.stopPropagation(); sparkClick('${sid}', ${i})"><title>${d.label}: ${d.v.toLocaleString(undefined,{maximumFractionDigits:2})}${unit}${d.v2 != null && opts.v2Label ? ` · ${d.v2.toLocaleString()} ${opts.v2Label}` : ''}${d.v3 != null && opts.v3Label ? ` · ${d.v3.toLocaleString(undefined,{maximumFractionDigits:1})} ${opts.v3Label}` : ''}${d.fleet ? `\n${d.fleet}` : ''}\nClick to filter time range</title></rect>`
             ).join('');
             const legend = opts.v2Color && opts.v2Label
                 ? `<span style="float:right;"><span style="color:${color};">▬</span> ${opts.label || ''} <span style="color:${opts.v2Color};">▬</span> ${opts.v2Label}${hasV3 && opts.v3Label ? ` <span style="color:#9ca3af;">╌</span> ${opts.v3Label}` : ''}</span>` : '';
@@ -1006,7 +1020,7 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                     <path d="${main}" fill="none" stroke="${color}" stroke-width="1.4"/>
                     ${breakMarks}${reviewMarks}${overlay}${axisLabels}${strips}
                 </svg>
-                ${anyBreak ? `<div style="font-size:8px;color:#888;margin-top:2px;">\u258f measurement method changes at the dashed rule \u2014 the two sides are different quantities, not a trend</div>` : ''}
+                ${anyBreak ? `<div style="font-size:8px;color:#888;margin-top:2px;">\u258f ${opts.breakNote || 'measurement method changes at the dashed rule \u2014 the two sides are different quantities, not a trend'}</div>` : ''}
                 <div style="display:flex;justify-content:space-between;font-size:8px;color:#666;"><span>${series[0].label}</span><span>${series[series.length-1].label}</span></div>
             </div>`;
         }
@@ -11064,7 +11078,7 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                     el.innerHTML = `
                         ${renderActiveGroups()}
                         <div class="pa-popup-mini-stat">
-                            <span class="pa-popup-mini-stat-label">Fire detections (${rangeLabel})</span>
+                            <span class="pa-popup-mini-stat-label" title="${escapeHtml(data.total_fires_basis || 'detections in fire groups near or inside the park')} — the stats panel counts detections inside the boundary, which is a different number for the same word">Fire detections in groups (${rangeLabel})</span>
                             <span class="pa-popup-mini-stat-value">${formatNumber(filteredFireCount)}</span>
                         </div>
                         ${filteredGroupCount > 0 ? `<div class="pa-popup-mini-stat">
@@ -11133,27 +11147,67 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                             const byWeekNum = {};
                             td.weeks.forEach(wk => {
                                 const wn = isoWeek(wk.week), yr = wk.week.slice(0, 4);
-                                (byWeekNum[wn] = byWeekNum[wn] || {})[yr] = wk.fires;
+                                (byWeekNum[wn] = byWeekNum[wn] || {})[yr] = {v: wk.fires, f: wk.sensors || ''};
                             });
-                            const priorAvg = (weekDate) => {
+                            // DO NOT COMPARE ACROSS FLEETS (F11, and the same rule
+                            // F9 applies to area_method). A 2024 week whose "prior
+                            // years average" is drawn from one-satellite years is
+                            // compared against a third of an instrument, and every
+                            // park then reads as a fire emergency at the cutover.
+                            // Prior years with a DIFFERENT fleet are dropped; if
+                            // none survive the reference line is absent, not zero
+                            // — unmeasured is not the same as none.
+                            const priorAvg = (weekDate, fleet) => {
                                 const wn = isoWeek(weekDate), yr = weekDate.slice(0, 4);
                                 const vals = Object.entries(byWeekNum[wn] || {})
-                                    .filter(([y]) => y !== yr).map(([, v]) => v);
-                                return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
+                                    .filter(([y, d]) => y !== yr && (!fleet || !d.f || d.f === fleet))
+                                    .map(([, d]) => d.v);
+                                return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
                             };
                             let weeks = td.weeks;
                             if (dateFrom || dateTo) {
                                 weeks = weeks.filter(wk => (!dateFrom || wk.week >= dateFrom.slice(0,10)) && (!dateTo || wk.week <= dateTo.slice(0,10)));
                             }
                             if (weeks.length < 2) return;
+                            // A 3x STEP THAT IS THE FLEET, NOT THE FIRE (F11).
+                            // One VIIRS sensor flies before 2024, three after,
+                            // so weekly detections jump ~3x on 2024-01-01 with
+                            // no extra hectare burning. Where the fleet changes
+                            // the line is CUT, exactly as F8 cuts the Hansen/GFW
+                            // switch (invariant 7). The fleet is measured, not
+                            // assumed: when `sensor_epochs_measured` is false
+                            // nothing is drawn and the caption says unmeasured,
+                            // because an unbroken line asserts continuity.
+                            const fleetKnown = td.sensor_epochs_measured === true;
+                            const fleetLabel = wk => wk.sensor_count
+                                ? `${wk.sensor_count} satellite${wk.sensor_count > 1 ? 's' : ''} (${wk.sensors})`
+                                : '';
+                            let prevFleet = null, fleetBreaks = 0;
                             const series = weeks.map(wk => {
                                 const end = new Date(wk.week + 'T00:00:00'); end.setDate(end.getDate() + 6);
+                                // Only a KNOWN, CHANGED fleet breaks the line — a
+                                // week with no epoch row must not manufacture a
+                                // break out of ignorance.
+                                const f = fleetKnown ? (wk.sensors || '') : '';
+                                const brk = !!(f && prevFleet && f !== prevFleet);
+                                if (brk) fleetBreaks++;
+                                const brkTitle = brk
+                                    ? `Satellite fleet changes here: ${fleetLabel(wk)} instead of ${prevFleet} \u2014 the step is instrument, not landscape`
+                                    : '';
+                                if (f) prevFleet = f;
+                                const pa = priorAvg(wk.week, f);
                                 return {label: wk.week, from: wk.week, to: end.toISOString().slice(0,10),
                                         v: wk.fires, v2: wk.groups,
-                                        v3: Math.round(priorAvg(wk.week) * 10) / 10,
+                                        v3: pa == null ? null : Math.round(pa * 10) / 10,
+                                        brk, brkTitle,
+                                        fleet: fleetKnown ? fleetLabel(wk) : '',
                                         _stopped: wk.stopped};
                             });
-                            div.innerHTML = areaSparkline(series, '#ef4444', ' fires', {title: 'Weekly fires · click to filter', v2Color: '#f59e0b', v2Label: 'groups', label: 'fires', v3Label: 'prior avg'});
+                            const breakNote = fleetBreaks
+                                ? 'the satellite fleet changes at the dashed rule \u2014 detections step with the instrument, not with the fire'
+                                : '';
+                            div.innerHTML = areaSparkline(series, '#ef4444', ' fires', {title: 'Weekly fires · click to filter', v2Color: '#f59e0b', v2Label: 'groups', label: 'fires', v3Label: 'prior avg', breakNote})
+                                + (fleetKnown ? '' : '<div style="font-size:8px;color:#888;margin-top:2px;">satellite fleet unmeasured — run scripts/build_sensor_epochs.py; detection counts across 2024 may not be comparable</div>');
                         })
                         .catch(() => {});
                     
@@ -18088,7 +18142,7 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
     <div class="narrative-section fire">
         <div class="narrative-title">◆ Fire Activity</div>
         <div class="narrative-stats">
-            <span>Total detections: ${formatNumber(fire.total_fires)}</span>
+            <span title="${escapeHtml(fire.total_fires_basis || 'detections in fire groups near or inside the park')}">Total detections: ${formatNumber(fire.total_fires)}${fire.total_fires_basis ? ` <span style="opacity:0.65;font-size:0.85em;">(${escapeHtml(fire.total_fires_basis)})</span>` : ''}</span>
             <span>Response rate: ${Math.round(fire.response_rate || 0)}%</span>
             <span>Peak month: ${fire.peak_month || 'N/A'}</span>
         </div>

@@ -333,8 +333,21 @@ def reclassify_deforestation(conn, rebuilder, park_id, dry_run=False):
     return updated
 
 
+# Side of the square cell the anomaly test also runs at, in degrees (~55 km).
+# A park-wide median is an average over the whole footprint, and the defect F9
+# describes is LOCAL: 203 km² appearing in one block of XSA_Study_Area is a
+# 1,000x step there and only a 6.4x step park-wide, which is under any
+# threshold worth having. The cell is the scale the step is visible at.
+ANOMALY_CELL_DEG = 0.5
+# A ratio needs a denominator worth dividing by. Below this a cell's history is
+# noise (a single mis-scored polygon against 0.01 km² is a 100x "step"), so a
+# cell must also gain at least this much area in absolute terms to flag.
+ANOMALY_MIN_KM2 = 5.0
+ANOMALY_RATIO = 50.0
+
+
 def flag_anomalous_years(conn, park_id, dry_run=False):
-    """Mark a (park, year) whose loss is a step change as `needs_review`.
+    """Mark deforestation whose loss is a step change as `needs_review`.
 
     F9: 203 of 2023's 313.6 km² over XSA_Study_Area sits north of 9.5 °N, where
     the series recorded ~0.2 km²/yr for 22 years -- a 1,000x step in one year,
@@ -343,10 +356,45 @@ def flag_anomalous_years(conn, park_id, dry_run=False):
     Either way it is a provenance question, and drawing it as a spike answers
     it for the reader without asking anybody.
 
+    THE TEST RUNS AT TWO SCALES, AND THE SECOND ONE IS THE POINT. Written
+    park-wide only, this function returned 0 for XSA_Study_Area -- the very area
+    it was written for -- because 313.6 km² against a 48.9 km² five-year median
+    is 6.4x, well under any threshold that does not flag half the continent.
+    Across all 81 areas it found two. A detector that scores zero on its own
+    motivating example has not measured anything; it has exited 0 (invariant 1).
+    So the same test also runs per ~55 km cell, where the step is 1,000x, and
+    flags the events IN that cell rather than the whole park-year: the reader is
+    told which ground is questioned, not handed a suspicious park.
+
     Compared **within one `area_method`**: an alert-count year against a
     canopy-loss year differs by construction (F8), and comparing them would
     flag every park at the 2024 cutover.
     """
+    def step_years(series):
+        """Years in one (method, place) series whose loss is a step change.
+
+        `series` is [(year, km2)] in year order. The baseline is the five
+        PRECEDING years of the same method; fewer than three is not a baseline,
+        and a ratio against a baseline that does not exist is exactly the kind
+        of confident number this flag is for.
+        """
+        hits = []
+        for i, (year, km2) in enumerate(series):
+            prior = [v for _, v in series[max(0, i - 5):i]]
+            if len(prior) < 3:
+                continue
+            med = sorted(prior)[len(prior) // 2]
+            if km2 < ANOMALY_MIN_KM2:
+                continue
+            if med <= 0:
+                # A step out of nothing is still a step, but "50x zero" is not
+                # a ratio; the absolute floor above carries it alone.
+                hits.append((year, km2, med))
+            elif km2 / med >= ANOMALY_RATIO:
+                hits.append((year, km2, med))
+        return hits
+
+    # --- scale 1: the whole park, one (method, year) at a time -------------
     rows = conn.execute("""
         SELECT COALESCE(area_method, 'hansen_canopy_loss') AS m, year,
                SUM(area_km2) AS km2
@@ -358,28 +406,41 @@ def flag_anomalous_years(conn, park_id, dry_run=False):
     for r in rows:
         by_method.setdefault(r['m'], []).append((r['year'], float(r['km2'] or 0)))
 
-    flagged = []
+    # (method, year, cell or None) -> the numbers that justify the flag
+    flagged = {}
     for method, series in by_method.items():
-        for i, (year, km2) in enumerate(series):
-            # The five preceding years of the SAME method. Fewer than three is
-            # not a baseline, and a ratio against a baseline that does not
-            # exist is exactly the kind of confident number this flag is for.
-            prior = [v for _, v in series[max(0, i - 5):i]]
-            if len(prior) < 3:
-                continue
-            med = sorted(prior)[len(prior) // 2]
-            if med <= 0:
-                # A step out of nothing is still a step, but "50x zero" is not
-                # a ratio; require an absolute floor instead.
-                if km2 >= 50.0:
-                    flagged.append((method, year, km2, med))
-                continue
-            if km2 / med >= 50.0:
-                flagged.append((method, year, km2, med))
+        for year, km2, med in step_years(series):
+            flagged[(method, year, None)] = (km2, med, 'park')
+
+    # --- scale 2: ~55 km cells, where a local step is visible ---------------
+    cells = {}
+    for r in conn.execute("""
+        SELECT COALESCE(area_method, 'hansen_canopy_loss') AS m, year,
+               CAST(lat / ? AS INTEGER) AS cy, CAST(lon / ? AS INTEGER) AS cx,
+               SUM(area_km2) AS km2
+        FROM deforestation_events
+        WHERE park_id = ?
+        GROUP BY m, year, cy, cx
+    """, (ANOMALY_CELL_DEG, ANOMALY_CELL_DEG, park_id)):
+        cells.setdefault((r['m'], r['cy'], r['cx']), []).append(
+            (r['year'], float(r['km2'] or 0)))
+    for (method, cy, cx), series in cells.items():
+        series.sort()
+        for year, km2, med in step_years(series):
+            if (method, year, None) in flagged:
+                continue    # the park-wide flag already covers these rows
+            flagged[(method, year, (cy, cx))] = (km2, med, f'cell {cy},{cx}')
+
+    def describe(key, val):
+        method, year, _ = key
+        km2, med, where = val
+        base = (f"{km2:.1f} km² vs 5-yr median {med:.1f}" if med > 0
+                else f"{km2:.1f} km² against no prior loss")
+        return f"{year} ({method}, {where}): {base}"
 
     if dry_run:
-        for m, y, km2, med in flagged:
-            log(f"  [dry-run] would flag {y} ({m}): {km2:.1f} km² vs median {med:.1f}")
+        for k, v in sorted(flagged.items(), key=lambda kv: str(kv[0])):
+            log(f"  [dry-run] would flag {describe(k, v)}")
         return len(flagged)
 
     # Recompute from scratch every run: a year that stops being anomalous
@@ -387,13 +448,25 @@ def flag_anomalous_years(conn, park_id, dry_run=False):
     # flag becomes a permanent scar rather than a statement about the data.
     conn.execute("UPDATE deforestation_events SET needs_review = 0 "
                  "WHERE park_id = ? AND needs_review = 1", (park_id,))
-    for m, y, km2, med in flagged:
-        conn.execute("""
-            UPDATE deforestation_events SET needs_review = 1
-            WHERE park_id = ? AND year = ?
-              AND COALESCE(area_method, 'hansen_canopy_loss') = ?
-        """, (park_id, y, m))
-        log(f"  needs_review: {y} ({m}) {km2:.1f} km² vs 5-yr median {med:.1f}")
+    for k, v in flagged.items():
+        method, year, cell = k
+        if cell is None:
+            conn.execute("""
+                UPDATE deforestation_events SET needs_review = 1
+                WHERE park_id = ? AND year = ?
+                  AND COALESCE(area_method, 'hansen_canopy_loss') = ?
+            """, (park_id, year, method))
+        else:
+            cy, cx = cell
+            conn.execute("""
+                UPDATE deforestation_events SET needs_review = 1
+                WHERE park_id = ? AND year = ?
+                  AND COALESCE(area_method, 'hansen_canopy_loss') = ?
+                  AND CAST(lat / ? AS INTEGER) = ?
+                  AND CAST(lon / ? AS INTEGER) = ?
+            """, (park_id, year, method,
+                  ANOMALY_CELL_DEG, cy, ANOMALY_CELL_DEG, cx))
+        log(f"  needs_review: {describe(k, v)}")
     conn.commit()
     return len(flagged)
 

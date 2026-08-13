@@ -33,6 +33,11 @@ func (s *Server) HandleAPIFireTrend(w http.ResponseWriter, r *http.Request) {
 		Fires   int    `json:"fires"`
 		Groups  int    `json:"groups"`
 		Stopped int    `json:"stopped"`
+		// The fleet that produced this week's detections (F11,
+		// srv/fire_sensor_epochs.go). Omitted entirely when unmeasured — an
+		// absent fleet is not a constant one.
+		Sensors     string `json:"sensors,omitempty"`
+		SensorCount int    `json:"sensor_count,omitempty"`
 	}
 	byWeek := map[string]*week{}
 	get := func(k string) *week {
@@ -50,7 +55,7 @@ func (s *Server) HandleAPIFireTrend(w http.ResponseWriter, r *http.Request) {
 		FROM (
 			SELECT acq_date d, COUNT(*) c
 			FROM fire_detections
-			WHERE protected_area_id = ? AND acq_date >= ? AND acq_date <= ?
+			WHERE protected_area_id = ?`+fireInsideSQL+` AND acq_date >= ? AND acq_date <= ?
 			GROUP BY acq_date
 		)
 		GROUP BY wk`, internalID, from, to)
@@ -102,9 +107,23 @@ func (s *Server) HandleAPIFireTrend(w http.ResponseWriter, r *http.Request) {
 	for _, k := range keys {
 		out = append(out, byWeek[k])
 	}
+	// Annotate each week with the satellite fleet flying that month. The count
+	// tripled on 2024-01-01 and every fire series steps with it; the client
+	// breaks the line where `sensors` changes rather than drawing a rise
+	// (F11 / invariant 7). `sensor_epochs_measured` is false when
+	// fire_sensor_epochs has never been built, so the client can say
+	// "unmeasured" instead of implying the fleet was constant.
+	epochs := s.SensorEpochs()
+	for _, wk := range out {
+		if sensors, n, ok := sensorsOn(epochs, wk.Week); ok {
+			wk.Sensors, wk.SensorCount = sensors, n
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"park_id": internalID,
-		"weeks":   out,
+		"park_id":                internalID,
+		"weeks":                  out,
+		"sensor_epochs_measured": len(epochs) > 0,
 	})
 }

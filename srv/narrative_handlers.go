@@ -40,8 +40,16 @@ type FireNarrative struct {
 	// reader cannot mistake "not applicable" for "nothing was stopped".
 	ResponseRate float64 `json:"response_rate,omitempty"`
 	TotalFires   int     `json:"total_fires"`
-	TotalFRP     float64 `json:"total_frp,omitempty"` // Total Fire Radiative Power
-	PeakMonth    string  `json:"peak_month,omitempty"`
+	// TWO SURFACES SAYING ONE WORD MUST SAY WHICH THING THEY COUNT
+	// (invariant 7). This `total_fires` is a sum over fire GROUPS whose
+	// trajectories pass near or inside the park (the v5 chain, which computes
+	// pct_inside by point-in-polygon); /api/parks/{id}/stats counts DETECTIONS
+	// inside the boundary. Chinko: 302,900 against 145,743, and neither number
+	// is wrong. The basis travels with the number so a reader can see they are
+	// different units rather than concluding the data is broken.
+	TotalFiresBasis string  `json:"total_fires_basis,omitempty"`
+	TotalFRP        float64 `json:"total_frp,omitempty"` // Total Fire Radiative Power
+	PeakMonth       string  `json:"peak_month,omitempty"`
 	// v3 aggregate fields
 	TotalGroups         int `json:"total_groups,omitempty"`
 	ManagementFires     int `json:"management_fires,omitempty"`
@@ -620,15 +628,17 @@ func (s *Server) HandleAPIFireNarrative(w http.ResponseWriter, r *http.Request) 
 		narrative.ResponseRate = float64(stoppedInside) / float64(totalGroups) * 100
 	}
 
-	// Get total fire count for the year range
+	// Get total fire count for the year range (inside the boundary only —
+	// srv/fire_containment.go)
 	var totalFires int
 	s.DB.QueryRow(`
 		SELECT COUNT(*) FROM fire_detections 
-		WHERE protected_area_id = ? 
+		WHERE protected_area_id = ?`+fireInsideSQL+`
 		  AND CAST(strftime('%Y', acq_date) AS INTEGER) >= ? 
 		  AND CAST(strftime('%Y', acq_date) AS INTEGER) <= ?
 	`, internalID, fromYear, toYear).Scan(&totalFires)
 	narrative.TotalFires = totalFires
+	narrative.TotalFiresBasis = "detections inside the park boundary"
 
 	// Get peak month across the range
 	var peakMonth string
@@ -636,7 +646,7 @@ func (s *Server) HandleAPIFireNarrative(w http.ResponseWriter, r *http.Request) 
 	s.DB.QueryRow(`
 		SELECT strftime('%m', acq_date) as month, COUNT(*) as cnt
 		FROM fire_detections 
-		WHERE protected_area_id = ? 
+		WHERE protected_area_id = ?`+fireInsideSQL+`
 		  AND CAST(strftime('%Y', acq_date) AS INTEGER) >= ?
 		  AND CAST(strftime('%Y', acq_date) AS INTEGER) <= ?
 		GROUP BY month ORDER BY cnt DESC LIMIT 1
@@ -2302,7 +2312,7 @@ func (s *Server) analyzeFireHotspots(parkID string, year int, totalFires int) []
 			AVG(longitude) as avg_lon,
 			COUNT(*) as fire_count
 		FROM fire_detections 
-		WHERE protected_area_id = ? AND strftime('%Y', acq_date) = ?
+		WHERE protected_area_id = ?`+fireInsideSQL+` AND strftime('%Y', acq_date) = ?
 		GROUP BY lat_bucket, lon_bucket
 		HAVING fire_count >= 10
 		ORDER BY fire_count DESC
@@ -2390,6 +2400,7 @@ func (s *Server) analyzeFireTrend(parkID string, currentYear int) *FireTrendAnal
 				CAST(strftime('%Y', acq_date) AS INTEGER) as year,
 				COUNT(*) as fire_count
 			FROM fire_detections
+			WHERE in_protected_area = 1
 			GROUP BY protected_area_id, strftime('%Y', acq_date)
 		) fd ON pgi.park_id = fd.protected_area_id AND pgi.year = fd.year
 		WHERE pgi.park_id = ?
@@ -2829,10 +2840,10 @@ func (s *Server) handleFireNarrativeStats(w http.ResponseWriter, parkID, parkNam
 		response.Stats.ResponseRate = float64(stoppedInside) / float64(totalGroups) * 100
 	}
 
-	// Get total fire detections
+	// Get total fire detections (inside the boundary only — srv/fire_containment.go)
 	s.DB.QueryRow(`
 		SELECT COUNT(*) FROM fire_detections 
-		WHERE protected_area_id = ? 
+		WHERE protected_area_id = ?`+fireInsideSQL+`
 		AND acq_date >= ? AND acq_date <= ?
 	`, parkID, fmt.Sprintf("%d-01-01", fromYear), fmt.Sprintf("%d-12-31", toYear)).Scan(&response.Stats.TotalFires)
 
@@ -2841,7 +2852,7 @@ func (s *Server) handleFireNarrativeStats(w http.ResponseWriter, parkID, parkNam
 	s.DB.QueryRow(`
 		SELECT strftime('%m', acq_date) as month
 		FROM fire_detections 
-		WHERE protected_area_id = ? 
+		WHERE protected_area_id = ?`+fireInsideSQL+`
 		AND acq_date >= ? AND acq_date <= ?
 		GROUP BY month ORDER BY COUNT(*) DESC LIMIT 1
 	`, parkID, fmt.Sprintf("%d-01-01", fromYear), fmt.Sprintf("%d-12-31", toYear)).Scan(&peakMonth)

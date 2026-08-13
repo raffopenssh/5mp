@@ -178,10 +178,10 @@ the v5 rebuild for the affected parks — edited detections do not propagate.
 **Purpose:** Measure the gap between `protected_area_id` (the nearest park
 within 100 km — a *catchment*) and actual containment, per park (F10).
 
-Read-only; it writes nothing, because the F10 fix is in the queries, not the
-data. It exists so that change can be measured before and after, and so a
-boundary-file edit shows up as a delta rather than silently moving published
-counts.
+Read-only, and deliberately not the same code as the re-derivation below: it
+re-measures containment from the boundary file instead of trusting the
+re-derivation's stamp, so a bug in the writer surfaces as a disagreement rather
+than as agreement with itself.
 
 ```bash
 python3 scripts/audit_fire_containment.py                    # all 163 parks, ~12 min
@@ -191,10 +191,84 @@ python3 scripts/audit_fire_containment.py --sample 20000     # labelled ESTIMATE
 ```
 
 Reports three quantities that are routinely confused: `tagged` (the column),
-`flagged` (`+ in_protected_area = 1`, a stored ingest-time answer) and `inside`
-(point-in-polygon, measured now). 2026-08-13: 42,092,853 / 8,055,317 /
-7,585,655, median 9.8× per park. A park with no polygon reports `unmeasured`,
-not 0. See `docs/agents/fire.md` § F10.
+`flagged` (`+ in_protected_area = 1`) and `inside` (point-in-polygon, measured
+now). Before the F10 fix: 42,092,853 / 8,055,317 / 7,585,655, median 9.8× per
+park. After: `flagged` == `inside` == 7,585,655, and `flagged but NOT inside`
+is 0 — a non-zero value there means a boundary was edited and the flag is
+stale. A park with no polygon reports `unmeasured`, not 0. See
+`docs/agents/fire.md` § F10.
+
+---
+
+### `scripts/rederive_fire_containment.py`
+**Purpose:** Recompute `fire_detections.in_protected_area` by point-in-polygon
+against `data/keystones_with_boundaries.json` (F10, the writer).
+
+The flag was an ingest-time answer from whichever rule ran that night, and
+5.83% of it disagreed with today's boundary — 433,632 rows from one batch
+(2026-02-26 → 2026-07-03, the bbox+0.5° `_find_park` that `ParkAssigner`
+replaced). Corrects **both** directions (clearing only false positives moves
+every count one way and reads as a trend), commits per park so the single
+writer stays available, and leaves a park with no polygon **untouched** rather
+than clearing it.
+
+```bash
+python3 scripts/rederive_fire_containment.py --dry-run          # counts only
+python3 scripts/rederive_fire_containment.py --park CMR_Nki
+python3 scripts/rederive_fire_containment.py                    # 163 parks, ~150 s
+```
+
+2026-08-13: 469,692 cleared, 30 set. Writes
+`data/fire_containment_state.json` with the boundary file's SHA-256; a db test
+compares it and fails when a boundary edit makes the flag stale.
+
+---
+
+### `scripts/build_sensor_epochs.py`
+**Purpose:** Measure the satellite fleet behind the archive, per month, into
+`fire_sensor_epochs` (F11).
+
+One VIIRS sensor before 2024, three after, so every raw detection chart steps
+~3× at that date for reasons that are instrument, not landscape. The count is
+measured rather than typed because the fleet describes an ingest history that
+grows nightly (invariant 2). Full scan, ~90 s; cron 04:30 on the 1st.
+
+```bash
+python3 scripts/build_sensor_epochs.py --dry-run
+python3 scripts/build_sensor_epochs.py --since 2026-01
+python3 scripts/build_sensor_epochs.py
+```
+
+A scan that returns fewer months than exist reports UNFINISHED and writes
+nothing. `/api/parks/{id}/fire-trend` then carries `sensors`/`sensor_count` per
+week plus `sensor_epochs_measured`, and the sparkline cuts the line where the
+fleet changes. See `docs/agents/fire.md` § F11.
+
+---
+
+## Park Refresh
+
+### `scripts/daily_park_refresh.py`
+**Purpose:** Nightly per-park refresh — river naming, GFW deforestation ingest,
+reclassification, **anomaly flagging (F9)**, fire-group reload, refresh endpoint,
+JSON export. Cron 07:30, one park per run (`--rotate`).
+
+```bash
+python3 scripts/daily_park_refresh.py --park XSA_Study_Area --dry-run
+python3 scripts/daily_park_refresh.py --rotate      # what cron runs
+```
+
+`flag_anomalous_years()` marks deforestation whose loss is a step change as
+`needs_review`, so the UI can question the ground instead of drawing a spike.
+It tests **two scales**, and the second is the point: park-wide it scored 0 on
+`XSA_Study_Area`, the area F9 was written about, because 313.6 km² against a
+48.9 km² five-year median is 6.4× and the threshold is 50× — the 1,000× step is
+local, and summing the park averages it away. It now also tests ~0.5° (~55 km)
+cells and flags the events in the offending cell. Comparisons are scoped to one
+`area_method` (F8) and must clear `ANOMALY_MIN_KM2 = 5.0` absolutely. Flags are
+recomputed from scratch each run, so a year that stops being anomalous loses
+the flag. Current state: 19 flags, 99 rows, 8 of 81 areas; two db tests hold
+both ends (the F9 block stays flagged; flags stay under 5 % of the corpus).
 
 ---
 

@@ -20,7 +20,7 @@ lives here, one file per subsystem, loaded only when a task touches it.
 | `reference.md` | Data files, key API examples, DB stats, Lucide icon system |
 | `mining.md` | Retired mining detection — read before proposing anything mining-related |
 | `acled.md` | Mining occurrence reference; what ACLED and Crisis Tracker may say about our truth sets' reach |
-| `HANDOVER_AOI_FIXES.md` | AOI structural data-correctness fixes (F1–F12): surface vs extent, measured population, the backfill rotation. Delete when the queue is empty. |
+| `settlements.md` | Settlement surface vs extent, measured population and its provenance, the GHSL backfill rotation, the classifier's inputs |
 
 ## Where a new note goes
 

@@ -1,12 +1,14 @@
-# Handover — AOI structural fixes (docs/AOI_STRUCTURAL_FIXES.md)
+# Settlements — surface, extent, population, and their provenance
 
-Started 2026-08-13. **F1–F9 and F12 are deployed, migration 055 has run, and
-the backfill has converted all 157 areas.** Every settlement figure in the app
-is now a measured surface and a measured population. F10 and F11 are still
-open, and they are the only items left in the original list.
+Where every settlement figure in the app comes from, and why three of them used
+to be different numbers for one word. Began as the F1–F12 handover
+(`docs/AOI_STRUCTURAL_FIXES.md`); **all twelve are deployed**, migration 055 has
+run, the backfill has converted all 157 areas, and F10/F11 (fire containment
+and the satellite-fleet step) closed on 2026-08-13 — those two live in
+`docs/agents/fire.md` because they are fire, not settlement.
 
-Status of the whole list: **F1 F2 F3 F4 F5 F6 F7 F8 F9 F12 done · F10 F11
-open.**
+Every settlement figure here is now a **measured surface** and a **measured
+population**, or absent.
 
 ---
 
@@ -110,35 +112,30 @@ Two things the backfill exposed that were not in the original list:
   boundary is not in that response at all. A weight on the wrong quantity is
   worse than no weight.
 
-## Still open
+## The download carries its own provenance (F12, and F1/F2 leaving the app)
 
-**F10 — `protected_area_id` is a 100 km buffer. The audit is done; the edits
-are not.** Full results, the eleven call sites, and the two traps are in
-`docs/agents/fire.md` § "`protected_area_id` is a catchment, not a park (F10)".
-Headline: 42,092,853 tagged vs 7,585,655 actually inside, **median 9.8×** per
-park, and **seven parks have detections tagged and none inside** — including
-`CMR_Nki`, which the test list calls pristine and which `/api/parks/.../stats`
-credits with 2,518 fires. Eleven user-facing counts are affected (stats panel,
-fire log, both CSV exports, fire-trend, hotspots, peak month, alerts).
+`settlement_type` is **NULL everywhere**, deliberately. It used to read
+`permanent` for every row because the only rules emitting `temporary`
+(`temporary_camp`, `pastoral`) required `total_area < 5,000 m²` — *below* the
+`MIN_AREA_M2 = 5,000` ingest floor, so `temporary` was unreachable by
+construction, in a landscape whose defining feature is seasonal pastoral camps.
+The fix was not to nudge the threshold until both words appear: size cannot
+answer the question at all, and inter-epoch persistence — which can — is not
+ingested. So the column says **unmeasured**. A column that always says the same
+word is not a classification (invariant 12).
 
-The measurement is a script, not a number:
-`scripts/audit_fire_containment.py [--csv f.csv] [--sample N]` recomputes
-containment from `keystones_with_boundaries.json`, so a boundary edit shows up
-as a delta instead of silently moving published counts.
-
-What is left is the *edit*: add `AND +in_protected_area = 1` (the `+` matters —
-without it the planner picks `idx_fire_infraction` and a 0.2 s lookup becomes
-18 s) to those eleven sites, and decide separately whether to re-derive the
-flag: it is 5.83% stale, almost all of it one identifiable batch
-(2026-02-26 → 2026-07-03, written by the bbox+0.5° `_find_park` that
-`ParkAssigner` replaced in `858eb69`). Nothing has been changed, so nothing has
-regressed — the overstatement is live and was live before.
-
-**F11 — sensor count changes at 2024-01-01.** One VIIRS sensor before 2024,
-three after (2026: `N` 2,381,805 · `N20` 4,097,180 · `N21` 2,440,808). Every
-raw fire chart has a 3× step at that date that is instrument, not landscape.
-The sparkline now *has* a break mechanism (`d.brk`, built for F8) that this can
-reuse; a per-sensor rate is the alternative.
+The GeoPackage export (`srv/gpkg_export.go`, `gpkgSettlements`) is where this
+bites hardest, because **a download is the most published artefact there is**:
+it leaves the app, gets joined to other data, and has no stats panel beside it
+to explain anything. It therefore ships `area_m2` *and* `extent_m2` as separate
+columns with `area_source`, plus `population_source` and `epoch`, and writes
+`settlement_type` as SQL `NULL` rather than `''` (`gpkgStr` maps empty →
+`NULL`, so an unmeasured class cannot arrive in QGIS as a blank string that
+reads like a value). Per-polygon values from `properties_json` win over the
+cluster's row, falling back to the cluster so a missing property reads as the
+cluster's provenance rather than as absent. Verified on `CAF_Chinko`: 28
+footprints, 28 NULL `settlement_type`, 0 NULL `population_source`, 0 NULL
+`extent_m2`.
 
 ## Traps that still apply
 
@@ -156,4 +153,18 @@ reuse; a per-sensor rate is the alternative.
   omitted rather than asserting a river 700 km away.
 * **Do not compare across `area_method`.** F9's flagger scopes its median to
   one method; any new year-over-year comparison must too, or every park flags
-  at the 2024 cutover.
+  at the 2024 cutover. The fire series learned the same rule from a different
+  input: a prior-years average drawn across the 2024 satellite-fleet change is
+  a comparison against a third of an instrument (`docs/agents/fire.md`, F11).
+* **...and do not compare at one scale only.** That same flagger
+  (`flag_anomalous_years` in `scripts/daily_park_refresh.py`) scored **0 on
+  `XSA_Study_Area`**, the area it was written for: park-wide, 2023's 313.6 km²
+  against a 48.9 km² median is 6.4×, and the threshold is 50×. The 1,000× step
+  is real but *local* — 198.6 km² of it lands in four 0.5° cells north of
+  10 °N — and summing the park averaged it away. It now tests park-wide **and**
+  per ~55 km cell, flagging the events in the offending cell so the reader
+  learns which ground is questioned. Two db tests hold it: the block stays
+  flagged, and flags stay under 5 % of the corpus (currently 19 flags / 99 rows
+  / 8 of 81 areas). An anomaly detector that flags nothing has not cleared the
+  data; it has failed to look, and "almost nothing is anomalous" over a whole
+  corpus is invariant 1 wearing a result's clothes.
