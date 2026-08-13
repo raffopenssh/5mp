@@ -120,6 +120,11 @@ test_url_param "complex_combined" "&popup=TZA_Serengeti&sections=fire,species&pa
 # spec; here we only pin that the combination is a valid page.
 test_url_param "viewport_wins_over_country" "&lat=24.9331&lng=2.6151&z=6.1&country=Kenya&popup=CAF_Chinko" "" ""
 test_url_param "viewport_with_animation" "&lat=6.5&lng=24.5&z=7&date_preset=90d&anim=fireGrid,trajs,deforest&anim_paused=1" "" ""
+# The structural context lines are continental and independent of any sheet,
+# so the link must restore with no geomap= at all — and a stale id must
+# degrade to "not drawn", never to an error page.
+test_url_param "geomap_structural" "&geomap_structural=active_faults,craton_edges" "" ""
+test_url_param "geomap_structural_stale_id" "&geomap=car&geomap_structural=nosuchlayer" "" ""
 
 # ── Source guards: a click must not be swallowed ──────────────────────
 #
@@ -210,6 +215,14 @@ src_guard "maplegend_refusal_kept"        present "refused" "srv/static/maplegen
 # Both overlay modules re-render the strip, so a share link or the admin panel
 # can turn a drape on and the strip follows without a second code path.
 src_guard "maplegend_hooked_geology"      present "MapLegend.refresh\(\);   // see renderHistMapPanel" "$GLOBE"
+# The structural block must exist, and its skill line must be MEASURED OR THE
+# WORD: a lift printed without the "unmeasured" fallback beside its absent
+# case would leave a measured-looking blank (cross-cutting invariant 12).
+src_guard "geo_structural_block"          present "function geoStructuralBlockHTML" "$GLOBE"
+src_guard "geo_structural_unmeasured"     present ">unmeasured</span>" "$GLOBE"
+# The lifts are the catalogue's (generated server-side), never typed into the
+# template — a hardcoded lift would survive a re-evaluation silently.
+src_guard "geo_structural_no_typed_lift"  absent  "[0-9]\.[0-9]+×" "$GLOBE"
 
 echo
 echo "======================================="

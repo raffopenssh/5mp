@@ -365,3 +365,72 @@ func TestAffinityTooFewIsACountNotAZero(t *testing.T) {
 		}
 	}
 }
+
+// The structural skill table (geoStructuralSkill) is generated from the
+// eval's continental block by gen_scores_go.py, never typed. This compares
+// the two the same way TestAffinityScoresMatchEvalOutput does for the sheet
+// scores: a hand-edited lift, or a regenerated eval nobody re-ran the
+// generator after, both surface here.
+func TestStructuralSkillMatchesEvalOutput(t *testing.T) {
+	const path = "../data/eval/geo_affinity.json"
+	blob, err := os.ReadFile(path)
+	if err != nil {
+		t.Skipf("%s absent — run scripts/geomaps/eval_affinity.py --continental", path)
+	}
+	var doc struct {
+		Continental *struct {
+			NearKM    float64 `json:"near_km"`
+			Proximity map[string]map[string]struct {
+				MedianKM float64  `json:"median_km"`
+				Lift     *float64 `json:"lift"`
+			} `json:"proximity"`
+		} `json:"continental"`
+	}
+	if err := json.Unmarshal(blob, &doc); err != nil {
+		t.Fatalf("eval output unreadable: %v", err)
+	}
+	if doc.Continental == nil || len(doc.Continental.Proximity) == 0 {
+		// No continental block: the generated table must say UNMEASURED
+		// (empty), not carry numbers left over from a previous eval.
+		if len(geoStructuralSkill) != 0 || geoStructuralSkillScope != "" {
+			t.Fatal("eval has no continental block but the generated table still " +
+				"carries structural lifts — rerun scripts/geomaps/gen_scores_go.py")
+		}
+		return
+	}
+	const tol = 0.005
+	for layer, per := range doc.Continental.Proximity {
+		got, ok := geoStructuralSkill[layer]
+		if !ok {
+			t.Errorf("eval measured %q but the generated table has no entry — "+
+				"rerun scripts/geomaps/gen_scores_go.py", layer)
+			continue
+		}
+		for com, m := range per {
+			if m.Lift == nil {
+				continue // the random baseline row has no lift
+			}
+			g, ok := got[com]
+			if !ok {
+				t.Errorf("%s/%s: measured in the eval, missing from the table", layer, com)
+				continue
+			}
+			if diff := g.Lift - *m.Lift; diff > tol || diff < -tol {
+				t.Errorf("%s/%s lift: table %.4f, eval %.4f", layer, com, g.Lift, *m.Lift)
+			}
+		}
+		for com := range got {
+			if _, ok := per[com]; !ok {
+				t.Errorf("%s/%s: in the table but not in the eval — a stale generation", layer, com)
+			}
+		}
+	}
+	// Every SERVED layer's skill key must resolve in the eval's own
+	// vocabulary; a typo'd key would print "unmeasured" under a layer that
+	// WAS measured, which is the quiet version of a wrong number.
+	for id, spec := range geoStructuralLayers {
+		if _, ok := doc.Continental.Proximity[spec.SkillKey]; !ok {
+			t.Errorf("served layer %q names skill key %q, which the eval never measured", id, spec.SkillKey)
+		}
+	}
+}

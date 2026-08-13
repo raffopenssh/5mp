@@ -78,6 +78,11 @@
     // catalogue describes them: {available, n, sources[], withheld[], notice}
     // or {available:false, reason}. Never the points — they are export payload.
     let anchors = null;
+    // Continental structural layers from the catalogue (id -> entry), and
+    // which of them have been added to the map already (add-once, then the
+    // toggle is a paint property — the contacts' own lesson at smaller cost).
+    let structural = null;
+    const structuralAdded = new Set();
     let metaPromise = null;
     const state = {};           // id -> {on, opacity, hidden:Set, isolate:Set|null}
 
@@ -160,7 +165,19 @@
         // Whether the Advanced block is open. A setting, so it travels in the
         // share link with the rest — "look at this" should reproduce the panel
         // the sender was reading, not just the map.
-        advOpen: false
+        advOpen: false,
+        /* ── Structural context: faults and craton margins ─────────────
+         *
+         * Two continental JRC AKP line layers (415 features total), OFF by
+         * default like the contacts and for the same reason: they are
+         * context for a question, not part of the drape. Ungraded — they
+         * carry no commodity weight, so they never wear the contact amber.
+         * The set holds the layer ids currently switched ON. */
+        structural: new Set(),
+        // Did WE draw the structural lines (opening the junction tab), or
+        // did the reader? Same contract as maplegend's autoContacts: only
+        // our own doing is undone automatically.
+        autoStructural: false
     };
 
     // Per basemap, the opacity at which a hatched drape is legible without
@@ -211,9 +228,14 @@
                     // Counts and provenance only — the points are export
                     // payload, and there is no anchor layer on the map.
                     anchors = j.anchors || null;
+                    // The continental structural layers (faults, craton
+                    // margins): id -> {available, label, n, url, skill|null}.
+                    // skill is measured-or-absent; the panel's word for
+                    // absent is "unmeasured".
+                    structural = j.structural || null;
                     return sheets;
                 })
-                .catch(() => { sheets = {}; order = []; gpkg = null; anchors = null; return sheets; });
+                .catch(() => { sheets = {}; order = []; gpkg = null; anchors = null; structural = null; return sheets; });
         }
         return metaPromise;
     }
@@ -1076,6 +1098,83 @@
         if (typeof renderGeoMapPanel === 'function') renderGeoMapPanel();
     }
 
+    /* ── Continental structural linework (JRC AKP) ──────────────────
+     *
+     * Two GeoJSON line layers, whole (415 features), not tiles. Added ONCE
+     * per session the first time each is switched on, then the toggle is a
+     * paint property — the contact layer's own lesson, at a fraction of the
+     * cost. They belong to the geology PANEL but not to any sheet: the lines
+     * are continental, so they stay when a sheet is switched off and they
+     * draw over ground no sheet covers.
+     *
+     * INK: fault red-brown short dash, craton margin violet long dash.
+     * Deliberately nowhere near the contact amber ramp — the contacts are
+     * GRADED and these are not, and a graded ink on an ungraded line would
+     * claim a grade nobody computed (invariant 12's shape). The GPKG export
+     * uses the same two inks (styleGeoStructural, geomap_gpkg_layers.go).
+     */
+    const STRUCT_SRC = id => 'geomap-struct-src-' + id;
+    const STRUCT = id => 'geomap-structural-' + id;
+    const STRUCT_INK = {
+        active_faults: { color: '#b93c28', dash: [2, 1.5], width: 1.1 },
+        craton_edges: { color: '#7c3aed', dash: [5, 2.5], width: 1.6 }
+    };
+
+    function structuralAvailable(id) {
+        return !!(structural && structural[id] && structural[id].available);
+    }
+
+    function addStructural(id) {
+        if (!map || !structuralAvailable(id) || structuralAdded.has(id)) return;
+        if (!map.isStyleLoaded()) {
+            // Same retry-once-on-idle contract as add(): a queued layer that
+            // silently evaporates leaves the map wrong with no error.
+            map.once('idle', () => { if (shared.structural.has(id)) addStructural(id); });
+            return;
+        }
+        structuralAdded.add(id);
+        const ink = STRUCT_INK[id];
+        if (!map.getSource(STRUCT_SRC(id))) {
+            map.addSource(STRUCT_SRC(id), {
+                type: 'geojson', data: api(structural[id].url),
+                attribution: 'JRC Africa Knowledge Platform'
+            });
+        }
+        if (!map.getLayer(STRUCT(id))) {
+            // Above the contacts (context lines must not vanish under a
+            // sheet's own linework), still below pins and park outlines.
+            map.addLayer({
+                id: STRUCT(id), type: 'line', source: STRUCT_SRC(id),
+                layout: { 'line-cap': 'butt', 'line-join': 'round' },
+                paint: {
+                    'line-color': ink.color,
+                    'line-dasharray': ink.dash,
+                    'line-width': ['interpolate', ['linear'], ['zoom'],
+                        3, ink.width * 0.7, 8, ink.width * 1.6],
+                    // Standing by; paintStructural raises it.
+                    'line-opacity': 0
+                }
+            }, firstOverlayLayer());
+        }
+        paintStructural(id);
+    }
+
+    // Like paintContacts: opacity IS the off state, and shared.structural is
+    // the flag — nothing infers the state from the layer's presence.
+    function paintStructural(id) {
+        if (!map || !map.getLayer(STRUCT(id))) return;
+        map.setPaintProperty(STRUCT(id), 'line-opacity',
+            shared.structural.has(id) ? 0.85 : 0);
+    }
+
+    function syncStructural() {
+        if (!structural) return;
+        Object.keys(STRUCT_INK).forEach(id => {
+            if (shared.structural.has(id)) addStructural(id);
+            else paintStructural(id);
+        });
+    }
+
     // Hover a unit and it says what it is — an ordinary hover tip, the same as
     // a fire trajectory, a road or a river. It used to be `clickOnly`, on the
     // theory that a country-sized drape has no "off it" to move to, and that
@@ -1595,6 +1694,41 @@
             if (window.MapLegend) MapLegend.refresh();
         },
         contactsOn: () => shared.contacts,
+
+        /* ── Structural context (faults, craton margins) ──────────
+         * Ungraded continental linework; the toggle is a paint property
+         * after the first draw (see addStructural). `opts.auto` marks a
+         * switch WE made (junction tab opened), which is the only kind
+         * that may be undone automatically. */
+        setStructural(id, on, opts) {
+            opts = opts || {};
+            if (!structuralAvailable(id)) return;
+            if (on) shared.structural.add(id); else shared.structural.delete(id);
+            if (!opts.auto) shared.autoStructural = false;
+            syncStructural();
+            if (typeof renderGeoMapPanel === 'function') renderGeoMapPanel();
+        },
+        structuralOn: id => shared.structural.has(id),
+        structuralAnyOn: () => shared.structural.size > 0,
+        /** Catalogue entries: id -> {available, label, n, skill|null, …}. */
+        structural: () => structural,
+        /** Auto-draw both structural layers with the junction tab, and take
+         *  only our own doing away again — the autoContacts contract. */
+        setStructuralAuto(on) {
+            if (on) {
+                if (shared.structural.size) return;   // the reader was first
+                shared.autoStructural = true;
+                Object.keys(STRUCT_INK).forEach(id => {
+                    if (structuralAvailable(id)) shared.structural.add(id);
+                });
+            } else {
+                if (!shared.autoStructural) return;
+                shared.autoStructural = false;
+                shared.structural.clear();
+            }
+            syncStructural();
+            if (typeof renderGeoMapPanel === 'function') renderGeoMapPanel();
+        },
         /** Graded-only is the default; off shows every mapped junction. */
         setContactsGraded(on) {
             shared.contactsGraded = !!on;
@@ -1694,7 +1828,9 @@
                     visiblePairs(id).forEach(p => pairs.push(id + ':' + p));
                 }
             });
-            return { units, pairs };
+            // The structural layers the reader has DRAWN, so the view export
+            // ships them — off means off, same rule as the pairs.
+            return { units, pairs, structural: [...shared.structural] };
         },
         contacts: contactsOf,
         allContacts: allContacts,
@@ -1920,9 +2056,13 @@
         // 'styledata' handler: addLayer() with a `before` id that has not
         // landed yet is silently dropped.
         reattach() {
-            if (!this.anyOn()) return;
+            // The structural lines went with the style too; re-adding them is
+            // add-once again from scratch.
+            structuralAdded.clear();
+            if (!this.anyOn() && !shared.structural.size) return;
             map.once('idle', () => {
                 order.forEach(id => { if (st(id).on) { remove(id); add(id); } });
+                syncStructural();
             });
         },
 
@@ -1936,7 +2076,17 @@
             // be pointing at ("open the unit list"). Nothing else survives:
             // an opacity or a lithology filter for a layer that is not drawn
             // would restore invisibly and then surprise whoever switched it on.
-            if (!on.length) return shared.advOpen ? { geomap_adv: '1' } : null;
+            if (!on.length) {
+                const p0 = {};
+                if (shared.advOpen) p0.geomap_adv = '1';
+                // The structural lines are continental: they can be drawn with
+                // no sheet on, so they travel even here. Auto-drawn ones are a
+                // consequence of the junction tab, which travels as geo_tab.
+                if (shared.structural.size && !shared.autoStructural) {
+                    p0.geomap_structural = [...shared.structural].join(',');
+                }
+                return Object.keys(p0).length ? p0 : null;
+            }
             const p = { geomap: on.join(',') };
             const only = [], hide = [], host = [];
             on.forEach(id => {
@@ -1984,6 +2134,12 @@
             // so no sheet prefix, and absent when nothing is picked.
             if (shared.picks.size) p.geomap_cells = [...shared.picks].join(',');
             if (shared.advOpen) p.geomap_adv = '1';
+            // Off by default, so only carried when drawn — and only when the
+            // READER drew them: an auto set is the junction tab's doing and
+            // travels as geo_tab, not as a frozen copy of its consequence.
+            if (shared.structural.size && !shared.autoStructural) {
+                p.geomap_structural = [...shared.structural].join(',');
+            }
             // The contact layer is off by default, so it only travels when
             // asked for. `graded` is its default, so only its ABSENCE is
             // carried — same rule as every other parameter here.
@@ -2009,6 +2165,19 @@
             // unit list"). Everything below it needs the catalogue and a
             // layer, so it stays behind the early return.
             if (params.get('geomap_adv') === '1') shared.advOpen = true;
+            // The structural lines are continental and independent of any
+            // sheet, so they restore even in a link with no geomap= at all.
+            // Validated against the catalogue's ids: an unknown one is a
+            // stale link, and drawing nothing for it must not read as "this
+            // server has no faults".
+            const structRaw = (params.get('geomap_structural') || '').split(',').filter(Boolean);
+            if (structRaw.length) {
+                await fetchMeta();
+                structRaw.forEach(id => {
+                    if (structuralAvailable(id)) shared.structural.add(id);
+                });
+                syncStructural();
+            }
             const want = (params.get('geomap') || '').split(',').filter(Boolean);
             if (!want.length) return;
             await fetchMeta();
