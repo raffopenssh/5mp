@@ -239,6 +239,146 @@ whose units file is older than the package would otherwise ship a country short.
 A link to the panel itself is `?panel=admin&admin_tab=map-settings&map_sheet=car`.
 `srv/geomap_gpkg.go`; details in `docs/GEOLOGY.md`.
 
+### The model has a score now, and the score is not the disclaimer
+
+Added 2026-08-13. Both choosers — "rock types that can host gold" and the
+Junctions tab — were textbook inference stated in three amber dots and had
+**never been scored against an occurrence dataset**. Every surface carried "an
+inference, not a record of any deposit", which is true and is not the same
+claim: it says the layer is not *evidence*, not that it is not *useful*. Three
+dots cannot help reading as a ranking, because a ranking is the only thing
+three dots can be.
+
+Measured (`scripts/geomaps/eval_affinity.py`, quoted in `srv/geomap_scores.go`,
+shipped in `std.affinity_skill`, output `data/eval/geo_affinity_car.json`) on
+the one sheet where we hold an independent occurrence list: **CAR vs 914 IPIS
+artisanal-mine visits** (`data/ipis/caf_mines_ipis.csv`, per-site gold/diamond
+flags). The result inverts the panel's implicit story:
+
+| claim | capture | baseline | lift | control |
+|---|---|---|---|---|
+| gold **junctions**, likely+ | 52.8% within 5 km | 22.8% | **2.32×** | 2.33× vs diamond sites |
+| gold junctions, classic | 20.4% | 5.6% | **3.63×** | ∞ (0 diamond sites) |
+| gold **units**, any host | 23.7% of sites | 37.7% of area | **0.63×** | — |
+| gold units, likely+ | 10.1% | 26.4% | **0.38×** | — |
+| diamond units, classic | 34.0% | 24.1% | **1.41×** | — |
+| diamond junctions, likely+ | 2.2% | 5.3% | **0.41×** | — |
+
+**On this sheet the junctions carry the signal and the units do not.** A reader
+who isolates "rocks that can host gold" on CAR is looking at ground *less* often
+worked than the sheet as a whole. The eval's per-class table says why: the pits
+sit on `Zeta` (gneiss, 294 sites) and `gamma_h` (heterogeneous syncinematic
+granite, 85) — the two largest units the affinity table grades **zero** for
+gold, because "gneiss" and "syncinematic granite" are not the words a textbook
+uses for a host. The junction rules recover exactly that ground from the other
+side: it is the *contact* between them that is graded, and that is where the
+workings are. Diamond is the mirror image (units 1.41×, junctions 0.41×), which
+is why the eval runs two commodities — one would have concluded "junctions
+good, units bad" about the model as a whole.
+
+Three measurement disciplines, each of which changed a number materially:
+
+* **The baseline is area, and area is where a lift comes from.** 53% sounds
+  strong until you know that a random point on CAR is within 5 km of *some*
+  contact 53.4% of the time. Proximity to a line only means something graded.
+* **The random baseline is drawn inside the sheet's own union of units**, never
+  its bounding box, and the continental section draws inside the **convex hull
+  of the visits** — IPIS surveys the east of DRC, so a country-wide baseline
+  credits any layer that merely happens to be eastern, including a layer of the
+  survey's own footprint.
+* **A cross-commodity control separates "finds gold" from "finds mines."** In a
+  country with 914 visited artisanal pits that is a real confusion: the gold
+  junctions score 2.33× against *diamond-only* sites, so it is gold the lines
+  are finding. The diamond junctions' 1.09× control is how you can tell their
+  0.41× is not a sign error.
+
+⚠️ **The scores are not a tuning target.** Re-weighting the affinity table until
+CAR's unit rows read 1.5× fits 675 visits in one country and calls it geology —
+the same failure invariant 12 forbids for the fire algorithm. The eval exists to
+make a weak claim *legible*, not to launder it. If a rule changes it is because
+the geology argument changed, and the score is re-measured afterwards.
+
+Shape rules that are easy to undo:
+
+* **`nil`/absent means UNMEASURED, and the surface must print that word.**
+  Eight of ten commodities have no occurrence list, and an absent number beside
+  a 2.3× reads as a low score rather than as no score.
+* **`geoAffinityScoreFor` never quotes a higher floor than asked for** — a
+  reader on "any host" must not be shown the flattering "classic" number
+  (`TestAffinityScoreForNeverQuotesAHigherFloor`).
+* **`gold unit w>=3` is absent, not 0.** No CAR class is graded classic for
+  gold, so the filter selects 0% of the map and the ratio has no denominator.
+  "Nothing to measure" and "measured, found nothing" are different statements.
+* **The verdict follows the lift**, checked (`TestAffinityVerdictFollowsLift`),
+  because the UI colours on the verdict.
+* **`TestAffinityScoresMatchEvalOutput` pins the hand-typed table to the eval's
+  JSON** (skips if absent — it is a gitignored input, and a test that fails for
+  everyone who has not run a 90 s script is disabled within a week). Invariant 2
+  applied to a measurement: the table may be hand-written, it may not disagree.
+  `json.dump` writes `NaN`, which is not JSON and made the file unreadable to
+  the Go side — undefined ratios now ship as `null`.
+
+### Other geology data, weighed: what is worth ingesting and what is not
+
+Surveyed 2026-08-13, all measured against the same IPIS/USGS truth rather than
+judged by resolution. `--continental` in the eval reproduces the table.
+
+| source | what it is | verdict |
+|---|---|---|
+| **JRC Africa Knowledge Platform** WFS (`akp:` layers, GeoJSON, whole continent, one request, no key) | 200+ layers incl. `LithoMap_Africa` (USGS 2001, 11,977 polys, 44 age classes), `cratons` (9), `active_faults` (406, Macgregor 2014), `granites` (544), `africa_major_mineral_deposits` (969 USGS deposits) | **the one to ingest** |
+| **CGMW/BRGM 1:10M Africa** (`mapsref.brgm.fr/wxs/1GG/…`, the BGS/OneGeology record) | Thiéblemont 2016, `GeologicUnits` (STRATI/AGE/NOTATION/LITHO) + a `Faults` layer with `DESCR` = Fault / Thrust fault / Inferred thrust | good vocabulary, **GML only and painfully slow** (4 min for a 6°×8° box, connection resets); take the faults, not the units |
+| `edepot.wur.nl/484816` (DRC geological map) | 5040×7072 JPEG scan of the same Thiéblemont compilation, ~130-entry printed legend, deposit symbols **with no key on the sheet** | **skip** — a scan of data we can get as vectors, and its symbols are unusable |
+| RCMRD `Africa_Surface_Lithology` ImageServer | 20-class parent-material raster, 3-band **RGB composite**, `exportTilesAllowed: false`, empty raster attribute table | **skip** — it is a picture of a classification, not the classification |
+| `data/flowacc/` (already local) | 273 flow-accumulation tiles | covers 19.25–25.75E; **zero** IPIS CAR sites fall inside it |
+
+Measured skill of the JRC layers, DRC (7,163 IPIS visits, baseline = random
+points in the visit hull):
+
+* `active_faults` within 25 km: gold 0.227, cassiterite 0.350, coltan 0.376 vs
+  random 0.138 — **1.6–2.7×, and the ordering is right** (pegmatite-hosted tin
+  and tantalum are more fault-controlled than gold). This is the single most
+  valuable new layer, and it is 406 lines.
+* `cratons` **edge** within 25 km: gold 0.256 vs 0.087 random, **2.9×**. Scored
+  on the edge, not the interior, on purpose: 60% of the hull is inside a craton,
+  so "on a craton" scores ~1.0 and means nothing. Craton margin is the same
+  claim our junction rules make, one tectonic order up.
+* `LithoMap_Africa` gold density: `PC` 2.3×, `Qv` 4.7× — but `pCm`
+  (undivided Precambrian) is 79% of the workings on 61% of the area, i.e. **1.3×
+  at continental scale**. It is an age map with four igneous classes; as a
+  *host* map it is much weaker than our sheets, which is the argument for
+  keeping ours and using this one only where no sheet reaches.
+* `Kimb`/`S_d` (kimberlite): 159 polygons, but the nearest is **761 km** from
+  the median DRC diamond site and 876 km from CAR's. Southern Africa only —
+  a layer that is real and simply not here.
+* `gem_active_faults` (16,195): fetched, then **discarded** — 727 in an Africa
+  bbox, and their median distance to every site set is ~3,500 km. The catalogue
+  is UCERF3/SHARE, i.e. California and Europe. A bbox filter on a global
+  catalogue returning 727 features is exactly the shape invariant 1 warns
+  about: it succeeded, and it answered a different question.
+
+`data/geology_truth/usgs_africa_deposits.geojson` (969 points, CC BY 4.0,
+committed) is the second truth set and the reason to keep it: it is
+industrial-scale *named* deposits, a different kind of claim from a visited
+artisanal pit, and a model scored only on the latter is being credited with the
+former. It reaches Sudan (5 deposits, 3 gold) and Tanzania (18, 3 gold) — and
+the eval **refuses to print a lift below n=8** rather than computing one from
+three points, because a number printed there gets quoted. Its one finding so
+far is a negative worth keeping: Tanzania's `tectonic_setting` = "greenstone
+belt" covers 2.1% of the sheet and contains **0 of the 3** gold deposits (both
+Bulyanhulu and Buck Reef land in `miNA`, the Neoarchaean granitic complex) — so
+"filter to greenstone" is not the free win it looks like.
+
+**Unused fields already in the data.** The Tanzania catalogue carries six
+survey-owned columns nothing reads: `metamorphism` (32/41 classes — greenschist
+16.1% of the sheet, almandine-amphibolite 14.7%, granulite 4.4%),
+`tectonic_unit` (30/41 — Tanzania Craton 27.7%, Mozambique Belt 20.2%, Ubendian
+5.7%), `tectonic_setting` (41/41), `stratigraphy` (15/41), `age_ma` (13/41) and
+`age_strat` (41/41, already used for the tip's "as printed"). Metamorphic facies
+is the interesting one: orogenic gold is a *greenschist-facies* phenomenon and
+we have that column for 78% of the sheet, unread. It is a **third axis** beside
+age and lithology, not a fourth commodity — the same argument that made contacts
+a table rather than an eleventh row.
+
 ### Contacts: the second table, and the panel that holds both
 
 The affinity model says *which rock*; a contact says *where two of them meet*,
