@@ -72,6 +72,12 @@ data/eval/*
 # negative result documented in docs/FIRE_PIPELINE.md, and re-measuring each
 # costs a FIRMS round-trip.
 !data/eval/nrt_sp/
+# ...and the nightlights measurement (600K): the evidence for the negative
+# result in docs/agents/nightlights.md (mine sites are dark; layer folded).
+# The raw pixel extracts behind it are untracked and cost ~33 GB of LAADS
+# transfer plus a live EARTHDATA_TOKEN to regenerate, so the per-site series
+# in this file are the only durable record of the measurement.
+!data/eval/nightlights_sites.json
 # ...and the mining-reference coverage measurements (13K): the evidence for the
 # two findings in docs/agents/acled.md. They hold verdicts and summary
 # statistics only -- no ACLED rows, so nothing here substitutes for ACLED's

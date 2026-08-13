@@ -162,6 +162,12 @@ def run_area(aid, info, months=None):
     return done_total, failed_total
 
 
+def _series_mean(series):
+    """Mean radiance over observed months of a [[month, val|None]] series."""
+    vals = [v for _, v in series if v is not None]
+    return float(np.mean(vals)) if vals else None
+
+
 def series_stats(rows):
     """Summary of one point's monthly series.
     observed = months with a radiance; lit = observed months over threshold."""
@@ -196,7 +202,7 @@ def evaluate(area_ids=None):
     for aid, info in sorted(areas.items()):
         by_tile, mines, ctl = area_site_list(aid, info)
         tile_of = {pid: t for t, pts in by_tile.items() for pid, _, _ in pts}
-        site_rows, mine_meds, ctl_meds = {}, [], []
+        site_rows, mine_meds, ctl_meds, ctl_means = {}, [], [], []
         n_unextracted = 0
         for pid in list(mines) + list(ctl):
             rows = fnl.site_series(tile_of[pid], pid)
@@ -212,6 +218,9 @@ def evaluate(area_ids=None):
                     mine_meds.append(med)
             elif med is not None:
                 ctl_meds.append(med)
+                cm_mean = _series_mean([[m, v] for m, v, _ in rows])
+                if cm_mean is not None:
+                    ctl_means.append(cm_mean)
         if not site_rows:
             out_areas[aid] = {"status": "unextracted",
                               "n_sites": len(mines)}
@@ -239,6 +248,31 @@ def evaluate(area_ids=None):
                     f"control spread (sd {float(cm.std()):.2f} "
                     f"nW/(cm^2 sr)) is not resolvable here"),
             })
+            # Secondary look: means of monthly means instead of medians.
+            # Medians of a mostly-zero series saturate at 0; the mean
+            # statistic catches faint occasional glow. It is a SECOND look
+            # at the same data, so its p carries a multiple-testing caveat
+            # and it cannot flip the verdict on its own.
+            mm2 = np.array([v for v in (
+                _series_mean(site_rows[p]["series"]) for p in site_rows)
+                if v is not None])
+            cm2 = np.array(ctl_means) if ctl_means else np.array([])
+            if len(mm2) and len(cm2) and cm2.mean() > 0:
+                pooled2 = np.concatenate([mm2, cm2])
+                obs2 = float(mm2.mean())
+                perm2 = [rng.permutation(pooled2)[:len(mm2)].mean()
+                         for _ in range(2000)]
+                p2 = float((np.sum(np.array(perm2) >= obs2) + 1) / 2001)
+                skill["mean_statistic"] = {
+                    "mine_mean_nw_cm2_sr": round(obs2, 4),
+                    "control_mean_nw_cm2_sr": round(float(cm2.mean()), 4),
+                    "lift": round(obs2 / float(cm2.mean()), 3),
+                    "permutation_p": round(p2, 4),
+                    "caveat": ("second look after the median statistic; "
+                               "p is optimistic. Magnitudes far below "
+                               f"lit_threshold ({LIT_THRESHOLD}) are a "
+                               "population-level glow, not per-site skill"),
+                }
         else:
             skill["verdict"] = "unmeasured"
             skill["power_note"] = "no observed months on one side; unmeasured"
