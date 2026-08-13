@@ -210,3 +210,4 @@ data/crisistracker/
 # data/eval/ucdp/.
 data/ucdp/
 data/nightlights/
+data/histmaps/labels.sqlite3*

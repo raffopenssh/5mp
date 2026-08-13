@@ -49,6 +49,7 @@ a stall: one curl sat on an idle connection for 22 min at load 0.00.
 | Mosaic to MBTiles | `scripts/histmaps/mosaic.sh` (~4 h, resumable); `refresh_meta.py` for metadata only |
 | Overnight rebuild | `scripts/histmaps/rebuild_night.sh` + `histmap-rebuild.service` |
 | Serving | `srv/histmap.go` — `GET /api/histmap`, `/api/histmap/sudan250k/{z}/{x}/{y}.png`, `/download` |
+| OCR'd labels (query the map by coordinate) | `scripts/histmaps/ocr_labels.py` (vision-LLM pipeline, resumable, tmux `histocr`); served by `srv/histmap_labels.go` — `GET /api/histmap/sudan250k/labels?lon=&lat=&radius_km=` or `?bbox=W,S,E,N`, plus `q=` (FTS5 prefix match) and `kind=` filters. **Partial while the run is in flight** — responses carry `complete` + `progress`, never pretend a missing label means the map is silent there. DB: `data/histmaps/labels.sqlite3` (gitignored derived output; `labels` raw, `labels_dedup` after `ocr_labels.py dedupe`, `labels_fts` trigger-maintained). Model: `fireworks/muse-glimmer-30b` — bake-off winner (gpt-5.6-luna hallucinated modern names); do not swap without re-running the comparison in `ocr_labels.py`'s docstring. |
 | UI | admin panel -> Map Settings -> Historical Maps (`HistMap` in globe.html) |
 | Share link | `?histmap=sudan250k` |
 
