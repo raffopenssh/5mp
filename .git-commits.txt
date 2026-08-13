@@ -1,3 +1,9 @@
+290266e 2026-08-13 19:09:15 Structural layers: mixer rows, MapTips, craton band ink
+ab720b6 2026-08-13 19:04:59 Nightlights WP3: measured and folded — mine sites are dark
+8c2b4a6 2026-08-13 19:03:14 histmap labels: query API + FTS/geo indexes
+d529740 2026-08-13 18:40:30 State snapshot: GHSL epoch persistence + settlement backfill progress (114/157 areas)
+66bec54 2026-08-13 18:37:17 WP3 nightlights: VNP46A3 fetch + mine-site radiance skill pipeline
+d42fd60 2026-08-13 18:34:57 docs: settlement persistence (WP1) in settlements.md
 a4e34bd 2026-08-13 18:34:21 WP2: JRC AKP structural context — active faults + craton margins
 ffa03dd 2026-08-13 18:32:45 WP1: settlement persistence measured from GHSL back-epochs (E2000/E2015)
 19e28c6 2026-08-13 18:30:20 WP4: GSW new-water pit-lake candidates — measured, no signal, no layer
@@ -12,9 +18,3 @@ c69b8e9 2026-08-13 15:57:12 Close AOI_STRUCTURAL_FIXES: F10 containment, F11 the
 b82fb39 2026-08-13 15:06:45 F10 audit: protected_area_id is a catchment, not a park
 7bbf363 2026-08-13 13:28:56 Geology download: the app's own menu, six tests, and two counts that name their units
 0bcfbd1 2026-08-13 13:07:13 Settlement surface: 157 areas re-derived, and two bugs a label could not catch
-2c9a253 2026-08-13 12:40:02 Geology panel: the junction toggle answers in 95ms instead of four seconds
-c90a111 2026-08-13 12:11:16 Handover: what the geology export now does, and what nobody has clicked yet
-604006e 2026-08-13 12:10:36 Geology export: the view you built, its contacts, and the workings it was scored against
-dc19614 2026-08-13 11:43:28 AOI structural fixes: surface is not extent, and a population is measured or absent
-a4ecf0e 2026-08-13 11:41:58 Mining anchors: every list we scored, reduced to a citation
-e62efd3 2026-08-13 11:40:23 histmaps: OCR + geocode map labels via vision LLM (ocr_labels.py)
