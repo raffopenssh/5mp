@@ -74,8 +74,17 @@ type GeoPointWithDate struct {
 }
 
 type SettlementStats struct {
+	// BuiltUpKm2 is built-up SURFACE (Σ of the GHS_BUILT_S fractional raster),
+	// not the mask's footprint; ExtentKm2 is the footprint. They differ by a
+	// median of 22x across the 157 areas and must not share a name (AGENTS.md
+	// invariant 7). MeasuredFor says how many of SettlementCount contributed a
+	// surface at all, so a partial sum cannot pass as a total.
 	BuiltUpKm2      float64 `json:"built_up_km2"`
+	ExtentKm2       float64 `json:"extent_km2"`
 	SettlementCount int     `json:"settlement_count"`
+	MeasuredFor     int     `json:"surface_measured_for"`
+	PopulationEst   int64   `json:"population_est,omitempty"`
+	PopulationFor   int     `json:"population_measured_for"`
 }
 
 type RoadlessStats struct {
@@ -313,22 +322,49 @@ func (s *Server) HandleAPIParkStats(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Query GHSL settlement data
+	// Settlements come from park_settlements, the table the map and the
+	// narrative both read.
+	//
+	// ⚠️ This used to be `SELECT built_up_km2, settlement_count FROM ghsl_data`,
+	// a 156-row snapshot taken 2026-03-03 that NOTHING in the tree has written
+	// since. It survived the surface-vs-extent fix untouched, so the stats
+	// panel said 0.61 km² built-up for CAF_Chinko while the settlement
+	// narrative said 0.027 km² — one word, two numbers, 22x apart, and the
+	// stale one was the mask (invariant 7). A cached aggregate with no writer
+	// is not a cache, it is a fossil.
 	var settlement SettlementStats
+	var builtUp, extent sql.NullFloat64
+	var popEst sql.NullInt64
 	err = s.DB.QueryRow(`
-		SELECT built_up_km2, settlement_count
-		FROM ghsl_data
-		WHERE park_id = ?
-	`, internalID).Scan(&settlement.BuiltUpKm2, &settlement.SettlementCount)
+		SELECT COUNT(*),
+		       SUM(`+settlementSurfaceSQL("")+`),
+		       SUM(CASE WHEN area_source = 'ghsl_built_s_surface' THEN 1 ELSE 0 END),
+		       SUM(`+settlementExtentSQL("")+`),
+		       SUM(`+settlementPopulationSQL("")+`),
+		       `+settlementPopulationMeasuredSQL("")+`
+		FROM park_settlements
+		WHERE park_id = ?`+settlementFilterSQL("narrative", "polygon_ids"),
+		internalID).Scan(&settlement.SettlementCount, &builtUp,
+		&settlement.MeasuredFor, &extent, &popEst, &settlement.PopulationFor)
 
 	if err == nil {
+		settlement.BuiltUpKm2 = builtUp.Float64 / 1e6
+		settlement.ExtentKm2 = extent.Float64 / 1e6
+		settlement.PopulationEst = popEst.Int64
 		stats.Settlement = &settlement
-		if settlement.SettlementCount > 0 {
+		switch {
+		case settlement.SettlementCount == 0:
+			insights = append(insights, "✓ No settlements detected inside park boundaries.")
+		case settlement.MeasuredFor == 0:
+			// Counted but not measured is a third state, and it must read as
+			// one rather than as "0.00 km²" (invariant 12).
 			insights = append(insights, fmt.Sprintf(
-				"🏘️ %d settlements detected inside the park (%.2f km² built-up area).",
-				settlement.SettlementCount, settlement.BuiltUpKm2))
-		} else if settlement.BuiltUpKm2 == 0 {
-			insights = append(insights, "✓ No permanent settlements detected inside park boundaries.")
+				"🏘️ %d settlements detected inside the park (built-up surface not yet measured).",
+				settlement.SettlementCount))
+		default:
+			insights = append(insights, fmt.Sprintf(
+				"🏘️ %d settlements detected inside the park (%.2f km² built-up surface across %.1f km² of settled ground).",
+				settlement.SettlementCount, settlement.BuiltUpKm2, settlement.ExtentKm2))
 		}
 	}
 

@@ -262,7 +262,14 @@ type SettlementDetail struct {
 	Lat                float64 `json:"lat"`
 	Lon                float64 `json:"lon"`
 	Direction          string  `json:"direction"`
-	NearestBoundaryKm  float64 `json:"nearest_boundary_km,omitempty"`
+	// Distance to the nearest NAMED PLACE, not to the park boundary. It was
+	// serialised as `nearest_boundary_km` until 2026-08-13 and globe.html duly
+	// scored it as boundary proximity ("< 10 km => encroachment priority"),
+	// which is a different question with a different answer: the largest
+	// settlement in CAF_Chinko sits 70.9 km from Yalinga and well inside the
+	// park. The value was always this; only the name was wrong (AGENTS.md
+	// invariant 7 -- a number must name what it measures).
+	DistanceToPlaceKm float64 `json:"distance_to_place_km,omitempty"`
 }
 
 // RegionSettlement groups settlements by geographic region within the park
@@ -1348,7 +1355,7 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 					sd.PopulationEst = popEst.Int64
 					sd.PopulationMeasured = true
 				}
-				sd.NearestBoundaryKm = distKm
+				sd.DistanceToPlaceKm = distKm
 				// mining labels + their "suspected alluvial extraction" prose are
 				// retired (docs/MINING_FINDINGS_2026-08.md §10)
 				sd.Narrative = publicSettlementNarrative(sd.Classification, settNarrative)
@@ -1669,8 +1676,8 @@ func describeSettlementWithPattern(s SettlementDetail, rank int) string {
 	areaStr := formatArea(s.AreaM2)
 
 	if s.Name != "" && s.Name != "Unnamed settlement" {
-		if s.Direction != "" && s.NearestBoundaryKm > 0 && s.NearestBoundaryKm < 50 {
-			return fmt.Sprintf("%s near %s (%.1f km %s).", areaStr, s.Name, s.NearestBoundaryKm, s.Direction)
+		if s.Direction != "" && s.DistanceToPlaceKm > 0 && s.DistanceToPlaceKm < 50 {
+			return fmt.Sprintf("%s near %s (%.1f km %s).", areaStr, s.Name, s.DistanceToPlaceKm, s.Direction)
 		}
 		return fmt.Sprintf("%s near %s.", areaStr, s.Name)
 	}

@@ -1,0 +1,4447 @@
+{
+ "AGO_Cameia": {
+  "after": {
+   "area_m2": 993371.0,
+   "classes": {
+    "temporary_camp": 37,
+    "town": 4,
+    "village": 11
+   },
+   "clusters": 52,
+   "detector_rows": 40,
+   "extent_m2": 6010000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 83,
+   "polygons_with_extent": 83,
+   "population_measured": 89758
+  },
+  "at": "2026-08-13T12:35:19Z",
+  "clusters": 52,
+  "extent_over_surface": 6.05010615369283,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 83,
+  "stale_removed": 0,
+  "tiles": [
+   "R11_C21"
+  ]
+ },
+ "AGO_Iona": {
+  "after": {
+   "area_m2": 114390.0,
+   "classes": {
+    "temporary_camp": 140,
+    "town": 1,
+    "village": 3
+   },
+   "clusters": 144,
+   "detector_rows": 165,
+   "extent_m2": 4180000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 254,
+   "polygons_with_extent": 254,
+   "population_measured": 4428
+  },
+  "at": "2026-08-13T12:37:12Z",
+  "clusters": 144,
+  "extent_over_surface": 36.54165573913804,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 254,
+  "stale_removed": 0,
+  "tiles": [
+   "R11_C20",
+   "R12_C20"
+  ]
+ },
+ "AGO_Luando": {
+  "after": {
+   "area_m2": 1260936.0,
+   "classes": {
+    "settlement": 31,
+    "temporary_camp": 186,
+    "town": 5,
+    "village": 22
+   },
+   "clusters": 244,
+   "detector_rows": 34,
+   "extent_m2": 17260000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 689,
+   "polygons_with_extent": 689,
+   "population_measured": 23752
+  },
+  "at": "2026-08-13T12:39:12Z",
+  "clusters": 244,
+  "extent_over_surface": 13.688244288369908,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 689,
+  "stale_removed": 0,
+  "tiles": [
+   "R11_C20"
+  ]
+ },
+ "AGO_Luengue-Luiana": {
+  "after": {
+   "area_m2": 976587.0,
+   "classes": {
+    "settlement": 23,
+    "temporary_camp": 100,
+    "town": 1,
+    "village": 12
+   },
+   "clusters": 136,
+   "detector_rows": 64,
+   "extent_m2": 17760000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 525,
+   "polygons_with_extent": 525,
+   "population_measured": 12595
+  },
+  "at": "2026-08-13T12:38:26Z",
+  "clusters": 136,
+  "extent_over_surface": 18.18578375505715,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 525,
+  "stale_removed": 0,
+  "tiles": [
+   "R12_C21"
+  ]
+ },
+ "BEN_Pendjari": {
+  "after": {
+   "area_m2": 3847955.0,
+   "classes": {
+    "temporary_camp": 19,
+    "town": 7,
+    "village": 6
+   },
+   "clusters": 32,
+   "detector_rows": 158,
+   "extent_m2": 37450000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 311,
+   "polygons_with_extent": 311,
+   "population_measured": 83585
+  },
+  "at": "2026-08-13T12:37:18Z",
+  "clusters": 32,
+  "extent_over_surface": 9.732442297272188,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 311,
+  "stale_removed": 0,
+  "tiles": [
+   "R8_C19"
+  ]
+ },
+ "BEN_W_Benin": {
+  "after": {
+   "area_m2": 1023582.0,
+   "classes": {
+    "settlement": 2,
+    "temporary_camp": 69,
+    "town": 4,
+    "village": 5
+   },
+   "clusters": 80,
+   "detector_rows": 174,
+   "extent_m2": 22900000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 502,
+   "polygons_with_extent": 502,
+   "population_measured": 15779
+  },
+  "at": "2026-08-13T12:38:11Z",
+  "clusters": 80,
+  "extent_over_surface": 22.372413739202134,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 502,
+  "stale_removed": 0,
+  "tiles": [
+   "R8_C19"
+  ]
+ },
+ "BWA_Central_Kalahari": {
+  "after": {
+   "area_m2": 83422.0,
+   "classes": {
+    "settlement": 5,
+    "temporary_camp": 27
+   },
+   "clusters": 32,
+   "detector_rows": 150,
+   "extent_m2": 1600000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 51,
+   "polygons_with_extent": 51,
+   "population_measured": 515
+  },
+  "at": "2026-08-13T12:34:49Z",
+  "clusters": 32,
+  "extent_over_surface": 19.179592913140418,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 51,
+  "stale_removed": 0,
+  "tiles": [
+   "R12_C21"
+  ]
+ },
+ "BWA_Chobe": {
+  "after": {
+   "area_m2": 85132.0,
+   "classes": {
+    "settlement": 5,
+    "temporary_camp": 35
+   },
+   "clusters": 40,
+   "detector_rows": 105,
+   "extent_m2": 1920000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 60,
+   "polygons_with_extent": 60,
+   "population_measured": 398
+  },
+  "at": "2026-08-13T12:35:00Z",
+  "clusters": 40,
+  "extent_over_surface": 22.553211483343514,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 60,
+  "stale_removed": 0,
+  "tiles": [
+   "R12_C21"
+  ]
+ },
+ "BWA_Gemsbok": {
+  "after": {
+   "area_m2": 21348.0,
+   "classes": {
+    "temporary_camp": 48
+   },
+   "clusters": 48,
+   "detector_rows": 179,
+   "extent_m2": 1540000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 121,
+   "polygons_with_extent": 121,
+   "population_measured": 16
+  },
+  "at": "2026-08-13T12:35:54Z",
+  "clusters": 48,
+  "extent_over_surface": 72.13790519018175,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 121,
+  "stale_removed": 0,
+  "tiles": [
+   "R12_C20",
+   "R12_C21",
+   "R13_C20",
+   "R13_C21"
+  ]
+ },
+ "CAF_Bamingui-Bangoran": {
+  "after": {
+   "area_m2": 7678.0,
+   "classes": {
+    "temporary_camp": 11
+   },
+   "clusters": 11,
+   "detector_rows": 103,
+   "extent_m2": 290000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 14,
+   "polygons_with_extent": 14,
+   "population_measured": 180
+  },
+  "at": "2026-08-13T12:33:58Z",
+  "clusters": 11,
+  "extent_over_surface": 37.77025266996614,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 14,
+  "stale_removed": 0,
+  "tiles": [
+   "R8_C20",
+   "R8_C21",
+   "R9_C20",
+   "R9_C21"
+  ]
+ },
+ "CAF_Chinko": {
+  "after": {
+   "area_m2": 27441.0,
+   "classes": {
+    "temporary_camp": 19,
+    "village": 1
+   },
+   "clusters": 20,
+   "detector_rows": 56,
+   "extent_m2": 500000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 28,
+   "polygons_with_extent": 28,
+   "population_measured": 826
+  },
+  "at": "2026-08-13T12:34:23Z",
+  "clusters": 20,
+  "extent_over_surface": 18.220910316679422,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 28,
+  "stale_removed": 0,
+  "tiles": [
+   "R9_C21"
+  ]
+ },
+ "CAF_Dzanga_Park": {
+  "after": {
+   "area_m2": 1685.0,
+   "classes": {
+    "temporary_camp": 4
+   },
+   "clusters": 4,
+   "detector_rows": 122,
+   "extent_m2": 50000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 4,
+   "polygons_with_extent": 4,
+   "population_measured": 30
+  },
+  "at": "2026-08-13T12:33:47Z",
+  "clusters": 4,
+  "extent_over_surface": 29.673590504451038,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 4,
+  "stale_removed": 0,
+  "tiles": [
+   "R9_C20"
+  ]
+ },
+ "CAF_Manovo_Gounda_St_Floris": {
+  "after": {
+   "area_m2": 35554.0,
+   "classes": {
+    "temporary_camp": 18,
+    "village": 2
+   },
+   "clusters": 20,
+   "detector_rows": 66,
+   "extent_m2": 600000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 24,
+   "polygons_with_extent": 24,
+   "population_measured": 876
+  },
+  "at": "2026-08-13T12:34:15Z",
+  "clusters": 20,
+  "extent_over_surface": 16.875738313551217,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 24,
+  "stale_removed": 0,
+  "tiles": [
+   "R8_C21"
+  ]
+ },
+ "CIV_Comoe": {
+  "after": {
+   "area_m2": 699548.0,
+   "classes": {
+    "settlement": 12,
+    "temporary_camp": 35,
+    "town": 4,
+    "village": 5
+   },
+   "clusters": 56,
+   "detector_rows": 162,
+   "extent_m2": 5520000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 81,
+   "polygons_with_extent": 81,
+   "population_measured": 9839
+  },
+  "at": "2026-08-13T12:35:15Z",
+  "clusters": 56,
+  "extent_over_surface": 7.890809494130496,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 81,
+  "stale_removed": 0,
+  "tiles": [
+   "R8_C18"
+  ]
+ },
+ "CIV_Ta\u00ef": {
+  "after": {
+   "area_m2": 45772.0,
+   "classes": {
+    "settlement": 2,
+    "temporary_camp": 25
+   },
+   "clusters": 27,
+   "detector_rows": 22,
+   "extent_m2": 1320000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 41,
+   "polygons_with_extent": 41,
+   "population_measured": 465
+  },
+  "at": "2026-08-13T12:34:38Z",
+  "clusters": 27,
+  "extent_over_surface": 28.83859127851088,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 41,
+  "stale_removed": 0,
+  "tiles": [
+   "R9_C18"
+  ]
+ },
+ "CMR_Bouba_Ndjida": {
+  "after": {
+   "area_m2": 32380.0,
+   "classes": {
+    "settlement": 1,
+    "temporary_camp": 8,
+    "village": 1
+   },
+   "clusters": 10,
+   "detector_rows": 152,
+   "extent_m2": 760000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 23,
+   "polygons_with_extent": 23,
+   "population_measured": 712
+  },
+  "at": "2026-08-13T12:34:11Z",
+  "clusters": 10,
+  "extent_over_surface": 23.471278567016675,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 23,
+  "stale_removed": 0,
+  "tiles": [
+   "R8_C20"
+  ]
+ },
+ "CMR_Boumba-Djombi": {
+  "after": {
+   "area_m2": 32380.0,
+   "classes": {
+    "settlement": 1,
+    "temporary_camp": 8,
+    "village": 1
+   },
+   "clusters": 10,
+   "detector_rows": 124,
+   "extent_m2": 760000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 23,
+   "polygons_with_extent": 23,
+   "population_measured": 712
+  },
+  "at": "2026-08-13T12:34:12Z",
+  "clusters": 10,
+  "extent_over_surface": 23.471278567016675,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 23,
+  "stale_removed": 0,
+  "tiles": [
+   "R8_C20"
+  ]
+ },
+ "CMR_Campo-Ma'an": {
+  "after": {
+   "area_m2": 10378.0,
+   "classes": {
+    "settlement": 1,
+    "temporary_camp": 3
+   },
+   "clusters": 4,
+   "detector_rows": 49,
+   "extent_m2": 240000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 8,
+   "polygons_with_extent": 8,
+   "population_measured": 156
+  },
+  "at": "2026-08-13T12:33:50Z",
+  "clusters": 4,
+  "extent_over_surface": 23.125843129697436,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 8,
+  "stale_removed": 0,
+  "tiles": [
+   "R9_C20"
+  ]
+ },
+ "CMR_Dja": {
+  "after": {
+   "area_m2": 602.0,
+   "classes": {
+    "temporary_camp": 2
+   },
+   "clusters": 2,
+   "detector_rows": 97,
+   "extent_m2": 30000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 2,
+   "polygons_with_extent": 2,
+   "population_measured": 1
+  },
+  "at": "2026-08-13T12:33:41Z",
+  "clusters": 2,
+  "extent_over_surface": 49.83388704318937,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 2,
+  "stale_removed": 0,
+  "tiles": [
+   "R9_C20"
+  ]
+ },
+ "CMR_Faro": {
+  "after": {
+   "area_m2": 14402.0,
+   "classes": {
+    "settlement": 1,
+    "temporary_camp": 9
+   },
+   "clusters": 10,
+   "detector_rows": 144,
+   "extent_m2": 350000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 18,
+   "polygons_with_extent": 18,
+   "population_measured": 250
+  },
+  "at": "2026-08-13T12:34:06Z",
+  "clusters": 10,
+  "extent_over_surface": 24.302180252742673,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 18,
+  "stale_removed": 0,
+  "tiles": [
+   "R8_C20",
+   "R9_C20"
+  ]
+ },
+ "CMR_Lob\u00e9k\u00e9": {
+  "after": {
+   "area_m2": 2099.0,
+   "classes": {
+    "temporary_camp": 1
+   },
+   "clusters": 1,
+   "detector_rows": 100,
+   "extent_m2": 50000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 1,
+   "polygons_with_extent": 1,
+   "population_measured": 32
+  },
+  "at": "2026-08-13T12:33:40Z",
+  "clusters": 1,
+  "extent_over_surface": 23.820867079561697,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 1,
+  "stale_removed": 0,
+  "tiles": [
+   "R9_C20"
+  ]
+ },
+ "CMR_Mbam_et_Djerem": {
+  "after": {
+   "area_m2": 288.0,
+   "classes": {
+    "temporary_camp": 1
+   },
+   "clusters": 1,
+   "detector_rows": 129,
+   "extent_m2": 20000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 2,
+   "polygons_with_extent": 2,
+   "population_measured": 0
+  },
+  "at": "2026-08-13T12:33:42Z",
+  "clusters": 1,
+  "extent_over_surface": 69.44444444444444,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 2,
+  "stale_removed": 0,
+  "tiles": [
+   "R9_C20"
+  ]
+ },
+ "CMR_Mont_Cameroun": {
+  "after": {
+   "area_m2": 15524.0,
+   "classes": {
+    "settlement": 1,
+    "temporary_camp": 9
+   },
+   "clusters": 10,
+   "detector_rows": 0,
+   "extent_m2": 430000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 16,
+   "polygons_with_extent": 16,
+   "population_measured": 180
+  },
+  "at": "2026-08-13T12:34:02Z",
+  "clusters": 10,
+  "extent_over_surface": 27.699046637464573,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 16,
+  "stale_removed": 0,
+  "tiles": [
+   "R9_C19"
+  ]
+ },
+ "CMR_Takamanda": {
+  "after": {
+   "area_m2": 31633.0,
+   "classes": {
+    "settlement": 1,
+    "temporary_camp": 3,
+    "village": 2
+   },
+   "clusters": 6,
+   "detector_rows": 35,
+   "extent_m2": 760000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 26,
+   "polygons_with_extent": 26,
+   "population_measured": 647
+  },
+  "at": "2026-08-13T12:34:20Z",
+  "clusters": 6,
+  "extent_over_surface": 24.025542945658014,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 26,
+  "stale_removed": 0,
+  "tiles": [
+   "R9_C19"
+  ]
+ },
+ "CMR_Waza": {
+  "after": {
+   "area_m2": 63233.0,
+   "classes": {
+    "settlement": 2,
+    "temporary_camp": 9,
+    "village": 2
+   },
+   "clusters": 13,
+   "detector_rows": 236,
+   "extent_m2": 800000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 32,
+   "polygons_with_extent": 32,
+   "population_measured": 1218
+  },
+  "at": "2026-08-13T12:34:24Z",
+  "clusters": 13,
+  "extent_over_surface": 12.651621779766893,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 32,
+  "stale_removed": 0,
+  "tiles": [
+   "R8_C20"
+  ]
+ },
+ "COD_Abumonbazi": {
+  "after": {
+   "area_m2": 131378.0,
+   "classes": {
+    "temporary_camp": 19,
+    "town": 2,
+    "village": 2
+   },
+   "clusters": 23,
+   "detector_rows": 44,
+   "extent_m2": 2020000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 35,
+   "polygons_with_extent": 35,
+   "population_measured": 3618
+  },
+  "at": "2026-08-13T12:34:28Z",
+  "clusters": 23,
+  "extent_over_surface": 15.375481435247911,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 35,
+  "stale_removed": 0,
+  "tiles": [
+   "R9_C21"
+  ]
+ },
+ "COD_Bili-Uere": {
+  "after": {
+   "area_m2": 3484354.0,
+   "classes": {
+    "settlement": 13,
+    "temporary_camp": 130,
+    "town": 11,
+    "village": 22
+   },
+   "clusters": 176,
+   "detector_rows": 69,
+   "extent_m2": 36810000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 756,
+   "polygons_with_extent": 756,
+   "population_measured": 72392
+  },
+  "at": "2026-08-13T12:39:21Z",
+  "clusters": 176,
+  "extent_over_surface": 10.564368603190147,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 756,
+  "stale_removed": 0,
+  "tiles": [
+   "R9_C21"
+  ]
+ },
+ "COD_Garamba": {
+  "after": {
+   "area_m2": 20810.0,
+   "classes": {
+    "temporary_camp": 59
+   },
+   "clusters": 59,
+   "detector_rows": 1,
+   "extent_m2": 2420000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 222,
+   "polygons_with_extent": 222,
+   "population_measured": 339
+  },
+  "at": "2026-08-13T12:36:30Z",
+  "clusters": 59,
+  "extent_over_surface": 116.29024507448342,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 222,
+  "stale_removed": 0,
+  "tiles": [
+   "R9_C21",
+   "R9_C22"
+  ]
+ },
+ "COD_Itombwe": {
+  "after": {
+   "area_m2": 1635764.0,
+   "classes": {
+    "settlement": 13,
+    "temporary_camp": 50,
+    "town": 11,
+    "village": 20
+   },
+   "clusters": 94,
+   "detector_rows": 0,
+   "extent_m2": 53860000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 1551,
+   "polygons_with_extent": 1551,
+   "population_measured": 29380
+  },
+  "at": "2026-08-13T12:41:15Z",
+  "clusters": 94,
+  "extent_over_surface": 32.92651018117528,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 1551,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C21"
+  ]
+ },
+ "COD_Kahuzi-Biega": {
+  "after": {
+   "area_m2": 522568.0,
+   "classes": {
+    "settlement": 15,
+    "temporary_camp": 42,
+    "town": 1,
+    "village": 6
+   },
+   "clusters": 64,
+   "detector_rows": 0,
+   "extent_m2": 14030000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 517,
+   "polygons_with_extent": 517,
+   "population_measured": 7263
+  },
+  "at": "2026-08-13T12:38:18Z",
+  "clusters": 64,
+  "extent_over_surface": 26.848180523874404,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 517,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C21"
+  ]
+ },
+ "COD_Kundelungu": {
+  "after": {
+   "area_m2": 1707034.0,
+   "classes": {
+    "temporary_camp": 102,
+    "town": 28,
+    "village": 30
+   },
+   "clusters": 160,
+   "detector_rows": 0,
+   "extent_m2": 26970000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 963,
+   "polygons_with_extent": 963,
+   "population_measured": 114273
+  },
+  "at": "2026-08-13T12:40:05Z",
+  "clusters": 160,
+  "extent_over_surface": 15.799333815260855,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 963,
+  "stale_removed": 0,
+  "tiles": [
+   "R11_C21"
+  ]
+ },
+ "COD_Lomami": {
+  "after": {
+   "area_m2": 790.0,
+   "classes": {
+    "temporary_camp": 5
+   },
+   "clusters": 5,
+   "detector_rows": 0,
+   "extent_m2": 70000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 5,
+   "polygons_with_extent": 5,
+   "population_measured": 14
+  },
+  "at": "2026-08-13T12:33:50Z",
+  "clusters": 5,
+  "extent_over_surface": 88.60759493670886,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 5,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C21"
+  ]
+ },
+ "COD_Maiko": {
+  "after": {
+   "area_m2": 36466.0,
+   "classes": {
+    "temporary_camp": 30,
+    "village": 2
+   },
+   "clusters": 32,
+   "detector_rows": 0,
+   "extent_m2": 750000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 39,
+   "polygons_with_extent": 39,
+   "population_measured": 1426
+  },
+  "at": "2026-08-13T12:34:33Z",
+  "clusters": 32,
+  "extent_over_surface": 20.56710360335655,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 39,
+  "stale_removed": 0,
+  "tiles": [
+   "R9_C21",
+   "R10_C21"
+  ]
+ },
+ "COD_Okapis": {
+  "after": {
+   "area_m2": 585963.0,
+   "classes": {
+    "settlement": 13,
+    "temporary_camp": 52,
+    "town": 2,
+    "village": 2
+   },
+   "clusters": 69,
+   "detector_rows": 0,
+   "extent_m2": 6880000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 194,
+   "polygons_with_extent": 194,
+   "population_measured": 8134
+  },
+  "at": "2026-08-13T12:36:11Z",
+  "clusters": 69,
+  "extent_over_surface": 11.741355682867349,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 194,
+  "stale_removed": 0,
+  "tiles": [
+   "R9_C21"
+  ]
+ },
+ "COD_Salonga": {
+  "after": {
+   "area_m2": 133740.0,
+   "classes": {
+    "settlement": 1,
+    "temporary_camp": 23,
+    "town": 1,
+    "village": 6
+   },
+   "clusters": 31,
+   "detector_rows": 0,
+   "extent_m2": 1620000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 41,
+   "polygons_with_extent": 41,
+   "population_measured": 5064
+  },
+  "at": "2026-08-13T12:34:40Z",
+  "clusters": 31,
+  "extent_over_surface": 12.113055181695827,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 41,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C21"
+  ]
+ },
+ "COD_Tumba-Lediima": {
+  "after": {
+   "area_m2": 5284805.0,
+   "classes": {
+    "settlement": 8,
+    "temporary_camp": 132,
+    "town": 19,
+    "village": 21
+   },
+   "clusters": 180,
+   "detector_rows": 0,
+   "extent_m2": 36420000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 487,
+   "polygons_with_extent": 487,
+   "population_measured": 133738
+  },
+  "at": "2026-08-13T12:38:07Z",
+  "clusters": 180,
+  "extent_over_surface": 6.891455786921182,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 487,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C20"
+  ]
+ },
+ "COD_Upemba": {
+  "after": {
+   "area_m2": 2035020.0,
+   "classes": {
+    "temporary_camp": 67,
+    "town": 14,
+    "village": 10
+   },
+   "clusters": 91,
+   "detector_rows": 0,
+   "extent_m2": 19320000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 229,
+   "polygons_with_extent": 229,
+   "population_measured": 132637
+  },
+  "at": "2026-08-13T12:36:52Z",
+  "clusters": 91,
+  "extent_over_surface": 9.49376418904974,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 229,
+  "stale_removed": 0,
+  "tiles": [
+   "R11_C21"
+  ]
+ },
+ "COD_Virunga": {
+  "after": {
+   "area_m2": 4995325.0,
+   "classes": {
+    "settlement": 11,
+    "temporary_camp": 80,
+    "town": 22,
+    "village": 9
+   },
+   "clusters": 122,
+   "detector_rows": 0,
+   "extent_m2": 58220000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 824,
+   "polygons_with_extent": 824,
+   "population_measured": 90916
+  },
+  "at": "2026-08-13T12:39:49Z",
+  "clusters": 122,
+  "extent_over_surface": 11.654897329002617,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 824,
+  "stale_removed": 0,
+  "tiles": [
+   "R9_C21",
+   "R9_C22",
+   "R10_C21",
+   "R10_C22"
+  ]
+ },
+ "COG_Conkouati-Douli": {
+  "after": {
+   "area_m2": 289616.0,
+   "classes": {
+    "settlement": 8,
+    "temporary_camp": 37,
+    "village": 3
+   },
+   "clusters": 48,
+   "detector_rows": 0,
+   "extent_m2": 6760000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 201,
+   "polygons_with_extent": 201,
+   "population_measured": 2056
+  },
+  "at": "2026-08-13T12:36:15Z",
+  "clusters": 48,
+  "extent_over_surface": 23.34125186453787,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 201,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C20"
+  ]
+ },
+ "COG_Lac_T\u00e9l\u00e9": {
+  "after": {
+   "area_m2": 621741.0,
+   "classes": {
+    "temporary_camp": 5,
+    "town": 13,
+    "village": 3
+   },
+   "clusters": 21,
+   "detector_rows": 0,
+   "extent_m2": 6060000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 34,
+   "polygons_with_extent": 34,
+   "population_measured": 75019
+  },
+  "at": "2026-08-13T12:34:25Z",
+  "clusters": 21,
+  "extent_over_surface": 9.746823838222024,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 34,
+  "stale_removed": 0,
+  "tiles": [
+   "R9_C20"
+  ]
+ },
+ "COG_L\u00e9fini": {
+  "after": {
+   "area_m2": 713118.0,
+   "classes": {
+    "agricultural": 2,
+    "settlement": 9,
+    "temporary_camp": 40,
+    "town": 1,
+    "village": 1
+   },
+   "clusters": 53,
+   "detector_rows": 0,
+   "extent_m2": 8050000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 177,
+   "polygons_with_extent": 177,
+   "population_measured": 1853
+  },
+  "at": "2026-08-13T12:36:08Z",
+  "clusters": 53,
+  "extent_over_surface": 11.288454365196223,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 177,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C20"
+  ]
+ },
+ "COG_Ntokou-Pikounda": {
+  "after": {
+   "area_m2": 69921.0,
+   "classes": {
+    "settlement": 1,
+    "temporary_camp": 15,
+    "village": 1
+   },
+   "clusters": 17,
+   "detector_rows": 0,
+   "extent_m2": 700000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 21,
+   "polygons_with_extent": 21,
+   "population_measured": 360
+  },
+  "at": "2026-08-13T12:34:10Z",
+  "clusters": 17,
+  "extent_over_surface": 10.011298465410963,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 21,
+  "stale_removed": 0,
+  "tiles": [
+   "R9_C20"
+  ]
+ },
+ "COG_Odzala_Kokoua": {
+  "after": {
+   "area_m2": 199445.0,
+   "classes": {
+    "settlement": 2,
+    "temporary_camp": 29,
+    "town": 1,
+    "village": 1
+   },
+   "clusters": 33,
+   "detector_rows": 0,
+   "extent_m2": 2000000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 50,
+   "polygons_with_extent": 50,
+   "population_measured": 5669
+  },
+  "at": "2026-08-13T12:34:47Z",
+  "clusters": 33,
+  "extent_over_surface": 10.02782722053699,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 50,
+  "stale_removed": 0,
+  "tiles": [
+   "R9_C20"
+  ]
+ },
+ "DZA_Ahaggar": {
+  "after": {
+   "area_m2": 16797011.0,
+   "classes": {
+    "settlement": 46,
+    "temporary_camp": 750,
+    "town": 25,
+    "village": 24
+   },
+   "clusters": 845,
+   "detector_rows": 0,
+   "extent_m2": 171340000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 3184,
+   "polygons_with_extent": 3184,
+   "population_measured": 309057
+  },
+  "at": "2026-08-13T12:42:46Z",
+  "clusters": 845,
+  "extent_over_surface": 10.200624384898003,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 3184,
+  "stale_removed": 0,
+  "tiles": [
+   "R6_C19",
+   "R6_C20",
+   "R7_C19",
+   "R7_C20"
+  ]
+ },
+ "ETH_Bale_Mountains": {
+  "after": {
+   "area_m2": 515395.0,
+   "classes": {
+    "settlement": 3,
+    "temporary_camp": 44,
+    "town": 6,
+    "village": 16
+   },
+   "clusters": 69,
+   "detector_rows": 0,
+   "extent_m2": 28220000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 1009,
+   "polygons_with_extent": 1009,
+   "population_measured": 18361
+  },
+  "at": "2026-08-13T12:40:14Z",
+  "clusters": 69,
+  "extent_over_surface": 54.75412062592768,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 1009,
+  "stale_removed": 0,
+  "tiles": [
+   "R9_C22",
+   "R9_C23"
+  ]
+ },
+ "ETH_Borana": {
+  "after": {
+   "area_m2": 12729608.0,
+   "classes": {
+    "settlement": 32,
+    "temporary_camp": 583,
+    "town": 88,
+    "village": 126
+   },
+   "clusters": 829,
+   "detector_rows": 0,
+   "extent_m2": 319120000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 6595,
+   "polygons_with_extent": 6595,
+   "population_measured": 824246
+  },
+  "at": "2026-08-13T12:45:16Z",
+  "clusters": 829,
+  "extent_over_surface": 25.069114461340835,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 6595,
+  "stale_removed": 0,
+  "tiles": [
+   "R9_C22",
+   "R9_C23"
+  ]
+ },
+ "ETH_Gambella": {
+  "after": {
+   "area_m2": 31300.0,
+   "classes": {
+    "temporary_camp": 2,
+    "town": 3,
+    "village": 2
+   },
+   "clusters": 7,
+   "detector_rows": 0,
+   "extent_m2": 940000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 13,
+   "polygons_with_extent": 13,
+   "population_measured": 13879
+  },
+  "at": "2026-08-13T12:33:53Z",
+  "clusters": 7,
+  "extent_over_surface": 30.031948881789138,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 13,
+  "stale_removed": 0,
+  "tiles": [
+   "R8_C22",
+   "R9_C22"
+  ]
+ },
+ "GAB_Ivindo": {
+  "after": {
+   "area_m2": 11077.0,
+   "classes": {
+    "settlement": 1,
+    "temporary_camp": 2
+   },
+   "clusters": 3,
+   "detector_rows": 0,
+   "extent_m2": 140000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 3,
+   "polygons_with_extent": 3,
+   "population_measured": 52
+  },
+  "at": "2026-08-13T12:33:43Z",
+  "clusters": 3,
+  "extent_over_surface": 12.638801119436671,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 3,
+  "stale_removed": 0,
+  "tiles": [
+   "R9_C20",
+   "R10_C20"
+  ]
+ },
+ "GAB_Loango": {
+  "after": {
+   "area_m2": 25857.0,
+   "classes": {
+    "settlement": 1,
+    "temporary_camp": 19
+   },
+   "clusters": 20,
+   "detector_rows": 0,
+   "extent_m2": 870000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 27,
+   "polygons_with_extent": 27,
+   "population_measured": 105
+  },
+  "at": "2026-08-13T12:34:21Z",
+  "clusters": 20,
+  "extent_over_surface": 33.646594732567586,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 27,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C19",
+   "R10_C20"
+  ]
+ },
+ "GAB_Lop\u00e9": {
+  "after": {
+   "area_m2": 228780.0,
+   "classes": {
+    "settlement": 2,
+    "temporary_camp": 15,
+    "town": 1,
+    "village": 1
+   },
+   "clusters": 19,
+   "detector_rows": 0,
+   "extent_m2": 3230000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 40,
+   "polygons_with_extent": 40,
+   "population_measured": 2739
+  },
+  "at": "2026-08-13T12:34:34Z",
+  "clusters": 19,
+  "extent_over_surface": 14.118366990121514,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 40,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C20"
+  ]
+ },
+ "GAB_Minkebe": {
+  "after": {
+   "area_m2": 2634.0,
+   "classes": {
+    "temporary_camp": 3
+   },
+   "clusters": 3,
+   "detector_rows": 0,
+   "extent_m2": 60000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 3,
+   "polygons_with_extent": 3,
+   "population_measured": 24
+  },
+  "at": "2026-08-13T12:33:44Z",
+  "clusters": 3,
+  "extent_over_surface": 22.779043280182233,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 3,
+  "stale_removed": 0,
+  "tiles": [
+   "R9_C20"
+  ]
+ },
+ "GAB_Monts_Birougou": {
+  "after": {
+   "area_m2": 843.0,
+   "classes": {
+    "temporary_camp": 1
+   },
+   "clusters": 1,
+   "detector_rows": 0,
+   "extent_m2": 40000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 1,
+   "polygons_with_extent": 1,
+   "population_measured": 26
+  },
+  "at": "2026-08-13T12:33:40Z",
+  "clusters": 1,
+  "extent_over_surface": 47.44958481613286,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 1,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C20"
+  ]
+ },
+ "GAB_Monts_de_Cristal": {
+  "after": {
+   "area_m2": 18083.0,
+   "classes": {
+    "settlement": 1
+   },
+   "clusters": 1,
+   "detector_rows": 0,
+   "extent_m2": 200000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 3,
+   "polygons_with_extent": 3,
+   "population_measured": 6
+  },
+  "at": "2026-08-13T12:33:45Z",
+  "clusters": 1,
+  "extent_over_surface": 11.060111707128241,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 3,
+  "stale_removed": 0,
+  "tiles": [
+   "R9_C20"
+  ]
+ },
+ "GAB_Moukalaba-Doudou": {
+  "after": {
+   "area_m2": 28042.0,
+   "classes": {
+    "settlement": 1,
+    "temporary_camp": 6
+   },
+   "clusters": 7,
+   "detector_rows": 0,
+   "extent_m2": 720000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 19,
+   "polygons_with_extent": 19,
+   "population_measured": 71
+  },
+  "at": "2026-08-13T12:34:08Z",
+  "clusters": 7,
+  "extent_over_surface": 25.675772056201414,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 19,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C20"
+  ]
+ },
+ "GAB_Plateaux_Bat\u00e9k": {
+  "after": {
+   "area_m2": 5486.0,
+   "classes": {
+    "temporary_camp": 7
+   },
+   "clusters": 7,
+   "detector_rows": 0,
+   "extent_m2": 160000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 10,
+   "polygons_with_extent": 10,
+   "population_measured": 98
+  },
+  "at": "2026-08-13T12:33:51Z",
+  "clusters": 7,
+  "extent_over_surface": 29.16514764855997,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 10,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C20"
+  ]
+ },
+ "GAB_Wonga-Wongu\u00e9": {
+  "after": {
+   "area_m2": 110683.0,
+   "classes": {
+    "settlement": 5,
+    "temporary_camp": 22,
+    "town": 1,
+    "village": 1
+   },
+   "clusters": 29,
+   "detector_rows": 0,
+   "extent_m2": 2780000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 108,
+   "polygons_with_extent": 108,
+   "population_measured": 2099
+  },
+  "at": "2026-08-13T12:35:41Z",
+  "clusters": 29,
+  "extent_over_surface": 25.116774933820007,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 108,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C19",
+   "R10_C20"
+  ]
+ },
+ "GHA_Mole": {
+  "after": {
+   "area_m2": 678725.0,
+   "classes": {
+    "settlement": 4,
+    "temporary_camp": 46,
+    "town": 4,
+    "village": 4
+   },
+   "clusters": 58,
+   "detector_rows": 0,
+   "extent_m2": 5640000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 113,
+   "polygons_with_extent": 113,
+   "population_measured": 11839
+  },
+  "at": "2026-08-13T12:35:44Z",
+  "clusters": 58,
+  "extent_over_surface": 8.309698331430255,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 113,
+  "stale_removed": 0,
+  "tiles": [
+   "R8_C18"
+  ]
+ },
+ "GNQ_Monte_Al\u00e9n": {
+  "after": {
+   "area_m2": 213188.0,
+   "classes": {
+    "settlement": 7,
+    "temporary_camp": 14,
+    "village": 1
+   },
+   "clusters": 22,
+   "detector_rows": 0,
+   "extent_m2": 2220000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 41,
+   "polygons_with_extent": 41,
+   "population_measured": 1110
+  },
+  "at": "2026-08-13T12:34:41Z",
+  "clusters": 22,
+  "extent_over_surface": 10.413344090661763,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 41,
+  "stale_removed": 0,
+  "tiles": [
+   "R9_C20"
+  ]
+ },
+ "KEN_Aberdare": {
+  "after": {
+   "area_m2": 161769.0,
+   "classes": {
+    "agricultural": 2,
+    "settlement": 1,
+    "temporary_camp": 9,
+    "village": 1
+   },
+   "clusters": 13,
+   "detector_rows": 0,
+   "extent_m2": 3320000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 25,
+   "polygons_with_extent": 25,
+   "population_measured": 461
+  },
+  "at": "2026-08-13T12:34:17Z",
+  "clusters": 13,
+  "extent_over_surface": 20.52309156884199,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 25,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C22"
+  ]
+ },
+ "KEN_Masai_Mara": {
+  "after": {
+   "area_m2": 436388.0,
+   "classes": {
+    "settlement": 11,
+    "temporary_camp": 35,
+    "village": 9
+   },
+   "clusters": 55,
+   "detector_rows": 0,
+   "extent_m2": 9130000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 225,
+   "polygons_with_extent": 225,
+   "population_measured": 5214
+  },
+  "at": "2026-08-13T12:36:44Z",
+  "clusters": 55,
+  "extent_over_surface": 20.921748535706758,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 225,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C22"
+  ]
+ },
+ "KEN_Melako": {
+  "after": {
+   "area_m2": 1170207.0,
+   "classes": {
+    "settlement": 5,
+    "temporary_camp": 48,
+    "town": 3,
+    "village": 5
+   },
+   "clusters": 61,
+   "detector_rows": 0,
+   "extent_m2": 17200000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 357,
+   "polygons_with_extent": 357,
+   "population_measured": 19708
+  },
+  "at": "2026-08-13T12:37:26Z",
+  "clusters": 61,
+  "extent_over_surface": 14.698254240489076,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 357,
+  "stale_removed": 0,
+  "tiles": [
+   "R9_C22"
+  ]
+ },
+ "KEN_Mount_Kenya": {
+  "after": {
+   "area_m2": 1961220.0,
+   "classes": {
+    "settlement": 14,
+    "temporary_camp": 25,
+    "town": 5,
+    "village": 5
+   },
+   "clusters": 49,
+   "detector_rows": 0,
+   "extent_m2": 33640000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 135,
+   "polygons_with_extent": 135,
+   "population_measured": 13315
+  },
+  "at": "2026-08-13T12:36:01Z",
+  "clusters": 49,
+  "extent_over_surface": 17.152588694792016,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 135,
+  "stale_removed": 0,
+  "tiles": [
+   "R9_C22",
+   "R10_C22"
+  ]
+ },
+ "KEN_Sera_Community_Conservancy": {
+  "after": {
+   "area_m2": 244313.0,
+   "classes": {
+    "settlement": 2,
+    "temporary_camp": 64,
+    "town": 1,
+    "village": 6
+   },
+   "clusters": 73,
+   "detector_rows": 0,
+   "extent_m2": 6060000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 236,
+   "polygons_with_extent": 236,
+   "population_measured": 6889
+  },
+  "at": "2026-08-13T12:36:58Z",
+  "clusters": 73,
+  "extent_over_surface": 24.804247011006375,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 236,
+  "stale_removed": 0,
+  "tiles": [
+   "R9_C22"
+  ]
+ },
+ "KEN_Sibiloi": {
+  "after": {
+   "area_m2": 1149.0,
+   "classes": {
+    "temporary_camp": 4
+   },
+   "clusters": 4,
+   "detector_rows": 0,
+   "extent_m2": 50000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 4,
+   "polygons_with_extent": 4,
+   "population_measured": 35
+  },
+  "at": "2026-08-13T12:33:47Z",
+  "clusters": 4,
+  "extent_over_surface": 43.51610095735422,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 4,
+  "stale_removed": 0,
+  "tiles": [
+   "R9_C22"
+  ]
+ },
+ "KEN_Tsavo_East": {
+  "after": {
+   "area_m2": 230555.0,
+   "classes": {
+    "settlement": 13,
+    "temporary_camp": 79,
+    "village": 1
+   },
+   "clusters": 93,
+   "detector_rows": 0,
+   "extent_m2": 4790000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 157,
+   "polygons_with_extent": 157,
+   "population_measured": 1173
+  },
+  "at": "2026-08-13T12:36:04Z",
+  "clusters": 93,
+  "extent_over_surface": 20.775953676996814,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 157,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C22"
+  ]
+ },
+ "KEN_Tsavo_West": {
+  "after": {
+   "area_m2": 707909.0,
+   "classes": {
+    "settlement": 11,
+    "temporary_camp": 75,
+    "town": 2,
+    "village": 2
+   },
+   "clusters": 90,
+   "detector_rows": 0,
+   "extent_m2": 9110000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 235,
+   "polygons_with_extent": 235,
+   "population_measured": 5649
+  },
+  "at": "2026-08-13T12:36:56Z",
+  "clusters": 90,
+  "extent_over_surface": 12.868885690109886,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 235,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C22"
+  ]
+ },
+ "LBR_Sapo": {
+  "after": {
+   "area_m2": 404.0,
+   "classes": {
+    "temporary_camp": 2
+   },
+   "clusters": 2,
+   "detector_rows": 0,
+   "extent_m2": 20000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 2,
+   "polygons_with_extent": 2,
+   "population_measured": 21
+  },
+  "at": "2026-08-13T12:33:42Z",
+  "clusters": 2,
+  "extent_over_surface": 49.504950495049506,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 2,
+  "stale_removed": 0,
+  "tiles": [
+   "R9_C18"
+  ]
+ },
+ "LSO_Maloti_Drakensberg": {
+  "after": {
+   "area_m2": 11045238.0,
+   "classes": {
+    "settlement": 6,
+    "temporary_camp": 101,
+    "town": 38,
+    "village": 17
+   },
+   "clusters": 162,
+   "detector_rows": 0,
+   "extent_m2": 202490000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 1958,
+   "polygons_with_extent": 1958,
+   "population_measured": 191398
+  },
+  "at": "2026-08-13T12:41:26Z",
+  "clusters": 162,
+  "extent_over_surface": 18.332787396704354,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 1958,
+  "stale_removed": 0,
+  "tiles": [
+   "R13_C21"
+  ]
+ },
+ "MLI_Gourma": {
+  "after": {
+   "area_m2": 4669414.0,
+   "classes": {
+    "settlement": 16,
+    "temporary_camp": 275,
+    "town": 25,
+    "village": 53
+   },
+   "clusters": 369,
+   "detector_rows": 0,
+   "extent_m2": 91950000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 2770,
+   "polygons_with_extent": 2770,
+   "population_measured": 134424
+  },
+  "at": "2026-08-13T12:42:16Z",
+  "clusters": 369,
+  "extent_over_surface": 19.691978479526554,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 2770,
+  "stale_removed": 0,
+  "tiles": [
+   "R8_C18"
+  ]
+ },
+ "MOZ_Banhine": {
+  "after": {
+   "area_m2": 262255.0,
+   "classes": {
+    "settlement": 7,
+    "temporary_camp": 58,
+    "village": 2
+   },
+   "clusters": 67,
+   "detector_rows": 0,
+   "extent_m2": 6620000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 224,
+   "polygons_with_extent": 224,
+   "population_measured": 1929
+  },
+  "at": "2026-08-13T12:36:39Z",
+  "clusters": 67,
+  "extent_over_surface": 25.242607385941163,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 224,
+  "stale_removed": 0,
+  "tiles": [
+   "R12_C22"
+  ]
+ },
+ "MOZ_Chimanimani": {
+  "after": {
+   "area_m2": 23351.0,
+   "classes": {
+    "temporary_camp": 26
+   },
+   "clusters": 26,
+   "detector_rows": 0,
+   "extent_m2": 1350000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 93,
+   "polygons_with_extent": 93,
+   "population_measured": 282
+  },
+  "at": "2026-08-13T12:35:29Z",
+  "clusters": 26,
+  "extent_over_surface": 57.81336987709306,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 93,
+  "stale_removed": 0,
+  "tiles": [
+   "R12_C22"
+  ]
+ },
+ "MOZ_Gil\u00e9": {
+  "after": {
+   "area_m2": 11431.0,
+   "classes": {
+    "settlement": 1,
+    "temporary_camp": 6
+   },
+   "clusters": 7,
+   "detector_rows": 0,
+   "extent_m2": 390000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 14,
+   "polygons_with_extent": 14,
+   "population_measured": 56
+  },
+  "at": "2026-08-13T12:34:00Z",
+  "clusters": 7,
+  "extent_over_surface": 34.117749978129645,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 14,
+  "stale_removed": 0,
+  "tiles": [
+   "R11_C22",
+   "R12_C22"
+  ]
+ },
+ "MOZ_Gorongosa": {
+  "after": {
+   "area_m2": 674234.0,
+   "classes": {
+    "settlement": 1,
+    "temporary_camp": 38,
+    "town": 4,
+    "village": 8
+   },
+   "clusters": 51,
+   "detector_rows": 0,
+   "extent_m2": 24540000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 661,
+   "polygons_with_extent": 661,
+   "population_measured": 17832
+  },
+  "at": "2026-08-13T12:38:59Z",
+  "clusters": 51,
+  "extent_over_surface": 36.39685925064592,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 661,
+  "stale_removed": 0,
+  "tiles": [
+   "R12_C22"
+  ]
+ },
+ "MOZ_Limpopo": {
+  "after": {
+   "area_m2": 3310407.0,
+   "classes": {
+    "agricultural": 1,
+    "settlement": 18,
+    "temporary_camp": 42,
+    "town": 7,
+    "village": 29
+   },
+   "clusters": 97,
+   "detector_rows": 0,
+   "extent_m2": 44590000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 365,
+   "polygons_with_extent": 365,
+   "population_measured": 32749
+  },
+  "at": "2026-08-13T12:37:36Z",
+  "clusters": 97,
+  "extent_over_surface": 13.469642856603432,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 365,
+  "stale_removed": 0,
+  "tiles": [
+   "R12_C22"
+  ]
+ },
+ "MOZ_Niassa": {
+  "after": {
+   "area_m2": 2182241.0,
+   "classes": {
+    "settlement": 13,
+    "temporary_camp": 126,
+    "town": 5,
+    "village": 10
+   },
+   "clusters": 154,
+   "detector_rows": 0,
+   "extent_m2": 23840000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 555,
+   "polygons_with_extent": 555,
+   "population_measured": 21479
+  },
+  "at": "2026-08-13T12:38:47Z",
+  "clusters": 154,
+  "extent_over_surface": 10.924549579995977,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 555,
+  "stale_removed": 0,
+  "tiles": [
+   "R11_C22"
+  ]
+ },
+ "MOZ_Tchuma_tchato": {
+  "after": {
+   "area_m2": 16983742.0,
+   "classes": {
+    "settlement": 39,
+    "temporary_camp": 369,
+    "town": 89,
+    "village": 132
+   },
+   "clusters": 629,
+   "detector_rows": 0,
+   "extent_m2": 278400000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 4355,
+   "polygons_with_extent": 4355,
+   "population_measured": 456233
+  },
+  "at": "2026-08-13T12:43:53Z",
+  "clusters": 629,
+  "extent_over_surface": 16.392147266485797,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 4355,
+  "stale_removed": 0,
+  "tiles": [
+   "R11_C22",
+   "R12_C22"
+  ]
+ },
+ "MOZ_Zinave": {
+  "after": {
+   "area_m2": 150130.0,
+   "classes": {
+    "settlement": 7,
+    "temporary_camp": 33,
+    "village": 1
+   },
+   "clusters": 41,
+   "detector_rows": 0,
+   "extent_m2": 5410000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 224,
+   "polygons_with_extent": 224,
+   "population_measured": 965
+  },
+  "at": "2026-08-13T12:36:42Z",
+  "clusters": 41,
+  "extent_over_surface": 36.03543595550523,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 224,
+  "stale_removed": 0,
+  "tiles": [
+   "R12_C22"
+  ]
+ },
+ "MWI_Liwonde": {
+  "after": {
+   "area_m2": 207175.0,
+   "classes": {
+    "temporary_camp": 7,
+    "town": 2,
+    "village": 5
+   },
+   "clusters": 14,
+   "detector_rows": 0,
+   "extent_m2": 5690000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 97,
+   "polygons_with_extent": 97,
+   "population_measured": 6248
+  },
+  "at": "2026-08-13T12:35:32Z",
+  "clusters": 14,
+  "extent_over_surface": 27.464703752865933,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 97,
+  "stale_removed": 0,
+  "tiles": [
+   "R11_C22"
+  ]
+ },
+ "MWI_Mulanje_mountain": {
+  "after": {
+   "area_m2": 200924.0,
+   "classes": {
+    "settlement": 3,
+    "temporary_camp": 18,
+    "village": 3
+   },
+   "clusters": 24,
+   "detector_rows": 0,
+   "extent_m2": 3780000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 81,
+   "polygons_with_extent": 81,
+   "population_measured": 1897
+  },
+  "at": "2026-08-13T12:35:16Z",
+  "clusters": 24,
+  "extent_over_surface": 18.813083553980608,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 81,
+  "stale_removed": 0,
+  "tiles": [
+   "R11_C22"
+  ]
+ },
+ "MWI_Nyika": {
+  "after": {
+   "area_m2": 152208.0,
+   "classes": {
+    "settlement": 6,
+    "temporary_camp": 49,
+    "village": 1
+   },
+   "clusters": 56,
+   "detector_rows": 0,
+   "extent_m2": 4810000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 210,
+   "polygons_with_extent": 210,
+   "population_measured": 810
+  },
+  "at": "2026-08-13T12:36:26Z",
+  "clusters": 56,
+  "extent_over_surface": 31.601492694207927,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 210,
+  "stale_removed": 0,
+  "tiles": [
+   "R11_C22"
+  ]
+ },
+ "NAM_Ai-Ais_Hot_Springs": {
+  "after": {
+   "area_m2": 161072.0,
+   "classes": {
+    "settlement": 4,
+    "temporary_camp": 20,
+    "village": 1
+   },
+   "clusters": 25,
+   "detector_rows": 0,
+   "extent_m2": 2170000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 55,
+   "polygons_with_extent": 55,
+   "population_measured": 441
+  },
+  "at": "2026-08-13T12:34:54Z",
+  "clusters": 25,
+  "extent_over_surface": 13.472236018674879,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 55,
+  "stale_removed": 0,
+  "tiles": [
+   "R13_C20"
+  ]
+ },
+ "NAM_Bwabwata": {
+  "after": {
+   "area_m2": 813937.0,
+   "classes": {
+    "settlement": 7,
+    "temporary_camp": 29,
+    "town": 2,
+    "village": 4
+   },
+   "clusters": 42,
+   "detector_rows": 0,
+   "extent_m2": 12980000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 194,
+   "polygons_with_extent": 194,
+   "population_measured": 5859
+  },
+  "at": "2026-08-13T12:36:13Z",
+  "clusters": 42,
+  "extent_over_surface": 15.947180187164363,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 194,
+  "stale_removed": 0,
+  "tiles": [
+   "R12_C21"
+  ]
+ },
+ "NAM_Etosha": {
+  "after": {
+   "area_m2": 445862.0,
+   "classes": {
+    "settlement": 6,
+    "temporary_camp": 37,
+    "village": 4
+   },
+   "clusters": 47,
+   "detector_rows": 0,
+   "extent_m2": 4700000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 97,
+   "polygons_with_extent": 97,
+   "population_measured": 1897
+  },
+  "at": "2026-08-13T12:35:34Z",
+  "clusters": 47,
+  "extent_over_surface": 10.541378273995093,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 97,
+  "stale_removed": 0,
+  "tiles": [
+   "R12_C20"
+  ]
+ },
+ "NAM_Namib-Naukluft": {
+  "after": {
+   "area_m2": 507444.0,
+   "classes": {
+    "agricultural": 1,
+    "settlement": 8,
+    "temporary_camp": 90
+   },
+   "clusters": 99,
+   "detector_rows": 0,
+   "extent_m2": 8040000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 248,
+   "polygons_with_extent": 248,
+   "population_measured": 610
+  },
+  "at": "2026-08-13T12:37:06Z",
+  "clusters": 99,
+  "extent_over_surface": 15.844112847920165,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 248,
+  "stale_removed": 0,
+  "tiles": [
+   "R12_C20",
+   "R13_C20"
+  ]
+ },
+ "NAM_Skeleton_Coast": {
+  "after": {
+   "area_m2": 39420.0,
+   "classes": {
+    "settlement": 1,
+    "temporary_camp": 39,
+    "village": 1
+   },
+   "clusters": 41,
+   "detector_rows": 0,
+   "extent_m2": 1990000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 120,
+   "polygons_with_extent": 120,
+   "population_measured": 1075
+  },
+  "at": "2026-08-13T12:35:51Z",
+  "clusters": 41,
+  "extent_over_surface": 50.48198883815322,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 120,
+  "stale_removed": 0,
+  "tiles": [
+   "R12_C20"
+  ]
+ },
+ "NER_Termit_et_Tin-Toumma": {
+  "after": {
+   "area_m2": 105850.0,
+   "classes": {
+    "temporary_camp": 160,
+    "town": 1,
+    "village": 9
+   },
+   "clusters": 170,
+   "detector_rows": 0,
+   "extent_m2": 5190000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 350,
+   "polygons_with_extent": 350,
+   "population_measured": 9464
+  },
+  "at": "2026-08-13T12:37:24Z",
+  "clusters": 170,
+  "extent_over_surface": 49.031648559282004,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 350,
+  "stale_removed": 0,
+  "tiles": [
+   "R7_C19",
+   "R7_C20",
+   "R8_C19",
+   "R8_C20"
+  ]
+ },
+ "NGA_Cross_River": {
+  "after": {
+   "area_m2": 501511.0,
+   "classes": {
+    "settlement": 2,
+    "temporary_camp": 14,
+    "town": 4,
+    "village": 6
+   },
+   "clusters": 26,
+   "detector_rows": 0,
+   "extent_m2": 5840000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 46,
+   "polygons_with_extent": 46,
+   "population_measured": 13335
+  },
+  "at": "2026-08-13T12:34:44Z",
+  "clusters": 26,
+  "extent_over_surface": 11.644809386035401,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 46,
+  "stale_removed": 0,
+  "tiles": [
+   "R9_C19"
+  ]
+ },
+ "NGA_Gashaka-Gumti": {
+  "after": {
+   "area_m2": 309564.0,
+   "classes": {
+    "settlement": 6,
+    "temporary_camp": 46,
+    "town": 1,
+    "village": 11
+   },
+   "clusters": 64,
+   "detector_rows": 0,
+   "extent_m2": 7830000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 365,
+   "polygons_with_extent": 365,
+   "population_measured": 6099
+  },
+  "at": "2026-08-13T12:37:42Z",
+  "clusters": 64,
+  "extent_over_surface": 25.293638795208746,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 365,
+  "stale_removed": 0,
+  "tiles": [
+   "R9_C20"
+  ]
+ },
+ "NGA_Kainji_Lake": {
+  "after": {
+   "area_m2": 2448656.0,
+   "classes": {
+    "settlement": 5,
+    "temporary_camp": 34,
+    "town": 8,
+    "village": 9
+   },
+   "clusters": 56,
+   "detector_rows": 0,
+   "extent_m2": 28790000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 536,
+   "polygons_with_extent": 536,
+   "population_measured": 37452
+  },
+  "at": "2026-08-13T12:38:32Z",
+  "clusters": 56,
+  "extent_over_surface": 11.757470220398455,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 536,
+  "stale_removed": 0,
+  "tiles": [
+   "R8_C19"
+  ]
+ },
+ "NGA_Yankari": {
+  "after": {
+   "area_m2": 436548.0,
+   "classes": {
+    "settlement": 1,
+    "temporary_camp": 8,
+    "town": 4,
+    "village": 1
+   },
+   "clusters": 14,
+   "detector_rows": 0,
+   "extent_m2": 4230000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 71,
+   "polygons_with_extent": 71,
+   "population_measured": 17175
+  },
+  "at": "2026-08-13T12:35:09Z",
+  "clusters": 14,
+  "extent_over_surface": 9.689656120289177,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 71,
+  "stale_removed": 0,
+  "tiles": [
+   "R8_C20"
+  ]
+ },
+ "RWA_Akagera": {
+  "after": {
+   "area_m2": 31990.0,
+   "classes": {
+    "settlement": 1,
+    "temporary_camp": 20
+   },
+   "clusters": 21,
+   "detector_rows": 0,
+   "extent_m2": 840000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 34,
+   "polygons_with_extent": 34,
+   "population_measured": 125
+  },
+  "at": "2026-08-13T12:34:26Z",
+  "clusters": 21,
+  "extent_over_surface": 26.2582056892779,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 34,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C22"
+  ]
+ },
+ "RWA_Nyungwe": {
+  "after": {
+   "area_m2": 29335.0,
+   "classes": {
+    "settlement": 2,
+    "temporary_camp": 15
+   },
+   "clusters": 17,
+   "detector_rows": 0,
+   "extent_m2": 840000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 23,
+   "polygons_with_extent": 23,
+   "population_measured": 254
+  },
+  "at": "2026-08-13T12:34:13Z",
+  "clusters": 17,
+  "extent_over_surface": 28.63473666268962,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 23,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C21"
+  ]
+ },
+ "RWA_Volcans": {
+  "after": {
+   "area_m2": 21605.0,
+   "classes": {
+    "temporary_camp": 2,
+    "village": 1
+   },
+   "clusters": 3,
+   "detector_rows": 0,
+   "extent_m2": 430000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 4,
+   "polygons_with_extent": 4,
+   "population_measured": 302
+  },
+  "at": "2026-08-13T12:33:49Z",
+  "clusters": 3,
+  "extent_over_surface": 19.902800277713492,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 4,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C21",
+   "R10_C22"
+  ]
+ },
+ "SDN_Dinder": {
+  "after": {
+   "area_m2": 2298304.0,
+   "classes": {
+    "settlement": 6,
+    "temporary_camp": 94,
+    "town": 8,
+    "village": 8
+   },
+   "clusters": 116,
+   "detector_rows": 0,
+   "extent_m2": 29990000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 357,
+   "polygons_with_extent": 357,
+   "population_measured": 35075
+  },
+  "at": "2026-08-13T12:37:30Z",
+  "clusters": 116,
+  "extent_over_surface": 13.048752471387598,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 357,
+  "stale_removed": 0,
+  "tiles": [
+   "R8_C22"
+  ]
+ },
+ "SEN_Niokolo_Koba": {
+  "after": {
+   "area_m2": 174478.0,
+   "classes": {
+    "settlement": 7,
+    "temporary_camp": 32,
+    "village": 5
+   },
+   "clusters": 44,
+   "detector_rows": 0,
+   "extent_m2": 3250000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 107,
+   "polygons_with_extent": 107,
+   "population_measured": 2640
+  },
+  "at": "2026-08-13T12:35:37Z",
+  "clusters": 44,
+  "extent_over_surface": 18.62699022226298,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 107,
+  "stale_removed": 0,
+  "tiles": [
+   "R8_C17"
+  ]
+ },
+ "SSD_Badingilo": {
+  "after": {
+   "area_m2": 144284.0,
+   "classes": {
+    "settlement": 4,
+    "temporary_camp": 6,
+    "village": 3
+   },
+   "clusters": 13,
+   "detector_rows": 0,
+   "extent_m2": 3600000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 124,
+   "polygons_with_extent": 124,
+   "population_measured": 2319
+  },
+  "at": "2026-08-13T12:35:56Z",
+  "clusters": 13,
+  "extent_over_surface": 24.950791494552412,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 124,
+  "stale_removed": 0,
+  "tiles": [
+   "R9_C22"
+  ]
+ },
+ "SSD_Boma": {
+  "after": {
+   "area_m2": 23917.0,
+   "classes": {
+    "temporary_camp": 3,
+    "town": 3,
+    "village": 3
+   },
+   "clusters": 9,
+   "detector_rows": 76,
+   "extent_m2": 1140000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 64,
+   "polygons_with_extent": 64,
+   "population_measured": 26425
+  },
+  "at": "2026-08-13T12:35:07Z",
+  "clusters": 9,
+  "extent_over_surface": 47.664840908140654,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 64,
+  "stale_removed": 0,
+  "tiles": [
+   "R9_C22"
+  ]
+ },
+ "SSD_Southern": {
+  "after": {
+   "area_m2": 14530.0,
+   "classes": {
+    "temporary_camp": 21,
+    "village": 8
+   },
+   "clusters": 29,
+   "detector_rows": 0,
+   "extent_m2": 870000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 60,
+   "polygons_with_extent": 60,
+   "population_measured": 5459
+  },
+  "at": "2026-08-13T12:35:03Z",
+  "clusters": 29,
+  "extent_over_surface": 59.87611837577426,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 60,
+  "stale_removed": 0,
+  "tiles": [
+   "R9_C21",
+   "R9_C22"
+  ]
+ },
+ "SSD_Zeraf": {
+  "after": {
+   "area_m2": 2058923.0,
+   "classes": {
+    "settlement": 1,
+    "temporary_camp": 51,
+    "town": 25,
+    "village": 15
+   },
+   "clusters": 92,
+   "detector_rows": 0,
+   "extent_m2": 110230000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 2400,
+   "polygons_with_extent": 2400,
+   "population_measured": 117634
+  },
+  "at": "2026-08-13T12:41:43Z",
+  "clusters": 92,
+  "extent_over_surface": 53.53769907859594,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 2400,
+  "stale_removed": 0,
+  "tiles": [
+   "R8_C22",
+   "R9_C22"
+  ]
+ },
+ "TCD_Aouk": {
+  "after": {
+   "area_m2": 4330896.0,
+   "classes": {
+    "settlement": 4,
+    "temporary_camp": 176,
+    "town": 24,
+    "village": 36
+   },
+   "clusters": 240,
+   "detector_rows": 0,
+   "extent_m2": 53150000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 822,
+   "polygons_with_extent": 822,
+   "population_measured": 201590
+  },
+  "at": "2026-08-13T12:39:39Z",
+  "clusters": 240,
+  "extent_over_surface": 12.272287304982617,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 822,
+  "stale_removed": 0,
+  "tiles": [
+   "R8_C20",
+   "R8_C21"
+  ]
+ },
+ "TCD_Ennedi": {
+  "after": {
+   "area_m2": 250592.0,
+   "classes": {
+    "temporary_camp": 146,
+    "town": 5,
+    "village": 21
+   },
+   "clusters": 172,
+   "detector_rows": 0,
+   "extent_m2": 16450000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 786,
+   "polygons_with_extent": 786,
+   "population_measured": 29176
+  },
+  "at": "2026-08-13T12:39:26Z",
+  "clusters": 172,
+  "extent_over_surface": 65.64455369684588,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 786,
+  "stale_removed": 0,
+  "tiles": [
+   "R7_C21",
+   "R8_C21"
+  ]
+ },
+ "TCD_Ouadi_Rim\u00e9-Ouadi_Achim": {
+  "after": {
+   "area_m2": 166542.0,
+   "classes": {
+    "temporary_camp": 66,
+    "town": 1,
+    "village": 4
+   },
+   "clusters": 71,
+   "detector_rows": 0,
+   "extent_m2": 5260000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 207,
+   "polygons_with_extent": 207,
+   "population_measured": 17061
+  },
+  "at": "2026-08-13T12:36:20Z",
+  "clusters": 71,
+  "extent_over_surface": 31.58362455116427,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 207,
+  "stale_removed": 0,
+  "tiles": [
+   "R7_C20",
+   "R7_C21",
+   "R8_C20",
+   "R8_C21"
+  ]
+ },
+ "TCD_Zakouma": {
+  "after": {
+   "area_m2": 24022.0,
+   "classes": {
+    "temporary_camp": 7,
+    "village": 2
+   },
+   "clusters": 9,
+   "detector_rows": 0,
+   "extent_m2": 590000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 16,
+   "polygons_with_extent": 16,
+   "population_measured": 1060
+  },
+  "at": "2026-08-13T12:34:04Z",
+  "clusters": 9,
+  "extent_over_surface": 24.56081924902173,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 16,
+  "stale_removed": 0,
+  "tiles": [
+   "R8_C20",
+   "R8_C21"
+  ]
+ },
+ "TGO_Fazao-Malfakassa": {
+  "after": {
+   "area_m2": 925325.0,
+   "classes": {
+    "settlement": 4,
+    "temporary_camp": 23,
+    "town": 2,
+    "village": 3
+   },
+   "clusters": 32,
+   "detector_rows": 0,
+   "extent_m2": 19290000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 424,
+   "polygons_with_extent": 424,
+   "population_measured": 7825
+  },
+  "at": "2026-08-13T12:37:49Z",
+  "clusters": 32,
+  "extent_over_surface": 20.846729527463324,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 424,
+  "stale_removed": 0,
+  "tiles": [
+   "R8_C19"
+  ]
+ },
+ "TZA_Katavi": {
+  "after": {
+   "area_m2": 412775.0,
+   "classes": {
+    "settlement": 3,
+    "temporary_camp": 38,
+    "town": 1
+   },
+   "clusters": 42,
+   "detector_rows": 0,
+   "extent_m2": 4040000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 90,
+   "polygons_with_extent": 90,
+   "population_measured": 6084
+  },
+  "at": "2026-08-13T12:35:24Z",
+  "clusters": 42,
+  "extent_over_surface": 9.78741445097208,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 90,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C22"
+  ]
+ },
+ "TZA_Kilimanjaro": {
+  "after": {
+   "area_m2": 349697.0,
+   "classes": {
+    "settlement": 4,
+    "temporary_camp": 21,
+    "town": 1,
+    "village": 8
+   },
+   "clusters": 34,
+   "detector_rows": 0,
+   "extent_m2": 6770000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 72,
+   "polygons_with_extent": 72,
+   "population_measured": 6095
+  },
+  "at": "2026-08-13T12:35:10Z",
+  "clusters": 34,
+  "extent_over_surface": 19.359617039894538,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 72,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C22"
+  ]
+ },
+ "TZA_Kilombero": {
+  "after": {
+   "area_m2": 6690.0,
+   "classes": {
+    "temporary_camp": 11
+   },
+   "clusters": 11,
+   "detector_rows": 0,
+   "extent_m2": 190000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 13,
+   "polygons_with_extent": 13,
+   "population_measured": 70
+  },
+  "at": "2026-08-13T12:33:55Z",
+  "clusters": 11,
+  "extent_over_surface": 28.400597907324364,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 13,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C22",
+   "R11_C22"
+  ]
+ },
+ "TZA_Kitulo_Plateau": {
+  "after": {
+   "area_m2": 99026.0,
+   "classes": {
+    "settlement": 2,
+    "temporary_camp": 11,
+    "village": 2
+   },
+   "clusters": 15,
+   "detector_rows": 0,
+   "extent_m2": 1480000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 45,
+   "polygons_with_extent": 45,
+   "population_measured": 1342
+  },
+  "at": "2026-08-13T12:34:42Z",
+  "clusters": 15,
+  "extent_over_surface": 14.945569850342334,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 45,
+  "stale_removed": 0,
+  "tiles": [
+   "R11_C22"
+  ]
+ },
+ "TZA_Kitwai": {
+  "after": {
+   "area_m2": 499578.0,
+   "classes": {
+    "settlement": 5,
+    "temporary_camp": 69,
+    "town": 3,
+    "village": 9
+   },
+   "clusters": 86,
+   "detector_rows": 0,
+   "extent_m2": 13250000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 397,
+   "polygons_with_extent": 397,
+   "population_measured": 12559
+  },
+  "at": "2026-08-13T12:37:45Z",
+  "clusters": 86,
+  "extent_over_surface": 26.522384892849566,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 397,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C22"
+  ]
+ },
+ "TZA_Luasi": {
+  "after": {
+   "area_m2": 3453.0,
+   "classes": {
+    "temporary_camp": 15
+   },
+   "clusters": 15,
+   "detector_rows": 0,
+   "extent_m2": 220000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 20,
+   "polygons_with_extent": 20,
+   "population_measured": 38
+  },
+  "at": "2026-08-13T12:34:09Z",
+  "clusters": 15,
+  "extent_over_surface": 63.71271358239212,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 20,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C22"
+  ]
+ },
+ "TZA_Luganzo-Tongwe": {
+  "after": {
+   "area_m2": 8805.0,
+   "classes": {
+    "settlement": 1
+   },
+   "clusters": 1,
+   "detector_rows": 0,
+   "extent_m2": 270000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 12,
+   "polygons_with_extent": 12,
+   "population_measured": 159
+  },
+  "at": "2026-08-13T12:33:52Z",
+  "clusters": 1,
+  "extent_over_surface": 30.664395229982965,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 12,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C22"
+  ]
+ },
+ "TZA_Mahale_Mts": {
+  "after": {
+   "area_m2": 21099.0,
+   "classes": {
+    "settlement": 2,
+    "temporary_camp": 9
+   },
+   "clusters": 11,
+   "detector_rows": 0,
+   "extent_m2": 570000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 36,
+   "polygons_with_extent": 36,
+   "population_measured": 466
+  },
+  "at": "2026-08-13T12:34:31Z",
+  "clusters": 11,
+  "extent_over_surface": 27.015498364851414,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 36,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C22"
+  ]
+ },
+ "TZA_Mkomazi": {
+  "after": {
+   "area_m2": 45906.0,
+   "classes": {
+    "settlement": 5,
+    "temporary_camp": 26
+   },
+   "clusters": 31,
+   "detector_rows": 0,
+   "extent_m2": 1250000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 57,
+   "polygons_with_extent": 57,
+   "population_measured": 653
+  },
+  "at": "2026-08-13T12:34:57Z",
+  "clusters": 31,
+  "extent_over_surface": 27.229556049318173,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 57,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C22"
+  ]
+ },
+ "TZA_Moyowosi": {
+  "after": {
+   "area_m2": 10842.0,
+   "classes": {
+    "settlement": 1,
+    "temporary_camp": 24
+   },
+   "clusters": 25,
+   "detector_rows": 0,
+   "extent_m2": 760000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 51,
+   "polygons_with_extent": 51,
+   "population_measured": 42
+  },
+  "at": "2026-08-13T12:34:52Z",
+  "clusters": 25,
+  "extent_over_surface": 70.09776793949456,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 51,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C22"
+  ]
+ },
+ "TZA_Mpanga_Kipengere": {
+  "after": {
+   "area_m2": 25219.0,
+   "classes": {
+    "village": 1
+   },
+   "clusters": 1,
+   "detector_rows": 0,
+   "extent_m2": 290000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 3,
+   "polygons_with_extent": 3,
+   "population_measured": 219
+  },
+  "at": "2026-08-13T12:33:46Z",
+  "clusters": 1,
+  "extent_over_surface": 11.4992664261073,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 3,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C22"
+  ]
+ },
+ "TZA_Ngorongoro": {
+  "after": {
+   "area_m2": 5804538.0,
+   "classes": {
+    "settlement": 14,
+    "temporary_camp": 97,
+    "town": 29,
+    "village": 24
+   },
+   "clusters": 164,
+   "detector_rows": 0,
+   "extent_m2": 132400000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 2557,
+   "polygons_with_extent": 2557,
+   "population_measured": 116854
+  },
+  "at": "2026-08-13T12:41:59Z",
+  "clusters": 164,
+  "extent_over_surface": 22.809739552053927,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 2557,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C22"
+  ]
+ },
+ "TZA_Nyerere": {
+  "after": {
+   "area_m2": 1182256.0,
+   "classes": {
+    "settlement": 16,
+    "temporary_camp": 333,
+    "town": 3,
+    "village": 4
+   },
+   "clusters": 356,
+   "detector_rows": 0,
+   "extent_m2": 26230000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 1083,
+   "polygons_with_extent": 1083,
+   "population_measured": 17753
+  },
+  "at": "2026-08-13T12:40:53Z",
+  "clusters": 356,
+  "extent_over_surface": 22.186396178154308,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 1083,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C22",
+   "R11_C22"
+  ]
+ },
+ "TZA_Ruaha": {
+  "after": {
+   "area_m2": 5410957.0,
+   "classes": {
+    "settlement": 17,
+    "temporary_camp": 262,
+    "town": 16,
+    "village": 14
+   },
+   "clusters": 309,
+   "detector_rows": 0,
+   "extent_m2": 130290000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 3599,
+   "polygons_with_extent": 3599,
+   "population_measured": 64149
+  },
+  "at": "2026-08-13T12:43:13Z",
+  "clusters": 309,
+  "extent_over_surface": 24.078919865746485,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 3599,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C22",
+   "R11_C22"
+  ]
+ },
+ "TZA_Saadani": {
+  "after": {
+   "area_m2": 254237.0,
+   "classes": {
+    "settlement": 1,
+    "temporary_camp": 22,
+    "town": 2,
+    "village": 3
+   },
+   "clusters": 28,
+   "detector_rows": 0,
+   "extent_m2": 4170000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 85,
+   "polygons_with_extent": 85,
+   "population_measured": 4730
+  },
+  "at": "2026-08-13T12:35:21Z",
+  "clusters": 28,
+  "extent_over_surface": 16.4020185889544,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 85,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C22"
+  ]
+ },
+ "TZA_Selous": {
+  "after": {
+   "area_m2": 132611.0,
+   "classes": {
+    "settlement": 2,
+    "temporary_camp": 302
+   },
+   "clusters": 304,
+   "detector_rows": 0,
+   "extent_m2": 5680000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 458,
+   "polygons_with_extent": 458,
+   "population_measured": 2896
+  },
+  "at": "2026-08-13T12:38:02Z",
+  "clusters": 304,
+  "extent_over_surface": 42.832042590735306,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 458,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C22",
+   "R11_C22"
+  ]
+ },
+ "TZA_Serengeti": {
+  "after": {
+   "area_m2": 1384185.0,
+   "classes": {
+    "settlement": 29,
+    "temporary_camp": 247,
+    "town": 2,
+    "village": 16
+   },
+   "clusters": 294,
+   "detector_rows": 0,
+   "extent_m2": 33670000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 1026,
+   "polygons_with_extent": 1026,
+   "population_measured": 14164
+  },
+  "at": "2026-08-13T12:40:26Z",
+  "clusters": 294,
+  "extent_over_surface": 24.324783175659324,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 1026,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C22"
+  ]
+ },
+ "TZA_Tarangire": {
+  "after": {
+   "area_m2": 189965.0,
+   "classes": {
+    "settlement": 2,
+    "temporary_camp": 55,
+    "village": 4
+   },
+   "clusters": 61,
+   "detector_rows": 0,
+   "extent_m2": 4550000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 173,
+   "polygons_with_extent": 173,
+   "population_measured": 2510
+  },
+  "at": "2026-08-13T12:36:06Z",
+  "clusters": 61,
+  "extent_over_surface": 23.95178059116153,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 173,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C22"
+  ]
+ },
+ "TZA_Udzungwa_Mountain": {
+  "after": {
+   "area_m2": 110305.0,
+   "classes": {
+    "settlement": 2,
+    "temporary_camp": 8,
+    "village": 2
+   },
+   "clusters": 12,
+   "detector_rows": 0,
+   "extent_m2": 1220000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 14,
+   "polygons_with_extent": 14,
+   "population_measured": 864
+  },
+  "at": "2026-08-13T12:34:01Z",
+  "clusters": 12,
+  "extent_over_surface": 11.06024205611713,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 14,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C22"
+  ]
+ },
+ "TZA_Ugalla": {
+  "after": {
+   "area_m2": 20886.0,
+   "classes": {
+    "settlement": 1,
+    "temporary_camp": 43
+   },
+   "clusters": 44,
+   "detector_rows": 0,
+   "extent_m2": 1440000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 97,
+   "polygons_with_extent": 97,
+   "population_measured": 186
+  },
+  "at": "2026-08-13T12:35:36Z",
+  "clusters": 44,
+  "extent_over_surface": 68.94570525711002,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 97,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C22"
+  ]
+ },
+ "TZA_Uluguru": {
+  "after": {
+   "area_m2": 10790.0,
+   "classes": {
+    "temporary_camp": 7,
+    "village": 1
+   },
+   "clusters": 8,
+   "detector_rows": 0,
+   "extent_m2": 500000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 24,
+   "polygons_with_extent": 24,
+   "population_measured": 288
+  },
+  "at": "2026-08-13T12:34:16Z",
+  "clusters": 8,
+  "extent_over_surface": 46.33920296570899,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 24,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C22"
+  ]
+ },
+ "TZA_Uzungwa_Scarp": {
+  "after": {
+   "area_m2": 273282.0,
+   "classes": {
+    "settlement": 2,
+    "temporary_camp": 6,
+    "town": 2,
+    "village": 2
+   },
+   "clusters": 12,
+   "detector_rows": 0,
+   "extent_m2": 3440000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 34,
+   "polygons_with_extent": 34,
+   "population_measured": 3865
+  },
+  "at": "2026-08-13T12:34:27Z",
+  "clusters": 12,
+  "extent_over_surface": 12.587729890735577,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 34,
+  "stale_removed": 0,
+  "tiles": [
+   "R11_C22"
+  ]
+ },
+ "UGA_Bwindi_Impenetrable": {
+  "after": {
+   "area_m2": 351406.0,
+   "classes": {
+    "settlement": 4,
+    "temporary_camp": 8,
+    "town": 1,
+    "village": 3
+   },
+   "clusters": 16,
+   "detector_rows": 0,
+   "extent_m2": 5890000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 40,
+   "polygons_with_extent": 40,
+   "population_measured": 4079
+  },
+  "at": "2026-08-13T12:34:35Z",
+  "clusters": 16,
+  "extent_over_surface": 16.761239136497384,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 40,
+  "stale_removed": 0,
+  "tiles": [
+   "R10_C22"
+  ]
+ },
+ "UGA_Kidepo_Valley": {
+  "after": {
+   "area_m2": 58412.0,
+   "classes": {
+    "temporary_camp": 33,
+    "village": 2
+   },
+   "clusters": 35,
+   "detector_rows": 0,
+   "extent_m2": 1310000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 62,
+   "polygons_with_extent": 62,
+   "population_measured": 1132
+  },
+  "at": "2026-08-13T12:35:04Z",
+  "clusters": 35,
+  "extent_over_surface": 22.42689858248305,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 62,
+  "stale_removed": 0,
+  "tiles": [
+   "R9_C22"
+  ]
+ },
+ "UGA_Mount_Elgon": {
+  "after": {
+   "area_m2": 2217292.0,
+   "classes": {
+    "settlement": 2,
+    "temporary_camp": 33,
+    "town": 5,
+    "village": 2
+   },
+   "clusters": 42,
+   "detector_rows": 0,
+   "extent_m2": 48900000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 131,
+   "polygons_with_extent": 131,
+   "population_measured": 54832
+  },
+  "at": "2026-08-13T12:35:58Z",
+  "clusters": 42,
+  "extent_over_surface": 22.05392884653893,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 131,
+  "stale_removed": 0,
+  "tiles": [
+   "R9_C22"
+  ]
+ },
+ "UGA_Murchison_Falls": {
+  "after": {
+   "area_m2": 626483.0,
+   "classes": {
+    "settlement": 3,
+    "temporary_camp": 61,
+    "town": 6,
+    "village": 6
+   },
+   "clusters": 76,
+   "detector_rows": 0,
+   "extent_m2": 9760000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 242,
+   "polygons_with_extent": 242,
+   "population_measured": 13817
+  },
+  "at": "2026-08-13T12:37:01Z",
+  "clusters": 76,
+  "extent_over_surface": 15.579034067963535,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 242,
+  "stale_removed": 0,
+  "tiles": [
+   "R9_C22"
+  ]
+ },
+ "UGA_Pian_Upe": {
+  "after": {
+   "area_m2": 346872.0,
+   "classes": {
+    "settlement": 1,
+    "temporary_camp": 32,
+    "town": 5,
+    "village": 2
+   },
+   "clusters": 40,
+   "detector_rows": 0,
+   "extent_m2": 8080000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 242,
+   "polygons_with_extent": 242,
+   "population_measured": 24043
+  },
+  "at": "2026-08-13T12:37:03Z",
+  "clusters": 40,
+  "extent_over_surface": 23.293895154408542,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 242,
+  "stale_removed": 0,
+  "tiles": [
+   "R9_C22"
+  ]
+ },
+ "UGA_Queen_Elizabeth": {
+  "after": {
+   "area_m2": 1059011.0,
+   "classes": {
+    "settlement": 4,
+    "temporary_camp": 53,
+    "town": 6,
+    "village": 5
+   },
+   "clusters": 68,
+   "detector_rows": 0,
+   "extent_m2": 13550000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 225,
+   "polygons_with_extent": 225,
+   "population_measured": 18120
+  },
+  "at": "2026-08-13T12:36:48Z",
+  "clusters": 68,
+  "extent_over_surface": 12.794956804036975,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 225,
+  "stale_removed": 0,
+  "tiles": [
+   "R9_C22",
+   "R10_C22"
+  ]
+ },
+ "UGA_Rwenzori_Mountains": {
+  "after": {
+   "area_m2": 9964.0,
+   "classes": {
+    "temporary_camp": 13
+   },
+   "clusters": 13,
+   "detector_rows": 0,
+   "extent_m2": 450000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 18,
+   "polygons_with_extent": 18,
+   "population_measured": 231
+  },
+  "at": "2026-08-13T12:34:07Z",
+  "clusters": 13,
+  "extent_over_surface": 45.16258530710558,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 18,
+  "stale_removed": 0,
+  "tiles": [
+   "R9_C22"
+  ]
+ },
+ "XSA_Study_Area": {
+  "after": {
+   "area_m2": 110173215.0,
+   "classes": {
+    "agricultural": 1,
+    "settlement": 102,
+    "temporary_camp": 1374,
+    "town": 333,
+    "village": 311
+   },
+   "clusters": 2121,
+   "detector_rows": 0,
+   "extent_m2": 4268230000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 74904,
+   "polygons_with_extent": 74904,
+   "population_measured": 2633521
+  },
+  "at": "2026-08-13T12:53:20Z",
+  "clusters": 2121,
+  "extent_over_surface": 38.74108602531024,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 74904,
+  "stale_removed": 0,
+  "tiles": [
+   "R8_C21",
+   "R8_C22",
+   "R9_C21",
+   "R9_C22"
+  ]
+ },
+ "ZAF_Kalahari_Gemsbok": {
+  "after": {
+   "area_m2": 122329.0,
+   "classes": {
+    "agricultural": 1,
+    "settlement": 2,
+    "temporary_camp": 51
+   },
+   "clusters": 54,
+   "detector_rows": 0,
+   "extent_m2": 2250000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 91,
+   "polygons_with_extent": 91,
+   "population_measured": 361
+  },
+  "at": "2026-08-13T12:35:25Z",
+  "clusters": 54,
+  "extent_over_surface": 18.393022096150546,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 91,
+  "stale_removed": 0,
+  "tiles": [
+   "R13_C20"
+  ]
+ },
+ "ZAF_Kruger": {
+  "after": {
+   "area_m2": 3465500.0,
+   "classes": {
+    "agricultural": 4,
+    "settlement": 38,
+    "temporary_camp": 274,
+    "town": 3,
+    "village": 5
+   },
+   "clusters": 324,
+   "detector_rows": 0,
+   "extent_m2": 32670000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 645,
+   "polygons_with_extent": 645,
+   "population_measured": 15953
+  },
+  "at": "2026-08-13T12:38:54Z",
+  "clusters": 324,
+  "extent_over_surface": 9.427211080652143,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 645,
+  "stale_removed": 0,
+  "tiles": [
+   "R12_C21",
+   "R12_C22",
+   "R13_C21",
+   "R13_C22"
+  ]
+ },
+ "ZAF_Mountain_Zebra-Camdeboo": {
+  "after": {
+   "area_m2": 1541955.0,
+   "classes": {
+    "settlement": 111,
+    "temporary_camp": 281
+   },
+   "clusters": 392,
+   "detector_rows": 0,
+   "extent_m2": 32180000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 1058,
+   "polygons_with_extent": 1058,
+   "population_measured": 5220
+  },
+  "at": "2026-08-13T12:40:36Z",
+  "clusters": 392,
+  "extent_over_surface": 20.869610332337842,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 1058,
+  "stale_removed": 0,
+  "tiles": [
+   "R13_C21"
+  ]
+ },
+ "ZAF_Namaqua": {
+  "after": {
+   "area_m2": 40893.0,
+   "classes": {
+    "settlement": 3,
+    "temporary_camp": 35
+   },
+   "clusters": 38,
+   "detector_rows": 0,
+   "extent_m2": 1040000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 58,
+   "polygons_with_extent": 58,
+   "population_measured": 46
+  },
+  "at": "2026-08-13T12:34:58Z",
+  "clusters": 38,
+  "extent_over_surface": 25.432225564277505,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 58,
+  "stale_removed": 0,
+  "tiles": [
+   "R13_C20"
+  ]
+ },
+ "ZAF_Richtersveld": {
+  "after": {
+   "area_m2": 189045.0,
+   "classes": {
+    "settlement": 1,
+    "temporary_camp": 14,
+    "town": 1,
+    "village": 1
+   },
+   "clusters": 17,
+   "detector_rows": 0,
+   "extent_m2": 1880000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 47,
+   "polygons_with_extent": 47,
+   "population_measured": 1754
+  },
+  "at": "2026-08-13T12:34:45Z",
+  "clusters": 17,
+  "extent_over_surface": 9.944722156100399,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 47,
+  "stale_removed": 0,
+  "tiles": [
+   "R13_C20"
+  ]
+ },
+ "ZAF_Sederberg": {
+  "after": {
+   "area_m2": 26987.0,
+   "classes": {
+    "temporary_camp": 34
+   },
+   "clusters": 34,
+   "detector_rows": 0,
+   "extent_m2": 1380000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 95,
+   "polygons_with_extent": 95,
+   "population_measured": 219
+  },
+  "at": "2026-08-13T12:35:31Z",
+  "clusters": 34,
+  "extent_over_surface": 51.13573201912032,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 95,
+  "stale_removed": 0,
+  "tiles": [
+   "R13_C20"
+  ]
+ },
+ "ZMB_Bangweulu": {
+  "after": {
+   "area_m2": 2818983.0,
+   "classes": {
+    "settlement": 8,
+    "temporary_camp": 125,
+    "town": 13,
+    "village": 17
+   },
+   "clusters": 163,
+   "detector_rows": 0,
+   "extent_m2": 57230000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 1245,
+   "polygons_with_extent": 1245,
+   "population_measured": 53877
+  },
+  "at": "2026-08-13T12:41:04Z",
+  "clusters": 163,
+  "extent_over_surface": 20.301647792838764,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 1245,
+  "stale_removed": 0,
+  "tiles": [
+   "R11_C21",
+   "R11_C22"
+  ]
+ },
+ "ZMB_Kafue": {
+  "after": {
+   "area_m2": 373738.0,
+   "classes": {
+    "settlement": 5,
+    "temporary_camp": 97,
+    "village": 3
+   },
+   "clusters": 105,
+   "detector_rows": 0,
+   "extent_m2": 7290000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 222,
+   "polygons_with_extent": 222,
+   "population_measured": 2056
+  },
+  "at": "2026-08-13T12:36:37Z",
+  "clusters": 105,
+  "extent_over_surface": 19.505642990544178,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 222,
+  "stale_removed": 0,
+  "tiles": [
+   "R11_C21",
+   "R12_C21"
+  ]
+ },
+ "ZMB_Liuwa_Plain": {
+  "after": {
+   "area_m2": 402590.0,
+   "classes": {
+    "settlement": 4,
+    "temporary_camp": 28,
+    "town": 3,
+    "village": 7
+   },
+   "clusters": 42,
+   "detector_rows": 0,
+   "extent_m2": 9350000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 362,
+   "polygons_with_extent": 362,
+   "population_measured": 9033
+  },
+  "at": "2026-08-13T12:37:33Z",
+  "clusters": 42,
+  "extent_over_surface": 23.224620581733276,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 362,
+  "stale_removed": 0,
+  "tiles": [
+   "R11_C21"
+  ]
+ },
+ "ZMB_Lower_Zambezi": {
+  "after": {
+   "area_m2": 463706.0,
+   "classes": {
+    "settlement": 3,
+    "temporary_camp": 11,
+    "town": 1,
+    "village": 4
+   },
+   "clusters": 19,
+   "detector_rows": 0,
+   "extent_m2": 17490000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 824,
+   "polygons_with_extent": 824,
+   "population_measured": 5263
+  },
+  "at": "2026-08-13T12:39:55Z",
+  "clusters": 19,
+  "extent_over_surface": 37.71786433645456,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 824,
+  "stale_removed": 0,
+  "tiles": [
+   "R11_C21",
+   "R11_C22"
+  ]
+ },
+ "ZMB_Lunga_Luswishi": {
+  "after": {
+   "area_m2": 641719.0,
+   "classes": {
+    "settlement": 6,
+    "temporary_camp": 61,
+    "town": 3,
+    "village": 2
+   },
+   "clusters": 72,
+   "detector_rows": 0,
+   "extent_m2": 19310000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 542,
+   "polygons_with_extent": 542,
+   "population_measured": 6308
+  },
+  "at": "2026-08-13T12:38:37Z",
+  "clusters": 72,
+  "extent_over_surface": 30.091052314174895,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 542,
+  "stale_removed": 0,
+  "tiles": [
+   "R11_C21"
+  ]
+ },
+ "ZMB_Musalangu": {
+  "after": {
+   "area_m2": 18957484.0,
+   "classes": {
+    "settlement": 31,
+    "temporary_camp": 79,
+    "town": 36,
+    "village": 39
+   },
+   "clusters": 185,
+   "detector_rows": 0,
+   "extent_m2": 292940000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 4519,
+   "polygons_with_extent": 4519,
+   "population_measured": 141364
+  },
+  "at": "2026-08-13T12:44:24Z",
+  "clusters": 185,
+  "extent_over_surface": 15.452472490547796,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 4519,
+  "stale_removed": 0,
+  "tiles": [
+   "R11_C22"
+  ]
+ },
+ "ZMB_Mweru_Wantipa": {
+  "after": {
+   "area_m2": 1314756.0,
+   "classes": {
+    "settlement": 7,
+    "temporary_camp": 33,
+    "town": 6,
+    "village": 5
+   },
+   "clusters": 51,
+   "detector_rows": 0,
+   "extent_m2": 14740000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 283,
+   "polygons_with_extent": 283,
+   "population_measured": 16269
+  },
+  "at": "2026-08-13T12:37:15Z",
+  "clusters": 51,
+  "extent_over_surface": 11.211205729428123,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 283,
+  "stale_removed": 0,
+  "tiles": [
+   "R11_C21",
+   "R11_C22"
+  ]
+ },
+ "ZMB_North_Luangwa": {
+  "after": {
+   "area_m2": 20534.0,
+   "classes": {
+    "settlement": 1,
+    "temporary_camp": 24
+   },
+   "clusters": 25,
+   "detector_rows": 0,
+   "extent_m2": 660000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 40,
+   "polygons_with_extent": 40,
+   "population_measured": 148
+  },
+  "at": "2026-08-13T12:34:36Z",
+  "clusters": 25,
+  "extent_over_surface": 32.14181357748125,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 40,
+  "stale_removed": 0,
+  "tiles": [
+   "R11_C22"
+  ]
+ },
+ "ZMB_Nsumbu": {
+  "after": {
+   "area_m2": 167306.0,
+   "classes": {
+    "settlement": 3,
+    "temporary_camp": 8,
+    "town": 1,
+    "village": 1
+   },
+   "clusters": 13,
+   "detector_rows": 0,
+   "extent_m2": 2230000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 56,
+   "polygons_with_extent": 56,
+   "population_measured": 2619
+  },
+  "at": "2026-08-13T12:34:55Z",
+  "clusters": 13,
+  "extent_over_surface": 13.328870452942512,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 56,
+  "stale_removed": 0,
+  "tiles": [
+   "R11_C22"
+  ]
+ },
+ "ZMB_South_Luangwa": {
+  "after": {
+   "area_m2": 78468.0,
+   "classes": {
+    "settlement": 4,
+    "temporary_camp": 60
+   },
+   "clusters": 64,
+   "detector_rows": 0,
+   "extent_m2": 2390000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 119,
+   "polygons_with_extent": 119,
+   "population_measured": 241
+  },
+  "at": "2026-08-13T12:35:47Z",
+  "clusters": 64,
+  "extent_over_surface": 30.458275985114952,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 119,
+  "stale_removed": 0,
+  "tiles": [
+   "R11_C22"
+  ]
+ },
+ "ZWE_Chimanimani": {
+  "after": {
+   "area_m2": 177487.0,
+   "classes": {
+    "settlement": 3,
+    "temporary_camp": 7,
+    "village": 3
+   },
+   "clusters": 13,
+   "detector_rows": 0,
+   "extent_m2": 4430000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 72,
+   "polygons_with_extent": 72,
+   "population_measured": 2158
+  },
+  "at": "2026-08-13T12:35:12Z",
+  "clusters": 13,
+  "extent_over_surface": 24.959574504048184,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 72,
+  "stale_removed": 0,
+  "tiles": [
+   "R12_C22"
+  ]
+ },
+ "ZWE_Chizarira": {
+  "after": {
+   "area_m2": 108957.0,
+   "classes": {
+    "settlement": 4,
+    "temporary_camp": 10,
+    "village": 2
+   },
+   "clusters": 16,
+   "detector_rows": 0,
+   "extent_m2": 2690000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 48,
+   "polygons_with_extent": 48,
+   "population_measured": 1016
+  },
+  "at": "2026-08-13T12:34:46Z",
+  "clusters": 16,
+  "extent_over_surface": 24.68863863726057,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 48,
+  "stale_removed": 0,
+  "tiles": [
+   "R12_C21"
+  ]
+ },
+ "ZWE_Gonarezhou": {
+  "after": {
+   "area_m2": 299117.0,
+   "classes": {
+    "settlement": 4,
+    "temporary_camp": 43,
+    "town": 1,
+    "village": 1
+   },
+   "clusters": 49,
+   "detector_rows": 0,
+   "extent_m2": 7610000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 107,
+   "polygons_with_extent": 107,
+   "population_measured": 4454
+  },
+  "at": "2026-08-13T12:35:39Z",
+  "clusters": 49,
+  "extent_over_surface": 25.44154962773764,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 107,
+  "stale_removed": 0,
+  "tiles": [
+   "R12_C22"
+  ]
+ },
+ "ZWE_Hwange": {
+  "after": {
+   "area_m2": 216376.0,
+   "classes": {
+    "settlement": 8,
+    "temporary_camp": 43,
+    "village": 1
+   },
+   "clusters": 52,
+   "detector_rows": 0,
+   "extent_m2": 3840000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 92,
+   "polygons_with_extent": 92,
+   "population_measured": 1273
+  },
+  "at": "2026-08-13T12:35:28Z",
+  "clusters": 52,
+  "extent_over_surface": 17.746885051946613,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 92,
+  "stale_removed": 0,
+  "tiles": [
+   "R12_C21"
+  ]
+ },
+ "ZWE_Mana_Pools": {
+  "after": {
+   "area_m2": 45393.0,
+   "classes": {
+    "settlement": 1,
+    "temporary_camp": 13,
+    "village": 1
+   },
+   "clusters": 15,
+   "detector_rows": 0,
+   "extent_m2": 1000000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 35,
+   "polygons_with_extent": 35,
+   "population_measured": 502
+  },
+  "at": "2026-08-13T12:34:30Z",
+  "clusters": 15,
+  "extent_over_surface": 22.02982838763686,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 35,
+  "stale_removed": 0,
+  "tiles": [
+   "R11_C21",
+   "R12_C21"
+  ]
+ },
+ "ZWE_Matetsi": {
+  "after": {
+   "area_m2": 186689.0,
+   "classes": {
+    "settlement": 10,
+    "temporary_camp": 23,
+    "village": 1
+   },
+   "clusters": 34,
+   "detector_rows": 0,
+   "extent_m2": 2830000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 62,
+   "polygons_with_extent": 62,
+   "population_measured": 1362
+  },
+  "at": "2026-08-13T12:35:06Z",
+  "clusters": 34,
+  "extent_over_surface": 15.158900631531585,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 62,
+  "stale_removed": 0,
+  "tiles": [
+   "R12_C21"
+  ]
+ },
+ "ZWE_Matusadona": {
+  "after": {
+   "area_m2": 19134.0,
+   "classes": {
+    "settlement": 1,
+    "temporary_camp": 18
+   },
+   "clusters": 19,
+   "detector_rows": 0,
+   "extent_m2": 380000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 25,
+   "polygons_with_extent": 25,
+   "population_measured": 210
+  },
+  "at": "2026-08-13T12:34:19Z",
+  "clusters": 19,
+  "extent_over_surface": 19.859935193895684,
+  "ok": true,
+  "pipeline": "2026-08-13c",
+  "polygons": 25,
+  "stale_removed": 0,
+  "tiles": [
+   "R12_C21"
+  ]
+ }
+}
