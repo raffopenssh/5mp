@@ -49,9 +49,26 @@ sys.path.insert(0, str(BASE_DIR / 'scripts'))
 DB_PATH = BASE_DIR / 'db.sqlite3'
 KEYSTONES = BASE_DIR / 'data' / 'keystones_with_boundaries.json'
 
-# Same key the Go client (srv/protectedplanet/client.go) uses.
 PP_API = "https://api.protectedplanet.net/v3"
-PP_TOKEN = "dea58ea0389007e386776c4f583f4425"
+
+
+def pp_token():
+    """Protected Planet API token, from secrets.env — never a literal here.
+
+    The same variable the Go client reads (srv/protectedplanet/client.go).
+    ⚠️ The token that used to be written on this line is in the repository's
+    history and must be treated as public; rotate it upstream. Absent is not
+    refused: Protected Planet answers a missing token with 401, and an
+    unexplained 401 gets debugged as an outage, so this raises with the name of
+    the variable to set.
+    """
+    from secrets_config import secret
+    tok = secret('PROTECTEDPLANET_TOKEN')
+    if not tok:
+        raise SystemExit(
+            "PROTECTEDPLANET_TOKEN is unset. Add it to secrets.env "
+            "(see secrets.env.example) and re-run.")
+    return tok
 
 FIRMS_URL = "https://firms.modaps.eosdis.nasa.gov/api/area/csv"
 BUFFER_KM = 100  # matches park_assigner.ASSIGN_MAX_DIST_KM
@@ -74,7 +91,7 @@ def http_json(url):
 
 def fetch_pp_area(wdpa_id):
     """Fetch PA metadata + geometry from Protected Planet."""
-    url = f"{PP_API}/protected_areas/{wdpa_id}?token={PP_TOKEN}&with_geometry=true"
+    url = f"{PP_API}/protected_areas/{wdpa_id}?token={pp_token()}&with_geometry=true"
     data = http_json(url)
     pa = data.get('protected_area')
     if not pa:

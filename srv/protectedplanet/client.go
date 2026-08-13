@@ -8,14 +8,29 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"time"
 )
 
 const (
 	baseURL    = "https://api.protectedplanet.net/v3"
-	apiKey     = "dea58ea0389007e386776c4f583f4425"
 	timeoutSec = 30
 )
+
+// apiKey reads PROTECTEDPLANET_TOKEN from the environment (secrets.env, loaded
+// by the systemd unit's EnvironmentFile).
+//
+// ⚠️ THE KEY THIS FUNCTION REPLACED IS IN THIS REPOSITORY'S HISTORY. It was a
+// literal in three files (here, cmd/buildwdpaindex, scripts/onboard_park.py)
+// from the first commit, so removing it from the working tree does not un-leak
+// it: anyone with a clone can read it out of any old revision. Treat that value
+// as public and rotate it at protectedplanet.net; this indirection is what
+// stops the NEXT one being pasted in beside it.
+//
+// Returns "" when unset, and the caller must then fail with a message that says
+// which variable is missing — a Protected Planet call with an empty token
+// returns 401, and an unexplained 401 gets debugged as an outage.
+func apiKey() string { return os.Getenv("PROTECTEDPLANET_TOKEN") }
 
 // Common errors
 var (
@@ -60,7 +75,7 @@ type Client struct {
 func NewClient() *Client {
 	return &Client{
 		baseURL: baseURL,
-		apiKey:  apiKey,
+		apiKey:  apiKey(),
 		httpClient: &http.Client{
 			Timeout: timeoutSec * time.Second,
 		},
@@ -127,8 +142,20 @@ func (a *apiPA) toPA() *PA {
 	return pa
 }
 
+// ErrNoToken means the credential is absent, which is not the same as refused.
+//
+// A missing token produces a 401 from the API, and a 401 reads as "the key was
+// revoked" — a wrong-turn that costs an afternoon. Checked before the request so
+// the message names the variable to set.
+var ErrNoToken = errors.New("PROTECTEDPLANET_TOKEN is unset — add it to " +
+	"secrets.env (see secrets.env.example) and restart; the token is not " +
+	"hardcoded any more")
+
 // doRequest performs an HTTP request and handles common errors.
 func (c *Client) doRequest(endpoint string) ([]byte, error) {
+	if c.apiKey == "" {
+		return nil, ErrNoToken
+	}
 	resp, err := c.httpClient.Get(endpoint)
 	if err != nil {
 		return nil, fmt.Errorf("request failed: %w", err)
