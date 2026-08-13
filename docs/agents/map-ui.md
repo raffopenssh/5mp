@@ -64,6 +64,47 @@ Load-bearing consequences, each of which was got wrong at least once:
   per row. `openAreaOverview()` (was `openFeatureInReport`) routes park→
   `showPAPopup`, AOI→`showAOIPopup`, then shares one `scrollAreaOverviewTo()`
   because both popups use the same section ids and entry markup.
+* **The map and the overview list key the same thing differently, and the
+  handoff must translate** (`overviewFeatureIDs(type, props)` in globe.html).
+  Invariant 7 again, this time as a *lookup*. Two of the three narrative layers
+  count in a different unit on the map than in the list:
+
+  | layer | list row | map feature |
+  |---|---|---|
+  | settlement | cluster, `settlement_<park_settlements.id>` | footprints, `settlement_ghsl_<area>_<lat>_<lon>` |
+  | deforestation | event, `event:<deforestation_events.id>` | patches, `deforest_<area>_<year>_<n>` |
+  | fire, road | — same id — | |
+
+  Every activation path handed the *polygon's* id to
+  `scrollAreaOverviewTo()`, which asked for a selector the list has never
+  emitted, and the honest fallback toast — *"This feature has no matching entry
+  in the overview list"* — was the only visible result of clicking any
+  settlement or any clearing on the map. So the server ships the list's id as a
+  property (`settlement_id`, `event_id`, set in `enrichFeatureProps` so they
+  reach `/api/features-in-bbox` and `/api/feature-detail` alike), and all three
+  activation paths (`lodlayer.js`, `anim.js`, the pinned-layer registration)
+  translate through `overviewFeatureIDs()`.
+
+  It returns a **list, best first**, because one layer's list has more than one
+  shape: deforestation falls back to one row per YEAR
+  (`deforestation_year_<y>`) when nothing is classified, and that row is a
+  legitimate destination for a click on a patch. `scrollAreaOverviewTo()` tries
+  each in turn — one extra `querySelector`, and a "no matching entry" becomes
+  the coarser-but-true answer. Deforestation also accepts `deforest_id` from
+  `properties_json` (`scripts/import_events_from_json.py`) for rows the
+  `polygon_ids` join misses.
+
+  Two related traps found in the same fix:
+  * `TEST.triggerLoadMore('settlement', …)` and `scrollAreaOverviewTo`'s
+    paging loop both looked up **`settlement-more-btn-<id>`**; the button the
+    list renders is **`settlements-more-btn-<id>`** (plural). A
+    `getElementById` that always returns `null` is a paging step that silently
+    never happens — invariant 1 in a single missing letter.
+  * "Show more" **re-rendered** the remaining rows into the container while the
+    same rows were already in the DOM inside the hidden div, so every entry
+    past the tenth existed **twice** and `querySelector` could win the
+    permanently-invisible copy. It reveals now (moves the children out, hides
+    the div); the filter code already assumed exactly that.
 * **On a phone the pinned card DOCKS to the bottom**, so it does not cover the
   feature the finger is already on. `bottomChromePx()` **measures** the toolbar
   and the time slider — a hard-coded `bottom` lands on both, and both change
@@ -231,10 +272,38 @@ design is the `.quiet` class:
   switches that is not four clicks deep — it just stops claiming to be
   information. A permanent "Basemap: Dark" row is chrome that is *wrong to
   read*.
-* **A chip is the state and the way out.** Tapping a chip switches that one
-  thing off; the opener beside it configures. Two targets, one meaning each —
-  the alternative (a chip that opens a menu containing the same chip) is the
-  ambiguity this replaced.
+* **A chip is the state and the route to changing it — body configures, `×`
+  switches off.** All three chips now (`.ml-chip.base`, `.hist`, `.geo` all get
+  `padding: 0` and a `.ml-chip-main` + `.ml-chip-x` pair). It started as "tap a
+  chip = that layer off, the opener beside it configures", which is wrong for
+  the same reason in three places: the chip is *the only word on screen naming
+  the layer*, so it is exactly where a reader taps to ask **which** — which
+  imagery is under the data, how strongly is the ink drawn, what rock is this —
+  and a single-target chip answered that question by destroying the layer.
+  Geology got the `×` first (its body already opened the tables and "off" had
+  retreated inside the menu); basemap and historical followed. `.ml-chip-x`
+  hover is red, `.ml-chip-main` neutral, and the whole-chip hover is suppressed
+  on two-target chips because it reads as one target.
+* **A caret means "this opens something"** (`.ml-caret`): `icon-chevron-down`
+  for a list, `icon-table-2` for geology, because that menu is a matrix rather
+  than a list and the difference is worth one glyph.
+* **The historical chip's menu is the opacity slider** (`openHistMenu`,
+  `.ml-op`). Traced ink over satellite imagery is either invisible or
+  obliterating, so "a bit less" is the commonest thing a reader wants, and it
+  lived four clicks deep in admin while the chip in front of them could only
+  delete the layer. Live `oninput` (`MapLegend.histOpacity`) updating only the
+  `%` label — a re-render mid-drag tears the slider out from under the finger,
+  and the point is watching the ink fade against the ground. Font sizing on
+  `.ml-op` is explicit (`10px` label, `10px` value): the row inherits nothing
+  useful from `.mode-menu`, whose sizes are on `.aoi-menu-item`.
+* **Both drapes say "not in view" when they are on but not here**
+  (`geoOffView()`, `histOffView()`), and `map.on('idle')` re-renders for
+  *either* — a chip that keeps saying "not in view" after the reader pans onto
+  the sheets is the contradiction the label exists to prevent. Geology measures
+  the canvas (vector, queryable); the historical series measures its archive
+  `bounds` envelope, because a raster has no features to query. In that state
+  the menu grows a **"Go to the sheets"** row — the one place an overlay moves
+  the camera, because the reader asked by tapping a row that says none are here.
 * **A filtered geology chip is amber** (`.ml-chip.geo.filtered`) and *names*
   the filter (`gold hosts`, `3 rock types`, `filtered`, `n hidden`), derived
   from `GeoMap.state()` — amber is this app's colour for "you are looking at a
