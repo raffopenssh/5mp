@@ -71,6 +71,12 @@ in a snippet, not in a comment. Add a named var to `secrets.env` (+ placeholder
 in `secrets.env.example`) and refer to it by name; snippets start with
 `source secrets.env`. Only `test2026` (shared demo password) is written
 literally. Admin password and `$AOI_OWNER_PWD` live in `secrets.env`.
+API keys are read from the environment, never from a literal
+(`PROTECTEDPLANET_TOKEN` was a constant in three files until 2026-08-13; **it
+is in the git history and must be treated as public** — rotate upstream, do not
+re-inline). A **missing** credential must fail with the variable's name: an
+absent token yields the same 401 as a revoked one, and a test that hits a live
+API **skips** rather than fails without one.
 
 ```bash
 grep -rn "$AOI_OWNER_PWD" --include="*.md" --include="*.py" --include="*.go" .
@@ -183,7 +189,15 @@ These apply no matter what you touch. Each cost real time at least once.
     target**. A grade drawn without its score beside it reads as a ranking —
     on CAR the gold *junctions* concentrate known workings 2.3×, the gold
     *units* score 0.63× (worse than random ground), and both were the same
-    amber dots. `nil` means **unmeasured** and must print that word.
+    amber dots. `nil` means **unmeasured** and must print that word — and
+    **a measurement's absence, its refusal and its contradiction are three
+    different states.** Seven truth sets now score three sheets
+    (`srv/geomap_scores_table.go`, *generated* — never edit it, never type a
+    lift). Two independent lists can disagree about one claim (CAR gold
+    junctions: IPIS 2.18×, Tearline 0.00×): that is `mixed`, it must reach the
+    reader as a word, and a caller taking one row takes the **lowest**. A
+    stratum of one survey is **not** corroboration, and a score may only
+    describe a layer that is actually **drawn**.
     See `docs/agents/overlays.md`.
 
 13. **Mining detection is retired** (`MiningEnabled = false`). Do not rebuild
