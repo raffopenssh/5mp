@@ -273,6 +273,45 @@ test_query "every epoch month names its sensors" \
     "SELECT COUNT(*) FROM fire_sensor_epochs
       WHERE sensors IS NULL OR sensors = '' OR sensor_count < 1 OR detections < 1" "0"
 
+yellow "\n=== UCDP GED derived mine sites (WP5) ==="
+# The committed artefact data/eval/ucdp/mine_sites.json feeds the mining
+# anchors. Three guards from the plan: the prec-pooling rule (a GED prec>=4
+# coordinate is an admin centroid wearing coordinates and must be EXCLUDED,
+# never published as a site), the version string (read from UCDP's file, never
+# typed), and the anchors' ids resolving back to the artefact they claim to
+# come from (a stamp nobody compares is a comment).
+printf "%-55s" "UCDP sites: prec>=4 excluded, version named, ids tie"
+if UCDP_ERR=$(python3 - <<'PYEOF'
+import json, sys
+d = json.load(open('data/eval/ucdp/mine_sites.json'))
+bad = [s['site_id'] for s in d['sites'] if s['best_where_prec'] > 3]
+if bad:
+    sys.exit(f"sites with admin-centroid coordinates published: {bad[:5]}")
+if 'coarse_coordinates' not in d['totals']['excluded']:
+    sys.exit("no coarse_coordinates exclusions recorded -- the prec gate "
+             "matched nothing, which is a broken filter, not clean data")
+if 'GED' not in d['source'] or not d.get('accessed') or not d.get('citation'):
+    sys.exit('attribution fields missing (source/accessed/citation)')
+event_ids = {e for s in d['sites'] for e in s['event_ids']}
+a = json.load(open('data/geology_truth/mining_anchors.geojson'))
+anchor_ids = {i for f in a['features']
+              if f['properties']['source'] == 'ucdp_ged'
+              for i in (f['properties']['source_id'] or '').split(';') if i}
+if not anchor_ids:
+    sys.exit('no ucdp_ged anchors -- rebuild scripts/mining_anchors.py')
+stray = anchor_ids - event_ids
+if stray:
+    sys.exit(f"anchors cite GED events the artefact does not hold: "
+             f"{sorted(stray)[:5]} -- anchors are stale, re-run "
+             f"scripts/mining_anchors.py")
+PYEOF
+); then
+    green "✓"; PASSED=$((PASSED + 1))
+else
+    red "FAIL ($UCDP_ERR)"
+    FAILED=$((FAILED + 1)); ERRORS+=("ucdp mine sites: $UCDP_ERR")
+fi
+
 yellow "\n=== Index Usage (Query Plans) ==="
 test_index_used "feature by park" "SELECT * FROM feature_geometries WHERE park_id='CAF_Chinko' LIMIT 10" "idx_feat"
 test_index_used "settlements by park" "SELECT * FROM park_settlements WHERE park_id='CAF_Chinko' LIMIT 10" "idx"

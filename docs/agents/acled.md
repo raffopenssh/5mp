@@ -326,3 +326,92 @@ python3 scripts/crisistracker_mines.py                # -> mine_sites.json, comm
 python3 scripts/eval_crisistracker.py                 # -> reach_car.json
 python3 scripts/mining_reference.py                   # crisistracker joins the merged reference
 ```
+
+---
+
+# UCDP GED: the third conflict-derived list, since the wires watched everywhere
+
+_Read when working with `scripts/ucdp_*.py`, `scripts/eval_ucdp.py`, or
+`data/eval/ucdp/`. (WP5 of `docs/PLAN_NEW_DATA_LAYERS.md`.)_
+
+The same instrument as Crisis Tracker — qualify conflict prose with an LLM,
+cluster incidents into sites, feed the anchors — pointed at the UCDP
+Georeferenced Event Dataset. Everything in the Crisis Tracker sections above
+(verbatim-span extraction, `extracted` vs `looted` provenance, incidents ≠
+sites, "conflict presence is the selection rule") applies unchanged; this
+section records only what GED does differently.
+
+## Access: the API grew a token, the bulk file did not
+
+`ucdpapi.pcr.uu.se` now answers `API token required` (the plan predates this).
+The yearly-release CSV zip is still open:
+`https://ucdp.uu.se/downloads/ged/ged<NNN>-csv.zip` (26.1 → `ged261`).
+`scripts/ucdp_fetch.py` downloads it, filters to the sheet countries
+(CAF/COD/SDN/SSD/TZA), and keeps events whose prose matches a loose mining
+keyword net → `data/ucdp/ged_mining_candidates.json` (both gitignored — the
+zip is UCDP's file, the candidates embed their source prose). GED 26.1:
+417,968 events (csv-parsed, NOT `wc -l` — embedded newlines make that 506,625),
+18,623 in our countries, 201 candidates; the fetcher aborts below 80% of those
+(invariant 1).
+
+## The prose lives in `where_description`, not the note
+
+Crisis Tracker's evidence is a narrative note; GED's is usually UCDP's own
+gazetteer string ("Bambu Locality (mining town of Bambou …)") while
+`source_article` is often just a citation line. The labeller
+(`scripts/ucdp_label_prompt.py`, one `llm_one_shot --model gpt-5.6-sol` pass →
+`data/eval/ucdp/event_labels.json`, committed) reads all three text fields and
+the verbatim-span check searches all three. On 201 records: 0 non-verbatim,
+135 `at_mine`, 46 `extracted` vs 2 `looted` commodity mentions.
+
+## `where_prec` gates, and it gates harder than Crisis Tracker
+
+GED grades its own coordinates: 1 exact, 2 ≤25 km, 3 second-order admin,
+4 first-order admin, 5 country. A prec-4 point is an ADM1 centroid wearing
+coordinates, so `scripts/ucdp_mines.py` **excludes** prec ≥ 4 outright
+(reason `coarse_coordinates`, kept in `excluded`) rather than publishing them
+as "approximate" — stricter than Crisis Tracker because GED tells us the
+radius. prec 2–3 keep the site with `precision: "approximate"`; only a tight
+prec-1 cluster earns `"reported"`. `tests/db_tests.sh` pins this: a published
+site with `best_where_prec > 3` fails, and so does an artefact with zero
+`coarse_coordinates` exclusions (a gate that matched nothing is a broken
+filter, not clean data).
+
+Result: 201 labelled → 127 located `at_mine` events → **96 sites**
+(CAF 27, COD 61, SDN 7, TZA 1; 29 with an extracted commodity, gold 25).
+
+## What it is worth (`scripts/eval_ucdp.py` → `data/eval/ucdp/reach_car.json`)
+
+Only the CAR block is a measurement — COD has no sheet, SDN/TZA are below the
+`n<8` floor. Reach: the 27 CAR sites sit a median **78.7 km** from the nearest
+IPIS mine (8 within 25 km) and **429 km** from the nearest Crisis Tracker
+mine; **18 are >25 km from both** — mostly central CAR (Ouaka, Haute-Kotto
+west), the gap between IPIS's west and Crisis Tracker's east. Skill on the
+CAR sheet, unlabelled occurrence (gold-or-diamond ground, hull baseline):
+
+    n=26  capture 38.5%  area 54.6%  lift 0.705  p=0.12
+          (this n could only have shown lift ≥1.41 or ≤0.63)
+
+A null with its power printed — same shape as Crisis Tracker's east-CAR null,
+now from a third independent list. Per-commodity: gold n=5, diamond n=1, both
+declined at `n<8`. The anchors line in the geology export carries these sites
+as `source: ucdp_ged` with GED event ids as `source_id` (searchable on
+ucdp.uu.se); the db test compares those ids to the artefact so a stale
+anchors build fails loudly.
+
+## Attribution
+
+Cite Sundberg & Melander (2013) JPR 50(4) plus the current version's release
+(Davies et al.), with the version string **read from the download, never
+typed**. UCDP's terms: free to use with citation, no formal licence document —
+so anchors carry `terms: "unstated"`. The labels, clustering and scores are
+ours; every output's `notice` says so.
+
+```bash
+python3 scripts/ucdp_fetch.py                 # -> data/ucdp/ (gitignored)
+python3 scripts/ucdp_label_prompt.py          # -> data/ucdp/label_prompt.txt
+# llm_one_shot --model gpt-5.6-sol label_prompt.txt -> data/eval/ucdp/event_labels.json
+python3 scripts/ucdp_mines.py                 # -> data/eval/ucdp/mine_sites.json
+python3 scripts/eval_ucdp.py                  # -> data/eval/ucdp/reach_car.json
+python3 scripts/mining_anchors.py             # ucdp_ged joins the anchors
+```

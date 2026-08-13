@@ -86,6 +86,10 @@ data/eval/*
 # labels are an artefact, not a cache. The raw pull that produced them is
 # Invisible Children's data and stays out (see data/crisistracker/ below).
 !data/eval/crisistracker/
+# ...and the UCDP GED derivation (~160K): 96 mine sites labelled once by a
+# language model over GED's location descriptions, same reasoning as Crisis
+# Tracker above. The GED zip and candidate cache stay out (data/ucdp/ below).
+!data/eval/ucdp/
 data/viirs_backfill_state.json
 
 # Mining analysis: bulk downloads & intermediate rasters (re-fetchable)
@@ -191,3 +195,9 @@ data/acled/*.xlsx
 # committed. Refresh with scripts/crisistracker_fetch.py; the committed
 # artefacts are the derived mine sites in data/eval/crisistracker/.
 data/crisistracker/
+
+# UCDP's own GED release: a cache of THEIR file (zip + filtered candidates
+# with embedded source prose), never committed. Refresh with
+# scripts/ucdp_fetch.py; committed artefacts are the derived labels/sites in
+# data/eval/ucdp/.
+data/ucdp/
