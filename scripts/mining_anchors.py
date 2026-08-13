@@ -457,6 +457,52 @@ def src_crisistracker():
     return meta, out
 
 
+def src_ucdp():
+    path = EVAL / "ucdp" / "mine_sites.json"
+    if not path.exists():
+        return None
+    doc = json.loads(path.read_text())
+    meta = {
+        "source": "ucdp_ged",
+        "label": "Mine sites recovered from UCDP GED event descriptions",
+        "attribution": "Event records: UCDP Georeferenced Event Dataset "
+                       "(Uppsala Conflict Data Program). The mine labelling "
+                       "and clustering are ours and must not be attributed "
+                       "to UCDP.",
+        "licence": "free to use with citation (Sundberg & Melander 2013); "
+                   "no formal licence document",
+        "terms": "unstated",
+        "landing": "https://ucdp.uu.se",
+        "observed": "conflict_report",
+        "id_field": "GED event id(s)",
+        # Same selection-rule caveat as Crisis Tracker, and the same commodity
+        # provenance rule (extracted only, loot dropped).
+        "note": "every site is on this list because organised violence there "
+                "was recorded, so its coverage is conflict and not mining; "
+                "the year is the last recorded event, not a survey date. "
+                "Only materials the text says the site YIELDS are carried "
+                "-- looted or taxed goods travel and are not evidence about "
+                "the rock. Sites whose best GED location precision is an "
+                "admin centroid were already excluded upstream "
+                "(scripts/ucdp_mines.py).",
+    }
+    out = []
+    for s in doc.get("sites", []):
+        lon, lat = s.get("lon"), s.get("lat")
+        if lon is None or lat is None:
+            continue
+        # The id a reader can resolve: GED event ids, searchable on
+        # ucdp.uu.se. ged_042 exists only in our file.
+        ids = s.get("event_ids") or []
+        out.append({
+            "lon": lon, "lat": lat,
+            "year": year_of(s.get("last_event")),
+            "resource": sorted(set(s.get("commodities") or [])),
+            "source_id": ";".join(ids) or None,
+        })
+    return meta, out
+
+
 def src_usgs():
     path = ROOT / "data" / "geology_truth" / "usgs_africa_deposits.geojson"
     if not path.exists():
@@ -518,7 +564,8 @@ def withheld():
 
 
 SOURCES = [src_ipis_caf, src_ipis_tza, src_gmis_tza, src_tearline_caf,
-           src_icmm, src_crisistracker, src_osm, src_tang_werner, src_usgs]
+           src_icmm, src_crisistracker, src_ucdp, src_osm, src_tang_werner,
+           src_usgs]
 
 
 def main():

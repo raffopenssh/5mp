@@ -1,0 +1,3191 @@
+{
+ "generated_by": "scripts/ucdp_mines.py",
+ "source": "UCDP Georeferenced Event Dataset (GED) 26.1, GEDEvent_v26_1.csv",
+ "accessed": "2026-08-13",
+ "citation": "Davies, Shawn, Garoun Engström, Therese Pettersson & Magnus Öberg (2026); Sundberg, Ralph & Erik Melander (2013) 'Introducing the UCDP Georeferenced Event Dataset', Journal of Peace Research 50(4).",
+ "terms": "https://ucdp.uu.se (free to use with citation; no formal licence document)",
+ "notice": "Event records are UCDP's (Uppsala Conflict Data Program, https://ucdp.uu.se). The mine/commodity labels, the clustering into sites and any downstream geological score are OURS, produced by a language model over GED's location descriptions and source strings, and must not be attributed to UCDP. Commodity provenance is preserved: 'commodities' are materials the text says the site yields; materials that appear only as looted/taxed goods are held separately in 'commodities_looted' and are not evidence about the rock at that coordinate. Every site is here because organised violence occurred at it -- conflict presence is the SELECTION RULE of this list, never an observation to pool with survey flags (docs/agents/acled.md).",
+ "labelled_by": "llm_one_shot, model gpt-5.6-sol, prompt scripts/ucdp_label_prompt.py",
+ "unit": "site (mine working), clustered from GED events at 1.0 km single-link or identical site name",
+ "totals": {
+  "candidates_labelled": 201,
+  "events_at_mine_located": 127,
+  "sites": 96,
+  "sites_with_commodity": 29,
+  "sites_approximate": 49,
+  "sites_with_name_conflict": 0,
+  "by_country": {
+   "CAF": 27,
+   "COD": 61,
+   "SDN": 7,
+   "TZA": 1
+  },
+  "by_commodity": {
+   "gold": 25,
+   "diamond": 1,
+   "tin": 1,
+   "coltan": 1,
+   "copper": 1
+  },
+  "excluded": {
+   "no": 31,
+   "mine_named": 31,
+   "coarse_coordinates": 8,
+   "miners": 4
+  }
+ },
+ "sites": [
+  {
+   "site_id": "ged_012",
+   "source": "ucdp_ged",
+   "iso3": "CAF",
+   "lon": 15.37,
+   "lat": 6.87,
+   "name": "Garga",
+   "adm1_reported": "Ouham-Pendé province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "63499"
+   ],
+   "first_event": "2013-10-08",
+   "last_event": "2013-10-08",
+   "sides": [
+    "FPRC",
+    "anti-Balaka"
+   ],
+   "best_deaths_total": 4,
+   "min_label_confidence": 0.99
+  },
+  {
+   "site_id": "ged_015",
+   "source": "ucdp_ged",
+   "iso3": "CAF",
+   "lon": 19.837212,
+   "lat": 6.526181,
+   "name": "Kajbi",
+   "adm1_reported": "Nana-Grébizi province",
+   "commodities": [
+    "gold"
+   ],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 2,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "157400"
+   ],
+   "first_event": "2014-06-01",
+   "last_event": "2014-06-01",
+   "sides": [
+    "Civilians",
+    "anti-Balaka"
+   ],
+   "best_deaths_total": 1,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_017",
+   "source": "ucdp_ged",
+   "iso3": "CAF",
+   "lon": 24.175254,
+   "lat": 5.741315,
+   "name": null,
+   "adm1_reported": "Mbomou province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 3,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "219257"
+   ],
+   "first_event": "2016-01-09",
+   "last_event": "2016-01-09",
+   "sides": [
+    "Civilians",
+    "LRA"
+   ],
+   "best_deaths_total": 1,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_018",
+   "source": "ucdp_ged",
+   "iso3": "CAF",
+   "lon": 20.363295,
+   "lat": 6.462021,
+   "name": null,
+   "adm1_reported": "Ouaka province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 3,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "251986"
+   ],
+   "first_event": "2016-12-11",
+   "last_event": "2016-12-11",
+   "sides": [
+    "Civilians",
+    "UPC"
+   ],
+   "best_deaths_total": 48,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_019",
+   "source": "ucdp_ged",
+   "iso3": "CAF",
+   "lon": 20.38748,
+   "lat": 6.197114,
+   "name": "Dengolo",
+   "adm1_reported": "Ouaka province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 2,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "251991"
+   ],
+   "first_event": "2016-12-11",
+   "last_event": "2016-12-11",
+   "sides": [
+    "Civilians",
+    "UPC"
+   ],
+   "best_deaths_total": 3,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_027",
+   "source": "ucdp_ged",
+   "iso3": "CAF",
+   "lon": 22.321806,
+   "lat": 6.4195,
+   "name": "Ngoulia",
+   "adm1_reported": "Haute-Kotto province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 2,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "275715"
+   ],
+   "first_event": "2018-07-20",
+   "last_event": "2018-07-20",
+   "sides": [
+    "Civilians",
+    "LRA"
+   ],
+   "best_deaths_total": 1,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_029",
+   "source": "ucdp_ged",
+   "iso3": "CAF",
+   "lon": 21.651071,
+   "lat": 5.108098,
+   "name": "Kolo",
+   "adm1_reported": "Basse-Kotto province",
+   "commodities": [
+    "gold"
+   ],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 3,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "307060"
+   ],
+   "first_event": "2019-09-03",
+   "last_event": "2019-09-03",
+   "sides": [
+    "Civilians",
+    "UPC"
+   ],
+   "best_deaths_total": 1,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_031",
+   "source": "ucdp_ged",
+   "iso3": "CAF",
+   "lon": 21.98633,
+   "lat": 6.54233,
+   "name": "Bria",
+   "adm1_reported": "Haute-Kotto province",
+   "commodities": [
+    "diamond"
+   ],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 2,
+   "event_ids": [
+    "328221",
+    "543894"
+   ],
+   "first_event": "2020-01-25",
+   "last_event": "2024-09-21",
+   "sides": [
+    "Civilians",
+    "FPRC",
+    "Government of Russia (Soviet Union)",
+    "MLCJ"
+   ],
+   "best_deaths_total": 50,
+   "min_label_confidence": 0.95
+  },
+  {
+   "site_id": "ged_043",
+   "source": "ucdp_ged",
+   "iso3": "CAF",
+   "lon": 19.156774,
+   "lat": 7.413941,
+   "name": "Bo-Jou",
+   "adm1_reported": "Nana-Grébizi prefecture",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 3,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "414480"
+   ],
+   "first_event": "2021-08-30",
+   "last_event": "2021-08-30",
+   "sides": [
+    "CPC",
+    "Government of Central African Republic"
+   ],
+   "best_deaths_total": 11,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_046",
+   "source": "ucdp_ged",
+   "iso3": "CAF",
+   "lon": 21.767224,
+   "lat": 6.887629,
+   "name": null,
+   "adm1_reported": "Haute-Kotto prefecture",
+   "commodities": [
+    "gold"
+   ],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 2,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "428791"
+   ],
+   "first_event": "2022-01-16",
+   "last_event": "2022-01-16",
+   "sides": [
+    "CPC",
+    "Government of Central African Republic"
+   ],
+   "best_deaths_total": 67,
+   "min_label_confidence": 0.9
+  },
+  {
+   "site_id": "ged_047",
+   "source": "ucdp_ged",
+   "iso3": "CAF",
+   "lon": 20.777868,
+   "lat": 6.138944,
+   "name": "Ndassima",
+   "adm1_reported": "Ouaka prefecture",
+   "commodities": [
+    "gold"
+   ],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 4,
+   "event_ids": [
+    "428876",
+    "490212",
+    "590709",
+    "600325"
+   ],
+   "first_event": "2022-01-09",
+   "last_event": "2025-09-05",
+   "sides": [
+    "CPC",
+    "Civilians",
+    "Government of Central African Republic",
+    "Government of Russia (Soviet Union)"
+   ],
+   "best_deaths_total": 34,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_048",
+   "source": "ucdp_ged",
+   "iso3": "CAF",
+   "lon": 15.21762,
+   "lat": 5.22531,
+   "name": "Pandé",
+   "adm1_reported": "Nana-Mambéré prefecture",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 3,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "428879"
+   ],
+   "first_event": "2022-01-05",
+   "last_event": "2022-01-05",
+   "sides": [
+    "CPC",
+    "Government of Central African Republic"
+   ],
+   "best_deaths_total": 17,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_051",
+   "source": "ucdp_ged",
+   "iso3": "CAF",
+   "lon": 14.693985,
+   "lat": 5.215661,
+   "name": "Yanoy",
+   "adm1_reported": "Nana-Mambéré prefecture",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 2,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "435062"
+   ],
+   "first_event": "2022-03-22",
+   "last_event": "2022-03-22",
+   "sides": [
+    "CPC",
+    "Government of Central African Republic"
+   ],
+   "best_deaths_total": 2,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_055",
+   "source": "ucdp_ged",
+   "iso3": "CAF",
+   "lon": 21.613256,
+   "lat": 9.787337,
+   "name": "Sikikédé",
+   "adm1_reported": "Vakaga prefecture",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "442504"
+   ],
+   "first_event": "2022-03-13",
+   "last_event": "2022-03-13",
+   "sides": [
+    "CPC",
+    "Government of Central African Republic"
+   ],
+   "best_deaths_total": 20,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_061",
+   "source": "ucdp_ged",
+   "iso3": "CAF",
+   "lon": 15.15199,
+   "lat": 5.33354,
+   "name": null,
+   "adm1_reported": "Nana-Mambéré prefecture",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 2,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "464514"
+   ],
+   "first_event": "2023-01-02",
+   "last_event": "2023-01-02",
+   "sides": [
+    "CPC",
+    "Civilians"
+   ],
+   "best_deaths_total": 1,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_062",
+   "source": "ucdp_ged",
+   "iso3": "CAF",
+   "lon": 17.3,
+   "lat": 6.99,
+   "name": null,
+   "adm1_reported": "Ouham prefecture",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 3,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "464946"
+   ],
+   "first_event": "2022-08-28",
+   "last_event": "2022-08-28",
+   "sides": [
+    "CPC",
+    "Government of Central African Republic"
+   ],
+   "best_deaths_total": 1,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_063",
+   "source": "ucdp_ged",
+   "iso3": "CAF",
+   "lon": 20.867108,
+   "lat": 5.727252,
+   "name": "Chimbolo",
+   "adm1_reported": "Ouaka prefecture",
+   "commodities": [
+    "gold"
+   ],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 2,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "470546"
+   ],
+   "first_event": "2023-03-19",
+   "last_event": "2023-03-19",
+   "sides": [
+    "CPC",
+    "Civilians"
+   ],
+   "best_deaths_total": 9,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_065",
+   "source": "ucdp_ged",
+   "iso3": "CAF",
+   "lon": 17.30974,
+   "lat": 7.1576,
+   "name": "Kouki",
+   "adm1_reported": "Ouham prefecture",
+   "commodities": [
+    "gold"
+   ],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 3,
+   "event_ids": [
+    "475452",
+    "498764",
+    "518877"
+   ],
+   "first_event": "2023-04-28",
+   "last_event": "2024-03-09",
+   "sides": [
+    "CPC",
+    "Civilians",
+    "Government of Central African Republic",
+    "Government of Russia (Soviet Union)"
+   ],
+   "best_deaths_total": 77,
+   "min_label_confidence": 0.95
+  },
+  {
+   "site_id": "ged_067",
+   "source": "ucdp_ged",
+   "iso3": "CAF",
+   "lon": 15.35143,
+   "lat": 6.71414,
+   "name": "Moum-Di",
+   "adm1_reported": "Ouham-Pendé prefecture",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 3,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "480770"
+   ],
+   "first_event": "2023-06-12",
+   "last_event": "2023-06-12",
+   "sides": [
+    "Civilians",
+    "Government of Central African Republic"
+   ],
+   "best_deaths_total": 2,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_073",
+   "source": "ucdp_ged",
+   "iso3": "CAF",
+   "lon": 14.608811,
+   "lat": 5.939709,
+   "name": "Aba",
+   "adm1_reported": "Nana-Mambéré prefecture",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 2,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "515563"
+   ],
+   "first_event": "2024-02-10",
+   "last_event": "2024-02-10",
+   "sides": [
+    "CPC",
+    "Government of Central African Republic"
+   ],
+   "best_deaths_total": 0,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_076",
+   "source": "ucdp_ged",
+   "iso3": "CAF",
+   "lon": 16.97,
+   "lat": 5.5,
+   "name": "Gaga",
+   "adm1_reported": "Ombella-M'Poko prefecture",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "526151"
+   ],
+   "first_event": "2024-05-12",
+   "last_event": "2024-05-12",
+   "sides": [
+    "CPC",
+    "Civilians"
+   ],
+   "best_deaths_total": 4,
+   "min_label_confidence": 0.9
+  },
+  {
+   "site_id": "ged_077",
+   "source": "ucdp_ged",
+   "iso3": "CAF",
+   "lon": 17.455184,
+   "lat": 6.492629,
+   "name": "Willy",
+   "adm1_reported": "Ouham prefecture",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 3,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "529752"
+   ],
+   "first_event": "2024-02-27",
+   "last_event": "2024-02-27",
+   "sides": [
+    "Government of Central African Republic",
+    "anti-Balaka"
+   ],
+   "best_deaths_total": 4,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_078",
+   "source": "ucdp_ged",
+   "iso3": "CAF",
+   "lon": 18.353388,
+   "lat": 7.079652,
+   "name": "Katanga",
+   "adm1_reported": "Ouham-Fafa prefecture",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 2,
+   "event_ids": [
+    "529761",
+    "529762"
+   ],
+   "first_event": "2024-06-22",
+   "last_event": "2024-06-22",
+   "sides": [
+    "CPC",
+    "Civilians",
+    "Government of Central African Republic"
+   ],
+   "best_deaths_total": 12,
+   "min_label_confidence": 0.8
+  },
+  {
+   "site_id": "ged_080",
+   "source": "ucdp_ged",
+   "iso3": "CAF",
+   "lon": 15.9,
+   "lat": 6.8,
+   "name": "Ngoutèrè",
+   "adm1_reported": "Ouham-Pendé prefecture",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 2,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "536246"
+   ],
+   "first_event": "2024-07-31",
+   "last_event": "2024-07-31",
+   "sides": [
+    "CPC",
+    "Civilians"
+   ],
+   "best_deaths_total": 8,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_081",
+   "source": "ucdp_ged",
+   "iso3": "CAF",
+   "lon": 16.051669,
+   "lat": 6.193035,
+   "name": "Sanya & Houhou",
+   "adm1_reported": "Ouham-Pendé prefecture",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 3,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "536248"
+   ],
+   "first_event": "2024-07-20",
+   "last_event": "2024-07-20",
+   "sides": [
+    "CPC",
+    "Government of Central African Republic"
+   ],
+   "best_deaths_total": 3,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_083",
+   "source": "ucdp_ged",
+   "iso3": "CAF",
+   "lon": 16.963783,
+   "lat": 7.62768,
+   "name": "Roquette",
+   "adm1_reported": "Ouham prefecture",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 2,
+   "cluster_spread_km": 0.0,
+   "events": 2,
+   "event_ids": [
+    "539872",
+    "539889"
+   ],
+   "first_event": "2024-08-13",
+   "last_event": "2024-09-01",
+   "sides": [
+    "CPC",
+    "Civilians",
+    "Government of Central African Republic",
+    "Government of Russia (Soviet Union)"
+   ],
+   "best_deaths_total": 18,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_085",
+   "source": "ucdp_ged",
+   "iso3": "CAF",
+   "lon": 16.378333,
+   "lat": 6.317222,
+   "name": "Wouhou",
+   "adm1_reported": "Ouham-Pendé prefecture",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 2,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "560253"
+   ],
+   "first_event": "2024-12-24",
+   "last_event": "2024-12-24",
+   "sides": [
+    "CPC",
+    "Government of Central African Republic"
+   ],
+   "best_deaths_total": 5,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_000",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 30.248417,
+   "lat": 1.5625,
+   "name": "Bunia",
+   "adm1_reported": "Haut-Zaïre region",
+   "commodities": [
+    "gold"
+   ],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 2,
+   "event_ids": [
+    "23158",
+    "23175"
+   ],
+   "first_event": "1996-12-10",
+   "last_event": "1996-12-24",
+   "sides": [
+    "AFDL",
+    "Civilians",
+    "Government of DR Congo (Zaire)"
+   ],
+   "best_deaths_total": 482,
+   "min_label_confidence": 0.85
+  },
+  {
+   "site_id": "ged_001",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 30.23662,
+   "lat": 1.789517,
+   "name": "Bambou",
+   "adm1_reported": "Ituri province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "23288"
+   ],
+   "first_event": "1999-12-01",
+   "last_event": "1999-12-01",
+   "sides": [
+    "Hema",
+    "Lendu"
+   ],
+   "best_deaths_total": 200,
+   "min_label_confidence": 0.99
+  },
+  {
+   "site_id": "ged_002",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 30.1291,
+   "lat": 1.82016,
+   "name": "Kilomoto",
+   "adm1_reported": "Ituri province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "23281"
+   ],
+   "first_event": "2002-10-11",
+   "last_event": "2002-10-11",
+   "sides": [
+    "Civilians",
+    "FNI"
+   ],
+   "best_deaths_total": 28,
+   "min_label_confidence": 0.99
+  },
+  {
+   "site_id": "ged_003",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 27.233333,
+   "lat": -11.766667,
+   "name": "Kipushi",
+   "adm1_reported": "Katanga province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "23790"
+   ],
+   "first_event": "2006-05-15",
+   "last_event": "2006-05-15",
+   "sides": [
+    "Civilians",
+    "Government of DR Congo (Zaire)"
+   ],
+   "best_deaths_total": 3,
+   "min_label_confidence": 0.99
+  },
+  {
+   "site_id": "ged_004",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 28.644033,
+   "lat": -2.814633,
+   "name": "Mukungwe",
+   "adm1_reported": "Sud Kivu province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "24220"
+   ],
+   "first_event": "2008-03-15",
+   "last_event": "2008-03-15",
+   "sides": [
+    "Civilians",
+    "Government of DR Congo (Zaire)"
+   ],
+   "best_deaths_total": 1,
+   "min_label_confidence": 0.99
+  },
+  {
+   "site_id": "ged_005",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 27.1984,
+   "lat": -3.4687,
+   "name": null,
+   "adm1_reported": "Sud Kivu province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 2,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "39961"
+   ],
+   "first_event": "2005-04-03",
+   "last_event": "2005-04-03",
+   "sides": [
+    "Civilians",
+    "FDLR-FOCA"
+   ],
+   "best_deaths_total": 29,
+   "min_label_confidence": 0.99
+  },
+  {
+   "site_id": "ged_006",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 29.866667,
+   "lat": 1.45,
+   "name": null,
+   "adm1_reported": "Orientale province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 3,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "30555"
+   ],
+   "first_event": "2011-11-01",
+   "last_event": "2011-11-01",
+   "sides": [
+    "Civilians",
+    "FRPI"
+   ],
+   "best_deaths_total": 2,
+   "min_label_confidence": 0.75
+  },
+  {
+   "site_id": "ged_007",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 29.44687,
+   "lat": -0.99174,
+   "name": "Katwiguru",
+   "adm1_reported": "Nord Kivu province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 2,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "39992"
+   ],
+   "first_event": "2009-10-24",
+   "last_event": "2009-10-24",
+   "sides": [
+    "Civilians",
+    "FDLR-FOCA"
+   ],
+   "best_deaths_total": 6,
+   "min_label_confidence": 0.8
+  },
+  {
+   "site_id": "ged_008",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 27.8617,
+   "lat": -1.092767,
+   "name": "Omate",
+   "adm1_reported": "Nord Kivu province",
+   "commodities": [
+    "tin"
+   ],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 2,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "40011"
+   ],
+   "first_event": "2009-12-12",
+   "last_event": "2009-12-12",
+   "sides": [
+    "Civilians",
+    "FDLR-FOCA"
+   ],
+   "best_deaths_total": 1,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_009",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 27.87,
+   "lat": -1.29,
+   "name": "Mubi",
+   "adm1_reported": "Nord Kivu province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "71502"
+   ],
+   "first_event": "2010-08-18",
+   "last_event": "2010-08-18",
+   "sides": [
+    "FDLR-FOCA",
+    "Government of Rwanda"
+   ],
+   "best_deaths_total": 3,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_010",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 27.466667,
+   "lat": -11.666667,
+   "name": "Lubumbashi",
+   "adm1_reported": "Katanga province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 2,
+   "event_ids": [
+    "60777",
+    "358331"
+   ],
+   "first_event": "2013-03-23",
+   "last_event": "2020-09-25",
+   "sides": [
+    "Government of DR Congo (Zaire)",
+    "Kata Katanga"
+   ],
+   "best_deaths_total": 42,
+   "min_label_confidence": 0.8
+  },
+  {
+   "site_id": "ged_013",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 28.704263,
+   "lat": -4.740317,
+   "name": "Ndende",
+   "adm1_reported": "Sud Kivu province",
+   "commodities": [
+    "gold"
+   ],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 4.57,
+   "events": 6,
+   "event_ids": [
+    "144367",
+    "144416",
+    "269034",
+    "274784",
+    "275035",
+    "375073"
+   ],
+   "first_event": "2014-03-19",
+   "last_event": "2020-12-24",
+   "sides": [
+    "CNPSC",
+    "Civilians",
+    "Government of DR Congo (Zaire)"
+   ],
+   "best_deaths_total": 24,
+   "min_label_confidence": 0.95
+  },
+  {
+   "site_id": "ged_014",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 28.8,
+   "lat": -4.5,
+   "name": "Maweka mines",
+   "adm1_reported": "Sud Kivu province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 2,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "147875"
+   ],
+   "first_event": "2014-07-12",
+   "last_event": "2014-07-12",
+   "sides": [
+    "Civilians",
+    "Government of DR Congo (Zaire)"
+   ],
+   "best_deaths_total": 0,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_021",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 28.08276,
+   "lat": 1.34501,
+   "name": "Muchacha",
+   "adm1_reported": "Ituri province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 2,
+   "event_ids": [
+    "237228",
+    "401752"
+   ],
+   "first_event": "2017-03-11",
+   "last_event": "2021-05-21",
+   "sides": [
+    "Civilians",
+    "Government of DR Congo (Zaire)",
+    "Mayi Mayi Simba"
+   ],
+   "best_deaths_total": 2,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_022",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 29.35,
+   "lat": -0.645649,
+   "name": "Karambi",
+   "adm1_reported": "Nord Kivu province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "249772"
+   ],
+   "first_event": "2017-10-07",
+   "last_event": "2017-10-07",
+   "sides": [
+    "Civilians",
+    "NDC-R"
+   ],
+   "best_deaths_total": 1,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_023",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 27.54578,
+   "lat": -4.028642,
+   "name": "Salamabila",
+   "adm1_reported": "Maniema province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "260610"
+   ],
+   "first_event": "2018-05-24",
+   "last_event": "2018-05-24",
+   "sides": [
+    "CNPSC",
+    "Government of DR Congo (Zaire)"
+   ],
+   "best_deaths_total": 62,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_024",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 27.6,
+   "lat": 1.390632,
+   "name": "Nia Nia riche",
+   "adm1_reported": "Ituri province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "261952"
+   ],
+   "first_event": "2018-09-02",
+   "last_event": "2018-09-02",
+   "sides": [
+    "Civilians",
+    "Mayi Mayi Simba"
+   ],
+   "best_deaths_total": 3,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_025",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 30.016667,
+   "lat": 2.066667,
+   "name": "Lodjo",
+   "adm1_reported": "Ituri province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 2,
+   "event_ids": [
+    "272483",
+    "425193"
+   ],
+   "first_event": "2018-11-27",
+   "last_event": "2021-12-22",
+   "sides": [
+    "Civilians",
+    "URDPC",
+    "Zaire self-defense group"
+   ],
+   "best_deaths_total": 35,
+   "min_label_confidence": 0.85
+  },
+  {
+   "site_id": "ged_026",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 28.751944,
+   "lat": -1.969167,
+   "name": "Lijiwe",
+   "adm1_reported": "Sud Kivu province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 2,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "274366"
+   ],
+   "first_event": "2018-12-10",
+   "last_event": "2018-12-10",
+   "sides": [
+    "Civilians",
+    "Government of DR Congo (Zaire)"
+   ],
+   "best_deaths_total": 3,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_028",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 29.035957,
+   "lat": 1.362199,
+   "name": "Bihombo",
+   "adm1_reported": "Ituri province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 2,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "281697"
+   ],
+   "first_event": "2019-03-17",
+   "last_event": "2019-03-17",
+   "sides": [
+    "Civilians",
+    "Mayi Mayi Simba"
+   ],
+   "best_deaths_total": 3,
+   "min_label_confidence": 0.98
+  },
+  {
+   "site_id": "ged_030",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 28.76,
+   "lat": -1.83,
+   "name": "Rutare",
+   "adm1_reported": "Sud Kivu province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "325389"
+   ],
+   "first_event": "2019-03-30",
+   "last_event": "2019-03-30",
+   "sides": [
+    "FDLR-FOCA",
+    "Government of Rwanda"
+   ],
+   "best_deaths_total": 7,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_033",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 26.41,
+   "lat": -10.75,
+   "name": "Kakanda",
+   "adm1_reported": "Lualaba province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "336341"
+   ],
+   "first_event": "2020-03-28",
+   "last_event": "2020-03-28",
+   "sides": [
+    "Government of DR Congo (Zaire)",
+    "Kata Katanga"
+   ],
+   "best_deaths_total": 2,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_034",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 28.280661,
+   "lat": -5.591558,
+   "name": "Kisengo and Lunga",
+   "adm1_reported": "Tanganyika province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "346468"
+   ],
+   "first_event": "2020-06-06",
+   "last_event": "2020-06-06",
+   "sides": [
+    "CNPSC",
+    "Government of DR Congo (Zaire)"
+   ],
+   "best_deaths_total": 5,
+   "min_label_confidence": 0.98
+  },
+  {
+   "site_id": "ged_035",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 28.88,
+   "lat": -1.54,
+   "name": "Rubaya",
+   "adm1_reported": "Nord Kivu province",
+   "commodities": [
+    "coltan"
+   ],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 3,
+   "event_ids": [
+    "346615",
+    "520113",
+    "524897"
+   ],
+   "first_event": "2020-06-23",
+   "last_event": "2024-05-19",
+   "sides": [
+    "AFC",
+    "Civilians",
+    "Government of DR Congo (Zaire)"
+   ],
+   "best_deaths_total": 119,
+   "min_label_confidence": 0.95
+  },
+  {
+   "site_id": "ged_036",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 25.466667,
+   "lat": -10.716667,
+   "name": "Kamoto Copper Company mine",
+   "adm1_reported": "Lualaba province",
+   "commodities": [
+    "copper"
+   ],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "347467"
+   ],
+   "first_event": "2019-07-04",
+   "last_event": "2019-07-04",
+   "sides": [
+    "Civilians",
+    "Government of DR Congo (Zaire)"
+   ],
+   "best_deaths_total": 0,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_037",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 30.14006,
+   "lat": 1.92517,
+   "name": "Bese",
+   "adm1_reported": "Ituri province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "364834"
+   ],
+   "first_event": "2020-11-07",
+   "last_event": "2020-11-07",
+   "sides": [
+    "URDPC",
+    "Zaire self-defense group"
+   ],
+   "best_deaths_total": 5,
+   "min_label_confidence": 0.95
+  },
+  {
+   "site_id": "ged_038",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 28.239369,
+   "lat": -1.09464,
+   "name": "Matungu",
+   "adm1_reported": "Nord Kivu province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 2,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "370342"
+   ],
+   "first_event": "2020-10-29",
+   "last_event": "2020-10-29",
+   "sides": [
+    "Civilians",
+    "NDC-R"
+   ],
+   "best_deaths_total": 12,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_039",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 28.62127,
+   "lat": -0.98786,
+   "name": "Bibasirwa",
+   "adm1_reported": "Nord Kivu province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "380062"
+   ],
+   "first_event": "2021-01-09",
+   "last_event": "2021-01-09",
+   "sides": [
+    "NDC-R",
+    "NDC-R-GBS"
+   ],
+   "best_deaths_total": 1,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_040",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 30.100985,
+   "lat": 1.801005,
+   "name": "Makala",
+   "adm1_reported": "Ituri province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.95,
+   "events": 2,
+   "event_ids": [
+    "385520",
+    "446543"
+   ],
+   "first_event": "2021-02-19",
+   "last_event": "2022-08-11",
+   "sides": [
+    "Civilians",
+    "FDBC",
+    "URDPC",
+    "Zaire self-defense group"
+   ],
+   "best_deaths_total": 12,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_041",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 29.26024,
+   "lat": 0.90877,
+   "name": "Malindi-Buo",
+   "adm1_reported": "Ituri province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "400861"
+   ],
+   "first_event": "2021-05-20",
+   "last_event": "2021-05-20",
+   "sides": [
+    "Civilians",
+    "Government of DR Congo (Zaire)"
+   ],
+   "best_deaths_total": 1,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_042",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 29.97142,
+   "lat": 1.92473,
+   "name": "Exodus",
+   "adm1_reported": "Ituri province",
+   "commodities": [
+    "gold"
+   ],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "401234"
+   ],
+   "first_event": "2021-06-02",
+   "last_event": "2021-06-02",
+   "sides": [
+    "Civilians",
+    "FPIC Chambre noire sanduku, URDPC"
+   ],
+   "best_deaths_total": 9,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_044",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 28.646829,
+   "lat": 0.979473,
+   "name": "Sun City",
+   "adm1_reported": "Ituri province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "414833"
+   ],
+   "first_event": "2021-09-05",
+   "last_event": "2021-09-05",
+   "sides": [
+    "Civilians",
+    "Government of DR Congo (Zaire)"
+   ],
+   "best_deaths_total": 1,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_045",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 30.033333,
+   "lat": 1.95,
+   "name": "Mungwalu",
+   "adm1_reported": "Ituri province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 2,
+   "event_ids": [
+    "423629",
+    "532832"
+   ],
+   "first_event": "2021-12-03",
+   "last_event": "2024-01-01",
+   "sides": [
+    "Civilians",
+    "URDPC"
+   ],
+   "best_deaths_total": 16,
+   "min_label_confidence": 0.98
+  },
+  {
+   "site_id": "ged_049",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 28.43303,
+   "lat": 0.38692,
+   "name": "Pusabango",
+   "adm1_reported": "Nord Kivu province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "430540"
+   ],
+   "first_event": "2022-02-10",
+   "last_event": "2022-02-10",
+   "sides": [
+    "Civilians",
+    "Mayi Mayi Simba"
+   ],
+   "best_deaths_total": 1,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_050",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 29.5832,
+   "lat": 1.06502,
+   "name": "Quarry",
+   "adm1_reported": "Ituri province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 2,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "434053"
+   ],
+   "first_event": "2022-03-13",
+   "last_event": "2022-03-13",
+   "sides": [
+    "Civilians",
+    "IS"
+   ],
+   "best_deaths_total": 19,
+   "min_label_confidence": 0.85
+  },
+  {
+   "site_id": "ged_053",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 30.01943,
+   "lat": 2.00486,
+   "name": "Camp Blanquette",
+   "adm1_reported": "Ituri province",
+   "commodities": [
+    "gold"
+   ],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 2,
+   "event_ids": [
+    "438543",
+    "438546"
+   ],
+   "first_event": "2022-05-08",
+   "last_event": "2022-05-09",
+   "sides": [
+    "Civilians",
+    "FDBC"
+   ],
+   "best_deaths_total": 88,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_054",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 30.19072,
+   "lat": 1.96043,
+   "name": "Wanadi",
+   "adm1_reported": "Ituri province",
+   "commodities": [
+    "gold"
+   ],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "441727"
+   ],
+   "first_event": "2022-05-31",
+   "last_event": "2022-05-31",
+   "sides": [
+    "Civilians",
+    "FDBC"
+   ],
+   "best_deaths_total": 1,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_056",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 28.70656,
+   "lat": -3.93737,
+   "name": "Tulendo",
+   "adm1_reported": "Sud Kivu province",
+   "commodities": [
+    "gold"
+   ],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "446471"
+   ],
+   "first_event": "2022-08-17",
+   "last_event": "2022-08-17",
+   "sides": [
+    "AFP-Gutabara, Ngumino, Twiganeho",
+    "Civilians"
+   ],
+   "best_deaths_total": 7,
+   "min_label_confidence": 0.9
+  },
+  {
+   "site_id": "ged_057",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 28.72793,
+   "lat": -3.96246,
+   "name": "Bigaragara",
+   "adm1_reported": "Sud Kivu province",
+   "commodities": [
+    "gold"
+   ],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "446595"
+   ],
+   "first_event": "2022-08-17",
+   "last_event": "2022-08-17",
+   "sides": [
+    "AFP-Gutabara, Ngumino, Twiganeho",
+    "Civilians"
+   ],
+   "best_deaths_total": 14,
+   "min_label_confidence": 0.98
+  },
+  {
+   "site_id": "ged_058",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 30.29348,
+   "lat": 1.84638,
+   "name": null,
+   "adm1_reported": "Ituri province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "446796"
+   ],
+   "first_event": "2022-08-16",
+   "last_event": "2022-08-16",
+   "sides": [
+    "Civilians",
+    "FDBC"
+   ],
+   "best_deaths_total": 12,
+   "min_label_confidence": 0.85
+  },
+  {
+   "site_id": "ged_059",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 29.147543,
+   "lat": 1.052649,
+   "name": "Paradis One",
+   "adm1_reported": "Ituri province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 2,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "450028"
+   ],
+   "first_event": "2022-09-09",
+   "last_event": "2022-09-09",
+   "sides": [
+    "Government of DR Congo (Zaire)",
+    "Mayi Mayi Kyandenga"
+   ],
+   "best_deaths_total": 3,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_060",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 29.677055,
+   "lat": 0.879111,
+   "name": "Kamungu",
+   "adm1_reported": "Nord Kivu province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "453370"
+   ],
+   "first_event": "2022-10-15",
+   "last_event": "2022-10-15",
+   "sides": [
+    "Civilians",
+    "IS"
+   ],
+   "best_deaths_total": 2,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_064",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 28.775485,
+   "lat": 0.383259,
+   "name": "Katrikwaze",
+   "adm1_reported": "Nord Kivu province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.57,
+   "events": 2,
+   "event_ids": [
+    "474896",
+    "601721"
+   ],
+   "first_event": "2023-04-26",
+   "last_event": "2025-10-30",
+   "sides": [
+    "Civilians",
+    "IS",
+    "VDP"
+   ],
+   "best_deaths_total": 3,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_066",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 28.06526,
+   "lat": -0.7237,
+   "name": "Kifo",
+   "adm1_reported": "Nord Kivu province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "476874"
+   ],
+   "first_event": "2023-03-18",
+   "last_event": "2023-03-18",
+   "sides": [
+    "Civilians",
+    "VDP"
+   ],
+   "best_deaths_total": 1,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_068",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 29.203978,
+   "lat": 1.048213,
+   "name": "Indépendant and Mandimo Mines",
+   "adm1_reported": "Ituri province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 2,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "488211"
+   ],
+   "first_event": "2023-08-25",
+   "last_event": "2023-08-25",
+   "sides": [
+    "Civilians",
+    "IS"
+   ],
+   "best_deaths_total": 4,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_069",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 30.316667,
+   "lat": 2.533333,
+   "name": "Shaba",
+   "adm1_reported": "Ituri province",
+   "commodities": [
+    "gold"
+   ],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 2,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "490399"
+   ],
+   "first_event": "2023-08-28",
+   "last_event": "2023-08-28",
+   "sides": [
+    "Civilians",
+    "URDPC"
+   ],
+   "best_deaths_total": 15,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_070",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 28.23202,
+   "lat": -1.174598,
+   "name": "Oku Mine",
+   "adm1_reported": "Nord Kivu province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "490859"
+   ],
+   "first_event": "2023-07-07",
+   "last_event": "2023-07-07",
+   "sides": [
+    "Civilians",
+    "VDP"
+   ],
+   "best_deaths_total": 1,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_071",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 30.17808,
+   "lat": 1.83366,
+   "name": "Madungbou",
+   "adm1_reported": "Ituri province",
+   "commodities": [
+    "gold"
+   ],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 2,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "511769"
+   ],
+   "first_event": "2024-01-27",
+   "last_event": "2024-01-27",
+   "sides": [
+    "Civilians",
+    "URDPC"
+   ],
+   "best_deaths_total": 1,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_072",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 30.15957,
+   "lat": 1.85391,
+   "name": "Gbado",
+   "adm1_reported": "Ituri province",
+   "commodities": [
+    "gold"
+   ],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 2,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "513762"
+   ],
+   "first_event": "2024-02-13",
+   "last_event": "2024-02-13",
+   "sides": [
+    "Civilians",
+    "URDPC"
+   ],
+   "best_deaths_total": 8,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_074",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 30.530776,
+   "lat": 1.542133,
+   "name": null,
+   "adm1_reported": "Ituri province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "516690"
+   ],
+   "first_event": "2024-03-05",
+   "last_event": "2024-03-05",
+   "sides": [
+    "URDPC",
+    "Zaire self-defense group"
+   ],
+   "best_deaths_total": 7,
+   "min_label_confidence": 0.8
+  },
+  {
+   "site_id": "ged_075",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 28.016667,
+   "lat": -5.95,
+   "name": "Luliya",
+   "adm1_reported": "Tanganyika province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 3,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "519426"
+   ],
+   "first_event": "2024-02-08",
+   "last_event": "2024-02-08",
+   "sides": [
+    "CNPSC",
+    "Government of DR Congo (Zaire)"
+   ],
+   "best_deaths_total": 4,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_079",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 30.06571,
+   "lat": 1.88913,
+   "name": "Mambeu",
+   "adm1_reported": "Ituri province",
+   "commodities": [
+    "gold"
+   ],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 2,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "530257"
+   ],
+   "first_event": "2024-07-03",
+   "last_event": "2024-07-03",
+   "sides": [
+    "Civilians",
+    "URDPC"
+   ],
+   "best_deaths_total": 6,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_082",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 28.035457,
+   "lat": 0.410224,
+   "name": "Ata Ndele",
+   "adm1_reported": "Nord Kivu province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "538403"
+   ],
+   "first_event": "2024-08-30",
+   "last_event": "2024-08-30",
+   "sides": [
+    "Civilians",
+    "IS"
+   ],
+   "best_deaths_total": 5,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_086",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 30.01425,
+   "lat": 1.95844,
+   "name": null,
+   "adm1_reported": "Ituri province",
+   "commodities": [
+    "gold"
+   ],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 2,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "563328"
+   ],
+   "first_event": "2025-01-08",
+   "last_event": "2025-01-08",
+   "sides": [
+    "Civilians",
+    "URDPC"
+   ],
+   "best_deaths_total": 1,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_089",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 30.022067,
+   "lat": 1.940465,
+   "name": "Scierie Abelkoze",
+   "adm1_reported": "Ituri province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 2,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "571584"
+   ],
+   "first_event": "2025-03-06",
+   "last_event": "2025-03-06",
+   "sides": [
+    "Civilians",
+    "URDPC"
+   ],
+   "best_deaths_total": 6,
+   "min_label_confidence": 0.85
+  },
+  {
+   "site_id": "ged_090",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 29.123132,
+   "lat": 1.195348,
+   "name": null,
+   "adm1_reported": "Ituri province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 2,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "576605"
+   ],
+   "first_event": "2025-04-05",
+   "last_event": "2025-04-05",
+   "sides": [
+    "Civilians",
+    "IS"
+   ],
+   "best_deaths_total": 3,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_091",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 28.68,
+   "lat": 0.06,
+   "name": "Angola 1 and Angola 2",
+   "adm1_reported": "Nord Kivu province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 2,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "584315"
+   ],
+   "first_event": "2025-06-07",
+   "last_event": "2025-06-07",
+   "sides": [
+    "Civilians",
+    "IS"
+   ],
+   "best_deaths_total": 35,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_092",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 28.621531,
+   "lat": -2.61579,
+   "name": "Ntula",
+   "adm1_reported": "Sud Kivu province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "591144"
+   ],
+   "first_event": "2025-08-07",
+   "last_event": "2025-08-07",
+   "sides": [
+    "AFC",
+    "VDP"
+   ],
+   "best_deaths_total": 11,
+   "min_label_confidence": 0.9
+  },
+  {
+   "site_id": "ged_093",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 29.11,
+   "lat": -1.02,
+   "name": "SOMIKIVU",
+   "adm1_reported": "Nord Kivu province",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 2,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "591467"
+   ],
+   "first_event": "2025-08-06",
+   "last_event": "2025-08-06",
+   "sides": [
+    "AFC",
+    "Civilians"
+   ],
+   "best_deaths_total": 3,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_094",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 28.629608,
+   "lat": 0.135078,
+   "name": "Rizeri",
+   "adm1_reported": "Nord Kivu province",
+   "commodities": [
+    "gold"
+   ],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 2,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "599410"
+   ],
+   "first_event": "2025-10-07",
+   "last_event": "2025-10-07",
+   "sides": [
+    "Civilians",
+    "IS"
+   ],
+   "best_deaths_total": 5,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_095",
+   "source": "ucdp_ged",
+   "iso3": "COD",
+   "lon": 28.592222,
+   "lat": -2.74983,
+   "name": "Tubimbi",
+   "adm1_reported": "Sud Kivu province",
+   "commodities": [
+    "gold"
+   ],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "605665"
+   ],
+   "first_event": "2025-11-20",
+   "last_event": "2025-11-20",
+   "sides": [
+    "AFC",
+    "Government of DR Congo (Zaire)"
+   ],
+   "best_deaths_total": 14,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_011",
+   "source": "ucdp_ged",
+   "iso3": "SDN",
+   "lon": 24.08333,
+   "lat": 13.65,
+   "name": null,
+   "adm1_reported": "Northern Darfur state",
+   "commodities": [
+    "gold"
+   ],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 3,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "63406"
+   ],
+   "first_event": "2013-01-09",
+   "last_event": "2013-01-09",
+   "sides": [
+    "Beni Hussein",
+    "Rizeigat Abbala"
+   ],
+   "best_deaths_total": 53,
+   "min_label_confidence": 0.85
+  },
+  {
+   "site_id": "ged_016",
+   "source": "ucdp_ged",
+   "iso3": "SDN",
+   "lon": 30.379722,
+   "lat": 10.636389,
+   "name": "Talodi",
+   "adm1_reported": "South Kordofan state",
+   "commodities": [
+    "gold"
+   ],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "reported",
+   "best_where_prec": 1,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "196249"
+   ],
+   "first_event": "2015-06-25",
+   "last_event": "2015-06-25",
+   "sides": [
+    "Government of Sudan",
+    "SRF"
+   ],
+   "best_deaths_total": 35,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_032",
+   "source": "ucdp_ged",
+   "iso3": "SDN",
+   "lon": 30.888,
+   "lat": 10.5413,
+   "name": "Altugula",
+   "adm1_reported": "South Kordofan state",
+   "commodities": [
+    "gold"
+   ],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 3,
+   "cluster_spread_km": 0.0,
+   "events": 2,
+   "event_ids": [
+    "332389",
+    "332394"
+   ],
+   "first_event": "2019-04-22",
+   "last_event": "2019-05-03",
+   "sides": [
+    "Civilians",
+    "Government of Sudan"
+   ],
+   "best_deaths_total": 2,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_052",
+   "source": "ucdp_ged",
+   "iso3": "SDN",
+   "lon": 29.716667,
+   "lat": 11.016667,
+   "name": "Elhegairat",
+   "adm1_reported": "South Kordofan state",
+   "commodities": [
+    "gold"
+   ],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 2,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "436819"
+   ],
+   "first_event": "2022-04-13",
+   "last_event": "2022-04-13",
+   "sides": [
+    "Civilians",
+    "Government of Sudan"
+   ],
+   "best_deaths_total": 1,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_084",
+   "source": "ucdp_ged",
+   "iso3": "SDN",
+   "lon": 23.7,
+   "lat": 13.8,
+   "name": "Jebel Amer",
+   "adm1_reported": "North Darfur state",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 2,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "558718"
+   ],
+   "first_event": "2024-12-28",
+   "last_event": "2024-12-28",
+   "sides": [
+    "Government of Sudan",
+    "RSF"
+   ],
+   "best_deaths_total": 7,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_087",
+   "source": "ucdp_ged",
+   "iso3": "SDN",
+   "lon": 24.663841,
+   "lat": 14.203053,
+   "name": "Al-Hamra Al-Bir",
+   "adm1_reported": "North Darfur state",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 2,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "563697"
+   ],
+   "first_event": "2025-01-29",
+   "last_event": "2025-01-29",
+   "sides": [
+    "Government of Sudan",
+    "RSF"
+   ],
+   "best_deaths_total": 13,
+   "min_label_confidence": 1.0
+  },
+  {
+   "site_id": "ged_088",
+   "source": "ucdp_ged",
+   "iso3": "SDN",
+   "lon": 27.96667,
+   "lat": 14.58333,
+   "name": "al-Zaraf",
+   "adm1_reported": "North Kordofan state",
+   "commodities": [],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 2,
+   "cluster_spread_km": 0.0,
+   "events": 1,
+   "event_ids": [
+    "570460"
+   ],
+   "first_event": "2025-03-10",
+   "last_event": "2025-03-10",
+   "sides": [
+    "Government of Sudan",
+    "SFA"
+   ],
+   "best_deaths_total": 2,
+   "min_label_confidence": 0.9
+  },
+  {
+   "site_id": "ged_020",
+   "source": "ucdp_ged",
+   "iso3": "TZA",
+   "lon": 34.534567,
+   "lat": -1.453335,
+   "name": "North Mara Gold Mine",
+   "adm1_reported": "Mara region",
+   "commodities": [
+    "gold"
+   ],
+   "commodities_looted": [],
+   "observed": "conflict_report",
+   "precision": "approximate",
+   "best_where_prec": 1,
+   "cluster_spread_km": 6.0,
+   "events": 8,
+   "event_ids": [
+    "456421",
+    "456426",
+    "456429",
+    "456432",
+    "459980",
+    "530109",
+    "534429",
+    "534430"
+   ],
+   "first_event": "2014-06-16",
+   "last_event": "2024-05-22",
+   "sides": [
+    "Civilians",
+    "Government of Tanzania"
+   ],
+   "best_deaths_total": 18,
+   "min_label_confidence": 0.65
+  }
+ ],
+ "excluded": [
+  {
+   "id": "8072",
+   "relid": "SUD-1998-1-645-35",
+   "where": "Eastern Sudan",
+   "reason": "no"
+  },
+  {
+   "id": "23369",
+   "relid": "DRC-2000-1-40-6",
+   "where": "Gandajika town (Near, south-east DRC Gandanjika, around 100 km (60 miles) south of the key diamond-producing city of Mbuji-Mayi Kafumbu Territoire de Gandanjika",
+   "reason": "mine_named"
+  },
+  {
+   "id": "24192",
+   "relid": "DRC-2000-1-40-18",
+   "where": "Moba town (on the western shore of Lake Tanganyika)",
+   "reason": "mine_named"
+  },
+  {
+   "id": "23246",
+   "relid": "DRC-2003-3-1460-7.2",
+   "where": "Dego location (Pluto and Dego north of Mongbwalu)",
+   "reason": "no"
+  },
+  {
+   "id": "23715",
+   "relid": "DRC-2003-3-1460-2",
+   "where": "Kilo area (Kilo Kabakaba, Buwenge, Alimasi and Bovi.)",
+   "reason": "no"
+  },
+  {
+   "id": "24435",
+   "relid": "DRC-2003-3-1460-7.1",
+   "where": "Pluto location (collectivé Baniari de Kilo and Dego north of Mongbwalu)",
+   "reason": "no"
+  },
+  {
+   "id": "24717",
+   "relid": "DRC-2002-3-1960-1",
+   "where": "Yedi Mongbwalu village (roadblock in)",
+   "reason": "no"
+  },
+  {
+   "id": "29595",
+   "relid": "CEN-2011-2-451-4",
+   "where": "Bria town",
+   "reason": "no"
+  },
+  {
+   "id": "31950",
+   "relid": "SSD-2011-1-819-7",
+   "where": "Mayom, west of the state capital Bentiu",
+   "reason": "no"
+  },
+  {
+   "id": "45229",
+   "relid": "CEN-2012-1-875-2",
+   "where": "Northern CAR",
+   "reason": "coarse_coordinates",
+   "where_prec": 5
+  },
+  {
+   "id": "63391",
+   "relid": "SUD-2013-2-12384-0",
+   "where": "al-Sref Beni Hussein locality (20 villages in the al-Sref Beni Hussein locality, North Darfur)",
+   "reason": "mine_named"
+  },
+  {
+   "id": "63936",
+   "relid": "SUD-2013-2-12384-7",
+   "where": "two villages outside El Sireaf.",
+   "reason": "mine_named"
+  },
+  {
+   "id": "113890",
+   "relid": "CEN-2013-3-12382-18",
+   "where": "Gaga village",
+   "reason": "no"
+  },
+  {
+   "id": "113891",
+   "relid": "CEN-2013-3-12379-24",
+   "where": "Gaga village",
+   "reason": "no"
+  },
+  {
+   "id": "147925",
+   "relid": "DRC-2014-3-3967-2",
+   "where": "Kina locality, over 300 km northwest of Kamina in Malembankulu territory [ Katanga Province]",
+   "reason": "no"
+  },
+  {
+   "id": "150831",
+   "relid": "CEN-2014-3-12382-19",
+   "where": "Bakala town (raided villages in Bakala and Saboyombo and mine sites around Louba, north-west of Bambari)",
+   "reason": "mine_named"
+  },
+  {
+   "id": "151878",
+   "relid": "SUD-2014-1-833-30",
+   "where": "entrance of Murinj in South Kurdufan",
+   "reason": "no"
+  },
+  {
+   "id": "152964",
+   "relid": "CEN-2014-3-12382-20",
+   "where": "Saboyombo (raided villages in Bakala and Saboyombo and mine sites around Louba, north-west of Bambari)",
+   "reason": "mine_named"
+  },
+  {
+   "id": "152965",
+   "relid": "CEN-2014-3-12382-21",
+   "where": "Louba (raided villages in Bakala and Saboyombo and mine sites around Louba, north-west of Bambari)",
+   "reason": "mine_named"
+  },
+  {
+   "id": "236389",
+   "relid": "CEN-2016-3-14329-2",
+   "where": "Yambélé, a small mining center 110 kilometers southeast of Bambar",
+   "reason": "coarse_coordinates",
+   "where_prec": 4
+  },
+  {
+   "id": "237502",
+   "relid": "DRC-2017-1-14929-11",
+   "where": "in front of the Dibwe Dietu diamond trader's shop Kamonia in Kasai",
+   "reason": "no"
+  },
+  {
+   "id": "238031",
+   "relid": "DRC-2017-3-934-7",
+   "where": "Salamabila, near Namoya, Maniema province (Twangiza gold mine in neighbouring South Kivu province)",
+   "reason": "mine_named"
+  },
+  {
+   "id": "287191",
+   "relid": "DRC-2019-3-934-26",
+   "where": "Luhoho town, Rubaya region, in Masisi territory",
+   "reason": "miners"
+  },
+  {
+   "id": "312181",
+   "relid": "DRC-2019-1-12009-1",
+   "where": "Luwowoshi district of Lubumbashi",
+   "reason": "no"
+  },
+  {
+   "id": "318769",
+   "relid": "DRC-2019-1-15998-36",
+   "where": "Mapobu 3 is located between Mapobu Quarry and Mapobu village",
+   "reason": "mine_named"
+  },
+  {
+   "id": "329668",
+   "relid": "CEN-2019-3-1026-9",
+   "where": "near the Dingilo mine, 12 km north of Banzey",
+   "reason": "mine_named"
+  },
+  {
+   "id": "332638",
+   "relid": "DRC-2020-3-16065-6",
+   "where": "Digeni village, Djugu territory, Ituri province [northeastern DR Congo]. seven kilometres from Mongbwalu, near the Ituri river.\n\nlocality of Digene in the Banya",
+   "reason": "mine_named"
+  },
+  {
+   "id": "343160",
+   "relid": "SUD-2020-2-5584-4",
+   "where": "El Gurenti near El Meiram, west of Abyei in West Kordofan",
+   "reason": "no"
+  },
+  {
+   "id": "346934",
+   "relid": "DRC-2020-3-4313-15",
+   "where": "Mugunga village in the territory of Nyunzu;\nMugunga is 23 km from the mining site of Lunguli, near Butondo",
+   "reason": "mine_named"
+  },
+  {
+   "id": "358327",
+   "relid": "DRC-2020-3-16065-90",
+   "where": "near a mining site Banyali Kilo sector [Ituri, north-eastern DR Congo]",
+   "reason": "mine_named"
+  },
+  {
+   "id": "373932",
+   "relid": "DRC-2020-3-15334-1",
+   "where": "Kahuzi Biega National Park Bunyakiri and Kalehe, in Sud Kivu Province",
+   "reason": "coarse_coordinates",
+   "where_prec": 5
+  },
+  {
+   "id": "376202",
+   "relid": "DRC-2020-1-11377-23",
+   "where": "Kahendwa, a village 30 km from the Kisengo mining site, in Nyunzu territory, 200 km to the West by Kalemie.\n\nKahendwa is located between the village of Kisengo ",
+   "reason": "mine_named"
+  },
+  {
+   "id": "401892",
+   "relid": "CEN-2021-1-16562-33",
+   "where": "on the road between Berberati and Bouar",
+   "reason": "no"
+  },
+  {
+   "id": "403119",
+   "relid": "CEN-2021-1-16562-116",
+   "where": "Yéléwa and Bouar axis",
+   "reason": "no"
+  },
+  {
+   "id": "414446",
+   "relid": "CEN-2021-1-16562-55",
+   "where": "two kilometers from the town of Ndim",
+   "reason": "no"
+  },
+  {
+   "id": "414447",
+   "relid": "CEN-2021-1-16562-56",
+   "where": "Bowara village, about 30 km from Ndim, Paoua axis",
+   "reason": "no"
+  },
+  {
+   "id": "414469",
+   "relid": "CEN-2021-3-16629-26",
+   "where": "Pana-mala,  Loura commune, in the locality of Bocaranga located more than 40 km from Bocaranga-center",
+   "reason": "no"
+  },
+  {
+   "id": "420740",
+   "relid": "CEN-2021-1-16562-113",
+   "where": "Bowara, Ngaoundaye",
+   "reason": "no"
+  },
+  {
+   "id": "435021",
+   "relid": "CEN-2022-1-16562-15",
+   "where": "near Ngoutèrè",
+   "reason": "no"
+  },
+  {
+   "id": "436999",
+   "relid": "CEN-2022-3-16629-2",
+   "where": "Pk 15 of Nzako on the Bakouma axis, not far from the Kono mining site",
+   "reason": "mine_named"
+  },
+  {
+   "id": "442501",
+   "relid": "CEN-2022-1-16562-46",
+   "where": "village of Sankillio, near Andaha",
+   "reason": "mine_named"
+  },
+  {
+   "id": "442605",
+   "relid": "CEN-2022-1-16562-54",
+   "where": "Kotabara and Poussière mining sites in Ouham Prefecture",
+   "reason": "coarse_coordinates",
+   "where_prec": 4
+  },
+  {
+   "id": "446605",
+   "relid": "DRC-2022-3-16412-2",
+   "where": "Bijombo",
+   "reason": "mine_named"
+  },
+  {
+   "id": "447797",
+   "relid": "CEN-2022-3-16629-10",
+   "where": "Bolo road, on the Nana-Bakassa – Kouki axis, towards the Pousseiere mining site",
+   "reason": "mine_named"
+  },
+  {
+   "id": "447798",
+   "relid": "CEN-2022-1-12380-0",
+   "where": "Pousseiere mining site",
+   "reason": "coarse_coordinates",
+   "where_prec": 4
+  },
+  {
+   "id": "450800",
+   "relid": "CEN-2022-3-931-4",
+   "where": "near Ndassima gold mine, Ouaka",
+   "reason": "mine_named"
+  },
+  {
+   "id": "453687",
+   "relid": "CEN-2022-1-16562-64",
+   "where": "village of Ndiba Mole, prefecture of Nana-Mambere",
+   "reason": "mine_named"
+  },
+  {
+   "id": "453723",
+   "relid": "CEN-2022-3-12379-1",
+   "where": "a mining site in Nassoya",
+   "reason": "coarse_coordinates",
+   "where_prec": 4
+  },
+  {
+   "id": "464137",
+   "relid": "CEN-2023-1-16562-0",
+   "where": "Béloko town",
+   "reason": "no"
+  },
+  {
+   "id": "475454",
+   "relid": "CEN-2023-1-16562-23",
+   "where": "Méré village",
+   "reason": "no"
+  },
+  {
+   "id": "475456",
+   "relid": "CEN-2023-1-16562-26",
+   "where": "road between Yéléwa and Ndonguedouane",
+   "reason": "no"
+  },
+  {
+   "id": "477661",
+   "relid": "CEN-2023-1-16562-32",
+   "where": "Nzamari",
+   "reason": "no"
+  },
+  {
+   "id": "494184",
+   "relid": "CEN-2023-1-16562-47",
+   "where": "near a mine in Songuidi, Baboua, western Nana-Mambere  region",
+   "reason": "mine_named"
+  },
+  {
+   "id": "510576",
+   "relid": "CEN-2024-1-16562-1",
+   "where": "",
+   "reason": "no"
+  },
+  {
+   "id": "510887",
+   "relid": "CEN-2024-1-16562-5",
+   "where": "",
+   "reason": "miners"
+  },
+  {
+   "id": "513763",
+   "relid": "DRC-2024-1-17740-12",
+   "where": "North Kivu",
+   "reason": "no"
+  },
+  {
+   "id": "516682",
+   "relid": "DRC-2024-3-17741-4",
+   "where": "in the Kibingu village in Kabanda (Rutshuru)",
+   "reason": "mine_named"
+  },
+  {
+   "id": "521523",
+   "relid": "DRC-2024-1-17740-43",
+   "where": "",
+   "reason": "mine_named"
+  },
+  {
+   "id": "542484",
+   "relid": "SUD-2024-1-17497-301",
+   "where": "Babnusa",
+   "reason": "no"
+  },
+  {
+   "id": "556102",
+   "relid": "CEN-2024-3-16629-16",
+   "where": "town of Bria",
+   "reason": "mine_named"
+  },
+  {
+   "id": "556432",
+   "relid": "DRC-2024-3-14315-2",
+   "where": "Kaloma, in the chiefdom of Museka, territory of Malemba-Nkulu, in Haut-Lomami (South-east of the Democratic Republic of Congo),\n\nShabukwa quarry, in the Museka ",
+   "reason": "mine_named"
+  },
+  {
+   "id": "563605",
+   "relid": "DRC-2024-1-17740-179",
+   "where": "",
+   "reason": "no"
+  },
+  {
+   "id": "562404",
+   "relid": "SUD-2025-1-17497-37",
+   "where": "Abu Shouk camp",
+   "reason": "mine_named"
+  },
+  {
+   "id": "562405",
+   "relid": "SUD-2025-1-17497-38",
+   "where": "town of Manawashi; east of the town market and the Al-Salam neighborhood",
+   "reason": "mine_named"
+  },
+  {
+   "id": "563740",
+   "relid": "SUD-2025-1-17497-50",
+   "where": "city of Al-Koma",
+   "reason": "mine_named"
+  },
+  {
+   "id": "572202",
+   "relid": "DRC-2025-3-16065-26",
+   "where": "in his field near the Djangapoli mining area, in the Mabilindey group in the Banyali Kilo sector, about 4 km from Mongbwalu center.",
+   "reason": "mine_named"
+  },
+  {
+   "id": "577418",
+   "relid": "DRC-2025-3-16418-0",
+   "where": "victim was based in Mongbwalu, a small town in the Djuga territory of the Ituri Province in DRC\n\ntravelling to Kunda, abducted on the way.",
+   "reason": "miners"
+  },
+  {
+   "id": "578051",
+   "relid": "DRC-2025-1-17740-159",
+   "where": "near the ITIG cemetery.",
+   "reason": "no"
+  },
+  {
+   "id": "578054",
+   "relid": "DRC-2025-1-17740-158",
+   "where": "Sake, a town located in the Kamuronza group, in Masisi territory (North Kivu).",
+   "reason": "no"
+  },
+  {
+   "id": "590743",
+   "relid": "UKR-2025-3-920-9",
+   "where": "outside of Andha gold mines",
+   "reason": "mine_named"
+  },
+  {
+   "id": "598861",
+   "relid": "DRC-2025-1-15998-23",
+   "where": "near the town of Robinet",
+   "reason": "mine_named"
+  },
+  {
+   "id": "599587",
+   "relid": "UKR-2025-3-920-19",
+   "where": "",
+   "reason": "miners"
+  },
+  {
+   "id": "604245",
+   "relid": "SUD-2025-1-18621-353",
+   "where": "Al-Manjam market of the Tagru mine, on the border between the Northern State and the Darfur region, Al-Malha locality",
+   "reason": "coarse_coordinates",
+   "where_prec": 5
+  },
+  {
+   "id": "606871",
+   "relid": "CEN-2025-1-18287-3",
+   "where": "mining sites in Ouham",
+   "reason": "coarse_coordinates",
+   "where_prec": 4
+  }
+ ]
+}

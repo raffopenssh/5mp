@@ -89,6 +89,20 @@
    "with_year": 49
   },
   {
+   "source": "ucdp_ged",
+   "label": "Mine sites recovered from UCDP GED event descriptions",
+   "attribution": "Event records: UCDP Georeferenced Event Dataset (Uppsala Conflict Data Program). The mine labelling and clustering are ours and must not be attributed to UCDP.",
+   "licence": "free to use with citation (Sundberg & Melander 2013); no formal licence document",
+   "terms": "unstated",
+   "landing": "https://ucdp.uu.se",
+   "observed": "conflict_report",
+   "id_field": "GED event id(s)",
+   "note": "every site is on this list because organised violence there was recorded, so its coverage is conflict and not mining; the year is the last recorded event, not a survey date. Only materials the text says the site YIELDS are carried -- looted or taxed goods travel and are not evidence about the rock. Sites whose best GED location precision is an admin centroid were already excluded upstream (scripts/ucdp_mines.py).",
+   "sites": 38,
+   "with_resource": 12,
+   "with_year": 38
+  },
+  {
    "source": "osm",
    "label": "OpenStreetMap mine, quarry, adit and mineshaft features",
    "attribution": "\u00a9 OpenStreetMap contributors",
@@ -142,7 +156,7 @@
   }
  ],
  "totals": {
-  "anchors": 3687,
+  "anchors": 3725,
   "by_source": {
    "ipis_caf": 914,
    "ipis_tza": 447,
@@ -150,18 +164,19 @@
    "tearline_caf": 40,
    "icmm": 11,
    "crisistracker": 49,
+   "ucdp_ged": 38,
    "osm": 1488,
    "tang_werner": 197,
    "usgs_africa": 61
   },
   "by_country": {
-   "CAF": 1386,
-   "TZA": 1051,
-   "SSD": 142,
-   "SDN": 1108
+   "CAF": 1413,
+   "TZA": 1055,
+   "SSD": 145,
+   "SDN": 1112
   },
-  "with_resource": 1835,
-  "with_year": 2898
+  "with_resource": 1847,
+  "with_year": 2936
  },
  "features": [
   {
@@ -42864,6 +42879,842 @@
     "licence": "not stated (public map records)",
     "terms": "unstated",
     "attribution": "Incident records: Crisis Tracker, a project of Invisible Children. The mine labelling and clustering are ours and must not be attributed to them."
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     15.37,
+     6.87
+    ]
+   },
+   "properties": {
+    "source": "ucdp_ged",
+    "source_id": "63499",
+    "source_url": "https://ucdp.uu.se",
+    "iso3": "CAF",
+    "year": 2013,
+    "resource": null,
+    "observed": "conflict_report",
+    "licence": "free to use with citation (Sundberg & Melander 2013); no formal licence document",
+    "terms": "unstated",
+    "attribution": "Event records: UCDP Georeferenced Event Dataset (Uppsala Conflict Data Program). The mine labelling and clustering are ours and must not be attributed to UCDP."
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     19.837212,
+     6.526181
+    ]
+   },
+   "properties": {
+    "source": "ucdp_ged",
+    "source_id": "157400",
+    "source_url": "https://ucdp.uu.se",
+    "iso3": "CAF",
+    "year": 2014,
+    "resource": "gold",
+    "observed": "conflict_report",
+    "licence": "free to use with citation (Sundberg & Melander 2013); no formal licence document",
+    "terms": "unstated",
+    "attribution": "Event records: UCDP Georeferenced Event Dataset (Uppsala Conflict Data Program). The mine labelling and clustering are ours and must not be attributed to UCDP."
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     24.175254,
+     5.741315
+    ]
+   },
+   "properties": {
+    "source": "ucdp_ged",
+    "source_id": "219257",
+    "source_url": "https://ucdp.uu.se",
+    "iso3": "CAF",
+    "year": 2016,
+    "resource": null,
+    "observed": "conflict_report",
+    "licence": "free to use with citation (Sundberg & Melander 2013); no formal licence document",
+    "terms": "unstated",
+    "attribution": "Event records: UCDP Georeferenced Event Dataset (Uppsala Conflict Data Program). The mine labelling and clustering are ours and must not be attributed to UCDP."
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     20.363295,
+     6.462021
+    ]
+   },
+   "properties": {
+    "source": "ucdp_ged",
+    "source_id": "251986",
+    "source_url": "https://ucdp.uu.se",
+    "iso3": "CAF",
+    "year": 2016,
+    "resource": null,
+    "observed": "conflict_report",
+    "licence": "free to use with citation (Sundberg & Melander 2013); no formal licence document",
+    "terms": "unstated",
+    "attribution": "Event records: UCDP Georeferenced Event Dataset (Uppsala Conflict Data Program). The mine labelling and clustering are ours and must not be attributed to UCDP."
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     20.38748,
+     6.197114
+    ]
+   },
+   "properties": {
+    "source": "ucdp_ged",
+    "source_id": "251991",
+    "source_url": "https://ucdp.uu.se",
+    "iso3": "CAF",
+    "year": 2016,
+    "resource": null,
+    "observed": "conflict_report",
+    "licence": "free to use with citation (Sundberg & Melander 2013); no formal licence document",
+    "terms": "unstated",
+    "attribution": "Event records: UCDP Georeferenced Event Dataset (Uppsala Conflict Data Program). The mine labelling and clustering are ours and must not be attributed to UCDP."
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     22.321806,
+     6.4195
+    ]
+   },
+   "properties": {
+    "source": "ucdp_ged",
+    "source_id": "275715",
+    "source_url": "https://ucdp.uu.se",
+    "iso3": "CAF",
+    "year": 2018,
+    "resource": null,
+    "observed": "conflict_report",
+    "licence": "free to use with citation (Sundberg & Melander 2013); no formal licence document",
+    "terms": "unstated",
+    "attribution": "Event records: UCDP Georeferenced Event Dataset (Uppsala Conflict Data Program). The mine labelling and clustering are ours and must not be attributed to UCDP."
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     21.651071,
+     5.108098
+    ]
+   },
+   "properties": {
+    "source": "ucdp_ged",
+    "source_id": "307060",
+    "source_url": "https://ucdp.uu.se",
+    "iso3": "CAF",
+    "year": 2019,
+    "resource": "gold",
+    "observed": "conflict_report",
+    "licence": "free to use with citation (Sundberg & Melander 2013); no formal licence document",
+    "terms": "unstated",
+    "attribution": "Event records: UCDP Georeferenced Event Dataset (Uppsala Conflict Data Program). The mine labelling and clustering are ours and must not be attributed to UCDP."
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     21.98633,
+     6.54233
+    ]
+   },
+   "properties": {
+    "source": "ucdp_ged",
+    "source_id": "328221;543894",
+    "source_url": "https://ucdp.uu.se",
+    "iso3": "CAF",
+    "year": 2024,
+    "resource": "diamond",
+    "observed": "conflict_report",
+    "licence": "free to use with citation (Sundberg & Melander 2013); no formal licence document",
+    "terms": "unstated",
+    "attribution": "Event records: UCDP Georeferenced Event Dataset (Uppsala Conflict Data Program). The mine labelling and clustering are ours and must not be attributed to UCDP."
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     19.156774,
+     7.413941
+    ]
+   },
+   "properties": {
+    "source": "ucdp_ged",
+    "source_id": "414480",
+    "source_url": "https://ucdp.uu.se",
+    "iso3": "CAF",
+    "year": 2021,
+    "resource": null,
+    "observed": "conflict_report",
+    "licence": "free to use with citation (Sundberg & Melander 2013); no formal licence document",
+    "terms": "unstated",
+    "attribution": "Event records: UCDP Georeferenced Event Dataset (Uppsala Conflict Data Program). The mine labelling and clustering are ours and must not be attributed to UCDP."
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     21.767224,
+     6.887629
+    ]
+   },
+   "properties": {
+    "source": "ucdp_ged",
+    "source_id": "428791",
+    "source_url": "https://ucdp.uu.se",
+    "iso3": "CAF",
+    "year": 2022,
+    "resource": "gold",
+    "observed": "conflict_report",
+    "licence": "free to use with citation (Sundberg & Melander 2013); no formal licence document",
+    "terms": "unstated",
+    "attribution": "Event records: UCDP Georeferenced Event Dataset (Uppsala Conflict Data Program). The mine labelling and clustering are ours and must not be attributed to UCDP."
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     20.777868,
+     6.138944
+    ]
+   },
+   "properties": {
+    "source": "ucdp_ged",
+    "source_id": "428876;490212;590709;600325",
+    "source_url": "https://ucdp.uu.se",
+    "iso3": "CAF",
+    "year": 2025,
+    "resource": "gold",
+    "observed": "conflict_report",
+    "licence": "free to use with citation (Sundberg & Melander 2013); no formal licence document",
+    "terms": "unstated",
+    "attribution": "Event records: UCDP Georeferenced Event Dataset (Uppsala Conflict Data Program). The mine labelling and clustering are ours and must not be attributed to UCDP."
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     15.21762,
+     5.22531
+    ]
+   },
+   "properties": {
+    "source": "ucdp_ged",
+    "source_id": "428879",
+    "source_url": "https://ucdp.uu.se",
+    "iso3": "CAF",
+    "year": 2022,
+    "resource": null,
+    "observed": "conflict_report",
+    "licence": "free to use with citation (Sundberg & Melander 2013); no formal licence document",
+    "terms": "unstated",
+    "attribution": "Event records: UCDP Georeferenced Event Dataset (Uppsala Conflict Data Program). The mine labelling and clustering are ours and must not be attributed to UCDP."
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     14.693985,
+     5.215661
+    ]
+   },
+   "properties": {
+    "source": "ucdp_ged",
+    "source_id": "435062",
+    "source_url": "https://ucdp.uu.se",
+    "iso3": "CAF",
+    "year": 2022,
+    "resource": null,
+    "observed": "conflict_report",
+    "licence": "free to use with citation (Sundberg & Melander 2013); no formal licence document",
+    "terms": "unstated",
+    "attribution": "Event records: UCDP Georeferenced Event Dataset (Uppsala Conflict Data Program). The mine labelling and clustering are ours and must not be attributed to UCDP."
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     21.613256,
+     9.787337
+    ]
+   },
+   "properties": {
+    "source": "ucdp_ged",
+    "source_id": "442504",
+    "source_url": "https://ucdp.uu.se",
+    "iso3": "CAF",
+    "year": 2022,
+    "resource": null,
+    "observed": "conflict_report",
+    "licence": "free to use with citation (Sundberg & Melander 2013); no formal licence document",
+    "terms": "unstated",
+    "attribution": "Event records: UCDP Georeferenced Event Dataset (Uppsala Conflict Data Program). The mine labelling and clustering are ours and must not be attributed to UCDP."
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     15.15199,
+     5.33354
+    ]
+   },
+   "properties": {
+    "source": "ucdp_ged",
+    "source_id": "464514",
+    "source_url": "https://ucdp.uu.se",
+    "iso3": "CAF",
+    "year": 2023,
+    "resource": null,
+    "observed": "conflict_report",
+    "licence": "free to use with citation (Sundberg & Melander 2013); no formal licence document",
+    "terms": "unstated",
+    "attribution": "Event records: UCDP Georeferenced Event Dataset (Uppsala Conflict Data Program). The mine labelling and clustering are ours and must not be attributed to UCDP."
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     17.3,
+     6.99
+    ]
+   },
+   "properties": {
+    "source": "ucdp_ged",
+    "source_id": "464946",
+    "source_url": "https://ucdp.uu.se",
+    "iso3": "CAF",
+    "year": 2022,
+    "resource": null,
+    "observed": "conflict_report",
+    "licence": "free to use with citation (Sundberg & Melander 2013); no formal licence document",
+    "terms": "unstated",
+    "attribution": "Event records: UCDP Georeferenced Event Dataset (Uppsala Conflict Data Program). The mine labelling and clustering are ours and must not be attributed to UCDP."
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     20.867108,
+     5.727252
+    ]
+   },
+   "properties": {
+    "source": "ucdp_ged",
+    "source_id": "470546",
+    "source_url": "https://ucdp.uu.se",
+    "iso3": "CAF",
+    "year": 2023,
+    "resource": "gold",
+    "observed": "conflict_report",
+    "licence": "free to use with citation (Sundberg & Melander 2013); no formal licence document",
+    "terms": "unstated",
+    "attribution": "Event records: UCDP Georeferenced Event Dataset (Uppsala Conflict Data Program). The mine labelling and clustering are ours and must not be attributed to UCDP."
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     17.30974,
+     7.1576
+    ]
+   },
+   "properties": {
+    "source": "ucdp_ged",
+    "source_id": "475452;498764;518877",
+    "source_url": "https://ucdp.uu.se",
+    "iso3": "CAF",
+    "year": 2024,
+    "resource": "gold",
+    "observed": "conflict_report",
+    "licence": "free to use with citation (Sundberg & Melander 2013); no formal licence document",
+    "terms": "unstated",
+    "attribution": "Event records: UCDP Georeferenced Event Dataset (Uppsala Conflict Data Program). The mine labelling and clustering are ours and must not be attributed to UCDP."
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     15.35143,
+     6.71414
+    ]
+   },
+   "properties": {
+    "source": "ucdp_ged",
+    "source_id": "480770",
+    "source_url": "https://ucdp.uu.se",
+    "iso3": "CAF",
+    "year": 2023,
+    "resource": null,
+    "observed": "conflict_report",
+    "licence": "free to use with citation (Sundberg & Melander 2013); no formal licence document",
+    "terms": "unstated",
+    "attribution": "Event records: UCDP Georeferenced Event Dataset (Uppsala Conflict Data Program). The mine labelling and clustering are ours and must not be attributed to UCDP."
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     14.608811,
+     5.939709
+    ]
+   },
+   "properties": {
+    "source": "ucdp_ged",
+    "source_id": "515563",
+    "source_url": "https://ucdp.uu.se",
+    "iso3": "CAF",
+    "year": 2024,
+    "resource": null,
+    "observed": "conflict_report",
+    "licence": "free to use with citation (Sundberg & Melander 2013); no formal licence document",
+    "terms": "unstated",
+    "attribution": "Event records: UCDP Georeferenced Event Dataset (Uppsala Conflict Data Program). The mine labelling and clustering are ours and must not be attributed to UCDP."
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     16.97,
+     5.5
+    ]
+   },
+   "properties": {
+    "source": "ucdp_ged",
+    "source_id": "526151",
+    "source_url": "https://ucdp.uu.se",
+    "iso3": "CAF",
+    "year": 2024,
+    "resource": null,
+    "observed": "conflict_report",
+    "licence": "free to use with citation (Sundberg & Melander 2013); no formal licence document",
+    "terms": "unstated",
+    "attribution": "Event records: UCDP Georeferenced Event Dataset (Uppsala Conflict Data Program). The mine labelling and clustering are ours and must not be attributed to UCDP."
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     17.455184,
+     6.492629
+    ]
+   },
+   "properties": {
+    "source": "ucdp_ged",
+    "source_id": "529752",
+    "source_url": "https://ucdp.uu.se",
+    "iso3": "CAF",
+    "year": 2024,
+    "resource": null,
+    "observed": "conflict_report",
+    "licence": "free to use with citation (Sundberg & Melander 2013); no formal licence document",
+    "terms": "unstated",
+    "attribution": "Event records: UCDP Georeferenced Event Dataset (Uppsala Conflict Data Program). The mine labelling and clustering are ours and must not be attributed to UCDP."
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     18.353388,
+     7.079652
+    ]
+   },
+   "properties": {
+    "source": "ucdp_ged",
+    "source_id": "529761;529762",
+    "source_url": "https://ucdp.uu.se",
+    "iso3": "CAF",
+    "year": 2024,
+    "resource": null,
+    "observed": "conflict_report",
+    "licence": "free to use with citation (Sundberg & Melander 2013); no formal licence document",
+    "terms": "unstated",
+    "attribution": "Event records: UCDP Georeferenced Event Dataset (Uppsala Conflict Data Program). The mine labelling and clustering are ours and must not be attributed to UCDP."
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     15.9,
+     6.8
+    ]
+   },
+   "properties": {
+    "source": "ucdp_ged",
+    "source_id": "536246",
+    "source_url": "https://ucdp.uu.se",
+    "iso3": "CAF",
+    "year": 2024,
+    "resource": null,
+    "observed": "conflict_report",
+    "licence": "free to use with citation (Sundberg & Melander 2013); no formal licence document",
+    "terms": "unstated",
+    "attribution": "Event records: UCDP Georeferenced Event Dataset (Uppsala Conflict Data Program). The mine labelling and clustering are ours and must not be attributed to UCDP."
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     16.051669,
+     6.193035
+    ]
+   },
+   "properties": {
+    "source": "ucdp_ged",
+    "source_id": "536248",
+    "source_url": "https://ucdp.uu.se",
+    "iso3": "CAF",
+    "year": 2024,
+    "resource": null,
+    "observed": "conflict_report",
+    "licence": "free to use with citation (Sundberg & Melander 2013); no formal licence document",
+    "terms": "unstated",
+    "attribution": "Event records: UCDP Georeferenced Event Dataset (Uppsala Conflict Data Program). The mine labelling and clustering are ours and must not be attributed to UCDP."
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     16.963783,
+     7.62768
+    ]
+   },
+   "properties": {
+    "source": "ucdp_ged",
+    "source_id": "539872;539889",
+    "source_url": "https://ucdp.uu.se",
+    "iso3": "CAF",
+    "year": 2024,
+    "resource": null,
+    "observed": "conflict_report",
+    "licence": "free to use with citation (Sundberg & Melander 2013); no formal licence document",
+    "terms": "unstated",
+    "attribution": "Event records: UCDP Georeferenced Event Dataset (Uppsala Conflict Data Program). The mine labelling and clustering are ours and must not be attributed to UCDP."
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     16.378333,
+     6.317222
+    ]
+   },
+   "properties": {
+    "source": "ucdp_ged",
+    "source_id": "560253",
+    "source_url": "https://ucdp.uu.se",
+    "iso3": "CAF",
+    "year": 2024,
+    "resource": null,
+    "observed": "conflict_report",
+    "licence": "free to use with citation (Sundberg & Melander 2013); no formal licence document",
+    "terms": "unstated",
+    "attribution": "Event records: UCDP Georeferenced Event Dataset (Uppsala Conflict Data Program). The mine labelling and clustering are ours and must not be attributed to UCDP."
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     29.44687,
+     -0.99174
+    ]
+   },
+   "properties": {
+    "source": "ucdp_ged",
+    "source_id": "39992",
+    "source_url": "https://ucdp.uu.se",
+    "iso3": "TZA",
+    "year": 2009,
+    "resource": null,
+    "observed": "conflict_report",
+    "licence": "free to use with citation (Sundberg & Melander 2013); no formal licence document",
+    "terms": "unstated",
+    "attribution": "Event records: UCDP Georeferenced Event Dataset (Uppsala Conflict Data Program). The mine labelling and clustering are ours and must not be attributed to UCDP."
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     29.35,
+     -0.645649
+    ]
+   },
+   "properties": {
+    "source": "ucdp_ged",
+    "source_id": "249772",
+    "source_url": "https://ucdp.uu.se",
+    "iso3": "TZA",
+    "year": 2017,
+    "resource": null,
+    "observed": "conflict_report",
+    "licence": "free to use with citation (Sundberg & Melander 2013); no formal licence document",
+    "terms": "unstated",
+    "attribution": "Event records: UCDP Georeferenced Event Dataset (Uppsala Conflict Data Program). The mine labelling and clustering are ours and must not be attributed to UCDP."
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     29.11,
+     -1.02
+    ]
+   },
+   "properties": {
+    "source": "ucdp_ged",
+    "source_id": "591467",
+    "source_url": "https://ucdp.uu.se",
+    "iso3": "TZA",
+    "year": 2025,
+    "resource": null,
+    "observed": "conflict_report",
+    "licence": "free to use with citation (Sundberg & Melander 2013); no formal licence document",
+    "terms": "unstated",
+    "attribution": "Event records: UCDP Georeferenced Event Dataset (Uppsala Conflict Data Program). The mine labelling and clustering are ours and must not be attributed to UCDP."
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     24.08333,
+     13.65
+    ]
+   },
+   "properties": {
+    "source": "ucdp_ged",
+    "source_id": "63406",
+    "source_url": "https://ucdp.uu.se",
+    "iso3": "SDN",
+    "year": 2013,
+    "resource": "gold",
+    "observed": "conflict_report",
+    "licence": "free to use with citation (Sundberg & Melander 2013); no formal licence document",
+    "terms": "unstated",
+    "attribution": "Event records: UCDP Georeferenced Event Dataset (Uppsala Conflict Data Program). The mine labelling and clustering are ours and must not be attributed to UCDP."
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     30.379722,
+     10.636389
+    ]
+   },
+   "properties": {
+    "source": "ucdp_ged",
+    "source_id": "196249",
+    "source_url": "https://ucdp.uu.se",
+    "iso3": "SSD",
+    "year": 2015,
+    "resource": "gold",
+    "observed": "conflict_report",
+    "licence": "free to use with citation (Sundberg & Melander 2013); no formal licence document",
+    "terms": "unstated",
+    "attribution": "Event records: UCDP Georeferenced Event Dataset (Uppsala Conflict Data Program). The mine labelling and clustering are ours and must not be attributed to UCDP."
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     30.888,
+     10.5413
+    ]
+   },
+   "properties": {
+    "source": "ucdp_ged",
+    "source_id": "332389;332394",
+    "source_url": "https://ucdp.uu.se",
+    "iso3": "SSD",
+    "year": 2019,
+    "resource": "gold",
+    "observed": "conflict_report",
+    "licence": "free to use with citation (Sundberg & Melander 2013); no formal licence document",
+    "terms": "unstated",
+    "attribution": "Event records: UCDP Georeferenced Event Dataset (Uppsala Conflict Data Program). The mine labelling and clustering are ours and must not be attributed to UCDP."
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     29.716667,
+     11.016667
+    ]
+   },
+   "properties": {
+    "source": "ucdp_ged",
+    "source_id": "436819",
+    "source_url": "https://ucdp.uu.se",
+    "iso3": "SSD",
+    "year": 2022,
+    "resource": "gold",
+    "observed": "conflict_report",
+    "licence": "free to use with citation (Sundberg & Melander 2013); no formal licence document",
+    "terms": "unstated",
+    "attribution": "Event records: UCDP Georeferenced Event Dataset (Uppsala Conflict Data Program). The mine labelling and clustering are ours and must not be attributed to UCDP."
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     23.7,
+     13.8
+    ]
+   },
+   "properties": {
+    "source": "ucdp_ged",
+    "source_id": "558718",
+    "source_url": "https://ucdp.uu.se",
+    "iso3": "SDN",
+    "year": 2024,
+    "resource": null,
+    "observed": "conflict_report",
+    "licence": "free to use with citation (Sundberg & Melander 2013); no formal licence document",
+    "terms": "unstated",
+    "attribution": "Event records: UCDP Georeferenced Event Dataset (Uppsala Conflict Data Program). The mine labelling and clustering are ours and must not be attributed to UCDP."
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     24.663841,
+     14.203053
+    ]
+   },
+   "properties": {
+    "source": "ucdp_ged",
+    "source_id": "563697",
+    "source_url": "https://ucdp.uu.se",
+    "iso3": "SDN",
+    "year": 2025,
+    "resource": null,
+    "observed": "conflict_report",
+    "licence": "free to use with citation (Sundberg & Melander 2013); no formal licence document",
+    "terms": "unstated",
+    "attribution": "Event records: UCDP Georeferenced Event Dataset (Uppsala Conflict Data Program). The mine labelling and clustering are ours and must not be attributed to UCDP."
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     27.96667,
+     14.58333
+    ]
+   },
+   "properties": {
+    "source": "ucdp_ged",
+    "source_id": "570460",
+    "source_url": "https://ucdp.uu.se",
+    "iso3": "SDN",
+    "year": 2025,
+    "resource": null,
+    "observed": "conflict_report",
+    "licence": "free to use with citation (Sundberg & Melander 2013); no formal licence document",
+    "terms": "unstated",
+    "attribution": "Event records: UCDP Georeferenced Event Dataset (Uppsala Conflict Data Program). The mine labelling and clustering are ours and must not be attributed to UCDP."
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     34.534567,
+     -1.453335
+    ]
+   },
+   "properties": {
+    "source": "ucdp_ged",
+    "source_id": "456421;456426;456429;456432;459980;530109;534429;534430",
+    "source_url": "https://ucdp.uu.se",
+    "iso3": "TZA",
+    "year": 2024,
+    "resource": "gold",
+    "observed": "conflict_report",
+    "licence": "free to use with citation (Sundberg & Melander 2013); no formal licence document",
+    "terms": "unstated",
+    "attribution": "Event records: UCDP Georeferenced Event Dataset (Uppsala Conflict Data Program). The mine labelling and clustering are ours and must not be attributed to UCDP."
    }
   },
   {
