@@ -1,86 +1,145 @@
 # Handover — AOI structural fixes (docs/AOI_STRUCTURAL_FIXES.md)
 
-Started 2026-08-13. **The code is written and builds; NOTHING HAS BEEN
-DEPLOYED and migration 055 HAS NOT RUN.** `db.sqlite3` is untouched, the live
-service still runs the previous build, and no cron has executed any of this.
-That is the safe state to pick up from, not a half-finished one — but it is
-also why the app currently shows the *old* numbers.
+Started 2026-08-13. **F1–F9 and F12 are deployed, migration 055 has run, and
+the backfill has converted all 157 areas.** Every settlement figure in the app
+is now a measured surface and a measured population. F10 and F11 are still
+open, and they are the only items left in the original list.
 
-## What is done (in the repo, unmerged into the running system)
+Status of the whole list: **F1 F2 F3 F4 F5 F6 F7 F8 F9 F12 done · F10 F11
+open.**
 
-| Fix | Where | State |
-|---|---|---|
-| F1 mask-area vs built surface | `scripts/ghsl_tiles.py:polygons_in` now yields `{extent_m2, area_m2, population}`; zonal sum of the raster's own values | written, spot-checked (0.4°×0.4° window: extent 173.5 km², surface 3.05 km², ratio 0.018 — matches the doc's 0.027) |
-| F2 population from GHS_POP | same file: `POP_PRODUCT`/`POP_BASE_URL`, same tile grid, zonal sum; **absent** rather than constant-density when POP is unreadable | written, one tile fetched OK (13 MB) |
-| F3 cluster diameter cap | `rebuild_events_enhanced._split_oversized`, `MAX_CLUSTER_DIAMETER_KM = 15` | written, **never run on real data** |
-| F4 `LIMIT 100` on places | `_load_park_places` → `_PointIndex` (exact grid nearest) | written |
-| F5 nearest river | `_load_park_rivers` → `_RoadIndex` of segments; `_get_nearest_river` does a real nearest-segment query and returns None beyond `RIVER_CONTEXT_MAX_KM = 10` | written |
-| F6 fire context for AOIs | `_settlement_fire_context()` in the one clusterer + `fire_context_at` column | written |
-| F7 response rate for AOIs | `srv/fire_containment_scope.go`, `containment_meaningful` in the JSON, popup rows suppressed | written |
-| F8 Hansen vs GFW units | `area_method` column + `_area_method_for()`; sparkline breaks the line (`d.brk`) | written |
-| F9 needs-review flag | `daily_park_refresh.flag_anomalous_years()` (≥50× the 5-yr median **within one method**), `needs_review` column, ring marker in the chart | written |
-| F12 `settlement_type` | now written as `NULL` — `temporary` was unreachable below the ingest floor | written |
-| provenance read path | `srv/settlement_provenance.go`: `settlementPopulationSQL` / `settlementSurfaceSQL` / `settlementExtentSQL`, applied across `api.go`, `narrative_handlers.go`, `fire_narrative_cache.go`, `settlement_classifier.go` | written |
+---
 
-Migration `055-settlement-surface-and-provenance.sql` adds
-`extent_m2`, `area_source`, `population_source`, `epoch`, `fire_context_at`
-to `park_settlements` and `area_method`, `needs_review` to
-`deforestation_events`, and **labels** existing rows rather than blanking them:
-14,504 settlements become `area_source='ghsl_mask_extent'`,
-`population_source='legacy_density_200_per_ha'`, which the read path then
-declines to serve as a population. That label is also the backfill's work
-queue.
+## What the numbers look like now
 
-## What is NOT done — pick up here
+```
+                      settlements  surface km²   extent km²   population
+converted (157 areas)      13,871        287.1      7,293.3    6,851,399
+retired detector            3,019            —            —            —
+legacy label                    0
+```
 
-1. **Run the migration.** `cp db.sqlite3 db.sqlite3.bak` first (1.8 GB, 39 GB
-   free). It is four `ALTER`s plus three scoped `UPDATE`s over 14.5k + 24k
-   rows; expect seconds, but it takes the write lock, so do it when the AOI
-   runner (12:00) and the fire job (03:00) are not running.
-2. **`make build && sudo systemctl restart 5mp`**, then check the version
-   endpoint against `git rev-parse --short HEAD`.
-3. **`scripts/backfill_settlement_surface.py` DOES NOT EXIST YET.** Migration
-   055 and `settlement_provenance.go` both name it. It must re-derive
-   `area_m2`/`extent_m2`/`population_est` for one park per run from the GHSL
-   tiles (the polygons in `feature_geometries` need re-ingesting through the
-   new `ingest_tile`, then `rebuild_settlements_for_park`), rate-limited so the
-   live app keeps its write slot — the `on_batch` yield discipline is already
-   in the rebuilder. 159 parks + 1 AOI; the AOI is 74,904 polygons and 4 tiles.
-   **Until it runs, every park serves an absent population and an extent-only
-   area.** That is honest but visibly emptier than before — decide whether to
-   ship the read-path change and the backfill together.
-4. **F10 (`protected_area_id` is a 100 km buffer) is untouched.** Finding from
-   this session: `in_protected_area` **already exists and already means
-   `dist_km == 0`, i.e. inside the boundary** — 8,055,317 rows set, 34,037,536
-   with an id but outside, 5,532,890 unassigned. So the column F10 asks for is
-   *there*; the work is auditing which user-facing "fires in park X" counts use
-   `protected_area_id` alone and switching them to `AND in_protected_area = 1`.
-   Nothing was changed, so nothing has regressed.
-5. **F11 (sensor count changes at 2024-01-01) is untouched.** Measured this
-   session: `N` 2,381,805 · `N20` 4,097,180 · `N21` 2,440,808 for 2026 — three
-   sensors now, one before 2024. Needs either a per-sensor normalisation or a
-   drawn discontinuity; the sparkline now *has* a break mechanism (`d.brk`,
-   added for F8) that this can reuse.
-6. **Nothing has been re-run over real data.** No park, no AOI, has been
-   rebuilt through the new clusterer. The first run should be **one small
-   park** (`CMR_Nki`, 0 settlements, or `CAF_Chinko`, 27 clusters / 35
-   polygons) with a before/after diff, *not* `XSA_Study_Area` (74,904
-   polygons). F3's split and F5's threshold are the two that will change
-   published numbers most, and neither has a measurement beside it yet.
-7. **No tests were written or run.** `./tests/run_all.sh` has not been executed
-   against these changes.
+Extent exceeds surface by a **median of 22×** across the 157 areas (min 6×,
+max 116×) — that ratio *is* F1, and it is why the two must never share a
+column name. `scripts/backfill_settlement_surface.py --list` is the queue and
+prints `0 area(s) pending`.
 
-## Traps found while doing this
+Cross-checks worth re-running after any change here:
 
-* **`polygons_in` changed its yield shape** from `(poly, area_m2)` to
-  `(poly, dict)`. `ingest_tile` is the only caller in-tree — check again before
-  assuming that holds.
-* **The two areas differ by ~24×, and the classifier keyed on the wrong one.**
-  `total_area > 50000 → agricultural` was reading mask extent; it now reads
-  surface, so *classification changes for every park* once the backfill runs.
-  Expect the class histogram to move and do not read that as a bug.
-* **`_get_nearest_river` returning None is the point**, not a failure: the
-  sentence is omitted. 9,366 rows currently assert a river.
-* **Do not compare across `area_method`.** F9's flagger already scopes its
-  median to one method; any new year-over-year comparison must too, or every
-  park flags at the 2024 cutover.
+```bash
+./tests/run_all.sh db     # 48 tests; 11 of them are these invariants
+python3 scripts/backfill_settlement_surface.py --list
+curl -s "localhost:8000/api/parks/CAF_Chinko/stats?pwd=test2026" | jq .settlement
+curl -s "localhost:8000/api/parks/CAF_Chinko/settlement-narrative?pwd=test2026" \
+  | jq '{settlement_count,polygon_count,total_population,population_measured_for}'
+```
+
+The last two must agree: 20 settlements, 0.027 km² surface, 826 people. They
+disagreed for months (see "a fossil" below).
+
+## The backfill
+
+`scripts/backfill_settlement_surface.py` — one area per unit of work,
+`--rotate N` for N of them, cron at **06:45** does 2/night to absorb newly
+onboarded parks. It re-ingests the area's GHSL tiles through
+`ghsl_tiles.polygons_in` and re-clusters through the canonical
+`EventRebuilder.rebuild_settlements_for_park`, so parks and AOIs get the same
+classifier. Whole queue: ~25 min for 157 areas; `XSA_Study_Area` alone is
+4 tiles / 74,904 polygons / ~6 min.
+
+Three things about it are load-bearing:
+
+* **Ids are coordinate-keyed** (`settlement_<area>_<lat>_<lon>`), so a re-run
+  is idempotent and a *shorter* second run cannot leave the tail of a longer
+  first one behind. Parks use `ghsl_tiles.PARK_PREFIX`, **not** `AOI_PREFIX`:
+  `aoi_clip.py` deletes everything except `settlement_ghsl_%` when copying a
+  park's footprints into an overlapping AOI, so a park keyed with the AOI
+  prefix would produce copies that are undeletable *and* double-counted.
+* **A run that yields nothing where rows existed reports UNFINISHED**, leaves
+  the old rows alone, and does not stamp the state file — so the rotation
+  retries it (invariant 1).
+* **`ghsl_tiles.PIPELINE_VERSION` re-queues everything when the *reader*
+  changes.** This exists because two real bugs moved the numbers without
+  moving any label; see below. A converted area whose state entry is missing
+  or stamped with an older version counts as pending — unknown is not clean.
+
+## Two reader bugs, and why a label could not catch them
+
+Both were found *after* the first full backfill, by tests that compare
+quantities rather than check for nulls.
+
+1. **The POP window was one pixel off.** `_read_window` took each raster's
+   window from the geometry's bounds independently. Those bounds are not on a
+   pixel edge (`col_off = 5992.39`), so BUILT_S rounded one way and POP
+   another. Verified against per-pixel coordinate lookups: the old read
+   matched ground truth for **71 of 200** built pixels, the new one for
+   **200 of 200**. It moved Comoé's population by 12% (11,788 → 9,838).
+   `_read_window_like` now derives POP's integer offsets from the BUILT_S
+   affine, so both rasters see the same pixels by construction. Tiles are also
+   *cropped to their own data extent* — R10_C19 is 4000×3000 in BUILT_S and
+   10000×10000 in POP — so shape equality was never a safe alignment check;
+   it silently cost GAB_Loango its population entirely.
+2. **Extent and surface counted different things.** `extent_m2` was the
+   clipped polygon's geometric area while `area_m2` sums *whole* pixels, so a
+   settlement straddling an area boundary could report more surface than
+   extent — impossible, and true for 3 rows. Extent is now the mask's pixels
+   × pixel area, over the same pixels the surface uses.
+
+The db test `surface never exceeds extent` catches the second class directly;
+the first was caught only by asking the raster. **The lesson worth keeping: a
+provenance label names the instrument, not the code that read it.** That is
+what `PIPELINE_VERSION` is for.
+
+## A fossil, and a mislabelled column
+
+Two things the backfill exposed that were not in the original list:
+
+* **`ghsl_data` was a 156-row snapshot from 2026-03-03 that nothing in the
+  tree writes.** `/api/parks/{id}/stats` served `built_up_km2` from it, so the
+  stats panel said 0.61 km² for CAF_Chinko while the settlement narrative said
+  0.027 km² — one word, two numbers, 22× apart, and the stale one was the
+  mask. Now derived from `park_settlements` through the provenance helpers, and
+  it reports extent and surface separately plus `surface_measured_for` /
+  `population_measured_for`. **A cached aggregate with no writer is not a
+  cache, it is a fossil** — the table still exists and is now unread.
+* **`nearest_boundary_km` was the distance to the nearest named PLACE.**
+  globe.html duly scored it as encroachment (`< 10 km ⇒ priority`), which gave
+  every remote settlement 0 — in CAF_Chinko that is all of them (nearest place
+  70.9 km). Renamed `distance_to_place_km`; the proximity term is **gone**
+  from the priority score rather than re-weighted, because distance to the
+  boundary is not in that response at all. A weight on the wrong quantity is
+  worse than no weight.
+
+## Still open
+
+**F10 — `protected_area_id` is a 100 km buffer.** The column F10 asks for
+already exists: `in_protected_area` already means `dist_km == 0`, i.e. inside
+the boundary (8,055,317 rows set, 34,037,536 with an id but outside, 5,532,890
+unassigned). The work is **auditing which user-facing "fires in park X" counts
+use `protected_area_id` alone** and adding `AND in_protected_area = 1`.
+Nothing has been changed, so nothing has regressed — but a 10× overstatement
+is live wherever such a count exists.
+
+**F11 — sensor count changes at 2024-01-01.** One VIIRS sensor before 2024,
+three after (2026: `N` 2,381,805 · `N20` 4,097,180 · `N21` 2,440,808). Every
+raw fire chart has a 3× step at that date that is instrument, not landscape.
+The sparkline now *has* a break mechanism (`d.brk`, built for F8) that this can
+reuse; a per-sensor rate is the alternative.
+
+## Traps that still apply
+
+* **`polygons_in` yields `(poly, dict)`**, not `(poly, area_m2)`. `ingest_tile`
+  is the only in-tree caller — check before assuming that holds.
+* **`rebuild_settlements_for_park` must never delete rows without
+  `polygon_ids`.** Those are the 3,019 retired pit/turbidity rows (invariant 5)
+  that this clusterer cannot recreate. The park-scoped and global deletes are
+  both scoped now; running the rebuild over 160 areas is how an unscoped purge
+  would have gone unnoticed until the rows were gone.
+* **The classifier keys on surface, not extent**, and the two differ by ~22×,
+  so class histograms moved for every park (Chinko: 32 `agricultural` → 25,
+  a `village` appeared). That is the fix, not a regression.
+* **`_get_nearest_river` returning None is the point** — the sentence is
+  omitted rather than asserting a river 700 km away.
+* **Do not compare across `area_method`.** F9's flagger scopes its median to
+  one method; any new year-over-year comparison must too, or every park flags
+  at the 2024 cutover.

@@ -25,19 +25,19 @@
   "n_requests": 21
  },
  "SSD_Badingilo": {
-  "scanned_at": "2026-08-03T04:31:48Z",
-  "n_alerts": 18660,
-  "n_requests": 37
+  "scanned_at": "2026-08-11T04:31:54Z",
+  "n_alerts": 30932,
+  "n_requests": 50
  },
  "SSD_Boma": {
-  "scanned_at": "2026-08-04T04:35:15Z",
-  "n_alerts": 349256,
-  "n_requests": 81
+  "scanned_at": "2026-08-12T04:35:56Z",
+  "n_alerts": 448968,
+  "n_requests": 95
  },
  "SSD_Southern": {
-  "scanned_at": "2026-08-05T04:32:43Z",
-  "n_alerts": 76746,
-  "n_requests": 57
+  "scanned_at": "2026-08-13T04:32:54Z",
+  "n_alerts": 170700,
+  "n_requests": 73
  },
  "SSD_Zeraf": {
   "scanned_at": "2026-08-06T04:32:01Z",

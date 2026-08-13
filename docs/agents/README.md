@@ -21,6 +21,8 @@ lives here, one file per subsystem, loaded only when a task touches it.
 | `mining.md` | Retired mining detection — read before proposing anything mining-related |
 | `acled.md` | Mining occurrence reference; what ACLED and Crisis Tracker may say about our truth sets' reach |
 | `HANDOVER_CONTACTS.md` | Open brief: geological contact zones. Delete when the work lands. |
+| `HANDOVER_GEOLOGY_EXPORT.md` | Open brief: geology export + mining anchors, half built. Delete when the work lands. |
+| `HANDOVER_AOI_FIXES.md` | AOI structural data-correctness fixes (F1–F12): surface vs extent, measured population, the backfill rotation. Delete when the queue is empty. |
 
 ## Where a new note goes
 

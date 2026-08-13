@@ -880,8 +880,32 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                 '📅': icon('calendar', 'neutral'),
                 '✓': icon('check', 'success'),
                 '✗': icon('x', 'fire'),
+                '👍': icon('thumbs-up', 'success'),
             };
             return map[emoji] || emoji; // Return icon or fallback to emoji
+        }
+
+        // Emoji-bearing backend prose -> escaped HTML with Lucide icons.
+        //
+        // /api/parks/{id}/stats returns `insights` as sentences that START with
+        // an emoji ("🏘️ 27 settlements detected..."), and the starred-report
+        // panel rendered them through escapeHtml() alone, so the one surface
+        // that shows them showed raw emoji while every other surface in the app
+        // uses the icon font. emojiToIcon() already existed for exactly this and
+        // was only wired into the fire-alert list. Unmapped emoji are DROPPED
+        // rather than passed through: the sentence carries the meaning, and a
+        // stray glyph in a dark-theme panel is the thing the icon font exists to
+        // avoid. Markdown export strips them the same way (`plain`).
+        function insightHtml(text) {
+            const escaped = escapeHtml(String(text || ''));
+            return escaped.replace(
+                /[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}\u{2B00}-\u{2BFF}][\u{FE0F}\u{200D}\u{1F000}-\u{1FAFF}]*/gu,
+                m => {
+                    const mapped = emojiToIcon(m);
+                    if (mapped !== m) return mapped;
+                    const bare = emojiToIcon(m.replace(/\u{FE0F}/gu, ''));
+                    return bare !== m.replace(/\u{FE0F}/gu, '') ? bare : '';
+                }).replace(/\s{2,}/g, ' ').trim();
         }
 
         // Format numbers - only use commas for numbers >= 1000
@@ -16090,7 +16114,7 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                     <span title="Roadless wilderness">Roadless: ${roadlessPercent.toFixed(1)}%</span>
                     <span title="Settlement built-up area">Built-up: ${builtUpKm2.toFixed(2)} km²</span>
                 </div>
-                ${showInsights ? `<div class="starred-report-group" style="margin-top:8px;"><div class="starred-report-group-title">Key Insights:</div>${stats.insights.slice(0, insightLimit).map(i => `<div style="margin:4px 0;font-size:10px;color:#aaa;">${escapeHtml(i)}</div>`).join('')}${!expanded && stats.insights.length > insightLimit ? `<div style="color:#60a5fa;font-size:10px;cursor:pointer;" onclick="this.parentElement.innerHTML=this.parentElement.innerHTML.replace('...show more', '')+reportDataCache.parks.get('${park.id}')?.stats?.insights?.slice(${insightLimit}).map(i=>'<div style=margin:4px\\ 0;font-size:10px;color:#aaa;>'+escapeHtml(i)+'</div>').join('')">...show ${stats.insights.length - insightLimit} more</div>` : ''}</div>` : ''}
+                ${showInsights ? `<div class="starred-report-group" style="margin-top:8px;"><div class="starred-report-group-title">Key Insights:</div>${stats.insights.slice(0, insightLimit).map(i => `<div style="margin:4px 0;font-size:10px;color:#aaa;">${insightHtml(i)}</div>`).join('')}${!expanded && stats.insights.length > insightLimit ? `<div style="color:#60a5fa;font-size:10px;cursor:pointer;" onclick="this.parentElement.innerHTML=this.parentElement.innerHTML.replace('...show more', '')+reportDataCache.parks.get('${park.id}')?.stats?.insights?.slice(${insightLimit}).map(i=>'<div style=margin:4px\\ 0;font-size:10px;color:#aaa;>'+insightHtml(i)+'</div>').join('')">...show ${stats.insights.length - insightLimit} more</div>` : ''}</div>` : ''}
             </div>`;
         }
         

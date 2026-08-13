@@ -49,6 +49,18 @@ POP_BASE_URL = ("https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/GHSL/"
                 f"GHS_POP_{EPOCH}_GLOBE_R2023A_54009_100/V1-0/tiles")
 POP_SOURCE = f"ghsl_{POP_PRODUCT}"
 
+# Bump when a change here would give a DIFFERENT NUMBER for the same ground.
+# The product id in `population_source` names the raster but not the code that
+# read it, and two of this file's bugs were readers, not rasters: the POP
+# window was taken from the geometry's fractional bounds and rounded
+# independently of the BUILT_S window (one pixel of offset, 12% of Comoé's
+# population), and `extent_m2` was the clipped polygon's own area rather than
+# the pixels the surface was summed over. Neither changes a label, so nothing
+# in the database could say "re-derive me" -- which is what this constant is
+# for: scripts/backfill_settlement_surface.py re-queues any area whose recorded
+# version is not this one.
+PIPELINE_VERSION = "2026-08-13c"
+
 # GHSL Mollweide tile grid: 1000 km squares, origin at the top-left of R1_C1.
 # Rows and columns are 1-INDEXED. Verified against the tile's own affine:
 # R7_C20's transform origin is (959000, 3000000) = ORIGIN + (19, 6) tiles.
@@ -150,13 +162,52 @@ def _read_window(path, geom_moll):
         return src.read(1, window=window), src.window_transform(window)
 
 
+def _read_window_like(path, transform, shape):
+    """Read `path` over exactly the ground covered by (transform, shape).
+
+    The two products are the same 100 m Mollweide grid, but they are NOT the
+    same rasters: a tile is cropped to its own data extent, so R10_C19 is
+    4000x3000 in BUILT_S and 10000x10000 in POP. Taking a window from bounds
+    on each independently then clipping it to that raster's size gives two
+    different shapes ((714, 302) vs (795, 302)) and `polygons_in` correctly
+    refused to zonal-sum them -- which cost GAB_Loango its population.
+
+    So the BUILT_S window is the authority and POP is read `boundless` against
+    it: same ground, same shape by construction, zero-filled where POP has no
+    pixel. Alignment is still asserted by the caller through the transform.
+    """
+    import rasterio
+    from rasterio.windows import Window
+
+    h, w = shape
+    minx, maxy = transform * (0, 0)
+    with rasterio.open(path) as src:
+        if abs(src.transform.a - transform.a) > 1e-6:
+            return None
+        # Integer pixel offsets computed from the two affines directly. NOT
+        # `from_bounds`: that returns a FRACTIONAL window (col_off 5992.39 for
+        # CIV_Comoe, because the geometry's bounds are not on a pixel edge),
+        # and a plain read rounds it while a boundless read resamples it --
+        # two different half-pixel decisions over the same ground, which moved
+        # 12% of Comoé's population (163,203 -> 145,559 raw pixel sum). Round
+        # once, here, and both rasters see the same pixels.
+        col = int(round((minx - src.transform.c) / src.transform.a))
+        row = int(round((maxy - src.transform.f) / src.transform.e))
+        arr = src.read(1, window=Window(col, row, w, h),
+                       boundless=True, fill_value=0)
+    if arr.shape != tuple(shape):
+        return None
+    return arr
+
+
 def polygons_in(tile, geom_wgs84, min_area_m2=MIN_AREA_M2, log=print,
                 with_pop=True):
     """Built-up polygons of one tile inside a lon/lat geometry.
 
     Yields (shapely polygon in WGS84, stats dict) where stats carries:
 
-      extent_m2   area of the vectorised MASK — the ground the cluster covers
+      extent_m2   ground the built-up MASK covers: one whole 100 m pixel per
+                  pixel of the mask, counted over the same pixels as area_m2
       area_m2     SUM of the raster's own values inside it — built-up SURFACE
       population  SUM of GHS_POP inside it, or None if POP is unavailable
 
@@ -193,14 +244,10 @@ def polygons_in(tile, geom_wgs84, min_area_m2=MIN_AREA_M2, log=print,
                 f"population will be null")
             pop_path = None
         if pop_path is not None:
-            pop, pop_transform = _read_window(pop_path, geom_moll)
-            # Same grid, same window bounds => same shape. If it is not, the
-            # rasters are not aligned and a zonal sum would be nonsense: say
-            # nothing rather than something wrong.
-            if pop is not None and pop.shape != data.shape:
-                log(f"  ghsl: POP window {pop.shape} != BUILT_S {data.shape} "
-                    f"for {tile}; population will be null")
-                pop = None
+            pop = _read_window_like(pop_path, transform, data.shape)
+            if pop is None:
+                log(f"  ghsl: POP tile {tile} is not on the BUILT_S grid; "
+                    f"population will be null")
 
     binary = (data > PIXEL_THRESHOLD_M2).astype(np.uint8)
     if binary.sum() == 0:
@@ -244,12 +291,21 @@ def polygons_in(tile, geom_wgs84, min_area_m2=MIN_AREA_M2, log=print,
             area_m2 = float((surface[r0:r1, c0:c1] * mask).sum())
             population = (None if popvals is None
                           else float((popvals[r0:r1, c0:c1] * mask).sum()))
+            # EXTENT COUNTS THE SAME PIXELS THE SURFACE DOES. Using the clipped
+            # polygon's own area instead mixes two rulers: `surface` sums whole
+            # pixels selected by centre, while `clipped.area` is cut at the
+            # geometry's edge, so a settlement straddling the park boundary
+            # could report more surface than extent -- impossible, and it did
+            # for 3 rows (ZAF_Richtersveld, CIV_Comoe x2). One pixel is one
+            # pixel of extent, whatever fraction of it is built.
+            px = abs(transform.a * transform.e)
+            extent_m2 = float((binary[r0:r1, c0:c1] * mask).sum()) * px
         except Exception:
             continue
         simplified = to_wgs84(clipped).simplify(0.0001, preserve_topology=True)
         if simplified.is_empty:
             continue
-        yield simplified, {"extent_m2": clipped.area,
+        yield simplified, {"extent_m2": extent_m2,
                            "area_m2": area_m2,
                            "population": population}
 
@@ -277,6 +333,18 @@ def _window_transform(transform, row_off, col_off):
 # (the fourth writer of (park_id=<aoi>, feature_type), see its DELETE_EXCLUDE).
 AOI_PREFIX = "settlement_ghsl_"
 
+# A park backfill (scripts/backfill_settlement_surface.py) wants coordinate ids
+# for the same reason an AOI does -- it re-ingests a park that already has rows,
+# and a counter renumbers them so the tail of a shorter run stays behind as
+# stale polygons -- but it must NOT use AOI_PREFIX. aoi_clip.py copies a park's
+# settlement footprints into an overlapping AOI by substituting the id
+# (`settlement_<park>_x` -> `settlement_<aoi>_<park>_x`) and then deletes
+# everything except `settlement_ghsl_%`, which is the AOI's own tile ingest. A
+# park keyed with AOI_PREFIX would produce copies that look like the AOI's own
+# rows: undeletable, and double counted against the AOI's real tiles. So the
+# park keeps the plain prefix and only its SUFFIX becomes coordinates.
+PARK_PREFIX = "settlement_"
+
 
 def write_rows(conn, sql, rows, tries=8):
     """executemany that waits out a long-running writer.
@@ -303,8 +371,14 @@ def write_rows(conn, sql, rows, tries=8):
 
 
 def ingest_tile(conn, target_id, tile, geom_wgs84, coord_ids=False,
-                start_index=0, log=print):
-    """Vectorise one tile into feature_geometries. Returns rows written."""
+                start_index=0, log=print, prefix=AOI_PREFIX, seen=None):
+    """Vectorise one tile into feature_geometries. Returns rows written.
+
+    `coord_ids` keys each polygon by its centroid (deterministic, so re-running
+    a tile is a no-op) under `prefix`; see PARK_PREFIX for why the prefix is a
+    parameter and not a constant. `seen` is an optional set that collects every
+    feature_id written, which is how a caller that re-ingests over existing rows
+    knows which of the old ones are now stale."""
     import json
     from shapely.geometry import mapping
 
@@ -313,7 +387,7 @@ def ingest_tile(conn, target_id, tile, geom_wgs84, coord_ids=False,
     for poly, st in polygons_in(tile, geom_wgs84, log=log):
         c = poly.centroid
         if coord_ids:
-            fid = f"{AOI_PREFIX}{target_id}_{c.y:.5f}_{c.x:.5f}"
+            fid = f"{prefix}{target_id}_{c.y:.5f}_{c.x:.5f}"
         else:
             fid = f"settlement_{target_id}_{start_index + n}"
         # `area_m2` is built-up SURFACE (the raster's own values); `extent_m2`
@@ -333,6 +407,8 @@ def ingest_tile(conn, target_id, tile, geom_wgs84, coord_ids=False,
         b = poly.bounds
         rows.append(('settlement', fid, target_id, json.dumps(mapping(poly)),
                      json.dumps(props), b[0], b[1], b[2], b[3]))
+        if seen is not None:
+            seen.add(fid)
         n += 1
     if rows:
         write_rows(conn, """

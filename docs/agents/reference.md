@@ -108,7 +108,23 @@ icon('zap', 'warning', 'lg')  // → <i class="icon-zap icon-color-warning icon-
 
 // Convert backend emojis to icons
 emojiToIcon('🔥')  // → <i class="icon-flame icon-color-fire"></i>
+
+// Escape backend prose AND convert its emoji in one step
+insightHtml(s)  // for any API string that carries a leading glyph
 ```
+
+⚠️ **`escapeHtml()` alone is not enough for text the backend wrote.**
+`/api/parks/{id}/stats` returns `insights` as sentences that *start* with an
+emoji (`"🏘️ 20 settlements detected…"`, `srv/park_stats_handlers.go`), and the
+starred-report panel escaped them and nothing more — so the one surface that
+shows them showed raw glyphs while the rest of the app used the font.
+`emojiToIcon` had existed for exactly this since the migration and was wired
+only into the fire-alert list. Use `insightHtml()` (globe.html): it escapes
+first, then maps each glyph, and **drops** unmapped ones rather than passing
+them through. Markdown export strips them the same way (`plain`).
+
+An emoji in a Go string is therefore not a bug by itself — it is the API's
+*token* for an icon. Adding one means adding its mapping in `emojiToIcon`.
 
 ### Icon Colors
 
@@ -141,6 +157,7 @@ emojiToIcon('🔥')  // → <i class="icon-flame icon-color-fire"></i>
 | ☀️ | `icon-sun` | Dry season |
 | 🌧️ | `icon-cloud-rain` | Rainy season |
 | 🗺️ | `icon-map` | Map/infrastructure |
+| 👍 | `icon-thumbs-up` | Good response rate |
 
 ### Usage Locations
 
