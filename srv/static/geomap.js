@@ -245,18 +245,97 @@
     function skillTable() {
         if (skillIdx) return skillIdx;
         const s = stdLegend().affinity_skill || {};
-        skillIdx = { eval: s.eval || null, rows: s.scores || [] };
+        skillIdx = {
+            eval: s.eval || null, rows: s.scores || [],
+            truths: s.truths || {}, tooFew: s.too_few || {},
+            spread: s.strata_spread || {}
+        };
         return skillIdx;
+    }
+
+    /* ── EVERY LIST THAT SCORED ONE CLAIM, NEVER THE FIRST ONE ──────────
+     *
+     * Three independent occurrence lists reach the CAR and they do not agree.
+     * On gold junctions IPIS's 914 field visits say 2.4x and Tearline's
+     * imagery census of eight mining permits says 0.0x on the same claim; on
+     * gold units both say "no better than area". A UI that indexes by
+     * (commodity, kind) and keeps what it finds shows whichever list the server
+     * happened to serialise first and calls it the score — and "2.4x" and
+     * "0.0x" are not a rounding apart, they are opposite advice.
+     *
+     * So the client collects them all and forms a verdict over the set:
+     *
+     *   'concentrates'        every list puts the claim above random ground
+     *   'no better than area' every list puts it at or below
+     *   'mixed'               the lists straddle 1.0 — A RESULT, not a gap. It
+     *                         means the answer depends on who was looking, and
+     *                         a reader deciding where to walk must be told that
+     *                         rather than shown the flattering half.
+     *   'unmeasured'          nobody scored it here
+     *
+     * STRATA ARE NOT LISTS. car/ipis_armed and car/ipis_calm are one survey cut
+     * by whether the surveyors saw an armed actor at the pit; they cannot
+     * corroborate each other, and counting them would let one survey outvote
+     * two others two-to-one. They arrive as `spread` instead: how far the
+     * pooled number moves with the stratifier.
+     */
+    function skillEvidence(commodity, kind, minWeight) {
+        const T = skillTable(), floor = minWeight || 1;
+        const best = new Map();
+        T.rows.forEach(r => {
+            if (r.commodity !== commodity || r.kind !== kind) return;
+            if (r.min_weight > floor) return;
+            if (r.stratum_of) return;
+            const id = r.evidence_id || r.scope_sheet || '';
+            const cur = best.get(id);
+            if (!cur || r.min_weight > cur.min_weight) best.set(id, r);
+        });
+        const scores = Array.from(best.values());
+        let above = 0, below = 0;
+        scores.forEach(r => { if (r.lift > 1.0) above++; else below++; });
+        let verdict = 'unmeasured';
+        if (above && below) verdict = 'mixed';
+        else if (above) verdict = 'concentrates';
+        else if (below) verdict = 'no better than area';
+        // Lists that hold the commodity but under the floor at which a lift
+        // means anything. "We looked and there were four" is a different
+        // statement from "nobody looked", and only this can tell them apart.
+        const tooFew = {};
+        Object.keys(T.tooFew || {}).forEach(eid => {
+            const n = T.tooFew[eid][commodity];
+            if (n !== undefined) tooFew[eid] = n;
+        });
+        return { scores: scores, verdict: verdict, tooFew: tooFew,
+                 spread: skillSpread(commodity, kind, floor) };
+    }
+
+    /** How far one survey's strata moved on this claim. >1 means the pooled
+     *  lift depends on something that is not the rock — on CAR gold units it is
+     *  1.55x between mines where IPIS recorded an armed actor and mines where
+     *  it did not (capture p=0.0033). The eval names its sections in the
+     *  plural; the score rows use the singular. */
+    function skillSpread(commodity, kind, floor) {
+        const per = (skillTable().spread || {});
+        for (const sheet of Object.keys(per)) {
+            if (!sheetActive(sheet)) continue;   // drawn, not merely nearby
+            const v = per[sheet][commodity + '|' + kind + 's|w' + floor];
+            if (v) return v;
+        }
+        return 0;
     }
 
     /** The score to quote for one claim: the measurement at the highest floor
      *  at or below the one the reader is looking at, so "any" is never
-     *  annotated with the flattering "classic" number. */
+     *  annotated with the flattering "classic" number.
+     *
+     *  ⚠️ ONE ROW CANNOT SAY "MIXED". Kept for the single badge that annotates
+     *  one grade; any surface a reader decides from must use skillEvidence(). */
     function skillFor(commodity, kind, minWeight) {
         let best = null;
         skillTable().rows.forEach(r => {
             if (r.commodity !== commodity || r.kind !== kind) return;
             if (r.min_weight > (minWeight || 1)) return;
+            if (r.stratum_of) return;
             if (!best || r.min_weight > best.min_weight) best = r;
         });
         return best;
@@ -267,12 +346,166 @@
      *  baseline is 23%. */
     function skillPhrase(r) {
         if (!r) return 'not measured against any occurrence dataset';
-        const x = (r.lift >= 10 ? Math.round(r.lift) : r.lift.toFixed(1)) + '\u00d7';
+        const x = fmtLift(r.lift);
         return r.verdict === 'concentrates'
             ? 'holds ' + x + ' more of the known workings than the same amount of ground '
               + 'picked at random (' + r.scope + ', n=' + r.n + ')'
             : 'no better than picking that much ground at random (' + x + ', '
               + r.scope + ', n=' + r.n + ')';
+    }
+
+    /* ── A SCORE IS A CLAIM ABOUT GROUND, AND THE READER IS LOOKING AT A
+     *    VIEWPORT ─────────────────────────────────────────────────────
+     *
+     * The measurement was made on ONE sheet, against one country's occurrence
+     * list. "Gold junctions concentrate 2.32x" is a fact about the Central
+     * African basement; printed over the Tanzanian craton it is a number
+     * nobody measured — the same failure as the score's absence, arriving from
+     * the other side. A panel that quotes it everywhere has generalised a
+     * survey of one country to a continent on the reader's behalf.
+     *
+     * So every quote carries WHERE, and "where" is tested against the map's
+     * own bounds rather than against which sheet is switched on: sheets are
+     * provenance in this UI (one Geology toggle, chips that act on all of
+     * them), and the reader's subject is what is on screen.
+     *
+     * The extent is the sheet's own `bounds`, straight from /api/geomap — the
+     * same box that bounds its tile source. Never a typed box: invariant 2.
+     */
+    function sheetInView(id) {
+        const b = sheets[id] && sheets[id].bounds;
+        if (!b || b.length !== 4) return false;
+        if (!map || !map.getBounds) return false;
+        let v;
+        try { v = map.getBounds(); } catch (e) { return false; }
+        if (!v) return false;
+        return !(b[2] < v.getWest() || b[0] > v.getEast() ||
+                 b[3] < v.getSouth() || b[1] > v.getNorth());
+    }
+
+    /** Is this sheet's layer actually on the reader's screen: present, drawn
+     *  and within the viewport. The subject of every score sentence. */
+    function sheetActive(id) {
+        return !!((sheets[id] || {}).available && st(id).on && sheetInView(id));
+    }
+
+    /** The ground a score speaks for, in words a park manager uses — never a
+     *  sheet id. The panel demoted sheets to provenance everywhere else, and a
+     *  score must not be the one surface that teaches the reader "car". */
+    function skillPlace(sheetId) {
+        const ev = skillTable().eval || {};
+        if (ev.sheet === sheetId && ev.scope_place) return ev.scope_place;
+        const s = sheets[sheetId];
+        return (s && s.catalogue && s.catalogue.short) || sheetId;
+    }
+
+    /** A lift, printed the one way — so two surfaces cannot round it
+     *  differently and read as two measurements.
+     *
+     *  Two decimals below 2x, because the interesting question down there is
+     *  which side of 1.0 the number is on: the CAR diamond units score 0.98,
+     *  and `toFixed(1)` prints that as "1.0x" — parity, in the colour of a
+     *  failure. A rounding that crosses the verdict's own threshold is a
+     *  rounding that contradicts the verdict beside it. */
+    function fmtLift(l) {
+        if (l >= 10) return Math.round(l) + '\u00d7';
+        if (l >= 2) return l.toFixed(1) + '\u00d7';
+        return l.toFixed(2) + '\u00d7';
+    }
+
+    /** The score for one claim, WITH whether it speaks for what is on screen.
+     *
+     *  `where` is the whole point and callers must branch on it:
+     *    'here'      — measured on ground in this view; a number to act on.
+     *    'elsewhere' — measured, but on other ground. It is evidence the RULE
+     *                  is not noise, and it is not a score for this view.
+     *    'none'      — never measured. Print that word (invariant: an absent
+     *                  number beside a 2.3x reads as a low score, not no score).
+     */
+    function skillHere(commodity, kind, minWeight) {
+        const ev = skillEvidence(commodity, kind, minWeight);
+        // IN-VIEW FIRST, and every list that measured this ground - not the
+        // first row that happens to match. Two lists can score one claim on one
+        // sheet and disagree, and picking one of them by array order is how a
+        // panel comes to recommend ground its own evidence argues against.
+        // DRAWN, not merely nearby. A sheet whose bounds reach the viewport but
+        // whose layer is switched OFF is not on screen: quoting its score would
+        // annotate the reader's gold selection with a measurement of ground they
+        // are not looking at. This bit off by itself: over the Central African
+        // basin at z6 the Sudan and Tanzania sheet envelopes both reach the
+        // view, so a reader drawing only the CAR was shown Sudan's 1.91x and
+        // told the evidence was mixed, when the CAR's own two lists agree.
+        const here = ev.scores.filter(r => sheetActive(r.scope_sheet));
+        if (!here.length) {
+            const away = ev.scores[0] || null;
+            if (!away) {
+                return { score: null, where: 'none', place: '', whole: false,
+                         all: [], verdict: 'unmeasured', tooFew: ev.tooFew,
+                         spread: 0 };
+            }
+            return { score: away, where: 'elsewhere',
+                     place: skillPlace(away.scope_sheet), whole: false,
+                     all: ev.scores, verdict: ev.verdict, tooFew: ev.tooFew,
+                     spread: 0 };
+        }
+        let above = 0, below = 0;
+        here.forEach(r => { if (r.lift > 1.0) above++; else below++; });
+        // MIXED IS THE VERDICT WHEN THE LISTS STRADDLE 1.0, and `score` is then
+        // the WEAKEST of them on purpose: whatever a caller does with a single
+        // row, it must not be the flattering one. A caller that can say the
+        // word "mixed" reads `verdict` and ignores this.
+        const verdict = (above && below) ? 'mixed'
+            : (above ? 'concentrates' : 'no better than area');
+        // WHY IT IS MIXED, because the two reasons need different sentences and
+        // conflating them was a real bug: at zoom 5 over the Central African
+        // basin the viewport also reaches Sudan, so "the surveys disagree"
+        // appeared for gold units when in truth the CAR's two lists AGREE
+        // (0.63x, 0.06x) and it is SUDAN that scores 1.91x. One is an open
+        // question about one piece of ground; the other is the model working in
+        // one country and not another, which is the thing this layer exists to
+        // show. 'surveys' outranks 'places': if any single country's own lists
+        // contradict each other, that is the more serious statement.
+        let reason = '';
+        if (verdict === 'mixed') {
+            const bySheet = {};
+            here.forEach(r => {
+                const b = bySheet[r.scope_sheet] || (bySheet[r.scope_sheet] = {});
+                if (r.lift > 1.0) b.up = true; else b.down = true;
+            });
+            const contested = Object.keys(bySheet)
+                .filter(k => bySheet[k].up && bySheet[k].down);
+            reason = contested.length ? 'surveys' : 'places';
+        }
+        const lead = (verdict === 'mixed')
+            ? here.reduce((a, b) => (a.lift <= b.lift ? a : b))
+            : here[0];
+        // MEASURED HERE, BUT IS "HERE" ALL OF IT? A view spanning the CAR and
+        // Tanzania reaches the measured ground and two countries of unmeasured
+        // ground, and "measured 0.63x here" over that view claims the whole
+        // screen. `whole` is false then, and the caller must qualify the word
+        // "here" — it is a fraction of the view, named by its country.
+        const scoped = {};
+        here.forEach(r => { scoped[r.scope_sheet] = true; });
+        const other = order.some(id => !scoped[id] && sheetActive(id));
+        return { score: lead, where: 'here', place: skillPlace(lead.scope_sheet),
+                 whole: !other, all: here, verdict: verdict, reason: reason,
+                 tooFew: ev.tooFew, spread: ev.spread };
+    }
+
+    /** Which measured grounds the view reaches, as one string.
+     *
+     *  The panel stays open while the reader pans, so a verdict keyed to the
+     *  viewport goes stale the moment they leave the measured sheet — and a
+     *  stale "measured 0.63x here" is exactly the invented number this whole
+     *  mechanism exists to prevent. maplegend.js compares this on `idle` and
+     *  rebuilds only when it changes, so panning within one country is free.
+     */
+    function skillScopeStamp() {
+        // Every sheet ON and in view, not only the measured ones: `whole`
+        // (above) turns on whether the view reaches unmeasured ground too, so
+        // panning from the CAR alone to the CAR-plus-Tanzania changes what the
+        // panel may say even though the measured sheet never left.
+        return order.filter(sheetActive).sort().join(',');
     }
 
     function ageMeta(key) {
@@ -810,15 +1043,45 @@
      * the reader already has three dots to read. It is a sentence, because the
      * finding it carries is a sentence — "this rule was measured and it is not
      * better than picking area at random" has no swatch.
+     *
+     * And it says WHERE. A tip is opened over one polygon, so it is the
+     * surface most likely to be read as a statement about that polygon: a
+     * 2.32x measured in the CAR, quoted over a Tanzanian unit, is a number
+     * about the wrong ground. Off the measured sheet the badge names the
+     * measurement's place and says the view is unmeasured.
      */
     function skillBadgeHTML(commodity, kind, weight) {
-        const r = skillFor(commodity, kind, weight);
-        const col = !r ? '#6b7280' : (r.verdict === 'concentrates' ? '#86efac' : '#fca5a5');
-        const txt = !r ? 'skill unmeasured for ' + commodity.replace(/_/g, ' ')
-            : (r.verdict === 'concentrates' ? 'measured ' : 'measured ')
-              + (r.lift >= 10 ? Math.round(r.lift) : r.lift.toFixed(1)) + '\u00d7 vs random ground'
-              + (r.verdict === 'concentrates' ? '' : ' \u2014 i.e. no better')
-              + ' (' + r.scope + ')';
+        const h = skillHere(commodity, kind, weight);
+        const r = h.score;
+        const name = commodity.replace(/_/g, ' ');
+        let col, txt;
+        if (!r) {
+            col = '#6b7280';
+            txt = 'skill unmeasured for ' + name;
+        } else if (h.where === 'here' && h.verdict === 'mixed') {
+            // Violet, not green and not red: the badge is opened over one
+            // polygon and is the surface most likely to be read as a verdict
+            // about it, so a claim two surveys contradict each other on must
+            // not wear either verdict's colour.
+            col = '#c4b5fd';
+            txt = (h.reason === 'places'
+                    ? 'differs by country in view \u2014 '
+                    : 'measured twice here, answers disagree \u2014 ') +
+                (h.all || []).map(x => fmtLift(x.lift) + ' ' + x.scope).join(' vs ');
+        } else if (h.where === 'elsewhere') {
+            // Measured, elsewhere. Grey, not green: the finding is about other
+            // ground, and colouring it by its verdict would rank this view on
+            // a measurement this view had no part in.
+            col = '#9ca3af';
+            txt = 'unmeasured here — ' +
+                (r.verdict === 'concentrates' ? 'scores ' : 'scores only ') +
+                fmtLift(r.lift) + ' in ' + h.place;
+        } else {
+            col = r.verdict === 'concentrates' ? '#86efac' : '#fca5a5';
+            txt = 'measured ' + fmtLift(r.lift) + ' vs random ground'
+                + (r.verdict === 'concentrates' ? '' : ' \u2014 i.e. no better')
+                + ' (' + r.scope + ')';
+        }
         return `<div style="color:${col};font-size:10px;margin:2px 0 0 14px;line-height:1.35;"
             title="${escapeHtml(skillPhrase(r))}">${escapeHtml(txt)}</div>`;
     }
@@ -1124,6 +1387,16 @@
          *  the UI invented. */
         skill: skillFor,
         skillPhrase: skillPhrase,
+        /** The score AND whether it speaks for the current viewport. Prefer
+         *  this to skill(): see skillHere(). */
+        skillHere: skillHere,
+        /** The measured grounds the viewport reaches, for a surface that must
+         *  rebuild when they change. See skillScopeStamp(). */
+        skillScope: skillScopeStamp,
+        skillLift: fmtLift,
+        /** Every list's measurement of one claim, with a verdict over the set
+         *  ('mixed' when they straddle 1.0). See skillEvidence(). */
+        skillEvidence: skillEvidence,
         /** Provenance of the measurement, for a surface that quotes it. */
         skillEval: () => skillTable().eval,
         shared: () => shared,

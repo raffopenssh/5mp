@@ -1631,7 +1631,267 @@
     function skillNote(commodity, kind, min) {
         if (!GeoMap.skill) return '';
         var r = GeoMap.skill(commodity, kind, min || 1);
-        return GeoMap.skillPhrase(r);
+        var phrase = GeoMap.skillPhrase(r);
+        var h = mxSkill(commodity, kind, min);
+        // WHERE, always. Without it the sentence is read as a statement about
+        // the map on screen, and the measurement was made on one sheet.
+        if (h.where === 'elsewhere') {
+            return 'not measured on the ground you are looking at; in ' + h.place +
+                   ' it ' + phrase;
+        }
+        // TWO LISTS, TWO ANSWERS: the sentence names both rather than picking.
+        // Two DIFFERENT reasons for that, and they need different words --
+        // see skillHere()'s `reason`.
+        if (h.verdict === 'mixed') {
+            return (h.reason === 'places'
+                ? 'scores differently on the countries in view \u2014 '
+                : 'measured more than once on this ground, and the answers disagree \u2014 ') +
+                evidenceText(h);
+        }
+        // AND WHAT IS STILL UNMEASURED, when a list holds the commodity but too
+        // few sites to score it. Eastern CAR is the case: 4 gold sites, under
+        // the floor, so "no one has checked there" is the honest addition to a
+        // number measured in the west.
+        var few = tooFewText(h);
+        if (few) {
+            return phrase + '; elsewhere only ' + few + ' — too few to score';
+        }
+        return phrase;
+    }
+
+    /* == DO NOT DRAW A CHOOSER THAT IS MEASURED NOT TO WORK HERE ==========
+     *
+     * b1ac4dc measured the two halves of this panel and they disagree: in the
+     * CAR the gold JUNCTIONS hold 2.3x more of the known workings than the
+     * same amount of ground picked at random, and the gold UNITS hold FEWER
+     * than random ground does (0.63x). Both were rendered in the same amber,
+     * with the same three dots, under the same disclaimer -- so the half that
+     * fails and the half that works were typographically identical, and a
+     * reader asking "where do I prepare for the next gold rush" was as likely
+     * to be sent to the wrong one. A grade drawn without its score beside it
+     * reads as a ranking (invariant 12).
+     *
+     * The interactive mixer stays; what changes is that its INK carries the
+     * measurement:
+     *
+     *  - a cell whose kind is measured, HERE, not to beat random ground is
+     *    drawn grey and hollow (`.unproven`), never amber. It stays present,
+     *    tappable and counted -- removing it would claim the sheet does not
+     *    mention the commodity, and the reader may well want that ground for
+     *    another reason. It simply stops looking like a recommendation.
+     *  - measured to beat random ground here: amber, and the panel says so.
+     *  - nothing measured on this ground: amber as before. It is an inference,
+     *    which is what it has always been, and "nobody has checked" is not the
+     *    same statement as "checked and it fails".
+     *
+     * mxSkill/mxVerdict are the ONE place that decision is made, so the two
+     * tables, the ladder, the tips and the routing line cannot disagree about
+     * a commodity.
+     */
+    function mxSkill(commodity, kind, min) {
+        if (typeof GeoMap === 'undefined' || !GeoMap.skillHere) {
+            return { score: null, where: 'none', place: '' };
+        }
+        return GeoMap.skillHere(commodity, kind,
+            min || (GeoMap.minWeight ? GeoMap.minWeight() : 1));
+    }
+
+    /* Which measured grounds the viewport last reached. Compared on `idle`; see
+     * watchMap(). A string rather than a boolean because a view can reach two
+     * measured sheets at once, and "which" is what changes the verdicts. */
+    var skillScopeSeen = null;
+
+    /* Does this (commodity, kind) chooser work on the ground IN VIEW?
+     *   'works'      -- every list that measured here puts it above 1
+     *   'fails'      -- every list puts it at or below 1: worse than area
+     *   'split'      -- the lists that measured here DISAGREE across 1
+     *   'unmeasured' -- no measurement speaks for this view
+     * Four states, never two. "fails", "nobody looked" and "the two surveys of
+     * this country contradict each other" are three different statements, and
+     * only the first is a reason to draw a grade as a dead end. */
+    function mxVerdict(commodity, kind, min) {
+        var h = mxSkill(commodity, kind, min);
+        if (h.where !== 'here' || !h.score) return 'unmeasured';
+        // FOUR STATES, because the CAR has three independent occurrence lists
+        // and on gold junctions they disagree: IPIS's field visits say 2.4x,
+        // Tearline's permit imagery census says 0.0x. Folding that into either
+        // 'works' or 'fails' picks a side of an open question on the reader's
+        // behalf -- and whichever side is picked, the panel is then confidently
+        // wrong for half the evidence. 'split' draws like neither.
+        if (h.verdict === 'mixed') return 'split';
+        return h.verdict === 'concentrates' ? 'works' : 'fails';
+    }
+
+    /* The evidence behind a verdict, as a sentence a reader can act on.
+     *
+     * Every list, named by its place and its n, in one line -- so "measured"
+     * cannot hide the fact that two surveys of the same country reached
+     * opposite conclusions. */
+    function evidenceText(h) {
+        if (!h || !h.all || !h.all.length) return '';
+        return h.all.map(function (r) {
+            return (GeoMap.skillLift ? GeoMap.skillLift(r.lift) : r.lift.toFixed(2) + 'x') +
+                   ' (' + r.scope + ', n=' + r.n + ')';
+        }).join(' vs ');
+    }
+
+    /* Lists that hold this commodity but too few sites to score, as words.
+     *
+     * "Nobody has checked eastern CAR" and "checked, and it fails" are
+     * different statements; only this one distinguishes them, and it is the
+     * honest answer for the half of the country IPIS never reached. */
+    function tooFewText(h) {
+        if (!h || !h.tooFew) return '';
+        var parts = Object.keys(h.tooFew).map(function (eid) {
+            return h.tooFew[eid] + ' site(s)';
+        });
+        return parts.length ? parts.join(', ') : '';
+    }
+
+    /* A lift, printed the one way, through GeoMap: two surfaces rounding one
+     * measurement differently read as two measurements. */
+    function liftText(h) {
+        if (!h || !h.score) return '';
+        return GeoMap.skillLift ? GeoMap.skillLift(h.score.lift)
+                                : h.score.lift.toFixed(1) + '\u00d7';
+    }
+
+    /* The word "here", qualified when "here" is only part of the view.
+     *
+     * A viewport spanning the CAR and Tanzania reaches the measured ground and
+     * two countries of unmeasured ground; "measured 0.63x here" over that view
+     * claims the whole screen, which is the same over-reach as quoting the
+     * number off-sheet. So when the view straddles, "here" becomes "in the
+     * Central African Republic" — the place, never the sheet id. */
+    function hereWords(h) {
+        if (!h || h.where !== 'here') return 'here';
+        return h.whole ? 'here' : 'in ' + h.place;
+    }
+
+    /* == THE ANSWER THE READER CAME FOR ==================================
+     *
+     * A park manager opens this panel with one question: where do I prepare
+     * for the next gold rush (or cobalt, or coltan). On the one sheet where we
+     * can check, the panel's honest answer is "not from the rock types -- from
+     * the contacts between them", and nothing on screen said it: the reader
+     * had to notice that two tooltips disagreed.
+     *
+     * So with a commodity picked, the panel states the measured finding for
+     * that commodity on the ground in view and -- when one half works and the
+     * other does not -- carries the route to the half that works as a button
+     * in the same line. Same shape as the "show all" escape: a statement about
+     * the map with its action in it.
+     *
+     * When nothing here is measured it says THAT, in those words. A confident
+     * sentence would be worse than the old amber, because it would look like a
+     * measurement. */
+    function skillRouteHTML(sel, min, viewMode) {
+        if (!sel || sel.size !== 1) return '';
+        var com = Array.from(sel)[0];
+        var name = com.replace(/_/g, ' ');
+        var u = mxSkill(com, 'unit', min), j = mxSkill(com, 'junction', min);
+        var uv = mxVerdict(com, 'unit', min), jv = mxVerdict(com, 'junction', min);
+        var why = (u.score ? 'Rocks: ' + skillNote(com, 'unit', min) + '. ' : '') +
+                  (j.score ? 'Junctions: ' + skillNote(com, 'junction', min) + '. ' : '') +
+                  'Measured against an independent list of workings and never tuned to it ' +
+                  '\u2014 the score is not a target.';
+        if (uv === 'unmeasured' && jv === 'unmeasured') {
+            var place = u.place || j.place;
+            return '<div class="ml-skill unmeasured"><i class="icon-help-circle"></i>' +
+                '<span title="' + esc('The model has only been scored where we hold an ' +
+                    'independent list of workings' + (place ? ' (' + place + ')' : '') +
+                    '. What is drawn here is inference from rock type, which is what it has ' +
+                    'always been \u2014 it is simply not known to work on this ground.') + '">' +
+                'No one has checked this model against real workings here' +
+                (place ? ' \u2014 only in ' + esc(place) : '') + '</span></div>';
+        }
+        var cls = 'ml-skill', ico = 'icon-target', msg, act = '';
+        // THE ROUTE IS ONLY A ROUTE FROM SOMEWHERE ELSE. A "use junctions"
+        // button under the junction table is a control whose job is already
+        // done — tapping it is a no-op, which is the "reads as broken" failure
+        // this panel keeps removing. The SENTENCE stays in both tabs (it is the
+        // finding, and the reader arriving by a share link needs it); only the
+        // button is conditional on being in the other half.
+        var here = (viewMode === 'junction') ? 'junction' : 'rock';
+        // Which of the two carries the measurement decides which one's "here"
+        // is quoted; they are the same sheet, so either does — but it must be
+        // one of the two that actually HAS a score.
+        var W = hereWords(j.score ? j : u);
+        // DISAGREEMENT IS REPORTED BEFORE ANY ROUTE IS OFFERED. On CAR gold
+        // junctions IPIS measures 2.4x and Tearline's permit census 0.0x on the
+        // same claim; "use junctions" there would be routing a reader on one of
+        // two contradictory measurements. The open question is the finding, and
+        // the reader is the one who gets to weigh a national field survey
+        // against a 4,000 km2 imagery census -- but only if we say both exist.
+        if (jv === 'split' || uv === 'split') {
+            var sp = (uv === 'split') ? u : j;
+            var half = (uv === 'split') ? 'rock types' : 'junctions';
+            cls += ' split'; ico = 'icon-help-circle';
+            if (sp.reason === 'places') {
+                // NOT A CONTRADICTION: the model works on one country's ground
+                // and not on another's, and both are in view. That is a real
+                // finding about the model, and the words for a contradiction
+                // would turn it into doubt about the data. Conflating the two
+                // was a live bug: over the Central African basin at zoom 5 the
+                // viewport also reaches Sudan, and the CAR's own two lists
+                // AGREE about gold units (0.63x, 0.06x) while Sudan scores
+                // 1.91x -- "the surveys disagree" was the wrong sentence for it.
+                msg = '<b>' + esc(name) + ': it depends where you are looking.</b> ' +
+                      'The ' + half + ' score differently on the countries in ' +
+                      'view \u2014 ' + esc(evidenceText(sp)) + '. Zoom to one ' +
+                      'country for a verdict that speaks for your ground.';
+            } else {
+                msg = '<b>' + esc(name) + ': the surveys disagree.</b> For the ' + half +
+                      ' ' + esc(W) + ', independent lists of known workings do not ' +
+                      'agree whether this beats random ground \u2014 ' +
+                      esc(evidenceText(sp)) + '. Treat it as an open question, not ' +
+                      'as a target.';
+            }
+        } else if (jv === 'works' && uv === 'fails') {
+            cls += ' route';
+            msg = '<b>' + esc(name) + ': the contacts, not the rock types.</b> Graded ' +
+                  'junctions hold ' + liftText(j) + ' more of the known workings than random ' +
+                  'ground ' + esc(W) + '; these rock types hold ' + liftText(u) + ' \u2014 fewer.';
+            if (here !== 'junction') {
+                act = '<button type="button" title="' + esc('Open the Junctions table with ' + name +
+                          ' carried over \u2014 the half of this model measured to work here') + '"' +
+                      ' onclick="event.stopPropagation();MapLegend.mxMode(\'junction\')">' +
+                      '<i class="icon-git-merge"></i>use junctions</button>';
+            }
+        } else if (uv === 'works' && jv === 'fails') {
+            cls += ' route';
+            msg = '<b>' + esc(name) + ': the rock types, not the contacts.</b> The graded units ' +
+                  'hold ' + liftText(u) + ' more of the known workings than random ground ' +
+                  esc(W) + '; the junctions hold ' + liftText(j) + '.';
+            if (here !== 'rock') {
+                act = '<button type="button" title="' + esc('Back to the rock table \u2014 the half ' +
+                          'measured to work for ' + name + ' here') + '"' +
+                      ' onclick="event.stopPropagation();MapLegend.mxMode(\'rock\')">' +
+                      '<i class="icon-table-2"></i>use rocks</button>';
+            }
+        } else if (uv === 'fails' && jv === 'fails') {
+            cls += ' bad'; ico = 'icon-ban';
+            msg = 'Neither half of this model beats random ground for <b>' + esc(name) +
+                  '</b> ' + esc(W) + ' (rocks ' + liftText(u) + ', junctions ' + liftText(j) +
+                  '). Read it as background geology, not as a target.';
+        } else if (uv === 'works' && jv === 'works') {
+            msg = 'Both halves beat random ground for <b>' + esc(name) + '</b> ' + esc(W) +
+                  ' \u2014 rocks ' + liftText(u) + ', junctions ' + liftText(j) + '.';
+        } else {
+            // One measured, the other never was. The measured half speaks, and
+            // the silent half is named as SILENT, not as weaker.
+            var m = (uv === 'unmeasured') ? j : u;
+            var mw = (uv === 'unmeasured') ? 'junctions' : 'rock types';
+            var sw = (uv === 'unmeasured') ? 'rock types' : 'junctions';
+            var ok = ((uv === 'unmeasured') ? jv : uv) === 'works';
+            if (!ok) { cls += ' bad'; ico = 'icon-ban'; }
+            msg = 'For <b>' + esc(name) + '</b> the ' + mw + ' ' +
+                  (ok ? 'hold ' + liftText(m) + ' more of the known workings than random ground'
+                      : 'do no better than random ground (' + liftText(m) + ')') +
+                  ' ' + esc(hereWords(m)) + '; the ' + sw + ' have never been scored.';
+        }
+        return '<div class="' + cls + '"><i class="' + ico + '"></i>' +
+            '<span title="' + esc(why) + '">' + msg + '</span>' + act + '</div>';
     }
 
     function openGeoMenu(btn) {
@@ -1887,11 +2147,24 @@
         var ANS = commodityAnswers();
         rows.forEach(function (r) {
             var k = r.k, on = commodityOn(k);
+            // THE ROW CARRIES ITS OWN VERDICT FOR THIS TABLE'S KIND. The rock
+            // table offers units, so it is scored on units: in the CAR the
+            // gold units are measured at 0.63x, and a gold row drawn like the
+            // rest is the panel recommending ground that is worked LESS often
+            // than the sheet as a whole. Marked, never hidden — hiding it
+            // would say no sheet here mentions gold.
+            var uV = mxVerdict(k, 'unit', min);
+            var jV = mxVerdict(k, 'junction', min);
+            var uS = mxSkill(k, 'unit', min);
             // A commodity with nothing on screen keeps its row, greyed: an
             // absent row reads as "no sheet here mentions cobalt", which is a
             // different and wrong statement.
             html += '<button type="button" data-mx="row:' + esc(k) + '" class="ml-mx-row' + (on ? ' on' : '') +
-                (r.cells ? '' : ' dead') + '" role="menuitemcheckbox" aria-checked="' + on + '"' +
+                (r.cells ? '' : ' dead') +
+                (uV === 'fails' ? ' unproven' : '') +
+                (uV === 'split' ? ' contested' : '') +
+                (uV === 'works' ? ' proven' : '') + '"' +
+                ' role="menuitemcheckbox" aria-checked="' + on + '"' +
                 ' title="' + esc(r.cells
                     ? (on ? 'Stop showing ' + k.replace(/_/g, ' ') + ' hosts'
                           : 'Show the ' + idx[k] + ' unit(s) that can host ' +
@@ -1914,9 +2187,23 @@
                     // do worse than random ground, and a row that offers the
                     // units without saying so is selling the junctions' number.
                     ' \u2014 rocks: ' + esc(skillNote(k, 'unit', min)) +
-                    '; junctions: ' + esc(skillNote(k, 'junction', min)) + '"' +
+                    '; junctions: ' + esc(skillNote(k, 'junction', min)) +
+                    (uV === 'fails' && jV === 'works'
+                        ? '. FOR THIS COMMODITY THE ROCK TYPES ARE THE WRONG HALF of this ' +
+                          'model here \u2014 use the Junctions tab.' : '') + '"' +
                 ' onclick="event.stopPropagation();MapLegend.geoCommodity(\'' + esc(k) + '\')">' +
-                '<span class="mode-mark check"></span>' + esc(k.replace(/_/g, ' ')) + '</button>';
+                '<span class="mode-mark check"></span>' + esc(k.replace(/_/g, ' ')) +
+                // The measured lift, ON the row that offers the choice. A
+                // sentence in a tooltip is not read before a tap; this is.
+                // Absent when unmeasured — a blank is honest, a "?" is a grade.
+                (uV === 'unmeasured' ? ''
+                    : '<span class="ml-mx-lift ' + uV + '" title="' +
+                      esc(uV === 'split'
+                          ? 'The lists disagree here: ' + evidenceText(uS) +
+                            '. The lower number is shown, never the flattering one.'
+                          : skillNote(k, 'unit', min)) + '">' +
+                      (uV === 'split' ? '?\u2009' : '') + liftText(uS) + '</span>') +
+                '</button>';
             ages.forEach(function (a) {
                 var w = A.g[k + '|' + a] || 0;
                 var n = A.n[k + '|' + a] || 0;
@@ -1929,21 +2216,42 @@
                 var picked = GeoMap.cellPicked && GeoMap.cellPicked(k, a);
                 html += '<button type="button" data-mx="cell:' + esc(k) + '|' + esc(a) +
                     '" class="ml-mx-cell g' + w + (faded ? ' below' : '') +
+                    // Measured NOT to work on the ground in view: grey, not
+                    // amber. The gesture is unchanged — the reader can still
+                    // draw it — but the cell stops reading as a target.
+                    // 'contested' is its own ink: two surveys of this ground
+                    // disagree, which is neither a target nor a dead end.
+                    (uV === 'fails' ? ' unproven' : '') +
+                    (uV === 'split' ? ' contested' : '') +
                     (picked ? ' picked' : (on ? ' on' : '')) + '"' +
                     ' aria-pressed="' + (!!picked) + '"' +
-                    ' title="' + esc(meta.label + ' — ' + WEIGHT_WHY[w] + ' for ' +
+                    ' title="' + esc(meta.label + ' \u2014 ' + WEIGHT_WHY[w] + ' for ' +
                         k.replace(/_/g, ' ') + ' (' + n + ' unit(s))' +
-                        (picked ? '. Picked — tap to drop it from the map.'
+                        (uV === 'fails'
+                            ? '. MEASURED ' + hereWords(uS).toUpperCase() + ' AT ' + liftText(uS) +
+                              ' vs random ground: this grade does not pick out worked ground ' +
+                              'there' + (jV === 'works' ? ' \u2014 the junctions do' : '') + '.'
+                            : uV === 'works'
+                                ? '. Measured ' + hereWords(uS) + ' at ' + liftText(uS) + ' vs random ground.'
+                                : '') +
+                        (picked ? ' Picked \u2014 tap to drop it from the map.'
                                 : faded
-                            ? '. Below the strength floor; tapping lowers the floor and adds it.'
-                            : '. Tap to ADD this ground to what the map draws.')) + '"' +
-                    ' aria-label="' + esc(k.replace(/_/g, ' ') + ', ' + meta.label + ', grade ' + w) + '"' +
+                            ? ' Below the strength floor; tapping lowers the floor and adds it.'
+                            : ' Tap to ADD this ground to what the map draws.')) + '"' +
+                    ' aria-label="' + esc(k.replace(/_/g, ' ') + ', ' + meta.label + ', grade ' + w +
+                        (uV === 'fails' ? ', measured no better than random ground here' : '')) + '"' +
                     ' onclick="event.stopPropagation();MapLegend.geoCell(\'' + esc(k) + '\',\'' +
                         esc(a) + '\',' + w + ')"><i></i></button>';
             });
             html += '<em class="ml-mx-n">' + idx[k] + '</em>';
         });
         html += '</div>';
+
+        // The route, under the table that offers the choice: with a commodity
+        // picked, what the measurement says about THIS ground and which half
+        // of the model to use. See skillRouteHTML().
+        html += skillRouteHTML(GeoMap.selectedCommodities
+            ? GeoMap.selectedCommodities() : new Set(), min, 'rock');
 
         html += '<div class="mode-menu-note">An inference from rock type \u2014 nothing here ' +
             'counts, ranks or locates a deposit.</div>';
@@ -2084,6 +2392,13 @@
             : '';
         var grade = min === 3 ? 'classic' : (min === 2 ? 'likely' : '');
 
+        // THIS TABLE'S KIND IS 'junction', so it is scored on junctions. One
+        // commodity picked => one verdict for the whole table's ink; with none
+        // or several picked the cells grade for "anything" and no single
+        // measurement speaks for them, so the ink stays as it was.
+        var jV = (sel.size === 1) ? mxVerdict(Array.from(sel)[0], 'junction', min) : 'unmeasured';
+        var jS = (sel.size === 1) ? mxSkill(Array.from(sel)[0], 'junction', min) : null;
+
         var html = '<div class="mode-menu-head ml-mx-head">' +
             '<i class="icon-git-merge"></i>Where two rocks meet' +
             // The carried-over question, in the head, because the cells cannot
@@ -2094,6 +2409,14 @@
                   'graded for ' + esc(forWhat || 'anything') +
                   (grade ? ', ' + grade : '') + '</em>'
                 : '<em>graded for anything</em>') +
+            // The measured lift for THIS table's kind, in its head, where the
+            // "graded for gold" claim is made. Same object as the rock table's
+            // per-row badge: one commodity, two kinds, two scores, each shown
+            // beside the choice it is a score for.
+            (jV === 'unmeasured' ? ''
+                : '<em class="ml-mx-lift ' + jV + '" title="' +
+                  esc(skillNote(Array.from(sel)[0], 'junction', min)) + '">' +
+                  liftText(jS) + '</em>') +
             '</div>';
 
         html += '<div class="ml-jx" style="grid-template-columns:minmax(52px,1fr) repeat(' +
@@ -2165,15 +2488,30 @@
                 var faded = w < min;
                 html += '<button type="button" data-mx="jcell:' + esc(key) +
                     '" class="ml-jx-cell g' + w + (faded ? ' below' : '') +
+                    // Measured, on the ground in view, NOT to beat random
+                    // ground for the picked commodity: grey. In the CAR this
+                    // is what the diamond junctions look like (0.41x), and it
+                    // is the same discipline the rock table applies to its own
+                    // cells — one model, two halves, each drawn as what it
+                    // measures.
+                    (jV === 'fails' ? ' unproven' : '') +
+                    (jV === 'split' ? ' contested' : '') +
                     (isPicked(key) ? ' on' : '') + '"' +
                     ' aria-pressed="' + isPicked(key) + '"' +
                     ' title="' + esc(head + '. ' + why.join(', ') +
-                        (faded ? '. Below the strength floor, so it is not drawn.'
-                               : '. Tap to draw just this junction' +
+                        (jV === 'fails'
+                            ? '. MEASURED ' + hereWords(jS).toUpperCase() + ' AT ' + liftText(jS) +
+                              ' vs random ground: for ' + forWhat + ', contacts do not pick out ' +
+                              'worked ground there.'
+                            : jV === 'works'
+                                ? '. Measured ' + hereWords(jS) + ' at ' + liftText(jS) + ' vs random ground.' : '') +
+                        (faded ? ' Below the strength floor, so it is not drawn.'
+                               : ' Tap to draw just this junction' +
                                  (isPicked(key) ? ' (tap again to drop it)'
-                                                : ' — it ADDS to the junctions already picked') +
+                                                : ' \u2014 it ADDS to the junctions already picked') +
                                  '.')) + '"' +
-                    ' aria-label="' + esc(lbl + ', grade ' + w) + '"' +
+                    ' aria-label="' + esc(lbl + ', grade ' + w +
+                        (jV === 'fails' ? ', measured no better than random ground here' : '')) + '"' +
                     ' onclick="event.stopPropagation();MapLegend.geoJunction(\'' + esc(key) + '\')">' +
                     '<i></i></button>';
             });
@@ -2227,15 +2565,15 @@
          * known workings than the same amount of ground picked at random, and
          * the gold-graded UNITS hold fewer than random ground does. Both were
          * drawn in the same amber under the same disclaimer. So the measured
-         * number rides beside the claim, and where nothing has been measured
-         * it says that word rather than leaving a gap that reads as a low
-         * score. srv/geomap_scores.go, scripts/geomaps/eval_affinity.py.
+         * finding rides beside the claim — as the SAME line the rock table
+         * carries, because a reader moving between the tabs must not have to
+         * reconcile two wordings of one measurement — and where nothing has
+         * been measured it says that word rather than leaving a gap that reads
+         * as a low score. srv/geomap_scores.go, scripts/geomaps/eval_affinity.py.
          */
-        var jSkill = forWhat && sel.size === 1
-            ? skillNote(Array.from(sel)[0], 'junction', min) : '';
+        html += skillRouteHTML(sel, min, 'junction');
         html += '<div class="mode-menu-note">An inference from the two rock types either side ' +
-            '\u2014 nothing here counts, ranks or locates a deposit.' +
-            (jSkill ? ' Measured: ' + esc(jSkill) + '.' : '') + '</div>';
+            '\u2014 nothing here counts, ranks or locates a deposit.</div>';
         return html;
     }
 
@@ -2745,12 +3083,27 @@
     // strip is otherwise driven by state changes (a toggle, a share link),
     // which do not move the map.
     function watchMap() {
-        if (typeof map === 'undefined' || !map || !map.on) return;
-        // Both drapes describe THIS view: geology by what it painted, the
+        if (typeof map === 'undefined' || !map || !map.on) return;        // Both drapes describe THIS view: geology by what it painted, the
         // scanned series by whether its envelope reaches the screen. A chip
         // that says "not in view" has to stop saying it when the reader pans
         // onto the sheets, or it is the contradiction it exists to prevent.
-        map.on('idle', function () { if (geoOn() || histOn()) render(); });
+        map.on('idle', function () {
+            if (!(geoOn() || histOn())) return;
+            render();
+            // A VERDICT KEYED TO THE VIEWPORT MUST NOT SURVIVE THE VIEWPORT.
+            // The panel stays open while the reader pans, and the scores are
+            // measured on one country's ground: pan off it and "measured 0.63x
+            // here" becomes a number about ground nobody measured, which is
+            // the failure the score was added to prevent, arriving from the
+            // other side. Rebuilt only when the answer CHANGES — panning
+            // inside one country is free, and a rebuild on every idle would
+            // reshuffle a table the reader is working in.
+            if (typeof GeoMap === 'undefined' || !GeoMap.skillScope) return;
+            var s = GeoMap.skillScope();
+            if (s === skillScopeSeen) return;
+            skillScopeSeen = s;
+            if (menuEl && menuEl.dataset.kind === 'geo') rebuildGeoMenuNow();
+        });
         // MOVING ON, in the map's own words. A reader who drags the map has
         // finished choosing in the table; the selection becomes a decision and
         // the table settles behind them. `movestart` rather than `moveend`, so

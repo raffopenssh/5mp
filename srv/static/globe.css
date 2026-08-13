@@ -544,6 +544,93 @@
         .ml-mx-cell.empty::after { content: ''; width: 3px; height: 3px; border-radius: 50%;
             background: rgba(255,255,255,0.09); }
 
+        /* ── MEASURED NOT TO WORK ON THE GROUND IN VIEW ─────────────
+           Amber is this panel's "prospective" ink, so amber on a grade that
+           has been SCORED and came out no better than picking area at random
+           is the panel recommending ground the measurement says nothing about.
+           b1ac4dc measured the CAR gold units at 0.63x — worse than random
+           ground — beside gold junctions at 2.32x, and both drew the same three
+           dots.
+
+           Grey and hollow, never absent: the cell is still tappable, still
+           counted, and the reader may want that ground for another reason. It
+           just stops looking like a target. The class is applied per COMMODITY
+           ROW (and to the junction table's whole ink when one commodity is
+           carried over), because the measurement is keyed (commodity, kind) —
+           there is no per-period measurement and pretending otherwise would
+           invent one. */
+        .ml-mx-cell.unproven > i, .ml-jx-cell.unproven > i { background: #9ca3af; }
+        .ml-mx-cell.unproven.below > i, .ml-jx-cell.unproven.below > i {
+            background: none; border-color: rgba(156,163,175,0.45); }
+        .ml-mx-cell.unproven.picked { background: rgba(156,163,175,0.18);
+            box-shadow: inset 0 0 0 1px rgba(156,163,175,0.5); }
+        .ml-mx-cell.unproven.picked > i { background: #d1d5db; }
+        .ml-jx-cell.unproven.on { background: rgba(156,163,175,0.18);
+            box-shadow: inset 0 0 0 1px rgba(156,163,175,0.5); }
+        /* ── THE SURVEYS DISAGREE ───────────────────────────────────
+           Neither amber (a target) nor grey (measured to fail): two independent
+           lists of known workings scored this claim on this ground and landed on
+           opposite sides of "no better than random". On CAR gold junctions IPIS
+           says 2.4x and Tearline's permit census says 0.0x, and the panel has no
+           business choosing between a national field survey and a 4,000 km2
+           imagery census on the reader's behalf. Violet, because it is a
+           question rather than a grade. */
+        .ml-mx-cell.contested > i, .ml-jx-cell.contested > i { background: #c4b5fd; }
+        .ml-mx-cell.contested.below > i, .ml-jx-cell.contested.below > i {
+            background: none; border-color: rgba(196,181,253,0.5); }
+        .ml-mx-cell.contested.picked, .ml-jx-cell.contested.on {
+            background: rgba(196,181,253,0.18);
+            box-shadow: inset 0 0 0 1px rgba(196,181,253,0.5); }
+        .ml-mx-row.contested, .ml-mx-row.contested.on { color: #ddd6fe; }
+        .ml-mx-lift.split { color: #c4b5fd; background: rgba(196,181,253,0.14); }
+        .ml-skill.split { background: rgba(196,181,253,0.09);
+            border-color: rgba(196,181,253,0.3); }
+        .ml-skill.split > i { color: #c4b5fd; }
+        .ml-skill.split b { color: #ddd6fe; }
+
+        .ml-mx-row.unproven, .ml-mx-row.unproven.on { color: #9ca3af; }
+        .ml-mx-row.unproven.on { font-weight: 600; }
+
+        /* The lift, on the row that offers the choice. A sentence in a tooltip
+           is not read before a tap; this is. Tabular so a column of them can
+           be compared down the table, and coloured on the verdict only — the
+           number itself is the finding. */
+        .ml-mx-lift { font-size: 9px; font-variant-numeric: tabular-nums; margin-left: auto;
+            padding: 0 4px; border-radius: 999px; flex: none; letter-spacing: 0.2px; }
+        .ml-mx-lift.works { color: #86efac; background: rgba(134,239,172,0.12); }
+        .ml-mx-lift.fails { color: #fca5a5; background: rgba(252,165,165,0.12); }
+        .ml-mx-head .ml-mx-lift { margin-left: 0; font-style: normal; }
+
+        /* ── THE MEASURED FINDING, AND THE ROUTE OUT OF THE WRONG HALF ──
+           The reader's question is "where do I prepare for the next gold
+           rush"; the measured answer on the one sheet we can check is "from
+           the contacts, not the rock types". That is a sentence, not a swatch,
+           and it carries its action the way the "show all" escape does — a
+           statement about the map with the way forward inside it. */
+        .ml-skill { display: flex; align-items: flex-start; gap: 7px; margin: 0 10px 8px;
+            padding: 6px 8px; border-radius: 7px; font-size: 10px; line-height: 1.4;
+            color: #cbd5e1; background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.09); }
+        .ml-skill > i { font-size: 12px; flex: none; color: #9ca3af; line-height: 1.3; }
+        .ml-skill > span { flex: 1; min-width: 0; }
+        .ml-skill b { color: #fde68a; font-weight: 600; }
+        .ml-skill.route { background: rgba(134,239,172,0.08);
+            border-color: rgba(134,239,172,0.28); }
+        .ml-skill.route > i { color: #86efac; }
+        .ml-skill.bad { background: rgba(252,165,165,0.07);
+            border-color: rgba(252,165,165,0.25); }
+        .ml-skill.bad > i { color: #fca5a5; }
+        .ml-skill.bad b { color: #fca5a5; }
+        /* Unmeasured is neither: a grey note, because "nobody has checked" is
+           not a verdict and must not be dressed as one. */
+        .ml-skill.unmeasured { color: #9ca3af; }
+        .ml-skill button { flex: none; align-self: center; display: inline-flex; align-items: center;
+            gap: 4px; padding: 3px 8px; border-radius: 999px; cursor: pointer; font: inherit;
+            font-size: 10px; color: #052e16; background: #86efac; border: 0; font-weight: 600;
+            -webkit-tap-highlight-color: transparent; transition: filter 0.15s; }
+        .ml-skill button:hover { filter: brightness(1.08); }
+        .ml-skill button:focus-visible { outline: 2px solid #60a5fa; outline-offset: 2px; }
+
         /* The floor, as a threshold on the ink just above it — so it is the
            legend for the cells as much as it is a control. */
         .ml-grade { display: flex; align-items: center; gap: 4px; padding: 2px 10px 7px;

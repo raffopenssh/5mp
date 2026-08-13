@@ -28,6 +28,11 @@
 // afterwards.
 package srv
 
+import (
+	"fmt"
+	"strings"
+)
+
 // geoAffinityScore is one measured comparison: how much of an occurrence set a
 // filter captures, against what the same filter would capture by covering that
 // much of the map (units) or by being that close to any line (junctions).
@@ -48,78 +53,194 @@ type geoAffinityScore struct {
 	N         int     `json:"n"`
 	Scope     string  `json:"scope"`
 	Verdict   string  `json:"verdict"` // "concentrates" | "no better than area" | "unmeasured"
+
+	// WHERE it was measured, as a sheet id — because a score is only a claim
+	// about ground it was measured on, and the reader is looking at a
+	// VIEWPORT, not at a dataset. A 2.32x measured on the CAR basement is not
+	// a statement about the Tanzanian craton, and a panel that prints it over
+	// Tanzania has invented a number.
+	//
+	// A sheet id, not a bounding box: the extent is the sheet's own
+	// `bounds` (already in /api/geomap and already used to bound the tile
+	// source), so it cannot drift from the data the way a typed box would —
+	// invariant 2 applied to an extent. The client intersects it with
+	// map.getBounds(); the USER never sees the sheet id, only the place.
+	ScopeSheet string `json:"scope_sheet"`
+
+	// EvidenceID identifies the OCCURRENCE LIST, not merely its sheet
+	// ("car/ipis", "car/tearline"). Three lists reach the CAR and they
+	// disagree; without this key a consumer picks between them by row order
+	// and calls the winner consensus.
+	EvidenceID string `json:"evidence_id"`
+
+	// StratumOf/Stratum mark a row as one half of another list, split by a
+	// property of its own sites. Set means: not independent evidence, do not
+	// count it in an agreement.
+	StratumOf string `json:"stratum_of,omitempty"`
+	Stratum   string `json:"stratum,omitempty"`
+
+	// The caveat of the list this row came from, carried per row so a number
+	// cannot be copied to a surface without it.
+	Caveat string `json:"caveat"`
 }
 
-// geoAffinityEval names the measurement itself, so a number on screen can be
-// traced to the run that produced it without a code search.
+// geoTruthSet is one occurrence list: what it is, and the sentence that must
+// travel with any number taken from it.
+//
+// A truth set is not interchangeable with another. IPIS visited what a surveyor
+// could drive to; Tearline traced imagery inside eight mining permits; Crisis
+// Tracker holds mines that were attacked in the east of the country; the GST
+// register was compiled by the same programme that drew the units it scores.
+// The caveat is not decoration - it is the difference between the numbers.
+type geoTruthSet struct {
+	Place  string `json:"place"`
+	Caveat string `json:"caveat"`
+	// StratumOf/Stratum name a SPLIT OF ANOTHER LIST rather than a list. Two
+	// strata of one survey share a footprint and a definition of "a mine": they
+	// show that a pooled number depends on the stratifier, and they can never
+	// corroborate each other. A surface that counts them as independent
+	// agreements lets one survey vote three times.
+	StratumOf string `json:"stratum_of,omitempty"`
+	Stratum   string `json:"stratum,omitempty"`
+	// The ground its random points came from, in words: "the mapped sheet" and
+	// "the 3 mapped Lobaye Invest permits" are different denominators, so two
+	// lifts are comparable only when this line matches.
+	Baseline string `json:"baseline,omitempty"`
+}
+
+// geoAffinityEval names the RUN. The measurements and their caveats are
+// generated into geomap_scores_table.go by scripts/geomaps/gen_scores_go.py
+// from the eval's JSON: one row per truth set, never an average across lists
+// that sampled different ground.
 var geoAffinityEval = map[string]any{
-	"dataset":  "IPIS artisanal mining site visits, CAR (2019 survey), 914 visited sites",
-	"script":   "scripts/geomaps/eval_affinity.py",
-	"out":      "data/eval/geo_affinity_car.json",
-	"measured": "2026-08-13",
-	"sheet":    "car",
-	"near_km":  5,
-	// The one sentence that stops a lift being over-read. Both baselines are
-	// area-like, and the sites are a SURVEY footprint: IPIS visits where IPIS
-	// can go, which is not a random sample of the ground.
-	"caveat": "One sheet, one country, one survey's reachable sites - a lift here is " +
-		"evidence the rule is not noise, not a probability of finding anything.",
+	"script":    "scripts/geomaps/eval_affinity.py",
+	"generator": "scripts/geomaps/gen_scores_go.py",
+	"strata":    "scripts/eval_reach_strata.py",
+	"out":       "data/eval/geo_affinity.json",
+	"measured":  "2026-08-13",
+	"near_km":   geoAffinityNearKm,
+	"min_sites": geoAffinityMinSites,
 }
 
-// geoAffinityScores are the measured numbers, verbatim from the eval run.
+// geoAffinityEvidence is every measurement that speaks to one claim, plus what
+// they add up to. A caller must render the WHOLE of this, not pick a row.
 //
-// The shape of the result, stated once so nobody has to reconstruct it from
-// the table: ON THIS SHEET THE JUNCTIONS CARRY THE SIGNAL AND THE UNITS DO NOT.
-// Gold-graded contacts hold 53% of gold workings within 5 km against a 23%
-// baseline (2.3x, and 2.3x again against diamond workings, so it is gold the
-// lines are finding and not mines) - while the gold-graded UNITS hold 24% of
-// them on 38% of the map, i.e. a reader who isolates "rocks that can host
-// gold" on CAR is looking at ground *less* likely to be worked than the sheet
-// as a whole. The reason is visible in the eval's own per-class table: the
-// workings sit on Zeta (gneiss) and gamma_h (heterogeneous granite), the two
-// biggest units the affinity table grades ZERO for gold, because "gneiss" and
-// "syncinematic granite" are not the words a textbook uses for a gold host.
-// The junction rules recover exactly that ground from the other side: it is
-// the CONTACT between them that the model grades, and that is where the pits
-// are.
-//
-// Diamond is the mirror image and is the reason this table has two commodities
-// rather than one: on CAR the diamond UNITS work (1.41x at classic, the
-// alluvium and the Carnot sandstone) and the diamond junctions do not (0.33x,
-// 4 graded lines out of 113). A single-commodity eval would have concluded
-// "junctions good, units bad" about the model as a whole; the model is simply
-// right about different things in different places.
-var geoAffinityScores = []geoAffinityScore{
-	{"gold", "junction", 1, 0.559, 0.257, 2.17, 2.20, 494, "CAR sheet, IPIS 2019", "concentrates"},
-	{"gold", "junction", 2, 0.528, 0.228, 2.32, 2.33, 494, "CAR sheet, IPIS 2019", "concentrates"},
-	{"gold", "junction", 3, 0.204, 0.056, 3.63, 0, 494, "CAR sheet, IPIS 2019", "concentrates"},
-	{"gold", "unit", 1, 0.237, 0.377, 0.63, 0, 675, "CAR sheet, IPIS 2019", "no better than area"},
-	{"gold", "unit", 2, 0.101, 0.264, 0.38, 0, 675, "CAR sheet, IPIS 2019", "no better than area"},
-	// gold unit w>=3 is deliberately ABSENT, not zero: no CAR class is graded
-	// classic for gold, so the filter selects 0% of the map and the ratio has
-	// no denominator. "Nothing to measure" and "measured, nothing found" are
-	// different statements, and the second one is false here.
-	{"diamond", "unit", 1, 0.376, 0.382, 0.98, 0, 362, "CAR sheet, IPIS 2019", "no better than area"},
-	{"diamond", "unit", 2, 0.376, 0.334, 1.13, 0, 362, "CAR sheet, IPIS 2019", "concentrates"},
-	{"diamond", "unit", 3, 0.340, 0.241, 1.41, 0, 362, "CAR sheet, IPIS 2019", "concentrates"},
-	{"diamond", "junction", 1, 0.022, 0.067, 0.33, 1.09, 181, "CAR sheet, IPIS 2019", "no better than area"},
-	{"diamond", "junction", 2, 0.022, 0.053, 0.41, 1.09, 181, "CAR sheet, IPIS 2019", "no better than area"},
+// The CAR is why this type exists. Three independent lists reach that sheet and
+// they do not say the same thing: IPIS's gold junctions score 2.4x, Tearline's
+// permit census scores 0.0x on the same claim, and Crisis Tracker cannot score
+// it at all (5 of 41 sites name a mineral). Any single row is defensible in
+// isolation and misleading on screen.
+type geoAffinityEvidence struct {
+	// Scores at the floor the reader is looking at, one per truth set, in the
+	// table's order. Never merged.
+	Scores []geoAffinityScore `json:"scores"`
+	// Verdict over all of them: "concentrates" when every list puts the claim
+	// above 1.0, "no better than area" when every list puts it at or below,
+	// "mixed" when they straddle, "unmeasured" when none scored it. MIXED IS A
+	// RESULT, not a missing value, and it must reach the reader as a word: the
+	// alternative is a UI that shows whichever list it happened to index first.
+	Verdict string `json:"verdict"`
+	// TooFew records lists that hold this commodity but under the floor, with
+	// the count. "We looked and there were four" is a different statement from
+	// "nobody looked", and only this field can tell them apart.
+	TooFew map[string]int `json:"too_few,omitempty"`
+	// Spread is the widest ratio between two strata of ONE survey for this
+	// claim, when it was measured. >1 means the pooled lift moves with
+	// something that is not the rock: on CAR gold units it is 1.55x between
+	// mines where the surveyors recorded an armed actor and mines where they
+	// did not (capture p=0.0033). A surface quoting a pooled lift with a spread
+	// like that beside it and not saying so is quoting an unnamed variable.
+	Spread float64 `json:"spread,omitempty"`
 }
 
-// geoAffinityScoreFor is the score a surface should quote for one claim: the
-// measurement at the highest floor at or below what the reader is looking at,
-// so a reader on "any" is not shown the flattering "classic" number.
+// geoAffinityEvidenceFor collects every list's measurement of one claim at the
+// highest floor at or below the reader's, so nobody is shown the flattering
+// "classic" number for an "any host" question.
 //
-// Returns nil when the pair was never measured, and the caller must then say
-// "unmeasured" rather than nothing: a commodity with no score beside one that
-// has a 2.3x is otherwise read as "worse", when in fact it is "unknown". Eight
-// of the ten commodities are in that state, because we hold an occurrence list
-// for two.
+// Strata are excluded from Scores and folded into Spread instead: they are not
+// more evidence, they are a statement about the pooled number's stability.
+func geoAffinityEvidenceFor(sheet, commodity, kind string, minWeight int) geoAffinityEvidence {
+	out := geoAffinityEvidence{Verdict: "unmeasured"}
+	best := map[string]*geoAffinityScore{}
+	for i := range geoAffinityScores {
+		s := &geoAffinityScores[i]
+		if s.Commodity != commodity || s.Kind != kind || s.MinWeight > minWeight {
+			continue
+		}
+		if sheet != "" && s.ScopeSheet != sheet {
+			continue
+		}
+		if s.StratumOf != "" {
+			continue
+		}
+		if b := best[s.EvidenceID]; b == nil || s.MinWeight > b.MinWeight {
+			best[s.EvidenceID] = s
+		}
+	}
+	// The table's own order, so two surfaces list the evidence identically.
+	seen := map[string]bool{}
+	above, below := 0, 0
+	for i := range geoAffinityScores {
+		id := geoAffinityScores[i].EvidenceID
+		if seen[id] || best[id] == nil {
+			continue
+		}
+		seen[id] = true
+		s := *best[id]
+		out.Scores = append(out.Scores, s)
+		if s.Lift > 1.0 {
+			above++
+		} else {
+			below++
+		}
+	}
+	switch {
+	case above > 0 && below > 0:
+		out.Verdict = "mixed"
+	case above > 0:
+		out.Verdict = "concentrates"
+	case below > 0:
+		out.Verdict = "no better than area"
+	}
+	for eid, per := range geoAffinityTooFew {
+		if sheet != "" && !strings.HasPrefix(eid, sheet+"/") {
+			continue
+		}
+		if n, ok := per[commodity]; ok {
+			if out.TooFew == nil {
+				out.TooFew = map[string]int{}
+			}
+			out.TooFew[eid] = n
+		}
+	}
+	// The spread is keyed by the eval's plural kind ("units"/"junctions"),
+	// because that is what the eval calls its two sections; the score rows use
+	// the singular. Translated here rather than in the generator, so the
+	// generated file keeps saying what the eval said.
+	if per, ok := geoAffinityStrataSpread[sheet]; ok {
+		key := fmt.Sprintf("%s|%ss|w%d", commodity, kind, minWeight)
+		if v, ok := per[key]; ok {
+			out.Spread = v
+		}
+	}
+	return out
+}
+
+// geoAffinityScoreFor is the single-row accessor, kept for surfaces that
+// annotate one grade in one badge.
+//
+// ⚠️ It returns the FIRST list's measurement and therefore cannot express
+// disagreement. On the CAR that is a real loss - the gold junctions are 2.4x to
+// IPIS and 0.0x to Tearline - so any surface where the reader makes a decision
+// must use geoAffinityEvidenceFor and print the "mixed" verdict.
 func geoAffinityScoreFor(commodity, kind string, minWeight int) *geoAffinityScore {
 	var best *geoAffinityScore
 	for i := range geoAffinityScores {
 		s := &geoAffinityScores[i]
 		if s.Commodity != commodity || s.Kind != kind || s.MinWeight > minWeight {
+			continue
+		}
+		if s.StratumOf != "" {
 			continue
 		}
 		if best == nil || s.MinWeight > best.MinWeight {
@@ -129,22 +250,31 @@ func geoAffinityScoreFor(commodity, kind string, minWeight int) *geoAffinityScor
 	return best
 }
 
-// geoAffinityScoresJSON ships the table in the shared legend, next to the rules
-// it scores. Same reason the contact rules ride there: it is one statement
-// about the model, not a property of a sheet, and a client that indexes it by
-// (commodity, kind) can annotate every grade it draws.
+// geoAffinityScoresJSON ships every measurement in the shared legend, beside
+// the rules it scores. The client forms the verdict for its viewport: all lists
+// above 1.0 is a verdict, lists straddling 1.0 is "mixed", and a stratum is
+// marked so it is never counted as a second opinion.
 func geoAffinityScoresJSON() map[string]any {
 	rows := make([]map[string]any, 0, len(geoAffinityScores))
 	for _, s := range geoAffinityScores {
 		row := map[string]any{
 			"commodity": s.Commodity, "kind": s.Kind, "min_weight": s.MinWeight,
 			"capture": s.Capture, "baseline": s.Baseline, "lift": s.Lift,
-			"n": s.N, "scope": s.Scope, "verdict": s.Verdict,
+			"n": s.N, "scope": s.Scope, "caveat": s.Caveat,
+			"verdict": s.Verdict, "scope_sheet": s.ScopeSheet,
+			"evidence_id": s.EvidenceID,
 		}
 		if s.Control > 0 {
 			row["control"] = s.Control
 		}
+		if s.StratumOf != "" {
+			row["stratum_of"], row["stratum"] = s.StratumOf, s.Stratum
+		}
 		rows = append(rows, row)
 	}
-	return map[string]any{"eval": geoAffinityEval, "scores": rows}
+	return map[string]any{
+		"eval": geoAffinityEval, "truths": geoAffinityTruth,
+		"too_few": geoAffinityTooFew, "strata_spread": geoAffinityStrataSpread,
+		"scores": rows,
+	}
 }

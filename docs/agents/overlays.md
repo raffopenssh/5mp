@@ -241,6 +241,15 @@ A link to the panel itself is `?panel=admin&admin_tab=map-settings&map_sheet=car
 
 ### The model has a score now, and the score is not the disclaimer
 
+> **Superseded in part, 2026-08-13 (later that day).** What follows describes
+> the first measurement — CAR against IPIS alone, one lift per claim, typed by
+> hand into `srv/geomap_scores.go`. All of it still reads correctly as the
+> *reasoning*, and the discipline sections below are unchanged. But the numbers
+> are now **generated**, there are **seven truth sets across three sheets**, and
+> a claim can come out **contested**. Read "Four lists, three sheets, and a
+> disagreement that must reach the reader" below before quoting any figure in
+> this section.
+
 Added 2026-08-13. Both choosers — "rock types that can host gold" and the
 Junctions tab — were textbook inference stated in three amber dots and had
 **never been scored against an occurrence dataset**. Every surface carried "an
@@ -317,6 +326,80 @@ Shape rules that are easy to undo:
   applied to a measurement: the table may be hand-written, it may not disagree.
   `json.dump` writes `NaN`, which is not JSON and made the file unreadable to
   the Go side — undefined ratios now ship as `null`.
+
+### Four lists, three sheets, and a disagreement that must reach the reader
+
+Added 2026-08-13, after the section above. The first measurement scored **one**
+sheet against **one** occurrence list, which left two problems: the model was
+unmeasured on two of three served sheets (so the panel quoted a Central African
+number over the Tanzanian craton), and a single list cannot be wrong out loud.
+
+**The eval now runs every served sheet against every list that reaches it, by
+default**, and `scripts/geomaps/gen_scores_go.py` writes `srv/geomap_scores_table.go`
+from the JSON — 68 measurements, seven truth sets, **no number typed by hand**
+(invariant 2; the table is committed so the server builds without Python or the
+licence-sensitive occurrence files, and `TestAffinityScoresMatchEvalOutput` pins
+every shipped row to the JSON by `EvidenceID` when it is present).
+
+| truth set | what it is | its blind spot |
+|---|---|---|
+| `car/ipis` | 914 artisanal-mine field visits, gold/diamond flags | where a surveyor can drive |
+| `car/tearline` | NGA Tearline / W&M geoLab, 40 mine systems traced off imagery inside 8 Lobaye Invest permits | a **licence boundary**; only 3 of 40 are within 2 km of an IPIS site |
+| `car/crisistracker` | 41 mine sites recovered from Crisis Tracker incident reports, **eastern** CAR | attacked places that could be reported; 5 of 41 name a mineral |
+| `car/ipis_armed`, `car/ipis_calm` | **strata**, not lists: IPIS split by armed presence recorded at the pit | share IPIS's footprint entirely |
+| `tanzania/gst` | the GST's own 480-point register, 6 commodities above the floor | **not arm's length** — same minerogenic programme drew the units |
+| `sudan/osm` | 272 OSM gold-tagged mine features | 91% one mapper's campaign |
+
+Five rules, each of which changed a number or a sentence:
+
+* **The baseline is the ground the list could have seen**, carried by the truth
+  set so a call site cannot forget it: the mapped sheet for a national register,
+  the sites' own hull for one mapper's campaign, **the searched permits** for
+  Tearline. A hull round the mines Tearline *found* would be tighter than the
+  ground it searched — flattery by hiding the searched-and-empty part. When the
+  region is not the sheet, the **area share is clipped to it too**, or capture
+  and baseline answer different questions.
+* **A stratum is not a second opinion.** Two halves of one survey share its
+  footprint and its definition of a mine; counting them as agreement lets one
+  survey vote three times. They are excluded from the agreement report and from
+  `geoAffinityEvidenceFor`, and surface instead as `Spread`.
+* **The pooled CAR gold lift has a known confound, so both strata ship by
+  default** — not behind a flag, because a correctness fact that costs a flag to
+  see gets quoted without it. Gold units score **2.04×** where IPIS recorded an
+  armed actor and **1.31×** where it did not (capture p=0.0033 over 20k label
+  permutations, p=0.0021 shuffling only within prefecture, which holds the
+  geology fixed — `scripts/eval_reach_strata.py`, read never recomputed).
+* **Under the floor is a count, not a zero.** Crisis Tracker's 4 gold sites ship
+  as `geoAffinityTooFew`, so the panel can say eastern CAR is *unmeasured*
+  rather than leaving a gap that reads as a low score.
+* **Comparisons are per floor.** Quoting each list at its own highest floor
+  compares w≥3 with w≥2 whenever one grades no ground that highly, and buries
+  the finding: the CAR gold strata differ 1.55× at w≥1 and 1.04× at w≥2.
+
+**The disagreement is the headline.** On CAR gold junctions IPIS says **2.18×**
+and Tearline says **0.00×** on the same claim. Any single row is defensible alone
+and misleading on screen, so `verdict` is `mixed` and the panel says *"the
+surveys disagree"*, names both with their n, and draws the cells **violet**
+(`.contested`) — neither amber (a target) nor grey (a dead end). When a caller
+takes one row anyway, it gets the **lowest** lift, never the flattering one.
+
+Two bugs this found, both of which had printed a plausible wrong number:
+
+* **`mixed` had two causes and one sentence.** At z6 over the Central African
+  basin the Sudan and Tanzania sheet *envelopes* also reach the viewport, so
+  "the surveys disagree" appeared for gold units — when in fact the CAR's two
+  lists agree (0.63×, 0.06×) and it is **Sudan** that scores 1.91×. `reason` is
+  now `'surveys'` (one ground, contradictory lists) or `'places'` (the model
+  works in one country and not another), with different wording; `'surveys'`
+  outranks `'places'`.
+* **A score must describe a layer that is DRAWN.** `sheetInView` was true for
+  any sheet whose bounds reached the screen, switched on or not — so a reader
+  drawing only the CAR was quoted Sudan's number. `sheetActive` = available **and
+  on** and in view, and it is now the single test everywhere.
+* **The per-floor loops silently matched nothing** (`rec["1"]` vs `rec[1]`) and
+  printed an empty agreement section, which reads exactly like "the lists agree
+  everywhere" — invariant 1, in the report whose job is honesty. `at_floor()`
+  accepts both, and "nothing comparable" now prints as a result.
 
 ### Other geology data, weighed: what is worth ingesting and what is not
 
