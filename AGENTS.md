@@ -100,9 +100,9 @@ Logs: `sudo journalctl -u 5mp -f`. Env vars (e.g. `ZENODO_TOKEN`) live in
 ./tests/run_all.sh          # db 37, api 45, ui 20
 ```
 
-`go test ./srv/` fails on `TestServerSetupAndHandlers`
-(`035-test-env.sql: no such column: avg_speed_kmh`) — **pre-existing**, don't
-chase it.
+`go test ./...` must pass clean (the old `TestServerSetupAndHandlers` failure
+was fixed 2026-08-13 by restoring lost `park_settlements` columns in
+`db/migrations/022`).
 
 ---
 

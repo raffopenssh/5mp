@@ -44,3 +44,20 @@ CREATE TABLE IF NOT EXISTS deforestation_events (
     classified_at TIMESTAMP
 );
 CREATE INDEX IF NOT EXISTS idx_de_park ON deforestation_events(park_id);
+
+-- park_settlements: the classification/enrichment columns were likewise added
+-- by scripts directly on the live database (the settlement reclassify and fire
+-- context pipelines), never by a migration. Migration 055 backfills provenance
+-- FROM polygon_ids/narrative, so a fresh database failed there with
+-- "no such column: polygon_ids" (TestServerSetupAndHandlers). Restore exactly
+-- the columns the live schema carries before 055; a no-op in production, where
+-- 022 is already recorded as executed.
+ALTER TABLE park_settlements ADD COLUMN classification TEXT;
+ALTER TABLE park_settlements ADD COLUMN classification_confidence REAL;
+ALTER TABLE park_settlements ADD COLUMN narrative TEXT;
+ALTER TABLE park_settlements ADD COLUMN polygon_ids TEXT;
+ALTER TABLE park_settlements ADD COLUMN fires_1km INTEGER DEFAULT 0;
+ALTER TABLE park_settlements ADD COLUMN fires_5km INTEGER DEFAULT 0;
+ALTER TABLE park_settlements ADD COLUMN fire_seasonality TEXT;
+ALTER TABLE park_settlements ADD COLUMN deforest_nearby_km2 REAL DEFAULT 0;
+ALTER TABLE park_settlements ADD COLUMN classified_at TIMESTAMP;
