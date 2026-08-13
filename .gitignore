@@ -72,6 +72,14 @@ data/eval/*
 # negative result documented in docs/FIRE_PIPELINE.md, and re-measuring each
 # costs a FIRMS round-trip.
 !data/eval/nrt_sp/
+# ...and the mining-reference coverage measurements (13K): the evidence for the
+# two findings in docs/agents/acled.md. They hold verdicts and summary
+# statistics only -- no ACLED rows, so nothing here substitutes for ACLED's
+# dataset. Everything else the ACLED pipeline writes is regenerable and stays
+# out: data/eval/acled/ (per-ADM1 totals, 77K, 1 min from the xlsx),
+# data/eval/adm1/ (geoBoundaries), data/eval/mining_reference.json (1.1 MB).
+!data/eval/mining_reference_bias.json
+!data/eval/reach_strata.json
 data/viirs_backfill_state.json
 
 # Mining analysis: bulk downloads & intermediate rasters (re-fetchable)
@@ -167,3 +175,8 @@ data/gpkg_output/
 # Historical-map fetch scratch: LOC contact thumbnails and rotated run logs
 data/histmaps/thumbs/
 data/histmaps/run_all.log.*
+
+# ACLED's own aggregated data file: a cache of THEIR file, never committed
+# (Content Usage Terms). Refresh with scripts/acled_download.py; the committed
+# artefact is the derived scalars in data/eval/acled/.
+data/acled/*.xlsx

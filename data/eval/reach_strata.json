@@ -1,0 +1,77 @@
+{
+  "generated_by": "scripts/eval_reach_strata.py",
+  "question": "does the CAR affinity lift differ between mine sites where IPIS recorded an armed actor and sites where it did not? A difference means part of the lift is about reach, not rock.",
+  "stratifier": "IPIS actor_type recorded at the site (not ACLED)",
+  "baseline": "each stratum scored against random ground in its OWN hull",
+  "min_sites": 8,
+  "strata": {
+    "armed": {
+      "sites_total": 251,
+      "sites_by_commodity": {
+        "gold": 207,
+        "diamond": 99
+      },
+      "units_lift": {
+        "gold": 2.0371476145222576,
+        "diamond": 1.0040820743272107
+      },
+      "junctions_lift": {
+        "gold": 1.8917475296002848,
+        "diamond": 0.436046511627907
+      }
+    },
+    "unarmed": {
+      "sites_total": 663,
+      "sites_by_commodity": {
+        "gold": 508,
+        "diamond": 299
+      },
+      "units_lift": {
+        "gold": 1.3129534952630137,
+        "diamond": 0.9393436327987237
+      },
+      "junctions_lift": {
+        "gold": 1.6966051551952406,
+        "diamond": 0.0
+      }
+    }
+  },
+  "comparison": {
+    "gold_units": {
+      "armed": 2.037,
+      "unarmed": 1.313,
+      "ratio_armed_over_unarmed": 1.552
+    },
+    "gold_junctions": {
+      "armed": 1.892,
+      "unarmed": 1.697,
+      "ratio_armed_over_unarmed": 1.115
+    },
+    "diamond_units": {
+      "armed": 1.004,
+      "unarmed": 0.939,
+      "ratio_armed_over_unarmed": 1.069
+    },
+    "diamond_junctions": {
+      "verdict": "UNMEASURED",
+      "reason": "a lift had no denominator"
+    }
+  },
+  "capture_permutation": {
+    "commodity": "gold",
+    "metric": "capture (fraction of sites in a unit graded gold, weight>=1)",
+    "sites_on_sheet": 675,
+    "capture_armed": 0.3131,
+    "capture_unarmed": 0.2055,
+    "difference": 0.1077,
+    "permutations": 20000,
+    "p": 0.0033,
+    "within_prefecture": {
+      "difference": 0.1077,
+      "p": 0.00205,
+      "prefectures_informative": 7,
+      "note": "labels shuffled only within prefecture, so geology and prefecture-level access are held fixed"
+    },
+    "note": "tests the capture numerator only; each stratum's area denominator is its own hull, so this p qualifies the difference in capture, not the lift ratio itself"
+  }
+}
