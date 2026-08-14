@@ -186,6 +186,17 @@
         try {
             const r = await fetch(`/api/geopackage/${encodeURIComponent(id)}?pwd=${encodeURIComponent(pwd())}`,
                                   { cache: 'no-store' });
+            if (r.status === 404) {
+                // The job is gone (cancelled elsewhere, swept, or orphaned by a
+                // restart). A card that can never resolve must not sit at
+                // "checking…" — remove it; the server's sweeper drops the
+                // notification row the same way.
+                stop(id);
+                cache.delete(id);
+                const card = document.querySelector(`[data-gpkg-id="${cssEsc(id)}"]`);
+                if (card) card.remove();
+                return null;
+            }
             if (!r.ok) { stop(id); return null; }
             const d = await r.json();
             cache.set(id, d);
@@ -275,7 +286,11 @@
         return `
             <div class="gpkg-line">${esc(step)}</div>
             <div class="gpkg-bar"><div style="width:${pct}%"></div></div>
-            <div class="gpkg-dim">${pct}% · you can close this, it keeps running</div>`;
+            <div class="gpkg-dim">${pct}% · you can close this, it keeps running</div>
+            <div class="gpkg-actions">
+              <button class="gpkg-btn danger" title="Stop this export and discard what has been built so far"
+                onclick="event.stopPropagation();GeoPackageExport.remove('${esc(d.id)}')"><i class="icon-x"></i> Cancel</button>
+            </div>`;
     }
 
     // Restart the same question. Uses the job's own parameters rather than the
@@ -311,7 +326,10 @@
         }
     }
 
-    // Delete the file now rather than waiting out the TTL.
+    // Delete the file now rather than waiting out the TTL — or, on a job
+    // still building, CANCEL it: the server stops the build at the next row
+    // and cleans up the half-written file, the job and the card itself
+    // (DELETE answers 202 in that case, and the cleanup follows a beat later).
     //
     // A confirm() would ask the user to predict the result; this shows it and
     // offers no undo *because there is nothing to undo cheaply* — the answer to
@@ -335,19 +353,23 @@
         }
         if (!r || !r.ok) {
             if (card) card.style.opacity = '';
-            const msg = r && r.status === 409
-                ? 'Still building — it can be deleted once it finishes'
-                : 'Could not delete the export';
-            if (typeof showToast === 'function') showToast(msg, 'error');
+            if (typeof showToast === 'function') showToast('Could not delete the export', 'error');
+            track(id);
             return;
         }
         cache.delete(id);
         if (card) card.remove();
         if (typeof showToast === 'function') {
-            showToast(`Deleted${d.size_bytes ? ' ' + fmtBytes(d.size_bytes) : ''} — `
-                    + `ask for the export again any time to rebuild it`, 'success');
+            if (r.status === 202) {
+                showToast('Export cancelled — the partial file is being cleaned up', 'success');
+            } else {
+                showToast(`Deleted${d.size_bytes ? ' ' + fmtBytes(d.size_bytes) : ''} — `
+                        + `ask for the export again any time to rebuild it`, 'success');
+            }
         }
-        if (typeof loadNotifications === 'function') loadNotifications();
+        // The server's cleanup deletes the notification row a moment after the
+        // 202; refresh after that beat so the panel doesn't repaint the card.
+        if (typeof loadNotifications === 'function') setTimeout(loadNotifications, r.status === 202 ? 900 : 0);
     }
 
     function cssEsc(v) {

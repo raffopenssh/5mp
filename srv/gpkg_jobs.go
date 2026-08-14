@@ -15,6 +15,7 @@ package srv
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"errors"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -36,6 +37,16 @@ const (
 // SQLite file every other request uses; two in parallel would make the site
 // slow in a way that looks like a bug rather than like a download.
 var gpkgBuildSem = make(chan struct{}, 1)
+
+// errGPKGCancelled is how a build reports that it stopped because the user
+// asked it to — a different thing from failing, and never surfaced as one.
+var errGPKGCancelled = errors.New("export cancelled")
+
+// gpkgCancels maps a live job id to the channel that aborts it. In-memory on
+// purpose: a cancel can only reach a goroutine in THIS process, and a job
+// orphaned by a restart is already reconciled by the startup sweeper. Closed
+// exactly once, by whoever LoadAndDelete-s it.
+var gpkgCancels sync.Map
 
 type GeoPackageJob struct {
 	ID        string          `json:"id"`
@@ -342,6 +353,12 @@ func (s *Server) runGeoPackageJob(id, path string, o gpkgExportOpts, isAOI bool)
 			s.failGeoPackageJob(id, o, fmt.Sprint(rec))
 		}
 	}()
+	// The cancel channel lives exactly as long as the goroutine that can act
+	// on it. DELETE on a live job closes it; the build notices between rows.
+	cancel := make(chan struct{})
+	gpkgCancels.Store(id, cancel)
+	defer gpkgCancels.Delete(id)
+	o.Cancel = cancel
 	// Queued behind another build: only one runs at a time, and "waiting for
 	// another export to finish" is a different thing from "0%" — a progress bar
 	// that has not moved for four minutes reads as broken.
@@ -351,7 +368,14 @@ func (s *Server) runGeoPackageJob(id, path string, o gpkgExportOpts, isAOI bool)
 			"Preparing GIS export: "+o.AreaName+gpkgTitleSuffix(o),
 			"Waiting for another export to finish first.")
 	}
-	gpkgBuildSem <- struct{}{}
+	// Cancellable even while queued: a job waiting behind another export owns
+	// nothing yet, so aborting it here is free.
+	select {
+	case gpkgBuildSem <- struct{}{}:
+	case <-cancel:
+		s.cleanupCancelledGeoPackageJob(id, path)
+		return
+	}
 	defer func() { <-gpkgBuildSem }()
 
 	os.MkdirAll(filepath.Dir(path), 0o755)
@@ -383,6 +407,10 @@ func (s *Server) runGeoPackageJob(id, path string, o gpkgExportOpts, isAOI bool)
 	}
 	stats, err := build(path, o)
 	if err != nil {
+		if errors.Is(err, errGPKGCancelled) {
+			s.cleanupCancelledGeoPackageJob(id, path)
+			return
+		}
 		os.Remove(path)
 		s.failGeoPackageJob(id, o, err.Error())
 		return
@@ -390,6 +418,15 @@ func (s *Server) runGeoPackageJob(id, path string, o gpkgExportOpts, isAOI bool)
 	var size int64
 	if st, e := os.Stat(path); e == nil {
 		size = st.Size()
+	}
+	// The row is the job. If a DELETE raced the start of this goroutine (the
+	// cancel channel not yet registered), the row is gone — publishing a card
+	// for it would resurrect what the user just removed.
+	var exists int
+	s.DB.QueryRow(`SELECT COUNT(*) FROM geopackage_jobs WHERE id = ?`, id).Scan(&exists)
+	if exists == 0 {
+		s.cleanupCancelledGeoPackageJob(id, path)
+		return
 	}
 	layersJSON, _ := json.Marshal(stats)
 	nowT := time.Now().UTC()
@@ -413,6 +450,21 @@ func (s *Server) failGeoPackageJob(id string, o gpkgExportOpts, msg string) {
 		msg, time.Now().UTC().Format(time.RFC3339), id)
 	s.upsertGeoPackageNotification(id, o, "geopackage_failed",
 		"GIS export failed: "+o.AreaName, msg)
+}
+
+// cleanupCancelledGeoPackageJob is the whole aftermath of a cancel: the
+// half-written directory, the job row and the notification card all go
+// together. Nothing is left behind on purpose — a cancelled export was the
+// user saying "I don't want this", and a card saying "cancelled" would be one
+// more thing to delete. Asking again simply rebuilds (the export is a pure
+// function of its options).
+func (s *Server) cleanupCancelledGeoPackageJob(id, path string) {
+	if path != "" {
+		os.RemoveAll(filepath.Dir(path))
+	}
+	s.DB.Exec(`DELETE FROM geopackage_jobs WHERE id = ?`, id)
+	s.DB.Exec(`DELETE FROM notifications WHERE notification_type LIKE 'geopackage_%' AND reference_id = ?`, id)
+	slog.Info("geopackage export cancelled", "id", id)
 }
 
 // One notification row per EXPORT QUESTION, rewritten in place — the card is
@@ -517,6 +569,13 @@ func (s *Server) sweepGeoPackages(startup bool) {
 			error='interrupted by a server restart — start the export again'
 			WHERE state IN ('pending','running')`)
 	}
+	// Orphan notifications: a card whose job row is gone can never resolve —
+	// the client polls, gets 404, and shows "checking…" forever. A notification
+	// is the job's status, so no job means no card.
+	s.DB.Exec(`DELETE FROM notifications
+		WHERE notification_type LIKE 'geopackage\_%' ESCAPE '\'
+		  AND (reference_id IS NULL
+		       OR reference_id NOT IN (SELECT id FROM geopackage_jobs))`)
 	// Orphan directories: a row deleted by hand leaves bytes behind. Each job
 	// owns one directory named by its id, so the check is "is this id still a
 	// job" rather than a filename match.
@@ -697,13 +756,22 @@ func (s *Server) HandleAPIGeoPackageDelete(w http.ResponseWriter, r *http.Reques
 	if !ok {
 		return
 	}
-	// A build in flight owns the directory it is writing into. Removing it
-	// underneath the writer would produce a half-file that the job then marks
-	// ready, so cancellation is a different feature; say so rather than
-	// pretending.
+	// A build in flight owns the directory it is writing into, so it cannot be
+	// deleted out from under the writer. Instead the DELETE becomes a CANCEL:
+	// close the job's cancel channel and let the build goroutine — the one
+	// owner of the directory — stop at the next row and clean up everything
+	// itself (file, row, card). 202, not 200: the cleanup is the goroutine's,
+	// and it happens a moment after this response.
 	if j.State == "pending" || j.State == "running" {
-		http.Error(w, "this export is still building — it can be deleted once it finishes",
-			http.StatusConflict)
+		if c, ok := gpkgCancels.LoadAndDelete(j.ID); ok {
+			close(c.(chan struct{}))
+			writeJSON(w, http.StatusAccepted, map[string]interface{}{"cancelled": true, "id": j.ID})
+			return
+		}
+		// No live goroutine in this process (restart raced the sweeper, or the
+		// row is stale). Nothing is writing, so the direct cleanup is safe.
+		s.cleanupCancelledGeoPackageJob(j.ID, path)
+		writeJSON(w, http.StatusOK, map[string]interface{}{"deleted": true, "id": j.ID})
 		return
 	}
 	if path != "" {
