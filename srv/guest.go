@@ -58,7 +58,12 @@ func withGuest(r *http.Request, g *GuestSession) *http.Request {
 // place a reviewer can read in ten seconds.
 func guestMayRead(r *http.Request) bool {
 	if r.Method != http.MethodGet && r.Method != http.MethodHead {
-		return false
+		// One deliberate exception: the filtered geology export is a READ
+		// wearing a POST — the body is the selection being asked about, the
+		// server writes nothing, and the same data is already guest-readable
+		// whole via GET /api/geomap/geopackage. Without this, a share link
+		// that shows the geology panel offers a download button that 401s.
+		return r.Method == http.MethodPost && r.URL.Path == "/api/geomap/geopackage"
 	}
 	p := r.URL.Path
 	switch {

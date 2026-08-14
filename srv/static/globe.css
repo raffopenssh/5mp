@@ -559,6 +559,10 @@
            nowhere near the arrow that opened it. Sized to the panel it belongs
            to. */
         .ml-menu-dl { width: 300px; min-width: 0; max-width: calc(100vw - 12px); }
+        /* A build indicator that does not move reads as a hang. Lucide's
+           loader glyph is a static font character; it only becomes a spinner
+           if something turns it — everywhere it appears. */
+        .icon-loader { display: inline-block; animation: spin 0.9s linear infinite; }
         .ml-menu-dl .mode-menu-note { padding: 6px 9px; }
         /* Two rows both named "GeoPackage" (as in the park menu, where the
            difference is a gigabyte): the ‘em’ is the only thing telling them
