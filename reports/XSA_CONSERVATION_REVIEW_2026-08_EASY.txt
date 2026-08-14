@@ -115,8 +115,8 @@ standards, this is a low-deforestation landscape.
     2026 |###                  30    must not be compared)
 
 THE 2023 SPIKE IS PROBABLY NOT REAL. Almost all of it (282 of 314 km2) is a
-handful of "logging" blocks flagged as suspect by the system itself, in one
-remote corner in the far north. Three independent lines of evidence say
+handful of "logging" blocks flagged as suspect by the system itself, in
+one remote corner of the far north - the Kafia Kingi borderlands. Three independent lines of evidence say
 artefact, not logging boom:
   - Century-old survey maps show that exact ground as uninhabited dune
     country crossed by hunters' trails - one is even named "the elephant
@@ -267,8 +267,8 @@ Two clusters matter:
     since 1996).
 
 How long has this been going on? The century-old maps answer: one site,
-"Hofrat el Nahas" - Arabic for "the copper pit" - is printed on the
-colonial sheets at 9.7610 N 24.3200 E; 8 km away (9.7840 N 24.2505 E) is
+"Hofrat el Nahas" - Arabic for "the copper pit", in the Kafia Kingi
+enclave - is printed on the colonial sheets at 9.7610 N 24.3200 E; 8 km away (9.7840 N 24.2505 E) is
 a modern mine where an armed attack was reported in 2016. The same pit,
 worked and fought over, a century apart.
 And it is not alone: two gold mines mapped today on OpenStreetMap
