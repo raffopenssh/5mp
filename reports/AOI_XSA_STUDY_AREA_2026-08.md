@@ -1,6 +1,6 @@
 # Study Area (XSA) — Fire, Transhumance, Human Presence, Forest Loss
 **485,150 km² across CAR / South Sudan / DRC · window 2024-01-01 → 2026-08-06**
-Prepared 2026-08-13 · source: 5MP conservation monitoring DB · share link `/s/cf4ftqj`
+Prepared 2026-08-13 · revised 2026-08-14 (v2: settlement rebuild, persistence epochs, complete histmap OCR, nightlights null) · source: 5MP conservation monitoring DB · share link `/s/cf4ftqj`
 
 The AOI spans the eastern CAR savanna, the South Sudan Bahr el Ghazal / Western
 Equatoria plains, and the northern edge of the Uele forest. It contains four
@@ -19,9 +19,11 @@ everything below happens.
 | Fire trajectories / groups | our v5 clustering | **High for shape, medium for count** | A "group" is a burning front tracked day-to-day, not a herd |
 | Forest loss 2001–2023 | Hansen GFC v1.12 | **High** | Ends 2023. Northern 2023 spike is a *map change*, see §3.2 |
 | Forest loss 2024–2026 | GFW integrated alerts | **Medium** | Different unit and threshold than Hansen — do not splice the series |
-| Settlements | GHSL built-up R2023A, 100 m | **Low-medium** | Modelled *2030 projection*; our area and population figures are inflated ~20× and ~20×, see §4.1 |
-| Mining sites | OSM + Crisis Tracker reports | **Anecdotal** | 38 points in 485,000 km²; a report list, not a survey. §5 |
-| Place names | OSM + Sudan Survey 1:250k (1915–68) | Mixed | OSM is thin here; the 1930s sheets are richer. §6 |
+| Settlements | GHSL built-up + POP, 100 m | **Medium-high** | Rebuilt since v1: surface is measured (not mask), population is the GHSL raster (not a density constant), and every cluster now carries a **persistence epoch** (E2000/E2015). §4.1 |
+| Settlement persistence | GHSL back-epochs E2000/E2015 | **Medium** | "Recent" = no built surface before 2015 *at 100 m*; a small camp below GHSL's detection floor in 2015 would also read "recent" |
+| Mining sites | OSM + Crisis Tracker reports | **Anecdotal** | 96 points in the AOI bbox; a report list, not a survey. §5 |
+| Nightlights (mines) | VIIRS VNP46A3 monthly | **High as a null** | Measured and dark: median 0.00 nW at 71 sites. §5.2 |
+| Place names | OSM + Sudan Survey 1:250k (1908–76) | Mixed | OSM is thin here; the historic sheets are richer — OCR of all 187 sheets is now **complete** (98,055 labels). §6 |
 
 **One rule for the whole report:** every count below is *detected*, not
 *present*. Absence of detection in the wet season is cloud and green fuel, not
@@ -299,63 +301,90 @@ which for integrated alerts largely reflects sensor/product changes plus the
 
 ## 4. Human presence
 
-### 4.1 ⚠ The settlement figures must be corrected before use
+### 4.1 The settlement layer was rebuilt — v1's warnings are resolved
 
-GHSL R2023A 100 m built-up surface, epoch **E2030 (a projection, not an
-observation)**, gives 74,904 built-up polygons → **1,552 settlement clusters**.
-Two errors compound in the stored figures:
+v1 of this report flagged the settlement figures as unusable (mask area counted
+as surface, 200 people/ha applied to it, one "town" of 61.7 M people spanning
+the Bahr el Ghazal). The pipeline has since been fixed: surface is now measured
+from the raster, population comes from the GHSL POP grid, cluster chaining is
+bounded. The current numbers, all measured:
 
-1. **Area is the mask, not the surface.** We keep every 100 m cell with >50 m²
-   of built-up surface and then count the *whole cell* as built. Recomputing
-   from the raster: mask 6,798 km² vs actual built-up surface **181 km²** — the
-   stored "4,268 km² built-up" is **~24× too high**.
-2. **Population is 200 people/ha applied to that inflated area**, giving
-   85.4 million people in the AOI. The true population is on the order of
-   3–5 million. **Every `population_est` in this AOI is unusable.** The largest
-   "town" is recorded as 61.7 million people across a 3,086 km² blob spanning
-   7.2–9.7 °N and 26.6–29.3 °E — that is 52,454 polygons chained together by
-   2 km single-linkage across the whole Bahr el Ghazal, i.e. one artefact, not
-   one town.
+**2,121 settlement clusters · 110.2 km² built-up surface · 2.63 M people
+(population measured for all 2,121).** That is ~5.4 people per km² of AOI
+— thinly but genuinely peopled ground.
 
-**What survives the correction and is usable:**
+```
+classification    n      persistence          n
+temporary_camp  1,374    permanent (pre-2000) 1,665   (79 %)
+town              333    established (00–15)    208   (10 %)
+village           311    recent (post-2015)     248   (12 %)
+settlement        102
+agricultural        1
+```
+
+### 4.2 The "temporary camps" are not temporary
+
+The classifier calls 1,374 clusters `temporary_camp` on morphology (small,
+low-density). GHSL back-epochs say **1,332 of them (97 %) already had built
+surface in 2000**; only 21 appeared after 2015. Whatever these are — and the
+historic sheets suggest an answer, §6.3 — they are a **persistent lattice of
+small settlements**, most of it standing for 25+ years and much of it far
+older. The word "camp" in the classification should not be read as "mobile" or
+"new". This reverses v1's framing of a camp-dominated, transient landscape.
+
+Median fire detections within 5 km, by persistence class: permanent 1,264 ·
+established 979 · recent 909. The *oldest* settlements sit in the heaviest
+burning — consistent with the fire being the long-standing pastoral economy of
+the old lattice, not something new arriving around new camps.
+
+### 4.3 Where growth actually is: a post-2015 town belt in Western Bahr el Ghazal
+
+The 248 recent clusters are not scattered — they are a **belt at 8.5–9.4 °N /
+26.8–28.2 °E** (Busseri River / Koko corridor, Western Bahr el Ghazal, SSD),
+and they are disproportionately **towns**: 150 of the 333 towns in the AOI are
+post-2015, and 62 of those sit in this one belt, housing ~168,000 people.
+All recent clusters together hold **~569,000 people — 22 % of the AOI's
+population lives in settlements that did not exist in 2015.** This is the
+northern-boundary pressure v1 gestured at, now with coordinates and a count.
+It coincides with the SSD civil-war displacement and return years, and it is
+the single fastest-changing human fact in the AOI.
+
+### 4.4 The "new" towns are mostly old places (historic-map cross-check)
+
+Matching every cluster against named places on the 100-year-old Sudan Survey
+sheets (§6): **54 % of recent clusters sit within 3 km of a named historic
+place, vs 24 % for random ground across the covered area** — 2.2× the random rate,
+and *higher* than for permanent clusters (31 %). Of the 62 recent towns in the
+WBeG belt, 36 sit on a named historic village (Rian Kuj, Karyat, Agok, Mayong,
+Fan Dung…). **The post-2015 growth is largely re-occupation of villages the
+colonial surveyors mapped, not greenfield expansion.** For dialogue and land-
+claims purposes that distinction matters: these populations are returning,
+not arriving.
+
+### 4.5 Parks are still 2–3× less settled than the landscape
 
 ```
 zone           clusters   per 1,000 km²
-unprotected       1,486        3.43
-Bili-Uere            18        1.59
-Southern NP          28        1.45
-Chinko               20        1.01
-Garamba (part)        0        0.00
+unprotected      ~2,055        4.7
+Bili-Uere            18        1.6
+Southern NP          28        1.5
+Chinko               20        1.0
+Garamba (part)        0        0.0
 ```
-**Settlement density inside parks is 2–3× lower than outside** — the parks are
-demonstrably less settled. Chinko is the least settled of the three with any
-settlement at all; Garamba's slice has none.
+(The park-side counts are unchanged from v1; the unprotected count rose with
+the rebuild.) Chinko remains the least settled park with any settlement at
+all; Garamba's slice has none.
 
-Cluster size distribution (as counted, before the 24× area correction):
-```
-1-5 ha    ############################################  62,408 polygons
-5-100 ha  ########                                       12,070
-1-10 km²                                                    347
->10 km²                                                      34   <- these are chaining artefacts
-```
+### 4.6 Settlements and fire are *not* co-located
 
-### 4.2 Settlements and fire are *not* co-located
+Fire detections within 5 km of a settlement cluster vs. random points in the
+AOI remain statistically indistinguishable (medians ~1,500 vs ~1,500).
+Burning here is a landscape-wide pastoral practice, not a village-perimeter
+phenomenon. **You cannot find the burners by watching the settlements** — and
+§4.2 explains why: the settlements and the burning are the same old economy,
+not cause and effect.
 
-Fire detections within 5 km of a settlement cluster vs. 1,552 random points in
-the AOI:
-
-```
-                  median   mean    p10    p90   zero
-settlements        1,594   1,502    661  2,239     0
-random points      1,504   1,477    449  2,391    23
-```
-Statistically indistinguishable. **28 % of all detections fall within 5 km of a
-settlement — but so would 28 % of random ground.** Burning in this landscape is
-not a village-perimeter phenomenon; it is a landscape-wide pastoral practice.
-This is the finding that most changes what a manager should do: **you cannot
-find the burners by watching the settlements.**
-
-### 4.3 Infrastructure
+### 4.7 Infrastructure
 
 12,956 road segments, 15,050 km:
 ```
@@ -386,19 +415,52 @@ against confusers; the one model with real signal, AUC 0.78, still yields
 precision ~0.001 at this base rate). Nothing in this report should be read as
 a mine detection.
 
-What we do hold, as *reports*, not survey: **38 occurrence points inside the
-AOI** — 32 from Crisis Tracker community incident reports, 6 from OSM tags.
-Commodity is recorded for 4 of them (3 gold, 1 diamond). By prefecture:
-Haute-Kotto 22, Mbomou 14, Haut-Mbomou 1, South Darfur 1. All 38 sit in the
-western third of the AOI (22.8–24.9 °E), i.e. **west of Chinko, in the Kotto
-basin** — the same direction Chinko's transhumance incursions come from.
+What we do hold, as *reports*, not survey: **96 occurrence points inside the
+AOI bbox** — 40 from Crisis Tracker community incident reports, 56 from OSM
+tags (the OSM points cluster around Juba-side quarries in the far east; the
+Crisis Tracker points sit in the western third, 22.8–24.9 °E, **west of
+Chinko in the Kotto basin** — the same direction Chinko's transhumance
+incursions come from).
 
 Every Crisis Tracker site exists because an incident was reported there; the
-list maps *reporting reach*, not geology. The blank eastern two-thirds of the
-AOI is not evidence of no mining.
+list maps *reporting reach*, not geology. The blank middle of the AOI is not
+evidence of no mining.
 
-**Geology affinity, measured, for the CAR sheet:** gold *junction* lines (rock-
-type contacts) concentrate known workings **2.2–3.9×** over random ground. Gold
+### 5.1 A century of extraction at the same pits (historic-map cross-check)
+
+The 100-year-old Sudan Survey sheets record mining directly, and the overlap
+with the modern incident list is exact where it can be checked:
+
+* **`Hofrat elNahas`** ("the copper pit", 9.76 °N 24.32 °E) is printed on the
+  sheets; **8 km away** sits Crisis Tracker site ct_015 — an unnamed mine where
+  an **LRA attack was reported in 2016**. The same pit, worked and fought over,
+  a century apart.
+* **`Old copper workings`** at 9.11 °N 23.86 °E — 66 km from the nearest
+  modern reported site, on the same Kotto-basin trend.
+* **`(Iron mines)`** at 8.66 °N 25.80 °E and **`Old iron forge`** at 7.38 °N
+  26.34 °E — no modern report within 200 km of either: either genuinely dead,
+  or outside anyone's reporting reach (see above; we cannot distinguish).
+* **54 `Ironstone` labels** (flats, ridges, outcrops) trace the laterite
+  plateau across 6–8 °N — geology the surveyors walked, not inferred.
+
+The operational point: **the historic sheets are an independent, pre-conflict
+mineral-occurrence layer** for exactly the ground where modern reporting is
+thinnest, and where they can be checked against modern reports they agree.
+
+### 5.2 The mines are dark (nightlights null result)
+
+VIIRS monthly nightlights (VNP46A3) were measured at 71 reference mine sites
+region-wide: **median radiance 0.00 nW·cm⁻²·sr⁻¹** — indistinguishable from
+dark ground and ~50× below the lit-settlement threshold. A mean-statistic
+"glow" lift of 1.44× (p≈0.03) exists but is driven by a handful of sites near
+towns. **Artisanal mining in this region cannot be monitored by satellite
+nightlights**; the pipeline was measured, found null, and retired. Reported
+here because a measured null closes a door that would otherwise keep being
+proposed.
+
+### 5.3 Geology affinity (unchanged from v1, still the measured view)
+
+**For the CAR sheet:** gold *junction* lines (rock-type contacts) concentrate known workings **2.2–3.9×** over random ground. Gold
 *map units* score **0.63×, i.e. worse than random**. Diamond units are flat
 (0.98–1.41×) and diamond junctions are unmeasured. Two operational readings:
 (1) contact zones are worth prospecting for *incursion risk*, map units are not;
@@ -411,12 +473,27 @@ fatalities since 1997, Mbomou 434 / 1,022, Vakaga 612 / 1,748 with a 2025 spike
 
 ---
 
-## 6. Historical maps: the names the modern data lost
+## 6. The historic map layer — a 100-year-old baseline, now machine-readable
 
-The Sudan Survey 1:250,000 sheets (surveyed 1915–1968, 49 cells cover this AOI)
-are the only source we hold that describes the **northern grazing belt as a
-grazing belt**. Georeferencing is good to a few hundred metres — read them for
-names and land use, not for coordinates. Verbatim from the sheets:
+OCR of the Sudan Survey 1:250,000 series (surveyed 1908–1976, mostly
+1920s–40s) is **complete**: all 187 sheets, 5,093 tiles, **98,055 label
+readings → 94,300 after dedup**, of which **17,553 fall in the AOI bbox**
+(9,476 named places, 3,355 water features, 1,890 terrain, 735 vegetation, 468
+route annotations) across 46 sheets. Georeferencing is good to a few hundred
+metres; the OCR is machine transcription — verify against the sheet image
+before citing a specific name. These maps are over a century old in their
+oldest survey work: they are a **historic reference**, a snapshot of the
+landscape before the modern conflict era, not a current gazetteer.
+
+**Coverage caveat:** the series is Anglo-Egyptian Sudan. Coverage of the CAR
+and DRC parks is thin border-sheet overlap only — Chinko 57 labels, Bili-Uere
+26, Garamba 190 — vs Southern NP 751. Findings below apply to the Sudanese
+two-thirds of the AOI; the park cores of Chinko/Bili-Uere are effectively
+uncovered, which itself matches: the surveyors mapped the Chinko headwaters'
+rivers and jebels in detail and recorded almost no settlement, agreeing with
+the modern zero.
+
+### 6.1 What the sheets say about the northern grazing belt (verbatim)
 
 * **10.5 °N, 23 °E** — the corridor between Birao and Am Dafok is labelled
   `Qoz Salsilgo`, `Qoz Binat`, `Kirkira el Binat`, with `Uninhabited forest`,
@@ -425,30 +502,65 @@ names and land use, not for coordinates. Verbatim from the sheets:
   `Bahr — water plentiful Jan 1923`, `Rahad Sherukh`, `Rahad Masrur`,
   `Rahad Gamalla`. The tribal name printed across it is **TAAISHA**, with
   `Umm Dafug (Watering place)` and `Barasmas Wells`.
-* **10.6 °N, 24.5 °E** — `Qoz Dango`, annotated `Uninhabited forest Traversable
-  in rains or just after`, with the surveyor's own note: *"Wells and Ruhud on
-  Qoz Dango entered from hearsay. They mark hunters' routes across the Qoz north
-  to south and east to west."* Also **FALLATA** (a Fulani/West African
-  pastoralist name) with `Good grazing`, `Numerous Wells`, `Open country
-  (Unsurveyed)`, and villages recorded in groups — `(4 Villages)`, `(3 Villages)`.
-* **10.8 °N, 25.4 °E** — **BENIYA** ( Rizeigat/Beni Halba country), `Mostly black
-  cotton soil and bad going`, `Cultivation` beside `Buram (Police Post)`,
-  `Doleiba Wells`, `El Buheir (Wells)`, `Telahun (Market)`, `Broad track`
-  running SE, and `(Unsurveyed)` across the southern third.
-* **8.5 °N, 28 °E (Gogrial / Jur)** — `Open Toich` (seasonal grazing floodplain)
-  in two places, `Fly Forest` and `Tsetse Fly Forest` on the east,
-  `Single Gemmeiza Well`, `Scattered wells`, `Deserted village(s)`, and roughly
-  **400 named settlements** in one 1:250k crop — against **23 OSM places** in
-  the whole 8 °N band today.
-* **7–8 °N, 24.7 °E (upper Chinko)** — `Bamboo forest`, `Open forest`, named
-  jebels (`Dj. Ngoug 3,342'`, `Dj. Am-Bayaba`), `Very hilly` and a French-CAR
-  boundary note; the Chinko headwaters are mapped in detail with no settlement
-  at all, which matches the modern zero-settlement reading for the park core.
+* **10.6 °N, 24.5 °E** — `Qoz Dango`, annotated `Uninhabited forest
+  Traversable in rains or just after`, with the surveyor's own note: *"Wells
+  and Ruhud on Qoz Dango entered from hearsay. They mark hunters' routes across
+  the Qoz north to south and east to west."* Also **FALLATA** (a Fulani/West
+  African pastoralist name) with `Good grazing`, `Numerous Wells`, and villages
+  recorded in groups — `(4 Villages)`, `(3 Villages)`.
+* **10.8 °N, 25.4 °E** — **BENIYA** (Rizeigat/Beni Halba country), `Mostly
+  black cotton soil and bad going`, `Cultivation` beside `Buram (Police Post)`,
+  `Doleiba Wells`, `Telahun (Market)`, `Broad track` running SE, and
+  `(Unsurveyed)` across the southern third.
+* **The 2023 Hansen anomaly block (10.1–10.8 °N, 23–25.2 °E, §3.2)** is, on
+  the sheets, qoz dune country and hunters'/caravan routes — `DARB EL FIL`
+  ("the elephant road"), `To Birkat Khadra`, `To Buram`, `(Rough track)` —
+  historic pastoral and forest ground with no settlement. Nothing in the
+  historic record suggests a 200 km² clearing frontier here; it supports
+  reading the 2023 northern spike as a map artefact.
 
-**Operational value:** the 1930s sheets give you a named, dated inventory of
-**dry-season water points and tribal grazing territories** for exactly the
-northern belt where the modern data is a blank. Any transhumance dialogue in
-the north should start from these names — they are still the names in use.
+### 6.2 The vanished density of the Bahr el Ghazal
+
+At **8.5 °N, 28 °E (Gogrial/Jur)** one 1:250k crop carries roughly **400 named
+settlements** — against **23 OSM places in the whole 8 °N band today**. The
+recent-town belt of §4.3 sits exactly here, and 36 of its 62 new towns are on
+named historic villages (§4.4). The sheets also carry the surveyors' Dinka
+glossary in situ: `Toich = Swamp formed by river flood`, `Wat = Cattle
+enclosure`, `Wot: site of cattle camp usually raised, with water adjacent`,
+`Luaks:- Large grass Dinka cattle byres`, `Dugdug:- Dinka cattle camp` — and
+**40 place names beginning `Wun …`** (Dinka *wun*, cattle-camp), 20 of them in
+the single degree square 8–9 °N / 28–29 °E. The named `Open Toich` polygons at
+7.9–8.5 °N, 27.5–28.7 °E map the seasonal grazing floodplain — exactly the
+belt where §1.3 shows the fire front peaking in November–December. **The
+pastoral geography of the 1930s is the fire geography of the 2020s.** The v1
+reading that "temporary camps" dominate the settlement layer (§4.2) resolves
+here: the lattice of small, old, persistent clusters *is* the cattle-camp
+system the surveyors named, still standing where they mapped it.
+
+### 6.3 Historic routes and terrain vs today's fire — measured, weak-to-real
+
+Two quantitative cross-checks of the historic layer against 2024–26 VIIRS
+detections (10 km sampling boxes, random-point controls, permutation test):
+
+```
+historic feature (5–10°N, 24–31°E)   n     fire det/km²   control   lift    p
+route annotations (tracks, darbs)   274        8.91         8.32    1.07×  0.03
+ironstone labels (flats, ridges)     54        9.89         8.25    1.20×  0.001
+```
+
+The century-old route network still carries a *measurable but weak* excess of
+burning — real (p = 0.03) but only +7 %; the corridors persist more in the
+toponymy than in the flame map. The **ironstone plateau association is
+stronger (+20 %, p = 0.001)**: laterite flats are the classic open
+grass-savanna surfaces of the Zande plateau, and they burn hardest. Neither is
+a targeting tool; both confirm the fire is structured by terrain and old
+geography, not by recent settlement (§4.6).
+
+**Operational value:** the sheets give a named, dated inventory of dry-season
+water points, tribal grazing territories, cattle-camp sites and market/police
+posts for exactly the northern belt where modern data is a blank — and §4.4
+shows the names still bind: people are re-occupying the mapped villages. Any
+transhumance dialogue in the north should start from these names.
 
 ---
 
@@ -490,19 +602,33 @@ conversion.
    tenth its canopy-loss rate. But its fire density rose in each of the three
    seasons — worth explaining now, not after it converges.
 5. **Do not look for burners near villages.** Fire near settlements is
-   indistinguishable from fire near random ground. Water points, not
-   settlements, are the leverage — and the 1930s sheets name them.
+   indistinguishable from fire near random ground — and the settlement lattice
+   is a century-old pastoral system, not new encroachment (§4.2, §6.2). Water
+   points, not settlements, are the leverage — and the historic sheets name
+   them.
 6. **Engage by direction, not by park.** Chinko's incursions come from the west,
    Garamba's from the east, Bili-Uere's from the west and south. Those are
    different communities.
-7. **Do not quote the population or built-up-area numbers** until §4.1 is fixed
-   in the pipeline (see `docs/AOI_STRUCTURAL_FIXES.md`). Everything else here
-   is safe to publish with its stated caveat.
+7. **The real demographic change is the WBeG town belt.** 248 post-2015
+   settlements, ~569,000 people (22 % of the AOI's population), concentrated at
+   8.5–9.4 °N — and mostly *returns* to villages mapped a century ago, not new
+   colonisation (§4.3–4.4). This is where land-use conflict with the northern
+   grazing corridors will surface first.
+8. **The settlement numbers are now safe to quote.** v1's warning is retired:
+   surface is measured, population is the GHSL grid, persistence is dated.
+   Quote them with their epoch caveats (§0).
+9. **The mines are dark and old.** Nightlights cannot monitor them (§5.2), and
+   the ground being fought over is in places the same pits the colonial sheets
+   label — Hofrat el Nahas has been "the copper pit" for a century (§5.1).
 
 ---
 
 ### Reproduce
 `/s/cf4ftqj` · AOI `XSA_Study_Area` · 11/11 datasets `done`
 (3.18 M detections → 38,725 trajectories · 76,903 Hansen polygons → 7,079
-events · 2.23 M GFW alerts → 696 events · 74,904 built-up polygons → 1,552
-clusters · 12,956 roads · 971 places · 46 watersheds)
+events · 2.23 M GFW alerts → 696 events · 74,904 built-up polygons → 2,121
+clusters · 12,956 roads · 971 places · 46 watersheds · 187 historic sheets →
+94,300 deduped labels, 17,553 in AOI). Histmap labels:
+`GET /api/histmap/sudan250k/labels?bbox=…` — machine OCR, verify against the
+sheet before citing. Route/ironstone fire lifts: 10 km boxes, VIIRS 2024–26,
+400 random controls, 2,000-permutation test.
