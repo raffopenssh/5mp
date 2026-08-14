@@ -48,6 +48,20 @@ type ClassifiedDeforestation struct {
 	IsLinear         bool `json:"is_linear"`
 	IsNearRoad       bool `json:"is_near_road"`
 	IsNearSettlement bool `json:"is_near_settlement"`
+
+	// Cropland (GLAD 30 m, scripts/cropland.py) — three questions, three
+	// numbers (invariant 7): CroplandFrac2019 = mean cropland within ~1 km of
+	// the event centroid, the CONTEXT ("farming landscape?");
+	// CroplandEventFrac2019 = share of the event's OWN cleared pixels mapped
+	// cropland in 2016-2019 ("cropped now?"); CroplandConversionFrac = share
+	// cropped in 2019 AND NOT in 2003 — the part of this clearing
+	// attributable to cropland EXPANSION (area_km2 * conversion sums to km²
+	// converted). nil = unmeasured (invariant 1). For year > 2016 the 2019
+	// epoch may predate the clearing, so outcome language gates on the year.
+	CroplandFrac2019       *float64 `json:"cropland_frac_2019,omitempty"`
+	CroplandEventFrac2019  *float64 `json:"cropland_event_frac_2019,omitempty"`
+	CroplandConversionFrac *float64 `json:"cropland_conversion_frac,omitempty"`
+	CroplandSource         string   `json:"cropland_source,omitempty"`
 }
 
 // ClassifyDeforestation determines the cause of deforestation
@@ -179,12 +193,45 @@ func (s *Server) loadDeforestContext(parkID string, df *ClassifiedDeforestation)
 	if roadDist.Valid {
 		df.IsNearRoad = roadDist.Float64 < 2 // Within 2km of a road
 	}
+
+	// Cropland context, measured by scripts/cropland.py. NULL stays nil.
+	if df.ID != 0 {
+		var f19, ef19, conv sql.NullFloat64
+		var src sql.NullString
+		s.DB.QueryRow(`SELECT cropland_frac_2019, cropland_event_frac_2019,
+			cropland_conversion_frac, cropland_source
+			FROM deforestation_events WHERE id = ?`, df.ID).
+			Scan(&f19, &ef19, &conv, &src)
+		if src.Valid {
+			df.CroplandSource = src.String
+		}
+		if f19.Valid {
+			v := f19.Float64
+			df.CroplandFrac2019 = &v
+		}
+		if ef19.Valid {
+			v := ef19.Float64
+			df.CroplandEventFrac2019 = &v
+		}
+		if conv.Valid {
+			v := conv.Float64
+			df.CroplandConversionFrac = &v
+		}
+	}
 }
 
 // Scoring functions
 
 func (s *Server) scoreSlashBurn(df *ClassifiedDeforestation) float64 {
 	score := 0.0
+
+	// The cleared pixels are NEW cropland (in the 2016-2019 GLAD epoch, not
+	// in 2000-2003) — direct evidence of agricultural conversion, but only
+	// meaningful as an OUTCOME for events the raster postdates (year <= 2016).
+	// For later events the crops may predate the clearing.
+	if df.CroplandConversionFrac != nil && df.Year <= 2016 && *df.CroplandConversionFrac > 0.10 {
+		score += 0.3
+	}
 
 	// High fire correlation is key indicator
 	if df.FireRatio > 50 {
@@ -340,23 +387,32 @@ func (s *Server) buildDeforestNarrativeText(df *ClassifiedDeforestation) string 
 		location = fmt.Sprintf("at (%.3f°, %.3f°)", df.Lat, df.Lon)
 	}
 
+	// Measured cropland over the cleared ground (GLAD 2016-2019). Only stated
+	// as an OUTCOME when the raster postdates the event; unmeasured is silent
+	// (invariant 12).
+	crop := ""
+	if df.CroplandConversionFrac != nil && df.Year <= 2016 && *df.CroplandConversionFrac >= 0.05 {
+		crop = fmt.Sprintf(" %.0f%% of the cleared ground is new cropland (GLAD 30m: cropped in 2016-2019, not in 2000-2003) — %.2f km² of this clearing became farmland.",
+			*df.CroplandConversionFrac*100, df.AreaKm2**df.CroplandConversionFrac)
+	}
+
 	// Classification-specific narrative
 	switch df.Classification {
 	case DeforestSlashBurn:
 		return fmt.Sprintf("In %d, %.2f km² cleared %s — likely slash-and-burn agriculture. %d fire detections in the area that year (%.0f fires/km²) indicate active burning for land preparation.",
-			df.Year, df.AreaKm2, location, df.FiresSameYear, df.FireRatio)
+			df.Year, df.AreaKm2, location, df.FiresSameYear, df.FireRatio) + crop
 
 	case DeforestLogging:
 		return fmt.Sprintf("In %d, %.2f km² of forest loss %s shows linear clearing pattern suggesting commercial logging. Low fire activity (%d detections) consistent with mechanical extraction.",
-			df.Year, df.AreaKm2, location, df.FiresSameYear)
+			df.Year, df.AreaKm2, location, df.FiresSameYear) + crop
 
 	case DeforestMining:
 		return fmt.Sprintf("In %d, %.2f km² cleared %s near %s River — pattern consistent with alluvial mining operations. Concentrated clearing with minimal fire use.",
-			df.Year, df.AreaKm2, location, df.NearestRiver)
+			df.Year, df.AreaKm2, location, df.NearestRiver) + crop
 
 	case DeforestEncroachment:
 		return fmt.Sprintf("In %d, %.2f km² lost %s — settlement encroachment pattern. Proximity to existing community (%.1fkm) suggests expansion of agricultural or residential land.",
-			df.Year, df.AreaKm2, location, df.NearestSettlement)
+			df.Year, df.AreaKm2, location, df.NearestSettlement) + crop
 
 	case DeforestNatural:
 		return fmt.Sprintf("In %d, %.2f km² of canopy loss %s in remote area. Minimal human indicators suggest natural disturbance (windthrow, disease, or flooding).",

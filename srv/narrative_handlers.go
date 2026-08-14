@@ -252,6 +252,15 @@ type SettlementNarrative struct {
 	// cluster is a different state than a recent one (invariant 12).
 	ByPersistence         map[string]int         `json:"by_persistence,omitempty"`
 	PersistenceUnmeasured int                    `json:"persistence_unmeasured,omitempty"`
+	// Cropland context, MEASURED from GLAD 30 m cropland extent
+	// (scripts/cropland.py): count of settlements with >=3% mapped cropland
+	// within ~1 km, the mean fraction over measured rows for both epochs
+	// (2000-2003 vs 2016-2019 — the TREND), and how many rows were measured
+	// at all. Basis named per invariant 7; unmeasured is not zero.
+	CroplandSettlements   int                    `json:"cropland_settlements,omitempty"`
+	CroplandMeasuredFor   int                    `json:"cropland_measured_for,omitempty"`
+	CroplandMeanFrac2019  float64                `json:"cropland_mean_frac_2019,omitempty"`
+	CroplandMeanFrac2003  float64                `json:"cropland_mean_frac_2003,omitempty"`
 	ClassifiedList        []ClassifiedSettlement `json:"classified_settlements,omitempty"`
 }
 
@@ -1473,6 +1482,20 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 		}
 	}
 
+	// Cropland aggregate (GLAD 30 m, scripts/cropland.py). Scoped to measured
+	// rows only — the mean of a column where NULL reads as 0 would launder
+	// unmeasured into crop-free (invariant 1).
+	s.DB.QueryRow(`
+		SELECT COUNT(*),
+		       COALESCE(SUM(CASE WHEN cropland_frac_2019 >= 0.03 THEN 1 ELSE 0 END), 0),
+		       COALESCE(AVG(cropland_frac_2019), 0),
+		       COALESCE(AVG(cropland_frac_2003), 0)
+		FROM park_settlements
+		WHERE park_id = ? AND cropland_frac_2019 IS NOT NULL`+
+		settlementFilterSQL("narrative", "polygon_ids"),
+		internalID).Scan(&narrative.CroplandMeasuredFor, &narrative.CroplandSettlements,
+		&narrative.CroplandMeanFrac2019, &narrative.CroplandMeanFrac2003)
+
 	// Get classified settlements with individual narratives
 	narrative.ClassifiedList = s.GetCachedClassifiedSettlements(internalID)
 
@@ -1491,6 +1514,10 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 	if s := persistenceSentence(narrative.ByPersistence, narrative.PersistenceUnmeasured, settlementCount); s != "" {
 		narrative.Summary += " " + s
 	}
+	if s := croplandNarrativeSentence(narrative.CroplandMeasuredFor, narrative.CroplandSettlements,
+		narrative.CroplandMeanFrac2003, narrative.CroplandMeanFrac2019, settlementCount); s != "" {
+		narrative.Summary += " " + s
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(narrative)
@@ -1503,6 +1530,28 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 // when nothing was measured — an absent measurement is not a sentence about
 // zero (invariant 12); when only some clusters were measurable the sentence
 // names its denominator.
+// croplandNarrativeSentence summarises measured GLAD cropland context for the
+// settlement narrative, naming its denominator (measured rows, not all rows)
+// and the trend between the 2000-2003 and 2016-2019 epochs. Returns "" when
+// nothing was measured -- an absent measurement is not a sentence about zero
+// (invariant 12). "Cropland" here excludes pasture and shifting cultivation
+// by the source dataset's definition.
+func croplandNarrativeSentence(measured, withCrop int, mean03, mean19 float64, total int) string {
+	if measured == 0 {
+		return ""
+	}
+	if withCrop == 0 {
+		return fmt.Sprintf("None of the %d settlements measured against GLAD 30m cropland extent has mapped cropland within 1km (pasture and shifting cultivation are excluded from that dataset).", measured)
+	}
+	s := fmt.Sprintf("%d of %d measured settlements have mapped cropland (>=3%% of the surrounding 1km, GLAD 30m, 2016-2019 epoch)", withCrop, measured)
+	if mean19 >= mean03*1.5 && mean19-mean03 >= 0.01 {
+		s += fmt.Sprintf("; mean cropland cover around settlements grew from %.1f%% (2000-2003) to %.1f%%", mean03*100, mean19*100)
+	} else if mean03 >= mean19*1.5 && mean03-mean19 >= 0.01 {
+		s += fmt.Sprintf("; mean cropland cover around settlements fell from %.1f%% (2000-2003) to %.1f%%", mean03*100, mean19*100)
+	}
+	return s + "."
+}
+
 func persistenceSentence(byPersistence map[string]int, unmeasured, total int) string {
 	if len(byPersistence) == 0 {
 		return ""

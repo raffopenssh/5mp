@@ -219,3 +219,42 @@ server; the structural linework route is now `/api/geomap-structural/{layer}`.
   / 8 of 81 areas). An anomaly detector that flags nothing has not cleared the
   data; it has failed to look, and "almost nothing is anomalous" over a whole
   corpus is invariant 1 wearing a result's clothes.
+
+## GLAD cropland context (2026-08-14)
+
+`scripts/cropland.py` measures GLAD UMD global cropland (Potapov et al. 2021,
+30 m, CC BY 4.0; epochs 2000-2003 and 2016-2019) for every clustered
+settlement and every deforestation event. Migrations `058` + `059`; version
+stamp `data/cropland_state.json` (CROPLAND_VERSION — bumping it re-queues all
+areas); nightly cron `--rotate 2` at 06:20; also hooked into
+`backfill_settlement_surface.py convert()` so a recluster re-measures.
+Clips are cached per area+epoch in `data/cropland/clips/` (quadrant VRT →
+`gdal_translate` over `/vsicurl`; a stalled UMD transfer aborts at
+<1 KB/s for 60 s and the area reports UNFINISHED, invariant 1).
+
+**Three questions, three columns** (invariant 7 — don't merge them):
+
+| Column | Table | Question |
+|---|---|---|
+| `cropland_frac_2019` / `_2003` | `park_settlements` | mean cropland in the ~1 km box (`BOX_DEG`, part of the column's definition) around the *cluster* centroid — has this settlement's cropland footprint expanded? |
+| `cropland_frac_2019` | `deforestation_events` | same box over the event centroid — farming landscape *context* |
+| `cropland_event_frac_2019` | `deforestation_events` | share of the event's OWN cleared pixels (polygon_ids → feature_geometries rasterized onto the GLAD grid) cropped in 2016-2019 |
+| `cropland_conversion_frac` | `deforestation_events` | share cropped in 2019 AND NOT in 2003 — `area_km2 × conversion` sums to km² of deforestation attributable to cropland *expansion* (corpus total 273.7 km²; XSA 30.33) |
+
+`cropland_source` names the instrument (`glad_cropland_30m`) or the reason
+unmeasured (`clip_missing`); NULL frac = unmeasured, never zero. **These are
+not area accounting**: the 1 km box is a neighborhood mean (overlapping boxes,
+footprints inherit their cluster's value in the GPKG), so sums over it do not
+reconcile with GLAD regional totals — only `area_km2 × conversion_frac` is
+summable, and only over cleared ground.
+
+Consumers: settlement classifier (`scoreAgricultural`/`scorePastoral` — GLAD
+excludes pasture by definition, so a measured 0 is weak *pastoral* evidence),
+`croplandSentence()` in settlement narratives, park aggregate in
+`narrative_handlers.go` (scoped `cropland_frac_2019 IS NOT NULL`),
+deforestation classifier + narrative (**outcome language gates on
+`Year <= 2016`** — the 2019 epoch may predate a later clearing), GPKG export
+(all columns on both layers). Go reads columns only; Python never writes
+cropland into narrative text because `classifyParkSettlements` rewrites it.
+Tests: `tests/db_tests.sh` (range, conversion ≤ event frac, source names,
+XSA stamp ↔ DB row counts).

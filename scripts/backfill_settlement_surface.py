@@ -327,6 +327,17 @@ def convert(conn, t, sleep, dry):
         return False, {"before": before, "after": after,
                        "error": f"epochs: {ep_summary.get('error')}"}
     ghsl_epochs.stamp(aid, ep_summary)
+    # Cropland context (GLAD 30 m, scripts/cropland.py) — also after the
+    # recluster, for the same reason as persistence: the rebuild wipes the
+    # cluster rows it writes to. A failed clip fails the area (invariant 1).
+    import cropland
+    cl_ok, cl_summary = cropland.derive_for_area(conn, aid, t["geom"], log=log)
+    if not cl_ok:
+        log(f"  UNFINISHED: cropland derive failed "
+            f"({cl_summary.get('error')})")
+        return False, {"before": before, "after": after,
+                       "error": f"cropland: {cl_summary.get('error')}"}
+    cropland.stamp(aid, cl_summary)
     ratio = (after["extent_m2"] / after["area_m2"]) if after["area_m2"] else None
     log(f"  {aid}: {polys:,} polygons ({stale:,} stale removed), "
         f"{clusters:,} clusters"

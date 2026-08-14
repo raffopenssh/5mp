@@ -374,6 +374,38 @@ test_query "osm places for Chinko" "SELECT COUNT(*) FROM osm_places WHERE park_i
 test_query "rivers for Chinko" "SELECT COUNT(*) FROM park_rivers_hydro WHERE park_id='CAF_Chinko'" "nonempty"
 test_query "species for Virunga" "SELECT COUNT(*) FROM park_species WHERE park_id='COD_Virunga'" "nonempty"
 
+# --- GLAD cropland context (scripts/cropland.py) ---------------------------
+# A derived flag names its instrument (invariant 5): every measured value
+# carries cropland_source, fractions live in [0,1], conversion cannot exceed
+# the event's own cropped share, and the XSA stamp in cropland_state.json
+# matches the rows it claims to describe.
+test_query "cropland settlement fracs in [0,1]" \
+    "SELECT COUNT(*) FROM park_settlements WHERE cropland_source='glad_cropland_30m' AND (cropland_frac_2019 NOT BETWEEN 0 AND 1 OR cropland_frac_2003 NOT BETWEEN 0 AND 1)" "0"
+test_query "cropland defo fracs in [0,1]" \
+    "SELECT COUNT(*) FROM deforestation_events WHERE cropland_source='glad_cropland_30m' AND (cropland_frac_2019 NOT BETWEEN 0 AND 1 OR cropland_event_frac_2019 NOT BETWEEN 0 AND 1 OR cropland_conversion_frac NOT BETWEEN 0 AND 1)" "0"
+test_query "cropland conversion <= event frac" \
+    "SELECT COUNT(*) FROM deforestation_events WHERE cropland_conversion_frac > cropland_event_frac_2019 + 1e-9" "0"
+test_query "cropland measured rows name a valid source" \
+    "SELECT COUNT(*) FROM park_settlements WHERE cropland_frac_2019 IS NOT NULL AND COALESCE(cropland_source,'') NOT IN ('glad_cropland_30m')" "0"
+printf "%-55s" "cropland XSA stamp matches DB rows"
+if python3 - <<'PYEOF' 2>/dev/null
+import json, sqlite3
+s = json.load(open('data/cropland_state.json'))['XSA_Study_Area']
+db = sqlite3.connect('db.sqlite3')
+n = db.execute("SELECT COUNT(*) FROM park_settlements WHERE park_id='XSA_Study_Area' AND cropland_frac_2019 IS NOT NULL").fetchone()[0]
+d = db.execute("SELECT COUNT(*) FROM deforestation_events WHERE park_id='XSA_Study_Area' AND cropland_conversion_frac IS NOT NULL").fetchone()[0]
+assert n == s['settlements_measured'], (n, s['settlements_measured'])
+assert d == s['deforestation_events'], (d, s['deforestation_events'])
+PYEOF
+then
+    green "\u2713"
+    PASSED=$((PASSED + 1))
+else
+    red "FAIL"
+    FAILED=$((FAILED + 1))
+    ERRORS+=("cropland XSA stamp does not match DB rows")
+fi
+
 # --- GSW new-water (WP4) — the eval artefact is the deliverable ------------
 # The stop-gate JSON must carry its verdict, its power ceiling (a null
 # without its power is a shrug wearing a result's clothes), and must have

@@ -195,6 +195,8 @@ data/geomaps/geology.gpkg.stamp
 
 # GeoPackage export cache (derived, 21-day TTL, one directory per job)
 data/gpkg_output/
+# GLAD cropland clips: 122 MB of re-downloadable rasters (scripts/cropland.py)
+data/cropland/clips/
 
 # Historical-map fetch scratch: LOC contact thumbnails and rotated run logs
 data/histmaps/thumbs/

@@ -1,0 +1,2741 @@
+{
+ "AGO_Cameia": {
+  "at": "2026-08-14T07:59:43Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "ddb3bdf7c6b543e5913474c112723b791fb407f6d74243cc9002ed873bf96487",
+   "2019": "9ced1647c7e20795c9d6dda5b9de53ea28eedd9023c77e985f8120238a82129b"
+  },
+  "defo_conversion_km2": 0.01,
+  "deforestation_events": 160,
+  "mean_frac_2003": 0.0001,
+  "mean_frac_2019": 0.0004,
+  "settlements": 52,
+  "settlements_measured": 52,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "AGO_Iona": {
+  "at": "2026-08-14T07:59:44Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "e6030ab63068d0d105e1444e074adabec745e6ba883f671fdd842ed40b3a0f9c",
+   "2019": "e6981d2a6885f6afaa67c6d37b1dea1b49dbd3003ad715a94745842a62b59717"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 144,
+  "settlements_measured": 144,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "AGO_Luando": {
+  "at": "2026-08-14T07:59:53Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "7ddebd1714ad2befc977eb1158f6a457c5470dfc5707882adad61d3e6e7e1037",
+   "2019": "6cf88b4c363c7bb229f900ff9972b801382e794354ddf98b8d465ec5fa326c78"
+  },
+  "defo_conversion_km2": 3.45,
+  "deforestation_events": 903,
+  "mean_frac_2003": 0.0001,
+  "mean_frac_2019": 0.0016,
+  "settlements": 244,
+  "settlements_measured": 244,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "AGO_Luengue-Luiana": {
+  "at": "2026-08-14T07:59:57Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "887bfed84c0afa9f207bc4a446bd1a3744863de568ee91476889715b657bd459",
+   "2019": "ad0e2a662ac66216a4dc2eb8c40b1ea0bc5a1e2c29c478b3c59c2b79d41d4d43"
+  },
+  "defo_conversion_km2": 0.0,
+  "deforestation_events": 564,
+  "mean_frac_2003": 0.0001,
+  "mean_frac_2019": 0.0005,
+  "settlements": 136,
+  "settlements_measured": 136,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "BEN_Pendjari": {
+  "at": "2026-08-14T07:59:57Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "269701173ca27ef998fdc8c31d84aad60d36aff6dc54ae052c1fe25a5c34d0c5",
+   "2019": "faf9fca92ac97033431b3ce2b001f5edcc13e0dcd7ccb7c344f4ed2902094bc2"
+  },
+  "defo_conversion_km2": 0.19,
+  "deforestation_events": 34,
+  "mean_frac_2003": 0.1073,
+  "mean_frac_2019": 0.2134,
+  "settlements": 32,
+  "settlements_measured": 32,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "BEN_W_Benin": {
+  "at": "2026-08-14T07:59:57Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "7d5ff15d55f03cfd0a54232c8e769ca2e18e85242521a0bb23caddbc38d47ad2",
+   "2019": "3980c396e5ff6b5d90ec63aacaf18d03d5b716caf4d11e0cc2039f3af0b7c132"
+  },
+  "defo_conversion_km2": 3.72,
+  "deforestation_events": 71,
+  "mean_frac_2003": 0.0446,
+  "mean_frac_2019": 0.0978,
+  "settlements": 80,
+  "settlements_measured": 80,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "BWA_Central_Kalahari": {
+  "at": "2026-08-14T07:59:57Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "1239663be2933030de781389a994dd49013345a9df92f9661fc6ea567932f65b",
+   "2019": "4d687483b7cc0cf1c9a3f90ebe8d7d5fc5a4b69a0d2e3d482a6745366f122640"
+  },
+  "defo_conversion_km2": 0.0,
+  "deforestation_events": 13,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 32,
+  "settlements_measured": 32,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "BWA_Chobe": {
+  "at": "2026-08-14T07:59:58Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "f43d67f047cb6e06e110c4c03f71360c4a6b73fceced0efd6dd62cece4796b87",
+   "2019": "bafd7b857fb9e8604edd64a0c9de161f2b897c9f8d032e28b700a3b3c9726d4c"
+  },
+  "defo_conversion_km2": 0.0,
+  "deforestation_events": 28,
+  "mean_frac_2003": 0.0001,
+  "mean_frac_2019": 0.0002,
+  "settlements": 40,
+  "settlements_measured": 40,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "BWA_Gemsbok": {
+  "at": "2026-08-14T07:59:58Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "f706f93f8dedb90c295b5e09524f7de8bf0a72155dd2ccc9146b5320740cecec",
+   "2019": "f706f93f8dedb90c295b5e09524f7de8bf0a72155dd2ccc9146b5320740cecec"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 48,
+  "settlements_measured": 48,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "CAF_Bamingui-Bangoran": {
+  "at": "2026-08-14T07:59:58Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "3cb0e635d4a049266a81fc8163ed4fe5c1616708215cb435392edab976bfe671",
+   "2019": "bfb7733b92474df410a30312f52231874b6ab9a467ef918be4b62abc25d0525d"
+  },
+  "defo_conversion_km2": 0.02,
+  "deforestation_events": 22,
+  "mean_frac_2003": 0.0012,
+  "mean_frac_2019": 0.02,
+  "settlements": 11,
+  "settlements_measured": 11,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "CAF_Chinko": {
+  "at": "2026-08-14T07:59:59Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "1b842e51048a628012baacbb303246fa8a40553d6a321734ef2cc170f5c0d366",
+   "2019": "79e0fcdc6f8d2e462621c63ca238cabfcb4d5f31459f0b174c050802389b92f9"
+  },
+  "defo_conversion_km2": 0.0,
+  "deforestation_events": 272,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 20,
+  "settlements_measured": 20,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "CAF_Dzanga_Park": {
+  "at": "2026-08-14T08:00:00Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "8f0845d08639340623209d8e7ed3dcbc5e411bf2ab5aec87b50df56bdd31e4c1",
+   "2019": "76856321ff42526e37491f7aba8366fb21784769947d5335d814f93dbc4926ec"
+  },
+  "defo_conversion_km2": 0.01,
+  "deforestation_events": 65,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 4,
+  "settlements_measured": 4,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "CAF_Manovo_Gounda_St_Floris": {
+  "at": "2026-08-14T08:00:01Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "8a4f1dfccd37ad8d96eca0d8fcb2edaae3fb8e5c79eb0d16f74e1eaae4d1757d",
+   "2019": "c337badae40c77ce7e703e40724a96a7baddaaf2f4f88a203dae5d77b8bdfdd1"
+  },
+  "defo_conversion_km2": 0.25,
+  "deforestation_events": 223,
+  "mean_frac_2003": 0.0069,
+  "mean_frac_2019": 0.0204,
+  "settlements": 20,
+  "settlements_measured": 20,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "CIV_Comoe": {
+  "at": "2026-08-14T08:00:03Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "412b9c2016be01928d90e98808797571cfd1107206eefdc0c4b5bd3a43ea9eb5",
+   "2019": "d2058fc45e3226abab5a405a918766ab88f93c09c11b75367bd1520c6d10fb12"
+  },
+  "defo_conversion_km2": 0.23,
+  "deforestation_events": 313,
+  "mean_frac_2003": 0.0152,
+  "mean_frac_2019": 0.0167,
+  "settlements": 56,
+  "settlements_measured": 56,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "CIV_Ta\u00ef": {
+  "at": "2026-08-14T08:00:04Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "cbc48d887c2192ce2d6fda325d870ae402ad9b73e41ceee78f10f96c7c4e1106",
+   "2019": "45ca88b64216f7a106d50eef910259bb44d3d60b5fa3eacae4a658775478c6f3"
+  },
+  "defo_conversion_km2": 0.0,
+  "deforestation_events": 192,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0004,
+  "settlements": 27,
+  "settlements_measured": 27,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "CMR_Bouba_Ndjida": {
+  "at": "2026-08-14T08:00:04Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "1f452998aea3bb1dfbc683af90ba2c0098e90d8d88752f39b82794b45e0220b5",
+   "2019": "fa3cceb6b316d4e1c3c42b308911471c3f2fb9fee3d5d7f5f2fc860fbc0e34cb"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0075,
+  "mean_frac_2019": 0.0541,
+  "settlements": 10,
+  "settlements_measured": 10,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "CMR_Boumba-Djombi": {
+  "at": "2026-08-14T08:00:04Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "1f452998aea3bb1dfbc683af90ba2c0098e90d8d88752f39b82794b45e0220b5",
+   "2019": "fa3cceb6b316d4e1c3c42b308911471c3f2fb9fee3d5d7f5f2fc860fbc0e34cb"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0075,
+  "mean_frac_2019": 0.0541,
+  "settlements": 10,
+  "settlements_measured": 10,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "CMR_Boumba_Bek": {
+  "at": "2026-08-14T08:00:04Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "deforestation_events": 0,
+  "note": "nothing to measure",
+  "settlements": 0,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "CMR_Campo-Ma'an": {
+  "at": "2026-08-14T08:00:04Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "5d57b1ccff15516d2a973a58c9c884b212e2fb4676d892e56135fec09156203a",
+   "2019": "e86d1f2d7c8e280f13727950fbb47fc009c3425aaf2158e30100308258b345ec"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 4,
+  "settlements_measured": 4,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "CMR_Dja": {
+  "at": "2026-08-14T08:00:04Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "8dd24f1c1ab7238a6b2b19b4a80dac3ba0e0f1c20c3a0eb61e9622234a851f9e",
+   "2019": "5f599e87f0485ff92fb9e4b308ed2659a8e38928b36357b7911b727f0c2a37cd"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 2,
+  "settlements_measured": 2,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "CMR_Faro": {
+  "at": "2026-08-14T08:00:04Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "4d69bc61b6f10f6ef42bd1aba24f86fb1c3592ed6bb6689520ea0d74519e5cc8",
+   "2019": "5f4d461755baecf772c617d39b7f7c98902802a8af214bf4459b696d65205dab"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0059,
+  "mean_frac_2019": 0.0638,
+  "settlements": 10,
+  "settlements_measured": 10,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "CMR_Lob\u00e9k\u00e9": {
+  "at": "2026-08-14T08:00:04Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "2bcdd7f51e6642468109f35e0ab7a3f17eb2cebab243b6065c3c317eae501181",
+   "2019": "b8206b7cfaf970d0f9ce14129c60afd8cf466068fd728041255cdb110d1097fd"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 1,
+  "settlements_measured": 1,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "CMR_Mbam_et_Djerem": {
+  "at": "2026-08-14T08:00:04Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "bd500fdf622b3824cb8bc71e93d6ef2d0e8de04abaabab5e3609ffb0522104fb",
+   "2019": "e9bed39b590450456518dfb86f9ff21987f707094008ae28d260cda332b7bdfb"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 1,
+  "settlements_measured": 1,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "CMR_Mont_Cameroun": {
+  "at": "2026-08-14T08:00:04Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "724a1023cfe57ea453faa8a649e18ddecca342415bf707fddeee70826201748c",
+   "2019": "9f017a82406b33bcd7380c4be61bb7170c1630afb28976c140fce24c525f7e2a"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0002,
+  "mean_frac_2019": 0.0,
+  "settlements": 10,
+  "settlements_measured": 10,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "CMR_Nki": {
+  "at": "2026-08-14T08:00:04Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "deforestation_events": 0,
+  "note": "nothing to measure",
+  "settlements": 0,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "CMR_Takamanda": {
+  "at": "2026-08-14T08:00:04Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "d93118efec48f9b9ea3c099170842fe2caa5974d624fcad129cfc4e69512a180",
+   "2019": "2dd413aa3a6687cae23d198778ce6e9667d704c0af1990dc43c3ddb4fa6a2902"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 6,
+  "settlements_measured": 6,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "CMR_Waza": {
+  "at": "2026-08-14T08:00:04Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "d3c8c16e9be30e2afdf36543c6dda562c634009285041960e81e667e02f53fab",
+   "2019": "6485644b9d4e99c3197bde1d8a5c4c36d22e9cc0df0f16ca79a5685e4849a5e7"
+  },
+  "defo_conversion_km2": 0.0,
+  "deforestation_events": 1,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 13,
+  "settlements_measured": 13,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "COD_Abumonbazi": {
+  "at": "2026-08-14T08:00:06Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "ff3fc399037b6111f47ecf551fb31a25112590979b8ccd08a61ca8ea44f53d97",
+   "2019": "d742264d58600796b9d25d40da463f75e6be10e7bd128c597660c0e8e50ff322"
+  },
+  "defo_conversion_km2": 0.53,
+  "deforestation_events": 354,
+  "mean_frac_2003": 0.0001,
+  "mean_frac_2019": 0.0012,
+  "settlements": 23,
+  "settlements_measured": 23,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "COD_Bili-Uere": {
+  "at": "2026-08-14T08:00:22Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "c6da32e79dd4f59c46a6ee0eff500aaf3856f712d8cb8cf0d9994927bd307802",
+   "2019": "41a8fa6c6527d372127b3875b380fa183bd96b0f7b43e71ddc8c6b8961f29189"
+  },
+  "defo_conversion_km2": 41.22,
+  "deforestation_events": 1572,
+  "mean_frac_2003": 0.0001,
+  "mean_frac_2019": 0.0117,
+  "settlements": 176,
+  "settlements_measured": 176,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "COD_Garamba": {
+  "at": "2026-08-14T08:00:23Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "aa3408113e52d7fdc2472588ce37133a3a8790d751ed9a7660ef5d0c2aea5848",
+   "2019": "eb2d99ec37bef89a8708242a004b5e58e926c848375e5e3db45c136f1b144a3c"
+  },
+  "defo_conversion_km2": 0.0,
+  "deforestation_events": 158,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 59,
+  "settlements_measured": 59,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "COD_Itombwe": {
+  "at": "2026-08-14T08:00:23Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "b79c9212c490bb0eeda64e5ff46a0c13a7daffee3412cedcfef8cfe375c7832f",
+   "2019": "062c3e61b0ac2ad90f212ed244dce06b460df9a0937ce22abc668dad087cfbd2"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0085,
+  "mean_frac_2019": 0.0136,
+  "settlements": 94,
+  "settlements_measured": 94,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "COD_Kahuzi-Biega": {
+  "at": "2026-08-14T08:00:23Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "c74685ef7a28762e21402d809b241c3231c57a00d68d0a251d3dfbd0cd72cbf9",
+   "2019": "f5782e8bb44682ef83a161de23fb418a19990e76b1b47d8337cfecb6e7ee1a84"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0058,
+  "mean_frac_2019": 0.0173,
+  "settlements": 64,
+  "settlements_measured": 64,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "COD_Kundelungu": {
+  "at": "2026-08-14T08:00:26Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "6eb00d065147b9b4c4c330143493823a81f9d21f0b65fcd45dbb528c5e2ed96a",
+   "2019": "f2ab0c00c3e054b17a1ed8863ac0c1dec5773cf55c7207b96549fa0e3208d155"
+  },
+  "defo_conversion_km2": 1.87,
+  "deforestation_events": 283,
+  "mean_frac_2003": 0.0035,
+  "mean_frac_2019": 0.0105,
+  "settlements": 160,
+  "settlements_measured": 160,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "COD_Lomami": {
+  "at": "2026-08-14T08:00:26Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "d63aee83cefae4db943396a364cce2a28f9d1b85fd397c3ad9380f57eb823534",
+   "2019": "52428d82f02e046444efe082447a55a3c260ef5c80b159c9f7c6108d05df7435"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 5,
+  "settlements_measured": 5,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "COD_Maiko": {
+  "at": "2026-08-14T08:00:26Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "2d3f04067ab8596f2f4be0fb8a9847128f134bb1e67bc9c305cf7134abe1500b",
+   "2019": "2d3f04067ab8596f2f4be0fb8a9847128f134bb1e67bc9c305cf7134abe1500b"
+  },
+  "defo_conversion_km2": 0.0,
+  "deforestation_events": 54,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 32,
+  "settlements_measured": 32,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "COD_Okapis": {
+  "at": "2026-08-14T08:00:30Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "ea210b7d066fd1b727eb4c7a37cf1829e7e2e39ddbf73bed5ce70b58e8d01af0",
+   "2019": "583d9cd56775c6d37607ba5a3d5b3cbccdd051aacf16383c100a16bed7bbe393"
+  },
+  "defo_conversion_km2": 0.0,
+  "deforestation_events": 539,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0002,
+  "settlements": 69,
+  "settlements_measured": 69,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "COD_Salonga": {
+  "at": "2026-08-14T08:00:30Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "3199851ca458e6ce6472749a75c0e8ddb9aa67e6d0632b8a1d7b80d41650f60e",
+   "2019": "394efcf51ca9acbbfd4104542edfd0940649d85af3316ddf098d106bcf452aa2"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 31,
+  "settlements_measured": 31,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "COD_Tumba-Lediima": {
+  "at": "2026-08-14T08:00:31Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "70457e428328005deb1dd23fb1d83c3e1cac0c94253346f5a28d78761cdb5159",
+   "2019": "6018050d762f0b8b0441e7ff1a373f10240c10b94836617d63036a1bc0e04e20"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.002,
+  "settlements": 180,
+  "settlements_measured": 180,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "COD_Upemba": {
+  "at": "2026-08-14T08:00:31Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "a914d78c6e7d800cbb205dcf53746722b77d85e7a02cc0a6b95699e8deb40b5c",
+   "2019": "e3ba100743e2511a647ca4eeb25cbd707c6fe46c97390db9e1811169883caa3d"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0342,
+  "mean_frac_2019": 0.0518,
+  "settlements": 91,
+  "settlements_measured": 91,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "COD_Virunga": {
+  "at": "2026-08-14T08:00:34Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "f12abd56e1e75ca774aa8a937f9aac94960c9edb36816f2fb55ff60e5f9821d1",
+   "2019": "118c33b3e456c28cdcb15bacc8018d4ca7327a7b281369d7a31a7d64d0d7386b"
+  },
+  "defo_conversion_km2": 2.0,
+  "deforestation_events": 332,
+  "mean_frac_2003": 0.0369,
+  "mean_frac_2019": 0.1277,
+  "settlements": 122,
+  "settlements_measured": 122,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "COG_Conkouati-Douli": {
+  "at": "2026-08-14T08:00:35Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "5d679dcd8c4a6dc2b68d683164f2c8838f9a915de2bb1c78a0630a6919d6c90d",
+   "2019": "a0bd15ef1dcb27e64415a102890b5e834ebe99a1b61c76ca988ced3132c276a8"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 48,
+  "settlements_measured": 48,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "COG_Lac_T\u00e9l\u00e9": {
+  "at": "2026-08-14T08:00:35Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "e995d1f6c6c78a8a3e2c209e7c315d0ebdb00e94a8c4e3fc00a9c2d315a8dca4",
+   "2019": "81490aad25729e20e63184b922528d05065a9030271e3582f5b2c47cf6b361de"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 21,
+  "settlements_measured": 21,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "COG_Lessio-Louna": {
+  "at": "2026-08-14T08:00:35Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "deforestation_events": 0,
+  "note": "nothing to measure",
+  "settlements": 0,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "COG_L\u00e9fini": {
+  "at": "2026-08-14T08:00:35Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "6396dfe60eb4b57e94f434b22273456c8f5755003225f025dffca04fd7e4f8b5",
+   "2019": "237bdd21d7fabb4b237a96a200470c801937b223114e630bbcf01cae782dcf32"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0102,
+  "mean_frac_2019": 0.0525,
+  "settlements": 53,
+  "settlements_measured": 53,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "COG_Nouabal\u00e9-Ndoki": {
+  "at": "2026-08-14T08:00:35Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "deforestation_events": 0,
+  "note": "nothing to measure",
+  "settlements": 0,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "COG_Ntokou-Pikounda": {
+  "at": "2026-08-14T08:00:35Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "f3e876443f11e8cf0952d02af98f64f242b00449a6d64d33466abd70d062887b",
+   "2019": "760216e838e46b0c6d033555295769dc2e929f932ad0d2bc0fbe4f6db4ef395e"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 17,
+  "settlements_measured": 17,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "COG_Odzala_Kokoua": {
+  "at": "2026-08-14T08:00:35Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "ea61dc0762c30378c569a08d43ddaae8e8b0e31574fe0e86204e019ccccd3b3c",
+   "2019": "2cbaa53ce519a5804d7c081b03bee3356c849cae4b7fa8a7bd36db8da26b1813"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 33,
+  "settlements_measured": 33,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "DZA_Ahaggar": {
+  "at": "2026-08-14T08:00:37Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "84783b21f66b21c098761d6346123366a25a6f85482383e09d4b1440d89bfc77",
+   "2019": "94e1e0342c12fbe78fcb9e66d2d96d2a488e68171f6542827eb6f56bb81b4130"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0001,
+  "settlements": 845,
+  "settlements_measured": 845,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "DZA_Djurdjura": {
+  "at": "2026-08-14T08:31:06Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "deforestation_events": 0,
+  "note": "nothing to measure",
+  "settlements": 0,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "ETH_Bale_Mountains": {
+  "at": "2026-08-14T08:00:39Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "4d0042d7a3cd9b981c002a534c68fde6516e91fdc92ba3a8f09532ee19b6a84c",
+   "2019": "4f347ffea09bcab686eef458e3bececf800156b04621925e677ddc5ed9237e87"
+  },
+  "defo_conversion_km2": 6.32,
+  "deforestation_events": 161,
+  "mean_frac_2003": 0.0571,
+  "mean_frac_2019": 0.0973,
+  "settlements": 69,
+  "settlements_measured": 69,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "ETH_Borana": {
+  "at": "2026-08-14T08:00:42Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "140bfe8abff2f22fd2eddd71376bcd2b4d35d6e5feab758c397998e6c1cda1c0",
+   "2019": "1a98a644dd8e2f8ca9c59a426b83458bbea561e713542b2bdd850b35b5dbfe4c"
+  },
+  "defo_conversion_km2": 1.36,
+  "deforestation_events": 177,
+  "mean_frac_2003": 0.0102,
+  "mean_frac_2019": 0.0253,
+  "settlements": 829,
+  "settlements_measured": 829,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "ETH_Gambella": {
+  "at": "2026-08-14T08:00:43Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "f0c9dbe7e006c4cc693fe07d466de7a076ec1ed4b610e15fa6e09e1953a4b455",
+   "2019": "33f8dad0de3f2a1f0b14ab1b9494ce0b6cc7c030679cadc2fcec8de715e13176"
+  },
+  "defo_conversion_km2": 0.0,
+  "deforestation_events": 55,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 7,
+  "settlements_measured": 7,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "GAB_Ivindo": {
+  "at": "2026-08-14T08:00:43Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "a830add40137a33864856f1f6858e9f6043e416e69060475c5f2ca30d94f9218",
+   "2019": "64a86ccc740163adeabefc4103457270f56e9d25065125273d65765a1921ee4d"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 3,
+  "settlements_measured": 3,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "GAB_Loango": {
+  "at": "2026-08-14T08:00:43Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "9d48726b21314bdf91666f4128876dab612c12a383f7f77e6029e1ccb371eed7",
+   "2019": "9d48726b21314bdf91666f4128876dab612c12a383f7f77e6029e1ccb371eed7"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 20,
+  "settlements_measured": 20,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "GAB_Lop\u00e9": {
+  "at": "2026-08-14T08:00:43Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "168202ce0da80d2d1b243833be75bbcc0ca7f6b1963c98b2f268698cebe6fc1b",
+   "2019": "168202ce0da80d2d1b243833be75bbcc0ca7f6b1963c98b2f268698cebe6fc1b"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 19,
+  "settlements_measured": 19,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "GAB_Minkebe": {
+  "at": "2026-08-14T08:00:43Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "3cdb1e589e6ea0664ec948434e7f69cceabd88c9a55a83f920fcd5637ec6754a",
+   "2019": "3cdb1e589e6ea0664ec948434e7f69cceabd88c9a55a83f920fcd5637ec6754a"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 3,
+  "settlements_measured": 3,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "GAB_Monts_Birougou": {
+  "at": "2026-08-14T08:00:43Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "53db1f539bcd93e4ee445eb0056c8ebfb70f7f4856f688469ed6f7106ed19bde",
+   "2019": "53db1f539bcd93e4ee445eb0056c8ebfb70f7f4856f688469ed6f7106ed19bde"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 1,
+  "settlements_measured": 1,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "GAB_Monts_de_Cristal": {
+  "at": "2026-08-14T08:00:43Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "471818d86597f8905ca5f0bbd44a2564a5158f5be49a9352b13a80914f05ed95",
+   "2019": "471818d86597f8905ca5f0bbd44a2564a5158f5be49a9352b13a80914f05ed95"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 1,
+  "settlements_measured": 1,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "GAB_Moukalaba-Doudou": {
+  "at": "2026-08-14T08:00:43Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "5563ad18bab5804ba21cd4e9d94e335f71bcfd0b1386c360a212f582b603fc78",
+   "2019": "5563ad18bab5804ba21cd4e9d94e335f71bcfd0b1386c360a212f582b603fc78"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 7,
+  "settlements_measured": 7,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "GAB_Plateaux_Bat\u00e9k": {
+  "at": "2026-08-14T08:00:43Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "ebd6adbcf00bfb52ebd5dbf78263c6efca740ad2f16b38078dc62c7a1ee4353e",
+   "2019": "2b39ac8a4b81571bce83bb3bf3cb951bd8775200b37d5342ed870edce05c7b3c"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 7,
+  "settlements_measured": 7,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "GAB_Wonga-Wongu\u00e9": {
+  "at": "2026-08-14T08:00:43Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "f46388c244ffe61da0eec4476f96cdca5527e83ecb864962f85c9b5720555ea8",
+   "2019": "f46388c244ffe61da0eec4476f96cdca5527e83ecb864962f85c9b5720555ea8"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 29,
+  "settlements_measured": 29,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "GHA_Mole": {
+  "at": "2026-08-14T08:00:45Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "831e473754a094fb043c8caa57749c6242d77b4305357e47e079ae7b0edbb0f3",
+   "2019": "1f28b8157425a80aaca3b25de3f954f224f9e1ccf8b95b7ab7ef1075e347e9a3"
+  },
+  "defo_conversion_km2": 10.49,
+  "deforestation_events": 130,
+  "mean_frac_2003": 0.0599,
+  "mean_frac_2019": 0.1091,
+  "settlements": 58,
+  "settlements_measured": 58,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "GNQ_Monte_Al\u00e9n": {
+  "at": "2026-08-14T08:00:45Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "3806fa9c2710bd1a9d3a309be45e5eae1f29192f8f4d23a5a85ba5930731d153",
+   "2019": "3806fa9c2710bd1a9d3a309be45e5eae1f29192f8f4d23a5a85ba5930731d153"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 22,
+  "settlements_measured": 22,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "GNQ_Reserva_de_la_Paz": {
+  "at": "2026-08-14T08:00:45Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "deforestation_events": 0,
+  "note": "nothing to measure",
+  "settlements": 0,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "KEN_Aberdare": {
+  "at": "2026-08-14T08:00:45Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "a3b14a4a4815537974ba57f960689a76e5c6f9b425adbc11361857bd3e65e309",
+   "2019": "2a4b5ebf0205e54ca0129e5f7bc05f13a2b843d50327124bd5c910d581ad033e"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.1568,
+  "mean_frac_2019": 0.1655,
+  "settlements": 13,
+  "settlements_measured": 13,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "KEN_Masai_Mara": {
+  "at": "2026-08-14T08:00:45Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "ab5d31c1e4012d1909aac38e19a26c3c6e1d24d76dd9c475f8a83f4a24c9bdcc",
+   "2019": "4d355e056ae6083fa19ba52b21effddf4e1fa4d558e18f7b6a3ffa211eeb41d4"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0107,
+  "mean_frac_2019": 0.0066,
+  "settlements": 55,
+  "settlements_measured": 55,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "KEN_Melako": {
+  "at": "2026-08-14T08:00:45Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "63ca1ec31a2b85779458853e1fe1614c0bbeff821e954d4f6d38ea397e2e45d6",
+   "2019": "63ca1ec31a2b85779458853e1fe1614c0bbeff821e954d4f6d38ea397e2e45d6"
+  },
+  "defo_conversion_km2": 0.0,
+  "deforestation_events": 2,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 61,
+  "settlements_measured": 61,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "KEN_Mount_Kenya": {
+  "at": "2026-08-14T08:00:45Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "d5e6a539309161665d24bde1517774c57313640ce43b58a5545ba0a046511cf1",
+   "2019": "64093c723ac6b2092030f5e9c203167e9ee8606207f0ac8e03a4b866b70baf8b"
+  },
+  "defo_conversion_km2": 4.1,
+  "deforestation_events": 44,
+  "mean_frac_2003": 0.2303,
+  "mean_frac_2019": 0.2496,
+  "settlements": 49,
+  "settlements_measured": 49,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "KEN_Sera_Community_Conservancy": {
+  "at": "2026-08-14T08:00:46Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "1271a094352eebc39eff8b9df74a3ea225d32fd7be0cb17b3c5523f0ecad2e56",
+   "2019": "1271a094352eebc39eff8b9df74a3ea225d32fd7be0cb17b3c5523f0ecad2e56"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 73,
+  "settlements_measured": 73,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "KEN_Sibiloi": {
+  "at": "2026-08-14T08:00:46Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "fd1d6f9356bb1608479d6734eac4db5061e01523ac16665d9e5e0d4c21f8107c",
+   "2019": "fd1d6f9356bb1608479d6734eac4db5061e01523ac16665d9e5e0d4c21f8107c"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 4,
+  "settlements_measured": 4,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "KEN_Tsavo_East": {
+  "at": "2026-08-14T08:00:46Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "349ee79a6a30b7eac877e0aad05f28e6b057cf0a77473edf381ca2b474d612f4",
+   "2019": "a03a2a295e70eba6da466838eae36fa26cf13f5cf1748dffdb66d304a0b1b64d"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0125,
+  "mean_frac_2019": 0.0186,
+  "settlements": 93,
+  "settlements_measured": 93,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "KEN_Tsavo_West": {
+  "at": "2026-08-14T08:00:46Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "fc5172b38281bb82c7d36552cfcb53f5d6507001d4894bc948d010f14785d5a1",
+   "2019": "77d40a4036692e832e54fe6b0b28133ce4b97f0ca1a6e0b8fefb2eb96cfa74f9"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0011,
+  "mean_frac_2019": 0.0046,
+  "settlements": 90,
+  "settlements_measured": 90,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "LBR_Sapo": {
+  "at": "2026-08-14T08:00:46Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "ce123b91a7fd73a7ee5600470db064781c07e9f57b16bbf82b939b4cf2590529",
+   "2019": "ce123b91a7fd73a7ee5600470db064781c07e9f57b16bbf82b939b4cf2590529"
+  },
+  "defo_conversion_km2": 0.0,
+  "deforestation_events": 31,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 2,
+  "settlements_measured": 2,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "LSO_Maloti_Drakensberg": {
+  "at": "2026-08-14T08:00:47Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "360ee1f2528ef92882b40733b6e93cf438d1a194b0dbf918d5f7e55f8cb10359",
+   "2019": "b43f7868fb175ab16b1b138585229bcd333bc42c3e4189b61b066a116dfc9f1c"
+  },
+  "defo_conversion_km2": 0.01,
+  "deforestation_events": 2,
+  "mean_frac_2003": 0.0062,
+  "mean_frac_2019": 0.0108,
+  "settlements": 162,
+  "settlements_measured": 162,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "MLI_Gourma": {
+  "at": "2026-08-14T08:00:47Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "b3afb72e723e9ae0a4f52b4476ccf4bfbb97faeb52776d82c9313ccab7aa7fd4",
+   "2019": "1b93488452de8d2fb09c7da480c635ae1fea3948da584b6df7f1e21dbabd93e3"
+  },
+  "defo_conversion_km2": 0.0,
+  "deforestation_events": 2,
+  "mean_frac_2003": 0.0022,
+  "mean_frac_2019": 0.0018,
+  "settlements": 369,
+  "settlements_measured": 369,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "MOZ_Banhine": {
+  "at": "2026-08-14T08:00:48Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "8a82ab4a7466375ad11f52a99a462532ef5fd3d15c867ebb1a6f40d14a551159",
+   "2019": "b59df28cc1c18c382e32c3e83c114badd87c84a526b385f8f0a325bd722923ca"
+  },
+  "defo_conversion_km2": 0.01,
+  "deforestation_events": 96,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0011,
+  "settlements": 67,
+  "settlements_measured": 67,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "MOZ_Chimanimani": {
+  "at": "2026-08-14T08:00:49Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "b3e1c532bdf481e70da3c469982bfd48fe677ebc974aca1852c1dc6e21265255",
+   "2019": "96905b25ef70080f434b93b5b2225eadb28cdae21188e3a6514c020ee239d8a3"
+  },
+  "defo_conversion_km2": 0.08,
+  "deforestation_events": 96,
+  "mean_frac_2003": 0.0031,
+  "mean_frac_2019": 0.0077,
+  "settlements": 26,
+  "settlements_measured": 26,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "MOZ_Gil\u00e9": {
+  "at": "2026-08-14T08:00:50Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "d3cb099dcdf57d45ed967871ad6563ac2f382b73c06c7748428fbe84b7dd76c4",
+   "2019": "14830f412ddd0fdb421b77808c2c13613b4feaab2162187216abea2439b36452"
+  },
+  "defo_conversion_km2": 0.14,
+  "deforestation_events": 113,
+  "mean_frac_2003": 0.0029,
+  "mean_frac_2019": 0.0109,
+  "settlements": 7,
+  "settlements_measured": 7,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "MOZ_Gorongosa": {
+  "at": "2026-08-14T08:00:52Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "0b58db6aa456040ce78c84231475ecfc4eeee3184eff3f5fa38208c67f0ce019",
+   "2019": "2496ebc7910d2432448c5a3e3c4f615ef15663640d4333e7ca6048ca85265919"
+  },
+  "defo_conversion_km2": 9.72,
+  "deforestation_events": 308,
+  "mean_frac_2003": 0.006,
+  "mean_frac_2019": 0.031,
+  "settlements": 51,
+  "settlements_measured": 51,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "MOZ_Limpopo": {
+  "at": "2026-08-14T08:00:54Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "2af079cc647b8e648fc604754e4363b11b4f3cd551a35fcddf17169f515f2048",
+   "2019": "e9ba684fa45a1d703307aefee56e4aa3b84812f302f96e7b826e1625a8f3c122"
+  },
+  "defo_conversion_km2": 0.98,
+  "deforestation_events": 363,
+  "mean_frac_2003": 0.028,
+  "mean_frac_2019": 0.0326,
+  "settlements": 97,
+  "settlements_measured": 97,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "MOZ_Niassa": {
+  "at": "2026-08-14T08:01:01Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "4a5105cbe28d72c5d2f393d3b51841f9f4df169f40340649aacaeb939ebed102",
+   "2019": "7ba22bfa0580bdf8f8a9cef5eb0cdf45723fc2e8eacfb09e3a3caf15727f999d"
+  },
+  "defo_conversion_km2": 4.95,
+  "deforestation_events": 1021,
+  "mean_frac_2003": 0.006,
+  "mean_frac_2019": 0.016,
+  "settlements": 154,
+  "settlements_measured": 154,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "MOZ_Tchuma_tchato": {
+  "at": "2026-08-14T08:01:28Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "879db6969e287f4665345f0a517ba7ff46bbe1a67312cf317f6be29fb9f48dab",
+   "2019": "392fc5767f4578f265bc7ce653930d79c363b93fc29b42530bc063a0ffda79c2"
+  },
+  "defo_conversion_km2": 74.03,
+  "deforestation_events": 2226,
+  "mean_frac_2003": 0.0065,
+  "mean_frac_2019": 0.0311,
+  "settlements": 629,
+  "settlements_measured": 629,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "MOZ_Zinave": {
+  "at": "2026-08-14T08:01:29Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "358192552ddb9a6c350f79911d91554f2bacc97bfc75a0b280360f66a85d58f6",
+   "2019": "b0563ba1166fd7a953fe45065d47c7deea7f875679b1dd2d06297aeb07ccd066"
+  },
+  "defo_conversion_km2": 0.26,
+  "deforestation_events": 182,
+  "mean_frac_2003": 0.0008,
+  "mean_frac_2019": 0.0025,
+  "settlements": 41,
+  "settlements_measured": 41,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "MWI_Liwonde": {
+  "at": "2026-08-14T08:01:29Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "cb9c7a451225749c461f5f37653ba886b51d90c192608e87e208e41394441ee8",
+   "2019": "995ed57f0b0a86f5835489fd8ff7d7677cc96ad88bccf7d955c0f1461c4221f2"
+  },
+  "defo_conversion_km2": 0.03,
+  "deforestation_events": 17,
+  "mean_frac_2003": 0.0619,
+  "mean_frac_2019": 0.1289,
+  "settlements": 14,
+  "settlements_measured": 14,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "MWI_Mulanje_mountain": {
+  "at": "2026-08-14T08:01:31Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "383a8141e671f97fb52aa47b0e79336c8ea5c2349f8a4c4bc64ddedf9e4ad813",
+   "2019": "1f07bd95d56b3f7ebf32a7d4edcf92bc2f0228a23a5f40c91adba858b3be1bea"
+  },
+  "defo_conversion_km2": 1.32,
+  "deforestation_events": 96,
+  "mean_frac_2003": 0.096,
+  "mean_frac_2019": 0.1125,
+  "settlements": 24,
+  "settlements_measured": 24,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "MWI_Nyika": {
+  "at": "2026-08-14T08:01:34Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "09c50bec73a706660595c0f6976c0539fb639e74255d1c36e77900f5b2408238",
+   "2019": "518be510d08ce4214cae15026edc053a55dbc5a3585b59368f278f56db9356ee"
+  },
+  "defo_conversion_km2": 0.01,
+  "deforestation_events": 248,
+  "mean_frac_2003": 0.0057,
+  "mean_frac_2019": 0.0114,
+  "settlements": 56,
+  "settlements_measured": 56,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "NAM_Ai-Ais_Hot_Springs": {
+  "at": "2026-08-14T08:01:34Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "68d6fec9a739da79d13913d6f1c68523b6da419debe7447d78b32791192e3d95",
+   "2019": "6f6f8c7f57e67d29ffe4e116ac89f8410581831cba237fcacb5740e15900ae23"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 25,
+  "settlements_measured": 25,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "NAM_Bwabwata": {
+  "at": "2026-08-14T08:01:34Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "6b12ad342cd3c18ed4d6266dcaddec63203612e56a624cfcc762b633d06c61bf",
+   "2019": "95e441ed4fb543fef61145a66d4a02104e05b0eb7b3730ebbc4cb60fc3437def"
+  },
+  "defo_conversion_km2": 0.09,
+  "deforestation_events": 48,
+  "mean_frac_2003": 0.0058,
+  "mean_frac_2019": 0.0081,
+  "settlements": 42,
+  "settlements_measured": 42,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "NAM_Etosha": {
+  "at": "2026-08-14T08:01:34Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "9a2cbe58f49b8a7ac7f9035d3a07f0c91a2ac78bc77939c6811080ffb8a43830",
+   "2019": "df254d868ac24f54c5c6e25944b50a3e5fed137342a206ac5695ecc5670299ba"
+  },
+  "defo_conversion_km2": 0.0,
+  "deforestation_events": 4,
+  "mean_frac_2003": 0.0025,
+  "mean_frac_2019": 0.0031,
+  "settlements": 47,
+  "settlements_measured": 47,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "NAM_Namib-Naukluft": {
+  "at": "2026-08-14T08:01:34Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "a5626e74fc0fc6884cee7c5944876fc1173bd48011fdc3f02f9481c19bced3dc",
+   "2019": "6ad0399f3dbe6f83881cca8d3f6cb45f2e06416ec4629751a3bbf7565541c805"
+  },
+  "defo_conversion_km2": 0.0,
+  "deforestation_events": 1,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 99,
+  "settlements_measured": 99,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "NAM_Skeleton_Coast": {
+  "at": "2026-08-14T08:01:35Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "771be89cc29bcdad36f191cf9b4401ace2a23351df8c6560b8bb5ac3b1e82e23",
+   "2019": "d84f2c930cbc7a74b525e319b29abbc8c431549d9db667d3ecbc16df0150de34"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 41,
+  "settlements_measured": 41,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "NER_Termit_et_Tin-Toumma": {
+  "at": "2026-08-14T08:01:36Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "8e2565bd670d47d695f75c6963e9ca5fd70e24111240ac2a34d9193019cba153",
+   "2019": "ce82ec462be3c98bc2ca42f8208d57e3d79e57fddf588b9b39f279906173064e"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 170,
+  "settlements_measured": 170,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "NGA_Cross_River": {
+  "at": "2026-08-14T08:01:36Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "9c11656aba1880059c48da2deb1b086e207ae173c76e60a0681f2776e8957af4",
+   "2019": "33bb909d7d59c0b415d76c5501a385e089874aafe8251f0824b13c31c3d178fa"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0007,
+  "mean_frac_2019": 0.0006,
+  "settlements": 26,
+  "settlements_measured": 26,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "NGA_Gashaka-Gumti": {
+  "at": "2026-08-14T08:01:36Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "198381a5d9060b8ff9c387ce7d3d29460075aec3b2e0d897302fbd06dbaee832",
+   "2019": "65692c94028e43937dfeef56e65e47b6a4e7df967f14a9d2411ec5943158c4eb"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0026,
+  "mean_frac_2019": 0.0417,
+  "settlements": 64,
+  "settlements_measured": 64,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "NGA_Kainji_Lake": {
+  "at": "2026-08-14T08:01:38Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "02c70e9140a44a09ae8bdbd228ed61e2c960f0cfaf174eedc22fd04b7a84b748",
+   "2019": "881bd1b10f39f17cdd9b9ec1c4d1c2af9dc1d8425acb7c4b92aabd723c3c51a4"
+  },
+  "defo_conversion_km2": 3.14,
+  "deforestation_events": 88,
+  "mean_frac_2003": 0.196,
+  "mean_frac_2019": 0.3128,
+  "settlements": 56,
+  "settlements_measured": 56,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "NGA_Yankari": {
+  "at": "2026-08-14T08:01:38Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "73cf30ef8bb76d6682f8c845102a258ff7a2d9d671c60fdf14a9751371e15f97",
+   "2019": "1e74a8c7ca38e55306e58b43dfe1a0efedb7e38c8e919b27b1f2770ae1a4aa09"
+  },
+  "defo_conversion_km2": 2.21,
+  "deforestation_events": 28,
+  "mean_frac_2003": 0.1466,
+  "mean_frac_2019": 0.2071,
+  "settlements": 14,
+  "settlements_measured": 14,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "RWA_Akagera": {
+  "at": "2026-08-14T08:01:38Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "351b8a64ddefe6312a2324aa29c949061c78d88d9c14a09a02891b9a8ee13265",
+   "2019": "2a7a64ad728d6c44b71ccc25419c089c4bd6b59fe5c9f84778349be3a429b9ab"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.005,
+  "mean_frac_2019": 0.022,
+  "settlements": 21,
+  "settlements_measured": 21,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "RWA_Nyungwe": {
+  "at": "2026-08-14T08:01:38Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "e6a81ef171ae2f10999ae1ee202cf0fb2e47b631fa18e6019e2972e99d64d751",
+   "2019": "cb3ce0aa034c9a7c13ae2d9d74a7c583d3e1d2c72e873b4151d025516b2bf873"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0946,
+  "mean_frac_2019": 0.0963,
+  "settlements": 17,
+  "settlements_measured": 17,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "RWA_Volcans": {
+  "at": "2026-08-14T08:01:38Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "e7d69cf90c18c4850664c8ad34f48e18f336e157fb5298e3098adb972462b655",
+   "2019": "0d0cd61fb2884e4bc3151defd95aa4a1a9d824d852b22349d7c8a205e346362f"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.1664,
+  "mean_frac_2019": 0.2332,
+  "settlements": 3,
+  "settlements_measured": 3,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "SDN_Dinder": {
+  "at": "2026-08-14T08:01:39Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "500ef670809162589d4043a2e8e660a7db364c0e787d565e0e60155a6e3591d5",
+   "2019": "6b92cc0e76aabfd501f479ad11b2ad20166b9ba3a166f18197c50a6a865cf6ef"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.3648,
+  "mean_frac_2019": 0.445,
+  "settlements": 116,
+  "settlements_measured": 116,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "SEN_Niokolo_Koba": {
+  "at": "2026-08-14T08:01:42Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "07519503fe92760e604458f68f72437edf8e17183d7c0aad0d20ff617485b75d",
+   "2019": "734c3b627fd328ee576adc034d5e7018206201a8b4eac43a7ec5a1cd9c4483ff"
+  },
+  "defo_conversion_km2": 0.24,
+  "deforestation_events": 175,
+  "mean_frac_2003": 0.0333,
+  "mean_frac_2019": 0.044,
+  "settlements": 44,
+  "settlements_measured": 44,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "SSD_Badingilo": {
+  "at": "2026-08-14T08:01:42Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "78b19b77d2856b5e3344ad1b72515f3e26530ca88bf7a20f9c01dc7f76044a95",
+   "2019": "7a1db7a5cda2e6935af6e49896930affeabb8e71993f7d3ca96cc5d0bdfeffe5"
+  },
+  "defo_conversion_km2": 0.09,
+  "deforestation_events": 38,
+  "mean_frac_2003": 0.0002,
+  "mean_frac_2019": 0.0267,
+  "settlements": 13,
+  "settlements_measured": 13,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "SSD_Boma": {
+  "at": "2026-08-14T08:01:43Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "afc0d345085798333e0d3874e11acdc0d8809e7a0eb56eb63fe412f019e1a70c",
+   "2019": "a8ea451e797b673cfdd84b4320eafa2377f34da458a4bd442a8496643b49c2c1"
+  },
+  "defo_conversion_km2": 0.0,
+  "deforestation_events": 146,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 9,
+  "settlements_measured": 9,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "SSD_Southern": {
+  "at": "2026-08-14T08:01:44Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "a15df56a3ae14b301d8455ff6bd60c07aedd319713be1739d7fb5efeabb8874e",
+   "2019": "865c1736f2dc3771f8a3a89df7905c2982091bd06733b7dd9eee38a55d1ef920"
+  },
+  "defo_conversion_km2": 0.03,
+  "deforestation_events": 149,
+  "mean_frac_2003": 0.0001,
+  "mean_frac_2019": 0.0017,
+  "settlements": 29,
+  "settlements_measured": 29,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "SSD_Zeraf": {
+  "at": "2026-08-14T08:01:45Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "101d12998cc48c1b721513ce283776ee7f7b953c58ef7a8eec7f1edfcb556580",
+   "2019": "05a5db2492f61fe06fde11b41cc7912ac082ae02a2955146e55fdf717a2eda00"
+  },
+  "defo_conversion_km2": 0.0,
+  "deforestation_events": 141,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 92,
+  "settlements_measured": 92,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "TCD_Aouk": {
+  "at": "2026-08-14T08:01:48Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "0465b2392d8db81fa56581d40bbea5e8f0acdd6da99e8d87c87ac30af023775b",
+   "2019": "7d4e39e443d645e69db68c54dca3392e42650edd7066b96224f4f3f83dd2da35"
+  },
+  "defo_conversion_km2": 5.04,
+  "deforestation_events": 413,
+  "mean_frac_2003": 0.072,
+  "mean_frac_2019": 0.1535,
+  "settlements": 240,
+  "settlements_measured": 240,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "TCD_Ennedi": {
+  "at": "2026-08-14T08:01:48Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "0e920e0538171487fe6a911436742ca3bf2ad78d60eebe7a2570195fb5b63f63",
+   "2019": "0e920e0538171487fe6a911436742ca3bf2ad78d60eebe7a2570195fb5b63f63"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 172,
+  "settlements_measured": 172,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "TCD_Ouadi_Rim\u00e9-Ouadi_Achim": {
+  "at": "2026-08-14T08:01:48Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "37ec37094a80751c9269dbe3775bd62688ad5dd14618291b11eecfe3b99b7510",
+   "2019": "2cd503ee4f49395a50b1f97f6d78f9b3d68bcb27cd65a538f27bdbc0c622d960"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 71,
+  "settlements_measured": 71,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "TCD_Zakouma": {
+  "at": "2026-08-14T08:01:48Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "2e6f8627bd15f32175b2ae6172f9e8c1852d4c87e018faa9d4d8d7fea4380517",
+   "2019": "4d75400ed59a33e96434d0d03282ee63df0054c59739cfa9557d9ff5c4bf12f2"
+  },
+  "defo_conversion_km2": 0.0,
+  "deforestation_events": 27,
+  "mean_frac_2003": 0.0129,
+  "mean_frac_2019": 0.0332,
+  "settlements": 9,
+  "settlements_measured": 9,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "TGO_Fazao-Malfakassa": {
+  "at": "2026-08-14T08:01:49Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "fcb21195d168c22f2515803d5664351ba00b5375f0f98de8d3cff3e7a3d464ae",
+   "2019": "3ac71046f6b0f79ada0c1bd318f48970b6727aba44b83d97343c9a8ac09906e2"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0153,
+  "mean_frac_2019": 0.0284,
+  "settlements": 32,
+  "settlements_measured": 32,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "TZA_Katavi": {
+  "at": "2026-08-14T08:01:49Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "c178424c7efba15a5a30df3c2f6141864c3d499bad249de9895d7766b865bfde",
+   "2019": "72e366a0e6911fc03636402b7a2aa860e10ecd62682089a957cf9e2476e18851"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.008,
+  "mean_frac_2019": 0.0521,
+  "settlements": 42,
+  "settlements_measured": 42,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "TZA_Kilimanjaro": {
+  "at": "2026-08-14T08:01:49Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "e81ab9643ad3315f161ff146c433fb9fff3570c1114978f9fd63dcc55b30b0b8",
+   "2019": "fa047dfaeef0ade626ec6dcf33c054b36fd3d8c3c522c1e9d7efe415d75479ec"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0879,
+  "mean_frac_2019": 0.1042,
+  "settlements": 34,
+  "settlements_measured": 34,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "TZA_Kilombero": {
+  "at": "2026-08-14T08:01:49Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "357d63c9fb3019fe212aa52ac2cf8de71237c7918388766b1f20a060ef85e701",
+   "2019": "cbfef0afce71b637520b3c0c79ac741fc0206a6c82af395a496bc038a5d97fe9"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0071,
+  "mean_frac_2019": 0.0343,
+  "settlements": 11,
+  "settlements_measured": 11,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "TZA_Kitulo_Plateau": {
+  "at": "2026-08-14T08:01:49Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "cf7905b9cfd5cc84fa78021fb048b0beb043a35f04d8da4f31cdd18fbb048b01",
+   "2019": "233826f29ea7c7ed1c453c2417f1c19cfc1773b4dc4a0158310055ce80f7900e"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0317,
+  "mean_frac_2019": 0.0431,
+  "settlements": 15,
+  "settlements_measured": 15,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "TZA_Kitwai": {
+  "at": "2026-08-14T08:01:49Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "61be4a2a024b7f3e90c5d3171e52f30a0f7ca14a939fd89193e5b51a64b13d95",
+   "2019": "989a8c419c24ef9748fbf0e4d94fe49d649ab4b2ef19c0f1d37be5d0332f572f"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0197,
+  "mean_frac_2019": 0.0381,
+  "settlements": 86,
+  "settlements_measured": 86,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "TZA_Luasi": {
+  "at": "2026-08-14T08:01:49Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "5abaa35a0086443fc3ab0df3ff57cecc9f7680ed426fe80e49cb83be6d3a3062",
+   "2019": "1fee2710a85e44678a3b3905532302091d80473f85d036ad81ebdda0daaa8c45"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 15,
+  "settlements_measured": 15,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "TZA_Luganzo-Tongwe": {
+  "at": "2026-08-14T08:01:49Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "4059a63f51a835343435dd7be6a450e4d5c27e57cab1c8814aaa7ff812c78ced",
+   "2019": "206b5919fd99813d005b4bec4ddec45c479c73a8c7c3092d391f765c7b85e135"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 1,
+  "settlements_measured": 1,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "TZA_Mahale_Mts": {
+  "at": "2026-08-14T08:01:49Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "439bf7fe8f67b00515fd96496ae613565d9e6ca292db76589fd6da75abc7b052",
+   "2019": "fee29d3c40401bf1e1d509459bb43b25bee594a8578974183a863f690c2dc161"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.006,
+  "mean_frac_2019": 0.0268,
+  "settlements": 11,
+  "settlements_measured": 11,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "TZA_Mkomazi": {
+  "at": "2026-08-14T08:01:49Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "b73ded9a1773bc71f879e778e09092706076aadd9e5185f8bf5e89640c61badf",
+   "2019": "d1e14dce217b4266222f7dae723d753b8ecdc4ac02976f13c458b7055d329464"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0081,
+  "mean_frac_2019": 0.0136,
+  "settlements": 31,
+  "settlements_measured": 31,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "TZA_Moyowosi": {
+  "at": "2026-08-14T08:01:49Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "9bf9a75e0368fc3198a3eedb1dff09fb958c48a3ef88e4344bbad5fdc391aca5",
+   "2019": "940dbc1e123c461d1aefc59d45b2ef7e5397717c813f7f105159fb5d89931c02"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0004,
+  "mean_frac_2019": 0.0006,
+  "settlements": 25,
+  "settlements_measured": 25,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "TZA_Mpanga_Kipengere": {
+  "at": "2026-08-14T08:01:49Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "dfc4cf5819e17cf635f20a6b0d1e91c72762924a413f9059b1c516fbd7479800",
+   "2019": "278a25ee45741ffa6bc4d41011b465a2a145440240699a88312b2edfd9407320"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0006,
+  "mean_frac_2019": 0.0023,
+  "settlements": 1,
+  "settlements_measured": 1,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "TZA_Ngorongoro": {
+  "at": "2026-08-14T08:01:50Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "b9174371495965fcfa7f37a0a8573d8d33c7053fecb39a4c322462dbd91cd400",
+   "2019": "c329a93194326a4ff99af5d29e046c1738a139cbe45be7cb9990bbb8ce8d6188"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.01,
+  "mean_frac_2019": 0.0118,
+  "settlements": 164,
+  "settlements_measured": 164,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "TZA_Nyerere": {
+  "at": "2026-08-14T08:01:51Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "a33a26d147e8486561b2d5e5fdc23dc6529c92c82e055bd58086b969420dc34a",
+   "2019": "2b9584f2b983fd44333d6b86f182bbbb292115bd1fdf0b970015321cf43ea879"
+  },
+  "defo_conversion_km2": 0.0,
+  "deforestation_events": 133,
+  "mean_frac_2003": 0.0024,
+  "mean_frac_2019": 0.0125,
+  "settlements": 356,
+  "settlements_measured": 356,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "TZA_Ruaha": {
+  "at": "2026-08-14T08:01:52Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "4510b0b545334b4e7043ca3b7580c75864b09e7f1256d3dbb59381d790bef236",
+   "2019": "a0b6b8391c499ebf4ab0795b74d147ecdf1be9c4d9b3048e5c5cf070830e310e"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0426,
+  "mean_frac_2019": 0.0777,
+  "settlements": 309,
+  "settlements_measured": 309,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "TZA_Rungwa": {
+  "at": "2026-08-14T08:01:52Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "deforestation_events": 0,
+  "note": "nothing to measure",
+  "settlements": 0,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "TZA_Saadani": {
+  "at": "2026-08-14T08:01:52Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "d75eb7214ee9527ea8fe2099b75c282061c3e51f45f3a1e1e84e3da9c93af7db",
+   "2019": "310f395205a10775991b33cd24463736777e98a000b7133edbbe144f2ace2737"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0011,
+  "settlements": 28,
+  "settlements_measured": 28,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "TZA_Selous": {
+  "at": "2026-08-14T08:01:54Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "0c136ce774fa190adac986e844496ed6273acc4c598956a86454c4576a40b437",
+   "2019": "342eb8f8287f8ab8b960fe929f1f71cecdabff35d905598083c5c47b9b79aabe"
+  },
+  "defo_conversion_km2": 0.0,
+  "deforestation_events": 130,
+  "mean_frac_2003": 0.0009,
+  "mean_frac_2019": 0.0034,
+  "settlements": 304,
+  "settlements_measured": 304,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "TZA_Serengeti": {
+  "at": "2026-08-14T08:01:55Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "0c08a8e7b5a8795ebb272f59f1409d3d1d430af62ac7a9ab83aa64d863c816b6",
+   "2019": "053e7e02a17696704d6ee585a430389014585a65e840e8c216340ab3fd573abc"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0087,
+  "mean_frac_2019": 0.0129,
+  "settlements": 294,
+  "settlements_measured": 294,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "TZA_Tarangire": {
+  "at": "2026-08-14T08:01:55Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "04b7c05b0e359778279f419607455a96797167e60476db82c11c5b426398fcfb",
+   "2019": "e511bf4050895d0bd929ac431cdfd37e1b835520b3ebfdae2a6c0909ffb71002"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0652,
+  "mean_frac_2019": 0.1465,
+  "settlements": 61,
+  "settlements_measured": 61,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "TZA_Udzungwa_Mountain": {
+  "at": "2026-08-14T08:01:55Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "8245dee21ec03d23d21cf45cfe075db5fdf648c212e102d0389409a9d56bc95a",
+   "2019": "2bfcc517414bdbeb17a935b701e8387306ab0a31fe80fe2c9bf51836edbd1a85"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0088,
+  "mean_frac_2019": 0.0082,
+  "settlements": 12,
+  "settlements_measured": 12,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "TZA_Ugalla": {
+  "at": "2026-08-14T08:01:55Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "ce065de167dbda2e080e6329d8ce5dbbc56cb21a4e0f7bf47cbb22d09ae7abf1",
+   "2019": "d40869ca4858278d686d4b913ccb39812ee4fe8b361b502d6b562f1adf152581"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0003,
+  "mean_frac_2019": 0.0003,
+  "settlements": 44,
+  "settlements_measured": 44,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "TZA_Uluguru": {
+  "at": "2026-08-14T08:01:55Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "e3348b82a9ade45f30fb3fc047f341b5d748313ebd48b1998a394f616802128d",
+   "2019": "c2ab150a9f3c62b28c84d675c422ae69e4da88453ff14bd433577d0044fb79a4"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0004,
+  "mean_frac_2019": 0.0003,
+  "settlements": 8,
+  "settlements_measured": 8,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "TZA_Uzungwa_Scarp": {
+  "at": "2026-08-14T08:01:55Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "9e3afb679e8f98093b2ab3bd37d476f293832b564e6e51346f6c2d0d02a4e3e0",
+   "2019": "8ef655febeaacc7ad3143a39037b96de6e39abe853b2f2628be38b2fc6a38fe0"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0186,
+  "mean_frac_2019": 0.0899,
+  "settlements": 12,
+  "settlements_measured": 12,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "UGA_Bwindi_Impenetrable": {
+  "at": "2026-08-14T08:01:55Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "7505dd01d7dc7626808063d1ccdf93c55c362cbdf48f92fab870e0aa6ab9bd27",
+   "2019": "30bd895346a8b14b368ce09424287fc84773002c7cf4d8ca44dcb7723083daeb"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.1248,
+  "mean_frac_2019": 0.1357,
+  "settlements": 16,
+  "settlements_measured": 16,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "UGA_Kidepo_Valley": {
+  "at": "2026-08-14T08:01:56Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "34845306b7a6cb08456d45f027cacd83ca8c4d8e2fc5f4db668c652362af3f0d",
+   "2019": "cfef0ac21d33fcf35fd1cef97c85ec2bb47314458a61fdfaa18b3ee9ff7e7a70"
+  },
+  "defo_conversion_km2": 0.0,
+  "deforestation_events": 17,
+  "mean_frac_2003": 0.0166,
+  "mean_frac_2019": 0.0241,
+  "settlements": 35,
+  "settlements_measured": 35,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "UGA_Mount_Elgon": {
+  "at": "2026-08-14T08:01:57Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "47c67c3869b6cb088f42ebd7135a49a9cc159427153a7e45e2a3b1fdb7e34d8c",
+   "2019": "f48e356aad697e4c56f9cb4a807d79d0ec62822e6fea66b4535989b4c78ce431"
+  },
+  "defo_conversion_km2": 3.28,
+  "deforestation_events": 137,
+  "mean_frac_2003": 0.1632,
+  "mean_frac_2019": 0.1747,
+  "settlements": 42,
+  "settlements_measured": 42,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "UGA_Murchison_Falls": {
+  "at": "2026-08-14T08:01:58Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "826ee0d387c386da4ade34be605140a23b8de13f5d6cbe3607d6740a02592029",
+   "2019": "6cb94ecbcf9e5ac5e39c8877a2d1d5ad8a862df5c063a605261d09fe6513f969"
+  },
+  "defo_conversion_km2": 0.25,
+  "deforestation_events": 159,
+  "mean_frac_2003": 0.0111,
+  "mean_frac_2019": 0.0317,
+  "settlements": 76,
+  "settlements_measured": 76,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "UGA_Pian_Upe": {
+  "at": "2026-08-14T08:01:58Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "792d5051a3564c4eea1d29712fefd6e4616cdd1a76455fe60ff5a076009d4554",
+   "2019": "9fd1735c26a12cf421a77a4eca5500a63d27a7a7850cee09d73b0139ff816c0a"
+  },
+  "defo_conversion_km2": 0.08,
+  "deforestation_events": 35,
+  "mean_frac_2003": 0.0029,
+  "mean_frac_2019": 0.0061,
+  "settlements": 40,
+  "settlements_measured": 40,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "UGA_Queen_Elizabeth": {
+  "at": "2026-08-14T08:01:59Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "d4876b3cabd993f2e5e0a65c29665ad828417f1bca82a67f08d93d74e7fbe350",
+   "2019": "4dc721fe3de3997ccc8172ea5067168419b525f43987797a2d8505dd382ace21"
+  },
+  "defo_conversion_km2": 0.32,
+  "deforestation_events": 73,
+  "mean_frac_2003": 0.0092,
+  "mean_frac_2019": 0.0405,
+  "settlements": 68,
+  "settlements_measured": 68,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "UGA_Rwenzori_Mountains": {
+  "at": "2026-08-14T08:02:00Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "196d82c3f03fb13392432f0f95d654de2e719c97f2b528a9b96a280813111db6",
+   "2019": "14e4de5ef316d97c86453975072f367493bd8b8200256cc7612a9601abc72d2a"
+  },
+  "defo_conversion_km2": 0.14,
+  "deforestation_events": 134,
+  "mean_frac_2003": 0.0254,
+  "mean_frac_2019": 0.0467,
+  "settlements": 13,
+  "settlements_measured": 13,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "XSA_Study_Area": {
+  "at": "2026-08-14T07:58:35Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "1848d31f8d87a17d02871b38f2a52f93f10b95d257e2639e11947c38cc935b9d",
+   "2019": "f0b1d57c9e249414798c77f7a8785c5cfe03f47e10ae3f9a793f6cba719d6f9f"
+  },
+  "defo_conversion_km2": 30.33,
+  "deforestation_events": 7815,
+  "mean_frac_2003": 0.0418,
+  "mean_frac_2019": 0.0863,
+  "settlements": 2121,
+  "settlements_measured": 2121,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "ZAF_Kalahari_Gemsbok": {
+  "at": "2026-08-14T08:02:00Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "ae0a1fd607a72fcb09b837ef54359a6bebb7e6c0cbaa762a28f82d773cf8a2e4",
+   "2019": "ae0a1fd607a72fcb09b837ef54359a6bebb7e6c0cbaa762a28f82d773cf8a2e4"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 54,
+  "settlements_measured": 54,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "ZAF_Kruger": {
+  "at": "2026-08-14T08:02:01Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "ef90618f893475932dc70984c4c4da13886d18847a0354204f422feda3f094b1",
+   "2019": "72208d801277df00a12087dd86cd80372866bb038c2666104aff165a89be14a9"
+  },
+  "defo_conversion_km2": 0.22,
+  "deforestation_events": 109,
+  "mean_frac_2003": 0.0046,
+  "mean_frac_2019": 0.0056,
+  "settlements": 324,
+  "settlements_measured": 324,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "ZAF_Mountain_Zebra-Camdeboo": {
+  "at": "2026-08-14T08:02:13Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "07c98507264cd663b9dc118cc7e76e5af367cc9469dca21ad0c09c7cd35407ab",
+   "2019": "052a7d99c92f7f19cf5b08afc7cc1d04a3db73174bd33ab40f1db586a0b7c921"
+  },
+  "defo_conversion_km2": 0.03,
+  "deforestation_events": 28,
+  "mean_frac_2003": 0.0131,
+  "mean_frac_2019": 0.0162,
+  "settlements": 392,
+  "settlements_measured": 392,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "ZAF_Namaqua": {
+  "at": "2026-08-14T08:02:36Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "340782655820a967410e0412f09beb20a8beef106ca0707f133449de2932810d",
+   "2019": "946e6383e9bf3f3817a944b0d866ed389ea648069803d815161f564f347700db"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 38,
+  "settlements_measured": 38,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "ZAF_Richtersveld": {
+  "at": "2026-08-14T08:02:49Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "e8fb399224257ccfd08413e57b85dfa80678b937341e55ad1a7b3e85e93ec38a",
+   "2019": "b96dba6c9bc80035210ac18774a706c9c8b67d734e82b67420ba8082a1f53c02"
+  },
+  "defo_conversion_km2": 0.0,
+  "deforestation_events": 1,
+  "mean_frac_2003": 0.0001,
+  "mean_frac_2019": 0.0023,
+  "settlements": 17,
+  "settlements_measured": 17,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "ZAF_Sederberg": {
+  "at": "2026-08-14T08:03:00Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "2556b0e1d1d1ad46e52137d27ad5b318f7e2319a2e3dc573240121fc095ab35e",
+   "2019": "a3940414d117c7420924201f416e8f18ace694f7d3e48f6488d63939cf85d5c7"
+  },
+  "defo_conversion_km2": 0.0,
+  "deforestation_events": 26,
+  "mean_frac_2003": 0.0002,
+  "mean_frac_2019": 0.0012,
+  "settlements": 34,
+  "settlements_measured": 34,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "ZMB_Bangweulu": {
+  "at": "2026-08-14T08:03:18Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "efd4f8339d7462f6549d35866df688f7e7131c3fd06c0cc13c98a16b0e1620b5",
+   "2019": "c1aa4e87d9be2b7db7dc6af58365cb705d51e37e424f8f271d8f60f75dff1ca5"
+  },
+  "defo_conversion_km2": 7.61,
+  "deforestation_events": 208,
+  "mean_frac_2003": 0.0039,
+  "mean_frac_2019": 0.0087,
+  "settlements": 163,
+  "settlements_measured": 163,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "ZMB_Kafue": {
+  "at": "2026-08-14T08:03:46Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "0b98fc6d86c4542b8eb3a11e238e0a86ab956a9994b86501ea921a62eb9fc44f",
+   "2019": "46644f85b260a4efda7ab3b11fccdfe0baaab0439a2944209b096bcbcf1c9549"
+  },
+  "defo_conversion_km2": 0.09,
+  "deforestation_events": 195,
+  "mean_frac_2003": 0.0011,
+  "mean_frac_2019": 0.0058,
+  "settlements": 105,
+  "settlements_measured": 105,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "ZMB_Liuwa_Plain": {
+  "at": "2026-08-14T08:03:59Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "39cfb914d6f39bada9d4ca6236417cf5ca9b4a134d0ac90dff4b034861aec698",
+   "2019": "39cfb914d6f39bada9d4ca6236417cf5ca9b4a134d0ac90dff4b034861aec698"
+  },
+  "defo_conversion_km2": 0.0,
+  "deforestation_events": 67,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 42,
+  "settlements_measured": 42,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "ZMB_Lower_Zambezi": {
+  "at": "2026-08-14T08:04:21Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "927338db563f115aad7967db31de7ea0c63c7350b5ddb16132b515fc249395d4",
+   "2019": "34aa9e1334454436bef1341c21b968aa13fc6bf01e3495233b7d0bce560cced7"
+  },
+  "defo_conversion_km2": 2.66,
+  "deforestation_events": 99,
+  "mean_frac_2003": 0.0139,
+  "mean_frac_2019": 0.0344,
+  "settlements": 19,
+  "settlements_measured": 19,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "ZMB_Lunga_Luswishi": {
+  "at": "2026-08-14T08:04:46Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "e4b872d9a3039ff816bf20683c8cf280ddf78c1eee4a2b1587813cccc4f56562",
+   "2019": "d4c9c2adeb5f67913ab77163d53f4de297705cf3093ee485100607a8351544ad"
+  },
+  "defo_conversion_km2": 9.34,
+  "deforestation_events": 389,
+  "mean_frac_2003": 0.0023,
+  "mean_frac_2019": 0.0152,
+  "settlements": 72,
+  "settlements_measured": 72,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "ZMB_Musalangu": {
+  "at": "2026-08-14T08:05:31Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "98813651a9d8899156f62b90e84e28e76e6299b8a982960686f119acf763ab64",
+   "2019": "9dd37d4e5eead85df8c4d0bf42911ece1e6ec2452570fb15db3c8223548bf037"
+  },
+  "defo_conversion_km2": 40.79,
+  "deforestation_events": 1170,
+  "mean_frac_2003": 0.0265,
+  "mean_frac_2019": 0.1035,
+  "settlements": 185,
+  "settlements_measured": 185,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "ZMB_Mweru_Wantipa": {
+  "at": "2026-08-14T08:16:09Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "1dd084d0f31ba92be54ef75dbfa8c9ee22abc23f9b9d9e09a541299b11377a42",
+   "2019": "23c784234380e6c41600acfd703ade7dfc57f0d7716ace08a9860daf7d682481"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0388,
+  "mean_frac_2019": 0.0784,
+  "settlements": 51,
+  "settlements_measured": 51,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "ZMB_North_Luangwa": {
+  "at": "2026-08-14T08:18:23Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "a7493e0234e2e7f4b292f3a721cdb39bdadd2cd88ea13323e9ca56ee7ec6903b",
+   "2019": "a15b9fa3033bdf548f29853e1ffa428a76a317090d7dace17ec6870dd1690eee"
+  },
+  "defo_conversion_km2": 0.0,
+  "deforestation_events": 66,
+  "mean_frac_2003": 0.0008,
+  "mean_frac_2019": 0.0032,
+  "settlements": 25,
+  "settlements_measured": 25,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "ZMB_Nsumbu": {
+  "at": "2026-08-14T08:18:50Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "c42abeddb0807fa39bd2728df7f74d9359d48cf38965ca2fbe7e0f4842866c61",
+   "2019": "b362de2aed8ad75517297fe3f09b951aa086a6a8c16741f6b83eabcba7e1926b"
+  },
+  "defo_conversion_km2": 0,
+  "deforestation_events": 0,
+  "mean_frac_2003": 0.0215,
+  "mean_frac_2019": 0.0497,
+  "settlements": 13,
+  "settlements_measured": 13,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "ZMB_South_Luangwa": {
+  "at": "2026-08-14T08:21:20Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "a130cbdf3e57a5d31948d368b6d0101304f087f1340c6e4930c0b8d0e61d812e",
+   "2019": "a35e06e2acb8c91bc1bb25b8b18a1710323a993a79e810ba74de4a6e116e8876"
+  },
+  "defo_conversion_km2": 0.02,
+  "deforestation_events": 94,
+  "mean_frac_2003": 0.001,
+  "mean_frac_2019": 0.006,
+  "settlements": 64,
+  "settlements_measured": 64,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "ZWE_Chimanimani": {
+  "at": "2026-08-14T08:22:48Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "d1b2b097a315618b89cb636134f0c08c953709d4bb151728b192df3a855f5302",
+   "2019": "529bba1b4ea8a529dc01462fc196249f2e1593783f411441097df9604e8af3f6"
+  },
+  "defo_conversion_km2": 0.05,
+  "deforestation_events": 56,
+  "mean_frac_2003": 0.0049,
+  "mean_frac_2019": 0.0076,
+  "settlements": 13,
+  "settlements_measured": 13,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "ZWE_Chizarira": {
+  "at": "2026-08-14T08:23:25Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "c6dc9fc110812ece34d4e58425d68323615c1862195a8387b3f1d29cd1ba46b0",
+   "2019": "ee60a739ecb39b7631ea83ea314e5ea2890c08b695c7a61d60fb79e32c50b1bb"
+  },
+  "defo_conversion_km2": 0.36,
+  "deforestation_events": 45,
+  "mean_frac_2003": 0.06,
+  "mean_frac_2019": 0.1176,
+  "settlements": 16,
+  "settlements_measured": 16,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "ZWE_Gonarezhou": {
+  "at": "2026-08-14T08:29:52Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "2fe334844232992b6189e3f78bc10c5f90403b0d7342e987244602524431e0c7",
+   "2019": "0752ff417fc08109b42c7feb65ad21e7491dcfb0983e3a8b2933656d10334781"
+  },
+  "defo_conversion_km2": 0.0,
+  "deforestation_events": 50,
+  "mean_frac_2003": 0.0045,
+  "mean_frac_2019": 0.0242,
+  "settlements": 49,
+  "settlements_measured": 49,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "ZWE_Hwange": {
+  "at": "2026-08-14T08:30:14Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "2fe07b0519c8b12fea30394c029a8747766e5c010fdad82f11ec17eec15b7dd5",
+   "2019": "4819947073a55c2908df6d85602fda8f4ecfa770f9781bdf332f6a2c892e87da"
+  },
+  "defo_conversion_km2": 0.0,
+  "deforestation_events": 17,
+  "mean_frac_2003": 0.0073,
+  "mean_frac_2019": 0.0119,
+  "settlements": 52,
+  "settlements_measured": 52,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "ZWE_Mana_Pools": {
+  "at": "2026-08-14T08:30:29Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "4952bf63527ba18c9663a9fc6cb5e794381a932b8d47744a08a2f433c8446065",
+   "2019": "db0c308c999c7cbcf62cd68a397f46a6fa32615f5ec6319c1b80688df019fb46"
+  },
+  "defo_conversion_km2": 0.0,
+  "deforestation_events": 23,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0,
+  "settlements": 15,
+  "settlements_measured": 15,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "ZWE_Matetsi": {
+  "at": "2026-08-14T08:30:53Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "1296ac26529fe1cf028d10239f5c29eb690f5195a7c5388c6e04ae258800dd63",
+   "2019": "ab099f8462f75659a771216d9f010d724c6f1a8b33f15a3742db583b0e89cde7"
+  },
+  "defo_conversion_km2": 0.0,
+  "deforestation_events": 7,
+  "mean_frac_2003": 0.0011,
+  "mean_frac_2019": 0.0034,
+  "settlements": 34,
+  "settlements_measured": 34,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "ZWE_Matusadona": {
+  "at": "2026-08-14T08:31:06Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "6d1f308aff696b6a1e4598ff9622f32b86c93a7ccfcac2fe4a1365265a44ac81",
+   "2019": "f93664240dda65a39f74d05436cb9de91d74540f2ffc7ac0822fac886078eeca"
+  },
+  "defo_conversion_km2": 0.0,
+  "deforestation_events": 8,
+  "mean_frac_2003": 0.0061,
+  "mean_frac_2019": 0.0205,
+  "settlements": 19,
+  "settlements_measured": 19,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ }
+}
