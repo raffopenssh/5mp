@@ -58,12 +58,36 @@ func withGuest(r *http.Request, g *GuestSession) *http.Request {
 // place a reviewer can read in ten seconds.
 func guestMayRead(r *http.Request) bool {
 	if r.Method != http.MethodGet && r.Method != http.MethodHead {
-		// One deliberate exception: the filtered geology export is a READ
-		// wearing a POST — the body is the selection being asked about, the
-		// server writes nothing, and the same data is already guest-readable
-		// whole via GET /api/geomap/geopackage. Without this, a share link
-		// that shows the geology panel offers a download button that 401s.
-		return r.Method == http.MethodPost && r.URL.Path == "/api/geomap/geopackage"
+		if r.Method != http.MethodPost {
+			return false
+		}
+		// Deliberate exceptions, each a READ wearing a POST — enumerated one
+		// by one so a reviewer can see exactly what a capability can start:
+		p := r.URL.Path
+		// 1. The filtered geology export: the body is the selection being
+		//    asked about, the server writes nothing, and the same data is
+		//    already guest-readable whole via GET /api/geomap/geopackage.
+		if p == "/api/geomap/geopackage" {
+			return true
+		}
+		// 2. The GeoPackage builders. They spool a file, but the file is an
+		//    answer to a read: every layer in it is data this guest can
+		//    already GET, the date window is clamped on the way in
+		//    (clampGuestQuery), patrol layers go through PatrolEnv (empty
+		//    tenant without the scope), and AOI ids still pass aoiGate.
+		//    Without these a shared link shows a download menu whose main
+		//    entries 401 — an offer the page makes and then withdraws.
+		//    What stays closed: DELETE (a guest must not cancel or remove
+		//    the owner's files) and the MBTiles builder (it publishes to
+		//    the owner's Zenodo account — an external write).
+		if p == "/api/view/export.gpkg" {
+			return true
+		}
+		if strings.HasSuffix(p, "/export.gpkg") &&
+			(strings.HasPrefix(p, "/api/parks/") || strings.HasPrefix(p, "/api/aois/")) {
+			return true
+		}
+		return false
 	}
 	p := r.URL.Path
 	switch {
