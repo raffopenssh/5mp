@@ -9325,6 +9325,11 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             if (!attach()) document.addEventListener('DOMContentLoaded', attach);
         })();
         function showToast(message, type = 'info', opts = {}) {
+            // Callers written against an older signature pass null (or extra
+            // args) here. A toast helper that throws takes down the caller's
+            // promise chain — which once left a download button dead — so it
+            // tolerates anything.
+            if (!opts || typeof opts !== 'object') opts = {};
             const colors = {
                 info: 'rgba(59, 130, 246, 0.95)',
                 success: 'rgba(34, 197, 94, 0.95)',
