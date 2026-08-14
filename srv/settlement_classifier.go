@@ -55,6 +55,15 @@ type ClassifiedSettlement struct {
 	DeforestNearby  float64 `json:"deforest_nearby_km2"`
 	DeforestPattern string  `json:"deforest_pattern,omitempty"`
 
+	// Cropland context (GLAD 30 m cropland extent, scripts/cropland.py).
+	// A nil pointer is UNMEASURED (clip never fetched), which is a different
+	// state from a measured 0 ("no crops here") — invariant 1. The source
+	// dataset EXCLUDES pasture and shifting cultivation, so a pastoral camp at
+	// 0 is the definition working, not missing data.
+	CroplandFrac2019 *float64 `json:"cropland_frac_2019,omitempty"`
+	CroplandFrac2003 *float64 `json:"cropland_frac_2003,omitempty"`
+	CroplandSource   string   `json:"cropland_source,omitempty"`
+
 	// Mining evidence (Sentinel-2 river turbidity + GFW integrated alerts)
 	TurbidityAlertKm   float64         `json:"turbidity_alert_km,omitempty"` // distance to nearest turbidity onset
 	TurbidityAlert     *TurbidityAlert `json:"turbidity_alert,omitempty"`    // the alert itself, when close
@@ -200,6 +209,28 @@ func (s *Server) loadSettlementContext(parkID string, st *ClassifiedSettlement) 
 		st.NearestRoad = haversineDistance(st.Lat, st.Lon, roadLat.Float64, roadLon.Float64)
 	}
 
+	// Cropland context, measured by scripts/cropland.py (GLAD 30 m). Read by
+	// row id — the callers' SELECTs predate the column and a missing row/NULL
+	// stays nil (unmeasured), never a zero.
+	if st.ID != 0 {
+		var f19, f03 sql.NullFloat64
+		var src sql.NullString
+		s.DB.QueryRow(`SELECT cropland_frac_2019, cropland_frac_2003,
+			cropland_source FROM park_settlements WHERE id = ?`, st.ID).
+			Scan(&f19, &f03, &src)
+		if src.Valid {
+			st.CroplandSource = src.String
+		}
+		if f19.Valid {
+			v := f19.Float64
+			st.CroplandFrac2019 = &v
+		}
+		if f03.Valid {
+			v := f03.Float64
+			st.CroplandFrac2003 = &v
+		}
+	}
+
 	// Mining evidence: river turbidity onsets (Sentinel-2) + GFW alert clusters.
 	// Turbidity/pit evidence is retired (docs/MINING_FINDINGS_2026-08.md §10) so
 	// no NEW settlement can be labelled 'mining' from it. GFW alerts are genuine
@@ -228,6 +259,18 @@ func (s *Server) loadSettlementContext(parkID string, st *ClassifiedSettlement) 
 
 func (s *Server) scoreAgricultural(st *ClassifiedSettlement) float64 {
 	score := 0.0
+
+	// Measured cropland within ~1 km (GLAD 30 m) is DIRECT evidence — the
+	// rest of this function infers farming from fire and clearing shape.
+	// Only a measured value scores; nil is unmeasured and says nothing
+	// (invariant 1). XSA baseline: background mean 1.5%, settlement mean 8.6%.
+	if st.CroplandFrac2019 != nil {
+		if *st.CroplandFrac2019 > 0.10 {
+			score += 0.4
+		} else if *st.CroplandFrac2019 > 0.03 {
+			score += 0.2
+		}
+	}
 
 	// High fires nearby + dry season = slash and burn
 	if st.FiresWithin5km > 100 && st.FireSeasonality == "dry_season" {
@@ -331,6 +374,16 @@ func (s *Server) scoreFishing(st *ClassifiedSettlement) float64 {
 func (s *Server) scorePastoral(st *ClassifiedSettlement) float64 {
 	score := 0.0
 
+	// GLAD cropland EXCLUDES pasture by definition, so a measured zero here is
+	// consistent with (not proof of) grazing; measured cropland argues against.
+	if st.CroplandFrac2019 != nil {
+		if *st.CroplandFrac2019 == 0 {
+			score += 0.1
+		} else if *st.CroplandFrac2019 > 0.10 {
+			score -= 0.2
+		}
+	}
+
 	// Seasonal fires (grazing management)
 	if st.FireSeasonality == "dry_season" && st.FiresWithin5km > 30 && st.FiresWithin5km < 200 {
 		score += 0.3
@@ -410,6 +463,35 @@ func (s *Server) scoreTemporary(st *ClassifiedSettlement) float64 {
 	return math.Min(score, 1.0)
 }
 
+// croplandSentence renders measured GLAD cropland context, with the 2003→2019
+// trend when both epochs are present. Empty when unmeasured — an absent
+// measurement is not a sentence about zero (invariant 12) — and empty when
+// measured-but-negligible (<1%), because "no cropland" around a fishing camp
+// is not worth a sentence. Names the instrument and radius: "cropland" here
+// excludes pasture and shifting cultivation by the source's definition.
+func croplandSentence(st *ClassifiedSettlement) string {
+	if st.CroplandFrac2019 == nil {
+		return ""
+	}
+	f19 := *st.CroplandFrac2019
+	if f19 < 0.01 {
+		return ""
+	}
+	base := fmt.Sprintf(" %.0f%% of the surrounding 1km is mapped cropland (GLAD 30m, 2016-2019 epoch)", f19*100)
+	if st.CroplandFrac2003 != nil {
+		f03 := *st.CroplandFrac2003
+		switch {
+		case f03 < 0.01 && f19 >= 0.05:
+			base += ", none of it present in 2000-2003 — new agricultural conversion"
+		case f19 >= f03*2 && f19-f03 >= 0.03:
+			base += fmt.Sprintf(", up from %.0f%% in 2000-2003", f03*100)
+		case f03 >= f19*2 && f03-f19 >= 0.03:
+			base += fmt.Sprintf(", down from %.0f%% in 2000-2003", f03*100)
+		}
+	}
+	return base + "."
+}
+
 func (s *Server) buildSettlementNarrativeText(st *ClassifiedSettlement) string {
 	var parts []string
 
@@ -434,11 +516,12 @@ func (s *Server) buildSettlementNarrativeText(st *ClassifiedSettlement) string {
 		location = fmt.Sprintf("at coordinates (%.3f°, %.3f°)", st.Lat, st.Lon)
 	}
 
-	// Classification-specific narrative
+	// Classification-specific narrative, plus measured cropland context.
+	crop := croplandSentence(st)
 	switch st.Classification {
 	case ClassAgricultural:
 		return fmt.Sprintf("Agricultural settlement %s. Fire activity (%d detections within 5km) concentrated in dry season suggests slash-and-burn farming. %.2f km² deforestation nearby indicates active land conversion.",
-			location, st.FiresWithin5km, st.DeforestNearby)
+			location, st.FiresWithin5km, st.DeforestNearby) + crop
 
 	case ClassMining:
 		base := fmt.Sprintf("Possible mining site %s. Low fire activity but %.2f km² of forest loss with %s pattern.",
@@ -454,21 +537,21 @@ func (s *Server) buildSettlementNarrativeText(st *ClassifiedSettlement) string {
 		if st.GFWAlertsWithin5km > 20 {
 			base += fmt.Sprintf(" %d GFW canopy-disturbance alerts within 5km corroborate recent ground activity.", st.GFWAlertsWithin5km)
 		}
-		return base
+		return base + crop
 
 	case ClassFishing:
 		// Same redundancy guard as ClassResidential: `location` may already
 		// carry the river distance.
 		if st.NearestRiver == "" || strings.Contains(location, st.NearestRiver) {
 			return fmt.Sprintf("Fishing camp %s. Small footprint (%.0f m²) and minimal forest disturbance consistent with seasonal fishing activity.",
-				location, st.AreaM2)
+				location, st.AreaM2) + crop
 		}
 		return fmt.Sprintf("Fishing camp %s, %.1fkm from %s River. Small footprint (%.0f m²) and minimal forest disturbance consistent with seasonal fishing activity.",
-			location, st.DistanceToRiver, st.NearestRiver, st.AreaM2)
+			location, st.DistanceToRiver, st.NearestRiver, st.AreaM2) + crop
 
 	case ClassPastoral:
 		return fmt.Sprintf("Pastoral settlement %s. Seasonal fire pattern suggests grazing management. Minimal deforestation (%.2f km²) indicates grassland/savanna habitat.",
-			location, st.DeforestNearby)
+			location, st.DeforestNearby) + crop
 
 	case ClassResidential:
 		// `location` already names the nearest place ("8km SW of Tetelle"), so
@@ -476,18 +559,18 @@ func (s *Server) buildSettlementNarrativeText(st *ClassifiedSettlement) string {
 		// Only name it here when location fell back to bare coordinates.
 		if st.NearestPlace != "" && !strings.Contains(location, st.NearestPlace) {
 			return fmt.Sprintf("Permanent settlement %s near %s. Population ~%d with %.0f m² built area. Established community with moderate surrounding land use.",
-				location, st.NearestPlace, st.PopulationEst, st.AreaM2)
+				location, st.NearestPlace, st.PopulationEst, st.AreaM2) + crop
 		}
 		return fmt.Sprintf("Permanent settlement %s. Population ~%d with %.0f m² built area. Established community with moderate surrounding land use.",
-			location, st.PopulationEst, st.AreaM2)
+			location, st.PopulationEst, st.AreaM2) + crop
 
 	case ClassTemporaryCamp:
 		return fmt.Sprintf("Temporary camp %s. Small footprint (%.0f m²) and remote location suggest seasonal occupation, possibly hunting or resource extraction.",
-			location, st.AreaM2)
+			location, st.AreaM2) + crop
 
 	default:
 		return fmt.Sprintf("Unclassified settlement %s. %.0f m² built area, %d fire detections nearby.",
-			location, st.AreaM2, st.FiresWithin5km)
+			location, st.AreaM2, st.FiresWithin5km) + crop
 	}
 }
 
