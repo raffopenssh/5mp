@@ -296,7 +296,7 @@ names where the old sheets reach [e]:
     sites near Yalinga sit 3 and 7 km off the line, the reported working
     by Fode village 9 km. The rocks, the pits and the settlement pressure
     all point at the same corner of the same park.
-    https://five-megapixel-conservation.exe.xyz:8000/?geomap=car&geo_panel=1&geomap_contacts=1&lat=5.6&lng=23.7&z=9
+    https://five-megapixel-conservation.exe.xyz/s/g-f5kkqmkc8z8fx8nx
 
   * THE DEMBIA-KARMADOR STRETCH (5.1-5.4 N, 24.5-24.9 E). Three more
     attacked-site clusters lie 3-15 km off the line, at villages with
@@ -322,7 +322,7 @@ names where the old sheets reach [e]:
     itself confesses the industry: villages named Kotto 2, 3 and 4 and
     Yangou-Diamant ("diamond river") ring the town of Sam-Ouandja; the
     1930s sheet marks "Kou" at the same bend of the river.
-    https://five-megapixel-conservation.exe.xyz:8000/?geomap=car&geo_panel=1&geomap_contacts=1&lat=8.4&lng=23.4&z=9
+    https://five-megapixel-conservation.exe.xyz/s/g-qx4xq8c9qvf27p3b
 
   * OUANDA DJALLE (8.8-9.0 N). The arc's northern end passes 5 km from
     the town of Ouanda Djalle - printed under the same name on the 1930s
@@ -415,13 +415,13 @@ READING THE NUMBERS HONESTLY (short version)
 
 WHERE TO LOOK
 --------------------------------------------------------------------------------
-[1] The live map of everything in this report:
-    https://five-megapixel-conservation.exe.xyz:8000/
-[2] The fire season, animated (Nov 2025 - Mar 2026):
-    https://five-megapixel-conservation.exe.xyz:8000/?aoi=XSA_Study_Area&from=2025-11-01&to=2026-03-31
+[1] The live map of everything in this report (study area focused):
+    https://five-megapixel-conservation.exe.xyz/s/g-rd3ngqzw82vf2k43
+[2] The study area with the last 90 days of fire (rolling window):
+    https://five-megapixel-conservation.exe.xyz/s/g-qcf8bms6sc8swvvs
 [3] The gold geology view used in section 4 (rock hosts, contact lines,
     junction types - with its skill scores and caveats on screen):
-    https://five-megapixel-conservation.exe.xyz:8000/s/n62mnpp
+    https://five-megapixel-conservation.exe.xyz/s/g-wd65mxvzqqk9jwd6
 [4] The full technical review with every number, method and caveat:
     reports/XSA_CONSERVATION_REVIEW_2026-08.txt
 
