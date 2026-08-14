@@ -253,6 +253,35 @@ and multiple toasts stack upward instead of printing on top of each other
 
 ---
 
+## Stats panel window furniture (`floatui.js setupStatsPanel`, desktop only)
+
+The stats panel is the legend. On desktop it wears the standard `.fui-bar`
+(grabber + chevron; CSS hides the bar ≤768px — the phone grid owns itself):
+drag to move (`fui-moved`, position in `fui.stats.pos`), chevron/bar-tap to
+collapse (`fui-collapsed`, persisted in `fui.stats.collapsed`). Three rules
+learned here:
+
+- **Collapse compacts, it never empties.** Users still need the legend: every
+  `.stats-item` keeps its label, value, colour accent and click target at
+  full font size; only `.stats-header`/`.stats-divider`/`.stats-lod` fold
+  (the LOD line needs `max-width: 0` too — folded by height alone it still
+  sets the shrink-to-fit width). An earlier version folded everything to a
+  bare bar and read as "the legend is gone".
+- **No auto-rest timer.** A 4 s rest (copied from the map strip) was tried
+  and rejected — it took the legend away mid-read. Folding is the user's
+  choice only.
+- **Snap-home**: a `data-act=home` house button in the bar, shown only while
+  `.fui-moved`, clears inline left/top and `fui.stats.pos`.
+
+The focus scope row (`#stats-scope`): the × sits directly beside the focus
+name (`flex: 0 1 auto`, not `flex: 1`) — flushed right it read as "close
+panel" when it means "leave focus". The row is `align-items: center`
+(baseline left icon/name/× on three different lines). Bar icons render at
+12px — at 11px the chevron's diagonals antialias fainter than the house and
+the pair looks two-coloured.
+
+---
+
 ## The Map strip in the stats panel (`srv/static/maplegend.js`)
 
 Basemap and the two drapes (`HistMap`, `GeoMap`) used to be reachable only from
