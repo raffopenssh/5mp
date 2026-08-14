@@ -9,8 +9,8 @@
         Chinko, Bili-Uere, Garamba and Southern National Park -
         plus the wide unprotected country between and north of
         them: the Western Bahr el Ghazal return belt around Wau,
-        and the disputed Kafia Kingi enclave in the far north,
-        where the region's oldest mines and emptiest ground lie.
+        and Kafia Kingi in the far north, where the region's
+        oldest mines and emptiest ground lie.
 
         The question: how bad are overgrazing, commercial hunting
         and artisanal mining here - and where exactly?
@@ -116,8 +116,8 @@ standards, this is a low-deforestation landscape.
 
 THE 2023 SPIKE IS PROBABLY NOT REAL. Almost all of it (282 of 314 km2) is a
 handful of "logging" blocks flagged as suspect by the system itself, in
-one remote corner of the far north - the Kafia Kingi borderlands. Three independent lines of evidence say
-artefact, not logging boom:
+one remote corner of the far north - the Kafia Kingi borderlands. Three
+independent lines of evidence say artefact, not logging boom:
   - Century-old survey maps show that exact ground as uninhabited dune
     country crossed by hunters' trails - one is even named "the elephant
     road". No settlement then.
@@ -267,9 +267,10 @@ Two clusters matter:
     since 1996).
 
 How long has this been going on? The century-old maps answer: one site,
-"Hofrat el Nahas" - Arabic for "the copper pit", in the Kafia Kingi
-enclave - is printed on the colonial sheets at 9.7610 N 24.3200 E; 8 km away (9.7840 N 24.2505 E) is
-a modern mine where an armed attack was reported in 2016. The same pit,
+"Hofrat el Nahas" - Arabic for "the copper pit", in Kafia Kingi - is
+printed on the colonial sheets at 9.7610 N 24.3200 E; 8 km away
+(9.7840 N 24.2505 E) is a modern mine where an armed attack was
+reported in 2016. The same pit,
 worked and fought over, a century apart.
 And it is not alone: two gold mines mapped today on OpenStreetMap
 (9.3750 N and 9.3610 N at 24.1015 E) sit ONE kilometre from a well the
