@@ -73,6 +73,14 @@ func histLabelsHasFTS(db *sql.DB) bool {
 	return n > 0
 }
 
+// histLabelsHasCategory reports whether categorize_labels.py apply has run
+// (adds a category column to both tables; older databases lack it).
+func histLabelsHasCategory(db *sql.DB, table string) bool {
+	var n int
+	db.QueryRow(`SELECT count(*) FROM pragma_table_info(?) WHERE name='category'`, table).Scan(&n)
+	return n > 0
+}
+
 func histLabelsTable(db *sql.DB) string {
 	var hasDedup int
 	db.QueryRow(`SELECT count(*) FROM sqlite_master WHERE name='labels_dedup'`).Scan(&hasDedup)
@@ -90,6 +98,11 @@ func histLabelsTable(db *sql.DB) string {
 type histLabel struct {
 	Text string  `json:"text"`
 	Kind string  `json:"kind"`
+	// Category refines the vision model's coarse kind: the 28k-row 'other'
+	// bucket was re-classified by a text LLM (categorize_labels.py) into
+	// note|collar|junk|vegetation|..., and hill renamed terrain. Empty on a
+	// database where the categorize pass has not been applied.
+	Category string `json:"category,omitempty"`
 	Lon  float64 `json:"lon"`
 	Lat  float64 `json:"lat"`
 	NSrc int     `json:"n_src,omitempty"`   // dedup only: sightings merged
@@ -99,8 +112,10 @@ type histLabel struct {
 // HandleAPIHistMapLabels answers "what does the 1930s map say here".
 //
 //	GET /api/histmap/sudan250k/labels?bbox=W,S,E,N            (or)
-//	GET /api/histmap/sudan250k/labels?lon=..&lat=..&radius_km=..
-//	optional: q= substring filter, kind= filter, limit= (default 500, max 5000)
+//	 GET /api/histmap/sudan250k/labels?lon=..&lat=..&radius_km=..
+//	optional: q= substring filter, kind= filter, category= filter
+//	(place|water|terrain|vegetation|route|boundary|note|collar|junk),
+//	limit= (default 500, max 5000)
 //
 // Results are sorted nearest-first when lon/lat given. `truncated` is set
 // when the limit cut the answer (invariant #8: say you truncated).
@@ -155,8 +170,13 @@ func (s *Server) HandleAPIHistMapLabels(w http.ResponseWriter, r *http.Request) 
 	}
 
 	table := histLabelsTable(db)
+	hasCat := histLabelsHasCategory(db, table)
+	catCol := "''"
+	if hasCat {
+		catCol = "COALESCE(category, '')"
+	}
 	// col BETWEEN ? AND ? -- sargable on idx_labels_lonlat (invariant #3).
-	sqlq := "SELECT text, kind, lon, lat, " +
+	sqlq := "SELECT text, kind, " + catCol + ", lon, lat, " +
 		map[string]string{"labels": "0, sheet", "labels_dedup": "n_src, ''"}[table] +
 		" FROM " + table +
 		" WHERE lon BETWEEN ? AND ? AND lat BETWEEN ? AND ?"
@@ -178,6 +198,17 @@ func (s *Server) HandleAPIHistMapLabels(w http.ResponseWriter, r *http.Request) 
 		sqlq += " AND kind = ?"
 		args = append(args, v)
 	}
+	if v := q.Get("category"); v != "" {
+		// Refuse rather than no-op on a database that predates the category
+		// pass: an unfiltered answer to a filtered question reads as "nothing
+		// junk here", which is the invariant-#1 trap.
+		if !hasCat {
+			http.Error(w, "this labels database has no category column (run categorize_labels.py apply)", http.StatusBadRequest)
+			return
+		}
+		sqlq += " AND category = ?"
+		args = append(args, v)
+	}
 	if hasCenter {
 		sqlq += " ORDER BY (lon-?)*(lon-?) + (lat-?)*(lat-?)"
 		args = append(args, centerLon, centerLon, centerLat, centerLat)
@@ -194,7 +225,7 @@ func (s *Server) HandleAPIHistMapLabels(w http.ResponseWriter, r *http.Request) 
 	labels := []histLabel{}
 	for rows.Next() {
 		var l histLabel
-		if err := rows.Scan(&l.Text, &l.Kind, &l.Lon, &l.Lat, &l.NSrc, &l.Sheet); err == nil {
+		if err := rows.Scan(&l.Text, &l.Kind, &l.Category, &l.Lon, &l.Lat, &l.NSrc, &l.Sheet); err == nil {
 			labels = append(labels, l)
 		}
 	}
@@ -216,4 +247,40 @@ func (s *Server) HandleAPIHistMapLabels(w http.ResponseWriter, r *http.Request) 
 		"attribution": "OCR of Sudan Survey 1:250,000 (1908-1976), Library of Congress g8310m.gct00289; " +
 			"machine transcription -- verify against the sheet before citing",
 	})
+}
+
+// Vector downloads of the label set, for QGIS and everything else. These are
+// batch artefacts written by scripts/histmaps/export_labels.sh from
+// labels_dedup AFTER the categorize pass -- not generated per request,
+// because the source database is being written by a resumable pipeline and a
+// download must be one consistent, whole snapshot (invariant #8: serve a
+// layer whole). Served with ServeContent for Range support, same as the
+// MBTiles archive.
+var histLabelExports = map[string]struct{ path, name, ctype string }{
+	"gpkg": {"data/histmaps/sudan250k_labels.gpkg",
+		"sudan250k_labels.gpkg", "application/geopackage+sqlite3"},
+	"geojson": {"data/histmaps/sudan250k_labels.geojson.gz",
+		"sudan250k_labels.geojson.gz", "application/gzip"},
+}
+
+func (s *Server) HandleAPIHistMapLabelsDownload(w http.ResponseWriter, r *http.Request) {
+	exp, ok := histLabelExports[r.PathValue("format")]
+	if !ok {
+		http.Error(w, "format must be gpkg or geojson", http.StatusBadRequest)
+		return
+	}
+	f, err := os.Open(exp.path)
+	if err != nil {
+		http.Error(w, "labels export not built (scripts/histmaps/export_labels.sh)", http.StatusNotFound)
+		return
+	}
+	defer f.Close()
+	st, err := f.Stat()
+	if err != nil {
+		http.Error(w, "stat failed", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", exp.ctype)
+	w.Header().Set("Content-Disposition", `attachment; filename="`+exp.name+`"`)
+	http.ServeContent(w, r, exp.name, st.ModTime(), f)
 }
