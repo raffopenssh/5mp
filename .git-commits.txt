@@ -1,3 +1,10 @@
+0ab519f 2026-08-14 05:43:52 XSA conservation review v2 (unified): persistence-corrected settlements, complete histmap corpus, nightlights null, full URLs
+2293555 2026-08-14 05:38:20 histmap labels: LLM categorization, category API filter, vector downloads
+2b490d0 2026-08-14 05:37:04 XSA report v2: settlement rebuild, persistence epochs, complete histmap OCR, nightlights null
+de40203 2026-08-13 19:21:13 docs: add nightlights.md to the agents README index
+9003fcf 2026-08-13 19:18:41 State snapshot: GHSL back-epoch persistence complete — 157/157 areas
+bb6ff7f 2026-08-13 19:14:48 ocr_labels: self-healing run loop + auto-refresh of dedup/index
+cb1e886 2026-08-13 19:09:24 docs: document /api/histmap/sudan250k/labels (OCR'd toponym query API)
 290266e 2026-08-13 19:09:15 Structural layers: mixer rows, MapTips, craton band ink
 ab720b6 2026-08-13 19:04:59 Nightlights WP3: measured and folded — mine sites are dark
 8c2b4a6 2026-08-13 19:03:14 histmap labels: query API + FTS/geo indexes
@@ -11,10 +18,3 @@ d80b405 2026-08-13 17:13:58 WP5: UCDP GED mine sites join the geology anchors
 9135d7d 2026-08-13 16:43:49 docs: implementation plan for six new data layers (GHSL epochs, JRC AKP, nightlights, GSW water, UCDP, Soviet 200k histmap)
 366b504 2026-08-13 16:25:23 AGENTS.md: add effort-budget working style; fix stale DB size (1.8GB -> 18GB)
 acec612 2026-08-13 16:20:28 Record 344155a in the commit log
-344155a 2026-08-13 16:20:22 022: restore lost park_settlements columns so 055 runs on a fresh database
-acb3fd0 2026-08-13 15:59:54 Record c69b8e9 in the commit log
-c69b8e9 2026-08-13 15:57:12 Close AOI_STRUCTURAL_FIXES: F10 containment, F11 the fleet, and F9's blind spot
-7d06517 2026-08-13 15:14:40 Geology strip: a zero that can be proven, and a legend that gets out of the way
-b82fb39 2026-08-13 15:06:45 F10 audit: protected_area_id is a catchment, not a park
-7bbf363 2026-08-13 13:28:56 Geology download: the app's own menu, six tests, and two counts that name their units
-0bcfbd1 2026-08-13 13:07:13 Settlement surface: 157 areas re-derived, and two bugs a label could not catch
