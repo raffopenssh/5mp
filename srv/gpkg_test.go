@@ -344,3 +344,29 @@ func TestGeoPackageCacheKeyDistinguishesQuestions(t *testing.T) {
 		t.Error("cache key is not deterministic")
 	}
 }
+
+// A cancelled build must stop and say it was cancelled — not fail, and not
+// finish. The job goroutine turns errGPKGCancelled into full cleanup (file,
+// row, notification), so the sentinel reaching the caller is the contract.
+func TestGPKGBuildStopsWhenCancelled(t *testing.T) {
+	cancel := make(chan struct{})
+	close(cancel)
+	o := gpkgExportOpts{AreaID: "CAF_Chinko", Cancel: cancel}
+	if !o.cancelled() {
+		t.Fatal("closed Cancel channel not seen as cancelled")
+	}
+	if (gpkgExportOpts{}).cancelled() {
+		t.Fatal("nil Cancel channel reported cancelled")
+	}
+
+	dbPath := filepath.Join(t.TempDir(), "cancel.sqlite3")
+	s, err := New(dbPath, "test")
+	if err != nil {
+		t.Fatalf("server: %v", err)
+	}
+	out := filepath.Join(t.TempDir(), "cancelled.gpkg")
+	if _, err := s.buildAreaGeoPackage(out, o); err != errGPKGCancelled {
+		t.Fatalf("want errGPKGCancelled, got %v", err)
+	}
+}
+
