@@ -649,6 +649,34 @@ if [[ -n "$CLIENT_PWD" ]]; then
         ERRORS+=("guest capability is not read-only")
     fi
 
+    # EXPORTS ARE READS WEARING POSTs (srv/guest.go guestMayRead). A shared
+    # link shows a download menu; every entry it shows must work, and every
+    # write next to them must not: the builders (POST export.gpkg, view and
+    # geology) pass, while DELETE on a job and the MBTiles builder (an
+    # external write to the owner's Zenodo account) stay refused. peek=1 is
+    # used so the test never spools a real file (404 = allowed through the
+    # gate, nothing cached — the same contract gpkg_peek relies on).
+    printf "%-50s" "guest_may_build_exports_but_not_delete"
+    pk=$(curl -s -m 30 -o /dev/null -w "%{http_code}" -b "$JAR" -X POST \
+        "${BASE_URL}/api/parks/COD_Virunga/export.gpkg?peek=1&raw=0")
+    vw=$(curl -s -m 30 -o /dev/null -w "%{http_code}" -b "$JAR" -X POST \
+        "${BASE_URL}/api/view/export.gpkg?peek=1&bbox=29,-2,30,-1")
+    ge=$(curl -s -m 30 -o /dev/null -w "%{http_code}" -b "$JAR" -X POST \
+        -H 'Content-Type: application/json' -d '{}' "${BASE_URL}/api/geomap/geopackage")
+    de=$(curl -s -m 30 -o /dev/null -w "%{http_code}" -b "$JAR" -X DELETE \
+        "${BASE_URL}/api/geopackage/nonexistent")
+    mb=$(curl -s -m 30 -o /dev/null -w "%{http_code}" -b "$JAR" -X POST \
+        "${BASE_URL}/api/parks/COD_Virunga/mbtiles")
+    # Allowed ≠ 200 here: peek answers 404-or-200 and the geology POST 400s
+    # on an empty body. What must never come back is the gate's own 401.
+    if [[ "$pk" != "401" && "$vw" != "401" && "$ge" != "401" \
+          && "$de" == "401" && "$mb" == "401" ]]; then
+        green "✓ (gpkg $pk, view $vw, geo $ge; del $de, tiles $mb)"; PASSED=$((PASSED + 1))
+    else
+        red "FAIL (gpkg $pk, view $vw, geo $ge, del $de, tiles $mb)"; FAILED=$((FAILED + 1))
+        ERRORS+=("guest export gate wrong (allow builders, refuse deletes/mbtiles)")
+    fi
+
     # THE POINT OF THE SCOPE. Patrol pixels are ranger movement, not public
     # geography: a link made from a view that was not showing them must not
     # carry them, or sharing a fire scar quietly ships the patrol history too.
