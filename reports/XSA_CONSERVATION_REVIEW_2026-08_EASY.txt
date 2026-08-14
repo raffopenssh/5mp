@@ -176,7 +176,8 @@ FINDING TWO: THE FABRIC IS MOSTLY NEW ANYWAY. 58% of all built surface
 standing today was added after 2015. Not new places - the same places,
 growing fast. 22% of the region's population now lives in settlements that
 did not exist in 2015, concentrated in one belt in Western Bahr el Ghazal
-(South Sudan), around Wau and the Busseri river.
+(South Sudan): Wau on the Jur river, the Busseri and Sue joining it from
+the south, and the boom towns strung north along the Lol.
 
 FINDING THREE - and this changes everything about how to talk to these
 communities: IT IS A RETURN, NOT AN INVASION. We cross-checked the new
@@ -289,8 +290,9 @@ So: no satellite we operate can find or monitor these pits. A quiet sensor
 does not mean a quiet place. Watching the two clusters is field work.
 
 Can the mines poison the parks' water? We cannot measure pollution. What
-we CAN say is the geometry: the south-west cluster sits upstream of
-Chinko. If contamination happens, it flows in.
+we CAN say is the geometry: the south-west cluster sits in the
+headwaters of the Chinko and Mbari rivers, upstream of the park. If
+contamination happens, it flows in.
 
 One warning about pretty maps, and one honest use for them. Our geology
 layer offers two ways to look for gold, and they are NOT equally good [i]:
@@ -353,9 +355,10 @@ names where the old sheets reach [e]:
     11-22 km EAST of the arc, in the river alluvium downstream - exactly
     where gold washed out of a contact like this would end up. The map
     itself confesses the industry: villages named Kotto 2, 3 and 4 and
-    Yangou-Diamant ("diamond river") ring the town of Sam-Ouandja; the
-    1930s sheet marks "Kou" (8.5080 N 23.3415 E) at the same bend of the
-    river.
+    Yangou-Diamant ("diamond river") ring the town of Sam-Ouandja; and
+    the 1930s sheet labels the river itself "Kotto (Ybongo)" at that very
+    bend (8.5530 N 23.3430 E) - the old name of the reach, lost from
+    modern maps.
     https://five-megapixel-conservation.exe.xyz/s/g-qx4xq8c9qvf27p3b
 
   * OUANDA DJALLE (8.8-9.0 N). The arc's northern end passes 5 km from
@@ -369,7 +372,45 @@ Use the geology only as a hint for where to point imagery next - and use
 the reported-site clusters for patrols.
 
 
-5. THE HUNDRED-YEAR-OLD MAPS - AN UNEXPECTED INSTRUMENT
+5. FIVE SMALL RIVERS TO WATCH
+--------------------------------------------------------------------------------
+Farms, mines and clearings all happen NEXT TO WATER, so the shortlist of
+river legs that matter is short. Modern maps mostly leave these streams
+nameless; the 1930s sheets name them [e]. Five legs, in order of urgency:
+
+  * THE LOL (9.13 N, 26.6-27.1 E) and its side-stream the Makedi
+    (9.14 N 26.79 E). The boom towns of the great return - Koko, Win,
+    Pan Nyel - are strung along this water. Section 3's prediction that
+    the next forest-to-farm front opens HERE means, in practice, along
+    these banks. The place to plan land use first.
+
+  * THE JUR AT WAU (labelled "B. Jur" on the sheets, 7.8310 N
+    27.9830 E), with the Busseri (7.5980 N 27.9930 E) and Sue (7.5360 N
+    28.1230 E) joining from the south. The region's biggest town and its
+    doubling farmland sit on this junction of rivers; whatever Wau grows
+    into, it happens on Jur water.
+
+  * THE KOTTO, upper reach - "Kotto (Ybongo)" on the 1930s sheet
+    (8.5530 N 23.3430 E). The armed-mining field of section 4 works this
+    river's alluvium; anything the diggings release moves downstream,
+    south, towards the Mbomou. A water-quality question, and nobody is
+    measuring.
+
+  * THE CHINKO AND MBARI HEADWATERS (5.4-6.4 N, 23.1-23.4 E). The
+    Kpangou pits sit in the streams' first kilometres, upstream of the
+    entire park. The shortest of these legs, and the one a patrol can
+    actually walk.
+
+  * THE MBOMOU on the CAR-DRC border (sheet labels at 5.1820 N
+    26.2240 E and 5.0790 N 26.8670 E). The one active
+    deforestation front in the region (section 2) presses into the
+    border forests along this river between Zemio and Doruma.
+
+None of these five needs a satellite: they need one boat, one water-test
+kit, and conversations in the villages on their banks.
+
+
+6. THE HUNDRED-YEAR-OLD MAPS - AN UNEXPECTED INSTRUMENT
 --------------------------------------------------------------------------------
 We digitised the complete Anglo-Egyptian Sudan Survey (187 map sheets,
 drawn mostly in the 1930s) and machine-read every label: 94,300 names,
@@ -400,7 +441,7 @@ region only, the place names are machine-read from old print, and the
 positioning is good to a few hundred metres.)
 
 
-6. WHAT TO DO - SIX ACTIONS, IN ORDER
+7. WHAT TO DO - SIX ACTIONS, IN ORDER
 --------------------------------------------------------------------------------
 1. ASK GARAMBA THE 6% QUESTION. It stops one fire in sixteen; its
    neighbours stop one in four. This is the corridor's weakest number and
@@ -495,7 +536,9 @@ DATA SOURCES
     the 2021 imagery census; mixed evidence, reported as such in
     section 4 and in the app [3].
 [j] Rivers and watersheds: HydroSHEDS-derived basin and river layers, for
-    the upstream/downstream geometry in section 4.
+    the upstream/downstream geometry in sections 4 and 5; the river NAMES
+    in section 5 are from the 1930s sheets [e], which name streams that
+    modern maps leave blank.
 [k] Roads and places (context layers): OpenStreetMap place names
     (villages, hamlets, towns), used to give locations in this report
     their local names; mapped mine pits from the same source appear in [f].
