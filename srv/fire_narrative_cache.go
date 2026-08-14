@@ -1040,6 +1040,16 @@ func (s *Server) GetCachedClassifiedSettlements(parkID string) []ClassifiedSettl
 		// Strip retired turbidity/pit evidence sentences (§10). The 'mining'
 		// label itself is river-proximity inference and is kept.
 		st.Narrative = publicSettlementNarrative(st.Classification, st.Narrative)
+		// Cropland context is appended at READ time: stored narratives
+		// predate the cropland columns, a force-reclassify of 13,871 rows
+		// is not warranted for a sentence, and the AOI refresh path
+		// deliberately has no force-classify. croplandSentence is the same
+		// function classifyParkSettlements uses, so a future rewrite
+		// produces identical text and the Contains guard makes this a no-op.
+		if crop := croplandSentence(&st); crop != "" &&
+			!strings.Contains(st.Narrative, "GLAD 30m") {
+			st.Narrative = strings.TrimRight(st.Narrative, " ") + " " + strings.TrimSpace(crop)
+		}
 		settlements = append(settlements, st)
 	}
 	return settlements
@@ -1052,7 +1062,9 @@ func (s *Server) GetCachedClassifiedDeforestation(parkID string) []ClassifiedDef
 			COALESCE(classification, 'unknown'), COALESCE(classification_confidence, 0),
 			COALESCE(narrative, ''), COALESCE(pattern_type, ''),
 			COALESCE(fires_same_year, 0), COALESCE(fire_ratio, 0), COALESCE(nearest_settlement_km, 0),
-			COALESCE(polygon_ids, '')
+			COALESCE(polygon_ids, ''),
+			cropland_frac_2019, cropland_event_frac_2019, cropland_conversion_frac,
+			COALESCE(cropland_source, '')
 		FROM deforestation_events
 		WHERE park_id = ?
 		ORDER BY year DESC, area_km2 DESC
@@ -1065,11 +1077,35 @@ func (s *Server) GetCachedClassifiedDeforestation(parkID string) []ClassifiedDef
 	var events []ClassifiedDeforestation
 	for rows.Next() {
 		var df ClassifiedDeforestation
+		var crop19, cropEv19, cropConv sql.NullFloat64
 		err := rows.Scan(&df.ID, &df.ParkID, &df.Year, &df.AreaKm2, &df.Lat, &df.Lon,
 			&df.Classification, &df.Confidence, &df.Narrative, &df.OriginalPattern,
-			&df.FiresSameYear, &df.FireRatio, &df.NearestSettlement, &df.PolygonIDs)
+			&df.FiresSameYear, &df.FireRatio, &df.NearestSettlement, &df.PolygonIDs,
+			&crop19, &cropEv19, &cropConv, &df.CroplandSource)
 		if err != nil {
 			continue
+		}
+		if crop19.Valid {
+			v := crop19.Float64
+			df.CroplandFrac2019 = &v
+		}
+		if cropEv19.Valid {
+			v := cropEv19.Float64
+			df.CroplandEventFrac2019 = &v
+		}
+		if cropConv.Valid {
+			v := cropConv.Float64
+			df.CroplandConversionFrac = &v
+		}
+		// Stored narratives are python-canonical (see classifyParkDeforestation);
+		// the cropland sentence is appended at READ time so the single writer
+		// stays single. Same gate as the Go narrative: the 2019 epoch is an
+		// outcome only for events it postdates.
+		if df.CroplandConversionFrac != nil && df.Year <= 2016 &&
+			*df.CroplandConversionFrac >= 0.05 &&
+			!strings.Contains(df.Narrative, "new cropland") {
+			df.Narrative += fmt.Sprintf(" %.0f%% of the cleared ground is new cropland (GLAD 30m: cropped in 2016-2019, not in 2000-2003) — %.2f km² became farmland.",
+				*df.CroplandConversionFrac*100, df.AreaKm2**df.CroplandConversionFrac)
 		}
 		events = append(events, df)
 	}
