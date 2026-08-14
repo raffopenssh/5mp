@@ -161,14 +161,18 @@
            colour AOIs wear everywhere else), a hairline rule instead of a box,
            and it is the whole readout AND the way out: the name opens the
            area, the × leaves focus. That is why it replaced a floating chip. */
-        .stats-scope { display: flex; align-items: baseline; gap: 5px;
+        .stats-scope { display: flex; align-items: center; gap: 5px;
             margin: 0 0 8px; padding: 0 8px 7px;
             border-bottom: 1px solid rgba(251,191,36,0.22);
             color: #999; font-size: 9px; font-weight: 600;
             text-transform: uppercase; letter-spacing: 0.5px; }
         .stats-scope[hidden] { display: none; }
-        .stats-scope .icon-focus { color: #fbbf24; font-size: 10px; align-self: center; }
-        .stats-scope .stats-scope-name { flex: 1; min-width: 0; cursor: pointer; color: #fbbf24;
+        .stats-scope .icon-focus { color: #fbbf24; font-size: 10px; }
+        /* The × sits NEXT TO the name, not flushed to the panel's far edge:
+           a × in a panel's top-right corner reads as "close this panel", and
+           this one leaves focus. Adjacency is the statement of what it acts
+           on. */
+        .stats-scope .stats-scope-name { flex: 0 1 auto; min-width: 0; cursor: pointer; color: #fbbf24;
             overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .stats-scope .stats-scope-name:hover { text-decoration: underline; }
         .stats-scope .stats-scope-x { flex: none; align-self: center; background: none; border: 0;
@@ -181,6 +185,46 @@
         .stats-scope.unscoped { border-bottom-style: dashed; }
         .stats-scope.unscoped .icon-focus,
         .stats-scope.unscoped .stats-scope-name { color: #f97316; }
+        /* ── Desktop window furniture (floatui.js setupStatsPanel) ─────────
+           The same .fui-bar every floating surface wears: drag to move, tap
+           or chevron to collapse. Collapse COMPACTS, it does not empty: the
+           panel is the legend, so every row keeps its label, value, colour
+           accent and click target — it just drops the section headers,
+           dividers and LOD sub-lines and tightens the air. Type stays at
+           full size. The fold is the user's choice only; no timer. */
+        .stats-panel .fui-bar { margin: -4px -6px 4px; }
+        .stats-panel.fui-moved { right: auto; }
+        .stats-panel .stats-item, .stats-panel .stats-divider,
+        .stats-panel .stats-header, .stats-panel .stats-map {
+            transition: max-height 0.25s ease, opacity 0.2s ease, margin 0.25s ease, padding 0.25s ease; }
+        /* Chrome folds… */
+        .stats-panel.fui-collapsed .stats-header,
+        .stats-panel.fui-collapsed .stats-divider,
+        .stats-panel.fui-collapsed .stats-lod {
+            max-height: 0; opacity: 0; margin-top: 0; margin-bottom: 0;
+            padding-top: 0; padding-bottom: 0; overflow: hidden; pointer-events: none; }
+        /* The LOD sub-line is the panel's widest content ("30.000 of 38.725
+           in view · lines ▾"); folded by height alone it still sets the
+           panel's shrink-to-fit width. Fold its width too, so the compact
+           panel is as narrow as its rows. */
+        .stats-panel.fui-collapsed .stats-lod { max-width: 0; }
+        /* …and the rows tighten but stay whole. */
+        .stats-panel.fui-collapsed { padding: 6px 10px 6px; }
+        .stats-panel.fui-collapsed .stats-item { padding: 2px 8px; margin: 0 -8px 1px; gap: 10px; }
+        .stats-panel.fui-collapsed .fui-bar { margin-bottom: 2px; }
+        .stats-panel.fui-collapsed #stats-scope { margin-bottom: 4px; padding-bottom: 4px; }
+        .stats-panel.fui-collapsed #stats-map.quiet { margin: 0; }
+        .stats-panel.fui-collapsed .fui-bar-btn[data-act=collapse] i { transform: rotate(180deg); }
+        /* "Snap home": only meaningful once the panel has been dragged. */
+        .stats-panel .fui-bar-btn[data-act=home] { display: none; }
+        .stats-panel.fui-moved .fui-bar-btn[data-act=home] { display: inline-flex; }
+        /* At 11px the chevron's diagonals antialias fainter than the house's
+           straight strokes and the pair reads as two colours. 12px renders
+           both at like weight. */
+        .stats-panel .fui-bar-btn i { font-size: 12px; }
+        /* The bar is desktop furniture only: the phone layout is a top-pinned
+           grid with its own compaction. */
+        @media (max-width: 768px) { .stats-panel .fui-bar { display: none; } }
         .stats-panel h3 { font-size: 11px; font-weight: 600; color: #a0a0a0; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
         .stats-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; padding: 6px 8px; margin: 0 -8px 6px -8px; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; position: relative; }
         .stats-item:last-child { margin-bottom: 0; }

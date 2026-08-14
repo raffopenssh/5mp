@@ -264,6 +264,119 @@
     }
 
     // ---------------------------------------------------------------
+    // Stats panel (desktop): standard window furniture + time-based rest
+    //
+    // The panel is the app's legend. On desktop it wore none of the app's
+    // furniture, so nothing said it could get out of the way — and its only
+    // × was the focus scope's "leave focus", which read as "close panel".
+    // Now it wears the same .fui-bar every floating surface wears (grabber,
+    // chevron; drag to move, tap to collapse), and it borrows the map
+    // strip's rest behaviour (maplegend.js): a few seconds untouched and it
+    // folds to the bar + the focus line + the map chip; any attention
+    // unfolds it. Manual collapse persists; rest never does — rest is the
+    // panel getting out of the way, not the user's choice.
+    //
+    // The bar is desktop-only (CSS ≤768px hides it): on a phone the panel is
+    // a top-pinned grid with its own compaction, and the map strip already
+    // rests itself there.
+    // ---------------------------------------------------------------
+    // ---------------------------------------------------------------
+    // Stats panel (desktop): standard window furniture, manual compaction
+    //
+    // The panel is the app's legend. On desktop it wore none of the app's
+    // furniture, so nothing said it could get out of the way — and its only
+    // × was the focus scope's "leave focus", which read as "close panel".
+    // Now it wears the same .fui-bar every floating surface wears (grabber,
+    // chevron; drag to move, tap to collapse). Collapse COMPACTS, it does
+    // not empty: users still need the legend, so every row keeps its label,
+    // value, colour accent and click target — it just drops the section
+    // headers, dividers and LOD sub-lines and tightens the spacing. The
+    // fold is the USER's choice only (persists in localStorage); there is
+    // deliberately no timer — an auto-fold took the legend away mid-read.
+    //
+    // The bar is desktop-only (CSS ≤768px hides it): on a phone the panel is
+    // a top-pinned grid with its own compaction.
+    // ---------------------------------------------------------------
+    function setupStatsPanel() {
+        const el = document.querySelector('.stats-panel');
+        if (!el || el.dataset.fui) return;
+        el.dataset.fui = '1';
+
+        const bar = makeBar('Statistics');
+        // No dock: docking would hide the legend entirely; compacting is
+        // as far as it folds.
+        const dockBtn = bar.querySelector('[data-act=dock]');
+        if (dockBtn) dockBtn.remove();
+        // "Snap home": after a drag, one tap returns the panel to its CSS
+        // place (top-right). Only visible while the panel is displaced
+        // (.fui-moved) — a home button on a panel that is home is noise.
+        const homeBtn = document.createElement('button');
+        homeBtn.className = 'fui-bar-btn';
+        homeBtn.setAttribute('data-act', 'home');
+        homeBtn.title = 'Snap back to its usual corner';
+        homeBtn.setAttribute('aria-label', 'Snap statistics panel back to its usual corner');
+        homeBtn.innerHTML = '<i class="icon-house"></i>';
+        const btns = bar.querySelector('.fui-bar-btns');
+        btns.insertBefore(homeBtn, btns.firstChild);
+        homeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            el.classList.remove('fui-moved');
+            el.style.left = '';
+            el.style.top = '';
+            store.del('stats.pos');
+        });
+        el.insertBefore(bar, el.firstChild);
+
+        function desktop() { return window.innerWidth > 768; }
+
+        function setCollapsed(on, persist) {
+            el.classList.toggle('fui-collapsed', on);
+            const b = bar.querySelector('[data-act=collapse]');
+            if (b) b.setAttribute('aria-expanded', String(!on));
+            if (persist !== false) store.set('stats.collapsed', on);
+        }
+
+        bar.querySelector('[data-act=collapse]').addEventListener('click', (e) => {
+            e.stopPropagation();
+            setCollapsed(!el.classList.contains('fui-collapsed'));
+        });
+
+        // Drag by the bar; tap toggles collapse. Same gestures as every
+        // other floating surface.
+        enableDrag(bar, {
+            getPos() { const r = el.getBoundingClientRect(); return { x: r.left, y: r.top }; },
+            onDragStart() {
+                if (!desktop()) return false;
+                const r = el.getBoundingClientRect();
+                el.classList.add('fui-moved');
+                el.style.left = r.left + 'px';
+                el.style.top = r.top + 'px';
+            },
+            setPos(x, y) {
+                const r = el.getBoundingClientRect();
+                el.style.left = clamp(x, MARGIN, window.innerWidth - r.width - MARGIN) + 'px';
+                el.style.top = clamp(y, MARGIN, window.innerHeight - r.height - MARGIN) + 'px';
+            },
+            onDragEnd() {
+                const r = el.getBoundingClientRect();
+                store.set('stats.pos', { x: r.left, y: r.top });
+            },
+            onTap() { setCollapsed(!el.classList.contains('fui-collapsed')); }
+        });
+
+        // Restore persisted state (desktop only — the phone layout owns itself)
+        if (desktop()) {
+            const pos = store.get('stats.pos', null);
+            if (pos && typeof pos.x === 'number') {
+                el.classList.add('fui-moved');
+                el.style.left = clamp(pos.x, MARGIN, Math.max(MARGIN, window.innerWidth - 180)) + 'px';
+                el.style.top = clamp(pos.y, MARGIN, Math.max(MARGIN, window.innerHeight - 100)) + 'px';
+            }
+            if (store.get('stats.collapsed', false)) setCollapsed(true, false);
+        }
+    }
+
+    // ---------------------------------------------------------------
     // Park popup (MapLibre popup with .pa-popup content)
     // ---------------------------------------------------------------
     function decoratePAPopup(popup) {
@@ -413,9 +526,10 @@
     // Init
     // ---------------------------------------------------------------
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', setupPinnedIndicator);
+        document.addEventListener('DOMContentLoaded', () => { setupPinnedIndicator(); setupStatsPanel(); });
     } else {
         setupPinnedIndicator();
+        setupStatsPanel();
     }
 
     window.FloatUI = { decoratePAPopup, addDockChip, removeDockChip, setDockBadge };
