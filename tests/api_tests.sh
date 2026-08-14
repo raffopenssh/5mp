@@ -568,6 +568,33 @@ if [[ -n "$CLIENT_PWD" ]]; then
     fi
 fi
 
+# ── Historical map labels: categories and vector downloads ────────────────
+#
+# The OCR'd label set (scripts/histmaps/ocr_labels.py + categorize_labels.py)
+# and its batch exports (export_labels.sh). Skips cleanly when the archive is
+# not installed on this server -- the endpoints answer 404 with a reason then.
+hist_avail=$(curl -s -m 30 -b "$COOKIE_FILE" "${BASE_URL}/api/histmap" | jq -r '.available // false')
+if [[ "$hist_avail" == "true" ]]; then
+    test_api "histmap_labels_category_field" "/api/histmap/sudan250k/labels?lon=25.78&lat=9.81&radius_km=10&limit=5" "200" \
+        '.labels | length > 0 and all(.category != null and .category != "")'
+    test_api "histmap_labels_category_filter" "/api/histmap/sudan250k/labels?bbox=22,3,32,12&category=place&limit=5" "200" \
+        '.labels | length > 0 and all(.category == "place")'
+    # Downloads advertised in meta must name the FILE's row count (dedup),
+    # not the raw table's -- two surfaces, one number (AGENTS invariant 7).
+    test_api "histmap_labels_downloads_advertised" "/api/histmap" "200" \
+        '.labels_downloads.gpkg.count > 0 and .labels_downloads.gpkg.count == .labels_downloads.geojson.count'
+    printf "%-50s" "histmap_labels_download_range"
+    st=$(curl -s -m 30 -b "$COOKIE_FILE" -o /dev/null -w "%{http_code}" -r 0-99 "${BASE_URL}/api/histmap/sudan250k/labels/download/gpkg")
+    bad=$(curl -s -m 30 -b "$COOKIE_FILE" -o /dev/null -w "%{http_code}" "${BASE_URL}/api/histmap/sudan250k/labels/download/kml")
+    if [[ "$st" == "206" && "$bad" == "400" ]]; then
+        green "✓ (gpkg 206, bad format 400)"; PASSED=$((PASSED + 1))
+    else
+        red "FAIL (gpkg $st, kml $bad)"; FAILED=$((FAILED + 1)); ERRORS+=("histmap labels download")
+    fi
+else
+    yellow "histmap not installed here -- label tests skipped"
+fi
+
 # ── Shared links: names, capabilities, and what a capability may see ───────
 #
 # The four properties that make a guest link safe to send (docs/agents/

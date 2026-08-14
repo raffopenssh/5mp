@@ -384,7 +384,12 @@ answerable without opening a sheet. One of `bbox=W,S,E,N` or `lon=&lat=`
 
 **Optional filters:**
 - `q=` — text search (FTS5 prefix match: `q=hagar` finds "HAGAR MASUDI")
-- `kind=` — one of `place|water|hill|route|boundary|other`
+- `kind=` — one of `place|water|hill|route|boundary|other` (the vision model's coarse sort)
+- `category=` — one of `place|water|terrain|vegetation|route|boundary|note|collar|junk`
+  (refined: the 'other' bucket re-classified by a text LLM,
+  `scripts/histmaps/categorize_labels.py`; `hill` renamed `terrain`). 400 on a
+  database that predates the categorize pass — an unfiltered answer to a
+  filtered question would read as "no junk here".
 - `limit=` — default 500, max 5000
 
 **Response:**
@@ -393,7 +398,7 @@ answerable without opening a sheet. One of `bbox=W,S,E,N` or `lon=&lat=`
   "available": true,
   "source": "labels",
   "labels": [
-    {"text": "HAGAR MASUDI", "kind": "place", "lon": 25.7814, "lat": 9.8088, "sheet": "cs000009"}
+    {"text": "HAGAR MASUDI", "kind": "place", "category": "place", "lon": 25.7814, "lat": 9.8088, "sheet": "cs000009"}
   ],
   "count": 1,
   "truncated": false,
@@ -413,6 +418,19 @@ not facts.
 
 `/api/histmap` advertises the endpoint as `labels`, with `labels_count` and
 `labels_complete`, when the label database exists.
+
+```
+GET /api/histmap/sudan250k/labels/download/gpkg
+GET /api/histmap/sudan250k/labels/download/geojson
+```
+
+The whole deduplicated, categorized label set as a vector file: GeoPackage
+(points + `category` column, opens directly in QGIS) or gzipped RFC 7946
+GeoJSON. Batch artefacts built by `scripts/histmaps/export_labels.sh` — one
+consistent snapshot, not generated per request. Range-capable. 404 until the
+export has been built; `/api/histmap` advertises them under
+`labels_downloads` with `url`, `size_bytes` and `count` (the file's own row
+count, which is the dedup table's, not `labels_count`).
 
 ---
 

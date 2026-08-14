@@ -136,6 +136,26 @@ func (s *Server) HandleAPIHistMapMeta(w http.ResponseWriter, r *http.Request) {
 		out["labels"] = "/api/histmap/sudan250k/labels"
 		out["labels_count"] = nLabels
 		out["labels_complete"] = total > 0 && done == total
+		// Vector downloads exist once export_labels.sh has run; advertised
+		// with sizes so the UI can label the buttons honestly.
+		dls := map[string]any{}
+		// The files hold the DEDUPLICATED set (94,300), not the raw table the
+		// meter above counts (98,055) -- two surfaces saying one word must say
+		// one number, so each download names its own row count.
+		var nDedup int
+		db.QueryRow(`SELECT count(*) FROM labels_dedup`).Scan(&nDedup)
+		for fmtKey, exp := range histLabelExports {
+			if st, err := os.Stat(exp.path); err == nil {
+				dls[fmtKey] = map[string]any{
+					"url":        "/api/histmap/sudan250k/labels/download/" + fmtKey,
+					"size_bytes": st.Size(),
+					"count":      nDedup,
+				}
+			}
+		}
+		if len(dls) > 0 {
+			out["labels_downloads"] = dls
+		}
 	}
 	enc.Encode(out)
 }

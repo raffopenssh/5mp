@@ -1493,6 +1493,33 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             }
             const on = HistMap.isOn();
             const mb = m.size_bytes ? (m.size_bytes / 1048576).toFixed(0) + ' MB' : '';
+            // The OCR'd labels as vectors, rendered INLINE in the card rather
+            // than in the download popup: the popup grew taller than fits
+            // under its button and flipped up over the card it describes.
+            // Buttons exist only for files that exist (labels_downloads is
+            // absent until export_labels.sh has run), and each names the
+            // FILE's own row count (deduplicated) — not labels_count, the raw
+            // table's — two surfaces, one number (invariant 7).
+            const ld = m.labels_downloads || {};
+            let labelsHtml = '';
+            if (ld.gpkg || ld.geojson) {
+                const nlab = d => d.count ? d.count.toLocaleString() + ' labels' : 'labels';
+                const pwdQ = u => u + ((typeof getPwd === 'function' && getPwd()) ? (u.indexOf('?') >= 0 ? '&' : '?') + 'pwd=' + encodeURIComponent(getPwd()) : '');
+                labelsHtml = `
+                    <div style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);">
+                        <div style="color:#aaa;font-size:11px;font-weight:600;margin-bottom:6px;">Map labels (vector)</div>
+                        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                            ${ld.gpkg ? `<a class="geo-cardbtn" href="${escapeHtml(pwdQ(ld.gpkg.url))}"
+                                title="Every place name, water feature and note OCR’d off the sheets, as points with a category column. Opens directly in QGIS.">
+                                <i class="icon-map-pin"></i>GeoPackage (${nlab(ld.gpkg)}, ${Math.round(ld.gpkg.size_bytes / 1048576)} MB)</a>` : ''}
+                            ${ld.geojson ? `<a class="geo-cardbtn" href="${escapeHtml(pwdQ(ld.geojson.url))}"
+                                title="The same labels as gzipped GeoJSON, for web maps and scripts.">
+                                <i class="icon-braces"></i>GeoJSON (${nlab(ld.geojson)}, ${(ld.geojson.size_bytes / 1048576).toFixed(1)} MB)</a>` : ''}
+                        </div>
+                        <div style="color:#555;font-size:10px;margin-top:6px;line-height:1.5;">Machine transcription and categorization
+                            (place, water, terrain, vegetation, route, boundary, note, collar, junk) — verify against the sheet before citing.</div>
+                    </div>`;
+            }
             box.innerHTML = `
                 <div style="border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px;background:rgba(255,255,255,0.02);">
                     <div style="display:flex;align-items:flex-start;gap:12px;">
@@ -1523,6 +1550,7 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                             onclick="copyMapSheetLink('histmap', event)"
                             title="Copy a link that opens this archive's panel here"><i class="icon-link"></i>Copy link</button>
                     </div>
+                    ${labelsHtml}
                     <div style="color:#555;font-size:10px;margin-top:10px;line-height:1.5;">${escapeHtml(m.attribution || '')}</div>
                 </div>`;
         }
