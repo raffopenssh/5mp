@@ -10474,7 +10474,7 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                 ${row(`<a class="aoi-menu-item" data-item="gpkg" href="${menuShareLink(id, 'gpkg')}" onclick="return startGeoPackageExportFromLink(event,'${id}','${safeName}',true)"><i class="icon-database"></i><span>GeoPackage</span><em>all layers, QGIS</em></a>`, menuShareLink(id, 'gpkg'))}
                 ${row(`<a class="aoi-menu-item" data-item="gpkg_light" href="${menuShareLink(id, 'gpkg_light')}" onclick="return startGeoPackageExportFromLink(event,'${id}','${safeName}',false)"><i class="icon-database"></i><span>GeoPackage</span><em>no raw fire points</em></a>`, menuShareLink(id, 'gpkg_light'))}
                 ${row(`<a class="aoi-menu-item" data-item="locus" href="${locusURL}"><i class="icon-smartphone"></i><span>Locus</span><em>field device backup</em></a>`, locusURL)}
-                ${row(`<button class="aoi-menu-item" data-item="tiles" onclick="event.stopPropagation();closeAOIMenu();showMBTilesDialog('${id}', '${safeName}')"><i class="icon-layers"></i><span>Tiles</span><em>offline satellite</em></button>`, '')}`;
+                ${window.IS_GUEST ? '' : row(`<button class="aoi-menu-item" data-item="tiles" onclick="event.stopPropagation();closeAOIMenu();showMBTilesDialog('${id}', '${safeName}')"><i class="icon-layers"></i><span>Tiles</span><em>offline satellite</em></button>`, '')}`;
         }
 
         // The menu stays open and the popup opens over it: copying a link is
