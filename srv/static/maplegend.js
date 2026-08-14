@@ -1848,8 +1848,8 @@
         var sel = GeoMap.selection();
         if (!sel.units.length) {
             if (typeof showToast === 'function') {
-                showToast('Nothing is drawn here', 'Pan onto a sheet or widen the filter — ' +
-                    'an export of an empty view would be an empty file.', null, null, 'warning');
+                showToast('Nothing is drawn here — pan onto a sheet or widen the filter; ' +
+                    'an export of an empty view would be an empty file.', 'warning');
             }
             return;
         }
@@ -1872,7 +1872,12 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(sel)
         }).then(function (r) {
-            if (!r.ok) return r.text().then(function (t) { throw new Error(t || ('HTTP ' + r.status)); });
+            if (!r.ok) return r.text().then(function (t) {
+                // A 401 here serves the login PAGE — 20 KB of HTML is not a
+                // sentence a toast can show.
+                if (/^\s*</.test(t)) t = '';
+                throw new Error(t || ('HTTP ' + r.status));
+            });
             var name = 'geology-view.gpkg';
             var cd = r.headers.get('Content-Disposition') || '';
             var m = /filename="?([^";]+)/.exec(cd);
@@ -1887,18 +1892,25 @@
             a.remove();
             setTimeout(function () { URL.revokeObjectURL(u); }, 30000);
             if (typeof showToast === 'function') {
-                showToast('Your view is downloading', res.name + ' — ' + f.units +
+                showToast('Your view is downloading — ' + res.name + ', ' + f.units +
                     ' unit(s)' + (f.lines ? ', ' + f.lines + ' junction type(s)' : '') +
-                    ', plus the published workings it was scored against.', null, null, 'success');
+                    ', plus the published workings it was scored against.', 'success');
             }
         }).catch(function (e) {
             if (typeof showToast === 'function') {
-                showToast('That view could not be packaged',
-                    String(e.message || e).slice(0, 300), null, null, 'error');
+                showToast('That view could not be packaged — ' +
+                    String(e.message || e).slice(0, 300), 'error');
             }
         }).then(function () {
+            // The reset must be unconditional: dlBusy stuck true turns every
+            // later click into a silent no-op ("works only once"). A `.then`
+            // after a throwing `.catch` is skipped on rejection — that is
+            // exactly how this stuck once — so both arms are handled here.
             dlBusy = false;
-            if (label && was !== null) label.innerHTML = was;
+            if (label && was !== null && label.isConnected) label.innerHTML = was;
+        }, function () {
+            dlBusy = false;
+            if (label && was !== null && label.isConnected) label.innerHTML = was;
         });
     }
 
