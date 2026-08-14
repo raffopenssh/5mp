@@ -244,6 +244,13 @@
 
     function bodyHTML(d) {
         const pct = Math.max(0, Math.min(100, Math.round((d.progress || 0) * 100)));
+        // A guest may build and download, but not delete or cancel: the job is
+        // a cache shared with the link's owner, and removing the owner's file
+        // is a write. Don't draw buttons that would 401.
+        const guest = !!window.IS_GUEST;
+        const delBtn = guest ? '' : `
+                  <button class="gpkg-btn danger" title="Delete this file now — it would otherwise be removed automatically after 21 days"
+                    onclick="event.stopPropagation();GeoPackageExport.remove('${esc(d.id)}')"><i class="icon-trash-2"></i></button>`;
         if (d.state === 'ready') {
             const n = (d.layers || []).reduce((a, l) => a + (l.count || 0), 0);
             const until = d.expires_at
@@ -262,9 +269,7 @@
                   <button class="gpkg-btn primary" onclick="event.stopPropagation();GeoPackageExport.download('${esc(d.id)}')">
                     <i class="icon-download"></i> Download .gpkg</button>
                   <button class="gpkg-btn" title="Copy a link that opens this download for anyone with access"
-                    onclick="event.stopPropagation();GeoPackageExport.copyLink('${esc(d.id)}')"><i class="icon-link"></i></button>
-                  <button class="gpkg-btn danger" title="Delete this file now — it would otherwise be removed automatically after 21 days"
-                    onclick="event.stopPropagation();GeoPackageExport.remove('${esc(d.id)}')"><i class="icon-trash-2"></i></button>
+                    onclick="event.stopPropagation();GeoPackageExport.copyLink('${esc(d.id)}')"><i class="icon-link"></i></button>${delBtn}
                 </div>
                 ${until ? `<div class="gpkg-dim">Styled for QGIS · link valid until ${until}</div>` : ''}`;
         }
@@ -272,9 +277,9 @@
             return `
                 <div class="gpkg-line">${esc(d.state === 'expired' ? 'Expired' : (d.error || 'Export failed'))}</div>
                 <div class="gpkg-actions">
-                  <button class="gpkg-btn" onclick="event.stopPropagation();GeoPackageExport.retry('${esc(d.id)}')">Try again</button>
+                  <button class="gpkg-btn" onclick="event.stopPropagation();GeoPackageExport.retry('${esc(d.id)}')">Try again</button>${guest ? '' : `
                   <button class="gpkg-btn danger" title="Remove this card"
-                    onclick="event.stopPropagation();GeoPackageExport.remove('${esc(d.id)}')"><i class="icon-trash-2"></i></button>
+                    onclick="event.stopPropagation();GeoPackageExport.remove('${esc(d.id)}')"><i class="icon-trash-2"></i></button>`}
                 </div>`;
         }
         // The step is a full phrase from the server ("writing fire detections",
@@ -287,10 +292,10 @@
             <div class="gpkg-line">${esc(step)}</div>
             <div class="gpkg-bar"><div style="width:${pct}%"></div></div>
             <div class="gpkg-dim">${pct}% · you can close this, it keeps running</div>
-            <div class="gpkg-actions">
+            ${guest ? '' : `<div class="gpkg-actions">
               <button class="gpkg-btn danger" title="Stop this export and discard what has been built so far"
                 onclick="event.stopPropagation();GeoPackageExport.remove('${esc(d.id)}')"><i class="icon-x"></i> Cancel</button>
-            </div>`;
+            </div>`}`;
     }
 
     // Restart the same question. Uses the job's own parameters rather than the

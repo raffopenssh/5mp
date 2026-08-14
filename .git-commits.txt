@@ -1,3 +1,13 @@
+b1612a7 2026-08-14 10:15:05 easy-read report: coordinates for every named place, settlement history
+9e1919c 2026-08-14 09:59:23 Fix geology view GPKG export: spinner never turned, second export silently no-op'd
+a0fa59c 2026-08-14 09:58:58 easy-read report: all links are shortened guest links, portless, 90d
+b97b8d2 2026-08-14 09:55:36 easy-read report: name the gold geology by place
+775b249 2026-08-14 09:39:16 Cropland/persistence consistency across all surfaces + easy-read report
+8d9bdbf 2026-08-14 08:33:50 GLAD cropland context: settlement expansion + deforestation attribution
+6ef388e 2026-08-14 08:04:59 GeoPackage export: cancellable builds + orphan-card cleanup
+3699b3c 2026-08-14 06:37:33 Nightly cron state: fire/GFW/OSM/deforestation outputs for 2026-08-14
+0ef92c1 2026-08-14 05:51:02 map-ui.md: document stats panel window furniture
+76c1e44 2026-08-14 05:50:24 Stats panel: standard window furniture, compact fold, snap-home, scope row alignment
 0ab519f 2026-08-14 05:43:52 XSA conservation review v2 (unified): persistence-corrected settlements, complete histmap corpus, nightlights null, full URLs
 2293555 2026-08-14 05:38:20 histmap labels: LLM categorization, category API filter, vector downloads
 2b490d0 2026-08-14 05:37:04 XSA report v2: settlement rebuild, persistence epochs, complete histmap OCR, nightlights null
@@ -8,13 +18,3 @@ cb1e886 2026-08-13 19:09:24 docs: document /api/histmap/sudan250k/labels (OCR'd 
 290266e 2026-08-13 19:09:15 Structural layers: mixer rows, MapTips, craton band ink
 ab720b6 2026-08-13 19:04:59 Nightlights WP3: measured and folded — mine sites are dark
 8c2b4a6 2026-08-13 19:03:14 histmap labels: query API + FTS/geo indexes
-d529740 2026-08-13 18:40:30 State snapshot: GHSL epoch persistence + settlement backfill progress (114/157 areas)
-66bec54 2026-08-13 18:37:17 WP3 nightlights: VNP46A3 fetch + mine-site radiance skill pipeline
-d42fd60 2026-08-13 18:34:57 docs: settlement persistence (WP1) in settlements.md
-a4e34bd 2026-08-13 18:34:21 WP2: JRC AKP structural context — active faults + craton margins
-ffa03dd 2026-08-13 18:32:45 WP1: settlement persistence measured from GHSL back-epochs (E2000/E2015)
-19e28c6 2026-08-13 18:30:20 WP4: GSW new-water pit-lake candidates — measured, no signal, no layer
-d80b405 2026-08-13 17:13:58 WP5: UCDP GED mine sites join the geology anchors
-9135d7d 2026-08-13 16:43:49 docs: implementation plan for six new data layers (GHSL epochs, JRC AKP, nightlights, GSW water, UCDP, Soviet 200k histmap)
-366b504 2026-08-13 16:25:23 AGENTS.md: add effort-budget working style; fix stale DB size (1.8GB -> 18GB)
-acec612 2026-08-13 16:20:28 Record 344155a in the commit log
