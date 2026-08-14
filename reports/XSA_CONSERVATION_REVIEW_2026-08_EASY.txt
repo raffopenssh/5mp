@@ -229,17 +229,27 @@ Two clusters matter:
     pressure sits - and those pits are in headwaters that drain INTO the
     park's rivers. Small, specific, and reachable by patrol.
 
-  * THE UPPER KOTTO RIVER (north of Chinko). A dense field of workings -
-    Yangou Dacko, Yangou Issi, the Kotto sites - each on the list BECAUSE
-    an armed group attacked it. This is armed-mining ground by definition,
-    in the prefecture with the region's heaviest conflict record (818
-    armed events, 1,318 deaths since 1996).
+  * THE UPPER KOTTO RIVER (north of Chinko). A dense field of workings
+    around the town of Sam-Ouandja - Yangou Dacko, Yangou Issi, the Kotto
+    sites - each on the list BECAUSE an armed group attacked it. The
+    villages here are literally named after the industry: Kotto 2, 3 and
+    4, and Yangou-Diamant, "diamond river" [k]. This is armed-mining
+    ground by definition, in the prefecture with the region's heaviest
+    conflict record (818 armed events, 1,318 deaths since 1996).
 
 How long has this been going on? The century-old maps answer: one site,
 "Hofrat el Nahas" - Arabic for "the copper pit" - is printed on the
 colonial sheets; 8 km away is a modern mine where an armed attack was
 reported in 2016. The same pit, worked and fought over, a century apart.
+And it is not alone: two gold mines mapped today on OpenStreetMap
+(9.37 N 24.10 E) sit ONE kilometre from a well the 1930s surveyors named
+"Bir Andem" - modern diggings at a century-old watering point [e][f].
 Extraction here is older than every armed group present.
+
+One more cluster, just outside the frame: ten mapped mine pits sit INSIDE
+Bili-Uere park, around the hamlet of Buza (4.05 N 24.14 E), a few
+kilometres south of the study area's edge [f][k]. Apart from Chinko's
+sites, it is the only mapped mining inside any of the four parks.
 
 Two things we PROVED we cannot see, which is worth as much as a finding:
 
@@ -256,11 +266,72 @@ Can the mines poison the parks' water? We cannot measure pollution. What
 we CAN say is the geometry: the south-west cluster sits upstream of
 Chinko. If contamination happens, it flows in.
 
-One warning about pretty maps: our geological "gold potential" layer,
-tested against real mine locations in eastern CAR, performs no better than
-random ground. Do NOT send patrols to amber dots on the geology map here.
-Use the reported-site clusters; use the geology only as a hint for where
-to point imagery next.
+One warning about pretty maps, and one honest use for them. Our geology
+layer offers two ways to look for gold, and they are NOT equally good [i]:
+
+  * The COLOURED ROCK AREAS ("rocks that can host gold") fail here.
+    Tested against real mine locations in eastern CAR they perform WORSE
+    than random ground. Do not send patrols to amber shapes.
+
+  * The CONTACT LINES - where two different rock types meet - carry a
+    real, but disputed, signal. Against the 2019 field survey (675 mines)
+    the gold-graded junctions concentrate known workings about 2.2-2.4
+    times over random ground. But a second, smaller test list (a 2021
+    imagery census, 32 mines inside mining permits) scores the same lines
+    at 0.06x - effectively zero. Mixed evidence, and the app says so.
+    Treat the lines as "where to point imagery and questions next" -
+    never as a treasure map.
+
+WITH THAT SAID: WHERE THE LINES RUN, BY NAME. The study area holds about
+1,800 km of gold-graded contact lines [i], and the strongest type present
+is the classic "greenstone" contact - ancient ocean-floor rock against the
+metamorphic basement - forming one long broken arc through eastern CAR.
+Several reported mining sites sit strikingly close to it. Walking the arc
+south-west to north-east, with today's village names [k] and the 1930s
+names where the old sheets reach [e]:
+
+  * CHINKO'S WESTERN EDGE (5.4-6.0 N). About 100 km of the arc crosses
+    the park's west, 25-35 km beyond the hamlets of Barogo, Drouaza and
+    Prouazo Kalambour. This is the Kpangou corner again: two attacked
+    sites near Yalinga sit 3 and 7 km off the line, the reported working
+    by Fode village 9 km. The rocks, the pits and the settlement pressure
+    all point at the same corner of the same park.
+    https://five-megapixel-conservation.exe.xyz:8000/?geomap=car&geo_panel=1&geomap_contacts=1&lat=5.6&lng=23.7&z=9
+
+  * THE DEMBIA-KARMADOR STRETCH (5.1-5.4 N, 24.5-24.9 E). Three more
+    attacked-site clusters lie 3-15 km off the line, at villages with
+    names: Dembia, Karmador, Zemoye, Modoue.
+
+  * THE BAROUA SITE (5.60 N 24.69 E). The one reported gold mine in the
+    area's interior sits ONE kilometre from the contact line, 2 km from
+    Baroua village. If the line predicts anything, it looks like this.
+
+  * THE MBOMOU STRETCH (around 6 N, 25.5-26.1 E). ~270 km of line in
+    inhabited country - Kparatio, Ourou and Ouando villages today; the
+    1930s sheets already name Rou, Rafi and Kaka here.
+
+  * THE EMPTY MIDDLE (7.0-7.9 N, 24.0-25.0 E). The longest share of the
+    arc - roughly 700 km of line - crosses ground with NO modern named
+    place at all: the nearest mapped village is 40+ km away. The only
+    names this ground has ever had are on the 1930s sheets (Osso, Deye,
+    Yango Asso). If anyone ever digs here, nobody will be watching.
+
+  * THE KOTTO FIELD (8.2-8.6 N). The armed-mining cluster above sits
+    11-22 km EAST of the arc, in the river alluvium downstream - exactly
+    where gold washed out of a contact like this would end up. The map
+    itself confesses the industry: villages named Kotto 2, 3 and 4 and
+    Yangou-Diamant ("diamond river") ring the town of Sam-Ouandja; the
+    1930s sheet marks "Kou" at the same bend of the river.
+    https://five-megapixel-conservation.exe.xyz:8000/?geomap=car&geo_panel=1&geomap_contacts=1&lat=8.4&lng=23.4&z=9
+
+  * OUANDA DJALLE (8.8-9.0 N). The arc's northern end passes 5 km from
+    the town of Ouanda Djalle - printed under the same name on the 1930s
+    sheets, beside hill names (J. Gawarra) still on today's map. Named,
+    inhabited, reachable: the one stretch of the line that is watchable
+    from the ground today.
+
+Use the geology only as a hint for where to point imagery next - and use
+the reported-site clusters for patrols.
 
 
 5. THE HUNDRED-YEAR-OLD MAPS - AN UNEXPECTED INSTRUMENT
@@ -348,7 +419,10 @@ WHERE TO LOOK
     https://five-megapixel-conservation.exe.xyz:8000/
 [2] The fire season, animated (Nov 2025 - Mar 2026):
     https://five-megapixel-conservation.exe.xyz:8000/?aoi=XSA_Study_Area&from=2025-11-01&to=2026-03-31
-[3] The full technical review with every number, method and caveat:
+[3] The gold geology view used in section 4 (rock hosts, contact lines,
+    junction types - with its skill scores and caveats on screen):
+    https://five-megapixel-conservation.exe.xyz:8000/s/n62mnpp
+[4] The full technical review with every number, method and caveat:
     reports/XSA_CONSERVATION_REVIEW_2026-08.txt
 
 
@@ -375,14 +449,20 @@ DATA SOURCES
     ours, not ACLED's.
 [h] Night lights: NASA Black Marble VNP46A3 monthly radiance (used to
     establish that mines are unlit; retired as a detection tool).
-[i] Geology: national geological map sheets (CAR and neighbours),
-    digitised; skill tested against sources in [f] and found unusable for
-    targeting in eastern CAR.
+[i] Geology: national geological map sheets (CAR, Sudan and neighbours),
+    digitised; contact lines graded by rock-pair. Skill tested against
+    sources in [f]: the rock AREAS are unusable for targeting in eastern
+    CAR (0.4-0.6x random); the gold contact LINES concentrate the 2019
+    survey's mines 2.2-2.4x but score 0.06x - effectively zero - against
+    the 2021 imagery census; mixed evidence, reported as such in
+    section 4 and in the app [3].
 [j] Rivers and watersheds: HydroSHEDS-derived basin and river layers, for
     the upstream/downstream geometry in section 4.
-[k] Roads and places (context layers): OpenStreetMap.
+[k] Roads and places (context layers): OpenStreetMap place names
+    (villages, hamlets, towns), used to give locations in this report
+    their local names; mapped mine pits from the same source appear in [f].
 
 ================================================================================
  Prepared August 2026. All sources listed above; all numbers cross-checked
- against the live app and the technical review [3].
+ against the live app and the technical review [4].
 ================================================================================
