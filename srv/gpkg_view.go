@@ -30,6 +30,7 @@ package srv
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"math"
@@ -136,10 +137,16 @@ func (s *Server) buildViewGeoPackage(path string, o gpkgExportOpts) ([]gpkgLayer
 		{"context", func() error { return s.gpkgViewContext(w, o) }},
 	}
 	for i, st := range steps {
+		if o.cancelled() {
+			return nil, errGPKGCancelled
+		}
 		if o.Progress != nil {
 			o.Progress(float64(i)/float64(len(steps)), st.label)
 		}
 		if err := st.fn(); err != nil {
+			if errors.Is(err, errGPKGCancelled) {
+				return nil, errGPKGCancelled
+			}
 			slog.Warn("gpkg view layer failed", "layer", st.label, "err", err)
 		}
 	}
@@ -332,6 +339,11 @@ func (s *Server) gpkgViewDetections(w *gpkgWriter, o gpkgExportOpts) error {
 	}
 	defer rows.Close()
 	for rows.Next() {
+		// A continent-sized view holds millions of detections — the only layer
+		// here long enough that a cancel must land mid-layer.
+		if o.cancelled() {
+			return errGPKGCancelled
+		}
 		var lat, lon float64
 		var bright, frp sql.NullFloat64
 		var date, atime, conf, dn, sat, paID string

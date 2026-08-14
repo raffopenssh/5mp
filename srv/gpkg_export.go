@@ -19,6 +19,7 @@ package srv
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"math"
@@ -67,6 +68,22 @@ type gpkgExportOpts struct {
 	// a different question, not a different mechanism.
 	View     *gpkgViewOpts
 	Progress gpkgProgress
+	// Cancel, when closed, aborts the build between rows/steps; the builder
+	// returns errGPKGCancelled and the job goroutine cleans everything up.
+	Cancel <-chan struct{}
+}
+
+// cancelled is safe to call per row: a select with a default is nanoseconds.
+func (o gpkgExportOpts) cancelled() bool {
+	if o.Cancel == nil {
+		return false
+	}
+	select {
+	case <-o.Cancel:
+		return true
+	default:
+		return false
+	}
 }
 
 type gpkgLayerStat struct {
@@ -110,10 +127,16 @@ func (s *Server) buildAreaGeoPackage(path string, o gpkgExportOpts) ([]gpkgLayer
 		{"patrol data", func() error { return s.gpkgPatrol(w, o, boundary) }},
 	}
 	for i, st := range steps {
+		if o.cancelled() {
+			return nil, errGPKGCancelled
+		}
 		if o.Progress != nil {
 			o.Progress(float64(i)/float64(len(steps)), st.label)
 		}
 		if err := st.fn(); err != nil {
+			if errors.Is(err, errGPKGCancelled) {
+				return nil, errGPKGCancelled
+			}
 			slog.Warn("gpkg layer failed", "area", o.AreaID, "layer", st.label, "err", err)
 		}
 	}
@@ -331,6 +354,11 @@ func (s *Server) gpkgFireDetections(w *gpkgWriter, o gpkgExportOpts, boundary st
 	}
 	defer rows.Close()
 	for rows.Next() {
+		// The one layer that runs for minutes on its own (XSA: 6.9M rows), so
+		// cancellation must be visible mid-layer, not just between layers.
+		if o.cancelled() {
+			return errGPKGCancelled
+		}
 		var lat, lon float64
 		var bright, bt31, frp, scan, track sql.NullFloat64
 		var date, atime, conf, dn, sat, instr, ver, paID string
@@ -365,6 +393,19 @@ func (s *Server) gpkgDeforestation(w *gpkgWriter, o gpkgExportOpts) error {
 			{"fires_same_year", "INTEGER"},
 			{"fire_ratio", "REAL"},
 			{"nearest_settlement_km", "REAL"},
+			// GLAD 30 m cropland (scripts/cropland.py), three questions:
+			// cropland_frac_2019 = mean within ~1 km of the event centroid
+			// (CONTEXT: farming landscape?); cropland_event_frac_2019 =
+			// share of this event's own cleared pixels mapped cropland in
+			// 2016-2019 (cropped now?); cropland_conversion_frac = share
+			// cropped in 2019 AND NOT in 2003 (cropland EXPANSION —
+			// area_km2 * conversion sums to km² converted). For year > 2016
+			// the 2019 epoch may predate the clearing. NULL = unmeasured,
+			// cropland_source says why.
+			{"cropland_frac_2019", "REAL"},
+			{"cropland_event_frac_2019", "REAL"},
+			{"cropland_conversion_frac", "REAL"},
+			{"cropland_source", "TEXT"},
 			{"narrative", "TEXT"},
 			{"classified_at", "DATETIME"},
 		})
@@ -375,15 +416,18 @@ func (s *Server) gpkgDeforestation(w *gpkgWriter, o gpkgExportOpts) error {
 	// documented O(events x polygons) trap. One scan of the small events
 	// table, split in Go (same shape as srv/feature_meta.go).
 	type defoMeta struct {
-		class, pattern, narrative, classifiedAt string
-		year                                    sql.NullInt64
-		area, conf, fireRatio, nearestSettle    sql.NullFloat64
-		firesSameYear, pixels                   sql.NullInt64
+		class, pattern, narrative, classifiedAt, cropSrc string
+		year                                             sql.NullInt64
+		area, conf, fireRatio, nearestSettle             sql.NullFloat64
+		crop19, cropEv19, cropConv                       sql.NullFloat64
+		firesSameYear, pixels                            sql.NullInt64
 	}
 	meta := map[string]*defoMeta{}
 	mrows, _ := s.DB.Query(`SELECT COALESCE(polygon_ids,''), year, area_km2, COALESCE(classification,''),
 		COALESCE(classification_confidence,0), COALESCE(pattern_type,''), fires_same_year, fire_ratio,
-		nearest_settlement_km, COALESCE(narrative,''), COALESCE(classified_at,''), pixel_count
+		nearest_settlement_km, COALESCE(narrative,''), COALESCE(classified_at,''), pixel_count,
+		cropland_frac_2019, cropland_event_frac_2019, cropland_conversion_frac,
+		COALESCE(cropland_source,'')
 		FROM deforestation_events WHERE park_id = ?`, o.AreaID)
 	if mrows != nil {
 		defer mrows.Close()
@@ -392,12 +436,15 @@ func (s *Server) gpkgDeforestation(w *gpkgWriter, o gpkgExportOpts) error {
 			var year sql.NullInt64
 			var area, conf, fr, ns sql.NullFloat64
 			var fsy, px sql.NullInt64
-			if mrows.Scan(&ids, &year, &area, &class, &conf, &pattern, &fsy, &fr, &ns, &narrative, &cAt, &px) != nil {
+			var crop19, cropEv19, cropConv sql.NullFloat64
+			var cropSrc string
+			if mrows.Scan(&ids, &year, &area, &class, &conf, &pattern, &fsy, &fr, &ns, &narrative, &cAt, &px, &crop19, &cropEv19, &cropConv, &cropSrc) != nil {
 				continue
 			}
 			m := &defoMeta{class: class, pattern: pattern, narrative: narrative, classifiedAt: cAt,
 				year: year, area: area, conf: conf, fireRatio: fr, nearestSettle: ns,
-				firesSameYear: fsy, pixels: px}
+				firesSameYear: fsy, pixels: px, crop19: crop19, cropEv19: cropEv19,
+				cropConv: cropConv, cropSrc: cropSrc}
 			for _, id := range strings.Split(ids, ",") {
 				if id = strings.TrimSpace(id); id != "" {
 					meta[id] = m
@@ -432,6 +479,7 @@ func (s *Server) gpkgDeforestation(w *gpkgWriter, o gpkgExportOpts) error {
 		var class, pattern, narrative, cAt interface{}
 		var conf, fr, ns, area interface{}
 		var fsy, px, year interface{}
+		var crop19, cropEv19, cropConv, cropSrc interface{}
 		area = gpkgJSONNum(p, "area_km2")
 		year = gpkgJSONInt(p, "year")
 		if m != nil {
@@ -439,12 +487,14 @@ func (s *Server) gpkgDeforestation(w *gpkgWriter, o gpkgExportOpts) error {
 			cAt = gpkgDateTime(m.classifiedAt)
 			conf, fr, ns = gpkgNF(m.conf), gpkgNF(m.fireRatio), gpkgNF(m.nearestSettle)
 			fsy, px = gpkgNI(m.firesSameYear), gpkgNI(m.pixels)
+			crop19, cropSrc = gpkgNF(m.crop19), gpkgStr(m.cropSrc)
+			cropEv19, cropConv = gpkgNF(m.cropEv19), gpkgNF(m.cropConv)
 			if year == nil {
 				year = gpkgNI(m.year)
 			}
 		}
 		l.Add(geojson, fid, year, gpkgDate(sd), gpkgDate(ed), area, px,
-			class, conf, pattern, fsy, fr, ns, narrative, cAt)
+			class, conf, pattern, fsy, fr, ns, crop19, cropEv19, cropConv, cropSrc, narrative, cAt)
 	}
 	w.SetStyle("deforestation", styleDeforestation(), "Coloured by driver classification")
 	return nil
@@ -467,6 +517,16 @@ func (s *Server) gpkgSettlements(w *gpkgWriter, o gpkgExportOpts) error {
 			{"persistence_source", "TEXT"},
 			{"surface_e2000_m2", "REAL"},
 			{"surface_e2015_m2", "REAL"},
+			// Cropland context (GLAD 30 m cropland extent, Potapov et al. 2021):
+			// mean cropland fraction of the pixels within ~1 km of the CLUSTER
+			// centroid, per epoch (2000-2003 and 2016-2019) — the pair is the
+			// trend. A cluster property, not a per-footprint one. NULL is
+			// unmeasured (`cropland_source` says why); the source dataset
+			// excludes pasture and shifting cultivation, so 0 around a pastoral
+			// camp is the definition working.
+			{"cropland_frac_2019", "REAL"},
+			{"cropland_frac_2003", "REAL"},
+			{"cropland_source", "TEXT"},
 			// A DOWNLOAD IS THE MOST PUBLISHED ARTEFACT THERE IS: it leaves the
 			// app and is joined to other data with no panel beside it to explain
 			// anything. So the provenance travels in the file. `area_m2` is the
@@ -499,8 +559,8 @@ func (s *Server) gpkgSettlements(w *gpkgWriter, o gpkgExportOpts) error {
 	}
 	type setMeta struct {
 		class, sType, place, dir, seasonality, narrative, detected, classified string
-		areaSrc, popSrc, epoch, persistence, persistenceSrc                     string
-		conf, distPlace, defoNearby, extent, e2000, e2015                      sql.NullFloat64
+		areaSrc, popSrc, epoch, persistence, persistenceSrc, cropSrc           string
+		conf, distPlace, defoNearby, extent, e2000, e2015, crop19, crop03      sql.NullFloat64
 		pop, hh, f1, f5, inBuf                                                 sql.NullInt64
 	}
 	meta := map[string]*setMeta{}
@@ -510,7 +570,8 @@ func (s *Server) gpkgSettlements(w *gpkgWriter, o gpkgExportOpts) error {
 		COALESCE(fire_seasonality,''), deforest_nearby_km2, in_buffer, COALESCE(narrative,''),
 		COALESCE(detected_at,''), COALESCE(classified_at,''),
 		extent_m2, COALESCE(area_source,''), COALESCE(population_source,''), COALESCE(epoch,''),
-		COALESCE(persistence,''), COALESCE(persistence_source,''), surface_e2000_m2, surface_e2015_m2
+		COALESCE(persistence,''), COALESCE(persistence_source,''), surface_e2000_m2, surface_e2015_m2,
+		cropland_frac_2019, cropland_frac_2003, COALESCE(cropland_source,'')
 		FROM park_settlements WHERE park_id = ?` + settlementFilterSQL("narrative", "polygon_ids")
 	mrows, _ := s.DB.Query(mq, o.AreaID)
 	if mrows != nil {
@@ -522,7 +583,8 @@ func (s *Server) gpkgSettlements(w *gpkgWriter, o gpkgExportOpts) error {
 				&m.dir, &m.f1, &m.f5, &m.seasonality, &m.defoNearby, &m.inBuf, &m.narrative,
 				&m.detected, &m.classified,
 				&m.extent, &m.areaSrc, &m.popSrc, &m.epoch,
-				&m.persistence, &m.persistenceSrc, &m.e2000, &m.e2015) != nil {
+				&m.persistence, &m.persistenceSrc, &m.e2000, &m.e2015,
+				&m.crop19, &m.crop03, &m.cropSrc) != nil {
 				continue
 			}
 			m.class = publicSettlementClass(m.class)
@@ -554,9 +616,11 @@ func (s *Server) gpkgSettlements(w *gpkgWriter, o gpkgExportOpts) error {
 		// per-feature value and fall back to the cluster's, so a missing
 		// property reads as the cluster's provenance rather than as absent.
 		// Persistence is a CLUSTER property (measured over the cluster's summed
-		// epoch surfaces), so it fills only from the cluster row.
+		// epoch surfaces), so it fills only from the cluster row; cropland
+		// likewise (a ~1 km neighbourhood of the cluster centroid).
 		vals := []interface{}{fid, nil, nil, nil,
 			nil, nil, nil, nil,
+			nil, nil, nil,
 			gpkgJSONNum(p, "area_m2"), gpkgJSONNum(p, "extent_m2"), gpkgJSONStr(p, "source"),
 			gpkgJSONInt(p, "population_est"), gpkgJSONStr(p, "population_source"), gpkgJSONStr(p, "epoch"),
 			nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil}
@@ -564,27 +628,28 @@ func (s *Server) gpkgSettlements(w *gpkgWriter, o gpkgExportOpts) error {
 			vals[1], vals[2], vals[3] = gpkgStr(m.class), gpkgNF(m.conf), gpkgStr(m.sType)
 			vals[4], vals[5] = gpkgStr(m.persistence), gpkgStr(m.persistenceSrc)
 			vals[6], vals[7] = gpkgNF(m.e2000), gpkgNF(m.e2015)
-			if vals[9] == nil {
-				vals[9] = gpkgNF(m.extent)
-			}
-			if vals[10] == nil {
-				vals[10] = gpkgStr(m.areaSrc)
-			}
-			if vals[11] == nil {
-				vals[11] = gpkgNI(m.pop)
-			}
+			vals[8], vals[9], vals[10] = gpkgNF(m.crop19), gpkgNF(m.crop03), gpkgStr(m.cropSrc)
 			if vals[12] == nil {
-				vals[12] = gpkgStr(m.popSrc)
+				vals[12] = gpkgNF(m.extent)
 			}
 			if vals[13] == nil {
-				vals[13] = gpkgStr(m.epoch)
+				vals[13] = gpkgStr(m.areaSrc)
 			}
-			vals[14] = gpkgNI(m.hh)
-			vals[15], vals[16], vals[17] = gpkgStr(m.place), gpkgNF(m.distPlace), gpkgStr(m.dir)
-			vals[18], vals[19], vals[20] = gpkgNI(m.f1), gpkgNI(m.f5), gpkgStr(m.seasonality)
-			vals[21], vals[22] = gpkgNF(m.defoNearby), gpkgNI(m.inBuf)
-			vals[23] = gpkgStr(m.narrative)
-			vals[24], vals[25] = gpkgDateTime(m.detected), gpkgDateTime(m.classified)
+			if vals[14] == nil {
+				vals[14] = gpkgNI(m.pop)
+			}
+			if vals[15] == nil {
+				vals[15] = gpkgStr(m.popSrc)
+			}
+			if vals[16] == nil {
+				vals[16] = gpkgStr(m.epoch)
+			}
+			vals[17] = gpkgNI(m.hh)
+			vals[18], vals[19], vals[20] = gpkgStr(m.place), gpkgNF(m.distPlace), gpkgStr(m.dir)
+			vals[21], vals[22], vals[23] = gpkgNI(m.f1), gpkgNI(m.f5), gpkgStr(m.seasonality)
+			vals[24], vals[25] = gpkgNF(m.defoNearby), gpkgNI(m.inBuf)
+			vals[26] = gpkgStr(m.narrative)
+			vals[27], vals[28] = gpkgDateTime(m.detected), gpkgDateTime(m.classified)
 		}
 		l.Add(geojson, vals...)
 	}

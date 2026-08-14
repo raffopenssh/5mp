@@ -49,6 +49,22 @@ valid rather than usable is the wrong change.**
 * One build at a time; a queued job says *"waiting for another export"*, not 0%.
   The card is written at queue time, and startup fails orphaned `running` jobs
   rather than freezing a bar at 40%.
+* **A running export is cancellable, and a cancel cleans up everything.**
+  DELETE on a pending/running job closes its cancel channel (`gpkgCancels`,
+  in-memory — a cancel can only reach a goroutine in this process) and answers
+  **202**; the build goroutine — the one owner of the job directory — notices
+  between layers (and between rows in the fire-detections loops, the only
+  minutes-long layers), returns `errGPKGCancelled`, and deletes file + job row
+  + notification together. No "cancelled" card is left: a cancelled export was
+  the user saying "I don't want this". A queued job cancels for free (select on
+  semaphore vs cancel). The in-progress card carries the Cancel button; the
+  JS `remove()` handles 202 with a delayed `loadNotifications` so the panel
+  doesn't repaint the card before the server's cleanup lands. Two races are
+  closed server-side: a DELETE before the goroutine registers its channel is
+  caught by a row-exists check before the job is published ready, and the
+  sweeper deletes any `geopackage_*` notification whose job row is gone —
+  otherwise the card polls a 404 forever and shows "checking…" as a limbo
+  state (the client also removes a card on a 404 poll for the same reason).
 * **Two variants, not a checkbox**: "all layers" and "no raw fire points"
   (`?raw=0`). A gigabyte and several minutes apart, so it is a choice between
   two downloads; `raw_fire` is in the cache key, the filename and the card
