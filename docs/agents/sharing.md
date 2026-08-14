@@ -100,7 +100,19 @@ lives in the middleware.
 2. **Read-only is a method check plus a prefix list** (`guestMayRead`), not a
    deny-list of known-dangerous endpoints — this app grows endpoints weekly and
    a deny-list admits every new one silently. New write surface must be closed
-   *there*.
+   *there*. The one carve-out is **reads wearing POSTs**, enumerated one by one
+   in the same function: the geology filtered export and the GeoPackage
+   builders (`/api/{parks|aois}/{id}/export.gpkg`, `/api/view/export.gpkg`).
+   A builder is admissible because everything in the file is data the guest
+   can already GET — dates are clamped on the way in, patrol rides on
+   `PatrolEnv` (and the job cache key carries `|np`, so a scope-restricted
+   export is a different file, never the owner's cached copy), and AOI ids
+   still pass `aoiGate`. What stays refused: `DELETE /api/geopackage/{id}`
+   (cancelling/removing the owner's files is a write) and
+   `POST …/mbtiles` (publishes to the owner's Zenodo account — an external
+   write). The guest UI matches: no Tiles menu entry, no delete/cancel
+   buttons on export cards (`gpkg_export.js`, `exportMenuItems`). Pinned by
+   `guest_may_build_exports_but_not_delete` in `tests/api_tests.sh`.
 3. **A guest may not mint links.** Blocked twice on purpose: in `guestMayRead`
    and again in the create handler. A capability that mints capabilities is a
    password.
