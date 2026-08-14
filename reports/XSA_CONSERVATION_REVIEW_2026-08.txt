@@ -102,8 +102,13 @@ the AOI in 25 years; by regional standards a LOW-deforestation landscape.
     routes — `Qoz Dango`, `DARB EL FIL` ("the elephant road"), `Uninhabited
     forest`, `(Rough track)` — pastoral/forest ground with no settlement then
     and (§3) barely any now. Nothing in the historic or settlement record
-    supports a 280 km² logging frontier there. Treat as "flagged, unverified,
-    probably a map artefact", not as a logging finding.
+    supports a 280 km² logging frontier there. THE CROPLAND LAYER NOW WEIGHS IN
+    TOO (GLAD 30 m): of the ~228 km² flagged, only 12.6% is mapped cropland at
+    all — and the cropland epoch (2016–19) PREDATES the 2023 event, so that
+    12.6% was cropped BEFORE the "clearing", not opened by it. A real 280 km²
+    extraction/conversion front leaves a land-use signature; this one left
+    none. Treat as "flagged, unverified, probably a map artefact", not as a
+    logging finding.
     https://five-megapixel-conservation.exe.xyz:8000/?aoi=XSA_Study_Area&lat=10.5&lng=23.9&z=8&from=2023-01-01&to=2023-12-31
 
 (b) The "100% decrease" sentence in the AOI summary is the method break, not a
@@ -116,6 +121,25 @@ the AOI in 25 years; by regional standards a LOW-deforestation landscape.
     from named towns.
     https://five-megapixel-conservation.exe.xyz:8000/?aoi=XSA_Study_Area&lat=4.8&lng=27.0&z=8&from=2026-01-01
 
+(d) WHAT THE LOSS BECOMES — the new GLAD cropland attribution splits the AOI
+    into two different problems. Of the 1,167 km² cumulative loss, 30.3 km²
+    is on land newly cropped by 2016–19 (loss after ~2019 is outside the GLAD
+    epoch and reads 0 — a floor, not a census). The split, by conversion rate
+    on pre-2019 loss:
+
+      south of 9.5°N:  648 km² lost →  0.8% became cropland
+      north of 9.5°N:   17 km² lost → 46.1% became cropland
+
+    Two regimes, not one landscape with noise. The big southern Mbomou losses
+    — including the 2017 spike (0.3% converted) and 2021–22 (0.0%) — are
+    ROTATIONAL: forest is burned, cropped briefly below GLAD's mapping
+    threshold or fallowed, and the canopy account never turns into a farm
+    account. The northern fringe is the opposite: half of what falls STAYS
+    FARMED — permanent conversion at the Sahel edge, small in km² (25.3 of
+    the 30.3 km² converted) but one-way. Priority-wise this inverts the raw
+    hectare ranking: the south generates the alarming numbers, the north the
+    irreversible ones.
+
   Parks: Bili-Uere carries by far the most loss (602 km² cumulative, worst
   year 2022) — losing canopy ~3× faster than the unprotected landscape, the
   only park where that is true, and it is the wettest, rainforest-classed one:
@@ -126,7 +150,11 @@ the AOI in 25 years; by regional standards a LOW-deforestation landscape.
 3. SETTLEMENTS — the overgrazing proxy, now with measured persistence
 --------------------------------------------------------------------------------
 2,121 settlement clusters, 110.2 km² measured built surface, 2,633,521 people
-(GHSL-measured for all 2,121 — no density constants).
+(GHSL-measured for all 2,121 — no density constants). New this revision:
+mapped cropland within ~1 km of a settlement doubled between GLAD epochs,
+4.2% → 8.6% mean (2000-03 → 2016-19; all 2,121 measured) — and the gradient
+by class is the pastoral/farming split made visible: towns 8.3→15.0%,
+villages 5.5→11.5%, camps 3.0→6.6%.
 
   Classification:                      Persistence (GHSL E2000/E2015 epochs):
   temporary_camp  1,374  65%           permanent (pre-2000)   1,665  79%
@@ -161,6 +189,39 @@ the AOI in 25 years; by regional standards a LOW-deforestation landscape.
     a named historic village (Rian Kuj, Karyat, Agok, Mayong, Fan Dung…).
     People are RETURNING to mapped villages — which changes the land-claims
     conversation entirely.
+
+(d) WHO IS GROWING FASTEST (built surface added since GHSL E2015; all 2,121
+    clusters measured). First the headline: 63.5 of the 110.2 km² of built
+    surface standing today — 58% — POSTDATES 2015. This is not a static
+    lattice with a few new camps; the fabric itself is mostly new.
+    The top growers, with their 1930s sheet names:
+
+      +299 ha  Wau (7.71°N 27.98°E)         'WAU' on the sheet, 1.3 km off
+      +160 ha  9.22°N 26.86°E  recent town   'Rian Kuj'
+      +149 ha  8.73°N 27.41°E  town          'E. Kome'
+      +138 ha  Rumbek-adjacent (6.84°N)      'Mako'
+      +108 ha  9.04°N 27.62°E  established   'Pan Nyel'
+      + 93 ha  8.26°N 27.95°E  established   'Agork'
+      + 92 ha  9.03°N 27.52°E  recent town   'Win'
+
+    21 of the 30 fastest-growing clusters sit within 3 km of a named 1930s
+    place — the growth is (c)'s re-occupation pattern, measured in hectares.
+    Nearly all of it is the Wau–Busseri–Koko corridor: the 8–9.5°N band holds
+    37.9 of the 63.5 km² of post-2015 growth on 380 clusters (~444,000
+    people).
+
+    AND THE CROPLAND TREND SAYS THE BELT DOES NOT FEED ITSELF YET: around
+    those booming 8–9.5°N clusters mapped cropland is 0.1% → 1.5% (2000-03 →
+    2016-19), versus 5.1% → 10.3% around everything else. Compare the deep
+    north (≥10°N, §2d): 21% → 39%, and 44% → 63% around its recent clusters
+    — there, farming leads settlement. In the WBeG belt, settlement is
+    running AHEAD of measured agriculture — consistent with displacement-
+    driven return (people arrive first, fields follow), and it predicts
+    where the next conversion front opens: around Rian Kuj, Win, Pan Nyel
+    and Karyat, not where cropland already is. (Caveat: GLAD's cropland
+    epoch ends 2019; growth 2019–25 may already have fields the mask
+    cannot see. Treat as "unmeasured since 2019", not "no farming".)
+    https://five-megapixel-conservation.exe.xyz:8000/?aoi=XSA_Study_Area&lat=9.0&lng=27.3&z=9
 
   Camps are everywhere, not just at the northern edge (count per 1° lat band):
   4°N 140 | 5°N 268 | 6°N 178 | 7°N 303 | 8°N 139 | 9°N 68 | 10°N 278
@@ -352,7 +413,10 @@ transcription — verify against the sheet image before citing a name.
    people (22% of AOI population) in settlements that did not exist in 2015 —
    is the overgrazing/hunting front. But note §3(c): the growth is RETURN to
    villages mapped a century ago. Engagement framing: returning communities
-   with historic claims, not encroachers.
+   with historic claims, not encroachers. And note §3(d): around the belt's
+   fastest growers cropland is still ≤1.5% — settlement is ahead of farming,
+   so the conversion front is COMING, not arrived; land-use planning there is
+   early, not late.
 3. CHINKO SW CORNER: reported gold+diamond workings inside/at the boundary,
    in park headwaters, on the same axis as its only settlement pressure.
    Small, specific, patrol-addressable — and invisible to every automated
@@ -361,7 +425,8 @@ transcription — verify against the sheet image before citing a name.
 4. ADJUDICATE the flagged 2023 "logging" block (281.7 km², north of 10°N)
    before anyone quotes the 2023 spike — the historic sheets say that ground
    was uninhabited qoz and caravan routes, which supports artefact over
-   logging frontier.
+   logging frontier — and the cropland mask now agrees: only 12.6% of the
+   flagged ground was cropped at all by 2016-19 (§2a).
 5. HAUTE-KOTTO Yangou/Kotto cluster is the armed-mining watch zone — anchored
    on reported sites (attack-selected by construction), NOT on the geology
    drape, whose skill on eastern-CAR rocks is unmeasured-to-null (§5). Where
@@ -383,6 +448,14 @@ CAVEATS RIDING WITH EVERY NUMBER ABOVE
   comparable.
 * Settlement persistence: "recent" = no GHSL built surface at 100 m in E2015;
   sub-resolution 2015 camps would also read "recent" (upper bound).
+* Cropland figures are GLAD 30 m cropland-extent epochs (Potapov et al. 2021;
+  2000-03 vs 2016-19). Settlement values are the mean fraction of a ~1 km box
+  around the cluster centroid — a trend indicator, NOT area accounting.
+  Deforestation "conversion" = loss area × share of its pixels cropped in
+  2016-19 but not 2000-03; loss after ~2019 postdates the last epoch and
+  reads 0 (floor, not census). The dataset maps stable cropland and excludes
+  pasture and short-fallow shifting cultivation — 0% around a pastoral camp
+  is the definition working, not an absence of land use.
 * Mine sites are REPORTED (incident/field lists with known reach bias), not
   detected; Crisis Tracker sites are armed-attack-selected by construction.
 * Histmap labels are machine OCR of century-old sheets (Library of Congress

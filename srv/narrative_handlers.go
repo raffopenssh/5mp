@@ -191,6 +191,13 @@ type DeforestationNarrative struct {
 	ByClassification   map[string]int            `json:"by_classification,omitempty"`
 	AreaByClass        map[string]float64        `json:"area_by_classification,omitempty"`
 	ClassifiedEvents   []ClassifiedDeforestation `json:"classified_events,omitempty"`
+	// Cropland attribution (GLAD 30 m, scripts/cropland.py). ConversionKm2 =
+	// Σ area_km2 × cropland_conversion_frac over measured events: km² of loss
+	// attributable to cropland EXPANSION (cropped 2016-19 AND NOT 2000-03).
+	// MeasuredFor names the denominator; loss after ~2019 reads 0 because the
+	// GLAD epoch predates it — unmeasured is not "no farming" (invariant 1).
+	CroplandConversionKm2 float64 `json:"cropland_conversion_km2"`
+	CroplandMeasuredFor   int     `json:"cropland_measured_for"`
 }
 
 // DeforestationYearStory describes forest loss for a single year
@@ -238,6 +245,11 @@ type SettlementNarrative struct {
 	// that was never measured must not read as a population of zero
 	// (AGENTS.md invariant 12; docs/AOI_STRUCTURAL_FIXES.md F2).
 	PopulationMeasuredFor int                    `json:"population_measured_for"`
+	// BuiltUpKm2 is built-up SURFACE (Σ settlementSurfaceSQL, the fractional
+	// GHSL raster), the same number the stats panel and the narrative text
+	// quote. Consumers must NOT sum ClassifiedList.area_m2 instead — that
+	// column is cluster EXTENT, ~24-39x larger (invariant 15).
+	BuiltUpKm2            float64                `json:"built_up_km2"`
 	Population2030        int64                  `json:"population_2030,omitempty"`
 	PopulationDensity     float64                `json:"population_density_per_km2"`
 	ParkAreaKm2           float64                `json:"park_area_km2"`
@@ -977,7 +989,11 @@ func (s *Server) HandleAPIDeforestationNarrative(w http.ResponseWriter, r *http.
 	// 120 s WriteTimeout, so the section rendered as if it had no data. Same
 	// cache-first shape as the fire narrative above it.
 	cacheParams := fmt.Sprintf("%d-%d", fromYear, toYear)
-	srcRev := s.narrativeSourceRev("deforestation_events", internalID)
+	// Rev = rows fingerprint + payload-shape version: narrativeSourceRev only
+	// sees the TABLE, so a code change that adds response fields (e.g.
+	// cropland_conversion_km2, 2026-08) would otherwise serve the old shape
+	// forever. Bump the suffix when the JSON shape changes.
+	srcRev := s.narrativeSourceRev("deforestation_events", internalID) + ":v2"
 	if payload, computedAt, ok := s.getCachedNarrative(internalID, "deforestation", cacheParams, srcRev); ok {
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set("X-Cache", "HIT")
@@ -1175,6 +1191,16 @@ func (s *Server) HandleAPIDeforestationNarrative(w http.ResponseWriter, r *http.
 	narrative.TotalLoss = totalLoss
 	narrative.WorstYear = worstYear
 
+	// Cropland-expansion attribution (GLAD 30 m). Measured rows only — NULL
+	// conversion is unmeasured, never zero (invariant 1). Not year-filtered:
+	// the GLAD epochs are fixed (2000-03 vs 2016-19), so this is a corpus
+	// property of the park's loss, not of the report window.
+	s.DB.QueryRow(`
+		SELECT COALESCE(SUM(area_km2 * cropland_conversion_frac), 0), COUNT(*)
+		FROM deforestation_events
+		WHERE park_id = ? AND cropland_conversion_frac IS NOT NULL`,
+		internalID).Scan(&narrative.CroplandConversionKm2, &narrative.CroplandMeasuredFor)
+
 	// Get polygon count from feature_geometries (for map display)
 	var defPolygonCount int
 	s.DB.QueryRow(`SELECT COUNT(*) FROM feature_geometries WHERE park_id = ? AND feature_type = 'deforestation'`, internalID).Scan(&defPolygonCount)
@@ -1299,13 +1325,15 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 	var settlementCount int
 	var totalPopulation sql.NullFloat64
 	var popMeasured sql.NullInt64
+	var builtUpM2 sql.NullFloat64
 	err := s.DB.QueryRow(`
 		SELECT COUNT(*) as count,
 		       SUM(`+settlementPopulationSQL("")+`) as total_pop,
-		       `+settlementPopulationMeasuredSQL("")+` as measured
+		       `+settlementPopulationMeasuredSQL("")+` as measured,
+		       SUM(`+settlementSurfaceSQL("")+`) as built_up
 		FROM park_settlements
 		WHERE park_id = ?`+settlementFilterSQL("narrative", "polygon_ids")+`
-	`, internalID).Scan(&settlementCount, &totalPopulation, &popMeasured)
+	`, internalID).Scan(&settlementCount, &totalPopulation, &popMeasured, &builtUpM2)
 
 	if err != nil {
 		narrative.Status = "error"
@@ -1323,6 +1351,9 @@ func (s *Server) HandleAPISettlementNarrative(w http.ResponseWriter, r *http.Req
 	// non-zero settlement_count means NOT MEASURED, not "nobody lives there" —
 	// the frontend prints that distinction rather than a confident zero.
 	narrative.PopulationMeasuredFor = int(popMeasured.Int64)
+	if builtUpM2.Valid {
+		narrative.BuiltUpKm2 = builtUpM2.Float64 / 1e6
+	}
 
 	// Get polygon count from feature_geometries (for map display). This is the
 	// number of built-up FOOTPRINTS, which is larger than settlement_count

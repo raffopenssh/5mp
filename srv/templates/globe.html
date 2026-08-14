@@ -5092,6 +5092,20 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             const fire = data.fire || {};
             const deforest = data.deforestation || {};
             const settle = data.settlement || {};
+
+            // Text bar chart helper for MD/PDF: rows = [label, value, note?].
+            // Bars scale to the max value; zero draws empty. Mono-rendered in
+            // print, so alignment holds.
+            const mdBars = (rows, unit = '') => {
+                const out = [];
+                const max = Math.max(...rows.map(r => r[1]), 1e-9);
+                const lw = Math.max(...rows.map(r => String(r[0]).length));
+                for (const [label, val, note] of rows) {
+                    const n = Math.round((val / max) * 24);
+                    out.push('    ' + String(label).padEnd(lw) + ' |' + '\u2588'.repeat(n).padEnd(24) + '| ' + (typeof val === 'number' ? (val >= 100 ? fmt(Math.round(val)) : val.toFixed(val < 10 ? 1 : 0)) : val) + (unit ? ' ' + unit : '') + (note ? '  ' + note : ''));
+                }
+                return out;
+            };
             const species = data.species || {};
             const climate = data.climate || {};
             const research = data.research || {};
@@ -5112,7 +5126,14 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             const kv = [];
             if (has('fire') && fireDetections) kv.push(['Fire detections', `${fmt(fireDetections)} in ${fmt(fireNarratives.length)} group${fireNarratives.length !== 1 ? 's' : ''} (${respRate}% stopped)`]);
             if (has('deforestation') && deforest.total_loss_km2) kv.push(['Forest loss', `${deforest.total_loss_km2.toFixed(1)} km2${deforest.worst_year ? ` (worst: ${deforest.worst_year})` : ''}`]);
-            if (has('settlement') && settle.settlement_count) kv.push(['Settlements', `${fmt(settle.settlement_count)}${settle.total_population ? ` (~${fmt(settle.total_population)} people)` : ''}`]);
+            if (has('deforestation') && deforest.cropland_measured_for > 0) kv.push(['Cropland expansion', `${(deforest.cropland_conversion_km2 || 0).toFixed(1)} km2 of loss on land newly cropped by 2016-19 (GLAD 30 m)`]);
+            if (has('settlement') && settle.settlement_count) kv.push(['Settlements', `${fmt(settle.settlement_count)}${settle.total_population ? ` (~${fmt(settle.total_population)} people)` : ''}${typeof settle.built_up_km2 === 'number' ? `, ${settle.built_up_km2.toFixed(2)} km2 built-up surface` : ''}`]);
+            if (has('settlement') && settle.by_persistence) {
+                const p = settle.by_persistence;
+                const parts = ['permanent', 'established', 'recent'].filter(k => p[k]).map(k => `${fmt(p[k])} ${k}`);
+                if (parts.length) kv.push(['Persistence', parts.join(', ') + (settle.persistence_unmeasured ? ` (+${fmt(settle.persistence_unmeasured)} unmeasured)` : '') + ' (GHSL epochs)']);
+            }
+            if (has('settlement') && settle.cropland_measured_for > 0) kv.push(['Cropland near settlements', `${((settle.cropland_mean_frac_2003 || 0) * 100).toFixed(1)}% -> ${((settle.cropland_mean_frac_2019 || 0) * 100).toFixed(1)}% (2000-03 -> 2016-19, mean of 1 km box, ${fmt(settle.cropland_measured_for)} measured)`]);
             if (has('biodiversity') && species.total_count) kv.push(['Mammal species', fmt(species.total_count)]);
             if (has('patrol') && grid.activePixels) {
                 const byType = Object.entries(grid.byType || {}).filter(([, v]) => v > 0.5)
@@ -5136,6 +5157,21 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                 lines.push('');
                 lines.push(`Detections: ${fmt(fireDetections)} | Groups: ${fmt(fireNarratives.length)} | Stopped: ${stopped} (${respRate}%)` + (fire.peak_month ? ` | Peak: ${fire.peak_month}` : ''));
                 lines.push('');
+                // Monthly detection profile within the report window — trend at
+                // a glance. Basis: detections in groups (total_fires_basis).
+                const byMonth = {};
+                for (const n of fireNarratives) {
+                    const m = (n.start_date || n.entry_date || '').slice(0, 7);
+                    if (m) byMonth[m] = (byMonth[m] || 0) + (n.fires_inside || n.fires_total || n.fires || 0);
+                }
+                const months = Object.keys(byMonth).sort();
+                if (months.length >= 2) {
+                    lines.push('```');
+                    lines.push('Detections by month (report window):');
+                    lines.push(...mdBars(months.map(m => [m, byMonth[m]])));
+                    lines.push('```');
+                    lines.push('');
+                }
                 const limit = deep ? fireNarratives.length : (detail === 'standard' ? 15 : 5);
                 for (const n of fireNarratives.slice(0, limit)) {
                     const d = n.entry_date || n.start_date || '';
@@ -5154,6 +5190,24 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                 const trendStr = deforest.trend_direction ? ` | Trend: ${deforest.trend_direction} (${deforest.trend_percent_change > 0 ? '+' : ''}${(deforest.trend_percent_change || 0).toFixed(1)}%)` : '';
                 const worstStr = deforest.worst_year ? ` | Worst year: ${deforest.worst_year} (${(deforest.worst_year_km2 || 0).toFixed(2)} km2)` : '';
                 lines.push(`Total loss: ${(deforest.total_loss_km2 || 0).toFixed(2)} km2${trendStr}${worstStr}`);
+                // Cropland-expansion attribution (GLAD 30 m). Epochs are fixed
+                // (2000-03 vs 2016-19): loss after ~2019 reads 0 because the
+                // epoch predates it, so this is a floor, not a census.
+                if (deforest.cropland_measured_for > 0) {
+                    lines.push(`Cropland expansion (GLAD 30 m): ${(deforest.cropland_conversion_km2 || 0).toFixed(1)} km2 of the total loss is attributable to land cropped by 2016-19 that was not cropped in 2000-03 (${fmt(deforest.cropland_measured_for)} events measured; loss after ~2019 is outside the GLAD epoch and reads 0).`);
+                }
+                // Yearly loss chart from classified events (same rows the list
+                // below draws from — one basis, one chart).
+                const lossByYear = {};
+                for (const e of deforestEvents) if (e.year) lossByYear[e.year] = (lossByYear[e.year] || 0) + (e.area_km2 || 0);
+                const lossYears = Object.keys(lossByYear).map(Number).sort();
+                if (lossYears.length >= 3) {
+                    lines.push('');
+                    lines.push('```');
+                    lines.push('Forest loss by year (km2):');
+                    lines.push(...mdBars(lossYears.map(y => [y, lossByYear[y]]), 'km2'));
+                    lines.push('```');
+                }
                 if (deforest.summary) { lines.push(''); lines.push(plain(deforest.summary)); }
                 lines.push('');
                 const limit = deep ? deforestEvents.length : (detail === 'standard' ? 10 : 3);
@@ -5170,11 +5224,37 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             if (has('settlement') && cfg.settlement !== false && (settle.settlement_count > 0 || settlements.length > 0)) {
                 lines.push('### Settlements');
                 lines.push('');
-                let builtUp = settle.built_up_km2 || 0;
-                if (!builtUp && settlements.length) builtUp = settlements.reduce((s, x) => s + (x.area_m2 || 0), 0) / 1e6;
-                lines.push(`Sites: ${fmt(settle.settlement_count || settlements.length)} | Population: ~${fmt(settle.total_population)} | Built-up: ${builtUp.toFixed(2)} km2` + (settle.conflict_risk ? ` | Conflict risk: ${settle.conflict_risk}` : ''));
+                // Built-up SURFACE only; summing classified area_m2 would quote cluster EXTENT (~24-39x larger, invariant 15)
+                const builtUp = (typeof settle.built_up_km2 === 'number') ? `${settle.built_up_km2.toFixed(2)} km2` : 'not measured';
+                lines.push(`Sites: ${fmt(settle.settlement_count || settlements.length)} | Population: ~${fmt(settle.total_population)} | Built-up: ${builtUp}` + (settle.conflict_risk ? ` | Conflict risk: ${settle.conflict_risk}` : ''));
                 if (settle.summary) { lines.push(''); lines.push(plain(settle.summary)); }
                 lines.push('');
+                // Persistence (GHSL epochs) — permanent/established/recent
+                if (settle.by_persistence && Object.keys(settle.by_persistence).length) {
+                    const p = settle.by_persistence;
+                    const rows = ['permanent', 'established', 'recent'].filter(k => p[k]).map(k => [k, p[k]]);
+                    if (rows.length >= 2) {
+                        lines.push('```');
+                        lines.push('Persistence (GHSL epochs: permanent=built by 2000, established=by 2015, recent=after 2015):');
+                        lines.push(...mdBars(rows, 'sites'));
+                        if (settle.persistence_unmeasured) lines.push(`    (+${fmt(settle.persistence_unmeasured)} unmeasured)`);
+                        lines.push('```');
+                        lines.push('');
+                    }
+                }
+                // Cropland context (GLAD 30 m, 1 km-box neighborhood means — a
+                // trend indicator, not area accounting).
+                if (settle.cropland_measured_for > 0) {
+                    lines.push('```');
+                    lines.push(`Cropland near settlements (GLAD 30 m, mean % of 1 km box; ${fmt(settle.cropland_measured_for)} of ${fmt(settle.settlement_count)} measured):`);
+                    lines.push(...mdBars([
+                        ['2000-03 epoch', (settle.cropland_mean_frac_2003 || 0) * 100],
+                        ['2016-19 epoch', (settle.cropland_mean_frac_2019 || 0) * 100]
+                    ], '%'));
+                    lines.push(`    ${fmt(settle.cropland_settlements)} sites have >=3% mapped cropland within ~1 km.`);
+                    lines.push('```');
+                    lines.push('');
+                }
                 // Group by classification
                 const byClass = {};
                 for (const s of settlements) {
@@ -5558,6 +5638,7 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                 if (/^## /.test(line)) return `<h2>${line.slice(3)}</h2>`;
                 if (/^### /.test(line)) return `<h3>${line.slice(4)}</h3>`;
                 if (/^---\s*$/.test(line)) return '<hr>';
+                if (/^```/.test(line)) return ''; // fence markers: body is already <pre> mono
                 return line;
             }).join('\n');
             const html = `<!DOCTYPE html><html><head><title>5MP Conservation Report</title><style>
@@ -5644,16 +5725,21 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
 
             // === Section 1: Park summary ===
             rows.push('PARK SUMMARY');
+            // Cropland_Expansion_km2 (GLAD 30 m): loss attributable to cropland
+            // expansion (cropped 2016-19 AND NOT 2000-03); blank = unmeasured.
+            // BuiltUp_km2 is SURFACE, not cluster extent (invariant 15).
             rows.push(['Park', 'Country', 'Area_km2', 'Fire_Detections', 'Fire_Groups', 'Stopped_%', 'Peak_Season',
-                'Deforest_km2', 'Settlements', 'Population', 'Species', 'Roads', 'Rivers',
+                'Deforest_km2', 'Cropland_Expansion_km2', 'Settlements', 'BuiltUp_km2', 'Population', 'Species', 'Roads', 'Rivers',
                 'Patrol_Pixels', 'Patrol_km', 'Publications', 'Legal_Docs', 'Source'].join(','));
-            const totals = { area: 0, fires: 0, groups: 0, deforest: 0, settle: 0, pop: 0, pixels: 0, km: 0, n: 0 };
+            const totals = { area: 0, fires: 0, groups: 0, deforest: 0, cropconv: 0, settle: 0, builtup: 0, pop: 0, pixels: 0, km: 0, n: 0 };
             for (const { park, data, source } of results) {
                 if (data.error) { rows.push([esc(park.name || park.id), '', '', 'ERROR: ' + esc(data.error)].join(',')); continue; }
                 const fire = data.fire || {}, deforestation = data.deforestation || {}, settle = data.settlement || {};
                 const grid = data.grid || {}, species = data.species || {}, road = data.road || {};
                 totals.area += park.area_km2 || 0; totals.fires += fire.total_fires || 0; totals.groups += fire.fire_groups || 0;
                 totals.deforest += deforestation.total_loss_km2 || 0; totals.settle += settle.settlement_count || 0;
+                totals.cropconv += deforestation.cropland_conversion_km2 || 0;
+                totals.builtup += settle.built_up_km2 || 0;
                 totals.pop += settle.total_population || 0; totals.pixels += grid.activePixels || 0;
                 totals.km += grid.totalDistanceKm || 0; totals.n++;
                 rows.push([
@@ -5661,7 +5747,10 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                     (park.area_km2 || 0).toFixed(0),
                     fire.total_fires || 0, fire.fire_groups || 0, fire.response_rate || 0, esc(fire.peak_month || ''),
                     (deforestation.total_loss_km2 || 0).toFixed(2),
-                    settle.settlement_count || 0, settle.total_population || 0,
+                    deforestation.cropland_measured_for > 0 ? (deforestation.cropland_conversion_km2 || 0).toFixed(2) : '',
+                    settle.settlement_count || 0,
+                    (typeof settle.built_up_km2 === 'number') ? settle.built_up_km2.toFixed(2) : '',
+                    settle.total_population || 0,
                     species.total_count || 0, road.roadCount || 0, road.riverCount || 0,
                     grid.activePixels || 0, (grid.totalDistanceKm || 0).toFixed(1),
                     (data.research || {}).count || ((data.research || {}).publications || []).length || 0,
@@ -5670,7 +5759,7 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                 ].join(','));
             }
             rows.push([esc(`TOTAL (${totals.n} parks)`), '', totals.area.toFixed(0), totals.fires, totals.groups, '', '',
-                totals.deforest.toFixed(2), totals.settle, totals.pop, '', '', '',
+                totals.deforest.toFixed(2), totals.cropconv.toFixed(2), totals.settle, totals.builtup.toFixed(2), totals.pop, '', '', '',
                 totals.pixels, totals.km.toFixed(1), '', '', ''].join(','));
             rows.push('');
 
@@ -5905,8 +5994,11 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             };
 
             // === SUMMARY SHEET ===
+            // Cropland_Expansion_km2: GLAD 30 m, loss on land cropped by 2016-19
+            // but not 2000-03; blank = unmeasured (invariant 1). BuiltUp_km2 is
+            // SURFACE (Σ fractional raster), not cluster extent.
             const sumHdr = ['Park', 'Country', 'Area_km2', 'Fire_Detections', 'Fire_Groups', 'Stopped_%', 'Peak_Season',
-                'Deforest_km2', 'Settlements', 'Population', 'Species', 'Patrol_Pixels', 'Patrol_km'];
+                'Deforest_km2', 'Cropland_Expansion_km2', 'Settlements', 'BuiltUp_km2', 'Population', 'Species', 'Patrol_Pixels', 'Patrol_km'];
             const summaryData = [
                 ['5MP Conservation Report'],
                 ['Generated: ' + new Date().toISOString().slice(0, 16).replace('T', ' ') + ' UTC'],
@@ -5914,25 +6006,31 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                 [],
                 sumHdr
             ];
-            const tot = { area: 0, fires: 0, deforest: 0, settle: 0, pop: 0, pixels: 0, km: 0 };
+            const tot = { area: 0, fires: 0, deforest: 0, cropconv: 0, settle: 0, builtup: 0, pop: 0, pixels: 0, km: 0 };
             for (const { park, data } of parkReports) {
                 if (data.error) { summaryData.push([park.name || park.id, 'ERROR: ' + data.error]); continue; }
                 const fire = data.fire || {}, deforestation = data.deforestation || {}, settle = data.settlement || {};
                 const grid = data.grid || {}, species = data.species || {};
                 tot.area += park.area_km2 || 0; tot.fires += fire.total_fires || 0;
                 tot.deforest += deforestation.total_loss_km2 || 0; tot.settle += settle.settlement_count || 0;
+                tot.cropconv += deforestation.cropland_conversion_km2 || 0;
+                tot.builtup += settle.built_up_km2 || 0;
                 tot.pop += settle.total_population || 0; tot.pixels += grid.activePixels || 0; tot.km += grid.totalDistanceKm || 0;
                 summaryData.push([
                     park.name || park.id, park.country || '', Math.round(park.area_km2 || 0),
                     fire.total_fires || 0, fire.fire_groups || 0, fire.response_rate || 0, fire.peak_month || '',
                     Math.round((deforestation.total_loss_km2 || 0) * 100) / 100,
-                    settle.settlement_count || 0, settle.total_population || 0, species.total_count || 0,
+                    deforestation.cropland_measured_for > 0 ? Math.round((deforestation.cropland_conversion_km2 || 0) * 100) / 100 : '',
+                    settle.settlement_count || 0,
+                    (typeof settle.built_up_km2 === 'number') ? Math.round(settle.built_up_km2 * 100) / 100 : '',
+                    settle.total_population || 0, species.total_count || 0,
                     grid.activePixels || 0, Math.round((grid.totalDistanceKm || 0) * 10) / 10
                 ]);
             }
             summaryData.push([]);
             summaryData.push(['TOTALS', '', Math.round(tot.area), tot.fires, '', '', '',
-                Math.round(tot.deforest * 100) / 100, tot.settle, tot.pop, '', tot.pixels, Math.round(tot.km * 10) / 10]);
+                Math.round(tot.deforest * 100) / 100, Math.round(tot.cropconv * 100) / 100, tot.settle,
+                Math.round(tot.builtup * 100) / 100, tot.pop, '', tot.pixels, Math.round(tot.km * 10) / 10]);
             const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
             summarySheet['!cols'] = [{ wch: 30 }, { wch: 14 }, ...Array(sumHdr.length - 2).fill({ wch: 13 })];
             styleHeaderRow(summarySheet, 4, sumHdr.length);
@@ -6014,23 +6112,29 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             }
 
             // === ALL SETTLEMENTS SHEET ===
-            const allSettlementsData = [['Park', 'Classification', 'Population', 'Area_km2', 'Narrative', 'Lat', 'Lon', 'Nearest_Place']];
+            // Extent_km2 is cluster EXTENT (mask), not built-up surface — the two
+            // differ ~24-39x and must not share a name (invariant 15). Cropland
+            // fracs are GLAD 1 km-box neighborhood means; blank = unmeasured.
+            const allSettlementsData = [['Park', 'Classification', 'Persistence', 'Population', 'Extent_km2', 'Cropland_2003_pct', 'Cropland_2019_pct', 'Narrative', 'Lat', 'Lon', 'Nearest_Place']];
             for (const { park, data } of parkReports) {
                 if (data.error) continue;
                 const settlement = data.settlement || {};
                 for (const s of (settlement.classified_settlements || settlement.settlements || [])) {
                     allSettlementsData.push([
                         park.name || park.id, s.classification || s.type || '',
+                        s.persistence || '',
                         s.population_est || s.population || 0,
                         s.area_m2 ? Math.round(s.area_m2 / 1000) / 1000 : 0,
+                        (typeof s.cropland_frac_2003 === 'number') ? Math.round(s.cropland_frac_2003 * 1000) / 10 : '',
+                        (typeof s.cropland_frac_2019 === 'number') ? Math.round(s.cropland_frac_2019 * 1000) / 10 : '',
                         s.narrative || '', s.lat || '', s.lon || '', s.nearest_place || s.name || ''
                     ]);
                 }
             }
             if (allSettlementsData.length > 1) {
                 const settlementsSheet = XLSX.utils.aoa_to_sheet(allSettlementsData);
-                settlementsSheet['!cols'] = [{ wch: 25 }, { wch: 16 }, { wch: 11 }, { wch: 10 }, { wch: 70 }, { wch: 10 }, { wch: 10 }, { wch: 22 }];
-                styleHeaderRow(settlementsSheet, 0, 8);
+                settlementsSheet['!cols'] = [{ wch: 25 }, { wch: 16 }, { wch: 11 }, { wch: 11 }, { wch: 10 }, { wch: 12 }, { wch: 12 }, { wch: 70 }, { wch: 10 }, { wch: 10 }, { wch: 22 }];
+                styleHeaderRow(settlementsSheet, 0, 11);
                 XLSX.utils.book_append_sheet(wb, settlementsSheet, 'All_Settlements');
             }
 
@@ -11462,9 +11566,9 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                             <span class="pa-popup-mini-stat-label">Settlements</span>
                             <span class="pa-popup-mini-stat-value">${formatNumber(data.settlement_count)}</span>
                         </div>
-                        ${data.total_built_area_m2 || data.total_area_m2 ? `<div class="pa-popup-mini-stat">
-                            <span class="pa-popup-mini-stat-label">Built-up area</span>
-                            <span class="pa-popup-mini-stat-value">${formatArea(data.total_built_area_m2 || data.total_area_m2)}</span>
+                        ${typeof data.built_up_km2 === 'number' ? `<div class="pa-popup-mini-stat" title="Built-up SURFACE (Σ GHSL fractional raster) — same basis as the stats panel and narrative">
+                            <span class="pa-popup-mini-stat-label">Built-up surface</span>
+                            <span class="pa-popup-mini-stat-value">${formatArea(data.built_up_km2 * 1e6)}</span>
                         </div>` : ''}
                         ${data.conflict_risk ? `<div class="pa-popup-mini-stat">
                             <span class="pa-popup-mini-stat-label">Conflict risk</span>
@@ -11473,6 +11577,10 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                         ${data.by_persistence ? `<div class="pa-popup-mini-stat" title="Measured from GHSL built-up epochs (E2000/E2015): permanent = built by 2000, established = by 2015, recent = after 2015${data.persistence_unmeasured ? `; ${formatNumber(data.persistence_unmeasured)} unmeasured (missing epoch tile)` : ''}">
                             <span class="pa-popup-mini-stat-label">Persistence</span>
                             <span class="pa-popup-mini-stat-value">${['permanent','established','recent'].filter(k => data.by_persistence[k]).map(k => `${formatNumber(data.by_persistence[k])} ${k}`).join(', ')}${data.persistence_unmeasured ? ` <span style="color:#888">(+${formatNumber(data.persistence_unmeasured)} unmeasured)</span>` : ''}</span>
+                        </div>` : ''}
+                        ${data.cropland_measured_for > 0 ? `<div class="pa-popup-mini-stat" title="GLAD 30 m cropland, mean % of the 1 km box around each settlement — a trend indicator, not area accounting (${formatNumber(data.cropland_measured_for)} of ${formatNumber(data.settlement_count)} measured; ${formatNumber(data.cropland_settlements || 0)} sites have >=3% mapped cropland within ~1 km)">
+                            <span class="pa-popup-mini-stat-label">Cropland nearby</span>
+                            <span class="pa-popup-mini-stat-value">${((data.cropland_mean_frac_2003 || 0) * 100).toFixed(1)}% → ${((data.cropland_mean_frac_2019 || 0) * 100).toFixed(1)}%</span>
                         </div>` : ''}
 
                         
@@ -12001,6 +12109,10 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                         ${data.trend_direction && data.trend_direction !== 'insufficient_data' ? `<div class="pa-popup-mini-stat">
                             <span class="pa-popup-mini-stat-label">Trend</span>
                             <span class="pa-popup-mini-stat-value${trendClass}">${data.trend_direction}</span>
+                        </div>` : ''}
+                        ${data.cropland_measured_for > 0 ? `<div class="pa-popup-mini-stat" title="GLAD 30 m: loss on land cropped by 2016-19 but not in 2000-03 (${formatNumber(data.cropland_measured_for)} events measured; loss after ~2019 is outside the GLAD epoch and reads 0). Not window-filtered — a corpus property of all recorded loss.">
+                            <span class="pa-popup-mini-stat-label">Cropland expansion</span>
+                            <span class="pa-popup-mini-stat-value">${(data.cropland_conversion_km2 || 0).toFixed(1)} km²</span>
                         </div>` : ''}
                         
                         ${(() => {
@@ -16307,16 +16419,15 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
     function renderSettlementsSummary(classifiedSettlements, limit) {
         if (!classifiedSettlements || classifiedSettlements.length === 0) return '';
         
-        // Group by classification
+        // Group by classification. NOTE: do not sum area_m2 here — it is
+        // cluster EXTENT, not built-up surface (invariant 15).
         const byClass = {};
         let totalPop = 0;
-        let totalArea = 0;
         classifiedSettlements.forEach(s => {
             const cls = s.classification || 'unclassified';
             if (!byClass[cls]) byClass[cls] = [];
             byClass[cls].push(s);
             totalPop += s.population_est || 0;
-            totalArea += s.area_m2 || 0;
         });
         
         const classLabels = {
@@ -16478,12 +16589,14 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             
             // Get settlement data from settlement endpoint
             const settle = data.settlement || {};
-            // Calculate built-up area from classified settlements if API doesn't provide it
-            let builtUpKm2 = settle.built_up_km2 || 0;
-            if (builtUpKm2 === 0 && settle.classified_settlements && settle.classified_settlements.length > 0) {
-                const totalAreaM2 = settle.classified_settlements.reduce((sum, s) => sum + (s.area_m2 || 0), 0);
-                builtUpKm2 = totalAreaM2 / 1000000;
-            }
+            // Built-up SURFACE from the narrative API (settlementSurfaceSQL).
+            // NEVER fall back to summing classified_settlements.area_m2 — that
+            // column is cluster EXTENT, ~24-39x larger (XSA: 4,268 vs 110 km²),
+            // and the fallback made this line disagree with the stats panel
+            // and the narrative text (invariants 7/15).
+            const builtUpKm2 = (typeof settle.built_up_km2 === 'number') ? settle.built_up_km2
+                : (stats.settlement && typeof stats.settlement.built_up_km2 === 'number') ? stats.settlement.built_up_km2
+                : null;
             const settlementVisits = settle.visit_count || 0;
             
             // Get roadless data from stats
@@ -16497,7 +16610,7 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                     ${distanceKm > 0 ? `<span title="Distance traveled">Distance: ${distanceKm.toFixed(1)} km</span>` : ''}
                     ${settlementVisits > 0 ? `<span title="Settlement visits">Visits: ${fmt(settlementVisits)}</span>` : ''}
                     <span title="Roadless wilderness">Roadless: ${roadlessPercent.toFixed(1)}%</span>
-                    <span title="Settlement built-up area">Built-up: ${builtUpKm2.toFixed(2)} km²</span>
+                    <span title="Settlement built-up surface (GHSL)">${builtUpKm2 !== null ? `Built-up: ${builtUpKm2.toFixed(2)} km²` : 'Built-up: not measured'}</span>
                 </div>
                 ${showInsights ? `<div class="starred-report-group" style="margin-top:8px;"><div class="starred-report-group-title">Key Insights:</div>${stats.insights.slice(0, insightLimit).map(i => `<div style="margin:4px 0;font-size:10px;color:#aaa;">${insightHtml(i)}</div>`).join('')}${!expanded && stats.insights.length > insightLimit ? `<div style="color:#60a5fa;font-size:10px;cursor:pointer;" onclick="this.parentElement.innerHTML=this.parentElement.innerHTML.replace('...show more', '')+reportDataCache.parks.get('${park.id}')?.stats?.insights?.slice(${insightLimit}).map(i=>'<div style=margin:4px\\ 0;font-size:10px;color:#aaa;>'+insightHtml(i)+'</div>').join('')">...show ${stats.insights.length - insightLimit} more</div>` : ''}</div>` : ''}
             </div>`;
@@ -16552,6 +16665,7 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                     <span>Loss: ${totalLoss.toFixed(2)} km²</span>
                     <span>Trend: ${deforest.trend_direction || deforestStats.trend || '?'} (${deforest.trend_percent_change > 0 ? '+' : ''}${(deforest.trend_percent_change || 0).toFixed(1)}%)</span>
                     <span>Worst: ${deforest.worst_year || deforestStats.worst_year || 'N/A'} (${(deforest.worst_year_km2 || deforestStats.worst_year_km2 || 0).toFixed(2)} km²)</span>
+                    ${deforest.cropland_measured_for > 0 ? `<span title="GLAD 30 m: loss on land cropped by 2016-19 but not in 2000-03 (${fmt(deforest.cropland_measured_for)} events measured; loss after ~2019 is outside the GLAD epoch and reads 0)">Cropland expansion: ${(deforest.cropland_conversion_km2 || 0).toFixed(1)} km²</span>` : ''}
                 </div>
                 ${detailLevel !== 'summary' && deforest.summary ? `<div class="starred-report-section-text">${deforest.summary}</div>` : ''}
                 ${detailLevel !== 'summary' && deforest.classified_events && deforest.classified_events.length > 0 ? renderDeforestationSummary(deforest.classified_events, detailLevel === 'comprehensive' ? 10 : 3) : ''}
@@ -16567,15 +16681,18 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
         if (shouldIncludeSection('settlement', data) && settleCount > 0) {
             const detailLevel = getDetailLevel();
             const showSettlements = detailLevel !== 'summary' && settle.largest_settlements && settle.largest_settlements.length > 0;
-            // Use built_up_km2 from settlement data, not stats
-            const builtUpKm2 = settle.built_up_km2 || settleStats.built_up_km2 || 0;
+            // Built-up SURFACE from the narrative API; unmeasured is a word, not 0.00 (invariant 12)
+            const builtUpKm2 = (typeof settle.built_up_km2 === 'number') ? settle.built_up_km2
+                : (typeof settleStats.built_up_km2 === 'number') ? settleStats.built_up_km2 : null;
             const visitCount = settle.visit_count || 0;
             html += `<div class="starred-report-section settlement">
                 <div class="starred-report-section-title">Settlements</div>
                 <div class="starred-report-section-stats">
                     <span>Count: ${fmt(settleCount)}</span>
-                    <span>Built-up: ${builtUpKm2.toFixed(2)} km²</span>
+                    <span>${builtUpKm2 !== null ? `Built-up: ${builtUpKm2.toFixed(2)} km²` : 'Built-up: not measured'}</span>
                     <span>Pop: ${fmt(settle.total_population || 0)}</span>
+                    ${settle.by_persistence ? `<span title="GHSL epochs: permanent=built by 2000, established=by 2015, recent=after 2015${settle.persistence_unmeasured ? `; ${fmt(settle.persistence_unmeasured)} unmeasured` : ''}">Persistence: ${['permanent','established','recent'].filter(k => settle.by_persistence[k]).map(k => `${fmt(settle.by_persistence[k])} ${k}`).join(', ')}</span>` : ''}
+                    ${settle.cropland_measured_for > 0 ? `<span title="GLAD 30 m cropland, mean % of the 1 km box around each settlement — a trend indicator, not area accounting (${fmt(settle.cropland_measured_for)} of ${fmt(settleCount)} measured)">Cropland nearby: ${((settle.cropland_mean_frac_2003 || 0) * 100).toFixed(1)}% → ${((settle.cropland_mean_frac_2019 || 0) * 100).toFixed(1)}% (2000-03 → 2016-19)</span>` : ''}
                     ${visitCount > 0 ? `<span>Visits: ${fmt(visitCount)}</span>` : ''}
                 </div>
                 ${detailLevel !== 'summary' && settle.summary ? `<div class="starred-report-section-text">${settle.summary}</div>` : ''}
@@ -17718,44 +17835,15 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
         }
     }
     
-    // GHSL/Settlement data
+    // GHSL/Settlement data — DEAD PATH kept as a stub. Nothing reads
+    // data.ghsl (settlement figures come from fetchSettlementNarrativeDirect),
+    // and the old implementation summed props.built_up_km2 / props.population
+    // off /features?type=settlement, which carries NEITHER field (it has
+    // population_est and extent_m2) and truncates at 1000 features — so it
+    // computed a confident 0 from a truncated list (invariants 1, 8, 15).
     async function fetchGHSLDataDirect(parkId, {pwd}) {
-        try {
-            const url = `${apiBase(parkId)}/features?type=settlement&pwd=${encodeURIComponent(pwd)}`;
-            const resp = await fetch(url);
-            if (!resp.ok) return {error: 'API error', count: 0};
-            
-            const geojson = await resp.json();
-            const features = geojson.features || [];
-            
-            // Aggregate settlement data
-            let totalPop = 0;
-            let builtUpKm2 = 0;
-            const settlements = features.map(f => {
-                const props = f.properties || {};
-                totalPop += props.population || 0;
-                builtUpKm2 += props.built_up_km2 || 0;
-                return {
-                    name: props.name || 'Unnamed',
-                    population: props.population || 0,
-                    type: props.classification || props.type || '',
-                    insidePark: props.inside_park || false,
-                    coords: f.geometry?.coordinates || []
-                };
-            });
-            
-            return {
-                count: features.length,
-                totalPopulation: totalPop,
-                builtUpKm2,
-                settlements
-            };
-        } catch (error) {
-            console.error(`GHSL data error for ${parkId}:`, error);
-            return {error: error.message, count: 0};
-        }
+        return {};
     }
-    
     // Settlement narrative data (rich data with classified settlements)
     async function fetchSettlementNarrativeDirect(parkId, {pwd}) {
         try {
@@ -17767,7 +17855,14 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             return {
                 settlement_count: data.settlement_count || 0,
                 total_population: data.total_population || 0,
-                built_up_km2: data.built_up_km2 || 0,
+                // Surface, not extent; unmeasured stays undefined, never 0 (invariant 12)
+                built_up_km2: (typeof data.built_up_km2 === 'number') ? data.built_up_km2 : undefined,
+                by_persistence: data.by_persistence,
+                persistence_unmeasured: data.persistence_unmeasured,
+                cropland_settlements: data.cropland_settlements,
+                cropland_measured_for: data.cropland_measured_for,
+                cropland_mean_frac_2003: data.cropland_mean_frac_2003,
+                cropland_mean_frac_2019: data.cropland_mean_frac_2019,
                 conflict_risk: data.conflict_risk || '',
                 summary: data.summary || '',
                 classified_settlements: data.classified_settlements || [],
@@ -17809,6 +17904,10 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                 summary: narrative.summary || '',
                 classified_events: narrative.classified_events || [],
                 hotspots: narrative.hotspots || [],
+                // GLAD cropland-expansion attribution (invariant 1: 0-measured
+                // must not read as "no cropland")
+                cropland_conversion_km2: narrative.cropland_conversion_km2,
+                cropland_measured_for: narrative.cropland_measured_for,
                 by_year: narrative.by_year || {}
             };
         } catch (error) {
@@ -20623,7 +20722,11 @@ ${starredItems.narratives.map(n => {
                 if (props.name) html += `<div style="font-weight: 600; font-size: 14px; margin-bottom: 5px;">${props.name}</div>`;
                 
                 const info = [];
-                if (props.area_m2) info.push(`${(props.area_m2 / 10000).toFixed(2)} ha`);
+                // area_m2 = built-up SURFACE (Σ GHSL fractional raster);
+                // extent_m2 = cluster mask extent, ~24-39x larger (invariant 15).
+                // Two quantities, two labels — never one bare number.
+                if (props.area_m2) info.push(`Built-up surface: ${(props.area_m2 / 10000).toFixed(2)} ha`);
+                if (props.extent_m2) info.push(`Extent: ${(props.extent_m2 / 10000).toFixed(1)} ha`);
                 if (props.population_est !== undefined) info.push(`Pop: ${props.population_est}`);
                 if (info.length) html += `<div style="margin-bottom: 3px; color: #6b7280; font-size: 12px;">${info.join(' • ')}</div>`;
                 

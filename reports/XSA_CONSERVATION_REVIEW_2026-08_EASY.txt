@@ -1,0 +1,388 @@
+================================================================================
+
+        WHAT IS HAPPENING IN THE CHINKO-GARAMBA CORRIDOR?
+        A plain-language conservation review, August 2026
+
+        The area: 485,000 km2 where the Central African Republic,
+        DR Congo and South Sudan meet - about the size of Spain -
+        holding four big protected areas: Chinko, Bili-Uere,
+        Garamba and Southern National Park.
+
+        The question: how bad are overgrazing, commercial hunting
+        and artisanal mining here - and where exactly?
+
+================================================================================
+
+
+THE WHOLE STORY IN SIX SENTENCES
+--------------------------------------------------------------------------------
+Every dry season a wall of fire sweeps the region from north to south -
+almost 4 million satellite fire detections in two years, nearly all of it
+people burning for hunting and pasture, and it peaks every January without
+exception. Forests are mostly holding: in 25 years the region lost just a
+quarter of one percent of its land to clearing, and only a sliver of that
+became farmland. The real change is people: more than half of all the
+buildings standing today were built in the last ten years, mostly by
+families returning to villages their great-grandparents lived in - villages
+we can find by name on maps drawn a century ago. Mining is real but small,
+concentrated in two known clusters, and completely invisible to satellites -
+no fire, no lights - so only people on the ground can watch it. The single
+biggest management gap is Garamba, which stops only 6 in every 100 fires
+that enter it. And the single best window to act is the same every year:
+mid-December to mid-February, when the burning season arrives everywhere
+at once.
+
+
+1. FIRE - A JANUARY OCEAN
+--------------------------------------------------------------------------------
+In two years, satellites logged 3,990,865 individual fire detections here,
+grouped into 38,725 distinct fires. These are not campfires: an average
+fire here burns for 22 days and moves 6.7 km per day. It is a moving front.
+
+Almost none of it is lightning, and almost none of it is planned management
+burning (about 300 fires out of 38,725). This is a landscape-scale human
+burning culture: hunters driving game, herders renewing pasture.
+
+The year has one shape, and it never changes:
+
+    A YEAR OF FIRE (monthly detections, last full season)
+
+    Sep  2025 |                            997
+    Oct  2025 | *                       25,857
+    Nov  2025 | *********              230,947
+    Dec  2025 | ****************       398,907
+    Jan  2026 | ********************   519,052   << the peak, every year
+    Feb  2026 | ********               187,834
+    Mar  2026 | *****                  127,078
+    Apr  2026 | *                       19,229
+    May  2026 |                          5,993
+
+Nov-Feb carries about 87% of the whole year's fire. July-September is
+essentially fire-free. The front follows the retreating rains: the dry
+north burns first (October-November), the parks at 5-8 degrees North burn
+December-February.
+
+How are the parks coping? Two numbers matter.
+
+First: is burning inside each park going up or down? (Same satellite each
+year, so the comparison is fair.)
+
+    Chinko      down 68% from 2023 to 2025, then a 2026 rebound.
+                The only park that clearly pushed fire out - for a while.
+    Bili-Uere   flat, and high.
+    Garamba     flat.
+    Southern NP UP roughly 40% since 2023. The pressure is growing here.
+
+Second: of the fires that enter each park, how many get stopped inside
+rather than burning straight through?
+
+    FIRES STOPPED INSIDE THE PARK
+
+    Bili-Uere    27%  |###########
+    Southern NP  22%  |#########     (2,112 fires crossed unstopped)
+    Chinko       18%  |#######         (173 fires crossed unstopped)
+    Garamba       6%  |##              (709 fires crossed unstopped)
+
+Garamba is the outlier: 94 of every 100 fires that enter it burn through,
+staying an average of 20 days. That is a management question, not a data
+question.
+
+One more useful detail: each park's fires arrive from a different side.
+Chinko's come from the west, Bili-Uere's from the west and south, Garamba's
+from the east. Different herder communities on each side - so each park
+needs its own conversation, with its own neighbours.
+
+
+2. FORESTS - LESS LOSS THAN IT LOOKS, AND TWO VERY DIFFERENT PROBLEMS
+--------------------------------------------------------------------------------
+Total forest loss since 2001: 1,167 km2, in 7,815 separate clearing events.
+That sounds like a lot; it is 0.24% of the area in 25 years. By regional
+standards, this is a low-deforestation landscape.
+
+    FOREST LOSS BY YEAR (km2)
+
+    2014 |#####                52
+    2017 |##########          100
+    2021 |######               60
+    2022 |######               59
+    2023 |################### 314   << mostly questioned data, see below
+    2024 |                      1   (measuring method changes here -
+    2025 |                      2    numbers before and after this line
+    2026 |###                  30    must not be compared)
+
+THE 2023 SPIKE IS PROBABLY NOT REAL. Almost all of it (282 of 314 km2) is a
+handful of "logging" blocks flagged as suspect by the system itself, in one
+remote corner in the far north. Three independent lines of evidence say
+artefact, not logging boom:
+  - Century-old survey maps show that exact ground as uninhabited dune
+    country crossed by hunters' trails - one is even named "the elephant
+    road". No settlement then.
+  - Today's settlement data shows barely anyone there now.
+  - The farmland satellite record shows only 13% of that ground was ever
+    farmed - and it was farmed BEFORE 2023, so the "clearing" opened
+    nothing. A real 280 km2 logging operation leaves marks on the land.
+    This one left none.
+
+THE REAL FOREST STORY is further south, along the Mbomou river on the
+CAR-DRC border: active slash-and-burn farming pressing into border forests
+near Zemio and Doruma. The three biggest clearings of 2026 (about 4 km2
+each, made of hundreds of small patches, saturated with fire) are all here.
+
+AND HERE IS THE NEW INSIGHT - what happens to land AFTER the trees fall?
+A new satellite farmland layer lets us check. The answer splits the region
+in two:
+
+    WHAT BECOMES FARMLAND AFTER FOREST LOSS?
+
+    South (below 9.5 N):  648 km2 lost  ->  0.8% became farms
+    North (above 9.5 N):   17 km2 lost  -> 46.1% became farms
+
+Two completely different problems. In the south, forest is burned, used
+briefly, and left to regrow - big scary numbers, but the land mostly comes
+back. In the north, HALF of everything cleared stays farmland forever -
+small numbers, but every hectare is a one-way door. The south generates the
+alarming statistics; the north generates the irreversible ones.
+
+Among the parks: Bili-Uere carries the most loss by far (602 km2, and it is
+the wettest, most rainforest-like park - loss there does not recover).
+Chinko is near-pristine: 6.5 km2 total in 25 years. Garamba is worsening
+but tiny (worst year: 3.2 km2).
+
+
+3. PEOPLE - THE GREAT RETURN
+--------------------------------------------------------------------------------
+The region holds 2,121 settlements with about 2.6 million people. Their
+actual built footprint - roofs and walls as the satellite measures them -
+is 110 km2, about the size of Paris.
+
+Who lives here, and for how long?
+
+    WHAT KIND OF SETTLEMENTS?          HOW OLD ARE THEY?
+
+    small camps   1,374  65%           built before 2000   1,665  79%
+    towns           333  16%           built 2000-2015       208  10%
+    villages        311  15%           built after 2015      248  12%
+    other           103   5%
+
+FINDING ONE: THE "CAMPS" ARE NOT TEMPORARY. 97% of the small "camps"
+already existed in 2000. This is a permanent lattice of cattle-camps - and
+maps drawn in the 1930s show the same system, in the same places, with the
+surveyors' own glossary of Dinka cattle-camp words written on the sheets.
+The old camps also sit deepest in the fire: the burning is the long-
+standing pastoral economy, not something new arriving.
+
+FINDING TWO: THE FABRIC IS MOSTLY NEW ANYWAY. 58% of all built surface
+standing today was added after 2015. Not new places - the same places,
+growing fast. 22% of the region's population now lives in settlements that
+did not exist in 2015, concentrated in one belt in Western Bahr el Ghazal
+(South Sudan), around Wau and the Busseri river.
+
+FINDING THREE - and this changes everything about how to talk to these
+communities: IT IS A RETURN, NOT AN INVASION. We cross-checked the new
+settlements against the century-old survey maps. More than half of the new
+settlements sit within 3 km of a village that was mapped and NAMED in the
+1930s - more than twice what chance would give. The fastest growers:
+
+    GROWTH SINCE 2015          TODAY'S SPOT      NAME ON THE 1930s MAP
+    +299 hectares              Wau               "WAU"
+    +160 hectares              new town, 9.2 N   "Rian Kuj"
+    +149 hectares              town, 8.7 N       "E. Kome"
+    +138 hectares              near Rumbek       "Mako"
+    +108 hectares              town, 9.0 N       "Pan Nyel"
+    + 93 hectares              town, 8.3 N       "Agork"
+    + 92 hectares              new town, 9.0 N   "Win"
+
+21 of the 30 fastest-growing settlements sit on named 1930s villages.
+People displaced by decades of war are going home. These are returning
+communities with historic claims - not encroachers. That is the right
+frame for every land conversation in this belt.
+
+FINDING FOUR: THE BOOM TOWNS DO NOT FEED THEMSELVES YET. Around most
+settlements in the region, farmland has doubled since 2000 (from 4% to 9%
+of nearby land). But around the booming return-belt towns, farmland is
+still almost absent - about 1.5%. People have arrived; fields have not.
+Compare the far north, where farming came FIRST (farmland around northern
+settlements: 39%, and 63% around the newest ones).
+
+What this predicts: the next wave of forest-to-farm conversion will open
+around Rian Kuj, Win, Pan Nyel and Karyat - where the people are - not
+where today's farmland map is greenest. Land-use planning there is early,
+not late. That is rare good news: there is still time to plan.
+
+Inside the parks, settlement stays 2-3 times sparser than outside. Chinko
+is the extreme case: 20 settlements, 826 people, in a park nearly the size
+of Switzerland - with its only pressure point at the south-west corner.
+
+
+4. MINING - SMALL, SPECIFIC, AND INVISIBLE TO SATELLITES
+--------------------------------------------------------------------------------
+First, honesty about the instrument: we tried to DETECT artisanal mines
+from satellite imagery and failed - the detector performed at chance and
+was retired. What remains is REPORTED mines: 96 known sites in this region,
+from incident reports and field lists.
+
+Two clusters matter:
+
+  * CHINKO'S SOUTH-WEST CORNER. A reported gold-and-diamond working sits
+    essentially ON the park boundary at Kpangou, with several more within
+    25 km. This is the same corner where the park's only settlement
+    pressure sits - and those pits are in headwaters that drain INTO the
+    park's rivers. Small, specific, and reachable by patrol.
+
+  * THE UPPER KOTTO RIVER (north of Chinko). A dense field of workings -
+    Yangou Dacko, Yangou Issi, the Kotto sites - each on the list BECAUSE
+    an armed group attacked it. This is armed-mining ground by definition,
+    in the prefecture with the region's heaviest conflict record (818
+    armed events, 1,318 deaths since 1996).
+
+How long has this been going on? The century-old maps answer: one site,
+"Hofrat el Nahas" - Arabic for "the copper pit" - is printed on the
+colonial sheets; 8 km away is a modern mine where an armed attack was
+reported in 2016. The same pit, worked and fought over, a century apart.
+Extraction here is older than every armed group present.
+
+Two things we PROVED we cannot see, which is worth as much as a finding:
+
+  * Mines have NO fire signature. Fire density near mines is the same as
+    anywhere else.
+  * Mines have NO lights. We measured night-time satellite radiance at 71
+    mining sites: the median is zero - 50 times below what a lit village
+    emits. THE MINES ARE DARK.
+
+So: no satellite we operate can find or monitor these pits. A quiet sensor
+does not mean a quiet place. Watching the two clusters is field work.
+
+Can the mines poison the parks' water? We cannot measure pollution. What
+we CAN say is the geometry: the south-west cluster sits upstream of
+Chinko. If contamination happens, it flows in.
+
+One warning about pretty maps: our geological "gold potential" layer,
+tested against real mine locations in eastern CAR, performs no better than
+random ground. Do NOT send patrols to amber dots on the geology map here.
+Use the reported-site clusters; use the geology only as a hint for where
+to point imagery next.
+
+
+5. THE HUNDRED-YEAR-OLD MAPS - AN UNEXPECTED INSTRUMENT
+--------------------------------------------------------------------------------
+We digitised the complete Anglo-Egyptian Sudan Survey (187 map sheets,
+drawn mostly in the 1930s) and machine-read every label: 94,300 names,
+17,553 of them inside this region. Three things they turned out to hold:
+
+  * THE FIRE MAP OF THE 2020s, DRAWN IN THE 1930s. The surveyors mapped
+    the cattle-camp system - even writing the Dinka vocabulary on the
+    sheets - and their grazing floodplains are exactly where today's fire
+    front peaks. The burning geography is at least a century old.
+
+  * THE NAMES OF THE BLANK SPACES. Where one 1930s sheet shows ~400 named
+    villages, today's maps show 23. The returning settlements of section 3
+    are landing on precisely these mapped, named, "vanished" villages. For
+    the emptiest ground in the region, the best gazetteer is 90 years old.
+
+  * A PRE-CONFLICT MINING REGISTER. "The copper pit", "Old copper
+    workings", "Iron mines" - mineral sites recorded decades before any
+    current armed group existed, for exactly the ground where modern
+    reporting is thinnest.
+
+We also tested the old geography against today's fire statistically: the
+century-old caravan routes still carry slightly more burning than random
+ground (+7%), and the old ironstone plains burn +20%. The fire is
+structured by terrain and old human geography - not by new settlement.
+
+(Handle with care: these sheets cover the Sudanese two-thirds of the
+region only, the place names are machine-read from old print, and the
+positioning is good to a few hundred metres.)
+
+
+6. WHAT TO DO - SIX ACTIONS, IN ORDER
+--------------------------------------------------------------------------------
+1. ASK GARAMBA THE 6% QUESTION. It stops one fire in sixteen; its
+   neighbours stop one in four. This is the corridor's weakest number and
+   it needs a management answer, not more data.
+
+2. TREAT THE NORTH AS THE FRONT - AND THE PEOPLE AS RETURNEES. Southern
+   NP's burning is up 40%; the return-belt holds 569,000 people in
+   settlements younger than ten years. But they are going HOME, to villages
+   with names on 90-year-old maps, and their farms have not arrived yet.
+   Plan land use with them NOW, while the conversion front is still coming.
+
+3. WATCH CHINKO'S SOUTH-WEST CORNER IN PERSON. Gold and diamond workings
+   on the boundary, upstream of the park's water, invisible to every
+   satellite. Only patrols and commissioned imagery can see it.
+
+4. DO NOT QUOTE THE 2023 DEFORESTATION SPIKE. 280 of its 314 km2 is
+   flagged, contradicted by the historic maps, the settlement record and
+   the farmland record. Adjudicate it before it appears in anyone's slide.
+
+5. KEEP THE KOTTO MINING CLUSTER ON THE CONFLICT DESK, not the geology
+   desk. Every site there is known because it was attacked. And remember
+   the pits are older than the armed groups that tax them.
+
+6. PUT EVERYTHING IN THE JANUARY WINDOW. Fire arrives at every park in
+   January; 87% of the year's burning is Nov-Feb. The engagement calendar
+   is Dec 15 - Feb 15 - and the old maps even name the dry-season water
+   points where the herds will be.
+
+
+READING THE NUMBERS HONESTLY (short version)
+--------------------------------------------------------------------------------
+* Fire trends compare the same satellite year-on-year (the fleet tripled
+  in 2024; raw counts across that line mislead).
+* Forest-loss measurement changed method in 2024; numbers before and
+  after are not comparable, so we never compare them.
+* "Farmland" is what the satellite maps as stable cropland: pasture and
+  brief shifting cultivation do not count. Zero farmland around a cattle
+  camp is the definition working, not empty land.
+* Settlement ages come from satellite building records (2000 / 2015 /
+  today). A tiny 2015 camp below the satellite's threshold would read
+  "new" - so "new" counts are upper bounds.
+* Mine locations are REPORTED, mostly because of attacks - quiet mines in
+  unreported areas are missing from every list.
+* The 1930s map names are machine-read: verify against the original sheet
+  image before citing one.
+
+
+WHERE TO LOOK
+--------------------------------------------------------------------------------
+[1] The live map of everything in this report:
+    https://five-megapixel-conservation.exe.xyz:8000/
+[2] The fire season, animated (Nov 2025 - Mar 2026):
+    https://five-megapixel-conservation.exe.xyz:8000/?aoi=XSA_Study_Area&from=2025-11-01&to=2026-03-31
+[3] The full technical review with every number, method and caveat:
+    reports/XSA_CONSERVATION_REVIEW_2026-08.txt
+
+
+DATA SOURCES
+--------------------------------------------------------------------------------
+[a] Fire: VIIRS active-fire detections (NASA FIRMS; Suomi-NPP, NOAA-20,
+    NOAA-21), 375 m, 2022-2026. Trends use a single sensor (NOAA-20) to
+    avoid the 2024 fleet change.
+[b] Forest loss: Hansen Global Forest Change (Univ. of Maryland) for
+    2001-2023; Global Forest Watch integrated alerts for 2024 onwards.
+[c] Farmland: GLAD global cropland extent, 30 m (Potapov et al. 2021),
+    epochs 2000-2003 and 2016-2019.
+[d] Buildings and population: EU JRC Global Human Settlement Layer (GHSL)
+    built-up surface and population, with the 2000 and 2015 epochs used
+    for settlement age.
+[e] Historic maps: Anglo-Egyptian Sudan Survey 1:250,000 (editions
+    1908-1976), Library of Congress collection g8310m.gct00289; our own
+    georeferencing and machine transcription (OCR) of 187 sheets.
+[f] Mining sites: Invisible Children Crisis Tracker incident-derived
+    sites; OpenStreetMap mine/quarry points; IPIS field-survey lists and
+    Tearline imagery census (used for model testing only).
+[g] Conflict: ACLED (Armed Conflict Location & Event Data) weekly
+    aggregates at province level, accessed 2026-08; sums and analysis are
+    ours, not ACLED's.
+[h] Night lights: NASA Black Marble VNP46A3 monthly radiance (used to
+    establish that mines are unlit; retired as a detection tool).
+[i] Geology: national geological map sheets (CAR and neighbours),
+    digitised; skill tested against sources in [f] and found unusable for
+    targeting in eastern CAR.
+[j] Rivers and watersheds: HydroSHEDS-derived basin and river layers, for
+    the upstream/downstream geometry in section 4.
+[k] Roads and places (context layers): OpenStreetMap.
+
+================================================================================
+ Prepared August 2026. All sources listed above; all numbers cross-checked
+ against the live app and the technical review [3].
+================================================================================
