@@ -37,11 +37,41 @@ ogr2ogr -f GPKG "$TMP/labels.gpkg" "$TMP/labels.csv" \
 GN=$(sqlite3 "$TMP/labels.gpkg" "SELECT count(*) FROM sudan250k_labels")
 [ "$GN" -eq "$N" ] || { echo "gpkg has $GN rows, expected $N" >&2; exit 1; }
 
+# --- traced lines + captured symbols (trace_lines.py run/refine/dedupe/stitch) ---
+# Optional layers: exported only when the trace pipeline has produced them.
+# Row counts verified against the source, same as labels.
+HAVE_LINES=$(sqlite3 "$DB" "SELECT count(*) FROM sqlite_master WHERE name='lines_stitched'")
+if [ "$HAVE_LINES" -eq 1 ] && [ "$(sqlite3 "$DB" 'SELECT count(*) FROM lines_stitched')" -gt 0 ]; then
+  read -r NLINES NSYM < <(python3 "$(dirname "$0")/../../scripts/histmaps/export_lines_geojson.py" \
+    "$DB" "$TMP/lines.geojson" "$TMP/symbols.geojson")
+  LINE_DESC="$NLINES linear features (tracks, roads, railways, telegraph, watercourses, boundaries) vision-LLM traced then snapped to sheet ink; year_min/year_max = survey years of source sheets. Machine traced -- verify against the sheet before citing."
+  ogr2ogr -f GPKG -update "$TMP/labels.gpkg" "$TMP/lines.geojson" \
+    -nln sudan250k_lines -lco IDENTIFIER="Sudan 1:250k traced lines" \
+    -lco DESCRIPTION="$LINE_DESC"
+  GLN=$(sqlite3 "$TMP/labels.gpkg" "SELECT count(*) FROM sudan250k_lines")
+  [ "$GLN" -eq "$NLINES" ] || { echo "gpkg lines: $GLN rows, expected $NLINES" >&2; exit 1; }
+  if [ "$NSYM" -gt 0 ]; then
+    ogr2ogr -f GPKG -update "$TMP/labels.gpkg" "$TMP/symbols.geojson" \
+      -nln sudan250k_symbols -lco IDENTIFIER="Sudan 1:250k point symbols" \
+      -lco DESCRIPTION="$NSYM point symbols (wells, cairns, camps, unclassified marks) captured during line tracing; category NULL until the bulk categorization pass runs."
+    GSN=$(sqlite3 "$TMP/labels.gpkg" "SELECT count(*) FROM sudan250k_symbols")
+    [ "$GSN" -eq "$NSYM" ] || { echo "gpkg symbols: $GSN rows, expected $NSYM" >&2; exit 1; }
+  fi
+  gzip -9 -c "$TMP/lines.geojson" > "$TMP/lines.geojson.gz"
+else
+  NLINES=0; NSYM=0
+  echo "note: lines_stitched absent/empty -- labels-only export"
+fi
+
 ogr2ogr -f GeoJSON "$TMP/labels.geojson" "$TMP/labels.gpkg" sudan250k_labels \
   -lco COORDINATE_PRECISION=5 -lco RFC7946=YES
 gzip -9 "$TMP/labels.geojson"
 
 mv "$TMP/labels.gpkg" sudan250k_labels.gpkg
 mv "$TMP/labels.geojson.gz" sudan250k_labels.geojson.gz
+if [ "$NLINES" -gt 0 ]; then
+  mv "$TMP/lines.geojson.gz" sudan250k_lines.geojson.gz
+  ls -l sudan250k_lines.geojson.gz
+fi
 ls -l sudan250k_labels.gpkg sudan250k_labels.geojson.gz
-echo "OK: $N labels exported"
+echo "OK: $N labels, $NLINES lines, $NSYM symbols exported"
