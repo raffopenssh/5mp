@@ -126,6 +126,7 @@ def init_db(c):
           model TEXT);
         CREATE INDEX IF NOT EXISTS idx_lines_bbox ON lines(minlon, maxlon, minlat, maxlat);
         CREATE INDEX IF NOT EXISTS idx_lines_kind ON lines(kind);
+        
         -- Point symbols the tracer saw but could not classify: a georef'd
         -- native-resolution crop each, so a later bulk pass (human or LLM)
         -- can categorize them all at once without re-reading the sheets.
@@ -141,6 +142,11 @@ def init_db(c):
         CREATE INDEX IF NOT EXISTS idx_symbols_lonlat ON symbols(lon, lat);
         """
     )
+    for col, typ in (("pts_raw", "TEXT"), ("support", "REAL")):
+        try:
+            c.execute(f"ALTER TABLE lines ADD COLUMN {col} {typ}")
+        except sqlite3.OperationalError:
+            pass  # already there
     c.commit()
 
 
@@ -513,6 +519,115 @@ def _seg_dup(short_pts, long_pts, tol_deg):
     return hit >= 0.7 * len(short_pts)
 
 
+
+def _sheet_ink_snap(path):
+    """-> snap(px,py,max_px): pull a native-px point to the nearest inked
+    pixel of its own sheet (None if none within max_px). Built once per
+    sheet from a half-scale grayscale + EDT with indices."""
+    import numpy as np
+    from scipy import ndimage
+    img = Image.open(path)
+    if img.mode == "RGBA":
+        bg = Image.new("RGB", img.size, (255, 255, 255))
+        bg.paste(img, (0, 0), img)
+        img = bg
+    g = img.convert("L").resize((img.width // 2, img.height // 2))
+    a = np.asarray(g) < 128
+    img.close()
+    dist, (iy, ix) = ndimage.distance_transform_edt(~a, return_indices=True)
+    H, W = a.shape
+
+    def snap(px, py, max_px=60.0):
+        x, y = int(px / 2), int(py / 2)
+        if not (0 <= x < W and 0 <= y < H):
+            return None
+        if dist[y, x] * 2 > max_px:
+            return None
+        return (float(ix[y, x]) * 2, float(iy[y, x]) * 2)
+
+    return snap
+
+
+def _refine_polyline(pts_px, snap, step=16.0, iters=3):
+    """Densify + snap a native-px polyline onto the ink; iterate with a
+    shrinking radius (coarse pull, then settle). Returns (pts, support)."""
+    cur = list(pts_px)
+    radius = 60.0
+    support = 0.0
+    for _ in range(iters):
+        dense = [cur[0]]
+        for a, b in zip(cur, cur[1:]):
+            d = math.hypot(b[0] - a[0], b[1] - a[1])
+            n = max(1, int(d / step))
+            for k in range(1, n + 1):
+                dense.append((a[0] + (b[0] - a[0]) * k / n,
+                              a[1] + (b[1] - a[1]) * k / n))
+        hit = 0
+        out = []
+        for q in dense:
+            sp = snap(q[0], q[1], radius)
+            if sp is not None:
+                hit += 1
+                out.append(sp)
+            else:
+                out.append(q)
+        support = hit / max(len(dense), 1)
+        cur = out
+        radius = max(radius / 2, 12.0)
+    dedup = [cur[0]]
+    for q in cur[1:]:
+        if math.hypot(q[0] - dedup[-1][0], q[1] - dedup[-1][1]) >= 4:
+            dedup.append(q)
+    return dedup, support
+
+
+def cmd_refine(args):
+    """Raster-guided refinement. The LLM contributes topology/kind/name; the
+    sheet raster contributes exact geometry: densify each traced polyline to
+    ~16 native px spacing, snap every sample to the nearest ink pixel,
+    iterate with shrinking radius -- meanders the model chord-cut are
+    recovered from the ink itself. support = fraction of samples that found
+    ink; < 0.35 means the line was drawn over blank paper (hallucinated
+    straight diagonals) and dedupe/stitch/export drop it. Original vertices
+    kept in pts_raw; idempotent (re-runs restart from pts_raw)."""
+    c = db()
+    init_db(c)
+    which = "1=1" if args.all else "support IS NULL"
+    sheets = [r[0] for r in c.execute(
+        f"SELECT DISTINCT sheet FROM lines WHERE {which}")]
+    for sid in sheets:
+        path = os.path.join(GEO_DIR, sid + "_geo.tif")
+        if not os.path.exists(path):
+            print(f"[{sid}] missing geotiff, skipped")
+            continue
+        gt, size = sheet_geotransform(path)
+        snap = _sheet_ink_snap(path)
+        rows = c.execute(
+            f"SELECT id, COALESCE(pts_raw, pts) FROM lines WHERE sheet=? AND {which}",
+            (sid,)).fetchall()
+        nlow = 0
+        for rid, pts in rows:
+            lonlat = json.loads(pts)
+            px = [((lon - gt[0]) / gt[1], (lat - gt[3]) / gt[5]) for lon, lat in lonlat]
+            ref, sup = _refine_polyline(px, snap)
+            out = [(round(gt[0] + gt[1] * x, 6), round(gt[3] + gt[5] * y, 6))
+                   for x, y in ref]
+            lons = [q[0] for q in out]
+            lats = [q[1] for q in out]
+            c.execute(
+                "UPDATE lines SET pts_raw=COALESCE(pts_raw, pts), pts=?, support=?,"
+                " n_pts=?, length_km=?, minlon=?, minlat=?, maxlon=?, maxlat=?"
+                " WHERE id=?",
+                (json.dumps(out), round(sup, 3), len(out),
+                 round(poly_length_km(out), 3),
+                 min(lons), min(lats), max(lons), max(lats), rid))
+            if sup < 0.35:
+                nlow += 1
+        c.commit()
+        print(f"[{sid}] refined {len(rows)} lines, {nlow} low-support (<0.35)",
+              flush=True)
+
+
 def cmd_dedupe(args):
     """Overlapping windows trace the same ink twice; drop the shorter of two
     same-kind segments when it lies along the longer one. Tol ~0.012 deg
@@ -526,7 +641,8 @@ def cmd_dedupe(args):
         minlon REAL, minlat REAL, maxlon REAL, maxlat REAL)""")
     rows = c.execute(
         "SELECT id, sheet, kind, style, name, n_pts, length_km, pts,"
-        " minlon, minlat, maxlon, maxlat FROM lines ORDER BY length_km DESC").fetchall()
+        " minlon, minlat, maxlon, maxlat FROM lines"
+        " WHERE support IS NULL OR support >= 0.35 ORDER BY length_km DESC").fetchall()
     # bucket by 0.25-deg cell of bbox center for locality
     from collections import defaultdict
     buckets = defaultdict(list)
@@ -562,6 +678,180 @@ def cmd_dedupe(args):
         " minlon,minlat,maxlon,maxlat) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)", kept)
     c.commit()
     print(f"lines_dedup: kept {len(kept)} of {len(rows)}")
+
+
+def _rdp(pts, eps):
+    """Douglas-Peucker in degrees (lon scaled by cos lat is overkill here;
+    eps is small enough that isotropic degrees are fine for simplification)."""
+    if len(pts) < 3:
+        return list(pts)
+    ax, ay = pts[0]
+    bx, by = pts[-1]
+    dx, dy = bx - ax, by - ay
+    L2 = dx * dx + dy * dy
+    imax, dmax = 0, -1.0
+    for i in range(1, len(pts) - 1):
+        px, py = pts[i]
+        if L2 == 0:
+            d2 = (px - ax) ** 2 + (py - ay) ** 2
+        else:
+            t = max(0.0, min(1.0, ((px - ax) * dx + (py - ay) * dy) / L2))
+            d2 = (px - ax - t * dx) ** 2 + (py - ay - t * dy) ** 2
+        if d2 > dmax:
+            imax, dmax = i, d2
+    if dmax <= eps * eps:
+        return [pts[0], pts[-1]]
+    left = _rdp(pts[:imax + 1], eps)
+    return left[:-1] + _rdp(pts[imax:], eps)
+
+
+def _bearing(p, q):
+    return math.atan2(q[1] - p[1], q[0] - p[0])
+
+
+def _ang_ok(chain_pts, at_end, next_dir, min_cos=0.4):
+    """Does continuing from this chain endpoint in next_dir keep direction?
+    Uses the last ~2 vertices for the chain's own exit bearing."""
+    if at_end:
+        a = chain_pts[-2] if len(chain_pts) >= 2 else chain_pts[0]
+        b = chain_pts[-1]
+    else:
+        a = chain_pts[1] if len(chain_pts) >= 2 else chain_pts[-1]
+        b = chain_pts[0]
+    own = _bearing(a, b)
+    return math.cos(own - next_dir) >= min_cos
+
+
+def cmd_stitch(args):
+    """Join deduped segments into continuous lines across tile and sheet
+    boundaries -> lines_stitched.
+
+    conservative by construction: two same-kind segments are joined only
+    when (a) an endpoint of one is within TOL of an endpoint of the other
+    (TOL measured from the data: p25 of nearest endpoint gaps ~2.8 km, so
+    3.3 km catches genuine continuations while staying well under the
+    ~28 km tile pitch), (b) both segments' bearings at the junction agree
+    (cos >= 0.4, ~66deg), and (c) that pairing is the best available for
+    both endpoints (greedy by gap, each endpoint consumed once). Ambiguity therefore breaks the
+    chain rather than guessing -- a wrong join is worse than a gap.
+    Names: most frequent non-null name along the chain wins; all seen
+    names kept in names_all. Geometry simplified with Douglas-Peucker
+    (~150 m) after joining."""
+    c = db()
+    init_db(c)
+    if not c.execute("SELECT count(*) FROM sqlite_master WHERE name='lines_dedup'").fetchone()[0] \
+       or not c.execute("SELECT count(*) FROM lines_dedup").fetchone()[0]:
+        cmd_dedupe(args)
+    TOL = 0.03           # deg, ~3.3 km max gap (from endpoint-gap stats)
+    EPS = 0.0014         # deg, ~150 m simplification
+    rows = c.execute(
+        "SELECT id, sheet, kind, style, name, pts FROM lines_dedup").fetchall()
+    from collections import defaultdict, Counter
+    chains = {}   # cid -> dict(pts, kind, styles, names, segs, sheets)
+    for rid, sheet, kind, style, name, pts in rows:
+        chains[rid] = {"pts": [tuple(p) for p in json.loads(pts)], "kind": kind,
+                       "styles": Counter([style] if style else []),
+                       "names": Counter([name] if name else []),
+                       "segs": 1, "sheets": {sheet}}
+
+    def endpoints(cid):
+        p = chains[cid]["pts"]
+        return (p[0], p[-1])
+
+    merged = True
+    while merged:
+        merged = False
+        # spatial hash of endpoints, rebuilt each sweep (chains shrink fast)
+        cell = defaultdict(list)   # (kind, ix, iy) -> [(cid, at_end)]
+        for cid in chains:
+            s, e = endpoints(cid)
+            k = chains[cid]["kind"]
+            cell[(k, int(s[0] / TOL), int(s[1] / TOL))].append((cid, False))
+            cell[(k, int(e[0] / TOL), int(e[1] / TOL))].append((cid, True))
+        # candidate joins: (gap, cid_a, end_a, cid_b, end_b)
+        cands = []
+        seen = set()
+        for (k, ix, iy), lst in cell.items():
+            near = []
+            for dx in (-1, 0, 1):
+                for dy in (-1, 0, 1):
+                    near.extend(cell.get((k, ix + dx, iy + dy), ()))
+            for cid, at_end in lst:
+                p = endpoints(cid)[1 if at_end else 0]
+                for cid2, at_end2 in near:
+                    if cid2 == cid:
+                        continue
+                    key = tuple(sorted([(cid, at_end), (cid2, at_end2)]))
+                    if key in seen:
+                        continue
+                    seen.add(key)
+                    q = endpoints(cid2)[1 if at_end2 else 0]
+                    gap = math.hypot(p[0] - q[0], p[1] - q[1])
+                    if gap > TOL:
+                        continue
+                    # direction continuity both ways across the junction
+                    d = _bearing(p, q) if gap > 1e-9 else None
+                    if d is not None:
+                        if not _ang_ok(chains[cid]["pts"], at_end, d):
+                            continue
+                        if not _ang_ok(chains[cid2]["pts"], at_end2, d + math.pi):
+                            continue
+                    cands.append((gap, cid, at_end, cid2, at_end2))
+        cands.sort(key=lambda t: t[0])
+        used = set()
+        for gap, a, ae, b, be in cands:
+            if (a, ae) in used or (b, be) in used or a not in chains or b not in chains:
+                continue
+            ca, cb = chains[a], chains[b]
+            pa = ca["pts"] if ae else list(reversed(ca["pts"]))   # ends at junction
+            pb = cb["pts"] if not be else list(reversed(cb["pts"]))  # starts at junction
+            ca["pts"] = pa + pb
+            ca["styles"] += cb["styles"]
+            ca["names"] += cb["names"]
+            ca["segs"] += cb["segs"]
+            ca["sheets"] |= cb["sheets"]
+            used.add((a, ae)); used.add((b, be))
+            # b's far endpoint now belongs to a; conservatively retire both
+            # from this sweep -- the next sweep re-indexes everything.
+            del chains[b]
+            merged = True
+
+    c.execute("DROP TABLE IF EXISTS lines_stitched")
+    c.execute("""CREATE TABLE lines_stitched(
+        id INTEGER PRIMARY KEY, kind TEXT, style TEXT, name TEXT,
+        names_all TEXT, n_segs INTEGER, n_sheets INTEGER, sheets TEXT,
+        n_pts INTEGER, length_km REAL, pts TEXT,
+        minlon REAL, minlat REAL, maxlon REAL, maxlat REAL)""")
+    out = []
+    for cid, ch in chains.items():
+        pts = _rdp(ch["pts"], EPS)
+        if len(pts) < 2:
+            continue
+        km = poly_length_km(pts)
+        lons = [p[0] for p in pts]
+        lats = [p[1] for p in pts]
+        name = ch["names"].most_common(1)[0][0] if ch["names"] else None
+        style = ch["styles"].most_common(1)[0][0] if ch["styles"] else None
+        names_all = json.dumps(sorted(ch["names"])) if len(ch["names"]) > 1 else None
+        out.append((ch["kind"], style, name, names_all, ch["segs"],
+                    len(ch["sheets"]), ",".join(sorted(ch["sheets"])),
+                    len(pts), round(km, 3),
+                    json.dumps([[round(x, 6), round(y, 6)] for x, y in pts]),
+                    min(lons), min(lats), max(lons), max(lats)))
+    c.executemany(
+        "INSERT INTO lines_stitched(kind,style,name,names_all,n_segs,n_sheets,"
+        " sheets,n_pts,length_km,pts,minlon,minlat,maxlon,maxlat)"
+        " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)", out)
+    c.commit()
+    ndd = c.execute("SELECT count(*) FROM lines_dedup").fetchone()[0]
+    multi = sum(1 for r in out if r[4] > 1)
+    xsheet = sum(1 for r in out if r[5] > 1)
+    print(f"lines_stitched: {len(out)} lines from {ndd} segments "
+          f"({multi} joined from >1 seg, {xsheet} span sheets)")
+    for kind, n, km in c.execute(
+            "SELECT kind, count(*), round(sum(length_km)) FROM lines_stitched"
+            " GROUP BY 1 ORDER BY 3 DESC"):
+        print(f"  {kind:12s} {n:6d}  {km:8.0f} km")
 
 
 def cmd_symbols(args):
@@ -626,6 +916,9 @@ def main():
     r.add_argument("--sheet")
     sub.add_parser("status")
     sub.add_parser("dedupe")
+    sub.add_parser("stitch")
+    rf = sub.add_parser("refine")
+    rf.add_argument("--all", action="store_true")
     s = sub.add_parser("symbols")
     s.add_argument("out")
     s.add_argument("--categorized", action="store_true")
@@ -635,7 +928,7 @@ def main():
     p.add_argument("--raw", action="store_true")
     args = ap.parse_args()
     {"run": cmd_run, "status": cmd_status, "dedupe": cmd_dedupe,
-     "symbols": cmd_symbols, "preview": cmd_preview}[args.cmd](args)
+     "stitch": cmd_stitch, "refine": cmd_refine, "symbols": cmd_symbols, "preview": cmd_preview}[args.cmd](args)
 
 
 if __name__ == "__main__":
