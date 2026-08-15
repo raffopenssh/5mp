@@ -54,9 +54,18 @@ valid rather than usable is the wrong change.**
   cannot dominate a map as fact. `needs_review` is also a BOOLEAN column on
   the layer (added 2026-08-15).
 * **AOI exports carry a `protected_areas` layer** — outlines of every park
-  whose bbox overlaps the AOI (`gpkgProtectedAreas`). An AOI export used to
+  whose bbox overlaps the AOI (`gpkgProtectedAreas`), with keystone attributes
+  (country, area_km2, wdpa_id, partner, staff/budget/donor/performance — the
+  last four are NULL throughout current source data; NULL means "not
+  recorded", never 0). An AOI export used to
   hold only its own outline, so a multi-park AOI project had no park
   boundaries to filter against. Parks' own exports don't get it.
+* **AOI trajectories carry `start_park`/`end_park`/`parks_touched`**, computed
+  at export time by point-in-polygon against actual park boundaries
+  (`gpkgParkHits`). The stored `position`/`pct_inside` are relative to the
+  EXPORT AREA — in an XSA export every trajectory reads `contained`, which
+  answers nothing about parks. NULL endpoint = outside every park;
+  `parks_touched` is a comma-joined park_id list.
 * **Schema/style changes bump `gpkgFormatVersion`** (in `gpkgCacheKey`,
   `srv/gpkg_jobs.go`): the job cache lives 21 days, and a cached v1 file
   served after a schema change silently lacks the new columns.
