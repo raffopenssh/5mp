@@ -238,6 +238,9 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("GET /api/histmap/sudan250k/download", s.HandleAPIHistMapDownload)
 	mux.HandleFunc("GET /api/histmap/sudan250k/labels", s.HandleAPIHistMapLabels)
 	mux.HandleFunc("GET /api/histmap/sudan250k/labels/download/{format}", s.HandleAPIHistMapLabelsDownload)
+	mux.HandleFunc("GET /api/histmap/sudan250k/lines", s.HandleAPIHistMapLines)
+	mux.HandleFunc("GET /api/histmap/sudan250k/lines/download", s.HandleAPIHistMapLinesDownload)
+	mux.HandleFunc("GET /api/histmap/sudan250k/around", s.HandleAPIHistMapAround)
 	mux.HandleFunc("GET /api/histmap/sudan250k/{z}/{x}/{y}", s.HandleAPIHistMapTile)
 	// Geology overlays (Sudan GRAS 2004, CAR BRGM 1964) -- vector tiles, not
 	// raster: the units are data the client recolours, hides and groups by

@@ -423,6 +423,10 @@ def cmd_run(args):
         cmd_refine(args)
         cmd_dedupe(args)
         cmd_stitch(args)
+        import subprocess
+        r = subprocess.run(["bash", os.path.join(os.path.dirname(
+            os.path.abspath(__file__)), "export_labels.sh")])
+        print(f"export_labels.sh exit={r.returncode}", flush=True)
     cmd_status(args)
 
 
@@ -598,6 +602,25 @@ def cmd_refine(args):
     which = "1=1" if args.all else "support IS NULL"
     sheets = [r[0] for r in c.execute(
         f"SELECT DISTINCT sheet FROM lines WHERE {which}")]
+    # EDT + snapping is CPU-bound pure-Python/numpy: farm sheets to processes,
+    # write results back on this connection (single writer).
+    import multiprocessing as mp
+    if len(sheets) > 1:
+        with mp.Pool(min(4, len(sheets))) as pool:
+            for sid, updates in pool.imap_unordered(
+                    _refine_sheet_worker, [(sid, which) for sid in sheets]):
+                nlow = 0
+                for row in updates:
+                    c.execute(
+                        "UPDATE lines SET pts_raw=COALESCE(pts_raw, pts), pts=?,"
+                        " support=?, n_pts=?, length_km=?, minlon=?, minlat=?,"
+                        " maxlon=?, maxlat=? WHERE id=?", row)
+                    if row[1] < 0.35:
+                        nlow += 1
+                c.commit()
+                print(f"[{sid}] refined {len(updates)} lines, {nlow} low-support",
+                      flush=True)
+        return
     for sid in sheets:
         path = os.path.join(GEO_DIR, sid + "_geo.tif")
         if not os.path.exists(path):
@@ -823,8 +846,11 @@ def cmd_stitch(args):
     c.execute("""CREATE TABLE lines_stitched(
         id INTEGER PRIMARY KEY, kind TEXT, style TEXT, name TEXT,
         names_all TEXT, n_segs INTEGER, n_sheets INTEGER, sheets TEXT,
+        year_min INTEGER, year_max INTEGER,
         n_pts INTEGER, length_km REAL, pts TEXT,
         minlon REAL, minlat REAL, maxlon REAL, maxlat REAL)""")
+    sheet_year = dict(c.execute("SELECT id, year FROM sheets")) if c.execute(
+        "SELECT count(*) FROM sqlite_master WHERE name='sheets'").fetchone()[0] else {}
     out = []
     for cid, ch in chains.items():
         pts = _rdp(ch["pts"], EPS)
@@ -836,15 +862,17 @@ def cmd_stitch(args):
         name = ch["names"].most_common(1)[0][0] if ch["names"] else None
         style = ch["styles"].most_common(1)[0][0] if ch["styles"] else None
         names_all = json.dumps(sorted(ch["names"])) if len(ch["names"]) > 1 else None
+        yrs = [sheet_year[sid] for sid in ch["sheets"] if sheet_year.get(sid)]
         out.append((ch["kind"], style, name, names_all, ch["segs"],
                     len(ch["sheets"]), ",".join(sorted(ch["sheets"])),
+                    min(yrs) if yrs else None, max(yrs) if yrs else None,
                     len(pts), round(km, 3),
                     json.dumps([[round(x, 6), round(y, 6)] for x, y in pts]),
                     min(lons), min(lats), max(lons), max(lats)))
     c.executemany(
         "INSERT INTO lines_stitched(kind,style,name,names_all,n_segs,n_sheets,"
-        " sheets,n_pts,length_km,pts,minlon,minlat,maxlon,maxlat)"
-        " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)", out)
+        " sheets,year_min,year_max,n_pts,length_km,pts,minlon,minlat,maxlon,maxlat)"
+        " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", out)
     c.commit()
     ndd = c.execute("SELECT count(*) FROM lines_dedup").fetchone()[0]
     multi = sum(1 for r in out if r[4] > 1)

@@ -156,6 +156,21 @@ func (s *Server) HandleAPIHistMapMeta(w http.ResponseWriter, r *http.Request) {
 		if len(dls) > 0 {
 			out["labels_downloads"] = dls
 		}
+		// Traced lines (trace_lines.py), if the trace has (even partially) run.
+		if histHasTable(db, "line_tiles") {
+			td, tt, nLines := histLinesProgress(db)
+			out["lines"] = "/api/histmap/sudan250k/lines"
+			out["around"] = "/api/histmap/sudan250k/around"
+			out["lines_count"] = nLines
+			out["lines_complete"] = tt > 0 && td == tt
+			if st, err := os.Stat("data/histmaps/sudan250k_lines.geojson.gz"); err == nil {
+				out["lines_download"] = map[string]any{
+					"url":        "/api/histmap/sudan250k/lines/download",
+					"size_bytes": st.Size(),
+					"count":      nLines,
+				}
+			}
+		}
 	}
 	enc.Encode(out)
 }
