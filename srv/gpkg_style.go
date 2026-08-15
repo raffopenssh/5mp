@@ -162,13 +162,16 @@ func styleBoundary() string {
 // thing an analyst actually sorts on (a transhumance line and a contained
 // wildfire mean different work).
 func styleFireTrajectory() string {
+	// Values are the v5 pipeline's actual group_type vocabulary; the previous
+	// list had five names the pipeline never emits, so 94% of trajectories
+	// (everything but transhumance) drew in the fallback colour.
 	return qmlDoc(qmlCategorized("group_type", "line", []qmlCat{
 		{"transhumance", "Transhumance", "251,146,60"},
-		{"agricultural", "Agricultural", "250,204,21"},
-		{"wildfire", "Wildfire", colFire},
-		{"early_burn", "Early burn", "132,204,22"},
-		{"late_burn", "Late burn", "220,38,38"},
-		{"stationary", "Stationary", "148,163,184"},
+		{"spreading_fire", "Spreading fire", colFire},
+		{"spot_fire", "Spot fire", "250,204,21"},
+		{"local_fire", "Local fire", "217,119,6"},
+		{"external_fire", "External fire", "148,163,184"},
+		{"management_controlled", "Management burn", "132,204,22"},
 	}, colFire, 0.5, 0))
 }
 
@@ -185,23 +188,39 @@ func styleFireDetections() string {
 }
 
 func styleDeforestation() string {
-	return qmlDoc(qmlCategorized("classification", "fill", []qmlCat{
-		{"agriculture", "Agriculture", "217,119,6"},
-		{"logging", "Logging", "132,90,223"},
-		{"settlement_expansion", "Settlement expansion", colSettle},
-		{"fire_driven", "Fire-driven", colFire},
-		{"natural", "Natural", "74,222,128"},
-	}, colDefo, 0.26, 110))
+	// The attr is an expression, not a bare column: an event the pipeline
+	// itself flagged as questioned (needs_review) must not render in the same
+	// confident colour as a verified clearing — the 2023 Kafia Kingi "logging"
+	// block is 282 of 314 km² and would otherwise dominate the map as fact.
+	// Category values below are the classifier's actual vocabulary
+	// (deforestation_events.classification: natural / slash_burn / logging /
+	// encroachment) — the previous list named five values that did not occur,
+	// so the largest real categories all fell into "other".
+	return qmlDoc(qmlCategorized(
+		"CASE WHEN needs_review = 1 THEN 'questioned' ELSE classification END",
+		"fill", []qmlCat{
+			{"slash_burn", "Slash-and-burn", "217,119,6"},
+			{"logging", "Logging", "132,90,223"},
+			{"encroachment", "Encroachment", "239,68,68"},
+			{"natural", "Natural", "74,222,128"},
+			{"questioned", "Questioned (needs review)", "148,163,184"},
+		}, colDefo, 0.26, 110))
 }
 
 func styleSettlements() string {
+	// Values are park_settlements.classification as it exists in the data;
+	// temporary_camp is the single biggest class (10,583 of 16,890) and used
+	// to render as "other".
 	return qmlDoc(qmlCategorized("classification", "fill", []qmlCat{
+		{"temporary_camp", "Temporary camp", "234,179,8"},
 		{"village", "Village", colSettle},
-		{"camp", "Camp", "234,179,8"},
-		{"fishing", "Fishing", "56,189,248"},
-		{"pastoral", "Pastoral", "163,230,53"},
-		{"mining", "Mining", "168,85,247"},
 		{"town", "Town", "249,115,22"},
+		{"settlement", "Settlement", "217,180,140"},
+		{"residential", "Residential", "196,150,110"},
+		{"pastoral", "Pastoral", "163,230,53"},
+		{"agricultural", "Agricultural", "134,199,90"},
+		{"mining", "Mining", "168,85,247"},
+		{"fishing", "Fishing", "56,189,248"},
 	}, colSettle, 0.26, 110))
 }
 

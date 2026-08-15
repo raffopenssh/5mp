@@ -115,6 +115,12 @@ func (s *Server) buildAreaGeoPackage(path string, o gpkgExportOpts) ([]gpkgLayer
 		fn    func() error
 	}{
 		{"boundary", func() error { return s.gpkgBoundary(w, o, boundary, isAOI) }},
+		{"protected areas", func() error {
+			if !isAOI {
+				return nil
+			}
+			return s.gpkgProtectedAreas(w, o)
+		}},
 		{"fire trajectories", func() error { return s.gpkgFireTrajectories(w, o) }},
 		{"fire detections", func() error { return s.gpkgFireDetections(w, o, boundary) }},
 		{"deforestation", func() error { return s.gpkgDeforestation(w, o) }},
@@ -207,6 +213,139 @@ func (s *Server) gpkgBoundary(w *gpkgWriter, o gpkgExportOpts, boundary string, 
 	return nil
 }
 
+// gpkgProtectedAreas ships the outlines of every protected area overlapping an
+// AOI's bbox. An AOI export used to hold the AOI outline only — so a QGIS
+// project over XSA (which exists to compare four parks) had no park boundaries
+// in it, and "is this fire inside Garamba" needed a second download. Parks'
+// own exports don't get the layer: their boundary IS the boundary table.
+func (s *Server) gpkgProtectedAreas(w *gpkgWriter, o gpkgExportOpts) error {
+	if s.AreaStore == nil {
+		return nil
+	}
+	_, bbox, ok := s.resolveAreaBBox(o.AreaID)
+	if !ok {
+		return nil
+	}
+	l, err := w.AddLayer("protected_areas", "MULTIPOLYGON",
+		"Protected-area boundaries overlapping this area of interest", []gpkgCol{
+			{"park_id", "TEXT"}, {"name", "TEXT"}, {"country", "TEXT"},
+			{"area_km2", "REAL"}, {"wdpa_id", "TEXT"}, {"partner", "TEXT"},
+			// Keystone management attributes. NULL means "not recorded" —
+			// never 0, which would read as an unstaffed, unfunded park.
+			{"staff", "INTEGER"}, {"budget_usd", "INTEGER"},
+			{"donor", "TEXT"}, {"performance", "TEXT"},
+		})
+	if err != nil {
+		return err
+	}
+	for i := range s.AreaStore.Areas {
+		a := &s.AreaStore.Areas[i]
+		latMin, latMax, lonMin, lonMax := a.GetBoundingBox()
+		if lonMax < bbox[0] || lonMin > bbox[2] || latMax < bbox[1] || latMin > bbox[3] {
+			continue
+		}
+		if a.Geometry.Type == "" {
+			continue
+		}
+		b, err := json.Marshal(a.Geometry)
+		if err != nil {
+			continue
+		}
+		var areaKm2 interface{}
+		if a.AreaKm2 > 0 {
+			areaKm2 = a.AreaKm2
+		}
+		var staff, budget, donor, perf interface{}
+		if a.Staff != nil {
+			staff = *a.Staff
+		}
+		if a.Budget != nil {
+			budget = *a.Budget
+		}
+		if a.Donor != nil {
+			donor = gpkgStr(*a.Donor)
+		}
+		if a.Performance != nil {
+			perf = gpkgStr(*a.Performance)
+		}
+		l.Add(string(b), a.ID, a.Name, gpkgStr(a.Country), areaKm2,
+			gpkgStr(a.WDPAID), gpkgStr(a.Partner), staff, budget, donor, perf)
+	}
+	w.SetStyle("protected_areas", styleBoundary(), "Protected-area outlines")
+	return nil
+}
+
+// gpkgParkHits builds point-in-polygon testers for every protected area
+// overlapping an AOI's bbox. The stored per-trajectory `position` and
+// `affected_parks` are relative to the EXPORT AREA (for XSA every trajectory
+// is "contained"), so "did this fire end inside Chinko" must be answered
+// geometrically at export time against the parks themselves.
+type gpkgParkHit struct {
+	id   string
+	test *areaHitTest
+}
+
+func (s *Server) gpkgParkHits(o gpkgExportOpts) []gpkgParkHit {
+	if s.AreaStore == nil || !IsAOIID(o.AreaID) {
+		return nil
+	}
+	_, bbox, ok := s.resolveAreaBBox(o.AreaID)
+	if !ok {
+		return nil
+	}
+	var out []gpkgParkHit
+	for i := range s.AreaStore.Areas {
+		a := &s.AreaStore.Areas[i]
+		latMin, latMax, lonMin, lonMax := a.GetBoundingBox()
+		if lonMax < bbox[0] || lonMin > bbox[2] || latMax < bbox[1] || latMin > bbox[3] {
+			continue
+		}
+		b, err := json.Marshal(a.Geometry)
+		if err != nil {
+			continue
+		}
+		t := newAreaHitTest(string(b))
+		if !t.ok {
+			// A failed parse yields an always-true Contains; attributing
+			// every fire to that park is worse than attributing none.
+			continue
+		}
+		out = append(out, gpkgParkHit{id: a.ID, test: t})
+	}
+	return out
+}
+
+// gpkgTrajPoints extracts the vertex list of a trajectory geometry
+// (LineString for tracked groups, Point for stationary ones).
+func gpkgTrajPoints(geojson string) [][2]float64 {
+	var g gpkgGeom
+	if json.Unmarshal([]byte(geojson), &g) != nil {
+		return nil
+	}
+	if g.Geometry != nil {
+		g = *g.Geometry
+	}
+	switch g.Type {
+	case "Point":
+		var p []float64
+		if json.Unmarshal(g.Coordinates, &p) == nil && len(p) >= 2 {
+			return [][2]float64{{p[0], p[1]}}
+		}
+	case "LineString":
+		return decodePositions(g.Coordinates)
+	case "MultiLineString":
+		var raw []json.RawMessage
+		if json.Unmarshal(g.Coordinates, &raw) == nil {
+			var pts [][2]float64
+			for _, r := range raw {
+				pts = append(pts, decodePositions(r)...)
+			}
+			return pts
+		}
+	}
+	return nil
+}
+
 func (s *Server) gpkgFireTrajectories(w *gpkgWriter, o gpkgExportOpts) error {
 	l, err := w.AddLayer("fire_trajectories", "GEOMETRY",
 		"VIIRS fire groups tracked over time (v5 pipeline)", []gpkgCol{
@@ -233,6 +372,14 @@ func (s *Server) gpkgFireTrajectories(w *gpkgWriter, o gpkgExportOpts) error {
 			{"nearest_place_dist_km", "REAL"},
 			{"nearest_river", "TEXT"},
 			{"nearest_river_dist_km", "REAL"},
+			// Park attribution, computed at export time against actual park
+			// boundaries (see gpkgParkHits). `position`/`pct_inside` above are
+			// relative to the export area — in an AOI export these three are
+			// the only columns that answer "which PARK did it end in".
+			// NULL start/end = that endpoint is outside every park.
+			{"start_park", "TEXT"},
+			{"end_park", "TEXT"},
+			{"parks_touched", "TEXT"},
 			{"narrative", "TEXT"},
 		})
 	if err != nil {
@@ -250,6 +397,7 @@ func (s *Server) gpkgFireTrajectories(w *gpkgWriter, o gpkgExportOpts) error {
 		args = append(args, o.ToDate)
 	}
 	q += " ORDER BY start_date"
+	hits := s.gpkgParkHits(o)
 	rows, err := s.DB.Query(q, args...)
 	if err != nil {
 		return err
@@ -262,6 +410,30 @@ func (s *Server) gpkgFireTrajectories(w *gpkgWriter, o gpkgExportOpts) error {
 		}
 		var p map[string]interface{}
 		json.Unmarshal([]byte(props), &p)
+		var startPark, endPark, parksTouched interface{}
+		if len(hits) > 0 {
+			if pts := gpkgTrajPoints(geojson); len(pts) > 0 {
+				touched := []string{}
+				last := pts[len(pts)-1]
+				for _, h := range hits {
+					for _, pt := range pts {
+						if h.test.Contains(pt[0], pt[1]) {
+							touched = append(touched, h.id)
+							break
+						}
+					}
+					if startPark == nil && h.test.Contains(pts[0][0], pts[0][1]) {
+						startPark = h.id
+					}
+					if endPark == nil && h.test.Contains(last[0], last[1]) {
+						endPark = h.id
+					}
+				}
+				if len(touched) > 0 {
+					parksTouched = strings.Join(touched, ",")
+				}
+			}
+		}
 		l.Add(geojson,
 			gpkgJSONStr(p, "feature_id"),
 			gpkgJSONStr(p, "group_name"),
@@ -285,6 +457,7 @@ func (s *Server) gpkgFireTrajectories(w *gpkgWriter, o gpkgExportOpts) error {
 			gpkgJSONNum(p, "nearest_place_dist"),
 			gpkgJSONStr(p, "nearest_river"),
 			gpkgJSONNum(p, "nearest_river_dist"),
+			startPark, endPark, parksTouched,
 			gpkgJSONStr(p, "narrative"),
 		)
 	}
@@ -389,6 +562,11 @@ func (s *Server) gpkgDeforestation(w *gpkgWriter, o gpkgExportOpts) error {
 			{"pixel_count", "INTEGER"},
 			{"classification", "TEXT"},
 			{"classification_confidence", "REAL"},
+			// The pipeline's own doubt travels with the polygon: 1 = the
+			// classifier flagged this event as questioned/unverified (e.g. the
+			// 2023 "logging" block in Kafia Kingi). NULL only when the event
+			// row is missing entirely.
+			{"needs_review", "BOOLEAN"},
 			{"pattern_type", "TEXT"},
 			{"fires_same_year", "INTEGER"},
 			{"fire_ratio", "REAL"},
@@ -421,13 +599,14 @@ func (s *Server) gpkgDeforestation(w *gpkgWriter, o gpkgExportOpts) error {
 		area, conf, fireRatio, nearestSettle             sql.NullFloat64
 		crop19, cropEv19, cropConv                       sql.NullFloat64
 		firesSameYear, pixels                            sql.NullInt64
+		needsReview                                      bool
 	}
 	meta := map[string]*defoMeta{}
 	mrows, _ := s.DB.Query(`SELECT COALESCE(polygon_ids,''), year, area_km2, COALESCE(classification,''),
 		COALESCE(classification_confidence,0), COALESCE(pattern_type,''), fires_same_year, fire_ratio,
 		nearest_settlement_km, COALESCE(narrative,''), COALESCE(classified_at,''), pixel_count,
 		cropland_frac_2019, cropland_event_frac_2019, cropland_conversion_frac,
-		COALESCE(cropland_source,'')
+		COALESCE(cropland_source,''), COALESCE(needs_review,0)
 		FROM deforestation_events WHERE park_id = ?`, o.AreaID)
 	if mrows != nil {
 		defer mrows.Close()
@@ -438,13 +617,14 @@ func (s *Server) gpkgDeforestation(w *gpkgWriter, o gpkgExportOpts) error {
 			var fsy, px sql.NullInt64
 			var crop19, cropEv19, cropConv sql.NullFloat64
 			var cropSrc string
-			if mrows.Scan(&ids, &year, &area, &class, &conf, &pattern, &fsy, &fr, &ns, &narrative, &cAt, &px, &crop19, &cropEv19, &cropConv, &cropSrc) != nil {
+			var needsReview bool
+			if mrows.Scan(&ids, &year, &area, &class, &conf, &pattern, &fsy, &fr, &ns, &narrative, &cAt, &px, &crop19, &cropEv19, &cropConv, &cropSrc, &needsReview) != nil {
 				continue
 			}
 			m := &defoMeta{class: class, pattern: pattern, narrative: narrative, classifiedAt: cAt,
 				year: year, area: area, conf: conf, fireRatio: fr, nearestSettle: ns,
 				firesSameYear: fsy, pixels: px, crop19: crop19, cropEv19: cropEv19,
-				cropConv: cropConv, cropSrc: cropSrc}
+				cropConv: cropConv, cropSrc: cropSrc, needsReview: needsReview}
 			for _, id := range strings.Split(ids, ",") {
 				if id = strings.TrimSpace(id); id != "" {
 					meta[id] = m
@@ -479,6 +659,7 @@ func (s *Server) gpkgDeforestation(w *gpkgWriter, o gpkgExportOpts) error {
 		var class, pattern, narrative, cAt interface{}
 		var conf, fr, ns, area interface{}
 		var fsy, px, year interface{}
+		var needsReview interface{}
 		var crop19, cropEv19, cropConv, cropSrc interface{}
 		area = gpkgJSONNum(p, "area_km2")
 		year = gpkgJSONInt(p, "year")
@@ -487,6 +668,7 @@ func (s *Server) gpkgDeforestation(w *gpkgWriter, o gpkgExportOpts) error {
 			cAt = gpkgDateTime(m.classifiedAt)
 			conf, fr, ns = gpkgNF(m.conf), gpkgNF(m.fireRatio), gpkgNF(m.nearestSettle)
 			fsy, px = gpkgNI(m.firesSameYear), gpkgNI(m.pixels)
+			needsReview = m.needsReview
 			crop19, cropSrc = gpkgNF(m.crop19), gpkgStr(m.cropSrc)
 			cropEv19, cropConv = gpkgNF(m.cropEv19), gpkgNF(m.cropConv)
 			if year == nil {
@@ -494,7 +676,7 @@ func (s *Server) gpkgDeforestation(w *gpkgWriter, o gpkgExportOpts) error {
 			}
 		}
 		l.Add(geojson, fid, year, gpkgDate(sd), gpkgDate(ed), area, px,
-			class, conf, pattern, fsy, fr, ns, crop19, cropEv19, cropConv, cropSrc, narrative, cAt)
+			class, conf, needsReview, pattern, fsy, fr, ns, crop19, cropEv19, cropConv, cropSrc, narrative, cAt)
 	}
 	w.SetStyle("deforestation", styleDeforestation(), "Coloured by driver classification")
 	return nil

@@ -84,7 +84,14 @@ type GeoPackageJob struct {
 // set, so those go in too (gpkgViewKey) — two paused frames of the same
 // animation are different files and must not share a cache slot.
 func gpkgCacheKey(areaID, from, to string, effort, rawFire bool, env string) string {
-	return strings.Join([]string{areaID, from, to, fmt.Sprint(effort), fmt.Sprint(rawFire), env}, "|")
+	// gpkgFormatVersion bumps when the file's SCHEMA or styling changes
+	// (new column, new layer, renderer rewrite): the question is the same but
+	// the right answer isn't, and a 21-day-old cached file must not be served
+	// as if it had the new columns. v2: needs_review on deforestation,
+	// protected_areas layer on AOI exports (with keystone attributes),
+	// trajectory start_park/end_park/parks_touched, data-matched renderers.
+	const gpkgFormatVersion = "v2"
+	return strings.Join([]string{gpkgFormatVersion, areaID, from, to, fmt.Sprint(effort), fmt.Sprint(rawFire), env}, "|")
 }
 
 func gpkgKeyFor(o gpkgExportOpts) string {
