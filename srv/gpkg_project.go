@@ -313,7 +313,9 @@ func gpkgProjectSpecs(present map[string]bool, isAOI bool) []gpkgLayerSpec {
 	// The area outline is drawn last (on top) and is always on: it is the
 	// answer to "which of these things is the area".
 	if isAOI {
-		all = append(all, gpkgLayerSpec{Table: "aoi_boundary", Title: "Area of interest", Group: "Reference", Geometry: "Polygon", WKBType: "MultiPolygon", QML: styleAOI(), Visible: true})
+		all = append(all,
+			gpkgLayerSpec{Table: "protected_areas", Title: "Protected areas", Group: "Reference", Geometry: "Polygon", WKBType: "MultiPolygon", QML: styleBoundary(), Visible: true},
+			gpkgLayerSpec{Table: "aoi_boundary", Title: "Area of interest", Group: "Reference", Geometry: "Polygon", WKBType: "MultiPolygon", QML: styleAOI(), Visible: true})
 	} else {
 		all = append(all, gpkgLayerSpec{Table: "boundary", Title: "Protected area", Group: "Reference", Geometry: "Polygon", WKBType: "MultiPolygon", QML: styleBoundary(), Visible: true})
 	}
