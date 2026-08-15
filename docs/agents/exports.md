@@ -42,6 +42,24 @@ valid rather than usable is the wrong change.**
 * **Every layer is exported whole — no LIMIT** (same rule as the `/features`
   geography layers; a truncated file is indistinguishable from a complete one
   once it is in someone's QGIS project). Empty layers are dropped.
+* **The renderer's category values must be the pipeline's actual vocabulary.**
+  The deforestation, settlement and fire-trajectory renderers each listed
+  plausible-sounding values the classifiers never emit (`agriculture`,
+  `wildfire`, `camp`…), so the largest real classes — `slash_burn`,
+  `temporary_camp`, `spreading_fire`, 94% of trajectories — all drew in the
+  fallback colour. Fixed 2026-08-15; when adding a categorized style, derive
+  the value list from a `GROUP BY` on the real column first. The deforestation
+  renderer's attr is a CASE expression: `needs_review = 1` rows render as
+  "Questioned" (grey) regardless of class, so the 2023 Kafia Kingi block
+  cannot dominate a map as fact. `needs_review` is also a BOOLEAN column on
+  the layer (added 2026-08-15).
+* **AOI exports carry a `protected_areas` layer** — outlines of every park
+  whose bbox overlaps the AOI (`gpkgProtectedAreas`). An AOI export used to
+  hold only its own outline, so a multi-park AOI project had no park
+  boundaries to filter against. Parks' own exports don't get it.
+* **Schema/style changes bump `gpkgFormatVersion`** (in `gpkgCacheKey`,
+  `srv/gpkg_jobs.go`): the job cache lives 21 days, and a cached v1 file
+  served after a schema change silently lacks the new columns.
 * **The job is a cache, not a spool**: keyed by (area, window, effort, env),
   file kept **21 days**, so asking twice returns the same file and a shared link
   keeps working. `?refresh=1` rebuilds — and **keeps the old file alive**,

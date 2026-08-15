@@ -42,6 +42,12 @@ type ProtectedArea struct {
 	Geometry    GeoJSONGeometry `json:"geometry"`
 	BufferKm    float64         `json:"buffer_km"`
 
+	// Keystone management attributes (nil = not recorded, not zero).
+	Staff       *int    `json:"staff,omitempty"`
+	Budget      *int    `json:"budget,omitempty"`
+	Donor       *string `json:"donor,omitempty"`
+	Performance *string `json:"performance,omitempty"`
+
 	// Cached bounding box for fast rejection
 	bbox *boundingBox
 }
@@ -175,6 +181,13 @@ func loadKeystonesWithBoundaries(path string) (*AreaStore, error) {
 				WDPAID:      ks.WDPAID,
 				Geometry:    *ks.Geometry,
 				BufferKm:    5.0, // 5km buffer for matching
+				Staff:       ks.Staff,
+				Budget:      ks.Budget,
+				Donor:       ks.Donor,
+				Performance: ks.Performance,
+			}
+			if ks.Partner != nil {
+				area.Partner = *ks.Partner
 			}
 			if ks.AreaKm2 != nil {
 				area.AreaKm2 = float64(*ks.AreaKm2)
@@ -218,6 +231,10 @@ func keystoneToArea(ks KeystonePA) ProtectedArea {
 		Partner:     partner,
 		Geometry:    geometry,
 		BufferKm:    2.0, // Default buffer
+		Staff:       ks.Staff,
+		Budget:      ks.Budget,
+		Donor:       ks.Donor,
+		Performance: ks.Performance,
 	}
 }
 
