@@ -10,7 +10,8 @@
 # a step". Row count is checked against the source (a manifest is not
 # trusted until its length is checked).
 set -euo pipefail
-cd "$(dirname "$0")/../../data/histmaps"
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+cd "$SCRIPT_DIR/../../data/histmaps"
 
 DB=labels.sqlite3
 N=$(sqlite3 "$DB" "SELECT count(*) FROM labels_dedup")
@@ -42,7 +43,7 @@ GN=$(sqlite3 "$TMP/labels.gpkg" "SELECT count(*) FROM sudan250k_labels")
 # Row counts verified against the source, same as labels.
 HAVE_LINES=$(sqlite3 "$DB" "SELECT count(*) FROM sqlite_master WHERE name='lines_stitched'")
 if [ "$HAVE_LINES" -eq 1 ] && [ "$(sqlite3 "$DB" 'SELECT count(*) FROM lines_stitched')" -gt 0 ]; then
-  read -r NLINES NSYM < <(python3 "$(dirname "$0")/../../scripts/histmaps/export_lines_geojson.py" \
+  read -r NLINES NSYM < <(python3 "$SCRIPT_DIR/export_lines_geojson.py" \
     "$DB" "$TMP/lines.geojson" "$TMP/symbols.geojson")
   LINE_DESC="$NLINES linear features (tracks, roads, railways, telegraph, watercourses, boundaries) vision-LLM traced then snapped to sheet ink; year_min/year_max = survey years of source sheets. Machine traced -- verify against the sheet before citing."
   ogr2ogr -f GPKG -update "$TMP/labels.gpkg" "$TMP/lines.geojson" \
