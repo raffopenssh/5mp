@@ -418,8 +418,11 @@ def cmd_run(args):
 
     c.commit()
     if not args.limit:
-        print("rebuilding lines_dedup...", flush=True)
+        print("post-run: refine -> dedupe -> stitch", flush=True)
+        args.all = False   # refine only sheets not yet snapped
+        cmd_refine(args)
         cmd_dedupe(args)
+        cmd_stitch(args)
     cmd_status(args)
 
 
