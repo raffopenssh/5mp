@@ -290,6 +290,35 @@ src_guard "stats_width_governor"          present "statsWidthGovernor" "srv/stat
 src_guard "stats_width_hysteresis"        present "QUIET_MS" "srv/static/floatui.js"
 src_guard "stats_width_transition"        present "transition: width" "srv/static/globe.css"
 
+# ── TOASTS ────────────────────────────────────────────────────────────────
+# ONE SURFACE. There were four (showToast, #task-toast, .upload-toast, the
+# satellite-hint card), each with its own corner, its own timers and its own
+# close rules; the MBTiles calls even passed a title where the message goes.
+src_guard "one_toast_surface"             absent  'class="upload-toast"|id="task-toast"|id="satellite-hint"' "$GLOBE"
+src_guard "toast_legacy_signature"        present "showToast.title, message, actionLabel" "$GLOBE"
+src_guard "toast_has_type_icon"           present "TOAST_ICONS" "$GLOBE"
+# The visible rail IS the dismiss timer, so hovering pauses the dismissal: a
+# message cannot expire while it is being read.
+src_guard "toast_timer_is_the_rail"       present "toast-timer" "srv/static/globe.css"
+src_guard "toast_hover_pauses"            present "animation-play-state: paused" "srv/static/globe.css"
+src_guard "toast_reading_time"            present "toastReadMs" "$GLOBE"
+# A RESTORE IS NOT A CONVERSATION: routine messages (the chips and the stats
+# panel already state them) are dropped while a share link assembles, and the
+# quiet lasts as long as the restore's own requests, not a fixed guess.
+src_guard "toast_routine_suppressed"      present "opts.routine && Date.now.. < window.toastQuietUntil" "$GLOBE"
+src_guard "toast_quiet_follows_requests"  present "inFlight.push" "$GLOBE"
+src_guard "pin_restore_is_routine"        present "routine: true" "$GLOBE"
+# "Is ready" is news only if the page SAW it unfinished; otherwise it is a
+# state read aloud on every load of an AOI that finished days ago.
+src_guard "aoi_ready_needs_transition"    present "w.sawUnfinished" "srv/static/aoi_progress.js"
+# The high-zoom offer must be true when SHOWN, not only when scheduled -- a
+# restore flies the camera between the two.
+src_guard "satellite_hint_rechecks_zoom"  present "getZoom.. < SATELLITE_HINT_ZOOM" "$GLOBE"
+# Position is measured against every bottom-anchored control that overlaps the
+# toast's band: on mobile the toolbar and the FAB move down there.
+src_guard "toast_measures_bottom_chrome"  present "TOAST_CHROME" "$GLOBE"
+src_guard "toast_chrome_has_toolbar"      present "map-toolbar" "$GLOBE"
+
 echo
 echo "======================================="
 if [[ $FAILED -eq 0 ]]; then
