@@ -60,17 +60,16 @@ own — while a sparse view stays bold and obviously clickable. Arrows fade out
 with them: a glyph every 100 px across 2,000 overlapping paths is noise.
 **Never judge this by feature count alone; look at the render.**
 
-**Deforestation is deliberately louder than the ramp says** (2026-08-16).
-Its purple (`#a855f7`) has roughly half the luminance of fire red and
-settlement amber, and with all three layers on it read as an empty layer
-(user report with screenshots). Two compensations in `lodlayer.js`, keyed on
-`featureType === 'deforestation'`: dots mode gets a larger radius ramp at
-0.95 alpha (`ensureLayers` + `setOpacity`), and `applyDensity` floors its
-vector-mode point radius at `1.5×`/3px. Rejected variants, both tried: a
-pale ring / halo stroke (too loud), and the animator's area-scaled
-√area·zoom dot (too much on the static map — the animator draws it over a
-heat field, the map over 30k fire chords). Ink, not data — counts and
-truncation stay honest.
+**Deforestation is deliberately more opaque than the ramp says**
+(2026-08-16). Its purple (`#a855f7`) has roughly half the luminance of fire
+red and settlement amber, and with all three layers on it read as an empty
+layer (user report with screenshots). Keyed on
+`featureType === 'deforestation'` in `lodlayer.js`: dots mode draws at 0.95
+alpha (`setOpacity`) and vector-mode points at 0.95 (`applyDensity`), at the
+**same sizes as every other layer**. Rejected variants, all tried: bigger
+dots (too much), a pale ring / halo stroke (too loud), the animator's
+area-scaled √area·zoom dot (too much over 30k fire chords). Ink, not data —
+counts and truncation stay honest.
 
 **Stacking order is pin order, always** (`restack()`, `seq` assigned in
 `LODLayer.add`). A rendering crossing its geometry/points threshold re-adds
