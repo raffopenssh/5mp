@@ -176,6 +176,14 @@ func scopeFromURL(raw string) string {
 	if err != nil {
 		return ""
 	}
+	// A download target (/api/files/…, /api/geopackage/…) is not a view: no
+	// layers travel with it, so nothing about it says "grant patrol". Without
+	// this the default-on layer set below would give every file-share key the
+	// patrol scope as a side effect — the failure must be the quiet direction
+	// (a guest seeing less), so an API path derives the empty scope.
+	if strings.HasPrefix(u.Path, "/api/") {
+		return ""
+	}
 	vals, present := u.Query()["layers"]
 	on := func(layer string) bool {
 		if !present || len(vals) == 0 {

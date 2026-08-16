@@ -280,6 +280,42 @@ the phone layout.
   on read from `short_links`, never stored) and a `+30 days` button
   (`POST /api/geopackage/{id}/extend`, owner only — guests 401).
 
+## Shared files (2026-08-16)
+
+Replaces the ad-hoc `busybox httpd` on :8099 that served `/tmp/gpkg_share`
+unauthenticated and unexpiring. `srv/shared_files.go`, table `shared_files`
+(migration 062), bytes under `data/shared_files/{id}/{name}`.
+
+* **A file share IS a guest link** whose target is `/api/files/{id}/download`
+  — minted through the ordinary `ShareLink` dialog, so revoke/expiry/tags/
+  renewal/the Sharing sheet all come from the existing machinery. One
+  credential system, not two.
+* **The file adopts the key's lifetime.** Default TTL 21 days
+  (`sharedFileTTL`); `retainSharedFileForLink` pushes `expires_at` out (never
+  in) at mint, extend, and hourly sweep — a 90-day key keeps the file 90
+  days. The sweeper (`sweepSharedFiles`, called from `sweepGeoPackages`)
+  deletes bytes and row together, plus hour-old orphan dirs.
+* **Scope:** owner = `shortCallerRef` (`pwd_ref`); list/extend/delete are
+  owner-only, another login gets **404** (invariant 6). Download is open to
+  any authenticated session or guest — the id is a random token and being
+  fetched via a link is the point (gpkg precedent). Anonymous = 401.
+* **Upload refused** for guests and for the sandbox tenant (test2026): a demo
+  password must not fill the disk or serve files under this domain's name.
+  1 GB cap (`http.MaxBytesReader`), filename sanitised (`sharedFileName`),
+  a partial write is deleted, never kept under the advertised name.
+* **Delete switches keys off**: `DELETE /api/files/{id}` removes bytes+row
+  and revokes every live guest link targeting the download in the same
+  stroke — a key whose target is gone must read "switched off", not 410.
+* **Scope side effect guarded:** `scopeFromURL` returns empty for any
+  `/api/…` target, otherwise the default-on layer set would have granted
+  every file key the patrol scope.
+* **UI:** "Shared files" section in Admin → Access & Sharing
+  (`loadFilesSection` in globe.html): upload (control absent, not disabled,
+  where refused), rows with size/downloads/kept-until, read-only link-tag
+  chips (computed on read via `linkTagsForTarget`), Share → ShareLink dialog,
+  renew (+30d) shown only ≤14 d out, delete with a confirm that names the
+  consequence (keys switched off).
+
 ## A `?pwd=` for another login switches the session (2026-08-16)
 
 `PasswordMiddleware` checked the cookie **first** and, finding a valid one,
