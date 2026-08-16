@@ -149,12 +149,12 @@
 
         if (!vector) {
             if (!map.getLayer(L.dots)) {
-                // Deforestation is the rare, high-stakes layer and its purple
-                // sits at half the luminance of fire red or settlement amber:
-                // at the shared alpha it simply drowns when the other two are
-                // on (user report, 2026-08-16). Same dot size as every other
-                // layer — bigger dots were tried and read as too much — but
-                // near-full opacity (setOpacity). Ink, not data.
+                // Every dots layer is the same dots layer: same radius ramp,
+                // same alpha. Deforestation used to carry an alpha boost here
+                // because it "drowned"; the real cause was that it was being
+                // drawn as sub-pixel POLYGONS while its neighbour drew dots
+                // (see subPixelShapes in srv/features_bbox.go). Ink cannot fix
+                // a geometry problem — do not re-add a per-type alpha.
                 map.addLayer({
                     id: L.dots, type: 'circle', source: L.src,
                     paint: {
@@ -324,12 +324,6 @@
     function applyDensity(key, n) {
         var L = ids(key), d = densityPaint(n);
         var s0 = reg.get(key);
-        // Deforestation carries the least luminous colour of the three
-        // feature layers; it keeps the shared sizes (bigger dots were tried
-        // and read as too much) but always draws at full point alpha, or it
-        // vanishes under fire red and settlement amber (user report,
-        // 2026-08-16).
-        var emphDef = s0 && s0.featureType === 'deforestation';
         if (s0) {
             s0.lineOpacity = d.o; s0.arrowOpacity = d.arrow; s0.fillOpacity = d.fill;
             s0.lineWidth = d.w; s0.pointRadius = d.r;
@@ -337,7 +331,7 @@
             // it is a feature you are meant to click. Same rule as the lines,
             // one step brighter so a lone stationary fire in a field of moving
             // ones is still findable.
-            s0.pointOpacity = emphDef ? 0.85 : (d.ring > 0 ? 0.7 : Math.min(1, d.o * 1.6));
+            s0.pointOpacity = d.ring > 0 ? 0.7 : Math.min(1, d.o * 1.6);
             s0.pointRing = d.ring;
         }
         var set = function (id, prop, val) {
@@ -372,11 +366,9 @@
         else if (id === ids(key).arrow && s.arrowOpacity != null) full = s.arrowOpacity;
         else if (id === ids(key).fill && s.fillOpacity != null) full = s.fillOpacity;
         else if (id === ids(key).point && s.pointOpacity != null) full = s.pointOpacity;
-        // A dots layer is denser, so it carries less alpha each — except
-        // deforestation, whose purple needs full alpha to compete with fire
-        // red and settlement amber at all (see ensureLayers).
-        var emph = s.featureType === 'deforestation';
-        var target = on ? (id.endsWith('-dots') ? (emph ? 0.85 : 0.75) : full) : 0;
+        // A dots layer is denser, so it carries less alpha each — the SAME
+        // alpha for every type (see ensureLayers: no per-type boost).
+        var target = on ? (id.endsWith('-dots') ? 0.75 : full) : 0;
         try {
             map.setPaintProperty(id, p[0], target);
             map.setPaintProperty(id, p[0] + '-transition', { duration: FADE_MS, delay: 0 });
@@ -611,6 +603,13 @@
             // unit and ships both numbers; carrying them here is what lets the
             // row say "27 settlements (35 footprints)" instead of picking one
             // and hoping.
+            // WHY this rendering, not just which. 'budget' = too many rows for
+            // shapes; 'subpixel' = the shapes are smaller than a pixel, so a
+            // dot is the better drawing (features_bbox.go); 'crowded' = a line
+            // layer whose strokes already cover the view, where the full path's
+            // extra vertices add no visible shape. Surfaced because a user who
+            // sees dots where a sibling layer has shapes reads it as a bug.
+            s.basis = d.render_basis || '';
             s.unit = d.unit || 'features';
             s.groups = (typeof d.groups === 'number') ? d.groups : null;
             s.groupUnit = d.group_unit || '';
@@ -622,6 +621,7 @@
                     detail: { key: key, render: render, count: s.count,
                               total: s.total, truncated: !!d.truncated,
                               unit: s.unit, groups: s.groups, group_unit: s.groupUnit,
+                              basis: s.basis,
                               detail_mode: s.detail || 'auto' }
                 }));
             } catch (e) {}

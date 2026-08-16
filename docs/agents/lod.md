@@ -60,16 +60,43 @@ own — while a sparse view stays bold and obviously clickable. Arrows fade out
 with them: a glyph every 100 px across 2,000 overlapping paths is noise.
 **Never judge this by feature count alone; look at the render.**
 
-**Deforestation is deliberately more opaque than the ramp says**
-(2026-08-16). Its purple (`#a855f7`) has roughly half the luminance of fire
-red and settlement amber, and with all three layers on it read as an empty
-layer (user report with screenshots). Keyed on
-`featureType === 'deforestation'` in `lodlayer.js`: dots mode draws at 0.85
-alpha (`setOpacity`) and vector-mode points at 0.85 (`applyDensity`), at the
-**same sizes as every other layer**. Rejected variants, all tried: bigger
-dots (too much), a pale ring / halo stroke (too loud), the animator's
-area-scaled √area·zoom dot (too much over 30k fire chords). Ink, not data —
-counts and truncation stay honest.
+### The renderer may not play one layer off against another (2026-08-16)
+
+**A layer must never draw a shape nobody can see.** The `mode=auto` switch was
+a pure **count** budget, so at AOI scale deforestation (80,408 rows in view)
+stayed `geometry` while settlements (74,904) crossed the budget into dots. A
+GLAD loss patch is ~0.0017° across — **1.4 px at z8** — so "shapes" was a
+sub-pixel purple stipple on the 30 m grid beside solid amber dots, and the layer
+read as *broken*, not as *rare*. Two rounds of alpha tuning failed because **the
+geometry, not the ink, was the bug**; both per-type alpha boosts are now gone
+(`lodlayer.js` — do not re-add one).
+
+`mode=auto` therefore answers two more questions, both in `srv/features_bbox.go`:
+
+* `subPixelShapes(cands, bbox)` — **polygon** layers. Median served feature
+  under `subPixelPx` (3 px, at ~1400 px of viewport width) ⇒ dots. Median, not
+  mean: one 0.03° clearing among 80,000 tiles must not vote for shapes on
+  behalf of all of them. 3 px, not 1: at 2 px a patch is one antialiased square,
+  a *worse* dot than the dots layer draws (no radius/alpha ramp).
+* `inkCrowded(cands, bbox)` — **line** layers. A path's cheap tier is a chord
+  (`?seg=1`), and all the full geometry adds is the wiggle *between* the three
+  chord vertices — invisible once strokes overlap. So promotion depends on ink
+  (Σ span×2 px vs viewport area, `inkCoverMax = 1.0`), not on row count: a dense
+  fire field keeps chords at 10× less payload, a sparse one still promotes.
+
+The reason is **named**, not just applied: `render_basis` is `budget` |
+`subpixel` | `crowded` | `""`, carried through `lod:state` into the row's mode
+tooltip (`LOD_BASIS_WHY`, globe.html). Dots beside a sibling layer's shapes is
+indistinguishable from a layer that failed to load unless the row says which
+question the renderer answered.
+
+Guards: `tests/api_tests.sh` `lod_no_subpixel_shapes_*` measures the median
+**served geometry** in px over four Chinko boxes at three scales and fails a
+`geometry` answer under 2 px (and fails an *empty* fixture box, so the check
+cannot pass by matching nothing); `lod_render_basis_named`,
+`lod_lines_promote_when_sparse`; `srv/features_bbox_render_test.go` unit-tests
+both predicates at the measured feature scales. `?subpixel=0` restores the old
+count-only behaviour — it is how the regression was reproduced (1.4 px shapes).
 
 **Stacking order is pin order, always** (`restack()`, `seq` assigned in
 `LODLayer.add`). A rendering crossing its geometry/points threshold re-adds
