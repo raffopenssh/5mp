@@ -828,6 +828,12 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                     }
                     return res;
                 } catch (err) {
+                    // AN ABORT IS NOT A FAILURE. The caller withdrew the
+                    // question because a newer one is in flight; retrying it
+                    // three times over six seconds re-asks something nobody
+                    // wants the answer to, and can land it after the newer
+                    // answer.
+                    if (err && err.name === 'AbortError') throw err;
                     if (i < retries) {
                         console.warn(`[fetchRetry] Error on ${url.split('?')[0]}, retry ${i+1}/${retries}`);
                         await new Promise(r => setTimeout(r, delay));
@@ -4267,7 +4273,7 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                 closeModal('upload');
                 
                 reloadGridData();
-                loadStats();
+                loadStats(true);   // an upload changes the data behind an unchanged query
                 
                 // Collect all grid cells and date range from segments
                 const allGridCells = [];
@@ -4525,7 +4531,114 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
         });
 
         
-        async function loadStats() {
+        // ── THE STATS PANEL SAYS WHAT IT IS DOING ─────────────────────────
+        //
+        // Same three states, and the same vocabulary, as a pinned layer chip
+        // (see .chip-dots / updatePinnedIndicator): waiting is drawn where the
+        // answer will be, the answer arrives with one short rise, and a failed
+        // request leaves the last numbers visibly stale rather than silently
+        // wrong. The panel is fed by ONE request, so the wait is a property of
+        // the panel and all its rows enter it together — which is the truth:
+        // none of these numbers is current until /api/stats answers.
+        const STATS_VALUE_IDS = ['stats-pixels', 'stats-distance', 'stats-fires',
+                                 'stats-deforest', 'stats-settlements'];
+        // A GRACE PERIOD, because most refreshes are not a wait. A warm
+        // /api/stats answers in well under 100 ms and this runs on every
+        // moveend; dots that appear and vanish within two frames are a
+        // flicker, not information. Only a request that is actually making the
+        // user wait gets to say so.
+        const STATS_WAIT_DELAY_MS = 220;
+        let statsWaitTimer = null, statsWaiting = false;
+
+        function showStatsWait() {
+            statsWaitTimer = null;
+            const panel = document.querySelector('.stats-panel');
+            if (!panel || !statsWaiting) return;
+            panel.classList.add('awaiting');
+            STATS_VALUE_IDS.forEach(id => {
+                const el = document.getElementById(id);
+                if (!el || el.dataset.waiting) return;
+                // THE DOTS FORM A COLUMN, and it is the column the numbers
+                // already make: every value is flush to the panel's right
+                // edge, so the wait is right-aligned too. The width and the
+                // alignment are taken on the whole VALUE CELL, not on the
+                // number's own span — two rows carry a trend arrow after the
+                // number inside that cell, so measuring the span alone
+                // reserved a box ending short of the edge and put those two
+                // rows' dots ~12 px left of the other three: five indicators
+                // on a ragged diagonal. The arrow is an opinion about a number
+                // that no longer exists, so it steps back for the duration.
+                const cell = el.closest('.stats-value') || el;
+                cell.style.minWidth = cell.getBoundingClientRect().width + 'px';
+                el.dataset.waiting = '1';
+                el.dataset.prev = el.textContent;
+                el.textContent = '';
+                const dots = document.createElement('span');
+                dots.className = 'chip-dots';
+                dots.setAttribute('role', 'status');
+                dots.setAttribute('aria-label', 'updating');
+                dots.innerHTML = '<i></i><i></i><i></i>';
+                el.appendChild(dots);
+                el.closest('.stats-item')?.classList.add('awaiting');
+            });
+        }
+
+        function beginStatsWait() {
+            statsWaiting = true;
+            if (!statsWaitTimer && !document.querySelector('.stats-panel.awaiting')) {
+                statsWaitTimer = setTimeout(showStatsWait, STATS_WAIT_DELAY_MS);
+            }
+        }
+
+        function clearStatWait(el) {
+            const cell = el.closest('.stats-value') || el;
+            delete el.dataset.waiting;
+            delete el.dataset.prev;
+            cell.style.minWidth = '';
+            el.style.minWidth = '';
+            el.closest('.stats-item')?.classList.remove('awaiting');
+        }
+
+        // Leave the wait. Any row the response did not write gets its previous
+        // text back: a row left showing dots forever is the worst of the three
+        // states, because it claims work that is not happening.
+        function endStatsWait() {
+            statsWaiting = false;
+            if (statsWaitTimer) { clearTimeout(statsWaitTimer); statsWaitTimer = null; }
+            document.querySelector('.stats-panel')?.classList.remove('awaiting');
+            STATS_VALUE_IDS.forEach(id => {
+                const el = document.getElementById(id);
+                if (!el || !el.dataset.waiting) return;
+                el.textContent = el.dataset.prev || '';
+                clearStatWait(el);
+            });
+        }
+
+        // The arrival animation fires ONLY when the value actually changed.
+        // Running it on every refresh would twitch every row each time the map
+        // settles, to report that nothing happened.
+        function setStatValue(id, text) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const prev = el.dataset.waiting ? (el.dataset.prev || '') : el.textContent;
+            if (el.dataset.waiting) clearStatWait(el);
+            el.textContent = text;
+            if (prev !== text) {
+                el.classList.remove('val-in');
+                void el.offsetWidth;
+                el.classList.add('val-in');
+            }
+        }
+
+        // SINGLE FLIGHT, AND THE SAME QUESTION IS NOT ASKED TWICE — the same
+        // rule the LOD loader learned (srv/static/lodlayer.js). loadStats has
+        // six call sites and several of them fire within the same second on a
+        // date change or a share-link restore; without this the panel showed
+        // whichever response happened to land last, which is not the same as
+        // the newest.
+        let statsAbort = null, statsSig = null;
+
+        async function loadStats(force) {
             try {
                 // Build URL with filters
                 var url = '/api/stats';
@@ -4569,17 +4682,33 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                 } else if (types.length < 5) {
                     params.push('type=' + types.join(','));
                 }
+                // THE SAME QUESTION IS NOT ASKED TWICE. The signature is the
+                // query WITHOUT the cache-buster: a date change calls this
+                // from reloadGridData and from the focus path in the same
+                // tick, and a pan that ends where it started is not new
+                // information. `force` is the escape hatch for "the data
+                // behind an unchanged query may itself have changed" — an
+                // upload, a reingest.
+                const sig = params.join('&');
+                if (!force && sig === statsSig && !statsWaiting) return;
+
                 // Cache-buster to ensure fresh data after uploads
                 params.push('t=' + Date.now());
                 if (params.length > 0) url += '?' + params.join('&');
-                
-                const res = await fetchRetry(url);
-                if (res.ok) {
+
+                if (statsAbort) statsAbort.abort();
+                const ctrl = new AbortController();
+                statsAbort = ctrl;
+                beginStatsWait();
+
+                const res = await fetchRetry(url, { signal: ctrl.signal });
+                if (ctrl !== statsAbort) return;      // a newer question is in flight
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                {
                     const stats = await res.json();
-                    const setIfExists = (id, value) => {
-                        const el = document.getElementById(id);
-                        if (el) el.textContent = value;
-                    };
+                    if (ctrl !== statsAbort) return;
+                    statsSig = sig;
+                    const setIfExists = setStatValue;
                     setIfExists('stats-pixels', formatNumber(stats.active_pixels || 0));
                     setIfExists('stats-distance', formatNumber(stats.total_distance_km || 0, 1) + ' km');
                     setIfExists('stats-patrols', formatNumber(stats.total_patrols || 0));
@@ -4603,6 +4732,8 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                     }
                     
                     setIfExists('stats-settlements', formatNumber(stats.total_settlements || 0));
+                    const okPanel = document.querySelector('.stats-panel');
+                    if (okPanel) { okPanel.classList.remove('stats-stale'); okPanel.title = ''; }
 
                     // The scope line is written by updateAOIFocusBanner (one
                     // writer, so the readout and the toggle cannot disagree).
@@ -4619,11 +4750,30 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                         }
                     }
                 }
+                endStatsWait();
 
             } catch (err) {
+                if (err && err.name === 'AbortError') return;   // superseded, not failed
                 console.error('Failed to load stats:', err);
+                // THE LAST GOOD NUMBERS STAY, BUT STOP CLAIMING TO BE CURRENT.
+                // They were true a moment ago, so blanking them destroys
+                // information; leaving them unmarked asserts something the app
+                // no longer knows. Dimmed, dotted, and the panel says why.
+                // Silence used to be the whole error handling here: a
+                // console.error, and a panel that looked exactly like a fresh
+                // one.
+                endStatsWait();
+                statsSig = null;                    // so the next call retries
+                const panel = document.querySelector('.stats-panel');
+                if (panel) {
+                    panel.classList.add('stats-stale');
+                    panel.title = 'These numbers could not be refreshed ('
+                                + (err && err.message ? err.message : 'network error')
+                                + ') — they are from the last successful update.';
+                }
             }
         }
+        window.loadStats = loadStats;
         
         // Declare state variables before they're used
         let filterPanelOpen = false; // Panel starts closed
