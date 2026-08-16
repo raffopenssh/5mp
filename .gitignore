@@ -222,3 +222,5 @@ data/histmaps/labels.sqlite3*
 # Label vector exports (derived from labels.sqlite3 by export_labels.sh)
 data/histmaps/sudan250k_labels.gpkg
 data/histmaps/sudan250k_labels.geojson.gz
+data/histmaps/sudan250k_labels.kmz
+data/histmaps/sudan250k_lines.geojson.gz

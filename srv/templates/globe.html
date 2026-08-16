@@ -1502,7 +1502,7 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             // table's — two surfaces, one number (invariant 7).
             const ld = m.labels_downloads || {};
             let labelsHtml = '';
-            if (ld.gpkg || ld.geojson) {
+            if (ld.gpkg || ld.geojson || ld.kml) {
                 const nlab = d => d.count ? d.count.toLocaleString() + ' labels' : 'labels';
                 const pwdQ = u => u + ((typeof getPwd === 'function' && getPwd()) ? (u.indexOf('?') >= 0 ? '&' : '?') + 'pwd=' + encodeURIComponent(getPwd()) : '');
                 labelsHtml = `
@@ -1512,6 +1512,9 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                             ${ld.gpkg ? `<a class="geo-cardbtn" href="${escapeHtml(pwdQ(ld.gpkg.url))}"
                                 title="Every place name, water feature and note OCR’d off the sheets, as points with a category column. Opens directly in QGIS.">
                                 <i class="icon-map-pin"></i>GeoPackage (${nlab(ld.gpkg)}, ${Math.round(ld.gpkg.size_bytes / 1048576)} MB)</a>` : ''}
+                            ${ld.kml ? `<a class="geo-cardbtn" href="${escapeHtml(pwdQ(ld.kml.url))}"
+                                title="The same labels plus the traced lines and point symbols as KMZ, in folders by category. Opens in Google Earth, Locus Map or OsmAnd.">
+                                <i class="icon-map"></i>KML (${nlab(ld.kml)}, ${Math.round(ld.kml.size_bytes / 1048576)} MB)</a>` : ''}
                             ${ld.geojson ? `<a class="geo-cardbtn" href="${escapeHtml(pwdQ(ld.geojson.url))}"
                                 title="The same labels as gzipped GeoJSON, for web maps and scripts.">
                                 <i class="icon-braces"></i>GeoJSON (${nlab(ld.geojson)}, ${(ld.geojson.size_bytes / 1048576).toFixed(1)} MB)</a>` : ''}
