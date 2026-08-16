@@ -726,6 +726,34 @@
         enableDrag(bar, dragOpts);
         enableDrag(header, dragOpts);
 
+        // FREEZE ON MAP INTERACTION (desktop).
+        //
+        // A card this size following the ground is not "anchored", it is a
+        // panel that leaps across the screen every time you drag the map —
+        // and it is the panel you are reading. So the anchor is only used to
+        // PLACE it: the first user-driven map move hands the position over to
+        // the screen (detach), where it stays until the user moves it, resizes
+        // the window, or opens a new card. Programmatic moves (the fly-to that
+        // accompanies opening the popup, a share-link restore) have no
+        // originalEvent and keep the popup anchored, so it still lands on its
+        // area.
+        if (popup._map) {
+            const freeze = (e) => {
+                if (detached) return;
+                if (!e || !e.originalEvent) return;          // programmatic move: stay anchored
+                if (container.classList.contains('fui-sheet')) return;   // phone: stack owns it
+                detach();
+            };
+            ['movestart', 'dragstart', 'zoomstart', 'rotatestart', 'pitchstart', 'wheel'].forEach((ev) => {
+                try { popup._map.on(ev, freeze); } catch (err) { }
+            });
+            popup.on('close', () => {
+                ['movestart', 'dragstart', 'zoomstart', 'rotatestart', 'pitchstart', 'wheel'].forEach((ev) => {
+                    try { popup._map.off(ev, freeze); } catch (err) { }
+                });
+            });
+        }
+
         // On a phone the popup joins the sheet stack: full-width above the
         // bottom chrome, stacked with the pinned card / pinned layers. The
         // .fui-sheet CSS out-!importants MapLibre's inline transform, so its
@@ -752,7 +780,7 @@
         setupStatsPanel();
     }
 
-    window.FloatUI = { decoratePAPopup, addDockChip, removeDockChip, setDockBadge,
+    window.FloatUI = { decoratePAPopup, enableDrag, addDockChip, removeDockChip, setDockBadge,
         registerSheet, unregisterSheet, noteSheetToggle, sheetActive,
         sheetLayout: queueSheetLayout, isSheetMode, sheetBottomPx };
 })();

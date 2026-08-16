@@ -253,6 +253,29 @@ and multiple toasts stack upward instead of printing on top of each other
 
 ---
 
+## The park/AOI popup freezes on the first user map move (`decoratePAPopup`)
+
+MapLibre re-projects a popup on every `move`, which for a card this size is
+not "anchored to the ground" — it is the panel you are *reading* leaping
+across the screen on every drag. So the ground anchoring only **places** it:
+the first *user-driven* map interaction calls the existing `detach()` (unhooks
+MapLibre's `_update`, switches to explicit `left`/`top`, `.fui-detached`), and
+from then on the position is a screen position — exactly the state a manual
+drag or a dock already produced. Every other floating surface (stats panel,
+pinned-layers box, pinned map-tip card) was already screen-fixed; the popup
+was the only one that jumped.
+
+The discriminator is `e.originalEvent`: `movestart`/`dragstart`/`zoomstart`/
+`rotatestart`/`pitchstart`/`wheel` carry one when a hand caused them and
+nothing when code did. That distinction is load-bearing — the popup is
+routinely opened *together with* a programmatic `flyTo`/`easeTo` (list click,
+share-link restore, `zoomToPark`), and freezing on those would strand the card
+wherever the camera happened to be mid-flight instead of landing it on its
+area. Listeners are removed on `close`; sheet mode (phone) returns early
+because the sheet stack owns the position there.
+
+---
+
 ## Stats panel window furniture (`floatui.js setupStatsPanel`, desktop only)
 
 The stats panel is the legend. On desktop it wears the standard `.fui-bar`
