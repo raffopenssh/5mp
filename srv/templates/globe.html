@@ -21309,8 +21309,8 @@ ${starredItems.narratives.map(n => {
         else if (tabName === 'pending') loadPendingApprovals();
         else if (tabName === 'learning') loadLearningResults();
         else if (tabName === 'features') loadLearnedFeatures();
-        else if (tabName === 'access') loadAccessTab();
-        else if (tabName === 'sharing') loadSharingTab();
+        else if (tabName === 'access') { loadAccessTab(); loadSharingTab(); }
+        else if (tabName === 'sharing') { switchAdminTab('access'); return; } // merged 2026-08-16
         else if (tabName === 'map-settings') {
             // Meta fetch is memoised and the panel renders from that cache, so
             // this is cheap on every revisit and correct on the first.
@@ -21368,11 +21368,15 @@ ${starredItems.narratives.map(n => {
 
     function sharingGroupHTML(g, ttlDays) {
         const keys = g.links.filter(l => l.guest && !l.revoked && !l.expired).length;
-        // Tags in this group with at least one live key: one button extends
-        // the whole purpose-group (every link a report cites) in one call.
-        const tags = [...new Set(g.links.filter(l => l.tag && l.guest && !l.revoked && !l.expired).map(l => l.tag))];
+        // Tags in this group with at least one live key close to expiry: one
+        // button renews the whole purpose-group (every link a report cites) in
+        // one call. Shown only when at least one member actually needs it — a
+        // renew button on a group with a year of life is noise.
+        const tags = [...new Set(g.links
+            .filter(l => l.tag && l.guest && !l.revoked && !l.expired && sharingDaysLeft(l) !== null && sharingDaysLeft(l) <= SHARING_RENEW_DAYS)
+            .map(l => l.tag))];
         const tagBtns = tags.map(t =>
-            `<button class="sh-btn" onclick="sharingExtendTag('${escapeHtml(t)}')" title="Add 30 days to every live key tagged '${escapeHtml(t)}'">+30d all &lsquo;${escapeHtml(t)}&rsquo;</button>`).join(' ');
+            `<button class="sh-btn sh-btn-renew" onclick="sharingExtendTag('${escapeHtml(t)}')" title="Some keys tagged #${escapeHtml(t)} expire soon — extend them all by 30 days"><i class="icon-calendar-plus"></i> renew #${escapeHtml(t)}</button>`).join(' ');
         return `<section class="sh-group">
             <h4 class="sh-group-head">
                 <span class="sh-group-name">${escapeHtml(g.label || 'unknown')}</span>
@@ -21382,6 +21386,32 @@ ${starredItems.narratives.map(n => {
             </h4>
             <div class="sh-list">${g.links.map(l => sharingRowHTML(l, ttlDays)).join('')}</div>
         </section>`;
+    }
+
+    // "Close to expiry": under this many days left, the renew icon appears.
+    // Above it the row stays quiet — an always-on +30d button taught people to
+    // click it ritually, which is how keys end up living forever.
+    const SHARING_RENEW_DAYS = 14;
+
+    function sharingDaysLeft(l) {
+        if (!l.guest || !l.expires_at || l.revoked || l.expired) return null;
+        return Math.max(0, Math.ceil((new Date(l.expires_at) - Date.now()) / 86400000));
+    }
+
+    // The tag chip: #name × — click the name to rename the tag EVERYWHERE it
+    // appears (a tag is one name for one purpose; renaming one row would fork
+    // the group out of the next "renew all"), × to take THIS link out of it.
+    function sharingTagChipHTML(l) {
+        if (l.alias_of) return '';
+        const dead = l.revoked || l.expired;
+        if (l.tag) {
+            return `<span class="sh-tag" id="sh-tag-${escapeHtml(l.slug)}">` +
+                `<span class="sh-tag-name" title="Click to rename this tag everywhere" onclick="sharingRenameTag('${escapeHtml(l.slug)}','${escapeHtml(l.tag)}')">#${escapeHtml(l.tag)}</span>` +
+                (dead ? '' : `<button class="sh-tag-x" title="Remove tag from this link" onclick="sharingSetTag('${escapeHtml(l.slug)}','')">×</button>`) +
+                `</span>`;
+        }
+        if (dead) return '';
+        return `<button class="sh-tag-add" id="sh-tag-${escapeHtml(l.slug)}" title="Tag this link with a purpose (e.g. report) so the whole group can be renewed together" onclick="sharingAddTag('${escapeHtml(l.slug)}')"><span class="sh-tag-hash">#</span> add tag</button>`;
     }
 
     function sharingRowHTML(l, ttlDays) {
@@ -21399,8 +21429,10 @@ ${starredItems.narratives.map(n => {
         const hits = l.hits
             ? `opened ${l.hits}×${l.last_hit_at ? ' · last ' + escapeHtml(safeDateStr(l.last_hit_at)) : ''}`
             : 'never opened';
-        const life = l.guest && l.expires_at && !dead
-            ? ` · expires ${escapeHtml(safeDateStr(l.expires_at))} (${Math.max(0, Math.ceil((new Date(l.expires_at) - Date.now()) / 86400000))}d)` : '';
+        const daysLeft = sharingDaysLeft(l);
+        const soon = daysLeft !== null && daysLeft <= SHARING_RENEW_DAYS;
+        const life = daysLeft !== null
+            ? ` · <span${soon ? ' class="sh-soon"' : ''}>expires ${escapeHtml(safeDateStr(l.expires_at))} (${daysLeft}d)</span>` : '';
         // What a key SHOWS is as much a property of it as when it dies.
         const patrol = l.guest && (l.scope || '').split(',').indexOf('patrol') >= 0;
         // ...and WHEN. A key confined to a window is a different thing to have
@@ -21411,6 +21443,10 @@ ${starredItems.narratives.map(n => {
         const window_ = l.guest && l.date_from && l.date_to
             ? `${safeDateStr(l.date_from)} \u2013 ${safeDateStr(l.date_to)} only` : '';
         const url = window.location.origin + '/s/' + l.slug;
+        // The renew icon appears only when the key is close to dying — the
+        // moment the operator actually has a decision to make.
+        const renew = soon
+            ? `<button class="sh-btn sh-btn-renew" title="Expires in ${daysLeft} day${daysLeft === 1 ? '' : 's'} — keep this key alive 30 days longer (and any file it points at)" onclick="sharingExtend('${escapeHtml(l.slug)}')"><i class="icon-calendar-plus"></i></button>` : '';
         return `<div class="sh-row${l.guest ? ' is-key' : ''}${dead ? ' is-dead' : ''}">
             <div class="sh-main">
                 <code class="sh-slug">/s/${escapeHtml(l.slug)}</code>
@@ -21418,7 +21454,7 @@ ${starredItems.narratives.map(n => {
                 ${patrol ? '<span class="sh-badge sh-badge-warn">patrol tracks</span>' : ''}
                 ${window_ ? `<span class="sh-badge sh-badge-when">${escapeHtml(window_)}</span>` : ''}
                 ${state ? `<span class="sh-badge sh-badge-off">${state}</span>` : ''}
-                ${l.tag ? `<span class="sh-badge" title="purpose tag">#${escapeHtml(l.tag)}</span>` : ''}
+                ${sharingTagChipHTML(l)}
                 <span class="sh-kind">${escapeHtml(l.kind || 'view')}</span>
                 ${l.title ? `<span class="sh-title">${escapeHtml(l.title)}</span>` : ''}
             </div>
@@ -21426,10 +21462,67 @@ ${starredItems.narratives.map(n => {
             <div class="sh-meta">${hits}${life}</div>
             <div class="sh-acts">
                 ${dead ? '' : `<button class="sh-btn" onclick="sharingCopy(this,'${escapeHtml(url)}')">Copy</button>`}
-                ${l.guest && !dead ? `<button class="sh-btn" title="Keep this key alive 30 days longer (and any file it points at)" onclick="sharingExtend('${escapeHtml(l.slug)}')">+30d</button>` : ''}
+                ${renew}
                 ${l.revoked ? '' : `<button class="sh-btn sh-btn-off" onclick="sharingClear('${escapeHtml(l.slug)}',${l.guest})">${l.guest ? 'Switch off' : 'Clear'}</button>`}
             </div>
         </div>`;
+    }
+
+    // Set (or clear, tag='') the tag on one link.
+    async function sharingSetTag(slug, tag) {
+        try {
+            const res = await fetch(`/api/shortlink/${encodeURIComponent(slug)}/retag?pwd=${encodeURIComponent(window.getPwd() || '')}`,
+                { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tag: tag }) });
+            if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || res.status); }
+            loadSharingTab();
+        } catch (e) {
+            showToast('Could not change tag (' + e.message + ')', 'error');
+        }
+    }
+
+    // Inline "# add tag" input, same gesture as renaming an AOI from its tag.
+    function sharingAddTag(slug) {
+        const el = document.getElementById(`sh-tag-${slug}`);
+        if (!el || el.querySelector('input')) return;
+        sharingTagInput(el, '', v => sharingSetTag(slug, v));
+    }
+
+    // Click a tag name → rename it everywhere. One purpose, one name: renaming
+    // row-by-row would silently fork the group out of the next "renew all".
+    function sharingRenameTag(slug, oldTag) {
+        const el = document.getElementById(`sh-tag-${slug}`);
+        if (!el || el.querySelector('input')) return;
+        sharingTagInput(el, oldTag, async v => {
+            if (v === oldTag) { loadSharingTab(); return; }
+            try {
+                const res = await fetch(`/api/shortlinks/retag?pwd=${encodeURIComponent(window.getPwd() || '')}`,
+                    { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tag: oldTag, new_tag: v }) });
+                if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || res.status); }
+                const d = await res.json();
+                showToast(`Tag renamed on ${d.renamed} link${d.renamed === 1 ? '' : 's'}`, 'success');
+            } catch (e) {
+                showToast('Could not rename tag (' + e.message + ')', 'error');
+            }
+            loadSharingTab();
+        });
+    }
+
+    function sharingTagInput(el, initial, commit) {
+        el.innerHTML = `<input class="sh-tag-input" value="${escapeHtml(initial)}" maxlength="32" placeholder="tag…" spellcheck="false">`;
+        const inp = el.querySelector('input');
+        inp.focus(); inp.select();
+        let done = false;
+        const finish = save => {
+            if (done) return; done = true;
+            const v = inp.value.trim().toLowerCase().replace(/^#/, '');
+            if (!save || v === initial) { loadSharingTab(); return; }
+            commit(v);
+        };
+        inp.onkeydown = ev => { ev.stopPropagation();
+            if (ev.key === 'Enter') { ev.preventDefault(); finish(true); }
+            if (ev.key === 'Escape') { ev.preventDefault(); finish(false); } };
+        inp.onblur = () => finish(true);
+        inp.onclick = ev => ev.stopPropagation();
     }
 
     function sharingCopy(btn, url) {
@@ -23520,12 +23613,8 @@ ${starredItems.narratives.map(n => {
                     Automated Fetch
                 </button>
                 <button class="admin-tab" data-tab="access" onclick="switchAdminTab('access')" role="tab" aria-selected="false" aria-controls="tab-access">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                    Access
-                </button>
-                <button class="admin-tab" data-tab="sharing" onclick="switchAdminTab('sharing')" role="tab" aria-selected="false" aria-controls="tab-sharing">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/></svg>
-                    Sharing
+                    Access &amp; Sharing
                 </button>
                 <button class="admin-tab" data-tab="map-settings" onclick="switchAdminTab('map-settings')" role="tab" aria-selected="false" aria-controls="tab-map-settings">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6m-5-7H1m6 0h6m6 0h6M7 7l-2-2m12 0l2-2M7 17l-2 2m12 0l2 2"/></svg>
@@ -23690,9 +23779,23 @@ ${starredItems.narratives.map(n => {
                     </div>
                 </div>
 
-                <!-- Access Tab: AOI ownership + per-dataset queue control -->
+                <!-- Access & Sharing Tab: share links + AOI ownership/queue.
+                     See docs/agents/sharing.md. -->
                 <div class="admin-tab-content" id="tab-access" role="tabpanel" aria-labelledby="tab-access">
-                    <p style="color:#888;font-size:12px;margin-bottom:16px;line-height:1.6;">
+                    <h4 style="color:#fff;font-size:13px;font-weight:600;margin:0 0 6px;">Share links</h4>
+                    <p style="color:#888;font-size:12px;margin-bottom:16px;line-height:1.6;max-width:70ch;">
+                        Every short link this server has issued, grouped by the login it belongs to.
+                        A <strong style="color:#4ade80;">named link</strong> is only a short name for a view &mdash;
+                        it still asks for the password, so the name is safe to say out loud.
+                        A <strong style="color:#fcd34d;">shared key</strong> opens that view <em>without</em> a
+                        password: it is read-only, expires by itself, and Switch off revokes it for whoever holds it.
+                        A <strong style="color:#93c5fd;">#tag</strong> groups links made for one purpose (e.g. a report)
+                        so they can be renewed together &mdash; click a tag to rename it everywhere, &times; to remove it.
+                    </p>
+                    <div id="sharing-body">Loading&hellip;</div>
+
+                    <h4 style="color:#fff;font-size:13px;font-weight:600;margin:28px 0 6px;">Areas of interest &amp; ingest</h4>
+                    <p style="color:#888;font-size:12px;margin-bottom:16px;line-height:1.6;max-width:70ch;">
                         Areas of interest visible to <em>this</em> login, their owners, and what each
                         dataset's ingest queue is doing. Passwords are never shown &mdash; a principal is
                         identified by a non-secret <code>sha256</code> handle. Disabling a dataset keeps its
@@ -23702,19 +23805,6 @@ ${starredItems.narratives.map(n => {
                     <div id="access-aois">Loading&hellip;</div>
                     <h4 style="color:#fff;font-size:13px;font-weight:600;margin:24px 0 8px;">Principals</h4>
                     <div id="access-principals"></div>
-                </div>
-
-                <!-- Sharing Tab: every short link, grouped by the password it
-                     delegates. See docs/agents/sharing.md. -->
-                <div class="admin-tab-content" id="tab-sharing" role="tabpanel" aria-labelledby="tab-sharing">
-                    <p style="color:#888;font-size:12px;margin-bottom:16px;line-height:1.6;max-width:70ch;">
-                        Every short link this server has issued, grouped by the login it belongs to.
-                        A <strong style="color:#4ade80;">named link</strong> is only a short name for a view &mdash;
-                        it still asks for the password, so the name is safe to say out loud.
-                        A <strong style="color:#fcd34d;">shared key</strong> opens that view <em>without</em> a
-                        password: it is read-only, expires by itself, and Clear switches it off for whoever holds it.
-                    </p>
-                    <div id="sharing-body">Loading&hellip;</div>
                 </div>
 
                 <!-- Map Settings Tab -->

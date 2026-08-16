@@ -287,13 +287,33 @@ dimmed with a tooltip it reads as "not yours to do". Write-only admin tabs *are*
 removed (nobody misses a tab they cannot use), leaving Map Settings, and the
 toolbar pencil becomes a map icon because a pencil promises editing.
 
-## Admin → Sharing
+## Admin → Access & Sharing (merged 2026-08-16)
 
-Grouped by password (`pwd_ref`, own group first). Guest rows are amber and
-badged; "never opened" is written out rather than left blank, because a blank
-cell reads as "no data" and an unopened key is the opposite of no data. Aliases
-are shown — an old link still resolves through one, and hiding it makes "why
-does this URL still work" unanswerable.
+The Access and Sharing tabs are ONE tab (`data-tab="access"`; share links
+first, then AOI/ingest, then principals). `switchAdminTab('sharing')` redirects
+to it so old deep links keep working. Grouped by password (`pwd_ref`, own group
+first). Guest rows are amber and badged; "never opened" is written out rather
+than left blank, because a blank cell reads as "no data" and an unopened key is
+the opposite of no data. Aliases are shown — an old link still resolves through
+one, and hiding it makes "why does this URL still work" unanswerable.
+
+**Tags.** A purpose tag is bookkeeping, not a grant: setting one never remints.
+Chip UI (`.sh-tag` in admin, `.sl-tag` in the share dialog — blue on purpose,
+not the key's amber): click the name to rename the tag **everywhere**
+(`POST /api/shortlinks/retag {tag,new_tag}` — renaming one row would fork the
+group out of the next "renew all"), × to remove it from one link
+(`POST /api/shortlink/{slug}/retag {tag}`, empty = clear). The share dialog
+offers a subtle "# add tag" with datalist autocomplete over
+`GET /api/shortlink-tags` (names only, most recent first) — the point of a tag
+is to be the *same word* as last time. On create, dedupe adopts a requested tag
+onto an untagged existing row but never overwrites one already there; the
+response echoes what is stored.
+
+**Renewal appears only near death.** The `+30d` buttons became a single amber
+calendar-plus icon (`.sh-btn-renew`, and `.gpkg-renew` on export cards) shown
+only when ≤14 days remain (`SHARING_RENEW_DAYS`); the group-level
+"renew #tag" likewise only when a member is close. An always-on extend button
+taught people to click it ritually, which is how keys live forever.
 
 ## Tests
 

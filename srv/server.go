@@ -226,6 +226,9 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("POST /api/shortlink/{slug}/rename", s.HandleAPIShortLinkRename)
 	mux.HandleFunc("POST /api/shortlink/{slug}/extend", s.HandleAPIShortLinkExtend)
 	mux.HandleFunc("POST /api/shortlinks/extend", s.HandleAPIShortLinkExtendTag)
+	mux.HandleFunc("POST /api/shortlink/{slug}/retag", s.HandleAPIShortLinkRetag)
+	mux.HandleFunc("POST /api/shortlinks/retag", s.HandleAPIShortLinkRetagAll)
+	mux.HandleFunc("GET /api/shortlink-tags", s.HandleAPIShortLinkTags)
 	mux.HandleFunc("DELETE /api/shortlink/{slug}", s.HandleAPIShortLinkDelete)
 	mux.HandleFunc("GET /api/shortlinks", s.HandleAPIShortLinkList)
 
