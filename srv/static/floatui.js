@@ -123,6 +123,192 @@
         return bar;
     }
 
+    // ---------------------------------------------------------------
+    // Mobile sheet stack (≤640px — the breakpoint maptip already docks at)
+    //
+    // Every persistent floating card (park/AOI popup, pinned map-tip card,
+    // pinned-layers indicator) registers here on a phone and becomes a
+    // full-width bottom sheet. Sheets stack upward from the measured bottom
+    // chrome (toolbar + time slider — measured, never assumed: both change
+    // height on a narrow screen; see bottomChromePx in maptip.js for why
+    // offsetParent cannot be the visibility guard). As many sheets stay
+    // EXPANDED as the vertical budget allows, most-recently-used first;
+    // the rest auto-collapse to their bar. Tapping a collapsed sheet
+    // expands it (and may auto-collapse another). A user's own collapse
+    // always wins over auto-expansion. Desktop is untouched.
+    // ---------------------------------------------------------------
+    const SHEET_BP = 640, SHEET_GAP = 8;
+    const sheets = new Map();   // id -> {api, el, entered, userCollapsed, autoCollapsed, lastActive, expH, colH}
+    let layoutQueued = false;
+    let applyingLayout = false; // suppresses noteSheetToggle from layout's own setCollapsed calls
+
+    // Portrait phone by width; landscape phone by height + coarse pointer
+    // (a desktop window dragged short must not become a sheet).
+    function isSheetMode() {
+        return window.innerWidth <= SHEET_BP ||
+            (window.innerHeight <= 480 && matchMedia('(pointer: coarse)').matches);
+    }
+
+    function sheetBottomPx() {
+        let top = window.innerHeight;
+        ['#map-toolbar', '.map-toolbar', '#time-slider-container'].forEach((sel) => {
+            const n = document.querySelector(sel);
+            if (!n || getComputedStyle(n).display === 'none') return;
+            const r = n.getBoundingClientRect();
+            // Bottom chrome STARTS in the lower half. In landscape the toolbar
+            // is a full-height column on the left — its bottom edge is low but
+            // it is not something to stack above.
+            if (!r.height || r.top < window.innerHeight * 0.5) return;
+            top = Math.min(top, r.top);
+        });
+        return Math.max(8, window.innerHeight - top + SHEET_GAP);
+    }
+
+    // The stats grid pins to the top of a phone screen; sheets must not
+    // climb into it.
+    function sheetTopPx() {
+        const n = document.querySelector('.stats-panel');
+        if (n && getComputedStyle(n).display !== 'none') {
+            const r = n.getBoundingClientRect();
+            if (r.height && r.top < window.innerHeight * 0.4) return r.bottom + SHEET_GAP;
+        }
+        return 8;
+    }
+
+    function sheetVisible(el) {
+        return el.isConnected && getComputedStyle(el).display !== 'none';
+    }
+
+    function queueSheetLayout() {
+        if (layoutQueued) return;
+        layoutQueued = true;
+        requestAnimationFrame(() => { layoutQueued = false; layoutSheets(); });
+    }
+
+    function layoutSheets() {
+        // Published even with no sheets: the transient menus (geology mixer,
+        // export menus) anchor to it via CSS.
+        const bottom = sheetBottomPx();
+        document.documentElement.style.setProperty('--fui-bottom', bottom + 'px');
+        const mode = isSheetMode();
+        const live = [];
+        sheets.forEach((s) => {
+            if (!s.el.isConnected) return;
+            if (mode && !s.entered) {
+                s.entered = true;
+                try { s.api.onEnterSheet && s.api.onEnterSheet(); } catch (e) { }
+                s.el.classList.add('fui-sheet');
+            } else if (!mode && s.entered) {
+                s.entered = false;
+                s.el.classList.remove('fui-sheet');
+                s.el.style.bottom = '';
+                if (s.autoCollapsed) { s.autoCollapsed = false; try { s.api.setCollapsed(false); } catch (e) { } }
+                try { s.api.onExitSheet && s.api.onExitSheet(); } catch (e) { }
+            }
+            if (mode && s.entered && sheetVisible(s.el)) live.push(s);
+        });
+        if (!mode || !live.length) return;
+
+        const budget = Math.max(120, window.innerHeight - sheetTopPx() - bottom);
+        const maxExp = Math.round(window.innerHeight * 0.45); // matches the sheets' CSS max-height
+        const order = live.slice().sort((a, b) => b.lastActive - a.lastActive);
+
+        // Pass 1: who stays expanded. Greedy by recency — the newest always
+        // does; each older one does if its (remembered) expanded height still
+        // fits the remaining budget.
+        let used = 0;
+        applyingLayout = true;
+        order.forEach((s, i) => {
+            const colH = s.colH || 44;
+            const expH = Math.min(s.expH || maxExp, maxExp);
+            const expand = !s.userCollapsed && (i === 0 || used + expH + SHEET_GAP <= budget);
+            s.autoCollapsed = !expand && !s.userCollapsed;
+            const collapsed = s.userCollapsed || s.autoCollapsed;
+            try { if (s.api.isCollapsed() !== collapsed) s.api.setCollapsed(collapsed); } catch (e) { }
+            used += (collapsed ? colH : expH) + SHEET_GAP;
+        });
+        applyingLayout = false;
+
+        // Pass 2: position — most recent nearest the thumb (bottom).
+        let y = bottom;
+        order.forEach((s) => {
+            s.el.style.bottom = y + 'px';
+            const h = s.el.offsetHeight || 44;
+            let collapsed = false;
+            try { collapsed = s.api.isCollapsed(); } catch (e) { }
+            if (collapsed) s.colH = h; else s.expH = h;   // remember real heights for next pass 1
+            y += h + SHEET_GAP;
+        });
+    }
+
+    function registerSheet(id, api) {
+        unregisterSheet(id);
+        const s = { api, el: api.el, entered: false, userCollapsed: false, autoCollapsed: false, lastActive: Date.now(), expH: 0, colH: 0 };
+        // Tapping a collapsed sheet expands it. Capture-phase so it wins over
+        // the card's own handlers — except the close controls, which must
+        // still close a collapsed sheet.
+        s.expandTap = (e) => {
+            if (!s.entered || !(s.userCollapsed || s.autoCollapsed)) return;
+            if (e.target.closest('[data-act=close], .maptip-close, .pinned-indicator-close, .maplibregl-popup-close-button')) return;
+            e.stopPropagation(); e.preventDefault();
+            s.userCollapsed = false; s.autoCollapsed = false; s.lastActive = Date.now();
+            queueSheetLayout();
+        };
+        s.el.addEventListener('click', s.expandTap, true);
+        // Any interaction bumps recency (used at the NEXT layout — no churn now).
+        s.touch = () => { s.lastActive = Date.now(); };
+        s.el.addEventListener('pointerdown', s.touch);
+        // Async content grows a sheet after layout (popup sections load) —
+        // restack so sheets never overlap.
+        if (window.ResizeObserver) {
+            s.ro = new ResizeObserver(() => { if (s.entered) queueSheetLayout(); });
+            s.ro.observe(s.el);
+        }
+        sheets.set(id, s);
+        queueSheetLayout();
+        return s;
+    }
+
+    function unregisterSheet(id) {
+        const s = sheets.get(id);
+        if (!s) return;
+        if (s.ro) s.ro.disconnect();
+        s.el.removeEventListener('click', s.expandTap, true);
+        s.el.removeEventListener('pointerdown', s.touch);
+        if (s.entered) { s.el.classList.remove('fui-sheet'); s.el.style.bottom = ''; }
+        sheets.delete(id);
+        queueSheetLayout();
+    }
+
+    // The widgets' own collapse controls report user intent through this, so
+    // auto-expansion never overrides a fold the user chose.
+    function noteSheetToggle(id, collapsed) {
+        if (applyingLayout) return;
+        const s = sheets.get(id);
+        if (!s) return;
+        s.userCollapsed = collapsed;
+        s.autoCollapsed = false;
+        s.lastActive = Date.now();
+        queueSheetLayout();
+    }
+
+    function sheetActive(id) {
+        const s = sheets.get(id);
+        return !!(s && s.entered);
+    }
+
+    window.addEventListener('resize', queueSheetLayout);
+    (function watchChrome() {
+        const attach = () => {
+            const n = document.getElementById('time-slider-container');
+            if (!n || !window.ResizeObserver) return false;
+            new ResizeObserver(queueSheetLayout).observe(n);
+            return true;
+        };
+        if (!attach()) document.addEventListener('DOMContentLoaded', attach);
+        document.addEventListener('DOMContentLoaded', queueSheetLayout);
+    })();
+
     const PIN_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1z"/></svg>';
     const POPUP_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>';
 
@@ -197,17 +383,21 @@
 
         bar.querySelector('[data-act=collapse]').addEventListener('click', (e) => {
             e.stopPropagation();
-            setCollapsed(!el.classList.contains('fui-collapsed'));
+            const on = !el.classList.contains('fui-collapsed');
+            setCollapsed(on);
+            noteSheetToggle('pinned', on);
         });
         bar.querySelector('[data-act=dock]').addEventListener('click', (e) => {
             e.stopPropagation();
             setDocked(true);
         });
 
-        // Drag by bar (or header); tap toggles collapse
+        // Drag by bar (or header); tap toggles collapse. In sheet mode the
+        // stack owns the position, so a drag never converts to fui-moved.
         const dragOpts = {
             getPos() { const r = el.getBoundingClientRect(); return { x: r.left, y: r.top }; },
             onDragStart() {
+                if (el.classList.contains('fui-sheet')) return false;
                 // Switch from centered transform positioning to explicit left/top
                 const r = el.getBoundingClientRect();
                 el.classList.add('fui-moved');
@@ -223,10 +413,21 @@
                 const r = el.getBoundingClientRect();
                 store.set('pinned.pos', { x: r.left, y: r.top });
             },
-            onTap() { setCollapsed(!el.classList.contains('fui-collapsed')); }
+            onTap() {
+                const on = !el.classList.contains('fui-collapsed');
+                setCollapsed(on);
+                noteSheetToggle('pinned', on);
+            }
         };
         enableDrag(bar, dragOpts);
         enableDrag(header, dragOpts);
+
+        // On a phone the pinned-layers box joins the sheet stack.
+        registerSheet('pinned', {
+            el,
+            isCollapsed: () => el.classList.contains('fui-collapsed'),
+            setCollapsed: (on) => setCollapsed(on, false)   // auto-folds never persist
+        });
 
         // Restore persisted state
         const pos = store.get('pinned.pos', null);
@@ -256,6 +457,7 @@
                 }
             }
             clampIntoViewport();
+            queueSheetLayout();   // becoming .active / chip changes affect the sheet stack
         }
         new MutationObserver(sync).observe(items, { childList: true, subtree: true });
         new MutationObserver(sync).observe(el, { attributes: true, attributeFilter: ['class'] });
@@ -437,8 +639,9 @@
                 container.classList.remove('fui-collapsed');
                 requestAnimationFrame(() => { content.scrollTop = savedScroll; });
             }
-            // Re-anchor cleanly if still attached to the map point
-            if (!detached && rawUpdate) { try { rawUpdate.call(popup); } catch (e) { } }
+            // Re-anchor cleanly if still attached to the map point (never in
+            // sheet mode, where the stack owns the popup's position)
+            if (!detached && !container.classList.contains('fui-sheet') && rawUpdate) { try { rawUpdate.call(popup); } catch (e) { } }
         }
 
         function detach() {
@@ -493,17 +696,20 @@
 
         bar.querySelector('[data-act=collapse]').addEventListener('click', (e) => {
             e.stopPropagation();
-            setCollapsed(!container.classList.contains('fui-collapsed'));
+            const on = !container.classList.contains('fui-collapsed');
+            setCollapsed(on);
+            noteSheetToggle('popup', on);
         });
         bar.querySelector('[data-act=dock]').addEventListener('click', (e) => {
             e.stopPropagation();
             setDocked(true);
         });
 
-        // Drag by bar or header; tap toggles collapse
+        // Drag by bar or header; tap toggles collapse. In sheet mode (phone)
+        // the stack owns the popup's position, so a drag never detaches it.
         const dragOpts = {
             getPos() { const r = container.getBoundingClientRect(); return { x: r.left, y: r.top }; },
-            onDragStart() { detach(); },
+            onDragStart() { if (container.classList.contains('fui-sheet')) return false; detach(); },
             setPos(x, y) {
                 const mapEl = container.offsetParent || container.parentElement;
                 const mr = mapEl.getBoundingClientRect();
@@ -511,13 +717,27 @@
                 container.style.left = clamp(x - mr.left, MARGIN, Math.max(MARGIN, mr.width - r.width - MARGIN)) + 'px';
                 container.style.top = clamp(y - mr.top, MARGIN, Math.max(MARGIN, mr.height - 60)) + 'px';
             },
-            onTap() { setCollapsed(!container.classList.contains('fui-collapsed')); }
+            onTap() {
+                const on = !container.classList.contains('fui-collapsed');
+                setCollapsed(on);
+                noteSheetToggle('popup', on);
+            }
         };
         enableDrag(bar, dragOpts);
         enableDrag(header, dragOpts);
 
-        // Cleanup dock chip when popup closes / is replaced
-        popup.on('close', () => removeDockChip('popup'));
+        // On a phone the popup joins the sheet stack: full-width above the
+        // bottom chrome, stacked with the pinned card / pinned layers. The
+        // .fui-sheet CSS out-!importants MapLibre's inline transform, so its
+        // _update can keep running and re-anchoring stays intact on exit.
+        registerSheet('popup', {
+            el: container,
+            isCollapsed: () => container.classList.contains('fui-collapsed'),
+            setCollapsed: setCollapsed
+        });
+
+        // Cleanup dock chip + sheet slot when popup closes / is replaced
+        popup.on('close', () => { removeDockChip('popup'); unregisterSheet('popup'); });
 
         window.addEventListener('resize', clampIntoView);
     }
@@ -532,5 +752,7 @@
         setupStatsPanel();
     }
 
-    window.FloatUI = { decoratePAPopup, addDockChip, removeDockChip, setDockBadge };
+    window.FloatUI = { decoratePAPopup, addDockChip, removeDockChip, setDockBadge,
+        registerSheet, unregisterSheet, noteSheetToggle, sheetActive,
+        sheetLayout: queueSheetLayout, isSheetMode, sheetBottomPx };
 })();
