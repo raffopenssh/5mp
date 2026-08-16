@@ -69,6 +69,9 @@ type GeoPackageJob struct {
 	Downloads int             `json:"downloads"`
 	URL       string          `json:"download_url,omitempty"`
 	Cached    bool            `json:"cached,omitempty"`
+	// LinkTag: the tag of a live guest share link that points straight at this
+	// file (e.g. 'report'). Filled on read, not stored: the link table owns it.
+	LinkTag string `json:"link_tag,omitempty"`
 	// View is present only for a viewport export. It is what makes the card
 	// self-describing after a reload ("1 Mar 2025 · fire paths, settlements"
 	// rather than "Map view"), and it is what Try-again re-sends.
@@ -548,6 +551,20 @@ func (s *Server) StartGeoPackageSweeper() {
 
 func (s *Server) sweepGeoPackages(startup bool) {
 	now := time.Now().UTC().Format(time.RFC3339)
+	// A live guest link pointing straight at an export file is a promise the
+	// file keeps existing — re-asserted every sweep, not only at mint time, so
+	// links created before this rule (or expiries edited by hand) are covered.
+	if lrows, err := s.DB.Query(`SELECT url, expires_at FROM short_links
+		WHERE guest = 1 AND (revoked_at IS NULL OR revoked_at = '')
+		  AND expires_at > ? AND url LIKE '/api/geopackage/%'`, now); err == nil {
+		for lrows.Next() {
+			var u, exp string
+			if lrows.Scan(&u, &exp) == nil {
+				s.retainGeoPackageForLink(u, exp)
+			}
+		}
+		lrows.Close()
+	}
 	rows, err := s.DB.Query(`SELECT id, COALESCE(file_path,'') FROM geopackage_jobs
 		WHERE (expires_at IS NOT NULL AND expires_at <> '' AND expires_at < ?)
 		   OR state = 'expired'`, now)
@@ -653,13 +670,69 @@ func (s *Server) HandleAPIAreaGeoPackage(w http.ResponseWriter, r *http.Request)
 	writeJSON(w, http.StatusOK, job)
 }
 
+// gpkgLinkTag returns the tag of a live guest link that points straight at
+// this job's download, or "" — so a card in the bell can say "part of
+// 'report'" and the operator knows why the file is being kept.
+func (s *Server) gpkgLinkTag(id string) string {
+	var tag string
+	s.DB.QueryRow(`SELECT COALESCE(tag,'') FROM short_links
+		WHERE guest = 1 AND (revoked_at IS NULL OR revoked_at = '')
+		  AND expires_at > ? AND tag <> ''
+		  AND (url = ? OR url LIKE ?)
+		ORDER BY expires_at DESC LIMIT 1`,
+		time.Now().UTC().Format(time.RFC3339),
+		"/api/geopackage/"+id+"/download",
+		"/api/geopackage/"+id+"/download?%").Scan(&tag)
+	return tag
+}
+
 // HandleAPIGeoPackageStatus — GET /api/geopackage/{id}. No-store: it is live.
 func (s *Server) HandleAPIGeoPackageStatus(w http.ResponseWriter, r *http.Request) {
 	j, _, ok := s.loadGeoPackageJob(w, r)
 	if !ok {
 		return
 	}
+	j.LinkTag = s.gpkgLinkTag(j.ID)
 	w.Header().Set("Cache-Control", "no-store")
+	writeJSON(w, http.StatusOK, j)
+}
+
+// HandleAPIGeoPackageExtend — POST /api/geopackage/{id}/extend {days:30}.
+// Pushes the file's expiry out from now or its current expiry, whichever is
+// later. Owner action, not a guest's: a guest must not lengthen the life of
+// the owner's file (guestMayRead only whitelists the builders).
+func (s *Server) HandleAPIGeoPackageExtend(w http.ResponseWriter, r *http.Request) {
+	if GuestFromRequest(r) != nil {
+		http.Error(w, "read-only link", http.StatusForbidden)
+		return
+	}
+	j, _, ok := s.loadGeoPackageJob(w, r)
+	if !ok {
+		return
+	}
+	if j.State != "ready" {
+		http.Error(w, "export is "+j.State, http.StatusConflict)
+		return
+	}
+	var body struct {
+		Days int `json:"days"`
+	}
+	decodeJSONBody(r, &body)
+	if body.Days <= 0 {
+		body.Days = 30
+	}
+	now := time.Now().UTC()
+	base := now
+	if t, err := time.Parse(time.RFC3339, j.ExpiresAt); err == nil && t.After(base) {
+		base = t
+	}
+	exp := base.Add(time.Duration(body.Days) * 24 * time.Hour).Format(time.RFC3339)
+	if _, err := s.DB.Exec(`UPDATE geopackage_jobs SET expires_at = ? WHERE id = ?`, exp, j.ID); err != nil {
+		http.Error(w, "database error", http.StatusInternalServerError)
+		return
+	}
+	j.ExpiresAt = exp
+	j.LinkTag = s.gpkgLinkTag(j.ID)
 	writeJSON(w, http.StatusOK, j)
 }
 

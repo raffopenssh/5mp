@@ -256,6 +256,14 @@
             const until = d.expires_at
                 ? new Date(d.expires_at).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })
                 : null;
+            // Days until the sweeper purges the file — the number the user
+            // actually reasons with ("will my link still work next month?").
+            const daysLeft = d.expires_at
+                ? Math.max(0, Math.ceil((new Date(d.expires_at) - Date.now()) / 86400000))
+                : null;
+            const tag = d.link_tag
+                ? ` · <span class="gpkg-tag" style="background:rgba(59,130,246,0.15);color:#3b82f6;border-radius:3px;padding:0 4px;">${esc(d.link_tag)}</span>`
+                : '';
             // The layer list is the receipt. "Ready, 412 MB" does not tell you
             // whether the fires you wanted are in it; "fire_detections 3.2M"
             // does, and it is the only place that answer exists.
@@ -271,7 +279,9 @@
                   <button class="gpkg-btn" title="Copy a link that opens this download for anyone with access"
                     onclick="event.stopPropagation();GeoPackageExport.copyLink('${esc(d.id)}')"><i class="icon-link"></i></button>${delBtn}
                 </div>
-                ${until ? `<div class="gpkg-dim">Styled for QGIS · link valid until ${until}</div>` : ''}`;
+                ${until ? `<div class="gpkg-dim">Styled for QGIS · kept until ${until} (${daysLeft} day${daysLeft === 1 ? '' : 's'})${tag}${guest ? '' : `
+                  <button class="gpkg-btn" style="margin-left:6px;" title="Keep the file 30 days longer"
+                    onclick="event.stopPropagation();GeoPackageExport.extend('${esc(d.id)}')">+30 days</button>`}</div>` : ''}`;
         }
         if (d.state === 'failed' || d.state === 'expired') {
             return `
@@ -344,6 +354,30 @@
     //
     // The card is removed optimistically so the click reads as immediate; a
     // failure puts the list back the way the server sees it.
+    // Push the file's expiry out 30 days. The server extends from the later
+    // of now / current expiry, so clicking twice adds 60.
+    async function extend(id) {
+        let r;
+        try {
+            r = await fetch(`/api/geopackage/${encodeURIComponent(id)}/extend?pwd=${encodeURIComponent(pwd())}`,
+                            { method: 'POST', headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ days: 30 }) });
+        } catch (e) { r = null; }
+        if (!r || !r.ok) {
+            if (typeof showToast === 'function') showToast('Could not extend the export', 'error');
+            return;
+        }
+        const d = await r.json();
+        cache.set(id, d);
+        paint(id, d);
+        if (typeof showToast === 'function') {
+            const until = d.expires_at
+                ? new Date(d.expires_at).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
+                : '';
+            showToast(`Export kept until ${until}`, 'success');
+        }
+    }
+
     async function remove(id) {
         const d = cache.get(id) || {};
         const card = document.querySelector(`[data-gpkg-id="${cssEsc(id)}"]`);
@@ -438,5 +472,5 @@
         }
     });
 
-    window.GeoPackageExport = { start, startView, peek, track, stop, poll, cardHTML, download, retry, remove, copyLink, cache };
+    window.GeoPackageExport = { start, startView, peek, track, stop, poll, cardHTML, download, retry, remove, extend, copyLink, cache };
 })();
