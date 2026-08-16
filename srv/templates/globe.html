@@ -19813,6 +19813,11 @@ ${starredItems.narratives.map(n => {
                     classification: filterClassification || null,
                     layerId, sourceId: 'lod-' + key
                 };
+                // The pin exists only NOW — icon syncs that ran while the
+                // fetch was in flight (popup open, restore's timer) saw no
+                // pin and left the accordion glyph unfilled. One writer,
+                // at the moment the state actually changes.
+                if (typeof updateIconPinStates === 'function') updateIconPinStates(parkId);
                 const what = filterClassification ? `${filterClassification} ${type}` : type;
                 if (!st.count) {
                     showToast(`No ${what} features in view for ${parkName} — the pin follows the map, so pan or widen the dates`, 'info');
@@ -19928,6 +19933,9 @@ ${starredItems.narratives.map(n => {
                 layerId,
                 sourceId
             };
+            // Same as the LOD path: the pin only exists after the fetch, so
+            // any accordion opened meanwhile shows an unfilled glyph.
+            if (typeof updateIconPinStates === 'function') updateIconPinStates(parkId);
             
             // Check geometry types - may have mixed Point and LineString (fire trajectories)
             const geomTypes = new Set(geojson.features.map(f => f.geometry?.type).filter(Boolean));
