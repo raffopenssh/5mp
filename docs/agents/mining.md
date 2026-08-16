@@ -253,19 +253,44 @@ prose version. Rules that cost time:
   `export_prediction_gpkg.py` must be kept in sync with the report text.
 - Shared via `/api/files` guest link (owner `$AOI_OWNER_PWD`); replacing the
   file = upload new + DELETE old id (delete revokes the old guest links).
-  Current link: `/s/g-dfx7znjwjvh9zbc5` (10-layer GPKG, exp 2026-11-14).
+  Current link: `/s/g-6v7m78xq55r6d2rt` (8-layer GPKG, exp 2026-11-14).
 
 ## Travel times, plan score and key places (2026-08-16)
 
 - **Local OSRM**, not the public demo: Docker containers `osrm-xsa` (car,
   :5001) and `osrm-xsa-foot` (foot, :5002), data under `/home/exedev/
   osrm-xsa/`, built from merged Geofabrik CAR+SSD+SDN extracts. Foot is a
-  first-class mode (people walk ~40 km/day here; only 42% of cells are
+  first-class mode (people walk ~40 km/day here; only 44% of cells are
   fastest by car); where OSRM has no route, a 4 km/h straight-line
   bush-walk fallback — stated in metadata, every pair finite.
   `scripts/osrm_travel_times_xsa.py` → `data/eval/xsa_mining/
   osrm_times.npz` (2,337 stations × 15,788 cells, uint16 minutes + mode)
   and `osrm_times_meta.json`.
+- **Historic 1930s network is routable (2026-08-16):**
+  `scripts/histmaps/hist_lines_to_osm.py` converts the 1,671 stitched
+  road/track lines (`data/histmaps/labels.sqlite3`, `lines_stitched`) to
+  OSM XML as `highway=unclassified` + `maxspeed` 20 (road) / 15 (track),
+  `surface=ground` — a *stated assumption* ("ridable, slowly drivable"),
+  written into tags and metadata. Two hard-won rules: (1) OSRM joins ways
+  only at **shared node IDs** — free-floating hist ways are unroutable
+  islands that produce a bit-identical matrix (invariant 1: the script now
+  welds hist vertices at 60 m and *adopts* modern highway node IDs within
+  150 m, needs `/tmp/modern_hw_nodes.npz` from `osmium tags-filter
+  w/highway` + pyosmium, and **refuses to write** if <5 % of lines
+  connect); (2) `highway=track` is not in car.lua's speed table — use
+  `unclassified`. Merged graph at `/home/exedev/osrm-xsa/xsa_hist.osm.pbf`,
+  containers `osrm-xsa-hist` (:5003, car) and `osrm-xsa-hist-foot` (:5004,
+  foot). `osrm_travel_times_xsa.py` is parameterized via `OSRM_CAR`,
+  `OSRM_FOOT`, `OSRM_OUT_SUFFIX`, `OSRM_NETWORK_NOTE`.
+- **Canonical matrix = pairwise min(modern, hist)**: a richer graph cannot
+  honestly be slower — cells that got *worse* under hist-only were snap
+  artifacts (cell snapping to a slow hist edge). `osrm_times.npz` =
+  combined (has `hist_used` bool per pair: hist wins 14.8 % of pairs);
+  originals kept as `osrm_times_modern.npz` / `osrm_times_hist.npz` (+
+  matching `_meta` JSONs). Effect: 784 cells >1 min closer (median 24 min,
+  max 7 h, Boro-basin track country); accessibility and gold∧access
+  verdicts unchanged; the greedy selection shifted (Ambougoudiou town
+  outpost #12 → base #3).
 - **Accessibility is a reporting proxy, NOT a mining signal**
   (`scripts/eval_osrm_accessibility.py` → `osrm_accessibility_eval.json`):
   beats the uniform null, fails the reach null after BH (best q=0.16).
@@ -275,8 +300,8 @@ prose version. Rules that cost time:
   `access_x_geology_eval.json`; the far-access complement is unfalsifiable
   from report data and says so in the file). Also measured and negative:
   **time-from-5k-town ("impunity") is not a mining signal** under the reach
-  null (best lift 1.30, q_bh=0.58; under uniform, mines are *nearer* towns
-  — the reporting lens). It votes only in the plan score as a stated
+  null (re-measured on the combined matrix: best lift 1.32, q_bh=0.60;
+  under uniform, mines are *nearer* towns — the reporting lens). It votes only in the plan score as a stated
   planning preference, never in the composite.
 - **Plan score** (`scripts/plan_score_xsa.py` → `key_places_plan.json` +
   `plan_surface.npz`): equal-vote rank mean of composite context + Harris
@@ -284,15 +309,26 @@ prose version. Rules that cost time:
   time-from-town impunity, on the top-20% surface. Gravity/impunity are
   stated planning preferences, never evidence claims.
 - **Key places**: greedy max-coverage of plan mass within 480 min,
-  ≤3/basin; 11 bases reach the 1%-marginal stop at 86.7%, then 8 remote
-  outposts (same rule on the residual) to 91.2%; 96.8% of conjunction
-  mass, 74.4% of truth clusters within a day. Ambougoudiou (rank 12) puts
-  (TIDI) 105 min away. Places + outposts ship as GPKG layer
-  `00_plan__key_places` and report section 4c.
-- **GPKG layout (2026-08-16, replaces the 21-layer tier folders): one
-  layer per information class** — 00 key places / 01 known mines / 02
-  candidates / 03 watchlist / 10 all scored places (viridis by pctile,
-  one layer, kind field) / 20 context surface (viridis) / 21 plan surface
-  / 22 travel time (whole grid, blues) / 23 gold∧reachable (amber, lift+q
-  fields) / 30 basins. Graduated QML ramps hardcoded in
-  `export_prediction_gpkg.py`.
+  ≤3/basin; on the combined matrix 11 places reach the 1%-marginal stop
+  at 87.4%, then 8 more on remoter ground to 91.5%; 96.9% of conjunction
+  mass, 74.4% of truth clusters within a day. Ambougoudiou *camp* (rank
+  12, Chinko basin) puts (TIDI) 105 min away; Ambougoudiou *town* (rank
+  3, Boro basin, 52 km away — two distinct places, same name) is the hub
+  the old track network revealed. Ships as `key_places_plan.json` only —
+  **framed as assessment, not plan** (user directive 2026-08-16): the
+  report calls it "what a day's travel covers, from where", never
+  bases/outposts, and the GPKG no longer has a key-places layer.
+- **GPKG layout (2026-08-16, assessment framing): one layer per
+  information class** — 01 known mines / 02 candidates (ONE layer:
+  32 candidates colour-coded by `character` via rule-based QML +
+  61-village watchlist in pale pink; `in_report=1` → dark outline +
+  bold label; only the 32 labelled, labels `displayAll` so surfaces
+  don't collide them off) / 10 all scored places (viridis by pctile) /
+  20 context surface (viridis) / 21 probability surface
+  (`probability_pctile`, **inverted Spectral** blue→red, caveat in
+  `method_note`: rank not calibrated probability) / 22 travel time
+  (whole grid, blues) / 23 gold∧reachable (amber; carries **its own**
+  signal's lift/q — `gold5_acc240` 1.88×/0.0412, not the best sibling's;
+  invariant 12) / 30 basins. Ramps + `cat_marker` rule renderer in
+  `export_prediction_gpkg.py`. Verified by headless PyQGIS render
+  (QT_QPA_PLATFORM=offscreen, `loadDefaultStyle()`), stacked and solo.

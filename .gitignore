@@ -225,3 +225,4 @@ data/histmaps/sudan250k_labels.geojson.gz
 data/histmaps/sudan250k_labels.kmz
 data/histmaps/sudan250k_lines.geojson.gz
 reports/
+data/shared_files/
