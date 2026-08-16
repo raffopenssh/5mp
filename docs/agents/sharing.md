@@ -261,6 +261,23 @@ the phone layout.
   than none, because it implies the data exists.
 * Lifetime is capped (`guestMaxTTL`, 1 year) and clamped rather than refused;
   "never expires" is not offered, because that is a second password.
+* **Tags & extension** (2026-08-16). `short_links.tag` (migration 060) groups
+  links issued for one purpose (e.g. every link a report cites → `report`).
+  Set at mint time (`tag` in the POST body, sanitised to `[a-z0-9_-]{≤32}`).
+  `POST /api/shortlink/{slug}/extend {days}` pushes one guest link's expiry
+  out (from the later of now/current, capped at `guestMaxTTL` from now);
+  `POST /api/shortlinks/extend {tag, days}` does every live key with that tag
+  in one call. Both refuse guests. The Sharing sheet shows `#tag` badges,
+  days-remaining, a per-key `+30d` button and a `+30d all '<tag>'` button per
+  group.
+* **A guest link to an export file retains the file.** A key pointing at
+  `/api/geopackage/{id}/download` promises the bytes exist as long as the key
+  lives: `retainGeoPackageForLink` pushes the job's `expires_at` out to the
+  link's (never in) at mint time and on every extend, and the hourly gpkg
+  sweeper re-asserts it for links created before the rule existed. The bell
+  card shows the purge date, days left, the link's tag (`link_tag`, computed
+  on read from `short_links`, never stored) and a `+30 days` button
+  (`POST /api/geopackage/{id}/extend`, owner only — guests 401).
 
 ## Guest UI
 

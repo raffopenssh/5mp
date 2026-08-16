@@ -21368,11 +21368,17 @@ ${starredItems.narratives.map(n => {
 
     function sharingGroupHTML(g, ttlDays) {
         const keys = g.links.filter(l => l.guest && !l.revoked && !l.expired).length;
+        // Tags in this group with at least one live key: one button extends
+        // the whole purpose-group (every link a report cites) in one call.
+        const tags = [...new Set(g.links.filter(l => l.tag && l.guest && !l.revoked && !l.expired).map(l => l.tag))];
+        const tagBtns = tags.map(t =>
+            `<button class="sh-btn" onclick="sharingExtendTag('${escapeHtml(t)}')" title="Add 30 days to every live key tagged '${escapeHtml(t)}'">+30d all &lsquo;${escapeHtml(t)}&rsquo;</button>`).join(' ');
         return `<section class="sh-group">
             <h4 class="sh-group-head">
                 <span class="sh-group-name">${escapeHtml(g.label || 'unknown')}</span>
                 ${g.mine ? '<span class="sh-mine">this login</span>' : ''}
                 <span class="sh-group-meta">${g.links.length} link${g.links.length === 1 ? '' : 's'}${keys ? ` · ${keys} live key${keys === 1 ? '' : 's'}` : ''}</span>
+                ${tagBtns}
             </h4>
             <div class="sh-list">${g.links.map(l => sharingRowHTML(l, ttlDays)).join('')}</div>
         </section>`;
@@ -21394,7 +21400,7 @@ ${starredItems.narratives.map(n => {
             ? `opened ${l.hits}×${l.last_hit_at ? ' · last ' + escapeHtml(safeDateStr(l.last_hit_at)) : ''}`
             : 'never opened';
         const life = l.guest && l.expires_at && !dead
-            ? ` · expires ${escapeHtml(safeDateStr(l.expires_at))}` : '';
+            ? ` · expires ${escapeHtml(safeDateStr(l.expires_at))} (${Math.max(0, Math.ceil((new Date(l.expires_at) - Date.now()) / 86400000))}d)` : '';
         // What a key SHOWS is as much a property of it as when it dies.
         const patrol = l.guest && (l.scope || '').split(',').indexOf('patrol') >= 0;
         // ...and WHEN. A key confined to a window is a different thing to have
@@ -21412,6 +21418,7 @@ ${starredItems.narratives.map(n => {
                 ${patrol ? '<span class="sh-badge sh-badge-warn">patrol tracks</span>' : ''}
                 ${window_ ? `<span class="sh-badge sh-badge-when">${escapeHtml(window_)}</span>` : ''}
                 ${state ? `<span class="sh-badge sh-badge-off">${state}</span>` : ''}
+                ${l.tag ? `<span class="sh-badge" title="purpose tag">#${escapeHtml(l.tag)}</span>` : ''}
                 <span class="sh-kind">${escapeHtml(l.kind || 'view')}</span>
                 ${l.title ? `<span class="sh-title">${escapeHtml(l.title)}</span>` : ''}
             </div>
@@ -21419,6 +21426,7 @@ ${starredItems.narratives.map(n => {
             <div class="sh-meta">${hits}${life}</div>
             <div class="sh-acts">
                 ${dead ? '' : `<button class="sh-btn" onclick="sharingCopy(this,'${escapeHtml(url)}')">Copy</button>`}
+                ${l.guest && !dead ? `<button class="sh-btn" title="Keep this key alive 30 days longer (and any file it points at)" onclick="sharingExtend('${escapeHtml(l.slug)}')">+30d</button>` : ''}
                 ${l.revoked ? '' : `<button class="sh-btn sh-btn-off" onclick="sharingClear('${escapeHtml(l.slug)}',${l.guest})">${l.guest ? 'Switch off' : 'Clear'}</button>`}
             </div>
         </div>`;
@@ -21428,6 +21436,37 @@ ${starredItems.narratives.map(n => {
         ShareLink.copy(url, false);
         btn.textContent = 'Copied';
         setTimeout(() => { btn.textContent = 'Copy'; }, 1400);
+    }
+
+    // +30 days on one key. The server also pushes out the expiry of any
+    // export file the key points at, so "the link outlives the file" cannot
+    // happen from here.
+    async function sharingExtend(slug) {
+        try {
+            const res = await fetch(`/api/shortlink/${encodeURIComponent(slug)}/extend?pwd=${encodeURIComponent(window.getPwd() || '')}`,
+                { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ days: 30 }) });
+            if (!res.ok) throw new Error(res.status);
+            const d = await res.json();
+            showToast(`Key extended — now expires ${safeDateStr(d.expires_at)}`, 'success');
+            loadSharingTab();
+        } catch (e) {
+            showToast('Could not extend (' + e.message + ')', 'error');
+        }
+    }
+
+    // +30 days on every live key carrying one tag — the "renew the report's
+    // links" button.
+    async function sharingExtendTag(tag) {
+        try {
+            const res = await fetch(`/api/shortlinks/extend?pwd=${encodeURIComponent(window.getPwd() || '')}`,
+                { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tag: tag, days: 30 }) });
+            if (!res.ok) throw new Error(res.status);
+            const d = await res.json();
+            showToast(`${d.extended} key${d.extended === 1 ? '' : 's'} tagged '${tag}' extended by 30 days`, 'success');
+            loadSharingTab();
+        } catch (e) {
+            showToast('Could not extend (' + e.message + ')', 'error');
+        }
     }
 
     // Guest links are revoked, named links deleted — the server decides which;

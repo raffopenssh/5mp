@@ -92,6 +92,49 @@ const guestTTL = 30 * 24 * time.Hour
 // than refused (refusing would only teach the caller to ask for exactly 365).
 const guestMaxTTL = 365 * 24 * time.Hour
 
+// shortTagRe: a tag names a purpose ("report"), so it is a slug, not prose.
+var shortTagRe = regexp.MustCompile(`[^a-z0-9_-]+`)
+
+func shortSanitizeTag(t string) string {
+	t = shortTagRe.ReplaceAllString(strings.ToLower(strings.TrimSpace(t)), "")
+	if len(t) > 32 {
+		t = t[:32]
+	}
+	return t
+}
+
+// gpkgDownloadTarget extracts the job id from a short-link target that points
+// straight at an export file, or "" for any other URL.
+func gpkgDownloadTarget(target string) string {
+	const pre = "/api/geopackage/"
+	if !strings.HasPrefix(target, pre) {
+		return ""
+	}
+	rest := strings.TrimPrefix(target, pre)
+	id, tail, ok := strings.Cut(rest, "/")
+	if !ok || id == "" {
+		return ""
+	}
+	if tail != "download" && !strings.HasPrefix(tail, "download?") {
+		return ""
+	}
+	return id
+}
+
+// retainGeoPackageForLink keeps the invariant "a file a live guest link points
+// at outlives the link": the job's expiry is pushed OUT to the link's, never
+// pulled in. Called at mint time and again at extend time; the sweeper holds
+// the same line for links created before this existed.
+func (s *Server) retainGeoPackageForLink(target, linkExpires string) {
+	id := gpkgDownloadTarget(target)
+	if id == "" || linkExpires == "" {
+		return
+	}
+	s.DB.Exec(`UPDATE geopackage_jobs SET expires_at = ?
+		WHERE id = ? AND (expires_at IS NULL OR expires_at = '' OR expires_at < ?)`,
+		linkExpires, id, linkExpires)
+}
+
 // guestLife turns a requested number of days into a lifetime.
 func guestLife(days int) time.Duration {
 	if days <= 0 {
@@ -441,6 +484,9 @@ func (s *Server) HandleAPIShortLinkCreate(w http.ResponseWriter, r *http.Request
 		// asked of a guest link -- a named link is a name, and whoever opens
 		// it signs in and sees what their own password sees, dates included.
 		LockDates bool `json:"lock_dates"`
+		// Tag: groups links issued for one purpose (e.g. 'report') so they can
+		// be listed and extended together.
+		Tag string `json:"tag"`
 	}
 	if err := decodeJSONBody(r, &body); err != nil {
 		writeJSON(w, http.StatusBadRequest, shortLinkResp{Error: "bad request"})
@@ -512,6 +558,7 @@ func (s *Server) HandleAPIShortLinkCreate(w http.ResponseWriter, r *http.Request
 		}
 	}
 
+	tag := shortSanitizeTag(body.Tag)
 	insert := func(slug string) error {
 		var pid interface{}
 		if body.Guest && principal != 0 {
@@ -523,11 +570,16 @@ func (s *Server) HandleAPIShortLinkCreate(w http.ResponseWriter, r *http.Request
 		}
 		_, err := s.DB.Exec(`INSERT INTO short_links
 			(slug, url, kind, title, env, pwd_ref, guest, principal_id, expires_at, created_at,
-			 scope, date_from, date_to)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			 scope, date_from, date_to, tag)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 			slug, target, kind, strings.TrimSpace(body.Title), env, ref,
 			boolInt(body.Guest), pid, exp, time.Now().UTC().Format(time.RFC3339),
-			scope, dFrom, dTo)
+			scope, dFrom, dTo, tag)
+		if err == nil && body.Guest {
+			// A guest link straight to an export file is a promise the file
+			// keeps existing: push the job's expiry out to the link's.
+			s.retainGeoPackageForLink(target, expires)
+		}
 		return err
 	}
 
@@ -675,6 +727,7 @@ type shortLinkRow struct {
 	Guest   bool   `json:"guest"`
 	Expires string `json:"expires_at,omitempty"`
 	Scope   string `json:"scope,omitempty"` // restricted layers this link carries
+	Tag     string `json:"tag,omitempty"`   // purpose group, e.g. 'report'
 	// The window this key is confined to, if any. The sheet must show it:
 	// "read-only, expiring, and only May-August" is a different thing to have
 	// handed out than "read-only and expiring", and an operator deciding
@@ -709,7 +762,7 @@ func (s *Server) HandleAPIShortLinkList(w http.ResponseWriter, r *http.Request) 
 	rows, err := s.DB.Query(`SELECT slug, url, COALESCE(alias_of,''), kind, title, env,
 		COALESCE(pwd_ref,''), guest, COALESCE(expires_at,''), COALESCE(revoked_at,''),
 		hits, COALESCE(last_hit_at,''), created_at, COALESCE(scope,''),
-		COALESCE(date_from,''), COALESCE(date_to,'')
+		COALESCE(date_from,''), COALESCE(date_to,''), COALESCE(tag,'')
 		FROM short_links ORDER BY created_at DESC LIMIT 1000`)
 	if err != nil {
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "could not list links"})
@@ -726,7 +779,7 @@ func (s *Server) HandleAPIShortLinkList(w http.ResponseWriter, r *http.Request) 
 		var guest int
 		if err := rows.Scan(&l.Slug, &l.URL, &l.AliasOf, &l.Kind, &l.Title, &env, &ref,
 			&guest, &l.Expires, &revoked, &l.Hits, &l.LastHit, &l.Created, &l.Scope,
-			&l.DateFrom, &l.DateTo); err != nil {
+			&l.DateFrom, &l.DateTo, &l.Tag); err != nil {
 			continue
 		}
 		l.Guest = guest == 1
@@ -784,6 +837,97 @@ func shortRefLabels() map[string]string {
 		out[principalRef(pwd)] = pwd[:min(3, len(pwd))] + "\u2026"
 	}
 	return out
+}
+
+// shortExtend pushes a guest link's expiry out by n days from now or from its
+// current expiry, whichever is later, clamped to guestMaxTTL from now. Returns
+// the new expiry, or "" if the row is not an extendable (live guest) link.
+func (s *Server) shortExtend(slug string, days int) string {
+	if days <= 0 {
+		days = 30
+	}
+	var target, expires, revoked string
+	var guest int
+	err := s.DB.QueryRow(`SELECT url, guest, COALESCE(expires_at,''), COALESCE(revoked_at,'')
+		FROM short_links WHERE slug = ?`, slug).Scan(&target, &guest, &expires, &revoked)
+	if err != nil || guest != 1 || revoked != "" {
+		return ""
+	}
+	now := time.Now().UTC()
+	base := now
+	if t, err := time.Parse(time.RFC3339, expires); err == nil && t.After(base) {
+		base = t
+	}
+	newExp := base.Add(time.Duration(days) * 24 * time.Hour)
+	if hi := now.Add(guestMaxTTL); newExp.After(hi) {
+		newExp = hi
+	}
+	exp := newExp.Format(time.RFC3339)
+	if _, err := s.DB.Exec(`UPDATE short_links SET expires_at = ? WHERE slug = ?`, exp, slug); err != nil {
+		return ""
+	}
+	// The file the link names must live at least as long as the link.
+	s.retainGeoPackageForLink(target, exp)
+	return exp
+}
+
+// HandleAPIShortLinkExtend — POST /api/shortlink/{slug}/extend {days:30}.
+// Guest links only: a named link does not expire, so there is nothing to
+// extend. Never callable by a guest (the middleware blocks guest POSTs, and a
+// capability that can lengthen its own life is not a capability).
+func (s *Server) HandleAPIShortLinkExtend(w http.ResponseWriter, r *http.Request) {
+	slug := strings.ToLower(strings.Trim(r.PathValue("slug"), "/"))
+	var body struct {
+		Days int `json:"days"`
+	}
+	decodeJSONBody(r, &body)
+	exp := s.shortExtend(slug, body.Days)
+	if exp == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "not an extendable link"})
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]string{"slug": slug, "expires_at": exp})
+}
+
+// HandleAPIShortLinkExtendTag — POST /api/shortlinks/extend {tag, days:30}.
+// The reason tags exist: every link a report cites is extended in one call.
+func (s *Server) HandleAPIShortLinkExtendTag(w http.ResponseWriter, r *http.Request) {
+	var body struct {
+		Tag  string `json:"tag"`
+		Days int    `json:"days"`
+	}
+	if err := decodeJSONBody(r, &body); err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "bad request"})
+		return
+	}
+	tag := shortSanitizeTag(body.Tag)
+	if tag == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "no tag"})
+		return
+	}
+	rows, err := s.DB.Query(`SELECT slug FROM short_links
+		WHERE tag = ? AND guest = 1 AND (revoked_at IS NULL OR revoked_at = '')`, tag)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "database error"})
+		return
+	}
+	var slugs []string
+	for rows.Next() {
+		var sl string
+		if rows.Scan(&sl) == nil {
+			slugs = append(slugs, sl)
+		}
+	}
+	rows.Close()
+	extended := 0
+	last := ""
+	for _, sl := range slugs {
+		if exp := s.shortExtend(sl, body.Days); exp != "" {
+			extended++
+			last = exp
+		}
+	}
+	writeJSON(w, http.StatusOK, map[string]interface{}{"tag": tag, "extended": extended, "expires_at": last})
 }
 
 // HandleAPIShortLinkDelete — DELETE /api/shortlink/{slug}
