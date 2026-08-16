@@ -229,6 +229,41 @@ src_guard "geo_structural_no_typed_lift"  absent  "[0-9]\.[0-9]+×" "$GLOBE"
 src_guard "geo_structural_in_mixer"       present "function structuralFootHTML" "srv/static/maplegend.js"
 src_guard "geo_structural_mixer_no_lift"  absent  "[0-9]\.[0-9]+×" "srv/static/maplegend.js"
 
+# ── A wait is said inside the chip that will answer ────────────────────────
+# A restored share link draws its pins before their data exists (4 s for 57k
+# fire trajectories). Registering the pin only AFTER the await left an empty
+# map with no evidence of work, and a user with no evidence clicks, pans and
+# re-toggles -- which aborts the fetch and starts it again. Three properties:
+#  * the pin is registered BEFORE the fetch, carrying loading:true;
+#  * the dots take the count's slot rather than sitting beside a stale number;
+#  * the LOADER owns the flag (onLoading), so a refetch on pan or a date
+#    change says the same thing the first load did.
+src_guard "pin_registered_before_fetch"   present "loading: true," "$GLOBE"
+src_guard "pin_chip_has_dots"             present "chip-dots" "$GLOBE"
+src_guard "pin_loading_from_loader"       present "onLoading: \(busy\)" "$GLOBE"
+src_guard "chip_dots_styled"              present "@keyframes chipDotWave" "srv/static/globe.css"
+# A repaint must not restart a neighbour's animation: this indicator is called
+# on every count and used to reassign innerHTML wholesale, so each answer
+# landing reset the other two chips' dot wave to frame zero.
+src_guard "pin_repaint_is_keyed"          present "_pinShape" "$GLOBE"
+src_guard "pin_chips_are_addressable"     present "data-chip-key" "$GLOBE"
+# THE SAME QUESTION IS NOT ASKED TWICE. "The dates changed" is announced by
+# three call sites, two of which fire AFTER a share link's pins have already
+# loaded with those very dates -- so every pinned layer fetched its full
+# payload twice more (6 requests where 3 were needed, 1.7 MB of fire
+# trajectories each time). The request IS its query string.
+src_guard "lod_dedupes_by_signature"      present "s.lastSig === sig" "srv/static/lodlayer.js"
+src_guard "lod_dedupes_inflight"          present "s.inflightSig === sig" "srv/static/lodlayer.js"
+# reload() must NOT clear lastBBox: it does not consult it (the containment
+# skips are for 'move' only), and clearing it is what defeated the signature.
+src_guard "lod_reload_keeps_bbox"         absent  "lastBBox = null; load\(key, 'reload'\)" "srv/static/lodlayer.js"
+# `font: <weight> <size>/<lh> inherit` is INVALID -- the shorthand's family slot
+# cannot be a keyword -- so the browser drops the WHOLE declaration and a
+# <button> falls back to the UA's 13.33px/400. That is how the pinned chip's
+# "dots"/"lines" footnote came to print larger than the count it annotates, in
+# five places at once. Longhands only.
+src_guard "no_font_shorthand_inherit"     absent  "font: [0-9][^;]*/[^;]* inherit;" "srv/static/globe.css"
+
 echo
 echo "======================================="
 if [[ $FAILED -eq 0 ]]; then

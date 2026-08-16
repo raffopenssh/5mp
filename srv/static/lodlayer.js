@@ -520,11 +520,6 @@
             return;
         }
 
-        if (s.abort) s.abort.abort();
-        var ctrl = new AbortController();
-        s.abort = ctrl;
-        if (s.onLoading) s.onLoading(true);
-
         // The detail preference is expressed as a BUDGET, so the server keeps
         // making the decision from the true count in view and the client only
         // says how much it is willing to draw. 'shapes' therefore still
@@ -579,6 +574,32 @@
             qs.set(isAoiScope ? 'aoi' : 'park_focus', scopeAOI);
         }
 
+        // THE SAME QUESTION IS NOT ASKED TWICE.
+        //
+        // "The dates changed" is announced by three call sites, and on a share
+        // link two of them fire *after* the pins have already loaded with those
+        // very dates: initTimeSlider applies the URL window, and reloadGridData
+        // runs again when the `areas` source finishes. Debouncing does not help
+        // — the announcements are seconds apart — so every pinned layer on a
+        // restored link fetched its full payload twice (3 requests, 1.7 MB and
+        // ~4 s of fire trajectories, repeated at t+6 s and t+15 s). The request
+        // is its query string: if that string is byte-identical to the one
+        // already drawn, there is nothing to learn, and if it is identical to
+        // one still in flight, aborting it to re-ask restarts the same work.
+        // `why === 'force'` is the escape hatch for "the data behind an
+        // unchanged query may itself have changed" (an upload, a reingest).
+        var sig = qs.toString();
+        if (why !== 'force') {
+            if (s.inflightSig === sig) return;
+            if (s.lastSig === sig) return;
+        }
+
+        if (s.abort) s.abort.abort();
+        var ctrl = new AbortController();
+        s.abort = ctrl;
+        s.inflightSig = sig;
+        if (s.onLoading) s.onLoading(true);
+
         try {
             var res = await fetch('/api/features-in-bbox?' + qs, { signal: ctrl.signal });
             if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -591,6 +612,7 @@
             else map.addSource(L.src, { type: 'geojson', data: data });
             ensureLayers(key, render, s.color, d.count || 0);
             s.lastBBox = bbox;
+            s.lastSig = sig;
             s.lastTruncated = !!d.truncated;
             s.count = d.count || 0;
             s.total = d.total || 0;
@@ -629,6 +651,7 @@
             if (e.name !== 'AbortError') console.error('LOD layer ' + key + ':', e);
         } finally {
             if (s.abort === ctrl) s.abort = null;
+            if (s.inflightSig === sig) s.inflightSig = null;
             if (s.onLoading) s.onLoading(false);
         }
     }
@@ -711,7 +734,12 @@
             // flight for no gain.
             if (reloadTimer) clearTimeout(reloadTimer);
             reloadTimer = setTimeout(function () {
-                reg.forEach(function (s, key) { s.lastBBox = null; load(key, 'reload'); });
+                // lastBBox is NOT cleared: 'reload' does not consult it (the
+                // containment skips are for 'move' only), and the request
+                // signature is what decides whether this reload has anything
+                // to fetch. Clearing it here is what let the same window be
+                // re-asked three times on a share-link restore.
+                reg.forEach(function (s, key) { load(key, 'reload'); });
             }, 80);
         },
         /** The shared per-feature detail cache, so a hover never re-asks. */
