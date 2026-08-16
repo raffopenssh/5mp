@@ -100,11 +100,15 @@ for c in pred["candidates"]:
 
 # ---- 02 watchlist villages
 lyr = mklayer("02_watchlist__villages", ogr.wkbPoint,
-              [("name", ogr.OFTString), ("gold_contact_km", ogr.OFTReal),
+              [("rank", ogr.OFTInteger), ("name", ogr.OFTString),
+               ("composite_pctile", ogr.OFTReal),
+               ("gold_contact_km", ogr.OFTReal),
                ("river_km", ogr.OFTReal)])
 for w in pred["abandoned_village_gold_watchlist"]["places"]:
     f = ogr.Feature(lyr.GetLayerDefn())
+    f.SetField("rank", w["rank"])
     f.SetField("name", w["name"] or "(unnamed)")
+    f.SetField("composite_pctile", w["composite_pctile"])
     f.SetField("gold_contact_km", w["gold_contact_km"])
     f.SetField("river_km", w["river_km"])
     f.SetGeometry(pt(w["lon"], w["lat"])); lyr.CreateFeature(f)
@@ -112,11 +116,13 @@ for w in pred["abandoned_village_gold_watchlist"]["places"]:
 # ---- 10..13 graduated feature folders
 def tier_meta(t):
     m = grad["tiers"][t]
-    return m.get("lift"), m.get("p")
+    return (m.get("lift"), m.get("p"),
+            m.get("lift_reach"), m.get("p_reach"))
 
 COMMON = [("name", ogr.OFTString), ("score", ogr.OFTReal),
           ("pctile", ogr.OFTReal), ("tier_lift", ogr.OFTReal),
-          ("tier_p", ogr.OFTReal)]
+          ("tier_p", ogr.OFTReal), ("tier_lift_reach", ogr.OFTReal),
+          ("tier_p_reach", ogr.OFTReal)]
 SPEC = {
     "settlements": COMMON + [("classification", ogr.OFTString),
                              ("persistence", ogr.OFTString),
@@ -128,7 +134,7 @@ SPEC = {
 }
 counts = {}
 for t in TIERS:
-    lift, p = tier_meta(t)
+    lift, p, lift_r, p_r = tier_meta(t)
     for kind in ("settlements", "hist_places", "osm_places"):
         rows = [x for x in grad["features"][kind] if x["tier"] == t]
         counts[f"{t}/{kind}"] = len(rows)
@@ -139,6 +145,8 @@ for t in TIERS:
             f.SetField("score", x["score"]); f.SetField("pctile", x["pctile"])
             if lift is not None: f.SetField("tier_lift", lift)
             if p is not None: f.SetField("tier_p", p)
+            if lift_r is not None: f.SetField("tier_lift_reach", lift_r)
+            if p_r is not None: f.SetField("tier_p_reach", p_r)
             for extra in SPEC[kind][len(COMMON):]:
                 k = extra[0]
                 if x.get(k) is not None:
@@ -153,10 +161,12 @@ for ft in gj["features"]:
     if pr.get("layer") != "composite_graduated": continue
     surf.setdefault(pr["tier"], []).append(ft)
 for t in TIERS:
-    lift, p = tier_meta(t)
+    lift, p, lift_r, p_r = tier_meta(t)
     lyr = mklayer(f"20_surface__{t}", ogr.wkbPolygon,
                   [("score", ogr.OFTReal), ("pctile", ogr.OFTReal),
-                   ("tier_lift", ogr.OFTReal), ("tier_p", ogr.OFTReal)])
+                   ("tier_lift", ogr.OFTReal), ("tier_p", ogr.OFTReal),
+                   ("tier_lift_reach", ogr.OFTReal),
+                   ("tier_p_reach", ogr.OFTReal)])
     for ft in surf.get(t, []):
         lon, lat = ft["geometry"]["coordinates"]
         ring = ogr.Geometry(ogr.wkbLinearRing)
@@ -168,6 +178,8 @@ for t in TIERS:
         f.SetField("pctile", ft["properties"]["pctile"])
         if lift is not None: f.SetField("tier_lift", lift)
         if p is not None: f.SetField("tier_p", p)
+        if lift_r is not None: f.SetField("tier_lift_reach", lift_r)
+        if p_r is not None: f.SetField("tier_p_reach", p_r)
         f.SetGeometry(poly); lyr.CreateFeature(f)
 ds = None
 print("layer counts:", counts)

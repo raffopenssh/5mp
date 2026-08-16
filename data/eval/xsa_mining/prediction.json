@@ -1162,25 +1162,33 @@
     "top_frac": 0.05,
     "capture": 0.163,
     "lift": 3.25,
-    "p": 0.0058
+    "p": 0.0058,
+    "lift_reach": 2.01,
+    "p_reach": 0.0568
    },
    "top10": {
     "top_frac": 0.1,
     "capture": 0.302,
     "lift": 3.02,
-    "p": 0.0002
+    "p": 0.0002,
+    "lift_reach": 1.97,
+    "p_reach": 0.0102
    },
    "top20": {
     "top_frac": 0.2,
     "capture": 0.465,
     "lift": 2.33,
-    "p": 0.0
+    "p": 0.0,
+    "lift_reach": 1.66,
+    "p_reach": 0.0088
    },
    "top35": {
     "top_frac": 0.35,
     "capture": 0.651,
     "lift": 1.86,
-    "p": 0.0
+    "p": 0.0,
+    "lift_reach": 1.51,
+    "p_reach": 0.0022
    }
   },
   "counts": {

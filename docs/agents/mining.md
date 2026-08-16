@@ -202,3 +202,32 @@ non-sargable, so SQLite drops the index and covering-scans all 42.9M
 only a WHERE term on an indexed column matters.
 
 ---
+
+## Mining prediction (inference, not detection) — 2026-08-16
+
+`scripts/predict_mining_xsa.py` → `data/eval/xsa_mining/prediction.json` +
+`prediction.geojson`; `scripts/export_prediction_gpkg.py` → styled 20-layer
+`xsa_mining_prediction.gpkg` (numbered `NN_tier__kind` prefixes group as
+folders in QGIS; QML embedded via `layer_styles`). EASY report §4b is the
+prose version. Rules that cost time:
+
+- **The truth set is reports, not mines**, so every signal is tested against
+  two nulls: uniform, and a *reach-corrected* null (target-group background,
+  Phillips 2009) that rethrows pseudo-sites by a 20 km KDE over all Crisis
+  Tracker/UCDP/OSM-place records regardless of topic. Votes are decided on
+  `q_bh_reach`; uniform columns stay in the JSON as the measured reporting
+  bias. Under the honest null the picture inverted: geology + abandoned-1930s
+  -on-gold vote (1.8x / 4.0x), generic settlement proximity and deforestation
+  drop out as reporting artifacts.
+- **Factor-grouped composite**: signals average within factor (settlement
+  variants are one PCA factor — `scripts/pca_mining_signals.py`), factors
+  vote equally. 43 clusters cannot support fitted weights.
+- Historic signals are **coverage-masked** (19/43 clusters on-sheet; baseline
+  computed inside coverage only). Graduated tiers top05/10/20/35 are drawn
+  for graduation; only cumulative cuts are claimed, each with lift/p under
+  both nulls carried as fields in the GPKG.
+- Watchlist (abandoned 1930s villages on gold contacts) is ranked by the
+  composite score of the ground under each village, so grid, watchlist and
+  candidates agree by construction.
+- Shared via `/api/files` guest link (owner `$AOI_OWNER_PWD`); replacing the
+  file = upload new + DELETE old id (delete revokes the old guest links).

@@ -993,7 +993,9 @@ def main():
                 top_frac=f,
                 capture=rec["capture"] if rec else None,
                 lift=rec["lift"] if rec else None,
-                p=rec["p"] if rec else None)
+                p=rec["p"] if rec else None,
+                lift_reach=rec.get("lift_reach") if rec else None,
+                p_reach=rec.get("p_reach") if rec else None)
         graduated = dict(
             note=("Band membership is the increment (a top10 feature is in "
                   "the top 10% but not the top 5%), while each tier's "
