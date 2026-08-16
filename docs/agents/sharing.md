@@ -340,6 +340,33 @@ unauthenticated and unexpiring. `srv/shared_files.go`, table `shared_files`
   `xhr.timeout = 0` on purpose: the server's own idle deadline (`longUpload`,
   10 min of *no bytes*) governs, a wall-clock cap would kill a slow but
   healthy 1 GB upload.
+* **`WriteTimeout` was killing slow uploads — after they succeeded** (bug found
+  2026-08-16, same 118 MB file). `longUpload` extended only the *read*
+  deadline. `http.Server.WriteTimeout` (120 s, absolute) is armed when the
+  request is **read**, not when the reply is written, so it burns down *during*
+  the upload: the handler stored the file, inserted the row, logged
+  `shared file uploaded` — and then had no connection left to answer on. The
+  browser got a closed socket, or (behind the exe.dev proxy) the proxy's HTML
+  error page, which the new control faithfully reported as
+  "Server error — `<!doctype html>`". A **completed write reported as a
+  failure** is the worst available outcome: the obvious response is a retry
+  that duplicates it. `deadlineReader.extend` now pushes the **write** deadline
+  out alongside the read one. Reproduced and regression-tested at 48 KB/s ×
+  6 MB ≈ 128 s (`shared_file_upload_outlives_write_timeout` in
+  `tests/api_tests.sh`) — the fixture must stay **slower than 120 s** or it
+  stops testing anything. **Every handler calling `longUpload` had this bug**;
+  they all get the fix from the shared reader.
+* **A lost reply is not a failure — it is an unknown, and the client resolves
+  it.** When every byte has been sent and the connection then breaks (or a
+  502/503/504 arrives from the proxy), `uplUnknownOutcome` polls
+  `GET /api/files` for ~13 s looking for the sanitised name **and exact byte
+  size**, then reports what it *found*: "arrived intact — the server's reply
+  was lost, the file was not", or "not in your list, so it was not stored —
+  retry is safe". The name check mirrors `sharedFileName()` (`PIP Part I.zip`
+  → `PIP_Part_I.zip`); if that regex changes, change both. An HTML error body
+  is never echoed as the reason (`uplReason`) — the proxy's markup identifies
+  *who* answered, not *what went wrong*, so it is replaced by a sentence that
+  says so.
 
 ## A `?pwd=` for another login switches the session (2026-08-16)
 

@@ -22292,6 +22292,58 @@ ${starredItems.narratives.map(n => {
         if (filesUploadLast) filesUploadSend(filesUploadLast);
     }
 
+    // An error body is written for a human, so anything that is plainly not
+    // one gets replaced. The reported bug read "Server error — <!doctype html>":
+    // the reply came from the exe.dev proxy, not the app, and echoing its first
+    // line told the reader nothing except that something upstream had an
+    // opinion. HTML in, generic sentence out.
+    function uplReason(text, parsed) {
+        if (parsed && parsed.error) return String(parsed.error).slice(0, 300);
+        const t = (text || '').trim();
+        if (!t) return '';
+        if (/^\s*<(!doctype|html|\?xml)/i.test(t) || /<\/html>/i.test(t)) {
+            return 'The reply came from the proxy in front of the app, not from the app itself.';
+        }
+        return t.split('\n')[0].slice(0, 300);
+    }
+
+    // The upload finished sending but the answer never arrived. That is NOT
+    // "failed": a stored file plus a lost reply looks identical from here, and
+    // telling the user to retry would duplicate it. Ask the server what it
+    // actually has, and report the checked answer.
+    async function uplUnknownOutcome(file, why) {
+        uplRender({ phase: 'processing', name: file.name, total: file.size });
+        showToast('Checking whether the file arrived…', 'info');
+        // Mirror of sharedFileName() in srv/shared_files.go: the server stores
+        // the sanitised name, so a check for "did my file arrive" must ask for
+        // the name the server would have written, not the one on disk here.
+        const want = file.name.replace(/^.*[\\/]/, '').trim()
+            .replace(/[^A-Za-z0-9._-]+/g, '_').replace(/^[._]+|[._]+$/g, '');
+        for (let attempt = 0; attempt < 6; attempt++) {
+            await new Promise(r => setTimeout(r, attempt ? 2500 : 400));
+            let d = null;
+            try {
+                const res = await fetch(`/api/files?pwd=${encodeURIComponent(window.getPwd() || '')}`,
+                    { cache: 'no-store' });
+                if (res.ok) d = await res.json();
+            } catch (e) { /* still offline; try again */ }
+            const hit = d && (d.files || []).find(f =>
+                (f.name === want || f.name === file.name) && f.size_bytes === file.size);
+            if (hit) {
+                filesUploadLast = null;
+                uplRender({ phase: 'done', name: hit.name });
+                showToast(`${hit.name} arrived intact — the server's reply was lost, the file was not`, 'success');
+                loadFilesSection();
+                setTimeout(() => { if (!filesUploadXHR) uplRender({ phase: 'idle' }); }, 5000);
+                return;
+            }
+        }
+        uplRender({ phase: 'error', errTitle: 'No confirmation',
+            errDetail: `${why} The file is not in your list, so it was not stored — retry is safe.`,
+            canRetry: true });
+        showToast('Upload failed — no confirmation from the server', 'error');
+    }
+
     function filesUpload(input) {
         const file = input.files && input.files[0];
         input.value = '';   // so picking the same file twice still fires onchange
@@ -22312,13 +22364,14 @@ ${starredItems.narratives.map(n => {
             return;
         }
         const started = Date.now();
-        let lastT = started, lastLoaded = 0, rate = 0;
+        let lastT = started, lastLoaded = 0, rate = 0, lastSent = 0;
         const xhr = new XMLHttpRequest();
         filesUploadXHR = xhr;
         uplRender({ phase: 'sending', name: file.name, loaded: 0, total: file.size, pct: 0 });
 
         xhr.upload.onprogress = (e) => {
             if (!e.lengthComputable) return;
+            lastSent = e.loaded;
             const now = Date.now();
             if (now - lastT > 400) {
                 // Smoothed rate: a raw per-event rate on a fast LAN flickers
@@ -22334,7 +22387,7 @@ ${starredItems.narratives.map(n => {
         };
         // All bytes acknowledged, answer pending: the honest state is "working",
         // not 100%.
-        xhr.upload.onload = () => uplRender({ phase: 'processing', name: file.name, total: file.size });
+        xhr.upload.onload = () => { lastSent = file.size; uplRender({ phase: 'processing', name: file.name, total: file.size }); };
 
         xhr.onload = () => {
             filesUploadXHR = null;
@@ -22350,7 +22403,7 @@ ${starredItems.narratives.map(n => {
                 }, 4000);
                 return;
             }
-            const detail = (d.error || (xhr.responseText || '').trim().split('\n')[0] || '').slice(0, 300);
+            const detail = uplReason(xhr.responseText, d);
             let title = `Server said ${xhr.status}`, canRetry = true;
             if (xhr.status === 413) {
                 title = 'File too large';
@@ -22362,6 +22415,10 @@ ${starredItems.narratives.map(n => {
                 title = 'Session expired';
             } else if (xhr.status === 429) {
                 title = 'Too many uploads';
+            } else if (xhr.status === 502 || xhr.status === 503 || xhr.status === 504) {
+                // The proxy answered, not the app: the file may already be stored.
+                uplUnknownOutcome(file, `The connection to the server broke before it answered (gateway ${xhr.status}).`);
+                return;
             } else if (xhr.status >= 500) {
                 title = 'Server error';
             }
@@ -22371,9 +22428,17 @@ ${starredItems.narratives.map(n => {
         };
         xhr.onerror = () => {
             filesUploadXHR = null;
-            const sent = uplFmtBytes(lastLoaded || 0);
+            // Every byte left the browser: the server may well have stored the
+            // file and lost only the reply (this is exactly what a response
+            // deadline expiring mid-upload looks like from here). Reporting
+            // "failed" would invite a retry that duplicates a stored file — so
+            // ask the server what it has instead of guessing.
+            if (lastSent >= file.size) {
+                uplUnknownOutcome(file, 'The connection closed before the server answered.');
+                return;
+            }
             uplRender({ phase: 'error', errTitle: 'Connection lost',
-                errDetail: `The upload stopped after ${sent} of ${uplFmtBytes(file.size)}. Nothing was stored — the server discards a partial file. Check the connection and retry.`,
+                errDetail: `The upload stopped after ${uplFmtBytes(lastLoaded || 0)} of ${uplFmtBytes(file.size)}. Nothing was stored — the server discards a partial file. Check the connection and retry.`,
                 canRetry: true });
             showToast('Upload failed — connection lost', 'error');
         };
