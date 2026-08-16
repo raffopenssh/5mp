@@ -59,9 +59,15 @@ a stall: one curl sat on an idle connection for 22 min at load 0.00.
 **White ink is a paint property, not a second tileset.** The archive holds one
 flat near-black (26,22,18) on transparent paper, so the layer sets
 `raster-brightness-min: 1` to lift RGB to white while leaving alpha alone. The
-**download stays black on purpose** — offline viewers (Locus, OsmAnd, QGIS)
-default to light backgrounds where white ink is invisible. Never "fix" this by
-generating a whitened archive; there would then be two copies to keep in sync.
+**canonical download stays black** — offline viewers (Locus, OsmAnd, QGIS)
+default to light backgrounds where white ink is invisible. Since 2026-08-16 a
+**derived** white variant exists for dark-basemap use:
+`scripts/histmaps/whiten_mbtiles.py` → `sudan250k_white.mbtiles` (RGB→255,
+alpha untouched; builds as `.building.mbtiles`, renames on verified
+completion so a partial file never wears the advertised name). Served at
+`/api/histmap/sudan250k/download/white`; `/api/histmap` advertises
+`download_white` only while the file exists. Never edit ink into the black
+archive — after a mosaic rebuild, re-run the whitener (~35 min, tmux).
 
 Layer order is load-bearing: inserted **before the first non-raster layer**, so
 above the basemap and below park/AOI outlines, trajectories and pins.
