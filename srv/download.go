@@ -118,6 +118,18 @@ func (w *deadlineWriter) Unwrap() http.ResponseWriter { return w.ResponseWriter 
 // anything slower than a datacentre. Call it before ParseMultipartForm/io.Copy
 // in any handler that accepts a file larger than a few MB; the deadline then
 // advances while bytes arrive and only a stalled upload expires.
+//
+// It must extend the WRITE deadline too, and that is not symmetry for its own
+// sake. WriteTimeout is armed when the request is *read*, not when the reply is
+// written, so it burns down during the upload: a POST that takes longer than
+// 120 s had its response killed before the handler could answer, even though
+// the file was already stored on disk and in the table. The client saw a closed
+// connection (or, behind the exe.dev proxy, the proxy's own HTML error page),
+// so a 118 MB upload over a domestic uplink reported "Server error" for an
+// upload that had in fact succeeded -- the worst failure mode available: a
+// completed write reported as a failure, inviting a retry that duplicates it.
+// Measured 2026-08-16 on localhost: 20 MB at 140 KB/s = 139 s, connection
+// closed, no status line, row present in shared_files.
 func longUpload(w http.ResponseWriter, r *http.Request) {
 	if r.Body == nil {
 		return
@@ -151,6 +163,12 @@ func (r *deadlineReader) extend() bool {
 		}
 		r.disabled = true
 		return false
+	}
+	// The reply's deadline is burning down while the body arrives (see
+	// longUpload): push it out by the same window, or a slow upload succeeds
+	// and then cannot say so.
+	if err := r.rc.SetWriteDeadline(now.Add(r.idle)); err != nil && !errors.Is(err, http.ErrNotSupported) {
+		slog.Warn("long upload: cannot extend write deadline", "err", err)
 	}
 	r.next = now.Add(r.idle / 2)
 	return true

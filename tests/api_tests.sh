@@ -1103,6 +1103,30 @@ if [[ -n "$CLIENT_PWD" ]]; then
             ERRORS+=("deleting a shared file leaves its key alive")
         fi
         rm -f "$tmpf" "$JF"
+
+        # An upload SLOWER than WriteTimeout must still receive its answer.
+        # WriteTimeout (120 s) is armed when the request is read, not when the
+        # reply is written, so it burns down *during* the upload: before
+        # 2026-08-16 a 118 MB post over a domestic uplink stored the file and
+        # then died without a status line, which reaches the browser as the
+        # proxy's HTML error page — a success reported as a failure, inviting a
+        # retry that duplicates it. 6 MB at 48 KB/s = ~128 s, i.e. deliberately
+        # past the deadline, which is the whole point of the fixture.
+        printf "%-50s" "shared_file_upload_outlives_write_timeout"
+        slowf=$(mktemp); head -c 6291456 /dev/urandom > "$slowf"
+        SJ=$(curl -s -m 300 --limit-rate 48k -F "file=@${slowf};filename=apislow.bin" \
+            "${BASE_URL}/api/files?pwd=${CLIENT_PWD}")
+        SID=$(jq -r '.id // empty' <<< "$SJ")
+        SSZ=$(jq -r '.size_bytes // 0' <<< "$SJ")
+        [[ -n "$SID" ]] && curl -s -m 30 -o /dev/null -X DELETE \
+            "${BASE_URL}/api/files/${SID}?pwd=${CLIENT_PWD}"
+        rm -f "$slowf"
+        if [[ -n "$SID" && "$SSZ" == "6291456" ]]; then
+            green "✓ (answered after ~128 s)"; PASSED=$((PASSED + 1))
+        else
+            red "FAIL (id=$SID size=$SSZ)"; FAILED=$((FAILED + 1))
+            ERRORS+=("a slow upload gets no reply (WriteTimeout kills it)")
+        fi
     fi
 
     # Teardown. The API revokes a guest rather than deleting it (that is the
