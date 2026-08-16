@@ -30,13 +30,13 @@ import csv, sqlite3, sys
 c = sqlite3.connect(f"file:{sys.argv[1]}?mode=ro", uri=True)
 years = dict(c.execute("SELECT id, year FROM sheets"))
 w = csv.writer(sys.stdout)
-w.writerow(["id", "text", "category", "kind", "n_src", "sheets",
-            "year_min", "year_max", "lon", "lat"])
-for i, text, cat, kind, n_src, sheets, lon, lat in c.execute(
-        "SELECT id, text, category, kind, n_src, sheets, lon, lat"
+w.writerow(["id", "text", "category", "note_topic", "kind", "n_src",
+            "sheets", "year_min", "year_max", "lon", "lat"])
+for i, text, cat, topic, kind, n_src, sheets, lon, lat in c.execute(
+        "SELECT id, text, category, note_topic, kind, n_src, sheets, lon, lat"
         " FROM labels_dedup ORDER BY id"):
     ys = [years[s] for s in (sheets or "").split(",") if s in years and years[s]]
-    w.writerow([i, " ".join(text.split()), cat, kind, n_src, sheets,
+    w.writerow([i, " ".join(text.split()), cat, topic, kind, n_src, sheets,
                 min(ys) if ys else "", max(ys) if ys else "", lon, lat])
 PYCSV
 
@@ -47,7 +47,7 @@ ogr2ogr -f GPKG "$TMP/labels.gpkg" "$TMP/labels.csv" \
   -oo X_POSSIBLE_NAMES=lon -oo Y_POSSIBLE_NAMES=lat -oo KEEP_GEOM_COLUMNS=NO \
   -a_srs EPSG:4326 -nln sudan250k_labels \
   -lco IDENTIFIER="Sudan 1:250k OCR labels" \
-  -lco DESCRIPTION="$N labels OCR'd from the Sudan Survey 1:250,000 series (1908-1976, LOC g8310m.gct00289). Machine transcription (fireworks/muse-glimmer-30b) + machine categorization -- verify against the sheet before citing. category: place|water|terrain|vegetation|route|boundary|note|collar|junk. year_min/year_max = survey years of the source sheets."
+  -lco DESCRIPTION="$N labels OCR'd from the Sudan Survey 1:250,000 series (1908-1976, LOC g8310m.gct00289). Machine transcription (fireworks/muse-glimmer-30b) + machine categorization -- verify against the sheet before citing. category: place|water|terrain|vegetation|route|boundary|note|collar|junk. note_topic (notes only): travel|water_supply|habitation|hazard|antiquity|grazing_game|survey|infrastructure|fragment. year_min/year_max = survey years of the source sheets."
 GN=$(sqlite3 "$TMP/labels.gpkg" "SELECT count(*) FROM sudan250k_labels")
 [ "$GN" -eq "$N" ] || { echo "gpkg has $GN rows, expected $N" >&2; exit 1; }
 

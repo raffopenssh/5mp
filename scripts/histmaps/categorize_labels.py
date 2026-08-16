@@ -123,6 +123,105 @@ def cmd_run(args):
           + (" -- rerun to finish" if left else ""))
 
 
+NOTE_TOPICS = ["travel", "water_supply", "habitation", "hazard", "antiquity",
+               "grazing_game", "survey", "infrastructure", "fragment"]
+
+NOTE_PROMPT = (
+    "You classify surveyor annotations OCR'd from 1908-1976 Sudan Survey "
+    "1:250,000 map sheets. For each numbered note output exactly one line: "
+    "the number, a space, and one topic from:\n"
+    "travel - route conditions, distances, going ('Very difficult "
+    "travelling', 'From Suqi Well 33 miles', 'Camels cannot pass')\n"
+    "water_supply - water availability/quality/season ('Large supply', "
+    "'water after rains', 'Wells dry by Feb', 'brackish')\n"
+    "habitation - occupation, seasonal movement, tribes ('Uninhabited', "
+    "'villages not inhabited in the dry season', 'Nomad Arabs')\n"
+    "hazard - floods, fly, disease, insecurity ('Liable to floods', "
+    "'Tsetse fly', 'seasonal swamp')\n"
+    "antiquity - ruins, graves, pyramids, forts, medieval/ancient remains\n"
+    "grazing_game - grazing, game, hunting, reserves ('Good grazing', "
+    "'Game Reserve', 'elephant')\n"
+    "survey - trig/levelling/azimuth notes, beacons, spot heights with "
+    "context, abbreviation keys, R.H./R.P. marks\n"
+    "infrastructure - regulators, pumps, steamers, landing grounds, "
+    "telegraph offices as annotations\n"
+    "fragment - truncated or context-free OCR debris: bare numbers, single "
+    "words without standalone meaning ('e found', 'navigatu', '3788')\n"
+    "Output ONLY the numbered lines, one per input, nothing else."
+)
+
+
+def pending_notes(c, limit=None):
+    c.execute("""CREATE TABLE IF NOT EXISTS note_topics(
+        text TEXT PRIMARY KEY, topic TEXT NOT NULL, model TEXT)""")
+    q = """SELECT DISTINCT d.text FROM labels_dedup d
+           LEFT JOIN note_topics t ON t.text = d.text
+           WHERE d.category = 'note' AND t.text IS NULL ORDER BY d.text"""
+    if limit:
+        q += f" LIMIT {int(limit)}"
+    return [r[0] for r in c.execute(q)]
+
+
+def cmd_notes(args):
+    """Sub-classify category='note' rows by topic, same ledger shape as run:
+    misparsed lines stay pending and retry on re-run."""
+    global SYS_PROMPT
+    SYS_PROMPT = NOTE_PROMPT
+    c = db()
+    todo = pending_notes(c, args.limit)
+    print(f"{len(todo)} distinct notes to topic-classify (model {MODEL})")
+    from concurrent.futures import ThreadPoolExecutor
+    batches = [todo[i:i + args.batch] for i in range(0, len(todo), args.batch)]
+
+    def classify(batch):
+        try:
+            return call_llm(batch)
+        except Exception as e:
+            return e
+
+    done = sent = 0
+    with ThreadPoolExecutor(max_workers=args.workers) as ex:
+        for batch, content in zip(batches, ex.map(classify, batches)):
+            sent += len(batch)
+            if isinstance(content, Exception):
+                print(f"  ERR: {type(content).__name__}: {content}"
+                      " -- rerun to retry", flush=True)
+                continue
+            got = {}
+            for m in re.finditer(r"^\s*(\d+)[.)\s]+\s*([a-z_]+)\s*$",
+                                 content, re.M):
+                n, cat = int(m.group(1)), m.group(2)
+                if 1 <= n <= len(batch) and cat in NOTE_TOPICS:
+                    got[n] = cat
+            c.executemany("INSERT OR IGNORE INTO note_topics VALUES(?,?,?)",
+                          [(batch[n - 1], cat, MODEL) for n, cat in got.items()])
+            c.commit()
+            done += len(got)
+            print(f"  {sent}/{len(todo)} classified={done}", flush=True)
+    left = len(pending_notes(c))
+    print(f"done: {done} this run, {left} pending"
+          + (" -- rerun to finish" if left else ""))
+
+
+def cmd_apply_notes(args):
+    c = db()
+    left = len(pending_notes(c))
+    if left:
+        sys.exit(f"{left} notes still unclassified -- run `notes` first")
+    for tbl in ("labels_dedup", "labels"):
+        cols = [r[1] for r in c.execute(f"PRAGMA table_info({tbl})")]
+        if "note_topic" not in cols:
+            c.execute(f"ALTER TABLE {tbl} ADD COLUMN note_topic TEXT")
+        c.execute(f"""UPDATE {tbl} SET note_topic = CASE
+            WHEN category = 'note' THEN (SELECT topic FROM note_topics t
+                                         WHERE t.text = {tbl}.text)
+            ELSE NULL END""")
+        c.commit()
+    for t, k in c.execute("SELECT note_topic, count(*) FROM labels_dedup"
+                          " WHERE category='note' GROUP BY 1 ORDER BY 2 DESC"):
+        print(f"  {t or 'NULL':15s} {k}")
+
+
 def cmd_status(args):
     c = db()
     n = c.execute("SELECT count(*) FROM text_categories").fetchone()[0]
@@ -163,5 +262,11 @@ if __name__ == "__main__":
     p.add_argument("--batch", type=int, default=150)
     sub.add_parser("status")
     sub.add_parser("apply")
+    pn = sub.add_parser("notes")
+    pn.add_argument("--limit", type=int)
+    pn.add_argument("--batch", type=int, default=150)
+    pn.add_argument("--workers", type=int, default=10)
+    sub.add_parser("apply-notes")
     args = ap.parse_args()
-    {"run": cmd_run, "status": cmd_status, "apply": cmd_apply}[args.cmd](args)
+    {"run": cmd_run, "status": cmd_status, "apply": cmd_apply,
+     "notes": cmd_notes, "apply-notes": cmd_apply_notes}[args.cmd](args)

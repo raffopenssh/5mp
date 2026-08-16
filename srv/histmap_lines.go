@@ -166,9 +166,16 @@ func (s *Server) HandleAPIHistMapAround(w http.ResponseWriter, r *http.Request) 
 	if histLabelsHasCategory(db, table) {
 		catCol = "COALESCE(category,'')"
 	}
-	rows, err := db.Query(`SELECT text, kind, `+catCol+`, lon, lat FROM `+table+`
+	topicCol, topicFilter := "''", ""
+	if histLabelsHasColumn(db, table, "note_topic") {
+		topicCol = "COALESCE(note_topic,'')"
+		// note_topic='fragment' = OCR debris that survived as category=note;
+		// suppressed here like junk (kept in DB and full /labels endpoint).
+		topicFilter = " AND COALESCE(note_topic,'') != 'fragment'"
+	}
+	rows, err := db.Query(`SELECT text, kind, `+catCol+`, `+topicCol+`, lon, lat FROM `+table+`
 		WHERE lon BETWEEN ? AND ? AND lat BETWEEN ? AND ?
-		AND COALESCE(category,'') NOT IN ('junk','collar')
+		AND COALESCE(category,'') NOT IN ('junk','collar')`+topicFilter+`
 		ORDER BY (lon-?)*(lon-?)+(lat-?)*(lat-?) LIMIT 120`,
 		minLon, maxLon, minLat, maxLat, lon, lon, lat, lat)
 	if err == nil {
@@ -176,7 +183,7 @@ func (s *Server) HandleAPIHistMapAround(w http.ResponseWriter, r *http.Request) 
 		notes := []histLabel{}
 		for rows.Next() {
 			var l histLabel
-			if rows.Scan(&l.Text, &l.Kind, &l.Category, &l.Lon, &l.Lat) == nil {
+			if rows.Scan(&l.Text, &l.Kind, &l.Category, &l.NoteTopic, &l.Lon, &l.Lat) == nil {
 				if l.Category == "note" {
 					notes = append(notes, l)
 				} else {

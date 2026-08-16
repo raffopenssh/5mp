@@ -76,8 +76,12 @@ func histLabelsHasFTS(db *sql.DB) bool {
 // histLabelsHasCategory reports whether categorize_labels.py apply has run
 // (adds a category column to both tables; older databases lack it).
 func histLabelsHasCategory(db *sql.DB, table string) bool {
+	return histLabelsHasColumn(db, table, "category")
+}
+
+func histLabelsHasColumn(db *sql.DB, table, col string) bool {
 	var n int
-	db.QueryRow(`SELECT count(*) FROM pragma_table_info(?) WHERE name='category'`, table).Scan(&n)
+	db.QueryRow(`SELECT count(*) FROM pragma_table_info(?) WHERE name=?`, table, col).Scan(&n)
 	return n > 0
 }
 
@@ -96,17 +100,21 @@ func histLabelsTable(db *sql.DB) string {
 }
 
 type histLabel struct {
-	Text string  `json:"text"`
-	Kind string  `json:"kind"`
+	Text string `json:"text"`
+	Kind string `json:"kind"`
 	// Category refines the vision model's coarse kind: the 28k-row 'other'
 	// bucket was re-classified by a text LLM (categorize_labels.py) into
 	// note|collar|junk|vegetation|..., and hill renamed terrain. Empty on a
 	// database where the categorize pass has not been applied.
 	Category string `json:"category,omitempty"`
-	Lon  float64 `json:"lon"`
-	Lat  float64 `json:"lat"`
-	NSrc int     `json:"n_src,omitempty"`   // dedup only: sightings merged
-	Sheet string `json:"sheet,omitempty"`   // raw only
+	// NoteTopic sub-classifies category=note rows (categorize_labels.py
+	// notes/apply-notes): travel|water_supply|habitation|hazard|antiquity|
+	// grazing_game|survey|infrastructure|fragment. Empty elsewhere.
+	NoteTopic string  `json:"note_topic,omitempty"`
+	Lon       float64 `json:"lon"`
+	Lat       float64 `json:"lat"`
+	NSrc      int     `json:"n_src,omitempty"` // dedup only: sightings merged
+	Sheet     string  `json:"sheet,omitempty"` // raw only
 }
 
 // HandleAPIHistMapLabels answers "what does the 1930s map say here".
@@ -175,8 +183,13 @@ func (s *Server) HandleAPIHistMapLabels(w http.ResponseWriter, r *http.Request) 
 	if hasCat {
 		catCol = "COALESCE(category, '')"
 	}
+	topicCol := "''"
+	hasTopic := histLabelsHasColumn(db, table, "note_topic")
+	if hasTopic {
+		topicCol = "COALESCE(note_topic, '')"
+	}
 	// col BETWEEN ? AND ? -- sargable on idx_labels_lonlat (invariant #3).
-	sqlq := "SELECT text, kind, " + catCol + ", lon, lat, " +
+	sqlq := "SELECT text, kind, " + catCol + ", " + topicCol + ", lon, lat, " +
 		map[string]string{"labels": "0, sheet", "labels_dedup": "n_src, ''"}[table] +
 		" FROM " + table +
 		" WHERE lon BETWEEN ? AND ? AND lat BETWEEN ? AND ?"
@@ -209,6 +222,15 @@ func (s *Server) HandleAPIHistMapLabels(w http.ResponseWriter, r *http.Request) 
 		sqlq += " AND category = ?"
 		args = append(args, v)
 	}
+	if v := q.Get("note_topic"); v != "" {
+		// Same refuse-don't-no-op rule as category (invariant #1).
+		if !hasTopic {
+			http.Error(w, "this labels database has no note_topic column (run categorize_labels.py apply-notes)", http.StatusBadRequest)
+			return
+		}
+		sqlq += " AND note_topic = ?"
+		args = append(args, v)
+	}
 	if hasCenter {
 		sqlq += " ORDER BY (lon-?)*(lon-?) + (lat-?)*(lat-?)"
 		args = append(args, centerLon, centerLon, centerLat, centerLat)
@@ -225,7 +247,7 @@ func (s *Server) HandleAPIHistMapLabels(w http.ResponseWriter, r *http.Request) 
 	labels := []histLabel{}
 	for rows.Next() {
 		var l histLabel
-		if err := rows.Scan(&l.Text, &l.Kind, &l.Category, &l.Lon, &l.Lat, &l.NSrc, &l.Sheet); err == nil {
+		if err := rows.Scan(&l.Text, &l.Kind, &l.Category, &l.NoteTopic, &l.Lon, &l.Lat, &l.NSrc, &l.Sheet); err == nil {
 			labels = append(labels, l)
 		}
 	}

@@ -439,3 +439,17 @@ API: `srv/histmap_lines.go`. `/api/histmap/sudan250k/lines` (bbox and/or
 `/around?lon=&lat=` returns labels, surveyor notes, clipped lines
 (`pts_in_window` + `clipped` flag), symbols and the sheet's survey year in
 one call. Both carry `progress`/`complete` while a run is in flight.
+
+## Note topics (`categorize_labels.py notes` / `apply-notes`)
+
+Sub-classifies the 4,499 `category='note'` labels so a reader can filter for
+interest without reading all of them: travel | water_supply | habitation |
+hazard | antiquity | grazing_game | survey | infrastructure | fragment.
+Text-only pass (gpt-oss-120b, same ledger shape as `run`: `note_topics` table
+keyed by distinct text, unparsed lines stay pending, rerun to retry;
+`--workers 10` ≈ 2 min for the full set). 61% came out `fragment` — OCR debris
+that survived as category=note — which is the honest answer, and `fragment`
+rows are suppressed from `/around`'s `surveyor_notes` (kept in DB and in the
+full `/labels` endpoint). `apply-notes` refuses a partial apply. Attribute
+`note_topic` flows to labels GPKG/CSV, `/labels?note_topic=` filter (refuses
+on a DB without the column, invariant #1) and `/around` responses.
