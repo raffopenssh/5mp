@@ -37,6 +37,25 @@ OUT = SRC / "xsa_mining_prediction.gpkg"
 pred = json.load(open(SRC / "prediction.json"))
 gj = json.load(open(SRC / "prediction.geojson"))
 cell = float(pred["cell_deg"])
+
+# Places the EASY report (section 4b) names in prose. Flagged in the GPKG
+# (in_report=1, distinct symbol) so the text and the map point at the same
+# things. MUST be kept in sync with
+# reports/XSA_CONSERVATION_REVIEW_2026-08_EASY.txt.
+REPORT_CAND_CELLS = {
+    (8.4270, 27.5288), (7.9270, 27.8288), (6.1770, 27.7788),
+    (8.9770, 22.9788),                       # abandoned-village group
+    (7.6770, 28.0288), (7.2770, 28.6788), (5.8270, 30.8288),
+    # big-village-no-farmland group
+    (5.3270, 25.4288), (6.5270, 23.8788), (7.2270, 28.3788),
+    # active-clearing group
+    (7.5270, 28.5288),                       # settled riverside
+    (8.4770, 24.5288),                       # empty ground
+}
+REPORT_WATCH_NAMES = {
+    "Toich", "Tup Weng", "Tambora A.M. & C.C.", "Kyango", "Ibrahim",
+    "(TIDI)",
+}
 grad = pred["graduated"]
 TIERS = ["top05", "top10", "top20", "top35"]
 TIER_PREFIX = {"top05": "10", "top10": "11", "top20": "12", "top35": "13"}
@@ -75,6 +94,7 @@ lyr = mklayer("01_candidates__report_points", ogr.wkbPoint, [
     ("character", ogr.OFTString),
     ("settlement_population_est", ogr.OFTInteger),
     ("settlement_cropland_frac", ogr.OFTReal),
+    ("in_report", ogr.OFTInteger),
     ("snap_source", ogr.OFTString),
     ("snap_km", ogr.OFTReal), ("tier", ogr.OFTString),
     ("composite_pctile", ogr.OFTReal), ("km_to_known_anchor", ogr.OFTReal),
@@ -100,6 +120,9 @@ for c in pred["candidates"]:
     if c.get("settlement_cropland_frac") is not None:
         f.SetField("settlement_cropland_frac",
                    c["settlement_cropland_frac"])
+    f.SetField("in_report",
+               1 if (round(c["lat"], 4), round(c["lon"], 4))
+               in REPORT_CAND_CELLS else 0)
     f.SetField("snap_source", src)
     f.SetField("snap_km", round(km(lat, lon, c["lat"], c["lon"]), 1))
     for k in ("tier", "composite_pctile", "km_to_known_anchor",
@@ -113,6 +136,7 @@ for c in pred["candidates"]:
 # ---- 02 watchlist villages
 lyr = mklayer("02_watchlist__villages", ogr.wkbPoint,
               [("rank", ogr.OFTInteger), ("name", ogr.OFTString),
+               ("in_report", ogr.OFTInteger),
                ("basin", ogr.OFTString),
                ("composite_pctile", ogr.OFTReal),
                ("gold_contact_km", ogr.OFTReal),
@@ -121,6 +145,7 @@ for w in pred["abandoned_village_gold_watchlist"]["places"]:
     f = ogr.Feature(lyr.GetLayerDefn())
     f.SetField("rank", w["rank"])
     f.SetField("name", w["name"] or "(unnamed)")
+    f.SetField("in_report", 1 if w["name"] in REPORT_WATCH_NAMES else 0)
     f.SetField("basin", w.get("basin") or "")
     f.SetField("composite_pctile", w["composite_pctile"])
     f.SetField("gold_contact_km", w["gold_contact_km"])
@@ -287,18 +312,64 @@ def outline(color, width="0.5", label_field=None, label_color="60,60,60,255",
             f'<Option name="outline_style" type="QString" value="dash"/>'
             f'</Option></layer></symbol></symbols></renderer-v2>{lab}</qgis>')
 
+
+def marker_flagged(shape_, color, outline_, size,
+                   flag_color, flag_outline, flag_size,
+                   label_field, label_color, label_size="8",
+                   buffer_alpha="200"):
+    """Rule-based marker style: in_report=1 features draw bigger, in their
+    own colour, with a bold label - the GPKG highlights exactly what the
+    EASY report's prose names."""
+    def sym(name, col, out, sz, outw):
+        return (f'<symbol type="marker" name="{name}">'
+                f'<layer class="SimpleMarker"><Option type="Map">'
+                f'<Option name="name" type="QString" value="{shape_}"/>'
+                f'<Option name="color" type="QString" value="{col}"/>'
+                f'<Option name="outline_color" type="QString" value="{out}"/>'
+                f'<Option name="outline_width" type="QString" value="{outw}"/>'
+                f'<Option name="size" type="QString" value="{sz}"/>'
+                f'</Option></layer></symbol>')
+    lab = (f'<labeling type="rule-based"><rules>'
+           f'<rule filter="&quot;in_report&quot;=1"><settings><text-style '
+           f'fieldName="{label_field}" fontSize="{int(label_size)+2}" '
+           f'fontWeight="75" textColor="{flag_outline}">'
+           f'<text-buffer bufferDraw="1" bufferSize="1.1" '
+           f'bufferColor="255,255,255,235"/></text-style>'
+           f'<placement placement="6" dist="2"/></settings></rule>'
+           f'<rule filter="&quot;in_report&quot;=0"><settings><text-style '
+           f'fieldName="{label_field}" fontSize="{label_size}" '
+           f'textColor="{label_color}">'
+           f'<text-buffer bufferDraw="1" bufferSize="0.9" '
+           f'bufferColor="255,255,255,{buffer_alpha}"/></text-style>'
+           f'<placement placement="6" dist="1.5"/></settings></rule>'
+           f'</rules></labeling>')
+    return (f'<!DOCTYPE qgis><qgis styleCategories="Symbology|Labeling" '
+            f'labelsEnabled="1">'
+            f'<renderer-v2 type="RuleRenderer"><rules key="root">'
+            f'<rule key="r1" filter="&quot;in_report&quot;=1" '
+            f'label="named in report" symbol="0"/>'
+            f'<rule key="r0" filter="&quot;in_report&quot;=0" '
+            f'label="other" symbol="1"/></rules><symbols>'
+            f'{sym("0", flag_color, flag_outline, flag_size, "0.6")}'
+            f'{sym("1", color, outline_, size, "0.3")}'
+            f'</symbols></renderer-v2>{lab}</qgis>')
+
 styles = {
     "03_basins__hydrobasins_lev5": outline(
         "70,90,140,200", label_field="name",
         label_color="70,90,140,255"),
     "00_known__anchors": marker("cross2", "0,0,0,255", "255,255,255,255",
                                 "3.2"),
-    "01_candidates__report_points": marker(
+    "01_candidates__report_points": marker_flagged(
         "star", "227,26,28,255", "255,255,255,255", "5",
+        flag_color="178,0,29,255", flag_outline="40,0,8,255",
+        flag_size="7",
         label_field="name", label_color="120,10,10,255", label_size="9",
         buffer_alpha="220"),
-    "02_watchlist__villages": marker(
+    "02_watchlist__villages": marker_flagged(
         "triangle", "255,170,0,255", "120,70,0,255", "3.4",
+        flag_color="230,120,0,255", flag_outline="90,45,0,255",
+        flag_size="5.2",
         label_field="name", label_color="120,70,0,255"),
 }
 for t in TIERS:
