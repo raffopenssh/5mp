@@ -278,6 +278,96 @@
         .stats-item.active::after { background: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,0.6); }
         .stats-label { color: #888; transition: color 0.2s; }
         .stats-value { color: #22c55e; font-weight: 600; font-variant-numeric: tabular-nums; transition: color 0.2s; }
+
+        /* ── THE PANEL SAYS IT IS WORKING ────────────────────────────────
+           Same vocabulary as a pinned chip (`.chip-dots`, defined once beside
+           the chips): three dots in the count's own slot, in the row's own
+           colour. The panel is fed by ONE request (/api/stats), so the wait is
+           a property of the panel and every row shows it together — which is
+           the truth: none of these numbers is current until that response
+           lands.
+
+           Two rules that make it calm rather than busy:
+           * The dots inherit the WIDTH of the number they replace (set inline
+             by beginStatsWait), so entering the wait moves nothing.
+           * They appear only after a grace delay (STATS_WAIT_DELAY_MS). A warm
+             /api/stats answers in ~80 ms, and a panel that flashed dots on
+             every pan would be the busiest thing on the screen. */
+        .stats-value .chip-dots { min-width: 0; height: 9px; }
+        /* The dots hold the value cell's own right edge, so the five rows'
+           indicators line up in the column the numbers make. Centring them in
+           each inherited slot instead produced a diagonal, because the slots
+           are 8 px ("0") to 79 px ("1,771,204") wide. */
+        .stats-item.awaiting .stats-value { text-align: right; }
+        /* A FLEX ITEM SHRINKS — including a 3px dot. The value span is a flex
+           item of its row and the dots are a flex container inside it, so on
+           the narrowest slot ("0", 8px wide) the browser dutifully squeezed
+           all three dots to nothing and the row went blank: a loading
+           indicator that vanishes precisely on the rows with the least to
+           say. The dots keep their size; the slot keeps room for them. */
+        .stats-value .chip-dots i { flex: none; }
+        .stats-item.awaiting .stats-value { flex: none; }
+        /* MIN-WIDTH DOES NOT APPLY TO AN INLINE BOX. The value ids are inline
+           <span>s, so the width reserved for the number being replaced was
+           silently ignored and the panel shrank to fit three dots — the exact
+           jump this indicator exists to prevent.
+           Scoped to the ID-carrying spans, NOT every child: a blanket
+           `.stats-value > span` outranks `.chip-dots`' own inline-flex (two
+           classes beat one), which turned the dot container into an
+           inline-block whose <i> children became inline boxes — and an inline
+           box ignores width, so all three dots measured 0. */
+        .stats-value, .stats-value > span[id^="stats-"] { display: inline-block; }
+        /* The trend arrow is an opinion about a number that is being replaced,
+           so it goes while the number is unknown — fully, not just to zero
+           opacity: an invisible arrow still holds ~12 px inside the value
+           cell, which pushed the two rows that have one out of the dots'
+           column. The cell keeps its measured width regardless (minWidth is
+           set on it), so nothing moves. */
+        .stats-item.awaiting .stats-trend { display: none; }
+        /* ONE indeterminate line for the whole panel, not five row sheens: the
+           panel is a single request, and a sweep per row would claim five
+           independent jobs. It rides the panel's top edge under the grab bar
+           (the linear-indeterminate idiom), in the panel's own green, thin
+           enough to stay peripheral. */
+        .stats-panel.awaiting::after { content: ''; position: absolute; left: 8px; right: 8px; top: 0;
+            height: 2px; border-radius: 0 0 2px 2px; pointer-events: none;
+            background: linear-gradient(90deg, transparent, rgba(34,197,94,0.85), transparent);
+            background-size: 42% 100%; background-repeat: no-repeat;
+            animation: statsScan 1.25s cubic-bezier(.45,0,.55,1) infinite, statsScanIn 0.2s ease-out; }
+        @keyframes statsScan { from { background-position: -45% 0; } to { background-position: 145% 0; } }
+        @keyframes statsScanIn { from { opacity: 0; } to { opacity: 1; } }
+        /* THE NUMBER ARRIVING IS THE EVENT — and only when it actually
+           changed. Re-running this on every refresh would twitch five rows
+           every time the map settles, to say nothing. Same 0.24 s rise as a
+           chip's count, so "an answer landed" is one gesture across the app. */
+        .stats-panel .val-in { animation: chipCountIn 0.24s cubic-bezier(.4,0,.2,1); }
+        /* THE REQUEST FAILED. The last good numbers stay (they were true a
+           moment ago) but must not read as current: dimmed, dotted-underlined,
+           with a title saying so. Silence here used to be the whole error
+           handling — a console.error and a panel that looked fine. */
+        .stats-panel.stats-stale .stats-value { opacity: 0.45;
+            text-decoration: underline dotted rgba(255,255,255,0.35); text-underline-offset: 3px; }
+        @media (prefers-reduced-motion: reduce) {
+            .stats-panel.awaiting::after { animation: none; background-position: 30% 0; }
+            .stats-panel .val-in { animation: none; }
+        }
+
+        /* ── WIDTH IS GOVERNED, NOT FOLLOWED (floatui.js, statsWidthGovernor)
+           This panel is shrink-to-fit over content that changes on every map
+           move: "1,771,204" becomes "0", the in-view readout goes from "30,000
+           of 38,725 in view" to "12 in view". Pinned to the RIGHT edge, every
+           width change moves the panel's left edge and every label under the
+           cursor with it — which is what makes a zoom feel like the UI is
+           twitching. The governor sets an explicit width: it grows immediately
+           and shrinks only after the content has been still for a while, so a
+           zoom sequence widens once and settles once instead of pumping. The
+           CSS transition is the animation; `w-anim` clips overflow only while
+           it runs, so a shrink reveals nothing ragged mid-flight. */
+        .stats-panel { transition: width 0.28s cubic-bezier(.4,0,.2,1); max-width: 340px; }
+        .stats-panel.w-anim { overflow: hidden; }
+        .stats-panel .stats-label, .stats-panel .stats-value { white-space: nowrap; }
+        @media (prefers-reduced-motion: reduce) { .stats-panel { transition: none; } }
+        @media (max-width: 768px) { .stats-panel { transition: none; max-width: none; } }
         .stats-divider { height: 1px; background: rgba(255,255,255,0.08); margin: 8px -8px; }
         .stats-header { font-size: 9px; font-weight: 600; color: #999; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; padding: 0 8px; }
 
@@ -1687,14 +1777,22 @@
              indeterminate indicator and a blinking LED.
            * The chip itself gets a single slow sheen and a dimmed border, so a
              glance at the panel tells you something is still arriving without
-             having to resolve three 3px dots. */
-        .pinned-layer-chip .chip-dots { display: inline-flex; align-items: center; gap: 2.5px;
-            min-width: 22px; height: 10px; justify-content: center; }
-        .pinned-layer-chip .chip-dots i { width: 3px; height: 3px; border-radius: 50%;
+             having to resolve three 3px dots.
+
+           NOT SCOPED TO THE CHIP. The stats panel's rows say "waiting" the
+           same way (`.stats-value .chip-dots`, written by loadStats), because a
+           pinned fire layer and the Fire Activity row are the same subject
+           reached from two controls — two different waiting animations for one
+           kind of wait is two components where the user sees one. Only the
+           surrounding treatment differs (`is-loading` below vs `.stats-item.
+           awaiting`), because a chip is a pill and a row is a line. */
+        .chip-dots { display: inline-flex; align-items: center; gap: 2.5px;
+            min-width: 22px; height: 10px; justify-content: center; vertical-align: middle; }
+        .chip-dots i { width: 3px; height: 3px; border-radius: 50%;
             background: currentColor; opacity: 0.28; transform: scale(0.72);
             animation: chipDotWave 1.05s cubic-bezier(.4,0,.2,1) infinite; }
-        .pinned-layer-chip .chip-dots i:nth-child(2) { animation-delay: 0.13s; }
-        .pinned-layer-chip .chip-dots i:nth-child(3) { animation-delay: 0.26s; }
+        .chip-dots i:nth-child(2) { animation-delay: 0.13s; }
+        .chip-dots i:nth-child(3) { animation-delay: 0.26s; }
         @keyframes chipDotWave {
             0%, 70%, 100% { opacity: 0.28; transform: scale(0.72); }
             35%           { opacity: 1;    transform: scale(1.18); }
@@ -1725,9 +1823,9 @@
         @keyframes chipCountIn { from { opacity: 0; transform: translateY(3px); }
                                  to   { opacity: 1; transform: none; } }
         @media (prefers-reduced-motion: reduce) {
-            .pinned-layer-chip .chip-dots i { animation-duration: 0s; opacity: 0.55; transform: none; }
-            .pinned-layer-chip .chip-dots i:nth-child(2) { opacity: 0.8; }
-            .pinned-layer-chip .chip-dots i:nth-child(3) { opacity: 1; }
+            .chip-dots i { animation-duration: 0s; opacity: 0.55; transform: none; }
+            .chip-dots i:nth-child(2) { opacity: 0.8; }
+            .chip-dots i:nth-child(3) { opacity: 1; }
             .pinned-layer-chip.is-loading::after,
             .pinned-layer-chip.is-loading,
             .pinned-layer-chip .chip-count { animation: none; }

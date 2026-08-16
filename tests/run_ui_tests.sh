@@ -264,6 +264,32 @@ src_guard "lod_reload_keeps_bbox"         absent  "lastBBox = null; load\(key, '
 # five places at once. Longhands only.
 src_guard "no_font_shorthand_inherit"     absent  "font: [0-9][^;]*/[^;]* inherit;" "srv/static/globe.css"
 
+# THE STATS CARD SAYS WHAT IT IS DOING, in the pin's vocabulary. Same three
+# dots (.chip-dots is defined once and used by both), in the value's own slot,
+# after a grace delay so a warm refresh does not flicker; one indeterminate
+# sweep for the panel because the panel is ONE request; the last good numbers
+# survive a failure but stop claiming to be current.
+src_guard "stats_wait_uses_chip_dots"     present "chip-dots" "srv/static/globe.css"
+src_guard "stats_wait_has_grace"          present "STATS_WAIT_DELAY_MS" "$GLOBE"
+src_guard "stats_wait_reserves_width"     present "cell.style.minWidth" "$GLOBE"
+src_guard "stats_panel_sweep"             present "@keyframes statsScan" "srv/static/globe.css"
+src_guard "stats_failure_is_visible"      present "stats-stale" "$GLOBE"
+src_guard "stats_failure_styled"          present ".stats-panel.stats-stale" "srv/static/globe.css"
+# Single flight + signature: loadStats has six call sites and several fire in
+# the same tick on a date change or a share-link restore.
+src_guard "stats_single_flight"           present "statsAbort" "$GLOBE"
+src_guard "stats_dedupes_by_signature"    present "sig === statsSig" "$GLOBE"
+# An abort is the caller WITHDRAWING the question -- retrying it three times
+# over six seconds re-asks something nobody wants the answer to.
+src_guard "fetchretry_skips_aborts"       present "err.name === 'AbortError'" "$GLOBE"
+# WIDTH IS GOVERNED, NOT FOLLOWED: this panel is shrink-to-fit, pinned to the
+# right edge, over content that changes on every map move -- so each zoom step
+# slid its left edge and every label under the cursor. Grow at once, shrink
+# only after the content has been still.
+src_guard "stats_width_governor"          present "statsWidthGovernor" "srv/static/floatui.js"
+src_guard "stats_width_hysteresis"        present "QUIET_MS" "srv/static/floatui.js"
+src_guard "stats_width_transition"        present "transition: width" "srv/static/globe.css"
+
 echo
 echo "======================================="
 if [[ $FAILED -eq 0 ]]; then
