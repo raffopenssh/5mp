@@ -71,7 +71,8 @@ for a in pred["anchors"]:
 
 # ---- 01 candidates at real locations
 lyr = mklayer("01_candidates__report_points", ogr.wkbPoint, [
-    ("name", ogr.OFTString), ("snap_source", ogr.OFTString),
+    ("name", ogr.OFTString), ("basin", ogr.OFTString),
+    ("snap_source", ogr.OFTString),
     ("snap_km", ogr.OFTReal), ("tier", ogr.OFTString),
     ("composite_pctile", ogr.OFTReal), ("km_to_known_anchor", ogr.OFTReal),
     ("gold_contact_km", ogr.OFTReal), ("river_km", ogr.OFTReal),
@@ -88,7 +89,8 @@ for c in pred["candidates"]:
     else:
         lat, lon, name, src = c["lat"], c["lon"], "(cell centre)", "cell_centre"
     f = ogr.Feature(lyr.GetLayerDefn())
-    f.SetField("name", name); f.SetField("snap_source", src)
+    f.SetField("name", name); f.SetField("basin", c.get("basin") or "")
+    f.SetField("snap_source", src)
     f.SetField("snap_km", round(km(lat, lon, c["lat"], c["lon"]), 1))
     for k in ("tier", "composite_pctile", "km_to_known_anchor",
               "gold_contact_km", "river_km", "settlement_km",
@@ -101,6 +103,7 @@ for c in pred["candidates"]:
 # ---- 02 watchlist villages
 lyr = mklayer("02_watchlist__villages", ogr.wkbPoint,
               [("rank", ogr.OFTInteger), ("name", ogr.OFTString),
+               ("basin", ogr.OFTString),
                ("composite_pctile", ogr.OFTReal),
                ("gold_contact_km", ogr.OFTReal),
                ("river_km", ogr.OFTReal)])
@@ -108,10 +111,28 @@ for w in pred["abandoned_village_gold_watchlist"]["places"]:
     f = ogr.Feature(lyr.GetLayerDefn())
     f.SetField("rank", w["rank"])
     f.SetField("name", w["name"] or "(unnamed)")
+    f.SetField("basin", w.get("basin") or "")
     f.SetField("composite_pctile", w["composite_pctile"])
     f.SetField("gold_contact_km", w["gold_contact_km"])
     f.SetField("river_km", w["river_km"])
     f.SetGeometry(pt(w["lon"], w["lat"])); lyr.CreateFeature(f)
+
+# ---- 03 drainage basins (grouping unit; HydroBASINS level 5)
+BASIN_FILE = ROOT / "data" / "hydrobasins" / "hybas5_xsa.json"
+basin_meta = {b["pfaf_id"]: b for b in pred["basins"]["list"]}
+lyr = mklayer("03_basins__hydrobasins_lev5", ogr.wkbMultiPolygon,
+              [("name", ogr.OFTString), ("pfaf_id", ogr.OFTInteger),
+               ("aoi_share", ogr.OFTReal)])
+for ft in json.load(open(BASIN_FILE))["features"]:
+    pid = int(ft["properties"]["PFAF_ID"])
+    if pid not in basin_meta: continue
+    g = ogr.CreateGeometryFromJson(json.dumps(ft["geometry"]))
+    g = ogr.ForceToMultiPolygon(g)
+    f = ogr.Feature(lyr.GetLayerDefn())
+    f.SetField("name", basin_meta[pid]["name"])
+    f.SetField("pfaf_id", pid)
+    f.SetField("aoi_share", basin_meta[pid]["aoi_share"])
+    f.SetGeometry(g); lyr.CreateFeature(f)
 
 # ---- 10..13 graduated feature folders
 def tier_meta(t):
@@ -232,7 +253,31 @@ SURF_COLOR = {
 KIND_SHAPE = {"settlements": "circle", "hist_places": "square",
               "osm_places": "diamond"}
 
+def outline(color, width="0.5", label_field=None, label_color="60,60,60,255",
+            label_size="10"):
+    lab = ""
+    if label_field:
+        lab = (f'<labeling type="simple"><settings><text-style '
+               f'fieldName="{label_field}" fontSize="{label_size}" '
+               f'textColor="{label_color}">'
+               f'<text-buffer bufferDraw="1" bufferSize="1.2" '
+               f'bufferColor="255,255,255,210"/></text-style>'
+               f'<placement placement="0"/></settings></labeling>')
+    return (f'<!DOCTYPE qgis><qgis styleCategories="Symbology|Labeling" '
+            f'labelsEnabled="{1 if label_field else 0}">'
+            f'<renderer-v2 type="singleSymbol"><symbols>'
+            f'<symbol type="fill" name="0"><layer class="SimpleFill">'
+            f'<Option type="Map">'
+            f'<Option name="style" type="QString" value="no"/>'
+            f'<Option name="outline_color" type="QString" value="{color}"/>'
+            f'<Option name="outline_width" type="QString" value="{width}"/>'
+            f'<Option name="outline_style" type="QString" value="dash"/>'
+            f'</Option></layer></symbol></symbols></renderer-v2>{lab}</qgis>')
+
 styles = {
+    "03_basins__hydrobasins_lev5": outline(
+        "70,90,140,200", label_field="name",
+        label_color="70,90,140,255"),
     "00_known__anchors": marker("cross2", "0,0,0,255", "255,255,255,255",
                                 "3.2"),
     "01_candidates__report_points": marker(
