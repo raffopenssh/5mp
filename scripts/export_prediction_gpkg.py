@@ -72,6 +72,9 @@ for a in pred["anchors"]:
 # ---- 01 candidates at real locations
 lyr = mklayer("01_candidates__report_points", ogr.wkbPoint, [
     ("name", ogr.OFTString), ("basin", ogr.OFTString),
+    ("character", ogr.OFTString),
+    ("settlement_population_est", ogr.OFTInteger),
+    ("settlement_cropland_frac", ogr.OFTReal),
     ("snap_source", ogr.OFTString),
     ("snap_km", ogr.OFTReal), ("tier", ogr.OFTString),
     ("composite_pctile", ogr.OFTReal), ("km_to_known_anchor", ogr.OFTReal),
@@ -90,6 +93,13 @@ for c in pred["candidates"]:
         lat, lon, name, src = c["lat"], c["lon"], "(cell centre)", "cell_centre"
     f = ogr.Feature(lyr.GetLayerDefn())
     f.SetField("name", name); f.SetField("basin", c.get("basin") or "")
+    f.SetField("character", c.get("character") or "")
+    if c.get("settlement_population_est") is not None:
+        f.SetField("settlement_population_est",
+                   int(c["settlement_population_est"]))
+    if c.get("settlement_cropland_frac") is not None:
+        f.SetField("settlement_cropland_frac",
+                   c["settlement_cropland_frac"])
     f.SetField("snap_source", src)
     f.SetField("snap_km", round(km(lat, lon, c["lat"], c["lon"]), 1))
     for k in ("tier", "composite_pctile", "km_to_known_anchor",
@@ -118,21 +128,24 @@ for w in pred["abandoned_village_gold_watchlist"]["places"]:
     f.SetGeometry(pt(w["lon"], w["lat"])); lyr.CreateFeature(f)
 
 # ---- 03 drainage basins (grouping unit; HydroBASINS level 5)
-BASIN_FILE = ROOT / "data" / "hydrobasins" / "hybas5_xsa.json"
 basin_meta = {b["pfaf_id"]: b for b in pred["basins"]["list"]}
 lyr = mklayer("03_basins__hydrobasins_lev5", ogr.wkbMultiPolygon,
               [("name", ogr.OFTString), ("pfaf_id", ogr.OFTInteger),
-               ("aoi_share", ogr.OFTReal)])
-for ft in json.load(open(BASIN_FILE))["features"]:
-    pid = int(ft["properties"]["PFAF_ID"])
-    if pid not in basin_meta: continue
-    g = ogr.CreateGeometryFromJson(json.dumps(ft["geometry"]))
-    g = ogr.ForceToMultiPolygon(g)
-    f = ogr.Feature(lyr.GetLayerDefn())
-    f.SetField("name", basin_meta[pid]["name"])
-    f.SetField("pfaf_id", pid)
-    f.SetField("aoi_share", basin_meta[pid]["aoi_share"])
-    f.SetGeometry(g); lyr.CreateFeature(f)
+               ("level", ogr.OFTInteger), ("aoi_share", ogr.OFTReal)])
+for fn in ("hybas5_xsa.json", "hybas6_xsa.json"):
+    for ft in json.load(open(ROOT / "data" / "hydrobasins" / fn))["features"]:
+        pid = int(ft["properties"]["PFAF_ID"])
+        b = basin_meta.get(pid)
+        if not b or b["level"] != (5 if fn == "hybas5_xsa.json" else 6):
+            continue
+        g = ogr.CreateGeometryFromJson(json.dumps(ft["geometry"]))
+        g = ogr.ForceToMultiPolygon(g)
+        f = ogr.Feature(lyr.GetLayerDefn())
+        f.SetField("name", b["name"])
+        f.SetField("pfaf_id", pid)
+        f.SetField("level", b["level"])
+        f.SetField("aoi_share", b["aoi_share"])
+        f.SetGeometry(g); lyr.CreateFeature(f)
 
 # ---- 10..13 graduated feature folders
 def tier_meta(t):
