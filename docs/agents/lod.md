@@ -64,8 +64,8 @@ with them: a glyph every 100 px across 2,000 overlapping paths is noise.
 (2026-08-16). Its purple (`#a855f7`) has roughly half the luminance of fire
 red and settlement amber, and with all three layers on it read as an empty
 layer (user report with screenshots). Keyed on
-`featureType === 'deforestation'` in `lodlayer.js`: dots mode draws at 0.95
-alpha (`setOpacity`) and vector-mode points at 0.95 (`applyDensity`), at the
+`featureType === 'deforestation'` in `lodlayer.js`: dots mode draws at 0.85
+alpha (`setOpacity`) and vector-mode points at 0.85 (`applyDensity`), at the
 **same sizes as every other layer**. Rejected variants, all tried: bigger
 dots (too much), a pale ring / halo stroke (too loud), the animator's
 area-scaled √area·zoom dot (too much over 30k fire chords). Ink, not data —
