@@ -315,6 +315,31 @@ unauthenticated and unexpiring. `srv/shared_files.go`, table `shared_files`
   chips (computed on read via `linkTagsForTarget`), Share → ShareLink dialog,
   renew (+30d) shown only ≤14 d out, delete with a confirm that names the
   consequence (keys switched off).
+* **Upload progress lives across the button** (2026-08-16). The first version
+  used a hidden `<input>` + `fetch()`, which has **no upload progress events**:
+  a 118 MB zip on a domestic uplink was minutes of a button that looked dead,
+  reported as "nothing happens" (the server was fine — 120 MB in 0.5 s over
+  loopback). Now `filesUploadSend` uses **XHR** for `upload.onprogress` and
+  renders four states through one function, `uplRender` (`.upl*` CSS in
+  `globe.css`):
+  - *sending* — determinate fill across the button + `MB / MB · rate · ETA` +
+    `%` + a cancel `✕` (which must `preventDefault`, or the surrounding
+    `<label>` reopens the file picker); rate is EWMA-smoothed, a raw
+    per-event rate flickers and reads as a broken meter.
+  - *processing* — bytes acknowledged, server still storing: an indeterminate
+    sweep, **not** 100%. Any number here would be invented (invariant 1: an
+    unfinished unit must say so).
+  - *done* / *error* — the failure names its reason **in the control** with a
+    Retry that reuses the already-picked `File`; a toast alone scrolls away.
+    Status codes map to plain titles, and 413/403 are `canRetry: false`
+    (retrying cannot help). Oversize is refused **client-side** against
+    `FILES_MAX_UPLOAD` — sending 3 GB for four minutes to be told "too large"
+    is the worst of both.
+  `loadFilesSection` re-renders the control **only when it is idle**, or the
+  reload after an upload would erase the running bar / the error being read.
+  `xhr.timeout = 0` on purpose: the server's own idle deadline (`longUpload`,
+  10 min of *no bytes*) governs, a wall-clock cap would kill a slow but
+  healthy 1 GB upload.
 
 ## A `?pwd=` for another login switches the session (2026-08-16)
 

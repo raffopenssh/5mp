@@ -4154,6 +4154,50 @@ body.is-guest .session-chip-label::before {
 .sh-empty { color: #6b7280; font-size: 12px; padding: 28px; text-align: center;
     border: 1px dashed rgba(255,255,255,0.1); border-radius: 10px; }
 
+/* ── Upload button with the progress drawn ACROSS it ───────────────────────
+   A 118 MB POST takes minutes on a domestic uplink, and the old control said
+   nothing while it ran (hidden <input>, a fetch() with no progress events):
+   indistinguishable from a dead button, which is exactly how it was reported.
+   The button IS the progress bar -- a determinate fill for the bytes actually
+   acknowledged by the socket, then an indeterminate sweep for the server-side
+   phase, where no percentage is honest. Errors land in the same control (red,
+   with the reason and a Retry), never only in a toast that scrolls away. */
+.upl { position: relative; overflow: hidden; display: inline-flex; align-items: center;
+    gap: 8px; min-width: 260px; padding: 7px 13px; isolation: isolate; }
+.upl-fill { position: absolute; inset: 0 auto 0 0; width: 0; z-index: 0;
+    background: linear-gradient(90deg, rgba(59,130,246,0.30), rgba(56,189,248,0.42));
+    border-right: 1px solid rgba(125,211,252,0.55);
+    transition: width 0.25s cubic-bezier(.4,0,.2,1); }
+.upl-label { position: relative; z-index: 1; display: inline-flex; align-items: center;
+    gap: 7px; flex: 1; min-width: 0; }
+.upl-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.upl-pct { position: relative; z-index: 1; font-variant-numeric: tabular-nums;
+    font-family: 'Fira Code', ui-monospace, Menlo, monospace; font-size: 11px; color: #e5e7eb; }
+.upl-cancel { position: relative; z-index: 2; background: none; border: 0; padding: 0 2px;
+    color: #9ca3af; cursor: pointer; font-size: 12px; line-height: 1; }
+.upl-cancel:hover { color: #fca5a5; }
+/* Busy: no hover affordance, and the fill keeps its own colour. */
+.upl.is-busy { color: #e5e7eb; border-color: rgba(56,189,248,0.45); cursor: progress; }
+.upl.is-busy:hover { background: rgba(255,255,255,0.06); }
+/* Server-side phase (bytes are in, answer isn't): a sweep, not a number. */
+.upl.is-indeterminate .upl-fill { width: 100% !important; border-right: 0;
+    background: linear-gradient(90deg, rgba(59,130,246,0.05) 0%, rgba(56,189,248,0.38) 45%,
+        rgba(59,130,246,0.05) 90%);
+    background-size: 240% 100%; animation: uplSweep 1.15s linear infinite; }
+@keyframes uplSweep { from { background-position: 140% 0; } to { background-position: -60% 0; } }
+.upl.is-done { border-color: rgba(52,211,153,0.5); color: #a7f3d0; }
+.upl.is-done .upl-fill { width: 100%; background: rgba(16,185,129,0.22); border-right: 0; }
+.upl.is-error { border-color: rgba(239,68,68,0.55); color: #fca5a5; }
+.upl.is-error .upl-fill { background: rgba(239,68,68,0.16); border-right: 0; animation: none; }
+.upl-err { display: flex; align-items: flex-start; gap: 6px; margin-top: 7px; max-width: 520px;
+    color: #fca5a5; font-size: 11px; line-height: 1.45; }
+.upl-err b { color: #fecaca; font-weight: 600; }
+.upl-retry { margin-left: 6px; }
+@media (prefers-reduced-motion: reduce) {
+    .upl-fill { transition: none; }
+    .upl.is-indeterminate .upl-fill { animation: none; background: rgba(56,189,248,0.22); }
+}
+
 /* ── Tag chips (srv/static/tagchips.js) ────────────────────────────────────
    ONE control, everywhere tags appear: the share dialog, Admin → Access &
    Sharing, and the export card in the bell. Blue, never the key's amber — a tag
