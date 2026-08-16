@@ -240,13 +240,26 @@
    link between the two is still visible. This is the bottom sheet every mobile
    map uses, and it is why the same card can safely be bigger here than the
    hover preview ever is. */
-@media (max-width: 640px) {
+@media (max-width: 640px), ((max-height: 480px) and (pointer: coarse)) {
     .maptip.sticky.docked {
         left: 8px !important; right: 8px !important;
         top: auto !important; max-width: none; width: auto;
         /* bottom is set from bottomChromePx() -- the toolbar and the time
            slider are measured, because both change height on a narrow screen. */
         max-height: 46vh; overflow-y: auto;
+        transition: bottom .18s ease;
+    }
+    /* In the FloatUI sheet stack a collapsed card folds to its first line —
+       still naming what is selected — so several sheets can coexist. */
+    .maptip.sticky.fui-collapsed .maptip-body { max-height: 1.5em; overflow: hidden; }
+    .maptip.sticky.fui-collapsed .maptip-action,
+    .maptip.sticky.fui-collapsed .maptip-exports { display: none; }
+}
+/* Landscape phone: bottom-left fixed width, matching the sheet stack. */
+@media ((max-height: 480px) and (pointer: coarse) and (min-width: 641px)) {
+    .maptip.sticky.docked {
+        left: 64px !important; right: auto !important;
+        width: min(420px, calc(100vw - 90px));
     }
 }
 `;
@@ -369,7 +382,12 @@
         if (!el) return;
         if (docked && el.classList.contains('docked')) {
             el.style.left = el.style.top = '';
-            el.style.bottom = bottomChromePx() + 'px';
+            // In the FloatUI sheet stack the stack owns `bottom`, so several
+            // sheets (this card, the area popup, pinned layers) coexist
+            // instead of printing over each other at the same offset.
+            if (!(window.FloatUI && FloatUI.sheetActive && FloatUI.sheetActive('maptip'))) {
+                el.style.bottom = bottomChromePx() + 'px';
+            }
             return;
         }
         el.style.bottom = '';
@@ -487,8 +505,25 @@
         // Docked only where the card would otherwise sit on the feature: a
         // narrow screen. The class is toggled (not media-query-only) so the
         // inline left/top written for a wide screen is not left fighting it.
-        var docked = map.getContainer().clientWidth <= 640;
+        var docked = map.getContainer().clientWidth <= 640 ||
+            (window.FloatUI && FloatUI.isSheetMode && FloatUI.isSheetMode());
         pinEl.classList.toggle('docked', docked);
+        // A docked card joins the FloatUI sheet stack so it shares the bottom
+        // edge with the area popup and pinned layers instead of overlapping.
+        if (window.FloatUI && FloatUI.registerSheet) {
+            if (docked && !FloatUI.sheetActive('maptip') && !pinEl._fuiSheet) {
+                pinEl._fuiSheet = true;
+                FloatUI.registerSheet('maptip', {
+                    el: pinEl,
+                    isCollapsed: function () { return pinEl.classList.contains('fui-collapsed'); },
+                    setCollapsed: function (on) { pinEl.classList.toggle('fui-collapsed', on); }
+                });
+            } else if (!docked && pinEl._fuiSheet) {
+                pinEl._fuiSheet = false;
+                FloatUI.unregisterSheet('maptip');
+                pinEl.classList.remove('fui-collapsed');
+            }
+        }
         position(pinEl, p, docked);
     }
 
@@ -506,7 +541,14 @@
     function unpin() {
         if (!pin) return;
         pin = null;
-        if (pinEl) { pinEl.classList.remove('visible'); pinEl.classList.remove('docked'); }
+        if (pinEl) {
+            pinEl.classList.remove('visible'); pinEl.classList.remove('docked');
+            pinEl.classList.remove('fui-collapsed');
+            if (pinEl._fuiSheet && window.FloatUI && FloatUI.unregisterSheet) {
+                pinEl._fuiSheet = false;
+                FloatUI.unregisterSheet('maptip');
+            }
+        }
         if (anchorEl) anchorEl.classList.remove('visible');
         if (tabsEl) { tabsEl.classList.remove('available'); tabsEl.innerHTML = ''; }
     }
