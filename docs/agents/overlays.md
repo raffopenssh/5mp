@@ -804,6 +804,14 @@ opened *from* one of these menus and deliberately leaves it open behind
 rather than close it. At 2600 it dimmed the map and left the geology panel and
 its menu bright on top of the modal they had just opened.
 
+**The geology panel itself sits at 900 (`.ml-menu.ml-panel`), not at
+`.aoi-menu`'s 10000.** It borrows `.aoi-menu` for its box, but it is a
+session-long panel, not a transient menu: at 10000 it floated over the admin
+panel (2000) and every modal. 900 keeps it above the map furniture and below
+the app's own overlay layer, the same rule the map tips (400) follow. The
+selector needs both classes — `.aoi-menu`'s rule comes later in `globe.css`,
+so a single-class rule loses the specificity tie.
+
 Tests: `srv/geomap_gpkg_test.go` (the four filtered-export cases, the stamp, the
 filename). Both rows have been **clicked through** and their files opened, and
 the two newer layers have now had a `render_gpkg.py` pass (see § the raster
