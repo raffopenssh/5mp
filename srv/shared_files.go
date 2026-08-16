@@ -217,6 +217,8 @@ func (s *Server) HandleAPISharedFileUpload(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	r.Body = http.MaxBytesReader(w, r.Body, maxSharedFileSize)
+	// A large body must outlive the server's absolute ReadTimeout.
+	longUpload(w, r)
 	if err := r.ParseMultipartForm(32 << 20); err != nil {
 		http.Error(w, "file too large (limit 1 GB) or malformed upload", http.StatusRequestEntityTooLarge)
 		return
@@ -341,7 +343,7 @@ func (s *Server) HandleAPISharedFileDownload(w http.ResponseWriter, r *http.Requ
 	if st, err := fh.Stat(); err == nil {
 		mod = st.ModTime()
 	}
-	http.ServeContent(w, r, f.Name, mod, fh)
+	http.ServeContent(longDownload(w), r, f.Name, mod, fh)
 }
 
 // HandleAPISharedFileExtend — POST /api/files/{id}/extend {days:30}.

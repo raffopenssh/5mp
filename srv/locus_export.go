@@ -387,7 +387,9 @@ func (s *Server) HandleAPIParkLocus(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/zip")
 	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s_locus_%s.zip"`, parkID, time.Now().Format("2006-01-02")))
-	zw := zip.NewWriter(w)
+	// Streamed straight to the client and unbounded in size (tracks + tiles
+	// for a whole park), so it must not inherit the absolute WriteTimeout.
+	zw := zip.NewWriter(longDownload(w))
 	writeFile := func(name string, data []byte) error {
 		f, err := zw.Create(name)
 		if err != nil {

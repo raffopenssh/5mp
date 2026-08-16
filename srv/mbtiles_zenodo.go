@@ -1041,8 +1041,9 @@ func proxyZenodoDownload(w http.ResponseWriter, r *http.Request, downloadURL, fi
 	if resp.ContentLength > 0 {
 		w.Header().Set("Content-Length", fmt.Sprintf("%d", resp.ContentLength))
 	}
-	w.WriteHeader(resp.StatusCode)
-	io.Copy(w, resp.Body)
+	lw := longDownload(w)
+	lw.WriteHeader(resp.StatusCode)
+	io.Copy(lw, resp.Body)
 }
 
 // HandleAPIZenodoMBTilesList lists jobs from both queues.

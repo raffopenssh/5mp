@@ -675,7 +675,7 @@ func (s *Server) HandleAPIMBTilesDownload(w http.ResponseWriter, r *http.Request
 	// region resumes with Range requests minutes or hours later, and a
 	// one-shot delete turns every resume into a 404. The 2-hour auto-cleanup
 	// scheduled at completion reclaims the space.
-	http.ServeFile(w, r, filePath)
+	http.ServeFile(longDownload(w), r, filePath)
 }
 
 // HandleAPIMBTilesList lists all jobs
