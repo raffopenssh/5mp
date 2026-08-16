@@ -22145,13 +22145,20 @@ ${starredItems.narratives.map(n => {
         // The upload control is absent, not disabled, when this session may
         // not upload (test env, guest): a control that could only ever refuse
         // implies the capability exists here.
-        up.innerHTML = d.can_upload
-            ? `<label class="sh-btn" style="cursor:pointer;display:inline-block;">
-                 <i class="icon-upload"></i> Upload a file (max 1 GB)
-                 <input type="file" style="display:none;" onchange="filesUpload(this)">
-               </label>
-               <span id="files-upload-note" style="font-size:11px;color:#9ca3af;margin-left:8px;"></span>`
-            : `<div style="font-size:11px;color:#9ca3af;">File sharing is not available in this environment.</div>`;
+        // It is also rendered ONCE: this function reloads after every upload,
+        // and re-writing the control's HTML mid-flight would erase the running
+        // progress bar (and the error the user is still reading).
+        const uplBusy = filesUploadXHR || up.querySelector('.upl.is-error, .upl.is-done');
+        if (!up.firstChild || !uplBusy) {
+            up.innerHTML = d.can_upload
+                ? `<label id="files-upload-btn" class="sh-btn upl" style="cursor:pointer;">
+                     <span class="upl-fill"></span>
+                     <span class="upl-label"><i class="icon-upload"></i><span class="upl-name">Upload a file (max 1 GB)</span></span>
+                     <input type="file" style="display:none;" onchange="filesUpload(this)">
+                   </label>
+                   <div id="files-upload-err"></div>`
+                : `<div style="font-size:11px;color:#9ca3af;">File sharing is not available in this environment.</div>`;
+        }
         const files = d.files || [];
         if (!files.length) {
             box.innerHTML = `<div class="sh-empty">No files yet.</div>`;
@@ -22191,24 +22198,202 @@ ${starredItems.narratives.map(n => {
         </div>`;
     }
 
-    async function filesUpload(input) {
+    // ===== Shared-file upload: the button IS the progress bar =====
+    //
+    // A 118 MB zip over a domestic uplink is minutes of silence, and the old
+    // control was a hidden <input> plus a bare `fetch()`: no progress events
+    // exist on a fetch body, so the button looked dead until the answer came
+    // back (or never, if it didn't) -- "nothing happens" was the bug report.
+    // XHR is used precisely because it reports `upload.onprogress`.
+    //
+    // Three phases, because they are three different truths:
+    //   1. sending    -- determinate %, bytes acknowledged, rate + ETA
+    //   2. processing -- 100% sent, server still writing/inserting; a sweep,
+    //                    because any number here would be invented
+    //   3. done / failed -- and a failure names its reason IN the control,
+    //                    with Retry; a toast alone scrolls away unread.
+    // Invariant 1's shape: an upload that stops must read as unfinished, never
+    // as an idle button.
+    let filesUploadXHR = null;
+
+    function uplFmtBytes(n) {
+        if (n >= (1 << 30)) return (n / (1 << 30)).toFixed(2) + ' GB';
+        if (n >= (1 << 20)) return (n / (1 << 20)).toFixed(1) + ' MB';
+        return Math.max(1, Math.round(n / 1024)) + ' KB';
+    }
+    function uplFmtETA(sec) {
+        if (!isFinite(sec) || sec < 0) return '';
+        if (sec < 60) return Math.ceil(sec) + 's left';
+        const m = Math.floor(sec / 60);
+        if (m < 60) return m + 'm ' + Math.round(sec % 60) + 's left';
+        return Math.floor(m / 60) + 'h ' + (m % 60) + 'm left';
+    }
+
+    // One renderer for every state the control can be in, so the button can
+    // never show a stale phase (e.g. a percentage after a failure).
+    function uplRender(state) {
+        const btn = document.getElementById('files-upload-btn');
+        const errBox = document.getElementById('files-upload-err');
+        if (!btn) return;
+        const fill = btn.querySelector('.upl-fill');
+        const input = btn.querySelector('input[type=file]');
+        btn.classList.toggle('is-busy', state.phase === 'sending' || state.phase === 'processing');
+        btn.classList.toggle('is-indeterminate', state.phase === 'processing');
+        btn.classList.toggle('is-done', state.phase === 'done');
+        btn.classList.toggle('is-error', state.phase === 'error');
+        // A busy button must not reopen the file picker: disable the input
+        // rather than the label (a disabled label still forwards the click).
+        if (input) input.disabled = (state.phase === 'sending' || state.phase === 'processing');
+        if (fill) fill.style.width = (state.phase === 'sending' ? (state.pct || 0) : 0) + '%';
+
+        const label = btn.querySelector('.upl-label');
+        const oldPct = btn.querySelector('.upl-pct');
+        if (oldPct) oldPct.remove();
+        const oldCancel = btn.querySelector('.upl-cancel');
+        if (oldCancel) oldCancel.remove();
+
+        if (state.phase === 'idle') {
+            label.innerHTML = `<i class="icon-upload"></i><span class="upl-name">Upload a file (max 1 GB)</span>`;
+        } else if (state.phase === 'sending') {
+            label.innerHTML = `<i class="icon-upload"></i><span class="upl-name">${escapeHtml(state.name)}</span>`
+                + `<span style="color:#9ca3af;font-size:10.5px;white-space:nowrap;">`
+                + `${uplFmtBytes(state.loaded)} / ${uplFmtBytes(state.total)}`
+                + (state.rate ? ` · ${uplFmtBytes(state.rate)}/s` : '')
+                + (state.eta ? ` · ${state.eta}` : '') + `</span>`;
+            btn.insertAdjacentHTML('beforeend',
+                `<span class="upl-pct">${Math.floor(state.pct)}%</span>`
+                + `<button class="upl-cancel" title="Cancel this upload" onclick="filesUploadCancel(event)">✕</button>`);
+        } else if (state.phase === 'processing') {
+            label.innerHTML = `<i class="icon-loader"></i><span class="upl-name">${escapeHtml(state.name)} — ${uplFmtBytes(state.total)} sent, storing…</span>`;
+        } else if (state.phase === 'done') {
+            label.innerHTML = `<i class="icon-check"></i><span class="upl-name">${escapeHtml(state.name)} uploaded</span>`;
+        } else if (state.phase === 'error') {
+            label.innerHTML = `<i class="icon-upload"></i><span class="upl-name">Upload failed — pick a file to try again</span>`;
+        }
+
+        if (errBox) {
+            errBox.innerHTML = state.phase === 'error'
+                ? `<div class="upl-err"><i class="icon-triangle-alert"></i><div><b>${escapeHtml(state.errTitle || 'Upload failed')}</b> — ${escapeHtml(state.errDetail || '')}`
+                  + (state.canRetry ? `<button class="sh-btn upl-retry" onclick="filesUploadRetry()">Retry</button>` : '')
+                  + `</div></div>`
+                : '';
+        }
+    }
+
+    function filesUploadCancel(ev) {
+        // The control lives inside a <label>: without this, cancelling would
+        // also reopen the file picker.
+        if (ev) { ev.preventDefault(); ev.stopPropagation(); }
+        if (filesUploadXHR) filesUploadXHR.abort();
+    }
+
+    let filesUploadLast = null;   // the File, so Retry needs no second pick
+    function filesUploadRetry() {
+        if (filesUploadLast) filesUploadSend(filesUploadLast);
+    }
+
+    function filesUpload(input) {
         const file = input.files && input.files[0];
+        input.value = '';   // so picking the same file twice still fires onchange
         if (!file) return;
-        const note = document.getElementById('files-upload-note');
-        if (note) note.textContent = `Uploading ${file.name}…`;
+        filesUploadSend(file);
+    }
+
+    const FILES_MAX_UPLOAD = 1 << 30;
+
+    function filesUploadSend(file) {
+        filesUploadLast = file;
+        // Refuse locally what the server would refuse anyway — uploading 3 GB
+        // for four minutes to be told "too large" is the worst of both.
+        if (file.size > FILES_MAX_UPLOAD) {
+            uplRender({ phase: 'error', errTitle: 'File too large',
+                errDetail: `${uplFmtBytes(file.size)} exceeds the 1 GB limit. Split it, or compress it further.`,
+                canRetry: false });
+            return;
+        }
+        const started = Date.now();
+        let lastT = started, lastLoaded = 0, rate = 0;
+        const xhr = new XMLHttpRequest();
+        filesUploadXHR = xhr;
+        uplRender({ phase: 'sending', name: file.name, loaded: 0, total: file.size, pct: 0 });
+
+        xhr.upload.onprogress = (e) => {
+            if (!e.lengthComputable) return;
+            const now = Date.now();
+            if (now - lastT > 400) {
+                // Smoothed rate: a raw per-event rate on a fast LAN flickers
+                // between 0 and absurd, which reads as a broken meter.
+                const inst = (e.loaded - lastLoaded) / ((now - lastT) / 1000);
+                rate = rate ? rate * 0.7 + inst * 0.3 : inst;
+                lastT = now; lastLoaded = e.loaded;
+            }
+            const pct = e.total ? (e.loaded / e.total) * 100 : 0;
+            uplRender({ phase: 'sending', name: file.name, loaded: e.loaded, total: e.total,
+                pct, rate: rate > 0 ? rate : 0,
+                eta: rate > 0 ? uplFmtETA((e.total - e.loaded) / rate) : '' });
+        };
+        // All bytes acknowledged, answer pending: the honest state is "working",
+        // not 100%.
+        xhr.upload.onload = () => uplRender({ phase: 'processing', name: file.name, total: file.size });
+
+        xhr.onload = () => {
+            filesUploadXHR = null;
+            let d = {};
+            try { d = JSON.parse(xhr.responseText || '{}'); } catch (e) { /* plain-text http.Error */ }
+            if (xhr.status >= 200 && xhr.status < 300) {
+                filesUploadLast = null;
+                uplRender({ phase: 'done', name: d.name || file.name });
+                showToast(`${d.name || file.name} uploaded — now share it`, 'success');
+                loadFilesSection();
+                setTimeout(() => {
+                    if (!filesUploadXHR) uplRender({ phase: 'idle' });
+                }, 4000);
+                return;
+            }
+            const detail = (d.error || (xhr.responseText || '').trim().split('\n')[0] || '').slice(0, 300);
+            let title = `Server said ${xhr.status}`, canRetry = true;
+            if (xhr.status === 413) {
+                title = 'File too large';
+                canRetry = false;
+            } else if (xhr.status === 403) {
+                title = 'Not allowed';
+                canRetry = false;
+            } else if (xhr.status === 401) {
+                title = 'Session expired';
+            } else if (xhr.status === 429) {
+                title = 'Too many uploads';
+            } else if (xhr.status >= 500) {
+                title = 'Server error';
+            }
+            uplRender({ phase: 'error', errTitle: title,
+                errDetail: detail || 'No reason given by the server.', canRetry });
+            showToast(`Upload failed — ${title}`, 'error');
+        };
+        xhr.onerror = () => {
+            filesUploadXHR = null;
+            const sent = uplFmtBytes(lastLoaded || 0);
+            uplRender({ phase: 'error', errTitle: 'Connection lost',
+                errDetail: `The upload stopped after ${sent} of ${uplFmtBytes(file.size)}. Nothing was stored — the server discards a partial file. Check the connection and retry.`,
+                canRetry: true });
+            showToast('Upload failed — connection lost', 'error');
+        };
+        xhr.ontimeout = () => {
+            filesUploadXHR = null;
+            uplRender({ phase: 'error', errTitle: 'Timed out',
+                errDetail: 'The connection stalled for too long. Retry, or use a faster link.', canRetry: true });
+        };
+        xhr.onabort = () => {
+            filesUploadXHR = null;
+            uplRender({ phase: 'error', errTitle: 'Cancelled',
+                errDetail: 'You stopped the upload. Nothing was stored.', canRetry: true });
+        };
+
         const fd = new FormData();
         fd.append('file', file);
-        try {
-            const res = await fetch(`/api/files?pwd=${encodeURIComponent(window.getPwd() || '')}`,
-                { method: 'POST', body: fd });
-            const d = await res.json().catch(() => ({}));
-            if (!res.ok) throw new Error(d.error || `HTTP ${res.status}`);
-            showToast(`${d.name} uploaded — now share it`, 'success');
-            loadFilesSection();
-        } catch (e) {
-            if (note) note.textContent = '';
-            showToast('Upload failed (' + e.message + ')', 'error');
-        }
+        xhr.open('POST', `/api/files?pwd=${encodeURIComponent(window.getPwd() || '')}`);
+        xhr.timeout = 0;   // the server's own idle deadline governs; a wall-clock
+                           // cap here would kill a legitimate slow 1 GB upload
+        xhr.send(fd);
     }
 
     // The share dialog is the ordinary one: it mints a guest key on
