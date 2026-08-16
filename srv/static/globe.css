@@ -805,7 +805,8 @@
            cannot be a popover that the next click on the map dismisses — the
            reader was choosing between seeing the map and seeing the key to it.
            It wears the app's own window furniture (.fui-bar), so a reader who
-           has learned to drag the pinned-layers box has learned this too. */
+           has learned to drag the pinned-layers box has learned this too.
+
            IT LIVES IN THE MAP'S LAYER, NOT ABOVE THE APP'S. `.aoi-menu` gives
            it z-index 10000 (right for a transient menu, wrong for a panel
            that stays open for the whole session): it then floated on top of
