@@ -117,6 +117,35 @@ func (s *Server) PasswordMiddleware(next http.Handler) http.Handler {
 		// Check cookie first
 		cookie, err := r.Cookie("access_pwd")
 		if err == nil && isValidPassword(cookie.Value) {
+			// A `pwd=` FOR A DIFFERENT LOGIN IS A SWITCH, NOT NOISE.
+			//
+			// This branch used to strip the param and serve on with the old
+			// cookie, which half-applied the switch: RequestPwd/RequestEnv
+			// prefer the query param, so THIS request was the new login while
+			// the cookie -- and therefore every XHR the page then made -- was
+			// still the old one. Opening a colleague's `?pwd=` link rendered a
+			// shell as them and filled it with your own tenant's links, AOIs
+			// and patrol data. One page, two identities, and the mismatch
+			// visible nowhere.
+			//
+			// The URL is the newer statement of intent, so it wins: adopt it
+			// into the cookie, then redirect to scrub it as usual. Downgrading
+			// is not possible here -- both values are valid passwords, and a
+			// guest capability never reaches this branch (it arrives on /s/,
+			// resolved above, and never as a `pwd=`).
+			if q := r.URL.Query().Get("pwd"); q != "" && q != cookie.Value && isValidPassword(q) {
+				SetAccessPwdCookie(w, q)
+				if strings.HasPrefix(r.URL.Path, "/api/") {
+					// An API call carrying an explicit pwd is answered as that
+					// login on this very request (a download must arrive as the
+					// response to the request that asked for it), and the fresh
+					// cookie makes the rest of the session agree.
+					next.ServeHTTP(w, r)
+					return
+				}
+				http.Redirect(w, r, urlWithoutPwd(r.URL), http.StatusFound)
+				return
+			}
 			// A PASSWORD MUST NOT SURVIVE IN THE ADDRESS BAR. The cookie
 			// branch used to serve the page as-is, so `?pwd=` was only ever
 			// stripped on the ONE request that had no cookie yet. Every later

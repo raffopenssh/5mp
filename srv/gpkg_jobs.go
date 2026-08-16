@@ -69,9 +69,12 @@ type GeoPackageJob struct {
 	Downloads int             `json:"downloads"`
 	URL       string          `json:"download_url,omitempty"`
 	Cached    bool            `json:"cached,omitempty"`
-	// LinkTag: the tag of a live guest share link that points straight at this
-	// file (e.g. 'report'). Filled on read, not stored: the link table owns it.
-	LinkTag string `json:"link_tag,omitempty"`
+	// LinkTags: the purpose tags of a live guest share link that points straight
+	// at this file (e.g. ['report']). Filled on read, never stored: the link
+	// table owns them, and a copy here would drift from a retag. `LinkTag` is
+	// the first of them, kept for one-word readers.
+	LinkTags []string `json:"link_tags,omitempty"`
+	LinkTag  string   `json:"link_tag,omitempty"`
 	// View is present only for a viewport export. It is what makes the card
 	// self-describing after a reload ("1 Mar 2025 · fire paths, settlements"
 	// rather than "Map view"), and it is what Try-again re-sends.
@@ -670,20 +673,41 @@ func (s *Server) HandleAPIAreaGeoPackage(w http.ResponseWriter, r *http.Request)
 	writeJSON(w, http.StatusOK, job)
 }
 
-// gpkgLinkTag returns the tag of a live guest link that points straight at
-// this job's download, or "" — so a card in the bell can say "part of
-// 'report'" and the operator knows why the file is being kept.
-func (s *Server) gpkgLinkTag(id string) string {
-	var tag string
-	s.DB.QueryRow(`SELECT COALESCE(tag,'') FROM short_links
-		WHERE guest = 1 AND (revoked_at IS NULL OR revoked_at = '')
-		  AND expires_at > ? AND tag <> ''
-		  AND (url = ? OR url LIKE ?)
-		ORDER BY expires_at DESC LIMIT 1`,
+// gpkgLinkTags returns the purpose tags of a live guest link that points
+// straight at this job's download, or nil — so a card in the bell can say
+// "part of 'report'" and the operator knows why the file is being kept.
+// Tags are a set, so a file kept for two purposes names both.
+func (s *Server) gpkgLinkTags(id string) []string {
+	rows, err := s.DB.Query(`SELECT DISTINCT t.tag FROM short_link_tags t
+		JOIN short_links l ON l.slug = t.slug
+		WHERE l.guest = 1 AND (l.revoked_at IS NULL OR l.revoked_at = '')
+		  AND COALESCE(l.expires_at,'') > ?
+		  AND (l.url = ? OR l.url LIKE ?)
+		ORDER BY t.tag`,
 		time.Now().UTC().Format(time.RFC3339),
 		"/api/geopackage/"+id+"/download",
-		"/api/geopackage/"+id+"/download?%").Scan(&tag)
-	return tag
+		"/api/geopackage/"+id+"/download?%")
+	if err != nil {
+		return nil
+	}
+	defer rows.Close()
+	var out []string
+	for rows.Next() {
+		var t string
+		if rows.Scan(&t) == nil {
+			out = append(out, t)
+		}
+	}
+	return out
+}
+
+// gpkgSetLinkTags fills both the set and the one-word form on a job.
+func (s *Server) gpkgSetLinkTags(j *GeoPackageJob) {
+	j.LinkTags = s.gpkgLinkTags(j.ID)
+	j.LinkTag = ""
+	if len(j.LinkTags) > 0 {
+		j.LinkTag = j.LinkTags[0]
+	}
 }
 
 // HandleAPIGeoPackageStatus — GET /api/geopackage/{id}. No-store: it is live.
@@ -692,7 +716,7 @@ func (s *Server) HandleAPIGeoPackageStatus(w http.ResponseWriter, r *http.Reques
 	if !ok {
 		return
 	}
-	j.LinkTag = s.gpkgLinkTag(j.ID)
+	s.gpkgSetLinkTags(j)
 	w.Header().Set("Cache-Control", "no-store")
 	writeJSON(w, http.StatusOK, j)
 }
@@ -732,7 +756,7 @@ func (s *Server) HandleAPIGeoPackageExtend(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	j.ExpiresAt = exp
-	j.LinkTag = s.gpkgLinkTag(j.ID)
+	s.gpkgSetLinkTags(j)
 	writeJSON(w, http.StatusOK, j)
 }
 

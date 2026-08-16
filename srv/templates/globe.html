@@ -21364,6 +21364,9 @@ ${starredItems.narratives.map(n => {
             return;
         }
         box.innerHTML = groups.map(g => sharingGroupHTML(g, d.guest_ttl_days)).join('');
+        // The chips are a live control, not markup: mount them once the rows
+        // exist. One implementation (srv/static/tagchips.js) for every surface.
+        mountSharingTags(groups.flatMap(g => g.links));
     }
 
     function sharingGroupHTML(g, ttlDays) {
@@ -21372,9 +21375,12 @@ ${starredItems.narratives.map(n => {
         // button renews the whole purpose-group (every link a report cites) in
         // one call. Shown only when at least one member actually needs it — a
         // renew button on a group with a year of life is noise.
+        // flatMap over l.tags, not l.tag: a link may be in several groups, and
+        // reading only the first would hide a dying key from the renew button
+        // of every other purpose it serves.
         const tags = [...new Set(g.links
-            .filter(l => l.tag && l.guest && !l.revoked && !l.expired && sharingDaysLeft(l) !== null && sharingDaysLeft(l) <= SHARING_RENEW_DAYS)
-            .map(l => l.tag))];
+            .filter(l => l.guest && !l.revoked && !l.expired && sharingDaysLeft(l) !== null && sharingDaysLeft(l) <= SHARING_RENEW_DAYS)
+            .flatMap(l => l.tags || (l.tag ? [l.tag] : [])))];
         const tagBtns = tags.map(t =>
             `<button class="sh-btn sh-btn-renew" onclick="sharingExtendTag('${escapeHtml(t)}')" title="Some keys tagged #${escapeHtml(t)} expire soon — extend them all by 30 days"><i class="icon-calendar-plus"></i> renew #${escapeHtml(t)}</button>`).join(' ');
         return `<section class="sh-group">
@@ -21397,20 +21403,68 @@ ${starredItems.narratives.map(n => {
         return Math.max(0, Math.ceil((new Date(l.expires_at) - Date.now()) / 86400000));
     }
 
-    // The tag chip: #name × — click the name to rename the tag EVERYWHERE it
-    // appears (a tag is one name for one purpose; renaming one row would fork
-    // the group out of the next "renew all"), × to take THIS link out of it.
-    function sharingTagChipHTML(l) {
-        if (l.alias_of) return '';
+    // The tag row: one TagChips control per link (srv/static/tagchips.js) —
+    // the same control the share dialog and the export card use, because a tag
+    // that looked different in each place taught the user they were three
+    // things. HTML here is only the empty slot; the control is mounted after
+    // the list is in the DOM (mountSharingTags), so behaviour lives in one file.
+    //
+    // Renaming from a chip renames the tag EVERYWHERE it appears: a tag is one
+    // name for one purpose, and a per-row rename would fork the group out of
+    // the next "renew #report". The × takes THIS link out of the group.
+    function sharingTagSlotHTML(l) {
+        if (l.alias_of) return ''; // an alias is a ghost of a rename, not a link
         const dead = l.revoked || l.expired;
-        if (l.tag) {
-            return `<span class="sh-tag" id="sh-tag-${escapeHtml(l.slug)}">` +
-                `<span class="sh-tag-name" title="Click to rename this tag everywhere" onclick="sharingRenameTag('${escapeHtml(l.slug)}','${escapeHtml(l.tag)}')">#${escapeHtml(l.tag)}</span>` +
-                (dead ? '' : `<button class="sh-tag-x" title="Remove tag from this link" onclick="sharingSetTag('${escapeHtml(l.slug)}','')">×</button>`) +
-                `</span>`;
-        }
-        if (dead) return '';
-        return `<button class="sh-tag-add" id="sh-tag-${escapeHtml(l.slug)}" title="Tag this link with a purpose (e.g. report) so the whole group can be renewed together" onclick="sharingAddTag('${escapeHtml(l.slug)}')"><span class="sh-tag-hash">#</span> add tag</button>`;
+        if (dead && !(l.tags || []).length) return '';
+        return `<span class="sh-tags" data-slug="${escapeHtml(l.slug)}" data-dead="${dead ? 1 : 0}"></span>`;
+    }
+
+    // Mount every slot the last render produced. Tags are a SET, so each row
+    // gets add/remove/rename and none of them is capped at one.
+    function mountSharingTags(links) {
+        if (typeof TagChips === 'undefined') return;
+        const bySlug = {};
+        (links || []).forEach(l => { bySlug[l.slug] = l; });
+        document.querySelectorAll('#sharing-body .sh-tags').forEach(el => {
+            const l = bySlug[el.dataset.slug];
+            if (!l) return;
+            const dead = el.dataset.dead === '1';
+            TagChips.mount(el, {
+                tags: l.tags || (l.tag ? [l.tag] : []),
+                editable: !dead,
+                onAdd: t => sharingPostTags(l.slug, { add: t }),
+                onRemove: t => sharingPostTags(l.slug, { remove: t }),
+                onRename: (oldT, next) => sharingRenameTag(oldT, next)
+            });
+        });
+    }
+
+    // One request shape for add/remove/replace. The server's set is the answer
+    // we draw — it sanitises, dedupes and caps, so a UI that painted its own
+    // request could show a refused tag as accepted.
+    async function sharingPostTags(slug, body) {
+        const res = await fetch(`/api/shortlink/${encodeURIComponent(slug)}/retag?pwd=${encodeURIComponent(window.getPwd() || '')}`,
+            { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        const d = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(d.error || `HTTP ${res.status}`);
+        // The group-level "renew #tag" button and the tag counts are derived
+        // from the whole list, so the sheet is reloaded — but only after the
+        // chip row has its answer, so the chips never flicker through a guess.
+        setTimeout(loadSharingTab, 0);
+        return d.tags || [];
+    }
+
+    // Rename EVERYWHERE, and say how many links moved: a rename that touched
+    // one row when the user expected twelve must not read like success
+    // (AGENTS.md invariant 1).
+    async function sharingRenameTag(oldTag, next) {
+        const res = await fetch(`/api/shortlinks/retag?pwd=${encodeURIComponent(window.getPwd() || '')}`,
+            { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tag: oldTag, new_tag: next }) });
+        const d = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(d.error || `HTTP ${res.status}`);
+        showToast(`Tag renamed on ${d.renamed} link${d.renamed === 1 ? '' : 's'}`, 'success');
+        setTimeout(loadSharingTab, 0);
+        return [next];
     }
 
     function sharingRowHTML(l, ttlDays) {
@@ -21453,7 +21507,7 @@ ${starredItems.narratives.map(n => {
                 ${patrol ? '<span class="sh-badge sh-badge-warn">patrol tracks</span>' : ''}
                 ${window_ ? `<span class="sh-badge sh-badge-when">${escapeHtml(window_)}</span>` : ''}
                 ${state ? `<span class="sh-badge sh-badge-off">${state}</span>` : ''}
-                ${sharingTagChipHTML(l)}
+                ${sharingTagSlotHTML(l)}
                 <span class="sh-kind">${escapeHtml(l.kind || 'view')}</span>
                 ${l.title ? `<span class="sh-title">${escapeHtml(l.title)}</span>` : ''}
             </div>
@@ -21465,63 +21519,6 @@ ${starredItems.narratives.map(n => {
                 ${l.revoked ? '' : `<button class="sh-btn sh-btn-off" onclick="sharingClear('${escapeHtml(l.slug)}',${l.guest})">${l.guest ? 'Switch off' : 'Clear'}</button>`}
             </div>
         </div>`;
-    }
-
-    // Set (or clear, tag='') the tag on one link.
-    async function sharingSetTag(slug, tag) {
-        try {
-            const res = await fetch(`/api/shortlink/${encodeURIComponent(slug)}/retag?pwd=${encodeURIComponent(window.getPwd() || '')}`,
-                { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tag: tag }) });
-            if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || res.status); }
-            loadSharingTab();
-        } catch (e) {
-            showToast('Could not change tag (' + e.message + ')', 'error');
-        }
-    }
-
-    // Inline "# add tag" input, same gesture as renaming an AOI from its tag.
-    function sharingAddTag(slug) {
-        const el = document.getElementById(`sh-tag-${slug}`);
-        if (!el || el.querySelector('input')) return;
-        sharingTagInput(el, '', v => sharingSetTag(slug, v));
-    }
-
-    // Click a tag name → rename it everywhere. One purpose, one name: renaming
-    // row-by-row would silently fork the group out of the next "renew all".
-    function sharingRenameTag(slug, oldTag) {
-        const el = document.getElementById(`sh-tag-${slug}`);
-        if (!el || el.querySelector('input')) return;
-        sharingTagInput(el, oldTag, async v => {
-            if (v === oldTag) { loadSharingTab(); return; }
-            try {
-                const res = await fetch(`/api/shortlinks/retag?pwd=${encodeURIComponent(window.getPwd() || '')}`,
-                    { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tag: oldTag, new_tag: v }) });
-                if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || res.status); }
-                const d = await res.json();
-                showToast(`Tag renamed on ${d.renamed} link${d.renamed === 1 ? '' : 's'}`, 'success');
-            } catch (e) {
-                showToast('Could not rename tag (' + e.message + ')', 'error');
-            }
-            loadSharingTab();
-        });
-    }
-
-    function sharingTagInput(el, initial, commit) {
-        el.innerHTML = `<input class="sh-tag-input" value="${escapeHtml(initial)}" maxlength="32" placeholder="tag…" spellcheck="false">`;
-        const inp = el.querySelector('input');
-        inp.focus(); inp.select();
-        let done = false;
-        const finish = save => {
-            if (done) return; done = true;
-            const v = inp.value.trim().toLowerCase().replace(/^#/, '');
-            if (!save || v === initial) { loadSharingTab(); return; }
-            commit(v);
-        };
-        inp.onkeydown = ev => { ev.stopPropagation();
-            if (ev.key === 'Enter') { ev.preventDefault(); finish(true); }
-            if (ev.key === 'Escape') { ev.preventDefault(); finish(false); } };
-        inp.onblur = () => finish(true);
-        inp.onclick = ev => ev.stopPropagation();
     }
 
     function sharingCopy(btn, url) {
@@ -23786,7 +23783,7 @@ ${starredItems.narratives.map(n => {
                     <dl class="sh-legend">
                         <div><dt style="color:#4ade80;">named link</dt><dd>a short name for a view &mdash; it still asks for the password, so the name is safe to say out loud.</dd></div>
                         <div><dt style="color:#fcd34d;">shared key</dt><dd>opens the view <em>without</em> a password: read-only, expires by itself; Switch&nbsp;off revokes it for whoever holds it.</dd></div>
-                        <div><dt style="color:#93c5fd;">#tag</dt><dd>groups links made for one purpose (e.g. a report) so they renew together &mdash; click to rename everywhere, &times; to remove.</dd></div>
+                        <div><dt style="color:#93c5fd;">#tag</dt><dd>groups links made for one purpose (e.g. a report) so they renew together. A link can carry several. Click a name to rename it on every link that has it, &times; to take this link out.</dd></div>
                     </dl>
                     <div id="sharing-body">Loading&hellip;</div>
 
@@ -24139,6 +24136,10 @@ ${starredItems.narratives.map(n => {
          own and adds nothing to the page when both are off. -->
     <script src="/static/maplegend.js?v={{.Version}}"></script>
     <script src="/static/floatui.js?v={{.Version}}"></script>
+    <!-- One tag control for every surface that shows a purpose tag: the share
+         popup, Admin -> Access & Sharing, and the export card in the bell.
+         Must load before sharelink.js, which mounts it. -->
+    <script src="/static/tagchips.js?v={{.Version}}"></script>
     <!-- One share popup for every "copy link" in the app (srv/shortlink.go,
          docs/agents/sharing.md). Loaded last because it only ever reacts to a
          click; nothing on the page waits for it. -->

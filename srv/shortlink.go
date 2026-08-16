@@ -92,16 +92,7 @@ const guestTTL = 30 * 24 * time.Hour
 // than refused (refusing would only teach the caller to ask for exactly 365).
 const guestMaxTTL = 365 * 24 * time.Hour
 
-// shortTagRe: a tag names a purpose ("report"), so it is a slug, not prose.
-var shortTagRe = regexp.MustCompile(`[^a-z0-9_-]+`)
-
-func shortSanitizeTag(t string) string {
-	t = shortTagRe.ReplaceAllString(strings.ToLower(strings.TrimSpace(t)), "")
-	if len(t) > 32 {
-		t = t[:32]
-	}
-	return t
-}
+// Tags (a link's purpose groups) live in srv/shortlink_tags.go.
 
 // gpkgDownloadTarget extracts the job id from a short-link target that points
 // straight at an export file, or "" for any other URL.
@@ -453,8 +444,13 @@ type shortLinkResp struct {
 	DateFrom string `json:"date_from,omitempty"`
 	DateTo   string `json:"date_to,omitempty"`
 	Reuse    bool   `json:"reused,omitempty"`
-	Tag      string `json:"tag,omitempty"` // purpose tag actually stored on the row
-	Error    string `json:"error,omitempty"`
+	// Tags: the purpose groups actually stored on the row (a SET — a link may
+	// be part of a report and of a workshop). `Tag` is the first of them, kept
+	// for one-word callers; both are echoed rather than assumed, because the
+	// server sanitises, dedupes and caps what was asked for.
+	Tags  []string `json:"tags,omitempty"`
+	Tag   string   `json:"tag,omitempty"`
+	Error string   `json:"error,omitempty"`
 }
 
 // HandleAPIShortLinkCreate — POST /api/shortlink
@@ -485,9 +481,11 @@ func (s *Server) HandleAPIShortLinkCreate(w http.ResponseWriter, r *http.Request
 		// asked of a guest link -- a named link is a name, and whoever opens
 		// it signs in and sees what their own password sees, dates included.
 		LockDates bool `json:"lock_dates"`
-		// Tag: groups links issued for one purpose (e.g. 'report') so they can
-		// be listed and extended together.
-		Tag string `json:"tag"`
+		// Tag/Tags: purpose groups (e.g. 'report') so links can be listed and
+		// extended together. A set, because one link can serve two purposes;
+		// `tag` is the single-word form older callers send.
+		Tag  string   `json:"tag"`
+		Tags []string `json:"tags"`
 	}
 	if err := decodeJSONBody(r, &body); err != nil {
 		writeJSON(w, http.StatusBadRequest, shortLinkResp{Error: "bad request"})
@@ -559,7 +557,11 @@ func (s *Server) HandleAPIShortLinkCreate(w http.ResponseWriter, r *http.Request
 		}
 	}
 
-	tag := shortSanitizeTag(body.Tag)
+	tags := shortSanitizeTags(append(append([]string{}, body.Tags...), body.Tag))
+	tag := ""
+	if len(tags) > 0 {
+		tag = tags[0]
+	}
 	insert := func(slug string) error {
 		var pid interface{}
 		if body.Guest && principal != 0 {
@@ -571,11 +573,18 @@ func (s *Server) HandleAPIShortLinkCreate(w http.ResponseWriter, r *http.Request
 		}
 		_, err := s.DB.Exec(`INSERT INTO short_links
 			(slug, url, kind, title, env, pwd_ref, guest, principal_id, expires_at, created_at,
-			 scope, date_from, date_to, tag)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			 scope, date_from, date_to)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 			slug, target, kind, strings.TrimSpace(body.Title), env, ref,
 			boolInt(body.Guest), pid, exp, time.Now().UTC().Format(time.RFC3339),
-			scope, dFrom, dTo, tag)
+			scope, dFrom, dTo)
+		if err == nil && len(tags) > 0 {
+			// Tags are rows in short_link_tags, not a column: the mint carries
+			// them so a re-minted key stays in its groups (a remint that
+			// dropped them would silently exempt the new key from the next
+			// "renew #report").
+			s.shortSetTags(slug, tags)
+		}
 		if err == nil && body.Guest {
 			// A guest link straight to an export file is a promise the file
 			// keeps existing: push the job's expiry out to the link's.
@@ -595,7 +604,7 @@ func (s *Server) HandleAPIShortLinkCreate(w http.ResponseWriter, r *http.Request
 			}
 			writeJSON(w, http.StatusOK, shortLinkResp{Slug: slug, Short: "/s/" + slug,
 				URL: target, Kind: kind, Guest: true, Expires: expires, Scope: scope,
-				DateFrom: dFrom, DateTo: dTo, Tag: tag})
+				DateFrom: dFrom, DateTo: dTo, Tag: tag, Tags: tags})
 			return
 		}
 		writeJSON(w, http.StatusInternalServerError, shortLinkResp{Error: "could not create a link"})
@@ -608,27 +617,31 @@ func (s *Server) HandleAPIShortLinkCreate(w http.ResponseWriter, r *http.Request
 	if want := shortSlugify(body.Slug); want != "" && !s.shortSlugTaken(want) {
 		if err := insert(want); err == nil {
 			writeJSON(w, http.StatusOK, shortLinkResp{Slug: want, Short: "/s/" + want,
-				URL: target, Kind: kind, Tag: tag})
+				URL: target, Kind: kind, Tag: tag, Tags: tags})
 			return
 		}
 	}
 
-	var existing, existingTag string
-	if err := s.DB.QueryRow(`SELECT slug, COALESCE(tag,'') FROM short_links
+	var existing string
+	if err := s.DB.QueryRow(`SELECT slug FROM short_links
 		WHERE url = ? AND env = ? AND pwd_ref = ? AND guest = 0
 		  AND (alias_of IS NULL OR alias_of = '')
-		ORDER BY created_at DESC LIMIT 1`, target, env, ref).Scan(&existing, &existingTag); err == nil && existing != "" {
-		// Dedupe found a row. A requested tag on an untagged row is adopted --
-		// the caller is tagging the view they are sharing right now -- but a
-		// tag already there is never silently overwritten; the response echoes
-		// what is actually stored, so the dialog shows the truth either way.
-		if tag != "" && existingTag == "" {
-			if _, err := s.DB.Exec(`UPDATE short_links SET tag = ? WHERE slug = ?`, tag, existing); err == nil {
-				existingTag = tag
-			}
+		ORDER BY created_at DESC LIMIT 1`, target, env, ref).Scan(&existing); err == nil && existing != "" {
+		// Dedupe found a row. Since tags are a SET, a requested tag is ADDED to
+		// whatever is already there rather than overwriting it or being dropped:
+		// the caller is tagging the view they are sharing right now, and the row
+		// they landed on may already belong to another purpose. The response
+		// echoes the stored set, so the dialog shows the truth either way.
+		if len(tags) > 0 {
+			s.shortAddTags(existing, tags)
+		}
+		have := s.shortTagsOf(existing)
+		first := ""
+		if len(have) > 0 {
+			first = have[0]
 		}
 		writeJSON(w, http.StatusOK, shortLinkResp{Slug: existing, Short: "/s/" + existing,
-			URL: target, Kind: kind, Reuse: true, Tag: existingTag})
+			URL: target, Kind: kind, Reuse: true, Tag: first, Tags: have})
 		return
 	}
 
@@ -641,7 +654,7 @@ func (s *Server) HandleAPIShortLinkCreate(w http.ResponseWriter, r *http.Request
 			continue
 		}
 		writeJSON(w, http.StatusOK, shortLinkResp{Slug: slug, Short: "/s/" + slug,
-			URL: target, Kind: kind, Tag: tag})
+			URL: target, Kind: kind, Tag: tag, Tags: tags})
 		return
 	}
 	writeJSON(w, http.StatusInternalServerError, shortLinkResp{Error: "could not create a link"})
@@ -750,11 +763,25 @@ func (s *Server) HandleAPIShortLinkRename(w http.ResponseWriter, r *http.Request
 		writeJSON(w, http.StatusInternalServerError, shortLinkResp{Error: "could not rename"})
 		return
 	}
+	// Tags are keyed on the slug, so they must travel with it inside the same
+	// transaction — a renamed link that lost its tags would silently drop out
+	// of the next "renew #report", which is the one thing tags exist to stop.
+	// (The alias gets none: an alias is a ghost of a rename, not a link.)
+	if _, err := tx.Exec(`UPDATE short_link_tags SET slug = ? WHERE slug = ?`, want, old); err != nil {
+		writeJSON(w, http.StatusInternalServerError, shortLinkResp{Error: "could not rename"})
+		return
+	}
 	if err := tx.Commit(); err != nil {
 		writeJSON(w, http.StatusInternalServerError, shortLinkResp{Error: "could not rename"})
 		return
 	}
-	writeJSON(w, http.StatusOK, shortLinkResp{Slug: want, Short: "/s/" + want, URL: target, Kind: kind})
+	tags := s.shortTagsOf(want)
+	first := ""
+	if len(tags) > 0 {
+		first = tags[0]
+	}
+	writeJSON(w, http.StatusOK, shortLinkResp{Slug: want, Short: "/s/" + want, URL: target,
+		Kind: kind, Tags: tags, Tag: first})
 }
 
 type shortLinkRow struct {
@@ -769,7 +796,10 @@ type shortLinkRow struct {
 	Guest   bool   `json:"guest"`
 	Expires string `json:"expires_at,omitempty"`
 	Scope   string `json:"scope,omitempty"` // restricted layers this link carries
-	Tag     string `json:"tag,omitempty"`   // purpose group, e.g. 'report'
+	// Tags: purpose groups, e.g. ['report','workshop'] — a SET, alphabetical.
+	// `Tag` is the first of them, kept so a one-word reader stays correct.
+	Tags []string `json:"tags,omitempty"`
+	Tag  string   `json:"tag,omitempty"`
 	// The window this key is confined to, if any. The sheet must show it:
 	// "read-only, expiring, and only May-August" is a different thing to have
 	// handed out than "read-only and expiring", and an operator deciding
@@ -811,13 +841,16 @@ func (s *Server) HandleAPIShortLinkList(w http.ResponseWriter, r *http.Request) 
 	rows, err := s.DB.Query(`SELECT slug, url, COALESCE(alias_of,''), kind, title, env,
 		COALESCE(pwd_ref,''), guest, COALESCE(expires_at,''), COALESCE(revoked_at,''),
 		hits, COALESCE(last_hit_at,''), created_at, COALESCE(scope,''),
-		COALESCE(date_from,''), COALESCE(date_to,''), COALESCE(tag,'')
+		COALESCE(date_from,''), COALESCE(date_to,'')
 		FROM short_links WHERE pwd_ref = ? ORDER BY created_at DESC LIMIT 1000`, mine)
 	if err != nil {
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "could not list links"})
 		return
 	}
 	defer rows.Close()
+	// One query for every (slug → tags) pair, not one per row: the sheet lists
+	// up to 1000 links and N+1 here is how a sheet becomes a spinner.
+	tagsBySlug := s.shortTagsByOwner(mine)
 	g := &shortLinkGroup{Ref: mine, Mine: true, Links: []shortLinkRow{}}
 	now := time.Now()
 	for rows.Next() {
@@ -826,8 +859,12 @@ func (s *Server) HandleAPIShortLinkList(w http.ResponseWriter, r *http.Request) 
 		var guest int
 		if err := rows.Scan(&l.Slug, &l.URL, &l.AliasOf, &l.Kind, &l.Title, &env, &ref,
 			&guest, &l.Expires, &revoked, &l.Hits, &l.LastHit, &l.Created, &l.Scope,
-			&l.DateFrom, &l.DateTo, &l.Tag); err != nil {
+			&l.DateFrom, &l.DateTo); err != nil {
 			continue
+		}
+		l.Tags = tagsBySlug[l.Slug]
+		if len(l.Tags) > 0 {
+			l.Tag = l.Tags[0]
 		}
 		l.Guest = guest == 1
 		l.Revoked = revoked != ""
@@ -923,21 +960,7 @@ func (s *Server) HandleAPIShortLinkExtendTag(w http.ResponseWriter, r *http.Requ
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "no tag"})
 		return
 	}
-	rows, err := s.DB.Query(`SELECT slug FROM short_links
-		WHERE tag = ? AND pwd_ref = ? AND guest = 1 AND (revoked_at IS NULL OR revoked_at = '')`,
-		tag, shortCallerRef(r))
-	if err != nil {
-		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "database error"})
-		return
-	}
-	var slugs []string
-	for rows.Next() {
-		var sl string
-		if rows.Scan(&sl) == nil {
-			slugs = append(slugs, sl)
-		}
-	}
-	rows.Close()
+	slugs := s.shortSlugsWithTag(tag, shortCallerRef(r))
 	extended := 0
 	last := ""
 	for _, sl := range slugs {
@@ -947,106 +970,6 @@ func (s *Server) HandleAPIShortLinkExtendTag(w http.ResponseWriter, r *http.Requ
 		}
 	}
 	writeJSON(w, http.StatusOK, map[string]interface{}{"tag": tag, "extended": extended, "expires_at": last})
-}
-
-// HandleAPIShortLinkRetag — POST /api/shortlink/{slug}/retag {tag}
-//
-// Sets or clears the purpose tag on ONE link. An empty tag removes it — the
-// UI's little ×. Aliases carry no tag (they are ghosts of a rename, not
-// links), so retagging one is refused rather than silently accepted.
-func (s *Server) HandleAPIShortLinkRetag(w http.ResponseWriter, r *http.Request) {
-	slug := strings.ToLower(strings.Trim(r.PathValue("slug"), "/"))
-	var body struct {
-		Tag string `json:"tag"`
-	}
-	if err := decodeJSONBody(r, &body); err != nil {
-		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "bad request"})
-		return
-	}
-	tag := shortSanitizeTag(body.Tag)
-	if strings.TrimSpace(body.Tag) != "" && tag == "" {
-		// The caller typed something and sanitising ate all of it. Accepting
-		// would store a silent no-tag while the user believes one was set.
-		writeJSON(w, http.StatusBadRequest, map[string]string{
-			"error": "a tag uses lowercase letters, digits, - and _"})
-		return
-	}
-	var alias sql.NullString
-	if !s.shortLinkOwned(slug, r) {
-		writeJSON(w, http.StatusNotFound, map[string]string{"error": "no such link"})
-		return
-	}
-	if err := s.DB.QueryRow(`SELECT alias_of FROM short_links WHERE slug = ?`, slug).Scan(&alias); err != nil {
-		writeJSON(w, http.StatusNotFound, map[string]string{"error": "no such link"})
-		return
-	}
-	if alias.Valid && alias.String != "" {
-		writeJSON(w, http.StatusConflict, map[string]string{"error": "an alias carries no tag"})
-		return
-	}
-	if _, err := s.DB.Exec(`UPDATE short_links SET tag = ? WHERE slug = ?`, tag, slug); err != nil {
-		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "could not retag"})
-		return
-	}
-	writeJSON(w, http.StatusOK, map[string]string{"slug": slug, "tag": tag})
-}
-
-// HandleAPIShortLinkRetagAll — POST /api/shortlinks/retag {tag, new_tag}
-//
-// Renames a purpose tag EVERYWHERE it appears — a tag is one name for one
-// purpose, so renaming it on a single row would fork the group and quietly
-// exempt the other rows from the next "+30d all" the new name gets. The
-// response carries the count so the UI can say what actually moved (invariant:
-// a no-op must not read as an answer — 0 renamed is reported as 0).
-func (s *Server) HandleAPIShortLinkRetagAll(w http.ResponseWriter, r *http.Request) {
-	var body struct {
-		Tag    string `json:"tag"`
-		NewTag string `json:"new_tag"`
-	}
-	if err := decodeJSONBody(r, &body); err != nil {
-		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "bad request"})
-		return
-	}
-	old := shortSanitizeTag(body.Tag)
-	newT := shortSanitizeTag(body.NewTag)
-	if old == "" || newT == "" {
-		writeJSON(w, http.StatusBadRequest, map[string]string{
-			"error": "a tag uses lowercase letters, digits, - and _"})
-		return
-	}
-	// "Everywhere" means everywhere in the caller's own links: a tag is one
-	// name for one purpose *per login*, and renaming it across tenants would
-	// let one login rewrite another's bookkeeping.
-	res, err := s.DB.Exec(`UPDATE short_links SET tag = ? WHERE tag = ? AND pwd_ref = ?`,
-		newT, old, shortCallerRef(r))
-	if err != nil {
-		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "could not rename tag"})
-		return
-	}
-	n, _ := res.RowsAffected()
-	writeJSON(w, http.StatusOK, map[string]interface{}{"tag": newT, "renamed": n})
-}
-
-// HandleAPIShortLinkTags — GET /api/shortlink-tags → {tags:[…]}.
-// The autocomplete vocabulary: every purpose tag in use, most recently used
-// first. Small on purpose — names only, no counts, no rows.
-func (s *Server) HandleAPIShortLinkTags(w http.ResponseWriter, r *http.Request) {
-	rows, err := s.DB.Query(`SELECT tag, MAX(created_at) m FROM short_links
-		WHERE tag IS NOT NULL AND tag != '' AND pwd_ref = ?
-		GROUP BY tag ORDER BY m DESC LIMIT 50`, shortCallerRef(r))
-	if err != nil {
-		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "database error"})
-		return
-	}
-	defer rows.Close()
-	tags := []string{}
-	for rows.Next() {
-		var t, m string
-		if rows.Scan(&t, &m) == nil {
-			tags = append(tags, t)
-		}
-	}
-	writeJSON(w, http.StatusOK, map[string]interface{}{"tags": tags})
 }
 
 // HandleAPIShortLinkDelete — DELETE /api/shortlink/{slug}
@@ -1083,6 +1006,10 @@ func (s *Server) HandleAPIShortLinkDelete(w http.ResponseWriter, r *http.Request
 		writeJSON(w, http.StatusOK, map[string]interface{}{"revoked": slug})
 		return
 	}
+	// The tag rows go with the link: a pair pointing at a deleted slug would
+	// keep the tag in the vocabulary and in every count, describing nothing.
+	s.DB.Exec(`DELETE FROM short_link_tags WHERE slug IN
+		(SELECT slug FROM short_links WHERE slug = ? OR alias_of = ?)`, slug, slug)
 	res, err := s.DB.Exec(`DELETE FROM short_links WHERE slug = ? OR alias_of = ?`, slug, slug)
 	if err != nil {
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "could not clear link"})
