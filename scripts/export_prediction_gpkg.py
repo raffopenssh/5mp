@@ -1,23 +1,27 @@
 #!/usr/bin/env python3
-"""Styled GPKG of the XSA mining prediction - one layer per information
+"""Styled GPKG of the XSA mining assessment - one layer per information
 class, symbology carried by attributes, so the method reads off the layer
-panel top-to-bottom:
+panel top-to-bottom.  Layers are designed to STACK: surfaces are
+semi-transparent with distinct ramps, points sit on top with light halos.
 
-  00_plan__key_places       WHERE TO STAND: 11 bases + 8 remote outposts
-                            (greedy max-coverage of the plan score within
-                            one travel day; key_places_plan.json)
   01_evidence__known_mines  the 43-cluster truth set (report anchors)
-  02_action__field_candidates  32 places worth a field check (in_report=1
-                            for the ones the EASY report names)
-  03_action__watchlist_villages 61 abandoned 1930s villages on gold rock
-  10_places__scored         all 3,138 scored named places in ONE layer,
-                            viridis by composite percentile, shape by kind
-  20_surface__context       the top-35% composite surface, viridis by
-                            percentile (measured tier skill in fields)
-  21_surface__plan          the plan score (context+gravity+impunity votes)
-                            on the top-20% surface, viridis
+  02_candidates             ONE layer for every named place worth a look:
+                            32 field candidates + 61 watchlist villages,
+                            colour-coded by group (fill), the ones the
+                            EASY report names in prose get a dark outline
+                            + bold label (in_report=1)
+  10_places__scored         all scored named places in ONE layer,
+                            viridis by composite percentile
+  20_surface__context       the top-35% composite evidence surface,
+                            viridis by percentile (tier skill in fields)
+  21_surface__probability   relative likelihood of unreported mining,
+                            percentile-ranked, inverted Spectral
+                            (blue = low, red = high); components and
+                            caveat in method_note - NOT calibrated
+                            probability, a ranking for readers to plan by
   22_surface__travel_time   minutes to the nearest start place over the
-                            WHOLE grid (car/foot/bush best, local OSRM)
+                            WHOLE grid (car/foot/bush best, local OSRM
+                            incl. 1930s tracks at 15-20 km/h)
   23_surface__gold_reachable  cells gold-contact<=5km AND <=4h reachable -
                             the strongest measured conjunction (q=0.04)
   30_context__basins        HydroBASINS outlines (grouping unit)
@@ -40,7 +44,6 @@ OUT = SRC / "xsa_mining_prediction.gpkg"
 
 pred = json.load(open(SRC / "prediction.json"))
 gj = json.load(open(SRC / "prediction.geojson"))
-plan = json.load(open(SRC / "key_places_plan.json"))
 axg = json.load(open(SRC / "access_x_geology_eval.json"))
 zs = np.load(SRC / "plan_surface.npz")
 cells = zs["cells"]; plan_v = zs["plan"]; conj_v = zs["conj"]
@@ -48,9 +51,12 @@ access_v = zs["access_min"]; ttown_v = zs["t_town_min"]
 cell = float(pred["cell_deg"]); h = cell / 2
 grad = pred["graduated"]
 
-conj_q = min(s["q_bh_reach"] for s in axg["signals"] if s.get("q_bh_reach"))
-conj_lift = max(s["lift_reach"] for s in axg["signals"]
-                if s.get("q_bh_reach"))
+# the layer IS gold5_acc240 - it must carry that signal's own score,
+# not the best score among its siblings (invariant 12)
+_conj_row = next(s for s in axg["signals"]
+                 if s["signal"] == axg["best_conjunction"])
+conj_q = _conj_row["q_bh_reach"]
+conj_lift = _conj_row["lift_reach"]
 
 # cell index for point->cell attribute joins
 cix = {(round(float(x), 4), round(float(y), 4)): i
@@ -109,69 +115,6 @@ def cellpoly(lon, lat):
     p = ogr.Geometry(ogr.wkbPolygon); p.AddGeometry(ring); return p
 
 
-# ---------------------------------------------------------------- 00 plan
-# enrichment sources: nearest graduated settlement (persistence/crop/pop)
-# and nearest 1930s place name
-setts = grad["features"]["settlements"]
-hists = grad["features"]["hist_places"]
-
-
-def nearest(rows, lon, lat, max_km):
-    best, bd = None, max_km
-    for r in rows:
-        d = km(lat, lon, r["lat"], r["lon"])
-        if d < bd:
-            best, bd = r, d
-    return best, (round(bd, 1) if best else None)
-
-
-lyr = mklayer("00_plan__key_places", ogr.wkbPoint, [
-    ("rank", ogr.OFTInteger), ("name", ogr.OFTString),
-    ("role", ogr.OFTString), ("basin", ogr.OFTString),
-    ("kind", ogr.OFTString), ("place_class", ogr.OFTString),
-    ("population", ogr.OFTInteger),
-    ("gain_pct", ogr.OFTReal), ("cum_coverage_pct", ogr.OFTReal),
-    ("known_mine_clusters_within_day", ogr.OFTInteger),
-    ("composite_pctile", ogr.OFTReal),
-    ("minutes_from_town_5k", ogr.OFTReal),
-    ("gold_and_reachable_cell", ogr.OFTInteger),
-    ("nearest_1930s_name", ogr.OFTString),
-    ("nearest_1930s_km", ogr.OFTReal),
-    ("settlement_persistence", ogr.OFTString),
-    ("settlement_cropland_frac", ogr.OFTReal),
-    ("method_note", ogr.OFTString)])
-NOTE = ("greedy max-coverage of plan score (context+gravity+impunity, "
-        "equal votes) within 480 min travel; see key_places_plan.json")
-for p_ in plan["places"] + plan["remote_outposts"]:
-    i = cell_of(p_["lon"], p_["lat"])
-    ns, _ = nearest(setts, p_["lon"], p_["lat"], 6.0)
-    nh, nhd = nearest(hists, p_["lon"], p_["lat"], 12.0)
-    f = ogr.Feature(lyr.GetLayerDefn())
-    f.SetField("rank", p_["rank"])
-    f.SetField("name", p_["name"])
-    f.SetField("role", "base" if p_ in plan["places"] else "outpost")
-    f.SetField("basin", p_["basin"])
-    f.SetField("kind", p_["kind"]); f.SetField("place_class", p_["cls"] or "")
-    if p_["pop"]: f.SetField("population", int(p_["pop"]))
-    f.SetField("gain_pct", p_["gain_pct"])
-    f.SetField("cum_coverage_pct", p_["cum_coverage_pct"])
-    f.SetField("known_mine_clusters_within_day",
-               p_["truth_clusters_within_day"])
-    pc = plan_v[i]
-    if np.isfinite(pc):
-        f.SetField("composite_pctile", round(float(pc) * 100, 1))
-    f.SetField("minutes_from_town_5k", round(float(ttown_v[i]), 0))
-    f.SetField("gold_and_reachable_cell", int(conj_v[i]))
-    if nh:
-        f.SetField("nearest_1930s_name", nh["name"] or "(unnamed)")
-        f.SetField("nearest_1930s_km", nhd)
-    if ns:
-        f.SetField("settlement_persistence", ns.get("persistence") or "")
-        if ns.get("cropland_frac_2019") is not None:
-            f.SetField("settlement_cropland_frac", ns["cropland_frac_2019"])
-    f.SetField("method_note", NOTE)
-    f.SetGeometry(pt(p_["lon"], p_["lat"])); lyr.CreateFeature(f)
-
 # ---------------------------------------------------------- 01 known mines
 lyr = mklayer("01_evidence__known_mines", ogr.wkbPoint,
               [("source", ogr.OFTString), ("resource", ogr.OFTString)])
@@ -181,20 +124,25 @@ for a in pred["anchors"]:
     f.SetField("resource", a["resource"] or "")
     f.SetGeometry(pt(a["lon"], a["lat"])); lyr.CreateFeature(f)
 
-# ----------------------------------------------------------- 02 candidates
-lyr = mklayer("02_action__field_candidates", ogr.wkbPoint, [
-    ("name", ogr.OFTString), ("basin", ogr.OFTString),
-    ("character", ogr.OFTString),
-    ("settlement_population_est", ogr.OFTInteger),
-    ("settlement_cropland_frac", ogr.OFTReal),
-    ("in_report", ogr.OFTInteger), ("snap_source", ogr.OFTString),
-    ("snap_km", ogr.OFTReal), ("tier", ogr.OFTString),
-    ("composite_pctile", ogr.OFTReal), ("km_to_known_anchor", ogr.OFTReal),
+# ------------------------------------------------------------ 02 candidates
+# ONE layer for everything worth a look: 32 field candidates (grouped by
+# what makes each suspicious) + the 61-village watchlist. Colour = group,
+# report-named entries get a dark outline + bold label (in_report=1).
+lyr = mklayer("02_candidates", ogr.wkbPoint, [
+    ("name", ogr.OFTString), ("group", ogr.OFTString),
+    ("watch_rank", ogr.OFTInteger), ("basin", ogr.OFTString),
+    ("in_report", ogr.OFTInteger),
+    ("composite_pctile", ogr.OFTReal),
     ("gold_contact_km", ogr.OFTReal), ("river_km", ogr.OFTReal),
     ("settlement_km", ogr.OFTReal), ("deforestation_km", ogr.OFTReal),
+    ("km_to_known_anchor", ogr.OFTReal),
+    ("settlement_population_est", ogr.OFTInteger),
+    ("settlement_cropland_frac", ogr.OFTReal),
+    ("snap_source", ogr.OFTString), ("snap_km", ogr.OFTReal),
+    ("hist_label", ogr.OFTString),
     ("travel_minutes_best", ogr.OFTReal),
-    ("minutes_from_town_5k", ogr.OFTReal),
-    ("hist_label", ogr.OFTString)])
+    ("minutes_from_town_5k", ogr.OFTReal)])
+n_cand = 0
 for c in pred["candidates"]:
     ns_, hl = c.get("nearest_settlement"), c.get("nearest_hist_label")
     if hl:
@@ -206,41 +154,33 @@ for c in pred["candidates"]:
     else:
         lat, lon, name, src = c["lat"], c["lon"], "(cell centre)", "cell_centre"
     f = ogr.Feature(lyr.GetLayerDefn())
-    f.SetField("name", name); f.SetField("basin", c.get("basin") or "")
-    f.SetField("character", c.get("character") or "")
+    f.SetField("name", name)
+    f.SetField("group", c.get("character") or "candidate")
+    f.SetField("basin", c.get("basin") or "")
+    f.SetField("in_report",
+               1 if (round(c["lat"], 4), round(c["lon"], 4))
+               in REPORT_CAND_CELLS else 0)
+    for k in ("composite_pctile", "gold_contact_km", "river_km",
+              "settlement_km", "deforestation_km", "km_to_known_anchor"):
+        f.SetField(k, c[k])
     if c.get("settlement_population_est") is not None:
         f.SetField("settlement_population_est",
                    int(c["settlement_population_est"]))
     if c.get("settlement_cropland_frac") is not None:
         f.SetField("settlement_cropland_frac", c["settlement_cropland_frac"])
-    f.SetField("in_report",
-               1 if (round(c["lat"], 4), round(c["lon"], 4))
-               in REPORT_CAND_CELLS else 0)
     f.SetField("snap_source", src)
     f.SetField("snap_km", round(km(lat, lon, c["lat"], c["lon"]), 1))
-    for k in ("tier", "composite_pctile", "km_to_known_anchor",
-              "gold_contact_km", "river_km", "settlement_km",
-              "deforestation_km"):
-        f.SetField(k, c[k])
+    if hl: f.SetField("hist_label", f'{hl["text"]} ({hl["dist_km"]} km)')
     ci_ = cell_of(c["lon"], c["lat"])
     f.SetField("travel_minutes_best", round(float(access_v[ci_]), 0))
     f.SetField("minutes_from_town_5k", round(float(ttown_v[ci_]), 0))
-    if hl: f.SetField("hist_label", f'{hl["text"]} ({hl["dist_km"]} km)')
     f.SetGeometry(pt(lon, lat)); lyr.CreateFeature(f)
-
-# ------------------------------------------------------------ 03 watchlist
-lyr = mklayer("03_action__watchlist_villages", ogr.wkbPoint,
-              [("rank", ogr.OFTInteger), ("name", ogr.OFTString),
-               ("in_report", ogr.OFTInteger), ("basin", ogr.OFTString),
-               ("composite_pctile", ogr.OFTReal),
-               ("gold_contact_km", ogr.OFTReal),
-               ("river_km", ogr.OFTReal),
-               ("travel_minutes_best", ogr.OFTReal),
-               ("minutes_from_town_5k", ogr.OFTReal)])
+    n_cand += 1
 for w in pred["abandoned_village_gold_watchlist"]["places"]:
     f = ogr.Feature(lyr.GetLayerDefn())
-    f.SetField("rank", w["rank"])
     f.SetField("name", w["name"] or "(unnamed)")
+    f.SetField("group", "watchlist: abandoned 1930s village on gold")
+    f.SetField("watch_rank", w["rank"])
     f.SetField("in_report", 1 if w["name"] in REPORT_WATCH_NAMES else 0)
     f.SetField("basin", w.get("basin") or "")
     f.SetField("composite_pctile", w["composite_pctile"])
@@ -250,6 +190,7 @@ for w in pred["abandoned_village_gold_watchlist"]["places"]:
     f.SetField("travel_minutes_best", round(float(access_v[wi_]), 0))
     f.SetField("minutes_from_town_5k", round(float(ttown_v[wi_]), 0))
     f.SetGeometry(pt(w["lon"], w["lat"])); lyr.CreateFeature(f)
+    n_cand += 1
 
 # ------------------------------------------------- 10 scored places (one)
 TIER_STATS = {t: grad["tiers"][t] for t in ("top05", "top10", "top20",
@@ -313,10 +254,15 @@ for ft in gj["features"]:
     f.SetGeometry(cellpoly(lon, lat)); lyr.CreateFeature(f)
     n_surf += 1
 
-lyr = mklayer("21_surface__plan", ogr.wkbPolygon,
-              [("plan_pctile", ogr.OFTReal),
+PROB_NOTE = ("percentile rank of equal votes: tested context composite + "
+             "population/travel-time pressure + distance-from-oversight; "
+             "a relative ranking for planning, NOT a calibrated "
+             "probability - see key_places_plan.json")
+lyr = mklayer("21_surface__probability", ogr.wkbPolygon,
+              [("probability_pctile", ogr.OFTReal),
                ("minutes_to_start_place", ogr.OFTReal),
-               ("minutes_from_town", ogr.OFTReal)])
+               ("minutes_from_town_5k", ogr.OFTReal),
+               ("method_note", ogr.OFTString)])
 ok = np.isfinite(plan_v)
 ranks = np.full(len(plan_v), np.nan)
 r = np.argsort(np.argsort(plan_v[ok]))
@@ -324,15 +270,16 @@ ranks[ok] = 100.0 * r / max(len(r) - 1, 1)
 n_plan = 0
 for i in np.where(ok)[0]:
     f = ogr.Feature(lyr.GetLayerDefn())
-    f.SetField("plan_pctile", round(float(ranks[i]), 1))
+    f.SetField("probability_pctile", round(float(ranks[i]), 1))
     f.SetField("minutes_to_start_place", round(float(access_v[i]), 0))
     f.SetField("minutes_from_town_5k", round(float(ttown_v[i]), 0))
+    f.SetField("method_note", PROB_NOTE)
     f.SetGeometry(cellpoly(*map(float, cells[i]))); lyr.CreateFeature(f)
     n_plan += 1
 
 lyr = mklayer("22_surface__travel_time", ogr.wkbPolygon,
               [("minutes_to_start_place", ogr.OFTReal),
-               ("minutes_from_town", ogr.OFTReal)])
+               ("minutes_from_town_5k", ogr.OFTReal)])
 for i in range(len(cells)):
     f = ogr.Feature(lyr.GetLayerDefn())
     f.SetField("minutes_to_start_place", round(float(access_v[i]), 0))
@@ -371,7 +318,7 @@ for fn in ("hybas5_xsa.json", "hybas6_xsa.json"):
         f.SetField("aoi_share", b["aoi_share"])
         f.SetGeometry(g); lyr.CreateFeature(f)
 ds = None
-print(f"places {n_places}, surface {n_surf}, plan {n_plan}, conj {n_conj}")
+print(f"candidates {n_cand}, places {n_places}, surface {n_surf}, prob {n_plan}, conj {n_conj}")
 
 # ================================================================= styles
 VIRIDIS = ["68,1,84", "72,40,120", "62,74,137", "49,104,142", "38,130,142",
@@ -518,34 +465,99 @@ def fill_single(color):
 
 
 AMP = "&quot;"
+
+
+def cat_marker(field, cats, label_field, nolabel_vals=()):
+    """Categorized fill-colour markers: cats = [(value, legend, rgba_fill,
+    size)]. All same shape (circle); report-named entries (in_report=1)
+    are drawn via a rule-based override with a dark outline + bold label,
+    so colour codes the group and the outline codes 'named in report'.
+    Groups listed in nolabel_vals get no labels (keeps the map readable
+    when a large secondary list shares the layer)."""
+    syms, rls, labs = [], [], []
+    i = 0
+    for val, leg, fill, size in cats:
+        for rep in (0, 1):
+            flt = (f"{AMP}{field}{AMP}='{val}' AND {AMP}in_report{AMP}={rep}")
+            out = "30,30,30,255" if rep else "255,255,255,200"
+            ow = "0.6" if rep else "0.25"
+            sz = f"{float(size) + (1.2 if rep else 0):.1f}"
+            syms.append(f'<symbol type="marker" name="{i}">'
+                        f'<layer class="SimpleMarker"><Option type="Map">'
+                        f'<Option name="name" type="QString" value="circle"/>'
+                        f'<Option name="color" type="QString" value="{fill}"/>'
+                        f'<Option name="outline_color" type="QString" '
+                        f'value="{out}"/>'
+                        f'<Option name="outline_width" type="QString" '
+                        f'value="{ow}"/>'
+                        f'<Option name="size" type="QString" value="{sz}"/>'
+                        f'</Option></layer></symbol>')
+            legend = leg + (" (named in report)" if rep else "")
+            rls.append(f'<rule key="k{i}" filter="{flt}" label="{legend}" '
+                       f'symbol="{i}"/>')
+            if val in nolabel_vals:
+                i += 1
+                continue
+            fw = "75" if rep else "50"
+            fs = "9" if rep else "7.5"
+            labs.append(f'<rule filter="{flt}"><settings><text-style '
+                        f'fieldName="{label_field}" fontSize="{fs}" '
+                        f'fontWeight="{fw}" textColor="40,40,40,255">'
+                        f'<text-buffer bufferDraw="1" bufferSize="1.0" '
+                        f'bufferColor="255,255,255,225"/></text-style>'
+                        f'<placement placement="6" dist="1.6" '
+                        f'overlapHandling="AllowOverlapIfRequired"/>'
+                        f'<rendering displayAll="1" obstacle="0"/>'
+                        f'</settings></rule>')
+            i += 1
+    return (f'<!DOCTYPE qgis><qgis styleCategories="Symbology|Labeling" '
+            f'labelsEnabled="1">'
+            f'<renderer-v2 type="RuleRenderer"><rules key="root">'
+            + "".join(rls) + '</rules><symbols>' + "".join(syms)
+            + '</symbols></renderer-v2>'
+            f'<labeling type="rule-based"><rules>' + "".join(labs)
+            + '</rules></labeling></qgis>')
+
+
+# candidate groups -> fill colours (colour codes the group; outline codes
+# "named in report"). Qualitative, distinct from the surface ramps below.
+CAND_CATS = [
+    ("abandoned 1930s village on graded rock",
+     "abandoned 1930s village on graded rock", "141,26,150,255", "4.2"),
+    ("big village, hardly any farmland",
+     "big village, hardly any farmland", "227,26,28,255", "4.2"),
+    ("active clearing on graded rock",
+     "active clearing on graded rock", "255,127,0,255", "4.2"),
+    ("settled riverside on graded rock",
+     "settled riverside on graded rock", "31,120,180,255", "4.2"),
+    ("empty ground: rock and water only",
+     "empty ground: rock and water only", "106,61,25,255", "4.2"),
+    ("watchlist: abandoned 1930s village on gold",
+     "watchlist village (1930s name, gold, empty today)",
+     "251,154,153,255", "3.0"),
+]
+
+# inverted Spectral (blue=low -> red=high) for the probability surface;
+# distinct from viridis (context) and blues (travel time) so stacked
+# layers stay tellable-apart.
+SPECTRAL_INV = ["94,79,162", "50,136,189", "102,194,165", "171,221,164",
+                "230,245,152", "254,224,139", "253,174,97", "244,109,67",
+                "213,62,79", "158,1,66"]
+
 styles = {
-    "00_plan__key_places": rule_marker(
-        [(f"{AMP}role{AMP}='base'", "base (rank 1-11)", "star",
-          "20,120,60,255", "0,60,25,255", "7", "75"),
-         (f"{AMP}role{AMP}='outpost'", "remote outpost (12-19)",
-          "pentagon", "110,190,120,255", "20,90,45,255", "5", "50")],
-        label_field="name"),
     "01_evidence__known_mines": marker("cross2", "0,0,0,255",
                                        "255,255,255,255", "3.2"),
-    "02_action__field_candidates": rule_marker(
-        [(f"{AMP}in_report{AMP}=1", "named in report", "star",
-          "178,0,29,255", "40,0,8,255", "6.5", "75"),
-         (f"{AMP}in_report{AMP}=0", "other candidate", "star",
-          "227,26,28,255", "255,255,255,255", "4.5", "50")],
-        label_field="name"),
-    "03_action__watchlist_villages": rule_marker(
-        [(f"{AMP}in_report{AMP}=1", "named in report", "triangle",
-          "230,120,0,255", "90,45,0,255", "5", "75"),
-         (f"{AMP}in_report{AMP}=0", "other village", "triangle",
-          "255,170,0,255", "120,70,0,255", "3.2", "50")],
-        label_field="name", label_size="8"),
+    "02_candidates": cat_marker(
+        "group", CAND_CATS, "name",
+        nolabel_vals=("watchlist: abandoned 1930s village on gold",)),
     "10_places__scored": graduated("pctile", 65, 100, VIRIDIS, "235",
                                    "marker"),
     "20_surface__context": graduated("pctile", 65, 100, VIRIDIS, "110"),
-    "21_surface__plan": graduated("plan_pctile", 0, 100, VIRIDIS, "150"),
+    "21_surface__probability": graduated("probability_pctile", 0, 100,
+                                         SPECTRAL_INV, "130"),
     "22_surface__travel_time": graduated("minutes_to_start_place", 0, 1000,
-                                         BLUES_R, "120"),
-    "23_surface__gold_reachable": fill_single("214,137,16,90"),
+                                         BLUES_R, "100"),
+    "23_surface__gold_reachable": fill_single("214,137,16,80"),
     "30_context__basins": outline_style("70,90,140,200", label_field="name"),
 }
 con = sqlite3.connect(OUT)
