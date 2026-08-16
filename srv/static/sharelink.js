@@ -127,11 +127,12 @@
                 // states here, and "unstated" means "whatever the shared view
                 // was showing", which is the default worth keeping.
                 patrol: opts.patrol,
-                // The purpose tag rides on the mint so a re-minted key stays
-                // in its group — tagging afterwards via /retag also works, but
-                // a remint that dropped the tag would silently exempt the new
-                // key from the next "renew #tag".
-                tag: opts.tag || ''
+                // The purpose tags ride on the mint so a re-minted key stays
+                // in its groups — tagging afterwards via /retag also works, but
+                // a remint that dropped them would silently exempt the new key
+                // from the next "renew #report". A SET: one link can belong to
+                // a report and to a workshop.
+                tags: opts.tags || (opts.tag ? [opts.tag] : [])
             })
         }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
             .then(function (res) {
@@ -251,7 +252,6 @@
             // for one purpose ("report") so Admin can renew or audit them
             // together; most links need none, so this is a whisper, not a form.
             '  <div class="sl-tagrow" id="sl-tagrow"></div>' +
-            '  <datalist id="sl-tag-list"></datalist>' +
             '  <button class="sl-copy" id="sl-copy" type="button">' +
             '    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
             '         stroke-linecap="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>' +
@@ -387,91 +387,94 @@
         el.querySelector('#sl-note').innerHTML = noteHTML();
     }
 
-    // ── the purpose tag ──────────────────────────────────────────
+    // ── the purpose tags ─────────────────────────────────────────
     //
-    // One chip: “#report ×”, or a ghosted “# add tag”. The vocabulary for
-    // autocomplete is every tag already in use (fetched once per dialog),
-    // because the whole point of a tag is to be the SAME word as last time —
-    // a fresh spelling per link is a group of one.
-    var tagVocab = null;
-    function ensureTagVocab() {
-        if (tagVocab) return Promise.resolve(tagVocab);
-        return fetch('/api/shortlink-tags' + (pwd() ? '?pwd=' + encodeURIComponent(pwd()) : ''))
-            .then(function (r) { return r.ok ? r.json() : { tags: [] }; })
-            .then(function (d) { tagVocab = (d && d.tags) || []; return tagVocab; })
-            .catch(function () { tagVocab = []; return tagVocab; });
-    }
-
+    // A row of chips: “#report” “#workshop” plus a ghosted “# add tag”. The
+    // control is TagChips (srv/static/tagchips.js), the same one Admin and the
+    // export card use — a tag that looked different in each place taught the
+    // user they were different things.
+    //
+    // SEVERAL, always. One link can be cited by a report AND handed out at a
+    // workshop; forcing it to pick would silently drop it out of the next
+    // "renew #report", which is the accident tags exist to prevent.
+    var tagCtl = null;
     function renderTag() {
         var box = document.getElementById('sl-tagrow');
         if (!box || !state) return;
-        if (box.querySelector('input')) return; // never repaint under a typing user
-        if (state.tag) {
-            box.innerHTML = '<span class="sl-tag"><span class="sl-tag-name">#' + esc(state.tag) + '</span>' +
-                '<button class="sl-tag-x" type="button" aria-label="Remove tag">×</button></span>';
-            box.querySelector('.sl-tag-x').addEventListener('click', function () { setTag(''); });
+        if (!tagCtl) {
+            tagCtl = TagChips.mount(box, {
+                tags: state.tags || (state.tag ? [state.tag] : []),
+                size: 'md',
+                // A guest cannot write, so its chips are read-only rather than
+                // absent: a link shown to a guest still says which purpose it
+                // belongs to, and a control that would 401 is not drawn.
+                editable: !isGuest(),
+                onAdd: function (t) { return pushTags(addTo(state.tags, t)); },
+                onRemove: function (t) { return pushTags(removeFrom(state.tags, t)); },
+                // Renaming from here renames the tag on EVERY link carrying it,
+                // exactly as in Admin: a tag is one name for one purpose, and a
+                // per-row rename would fork the group.
+                onRename: function (oldT, next) { return renameEverywhere(oldT, next); }
+            });
         } else {
-            box.innerHTML = '<button class="sl-tag-add" type="button" ' +
-                'title="Group this link with others made for one purpose — tagged links can be renewed together">' +
-                '<span class="sl-tag-hash">#</span> add tag</button>';
-            box.querySelector('.sl-tag-add').addEventListener('click', tagEdit);
+            tagCtl.setTags(state.tags || []);
         }
     }
 
-    function tagEdit() {
-        var box = document.getElementById('sl-tagrow');
-        if (!box) return;
-        box.innerHTML = '<span class="sl-tag is-editing"><span class="sl-tag-hash">#</span>' +
-            '<input class="sl-tag-input" list="sl-tag-list" maxlength="32" placeholder="report…" ' +
-            'spellcheck="false" autocapitalize="off" autocorrect="off"></span>';
-        var inp = box.querySelector('input');
-        ensureTagVocab().then(function (tags) {
-            var dl = document.getElementById('sl-tag-list');
-            if (dl) dl.innerHTML = tags.map(function (t) { return '<option value="' + esc(t) + '">'; }).join('');
-        });
-        inp.focus();
-        var done = false;
-        var finish = function (save) {
-            if (done) return; done = true;
-            var v = (inp.value || '').trim().toLowerCase().replace(/^#/, '')
-                .replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 32);
-            if (!save || !v) { renderTagFresh(); return; }
-            setTag(v);
-        };
-        inp.addEventListener('keydown', function (e) {
-            e.stopPropagation();
-            if (e.key === 'Enter') { e.preventDefault(); finish(true); }
-            else if (e.key === 'Escape') { e.preventDefault(); finish(false); }
-        });
-        inp.addEventListener('blur', function () { finish(true); });
+    function addTo(list, t) {
+        list = (list || []).slice();
+        if (list.indexOf(t) < 0) list.push(t);
+        return list;
+    }
+    function removeFrom(list, t) {
+        return (list || []).filter(function (x) { return x !== t; });
     }
 
-    function renderTagFresh() {
-        var box = document.getElementById('sl-tagrow');
-        if (box) box.innerHTML = '';
-        renderTag();
-    }
-
-    // setTag — tags the LINK ON SCREEN in place (a tag is bookkeeping, not a
-    // grant, so unlike days/scope it does not remint), and rides on any later
-    // remint from this dialog so the next key stays in the group.
-    function setTag(tag) {
-        if (!state) return;
-        var prev = state.tag || '';
-        state.tag = tag;
-        if (tagVocab && tag && tagVocab.indexOf(tag) < 0) tagVocab.unshift(tag);
-        renderTagFresh();
-        if (!state.slug || prev === tag) return;
-        fetch('/api/shortlink/' + encodeURIComponent(state.slug) + '/retag' +
+    // pushTags — tags the LINK ON SCREEN in place. A tag is bookkeeping, not a
+    // grant, so unlike days/scope it does NOT remint; and the set the server
+    // stores is what we draw, never the set we asked for.
+    function pushTags(next) {
+        if (!state) return Promise.resolve([]);
+        var prev = (state.tags || []).slice();
+        state.tags = next.slice();
+        state.tag = next[0] || '';
+        if (!state.slug) return Promise.resolve(state.tags);
+        return fetch('/api/shortlink/' + encodeURIComponent(state.slug) + '/retag' +
             (pwd() ? '?pwd=' + encodeURIComponent(pwd()) : ''), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ tag: tag })
+            body: JSON.stringify({ tags: next })
         }).then(function (r) {
-            if (!r.ok) throw new Error(r.status);
-        }).catch(function () {
-            if (state) { state.tag = prev; renderTagFresh(); }
-            toast('Could not change the tag', 'error');
+            return r.json().catch(function () { return {}; }).then(function (d) {
+                if (!r.ok) throw new Error(d.error || 'could not change the tag');
+                state.tags = d.tags || [];
+                state.tag = state.tags[0] || '';
+                return state.tags;
+            });
+        }, function () {
+            state.tags = prev; state.tag = prev[0] || '';
+            throw new Error('could not change the tag');
+        });
+    }
+
+    function renameEverywhere(oldT, next) {
+        if (!state) return Promise.resolve([]);
+        return fetch('/api/shortlinks/retag' + (pwd() ? '?pwd=' + encodeURIComponent(pwd()) : ''), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tag: oldT, new_tag: next })
+        }).then(function (r) {
+            return r.json().catch(function () { return {}; }).then(function (d) {
+                if (!r.ok) throw new Error(d.error || 'could not rename the tag');
+                // Say what actually moved: a rename that touched one link when
+                // the user expected twelve must not read the same as success.
+                toast('Tag renamed on ' + d.renamed + ' link' + (d.renamed === 1 ? '' : 's'), 'success');
+                // Sorted, like every other surface's set: two views of one
+                // link must not order its tags two ways (AGENTS.md inv. 7).
+                state.tags = addTo(removeFrom(state.tags, oldT), next).sort();
+                state.tag = state.tags[0] || '';
+                return state.tags;
+            });
         });
     }
 
@@ -737,7 +740,7 @@
         var msg = document.getElementById('sl-msg');
         if (msg) msg.innerHTML = '<span class="sl-dim">' + esc(what) + '</span>';
         var long = state.long;
-        create(long, { title: state.title, kind: state.kind, tag: state.tag })
+        create(long, { title: state.title, kind: state.kind, tags: state.tags })
             .then(function (d) {
                 if (!state || state.long !== long) return;
                 apply({ slug: d.slug, guest: false });
@@ -781,7 +784,7 @@
         if (msg) msg.innerHTML = '<span class="sl-dim">' +
             (want ? 'making a link anyone can open…' : 'switching back…') + '</span>';
         create(state.long, {
-            title: state.title, kind: state.kind, guest: want, tag: state.tag,
+            title: state.title, kind: state.kind, guest: want, tags: state.tags,
             days: want ? state.days : 0,
             patrol: want ? state.wantPatrol : undefined,
             lockDates: want && state.lockDates
@@ -789,7 +792,7 @@
             .then(function (d) {
                 state.busy = false;
                 apply({ slug: d.slug, guest: !!d.guest, expires: d.expires_at, scope: d.scope || '',
-                    date_from: d.date_from, date_to: d.date_to, tag: d.tag });
+                    date_from: d.date_from, date_to: d.date_to, tags: d.tags });
                 remember();
                 copy(current(), true);
             })
@@ -829,11 +832,11 @@
         // network before it moves reads as broken.
         renderOptions();
         create(state.long, {
-            title: state.title, kind: state.kind, guest: true, tag: state.tag,
+            title: state.title, kind: state.kind, guest: true, tags: state.tags,
             days: state.days, patrol: state.wantPatrol, lockDates: state.lockDates
         }).then(function (d) {
             apply({ slug: d.slug, guest: true, expires: d.expires_at, scope: d.scope || '',
-                date_from: d.date_from, date_to: d.date_to, tag: d.tag });
+                date_from: d.date_from, date_to: d.date_to, tags: d.tags });
             state.guestLink = null; // the remembered key is the OLD one
             remember();
             copy(current(), true);
@@ -855,8 +858,15 @@
         state.dateFrom = link.date_from || '';
         state.dateTo = link.date_to || '';
         // The server's answer wins (dedupe may return a row that already
-        // carries a tag); an unstated answer keeps the user's pending choice.
-        if (link.tag !== undefined && link.tag !== '') state.tag = link.tag;
+        // carries tags, and a remint adopts the set): an unstated answer keeps
+        // the user's pending choice, an empty ARRAY is an answer and is taken.
+        if (Array.isArray(link.tags)) {
+            state.tags = link.tags.slice();
+            state.tag = state.tags[0] || '';
+        }
+        // A fresh mint is a fresh row: the chips must be rebuilt against it
+        // rather than keep pointing at the previous link's controller.
+        tagCtl = null;
         // The server is the authority on all of these: it clamps the lifetime,
         // refuses to grant a capability this session does not itself hold, and
         // refuses a lock on a view with no dates. So the UI follows the answer
@@ -972,11 +982,15 @@
             window: resolvedWindow(long),
             fixed: !!(d0.from && d0.to),
             lockDates: false, dateFrom: '', dateTo: '',
-            tag: opts.tag || '',
+            // Tags are a SET on the row; `tag` is the first of them, kept only
+            // for the callers that speak one word.
+            tags: (opts.tags || (opts.tag ? [opts.tag] : [])).slice(),
+            tag: (opts.tags && opts.tags[0]) || opts.tag || '',
             kind: opts.kind || 'view', title: opts.title || '',
             copied: opts.copy !== false, opts: opts
         };
 
+        tagCtl = null; // a new dialog draws a fresh chip row
         var el = build();
         render();
         el.classList.add('is-open');
@@ -985,11 +999,11 @@
 
         if (opts.copy !== false) copy(long, false);
 
-        create(long, { title: opts.title, kind: opts.kind, guest: !!opts.guest })
+        create(long, { title: opts.title, kind: opts.kind, guest: !!opts.guest, tags: state.tags })
             .then(function (d) {
                 if (!state || state.long !== long) return; // dialog moved on
                 apply({ slug: d.slug, guest: !!d.guest, expires: d.expires_at, scope: d.scope || '',
-                    date_from: d.date_from, date_to: d.date_to, tag: d.tag });
+                    date_from: d.date_from, date_to: d.date_to, tags: d.tags });
                 remember();
                 if (opts.copy !== false) copy(current(), false);
             })

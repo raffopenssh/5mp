@@ -232,7 +232,23 @@
 
     function paint(id, d) {
         const el = document.querySelector(`[data-gpkg-job="${CSS.escape(id)}"]`);
-        if (el && d) el.innerHTML = bodyHTML(d);
+        if (el && d) { el.innerHTML = bodyHTML(d); mountTags(el); }
+    }
+
+    // Tag chips are a control, not markup, so any HTML this module injects has
+    // to be walked once afterwards. Read-only here: the SHARE LINK owns its
+    // tags, and offering to edit them on a file card would put two writers on
+    // one fact. Drawn by the shared control (srv/static/tagchips.js) so a tag
+    // looks like a tag here, in the share dialog and in Admin alike.
+    function mountTags(root) {
+        if (typeof TagChips === 'undefined') return;
+        (root || document).querySelectorAll('.gpkg-tags:not([data-tc])').forEach((el) => {
+            el.dataset.tc = '1';
+            TagChips.mount(el, {
+                tags: (el.dataset.tags || '').split(',').filter(Boolean),
+                editable: false
+            });
+        });
     }
 
     function fmtBytes(n) {
@@ -261,8 +277,15 @@
             const daysLeft = d.expires_at
                 ? Math.max(0, Math.ceil((new Date(d.expires_at) - Date.now()) / 86400000))
                 : null;
-            const tag = d.link_tag
-                ? ` · <span class="gpkg-tag" style="background:rgba(59,130,246,0.15);color:#3b82f6;border-radius:3px;padding:0 4px;">#${esc(d.link_tag)}</span>`
+            // The purpose tags of the live guest link that keeps this file
+            // alive — the answer to "why is this being retained". Read-only
+            // here (the link owns them; editing happens where the link is),
+            // but drawn by the SAME control as everywhere else, so a tag looks
+            // like a tag in all three places it appears. Several, because a
+            // file can be cited by a report and handed out at a workshop.
+            const linkTags = d.link_tags || (d.link_tag ? [d.link_tag] : []);
+            const tag = linkTags.length
+                ? ` · <span class="gpkg-tags" data-tags="${esc(linkTags.join(','))}"></span>`
                 : '';
             // The renew control appears only when the file is CLOSE to being
             // swept (≤14 days) — a single calendar-plus icon, same logic as
@@ -400,6 +423,9 @@
             if (card) card.style.opacity = '';
             if (typeof showToast === 'function') showToast('Could not delete the export', 'error');
             track(id);
+        // The card's HTML is returned as a string to the notification panel, so
+        // the chips inside it can only be mounted after it lands in the DOM.
+        setTimeout(mountTags, 0);
             return;
         }
         cache.delete(id);
@@ -478,5 +504,5 @@
         }
     });
 
-    window.GeoPackageExport = { start, startView, peek, track, stop, poll, cardHTML, download, retry, remove, extend, copyLink, cache };
+    window.GeoPackageExport = { start, startView, peek, track, stop, poll, cardHTML, download, retry, remove, extend, copyLink, mountTags, cache };
 })();

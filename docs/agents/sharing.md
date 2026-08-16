@@ -261,15 +261,16 @@ the phone layout.
   than none, because it implies the data exists.
 * Lifetime is capped (`guestMaxTTL`, 1 year) and clamped rather than refused;
   "never expires" is not offered, because that is a second password.
-* **Tags & extension** (2026-08-16). `short_links.tag` (migration 060) groups
-  links issued for one purpose (e.g. every link a report cites → `report`).
-  Set at mint time (`tag` in the POST body, sanitised to `[a-z0-9_-]{≤32}`).
-  `POST /api/shortlink/{slug}/extend {days}` pushes one guest link's expiry
-  out (from the later of now/current, capped at `guestMaxTTL` from now);
-  `POST /api/shortlinks/extend {tag, days}` does every live key with that tag
-  in one call. Both refuse guests. The Sharing sheet shows `#tag` badges,
-  days-remaining, a per-key `+30d` button and a `+30d all '<tag>'` button per
-  group.
+* **Tags & extension** (2026-08-16). Tags group links issued for one purpose
+  (e.g. every link a report cites → `report`) and live in
+  `short_link_tags(slug, tag)` — migration **061**, which dropped the single
+  `short_links.tag` column of 060; see "Tags" below for why a set.
+  Set at mint time (`tags:[…]` or `tag` in the POST body, sanitised to
+  `[a-z0-9_-]{≤32}`). `POST /api/shortlink/{slug}/extend {days}` pushes one
+  guest link's expiry out (from the later of now/current, capped at
+  `guestMaxTTL` from now); `POST /api/shortlinks/extend {tag, days}` does every
+  live key with that tag in one call. Both refuse guests. The Sharing sheet
+  shows tag chips, days-remaining and a renew icon per key and per group.
 * **A guest link to an export file retains the file.** A key pointing at
   `/api/geopackage/{id}/download` promises the bytes exist as long as the key
   lives: `retainGeoPackageForLink` pushes the job's `expires_at` out to the
@@ -278,6 +279,26 @@ the phone layout.
   card shows the purge date, days left, the link's tag (`link_tag`, computed
   on read from `short_links`, never stored) and a `+30 days` button
   (`POST /api/geopackage/{id}/extend`, owner only — guests 401).
+
+## A `?pwd=` for another login switches the session (2026-08-16)
+
+`PasswordMiddleware` checked the cookie **first** and, finding a valid one,
+stripped the query param and served on. That half-applied a switch:
+`RequestPwd`/`RequestEnv` prefer the param, so one page load was two
+identities — a shell rendered as the new login, filled by XHRs that were still
+the old one. Opening a colleague's `?pwd=` link showed *your* tenant's links,
+AOIs and patrol data under their name, with the mismatch visible nowhere.
+
+The URL is the newer statement of intent, so it wins: a `pwd=` that differs from
+the cookie is adopted into the cookie, then scrubbed by the usual redirect (an
+`/api/` path is answered as that login on the same request, since a download
+must arrive as the response to the request that asked for it). The *same*
+password does not re-issue the cookie — a `Set-Cookie` on every page view is a
+session that resets. A guest capability never reaches this branch: it arrives on
+`/s/`, resolved above the gate, and never as a `pwd=`. Pinned by
+`pwd_in_url_switches_the_session` in `tests/api_tests.sh`, which asserts on the
+tenant's own autofetch list (0 → ≥1) rather than a link count, because a count
+that is 0 for both logins would pass while nothing switched.
 
 ## Guest UI
 
@@ -317,17 +338,63 @@ than left blank, because a blank cell reads as "no data" and an unopened key is
 the opposite of no data. Aliases are shown — an old link still resolves through
 one, and hiding it makes "why does this URL still work" unanswerable.
 
-**Tags.** A purpose tag is bookkeeping, not a grant: setting one never remints.
-Chip UI (`.sh-tag` in admin, `.sl-tag` in the share dialog — blue on purpose,
-not the key's amber): click the name to rename the tag **everywhere**
-(`POST /api/shortlinks/retag {tag,new_tag}` — renaming one row would fork the
-group out of the next "renew all"), × to remove it from one link
-(`POST /api/shortlink/{slug}/retag {tag}`, empty = clear). The share dialog
-offers a subtle "# add tag" with datalist autocomplete over
-`GET /api/shortlink-tags` (names only, most recent first) — the point of a tag
-is to be the *same word* as last time. On create, dedupe adopts a requested tag
-onto an untagged existing row but never overwrites one already there; the
-response echoes what is stored.
+**Tags.** A purpose tag is bookkeeping, not a grant: setting, renaming or
+clearing one never remints, never changes what a key shows and never changes
+when it dies. Server: `srv/shortlink_tags.go`. Frontend: **one** control,
+`srv/static/tagchips.js` (`TagChips.mount`), used by the share dialog, the
+admin sheet and the gpkg export card.
+
+*A link carries a SET of tags.* 060's single column made the two truthful
+answers exclusive — a link cited by a report **and** handed out at a workshop
+had to pick, and picking took it out of the next "renew #report", the exact
+accident tags exist to prevent. 061 moved the pairs to `short_link_tags` and
+**dropped** the old column rather than keeping it in sync (a duplicated fact
+with two writers drifts; a reader selecting the dead column would see the first
+tag as if it were the only one). `tags` is served sorted; `tag` is still in
+every response as the *first* of them, for one-word readers. Tag rows travel
+with the slug on a rename and are deleted with the link — a pair pointing at a
+dead slug keeps the tag in the vocabulary, describing nothing.
+
+`POST /api/shortlink/{slug}/retag` takes `{tags:[…]}` (replace), `{add}`,
+`{remove}` or legacy `{tag}`; a word that sanitises to nothing is a **400**, not
+a silent no-op. `POST /api/shortlinks/retag {tag,new_tag}` renames **everywhere**
+(renaming one row would fork the group), merges by `INSERT OR IGNORE` — an
+`UPDATE` aborted the whole rename when one link already carried the target — and
+`{delete:true}` clears a tag from every link. `GET /api/shortlink-tags` returns
+`tags` (names, most recent first) **and** `detail` with per-tag link/live counts:
+a chooser that cannot tell "report (12 links)" from a typo made once spreads the
+typo. Every verb is scoped through `shortLinkOwned`/`shortCallerRef`.
+
+*Chip UI.* Blue, never the key's amber. A **soft 6px rectangle with a dashed
+outline**, not a pill: this app spends pills on status ("key", "expired",
+"patrol tracks"), so a tag — an editable label — must not borrow that shape, and
+dashed matches the "# add tag" slot beside it, making chip and empty slot one
+control in two states. Editing happens **inside the chip's own box** with a
+borderless input: the previous version nested a bordered pill in a bordered
+chip, so a rename drew *two* outlines around one word. The add slot stays
+visible while tags exist, because an "add" that vanishes after the first one
+teaches that the set holds one. `mount` retires any previous controller on the
+element (`el.__tc`) — two live controllers on one node meant a × repainted from
+the stale tag array and appeared to do nothing.
+
+*Autocomplete is inline, not a dropdown.* A `<datalist>` gets a browser-drawn
+arrow inside the chip and a floating menu over the dialog — a second boundary
+around one word. Instead the remainder of the best match is its own
+`.tc-ghost` span after the caret. It is an **element, not selected text**:
+selected-text-in-an-input is not tappable and a touch keyboard has no Tab, so
+the address-bar trick left the suggestion visible and unacceptable on a phone.
+Accepted by tap (`mousedown`/`touchstart`, never `click` — blur would commit
+first), Enter, Tab, → or End; one Escape dismisses the suggestion, a second
+cancels the edit. It never regrows over a Backspace. Ranking is prefix match
+then link count, excluding tags the link already carries (a suggestion whose
+acceptance is a no-op reads as broken). The input is sized in **px from a
+measured mirror on `<body>`**, never in `ch`: `ch` is the width of "0", so a
+proportional font left a gap and "rep|ort" read as two words — and a mirror
+appended *inside* the flex chip measures 0.
+
+On create, dedupe **adds** requested tags to the row it lands on rather than
+overwriting or dropping them (it is a set, and that row may already serve
+another purpose); the response echoes what is stored.
 
 **Renewal appears only near death.** The `+30d` buttons became a single amber
 calendar-plus icon (`.sh-btn-renew`, and `.gpkg-renew` on export cards) shown
@@ -337,7 +404,11 @@ taught people to click it ritually, which is how keys live forever.
 
 ## Tests
 
-`tests/api_tests.sh`, eight checks: a guest reads, is refused writes/admin/
+`tests/api_tests.sh`, eight guest checks plus four on tags and the session
+switch (`tags_are_a_set_not_one_word`, `tags_survive_slug_rename_and_merge`,
+`tag_vocabulary_carries_counts`, `pwd_in_url_switches_the_session`); the fixture
+sweeper deletes `short_link_tags` rows too, or a test's tags outlive it in the
+vocabulary. The guest checks: a guest reads, is refused writes/admin/
 minting, is withheld patrol pixels (**both halves asserted** — "0 and 0" would
 pass a one-sided check while meaning the feature is broken), honours an explicit
 scope, expires and revokes, is **confined by a date lock** (again both halves:
