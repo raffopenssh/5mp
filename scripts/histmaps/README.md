@@ -394,3 +394,48 @@ take `meta.tiles`.
 LOC lists no known copyright restrictions for this item (US government
 holdings of foreign official mapping of this era; digitised by LOC). Verify per
 sheet at https://www.loc.gov/item/87692353/ before republishing.
+
+## Traced linework (`trace_lines.py`)
+
+Vector features traced off the sheets, sibling pipeline to `ocr_labels.py`
+(same DB, same model, same resumable-ledger shape — ledger table
+`line_tiles`, only `done`/`blank` terminal, errors retried next pass).
+
+Division of labour: **the LLM does topology and classification; the raster
+does geometry.** The model traces each 2048-px tile coarsely; `refine` then
+densifies vertices and snaps them to map ink (distance transform, radius
+60→12 px, 3 iters). Mean ink support < 0.35 marks a hallucinated line —
+kept in `lines`, excluded downstream. `dedupe` collapses overlap-region
+duplicates, `stitch` joins across sheet edges (TOL 0.03°, bearing cos ≥ 0.4,
+ambiguity breaks the chain: a wrong join is worse than a gap).
+
+`catsym` classifies the point-symbol crops the tracer captured, 25 per
+contact-sheet call. The taxonomy came from reading actual sheet REFERENCE
+legends across editions (1915, 1926, 1940 — pull collar strips via LOC IIIF
+region requests, see git history of this file's conversation): water-point
+letter codes (oW bir, oR rahad, oP pool, oT tamad, oF fula, oH hafir,
+G.W.B. bore), town-importance marks, jebel hachures, trig triangles,
+tebeldi/palm trees. Two hard-won call details: the tracer's SYS_PROMPT makes
+the model return an *empty* answer to the classification question (pass a
+neutral system prompt), and the model reasons for ~7k tokens before its
+25-line answer (max_tokens 10000, not 2000). ~35% of captures are junk
+(text fragments, line crossings) — quarantined in the DB, excluded from
+exports and API.
+
+`link` joins the layers by geometry, no LLM: a symbol takes the name of the
+nearest compatible OCR label within 600 m (recorded as `name_dist_km`); an
+unnamed watercourse/track takes the label voted by its vertices (≥ 2 votes —
+one grazing vertex is coincidence). Measured before choosing 600 m: median
+water-symbol→water-label distance is 10.7 km, i.e. most symbols genuinely
+have no printed name; do not widen the radius to make the join "succeed".
+
+`run` chains refine → dedupe → stitch → link → catsym-less export on
+completion, so `export_labels.sh` artifacts and the API refresh themselves.
+Survey years: `sheets` table (from `selection.json` LOC metadata) stamps
+`year_min`/`year_max` on every stitched line.
+
+API: `srv/histmap_lines.go`. `/api/histmap/sudan250k/lines` (bbox and/or
+`q=` name search, `kind=`, longest-first so a truncation drops the shortest);
+`/around?lon=&lat=` returns labels, surveyor notes, clipped lines
+(`pts_in_window` + `clipped` flag), symbols and the sheet's survey year in
+one call. Both carry `progress`/`complete` while a run is in flight.
