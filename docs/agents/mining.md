@@ -206,7 +206,7 @@ only a WHERE term on an indexed column matters.
 ## Mining prediction (inference, not detection) — 2026-08-16
 
 `scripts/predict_mining_xsa.py` → `data/eval/xsa_mining/prediction.json` +
-`prediction.geojson`; `scripts/export_prediction_gpkg.py` → styled 20-layer
+`prediction.geojson`; `scripts/export_prediction_gpkg.py` → styled 21-layer
 `xsa_mining_prediction.gpkg` (numbered `NN_tier__kind` prefixes group as
 folders in QGIS; QML embedded via `layer_styles`). EASY report §4b is the
 prose version. Rules that cost time:
@@ -229,5 +229,28 @@ prose version. Rules that cost time:
 - Watchlist (abandoned 1930s villages on gold contacts) is ranked by the
   composite score of the ground under each village, so grid, watchlist and
   candidates agree by construction.
+- **Basin grouping (presentation only, 2026-08-16):** candidates capped at
+  2/basin, watchlist 3/basin, over HydroBASINS level-5 units
+  (`data/hydrobasins/hybas5_xsa.json`); any level-5 basin holding >10% of
+  the AOI (`SPLIT_SHARE`) is replaced by its level-6 children
+  (`hybas6_xsa.json`, share ≥1%) — a uniform rule, no special-casing, which
+  is what puts (TIDI) in its own Chinko basin instead of losing it under a
+  25%-of-AOI monster. 24 named basins; naming = most-frequent
+  `park_rivers_hydro` name in the polygon (fragments <3 chars skipped),
+  falling back to historic 1:250k water labels (`data/histmaps/
+  labels.sqlite3`, OCR `?` names skipped); name collisions get the
+  runner-up river appended (Jur–Ahill, Lol–Diakh…). No statistics are
+  computed per basin.
+- **Candidate `character`** (one word per candidate so the report can group
+  by evidence): abandoned-1930s-village / big-village-no-farmland (pop≥500,
+  cropland-poor within 5 km) / active-clearing / settled-riverside /
+  empty-ground — priority-ordered by factor lift; nearest-settlement
+  population (measured only, never assumed) and `cropland_frac_2019` travel
+  as fields.
+- **`in_report` flag**: the places the EASY report names in prose are
+  flagged in the GPKG (candidates + watchlist) and rule-rendered larger
+  with bold labels — `REPORT_CAND_CELLS` / `REPORT_WATCH_NAMES` in
+  `export_prediction_gpkg.py` must be kept in sync with the report text.
 - Shared via `/api/files` guest link (owner `$AOI_OWNER_PWD`); replacing the
   file = upload new + DELETE old id (delete revokes the old guest links).
+  Current link: `/s/g-nsnzgpkhgkfgzrs8` (21-layer GPKG, exp 2026-11-14).

@@ -1095,7 +1095,7 @@ def main():
         # basin keeps its best WATCH_PER_BASIN members (composite-ranked,
         # 10 km dedupe); rank stays GLOBAL so the numbers still order the
         # whole list.
-        WATCH_PER_BASIN = 4
+        WATCH_PER_BASIN = 3
         taken = []
         picked = []
         per_basin = {}
