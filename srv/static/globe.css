@@ -1758,6 +1758,57 @@
         }
         /* ===== End FloatUI ===== */
 
+        /* ===== FloatUI sheet stack (≤640px) =====
+           On a phone every persistent floating card becomes a full-width
+           bottom sheet: the area popup (a MapLibre popup), the pinned map-tip
+           card (maptip.js registers itself) and the pinned-layers box. JS
+           (floatui.js layoutSheets) sets each sheet's `bottom` so they stack
+           above the measured chrome; the CSS only wins the horizontal fight
+           against MapLibre's inline transform / the widgets' own left/top. */
+        @media (max-width: 640px), ((max-height: 480px) and (pointer: coarse)) {
+            .maplibregl-popup.fui-sheet {
+                transform: none !important;
+                left: 8px !important; right: 8px !important;
+                top: auto !important; bottom: 0;   /* JS overrides with the stack offset */
+                position: fixed !important;
+                max-width: none !important; width: auto !important;
+                transition: bottom 0.18s ease;
+            }
+            .maplibregl-popup.fui-sheet .maplibregl-popup-tip { display: none; }
+            .maplibregl-popup.fui-sheet .maplibregl-popup-content { max-width: none !important; width: 100%; }
+            .maplibregl-popup.fui-sheet .pa-popup { max-height: 45vh; min-width: 0 !important; }
+            .maplibregl-popup.fui-sheet.fui-collapsed .pa-popup { max-height: none; }
+            .pinned-indicator.fui-sheet {
+                top: auto !important; left: 8px !important; right: 8px !important;
+                transform: none !important; max-width: none;
+                transition: bottom 0.18s ease;
+            }
+            .maptip.sticky.docked { transition: bottom 0.18s ease; }
+            /* The geology mixer joins the stack's bottom edge as a full-width
+               sheet too (it re-places itself on every rebuild, so it anchors
+               with the published --fui-bottom rather than a JS slot). */
+            .ml-menu.ml-panel {
+                left: 8px !important; right: 8px !important;
+                top: auto !important; bottom: var(--fui-bottom, 90px);
+                position: fixed; width: auto !important; max-width: none;
+                max-height: 45vh;
+            }
+        }
+        /* Landscape phone: a full-width sheet over a 390px-tall screen buries
+           the map; anchor sheets bottom-left (clear of the toolbar column,
+           clear of the stats panel on the right) at a fixed width instead.
+           Same stack, same JS, different horizontal footprint. */
+        @media ((max-height: 480px) and (pointer: coarse) and (min-width: 641px)) {
+            .maplibregl-popup.fui-sheet,
+            .pinned-indicator.fui-sheet,
+            .ml-menu.ml-panel {
+                left: 64px !important; right: auto !important;
+                width: min(420px, calc(100vw - 90px)) !important;
+            }
+            .maplibregl-popup.fui-sheet .pa-popup { max-height: 55vh; }
+        }
+        /* ===== End FloatUI sheet stack ===== */
+
         .single-pin-icon { user-select: none; }
         .single-pin-icon.pinned { opacity: 1 !important; }
         .single-pin-icon.loading { animation: pulse 0.6s ease-in-out infinite; }

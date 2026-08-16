@@ -482,3 +482,42 @@ describes the ground under every cell, not a fourth statistic; targets go to
 strip survives — right-aligned and sized to itself, with its own backing on the
 `.ml-row`, since an overlay that is on must stay visible and switchable there
 too.
+
+### FloatUI sheet stack (phones)
+
+On a phone (≤640px wide, or ≤480px tall + coarse pointer — `isSheetMode()` in
+`srv/static/floatui.js`) every persistent floating card becomes a bottom sheet
+in a single stack: the AOI/park popup (id `popup`), the pinned map-tip card
+(`maptip` — maptip.js registers/unregisters as it docks/unpins), and the
+pinned-layers box (`pinned`). API: `FloatUI.registerSheet(id, {el, isCollapsed,
+setCollapsed})`, `unregisterSheet`, `noteSheetToggle(id, collapsed)` from any
+manual collapse handler so the user's choice sticks (`userCollapsed` beats
+auto-expansion).
+
+`layoutSheets()` runs greedy-by-recency: the most recently touched sheet is
+expanded and sits nearest the thumb (bottom); older sheets expand only if
+their remembered height still fits, else auto-collapse via the widget's own
+`setCollapsed` (an `applyingLayout` flag keeps that from registering as a user
+choice or persisting to localStorage — pinned passes `persist=false`). Each
+sheet's `bottom` is set inline; the CSS (`globe.css` "FloatUI sheet stack")
+only wins the horizontal fight: `transform: none !important` on
+`.maplibregl-popup.fui-sheet` out-!importants MapLibre's inline anchor
+transform so `_update` keeps running and the popup re-anchors cleanly when the
+class comes off. Portrait sheets are full-width (8px gutters); landscape
+anchors them bottom-left at `min(420px, 100vw-90px)` — clear of the toolbar
+column (left) and the stats panel (right).
+
+`sheetBottomPx()` measures the bottom chrome (`.map-toolbar`,
+`#time-slider-container`) but only counts nodes whose **top** is in the lower
+half of the screen — in landscape the toolbar is a full-height left column
+whose bottom edge is low, and counting it pushed the whole stack above the
+fold. The measured offset is also published as `--fui-bottom` so transient
+menus (geology mixer `.ml-menu.ml-panel`) can anchor by CSS alone without
+joining the stack.
+
+Drag-to-detach is disabled while a widget wears `.fui-sheet` (the stack owns
+position); tap-to-collapse still works and routes through `noteSheetToggle`.
+A collapsed docked maptip folds to its first line (`.fui-collapsed` rules in
+maptip.js's own CSS block). The stats panel is **not** a stack member — it has
+its own mobile grid at the top.
+
