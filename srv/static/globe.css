@@ -1666,6 +1666,10 @@
             background: rgba(255,255,255,0.08); border: 1px solid transparent; }
         .pinned-layer-chip .chip-lod:hover { opacity: 1; background: rgba(255,255,255,0.18); }
         .pinned-layer-chip .chip-lod.forced { opacity: 0.95; border-color: currentColor; }
+        /* An individual pin is served whole, so its mark states a fact rather
+           than offering a choice: same words, no pointer, no hover lift. */
+        .pinned-layer-chip .chip-lod.static { cursor: default; }
+        .pinned-layer-chip .chip-lod.static:hover { opacity: 0.6; background: rgba(255,255,255,0.08); }
         .pinned-layer-chip .chip-icon,
         .pinned-layer-chip .chip-count,
         .pinned-layer-chip .chip-remove { display: inline-flex; align-items: center; line-height: 1; }

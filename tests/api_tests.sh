@@ -129,6 +129,23 @@ test_api "features_chinko_settlement" "/api/parks/CAF_Chinko/features" "200" ".t
 test_api "features_virunga" "/api/parks/COD_Virunga/features" "200" ".type == \"FeatureCollection\""
 test_api "features_serengeti" "/api/parks/TZA_Serengeti/features" "200" ".type == \"FeatureCollection\""
 
+# Invariant 7 — a settlement is a CLUSTER and feature_geometries holds its
+# FOOTPRINTS, so `feature_id=settlement_<id>` must answer with every footprint
+# the cluster lists. It used to answer with the cluster's stored centroid, i.e.
+# one Point, so a pinned town could never gain detail at any zoom. The expected
+# count is DERIVED from polygon_ids (invariant 2), and the cluster picked is the
+# one with the most footprints so a park with only 1:1 clusters cannot make this
+# pass vacuously.
+SETTLE_CLUSTER=$(sqlite3 db.sqlite3 "SELECT id FROM park_settlements WHERE park_id='CAF_Chinko' AND COALESCE(polygon_ids,'')!='' ORDER BY LENGTH(polygon_ids) DESC LIMIT 1" 2>/dev/null || echo "")
+SETTLE_FOOTPRINTS=$(sqlite3 db.sqlite3 "SELECT LENGTH(polygon_ids)-LENGTH(REPLACE(polygon_ids,',',''))+1 FROM park_settlements WHERE id=${SETTLE_CLUSTER:-0}" 2>/dev/null || echo 0)
+if [[ -n "$SETTLE_CLUSTER" && "${SETTLE_FOOTPRINTS:-0}" -gt 1 ]]; then
+    test_api "settlement_pin_serves_all_footprints" \
+        "/api/parks/CAF_Chinko/features?type=settlement&feature_id=settlement_${SETTLE_CLUSTER}" "200" \
+        "(.features | length) == ${SETTLE_FOOTPRINTS} and ([.features[].geometry.type] | unique) == [\"Polygon\"]"
+else
+    yellow "settlement_pin_serves_all_footprints           SKIP (no multi-footprint cluster in CAF_Chinko)"
+fi
+
 yellow "\n=== Climate & Species ==="
 test_api "climate_chinko" "/api/parks/CAF_Chinko/climate" "200" ".park_id == \"CAF_Chinko\""
 test_api "climate_virunga" "/api/parks/COD_Virunga/climate" "200" ".park_id == \"COD_Virunga\""
