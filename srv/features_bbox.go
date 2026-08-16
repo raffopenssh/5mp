@@ -92,7 +92,7 @@ func (s *Server) HandleAPIFeaturesInBBox(w http.ResponseWriter, r *http.Request)
 		WHERE feature_type = ?
 		  AND bbox_maxx >= ? AND bbox_minx <= ?
 		  AND bbox_maxy >= ? AND bbox_miny <= ?
-	` + areaScopeSQL("park_id", s.areaScopeParam(r))
+	`
 	args := []interface{}{featureType, bbox[0], bbox[2], bbox[1], bbox[3]}
 
 	// ?area= scopes the answer to one area's rows. A pinned layer is a
@@ -121,7 +121,25 @@ func (s *Server) HandleAPIFeaturesInBBox(w http.ResponseWriter, r *http.Request)
 			area = ""
 		}
 	}
-	if area != "" {
+
+	// The focus scope (?aoi=/?park_focus=) and the pin scope (?area=) must not
+	// contradict each other. Without a focus, ?area=<AOI> ALONE used to keep
+	// the default aoiExcludeSQL ("no AOI rows at all") and then AND
+	// park_id=<that AOI> — excluded and required at once, so an AOI pin whose
+	// client didn't also send ?aoi= got 0 rows with a 200, the no-op that
+	// reads as an answer (share link /s/pxvn2c5, 2026-08-16: the client only
+	// sends aoi= when window.AOI_IDS has loaded, a race the pin restore
+	// loses on a slow link). A validated ?area= is a visibility-checked AOI
+	// id, so let it stand in as the scope when no explicit focus came.
+	scope := s.areaScopeParam(r)
+	if scope == "" && area != "" && IsAOIID(area) {
+		scope = area
+	}
+	where += areaScopeSQL("park_id", scope)
+	// When the scope IS the area, areaScopeSQL already pins park_id (and, for
+	// an AOI, admits the legacy 'aoi:<id>' alias the bare equality would
+	// drop). Only add the equality when they differ.
+	if area != "" && area != scope {
 		where += " AND park_id = ?"
 		args = append(args, area)
 	}
