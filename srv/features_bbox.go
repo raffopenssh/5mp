@@ -153,14 +153,18 @@ func (s *Server) HandleAPIFeaturesInBBox(w http.ResponseWriter, r *http.Request)
 	// Requires ?area=: without it the candidate set spans every park in view,
 	// and the filter only ever comes from one area's popup. Ignored rather
 	// than refused otherwise — the unfiltered answer is the honest superset.
+	//
+	// ?age= and ?crop= are two more dimensions of the same filter (settlement
+	// persistence buckets; cropland presence / conversion buckets — see
+	// featureIDsWithClass for the bucket words). They AND with ?class=.
 	classFilter := strings.TrimSpace(q.Get("class"))
+	ageFilter := strings.TrimSpace(q.Get("age"))
+	cropFilter := strings.TrimSpace(q.Get("crop"))
 	var classIDs map[string]bool
-	if classFilter != "" && area != "" {
-		classIDs = s.featureIDsWithClass(featureType, area, classFilter)
+	if (classFilter != "" || ageFilter != "" || cropFilter != "") && area != "" {
+		classIDs = s.featureIDsWithClass(featureType, area, classFilter, ageFilter, cropFilter)
 	}
-	if classIDs == nil {
-		classFilter = ""
-	}
+	hasMetaFilter := classIDs != nil
 
 	// Pass 1 is index-only: id, centroid, rank inputs. No geojson, so the rows
 	// that lose the selection cost nothing to read.
@@ -207,7 +211,7 @@ func (s *Server) HandleAPIFeaturesInBBox(w http.ResponseWriter, r *http.Request)
 		// passes it and a spread selection spreads over the filtered set. A
 		// filter that changed the picture but not the number would read as a
 		// broken filter.
-		if classFilter != "" && !classIDs[featureID] {
+		if hasMetaFilter && !classIDs[featureID] {
 			continue
 		}
 		if countGroups {
