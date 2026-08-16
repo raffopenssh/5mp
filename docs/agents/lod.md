@@ -240,3 +240,44 @@ it is a statement about this screen's patience, not about what is being looked
 at, and `?detail=` already means the *geography* tier (`major`/`main`/`all`),
 which is a different thing entirely — that one is a WHERE clause and must
 reproduce, this one is a budget.
+
+### An individual pin is served whole, and it says so (2026-08-16)
+
+A pinned *town* stayed one dot at z16 while every other layer gained detail.
+It was not the loader: an individual pin (`addSinglePinnedFeature`) never goes
+through `LODLayer` — it is one named feature, fetched once and drawn at every
+zoom — so there is nothing to promote. The bug was upstream of that, and it was
+invariant 7 again: **a settlement is a CLUSTER, `feature_geometries` holds its
+FOOTPRINTS**, and `/features?type=settlement&feature_id=settlement_<id>` was
+matching that id against `feature_geometries.feature_id`, missing, and falling
+through to the cluster's stored `lat`/`lon` as a Point. So pinning a town of 21
+built-up polygons drew its centroid, and no zoom could improve on it.
+
+`settlementFootprintIDs` (`srv/feature_meta.go`) resolves the cluster id to its
+`polygon_ids` and the handler serves **all** of them — the same shape as
+`event_id=` for deforestation, which was already whole (31 patches for Chinko's
+biggest event). Retired detector rows are excluded here as everywhere
+(`scannerInjectedRow`): a footprint-less row is not a settlement, and pinning
+must not be the one door that lets it become one. A footprint id still pins
+itself, so nothing that worked before changed. Test:
+`settlement_pin_serves_all_footprints` (api suite), with the count **derived**
+from `polygon_ids` and the cluster chosen as the one with the most footprints —
+a park of 1:1 clusters must not pass it vacuously.
+
+Two consequences, both "the same feature at every zoom" applied to pins:
+
+* **A pin with extent is fitted, not flown to.** `flyToSinglePin` used
+  `zoom: max(current, 10)` on a guessed centre; it now `fitBounds` the pin's
+  own bbox (`singlePinBBox`, one walk over whatever geometry it has) whenever
+  that bbox is bigger than ~0.004°. Arriving at z10 over a 3 km cluster is the
+  same "nothing to see" complaint, one layer up.
+* **A point pin scales with zoom** (`circle-radius` 2.5→7 interpolate), like
+  the loader's dots. A fixed 2 px is unfindable at the zoom the pin flies you
+  to.
+
+And the chip now names its rendering, in the *same words* as the stats rows and
+the LOD chips (`LOD_MODE_LABEL`): `shapes`, `dots`, or `mixed` when several
+pins of one type disagree. It is `.chip-lod.static` — no menu, no pointer —
+because an individual pin has no budget to spend: it is served whole by
+definition, and the mark is a statement of fact. Silence there is what made a
+correctly-drawn Point read as a layer that had thrown its detail away.

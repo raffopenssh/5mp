@@ -3,6 +3,7 @@ package srv
 import (
 	"database/sql"
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -117,6 +118,37 @@ func (s *Server) deforestMetaByPolygon(parkID string) map[string]deforestMeta {
 		}
 	}
 	return out
+}
+
+// settlementFootprintIDs resolves `settlement_<id>` — the CLUSTER — to the
+// feature_geometries footprints it lists.
+//
+// Invariant 7, from the other direction: pinning a settlement asks for a
+// settlement, and a settlement is a cluster of built-up polygons. Answering
+// with the cluster's stored centroid alone gave the map a single Point, so a
+// pinned town could not gain detail at any zoom — there was no geometry to
+// promote to. Returns nil for anything that is not a cluster id (a footprint
+// id pins itself), so the caller falls back to an exact match.
+func (s *Server) settlementFootprintIDs(parkID, featureID string) []string {
+	if !strings.HasPrefix(featureID, "settlement_") {
+		return nil
+	}
+	sid, err := strconv.ParseInt(strings.TrimPrefix(featureID, "settlement_"), 10, 64)
+	if err != nil {
+		return nil
+	}
+	var polyIDs, narrative sql.NullString
+	if err := s.DB.QueryRow(`
+		SELECT polygon_ids, narrative FROM park_settlements
+		WHERE id = ? AND park_id = ?`, sid, parkID).Scan(&polyIDs, &narrative); err != nil {
+		return nil
+	}
+	// Retired detector output is not a settlement anywhere else either
+	// (srv/mining_flag.go); it must not become one by being pinned.
+	if scannerInjectedRow(narrative.String, polyIDs.String) {
+		return nil
+	}
+	return splitPolygonIDs(polyIDs.String)
 }
 
 // ---- viewport enrichment -------------------------------------------------
