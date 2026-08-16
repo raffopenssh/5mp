@@ -13800,8 +13800,11 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             if (dup && viewLayers[name]) {
                 // Off BEFORE the pin is removed: removePinnedLayer reconciles
                 // on its way out, and a row still marked on would be handed
-                // back its own layer at exactly that moment.
+                // back its own layer at exactly that moment. Clearing wasOn
+                // too, or reconcile would "restore" the pre-mirror state and
+                // resurrect the layer the user just switched off.
                 viewLayers[name] = false;
+                if (mirroredPins[name]) mirroredPins[name].wasOn = false;
                 // removePinnedLayer lives in the pinning script block; it is a
                 // top-level declaration, so it is global by the time a click
                 // can happen — guarded anyway because this row must never
@@ -13882,22 +13885,29 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
         // mirroring a pin that has gone draws its own again.
         // `var`, not `let`: updateViewLayerUI() reads it and is declared
         // hundreds of lines above this — the same trap as aoiFocusID.
-        var mirroredPins = {};   // stats layer name -> pin key it is mirroring
+        var mirroredPins = {};   // stats layer name -> { key, wasOn }
         function reconcileViewLayerDuplicates() {
             Object.keys(VIEW_LAYER_META).forEach(name => {
                 const dup = duplicatePinKey(name);
                 const was = mirroredPins[name] || null;
                 if (dup) {
                     if (window.LODLayer) window.LODLayer.remove('view-' + name);
-                    mirroredPins[name] = dup;
+                    // Remember whether the ROW was on before it started
+                    // mirroring: unpinning must not leave a layer on screen
+                    // the user only ever asked for as a pin.
+                    if (!was) mirroredPins[name] = { key: dup, wasOn: !!viewLayers[name] };
+                    else was.key = dup;
                     viewLayers[name] = true;          // it IS on screen; say so
                     const st = (window.LODLayer && LODLayer.state(dup)) || {};
                     setLayerLOD(name, { count: st.count, total: st.total, render: st.render,
                                         truncated: st.lastTruncated, mirror: dup });
                 } else if (was) {
                     delete mirroredPins[name];
-                    // The pin went away. The row stays on — the user never
-                    // switched it off — so it goes back to loading its own.
+                    // The pin went away. The row goes back to what the USER
+                    // set it to: on only if it was on before the mirror took
+                    // over (or was explicitly toggled off via the row, which
+                    // clears wasOn below).
+                    viewLayers[name] = !!was.wasOn;
                     if (viewLayers[name]) loadViewFeatureLayer(name);
                     else setLayerLOD(name, null);
                 }
@@ -13909,7 +13919,7 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
         // A mirrored row's numbers come from the pin's own loader.
         window.addEventListener('lod:state', (e) => {
             const d = e.detail || {};
-            const name = Object.keys(mirroredPins).find(n => mirroredPins[n] === d.key);
+            const name = Object.keys(mirroredPins).find(n => mirroredPins[n].key === d.key);
             if (!name) return;
             setLayerLOD(name, { count: d.count, total: d.total, render: d.render,
                                 truncated: d.truncated, detail: d.detail_mode, mirror: d.key,

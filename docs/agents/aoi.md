@@ -366,6 +366,16 @@ pin (`classification`) is a different answer and is never mirrored; without
 focus a pin is a subset of the view, not a duplicate. `var mirroredPins`, not
 `let` (`updateViewLayerUI()` is declared far above it).
 
+The mirror must remember **whether the row was on before it took over**:
+`mirroredPins[name]` is `{ key, wasOn }`. Mirroring sets `viewLayers[name] =
+true` (it IS on screen), so when the pin is later removed, restoring
+"whatever `viewLayers` says" resurrects the layer as a stats-row copy — that
+was the 2026-08-16 bug where unpinning settlements left them drawn (share
+link j723245: pin fires, pin settlements+deforestation, unpin settlements →
+settlements stayed). On unpin the row reverts to `wasOn`; the row's own ×
+while mirrored clears `wasOn` too, or reconcile would restore the pre-mirror
+state the user just declined.
+
 **archive ≠ cancel ≠ delete ≠ supersede.** `archive` hides the overlay and
 touches nothing else — ingest keeps running, so unhiding shows an answer rather
 than a progress bar. `cancel` disables unfinished datasets but keeps their
