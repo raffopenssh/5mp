@@ -96,7 +96,11 @@ func gpkgCacheKey(areaID, from, to string, effort, rawFire bool, env string) str
 	// as if it had the new columns. v2: needs_review on deforestation,
 	// protected_areas layer on AOI exports (with keystone attributes),
 	// trajectory start_park/end_park/parks_touched, data-matched renderers.
-	const gpkgFormatVersion = "v2"
+	// v3: cluster_id on settlements (footprint→settlement mapping, so a
+	// dissolve reproduces the app's published cluster counts) and
+	// hist_place/_dist_km/_source on settlements + deforestation where the
+	// 1908-1976 Sudan survey sheets overlap the area.
+	const gpkgFormatVersion = "v3"
 	return strings.Join([]string{gpkgFormatVersion, areaID, from, to, fmt.Sprint(effort), fmt.Sprint(rawFire), env}, "|")
 }
 
@@ -781,6 +785,7 @@ func (s *Server) HandleAPIGeoPackageList(w http.ResponseWriter, r *http.Request)
 	out := []*GeoPackageJob{}
 	for rows.Next() {
 		if j, _, err := scanGeoPackageJob(rows); err == nil {
+			s.gpkgSetLinkTags(j)
 			out = append(out, j)
 		}
 	}

@@ -381,7 +381,7 @@ func (s *Server) gpkgViewPolygons(w *gpkgWriter, o gpkgExportOpts, featureType s
 	desc := "Canopy-loss polygons in the exported view"
 	if featureType == "settlement" {
 		cols = []gpkgCol{
-			{"feature_id", "TEXT"}, {"park_id", "TEXT"}, {"area_m2", "REAL"},
+			{"feature_id", "TEXT"}, {"cluster_id", "INTEGER"}, {"park_id", "TEXT"}, {"area_m2", "REAL"},
 			{"population_est", "INTEGER"}, {"classification", "TEXT"},
 			{"nearest_place", "TEXT"}, {"distance_to_place_km", "REAL"}, {"narrative", "TEXT"},
 		}
@@ -426,7 +426,10 @@ func (s *Server) gpkgViewPolygons(w *gpkgWriter, o gpkgExportOpts, featureType s
 		json.Unmarshal([]byte(props), &p)
 		s.enrichFeatureProps(featureType, park, fid, p, &meta)
 		if featureType == "settlement" {
-			l.Add(geojson, fid, park, gpkgJSONNum(p, "area_m2"), gpkgJSONInt(p, "population_est"),
+			// settlement_id is the CLUSTER the footprint belongs to
+			// (enrichFeatureProps) — same contract as the area export's
+			// cluster_id: dissolve on it to get settlements, not patches.
+			l.Add(geojson, fid, gpkgJSONInt(p, "settlement_id"), park, gpkgJSONNum(p, "area_m2"), gpkgJSONInt(p, "population_est"),
 				gpkgJSONStr(p, "classification"), gpkgJSONStr(p, "nearest_place"),
 				gpkgJSONNum(p, "distance_to_place_km"), gpkgJSONStr(p, "narrative"))
 		} else {
