@@ -250,7 +250,11 @@ These apply no matter what you touch. Each cost real time at least once.
     tracks with it. A capability's **dates** are the same shape of question:
     a window is clamped once in the middleware (`clampGuestQuery`), so a
     handler whose range is not a `from`/`to` pair must call
-    `ClampGuestDates` itself. See `docs/agents/sharing.md`.
+    `ClampGuestDates` itself. And **arriving with a `pwd=` for a different
+    login must switch the whole session, not half of it**: the cookie and
+    `RequestPwd`/`RequestEnv` disagreed for one page load, which rendered a
+    shell as one tenant and filled it from another. See
+    `docs/agents/sharing.md`.
 
 15. **A derived quantity must not outlive the scale it was calibrated at.**
     Single-linkage clustering with no diameter bound, a `LIMIT 100`

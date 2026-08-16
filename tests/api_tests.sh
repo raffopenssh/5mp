@@ -557,6 +557,39 @@ if [[ -n "$CLIENT_PWD" ]]; then
         red "FAIL"; FAILED=$((FAILED + 1)); ERRORS+=("authenticated response is publicly cacheable")
     fi
 
+    # ARRIVING WITH A DIFFERENT ?pwd= MUST SWITCH THE SESSION, NOT HALF OF IT.
+    #
+    # The cookie branch used to strip the param and serve on with the OLD
+    # cookie, while RequestPwd/RequestEnv prefer the param — so one page load
+    # was two identities: a shell rendered as the new login, filled by XHRs
+    # that were still the old one (a colleague's link showed your own tenant's
+    # links, AOIs and patrol data). Asserted on the cookie the redirect sets
+    # AND on what a following cookie-only request actually answers, because the
+    # first alone would pass while the session still disagreed.
+    printf "%-50s" "pwd_in_url_switches_the_session"
+    SJ=$(mktemp)
+    # The discriminator is the tenant's OWN autofetch list (one source for the
+    # owner, none for anybody else), not a link count: a count that happens to
+    # be 0 for both logins would pass while the session never switched.
+    curl -s -m 30 -o /dev/null -c "$SJ" --get --data-urlencode "pwd=test2026" "${BASE_URL}/"
+    before=$(curl -s -m 30 -b "$SJ" "${BASE_URL}/api/admin/autofetch" | jq -r '.sources | length // 0')
+    setc=$(curl -s -m 30 -D- -o /dev/null -b "$SJ" -c "$SJ" \
+        --get --data-urlencode "pwd=$CLIENT_PWD" "${BASE_URL}/" \
+        | grep -ci '^set-cookie:.*access_pwd' || true)
+    after=$(curl -s -m 30 -b "$SJ" "${BASE_URL}/api/admin/autofetch" | jq -r '.sources | length // 0')
+    # And the same password twice must NOT re-issue the cookie — it is the same
+    # session, and a Set-Cookie on every page view is a session that resets.
+    again=$(curl -s -m 30 -D- -o /dev/null -b "$SJ" \
+        --get --data-urlencode "pwd=$CLIENT_PWD" "${BASE_URL}/" \
+        | grep -ci '^set-cookie:.*access_pwd' || true)
+    rm -f "$SJ"
+    if [[ "$setc" == "1" && "$again" == "0" && "$before" == "0" && "$after" -ge 1 ]]; then
+        green "✓ (switched, not re-set)"; PASSED=$((PASSED + 1))
+    else
+        red "FAIL (set=$setc again=$again sources $before -> $after)"; FAILED=$((FAILED + 1))
+        ERRORS+=("a ?pwd= for another login does not switch the session")
+    fi
+
     # An EarthRanger subscription names a client's server, username and parks.
     printf "%-50s" "autofetch_sources_scoped_to_tenant"
     a=$(curl -s -m 30 --get --data-urlencode "pwd=$CLIENT_PWD" "${BASE_URL}/api/admin/autofetch" | jq -r '.sources | length')
@@ -813,6 +846,73 @@ if [[ -n "$CLIENT_PWD" ]]; then
         ERRORS+=("shortlink tag lifecycle broken")
     fi
 
+    # A LINK CARRIES A SET OF TAGS. The single-tag column (migration 060) made
+    # the two truthful answers exclusive: a link cited by a report AND handed
+    # out at a workshop had to pick, and picking took it out of the next
+    # "renew #report" — the accident tags exist to prevent. Asserted on all
+    # four verbs, because each one used to be the whole feature.
+    printf "%-50s" "tags_are_a_set_not_one_word"
+    TM=$(mint '{"url":"/?park_focus=CAF_Chinko&tagset=1","tags":["apitest-b","apitest-a"]}')
+    # Sorted on read: two surfaces showing one link must order its tags one way.
+    both=$(curl -s -m 30 "${BASE_URL}/api/shortlinks?pwd=${CLIENT_PWD}" \
+        | jq -c --arg s "$TM" '[.groups[].links[] | select(.slug==$s) | .tags][0]')
+    added=$(curl -s -m 30 -X POST "${BASE_URL}/api/shortlink/${TM}/retag?pwd=${CLIENT_PWD}" \
+        -H 'Content-Type: application/json' -d '{"add":"apitest-c"}' | jq -c '.tags')
+    # remove takes ONE tag off and leaves the rest — the chip's ×.
+    dropped=$(curl -s -m 30 -X POST "${BASE_URL}/api/shortlink/${TM}/retag?pwd=${CLIENT_PWD}" \
+        -H 'Content-Type: application/json' -d '{"remove":"apitest-a"}' | jq -c '.tags')
+    # A word sanitising to nothing is an ERROR, not a silent no-op: accepting it
+    # would store nothing while the user believes a tag was set (invariant 1).
+    badcode=$(curl -s -m 30 -o /dev/null -w "%{http_code}" -X POST \
+        "${BASE_URL}/api/shortlink/${TM}/retag?pwd=${CLIENT_PWD}" \
+        -H 'Content-Type: application/json' -d '{"add":"!!!"}')
+    if [[ "$both" == '["apitest-a","apitest-b"]' && "$added" == '["apitest-a","apitest-b","apitest-c"]' \
+       && "$dropped" == '["apitest-b","apitest-c"]' && "$badcode" == "400" ]]; then
+        green "✓ (set, add, remove, 400)"; PASSED=$((PASSED + 1))
+    else
+        red "FAIL (both=$both added=$added dropped=$dropped bad=$badcode)"; FAILED=$((FAILED + 1))
+        ERRORS+=("short link tags are not behaving as a set")
+    fi
+
+    # A tag must survive the two operations that change a link's identity:
+    # renaming its slug (tags are keyed on it) and being renamed as a group
+    # onto a tag the link ALREADY carries — the second one aborted the whole
+    # rename when it was an UPDATE against the primary key.
+    printf "%-50s" "tags_survive_slug_rename_and_merge"
+    RS=$(curl -s -m 30 -X POST "${BASE_URL}/api/shortlink/${TM}/rename?pwd=${CLIENT_PWD}" \
+        -H 'Content-Type: application/json' -d '{"slug":"apitest-renamed-tags"}' | jq -c '.tags')
+    merged=$(curl -s -m 30 -X POST "${BASE_URL}/api/shortlinks/retag?pwd=${CLIENT_PWD}" \
+        -H 'Content-Type: application/json' -d '{"tag":"apitest-b","new_tag":"apitest-c"}' | jq -r '.renamed')
+    after=$(curl -s -m 30 "${BASE_URL}/api/shortlinks?pwd=${CLIENT_PWD}" \
+        | jq -c '[.groups[].links[] | select(.slug=="apitest-renamed-tags") | .tags][0]')
+    # An empty new_tag with delete:true removes the tag everywhere.
+    gone=$(curl -s -m 30 -X POST "${BASE_URL}/api/shortlinks/retag?pwd=${CLIENT_PWD}" \
+        -H 'Content-Type: application/json' -d '{"tag":"apitest-c","delete":true}' | jq -r '.renamed')
+    if [[ "$RS" == '["apitest-b","apitest-c"]' && "$merged" == "1" \
+       && "$after" == '["apitest-c"]' && "$gone" == "1" ]]; then
+        green "✓ (rename keeps, merge dedupes, delete-all)"; PASSED=$((PASSED + 1))
+    else
+        red "FAIL (renamed=$RS merged=$merged after=$after gone=$gone)"; FAILED=$((FAILED + 1))
+        ERRORS+=("short link tags lost across a slug rename or a merge")
+    fi
+    # The rename left an alias on the OLD slug and moved the row to the new one;
+    # both are fixtures, so both go into the ledger the sweeper reads.
+    printf 'apitest-renamed-tags\n' >> "$MINTED_LOG"
+
+    # The vocabulary is what makes a tag the SAME word as last time, so it must
+    # carry counts: a chooser that cannot tell "report (12 links)" from a typo
+    # made once is a chooser that spreads the typo.
+    printf "%-50s" "tag_vocabulary_carries_counts"
+    TV=$(mint '{"url":"/?park_focus=CAF_Chinko&tagvocab=1","tags":["apitest-vocab"]}')
+    det=$(curl -s -m 30 "${BASE_URL}/api/shortlink-tags?pwd=${CLIENT_PWD}" \
+        | jq -r '[.detail[] | select(.tag=="apitest-vocab")] | "\(length):\(.[0].links)"')
+    if [[ "$det" == "1:1" ]]; then
+        green "✓"; PASSED=$((PASSED + 1))
+    else
+        red "FAIL (detail=$det)"; FAILED=$((FAILED + 1))
+        ERRORS+=("tag vocabulary lost its counts")
+    fi
+
     # A link belongs to the login that minted it. Another login must neither
     # see it in /api/shortlinks nor act on it — and the refusal is a 404, not
     # a 403, because an id must not be an oracle (AGENTS.md invariant 6).
@@ -847,6 +947,9 @@ if [[ -n "$CLIENT_PWD" ]]; then
         # the sheet keeps the evidence), so the row goes directly afterwards:
         # these are fixtures, not history. Scoped by exact slug, never by a
         # LIKE over url, which would eventually match a real link.
+        # Tag rows are keyed on the slug, so a fixture's tags would outlive it
+        # and keep showing up in the vocabulary and in every count.
+        sqlite3 db.sqlite3 "DELETE FROM short_link_tags WHERE slug = '${sl}'" 2>/dev/null
         sqlite3 db.sqlite3 "DELETE FROM short_links WHERE slug = '${sl}' OR alias_of = '${sl}'" 2>/dev/null
         n=$(sqlite3 db.sqlite3 "SELECT COUNT(*) FROM short_links WHERE slug = '${sl}'" 2>/dev/null || echo 1)
         left=$((left + n))
@@ -858,7 +961,7 @@ if [[ -n "$CLIENT_PWD" ]]; then
     # meaning anything the moment one is added or removed (AGENTS.md
     # invariant 2) -- it was wrong within a minute of being written.
     missing=0
-    for want in "$G" "$G2" "$N" "$expslug" "$L" "$U" "$nlslug"; do
+    for want in "$G" "$G2" "$N" "$expslug" "$L" "$U" "$nlslug" "$TM" "$TV"; do
         [[ -z "$want" ]] && { missing=$((missing + 1)); continue; }
         printf '%s\n' "${MINTED[@]}" | grep -qx "$want" || missing=$((missing + 1))
     done

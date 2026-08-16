@@ -3758,23 +3758,11 @@ body.sl-open { overflow: hidden; }
 .sl-note:empty { display: none; }
 .sl-note-warn { color: #fcd34d; font-weight: 600; }
 
-/* The purpose tag — one whisper of a line under the note. Same chip language
-   as Admin → Access & Sharing (.sh-tag), blue: bookkeeping, not a credential. */
-.sl-tagrow { margin: 10px 2px 0; min-height: 20px; }
-.sl-tag { display: inline-flex; align-items: center; gap: 2px;
-    background: rgba(96,165,250,0.12); border: 1px solid rgba(96,165,250,0.35);
-    border-radius: 999px; padding: 1px 5px 1px 9px; font-size: 11px; color: #93c5fd; }
-.sl-tag.is-editing { padding: 1px 5px; }
-.sl-tag-x { background: none; border: none; color: #60a5fa; font-size: 14px;
-    line-height: 1; padding: 1px 5px; cursor: pointer; border-radius: 999px; }
-.sl-tag-x:hover { color: #fca5a5; background: rgba(239,68,68,0.15); }
-.sl-tag-add { background: none; border: 1px dashed rgba(255,255,255,0.14);
-    border-radius: 999px; padding: 2px 10px; font-size: 11px; color: #565e6b;
-    cursor: pointer; transition: color 0.15s, border-color 0.15s; }
-.sl-tag-add:hover { color: #93c5fd; border-color: rgba(96,165,250,0.4); }
-.sl-tag-hash { opacity: 0.7; }
-.sl-tag-input { background: none; border: none; color: #bfdbfe; font: inherit;
-    font-size: 11px; padding: 1px 4px; width: 110px; outline: none; }
+/* The purpose tag — one whisper of a line under the note. The control itself
+   is TagChips (srv/static/tagchips.js, .tc-* below): one implementation for the
+   dialog, the admin sheet and the export card, because three drawings of one
+   thing taught the user they were three things. */
+.sl-tagrow { margin: 10px 2px 0; min-height: 22px; }
 
 .sl-copy {
     display: flex; align-items: center; justify-content: center; gap: 8px;
@@ -3921,25 +3909,94 @@ body.is-guest .session-chip-label::before {
 .sh-empty { color: #6b7280; font-size: 12px; padding: 28px; text-align: center;
     border: 1px dashed rgba(255,255,255,0.1); border-radius: 10px; }
 
-/* The purpose-tag chip: “#report ×”. Blue like the gpkg card's tag — a tag is
-   bookkeeping, not a credential, so it must not borrow the key's amber. The
-   name is clickable (rename everywhere), the × removes it from one link. */
-.sh-tag { display: inline-flex; align-items: center; gap: 2px;
-    background: rgba(96,165,250,0.12); border: 1px solid rgba(96,165,250,0.35);
-    border-radius: 999px; padding: 0 4px 0 8px; font-size: 10.5px; color: #93c5fd; }
-.sh-tag-name { cursor: pointer; padding: 1px 0; }
-.sh-tag-name:hover { text-decoration: underline dashed; text-underline-offset: 2px; }
-.sh-tag-x { background: none; border: none; color: #60a5fa; font-size: 13px;
-    line-height: 1; padding: 1px 4px; cursor: pointer; border-radius: 999px; }
-.sh-tag-x:hover { color: #fca5a5; background: rgba(239,68,68,0.15); }
-.sh-tag-add { background: none; border: 1px dashed rgba(255,255,255,0.16);
-    border-radius: 999px; padding: 1px 8px; font-size: 10.5px; color: #6b7280;
-    cursor: pointer; transition: color 0.15s, border-color 0.15s; }
-.sh-tag-add:hover { color: #93c5fd; border-color: rgba(96,165,250,0.4); }
-.sh-tag-hash { opacity: 0.7; }
-.sh-tag-input { background: rgba(0,0,0,0.4); border: 1px solid rgba(96,165,250,0.5);
-    border-radius: 999px; color: #bfdbfe; font: inherit; font-size: 10.5px;
-    padding: 1px 8px; width: 90px; outline: none; }
+/* ── Tag chips (srv/static/tagchips.js) ────────────────────────────────────
+   ONE control, everywhere tags appear: the share dialog, Admin → Access &
+   Sharing, and the export card in the bell. Blue, never the key's amber — a tag
+   is bookkeeping, not a credential.
+
+   A SOFT RECTANGLE, DASHED. This app spends pills on status ("key", "expired",
+   "patrol tracks"); a tag is an editable label, so it is a 6px rectangle, and
+   its outline is dashed like the "# add tag" slot beside it — chip and empty
+   slot are one control in two states, and dashed reads "editable" where solid
+   reads "issued".
+
+   EDITING HAS ONE BORDER. The input lives inside the chip's own box and carries
+   no border of its own, because the first version nested a bordered input in a
+   bordered chip and a rename drew two outlines around one word. */
+.tc-row { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 5px;
+    vertical-align: middle; transition: opacity 0.15s; }
+.tc-row.is-busy { opacity: 0.55; pointer-events: none; }
+.tc-chip, .tc-add { display: inline-flex; align-items: center; gap: 1px;
+    border-radius: 6px; font-size: 10.5px; line-height: 1.5;
+    font-family: inherit; padding: 1px 3px 1px 6px; }
+.tc-chip { background: rgba(96,165,250,0.1); border: 1px dashed rgba(96,165,250,0.5);
+    color: #93c5fd; }
+.tc-name { cursor: pointer; padding: 0 1px; border-radius: 3px; outline: none; }
+.tc-name:hover, .tc-name:focus-visible { background: rgba(96,165,250,0.18); color: #dbeafe; }
+.tc-hash { opacity: 0.6; }
+.tc-x { background: none; border: none; color: #60a5fa; font-size: 12px;
+    line-height: 1; padding: 1px 3px; cursor: pointer; border-radius: 4px;
+    transition: color 0.12s, background 0.12s; }
+.tc-x:hover { color: #fca5a5; background: rgba(239,68,68,0.16); }
+/* The empty slot: same rectangle, same dashes, quieter — it is the chip that is
+   not there yet, and it stays visible once tags exist, because tags are a SET
+   and an "add" that vanishes teaches that the set holds one. */
+.tc-add { background: none; border: 1px dashed rgba(255,255,255,0.16);
+    color: #6b7280; cursor: pointer; padding: 1px 7px;
+    transition: color 0.15s, border-color 0.15s, background 0.15s; }
+.tc-add:hover { color: #93c5fd; border-color: rgba(96,165,250,0.45);
+    background: rgba(96,165,250,0.08); }
+.tc-chip.is-editing { border-style: solid; border-color: rgba(96,165,250,0.75);
+    background: rgba(30,58,138,0.35); padding-right: 6px;
+    /* No gap while editing: the ghost must sit against the typed text, or the
+       completion reads as a second word instead of the rest of this one. */
+    gap: 0; }
+.tc-chip.is-editing input { background: none; border: none; outline: none;
+    color: #dbeafe; font: inherit; font-size: 10.5px; padding: 0;
+    /* Sized in px from a measured mirror (tagchips.js `resize`), never in `ch`:
+       `ch` is the width of "0", so a proportional font leaves a variable gap
+       between the text and the completion that follows it. */
+    min-width: 1ch; }
+/* The measuring mirror lives on <body> and is styled from JS (tagchips.js
+   `measure`) — inside the chip it became a flex item and measured 0. */
+.tc-chip.is-editing input::placeholder { color: rgba(147,197,253,0.4); }
+/* The completion. An ELEMENT, not selected text inside the input: selected text
+   is not tappable and a touch keyboard has no Tab, so the desktop
+   address-bar trick left the suggestion visible and unacceptable on a phone.
+   Dimmed (it is not typed yet), underlined on hover, and hidden entirely when
+   there is nothing to suggest so it never reserves empty space. */
+.tc-ghost { display: none; color: rgba(147,197,253,0.45); cursor: pointer;
+    /* Zero padding and zero margin: the completion is the REST OF THE WORD, so
+       any box of its own re-introduces the gap the px sizing just removed. It
+       inherits font and line-height, so the two halves share one baseline. */
+    /* -1px cancels the one pixel the input reserves for its caret (tagchips.js
+       `resize`), so the glyphs butt exactly. Any other margin or padding would
+       re-open the gap that made a completion read as a second word. */
+    padding: 0; margin: 0 0 0 -1px; white-space: pre; letter-spacing: inherit;
+    -webkit-user-select: none; user-select: none; }
+.tc-chip.is-editing.has-ghost .tc-ghost { display: inline; }
+/* Hover says "this is a control" without moving anything: an underline, not a
+   background box, because a box would look like a separate token again. */
+.tc-ghost:hover { color: #bfdbfe;
+    text-decoration: underline; text-decoration-style: dotted;
+    text-underline-offset: 2px; }
+/* On touch there is no hover to explain it, so the suggestion is drawn as an
+   obviously tappable target: bigger hit area, visible fill, no relayout of the
+   text itself (padding, not font-size). */
+/* Touch has no hover to explain the suggestion, and no Tab to accept it, so
+   there the completion must LOOK tappable. It is underlined rather than boxed
+   for the same reason as above, plus a wider hit area created with padding on
+   the block axis only — horizontal padding would separate it from the word. */
+@media (hover: none) {
+    .tc-ghost { color: rgba(147,197,253,0.72);
+        text-decoration: underline; text-decoration-style: dotted;
+        text-underline-offset: 2px; padding: 4px 0; }
+}
+/* Dialog scale: the same control one step larger, so the share sheet does not
+   render admin-sized 10.5px text beside its 11px labels. */
+.tc-md .tc-chip, .tc-md .tc-add { font-size: 11px; padding: 2px 4px 2px 8px; }
+.tc-md .tc-add { padding: 2px 9px; }
+.tc-md .tc-chip.is-editing input { font-size: 11px; }
 
 /* Renewal — shown only when a key/file is close to dying, so it can afford to
    be quietly amber rather than a labelled button begging for ritual clicks. */
