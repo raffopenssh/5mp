@@ -30,6 +30,7 @@
 
     var map = null;
     var reg = new Map();          // key -> layer state
+    var seqCounter = 0;           // pin order; stacking order (see restack)
     var detailCache = new Map();  // feature row id -> properties
     var detailPending = new Map();
     var REFETCH_MS = 260;
@@ -148,13 +149,22 @@
 
         if (!vector) {
             if (!map.getLayer(L.dots)) {
+                // Deforestation is the rare, high-stakes layer and its purple
+                // sits at half the luminance of fire red or settlement amber:
+                // at the shared dot size it simply drowns when the other two
+                // are on (user report, 2026-08-16). It wears bigger, fuller
+                // dots so a clearing reads at a glance the way a settlement
+                // cluster does. Counts stay honest — this is ink, not data.
+                var emph = s.featureType === 'deforestation';
                 map.addLayer({
                     id: L.dots, type: 'circle', source: L.src,
                     paint: {
                         // Small and dense: this rendering exists because there
                         // are a lot of them, and fat dots at continental zoom
                         // are a smear, not a map.
-                        'circle-radius': ['interpolate', ['linear'], ['zoom'], 2, 1.6, 6, 2.6, 10, 4],
+                        'circle-radius': emph
+                            ? ['interpolate', ['linear'], ['zoom'], 2, 2.4, 6, 3.8, 10, 5.5]
+                            : ['interpolate', ['linear'], ['zoom'], 2, 1.6, 6, 2.6, 10, 4],
                         'circle-color': color,
                         'circle-opacity': 0,
                         'circle-stroke-width': 0
@@ -215,6 +225,23 @@
         fade(key, want, unwant);
         if (changed) focusPulse(key, render);
         s.render = render;
+        restack();
+    }
+
+    // Stacking order is the PIN order, always. A rendering crossing its
+    // geometry/points threshold re-adds layers, which would otherwise shuffle
+    // whoever reloaded last to the top; instead every ensureLayers re-asserts
+    // the sequence the layers were added in, so the layer pinned last draws
+    // on top and stays there.
+    function restack() {
+        Array.from(reg.entries())
+            .sort(function (a, b) { return (a[1].seq || 0) - (b[1].seq || 0); })
+            .forEach(function (entry) {
+                var L = ids(entry[0]);
+                [L.fill, L.line, L.arrow, L.point, L.dots].forEach(function (id) {
+                    try { if (map.getLayer(id)) map.moveLayer(id); } catch (e) {}
+                });
+            });
     }
 
     // ---- the transition, made visible ------------------------------------
@@ -300,6 +327,16 @@
     function applyDensity(key, n) {
         var L = ids(key), d = densityPaint(n);
         var s0 = reg.get(key);
+        // Deforestation carries the least luminous colour of the three feature
+        // layers and the highest stakes per feature; at every density step it
+        // keeps a larger dot, or it vanishes under fire red and settlement
+        // amber (user report, 2026-08-16). No extra ring — that was tried and
+        // read as too loud.
+        if (s0 && s0.featureType === 'deforestation') {
+            d = Object.assign({}, d, {
+                r: Math.max(d.r * 1.5, 3)
+            });
+        }
         if (s0) {
             s0.lineOpacity = d.o; s0.arrowOpacity = d.arrow; s0.fillOpacity = d.fill;
             s0.lineWidth = d.w; s0.pointRadius = d.r;
@@ -342,8 +379,11 @@
         else if (id === ids(key).arrow && s.arrowOpacity != null) full = s.arrowOpacity;
         else if (id === ids(key).fill && s.fillOpacity != null) full = s.fillOpacity;
         else if (id === ids(key).point && s.pointOpacity != null) full = s.pointOpacity;
-        // A dots layer is denser, so it carries less alpha each.
-        var target = on ? (id.endsWith('-dots') ? 0.75 : full) : 0;
+        // A dots layer is denser, so it carries less alpha each — except
+        // deforestation, whose purple needs full alpha to compete with fire
+        // red and settlement amber at all (see ensureLayers).
+        var emph = s.featureType === 'deforestation';
+        var target = on ? (id.endsWith('-dots') ? (emph ? 0.95 : 0.75) : full) : 0;
         try {
             map.setPaintProperty(id, p[0], target);
             map.setPaintProperty(id, p[0] + '-transition', { duration: FADE_MS, delay: 0 });
@@ -626,6 +666,10 @@
             var s = reg.get(key) || {};
             Object.keys(opts || {}).forEach(function (k) { s[k] = opts[k]; });
             s.lastBBox = null;
+            // Pin order is stacking order: a NEW layer draws on top of the
+            // ones already pinned; re-adding an existing key (option update,
+            // date change) keeps its place rather than jumping the queue.
+            if (s.seq == null) s.seq = ++seqCounter;
             reg.set(key, s);
             return load(key, 'add');
         },

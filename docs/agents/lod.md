@@ -60,6 +60,25 @@ own — while a sparse view stays bold and obviously clickable. Arrows fade out
 with them: a glyph every 100 px across 2,000 overlapping paths is noise.
 **Never judge this by feature count alone; look at the render.**
 
+**Deforestation is deliberately louder than the ramp says** (2026-08-16).
+Its purple (`#a855f7`) has roughly half the luminance of fire red and
+settlement amber, and with all three layers on it read as an empty layer
+(user report with screenshots). Two compensations in `lodlayer.js`, keyed on
+`featureType === 'deforestation'`: dots mode gets a larger radius ramp at
+0.95 alpha (`ensureLayers` + `setOpacity`), and `applyDensity` floors its
+vector-mode point radius at `1.5×`/3px. Rejected variants, both tried: a
+pale ring / halo stroke (too loud), and the animator's area-scaled
+√area·zoom dot (too much on the static map — the animator draws it over a
+heat field, the map over 30k fire chords). Ink, not data — counts and
+truncation stay honest.
+
+**Stacking order is pin order, always** (`restack()`, `seq` assigned in
+`LODLayer.add`). A rendering crossing its geometry/points threshold re-adds
+layers, which used to shuffle whoever reloaded last to the top; now every
+`ensureLayers` re-asserts the add sequence, so the layer pinned last draws on
+top and stays there, and re-adding an existing key (date change, option
+update) keeps its place.
+
 ⚠️ **The animator's ramp keys on what is drawn AT `t`, not on what was
 loaded.** The map draws every feature in the view at once; an animation draws a
 group only between its own `t0` and its ash-out, so a window holding 6,000
