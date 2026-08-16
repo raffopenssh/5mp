@@ -24,7 +24,6 @@ package srv
 // the disk or serve files under this domain's name.
 
 import (
-	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
@@ -330,12 +329,19 @@ func (s *Server) HandleAPISharedFileDownload(w http.ResponseWriter, r *http.Requ
 		return
 	}
 	defer fh.Close()
-	s.DB.Exec(`UPDATE shared_files SET downloads = downloads + 1, last_download_at = ? WHERE id = ?`,
-		time.Now().UTC().Format(time.RFC3339), f.ID)
+	if isDownloadStart(r) {
+		s.DB.Exec(`UPDATE shared_files SET downloads = downloads + 1, last_download_at = ? WHERE id = ?`,
+			time.Now().UTC().Format(time.RFC3339), f.ID)
+	}
 	w.Header().Set("Content-Type", "application/octet-stream")
 	w.Header().Set("Content-Disposition", `attachment; filename="`+f.Name+`"`)
-	w.Header().Set("Content-Length", fmt.Sprint(f.SizeBytes))
-	http.ServeContent(w, r, f.Name, time.Now(), fh)
+	// ServeContent owns Content-Length/Range; a stable modtime is what makes
+	// If-Range resumes work (time.Now() would invalidate every partial file).
+	mod := time.Now()
+	if st, err := fh.Stat(); err == nil {
+		mod = st.ModTime()
+	}
+	http.ServeContent(w, r, f.Name, mod, fh)
 }
 
 // HandleAPISharedFileExtend — POST /api/files/{id}/extend {days:30}.
