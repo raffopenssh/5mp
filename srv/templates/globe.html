@@ -283,28 +283,8 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
     <div class="bbox-draw-overlay" id="bbox-draw-overlay"></div>
     <div class="bbox-draw-hint" id="bbox-draw-hint">Click and drag to select area. Press ESC to cancel.</div>
     
-    <!-- Satellite Switch Hint (appears at high zoom) -->
-    <div class="satellite-hint" id="satellite-hint">
-        <div class="satellite-hint-content">
-            <div class="satellite-hint-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="3" y="3" width="18" height="18" rx="2"/>
-                    <path d="M3 9h18M9 21V9"/>
-                </svg>
-            </div>
-            <div class="satellite-hint-text">
-                <div style="font-weight:600;margin-bottom:1px;">High zoom</div>
-                <div style="font-size:10px;opacity:0.85;">Satellite shows more detail</div>
-            </div>
-            <button class="satellite-hint-btn" onclick="quickSwitchToSatellite()" aria-label="Switch to satellite view">
-                Switch
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:3px;">
-                    <polyline points="9 18 15 12 9 6"/>
-                </svg>
-            </button>
-        </div>
-        <button class="satellite-hint-close" onclick="dismissSatelliteHint()" title="Dismiss" aria-label="Dismiss satellite hint">&times;</button>
-    </div>
+    <!-- The high-zoom satellite offer is a toast with an action (showToast,
+         key 'satellite-hint'), not a bespoke card. -->
 
     
     <div class="filter-panel" id="filter-panel" role="region" aria-label="Filter controls">
@@ -2540,46 +2520,43 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             if (typeof applyAOIFocusPaint === 'function') applyAOIFocusPaint(isSatellite);
         }
         
-        // Satellite hint for high zoom levels
+        // ── "TRY SATELLITE UP HERE" IS A TOAST ────────────────────────────
+        //
+        // It was a fourth transient surface: a green gradient card, own
+        // corner, own fade classes, own close button, own mobile breakpoints
+        // (three of them). It says one sentence and offers one action — that
+        // is exactly a toast with an action, so it is one now. The state
+        // (shown / dismissed) still lives here, because the *policy* is the
+        // interesting part: offer once, never after the user says no.
+        const SATELLITE_HINT_ZOOM = 13;
         let satelliteHintShown = false;
         let satelliteHintDismissed = false;
-        let satelliteHintTimeout = null;
-        
+
+        // THE CONDITION IS CHECKED WHERE THE HINT IS SHOWN, not only where it
+        // is scheduled. Its whole claim is "you are zoomed in far enough that
+        // the dark basemap has run out of detail" — shown at z 3 it is simply
+        // false. The caller already debounces a 1 s settle, but a caller is a
+        // schedule and a schedule can fire after the world moved (a share-link
+        // restore flies the camera, the animator jumps it); re-reading the zoom
+        // here costs nothing and makes the message unable to lie.
         function showSatelliteHint() {
-            // Don't show if already on satellite, already dismissed, or already showing
             if (currentBasemap !== 'dark' || satelliteHintDismissed || satelliteHintShown) return;
-            
-            const hint = document.getElementById('satellite-hint');
-            if (!hint) return;
-            
+            if (typeof map === 'undefined' || map.getZoom() < SATELLITE_HINT_ZOOM) return;
             satelliteHintShown = true;
-            hint.classList.add('visible');
-            
-            // Auto-fade after 8 seconds
-            satelliteHintTimeout = setTimeout(() => {
-                hint.classList.add('fade-out');
-                setTimeout(() => {
-                    hint.classList.remove('visible', 'fade-out');
-                    satelliteHintShown = false;
-                }, 1000);
-            }, 8000);
+            showToast('Satellite imagery shows more detail at this zoom', 'info', {
+                key: 'satellite-hint',
+                title: 'High zoom',
+                duration: 8000,
+                action: { label: 'Switch', onClick: quickSwitchToSatellite }
+            });
         }
-        
+
         function dismissSatelliteHint() {
-            const hint = document.getElementById('satellite-hint');
-            if (!hint) return;
-            
-            if (satelliteHintTimeout) {
-                clearTimeout(satelliteHintTimeout);
-                satelliteHintTimeout = null;
-            }
-            
+            // Dismissing is an ANSWER, not a close: the offer does not come
+            // back for the rest of the session.
             satelliteHintDismissed = true;
-            hint.classList.add('fade-out');
-            setTimeout(() => {
-                hint.classList.remove('visible', 'fade-out');
-                satelliteHintShown = false;
-            }, 1000);
+            satelliteHintShown = false;
+            dismissToast('satellite-hint');
         }
         
         function quickSwitchToSatellite() {
@@ -2590,13 +2567,9 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
         // Monitor zoom level for satellite hint
         map.on('zoom', function() {
             const zoom = map.getZoom();
-            if (zoom >= 13 && currentBasemap === 'dark' && !satelliteHintDismissed && !satelliteHintShown) {
+            if (zoom >= SATELLITE_HINT_ZOOM && currentBasemap === 'dark' && !satelliteHintDismissed && !satelliteHintShown) {
                 // Delay showing hint by 1 second to avoid showing during quick zooms
-                setTimeout(() => {
-                    if (map.getZoom() >= 13 && currentBasemap === 'dark') {
-                        showSatelliteHint();
-                    }
-                }, 1000);
+                setTimeout(showSatelliteHint, 1000);
             }
         });
         
@@ -3967,14 +3940,11 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             }
         }
         
-        function hideToast() {
-            document.getElementById('task-toast').classList.remove('active');
-            toastActionCallback = null;
-        }
-        function handleToastAction() {
-            if (toastActionCallback) toastActionCallback();
-            hideToast();
-        }
+        // The #task-toast panel (title / body / one action, top-right corner)
+        // is gone: its callers go through showToast's legacy-signature adapter
+        // and land in the one toast surface. hideToast/handleToastAction were
+        // its only API and referenced an undeclared `toastActionCallback`,
+        // i.e. they threw if anything had ever called them.
         
         function selectMBTilesSource(source) {
             document.querySelectorAll('.mbtiles-source-btn').forEach(btn => {
@@ -4312,45 +4282,29 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             } catch (err) { restoreBtn(); showError('upload', err.message); }
         }
 
-        // Show clickable upload success toast
+        // Upload success. Was a hand-rolled `.upload-toast` div with its own
+        // corner, its own 15 s timer and its own close button; it is the same
+        // message as every other toast and now uses the same one. The whole
+        // surface used to be clickable — kept as an explicit action button
+        // instead, because a toast that navigates when you click it to read it
+        // is a trap, and its own × was the only safe place to touch.
         function showUploadToast(uploadInfo) {
-            // Remove any existing upload toast
-            const existing = document.querySelector('.upload-toast');
-            if (existing) existing.remove();
-            
-            const distanceText = uploadInfo.totalDistance > 0 
+            const distanceText = uploadInfo.totalDistance > 0
                 ? formatNumber(uploadInfo.totalDistance, 1) + ' km'
                 : '';
             const pixelCount = uploadInfo.gridCells.length;
             const fileText = uploadInfo.filesProcessed > 1 ? uploadInfo.filesProcessed + ' files' : '';
             const subtitle = [fileText, distanceText, pixelCount + ' pixel' + (pixelCount !== 1 ? 's' : '')].filter(Boolean).join(' • ');
-            
-            const toast = document.createElement('div');
-            toast.className = 'upload-toast';
-            toast.innerHTML = `
-                <div class="upload-toast-icon">✓</div>
-                <div class="upload-toast-content">
-                    <div class="upload-toast-title">Upload complete</div>
-                    <div class="upload-toast-subtitle">${subtitle}</div>
-                </div>
-                <div class="upload-toast-action">View on map →</div>
-                <button class="upload-toast-close" onclick="event.stopPropagation(); this.parentElement.remove();">&times;</button>
-            `;
-            
-            toast.addEventListener('click', () => {
-                toast.remove();
-                highlightUploadedPixels(uploadInfo.gridCells, uploadInfo.dateRange);
-            });
-            
-            document.body.appendChild(toast);
-            
-            // Auto-dismiss after 15 seconds
-            setTimeout(() => {
-                if (toast.parentElement) {
-                    toast.classList.add('leaving');
-                    setTimeout(() => toast.remove(), 260);
+
+            showToast(subtitle, 'success', {
+                key: 'upload-done',
+                title: 'Upload complete',
+                duration: 15000,
+                action: {
+                    label: 'View on map',
+                    onClick: () => highlightUploadedPixels(uploadInfo.gridCells, uploadInfo.dateRange)
                 }
-            }, 15000);
+            });
         }
 
         // Highlight uploaded pixels on the map
@@ -9231,28 +9185,14 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             } finally { if (btn) btn.disabled = false; }
         }
 
-        // Toast with an inline Undo button (10s window).
+        // Toast with an inline Undo button (10s window). One surface: this is
+        // showToast with an action, not a second hand-styled div — the old one
+        // carried its own inline colours and drifted from the toast styling.
         function showUndoToast(message, onUndo) {
-            const toast = document.createElement('div');
-            toast.style.cssText = 'position:fixed;bottom:' + toastBottomPx() + 'px;left:50%;transform:translateX(-50%);' +
-                'background:rgba(34,197,94,0.95);color:white;padding:12px 20px;border-radius:8px;' +
-                'font-size:14px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.3);' +
-                'animation:toastFadeIn 0.3s ease;display:flex;align-items:center;gap:14px;';
-            const span = document.createElement('span');
-            span.textContent = message;
-            const undoBtn = document.createElement('button');
-            undoBtn.textContent = 'Undo';
-            undoBtn.style.cssText = 'background:rgba(255,255,255,0.25);border:none;color:white;' +
-                'padding:5px 14px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;';
-            undoBtn.onclick = () => { clearTimeout(timer); toast.remove(); repositionToasts(); onUndo(); };
-            toast.appendChild(span); toast.appendChild(undoBtn);
-            toast.classList.add('app-toast');
-            document.body.appendChild(toast);
-            repositionToasts();
-            const timer = setTimeout(() => {
-                toast.style.animation = 'toastFadeOut 0.3s ease';
-                setTimeout(() => { toast.remove(); repositionToasts(); }, 300);
-            }, 10000);
+            return showToast(message, 'success', {
+                duration: 10000,
+                action: { label: 'Undo', onClick: onUndo }
+            });
         }
 
         function displaySearchResults(areas) {
@@ -9510,15 +9450,40 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
         // carrying the "Zoom there" action — slid underneath it and its button
         // became unclickable. Same lesson as the docked map tip
         // (`bottomChromePx()` in maptip.js): measure the chrome.
+        //
+        // The footer is not the only thing down there, and that was the second
+        // bug: on a phone the map toolbar moves to the BOTTOM (a row of six
+        // 44 px buttons) and the FAB sits beside it, while a full-width toast
+        // spans the whole viewport — so the toast printed straight over the
+        // controls. So this measures EVERY bottom-anchored piece of chrome
+        // that actually overlaps the toast's horizontal band, and stacks above
+        // the tallest. Horizontal overlap matters: on a desktop the toolbar is
+        // a column down the LEFT edge and a 560 px centred toast clears it,
+        // and lifting for something it does not touch wastes the map.
+        const TOAST_CHROME = ['#time-slider-container', '#map-toolbar',
+                              '.fab', '.bbox-draw-hint.active'];
+        function toastWidthPx() {
+            const vw = window.innerWidth;
+            return vw <= 768 ? vw - 24 : Math.min(560, vw - 32);
+        }
         function toastBottomPx() {
+            const vw = window.innerWidth, vh = window.innerHeight;
+            const w = toastWidthPx(), left = (vw - w) / 2, right = left + w;
             let bottom = 24;
-            const n = document.getElementById('time-slider-container');
-            if (n && getComputedStyle(n).display !== 'none') {
-                const r = n.getBoundingClientRect();
-                if (r.height) bottom = Math.max(bottom, window.innerHeight - r.top + 16);
-            }
-            // Never push a toast off the top of a short screen.
-            return Math.min(bottom, Math.max(24, window.innerHeight - 120));
+            TOAST_CHROME.forEach(sel => {
+                document.querySelectorAll(sel).forEach(el => {
+                    const cs = getComputedStyle(el);
+                    if (cs.display === 'none' || cs.visibility === 'hidden'
+                        || parseFloat(cs.opacity || '1') < 0.05) return;
+                    const r = el.getBoundingClientRect();
+                    if (!r.height || r.bottom < vh - 220) return;   // not bottom furniture
+                    if (r.right <= left || r.left >= right) return; // different column
+                    bottom = Math.max(bottom, vh - r.top + 12);
+                });
+            });
+            // Never push a toast off the top of a short screen (landscape
+            // phone: the footer alone can be a third of the viewport).
+            return Math.min(bottom, Math.max(24, vh - 140));
         }
 
         // Every live toast follows the footer as it grows/shrinks: the
@@ -9536,55 +9501,113 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
         }
         window.repositionToasts = repositionToasts;
         window.addEventListener('resize', repositionToasts);
-        (function watchFooterHeight() {
+        window.addEventListener('orientationchange', () => setTimeout(repositionToasts, 250));
+        (function watchBottomChrome() {
+            // The footer RESIZES (animator opens, tags wrap) and the toolbar
+            // moves to the bottom below 768px. Both change the floor under a
+            // toast that is already on screen — a toast placed correctly at
+            // t=0 and buried at t=2s is the same bug as one placed wrong.
             const attach = () => {
                 const n = document.getElementById('time-slider-container');
                 if (!n || !window.ResizeObserver) return false;
-                new ResizeObserver(repositionToasts).observe(n);
+                const ro = new ResizeObserver(repositionToasts);
+                ro.observe(n);
+                const tb = document.getElementById('map-toolbar');
+                if (tb) ro.observe(tb);
                 return true;
             };
             if (!attach()) document.addEventListener('DOMContentLoaded', attach);
         })();
+        // ── A RESTORE IS NOT A CONVERSATION ───────────────────────────────
+        //
+        // Opening a share link used to narrate itself: "Pinned 30,000 of
+        // 73,349 settlement in view", "Pinned 30,000 of 38,651 fire in view",
+        // "'Study Area' is ready" — three slabs of colour over the map before
+        // the user had done anything. Every one of those messages reported
+        // something the interface itself now shows: the pinned chips carry
+        // their own dots-then-count, the stats panel says when it is waiting.
+        // A toast is for what the user CANNOT see, or did not expect.
+        //
+        // So a message may declare itself `routine: true` — meaning "the UI
+        // states this anyway" — and routine messages are dropped while the
+        // page is still assembling itself from a URL. Errors and anything the
+        // user actually clicked are never routine and always get through.
+        // `TOAST_QUIET_MS` is a floor; restorePinnedFromURL extends it while
+        // pins are still landing.
+        window.toastQuietUntil = 0;
+        function quietToasts(ms) {
+            window.toastQuietUntil = Math.max(window.toastQuietUntil, Date.now() + (ms || 0));
+        }
+        window.quietToasts = quietToasts;
+        // A link that restores anything (pins, a focus, an AOI) opens in quiet
+        // mode; a plain visit does not need to.
+        (function () {
+            const p = new URLSearchParams(window.location.search);
+            const restoring = ['pinned', 'pinned_features', 'park_focus', 'aoi',
+                              'starred', 'bbox', 'geomap', 'histmap']
+                .some(k => p.get(k));
+            if (restoring) quietToasts(6000);
+        })();
+
+        const TOAST_ICONS = {
+            info:    '<i class="icon-info"></i>',
+            success: '<i class="icon-circle-check"></i>',
+            warning: '<i class="icon-triangle-alert"></i>',
+            error:   '<i class="icon-circle-x"></i>'
+        };
+        const TOAST_ROLE = { error: 'alert', warning: 'alert' };
+
         function showToast(message, type = 'info', opts = {}) {
             // Callers written against an older signature pass null (or extra
             // args) here. A toast helper that throws takes down the caller's
             // promise chain — which once left a download button dead — so it
             // tolerates anything.
             if (!opts || typeof opts !== 'object') opts = {};
-            const colors = {
-                info: 'rgba(59, 130, 246, 0.95)',
-                success: 'rgba(34, 197, 94, 0.95)',
-                warning: 'rgba(245, 158, 11, 0.95)',
-                error: 'rgba(239, 68, 68, 0.95)'
-            };
+            // ONE TOAST, THREE OLD SIGNATURES. Three separate implementations
+            // used to draw a transient message in this app — this one, the
+            // `#task-toast` panel (title/body/action, top-right, 5 positional
+            // args) and `.upload-toast` (its own hand-rolled div, timers and
+            // close button). They aged apart: different corners, different
+            // dismiss rules, and the MBTiles calls silently passed a TITLE as
+            // the message and a TYPE as the options object, so "MBTiles
+            // Failed" rendered as a blue info toast. The old 5-arg form is
+            // adapted here rather than at ~8 call sites, and `opts.title` is
+            // the one feature that survives from it.
+            if (typeof type === 'string' && !TOAST_ICONS[type] && arguments.length >= 3) {
+                // showToast(title, message, actionLabel, onClick, type)
+                const t0 = arguments[0], m0 = arguments[1], aLabel = arguments[2],
+                      aClick = arguments[3], t5 = arguments[4];
+                return showToast(m0, TOAST_ICONS[t5] ? t5 : 'info', {
+                    title: t0,
+                    action: aLabel ? { label: aLabel, onClick: aClick } : null
+                });
+            }
+            if (!TOAST_ICONS[type]) type = 'info';
+            // Routine chatter during a restore: the UI is already saying it.
+            if (opts.routine && Date.now() < window.toastQuietUntil) return null;
             const key = opts.key || null;
             let toast = key ? _toastRegistry.get(key) : null;
             if (toast && !document.body.contains(toast)) { _toastRegistry.delete(key); toast = null; }
             if (!toast) {
                 toast = document.createElement('div');
-                toast.style.cssText = `
-                    position: fixed;
-                    bottom: ${toastBottomPx()}px;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    color: white;
-                    padding: 12px 20px;
-                    border-radius: 8px;
-                    font-size: 14px;
-                    z-index: 9999;
-                    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-                    animation: toastFadeIn 0.3s ease;
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                `;
+                toast.className = 'app-toast';
+                toast.style.bottom = toastBottomPx() + 'px';
                 document.body.appendChild(toast);
-                toast.classList.add('app-toast');
                 if (key) _toastRegistry.set(key, toast);
             }
-            toast.style.background = colors[type] || colors.info;
-            toast.innerHTML = (opts.spinner ? '<span class="toast-spinner"></span>' : '') + '<span></span>';
-            toast.lastChild.textContent = message;
+            toast.classList.remove('t-info', 't-success', 't-warning', 't-error', 'leaving');
+            toast.classList.add('t-' + type);
+            toast.setAttribute('role', TOAST_ROLE[type] || 'status');
+            toast.setAttribute('aria-live', type === 'error' ? 'assertive' : 'polite');
+
+            toast.innerHTML = (opts.spinner ? '<span class="toast-spinner"></span>'
+                                            : '<span class="toast-icon">' + TOAST_ICONS[type] + '</span>')
+                            + '<span class="toast-text">'
+                            + (opts.title ? '<b class="toast-title-line"></b>' : '')
+                            + '<span class="toast-body"></span></span>';
+            if (opts.title) toast.querySelector('.toast-title-line').textContent = opts.title;
+            toast.querySelector('.toast-body').textContent = message;
+            toast.classList.toggle('has-title', !!opts.title);
             // An optional inline action ({label, onClick}). This exists so a
             // destructive-looking toggle can be undone *where it happened*
             // rather than confirmed before it happens: a confirm() dialog asks
@@ -9596,23 +9619,64 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                 abtn.onclick = (ev) => {
                     ev.stopPropagation();
                     try { opts.action.onClick && opts.action.onClick(); } catch (e) { console.warn(e); }
-                    if (key) dismissToast(key); else toast.remove();
+                    closeToast(toast, key);
                 };
                 toast.appendChild(abtn);
             }
-            // Reset auto-dismiss timer
-            if (toast._dismissTimer) clearTimeout(toast._dismissTimer);
+            // EVERY toast can be dismissed. A sticky one (an export in
+            // progress) especially: without this it is a permanent bar the
+            // user never agreed to.
+            const x = document.createElement('button');
+            x.className = 'toast-close';
+            x.type = 'button';
+            x.setAttribute('aria-label', 'Dismiss');
+            x.innerHTML = '&times;';
+            x.onclick = (ev) => { ev.stopPropagation(); closeToast(toast, key); };
+            toast.appendChild(x);
+
+            // THE VISIBLE TIMER IS THE TIMER. The rail's animationend removes
+            // the toast, so :hover (which pauses the animation) pauses the
+            // dismissal — a message cannot expire while it is being read.
+            // Under reduced motion the rail does not animate, so fall back to
+            // a plain timeout.
+            if (toast._dismissTimer) { clearTimeout(toast._dismissTimer); toast._dismissTimer = null; }
             if (!opts.sticky) {
-                toast._dismissTimer = setTimeout(() => {
-                    toast.style.animation = 'toastFadeOut 0.3s ease';
-                    setTimeout(() => { toast.remove(); if (key) _toastRegistry.delete(key); repositionToasts(); }, 300);
-                }, opts.duration || 4000);
+                const ms = opts.duration || toastReadMs(message);
+                if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                    toast._dismissTimer = setTimeout(() => closeToast(toast, key), ms);
+                } else {
+                    const bar = document.createElement('div');
+                    bar.className = 'toast-timer';
+                    bar.style.animationDuration = ms + 'ms';
+                    bar.addEventListener('animationend', () => closeToast(toast, key));
+                    toast.appendChild(bar);
+                }
             }
             // After the content is in place: the stack's offsets depend on
             // each toast's rendered height, and a re-used toast may have been
             // placed before the animator opened.
             repositionToasts();
             return toast;
+        }
+
+        // A 14-word sentence and a two-word confirmation do not deserve the
+        // same four seconds. ~13 characters per second of reading, floored at
+        // 3.2 s and capped at 9 s.
+        function toastReadMs(message) {
+            const n = String(message || '').length;
+            return Math.min(9000, Math.max(3200, 1400 + n * 75));
+        }
+
+        function closeToast(toast, key) {
+            if (!toast || toast._closing) return;
+            toast._closing = true;
+            if (toast._dismissTimer) clearTimeout(toast._dismissTimer);
+            toast.classList.add('leaving');
+            setTimeout(() => {
+                toast.remove();
+                if (key) _toastRegistry.delete(key);
+                repositionToasts();
+            }, 220);
         }
 
         // ADDING A LAYER IS NOT A REQUEST TO GO SOMEWHERE.
@@ -9648,10 +9712,7 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
         function dismissToast(key) {
             const toast = _toastRegistry.get(key);
             if (!toast) return;
-            if (toast._dismissTimer) clearTimeout(toast._dismissTimer);
-            toast.style.animation = 'toastFadeOut 0.3s ease';
-            setTimeout(() => { toast.remove(); repositionToasts(); }, 300);
-            _toastRegistry.delete(key);
+            closeToast(toast, key);
         }
 
         // Wraps an export function: spinner on the button, re-entry guard,
@@ -20148,12 +20209,18 @@ ${starredItems.narratives.map(n => {
                 if (typeof updatePinnedIndicator === 'function') updatePinnedIndicator();
                 const filterWords = [filterClassification, filterAge, filterCrop].filter(Boolean).join(' ');
                 const what = filterWords ? `${filterWords} ${type}` : type;
+                // ROUTINE: the chip says all of this, in place, and keeps
+                // saying it. "Pinned 30,000 of 73,349" is the chip's own count
+                // read aloud — worth a line when the user just clicked a pin,
+                // noise when a share link is restoring three layers at once.
+                // The empty case is NOT routine: nothing appears, so nothing
+                // else explains why.
                 if (!st.count) {
                     showToast(`No ${what} features in view for ${parkName} — the pin follows the map, so pan or widen the dates`, 'info');
                 } else if (st.total > st.count) {
-                    showToast(`Pinned ${st.count.toLocaleString()} of ${st.total.toLocaleString()} ${what} in view — zoom in for more detail`, 'success');
+                    showToast(`Pinned ${st.count.toLocaleString()} of ${st.total.toLocaleString()} ${what} in view — zoom in for more detail`, 'success', { routine: true });
                 } else {
-                    showToast(`Pinned ${st.count.toLocaleString()} ${what} features from ${parkName}`, 'success');
+                    showToast(`Pinned ${st.count.toLocaleString()} ${what} features from ${parkName}`, 'success', { routine: true });
                 }
                 return;
             }
@@ -20597,7 +20664,7 @@ ${starredItems.narratives.map(n => {
                 }));
             }
             
-            showToast(`Pinned ${geojson.features.length} ${type} features from ${parkName}`, 'success');
+            showToast(`Pinned ${geojson.features.length} ${type} features from ${parkName}`, 'success', { routine: true });
             
         } catch (error) {
             console.error('Error adding pinned layer:', error.message || error);
@@ -21412,6 +21479,16 @@ ${starredItems.narratives.map(n => {
         window.history.replaceState({}, '', url);
     }
     
+    // A RESTORE HOLDS THE QUIET UNTIL IT IS ACTUALLY DONE.
+    //
+    // The first version of this used a fixed 6 s window and the fire pin
+    // still announced itself — at 21 s, because an AOI-scale fire layer takes
+    // that long to come back and the window had long since expired. A quiet
+    // period measured in seconds is a guess about how slow the network is;
+    // the honest boundary is "while the restore's own requests are in
+    // flight". So the promises are collected and the quiet is extended to
+    // cover them (with a cap, because a request that never settles must not
+    // silence the app for the rest of the session).
     function restorePinnedFromURL() {
         const params = new URLSearchParams(window.location.search);
         const pinned = params.get('pinned');
@@ -21425,6 +21502,7 @@ ${starredItems.narratives.map(n => {
         if (!pinned) return;
         
         const parkIds = new Set();
+        const inFlight = [];
         pinned.split(',').forEach(item => {
             const [parkId, type] = item.split(':');
             if (parkId && type) {
@@ -21438,11 +21516,29 @@ ${starredItems.narratives.map(n => {
                 // Find park name from keystones
                 const park = (window.keystoneAreas || []).find(p => p.id === parkId);
                 const parkName = park ? park.name : parkId;
-                addPinnedLayer(parkId, parkName, type);
+                inFlight.push(Promise.resolve(addPinnedLayer(parkId, parkName, type)).catch(() => {}));
                 parkIds.add(parkId);
             }
         });
-        
+
+        // Hold the quiet while these are loading (see the header comment):
+        // a slow layer must not get to announce itself just because it was
+        // slow. 45 s cap — past that, a stuck request has to stop muting the
+        // rest of the app. Re-armed on a 1 s heartbeat because the quiet is an
+        // absolute deadline, not a flag.
+        if (inFlight.length && typeof quietToasts === 'function') {
+            const started = Date.now();
+            const beat = setInterval(() => {
+                if (Date.now() - started > 45000) { clearInterval(beat); return; }
+                quietToasts(1500);
+            }, 1000);
+            Promise.all(inFlight).then(() => {
+                // One tick of grace: the last layer's own toast fires in the
+                // same turn its promise settles.
+                setTimeout(() => clearInterval(beat), 250);
+            });
+        }
+
         setTimeout(() => {
             updatePinnedIndicator();
             // Update icon states for all parks with pinned layers
@@ -24144,16 +24240,6 @@ ${starredItems.narratives.map(n => {
     }
     </script>
 
-    <!-- Toast Notification for Background Tasks -->
-    <div class="toast-notification" id="task-toast" role="alert" aria-live="assertive">
-        <div style="flex: 1;">
-            <div class="toast-title" id="toast-title">Task Complete</div>
-            <div class="toast-message" id="toast-message">Your file is ready.</div>
-        </div>
-        <button class="toast-action" id="toast-action" onclick="handleToastAction()">Download</button>
-        <span class="toast-close" onclick="hideToast()" role="button" tabindex="0" aria-label="Close notification">&times;</span>
-    </div>
-    
     <!-- Pinned GeoJSON Indicator -->
     <div class="pinned-indicator" id="pinned-indicator">
         <div class="pinned-indicator-header">

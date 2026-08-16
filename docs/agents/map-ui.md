@@ -255,14 +255,60 @@ the same hecticness in another costume. `opts.fly` still exists on
 toggles pass `fly:false`. `zoomToPark`/`zoomToAOI` remain for explicit
 gestures (search results, starred tags).
 
-**Toast placement is measured, not assumed.** The footer
-(`#time-slider-container`) grows when the animator opens and when the date tags
-wrap, so the old `bottom: 100px` put the toast — and its *Zoom there* button —
-under the footer. `toastBottomPx()` measures it, a `ResizeObserver` +
-`resize` listener re-runs `repositionToasts()` so live toasts follow the footer,
-and multiple toasts stack upward instead of printing on top of each other
-(geology + histmap off-screen offers two trips at once). Same lesson as
-`bottomChromePx()` for the docked map tip.
+---
+
+## Toasts — one surface, and quiet during a restore
+
+**One implementation.** There were four: `showToast`, the `#task-toast` panel
+(top-right title/body/action, reached through a 5-positional-arg overload),
+`.upload-toast` (its own div, timers, close button) and the satellite-hint card
+(green gradient, three mobile breakpoints). They drifted — different corners,
+different dismiss rules — and the MBTiles calls passed a *title* where the
+message goes, so "MBTiles Failed" rendered blue. All four are now `.app-toast`;
+`showToast` adapts the old signature and `opts.title` is the one feature kept
+from it. Anything transient that isn't a menu belongs here.
+
+**Look.** Dark glass like every other panel, with type carried by an accent
+(icon + left rail), not by a slab of colour: an error and a success must differ
+by more than hue, and a screenshot in grayscale still says which it was.
+
+**The visible rail *is* the timer.** Its `animationend` removes the toast, so
+`:hover` pausing the animation pauses the dismissal — a message cannot expire
+while it is being read, with no second bookkeeping to drift. Duration scales
+with message length (`toastReadMs`, 3.2–9 s). Under `prefers-reduced-motion`
+the rail doesn't animate, so there is a plain `setTimeout` fallback. Every
+toast has a ×, sticky ones especially.
+
+**A restore is not a conversation.** Opening a share link narrated itself with
+three toasts before the user had done anything — all of them reporting what
+the UI now shows anyway (chips carry dots-then-count, the stats panel says when
+it's waiting). A message may declare `routine: true`; routine messages are
+dropped while `window.toastQuietUntil` is in the future. Errors and anything
+the user clicked are never routine. The quiet is **not a fixed window**: a
+first attempt used 6 s and the fire pin still spoke at 21 s, because an
+AOI-scale layer takes that long. `restorePinnedFromURL` collects the load
+promises and re-arms the quiet on a heartbeat until they settle (45 s cap).
+
+Related: **an event announced on arrival is not an event.** `announceReady`
+(aoi_progress.js) fired on every page load of an AOI that finished days ago —
+the first poll says `ready` and the card announced a transition it never
+witnessed. It now requires `sawUnfinished`. Same shape as the satellite hint,
+which is only true at z ≥ 13 and so re-checks `map.getZoom()` **where it is
+shown**, not only where it is scheduled — a restore flies the camera between
+the two.
+
+**Placement is measured, not assumed.** The footer (`#time-slider-container`)
+grows when the animator opens and when the date tags wrap, so the old
+`bottom: 100px` put the toast — and its *Zoom there* button — under the footer.
+And the footer is not alone down there: below 768 px `#map-toolbar` and the FAB
+move to the bottom while the toast spans the full width, so it printed over the
+controls. `toastBottomPx()` measures every selector in `TOAST_CHROME` that
+actually overlaps the toast's horizontal band (a desktop toast clears the
+left-edge toolbar column and must not lift for it), `ResizeObserver` +
+`resize`/`orientationchange` re-run `repositionToasts()`, and multiple toasts
+stack upward. The CSS width and `toastWidthPx()` must stay equal — the JS
+measures the band the CSS occupies. Same lesson as `bottomChromePx()` for the
+docked map tip.
 
 ---
 

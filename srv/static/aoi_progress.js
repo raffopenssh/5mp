@@ -87,6 +87,9 @@
         const w = watched.get(id);
         if (!w) return;
         clearTimeout(w.timer);
+        // Remember that this AOI was seen mid-flight; announceReady needs it
+        // to tell a completion from a state.
+        if (d && !TERMINAL[d.state]) w.sawUnfinished = true;
         if (d && d.state === 'ready') {
             // Done. Stop polling forever — the card stays, rendered from the
             // last payload, and a reload re-reads it from the API once.
@@ -112,11 +115,20 @@
     // Fired once, when the last dataset lands. Deliberately a toast plus a
     // repaint rather than a browser notification: the user may well not be
     // looking, and the card is the durable record.
+    // "IS READY" IS NEWS ONLY IF IT JUST HAPPENED.
+    //
+    // This fired on every page load of a link whose AOI finished days ago:
+    // track() polls, the first payload says 'ready', and the card announced a
+    // transition it never witnessed. An event announced on arrival is not an
+    // event, it is a state read aloud — and the card already shows the state.
+    // So the announcement requires having SEEN the thing unfinished: the first
+    // poll only records the state, and a later poll that finds 'ready' after a
+    // non-terminal one is the actual completion.
     function announceReady(id, d) {
         const w = watched.get(id);
         if (!w || w.announced) return;
         w.announced = true;
-        if (typeof showToast === 'function') {
+        if (w.sawUnfinished && typeof showToast === 'function') {
             showToast(`“${d.name || id}” is ready — all data layers complete`,
                       'success', { key: 'aoi-ready-' + id });
         }
@@ -256,7 +268,7 @@
 
     function track(id, estimate) {
         if (!id || watched.has(id) || finished.has(id)) return;
-        watched.set(id, { timer: null, last: null, announced: false });
+        watched.set(id, { timer: null, last: null, announced: false, sawUnfinished: false });
         // First poll immediately: the panel may have been opened days later.
         poll(id);
     }

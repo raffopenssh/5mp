@@ -1279,11 +1279,9 @@
         }
         .toast-spinner { width: 14px; height: 14px; flex: 0 0 auto; border: 2px solid rgba(255,255,255,0.35); border-top-color: #fff; border-radius: 50%; animation: exportSpin 0.7s linear infinite; }
         /* Undo lives on the toast: a reversible action should be reversed where
-           it happened, rather than confirmed in a modal before it happens. */
-        .toast-action { flex: 0 0 auto; margin-left: 4px; padding: 4px 10px; background: rgba(255,255,255,0.18);
-            border: 1px solid rgba(255,255,255,0.35); border-radius: 5px; color: #fff;
-            font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
-        .toast-action:hover { background: rgba(255,255,255,0.3); }
+           it happened, rather than confirmed in a modal before it happens.
+           The button itself is styled once, with the toast (`.app-toast
+           .toast-action`), in the toast's accent colour. */
         @keyframes exportSpin { to { transform: rotate(360deg); } }
 
         /* Report Builder Modal */
@@ -1476,23 +1474,118 @@
         .activity-marker { width: 24px; height: 24px; background: rgba(34,197,94,0.3); border: 2px solid #22c55e; border-radius: 50%; position: relative; }
         .activity-marker::after { content: ''; position: absolute; inset: -8px; border: 2px solid rgba(34,197,94,0.5); border-radius: 50%; animation: marker-pulse 1.5s ease-out infinite; }
         @keyframes marker-pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(2); opacity: 0; } }
-        @keyframes toastFadeIn { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
-        @keyframes toastFadeOut { from { opacity: 1; transform: translateX(-50%) translateY(0); } to { opacity: 0; transform: translateX(-50%) translateY(20px); } }
 
-        /* Upload success toast - clickable */
-        .upload-toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: rgba(16,24,18,0.96); border: 1px solid rgba(34,197,94,0.4); backdrop-filter: blur(12px); color: #e5e7eb; padding: 14px 18px; border-radius: 14px; font-size: 14px; z-index: 9999; box-shadow: 0 12px 40px rgba(0,0,0,0.5), 0 0 24px rgba(34,197,94,0.12); animation: uploadToastIn 0.45s cubic-bezier(0.34,1.56,0.64,1); cursor: pointer; display: flex; align-items: center; gap: 14px; max-width: 90vw; transition: border-color 0.2s, box-shadow 0.2s; }
-        .upload-toast:hover { border-color: rgba(34,197,94,0.7); box-shadow: 0 12px 40px rgba(0,0,0,0.5), 0 0 32px rgba(34,197,94,0.25); }
-        @keyframes uploadToastIn { from { opacity: 0; transform: translateX(-50%) translateY(24px) scale(0.95); } to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); } }
-        .upload-toast.leaving { animation: toastFadeOut 0.25s ease forwards; }
-        .upload-toast-icon { width: 34px; height: 34px; flex: none; border-radius: 50%; background: rgba(34,197,94,0.15); border: 1.5px solid rgba(34,197,94,0.5); color: #22c55e; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 700; animation: uploadTickPop 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.15s backwards; }
-        @keyframes uploadTickPop { from { transform: scale(0); } to { transform: scale(1); } }
-        .upload-toast-content { flex: 1; min-width: 0; }
-        .upload-toast-title { font-weight: 600; margin-bottom: 2px; color: #fff; }
-        .upload-toast-subtitle { font-size: 12px; color: #9ca3af; }
-        .upload-toast-action { background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.35); color: #4ade80; padding: 7px 13px; border-radius: 8px; font-size: 12px; font-weight: 600; white-space: nowrap; transition: background 0.2s; }
-        .upload-toast:hover .upload-toast-action { background: rgba(34,197,94,0.28); }
-        .upload-toast-close { position: absolute; top: 4px; right: 6px; background: none; border: none; color: rgba(255,255,255,0.4); font-size: 15px; cursor: pointer; padding: 2px 6px; line-height: 1; border-radius: 4px; }
-        .upload-toast-close:hover { color: #fff; background: rgba(255,255,255,0.08); }
+        /* ── TOASTS ───────────────────────────────────────────────────────
+           One surface for every transient message in the app. It used to be a
+           flat 95%-opaque BLOCK OF COLOUR with white text: a green slab over
+           the map, readable but loud, and indistinguishable at a glance from
+           an error slab except by hue. The map is the document; a toast is a
+           remark about it, so it is now the same dark glass as every other
+           panel (popup, stats, pinned chips) and the TYPE is carried by an
+           accent — icon, hairline, left rail — rather than by drowning the
+           text in it.
+
+           Three things this buys beyond looks:
+           * a status ICON, so type survives a colour-blind reader and a
+             grayscale screenshot;
+           * a TIMER the user can see and STOP — the progress rail *is* the
+             dismiss timer (`animationend` fires the removal), so hovering
+             pauses the animation and therefore pauses the dismissal. A
+             message that vanishes while you are reading it is the classic
+             toast failure and it needed no extra bookkeeping to fix;
+           * a real close affordance, because a sticky toast with no × is a
+             modal nobody agreed to.
+
+           Under prefers-reduced-motion the rail does not animate, so the
+           dismissal falls back to a timer (see showToast). */
+        .app-toast {
+            --toast-accent: #60a5fa;
+            position: fixed; left: 50%; transform: translateX(-50%);
+            display: flex; align-items: flex-start; gap: 11px;
+            /* Same band toastBottomPx() measures against: if the CSS width and
+               the JS width disagree, the toast dodges chrome it overlaps and
+               lifts for chrome it clears. One number, two readers. */
+            min-width: min(260px, calc(100vw - 24px)); max-width: min(560px, calc(100vw - 32px));
+            padding: 12px 34px 12px 14px;
+            background: rgba(16,18,21,0.88);
+            border: 1px solid rgba(255,255,255,0.10);
+            border-left: 3px solid var(--toast-accent);
+            border-radius: 12px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.55), 0 0 0 1px rgba(0,0,0,0.25);
+            backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+            color: #e8eaed; font-size: 13.5px; line-height: 1.45;
+            z-index: 9999; overflow: hidden;
+            transition: bottom 0.28s cubic-bezier(.4,0,.2,1), opacity 0.2s;
+            animation: toastIn 0.34s cubic-bezier(0.22,1.2,0.4,1);
+        }
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(14px) scale(0.97); }
+            to   { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+        }
+        .app-toast.leaving { animation: toastOut 0.22s ease forwards; }
+        @keyframes toastOut {
+            from { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+            to   { opacity: 0; transform: translateX(-50%) translateY(8px) scale(0.98); }
+        }
+        .app-toast .toast-icon { flex: none; width: 18px; height: 18px; margin-top: 1px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--toast-accent); font-size: 15px; line-height: 1; }
+        .app-toast .toast-text { flex: 1 1 auto; min-width: 0; }
+        /* A title is optional and rare (MBTiles ready, upload complete): a
+           two-line toast for a one-line remark is a dialog in disguise. */
+        .app-toast .toast-title-line { display: block; font-weight: 600; color: #fff; }
+        .app-toast.has-title .toast-body { color: #a8adb5; font-size: 12.5px; }
+        /* Long messages in this app are sentences, not labels — they wrap. */
+        .app-toast .toast-text { overflow-wrap: anywhere; }
+        .app-toast .toast-close { position: absolute; top: 6px; right: 7px;
+            width: 20px; height: 20px; padding: 0; border: none; border-radius: 5px;
+            background: none; color: rgba(255,255,255,0.35); font-size: 15px; line-height: 1;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .app-toast .toast-close:hover { color: #fff; background: rgba(255,255,255,0.10); }
+        /* THE RAIL IS THE TIMER. Its animationend dismisses the toast, so
+           :hover pausing the animation pauses the dismissal — one mechanism,
+           no drift between what is drawn and what is scheduled. */
+        .app-toast .toast-timer { position: absolute; left: 0; bottom: 0; height: 2px;
+            width: 100%; transform-origin: left center; background: var(--toast-accent);
+            opacity: 0.55; animation: toastTimer linear forwards; }
+        @keyframes toastTimer { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+        .app-toast:hover .toast-timer, .app-toast:focus-within .toast-timer { animation-play-state: paused; }
+        .app-toast.t-info    { --toast-accent: #60a5fa; }
+        .app-toast.t-success { --toast-accent: #22c55e; }
+        .app-toast.t-warning { --toast-accent: #f59e0b; }
+        .app-toast.t-error   { --toast-accent: #ef4444; }
+        .app-toast .toast-spinner { border-color: rgba(255,255,255,0.25); border-top-color: var(--toast-accent); }
+        .app-toast .toast-action { flex: none; align-self: center; margin-left: 2px;
+            padding: 5px 11px; border-radius: 7px; cursor: pointer;
+            background: color-mix(in srgb, var(--toast-accent) 18%, transparent);
+            border: 1px solid color-mix(in srgb, var(--toast-accent) 45%, transparent);
+            color: var(--toast-accent); font-family: inherit; font-size: 12px; font-weight: 600;
+            white-space: nowrap; transition: background 0.18s; }
+        .app-toast .toast-action:hover { background: color-mix(in srgb, var(--toast-accent) 32%, transparent); }
+        @media (max-width: 768px) {
+            .app-toast { min-width: 0; width: calc(100vw - 24px); max-width: none; font-size: 13px;
+                padding-right: 34px; }
+            /* A phone toast is a full-width bar, so the action goes UNDER the
+               text rather than squeezing it to two words per line. The text's
+               flex-basis has to be 0 for that: a wrapping flex line places
+               items at their CONTENT width before it shrinks any of them, so
+               with the default `auto` basis the sentence claimed a full row and
+               pushed itself off the icon's line — three rows for a two-row
+               message. */
+            .app-toast:has(.toast-action) { flex-wrap: wrap; }
+            .app-toast:has(.toast-action) .toast-text { flex: 1 1 0; }
+            .app-toast .toast-action { margin-left: 29px; padding: 7px 14px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .app-toast, .app-toast.leaving { animation: none; }
+            .app-toast .toast-timer { animation: none; transform: scaleX(1); opacity: 0.3; }
+        }
+
+        /* The upload-success toast was a second toast implementation with
+           its own corner, timers and close button (`.upload-toast`). It is
+           the same message as every other toast and now goes through
+           showToast() with a title and a "View on map" action, so the styles
+           are gone rather than kept in sync by hand. */
 
         /* Upload highlight layer */
         @keyframes uploadHighlightPulse { 0%, 100% { opacity: 0.8; } 50% { opacity: 0.5; } }
@@ -2075,106 +2168,11 @@
         .bbox-draw-hint { position: fixed; top: 70px; left: 50%; -webkit-transform: translateX(-50%); transform: translateX(-50%); background: rgba(18,18,18,0.95); border: 1px solid rgba(59,130,246,0.3); border-radius: 6px; padding: 10px 16px; font-size: 13px; color: #60a5fa; z-index: 210; display: none; }
         .bbox-draw-hint.active { display: block; }
         
-        /* Satellite Switch Hint */
-        /* The satellite hint fires at z>=13, i.e. exactly when the user is
-           deep in a map — so it must sit above the time slider (z 400), not
-           behind it. Its bottom is derived from the *measured* slider height
-           (--slider-h, published by trackSliderHeight()), because a hard-coded
-           110px lands inside the slider as soon as it grows: the animator's
-           layer chips, or preset tags wrapping to a second row on a narrow
-           phone, take it well past 110. Same rule as the AOI focus banner. */
-        .satellite-hint {
-            position: fixed;
-            bottom: calc(var(--slider-h, 70px) + 40px);
-            right: 20px;
-            background: linear-gradient(135deg, rgba(34,197,94,0.95) 0%, rgba(22,163,74,0.95) 100%);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 8px;
-            padding: 12px;
-            max-width: 320px;
-            z-index: 500;
-            box-shadow: 0 6px 24px rgba(0,0,0,0.4);
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.5s, transform 0.5s;
-            pointer-events: none;
-        }
-        .satellite-hint.visible {
-            opacity: 1;
-            transform: translateY(0);
-            pointer-events: auto;
-        }
-        .satellite-hint.fade-out {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 1s, transform 1s;
-        }
-        .satellite-hint-content {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #fff;
-            font-size: 11px;
-            line-height: 1.3;
-        }
-        .satellite-hint-icon {
-            flex-shrink: 0;
-            width: 32px;
-            height: 32px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-        }
-        .satellite-hint-icon svg {
-            width: 16px;
-            height: 16px;
-        }
-        .satellite-hint-text {
-            flex: 1;
-        }
-        .satellite-hint-btn {
-            flex-shrink: 0;
-            padding: 6px 10px;
-            background: rgba(255,255,255,0.95);
-            color: #16a34a;
-            border: none;
-            border-radius: 5px;
-            font-size: 11px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            white-space: nowrap;
-        }
-        .satellite-hint-btn:hover {
-            background: #fff;
-            transform: translateX(2px);
-        }
-        .satellite-hint-close {
-            position: absolute;
-            top: 6px;
-            right: 6px;
-            width: 20px;
-            height: 20px;
-            background: rgba(0,0,0,0.2);
-            border: none;
-            border-radius: 50%;
-            color: #fff;
-            font-size: 16px;
-            line-height: 1;
-            cursor: pointer;
-            transition: background 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .satellite-hint-close:hover {
-            background: rgba(0,0,0,0.4);
-        }
+        /* The high-zoom satellite offer used to be a bespoke green card with
+           its own corner, fade classes and three mobile breakpoints. It is one
+           sentence and one action, i.e. a toast, and it is one now (showToast,
+           key 'satellite-hint'); the toast measures the bottom chrome itself,
+           so the breakpoints went with it. */
 
          /* Search Panel */
         /* Search bar - appears next to search button on toggle */
@@ -2733,15 +2731,6 @@
             /* FAB button */
             .fab { bottom: calc(var(--slider-h, 70px) + 10px); right: 10px; width: 48px; height: 48px; font-size: 20px; }
 
-            /* Satellite hint: clear the whole bottom furniture, not just the
-               slider — on mobile the toolbar and the FAB sit on top of it at
-               slider-h + 10, ~48px tall. Full width because a 320px card
-               beside a 48px FAB leaves no room for the "Switch" button. */
-            .satellite-hint {
-                bottom: calc(var(--slider-h, 70px) + 66px);
-                left: 10px; right: 10px; max-width: none;
-            }
-            
             /* Hide MapLibre attribution on mobile - we show our own */
             .maplibregl-ctrl-attrib { display: none !important; }
             
@@ -2792,7 +2781,6 @@
             .modal-close,
             .notification-close,
             .star-modal-close,
-            .upload-toast-close,
             .filter-panel-close,
             .pinned-indicator-close,
             .admin-panel-close,
@@ -2940,9 +2928,6 @@
             .filter-panel { max-height: 40vh; bottom: calc(var(--slider-h, 44px) + 56px); }
             #map-legend { bottom: calc(var(--slider-h, 44px) + 56px) !important; }
             .footer-attribution { bottom: calc(var(--slider-h, 44px) + 6px); }
-            /* Landscape has almost no vertical room: keep the hint one row
-               above the toolbar and let it stay a card, not a banner. */
-            .satellite-hint { bottom: calc(var(--slider-h, 44px) + 56px); left: auto; right: 10px; max-width: 300px; }
         }
 
         /* === SAFE AREA INSETS (iPhone notch/Dynamic Island) === */
@@ -2975,35 +2960,10 @@
             }
         }
 
-        /* Toast notification for background tasks */
-        .toast-notification {
-            position: fixed;
-            bottom: 80px;
-            right: 20px;
-            background: rgba(18,18,18,0.95);
-            border: 1px solid rgba(59,130,246,0.5);
-            border-radius: 8px;
-            padding: 12px 16px;
-            z-index: 1000;
-            font-size: 12px;
-            color: #fff;
-            display: none;
-            align-items: center;
-            gap: 12px;
-            max-width: 320px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-            backdrop-filter: blur(8px);
-            animation: slideIn 0.3s ease;
-        }
-        .toast-notification.active { display: flex; }
-        .toast-notification.success { border-color: rgba(34,197,94,0.5); }
-        .toast-notification.error { border-color: rgba(239,68,68,0.5); }
-        .toast-title { font-weight: 500; margin-bottom: 4px; }
-        .toast-message { color: #aaa; font-size: 11px; }
-        .toast-action { background: #3b82f6; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 11px; white-space: nowrap; }
-        .toast-action:hover { background: #2563eb; }
-        .toast-close { color: #888; cursor: pointer; font-size: 18px; line-height: 1; margin-left: auto; }
-        .toast-close:hover { color: #fff; }
+        /* `#task-toast` (top-right title/body/action panel) was a THIRD toast
+           implementation, reached through a 5-positional-arg overload of
+           showToast(). Folded into .app-toast: showToast adapts the old
+           signature, `opts.title` renders the title line. */
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         
         /* ========== SKIP LINK ========== */
@@ -3041,8 +3001,6 @@
         .admin-btn:focus-visible,
         .report-builder-close:focus-visible,
         .feature-modal-close:focus-visible,
-        .satellite-hint-btn:focus-visible,
-        .satellite-hint-close:focus-visible,
         .footer-btn:focus-visible,
         .star-btn:focus-visible,
         .star-report-btn:focus-visible,
@@ -3059,9 +3017,8 @@
         .pa-popup-btn:focus-visible,
         .notif-type-filter:focus-visible,
         .notif-action-btn:focus-visible,
-        .upload-toast-close:focus-visible,
-        .toast-action:focus-visible,
-        .toast-close:focus-visible,
+        .app-toast .toast-action:focus-visible,
+        .app-toast .toast-close:focus-visible,
         .pinned-indicator-close:focus-visible,
         .pinned-layer-chip:focus-visible,
         .report-builder-preset-btn:focus-visible,
