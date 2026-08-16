@@ -67,6 +67,72 @@ def log(*a):
     print(*a, file=sys.stderr, flush=True)
 
 
+# ---------------------------------------------------------------- regions
+# Output is GROUPED BY DRAINAGE BASIN, not by an arbitrary hand-drawn
+# region: alluvial gold travels with the river, and any contamination a
+# working releases moves within its basin - so the basin is the physical
+# unit of both prospectivity and consequence. Units are HydroBASINS
+# Pfafstetter level-5 sub-basins (Lehner & Grill 2013, v1.c, UNESCO
+# IHP-WINS mirror; data/hydrobasins/hybas5_xsa.json). HydroBASINS carries
+# no names, so each basin is named by the river with the most named
+# HydroRIVERS/OSM vertices inside it (park_rivers_hydro) - a second name
+# joins when it has >=50% of the leader's count. Basins covering <1% of
+# the AOI are edge slivers; points there report the nearest kept basin.
+# Presentation only - no statistic is computed per basin.
+BASIN_FILE = ROOT / "data" / "hydrobasins" / "hybas5_xsa.json"
+
+
+def _clean_river(name):
+    n = name.replace("River", " ").replace("Nahr al", " ").strip()
+    n = n.split("(")[0].strip()
+    return " ".join(n.split()) or name
+
+
+def load_basins(aoi_poly):
+    from collections import Counter
+    d = json.load(open(BASIN_FILE))
+    c = db()
+    rows = c.execute(
+        "SELECT name, lat, lon FROM park_rivers_hydro "
+        "WHERE park_id=? AND name<>''", (AOI,)).fetchall()
+    basins = []
+    for f in d["features"]:
+        g = shape(f["geometry"])
+        share = g.intersection(aoi_poly).area / aoi_poly.area
+        if share < 0.01:
+            continue
+        cnt = Counter()
+        for name, lat, lon in rows:
+            if g.contains(Point(lon, lat)):
+                cnt[_clean_river(name)] += 1
+        top = cnt.most_common(2)
+        if not top:
+            nm = f"basin {f['properties']['PFAF_ID']}"
+        elif len(top) > 1 and top[1][1] >= 0.5 * top[0][1]:
+            nm = f"{top[0][0]}\u2013{top[1][0]} basin"
+        else:
+            nm = f"{top[0][0]} basin"
+        basins.append(dict(name=nm, pfaf_id=int(f["properties"]["PFAF_ID"]),
+                           share=round(share, 3), geom=g))
+    log(f"  {len(basins)} level-5 basins cover the AOI: "
+        + ", ".join(b["name"] for b in basins))
+    return basins
+
+
+def make_region_of(basins):
+    from shapely.prepared import prep
+    prepped = [(prep(b["geom"]), b) for b in basins]
+    cents = [(b["geom"].centroid, b) for b in basins]
+
+    def region_of(lon, lat):
+        p = Point(lon, lat)
+        for pg, b in prepped:
+            if pg.contains(p):
+                return b["name"]
+        return min(cents, key=lambda cb: cb[0].distance(p))[1]["name"]
+    return region_of
+
+
 def db():
     return sqlite3.connect(f"file:{DB}?mode=ro", uri=True)
 
@@ -374,6 +440,10 @@ def main():
     grid = make_grid(poly)          # lon/lat
     gk = proj(grid, lat0)           # km
     log(f"{len(grid)} cells")
+
+    log("drainage basins (grouping unit)...")
+    basins = load_basins(poly)
+    region_of = make_region_of(basins)
 
     anchors = load_anchors(poly)
     log("reach weights (target-group background)...")
@@ -798,7 +868,13 @@ def main():
             log("  extrapolation proxy:", cv["extrapolation_proxy"])
             log("  validation limit:", cv["validation_limit"]["note"])
 
-    # ---- candidates: high composite, >=25 km from every known anchor
+    # ---- candidates: high composite, >=25 km from every known anchor.
+    # Selection is BASIN-GROUPED, not a global top-N: alluvial mining and
+    # its consequences are organised by drainage, so each level-5 basin
+    # gets up to CAND_PER_BASIN candidates from top-5% ground (a global
+    # cut of 12 previously concentrated the whole list in the two hottest
+    # basins and said nothing about the rest).
+    CAND_PER_BASIN = 2
     candidates = []
     if comp is not None:
         truth_max_lon = max(
@@ -806,16 +882,20 @@ def main():
             for c in clusters)
         anc_pts = proj([[a["lon"], a["lat"]] for a in anchors], lat0)
         d_anchor = nearest_dist_km_points(gk, anc_pts)
+        thr_top05 = float(np.nanquantile(comp, 0.95))
         order = np.argsort(np.where(np.isnan(comp), -1, comp))[::-1]
         chosen = []
+        by_basin = {}
         for i in order:
-            if np.isnan(comp[i]) or d_anchor[i] < 25:
+            if np.isnan(comp[i]) or comp[i] < thr_top05 or d_anchor[i] < 25:
                 continue
             if any(np.hypot(*(gk[i] - gk[j])) < 25 for j in chosen):
                 continue
+            reg = region_of(grid[i][0], grid[i][1])
+            if len(by_basin.get(reg, ())) >= CAND_PER_BASIN:
+                continue
+            by_basin.setdefault(reg, []).append(i)
             chosen.append(i)
-            if len(chosen) >= 12:
-                break
         # context per candidate
         c = db()
         for i in chosen:
@@ -839,6 +919,7 @@ def main():
                               lat=round(g.y, 4), lon=round(g.x, 4))
             candidates.append(dict(
                 lat=round(float(lat), 4), lon=round(float(lon), 4),
+                basin=region_of(float(lon), float(lat)),
                 tier=("near_known_mining_ground" if d_anchor[i] < 100
                       else "beyond_validated_ground" if lon > truth_max_lon
                       else "extrapolated"),
@@ -894,28 +975,41 @@ def main():
         else:
             vscore = np.zeros(len(sub_pts))
         order = np.lexsort((dg[idx], -vscore))
+        # Per-basin quota instead of a global top-25: the old cut crowded
+        # the whole list into the two hottest basins and silently dropped
+        # sheet-verified names like (TIDI) and Ou?ligui in the west. Every
+        # basin keeps its best WATCH_PER_BASIN members (composite-ranked,
+        # 10 km dedupe); rank stays GLOBAL so the numbers still order the
+        # whole list.
+        WATCH_PER_BASIN = 3
         taken = []
+        picked = []
+        per_basin = {}
         for oi in order:
             p = sub_pts[oi]
             if any(np.hypot(*(p - q)) < 10.0 for q in taken):
                 continue
-            taken.append(p)
             j = int(idx[oi])
             lon_, lat_ = ab_lonlat[j]
+            reg = region_of(lon_, lat_)
+            if len(per_basin.get(reg, ())) >= WATCH_PER_BASIN:
+                continue
+            taken.append(p)
+            per_basin.setdefault(reg, []).append(oi)
+            picked.append((oi, j, lon_, lat_, reg))
+        for rank, (oi, j, lon_, lat_, reg) in enumerate(picked, 1):
             pctl = (round(float(np.mean(vscore[oi] >=
                                         comp[~np.isnan(comp)])) * 100, 1)
                     if comp is not None and vscore[oi] >= 0 else None)
             watchlist.append(dict(
                 name=ab_names[j], lat=round(lat_, 4), lon=round(lon_, 4),
-                rank=len(watchlist) + 1,
+                rank=rank, basin=reg,
                 composite_pctile=pctl,
                 gold_contact_km=round(float(dg[j]), 1),
                 river_km=round(float(driv[oi]), 1)))
-            if len(watchlist) >= 25:
-                break
         log(f"  watchlist: {watch_total} abandoned 1930s villages on "
-            f"gold-graded contacts; reporting top {len(watchlist)} "
-            f"after 10 km dedupe")
+            f"gold-graded contacts; reporting {len(watchlist)} "
+            f"({WATCH_PER_BASIN}/basin) after 10 km dedupe")
 
     # ---- graduated tiers + feature export.
     # The composite is a rank surface; instead of one top-20% cut, grade it
@@ -961,6 +1055,7 @@ def main():
                 continue
             gfeats["settlements"].append(dict(
                 lat=s[0], lon=s[1], tier=tier_name(t),
+                basin=region_of(s[1], s[0]),
                 score=round(sc, 4), pctile=pct,
                 name=s[6], classification=s[7],
                 persistence=s[10],
@@ -973,6 +1068,7 @@ def main():
                 continue
             gfeats["hist_places"].append(dict(
                 lat=round(g.y, 5), lon=round(g.x, 5), tier=tier_name(t),
+                basin=region_of(g.x, g.y),
                 score=round(sc, 4), pctile=pct, name=t_[0]))
         c = db()
         for name_, ptype, lat_, lon_ in c.execute(
@@ -984,6 +1080,7 @@ def main():
                 continue
             gfeats["osm_places"].append(dict(
                 lat=lat_, lon=lon_, tier=tier_name(t),
+                basin=region_of(lon_, lat_),
                 score=round(sc, 4), pctile=pct,
                 name=name_, place_type=ptype))
         tier_stats = {}
@@ -1059,6 +1156,21 @@ def main():
         spatial_cv=cv,
         note=result_note,
         candidates=candidates,
+        basins=dict(
+            method=("Grouping unit: HydroBASINS Pfafstetter level-5 "
+                    "sub-basins (Lehner & Grill 2013 v1.c, UNESCO IHP-WINS "
+                    "mirror, data/hydrobasins/hybas5_xsa.json). Chosen "
+                    "because alluvial mining and its downstream "
+                    "consequences are organised by drainage, not by "
+                    "administrative or ad-hoc regions. Each basin is named "
+                    "by its dominant named river(s) (most named "
+                    "HydroRIVERS/OSM vertices in park_rivers_hydro; a "
+                    "second name joins at >=50% of the leader). "
+                    "Presentation only - no statistic is computed per "
+                    "basin. Candidates: up to 2 per basin from top-5% "
+                    "ground; watchlist: up to 3 per basin."),
+            list=[dict(name=b["name"], pfaf_id=b["pfaf_id"],
+                       aoi_share=b["share"]) for b in basins]),
         abandoned_village_gold_watchlist=dict(
             hypothesis=(
                 "1930s villages with no modern settlement within 3 km, "
