@@ -2374,8 +2374,12 @@
            1 recent (+3 unmeasured)") used to wrap into each other. The label
            keeps its natural width; the value right-aligns and wraps cleanly
            in its own column. */
-        .pa-popup-mini-stat { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; align-items: baseline; padding: 3px 0; font-size: 11px; }
-        .pa-popup-mini-stat-label { color: #999; white-space: nowrap; }
+        .pa-popup-mini-stat { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; align-items: baseline; padding: 3px 0; font-size: 11px; }
+        /* The label wraps, the value never squashes: with `auto 1fr` + nowrap
+           label, a long label ("Fire detections in groups (Dec 2023 - Aug
+           2026)") left the value a 7px column that wrapped one digit per
+           line — a 180px-tall invisible number that read as empty space. */
+        .pa-popup-mini-stat-label { color: #999; }
         .pa-popup-mini-stat-value { color: #22c55e; font-weight: 500; text-align: right; overflow-wrap: anywhere; }
         .pa-popup-mini-stat-value.warning { color: #f97316; }
         .pa-popup-mini-stat-value.bad { color: #ef4444; }

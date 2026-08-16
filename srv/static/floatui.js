@@ -754,6 +754,34 @@
             });
         }
 
+        // ENSURE THE GRAB BAR IS ON SCREEN AFTER PLACEMENT.
+        //
+        // Staying anchored through programmatic moves (above) assumes the
+        // anchor point puts the card somewhere usable. A share-link restore
+        // opens the popup at the area's centroid with the link's own lat/lng/z,
+        // and for a large AOI the centroid can sit above the viewport — the
+        // card renders with its top (grab bar, name, ×) off-screen, and
+        // nothing brings it back until the first user gesture happens to
+        // detach it. So once the map settles, if the bar is not visible,
+        // hand the card to the screen and clamp it into view.
+        function ensureVisible() {
+            if (detached || container.classList.contains('fui-sheet') ||
+                container.classList.contains('fui-docked')) return;
+            const mapEl = container.offsetParent || container.parentElement;
+            if (!mapEl) return;
+            const mr = mapEl.getBoundingClientRect();
+            const r = container.getBoundingClientRect();
+            if (r.top < mr.top + 2 || r.top > mr.bottom - 60 ||
+                r.right < mr.left + 60 || r.left > mr.right - 60) {
+                detach();
+                clampIntoView();
+            }
+        }
+        if (popup._map) {
+            try { popup._map.once('idle', ensureVisible); } catch (err) { }
+        }
+        requestAnimationFrame(ensureVisible);
+
         // On a phone the popup joins the sheet stack: full-width above the
         // bottom chrome, stacked with the pinned card / pinned layers. The
         // .fui-sheet CSS out-!importants MapLibre's inline transform, so its

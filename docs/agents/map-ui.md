@@ -187,6 +187,19 @@ three overlapping answers at once (geology popup + AOI popup + AOI map tip):
   MapLibre's × is now `display:none` and the bar builds its own button calling
   `popup.remove()`. Never move a foreign library's control into a drag handle
   and keep its listener.
+* **A popup restored from a share link can render with its grab bar off-screen**
+  (`/s/bhk8ps5`, 2026-08-16). The popup stays *anchored* through programmatic
+  moves (correct — the fly-to should land it on its area), but a share link
+  sets its own `lat/lng/z`, and a large AOI's centroid can sit above the
+  viewport: the card's top (grab bar, name, ×) was simply outside the map until
+  the first user gesture happened to detach it. `decoratePAPopup` now runs
+  `ensureVisible()` on map `idle` + one rAF: if the bar is off-screen it
+  detaches and `clampIntoView()`s. Skips sheet mode and docked.
+* **`.pa-popup-mini-stat` grid was `auto 1fr` with a `nowrap` label** — a long
+  label ("Fire detections in groups (Dec 2023 - Aug 2026)") took the whole
+  width and left the value a 7px column wrapping one digit per line: a
+  180px-tall invisible number reading as empty space in the fire accordion.
+  Now `minmax(0,1fr) auto`, label wraps, value never squashes (`globe.css`).
 * Where a backdrop wins but hides another, **name the other in the same tip**
   rather than making it unreachable: the AOI tip carries a `Geology · <code>`
   line. One tip, both answers.
