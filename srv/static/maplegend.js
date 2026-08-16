@@ -1733,17 +1733,26 @@
         html += dlRow('<a class="aoi-menu-item" data-item="mbtiles" ' +
             'href="' + esc(dlUrl(m.download)) + '" ' +
             'title="' + esc('The mosaicked sheet series as MBTiles, z' + (m.minzoom || 0) + '–' +
-                (m.maxzoom || 0) + ', for Locus Map, OsmAnd or QGIS.') + '">' +
-            '<i class="icon-scroll-text"></i><span>MBTiles</span>' +
+                (m.maxzoom || 0) + ', black ink as printed — for light backgrounds (the default in Locus, OsmAnd and QGIS).') + '">' +
+            '<i class="icon-scroll-text"></i><span>MBTiles — black ink</span>' +
             '<em>' + esc(m.name || 'archive') + (mb ? ', ' + mb : '') + '</em></a>',
             dlUrl(m.download), 'mbtiles');
-        // The one thing about this file a reader has to be told BEFORE they
-        // open it somewhere it looks empty. On screen the ink is lifted to
-        // white so imagery stays readable; the file keeps the archive's own
-        // near-black, because offline viewers default to light backgrounds.
-        html += '<div class="mode-menu-note">Black ink, as printed — the white you see on ' +
-            'the map is a paint property of the overlay, not a second archive. On a light ' +
-            'background (the default in Locus, OsmAnd and QGIS) black is what you want.</div>';
+        if (m.download_white && m.download_white.url) {
+            var wmb = m.download_white.size_bytes ? Math.round(m.download_white.size_bytes / 1048576) + ' MB' : '';
+            html += dlRow('<a class="aoi-menu-item" data-item="mbtiles-white" ' +
+                'href="' + esc(dlUrl(m.download_white.url)) + '" ' +
+                'title="' + esc('The same archive with the ink lifted to white — for dark basemaps (satellite imagery), matching what this globe shows.') + '">' +
+                '<i class="icon-scroll-text"></i><span>MBTiles — white ink</span>' +
+                '<em>for dark basemaps' + (wmb ? ', ' + wmb : '') + '</em></a>',
+                dlUrl(m.download_white.url), 'mbtiles-white');
+        }
+        // The one thing about these files a reader has to be told BEFORE they
+        // open one somewhere it looks empty: ink colour must match the
+        // background. Same sheets, one recoloured — never two archives to
+        // keep in sync; the white file is DERIVED (whiten_mbtiles.py).
+        html += '<div class="mode-menu-note">Same sheets, two ink colours. Black is what you want ' +
+            'on a light background (the default in Locus, OsmAnd and QGIS); white on dark ' +
+            'satellite imagery. The wrong pick renders invisible.</div>';
         if (m.attribution) html += '<div class="mode-menu-note">' + esc(m.attribution) + '</div>';
         el.innerHTML = html;
         dlEl = el;

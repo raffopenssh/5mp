@@ -27,6 +27,13 @@ import (
 
 const histMapDefaultPath = "data/histmaps/sudan250k.mbtiles"
 
+// histMapWhitePath is the whitened derivative of the archive (RGB lifted to
+// 255, alpha untouched) built by scripts/histmaps/whiten_mbtiles.py — for
+// offline viewers used over dark basemaps. The black original stays the
+// canonical archive (docs/agents/overlays.md): one source of ink, one
+// derived recolour, never two archives to keep in sync by hand.
+const histMapWhitePath = "data/histmaps/sudan250k_white.mbtiles"
+
 type histMapStore struct {
 	once sync.Once
 	db   *sql.DB
@@ -128,6 +135,16 @@ func (s *Server) HandleAPIHistMapMeta(w http.ResponseWriter, r *http.Request) {
 		out["size_bytes"] = st.Size()
 		out["download"] = "/api/histmap/sudan250k/download"
 	}
+	// The whitened variant is a DERIVED artifact (scripts/histmaps/
+	// whiten_mbtiles.py) for dark-basemap offline viewers; advertised only
+	// when the file exists, with its own size, so the UI can offer it
+	// honestly (buttons exist only for files that exist).
+	if st, err := os.Stat(histMapWhitePath); err == nil {
+		out["download_white"] = map[string]any{
+			"url":        "/api/histmap/sudan250k/download/white",
+			"size_bytes": st.Size(),
+		}
+	}
 	// OCR'd labels, if the extraction has (even partially) run. Partiality is
 	// advertised, not hidden: labels_complete=false means the OCR run is still
 	// in flight and a coordinate query may legitimately find nothing *yet*.
@@ -187,7 +204,18 @@ func (s *Server) HandleAPIHistMapMeta(w http.ResponseWriter, r *http.Request) {
 // Served with http.ServeContent so the 1.4 GB transfer supports Range
 // requests and can be resumed over a field link.
 func (s *Server) HandleAPIHistMapDownload(w http.ResponseWriter, r *http.Request) {
-	f, err := os.Open(histMaps.path)
+	s.serveHistMBTiles(w, r, histMaps.path, "sudan250k_1908-1944.mbtiles")
+}
+
+// HandleAPIHistMapDownloadWhite serves the whitened derivative for viewers
+// on dark basemaps. 404 while the build (whiten_mbtiles.py) has not produced
+// the file — the meta endpoint only advertises it once it exists.
+func (s *Server) HandleAPIHistMapDownloadWhite(w http.ResponseWriter, r *http.Request) {
+	s.serveHistMBTiles(w, r, histMapWhitePath, "sudan250k_1908-1944_white.mbtiles")
+}
+
+func (s *Server) serveHistMBTiles(w http.ResponseWriter, r *http.Request, path, name string) {
+	f, err := os.Open(path)
 	if err != nil {
 		http.Error(w, "historical map not installed", http.StatusNotFound)
 		return
@@ -199,8 +227,8 @@ func (s *Server) HandleAPIHistMapDownload(w http.ResponseWriter, r *http.Request
 		return
 	}
 	w.Header().Set("Content-Type", "application/octet-stream")
-	w.Header().Set("Content-Disposition", `attachment; filename="sudan250k_1908-1944.mbtiles"`)
-	http.ServeContent(w, r, "sudan250k_1908-1944.mbtiles", st.ModTime(), f)
+	w.Header().Set("Content-Disposition", `attachment; filename="`+name+`"`)
+	http.ServeContent(w, r, name, st.ModTime(), f)
 }
 
 func parseFloatCSV(s string, want int) []float64 {

@@ -241,6 +241,7 @@ func (s *Server) Serve(addr string) error {
 	// coordinate, not by park id.
 	mux.HandleFunc("GET /api/histmap", s.HandleAPIHistMapMeta)
 	mux.HandleFunc("GET /api/histmap/sudan250k/download", s.HandleAPIHistMapDownload)
+	mux.HandleFunc("GET /api/histmap/sudan250k/download/white", s.HandleAPIHistMapDownloadWhite)
 	mux.HandleFunc("GET /api/histmap/sudan250k/labels", s.HandleAPIHistMapLabels)
 	mux.HandleFunc("GET /api/histmap/sudan250k/labels/download/{format}", s.HandleAPIHistMapLabelsDownload)
 	mux.HandleFunc("GET /api/histmap/sudan250k/lines", s.HandleAPIHistMapLines)
