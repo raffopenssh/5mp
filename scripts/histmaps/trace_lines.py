@@ -423,6 +423,8 @@ def cmd_run(args):
         cmd_refine(args)
         cmd_dedupe(args)
         cmd_stitch(args)
+        cmd_catsym(args)   # only category IS NULL rows -- cheap on re-runs
+        cmd_link(args)
         import subprocess
         r = subprocess.run(["bash", os.path.join(os.path.dirname(
             os.path.abspath(__file__)), "export_labels.sh")])
