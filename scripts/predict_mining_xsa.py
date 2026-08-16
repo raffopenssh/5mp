@@ -80,6 +80,11 @@ def log(*a):
 # the AOI are edge slivers; points there report the nearest kept basin.
 # Presentation only - no statistic is computed per basin.
 BASIN_FILE = ROOT / "data" / "hydrobasins" / "hybas5_xsa.json"
+BASIN_FILE6 = ROOT / "data" / "hydrobasins" / "hybas6_xsa.json"
+# A level-5 basin holding more than this share of the AOI is split into its
+# level-6 children, so one huge basin cannot swallow a fifth of the study
+# area under a single quota (uniform rule, applied before any scoring).
+SPLIT_SHARE = 0.10
 
 
 def _clean_river(name):
@@ -90,31 +95,108 @@ def _clean_river(name):
 
 def load_basins(aoi_poly):
     from collections import Counter
-    d = json.load(open(BASIN_FILE))
     c = db()
     rows = c.execute(
         "SELECT name, lat, lon FROM park_rivers_hydro "
         "WHERE park_id=? AND name<>''", (AOI,)).fetchall()
+    # Historic 1:250k river labels fill in where HydroRIVERS/OSM has no
+    # name (e.g. R. Papa, the drainage the original mining reports came
+    # from) - weighted lightly so a modern named river still dominates.
+    try:
+        hc = sqlite3.connect("file:%s?mode=ro" % (
+            ROOT / "data/histmaps/labels.sqlite3"), uri=True)
+        hist_rows = hc.execute(
+            "SELECT text, lat, lon FROM labels WHERE category='water' "
+            "AND (text LIKE 'R.%' OR text LIKE 'Nahr%' OR text LIKE 'Bahr%' "
+            "OR text LIKE 'K.%' OR text LIKE 'O.%')").fetchall()
+    except sqlite3.Error:
+        hist_rows = []
+
+    GENERIC = {"lagoon", "lake", "(water)", "ford", "pool", "wells",
+               "well", "bahr en nil"}
+
+    def hist_names(g):
+        cnt = Counter()
+        for text, lat, lon in hist_rows:
+            if "?" in text:   # OCR failed on the name itself
+                continue
+            if g.contains(Point(lon, lat)):
+                t = text.split(".", 1)[-1].strip()
+                if len(t) >= 3 and t.lower() not in GENERIC:
+                    cnt[t] += 1
+        return cnt
+
+    def name_basin(g, pfaf):
+        cnt = Counter()
+        for name, lat, lon in rows:
+            nm = _clean_river(name)
+            if len(nm) < 3:   # junk fragments like 'sd'
+                continue
+            if g.contains(Point(lon, lat)):
+                cnt[nm] += 1
+        if not cnt:
+            cnt = hist_names(g)
+        top = cnt.most_common(2)
+        if not top:
+            return f"basin {pfaf}", None
+        if len(top) > 1 and top[1][1] >= 0.5 * top[0][1]:
+            return f"{top[0][0]}\u2013{top[1][0]} basin", None
+        alt = top[1][0] if len(top) > 1 else None
+        if alt is None:
+            # no modern runner-up: borrow the historic sheets' most-named
+            # stream (skipping the leader itself) as the disambiguator
+            for hn, _ in hist_names(g).most_common(3):
+                if hn.lower() != top[0][0].lower():
+                    alt = hn
+                    break
+        return f"{top[0][0]} basin", alt
+
+    d5 = json.load(open(BASIN_FILE))
+    d6 = json.load(open(BASIN_FILE6))
+    lev6 = [(int(f["properties"]["PFAF_ID"]), shape(f["geometry"]), f)
+            for f in d6["features"]]
     basins = []
-    for f in d["features"]:
+
+    def add(f, g, share, level):
+        p = f["properties"]
+        pfaf = int(p["PFAF_ID"])
+        nm, alt = name_basin(g, pfaf)
+        basins.append(dict(name=nm, alt=alt, pfaf_id=pfaf,
+                           level=level, share=round(share, 3), geom=g))
+
+    for f in d5["features"]:
         g = shape(f["geometry"])
         share = g.intersection(aoi_poly).area / aoi_poly.area
         if share < 0.01:
             continue
-        cnt = Counter()
-        for name, lat, lon in rows:
-            if g.contains(Point(lon, lat)):
-                cnt[_clean_river(name)] += 1
-        top = cnt.most_common(2)
-        if not top:
-            nm = f"basin {f['properties']['PFAF_ID']}"
-        elif len(top) > 1 and top[1][1] >= 0.5 * top[0][1]:
-            nm = f"{top[0][0]}\u2013{top[1][0]} basin"
-        else:
-            nm = f"{top[0][0]} basin"
-        basins.append(dict(name=nm, pfaf_id=int(f["properties"]["PFAF_ID"]),
-                           share=round(share, 3), geom=g))
-    log(f"  {len(basins)} level-5 basins cover the AOI: "
+        if share <= SPLIT_SHARE:
+            add(f, g, share, 5)
+            continue
+        # too large for one quota: use its level-6 children instead
+        parent = int(f["properties"]["PFAF_ID"])
+        for pfaf6, g6, f6 in lev6:
+            if pfaf6 // 10 != parent:
+                continue
+            s6 = g6.intersection(aoi_poly).area / aoi_poly.area
+            if s6 >= 0.01:
+                add(f6, g6, s6, 6)
+    # Disambiguate name collisions (several level-6 children of one river
+    # system share a dominant name): append the runner-up river, else the
+    # Pfafstetter id.
+    from collections import Counter as _C
+    dup = {n for n, k in _C(b["name"] for b in basins).items() if k > 1}
+    for b in basins:
+        if b["name"] in dup:
+            if b["alt"]:
+                b["name"] = b["name"].replace(
+                    " basin", f"\u2013{b['alt']} basin")
+            else:
+                b["name"] = b["name"].replace(
+                    " basin", f" ({b['pfaf_id']}) basin")
+    for b in basins:
+        b.pop("alt", None)
+    log(f"  {len(basins)} basins cover the AOI "
+        f"(level-5, split >{SPLIT_SHARE:.0%} into level-6): "
         + ", ".join(b["name"] for b in basins))
     return basins
 
@@ -901,7 +983,9 @@ def main():
         for i in chosen:
             lon, lat = grid[i]
             near_sett = c.execute(
-                "SELECT nearest_place, lat, lon, area_m2, surface_e2015_m2 "
+                "SELECT nearest_place, lat, lon, area_m2, surface_e2015_m2, "
+                "population_est, population_source, cropland_frac_2019, "
+                "classification "
                 "FROM park_settlements WHERE park_id=? AND polygon_ids<>'' "
                 "AND lat BETWEEN ? AND ? AND lon BETWEEN ? AND ? "
                 "ORDER BY (lat-?)*(lat-?)+(lon-?)*(lon-?) LIMIT 1",
@@ -940,10 +1024,40 @@ def main():
                 hist_hill_km=round(float(d_hill[i]), 1) if coverage[i] else None,
                 hist_mine_note_km=round(float(d_hmine[i]), 1) if coverage[i] else None,
                 nearest_settlement=dict(
-                    place=near_sett[0], lat=near_sett[1], lon=near_sett[2])
+                    place=near_sett[0], lat=near_sett[1], lon=near_sett[2],
+                    population_est=(near_sett[5]
+                                    if near_sett[6]
+                                    and near_sett[6] != "assumed" else None),
+                    cropland_frac_2019=near_sett[7],
+                    classification=near_sett[8])
                 if near_sett else None,
                 nearest_hist_label=hl,
             ))
+            cand = candidates[-1]
+            # ---- character: which of the model's factors carries this
+            # cell. Priority order mirrors the factor lifts (people
+            # anomaly > old maps > clearing > rock+water). One word per
+            # candidate so the report can GROUP by it; the full distances
+            # stay as fields.
+            ns = cand["nearest_settlement"]
+            pop = ns and ns.get("population_est")
+            crop = ns and ns.get("cropland_frac_2019")
+            if (cand["cropland_poor_settlement_km"] <= 5
+                    and pop is not None and pop >= 500):
+                character = "big village, hardly any farmland"
+            elif (cand.get("hist_abandoned_village_km") is not None
+                    and cand["hist_abandoned_village_km"] <= 5):
+                character = "abandoned 1930s village on graded rock"
+            elif cand["deforestation_km"] <= 5:
+                character = "active clearing on graded rock"
+            elif cand["settlement_km"] >= 10:
+                character = "empty ground: rock and water only"
+            else:
+                character = "settled riverside on graded rock"
+            cand["character"] = character
+            cand["settlement_population_est"] = pop
+            cand["settlement_cropland_frac"] = (
+                round(crop, 3) if crop is not None else None)
 
     # ---- watchlist: the abandoned-village x gold-contact conjunction.
     # Raw p~0.04 but q>0.05 after BH across the tried signals, and its power
@@ -981,7 +1095,7 @@ def main():
         # basin keeps its best WATCH_PER_BASIN members (composite-ranked,
         # 10 km dedupe); rank stays GLOBAL so the numbers still order the
         # whole list.
-        WATCH_PER_BASIN = 3
+        WATCH_PER_BASIN = 4
         taken = []
         picked = []
         per_basin = {}
@@ -1159,17 +1273,23 @@ def main():
         basins=dict(
             method=("Grouping unit: HydroBASINS Pfafstetter level-5 "
                     "sub-basins (Lehner & Grill 2013 v1.c, UNESCO IHP-WINS "
-                    "mirror, data/hydrobasins/hybas5_xsa.json). Chosen "
-                    "because alluvial mining and its downstream "
-                    "consequences are organised by drainage, not by "
-                    "administrative or ad-hoc regions. Each basin is named "
-                    "by its dominant named river(s) (most named "
-                    "HydroRIVERS/OSM vertices in park_rivers_hydro; a "
-                    "second name joins at >=50% of the leader). "
-                    "Presentation only - no statistic is computed per "
-                    "basin. Candidates: up to 2 per basin from top-5% "
-                    "ground; watchlist: up to 3 per basin."),
+                    "mirror, data/hydrobasins/hybas5_xsa.json); any level-5 "
+                    "basin holding more than 10% of the AOI is replaced by "
+                    "its level-6 children (hybas6_xsa.json) so one huge "
+                    "basin cannot swallow a fifth of the study area under "
+                    "a single quota. Chosen because alluvial mining and "
+                    "its downstream consequences are organised by "
+                    "drainage, not by administrative or ad-hoc regions. "
+                    "Each basin is named by its dominant named river(s) "
+                    "(most named HydroRIVERS/OSM vertices in "
+                    "park_rivers_hydro; historic 1:250k water labels fill "
+                    "in where no modern name exists; a second name joins "
+                    "at >=50% of the leader). Presentation only - no "
+                    "statistic is computed per basin. Candidates: up to 2 "
+                    "per basin from top-5% ground; watchlist: up to 4 per "
+                    "basin."),
             list=[dict(name=b["name"], pfaf_id=b["pfaf_id"],
+                       level=b["level"],
                        aoi_share=b["share"]) for b in basins]),
         abandoned_village_gold_watchlist=dict(
             hypothesis=(
