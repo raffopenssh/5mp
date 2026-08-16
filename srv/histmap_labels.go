@@ -283,12 +283,17 @@ var histLabelExports = map[string]struct{ path, name, ctype string }{
 		"sudan250k_labels.gpkg", "application/geopackage+sqlite3"},
 	"geojson": {"data/histmaps/sudan250k_labels.geojson.gz",
 		"sudan250k_labels.geojson.gz", "application/gzip"},
+	// The GPKG's KML twin (labels + lines + symbols, folders standing in for
+	// the typed columns KML cannot carry) for Google Earth / Locus / OsmAnd.
+	// Built by scripts/histmaps/export_kml.py via export_labels.sh.
+	"kml": {"data/histmaps/sudan250k_labels.kmz",
+		"sudan250k_labels.kmz", "application/vnd.google-earth.kmz"},
 }
 
 func (s *Server) HandleAPIHistMapLabelsDownload(w http.ResponseWriter, r *http.Request) {
 	exp, ok := histLabelExports[r.PathValue("format")]
 	if !ok {
-		http.Error(w, "format must be gpkg or geojson", http.StatusBadRequest)
+		http.Error(w, "format must be gpkg, geojson or kml", http.StatusBadRequest)
 		return
 	}
 	f, err := os.Open(exp.path)
