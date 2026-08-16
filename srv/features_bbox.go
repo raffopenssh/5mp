@@ -246,8 +246,51 @@ func (s *Server) HandleAPIFeaturesInBBox(w http.ResponseWriter, r *http.Request)
 	// count in view, not on zoom — two views at the same zoom can differ by
 	// three orders of magnitude, and the thing that must stay bounded is the
 	// number of rings the browser parses.
+	renderReason := ""
 	if mode == "auto" {
 		pointsMode = total > geomBudget
+		if pointsMode {
+			renderReason = "budget"
+		}
+		// TWO LAYERS IN ONE VIEW MUST NOT BE TWO KINDS OF PICTURE.
+		//
+		// The budget above is a count, so at AOI scale one layer crossed it
+		// and its neighbour did not: 80,408 deforestation polygons in view
+		// stayed *shapes* while 74,904 settlement footprints became dots.
+		// A GLAD loss patch is ~0.0017 deg across — a third of a pixel at
+		// z8 — so "shapes" drew a sub-pixel purple stipple next to solid
+		// amber dots, and the layer read as broken rather than as rare
+		// (user report with screenshots, 2026-08-16; two rounds of alpha
+		// tuning that could not fix it, because the geometry was the bug).
+		//
+		// So a polygon layer whose features are smaller than a pixel is
+		// drawn as dots whatever the count: a fill nobody can see is not
+		// more detail than a centroid, and the centroid carries the same
+		// row id and the same tip. A LINE is judged differently — its
+		// *length*, not its width, is the information — so it gets the ink
+		// test below instead.
+		if !pointsMode && q.Get("subpixel") != "0" {
+			if lineLikeFeature(featureType) {
+				// A DENSE FIELD OF PATHS KEEPS ITS CHEAP TIER LONGER.
+				//
+				// Under the count budget a fire layer flips to full
+				// polylines, but what a full path adds over its chord is
+				// the WIGGLE, and wiggle is invisible once the paths
+				// overlap: 2,800 trajectories in an AOI view is one red
+				// sheet whose extra vertices cost 10x the payload and
+				// show nothing the chords did not. So promote on how much
+				// ink is already on screen, not on how many rows there
+				// are. Chords stay until the field is sparse enough that
+				// an individual path can be followed.
+				if inkCrowded(cands, bbox) {
+					pointsMode = true
+					renderReason = "crowded"
+				}
+			} else if subPixelShapes(cands, bbox) {
+				pointsMode = true
+				renderReason = "subpixel"
+			}
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -275,8 +318,9 @@ func (s *Server) HandleAPIFeaturesInBBox(w http.ResponseWriter, r *http.Request)
 			ids = append(ids, c.id)
 		}
 		out := addCounts(map[string]interface{}{
-			"mode":      "points",
-			"render":    "points",
+			"mode":         "points",
+			"render":       "points",
+			"render_basis": renderReason,
 			"type":      featureType,
 			"from":      base,
 			"points":    pts,
@@ -344,15 +388,93 @@ func (s *Server) HandleAPIFeaturesInBBox(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	json.NewEncoder(w).Encode(addCounts(map[string]interface{}{
-		"type":      "FeatureCollection",
-		"render":    "geometry",
-		"slim":      slim,
-		"features":  features,
-		"count":     len(features),
-		"total":     total,
-		"truncated": truncated,
+		"type":         "FeatureCollection",
+		"render":       "geometry",
+		"render_basis": renderReason,
+		"slim":         slim,
+		"features":     features,
+		"count":        len(features),
+		"total":        total,
+		"truncated":    truncated,
 	}))
 }
+
+// subPixelShapes — would this layer's polygons be smaller than a screen pixel?
+//
+// The viewport is ~1400 px wide for the purposes of this endpoint (the same
+// constant the simplify tolerance uses), so one pixel is bboxWidth/1400 in
+// degrees. A layer whose typical feature is under ~1.2 px across has no shape
+// to show: its fill is a stipple of isolated dots on a grid, which reads as
+// corrupted data rather than as small features — and next to a sibling layer
+// that crossed the count budget and is drawing honest dots, it reads as one
+// layer being broken.
+//
+// The MEDIAN, not the mean: one 0.03-degree clearing among 80,000 GLAD tiles
+// must not vote for shapes on behalf of all of them. Measured over the served
+// candidates, which are what would actually be drawn.
+func subPixelShapes(cands []bboxCand, bbox [4]float64) bool {
+	if len(cands) == 0 {
+		return false
+	}
+	px := math.Abs(bbox[2]-bbox[0]) / 1400
+	if px <= 0 {
+		return false
+	}
+	w := make([]float64, 0, len(cands))
+	for _, c := range cands {
+		// bboxCand carries the bbox AREA in square degrees; its side is the
+		// scale a fill would occupy. sqrt keeps a long thin patch honest.
+		w = append(w, math.Sqrt(math.Max(c.area, 0)))
+	}
+	sort.Float64s(w)
+	med := w[len(w)/2]
+	return med < px*subPixelPx
+}
+
+// How many pixels across a feature must be for its shape to carry information.
+// 3 px, not 1: at 2 px a GLAD loss patch is a single antialiased square, which
+// is a *worse* dot than the dots layer draws (no radius ramp, no alpha ramp) and
+// tiles into a visible stipple of our 30 m grid. 3 px is where an outline starts
+// to describe a shape. Measured against this: at an 0.4-deg view both
+// deforestation and settlement footprints are shapes; at 1.1 deg both are dots.
+const subPixelPx = 3.0
+
+// inkCrowded — is this line layer's screen already full of its own strokes?
+//
+// The cheap tier for a path is a shorter path (?seg=1, a three-point chord),
+// and the ONLY thing the full geometry adds is the shape between those three
+// vertices. That shape is legible when a path can be followed with the eye and
+// invisible when paths cross each other several times per centimetre — at which
+// point the full rendering is 10x the bytes for the same picture, and the honest
+// answer is the chord.
+//
+// The measure is stroke area over screen area: each candidate contributes its
+// diagonal span (sqrt of its bbox area in degrees, converted to px) times a
+// nominal 2 px stroke, against a ~1400x900 px viewport. Above ~1.0 the strokes
+// would cover the view once over. Uses the SERVED candidates, i.e. what would
+// actually be drawn, so a truncated view is judged on its own ink.
+func inkCrowded(cands []bboxCand, bbox [4]float64) bool {
+	if len(cands) == 0 {
+		return false
+	}
+	degPerPx := math.Abs(bbox[2]-bbox[0]) / 1400
+	if degPerPx <= 0 {
+		return false
+	}
+	ink := 0.0
+	for _, c := range cands {
+		spanPx := math.Sqrt(math.Max(c.area, 0)) / degPerPx
+		// A stationary group is a dot, not a stroke: give it its own area
+		// rather than zero, so a field of hotspots still counts as ink.
+		ink += math.Max(spanPx, 2) * inkStrokePx
+	}
+	return ink > inkCoverMax*1400*900
+}
+
+const (
+	inkStrokePx = 2.0 // nominal drawn line width
+	inkCoverMax = 1.0 // strokes may cover the view once before we stay on chords
+)
 
 // geoSlimAbove: how many features one answer may carry full properties for.
 // Below it a view is a handful of shapes and its tips should need no second
