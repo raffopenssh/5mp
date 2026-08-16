@@ -84,6 +84,8 @@ func (s *Server) HandleUpload(w http.ResponseWriter, r *http.Request) {
 	r.Body = http.MaxBytesReader(w, r.Body, maxUploadSize)
 
 	// Parse multipart form
+	// A large body must outlive the server's absolute ReadTimeout.
+	longUpload(w, r)
 	if err := r.ParseMultipartForm(maxUploadSize); err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)

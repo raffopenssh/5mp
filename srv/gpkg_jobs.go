@@ -853,7 +853,7 @@ func (s *Server) HandleAPIGeoPackageDownload(w http.ResponseWriter, r *http.Requ
 	if st != nil {
 		mod = st.ModTime()
 	}
-	http.ServeContent(w, r, fn, mod, f)
+	http.ServeContent(longDownload(w), r, fn, mod, f)
 }
 
 // HandleAPIGeoPackageDelete — DELETE /api/geopackage/{id}.

@@ -1040,7 +1040,7 @@ func (s *Server) HandleAPIGeoMapGeoPackage(w http.ResponseWriter, r *http.Reques
 	name := filepath.Base(path)
 	w.Header().Set("Content-Type", "application/geopackage+sqlite3")
 	w.Header().Set("Content-Disposition", `attachment; filename="`+name+`"`)
-	http.ServeContent(w, r, name, st.ModTime(), f)
+	http.ServeContent(longDownload(w), r, name, st.ModTime(), f)
 }
 
 // HandleAPIGeoMapGeoPackageView builds the CURRENT VIEW as a GeoPackage.
@@ -1121,7 +1121,7 @@ func (s *Server) HandleAPIGeoMapGeoPackageView(w http.ResponseWriter, r *http.Re
 	// Built for this request and for this reader's filter: never a shared cache
 	// entry (see PrivateCacheMiddleware and cross-cutting invariant 9).
 	w.Header().Set("Cache-Control", "private, no-store")
-	http.ServeContent(w, r, name, st.ModTime(), f)
+	http.ServeContent(longDownload(w), r, name, st.ModTime(), f)
 }
 
 // geoViewFileName turns the reader's own words for their view into a file name,

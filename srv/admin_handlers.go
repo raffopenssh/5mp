@@ -245,6 +245,8 @@ func (s *Server) HandleUploadFire(w http.ResponseWriter, r *http.Request) {
 	// Limit request body size (500MB for fire data)
 	r.Body = http.MaxBytesReader(w, r.Body, 500<<20)
 
+	// A large body must outlive the server's absolute ReadTimeout.
+	longUpload(w, r)
 	if err := r.ParseMultipartForm(500 << 20); err != nil {
 		http.Redirect(w, r, "/admin?error=Failed+to+parse+form:+"+err.Error(), http.StatusSeeOther)
 		return
@@ -317,6 +319,8 @@ func (s *Server) HandleUploadGHSL(w http.ResponseWriter, r *http.Request) {
 	// Limit request body size (2GB for GHSL tiles)
 	r.Body = http.MaxBytesReader(w, r.Body, 2<<30)
 
+	// A large body must outlive the server's absolute ReadTimeout.
+	longUpload(w, r)
 	if err := r.ParseMultipartForm(2 << 30); err != nil {
 		http.Redirect(w, r, "/admin?error=Failed+to+parse+form:+"+err.Error(), http.StatusSeeOther)
 		return

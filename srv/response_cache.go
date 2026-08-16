@@ -91,6 +91,10 @@ func (cr *cacheRecorder) WriteHeader(code int) {
 	cr.ResponseWriter.WriteHeader(code)
 }
 
+// Unwrap lets http.ResponseController (e.g. longDownload's deadline) reach
+// the underlying writer through the recorder.
+func (cr *cacheRecorder) Unwrap() http.ResponseWriter { return cr.ResponseWriter }
+
 func (cr *cacheRecorder) Write(b []byte) (int, error) {
 	if cr.status == 200 && cr.buf.Len()+len(b) <= respCacheMaxEntry {
 		cr.buf.Write(b)

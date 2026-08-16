@@ -311,5 +311,5 @@ func (s *Server) HandleAPIHistMapLinesDownload(w http.ResponseWriter, r *http.Re
 	}
 	w.Header().Set("Content-Type", "application/gzip")
 	w.Header().Set("Content-Disposition", `attachment; filename="sudan250k_lines.geojson.gz"`)
-	http.ServeContent(w, r, "sudan250k_lines.geojson.gz", st.ModTime(), f)
+	http.ServeContent(longDownload(w), r, "sudan250k_lines.geojson.gz", st.ModTime(), f)
 }

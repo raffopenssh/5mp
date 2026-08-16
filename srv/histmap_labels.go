@@ -309,5 +309,5 @@ func (s *Server) HandleAPIHistMapLabelsDownload(w http.ResponseWriter, r *http.R
 	}
 	w.Header().Set("Content-Type", exp.ctype)
 	w.Header().Set("Content-Disposition", `attachment; filename="`+exp.name+`"`)
-	http.ServeContent(w, r, exp.name, st.ModTime(), f)
+	http.ServeContent(longDownload(w), r, exp.name, st.ModTime(), f)
 }
