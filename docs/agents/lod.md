@@ -344,3 +344,71 @@ pins of one type disagree. It is `.chip-lod.static` — no menu, no pointer —
 because an individual pin has no budget to spend: it is served whole by
 definition, and the mark is a statement of fact. Silence there is what made a
 correctly-drawn Point read as a layer that had thrown its detail away.
+
+## Waiting is said in the chip that will answer it (2026-08-16)
+
+Opening a large share link (`/s/g-…`, an AOI with three pins over a 2.7-year
+window) showed an empty map for several seconds with nothing saying why. Two
+separate faults, found by wrapping `fetch`/`LODLayer.reload` and reading the
+stacks.
+
+**1. The same question was asked three times.** "The dates changed" is
+announced by three call sites, and on a restored link two of them fire *after*
+the pins have already loaded with those very dates: `initTimeSlider` →
+`applyPreciseDateFilter` at t≈2.4 s, and `reloadGridData` again when the
+`areas` source finishes (t≈4.6 s and t≈11.8 s). Each announcement reached
+`LODLayer.reload()`, which cleared `lastBBox` and refetched every layer — so
+the fire trajectories' 1.2 MB / 2.8 s payload was fetched **three times**, the
+later copies aborting the earlier ones mid-flight. The 80 ms debounce cannot
+help: these are seconds apart.
+
+The fix is that **the request is its query string**. `load()` builds `qs`,
+compares it to `s.inflightSig` and `s.lastSig`, and returns if either matches;
+`why === 'force'` bypasses it for "the rows behind an unchanged query may have
+changed" (an upload, a reingest). `reload()` no longer clears `lastBBox` —
+it never consulted it (the containment skips are `why === 'move'` only), and
+clearing it was precisely what defeated the signature check. Result on that
+link: **6 heavy fetches → 3**, and pans/date changes/detail switches still
+refetch (each changes the string). Pinned by `lod_dedupes_by_signature`,
+`lod_dedupes_inflight`, `lod_reload_keeps_bbox` in the ui suite.
+
+**2. The pin did not exist until its data did.** `addPinnedLayer` awaited
+`LODLayer.add()` and only then wrote `pinnedLayers[key]`, so for the whole
+fetch there was no chip, no count, no evidence of work — and a user with no
+evidence clicks, pans and re-toggles, which aborts the fetch and starts it
+again. The pin is now registered **before** the fetch with `loading: true`, and
+the loader owns the flag from then on (`onLoading`), so a refetch on pan or a
+date change says the same thing the first load did. Two consequences that are
+easy to get wrong: the pin may be **removed while its data is in flight** (the
+× on a loading chip is a legitimate click and the whole point of showing one),
+so the post-await path re-checks `pinnedLayers[key]` instead of re-asserting
+it; and `updatePinnedIndicator` must not resurrect a dismissed layer.
+
+**The dots are in the count's slot**, not beside it: a stale number about to be
+replaced reads as the answer. Three `currentColor` dots on a travelling wave
+(1.05 s, 0.13 s stagger, scale+opacity only — compositor properties, no
+layout), the chip carrying one slow same-tint sheen so a glance at the panel
+reads "still arriving" without resolving three 3 px dots. `prefers-reduced-motion`
+gets three static dots of graded opacity. The count animates in once on arrival
+with the chip's own 0.22 s ease — the value is the news.
+
+**A repaint must not restart a neighbour's animation.** This function runs on
+every count, every load and every pan, and it assigned `innerHTML` wholesale —
+so each pin's answer landing tore down and rebuilt the other two chips,
+resetting their wave to frame zero exactly when it was meant to be reassuring.
+The park/chip **shape** is now compared (`_pinShape`) and only rebuilt when it
+changes; otherwise each chip is addressed by `data-chip-key` and swapped alone.
+
+**Basemap switches cost nothing** (verified): `switchBasemap` replays sources
+and layers, so satellite ↔ dark is 0 fetches and the pins keep their data.
+
+### `font: 600 8px/1 inherit` is invalid, and fails silently
+
+Found while checking the chip's type scale. The `font:` shorthand's family slot
+cannot be a keyword, so the browser drops the **whole** declaration — and a
+`<button>` falls back to the UA's 13.33 px/400. That is why `.chip-lod`, the
+quiet footnote naming what is drawn, printed *larger and lighter* than the count
+it annotates. The same mistake was in four more rules (`.sl-day`, `.sl-copy`,
+`.sh-btn`, `.footer-btn.share-btn`) — every one a button, every one silently at
+UA size since 2026-08-12. All five are longhands now, and
+`no_font_shorthand_inherit` fails the suite if the shorthand comes back.
