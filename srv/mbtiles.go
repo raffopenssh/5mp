@@ -670,17 +670,12 @@ func (s *Server) HandleAPIMBTilesDownload(w http.ResponseWriter, r *http.Request
 	w.Header().Set("Content-Type", "application/x-sqlite3")
 
 	filePath := job.FilePath
+	// ServeFile gives us Range support and a correct Content-Length. Do NOT
+	// delete the file after the first request: a client in a low-bandwidth
+	// region resumes with Range requests minutes or hours later, and a
+	// one-shot delete turns every resume into a 404. The 2-hour auto-cleanup
+	// scheduled at completion reclaims the space.
 	http.ServeFile(w, r, filePath)
-
-	// Delete immediately after download (one-shot download)
-	go func() {
-		time.Sleep(5 * time.Second) // Brief delay to ensure download completes
-		mbtilesQueue.mu.Lock()
-		delete(mbtilesQueue.jobs, jobID)
-		mbtilesQueue.mu.Unlock()
-		os.Remove(filePath)
-		slog.Info("Deleted MBTiles file after download", "id", jobID, "path", filePath)
-	}()
 }
 
 // HandleAPIMBTilesList lists all jobs

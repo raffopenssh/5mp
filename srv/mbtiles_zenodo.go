@@ -988,7 +988,7 @@ func (s *Server) HandleAPIZenodoMBTilesDownload(w http.ResponseWriter, r *http.R
 				return
 			}
 			if job.DownloadURL != "" {
-				proxyZenodoDownload(w, job.DownloadURL, fmt.Sprintf("%s_%s.mbtiles", job.ParkID, job.Source))
+				proxyZenodoDownload(w, r, job.DownloadURL, fmt.Sprintf("%s_%s.mbtiles", job.ParkID, job.Source))
 				return
 			}
 			http.Error(w, "No download URL available", http.StatusNotFound)
@@ -999,7 +999,7 @@ func (s *Server) HandleAPIZenodoMBTilesDownload(w http.ResponseWriter, r *http.R
 		if key := r.URL.Query().Get("key"); key != "" {
 			if entry := zenodoMBQueue.zenodoManifest.Get(key); entry != nil {
 				downloadURL := fmt.Sprintf("%s/%s", entry.BucketURL, entry.Filename)
-				proxyZenodoDownload(w, downloadURL, entry.Filename)
+				proxyZenodoDownload(w, r, downloadURL, entry.Filename)
 				return
 			}
 		}
@@ -1009,8 +1009,11 @@ func (s *Server) HandleAPIZenodoMBTilesDownload(w http.ResponseWriter, r *http.R
 	s.HandleAPIMBTilesDownload(w, r)
 }
 
-// proxyZenodoDownload streams a file from Zenodo to the client.
-func proxyZenodoDownload(w http.ResponseWriter, downloadURL, filename string) {
+// proxyZenodoDownload streams a file from Zenodo to the client. The client's
+// Range header is forwarded and Zenodo's Content-Range/Length/status come
+// back verbatim, so a field download over a flaky link is resumable and the
+// browser can show real progress.
+func proxyZenodoDownload(w http.ResponseWriter, r *http.Request, downloadURL, filename string) {
 	q := zenodoMBQueue
 	req, err := http.NewRequest("GET", downloadURL, nil)
 	if err != nil {
@@ -1018,6 +1021,9 @@ func proxyZenodoDownload(w http.ResponseWriter, downloadURL, filename string) {
 		return
 	}
 	req.Header.Set("Authorization", "Bearer "+q.zenodoClient.Token)
+	if rng := r.Header.Get("Range"); rng != "" {
+		req.Header.Set("Range", rng)
+	}
 
 	resp, err := q.zenodoClient.HTTPClient.Do(req)
 	if err != nil {
@@ -1026,22 +1032,17 @@ func proxyZenodoDownload(w http.ResponseWriter, downloadURL, filename string) {
 	}
 	defer resp.Body.Close()
 
-	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
+	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, filename))
 	w.Header().Set("Content-Type", "application/x-sqlite3")
+	w.Header().Set("Accept-Ranges", "bytes")
+	if cr := resp.Header.Get("Content-Range"); cr != "" {
+		w.Header().Set("Content-Range", cr)
+	}
 	if resp.ContentLength > 0 {
 		w.Header().Set("Content-Length", fmt.Sprintf("%d", resp.ContentLength))
 	}
 	w.WriteHeader(resp.StatusCode)
-	buf := make([]byte, 256*1024)
-	for {
-		n, readErr := resp.Body.Read(buf)
-		if n > 0 {
-			w.Write(buf[:n])
-		}
-		if readErr != nil {
-			break
-		}
-	}
+	io.Copy(w, resp.Body)
 }
 
 // HandleAPIZenodoMBTilesList lists jobs from both queues.

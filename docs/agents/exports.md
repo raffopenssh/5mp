@@ -161,6 +161,18 @@ set its own `Content-Encoding`, on 204/304/206/`Content-Range`, and on any
 byte-exact and resumable beats a little bandwidth). Pinned by
 `go test ./srv/ -run Gzip`.
 
+**A download must be measured and resumable** (many clients are on
+low-bandwidth links): `http.ServeContent`/`ServeFile` own `Content-Length` and
+`Range`; never set `Content-Length` beside them (a stale row size vs the file
+on disk reads as "227 MB of 209 MB" in the browser), and never pass
+`time.Now()` as modtime — `Last-Modified` is the `If-Range` validator, so a
+per-request timestamp makes every resume restart from byte 0. Fixed
+2026-08-16 in `srv/gpkg_jobs.go` + `srv/shared_files.go`; the Zenodo MBTiles
+proxy now forwards `Range`/`Content-Range`; the legacy MBTiles one-shot
+delete-after-first-request is gone (the 2 h auto-cleanup reclaims space).
+Download counters bump only on a start, not per Range chunk
+(`isDownloadStart`, `srv/download.go`, pinned by `TestIsDownloadStart`).
+
 **A middleware must not commit to a response encoding before the handler has
 described the response.**
 

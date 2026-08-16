@@ -834,16 +834,26 @@ func (s *Server) HandleAPIGeoPackageDownload(w http.ResponseWriter, r *http.Requ
 	}
 	defer f.Close()
 	st, _ := f.Stat()
-	s.DB.Exec(`UPDATE geopackage_jobs SET downloads = downloads + 1, last_download_at = ? WHERE id = ?`,
-		time.Now().UTC().Format(time.RFC3339), j.ID)
+	if isDownloadStart(r) {
+		// Count downloads, not HTTP requests: a resumed transfer over a flaky
+		// link is one download in many Range chunks.
+		s.DB.Exec(`UPDATE geopackage_jobs SET downloads = downloads + 1, last_download_at = ? WHERE id = ?`,
+			time.Now().UTC().Format(time.RFC3339), j.ID)
+	}
 
 	fn := filepath.Base(path)
 	w.Header().Set("Content-Type", "application/geopackage+sqlite3")
 	w.Header().Set("Content-Disposition", `attachment; filename="`+fn+`"`)
+	// ServeContent owns Content-Length and Range. The modtime MUST be the
+	// file's, not time.Now(): Last-Modified is the If-Range validator, and a
+	// timestamp that changes per request makes every resume restart from byte
+	// 0 with a 200 -- which a client that kept its partial file reports as
+	// "227 MB of 209 MB" and a corrupt download.
+	mod := time.Now()
 	if st != nil {
-		w.Header().Set("Content-Length", fmt.Sprint(st.Size()))
+		mod = st.ModTime()
 	}
-	http.ServeContent(w, r, fn, time.Now(), f)
+	http.ServeContent(w, r, fn, mod, f)
 }
 
 // HandleAPIGeoPackageDelete — DELETE /api/geopackage/{id}.
