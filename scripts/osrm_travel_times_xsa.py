@@ -46,8 +46,14 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from predict_mining_xsa import load_aoi, make_grid, AOI  # noqa: E402
 
 OUTDIR = ROOT / "data/eval/xsa_mining"
-CAR_URL = "http://localhost:5001/table/v1/driving/"
-FOOT_URL = "http://localhost:5002/table/v1/foot/"
+import os
+CAR_URL = os.environ.get("OSRM_CAR",
+                         "http://localhost:5001") + "/table/v1/driving/"
+FOOT_URL = os.environ.get("OSRM_FOOT",
+                          "http://localhost:5002") + "/table/v1/foot/"
+OUT_SUFFIX = os.environ.get("OSRM_OUT_SUFFIX", "")  # e.g. "_hist"
+NETWORK_NOTE = os.environ.get("OSRM_NETWORK_NOTE",
+                              "modern OSM extract only")
 WALK_BUSH_KMH = 4.0     # straight-line pace where no network path exists
 DEDUPE_KM = 2.0         # stations closer than this collapse to one
 SRC_CHUNK = 25          # sources per /table request
@@ -175,7 +181,7 @@ def main():
     t_u16 = np.minimum(np.round(t_min), UINT16_CAP).astype(np.uint16)
     OUTDIR.mkdir(parents=True, exist_ok=True)
     np.savez_compressed(
-        OUTDIR / "osrm_times.npz",
+        OUTDIR / f"osrm_times{OUT_SUFFIX}.npz",
         t_min=t_u16, mode=mode,
         stations=np.array(s_lonlat, np.float32),
         cells=np.array(g_lonlat, np.float32))
@@ -188,8 +194,9 @@ def main():
         osrm=dict(
             extract="geofabrik CAR + South Sudan + Sudan, bbox 22.3,4.1,"
                     "31.4,11.2, downloaded 2026-08-16",
-            profiles=dict(car="car.lua @ localhost:5001",
-                          foot="foot.lua (5 km/h) @ localhost:5002")),
+            network=NETWORK_NOTE,
+            profiles=dict(car=f"car.lua @ {CAR_URL}",
+                          foot=f"foot.lua (5 km/h) @ {FOOT_URL}")),
         assumptions=dict(
             walk_bush_kmh=WALK_BUSH_KMH,
             bush_rule="straight-line at walk_bush_kmh where no network "
@@ -209,8 +216,8 @@ def main():
                 round(float(np.mean(mode[argb, np.arange(m)] == k)), 3)
             for k in (0, 1, 2)},
     )
-    json.dump(meta, open(OUTDIR / "osrm_times_meta.json", "w"), indent=1)
-    log("wrote osrm_times.npz + osrm_times_meta.json;",
+    json.dump(meta, open(OUTDIR / f"osrm_times_meta{OUT_SUFFIX}.json", "w"), indent=1)
+    log(f"wrote osrm_times{OUT_SUFFIX}.npz + meta;",
         "median cell reach:", meta["cell_best_minutes_percentiles"]["50"],
         "min; mode share:", meta["mode_share_at_best"])
 
