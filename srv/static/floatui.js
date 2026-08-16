@@ -576,6 +576,122 @@
             }
             if (store.get('stats.collapsed', false)) setCollapsed(true, false);
         }
+
+        statsWidthGovernor(el);
+    }
+
+    // ── WIDTH IS GOVERNED, NOT FOLLOWED ────────────────────────────────
+    //
+    // The stats panel is shrink-to-fit over content that changes whenever the
+    // map moves: "1,771,204" becomes "0" one zoom step later, the in-view
+    // readout goes from "30,000 of 38,725 in view" to "12 in view", the LOD
+    // pill's word changes length. Pinned to the RIGHT edge, every one of those
+    // moves the panel's LEFT edge and every label with it — so a zoom sequence
+    // made the whole panel jitter horizontally under the cursor. That is the
+    // complaint this exists to fix, and the two halves of the fix are
+    // independent:
+    //
+    //   1. ANIMATE the change (CSS `transition: width`) so a resize is a
+    //      movement the eye can follow rather than a teleport; and
+    //   2. RESIST it — asymmetric hysteresis, the standard treatment for a
+    //      value that is noisy in one direction. GROW IMMEDIATELY (the content
+    //      does not fit; withholding space would clip a number, and a clipped
+    //      number is a wrong number) but SHRINK ONLY AFTER THE CONTENT HAS
+    //      BEEN STILL for QUIET_MS. A zoom-in/zoom-out that returns to the
+    //      same numbers therefore costs zero width changes, and a long zoom
+    //      sequence costs one settle at the end instead of one per step.
+    //
+    // Shrinking also ignores changes under SHRINK_EPS px: a digit's worth of
+    // width is not worth an animation.
+    //
+    // Measurement is the subtle part — with an explicit width applied, the
+    // element's own box no longer tells you what the content wants. So the
+    // measurement removes the width for one synchronous read (one forced
+    // layout, only when the content actually changed, never during the
+    // transition) and puts it straight back.
+    function statsWidthGovernor(el) {
+        const QUIET_MS = 700;      // content must be still this long before shrinking
+        const SHRINK_EPS = 6;      // px; below this a shrink is not worth animating
+        const GROW_EPS = 1;
+        let applied = null, shrinkTimer = null, raf = null, animTimer = null;
+
+        const enabled = () => window.innerWidth > 768
+            && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        function natural() {
+            const prev = el.style.width;
+            el.style.width = 'auto';
+            const w = el.getBoundingClientRect().width;
+            el.style.width = prev;
+            return Math.ceil(w);
+        }
+
+        function apply(w) {
+            if (applied === w) return;
+            applied = w;
+            el.style.width = w + 'px';
+            // Clip only WHILE the width animates: a shrink would otherwise
+            // show the content overflowing its own border for 280 ms. Outside
+            // the animation the panel must not clip, or a menu opened from a
+            // row would be cut off by its own container.
+            el.classList.add('w-anim');
+            clearTimeout(animTimer);
+            animTimer = setTimeout(() => el.classList.remove('w-anim'), 320);
+        }
+
+        function measure() {
+            raf = null;
+            if (!enabled()) { el.style.width = ''; applied = null; return; }
+            const want = natural();
+            if (applied === null) { applied = want; el.style.width = want + 'px'; return; }
+            if (want > applied + GROW_EPS) {          // grow now
+                clearTimeout(shrinkTimer); shrinkTimer = null;
+                apply(want);
+                return;
+            }
+            if (want < applied - SHRINK_EPS) {        // shrink later, if it lasts
+                clearTimeout(shrinkTimer);
+                shrinkTimer = setTimeout(() => {
+                    shrinkTimer = null;
+                    if (!enabled()) return;
+                    const w = natural();
+                    if (w < applied - SHRINK_EPS) apply(w);
+                }, QUIET_MS);
+            }
+        }
+
+        function schedule() { if (raf === null) raf = requestAnimationFrame(measure); }
+
+        // Content changes are the trigger. Two things the observer must NOT
+        // react to, both of which this function itself causes: the panel's
+        // `style` (we write the width) and the `w-anim` class (we toggle it
+        // for the duration of the transition). Reacting to the latter
+        // re-baselined the governor a third of a second after every change and
+        // left the panel unmanaged again — a feedback loop that looks exactly
+        // like "it works, then stops working". Only a change of the COLLAPSED
+        // state is a deliberate resize by the user, and only that re-baselines.
+        let wasCollapsed = el.classList.contains('fui-collapsed');
+        new MutationObserver((muts) => {
+            let relevant = false;
+            for (const m of muts) {
+                if (m.type === 'attributes' && m.target === el) {
+                    if (m.attributeName === 'style') continue;      // written by us
+                    const now = el.classList.contains('fui-collapsed');
+                    if (now === wasCollapsed) continue;             // w-anim, awaiting, …
+                    wasCollapsed = now;
+                    applied = null; el.style.width = '';
+                }
+                relevant = true;
+            }
+            if (relevant) schedule();
+        }).observe(el, {
+            childList: true, subtree: true, characterData: true,
+            attributes: true, attributeFilter: ['class', 'hidden', 'style']
+        });
+        window.addEventListener('resize', () => { el.style.width = ''; applied = null; schedule(); });
+        // Fonts land after first paint and change every measurement.
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(schedule);
+        schedule();
     }
 
     // ---------------------------------------------------------------
