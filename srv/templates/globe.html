@@ -21379,8 +21379,7 @@ ${starredItems.narratives.map(n => {
             `<button class="sh-btn sh-btn-renew" onclick="sharingExtendTag('${escapeHtml(t)}')" title="Some keys tagged #${escapeHtml(t)} expire soon — extend them all by 30 days"><i class="icon-calendar-plus"></i> renew #${escapeHtml(t)}</button>`).join(' ');
         return `<section class="sh-group">
             <h4 class="sh-group-head">
-                <span class="sh-group-name">${escapeHtml(g.label || 'unknown')}</span>
-                ${g.mine ? '<span class="sh-mine">this login</span>' : ''}
+                <span class="sh-mine">this login</span>
                 <span class="sh-group-meta">${g.links.length} link${g.links.length === 1 ? '' : 's'}${keys ? ` · ${keys} live key${keys === 1 ? '' : 's'}` : ''}</span>
                 ${tagBtns}
             </h4>
@@ -23783,15 +23782,12 @@ ${starredItems.narratives.map(n => {
                      See docs/agents/sharing.md. -->
                 <div class="admin-tab-content" id="tab-access" role="tabpanel" aria-labelledby="tab-access">
                     <h4 style="color:#fff;font-size:13px;font-weight:600;margin:0 0 6px;">Share links</h4>
-                    <p style="color:#888;font-size:12px;margin-bottom:16px;line-height:1.6;max-width:70ch;">
-                        Every short link this server has issued, grouped by the login it belongs to.
-                        A <strong style="color:#4ade80;">named link</strong> is only a short name for a view &mdash;
-                        it still asks for the password, so the name is safe to say out loud.
-                        A <strong style="color:#fcd34d;">shared key</strong> opens that view <em>without</em> a
-                        password: it is read-only, expires by itself, and Switch off revokes it for whoever holds it.
-                        A <strong style="color:#93c5fd;">#tag</strong> groups links made for one purpose (e.g. a report)
-                        so they can be renewed together &mdash; click a tag to rename it everywhere, &times; to remove it.
-                    </p>
+                    <p class="sh-intro">The short links <em>this login</em> has issued. Other logins keep their own list.</p>
+                    <dl class="sh-legend">
+                        <div><dt style="color:#4ade80;">named link</dt><dd>a short name for a view &mdash; it still asks for the password, so the name is safe to say out loud.</dd></div>
+                        <div><dt style="color:#fcd34d;">shared key</dt><dd>opens the view <em>without</em> a password: read-only, expires by itself; Switch&nbsp;off revokes it for whoever holds it.</dd></div>
+                        <div><dt style="color:#93c5fd;">#tag</dt><dd>groups links made for one purpose (e.g. a report) so they renew together &mdash; click to rename everywhere, &times; to remove.</dd></div>
+                    </dl>
                     <div id="sharing-body">Loading&hellip;</div>
 
                     <h4 style="color:#fff;font-size:13px;font-weight:600;margin:28px 0 6px;">Areas of interest &amp; ingest</h4>
