@@ -806,7 +806,15 @@
            reader was choosing between seeing the map and seeing the key to it.
            It wears the app's own window furniture (.fui-bar), so a reader who
            has learned to drag the pinned-layers box has learned this too. */
-        .ml-panel { box-shadow: 0 10px 34px rgba(0,0,0,0.6); }
+           IT LIVES IN THE MAP'S LAYER, NOT ABOVE THE APP'S. `.aoi-menu` gives
+           it z-index 10000 (right for a transient menu, wrong for a panel
+           that stays open for the whole session): it then floated on top of
+           the admin panel and every modal. Like the map tips (400) and the
+           AOI tip, it belongs under the admin panel / modal-overlay layer
+           (2000+) and above the map furniture. The selector carries two
+           classes on purpose: `.aoi-menu`'s 10000 is declared later in this
+           file, so a single-class rule loses the tie. */
+        .ml-menu.ml-panel { box-shadow: 0 10px 34px rgba(0,0,0,0.6); z-index: 900; }
         .ml-panel .ml-bar { height: 22px; padding: 3px 4px 3px 9px; gap: 6px;
             justify-content: flex-start; margin: 0;
             border-bottom: 1px solid rgba(255,255,255,0.07);
