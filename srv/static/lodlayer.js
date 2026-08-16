@@ -151,20 +151,17 @@
             if (!map.getLayer(L.dots)) {
                 // Deforestation is the rare, high-stakes layer and its purple
                 // sits at half the luminance of fire red or settlement amber:
-                // at the shared dot size it simply drowns when the other two
-                // are on (user report, 2026-08-16). It wears bigger, fuller
-                // dots so a clearing reads at a glance the way a settlement
-                // cluster does. Counts stay honest — this is ink, not data.
-                var emph = s.featureType === 'deforestation';
+                // at the shared alpha it simply drowns when the other two are
+                // on (user report, 2026-08-16). Same dot size as every other
+                // layer — bigger dots were tried and read as too much — but
+                // near-full opacity (setOpacity). Ink, not data.
                 map.addLayer({
                     id: L.dots, type: 'circle', source: L.src,
                     paint: {
                         // Small and dense: this rendering exists because there
                         // are a lot of them, and fat dots at continental zoom
                         // are a smear, not a map.
-                        'circle-radius': emph
-                            ? ['interpolate', ['linear'], ['zoom'], 2, 2.4, 6, 3.8, 10, 5.5]
-                            : ['interpolate', ['linear'], ['zoom'], 2, 1.6, 6, 2.6, 10, 4],
+                        'circle-radius': ['interpolate', ['linear'], ['zoom'], 2, 1.6, 6, 2.6, 10, 4],
                         'circle-color': color,
                         'circle-opacity': 0,
                         'circle-stroke-width': 0
@@ -327,16 +324,12 @@
     function applyDensity(key, n) {
         var L = ids(key), d = densityPaint(n);
         var s0 = reg.get(key);
-        // Deforestation carries the least luminous colour of the three feature
-        // layers and the highest stakes per feature; at every density step it
-        // keeps a larger dot, or it vanishes under fire red and settlement
-        // amber (user report, 2026-08-16). No extra ring — that was tried and
-        // read as too loud.
-        if (s0 && s0.featureType === 'deforestation') {
-            d = Object.assign({}, d, {
-                r: Math.max(d.r * 1.5, 3)
-            });
-        }
+        // Deforestation carries the least luminous colour of the three
+        // feature layers; it keeps the shared sizes (bigger dots were tried
+        // and read as too much) but always draws at full point alpha, or it
+        // vanishes under fire red and settlement amber (user report,
+        // 2026-08-16).
+        var emphDef = s0 && s0.featureType === 'deforestation';
         if (s0) {
             s0.lineOpacity = d.o; s0.arrowOpacity = d.arrow; s0.fillOpacity = d.fill;
             s0.lineWidth = d.w; s0.pointRadius = d.r;
@@ -344,7 +337,7 @@
             // it is a feature you are meant to click. Same rule as the lines,
             // one step brighter so a lone stationary fire in a field of moving
             // ones is still findable.
-            s0.pointOpacity = d.ring > 0 ? 0.7 : Math.min(1, d.o * 1.6);
+            s0.pointOpacity = emphDef ? 0.95 : (d.ring > 0 ? 0.7 : Math.min(1, d.o * 1.6));
             s0.pointRing = d.ring;
         }
         var set = function (id, prop, val) {
