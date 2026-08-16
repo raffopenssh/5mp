@@ -1635,7 +1635,12 @@
         @keyframes section-pulse { 0%, 100% { background: rgba(255,255,255,0.03); } 50% { background: rgba(255,255,255,0.08); } }
         
         /* Pinned layers badge - redesigned for clarity */
-        .pinned-indicator { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: rgba(18,18,18,0.95); border: 1px solid rgba(34,197,94,0.4); border-radius: 8px; padding: 4px 8px 6px; z-index: 300; font-size: 11px; color: #ccc; display: none; flex-direction: column; gap: 4px; max-width: 90vw; min-width: 170px; backdrop-filter: blur(10px); transition: all 0.2s; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
+        /* Same surface as the stats panel (the app's legend): same alpha, no
+           backdrop blur, and NO transition on geometry — `transition: all`
+           animated left/top, so a drag lagged ~200ms behind the pointer and
+           read as "heavier" than every other floating card. Only paint
+           properties may transition here. */
+        .pinned-indicator { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: rgba(18,18,18,0.9); border: 1px solid rgba(34,197,94,0.4); border-radius: 8px; padding: 4px 8px 6px; z-index: 300; font-size: 11px; color: #ccc; display: none; flex-direction: column; gap: 4px; max-width: 90vw; min-width: 170px; transition: border-color 0.2s, box-shadow 0.2s; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
         .pinned-indicator.active { display: flex; }
         .pinned-indicator-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .pinned-indicator-title { display: flex; align-items: center; gap: 6px; font-weight: 500; color: #22c55e; font-size: 11px; }
