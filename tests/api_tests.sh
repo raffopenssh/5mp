@@ -795,6 +795,24 @@ if [[ -n "$CLIENT_PWD" ]]; then
     fi
     rm -f "$JAR" "$JAR2"
 
+    # Tags: set on one link, renamed everywhere, removable. A tag is one name
+    # for one purpose — the whole-group rename exists because renaming one row
+    # would fork the group out of the next "renew all".
+    printf "%-50s" "tag_set_rename_everywhere_remove"
+    T1=$(mint '{"url":"/?park_focus=CAF_Chinko&tagtest=1","tag":"apitest-tag"}')
+    T2=$(mint '{"url":"/?park_focus=CMR_Nki&tagtest=2","tag":"apitest-tag"}')
+    ren=$(curl -s -m 30 -X POST "${BASE_URL}/api/shortlinks/retag?pwd=${CLIENT_PWD}" \
+        -H 'Content-Type: application/json' -d '{"tag":"apitest-tag","new_tag":"apitest-tag2"}' | jq -r '.renamed')
+    one=$(curl -s -m 30 -X POST "${BASE_URL}/api/shortlink/${T1}/retag?pwd=${CLIENT_PWD}" \
+        -H 'Content-Type: application/json' -d '{"tag":""}' | jq -r '.tag')
+    vocab=$(curl -s -m 30 "${BASE_URL}/api/shortlink-tags?pwd=${CLIENT_PWD}" | jq -r '.tags | index("apitest-tag2") != null')
+    if [[ "$ren" == "2" && "$one" == "" && "$vocab" == "true" ]]; then
+        green "✓"; PASSED=$((PASSED + 1))
+    else
+        red "FAIL (renamed=$ren cleared='$one' vocab=$vocab)"; FAILED=$((FAILED + 1))
+        ERRORS+=("shortlink tag lifecycle broken")
+    fi
+
     # Teardown. The API revokes a guest rather than deleting it (that is the
     # point -- the sheet keeps the evidence), so the rows are removed directly
     # afterwards: these are test fixtures, not history worth keeping. Scoped by

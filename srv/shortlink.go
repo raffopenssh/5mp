@@ -453,6 +453,7 @@ type shortLinkResp struct {
 	DateFrom string `json:"date_from,omitempty"`
 	DateTo   string `json:"date_to,omitempty"`
 	Reuse    bool   `json:"reused,omitempty"`
+	Tag      string `json:"tag,omitempty"` // purpose tag actually stored on the row
 	Error    string `json:"error,omitempty"`
 }
 
@@ -594,7 +595,7 @@ func (s *Server) HandleAPIShortLinkCreate(w http.ResponseWriter, r *http.Request
 			}
 			writeJSON(w, http.StatusOK, shortLinkResp{Slug: slug, Short: "/s/" + slug,
 				URL: target, Kind: kind, Guest: true, Expires: expires, Scope: scope,
-				DateFrom: dFrom, DateTo: dTo})
+				DateFrom: dFrom, DateTo: dTo, Tag: tag})
 			return
 		}
 		writeJSON(w, http.StatusInternalServerError, shortLinkResp{Error: "could not create a link"})
@@ -607,18 +608,27 @@ func (s *Server) HandleAPIShortLinkCreate(w http.ResponseWriter, r *http.Request
 	if want := shortSlugify(body.Slug); want != "" && !s.shortSlugTaken(want) {
 		if err := insert(want); err == nil {
 			writeJSON(w, http.StatusOK, shortLinkResp{Slug: want, Short: "/s/" + want,
-				URL: target, Kind: kind})
+				URL: target, Kind: kind, Tag: tag})
 			return
 		}
 	}
 
-	var existing string
-	if err := s.DB.QueryRow(`SELECT slug FROM short_links
+	var existing, existingTag string
+	if err := s.DB.QueryRow(`SELECT slug, COALESCE(tag,'') FROM short_links
 		WHERE url = ? AND env = ? AND guest = 0
 		  AND (alias_of IS NULL OR alias_of = '')
-		ORDER BY created_at DESC LIMIT 1`, target, env).Scan(&existing); err == nil && existing != "" {
+		ORDER BY created_at DESC LIMIT 1`, target, env).Scan(&existing, &existingTag); err == nil && existing != "" {
+		// Dedupe found a row. A requested tag on an untagged row is adopted --
+		// the caller is tagging the view they are sharing right now -- but a
+		// tag already there is never silently overwritten; the response echoes
+		// what is actually stored, so the dialog shows the truth either way.
+		if tag != "" && existingTag == "" {
+			if _, err := s.DB.Exec(`UPDATE short_links SET tag = ? WHERE slug = ?`, tag, existing); err == nil {
+				existingTag = tag
+			}
+		}
 		writeJSON(w, http.StatusOK, shortLinkResp{Slug: existing, Short: "/s/" + existing,
-			URL: target, Kind: kind, Reuse: true})
+			URL: target, Kind: kind, Reuse: true, Tag: existingTag})
 		return
 	}
 
@@ -631,7 +641,7 @@ func (s *Server) HandleAPIShortLinkCreate(w http.ResponseWriter, r *http.Request
 			continue
 		}
 		writeJSON(w, http.StatusOK, shortLinkResp{Slug: slug, Short: "/s/" + slug,
-			URL: target, Kind: kind})
+			URL: target, Kind: kind, Tag: tag})
 		return
 	}
 	writeJSON(w, http.StatusInternalServerError, shortLinkResp{Error: "could not create a link"})
@@ -928,6 +938,97 @@ func (s *Server) HandleAPIShortLinkExtendTag(w http.ResponseWriter, r *http.Requ
 		}
 	}
 	writeJSON(w, http.StatusOK, map[string]interface{}{"tag": tag, "extended": extended, "expires_at": last})
+}
+
+// HandleAPIShortLinkRetag — POST /api/shortlink/{slug}/retag {tag}
+//
+// Sets or clears the purpose tag on ONE link. An empty tag removes it — the
+// UI's little ×. Aliases carry no tag (they are ghosts of a rename, not
+// links), so retagging one is refused rather than silently accepted.
+func (s *Server) HandleAPIShortLinkRetag(w http.ResponseWriter, r *http.Request) {
+	slug := strings.ToLower(strings.Trim(r.PathValue("slug"), "/"))
+	var body struct {
+		Tag string `json:"tag"`
+	}
+	if err := decodeJSONBody(r, &body); err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "bad request"})
+		return
+	}
+	tag := shortSanitizeTag(body.Tag)
+	if strings.TrimSpace(body.Tag) != "" && tag == "" {
+		// The caller typed something and sanitising ate all of it. Accepting
+		// would store a silent no-tag while the user believes one was set.
+		writeJSON(w, http.StatusBadRequest, map[string]string{
+			"error": "a tag uses lowercase letters, digits, - and _"})
+		return
+	}
+	var alias sql.NullString
+	if err := s.DB.QueryRow(`SELECT alias_of FROM short_links WHERE slug = ?`, slug).Scan(&alias); err != nil {
+		writeJSON(w, http.StatusNotFound, map[string]string{"error": "no such link"})
+		return
+	}
+	if alias.Valid && alias.String != "" {
+		writeJSON(w, http.StatusConflict, map[string]string{"error": "an alias carries no tag"})
+		return
+	}
+	if _, err := s.DB.Exec(`UPDATE short_links SET tag = ? WHERE slug = ?`, tag, slug); err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "could not retag"})
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]string{"slug": slug, "tag": tag})
+}
+
+// HandleAPIShortLinkRetagAll — POST /api/shortlinks/retag {tag, new_tag}
+//
+// Renames a purpose tag EVERYWHERE it appears — a tag is one name for one
+// purpose, so renaming it on a single row would fork the group and quietly
+// exempt the other rows from the next "+30d all" the new name gets. The
+// response carries the count so the UI can say what actually moved (invariant:
+// a no-op must not read as an answer — 0 renamed is reported as 0).
+func (s *Server) HandleAPIShortLinkRetagAll(w http.ResponseWriter, r *http.Request) {
+	var body struct {
+		Tag    string `json:"tag"`
+		NewTag string `json:"new_tag"`
+	}
+	if err := decodeJSONBody(r, &body); err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "bad request"})
+		return
+	}
+	old := shortSanitizeTag(body.Tag)
+	newT := shortSanitizeTag(body.NewTag)
+	if old == "" || newT == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]string{
+			"error": "a tag uses lowercase letters, digits, - and _"})
+		return
+	}
+	res, err := s.DB.Exec(`UPDATE short_links SET tag = ? WHERE tag = ?`, newT, old)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "could not rename tag"})
+		return
+	}
+	n, _ := res.RowsAffected()
+	writeJSON(w, http.StatusOK, map[string]interface{}{"tag": newT, "renamed": n})
+}
+
+// HandleAPIShortLinkTags — GET /api/shortlink-tags → {tags:[…]}.
+// The autocomplete vocabulary: every purpose tag in use, most recently used
+// first. Small on purpose — names only, no counts, no rows.
+func (s *Server) HandleAPIShortLinkTags(w http.ResponseWriter, r *http.Request) {
+	rows, err := s.DB.Query(`SELECT tag, MAX(created_at) m FROM short_links
+		WHERE tag IS NOT NULL AND tag != '' GROUP BY tag ORDER BY m DESC LIMIT 50`)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "database error"})
+		return
+	}
+	defer rows.Close()
+	tags := []string{}
+	for rows.Next() {
+		var t, m string
+		if rows.Scan(&t, &m) == nil {
+			tags = append(tags, t)
+		}
+	}
+	writeJSON(w, http.StatusOK, map[string]interface{}{"tags": tags})
 }
 
 // HandleAPIShortLinkDelete — DELETE /api/shortlink/{slug}

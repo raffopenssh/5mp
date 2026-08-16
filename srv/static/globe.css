@@ -3330,6 +3330,10 @@ tr.selected td {
    warning. It turns red on hover, i.e. once it is the thing being aimed at. */
 .gpkg-btn.danger { color: #9ca3af; }
 .gpkg-btn.danger:hover { background: rgba(239,68,68,0.18); border-color: rgba(239,68,68,0.5); color: #fca5a5; }
+/* Renew: appears only ≤14 days from the sweeper, so it may be quietly amber. */
+.gpkg-btn.gpkg-renew { padding: 2px 6px; margin-left: 4px; vertical-align: middle;
+    color: #fbbf24; border-color: rgba(251,191,36,0.4); }
+.gpkg-btn.gpkg-renew:hover { color: #fde68a; background: rgba(251,191,36,0.12); border-color: rgba(251,191,36,0.7); }
 
 .aoi-menu-item.highlight { background: rgba(251,191,36,0.2); color: #fbbf24;
     box-shadow: inset 0 0 0 1px rgba(251,191,36,0.55); animation: gpkgPulse 1.4s ease-in-out 3; }
@@ -3754,6 +3758,24 @@ body.sl-open { overflow: hidden; }
 .sl-note:empty { display: none; }
 .sl-note-warn { color: #fcd34d; font-weight: 600; }
 
+/* The purpose tag — one whisper of a line under the note. Same chip language
+   as Admin → Access & Sharing (.sh-tag), blue: bookkeeping, not a credential. */
+.sl-tagrow { margin: 10px 2px 0; min-height: 20px; }
+.sl-tag { display: inline-flex; align-items: center; gap: 2px;
+    background: rgba(96,165,250,0.12); border: 1px solid rgba(96,165,250,0.35);
+    border-radius: 999px; padding: 1px 5px 1px 9px; font-size: 11px; color: #93c5fd; }
+.sl-tag.is-editing { padding: 1px 5px; }
+.sl-tag-x { background: none; border: none; color: #60a5fa; font-size: 14px;
+    line-height: 1; padding: 1px 5px; cursor: pointer; border-radius: 999px; }
+.sl-tag-x:hover { color: #fca5a5; background: rgba(239,68,68,0.15); }
+.sl-tag-add { background: none; border: 1px dashed rgba(255,255,255,0.14);
+    border-radius: 999px; padding: 2px 10px; font-size: 11px; color: #565e6b;
+    cursor: pointer; transition: color 0.15s, border-color 0.15s; }
+.sl-tag-add:hover { color: #93c5fd; border-color: rgba(96,165,250,0.4); }
+.sl-tag-hash { opacity: 0.7; }
+.sl-tag-input { background: none; border: none; color: #bfdbfe; font: inherit;
+    font-size: 11px; padding: 1px 4px; width: 110px; outline: none; }
+
 .sl-copy {
     display: flex; align-items: center; justify-content: center; gap: 8px;
     width: 100%; margin-top: 16px; padding: 13px;
@@ -3885,6 +3907,32 @@ body.is-guest .session-chip-label::before {
 .sh-btn-off:hover { color: #fca5a5; border-color: rgba(239,68,68,0.5); background: rgba(239,68,68,0.12); }
 .sh-empty { color: #6b7280; font-size: 12px; padding: 28px; text-align: center;
     border: 1px dashed rgba(255,255,255,0.1); border-radius: 10px; }
+
+/* The purpose-tag chip: “#report ×”. Blue like the gpkg card's tag — a tag is
+   bookkeeping, not a credential, so it must not borrow the key's amber. The
+   name is clickable (rename everywhere), the × removes it from one link. */
+.sh-tag { display: inline-flex; align-items: center; gap: 2px;
+    background: rgba(96,165,250,0.12); border: 1px solid rgba(96,165,250,0.35);
+    border-radius: 999px; padding: 0 4px 0 8px; font-size: 10.5px; color: #93c5fd; }
+.sh-tag-name { cursor: pointer; padding: 1px 0; }
+.sh-tag-name:hover { text-decoration: underline dashed; text-underline-offset: 2px; }
+.sh-tag-x { background: none; border: none; color: #60a5fa; font-size: 13px;
+    line-height: 1; padding: 1px 4px; cursor: pointer; border-radius: 999px; }
+.sh-tag-x:hover { color: #fca5a5; background: rgba(239,68,68,0.15); }
+.sh-tag-add { background: none; border: 1px dashed rgba(255,255,255,0.16);
+    border-radius: 999px; padding: 1px 8px; font-size: 10.5px; color: #6b7280;
+    cursor: pointer; transition: color 0.15s, border-color 0.15s; }
+.sh-tag-add:hover { color: #93c5fd; border-color: rgba(96,165,250,0.4); }
+.sh-tag-hash { opacity: 0.7; }
+.sh-tag-input { background: rgba(0,0,0,0.4); border: 1px solid rgba(96,165,250,0.5);
+    border-radius: 999px; color: #bfdbfe; font: inherit; font-size: 10.5px;
+    padding: 1px 8px; width: 90px; outline: none; }
+
+/* Renewal — shown only when a key/file is close to dying, so it can afford to
+   be quietly amber rather than a labelled button begging for ritual clicks. */
+.sh-btn-renew { color: #fbbf24; border-color: rgba(251,191,36,0.4); }
+.sh-btn-renew:hover { color: #fde68a; border-color: rgba(251,191,36,0.7); background: rgba(251,191,36,0.12); }
+.sh-soon { color: #fbbf24; }
 
 @media (max-width: 640px) {
     .sh-row { grid-template-columns: 1fr; grid-template-areas: "main" "target" "meta" "acts"; gap: 5px; }

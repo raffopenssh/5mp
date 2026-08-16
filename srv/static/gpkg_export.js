@@ -262,7 +262,15 @@
                 ? Math.max(0, Math.ceil((new Date(d.expires_at) - Date.now()) / 86400000))
                 : null;
             const tag = d.link_tag
-                ? ` · <span class="gpkg-tag" style="background:rgba(59,130,246,0.15);color:#3b82f6;border-radius:3px;padding:0 4px;">${esc(d.link_tag)}</span>`
+                ? ` · <span class="gpkg-tag" style="background:rgba(59,130,246,0.15);color:#3b82f6;border-radius:3px;padding:0 4px;">#${esc(d.link_tag)}</span>`
+                : '';
+            // The renew control appears only when the file is CLOSE to being
+            // swept (≤14 days) — a single calendar-plus icon, same logic as
+            // share-key renewal in Admin. An always-on "+30 days" taught
+            // people to click it ritually, which is how files live forever.
+            const renew = until && !guest && daysLeft !== null && daysLeft <= 14
+                ? ` <button class="gpkg-btn gpkg-renew" title="Expires in ${daysLeft} day${daysLeft === 1 ? '' : 's'} — keep the file 30 days longer"
+                    onclick="event.stopPropagation();GeoPackageExport.extend('${esc(d.id)}')"><i class="icon-calendar-plus"></i></button>`
                 : '';
             // The layer list is the receipt. "Ready, 412 MB" does not tell you
             // whether the fires you wanted are in it; "fire_detections 3.2M"
@@ -279,9 +287,7 @@
                   <button class="gpkg-btn" title="Copy a link that opens this download for anyone with access"
                     onclick="event.stopPropagation();GeoPackageExport.copyLink('${esc(d.id)}')"><i class="icon-link"></i></button>${delBtn}
                 </div>
-                ${until ? `<div class="gpkg-dim">Styled for QGIS · kept until ${until} (${daysLeft} day${daysLeft === 1 ? '' : 's'})${tag}${guest ? '' : `
-                  <button class="gpkg-btn" style="margin-left:6px;" title="Keep the file 30 days longer"
-                    onclick="event.stopPropagation();GeoPackageExport.extend('${esc(d.id)}')">+30 days</button>`}</div>` : ''}`;
+                ${until ? `<div class="gpkg-dim">Styled for QGIS · kept until ${until}${daysLeft !== null && daysLeft <= 14 ? ` <span style="color:#f59e0b">(${daysLeft} day${daysLeft === 1 ? '' : 's'} left)</span>` : ` (${daysLeft} day${daysLeft === 1 ? '' : 's'})`}${tag}${renew}</div>` : ''}`;
         }
         if (d.state === 'failed' || d.state === 'expired') {
             return `
