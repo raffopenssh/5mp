@@ -1552,6 +1552,8 @@ func (s *Server) HandleAPIUpload(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Parse multipart form (max 50MB)
+	// A large body must outlive the server's absolute ReadTimeout.
+	longUpload(w, r)
 	if err := r.ParseMultipartForm(50 << 20); err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
@@ -5076,7 +5078,8 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/vnd.google-earth.kml+xml")
 	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s%s.kml"`, parkID, sanitizeFilenamePart(suffix)))
-	w.Write([]byte(kml.String()))
+	// A whole-park KML is tens of MB of gzipped text over a field link.
+	longDownload(w).Write([]byte(kml.String()))
 }
 
 // writeGeoJSONToKMLWithDesc converts a GeoJSON geometry to KML placemark with description and optional timespan
@@ -5705,7 +5708,8 @@ func (s *Server) HandleAPIMergedKML(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/vnd.google-earth.kml+xml")
 	w.Header().Set("Content-Disposition", `attachment; filename="5mp_conservation_export.kml"`)
-	w.Write([]byte(kml.String()))
+	// A whole-park KML is tens of MB of gzipped text over a field link.
+	longDownload(w).Write([]byte(kml.String()))
 }
 
 // handleSettlementFeatures returns GeoJSON features for settlements with narratives

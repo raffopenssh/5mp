@@ -305,5 +305,5 @@ func (s *Server) HandleAPIGeoMapDownload(w http.ResponseWriter, r *http.Request)
 	name := id + "_geology.mbtiles"
 	w.Header().Set("Content-Type", "application/octet-stream")
 	w.Header().Set("Content-Disposition", `attachment; filename="`+name+`"`)
-	http.ServeContent(w, r, name, st.ModTime(), f)
+	http.ServeContent(longDownload(w), r, name, st.ModTime(), f)
 }

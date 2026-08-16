@@ -228,7 +228,9 @@ func (s *Server) serveHistMBTiles(w http.ResponseWriter, r *http.Request, path, 
 	}
 	w.Header().Set("Content-Type", "application/octet-stream")
 	w.Header().Set("Content-Disposition", `attachment; filename="`+name+`"`)
-	http.ServeContent(w, r, name, st.ModTime(), f)
+	// Multi-GB over a field link: the transfer must outlive the server's
+	// absolute WriteTimeout (see longDownload).
+	http.ServeContent(longDownload(w), r, name, st.ModTime(), f)
 }
 
 func parseFloatCSV(s string, want int) []float64 {
