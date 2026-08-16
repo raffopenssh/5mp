@@ -14042,7 +14042,8 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             if (!name) return;
             setLayerLOD(name, { count: d.count, total: d.total, render: d.render,
                                 truncated: d.truncated, detail: d.detail_mode, mirror: d.key,
-                                unit: d.unit, groups: d.groups, groupUnit: d.group_unit });
+                                unit: d.unit, groups: d.groups, groupUnit: d.group_unit,
+                                basis: d.basis });
         });
 
         function removeViewFeatureLayer(name) {
@@ -14210,6 +14211,17 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
         // The pill says what is on screen, in as few words as fit. Two
         // renderings are named; more than two is "3 modes" — the list is one
         // tap away and a pill is not a legend.
+        // The server's `render_basis`, in words. 'budget' is the familiar one
+        // (too many features for shapes) and needs no sentence; the other two
+        // are judgements about the DRAWING and must be readable, because both
+        // produce dots where the count alone would have produced shapes.
+        const LOD_BASIS_WHY = {
+            subpixel: 'At this zoom each shape is under 3 px across, so points'
+                    + ' are the clearer drawing — zoom in for outlines.',
+            crowded: 'The paths already cover the view, so the full geometry'
+                   + ' would add vertices but no visible shape — zoom in for full paths.'
+        };
+
         function rowModeSummary(name, st, anim) {
             const parts = [];
             let cls = 'dots', forced = false;
@@ -14225,7 +14237,12 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             const label = parts.length === 0 ? 'off'
                         : parts.length <= 2 ? parts.join(' · ')
                         : parts.length + ' modes';
+            // WHY, when the reason is not "too many of them". Dots beside a
+            // sibling layer's shapes reads as a broken layer unless the row
+            // says which question the renderer answered.
+            const why = st && LOD_BASIS_WHY[st.basis] ? LOD_BASIS_WHY[st.basis] + ' ' : '';
             const title = (parts.length ? 'Drawn as ' + parts.join(', ') + '. ' : '')
+                        + why
                         + 'Click to choose how this layer is drawn.';
             return { label, cls, forced, title, key: parts.join('|') };
         }

@@ -389,6 +389,100 @@ else
     red "FAIL (no segments)"; FAILED=$((FAILED + 1)); ERRORS+=("features_bbox_seg")
 fi
 
+# NO LAYER MAY DRAW A SHAPE NOBODY CAN SEE.
+#
+# The render switch used to be a pure COUNT budget, so at AOI scale
+# deforestation (80,408 rows in view) stayed "shapes" while settlements (74,904)
+# became dots -- and a GLAD loss patch is a third of a pixel wide at that zoom,
+# so those shapes were a sub-pixel purple stipple beside solid amber dots. That
+# reads as one broken layer, and it survived two rounds of alpha tuning because
+# the geometry, not the ink, was wrong (user report 2026-08-16).
+#
+# The invariant is per layer and MEASURED from the answer, not a cross-layer
+# equality: two layers may legitimately differ when their features differ in
+# size (a recent GLAD patch is 8 px where a single GHSL cell is 1 px). What may
+# never happen is a `geometry` answer whose own median feature is under ~2 px --
+# that is the stipple. Sizes come out of the served geometry, so the check
+# cannot drift from what is drawn.
+# Boxes chosen to hold BOTH layers (Chinko, three scales: continental-ish,
+# park, village). An empty answer proves nothing, so an empty box FAILS rather
+# than passing quietly -- the no-op that reads as an answer (AGENTS.md 1).
+for bx in "23,5,27,9" "23.0,5.5,24.0,6.9" "23.9,6.2,24.1,6.5" "23.95,6.35,24.05,6.45"; do
+    for t in deforestation settlement; do
+        printf "%-50s" "lod_no_subpixel_shapes_${t:0:6}_${bx%%,*}"
+        res=$(curl -s -m 90 -b "$COOKIE_FILE" \
+            "${BASE_URL}/api/features-in-bbox?type=$t&bbox=$bx&mode=auto&limit=30000&geom_budget=200000&area=CAF_Chinko" \
+            | python3 -c '
+import sys, json, statistics
+d = json.load(sys.stdin)
+bbox = [float(v) for v in sys.argv[1].split(",")]
+degpx = abs(bbox[2] - bbox[0]) / 1400
+if not d.get("total"):
+    print("empty 0")
+    raise SystemExit
+if d.get("render") != "geometry":
+    print("dots", d.get("render_basis") or "-")
+    raise SystemExit
+def span(g):
+    xs = []
+    def walk(c):
+        if isinstance(c[0], (int, float)):
+            xs.append(c[0])
+        else:
+            for k in c:
+                walk(k)
+    walk(g["coordinates"])
+    return max(xs) - min(xs)
+w = sorted(span(f["geometry"]) for f in d.get("features", []) if f.get("geometry"))
+print("shapes", round(statistics.median(w) / degpx, 2) if w else 0)
+' "$bx")
+        kind=$(echo "$res" | awk '{print $1}'); val=$(echo "$res" | awk '{print $2}')
+        if [ "$kind" = "dots" ]; then
+            green "✓ (dots: $val)"; PASSED=$((PASSED + 1))
+        elif [ "$kind" = "shapes" ] && python3 -c "import sys;sys.exit(0 if float('$val')>=2 else 1)"; then
+            green "✓ (shapes, ${val}px)"; PASSED=$((PASSED + 1))
+        elif [ "$kind" = "empty" ]; then
+            red "FAIL (no features in fixture box -- test proves nothing)"
+            FAILED=$((FAILED + 1)); ERRORS+=("lod_subpixel_fixture_empty_${t}_${bx}")
+        else
+            red "FAIL (shapes at ${val}px median -- sub-pixel stipple)"
+            FAILED=$((FAILED + 1)); ERRORS+=("lod_subpixel_shapes_${t}_${bx}")
+        fi
+    done
+done
+
+# ...and the switch must say WHY, not just switch. `render_basis` is what the
+# row's tooltip reads; without it dots-beside-shapes is indistinguishable from a
+# layer that failed to load. A count-driven downgrade is "budget", a size-driven
+# one "subpixel", a dense line field "crowded".
+printf "%-50s" "lod_render_basis_named"
+basis=$(curl -s -m 90 -b "$COOKIE_FILE" \
+    "${BASE_URL}/api/features-in-bbox?type=settlement&bbox=26.8,5.0,27.9,5.9&mode=auto&limit=30000&geom_budget=200000" \
+    | grep -o '"render_basis":"[a-z]*"' | head -1)
+fbasis=$(curl -s -m 90 -b "$COOKIE_FILE" \
+    "${BASE_URL}/api/features-in-bbox?type=fire_trajectory&bbox=26.8,5.0,27.9,5.9&mode=auto&seg=1&limit=30000&geom_budget=200000&from=2024-01-01&to=2026-01-01" \
+    | grep -o '"render_basis":"[a-z]*"' | head -1)
+if [ "$basis" = '"render_basis":"subpixel"' ] && [ "$fbasis" = '"render_basis":"crowded"' ]; then
+    green "✓"; PASSED=$((PASSED + 1))
+else
+    red "FAIL (settlement=$basis fire=$fbasis)"; FAILED=$((FAILED + 1))
+    ERRORS+=("lod_render_basis")
+fi
+
+# A dense field of PATHS keeps its chord tier: the full geometry's extra
+# vertices are invisible once the strokes overlap. A sparse view must still
+# promote to full paths, or the rule would silently be "never shapes".
+printf "%-50s" "lod_lines_promote_when_sparse"
+sparse=$(curl -s -m 90 -b "$COOKIE_FILE" \
+    "${BASE_URL}/api/features-in-bbox?type=fire_trajectory&bbox=27.25,5.40,27.35,5.50&mode=auto&seg=1&limit=30000&geom_budget=200000&from=2024-02-20&to=2024-03-05" \
+    | grep -o '"render":"[a-z]*"' | head -1)
+if [ "$sparse" = '"render":"geometry"' ]; then
+    green "✓"; PASSED=$((PASSED + 1))
+else
+    red "FAIL (sparse fire view rendered $sparse)"; FAILED=$((FAILED + 1))
+    ERRORS+=("lod_lines_promote_when_sparse")
+fi
+
 # A GeoPackage peek must be a LOOKUP, not a build. ?aoi_menu_item=gpkg on a
 # share link asks "is this file already there?" so it can download instead of
 # making the recipient click -- if asking created a job, opening a shared link
