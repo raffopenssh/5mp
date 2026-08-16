@@ -68,7 +68,17 @@ valid rather than usable is the wrong change.**
   `parks_touched` is a comma-joined park_id list.
 * **Schema/style changes bump `gpkgFormatVersion`** (in `gpkgCacheKey`,
   `srv/gpkg_jobs.go`): the job cache lives 21 days, and a cached v1 file
-  served after a schema change silently lacks the new columns.
+  served after a schema change silently lacks the new columns. v3 (2026-08-16)
+  added to settlements: `cluster_id` (the `park_settlements.id` this footprint
+  belongs to — dissolve on it to reproduce the app's cluster counts; the view
+  export carries the same id as `cluster_id` from props `settlement_id`), and
+  to settlements + deforestation: `hist_place`/`hist_place_dist_km`/
+  `hist_place_source` — nearest 'place' label (≥4 chars, within 5 km) from the
+  Sudan 1:250k survey sheets (`histPlaceIndex` in `srv/gpkg_export.go`, reads
+  `data/histmaps/labels.sqlite3`). The three columns exist **only when a sheet
+  bbox overlaps the export area** (most parks get no columns, not NULL noise);
+  source distinguishes `sudan250k` / `none_within_5km` / `no_sheet_coverage` /
+  `unavailable` — three different absences, three words.
 * **The job is a cache, not a spool**: keyed by (area, window, effort, env),
   file kept **21 days**, so asking twice returns the same file and a shared link
   keeps working. `?refresh=1` rebuilds — and **keeps the old file alive**,

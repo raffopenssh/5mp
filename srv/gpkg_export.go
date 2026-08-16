@@ -552,41 +552,57 @@ func (s *Server) gpkgFireDetections(w *gpkgWriter, o gpkgExportOpts, boundary st
 }
 
 func (s *Server) gpkgDeforestation(w *gpkgWriter, o gpkgExportOpts) error {
+	hist := s.loadHistPlaceIndex()
+	histOn := false
+	if _, bbox, ok := s.resolveAreaBBox(o.AreaID); ok {
+		histOn = hist.coversBBox(bbox)
+	}
+	cols := []gpkgCol{
+		{"feature_id", "TEXT"},
+		{"loss_year", "INTEGER"},
+		{"start_date", "DATE"},
+		{"end_date", "DATE"},
+		{"area_km2", "REAL"},
+		{"pixel_count", "INTEGER"},
+		{"classification", "TEXT"},
+		{"classification_confidence", "REAL"},
+		// The pipeline's own doubt travels with the polygon: 1 = the
+		// classifier flagged this event as questioned/unverified (e.g. the
+		// 2023 "logging" block in Kafia Kingi). NULL only when the event
+		// row is missing entirely.
+		{"needs_review", "BOOLEAN"},
+		{"pattern_type", "TEXT"},
+		{"fires_same_year", "INTEGER"},
+		{"fire_ratio", "REAL"},
+		{"nearest_settlement_km", "REAL"},
+		// GLAD 30 m cropland (scripts/cropland.py), three questions:
+		// cropland_frac_2019 = mean within ~1 km of the event centroid
+		// (CONTEXT: farming landscape?); cropland_event_frac_2019 =
+		// share of this event's own cleared pixels mapped cropland in
+		// 2016-2019 (cropped now?); cropland_conversion_frac = share
+		// cropped in 2019 AND NOT in 2003 (cropland EXPANSION —
+		// area_km2 * conversion sums to km² converted). For year > 2016
+		// the 2019 epoch may predate the clearing. NULL = unmeasured,
+		// cropland_source says why.
+		{"cropland_frac_2019", "REAL"},
+		{"cropland_event_frac_2019", "REAL"},
+		{"cropland_conversion_frac", "REAL"},
+		{"cropland_source", "TEXT"},
+		{"narrative", "TEXT"},
+		{"classified_at", "DATETIME"},
+	}
+	if histOn {
+		// Nearest 1908-1976 survey place name, same contract as the
+		// settlements layer: only present for areas the sheets overlap,
+		// source names matched / none_within_5km / no_sheet_coverage.
+		// It answers "is this clearing at an old village site?" in the file.
+		cols = append(cols,
+			gpkgCol{"hist_place", "TEXT"},
+			gpkgCol{"hist_place_dist_km", "REAL"},
+			gpkgCol{"hist_place_source", "TEXT"})
+	}
 	l, err := w.AddLayer("deforestation", "MULTIPOLYGON",
-		"Canopy-loss polygons (Hansen <=2023, GFW integrated alerts >=2024)", []gpkgCol{
-			{"feature_id", "TEXT"},
-			{"loss_year", "INTEGER"},
-			{"start_date", "DATE"},
-			{"end_date", "DATE"},
-			{"area_km2", "REAL"},
-			{"pixel_count", "INTEGER"},
-			{"classification", "TEXT"},
-			{"classification_confidence", "REAL"},
-			// The pipeline's own doubt travels with the polygon: 1 = the
-			// classifier flagged this event as questioned/unverified (e.g. the
-			// 2023 "logging" block in Kafia Kingi). NULL only when the event
-			// row is missing entirely.
-			{"needs_review", "BOOLEAN"},
-			{"pattern_type", "TEXT"},
-			{"fires_same_year", "INTEGER"},
-			{"fire_ratio", "REAL"},
-			{"nearest_settlement_km", "REAL"},
-			// GLAD 30 m cropland (scripts/cropland.py), three questions:
-			// cropland_frac_2019 = mean within ~1 km of the event centroid
-			// (CONTEXT: farming landscape?); cropland_event_frac_2019 =
-			// share of this event's own cleared pixels mapped cropland in
-			// 2016-2019 (cropped now?); cropland_conversion_frac = share
-			// cropped in 2019 AND NOT in 2003 (cropland EXPANSION —
-			// area_km2 * conversion sums to km² converted). For year > 2016
-			// the 2019 epoch may predate the clearing. NULL = unmeasured,
-			// cropland_source says why.
-			{"cropland_frac_2019", "REAL"},
-			{"cropland_event_frac_2019", "REAL"},
-			{"cropland_conversion_frac", "REAL"},
-			{"cropland_source", "TEXT"},
-			{"narrative", "TEXT"},
-			{"classified_at", "DATETIME"},
-		})
+		"Canopy-loss polygons (Hansen <=2023, GFW integrated alerts >=2024)", cols)
 	if err != nil {
 		return err
 	}
@@ -675,78 +691,106 @@ func (s *Server) gpkgDeforestation(w *gpkgWriter, o gpkgExportOpts) error {
 				year = gpkgNI(m.year)
 			}
 		}
-		l.Add(geojson, fid, year, gpkgDate(sd), gpkgDate(ed), area, px,
-			class, conf, needsReview, pattern, fsy, fr, ns, crop19, cropEv19, cropConv, cropSrc, narrative, cAt)
+		l.Add(geojson, append([]interface{}{fid, year, gpkgDate(sd), gpkgDate(ed), area, px,
+			class, conf, needsReview, pattern, fsy, fr, ns, crop19, cropEv19, cropConv, cropSrc, narrative, cAt},
+			histVals(histOn, hist, p)...)...)
 	}
 	w.SetStyle("deforestation", styleDeforestation(), "Coloured by driver classification")
 	return nil
 }
 
 func (s *Server) gpkgSettlements(w *gpkgWriter, o gpkgExportOpts) error {
+	hist := s.loadHistPlaceIndex()
+	histOn := false
+	if _, bbox, ok := s.resolveAreaBBox(o.AreaID); ok {
+		histOn = hist.coversBBox(bbox)
+	}
+	cols := []gpkgCol{
+		{"feature_id", "TEXT"},
+		// The report's unit is the CLUSTER (one settlement), this layer's
+		// row is one built FOOTPRINT (invariant 7: two units, two words).
+		// cluster_id is what turns one into the other: all footprints of a
+		// settlement share it, so `Dissolve by cluster_id` (or a group-by)
+		// reproduces the counts the app publishes. NULL = footprint not
+		// claimed by any cluster row.
+		{"cluster_id", "INTEGER"},
+		{"classification", "TEXT"},
+		{"classification_confidence", "REAL"},
+		{"settlement_type", "TEXT"},
+		// Persistence is MEASURED from GHSL back-epochs (E2000/E2015
+		// built surface over the same mask pixels, scripts/ghsl_epochs.py):
+		// permanent / established / recent, or NULL where an epoch tile
+		// was missing (`persistence_source` says which — 'tile_missing'
+		// vs 'ghsl_E2000+E2015'). The two epoch surfaces ride along so
+		// the 25% rule is auditable in the file itself.
+		{"persistence", "TEXT"},
+		{"persistence_source", "TEXT"},
+		{"surface_e2000_m2", "REAL"},
+		{"surface_e2015_m2", "REAL"},
+		// Cropland context (GLAD 30 m cropland extent, Potapov et al. 2021):
+		// mean cropland fraction of the pixels within ~1 km of the CLUSTER
+		// centroid, per epoch (2000-2003 and 2016-2019) — the pair is the
+		// trend. A cluster property, not a per-footprint one. NULL is
+		// unmeasured (`cropland_source` says why); the source dataset
+		// excludes pasture and shifting cultivation, so 0 around a pastoral
+		// camp is the definition working.
+		{"cropland_frac_2019", "REAL"},
+		{"cropland_frac_2003", "REAL"},
+		{"cropland_source", "TEXT"},
+		// A DOWNLOAD IS THE MOST PUBLISHED ARTEFACT THERE IS: it leaves the
+		// app and is joined to other data with no panel beside it to explain
+		// anything. So the provenance travels in the file. `area_m2` is the
+		// built SURFACE and `extent_m2` the mask's FOOTPRINT — they differ by
+		// a median of 22x and must never be read as one number (F1,
+		// invariant 7) — and a population without `population_source` is
+		// UNMEASURED, not zero (F2). `epoch` says every figure here is a
+		// modelled 2030 state.
+		{"area_m2", "REAL"},
+		{"extent_m2", "REAL"},
+		{"area_source", "TEXT"},
+		{"population_est", "INTEGER"},
+		{"population_source", "TEXT"},
+		{"epoch", "TEXT"},
+		{"households_est", "INTEGER"},
+		{"nearest_place", "TEXT"},
+		{"distance_to_place_km", "REAL"},
+		{"direction_from_place", "TEXT"},
+		{"fires_1km", "INTEGER"},
+		{"fires_5km", "INTEGER"},
+		{"fire_seasonality", "TEXT"},
+		{"deforest_nearby_km2", "REAL"},
+		{"in_buffer", "BOOLEAN"},
+		{"narrative", "TEXT"},
+		{"detected_at", "DATETIME"},
+		{"classified_at", "DATETIME"},
+	}
+	if histOn {
+		// The name this ground had on the 1908-1976 Sudan survey sheets
+		// (nearest 'place' label within 5 km) — the report's return-not-
+		// invasion check, carried in the file so it is joinable. Source
+		// distinguishes matched / none_within_5km / no_sheet_coverage
+		// (the survey never reached the CAR interior — absence of a name
+		// there is absence of a map, not of a village). Columns exist only
+		// for areas the sheets overlap; most parks are far outside them.
+		cols = append(cols,
+			gpkgCol{"hist_place", "TEXT"},
+			gpkgCol{"hist_place_dist_km", "REAL"},
+			gpkgCol{"hist_place_source", "TEXT"})
+	}
 	l, err := w.AddLayer("settlements", "MULTIPOLYGON",
-		"Built-up polygons (GHSL), clustered and classified", []gpkgCol{
-			{"feature_id", "TEXT"},
-			{"classification", "TEXT"},
-			{"classification_confidence", "REAL"},
-			{"settlement_type", "TEXT"},
-			// Persistence is MEASURED from GHSL back-epochs (E2000/E2015
-			// built surface over the same mask pixels, scripts/ghsl_epochs.py):
-			// permanent / established / recent, or NULL where an epoch tile
-			// was missing (`persistence_source` says which — 'tile_missing'
-			// vs 'ghsl_E2000+E2015'). The two epoch surfaces ride along so
-			// the 25% rule is auditable in the file itself.
-			{"persistence", "TEXT"},
-			{"persistence_source", "TEXT"},
-			{"surface_e2000_m2", "REAL"},
-			{"surface_e2015_m2", "REAL"},
-			// Cropland context (GLAD 30 m cropland extent, Potapov et al. 2021):
-			// mean cropland fraction of the pixels within ~1 km of the CLUSTER
-			// centroid, per epoch (2000-2003 and 2016-2019) — the pair is the
-			// trend. A cluster property, not a per-footprint one. NULL is
-			// unmeasured (`cropland_source` says why); the source dataset
-			// excludes pasture and shifting cultivation, so 0 around a pastoral
-			// camp is the definition working.
-			{"cropland_frac_2019", "REAL"},
-			{"cropland_frac_2003", "REAL"},
-			{"cropland_source", "TEXT"},
-			// A DOWNLOAD IS THE MOST PUBLISHED ARTEFACT THERE IS: it leaves the
-			// app and is joined to other data with no panel beside it to explain
-			// anything. So the provenance travels in the file. `area_m2` is the
-			// built SURFACE and `extent_m2` the mask's FOOTPRINT — they differ by
-			// a median of 22x and must never be read as one number (F1,
-			// invariant 7) — and a population without `population_source` is
-			// UNMEASURED, not zero (F2). `epoch` says every figure here is a
-			// modelled 2030 state.
-			{"area_m2", "REAL"},
-			{"extent_m2", "REAL"},
-			{"area_source", "TEXT"},
-			{"population_est", "INTEGER"},
-			{"population_source", "TEXT"},
-			{"epoch", "TEXT"},
-			{"households_est", "INTEGER"},
-			{"nearest_place", "TEXT"},
-			{"distance_to_place_km", "REAL"},
-			{"direction_from_place", "TEXT"},
-			{"fires_1km", "INTEGER"},
-			{"fires_5km", "INTEGER"},
-			{"fire_seasonality", "TEXT"},
-			{"deforest_nearby_km2", "REAL"},
-			{"in_buffer", "BOOLEAN"},
-			{"narrative", "TEXT"},
-			{"detected_at", "DATETIME"},
-			{"classified_at", "DATETIME"},
-		})
+		"Built-up polygons (GHSL), clustered and classified", cols)
 	if err != nil {
 		return err
 	}
 	type setMeta struct {
+		clusterID                                                              int64
 		class, sType, place, dir, seasonality, narrative, detected, classified string
 		areaSrc, popSrc, epoch, persistence, persistenceSrc, cropSrc           string
 		conf, distPlace, defoNearby, extent, e2000, e2015, crop19, crop03      sql.NullFloat64
 		pop, hh, f1, f5, inBuf                                                 sql.NullInt64
 	}
 	meta := map[string]*setMeta{}
-	mq := `SELECT COALESCE(polygon_ids,''), COALESCE(classification,''), classification_confidence,
+	mq := `SELECT id, COALESCE(polygon_ids,''), COALESCE(classification,''), classification_confidence,
 		COALESCE(settlement_type,''), population_est, households_est, COALESCE(nearest_place,''),
 		distance_to_place_km, COALESCE(direction_from_place,''), fires_1km, fires_5km,
 		COALESCE(fire_seasonality,''), deforest_nearby_km2, in_buffer, COALESCE(narrative,''),
@@ -761,7 +805,7 @@ func (s *Server) gpkgSettlements(w *gpkgWriter, o gpkgExportOpts) error {
 		for mrows.Next() {
 			var ids string
 			m := &setMeta{}
-			if mrows.Scan(&ids, &m.class, &m.conf, &m.sType, &m.pop, &m.hh, &m.place, &m.distPlace,
+			if mrows.Scan(&m.clusterID, &ids, &m.class, &m.conf, &m.sType, &m.pop, &m.hh, &m.place, &m.distPlace,
 				&m.dir, &m.f1, &m.f5, &m.seasonality, &m.defoNearby, &m.inBuf, &m.narrative,
 				&m.detected, &m.classified,
 				&m.extent, &m.areaSrc, &m.popSrc, &m.epoch,
@@ -800,39 +844,41 @@ func (s *Server) gpkgSettlements(w *gpkgWriter, o gpkgExportOpts) error {
 		// Persistence is a CLUSTER property (measured over the cluster's summed
 		// epoch surfaces), so it fills only from the cluster row; cropland
 		// likewise (a ~1 km neighbourhood of the cluster centroid).
-		vals := []interface{}{fid, nil, nil, nil,
+		vals := []interface{}{fid, nil, nil, nil, nil,
 			nil, nil, nil, nil,
 			nil, nil, nil,
 			gpkgJSONNum(p, "area_m2"), gpkgJSONNum(p, "extent_m2"), gpkgJSONStr(p, "source"),
 			gpkgJSONInt(p, "population_est"), gpkgJSONStr(p, "population_source"), gpkgJSONStr(p, "epoch"),
 			nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil}
 		if m != nil {
-			vals[1], vals[2], vals[3] = gpkgStr(m.class), gpkgNF(m.conf), gpkgStr(m.sType)
-			vals[4], vals[5] = gpkgStr(m.persistence), gpkgStr(m.persistenceSrc)
-			vals[6], vals[7] = gpkgNF(m.e2000), gpkgNF(m.e2015)
-			vals[8], vals[9], vals[10] = gpkgNF(m.crop19), gpkgNF(m.crop03), gpkgStr(m.cropSrc)
-			if vals[12] == nil {
-				vals[12] = gpkgNF(m.extent)
-			}
+			vals[1] = m.clusterID
+			vals[2], vals[3], vals[4] = gpkgStr(m.class), gpkgNF(m.conf), gpkgStr(m.sType)
+			vals[5], vals[6] = gpkgStr(m.persistence), gpkgStr(m.persistenceSrc)
+			vals[7], vals[8] = gpkgNF(m.e2000), gpkgNF(m.e2015)
+			vals[9], vals[10], vals[11] = gpkgNF(m.crop19), gpkgNF(m.crop03), gpkgStr(m.cropSrc)
 			if vals[13] == nil {
-				vals[13] = gpkgStr(m.areaSrc)
+				vals[13] = gpkgNF(m.extent)
 			}
 			if vals[14] == nil {
-				vals[14] = gpkgNI(m.pop)
+				vals[14] = gpkgStr(m.areaSrc)
 			}
 			if vals[15] == nil {
-				vals[15] = gpkgStr(m.popSrc)
+				vals[15] = gpkgNI(m.pop)
 			}
 			if vals[16] == nil {
-				vals[16] = gpkgStr(m.epoch)
+				vals[16] = gpkgStr(m.popSrc)
 			}
-			vals[17] = gpkgNI(m.hh)
-			vals[18], vals[19], vals[20] = gpkgStr(m.place), gpkgNF(m.distPlace), gpkgStr(m.dir)
-			vals[21], vals[22], vals[23] = gpkgNI(m.f1), gpkgNI(m.f5), gpkgStr(m.seasonality)
-			vals[24], vals[25] = gpkgNF(m.defoNearby), gpkgNI(m.inBuf)
-			vals[26] = gpkgStr(m.narrative)
-			vals[27], vals[28] = gpkgDateTime(m.detected), gpkgDateTime(m.classified)
+			if vals[17] == nil {
+				vals[17] = gpkgStr(m.epoch)
+			}
+			vals[18] = gpkgNI(m.hh)
+			vals[19], vals[20], vals[21] = gpkgStr(m.place), gpkgNF(m.distPlace), gpkgStr(m.dir)
+			vals[22], vals[23], vals[24] = gpkgNI(m.f1), gpkgNI(m.f5), gpkgStr(m.seasonality)
+			vals[25], vals[26] = gpkgNF(m.defoNearby), gpkgNI(m.inBuf)
+			vals[27] = gpkgStr(m.narrative)
+			vals[28], vals[29] = gpkgDateTime(m.detected), gpkgDateTime(m.classified)
 		}
+		vals = append(vals, histVals(histOn, hist, p)...)
 		l.Add(geojson, vals...)
 	}
 	w.SetStyle("settlements", styleSettlements(), "Coloured by settlement classification")
@@ -1218,4 +1264,144 @@ func lineGeoJSON(path [][2]float64) string {
 	}
 	b.WriteString("]}")
 	return b.String()
+}
+
+// ---- historic place labels (Sudan 1:250k survey, 1908-1976) ---------------
+
+// histPlaceIndex answers "what did the 1930s surveyors call this spot?" for
+// the settlement and deforestation exports. It exists because the report's
+// central settlement finding — the new towns are RETURNS to villages named on
+// the old sheets — is only checkable if the file itself carries the old name;
+// without it the reader would need a second download and a spatial join.
+//
+// Three states, three spellings (a measurement's absence, its refusal and its
+// contradiction are different things): a matched name; 'none within 5 km' on
+// ground the sheets cover; and NULL + source 'no_sheet_coverage' where the
+// survey never reached (the CAR interior), which must not read as "no
+// village". Source is 'unavailable' when the labels db is not on disk.
+type histPlaceIndex struct {
+	ok     bool
+	grid   map[[2]int][]histPlacePt
+	sheets [][4]float64 // minlon, minlat, maxlon, maxlat
+}
+
+type histPlacePt struct {
+	lon, lat float64
+	text     string
+}
+
+const histPlaceCell = 0.05 // grid cell, degrees (~5.5 km)
+const histPlaceMaxKm = 5.0 // beyond this a name is trivia, not identity
+const histPlaceKmPerDeg = 111.32
+
+func (s *Server) loadHistPlaceIndex() *histPlaceIndex {
+	idx := &histPlaceIndex{}
+	db, err := histLabels.open()
+	if err != nil {
+		return idx
+	}
+	table := histLabelsTable(db)
+	if !histLabelsHasCategory(db, table) {
+		return idx
+	}
+	rows, err := db.Query(`SELECT lon, lat, text FROM ` + table +
+		` WHERE category = 'place' AND length(trim(text, '. ')) >= 4`)
+	if err != nil {
+		return idx
+	}
+	idx.grid = map[[2]int][]histPlacePt{}
+	for rows.Next() {
+		var p histPlacePt
+		if rows.Scan(&p.lon, &p.lat, &p.text) == nil {
+			k := [2]int{int(p.lon / histPlaceCell), int(p.lat / histPlaceCell)}
+			idx.grid[k] = append(idx.grid[k], p)
+		}
+	}
+	rows.Close()
+	srows, err := db.Query(`SELECT minlon, minlat, maxlon, maxlat FROM sheets
+		WHERE minlon IS NOT NULL`)
+	if err != nil {
+		return idx
+	}
+	for srows.Next() {
+		var b [4]float64
+		if srows.Scan(&b[0], &b[1], &b[2], &b[3]) == nil {
+			idx.sheets = append(idx.sheets, b)
+		}
+	}
+	srows.Close()
+	idx.ok = len(idx.grid) > 0 && len(idx.sheets) > 0
+	return idx
+}
+
+func (idx *histPlaceIndex) covered(lon, lat float64) bool {
+	for _, b := range idx.sheets {
+		if lon >= b[0] && lon <= b[2] && lat >= b[1] && lat <= b[3] {
+			return true
+		}
+	}
+	return false
+}
+
+// lookup returns (name, distance_km, source). name is "" unless matched.
+func (idx *histPlaceIndex) lookup(lon, lat float64) (string, float64, string) {
+	if !idx.ok {
+		return "", 0, "unavailable"
+	}
+	if !idx.covered(lon, lat) {
+		return "", 0, "no_sheet_coverage"
+	}
+	cx, cy := int(lon/histPlaceCell), int(lat/histPlaceCell)
+	best, bestKm := "", histPlaceMaxKm
+	for dx := -2; dx <= 2; dx++ {
+		for dy := -2; dy <= 2; dy++ {
+			for _, p := range idx.grid[[2]int{cx + dx, cy + dy}] {
+				dLat := (p.lat - lat) * histPlaceKmPerDeg
+				dLon := (p.lon - lon) * histPlaceKmPerDeg * math.Cos(lat*math.Pi/180)
+				km := math.Sqrt(dLat*dLat + dLon*dLon)
+				if km < bestKm {
+					best, bestKm = p.text, km
+				}
+			}
+		}
+	}
+	if best == "" {
+		return "", 0, "none_within_5km"
+	}
+	return best, math.Round(bestKm*100) / 100, "sudan250k"
+}
+
+// coversBBox reports whether any survey sheet intersects the area at all —
+// the gate for adding hist_place columns to an export. Most parks are far
+// outside the Sudan survey; giving them three always-NULL columns would be
+// noise, so the columns exist only where at least one sheet overlaps.
+func (idx *histPlaceIndex) coversBBox(b [4]float64) bool {
+	if !idx.ok {
+		return false
+	}
+	for _, s := range idx.sheets {
+		if b[0] <= s[2] && b[2] >= s[0] && b[1] <= s[3] && b[3] >= s[1] {
+			return true
+		}
+	}
+	return false
+}
+
+// histVals returns the three hist_place values for one feature (or an empty
+// slice when the columns are absent for this area).
+func histVals(histOn bool, hist *histPlaceIndex, p map[string]interface{}) []interface{} {
+	if !histOn {
+		return nil
+	}
+	var hp, hd, hs interface{}
+	lon, lonOK := p["lon"].(float64)
+	lat, latOK := p["lat"].(float64)
+	if lonOK && latOK {
+		name, km, src := hist.lookup(lon, lat)
+		if name != "" {
+			hp, hd = name, km
+		}
+		hs = src
+	}
+	return []interface{}{hp, hd, hs}
 }
