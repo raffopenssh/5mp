@@ -558,6 +558,8 @@ func (s *Server) StartGeoPackageSweeper() {
 
 func (s *Server) sweepGeoPackages(startup bool) {
 	now := time.Now().UTC().Format(time.RFC3339)
+	// User-uploaded shared files ride the same hourly clock (srv/shared_files.go).
+	s.sweepSharedFiles(now)
 	// A live guest link pointing straight at an export file is a promise the
 	// file keeps existing — re-asserted every sweep, not only at mint time, so
 	// links created before this rule (or expiries edited by hand) are covered.
