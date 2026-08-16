@@ -418,6 +418,17 @@ func (s *Server) Serve(addr string) error {
 	// Delete before the TTL expires: the 21 days are a promise about links, not
 	// an obligation to keep a gigabyte around after the file has been used.
 	mux.HandleFunc("DELETE /api/geopackage/{id}", s.HandleAPIGeoPackageDelete)
+
+	// Shared files: user-uploaded files behind expiring guest links
+	// (srv/shared_files.go). Upload is refused for guests and the test
+	// sandbox; downloads are open to any authenticated session, like the
+	// GeoPackage downloads — the id is a random token and sharing is the point.
+	mux.HandleFunc("GET /api/files", s.HandleAPISharedFileList)
+	mux.HandleFunc("POST /api/files", RateLimitMiddleware(uploadRL, s.HandleAPISharedFileUpload))
+	mux.HandleFunc("GET /api/files/{id}/download", s.HandleAPISharedFileDownload)
+	mux.HandleFunc("POST /api/files/{id}/extend", s.HandleAPISharedFileExtend)
+	mux.HandleFunc("DELETE /api/files/{id}", s.HandleAPISharedFileDelete)
+
 	mux.HandleFunc("GET /api/export/merged.kml", s.HandleAPIMergedKML)
 
 	// MBTiles generation endpoints (Zenodo-backed, with legacy fallback)

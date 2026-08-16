@@ -589,6 +589,7 @@ func (s *Server) HandleAPIShortLinkCreate(w http.ResponseWriter, r *http.Request
 			// A guest link straight to an export file is a promise the file
 			// keeps existing: push the job's expiry out to the link's.
 			s.retainGeoPackageForLink(target, expires)
+			s.retainSharedFileForLink(target, expires)
 		}
 		return err
 	}
@@ -919,6 +920,7 @@ func (s *Server) shortExtend(slug string, days int) string {
 	}
 	// The file the link names must live at least as long as the link.
 	s.retainGeoPackageForLink(target, exp)
+	s.retainSharedFileForLink(target, exp)
 	return exp
 }
 

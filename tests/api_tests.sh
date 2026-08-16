@@ -949,6 +949,68 @@ if [[ -n "$CLIENT_PWD" ]]; then
         fi
     fi
 
+    # ---- Shared files (srv/shared_files.go) ------------------------------
+    # A file share IS a guest link whose target is /api/files/{id}/download.
+    # The properties that matter: the sandbox cannot upload, another login
+    # sees nothing, the file ADOPTS the key's lifetime (a 90-day key keeps
+    # the file 90 days — not the 21-day default), the key downloads the exact
+    # bytes without a password, and deleting the file switches the key off.
+    if [[ "$CLIENT_PWD" != "test2026" ]]; then
+        printf "%-50s" "shared_file_upload_refused_in_sandbox"
+        tmpf=$(mktemp); printf 'shared-file-fixture' > "$tmpf"
+        code=$(curl -s -m 30 -o /dev/null -w "%{http_code}" -F "file=@${tmpf};filename=apitest.txt" \
+            "${BASE_URL}/api/files?pwd=test2026")
+        if [[ "$code" == "403" ]]; then green "✓"; PASSED=$((PASSED + 1))
+        else red "FAIL ($code)"; FAILED=$((FAILED + 1)); ERRORS+=("sandbox may upload shared files"); fi
+
+        printf "%-50s" "shared_file_lifecycle_adopts_key_ttl"
+        FJ=$(curl -s -m 60 -F "file=@${tmpf};filename=apitest.txt" "${BASE_URL}/api/files?pwd=${CLIENT_PWD}")
+        FID=$(jq -r '.id // empty' <<< "$FJ")
+        exp0=$(jq -r '.expires_at' <<< "$FJ")
+        # Another login must not see the file, and its id must not be an oracle.
+        seen=$(curl -s -m 30 "${BASE_URL}/api/files?pwd=test2026" | jq -r '.count')
+        oth=$(curl -s -m 30 -o /dev/null -w "%{http_code}" -X POST \
+            "${BASE_URL}/api/files/${FID}/extend?pwd=test2026" -H 'Content-Type: application/json' -d '{}')
+        # Mint a 90-day guest key on it: the file must outlive its own 21 days.
+        KJ=$(curl -s -m 30 -X POST "${BASE_URL}/api/shortlink?pwd=${CLIENT_PWD}" \
+            -H 'Content-Type: application/json' \
+            -d "{\"url\":\"/api/files/${FID}/download\",\"guest\":true,\"days\":90,\"tags\":[\"apitest-file\"]}")
+        KS=$(jq -r '.slug // empty' <<< "$KJ")
+        [[ -n "$KS" ]] && printf '%s\n' "$KS" >> "$MINTED_LOG"
+        kexp=$(jq -r '.expires_at' <<< "$KJ")
+        fexp=$(curl -s -m 30 "${BASE_URL}/api/files?pwd=${CLIENT_PWD}" \
+            | jq -r --arg id "$FID" '.files[] | select(.id==$id) | .expires_at')
+        ftags=$(curl -s -m 30 "${BASE_URL}/api/files?pwd=${CLIENT_PWD}" \
+            | jq -r --arg id "$FID" '.files[] | select(.id==$id) | .link_tags[0] // ""')
+        # The key downloads the exact bytes without a password; a stranger gets 401.
+        JF=$(mktemp); curl -s -m 30 -o /dev/null -c "$JF" "${BASE_URL}/s/${KS}"
+        body=$(curl -s -m 60 -b "$JF" "${BASE_URL}/api/files/${FID}/download")
+        anon=$(curl -s -m 30 -o /dev/null -w "%{http_code}" "${BASE_URL}/api/files/${FID}/download")
+        # A file-download key must not carry the patrol scope as a side effect.
+        kscope=$(jq -r '.scope // ""' <<< "$KJ")
+        if [[ -n "$FID" && "$seen" == "0" && "$oth" == "404" \
+              && "$fexp" == "$kexp" && "$fexp" > "$exp0" && "$ftags" == "apitest-file" \
+              && "$body" == "shared-file-fixture" && "$anon" == "401" && -z "$kscope" ]]; then
+            green "✓ (kept until $fexp)"; PASSED=$((PASSED + 1))
+        else
+            red "FAIL (id=$FID seen=$seen oth=$oth fexp=$fexp kexp=$kexp tags=$ftags anon=$anon scope=$kscope body=${body:0:20})"
+            FAILED=$((FAILED + 1)); ERRORS+=("shared file lifecycle broken")
+        fi
+
+        printf "%-50s" "shared_file_delete_switches_key_off"
+        curl -s -m 30 -o /dev/null -X DELETE "${BASE_URL}/api/files/${FID}?pwd=${CLIENT_PWD}"
+        koff=$(curl -s -m 30 -o /dev/null -w "%{http_code}" "${BASE_URL}/s/${KS}")
+        fgone=$(curl -s -m 30 "${BASE_URL}/api/files?pwd=${CLIENT_PWD}" \
+            | jq -r --arg id "$FID" '[.files[] | select(.id==$id)] | length')
+        if [[ "$koff" == "404" && "$fgone" == "0" ]]; then
+            green "✓"; PASSED=$((PASSED + 1))
+        else
+            red "FAIL (key=$koff file=$fgone)"; FAILED=$((FAILED + 1))
+            ERRORS+=("deleting a shared file leaves its key alive")
+        fi
+        rm -f "$tmpf" "$JF"
+    fi
+
     # Teardown. The API revokes a guest rather than deleting it (that is the
     # point -- the sheet keeps the evidence), so the rows are removed directly
     # afterwards: these are test fixtures, not history worth keeping. Scoped by

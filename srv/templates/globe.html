@@ -21369,7 +21369,7 @@ ${starredItems.narratives.map(n => {
         else if (tabName === 'pending') loadPendingApprovals();
         else if (tabName === 'learning') loadLearningResults();
         else if (tabName === 'features') loadLearnedFeatures();
-        else if (tabName === 'access') { loadAccessTab(); loadSharingTab(); }
+        else if (tabName === 'access') { loadAccessTab(); loadSharingTab(); loadFilesSection(); }
         else if (tabName === 'sharing') { switchAdminTab('access'); return; } // merged 2026-08-16
         else if (tabName === 'map-settings') {
             // Meta fetch is memoised and the panel renders from that cache, so
@@ -21633,6 +21633,142 @@ ${starredItems.narratives.map(n => {
             loadSharingTab();
         } catch (e) {
             showToast('Could not do that (' + e.message + ')', 'error');
+        }
+    }
+
+    // ===== Admin Access & Sharing: shared files =====
+    //
+    // A file share IS a guest link whose target is /api/files/{id}/download,
+    // so revoke/expiry/tags/renewal all live in the link list above — this
+    // section only owns the bytes: upload, list, extend, delete. Retention is
+    // the server's job (the file outlives every live key pointing at it).
+    async function loadFilesSection() {
+        const box = document.getElementById('files-body');
+        const up = document.getElementById('files-upload');
+        if (!box) return;
+        let d;
+        try {
+            const res = await fetch(`/api/files?pwd=${encodeURIComponent(window.getPwd() || '')}`);
+            if (!res.ok) throw new Error(res.status);
+            d = await res.json();
+        } catch (e) {
+            box.innerHTML = `<div style="color:#ef4444;font-size:12px;">Could not load files (${e.message})</div>`;
+            return;
+        }
+        // The upload control is absent, not disabled, when this session may
+        // not upload (test env, guest): a control that could only ever refuse
+        // implies the capability exists here.
+        up.innerHTML = d.can_upload
+            ? `<label class="sh-btn" style="cursor:pointer;display:inline-block;">
+                 <i class="icon-upload"></i> Upload a file (max 1 GB)
+                 <input type="file" style="display:none;" onchange="filesUpload(this)">
+               </label>
+               <span id="files-upload-note" style="font-size:11px;color:#9ca3af;margin-left:8px;"></span>`
+            : `<div style="font-size:11px;color:#9ca3af;">File sharing is not available in this environment.</div>`;
+        const files = d.files || [];
+        if (!files.length) {
+            box.innerHTML = `<div class="sh-empty">No files yet.</div>`;
+            return;
+        }
+        box.innerHTML = `<div class="sh-list">${files.map(filesRowHTML).join('')}</div>`;
+        if (typeof TagChips !== 'undefined') {
+            box.querySelectorAll('.gpkg-tags').forEach(el => TagChips.mount(el, {
+                tags: (el.dataset.tags || '').split(',').filter(Boolean), editable: false
+            }));
+        }
+    }
+
+    function filesRowHTML(f) {
+        const daysLeft = Math.max(0, Math.ceil((new Date(f.expires_at) - Date.now()) / 86400000));
+        const soon = daysLeft <= SHARING_RENEW_DAYS;
+        const tags = (f.link_tags || []).join(',');
+        const kb = f.size_bytes >= (1 << 20) ? Math.round(f.size_bytes / (1 << 20)) + ' MB'
+            : Math.max(1, Math.round(f.size_bytes / 1024)) + ' KB';
+        // Renew appears only near death, same rule as keys: an always-on
+        // extend button gets clicked ritually, which is how files live forever.
+        const renew = soon
+            ? `<button class="sh-btn sh-btn-renew" title="Swept in ${daysLeft} day${daysLeft === 1 ? '' : 's'} — keep the file 30 days longer" onclick="filesExtend('${escapeHtml(f.id)}')"><i class="icon-calendar-plus"></i></button>` : '';
+        return `<div class="sh-row">
+            <div class="sh-main">
+                <code class="sh-slug">${escapeHtml(f.name)}</code>
+                <span class="sh-kind">${kb}</span>
+                ${f.downloads ? `<span class="sh-kind">downloaded ${f.downloads}×</span>` : ''}
+                ${tags ? `<span class="gpkg-tags" data-tags="${escapeHtml(tags)}"></span>` : ''}
+            </div>
+            <div class="sh-meta">kept until ${escapeHtml(safeDateStr(f.expires_at))} <span${soon ? ' class="sh-soon"' : ''}>(${daysLeft}d)</span></div>
+            <div class="sh-acts">
+                <button class="sh-btn" title="Mint an expiring key that downloads this file without a password" onclick="filesShare('${escapeHtml(f.id)}','${escapeHtml(f.name)}')">Share</button>
+                ${renew}
+                <button class="sh-btn sh-btn-off" onclick="filesDelete('${escapeHtml(f.id)}','${escapeHtml(f.name)}')">Delete</button>
+            </div>
+        </div>`;
+    }
+
+    async function filesUpload(input) {
+        const file = input.files && input.files[0];
+        if (!file) return;
+        const note = document.getElementById('files-upload-note');
+        if (note) note.textContent = `Uploading ${file.name}…`;
+        const fd = new FormData();
+        fd.append('file', file);
+        try {
+            const res = await fetch(`/api/files?pwd=${encodeURIComponent(window.getPwd() || '')}`,
+                { method: 'POST', body: fd });
+            const d = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(d.error || `HTTP ${res.status}`);
+            showToast(`${d.name} uploaded — now share it`, 'success');
+            loadFilesSection();
+        } catch (e) {
+            if (note) note.textContent = '';
+            showToast('Upload failed (' + e.message + ')', 'error');
+        }
+    }
+
+    // The share dialog is the ordinary one: it mints a guest key on
+    // /api/files/{id}/download, and the server pushes the file's expiry out
+    // to the key's — the lifetime chosen in the dialog IS the file's lifetime.
+    function filesShare(id, name) {
+        ShareLink.open(`/api/files/${id}/download`, {
+            title: name, kind: 'download', guest: true, copy: false
+        });
+        // Reload once the dialog closes so the new key's tag + the pushed-out
+        // expiry show without a manual refresh.
+        const obs = new MutationObserver(() => {
+            const el = document.getElementById('sharelink-pop');
+            if (!el || !el.classList.contains('is-open')) {
+                obs.disconnect(); loadSharingTab(); loadFilesSection();
+            }
+        });
+        const el = document.getElementById('sharelink-pop');
+        if (el) obs.observe(el, { attributes: true, attributeFilter: ['class'] });
+    }
+
+    async function filesExtend(id) {
+        try {
+            const res = await fetch(`/api/files/${encodeURIComponent(id)}/extend?pwd=${encodeURIComponent(window.getPwd() || '')}`,
+                { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ days: 30 }) });
+            if (!res.ok) throw new Error(res.status);
+            const d = await res.json();
+            showToast(`File kept until ${safeDateStr(d.expires_at)}`, 'success');
+            loadFilesSection();
+        } catch (e) {
+            showToast('Could not extend (' + e.message + ')', 'error');
+        }
+    }
+
+    // Deleting the file also switches off every live key pointing at it (the
+    // server does both in one stroke) — the confirmation says so, because a
+    // recipient losing access is the consequence that matters.
+    async function filesDelete(id, name) {
+        if (!confirm(`Delete ${name}? Any shared key pointing at it is switched off too.`)) return;
+        try {
+            const res = await fetch(`/api/files/${encodeURIComponent(id)}?pwd=${encodeURIComponent(window.getPwd() || '')}`,
+                { method: 'DELETE' });
+            if (!res.ok) throw new Error(res.status);
+            showToast('File deleted', 'info');
+            loadFilesSection(); loadSharingTab();
+        } catch (e) {
+            showToast('Could not delete (' + e.message + ')', 'error');
         }
     }
 
@@ -23846,6 +23982,11 @@ ${starredItems.narratives.map(n => {
                         <div><dt style="color:#93c5fd;">#tag</dt><dd>groups links made for one purpose (e.g. a report) so they renew together. A link can carry several. Click a name to rename it on every link that has it, &times; to take this link out.</dd></div>
                     </dl>
                     <div id="sharing-body">Loading&hellip;</div>
+
+                    <h4 style="color:#fff;font-size:13px;font-weight:600;margin:28px 0 6px;">Shared files</h4>
+                    <p class="sh-intro">Upload a file (a styled GeoPackage, a PDF&hellip;) and hand it out with an expiring key. The file lives 21 days by default and is kept as long as any live key points at it &mdash; a 90-day key keeps the file 90 days. When the last key dies, the file is swept.</p>
+                    <div id="files-upload" style="margin-bottom:10px;"></div>
+                    <div id="files-body">Loading&hellip;</div>
 
                     <h4 style="color:#fff;font-size:13px;font-weight:600;margin:28px 0 6px;">Areas of interest &amp; ingest</h4>
                     <p style="color:#888;font-size:12px;margin-bottom:16px;line-height:1.6;max-width:70ch;">
