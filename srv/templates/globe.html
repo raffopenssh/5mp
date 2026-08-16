@@ -19931,6 +19931,27 @@ ${starredItems.narratives.map(n => {
             // the viewport, and above the LOD threshold would have emptied the
             // layer.
             if (window.LODLayer && window.LODLayer.supports(featureType)) {
+                // THE PIN EXISTS BEFORE ITS DATA DOES.
+                //
+                // This used to register pinnedLayers[key] only *after* the
+                // await, so a restored share link showed an empty screen for
+                // as long as the fetch took (4 s for 57,561 fire
+                // trajectories) with nothing naming what was coming. A user
+                // with no evidence that work is under way clicks, pans and
+                // re-toggles — which aborts the fetch and starts it again.
+                // So the chip is drawn immediately with `loading` in place of
+                // its count (three dots, see .chip-dots), and the count
+                // replaces the dots when the answer lands.
+                pinnedLayers[key] = {
+                    parkId, parkName, type,
+                    featureCount: 0, totalCount: 0, lod: true, loading: true,
+                    classification: filterClassification || null,
+                    age: filterAge || null,
+                    crop: filterCrop || null,
+                    layerId, sourceId: 'lod-' + key
+                };
+                if (typeof updatePinnedIndicator === 'function') updatePinnedIndicator();
+                if (typeof updateIconPinStates === 'function') updateIconPinStates(parkId);
                 await window.LODLayer.add(key, {
                     featureType,
                     color: { fire_trajectory: '#ef4444', deforestation: '#a855f7', settlement: '#fbbf24' }[featureType],
@@ -19942,6 +19963,16 @@ ${starredItems.narratives.map(n => {
                     age: filterAge || null,
                     crop: filterCrop || null,
                     dated: featureType !== 'settlement',
+                    // One writer for "is this pin waiting": the loader knows,
+                    // and it is the only thing that knows (a refetch on pan or
+                    // a date change is the same wait as the first load, and
+                    // the chip must say so both times).
+                    onLoading: (busy) => {
+                        const p = pinnedLayers[key];
+                        if (!p || !!p.loading === !!busy) return;
+                        p.loading = !!busy;
+                        if (typeof updatePinnedIndicator === 'function') updatePinnedIndicator();
+                    },
                     onCount: (count, total, render) => {
                         const p = pinnedLayers[key];
                         if (p) { p.featureCount = count; p.totalCount = total; p.render = render; }
@@ -19949,21 +19980,22 @@ ${starredItems.narratives.map(n => {
                     }
                 });
                 const st = window.LODLayer.state(key) || {};
-                pinnedLayers[key] = {
-                    parkId, parkName, type,
+                // The pin may have been removed while its data was in flight
+                // (the × on a loading chip is a legitimate click, and the whole
+                // point of showing one). Re-asserting it here would resurrect
+                // a layer the user just dismissed.
+                if (!pinnedLayers[key]) return;
+                Object.assign(pinnedLayers[key], {
                     featureCount: st.count || 0,
                     totalCount: st.total || 0,
-                    lod: true,
-                    classification: filterClassification || null,
-                    age: filterAge || null,
-                    crop: filterCrop || null,
-                    layerId, sourceId: 'lod-' + key
-                };
-                // The pin exists only NOW — icon syncs that ran while the
+                    loading: false
+                });
+                // The pin is COMPLETE only NOW — icon syncs that ran while the
                 // fetch was in flight (popup open, restore's timer) saw no
                 // pin and left the accordion glyph unfilled. One writer,
                 // at the moment the state actually changes.
                 if (typeof updateIconPinStates === 'function') updateIconPinStates(parkId);
+                if (typeof updatePinnedIndicator === 'function') updatePinnedIndicator();
                 const filterWords = [filterClassification, filterAge, filterCrop].filter(Boolean).join(' ');
                 const what = filterWords ? `${filterWords} ${type}` : type;
                 if (!st.count) {
@@ -20653,7 +20685,7 @@ ${starredItems.narratives.map(n => {
             const park = layer.parkName;
             if (!byPark[park]) byPark[park] = [];
             byPark[park].push({ type: layer.type, count: layer.featureCount, key, isBulk: true,
-                                lod: layer.lod, render: layer.render,
+                                lod: layer.lod, render: layer.render, loading: !!layer.loading,
                                 detail: layer.lod && window.LODLayer ? LODLayer.detail(key) : null,
                                 classification: [layer.classification, layer.age, layer.crop].filter(Boolean).join(' ') || null,
                                 total: layer.totalCount });
@@ -20704,7 +20736,7 @@ ${starredItems.narratives.map(n => {
                 
                 if (p.realtime) {
                     // Active fire with group name - click to fly, × to remove
-                    html += `<span class="pinned-layer-chip active-fire" style="cursor:pointer;" onclick="event.stopPropagation(); flyToRealtimeFire('${p.key}')" title="${p.groupName} - Click to fly to">`;
+                    html += `<span class="pinned-layer-chip active-fire" data-chip-key="rt:${p.key}" style="cursor:pointer;" onclick="event.stopPropagation(); flyToRealtimeFire('${p.key}')" title="${p.groupName} - Click to fly to">`;
                     html += `<span class="chip-icon">${icon}</span>`;
                     html += `<span>${p.groupName}</span>`;
                     html += `<span class="chip-remove" onclick="event.stopPropagation(); removeRealtimeFireLayer('${p.key}')" title="Remove">×</span>`;
@@ -20736,9 +20768,24 @@ ${starredItems.narratives.map(n => {
                                 + `title="${escapeHtml(title)}">${label}<span class="lod-caret">\u25be</span></button>`;
                     }
                     const clsNote = p.classification ? ` · ${p.classification} only` : '';
-                    html += `<span class="pinned-layer-chip ${p.type}" style="cursor:pointer;" onclick="event.stopPropagation(); flyToPinnedLayer('${p.key}')" title="${typeLabels[p.type] || p.type}: ${count} features${tierNote}${clsNote} - Click to fly to">`;
+                    // WAITING IS SAID WHERE THE ANSWER WILL APPEAR.
+                    //
+                    // Three pulsing dots stand exactly where the count goes, in
+                    // the chip's own colour: the chip is the thing that will
+                    // change, so the wait belongs inside it rather than in a
+                    // fourth overlay competing with the toast, the slider and
+                    // this indicator for the same corner. A stale count is not
+                    // shown beside them — a number that is about to be replaced
+                    // reads as the answer.
+                    const countMark = p.loading
+                        ? `<span class="chip-dots" role="status" aria-label="loading"><i></i><i></i><i></i></span>`
+                        : `<span class="chip-count">${count}</span>`;
+                    const chipTitle = p.loading
+                        ? `${typeLabels[p.type] || p.type}: loading this view…${clsNote} - × to cancel`
+                        : `${typeLabels[p.type] || p.type}: ${count} features${tierNote}${clsNote} - Click to fly to`;
+                    html += `<span class="pinned-layer-chip ${p.type}${p.loading ? ' is-loading' : ''}" data-chip-key="b:${p.key}" style="cursor:pointer;" onclick="event.stopPropagation(); flyToPinnedLayer('${p.key}')" title="${escapeHtml(chipTitle)}">`;
                     html += `<span class="chip-icon">${icon}</span>`;
-                    html += `<span class="chip-count">${count}</span>${lodMark}`;
+                    html += `${countMark}${p.loading ? '' : lodMark}`;
                     html += `<span class="chip-remove" onclick="event.stopPropagation(); removePinnedLayer('${p.key}')" title="Remove">×</span>`;
                     html += `</span>`;
                 } else if (p.isSingle) {
@@ -20761,7 +20808,7 @@ ${starredItems.narratives.map(n => {
                         : uniq[0] === 'shapes'
                         ? 'Drawn as full clickable shapes at every zoom — an individual pin is served whole, so it does not change with the view.'
                         : 'Drawn as a point: this feature has no stored outline, only a centre. Hover it for its details.';
-                    html += `<span class="pinned-layer-chip ${p.type}" style="opacity:0.8;cursor:pointer;" onclick="event.stopPropagation(); flyToSinglePin('${firstKey}')" title="${count} individual ${typeLabels[p.type] || p.type} pinned - Click to fly to">`;
+                    html += `<span class="pinned-layer-chip ${p.type}" data-chip-key="s:${firstKey}" style="opacity:0.8;cursor:pointer;" onclick="event.stopPropagation(); flyToSinglePin('${firstKey}')" title="${count} individual ${typeLabels[p.type] || p.type} pinned - Click to fly to">`;
                     html += `<span class="chip-icon">${icon}</span>`;
                     html += `<span class="chip-count">${label}</span>`;
                     html += `<span style="font-size:8px;opacity:0.7;">ind</span>`;
@@ -20779,7 +20826,36 @@ ${starredItems.narratives.map(n => {
             html += `<div class="pinned-summary">${parkNames.length} parks · ${totalFeatures.toLocaleString()} features</div>`;
         }
         
-        itemsContainer.innerHTML = html;
+        // A REPAINT MUST NOT RESTART AN ANIMATION.
+        //
+        // This function is called on every count, every load and every pan, and
+        // it used to assign innerHTML unconditionally. With three pins loading
+        // at once that meant each one's answer landing tore down and rebuilt the
+        // other two chips — restarting their dot wave from frame zero, so the
+        // indicator twitched exactly when it was supposed to be reassuring. So:
+        // the SHAPE (park groups and chip order) is rebuilt only when it
+        // actually changes; otherwise each chip whose own markup changed is
+        // swapped on its own, and its untouched neighbours keep animating.
+        const shape = parkNames.map(p => (byPark[p] || [])
+            .map(x => x.key || (x.keys || []).join('+')).join('|')).join('/');
+        if (itemsContainer._pinShape !== shape) {
+            itemsContainer._pinShape = shape;
+            itemsContainer.innerHTML = html;
+            return;
+        }
+        const next = document.createElement('div');
+        next.innerHTML = html;
+        next.querySelectorAll('[data-chip-key]').forEach(el => {
+            const cur = itemsContainer.querySelector(`[data-chip-key="${CSS.escape(el.dataset.chipKey)}"]`);
+            if (!cur) return;
+            if (cur.outerHTML !== el.outerHTML) cur.replaceWith(el);
+        });
+        // The footer is not a chip and carries no animation; it can be written
+        // whenever it differs.
+        const curSum = itemsContainer.querySelector('.pinned-summary');
+        const newSum = next.querySelector('.pinned-summary');
+        if (curSum && newSum) { if (curSum.textContent !== newSum.textContent) curSum.textContent = newSum.textContent; }
+        else if (curSum !== newSum) itemsContainer.innerHTML = html;
     }
     
     // Refresh all pinned category layers with new date filter
