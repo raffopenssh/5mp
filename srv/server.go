@@ -224,6 +224,8 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("GET /s/{slug}", s.HandleShortLink)
 	mux.HandleFunc("POST /api/shortlink", s.HandleAPIShortLinkCreate)
 	mux.HandleFunc("POST /api/shortlink/{slug}/rename", s.HandleAPIShortLinkRename)
+	mux.HandleFunc("POST /api/shortlink/{slug}/extend", s.HandleAPIShortLinkExtend)
+	mux.HandleFunc("POST /api/shortlinks/extend", s.HandleAPIShortLinkExtendTag)
 	mux.HandleFunc("DELETE /api/shortlink/{slug}", s.HandleAPIShortLinkDelete)
 	mux.HandleFunc("GET /api/shortlinks", s.HandleAPIShortLinkList)
 
@@ -407,6 +409,7 @@ func (s *Server) Serve(addr string) error {
 	// token and the handler re-checks AOI visibility on every hit.
 	mux.HandleFunc("GET /api/geopackage", s.HandleAPIGeoPackageList)
 	mux.HandleFunc("GET /api/geopackage/{id}", s.HandleAPIGeoPackageStatus)
+	mux.HandleFunc("POST /api/geopackage/{id}/extend", s.HandleAPIGeoPackageExtend)
 	mux.HandleFunc("GET /api/geopackage/{id}/download", s.HandleAPIGeoPackageDownload)
 	// Delete before the TTL expires: the 21 days are a promise about links, not
 	// an obligation to keep a gigabyte around after the file has been used.
