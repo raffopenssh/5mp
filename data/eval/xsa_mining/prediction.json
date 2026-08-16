@@ -1,0 +1,886 @@
+{
+ "generated_by": "scripts/predict_mining_xsa.py",
+ "aoi": "XSA_Study_Area",
+ "question": "Do the context layers concentrate the 89 reported mine sites, and if so where else does that context exist?",
+ "truth_caveat": "Anchors are OSM tags, Crisis Tracker attack records, UCDP GED and USGS points - reachability- and conflict-biased, coordinates sometimes village label positions. A lift means 'reported mines sit on this ground', never 'mines do'. Candidates are places to point imagery and questions, not a treasure map (AGENTS.md invariant 12).",
+ "n_anchors": 89,
+ "n_clusters": 43,
+ "n_cells": 15788,
+ "cell_deg": 0.05,
+ "permutations": 5000,
+ "signals": {
+  "gold_contact_w2": {
+   "signal": "gold_contact_w2",
+   "n": 43,
+   "threshold_km": 5.0,
+   "capture": 0.326,
+   "baseline": 0.223,
+   "lift": 1.46,
+   "p": 0.075,
+   "min_detectable_lift": 1.46,
+   "verdict": "null",
+   "q_bh": 0.1714
+  },
+  "river_order3": {
+   "signal": "river_order3",
+   "n": 43,
+   "threshold_km": 5.0,
+   "capture": 0.512,
+   "baseline": 0.234,
+   "lift": 2.18,
+   "p": 0.0,
+   "min_detectable_lift": 1.49,
+   "verdict": "signal",
+   "q_bh": 0.0
+  },
+  "settlement": {
+   "signal": "settlement",
+   "n": 43,
+   "threshold_km": 5.0,
+   "capture": 0.349,
+   "baseline": 0.219,
+   "lift": 1.59,
+   "p": 0.0388,
+   "min_detectable_lift": 1.48,
+   "verdict": "null",
+   "q_bh": 0.1056
+  },
+  "settlement_grew_33pct": {
+   "signal": "settlement_grew_33pct",
+   "n": 43,
+   "threshold_km": 5.0,
+   "capture": 0.116,
+   "baseline": 0.097,
+   "lift": 1.19,
+   "p": 0.4084,
+   "min_detectable_lift": 1.91,
+   "verdict": "null",
+   "q_bh": 0.594
+  },
+  "settlement_cropland_poor": {
+   "signal": "settlement_cropland_poor",
+   "n": 43,
+   "threshold_km": 5.0,
+   "capture": 0.349,
+   "baseline": 0.177,
+   "lift": 1.97,
+   "p": 0.0042,
+   "min_detectable_lift": 1.58,
+   "verdict": "signal",
+   "q_bh": 0.0245
+  },
+  "deforestation_verified": {
+   "signal": "deforestation_verified",
+   "n": 43,
+   "threshold_km": 5.0,
+   "capture": 0.581,
+   "baseline": 0.368,
+   "lift": 1.58,
+   "p": 0.0046,
+   "min_detectable_lift": 1.33,
+   "verdict": "signal",
+   "q_bh": 0.0245
+  },
+  "hist_track_1930s": {
+   "signal": "hist_track_1930s",
+   "n": 19,
+   "threshold_km": 3.0,
+   "capture": 0.421,
+   "baseline": 0.293,
+   "lift": 1.44,
+   "p": 0.164,
+   "min_detectable_lift": 1.61,
+   "verdict": "null",
+   "q_bh": 0.328
+  },
+  "hist_settlement_1930s": {
+   "signal": "hist_settlement_1930s",
+   "n": 19,
+   "threshold_km": 5.0,
+   "capture": 0.368,
+   "baseline": 0.36,
+   "lift": 1.02,
+   "p": 0.556,
+   "min_detectable_lift": 1.46,
+   "verdict": "null",
+   "q_bh": 0.6843
+  },
+  "hist_abandoned_village_1930s": {
+   "signal": "hist_abandoned_village_1930s",
+   "n": 19,
+   "threshold_km": 5.0,
+   "capture": 0.263,
+   "baseline": 0.319,
+   "lift": 0.82,
+   "p": 0.394,
+   "min_detectable_lift": 1.48,
+   "verdict": "null",
+   "q_bh": 0.594
+  },
+  "hist_abandoned_village_on_gold_contact": {
+   "signal": "hist_abandoned_village_on_gold_contact",
+   "n": 19,
+   "threshold_km": 5.0,
+   "capture": 0.211,
+   "baseline": 0.071,
+   "lift": 2.95,
+   "p": 0.0396,
+   "min_detectable_lift": 2.21,
+   "verdict": "null",
+   "q_bh": 0.1056
+  },
+  "hist_abandoned_track_1930s": {
+   "signal": "hist_abandoned_track_1930s",
+   "n": 19,
+   "threshold_km": 3.0,
+   "capture": 0.368,
+   "baseline": 0.278,
+   "lift": 1.32,
+   "p": 0.2544,
+   "min_detectable_lift": 1.7,
+   "verdict": "null",
+   "q_bh": 0.4523
+  },
+  "hist_abandoned_track_on_gold_contact": {
+   "signal": "hist_abandoned_track_on_gold_contact",
+   "n": 19,
+   "threshold_km": 5.0,
+   "capture": 0.263,
+   "baseline": 0.099,
+   "lift": 2.65,
+   "p": 0.0352,
+   "min_detectable_lift": 2.12,
+   "verdict": "null",
+   "q_bh": 0.1056
+  },
+  "hist_water_point_1930s": {
+   "signal": "hist_water_point_1930s",
+   "n": 19,
+   "threshold_km": 5.0,
+   "capture": 0.0,
+   "baseline": 0.026,
+   "lift": 0.0,
+   "p": 0.6046,
+   "min_detectable_lift": 4.09,
+   "verdict": "null",
+   "q_bh": 0.691
+  },
+  "hist_water_point_on_gold_contact": {
+   "signal": "hist_water_point_on_gold_contact",
+   "n": 19,
+   "threshold_km": 5.0,
+   "capture": 0.0,
+   "baseline": 0.005,
+   "lift": 0.0,
+   "p": 0.9018,
+   "min_detectable_lift": 9.84,
+   "verdict": "null",
+   "q_bh": 0.9036
+  },
+  "hist_hill_terrain_1930s": {
+   "signal": "hist_hill_terrain_1930s",
+   "n": 19,
+   "threshold_km": 5.0,
+   "capture": 0.158,
+   "baseline": 0.136,
+   "lift": 1.16,
+   "p": 0.4962,
+   "min_detectable_lift": 1.93,
+   "verdict": "null",
+   "q_bh": 0.6616
+  },
+  "hist_mine_note_1930s": {
+   "signal": "hist_mine_note_1930s",
+   "n": 19,
+   "threshold_km": 10.0,
+   "capture": 0.0,
+   "baseline": 0.005,
+   "lift": 0.0,
+   "p": 0.9036,
+   "min_detectable_lift": 9.84,
+   "verdict": "null",
+   "q_bh": 0.9036
+  }
+ },
+ "passing": [
+  "river_order3",
+  "settlement_cropland_poor",
+  "deforestation_verified"
+ ],
+ "composite_skill": [
+  {
+   "top_frac": 0.1,
+   "capture": 0.233,
+   "baseline": 0.1,
+   "lift": 2.33,
+   "p": 0.007,
+   "min_detectable_lift": 1.86
+  },
+  {
+   "top_frac": 0.2,
+   "capture": 0.302,
+   "baseline": 0.2,
+   "lift": 1.51,
+   "p": 0.0804,
+   "min_detectable_lift": 1.51
+  }
+ ],
+ "robustness_by_truth_source": {
+  "osm_only": {
+   "n": 14,
+   "capture_top20": 0.429,
+   "baseline": 0.2,
+   "lift": 2.14
+  },
+  "attack_records": {
+   "n": 29,
+   "capture_top20": 0.241,
+   "baseline": 0.2,
+   "lift": 1.21
+  }
+ },
+ "spatial_cv": {
+  "method": "4 spatial blocks by longitude; signal selection redone per fold on training blocks; capture of held-out clusters in the fold composite's top 20%",
+  "folds": [
+   {
+    "block": 0,
+    "n_test": 8,
+    "lon_range": [
+     22.83,
+     23.23
+    ],
+    "signals": [
+     "gold_contact_w2",
+     "river_order3",
+     "settlement",
+     "settlement_cropland_poor",
+     "deforestation_verified",
+     "hist_abandoned_village_on_gold_contact",
+     "hist_abandoned_track_on_gold_contact"
+    ],
+    "captured": 3
+   },
+   {
+    "block": 1,
+    "n_test": 13,
+    "lon_range": [
+     23.28,
+     23.78
+    ],
+    "signals": [
+     "river_order3",
+     "settlement",
+     "settlement_cropland_poor",
+     "deforestation_verified",
+     "hist_track_1930s",
+     "hist_abandoned_village_on_gold_contact",
+     "hist_abandoned_track_on_gold_contact"
+    ],
+    "captured": 3
+   },
+   {
+    "block": 2,
+    "n_test": 11,
+    "lon_range": [
+     23.83,
+     24.63
+    ],
+    "signals": [
+     "river_order3",
+     "settlement_cropland_poor",
+     "deforestation_verified"
+    ],
+    "captured": 2
+   },
+   {
+    "block": 3,
+    "n_test": 11,
+    "lon_range": [
+     24.68,
+     27.48
+    ],
+    "signals": [
+     "river_order3",
+     "deforestation_verified"
+    ],
+    "captured": 6
+   }
+  ],
+  "pooled_captured": 14,
+  "pooled_n": 43,
+  "pooled_capture": 0.326,
+  "baseline": 0.2,
+  "lift": 1.63,
+  "p_binomial": 0.0362,
+  "extrapolation_proxy": {
+   "note": "The easternmost block is the best available proxy for extrapolation: its clusters were predicted from signals selected on ground entirely to the west of them.",
+   "lon_range": [
+    24.68,
+    27.48
+   ],
+   "n": 11,
+   "captured": 6,
+   "capture": 0.545,
+   "lift": 2.73
+  },
+  "validation_limit": {
+   "truth_lon_range": [
+    22.83,
+    27.48
+   ],
+   "aoi_share_beyond_truth": 0.293,
+   "note": "No reported mine site exists east of 27.5E, so 29% of the study area is ground the model can only extrapolate into. Candidates there are unvalidatable until someone reports a site - treat them as a lower tier."
+  }
+ },
+ "note": null,
+ "candidates": [
+  {
+   "lat": 4.727,
+   "lon": 25.8288,
+   "tier": "near_known_mining_ground",
+   "composite_pctile": 100.0,
+   "km_to_known_anchor": 67.6,
+   "gold_contact_km": 51.0,
+   "river_km": 0.2,
+   "settlement_km": 1.5,
+   "deforestation_km": 0.6,
+   "cropland_poor_settlement_km": 1.5,
+   "hist_covered": false,
+   "hist_track_km": null,
+   "hist_settlement_km": null,
+   "hist_abandoned_village_km": null,
+   "hist_abandoned_track_km": null,
+   "hist_water_point_km": null,
+   "hist_hill_km": null,
+   "hist_mine_note_km": null,
+   "nearest_settlement": {
+    "place": "Gwane",
+    "lat": 4.723339,
+    "lon": 25.81562033333333
+   },
+   "nearest_hist_label": null
+  },
+  {
+   "lat": 5.827,
+   "lon": 27.5788,
+   "tier": "near_known_mining_ground",
+   "composite_pctile": 100.0,
+   "km_to_known_anchor": 25.7,
+   "gold_contact_km": 1.1,
+   "river_km": 0.9,
+   "settlement_km": 1.0,
+   "deforestation_km": 0.8,
+   "cropland_poor_settlement_km": 1.0,
+   "hist_covered": true,
+   "hist_track_km": 0.1,
+   "hist_settlement_km": 0.2,
+   "hist_abandoned_village_km": 8.5,
+   "hist_abandoned_track_km": 0.1,
+   "hist_water_point_km": 23.6,
+   "hist_hill_km": 30.4,
+   "hist_mine_note_km": 217.8,
+   "nearest_settlement": {
+    "place": "Tambura",
+    "lat": 5.818065,
+    "lon": 27.578696
+   },
+   "nearest_hist_label": {
+    "text": "LUBU",
+    "category": "place",
+    "dist_km": 0.2,
+    "lat": 5.8283,
+    "lon": 27.5771
+   }
+  },
+  {
+   "lat": 7.727,
+   "lon": 28.9788,
+   "tier": "beyond_validated_ground",
+   "composite_pctile": 100.0,
+   "km_to_known_anchor": 238.1,
+   "gold_contact_km": 45.4,
+   "river_km": 0.5,
+   "settlement_km": 1.8,
+   "deforestation_km": 0.7,
+   "cropland_poor_settlement_km": 1.8,
+   "hist_covered": true,
+   "hist_track_km": 2.3,
+   "hist_settlement_km": 4.0,
+   "hist_abandoned_village_km": 4.7,
+   "hist_abandoned_track_km": 2.3,
+   "hist_water_point_km": 29.1,
+   "hist_hill_km": 13.1,
+   "hist_mine_note_km": 86.2,
+   "nearest_settlement": {
+    "place": "Ibba River",
+    "lat": 7.715058841121495,
+    "lon": 28.96777276635514
+   },
+   "nearest_hist_label": {
+    "text": "Atur",
+    "category": "place",
+    "dist_km": 4.0,
+    "lat": 7.6953,
+    "lon": 28.9611
+   }
+  },
+  {
+   "lat": 5.327,
+   "lon": 29.5788,
+   "tier": "beyond_validated_ground",
+   "composite_pctile": 100.0,
+   "km_to_known_anchor": 235.1,
+   "gold_contact_km": 24.9,
+   "river_km": 0.8,
+   "settlement_km": 1.4,
+   "deforestation_km": 0.9,
+   "cropland_poor_settlement_km": 1.4,
+   "hist_covered": true,
+   "hist_track_km": 4.3,
+   "hist_settlement_km": 2.2,
+   "hist_abandoned_village_km": 2.2,
+   "hist_abandoned_track_km": 4.3,
+   "hist_water_point_km": 42.8,
+   "hist_hill_km": 6.9,
+   "hist_mine_note_km": 189.1,
+   "nearest_settlement": {
+    "place": "Ringwa",
+    "lat": 5.317519222222222,
+    "lon": 29.571082222222223
+   },
+   "nearest_hist_label": {
+    "text": "Ababu",
+    "category": "place",
+    "dist_km": 2.2,
+    "lat": 5.3455,
+    "lon": 29.5724
+   }
+  },
+  {
+   "lat": 5.277,
+   "lon": 30.7288,
+   "tier": "beyond_validated_ground",
+   "composite_pctile": 100.0,
+   "km_to_known_anchor": 361.8,
+   "gold_contact_km": 20.0,
+   "river_km": 0.3,
+   "settlement_km": 1.8,
+   "deforestation_km": 1.1,
+   "cropland_poor_settlement_km": 1.8,
+   "hist_covered": true,
+   "hist_track_km": 1.8,
+   "hist_settlement_km": 2.8,
+   "hist_abandoned_village_km": 13.2,
+   "hist_abandoned_track_km": 1.8,
+   "hist_water_point_km": 35.9,
+   "hist_hill_km": 14.7,
+   "hist_mine_note_km": 255.5,
+   "nearest_settlement": {
+    "place": "Yei River",
+    "lat": 5.269652,
+    "lon": 30.7142788
+   },
+   "nearest_hist_label": {
+    "text": "Abdullah",
+    "category": "place",
+    "dist_km": 2.8,
+    "lat": 5.295,
+    "lon": 30.7107
+   }
+  },
+  {
+   "lat": 6.977,
+   "lon": 29.4288,
+   "tier": "beyond_validated_ground",
+   "composite_pctile": 99.9,
+   "km_to_known_anchor": 263.6,
+   "gold_contact_km": 9.6,
+   "river_km": 0.2,
+   "settlement_km": 1.2,
+   "deforestation_km": 1.4,
+   "cropland_poor_settlement_km": 1.2,
+   "hist_covered": true,
+   "hist_track_km": 1.0,
+   "hist_settlement_km": 2.6,
+   "hist_abandoned_village_km": 6.2,
+   "hist_abandoned_track_km": 1.0,
+   "hist_water_point_km": 36.6,
+   "hist_hill_km": 2.2,
+   "hist_mine_note_km": 28.1,
+   "nearest_settlement": {
+    "place": "River Gulnam",
+    "lat": 6.968865,
+    "lon": 29.422262
+   },
+   "nearest_hist_label": {
+    "text": "Asir m",
+    "category": "terrain",
+    "dist_km": 2.2,
+    "lat": 6.9841,
+    "lon": 29.447
+   }
+  },
+  {
+   "lat": 4.527,
+   "lon": 26.6288,
+   "tier": "near_known_mining_ground",
+   "composite_pctile": 99.9,
+   "km_to_known_anchor": 79.1,
+   "gold_contact_km": 69.5,
+   "river_km": 1.6,
+   "settlement_km": 1.9,
+   "deforestation_km": 0.2,
+   "cropland_poor_settlement_km": 1.9,
+   "hist_covered": false,
+   "hist_track_km": null,
+   "hist_settlement_km": null,
+   "hist_abandoned_village_km": null,
+   "hist_abandoned_track_km": null,
+   "hist_water_point_km": null,
+   "hist_hill_km": null,
+   "hist_mine_note_km": null,
+   "nearest_settlement": {
+    "place": "Duma",
+    "lat": 4.543461,
+    "lon": 26.623656
+   },
+   "nearest_hist_label": null
+  },
+  {
+   "lat": 5.027,
+   "lon": 27.6288,
+   "tier": "near_known_mining_ground",
+   "composite_pctile": 99.9,
+   "km_to_known_anchor": 51.7,
+   "gold_contact_km": 35.6,
+   "river_km": 0.9,
+   "settlement_km": 2.8,
+   "deforestation_km": 0.7,
+   "cropland_poor_settlement_km": 2.8,
+   "hist_covered": true,
+   "hist_track_km": 0.0,
+   "hist_settlement_km": 5.2,
+   "hist_abandoned_village_km": 10.3,
+   "hist_abandoned_track_km": 0.0,
+   "hist_water_point_km": 37.0,
+   "hist_hill_km": 24.2,
+   "hist_mine_note_km": 276.1,
+   "nearest_settlement": {
+    "place": "sd",
+    "lat": 5.010275,
+    "lon": 27.64749625
+   },
+   "nearest_hist_label": null
+  },
+  {
+   "lat": 4.727,
+   "lon": 27.6288,
+   "tier": "near_known_mining_ground",
+   "composite_pctile": 99.9,
+   "km_to_known_anchor": 33.5,
+   "gold_contact_km": 54.9,
+   "river_km": 2.2,
+   "settlement_km": 1.4,
+   "deforestation_km": 0.5,
+   "cropland_poor_settlement_km": 1.4,
+   "hist_covered": true,
+   "hist_track_km": 5.0,
+   "hist_settlement_km": 6.7,
+   "hist_abandoned_village_km": 7.9,
+   "hist_abandoned_track_km": 5.0,
+   "hist_water_point_km": 57.3,
+   "hist_hill_km": 55.7,
+   "hist_mine_note_km": 303.1,
+   "nearest_settlement": {
+    "place": "Naisa",
+    "lat": 4.714594666666667,
+    "lon": 27.632493666666665
+   },
+   "nearest_hist_label": {
+    "text": "Doruma",
+    "category": "place",
+    "dist_km": 6.7,
+    "lat": 4.7268,
+    "lon": 27.6895
+   }
+  },
+  {
+   "lat": 6.227,
+   "lon": 29.9288,
+   "tier": "beyond_validated_ground",
+   "composite_pctile": 99.9,
+   "km_to_known_anchor": 279.7,
+   "gold_contact_km": 2.5,
+   "river_km": 2.7,
+   "settlement_km": 0.1,
+   "deforestation_km": 0.1,
+   "cropland_poor_settlement_km": 0.1,
+   "hist_covered": true,
+   "hist_track_km": 5.1,
+   "hist_settlement_km": 4.3,
+   "hist_abandoned_village_km": 11.9,
+   "hist_abandoned_track_km": 5.1,
+   "hist_water_point_km": 34.0,
+   "hist_hill_km": 19.1,
+   "hist_mine_note_km": 118.0,
+   "nearest_settlement": {
+    "place": "River Rohl",
+    "lat": 6.226231038461538,
+    "lon": 29.92870242307692
+   },
+   "nearest_hist_label": {
+    "text": "Lal",
+    "category": "place",
+    "dist_km": 4.3,
+    "lat": 6.2333,
+    "lon": 29.9668
+   }
+  },
+  {
+   "lat": 5.527,
+   "lon": 30.7288,
+   "tier": "beyond_validated_ground",
+   "composite_pctile": 99.9,
+   "km_to_known_anchor": 359.9,
+   "gold_contact_km": 16.6,
+   "river_km": 1.7,
+   "settlement_km": 1.0,
+   "deforestation_km": 1.1,
+   "cropland_poor_settlement_km": 1.0,
+   "hist_covered": true,
+   "hist_track_km": 1.9,
+   "hist_settlement_km": 1.2,
+   "hist_abandoned_village_km": 5.9,
+   "hist_abandoned_track_km": 1.9,
+   "hist_water_point_km": 32.0,
+   "hist_hill_km": 12.4,
+   "hist_mine_note_km": 235.6,
+   "nearest_settlement": {
+    "place": "Yei River",
+    "lat": 5.518159499999999,
+    "lon": 30.731166318181817
+   },
+   "nearest_hist_label": {
+    "text": "Kediba",
+    "category": "place",
+    "dist_km": 1.2,
+    "lat": 5.5353,
+    "lon": 30.7363
+   }
+  },
+  {
+   "lat": 4.777,
+   "lon": 30.4788,
+   "tier": "beyond_validated_ground",
+   "composite_pctile": 99.9,
+   "km_to_known_anchor": 345.3,
+   "gold_contact_km": 12.6,
+   "river_km": 1.4,
+   "settlement_km": 0.8,
+   "deforestation_km": 1.5,
+   "cropland_poor_settlement_km": 0.8,
+   "hist_covered": true,
+   "hist_track_km": 9.7,
+   "hist_settlement_km": 1.4,
+   "hist_abandoned_village_km": 4.5,
+   "hist_abandoned_track_km": 9.7,
+   "hist_water_point_km": 37.4,
+   "hist_hill_km": 23.0,
+   "hist_mine_note_km": 284.2,
+   "nearest_settlement": {
+    "place": "Yei River",
+    "lat": 4.769693833333333,
+    "lon": 30.478820666666667
+   },
+   "nearest_hist_label": {
+    "text": "K.Moba",
+    "category": "place",
+    "dist_km": 1.4,
+    "lat": 4.7672,
+    "lon": 30.4875
+   }
+  }
+ ],
+ "abandoned_village_gold_watchlist": {
+  "hypothesis": "1930s villages with no modern settlement within 3 km, sitting within 5 km of a gold-graded geology contact. Lift 2.95 on n=19 covered clusters, raw p=0.04, but q=0.11 after correcting for 16 signals tried - suggestive, not proven. Listed for imagery follow-up, not scored into the composite.",
+  "total_matches": 673,
+  "listed": 25,
+  "places": [
+   {
+    "name": "Turda",
+    "lat": 9.5353,
+    "lon": 24.5922,
+    "gold_contact_km": 0.0,
+    "river_km": 3.4
+   },
+   {
+    "name": "K Lefranai",
+    "lat": 6.5981,
+    "lon": 29.7988,
+    "gold_contact_km": 0.1,
+    "river_km": 2.3
+   },
+   {
+    "name": "(TIDI)",
+    "lat": 8.0432,
+    "lon": 24.7822,
+    "gold_contact_km": 0.1,
+    "river_km": 4.4
+   },
+   {
+    "name": "Ayoich or Bed",
+    "lat": 7.0042,
+    "lon": 29.1036,
+    "gold_contact_km": 0.1,
+    "river_km": 4.0
+   },
+   {
+    "name": "Tarhala",
+    "lat": 8.819,
+    "lon": 26.0502,
+    "gold_contact_km": 0.1,
+    "river_km": 4.4
+   },
+   {
+    "name": "D. Nitabo",
+    "lat": 8.7323,
+    "lon": 26.1704,
+    "gold_contact_km": 0.1,
+    "river_km": 3.2
+   },
+   {
+    "name": "le Ramis",
+    "lat": 9.4621,
+    "lon": 23.5275,
+    "gold_contact_km": 0.1,
+    "river_km": 1.8
+   },
+   {
+    "name": "Drogall",
+    "lat": 6.1461,
+    "lon": 27.7784,
+    "gold_contact_km": 0.2,
+    "river_km": 2.9
+   },
+   {
+    "name": "Tup Weng",
+    "lat": 9.1144,
+    "lon": 26.984,
+    "gold_contact_km": 0.2,
+    "river_km": 3.0
+   },
+   {
+    "name": "Campin",
+    "lat": 8.9176,
+    "lon": 26.2474,
+    "gold_contact_km": 0.3,
+    "river_km": 4.9
+   },
+   {
+    "name": "Grar Bol",
+    "lat": 7.1506,
+    "lon": 28.5919,
+    "gold_contact_km": 0.3,
+    "river_km": 3.6
+   },
+   {
+    "name": "Tirjok",
+    "lat": 6.417,
+    "lon": 29.77,
+    "gold_contact_km": 0.3,
+    "river_km": 1.2
+   },
+   {
+    "name": "Saidun Hamadan",
+    "lat": 8.6783,
+    "lon": 25.8663,
+    "gold_contact_km": 0.3,
+    "river_km": 1.6
+   },
+   {
+    "name": "BA",
+    "lat": 5.367,
+    "lon": 29.8104,
+    "gold_contact_km": 0.4,
+    "river_km": 3.3
+   },
+   {
+    "name": "Waderil",
+    "lat": 7.9053,
+    "lon": 28.0292,
+    "gold_contact_km": 0.4,
+    "river_km": 2.8
+   },
+   {
+    "name": "U.BARSHAM",
+    "lat": 9.0775,
+    "lon": 24.3618,
+    "gold_contact_km": 0.4,
+    "river_km": 2.9
+   },
+   {
+    "name": "D. Lachiri",
+    "lat": 8.6459,
+    "lon": 26.0299,
+    "gold_contact_km": 0.5,
+    "river_km": 2.5
+   },
+   {
+    "name": "Ulamo",
+    "lat": 5.7382,
+    "lon": 27.6,
+    "gold_contact_km": 0.5,
+    "river_km": 1.7
+   },
+   {
+    "name": "Mirda",
+    "lat": 5.7955,
+    "lon": 30.8317,
+    "gold_contact_km": 0.6,
+    "river_km": 2.0
+   },
+   {
+    "name": "DJ.OUEDJ",
+    "lat": 8.9689,
+    "lon": 22.9873,
+    "gold_contact_km": 0.6,
+    "river_km": 2.4
+   },
+   {
+    "name": "Tambora A.M. & C.C.",
+    "lat": 5.6249,
+    "lon": 27.4781,
+    "gold_contact_km": 0.7,
+    "river_km": 2.2
+   },
+   {
+    "name": "Toich",
+    "lat": 8.4097,
+    "lon": 27.5394,
+    "gold_contact_km": 0.7,
+    "river_km": 0.7
+   },
+   {
+    "name": "Stn. Rabi",
+    "lat": 9.2063,
+    "lon": 24.2458,
+    "gold_contact_km": 0.7,
+    "river_km": 3.1
+   },
+   {
+    "name": "Ou?ligui",
+    "lat": 7.6123,
+    "lon": 24.529,
+    "gold_contact_km": 0.8,
+    "river_km": 2.8
+   },
+   {
+    "name": "Old copper workings",
+    "lat": 9.1082,
+    "lon": 23.8598,
+    "gold_contact_km": 0.8,
+    "river_km": 0.2
+   }
+  ]
+ }
+}
