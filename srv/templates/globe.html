@@ -1024,23 +1024,91 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                 <div style="display:flex;justify-content:space-between;font-size:8px;color:#666;"><span>${series[0].label}</span><span>${series[series.length-1].label}</span></div>
             </div>`;
         }
-        // Chip row for classification filters. onSel: JS fn name (paId, value, event)
-        function filterChips(paId, counts, colors, labels, onSel, kind) {
-            const keys = Object.keys(counts).sort();
-            if (keys.length < 2) return '';
-            const total = Object.values(counts).reduce((a, b) => a + b, 0);
-            const chip = (val, label, n, color) =>
-                `<button class="filter-chip" data-chip="${val}" onclick="event.stopPropagation(); selectChip(this, '${paId}', '${val}', ${onSel})" style="font-size: 8px; padding: 2px 7px; border-radius: 9px; cursor: pointer; background: ${color}22; border: 1px solid ${color}55; color: ${color};">${label} ${n}</button>`;
-            return `<div id="${kind}-chips-${paId}" style="display: flex; flex-wrap: wrap; gap: 4px; margin: 8px 0 6px 0;">
-                ${chip('', 'all', total, '#9ca3af')}
-                ${keys.map(c => chip(c, labels[c] || c.replace('_',' '), counts[c], colors[c] || '#9ca3af')).join('')}
-            </div>`;
+        // ---- Accordion filter chips ---------------------------------------
+        //
+        // A section's filter is a small OBJECT, not one value: settlements
+        // filter by type AND age (GHSL persistence) AND cropland-nearby;
+        // deforestation by type AND what the land did after the loss
+        // (cropland conversion — the report's "one-way doors"). Each dimension
+        // is its own chip row, rows AND together, and every dimension rides in
+        // the share URL. Bucket words must stay in lockstep with
+        // featureIDsWithClass (srv/feature_meta.go), which applies the same
+        // filter server-side for the pinned map layer.
+        const sectionFilters = {};   // `${kind}-${paId}` -> {class,age,crop}
+        function getSectionFilters(kind, paId) {
+            const k = `${kind}-${paId}`;
+            if (!sectionFilters[k]) sectionFilters[k] = { class: '', age: '', crop: '' };
+            return sectionFilters[k];
         }
-        function selectChip(btn, paId, value, fn) {
-            const row = btn.parentElement;
-            row.querySelectorAll('.filter-chip').forEach(b => { b.style.opacity = '0.45'; b.style.fontWeight = '400'; });
-            btn.style.opacity = '1'; btn.style.fontWeight = '700';
-            fn(paId, value, null);
+        // NULL is unmeasured, not zero (invariant 1): an unmeasured row lands
+        // in its own bucket, never in a value bucket.
+        function settlementCropBucket(frac) {
+            if (frac == null) return 'unmeasured';
+            return frac >= 0.03 ? 'crops' : 'nocrops';   // same 3% the "Cropland nearby" stat counts
+        }
+        function deforestConvBucket(frac) {
+            if (frac == null) return 'unmeasured';
+            return frac >= 0.5 ? 'converted' : 'regrows';
+        }
+        // Chip group for one filter dimension. onSel: JS fn name (paId, dim, value, event).
+        // opts: {dim:'class', name:'', order:[], tips:{}} — name is the tiny
+        // group caption ("type", "age", "after loss").
+        //
+        // Design notes (phone-first): NO per-dimension "all N" chip — "no
+        // selection" already means all, and three "all 2121" chips read as
+        // duplication. Clearing is (a) tap the lit chip again, (b) the single
+        // ✕ that appears in the strip only while something is filtered.
+        function filterChips(paId, counts, colors, labels, onSel, kind, opts) {
+            opts = opts || {};
+            const dim = opts.dim || 'class';
+            const keys = opts.order
+                ? opts.order.filter(k => counts[k])
+                : Object.keys(counts).sort();
+            if (keys.length < 2) return '';
+            const cur = getSectionFilters(kind, paId)[dim] || '';
+            const chip = (val, label, n, color, tip) =>
+                `<button class="filter-chip${(val === cur) ? ' on' : ''}" data-chip="${val}"${tip ? ` title="${escapeHtml(tip)}"` : ''} onclick="event.stopPropagation(); selectChip(this, '${paId}', '${dim}', '${val}', ${onSel})" style="--chip: ${color};">${label}<span class="filter-chip-n">${n}</span></button>`;
+            return `<span id="${kind}-chips-${paId}-${dim}" class="filter-chip-group">
+                ${opts.name ? `<span class="filter-chip-dim">${opts.name}</span>` : ''}
+                ${keys.map(c => chip(c, labels[c] || c.replace('_', ' '), counts[c], colors[c] || '#9ca3af', (opts.tips || {})[c])).join('')}
+            </span>`;
+        }
+        // Wraps a section's chip groups into one wrapping strip and appends
+        // the shared ✕ clear-all (hidden until any dimension is filtered —
+        // syncFilterChips toggles it).
+        function filterStrip(kind, paId, groups, onSel) {
+            if (!groups || !groups.trim()) return '';
+            const any = (() => { const st = getSectionFilters(kind, paId); return !!(st.class || st.age || st.crop); })();
+            return `<div class="filter-strip" id="${kind}-strip-${paId}">${groups}<button class="filter-clear-chip" style="display:${any ? '' : 'none'}" title="Clear all filters" onclick="event.stopPropagation(); clearSectionFilters('${kind}', '${paId}', ${onSel})">✕</button></div>`;
+        }
+        function clearSectionFilters(kind, paId, fn) {
+            const st = getSectionFilters(kind, paId);
+            st.class = ''; st.age = ''; st.crop = '';
+            fn(paId, 'class', '', null);   // one re-render; handler syncs visuals + URL
+        }
+        function selectChip(btn, paId, dim, value, fn) {
+            // Toggling the already-active chip clears its dimension.
+            if (btn.classList.contains('on') && value !== '') value = '';
+            fn(paId, dim, value, null);   // handler updates state + syncs visuals
+        }
+        // One writer for chip visuals: reads the state the handler just set,
+        // so a URL-restored filter lights the same chips a click would.
+        function syncFilterChips(kind, paId) {
+            const st = getSectionFilters(kind, paId);
+            ['class', 'age', 'crop'].forEach(dim => {
+                const row = document.getElementById(`${kind}-chips-${paId}-${dim}`);
+                if (!row) return;
+                const cur = st[dim] || '';
+                row.querySelectorAll('.filter-chip').forEach(b =>
+                    b.classList.toggle('on', (b.dataset.chip || '') === cur));
+            });
+            const strip = document.getElementById(`${kind}-strip-${paId}`);
+            if (strip) {
+                const any = !!(st.class || st.age || st.crop);
+                strip.classList.toggle('filtering', any);
+                const clr = strip.querySelector('.filter-clear-chip');
+                if (clr) clr.style.display = any ? '' : 'none';
+            }
         }
 
         function formatDateRangeLabel(fromStr, toStr) {
@@ -11524,7 +11592,7 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                         // distance to the boundary is not in this response.
                         const priorityScore = (populationScore * 0.57) + (areaScore * 0.43);
                         
-                        return `<div class="narrative-row" data-park="${paId}" data-type="settlement" data-feature="${featureId}" data-classification="${s.classification || ''}" data-priority="${priorityScore.toFixed(0)}" data-population="${pop}" data-area="${area}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName || paId)}', 'settlement', '${featureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; display: flex; align-items: flex-start; gap: 6px; transition: all 0.2s;" title="Click to pin on map. ${escapeHtml(text)}">${testBadge}<span style="background: rgba(${parseInt(color.slice(1,3), 16)}, ${parseInt(color.slice(3,5), 16)}, ${parseInt(color.slice(5,7), 16)}, 0.2); border: 1px solid ${color}40; color: ${color}; font-size: 8px; font-weight: 600; flex-shrink: 0; text-transform: uppercase; padding: 2px 4px; border-radius: 3px;">${escapeHtml(typeLabel)}</span> <span style="flex:1;">${escapeHtml(shortText)}</span></div>`;
+                        return `<div class="narrative-row" data-park="${paId}" data-type="settlement" data-feature="${featureId}" data-classification="${s.classification || ''}" data-persistence="${s.persistence || 'unmeasured'}" data-crop="${settlementCropBucket(s.cropland_frac_2019)}" data-priority="${priorityScore.toFixed(0)}" data-population="${pop}" data-area="${area}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName || paId)}', 'settlement', '${featureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; display: flex; align-items: flex-start; gap: 6px; transition: all 0.2s;" title="Click to pin on map. ${escapeHtml(text)}">${testBadge}<span style="background: rgba(${parseInt(color.slice(1,3), 16)}, ${parseInt(color.slice(3,5), 16)}, ${parseInt(color.slice(5,7), 16)}, 0.2); border: 1px solid ${color}40; color: ${color}; font-size: 8px; font-weight: 600; flex-shrink: 0; text-transform: uppercase; padding: 2px 4px; border-radius: 3px;">${escapeHtml(typeLabel)}</span> <span style="flex:1;">${escapeHtml(shortText)}</span></div>`;
                     };
                     
                     // Get settlements - prefer classified if available
@@ -11557,17 +11625,41 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                     const btnId = `settlements-more-btn-${paId}`;
                     const hiddenId = `settlements-hidden-${paId}`;
                     
-                    // Get unique classifications for filter with counts
+                    // Get unique classifications for filter with counts, plus the
+                    // two crop-insight dimensions: persistence (GHSL epochs) and
+                    // cropland-nearby. Each dimension is its own chip row; rows
+                    // AND together (filterSettlementEntries).
                     const classificationCounts = {};
+                    const persistenceCounts = {};
+                    const cropCounts = {};
                     if (useClassified) {
                         classifiedSettlements.forEach(s => {
                             if (s.classification) {
                                 classificationCounts[s.classification] = (classificationCounts[s.classification] || 0) + 1;
                             }
+                            const p = s.persistence || 'unmeasured';
+                            persistenceCounts[p] = (persistenceCounts[p] || 0) + 1;
+                            const c = settlementCropBucket(s.cropland_frac_2019);
+                            cropCounts[c] = (cropCounts[c] || 0) + 1;
                         });
                     }
                     const classifications = Object.keys(classificationCounts).sort();
                     const showFilter = classifications.length > 1;
+                    const settlementChipRows = !useClassified ? '' : filterStrip('settlement', paId,
+                        (showFilter ? filterChips(paId, classificationCounts, {agricultural: '#f59e0b', residential: '#3b82f6', pastoral: '#22c55e', mining: '#ef4444', fishing: '#06b6d4', temporary_camp: '#a855f7'}, {agricultural: 'farming', temporary_camp: 'camp', residential: 'village', pastoral: 'herding'}, 'filterSettlementEntries', 'settlement', {dim: 'class', name: 'type'}) : '')
+                        + filterChips(paId, persistenceCounts,
+                            {permanent: '#22c55e', established: '#f59e0b', recent: '#ef4444', unmeasured: '#6b7280'},
+                            {},
+                            'filterSettlementEntries', 'settlement',
+                            {dim: 'age', name: 'age', order: ['permanent', 'established', 'recent', 'unmeasured'],
+                             tips: {permanent: 'Built by 2000 (GHSL epoch)', established: 'Built by 2015', recent: 'Appeared after 2015', unmeasured: 'No GHSL epoch tile — unmeasured, not zero'}})
+                        + filterChips(paId, cropCounts,
+                            {crops: '#84cc16', nocrops: '#6b7280', unmeasured: '#6b7280'},
+                            {crops: 'crops nearby', nocrops: 'no crops', unmeasured: 'unmeasured'},
+                            'filterSettlementEntries', 'settlement',
+                            {dim: 'crop', name: 'crops', order: ['crops', 'nocrops', 'unmeasured'],
+                             tips: {crops: '≥3% GLAD cropland within ~1 km (2016-19)', nocrops: '<3% mapped cropland within ~1 km — a larger settlement with no farmland is the strongest mining signal in the 2026-08 review', unmeasured: 'No GLAD measurement — unmeasured, not zero'}}),
+                        'filterSettlementEntries');
                     
                     el.innerHTML = `
                         <div class="pa-popup-mini-stat">
@@ -11594,7 +11686,7 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                         
                         ${initial.length > 0 ? `
                         <div style="margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">
-                            ${showFilter ? filterChips(paId, classificationCounts, {agricultural: '#f59e0b', residential: '#3b82f6', pastoral: '#22c55e', mining: '#ef4444', fishing: '#06b6d4', temporary_camp: '#a855f7'}, {agricultural: 'farming', temporary_camp: 'camp', residential: 'village', pastoral: 'herding'}, 'filterSettlementEntries', 'settlement') : ''}
+                            ${settlementChipRows}
                             <div id="${containerId}">
                                 ${initial.map((s, i) => useClassified ? formatClassifiedSettlement(s, paId, parkName, i) : formatSettlement(s, paId, parkName, i)).join('')}
                                 ${remaining.length > 0 ? `<div id="${hiddenId}" style="display: none;">${remaining.map((s, i) => useClassified ? formatClassifiedSettlement(s, paId, parkName, initial.length + i) : formatSettlement(s, paId, parkName, initial.length + i)).join('')}</div>` : ''}
@@ -11635,19 +11727,20 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                         }
                     }
                     
-                    // Apply filter from URL if present
+                    // Apply filters from URL if present. State is written first,
+                    // then ONE handler call re-renders; syncFilterChips inside
+                    // the handler lights the same chips a click would.
                     const urlParams = new URLSearchParams(window.location.search);
-                    const settlementFilter = urlParams.get('settlement_filter');
-                    if (settlementFilter && classifications.length > 1) {
-                        setTimeout(() => {
-                            // Apply filter even if select doesn't exist (happens when URL pre-filters)
-                            const filterSelect = document.getElementById(`settlement-filter-${paId}`);
-                            if (filterSelect) {
-                                filterSelect.value = settlementFilter;
-                            }
-                            // Wait for entries to be fully rendered in DOM, then apply filter
-                            setTimeout(() => filterSettlementEntries(paId, settlementFilter, null), 200);
-                        }, 500);
+                    const urlSt = {
+                        class: urlParams.get('settlement_filter') || '',
+                        age: urlParams.get('settlement_age') || '',
+                        crop: urlParams.get('settlement_crop') || ''
+                    };
+                    if (urlSt.class || urlSt.age || urlSt.crop) {
+                        const st = getSectionFilters('settlement', paId);
+                        st.class = urlSt.class; st.age = urlSt.age; st.crop = urlSt.crop;
+                        // Wait for entries to be fully rendered in DOM, then apply
+                        setTimeout(() => filterSettlementEntries(paId, 'class', st.class, null), 700);
                     }
                     
                     // Number settlement entries if TEST mode is active
@@ -11706,30 +11799,26 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             if (btn) btn.remove();
         }
         
-        // Filter deforestation entries by classification
-        async function filterDeforestEntries(paId, classification, event) {
-            console.log('[filterDeforestEntries] Called with:', { paId, classification });
-            
+        // Filter deforestation entries. dim: 'class' | 'crop'; dimensions AND
+        // together and each rides in the share URL (deforest_filter /
+        // deforest_crop). value '' clears one dimension.
+        async function filterDeforestEntries(paId, dim, value, event) {
             // Prevent event from bubbling to section header (which would collapse)
             if (event) {
                 event.stopPropagation();
             }
-            
-            // Show/hide clear button
-            const clearBtn = document.getElementById(`deforest-filter-clear-${paId}`);
-            if (clearBtn) {
-                clearBtn.style.display = classification ? 'block' : 'none';
-            }
-            
+
+            const st = getSectionFilters('deforest', paId);
+            st[dim] = value || '';
+            syncFilterChips('deforest', paId);
+            const anyFilter = !!(st.class || st.crop);
+
             // Update URL with filter state
             const url = new URL(window.location);
-            if (classification) {
-                url.searchParams.set('deforest_filter', classification);
-            } else {
-                url.searchParams.delete('deforest_filter');
-            }
+            st.class ? url.searchParams.set('deforest_filter', st.class) : url.searchParams.delete('deforest_filter');
+            st.crop ? url.searchParams.set('deforest_crop', st.crop) : url.searchParams.delete('deforest_crop');
             window.history.replaceState({}, '', url);
-            
+
             const container = document.getElementById(`deforest-stories-${paId}`);
             if (!container) return;
             
@@ -11751,10 +11840,11 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             let visibleArea = 0;
             let matchingEntries = [];
             
-            // First pass: identify matching entries
+            // First pass: identify matching entries (all dimensions AND)
             entries.forEach(entry => {
-                const entryClass = entry.dataset.classification || '';
-                if (!classification || entryClass === classification) {
+                const okClass = !st.class || (entry.dataset.classification || '') === st.class;
+                const okCrop = !st.crop || (entry.dataset.crop || 'unmeasured') === st.crop;
+                if (okClass && okCrop) {
                     matchingEntries.push(entry);
                     const area = parseFloat(entry.dataset.area) || 0;
                     visibleArea += area;
@@ -11773,7 +11863,15 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                 }
             });
             console.log('[filterDeforestEntries] After second pass:', { matchingTotal: matchingEntries.length, visibleCount });
-            
+
+            // Human words for the active filter (accordion header + toasts)
+            const deforestFilterLabel = () => {
+                const parts = [];
+                if (st.class) parts.push(st.class === 'slash_burn' ? 'burn' : (st.class === 'encroachment' ? 'clearing' : st.class));
+                if (st.crop) parts.push({converted: 'became farmland', regrows: 'regrows', unmeasured: 'crop unmeasured'}[st.crop] || st.crop);
+                return parts.join(', ');
+            };
+
             // Update accordion to show filtered area in km²
             const countEl = document.getElementById(`deforest-count-${paId}`);
             if (countEl) {
@@ -11781,12 +11879,10 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                 if (!countEl.dataset.originalCount) {
                     countEl.dataset.originalCount = countEl.textContent;
                 }
-                
-                if (classification) {
-                    // Use friendly name for display
-                    const displayName = classification === 'slash_burn' ? 'burn' : classification;
+
+                if (anyFilter) {
                     // Show area in km² with filter name
-                    countEl.textContent = `${visibleArea.toFixed(2)} KM² (${displayName})`;
+                    countEl.textContent = `${visibleArea.toFixed(2)} KM² (${deforestFilterLabel()})`;
                 } else {
                     // Restore original count when filter cleared
                     countEl.textContent = countEl.dataset.originalCount || entries.length;
@@ -11794,7 +11890,7 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             }
             
             // Auto-expand to show all matching if < 20, or show "Show more" button if >= 20
-            if (classification) {
+            if (anyFilter) {
                 const hiddenDiv = document.getElementById(`deforest-hidden-${paId}`);
                 const moreBtn = document.getElementById(`deforest-more-btn-${paId}`);
                 
@@ -11864,7 +11960,7 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                 const parkName = pinnedLayers[pinKey].parkName;
                 
                 // Check if any entries match the filter
-                if (visibleCount === 0 && classification) {
+                if (visibleCount === 0 && anyFilter) {
                     // No features match filter - remove pin
                     removePinnedLayer(pinKey);
                     const iconEl = document.querySelector(`.pa-popup-section-icon[data-park-id="${paId}"][data-type="deforestation"]`);
@@ -11873,7 +11969,7 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                         updateIconSymbol(iconEl, 'deforestation', false);
                     }
                     updatePinnedIndicator();
-                    showToast(`No deforestation features match ${classification} filter`, 'info');
+                    showToast(`No deforestation features match ${deforestFilterLabel()} filter`, 'info');
                 } else {
                     // Re-add layer with filtered features
                     await addPinnedLayer(paId, parkName, 'deforestation');
@@ -11891,26 +11987,25 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             }
         }
         
-        // Filter settlement entries by classification
-        async function filterSettlementEntries(paId, classification, event) {
+        // Filter settlement entries. dim: 'class' | 'age' | 'crop'; dimensions
+        // AND together, each rides in the share URL (settlement_filter /
+        // settlement_age / settlement_crop). value '' clears one dimension.
+        async function filterSettlementEntries(paId, dim, value, event) {
             // Prevent event from bubbling to section header (which would collapse)
             if (event) {
                 event.stopPropagation();
             }
-            
-            // Show/hide clear button
-            const clearBtn = document.getElementById(`settlement-filter-clear-${paId}`);
-            if (clearBtn) {
-                clearBtn.style.display = classification ? 'block' : 'none';
-            }
-            
+
+            const st = getSectionFilters('settlement', paId);
+            st[dim] = value || '';
+            syncFilterChips('settlement', paId);
+            const anyFilter = !!(st.class || st.age || st.crop);
+
             // Update URL with filter state
             const url = new URL(window.location);
-            if (classification) {
-                url.searchParams.set('settlement_filter', classification);
-            } else {
-                url.searchParams.delete('settlement_filter');
-            }
+            st.class ? url.searchParams.set('settlement_filter', st.class) : url.searchParams.delete('settlement_filter');
+            st.age ? url.searchParams.set('settlement_age', st.age) : url.searchParams.delete('settlement_age');
+            st.crop ? url.searchParams.set('settlement_crop', st.crop) : url.searchParams.delete('settlement_crop');
             window.history.replaceState({}, '', url);
             
             const container = document.getElementById(`settlements-list-${paId}`);
@@ -11932,10 +12027,12 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             let visibleCount = 0;
             let matchingEntries = [];
             
-            // First pass: identify matching entries
+            // First pass: identify matching entries (all dimensions AND)
             entries.forEach(entry => {
-                const entryClass = entry.dataset.classification || '';
-                if (!classification || entryClass === classification) {
+                const okClass = !st.class || (entry.dataset.classification || '') === st.class;
+                const okAge = !st.age || (entry.dataset.persistence || 'unmeasured') === st.age;
+                const okCrop = !st.crop || (entry.dataset.crop || 'unmeasured') === st.crop;
+                if (okClass && okAge && okCrop) {
                     matchingEntries.push(entry);
                 } else {
                     entry.style.display = 'none';
@@ -11952,6 +12049,15 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                 }
             });
             
+            // Human words for the active filter (accordion header + toasts)
+            const settlementFilterLabel = () => {
+                const parts = [];
+                if (st.class) parts.push(st.class === 'agricultural' ? 'farming' : (st.class === 'temporary_camp' ? 'camp' : (st.class === 'residential' ? 'village' : (st.class === 'pastoral' ? 'herding' : st.class))));
+                if (st.age) parts.push(st.age);
+                if (st.crop) parts.push({crops: 'crops nearby', nocrops: 'no crops', unmeasured: 'crop unmeasured'}[st.crop] || st.crop);
+                return parts.join(', ');
+            };
+
             // Update accordion count to show filtered count
             const countEl = document.getElementById(`settlement-count-${paId}`);
             if (countEl) {
@@ -11959,19 +12065,17 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                 if (!countEl.dataset.originalCount) {
                     countEl.dataset.originalCount = countEl.textContent;
                 }
-                
-                if (classification) {
-                    // Use friendly name for display
-                    const displayName = classification === 'agricultural' ? 'farming' : (classification === 'temporary_camp' ? 'camp' : classification);
-                    countEl.textContent = `${matchingEntries.length} (${displayName})`;
+
+                if (anyFilter) {
+                    countEl.textContent = `${matchingEntries.length} (${settlementFilterLabel()})`;
                 } else {
                     // Restore original count when filter cleared
                     countEl.textContent = countEl.dataset.originalCount || entries.length;
                 }
             }
-            
+
             // Auto-expand to show all matching if < 20, or show "Show more" button if >= 20
-            if (classification) {
+            if (anyFilter) {
                 const hiddenDiv = document.getElementById(`settlements-hidden-${paId}`);
                 const moreBtn = document.getElementById(`settlements-more-btn-${paId}`);
                 
@@ -12041,7 +12145,7 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                 const parkName = pinnedLayers[pinKey].parkName;
                 
                 // Check if any entries match the filter
-                if (visibleCount === 0 && classification) {
+                if (visibleCount === 0 && anyFilter) {
                     // No features match filter - remove pin
                     removePinnedLayer(pinKey);
                     const iconEl = document.querySelector(`.pa-popup-section-icon[data-park-id="${paId}"][data-type="settlement"]`);
@@ -12050,7 +12154,7 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                         updateIconSymbol(iconEl, 'settlement', false);
                     }
                     updatePinnedIndicator();
-                    showToast(`No settlement features match ${classification} filter`, 'info');
+                    showToast(`No settlement features match ${settlementFilterLabel()} filter`, 'info');
                 } else {
                     // Re-add layer with filtered features
                     await addPinnedLayer(paId, parkName, 'settlement');
@@ -12218,7 +12322,7 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                                 const patchInfo = polygonIds.length > 1 ? ` <span style="color: #666; font-size: 8px;">[${polygonIds.length} patches]</span>` : '';
                                 const badgeNum = deforestBadgeIdx++;
                                 const testBadge = window.TEST ? `<span class="test-entry-id" data-entry="deforestation-${badgeNum}" style="display: inline-block; background: #3b82f6; color: white; font-size: 8px; font-weight: 600; padding: 1px 4px; border-radius: 3px; margin-right: 4px;">${badgeNum}</span>` : '';
-                                return `<div class="narrative-row" data-park="${paId}" data-type="deforestation" data-feature="${pinRef}" data-classification="${e.classification || ''}" data-priority="${priorityScore.toFixed(0)}" data-year="${e.year}" data-area="${e.area_km2 || 0}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName)}', 'deforestation', '${pinRef}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; display: flex; align-items: flex-start; gap: 6px; transition: all 0.2s;" title="Click to pin on map. ${escapeHtml(text)}">${testBadge}<span style="background: rgba(${parseInt(color.slice(1,3), 16)}, ${parseInt(color.slice(3,5), 16)}, ${parseInt(color.slice(5,7), 16)}, 0.2); border: 1px solid ${color}40; color: ${color}; font-size: 8px; font-weight: 600; flex-shrink: 0; text-transform: uppercase; padding: 2px 4px; border-radius: 3px;">${escapeHtml(typeLabel)}</span> <span style="flex:1;">${escapeHtml(shortText)}${patchInfo}</span></div>`;
+                                return `<div class="narrative-row" data-park="${paId}" data-type="deforestation" data-feature="${pinRef}" data-classification="${e.classification || ''}" data-crop="${deforestConvBucket(e.cropland_conversion_frac)}" data-priority="${priorityScore.toFixed(0)}" data-year="${e.year}" data-area="${e.area_km2 || 0}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName)}', 'deforestation', '${pinRef}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; display: flex; align-items: flex-start; gap: 6px; transition: all 0.2s;" title="Click to pin on map. ${escapeHtml(text)}">${testBadge}<span style="background: rgba(${parseInt(color.slice(1,3), 16)}, ${parseInt(color.slice(3,5), 16)}, ${parseInt(color.slice(5,7), 16)}, 0.2); border: 1px solid ${color}40; color: ${color}; font-size: 8px; font-weight: 600; flex-shrink: 0; text-transform: uppercase; padding: 2px 4px; border-radius: 3px;">${escapeHtml(typeLabel)}</span> <span style="flex:1;">${escapeHtml(shortText)}${patchInfo}</span></div>`;
                             };
                             
                             // Format yearly story without classified data
@@ -12244,19 +12348,35 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                                 const initial = sortedEvents.slice(0, 10);
                                 const remaining = sortedEvents.slice(10);
                                 
-                                // Get unique classifications for filter with counts
+                                // Get unique classifications for filter with counts,
+                                // plus the cropland-conversion dimension ("became
+                                // farmland" = the report's one-way doors, conversion
+                                // frac >= 0.5; "regrows" = loss the GLAD epochs did
+                                // not see become cropland).
                                 const classificationCounts = {};
+                                const convCounts = {};
                                 sortedEvents.forEach(e => {
                                     if (e.classification) {
                                         classificationCounts[e.classification] = (classificationCounts[e.classification] || 0) + 1;
                                     }
+                                    const c = deforestConvBucket(e.cropland_conversion_frac);
+                                    convCounts[c] = (convCounts[c] || 0) + 1;
                                 });
                                 const classifications = Object.keys(classificationCounts).sort();
                                 const showFilter = classifications.length > 1;
-                                
+                                const deforestChipRows = filterStrip('deforest', paId,
+                                    (showFilter ? filterChips(paId, classificationCounts, classColorsMap, {slash_burn: 'burn', encroachment: 'clearing'}, 'filterDeforestEntries', 'deforest', {dim: 'class', name: 'type'}) : '')
+                                    + filterChips(paId, convCounts,
+                                        {converted: '#f59e0b', regrows: '#22c55e', unmeasured: '#6b7280'},
+                                        {converted: 'became farmland', regrows: 'regrows', unmeasured: 'unmeasured'},
+                                        'filterDeforestEntries', 'deforest',
+                                        {dim: 'crop', name: 'after loss', order: ['converted', 'regrows', 'unmeasured'],
+                                         tips: {converted: '≥50% of the loss became mapped cropland (GLAD 2016-19) — permanent conversion, not a cycle', regrows: '<50% became cropland — the canopy can close again', unmeasured: 'No GLAD measurement — unmeasured, not zero'}}),
+                                    'filterDeforestEntries');
+
                                 return `
                                 <div style="margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">
-                                    ${showFilter ? filterChips(paId, classificationCounts, classColorsMap, {slash_burn: 'burn', encroachment: 'clearing'}, 'filterDeforestEntries', 'deforest') : ''}
+                                    ${deforestChipRows}
                                     <div id="deforest-stories-${paId}">
                                         ${initial.map(e => formatClassifiedDefo(e)).join('')}
                                         ${remaining.length > 0 ? `<div id="deforest-hidden-${paId}" style="display: none;">${remaining.map(e => formatClassifiedDefo(e)).join('')}</div>` : ''}
@@ -12322,19 +12442,18 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                         }, 100);
                     }
                     
-                    // Apply filter from URL if present
+                    // Apply filters from URL if present (same pattern as the
+                    // settlements section: write state, one handler call).
                     const urlParams = new URLSearchParams(window.location.search);
-                    const deforestFilter = urlParams.get('deforest_filter');
-                    if (deforestFilter && classifiedEvents && classifiedEvents.length > 0) {
-                        setTimeout(() => {
-                            // Apply filter even if select doesn't exist (happens when URL pre-filters)
-                            const filterSelect = document.getElementById(`deforest-filter-${paId}`);
-                            if (filterSelect) {
-                                filterSelect.value = deforestFilter;
-                            }
-                            // Wait for entries to be fully rendered in DOM, then apply filter
-                            setTimeout(() => filterDeforestEntries(paId, deforestFilter, null), 200);
-                        }, 500);
+                    const urlSt = {
+                        class: urlParams.get('deforest_filter') || '',
+                        crop: urlParams.get('deforest_crop') || ''
+                    };
+                    if ((urlSt.class || urlSt.crop) && classifiedEvents && classifiedEvents.length > 0) {
+                        const st = getSectionFilters('deforest', paId);
+                        st.class = urlSt.class; st.crop = urlSt.crop;
+                        // Wait for entries to be fully rendered in DOM, then apply
+                        setTimeout(() => filterDeforestEntries(paId, 'class', st.class, null), 700);
                     }
                     
                     // Number deforestation entries if TEST mode is active
@@ -13873,7 +13992,7 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             return Object.keys(pins).find(k => {
                 const p = pins[k];
                 if (!p || !p.lod || p.parkId !== scope) return false;
-                if (p.classification) return false;   // a filtered pin is a different answer
+                if (p.classification || p.age || p.crop) return false;   // a filtered pin is a different answer
                 const ft = p.type === 'fire' ? 'fire_trajectory' : p.type;
                 return ft === meta.featureType;
             }) || null;
@@ -19758,14 +19877,20 @@ ${starredItems.narratives.map(n => {
                 }
             }
             
-            // Get current filter value for this type
-            let filterClassification = null;
+            // Current popup filter for this type — the chip rows' state
+            // (sectionFilters), not a DOM query: the old <select> elements the
+            // pin used to read were removed in the chip migration, so a
+            // filtered pin silently un-filtered on re-add.
+            let filterClassification = null, filterAge = null, filterCrop = null;
             if (type === 'deforestation') {
-                const filter = document.querySelector(`#deforest-filter-${parkId}`);
-                if (filter) filterClassification = filter.value || null;
+                const st = getSectionFilters('deforest', parkId);
+                filterClassification = st.class || null;
+                filterCrop = st.crop || null;
             } else if (type === 'settlement') {
-                const filter = document.querySelector(`#settlement-filter-${parkId}`);
-                if (filter) filterClassification = filter.value || null;
+                const st = getSectionFilters('settlement', parkId);
+                filterClassification = st.class || null;
+                filterAge = st.age || null;
+                filterCrop = st.crop || null;
             }
             
             let geojson;
@@ -19797,6 +19922,8 @@ ${starredItems.narratives.map(n => {
                     parkName,
                     aoi: isAOI(parkId) ? parkId : null,
                     classification: filterClassification || null,
+                    age: filterAge || null,
+                    crop: filterCrop || null,
                     dated: featureType !== 'settlement',
                     onCount: (count, total, render) => {
                         const p = pinnedLayers[key];
@@ -19811,6 +19938,8 @@ ${starredItems.narratives.map(n => {
                     totalCount: st.total || 0,
                     lod: true,
                     classification: filterClassification || null,
+                    age: filterAge || null,
+                    crop: filterCrop || null,
                     layerId, sourceId: 'lod-' + key
                 };
                 // The pin exists only NOW — icon syncs that ran while the
@@ -19818,7 +19947,8 @@ ${starredItems.narratives.map(n => {
                 // pin and left the accordion glyph unfilled. One writer,
                 // at the moment the state actually changes.
                 if (typeof updateIconPinStates === 'function') updateIconPinStates(parkId);
-                const what = filterClassification ? `${filterClassification} ${type}` : type;
+                const filterWords = [filterClassification, filterAge, filterCrop].filter(Boolean).join(' ');
+                const what = filterWords ? `${filterWords} ${type}` : type;
                 if (!st.count) {
                     showToast(`No ${what} features in view for ${parkName} — the pin follows the map, so pan or widen the dates`, 'info');
                 } else if (st.total > st.count) {
@@ -20508,7 +20638,7 @@ ${starredItems.narratives.map(n => {
             byPark[park].push({ type: layer.type, count: layer.featureCount, key, isBulk: true,
                                 lod: layer.lod, render: layer.render,
                                 detail: layer.lod && window.LODLayer ? LODLayer.detail(key) : null,
-                                classification: layer.classification || null,
+                                classification: [layer.classification, layer.age, layer.crop].filter(Boolean).join(' ') || null,
                                 total: layer.totalCount });
         });
         singleKeys.forEach(key => {
@@ -22928,6 +23058,19 @@ ${starredItems.narratives.map(n => {
                 });
                 if (open.length) params.set('aoi_sections', open.join(','));
             }
+        }
+
+        // Section filter chips (settlement type/age/crops, deforestation
+        // type/conversion). The chip handlers keep these five params current
+        // in the address bar via replaceState, so the address bar IS the
+        // state — copy them rather than re-deriving from sectionFilters.
+        {
+            const cur = new URLSearchParams(window.location.search);
+            ['settlement_filter', 'settlement_age', 'settlement_crop',
+             'deforest_filter', 'deforest_crop'].forEach(k => {
+                const v = cur.get(k);
+                if (v) params.set(k, v);
+            });
         }
 
         // The open download menu, and which entry it is pointing at.

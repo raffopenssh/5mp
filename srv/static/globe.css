@@ -2318,12 +2318,52 @@
         .narrative-row:hover { background: rgba(255,255,255,0.05) !important; }
         .narrative-row.pinned { background: rgba(34,197,94,0.15) !important; border: 1px solid rgba(34,197,94,0.3); opacity: 1 !important; }
         .narrative-row:focus { outline: none; }
-        .pa-popup-mini-stat { display: flex; justify-content: space-between; padding: 3px 0; font-size: 11px; }
-        .pa-popup-mini-stat-label { color: #999; }
-        .pa-popup-mini-stat-value { color: #22c55e; font-weight: 500; }
+        /* Summary rows in accordion sections. Grid, not space-between flex:
+           long labels ("Cropland nearby") and long values ("19 permanent,
+           1 recent (+3 unmeasured)") used to wrap into each other. The label
+           keeps its natural width; the value right-aligns and wraps cleanly
+           in its own column. */
+        .pa-popup-mini-stat { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; align-items: baseline; padding: 3px 0; font-size: 11px; }
+        .pa-popup-mini-stat-label { color: #999; white-space: nowrap; }
+        .pa-popup-mini-stat-value { color: #22c55e; font-weight: 500; text-align: right; overflow-wrap: anywhere; }
         .pa-popup-mini-stat-value.warning { color: #f97316; }
         .pa-popup-mini-stat-value.bad { color: #ef4444; }
         .pa-popup-mini-stat-value.muted { color: #888; }
+        /* Accordion filter chips — one row per dimension (type / age / crops) */
+        /* Filter strip: one wrapping row of chip groups (type | age | crops),
+           no "all" chips — nothing selected means everything shown. Groups get
+           hairline separators; a single ✕ clears all dimensions. */
+        .filter-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 3px 4px; margin: 4px 0 6px; }
+        .filter-chip-group { display: contents; }
+        .filter-chip-group + .filter-chip-group .filter-chip-dim { border-left: 1px solid rgba(255,255,255,0.12); padding-left: 7px; margin-left: 3px; }
+        .filter-chip-dim { font-size: 8px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.4px; margin-right: 1px; }
+        .filter-chip { font-size: 9px; line-height: 1; padding: 3px 7px; min-height: 18px; border-radius: 9px; cursor: pointer;
+            color: var(--chip, #9ca3af);
+            background: color-mix(in srgb, var(--chip, #9ca3af) 11%, transparent);
+            border: 1px solid color-mix(in srgb, var(--chip, #9ca3af) 28%, transparent);
+            opacity: 0.8; font-weight: 400;
+            transition: opacity 0.15s, box-shadow 0.15s, transform 0.1s, background 0.15s; }
+        .filter-chip-n { opacity: 0.6; margin-left: 3px; font-size: 8px; font-variant-numeric: tabular-nums; }
+        .filter-chip:hover { opacity: 1; }
+        .filter-chip.on { opacity: 1; font-weight: 700;
+            background: color-mix(in srgb, var(--chip, #9ca3af) 24%, transparent);
+            box-shadow: 0 0 0 1px var(--chip, #9ca3af) inset; }
+        /* While something is filtered, quiet the rest so the selection pops */
+        .filter-strip.filtering .filter-chip:not(.on) { opacity: 0.4; }
+        .filter-strip.filtering .filter-chip:not(.on):hover { opacity: 0.9; }
+        .filter-chip:active { transform: scale(0.94); }
+        .filter-clear-chip { font-size: 9px; line-height: 1; padding: 3px 7px; min-height: 18px; border-radius: 9px; cursor: pointer;
+            color: #d1d5db; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.18);
+            transition: background 0.15s, transform 0.1s; }
+        .filter-clear-chip:hover { background: rgba(255,255,255,0.14); }
+        .filter-clear-chip:active { transform: scale(0.94); }
+        /* Phone: bigger tap targets */
+        @media (pointer: coarse) {
+            .filter-chip, .filter-clear-chip { font-size: 11px; padding: 6px 10px; min-height: 28px; border-radius: 14px; }
+            .filter-chip-n { font-size: 10px; }
+            .filter-chip-dim { font-size: 9px; }
+            .filter-strip { gap: 5px 6px; }
+        }
         .pa-popup-bar { height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 4px; overflow: hidden; }
         .pa-popup-bar-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
         .pa-popup-bar-fill.good { background: #22c55e; }

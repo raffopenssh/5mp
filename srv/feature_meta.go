@@ -39,6 +39,12 @@ func splitPolygonIDs(s string) []string {
 type settlementMeta struct {
 	narrative, classification, nearestPlace sql.NullString
 	distanceKm                              sql.NullFloat64
+	// persistence (permanent/established/recent from GHSL epochs) and the
+	// 2019 cropland fraction ride along for the popup's age/crop filters.
+	// Both nullable: NULL is unmeasured, not zero (invariant 1), and the
+	// filter buckets keep "unmeasured" as its own word.
+	persistence      sql.NullString
+	croplandFrac2019 sql.NullFloat64
 	// groupID is the park_settlements row this footprint belongs to — the
 	// identity of the SETTLEMENT, as opposed to of the polygon. See
 	// settlementGroupKey.
@@ -53,7 +59,8 @@ type settlementMeta struct {
 func (s *Server) settlementMetaByPolygon(parkID string) map[string]settlementMeta {
 	out := map[string]settlementMeta{}
 	rows, err := s.DB.Query(`
-		SELECT polygon_ids, narrative, classification, nearest_place, distance_to_place_km, id
+		SELECT polygon_ids, narrative, classification, nearest_place, distance_to_place_km, id,
+		       persistence, cropland_frac_2019
 		FROM park_settlements
 		WHERE park_id = ? AND polygon_ids IS NOT NULL AND polygon_ids != ''`+
 		scannerInjectedSQLFilter("narrative"), parkID)
@@ -64,7 +71,8 @@ func (s *Server) settlementMetaByPolygon(parkID string) map[string]settlementMet
 	for rows.Next() {
 		var polyIDs string
 		var m settlementMeta
-		if err := rows.Scan(&polyIDs, &m.narrative, &m.classification, &m.nearestPlace, &m.distanceKm, &m.groupID); err != nil {
+		if err := rows.Scan(&polyIDs, &m.narrative, &m.classification, &m.nearestPlace, &m.distanceKm, &m.groupID,
+			&m.persistence, &m.croplandFrac2019); err != nil {
 			continue
 		}
 		for _, id := range splitPolygonIDs(polyIDs) {
@@ -76,6 +84,10 @@ func (s *Server) settlementMetaByPolygon(parkID string) map[string]settlementMet
 
 type deforestMeta struct {
 	narrative, classification, patternType sql.NullString
+	// croplandConversionFrac: share of the loss attributable to cropland
+	// EXPANSION (GLAD epochs). NULL = unmeasured (invariant 1). Drives the
+	// popup's "became farmland / regrows" filter.
+	croplandConversionFrac sql.NullFloat64
 	// eventID is the deforestation_events row this patch belongs to. One event
 	// is one row in the overview list and several polygons on the map
 	// (`[n patches]` in the list entry), so this is the identity the LIST uses
@@ -99,7 +111,7 @@ func defMetaKey(featureID string, year interface{}) string {
 func (s *Server) deforestMetaByPolygon(parkID string) map[string]deforestMeta {
 	out := map[string]deforestMeta{}
 	rows, err := s.DB.Query(`
-		SELECT polygon_ids, year, narrative, classification, pattern_type, id
+		SELECT polygon_ids, year, narrative, classification, pattern_type, id, cropland_conversion_frac
 		FROM deforestation_events
 		WHERE park_id = ? AND polygon_ids IS NOT NULL AND polygon_ids != ''`, parkID)
 	if err != nil {
@@ -110,7 +122,7 @@ func (s *Server) deforestMetaByPolygon(parkID string) map[string]deforestMeta {
 		var polyIDs string
 		var year int
 		var m deforestMeta
-		if err := rows.Scan(&polyIDs, &year, &m.narrative, &m.classification, &m.patternType, &m.eventID); err != nil {
+		if err := rows.Scan(&polyIDs, &year, &m.narrative, &m.classification, &m.patternType, &m.eventID, &m.croplandConversionFrac); err != nil {
 			continue
 		}
 		for _, id := range splitPolygonIDs(polyIDs) {
@@ -272,30 +284,81 @@ func (s *Server) settlementGroupKey(parkID, featureID string, c *featureMetaCach
 }
 
 // featureIDsWithClass returns the feature_ids of one area whose classification
-// matches, for the viewport endpoint's ?class= filter.
+// (and optionally persistence / cropland bucket) matches, for the viewport
+// endpoint's ?class= / ?age= / ?crop= filters. Empty-string dimensions do not
+// filter; supplied dimensions AND together, mirroring the popup's chip rows.
 //
-// nil means "this feature type has no classification" (fire trajectories), and
-// the caller must then serve the UNFILTERED answer rather than an empty one: a
-// filter that cannot apply is not a filter that excludes everything. An empty
-// (non-nil) map means the class is real and nothing in this area carries it,
-// which legitimately draws nothing.
+// nil means "this feature type has none of these dimensions" (fire
+// trajectories), and the caller must then serve the UNFILTERED answer rather
+// than an empty one: a filter that cannot apply is not a filter that excludes
+// everything. An empty (non-nil) map means the buckets are real and nothing in
+// this area matches, which legitimately draws nothing.
+//
+// Bucket words (must stay in lockstep with settlementCropBucket/
+// deforestConvBucket in globe.html):
+//   settlement age:  permanent | established | recent | unmeasured
+//   settlement crop: crops (frac_2019 >= 0.03, same threshold the popup's
+//                    "Cropland nearby" stat counts) | nocrops | unmeasured
+//   deforest crop:   converted (cropland_conversion_frac >= 0.5, the report's
+//                    one-way doors) | regrows (< 0.5) | unmeasured (NULL)
+//
+// NULL is unmeasured, not zero (invariant 1): an unmeasured row matches only
+// the explicit 'unmeasured' bucket, never a value bucket.
 //
 // Same rule as everywhere else in this file: one scan of the small events
 // table, split in Go. Never the polygon_ids LIKE join.
-func (s *Server) featureIDsWithClass(featureType, areaID, class string) map[string]bool {
+func settlementCropBucketGo(f sql.NullFloat64) string {
+	if !f.Valid {
+		return "unmeasured"
+	}
+	if f.Float64 >= 0.03 {
+		return "crops"
+	}
+	return "nocrops"
+}
+
+func deforestConvBucketGo(f sql.NullFloat64) string {
+	if !f.Valid {
+		return "unmeasured"
+	}
+	if f.Float64 >= 0.5 {
+		return "converted"
+	}
+	return "regrows"
+}
+
+func (s *Server) featureIDsWithClass(featureType, areaID, class, age, crop string) map[string]bool {
 	out := map[string]bool{}
 	switch featureType {
 	case "settlement":
 		for id, m := range s.settlementMetaByPolygon(areaID) {
-			if m.classification.Valid && publicSettlementClass(m.classification.String) == class {
-				out[id] = true
+			if class != "" && (!m.classification.Valid || publicSettlementClass(m.classification.String) != class) {
+				continue
 			}
+			if age != "" {
+				p := "unmeasured"
+				if m.persistence.Valid && m.persistence.String != "" {
+					p = m.persistence.String
+				}
+				if p != age {
+					continue
+				}
+			}
+			if crop != "" && settlementCropBucketGo(m.croplandFrac2019) != crop {
+				continue
+			}
+			out[id] = true
 		}
 	case "deforestation":
+		// age never applies to deforestation; a dimension that cannot apply
+		// does not filter (same contract as nil for the whole type).
 		// Keyed by "<feature_id>|<year>" for the tip lookup; the filter is
 		// about the polygon, so the year is dropped here.
 		for key, m := range s.deforestMetaByPolygon(areaID) {
-			if !m.classification.Valid || m.classification.String != class {
+			if class != "" && (!m.classification.Valid || m.classification.String != class) {
+				continue
+			}
+			if crop != "" && deforestConvBucketGo(m.croplandConversionFrac) != crop {
 				continue
 			}
 			if i := strings.LastIndexByte(key, '|'); i >= 0 {

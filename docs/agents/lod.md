@@ -218,6 +218,24 @@ filtered on. It is `?class=` now, resolved through the same Go-side map as the
 hover tips (`featureIDsWithClass` in `feature_meta.go`) — never the
 `polygon_ids` LIKE join.
 
+`?age=` and `?crop=` (2026-08) are two more dimensions of the same filter and
+AND with `?class=`: settlement GHSL persistence
+(`permanent|established|recent|unmeasured`), settlement cropland-nearby
+(`crops` = frac_2019 ≥ 3%, the same threshold the "Cropland nearby" stat uses
+`|nocrops|unmeasured`), deforestation conversion (`converted` =
+cropland_conversion_frac ≥ 0.5 `|regrows|unmeasured`). Bucket words live in
+lockstep in `featureIDsWithClass` (Go) and
+`settlementCropBucket`/`deforestConvBucket` (globe.html) — NULL is its own
+`unmeasured` bucket, never a value bucket (invariant 1). The popup chip strip
+(`filterStrip`/`filterChips`/`selectChip`/`syncFilterChips`, state in
+`sectionFilters`) is the only writer of the five URL params
+`settlement_filter|settlement_age|settlement_crop|deforest_filter|deforest_crop`;
+`buildShareUrl` copies them from `location.search`, and the section renderers
+restore them by seeding `sectionFilters` then calling the filter handler once.
+Design choice: no per-dimension "all" chip (empty selection means all); one
+shared ✕ appears only while filtering; `.filter-strip.filtering` dims
+unselected chips.
+
 * Applied **before** the spread collector, so `total` counts what passes it and
   the selection spreads over the filtered set. A filter that changed the
   picture but not the number reads as broken.

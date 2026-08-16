@@ -567,6 +567,12 @@
         // pin could not use this loader at all: neither the chord nor the slim
         // geometry rendering ships the property it filtered on.
         if (s.classification) qs.set('class', s.classification);
+        // Two more dimensions of the same popup filter, AND-combined
+        // server-side: settlement persistence bucket (?age=) and cropland /
+        // conversion bucket (?crop=). Bucket words live in
+        // featureIDsWithClass (srv/feature_meta.go).
+        if (s.age) qs.set('age', s.age);
+        if (s.crop) qs.set('crop', s.crop);
         // The focus scope, so the layer draws what the panel counts. An AOI
         // needs `aoi=` (it is excluded by default, for privacy and to stop it
         // double-counting the parks it overlaps); a park needs `park_focus=`,
