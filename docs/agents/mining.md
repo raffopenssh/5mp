@@ -253,4 +253,46 @@ prose version. Rules that cost time:
   `export_prediction_gpkg.py` must be kept in sync with the report text.
 - Shared via `/api/files` guest link (owner `$AOI_OWNER_PWD`); replacing the
   file = upload new + DELETE old id (delete revokes the old guest links).
-  Current link: `/s/g-nsnzgpkhgkfgzrs8` (21-layer GPKG, exp 2026-11-14).
+  Current link: `/s/g-dfx7znjwjvh9zbc5` (10-layer GPKG, exp 2026-11-14).
+
+## Travel times, plan score and key places (2026-08-16)
+
+- **Local OSRM**, not the public demo: Docker containers `osrm-xsa` (car,
+  :5001) and `osrm-xsa-foot` (foot, :5002), data under `/home/exedev/
+  osrm-xsa/`, built from merged Geofabrik CAR+SSD+SDN extracts. Foot is a
+  first-class mode (people walk ~40 km/day here; only 42% of cells are
+  fastest by car); where OSRM has no route, a 4 km/h straight-line
+  bush-walk fallback — stated in metadata, every pair finite.
+  `scripts/osrm_travel_times_xsa.py` → `data/eval/xsa_mining/
+  osrm_times.npz` (2,337 stations × 15,788 cells, uint16 minutes + mode)
+  and `osrm_times_meta.json`.
+- **Accessibility is a reporting proxy, NOT a mining signal**
+  (`scripts/eval_osrm_accessibility.py` → `osrm_accessibility_eval.json`):
+  beats the uniform null, fails the reach null after BH (best q=0.16).
+  Never add plain travel time to the composite. The measured exception:
+  **gold-contact ≤5 km ∧ access ≤240 min**, lift 1.9–2.4× vs 1.8× gold
+  alone, q_bh_reach=0.04 (`scripts/eval_access_x_geology_xsa.py` →
+  `access_x_geology_eval.json`; the far-access complement is unfalsifiable
+  from report data and says so in the file). Also measured and negative:
+  **time-from-5k-town ("impunity") is not a mining signal** under the reach
+  null (best lift 1.30, q_bh=0.58; under uniform, mines are *nearer* towns
+  — the reporting lens). It votes only in the plan score as a stated
+  planning preference, never in the composite.
+- **Plan score** (`scripts/plan_score_xsa.py` → `key_places_plan.json` +
+  `plan_surface.npz`): equal-vote rank mean of composite context + Harris
+  pop/max(t,30min)² gravity (measured pops only, 2,071 stations) +
+  time-from-town impunity, on the top-20% surface. Gravity/impunity are
+  stated planning preferences, never evidence claims.
+- **Key places**: greedy max-coverage of plan mass within 480 min,
+  ≤3/basin; 11 bases reach the 1%-marginal stop at 86.7%, then 8 remote
+  outposts (same rule on the residual) to 91.2%; 96.8% of conjunction
+  mass, 74.4% of truth clusters within a day. Ambougoudiou (rank 12) puts
+  (TIDI) 105 min away. Places + outposts ship as GPKG layer
+  `00_plan__key_places` and report section 4c.
+- **GPKG layout (2026-08-16, replaces the 21-layer tier folders): one
+  layer per information class** — 00 key places / 01 known mines / 02
+  candidates / 03 watchlist / 10 all scored places (viridis by pctile,
+  one layer, kind field) / 20 context surface (viridis) / 21 plan surface
+  / 22 travel time (whole grid, blues) / 23 gold∧reachable (amber, lift+q
+  fields) / 30 basins. Graduated QML ramps hardcoded in
+  `export_prediction_gpkg.py`.
