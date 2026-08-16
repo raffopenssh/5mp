@@ -291,8 +291,28 @@ toolbar pencil becomes a map icon because a pencil promises editing.
 
 The Access and Sharing tabs are ONE tab (`data-tab="access"`; share links
 first, then AOI/ingest, then principals). `switchAdminTab('sharing')` redirects
-to it so old deep links keep working. Grouped by password (`pwd_ref`, own group
-first). Guest rows are amber and badged; "never opened" is written out rather
+to it so old deep links keep working.
+
+**Scoped to the caller (2026-08-16).** The first cut listed *every* login's
+links grouped by `pwd_ref` — one tenant could read another's link targets
+(which name their private AOIs and export files), copy their live guest keys,
+and revoke/retag/extend/rename them; the group label was even `pwd[:3]+"…"`,
+three characters of every other password. Now `GET /api/shortlinks` returns
+only rows `WHERE pwd_ref = <caller>` (empty ref → empty list, so a legacy row
+with no `pwd_ref` is reachable by *nobody*), and every mutation
+(delete/rename/extend/retag, the by-tag bulk verbs, and the tag vocabulary)
+is scoped through `shortLinkOwned`/`shortCallerRef` in `srv/shortlink.go`.
+Not-yours answers **404, not 403** (invariant 6). Create's dedupe also matches
+only the caller's own rows — it used to return, and adopt tags onto, another
+login's slug. `/s/{slug}` resolution is unchanged: a named link resolving for
+anyone holding a valid password is the feature. Pinned by
+`shortlinks_scoped_to_their_login` in `tests/api_tests.sh`.
+
+The intro text is a one-line scope statement plus a `.sh-legend` definition
+list (globe.css) that collapses to one column under 640px — the old 7-line
+paragraph read as a wall on desktop and wrapped badly on phones.
+
+Guest rows are amber and badged; "never opened" is written out rather
 than left blank, because a blank cell reads as "no data" and an unopened key is
 the opposite of no data. Aliases are shown — an old link still resolves through
 one, and hiding it makes "why does this URL still work" unanswerable.

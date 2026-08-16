@@ -615,9 +615,9 @@ func (s *Server) HandleAPIShortLinkCreate(w http.ResponseWriter, r *http.Request
 
 	var existing, existingTag string
 	if err := s.DB.QueryRow(`SELECT slug, COALESCE(tag,'') FROM short_links
-		WHERE url = ? AND env = ? AND guest = 0
+		WHERE url = ? AND env = ? AND pwd_ref = ? AND guest = 0
 		  AND (alias_of IS NULL OR alias_of = '')
-		ORDER BY created_at DESC LIMIT 1`, target, env).Scan(&existing, &existingTag); err == nil && existing != "" {
+		ORDER BY created_at DESC LIMIT 1`, target, env, ref).Scan(&existing, &existingTag); err == nil && existing != "" {
 		// Dedupe found a row. A requested tag on an untagged row is adopted --
 		// the caller is tagging the view they are sharing right now -- but a
 		// tag already there is never silently overwritten; the response echoes
@@ -652,6 +652,33 @@ func (s *Server) shortSlugTaken(slug string) bool {
 	return s.DB.QueryRow(`SELECT 1 FROM short_links WHERE slug = ?`, slug).Scan(&one) == nil
 }
 
+// shortCallerRef is the caller's pwd_ref, or "" when the request carries no
+// password (a guest, or nothing). Every read and write on short_links is
+// scoped by it: a link belongs to the login that minted it, and another
+// login must get "no such link" (404, not 403 — an id must not be an oracle,
+// AGENTS.md invariant 6). Rows with an empty pwd_ref (pre-scoping legacy)
+// are reachable by nobody rather than by everybody.
+func shortCallerRef(r *http.Request) string {
+	if pwd := RequestPwd(r); pwd != "" {
+		return principalRef(pwd)
+	}
+	return ""
+}
+
+// shortLinkOwned reports whether slug exists AND belongs to the caller.
+func (s *Server) shortLinkOwned(slug string, r *http.Request) bool {
+	ref := shortCallerRef(r)
+	if ref == "" {
+		return false
+	}
+	var pr string
+	if err := s.DB.QueryRow(`SELECT COALESCE(pwd_ref,'') FROM short_links WHERE slug = ?`,
+		slug).Scan(&pr); err != nil {
+		return false
+	}
+	return pr == ref
+}
+
 // HandleAPIShortLinkRename — POST /api/shortlink/{slug}/rename {slug}
 //
 // The old name stays as an alias. Renaming is the normal case (copy first,
@@ -675,6 +702,11 @@ func (s *Server) HandleAPIShortLinkRename(w http.ResponseWriter, r *http.Request
 	var target, kind string
 	var guest int
 	var alias sql.NullString
+	if !s.shortLinkOwned(old, r) {
+		// Not yours reads as not there — an id must not be an oracle.
+		writeJSON(w, http.StatusNotFound, shortLinkResp{Error: "no such link"})
+		return
+	}
 	if err := s.DB.QueryRow(`SELECT url, kind, guest, alias_of FROM short_links WHERE slug = ?`, old).
 		Scan(&target, &kind, &guest, &alias); err != nil {
 		writeJSON(w, http.StatusNotFound, shortLinkResp{Error: "no such link"})
@@ -751,7 +783,7 @@ type shortLinkRow struct {
 
 type shortLinkGroup struct {
 	Ref   string         `json:"ref"`   // non-secret sha256 handle
-	Label string         `json:"label"` // "tes…" — what the Access tab shows
+	Label string         `json:"label,omitempty"` // unused since scoping; kept for shape stability
 	Env   string         `json:"env"`
 	Mine  bool           `json:"mine"`
 	Links []shortLinkRow `json:"links"`
@@ -759,29 +791,34 @@ type shortLinkGroup struct {
 
 // HandleAPIShortLinkList — GET /api/shortlinks. The admin sheet.
 //
-// GROUPED BY PASSWORD, not flat. A guest link grants sight of exactly what one
-// password can see, so "whose access does this delegate" is the question being
-// asked here, and a flat list would answer it only by accident. The password
-// itself is never in the response — a group is identified by `pwd_ref`, the
-// same non-secret handle the Access tab already prints.
+// SCOPED TO THE CALLER. You see and manage the links your login minted, and
+// only those — another tenant's share links describe their views and their
+// grants, which is exactly the class of thing the AOI Access tab already
+// refuses to show globally (srv/aoi_admin.go, decision 1). The response keeps
+// the grouped shape (one group: yours) so the sheet needs no second format.
+// The password itself is never in the response — a group is identified by
+// `pwd_ref`, the same non-secret handle the Access tab already prints.
 func (s *Server) HandleAPIShortLinkList(w http.ResponseWriter, r *http.Request) {
-	mine := ""
-	if pwd := RequestPwd(r); pwd != "" {
-		mine = principalRef(pwd)
+	mine := shortCallerRef(r)
+	if mine == "" {
+		// No password, no links: a guest or an unauthenticated caller owns
+		// nothing here. Empty, not an error — the sheet renders "no links".
+		writeJSON(w, http.StatusOK, map[string]interface{}{"groups": []*shortLinkGroup{},
+			"guest_ttl_days": int(guestTTL / (24 * time.Hour)),
+			"guest_max_days": int(guestMaxTTL / (24 * time.Hour))})
+		return
 	}
 	rows, err := s.DB.Query(`SELECT slug, url, COALESCE(alias_of,''), kind, title, env,
 		COALESCE(pwd_ref,''), guest, COALESCE(expires_at,''), COALESCE(revoked_at,''),
 		hits, COALESCE(last_hit_at,''), created_at, COALESCE(scope,''),
 		COALESCE(date_from,''), COALESCE(date_to,''), COALESCE(tag,'')
-		FROM short_links ORDER BY created_at DESC LIMIT 1000`)
+		FROM short_links WHERE pwd_ref = ? ORDER BY created_at DESC LIMIT 1000`, mine)
 	if err != nil {
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "could not list links"})
 		return
 	}
 	defer rows.Close()
-	order := []string{}
-	byRef := map[string]*shortLinkGroup{}
-	labels := shortRefLabels()
+	g := &shortLinkGroup{Ref: mine, Mine: true, Links: []shortLinkRow{}}
 	now := time.Now()
 	for rows.Next() {
 		var l shortLinkRow
@@ -799,55 +836,22 @@ func (s *Server) HandleAPIShortLinkList(w http.ResponseWriter, r *http.Request) 
 				l.Expired = now.After(t)
 			}
 		}
-		l.Mine = ref != "" && ref == mine
-		g := byRef[ref]
-		if g == nil {
-			label := labels[ref]
-			if label == "" {
-				// A link made by a password since removed from the config.
-				// Say so rather than inventing a name: an unattributed key is
-				// exactly what an operator needs to notice.
-				label = "unknown password"
-				if ref == "" {
-					label = "no password recorded"
-				}
-			}
-			g = &shortLinkGroup{Ref: ref, Label: label, Env: env, Mine: ref != "" && ref == mine}
-			byRef[ref] = g
-			order = append(order, ref)
-		}
+		l.Mine = true
+		g.Env = env
 		g.Links = append(g.Links, l)
 	}
-	// The reader's own password first: those are the links they can act on
-	// without asking anybody.
-	groups := make([]*shortLinkGroup, 0, len(order))
-	for _, ref := range order {
-		if byRef[ref].Mine {
-			groups = append(groups, byRef[ref])
-		}
-	}
-	for _, ref := range order {
-		if !byRef[ref].Mine {
-			groups = append(groups, byRef[ref])
-		}
+	groups := []*shortLinkGroup{}
+	if len(g.Links) > 0 {
+		groups = append(groups, g)
 	}
 	writeJSON(w, http.StatusOK, map[string]interface{}{"groups": groups,
 		"guest_ttl_days": int(guestTTL / (24 * time.Hour)),
 		"guest_max_days": int(guestMaxTTL / (24 * time.Hour))})
 }
 
-// shortRefLabels maps principalRef -> the label the Access tab shows.
-func shortRefLabels() map[string]string {
-	out := map[string]string{}
-	for _, pwd := range validPasswords {
-		pwd = strings.TrimSpace(pwd)
-		if pwd == "" {
-			continue
-		}
-		out[principalRef(pwd)] = pwd[:min(3, len(pwd))] + "\u2026"
-	}
-	return out
-}
+// shortRefLabels is gone: the list is scoped to the caller, so no label
+// (which was pwd[:3]+"…", three characters of a credential) is ever needed
+// or served.
 
 // shortExtend pushes a guest link's expiry out by n days from now or from its
 // current expiry, whichever is later, clamped to guestMaxTTL from now. Returns
@@ -887,6 +891,10 @@ func (s *Server) shortExtend(slug string, days int) string {
 // capability that can lengthen its own life is not a capability).
 func (s *Server) HandleAPIShortLinkExtend(w http.ResponseWriter, r *http.Request) {
 	slug := strings.ToLower(strings.Trim(r.PathValue("slug"), "/"))
+	if !s.shortLinkOwned(slug, r) {
+		writeJSON(w, http.StatusNotFound, map[string]string{"error": "no such link"})
+		return
+	}
 	var body struct {
 		Days int `json:"days"`
 	}
@@ -916,7 +924,8 @@ func (s *Server) HandleAPIShortLinkExtendTag(w http.ResponseWriter, r *http.Requ
 		return
 	}
 	rows, err := s.DB.Query(`SELECT slug FROM short_links
-		WHERE tag = ? AND guest = 1 AND (revoked_at IS NULL OR revoked_at = '')`, tag)
+		WHERE tag = ? AND pwd_ref = ? AND guest = 1 AND (revoked_at IS NULL OR revoked_at = '')`,
+		tag, shortCallerRef(r))
 	if err != nil {
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "database error"})
 		return
@@ -963,6 +972,10 @@ func (s *Server) HandleAPIShortLinkRetag(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	var alias sql.NullString
+	if !s.shortLinkOwned(slug, r) {
+		writeJSON(w, http.StatusNotFound, map[string]string{"error": "no such link"})
+		return
+	}
 	if err := s.DB.QueryRow(`SELECT alias_of FROM short_links WHERE slug = ?`, slug).Scan(&alias); err != nil {
 		writeJSON(w, http.StatusNotFound, map[string]string{"error": "no such link"})
 		return
@@ -1001,7 +1014,11 @@ func (s *Server) HandleAPIShortLinkRetagAll(w http.ResponseWriter, r *http.Reque
 			"error": "a tag uses lowercase letters, digits, - and _"})
 		return
 	}
-	res, err := s.DB.Exec(`UPDATE short_links SET tag = ? WHERE tag = ?`, newT, old)
+	// "Everywhere" means everywhere in the caller's own links: a tag is one
+	// name for one purpose *per login*, and renaming it across tenants would
+	// let one login rewrite another's bookkeeping.
+	res, err := s.DB.Exec(`UPDATE short_links SET tag = ? WHERE tag = ? AND pwd_ref = ?`,
+		newT, old, shortCallerRef(r))
 	if err != nil {
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "could not rename tag"})
 		return
@@ -1015,7 +1032,8 @@ func (s *Server) HandleAPIShortLinkRetagAll(w http.ResponseWriter, r *http.Reque
 // first. Small on purpose — names only, no counts, no rows.
 func (s *Server) HandleAPIShortLinkTags(w http.ResponseWriter, r *http.Request) {
 	rows, err := s.DB.Query(`SELECT tag, MAX(created_at) m FROM short_links
-		WHERE tag IS NOT NULL AND tag != '' GROUP BY tag ORDER BY m DESC LIMIT 50`)
+		WHERE tag IS NOT NULL AND tag != '' AND pwd_ref = ?
+		GROUP BY tag ORDER BY m DESC LIMIT 50`, shortCallerRef(r))
 	if err != nil {
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "database error"})
 		return
@@ -1048,6 +1066,10 @@ func (s *Server) HandleAPIShortLinkDelete(w http.ResponseWriter, r *http.Request
 		return
 	}
 	var guest int
+	if !s.shortLinkOwned(slug, r) {
+		writeJSON(w, http.StatusNotFound, map[string]string{"error": "no such link"})
+		return
+	}
 	if err := s.DB.QueryRow(`SELECT guest FROM short_links WHERE slug = ?`, slug).Scan(&guest); err != nil {
 		writeJSON(w, http.StatusNotFound, map[string]string{"error": "no such link"})
 		return

@@ -813,6 +813,25 @@ if [[ -n "$CLIENT_PWD" ]]; then
         ERRORS+=("shortlink tag lifecycle broken")
     fi
 
+    # A link belongs to the login that minted it. Another login must neither
+    # see it in /api/shortlinks nor act on it — and the refusal is a 404, not
+    # a 403, because an id must not be an oracle (AGENTS.md invariant 6).
+    if [[ "$CLIENT_PWD" != "test2026" ]]; then
+        printf "%-50s" "shortlinks_scoped_to_their_login"
+        seen=$(curl -s -m 30 "${BASE_URL}/api/shortlinks?pwd=test2026" \
+            | jq -r --arg s "$T2" '[.groups[].links[] | select(.slug==$s)] | length')
+        del=$(curl -s -m 30 -o /dev/null -w "%{http_code}" -X DELETE \
+            "${BASE_URL}/api/shortlink/${T2}?pwd=test2026")
+        still=$(curl -s -m 30 "${BASE_URL}/api/shortlinks?pwd=${CLIENT_PWD}" \
+            | jq -r --arg s "$T2" '[.groups[].links[] | select(.slug==$s)] | length')
+        if [[ "$seen" == "0" && "$del" == "404" && "$still" == "1" ]]; then
+            green "✓ (unseen, delete 404, survives)"; PASSED=$((PASSED + 1))
+        else
+            red "FAIL (seen=$seen del=$del still=$still)"; FAILED=$((FAILED + 1))
+            ERRORS+=("share links leak across logins")
+        fi
+    fi
+
     # Teardown. The API revokes a guest rather than deleting it (that is the
     # point -- the sheet keeps the evidence), so the rows are removed directly
     # afterwards: these are test fixtures, not history worth keeping. Scoped by
