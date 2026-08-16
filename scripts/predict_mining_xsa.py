@@ -244,7 +244,8 @@ def modern_context(poly):
     c = db()
     setts = c.execute(
         "SELECT lat, lon, area_m2, surface_e2015_m2, cropland_frac_2019, "
-        "cropland_frac_2003, nearest_place, classification "
+        "cropland_frac_2003, nearest_place, classification, "
+        "population_est, population_source "
         "FROM park_settlements WHERE park_id=? AND polygon_ids<>''",
         (AOI,)).fetchall()
     defor = c.execute(
@@ -353,6 +354,27 @@ def main():
     d_croppoor = (nearest_dist_km_points(gk, cp_pts)
                   if len(cp_pts) else np.full(len(gk), 1e9))
 
+    # population: GHSL-measured or absent, never a density constant
+    # (invariant 15). The labour-shed hypothesis: mining crews come FROM
+    # somewhere - a village big enough to spare working-age men. Two forms:
+    # a plain labour pool (pop >= 500), and the sharp conjunction the
+    # cropland-poor signal hints at - hundreds of people with no fields
+    # to feed them (pop >= 500 AND cropland < 2%).
+    pops = [s[8] for s in setts if s[8] is not None and s[9]]
+    pop_ok = [s for s in setts if s[8] is not None and s[9] and s[8] >= 500]
+    lp_pts = (proj([[s[1], s[0]] for s in pop_ok], lat0)
+              if pop_ok else np.zeros((0, 2)))
+    d_labour = (nearest_dist_km_points(gk, lp_pts)
+                if len(lp_pts) else np.full(len(gk), 1e9))
+    pop_nofarm = [s for s in pop_ok if s[4] is not None and s[4] < 0.02]
+    pn_pts = (proj([[s[1], s[0]] for s in pop_nofarm], lat0)
+              if pop_nofarm else np.zeros((0, 2)))
+    d_pop_nofarm = (nearest_dist_km_points(gk, pn_pts)
+                    if len(pn_pts) else np.full(len(gk), 1e9))
+    log(f"  population: {len(pops)}/{len(setts)} settlements have a GHSL "
+        f"estimate; {len(pop_ok)} with pop>=500, {len(pop_nofarm)} of those "
+        f"cropland-poor")
+
     # "abandoned" 1930s villages: named on the survey sheets, no modern
     # settlement cluster within 3 km today. The report's finding three says
     # returnees land ON named villages - the ones nobody has returned to are
@@ -416,6 +438,8 @@ def main():
         ("settlement", d_sett, None, NEAR_KM),
         ("settlement_grew_33pct", d_grow, None, NEAR_KM),
         ("settlement_cropland_poor", d_croppoor, None, NEAR_KM),
+        ("settlement_pop500_labour_pool", d_labour, None, NEAR_KM),
+        ("settlement_pop500_no_farmland", d_pop_nofarm, None, NEAR_KM),
         ("deforestation_verified", d_def, None, NEAR_KM),
         ("hist_track_1930s", d_track, coverage, 3.0),
         ("hist_settlement_1930s", d_hplace, coverage, NEAR_KM),
@@ -751,10 +775,15 @@ def main():
         abandoned_village_gold_watchlist=dict(
             hypothesis=("1930s villages with no modern settlement within "
                         "3 km, sitting within 5 km of a gold-graded geology "
-                        "contact. Lift 2.95 on n=19 covered clusters, raw "
-                        "p=0.04, but q=0.11 after correcting for 16 signals "
-                        "tried - suggestive, not proven. Listed for imagery "
-                        "follow-up, not scored into the composite."),
+                        "contact. Lift "
+                        f"{signals['hist_abandoned_village_on_gold_contact'].get('lift')} "
+                        f"on n={signals['hist_abandoned_village_on_gold_contact'].get('n')} "
+                        "covered clusters, raw p="
+                        f"{signals['hist_abandoned_village_on_gold_contact'].get('p')}, "
+                        f"q={signals['hist_abandoned_village_on_gold_contact'].get('q_bh')} "
+                        f"after BH correction across {len(signal_defs)} "
+                        "signals tried - suggestive, not proven. Listed for "
+                        "imagery follow-up, not scored into the composite."),
             total_matches=watch_total,
             listed=len(watchlist),
             places=watchlist),
@@ -762,6 +791,54 @@ def main():
     OUT.parent.mkdir(parents=True, exist_ok=True)
     json.dump(out, open(OUT, "w"), indent=1)
     log(f"wrote {OUT}")
+
+    # ---- GeoJSON for QGIS: three layers in one FeatureCollection,
+    # distinguished by `layer` (filter in QGIS: "layer" = 'candidate').
+    # - candidate: the 12 report points (cell centres, ~3 km precision)
+    # - watchlist: abandoned 1930s villages on gold contacts (top 25)
+    # - composite_top20: the scored surface itself as cell-centre points,
+    #   so heat can be styled/interpolated without shipping 15,788 cells.
+    feats = []
+    for c in candidates:
+        props = {k: v for k, v in c.items()
+                 if k not in ("lat", "lon")}
+        props["layer"] = "candidate"
+        feats.append(dict(type="Feature", geometry=dict(
+            type="Point", coordinates=[c["lon"], c["lat"]]),
+            properties=props))
+    for wl in watchlist:
+        props = {k: v for k, v in wl.items() if k not in ("lat", "lon")}
+        props["layer"] = "watchlist_abandoned_village_gold"
+        feats.append(dict(type="Feature", geometry=dict(
+            type="Point", coordinates=[wl["lon"], wl["lat"]]),
+            properties=props))
+    if comp is not None:
+        thr_v = np.nanquantile(comp, 0.8)
+        for i in np.nonzero(comp >= thr_v)[0]:
+            feats.append(dict(type="Feature", geometry=dict(
+                type="Point",
+                coordinates=[round(float(grid[i][0]), 4),
+                             round(float(grid[i][1]), 4)]),
+                properties=dict(
+                    layer="composite_top20",
+                    score=round(float(comp[i]), 4),
+                    pctile=round(float(
+                        np.mean(comp[i] >= comp[~np.isnan(comp)])) * 100, 1))))
+    gj = dict(
+        type="FeatureCollection",
+        name="xsa_mining_prediction",
+        description=(
+            "Predicted artisanal-mining context, XSA_Study_Area. "
+            "Layers: candidate (12 report points), "
+            "watchlist_abandoned_village_gold (top 25), composite_top20 "
+            "(scored 0.05 deg cell centres). Candidates are cell centres "
+            "good to ~3 km - neighbourhoods for imagery, not pits. Truth "
+            "set is reachability/conflict-biased; see prediction.json. "
+            "Generated by scripts/predict_mining_xsa.py."),
+        features=feats)
+    gj_out = OUT.with_name("prediction.geojson")
+    json.dump(gj, open(gj_out, "w"))
+    log(f"wrote {gj_out} ({len(feats)} features)")
 
 
 if __name__ == "__main__":
