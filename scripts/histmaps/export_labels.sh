@@ -82,11 +82,20 @@ ogr2ogr -f GeoJSON "$TMP/labels.geojson" "$TMP/labels.gpkg" sudan250k_labels \
   -lco COORDINATE_PRECISION=5 -lco RFC7946=YES
 gzip -9 "$TMP/labels.geojson"
 
+# KMZ twin of the GPKG for Google Earth / Locus / OsmAnd (export_kml.py:
+# folders stand in for the typed columns KML cannot carry). Same snapshot,
+# counts verified like everything else.
+read -r KN KLN KSN < <(python3 "$SCRIPT_DIR/export_kml.py" "$DB" "$TMP/labels.kmz")
+[ "$KN" -eq "$N" ] || { echo "kmz has $KN labels, expected $N" >&2; exit 1; }
+[ "$KLN" -eq "$NLINES" ] || { echo "kmz has $KLN lines, expected $NLINES" >&2; exit 1; }
+[ "$KSN" -eq "$NSYM" ] || { echo "kmz has $KSN symbols, expected $NSYM" >&2; exit 1; }
+
 mv "$TMP/labels.gpkg" sudan250k_labels.gpkg
 mv "$TMP/labels.geojson.gz" sudan250k_labels.geojson.gz
+mv "$TMP/labels.kmz" sudan250k_labels.kmz
 if [ "$NLINES" -gt 0 ]; then
   mv "$TMP/lines.geojson.gz" sudan250k_lines.geojson.gz
   ls -l sudan250k_lines.geojson.gz
 fi
-ls -l sudan250k_labels.gpkg sudan250k_labels.geojson.gz
+ls -l sudan250k_labels.gpkg sudan250k_labels.geojson.gz sudan250k_labels.kmz
 echo "OK: $N labels, $NLINES lines, $NSYM symbols exported"

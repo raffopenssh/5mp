@@ -582,14 +582,15 @@ if [[ "$hist_avail" == "true" ]]; then
     # Downloads advertised in meta must name the FILE's row count (dedup),
     # not the raw table's -- two surfaces, one number (AGENTS invariant 7).
     test_api "histmap_labels_downloads_advertised" "/api/histmap" "200" \
-        '.labels_downloads.gpkg.count > 0 and .labels_downloads.gpkg.count == .labels_downloads.geojson.count'
+        '.labels_downloads.gpkg.count > 0 and .labels_downloads.gpkg.count == .labels_downloads.geojson.count and .labels_downloads.kml.count == .labels_downloads.gpkg.count'
     printf "%-50s" "histmap_labels_download_range"
     st=$(curl -s -m 30 -b "$COOKIE_FILE" -o /dev/null -w "%{http_code}" -r 0-99 "${BASE_URL}/api/histmap/sudan250k/labels/download/gpkg")
-    bad=$(curl -s -m 30 -b "$COOKIE_FILE" -o /dev/null -w "%{http_code}" "${BASE_URL}/api/histmap/sudan250k/labels/download/kml")
-    if [[ "$st" == "206" && "$bad" == "400" ]]; then
-        green "✓ (gpkg 206, bad format 400)"; PASSED=$((PASSED + 1))
+    kst=$(curl -s -m 30 -b "$COOKIE_FILE" -o /dev/null -w "%{http_code}" -r 0-99 "${BASE_URL}/api/histmap/sudan250k/labels/download/kml")
+    bad=$(curl -s -m 30 -b "$COOKIE_FILE" -o /dev/null -w "%{http_code}" "${BASE_URL}/api/histmap/sudan250k/labels/download/shapefile")
+    if [[ "$st" == "206" && "$kst" == "206" && "$bad" == "400" ]]; then
+        green "✓ (gpkg 206, kml 206, bad format 400)"; PASSED=$((PASSED + 1))
     else
-        red "FAIL (gpkg $st, kml $bad)"; FAILED=$((FAILED + 1)); ERRORS+=("histmap labels download")
+        red "FAIL (gpkg $st, kml $kst, shapefile $bad)"; FAILED=$((FAILED + 1)); ERRORS+=("histmap labels download")
     fi
 else
     yellow "histmap not installed here -- label tests skipped"

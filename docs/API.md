@@ -422,11 +422,14 @@ not facts.
 ```
 GET /api/histmap/sudan250k/labels/download/gpkg
 GET /api/histmap/sudan250k/labels/download/geojson
+GET /api/histmap/sudan250k/labels/download/kml
 ```
 
 The whole deduplicated, categorized label set as a vector file: GeoPackage
-(points + `category` column, opens directly in QGIS) or gzipped RFC 7946
-GeoJSON. Batch artefacts built by `scripts/histmaps/export_labels.sh` — one
+(points + `category` column, opens directly in QGIS), gzipped RFC 7946
+GeoJSON, or KMZ (labels + traced lines + point symbols in folders by
+category, for Google Earth / Locus / OsmAnd; junk/collar folders ship
+unchecked). Batch artefacts built by `scripts/histmaps/export_labels.sh` — one
 consistent snapshot, not generated per request. Range-capable. 404 until the
 export has been built; `/api/histmap` advertises them under
 `labels_downloads` with `url`, `size_bytes` and `count` (the file's own row
