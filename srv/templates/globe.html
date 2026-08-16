@@ -19418,13 +19418,17 @@ ${starredItems.narratives.map(n => {
                     }
                 });
             } else {
-                // Point features - simple circle, no glow
+                // Point features. Radius follows the zoom, as the LOD loader's
+                // dots do: a fixed 2 px was a speck you could not find at the
+                // zoom the pin flies you to, which is the same complaint as a
+                // layer that "loses detail" — the pin is the same feature at
+                // every zoom, so it must stay visible at every zoom.
                 map.addLayer({
                     id: layerId,
                     type: 'circle',
                     source: sourceId,
                     paint: {
-                        'circle-radius': 2,
+                        'circle-radius': ['interpolate', ['linear'], ['zoom'], 2, 2.5, 8, 4.5, 14, 7],
                         'circle-color': color,
                         'circle-stroke-width': 2,
                         'circle-stroke-color': '#fff'
@@ -19436,7 +19440,13 @@ ${starredItems.narratives.map(n => {
                 ...singlePinnedFeatures[key],  // Preserve frontSourceId, frontLayerId, frontGlowId
                 parkId, parkName, type, featureId,
                 sourceId, layerId,
-                feature, narrative
+                // The WHOLE collection, not just features[0]: a settlement is a
+                // cluster of built-up footprints and a deforestation event a
+                // set of patches, so "how big is this pin" and "what is it
+                // drawn as" are questions about all of them (invariant 7).
+                feature, features,
+                render: geomType.includes('Point') && features.length === 1 ? 'point' : 'shapes',
+                narrative
             };
             
             // Unified hover/tap tip. The narrative (from the popup entry) is the
@@ -19519,9 +19529,40 @@ ${starredItems.narratives.map(n => {
         delete singlePinnedFeatures[key];
     }
     
+    // The bbox of ONE pinned feature (or of the cluster/event it stands for).
+    // Walks whatever geometry it was given, so a Point, a trajectory, a
+    // polygon and 21 town footprints are one code path.
+    function singlePinBBox(pin) {
+        const feats = pin.features || (pin.feature ? [pin.feature] : []);
+        let bb = null;
+        const eat = c => {
+            if (!bb) bb = [c[0], c[1], c[0], c[1]];
+            else {
+                bb[0] = Math.min(bb[0], c[0]); bb[1] = Math.min(bb[1], c[1]);
+                bb[2] = Math.max(bb[2], c[0]); bb[3] = Math.max(bb[3], c[1]);
+            }
+        };
+        const walk = c => {
+            if (!Array.isArray(c)) return;
+            if (typeof c[0] === 'number') eat(c);
+            else c.forEach(walk);
+        };
+        feats.forEach(f => walk(f.geometry && f.geometry.coordinates));
+        return bb;
+    }
+
     function flyToSinglePin(key) {
         const pin = singlePinnedFeatures[key];
         if (!pin || !pin.feature) return;
+        // A pin with real extent (a town's 21 footprints, a multi-patch
+        // clearing) is FITTED, not flown to at a guessed zoom: arriving at
+        // z10 over a 3 km cluster is the same "nothing to see" the LOD work
+        // exists to remove.
+        const bb = singlePinBBox(pin);
+        if (bb && (bb[2] - bb[0] > 0.004 || bb[3] - bb[1] > 0.004)) {
+            map.fitBounds([[bb[0], bb[1]], [bb[2], bb[3]]], { padding: 80, duration: 1500, essential: true });
+            return;
+        }
         
         // Get center of the feature
         const geom = pin.feature.geometry;
@@ -20461,8 +20502,10 @@ ${starredItems.narratives.map(n => {
             if (existing) {
                 existing.count++;
                 existing.keys.push(key);
+                existing.renders.push(pin.render || 'shapes');
             } else {
-                byPark[park].push({ type: pin.type, count: 1, isSingle: true, keys: [key] });
+                byPark[park].push({ type: pin.type, count: 1, isSingle: true, keys: [key],
+                                    renders: [pin.render || 'shapes'] });
             }
         });
         rtKeys.forEach(key => {
@@ -20537,10 +20580,27 @@ ${starredItems.narratives.map(n => {
                     // Individual pinned features - click to fly, × to remove
                     const label = count === 1 ? '1' : count;
                     const firstKey = p.keys[0];
+                    // WHAT IT IS DRAWN AS, in the same words the bulk pins and
+                    // the stats rows use. An individual pin does not follow the
+                    // viewport — it is a named feature, served whole — so this
+                    // is a statement, not a menu: 'shapes' when the feature has
+                    // real geometry, 'dots' when all the data has is a centre
+                    // point. Silence here is what made a pinned town look like
+                    // a layer that had thrown its detail away.
+                    const uniq = Array.from(new Set(p.renders || []));
+                    const rMark = uniq.length !== 1 ? 'mixed'
+                                : uniq[0] === 'shapes' ? LOD_MODE_LABEL.auto('geometry')
+                                : LOD_MODE_LABEL.auto('points');
+                    const rTitle = uniq.length !== 1
+                        ? 'These pins are drawn differently: some have full geometry, some only a centre point.'
+                        : uniq[0] === 'shapes'
+                        ? 'Drawn as full clickable shapes at every zoom — an individual pin is served whole, so it does not change with the view.'
+                        : 'Drawn as a point: this feature has no stored outline, only a centre. Hover it for its details.';
                     html += `<span class="pinned-layer-chip ${p.type}" style="opacity:0.8;cursor:pointer;" onclick="event.stopPropagation(); flyToSinglePin('${firstKey}')" title="${count} individual ${typeLabels[p.type] || p.type} pinned - Click to fly to">`;
                     html += `<span class="chip-icon">${icon}</span>`;
                     html += `<span class="chip-count">${label}</span>`;
                     html += `<span style="font-size:8px;opacity:0.7;">ind</span>`;
+                    html += `<span class="chip-lod ${uniq.length === 1 && uniq[0] === 'shapes' ? 'shapes' : 'dots'} static" title="${escapeHtml(rTitle)}">${rMark}</span>`;
                     html += `<span class="chip-remove" onclick="event.stopPropagation(); ${p.keys.map(k => `removeSinglePinnedFeature('${k}')`).join(';')}; updatePinnedIndicator()" title="Remove">×</span>`;
                     html += `</span>`;
                 }

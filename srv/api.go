@@ -5729,7 +5729,21 @@ func (s *Server) handleSettlementFeatures(w http.ResponseWriter, parkID string, 
 	`
 	args := []interface{}{parkID}
 
-	if featureID != "" {
+	// A settlement is a CLUSTER; feature_geometries holds its FOOTPRINTS
+	// (invariant 7). `feature_id=settlement_<id>` therefore asks for the
+	// cluster and must answer with every footprint it lists — the same shape
+	// as `event_id=` for deforestation. Answering with the single stored
+	// centroid is why a pinned town stayed a dot at every zoom: there was no
+	// geometry to promote to.
+	if ids := s.settlementFootprintIDs(parkID, featureID); len(ids) > 0 {
+		query += " AND fg.feature_id IN (" + strings.TrimSuffix(strings.Repeat("?,", len(ids)), ",") + ")"
+		for _, id := range ids {
+			args = append(args, id)
+		}
+		if len(ids) > limit {
+			limit = len(ids)
+		}
+	} else if featureID != "" {
 		query += " AND fg.feature_id = ?"
 		args = append(args, featureID)
 	}
