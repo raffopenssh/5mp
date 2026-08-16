@@ -54,11 +54,12 @@ if [ "$HAVE_LINES" -eq 1 ] && [ "$(sqlite3 "$DB" 'SELECT count(*) FROM lines_sti
   if [ "$NSYM" -gt 0 ]; then
     ogr2ogr -f GPKG -update "$TMP/labels.gpkg" "$TMP/symbols.geojson" \
       -nln sudan250k_symbols -lco IDENTIFIER="Sudan 1:250k point symbols" \
-      -lco DESCRIPTION="$NSYM point symbols (wells, cairns, camps, unclassified marks) captured during line tracing; category NULL until the bulk categorization pass runs."
+      -lco DESCRIPTION="$NSYM point symbols captured during line tracing, vision-classified against the sheets' own legend vocabulary (water, settlement, peak, trig_point, tree, enclosure, grave, fort, church, station, ruin, landmark, unknown); name = nearest matching OCR label where one exists within name_dist_km. Junk captures excluded. Machine classified -- verify against the sheet before citing."
     GSN=$(sqlite3 "$TMP/labels.gpkg" "SELECT count(*) FROM sudan250k_symbols")
     [ "$GSN" -eq "$NSYM" ] || { echo "gpkg symbols: $GSN rows, expected $NSYM" >&2; exit 1; }
   fi
   gzip -9 -c "$TMP/lines.geojson" > "$TMP/lines.geojson.gz"
+  python3 "$SCRIPT_DIR/make_gpkg_styles.py" "$TMP/labels.gpkg"
 else
   NLINES=0; NSYM=0
   echo "note: lines_stitched absent/empty -- labels-only export"

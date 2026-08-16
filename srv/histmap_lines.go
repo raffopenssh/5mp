@@ -50,9 +50,11 @@ func (s *Server) HandleAPIHistMapLines(w http.ResponseWriter, r *http.Request) {
 			"reason": "traced lines not built (scripts/histmaps/trace_lines.py)"})
 		return
 	}
-	b := parseFloatCSV(r.URL.Query().Get("bbox"), 4)
-	if b == nil {
-		http.Error(w, `need bbox=W,S,E,N`, http.StatusBadRequest)
+	qs := r.URL.Query()
+	b := parseFloatCSV(qs.Get("bbox"), 4)
+	nameQ := qs.Get("q")
+	if b == nil && nameQ == "" {
+		http.Error(w, `need bbox=W,S,E,N or q=<name>`, http.StatusBadRequest)
 		return
 	}
 	limit := 500
@@ -64,10 +66,17 @@ func (s *Server) HandleAPIHistMapLines(w http.ResponseWriter, r *http.Request) {
 	// bbox intersect on indexed min/max columns (sargable, invariant #3)
 	sqlq := `SELECT kind, COALESCE(style,''), COALESCE(name,''),
 	        COALESCE(year_min,0), COALESCE(year_max,0), length_km, pts
-	        FROM lines_stitched
-	        WHERE maxlon >= ? AND minlon <= ? AND maxlat >= ? AND minlat <= ?`
-	args := []any{b[0], b[2], b[1], b[3]}
-	if v := r.URL.Query().Get("kind"); v != "" {
+	        FROM lines_stitched WHERE 1=1`
+	args := []any{}
+	if b != nil {
+		sqlq += " AND maxlon >= ? AND minlon <= ? AND maxlat >= ? AND minlat <= ?"
+		args = append(args, b[0], b[2], b[1], b[3])
+	}
+	if nameQ != "" {
+		sqlq += " AND (name LIKE ? OR names_all LIKE ?)"
+		args = append(args, "%"+nameQ+"%", "%"+nameQ+"%")
+	}
+	if v := qs.Get("kind"); v != "" {
 		sqlq += " AND kind = ?"
 		args = append(args, v)
 	}
@@ -180,21 +189,57 @@ func (s *Server) HandleAPIHistMapAround(w http.ResponseWriter, r *http.Request) 
 		out["surveyor_notes"] = notes
 	}
 
-	// traced lines crossing the window
+	// traced lines crossing the window. Geometry is CLIPPED to the asked
+	// window: a 2,000 km river must not dump its whole course into a 10 km
+	// question (the /lines endpoint serves full geometry when wanted).
 	if histHasTable(db, "lines_stitched") {
 		rows, err := db.Query(`SELECT kind, COALESCE(style,''), COALESCE(name,''),
 			COALESCE(year_min,0), COALESCE(year_max,0), length_km, pts FROM lines_stitched
 			WHERE maxlon >= ? AND minlon <= ? AND maxlat >= ? AND minlat <= ?
 			ORDER BY length_km DESC LIMIT 60`, minLon, maxLon, minLat, maxLat)
 		if err == nil {
-			lines := []histLine{}
+			type nearLine struct {
+				Kind        string          `json:"kind"`
+				Style       string          `json:"style,omitempty"`
+				Name        string          `json:"name,omitempty"`
+				YearMin     int             `json:"year_min,omitempty"`
+				YearMax     int             `json:"year_max,omitempty"`
+				LengthKm    float64         `json:"length_km"`
+				PtsInWindow json.RawMessage `json:"pts_in_window"`
+				Clipped     bool            `json:"clipped,omitempty"`
+			}
+			lines := []nearLine{}
 			for rows.Next() {
-				var l histLine
+				var l nearLine
 				var pts string
-				if rows.Scan(&l.Kind, &l.Style, &l.Name, &l.YearMin, &l.YearMax, &l.LengthKm, &pts) == nil {
-					l.Pts = json.RawMessage(pts)
-					lines = append(lines, l)
+				if rows.Scan(&l.Kind, &l.Style, &l.Name, &l.YearMin, &l.YearMax, &l.LengthKm, &pts) != nil {
+					continue
 				}
+				var coords [][2]float64
+				if json.Unmarshal([]byte(pts), &coords) != nil {
+					continue
+				}
+				kept := make([][2]float64, 0, 32)
+				for i, p := range coords {
+					in := p[0] >= minLon && p[0] <= maxLon && p[1] >= minLat && p[1] <= maxLat
+					if in {
+						// keep one neighbour either side so clipped runs
+						// still reach the window edge
+						if len(kept) == 0 && i > 0 {
+							kept = append(kept, coords[i-1])
+						}
+						kept = append(kept, p)
+					} else if len(kept) > 0 && kept[len(kept)-1] == coords[i-1] && i > 0 {
+						kept = append(kept, p)
+					}
+				}
+				if len(kept) == 0 {
+					continue // bbox brushed it but no vertex inside
+				}
+				l.Clipped = len(kept) < len(coords)
+				j, _ := json.Marshal(kept)
+				l.PtsInWindow = j
+				lines = append(lines, l)
 			}
 			rows.Close()
 			out["lines"] = lines
@@ -203,21 +248,24 @@ func (s *Server) HandleAPIHistMapAround(w http.ResponseWriter, r *http.Request) 
 
 	// captured point symbols (wells, cairns, camps...)
 	if histHasTable(db, "symbols") {
-		rows, err := db.Query(`SELECT descr, COALESCE(category,''), lon, lat FROM symbols
+		rows, err := db.Query(`SELECT descr, COALESCE(category,''),
+			COALESCE(name,''), lon, lat FROM symbols
 			WHERE lon BETWEEN ? AND ? AND lat BETWEEN ? AND ?
+			AND COALESCE(category,'') NOT IN ('junk')
 			ORDER BY (lon-?)*(lon-?)+(lat-?)*(lat-?) LIMIT 60`,
 			minLon, maxLon, minLat, maxLat, lon, lon, lat, lat)
 		if err == nil {
 			type sym struct {
 				Descr    string  `json:"descr"`
 				Category string  `json:"category,omitempty"`
+				Name     string  `json:"name,omitempty"`
 				Lon      float64 `json:"lon"`
 				Lat      float64 `json:"lat"`
 			}
 			syms := []sym{}
 			for rows.Next() {
 				var s sym
-				if rows.Scan(&s.Descr, &s.Category, &s.Lon, &s.Lat) == nil {
+				if rows.Scan(&s.Descr, &s.Category, &s.Name, &s.Lon, &s.Lat) == nil {
 					syms = append(syms, s)
 				}
 			}

@@ -194,7 +194,7 @@ def render_tile(img, tx, ty):
     return bg.resize((SEND, SEND), Image.LANCZOS), ink
 
 
-def call_llm(png_bytes, hint_text=None, max_tokens=MAX_TOKENS):
+def call_llm(png_bytes, hint_text=None, max_tokens=MAX_TOKENS, sys_prompt=None):
     img64 = base64.b64encode(png_bytes).decode()
     content = [{"type": "image_url",
                 "image_url": {"url": "data:image/png;base64," + img64}}]
@@ -204,7 +204,7 @@ def call_llm(png_bytes, hint_text=None, max_tokens=MAX_TOKENS):
         "model": MODEL,
         "max_tokens": max_tokens,
         "messages": [
-            {"role": "system", "content": SYS_PROMPT},
+            {"role": "system", "content": sys_prompt or SYS_PROMPT},
             {"role": "user", "content": content},
         ],
     }).encode()
@@ -906,6 +906,204 @@ def cmd_symbols(args):
     print(f"{len(rows)} symbol crops -> {args.out}")
 
 
+SYM_TAXONOMY = ("water", "settlement", "peak", "trig_point", "tree",
+                "enclosure", "grave", "fort", "church", "station", "ruin",
+                "landmark", "unknown", "junk")
+
+SYM_PROMPT = """Each numbered cell in this contact sheet is a 192x192 px crop from a \
+Sudan Survey 1:250,000 map (1915-1968), centered on one point symbol. \
+Classify the CENTER symbol of each cell using the series' own conventional \
+signs (from the sheet legends):
+- water: any water point -- small circle/circled dot WITH a letter code \
+beside it: W (bir/'idd well), R (rahad lake), P (pool), T (tamad waterhole), \
+F (fula rain pool), H (hafir rain pond), G.W.B (govt water bore). On \
+1940s-60s sheets a plain solid black dot labelled near water words is also \
+"well or place where water may be found".
+- settlement: town/village marker -- filled square block (1st/2nd \
+importance), circled dot WITHOUT a letter code next to a place name \
+(3rd/4th), hut/house symbols, temporary village (small horseshoe), deserted \
+village (dotted cluster).
+- peak: hill/mountain -- hachured or form-lined mound, often "J." (jebel) \
+name or a height number.
+- trig_point: survey mark -- solid triangle (triangulation/astro point), \
+dotted circle (intersected point), beacon or cairn.
+- tree: single tree symbols -- palm, dom palm, tebeldi (baobab), general \
+tree; also scattered-scrub tufts.
+- enclosure: morah (cattle enclosure), zariba, camp ring.
+- grave: cemetery, site of graves, qubba (domed tomb), pyramid.
+- fort: fort (star or square outline symbol), ancient fort.
+- church: church, mosque, mission station cross.
+- station: manned post abbreviations -- R.H. (rest house), C.C. (chief's \
+court), P. (police post), T.O./P (telegraph/post office), wireless station, \
+landing ground, meshra M (landing place), ford, ferry.
+- ruin: ruins.
+- landmark: other genuine point feature you can see but none of the above.
+- unknown: a real symbol you cannot identify.
+- junk: not a point symbol (text fragment only, line crossing, blank paper, \
+smudge, border tick).
+Judge by the SYMBOL INK at the cell center, not by nearby text alone.
+Answer one line per cell: <number>: <category>. Nothing else."""
+
+
+def _try(fn, *a):
+    try:
+        return fn(*a)
+    except Exception as e:
+        return e
+
+
+# category -> label kinds that can plausibly name it, in preference order
+LINK_KINDS = {"water": ("water", "place"), "peak": ("hill",),
+              "settlement": ("place",), "fort": ("place", "other"),
+              "church": ("place", "other"), "station": ("place", "other"),
+              "ruin": ("place", "other"), "grave": ("place", "other"),
+              "enclosure": ("place", "other"), "landmark": ("place", "other")}
+
+
+def cmd_link(args):
+    """Join the three layers by proximity: give symbols the name of the
+    nearest compatible OCR label, and name unnamed watercourse/track lines
+    from water/route labels along their path. Pure geometry, no LLM.
+    Idempotent: recomputes all links from scratch each run."""
+    c = db()
+    init_db(c)
+    for ddl in ("ALTER TABLE symbols ADD COLUMN name TEXT",
+                "ALTER TABLE symbols ADD COLUMN name_dist_km REAL",
+                "ALTER TABLE lines_stitched ADD COLUMN name_src TEXT"):
+        try:
+            c.execute(ddl)
+        except sqlite3.OperationalError:
+            pass
+    # bucket-grid the labels once (0.02 deg cells)
+    CELL = 0.02
+    grid = {}
+    for text, kind, lon, lat in c.execute(
+            "SELECT text, kind, lon, lat FROM labels_dedup"
+            " WHERE COALESCE(category,'') NOT IN ('junk','collar','note')"):
+        grid.setdefault((int(lon / CELL), int(lat / CELL)), []).append(
+            (text, kind, lon, lat))
+
+    def near(lon, lat, kinds, max_deg):
+        best = None
+        ci, cj = int(lon / CELL), int(lat / CELL)
+        r = int(max_deg / CELL) + 1
+        for i in range(ci - r, ci + r + 1):
+            for j in range(cj - r, cj + r + 1):
+                for text, kind, llon, llat in grid.get((i, j), ()):
+                    if kind not in kinds:
+                        continue
+                    d2 = (llon - lon) ** 2 + (llat - lat) ** 2
+                    # prefer earlier kinds: penalize later ones slightly
+                    d2 *= 1 + kinds.index(kind)
+                    if d2 <= max_deg ** 2 and (best is None or d2 < best[0]):
+                        best = (d2, text, llon, llat)
+        return best
+
+    # --- symbols -> nearest compatible label (<= ~600 m) ---
+    nsym = 0
+    ups = []
+    for sid, cat, lon, lat in c.execute(
+            "SELECT id, category, lon, lat FROM symbols"
+            " WHERE category NOT IN ('junk','unknown','tree')"):
+        kinds = LINK_KINDS.get(cat)
+        if not kinds:
+            continue
+        b = near(lon, lat, kinds, 0.006)
+        if b:
+            ups.append((b[1], round(111 * b[0] ** 0.5, 3), sid))
+            nsym += 1
+    c.execute("UPDATE symbols SET name=NULL, name_dist_km=NULL")
+    c.executemany("UPDATE symbols SET name=?, name_dist_km=? WHERE id=?", ups)
+    total_sym = c.execute("SELECT count(*) FROM symbols WHERE category NOT IN"
+                          " ('junk','unknown','tree')").fetchone()[0]
+    print(f"symbols: {nsym}/{total_sym} named", flush=True)
+
+    # --- unnamed lines -> label voted by vertices along the path ---
+    LKIND = {"watercourse": ("water",), "track": ("route",),
+             "road": ("route",), "railway": ("route",)}
+    nline = 0
+    ups = []
+    for lid, kind, pts in c.execute(
+            "SELECT id, kind, pts FROM lines_stitched"
+            " WHERE (name IS NULL OR name = '') AND kind IN"
+            " ('watercourse','track','road','railway')"):
+        votes = {}
+        for lon, lat in json.loads(pts)[::2]:
+            b = near(lon, lat, LKIND[kind], 0.008)
+            if b:
+                votes[b[1]] = votes.get(b[1], 0) + 1
+        if votes:
+            name, n = max(votes.items(), key=lambda kv: kv[1])
+            if n >= 2:  # one grazing vertex is coincidence, not a name
+                ups.append((name, lid))
+                nline += 1
+    c.executemany(
+        "UPDATE lines_stitched SET name=?, name_src='label' WHERE id=?", ups)
+    c.commit()
+    print(f"lines: {nline} previously-unnamed lines named from labels",
+          flush=True)
+
+
+def cmd_catsym(args):
+    """Vision-LLM categorization of captured symbol crops, in contact-sheet
+    batches. Resumable: only category IS NULL rows are sent; a batch that
+    fails parses stays NULL and is retried on the next invocation."""
+    c = db()
+    init_db(c)
+    rows = c.execute("SELECT id, crop FROM symbols WHERE category IS NULL"
+                     " ORDER BY id").fetchall()
+    print(f"{len(rows)} uncategorized symbols (model {MODEL})", flush=True)
+    B, COLS, CELL = 25, 5, 192
+    from PIL import ImageDraw
+    from concurrent.futures import ThreadPoolExecutor
+
+    def classify(batch):
+        nrows = (len(batch) + COLS - 1) // COLS
+        sheet = Image.new("RGB", (COLS * (CELL + 24), nrows * (CELL + 24)),
+                          (255, 255, 255))
+        d = ImageDraw.Draw(sheet)
+        for n, (rid, blob) in enumerate(batch):
+            im = Image.open(io.BytesIO(blob)).convert("RGB")
+            x = (n % COLS) * (CELL + 24) + 12
+            y = (n // COLS) * (CELL + 24) + 20
+            sheet.paste(im, (x, y))
+            d.rectangle([x - 1, y - 1, x + CELL, y + CELL], outline=(200, 0, 0))
+            d.text((x, y - 14), str(n + 1), fill=(200, 0, 0))
+        buf = io.BytesIO()
+        sheet.save(buf, format="PNG")
+        # tracer SYS_PROMPT suppressed: with it the model answered the wrong
+        # question (returned nothing); reasoning needs ~7k tokens, so 10k cap.
+        content, _fin, _u = call_llm(
+            buf.getvalue(), hint_text=SYM_PROMPT, max_tokens=10000,
+            sys_prompt="You classify point symbols on historical maps.")
+        got = {}
+        for m in re.finditer(r"(\d+)\s*[:.\-]\s*([a-z_]+)", content.lower()):
+            n, cat = int(m.group(1)), m.group(2)
+            if 1 <= n <= len(batch) and cat in SYM_TAXONOMY:
+                got[n] = cat
+        return [(cat, batch[n - 1][0]) for n, cat in got.items()]
+
+    batches = [rows[i:i + B] for i in range(0, len(rows), B)]
+    done = sent = 0
+    with ThreadPoolExecutor(max_workers=args.workers) as ex:
+        for batch, res in zip(batches, ex.map(
+                lambda b: _try(classify, b), batches)):
+            sent += len(batch)
+            if isinstance(res, Exception):
+                print(f"  ERR batch: {type(res).__name__}: {res}", flush=True)
+                continue
+            c.executemany("UPDATE symbols SET category=? WHERE id=?", res)
+            c.commit()
+            done += len(res)
+            if sent % (B * 10) == 0:
+                print(f"  {sent}/{len(rows)} sent, {done} categorized",
+                      flush=True)
+    left = c.execute(
+        "SELECT count(*) FROM symbols WHERE category IS NULL").fetchone()[0]
+    print(f"done: {done} categorized this pass, {left} still NULL"
+          + (" -- re-run to retry" if left else ""), flush=True)
+
+
 def cmd_preview(args):
     """Render traced lines over a downscaled sheet for visual QA."""
     from PIL import ImageDraw
@@ -950,6 +1148,9 @@ def main():
     sub.add_parser("stitch")
     rf = sub.add_parser("refine")
     rf.add_argument("--all", action="store_true")
+    cy = sub.add_parser("catsym")
+    cy.add_argument("--workers", type=int, default=8)
+    sub.add_parser("link")
     s = sub.add_parser("symbols")
     s.add_argument("out")
     s.add_argument("--categorized", action="store_true")
@@ -959,7 +1160,8 @@ def main():
     p.add_argument("--raw", action="store_true")
     args = ap.parse_args()
     {"run": cmd_run, "status": cmd_status, "dedupe": cmd_dedupe,
-     "stitch": cmd_stitch, "refine": cmd_refine, "symbols": cmd_symbols, "preview": cmd_preview}[args.cmd](args)
+     "stitch": cmd_stitch, "refine": cmd_refine, "symbols": cmd_symbols, "preview": cmd_preview,
+     "catsym": cmd_catsym, "link": cmd_link}[args.cmd](args)
 
 
 if __name__ == "__main__":
