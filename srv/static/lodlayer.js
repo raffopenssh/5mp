@@ -337,7 +337,7 @@
             // it is a feature you are meant to click. Same rule as the lines,
             // one step brighter so a lone stationary fire in a field of moving
             // ones is still findable.
-            s0.pointOpacity = emphDef ? 0.95 : (d.ring > 0 ? 0.7 : Math.min(1, d.o * 1.6));
+            s0.pointOpacity = emphDef ? 0.85 : (d.ring > 0 ? 0.7 : Math.min(1, d.o * 1.6));
             s0.pointRing = d.ring;
         }
         var set = function (id, prop, val) {
@@ -376,7 +376,7 @@
         // deforestation, whose purple needs full alpha to compete with fire
         // red and settlement amber at all (see ensureLayers).
         var emph = s.featureType === 'deforestation';
-        var target = on ? (id.endsWith('-dots') ? (emph ? 0.95 : 0.75) : full) : 0;
+        var target = on ? (id.endsWith('-dots') ? (emph ? 0.85 : 0.75) : full) : 0;
         try {
             map.setPaintProperty(id, p[0], target);
             map.setPaintProperty(id, p[0] + '-transition', { duration: FADE_MS, delay: 0 });
