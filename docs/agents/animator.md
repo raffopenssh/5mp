@@ -222,6 +222,68 @@ grid — an offer the app already knew was refused. Load-bearing details:
 * A failed probe is **unknown, never a refusal** — the chip stays live and the
   old ask-then-fall-back path answers.
 
+### Waiting is said where the answer will be (2026-08-17)
+
+The animator had its own loading language: a fixed modal in the middle of the
+screen with a flickering 🔥, a red/amber progress bar and "Loaded 2/4". Three
+things wrong with it, and none of them was the animation. It **covered the map
+it was loading**; it spoke a visual language nothing else in the app speaks
+(every other wait here is `.chip-dots` — three dots, `globe.css`); and it
+attributed to *the app* a wait that belongs to **four named layers whose chips
+were right there**, greyed and silent.
+
+Now the chips carry it. `.anim-chip.is-loading` swaps the layer's own status dot
+for the three dots and adds the same sheen a pinned layer chip uses, so the
+answer lands exactly where the waiting was drawn. Progress is **counted, not
+narrated** — the chips still dotted *are* "2 of 4", and it is spatial: you can
+see *which* two. The date label carries the overall first load (`showLoading()`,
+now a boolean), because until a layer lands there is no frame and the date on
+screen is not yet true of the picture — hence `drawAndSync()` refuses to
+overwrite the label while `is-loading`.
+
+* The **mark slot is one width in both states** (dot centred in 12–14 px). A
+  chip that grew on entering the wait would reflow seven chips from two rows to
+  three and shove the footer up — the same rule as the pinned chip's min-width
+  count slot.
+* `⏳` is gone from both exports. A **GeoPackage** job is unmeasurable (the
+  server owns it) → dots. A **GIF** encode is measurable (we own the loop) →
+  it keeps its percentage. A real number always beats dots; dots are for waits
+  that have no number.
+
+### Touch: separation, not bulk
+
+The controls were badge-sized with an invisible `::after` stretched 8 px past
+every edge. That produced **mistaps, not misses**: `−` and `+` sat 3 px apart
+with 6 px of slop each, so a band between them belonged to both and DOM order
+won it — a finger aiming at *slower* stepped *faster*, which reads as the app
+ignoring you. And a target you cannot see cannot be aimed at: enlarging the
+invisible box does not move the aim point.
+
+The first fix over-corrected to 40 px (then 26 px) pill-shaped controls. That
+was **the wrong reference**: these controls are siblings of the `90d` date
+preset tag one row up, which is **14 px tall with a 3 px corner**. Blown up
+they stopped reading as time-slider furniture and became a second toolbar on
+top of the first, and they ate 40 px of a map the user opened the app to look
+at. Touch changes how **big** a control is, never **what it is**.
+
+So, under `@media (hover: none) and (pointer: coarse)` — keyed on the pointer,
+not the viewport (a landscape phone is 900 px wide and still a thumb):
+
+| | before | now | reference |
+|---|---|---|---|
+| button | 12×14 px + 8 px slop | 17–18 px tall, 3 px radius | `90d` tag = 14 px |
+| chip | 13 px | 17 px | same badge |
+| gutter | 3 px | 7 px | — |
+| hit box | ±8 px (overlapping) | **≤ half a gutter** (±3 px) | — |
+| footer, 412×915 | ~120 px | **138 px** | map keeps 85% |
+
+Half a gutter can never overlap, so every tap lands on the control nearest the
+finger. Verified with `document.elementFromPoint` swept along both rows and
+across the band between them: every pixel resolves to at most one control, with
+dead space between (`anim-play×24 · -×3 · chip:fireGrid×19`). Desktop is
+untouched (footer 93 px). Press feedback is `:active { transform: scale(.93) }`
+— a touch has no hover, so the press itself has to answer.
+
 **Key behaviors** (all in `anim.js`, v2 — integrated into the time slider):
 - UI lives **inside** the time-slider header: play/date/speed/GIF/close inline, playhead + progress rendered in the slider track (playhead is pointer-draggable to scrub; pauses while dragging, resumes after). `#anim-open-btn` is a preset-tag-styled chip.
 - **Layer chips** (`.anim-chip`, staggered reveal like date tags — all always shown so users see what's available): fireGrid / firePts / trajs / effortGrid / effortPts / deforest / settlements. Lazy-load on first enable (`ensureLayer`); toggleable mid-play.
