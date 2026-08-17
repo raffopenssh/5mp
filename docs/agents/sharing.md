@@ -256,6 +256,21 @@ the phone layout.
 * **Guest options unfold, they do not appear.** `display:none` toggling jumped
   the card 90px, which reads as a reload. The grid `0fr→1fr` transition animates
   to the panel's own height with nothing measured or hardcoded.
+* **The card never exceeds the viewport** (fixed 2026-08-17). With guest mode
+  on, a date choice present and all three key options unfolded, the content is
+  ~900 px — taller than a phone. The card had no height cap and
+  `body.sl-open` scroll-locks the page, so on mobile the sheet grew off both
+  edges: close button behind the browser chrome, copy button below the fold,
+  nothing scrollable. A modal that cannot be dismissed is a trap. Now the card
+  is a flex column with `max-height: calc(100dvh - 40px)` (92dvh on the phone
+  sheet, `vh` fallback first for older engines); head and copy button are
+  `flex: none`, everything between them lives in `#sl-body`
+  (`overflow-y:auto`, `overscroll-behavior:contain` so a flick at the end does
+  not scroll the page under the scrim). Switching *to* guest scrolls
+  `#sl-body` to the bottom once, after the unfold settles (280 ms) — only on
+  the off→on edge, so a re-render never moves the view under a reading thumb.
+  Any new row added to the dialog inherits this; do not add height outside
+  `#sl-body`.
 * **The patrol row is absent, not disabled,** when the account owns no patrol or
   the page is itself a guest: a control that could only ever be off is worse
   than none, because it implies the data exists.

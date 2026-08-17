@@ -177,6 +177,14 @@
             '      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
             '           stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>' +
             '  </div>' +
+            // Everything between the head and the copy button scrolls. On a
+            // phone with every option on (guest + date choice + three
+            // options) the card is taller than the screen; without a scroll
+            // container the sheet grew past both edges, so neither the close
+            // button nor the copy button could be reached and the page behind
+            // it is scroll-locked. The head and the button stay put; only the
+            // middle moves.
+            '  <div class="sl-body" id="sl-body">' +
             '  <div class="sl-url" id="sl-url">' +
             '    <span class="sl-prefix" id="sl-prefix"></span>' +
             '    <span class="sl-slug" id="sl-slug" spellcheck="false" autocapitalize="off" ' +
@@ -252,6 +260,7 @@
             // for one purpose ("report") so Admin can renew or audit them
             // together; most links need none, so this is a whisper, not a form.
             '  <div class="sl-tagrow" id="sl-tagrow"></div>' +
+            '  </div>' +
             '  <button class="sl-copy" id="sl-copy" type="button">' +
             '    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
             '         stroke-linecap="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>' +
@@ -502,7 +511,20 @@
         if (!el) return;
         var guest = !!(state && state.guest);
         var opts = el.querySelector('#sl-opts');
+        var wasOn = opts.classList.contains('is-on');
         opts.classList.toggle('is-on', guest);
+        // Turning the key options on adds ~200px below the fold on a phone.
+        // The panel animates its height, so scroll after it settles, and only
+        // on the off→on edge — re-rendering must never move the view under a
+        // thumb that is already reading.
+        if (guest && !wasOn) {
+            var body = el.querySelector('#sl-body');
+            if (body && body.scrollHeight > body.clientHeight) {
+                setTimeout(function () {
+                    body.scrollTo({ top: body.scrollHeight, behavior: 'smooth' });
+                }, 280);
+            }
+        }
         // inert while collapsed: a zero-height panel is still tabbable, and a
         // focus ring landing on something nobody can see is how a smooth
         // dialog starts feeling haunted.
@@ -994,6 +1016,8 @@
         var el = build();
         render();
         el.classList.add('is-open');
+        var body0 = el.querySelector('#sl-body');
+        if (body0) body0.scrollTop = 0; // a reused dialog opens at the top
         document.body.classList.add('sl-open');
         document.addEventListener('keydown', onKey, true);
 
