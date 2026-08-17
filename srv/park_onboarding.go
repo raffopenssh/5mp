@@ -22,8 +22,24 @@ import (
 	"strings"
 )
 
+// onboardCallerRef is the caller's pwd_ref, or "" when the request carries
+// no password. Same handle as short_links/shared_files: a request belongs to
+// the logins that made it, and another login must get "no such request"
+// (404, not 403 — an id must not be an oracle, AGENTS.md invariant 6).
+func onboardCallerRef(r *http.Request) string {
+	if pwd := RequestPwd(r); pwd != "" {
+		return principalRef(pwd)
+	}
+	return ""
+}
+
 // HandleAPIRequestOnboard records a request to onboard a new WDPA park.
 // POST /api/onboarding/request?wdpa_id=NNN
+//
+// The WORK is global (a park is shared data; the ingest runs once no matter
+// how many logins ask), but the REQUEST is scoped: each caller becomes a
+// subscriber on the shared request row, gets lifecycle notifications in their
+// own tenant, and may later cancel only their own subscription.
 func (s *Server) HandleAPIRequestOnboard(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -32,25 +48,46 @@ func (s *Server) HandleAPIRequestOnboard(w http.ResponseWriter, r *http.Request)
 		http.Error(w, `{"error":"missing or invalid wdpa_id"}`, http.StatusBadRequest)
 		return
 	}
+	ref := onboardCallerRef(r)
+	if ref == "" {
+		// A guest capability or an unauthenticated caller cannot start a
+		// multi-hour ingest.
+		http.Error(w, `{"error":"onboarding requires a logged-in session"}`, http.StatusForbidden)
+		return
+	}
 
-	// Onboarding adds a park for EVERY tenant, so the request is tagged with
-	// the caller's tenant only to route the notification back and to keep the
-	// shared sandbox out: onboard_park.py skips env='test', so a demo dwell
-	// never triggers a real multi-hour ingest.
+	// The request is tagged with the caller's tenant to route notifications
+	// back and to keep the shared sandbox out: onboard_park.py skips requests
+	// whose subscribers are all env='test', so a demo dwell never triggers a
+	// real multi-hour ingest.
 	env := RequestEnv(r)
 
 	// Must be a known WDPA area.
+	if s.WDPAIndex == nil {
+		http.Error(w, `{"error":"wdpa index unavailable"}`, http.StatusServiceUnavailable)
+		return
+	}
 	entry := s.WDPAIndex.GetByID(wdpaID)
 	if entry == nil {
 		http.Error(w, `{"error":"unknown wdpa_id"}`, http.StatusNotFound)
 		return
 	}
 
-	// Must not already be loaded as a keystone.
+	// Must not already be loaded as a keystone. If it is — e.g. onboarded on
+	// another tenant's request — the caller still becomes a subscriber on the
+	// existing request row (if any), so their interest is on record and one
+	// tenant's later cancel cannot remove a park another tenant uses. The data
+	// itself is global and shared; nothing is re-ingested.
 	if s.AreaStore != nil {
 		idStr := strconv.Itoa(wdpaID)
 		for _, a := range s.AreaStore.Areas {
 			if a.WDPAID == idStr {
+				var reqID int64
+				if s.DB.QueryRow(`SELECT id FROM park_onboarding_requests WHERE wdpa_id = ?`,
+					wdpaID).Scan(&reqID) == nil {
+					s.DB.Exec(`INSERT OR IGNORE INTO park_onboarding_subscribers (request_id, pwd_ref, env)
+						VALUES (?, ?, ?)`, reqID, ref, env)
+				}
 				json.NewEncoder(w).Encode(map[string]any{
 					"status": "already_loaded", "park_id": a.ID,
 				})
@@ -59,12 +96,27 @@ func (s *Server) HandleAPIRequestOnboard(w http.ResponseWriter, r *http.Request)
 		}
 	}
 
-	// Existing request? Return its status (idempotent).
+	// Existing request? Subscribe this caller to it (idempotent) — the ingest
+	// runs once; a second tenant asking for the same park shares the row and
+	// the eventual result rather than triggering a duplicate.
 	var existingStatus string
 	var existingID int64
 	err = s.DB.QueryRow(`SELECT id, status FROM park_onboarding_requests WHERE wdpa_id = ?`,
 		wdpaID).Scan(&existingID, &existingStatus)
 	if err == nil {
+		s.DB.Exec(`INSERT OR IGNORE INTO park_onboarding_subscribers (request_id, pwd_ref, env)
+			VALUES (?, ?, ?)`, existingID, ref, env)
+		// A new subscriber revives a dying/dead request: a removal another
+		// tenant scheduled must not take out a park this caller just asked
+		// for, and a removed park is simply queued again.
+		switch existingStatus {
+		case "remove_requested":
+			s.DB.Exec(`UPDATE park_onboarding_requests SET status='ready' WHERE id = ?`, existingID)
+			existingStatus = "ready"
+		case "removed":
+			s.DB.Exec(`UPDATE park_onboarding_requests SET status='pending', detail='' WHERE id = ?`, existingID)
+			existingStatus = "pending"
+		}
 		json.NewEncoder(w).Encode(map[string]any{
 			"status": "already_requested", "request_status": existingStatus, "request_id": existingID,
 		})
@@ -80,6 +132,8 @@ func (s *Server) HandleAPIRequestOnboard(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	reqID, _ := res.LastInsertId()
+	s.DB.Exec(`INSERT OR IGNORE INTO park_onboarding_subscribers (request_id, pwd_ref, env)
+		VALUES (?, ?, ?)`, reqID, ref, env)
 
 	// User-facing notification: set expectations (data takes ~1 day).
 	title := fmt.Sprintf("New park requested: %s", entry.Name)
@@ -103,14 +157,20 @@ func (s *Server) HandleAPIRequestOnboard(w http.ResponseWriter, r *http.Request)
 	})
 }
 
-// HandleAPICancelOnboard cancels a pending onboarding request or schedules
-// removal of an already-onboarded park. POST /api/onboarding/cancel?wdpa_id=NNN
+// HandleAPICancelOnboard cancels the CALLER'S subscription to an onboarding
+// request, and only tears down the shared work when no subscriber remains.
+// POST /api/onboarding/cancel?wdpa_id=NNN
 //
-//   - status pending/failed  -> request row deleted immediately (undo toast path)
-//   - status ready           -> status=remove_requested; scripts/onboard_park.py
-//     removes the keystone + derived data on its next
-//     nightly run (only onboarded parks can be removed;
-//     original keystones are refused by the script).
+//   - status pending/failed  -> subscription removed; the request row is
+//     deleted only when the last subscriber leaves
+//     (undo toast path)
+//   - status ready           -> subscription removed; status=remove_requested
+//     only when the last subscriber leaves — another
+//     tenant still using the park keeps it alive.
+//     scripts/onboard_park.py removes the keystone +
+//     derived data on its next nightly run (only
+//     onboarded parks can be removed; original
+//     keystones are refused by the script).
 func (s *Server) HandleAPICancelOnboard(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	wdpaID, err := strconv.Atoi(r.URL.Query().Get("wdpa_id"))
@@ -128,25 +188,67 @@ func (s *Server) HandleAPICancelOnboard(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	// Scope: only a subscriber may act on the request, and a non-subscriber
+	// gets the same 404 as a missing row — an id must not be an oracle.
+	ref := onboardCallerRef(r)
+	var one int
+	if ref == "" || s.DB.QueryRow(`SELECT 1 FROM park_onboarding_subscribers
+		WHERE request_id = ? AND pwd_ref = ?`, id, ref).Scan(&one) != nil {
+		// remove_requested toggle-back is the one exception: the caller wants
+		// back IN, and their subscription was already removed on the way out.
+		if !(ref != "" && status == "remove_requested") {
+			http.Error(w, `{"error":"no onboarding request for this wdpa_id"}`, http.StatusNotFound)
+			return
+		}
+	}
+
+	// subscribersLeft after this caller leaves.
+	unsubscribe := func() int {
+		s.DB.Exec(`DELETE FROM park_onboarding_subscribers WHERE request_id = ? AND pwd_ref = ?`, id, ref)
+		var n int
+		s.DB.QueryRow(`SELECT COUNT(*) FROM park_onboarding_subscribers WHERE request_id = ?`, id).Scan(&n)
+		return n
+	}
+	env := RequestEnv(r)
+
 	switch status {
 	case "pending", "failed":
+		left := unsubscribe()
+		// The caller's own queued-notification goes either way, so their bell
+		// doesn't advertise a park they no longer want.
+		s.DB.Exec(`DELETE FROM notifications WHERE notification_type = 'park_onboarding' AND reference_id = ? AND env = ?`,
+			strconv.Itoa(wdpaID), env)
+		if left > 0 {
+			// Another tenant still wants the park: the shared work stays queued.
+			json.NewEncoder(w).Encode(map[string]any{"status": "cancelled", "name": name})
+			return
+		}
 		s.DB.Exec(`DELETE FROM park_onboarding_requests WHERE id = ?`, id)
-		// Drop the queued-notification too so the bell doesn't advertise a park
-		// that will never arrive.
 		s.DB.Exec(`DELETE FROM notifications WHERE notification_type = 'park_onboarding' AND reference_id = ?`,
 			strconv.Itoa(wdpaID))
 		json.NewEncoder(w).Encode(map[string]any{"status": "cancelled", "name": name})
 	case "processing":
 		http.Error(w, `{"error":"onboarding is running right now; try again later"}`, http.StatusConflict)
 	case "ready":
+		if left := unsubscribe(); left > 0 {
+			// Someone else still uses the park. The caller is out; the park
+			// stays. Never let one tenant delete another tenant's data.
+			json.NewEncoder(w).Encode(map[string]any{
+				"status": "unsubscribed", "park_id": parkID,
+				"message": "Your request was withdrawn; the park stays because another account still uses it.",
+			})
+			return
+		}
 		s.DB.Exec(`UPDATE park_onboarding_requests SET status='remove_requested' WHERE id = ?`, id)
 		msg := fmt.Sprintf("%s (%s) is scheduled for removal; the park and its derived layers will be dropped in the next nightly run.", name, parkID)
 		s.DB.Exec(`INSERT INTO notifications (park_id, notification_type, title, message, reference_id, env)
 			VALUES (?, 'park_onboarding', ?, ?, ?, ?)`,
-			parkID, "Park removal scheduled: "+name, msg, strconv.Itoa(wdpaID), RequestEnv(r))
+			parkID, "Park removal scheduled: "+name, msg, strconv.Itoa(wdpaID), env)
 		json.NewEncoder(w).Encode(map[string]any{"status": "remove_scheduled", "park_id": parkID, "message": msg})
 	case "remove_requested":
-		// Toggle back: user reconsidered the removal.
+		// Toggle back: user reconsidered the removal. Re-subscribe them.
+		s.DB.Exec(`INSERT OR IGNORE INTO park_onboarding_subscribers (request_id, pwd_ref, env)
+			VALUES (?, ?, ?)`, id, ref, env)
 		s.DB.Exec(`UPDATE park_onboarding_requests SET status='ready' WHERE id = ?`, id)
 		json.NewEncoder(w).Encode(map[string]any{"status": "remove_cancelled", "park_id": parkID})
 	default:
@@ -154,14 +256,25 @@ func (s *Server) HandleAPICancelOnboard(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
-// HandleAPIOnboardingStatus lists onboarding requests (newest first).
+// HandleAPIOnboardingStatus lists the CALLER'S onboarding requests (newest
+// first). Scoped like short_links: a request row is visible only to its
+// subscribers, so one tenant's search-dwell offers never reveal what another
+// tenant asked for. A caller who wants a park someone else already queued
+// simply requests it again and is folded into the shared row.
 // GET /api/onboarding
 func (s *Server) HandleAPIOnboardingStatus(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	ref := onboardCallerRef(r)
+	if ref == "" {
+		json.NewEncoder(w).Encode([]any{})
+		return
+	}
 	rows, err := s.DB.Query(`
-		SELECT id, wdpa_id, name, COALESCE(country,''), COALESCE(park_id,''),
-		       status, COALESCE(detail,''), requested_at, COALESCE(processed_at,'')
-		FROM park_onboarding_requests ORDER BY requested_at DESC LIMIT 100`)
+		SELECT q.id, q.wdpa_id, q.name, COALESCE(q.country,''), COALESCE(q.park_id,''),
+		       q.status, COALESCE(q.detail,''), q.requested_at, COALESCE(q.processed_at,'')
+		FROM park_onboarding_requests q
+		JOIN park_onboarding_subscribers s ON s.request_id = q.id AND s.pwd_ref = ?
+		ORDER BY q.requested_at DESC LIMIT 100`, ref)
 	if err != nil {
 		json.NewEncoder(w).Encode([]any{})
 		return
