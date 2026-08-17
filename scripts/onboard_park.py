@@ -171,14 +171,112 @@ def backfill_window():
     return FIRE_DATA_START, today
 
 
+def covered_fire_ranges(conn, minx, miny, maxx, maxy):
+    """Date ranges of fire_detections already ingested for this (buffered)
+    bbox by a COMPLETED AOI fire_gap run whose bbox contains it.
+
+    A park drawn inside an already-ingested AOI (Numatina inside
+    XSA_Study_Area) must not re-download two years of FIRMS windows the AOI
+    gap-fill already inserted: the detections are in fire_detections, they
+    merely carry a stale park assignment (fixed by reassign_fires_bbox, not by
+    re-fetching). Only coverage >= 1.0 AND state='done' counts — a partial
+    run is treated as absent, never as "probably fine" (a no-op must not read
+    as an answer). The range end backs off one day from last_run_at because
+    the NRT tail of that run may have been hours stale.
+    """
+    rows = conn.execute("""
+        SELECT a.from_date, d.last_run_at
+        FROM aois a
+        JOIN aoi_datasets d ON d.aoi_id = a.id AND d.dataset = 'fire_gap'
+             AND d.state = 'done' AND IFNULL(d.coverage, 0) >= 1.0
+        WHERE a.archived_at IS NULL
+          AND a.bbox_minx <= ? AND a.bbox_miny <= ?
+          AND a.bbox_maxx >= ? AND a.bbox_maxy >= ?""",
+        (minx, miny, maxx, maxy)).fetchall()
+    out = []
+    for from_date, last_run in rows:
+        if not last_run:
+            continue
+        start = (datetime.strptime(from_date, '%Y-%m-%d').date()
+                 if from_date else FIRE_DATA_START)
+        end = datetime.strptime(str(last_run)[:10], '%Y-%m-%d').date() - timedelta(days=1)
+        if start <= end:
+            out.append((start, end))
+    return out
+
+
+def reassign_fires_bbox(conn, park_id, minx, miny, maxx, maxy, dry_run,
+                        expect_park=True):
+    """Re-run canonical park assignment over EXISTING detections in the bbox.
+
+    backfill_fires upserts with INSERT OR IGNORE, so any detection that was
+    already in the DB (AOI gap-fill, daily Africa update, a neighbouring
+    park's backfill) keeps the protected_area_id computed BEFORE this park
+    existed — the new park would show zero fires while the rows sit right
+    under it. The read path is protected_area_id (scripts/fire_source.py), so
+    reassignment is mandatory for reuse, and it must run AFTER append_keystone
+    (ParkAssigner reads the keystones file) and AFTER backfill.
+
+    Updates every row whose canonical assignment changed (not only rows the
+    new park wins): nearest-park is a global property and a half-applied
+    answer is worse than none. Batched commits so the single writer stays
+    available (AGENTS.md invariant 16); keyset pagination so the read cursor
+    never races its own writes.
+    """
+    log(f"  reassigning existing detections in bbox "
+        f"({minx:.3f},{miny:.3f},{maxx:.3f},{maxy:.3f})")
+    if dry_run:
+        return 0, 0
+    from park_assigner import ParkAssigner
+    assigner = ParkAssigner()
+    if expect_park and park_id not in assigner.park_ids:
+        raise RuntimeError(f"{park_id} missing from ParkAssigner keystones; "
+                           "reassignment would silently do nothing")
+    cur = conn.cursor()
+    scanned = changed = 0
+    last_id = 0
+    while True:
+        rows = conn.execute("""
+            SELECT id, latitude, longitude, IFNULL(protected_area_id,''), in_protected_area
+            FROM fire_detections
+            WHERE latitude BETWEEN ? AND ? AND longitude BETWEEN ? AND ?
+              AND id > ? ORDER BY id LIMIT 20000""",
+            (miny, maxy, minx, maxx, last_id)).fetchall()
+        if not rows:
+            break
+        batch = []
+        for rid, lat, lon, old_pid, old_in in rows:
+            last_id = rid
+            scanned += 1
+            pid, dist = assigner.assign(lon, lat)
+            new_in = 1 if dist == 0.0 else 0
+            if (pid or '') != old_pid or new_in != (old_in or 0):
+                batch.append((pid, new_in, rid))
+        if batch:
+            cur.executemany("UPDATE fire_detections SET protected_area_id=?, "
+                            "in_protected_area=? WHERE id=?", batch)
+            changed += len(batch)
+        conn.commit()  # yield the write lock between chunks
+    log(f"    reassign: {scanned:,} scanned, {changed:,} updated")
+    return scanned, changed
+
+
 def backfill_fires(conn, park_id, geometry, dry_run):
     """FIRMS archive backfill for the park bbox + 100km, upserted with
-    canonical park assignment (park_assigner)."""
+    canonical park assignment (park_assigner). Five-day windows already
+    ingested whole by a completed covering AOI fire_gap run are skipped —
+    those detections are in the DB and reassign_fires_bbox() gives them to
+    the new park; only genuinely missing dates hit FIRMS."""
     minx, miny, maxx, maxy = geom_bbox(geometry)
     d = BUFFER_KM / 111.0
-    area = f"{max(minx-d,-180):.3f},{max(miny-d,-90):.3f},{min(maxx+d,180):.3f},{min(maxy+d,90):.3f}"
+    bminx, bminy = max(minx - d, -180), max(miny - d, -90)
+    bmaxx, bmaxy = min(maxx + d, 180), min(maxy + d, 90)
+    area = f"{bminx:.3f},{bminy:.3f},{bmaxx:.3f},{bmaxy:.3f}"
     start, today = backfill_window()
+    covered = covered_fire_ranges(conn, bminx, bminy, bmaxx, bmaxy)
     log(f"  fire backfill {start} .. {today} bbox={area}")
+    for c0, c1 in covered:
+        log(f"    reusing existing ingest {c0} .. {c1} (covering AOI fire_gap done)")
     if dry_run:
         return 0
 
@@ -189,6 +287,7 @@ def backfill_fires(conn, park_id, geometry, dry_run):
     assigner = ParkAssigner()
     key = firms_key()
     inserted = 0
+    skipped = 0
     cur = conn.cursor()
 
     # FIRMS area API allows max 5-day ranges ("Invalid day range. Expects [1..5]");
@@ -196,6 +295,14 @@ def backfill_fires(conn, park_id, geometry, dry_run):
     day = start
     while day <= today:
         span = min(5, (today - day).days + 1)
+        # Skip a window only when EVERY day of it is inside one covered range
+        # (a window straddling the range edge is fetched whole — duplicate
+        # rows are absorbed by INSERT OR IGNORE, missing rows are not).
+        wend = day + timedelta(days=span - 1)
+        if any(c0 <= day and wend <= c1 for c0, c1 in covered):
+            skipped += span
+            day += timedelta(days=span)
+            continue
         age = (today - day).days
         source = "VIIRS_NOAA20_NRT" if age <= 60 else "VIIRS_NOAA20_SP"
         url = f"{FIRMS_URL}/{key}/{source}/{area}/{span}/{day.strftime('%Y-%m-%d')}"
@@ -232,6 +339,8 @@ def backfill_fires(conn, park_id, geometry, dry_run):
         log(f"    {day} +{span}d: {len(rows)} rows, {inserted} inserted so far")
         day += timedelta(days=span)
         time.sleep(2)  # be polite to FIRMS
+    if skipped:
+        log(f"    skipped {skipped} already-ingested days (reused AOI fire_gap data)")
     return inserted
 
 
@@ -260,8 +369,25 @@ def notify(conn, park_id, title, msg, env='prod'):
     conn.commit()
 
 
+def subscriber_envs(conn, req_id):
+    """Distinct tenant envs subscribed to a request. The request row's own
+    `env` is only the FIRST requester's tenant; every subscriber gets the
+    lifecycle notifications in their own env, or the second tenant to ask for
+    a park never hears that it arrived."""
+    rows = conn.execute(
+        "SELECT DISTINCT env FROM park_onboarding_subscribers WHERE request_id=?",
+        (req_id,)).fetchall()
+    return [r[0] for r in rows] or ['prod']
+
+
+def notify_subscribers(conn, req_id, park_id, title, msg):
+    for env in subscriber_envs(conn, req_id):
+        notify(conn, park_id, title, msg, env=env)
+
+
 def process_request(conn, req, dry_run):
     wdpa_id, name = req['wdpa_id'], req['name']
+    was_retry = req['status'] == 'failed'
     log(f"=== onboarding WDPA {wdpa_id}: {name} ===")
     conn.execute("UPDATE park_onboarding_requests SET status='processing' WHERE id=?", (req['id'],))
     conn.commit()
@@ -272,11 +398,36 @@ def process_request(conn, req, dry_run):
     park_id = make_park_id(meta['iso3'], meta['name'])
     log(f"  park_id={park_id} area={meta['area_km2']}km2")
 
-    append_keystone(park_id, meta, dry_run)
+    appended = append_keystone(park_id, meta, dry_run)
 
-    # Fire backfill (all-time) + v5 pipeline
+    if not appended and not was_retry:
+        # Keystone already on the globe (onboarded earlier, or added manually)
+        # and this request is not a retry of a partial failure: the multi-hour
+        # ingest already ran — reuse it, don't repeat it. A retry ('failed')
+        # falls through and re-runs the pipeline steps, which are idempotent.
+        log(f"  {park_id} already onboarded; marking ready without re-ingest")
+        if not dry_run:
+            conn.execute('''UPDATE park_onboarding_requests
+                            SET status='ready', park_id=?, detail='reused existing park data',
+                                processed_at=? WHERE id=?''',
+                         (park_id, datetime.now(timezone.utc).isoformat(), req['id']))
+            conn.commit()
+            notify_subscribers(conn, req['id'], park_id,
+                               f"Park available: {meta['name']}",
+                               f"{meta['name']} ({meta['country']}) was already on the globe "
+                               f"as {park_id}; your request is complete — no new ingest was needed.")
+        return
+
+    # Fire backfill (all-time, minus windows a completed covering AOI ingest
+    # already holds) + reassignment of pre-existing detections + v5 pipeline.
     n = backfill_fires(conn, park_id, meta['geometry'], dry_run)
     notes.append(f"fires backfilled: {n}")
+    minx, miny, maxx, maxy = geom_bbox(meta['geometry'])
+    d = BUFFER_KM / 111.0
+    _, changed = reassign_fires_bbox(conn, park_id,
+                                     max(minx - d, -180), max(miny - d, -90),
+                                     min(maxx + d, 180), min(maxy + d, 90), dry_run)
+    notes.append(f"fires reassigned: {changed}")
 
     py = sys.executable or 'python3'
     run([py, 'scripts/rebuild_fire_trajectories_v5.py', '--park', park_id], dry_run, ok_fail=True)
@@ -325,10 +476,11 @@ def process_request(conn, req, dry_run):
                     WHERE id=?''',
                  (park_id, detail, datetime.now(timezone.utc).isoformat(), req['id']))
     conn.commit()
-    notify(conn, park_id, f"New park live: {meta['name']}",
-           f"{meta['name']} ({meta['country']}) is now on the globe as {park_id}. "
-           f"{detail}. Daily scans will prioritise this park for deforestation "
-           f"and turbidity coverage over the coming days.")
+    notify_subscribers(conn, req['id'], park_id,
+                       f"New park live: {meta['name']}",
+                       f"{meta['name']} ({meta['country']}) is now on the globe as {park_id}. "
+                       f"{detail}. Daily scans will prioritise this park for deforestation "
+                       f"and turbidity coverage over the coming days.")
     log(f"=== {park_id} ready: {detail} ===")
 
 
@@ -356,6 +508,20 @@ def remove_keystone(park_id, dry_run):
 
 def process_removal(conn, req, dry_run):
     park_id = req['park_id']
+    # Last line of defence: a park may only be torn down when NO subscriber
+    # remains on the request. The cancel handler enforces this too, but a
+    # subscriber can arrive between the cancel and this nightly run — never
+    # let one tenant's removal delete a park another tenant just asked for.
+    n = conn.execute("SELECT COUNT(*) FROM park_onboarding_subscribers WHERE request_id=?",
+                     (req['id'],)).fetchone()[0]
+    if n:
+        log(f"=== removal of {park_id} aborted: {n} subscriber(s) still attached; "
+            "restoring status=ready ===")
+        if not dry_run:
+            conn.execute("UPDATE park_onboarding_requests SET status='ready' WHERE id=?",
+                         (req['id'],))
+            conn.commit()
+        return
     log(f"=== removing park {park_id} (WDPA {req['wdpa_id']}) ===")
     remove_keystone(park_id, dry_run)
     if dry_run:
@@ -390,7 +556,8 @@ def process_removal(conn, req, dry_run):
                  (datetime.now(timezone.utc).isoformat(), req['id']))
     conn.commit()
     notify(conn, park_id, f"Park removed: {req['name']}",
-           f"{req['name']} ({park_id}) and its derived data layers were removed as requested.")
+           f"{req['name']} ({park_id}) and its derived data layers were removed as requested.",
+           env=req['env'] or 'prod')
     log(f"=== {park_id} removed ===")
 
 
@@ -402,10 +569,16 @@ def main():
 
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
-    q = ("SELECT * FROM park_onboarding_requests "
+    q = ("SELECT * FROM park_onboarding_requests q "
          # Any real tenant may request an onboarding (a park is global data);
-         # only the shared demo sandbox is skipped.
-         "WHERE status IN ('pending','failed','remove_requested') AND env <> 'test'")
+         # only the shared demo sandbox is skipped — judged by SUBSCRIBERS,
+         # not by the row's env (that is only the first requester's tenant:
+         # a prod tenant joining a test-created row must still get the park).
+         # remove_requested rows have no subscribers left by definition.
+         "WHERE (q.status = 'remove_requested' AND q.env <> 'test') "
+         "   OR (q.status IN ('pending','failed') AND EXISTS ("
+         "         SELECT 1 FROM park_onboarding_subscribers s "
+         "         WHERE s.request_id = q.id AND s.env <> 'test'))")
     params = ()
     if args.request_id:
         q = "SELECT * FROM park_onboarding_requests WHERE id=?"
