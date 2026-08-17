@@ -113,16 +113,46 @@ A duplicate scheduler is worse than none: check
 
 ## On-the-fly Park Onboarding
 
-Search for an unloaded-but-WDPA-matched park name, dwell 15s → offer to add it.
+Every unloaded search result carries an **Add** control; every row already in
+the queue carries its live status (`queued` / `building` / `removing tonight`
+chip, plus Cancel / Keep / Remove). No dwell timer.
+
+*Why the timer went (2026-08-17).* The offer used to be a footer banner in the
+dropdown that appeared after **15 s** of dwelling on a matching search. Nobody
+looks at a dropdown that long, and on a phone the keyboard covers it — the
+capability existed but was effectively unreachable. **An action belongs on the
+object it acts on, visible the moment that object is.** `searchAreas()` now
+fetches `/api/onboarding` alongside the three search endpoints (60 s cache,
+`indexOnboarding()` → `_onboardByWdpa` / `_onboardByPark`), and
+`onboardRowAction(area)` renders the row's control. After a request/cancel,
+`refreshSearchResults()` re-runs the search so the row shows its new state.
+Guests get **no** control at all: `guestMayRead` rejects the POST, and an offer
+the page then withdraws is worse than none.
+
+Two related search fixes shipped with it:
+
+* **Duplicate designations.** WDPA lists one protected area under several
+  designations, so Djurdjura appeared once loaded and once as an unloaded
+  Biosphere Reserve offering "Add" for a park already on the globe. Unloaded
+  rows whose name is already loaded are dropped from *both* sources.
+* **Mobile: the dropdown drops *up*.** The search bar is fixed just above the
+  bottom toolbar, so a downward list was drawn over the toolbar buttons — a tap
+  on a result hid the list and the same click then landed on the filter button
+  underneath, opening "Active Filters" instead of the park. It now opens
+  upward, over the map. Same shape of bug in `selectSearchResult()`: the filter
+  panel is a full-screen sheet on a phone, so it opens only on a wide screen
+  (`FloatUI.isSheetMode()`), and never for an unloaded PA, which has no
+  selection to confirm.
+
 Backend: `srv/park_onboarding.go` (`POST /api/onboarding/request|cancel`,
 `GET /api/onboarding`; routes NOT under /api/parks/* because of park-id
 middleware). Table: `park_onboarding_requests` (migration 037). Worker:
 `scripts/onboard_park.py` (cron 02:30) — Protected Planet boundary → keystone
 append, FIRMS fire backfill max(6mo, current year), v5 pipeline, GFW scan,
-GHSL/HydroSHEDS if local sources exist, restart. Removal: same search-dwell on
-an onboarded park (or undo toast); only parks with `onboarded_at` in
+GHSL/HydroSHEDS if local sources exist, restart. Removal: the Remove control on
+a loaded, onboarded row (or the undo toast); only parks with `onboarded_at` in
 keystones_with_boundaries.json can be removed. Test-env requests are tagged
-`env='test'` and skipped by the worker; test UI never shows offers.
+`env='test'` and skipped by the worker.
 
 ---
 
