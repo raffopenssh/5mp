@@ -930,6 +930,36 @@ idle it first appeared at (`contactIdleAt`, reset whenever the set changes), and
 since the layers appeared *and* every source they read is loaded. Then "no lines
 here" is a reading of the canvas.
 
+**The BAR was fixed twice before the BODY under it was fixed once** (2026-08-17).
+`syncBar()` restates the counts on every idle, but they come from GeoMap's
+state (unit *types* passing the filter) and are true the moment the panel
+opens. The body — the state line, the columns, the two tables — is built from
+what MapLibre has **painted**, and a reader who taps the geology chip *just
+after loading* opens it before the tiles land. Two ways that showed, both from
+the same cause and both permanent, because the only idle-time rebuild was keyed
+on `skillScope()` (which had not changed):
+
+* no columns yet → *"No mapped sheet reaches this view, so there is no rock
+  here to describe"*, under a bar reading `36 units · 67 lines`, over a map
+  drawing three countries (the reported screenshot);
+* **some** columns yet → a 26- or 33-cell grid frozen over a map that went on
+  to paint 55. That half is the nastier one: nothing on screen announces the
+  missing periods, so it reads as a sheet with less geology than it has.
+
+Fix: the panel records **what its body is an answer to** (`bodyAnswerSig()` —
+the drawn column *set*, plus whether contacts are painting) at build time, and
+the idle handler calls `syncBody()`, which rebuilds only when that changed.
+The column set, not a coarse "is anything drawn" — the first attempt used the
+coarse key, cleared the empty note, and left the partial grid exactly as
+reported. Panning between periods therefore does rebuild, which is correct (a
+period entering the view is a column the reader can pick); `mxOrder` keeps the
+order frozen so nothing reshuffles, and `syncBody()` declines while `mxWorking`
+— a reader mid-selection gets their rebuild from `mxSettle`. Two rebuilds
+measured across two pans inside Tanzania. Same rule as the admin card's
+`geoAnswerSig()` guard, on the panel this time: **a surface built from the
+canvas needs the canvas's own events, and the bar and the body are two
+surfaces.**
+
 Measured after the fix, and the answer to the second open item — the contact
 half of the zoomed-in gesture, which the previous pass could not time because
 the count was stuck:
