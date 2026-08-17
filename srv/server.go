@@ -56,6 +56,14 @@ type pageData struct {
 	// would produce one, because an editor that 403s on save is worse than an
 	// editor that was never offered.
 	IsGuest bool
+	// GuestSlug: the capability this page is riding on, so "copy link" can
+	// hand back the SHORT link the reader arrived through instead of minting
+	// (which a guest may not do) or copying 400 characters of view state.
+	// The slug lives in an HttpOnly cookie precisely so it leaves the address
+	// bar; echoing it into the page it already authenticated is not a widening
+	// -- script on this page can read everything the key grants anyway -- but
+	// it must never be written into a URL by anything except a deliberate copy.
+	GuestSlug string
 }
 
 func New(dbPath, hostname string) (*Server, error) {
@@ -135,12 +143,20 @@ func (s *Server) HandleRoot(w http.ResponseWriter, r *http.Request) {
 		HasPatrol: s.tenantHasPatrol(PatrolEnv(r)),
 		AuthLabel: authLabel,
 		IsGuest:   guest != nil,
+		GuestSlug: guestSlug(guest),
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	if err := s.renderTemplate(w, "globe.html", data); err != nil {
 		slog.Warn("render template", "url", r.URL.Path, "error", err)
 	}
+}
+
+func guestSlug(g *GuestSession) string {
+	if g == nil {
+		return ""
+	}
+	return g.Slug
 }
 
 func (s *Server) loadTemplates() error {

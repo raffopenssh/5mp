@@ -411,14 +411,20 @@ func (s *Server) HandleShortLink(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) shortLinkGone(w http.ResponseWriter, head, body string) {
+	s.noticePage(w, http.StatusNotFound, head, body, `<p><a style="color:#4ade80" href="/">Open the map</a></p>`)
+}
+
+// noticePage: the one dead-end page. Status is a parameter because the same
+// shape serves a 404 ("no such link") and a 200 ("you left the shared view") --
+// and a page that says goodbye under a 404 tells a monitor something broke.
+func (s *Server) noticePage(w http.ResponseWriter, status int, head, body, tail string) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Header().Set("Cache-Control", "private, no-store")
-	w.WriteHeader(http.StatusNotFound)
+	w.WriteHeader(status)
 	w.Write([]byte(`<!doctype html><meta charset="utf-8"><title>` + head + `</title>` +
 		`<body style="font:15px/1.6 -apple-system,system-ui,sans-serif;background:#0a0a0a;color:#e0e0e0;padding:14vh 8vw">` +
 		`<h1 style="font-size:20px;color:#fff">` + head + `</h1>` +
-		`<p style="color:#888">` + body + `</p>` +
-		`<p><a style="color:#4ade80" href="/">Open the map</a></p></body>`))
+		`<p style="color:#888">` + body + `</p>` + tail + `</body>`))
 }
 
 func (s *Server) bumpShortLinkHit(slug string) {

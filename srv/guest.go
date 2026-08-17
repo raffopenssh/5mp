@@ -32,6 +32,19 @@ const guestCookie = "guest_link"
 
 type guestCtxKey struct{}
 
+// ClearGuestCookie ends the guest session in THIS browser. It does not revoke
+// the key -- the recipient may reopen the link they were sent, and revoking on
+// a close would let a forwarded link be destroyed by whoever opened it last.
+// What it must do is leave nothing behind on a shared screen: the whole point
+// of a close-is-logout is the borrowed laptop.
+func ClearGuestCookie(w http.ResponseWriter) {
+	http.SetCookie(w, &http.Cookie{
+		Name: guestCookie, Value: "", Path: "/",
+		MaxAge: -1, HttpOnly: true, Secure: true,
+		SameSite: http.SameSiteLaxMode,
+	})
+}
+
 // GuestFromRequest returns the guest capability this request is riding on, or
 // nil for an ordinary password session. Handlers use it to answer "may I write
 // / may I show the admin panel", and the page uses it to label the session

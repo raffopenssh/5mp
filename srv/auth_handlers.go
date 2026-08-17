@@ -63,7 +63,16 @@ func (s *Server) HandleLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 // HandleLogout clears the session and redirects to login.
+//
+// A GUEST logging out is a different ending. It holds no password, so the
+// password form is not "sign in again", it is a wall with no door; and the
+// slug it arrived on lives in an HttpOnly cookie we are about to delete, so
+// there is no link left on screen to reopen. It gets a page that says which
+// of those two things happened. The key itself is NOT revoked (see
+// ClearGuestCookie): closing a view on a borrowed laptop must not destroy the
+// link for everyone else it was sent to.
 func (s *Server) HandleLogout(w http.ResponseWriter, r *http.Request) {
+	wasGuest := GuestFromRequest(r) != nil
 	if cookie, err := r.Cookie(auth.SessionCookieName); err == nil {
 		if err := s.Auth.Logout(r.Context(), cookie.Value); err != nil {
 			// Session deletion failed, but we still clear the cookie
@@ -75,6 +84,14 @@ func (s *Server) HandleLogout(w http.ResponseWriter, r *http.Request) {
 	// Alpha: also clear the shared access-password cookie so the session
 	// chip logout works. Redirect to root, which shows the password form.
 	ClearAccessPwdCookie(w)
+	// A shared view is a session too: leaving it must leave nothing behind.
+	ClearGuestCookie(w)
+	if wasGuest {
+		s.noticePage(w, http.StatusOK, "You have left the shared view",
+			"The link you were sent still works &mdash; open it again to come back. "+
+				"This browser no longer holds it.", "")
+		return
+	}
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
