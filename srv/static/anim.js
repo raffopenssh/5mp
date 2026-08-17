@@ -106,6 +106,7 @@
         cursor: pointer; letter-spacing: 0.3px; line-height: 1.3; white-space: nowrap; user-select: none;
         vertical-align: middle; transition: background .15s, border-color .15s; font-family: inherit; }
     #anim-open-btn:hover { background: rgba(34,197,94,0.22); border-color: #22c55e; }
+    #anim-open-btn:active { transform: scale(0.93); }
     .time-slider-container.animating #anim-open-btn { display: none; }
 
     /* inline controls in the slider header — same badge height as the date tags */
@@ -115,8 +116,18 @@
         letter-spacing: 0.3px; font-family: inherit; user-select: none; -webkit-user-select: none; touch-action: manipulation;
         transition: background .15s, border-color .15s, color .15s; }
     .anim-btn:hover { background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.35); color: #ccc; }
+    /* A TOUCH HAS NO HOVER, so the press itself has to answer. Both here and
+       on the chips: 90 ms of depression is the only feedback a finger gets
+       that the tap landed on the button and not between two of them. */
+    .anim-btn:active { transform: scale(0.93); background: rgba(34,197,94,0.22); }
     .anim-btn.primary { background: rgba(34,197,94,0.18); border-color: rgba(34,197,94,0.5); color: #22c55e; font-weight: 700; min-width: 26px; text-align: center; }
     .anim-btn.primary:hover { background: rgba(34,197,94,0.3); }
+    .anim-btn:focus-visible { outline: 2px solid rgba(34,197,94,0.8); outline-offset: 1px; }
+    /* An export in flight is a wait with no percentage (the server owns the
+       job), so it says so in the app's one waiting vocabulary — three dots
+       where the glyph was — rather than an hourglass emoji. */
+    .anim-btn.is-busy { color: #22c55e; border-color: rgba(34,197,94,0.35); cursor: default; }
+    .anim-btn .chip-dots { min-width: 18px; height: 8px; }
     #anim-date-lbl { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 11px; color: #fff;
         min-width: 80px; text-align: center; line-height: 1.3; }
     #anim-speed-lbl { font-size: 9px; color: #999; min-width: 46px; text-align: center; font-variant-numeric: tabular-nums; line-height: 1.3; }
@@ -138,18 +149,46 @@
         border: 1px solid rgba(255,255,255,0.12); border-radius: 3px; padding: 1px 5px; cursor: pointer;
         letter-spacing: 0.3px; line-height: 1.3; white-space: nowrap; user-select: none; -webkit-user-select: none;
         display: inline-flex; align-items: center; gap: 4px; max-width: 0; opacity: 0; padding-left: 0; padding-right: 0;
-        border-width: 0; overflow: hidden;
+        border-width: 0; overflow: hidden; position: relative; touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
         transition: max-width .25s cubic-bezier(.4,0,.2,1), opacity .2s ease, padding .25s cubic-bezier(.4,0,.2,1),
             background .15s, border-color .15s, color .15s;
         font-family: inherit; }
-    .anim-chip.visible { max-width: 120px; opacity: 1; padding: 1px 6px 1px 5px; border-width: 1px; }
-    .anim-chip i { width: 6px; height: 6px; border-radius: 50%; display: inline-block; flex: none;
-        background: #555; transition: background .15s, box-shadow .15s; }
+    .anim-chip.visible { max-width: 140px; opacity: 1; padding: 1px 6px 1px 5px; border-width: 1px; }
+    /* THE MARK SLOT IS ONE WIDTH IN BOTH STATES. The status dot is centred in
+       12 px — exactly what the three dots occupy — so a chip that starts
+       loading does not grow, and seven chips do not reflow from two rows to
+       three and shove the whole footer up. (Same rule as .pinned-layer-chip's
+       min-width count slot: a row that reflows as each answer lands reads as
+       instability, which is the opposite of what a loading indicator is for.) */
+    .anim-chip > i { width: 6px; height: 6px; border-radius: 50%; display: inline-block; flex: none;
+        margin: 0 4px; background: #555; transition: background .15s, box-shadow .15s; }
     .anim-chip.on { color: #ddd; background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.25); }
     .anim-chip.on i { box-shadow: 0 0 5px currentColor; }
-    .anim-chip.loading i { animation: animChipPulse 0.8s infinite alternate; }
-    @keyframes animChipPulse { 0% { opacity: .3; } 100% { opacity: 1; } }
+    /* WAITING IS DRAWN WHERE THE ANSWER WILL BE, in the app's one waiting
+       vocabulary (.chip-dots, globe.css — a pinned layer chip and a stats row
+       already say it this way). The chip's own status dot is what the layer
+       says about itself, so the three dots stand exactly there and the dot
+       comes back, lit, when the data lands. The old fixed modal (a flickering
+       flame over the middle of the map) said 'the app is busy' about a wait
+       that belongs to one named layer, covered the picture it was loading,
+       and had nothing to do with the way every other wait in this app looks. */
+    .anim-chip > .chip-dots { display: none; }
+    .anim-chip.is-loading > i { display: none; }
+    .anim-chip.is-loading > .chip-dots { display: inline-flex; min-width: 14px; width: 14px; height: 8px; gap: 2.5px; }
+    .anim-chip.is-loading { border-color: color-mix(in srgb, currentColor 30%, transparent); }
+    .anim-chip.is-loading::after { content: ''; position: absolute; inset: 0; pointer-events: none;
+        border-radius: inherit; background: linear-gradient(100deg, transparent 20%,
+            color-mix(in srgb, currentColor 16%, transparent) 50%, transparent 80%);
+        background-size: 220% 100%; animation: animChipSheen 1.6s cubic-bezier(.45,0,.55,1) infinite; }
+    @keyframes animChipSheen { from { background-position: 180% 0; } to { background-position: -80% 0; } }
     .anim-chip:hover { border-color: rgba(34,197,94,0.35); color: #ccc; }
+    .anim-chip:active { transform: scale(0.95); }
+    .anim-chip:focus-visible { outline: 2px solid rgba(34,197,94,0.7); outline-offset: 1px; }
+    @media (prefers-reduced-motion: reduce) {
+        .anim-chip.is-loading::after { animation: none; }
+        .anim-btn:active, .anim-chip:active { transform: none; }
+    }
     /* A disabled chip must still be HOVERABLE. pointer-events:none made it
        invisible to the cursor, so the one thing it has to do -- explain why it
        is off -- could not happen, and it read as broken rather than as
@@ -171,34 +210,73 @@
         background: linear-gradient(to top, rgba(10,10,10,0.96) 0%, rgba(10,10,10,0.92) 80%, rgba(10,10,10,0.55) 100%); }
     .time-slider-container.animating .time-slider-header { margin-bottom: 2px; }
 
-    #anim-loading { position: fixed; left: 50%; top: 50%; transform: translate(-50%,-50%); z-index: 700;
-        background: rgba(12,14,16,0.95); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px;
-        padding: 22px 30px; text-align: center; color: #ddd; box-shadow: 0 8px 40px rgba(0,0,0,0.7); }
-    #anim-loading .flame { font-size: 26px; animation: animFlicker 0.9s infinite alternate; }
-    @keyframes animFlicker { 0% { transform: scale(1) rotate(-3deg); opacity: .8; } 100% { transform: scale(1.15) rotate(3deg); opacity: 1; } }
-    #anim-loading .bar { width: 200px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 3px; margin: 10px auto 4px; overflow: hidden; }
-    #anim-loading .bar > div { height: 100%; width: 0%; background: linear-gradient(90deg,#f59e0b,#ef4444); border-radius: 3px; transition: width .3s; }
-    #anim-loading .sub { font-size: 11px; color: #888; margin-top: 4px; }
+    /* The date label is the animation's own subject line, so the FIRST load —
+       before any frame exists to look at — says so there, in the same three
+       dots. It is one line of the furniture the user is already reading, not a
+       box over the map. */
+    #anim-date-lbl.is-loading { color: #22c55e; }
+    #anim-date-lbl .chip-dots { min-width: 26px; height: 10px; }
 
     .time-slider-container.animating .time-slider-date { flex-wrap: wrap; row-gap: 2px; }
     .time-slider-container.animating .time-slider-date-part { white-space: nowrap; }
     @media (max-width: 768px) {
-        #anim-inline { gap: 3px; margin-left: 0; width: 100%; justify-content: flex-start; }
-        /* keep date preset tags tappable while animating — header wraps */
-        #anim-date-lbl { font-size: 10px; min-width: 68px; }
-        #anim-inline > #anim-date-lbl.visible { min-width: 68px; }
-        #anim-speed-lbl { min-width: 40px; font-size: 9px; }
-        #anim-inline > #anim-speed-lbl.visible { min-width: 40px; }
-        .anim-chip { font-size: 8px; }
-        .anim-chip.visible { max-width: 100px; padding: 1px 5px 1px 4px; }
-        #anim-chips { gap: 2px; }
+        #anim-inline { gap: 6px; margin-left: 0; width: 100%; justify-content: flex-start; }
+        #anim-date-lbl { font-size: 12px; min-width: 76px; }
+        #anim-inline > #anim-date-lbl.visible { min-width: 76px; }
+        #anim-speed-lbl { min-width: 44px; font-size: 10px; }
+        #anim-inline > #anim-speed-lbl.visible { min-width: 44px; }
         /* GIF encoding a phone's viewport is minutes of CPU; the row stays,
            the GIF entry hides itself (see exportMenuHTML). */
-        /* bigger touch targets: keep badge look, extend invisible hit area */
-        .anim-btn { padding: 3px 8px; font-size: 11px; }
-        #anim-inline > .anim-btn.visible { padding: 3px 8px; max-width: 60px;
-            overflow: visible; position: relative; }
-        #anim-inline > .anim-btn.visible::after { content: ''; position: absolute; inset: -8px -6px; }
+    }
+
+    /* ── TOUCH: A CONTROL IS AS BIG AS IT IS, NOT AS BIG AS ITS HIT SLOP ──
+       These controls were badge-sized (a 10 px glyph in 1 px of padding) with
+       an invisible ::after stretched 8 px past every edge to make up the
+       difference. Two failures, both of them mistaps rather than misses:
+
+        * ADJACENT SLOPS OVERLAP. − and + sat 3 px apart with 6 px of slop
+          each, so a band between them belonged to both and the later element
+          in the DOM won it. A finger aiming at 'slower' stepped faster, which
+          reads as the app ignoring you, not as a near miss.
+        * A TARGET YOU CANNOT SEE CANNOT BE AIMED AT. The user aims at the
+          drawn pill; enlarging only the invisible box does not move the aim
+          point, it just forgives what the aim already hit.
+
+       THE REFERENCE IS THE 90d TAG, one row up. These controls are that
+       badge's siblings, so they are that badge's SIZE and SHAPE: 8-9 px type,
+       a 3 px corner, ~15 px tall. Blown up to 26 px lozenges they stopped
+       being date-slider furniture and became a second toolbar sitting on the
+       first, and they ate 40 px of a map the user opened the app to look at.
+
+       So touch buys SEPARATION, not bulk. The badge grows by two pixels and a
+       little padding; the gutters grow to 7 px; and the hit box then extends
+       into at most HALF of each gutter (3 px), which is the rule the old code
+       broke — 8 px of slop into a 3 px gap gave two neighbours a shared band,
+       and the DOM order decided who got the tap. That is why '-' stepped
+       faster. Half a gutter can never overlap, so every tap lands on the
+       control nearest the finger, which is the one it was aimed at.
+
+       Keyed on the POINTER, not the viewport width: a phone in landscape is
+       900 px wide and still a thumb, and a 700 px desktop window is still a
+       mouse. */
+    @media (hover: none) and (pointer: coarse) {
+        #anim-inline { gap: 7px; flex-wrap: wrap; row-gap: 5px; }
+        .anim-btn { min-height: 17px; padding: 1px 7px; font-size: 11px; border-radius: 3px;
+            display: inline-flex; align-items: center; justify-content: center; position: relative; }
+        #anim-inline > .anim-btn.visible { padding: 1px 7px; max-width: 52px; overflow: visible; }
+        /* At most half a gutter on every side, so no two hit boxes can ever
+           share a pixel — vertically the neighbour is the chips row below. */
+        #anim-inline > .anim-btn.visible::after { content: ''; position: absolute; inset: -5px -3px -2px; }
+        .anim-btn.primary { min-width: 26px; }
+        #anim-inline > .anim-btn.primary.visible { min-width: 26px; }
+        #anim-date-lbl { font-size: 11px; }
+
+        #anim-chips { gap: 7px; margin: 5px 0 5px; }
+        .anim-chip { font-size: 9px; min-height: 17px; border-radius: 3px; }
+        .anim-chip.visible { max-width: 190px; padding: 1px 7px 1px 5px; gap: 5px; overflow: visible; }
+        .anim-chip.visible::before { content: ''; position: absolute; inset: -2px -3px; }
+        #anim-playhead { width: 5px; height: 22px; }
+        #anim-playhead::after { inset: -14px -16px; }
     }
     `;
 
@@ -210,18 +288,39 @@
         document.head.appendChild(st);
     }
 
-    function showLoading(msg, pct) {
-        let el = document.getElementById('anim-loading');
-        if (!el) {
-            el = document.createElement('div');
-            el.id = 'anim-loading';
-            el.innerHTML = '<div class="flame">🔥</div><div class="msg" style="margin-top:6px;font-size:13px;"></div><div class="bar"><div></div></div><div class="sub">preparing animation…</div>';
-            document.body.appendChild(el);
+    // ---------- "we are loading" ----------
+    //
+    // WAITING IS SAID WHERE THE ANSWER WILL BE. This used to be a fixed modal
+    // in the middle of the screen — a flickering flame, a progress bar and
+    // "Loaded 2/4" — which covered the map it was loading, spoke a visual
+    // language nothing else in the app speaks, and attributed to the whole app
+    // a wait that belongs to four named layers whose chips are right there.
+    //
+    // Now the chips carry it (`.anim-chip.is-loading` → three dots in place of
+    // the layer's own status dot, plus a sheen), which is exactly how a pinned
+    // layer chip and a stats row say the same thing (`.chip-dots`, globe.css).
+    // The date label carries the *overall* first load, because until a layer
+    // lands there is no frame and the date on screen is not yet true of it.
+    //
+    // Progress is therefore counted, not narrated: the chips still dotted ARE
+    // "2 of 4", and it is spatial — you can see WHICH two are still coming.
+    function showLoading(on) {
+        const el = document.getElementById('anim-date-lbl');
+        if (!el) return;
+        if (on) {
+            if (el.classList.contains('is-loading')) return;
+            el.classList.add('is-loading');
+            el.setAttribute('role', 'status');
+            el.setAttribute('aria-label', 'loading animation layers');
+            el.innerHTML = '<span class="chip-dots"><i></i><i></i><i></i></span>';
+        } else if (el.classList.contains('is-loading')) {
+            el.classList.remove('is-loading');
+            el.removeAttribute('role');
+            el.removeAttribute('aria-label');
+            el.textContent = A ? fmtDateHuman(A.t) : '';
         }
-        el.querySelector('.msg').textContent = msg;
-        el.querySelector('.bar > div').style.width = (pct || 0) + '%';
     }
-    function hideLoading() { const el = document.getElementById('anim-loading'); if (el) el.remove(); }
+    function hideLoading() { showLoading(false); }
 
     // ---------- geometry helpers ----------
     function activeBbox() {
@@ -516,8 +615,11 @@
     function ensureLayer(name) {
         if (A.data[name] !== undefined) return Promise.resolve();
         if (A.loading[name]) return A.loading[name];
+        // `is-loading` (not `loading`) — the same class, and the same three
+        // dots, a pinned layer chip uses in globe.css. One vocabulary for one
+        // kind of wait.
         const chip = document.querySelector(`.anim-chip[data-layer="${name}"]`);
-        if (chip) chip.classList.add('loading');
+        if (chip) setChipLoading(chip, true);
         A.loading[name] = loadLayer(name).catch(e => {
             A.on[name] = false;
             toast(e.message, 'warning');
@@ -526,11 +628,25 @@
             // A refetch can return the same number of points for a different
             // area, and the sprite keys count position — drop them explicitly.
             invalidateSprites();
-            if (chip) chip.classList.remove('loading');
+            if (chip) setChipLoading(chip, false);
             updateChips();
             if (A) draw(A.t);
         });
         return A.loading[name];
+    }
+
+    // The dots stand exactly where the chip's status dot is, so the answer
+    // lands in the place that was saying it was coming.
+    function setChipLoading(chip, on) {
+        chip.classList.toggle('is-loading', !!on);
+        if (on && !chip.querySelector('.chip-dots')) {
+            const d = document.createElement('span');
+            d.className = 'chip-dots';
+            d.setAttribute('role', 'status');
+            d.setAttribute('aria-label', 'loading');
+            d.innerHTML = '<i></i><i></i><i></i>';
+            chip.insertBefore(d, chip.firstChild);
+        }
     }
 
     // ---------- canvas ----------
@@ -1804,7 +1920,10 @@
     function drawAndSync() {
         draw(A.t);
         const el = document.getElementById('anim-date-lbl');
-        if (el) el.textContent = fmtDateHuman(A.t);
+        // While the first load runs the label IS the wait (three dots). A
+        // frame drawn from half the layers must not overwrite it with a date
+        // that is not yet true of the picture.
+        if (el && !el.classList.contains('is-loading')) el.textContent = fmtDateHuman(A.t);
         const sp = document.getElementById('anim-speed-lbl');
         if (sp) sp.textContent = fmtSpeed();
         // playhead + progress in slider track
@@ -2142,9 +2261,12 @@
         A.recording = true;
         pause();
         const btn = document.getElementById('anim-export');
-        const label = btn && btn.textContent;
+        // A GIF encode HAS a percentage (we own the loop), and a real number
+        // always beats three dots — the dots are for waits we cannot measure.
+        const label = btn && btn.innerHTML;
         try {
-            btn.textContent = '⏳0%';
+            btn.classList.add('is-busy');
+            btn.textContent = '0%';
             const gifenc = await import('https://unpkg.com/gifenc@1.0.3/dist/gifenc.esm.js');
             const { GIFEncoder, quantize, applyPalette } = gifenc;
             const mapCanvas = map.getCanvas();
@@ -2183,7 +2305,7 @@
                 const palette = quantize(data, 256);
                 const index = applyPalette(data, palette);
                 enc.writeFrame(index, outW, outH, { palette, delay: delayMs });
-                btn.textContent = '⏳' + Math.round((i + 1) / frames * 100) + '%';
+                btn.textContent = Math.round((i + 1) / frames * 100) + '%';
                 if (i % 8 === 0) await new Promise(r => setTimeout(r, 0));
             }
             enc.finish();
@@ -2200,7 +2322,7 @@
             toast('GIF export failed: ' + e.message, 'error');
         } finally {
             A.recording = false;
-            if (btn) btn.textContent = label;
+            if (btn) { btn.classList.remove('is-busy'); btn.innerHTML = label; }
             drawAndSync();
         }
     }
@@ -2238,8 +2360,12 @@
             return;
         }
         A.exporting = true;
-        const label = btn && btn.textContent;
-        if (btn) { btn.textContent = '⏳'; btn.disabled = true; }
+        // A server-side export has no percentage to show (the job is not ours
+        // to measure), so the button says "working" in the app's one waiting
+        // vocabulary rather than with an hourglass. The GIF keeps its number:
+        // that one IS measurable, and a real percentage always beats dots.
+        const label = btn && btn.innerHTML;
+        if (btn) { setBtnBusy(btn, true); btn.disabled = true; }
         try {
             await window.GeoPackageExport.startView({
                 bbox: A.fetchBbox,
@@ -2259,8 +2385,14 @@
             toast('GeoPackage export failed: ' + e.message, 'error');
         } finally {
             A.exporting = false;
-            if (btn) { btn.textContent = label; btn.disabled = false; }
+            if (btn) { setBtnBusy(btn, false); btn.innerHTML = label; btn.disabled = false; }
         }
+    }
+
+    // Same three dots as everywhere else, in the button's own line box.
+    function setBtnBusy(btn, on) {
+        btn.classList.toggle('is-busy', !!on);
+        if (on) btn.innerHTML = '<span class="chip-dots" role="status" aria-label="working"><i></i><i></i><i></i></span>';
     }
 
     // ---------- the download menu ----------
@@ -2898,12 +3030,8 @@
                 toast(firePtsRefusal(), 'info', { key: 'anim-chip-firePts' });
             }
             const active = initial.slice();
-            let done = 0;
-            showLoading('Loading ' + active.length + ' layers…', 5);
-            await Promise.all(active.map(n => ensureLayer(n).then(() => {
-                done++;
-                showLoading('Loaded ' + done + '/' + active.length, Math.round(done / active.length * 100));
-            })));
+            showLoading(true);
+            await Promise.all(active.map(n => ensureLayer(n)));
             hideLoading();
 
             const any = LAYER_ORDER.some(n => A.on[n] && A.data[n] && (
