@@ -2185,7 +2185,10 @@
         .search-bar-input::placeholder { color: #888; }
         .search-bar-clear { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #888; font-size: 16px; cursor: pointer; padding: 4px; line-height: 1; display: none; }
         .search-bar-clear:hover { color: #fff; }
-        .search-bar-results { position: absolute; top: 100%; left: 0; right: 0; margin-top: 4px; background: rgba(26,26,26,0.98); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; max-height: 320px; overflow-y: auto; display: none; box-shadow: 0 10px 40px rgba(0,0,0,0.5); z-index: 200; }
+        /* The results panel is wider than the input: the input holds a query,
+           the row holds a name, a country, a designation and an action. It
+           anchors left so it grows away from the toolbar. */
+        .search-bar-results { position: absolute; top: 100%; left: 0; right: auto; min-width: 380px; max-width: min(460px, calc(100vw - 90px)); margin-top: 6px; background: rgba(20,22,20,0.97); border: 1px solid rgba(255,255,255,0.09); border-radius: 12px; max-height: 320px; overflow-y: auto; display: none; box-shadow: 0 18px 48px rgba(0,0,0,0.6); z-index: 200; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); overscroll-behavior: contain; }
         .search-input-wrapper { position: relative; display: -webkit-box; display: -webkit-flex; display: flex; -webkit-box-align: center; -webkit-align-items: center; align-items: center; }
         .search-input { width: 100%; padding: 10px 36px 10px 14px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #e0e0e0; font-size: 14px; -webkit-transition: all 0.2s; transition: all 0.2s; }
         .search-input:focus { outline: none; border-color: #22c55e; background: rgba(255,255,255,0.08); }
@@ -2195,17 +2198,77 @@
         .search-clear:hover { color: #fff; }
         .search-results { width: 100%; max-height: 320px; overflow-y: auto; background: rgba(26,26,26,0.98); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; margin-top: 12px; display: none; -webkit-box-shadow: 0 10px 40px rgba(0,0,0,0.5); box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
         .search-results.open { display: block; }
-        .search-result-item { padding: 12px 14px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.06); -webkit-transition: background 0.15s; transition: background 0.15s; min-height: 44px; }
+        /* ---- Search result rows -------------------------------------------
+           One row shape for parks, AOIs, countries and regions: status dot,
+           title+meta, trailing action strip. The strip carries the star and
+           the onboarding control; it stops its own clicks so a tap on it does
+           not also select the row.
+        */
+        .search-result-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); -webkit-transition: background 0.15s; transition: background 0.15s; min-height: 52px; }
         .search-result-item:last-child { border-bottom: none; }
-        .search-result-item:hover { background: rgba(34,197,94,0.1); }
-        .search-result-item.unloaded { opacity: 0.7; }
-        .search-result-item.unloaded:hover { background: rgba(128,128,128,0.15); }
-        .search-result-name { font-size: 13px; color: #fff; margin-bottom: 2px; display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .search-result-item:hover { background: rgba(34,197,94,0.08); }
+        .search-result-item:active { background: rgba(34,197,94,0.14); }
+        .search-result-item.unloaded:hover { background: rgba(255,255,255,0.05); }
+        .search-result-main { flex: 1; min-width: 0; }
+        .search-result-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+        .search-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; background: #555; box-shadow: 0 0 0 3px rgba(255,255,255,0.04); }
+        .search-dot.loaded { background: #22c55e; box-shadow: 0 0 0 3px rgba(34,197,94,0.14); }
+        .search-dot.unloaded { background: transparent; border: 1.5px solid #6b7280; box-shadow: none; }
+        .search-dot.aoi { background: #fbbf24; box-shadow: 0 0 0 3px rgba(251,191,36,0.14); }
+        .search-dot.country { background: #60a5fa; box-shadow: 0 0 0 3px rgba(96,165,250,0.12); }
+        .search-result-name { font-size: 13.5px; color: #f3f4f6; font-weight: 500; margin-bottom: 2px; display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .search-result-name span:first-child { overflow: hidden; text-overflow: ellipsis; flex-shrink: 1; min-width: 0; }
         .search-result-name .loaded-badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 500; }
         .search-result-name .loaded-badge.loaded { background: rgba(34,197,94,0.2); color: #22c55e; }
         .search-result-name .loaded-badge.unloaded { background: rgba(128,128,128,0.2); color: #888; }
-        .search-result-country { font-size: 12px; color: #888; }
+        .search-result-country { font-size: 11.5px; color: #8b929c; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .loaded-badge.hidden-badge { background: rgba(136,136,136,0.2); color: #9ca3af; font-size: 10px; padding: 2px 6px; border-radius: 4px; }
+
+        /* ---- On-the-fly onboarding controls (live on the row) --------------
+           Sized like the badges next to them, not like a form button: the row
+           is the primary target and the control is a secondary affordance on
+           it. On touch the VISUAL size stays small while the HIT area is
+           padded out to 44 px by a pseudo-element — a finger-sized button and
+           a finger-sized target are two different requirements.
+        */
+        .onboard-btn { position: relative; border: 1px solid transparent; border-radius: 6px;
+            cursor: pointer; font: inherit; font-size: 11px; font-weight: 600;
+            padding: 3px 8px; height: 22px; display: inline-flex; align-items: center;
+            justify-content: center; gap: 3px; white-space: nowrap; background: none;
+            transition: background 0.15s, border-color 0.15s, color 0.15s; }
+        .onboard-btn::after { content: ''; position: absolute; left: 50%; top: 50%;
+            width: 100%; height: 100%; min-width: 32px; min-height: 32px;
+            transform: translate(-50%, -50%); }
+        .onboard-btn.add { background: rgba(34,197,94,0.14); border-color: rgba(34,197,94,0.3); color: #4ade80; }
+        .onboard-btn.add:hover { background: rgba(34,197,94,0.24); border-color: rgba(34,197,94,0.5); }
+        .onboard-btn.add::before { content: '+'; font-size: 12px; line-height: 1; opacity: 0.85; }
+        .onboard-btn.ghost { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.12); color: #9ca3af; }
+        .onboard-btn.ghost:hover { background: rgba(255,255,255,0.1); color: #e5e7eb; }
+        .onboard-btn.ghost.danger { color: #9ca3af; }
+        .onboard-btn.ghost.danger:hover { background: rgba(239,68,68,0.15); border-color: rgba(248,113,113,0.35); color: #f87171; }
+        .onboard-btn:active { opacity: 0.75; }
+        .onboard-btn:disabled { opacity: 0.55; cursor: default; }
+        .onboard-btn.busy { color: transparent; }
+        .onboard-btn.busy::before { content: ''; width: 10px; height: 10px;
+            border: 2px solid rgba(255,255,255,0.5); border-top-color: transparent;
+            border-radius: 50%; animation: onboard-spin 0.7s linear infinite; }
+        @keyframes onboard-spin { to { transform: rotate(360deg); } }
+        .onboard-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 10px;
+            font-weight: 600; padding: 2px 7px; border-radius: 4px; white-space: nowrap; }
+        .onboard-chip.queued { background: rgba(96,165,250,0.15); color: #93c5fd; }
+        .onboard-chip.removing { background: rgba(248,113,113,0.15); color: #fca5a5; }
+        .onboard-pulse { width: 5px; height: 5px; border-radius: 50%; background: currentColor;
+            animation: onboard-pulse 1.6s ease-in-out infinite; }
+        @keyframes onboard-pulse { 0%,100% { opacity: 0.35; } 50% { opacity: 1; } }
+        @media (prefers-reduced-motion: reduce) {
+            .onboard-pulse, .onboard-btn.busy::before { animation: none; }
+        }
+        @media (hover: none) {
+            .onboard-btn { height: 26px; font-size: 11.5px; padding: 3px 10px; }
+            .onboard-btn::after { min-width: 44px; min-height: 44px; }
+            .search-result-actions { gap: 10px; }
+            .search-result-item { min-height: 58px; padding: 12px; }
+        }
         .search-no-results { padding: 16px 14px; text-align: center; color: #999; font-size: 13px; }
         .search-loading { padding: 16px 14px; text-align: center; color: #888; font-size: 13px; }
 
@@ -2645,6 +2708,16 @@
             .search-container { position: relative; display: flex; }
             .search-container .search-bar { display: none; position: fixed; bottom: 135px; left: 60px; right: 60px; width: auto; z-index: 145; }
             .search-container .search-bar.open { display: block; }
+            /* THE DROPDOWN DROPS UP ON A PHONE.
+               The search bar is fixed just above the bottom toolbar, so a
+               downward list is drawn straight over the toolbar buttons: a tap
+               on a result was also a tap on the filter button underneath it
+               (the row hides the list, then the click lands on what is now
+               below the finger — and "Active Filters" opened instead of the
+               park). Opening upward puts the list over the map, where nothing
+               is competing for the tap. */
+            .search-container .search-bar-results { top: auto; bottom: 100%; left: 0; right: 0; min-width: 0; max-width: none; margin: 0 0 6px 0;
+                max-height: min(46vh, 340px); }
             #toolbar-search { display: flex; } /* Keep search icon visible on mobile */
             
             /* Stats panel: a three-column grid of small CARDS at the top of
