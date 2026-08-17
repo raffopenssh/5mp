@@ -1141,6 +1141,7 @@
 
     function closeMenu() {
         if (menuEl) { menuEl.remove(); menuEl = null; }
+        bodySeen = null;            // no body on screen to compare against
         document.removeEventListener('click', closeMenu);
         // A pending "rebuild once the map has drawn" outlives the menu it was
         // for otherwise, and fires a timer against a menu nobody is looking
@@ -1395,6 +1396,60 @@
         var c = barCountText();
         if (el.innerHTML !== c.html) el.innerHTML = c.html;
         if (el.title !== c.title) el.title = c.title;
+    }
+
+    /* ── THE BODY IS AN ANSWER ABOUT THE CANVAS TOO ────────────────────
+     *
+     * syncBar() fixed the BAR, whose numbers come from GeoMap's state (unit
+     * types passing the filter) and are therefore true the moment the panel
+     * opens. The BODY below it is built from what MapLibre has PAINTED
+     * (columnEntries(), contactHits) — and on a cold load, or on the first
+     * tap after switching geology on, nothing has painted yet. The panel
+     * then opens saying "No mapped sheet reaches this view, so there is no
+     * rock here to describe" under a bar reading "36 units · 67 lines", over
+     * a map that is drawing three countries. It stayed that way until the
+     * reader closed and reopened it, because the only idle-time rebuild was
+     * keyed on the SKILL SCOPE, which had not changed.
+     *
+     * So the panel remembers WHICH ANSWER its body is, and every idle checks
+     * it. Deliberately coarse — "is there rock drawn", "are there lines
+     * drawn" — because that is the difference between the empty note and the
+     * tables, and because a finer key (the column list) would rebuild the
+     * panel under a reader who is merely panning inside one country. The
+     * column ORDER is frozen separately (mxOrder) and unaffected. */
+    var bodySeen = null;
+
+    /* The COLUMN SET, not merely "is anything drawn". A coarser key (rock
+     * yes/no, lines yes/no) fixed the empty note and left the other half of
+     * the same bug on screen: tapping the chip while the first tiles are
+     * still landing catches two or three periods, the key was already
+     * non-empty, and the mixer then kept a 26-cell grid over a map that went
+     * on to paint 55 — a table missing most of its columns, which reads as a
+     * broken layer rather than as a table built too early.
+     *
+     * Panning is not free under this key, and should not be: a period that
+     * enters the view is a column the reader can pick, and one that leaves is
+     * a column whose cells no longer describe anything on screen. The order
+     * is frozen separately by mxOrder, so a rebuild here does not reshuffle
+     * the grid under the reader's finger. */
+    function bodyAnswerSig() {
+        var cOn = typeof GeoMap !== 'undefined' && GeoMap.contactsOn && GeoMap.contactsOn();
+        var cols = [];
+        try { cols = columnEntries().map(function (e) { return e.key; }); } catch (e) { cols = []; }
+        return cols.join(',') + '|' + (cOn && contactHits > 0 ? 'c' : '-');
+    }
+
+    /* One innerHTML is cheap; a rebuild is ~20 ms of DOM and throws away
+     * hover and focus, so it happens only when the body would say a
+     * different thing than the one on screen — and never in the middle of a
+     * gesture, where mxWorking says the reader is still assembling a
+     * selection and mxSettle rebuilds for us when they stop. */
+    function syncBody() {
+        if (!menuEl || menuEl.dataset.kind !== 'geo') return;
+        if (mxWorking) return;
+        var sig = bodyAnswerSig();
+        if (sig === bodySeen) return;
+        rebuildGeoMenuNow();          // re-records bodySeen via openGeoMenu
     }
 
     /* Re-measure the canvas and rebuild the strip + the open matrix, once the
@@ -3145,6 +3200,9 @@
         el.setAttribute('role', 'dialog');
         el.setAttribute('aria-label', 'Geology');
         el.innerHTML = headRow() + geoBodyHTML();
+        // What this body is an answer to, so an idle can tell that the canvas
+        // has since answered differently. See syncBody().
+        bodySeen = bodyAnswerSig();
         place(el, btn, { floating: true });
     }
 
@@ -4142,6 +4200,10 @@
             // and the label it wanted to fix stayed on screen for good. Two
             // text writes that usually change nothing; see syncBar().
             syncBar();
+            // ...and the body below it, which unlike the bar is a statement
+            // about what has been PAINTED: on a cold load it opens saying
+            // "no rock here to describe" and had no path back. See syncBody().
+            syncBody();
             // THE ADMIN CARD SHOWS THE SAME MIXER and has no idle handler of
             // its own; without this it keeps whatever the canvas said when it
             // was built, which on a cold `?panel=admin` load is "no mapped
