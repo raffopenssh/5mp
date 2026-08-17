@@ -71,6 +71,11 @@
 // exists so the UI does not OFFER one, because an editor that 403s on save is
 // worse than an editor that was never there. Set before any module loads.
 window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
+// GUEST_SLUG: the capability this page arrived on. A guest may not mint links
+// (the server refuses twice), so the only shareable name it holds is the one
+// it came in through — sharelink.js copies THAT rather than 400 characters of
+// view state that would ask the recipient for a password nobody gave them.
+window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
 </script>
     <!-- Skip to content -->
     <a href="#map" class="skip-link">Skip to map</a>
@@ -90,7 +95,7 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
          the numbers are the thing focus silently changes, so the statement
          and the way out belong on top of them. -->
     <div id="top-chips" class="top-chips">
-    {{if .AuthLabel}}<div id="session-chip" class="session-chip {{if .IsTest}}is-test{{end}}"><span class="session-chip-label">{{if .IsTest}}TEST ENV · {{end}}{{.AuthLabel}}</span><a href="/logout" title="Log out" aria-label="Log out" class="session-chip-logout">&times;</a></div>{{end}}
+    {{if .AuthLabel}}<div id="session-chip" class="session-chip {{if .IsTest}}is-test{{end}}">{{if .IsGuest}}<span class="session-chip-badge" title="You are reading this through a read-only shared link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>Shared</span>{{end}}<span class="session-chip-label">{{if .IsTest}}TEST ENV · {{end}}{{.AuthLabel}}</span><a href="/logout" title="{{if .IsGuest}}Leave this shared view{{else}}Log out{{end}}" aria-label="{{if .IsGuest}}Leave this shared view{{else}}Log out{{end}}" class="session-chip-logout">&times;</a></div>{{end}}
     </div>
     {{if .AuthLabel}}<script>
     // Keep the chip row clear of the stats panel (mobile: panel spans full width at top)
