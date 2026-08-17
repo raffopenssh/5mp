@@ -146,13 +146,59 @@ Two related search fixes shipped with it:
 
 Backend: `srv/park_onboarding.go` (`POST /api/onboarding/request|cancel`,
 `GET /api/onboarding`; routes NOT under /api/parks/* because of park-id
-middleware). Table: `park_onboarding_requests` (migration 037). Worker:
+middleware). Tables: `park_onboarding_requests` (migration 037) +
+`park_onboarding_subscribers` (migration 063). Worker:
 `scripts/onboard_park.py` (cron 02:30) — Protected Planet boundary → keystone
-append, FIRMS fire backfill max(6mo, current year), v5 pipeline, GFW scan,
-GHSL/HydroSHEDS if local sources exist, restart. Removal: the Remove control on
-a loaded, onboarded row (or the undo toast); only parks with `onboarded_at` in
-keystones_with_boundaries.json can be removed. Test-env requests are tagged
-`env='test'` and skipped by the worker.
+append, FIRMS all-time fire backfill, fire reassignment pass, v5 pipeline, GFW
+scan + Hansen loss, GHSL/HydroSHEDS if local sources exist, restart. Removal:
+the Remove control on a loaded, onboarded row (or the undo toast); only parks
+with `onboarded_at` in keystones_with_boundaries.json can be removed.
+
+**Scoping (2026-08-17): the request is the caller's; the work is shared.**
+A park is global data, so one `park_onboarding_requests` row exists per
+`wdpa_id` no matter how many logins ask — but each caller is a row in
+`park_onboarding_subscribers` (`pwd_ref = principalRef(pwd)`, same non-secret
+handle as AOIs/short links, plus their `env` for notification routing).
+Consequences, each enforced by `srv/park_onboarding_test.go`:
+
+* `GET /api/onboarding` lists only the caller's subscriptions; a non-subscriber
+  cancelling gets **404, not 403** (an id must not be an oracle). Requests
+  never leak across tenants.
+* A second tenant requesting the same park **joins** the existing row
+  (`already_requested`) instead of duplicating the multi-hour ingest; on
+  completion `notify_subscribers()` writes one notification per subscriber env
+  (the row's own `env` is only the first requester's tenant).
+* Cancel removes only the caller's subscription. The pending row is deleted —
+  and a ready park is scheduled for removal — **only when the last subscriber
+  leaves**; otherwise the caller gets `unsubscribed` and the park stays.
+  `process_removal()` re-checks subscribers at run time (someone may join
+  between the cancel and the nightly run) and aborts back to `ready`.
+* Requesting a park whose row is `remove_requested`/`removed` revives it
+  (ready/pending) and re-subscribes the caller.
+* The worker skips a request only when **all** subscribers are `env='test'`
+  (sandbox); pre-063 rows have no subscribers and are reachable by nobody,
+  like legacy empty-`pwd_ref` short links.
+
+**Data reuse (same date): never re-fetch what the DB already holds.**
+`backfill_fires` consults `covered_fire_ranges()`: any completed covering-AOI
+`fire_gap` ingest (state=done, coverage≥1.0, AOI bbox ⊇ buffered park bbox)
+marks its `from_date..last_run_at-1d` range as already ingested, and whole
+5-day FIRMS windows inside it are skipped (a window straddling a range edge is
+fetched whole; `INSERT OR IGNORE` absorbs duplicates). For Numatina inside
+XSA_Study_Area that skips 2024-01→now, ~190 of ~610 windows. The reused rows
+carry a park assignment computed before the park existed, so
+`reassign_fires_bbox()` then re-runs `ParkAssigner` over ALL existing
+detections in the buffered bbox (keyset-paginated, batched commits — invariant
+16) and updates every row whose canonical assignment changed; it raises if the
+new park is missing from the assigner's keystones, because a reassignment that
+cannot possibly match is a no-op reading as an answer. The read path is
+`protected_area_id` (`scripts/fire_source.py`), so without this pass a park
+inside an ingested AOI shows zero fires while the rows sit under it. A park
+already in the keystones file (onboarded by another tenant) short-circuits to
+`ready` with no ingest at all — except when retrying a `failed` row, which
+re-runs the idempotent pipeline steps. GFW/GHSL reuse needs no special code:
+their per-tile caches (`data/gfw_tiles/`, `ghsl_tiles.py`) make park-scoped
+re-runs cheap. Test-env requests are skipped by the worker.
 
 ---
 
