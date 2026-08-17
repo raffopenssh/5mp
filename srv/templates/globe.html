@@ -9021,11 +9021,13 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                 // previous one, and archived AOIs are off the map by design),
                 // so it belongs in the ordinary search box rather than hidden
                 // in an admin panel.
-                const [keystonesRes, wdpaRes, aoiRes] = await Promise.all([
+                const [keystonesRes, wdpaRes, aoiRes, onboardRows] = await Promise.all([
                     fetch(`/api/areas/search?q=${encodeURIComponent(query)}`),
                     fetch(`/api/wdpa/search?q=${encodeURIComponent(query)}`),
-                    fetch(`/api/aois/search?q=${encodeURIComponent(query)}&pwd=${encodeURIComponent(getPwd())}`)
+                    fetch(`/api/aois/search?q=${encodeURIComponent(query)}&pwd=${encodeURIComponent(getPwd())}`),
+                    getOnboardingStatus()
                 ]);
+                indexOnboarding(onboardRows);
                 
                 const areaResults = keystonesRes.ok ? await keystonesRes.json() : [];
                 const wdpaAreas = wdpaRes.ok ? await wdpaRes.json() : [];
@@ -9034,8 +9036,14 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                 // /api/areas/search mixes loaded keystones (loaded:true) with
                 // unloaded WDPA entries (loaded:false) — split by the real flag.
                 const keystones = areaResults.filter(a => a.type !== 'pa' || a.loaded !== false);
-                const areaUnloaded = areaResults.filter(a => a.type === 'pa' && a.loaded === false);
                 const loadedIds = new Set(keystones.filter(a => a.type === 'pa').map(k => k.name.toLowerCase()));
+                // A row offering "Add" for a park already on the globe is a
+                // no-op wearing an action: WDPA lists the same protected area
+                // under several designations, so Djurdjura arrived once loaded
+                // and once as an unloaded Biosphere Reserve. Drop unloaded rows
+                // whose name is already loaded, from BOTH sources.
+                const areaUnloaded = areaResults.filter(a => a.type === 'pa' && a.loaded === false &&
+                    !loadedIds.has((a.name || '').toLowerCase()));
                 const seenWdpa = new Set(areaUnloaded.map(a => String(a.wdpa_id)));
                 const unloaded = [...areaUnloaded, ...wdpaAreas.filter(w =>
                     !w.loaded && !loadedIds.has(w.name.toLowerCase()) && !seenWdpa.has(String(w.wdpa_id)))];
@@ -9045,18 +9053,39 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                 // most a handful of them against 300k WDPA rows.
                 const aoiItems = aoiResults.map(a => ({ ...a, type: 'aoi' }));
                 displaySearchResults([...aoiItems, ...merged]);
-                scheduleOnboardDwell(query, keystones.filter(a => a.type === 'pa'), unloaded);
             } catch (err) {
                 console.error('Search error:', err);
                 results.innerHTML = '<div class="search-no-results">Search failed</div>';
             }
         }
 
-        // ===== On-the-fly park onboarding (dwell 15s on an unmatched search) =====
-        var _onboardDwellTimer = null;
-        var _onboardStatusCache = null; // /api/parks/onboarding rows, 60s cache
+        // ===== On-the-fly park onboarding =====
+        //
+        // THE OFFER IS THE ROW, NOT A TIMER.
+        //
+        // This used to be a footer banner appearing after dwelling 15 s on a
+        // search whose only match was an unloaded WDPA row. Fifteen seconds is
+        // longer than anyone looks at a dropdown, so the capability existed but
+        // was in practice unreachable — and on a phone the keyboard hides the
+        // dropdown long before it fires. An action belongs ON the object it
+        // acts on, visible the moment that object is: every unloaded result now
+        // carries an Add control, and every row already in the queue carries
+        // its live status. No timer, nothing to wait for.
+        var _onboardStatusCache = null; // /api/onboarding rows, 60s cache
+        var _onboardByWdpa = new Map();  // wdpa_id (string) -> request row
+        var _onboardByPark = new Map();  // park_id -> request row
+
+        function indexOnboarding(rows) {
+            _onboardByWdpa = new Map();
+            _onboardByPark = new Map();
+            (rows || []).forEach(r => {
+                if (r.wdpa_id != null) _onboardByWdpa.set(String(r.wdpa_id), r);
+                if (r.park_id) _onboardByPark.set(r.park_id, r);
+            });
+        }
 
         async function getOnboardingStatus() {
+            if (window.IS_GUEST) return [];
             if (_onboardStatusCache && Date.now() - _onboardStatusCache.t < 60000) return _onboardStatusCache.rows;
             try {
                 const r = await fetch('/api/onboarding');
@@ -9066,91 +9095,64 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
             } catch (e) { return []; }
         }
 
-        function scheduleOnboardDwell(query, keystones, wdpaUnloaded) {
-            if (_onboardDwellTimer) { clearTimeout(_onboardDwellTimer); _onboardDwellTimer = null; }
-            if (window.IS_TEST_ENV) return; // test sessions never trigger onboarding offers
-            const q = query.toLowerCase();
-            const keystoneMatch = keystones.length > 0;
-            // "good match" in WDPA: name contains the query (>=4 chars to avoid noise)
-            const wdpaMatch = q.length >= 4 ? wdpaUnloaded.find(w => (w.name || '').toLowerCase().includes(q)) : null;
-            if (keystoneMatch || !wdpaMatch || !wdpaMatch.wdpa_id) {
-                // Loaded park matched: still offer REMOVAL if it was onboarded by us.
-                if (keystoneMatch) scheduleRemoveDwell(query, keystones);
-                return;
+        // The onboarding affordance for one search row. Returns the trailing
+        // control (or ''), so row markup stays one template:
+        //   unloaded + no request  -> Add
+        //   pending / processing   -> live status chip (+ Cancel while pending)
+        //   ready (added on request) -> Remove
+        //   remove_requested       -> "removing tonight" + Keep
+        function onboardRowAction(area) {
+            // A guest link cannot POST onboarding (srv/guest.go), so it must
+            // not be offered the control: an offer the page withdraws is worse
+            // than no offer.
+            if (window.IS_GUEST) return '';
+            const isLoaded = area.loaded !== false;
+            const req = (area.id && _onboardByPark.get(area.id)) ||
+                        (area.wdpa_id != null && _onboardByWdpa.get(String(area.wdpa_id))) || null;
+            const st = req && req.status;
+            if (st === 'pending' || st === 'processing') {
+                return `<span class="onboard-chip queued" title="Boundary, fire, deforestation and settlement layers are being fetched"><span class="onboard-pulse"></span>${st === 'processing' ? 'building' : 'queued'}</span>` +
+                       (st === 'pending' ? `<button class="onboard-btn ghost" title="Cancel this request" onclick="event.stopPropagation();cancelOnboard(${req.wdpa_id}, this)">Cancel</button>` : '');
             }
-            _onboardDwellTimer = setTimeout(async () => {
-                // still the same query + results visible?
-                const input = document.getElementById('search-input');
-                const results = document.getElementById('search-results');
-                if (!input || input.value.trim().toLowerCase() !== q) return;
-                if (!results || results.style.display === 'none') return;
-                // don't re-offer if already requested
-                const rows = await getOnboardingStatus();
-                const existing = rows.find(r => String(r.wdpa_id) === String(wdpaMatch.wdpa_id));
-                showOnboardOffer(wdpaMatch, existing);
-            }, 15000);
+            if (st === 'remove_requested') {
+                return `<span class="onboard-chip removing">removing tonight</span>` +
+                       `<button class="onboard-btn ghost" onclick="event.stopPropagation();cancelOnboard(${req.wdpa_id}, this)">Keep</button>`;
+            }
+            if (st === 'ready' && isLoaded) {
+                return `<button class="onboard-btn ghost danger" title="Added on request \u2014 remove it again" onclick="event.stopPropagation();cancelOnboard(${req.wdpa_id}, this)">Remove</button>`;
+            }
+            if (!isLoaded && area.wdpa_id != null) {
+                return `<button class="onboard-btn add" title="Add this park \u2014 boundary, fires, deforestation and settlements, ready tomorrow" onclick="event.stopPropagation();requestOnboard(${area.wdpa_id}, this)">Add</button>`;
+            }
+            return '';
         }
 
-        function scheduleRemoveDwell(query, keystones) {
-            _onboardDwellTimer = setTimeout(async () => {
-                const input = document.getElementById('search-input');
-                const results = document.getElementById('search-results');
-                if (!input || input.value.trim() !== query) return;
-                if (!results || results.style.display === 'none') return;
-                const rows = await getOnboardingStatus();
-                // an onboarded park among the matches?
-                for (const k of keystones) {
-                    const row = rows.find(r => r.park_id && r.park_id === k.id &&
-                        (r.status === 'ready' || r.status === 'remove_requested' || r.status === 'processing'));
-                    if (row) { showOnboardOffer(null, row); return; }
-                }
-            }, 15000);
-        }
-
-        function showOnboardOffer(wdpa, existing) {
+        // Re-render the open dropdown after a state change, so the row acted on
+        // shows its new status without the user searching again.
+        function refreshSearchResults() {
+            const input = document.getElementById('search-input');
             const results = document.getElementById('search-results');
-            if (!results) return;
-            const old = document.getElementById('onboard-offer');
-            if (old) old.remove();
-            const div = document.createElement('div');
-            div.id = 'onboard-offer';
-            div.style.cssText = 'padding:10px 12px;border-top:1px solid rgba(255,255,255,0.15);background:rgba(59,130,246,0.12);font-size:12px;line-height:1.5;';
-            let html;
-            if (existing && (existing.status === 'pending' || existing.status === 'processing')) {
-                html = `<div style="margin-bottom:6px;">${escapeHtml(existing.name)} is already queued for onboarding (${existing.status}).</div>` +
-                    (existing.status === 'pending'
-                        ? `<button class="onboard-offer-btn" onclick="cancelOnboard(${existing.wdpa_id}, this)">Remove scheduled park</button>` : '');
-            } else if (existing && existing.status === 'remove_requested') {
-                html = `<div style="margin-bottom:6px;">${escapeHtml(existing.name)} is scheduled for removal tonight.</div>` +
-                    `<button class="onboard-offer-btn" onclick="cancelOnboard(${existing.wdpa_id}, this)">Keep this park</button>`;
-            } else if (existing && existing.status === 'ready') {
-                html = `<div style="margin-bottom:6px;">${escapeHtml(existing.name)} was added on request. No longer needed?</div>` +
-                    `<button class="onboard-offer-btn" style="background:rgba(239,68,68,0.25);" onclick="cancelOnboard(${existing.wdpa_id}, this)">Remove park</button>`;
-            } else if (wdpa) {
-                html = `<div style="margin-bottom:6px;">Looking for <b>${escapeHtml(wdpa.name)}</b> (${escapeHtml(wdpa.country || '')})? ` +
-                    `We can add it — fetching boundary, fires, deforestation and settlement layers takes about a day.</div>` +
-                    `<button class="onboard-offer-btn" onclick="requestOnboard(${wdpa.wdpa_id}, this)">Add this park (ready tomorrow)</button>`;
-            } else return;
-            div.innerHTML = html;
-            results.appendChild(div);
+            if (!input || !results || results.style.display === 'none') return;
+            if (input.value.trim().length >= 2) searchAreas(input.value.trim());
         }
 
         async function requestOnboard(wdpaId, btn) {
-            if (btn) btn.disabled = true;
+            if (btn) { btn.disabled = true; btn.classList.add('busy'); }
             try {
                 const r = await fetch(`/api/onboarding/request?wdpa_id=${wdpaId}`, { method: 'POST' });
                 const data = await r.json();
                 _onboardStatusCache = null;
                 if (data.status === 'requested') {
-                    const el = document.getElementById('onboard-offer');
-                    if (el) el.remove();
+                    refreshSearchResults();
                     showUndoToast(`${data.name} queued — data will be ready in about a day.`,
                         async () => {
                             await fetch(`/api/onboarding/cancel?wdpa_id=${wdpaId}`, { method: 'POST' });
                             _onboardStatusCache = null;
+                            refreshSearchResults();
                             showToast('Park request cancelled', 'info');
                         });
                 } else if (data.status === 'already_requested') {
+                    _onboardStatusCache = null; refreshSearchResults();
                     showToast('This park is already queued for onboarding', 'info');
                 } else if (data.status === 'already_loaded') {
                     showToast('This park is already on the globe', 'info');
@@ -9159,22 +9161,22 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                 }
             } catch (e) {
                 showToast('Request failed: ' + e.message, 'error');
-            } finally { if (btn) btn.disabled = false; }
+            } finally { if (btn) { btn.disabled = false; btn.classList.remove('busy'); } }
         }
 
         async function cancelOnboard(wdpaId, btn) {
-            if (btn) btn.disabled = true;
+            if (btn) { btn.disabled = true; btn.classList.add('busy'); }
             try {
                 const r = await fetch(`/api/onboarding/cancel?wdpa_id=${wdpaId}`, { method: 'POST' });
                 const data = await r.json();
                 _onboardStatusCache = null;
-                const el = document.getElementById('onboard-offer');
-                if (el) el.remove();
+                refreshSearchResults();
                 if (data.status === 'cancelled') showToast(`${data.name || 'Park'} request removed`, 'success');
                 else if (data.status === 'remove_scheduled') {
                     showUndoToast('Park removal scheduled for tonight.', async () => {
                         await fetch(`/api/onboarding/cancel?wdpa_id=${wdpaId}`, { method: 'POST' });
                         _onboardStatusCache = null;
+                        refreshSearchResults();
                         showToast('Removal cancelled — park stays', 'success');
                     });
                 }
@@ -9182,7 +9184,7 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                 else showToast(data.error || 'Failed', 'error');
             } catch (e) {
                 showToast('Failed: ' + e.message, 'error');
-            } finally { if (btn) btn.disabled = false; }
+            } finally { if (btn) { btn.disabled = false; btn.classList.remove('busy'); } }
         }
 
         // Toast with an inline Undo button (10s window). One surface: this is
@@ -9203,66 +9205,60 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                 return;
             }
             
+            // One row shape for every kind of result: a leading dot that says
+            // what the row IS, a title + meta line, and a trailing action strip.
+            // The strip is where onboarding lives (see onboardRowAction) and it
+            // swallows its own taps — tapping the row body still selects.
+            const row = (area, o) => `
+                    <div class="search-result-item${o.cls ? ' ' + o.cls : ''}" role="option"
+                         onclick="selectSearchResult(${JSON.stringify(area).replace(/"/g, '&quot;')})">
+                        <span class="search-dot ${o.dot}" title="${o.dotTitle || ''}"></span>
+                        <div class="search-result-main">
+                            <div class="search-result-name"><span>${escapeHtml(area.name)}</span>${o.badge || ''}</div>
+                            <div class="search-result-country">${o.meta || ''}</div>
+                        </div>
+                        ${o.actions ? `<div class="search-result-actions" onclick="event.stopPropagation()">${o.actions}</div>` : ''}
+                    </div>`;
+
             results.innerHTML = areas.map(area => {
                 const areaType = area.type || 'pa';
                 const isLoaded = area.loaded !== false;
                 
-                // Different styling for countries vs parks
                 if (areaType === 'aoi') {
                     // An AOI is labelled by its analysis window, not "v3":
                     // that is what the user remembers about it, and it is the
                     // only thing that distinguishes two versions in practice.
                     // “Hidden”, not “archived”: hiding is what the user did, and
                     // search is the way back — the hide toast says so.
-                    const chip = area.archived
-                        ? '<span class="loaded-badge" style="background:rgba(136,136,136,0.2);color:#888;">hidden</span>'
-                        : '<span class="loaded-badge" style="background:rgba(251,191,36,0.18);color:#fbbf24;">area</span>';
-                    return `
-                    <div class="search-result-item" onclick="selectSearchResult(${JSON.stringify(area).replace(/"/g, '&quot;')})">
-                        <div class="search-result-name">
-                            <span style="color:#fbbf24;">◈</span> ${escapeHtml(area.name)}
-                            ${chip}
-                        </div>
-                        <div class="search-result-country">${escapeHtml(area.label || '')}${area.area_km2 ? ' • ' + formatNumber(Math.round(area.area_km2)) + ' km²' : ''}</div>
-                    </div>
-                `;
+                    return row(area, {
+                        dot: 'aoi', dotTitle: 'Area of interest',
+                        badge: area.archived ? '<span class="loaded-badge hidden-badge">hidden</span>' : '',
+                        meta: `${escapeHtml(area.label || '')}${area.area_km2 ? ' • ' + formatNumber(Math.round(area.area_km2)) + ' km²' : ''}`
+                    });
                 } else if (areaType === 'country') {
                     const countryData = { name: area.name, bbox: area.bbox, parkCount: area.parkCount };
-                    return `
-                    <div class="search-result-item" onclick="selectSearchResult(${JSON.stringify(area).replace(/"/g, '&quot;')})">
-                        <div class="search-result-name">
-                            <span style="color: #888;">○</span> ${escapeHtml(area.name)}
-                            ${createStarButton('countries', countryData, 'small')}
-                            <span class="loaded-badge" style="background: rgba(136,136,136,0.2); color: #888;">country</span>
-                        </div>
-                        <div class="search-result-country">Click to filter by country</div>
-                    </div>
-                `;
+                    return row(area, {
+                        dot: 'country', dotTitle: 'Country',
+                        meta: `Country${area.parkCount ? ' • ' + area.parkCount + ' parks' : ''}`,
+                        actions: createStarButton('countries', countryData, 'small')
+                    });
                 } else if (areaType === 'region') {
-                    return `
-                    <div class="search-result-item" onclick="selectSearchResult(${JSON.stringify(area).replace(/"/g, '&quot;')})">
-                        <div class="search-result-name">
-                            <span style="color: #888;">○</span> ${escapeHtml(area.name)}
-                            <span class="loaded-badge" style="background: rgba(136,136,136,0.2); color: #888;">region</span>
-                        </div>
-                        <div class="search-result-country">${escapeHtml(area.country || '')}</div>
-                    </div>
-                `;
+                    return row(area, {
+                        dot: 'country', dotTitle: 'Region',
+                        meta: `Region${area.country ? ' • ' + escapeHtml(area.country) : ''}`
+                    });
                 } else {
-                    const itemClass = isLoaded ? 'search-result-item' : 'search-result-item unloaded';
-                    const badgeClass = isLoaded ? 'loaded-badge loaded' : 'loaded-badge unloaded';
-                    const badgeText = isLoaded ? 'loaded' : 'not loaded';
                     const parkData = { id: area.id, name: area.name, country: area.country, bbox: area.bbox, center: area.center };
-                    return `
-                    <div class="${itemClass}" onclick="selectSearchResult(${JSON.stringify(area).replace(/"/g, '&quot;')})">
-                        <div class="search-result-name">
-                            <span>${escapeHtml(area.name)}</span>
-                            ${isLoaded ? createStarButton('parks', parkData, 'small') : ''}
-                            <span class="${badgeClass}">${badgeText}</span>
-                        </div>
-                        <div class="search-result-country">${escapeHtml(area.country || 'Unknown')}${area.designation ? ' • ' + escapeHtml(area.designation) : ''}</div>
-                    </div>
-                `;
+                    // No "not loaded" in the meta line: the hollow dot and the
+                    // Add control already say it, three times is noise.
+                    const meta = `${escapeHtml(area.country || 'Unknown')}${area.designation ? ' • ' + escapeHtml(area.designation) : ''}`;
+                    return row(area, {
+                        cls: isLoaded ? '' : 'unloaded',
+                        dot: isLoaded ? 'loaded' : 'unloaded',
+                        dotTitle: isLoaded ? 'Loaded — full analysis available' : 'Not loaded',
+                        meta,
+                        actions: (isLoaded ? createStarButton('parks', parkData, 'small') : '') + onboardRowAction(area)
+                    });
                 }
             }).join('');
         }
@@ -9301,13 +9297,22 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
                 return;
             }
 
-            // Open filter panel to show selection
-            if (!filterPanelOpen) {
+            // Open the filter panel to show the selection — on a desktop.
+            //
+            // WHY NOT ON A PHONE: the filter panel is a full-screen sheet
+            // there, so picking a park from search printed "Active Filters"
+            // over the map and the user never saw the park they asked for. The
+            // panel is a *confirmation* of a selection on a wide screen and an
+            // interruption on a narrow one. An unloaded PA has no selection to
+            // confirm at all, so it never opens the panel either.
+            const wideScreen = !(window.FloatUI && FloatUI.isSheetMode && FloatUI.isSheetMode());
+            if (!filterPanelOpen && wideScreen && isLoaded && areaType !== 'country') {
                 toggleFilterPanel();
             }
             
             // Handle country selection - set bbox and country filter, then zoom
             if (areaType === 'country') {
+                if (!filterPanelOpen && wideScreen) toggleFilterPanel();
                 // Set country filter to only show parks in this country
                 currentCountryFilter = area.name;
                 applyCountryFilter();
@@ -9411,7 +9416,6 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
 
         function hideSearchResults() {
             document.getElementById('search-results').style.display = 'none';
-            if (_onboardDwellTimer) { clearTimeout(_onboardDwellTimer); _onboardDwellTimer = null; }
         }
 
         function clearSearch() {
@@ -18985,16 +18989,6 @@ h3 { color: #60a5fa; margin-top: 20px; font-size: 16px; page-break-after: avoid;
     .starred-report-section { background: #f9f9f9 !important; }
     .narrative-section { background: #f5f5f5 !important; }
 }
-</style>
-<style>
-/* On-the-fly park onboarding offer (search dropdown footer) */
-.onboard-offer-btn {
-    background: rgba(59,130,246,0.35); border: none; color: #fff;
-    padding: 6px 14px; border-radius: 6px; cursor: pointer;
-    font-size: 12px; font-weight: 600;
-}
-.onboard-offer-btn:hover { background: rgba(59,130,246,0.55); }
-.onboard-offer-btn:disabled { opacity: 0.5; cursor: default; }
 </style>
 </head><body>
 <h1>★ 5MP Conservation Monitoring Report <span style="font-size:16px;color:#888;font-weight:400;">[${reportConfig.preset.toUpperCase()} Profile]</span></h1>
