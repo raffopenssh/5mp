@@ -411,6 +411,47 @@ dimmed with a tooltip it reads as "not yours to do". Write-only admin tabs *are*
 removed (nobody misses a tab they cannot use), leaving Map Settings, and the
 toolbar pencil becomes a map icon because a pencil promises editing.
 
+**Closing a shared view logs out** (2026-08-17). The chip's `×` pointed at
+`/logout`, which cleared the *password* cookie — the one thing a guest does not
+hold — and redirected to the password form, so the shared view survived the
+click and the reader landed at a wall with no door. `HandleLogout` now clears
+`guest_link` too (`ClearGuestCookie`) and, when the caller *was* a guest,
+answers a **200** goodbye page (`noticePage`; `shortLinkGone` is the same page
+at 404 — a goodbye served as 404 tells a monitor something broke) saying the
+link still works and this browser no longer holds it. The key is **not**
+revoked: closing a view on a borrowed laptop must not destroy the link for
+everyone else it was sent to.
+
+Same stroke, the other direction: arriving with a valid `?pwd=` while holding a
+guest cookie now **supersedes and clears** it. The password branch sat *below*
+`guestAuth` in `PasswordMiddleware`, so such a request was admitted as the guest
+while `RequestPwd`/`RequestEnv` read the param — invariant 14's
+one-page-two-identities split in a new costume, and a stale key left behind
+meant logging out of the password dropped silently back into somebody else's
+shared view. Both pinned by `guest_logout_ends_the_view_not_the_key` and
+`password_supersedes_a_held_guest_key` in `tests/api_tests.sh`.
+
+**The badge is an element, not a `::before`.** It was
+`content: 'shared \00b7 '` on `.session-chip-label`, which put an amber word and
+a **middle dot** between two monospace strings: at 11px with the chip's 1px
+letter-spacing that reads as a stray bullet, not as a status. Now
+`.session-chip-badge` — a filled amber pill carrying the share dialog's own link
+icon, icon-only under 768px where the word costs 40px next to a link name that
+is already truncating.
+
+**A guest copies the key it holds.** A guest may not mint (refused twice), so
+"Copy link" fell through to the catch branch and put the **long URL** on the
+clipboard — 400 characters of view state that asks the recipient for a password
+nobody gave them. The page now carries `window.GUEST_SLUG` (`pageData.GuestSlug`
+from the cookie it already authenticated with), and `heldSlug()` in
+`sharelink.js` returns it for a **view** target only: an `/api/…` download is not
+the page this key points at, and handing over the view link under a file
+button would be a different link behind the same button. A held key shows no
+mode switch, no date choice, no lifetime/scope switches (they would offer a
+choice the server refuses) and no invented expiry — one line of text saying it
+is the link you were given, and one saying it stops working when the sender
+says so.
+
 ## Admin → Access & Sharing (merged 2026-08-16)
 
 The Access and Sharing tabs are ONE tab (`data-tab="access"`; share links

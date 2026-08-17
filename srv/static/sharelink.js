@@ -44,6 +44,28 @@
     function pwd() { return (typeof getPwd === 'function' ? getPwd() : '') || ''; }
     function isGuest() { return !!window.IS_GUEST; }
 
+    // ── the link a guest already holds ───────────────────────────────────
+    //
+    // A guest may not mint (the server refuses twice), so before this the
+    // "copy link" button in a shared view fell through to the catch branch and
+    // put the LONG url on the clipboard: 400 characters of view state that
+    // asks the recipient for a password nobody gave them. But the reader is
+    // holding a perfectly good short link already — the one they arrived on —
+    // and passing it on is exactly what they meant. So for a view target we
+    // show that key instead of minting.
+    //
+    // "For a VIEW target": an /api/… download is not the page this key points
+    // at, and handing over the view link in place of a file link would be a
+    // different link with the same button. Those fall through unchanged.
+    function heldSlug(u) {
+        if (!isGuest() || !window.GUEST_SLUG) return '';
+        try {
+            var p = new URL(u, window.location.href).pathname;
+            return p === '/' || p === '' ? window.GUEST_SLUG : '';
+        } catch (e) { return ''; }
+    }
+    function isHeld() { return !!(state && state.held); }
+
     // ── clipboard ────────────────────────────────────────────────────────
     // writeText outside a user gesture is refused by Safari and, on http
     // origins, missing entirely. Both failures are silent-by-design here: the
@@ -511,6 +533,10 @@
         if (!el) return;
         var guest = !!(state && state.guest);
         var opts = el.querySelector('#sl-opts');
+        // A held key's lifetime and scope were decided by whoever sent it.
+        // Showing the switches would offer the reader a choice the server
+        // refuses (a guest may not mint), which is worse than not offering it.
+        if (isHeld()) guest = false;
         var wasOn = opts.classList.contains('is-on');
         opts.classList.toggle('is-on', guest);
         // Turning the key options on adds ~200px below the fold on a phone.
@@ -583,6 +609,7 @@
     function msgHTML() {
         if (!state) return '';
         if (state.error) return '<span class="sl-warn">' + esc(state.error) + '</span>';
+        if (isHeld()) return '<span class="sl-dim">the link you were given — pass it on as it is</span>';
         if (!state.slug) return '<span class="sl-dim">shortening…</span>';
         if (state.guest) return '<span class="sl-dim">this name is the key — it cannot be changed</span>';
         return '';
@@ -594,6 +621,12 @@
     // the one line worth spending here (srv/guest.go).
     function noteHTML() {
         if (!state || !state.guest) return '';
+        // A held key: we know what it grants only by what this page can see,
+        // and inventing a lifetime or a scope here would be a number that
+        // describes nothing. It says the one true thing instead.
+        if (isHeld()) {
+            return '<span class="sl-dim">Read-only, and it stops working when whoever sent it says so.</span>';
+        }
         var out = [];
         if (hasPatrolScope()) {
             out.push('<span class="sl-note-warn">Whoever opens this can see your patrol tracks.</span>');
@@ -680,7 +713,7 @@
     // already pinned to explicit dates has nothing to decide — showing two
     // buttons with one possible answer would invent a decision.
     function hasDateChoice() {
-        return !!(state && state.preset && state.window);
+        return !!(state && state.preset && state.window) && !isHeld();
     }
 
     // A short, human range: "15 May – 12 Aug 2026", and "12 Aug 2026" when
@@ -986,6 +1019,7 @@
     function open(url, opts) {
         opts = opts || {};
         var long = absolute(url);
+        var held = heldSlug(long);
         lastFocus = document.activeElement;
         var d0 = urlDates(long);
         state = {
@@ -1009,8 +1043,13 @@
             tags: (opts.tags || (opts.tag ? [opts.tag] : [])).slice(),
             tag: (opts.tags && opts.tags[0]) || opts.tag || '',
             kind: opts.kind || 'view', title: opts.title || '',
+            // held: this is the key the reader arrived on, not one we minted.
+            // Nothing about it may be edited (it is somebody else's grant),
+            // and there is no network call to wait for.
+            held: !!held,
             copied: opts.copy !== false, opts: opts
         };
+        if (held) { state.slug = held; state.guest = true; }
 
         tagCtl = null; // a new dialog draws a fresh chip row
         var el = build();
@@ -1022,6 +1061,14 @@
         document.addEventListener('keydown', onKey, true);
 
         if (opts.copy !== false) copy(long, false);
+
+        // A held key needs no mint: the short link is already known, so it
+        // goes on the clipboard inside the same gesture instead of the long
+        // URL being left there for a request that will be refused.
+        if (held) {
+            if (opts.copy !== false) copy(current(), false);
+            return false;
+        }
 
         create(long, { title: opts.title, kind: opts.kind, guest: !!opts.guest, tags: state.tags })
             .then(function (d) {

@@ -4186,9 +4186,30 @@ body.is-guest .admin-panel-tabs .admin-tab[data-tab="map-settings"] {
     color: #6b7280; padding-left: 0;
 }
 
-body.is-guest .session-chip { border-color: rgba(251,191,36,0.45); }
-body.is-guest .session-chip-label::before {
-    content: 'shared \00b7 '; color: #fcd34d; font-weight: 600;
+/* The shared-view badge. It used to be `content: 'shared \00b7 '` on the
+   label's ::before — an amber word and a MIDDLE DOT floating between two
+   monospace strings, which at 11px reads as a stray bullet, not as a badge,
+   and inherited the chip's 1px letter-spacing so it sat wider than the name it
+   qualified. It is an element now: a filled amber pill with the same link icon
+   the share dialog uses, so "you are reading a link" is said in the shape the
+   rest of the app spends on status. */
+body.is-guest .session-chip { border-color: rgba(251,191,36,0.45); padding-left: 5px; }
+.session-chip-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: rgba(251,191,36,0.16); color: #fcd34d;
+    border: 1px solid rgba(251,191,36,0.35); border-radius: 3px;
+    padding: 2px 5px; font-size: 9.5px; font-weight: 700;
+    letter-spacing: 0.6px; text-transform: uppercase; line-height: 1;
+    flex: none;
+}
+.session-chip-badge svg { width: 10px; height: 10px; flex: none; }
+body.is-guest .session-chip-logout { color: #fcd34d; opacity: 0.75; }
+body.is-guest .session-chip-logout:hover { opacity: 1; background: rgba(251,191,36,0.18); }
+@media (max-width: 768px) {
+    /* The icon alone at phone size: the word costs 40px next to a link name
+       that is already being truncated, and the colour carries it. */
+    .session-chip-badge { font-size: 0; gap: 0; padding: 3px 4px; }
+    .session-chip-badge svg { width: 11px; height: 11px; }
 }
 
 /* ── Admin → Sharing tab ──────────────────────────────────────────────────

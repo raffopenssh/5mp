@@ -164,24 +164,22 @@ func (s *Server) PasswordMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		// A capability short link (srv/guest.go). Consulted BEFORE the
-		// password form and AFTER a real password, so a signed-in user who
-		// also holds a guest cookie stays themselves -- the strongest
-		// credential present wins, and a guest never downgrades a session.
-		if gr, ok := s.guestAuth(r); ok {
-			next.ServeHTTP(w, gr)
-			return
-		}
-
-		// Check query param (for setting cookie)
-		pwd := r.URL.Query().Get("pwd")
-		if isValidPassword(pwd) {
-			// Set cookie for future requests. This happens for API paths too:
-			// a shared download link (/api/geopackage/{id}/download) is a page
-			// someone opens in a browser, and after logging in through the form
-			// they should be logged in -- not have to type the password again
-			// the moment they click anything else.
+		// A `pwd=` IN THE URL OUTRANKS A GUEST COOKIE, and must be seen before
+		// guestAuth. Invariant 4 ("the strongest credential present wins") was
+		// implemented one line too low: a browser holding a guest cookie that
+		// then opened a `?pwd=` link was admitted AS THE GUEST here, while
+		// RequestPwd/RequestEnv read the param and answered as the password --
+		// the same one-page-two-identities split the cookie branch above was
+		// fixed for, in a new costume (the page rendered read-only under the
+		// link's name while its XHRs ran as the tenant). Adopting the password
+		// also ENDS the guest session: leaving a dead capability in the browser
+		// means logging out of the password silently drops back into somebody
+		// else's shared view.
+		if pwd := r.URL.Query().Get("pwd"); isValidPassword(pwd) {
 			SetAccessPwdCookie(w, pwd)
+			if _, err := r.Cookie(guestCookie); err == nil {
+				ClearGuestCookie(w)
+			}
 			// For API endpoints, serve directly: an XHR follows a redirect
 			// silently but a download must arrive as the response to *this*
 			// request, and RequestEnv/RequestPwd read the param anyway.
@@ -191,6 +189,15 @@ func (s *Server) PasswordMiddleware(next http.Handler) http.Handler {
 			}
 			// Redirect to remove pwd from URL
 			http.Redirect(w, r, urlWithoutPwd(r.URL), http.StatusFound)
+			return
+		}
+
+		// A capability short link (srv/guest.go). Consulted BEFORE the
+		// password form and AFTER a real password, so a signed-in user who
+		// also holds a guest cookie stays themselves -- the strongest
+		// credential present wins, and a guest never downgrades a session.
+		if gr, ok := s.guestAuth(r); ok {
+			next.ServeHTTP(w, gr)
 			return
 		}
 

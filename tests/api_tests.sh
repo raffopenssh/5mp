@@ -939,6 +939,53 @@ if [[ -n "$CLIENT_PWD" ]]; then
     fi
     rm -f "$JAR" "$JAR2"
 
+    # CLOSING A SHARED VIEW ENDS IT IN THIS BROWSER, AND ONLY IN THIS BROWSER.
+    #
+    # The chip's × was wired to /logout, which cleared the password cookie and
+    # redirected to the password form — neither of which is what a guest holds
+    # or can use, so the shared view survived the click and the reader was
+    # dropped at a wall with no door. Both halves are asserted: the guest
+    # cookie is really gone (the same jar must no longer read), and the KEY is
+    # untouched (a borrowed laptop must not destroy the link for everyone else
+    # it was sent to) — the second alone would pass while nothing logged out,
+    # and the first alone would pass while a close revoked the key.
+    printf "%-50s" "guest_logout_ends_the_view_not_the_key"
+    L=$(mint '{"url":"/?layers=fires&lo=1","guest":true}')
+    JAR5=$(mktemp); curl -s -m 30 -o /dev/null -c "$JAR5" "${BASE_URL}/s/${L}"
+    pre=$(curl -s -m 30 -o /dev/null -w "%{http_code}" -b "$JAR5" "${BASE_URL}/api/stats")
+    lo=$(curl -s -m 30 -o /dev/null -w "%{http_code}" -b "$JAR5" -c "$JAR5" "${BASE_URL}/logout")
+    post=$(curl -s -m 30 -o /dev/null -w "%{http_code}" -b "$JAR5" "${BASE_URL}/api/stats")
+    # The link still works for the next person who opens it.
+    JAR6=$(mktemp); curl -s -m 30 -o /dev/null -c "$JAR6" "${BASE_URL}/s/${L}"
+    again=$(curl -s -m 30 -o /dev/null -w "%{http_code}" -b "$JAR6" "${BASE_URL}/api/stats")
+    rm -f "$JAR5" "$JAR6"
+    # 200 on the goodbye page, not 404: a page that says goodbye under a 404
+    # tells a monitor something broke.
+    if [[ "$pre" == "200" && "$lo" == "200" && "$post" != "200" && "$again" == "200" ]]; then
+        green "✓"; PASSED=$((PASSED + 1))
+    else
+        red "FAIL (pre $pre, logout $lo, after $post, reopened $again)"; FAILED=$((FAILED + 1))
+        ERRORS+=("closing a shared view does not log the guest out")
+    fi
+
+    # ARRIVING WITH A PASSWORD ENDS THE GUEST SESSION TOO. A browser holding a
+    # guest cookie that then opens a ?pwd= link used to be admitted AS THE
+    # GUEST by the middleware while RequestPwd/RequestEnv read the param —
+    # one page, two identities (the same split fixed above for two passwords).
+    printf "%-50s" "password_supersedes_a_held_guest_key"
+    JAR7=$(mktemp); curl -s -m 30 -o /dev/null -c "$JAR7" "${BASE_URL}/s/${L}"
+    curl -s -m 30 -o /dev/null -b "$JAR7" -c "$JAR7" --get \
+        --data-urlencode "pwd=${CLIENT_PWD}" "${BASE_URL}/"
+    isg=$(curl -s -m 30 -b "$JAR7" "${BASE_URL}/" | grep -c 'IS_GUEST = true' || true)
+    adm=$(curl -s -m 30 -o /dev/null -w "%{http_code}" -b "$JAR7" "${BASE_URL}/api/admin/access")
+    rm -f "$JAR7"
+    if [[ "$isg" == "0" && "$adm" == "200" ]]; then
+        green "✓"; PASSED=$((PASSED + 1))
+    else
+        red "FAIL (is_guest=$isg admin=$adm)"; FAILED=$((FAILED + 1))
+        ERRORS+=("a password does not supersede a held guest key")
+    fi
+
     # Tags: set on one link, renamed everywhere, removable. A tag is one name
     # for one purpose — the whole-group rename exists because renaming one row
     # would fork the group out of the next "renew all".
