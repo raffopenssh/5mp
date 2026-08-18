@@ -952,6 +952,9 @@
     // So: no answer means retry on the next idle, once, and only for a sheet
     // we know is available.
     function add(id) {
+        // A queued once('idle', () => add(id)) must not resurrect a sheet
+        // toggled off before idle fired — re-check the flag at fire time.
+        if (!st(id).on) return;
         const s = sheets && sheets[id];
         if (!s || !s.available || !map) return;
         if (!map.isStyleLoaded()) {
@@ -1686,8 +1689,17 @@
             // basemap's value, i.e. almost invisibly.
             if (want && shared.opacityAuto) shared.opacity = autoOpacity();
             st(id).on = !!want;
-            if (map && map.isStyleLoaded()) { want ? add(id) : remove(id); }
-            else if (want) { map.once('idle', () => add(id)); }
+            // Removal must NOT wait for isStyleLoaded(): that is false whenever
+            // tiles are still loading (i.e. during any pan/zoom), and a dropped
+            // remove() leaves the layers orphaned on the map while the state —
+            // and the legend checkbox — say off. removeLayer/removeSource are
+            // safe mid-load; only add() needs a settled style.
+            if (map && want) {
+                if (map.isStyleLoaded()) add(id);
+                else map.once('idle', () => add(id));
+            } else if (map) {
+                remove(id);
+            }
             if (typeof renderGeoMapPanel === 'function') renderGeoMapPanel();
             if (want && opts.fly && s.center) {
                 map.flyTo({ center: [s.center[0], s.center[1]], zoom: Math.max(map.getZoom(), 5) });
