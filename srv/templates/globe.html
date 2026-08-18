@@ -1425,7 +1425,9 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             }
 
             function add() {
-                if (!meta || !meta.available || !map || !map.isStyleLoaded()) return;
+                // `on` re-checked here: a queued once('idle', add) must not
+                // resurrect the overlay if it was toggled off before idle.
+                if (!on || !meta || !meta.available || !map || !map.isStyleLoaded()) return;
                 if (!map.getSource(SRC)) {
                     map.addSource(SRC, {
                         type: 'raster',
@@ -1481,8 +1483,16 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                         return false;
                     }
                     on = !!want;
-                    if (map && map.isStyleLoaded()) { on ? add() : remove(); }
-                    else if (on) { map.once('idle', add); }
+                    // Same rule as GeoMap.set(): remove() must not wait for
+                    // isStyleLoaded() (false during any tile load), or a
+                    // toggle-off mid-pan is silently dropped and the scan
+                    // stays on the map while the legend says off.
+                    if (map && on) {
+                        if (map.isStyleLoaded()) add();
+                        else map.once('idle', add);
+                    } else if (map) {
+                        remove();
+                    }
                     renderHistMapPanel();
                     // NO CAMERA MOVE on add — an overlay is drawn on the view
                     // the user has, not a reason to leave it. If the sheet
