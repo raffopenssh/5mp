@@ -126,3 +126,86 @@ npx playwright test tests/playwright/
 ```
 
 ---
+
+## Interactive map stress testing (browser-tool sessions)
+
+**Opt-in only.** This is NOT part of `run_all.sh` or `runUITests()` and must
+not be added to them — it takes 5–8 minutes, mutates UI state (time window,
+basemap, pins), and belongs to explicit "stress test the map" asks, not to
+the per-change test loop.
+
+The phases are packaged in **`tests/stress/map_stress.js`**: paste it into
+the console on `/?pwd=test2026&test=1&popup=CAF_Chinko` (or eval via the
+browser tool), then `await MapStress.runAll()` — or run a single phase,
+e.g. `await MapStress.phases.geology()`. `MapStress.report()` says whether
+the style returned to baseline.
+
+How the 2026-08 stress sessions were run (found the metaPromise retry bug,
+the setOpacity(NaN) poison, and the pin tabLabel fix — commits bb30e33,
+2337250). Reuse this recipe when asked to "make sure hours-long browsing
+stays stable".
+
+**Setup** — navigate to `/?pwd=test2026&test=1`, then instrument *before*
+interacting (on `/s/` guest links: instrument immediately, restore is async):
+
+```javascript
+window.__errs = [];
+addEventListener('error', e => __errs.push('ERR:' + (e.message || '')));
+addEventListener('unhandledrejection', e => __errs.push('REJ:' + String(e.reason).slice(0, 150)));
+window.__snap = () => { const st = map.getStyle(); return {
+    layers: st.layers.length, sources: Object.keys(st.sources).length,
+    images: map.listImages().length, errs: __errs.length }; };
+```
+
+Baseline is **10 layers / 4 sources / 1 image**. The invariant: after every
+churn phase that ends "everything off", `__snap()` must equal baseline and
+`__errs` must be empty. Residue in `layers`/`images` = a leak (grep the ids:
+`geomap-*`, `geopat-*`, `histmap-*`, `pinned-*`, `lod-*`). Exception:
+`geomap-structural-*` layers persist at `line-opacity: 0` by design (soft-off).
+
+**Also check the console**: `__errs` misses `console.error` — MapLibre paint
+errors (e.g. the NaN opacity spam) only show in browser console_logs.
+
+**Synthetic input** — dispatch on `map.getCanvas()`; MapTip listens there:
+
+```javascript
+const cv = map.getCanvas(), rect = cv.getBoundingClientRect();
+const mm = (x, y) => cv.dispatchEvent(new MouseEvent('mousemove',
+    { bubbles: true, clientX: rect.left + x, clientY: rect.top + y }));
+const click = (x, y) => { for (const t of ['mousedown', 'mouseup', 'click'])
+    cv.dispatchEvent(new MouseEvent(t, { bubbles: true,
+        clientX: rect.left + x, clientY: rect.top + y, button: 0 })); };
+// Time-slider drags need PointerEvents on .time-slider-handle.start/.end
+// (pointerdown on handle, pointermove/up on document).
+```
+
+Aim storms at *real* features, not random pixels: collect targets via
+`map.queryRenderedFeatures({layers:[...]})`, project midpoints with
+`map.project()`, then hover at 15–25 ms cadence / click at 50–60 ms.
+After a click storm: Esc must clear every `.maptip.visible`. Beware: at a
+2-year window fires cover everything, so a "void" click may legitimately pin.
+
+**Phases that earned their keep** (each ends with a baseline check):
+1. Stats-panel `toggleViewLayer('fires'|'deforestation'|'settlements'|'pixels')` ×4+.
+2. Geology on/off incl. **mid-load toggle-off**; opacity slider incl. garbage
+   values (`slider.value=''` + input event); color modes; lith/age chips;
+   commodity rows (`MapLegend.geoCommodity`), min-weight 1/2/3, per-cell grid
+   (`MapLegend.geoCell`) — drawn count must go filtered→back (104→22→104);
+   Rocks/Junctions tabs; structural on/off.
+3. HistMap toggle incl. mid-load; opacity drags.
+4. Legend menu (`MapLegend.menu` button) + basemap switches with overlays on:
+   auto-opacity must re-pick (0.52 dark / 0.72 sat), a manual value must survive.
+5. Park popup pins: `?popup=CAF_Chinko`, click the
+   `togglePinFromIcon` icons next to accordion titles; **widen to 2 years
+   first** (drag start handle) so pins carry thousands of shapes; fly-to,
+   MAP DETAIL modes (openPinModeMenu → Automatic/Full/Fast), clearAllPinnedLayers.
+6. Hover/click storms over pinned + lod layers (targets from
+   queryRenderedFeatures). Tabs on multi-answer cards must show type names
+   ("River", "Fire"), never layer ids.
+7. Guest share restore: open an `/s/` slug, storm *during* restore, verify
+   popup + geology + pins all survive and reload cleanly.
+
+**Gotchas** — DOM refs go stale after popup re-renders (re-query, don't cache
+button handles); many "checkboxes" are styled divs with `onclick`, so find by
+`[onclick*="geoCommodity"]` etc., not `input[type=checkbox]`; `performance.memory`
+is a cheap heap sanity check between phases.
