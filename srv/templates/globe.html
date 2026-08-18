@@ -1401,9 +1401,14 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             function fetchMeta() {
                 if (!metaPromise) {
                     metaPromise = fetch(histMapUrl('/api/histmap'))
-                        .then(r => r.json())
+                        .then(r => { if (!r.ok) throw new Error('histmap ' + r.status); return r.json(); })
                         .then(j => { meta = j; return j; })
-                        .catch(() => { meta = { available: false, reason: 'request failed' }; return meta; });
+                        .catch(() => {
+                            // Unfinished, not "unavailable": clear the promise
+                            // so a later ensureMeta() retries (see geomap.js).
+                            metaPromise = null;
+                            meta = { available: false, reason: 'request failed' }; return meta;
+                        });
                 }
                 return metaPromise;
             }
@@ -1514,6 +1519,8 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 toggle() { return this.set(!on, { fly: false }); },
 
                 setOpacity(v) {
+                    v = Number(v);
+                    if (!isFinite(v)) return; // NaN must not stick (see GeoMap.setOpacity)
                     opacity = Math.max(0, Math.min(1, v));
                     if (map.getLayer(LYR)) map.setPaintProperty(LYR, 'raster-opacity', opacity);
                     const lbl = document.getElementById('histmap-opacity-val');
@@ -19824,6 +19831,9 @@ ${starredItems.narratives.map(n => {
             singlePinnedFeatures[key].tipLayers = tipLayers;
             if (window.MapTip) {
                 tipLayers.forEach(id => window.MapTip.register(id, {
+                    // See addPinnedLayer: a tab must carry the feature's type,
+                    // not a name derived from the layer id.
+                    tabLabel: String(type || 'Feature').replace(/^./, c => c.toUpperCase()),
                     html: (props) => {
                         const pin = singlePinnedFeatures[key];
                         const label = featureTipHTML(props, type, parkName);
@@ -20664,6 +20674,10 @@ ${starredItems.narratives.map(n => {
             pinnedLayers[key].tipLayers = tipLayers;
             if (window.MapTip) {
                 tipLayers.forEach(id => window.MapTip.register(id, {
+                    // Names the tab when several answers share a point; without
+                    // it the fallback derives "pinned CAF Chinko river" from the
+                    // layer id, which is an id, not a name.
+                    tabLabel: String(type || 'Feature').replace(/^./, c => c.toUpperCase()),
                     html: (props) => featureTipHTML(props, type, parkName),
                     actionLabel: areaOverviewLabel(parkId),
                     onActivate: (feature) => {
