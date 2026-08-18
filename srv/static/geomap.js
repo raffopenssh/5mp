@@ -210,7 +210,7 @@
     function fetchMeta() {
         if (!metaPromise) {
             metaPromise = fetch(api('/api/geomap'))
-                .then(r => r.json())
+                .then(r => { if (!r.ok) throw new Error('geomap ' + r.status); return r.json(); })
                 .then(j => {
                     sheets = {};
                     order = [];
@@ -235,7 +235,15 @@
                     structural = j.structural || null;
                     return sheets;
                 })
-                .catch(() => { sheets = {}; order = []; gpkg = null; anchors = null; structural = null; return sheets; });
+                .catch(() => {
+                    // A failed catalogue is UNFINISHED, not "no sheets": the
+                    // page's first fetch can lose a race with the pwd cookie
+                    // (401 → HTML → json() throws). Freezing {} here made the
+                    // geology panel empty for the whole session; clearing the
+                    // promise lets the next ensureMeta() re-ask.
+                    metaPromise = null;
+                    sheets = {}; order = []; gpkg = null; anchors = null; structural = null; return sheets;
+                });
         }
         return metaPromise;
     }
@@ -1727,6 +1735,11 @@
         // basemap switch.
         setOpacity(v, opts) {
             opts = opts || {};
+            // A non-numeric value must not poison shared.opacity: NaN sticks,
+            // every refresh() then sets fill-opacity:NaN (MapLibre error spam)
+            // and the drape goes invisible until reload. Ignore bad input.
+            v = Number(v);
+            if (!isFinite(v)) return;
             shared.opacity = Math.max(0, Math.min(1, v));
             if (!opts.auto) shared.opacityAuto = false;
             order.forEach(id => { if (st(id).on) refresh(id); });
