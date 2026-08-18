@@ -1086,6 +1086,15 @@
         if (window.MapTip) { window.MapTip.unregister(FILL(id)); window.MapTip.unregister(CONT(id)); }
         bound[id] = false;
         contactBound[id] = false;
+        // Pattern images are shared across sheets (keyed lith+colour), so a
+        // single sheet going off must not strip them from a sheet still on.
+        // When the LAST sheet goes off, drop them all: they are cheap to
+        // rebuild (ensurePatterns re-adds on next toggle-on) and leaving them
+        // accumulates style images across toggle cycles.
+        if (order.every(k => !st(k).on) && map.listImages) {
+            map.listImages().filter(n => n.indexOf('geopat-') === 0)
+                .forEach(n => { try { map.removeImage(n); } catch (e) { /* gone already */ } });
+        }
     }
 
     function refresh(id) {
