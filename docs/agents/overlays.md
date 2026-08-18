@@ -87,6 +87,15 @@ rendering after the 187-sheet rebuild, and only at the zoom levels the browser
 had cached — which reads as "gaps at some zoom levels", not as a stale cache.
 The client must use `meta.tiles`, never a hand-written tile path.
 
+**Toggle-off must not wait for `isStyleLoaded()`** (fixed 2026-08-18): that
+predicate is false during any tile load, i.e. during any pan/zoom, so gating
+`remove()` behind it silently dropped a mid-navigation toggle-off and left the
+layers (and vector-tile sources) orphaned while the legend said off — the
+cause of "unstable when exploring the map". Rule for both HistMap and GeoMap:
+`remove()` runs unconditionally (safe mid-load); only `add()` waits for a
+settled style; and `add()` re-checks the on flag when a queued `once('idle')`
+fires, so a toggle-off before idle is not resurrected.
+
 Full detail, including why the mosaic is built per-block and why `tile_row` is
 TMS: `scripts/histmaps/README.md`.
 
