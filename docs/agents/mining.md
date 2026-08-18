@@ -257,9 +257,18 @@ prose version. Rules that cost time:
 
 ## Travel times, plan score and key places (2026-08-16)
 
-- **Local OSRM**, not the public demo: Docker containers `osrm-xsa` (car,
-  :5001) and `osrm-xsa-foot` (foot, :5002), data under `/home/exedev/
-  osrm-xsa/`, built from merged Geofabrik CAR+SSD+SDN extracts. Foot is a
+- **Local OSRM**, not the public demo — **decommissioned 2026-08-18 for
+  disk space**: the four Docker containers (`osrm-xsa` car :5001,
+  `osrm-xsa-foot` :5002, `osrm-xsa-hist` :5003, `osrm-xsa-hist-foot`
+  :5004), the image, and `/home/exedev/osrm-xsa/` (2.2 GB graphs + PBFs)
+  are gone. The distance matrices in `data/eval/xsa_mining/osrm_times*.npz`
+  (+ `_meta` JSONs) are **kept** and suffice for re-running predictions.
+  To rebuild servers: Geofabrik CAR+SSD+SDN extracts, osmium merge, then
+  `hist_lines_to_osm.py` (needs `/tmp/modern_hw_nodes.npz` regenerated via
+  `osmium tags-filter w/highway` + pyosmium; source `labels.sqlite3` is
+  kept). Original setup: containers built from
+  `ghcr.io/project-osrm/osrm-backend`, merged Geofabrik CAR+SSD+SDN
+  extracts. Foot is a
   first-class mode (people walk ~40 km/day here; only 44% of cells are
   fastest by car); where OSRM has no route, a 4 km/h straight-line
   bush-walk fallback — stated in metadata, every pair finite.
