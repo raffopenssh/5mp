@@ -666,7 +666,7 @@ func (s *Server) HandleAPIMBTilesDownload(w http.ResponseWriter, r *http.Request
 
 	// Serve file
 	filename := fmt.Sprintf("%s_%s.mbtiles", job.ParkID, job.Source)
-	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%q", filename))
 	w.Header().Set("Content-Type", "application/x-sqlite3")
 
 	filePath := job.FilePath

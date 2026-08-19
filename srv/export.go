@@ -130,7 +130,7 @@ func (s *Server) HandleAPIExportParks(w http.ResponseWriter, r *http.Request) {
 	// Set headers for CSV download
 	filename := fmt.Sprintf("parks_export_%s.csv", time.Now().Format("2006-01-02"))
 	w.Header().Set("Content-Type", "text/csv")
-	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%q", filename))
 
 	// Write CSV
 	csvWriter := csv.NewWriter(w)
