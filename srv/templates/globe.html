@@ -1226,11 +1226,57 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
         })();
         window._urlView = _urlView;
 
+        // THE HOME VIEW: WHAT THIS ACCOUNT IS ACTUALLY ABOUT.
+        //
+        // A session that owns an AOI opens on it. Landing on the whole of
+        // Africa is only the right default for someone whose subject IS the
+        // continent; for anyone with a drawn polygon it means hunting for their
+        // own area on every login, and the previous default made the app look
+        // like it had lost their data.
+        //
+        // Precedence, and the order matters:
+        //   1. ?lat/?lng/?z  — a link's viewport is what the link MEANS, and it
+        //      always outranks a default (see _urlView above).
+        //   2. a visible AOI — the union bbox of every AOI this principal may
+        //      see, computed server-side (pageData.AOIHome) so there is no
+        //      flash of the continent first. An AOI outranks a starred park for
+        //      the same reason it leads the star report: it is the question,
+        //      the park is context.
+        //   3. starred parks/bboxes — union of what the user pinned.
+        //   4. [20, 0] z3.
+        //
+        // Only the BBOX comes from the server: the zoom that frames it depends
+        // on the container size, which the server cannot know. The initial
+        // camera is an estimate (no flash), then fitBounds refines it on load.
+        const AOI_HOME = {{.AOIHomeJSON}};
+        window.AOI_HOME = AOI_HOME;
+
+        // Zoom that fits a bbox in the current window, Web-Mercator-ish. Only
+        // used for the pre-load estimate; fitBounds is authoritative after.
+        function _zoomForBBox(bb, pad) {
+            const w = Math.max(window.innerWidth - (pad || 120), 200);
+            const h = Math.max(window.innerHeight - (pad || 120), 200);
+            const lngSpan = Math.max(Math.abs(bb[2] - bb[0]), 1e-4);
+            const latSpan = Math.max(Math.abs(bb[3] - bb[1]), 1e-4);
+            const zx = Math.log2((w / 512) * (360 / lngSpan));
+            const zy = Math.log2((h / 512) * (180 / latSpan));
+            return Math.max(1, Math.min(12, Math.min(zx, zy)));
+        }
+        window._zoomForBBox = _zoomForBBox;
+
+        const _homeBBox = (!_urlView && AOI_HOME && AOI_HOME.bbox) ? AOI_HOME.bbox : null;
+        const _homeView = _homeBBox ? {
+            center: [(_homeBBox[0] + _homeBBox[2]) / 2, (_homeBBox[1] + _homeBBox[3]) / 2],
+            zoom: _zoomForBBox(_homeBBox),
+            bbox: _homeBBox,
+        } : null;
+        window._homeView = _homeView;
+
         const map = new maplibregl.Map({
             container: 'map',
             style: darkStyle,
-            center: _urlView ? _urlView.center : [20, 0],
-            zoom: _urlView ? _urlView.zoom : 3,
+            center: _urlView ? _urlView.center : (_homeView ? _homeView.center : [20, 0]),
+            zoom: _urlView ? _urlView.zoom : (_homeView ? _homeView.zoom : 3),
             antialias: true,
             preserveDrawingBuffer: true,  // Helps with Safari
             failIfMajorPerformanceCaveat: false,  // Don't fail on software rendering
@@ -19179,6 +19225,79 @@ ${starredItems.narratives.map(n => {
     
     // Load starred items on page load
     document.addEventListener('DOMContentLoaded', loadStarredItems);
+
+    // ── The home viewport ────────────────────────────────────────────────
+    //
+    // Precedence (see the _urlView / AOI_HOME block near map construction):
+    //   1. a link's own viewport or any viewport-bearing link param — a link
+    //      means the picture it carries, never a default;
+    //   2. a visible AOI (server-computed union bbox, already applied as the
+    //      map's INITIAL camera so there is no flash of the continent);
+    //   3. starred parks / bboxes, unioned;
+    //   4. Africa.
+    //
+    // This pass exists because the initial camera is an estimate: fitBounds
+    // knows the container and the padding, and starred items only become known
+    // after sessionStorage is read. It refuses to move the map if the user has
+    // already touched it — a human gesture outranks a default, always.
+    let _homeViewApplied = false;
+    function applyHomeViewport(opts) {
+        if (_homeViewApplied) return false;
+        if (window._urlView) return false;
+        // Any link param whose restorer legitimately moves the map is itself a
+        // requested viewport; the default must not fight it.
+        const p = new URLSearchParams(window.location.search);
+        for (const k of ['bbox', 'aoi', 'park', 'park_focus', 'country', 'histmap', 'geomap', 'fire', 'pin']) {
+            if (p.get(k)) return false;
+        }
+        if (window._homeUserMoved) return false;
+
+        let bb = null, why = '';
+        const aoiBB = (window.AOI_HOME && window.AOI_HOME.bbox) || null;
+        if (aoiBB && aoiBB.length === 4) {
+            // An AOI outranks a starred park: it is the question the account was
+            // created to ask, the park is context around it.
+            bb = aoiBB.slice();
+            why = 'aoi';
+        } else {
+            const boxes = [];
+            for (const park of (starredItems.parks || [])) {
+                if (park.bbox && park.bbox.length === 4) boxes.push(park.bbox);
+            }
+            for (const b of (starredItems.bboxes || [])) {
+                if (b.bbox && b.bbox.length === 4) boxes.push(b.bbox);
+            }
+            if (boxes.length) {
+                bb = boxes.reduce((acc, b) => [
+                    Math.min(acc[0], b[0]), Math.min(acc[1], b[1]),
+                    Math.max(acc[2], b[2]), Math.max(acc[3], b[3]),
+                ], boxes[0].slice());
+                why = 'starred';
+            }
+        }
+        if (!bb || !(bb[2] > bb[0]) || !(bb[3] > bb[1])) return false;
+
+        _homeViewApplied = true;
+        window._homeViewSource = why;
+        map.fitBounds([[bb[0], bb[1]], [bb[2], bb[3]]], {
+            padding: 80, maxZoom: 12, duration: (opts && opts.duration) || 0,
+        });
+        return true;
+    }
+    window.applyHomeViewport = applyHomeViewport;
+
+    // A person always outranks a default, so record the first real gesture.
+    ['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(ev =>
+        document.addEventListener(ev, () => { window._homeUserMoved = true; }, { capture: true, once: true }));
+
+    // AOIs are already known server-side, so the AOI case can run as soon as
+    // the map is ready; the starred case waits for sessionStorage (DOMContent
+    // -Loaded) and for a re-fit after the async restorers have settled.
+    (function scheduleHomeViewport() {
+        const go = () => { try { applyHomeViewport(); } catch (e) { console.warn('home viewport:', e); } };
+        if (map.loaded()) go(); else map.on('load', go);
+        [300, 1200].forEach(ms => setTimeout(go, ms));
+    })();
     
     // Generate RSS feed URL for starred items
     //
