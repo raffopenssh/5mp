@@ -15,8 +15,8 @@ package srv
 import (
 	"crypto/rand"
 	"encoding/hex"
-	"errors"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"

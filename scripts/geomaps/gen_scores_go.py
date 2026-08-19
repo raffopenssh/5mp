@@ -20,6 +20,7 @@ so the distinction survives the file boundary.
 """
 import json
 import math
+import subprocess
 import sys
 
 SRC = "data/eval/geo_affinity.json"
@@ -171,6 +172,9 @@ def main():
         w("const geoStructuralNearKm = 0")
     w("")
     open(OUT, "w").write("\n".join(L))
+    # gofmt the output so `gofmt -l` stays clean without hand-editing a
+    # generated file (which the header forbids).
+    subprocess.run(["gofmt", "-w", OUT], check=True)
     print(f"wrote {OUT}: {len(rows)} measurements from {len(truths)} truth sets")
 
 
