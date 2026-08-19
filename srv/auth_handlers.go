@@ -65,14 +65,18 @@ func (s *Server) HandleLogin(w http.ResponseWriter, r *http.Request) {
 // HandleLogout clears the session and redirects to login.
 //
 // A GUEST logging out is a different ending. It holds no password, so the
-// password form is not "sign in again", it is a wall with no door; and the
-// slug it arrived on lives in an HttpOnly cookie we are about to delete, so
-// there is no link left on screen to reopen. It gets a page that says which
-// of those two things happened. The key itself is NOT revoked (see
-// ClearGuestCookie): closing a view on a borrowed laptop must not destroy the
-// link for everyone else it was sent to.
+// password form is not "sign in again" for them; but a dead-end goodbye page
+// with no next step reads as an error, so they land on the SAME login page as
+// everyone else with the goodbye carried as a notice (?notice=left-shared,
+// rendered as a toast by showPasswordForm) -- feedback, not a wall, and the
+// toast offers the slug back for the click that was a mistake (the slug travels
+// in a short-lived HttpOnly cookie, never in the redirect URL: it is a
+// credential). The key
+// itself is NOT revoked (see ClearGuestCookie): closing a view on a borrowed
+// laptop must not destroy the link for everyone else it was sent to.
 func (s *Server) HandleLogout(w http.ResponseWriter, r *http.Request) {
-	wasGuest := GuestFromRequest(r) != nil
+	guest := GuestFromRequest(r)
+	wasGuest := guest != nil
 	if cookie, err := r.Cookie(auth.SessionCookieName); err == nil {
 		if err := s.Auth.Logout(r.Context(), cookie.Value); err != nil {
 			// Session deletion failed, but we still clear the cookie
@@ -87,9 +91,8 @@ func (s *Server) HandleLogout(w http.ResponseWriter, r *http.Request) {
 	// A shared view is a session too: leaving it must leave nothing behind.
 	ClearGuestCookie(w)
 	if wasGuest {
-		s.noticePage(w, http.StatusOK, "You have left the shared view",
-			"The link you were sent still works &mdash; open it again to come back. "+
-				"This browser no longer holds it.", "")
+		SetLeftGuestCookie(w, guest.Slug)
+		http.Redirect(w, r, "/?notice=left-shared", http.StatusSeeOther)
 		return
 	}
 	http.Redirect(w, r, "/", http.StatusSeeOther)

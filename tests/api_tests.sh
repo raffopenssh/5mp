@@ -955,16 +955,29 @@ if [[ -n "$CLIENT_PWD" ]]; then
     pre=$(curl -s -m 30 -o /dev/null -w "%{http_code}" -b "$JAR5" "${BASE_URL}/api/stats")
     lo=$(curl -s -m 30 -o /dev/null -w "%{http_code}" -b "$JAR5" -c "$JAR5" "${BASE_URL}/logout")
     post=$(curl -s -m 30 -o /dev/null -w "%{http_code}" -b "$JAR5" "${BASE_URL}/api/stats")
+    # The landing page carries the goodbye AND a way back in: the × is one
+    # mis-tap away, and a guest cannot retype a link it never saw (the slug is
+    # in an HttpOnly cookie, never in the redirect URL — a slug is a
+    # credential). Asserted on the page, not just on the redirect, because the
+    # cookie is consumed by the read: it must survive exactly one page load.
+    land=$(curl -s -m 30 -b "$JAR5" -c "$JAR5" "${BASE_URL}/?notice=left-shared")
+    grep -q "notice-toast" <<< "$land" && has_toast=1 || has_toast=0
+    grep -q "/s/${L}\"" <<< "$land" && has_back=1 || has_back=0
+    # ...and only one: a second load must not re-offer a session already left.
+    land2=$(curl -s -m 30 -b "$JAR5" -c "$JAR5" "${BASE_URL}/?notice=left-shared")
+    grep -q "/s/${L}\"" <<< "$land2" && back_twice=1 || back_twice=0
     # The link still works for the next person who opens it.
     JAR6=$(mktemp); curl -s -m 30 -o /dev/null -c "$JAR6" "${BASE_URL}/s/${L}"
     again=$(curl -s -m 30 -o /dev/null -w "%{http_code}" -b "$JAR6" "${BASE_URL}/api/stats")
     rm -f "$JAR5" "$JAR6"
-    # 200 on the goodbye page, not 404: a page that says goodbye under a 404
-    # tells a monitor something broke.
-    if [[ "$pre" == "200" && "$lo" == "200" && "$post" != "200" && "$again" == "200" ]]; then
+    # 303 to the login page, not a goodbye page of its own: the notice is a
+    # toast on the page that has the way back, and a dead-end reads as an error.
+    if [[ "$pre" == "200" && "$lo" == "303" && "$post" != "200" && "$again" == "200" \
+          && "$has_toast" == "1" && "$has_back" == "1" && "$back_twice" == "0" ]]; then
         green "✓"; PASSED=$((PASSED + 1))
     else
-        red "FAIL (pre $pre, logout $lo, after $post, reopened $again)"; FAILED=$((FAILED + 1))
+        red "FAIL (pre $pre, logout $lo, after $post, reopened $again, toast $has_toast, back $has_back, twice $back_twice)"
+        FAILED=$((FAILED + 1))
         ERRORS+=("closing a shared view does not log the guest out")
     fi
 
