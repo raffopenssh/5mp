@@ -3,6 +3,7 @@ package srv
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"log/slog"
@@ -56,6 +57,12 @@ type pageData struct {
 	// would produce one, because an editor that 403s on save is worse than an
 	// editor that was never offered.
 	IsGuest bool
+	// AOIHome: the union bbox of the AOIs this session may see, or nil.
+	// An AOI is the reason its owner logs in, so it — not the continent — is
+	// the viewport a session opens on. Server-side so there is no flash of
+	// Africa first; the client frames it (zoom depends on the container) and a
+	// URL viewport always wins, because a link's view is what the link means.
+	AOIHome *AOIHomeView
 	// GuestSlug: the capability this page is riding on, so "copy link" can
 	// hand back the SHORT link the reader arrived through instead of minting
 	// (which a guest may not do) or copying 400 characters of view state.
@@ -64,6 +71,19 @@ type pageData struct {
 	// -- script on this page can read everything the key grants anyway -- but
 	// it must never be written into a URL by anything except a deliberate copy.
 	GuestSlug string
+}
+
+// AOIHomeJSON renders AOIHome for the page script. `null` when there is none,
+// so the client has one shape to test.
+func (d pageData) AOIHomeJSON() template.JS {
+	if d.AOIHome == nil {
+		return template.JS("null")
+	}
+	b, err := json.Marshal(d.AOIHome)
+	if err != nil {
+		return template.JS("null")
+	}
+	return template.JS(b)
 }
 
 func New(dbPath, hostname string) (*Server, error) {
@@ -143,6 +163,7 @@ func (s *Server) HandleRoot(w http.ResponseWriter, r *http.Request) {
 		HasPatrol: s.tenantHasPatrol(PatrolEnv(r)),
 		AuthLabel: authLabel,
 		IsGuest:   guest != nil,
+		AOIHome:   s.aoiHomeView(s.RequestPrincipalID(r)),
 		GuestSlug: guestSlug(guest),
 	}
 

@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"log/slog"
+	"math"
 	"net/http"
 	"regexp"
 	"strings"
@@ -324,6 +325,61 @@ func aoiNotifSQLFilter(col string, principalID int64) (string, []any) {
 		" OR EXISTS (SELECT 1 FROM aois WHERE aois.id = " + col +
 		" AND " + aoiVisibleSQL + "))"
 	return sqlStr, []any{principalID, principalID, principalID, principalID}
+}
+
+// AOIHomeView is the viewport a session should open on: the union bbox of the
+// AOIs this principal may see. An AOI is the reason its owner logs in, so
+// landing on the whole of Africa makes them hunt for their own polygon; a
+// tenant with no AOI keeps the continental default.
+//
+// Only the *bbox* is computed here. The zoom that frames it depends on the
+// container size, which the server does not know — the client fits it (and a
+// URL viewport always outranks this: a link's view is what the link means).
+type AOIHomeView struct {
+	BBox  [4]float64 `json:"bbox"` // minx, miny, maxx, maxy
+	Count int        `json:"count"`
+	ID    string     `json:"id"`   // set when exactly one AOI is visible
+	Name  string     `json:"name"` // ditto
+}
+
+// aoiHomeView unions the bboxes of the visible, non-archived AOIs.
+// Returns nil when there are none, or when a row has no bbox yet.
+func (s *Server) aoiHomeView(principalID int64) *AOIHomeView {
+	if principalID == 0 {
+		return nil
+	}
+	rows, err := s.DB.Query(`SELECT id, name, bbox_minx, bbox_miny, bbox_maxx, bbox_maxy
+		FROM aois WHERE `+aoiVisibleSQL+aoiActiveSQL+`
+		  AND bbox_minx IS NOT NULL AND bbox_maxx IS NOT NULL`,
+		principalID, principalID, principalID, principalID)
+	if err != nil {
+		slog.Warn("aoi home view", "error", err)
+		return nil
+	}
+	defer rows.Close()
+	var out AOIHomeView
+	for rows.Next() {
+		var id, name string
+		var x0, y0, x1, y1 float64
+		if err := rows.Scan(&id, &name, &x0, &y0, &x1, &y1); err != nil {
+			return nil
+		}
+		if out.Count == 0 {
+			out.BBox = [4]float64{x0, y0, x1, y1}
+			out.ID, out.Name = id, name
+		} else {
+			out.BBox[0] = math.Min(out.BBox[0], x0)
+			out.BBox[1] = math.Min(out.BBox[1], y0)
+			out.BBox[2] = math.Max(out.BBox[2], x1)
+			out.BBox[3] = math.Max(out.BBox[3], y1)
+			out.ID, out.Name = "", ""
+		}
+		out.Count++
+	}
+	if out.Count == 0 || out.BBox[2] <= out.BBox[0] || out.BBox[3] <= out.BBox[1] {
+		return nil
+	}
+	return &out
 }
 
 // ---------------------------------------------------------------------- AOI
