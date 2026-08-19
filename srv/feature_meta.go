@@ -296,11 +296,12 @@ func (s *Server) settlementGroupKey(parkID, featureID string, c *featureMetaCach
 //
 // Bucket words (must stay in lockstep with settlementCropBucket/
 // deforestConvBucket in globe.html):
-//   settlement age:  permanent | established | recent | unmeasured
-//   settlement crop: crops (frac_2019 >= 0.03, same threshold the popup's
-//                    "Cropland nearby" stat counts) | nocrops | unmeasured
-//   deforest crop:   converted (cropland_conversion_frac >= 0.5, the report's
-//                    one-way doors) | regrows (< 0.5) | unmeasured (NULL)
+//
+//	settlement age:  permanent | established | recent | unmeasured
+//	settlement crop: crops (frac_2019 >= 0.03, same threshold the popup's
+//	                 "Cropland nearby" stat counts) | nocrops | unmeasured
+//	deforest crop:   converted (cropland_conversion_frac >= 0.5, the report's
+//	                 one-way doors) | regrows (< 0.5) | unmeasured (NULL)
 //
 // NULL is unmeasured, not zero (invariant 1): an unmeasured row matches only
 // the explicit 'unmeasured' bucket, never a value bucket.

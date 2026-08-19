@@ -758,6 +758,19 @@ if [[ -n "$CLIENT_PWD" ]]; then
     # eleven and reported success -- a no-op reading as an answer, which is the
     # recurring bug this repo warns about (AGENTS.md invariant 1).
     MINTED_LOG=$(mktemp)
+    # Pre-flight: teardown only runs if the block COMPLETES, so an interrupted
+    # prior run leaves fixtures behind. Stale apitest-* tag rows inflate the
+    # count-based assertions (merged=1, gone=1) and a leftover row on the one
+    # FIXED slug ('apitest-renamed-tags') makes the rename collide — the
+    # intermittent failure in tags_survive_slug_rename_and_merge. Scoped by
+    # the apitest- tag namespace and that exact slug, never a LIKE over url.
+    while IFS= read -r sl; do
+        [[ -z "$sl" ]] && continue
+        sqlite3 db.sqlite3 "DELETE FROM short_link_tags WHERE slug = '${sl}'" 2>/dev/null
+        sqlite3 db.sqlite3 "DELETE FROM short_links WHERE slug = '${sl}' OR alias_of = '${sl}'" 2>/dev/null
+    done < <(sqlite3 db.sqlite3 "SELECT DISTINCT slug FROM short_link_tags WHERE tag LIKE 'apitest-%'" 2>/dev/null)
+    sqlite3 db.sqlite3 "DELETE FROM short_link_tags WHERE slug = 'apitest-renamed-tags'" 2>/dev/null
+    sqlite3 db.sqlite3 "DELETE FROM short_links WHERE slug = 'apitest-renamed-tags' OR alias_of = 'apitest-renamed-tags'" 2>/dev/null
     mint() {  # mint <json-body> -> slug
         local sl
         sl=$(curl -s -m 30 -X POST "${BASE_URL}/api/shortlink?pwd=${CLIENT_PWD}" \

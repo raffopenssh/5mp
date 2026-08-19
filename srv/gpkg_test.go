@@ -369,4 +369,3 @@ func TestGPKGBuildStopsWhenCancelled(t *testing.T) {
 		t.Fatalf("want errGPKGCancelled, got %v", err)
 	}
 }
-
