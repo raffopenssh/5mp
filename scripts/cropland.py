@@ -353,13 +353,25 @@ def stamp(area_id, summary):
 
 
 def pending(conn):
-    """[area ids] whose stamp is missing or older than CROPLAND_VERSION."""
+    """[area ids] whose stamp is missing/older than CROPLAND_VERSION, or that
+    have deforestation events nothing ever measured (NULL fraction AND NULL
+    source) -- a re-ingest (e.g. a healed GFW scan, see
+    scripts/gfw_find_truncated.py) creates new events after the stamp, and a
+    current stamp must not hide them (invariant 1: unmeasured is not clean).
+    Settlement rows are covered the same way via polygon_ids."""
     from backfill_settlement_surface import targets
     state = load_state()
+    unmeasured = {r[0] for r in conn.execute(
+        "SELECT DISTINCT park_id FROM deforestation_events "
+        "WHERE cropland_frac_2019 IS NULL AND cropland_source IS NULL")}
+    unmeasured |= {r[0] for r in conn.execute(
+        "SELECT DISTINCT park_id FROM park_settlements "
+        "WHERE polygon_ids IS NOT NULL AND polygon_ids != '' "
+        "AND cropland_frac_2019 IS NULL AND cropland_source IS NULL")}
     out = []
     for aid, geom, _aoi in targets(conn):
         e = state.get(aid)
-        if not e or e.get("version") != CROPLAND_VERSION:
+        if not e or e.get("version") != CROPLAND_VERSION or aid in unmeasured:
             out.append((aid, geom))
     return out
 
