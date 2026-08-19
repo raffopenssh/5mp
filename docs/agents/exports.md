@@ -240,3 +240,18 @@ Park tooltip icon buttons → `GET /api/parks/{id}/export.kml` (`srv/api.go`,
   `scripts/import_json_to_db.py waterbodies` (creates table if missing).
 
 ---
+
+## PDF/print report on mobile (globe.html `printMarkdownText`)
+
+- Desktop: hidden iframe + `iframe.contentWindow.print()`.
+- Mobile (`isMobilePrintEnv()`): a real tab must be opened **synchronously in
+  the click handler** (`openReportWindow()`), then filled with the rendered
+  report plus a `.print-bar`. If `window.open` returns null (popup blocker),
+  `openReportWindow` toasts and callers abort — the silent iframe fallback is a
+  dead button on mobile.
+- Some mobile browsers (DuckDuckGo Android) **no-op `print()` entirely**, even
+  from a real tab and a user gesture. `beforeprint` never fires, so the tab's
+  inline script waits 800 ms after the button click and, if unprinted, reveals
+  a hint (use browser menu → Print/Share) plus a client-side "Download .html"
+  button (blob anchor; clones the doc and strips `.print-bar` first). No
+  server involvement.
