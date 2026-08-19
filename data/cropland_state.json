@@ -2737,5 +2737,32 @@
   "source": "glad_cropland_30m",
   "terms": "CC BY 4.0",
   "version": "2026-08-14b"
+ },
+ "aoi_Serra_Bonita_260818163704": {
+  "at": "2026-08-19T06:20:02Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "deforestation_events": 0,
+  "note": "nothing to measure",
+  "settlements": 0,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
+ },
+ "aoi_Serra_Bonita_260818165659": {
+  "at": "2026-08-19T14:59:43Z",
+  "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
+  "clips": {
+   "2003": "7b30c714fa7fc6aa19a1c314b3228476b597df2e778cc15faea5ae8ca96fa0bc",
+   "2019": "a7cf0be41f997fc95a38ac29bf23b9b5496ab6a46674c4618cde8bf8b629944a"
+  },
+  "defo_conversion_km2": 0.07,
+  "deforestation_events": 1007,
+  "mean_frac_2003": 0.0,
+  "mean_frac_2019": 0.0005,
+  "settlements": 66,
+  "settlements_measured": 66,
+  "source": "glad_cropland_30m",
+  "terms": "CC BY 4.0",
+  "version": "2026-08-14b"
  }
 }
