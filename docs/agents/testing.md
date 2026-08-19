@@ -134,11 +134,33 @@ not be added to them — it takes 5–8 minutes, mutates UI state (time window,
 basemap, pins), and belongs to explicit "stress test the map" asks, not to
 the per-change test loop.
 
-The phases are packaged in **`tests/stress/map_stress.js`**: paste it into
-the console on `/?pwd=test2026&test=1&popup=CAF_Chinko` (or eval via the
-browser tool), then `await MapStress.runAll()` — or run a single phase,
-e.g. `await MapStress.phases.geology()`. `MapStress.report()` says whether
-the style returned to baseline.
+The phases are packaged in **`tests/stress/map_stress.js`**, which the server
+also serves at `/static/map_stress.js` (symlink in `srv/static/`), so a
+browser-tool session injects it in one cheap eval instead of pasting 16 KB:
+
+```javascript
+eval(await (await fetch('/static/map_stress.js')).text());
+MapStress.setup();
+await MapStress.runAll();          // or one phase, e.g. MapStress.phases.geology()
+MapStress.report();                // did the style return to baseline?
+```
+
+Desktop phases want `/?pwd=test2026&test=1&popup=CAF_Chinko`. Two phases
+added after the 2026-08 mobile black-map session:
+
+- **`mobileTouch`** — coarse-pointer soak (real TouchEvents: taps on real
+  features, pinches, popup open/close via the maptip action, resize after
+  every cycle). Run it under mobile emulation (`emulate_device pixel_7`) on
+  any view with `pinned-*` layers, e.g. an AOI guest share link. This is the
+  phase that found the floatui.js per-popup `resize`-listener leak.
+- **`contextLoss`** — WebGL context-loss drill. **Skipped unless you set
+  `MapStress.allowReload = true`, and it navigates the page**: globe.html's
+  `webglcontextrestored` handler recovers by freezing the view into the URL
+  (`buildShareUrl()`) and reloading, because MapLibre 4.1 comes back from a
+  restored context with a stuck render queue and corrupted tile/glyph
+  textures (black or garbled map — the mobile screenshot bug). Run it last
+  or standalone; after the reload, assert the URL carries lat/lng/z/pins and
+  the map renders. Never put it inside `runAll()` unattended.
 
 How the 2026-08 stress sessions were run (found the metaPromise retry bug,
 the setOpacity(NaN) poison, and the pin tabLabel fix — commits bb30e33,

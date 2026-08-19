@@ -2,11 +2,14 @@
 // Run when asked to verify hours-long browsing stability (see
 // docs/agents/testing.md "Interactive map stress testing").
 //
-// Usage: open /?pwd=test2026&test=1&popup=CAF_Chinko , paste this file into
-// the console (or have the agent eval it via the browser tool), then:
+// Usage: open /?pwd=test2026&test=1&popup=CAF_Chinko , then inject cheaply
+// (the server serves this file via a symlink in srv/static/):
+//   eval(await (await fetch('/static/map_stress.js')).text());
 //   await MapStress.runAll()        // every phase, ~5-8 min
 //   await MapStress.phases.geology() // one phase
 //   MapStress.report()              // snapshot + errors so far
+// Mobile: emulate a phone, open an AOI guest link, run phases.mobileTouch().
+// phases.contextLoss() RELOADS THE PAGE and needs MapStress.allowReload=true.
 //
 // Invariant: after any phase that ends "everything off", __snap() must equal
 // the baseline captured at setup (10 layers / 4 sources / 1 image as of
@@ -196,6 +199,76 @@ window.MapStress = (() => {
             [...document.querySelectorAll('[onclick*="clearAllPinnedLayers"]')]
                 .find(e => e.offsetParent)?.click();
             await s(1500);
+        },
+
+        // MOBILE / coarse-pointer soak (found the floatui resize-listener
+        // leak + the WebGL context-loss black map, 2026-08). Real
+        // TouchEvents: tap features (a tap = click with no prior mousemove,
+        // which is how MapTip detects a coarse pointer), pan + pinch with a
+        // tip pinned, open/close the popup via the tip's action button, then
+        // fire resize — every leaked listener throws here. Works on any
+        // view with pinned-* layers (e.g. an AOI share link).
+        async mobileTouch() {
+            const T = (() => {
+                const el = () => cv();
+                function touch(type, pts) {
+                    const touches = pts.map(([x, y], i) => new Touch({
+                        identifier: i, target: el(),
+                        clientX: rect().left + x, clientY: rect().top + y }));
+                    el().dispatchEvent(new TouchEvent(type, { bubbles: true, cancelable: true,
+                        touches: type === 'touchend' ? [] : touches,
+                        targetTouches: type === 'touchend' ? [] : touches,
+                        changedTouches: touches }));
+                }
+                async function tap(x, y) {
+                    touch('touchstart', [[x, y]]); await s(40); touch('touchend', [[x, y]]);
+                    click(x, y);   // browsers fire compat mouse events after a tap
+                }
+                async function pinch(cx, cy, d1, d2) {
+                    const p = d => [[cx - d / 2, cy], [cx + d / 2, cy]];
+                    touch('touchstart', p(d1));
+                    for (let i = 1; i <= 8; i++) { touch('touchmove', p(d1 + (d2 - d1) * i / 8)); await s(30); }
+                    touch('touchend', p(d2));
+                }
+                return { touch, tap, pinch };
+            })();
+            const feats = () => targetsFrom(map.getStyle().layers.map(l => l.id)
+                .filter(id => /^(pinned|lod)-/.test(id) && !/-text$/.test(id)), 30);
+            for (let round = 0; round < 4; round++) {
+                const ts = feats();
+                if (ts.length) { await T.tap(...ts[round % ts.length]); await s(400); }
+                await T.pinch(206, 400, 100, 260); await s(500);
+                await T.pinch(206, 400, 260, 100); await s(500);
+                for (const [x, y] of feats().slice(0, 10)) { await T.tap(x, y); await s(40); }
+                // popup open/close via the tip's action button (this leaked a
+                // resize listener per cycle until 2026-08)
+                const act = document.querySelector('.maptip.sticky.visible .maptip-action');
+                if (act) { act.click(); await s(900);
+                    document.querySelector('.maplibregl-popup-close-button')?.click(); }
+                esc(); await s(200);
+                const errsBefore = __errs.length;
+                window.dispatchEvent(new Event('resize')); map.resize(); await s(250);
+                if (__errs.length > errsBefore)
+                    __errs.push('LEAK: resize after popup cycle threw (round ' + round + ')');
+            }
+            esc(); await s(300);
+        },
+
+        // WebGL context loss drill. Android discards contexts under memory
+        // pressure; globe.html's webglcontextrestored handler reloads the
+        // page (URL carries the view), so in THIS harness we only verify the
+        // handler is wired — run it LAST or standalone: the page navigates.
+        // Skipped unless MapStress.allowReload = true.
+        async contextLoss() {
+            if (!window.MapStress || !MapStress.allowReload) {
+                console.log('[MapStress] contextLoss skipped (set MapStress.allowReload = true)');
+                return;
+            }
+            const gl = map.painter.context.gl;
+            const ext = gl.getExtension('WEBGL_lose_context');
+            if (!ext) { __errs.push('CTX: WEBGL_lose_context unavailable'); return; }
+            ext.loseContext(); await s(800); ext.restoreContext();
+            // page reloads ≈200ms later; nothing to assert here
         },
 
         // Pan/zoom + hover/click soak across scales.
