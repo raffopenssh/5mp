@@ -271,6 +271,13 @@ func isValidPassword(pwd string) bool {
 
 func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	// A Set-Cookie added after WriteHeader is dropped, and the way-back slug is
+	// consumed by a Set-Cookie -- so read it here, before the status is written,
+	// not down where the notice HTML is built.
+	leftSlug := ""
+	if r.URL.Query().Get("notice") == "left-shared" {
+		leftSlug = takeLeftGuestSlug(w, r)
+	}
 	// Pages: 200 (not 401) so social-media link scrapers (Facebook, Slack,
 	// WhatsApp, Twitter) parse the Open Graph tags on this page; most refuse
 	// non-2xx responses. API paths keep a proper 401 for clients.
@@ -283,7 +290,10 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
 	// Build hidden fields for existing query params (preserve through login)
 	var hiddenFields string
 	for key, values := range r.URL.Query() {
-		if key == "pwd" {
+		// `notice` describes how the reader ARRIVED here; carrying it through
+		// the form (or the sandbox link) would replay the goodbye toast on the
+		// next page load, where it is no longer true.
+		if key == "pwd" || key == "notice" {
 			continue
 		}
 		for _, val := range values {
@@ -293,6 +303,7 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
 
 	// Tryout link must also carry the current params through login
 	tryoutQuery := r.URL.Query()
+	tryoutQuery.Del("notice")
 	tryoutQuery.Set("pwd", "test2026")
 	tryoutHref := r.URL.Path + "?" + tryoutQuery.Encode()
 
@@ -340,6 +351,43 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
 		prompt = `Sign in to download`
 	}
 
+	// An arrival notice says what just happened; the form below says what to do
+	// next. Rendered in the app's toast shape (title + body + close), so leaving
+	// a shared view is feedback on the page you land on rather than a dead-end
+	// page of its own. The param is looked up in a fixed table -- never echoed
+	// into the document -- and an unknown value renders nothing.
+	// Autofocus scrolls the focused input into view, which on a short window
+	// scrolls an in-flow notice off the TOP of the page -- the message the
+	// redirect exists to deliver, invisible. When there is something to read,
+	// the page opens at the top and the reader taps the field themselves.
+	autofocusAttr := " autofocus"
+	noticeToast := ""
+	switch r.URL.Query().Get("notice") {
+	case "left-shared":
+		// The slug is offered back for the × that was a mistake. Read once from
+		// the short-lived cookie (takeLeftGuestSlug) -- if it is gone, the body
+		// still tells the truth: the link works, they have to reopen it.
+		back := ""
+		body := "The link you were sent still works &mdash; open it again to come back. " +
+			"This browser no longer holds it."
+		if leftSlug != "" {
+			body = "Closed it by mistake? Go straight back in &mdash; this offer is only on this page load."
+			back = `<a class="notice-action" href="/s/` + html.EscapeString(leftSlug) + `">` +
+				`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>` +
+				`Reopen shared view</a>`
+		}
+		noticeToast = `<div class="notice-toast" role="status" aria-live="polite">
+            <svg class="notice-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
+            <div class="notice-text">
+                <span class="notice-title">You have left the shared view</span>
+                <span class="notice-body">` + body + `</span>
+                ` + back + `
+            </div>
+            <button type="button" class="notice-close" aria-label="Dismiss">&times;</button>
+        </div>`
+		autofocusAttr = ""
+	}
+
 	html := `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -374,6 +422,8 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
             min-height: 100vh;
             min-height: 100dvh;
             display: flex; 
+            flex-direction: column;   /* so an in-flow notice stacks ABOVE the
+                                         card instead of beside it */
             align-items: center; 
             justify-content: center;
             position: relative;
@@ -655,7 +705,79 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
         .error-hint svg { width: 15px; height: 15px; flex: 0 0 15px; margin-top: 1px; }
 
         @keyframes hintIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
-        
+
+        /* Arrival notice -- the app's toast, on the login page. IN THE FLOW, not
+           position:fixed -- a floating toast at the top of the viewport looked
+           right at 900px and covered the logo and product name at 760px, which
+           is an ordinary laptop window with a browser chrome. Body is a centred
+           flex COLUMN, so notice + card are centred as one group and can never
+           overlap -- and on a phone or with the keyboard up it simply scrolls
+           with the card. */
+        .notice-toast {
+            position: relative;   /* for .notice-close */
+            z-index: 20;
+            width: min(520px, 100%);
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 13px 34px 13px 14px;
+            border: 1px solid rgba(251,191,36,0.3);
+            background: rgba(24,20,10,0.97);
+            border-radius: 12px;
+            box-shadow: 0 16px 40px -12px rgba(0,0,0,0.7);
+            text-align: left;
+            animation: noticeIn 0.32s cubic-bezier(0.2,0.9,0.3,1);
+            backdrop-filter: blur(8px);
+        }
+        .notice-toast.leaving { animation: noticeOut 0.22s ease forwards; }
+        @keyframes noticeIn { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: none; } }
+        @keyframes noticeOut { to { opacity: 0; transform: translateY(-10px); height: 0; margin: 0; padding: 0; border-width: 0; } }
+        .notice-icon { flex: none; width: 18px; height: 18px; margin-top: 1px; color: #fbbf24; }
+        .notice-text { flex: 1 1 auto; min-width: 0; }
+        .notice-title { display: block; font-size: 13.5px; font-weight: 600; color: #fff; }
+        .notice-body { display: block; margin-top: 3px; font-size: 12.5px; line-height: 1.45; color: #a8adb5; overflow-wrap: anywhere; }
+        .notice-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            margin-top: 10px;
+            padding: 9px 14px;
+            min-height: 40px;   /* touch target */
+            border: 1px solid rgba(251,191,36,0.45);
+            border-radius: 8px;
+            background: rgba(251,191,36,0.10);
+            color: #fbbf24;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .notice-action:hover { background: rgba(251,191,36,0.18); border-color: rgba(251,191,36,0.7); }
+        .notice-action svg { width: 14px; height: 14px; flex: none; }
+        .notice-close {
+            position: absolute; top: 6px; right: 7px;
+            width: 32px; height: 32px; padding: 0;
+            background: transparent; border: none; border-radius: 6px;
+            color: #777; font-size: 18px; line-height: 1; cursor: pointer;
+            transition: color 0.2s, background 0.2s;
+        }
+        .notice-close:hover { color: #fff; background: rgba(255,255,255,0.10); }
+
+        /* Phone: match the card's width exactly so the two read as one column,
+           and let the action button own the full row (thumb-sized). */
+        @media (max-width: 480px) {
+            .notice-toast { width: 100%; max-width: 380px; padding: 12px 32px 12px 12px; }
+            .notice-action { width: 100%; }
+        }
+        /* Keyboard up / short landscape: the form is what matters. Keep the
+           notice, drop it to one line of body text. */
+        @media (max-height: 620px) {
+            .notice-toast { margin-bottom: 10px; padding: 10px 30px 10px 12px; }
+            .notice-action { margin-top: 8px; min-height: 34px; padding: 7px 12px; }
+        }
+
         button {
             width: 100%;
             padding: 14px;
@@ -759,6 +881,7 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
         <div class="particle"></div>
         <div class="particle"></div>
     </div>
+    ` + noticeToast + `
     <div class="container">
         <div class="logo">
             <div class="orbit"></div>
@@ -779,7 +902,7 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
         <form method="GET">
             ` + hiddenFields + `
             <div class="form-group">
-                <input type="password" name="pwd" placeholder="Enter password" autofocus required` + inputClass + `>
+                <input type="password" name="pwd" placeholder="Enter password"` + autofocusAttr + ` required` + inputClass + `>
             </div>
             ` + errorHint + `
             <button type="submit">Continue →</button>
@@ -793,6 +916,15 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
     </div>
     <script>
     (function(){
+        // The notice is dismissible and self-clearing: ?notice= is scrubbed from
+        // the URL below with the password, so a reload does not replay a
+        // goodbye that already happened.
+        var notice = document.querySelector('.notice-toast');
+        var noticeClose = notice && notice.querySelector('.notice-close');
+        if (noticeClose) noticeClose.addEventListener('click', function(){
+            notice.classList.add('leaving');
+            setTimeout(function(){ notice.remove(); }, 220);
+        });
         var input = document.querySelector('input[name="pwd"]');
         var form = document.querySelector('form');
         if (!input || !form) return;
@@ -808,8 +940,9 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
         if (window.history && history.replaceState) {
             try {
                 var u = new URL(window.location.href);
-                if (u.searchParams.has('pwd')) {
+                if (u.searchParams.has('pwd') || u.searchParams.has('notice')) {
                     u.searchParams.delete('pwd');
+                    u.searchParams.delete('notice');
                     history.replaceState(null, '', u.pathname + (u.searchParams.toString() ? '?' + u.searchParams : '') + u.hash);
                 }
             } catch (e) {}

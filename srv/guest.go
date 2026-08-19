@@ -45,6 +45,46 @@ func ClearGuestCookie(w http.ResponseWriter) {
 	})
 }
 
+// leftGuestCookie carries ONE thing across the logout redirect: the slug the
+// guest just closed, so the login page can offer it back to someone who hit ×
+// by mistake. It is NOT in the redirect URL, because a guest slug is a
+// credential (AGENTS.md invariant 14) and a URL is copied, pasted and shared;
+// this is HttpOnly, Secure, dies in two minutes, and is consumed on first read
+// (takeLeftGuestSlug clears it), so the way back is offered exactly once, to
+// the browser that just left.
+const leftGuestCookie = "left_link"
+
+// SetLeftGuestCookie remembers the slug just closed, for one page load.
+func SetLeftGuestCookie(w http.ResponseWriter, slug string) {
+	if !shortSlugRe.MatchString(slug) {
+		return
+	}
+	http.SetCookie(w, &http.Cookie{
+		Name: leftGuestCookie, Value: slug, Path: "/",
+		MaxAge: 120, HttpOnly: true, Secure: true,
+		SameSite: http.SameSiteLaxMode,
+	})
+}
+
+// takeLeftGuestSlug reads and immediately expires the way-back slug. Returns
+// "" for a missing or malformed value -- the notice then renders without a link
+// rather than echoing whatever arrived.
+func takeLeftGuestSlug(w http.ResponseWriter, r *http.Request) string {
+	c, err := r.Cookie(leftGuestCookie)
+	if err != nil || c.Value == "" {
+		return ""
+	}
+	http.SetCookie(w, &http.Cookie{
+		Name: leftGuestCookie, Value: "", Path: "/",
+		MaxAge: -1, HttpOnly: true, Secure: true,
+		SameSite: http.SameSiteLaxMode,
+	})
+	if !shortSlugRe.MatchString(c.Value) {
+		return ""
+	}
+	return c.Value
+}
+
 // GuestFromRequest returns the guest capability this request is riding on, or
 // nil for an ordinary password session. Handlers use it to answer "may I write
 // / may I show the admin panel", and the page uses it to label the session
