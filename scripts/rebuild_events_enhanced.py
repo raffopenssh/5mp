@@ -674,10 +674,12 @@ class EventRebuilder:
         elif pattern == 'concentrated':
             parts.append("Concentrated clearing suggests single development event.")
         
-        # Location context
+        # Location context. _get_nearest_place returns (None, None) when
+        # nothing is in range -- a truthy tuple, so unpack before testing.
         if nearest_place:
             place, dist = nearest_place
-            parts.append(f"Located {dist:.1f}km from {place['name']}.")
+            if place is not None and dist is not None:
+                parts.append(f"Located {dist:.1f}km from {place['name']}.")
         
         if nearest_river:
             # Distance included, and the sentence omitted entirely beyond
@@ -798,6 +800,11 @@ class EventRebuilder:
                     linear_count += 1
 
                 nearest_place = self._get_nearest_place(avg_lat, avg_lon, places)
+                if nearest_place[0] is None:
+                    # No place within range (e.g. an AOI outside OSM coverage):
+                    # (None, None) is a truthy tuple, and the narrative would
+                    # format None as a distance.
+                    nearest_place = None
                 nearest_river = self._get_nearest_river(avg_lat, avg_lon, rivers)
                 narrative = self._generate_deforestation_narrative(
                     park_name, year, classification,
