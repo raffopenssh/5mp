@@ -2345,7 +2345,10 @@
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
             a.download = `5mp_animation_${fmtDate(A.t0)}_${fmtDate(A.t1)}.gif`;
+            // Android ignores click() on a detached anchor; append first.
+            document.body.appendChild(a);
             a.click();
+            a.remove();
             setTimeout(() => URL.revokeObjectURL(a.href), 30000);
             toast('GIF downloaded — ' + frames + ' frames, ' + durSec.toFixed(0) + 's at '
                 + fmtSpeed() + ' (' + Math.round(blob.size / 1024) + ' KB)', 'success');
