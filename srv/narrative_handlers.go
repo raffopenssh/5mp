@@ -989,11 +989,25 @@ func (s *Server) HandleAPIDeforestationNarrative(w http.ResponseWriter, r *http.
 	// 120 s WriteTimeout, so the section rendered as if it had no data. Same
 	// cache-first shape as the fire narrative above it.
 	cacheParams := fmt.Sprintf("%d-%d", fromYear, toYear)
-	// Rev = rows fingerprint + payload-shape version: narrativeSourceRev only
-	// sees the TABLE, so a code change that adds response fields (e.g.
-	// cropland_conversion_km2, 2026-08) would otherwise serve the old shape
-	// forever. Bump the suffix when the JSON shape changes.
-	srcRev := s.narrativeSourceRev("deforestation_events", internalID) + ":v2"
+	// Rev = rows fingerprint + enrichment fingerprint + payload-shape version.
+	// narrativeSourceRev is COUNT:MAX(id), which is blind to IN-PLACE updates:
+	// scripts/cropland.py and the nightly reclassify both UPDATE existing rows
+	// (cropland_*, classification, narrative, classified_at) without changing
+	// the row set, so a payload computed minutes before the enricher finished
+	// validated as fresh forever (Serra Bonita, 2026-08-19). The enrichment rev
+	// names those writers' own footprints: how many rows carry a cropland
+	// measurement, and the newest classification stamp. One indexed aggregate
+	// (idx_de_park), ~28 ms on the largest AOI.
+	// The :v2 suffix is the payload-shape version — bump it when the JSON
+	// shape changes, or a code change serves the old shape forever.
+	var cropMeasured int
+	var lastClassified sql.NullString
+	s.DB.QueryRow(`SELECT COUNT(cropland_frac_2019), MAX(classified_at)
+		FROM deforestation_events WHERE park_id = ?`, internalID).
+		Scan(&cropMeasured, &lastClassified)
+	srcRev := fmt.Sprintf("%s:c%d:%s:v2",
+		s.narrativeSourceRev("deforestation_events", internalID),
+		cropMeasured, lastClassified.String)
 	if payload, computedAt, ok := s.getCachedNarrative(internalID, "deforestation", cacheParams, srcRev); ok {
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set("X-Cache", "HIT")

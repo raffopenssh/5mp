@@ -137,7 +137,14 @@ an existing O(events) cost visible. Two fixes, both shared by parks and AOIs:
    cache-first shape as `fire_narrative_cache`, but **self-invalidating**:
    `source_rev` is `COUNT + MAX(id)` of the source rows, so any rebuild
    (python, the AOI runner, a manual reclassify) invalidates it without
-   knowing the table exists. That is deliberately *not* the fire cache's
+   knowing the table exists. **COUNT+MAX(id) is blind to in-place UPDATEs**:
+   `cropland.py` and the nightly reclassify enrich existing rows without
+   changing the row set, so Serra Bonita's payload (computed 14:46, cropland
+   finished 14:59, 2026-08-19) validated as fresh forever. The deforestation
+   rev therefore also folds in `COUNT(cropland_frac_2019)` and
+   `MAX(classified_at)` — the enrichers' own footprints — one indexed
+   aggregate on `idx_de_park`. Any new in-place enricher must either stamp a
+   column the rev reads or extend the rev. That is deliberately *not* the fire cache's
    Single Writer Rule: the fire cache holds v5 hash feature_ids only the python
    builder can mint, whereas this holds a pure function of `deforestation_events`
    that any reader can recompute. Keyed by `park_id`, and an AOI id **is** a
