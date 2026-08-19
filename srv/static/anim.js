@@ -368,6 +368,38 @@
         return b.getWest() >= bb[0] && b.getSouth() >= bb[1] && b.getEast() <= bb[2] && b.getNorth() <= bb[3];
     }
 
+    // If the animation is opened UNSCOPED over a viewport that contains no
+    // park but does contain a visible AOI, aoiExcludeSQL's default (see the
+    // aoiQ comment in loadLayer) hides every row the user is looking at:
+    // trajectories, deforestation and settlements all animate empty while
+    // their chips say "on". Nothing on screen explains that, and a person
+    // cannot diagnose it. Focus is the gesture that makes the panel, the map
+    // and the animation agree (AGENTS.md invariant 7), so when the AOI is the
+    // only possible subject we pick it, set the focus FOR REAL (so panel,
+    // dimming and the share link all say it) and announce it in a toast.
+    // Any park in view, or an explicit opts.aoi — including null, which is
+    // how "un-focus" reopens us — suppresses the guess.
+    async function autoFocusAOI(viewBbox) {
+        try {
+            if (window._aoisPromise) await window._aoisPromise;
+            const aois = window._aois || {};
+            const ids = Object.keys(aois);
+            if (!ids.length) return null;
+            if (map.getLayer && map.getLayer('areas-fill')
+                && map.queryRenderedFeatures({ layers: ['areas-fill'] }).length) return null;
+            let best = null, bestArea = 0;
+            for (const id of ids) {
+                const bb = aois[id].bbox || (aois[id].geometry && geomBbox(aois[id].geometry));
+                if (!bb || bb.length !== 4) continue;
+                const w = Math.min(bb[2], viewBbox[2]) - Math.max(bb[0], viewBbox[0]);
+                const h = Math.min(bb[3], viewBbox[3]) - Math.max(bb[1], viewBbox[1]);
+                if (w <= 0 || h <= 0) continue;
+                if (w * h > bestArea) { bestArea = w * h; best = id; }
+            }
+            return best;
+        } catch (e) { return null; }
+    }
+
     function pinnedTypes() {
         const out = new Set();
         try {
@@ -2941,7 +2973,14 @@
             // opened from the time slider must animate that subject, or the
             // ▶ chip and the focus banner disagree about what is on screen.
             let clipGeom = null, aoiID = null;
-            const wantAOI = opts.aoi !== undefined ? opts.aoi : (window.aoiFocusID || null);
+            let wantAOI = opts.aoi !== undefined ? opts.aoi : (window.aoiFocusID || null);
+            // Unscoped, and nothing in view but an AOI? Adopt it — see
+            // autoFocusAOI. `opts.aoi === undefined` matters: null is how
+            // "un-focus" reopens us, and it must stay unscoped.
+            let autoFocused = null;
+            if (!wantAOI && opts.aoi === undefined) {
+                wantAOI = autoFocused = await autoFocusAOI(bbox);
+            }
             if (wantAOI) {
                 // window._aois is filled by an async loadAOIs(); a share link
                 // that opens the animator can win that race, and then the AOI
@@ -2963,6 +3002,19 @@
                     const gb = geomBbox(a.geometry) || a.bbox;
                     if (gb) { bbox = gb.slice(); fixed = true; }
                 }
+            }
+            if (autoFocused && aoiID && typeof window.setAOIFocus === 'function') {
+                // Make the guess REAL: panel scope, dimming and the share
+                // link must all say what the animation is showing, or the
+                // animation becomes a fourth surface disagreeing with the
+                // other three. A is still null here, so setAOIFocus's
+                // reopen-the-animator branch cannot recurse into us. Fire and
+                // forget — the animation must not wait on the stats panel.
+                window.setAOIFocus(aoiID).catch(() => {});
+                const nm = (window._aois?.[aoiID]?.name) || aoiID;
+                toast(`No park in view — focused on “${nm}” so its fires, deforestation`
+                    + ` and settlements animate. Un-focus via its banner to go back.`,
+                    'info', { key: 'anim-auto-focus' });
             }
 
             const { canvas, resize } = makeCanvas();

@@ -6526,7 +6526,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             // AOIs load once per session, before anything can reference an AOI
             // id: apiBase() routes on window.AOI_IDS, so a fetch issued before
             // this resolves would go to /api/parks/{aoi} and 404 by design.
-            loadAOIs();
+            window._aoisPromise = loadAOIs();
             registerAOITip();
             registerParkTip();
             // Wait for areas source to load before fetching grid data
@@ -10193,7 +10193,11 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 Animator.close();
                 Animator.open({ layers: st.layers, speed: st.speed, t: st.tISO,
                                 paused: !st.playing,
-                                aoi: focusIsAOI() ? aoiFocusID : undefined });
+                                // null, not undefined: un-focusing must reopen
+                                // UNSCOPED, and undefined is the animator's cue
+                                // to guess a subject (autoFocusAOI) — which
+                                // would re-adopt the AOI we just left.
+                                aoi: focusIsAOI() ? aoiFocusID : null });
             }
             if (typeof updateShareURL === 'function') updateShareURL();
             return true;

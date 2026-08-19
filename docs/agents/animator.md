@@ -389,3 +389,26 @@ Series keys: `v`=fires (red, left axis), `v2`=groups (orange, right axis),
 from full history). Don't add a second weekly chart.
 
 ---
+
+### Auto-focus when only an AOI is in view (2026-08-19)
+
+An animation opened *unscoped* over a viewport containing no park but a
+visible AOI played empty for trajectories/deforest/settlements: the default
+`aoiExcludeSQL()` hid every row on screen while the chips said "on" (guest
+link `/s/g-4dqkd24fq56h4cgj` was the report). Fix in `anim.js` `open()`:
+when `opts.aoi === undefined` and no `aoiFocusID` and
+`queryRenderedFeatures(['areas-fill'])` is empty, `autoFocusAOI()` picks the
+visible AOI with the largest viewport overlap, adopts it as the animation's
+subject, calls `window.setAOIFocus()` for real (panel/dimming/share link must
+agree) and toasts (`key: 'anim-auto-focus'`). Details that matter:
+
+* `opts.aoi === null` means **deliberately unscoped** and suppresses the
+  guess — `setAOIFocus`'s animator-reopen branch passes `null` (not
+  `undefined`) when leaving focus, or un-focusing would instantly re-adopt
+  the AOI it just left.
+* `setAOIFocus` is called while `A` is still null, so its
+  reopen-the-animator branch cannot recurse.
+* `window._aoisPromise` (set at `map.on('load')` in globe.html) is awaited so
+  a share link opening the animator does not race `loadAOIs()`.
+* `/api/fire-anim-trajectories` returns `groups`, not `trajectories` — a
+  debugging probe on the wrong key reads as an empty layer.
