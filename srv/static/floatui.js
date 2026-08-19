@@ -859,6 +859,13 @@
                 if (!e || !e.originalEvent) return;          // programmatic move: stay anchored
                 if (container.classList.contains('fui-sheet')) return;   // phone: stack owns it
                 detach();
+                // The anchor may have carried the card partly off-screen (a
+                // tall AOI popup anchored near the top edge shows only its
+                // lowest accordion row). Freezing it THERE strands the grab
+                // bar outside the viewport with no gesture that can bring it
+                // back — so the hand-over to the screen always ends with the
+                // bar reachable.
+                clampIntoView();
             };
             ['movestart', 'dragstart', 'zoomstart', 'rotatestart', 'pitchstart', 'wheel'].forEach((ev) => {
                 try { popup._map.on(ev, freeze); } catch (err) { }
@@ -897,6 +904,24 @@
             try { popup._map.once('idle', ensureVisible); } catch (err) { }
         }
         requestAnimationFrame(ensureVisible);
+
+        // The popup's sections load asynchronously (narratives, versions,
+        // accordions), so the card can GROW past the top edge long after the
+        // one-time ensureVisible passed — an anchored card grows upward from
+        // its anchor. Watch the content's size: detached cards re-clamp,
+        // anchored ones re-check visibility (but never mid-flight — a fly-to
+        // in progress puts the card anywhere for a frame).
+        if (window.ResizeObserver) {
+            const ro = new ResizeObserver(() => {
+                if (container.classList.contains('fui-sheet') ||
+                    container.classList.contains('fui-docked')) return;
+                if (detached) { clampIntoView(); return; }
+                try { if (popup._map && popup._map.isMoving()) return; } catch (err) { }
+                ensureVisible();
+            });
+            ro.observe(content);
+            popup.on('close', () => { try { ro.disconnect(); } catch (err) { } });
+        }
 
         // On a phone the popup joins the sheet stack: full-width above the
         // bottom chrome, stacked with the pinned card / pinned layers. The
