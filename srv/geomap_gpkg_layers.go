@@ -456,7 +456,7 @@ func addGeoStructuralLayer(w *gpkgWriter, id string) (*gpkgLayer, string, error)
 		desc += " Skill: unmeasured."
 	}
 	l, err := w.AddLayer("structural_"+id, "MULTILINESTRING", desc, []gpkgCol{
-		{"name", "TEXT"},      // craton name; NULL on faults
+		{"name", "TEXT"},       // craton name; NULL on faults
 		{"fault_type", "TEXT"}, // fault kinematics; NULL on craton margins
 		{"reference", "TEXT"},
 	})
@@ -507,4 +507,3 @@ func styleGeoStructural(id string) string {
 		qmlOpt("capstyle", "flat"),
 		qmlOpt("joinstyle", "round")))
 }
-

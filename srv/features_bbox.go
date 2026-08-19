@@ -339,13 +339,13 @@ func (s *Server) HandleAPIFeaturesInBBox(w http.ResponseWriter, r *http.Request)
 			"mode":         "points",
 			"render":       "points",
 			"render_basis": renderReason,
-			"type":      featureType,
-			"from":      base,
-			"points":    pts,
-			"ids":       ids,
-			"count":     len(pts),
-			"total":     total,
-			"truncated": truncated,
+			"type":         featureType,
+			"from":         base,
+			"points":       pts,
+			"ids":          ids,
+			"count":        len(pts),
+			"total":        total,
+			"truncated":    truncated,
 		})
 		// A FIRE IS A MOVEMENT, AND A DOT IS THE ONE THING IT IS NOT.
 		//

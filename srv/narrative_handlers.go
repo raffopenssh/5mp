@@ -244,36 +244,36 @@ type SettlementNarrative struct {
 	// How many of SettlementCount contributed to TotalPopulation. A population
 	// that was never measured must not read as a population of zero
 	// (AGENTS.md invariant 12; docs/AOI_STRUCTURAL_FIXES.md F2).
-	PopulationMeasuredFor int                    `json:"population_measured_for"`
+	PopulationMeasuredFor int `json:"population_measured_for"`
 	// BuiltUpKm2 is built-up SURFACE (Σ settlementSurfaceSQL, the fractional
 	// GHSL raster), the same number the stats panel and the narrative text
 	// quote. Consumers must NOT sum ClassifiedList.area_m2 instead — that
 	// column is cluster EXTENT, ~24-39x larger (invariant 15).
-	BuiltUpKm2            float64                `json:"built_up_km2"`
-	Population2030        int64                  `json:"population_2030,omitempty"`
-	PopulationDensity     float64                `json:"population_density_per_km2"`
-	ParkAreaKm2           float64                `json:"park_area_km2"`
-	ConflictRisk          string                 `json:"conflict_risk"`
-	LargestSettlements    []SettlementDetail     `json:"largest_settlements"`
-	RegionalBreakdown     []RegionSettlement     `json:"regional_breakdown,omitempty"`
-	ByClassification      map[string]int         `json:"by_classification,omitempty"`
+	BuiltUpKm2         float64            `json:"built_up_km2"`
+	Population2030     int64              `json:"population_2030,omitempty"`
+	PopulationDensity  float64            `json:"population_density_per_km2"`
+	ParkAreaKm2        float64            `json:"park_area_km2"`
+	ConflictRisk       string             `json:"conflict_risk"`
+	LargestSettlements []SettlementDetail `json:"largest_settlements"`
+	RegionalBreakdown  []RegionSettlement `json:"regional_breakdown,omitempty"`
+	ByClassification   map[string]int     `json:"by_classification,omitempty"`
 	// ByPersistence is MEASURED from GHSL back-epochs (scripts/ghsl_epochs.py):
 	// permanent (built by 2000) / established (by 2015) / recent (after 2015).
 	// Rows whose epoch tiles were unavailable are counted in
 	// PersistenceUnmeasured rather than silently omitted — an unmeasured
 	// cluster is a different state than a recent one (invariant 12).
-	ByPersistence         map[string]int         `json:"by_persistence,omitempty"`
-	PersistenceUnmeasured int                    `json:"persistence_unmeasured,omitempty"`
+	ByPersistence         map[string]int `json:"by_persistence,omitempty"`
+	PersistenceUnmeasured int            `json:"persistence_unmeasured,omitempty"`
 	// Cropland context, MEASURED from GLAD 30 m cropland extent
 	// (scripts/cropland.py): count of settlements with >=3% mapped cropland
 	// within ~1 km, the mean fraction over measured rows for both epochs
 	// (2000-2003 vs 2016-2019 — the TREND), and how many rows were measured
 	// at all. Basis named per invariant 7; unmeasured is not zero.
-	CroplandSettlements   int                    `json:"cropland_settlements,omitempty"`
-	CroplandMeasuredFor   int                    `json:"cropland_measured_for,omitempty"`
-	CroplandMeanFrac2019  float64                `json:"cropland_mean_frac_2019,omitempty"`
-	CroplandMeanFrac2003  float64                `json:"cropland_mean_frac_2003,omitempty"`
-	ClassifiedList        []ClassifiedSettlement `json:"classified_settlements,omitempty"`
+	CroplandSettlements  int                    `json:"cropland_settlements,omitempty"`
+	CroplandMeasuredFor  int                    `json:"cropland_measured_for,omitempty"`
+	CroplandMeanFrac2019 float64                `json:"cropland_mean_frac_2019,omitempty"`
+	CroplandMeanFrac2003 float64                `json:"cropland_mean_frac_2003,omitempty"`
+	ClassifiedList       []ClassifiedSettlement `json:"classified_settlements,omitempty"`
 }
 
 // SettlementDetail describes a single settlement

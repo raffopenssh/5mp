@@ -18,7 +18,7 @@ func cands(n int, span float64) []bboxCand {
 }
 
 func TestSubPixelShapesAgreesAcrossLayers(t *testing.T) {
-	wide := [4]float64{26.8, 5.0, 27.9, 5.9}   // ~1.1 deg -> 0.00079 deg/px
+	wide := [4]float64{26.8, 5.0, 27.9, 5.9}    // ~1.1 deg -> 0.00079 deg/px
 	tight := [4]float64{27.25, 5.4, 27.35, 5.5} // ~0.1 deg -> 0.00007 deg/px
 
 	// Same bbox, wildly different counts, near-identical feature sizes:

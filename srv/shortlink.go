@@ -819,7 +819,7 @@ type shortLinkRow struct {
 }
 
 type shortLinkGroup struct {
-	Ref   string         `json:"ref"`   // non-secret sha256 handle
+	Ref   string         `json:"ref"`             // non-secret sha256 handle
 	Label string         `json:"label,omitempty"` // unused since scoping; kept for shape stability
 	Env   string         `json:"env"`
 	Mine  bool           `json:"mine"`
