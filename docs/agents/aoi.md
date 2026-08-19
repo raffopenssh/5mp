@@ -103,6 +103,17 @@ More load-bearing details, each already got wrong once:
 
 * **No endpoint runs the ingest.** `scripts/aoi_runner.py` owns lease
   discipline; `kick` shells out to it. One implementation of "work a unit".
+* **Persistence + cropland ride the units, not just the nightly rotations.**
+  `enrich_area()` in the runner calls `ghsl_epochs` + `cropland` derives when
+  the `ghsl` unit finishes (persistence + cropland) and when
+  `deforestation`/`hansen` finish (cropland). Without this a new AOI spent its
+  first day(s) unmeasured, and worse: the 06:20 cropland rotation once ran
+  *before* aoi_Serra_Bonita's ingest and stamped "nothing to measure" at
+  current version, freezing the no-op (invariant 1). `cropland.pending()` now
+  also re-queues areas with unmeasured rows behind a current stamp, so the
+  rotation is the safety net and the inline call the fast path. A failed
+  derive leaves the unit `pending`; the retry skips the tiles (cursor done),
+  re-clusters idempotently and re-derives.
 * **`DELETE` order**: the `aois` row goes *last* — while it exists,
   `aoiExcludeSQL()` still masks derived rows not yet deleted. The delete list
   must include `roads_heigit`, `park_rivers_hydro`, `park_lakes_hydro`,
