@@ -5830,16 +5830,22 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             return matchMedia('(pointer: coarse)').matches || /Mobi|Android/i.test(navigator.userAgent);
         }
         // Must be called synchronously in the click handler so popup blockers allow it.
+        // Returns null when blocked — callers toast and abort (the iframe
+        // fallback is a silent no-op on mobile, which reads as a dead button).
         function openReportWindow() {
             const w = window.open('', '_blank');
             if (w) {
                 try { w.document.write('<!DOCTYPE html><title>5MP Report</title><body style="font:14px sans-serif;color:#333;padding:20px">Building report…</body>'); w.document.close(); } catch (e) {}
+            } else {
+                showToast('Your browser blocked the report tab — allow popups for this site and try again', 'error', { key: 'export' });
             }
             return w;
         }
 
         async function exportFullReportPdf(progress = (m) => showToast(m, 'info', { key: 'export', sticky: true, spinner: true })) {
-            const win = isMobilePrintEnv() ? openReportWindow() : null;
+            const mobile = isMobilePrintEnv();
+            const win = mobile ? openReportWindow() : null;
+            if (mobile && !win) return; // popup blocked — openReportWindow toasted
             progress('Building report...');
             const result = await buildFullReportMarkdown();
             if (!result) {
@@ -5859,7 +5865,9 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
         // Print the current (possibly edited) Markdown: minimal mono rendering
         // in a hidden iframe, headings bolded, [MAP:...] tokens replaced by SVGs.
         async function printMdReport() {
-            const win = isMobilePrintEnv() ? openReportWindow() : null; // sync open (popup blockers)
+            const mobile = isMobilePrintEnv();
+            const win = mobile ? openReportWindow() : null; // sync open (popup blockers)
+            if (mobile && !win) return; // popup blocked — openReportWindow toasted
             const text = document.getElementById('md-report-text').value;
             // Resolve any maps that were kicked off when the modal opened
             const svgs = {};
@@ -5902,8 +5910,37 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 // Mobile path: render into the pre-opened tab with a visible
                 // "Print / Save as PDF" button (mobile browsers ignore print()
                 // from hidden iframes, and often from script entirely).
-                const withBar = html.replace('<body><pre>',
-                    '<body><div class="print-bar"><button onclick="print()">Print / Save as PDF</button></div><pre>');
+                // Some (DuckDuckGo Android) even no-op print() from a real tab:
+                // beforeprint never fires, so after a beat we reveal an inline
+                // fallback — a hint to use the browser menu plus a pure client
+                // side "Download .html" (blob anchor, no server involved).
+                const bar = [
+                    '<div class="print-bar">',
+                    '<button id="pb-print">Print / Save as PDF</button> ',
+                    '<button id="pb-dl" style="background:#475569">Download .html</button>',
+                    '<div id="pb-note" style="display:none;font:12px sans-serif;color:#92400e;margin-top:6px">',
+                    'If no print dialog appeared, this browser can\'t print from a script — ',
+                    'use the browser menu (\u22ee) \u2192 Print / Share, or the Download button.</div>',
+                    '</div>',
+                    '<scr'+'ipt>',
+                    'var printed=false;',
+                    'addEventListener("beforeprint",function(){printed=true});',
+                    'document.getElementById("pb-print").onclick=function(){',
+                    '  printed=false;',
+                    '  try{print()}catch(e){}',
+                    '  setTimeout(function(){if(!printed)document.getElementById("pb-note").style.display="block"},800);',
+                    '};',
+                    'document.getElementById("pb-dl").onclick=function(){',
+                    '  var d=document.documentElement.cloneNode(true);',
+                    '  var pb=d.querySelector(".print-bar");if(pb)pb.remove();',
+                    '  var b=new Blob(["<!DOCTYPE html>"+d.outerHTML],{type:"text/html"});',
+                    '  var a=document.createElement("a");',
+                    '  a.href=URL.createObjectURL(b);a.download="5mp-report.html";',
+                    '  document.body.appendChild(a);a.click();a.remove();',
+                    '};',
+                    '</scr'+'ipt>'
+                ].join('');
+                const withBar = html.replace('<body><pre>', '<body>' + bar + '<pre>');
                 targetWin.document.open();
                 targetWin.document.write(withBar);
                 targetWin.document.close();
