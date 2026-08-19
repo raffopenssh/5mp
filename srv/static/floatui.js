@@ -802,6 +802,7 @@
         function clampIntoView() {
             if (!detached) return;
             const mapEl = container.offsetParent || container.parentElement;
+            if (!mapEl) return;   // container no longer in the DOM
             const mr = mapEl.getBoundingClientRect();
             const r = container.getBoundingClientRect();
             const x = clamp(r.left - mr.left, MARGIN, Math.max(MARGIN, mr.width - r.width - MARGIN));
@@ -933,10 +934,17 @@
             setCollapsed: setCollapsed
         });
 
-        // Cleanup dock chip + sheet slot when popup closes / is replaced
-        popup.on('close', () => { removeDockChip('popup'); unregisterSheet('popup'); });
-
+        // Cleanup dock chip + sheet slot when popup closes / is replaced.
+        // The resize listener MUST be removed too: each popup open/close used
+        // to leak one, and every leaked clampIntoView then threw on a null
+        // offsetParent on the next resize (mobile fires resize on every
+        // URL-bar show/hide). Found by the 2026-08 mobile maptip soak.
         window.addEventListener('resize', clampIntoView);
+        popup.on('close', () => {
+            removeDockChip('popup');
+            unregisterSheet('popup');
+            window.removeEventListener('resize', clampIntoView);
+        });
     }
 
     // ---------------------------------------------------------------

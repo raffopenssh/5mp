@@ -1288,6 +1288,32 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             console.error('MapLibre error:', e.error || e.message || e);
         });
 
+        // WEBGL CONTEXT LOSS RECOVERY (mobile). Android Chrome discards the
+        // WebGL context under memory pressure (tab switch, keyboard, big tip
+        // opens); MapLibre 4.1's own webglcontextrestored handler re-creates
+        // the painter but reproducibly leaves (a) the render task queue stuck
+        // ("Attempting to run(), but is already running" — every later frame
+        // silently no-ops) and (b) tile/glyph textures corrupted (raster
+        // tiles sample the dead context's glyph atlas), so the map stays
+        // black or garbled while the DOM chrome lives on. Verified with
+        // WEBGL_lose_context in the 2026-08 mobile soak. Both in-place
+        // texture surgery and a non-diff setStyle + readPixels verify proved
+        // unreliable (a healthy vector layer over garbled raster tiles
+        // passes any single-pixel check), so recovery is a full reload:
+        // updateURL() keeps the entire view — viewport, pins, popups, tip —
+        // in the address bar, so the reload restores exactly what was on
+        // screen. Context loss is rare; a correct reload beats a fast lie.
+        map.on('webglcontextrestored', function() {
+            console.warn('WebGL context restored: reloading to rebuild GL state');
+            try {
+                // Freeze the whole view into the address bar first —
+                // buildShareUrl() captures viewport, pins, popups, tip,
+                // filters — so the reload comes back to this exact screen.
+                window.history.replaceState({}, '', buildShareUrl());
+            } catch (err) { }
+            setTimeout(function() { window.location.reload(); }, 200);
+        });
+
         // A shared link's viewport, held against the async restorers.
         //
         // Everything that runs after `load` — selectCountry(), the bbox
