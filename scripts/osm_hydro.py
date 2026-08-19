@@ -168,11 +168,17 @@ def lakes_from_pbf(conn, target_id, area_pbf, replace=True, log=print):
     return len(rows)
 
 
-def ingest_country(conn, target_id, iso, bbox, replace=True, log=print):
+def ingest_country(conn, target_id, iso, bbox, replace=True, log=print,
+                   keep_pbf=None):
     """Download (or reuse) one country PBF, extract the bbox, fill both tables.
 
     replace=False for the second and later countries of a multi-country AOI,
     or each would wipe the previous one's rows.
+
+    keep_pbf: optional callable(path). When given, a temporary downloaded PBF
+    is handed to it instead of deleted, so a runner working several datasets
+    of one AOI in one process downloads each country once (aoi_runner
+    sweeps them at exit).
     """
     pbf, temporary = osm_pbf.ensure_pbf(iso)
     key = f"{target_id}_{iso}".replace(":", "_").replace("/", "_")
@@ -181,10 +187,16 @@ def ingest_country(conn, target_id, iso, bbox, replace=True, log=print):
         n_r = rivers_from_pbf(conn, target_id, area, replace=replace, log=log)
         n_l = lakes_from_pbf(conn, target_id, area, replace=replace, log=log)
     finally:
-        for path, drop in ((area, True), (pbf, temporary)):
-            if drop:
+        try:
+            os.remove(area)
+        except OSError:
+            pass
+        if temporary:
+            if keep_pbf:
+                keep_pbf(pbf)
+            else:
                 try:
-                    os.remove(path)
+                    os.remove(pbf)
                 except OSError:
                     pass
     return n_r, n_l
