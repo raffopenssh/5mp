@@ -5798,11 +5798,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
         function downloadMdReport() {
             const text = document.getElementById('md-report-text').value;
             const blob = new Blob([text], { type: 'text/markdown;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = buildReportFilename('5MP_Report', 'md');
-            link.click();
-            URL.revokeObjectURL(link.href);
+            downloadBlob(blob, buildReportFilename('5MP_Report', 'md'));
             showToast('Markdown report downloaded', 'success');
         }
 
@@ -6084,11 +6080,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
 
             const csv = rows.join('\r\n');
             const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = buildReportFilename('5MP_Report', 'csv');
-            link.click();
-            URL.revokeObjectURL(link.href);
+            downloadBlob(blob, buildReportFilename('5MP_Report', 'csv'));
             showToast(`Exported ${totals.n} parks to CSV (summary, patrol stats, effort maps)`, 'success', { key: 'export' });
         }
         
@@ -6454,7 +6446,14 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 heatmaps++;
             }
 
-            XLSX.writeFile(wb, buildReportFilename('5MP_Report', 'xlsx'));
+            // Not XLSX.writeFile(): SheetJS saves via an octet-stream blob and
+            // an immediately-revoked object URL, which on Android yields a
+            // nameless "download.bin". Write to an ArrayBuffer and save it
+            // through downloadBlob with the real MIME type instead.
+            const xlsxOut = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+            downloadBlob(
+                new Blob([xlsxOut], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }),
+                buildReportFilename('5MP_Report', 'xlsx'));
             showToast(`Exported ${parkReports.length} parks, ${wb.SheetNames.length} sheets (${heatmaps} effort heatmap${heatmaps !== 1 ? 's' : ''})`, 'success', { key: 'export' });
         }
         
@@ -6505,13 +6504,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             
             // Download
             const blob = new Blob([mergedKML], {type: 'application/vnd.google-earth.kml+xml'});
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `5MP_Report_${parkIDs.size}_areas${dateStr}.kml`.replace(/[\s\/\\:]/g, '_');
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(link.href);
+            downloadBlob(blob, `5MP_Report_${parkIDs.size}_areas${dateStr}.kml`.replace(/[\s\/\\:]/g, '_'));
             
             showToast(`Exported KML with ${successCount} park${successCount !== 1 ? 's' : ''} (all geo layers incl. all geo layers)`, 'success', { key: 'export' });
         }
@@ -18086,6 +18079,29 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
     function printInlineReport() {
         window.print();
     }
+
+    // One way to save a Blob, everywhere. Two Android-specific bugs lived in
+    // the old per-export copies of this dance:
+    //   1. revokeObjectURL immediately after click() — Chrome on Android hands
+    //      the URL to its DownloadManager *asynchronously*, so the blob was
+    //      gone before the download started: no filename (or a failed
+    //      download) while desktop browsers, which snapshot synchronously,
+    //      worked fine. The revoke is now delayed 30 s.
+    //   2. an anchor never appended to the DOM — some Android WebView/browser
+    //      combinations ignore click() on a detached node.
+    // The MIME type matters too: Android names an unnamed/opaque download from
+    // the type (application/octet-stream → "download.bin"), so callers pass
+    // the real one.
+    function downloadBlob(blob, filename) {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 30000);
+    }
+    window.downloadBlob = downloadBlob;
 
     // Build comprehensive filename with park names and date range
     function buildReportFilename(prefix, extension) {
