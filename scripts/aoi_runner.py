@@ -589,6 +589,13 @@ def run_deforestation(conn, aoi, ds, deadline, budget):
         except Exception:
             pass
     progress(conn, aoi["id"], ds["dataset"], {"i": 1}, 1, 1)
+    # Cropland context for the events just clustered (and any settlements
+    # already present) — see enrich_area. No persistence: that is settlement-
+    # shaped and belongs to the ghsl unit.
+    err = enrich_area(conn, aoi["id"], geom)
+    if err:
+        return False, (f"{n:,} deforestation events, "
+                       f"enrichment UNFINISHED ({err})")
     return True, f"{n:,} deforestation events from GFW alerts"
 
 
@@ -652,6 +659,14 @@ def run_ghsl(conn, aoi, ds, deadline, budget):
             rebuilder.conn.close()
         except Exception:
             pass
+    # The recluster deletes+reinserts every cluster row, so this must come
+    # after it (same ordering as backfill_settlement_surface.convert). A
+    # failed derive leaves the unit pending: cur["i"] == total, so the next
+    # slice skips the tiles, re-clusters (idempotent) and retries the derive.
+    err = enrich_area(conn, aid, geom, with_persistence=True)
+    if err:
+        return False, (f"{cur['polys']:,} polygons, {n:,} settlements, "
+                       f"enrichment UNFINISHED ({err})")
     return True, f"{cur['polys']:,} built-up polygons, {n:,} settlements"
 
 
@@ -724,6 +739,11 @@ def run_hansen(conn, aoi, ds, deadline, budget):
             rebuilder.conn.close()
         except Exception:
             pass
+    # Cropland context for the freshly clustered Hansen events (enrich_area).
+    err = enrich_area(conn, aid, geom)
+    if err:
+        return False, (f"{cur['polys']:,} loss polygons, {n:,} events, "
+                       f"enrichment UNFINISHED ({err})")
     return True, (f"{cur['polys']:,} loss polygons "
                   f"({hansen_loss.HANSEN_MIN_YEAR}-{hansen_loss.HANSEN_MAX_YEAR}), "
                   f"{n:,} events")
@@ -877,6 +897,36 @@ def run_hydro(conn, aoi, ds, deadline, budget):
     return (cur["i"] >= total,
             f"{cur['rivers']:,} rivers, {cur['lakes']:,} lakes "
             f"({cur['i']}/{total} countries, OSM)")
+
+
+def enrich_area(conn, aid, geom, with_persistence=False):
+    """Persistence (GHSL back-epochs) + GLAD cropland context for the rows a
+    unit just clustered. Returns an error string, or None on success.
+
+    The nightly rotations (backfill_settlement_surface --rotate 2 at 06:45,
+    cropland --rotate 2 at 06:20) own the steady state; this inline call
+    exists because a NEW AOI otherwise spends its first day(s) with
+    persistence/cropland unmeasured — and worse, a rotation that ran BEFORE
+    the ingest finished had stamped the AOI "nothing to measure" at current
+    version, freezing the no-op as an answer (aoi_Serra_Bonita, 2026-08-19;
+    invariant 1). cropland.pending() now re-detects unmeasured rows behind a
+    current stamp, so the rotation is the safety net; this is the fast path.
+
+    Both derives are idempotent and their stamps are the same files the
+    rotations read, so running here neither double-counts nor hides work.
+    """
+    import cropland
+    if with_persistence:
+        import ghsl_epochs
+        ok, summary = ghsl_epochs.derive_for_area(conn, aid, geom, log=log)
+        if not ok:
+            return f"persistence: {summary.get('error')}"
+        ghsl_epochs.stamp(aid, summary)
+    ok, summary = cropland.derive_for_area(conn, aid, geom, log=log)
+    if not ok:
+        return f"cropland: {summary.get('error')}"
+    cropland.stamp(aid, summary)
+    return None
 
 
 def run_clip(conn, aoi, ds, deadline, budget):

@@ -3326,5 +3326,23 @@
    }
   },
   "version": "2026-08-13a"
+ },
+ "aoi_Serra_Bonita_260818165659": {
+  "at": "2026-08-19T14:59:36Z",
+  "breakdown": {
+   "permanent": 66
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 66,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R11_C15": {
+    "E2000": "ecf902484a42409b0fd202ddfeb47b3293c9ac9d8d0add7c8952c8c94146e4fc",
+    "E2015": "ac96c47fc94ad238d3e855e3adf96a2bd38c8e2ac95c19c35de1fdfd89807fbd",
+    "E2030": "a1a880ac751395560c8013323e22e6732710214c581f23ccd6774bd5311c8138"
+   }
+  },
+  "version": "2026-08-13a"
  }
 }
