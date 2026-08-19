@@ -25,6 +25,13 @@ from cron_notify import notify_status  # noqa: E402
 API_KEY = os.environ.get("GFW_API_KEY") or secret('GFW_API_KEY')
 BASE = "https://data-api.globalforestwatch.org"
 STATE_FILE = "data/gfw_alerts/state.json"
+# Heal queue: park ids whose existing scan was assembled from silently
+# truncated tiles (see TRUNCATION_FLOOR). --rotate drains this list first,
+# one park per day, before the normal staleness rotation -- so a bad scan is
+# repaired within days without blowing the daily API budget in one run.
+# Written by scripts/gfw_find_truncated.py; entries removed after a
+# successful re-scan.
+HEAL_FILE = "data/gfw_alerts/heal_queue.json"
 
 # Per-tile cache. Park scans used to write only data/gfw_alerts/{park}.json, so
 # the same 0.5-deg tile was re-fetched for every park (and every AOI) that
@@ -52,17 +59,29 @@ def _tile_cached(key):
     if age_days > TILE_TTL_DAYS:
         return None
     try:
-        return json.load(open(path))["rows"]
+        d = json.load(open(path))
+        rows = d["rows"]
     except Exception:
         return None
+    if len(rows) >= TRUNCATION_FLOOR and not d.get("complete"):
+        # Stored before truncation detection existed: the API silently capped
+        # one of this tile's answers. A big tile assembled BY subdivision is
+        # fine and carries complete=true; an unmarked big tile is suspect.
+        # Treat as a miss so it is refetched with subdivision.
+        return None
+    return rows
 
 
 def _tile_store(key, rows):
     os.makedirs(TILE_CACHE_DIR, exist_ok=True)
     path = os.path.join(TILE_CACHE_DIR, key + ".json")
     tmp = path + ".tmp"
+    # complete=True: this answer passed truncation detection (any sub-query
+    # at or above TRUNCATION_FLOOR was subdivided), so a large row count here
+    # is genuine, not a cap.
     json.dump({"fetched_at": datetime.datetime.now(datetime.timezone.utc)
-               .strftime("%Y-%m-%dT%H:%M:%SZ"), "rows": rows}, open(tmp, "w"))
+               .strftime("%Y-%m-%dT%H:%M:%SZ"), "complete": True,
+               "rows": rows}, open(tmp, "w"))
     os.replace(tmp, path)
 _version = None
 _nreq = 0
@@ -119,6 +138,15 @@ def fetch_tile(w, s, e, n, since, depth=0, use_cache=True):
     return _fetch_tile_uncached(w, s, e, n, since, depth)
 
 
+# The GFW query endpoint silently truncates large answers while still
+# returning status=success (observed: exactly 40,000 rows for tiles whose
+# quarters sum to >100,000; older caches show a 45,000 cap). A truncated
+# answer is indistinguishable from a complete one (AGENTS.md invariant 8),
+# so any response at or above this floor is treated as truncated and the
+# tile is subdivided, exactly like an error would be.
+TRUNCATION_FLOOR = 40000
+
+
 def _fetch_tile_uncached(w, s, e, n, since, depth=0):
     geom = {"type": "Polygon", "coordinates": [[
         [w, s], [e, s], [e, n], [w, n], [w, s]]]}
@@ -126,18 +154,32 @@ def _fetch_tile_uncached(w, s, e, n, since, depth=0):
            "gfw_integrated_alerts__confidence FROM results "
            f"WHERE gfw_integrated_alerts__date >= '{since}'")
     try:
-        return query(sql, geom)
-    except Exception as ex:
-        if depth >= 3:
-            print(f"  tile {w:.2f},{s:.2f} FAILED: {ex}", file=sys.stderr)
+        rows = query(sql, geom)
+        if len(rows) < TRUNCATION_FLOOR:
+            return rows
+        if depth >= 6:
+            # Genuinely possible (~49 km2 of loss in a ~0.008-deg cell is
+            # not) -- but if it ever happens, say so instead of freezing a
+            # truncated tile as complete.
+            raise RuntimeError(
+                f"tile {w:.4f},{s:.4f} still returns {len(rows)} rows "
+                f"(>= truncation floor {TRUNCATION_FLOOR}) at depth {depth}")
+        # fall through to subdivision below
+        ex = None
+    except Exception as e2:
+        if depth >= 6:
+            raise
+        if depth >= 3 and "truncation floor" not in str(e2):
+            print(f"  tile {w:.2f},{s:.2f} FAILED: {e2}", file=sys.stderr)
             return []
-        # subdivide into 4
-        mx, my = (w+e)/2, (s+n)/2
-        rows = []
-        for (a, b, c, d) in [(w, s, mx, my), (mx, s, e, my),
-                             (w, my, mx, n), (mx, my, e, n)]:
-            rows += _fetch_tile_uncached(a, b, c, d, since, depth+1)
-        return rows
+        ex = e2
+    # subdivide into 4 (oversize error, or a silently truncated success)
+    mx, my = (w+e)/2, (s+n)/2
+    rows = []
+    for (a, b, c, d) in [(w, s, mx, my), (mx, s, e, my),
+                         (w, my, mx, n), (mx, my, e, n)]:
+        rows += _fetch_tile_uncached(a, b, c, d, since, depth+1)
+    return rows
 
 def bbox_of(geom):
     lons, lats = [], []
@@ -204,6 +246,14 @@ def load_state():
     try: return json.load(open(STATE_FILE))
     except Exception: return {}
 
+def load_heal_queue():
+    try: return json.load(open(HEAL_FILE))
+    except Exception: return []
+
+def pop_heal_queue(park_id):
+    q = [x for x in load_heal_queue() if x != park_id]
+    json.dump(q, open(HEAL_FILE, "w"))
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--park", help="scan a single park by id")
@@ -234,21 +284,31 @@ def main():
     elif args.rotate:
         prefixes = tuple(args.priority.split(","))
         state = load_state()
-        pri = [p for pid, p in parks.items() if pid.startswith(prefixes)]
-        # least-recently-scanned first (never-scanned = highest priority)
-        pri.sort(key=lambda p: state.get(p["id"], {}).get("scanned_at", ""))
-        # if all priority parks scanned within 7 days, fall back to other parks
-        cutoff = (datetime.datetime.now(datetime.timezone.utc) -
-                  datetime.timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%SZ")
-        cand = pri[0] if pri and state.get(pri[0]["id"], {}) \
-            .get("scanned_at", "") < cutoff else None
-        if cand is None:
-            rest = [p for pid, p in parks.items() if not pid.startswith(prefixes)]
-            rest.sort(key=lambda p: state.get(p["id"], {}).get("scanned_at", ""))
-            cand = rest[0] if rest else (pri[0] if pri else None)
-        if cand is None:
-            print("nothing to scan", file=sys.stderr); return
-        targets = [cand]
+        # Heal queue first: a scan known to be built from truncated tiles is
+        # worse than a stale one -- it is confidently wrong. One per day.
+        heal = [pid for pid in load_heal_queue() if pid in parks]
+        if heal:
+            print(f"heal queue: re-scanning {heal[0]} ({len(heal)} queued)",
+                  file=sys.stderr)
+            targets = [parks[heal[0]]]
+        else:
+            pri = [p for pid, p in parks.items() if pid.startswith(prefixes)]
+            # least-recently-scanned first (never-scanned = highest priority)
+            pri.sort(key=lambda p: state.get(p["id"], {}).get("scanned_at", ""))
+            # if all priority parks scanned within 7 days, fall back to others
+            cutoff = (datetime.datetime.now(datetime.timezone.utc) -
+                      datetime.timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%SZ")
+            cand = pri[0] if pri and state.get(pri[0]["id"], {}) \
+                .get("scanned_at", "") < cutoff else None
+            if cand is None:
+                rest = [p for pid, p in parks.items()
+                        if not pid.startswith(prefixes)]
+                rest.sort(key=lambda p: state.get(p["id"], {})
+                          .get("scanned_at", ""))
+                cand = rest[0] if rest else (pri[0] if pri else None)
+            if cand is None:
+                print("nothing to scan", file=sys.stderr); return
+            targets = [cand]
     else:
         ap.error("need --park or --rotate")
 
@@ -262,6 +322,7 @@ def main():
         notify_status("gfw_scan_success", "GFW Alert Scan Complete",
                       f"{p['id']}: {n:,} integrated deforestation alerts "
                       f"since {since} ({_nreq} API requests)")
+        pop_heal_queue(p["id"])
         state = load_state()
         state[p["id"]] = {"scanned_at": datetime.datetime.now(datetime.timezone.utc)
                           .strftime("%Y-%m-%dT%H:%M:%SZ"),

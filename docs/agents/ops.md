@@ -202,6 +202,42 @@ re-runs cheap. Test-env requests are skipped by the worker.
 
 ---
 
+## GFW silent truncation + heal queue (2026-08-19)
+
+The GFW query endpoint caps large answers (observed exactly 40,000 and 45,000
+rows) while returning `status=success` — a truncated tile is indistinguishable
+from a complete one (invariant 8), and it surfaced as a sharp rectangular hole
+in an AOI's deforestation layer (Serra Bonita: 2 of 6 tiles capped, 135k of a
+true 278k alerts). Fixes, all in `analysis/gfw_alerts.py`:
+
+* `TRUNCATION_FLOOR = 40000`: any response at/over it is treated as truncated
+  and the tile subdivides (same path as an oversize error), up to depth 6,
+  raising instead of returning a capped answer at the bottom.
+* Healthy cache entries in `data/gfw_tiles/` now carry `complete: true`;
+  `_tile_cached()` refuses an unmarked entry at/over the floor, so legacy
+  capped tiles refetch on next use.
+* **Heal queue** (`data/gfw_alerts/heal_queue.json`): park ids whose scan was
+  built from a suspect tile. `gfw_alerts.py --rotate` (nightly cron) drains it
+  first, one park per day — the daily API budget is why this is a queue and
+  not a one-shot. Entries pop only after a successful re-scan.
+* `scripts/gfw_find_truncated.py` (idempotent, no API calls) detects suspect
+  tiles, fills the heal queue for parks, and resets `aoi_datasets`
+  gfw+deforestation to pending for affected AOIs (the aoi_runner cron re-walks
+  tiles; cache hits are free). Run 2026-08-19: 69 suspect tiles → heal queue
+  `[CAF_Chinko, CAF_Dzanga_Park, SSD_Boma]`, XSA_Study_Area re-queued;
+  Serra_Bonita healed by hand the same day (696→99 events is fine — events
+  are clusters; alert count is the honest number, 135,446→278,335).
+
+Downstream: `daily_park_refresh.py --rotate` already picks up parks re-scanned
+by the heal queue (it refreshes parks scanned since last refresh), and
+`scripts/cropland.py pending()` now also returns areas that have deforestation
+events/settlements with NULL fraction **and** NULL `cropland_source` — so
+events created by a healed scan get measured on the nightly cropland rotation
+even when the area's version stamp is current (invariant 1: unmeasured is not
+clean).
+
+---
+
 ## Background Workers
 
 | Worker | Schedule | File | Description |
