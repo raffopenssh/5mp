@@ -87,7 +87,11 @@ python3 scripts/osm_pbf.py --enrich-all --iso CAF    # one country, ~75s
 ## Cron jobs report into the notification bell — by SHAPE, not by a list
 
 Every nightly job writes a `<job>_success` / `<job>_failed` row via
-`scripts/cron_notify.py`. The bell fetches
+`scripts/cron_notify.py` — since 2026-08-20 that includes
+`settlement_backfill_*`, `cropland_*` and `park_onboarding_*` (the last three
+cron jobs that only wrote log files). A no-op run still writes a `_success`
+row ("nothing pending"): silence in the bell must mean *didn't run*, not *ran
+quietly*. The bell fetches
 `/api/notifications?type=cron_status`, a **meta-type** resolved server-side by
 `cronStatusSQL()` (`srv/notifications.go`): `LIKE '%_success'`,
 `LIKE '%_failed'`, plus the few one-off system types.
