@@ -584,8 +584,12 @@ def main():
         q = "SELECT * FROM park_onboarding_requests WHERE id=?"
         params = (args.request_id,)
     reqs = conn.execute(q + " ORDER BY requested_at", params).fetchall()
+    from cron_notify import notify_status
     if not reqs:
         log("no pending onboarding requests")
+        if not args.dry_run:
+            notify_status('park_onboarding_success', 'Park Onboarding',
+                          'no pending onboarding requests')
         return
 
     # Deadline guard: the 03:00 daily fire update must not overlap with a
@@ -598,24 +602,37 @@ def main():
         return now.hour == 2 and now.minute >= 30 or 3 <= now.hour < 5
 
     any_ok = False
+    outcomes = []
+    deferred = 0
     for req in reqs:
         if past_deadline():
             log(f"deadline (02:30 UTC) reached; deferring request {req['id']} ({req['name']}) to next run")
+            deferred += 1
             continue
         try:
             if req['status'] == 'remove_requested':
                 process_removal(conn, dict(req), args.dry_run)
+                outcomes.append(f"{req['name']}: removed")
             else:
                 process_request(conn, dict(req), args.dry_run)
+                outcomes.append(f"{req['name']}: onboarded")
             any_ok = True
         except Exception as ex:
             log(f"FAILED: {ex}")
+            outcomes.append(f"{req['name']}: FAILED ({str(ex)[:80]})")
             if not args.dry_run:
                 conn.execute("UPDATE park_onboarding_requests SET status='failed', detail=? WHERE id=?",
                              (str(ex)[:400], req['id']))
                 conn.commit()
 
     conn.close()
+    if not args.dry_run:
+        failed = any('FAILED' in o for o in outcomes)
+        msg = '; '.join(outcomes) or 'nothing processed'
+        if deferred:
+            msg += f"; {deferred} deferred past 02:30 UTC deadline"
+        notify_status('park_onboarding_failed' if failed else 'park_onboarding_success',
+                      'Park Onboarding', msg)
     if any_ok and not args.dry_run:
         log("restarting 5mp to load new keystones")
         subprocess.run(['sudo', 'systemctl', 'restart', '5mp'])

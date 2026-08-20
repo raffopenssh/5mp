@@ -406,21 +406,31 @@ def main():
         return 1
 
     if a.rotate:
+        from cron_notify import notify_status
         p = pending(conn)
         if not p:
             print("cropland: queue empty")
+            notify_status("cropland_success", "Cropland Derivation",
+                          "queue empty (all areas current)")
             return 0
         done = 0
+        results = []
         for aid, geom in p[:a.rotate]:
             t0 = time.time()
             ok, summary = derive_for_area(conn, aid, geom)
             if ok:
                 stamp(aid, summary)
                 done += 1
+            results.append(f"{aid}: {'ok' if ok else 'UNFINISHED'}")
             print(f"cropland: {aid}: {'ok' if ok else 'UNFINISHED'} "
                   f"({time.time()-t0:.0f}s)")
-        print(f"cropland: {done}/{min(a.rotate, len(p))} done, "
+        n = min(a.rotate, len(p))
+        print(f"cropland: {done}/{n} done, "
               f"{len(p)-done} still pending")
+        ntype = "cropland_success" if done == n else "cropland_failed"
+        notify_status(ntype, "Cropland Derivation",
+                      f"{done}/{n} done ({'; '.join(results)}). "
+                      f"{len(p)-done} area(s) still pending.")
         return 0
 
     ap.print_help()
