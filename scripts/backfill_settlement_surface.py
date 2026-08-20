@@ -400,15 +400,21 @@ def main():
 
     if not work:
         log("nothing pending")
+        if not a.dry_run:
+            from cron_notify import notify_status
+            notify_status("settlement_backfill_success", "Settlement Surface Backfill",
+                          "nothing pending (all areas current)")
         return 0
 
     failures = 0
+    done_ids, failed_ids = [], []
     for t in work:
         try:
             ok, summary = convert(conn, t, a.sleep, a.dry_run)
         except Exception as ex:
             log(f"  {t['id']}: ERROR {type(ex).__name__}: {ex}")
             ok, summary = False, {"error": f"{type(ex).__name__}: {ex}"}
+        (done_ids if ok else failed_ids).append(t["id"])
         if a.dry_run:
             continue
         entry = dict(summary)
@@ -425,6 +431,19 @@ def main():
             # the rotation's memory, and a failure that stamps itself is a
             # failure that never gets retried.
             failures += 1
+
+    if not a.dry_run:
+        from cron_notify import notify_status
+        left = len(queue(conn, state))
+        if failures:
+            notify_status("settlement_backfill_failed", "Settlement Surface Backfill",
+                          f"failed: {', '.join(failed_ids)}"
+                          + (f"; ok: {', '.join(done_ids)}" if done_ids else "")
+                          + f". {left} area(s) still pending.")
+        else:
+            notify_status("settlement_backfill_success", "Settlement Surface Backfill",
+                          f"{', '.join(done_ids)} re-derived. "
+                          f"{left} area(s) still pending.")
     return 1 if failures else 0
 
 
