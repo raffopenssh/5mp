@@ -1128,7 +1128,10 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             sources: {
                 'osm': {
                     type: 'raster',
-                    tiles: ['https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png'],
+                    // Proxied through our own server (/api/basemap/...) so the
+                    // CARTO API key stays server-side; CARTO watermarks
+                    // unauthenticated raster tiles since 2026-08.
+                    tiles: ['/api/basemap/dark_all/{z}/{x}/{y}@2x.png'],
                     tileSize: 256,
                     attribution: '© OpenStreetMap contributors, © CARTO'
                 }

@@ -740,6 +740,70 @@ else
     yellow "histmap not installed here -- label tests skipped"
 fi
 
+# ── CARTO base-map proxy: the key is used, and it stays server-side ────────
+#
+# CARTO began requiring an API key on its raster basemaps in 2026-08 and
+# watermarks unauthenticated tiles with "API KEY REQUIRED" -- 200 OK, valid
+# PNG, visibly broken map. So the failure this suite must catch is not a status
+# code: it is a *keyless* tile. X-Carto-Key says which happened.
+printf "%-50s" "basemap_tile_keyed"
+hdr=$(curl -s -m 30 -b "$COOKIE_FILE" -D - -o /tmp/5mp_tile.png "${BASE_URL}/api/basemap/dark_all/5/17/16@2x.png")
+keyed=$(echo "$hdr" | grep -i '^x-carto-key:' | tr -d '\r' | awk '{print $2}')
+ctype=$(echo "$hdr" | grep -i '^content-type:' | tr -d '\r' | awk '{print $2}')
+bytes=$(stat -c%s /tmp/5mp_tile.png 2>/dev/null || echo 0)
+if [[ "$keyed" == "yes" && "$ctype" == "image/png" && "$bytes" -gt 1000 ]]; then
+    green "✓ (keyed, $bytes B)"; PASSED=$((PASSED + 1))
+elif [[ "$keyed" == "no" ]]; then
+    yellow "CARTO_API_KEY not set here -- tiles would be watermarked"
+else
+    red "FAIL (key=$keyed type=$ctype bytes=$bytes)"; FAILED=$((FAILED + 1))
+    ERRORS+=("basemap tile not keyed")
+fi
+
+# The whole point of proxying is that the key never reaches a browser. If it
+# appears in any page the client loads, the proxy is pointless and the key is
+# published (CARTO's terms: the key is ours, not to be shared).
+printf "%-50s" "basemap_key_absent_from_client"
+leaks=0
+for page in "/?pwd=${PWD}" "/fire?pwd=${PWD}" "/fire/animation?pwd=${PWD}"; do
+    body=$(curl -s -m 30 -b "$COOKIE_FILE" "${BASE_URL}${page}")
+    # Neither the key itself nor a direct cartocdn URL (which would be
+    # watermarked) may appear in a page the browser executes.
+    if echo "$body" | grep -qi "cartocdn.com"; then leaks=$((leaks + 1)); fi
+    if [[ -f secrets.env ]] && k=$(grep -m1 '^CARTO_API_KEY=' secrets.env | cut -d= -f2-) && [[ -n "$k" ]]; then
+        if echo "$body" | grep -qF "$k"; then leaks=$((leaks + 1)); fi
+    fi
+done
+if [[ "$leaks" == "0" ]]; then
+    green "✓"; PASSED=$((PASSED + 1))
+else
+    red "FAIL ($leaks leaks)"; FAILED=$((FAILED + 1)); ERRORS+=("CARTO key or direct cartocdn URL reaches the client")
+fi
+
+# A cached tile must not cost quota, and the {style} segment is an allowlist --
+# forwarding it verbatim would make this an open proxy to any cartocdn path.
+printf "%-50s" "basemap_cache_and_allowlist"
+curl -s -m 30 -b "$COOKIE_FILE" -o /dev/null "${BASE_URL}/api/basemap/dark_all/5/17/16@2x.png"
+second=$(curl -s -m 30 -b "$COOKIE_FILE" -D - -o /dev/null "${BASE_URL}/api/basemap/dark_all/5/17/16@2x.png" | grep -i '^x-tile-cache:' | tr -d '\r' | awk '{print $2}')
+badstyle=$(curl -s -m 30 -b "$COOKIE_FILE" -o /dev/null -w "%{http_code}" "${BASE_URL}/api/basemap/evil/5/1/1.png")
+badzoom=$(curl -s -m 30 -b "$COOKIE_FILE" -o /dev/null -w "%{http_code}" "${BASE_URL}/api/basemap/dark_all/30/1/1.png")
+badxy=$(curl -s -m 30 -b "$COOKIE_FILE" -o /dev/null -w "%{http_code}" "${BASE_URL}/api/basemap/dark_all/5/99999/1.png")
+if [[ "$second" == "hit" && "$badstyle" == "404" && "$badzoom" == "400" && "$badxy" == "400" ]]; then
+    green "✓ (hit; evil 404, z30 400, x99999 400)"; PASSED=$((PASSED + 1))
+else
+    red "FAIL (cache=$second style=$badstyle zoom=$badzoom xy=$badxy)"; FAILED=$((FAILED + 1))
+    ERRORS+=("basemap cache/allowlist")
+fi
+
+# An authenticated response must never be publicly cacheable (invariant 9).
+printf "%-50s" "basemap_tile_cache_private"
+cc=$(curl -s -m 30 -b "$COOKIE_FILE" -D - -o /dev/null "${BASE_URL}/api/basemap/dark_all/5/17/16@2x.png" | grep -i '^cache-control:' | tr -d '\r')
+if [[ "$cc" == *private* && "$cc" != *public* ]]; then
+    green "✓"; PASSED=$((PASSED + 1))
+else
+    red "FAIL ($cc)"; FAILED=$((FAILED + 1)); ERRORS+=("basemap tile cache-control not private")
+fi
+
 # ── Shared links: names, capabilities, and what a capability may see ───────
 #
 # The four properties that make a guest link safe to send (docs/agents/
