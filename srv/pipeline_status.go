@@ -53,6 +53,16 @@ func (s *Server) HandleAPIPipelineStatus(w http.ResponseWriter, r *http.Request)
 		}
 	}
 	payload["stale"] = stale
+	// CARTO base-map proxy usage, so the admin panel shows how much of the
+	// 5M/month fair-use allowance the tile proxy has spent (upstream fetches
+	// only -- cache hits cost no quota). See srv/basemap.go.
+	if month, n := CartoQuotaThisMonth(); month != "" {
+		payload["carto_basemap"] = map[string]any{
+			"month":            month,
+			"upstream_fetches": n,
+			"fair_use_limit":   5000000,
+		}
+	}
 	if ageHours >= 0 {
 		payload["age_hours"] = math.Round(ageHours*10) / 10
 	}

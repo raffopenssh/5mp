@@ -22,6 +22,32 @@ JSON data files in `data/` provide precomputed data:
 
 ---
 
+## External credentials
+
+All live values in `secrets.env` (untracked, mode 600, loaded by
+`/etc/systemd/system/5mp.service` via `EnvironmentFile`); names + placeholders
+in `secrets.env.example`. Read them from the environment, never inline a
+literal. In shell snippets: `set -a; source secrets.env; set +a`.
+
+| Var | Service |
+|---|---|
+| `NASA_FIRMS_KEY` | FIRMS fire ingest |
+| `GFW_API_KEY` | Global Forest Watch |
+| `ACLED_USERNAME` / `ACLED_PASSWORD` | ACLED |
+| `PROTECTEDPLANET_TOKEN` | Protected Planet (old literal is in git history — public) |
+| `EARTHDATA_TOKEN` | NASA URS (nightlights, ~60-day expiry) |
+| `ZENODO_TOKEN` | Zenodo publishing |
+| `CARTO_API_KEY` | CARTO (`basemaps.cartocdn.com` + platform APIs) |
+
+`CARTO_API_KEY` is **server-side only** — the dark base-map tile URLs in
+`globe.html`, `fire_animation.html` and `fire_analysis.html` are browser-fetched
+and must stay unauthenticated public endpoints; templating the key into them
+publishes it. Use it only from Go/Python that runs on the VM, and treat its
+absence as "fall back to the public endpoint", failing (if it must) by naming
+the variable.
+
+---
+
 ## Key APIs
 
 ```bash

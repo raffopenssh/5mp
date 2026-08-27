@@ -273,6 +273,11 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("GET /api/version", s.HandleAPIVersion)
 	mux.HandleFunc("GET /api/pipeline-status", s.HandleAPIPipelineStatus)
 
+	// CARTO base-map tiles, proxied so our API key stays off the client (see
+	// srv/basemap.go). Not optional: since 2026-08 CARTO watermarks
+	// unauthenticated raster tiles with "API KEY REQUIRED".
+	mux.HandleFunc("GET /api/basemap/{style}/{z}/{x}/{y}", s.HandleAPIBasemapTile)
+
 	// Historical map overlay (Sudan Survey 1:250k, 1908-1944). Not under
 	// /api/parks/* on purpose: it is a basemap-level raster keyed by tile
 	// coordinate, not by park id.

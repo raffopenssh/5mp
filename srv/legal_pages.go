@@ -279,11 +279,14 @@ respective provider:</p>
 <ul>
 <li><strong>unpkg.com</strong> &ndash; MapLibre map library, icon font</li>
 <li><strong>cdn.jsdelivr.net</strong> &ndash; export libraries</li>
-<li><strong>basemaps.cartocdn.com</strong> (CARTO) &ndash; dark base-map tiles</li>
 <li><strong>demotiles.maplibre.org</strong> &ndash; map fonts</li>
 <li><strong>Google Maps / Esri ArcGIS Online</strong> &ndash; satellite imagery
 tiles, only if you enable the satellite view</li>
 </ul>
+<p>The dark base-map tiles (data &copy; OpenStreetMap contributors, rendering
+&copy; CARTO) are <em>not</em> loaded from CARTO by your browser: this server
+fetches them and passes them on, so your IP address is not transmitted to
+CARTO.</p>
 <p>In the context of this application, these services do not set tracking
 cookies. Legal basis: Art. 6(1)(f) GDPR (legitimate interest in a functioning
 map display).</p>
@@ -401,11 +404,14 @@ Anbieter &uuml;bermittelt:</p>
 <ul>
 <li><strong>unpkg.com</strong> &ndash; MapLibre-Kartenbibliothek, Icon-Schriftart</li>
 <li><strong>cdn.jsdelivr.net</strong> &ndash; Export-Bibliotheken</li>
-<li><strong>basemaps.cartocdn.com</strong> (CARTO) &ndash; dunkle Basiskarten-Kacheln</li>
 <li><strong>demotiles.maplibre.org</strong> &ndash; Kartenschriften</li>
 <li><strong>Google Maps / Esri ArcGIS Online</strong> &ndash; Satellitenbild-Kacheln,
 nur wenn Sie die Satellitenansicht aktivieren</li>
 </ul>
+<p>Die dunklen Basiskarten-Kacheln (Daten &copy; OpenStreetMap-Mitwirkende,
+Darstellung &copy; CARTO) werden <em>nicht</em> von Ihrem Browser bei CARTO
+geladen: dieser Server ruft sie ab und liefert sie aus, Ihre IP-Adresse wird
+daher nicht an CARTO &uuml;bermittelt.</p>
 <p>Diese Dienste setzen im Kontext dieser Anwendung keine Tracking-Cookies.
 Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an einer
 funktionierenden Kartendarstellung).</p>

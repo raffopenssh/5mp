@@ -603,3 +603,60 @@ A collapsed docked maptip folds to its first line (`.fui-collapsed` rules in
 maptip.js's own CSS block). The stats panel is **not** a stack member — it has
 its own mobile grid at the top.
 
+
+## Base-map tiles are proxied: the CARTO key is ours (`srv/basemap.go`)
+
+CARTO began requiring an API key on its raster (PNG) basemaps in August 2026
+and **watermarks unauthenticated tiles** — `200 OK`, a valid PNG, "API KEY
+REQUIRED" repeated diagonally across the map. Nothing 4xx's, nothing logs; the
+map just reads as broken. (Measured 2026-08-27 on one z5 tile: keyed 22,653 B,
+unkeyed 26,128 B, the difference being the watermark.)
+
+The three surfaces that draw CARTO tiles — `globe.html` (MapLibre),
+`fire_animation.html` (MapLibre), `fire_analysis.html` (Leaflet) — now ask
+**us**, not `basemaps.cartocdn.com`:
+
+```
+GET /api/basemap/{style}/{z}/{x}/{y}     # y may carry "@2x" and ".png"
+```
+
+Four properties, each asserted (`basemap_*` in `tests/api_tests.sh`,
+`TestBasemap*` in `srv/basemap_test.go`):
+
+* **The key never reaches the browser.** `CARTO_API_KEY` lives in
+  `secrets.env`; the proxy appends `?key=` server-side. Templating it into a
+  tile URL publishes it to anyone with devtools, and CARTO's terms say the key
+  is ours and must not be shared. `basemap_key_absent_from_client` greps all
+  three pages for the key *and* for any `cartocdn.com` URL — a direct URL is a
+  watermarked tile even when no key leaks.
+* **A miss costs quota; a hit does not.** Free tier is **5M tile
+  requests/calendar month** across raster + vector. Tiles cache to
+  `data/basemap_cache/{style}[@2x]/{z}/{x}/{y}.png` for 30 days (temp file +
+  rename, so a concurrent reader never sees a half-written PNG); only upstream
+  fetches are counted, into `data/basemap_quota.json`, surfaced as
+  `carto_basemap` in `/api/pipeline-status`. Counting *requests* would
+  overstate usage by an order of magnitude — invariant 7: the number names its
+  unit (`upstream_fetches`).
+* **`{style}` is an allowlist, not a passthrough** (`cartoStyles`). The segment
+  comes from the URL; forwarding it verbatim makes this an open proxy to any
+  cartocdn path. Unknown style → 404; `z>20` or x/y outside that zoom's grid →
+  400.
+* **Absence is named, not silent.** No `CARTO_API_KEY` → one `slog.Warn`
+  naming the variable, tiles still served (watermarked), and `X-Carto-Key: no`
+  on the response so the API test *skips* rather than fails on a box without
+  the wallet. A deployment that lost its key says so in a header instead of
+  quietly looking broken.
+
+Upstream failure serves a **stale** cached tile if there is one
+(`X-Tile-Cache: stale`), else `204` — not 5xx, which MapLibre retries,
+amplifying an outage into a request storm. Same 204-on-miss convention as the
+histmap. `Cache-Control` is `private` (invariant 9: the path is behind the
+password gate).
+
+Two things that must not drift: the `© OpenStreetMap contributors, © CARTO`
+attribution is what the free tier is in exchange for (keep it in every style
+and in the footer), and the privacy pages no longer list
+`basemaps.cartocdn.com` as a host the browser contacts — because it isn't one
+(`srv/legal_pages.go`, both languages). CARTO is retiring raster in favour of
+vector; the same key covers both, so that migration is a change of URL and
+style spec, not of credential.

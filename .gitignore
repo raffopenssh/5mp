@@ -226,3 +226,8 @@ data/histmaps/sudan250k_labels.kmz
 data/histmaps/sudan250k_lines.geojson.gz
 reports/
 data/shared_files/
+
+# CARTO base-map tile cache + fair-use counter (srv/basemap.go). Regenerates
+# itself from CARTO on demand; the counter is per-deployment state.
+data/basemap_cache/
+data/basemap_quota.json

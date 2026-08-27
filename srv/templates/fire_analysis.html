@@ -113,7 +113,10 @@
         // Initialize map centered on Chinko
         const map = L.map('map').setView([6.15, 24.0], 8);
         
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        // Server-side proxy keeps the CARTO key off the client (srv/basemap.go).
+        // No {s} subdomain: it is our own origin, and no {r} either -- the
+        // proxy route spells @2x explicitly.
+        L.tileLayer('/api/basemap/dark_all/{z}/{x}/{y}@2x.png', {
             attribution: '© OpenStreetMap © CARTO'
         }).addTo(map);
         
