@@ -232,10 +232,12 @@
                     'carto-dark': {
                         type: 'raster',
                         tiles: [
-                            'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png'
+                            // Server-side proxy keeps the CARTO key off the
+                            // client (see srv/basemap.go).
+                            '/api/basemap/dark_all/{z}/{x}/{y}@2x.png'
                         ],
                         tileSize: 256,
-                        attribution: '© CartoDB'
+                        attribution: '© OpenStreetMap contributors, © CARTO'
                     }
                 },
                 layers: [{
