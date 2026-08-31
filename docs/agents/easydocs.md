@@ -250,3 +250,72 @@ nearest known mine to Raga 198 km away in CAR. The armed/unarmed gold lift
 (31.3% vs 20.5%, p=0.0033) is IPIS CAR field data carried across a border as a
 hypothesis, and the plan says so. Invariant 1 in prose form: an empty map there
 is the reach of the lists, not the absence of pits.
+### The six proposed-zone KMLs (2026-08-31) — section 3b of the plan
+
+Colleagues asked what is inside each shape of the future Pongo-Wau-Numatinna
+complex. Six KMLs arrived; they hold **eleven** shapes (the wilderness file has
+four Placemarks, the pastoral file three, and the two "ecological corridor"
+files hold **a single Point each, not a polygon**). Inputs are committed to
+`data/plan_zones/`; the measurement is
+`scripts/plan_zone_stats.py` → `data/eval/zone_stats.json` +
+`reports/ZONE_STATS.txt` (both gitignored, ~40 s to rebuild):
+
+```bash
+python3 scripts/plan_zone_stats.py --kml-dir data/plan_zones \
+    --json data/eval/zone_stats.json --report reports/ZONE_STATS.txt
+```
+
+It reads settlements/GHSL, GLAD cropland, Hansen/GFW clearing, `fire_grid_month`,
+the v5 fire groups, `prediction.json`, `osm_places` and — through the running
+app's own `/api/histmap/sudan250k/labels` — the 1930s sheet toponyms, per zone,
+per 25 km rim, plus the whole XSA as a baseline row.
+
+Five things that pass through the same traps this repo keeps setting:
+
+* **A bounding box is not a boundary.** The August draft measured the park as
+  `6.6–7.9 N, 26.9–27.9 E` and reported ~61 clusters / ~1,900 people. The real
+  polygon runs south-west of that box — they share 6,123 of ~15,800 km² — and
+  **all 61 of those clusters are outside it**. Inside the KML: one cattle camp,
+  one estimated person. Section 3 of the plan now carries the correction
+  explicitly rather than silently restating the number (invariant 7: two
+  surfaces, two words).
+* **A Placemark is the unit, not a file.** Reading `<coordinates>` file-wide
+  unions four distinct wilderness blocks into one 85,168 km² blob. The parser
+  iterates `<Placemark>` and also parses the **author's own area out of the
+  name** (`…_1587922ha`, `…_13,111km2`) so the file's claim and our measurement
+  print side by side: they agree to <1% everywhere except the Southern-NP block
+  (41,590 claimed, 38,719 measured, −6.9%), which is the whole of the file
+  name's 91,711 vs our 85,168.
+* **The shapes are nested, and that is the finding.** The park is 99.4% inside
+  the Wau wilderness block; Southern NP is inside its wilderness block; the
+  Numatina grazing zone overlaps the wilderness set by 91% of itself. The
+  `overlaps` block in the JSON exists so nobody adds the areas.
+* **Fire rate is quoted for 2024–2025 only.** The VIIRS fleet triples on
+  2024-01-01 (`fire.md` F11); an all-years mean per km² would have made every
+  zone look like it was burning more each year. `by_year_all` still ships, with
+  the caption.
+* **Zero cropland is a measurement here.** GLAD excludes pasture and shifting
+  cultivation, so 0.00 km² inside a grazed zone is the dataset working, not a
+  missing raster — the JSON carries `source_2019`, pixel counts and the
+  decimation factor, and an absent clip says `unmeasured`.
+
+The substantive answers: nine polygons cover 90,547 km² of distinct ground
+holding **67 clusters / ~6,071 people, all permanent, none new since 2015**;
+the rim of the union holds 323 clusters / 232,504 people. Fire is 2,400–6,000
+detections per 1,000 km²/yr everywhere (1.3–1.8× the XSA mean), 96–99% of
+fronts transhumance. Origin→destination by zone: the park is a **sink** (44% of
+fronts die inside, arrivals from the NE/Wau block), Boro is a **thoroughfare**
+(15%), the Numatina grazing zone shows the plan's NW–SE axis outright (43% of
+external arrivals from the SE), and Radom peaks in **November**, a month before
+everything else — the season's starting gun. The two corridor pins: 270 fronts
+touch both the park and Southern NP and 132 of them pass through one of the
+two 15 km discs, so the connectivity claim holds — but a pin cannot be
+gazetted, and the two polygons already touch at 28.003 E 6.72 N.
+
+Gold: **nothing inside the park or its rim** — no reported site, candidate,
+watchlist village or top-5% cell. The 13 top-5% cells are in Wau-Wilderness at
+6.0–6.3 N (nearest 10 km from the park's southern edge), Boro-Wilderness holds
+one candidate and two watchlist villages, and the Radom rim holds three
+reported sites over ground the 1930s sheet labels *"Old copper workings"*. The
+s.24 Gazette request in the plan's action 3 therefore has to cover the
+wilderness blocks, not just the park.

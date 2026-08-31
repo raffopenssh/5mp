@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+<Document>
+	<name>Pongo-Wau-Numatinna_National-Park_1587922ha.kml</name>
+	<StyleMap id="msn_ylw-pushpin">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#sn_ylw-pushpin</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#sh_ylw-pushpin</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Style id="sh_ylw-pushpin">
+		<IconStyle>
+			<scale>1.2</scale>
+		</IconStyle>
+		<BalloonStyle>
+		</BalloonStyle>
+		<LineStyle>
+			<color>bf00aa00</color>
+		</LineStyle>
+		<PolyStyle>
+			<color>8000aa00</color>
+		</PolyStyle>
+	</Style>
+	<Style id="sn_ylw-pushpin">
+		<BalloonStyle>
+		</BalloonStyle>
+		<LineStyle>
+			<color>bf00aa00</color>
+		</LineStyle>
+		<PolyStyle>
+			<color>8000aa00</color>
+		</PolyStyle>
+	</Style>
+	<Placemark>
+		<name>Pongo-Wau-Numatinna_National-Park_1587922ha</name>
+		<styleUrl>#msn_ylw-pushpin</styleUrl>
+		<Polygon>
+			<tessellate>1</tessellate>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						26.40558875131405,7.375957515546324,0 26.15949875815085,7.305646729543208,0 26.14238005286104,7.277149659066085,0 26.14360970459208,7.214810715329967,0 26.1329386349197,7.129177169484604,0 26.11311103217408,7.078627148783405,0 26.2153305151508,7.010838351134097,0 26.49432823164753,6.748151759690944,0 26.48598325888736,6.641795085000518,0 26.52047939870829,6.483917211354082,0 26.7230216058988,6.243457459428924,0 26.845668700055,6.24549910424051,0 27.3973413579482,6.312674200022961,0 27.63059844342141,6.604352341454188,0 27.64700418545466,6.683260212549675,0 27.88047597493562,6.674510562780614,0 27.89688946383804,6.660841707460396,0 27.90542015921468,6.659219264560657,0 27.9087053047524,6.654334763758889,0 27.92871022041852,6.664448708559349,0 27.93695033017777,6.626330125880155,0 27.96519509004441,6.610697004288058,0 27.97959823234137,6.653725399787125,0 28.00320386610018,6.720878479176425,0 27.92325577578219,6.752171651685273,0 27.90140953916809,6.752392354320521,0 27.88664609018079,6.750096637291483,0 27.87647395712641,6.752041538016468,0 27.87155285232004,6.752036657140404,0 27.643958302796,6.760605431012749,0 27.51279199502342,7.10111324836963,0 27.23544731797664,7.341037772672638,0 26.99156904100498,7.423802197707902,0 26.40558875131405,7.375957515546324,0 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+		<atom:link rel="app" href="https://www.google.com/earth/about/versions/#earth-pro" title="Google Earth Pro 7.3.7.1155"></atom:link>
+	</Placemark>
+</Document>
+</kml>
