@@ -46,3 +46,15 @@ c=Counter(["N","NE","E","SE","S","SW","W","NW"][int(((b+22.5)%360)//45)] for _,b
 print(c.most_common())
 for d,b,s,dist,days in big[:8]:
     print(f"  net {d:.0f}km heading {b:.0f}deg, start {s}, total path {dist}km in {days}d")
+
+# --- verification pass 2026-08-31 (report rewrite) ---
+# Additional checks run against the EASY assessment; results recorded here:
+#   * SE long movers start months: {'10':15,'11':60,'12':62,'01':52,'02':8}
+#     NW long movers start months: {'10':3,'11':67,'12':39,'01':77,'02':5}
+#     -> round trip overlaps; not two tidy pulses.
+#   * Nov-Feb share of detections (group-start weighted): 90%.
+#   * Boro funnel test: southbound long fronts (net>100km) crossing 8.8N
+#     spread evenly 23.0-27.5E; only 111/1372 (~8%) at Boro-Medina's
+#     longitude; 1113 long fronts pass within 30km of Raja vs 989 of
+#     Boro-Medina -> classified "Boro funnel" claim NOT supported.
+#   * 119/197 SE long movers enter belt from north of 8.5N (Darfur side).
