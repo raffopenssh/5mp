@@ -180,3 +180,33 @@ entries are self-written. Best geographic fit found: HARD (Wau HQ, Raja and
 Aweil offices). Two counterparts have **no name anywhere**: the state mining
 authority that actually issues artisanal gold licences, and the WBeG State
 Wildlife Conservation Authority consulted under s.16.
+
+### The dump is four years stale on partners (checked 2026-08-31)
+
+A web check while building section 8 of the plan overturned three things the
+dump implies:
+
+* **FFI is the incumbent next door.** Fauna & Flora works in **Southern
+  National Park** plus Bangangai and Bire Kpatuos Game Reserves with MWCT/SSWS
+  and Bucknell (camera traps, ranger+community biomonitoring, lion confirmed
+  in SNP 2022), EU-funded under NaturAfrica, with a 2023–2026 grant cycle
+  turning now. The plan's "no effective management here" was true only of
+  Numatina/Boro and had to be narrowed. FFI also already calls its scouts
+  **Community Wildlife Ambassadors (CWAs)** — the plan's own acronym for
+  Community Wildlife Areas, an avoidable collision.
+* **African Parks holds a 10-year agreement (Aug 2022) for Boma/Badingilo and
+  the Jonglei landscape**; Boma–Badingilo was inscribed as South Sudan's first
+  UNESCO World Heritage Site in July 2026. That is the working precedent for
+  how a management agreement, an aerial survey and a designation get done
+  here. The dump only has the 2022 AP–WCS dispute.
+* **The MWCT minister named in `SS contacts from Jean.xlsx` is out of post** —
+  Hon. Denay Jock Chagor holds it as of mid-2026. Treat every government
+  contact in that sheet the same way: the post survives, the name may not.
+
+The EU delegation also runs a standing "Friends of Conservation" forum in Juba
+on implementing the 2026 Act (4th session Aug 2026) — a convening table that
+already exists for exactly this plan's subject.
+
+Rule of thumb: **the dump is authoritative on law and stale on people.** Legal
+status from `docs.sqlite3`; every named human or organisational relationship
+re-checked before use.
