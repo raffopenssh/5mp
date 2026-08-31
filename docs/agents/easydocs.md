@@ -128,3 +128,43 @@ hook for absorbing them into a Pongo-Wau-Numatinna park.
 Spelling varies by document and era (Raga/Raja, Tambura/Tamboura,
 Numatina/Numatinna); the place index matches on substring and prints its key,
 so the match is auditable. Match on position, not on string.
+
+### What the plan took from it (2026-08-31)
+
+`reports/PLAN_APRCA_WSS_ASSESSMENT_TO_ACTION_2026-08_EASY.txt` (untracked, like
+all of `reports/`) was rewritten against the dossier: a new **section 7 on
+artisanal gold**, and an Oct-2026 start with 6 mo / 1 yr / 2 yr / 3 yr+ phases
+built around the single Dec 15 – Feb 15 field window.
+
+The gold section turns on a mismatch only the dump makes visible: the 2026 Act
+s.10(1)(e) bans mining and prospecting inside a protected area, but **Mining
+Act 2012 s.23(1)(g) only defers to a park "wherein Mining Operations are
+specifically banned"** — so the ban must be written in those words into the
+declaration and the Schedule IV boundary regulations (2026 Act s.8(3)), or a
+state mining office reads no bar. And it is a *state* office: artisanal
+licences are applied for and granted by "the respective State Authorities"
+(Mining Act s.75), citizens only, 12,000 m³/yr cap (s.74(1)), annual renewal,
+EIA and closure plan exemptible under s.75(6); Community Development
+Agreements bind large-scale holders only (s.68(1)). The cheap counter-moves
+are **s.24** (Gazette order closing an area to mineral-title applications —
+needs no park, no budget) and 2026 Act **s.14(4)** (an authorized
+conservancy's governing authority must consent in writing before *any*
+natural-resource use inside it). **s.27** is the same tool pointed the other
+way (Mineral Resource Reserve), so filing order matters.
+
+Two other findings the dump settled:
+
+* **Numatina is claimed twice** — Game Reserve in Schedule IV of the 2026 Act
+  *and* "Namatina Central Forest Reserve", gazetted 15-06-1953 (Gazette 856,
+  610,236 feddans ≈ 2,560 km²) in the Harmonized Forestry Policy's own reserve
+  list, whose boundaries only the forests Minister may change. Settle before
+  declaration.
+* **No recent wildlife baseline.** The last aerial numbers here are WCS 2007
+  (165 Derby's eland, Southern NP); the 2015/16 survey named
+  Numatina–Chelkou–Boro a key unassessed area and listed it as still to be
+  flown. It never was.
+
+The same 2015/16 survey is the precedent for the gold risk: gold found at
+Nyalongoro in 2016, a small-scale mine in an elephant corridor on the Kidepo
+drainage, and 2015–16 exploration licences outside protected areas but inside
+corridors, proposed conservancies and river headwaters.
