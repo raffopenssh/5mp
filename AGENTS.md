@@ -32,6 +32,7 @@ settlements, patrol tracking. ~17k-line single-page frontend + SQLite (~18 GB).
 | Settlement surface/extent/population provenance, GHSL backfill | `docs/agents/settlements.md` (+ `docs/AOI_STRUCTURAL_FIXES.md`) |
 | Mining reference lists, ACLED + Crisis Tracker + UCDP GED, coverage bias, reach strata | `docs/agents/acled.md` |
 | Nightlights (VNP46A3) — folded 2026-08-13; read before any nightlight work | `docs/agents/nightlights.md` |
+| The EASY document dump: 98 source files read, dated, legal-status-checked, scored against the plan | `docs/agents/easydocs.md` |
 
 Other human docs: `docs/API.md`, `docs/DATABASE.md`, `docs/SCRIPTS.md`,
 `docs/ARCHITECTURE.md`, `docs/QUICK_TASKS.md`, `docs/DATA_FLOW.md`.
