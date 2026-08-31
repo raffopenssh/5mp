@@ -210,3 +210,43 @@ already exists for exactly this plan's subject.
 Rule of thumb: **the dump is authoritative on law and stale on people.** Legal
 status from `docs.sqlite3`; every named human or organisational relationship
 re-checked before use.
+
+### Section 8 final shape, and the violence data's role (2026-08-31)
+
+The plan's counterpart section ended up as four tables — 8A government, 8B
+national NGOs, 8C international/donors, 8D named individuals — each row
+carrying a *last read* date, because the two source pools differ by four years.
+
+Three additions worth remembering beyond this plan:
+
+* **DG Khamis Adieng Ding (SSWS) is the entry point**, and the one contact in
+  `SS contacts from Jean.xlsx` verified as still valid. Publicly (Feb–Aug 2026)
+  he frames the 2026 Act around community conservancies, ran a Juba workshop on
+  roads-without-cutting-corridors, and is reforming the ranger cadre.
+* **RWF / Africa Keystone Protected Area Partnership** is the funding
+  architecture: 162 African PAs by 2035, South Sudan among 33 countries,
+  founded 2025 with WCS/AP/FZS/AU/AWF/ICCF, and a 2026 GEF–RWF match of up to
+  US$50m for governments directing GEF-9 to an NGO holding a long-term
+  co-management agreement. Whether any ground in western South Sudan is *on*
+  that list is unresolved and is a week-one question — the answer changes the
+  plan either way. (Coincidence worth not tripping over: their 162 and our
+  162 parks are unrelated.)
+* A 2023 *Bull. Brit. Orn. Club* paper on the south-west reserves independently
+  recommends this plan's prescription and notes it has barely changed since
+  1983. Recorded in the plan as a warning, not a citation: the bottleneck is
+  execution.
+
+**How the conflict data was allowed to be used.** Section 7 (gold) now carries
+a violence read, built only from `data/eval/acled/adm1_conflict.json` and
+`data/eval/mining_reference.json`, under `docs/agents/acled.md`'s constraints —
+derived per-state scalars, our inference, never attributed to ACLED. The three
+statements: WBeG is 9th of 10 states by events (721 / 1,681 fatalities) but
+**2nd by peak weekly population exposure** (279k) — low frequency, high
+amplitude, which is an argument for short movable field seasons; Western
+Equatoria peaked in **2025** (239 events vs 45 in 2019) so the trend risk is
+south-west, not north; and the gold–violence link **cannot be tested here** —
+all 71 SSD sites in the merged reference are OSM, none in the study box,
+nearest known mine to Raga 198 km away in CAR. The armed/unarmed gold lift
+(31.3% vs 20.5%, p=0.0033) is IPIS CAR field data carried across a border as a
+hypothesis, and the plan says so. Invariant 1 in prose form: an empty map there
+is the reach of the lists, not the absence of pits.
