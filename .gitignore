@@ -231,3 +231,7 @@ data/shared_files/
 # itself from CARTO on demand; the counter is per-deployment state.
 data/basemap_cache/
 data/basemap_quota.json
+
+# EASY document dump (scripts/easydocs): sources, extracted text, ledger and
+# index are reproducible artefacts; the dossier lives in reports/ (untracked).
+data/easy_docs/
