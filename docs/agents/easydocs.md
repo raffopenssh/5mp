@@ -168,3 +168,15 @@ The same 2015/16 survey is the precedent for the gold risk: gold found at
 Nyalongoro in 2016, a small-scale mine in an elephant corridor on the Kidepo
 drainage, and 2015–16 exploration licences outside protected areas but inside
 corridors, proposed conservancies and river headwaters.
+The dossier's own contact material is old in a specific way. `SS contacts from
+Jean.xlsx` is **undated** (internal references run to mid-2021), so government
+post-holders in it must be treated as ~5 years stale — the posts survive, the
+names may not. Section 8 of the plan therefore carries a *last read* column
+per counterpart, and is filled from two sources of very different vintage:
+the dump for government, and the South Sudan NGO Forum's national-member
+roster read live on 2026-08-31 (250 listed, 139 certified) for NNGOs.
+Certification there is Forum membership status, not diligence, and the
+entries are self-written. Best geographic fit found: HARD (Wau HQ, Raja and
+Aweil offices). Two counterparts have **no name anywhere**: the state mining
+authority that actually issues artisanal gold licences, and the WBeG State
+Wildlife Conservation Authority consulted under s.16.
