@@ -523,6 +523,42 @@ else
     green "✓"; PASSED=$((PASSED + 1))
 fi
 
+# Geology is WITHHELD from the sandbox tenant (srv/geomap_gate.go): the CAR
+# sheet is used under research-use terms and the affinity model points at
+# gold-bearing rock, so the public demo password gets an explanatory empty
+# catalogue and 403s on tiles/downloads. A client password and a guest link
+# minted by one see the layer. Asserted first; the geology suite below then
+# runs as the client tenant (skipped when no client password is configured).
+GEO_CLIENT_PWD=$(grep -o '^PASSWORD_ENVS=.*' secrets.env 2>/dev/null | cut -d= -f2 \
+    | tr ',' '\n' | grep ':prod$' | head -1 | cut -d: -f1)
+printf "%-50s" "geomap_withheld_from_sandbox"
+GW_CAT=$(curl -s -m 30 -b "$COOKIE_FILE" "${BASE_URL}/api/geomap" | jq -r '[(.withheld==true), (.sheets|length), (.reason|length>0)] | @tsv' 2>/dev/null)
+GW_TILE=$(curl -s -m 30 -o /dev/null -w "%{http_code}" -b "$COOKIE_FILE" "${BASE_URL}/api/geomap/car/6/34/30.pbf")
+GW_GPKG=$(curl -s -m 30 -o /dev/null -w "%{http_code}" -b "$COOKIE_FILE" "${BASE_URL}/api/geomap/geopackage")
+GW_STRUCT=$(curl -s -m 30 -o /dev/null -w "%{http_code}" -b "$COOKIE_FILE" "${BASE_URL}/api/geomap-structural/faults")
+if [[ "$GW_CAT" == "true	0	true" && "$GW_TILE" == "403" && "$GW_GPKG" == "403" && "$GW_STRUCT" == "403" ]]; then
+    green "✓"; PASSED=$((PASSED + 1))
+else
+    red "FAIL (catalogue '$GW_CAT', tile $GW_TILE, gpkg $GW_GPKG, structural $GW_STRUCT)"
+    FAILED=$((FAILED + 1)); ERRORS+=("geomap not withheld from sandbox")
+fi
+
+if [[ -n "$GEO_CLIENT_PWD" ]]; then
+GEO_JAR=$(mktemp); curl -s -m 30 -o /dev/null -c "$GEO_JAR" --get --data-urlencode "pwd=$GEO_CLIENT_PWD" "${BASE_URL}/"
+printf "%-50s" "geomap_visible_to_client_and_guest_link"
+GV_N=$(curl -s -m 30 -b "$GEO_JAR" "${BASE_URL}/api/geomap" | jq -r '[.sheets[] | select(.available)] | length' 2>/dev/null)
+GV_SLUG=$(curl -s -m 30 -X POST "${BASE_URL}/api/shortlink?pwd=${GEO_CLIENT_PWD}" \
+    -H 'Content-Type: application/json' -d '{"url":"/?geomap=car","guest":true}' | jq -r '.slug // empty')
+GV_GJAR=$(mktemp); curl -s -m 30 -o /dev/null -c "$GV_GJAR" "${BASE_URL}/s/${GV_SLUG}"
+GV_GUEST=$(curl -s -m 30 -b "$GV_GJAR" "${BASE_URL}/api/geomap" | jq -r '[.sheets[] | select(.available)] | length' 2>/dev/null)
+rm -f "$GV_GJAR"
+if [[ "$GV_N" -gt 0 && "$GV_GUEST" == "$GV_N" ]]; then
+    green "✓ ($GV_N sheets)"; PASSED=$((PASSED + 1))
+else
+    red "FAIL (client sees $GV_N sheets, guest link sees $GV_GUEST)"
+    FAILED=$((FAILED + 1)); ERRORS+=("geomap not visible to client/guest")
+fi
+
 # The geology GeoPackage is built on first request and cached beside the units
 # it came from. It is ONE file covering every sheet -- the map is one layer, so
 # the data behind it is not a per-country jigsaw -- and three things must hold
@@ -535,7 +571,7 @@ fi
 # is indistinguishable from "no data here".
 printf "%-50s" "geomap_geopackage_typed_and_filterable"
 GEO_TMP=$(mktemp /tmp/geomapXXXX.gpkg)
-GEO_CODE=$(curl -s -m 300 -L -o "$GEO_TMP" -w "%{http_code}" -b "$COOKIE_FILE" \
+GEO_CODE=$(curl -s -m 300 -L -o "$GEO_TMP" -w "%{http_code}" -b "$GEO_JAR" \
     "${BASE_URL}/api/geomap/geopackage")
 GEO_APP=$(sqlite3 "$GEO_TMP" "PRAGMA application_id" 2>/dev/null || echo 0)
 GEO_GOLD=$(sqlite3 "$GEO_TMP" 'SELECT COUNT(*) FROM geology_units WHERE "w_gold" IS NOT NULL' 2>/dev/null || echo 0)
@@ -544,7 +580,7 @@ GEO_PROJ=$(sqlite3 "$GEO_TMP" "SELECT COUNT(*) FROM qgis_projects" 2>/dev/null |
 GEO_SHEETS=$(sqlite3 "$GEO_TMP" "SELECT COUNT(DISTINCT sheet) FROM geology_units" 2>/dev/null || echo 0)
 # Derived from the catalogue, never typed here: a server with one sheet built
 # must pass, and a third sheet added later must be checked without an edit.
-GEO_WANT=$(curl -s -b "$COOKIE_FILE" "${BASE_URL}/api/geomap" \
+GEO_WANT=$(curl -s -b "$GEO_JAR" "${BASE_URL}/api/geomap" \
     | python3 -c 'import json,sys; print(len(json.load(sys.stdin).get("geopackage_sheets") or []))' 2>/dev/null || echo 0)
 rm -f "$GEO_TMP"
 if [[ "$GEO_CODE" == "200" && "$GEO_APP" == "1196444487" && "$GEO_GOLD" -gt 0 \
@@ -560,7 +596,7 @@ fi
 # render_gpkg.py. It must REDIRECT to the combined file, not 404: a 404 there
 # reads as "the export was removed", which is not what happened.
 printf "%-50s" "geomap_geopackage_legacy_sheet_path"
-GEO_LOC=$(curl -s -o /dev/null -w "%{http_code} %{redirect_url}" -b "$COOKIE_FILE" \
+GEO_LOC=$(curl -s -o /dev/null -w "%{http_code} %{redirect_url}" -b "$GEO_JAR" \
     "${BASE_URL}/api/geomap/car/geopackage")
 if [[ "$GEO_LOC" == 308*"/api/geomap/geopackage"* ]]; then
     green "✓"; PASSED=$((PASSED + 1))
@@ -577,7 +613,7 @@ fi
 # set; a layer without one must be exactly the word the UI prints: unmeasured.
 printf "%-50s" "geomap_structural_served_whole"
 STRUCT_OK="ok"
-STRUCT_META=$(curl -s -b "$COOKIE_FILE" "${BASE_URL}/api/geomap" | python3 -c '
+STRUCT_META=$(curl -s -b "$GEO_JAR" "${BASE_URL}/api/geomap" | python3 -c '
 import json, sys
 s = (json.load(sys.stdin).get("structural") or {})
 for lid, e in s.items():
@@ -592,7 +628,7 @@ while read -r SL_ID SL_N SL_URL SL_SKILL; do
     [[ -z "$SL_ID" ]] && continue
     if [[ "$SL_N" == "-1" ]]; then STRUCT_OK="$SL_ID unavailable with no reason"; break; fi
     if [[ "$SL_SKILL" != "1" ]]; then STRUCT_OK="$SL_ID skill block without lifts or scope"; break; fi
-    SL_GOT=$(curl -s --compressed -b "$COOKIE_FILE" "${BASE_URL}${SL_URL}" | python3 -c '
+    SL_GOT=$(curl -s --compressed -b "$GEO_JAR" "${BASE_URL}${SL_URL}" | python3 -c '
 import json, sys
 d = json.load(sys.stdin)
 miss = [k for k in ("source","citation","terms","accessed") if not d.get(k)]
@@ -610,6 +646,11 @@ if [[ "$STRUCT_OK" == "ok" ]]; then
 else
     red "FAIL ($STRUCT_OK)"
     FAILED=$((FAILED + 1)); ERRORS+=("geomap structural")
+fi
+
+rm -f "$GEO_JAR"
+else
+    yellow "  (geology suite skipped: no client password in secrets.env)"
 fi
 
 yellow "\n=== Patrol data tenants ==="

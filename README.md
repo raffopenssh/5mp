@@ -82,3 +82,7 @@ This template uses sqlite (`db.sqlite3`). SQL queries are managed with sqlc.
 - `srv`: HTTP server logic (handlers)
 - `srv/templates`: Go HTML templates
 - `db`: SQLite open + migrations (001-base.sql)
+
+## Licence
+
+Code: MIT (see `LICENSE`). Data sources and their terms: `srv/license.go`, served at `/licenses` and `/api/licenses`. The app is non-commercial; several imagery/data terms depend on that.

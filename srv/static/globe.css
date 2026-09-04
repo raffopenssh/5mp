@@ -129,6 +129,31 @@
         .methods-hint:hover { color: #22c55e; border-color: rgba(34,197,94,0.8); }
         .footer-attribution a { color: #888; text-decoration: none; display: flex; align-items: center; }
         .footer-attribution a:hover { color: #22c55e; }
+        /* Footer popovers: one look for every chip that needs words. */
+        .fpop-wrap { position: relative; display: inline-flex; align-items: center; }
+        .fpop-chip { background: none; border: 0; padding: 0; font: inherit; color: #999; cursor: pointer; white-space: nowrap; line-height: inherit; position: relative; }
+        /* Tap target: the chip is 10px text, the hit area is not. */
+        .fpop-chip::before { content: ''; position: absolute; inset: -12px -6px; }
+        .fpop-chip:hover, .fpop-chip[aria-expanded="true"] { color: #22c55e; }
+        .fpop-chip:empty { display: none; }
+        /* Opened by hover (pointer devices) or tap; closes with a fade and a
+           grace period so the pointer can travel from the chip up into the
+           bubble -- the gap below the bubble is padding, not air, so hovering
+           across it never loses the popover. */
+        .fpop { position: absolute; bottom: 100%; right: -8px; padding-bottom: 10px; width: min(320px, calc(100vw - 24px)); z-index: 600; opacity: 0; visibility: hidden; transform: translateY(4px); transition: opacity 0.18s ease, transform 0.18s ease, visibility 0s linear 0.45s; pointer-events: none; }
+        .fpop-body { background: rgba(18,18,18,0.97); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; padding: 10px 12px; font-size: 11px; line-height: 1.5; color: #bbb; white-space: normal; text-align: left; box-shadow: 0 6px 24px rgba(0,0,0,0.5); position: relative; }
+        .fpop-body::after { content: ''; position: absolute; right: 16px; top: 100%; border: 6px solid transparent; border-top-color: rgba(255,255,255,0.12); }
+        .fpop.open, .fpop-wrap.hover .fpop { opacity: 1; visibility: visible; transform: none; pointer-events: auto; transition: opacity 0.18s ease, transform 0.18s ease, visibility 0s; }
+        .fpop a { display: inline; color: #ddd; text-decoration: underline; text-decoration-color: #555; }
+        .fpop a:hover { color: #22c55e; }
+        .fpop a[role="menuitem"] { display: flex; align-items: center; gap: 6px; padding: 4px 0; text-decoration: none; color: #ccc; }
+        .fpop a[role="menuitem"]:hover { color: #22c55e; }
+        .fpop-dim { color: #666; font-size: 10px; margin-left: auto; }
+        .fpop-title { color: #666; font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px; }
+        .fpop-line { padding: 3px 0; }
+        .fpop-line + .fpop-line { border-top: 1px solid rgba(255,255,255,0.06); }
+        .fpop-more { margin-top: 8px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.08); color: #777; }
+        .fpop-more a { color: #22c55e; text-decoration: none; }
         .footer-sep { color: #777; }
         .github-link svg { fill: currentColor; }
 
@@ -2813,7 +2838,17 @@
                 padding: 4px 8px; font-size: 10px; gap: 6px; 
                 background: transparent; border-radius: 0;
             }
-            .footer-sep { display: none; }
+            .footer-sep { display: inline; color: #444; }
+            .footer-sep.desktop-only { display: none !important; }
+            /* Footer popovers on a phone: a sheet the width of the screen,
+               pinned above the footer bar (which itself rides above the
+               timeline), instead of a bubble hanging off a 10px chip. */
+            .fpop { position: fixed; left: 8px; right: 8px; width: auto; bottom: calc(var(--slider-h, 70px) + 40px); padding-bottom: 0; }
+            .fpop-body { font-size: 13px; padding: 14px 16px; border-radius: 12px; }
+            .fpop-body::after { display: none; }
+            .fpop-title { font-size: 11px; }
+            .fpop a[role="menuitem"] { padding: 8px 0; min-height: 40px; }
+            .fpop-line { padding: 6px 0; }
             /* Truncate commit hash to ~4 chars so it doesn't overlap the toolbar */
             #version-link { display: inline-block; max-width: 4ch; overflow: hidden; white-space: nowrap; vertical-align: bottom; }
             .footer-btn { display: none; }

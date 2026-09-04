@@ -14,6 +14,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -822,10 +823,10 @@ func (s *Server) HandleAPIZenodoMBTilesCreate(w http.ResponseWriter, r *http.Req
 
 	source := r.URL.Query().Get("source")
 	if source == "" {
-		source = "esri"
+		source = defaultTileSource
 	}
 	if _, ok := TileSources[source]; !ok {
-		http.Error(w, "Invalid source. Use: esri, bing, google", http.StatusBadRequest)
+		http.Error(w, "Invalid source. Use: "+strings.Join(tileSourceNames(), ", "), http.StatusBadRequest)
 		return
 	}
 
@@ -837,8 +838,8 @@ func (s *Server) HandleAPIZenodoMBTilesCreate(w http.ResponseWriter, r *http.Req
 		if maxZoom < 1 {
 			maxZoom = 1
 		}
-		if maxZoom > 19 {
-			maxZoom = 19
+		if maxZoom > maxBuildZoom() {
+			maxZoom = maxBuildZoom()
 		}
 	}
 
@@ -902,8 +903,8 @@ func (s *Server) HandleAPIZenodoMBTilesEstimate(w http.ResponseWriter, r *http.R
 		if maxZoom < 1 {
 			maxZoom = 1
 		}
-		if maxZoom > 19 {
-			maxZoom = 19
+		if maxZoom > maxBuildZoom() {
+			maxZoom = maxBuildZoom()
 		}
 	}
 
@@ -919,10 +920,11 @@ func (s *Server) HandleAPIZenodoMBTilesEstimate(w http.ResponseWriter, r *http.R
 	sufficient, capacityReason := checkMBTilesCapacity(bbox, maxZoom, extended)
 
 	// Check if already uploaded to Zenodo
-	key := fmt.Sprintf("mbtiles_%s_%s", parkID, r.URL.Query().Get("source"))
-	if key == fmt.Sprintf("mbtiles_%s_", parkID) {
-		key = fmt.Sprintf("mbtiles_%s_esri", parkID)
+	srcName := r.URL.Query().Get("source")
+	if srcName == "" {
+		srcName = defaultTileSource
 	}
+	key := fmt.Sprintf("mbtiles_%s_%s", parkID, srcName)
 	var existingDepoID int
 	if zenodoMBQueue != nil {
 		if entry := zenodoMBQueue.zenodoManifest.Get(key); entry != nil {
@@ -947,7 +949,8 @@ func (s *Server) HandleAPIZenodoMBTilesEstimate(w http.ResponseWriter, r *http.R
 		"storage":           "zenodo",
 		"ram_needed_mb":     ramNeeded / (1024 * 1024),
 		"existing_depo_id":  existingDepoID,
-		"sources":           []string{"esri", "bing", "google"},
+		"sources":           tileSourceNames(),
+		"max_build_zoom":    maxBuildZoom(),
 	})
 }
 
