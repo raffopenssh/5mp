@@ -2,8 +2,10 @@ package srv
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"os"
 	"time"
 )
@@ -91,6 +93,21 @@ func (s *Server) checkpointWAL(ctx context.Context, dbPath string) {
 	}
 }
 
+// logWALBlockers names what could be holding the read snapshot a checkpoint
+// cannot pass: the pool's in-use connection count and every HTTP request that
+// has been running longer than a minute. A busy checkpoint with zero in-use
+// connections means the reader is another process (a cron script's open
+// cursor) — check `fuser db.sqlite3-wal`.
+func (s *Server) logWALBlockers() {
+	st := s.DB.Stats()
+	slog.Warn("wal blockers: pool", "in_use", st.InUse, "idle", st.Idle, "open", st.OpenConnections,
+		"wait_count", st.WaitCount, "inflight_requests", inflight.count())
+	for _, r := range inflight.olderThan(time.Minute) {
+		slog.Warn("wal blockers: long request", "method", r.Method, "path", r.Path,
+			"query", r.Query, "age", time.Since(r.Since).Round(time.Second))
+	}
+}
+
 // notifyWALStuck writes a cron_status-shaped notification so the stuck WAL
 // shows in the bell like a failed nightly job (docs/agents/ops.md, "Cron jobs
 // report into the notification bell — by SHAPE"). One per day at most.
@@ -121,4 +138,34 @@ func walSize(dbPath string) int64 {
 
 func fmtBytesGB(b int64) string {
 	return fmt.Sprintf("%.1f GB", float64(b)/(1<<30))
+}
+
+// HandleAdminDBHealth reports WAL size, pool state and long-running requests
+// — everything logWALBlockers logs, on demand. Admin only: request paths and
+// query strings are operational detail, not for guests.
+func (s *Server) HandleAdminDBHealth(w http.ResponseWriter, r *http.Request) {
+	st := s.DB.Stats()
+	type req struct {
+		Method string `json:"method"`
+		Path   string `json:"path"`
+		Query  string `json:"query,omitempty"`
+		AgeS   int    `json:"age_s"`
+	}
+	var long []req
+	for _, x := range inflight.olderThan(10 * time.Second) {
+		long = append(long, req{x.Method, x.Path, x.Query, int(time.Since(x.Since).Seconds())})
+	}
+	var busy, logFrames, ckptFrames int64
+	_ = s.DB.QueryRowContext(r.Context(), "PRAGMA wal_checkpoint(PASSIVE)").Scan(&busy, &logFrames, &ckptFrames)
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(map[string]any{
+		"wal_bytes":               walSize("db.sqlite3"),
+		"wal_frames":              logFrames,
+		"wal_frames_checkpointed": ckptFrames,
+		"checkpoint_busy":         busy != 0,
+		"pool":                    map[string]any{"in_use": st.InUse, "idle": st.Idle, "open": st.OpenConnections, "wait_count": st.WaitCount},
+		"inflight_requests":       inflight.count(),
+		"long_requests":           long,
+		"checkpoint_interval_s":   int(walCheckpointInterval.Seconds()),
+	})
 }
