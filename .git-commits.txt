@@ -1,3 +1,7 @@
+b3be8ad 2026-09-04 11:52:30 WAL visibility: blockers logged when checkpoint is busy, /api/admin/db-health, WAL size in every cron notification
+49bb1fa 2026-09-04 11:25:37 WAL: hourly checkpoint worker, journal_size_limit, pragmas on every pooled connection
+185c1fe 2026-09-04 08:04:51 Map: detect dead WebGL at startup; banner instead of black map, safe-mode retry for AA/preserve buffer failures
+566a35c 2026-09-04 07:52:27 switchBasemap: any google/bing basemap id falls back to satellite-esri
 60e8035 2026-09-04 07:50:27 MBTiles estimate: reject sources not in TileSources whitelist (same as create)
 07eeaec 2026-09-04 07:48:18 Delete Esri/Google MBTiles Zenodo drafts (3 depositions) and clear manifest
 60301e1 2026-09-04 07:45:19 Footer: hover-intent popovers with fade, equal icon pills on phones
@@ -14,7 +18,3 @@ b1ee141 2026-08-31 16:02:06 docs: easydocs subsystem — how the EASY document d
 6a3a5bd 2026-08-31 16:00:36 gitignore: EASY document dump artefacts (256 MB raw + 5.6 MB ledger)
 b677621 2026-08-31 16:00:04 easydocs: read the EASY document dump and score it against the AP-RCA plan
 ac35d24 2026-08-31 10:49:04 Record corridor verification results for AP-RCA plan assessment rewrite
-7e8366c 2026-08-31 10:18:42 Corridor directionality analysis from v5 trajectories (AP-RCA plan check)
-9a9a250 2026-08-27 06:29:45 Proxy CARTO base-map tiles server-side with our API key
-a0e1514 2026-08-20 10:13:13 Cron status: settlement_backfill, cropland, onboard_park report into the bell
-1178644 2026-08-19 17:38:29 Fix mobile black-map: WebGL context-loss recovery + floatui resize-listener leak

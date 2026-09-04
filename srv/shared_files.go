@@ -24,12 +24,14 @@ package srv
 // the disk or serve files under this domain's name.
 
 import (
+	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -38,7 +40,32 @@ const (
 	sharedFileDir     = "data/shared_files"
 	sharedFileTTL     = 21 * 24 * time.Hour
 	maxSharedFileSize = 1 << 30 // 1 GB — GPKGs and MBTiles are legitimately large
+	// sharedFileBudgetDefault caps what one login may hold across uploads and
+	// MBTiles builds. SHARED_FILE_BUDGET_GB overrides.
+	sharedFileBudgetDefault = 20 << 30
 )
+
+// sharedFileBudgetBytes: the per-login storage budget.
+func sharedFileBudgetBytes() int64 {
+	v := strings.TrimSpace(os.Getenv("SHARED_FILE_BUDGET_GB"))
+	if v == "" {
+		v = secretsEnv("SHARED_FILE_BUDGET_GB")
+	}
+	if n, err := strconv.Atoi(v); err == nil && n > 0 {
+		return int64(n) << 30
+	}
+	return sharedFileBudgetDefault
+}
+
+// sharedFileUsage: bytes this login currently holds.
+func (s *Server) sharedFileUsage(ref string) int64 {
+	if ref == "" {
+		return 0
+	}
+	var n int64
+	s.DB.QueryRow(`SELECT COALESCE(SUM(size_bytes),0) FROM shared_files WHERE pwd_ref = ?`, ref).Scan(&n)
+	return n
+}
 
 type SharedFile struct {
 	ID        string `json:"id"`
@@ -53,6 +80,32 @@ type SharedFile struct {
 	// copy here would drift from a retag (same rule as GeoPackageJob).
 	LinkTags []string `json:"link_tags,omitempty"`
 	LinkTag  string   `json:"link_tag,omitempty"`
+	// Kind: 'upload' | 'mbtiles'. Encrypted: at rest (every row since 064).
+	// Private: the download answers only the owner or a guest key they
+	// minted, never another login — set for files built from a private
+	// tile source. MaxDownloads 0 = unlimited.
+	Kind         string `json:"kind"`
+	Encrypted    bool   `json:"encrypted"`
+	Private      bool   `json:"private"`
+	MaxDownloads int    `json:"max_downloads"`
+	nonce        []byte
+	ref          string
+}
+
+const sharedFileCols = `id, pwd_ref, name, size_bytes, created_at, expires_at, downloads,
+	COALESCE(enc,0), nonce, COALESCE(max_downloads,0), COALESCE(kind,'upload'), COALESCE(private,0)`
+
+func scanSharedFile(sc interface{ Scan(...interface{}) error }) (*SharedFile, error) {
+	f := &SharedFile{}
+	var enc, priv int
+	if err := sc.Scan(&f.ID, &f.ref, &f.Name, &f.SizeBytes, &f.CreatedAt, &f.ExpiresAt, &f.Downloads,
+		&enc, &f.nonce, &f.MaxDownloads, &f.Kind, &priv); err != nil {
+		return nil, err
+	}
+	f.Encrypted = enc == 1
+	f.Private = priv == 1
+	f.URL = "/api/files/" + f.ID + "/download"
+	return f, nil
 }
 
 // sharedFileName keeps the original basename recognisable but safe: path
@@ -123,7 +176,8 @@ func (s *Server) sweepSharedFiles(now string) {
 		}
 		lrows.Close()
 	}
-	rows, err := s.DB.Query(`SELECT id FROM shared_files WHERE expires_at < ?`, now)
+	rows, err := s.DB.Query(`SELECT id FROM shared_files WHERE expires_at < ?
+		OR (COALESCE(max_downloads,0) > 0 AND downloads >= max_downloads)`, now)
 	if err != nil {
 		return
 	}
@@ -138,6 +192,12 @@ func (s *Server) sweepSharedFiles(now string) {
 	for _, id := range ids {
 		os.RemoveAll(filepath.Join(sharedFileDir, id))
 		s.DB.Exec(`DELETE FROM shared_files WHERE id = ?`, id)
+		// A key whose target is gone must read "switched off", not 410 —
+		// same rule as an explicit delete. (Expiry is already the key's;
+		// this matters for the download-cap case.)
+		u := "/api/files/" + id + "/download"
+		s.DB.Exec(`UPDATE short_links SET revoked_at = ? WHERE guest = 1
+			AND (revoked_at IS NULL OR revoked_at = '') AND (url = ? OR url LIKE ?)`, now, u, u+"?%")
 	}
 	if len(ids) > 0 {
 		slog.Info("shared-file sweeper removed expired files", "count", len(ids))
@@ -216,6 +276,12 @@ func (s *Server) HandleAPISharedFileUpload(w http.ResponseWriter, r *http.Reques
 			"error": "file sharing is not available in the test environment"})
 		return
 	}
+	if used, budget := s.sharedFileUsage(ref), sharedFileBudgetBytes(); used >= budget {
+		writeJSON(w, http.StatusInsufficientStorage, map[string]interface{}{
+			"error": fmt.Sprintf("storage budget of %s is used up (%s held) — delete a file first", gb(budget), gb(used)),
+			"budget_used_bytes": used, "budget_max_bytes": budget})
+		return
+	}
 	r.Body = http.MaxBytesReader(w, r.Body, maxSharedFileSize)
 	// A large body must outlive the server's absolute ReadTimeout.
 	longUpload(w, r)
@@ -246,8 +312,25 @@ func (s *Server) HandleAPISharedFileUpload(w http.ResponseWriter, r *http.Reques
 		http.Error(w, "could not store the file", http.StatusInternalServerError)
 		return
 	}
-	n, err := io.Copy(dst, src)
+	nonce, nerr := newFileNonce()
+	var ew io.Writer
+	if nerr == nil {
+		ew, nerr = encryptingWriter(dst, nonce)
+	}
+	if nerr != nil {
+		dst.Close()
+		os.RemoveAll(dir)
+		http.Error(w, "encryption unavailable: "+nerr.Error(), http.StatusInternalServerError)
+		return
+	}
+	n, err := io.Copy(ew, src)
 	dst.Close()
+	if err == nil && s.sharedFileUsage(ref)+n > sharedFileBudgetBytes() {
+		os.RemoveAll(dir)
+		writeJSON(w, http.StatusInsufficientStorage, map[string]interface{}{
+			"error": fmt.Sprintf("this file would exceed your %s storage budget", gb(sharedFileBudgetBytes()))})
+		return
+	}
 	if err != nil {
 		// A partial file must not wear the advertised name (invariant 1's
 		// cousin): delete everything, report unfinished.
@@ -261,11 +344,12 @@ func (s *Server) HandleAPISharedFileUpload(w http.ResponseWriter, r *http.Reques
 		CreatedAt: now.Format(time.RFC3339),
 		ExpiresAt: now.Add(sharedFileTTL).Format(time.RFC3339),
 		URL:       "/api/files/" + id + "/download",
+		Kind:      "upload", Encrypted: true,
 	}
 	if _, err := s.DB.Exec(`INSERT INTO shared_files
-		(id, pwd_ref, env, name, size_bytes, created_at, expires_at)
-		VALUES (?,?,?,?,?,?,?)`,
-		id, ref, RequestEnv(r), name, n, f.CreatedAt, f.ExpiresAt); err != nil {
+		(id, pwd_ref, env, name, size_bytes, created_at, expires_at, enc, nonce, kind)
+		VALUES (?,?,?,?,?,?,?,1,?,'upload')`,
+		id, ref, RequestEnv(r), name, n, f.CreatedAt, f.ExpiresAt, nonce); err != nil {
 		os.RemoveAll(dir)
 		http.Error(w, "database error", http.StatusInternalServerError)
 		return
@@ -280,7 +364,7 @@ func (s *Server) HandleAPISharedFileList(w http.ResponseWriter, r *http.Request)
 	ref := shortCallerRef(r)
 	out := []*SharedFile{}
 	if ref != "" {
-		rows, err := s.DB.Query(`SELECT id, name, size_bytes, created_at, expires_at, downloads
+		rows, err := s.DB.Query(`SELECT `+sharedFileCols+`
 			FROM shared_files WHERE pwd_ref = ? ORDER BY created_at DESC LIMIT 200`, ref)
 		if err != nil {
 			http.Error(w, "database error", http.StatusInternalServerError)
@@ -288,17 +372,21 @@ func (s *Server) HandleAPISharedFileList(w http.ResponseWriter, r *http.Request)
 		}
 		defer rows.Close()
 		for rows.Next() {
-			f := &SharedFile{}
-			if rows.Scan(&f.ID, &f.Name, &f.SizeBytes, &f.CreatedAt, &f.ExpiresAt, &f.Downloads) == nil {
-				f.URL = "/api/files/" + f.ID + "/download"
+			if f, err := scanSharedFile(rows); err == nil {
 				s.sharedFileSetLinkTags(f)
 				out = append(out, f)
 			}
 		}
 	}
+	var used int64
+	for _, f := range out {
+		used += f.SizeBytes
+	}
 	w.Header().Set("Cache-Control", "no-store")
 	writeJSON(w, http.StatusOK, map[string]interface{}{"files": out, "count": len(out),
-		"can_upload": ref != "" && RequestEnv(r) != sandboxTenant && GuestFromRequest(r) == nil})
+		"can_upload":        ref != "" && RequestEnv(r) != sandboxTenant && GuestFromRequest(r) == nil,
+		"budget_used_bytes": used, "budget_max_bytes": sharedFileBudgetBytes(),
+		"disk_free_bytes":   getAvailableDiskSpace(sharedFileDir)})
 }
 
 // loadSharedFile resolves an id. ownerOnly enforces pwd_ref scope with 404
@@ -306,16 +394,11 @@ func (s *Server) HandleAPISharedFileList(w http.ResponseWriter, r *http.Request)
 // random token fetched through a link is the feature.
 func (s *Server) loadSharedFile(w http.ResponseWriter, r *http.Request, ownerOnly bool) (*SharedFile, bool) {
 	id := r.PathValue("id")
-	f := &SharedFile{}
-	var ref string
-	err := s.DB.QueryRow(`SELECT id, pwd_ref, name, size_bytes, created_at, expires_at, downloads
-		FROM shared_files WHERE id = ?`, id).
-		Scan(&f.ID, &ref, &f.Name, &f.SizeBytes, &f.CreatedAt, &f.ExpiresAt, &f.Downloads)
-	if err != nil || (ownerOnly && ref != shortCallerRef(r)) {
+	f, err := scanSharedFile(s.DB.QueryRow(`SELECT `+sharedFileCols+` FROM shared_files WHERE id = ?`, id))
+	if err != nil || (ownerOnly && f.ref != shortCallerRef(r)) {
 		http.NotFound(w, r)
 		return nil, false
 	}
-	f.URL = "/api/files/" + f.ID + "/download"
 	return f, true
 }
 
@@ -325,12 +408,34 @@ func (s *Server) HandleAPISharedFileDownload(w http.ResponseWriter, r *http.Requ
 	if !ok {
 		return
 	}
+	// A private file answers its owner, or a guest key the owner minted
+	// whose target is this very file. Any other login: 404, not 403.
+	if f.Private && f.ref != shortCallerRef(r) {
+		g := GuestFromRequest(r)
+		if g == nil || !s.guestTargets(g.Slug, f.URL) {
+			http.NotFound(w, r)
+			return
+		}
+	}
+	if f.MaxDownloads > 0 && f.Downloads >= f.MaxDownloads {
+		http.Error(w, "this file has reached its download limit", http.StatusGone)
+		return
+	}
 	fh, err := os.Open(sharedFilePath(f.ID, f.Name))
 	if err != nil {
 		http.Error(w, "file is no longer available", http.StatusGone)
 		return
 	}
 	defer fh.Close()
+	var body io.ReadSeeker = fh
+	if f.Encrypted {
+		dec, derr := newDecryptingReadSeeker(fh, f.nonce)
+		if derr != nil {
+			http.Error(w, "file cannot be decrypted on this server", http.StatusInternalServerError)
+			return
+		}
+		body = dec
+	}
 	if isDownloadStart(r) {
 		s.DB.Exec(`UPDATE shared_files SET downloads = downloads + 1, last_download_at = ? WHERE id = ?`,
 			time.Now().UTC().Format(time.RFC3339), f.ID)
@@ -343,7 +448,15 @@ func (s *Server) HandleAPISharedFileDownload(w http.ResponseWriter, r *http.Requ
 	if st, err := fh.Stat(); err == nil {
 		mod = st.ModTime()
 	}
-	http.ServeContent(longDownload(w), r, f.Name, mod, fh)
+	http.ServeContent(longDownload(w), r, f.Name, mod, body)
+}
+
+// guestTargets: does this live guest key point at exactly this target?
+func (s *Server) guestTargets(slug, target string) bool {
+	var n int
+	s.DB.QueryRow(`SELECT COUNT(*) FROM short_links WHERE slug = ? AND guest = 1
+		AND (revoked_at IS NULL OR revoked_at = '') AND (url = ? OR url LIKE ?)`, slug, target, target+"?%").Scan(&n)
+	return n > 0
 }
 
 // HandleAPISharedFileExtend — POST /api/files/{id}/extend {days:30}.

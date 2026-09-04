@@ -148,10 +148,10 @@ window.MapStress = (() => {
         // a manual value must survive the switch.
         async basemaps() {
             GeoMap.setAll(true); await s(1500);
-            MapLegend.pickBasemap('satellite-esri'); await s(3500);
+            MapLegend.pickBasemap('satellite-s2'); await s(3500);
             MapLegend.pickBasemap('dark'); await s(3500);
             GeoMap.setOpacity(0.33); await s(300);
-            MapLegend.pickBasemap('satellite-esri'); await s(3500);
+            MapLegend.pickBasemap('satellite-s2'); await s(3500);
             const op = map.getLayer('geomap-fill-car')
                 ? map.getPaintProperty('geomap-fill-car', 'fill-opacity') : null;
             if (op !== null && Math.abs(op - 0.33) > 0.01)

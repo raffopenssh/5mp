@@ -108,8 +108,8 @@ test_url_param "geomap_stale_lithology" "&geomap=car&geomap_lith=nosuchrock" "" 
 # to be a loadable link: a non-default basemap alone, a drape alone, and a
 # drape that is filtered down to one commodity (the case that must not read as
 # the complete rock map).
-test_url_param "maplegend_basemap_only" "&basemap=satellite-esri" "" ""
-test_url_param "maplegend_filtered_geology" "&geomap=car&geomap_host=car:gold&basemap=satellite-esri" "" ""
+test_url_param "maplegend_basemap_only" "&basemap=satellite-s2" "" ""
+test_url_param "maplegend_filtered_geology" "&geomap=car&geomap_host=car:gold&basemap=satellite-s2" "" ""
 test_url_param "tip_selection" "&tip=22.62154,6.61277" "" ""
 test_url_param "tip_selection_layer" "&tip=22.62154,6.61277&tip_layer=geomap-fill-car" "" ""
 test_url_param "tip_selection_stale" "&tip=0,0&tip_layer=lod-nope-line" "" ""

@@ -8,7 +8,6 @@ import (
 	"html/template"
 	"log/slog"
 	"net/http"
-	"os"
 	"path/filepath"
 	"runtime"
 	"time"
@@ -378,8 +377,8 @@ func (s *Server) Serve(addr string) error {
 	// AOI deliberately never appears. They go through resolveAreaBBox() now.
 	// The job status/download routes are shared with parks: a job id is opaque
 	// and unguessable, and the file is imagery, not the polygon.
-	mux.HandleFunc("POST /api/aois/{id}/mbtiles", s.aoiGate(s.HandleAPIZenodoMBTilesCreate))
-	mux.HandleFunc("GET /api/aois/{id}/mbtiles/estimate", s.aoiGate(s.HandleAPIZenodoMBTilesEstimate))
+	mux.HandleFunc("POST /api/aois/{id}/mbtiles", s.aoiGate(s.HandleAPIMBTilesCreate))
+	mux.HandleFunc("GET /api/aois/{id}/mbtiles/estimate", s.aoiGate(s.HandleAPIMBTilesEstimate))
 	// Write surface (docs/PLAN_AOI_OVERLAY.md §3f). None of these run the
 	// ingest: scripts/aoi_runner.py owns the lease discipline and is the only
 	// thing that works a unit. These queue, requeue, price and report.
@@ -478,12 +477,22 @@ func (s *Server) Serve(addr string) error {
 
 	mux.HandleFunc("GET /api/export/merged.kml", s.HandleAPIMergedKML)
 
-	// MBTiles generation endpoints (Zenodo-backed, with legacy fallback)
-	mux.HandleFunc("POST /api/parks/{id}/mbtiles", s.HandleAPIZenodoMBTilesCreate)
-	mux.HandleFunc("GET /api/parks/{id}/mbtiles/estimate", s.HandleAPIZenodoMBTilesEstimate)
-	mux.HandleFunc("GET /api/mbtiles/{id}/status", s.HandleAPIZenodoMBTilesStatus)
-	mux.HandleFunc("GET /api/mbtiles/{id}/download", s.HandleAPIZenodoMBTilesDownload)
-	mux.HandleFunc("GET /api/mbtiles", s.HandleAPIZenodoMBTilesList)
+	// Offline tiles (srv/mbtiles.go): built locally, stored encrypted as shared files.
+	mux.HandleFunc("POST /api/parks/{id}/mbtiles", s.HandleAPIMBTilesCreate)
+	mux.HandleFunc("GET /api/parks/{id}/mbtiles/estimate", s.HandleAPIMBTilesEstimate)
+	mux.HandleFunc("GET /api/mbtiles/{id}/status", s.HandleAPIMBTilesStatus)
+	mux.HandleFunc("DELETE /api/mbtiles/{id}", s.HandleAPIMBTilesCancel)
+	mux.HandleFunc("GET /api/mbtiles/{id}/download", s.HandleAPIMBTilesDownload)
+	mux.HandleFunc("GET /api/mbtiles", s.HandleAPIMBTilesList)
+	// Private tile sources (srv/tile_sources.go) and per-login map preferences.
+	mux.HandleFunc("GET /api/tile-sources", s.HandleAPITileSourcesList)
+	mux.HandleFunc("POST /api/tile-sources", s.HandleAPITileSourcesCreate)
+	mux.HandleFunc("PATCH /api/tile-sources/{id}", s.HandleAPITileSourcesUpdate)
+	mux.HandleFunc("POST /api/tile-sources/{id}/verify", s.HandleAPITileSourcesVerify)
+	mux.HandleFunc("DELETE /api/tile-sources/{id}", s.HandleAPITileSourcesDelete)
+	mux.HandleFunc("GET /api/tile-sources/{id}/tile/{z}/{x}/{y}", s.HandleAPITileSourceTile)
+	mux.HandleFunc("GET /api/map-prefs", s.HandleAPIMapPrefs)
+	mux.HandleFunc("PUT /api/map-prefs", s.HandleAPIMapPrefs)
 	mux.HandleFunc("GET /api/parks/{id}/climate", s.HandleAPIParkClimate)
 	mux.HandleFunc("GET /api/parks/{id}/turbidity", s.HandleAPIParkTurbidity)
 	mux.HandleFunc("GET /api/parks/{id}/infrastructure", s.HandleAPIParkInfrastructure)
@@ -577,22 +586,13 @@ func (s *Server) Serve(addr string) error {
 		http.ServeFile(w, r, s.StaticDir+"/sitemap.xml")
 	})
 
-	// Initialize MBTiles queue (legacy disk-based, as fallback)
-	InitMBTilesQueue("data/mbtiles_output", s.DB)
+	// Offline-tile builder: local, encrypted, into shared_files (srv/mbtiles.go).
+	InitMBTilesQueue(s)
 
 	// GeoPackage export cache: hourly expiry sweep + a startup pass that fails
 	// jobs a restart orphaned (a card frozen at 40% forever is worse than an
 	// error the user can retry).
 	s.StartGeoPackageSweeper()
-
-	// Initialize Zenodo-backed MBTiles queue (preferred)
-	if token := os.Getenv("ZENODO_TOKEN"); token != "" {
-		if err := InitZenodoMBTilesQueue(token, s.DB); err != nil {
-			slog.Warn("Failed to init Zenodo MBTiles queue", "error", err)
-		}
-	} else {
-		slog.Info("ZENODO_TOKEN not set, MBTiles will use disk storage only")
-	}
 
 	slog.Info("starting server", "addr", addr)
 

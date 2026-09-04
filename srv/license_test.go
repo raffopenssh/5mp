@@ -45,26 +45,24 @@ func TestLicenseRegisterComplete(t *testing.T) {
 
 // Every external tile/asset host the frontend reaches must be declared in the
 // register, so a basemap cannot be added without stating whose it is and on
-// what terms. Esri World Imagery is the deliberate exception (see
-// globe.html satelliteStyles): streamed live under Esri's attribution terms,
-// never bulk-copied, and listed here by name so its absence from the register
-// is a choice and not an oversight.
+// what terms. Private sources a user adds at runtime (srv/tile_sources.go) are
+// not in this file and not this server's to license — the test pins only what
+// ships.
 func TestFrontendTileHostsAreLicensed(t *testing.T) {
 	html, err := os.ReadFile("templates/globe.html")
 	if err != nil {
 		t.Skip("template not available:", err)
 	}
 	re := regexp.MustCompile(`(?:tiles:\s*\[\s*'|glyphs:\s*'|<script src="|<link href=")https://([a-z0-9.-]+)/`)
-	allowedUnlisted := map[string]bool{"server.arcgisonline.com": true}
 	for _, m := range re.FindAllStringSubmatch(string(html), -1) {
 		host := m[1]
-		if allowedUnlisted[host] || LicenseForHost(host) != nil {
+		if LicenseForHost(host) != nil {
 			continue
 		}
 		t.Errorf("frontend loads from %s but no licence entry declares that host", host)
 	}
 	// The retired providers must not come back.
-	for _, banned := range []string{"mt1.google.com", "mt{s}.google.com", "virtualearth.net"} {
+	for _, banned := range []string{"mt1.google.com", "mt{s}.google.com", "virtualearth.net", "arcgisonline.com"} {
 		if strings.Contains(string(html), banned) {
 			t.Errorf("globe.html references %s, whose terms forbid direct tile access", banned)
 		}

@@ -167,9 +167,9 @@ low-bandwidth links): `http.ServeContent`/`ServeFile` own `Content-Length` and
 on disk reads as "227 MB of 209 MB" in the browser), and never pass
 `time.Now()` as modtime — `Last-Modified` is the `If-Range` validator, so a
 per-request timestamp makes every resume restart from byte 0. Fixed
-2026-08-16 in `srv/gpkg_jobs.go` + `srv/shared_files.go`; the Zenodo MBTiles
-proxy now forwards `Range`/`Content-Range`; the legacy MBTiles one-shot
-delete-after-first-request is gone (the 2 h auto-cleanup reclaims space).
+2026-08-16 in `srv/gpkg_jobs.go` + `srv/shared_files.go`. Encrypted shared
+files keep Range working because the cipher is a seekable stream
+(`cryptReadSeeker`, `srv/filecrypt.go`) — see "Offline tiles" below.
 Download counters bump only on a start, not per Range chunk
 (`isDownloadStart`, `srv/download.go`, pinned by `TestIsDownloadStart`).
 
@@ -213,6 +213,81 @@ the form reads "Sign in to download" and **drops the sandbox link**: `test2026`
 does not own that export, so "try it out" would land on a 404 that reads as a
 dead link. The filename is deliberately not shown — it carries the area's name,
 and an id must not be an oracle.
+
+---
+
+## Offline tiles (MBTiles) and private imagery sources (2026-09-04)
+
+Files: `srv/mbtiles.go` (builder), `srv/tile_sources.go` (private sources +
+map prefs), `srv/filecrypt.go` (encryption), migration **064**; frontend:
+the `#mbtiles-dialog` block, `BUILTIN_BASEMAPS`/`basemapList()`/
+`registerTileSource()` and the Map Settings `renderBasemapGrid` /
+`renderTileSourcesPanel` in globe.html, `BASEMAPS_()` in `maplegend.js`.
+
+**Zenodo is gone.** `srv/mbtiles_zenodo.go`, `ZENODO_TOKEN` for tiles and the
+"upload to a deposition" phase were deleted; the backup tool
+(`cmd/backup-zenodo`) is unrelated and stays. A build now downloads into a
+plaintext temp, encrypts it into `data/shared_files/{id}/` and inserts a
+`shared_files` row (`kind='mbtiles'`, `enc=1`, `max_downloads=3`,
+`expires_at=+14 d`). From there it is an ordinary shared file: listed under
+Admin → Access & Sharing, shareable with a guest key, swept by
+`sweepSharedFiles` — which now also sweeps files that hit their download cap
+and **revokes the keys pointing at them**.
+
+* **Two kinds of source, one rule.** `TileSources` (one entry, Sentinel-2
+  cloudless) is what *this server* may copy and hand out; `license_test.go`
+  pins it. A `src:<id>` key is a **private source** the login added: URL
+  stored AES-GCM-encrypted (`url_enc`), tiles proxied owner-only through
+  `/api/tile-sources/{id}/tile/{z}/{x}/{y}` (no disk cache), the resulting
+  file marked `private=1` (download answers the owner or a guest key whose
+  target is that file; another login gets **404**). **Nothing in the repo
+  names a provider** — do not add one, not in code, not in docs, not as a
+  "seed". Seeding a source for a user is a one-time manual act through the
+  API with their password.
+* **The probe is the validation.** `validateTileTemplate` (https only,
+  `{z}{x}{y}` / `{-y}` / `{q}` / `{s}` / `{a-c}`, public host) and then one
+  real tile at z6 over central Africa must come back *as an image* (bytes
+  sniffed, not the header — providers 200 an HTML error page). A source that
+  fails is refused with the reason, never stored "unverified". `dry_run:true`
+  returns what a save would store and stores nothing — the UI's "Check".
+  Both probe and proxy dial through `tileHTTPClient`, which refuses hosts
+  resolving to non-public addresses (SSRF).
+* **Capacity is three numbers, each named in its refusal** (`checkCapacity`):
+  the 8 GB per-file cap, the login's **storage budget**
+  (`sharedFileBudgetBytes()`, default 20 GB, `SHARED_FILE_BUDGET_GB`
+  overrides; uploads count against it too, enforced in the upload handler),
+  and the disk (2.2× estimate + 2 GB must remain — the build holds a
+  plaintext temp and an encrypted copy at once). The estimate uses the
+  source's probe-tile size when known.
+* **Encryption at rest, all shared files** (uploads too, since 064; `enc=0`
+  rows predate it and are served as-is). XChaCha20 stream with a per-file
+  nonce so `http.ServeContent` Range/If-Range keep working byte-exact;
+  AES-GCM for the short secrets. Master key: `SHARED_FILES_KEY` (64 hex) in
+  the environment/`secrets.env`, else generated once into
+  `data/shared_files/.key` (0600) with a WARN — **back that file up or every
+  encrypted file dies with the disk.** "Encrypted with the user password"
+  means scope (`pwd_ref`), not key derivation: passwords rotate and a
+  rotation must not orphan files. Pinned by `go test ./srv/ -run 'Crypt|TileURL'`.
+* **Map preferences** (`map_prefs`, `PUT /api/map-prefs`): `default_base`
+  (the globe opens on it — only when the URL says nothing; a link's view
+  wins) and `default_satellite` (what the high-zoom hint,
+  `?basemap=satellite` and any unknown/retired basemap id resolve to via
+  `defaultSatelliteId()`). Both validated against built-ins + the login's
+  own sources; deleting a source clears prefs naming it. The test env has no
+  private sources, so its satellite is Sentinel-2 — which is the point.
+* **UI.** Map Settings: `bm-card` grid (live tile previews, hover-revealed
+  "Make default"/"Use as satellite", lock badge on private cards) above the
+  sources manager (`ts-*`: Check → preview tile → Add; inline rename, max
+  zoom, attribution; Show / Re-check / Remove). The Map strip menu reads the
+  same registry and offers "Add imagery source…" when `can_add`. The tiles
+  dialog: imagery chips (built-in + private, with the licence/privacy note
+  swapping), zoom in m/px, estimate with a budget bar, cancel button, footer
+  naming the retention rule. Bell card says `Ready • n MB • private • in
+  Shared files`. Guests: no sources, no build, no prefs (all structural in
+  `guestMayRead` plus handler checks).
+* Tests: `tile_source_sandbox_and_validation`,
+  `tile_source_private_build_lifecycle` in `tests/api_tests.sh` (uses the
+  EOX host only — the plumbing is what is tested, not a provider).
 
 ---
 

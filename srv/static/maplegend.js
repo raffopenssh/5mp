@@ -42,16 +42,19 @@
 (function () {
     'use strict';
 
-    var BASEMAPS = [
-        ['dark',              'Dark',      'icon-moon',      'The default cartographic basemap'],
-        ['satellite-esri',    'Esri',      'icon-satellite', 'Esri World Imagery (high resolution, online only)'],
-        ['satellite-s2',      'Sentinel',  'icon-satellite', 'Sentinel-2 cloudless 2024 by EOX (10 m, CC BY-NC-SA)']
-    ];
+    /* The registry lives in globe.html (basemapList): built-ins plus the
+     * login's private sources, registered at runtime. Read live, never
+     * copied, so a source added in Map Settings is in this menu at once. */
+    function BASEMAPS_() {
+        var list = (typeof basemapList === 'function') ? basemapList() : [];
+        return list.map(function (b) { return [b.id, b.short || b.name, b.icon || 'icon-satellite', b.desc || '', b.private]; });
+    }
 
     function bm() { return (typeof currentBasemap === 'string') ? currentBasemap : 'dark'; }
     function bmEntry(id) {
+        var BASEMAPS = BASEMAPS_();
         for (var i = 0; i < BASEMAPS.length; i++) if (BASEMAPS[i][0] === id) return BASEMAPS[i];
-        return BASEMAPS[0];
+        return BASEMAPS[0] || ['dark', 'Dark', 'icon-moon', ''];
     }
     function esc(s) {
         return (typeof escapeHtml === 'function') ? escapeHtml(String(s == null ? '' : s))
@@ -1168,10 +1171,15 @@
         el.setAttribute('aria-label', 'Basemap and overlays');
         var html = '<div class="mode-menu-head">Basemap</div>';
         var cur = bm();
-        BASEMAPS.forEach(function (b) {
-            html += row('', 'menuitemradio', cur === b[0], b[1], b[2], b[3],
+        BASEMAPS_().forEach(function (b) {
+            html += row('', 'menuitemradio', cur === b[0], b[1] + (b[4] ? ' \u00b7 private' : ''), b[2], b[3],
                 "MapLegend.pickBasemap('" + b[0] + "')", 'radio');
         });
+        if (!window.IS_GUEST && !window.IS_TEST_ENV && window._tileSourcesMeta && window._tileSourcesMeta.can_add) {
+            html += row('', 'menuitem', false, 'Add imagery source\u2026', 'icon-plus',
+                'Paste any XYZ tile URL you may use \u2014 private to your login',
+                "openAdminPanel('map-settings')", '');
+        }
 
         html += '<div class="mode-menu-head">Overlays</div>';
 

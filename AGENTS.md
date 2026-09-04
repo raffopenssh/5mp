@@ -114,7 +114,7 @@ make build && sudo systemctl restart 5mp
 curl -s "http://localhost:8000/api/version?pwd=test2026" | jq -r .version   # == git rev-parse --short HEAD
 ```
 
-Logs: `sudo journalctl -u 5mp -f`. Env vars (e.g. `ZENODO_TOKEN`) live in
+Logs: `sudo journalctl -u 5mp -f`. Env vars (e.g. `SHARED_FILES_KEY`) live in
 `/etc/systemd/system/5mp.service` (`daemon-reload` after editing).
 
 **Test parks:** `COD_Virunga` (full coverage), `CAF_Chinko` (fire detail),

@@ -109,8 +109,8 @@ lives in the middleware.
    export is a different file, never the owner's cached copy), and AOI ids
    still pass `aoiGate`. What stays refused: `DELETE /api/geopackage/{id}`
    (cancelling/removing the owner's files is a write) and
-   `POST …/mbtiles` (publishes to the owner's Zenodo account — an external
-   write). The guest UI matches: no Tiles menu entry, no delete/cancel
+   `POST …/mbtiles` (writes an encrypted file into the owner's storage
+   budget — durable state, not a read; see `docs/agents/exports.md`). The guest UI matches: no Tiles menu entry, no delete/cancel
    buttons on export cards (`gpkg_export.js`, `exportMenuItems`). Pinned by
    `guest_may_build_exports_but_not_delete` in `tests/api_tests.sh`.
 3. **A guest may not mint links.** Blocked twice on purpose: in `guestMayRead`

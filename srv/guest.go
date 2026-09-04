@@ -131,8 +131,9 @@ func guestMayRead(r *http.Request) bool {
 		//    Without these a shared link shows a download menu whose main
 		//    entries 401 — an offer the page makes and then withdraws.
 		//    What stays closed: DELETE (a guest must not cancel or remove
-		//    the owner's files) and the MBTiles builder (it publishes to
-		//    the owner's Zenodo account — an external write).
+		//    the owner's files) and the MBTiles builder (it writes a file
+		//    into the owner's storage budget and may spend the owner's
+		//    private imagery agreement — durable state, not a read).
 		if p == "/api/view/export.gpkg" {
 			return true
 		}

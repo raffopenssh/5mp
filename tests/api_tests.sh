@@ -915,8 +915,8 @@ if [[ -n "$CLIENT_PWD" ]]; then
     # EXPORTS ARE READS WEARING POSTs (srv/guest.go guestMayRead). A shared
     # link shows a download menu; every entry it shows must work, and every
     # write next to them must not: the builders (POST export.gpkg, view and
-    # geology) pass, while DELETE on a job and the MBTiles builder (an
-    # external write to the owner's Zenodo account) stay refused. peek=1 is
+    # geology) pass, while DELETE on a job and the MBTiles builder (a file
+    # written into the owner's storage budget) stay refused. peek=1 is
     # used so the test never spools a real file (404 = allowed through the
     # gate, nothing cached — the same contract gpkg_peek relies on).
     printf "%-50s" "guest_may_build_exports_but_not_delete"
@@ -1304,6 +1304,63 @@ if [[ -n "$CLIENT_PWD" ]]; then
         else
             red "FAIL (id=$SID size=$SSZ)"; FAILED=$((FAILED + 1))
             ERRORS+=("a slow upload gets no reply (WriteTimeout kills it)")
+        fi
+
+        # ---- Private tile sources + encrypted offline tiles (srv/tile_sources.go,
+        # srv/mbtiles.go). The sandbox may not add a source; a template must
+        # survive a real probe; the URL is stored encrypted and proxied
+        # owner-only; a build from it lands as a PRIVATE encrypted shared file
+        # that another login cannot download (404) but a guest key can; the
+        # plaintext the owner receives is a valid SQLite MBTiles.
+        printf "%-50s" "tile_source_sandbox_and_validation"
+        sb=$(curl -s -m 30 -o /dev/null -w "%{http_code}" -X POST "${BASE_URL}/api/tile-sources?pwd=test2026" \
+            -H 'Content-Type: application/json' -d '{"url":"https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2024_3857/default/g/{z}/{y}/{x}.jpg"}')
+        bad=$(curl -s -m 30 "${BASE_URL}/api/tile-sources?pwd=${CLIENT_PWD}" -X POST \
+            -H 'Content-Type: application/json' -d '{"url":"https://localhost/{z}/{x}/{y}","dry_run":true}' | jq -r '.error // ""')
+        nox=$(curl -s -m 30 "${BASE_URL}/api/tile-sources?pwd=${CLIENT_PWD}" -X POST \
+            -H 'Content-Type: application/json' -d '{"url":"https://example.org/tiles","dry_run":true}' | jq -r '.error // ""')
+        if [[ "$sb" == "403" && -n "$bad" && -n "$nox" ]]; then green "✓"; PASSED=$((PASSED + 1))
+        else red "FAIL (sandbox $sb, bad='$bad', nox='$nox')"; FAILED=$((FAILED + 1)); ERRORS+=("tile source validation"); fi
+
+        printf "%-50s" "tile_source_private_build_lifecycle"
+        # EOX is the one host the test may legitimately fetch from; the point
+        # here is the plumbing, not the provider.
+        TJ=$(curl -s -m 60 -X POST "${BASE_URL}/api/tile-sources?pwd=${CLIENT_PWD}" -H 'Content-Type: application/json' \
+            -d '{"url":"https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2024_3857/default/g/{z}/{y}/{x}.jpg","name":"apitest src","max_zoom":12}')
+        TID=$(jq -r '.source.id // empty' <<< "$TJ")
+        enc_ok=$(sqlite3 db.sqlite3 "SELECT CASE WHEN instr(CAST(url_enc AS TEXT),'eox.at')>0 THEN 'plain' ELSE 'enc' END FROM tile_sources WHERE id='${TID}'" 2>/dev/null)
+        tl=$(curl -s -m 30 -o /dev/null -w "%{http_code}" "${BASE_URL}/api/tile-sources/${TID}/tile/6/35/32?pwd=${CLIENT_PWD}")
+        tlo=$(curl -s -m 30 -o /dev/null -w "%{http_code}" "${BASE_URL}/api/tile-sources/${TID}/tile/6/35/32?pwd=test2026")
+        eo=$(curl -s -m 30 -o /dev/null -w "%{http_code}" "${BASE_URL}/api/parks/CMR_Nki/mbtiles/estimate?pwd=test2026&source=src:${TID}")
+        BJ=$(curl -s -m 30 -X POST "${BASE_URL}/api/parks/CMR_Nki/mbtiles?pwd=${CLIENT_PWD}&source=src:${TID}&maxZoom=8")
+        BID=$(jq -r '.job_id // empty' <<< "$BJ")
+        st=""; for i in $(seq 1 60); do
+            SJ=$(curl -s -m 30 "${BASE_URL}/api/mbtiles/${BID}/status?pwd=${CLIENT_PWD}")
+            st=$(jq -r '.status' <<< "$SJ"); [[ "$st" == "completed" || "$st" == "failed" ]] && break; sleep 2
+        done
+        BF=$(jq -r '.file_id // empty' <<< "$SJ")
+        priv=$(curl -s -m 30 "${BASE_URL}/api/files?pwd=${CLIENT_PWD}" | jq -r --arg id "$BF" '.files[] | select(.id==$id) | "\(.private) \(.encrypted) \(.kind) \(.max_downloads)"')
+        oth=$(curl -s -m 30 -o /dev/null -w "%{http_code}" "${BASE_URL}/api/files/${BF}/download?pwd=test2026")
+        dlf=$(mktemp); curl -s -m 60 -o "$dlf" "${BASE_URL}/api/files/${BF}/download?pwd=${CLIENT_PWD}"
+        ntiles=$(sqlite3 "$dlf" "SELECT COUNT(*) FROM tiles" 2>/dev/null || echo 0)
+        ondisk=$(head -c 15 data/shared_files/${BF}/*.mbtiles 2>/dev/null | tr -d '\0')
+        # Guest key on the private file downloads identical bytes.
+        KJ=$(curl -s -m 30 -X POST "${BASE_URL}/api/shortlink?pwd=${CLIENT_PWD}" -H 'Content-Type: application/json' \
+            -d "{\"url\":\"/api/files/${BF}/download\",\"guest\":true,\"days\":7}")
+        KS=$(jq -r '.slug // empty' <<< "$KJ"); [[ -n "$KS" ]] && printf '%s\n' "$KS" >> "$MINTED_LOG"
+        JF2=$(mktemp); curl -s -m 30 -o /dev/null -c "$JF2" "${BASE_URL}/s/${KS}"
+        dlg=$(mktemp); curl -s -m 60 -b "$JF2" -o "$dlg" "${BASE_URL}/api/files/${BF}/download"
+        same=$(cmp -s "$dlf" "$dlg" && echo yes || echo no)
+        curl -s -m 30 -o /dev/null -X DELETE "${BASE_URL}/api/files/${BF}?pwd=${CLIENT_PWD}"
+        curl -s -m 30 -o /dev/null -X DELETE "${BASE_URL}/api/tile-sources/${TID}?pwd=${CLIENT_PWD}"
+        rm -f "$dlf" "$dlg" "$JF2"
+        if [[ -n "$TID" && "$enc_ok" == "enc" && "$tl" == "200" && "$tlo" == "404" && "$eo" == "400" \
+              && "$st" == "completed" && "$priv" == "true true mbtiles 3" && "$oth" == "404" \
+              && "$ntiles" -gt 0 && "$ondisk" != "SQLite format 3" && "$same" == "yes" ]]; then
+            green "✓ ($ntiles tiles, encrypted, private, guest ok)"; PASSED=$((PASSED + 1))
+        else
+            red "FAIL (src=$TID enc=$enc_ok tile=$tl/$tlo est=$eo st=$st priv='$priv' oth=$oth tiles=$ntiles disk='$ondisk' same=$same)"
+            FAILED=$((FAILED + 1)); ERRORS+=("private tile source / encrypted MBTiles lifecycle broken")
         fi
     fi
 
