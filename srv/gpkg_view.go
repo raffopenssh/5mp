@@ -463,9 +463,9 @@ func (s *Server) gpkgViewEffort(w *gpkgWriter, o gpkgExportOpts) error {
 	q := `SELECT e.grid_cell_id, e.year, e.month, SUM(e.total_distance_km), SUM(e.total_points),
 			g.lat_min, g.lat_max, g.lon_min, g.lon_max, g.lat_center, g.lon_center
 		FROM effort_data e JOIN grid_cells g ON e.grid_cell_id = g.id
-		WHERE e.movement_type = 'all' AND e.env = ?
+		WHERE e.movement_type = 'all' AND e.env IN (SELECT value FROM json_each(?))
 			AND g.lat_center BETWEEN ? AND ? AND g.lon_center BETWEEN ? AND ?`
-	args := []interface{}{o.patrolTenant(), v.BBox[1], v.BBox[3], v.BBox[0], v.BBox[2]}
+	args := []interface{}{o.patrolEnvsJSON(), v.BBox[1], v.BBox[3], v.BBox[0], v.BBox[2]}
 	if t, err := time.Parse("2006-01-02", o.FromDate); err == nil {
 		q += " AND (e.year > ? OR (e.year = ? AND e.month >= ?))"
 		args = append(args, t.Year(), t.Year(), int(t.Month()))
@@ -753,15 +753,16 @@ func (s *Server) HandleAPIViewGeoPackage(w http.ResponseWriter, r *http.Request)
 	}
 
 	o := gpkgExportOpts{
-		AreaID:    areaID,
-		AreaName:  name,
-		FromDate:  q.Get("from"),
-		ToDate:    q.Get("to"),
-		Env:       RequestEnv(r),
-		PatrolEnv: PatrolEnv(r),
-		Effort:    q.Get("effort") != "0",
-		RawFire:   q.Get("raw") != "0",
-		View:      v,
+		AreaID:     areaID,
+		AreaName:   name,
+		FromDate:   q.Get("from"),
+		ToDate:     q.Get("to"),
+		Env:        RequestEnv(r),
+		PatrolEnv:  PatrolEnv(r),
+		PatrolEnvs: s.PatrolEnvsJSON(r),
+		Effort:     q.Get("effort") != "0",
+		RawFire:    q.Get("raw") != "0",
+		View:       v,
 	}
 	if q.Get("peek") == "1" {
 		j := s.findGeoPackageJob(gpkgKeyFor(o))

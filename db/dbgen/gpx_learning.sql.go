@@ -523,7 +523,7 @@ func (q *Queries) GetAllLearningResults(ctx context.Context, arg GetAllLearningR
 }
 
 const getAutoApprovedFeatures = `-- name: GetAutoApprovedFeatures :many
-SELECT id, feature_type, feature_id, park_id, geojson, bbox_minx, bbox_miny, bbox_maxx, bbox_maxy, start_date, end_date, properties_json, created_at, stat_value FROM feature_geometries 
+SELECT id, feature_type, feature_id, park_id, geojson, bbox_minx, bbox_miny, bbox_maxx, bbox_maxy, start_date, end_date, properties_json, created_at, stat_value, dist_to_park_km, traj_days FROM feature_geometries 
 WHERE park_id = ? 
   AND json_extract(properties_json, '$.approval_status') = 'auto_approved'
 ORDER BY created_at DESC
@@ -553,6 +553,8 @@ func (q *Queries) GetAutoApprovedFeatures(ctx context.Context, parkID string) ([
 			&i.PropertiesJson,
 			&i.CreatedAt,
 			&i.StatValue,
+			&i.DistToParkKm,
+			&i.TrajDays,
 		); err != nil {
 			return nil, err
 		}

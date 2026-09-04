@@ -1086,7 +1086,7 @@ func (q *Queries) GetSession(ctx context.Context, id string) (GetSessionRow, err
 }
 
 const getSettlementById = `-- name: GetSettlementById :one
-SELECT id, park_id, lat, lon, area_m2, population_est, households_est, nearest_place, distance_to_place_km, direction_from_place, settlement_type, in_buffer, tile_row, tile_col, detected_at FROM park_settlements WHERE id = ?
+SELECT id, park_id, lat, lon, area_m2, population_est, households_est, nearest_place, distance_to_place_km, direction_from_place, settlement_type, in_buffer, tile_row, tile_col, detected_at, classification, classification_confidence, narrative, polygon_ids, fires_1km, fires_5km, fire_seasonality, deforest_nearby_km2, classified_at, extent_m2, area_source, population_source, epoch, fire_context_at, persistence, persistence_source, surface_e2000_m2, surface_e2015_m2, cropland_frac_2019, cropland_frac_2003, cropland_source FROM park_settlements WHERE id = ?
 `
 
 func (q *Queries) GetSettlementById(ctx context.Context, id int64) (ParkSettlement, error) {
@@ -1108,6 +1108,27 @@ func (q *Queries) GetSettlementById(ctx context.Context, id int64) (ParkSettleme
 		&i.TileRow,
 		&i.TileCol,
 		&i.DetectedAt,
+		&i.Classification,
+		&i.ClassificationConfidence,
+		&i.Narrative,
+		&i.PolygonIds,
+		&i.Fires1km,
+		&i.Fires5km,
+		&i.FireSeasonality,
+		&i.DeforestNearbyKm2,
+		&i.ClassifiedAt,
+		&i.ExtentM2,
+		&i.AreaSource,
+		&i.PopulationSource,
+		&i.Epoch,
+		&i.FireContextAt,
+		&i.Persistence,
+		&i.PersistenceSource,
+		&i.SurfaceE2000M2,
+		&i.SurfaceE2015M2,
+		&i.CroplandFrac2019,
+		&i.CroplandFrac2003,
+		&i.CroplandSource,
 	)
 	return i, err
 }

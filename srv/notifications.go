@@ -76,8 +76,13 @@ func (s *Server) HandleGetNotifications(w http.ResponseWriter, r *http.Request) 
 
 	// Env scoping: 'new_upload' and MBTiles notifications are tenant-scoped;
 	// all other notification types are shared across prod and test.
+	// new_upload rows follow the pixels: the caller's tenant plus every
+	// autofetch env visible to it (PatrolEnvs). MBTiles/GeoPackage rows are
+	// the caller's own jobs, so they stay on the tenant env.
 	env := RequestEnv(r)
-	envCond := "(notification_type NOT IN ('new_upload','mbtiles_complete','mbtiles_failed') AND notification_type NOT LIKE 'geopackage\\_%' ESCAPE '\\' OR env = ?)"
+	envCond := "(notification_type NOT IN ('new_upload','mbtiles_complete','mbtiles_failed') AND notification_type NOT LIKE 'geopackage\\_%' ESCAPE '\\'" +
+		" OR (notification_type = 'new_upload' AND " + PatrolEnvsSQL("env") + ")" +
+		" OR (notification_type != 'new_upload' AND env = ?))"
 	// Mining/turbidity notifications (4,267 mining_alert + scan-status rows) are
 	// retired but not deleted -- docs/MINING_FINDINGS_2026-08.md §10. Appended to
 	// envCond so every branch below (and the unread count) inherits it.
@@ -88,7 +93,7 @@ func (s *Server) HandleGetNotifications(w http.ResponseWriter, r *http.Request) 
 	// unread count inherit it. envArgs replaces the bare `env` in each branch.
 	aoiCond, aoiArgs := aoiNotifSQLFilter("park_id", s.RequestPrincipalID(r))
 	envCond += aoiCond
-	envArgs := append([]interface{}{env}, aoiArgs...)
+	envArgs := append([]interface{}{s.PatrolEnvsJSON(r), env}, aoiArgs...)
 	// Same filter for the aliased fire_alert branch (which does not use envCond).
 	nAOICond, nAOIArgs := aoiNotifSQLFilter("n.park_id", s.RequestPrincipalID(r))
 

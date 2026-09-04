@@ -92,13 +92,25 @@ func tenantForPwd(pwd string) string {
 // tenantHasPatrol reports whether an env tenant owns any patrol effort. Cached
 // per tenant for the process lifetime is deliberately NOT done: a first upload
 // must light the UI up without a restart, and the query is one indexed EXISTS.
-func (s *Server) tenantHasPatrol(env string) bool {
+func (s *Server) tenantHasPatrol(envsJSON string) bool {
 	if s == nil || s.DB == nil {
 		return false
 	}
 	var one int
-	err := s.DB.QueryRow(`SELECT 1 FROM effort_data WHERE env = ? LIMIT 1`, env).Scan(&one)
+	err := s.DB.QueryRow(`SELECT 1 FROM effort_data WHERE `+PatrolEnvsSQL("env")+` LIMIT 1`, envsJSON).Scan(&one)
 	return err == nil
+}
+
+// tenantForRef maps a principal ref back to its tenant, or "" when no
+// configured password has that ref (the login was removed).
+func tenantForRef(ref string) string {
+	for _, p := range validPasswords {
+		p = strings.TrimSpace(p)
+		if p != "" && principalRef(p) == ref {
+			return tenantForPwd(p)
+		}
+	}
+	return ""
 }
 
 // pwdForTenant returns a configured access password belonging to env, so a

@@ -370,7 +370,8 @@ def main():
     ap = argparse.ArgumentParser(description='Fetch EarthRanger GPS tracks → anonymised GPX')
     ap.add_argument('--url', required=True, help='PAMDAS server URL')
     ap.add_argument('--user', required=True, help='Username')
-    ap.add_argument('--upload-url', required=True, help='App async upload URL')
+    ap.add_argument('--upload-url', default=None, help='App async upload URL (legacy; prefer --out)')
+    ap.add_argument('--out', default=None, help='Write the GPX to this path instead of uploading')
     ap.add_argument('--days', type=int, default=1, help='Days of history (default: 1, used if --since not set)')
     ap.add_argument('--since', type=str, default=None,
                     help='ISO-8601 timestamp: only fetch data after this time (overrides --days)')
@@ -472,6 +473,17 @@ def main():
         print(json.dumps({'ok': True, 'subjects': subject_count, 'points': total_pts,
                           'types': type_counts, 'uploaded': False, 'dry_run': True}))
         sys.exit(0)
+
+    if args.out:
+        with open(args.out, 'w', encoding='utf-8') as fh:
+            fh.write(gpx_xml)
+        print(json.dumps({'ok': True, 'subjects': subject_count, 'points': total_pts,
+                          'types': type_counts, 'uploaded': False, 'out': args.out}))
+        sys.exit(0)
+
+    if not args.upload_url:
+        print(json.dumps({'ok': False, 'error': 'one of --out or --upload-url is required'}))
+        sys.exit(1)
 
     try:
         resp = requests.post(

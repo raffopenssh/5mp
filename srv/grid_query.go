@@ -20,7 +20,7 @@ type GridQueryParams struct {
 	Month         *int64      // Optional: filter by specific month
 	MovementTypes []string    // Optional: filter by movement types (foot, vehicle, boat, fixed_wing, rotor_wing)
 	BBox          *[4]float64 // Optional: [minLng, minLat, maxLng, maxLat]
-	Env           string      // tenant (RequestEnv); empty = no filter
+	Envs          string      // JSON array of patrol envs (PatrolEnvsJSON); empty = no filter
 }
 
 // GridRow represents a row from the grid query result.
@@ -148,9 +148,9 @@ func (s *Server) QueryGridData(ctx context.Context, params GridQueryParams) ([]G
 	}
 
 	// Env (tenant) filter
-	if params.Env != "" {
-		conditions = append(conditions, "e.env = ?")
-		args = append(args, params.Env)
+	if params.Envs != "" {
+		conditions = append(conditions, PatrolEnvsSQL("e.env"))
+		args = append(args, params.Envs)
 	}
 
 	// Bounding box filter
@@ -257,9 +257,9 @@ func (s *Server) enrichSubcellCoverage(ctx context.Context, params GridQueryPara
 		dateCondition = "AND sv.visit_date >= ? AND sv.visit_date < ?"
 		dateArgs = append(dateArgs, fromDate, dayAfterTo)
 	}
-	if params.Env != "" {
-		dateCondition += " AND sv.env = ?"
-		dateArgs = append(dateArgs, params.Env)
+	if params.Envs != "" {
+		dateCondition += " AND " + PatrolEnvsSQL("sv.env")
+		dateArgs = append(dateArgs, params.Envs)
 	}
 
 	// Query in batches of ~500 to avoid huge IN clauses
@@ -341,9 +341,9 @@ func (s *Server) enrichMovementTypes(ctx context.Context, params GridQueryParams
 		dateCondition = "AND e.year BETWEEN ? AND ?"
 		dateArgs = append(dateArgs, params.FromYear, params.ToYear)
 	}
-	if params.Env != "" {
-		dateCondition += " AND e.env = ?"
-		dateArgs = append(dateArgs, params.Env)
+	if params.Envs != "" {
+		dateCondition += " AND " + PatrolEnvsSQL("e.env")
+		dateArgs = append(dateArgs, params.Envs)
 	}
 
 	const batchSize = 500

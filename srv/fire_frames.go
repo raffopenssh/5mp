@@ -93,7 +93,7 @@ func (s *Server) HandleAPIFireFrames(w http.ResponseWriter, r *http.Request) {
 	// layer=effort: patrol effort (green pixels) from effort_data, bucketed the same way.
 	// Returns grid-indexed coords in p entries: [xi, yi, distance_km, uploads].
 	if q.Get("layer") == "effort" {
-		s.serveEffortFrames(w, PatrolEnv(r), from, to, step, res, south, north, west, east)
+		s.serveEffortFrames(w, s.PatrolEnvsJSON(r), from, to, step, res, south, north, west, east)
 		return
 	}
 
@@ -312,12 +312,12 @@ func (s *Server) serveFirePoints(w http.ResponseWriter, from, to string, south, 
 // xi/yi grid as fire frames (cell center = xi*res, yi*res), so the animator
 // renders both layers with identical grid-aligned pixels.
 // p entries: [xi, yi, distance_km, uploads].
-func (s *Server) serveEffortFrames(w http.ResponseWriter, env, from, to, step string, res, south, north, west, east float64) {
-	// env is the caller's tenant (RequestEnv). Patrol effort is client data:
+func (s *Server) serveEffortFrames(w http.ResponseWriter, envs, from, to, step string, res, south, north, west, east float64) {
+	// envs is the caller's patrol env set (PatrolEnvsJSON). Patrol effort is client data:
 	// the animator must draw only the pixels created in this scope, so the
 	// value is used as given -- never coerced to the client tenant.
-	if env == "" {
-		env = clientTenant
+	if envs == "" {
+		envs = envSetJSON([]string{clientTenant})
 	}
 	var bucketExpr string
 	dateExpr := "printf('%04d-%02d-%02d', e.year, e.month, COALESCE(e.day,1))"
@@ -342,13 +342,13 @@ func (s *Server) serveEffortFrames(w http.ResponseWriter, env, from, to, step st
 		       SUM(e.total_distance_km) AS dist, SUM(e.unique_uploads) AS ups
 		FROM effort_data e
 		JOIN grid_cells gc ON gc.id = e.grid_cell_id
-		WHERE e.day IS NOT NULL AND e.movement_type = 'all' AND e.env = ?
+		WHERE e.day IS NOT NULL AND e.movement_type = 'all' AND e.env IN (SELECT value FROM json_each(?))
 		  AND gc.lat_center BETWEEN ? AND ? AND gc.lon_center BETWEEN ? AND ?
 		  AND %s >= ? AND %s <= ?
 		GROUP BY xi, yi, bucket
 		LIMIT 200000`, bucketExpr, dateExpr, dateExpr)
 
-	rows, err := s.DB.Query(query, res, res, env, south, north, west, east, from, to)
+	rows, err := s.DB.Query(query, res, res, envs, south, north, west, east, from, to)
 	if err != nil {
 		http.Error(w, `{"error":"query failed"}`, http.StatusInternalServerError)
 		return

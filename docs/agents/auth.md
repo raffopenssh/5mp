@@ -37,15 +37,39 @@ carried `RequestEnv`. What changed is only what `RequestEnv` *means*.
   Its callers all ask one question — may this request see client-derived data —
   and that has exactly one answer per tenant. `clientTenant`/`sandboxTenant`
   constants; never compare against the string `"test"` again.
-* A server-side job that acts through our own HTTP API must pick a password for
-  the *tenant it is working for* (`pwdForTenant`), and **refuse** when none
-  maps. `runAutofetchSource` used `validPasswords[0]`, which files a client's
-  EarthRanger tracks under whichever password happens to sort first.
-* `autofetch_sources` is per tenant (migration **049**): a subscription names
-  the client's tracking server, their username and the parks they operate in,
-  and it feeds their pixels. Every by-id write is `WHERE id = ? AND env = ?`,
-  and `run` checks ownership **in the handler**, not in the worker (the worker
-  is also the scheduler's entry point and must not need a request).
+* A server-side job must never act through our own HTTP API with a password
+  in a URL. The autofetch worker used to (`pwdForTenant` + `/api/upload/async?pwd=`);
+  since migration 065 the script writes GPX to a temp file (`--out`) and the
+  worker queues it directly (`queueAutofetchFile`) under the source's env.
+* **Autofetch sources are owned by a login and their pixels are an ACL, not a
+  copy** (migration **065**, `srv/autofetch.go`). Each source has `owner_ref`
+  (principal ref), `visibility` (`owner`|`selected`|`all`), `data_env`
+  (`af<id>`) and a roster `autofetch_viewers(source_id, principal_ref, label)`
+  — hashed refs and a 3-char label, never a password. Fetched tracks land in
+  `data_env`; the read path is **`s.PatrolEnvs(r)`** (`srv/guest.go`) = the
+  caller's tenant ∪ every autofetch env it may see (owner, `all`, or granted),
+  bound as one JSON array through `PatrolEnvsSQL(col)` /
+  `s.PatrolEnvsJSON(r)`. `all` still excludes the sandbox. Every former
+  `e.env = PatrolEnv(r)` site — grid, stats, animator frames, cell detail,
+  worldclim intensity, gpkg effort layers, upload logs, `new_upload`
+  notifications, `tenantHasPatrol` — now takes the set, so the grid, the
+  animator and the stats panel move together on a toggle
+  (`autofetch_visibility_gates_cotenant_pixels`). Mutations (delete/reject a
+  log) use `PatrolWriteEnvs`: own tenant + sources you *own*; a grantee is
+  read-only. `patrolACLVersion` is part of `cacheKey` so a toggle is not
+  answered from the previous audience's body for five minutes. Guests act as
+  their issuer's ref (`callerRef`). Handlers refuse guests and the sandbox
+  (`autofetchAllowed`, mirrors `tileSourcesAllowed`); a non-owner gets 404.
+  Learning (`envFeedsLearning`) accepts an `af*` env whose owner is a
+  client-tenant login, so road/airstrip learning kept working.
+* Credentials are sealed with the master key (`sealSecret`, `v2:` prefix);
+  `migrateAutofetchLegacy` (runs at worker start) re-seals pre-065 rows and
+  finishes the data move: owner = first prod login, viewers = the other prod
+  logins, `autofetch-*.gpx` uploads/track_points/logs/notifications → `af<id>`,
+  `subcell_visits` by date only when manual and autofetch ranges are disjoint
+  (logged otherwise — invariant 1), then `rebuildAllEffortData`. The legacy
+  `.autofetch_key` is only read for rows without the prefix. Backup of the
+  touched tables: `backups/pre065_patrol_tables.sqlite3` (untracked).
 * Onboarding is *not* tenant-scoped — a park is global data. `onboard_park.py`
   now skips only `env='test'` instead of requiring `env='prod'`, or a
   non-default tenant's request would never be processed.

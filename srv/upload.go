@@ -1666,6 +1666,7 @@ func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEm
 		TransitKm:         ptrFloat64(ms.TransitKm),
 		LogisticsSegments: ptrInt64(int64(ms.LogisticsSegments)),
 		LogisticsKm:       ptrFloat64(ms.LogisticsKm),
+		Env:               env,
 	})
 	if err != nil {
 		slog.Warn("failed to create gpx upload log", "error", err)
@@ -1720,7 +1721,7 @@ func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEm
 	// Only the client tenant's uploads may feed the learned-feature tables
 	// (learned_roads/places/airstrips have no env column -- see
 	// srv/test_env_guard.go), so anything from another tenant stops here.
-	if env != clientTenant {
+	if !s.envFeedsLearning(ctx, env) {
 		return validationResult, nil
 	}
 	queuedParks := make(map[string]bool)

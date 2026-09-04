@@ -112,6 +112,11 @@ func gpkgKeyFor(o gpkgExportOpts) string {
 	if pt := o.patrolTenant(); pt != strOr(o.Env, clientTenant) {
 		k += "|np"
 	}
+	// The env set is part of the audience: two logins of one tenant with
+	// different autofetch grants must not share a cached effort layer.
+	if o.PatrolEnvs != "" {
+		k += "|pe" + principalRef(o.PatrolEnvs)[:8]
+	}
 	if o.View != nil {
 		k += "|" + gpkgViewKey(o.View)
 	}
@@ -648,13 +653,14 @@ func (s *Server) HandleAPIAreaGeoPackage(w http.ResponseWriter, r *http.Request)
 	name, _ := s.resolveAreaGeom(areaID)
 	q := r.URL.Query()
 	o := gpkgExportOpts{
-		AreaID:    areaID,
-		AreaName:  name,
-		FromDate:  q.Get("from"),
-		ToDate:    q.Get("to"),
-		Env:       RequestEnv(r),
-		PatrolEnv: PatrolEnv(r),
-		Effort:    q.Get("effort") != "0",
+		AreaID:     areaID,
+		AreaName:   name,
+		FromDate:   q.Get("from"),
+		ToDate:     q.Get("to"),
+		Env:        RequestEnv(r),
+		PatrolEnv:  PatrolEnv(r),
+		PatrolEnvs: s.PatrolEnvsJSON(r),
+		Effort:     q.Get("effort") != "0",
 		// Default on: "GeoPackage" means everything unless asked otherwise.
 		RawFire: q.Get("raw") != "0",
 	}

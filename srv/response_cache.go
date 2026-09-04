@@ -3,6 +3,7 @@ package srv
 import (
 	"bytes"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -77,7 +78,9 @@ func cacheablePath(r *http.Request) bool {
 func cacheKey(r *http.Request) string {
 	q := r.URL.Query()
 	q.Del("pwd")
-	return RequestEnv(r) + "|" + visibilityFingerprint(r) + "|" + r.URL.Path + "?" + q.Encode()
+	// patrolACLVersion: an autofetch visibility change must not be answered
+	// from a body built for the previous audience (srv/guest.go).
+	return RequestEnv(r) + "|" + visibilityFingerprint(r) + "|" + strconv.FormatInt(patrolACLVersion.Load(), 10) + "|" + r.URL.Path + "?" + q.Encode()
 }
 
 type cacheRecorder struct {

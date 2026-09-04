@@ -700,6 +700,40 @@ if [[ -n "$CLIENT_PWD" ]]; then
     # An authenticated body must never be cacheable by a shared cache or by a
     # browser's URL-keyed HTTP cache: that served the previous account's pixels
     # after switching password in one browser (2026-08-10).
+    # AUTOFETCH VISIBILITY IS AN ACL ON THE PIXELS (migration 065, PatrolEnvs).
+    # The owner flips a source to "only me" and a co-tenant login loses exactly
+    # that source's kilometres -- and the response cache must not keep serving
+    # the previous audience's body. Restored to its prior state afterwards.
+    # Skips (not passes) when the owner has no source: a no-op is not a result.
+    AF_ID=$(curl -s -m 30 --get --data-urlencode "pwd=$CLIENT_PWD" "${BASE_URL}/api/admin/autofetch" \
+        | jq -r '[.sources[] | select(.mine)][0].id // empty')
+    AF_OTHER=$(grep -o '^PASSWORD_ENVS=.*' secrets.env 2>/dev/null | cut -d= -f2 \
+        | tr ',' '\n' | grep ':prod$' | sed -n 2p | cut -d: -f1)
+    printf "%-50s" "autofetch_visibility_gates_cotenant_pixels"
+    if [[ -n "$AF_ID" && -n "$AF_OTHER" ]]; then
+        AF_PREV=$(curl -s -m 30 --get --data-urlencode "pwd=$CLIENT_PWD" "${BASE_URL}/api/admin/autofetch" \
+            | jq -r --argjson id "$AF_ID" '.sources[] | select(.id==$id) | .visibility')
+        km_of() { curl -s -m 30 --get --data-urlencode "pwd=$1" "${BASE_URL}/api/stats" | jq -r '.total_distance_km|floor'; }
+        before=$(km_of "$AF_OTHER")
+        curl -s -m 30 -o /dev/null -X POST "${BASE_URL}/api/admin/autofetch/visibility?pwd=${CLIENT_PWD}" \
+            -H 'Content-Type: application/json' -d "{\"id\":$AF_ID,\"visibility\":\"owner\"}"
+        during=$(km_of "$AF_OTHER"); owner_km=$(km_of "$CLIENT_PWD")
+        # A non-owner must get 404 (not 403) trying to change it.
+        code=$(curl -s -m 30 -o /dev/null -w '%{http_code}' -X POST "${BASE_URL}/api/admin/autofetch/visibility?pwd=${AF_OTHER}" \
+            -H 'Content-Type: application/json' -d "{\"id\":$AF_ID,\"visibility\":\"all\"}")
+        curl -s -m 30 -o /dev/null -X POST "${BASE_URL}/api/admin/autofetch/visibility?pwd=${CLIENT_PWD}" \
+            -H 'Content-Type: application/json' -d "{\"id\":$AF_ID,\"visibility\":\"$AF_PREV\"}"
+        after=$(km_of "$AF_OTHER")
+        if [[ "$before" -gt "$during" && "$after" == "$before" && "$owner_km" -ge "$before" && "$code" == "404" ]]; then
+            green "✓ ($before → $during → $after km; non-owner $code)"; PASSED=$((PASSED + 1))
+        else
+            red "FAIL ($before → $during → $after km; non-owner $code)"; FAILED=$((FAILED + 1))
+            ERRORS+=("autofetch visibility does not gate co-tenant pixels")
+        fi
+    else
+        yellow "skip (no owned source or second prod login)"
+    fi
+
     printf "%-50s" "authenticated_responses_are_private"
     hdrs=$(curl -s -m 30 -D- -o /dev/null --get --data-urlencode "pwd=$CLIENT_PWD" \
         --data "bbox=$TZ_BBOX" "${BASE_URL}/api/grid")

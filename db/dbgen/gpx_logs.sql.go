@@ -26,8 +26,8 @@ INSERT INTO gpx_upload_logs (
     rotor_wing_segments, rotor_wing_km, rotor_wing_minutes,
     recon_segments, recon_km, recon_minutes,
     fast_vehicle_segments, fast_vehicle_km, fast_vehicle_minutes,
-    transit_segments, transit_km, logistics_segments, logistics_km
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    transit_segments, transit_km, logistics_segments, logistics_km, env
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 RETURNING id
 `
 
@@ -82,6 +82,7 @@ type CreateGPXUploadLogParams struct {
 	TransitKm              *float64  `json:"transit_km"`
 	LogisticsSegments      *int64    `json:"logistics_segments"`
 	LogisticsKm            *float64  `json:"logistics_km"`
+	Env                    string    `json:"env"`
 }
 
 func (q *Queries) CreateGPXUploadLog(ctx context.Context, arg CreateGPXUploadLogParams) (int64, error) {
@@ -136,6 +137,7 @@ func (q *Queries) CreateGPXUploadLog(ctx context.Context, arg CreateGPXUploadLog
 		arg.TransitKm,
 		arg.LogisticsSegments,
 		arg.LogisticsKm,
+		arg.Env,
 	)
 	var id int64
 	err := row.Scan(&id)
@@ -143,7 +145,7 @@ func (q *Queries) CreateGPXUploadLog(ctx context.Context, arg CreateGPXUploadLog
 }
 
 const getGPXUploadLog = `-- name: GetGPXUploadLog :one
-SELECT id, upload_id, user_id, user_email, filename, upload_time, is_valid, total_points, validation_errors, validation_warnings, protected_area_id, protected_area_name, patrol_km, road_km, boundary_km, excluded_km, total_segments, patrol_segments, static_segments, excluded_segments, foot_segments, foot_km, foot_minutes, vehicle_segments, vehicle_km, vehicle_minutes, aircraft_segments, aircraft_km, aircraft_minutes, recon_segments, recon_km, recon_minutes, fast_vehicle_segments, fast_vehicle_km, fast_vehicle_minutes, transit_segments, transit_km, logistics_segments, logistics_km, classified_segments_json, processing_status, rejection_reason, boat_segments, boat_km, boat_minutes, fixed_wing_segments, fixed_wing_km, fixed_wing_minutes, rotor_wing_segments, rotor_wing_km, rotor_wing_minutes FROM gpx_upload_logs WHERE id = ?
+SELECT id, upload_id, user_id, user_email, filename, upload_time, is_valid, total_points, validation_errors, validation_warnings, protected_area_id, protected_area_name, patrol_km, road_km, boundary_km, excluded_km, total_segments, patrol_segments, static_segments, excluded_segments, foot_segments, foot_km, foot_minutes, vehicle_segments, vehicle_km, vehicle_minutes, aircraft_segments, aircraft_km, aircraft_minutes, recon_segments, recon_km, recon_minutes, fast_vehicle_segments, fast_vehicle_km, fast_vehicle_minutes, transit_segments, transit_km, logistics_segments, logistics_km, classified_segments_json, processing_status, rejection_reason, boat_segments, boat_km, boat_minutes, fixed_wing_segments, fixed_wing_km, fixed_wing_minutes, rotor_wing_segments, rotor_wing_km, rotor_wing_minutes, env FROM gpx_upload_logs WHERE id = ?
 `
 
 func (q *Queries) GetGPXUploadLog(ctx context.Context, id int64) (GpxUploadLog, error) {
@@ -201,6 +203,7 @@ func (q *Queries) GetGPXUploadLog(ctx context.Context, id int64) (GpxUploadLog, 
 		&i.RotorWingSegments,
 		&i.RotorWingKm,
 		&i.RotorWingMinutes,
+		&i.Env,
 	)
 	return i, err
 }
@@ -231,8 +234,13 @@ SELECT
     SUM(rotor_wing_minutes) as total_rotor_wing_minutes,
     SUM(recon_minutes) as total_recon_minutes
 FROM gpx_upload_logs
-WHERE upload_time >= ?
+WHERE upload_time >= ? AND env IN (SELECT value FROM json_each(?))
 `
+
+type GetGPXUploadLogStatsParams struct {
+	UploadTime time.Time   `json:"upload_time"`
+	JsonEach   interface{} `json:"json_each"`
+}
 
 type GetGPXUploadLogStatsRow struct {
 	TotalUploads          int64    `json:"total_uploads"`
@@ -260,8 +268,8 @@ type GetGPXUploadLogStatsRow struct {
 	TotalReconMinutes     *float64 `json:"total_recon_minutes"`
 }
 
-func (q *Queries) GetGPXUploadLogStats(ctx context.Context, uploadTime time.Time) (GetGPXUploadLogStatsRow, error) {
-	row := q.db.QueryRowContext(ctx, getGPXUploadLogStats, uploadTime)
+func (q *Queries) GetGPXUploadLogStats(ctx context.Context, arg GetGPXUploadLogStatsParams) (GetGPXUploadLogStatsRow, error) {
+	row := q.db.QueryRowContext(ctx, getGPXUploadLogStats, arg.UploadTime, arg.JsonEach)
 	var i GetGPXUploadLogStatsRow
 	err := row.Scan(
 		&i.TotalUploads,
@@ -309,13 +317,15 @@ SELECT
     fast_vehicle_segments, fast_vehicle_km, fast_vehicle_minutes,
     transit_segments, transit_km, logistics_segments, logistics_km
 FROM gpx_upload_logs
+WHERE env IN (SELECT value FROM json_each(?))
 ORDER BY upload_time DESC
 LIMIT ? OFFSET ?
 `
 
 type ListGPXUploadLogsParams struct {
-	Limit  int64 `json:"limit"`
-	Offset int64 `json:"offset"`
+	JsonEach interface{} `json:"json_each"`
+	Limit    int64       `json:"limit"`
+	Offset   int64       `json:"offset"`
 }
 
 type ListGPXUploadLogsRow struct {
@@ -372,7 +382,7 @@ type ListGPXUploadLogsRow struct {
 }
 
 func (q *Queries) ListGPXUploadLogs(ctx context.Context, arg ListGPXUploadLogsParams) ([]ListGPXUploadLogsRow, error) {
-	rows, err := q.db.QueryContext(ctx, listGPXUploadLogs, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, listGPXUploadLogs, arg.JsonEach, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -463,15 +473,16 @@ SELECT
     fast_vehicle_segments, fast_vehicle_km, fast_vehicle_minutes,
     transit_segments, transit_km, logistics_segments, logistics_km
 FROM gpx_upload_logs
-WHERE protected_area_id = ?
+WHERE protected_area_id = ? AND env IN (SELECT value FROM json_each(?))
 ORDER BY upload_time DESC
 LIMIT ? OFFSET ?
 `
 
 type ListGPXUploadLogsByParkParams struct {
-	ProtectedAreaID *string `json:"protected_area_id"`
-	Limit           int64   `json:"limit"`
-	Offset          int64   `json:"offset"`
+	ProtectedAreaID *string     `json:"protected_area_id"`
+	JsonEach        interface{} `json:"json_each"`
+	Limit           int64       `json:"limit"`
+	Offset          int64       `json:"offset"`
 }
 
 type ListGPXUploadLogsByParkRow struct {
@@ -528,7 +539,12 @@ type ListGPXUploadLogsByParkRow struct {
 }
 
 func (q *Queries) ListGPXUploadLogsByPark(ctx context.Context, arg ListGPXUploadLogsByParkParams) ([]ListGPXUploadLogsByParkRow, error) {
-	rows, err := q.db.QueryContext(ctx, listGPXUploadLogsByPark, arg.ProtectedAreaID, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, listGPXUploadLogsByPark,
+		arg.ProtectedAreaID,
+		arg.JsonEach,
+		arg.Limit,
+		arg.Offset,
+	)
 	if err != nil {
 		return nil, err
 	}

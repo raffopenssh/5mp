@@ -121,8 +121,8 @@ func (s *Server) HandleAdminPage(w http.ResponseWriter, r *http.Request) {
 		       COALESCE(SUM(e.total_points), 0),
 		       COALESCE(SUM(e.unique_uploads), 0)
 		FROM effort_data e
-		WHERE e.year = ? AND e.day IS NULL AND e.movement_type = 'all' AND e.env = ?`,
-		currentYear, RequestEnv(r)).Scan(&stats.TotalDistanceKm, &stats.TotalPoints,
+		WHERE e.year = ? AND e.day IS NULL AND e.movement_type = 'all' AND e.env IN (SELECT value FROM json_each(?))`,
+		currentYear, s.PatrolEnvsJSON(r)).Scan(&stats.TotalDistanceKm, &stats.TotalPoints,
 		&stats.TotalUploads); err != nil {
 		slog.Warn("failed to get global stats", "error", err)
 		// Continue with zero stats
