@@ -286,8 +286,10 @@ respective provider:</p>
 <li><strong>unpkg.com</strong> &ndash; MapLibre map library, icon font</li>
 <li><strong>cdn.jsdelivr.net</strong> &ndash; export libraries</li>
 <li><strong>demotiles.maplibre.org</strong> &ndash; map fonts</li>
-<li><strong>Google Maps / Esri ArcGIS Online</strong> &ndash; satellite imagery
+<li><strong>tiles.maps.eox.at</strong> &ndash; Sentinel-2 satellite imagery
 tiles, only if you enable the satellite view</li>
+<li><strong>Imagery sources you configure yourself</strong> &ndash; fetched by
+this server on your behalf, so your IP address is not transmitted to them</li>
 </ul>
 <p>The dark base-map tiles (data &copy; OpenStreetMap contributors, rendering
 &copy; CARTO) are <em>not</em> loaded from CARTO by your browser: this server
@@ -411,8 +413,10 @@ Anbieter &uuml;bermittelt:</p>
 <li><strong>unpkg.com</strong> &ndash; MapLibre-Kartenbibliothek, Icon-Schriftart</li>
 <li><strong>cdn.jsdelivr.net</strong> &ndash; Export-Bibliotheken</li>
 <li><strong>demotiles.maplibre.org</strong> &ndash; Kartenschriften</li>
-<li><strong>Google Maps / Esri ArcGIS Online</strong> &ndash; Satellitenbild-Kacheln,
+<li><strong>tiles.maps.eox.at</strong> &ndash; Sentinel-2-Satellitenbild-Kacheln,
 nur wenn Sie die Satellitenansicht aktivieren</li>
+<li><strong>Selbst konfigurierte Bildquellen</strong> &ndash; werden von diesem
+Server f&uuml;r Sie abgerufen, Ihre IP-Adresse wird nicht &uuml;bermittelt</li>
 </ul>
 <p>Die dunklen Basiskarten-Kacheln (Daten &copy; OpenStreetMap-Mitwirkende,
 Darstellung &copy; CARTO) werden <em>nicht</em> von Ihrem Browser bei CARTO

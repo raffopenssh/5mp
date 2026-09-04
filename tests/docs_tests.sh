@@ -58,7 +58,7 @@ if [[ -f secrets.env ]]; then
     # shellcheck disable=SC1091
     source secrets.env
     leaked=0
-    for var in AOI_OWNER_PWD ADMIN_PASSWORD BACKUP_PEER_TOKEN ZENODO_TOKEN; do
+    for var in AOI_OWNER_PWD ADMIN_PASSWORD BACKUP_PEER_TOKEN ZENODO_TOKEN SHARED_FILES_KEY; do
         val="${!var}"
         [[ -z "$val" || "$val" == "test2026" ]] && continue
         if grep -rqF "$val" --include="*.md" . 2>/dev/null; then

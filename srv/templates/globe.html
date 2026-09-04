@@ -1122,33 +1122,17 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
         
         // Basemap styles. Each declares the attribution its publisher requires;
         // renderBasemapAttribution() prints it in the footer, because the
-        // MapLibre attribution control is off. Google and Bing tile endpoints
-        // were removed 2026-09: their terms forbid direct tile access. Esri
-        // World Imagery stays as the high-resolution option (attribution
-        // required, no bulk caching -- the offline builder does not use it);
-        // Sentinel-2 cloudless (EOX, CC BY-NC-SA 4.0) is the fully licensed
-        // one and the only imagery the offline builder ships.
+        // MapLibre attribution control is off.
+        //
+        // TWO KINDS OF ENTRY. The built-ins below are imagery THIS SERVER may
+        // show to everyone: Sentinel-2 cloudless (EOX, CC BY-NC-SA 4.0) is the
+        // one licensed satellite layer. Everything else a user sees under
+        // "Satellite" is a PRIVATE SOURCE they configured themselves in
+        // Map Settings (srv/tile_sources.go): its URL lives encrypted on the
+        // server, tiles are proxied owner-only, and it is registered here at
+        // runtime by registerTileSource() under the id `src:<id>`. Nothing in
+        // this file names a provider.
         const satelliteStyles = {
-            'satellite-esri': {
-                version: 8,
-                name: 'Satellite (Esri)',
-                glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
-                sources: {
-                    'satellite': {
-                        type: 'raster',
-                        tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
-                        tileSize: 256,
-                        attribution: 'Imagery © <a href="https://www.esri.com/" target="_blank" rel="noopener">Esri</a>, Maxar, Earthstar Geographics, and the GIS User Community',
-                        credit: '© Esri',
-                        maxzoom: 19
-                    }
-                },
-                layers: [{
-                    id: 'satellite',
-                    type: 'raster',
-                    source: 'satellite'
-                }]
-            },
             'satellite-s2': {
                 version: 8,
                 name: 'Satellite (Sentinel-2)',
@@ -1170,6 +1154,82 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 }]
             }
         };
+
+        // ── Basemap registry ─────────────────────────────────────────────
+        // One list every surface reads (Map Settings grid, the stats-panel Map
+        // strip, the offline-tile dialog, ?basemap= aliases), so a source added
+        // at runtime appears everywhere at once. `kind`: base | satellite.
+        const BUILTIN_BASEMAPS = [
+            { id: 'dark',         name: 'Dark',       short: 'Dark',     kind: 'base',      icon: 'icon-moon',      desc: 'The default cartographic basemap (OSM · CARTO)',
+              preview: '/api/basemap/dark_all/5/17/16@2x.png' },
+            { id: 'satellite-s2', name: 'Sentinel-2', short: 'Sentinel', kind: 'satellite', icon: 'icon-satellite', desc: 'Sentinel-2 cloudless 2024 by EOX · 10 m · CC BY-NC-SA 4.0',
+              preview: 'https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2024_3857/default/g/5/16/17.jpg', maxzoom: 18 }
+        ];
+        let privateTileSources = [];           // rows from /api/tile-sources (owner only)
+        let mapPrefs = { default_base: '', default_satellite: '' };
+
+        function basemapList() {
+            return BUILTIN_BASEMAPS.concat(privateTileSources.map(function (t) {
+                return { id: t.basemap, name: t.name, short: t.name.length > 18 ? t.name.slice(0, 17) + '…' : t.name,
+                         kind: t.kind === 'base' ? 'base' : 'satellite', icon: t.kind === 'base' ? 'icon-map' : 'icon-satellite',
+                         desc: (t.attribution || t.host) + ' · private source · z' + t.min_zoom + '–' + t.max_zoom,
+                         preview: t.tiles.replace('{z}', '5').replace('{x}', '17').replace('{y}', '16'),
+                         maxzoom: t.max_zoom, private: true, source: t };
+            }));
+        }
+        function basemapEntry(id) {
+            return basemapList().find(function (b) { return b.id === id; }) || null;
+        }
+        // The satellite the "Switch to satellite" gesture means: the login's
+        // preference, else its first private satellite source, else Sentinel-2.
+        function defaultSatelliteId() {
+            if (mapPrefs.default_satellite && basemapEntry(mapPrefs.default_satellite)) return mapPrefs.default_satellite;
+            const p = privateTileSources.find(function (t) { return t.kind !== 'base'; });
+            return p ? p.basemap : 'satellite-s2';
+        }
+        function registerTileSource(t) {
+            privateTileSources = privateTileSources.filter(function (x) { return x.id !== t.id; }).concat([t]);
+            satelliteStyles[t.basemap] = {
+                version: 8,
+                name: t.name,
+                glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
+                sources: {
+                    'satellite': {
+                        type: 'raster',
+                        tiles: [t.tiles],
+                        tileSize: t.tile_size || 256,
+                        attribution: escapeHtml(t.attribution || (t.name + ' — a private imagery source of this login, via ' + t.host)),
+                        credit: t.attribution ? t.attribution.replace(/<[^>]+>/g, '').split(/[,·]/)[0].trim().slice(0, 28) : t.name,
+                        minzoom: t.min_zoom || 0,
+                        maxzoom: t.max_zoom || 19
+                    }
+                },
+                layers: [{ id: 'satellite', type: 'raster', source: 'satellite' }]
+            };
+        }
+        function unregisterTileSource(id) {
+            privateTileSources = privateTileSources.filter(function (x) { return x.id !== id; });
+            delete satelliteStyles['src:' + id];
+            if (currentBasemap === 'src:' + id) switchBasemap('dark');
+        }
+        // Loads the login's sources + preferences. Resolves to the prefs so the
+        // caller can apply a default basemap BEFORE the URL restore (a link's
+        // view always wins over a preference).
+        async function loadTileSources() {
+            if (window.IS_GUEST) return mapPrefs;
+            try {
+                const r = await fetch('/api/tile-sources?pwd=' + encodeURIComponent(getPwd()));
+                if (!r.ok) return mapPrefs;
+                const d = await r.json();
+                privateTileSources = [];
+                (d.sources || []).forEach(registerTileSource);
+                mapPrefs = d.prefs || mapPrefs;
+                window._tileSourcesMeta = { can_add: !!d.can_add, max: d.max || 0 };
+            } catch (e) { console.warn('tile sources unavailable', e); }
+            if (typeof renderBasemapGrid === 'function') renderBasemapGrid();
+            if (window.MapLegend) MapLegend.refresh();
+            return mapPrefs;
+        }
 
         // Footer credits. CARTO's free tier and EOX's non-commercial grant are
         // both given in exchange for the credit being visible next to the map.
@@ -1478,9 +1538,10 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
         
         // Basemap switching function
         function switchBasemap(basemapId) {
-            // Retired providers (Google, Bing — removed 2026-09) fall back to
-            // the Esri imagery we still serve, whatever path names them.
-            if (/google|bing/i.test(basemapId || '')) basemapId = 'satellite-esri';
+            // Anything that is not a registered style — a retired provider id
+            // in an old link, another login's private source — means "the
+            // satellite this login has", never an error and never a blank map.
+            if (basemapId !== 'dark' && !satelliteStyles[basemapId]) basemapId = defaultSatelliteId();
             if (currentBasemap === basemapId) return;
             
             console.log('Switching basemap to:', basemapId);
@@ -1488,7 +1549,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             renderBasemapAttribution();
             
             // Update UI selection
-            document.querySelectorAll('.basemap-option').forEach(btn => {
+            document.querySelectorAll('.bm-card').forEach(btn => {
                 btn.classList.toggle('selected', btn.dataset.basemap === basemapId);
             });
             
@@ -1750,6 +1811,211 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
         // template is handed straight to MapLibre, so it has to be baked in.
         function histMapUrl(path) {
             return path + (path.indexOf('?') >= 0 ? '&' : '?') + 'pwd=' + encodeURIComponent(getPwd());
+        }
+
+        // ── Map Settings: basemap grid + private sources ─────────────────
+        // One renderer for the grid, fed by basemapList(). Each card is the
+        // basemap it shows (click = switch), a live tile as its preview (so a
+        // dead source reads as a dead card, not a pretty gradient), and two
+        // quiet controls that appear on hover: "default" (the globe opens on
+        // it) and, for satellite entries, "satellite" (what the high-zoom hint
+        // and ?basemap=satellite mean). A guest sees the grid with no pins.
+        function renderBasemapGrid() {
+            const grid = document.getElementById('basemap-grid');
+            if (!grid) return;
+            const canPin = !window.IS_GUEST && !!getPwd();
+            const cur = currentBasemap;
+            const defBase = mapPrefs.default_base || 'dark';
+            const defSat = defaultSatelliteId();
+            grid.innerHTML = basemapList().map(function (b) {
+                const isCur = cur === b.id;
+                const pins = [];
+                if (defBase === b.id) pins.push('<span class="bm-pin is-on" title="The globe opens on this map">opens here</span>');
+                if (b.kind === 'satellite' && defSat === b.id) pins.push('<span class="bm-pin is-on is-sat" title="What “switch to satellite” means for your login">satellite</span>');
+                const acts = canPin ? [
+                    defBase === b.id ? '' : `<button class="bm-act" onclick="event.stopPropagation();setMapPref('default_base','${b.id}')" title="Open the globe on this map">Make default</button>`,
+                    (b.kind === 'satellite' && defSat !== b.id) ? `<button class="bm-act" onclick="event.stopPropagation();setMapPref('default_satellite','${b.id}')" title="Use this when switching to satellite">Use as satellite</button>` : ''
+                ].join('') : '';
+                return `<button class="bm-card${isCur ? ' selected' : ''}${b.private ? ' is-private' : ''}" data-basemap="${b.id}" onclick="switchBasemap('${b.id}');renderBasemapGrid()" title="${escapeHtml(b.desc)}">
+                    <div class="bm-preview"><img src="${escapeHtml(b.preview)}" alt="" loading="lazy" onerror="this.parentNode.classList.add('is-dead')"><span class="bm-dead">no tile</span>${b.private ? '<span class="bm-lock" title="Private source — only your login"><i class="icon-lock"></i></span>' : ''}</div>
+                    <div class="bm-name">${escapeHtml(b.name)}</div>
+                    <div class="bm-pins">${pins.join('')}</div>
+                    <div class="bm-acts">${acts}</div>
+                </button>`;
+            }).join('');
+        }
+        async function setMapPref(key, value) {
+            const body = {}; body[key] = value;
+            try {
+                const r = await fetch('/api/map-prefs?pwd=' + encodeURIComponent(getPwd()), { method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+                if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || r.status);
+                mapPrefs = await r.json();
+                const e = basemapEntry(value);
+                showToast(key === 'default_base' ? `The globe now opens on ${e ? e.name : value}` : `“Satellite” now means ${e ? e.name : value}`, 'success');
+                renderBasemapGrid();
+                if (window.MapLegend) MapLegend.refresh();
+            } catch (err) { showToast('Could not save preference (' + err.message + ')', 'error'); }
+        }
+
+        // The sources manager. Form + list in one card; the probe IS the
+        // validation, so the "Check" step fetches a real tile through the
+        // server and shows it — a URL that answers with an HTML error page is
+        // refused with that reason, never stored as "unverified".
+        let _tsProbe = null; // last successful dry-run, so Add doesn't re-ask
+        function renderTileSourcesPanel() {
+            const box = document.getElementById('tile-sources-body');
+            if (!box) return;
+            const meta = window._tileSourcesMeta || { can_add: false, max: 0 };
+            if (window.IS_GUEST || !meta.can_add) {
+                box.innerHTML = `<div class="ts-empty">${window.IS_GUEST
+                    ? 'Shared links cannot hold imagery sources.'
+                    : (window.IS_TEST_ENV ? 'Private sources are not available in the test environment — the Sentinel-2 imagery above is what it uses.'
+                                          : 'Sign in with your own access password to add imagery sources.')}</div>`;
+                return;
+            }
+            const rows = privateTileSources.map(function (t) {
+                const ok = !!t.verified_at;
+                const isCur = currentBasemap === t.basemap;
+                return `<div class="ts-row${isCur ? ' is-current' : ''}">
+                    <div class="ts-thumb"><img src="${escapeHtml(t.tiles.replace('{z}','6').replace('{x}','35').replace('{y}','32'))}" alt="" loading="lazy" onerror="this.style.visibility='hidden'"></div>
+                    <div class="ts-main">
+                        <div class="ts-name"><input value="${escapeHtml(t.name)}" maxlength="60" onchange="tsUpdate('${t.id}',{name:this.value})" aria-label="Source name">
+                            <span class="ts-badge ${ok ? 'ok' : 'warn'}" title="${ok ? 'A tile came back on ' + escapeHtml(safeDateStr(t.verified_at)) : 'Not verified'}">${ok ? 'verified' : 'unverified'}</span>
+                            <span class="ts-badge kind">${escapeHtml(t.kind)}</span></div>
+                        <div class="ts-meta"><code>${escapeHtml(t.host)}</code> · ${escapeHtml(t.scheme)} · z${t.min_zoom}–<input type="number" min="1" max="22" value="${t.max_zoom}" class="ts-zoom" onchange="tsUpdate('${t.id}',{max_zoom:+this.value})" aria-label="Max zoom"> · ${t.probe_bytes ? Math.round(t.probe_bytes/1024) + ' KB/tile' : ''}</div>
+                        <input class="ts-attr" value="${escapeHtml(t.attribution || '')}" placeholder="Attribution line written into the map footer and any MBTiles (optional)" maxlength="300" onchange="tsUpdate('${t.id}',{attribution:this.value})">
+                    </div>
+                    <div class="ts-acts">
+                        <button class="sh-btn" onclick="switchBasemap('${t.basemap}');renderBasemapGrid();renderTileSourcesPanel()" title="Show this source on the globe now">${isCur ? 'Showing' : 'Show'}</button>
+                        <button class="sh-btn" onclick="tsVerify('${t.id}')" title="Fetch one tile again">Re-check</button>
+                        <button class="sh-btn sh-btn-off" onclick="tsDelete('${t.id}','${escapeHtml(t.name)}')">Remove</button>
+                    </div>
+                </div>`;
+            }).join('');
+            const full = privateTileSources.length >= meta.max;
+            box.innerHTML = `
+                ${rows ? `<div class="ts-list">${rows}</div>` : ''}
+                ${full ? `<div class="ts-empty">You hold ${privateTileSources.length} sources, the maximum. Remove one to add another.</div>` : `
+                <form class="ts-form" onsubmit="return tsSubmit(event)" autocomplete="off">
+                    <div class="ts-form-head">${rows ? 'Add another source' : 'Add a source'} <span class="ts-count">${privateTileSources.length}/${meta.max}</span></div>
+                    <label class="ts-field"><span>Tile URL template</span>
+                        <input id="ts-url" type="url" required placeholder="https://…/{z}/{x}/{y}.jpg   (also {-y}, {q}, {s})" spellcheck="false" oninput="tsUrlChanged()"></label>
+                    <div class="ts-grid">
+                        <label class="ts-field"><span>Name</span><input id="ts-name" maxlength="60" placeholder="How the map will call it"></label>
+                        <label class="ts-field"><span>Type</span><select id="ts-kind"><option value="satellite">Satellite imagery</option><option value="base">Base map</option></select></label>
+                        <label class="ts-field"><span>Max zoom</span><input id="ts-maxz" type="number" min="1" max="22" value="19"></label>
+                        <label class="ts-field"><span>Tile size</span><select id="ts-size"><option value="256">256 px</option><option value="512">512 px</option></select></label>
+                    </div>
+                    <label class="ts-field"><span>Attribution <em>(optional — shown in the footer and written into MBTiles)</em></span><input id="ts-attr" maxlength="300" placeholder="© Provider"></label>
+                    <div class="ts-probe" id="ts-probe"></div>
+                    <div class="ts-form-acts">
+                        <button type="button" class="sh-btn" id="ts-check" onclick="tsCheck()">Check</button>
+                        <button type="submit" class="sh-btn sh-btn-primary" id="ts-add" disabled title="Check the URL first">Add source</button>
+                    </div>
+                </form>`}`;
+        }
+        // Client-side twin of Go tileURL, for the probe preview only.
+        function tileURLPreview(tpl, z, x, y) {
+            const q = (function () { let s = ''; for (let i = z; i > 0; i--) { let d = 0, m = 1 << (i - 1); if (x & m) d++; if (y & m) d += 2; s += d; } return s; })();
+            return tpl.replace(/\{q\}/g, q).replace(/\{z\}/g, z).replace(/\{x\}/g, x).replace(/\{y\}/g, y)
+                .replace(/\{-y\}/g, (1 << z) - 1 - y).replace(/\{s\}/g, (x + y) % 4)
+                .replace(/\{([a-z0-9])-([a-z0-9])\}/g, (m, lo, hi) => String.fromCharCode(lo.charCodeAt(0) + ((x + y) % (hi.charCodeAt(0) - lo.charCodeAt(0) + 1))));
+        }
+        function tsUrlChanged() {
+            _tsProbe = null;
+            const add = document.getElementById('ts-add'); if (add) { add.disabled = true; add.title = 'Check the URL first'; }
+            const p = document.getElementById('ts-probe'); if (p) p.innerHTML = '';
+        }
+        function tsFormBody(dry) {
+            return {
+                url: document.getElementById('ts-url').value.trim(),
+                name: document.getElementById('ts-name').value.trim(),
+                kind: document.getElementById('ts-kind').value,
+                max_zoom: +document.getElementById('ts-maxz').value || 19,
+                tile_size: +document.getElementById('ts-size').value || 256,
+                attribution: document.getElementById('ts-attr').value.trim(),
+                dry_run: !!dry
+            };
+        }
+        async function tsPost(body) {
+            const r = await fetch('/api/tile-sources?pwd=' + encodeURIComponent(getPwd()), { method: 'POST',
+                headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+            const d = await r.json().catch(() => ({}));
+            if (!r.ok) throw new Error(d.error || ('HTTP ' + r.status));
+            return d;
+        }
+        async function tsCheck() {
+            const probe = document.getElementById('ts-probe'), btn = document.getElementById('ts-check'), add = document.getElementById('ts-add');
+            const body = tsFormBody(true);
+            if (!body.url) { probe.innerHTML = '<span class="ts-err">Paste a tile URL first.</span>'; return; }
+            btn.disabled = true; btn.textContent = 'Checking…';
+            probe.innerHTML = '<span class="ts-wait">Fetching one tile through the server…</span>';
+            try {
+                const d = await tsPost(body);
+                _tsProbe = d;
+                const kb = Math.max(1, Math.round((d.probe.bytes || 0) / 1024));
+                // The preview is fetched by the browser from the URL the user
+                // typed — it is theirs, it has not been stored, and seeing the
+                // actual tile is the only honest "this works".
+                const u = tileURLPreview(d.source.url, 6, 35, 32);
+                probe.innerHTML = `<img class="ts-probe-img" src="${escapeHtml(u)}" alt=""><div><div class="ts-ok">A ${escapeHtml(d.probe.content_type || 'image')} tile came back (${kb} KB).</div>
+                    <div class="ts-meta">${escapeHtml(d.source.host)} · ${escapeHtml(d.source.scheme)} scheme${!body.name ? ' · it will be called <b>' + escapeHtml(d.source.name) + '</b>' : ''}</div></div>`;
+                add.disabled = false; add.title = '';
+            } catch (e) {
+                _tsProbe = null;
+                probe.innerHTML = `<span class="ts-err">${escapeHtml(e.message)}</span>`;
+                add.disabled = true;
+            } finally { btn.disabled = false; btn.textContent = 'Check'; }
+        }
+        async function tsSubmit(ev) {
+            ev.preventDefault();
+            if (!_tsProbe) { tsCheck(); return false; }
+            const add = document.getElementById('ts-add'); add.disabled = true; add.textContent = 'Adding…';
+            try {
+                const d = await tsPost(tsFormBody(false));
+                registerTileSource(d.source);
+                showToast(`${d.source.name} added — it is now under Satellite`, 'success', {
+                    action: { label: 'Show it', onClick: () => { switchBasemap(d.source.basemap); renderBasemapGrid(); } } });
+                renderBasemapGrid(); renderTileSourcesPanel();
+                if (window.MapLegend) MapLegend.refresh();
+            } catch (e) {
+                showToast('Could not add source: ' + e.message, 'error');
+                add.disabled = false; add.textContent = 'Add source';
+            }
+            return false;
+        }
+        async function tsUpdate(id, patch) {
+            try {
+                const r = await fetch(`/api/tile-sources/${id}?pwd=` + encodeURIComponent(getPwd()) + (patch.attribution === '' ? '&clear_attribution=1' : ''),
+                    { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(patch) });
+                if (!r.ok) throw new Error(r.status);
+                const d = await r.json();
+                registerTileSource(d.source);
+                renderBasemapGrid(); renderTileSourcesPanel();
+                if (currentBasemap === d.source.basemap) { const b = currentBasemap; currentBasemap = ''; switchBasemap(b); }
+                if (window.MapLegend) MapLegend.refresh();
+            } catch (e) { showToast('Could not save (' + e.message + ')', 'error'); }
+        }
+        async function tsVerify(id) {
+            try {
+                const r = await fetch(`/api/tile-sources/${id}/verify?pwd=` + encodeURIComponent(getPwd()), { method: 'POST' });
+                const d = await r.json();
+                if (d.ok) { registerTileSource(d.source); showToast(`A tile came back (${Math.round(d.probe.bytes/1024)} KB)`, 'success'); }
+                else showToast('No tile came back: ' + d.error, 'error');
+                renderTileSourcesPanel();
+            } catch (e) { showToast('Could not check (' + e.message + ')', 'error'); }
+        }
+        async function tsDelete(id, name) {
+            if (!confirm(`Remove ${name}? Offline tiles already built from it stay in your shared files.`)) return;
+            try {
+                const r = await fetch(`/api/tile-sources/${id}?pwd=` + encodeURIComponent(getPwd()), { method: 'DELETE' });
+                if (!r.ok) throw new Error(r.status);
+                unregisterTileSource(id);
+                mapPrefs = (await (await fetch('/api/map-prefs?pwd=' + encodeURIComponent(getPwd()))).json()) || mapPrefs;
+                renderBasemapGrid(); renderTileSourcesPanel();
+                if (window.MapLegend) MapLegend.refresh();
+            } catch (e) { showToast('Could not remove (' + e.message + ')', 'error'); }
         }
 
         function renderHistMapPanel() {
@@ -2768,7 +3034,8 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             if (currentBasemap !== 'dark' || satelliteHintDismissed || satelliteHintShown) return;
             if (typeof map === 'undefined' || map.getZoom() < SATELLITE_HINT_ZOOM) return;
             satelliteHintShown = true;
-            showToast('Satellite imagery shows more detail at this zoom', 'info', {
+            const satName = (basemapEntry(defaultSatelliteId()) || {}).name || 'Satellite';
+            showToast(`${satName}${/imagery|satellite/i.test(satName) ? '' : ' imagery'} shows more detail at this zoom`, 'info', {
                 key: 'satellite-hint',
                 title: 'High zoom',
                 duration: 8000,
@@ -2786,7 +3053,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
         
         function quickSwitchToSatellite() {
             dismissSatelliteHint();
-            switchBasemap('satellite-esri');
+            switchBasemap(defaultSatelliteId());
         }
         
         // Monitor zoom level for satellite hint
@@ -4133,283 +4400,205 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             document.getElementById('version-modal').style.display = 'none';
         }
 
-        // MBTiles Dialog Functions
+        // ── Offline tiles dialog ─────────────────────────────────────────
+        // The builder writes an encrypted MBTiles into the login's shared
+        // files (srv/mbtiles.go). Sources: the one imagery this server may
+        // copy for everyone (Sentinel-2) plus every private source the login
+        // configured in Map Settings — those builds are owner-only files.
         let currentMBTilesParkId = null;
         let currentMBTilesParkName = null;
         let currentMBTilesJobId = null;
         let mbtilesPollingInterval = null;
         let mbtilesState = 'idle'; // idle, generating, complete
-        let mbtilesMaxZoom = 17;
-        
+        let mbtilesMaxZoom = 16;
+        let mbtilesSource = null;   // key: 's2cloudless' | 'src:<id>'
+        let mbtilesLastJob = null;
+        let _mbtEstTimer = null;
+
+        function mbtilesSourceList() {
+            const list = [{ key: 's2cloudless', name: 'Sentinel-2 cloudless', sub: '10 m · EOX · CC BY-NC-SA 4.0', maxz: 18, private: false }];
+            privateTileSources.forEach(t => list.push({ key: 'src:' + t.id, name: t.name, sub: t.host + ' · private', maxz: t.max_zoom, private: true }));
+            return list;
+        }
+        function mbtilesSourceEntry() { return mbtilesSourceList().find(x => x.key === mbtilesSource) || mbtilesSourceList()[0]; }
+
         async function showMBTilesDialog(parkId, parkName) {
-            // Check if we're resuming an active job for this park
-            const resumingJob = currentMBTilesParkId === parkId && currentMBTilesJobId && mbtilesState === 'generating';
-            
+            const resuming = currentMBTilesParkId === parkId && currentMBTilesJobId && mbtilesState === 'generating';
             currentMBTilesParkId = parkId;
             currentMBTilesParkName = parkName;
             document.getElementById('mbtiles-park-name').textContent = parkName;
             document.getElementById('mbtiles-dialog').style.display = 'flex';
-            
-            // Only reset if not resuming an active job
-            if (!resumingJob) {
-                mbtilesState = 'idle';
-                currentMBTilesJobId = null;
+            if (!resuming) { mbtilesState = 'idle'; currentMBTilesJobId = null; mbtilesLastJob = null; }
+            // Default imagery: the login's satellite source when the current
+            // basemap is one, else whatever is showing, else Sentinel-2.
+            if (!mbtilesSource || !mbtilesSourceList().some(x => x.key === mbtilesSource)) {
+                const cur = currentBasemap.startsWith('src:') ? currentBasemap : (defaultSatelliteId().startsWith('src:') ? defaultSatelliteId() : 's2cloudless');
+                mbtilesSource = cur === 'satellite-s2' ? 's2cloudless' : cur;
             }
+            renderMBTilesSources();
             updateMBTilesButton();
-            
-            // Setup source buttons
-            document.querySelectorAll('.mbtiles-source-btn').forEach(btn => {
-                btn.onclick = () => selectMBTilesSource(btn.dataset.source);
-            });
-            
-            // Setup zoom slider
             document.getElementById('mbtiles-zoom-slider').value = mbtilesMaxZoom;
-            updateZoomLevel(mbtilesMaxZoom);
-            
-            // Fetch estimate (only if idle)
-            if (mbtilesState === 'idle') {
-                await fetchMBTilesEstimate();
-            }
+            updateZoomLevel(mbtilesMaxZoom, true);
+            if (mbtilesState === 'idle') fetchMBTilesEstimate();
         }
-        
+        function renderMBTilesSources() {
+            const box = document.getElementById('mbtiles-sources');
+            const list = mbtilesSourceList();
+            box.innerHTML = list.map(o => `<button class="mbtiles-source-btn${o.key === mbtilesSource ? ' selected' : ''}" data-source="${escapeHtml(o.key)}" onclick="selectMBTilesSource('${escapeHtml(o.key)}')" title="${escapeHtml(o.sub)}">
+                ${o.private ? '<i class="icon-lock"></i>' : '<i class="icon-satellite"></i>'}<span>${escapeHtml(o.name)}</span></button>`).join('');
+            const e = mbtilesSourceEntry();
+            const slider = document.getElementById('mbtiles-zoom-slider');
+            slider.max = Math.min(19, e.maxz || 19);
+            if (mbtilesMaxZoom > +slider.max) { mbtilesMaxZoom = +slider.max; slider.value = mbtilesMaxZoom; }
+            document.getElementById('mbtiles-source-note').innerHTML = e.private
+                ? `<i class="icon-lock"></i> Built from your own source. The file is encrypted and only your login (or a key you mint) can download it. Use is under your agreement with the provider.`
+                : `Open imagery this server may hand out; attribution is written into the file.` + (!window.IS_GUEST && !window.IS_TEST_ENV && !privateTileSources.length
+                    ? ` <a href="#" onclick="event.preventDefault();hideMBTilesDialog();openAdminPanel&&openAdminPanel('map-settings')">Add your own imagery source →</a>` : '');
+        }
+        function selectMBTilesSource(key) {
+            mbtilesSource = key;
+            renderMBTilesSources();
+            updateZoomLevel(document.getElementById('mbtiles-zoom-slider').value, true);
+            fetchMBTilesEstimate();
+        }
+        function getSelectedSource() { return mbtilesSource || 's2cloudless'; }
+
         function hideMBTilesDialog() {
             document.getElementById('mbtiles-dialog').style.display = 'none';
-            
-            // If still generating, show hint about bell notification
-            if (mbtilesState === 'generating' && mbtilesPollingInterval) {
-                showMBTilesNotificationHint();
-            }
+            if (mbtilesState === 'generating' && mbtilesPollingInterval) showMBTilesNotificationHint();
         }
-        
         function showMBTilesNotificationHint() {
-            // Add a notification badge to show progress is continuing
             const notifBtn = document.getElementById('notification-toggle');
-            if (notifBtn) {
-                notifBtn.classList.add('has-mbtiles-progress');
-            }
-            
-            // Show toast pointing to bell
-            showToast(
-                'Generating in background',
-                `Track progress in the bell notification menu`,
-                'Show',
-                () => {
-                    document.getElementById('notification-toggle').click();
-                    loadNotifications();
-                },
-                'info'
-            );
+            if (notifBtn) notifBtn.classList.add('has-mbtiles-progress');
+            showToast('Building in the background — progress is in the bell menu', 'info', {
+                action: { label: 'Show', onClick: () => { document.getElementById('notification-toggle').click(); loadNotifications(); } } });
         }
-        
         function hideMBTilesNotificationHint() {
             const notifBtn = document.getElementById('toolbar-notifications');
-            if (notifBtn) {
-                notifBtn.classList.remove('has-mbtiles-progress');
-                notifBtn.title = 'Notifications';
-            }
+            if (notifBtn) { notifBtn.classList.remove('has-mbtiles-progress'); notifBtn.title = 'Notifications'; }
         }
-        
-        // The #task-toast panel (title / body / one action, top-right corner)
-        // is gone: its callers go through showToast's legacy-signature adapter
-        // and land in the one toast surface. hideToast/handleToastAction were
-        // its only API and referenced an undeclared `toastActionCallback`,
-        // i.e. they threw if anything had ever called them.
-        
-        function selectMBTilesSource(source) {
-            document.querySelectorAll('.mbtiles-source-btn').forEach(btn => {
-                btn.classList.toggle('selected', btn.dataset.source === source);
-            });
-            fetchMBTilesEstimate();
+
+        // Zoom in words the user can act on: z13 ≈ a town, z16 ≈ a building,
+        // z18 ≈ a tree. Ground resolution at the equator, no invented detail.
+        function zoomWords(z) {
+            const m = 156543 / Math.pow(2, z); // m/px
+            const res = m >= 1 ? m.toFixed(0) + ' m/px' : (m * 100).toFixed(0) + ' cm/px';
+            return `z${z} · ${res}`;
         }
-        
-        function getSelectedSource() {
-            const selected = document.querySelector('.mbtiles-source-btn.selected');
-            return selected ? selected.dataset.source : 's2cloudless';
+        function updateZoomLevel(value, silent) {
+            mbtilesMaxZoom = Math.min(parseInt(value, 10), 19);
+            document.getElementById('mbtiles-zoom-label').textContent = zoomWords(mbtilesMaxZoom);
+            if (!silent) { clearTimeout(_mbtEstTimer); _mbtEstTimer = setTimeout(fetchMBTilesEstimate, 250); }
         }
-        
-        function updateZoomLevel(value) {
-            const intVal = parseInt(value);
-            mbtilesMaxZoom = Math.min(intVal, 19);
-            const label = document.getElementById('mbtiles-zoom-label');
-            label.textContent = `1-${mbtilesMaxZoom}`;
-            fetchMBTilesEstimate();
-        }
-        
+        function fmtBytes(b) { return b >= (1 << 30) ? (b / (1 << 30)).toFixed(1) + ' GB' : Math.max(1, Math.round(b / (1 << 20))) + ' MB'; }
+
         async function fetchMBTilesEstimate() {
             const estimateEl = document.getElementById('mbtiles-estimate');
             const actionBtn = document.getElementById('mbtiles-action-btn');
-            
+            const foot = document.getElementById('mbtiles-foot');
+            estimateEl.classList.add('is-loading');
             try {
-                const resp = await fetch(`${apiBase(currentMBTilesParkId)}/mbtiles/estimate?pwd=${encodeURIComponent(getPwd())}&maxZoom=${mbtilesMaxZoom}`);
+                const resp = await fetch(`${apiBase(currentMBTilesParkId)}/mbtiles/estimate?pwd=${encodeURIComponent(getPwd())}&maxZoom=${mbtilesMaxZoom}&source=${encodeURIComponent(getSelectedSource())}`);
                 const data = await resp.json();
-                
-                const mins = Math.ceil(data.estimated_seconds / 60);
-                const sizeStr = data.estimated_size_mb >= 1000 
-                    ? `${(data.estimated_size_mb / 1024).toFixed(1)} GB` 
-                    : `${data.estimated_size_mb} MB`;
-                
-                const storageLabel = data.storage === 'zenodo' ? ' · Zenodo' : '';
-                estimateEl.innerHTML = `~${sizeStr} &middot; ~${mins} min${storageLabel}`;
-                
-                // Check for sufficient capacity (server decides: RAM build, or disk-backed up to 8 GB for full-access users)
+                if (!resp.ok) throw new Error(data.error || resp.statusText);
+                const mins = Math.max(1, Math.ceil(data.estimated_seconds / 60));
+                const used = data.budget_used_bytes || 0, max = data.budget_max_bytes || 1;
+                const pct = Math.min(100, Math.round(100 * (used + data.estimated_size_mb * 1048576) / max));
+                estimateEl.innerHTML = `<div class="mbt-est-row"><b>~${fmtBytes(data.estimated_size_mb * 1048576)}</b><span>${data.total_tiles.toLocaleString()} tiles · ~${mins} min</span></div>
+                    <div class="mbt-budget" title="Your storage budget across shared files and offline tiles"><div class="mbt-budget-used" style="width:${Math.round(100*used/max)}%"></div><div class="mbt-budget-new${pct >= 100 ? ' over' : ''}" style="left:${Math.round(100*used/max)}%;width:${Math.max(1, pct - Math.round(100*used/max))}%"></div></div>
+                    <div class="mbt-budget-lbl">${fmtBytes(used)} of ${fmtBytes(max)} in use${data.disk_free_bytes ? ' · ' + fmtBytes(data.disk_free_bytes) + ' free on the server' : ''}</div>`;
                 if (!data.sufficient_space) {
-                    const reason = data.capacity_reason || 'File too large. Reduce zoom level.';
-                    estimateEl.innerHTML = `<span style="color: #ef4444;">File too large</span><br><span style="font-size: 10px; color: #888;">${reason}</span>`;
+                    estimateEl.innerHTML += `<div class="mbt-refuse">${escapeHtml(data.capacity_reason || 'Too large — lower the detail.')}</div>`;
                     actionBtn.disabled = true;
-                    actionBtn.title = 'Reduce zoom level';
                 } else {
-                    if (data.build_mode === 'disk') {
-                        estimateEl.innerHTML += ` <span style="font-size: 10px; color: #666;">(large build — may take a while)</span>`;
-                    }
                     actionBtn.disabled = mbtilesState === 'generating';
-                    actionBtn.title = '';
                 }
+                foot.innerHTML = `Encrypted on this server · kept ${data.ttl_days} days or ${data.max_downloads} downloads · listed under <a href="#" onclick="event.preventDefault();hideMBTilesDialog();openAdminPanel&&openAdminPanel('access')">Shared files</a>, where you can hand it out with an expiring key.`;
             } catch (err) {
-                estimateEl.textContent = 'Failed to estimate';
-            }
+                estimateEl.innerHTML = `<div class="mbt-refuse">${escapeHtml(err.message || 'Could not estimate')}</div>`;
+                actionBtn.disabled = true;
+            } finally { estimateEl.classList.remove('is-loading'); }
         }
-        
-        // Handle the main action button click based on state
+
         async function handleMBTilesAction() {
-            if (mbtilesState === 'idle') {
-                await startMBTilesGeneration();
-            } else if (mbtilesState === 'complete') {
-                downloadMBTiles();
-            }
+            if (mbtilesState === 'idle') await startMBTilesGeneration();
+            else if (mbtilesState === 'complete') downloadMBTiles();
         }
-        
         function updateMBTilesButton() {
             const btn = document.getElementById('mbtiles-action-btn');
             const btnText = document.getElementById('mbtiles-btn-text');
             const btnProgress = document.getElementById('mbtiles-btn-progress');
-            
+            const cancel = document.getElementById('mbtiles-cancel-btn');
             btn.classList.remove('generating', 'complete');
             btnProgress.style.width = '0%';
-            
-            if (mbtilesState === 'idle') {
-                btnText.textContent = 'Generate';
-                btn.disabled = false;
-            } else if (mbtilesState === 'generating') {
-                btn.classList.add('generating');
-                btn.disabled = true;
-            } else if (mbtilesState === 'complete') {
-                btn.classList.add('complete');
-                btnText.textContent = 'Download';
-                btn.disabled = false;
-            }
+            cancel.style.display = mbtilesState === 'generating' ? '' : 'none';
+            if (mbtilesState === 'idle') { btnText.textContent = 'Build offline tiles'; btn.disabled = false; }
+            else if (mbtilesState === 'generating') { btn.classList.add('generating'); btn.disabled = true; }
+            else if (mbtilesState === 'complete') { btn.classList.add('complete'); btnText.textContent = 'Download' + (mbtilesLastJob && mbtilesLastJob.file_size_bytes ? ' · ' + fmtBytes(mbtilesLastJob.file_size_bytes) : ''); btn.disabled = false; }
         }
-        
         async function startMBTilesGeneration() {
-            const source = getSelectedSource();
             const btn = document.getElementById('mbtiles-action-btn');
             const btnText = document.getElementById('mbtiles-btn-text');
-            
             mbtilesState = 'generating';
-            btn.classList.add('generating');
-            btn.disabled = true;
-            btnText.textContent = 'Starting...';
-            
+            updateMBTilesButton();
+            btnText.textContent = 'Starting…';
             try {
-                const resp = await fetch(`${apiBase(currentMBTilesParkId)}/mbtiles?source=${source}&maxZoom=${mbtilesMaxZoom}&pwd=${encodeURIComponent(getPwd())}`, {
-                    method: 'POST'
-                });
-                
-                if (!resp.ok) {
-                    throw new Error(await resp.text());
-                }
-                
-                const data = await resp.json();
+                const resp = await fetch(`${apiBase(currentMBTilesParkId)}/mbtiles?source=${encodeURIComponent(getSelectedSource())}&maxZoom=${mbtilesMaxZoom}&pwd=${encodeURIComponent(getPwd())}`, { method: 'POST' });
+                const data = await resp.json().catch(() => ({}));
+                if (!resp.ok) throw new Error(data.error || (await resp.text()));
                 currentMBTilesJobId = data.job_id;
-                
-                btnText.textContent = '0%';
-                
-                // Start polling for status - poll immediately then every 2s
+                btnText.textContent = data.adopted ? 'Already building…' : 'Queued…';
                 pollMBTilesStatus();
                 mbtilesPollingInterval = setInterval(pollMBTilesStatus, 2000);
-                
-                // Refresh notifications to show new job (but keep dialog open)
                 loadNotifications();
             } catch (err) {
                 mbtilesState = 'idle';
                 updateMBTilesButton();
-                document.getElementById('mbtiles-estimate').innerHTML = `<span style="color: #ef4444;">Error: ${escapeHtml(err.message)}</span>`;
+                document.getElementById('mbtiles-estimate').innerHTML = `<div class="mbt-refuse">${escapeHtml(err.message)}</div>`;
             }
         }
-        
+        async function cancelMBTiles() {
+            if (!currentMBTilesJobId) return;
+            try { await fetch(`/api/mbtiles/${currentMBTilesJobId}?pwd=${encodeURIComponent(getPwd())}`, { method: 'DELETE' }); } catch (e) {}
+            clearInterval(mbtilesPollingInterval); mbtilesPollingInterval = null;
+            mbtilesState = 'idle'; currentMBTilesJobId = null;
+            updateMBTilesButton(); hideMBTilesNotificationHint(); fetchMBTilesEstimate();
+            setTimeout(loadNotifications, 800);
+        }
         async function pollMBTilesStatus() {
             if (!currentMBTilesJobId) return;
-            
-            const btn = document.getElementById('mbtiles-action-btn');
             const btnText = document.getElementById('mbtiles-btn-text');
             const btnProgress = document.getElementById('mbtiles-btn-progress');
-            
             try {
                 const resp = await fetch(`/api/mbtiles/${currentMBTilesJobId}/status?pwd=${encodeURIComponent(getPwd())}`);
+                if (resp.status === 404) { clearInterval(mbtilesPollingInterval); mbtilesPollingInterval = null; mbtilesState = 'idle'; currentMBTilesJobId = null; updateMBTilesButton(); return; }
                 const job = await resp.json();
-                
-                // Update progress in button with phase info
+                mbtilesLastJob = job;
                 btnProgress.style.width = job.progress + '%';
                 const pct = Math.round(job.progress);
-                if (job.phase === 'upload') {
-                    btnText.textContent = `Uploading… ${pct}%`;
-                } else if (job.status === 'uploading') {
-                    btnText.textContent = `Uploading… ${pct}%`;
-                } else {
-                    btnText.textContent = `${pct}%`;
-                }
-                
+                if (job.status === 'pending') btnText.textContent = 'Waiting for another build…';
+                else if (job.status === 'encrypting') btnText.textContent = 'Encrypting…';
+                else btnText.textContent = `${pct}% · ${(job.downloaded_tiles || 0).toLocaleString()} / ${(job.total_tiles || 0).toLocaleString()} tiles${job.failed_tiles ? ' · ' + job.failed_tiles + ' missing' : ''}`;
                 if (job.status === 'completed') {
-                    clearInterval(mbtilesPollingInterval);
-                    mbtilesPollingInterval = null;
-                    
+                    clearInterval(mbtilesPollingInterval); mbtilesPollingInterval = null;
                     mbtilesState = 'complete';
-                    updateMBTilesButton();
-                    hideMBTilesNotificationHint();
-                    
-                    // Show toast notification with download link
-                    showToast(
-                        'MBTiles Ready',
-                        `Offline tiles for ${currentMBTilesParkName} ready to download.`,
-                        'Download',
-                        () => downloadMBTiles(),
-                        'success'
-                    );
-                    
-                    // Browser notification
-                    if (Notification.permission === 'granted') {
-                        new Notification('MBTiles Ready', {
-                            body: `Offline tiles for ${currentMBTilesParkName} ready to download.`
-                        });
+                    updateMBTilesButton(); hideMBTilesNotificationHint();
+                    showToast(`Offline tiles for ${currentMBTilesParkName} are ready (${fmtBytes(job.file_size_bytes || 0)})`, 'success', { action: { label: 'Download', onClick: () => downloadMBTiles() } });
+                    if (window.Notification && Notification.permission === 'granted') new Notification('Offline tiles ready', { body: `${currentMBTilesParkName} · ${fmtBytes(job.file_size_bytes || 0)}` });
+                    loadNotifications();
+                } else if (job.status === 'failed' || job.status === 'cancelled') {
+                    clearInterval(mbtilesPollingInterval); mbtilesPollingInterval = null;
+                    mbtilesState = 'idle'; updateMBTilesButton(); hideMBTilesNotificationHint();
+                    if (job.status === 'failed') {
+                        showToast('Offline tiles failed: ' + (job.error || ''), 'error');
+                        document.getElementById('mbtiles-estimate').innerHTML = `<div class="mbt-refuse">${escapeHtml(job.error || 'Build failed')}</div>`;
                     }
-                } else if (job.status === 'failed') {
-                    clearInterval(mbtilesPollingInterval);
-                    mbtilesPollingInterval = null;
-                    
-                    mbtilesState = 'idle';
-                    updateMBTilesButton();
-                    hideMBTilesNotificationHint();
-                    
-                    // Show error toast
-                    showToast('MBTiles Failed', job.error || 'Generation failed', null, null, 'error');
-                    document.getElementById('mbtiles-estimate').innerHTML = `<span style="color: #ef4444;">Failed: ${escapeHtml(job.error || '')}</span>`;
                 }
-            } catch (err) {
-                console.error('Error polling status:', err);
-            }
+            } catch (err) { console.error('Error polling status:', err); }
         }
-        
         function downloadMBTiles() {
-            if (!currentMBTilesJobId) return;
-            const url = `/api/mbtiles/${currentMBTilesJobId}/download?pwd=${encodeURIComponent(getPwd())}`;
-            window.location.href = url;
-            
-            // Reset state after download starts
-            setTimeout(() => {
-                mbtilesState = 'idle';
-                currentMBTilesJobId = null;
-                updateMBTilesButton();
-                fetchMBTilesEstimate();
-            }, 1000);
+            if (!mbtilesLastJob || !mbtilesLastJob.download_url) return;
+            window.location.href = `${mbtilesLastJob.download_url}?pwd=${encodeURIComponent(getPwd())}`;
         }
 
         async function handleLogin(e) {
@@ -7911,7 +8100,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 showNotificationBadge();
                 
                 // Auto-refresh logic
-                const hasActiveJobs = mbtilesJobs.some(j => ['processing','pending','downloading','uploading'].includes(j.status));
+                const hasActiveJobs = mbtilesJobs.some(j => ['processing','pending','downloading','uploading','encrypting'].includes(j.status));
                 const dropdownOpen = document.getElementById('notification-dropdown')?.classList.contains('open');
                 
                 if (hasActiveJobs) {
@@ -8196,7 +8385,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
         }
         
         function renderMBTilesNotification(job) {
-            const isProcessing = ['processing','pending','downloading','uploading'].includes(job.status);
+            const isProcessing = ['processing','pending','downloading','uploading','encrypting'].includes(job.status);
             const isComplete = job.status === 'completed';
             const isFailed = job.status === 'failed';
             
@@ -8207,12 +8396,11 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             let subtitle = '';
             if (isProcessing) {
                 const pct = Math.round(job.progress || 0);
-                const phase = job.phase === 'upload' || job.status === 'uploading' ? 'Uploading to Zenodo' : 'Downloading tiles';
-                subtitle = `${phase} • ${job.downloaded_tiles || 0}/${job.total_tiles || 0} tiles • ${pct}%`;
+                const phase = job.status === 'pending' ? 'Waiting' : (job.status === 'encrypting' ? 'Encrypting' : 'Downloading tiles');
+                subtitle = `${phase} • ${(job.downloaded_tiles || 0).toLocaleString()}/${(job.total_tiles || 0).toLocaleString()} tiles • ${pct}%`;
             } else if (isComplete) {
                 const sizeMB = job.file_size_bytes ? (job.file_size_bytes / 1024 / 1024).toFixed(1) : (job.file_size ? (job.file_size / 1024 / 1024).toFixed(1) : (job.estimated_size_bytes ? Math.round(job.estimated_size_bytes / 1024 / 1024) : '?'));
-                const zenodoLabel = job.zenodo_depo_id ? ' • Zenodo' : '';
-                subtitle = `Ready to download • ${sizeMB} MB${zenodoLabel}`;
+                subtitle = `Ready • ${sizeMB} MB${job.private ? ' • private' : ''} • in Shared files`;
             } else if (isFailed) {
                 subtitle = job.error_message || job.error || 'Export failed';
             }
@@ -9006,7 +9194,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
         
         // Wrapper for MBTiles download
         function handleMBTilesDownload(jobId) {
-            window.open(`/api/mbtiles/${jobId}/download?pwd=${encodeURIComponent(getPwd())}`, '_blank');
+            window.location.href = `/api/mbtiles/${jobId}/download?pwd=${encodeURIComponent(getPwd())}`;
         }
 
         function showNotificationBadge() {
@@ -22118,6 +22306,15 @@ ${starredItems.narratives.map(n => {
     let adminCurrentTab = 'uploads';
     let adminDataCache = {};
     
+    // openAdminPanel(tab): open (if closed) and land on a tab — the deep link
+    // the offline-tiles dialog and the Map strip use.
+    function openAdminPanel(tab) {
+        const panel = document.getElementById('admin-panel');
+        if (!panel) return;
+        if (!panel.classList.contains('active')) toggleAdminPanel();
+        if (tab) switchAdminTab(tab);
+    }
+    window.openAdminPanel = openAdminPanel;
     function toggleAdminPanel() {
         const panel = document.getElementById('admin-panel');
         if (!panel) return;
@@ -22259,6 +22456,8 @@ ${starredItems.narratives.map(n => {
         else if (tabName === 'access') { loadAccessTab(); loadSharingTab(); loadFilesSection(); }
         else if (tabName === 'sharing') { switchAdminTab('access'); return; } // merged 2026-08-16
         else if (tabName === 'map-settings') {
+            renderBasemapGrid();
+            renderTileSourcesPanel();
             // Meta fetch is memoised and the panel renders from that cache, so
             // this is cheap on every revisit and correct on the first.
             HistMap.ensureMeta().then(renderHistMapPanel);
@@ -22560,11 +22759,14 @@ ${starredItems.narratives.map(n => {
                 : `<div style="font-size:11px;color:#9ca3af;">File sharing is not available in this environment.</div>`;
         }
         const files = d.files || [];
+        const budget = d.budget_max_bytes ? `<div class="files-budget" title="Uploads and offline tiles share this budget">
+            <div class="mbt-budget"><div class="mbt-budget-used" style="width:${Math.min(100, Math.round(100 * (d.budget_used_bytes || 0) / d.budget_max_bytes))}%"></div></div>
+            <div class="mbt-budget-lbl">${fmtBytes(d.budget_used_bytes || 0)} of ${fmtBytes(d.budget_max_bytes)} used · ${fmtBytes(d.disk_free_bytes || 0)} free on the server · files are encrypted at rest</div></div>` : '';
         if (!files.length) {
-            box.innerHTML = `<div class="sh-empty">No files yet.</div>`;
+            box.innerHTML = budget + `<div class="sh-empty">No files yet.</div>`;
             return;
         }
-        box.innerHTML = `<div class="sh-list">${files.map(filesRowHTML).join('')}</div>`;
+        box.innerHTML = budget + `<div class="sh-list">${files.map(filesRowHTML).join('')}</div>`;
         if (typeof TagChips !== 'undefined') {
             box.querySelectorAll('.gpkg-tags').forEach(el => TagChips.mount(el, {
                 tags: (el.dataset.tags || '').split(',').filter(Boolean), editable: false
@@ -22586,7 +22788,9 @@ ${starredItems.narratives.map(n => {
             <div class="sh-main">
                 <code class="sh-slug">${escapeHtml(f.name)}</code>
                 <span class="sh-kind">${kb}</span>
-                ${f.downloads ? `<span class="sh-kind">downloaded ${f.downloads}×</span>` : ''}
+                ${f.kind === 'mbtiles' ? '<span class="sh-badge sh-badge-when" title="Built by the offline-tiles dialog">offline tiles</span>' : ''}
+                ${f.private ? '<span class="sh-badge" title="Only your login or a key you mint can download it">private</span>' : ''}
+                ${f.downloads || f.max_downloads ? `<span class="sh-kind">downloaded ${f.downloads}×${f.max_downloads ? ' of ' + f.max_downloads : ''}</span>` : ''}
                 ${tags ? `<span class="gpkg-tags" data-tags="${escapeHtml(tags)}"></span>` : ''}
             </div>
             <div class="sh-meta">kept until ${escapeHtml(safeDateStr(f.expires_at))} <span${soon ? ' class="sh-soon"' : ''}>(${daysLeft}d)</span></div>
@@ -24234,19 +24438,15 @@ ${starredItems.narratives.map(n => {
         };
         
         if (basemap && typeof switchBasemap === 'function') {
-            // Map short aliases to actual basemap IDs
+            // Short aliases. 'satellite'/'sat' mean "this login's satellite"
+            // (defaultSatelliteId); any unknown id falls back the same way in
+            // switchBasemap, so old links naming a retired provider still open
+            // on imagery.
             const basemapAliases = {
-                'satellite': 'satellite-esri',
-                'sat': 'satellite-esri',
-                'esri': 'satellite-esri',
+                'satellite': defaultSatelliteId(),
+                'sat': defaultSatelliteId(),
                 's2': 'satellite-s2',
-                'sentinel': 'satellite-s2',
-                // Retired providers resolve to the licensed imagery so old
-                // share links keep opening on a satellite view.
-                'bing': 'satellite-esri',
-                'google': 'satellite-esri',
-                'satellite-bing': 'satellite-esri',
-                'satellite-google': 'satellite-esri'
+                'sentinel': 'satellite-s2'
             };
             const resolvedBasemap = basemapAliases[basemap] || basemap;
             // Force basemap switch by temporarily setting currentBasemap to something else
@@ -24883,9 +25083,20 @@ ${starredItems.narratives.map(n => {
     // Initialize state restoration when map is ready
     if (typeof map !== 'undefined') {
         map.on('load', function() {
-            restoreStateFromURL();
-            setupNotificationEventListeners();
-            handleNotificationShareLinks();
+            // Private sources and the login's default basemap load first: a
+            // ?basemap= naming one of them must find it registered, and a
+            // saved default applies only when the URL says nothing (a link's
+            // view is what the link means).
+            loadTileSources().then(function (prefs) {
+                const params = new URLSearchParams(window.location.search);
+                if (!params.get('basemap') && prefs && prefs.default_base && prefs.default_base !== 'dark'
+                    && basemapEntry(prefs.default_base)) {
+                    switchBasemap(prefs.default_base);
+                }
+                restoreStateFromURL();
+                setupNotificationEventListeners();
+                handleNotificationShareLinks();
+            });
         });
     } else {
         setTimeout(function() {
@@ -25152,39 +25363,20 @@ ${starredItems.narratives.map(n => {
                     <div style="max-width:600px;">
                         <div style="margin-bottom:24px;" data-mapsettings="basemap">
                             <h3 style="color:#fff;font-size:14px;font-weight:600;margin-bottom:12px;">Background Map</h3>
-                            <p style="color:#888;font-size:12px;margin-bottom:16px;line-height:1.5;">Choose the basemap style for the globe view. Satellite imagery provides high-resolution aerial photos, useful for detailed analysis.</p>
-                            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;">
-                                <button class="basemap-option selected" data-basemap="dark" onclick="switchBasemap('dark')">
-                                    <div class="basemap-preview" style="background:linear-gradient(135deg,#1a1a1a 0%,#2d2d2d 100%);">
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#666;">
-                                            <circle cx="12" cy="12" r="10"/>
-                                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                                        </svg>
-                                    </div>
-                                    <div style="font-size:13px;font-weight:500;margin-top:8px;">Dark</div>
-                                    <div style="font-size:11px;color:#666;margin-top:2px;">Default</div>
-                                </button>
-                                <button class="basemap-option" data-basemap="satellite-esri" onclick="switchBasemap('satellite-esri')">
-                                    <div class="basemap-preview" style="background:linear-gradient(135deg,#2a4a3a 0%,#4a6a5a 100%);">
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#8ab894;">
-                                            <rect x="3" y="3" width="18" height="18" rx="2"/>
-                                            <path d="M3 9h18M9 21V9"/>
-                                        </svg>
-                                    </div>
-                                    <div style="font-size:13px;font-weight:500;margin-top:8px;">Satellite (Esri)</div>
-                                    <div style="font-size:11px;color:#666;margin-top:2px;">High-res imagery · online only</div>
-                                </button>
-                                <button class="basemap-option" data-basemap="satellite-s2" onclick="switchBasemap('satellite-s2')">
-                                    <div class="basemap-preview" style="background:linear-gradient(135deg,#2a4a4a 0%,#4a6a6a 100%);">
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#8ab8b8;">
-                                            <rect x="3" y="3" width="18" height="18" rx="2"/>
-                                            <path d="M3 9h18M9 21V9"/>
-                                        </svg>
-                                    </div>
-                                    <div style="font-size:13px;font-weight:500;margin-top:8px;">Satellite (Sentinel-2)</div>
-                                    <div style="font-size:11px;color:#666;margin-top:2px;">10 m, cloud-free 2024 · CC BY-NC-SA</div>
-                                </button>
-                            </div>
+                            <p style="color:#888;font-size:12px;margin-bottom:16px;line-height:1.5;">Choose what the globe draws under the data. Sentinel-2 is the imagery this server may show to everyone; the satellite sources you add below are yours alone. Hover a card to make it your default.</p>
+                            <div id="basemap-grid" class="bm-grid"></div>
+                        </div>
+
+                        <!-- Private tile sources: XYZ imagery a login adds for its own use (srv/tile_sources.go) -->
+                        <div style="margin-bottom:24px;" id="tile-sources-block" data-mapsettings="sources">
+                            <h3 style="color:#fff;font-size:14px;font-weight:600;margin-bottom:12px;">Your imagery sources</h3>
+                            <p style="color:#888;font-size:12px;margin-bottom:12px;line-height:1.5;">
+                                Add any XYZ tile service you have the right to use &mdash; paste the URL template exactly as
+                                you would in QGIS. The URL is stored encrypted and only your login can see or use it;
+                                tiles are fetched through this server, never cached, and an offline MBTiles built from it
+                                is encrypted and visible only to you. Whether a provider allows that use is between you and them.
+                            </p>
+                            <div id="tile-sources-body"><div style="color:#666;font-size:12px;">Loading&hellip;</div></div>
                         </div>
 
                         <!-- Historical map overlay: scanned survey sheets draped on the basemap -->
@@ -25291,48 +25483,30 @@ ${starredItems.narratives.map(n => {
     </div>
 
     <!-- MBTiles Dialog -->
-    <div id="mbtiles-dialog" class="modal-overlay" onclick="if(event.target===this)hideMBTilesDialog()" role="dialog" aria-modal="true" aria-label="Offline tiles download">
+    <div id="mbtiles-dialog" class="modal-overlay" onclick="if(event.target===this)hideMBTilesDialog()" role="dialog" aria-modal="true" aria-label="Offline tiles">
         <div class="mbtiles-dialog">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <span style="font-weight: 600; color: #fff;">Offline Tiles</span>
-                <button onclick="hideMBTilesDialog()" style="background: none; border: none; color: #888; cursor: pointer; font-size: 18px;">&times;</button>
+            <div class="mbt-head">
+                <div><div class="mbt-title">Offline tiles</div><div id="mbtiles-park-name" class="mbt-area"></div></div>
+                <button onclick="hideMBTilesDialog()" class="mbt-close" aria-label="Close">&times;</button>
             </div>
-            <div id="mbtiles-park-name" style="color: #60a5fa; font-size: 13px; margin-bottom: 12px;"></div>
-            
-            <!-- Source selection -->
-            <div style="color: #666; font-size: 10px; margin-bottom: 6px;">Source</div>
-            <div id="mbtiles-sources" style="display: flex; gap: 4px; margin-bottom: 4px;">
-                <button class="mbtiles-source-btn selected" data-source="s2cloudless">Sentinel-2 cloudless 2024 (EOX)</button>
-            </div>
-            <!-- The only imagery whose licence permits handing tiles over as
-                 a file. Esri/Bing/Google forbid bulk download; see
-                 srv/license.go and /licenses. -->
-            <div style="color: #555; font-size: 10px; margin-bottom: 12px; line-height: 1.4;">10 m Sentinel-2 mosaic, CC BY-NC-SA 4.0 — non-commercial use, attribution included in the file. Higher-resolution commercial imagery cannot legally be bundled offline.</div>
-            
-            <!-- Zoom level slider -->
-            <div style="color: #666; font-size: 10px; margin-bottom: 6px;">Zoom levels: <span id="mbtiles-zoom-label">1-17</span></div>
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-                <input type="range" id="mbtiles-zoom-slider" min="10" max="18" value="17" 
-                    style="flex: 1; accent-color: #3b82f6;" oninput="updateZoomLevel(this.value)">
-                <div style="display: flex; font-size: 9px; color: #444;">
-                    <span id="zoom-markers"></span>
-                </div>
-            </div>
-            
-            <!-- Estimate -->
-            <div id="mbtiles-estimate" style="font-size: 11px; color: #888; margin-bottom: 12px;"></div>
-            
-            <!-- Action button (changes based on state) -->
+
+            <div class="mbt-label">Imagery</div>
+            <div id="mbtiles-sources" class="mbt-sources"></div>
+            <div id="mbtiles-source-note" class="mbt-note"></div>
+
+            <div class="mbt-label">Detail <span id="mbtiles-zoom-label" class="mbt-zoom"></span></div>
+            <input type="range" id="mbtiles-zoom-slider" min="10" max="19" value="16" class="mbt-slider" oninput="updateZoomLevel(this.value)" aria-label="Maximum zoom level">
+            <div class="mbt-scale"><span>town</span><span>building</span><span>tree</span></div>
+
+            <div id="mbtiles-estimate" class="mbt-estimate"></div>
+
             <button id="mbtiles-action-btn" onclick="handleMBTilesAction()" class="mbtiles-action-btn">
-                <span id="mbtiles-btn-text">Generate</span>
+                <span id="mbtiles-btn-text">Build</span>
                 <div id="mbtiles-btn-progress" class="mbtiles-btn-progress" style="width: 0%;"></div>
             </button>
-            
-            <!-- Info about expiration -->
-            <div style="font-size: 10px; color: #666; margin-top: 10px; text-align: center;">Tiles stored on Zenodo. Files up to 8 GB (full access) or ~2 GB (test access).</div>
-            
-            <!-- Hidden status for polling -->
-            <div id="mbtiles-status" style="display: none;"></div>
+            <button id="mbtiles-cancel-btn" class="mbt-cancel" onclick="cancelMBTiles()" style="display:none;">Cancel build</button>
+
+            <div id="mbtiles-foot" class="mbt-foot"></div>
         </div>
     </div>
 
