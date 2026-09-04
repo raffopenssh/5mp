@@ -135,7 +135,8 @@
         /* Tap target: the chip is 10px text, the hit area is not. */
         .fpop-chip::before { content: ''; position: absolute; inset: -12px -6px; }
         .fpop-chip:hover, .fpop-chip[aria-expanded="true"] { color: #22c55e; }
-        .fpop-chip:empty { display: none; }
+        .fpop-chip-icon { display: none; vertical-align: middle; }
+        .fpop-mobile-links { display: none; }
         /* Opened by hover (pointer devices) or tap; closes with a fade and a
            grace period so the pointer can travel from the chip up into the
            bubble -- the gap below the bubble is padding, not air, so hovering
@@ -2849,6 +2850,34 @@
             .fpop-title { font-size: 11px; }
             .fpop a[role="menuitem"] { padding: 8px 0; min-height: 40px; }
             .fpop-line { padding: 6px 0; }
+            /* Footer collapses to three identical pills -- credits, share,
+               about -- one row with the toolbar: same 32px disc, same
+               hairline, same 15px glyph; the share pill keeps its green.
+               No separators: three equal buttons do not need fences. */
+            .fpop-chip-text { display: none; }
+            .fpop-chip-icon { display: block; }
+            .fpop-mobile-links { display: block; margin-top: 8px; color: #666; }
+            .fpop-mobile-links a { color: #999; text-decoration: none; }
+            .fpop-ver { font-family: ui-monospace, Menlo, monospace; color: #888; }
+            .footer-attribution { gap: 6px; padding: 0; }
+            .footer-attribution .footer-sep { display: none !important; }
+            .fpop-chip, .footer-btn.share-btn, .footer-btn.info-btn {
+                width: 32px; height: 32px; padding: 0; margin: 0; border-radius: 999px; box-sizing: border-box;
+                display: inline-flex; align-items: center; justify-content: center;
+                border: 1px solid rgba(255,255,255,0.14); background: rgba(18,18,18,0.85); color: #bbb;
+            }
+            .fpop-chip::before { inset: -4px; }
+            .fpop-chip[aria-expanded="true"] { border-color: rgba(34,197,94,0.6); color: #22c55e; }
+            .footer-btn.share-btn { border-color: rgba(34,197,94,0.45); background: rgba(34,197,94,0.12); color: #86efac; }
+            .fpop-chip-icon, .footer-btn.share-btn svg, .footer-btn.info-btn svg { width: 15px; height: 15px; filter: none; }
+            .footer-btn.info-btn svg { filter: none; }
+            /* Toolbar (6 x 40 px) + footer (3 x 32 px) need ~400 px in one
+               row. Narrower than that the footer pills stack as a column
+               above the toolbar's right end. */
+            @media (max-width: 420px) {
+                .footer-attribution { flex-direction: column; right: 10px; bottom: calc(var(--slider-h, 70px) + 58px); align-items: center; }
+                .fpop { bottom: calc(var(--slider-h, 70px) + 58px + 3 * 38px); }
+            }
             /* Truncate commit hash to ~4 chars so it doesn't overlap the toolbar */
             #version-link { display: inline-block; max-width: 4ch; overflow: hidden; white-space: nowrap; vertical-align: bottom; }
             .footer-btn { display: none; }
