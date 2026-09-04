@@ -3256,10 +3256,10 @@
     "polygon_ids": "deforest_SSD_Southern_2023_354"
   },
   {
-    "id": 41429,
+    "id": 44135,
     "park_id": "SSD_Southern",
     "year": 2025,
-    "area_km2": 0.0072,
+    "area_km2": 0.0063,
     "event_type": null,
     "lat": 5.6,
     "lon": 28.485,
@@ -3270,11 +3270,11 @@
     "created_at": null,
     "classification": "slash_burn",
     "classification_confidence": 0.85,
-    "narrative": "Slash-and-burn clearing detected in 2025. Affected 0.01 km\u00b2 across 2 patches. Strong fire correlation indicates agricultural burning. Located 11.7km from Nadiangere. Near Wahko river.",
+    "narrative": "Slash-and-burn clearing detected in 2025. Affected 0.01 km\u00b2 across 2 patches. Strong fire correlation indicates agricultural burning. Located 11.7km from Nadiangere. Near Ibba river (2.8km).",
     "fires_same_year": 1997,
     "fire_ratio": 199700.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-08-13T07:30:02.607005",
+    "classified_at": "2026-08-31T07:30:05.888505",
     "polygon_ids": "deforest_gfw_SSD_Southern_2025_5.60_28.48,deforest_gfw_SSD_Southern_2025_5.60_28.49"
   }
 ]
