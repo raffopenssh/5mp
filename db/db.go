@@ -20,30 +20,41 @@ var migrationFS embed.FS
 
 // Open opens an sqlite database and prepares pragmas suitable for a small web app.
 func Open(path string) (*sql.DB, error) {
-	db, err := sql.Open("sqlite", path)
+	// Pragmas go in the DSN, not through db.Exec: database/sql hands an Exec
+	// to *one* pooled connection, so until 2026-09-04 only 1 of the 16
+	// connections had busy_timeout/foreign_keys set and the other 15 ran with
+	// the driver defaults (busy_timeout 0 → instant SQLITE_BUSY under the
+	// nightly batch writers). modernc's `_pragma=` query parameters run on
+	// every new connection.
+	//
+	//   busy_timeout=30000 — 30 s, not 5. Every write on this deployment
+	//   competes with batch jobs that hold SQLite's single writer for minutes
+	//   (the v5 fire chain, the AOI Hansen unit, the nightly rebuilds), and at
+	//   5 s a user-initiated write during one of those failed outright. 30 s
+	//   absorbs the gaps those jobs leave between their own commits; anything
+	//   still busy after it surfaces as a 503 with Retry-After
+	//   (srv/errors.go isDBLocked), which is the honest answer rather than a 500.
+	//
+	//   journal_size_limit=1 GiB — cap the WAL file after a checkpoint. SQLite
+	//   never shrinks the -wal on its own: autocheckpoint (1000 pages) cannot
+	//   pass a snapshot any open reader still holds, and once one is blocked
+	//   every nightly job (fire update, reclassify, GFW, cropland, OSM enrich)
+	//   appends behind it. On 2026-09-04 the -wal reached 28.9 GB against a
+	//   22.7 GB database and took the VM to 95% disk. With this limit the next
+	//   successful checkpoint truncates it; srv.StartWALCheckpointWorker forces
+	//   that checkpoint periodically and reports when it cannot.
+	dsn := "file:" + path +
+		"?_pragma=foreign_keys(ON)" +
+		"&_pragma=journal_mode(WAL)" +
+		"&_pragma=busy_timeout(30000)" +
+		"&_pragma=journal_size_limit(1073741824)"
+	db, err := sql.Open("sqlite", dsn)
 	if err != nil {
 		return nil, err
 	}
-	// Light pragmas similar
-	if _, err := db.Exec("PRAGMA foreign_keys=ON;"); err != nil {
+	if err := db.Ping(); err != nil {
 		_ = db.Close()
-		return nil, fmt.Errorf("enable foreign keys: %w", err)
-	}
-	if _, err := db.Exec("PRAGMA journal_mode=wal;"); err != nil {
-		_ = db.Close()
-		return nil, fmt.Errorf("set WAL: %w", err)
-	}
-	// 30 s, not 5. Every write on this deployment competes with batch jobs
-	// that hold SQLite's single writer for minutes (the v5 fire chain, the AOI
-	// Hansen unit, the nightly rebuilds), and at 5 s a user-initiated write
-	// during one of those failed outright. 30 s absorbs the gaps those jobs
-	// leave between their own commits without making a genuinely stuck request
-	// hang long enough to look like a dead page; anything still busy after it
-	// surfaces as a 503 with Retry-After (srv/errors.go isDBLocked), which is
-	// the honest answer rather than a 500.
-	if _, err := db.Exec("PRAGMA busy_timeout=30000;"); err != nil {
-		_ = db.Close()
-		return nil, fmt.Errorf("set busy_timeout: %w", err)
+		return nil, fmt.Errorf("open %s: %w", path, err)
 	}
 	// WAL allows many concurrent readers; writers serialize via busy_timeout.
 	// Keep this comfortably above the worst-case nested-query fan-out: with

@@ -90,6 +90,7 @@ func run() error {
 	go server.StartNarrativeCacheWorker(ctx)
 	go server.StartAutofetchWorker(ctx)
 	go server.StartUploadQueueCleanup(ctx)
+	go server.StartWALCheckpointWorker(ctx, "db.sqlite3")
 	server.StartTurbidityWatcher()
 
 	// Start HTTP server in a goroutine
