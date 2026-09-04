@@ -1,22 +1,22 @@
 {
  "CAF_Chinko": {
-  "scanned_at": "2026-08-07T04:35:57Z",
-  "n_alerts": 791644,
-  "n_requests": 97
+  "scanned_at": "2026-08-28T04:38:25Z",
+  "n_alerts": 880449,
+  "n_requests": 119
  },
  "CAF_Bamingui-Bangoran": {
-  "scanned_at": "2026-08-08T04:31:56Z",
-  "n_alerts": 22934,
+  "scanned_at": "2026-09-02T04:32:32Z",
+  "n_alerts": 22672,
   "n_requests": 50
  },
  "CAF_Dzanga_Park": {
-  "scanned_at": "2026-08-09T04:42:08Z",
-  "n_alerts": 1895189,
-  "n_requests": 157
+  "scanned_at": "2026-08-29T04:47:16Z",
+  "n_alerts": 2033317,
+  "n_requests": 202
  },
  "CAF_Manovo_Gounda_St_Floris": {
-  "scanned_at": "2026-08-10T04:32:24Z",
-  "n_alerts": 2726,
+  "scanned_at": "2026-09-03T04:33:19Z",
+  "n_alerts": 2668,
   "n_requests": 65
  },
  "DZA_Djurdjura": {
@@ -25,22 +25,22 @@
   "n_requests": 21
  },
  "SSD_Badingilo": {
-  "scanned_at": "2026-08-11T04:31:54Z",
-  "n_alerts": 30932,
+  "scanned_at": "2026-09-04T04:32:35Z",
+  "n_alerts": 30525,
   "n_requests": 50
  },
  "SSD_Boma": {
-  "scanned_at": "2026-08-12T04:35:56Z",
-  "n_alerts": 448968,
+  "scanned_at": "2026-08-30T04:36:45Z",
+  "n_alerts": 459656,
   "n_requests": 95
  },
  "SSD_Southern": {
-  "scanned_at": "2026-08-13T04:32:54Z",
-  "n_alerts": 170700,
+  "scanned_at": "2026-08-31T04:33:51Z",
+  "n_alerts": 169820,
   "n_requests": 73
  },
  "SSD_Zeraf": {
-  "scanned_at": "2026-08-14T04:32:44Z",
+  "scanned_at": "2026-09-01T04:32:21Z",
   "n_alerts": 1124,
   "n_requests": 57
  }

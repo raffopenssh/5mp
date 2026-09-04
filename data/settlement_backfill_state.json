@@ -4443,5 +4443,34 @@
   "tiles": [
    "R12_C21"
   ]
+ },
+ "aoi_Serra_Bonita_260818165659": {
+  "after": {
+   "area_m2": 4469729.0,
+   "classes": {
+    "settlement": 4,
+    "temporary_camp": 31,
+    "town": 16,
+    "village": 15
+   },
+   "clusters": 66,
+   "detector_rows": 0,
+   "extent_m2": 76950000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 2683,
+   "polygons_with_extent": 2683,
+   "population_measured": 95530
+  },
+  "at": "2026-08-20T06:45:49Z",
+  "clusters": 66,
+  "extent_over_surface": 17.215808833152973,
+  "ok": true,
+  "pipeline": "2026-08-13d",
+  "polygons": 2683,
+  "stale_removed": 0,
+  "tiles": [
+   "R11_C15"
+  ]
  }
 }
