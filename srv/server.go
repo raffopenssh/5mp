@@ -250,6 +250,7 @@ func (s *Server) Serve(addr string) error {
 
 	// Admin routes (require admin role)
 	mux.HandleFunc("GET /admin", s.RequireAdmin(s.HandleAdminPage))
+	mux.HandleFunc("GET /api/admin/db-health", s.RequireAdmin(s.HandleAdminDBHealth))
 	mux.HandleFunc("POST /admin/approve", s.RequireAdmin(s.HandleApproveUser))
 	mux.HandleFunc("POST /admin/reject", s.RequireAdmin(s.HandleRejectUser))
 	mux.HandleFunc("POST /admin/upload/fire", s.RequireAdmin(s.HandleUploadFire))
@@ -598,7 +599,7 @@ func (s *Server) Serve(addr string) error {
 	// Wrap with security headers, compression, and password protection
 	// ResponseCacheMiddleware sits inside Password (auth still enforced) and
 	// inside Gzip (caches uncompressed bodies; gzip recompresses per client).
-	protectedHandler := SecurityHeadersMiddleware(PrivateCacheMiddleware(GzipMiddleware(s.PasswordMiddleware(s.ResponseCacheMiddleware(ParkIDMiddleware(AOIMiddleware(mux)))))))
+	protectedHandler := InflightMiddleware(SecurityHeadersMiddleware(PrivateCacheMiddleware(GzipMiddleware(s.PasswordMiddleware(s.ResponseCacheMiddleware(ParkIDMiddleware(AOIMiddleware(mux))))))))
 
 	s.httpServer = &http.Server{
 		Addr:         addr,
