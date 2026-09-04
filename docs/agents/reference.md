@@ -36,7 +36,9 @@ literal. In shell snippets: `set -a; source secrets.env; set +a`.
 | `ACLED_USERNAME` / `ACLED_PASSWORD` | ACLED |
 | `PROTECTEDPLANET_TOKEN` | Protected Planet (old literal is in git history — public) |
 | `EARTHDATA_TOKEN` | NASA URS (nightlights, ~60-day expiry) |
-| `ZENODO_TOKEN` | Zenodo publishing |
+| `ZENODO_TOKEN` | Zenodo DB backups (`cmd/backup-zenodo`) |
+| `SHARED_FILES_KEY` | 32-byte hex master key for encrypted shared files / private tile URLs (else generated into `data/shared_files/.key`) |
+| `SHARED_FILE_BUDGET_GB` | per-login storage budget for shared files + offline tiles (default 20) |
 | `CARTO_API_KEY` | CARTO (`basemaps.cartocdn.com` + platform APIs) |
 
 `CARTO_API_KEY` is **server-side only** — the dark base-map tile URLs in
