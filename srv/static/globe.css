@@ -4613,3 +4613,85 @@ body.is-guest .session-chip-logout:hover { opacity: 1; background: rgba(251,191,
 .mbt-cancel:hover { color: #fca5a5; border-color: rgba(239,68,68,0.4); }
 .mbt-foot { font-size: 10.5px; color: #6b7280; margin-top: 10px; text-align: center; line-height: 1.45; }
 .mbt-foot a { color: #9ca3af; text-decoration: underline; }
+
+/* ===== Automated fetch (admin › Automated Fetch) =====
+   Cards, not a table: seven columns do not fit a phone, and the interesting
+   state (healthy / paused / error, who sees it) reads better as a pill and a
+   segmented control than as cells. See docs/agents/auth.md "autofetch". */
+.af-security { display: flex; gap: 8px; align-items: flex-start; background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.15);
+    border-radius: 8px; padding: 10px 12px; margin-bottom: 14px; font-size: 11px; line-height: 1.55; color: #9ca3af; }
+.af-security i { margin-top: 2px; flex: none; }
+.af-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+.af-card { border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: rgba(255,255,255,0.025); padding: 12px 14px;
+    display: flex; flex-direction: column; gap: 10px; }
+.af-card-ro { border-style: dashed; }
+.af-card-title { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
+.af-title-inp { font: inherit; font-size: 14px; font-weight: 600; color: #fff; background: none; border: 1px solid transparent; border-radius: 6px;
+    padding: 2px 6px; margin-left: -6px; min-width: 0; flex: 1 1 140px; }
+.af-title-inp:hover, .af-title-inp:focus { border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.04); outline: none; }
+.af-title-ro { font-size: 14px; font-weight: 600; color: #e5e7eb; }
+.ts-badge.off { color: #9ca3af; border-color: rgba(255,255,255,0.2); }
+.ts-badge.err { color: #fca5a5; border-color: rgba(239,68,68,0.45); }
+.ts-badge.wait { color: #fcd34d; border-color: rgba(245,158,11,0.4); }
+.af-park { font-size: 10px; color: #60a5fa; background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.2); border-radius: 4px; padding: 0 6px; }
+.af-stats { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; font-size: 11.5px; color: #9ca3af; font-variant-numeric: tabular-nums; }
+.af-dot { width: 3px; height: 3px; border-radius: 50%; background: #4b5563; display: inline-block; }
+.af-err { font-size: 11px; color: #fca5a5; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); border-radius: 7px; padding: 6px 9px; word-break: break-word; }
+.af-shared-note { font-size: 11px; color: #9ca3af; display: flex; gap: 6px; align-items: flex-start; line-height: 1.5; }
+.af-vis { border-top: 1px solid rgba(255,255,255,0.07); padding-top: 10px; display: flex; flex-direction: column; gap: 7px; }
+.af-vis-head { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: #6b7280; font-weight: 600; }
+.af-segs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border: 1px solid rgba(255,255,255,0.14); border-radius: 9px; overflow: hidden; background: rgba(0,0,0,0.25); }
+.af-seg { font: inherit; font-size: 12px; color: #9ca3af; background: none; border: none; border-right: 1px solid rgba(255,255,255,0.1);
+    padding: 9px 8px; min-height: 40px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: background .15s, color .15s; }
+.af-seg:last-child { border-right: none; }
+.af-seg:hover { color: #e5e7eb; background: rgba(255,255,255,0.05); }
+.af-seg.on { color: #fff; background: rgba(59,130,246,0.28); }
+.af-seg:focus-visible { outline: 2px solid #60a5fa; outline-offset: -2px; }
+.af-vis-hint { font-size: 11px; color: #6b7280; line-height: 1.45; }
+.af-roster { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 6px 8px; border: 1px solid rgba(255,255,255,0.14); border-radius: 9px; background: rgba(0,0,0,0.3); min-height: 40px; }
+.af-roster:focus-within { border-color: rgba(59,130,246,0.7); }
+.af-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: #dbeafe; background: rgba(59,130,246,0.18); border: 1px solid rgba(59,130,246,0.35);
+    border-radius: 999px; padding: 3px 4px 3px 10px; font-family: ui-monospace, Menlo, monospace; }
+.af-chip button { font: inherit; line-height: 1; color: #93c5fd; background: none; border: none; cursor: pointer; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; }
+.af-chip button:hover { background: rgba(255,255,255,0.12); color: #fff; }
+.af-chip-you { color: #86efac; background: rgba(34,197,94,0.14); border-color: rgba(34,197,94,0.35); padding-right: 10px; }
+.af-chip-input { flex: 1 1 180px; min-width: 120px; font: inherit; font-size: 12px; color: #eee; background: none; border: none; padding: 5px 4px; outline: none; }
+.af-chip-input::placeholder { color: #6b7280; }
+.af-vis-msg { font-size: 11px; min-height: 0; }
+.af-vis-msg:empty { display: none; }
+.af-vis-msg.ok { color: #86efac; } .af-vis-msg.err { color: #fca5a5; }
+.af-add { border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 0 12px; }
+.af-add[open] { padding-bottom: 12px; }
+.af-add-summary { cursor: pointer; color: #93c5fd; font-size: 12.5px; font-weight: 600; padding: 11px 0; user-select: none; display: flex; align-items: center; gap: 6px; list-style: none; }
+.af-add-summary::-webkit-details-marker { display: none; }
+.af-form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.af-vis-block .af-vis { border-top: none; padding-top: 0; }
+.af-status { font-size: 12px; margin-right: auto; align-self: center; }
+.af-status.ok { color: #86efac; } .af-status.err { color: #fca5a5; } .af-status.wait { color: #9ca3af; }
+.ts-form-acts { align-items: center; }
+@media (max-width: 640px) {
+    .af-form-grid { grid-template-columns: 1fr 1fr; }
+    .af-seg span { font-size: 11px; }
+    .af-seg { padding: 9px 4px; }
+    .ts-acts .sh-btn { min-height: 38px; }
+}
+@media (max-width: 420px) {
+    .af-form-grid { grid-template-columns: 1fr; }
+    .af-segs { grid-template-columns: 1fr; }
+    .af-seg { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); justify-content: flex-start; padding-left: 12px; }
+    .af-seg:last-child { border-bottom: none; }
+}
+
+/* Admin panel on phones: the header must keep its close button on screen
+   and the tab strip scrolls sideways instead of stacking three rows deep. */
+@media (max-width: 640px) {
+    .admin-panel-header { gap: 8px; }
+    .admin-panel-title { font-size: 16px; min-width: 0; }
+    .admin-panel-title svg { flex: none; }
+    .admin-panel-header > div:last-child { flex: none; gap: 6px; }
+    .pipeline-badge .pipeline-age { display: none; }
+    .admin-panel-tabs { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;
+        margin-left: -12px; margin-right: -12px; padding: 0 12px 6px; scroll-snap-type: x proximity; }
+    .admin-panel-tabs::-webkit-scrollbar { display: none; }
+    .admin-tab { flex: none; white-space: nowrap; scroll-snap-align: start; padding: 9px 12px; }
+}

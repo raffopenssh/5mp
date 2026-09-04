@@ -159,7 +159,7 @@ func (s *Server) HandleRoot(w http.ResponseWriter, r *http.Request) {
 		// patrol capability owns no patrol data as far as this page is
 		// concerned, so the UI dims the layer for exactly the reason it dims
 		// it for a tenant with no uploads -- the answer would be empty.
-		HasPatrol: s.tenantHasPatrol(PatrolEnv(r)),
+		HasPatrol: s.tenantHasPatrol(s.PatrolEnvsJSON(r)),
 		AuthLabel: authLabel,
 		IsGuest:   guest != nil,
 		AOIHome:   s.aoiHomeView(s.RequestPrincipalID(r)),
@@ -560,6 +560,9 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("POST /api/admin/autofetch/enable", s.HandleAPIAutofetchEnable)
 	mux.HandleFunc("POST /api/admin/autofetch/delete", s.HandleAPIAutofetchDelete)
 	mux.HandleFunc("POST /api/admin/autofetch/run", s.HandleAPIAutofetchRunNow)
+	mux.HandleFunc("POST /api/admin/autofetch/visibility", s.HandleAPIAutofetchVisibility)
+	mux.HandleFunc("POST /api/admin/autofetch/viewers/add", s.HandleAPIAutofetchViewerAdd)
+	mux.HandleFunc("POST /api/admin/autofetch/viewers/remove", s.HandleAPIAutofetchViewerRemove)
 	mux.HandleFunc("POST /api/admin/rebuild-effort", s.HandleAPIRebuildEffort)
 	mux.HandleFunc("GET /api/admin/autofetch/script", s.HandleAPIAutofetchScript)
 

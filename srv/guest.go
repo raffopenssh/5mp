@@ -22,9 +22,11 @@ package srv
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/url"
 	"strings"
+	"sync/atomic"
 	"time"
 )
 
@@ -473,3 +475,118 @@ func ClampGuestDates(r *http.Request, start, end time.Time) (time.Time, time.Tim
 	}
 	return start, end
 }
+
+// ── PATROL ENV SETS ───────────────────────────────────────────────────────────
+//
+// An automated-fetch subscription files its tracks in its OWN env
+// ('af<id>', autofetch_sources.data_env) and carries a visibility rule: the
+// owner alone, a selected list of logins, or every authenticated login except
+// the public sandbox. A caller's patrol data is therefore no longer one env
+// but a SET -- its tenant plus every autofetch env it may see -- and every
+// query that used `e.env = PatrolEnv(r)` now uses PatrolEnvsSQL below.
+//
+// Visibility is an ACL on an env, not a copy of the pixels: changing it
+// changes what this function returns and nothing in effort_data moves.
+
+// patrolACLVersion is bumped whenever a source's visibility or viewers change
+// so cacheKey stops serving the previous audience's body (respCacheTTL is
+// five minutes, which is long enough to read as "the toggle did nothing").
+var patrolACLVersion atomic.Int64
+
+// callerRef is the principal ref the request acts as: its own password's, or
+// for a guest the ref of the login that minted the link. "" when neither.
+func (s *Server) callerRef(r *http.Request) string {
+	if pwd := RequestPwd(r); pwd != "" {
+		return principalRef(pwd)
+	}
+	if g := GuestFromRequest(r); g != nil && g.PrincipalID > 0 && s != nil && s.DB != nil {
+		var ref string
+		if err := s.DB.QueryRow(`SELECT ref FROM principals WHERE id = ?`, g.PrincipalID).Scan(&ref); err == nil {
+			return ref
+		}
+	}
+	return ""
+}
+
+// PatrolEnvs returns every env whose patrol effort this request may read.
+// Always non-empty (a scope-less guest gets the tenant that owns nothing).
+func (s *Server) PatrolEnvs(r *http.Request) []string {
+	base := PatrolEnv(r)
+	envs := []string{base}
+	if base == noSuchTenant || s == nil || s.DB == nil {
+		return envs
+	}
+	// The sandbox is a public demo: it never sees client data, however shared.
+	if RequestEnv(r) == sandboxTenant {
+		return envs
+	}
+	ref := s.callerRef(r)
+	rows, err := s.DB.QueryContext(r.Context(), `
+		SELECT DISTINCT a.data_env FROM autofetch_sources a
+		WHERE a.data_env != '' AND (
+		      a.visibility = 'all'
+		   OR (a.owner_ref != '' AND a.owner_ref = ?)
+		   OR (a.visibility = 'selected' AND EXISTS (
+		         SELECT 1 FROM autofetch_viewers v WHERE v.source_id = a.id AND v.principal_ref = ?)))`,
+		ref, ref)
+	if err != nil {
+		return envs
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var e string
+		if rows.Scan(&e) == nil && e != "" {
+			envs = append(envs, e)
+		}
+	}
+	return envs
+}
+
+// PatrolEnvsJSON is PatrolEnvs as a JSON array, the single bind value that
+// PatrolEnvsSQL expects.
+func (s *Server) PatrolEnvsJSON(r *http.Request) string {
+	return envSetJSON(s.PatrolEnvs(r))
+}
+
+func envSetJSON(envs []string) string {
+	b, _ := json.Marshal(envs)
+	return string(b)
+}
+
+// PatrolEnvsSQL is the WHERE fragment for a column holding a patrol env; bind
+// PatrolEnvsJSON(r) (or envSetJSON) to its one placeholder.
+//
+//	WHERE ... AND ` + PatrolEnvsSQL("e.env") + `
+func PatrolEnvsSQL(col string) string {
+	return col + " IN (SELECT value FROM json_each(?))"
+}
+
+// PatrolWriteEnvs is the subset of PatrolEnvs the caller may MUTATE: its own
+// tenant and the autofetch envs of sources it owns. A login a source is
+// shared with may look at the pixels and the logs, not delete them.
+func (s *Server) PatrolWriteEnvs(r *http.Request) []string {
+	base := PatrolEnv(r)
+	envs := []string{base}
+	if base == noSuchTenant || GuestFromRequest(r) != nil || s == nil || s.DB == nil {
+		return envs
+	}
+	ref := s.callerRef(r)
+	if ref == "" {
+		return envs
+	}
+	rows, err := s.DB.QueryContext(r.Context(),
+		`SELECT data_env FROM autofetch_sources WHERE data_env != '' AND owner_ref = ?`, ref)
+	if err != nil {
+		return envs
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var e string
+		if rows.Scan(&e) == nil && e != "" {
+			envs = append(envs, e)
+		}
+	}
+	return envs
+}
+
+func (s *Server) patrolWriteEnvsJSON(r *http.Request) string { return envSetJSON(s.PatrolWriteEnvs(r)) }

@@ -274,7 +274,7 @@ func (s *Server) HandleAPIExportPatrolPixels(w http.ResponseWriter, r *http.Requ
 			FromYear: int64(2018),
 			ToYear:   int64(2026),
 			BBox:     &[4]float64{queryMinLon, queryMinLat, queryMaxLon, queryMaxLat},
-			Env:      PatrolEnv(r),
+			Envs:     s.PatrolEnvsJSON(r),
 		}
 		if fromStr != "" {
 			if t, err := time.Parse("2006-01-02", fromStr); err == nil {
@@ -307,11 +307,11 @@ func (s *Server) HandleAPIExportPatrolPixels(w http.ResponseWriter, r *http.Requ
 			FROM effort_data e
 			JOIN grid_cells g ON e.grid_cell_id = g.id
 			WHERE e.movement_type IN ('foot', 'vehicle', 'aircraft')
-			  AND e.env = ?
+			  AND e.env IN (SELECT value FROM json_each(?))
 			  AND g.lat_center BETWEEN ? AND ?
 			  AND g.lon_center BETWEEN ? AND ?
 		`
-		args := []interface{}{PatrolEnv(r), queryMinLat, queryMaxLat, queryMinLon, queryMaxLon}
+		args := []interface{}{s.PatrolEnvsJSON(r), queryMinLat, queryMaxLat, queryMinLon, queryMaxLon}
 
 		if fromStr != "" {
 			query += " AND (e.year > ? OR (e.year = ? AND e.month >= ?))"
@@ -442,10 +442,10 @@ func (s *Server) HandleAPIGridCellEffort(w http.ResponseWriter, r *http.Request)
 			SUM(e.total_points) as total_points
 		FROM effort_data e
 		WHERE e.grid_cell_id = ?
-		  AND e.env = ?
+		  AND e.env IN (SELECT value FROM json_each(?))
 		  AND e.movement_type IN ('foot', 'vehicle', 'aircraft')
 	`
-	args := []interface{}{gridCellID, PatrolEnv(r)}
+	args := []interface{}{gridCellID, s.PatrolEnvsJSON(r)}
 
 	if fromStr != "" {
 		query += " AND (e.year > ? OR (e.year = ? AND e.month >= ?))"
@@ -579,7 +579,7 @@ func (s *Server) HandleAPIGrid(w http.ResponseWriter, r *http.Request) {
 	bboxStr := r.URL.Query().Get("bbox")
 
 	// Build query params
-	params := GridQueryParams{Env: PatrolEnv(r)}
+	params := GridQueryParams{Envs: s.PatrolEnvsJSON(r)}
 	now := time.Now()
 
 	// Determine date range (year + month + day precision)
@@ -1128,9 +1128,9 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 			COALESCE(SUM(e.unique_uploads), 0) as total_uploads
 		FROM effort_data e
 		JOIN grid_cells g ON e.grid_cell_id = g.id
-		WHERE e.env = ?
+		WHERE e.env IN (SELECT value FROM json_each(?))
 	`
-	args := []interface{}{PatrolEnv(r)}
+	args := []interface{}{s.PatrolEnvsJSON(r)}
 	// Day-level filtering when day precision is available
 	if fromDay > 0 && toDay > 0 && fromMonth > 0 && toMonth > 0 {
 		statsQuery += " AND ((e.day IS NOT NULL AND (e.year * 10000 + e.month * 100 + e.day) BETWEEN ? AND ?) OR (e.day IS NULL AND (e.year * 100 + e.month) BETWEEN ? AND ?))"
@@ -1447,10 +1447,10 @@ func (s *Server) HandleAPIActivity(w http.ResponseWriter, r *http.Request) {
 		       u.total_distance_km, AVG(t.lat), AVG(t.lon)
 		FROM gpx_uploads u
 		LEFT JOIN track_points t ON u.id = t.upload_id
-		WHERE u.env = ?
+		WHERE u.env IN (SELECT value FROM json_each(?))
 		GROUP BY u.id
 		ORDER BY u.upload_date DESC
-		LIMIT 10`, PatrolEnv(r))
+		LIMIT 10`, s.PatrolEnvsJSON(r))
 	if err != nil {
 		slog.Error("failed to get activity", "error", err)
 		w.Header().Set("Content-Type", "application/json")
@@ -2606,6 +2606,9 @@ func (s *Server) HandleAPIGPXUploadLogs(w http.ResponseWriter, r *http.Request) 
 	if blockLearnedInTestEnv(w, r, map[string]interface{}{"logs": []interface{}{}}) {
 		return
 	}
+	// Scoped like the pixels they describe: the caller's tenant plus the
+	// autofetch envs shared with it (PatrolEnvs, srv/guest.go).
+	envs := s.PatrolEnvsJSON(r)
 	// Parse pagination
 	limitStr := r.URL.Query().Get("limit")
 	offsetStr := r.URL.Query().Get("offset")
@@ -2629,13 +2632,15 @@ func (s *Server) HandleAPIGPXUploadLogs(w http.ResponseWriter, r *http.Request) 
 	if parkID != "" {
 		logsResult, err = q.ListGPXUploadLogsByPark(ctx, dbgen.ListGPXUploadLogsByParkParams{
 			ProtectedAreaID: &parkID,
+			JsonEach:        envs,
 			Limit:           limit,
 			Offset:          offset,
 		})
 	} else {
 		logsResult, err = q.ListGPXUploadLogs(ctx, dbgen.ListGPXUploadLogsParams{
-			Limit:  limit,
-			Offset: offset,
+			JsonEach: envs,
+			Limit:    limit,
+			Offset:   offset,
 		})
 	}
 
@@ -2646,7 +2651,7 @@ func (s *Server) HandleAPIGPXUploadLogs(w http.ResponseWriter, r *http.Request) 
 
 	// Get summary stats for last 30 days
 	thirtyDaysAgo := time.Now().AddDate(0, 0, -30)
-	stats, _ := q.GetGPXUploadLogStats(ctx, thirtyDaysAgo)
+	stats, _ := q.GetGPXUploadLogStats(ctx, dbgen.GetGPXUploadLogStatsParams{UploadTime: thirtyDaysAgo, JsonEach: envs})
 
 	response := struct {
 		Logs  interface{}                    `json:"logs"`
@@ -3247,12 +3252,13 @@ func (s *Server) HandleAPIBulkDeleteUploads(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	wenvs := s.patrolWriteEnvsJSON(r)
 	deleted := 0
 	for _, id := range req.IDs {
 		var uploadID sql.NullInt64
-		_ = s.DB.QueryRowContext(ctx, "SELECT upload_id FROM gpx_upload_logs WHERE id = ?", id).Scan(&uploadID)
+		_ = s.DB.QueryRowContext(ctx, "SELECT upload_id FROM gpx_upload_logs WHERE id = ? AND "+PatrolEnvsSQL("env"), id, wenvs).Scan(&uploadID)
 
-		_, err := s.DB.ExecContext(ctx, "DELETE FROM gpx_upload_logs WHERE id = ?", id)
+		_, err := s.DB.ExecContext(ctx, "DELETE FROM gpx_upload_logs WHERE id = ? AND "+PatrolEnvsSQL("env"), id, wenvs)
 		if err != nil {
 			continue
 		}
@@ -3303,10 +3309,11 @@ func (s *Server) HandleAPIDeleteUpload(w http.ResponseWriter, r *http.Request) {
 
 	// Look up the upload_id from the log so we can clean up related tables
 	var uploadID sql.NullInt64
-	_ = s.DB.QueryRowContext(ctx, "SELECT upload_id FROM gpx_upload_logs WHERE id = ?", req.ID).Scan(&uploadID)
+	wenvs := s.patrolWriteEnvsJSON(r)
+	_ = s.DB.QueryRowContext(ctx, "SELECT upload_id FROM gpx_upload_logs WHERE id = ? AND "+PatrolEnvsSQL("env"), req.ID, wenvs).Scan(&uploadID)
 
 	// Delete from gpx_upload_logs
-	_, err := s.DB.ExecContext(ctx, "DELETE FROM gpx_upload_logs WHERE id = ?", req.ID)
+	_, err := s.DB.ExecContext(ctx, "DELETE FROM gpx_upload_logs WHERE id = ? AND "+PatrolEnvsSQL("env"), req.ID, wenvs)
 	if err != nil {
 		http.Error(w, "Failed to delete upload", http.StatusInternalServerError)
 		return
@@ -3421,8 +3428,8 @@ func (s *Server) HandleAPIUploadDetail(w http.ResponseWriter, r *http.Request) {
 			COALESCE(transit_segments, 0), COALESCE(transit_km, 0),
 			classified_segments_json
 		FROM gpx_upload_logs
-		WHERE id = ?
-	`, uploadID).Scan(
+		WHERE id = ? AND env IN (SELECT value FROM json_each(?))
+	`, uploadID, s.PatrolEnvsJSON(r)).Scan(
 		&result.ID, &result.Filename, &result.UploadTime, &result.TotalPoints,
 		&result.ProtectedAreaID, &result.ProtectedAreaName,
 		&result.ProcessingStatus, &result.RejectionReason,
@@ -3465,7 +3472,7 @@ func (s *Server) HandleAPIHideNotification(w http.ResponseWriter, r *http.Reques
 	}
 
 	// Mark notification as hidden (we'd need a hidden column, for now just delete)
-	_, err := s.DB.ExecContext(ctx, "DELETE FROM gpx_upload_logs WHERE id = ?", req.ID)
+	_, err := s.DB.ExecContext(ctx, "DELETE FROM gpx_upload_logs WHERE id = ? AND "+PatrolEnvsSQL("env"), req.ID, s.patrolWriteEnvsJSON(r))
 	if err != nil {
 		http.Error(w, "Failed to hide notification", http.StatusInternalServerError)
 		return
@@ -4885,11 +4892,11 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 			FROM effort_data e
 			JOIN grid_cells g ON e.grid_cell_id = g.id
 			WHERE e.movement_type = 'all'
-				AND e.env = ?
+				AND e.env IN (SELECT value FROM json_each(?))
 				AND g.lat_center BETWEEN ? AND ?
 				AND g.lon_center BETWEEN ? AND ?
 		`
-			patrolArgs := []interface{}{PatrolEnv(r), patrolBBox[1], patrolBBox[3], patrolBBox[0], patrolBBox[2]}
+			patrolArgs := []interface{}{s.PatrolEnvsJSON(r), patrolBBox[1], patrolBBox[3], patrolBBox[0], patrolBBox[2]}
 
 			if fromDate != "" {
 				patrolQuery += " AND (e.year > ? OR (e.year = ? AND e.month >= ?))"
@@ -5291,9 +5298,9 @@ func (s *Server) HandleAPIParksExport(w http.ResponseWriter, r *http.Request) {
 		s.DB.QueryRow(`
 			SELECT COUNT(DISTINCT g.id), COALESCE(SUM(e.total_distance_km), 0)
 			FROM grid_cells g
-			JOIN effort_data e ON g.id = e.grid_cell_id AND e.env = ?
+			JOIN effort_data e ON g.id = e.grid_cell_id AND e.env IN (SELECT value FROM json_each(?))
 			WHERE g.lat_center >= ? AND g.lat_center <= ? AND g.lon_center >= ? AND g.lon_center <= ?`,
-			PatrolEnv(r), latMin, latMax, lonMin, lonMax).Scan(&pixels, &patrolDist)
+			s.PatrolEnvsJSON(r), latMin, latMax, lonMin, lonMax).Scan(&pixels, &patrolDist)
 		s.DB.QueryRow(`SELECT COUNT(*) FROM pa_publications WHERE pa_id = ?`, area.WDPAID).Scan(&pubs)
 
 		results = append(results, ParkExport{
