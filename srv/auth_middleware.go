@@ -58,6 +58,8 @@ func isPublicPath(p string) bool {
 		p == "/healthz" ||
 		p == "/impressum" ||
 		p == "/datenschutz" ||
+		p == "/licenses" ||
+		p == "/api/licenses" ||
 		p == "/robots.txt" ||
 		p == "/sitemap.xml" ||
 		p == "/static/robots.txt" ||

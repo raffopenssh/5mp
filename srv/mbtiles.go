@@ -1,10 +1,14 @@
 package srv
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"image"
+	"image/jpeg"
+	_ "image/png"
 	"io"
 	"log/slog"
 	"math"
@@ -12,7 +16,9 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"sort"
 	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"syscall"
@@ -24,31 +30,70 @@ import (
 // TileSource represents a satellite imagery source
 type TileSource struct {
 	Name      string
-	URLFormat string // {z}/{x}/{y} or {quadkey} patterns
-	MaxZoom   int
-	Headers   map[string]string
+	URLFormat string // {z}/{x}/{y} pattern
+	// MaxZoom is the deepest level the SERVER has. Requests beyond it are
+	// answered by upscaling the ancestor tile at MaxZoom (see downloadTile),
+	// so an offline map can be zoomed in on a 10 m image without holes —
+	// the pixels get bigger, no detail is invented.
+	MaxZoom int
+	// UpscaleTo is the deepest level the builder will fabricate by upscaling.
+	UpscaleTo   int
+	Headers     map[string]string
+	Attribution string // the credit line the publisher prescribes, verbatim
+	Licence     string
+	LicenceURL  string
 }
 
-// Available tile sources (MOBAC-compatible)
+// Available tile sources.
+//
+// ONLY IMAGERY WE MAY COPY. This builder downloads tiles in bulk and hands
+// them to the user as a file, which is redistribution. Google Maps, Bing Maps
+// and Esri World Imagery all forbid bulk download and offline caching in their
+// terms of use, so they were removed here (2026-09). EOX's Sentinel-2 cloudless
+// is CC BY-NC-SA 4.0: copying and redistribution are permitted for
+// non-commercial use with the attribution below, which is written into every
+// MBTiles' metadata. The register in license.go is the source of truth.
 var TileSources = map[string]TileSource{
-	"esri": {
-		Name:      "ESRI World Imagery",
-		URLFormat: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-		MaxZoom:   19,
-		Headers:   map[string]string{"User-Agent": "Mozilla/5.0"},
+	"s2cloudless": {
+		Name:        "Sentinel-2 cloudless 2024 (EOX)",
+		URLFormat:   "https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2024_3857/default/g/{z}/{y}/{x}.jpg",
+		MaxZoom:     18,
+		UpscaleTo:   18, // equal to MaxZoom: upscaling available but not offered
+		Headers:     map[string]string{"User-Agent": "5MP Conservation Monitoring (https://github.com/raffopenssh/5mp)"},
+		Attribution: "Sentinel-2 cloudless - https://s2maps.eu by EOX IT Services GmbH (Contains modified Copernicus Sentinel data 2024)",
+		Licence:     "CC BY-NC-SA 4.0",
+		LicenceURL:  "https://creativecommons.org/licenses/by-nc-sa/4.0/",
 	},
-	"bing": {
-		Name:      "Bing Satellite",
-		URLFormat: "https://ecn.t{s}.tiles.virtualearth.net/tiles/a{quadkey}.jpeg?g=14627",
-		MaxZoom:   19,
-		Headers:   map[string]string{"User-Agent": "Mozilla/5.0"},
-	},
-	"google": {
-		Name:      "Google Satellite",
-		URLFormat: "https://mt{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
-		MaxZoom:   21,
-		Headers:   map[string]string{"User-Agent": "Mozilla/5.0"},
-	},
+}
+
+// defaultTileSource is the source used when the request names none.
+const defaultTileSource = "s2cloudless"
+
+// tileSourceNames lists the accepted source keys, for error messages and the
+// estimate endpoints. Derived, never typed (invariant 2).
+func tileSourceNames() []string {
+	names := make([]string, 0, len(TileSources))
+	for k := range TileSources {
+		names = append(names, k)
+	}
+	sort.Strings(names)
+	return names
+}
+
+// maxBuildZoom is the deepest zoom any source can deliver, natively or by
+// upscaling. The UI slider and the handlers clamp to it.
+func maxBuildZoom() int {
+	m := 0
+	for _, src := range TileSources {
+		z := src.MaxZoom
+		if src.UpscaleTo > z {
+			z = src.UpscaleTo
+		}
+		if z > m {
+			m = z
+		}
+	}
+	return m
 }
 
 // MBTilesJob represents a tile generation job
@@ -405,43 +450,124 @@ func tileToQuadKey(x, y, z int) string {
 	return string(quadKey)
 }
 
-// downloadTile downloads a single tile
+// downloadTile fetches one tile. Beyond the source's native MaxZoom it fetches
+// the ancestor at MaxZoom and crops+upscales the matching quadrant, so a z20
+// tile is a 4x-magnified quarter of a z18 tile. The result is re-encoded as
+// JPEG so the MBTiles stays one format.
 func downloadTile(source TileSource, tile Tile) ([]byte, error) {
-	url := source.URLFormat
+	if source.MaxZoom > 0 && tile.Z > source.MaxZoom {
+		if source.UpscaleTo > 0 && tile.Z > source.UpscaleTo {
+			return nil, fmt.Errorf("zoom %d beyond upscale limit %d", tile.Z, source.UpscaleTo)
+		}
+		return upscaledTile(source, tile)
+	}
+	return fetchTile(source, tile)
+}
 
-	// Replace placeholders
+// fetchTile performs the HTTP GET for a tile the server actually has.
+func fetchTile(source TileSource, tile Tile) ([]byte, error) {
+	url := source.URLFormat
 	url = replaceAll(url, "{z}", fmt.Sprintf("%d", tile.Z))
 	url = replaceAll(url, "{x}", fmt.Sprintf("%d", tile.X))
 	url = replaceAll(url, "{y}", fmt.Sprintf("%d", tile.Y))
-	url = replaceAll(url, "{s}", fmt.Sprintf("%d", tile.X%4)) // Server balancing
-
-	// Handle Bing quadkey
-	if contains(url, "{quadkey}") {
-		quadkey := tileToQuadKey(tile.X, tile.Y, tile.Z)
-		url = replaceAll(url, "{quadkey}", quadkey)
-	}
+	url = replaceAll(url, "{s}", fmt.Sprintf("%d", tile.X%4))
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
-
 	for k, v := range source.Headers {
 		req.Header.Set(k, v)
 	}
-
 	client := &http.Client{Timeout: 30 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
-
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("HTTP %d", resp.StatusCode)
 	}
-
 	return io.ReadAll(resp.Body)
+}
+
+// upscaledTile builds tile (Z > MaxZoom) from its ancestor at MaxZoom.
+// Ancestors are memoised per build in ancestorCache so the 4^(Z-MaxZoom)
+// descendants of one native tile cost one HTTP request, not 4^n.
+func upscaledTile(source TileSource, tile Tile) ([]byte, error) {
+	dz := tile.Z - source.MaxZoom
+	ax, ay := tile.X>>dz, tile.Y>>dz
+	anc := Tile{Z: source.MaxZoom, X: ax, Y: ay}
+
+	img, err := ancestorImage(source, anc)
+	if err != nil {
+		return nil, err
+	}
+	// Quadrant of the ancestor this tile covers, in ancestor pixels.
+	n := 1 << dz
+	b := img.Bounds()
+	w := b.Dx() / n
+	h := b.Dy() / n
+	if w == 0 || h == 0 {
+		return nil, fmt.Errorf("upscale factor %d exceeds tile size", n)
+	}
+	sx := b.Min.X + (tile.X-ax<<dz)*w
+	sy := b.Min.Y + (tile.Y-ay<<dz)*h
+
+	out := image.NewRGBA(image.Rect(0, 0, b.Dx(), b.Dy()))
+	// Nearest-neighbour: honest about the source resolution (pixels stay
+	// visibly pixels rather than a blur pretending to be detail).
+	for y := 0; y < b.Dy(); y++ {
+		for x := 0; x < b.Dx(); x++ {
+			out.Set(x, y, img.At(sx+x/n, sy+y/n))
+		}
+	}
+	var buf bytes.Buffer
+	if err := jpeg.Encode(&buf, out, &jpeg.Options{Quality: 85}); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
+// ancestorCache holds decoded native tiles for the upscaling path. Bounded:
+// a job walks zooms in order so an ancestor is only hot for a while.
+var ancestorCache = struct {
+	sync.Mutex
+	m     map[string]image.Image
+	order []string
+}{m: map[string]image.Image{}}
+
+const ancestorCacheMax = 512
+
+func ancestorImage(source TileSource, t Tile) (image.Image, error) {
+	key := fmt.Sprintf("%s/%d/%d/%d", source.URLFormat, t.Z, t.X, t.Y)
+	ancestorCache.Lock()
+	if img, ok := ancestorCache.m[key]; ok {
+		ancestorCache.Unlock()
+		return img, nil
+	}
+	ancestorCache.Unlock()
+
+	data, err := fetchTile(source, t)
+	if err != nil {
+		return nil, err
+	}
+	img, _, err := image.Decode(bytes.NewReader(data))
+	if err != nil {
+		return nil, fmt.Errorf("decode ancestor tile: %w", err)
+	}
+
+	ancestorCache.Lock()
+	defer ancestorCache.Unlock()
+	if _, ok := ancestorCache.m[key]; !ok {
+		ancestorCache.m[key] = img
+		ancestorCache.order = append(ancestorCache.order, key)
+		for len(ancestorCache.order) > ancestorCacheMax {
+			delete(ancestorCache.m, ancestorCache.order[0])
+			ancestorCache.order = ancestorCache.order[1:]
+		}
+	}
+	return img, nil
 }
 
 // initMBTilesSchema creates the MBTiles SQLite schema
@@ -466,6 +592,16 @@ func initMBTilesSchema(db *sql.DB, job *MBTilesJob, source TileSource) error {
 		"bounds":      fmt.Sprintf("%f,%f,%f,%f", job.BBox[0], job.BBox[1], job.BBox[2], job.BBox[3]),
 		"minzoom":     fmt.Sprintf("%d", job.MinZoom),
 		"maxzoom":     fmt.Sprintf("%d", job.MaxZoom),
+		// The publisher's terms travel with the file. Without these lines a
+		// downloaded MBTiles is an unattributed copy, which is what the
+		// licence forbids.
+		"attribution": source.Attribution,
+		"licence":     source.Licence,
+		"licence_url": source.LicenceURL,
+	}
+	if job.MaxZoom > source.MaxZoom {
+		metadata["upscaled_from_zoom"] = fmt.Sprintf("%d", source.MaxZoom)
+		metadata["description"] += fmt.Sprintf(". Native imagery to zoom %d; levels %d-%d are nearest-neighbour upscales of it (no added detail).", source.MaxZoom, source.MaxZoom+1, job.MaxZoom)
 	}
 
 	stmt, err := db.Prepare("INSERT INTO metadata (name, value) VALUES (?, ?)")
@@ -543,10 +679,10 @@ func (s *Server) HandleAPIMBTilesCreate(w http.ResponseWriter, r *http.Request) 
 	// Get parameters
 	source := r.URL.Query().Get("source")
 	if source == "" {
-		source = "esri"
+		source = defaultTileSource
 	}
 	if _, ok := TileSources[source]; !ok {
-		http.Error(w, "Invalid source. Use: esri, bing, google", http.StatusBadRequest)
+		http.Error(w, "Invalid source. Use: "+strings.Join(tileSourceNames(), ", "), http.StatusBadRequest)
 		return
 	}
 
@@ -567,7 +703,7 @@ func (s *Server) HandleAPIMBTilesCreate(w http.ResponseWriter, r *http.Request) 
 
 	// Get maxZoom from query parameter
 	if maxZoomStr := r.URL.Query().Get("maxZoom"); maxZoomStr != "" {
-		if mz, err := strconv.Atoi(maxZoomStr); err == nil && mz >= 1 && mz <= 19 {
+		if mz, err := strconv.Atoi(maxZoomStr); err == nil && mz >= 1 && mz <= maxBuildZoom() {
 			maxZoom = mz
 		}
 	}
@@ -707,7 +843,7 @@ func (s *Server) HandleAPIMBTilesEstimate(w http.ResponseWriter, r *http.Request
 
 	// Get maxZoom from query parameter
 	if maxZoomStr := r.URL.Query().Get("maxZoom"); maxZoomStr != "" {
-		if mz, err := strconv.Atoi(maxZoomStr); err == nil && mz >= 1 && mz <= 17 {
+		if mz, err := strconv.Atoi(maxZoomStr); err == nil && mz >= 1 && mz <= maxBuildZoom() {
 			maxZoom = mz
 		}
 	}
@@ -734,7 +870,7 @@ func (s *Server) HandleAPIMBTilesEstimate(w http.ResponseWriter, r *http.Request
 		"available_space_mb": availableSpace / (1024 * 1024),
 		"required_space_mb":  requiredSpace / (1024 * 1024),
 		"sufficient_space":   sufficient,
-		"sources":            []string{"esri", "bing", "google"},
+		"sources":            tileSourceNames(),
 	})
 }
 

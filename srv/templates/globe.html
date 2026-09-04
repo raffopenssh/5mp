@@ -419,28 +419,38 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
         </div>
     </div>
 
-    <!-- Footer attribution bar with buttons -->
+    <!-- Footer bar. A few uniform chips; anything that needs words opens a
+         popover (.fpop) anchored to the bar, so it rides along when the
+         timeline below expands. Two popovers: map credits (every source in
+         the live MapLibre style -- basemap, historical sheets, geology --
+         the way MapLibre's own attribution control would list them, which is
+         disabled because a 10px sentence in the corner is neither legible
+         nor mobile) and 5MP (code, libraries, legal pages). -->
     <div class="footer-attribution">
         <span id="page-views-footer" class="desktop-only">0 views</span>
         <span class="footer-sep desktop-only">|</span>
         <span id="version-link" style="cursor: pointer;" onclick="showVersionModal()" title="Click to see recent changes">{{.Version}}</span>
-        <span class="footer-sep desktop-only">|</span>
-        <a href="https://github.com/raffopenssh/5mp" target="_blank" title="View on GitHub" class="github-link desktop-only">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-            </svg>
-        </a>
-        <span class="footer-sep desktop-only">|</span>
-        <a href="https://maplibre.org/" target="_blank" class="maplibre-link desktop-only">MapLibre</a>
-        <span class="footer-sep desktop-only">|</span>
-        <a href="/impressum" target="_blank" class="maplibre-link desktop-only">Impressum</a>
-        <span class="footer-sep desktop-only">|</span>
-        <a href="/datenschutz" target="_blank" class="maplibre-link desktop-only">Datenschutz</a>
-        <span class="footer-sep desktop-only">|</span>
-        <!-- Share. It used to be a 12px chain among six other 12px footer
-             glyphs, i.e. invisible, so it now says what it is and reads as a
-             button: a pill with a label that collapses to the icon on narrow
-             screens, where the footer has no room for words anyway. -->
+        <span class="footer-sep">|</span>
+        <span class="fpop-wrap">
+            <button id="basemap-attribution" class="fpop-chip" onclick="toggleFooterPop(event, 'basemap-attribution-pop')" title="Map data & imagery credits" aria-haspopup="true" aria-expanded="false"></button>
+            <div id="basemap-attribution-pop" class="fpop" role="tooltip"><div class="fpop-body"></div></div>
+        </span>
+        <span class="footer-sep">|</span>
+        <span class="fpop-wrap">
+            <button class="fpop-chip" onclick="toggleFooterPop(event, 'about-links-pop')" title="About, code and legal" aria-haspopup="true" aria-expanded="false">5MP</button>
+            <div id="about-links-pop" class="fpop" role="menu"><div class="fpop-body">
+                <div class="fpop-title">5 Megapixels of Global Conservation</div>
+                <a href="https://github.com/raffopenssh/5mp" target="_blank" rel="noopener" role="menuitem">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    Source code on GitHub <span class="fpop-dim">MIT</span></a>
+                <a href="/licenses" target="_blank" rel="noopener" role="menuitem">Data sources &amp; licences</a>
+                <a href="https://maplibre.org/" target="_blank" rel="noopener" role="menuitem">Built with MapLibre GL <span class="fpop-dim">BSD-3</span></a>
+                <div class="fpop-more">
+                    <a href="/impressum" target="_blank">Impressum</a> · <a href="/datenschutz" target="_blank">Datenschutz</a>
+                </div>
+            </div></div>
+        </span>
+        <span class="footer-sep">|</span>
         <button class="footer-btn share-btn" onclick="shareCurrentView(event)" title="Copy a link to this exact view" aria-label="Copy a link to this view">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                 <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
@@ -652,52 +662,18 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                     </tr>
                 </table>
 
-                <!-- Data Sources -->
-                <h3 style="color: #22c55e; margin: 20px 0 12px; font-size: 15px;">Data Sources</h3>
-                <table style="width: 100%; font-size: 11px; border-collapse: collapse;">
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <td style="padding: 6px 0; color: #fff;">Fire</td>
-                        <td style="padding: 6px 0;"><a href="https://firms.modaps.eosdis.nasa.gov/" target="_blank" style="color: #22c55e;">NASA FIRMS VIIRS</a></td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <td style="padding: 6px 0; color: #fff;">Forest</td>
-                        <td style="padding: 6px 0;"><a href="https://glad.earthengine.app/view/global-forest-change" target="_blank" style="color: #22c55e;">Hansen/UMD v1.11</a></td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <td style="padding: 6px 0; color: #fff;">Forest alerts</td>
-                        <td style="padding: 6px 0;"><a href="https://www.globalforestwatch.org/" target="_blank" style="color: #22c55e;">GFW integrated alerts</a></td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <td style="padding: 6px 0; color: #fff;">Settlements</td>
-                        <td style="padding: 6px 0;"><a href="https://ghsl.jrc.ec.europa.eu/" target="_blank" style="color: #22c55e;">EU JRC GHSL</a></td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <td style="padding: 6px 0; color: #fff;">Rivers</td>
-                        <td style="padding: 6px 0;"><a href="https://www.hydrosheds.org/products/hydrorivers" target="_blank" style="color: #22c55e;">HydroRIVERS</a></td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <td style="padding: 6px 0; color: #fff;">Roads</td>
-                        <td style="padding: 6px 0;"><a href="https://heigit.org/" target="_blank" style="color: #22c55e;">HeiGIT/OSM</a></td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <td style="padding: 6px 0; color: #fff;">Parks</td>
-                        <td style="padding: 6px 0;"><a href="https://www.protectedplanet.net/" target="_blank" style="color: #22c55e;">WDPA</a></td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <td style="padding: 6px 0; color: #fff;">Species</td>
-                        <td style="padding: 6px 0;"><a href="https://www.iucnredlist.org/" target="_blank" style="color: #22c55e;">IUCN Red List</a></td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 6px 0; color: #fff;">Research</td>
-                        <td style="padding: 6px 0;"><a href="https://openalex.org/" target="_blank" style="color: #22c55e;">OpenAlex</a></td>
-                    </tr>
-                </table>
+                <!-- Data sources & licences: rendered from /api/licenses by
+                     renderAboutLicences() so this list and the Impressum and
+                     the MBTiles metadata cannot disagree about who we owe credit. -->
+                <h3 style="color: #22c55e; margin: 20px 0 12px; font-size: 15px;">Data Sources &amp; Licences</h3>
+                <p style="font-size: 12px; color: #888; margin: 0 0 10px;">Everything here was measured, drawn or published by somebody else first. Each source is listed with the terms its publisher granted; the full register with citations is at <a href="/licenses" target="_blank" style="color:#22c55e;">/licenses</a>.</p>
+                <div id="about-licences" style="font-size: 11px;"><span style="color:#666;">Loading…</span></div>
 
                 <!-- Footer -->
                 <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 11px; color: #666;">
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
                         <span>Version: <strong id="modal-version" style="color: #22c55e;">{{.Version}}</strong></span>
-                        <span><a href="https://github.com/5mp-conservation/5mp" target="_blank" style="color: #888;">GitHub</a></span>
+                        <span><a href="https://github.com/raffopenssh/5mp" target="_blank" style="color: #888;">GitHub</a> · <a href="/licenses" target="_blank" style="color: #888;">Licences</a></span>
                     </div>
                 </div>
             </div>
@@ -1133,7 +1109,8 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                     // unauthenticated raster tiles since 2026-08.
                     tiles: ['/api/basemap/dark_all/{z}/{x}/{y}@2x.png'],
                     tileSize: 256,
-                    attribution: '© OpenStreetMap contributors, © CARTO'
+                    attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors, © <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>',
+                    credit: '© OSM, CARTO'
                 }
             },
             layers: [{
@@ -1143,17 +1120,26 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             }]
         };
         
+        // Basemap styles. Each declares the attribution its publisher requires;
+        // renderBasemapAttribution() prints it in the footer, because the
+        // MapLibre attribution control is off. Google and Bing tile endpoints
+        // were removed 2026-09: their terms forbid direct tile access. Esri
+        // World Imagery stays as the high-resolution option (attribution
+        // required, no bulk caching -- the offline builder does not use it);
+        // Sentinel-2 cloudless (EOX, CC BY-NC-SA 4.0) is the fully licensed
+        // one and the only imagery the offline builder ships.
         const satelliteStyles = {
             'satellite-esri': {
                 version: 8,
-                name: 'Satellite (ESRI)',
+                name: 'Satellite (Esri)',
                 glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
                 sources: {
                     'satellite': {
                         type: 'raster',
                         tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
                         tileSize: 256,
-                        attribution: '© Esri, Maxar, Earthstar Geographics',
+                        attribution: 'Imagery © <a href="https://www.esri.com/" target="_blank" rel="noopener">Esri</a>, Maxar, Earthstar Geographics, and the GIS User Community',
+                        credit: '© Esri',
                         maxzoom: 19
                     }
                 },
@@ -1163,38 +1149,18 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                     source: 'satellite'
                 }]
             },
-            'satellite-bing': {
+            'satellite-s2': {
                 version: 8,
-                name: 'Satellite (Bing)',
+                name: 'Satellite (Sentinel-2)',
                 glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
                 sources: {
                     'satellite': {
                         type: 'raster',
-                        tiles: [
-                            'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
-                        ],
+                        tiles: ['https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2024_3857/default/g/{z}/{y}/{x}.jpg'],
                         tileSize: 256,
-                        attribution: '© Esri (Bing alternate)',
-                        maxzoom: 19
-                    }
-                },
-                layers: [{
-                    id: 'satellite',
-                    type: 'raster',
-                    source: 'satellite'
-                }]
-            },
-            'satellite-google': {
-                version: 8,
-                name: 'Satellite (Google)',
-                glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
-                sources: {
-                    'satellite': {
-                        type: 'raster',
-                        tiles: ['https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}'],
-                        tileSize: 256,
-                        attribution: '© Google',
-                        maxzoom: 20
+                        attribution: '<a href="https://s2maps.eu" target="_blank" rel="noopener">Sentinel-2 cloudless</a> by <a href="https://eox.at" target="_blank" rel="noopener">EOX IT Services GmbH</a> (Contains modified Copernicus Sentinel data 2024) · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a>',
+                        credit: '© EOX · Sentinel-2',
+                        maxzoom: 18
                     }
                 },
                 layers: [{
@@ -1204,6 +1170,75 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 }]
             }
         };
+
+        // Footer credits. CARTO's free tier and EOX's non-commercial grant are
+        // both given in exchange for the credit being visible next to the map.
+        // The chip shows the basemap's short `credit`; the popover lists the
+        // publisher's prescribed `attribution` line, verbatim with links, for
+        // EVERY source in the live style (basemap + historical sheet + geology
+        // overlays), deduplicated -- what MapLibre's attribution control would
+        // show, in a form that fits a phone. Called on basemap switch and on
+        // every 'sourcedata' so overlays appear when they are added.
+        function basemapSource() {
+            const style = currentBasemap === 'dark' ? darkStyle : satelliteStyles[currentBasemap];
+            return style && style.sources && (style.sources.osm || style.sources.satellite);
+        }
+        let _attrRenderTimer = null;
+        function renderBasemapAttribution() {
+            const chip = document.getElementById('basemap-attribution');
+            const pop = document.getElementById('basemap-attribution-pop');
+            if (!chip || !pop) return;
+            const base = basemapSource();
+            chip.textContent = base ? (base.credit || base.attribution.replace(/<[^>]+>/g, '')) : '';
+            const lines = [];
+            const seen = new Set();
+            const push = (html) => { if (!html) return; const k = html.replace(/<[^>]+>/g, '').trim(); if (!k || seen.has(k)) return; seen.add(k); lines.push(html); };
+            if (base) push(base.attribution);
+            try {
+                const st = map && map.getStyle && map.getStyle();
+                if (st && st.sources) Object.values(st.sources).forEach(src => push(src.attribution));
+            } catch (e) { /* style not ready */ }
+            const extra = lines.length - (base ? 1 : 0);
+            if (extra > 0) chip.textContent += ' +' + extra;
+            pop.querySelector('.fpop-body').innerHTML = '<div class="fpop-title">Map data &amp; imagery</div>' +
+                lines.map(l => '<div class="fpop-line">' + l + '</div>').join('') +
+                '<div class="fpop-more"><a href="/licenses" target="_blank" rel="noopener">All data sources &amp; licences →</a></div>';
+        }
+        function scheduleAttributionRender() {
+            clearTimeout(_attrRenderTimer);
+            _attrRenderTimer = setTimeout(renderBasemapAttribution, 300);
+        }
+        // One popover mechanism for every footer chip: opens upward from the
+        // bar (so it follows the bar when the timeline grows), one open at a
+        // time, closes on outside click or Escape. Hover opens on pointer
+        // devices via CSS; tap toggles everywhere.
+        function toggleFooterPop(ev, id) {
+            ev.stopPropagation();
+            const pop = document.getElementById(id);
+            const chip = ev.currentTarget;
+            const wasOpen = pop.classList.contains('open');
+            closeFooterPops();
+            if (!wasOpen) {
+                pop.classList.add('open');
+                chip.setAttribute('aria-expanded', 'true');
+            }
+        }
+        function closeFooterPops() {
+            document.querySelectorAll('.fpop.open').forEach(p => p.classList.remove('open'));
+            document.querySelectorAll('.fpop-chip[aria-expanded="true"]').forEach(c => c.setAttribute('aria-expanded', 'false'));
+        }
+        document.addEventListener('click', (e) => { if (!e.target.closest('.fpop-wrap')) closeFooterPops(); });
+        // Hover with intent: opens on enter, and stays 450 ms after the
+        // pointer leaves so the trip from chip to bubble (and to the link at
+        // its far corner) survives a wobble. Pointer devices only.
+        if (matchMedia('(hover: hover)').matches) {
+            document.querySelectorAll('.fpop-wrap').forEach(wrap => {
+                let t = null;
+                wrap.addEventListener('mouseenter', () => { clearTimeout(t); document.querySelectorAll('.fpop-wrap.hover').forEach(o => o !== wrap && o.classList.remove('hover')); wrap.classList.add('hover'); });
+                wrap.addEventListener('mouseleave', () => { t = setTimeout(() => wrap.classList.remove('hover'), 450); });
+            });
+        }
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeFooterPops(); });
         
         let currentBasemap = 'dark';  // Track current basemap
 
@@ -1362,6 +1397,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             
             console.log('Switching basemap to:', basemapId);
             currentBasemap = basemapId;
+            renderBasemapAttribution();
             
             // Update UI selection
             document.querySelectorAll('.basemap-option').forEach(btn => {
@@ -1775,7 +1811,11 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             const ids = GeoMap.order();
             box.innerHTML = ids.length
                 ? geoMapCardHTML(ids, sheets)
-                : '<div style="color:#666;font-size:12px;">No geology sheets built on this server.</div>';
+                : GeoMap.withheld()
+                    ? `<div style="border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px;background:rgba(255,255,255,0.02);">
+                        <div style="color:#fff;font-size:13px;font-weight:600;">Geological units</div>
+                        <div style="color:#888;font-size:11px;margin-top:6px;line-height:1.5;">${escapeHtml(GeoMap.withheld())}</div></div>`
+                    : '<div style="color:#666;font-size:12px;">No geology sheets built on this server.</div>';
             // WHAT THIS BUILD IS AN ANSWER TO, recorded by the build itself.
             // Two paths reach here on one gesture — the state change (via
             // refreshWhenDrawn, after the paint) and the map's own idle — and
@@ -3375,6 +3415,9 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
         }
         
         map.on('load', function() {
+            renderBasemapAttribution();
+            map.on('sourcedata', scheduleAttributionRender);
+            map.on('styledata', scheduleAttributionRender);
             // Add arrow icon for fire trajectory direction indicators
             const arrowSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#ef4444"><path d="M12 2l-7 7h5v13h4V9h5z"/></svg>`;
             const arrowImg = new Image(24, 24);
@@ -3895,7 +3938,10 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             updateParkFillForBasemap();
         });
 
-        function showModal(name) { document.getElementById(`modal-${name}`).classList.add('active'); }
+        function showModal(name) {
+            document.getElementById(`modal-${name}`).classList.add('active');
+            if (name === 'manifest' && typeof renderAboutLicences === 'function') renderAboutLicences();
+        }
         function closeModal(name) {
             document.getElementById(`modal-${name}`).classList.remove('active');
             const form = document.getElementById(`form-${name}`);
@@ -3925,6 +3971,44 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
         }
         
         // Version modal
+        // About modal: data sources & licences, from the one register
+        // (srv/license.go). Rendered once per page load.
+        let aboutLicencesLoaded = false;
+        async function renderAboutLicences() {
+            const el = document.getElementById('about-licences');
+            if (!el || aboutLicencesLoaded) return;
+            try {
+                const resp = await fetch('/api/licenses');
+                const data = await resp.json();
+                const termsColor = { open: '#22c55e', restricted: '#f59e0b', unstated: '#9ca3af' };
+                const catTitle = { imagery: 'Imagery & map sheets', data: 'Datasets', software: 'Software' };
+                let cat = '', html = '';
+                for (const e of data.licenses) {
+                    if (e.category !== cat) {
+                        cat = e.category;
+                        html += `<div style="color:#aaa;font-weight:600;margin:10px 0 4px;">${escapeHtml(catTitle[cat] || cat)}</div>`;
+                    }
+                    const lic = e.licence_url
+                        ? `<a href="${escapeHtml(e.licence_url)}" target="_blank" rel="noopener" style="color:#888;">${escapeHtml(e.licence)}</a>`
+                        : escapeHtml(e.licence);
+                    html += `<div style="display:flex;gap:8px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.06);" title="${escapeHtml(e.attribution)}">
+                        <span style="flex:0 0 6px;height:6px;margin-top:5px;border-radius:50%;background:${termsColor[e.terms] || '#666'};" title="${escapeHtml(e.terms)}"></span>
+                        <div style="flex:1;min-width:0;">
+                            <a href="${escapeHtml(e.url)}" target="_blank" rel="noopener" style="color:#ddd;">${escapeHtml(e.name)}</a>
+                            <span style="color:#666;"> — ${escapeHtml(e.use)}</span>
+                            <div style="color:#777;">${escapeHtml(e.publisher)} · ${lic}</div>
+                        </div></div>`;
+                }
+                html += `<div style="color:#666;margin-top:10px;line-height:1.5;">
+                    <span style="color:#22c55e;">●</span> open &nbsp;<span style="color:#f59e0b;">●</span> restricted (non-commercial / keyed / attribution) &nbsp;<span style="color:#9ca3af;">●</span> publisher stated no licence<br>
+                    Code: ${escapeHtml(data.project.code)} · ${escapeHtml(data.project.derived)}</div>`;
+                el.innerHTML = html;
+                aboutLicencesLoaded = true;
+            } catch (e) {
+                el.innerHTML = '<span style="color:#ef4444;">Could not load the licence register.</span> <a href="/licenses" target="_blank" style="color:#22c55e;">Open /licenses</a>';
+            }
+        }
+
         async function showVersionModal() {
             const modal = document.getElementById('version-modal');
             const commitsList = document.getElementById('commits-list');
@@ -4052,7 +4136,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
         
         function getSelectedSource() {
             const selected = document.querySelector('.mbtiles-source-btn.selected');
-            return selected ? selected.dataset.source : 'esri';
+            return selected ? selected.dataset.source : 's2cloudless';
         }
         
         function updateZoomLevel(value) {
@@ -24067,8 +24151,14 @@ ${starredItems.narratives.map(n => {
                 'satellite': 'satellite-esri',
                 'sat': 'satellite-esri',
                 'esri': 'satellite-esri',
-                'bing': 'satellite-bing',
-                'google': 'satellite-google'
+                's2': 'satellite-s2',
+                'sentinel': 'satellite-s2',
+                // Retired providers resolve to the licensed imagery so old
+                // share links keep opening on a satellite view.
+                'bing': 'satellite-esri',
+                'google': 'satellite-esri',
+                'satellite-bing': 'satellite-esri',
+                'satellite-google': 'satellite-esri'
             };
             const resolvedBasemap = basemapAliases[basemap] || basemap;
             // Force basemap switch by temporarily setting currentBasemap to something else
@@ -24993,28 +25083,18 @@ ${starredItems.narratives.map(n => {
                                             <path d="M3 9h18M9 21V9"/>
                                         </svg>
                                     </div>
-                                    <div style="font-size:13px;font-weight:500;margin-top:8px;">Satellite (ESRI)</div>
-                                    <div style="font-size:11px;color:#666;margin-top:2px;">High-res imagery</div>
+                                    <div style="font-size:13px;font-weight:500;margin-top:8px;">Satellite (Esri)</div>
+                                    <div style="font-size:11px;color:#666;margin-top:2px;">High-res imagery · online only</div>
                                 </button>
-                                <button class="basemap-option" data-basemap="satellite-bing" onclick="switchBasemap('satellite-bing')">
+                                <button class="basemap-option" data-basemap="satellite-s2" onclick="switchBasemap('satellite-s2')">
                                     <div class="basemap-preview" style="background:linear-gradient(135deg,#2a4a4a 0%,#4a6a6a 100%);">
                                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#8ab8b8;">
                                             <rect x="3" y="3" width="18" height="18" rx="2"/>
                                             <path d="M3 9h18M9 21V9"/>
                                         </svg>
                                     </div>
-                                    <div style="font-size:13px;font-weight:500;margin-top:8px;">Satellite (Bing)</div>
-                                    <div style="font-size:11px;color:#666;margin-top:2px;">High-res imagery</div>
-                                </button>
-                                <button class="basemap-option" data-basemap="satellite-google" onclick="switchBasemap('satellite-google')">
-                                    <div class="basemap-preview" style="background:linear-gradient(135deg,#3a4a2a 0%,#5a6a4a 100%);">
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#a8b894;">
-                                            <rect x="3" y="3" width="18" height="18" rx="2"/>
-                                            <path d="M3 9h18M9 21V9"/>
-                                        </svg>
-                                    </div>
-                                    <div style="font-size:13px;font-weight:500;margin-top:8px;">Satellite (Google)</div>
-                                    <div style="font-size:11px;color:#666;margin-top:2px;">High-res imagery</div>
+                                    <div style="font-size:13px;font-weight:500;margin-top:8px;">Satellite (Sentinel-2)</div>
+                                    <div style="font-size:11px;color:#666;margin-top:2px;">10 m, cloud-free 2024 · CC BY-NC-SA</div>
                                 </button>
                             </div>
                         </div>
@@ -25133,16 +25213,18 @@ ${starredItems.narratives.map(n => {
             
             <!-- Source selection -->
             <div style="color: #666; font-size: 10px; margin-bottom: 6px;">Source</div>
-            <div id="mbtiles-sources" style="display: flex; gap: 4px; margin-bottom: 12px;">
-                <button class="mbtiles-source-btn selected" data-source="esri">ESRI</button>
-                <button class="mbtiles-source-btn" data-source="bing">Bing</button>
-                <button class="mbtiles-source-btn" data-source="google">Google</button>
+            <div id="mbtiles-sources" style="display: flex; gap: 4px; margin-bottom: 4px;">
+                <button class="mbtiles-source-btn selected" data-source="s2cloudless">Sentinel-2 cloudless 2024 (EOX)</button>
             </div>
+            <!-- The only imagery whose licence permits handing tiles over as
+                 a file. Esri/Bing/Google forbid bulk download; see
+                 srv/license.go and /licenses. -->
+            <div style="color: #555; font-size: 10px; margin-bottom: 12px; line-height: 1.4;">10 m Sentinel-2 mosaic, CC BY-NC-SA 4.0 — non-commercial use, attribution included in the file. Higher-resolution commercial imagery cannot legally be bundled offline.</div>
             
             <!-- Zoom level slider -->
             <div style="color: #666; font-size: 10px; margin-bottom: 6px;">Zoom levels: <span id="mbtiles-zoom-label">1-17</span></div>
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-                <input type="range" id="mbtiles-zoom-slider" min="10" max="19" value="17" 
+                <input type="range" id="mbtiles-zoom-slider" min="10" max="18" value="17" 
                     style="flex: 1; accent-color: #3b82f6;" oninput="updateZoomLevel(this.value)">
                 <div style="display: flex; font-size: 9px; color: #444;">
                     <span id="zoom-markers"></span>
