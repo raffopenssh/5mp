@@ -1,34 +1,3 @@
 {
-  "entries": {
-    "mbtiles_CMR_Nki_esri": {
-      "key": "mbtiles_CMR_Nki_esri",
-      "depo_id": 19208805,
-      "bucket_url": "https://zenodo.org/api/files/a852c79f-1310-4e2d-ad18-915ab7407604",
-      "filename": "CMR_Nki_esri.mbtiles",
-      "size": 933888,
-      "checksum": "cee965b478666a8ae347d8071472708d",
-      "uploaded_at": "2026-03-24T18:28:23.585421865Z",
-      "version": "2026-03-24T18:28:21"
-    },
-    "mbtiles_COD_Virunga_esri": {
-      "key": "mbtiles_COD_Virunga_esri",
-      "depo_id": 19208875,
-      "bucket_url": "https://zenodo.org/api/files/ce873d21-a939-46b1-a48d-d13d0608c399",
-      "filename": "COD_Virunga_esri.mbtiles",
-      "size": 85381120,
-      "checksum": "af77b56845c12dcbd5faa74cff119e56",
-      "uploaded_at": "2026-03-24T18:37:22.638935852Z",
-      "version": "2026-03-24T18:37:12"
-    },
-    "mbtiles_TZA_Nyerere_google": {
-      "key": "mbtiles_TZA_Nyerere_google",
-      "depo_id": 19210188,
-      "bucket_url": "https://zenodo.org/api/files/35adffd5-344a-4875-a9c6-b873f93ceff7",
-      "filename": "TZA_Nyerere_google.mbtiles",
-      "size": 1360474112,
-      "checksum": "6af84ae20f6d0b6c6a657c99ab112b3b",
-      "uploaded_at": "2026-03-24T20:54:54.683921423Z",
-      "version": "2026-03-24T20:52:22"
-    }
-  }
+  "entries": {}
 }
