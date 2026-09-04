@@ -3080,7 +3080,7 @@
     "polygon_ids": "deforest_SSD_Zeraf_2023_320,deforest_SSD_Zeraf_2023_321"
   },
   {
-    "id": 41430,
+    "id": 44136,
     "park_id": "SSD_Zeraf",
     "year": 2025,
     "area_km2": 0.0009,
@@ -3094,11 +3094,11 @@
     "created_at": null,
     "classification": "slash_burn",
     "classification_confidence": 0.85,
-    "narrative": "Slash-and-burn clearing detected in 2025. Affected 0.00 km\u00b2 across 1 patch. Strong fire correlation indicates agricultural burning. Located 18.4km from Bahr el Zeraf.",
+    "narrative": "Slash-and-burn clearing detected in 2025. Affected 0.00 km\u00b2 across 1 patch. Strong fire correlation indicates agricultural burning. Located 13.0km from Bahr el Zeraf.",
     "fires_same_year": 123,
     "fire_ratio": 12300.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-08-14T07:30:01.953487",
+    "classified_at": "2026-09-01T07:30:02.729051",
     "polygon_ids": "deforest_gfw_SSD_Zeraf_2025_8.89_30.73"
   }
 ]

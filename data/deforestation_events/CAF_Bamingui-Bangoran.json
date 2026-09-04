@@ -440,7 +440,7 @@
     "polygon_ids": "deforest_CAF_Bamingui-Bangoran_2023_38"
   },
   {
-    "id": 41293,
+    "id": 44137,
     "park_id": "CAF_Bamingui-Bangoran",
     "year": 2026,
     "area_km2": 0.0055,
@@ -454,15 +454,15 @@
     "created_at": null,
     "classification": "slash_burn",
     "classification_confidence": 0.85,
-    "narrative": "Slash-and-burn clearing detected in 2026. Affected 0.01 km\u00b2 across 2 patches. Strong fire correlation indicates agricultural burning. Located 4.1km from Bamingui. Near Bahr Aouk river.",
-    "fires_same_year": 913,
-    "fire_ratio": 91300.0,
+    "narrative": "Slash-and-burn clearing detected in 2026. Affected 0.01 km\u00b2 across 2 patches. Strong fire correlation indicates agricultural burning. Located 4.1km from Bamingui. Near Bamingui river (4.3km).",
+    "fires_same_year": 915,
+    "fire_ratio": 91500.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-08-08T07:30:07.567175",
+    "classified_at": "2026-09-02T07:30:08.654518",
     "polygon_ids": "deforest_gfw_CAF_Bamingui-Bangoran_2026_7.55_20.21,deforest_gfw_CAF_Bamingui-Bangoran_2026_7.52_20.20"
   },
   {
-    "id": 41294,
+    "id": 44138,
     "park_id": "CAF_Bamingui-Bangoran",
     "year": 2026,
     "area_km2": 0.0009,
@@ -476,11 +476,11 @@
     "created_at": null,
     "classification": "slash_burn",
     "classification_confidence": 0.85,
-    "narrative": "Slash-and-burn clearing detected in 2026. Affected 0.00 km\u00b2 across 1 patch. Strong fire correlation indicates agricultural burning. Located 4.1km from Bamingui. Near Bahr Aouk river.",
-    "fires_same_year": 911,
-    "fire_ratio": 91100.0,
+    "narrative": "Slash-and-burn clearing detected in 2026. Affected 0.00 km\u00b2 across 1 patch. Strong fire correlation indicates agricultural burning. Located 4.1km from Bamingui. Near Bamingui river (1.1km).",
+    "fires_same_year": 912,
+    "fire_ratio": 91200.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-08-08T07:30:07.632335",
+    "classified_at": "2026-09-02T07:30:08.700901",
     "polygon_ids": "deforest_gfw_CAF_Bamingui-Bangoran_2026_7.56_20.14"
   }
 ]

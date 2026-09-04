@@ -792,7 +792,7 @@
     "polygon_ids": "deforest_SSD_Badingilo_2023_104"
   },
   {
-    "id": 41405,
+    "id": 44141,
     "park_id": "SSD_Badingilo",
     "year": 2025,
     "area_km2": 0.0009,
@@ -806,15 +806,15 @@
     "created_at": null,
     "classification": "slash_burn",
     "classification_confidence": 0.85,
-    "narrative": "Slash-and-burn clearing detected in 2025. Affected 0.00 km\u00b2 across 1 patch. Strong fire correlation indicates agricultural burning. Located 3.8km from Km 3.2. Near Bahr al Jabal (Mountain Nile) river.",
+    "narrative": "Slash-and-burn clearing detected in 2025. Affected 0.00 km\u00b2 across 1 patch. Strong fire correlation indicates agricultural burning. Located 2.1km from Garbu. Near Bahr al Jabal (Mountain Nile) river (0.4km).",
     "fires_same_year": 793,
     "fire_ratio": 79300.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-08-11T07:30:08.211406",
+    "classified_at": "2026-09-04T07:30:08.611467",
     "polygon_ids": "deforest_gfw_SSD_Badingilo_2025_4.84_31.64"
   },
   {
-    "id": 41406,
+    "id": 44142,
     "park_id": "SSD_Badingilo",
     "year": 2025,
     "area_km2": 0.0004,
@@ -828,11 +828,11 @@
     "created_at": null,
     "classification": "slash_burn",
     "classification_confidence": 0.85,
-    "narrative": "Slash-and-burn clearing detected in 2025. Affected 0.00 km\u00b2 across 1 patch. Strong fire correlation indicates agricultural burning. Located 2.8km from Tiyang 1. Near Bahr al Jabal (Mountain Nile) river.",
+    "narrative": "Slash-and-burn clearing detected in 2025. Affected 0.00 km\u00b2 across 1 patch. Strong fire correlation indicates agricultural burning. Located 2.8km from Tiyang 1. Near \u0627\u0644\u0646\u064a\u0644 \u0627\u0644\u0623\u0628\u064a\u0636 river (1.1km).",
     "fires_same_year": 529,
     "fire_ratio": 52900.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-08-11T07:30:08.246550",
+    "classified_at": "2026-09-04T07:30:08.643016",
     "polygon_ids": "deforest_gfw_SSD_Badingilo_2025_5.34_31.76"
   }
 ]

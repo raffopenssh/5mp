@@ -919,10 +919,15 @@ func (s *Server) HandleAPIZenodoMBTilesEstimate(w http.ResponseWriter, r *http.R
 	extended := RequestEnv(r) != sandboxTenant
 	sufficient, capacityReason := checkMBTilesCapacity(bbox, maxZoom, extended)
 
-	// Check if already uploaded to Zenodo
+	// Check if already uploaded to Zenodo. Same whitelist as Create: an
+	// estimate for a source we may not redistribute must not read as an offer.
 	srcName := r.URL.Query().Get("source")
 	if srcName == "" {
 		srcName = defaultTileSource
+	}
+	if _, ok := TileSources[srcName]; !ok {
+		http.Error(w, "Invalid source. Use: "+strings.Join(tileSourceNames(), ", "), http.StatusBadRequest)
+		return
 	}
 	key := fmt.Sprintf("mbtiles_%s_%s", parkID, srcName)
 	var existingDepoID int

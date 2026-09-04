@@ -1,20 +1,20 @@
-b1612a7 2026-08-14 10:15:05 easy-read report: coordinates for every named place, settlement history
-9e1919c 2026-08-14 09:59:23 Fix geology view GPKG export: spinner never turned, second export silently no-op'd
-a0fa59c 2026-08-14 09:58:58 easy-read report: all links are shortened guest links, portless, 90d
-b97b8d2 2026-08-14 09:55:36 easy-read report: name the gold geology by place
-775b249 2026-08-14 09:39:16 Cropland/persistence consistency across all surfaces + easy-read report
-8d9bdbf 2026-08-14 08:33:50 GLAD cropland context: settlement expansion + deforestation attribution
-6ef388e 2026-08-14 08:04:59 GeoPackage export: cancellable builds + orphan-card cleanup
-3699b3c 2026-08-14 06:37:33 Nightly cron state: fire/GFW/OSM/deforestation outputs for 2026-08-14
-0ef92c1 2026-08-14 05:51:02 map-ui.md: document stats panel window furniture
-76c1e44 2026-08-14 05:50:24 Stats panel: standard window furniture, compact fold, snap-home, scope row alignment
-0ab519f 2026-08-14 05:43:52 XSA conservation review v2 (unified): persistence-corrected settlements, complete histmap corpus, nightlights null, full URLs
-2293555 2026-08-14 05:38:20 histmap labels: LLM categorization, category API filter, vector downloads
-2b490d0 2026-08-14 05:37:04 XSA report v2: settlement rebuild, persistence epochs, complete histmap OCR, nightlights null
-de40203 2026-08-13 19:21:13 docs: add nightlights.md to the agents README index
-9003fcf 2026-08-13 19:18:41 State snapshot: GHSL back-epoch persistence complete — 157/157 areas
-bb6ff7f 2026-08-13 19:14:48 ocr_labels: self-healing run loop + auto-refresh of dedup/index
-cb1e886 2026-08-13 19:09:24 docs: document /api/histmap/sudan250k/labels (OCR'd toponym query API)
-290266e 2026-08-13 19:09:15 Structural layers: mixer rows, MapTips, craton band ink
-ab720b6 2026-08-13 19:04:59 Nightlights WP3: measured and folded — mine sites are dark
-8c2b4a6 2026-08-13 19:03:14 histmap labels: query API + FTS/geo indexes
+07eeaec 2026-09-04 07:48:18 Delete Esri/Google MBTiles Zenodo drafts (3 depositions) and clear manifest
+60301e1 2026-09-04 07:45:19 Footer: hover-intent popovers with fade, equal icon pills on phones
+d5b7fed 2026-09-04 07:39:42 Licence register, licensed-only imagery, footer credits, geology gated to partners
+17856a4 2026-08-31 19:49:59 easypip: styled GeoPackage of the PIP map, plus the full PIP and two-pager
+8d5a535 2026-08-31 19:24:04 EASY PIP map: one clean sheet, measured legend spacing, collision-free labels
+d9af8e8 2026-08-31 18:14:23 Per-zone stats for the six proposed Pongo-Wau-Numatinna KMLs
+ffb135b 2026-08-31 17:31:11 Add EASY budget generator for the AP-RCA Western South Sudan plan
+6cf5932 2026-08-31 16:42:54 easydocs: record section 8 shape, RWF/Keystone funding route, DG Khamis as entry point, and how ACLED-derived scalars were used in the gold section
+4e5d3f7 2026-08-31 16:29:10 easydocs: dump is authoritative on law, stale on people (FFI in Southern NP, AP/UNESCO, minister changed)
+8dfbff8 2026-08-31 16:25:23 easydocs: note contact-sheet vintage and the NGO Forum roster as the fresh counterpart source
+8285f5b 2026-08-31 16:19:40 easydocs: record what the plan took from the dump (gold flank, Numatina double claim, missing baseline)
+b1ee141 2026-08-31 16:02:06 docs: easydocs subsystem — how the EASY document dump was read
+6a3a5bd 2026-08-31 16:00:36 gitignore: EASY document dump artefacts (256 MB raw + 5.6 MB ledger)
+b677621 2026-08-31 16:00:04 easydocs: read the EASY document dump and score it against the AP-RCA plan
+ac35d24 2026-08-31 10:49:04 Record corridor verification results for AP-RCA plan assessment rewrite
+7e8366c 2026-08-31 10:18:42 Corridor directionality analysis from v5 trajectories (AP-RCA plan check)
+9a9a250 2026-08-27 06:29:45 Proxy CARTO base-map tiles server-side with our API key
+a0e1514 2026-08-20 10:13:13 Cron status: settlement_backfill, cropland, onboard_park report into the bell
+1178644 2026-08-19 17:38:29 Fix mobile black-map: WebGL context-loss recovery + floatui resize-listener leak
+41bd8da 2026-08-19 16:50:01 Deforestation narrative cache: see in-place enrichment writes
