@@ -72,6 +72,7 @@
     const PAT = (lith, age) => 'geopat-' + lith + '-' + age;
 
     let sheets = null;          // id -> catalogue entry from /api/geomap
+    let withheld = null;        // reason string when the server withholds geology from this session
     let order = [];             // sheet ids in server order
     let gpkg = null;            // the ONE combined GeoPackage: {url, bytes, sheets}
     // The reference workings the affinity model was scored against, as the
@@ -214,6 +215,9 @@
                 .then(j => {
                     sheets = {};
                     order = [];
+                    // The demo password gets no sheets and a sentence saying
+                    // why (srv/geomap_gate.go); the panel prints the sentence.
+                    withheld = j.withheld ? (j.reason || 'Geology is not available in this session.') : null;
                     (j.sheets || []).forEach(s => { sheets[s.id] = s; order.push(s.id); });
                     // ONE GeoPackage for every sheet — a property of the
                     // catalogue, not of a sheet, because the map is one layer
@@ -1654,6 +1658,8 @@
         state: st,
         isOn: id => st(id).on,
         anyOn: () => order.some(id => st(id).on),
+        /** Non-null when the server withheld geology from this session. */
+        withheld: () => withheld,
 
         // ---- the one switch the user sees -------------------------------
         //

@@ -148,11 +148,13 @@ sole basis for operational decisions in protected-area management.</p>
 the linked pages are solely responsible for their content.</p>
 
 <h2>Data sources and copyright</h2>
-<p>The application uses open data sources, including NASA FIRMS (VIIRS),
-Global Forest Watch / Hansen Global Forest Change, GHSL (European Commission),
-HydroSHEDS/HydroRIVERS, Protected Planet (WDPA), OpenStreetMap, HeiGIT,
-OpenAlex, FAOLEX and IUCN. The respective licence and citation terms of the
-data providers remain unaffected.</p>
+<p>The application uses the following third-party data, imagery and map
+sheets. The respective licence and citation terms of the providers remain
+unaffected; the full register with attribution lines, citations and the
+conditions our use rests on is at <a href="/licenses">/licenses</a>.</p>
+`+licenseSummaryList()+`
+<p>The source code is released under the MIT licence; our own derived layers
+under CC BY 4.0 unless an input imposes stricter terms.</p>
 <p>Contents and works created by the site operator on these pages are subject
 to Austrian copyright law.</p>
 
@@ -190,11 +192,15 @@ Schutzgebietsmanagement geeignet.</p>
 der verlinkten Seiten sind ausschlie&szlig;lich deren Betreiber verantwortlich.</p>
 
 <h2>Datenquellen und Urheberrecht</h2>
-<p>Die Anwendung nutzt offene Datenquellen, u.&nbsp;a. NASA FIRMS (VIIRS),
-Global Forest Watch / Hansen Global Forest Change, GHSL (Europ&auml;ische
-Kommission), HydroSHEDS/HydroRIVERS, Protected Planet (WDPA), OpenStreetMap,
-HeiGIT, OpenAlex, FAOLEX und IUCN. Die jeweiligen Lizenz- und
-Zitationsbedingungen der Datenanbieter bleiben unber&uuml;hrt.</p>
+<p>Die Anwendung nutzt folgende Daten, Bilddaten und Kartenwerke Dritter. Die
+jeweiligen Lizenz- und Zitationsbedingungen der Anbieter bleiben unber&uuml;hrt;
+das vollst&auml;ndige Verzeichnis mit Quellenangaben, Zitationen und den
+Bedingungen, auf denen unsere Nutzung beruht, findet sich unter
+<a href="/licenses">/licenses</a> (englisch).</p>
+`+licenseSummaryList()+`
+<p>Der Quellcode steht unter der MIT-Lizenz; unsere eigenen abgeleiteten
+Ebenen unter CC BY 4.0, sofern eine Eingangsquelle keine strengeren
+Bedingungen vorgibt.</p>
 <p>Die durch den Seitenbetreiber erstellten Inhalte und Werke auf diesen Seiten
 unterliegen dem &ouml;sterreichischen Urheberrecht.</p>
 

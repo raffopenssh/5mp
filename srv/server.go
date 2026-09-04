@@ -271,6 +271,8 @@ func (s *Server) Serve(addr string) error {
 
 	// API routes
 	mux.HandleFunc("GET /api/version", s.HandleAPIVersion)
+	mux.HandleFunc("GET /api/licenses", s.HandleAPILicenses)
+	mux.HandleFunc("GET /licenses", s.HandleLicensesPage)
 	mux.HandleFunc("GET /api/pipeline-status", s.HandleAPIPipelineStatus)
 
 	// CARTO base-map tiles, proxied so our API key stays off the client (see
@@ -293,13 +295,15 @@ func (s *Server) Serve(addr string) error {
 	// Geology overlays (Sudan GRAS 2004, CAR BRGM 1964) -- vector tiles, not
 	// raster: the units are data the client recolours, hides and groups by
 	// commodity. Same 204-on-miss and ?v=<rev> conventions as the histmap.
+	// Every geology route goes through geoMapGate (srv/geomap_gate.go): the
+	// sandbox tenant gets an explanatory empty catalogue and 403s elsewhere.
 	mux.HandleFunc("GET /api/geomap", s.HandleAPIGeoMap)
-	mux.HandleFunc("GET /api/geomap/{sheet}/download", s.HandleAPIGeoMapDownload)
+	mux.HandleFunc("GET /api/geomap/{sheet}/download", geoMapGate(s.HandleAPIGeoMapDownload))
 	// One GeoPackage for every sheet: the map is one layer, so the data behind
 	// it is one file. The per-sheet path stays as a redirect because links to it
 	// are already in circulation (and in docs) -- a 404 there would read as "the
 	// export was removed", which is not what happened.
-	mux.HandleFunc("GET /api/geomap/geopackage", s.HandleAPIGeoMapGeoPackage)
+	mux.HandleFunc("GET /api/geomap/geopackage", geoMapGate(s.HandleAPIGeoMapGeoPackage))
 	// The CURRENT VIEW as a GeoPackage. POST because the body is the selection
 	// the client resolved (unit keys + contact pairs), which is too long for a
 	// URL and is not a name for anything: it is one reader's filter, built per
@@ -308,16 +312,16 @@ func (s *Server) Serve(addr string) error {
 	// A guest link cannot reach this (guestMayRead is GET/HEAD only), which is
 	// correct — not because the geology is private, but because a capability
 	// must not be able to make the server build things.
-	mux.HandleFunc("POST /api/geomap/geopackage", s.HandleAPIGeoMapGeoPackageView)
-	mux.HandleFunc("GET /api/geomap/{sheet}/geopackage", s.HandleAPIGeoMapGeoPackageLegacy)
+	mux.HandleFunc("POST /api/geomap/geopackage", geoMapGate(s.HandleAPIGeoMapGeoPackageView))
+	mux.HandleFunc("GET /api/geomap/{sheet}/geopackage", geoMapGate(s.HandleAPIGeoMapGeoPackageLegacy))
 	// Continental structural linework (JRC AKP faults + craton margins) —
 	// whole GeoJSON, not tiles: 415 features. Its own prefix, NOT
 	// /api/geomap/structural/{layer}: that pattern conflicts with
 	// GET /api/geomap/{sheet}/download in Go's ServeMux (both match
 	// "structural/download", neither is more specific) and the server
 	// panics at startup.
-	mux.HandleFunc("GET /api/geomap-structural/{layer}", s.HandleAPIGeoMapStructural)
-	mux.HandleFunc("GET /api/geomap/{sheet}/{z}/{x}/{y}", s.HandleAPIGeoMapTile)
+	mux.HandleFunc("GET /api/geomap-structural/{layer}", geoMapGate(s.HandleAPIGeoMapStructural))
+	mux.HandleFunc("GET /api/geomap/{sheet}/{z}/{x}/{y}", geoMapGate(s.HandleAPIGeoMapTile))
 	mux.HandleFunc("GET /api/grid", s.HandleAPIGrid)
 	mux.HandleFunc("GET /api/nearby-places", s.HandleAPINearbyPlaces)
 	mux.HandleFunc("GET /api/grid/{id}/effort", s.HandleAPIGridCellEffort)

@@ -147,6 +147,12 @@ func (g *geoMapStore) load() map[string]*geoMapSheet {
 // is ~40 KB for both sheets, so a per-sheet endpoint would only add a second
 // round trip and a loading state.
 func (s *Server) HandleAPIGeoMap(w http.ResponseWriter, r *http.Request) {
+	if geoMapWithheld(r) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Cache-Control", "private, no-store")
+		json.NewEncoder(w).Encode(map[string]any{"sheets": []any{}, "withheld": true, "reason": geoMapWithheldReason})
+		return
+	}
 	sheets := geoMaps.load()
 	out := make([]map[string]any, 0, len(sheets))
 	for _, id := range geoMapSheets {

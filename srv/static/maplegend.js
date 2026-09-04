@@ -44,9 +44,8 @@
 
     var BASEMAPS = [
         ['dark',              'Dark',      'icon-moon',      'The default cartographic basemap'],
-        ['satellite-esri',    'ESRI',      'icon-satellite', 'Esri World Imagery'],
-        ['satellite-bing',    'Bing',      'icon-satellite', 'Bing-style imagery'],
-        ['satellite-google',  'Google',    'icon-satellite', 'Google satellite imagery']
+        ['satellite-esri',    'Esri',      'icon-satellite', 'Esri World Imagery (high resolution, online only)'],
+        ['satellite-s2',      'Sentinel',  'icon-satellite', 'Sentinel-2 cloudless 2024 by EOX (10 m, CC BY-NC-SA)']
     ];
 
     function bm() { return (typeof currentBasemap === 'string') ? currentBasemap : 'dark'; }
