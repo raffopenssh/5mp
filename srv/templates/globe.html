@@ -1318,13 +1318,54 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
         } : null;
         window._homeView = _homeView;
 
+        // GL SAFE MODE + DEAD-GL BANNER. Two distinct failures seen on Intel
+        // Macs (Safari 18.6, 2026-09):
+        //   (a) the context is lost inside getContext when MapLibre asks for
+        //       an antialiased, preserved, retina drawing buffer -> retry once
+        //       with modest options (flag in sessionStorage: this tab only, a
+        //       fresh Safari gets full quality back);
+        //   (b) WebGL is dead browser-wide: even a bare 64px canvas returns a
+        //       lost context before MapLibre runs. Safari's GPU process has
+        //       given up (too many WebGL tabs, or a driver hiccup) and only
+        //       quitting Safari brings it back. Nothing we render can help;
+        //       what we can do is say so instead of showing a black map.
+        const GL_SAFE_KEY = '5mp-gl-safe';
+        let _glSafe = false;
+        try { _glSafe = sessionStorage.getItem(GL_SAFE_KEY) === '1'; } catch (err) { }
+        let _glDead = false;
+        try {
+            const c = document.createElement('canvas'); c.width = c.height = 64;
+            const gl = c.getContext('webgl2', { antialias: false, preserveDrawingBuffer: false })
+                    || c.getContext('webgl', { antialias: false, preserveDrawingBuffer: false });
+            _glDead = !gl || gl.isContextLost();
+        } catch (err) { _glDead = true; }
+        function showGLDeadBanner() {
+            if (document.getElementById('gl-dead-banner')) return;
+            const b = document.createElement('div');
+            b.id = 'gl-dead-banner';
+            b.setAttribute('role', 'alert');
+            b.style.cssText = 'position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:9000;max-width:420px;padding:18px 22px;background:#1a1a1a;color:#eee;border:1px solid #c33;border-radius:10px;font:14px/1.5 system-ui,sans-serif;box-shadow:0 8px 32px rgba(0,0,0,.6)';
+            b.innerHTML = '<div style="font-weight:600;color:#f66;margin-bottom:6px">The map cannot draw: WebGL is unavailable</div>'
+                + '<div>Your browser lost its graphics context before the map started (Safari on older Macs does this when its GPU process gives up).</div>'
+                + '<ul style="margin:8px 0 0 18px;padding:0"><li><b>Quit and reopen Safari</b> (⌘Q, not just close the tab)</li><li>Close other tabs with maps, 3D or video</li><li>Or open this link in Chrome / Firefox</li></ul>'
+                + '<div style="margin-top:10px;display:flex;gap:8px"><button onclick="location.reload()" style="padding:6px 12px;border-radius:6px;border:1px solid #4caf50;background:#2e7d32;color:#fff;cursor:pointer">Retry</button>'
+                + '<button onclick="this.closest(\'#gl-dead-banner\').remove()" style="padding:6px 12px;border-radius:6px;border:1px solid #555;background:transparent;color:#ccc;cursor:pointer">Dismiss</button></div>';
+            document.body.appendChild(b);
+        }
+        if (_glDead) {
+            console.warn('WebGL is unavailable in this browser (context lost on a bare canvas)');
+            showGLDeadBanner();
+        } else if (_glSafe) {
+            console.warn('WebGL safe mode: antialias/preserveDrawingBuffer off');
+        }
+
         const map = new maplibregl.Map({
             container: 'map',
             style: darkStyle,
             center: _urlView ? _urlView.center : (_homeView ? _homeView.center : [20, 0]),
             zoom: _urlView ? _urlView.zoom : (_homeView ? _homeView.zoom : 3),
-            antialias: true,
-            preserveDrawingBuffer: true,  // Helps with Safari
+            antialias: !_glSafe && !_glDead,
+            preserveDrawingBuffer: !_glSafe && !_glDead,  // Helps with Safari screenshots; costs a second buffer
             failIfMajorPerformanceCaveat: false,  // Don't fail on software rendering
             attributionControl: false  // Disable default attribution (we have custom footer)
         });
@@ -1333,6 +1374,42 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
         map.on('error', function(e) {
             console.error('MapLibre error:', e.error || e.message || e);
         });
+
+        // A context lost within the first seconds of life (before any frame
+        // rendered) is the allocation failure above, not memory pressure:
+        // arm safe mode and reload once. Later losses are handled by the
+        // webglcontextrestored reload below.
+        (function armGLSafeFallback() {
+            if (_glDead) return;           // banner already up; a reload would loop
+            if (_glSafe) {                 // safe mode also failed: GL is dead
+                setTimeout(function() {
+                    try {
+                        const gl = map.painter && map.painter.context && map.painter.context.gl;
+                        if (!gl || (gl.isContextLost && gl.isContextLost())) showGLDeadBanner();
+                    } catch (err) { showGLDeadBanner(); }
+                }, 1500);
+                return;
+            }
+            const t0 = Date.now();
+            let rendered = false;
+            map.once('render', () => { rendered = true; });
+            const onLost = () => {
+                if (rendered && Date.now() - t0 > 5000) return;
+                console.warn('WebGL context lost at startup: switching to safe mode and reloading');
+                try { sessionStorage.setItem(GL_SAFE_KEY, '1'); } catch (err) { }
+                setTimeout(function() { window.location.reload(); }, 300);
+            };
+            const cv = map.getCanvas && map.getCanvas();
+            if (cv) cv.addEventListener('webglcontextlost', onLost);
+            // Safari's getContext-time loss fires no event on the canvas we can
+            // reach in time; the painter simply has no live context.
+            setTimeout(function() {
+                try {
+                    const gl = map.painter && map.painter.context && map.painter.context.gl;
+                    if (gl && gl.isContextLost && gl.isContextLost()) onLost();
+                } catch (err) { }
+            }, 1500);
+        })();
 
         // WEBGL CONTEXT LOSS RECOVERY (mobile). Android Chrome discards the
         // WebGL context under memory pressure (tab switch, keyboard, big tip
