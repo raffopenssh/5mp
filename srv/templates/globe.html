@@ -429,14 +429,14 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
     <div class="footer-attribution">
         <span id="page-views-footer" class="desktop-only">0 views</span>
         <span class="footer-sep desktop-only">|</span>
-        <span id="version-link" style="cursor: pointer;" onclick="showVersionModal()" title="Click to see recent changes">{{.Version}}</span>
-        <span class="footer-sep">|</span>
+        <span id="version-link" class="desktop-only" style="cursor: pointer;" onclick="showVersionModal()" title="Click to see recent changes">{{.Version}}</span>
+        <span class="footer-sep desktop-only">|</span>
         <span class="fpop-wrap">
-            <button id="basemap-attribution" class="fpop-chip" onclick="toggleFooterPop(event, 'basemap-attribution-pop')" title="Map data & imagery credits" aria-haspopup="true" aria-expanded="false"></button>
+            <button id="basemap-attribution" class="fpop-chip" onclick="toggleFooterPop(event, 'basemap-attribution-pop')" title="Map data & imagery credits" aria-haspopup="true" aria-expanded="false" aria-label="Map data and imagery credits"><span class="fpop-chip-text"></span><svg class="fpop-chip-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></button>
             <div id="basemap-attribution-pop" class="fpop" role="tooltip"><div class="fpop-body"></div></div>
         </span>
-        <span class="footer-sep">|</span>
-        <span class="fpop-wrap">
+        <span class="footer-sep desktop-only">|</span>
+        <span class="fpop-wrap desktop-only">
             <button class="fpop-chip" onclick="toggleFooterPop(event, 'about-links-pop')" title="About, code and legal" aria-haspopup="true" aria-expanded="false">5MP</button>
             <div id="about-links-pop" class="fpop" role="menu"><div class="fpop-body">
                 <div class="fpop-title">5 Megapixels of Global Conservation</div>
@@ -1189,7 +1189,8 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             const pop = document.getElementById('basemap-attribution-pop');
             if (!chip || !pop) return;
             const base = basemapSource();
-            chip.textContent = base ? (base.credit || base.attribution.replace(/<[^>]+>/g, '')) : '';
+            const chipText = chip.querySelector('.fpop-chip-text');
+            chipText.textContent = base ? (base.credit || base.attribution.replace(/<[^>]+>/g, '')) : '';
             const lines = [];
             const seen = new Set();
             const push = (html) => { if (!html) return; const k = html.replace(/<[^>]+>/g, '').trim(); if (!k || seen.has(k)) return; seen.add(k); lines.push(html); };
@@ -1199,10 +1200,15 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 if (st && st.sources) Object.values(st.sources).forEach(src => push(src.attribution));
             } catch (e) { /* style not ready */ }
             const extra = lines.length - (base ? 1 : 0);
-            if (extra > 0) chip.textContent += ' +' + extra;
+            if (extra > 0) chipText.textContent += ' +' + extra;
+            // On phones the 5MP chip is hidden, so its links ride here.
+            const ver = (document.getElementById('version-link') || {}).textContent || '';
             pop.querySelector('.fpop-body').innerHTML = '<div class="fpop-title">Map data &amp; imagery</div>' +
                 lines.map(l => '<div class="fpop-line">' + l + '</div>').join('') +
-                '<div class="fpop-more"><a href="/licenses" target="_blank" rel="noopener">All data sources &amp; licences →</a></div>';
+                '<div class="fpop-more"><a href="/licenses" target="_blank" rel="noopener">All data sources &amp; licences →</a>' +
+                '<div class="fpop-mobile-links"><a href="https://github.com/raffopenssh/5mp" target="_blank" rel="noopener">GitHub</a> · ' +
+                '<a href="/impressum" target="_blank">Impressum</a> · <a href="/datenschutz" target="_blank">Datenschutz</a> · ' +
+                '<span class="fpop-ver" onclick="closeFooterPops(); showVersionModal()">' + escapeHtml(ver.trim()) + '</span></div></div>';
         }
         function scheduleAttributionRender() {
             clearTimeout(_attrRenderTimer);
@@ -1225,19 +1231,21 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
         }
         function closeFooterPops() {
             document.querySelectorAll('.fpop.open').forEach(p => p.classList.remove('open'));
+            document.querySelectorAll('.fpop-wrap.hover').forEach(w => w.classList.remove('hover'));
             document.querySelectorAll('.fpop-chip[aria-expanded="true"]').forEach(c => c.setAttribute('aria-expanded', 'false'));
         }
         document.addEventListener('click', (e) => { if (!e.target.closest('.fpop-wrap')) closeFooterPops(); });
         // Hover with intent: opens on enter, and stays 450 ms after the
         // pointer leaves so the trip from chip to bubble (and to the link at
         // its far corner) survives a wobble. Pointer devices only.
-        if (matchMedia('(hover: hover)').matches) {
-            document.querySelectorAll('.fpop-wrap').forEach(wrap => {
-                let t = null;
-                wrap.addEventListener('mouseenter', () => { clearTimeout(t); document.querySelectorAll('.fpop-wrap.hover').forEach(o => o !== wrap && o.classList.remove('hover')); wrap.classList.add('hover'); });
-                wrap.addEventListener('mouseleave', () => { t = setTimeout(() => wrap.classList.remove('hover'), 450); });
-            });
-        }
+        // Attached regardless of (hover: hover): a touch tap synthesises
+        // mouseenter, which only opens what the tap opens anyway, and the
+        // outside-click handler clears .hover too.
+        document.querySelectorAll('.fpop-wrap').forEach(wrap => {
+            let t = null;
+            wrap.addEventListener('mouseenter', () => { clearTimeout(t); document.querySelectorAll('.fpop-wrap.hover').forEach(o => o !== wrap && o.classList.remove('hover')); wrap.classList.add('hover'); });
+            wrap.addEventListener('mouseleave', () => { t = setTimeout(() => wrap.classList.remove('hover'), 450); });
+        });
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeFooterPops(); });
         
         let currentBasemap = 'dark';  // Track current basemap
