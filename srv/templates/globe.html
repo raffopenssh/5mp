@@ -1881,9 +1881,9 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                     <div class="ts-thumb"><img src="${escapeHtml(t.tiles.replace('{z}','6').replace('{x}','35').replace('{y}','32'))}" alt="" loading="lazy" onerror="this.style.visibility='hidden'"></div>
                     <div class="ts-main">
                         <div class="ts-name"><input value="${escapeHtml(t.name)}" maxlength="60" onchange="tsUpdate('${t.id}',{name:this.value})" aria-label="Source name">
-                            <span class="ts-badge ${ok ? 'ok' : 'warn'}" title="${ok ? 'A tile came back on ' + escapeHtml(safeDateStr(t.verified_at)) : 'Not verified'}">${ok ? 'verified' : 'unverified'}</span>
-                            <span class="ts-badge kind">${escapeHtml(t.kind)}</span></div>
-                        <div class="ts-meta"><code>${escapeHtml(t.host)}</code> · ${escapeHtml(t.scheme)} · z${t.min_zoom}–<input type="number" min="1" max="22" value="${t.max_zoom}" class="ts-zoom" onchange="tsUpdate('${t.id}',{max_zoom:+this.value})" aria-label="Max zoom"> · ${t.probe_bytes ? Math.round(t.probe_bytes/1024) + ' KB/tile' : ''}</div>
+                            <span class="ts-badges"><span class="ts-badge ${ok ? 'ok' : 'warn'}" title="${ok ? 'A tile came back on ' + escapeHtml(safeDateStr(t.verified_at)) : 'Not verified'}">${ok ? 'verified' : 'unverified'}</span>
+                            <span class="ts-badge kind">${escapeHtml(t.kind)}</span></span></div>
+                        <div class="ts-meta"><code>${escapeHtml(t.host)}</code><span class="ts-mi">${escapeHtml(t.scheme)}</span><span class="ts-mi ts-zrange">z${t.min_zoom}–<input type="number" min="1" max="22" value="${t.max_zoom}" class="ts-zoom" onchange="tsUpdate('${t.id}',{max_zoom:+this.value})" aria-label="Max zoom"></span>${t.probe_bytes ? `<span class="ts-mi ts-kb">${Math.round(t.probe_bytes/1024)} KB/tile</span>` : ''}</div>
                         <input class="ts-attr" value="${escapeHtml(t.attribution || '')}" placeholder="Attribution line written into the map footer and any MBTiles (optional)" maxlength="300" onchange="tsUpdate('${t.id}',{attribution:this.value})">
                     </div>
                     <div class="ts-acts">
