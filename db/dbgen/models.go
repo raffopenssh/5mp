@@ -23,6 +23,65 @@ type AircraftPattern struct {
 	CreatedAt    *time.Time `json:"created_at"`
 }
 
+type Aoi struct {
+	ID               string     `json:"id"`
+	Name             string     `json:"name"`
+	Geometry         string     `json:"geometry"`
+	BboxMinx         *float64   `json:"bbox_minx"`
+	BboxMiny         *float64   `json:"bbox_miny"`
+	BboxMaxx         *float64   `json:"bbox_maxx"`
+	BboxMaxy         *float64   `json:"bbox_maxy"`
+	AreaKm2          *float64   `json:"area_km2"`
+	FromDate         *string    `json:"from_date"`
+	ToDate           *string    `json:"to_date"`
+	OwnerPrincipalID *int64     `json:"owner_principal_id"`
+	Visibility       string     `json:"visibility"`
+	State            string     `json:"state"`
+	CreatedAt        *time.Time `json:"created_at"`
+	Notes            *string    `json:"notes"`
+	LineageID        *string    `json:"lineage_id"`
+	Version          int64      `json:"version"`
+	SupersededBy     *string    `json:"superseded_by"`
+	ArchivedAt       *time.Time `json:"archived_at"`
+}
+
+type AoiDataset struct {
+	AoiID      string     `json:"aoi_id"`
+	Dataset    string     `json:"dataset"`
+	Enabled    int64      `json:"enabled"`
+	Priority   int64      `json:"priority"`
+	State      string     `json:"state"`
+	DependsOn  *string    `json:"depends_on"`
+	Cursor     *string    `json:"cursor"`
+	UnitsTotal *int64     `json:"units_total"`
+	UnitsDone  *int64     `json:"units_done"`
+	Coverage   *float64   `json:"coverage"`
+	LeaseOwner *string    `json:"lease_owner"`
+	LeaseUntil *time.Time `json:"lease_until"`
+	LastRunAt  *time.Time `json:"last_run_at"`
+	NextRunAt  *time.Time `json:"next_run_at"`
+	Detail     *string    `json:"detail"`
+}
+
+type AoiFire struct {
+	AoiID  string `json:"aoi_id"`
+	FireID int64  `json:"fire_id"`
+}
+
+type AoiGrant struct {
+	AoiID       string     `json:"aoi_id"`
+	PrincipalID int64      `json:"principal_id"`
+	Scope       string     `json:"scope"`
+	CreatedAt   *time.Time `json:"created_at"`
+}
+
+type AoiPark struct {
+	AoiID      string  `json:"aoi_id"`
+	ParkID     string  `json:"park_id"`
+	FracOfAoi  float64 `json:"frac_of_aoi"`
+	FracOfPark float64 `json:"frac_of_park"`
+}
+
 type AutofetchSource struct {
 	ID         int64      `json:"id"`
 	ApiType    string     `json:"api_type"`
@@ -36,6 +95,18 @@ type AutofetchSource struct {
 	LastRunAt  *time.Time `json:"last_run_at"`
 	LastStatus *string    `json:"last_status"`
 	LastPoints *int64     `json:"last_points"`
+	Env        string     `json:"env"`
+	OwnerRef   string     `json:"owner_ref"`
+	Visibility string     `json:"visibility"`
+	DataEnv    string     `json:"data_env"`
+	Title      string     `json:"title"`
+}
+
+type AutofetchViewer struct {
+	SourceID     int64  `json:"source_id"`
+	PrincipalRef string `json:"principal_ref"`
+	Label        string `json:"label"`
+	CreatedAt    string `json:"created_at"`
 }
 
 type DatasetVersion struct {
@@ -47,6 +118,31 @@ type DatasetVersion struct {
 	CreatedBy   *string    `json:"created_by"`
 	CreatedAt   *time.Time `json:"created_at"`
 	IsActive    *int64     `json:"is_active"`
+}
+
+type DeforestationEvent struct {
+	ID                       int64      `json:"id"`
+	ParkID                   string     `json:"park_id"`
+	Year                     int64      `json:"year"`
+	Lat                      float64    `json:"lat"`
+	Lon                      float64    `json:"lon"`
+	AreaKm2                  *float64   `json:"area_km2"`
+	PatternType              *string    `json:"pattern_type"`
+	Classification           *string    `json:"classification"`
+	Narrative                *string    `json:"narrative"`
+	PolygonIds               *string    `json:"polygon_ids"`
+	ClassificationConfidence *float64   `json:"classification_confidence"`
+	FiresSameYear            *int64     `json:"fires_same_year"`
+	FireRatio                *float64   `json:"fire_ratio"`
+	NearestSettlementKm      *float64   `json:"nearest_settlement_km"`
+	ClassifiedAt             *time.Time `json:"classified_at"`
+	PixelCount               *int64     `json:"pixel_count"`
+	AreaMethod               *string    `json:"area_method"`
+	NeedsReview              int64      `json:"needs_review"`
+	CroplandFrac2019         *float64   `json:"cropland_frac_2019"`
+	CroplandSource           *string    `json:"cropland_source"`
+	CroplandConversionFrac   *float64   `json:"cropland_conversion_frac"`
+	CroplandEventFrac2019    *float64   `json:"cropland_event_frac_2019"`
 }
 
 type EffortDatum struct {
@@ -81,6 +177,8 @@ type FeatureGeometry struct {
 	PropertiesJson *string    `json:"properties_json"`
 	CreatedAt      *time.Time `json:"created_at"`
 	StatValue      *float64   `json:"stat_value"`
+	DistToParkKm   *float64   `json:"dist_to_park_km"`
+	TrajDays       *string    `json:"traj_days"`
 }
 
 type FireDailyGrid struct {
@@ -146,6 +244,42 @@ type FireGroupAlert struct {
 	MovementDirection *string    `json:"movement_direction"`
 	IsDismissed       *bool      `json:"is_dismissed"`
 	CreatedAt         *time.Time `json:"created_at"`
+}
+
+type FireSensorEpoch struct {
+	Month       string `json:"month"`
+	Sensors     string `json:"sensors"`
+	SensorCount int64  `json:"sensor_count"`
+	Detections  int64  `json:"detections"`
+	ComputedAt  string `json:"computed_at"`
+}
+
+type GeopackageJob struct {
+	ID             string  `json:"id"`
+	CacheKey       string  `json:"cache_key"`
+	AreaID         string  `json:"area_id"`
+	AreaName       string  `json:"area_name"`
+	IsAoi          int64   `json:"is_aoi"`
+	PrincipalID    *int64  `json:"principal_id"`
+	Env            string  `json:"env"`
+	FromDate       string  `json:"from_date"`
+	ToDate         string  `json:"to_date"`
+	Effort         int64   `json:"effort"`
+	State          string  `json:"state"`
+	Progress       float64 `json:"progress"`
+	Step           string  `json:"step"`
+	FilePath       string  `json:"file_path"`
+	SizeBytes      int64   `json:"size_bytes"`
+	LayersJson     string  `json:"layers_json"`
+	Error          string  `json:"error"`
+	CreatedAt      string  `json:"created_at"`
+	StartedAt      *string `json:"started_at"`
+	FinishedAt     *string `json:"finished_at"`
+	ExpiresAt      *string `json:"expires_at"`
+	Downloads      int64   `json:"downloads"`
+	LastDownloadAt *string `json:"last_download_at"`
+	RawFire        int64   `json:"raw_fire"`
+	ViewJson       string  `json:"view_json"`
 }
 
 type GhslDatum struct {
@@ -259,6 +393,7 @@ type GpxUploadLog struct {
 	RotorWingSegments      *int64    `json:"rotor_wing_segments"`
 	RotorWingKm            *float64  `json:"rotor_wing_km"`
 	RotorWingMinutes       *float64  `json:"rotor_wing_minutes"`
+	Env                    string    `json:"env"`
 }
 
 type GridCell struct {
@@ -269,6 +404,13 @@ type GridCell struct {
 	LatMax    float64 `json:"lat_max"`
 	LonMin    float64 `json:"lon_min"`
 	LonMax    float64 `json:"lon_max"`
+}
+
+type HttpCache struct {
+	Url       string     `json:"url"`
+	Status    *int64     `json:"status"`
+	Body      []byte     `json:"body"`
+	FetchedAt *time.Time `json:"fetched_at"`
 }
 
 type LearnedAirstrip struct {
@@ -374,10 +516,26 @@ type LearnedRoadsHistory struct {
 	ActionAt   *time.Time `json:"action_at"`
 }
 
+type MapPref struct {
+	PwdRef           string  `json:"pwd_ref"`
+	DefaultBase      *string `json:"default_base"`
+	DefaultSatellite *string `json:"default_satellite"`
+	UpdatedAt        string  `json:"updated_at"`
+}
+
 type Migration struct {
 	MigrationNumber int64     `json:"migration_number"`
 	MigrationName   string    `json:"migration_name"`
 	ExecutedAt      time.Time `json:"executed_at"`
+}
+
+type NarrativeCache struct {
+	ParkID     string `json:"park_id"`
+	Kind       string `json:"kind"`
+	Params     string `json:"params"`
+	Payload    string `json:"payload"`
+	SourceRev  string `json:"source_rev"`
+	ComputedAt string `json:"computed_at"`
 }
 
 type Notification struct {
@@ -419,6 +577,42 @@ type PaPublicationSync struct {
 	PaID        string    `json:"pa_id"`
 	LastSync    time.Time `json:"last_sync"`
 	ResultCount int64     `json:"result_count"`
+}
+
+type ParkBasin struct {
+	ParkID    string     `json:"park_id"`
+	Kind      string     `json:"kind"`
+	OutletLat float64    `json:"outlet_lat"`
+	OutletLon float64    `json:"outlet_lon"`
+	AreaKm2   *float64   `json:"area_km2"`
+	LengthKm  *float64   `json:"length_km"`
+	Geojson   string     `json:"geojson"`
+	Source    string     `json:"source"`
+	Meta      *string    `json:"meta"`
+	FetchedAt *time.Time `json:"fetched_at"`
+}
+
+type ParkBasinPart struct {
+	ParkID    string     `json:"park_id"`
+	Kind      string     `json:"kind"`
+	Idx       int64      `json:"idx"`
+	OutletLat float64    `json:"outlet_lat"`
+	OutletLon float64    `json:"outlet_lon"`
+	River     *string    `json:"river"`
+	AreaKm2   *float64   `json:"area_km2"`
+	LengthKm  *float64   `json:"length_km"`
+	Geojson   string     `json:"geojson"`
+	Source    string     `json:"source"`
+	Meta      *string    `json:"meta"`
+	FetchedAt *time.Time `json:"fetched_at"`
+}
+
+type ParkBasinRiver struct {
+	ParkID      string   `json:"park_id"`
+	Comid       int64    `json:"comid"`
+	StreamOrder *int64   `json:"stream_order"`
+	LengthKm    *float64 `json:"length_km"`
+	Geojson     string   `json:"geojson"`
 }
 
 type ParkChecklist struct {
@@ -474,6 +668,27 @@ type ParkGroupInfraction struct {
 	AnalyzedAt          *string  `json:"analyzed_at"`
 }
 
+type ParkOnboardingRequest struct {
+	ID          int64      `json:"id"`
+	WdpaID      int64      `json:"wdpa_id"`
+	Name        string     `json:"name"`
+	Country     *string    `json:"country"`
+	CountryCode *string    `json:"country_code"`
+	ParkID      *string    `json:"park_id"`
+	Status      string     `json:"status"`
+	Detail      *string    `json:"detail"`
+	Env         string     `json:"env"`
+	RequestedAt *time.Time `json:"requested_at"`
+	ProcessedAt *time.Time `json:"processed_at"`
+}
+
+type ParkOnboardingSubscriber struct {
+	RequestID   int64      `json:"request_id"`
+	PwdRef      string     `json:"pwd_ref"`
+	Env         string     `json:"env"`
+	RequestedAt *time.Time `json:"requested_at"`
+}
+
 type ParkPatrolMcp struct {
 	ID           int64      `json:"id"`
 	ParkID       string     `json:"park_id"`
@@ -486,21 +701,42 @@ type ParkPatrolMcp struct {
 }
 
 type ParkSettlement struct {
-	ID                 int64      `json:"id"`
-	ParkID             string     `json:"park_id"`
-	Lat                float64    `json:"lat"`
-	Lon                float64    `json:"lon"`
-	AreaM2             *float64   `json:"area_m2"`
-	PopulationEst      *int64     `json:"population_est"`
-	HouseholdsEst      *int64     `json:"households_est"`
-	NearestPlace       *string    `json:"nearest_place"`
-	DistanceToPlaceKm  *float64   `json:"distance_to_place_km"`
-	DirectionFromPlace *string    `json:"direction_from_place"`
-	SettlementType     *string    `json:"settlement_type"`
-	InBuffer           *int64     `json:"in_buffer"`
-	TileRow            *int64     `json:"tile_row"`
-	TileCol            *int64     `json:"tile_col"`
-	DetectedAt         *time.Time `json:"detected_at"`
+	ID                       int64      `json:"id"`
+	ParkID                   string     `json:"park_id"`
+	Lat                      float64    `json:"lat"`
+	Lon                      float64    `json:"lon"`
+	AreaM2                   *float64   `json:"area_m2"`
+	PopulationEst            *int64     `json:"population_est"`
+	HouseholdsEst            *int64     `json:"households_est"`
+	NearestPlace             *string    `json:"nearest_place"`
+	DistanceToPlaceKm        *float64   `json:"distance_to_place_km"`
+	DirectionFromPlace       *string    `json:"direction_from_place"`
+	SettlementType           *string    `json:"settlement_type"`
+	InBuffer                 *int64     `json:"in_buffer"`
+	TileRow                  *int64     `json:"tile_row"`
+	TileCol                  *int64     `json:"tile_col"`
+	DetectedAt               *time.Time `json:"detected_at"`
+	Classification           *string    `json:"classification"`
+	ClassificationConfidence *float64   `json:"classification_confidence"`
+	Narrative                *string    `json:"narrative"`
+	PolygonIds               *string    `json:"polygon_ids"`
+	Fires1km                 *int64     `json:"fires_1km"`
+	Fires5km                 *int64     `json:"fires_5km"`
+	FireSeasonality          *string    `json:"fire_seasonality"`
+	DeforestNearbyKm2        *float64   `json:"deforest_nearby_km2"`
+	ClassifiedAt             *time.Time `json:"classified_at"`
+	ExtentM2                 *float64   `json:"extent_m2"`
+	AreaSource               *string    `json:"area_source"`
+	PopulationSource         *string    `json:"population_source"`
+	Epoch                    *string    `json:"epoch"`
+	FireContextAt            *time.Time `json:"fire_context_at"`
+	Persistence              *string    `json:"persistence"`
+	PersistenceSource        *string    `json:"persistence_source"`
+	SurfaceE2000M2           *float64   `json:"surface_e2000_m2"`
+	SurfaceE2015M2           *float64   `json:"surface_e2015_m2"`
+	CroplandFrac2019         *float64   `json:"cropland_frac_2019"`
+	CroplandFrac2003         *float64   `json:"cropland_frac_2003"`
+	CroplandSource           *string    `json:"cropland_source"`
 }
 
 type ParkVehicleStat struct {
@@ -514,6 +750,14 @@ type ParkVehicleStat struct {
 	P90SpeedKmh     *float64   `json:"p90_speed_kmh"`
 	SampleCount     *int64     `json:"sample_count"`
 	UpdatedAt       *time.Time `json:"updated_at"`
+}
+
+type Principal struct {
+	ID        int64      `json:"id"`
+	Kind      string     `json:"kind"`
+	Ref       string     `json:"ref"`
+	Label     *string    `json:"label"`
+	CreatedAt *time.Time `json:"created_at"`
 }
 
 type Session struct {
@@ -556,6 +800,49 @@ type SettlementVisit struct {
 	CreatedAt       *time.Time `json:"created_at"`
 }
 
+type SharedFile struct {
+	ID             string  `json:"id"`
+	PwdRef         string  `json:"pwd_ref"`
+	Env            string  `json:"env"`
+	Name           string  `json:"name"`
+	SizeBytes      int64   `json:"size_bytes"`
+	CreatedAt      string  `json:"created_at"`
+	ExpiresAt      string  `json:"expires_at"`
+	Downloads      int64   `json:"downloads"`
+	LastDownloadAt *string `json:"last_download_at"`
+	Enc            int64   `json:"enc"`
+	Nonce          []byte  `json:"nonce"`
+	MaxDownloads   int64   `json:"max_downloads"`
+	Kind           string  `json:"kind"`
+	Private        int64   `json:"private"`
+}
+
+type ShortLink struct {
+	Slug        string  `json:"slug"`
+	Url         string  `json:"url"`
+	AliasOf     *string `json:"alias_of"`
+	Kind        string  `json:"kind"`
+	Title       string  `json:"title"`
+	Env         string  `json:"env"`
+	PwdRef      string  `json:"pwd_ref"`
+	Guest       int64   `json:"guest"`
+	PrincipalID *int64  `json:"principal_id"`
+	ExpiresAt   *string `json:"expires_at"`
+	RevokedAt   *string `json:"revoked_at"`
+	CreatedAt   string  `json:"created_at"`
+	Hits        int64   `json:"hits"`
+	LastHitAt   *string `json:"last_hit_at"`
+	Scope       string  `json:"scope"`
+	DateFrom    string  `json:"date_from"`
+	DateTo      string  `json:"date_to"`
+}
+
+type ShortLinkTag struct {
+	Slug      string `json:"slug"`
+	Tag       string `json:"tag"`
+	CreatedAt string `json:"created_at"`
+}
+
 type SubcellVisit struct {
 	ID         int64     `json:"id"`
 	GridCellID string    `json:"grid_cell_id"`
@@ -563,6 +850,23 @@ type SubcellVisit struct {
 	VisitDate  time.Time `json:"visit_date"`
 	VisitCount int64     `json:"visit_count"`
 	Env        string    `json:"env"`
+}
+
+type TileSource struct {
+	ID          string  `json:"id"`
+	PwdRef      string  `json:"pwd_ref"`
+	Name        string  `json:"name"`
+	UrlEnc      []byte  `json:"url_enc"`
+	Host        string  `json:"host"`
+	Scheme      string  `json:"scheme"`
+	MinZoom     int64   `json:"min_zoom"`
+	MaxZoom     int64   `json:"max_zoom"`
+	TileSize    int64   `json:"tile_size"`
+	Attribution string  `json:"attribution"`
+	Kind        string  `json:"kind"`
+	VerifiedAt  *string `json:"verified_at"`
+	ProbeBytes  int64   `json:"probe_bytes"`
+	CreatedAt   string  `json:"created_at"`
 }
 
 type TrackPoint struct {

@@ -14,8 +14,8 @@ INSERT INTO gpx_upload_logs (
     rotor_wing_segments, rotor_wing_km, rotor_wing_minutes,
     recon_segments, recon_km, recon_minutes,
     fast_vehicle_segments, fast_vehicle_km, fast_vehicle_minutes,
-    transit_segments, transit_km, logistics_segments, logistics_km
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    transit_segments, transit_km, logistics_segments, logistics_km, env
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 RETURNING id;
 
 -- name: ListGPXUploadLogs :many
@@ -36,6 +36,7 @@ SELECT
     fast_vehicle_segments, fast_vehicle_km, fast_vehicle_minutes,
     transit_segments, transit_km, logistics_segments, logistics_km
 FROM gpx_upload_logs
+WHERE env IN (SELECT value FROM json_each(?))
 ORDER BY upload_time DESC
 LIMIT ? OFFSET ?;
 
@@ -57,7 +58,7 @@ SELECT
     fast_vehicle_segments, fast_vehicle_km, fast_vehicle_minutes,
     transit_segments, transit_km, logistics_segments, logistics_km
 FROM gpx_upload_logs
-WHERE protected_area_id = ?
+WHERE protected_area_id = ? AND env IN (SELECT value FROM json_each(?))
 ORDER BY upload_time DESC
 LIMIT ? OFFSET ?;
 
@@ -87,7 +88,7 @@ SELECT
     SUM(rotor_wing_minutes) as total_rotor_wing_minutes,
     SUM(recon_minutes) as total_recon_minutes
 FROM gpx_upload_logs
-WHERE upload_time >= ?;
+WHERE upload_time >= ? AND env IN (SELECT value FROM json_each(?));
 
 -- name: GetGPXUploadLog :one
 SELECT * FROM gpx_upload_logs WHERE id = ?;

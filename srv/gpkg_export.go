@@ -38,6 +38,14 @@ func (o gpkgExportOpts) patrolTenant() string {
 	return strOr(o.Env, clientTenant)
 }
 
+// patrolEnvsJSON is the bind value for PatrolEnvsSQL in the effort queries.
+func (o gpkgExportOpts) patrolEnvsJSON() string {
+	if o.PatrolEnvs != "" {
+		return o.PatrolEnvs
+	}
+	return envSetJSON([]string{o.patrolTenant()})
+}
+
 // gpkgProgress reports which layer is being written, 0..1.
 type gpkgProgress func(frac float64, label string)
 
@@ -55,7 +63,11 @@ type gpkgExportOpts struct {
 	// It is part of the cache key, so a guest export can never be answered
 	// from a file built for the account itself.
 	PatrolEnv string
-	Effort    bool // include patrol effort (expensive, and empty for most AOIs)
+	// PatrolEnvs is the JSON env set (PatrolEnvsJSON) the effort layers are
+	// read under: the tenant plus every autofetch env visible to the caller.
+	// Empty means just patrolTenant().
+	PatrolEnvs string
+	Effort     bool // include patrol effort (expensive, and empty for most AOIs)
 	// RawFire includes the raw VIIRS detection points. They are the single
 	// biggest layer by an order of magnitude (XSA: 6.9M points, ~1.1 GB of a
 	// 1.4 GB file) while fire_trajectories tells the same story in 38k
@@ -1211,9 +1223,9 @@ func (s *Server) gpkgPatrolEffort(w *gpkgWriter, o gpkgExportOpts, boundary stri
 			SUM(e.total_distance_km), SUM(e.total_points),
 			g.lat_min, g.lat_max, g.lon_min, g.lon_max, g.lat_center, g.lon_center
 		FROM effort_data e JOIN grid_cells g ON e.grid_cell_id = g.id
-		WHERE e.movement_type = 'all' AND e.env = ?
+		WHERE e.movement_type = 'all' AND e.env IN (SELECT value FROM json_each(?))
 			AND g.lat_center BETWEEN ? AND ? AND g.lon_center BETWEEN ? AND ?`
-	args := []interface{}{o.patrolTenant(),
+	args := []interface{}{o.patrolEnvsJSON(),
 		bbox[1] - bufferDeg, bbox[3] + bufferDeg, bbox[0] - bufferDeg, bbox[2] + bufferDeg}
 	if o.FromDate != "" {
 		if t, err := time.Parse("2006-01-02", o.FromDate); err == nil {

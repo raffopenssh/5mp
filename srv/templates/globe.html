@@ -4499,7 +4499,10 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             estimateEl.classList.add('is-loading');
             try {
                 const resp = await fetch(`${apiBase(currentMBTilesParkId)}/mbtiles/estimate?pwd=${encodeURIComponent(getPwd())}&maxZoom=${mbtilesMaxZoom}&source=${encodeURIComponent(getSelectedSource())}`);
-                const data = await resp.json();
+                // Error bodies are plain text ("invalid park id"), not JSON.
+                const raw = await resp.text();
+                let data = {};
+                try { data = JSON.parse(raw); } catch (_) { data = {error: raw.trim()}; }
                 if (!resp.ok) throw new Error(data.error || resp.statusText);
                 const mins = Math.max(1, Math.ceil(data.estimated_seconds / 60));
                 const used = data.budget_used_bytes || 0, max = data.budget_max_bytes || 1;
@@ -23615,137 +23618,267 @@ ${starredItems.narratives.map(n => {
 
     // ── Automated Fetch (EarthRanger/PAMDAS GPS sync) ──────────────────────
 
+    // Each source is a card. Visibility is a segmented control; "Selected
+    // logins" reveals a chip roster where a password is typed once, verified
+    // server-side and stored as a hash -- the chip shows only its first
+    // three characters. Edits autosave.
+    let _afSources = [];
+    const AF_VIS = [
+        {v:'owner',    icon:'lock',  label:'Only me',          hint:'Only your login sees these pixels.'},
+        {v:'selected', icon:'users', label:'Selected logins',  hint:'You and the logins you name below.'},
+        {v:'all',      icon:'globe', label:'Every account',    hint:'Every login on this server except the public demo.'},
+    ];
+
+    function afVisControl(idAttr, current, viewers, ctx) {
+        // ctx: 'add' (staged, no server calls) or a numeric source id.
+        const seg = AF_VIS.map(o => `<button type="button" class="af-seg${current===o.v?' on':''}" data-v="${o.v}"
+            onclick="afSetVis(${JSON.stringify(ctx)}, '${o.v}')" aria-pressed="${current===o.v}">
+            <i class="icon-${o.icon}" style="font-size:12px;"></i><span>${o.label}</span></button>`).join('');
+        const cur = AF_VIS.find(o => o.v === current) || AF_VIS[0];
+        const chips = (viewers || []).map(v => `<span class="af-chip" title="login ${escapeHtml(v.label)}">${escapeHtml(v.label)}
+            <button type="button" aria-label="Remove ${escapeHtml(v.label)}" onclick="afRemoveViewer(${JSON.stringify(ctx)}, '${escapeHtml(v.ref)}')">&times;</button></span>`).join('');
+        const roster = current === 'selected' ? `
+            <div class="af-roster" id="${idAttr}-roster">
+                <span class="af-chip af-chip-you" title="the owner always sees the source">you</span>${chips}
+                <input class="af-chip-input" id="${idAttr}-inp" type="password" autocomplete="off" autocapitalize="off"
+                       placeholder="type a login password, press Enter" aria-label="Add a login by password"
+                       onkeydown="afChipKey(event, ${JSON.stringify(ctx)})" onblur="afChipCommit(this, ${JSON.stringify(ctx)})">
+            </div>
+            <div class="af-vis-hint">The password is checked once and kept only as a hash; the chip shows its first three characters.</div>` : '';
+        return `<div class="af-vis" id="${idAttr}">
+            <div class="af-vis-head">Who sees these pixels</div>
+            <div class="af-segs" role="group" aria-label="Visibility">${seg}</div>
+            <div class="af-vis-hint" id="${idAttr}-hint">${cur.hint}</div>${roster}
+            <div class="af-vis-msg" id="${idAttr}-msg"></div>
+        </div>`;
+    }
+
+    // Staged state for the add form.
+    let _afAddVis = {visibility:'owner', viewers:[], pwds:[]};
+    function afRenderAddVis() {
+        const el = document.getElementById('af-add-vis');
+        if (el) el.innerHTML = afVisControl('af-add-visc', _afAddVis.visibility, _afAddVis.viewers, 'add');
+    }
+
+    function afMsg(ctx, text, kind) {
+        const id = ctx === 'add' ? 'af-add-visc-msg' : `af-vis-${ctx}-msg`;
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = text || '';
+        el.className = 'af-vis-msg' + (kind ? ' ' + kind : '');
+        if (text && kind !== 'err') setTimeout(() => { if (el.textContent === text) el.textContent = ''; }, 2500);
+    }
+
+    async function afPost(path, body) {
+        const res = await fetch(`/api/admin/autofetch/${path}?pwd=${getPwd()}`, {
+            method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+        let data = {};
+        try { data = await res.json(); } catch (_) {}
+        if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+        return data;
+    }
+
+    async function afSetVis(ctx, v) {
+        if (ctx === 'add') { _afAddVis.visibility = v; afRenderAddVis(); focusChipInput('af-add-visc'); return; }
+        const src = _afSources.find(x => x.id === ctx);
+        if (!src) return;
+        const prev = src.visibility;
+        src.visibility = v;
+        renderAutofetchCard(src);
+        try {
+            const d = await afPost('visibility', {id: ctx, visibility: v});
+            src.visibility = d.visibility; src.viewers = d.viewers || [];
+            renderAutofetchCard(src);
+            afMsg(ctx, v === 'selected' && src.viewers.length === 0 ? 'Saved — add a login below.' : 'Saved', 'ok');
+            if (v === 'selected') focusChipInput(`af-vis-${ctx}`);
+        } catch (e) { src.visibility = prev; renderAutofetchCard(src); afMsg(ctx, e.message, 'err'); }
+    }
+    function focusChipInput(idAttr) {
+        const inp = document.getElementById(idAttr + '-inp');
+        if (inp && window.matchMedia('(min-width: 640px)').matches) inp.focus();
+    }
+
+    function afChipKey(ev, ctx) {
+        if (ev.key === 'Enter' || ev.key === ',' ) { ev.preventDefault(); afChipCommit(ev.target, ctx); }
+        else if (ev.key === 'Backspace' && !ev.target.value) {
+            const chips = ev.target.parentElement.querySelectorAll('.af-chip:not(.af-chip-you) button');
+            if (chips.length) chips[chips.length-1].click();
+        }
+    }
+    async function afChipCommit(inp, ctx) {
+        const pwd = (inp.value || '').trim();
+        if (!pwd) return;
+        inp.value = '';
+        if (ctx === 'add') {
+            // Verify now so a typo is caught where it was made, not on Connect.
+            try {
+                // Stage without a server round-trip is impossible (we need the
+                // ref), so verify through a dry visibility check on a dummy id?
+                // No -- keep the plain password staged and let /add validate;
+                // show it masked in the meantime.
+                if (_afAddVis.pwds.includes(pwd)) return;
+                _afAddVis.pwds.push(pwd);
+                _afAddVis.viewers.push({ref: 'staged-' + _afAddVis.pwds.length, label: pwd.slice(0,3) + '…'});
+                afRenderAddVis(); focusChipInput('af-add-visc');
+            } catch (e) { afMsg('add', e.message, 'err'); }
+            return;
+        }
+        const src = _afSources.find(x => x.id === ctx);
+        if (!src) return;
+        inp.disabled = true;
+        try {
+            const d = await afPost('viewers/add', {id: ctx, password: pwd});
+            src.viewers = d.viewers || []; src.visibility = 'selected';
+            renderAutofetchCard(src); afMsg(ctx, `Added ${d.viewer.label}`, 'ok'); focusChipInput(`af-vis-${ctx}`);
+        } catch (e) { inp.disabled = false; inp.focus(); afMsg(ctx, e.message, 'err'); }
+    }
+    async function afRemoveViewer(ctx, ref) {
+        if (ctx === 'add') {
+            const i = _afAddVis.viewers.findIndex(v => v.ref === ref);
+            if (i >= 0) { _afAddVis.viewers.splice(i,1); _afAddVis.pwds.splice(i,1); }
+            afRenderAddVis(); return;
+        }
+        const src = _afSources.find(x => x.id === ctx);
+        if (!src) return;
+        try {
+            const d = await afPost('viewers/remove', {id: ctx, ref});
+            src.viewers = d.viewers || []; renderAutofetchCard(src); afMsg(ctx, 'Removed', 'ok');
+        } catch (e) { afMsg(ctx, e.message, 'err'); }
+    }
+
+    function afRelTime(sqlTs) {
+        if (!sqlTs) return '';
+        const t = new Date(sqlTs.replace(' ', 'T') + (sqlTs.endsWith('Z') ? '' : 'Z')).getTime();
+        if (isNaN(t)) return sqlTs;
+        const d = t - Date.now(), ad = Math.abs(d);
+        const m = Math.round(ad/60000), h = Math.floor(m/60), dd = Math.floor(h/24);
+        const span = dd >= 1 ? `${dd}d ${h%24}h` : h >= 1 ? `${h}h ${m%60}m` : `${m}m`;
+        return d < 0 ? `${span} ago` : `in ${span}`;
+    }
+
+    function renderAutofetchCard(s) {
+        const host = document.getElementById(`af-card-${s.id}`);
+        if (!host) return;
+        host.outerHTML = autofetchCardHTML(s);
+    }
+    function autofetchCardHTML(s) {
+        const host = (() => { try { return new URL(s.service_url).host; } catch (_) { return s.service_url; } })();
+        const title = s.title || host;
+        const isErr = s.enabled && s.last_status && s.last_status.startsWith('error');
+        const pill = !s.enabled ? ['off','Paused'] : isErr ? ['err','Error'] : s.last_status === 'ok' ? ['ok','Healthy'] : ['wait','Waiting for first run'];
+        const parks = (s.park_names||'').split(',').map(p=>p.trim()).filter(Boolean);
+        const next = !s.enabled ? '' : s.next_run_at === 'soon' ? 'soon' : afRelTime(s.next_run_at);
+        const stats = [
+            s.last_run_at ? `<span title="${escapeHtml(s.last_run_at)} UTC">Last fetch ${afRelTime(s.last_run_at)}</span>` : '<span>Never fetched</span>',
+            next ? `<span>Next ${next}</span>` : '',
+            s.last_points ? `<span>${s.last_points.toLocaleString()} points last run</span>` : '',
+            s.uploads ? `<span>${s.uploads} fetches · ${Math.round(s.total_km).toLocaleString()} km</span>` : '',
+            `<span>every ${s.interval_h} h</span>`,
+        ].filter(Boolean).join('<i class="af-dot"></i>');
+        const acts = s.mine ? `
+            ${s.enabled ? `<button class="sh-btn" onclick="autofetchRunNow(${s.id})">Fetch now</button>
+                           <button class="sh-btn" onclick="autofetchDisable(${s.id})" title="Pauses fetching and purges the stored password">Pause</button>`
+                        : `<button class="sh-btn sh-btn-primary" onclick="autofetchEnable(${s.id})">Resume…</button>`}
+            <button class="sh-btn sh-btn-off" onclick="autofetchDelete(${s.id})" aria-label="Delete source">Delete</button>` : '';
+        const shared = s.mine ? '' : `<div class="af-shared-note"><i class="icon-users" style="font-size:11px;"></i> Shared with you by another login. Its pixels are drawn on your map; only the owner can change it.</div>`;
+        return `<div class="af-card${s.mine?'':' af-card-ro'}" id="af-card-${s.id}">
+            <div class="af-card-head">
+                <div class="af-card-title">
+                    ${s.mine ? `<input class="af-title-inp" value="${escapeHtml(title)}" maxlength="80" aria-label="Source name"
+                        onchange="afRenameSource(${s.id}, this.value)" onkeydown="if(event.key==='Enter')this.blur()">` : `<span class="af-title-ro">${escapeHtml(title)}</span>`}
+                    <span class="ts-badge ${pill[0]}">${pill[1]}</span>
+                </div>
+                <div class="ts-meta"><code>${escapeHtml(host)}</code>${parks.map(p=>`<span class="af-park">${escapeHtml(p)}</span>`).join('')}</div>
+            </div>
+            <div class="af-stats">${stats}</div>
+            ${isErr ? `<div class="af-err">${escapeHtml(s.last_status)}</div>` : ''}
+            ${shared}
+            ${s.mine ? afVisControl(`af-vis-${s.id}`, s.visibility, s.viewers, s.id) : ''}
+            ${acts ? `<div class="ts-acts">${acts}</div>` : ''}
+        </div>`;
+    }
+
+    async function afRenameSource(id, title) {
+        try { await afPost('visibility', {id, title}); const src=_afSources.find(x=>x.id===id); if (src) src.title = title.trim(); showToast('Renamed', 'success'); }
+        catch (e) { showToast(e.message, 'error'); }
+    }
+
     async function loadAutofetchSources() {
-        const tbody = document.getElementById('autofetch-table-body');
-        if (!tbody) return;
+        const list = document.getElementById('af-list');
+        if (!list) return;
         try {
             const res = await fetch('/api/admin/autofetch?pwd=' + getPwd());
             const data = await res.json();
-            const sources = data.sources || [];
-            if (sources.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#666;padding:24px;">No sources configured. Add one above to start fetching GPS tracks automatically.</td></tr>';
+            _afSources = data.sources || [];
+            if (data.readonly) {
+                list.innerHTML = '<div class="ts-empty">Automated fetch is available to account logins — not in the public demo or on a shared link.</div>';
+                const add = document.getElementById('af-add'); if (add) add.style.display = 'none';
                 return;
             }
-            tbody.innerHTML = sources.map(s => {
-                const statusColor = !s.enabled ? '#666' : s.last_status === 'ok' ? '#22c55e' : s.last_status && s.last_status.startsWith('error') ? '#ef4444' : '#888';
-                const statusText = !s.enabled ? 'Disabled' : s.last_status || 'Pending';
-                const lastRun = s.last_run_at ? safeDateStr(s.last_run_at) : 'Never';
-                const actions = s.enabled
-                    ? `<button onclick="autofetchDisable(${s.id})" style="background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3);border-radius:4px;padding:4px 10px;font-size:11px;cursor:pointer;margin-right:4px;" title="Disable (clears password)">Disable</button>`
-                      + `<button onclick="autofetchRunNow(${s.id})" style="background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.3);border-radius:4px;padding:4px 10px;font-size:11px;cursor:pointer;margin-right:4px;" title="Fetch now">Run</button>`
-                    : `<button onclick="autofetchEnable(${s.id})" style="background:rgba(59,130,246,0.15);color:#3b82f6;border:1px solid rgba(59,130,246,0.3);border-radius:4px;padding:4px 10px;font-size:11px;cursor:pointer;margin-right:4px;" title="Re-enable (requires password)">Enable</button>`;
-                const deleteBtn = `<button onclick="autofetchDelete(${s.id})" style="background:rgba(239,68,68,0.08);color:#ef4444;border:1px solid rgba(239,68,68,0.2);border-radius:4px;padding:4px 10px;font-size:11px;cursor:pointer;" title="Delete source and credentials">&times;</button>`;
-                // Compute next run display
-                let nextRunText = '';
-                if (s.enabled && s.next_run_at) {
-                    if (s.next_run_at === 'soon') {
-                        nextRunText = '<span style="color:#f59e0b;">soon</span>';
-                    } else {
-                        const nextDate = new Date(s.next_run_at + 'Z');
-                        const nowMs = Date.now();
-                        const diffMs = nextDate.getTime() - nowMs;
-                        if (diffMs <= 0) {
-                            nextRunText = '<span style="color:#f59e0b;">due now</span>';
-                        } else {
-                            const diffH = Math.floor(diffMs / 3600000);
-                            const diffM = Math.floor((diffMs % 3600000) / 60000);
-                            nextRunText = diffH > 0 
-                                ? `<span style="color:#3b82f6;">in ${diffH}h ${diffM}m</span>`
-                                : `<span style="color:#3b82f6;">in ${diffM}m</span>`;
-                        }
-                    }
-                }
-                // Parks list
-                const parksList = (s.park_names || '').split(',').filter(Boolean).map(p => p.trim());
-                const parksHtml = parksList.length > 0 
-                    ? parksList.map(p => `<span style="display:inline-block;background:rgba(59,130,246,0.12);color:#60a5fa;border:1px solid rgba(59,130,246,0.2);border-radius:4px;padding:1px 6px;margin:1px 2px;font-size:10px;white-space:nowrap;">${escapeHtml(p)}</span>`).join('')
-                    : '<span style="color:#666;">—</span>';
-                return `<tr>
-                    <td style="max-width:180px;">${parksHtml}</td>
-                    <td style="color:#888;font-size:11px;">${escapeHtml(s.service_url)}<br><span style="color:#666;">${escapeHtml(s.api_type)} · every ${s.interval_h}h</span></td>
-                    <td style="color:#888;font-size:11px;">${lastRun}</td>
-                    <td style="font-size:11px;">${nextRunText || '<span style="color:#666;">—</span>'}</td>
-                    <td style="color:#22c55e;text-align:right;">${s.last_points > 0 ? s.last_points.toLocaleString() : '—'}</td>
-                    <td><span style="color:${statusColor};font-size:11px;">${escapeHtml(statusText)}</span></td>
-                    <td style="text-align:right;white-space:nowrap;">${actions}${deleteBtn}</td>
-                </tr>`;
-            }).join('');
+            if (_afSources.length === 0) {
+                list.innerHTML = '<div class="ts-empty">No tracking server connected yet. Connect one below and its patrol tracks appear here on a schedule.</div>';
+                const add = document.getElementById('af-add'); if (add && !add.open) add.open = true;
+            } else {
+                list.innerHTML = _afSources.map(autofetchCardHTML).join('');
+            }
+            if (!document.getElementById('af-add-visc')) afRenderAddVis();
         } catch (err) {
-            tbody.innerHTML = `<tr><td colspan="7" style="color:#ef4444;text-align:center;">${err.message}</td></tr>`;
+            list.innerHTML = `<div class="ts-empty ts-err">${escapeHtml(err.message)}</div>`;
         }
     }
 
     async function addAutofetchSource() {
-        const apiType = document.getElementById('af-api-type').value;
         const url = document.getElementById('af-url').value.trim();
         const user = document.getElementById('af-user').value.trim();
         const pass = document.getElementById('af-pass').value;
+        const title = document.getElementById('af-title').value.trim();
         const interval = parseInt(document.getElementById('af-interval').value) || 24;
         const backfill = document.getElementById('af-backfill').value;
         const status = document.getElementById('af-add-status');
-
-        if (!url || !user || !pass) {
-            status.style.display = 'block';
-            status.style.color = '#ef4444';
-            status.textContent = 'All fields are required.';
-            return;
-        }
-
-        status.style.display = 'block';
-        status.style.color = '#888';
-        status.textContent = 'Connecting and validating credentials...';
-
+        const btn = document.getElementById('af-connect-btn');
+        const say = (t, k) => { status.textContent = t; status.className = 'af-status ' + (k||''); };
+        if (!url || !user || !pass) { say('Service URL, username and password are required.', 'err'); return; }
+        if (!/^https:\/\//i.test(url)) { say('The service URL must start with https://', 'err'); return; }
+        if (_afAddVis.visibility === 'selected' && _afAddVis.pwds.length === 0) { say('Add at least one login, or choose “Only me”.', 'err'); return; }
+        say('Connecting and validating credentials…', 'wait'); btn.disabled = true;
         try {
-            const res = await fetch('/api/admin/autofetch/add?pwd=' + getPwd(), {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({api_type: apiType, service_url: url, username: user, password: pass, interval_h: interval, backfill_since: backfill})
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Failed');
-
-            status.style.color = '#22c55e';
-            status.textContent = `Connected! Parks: ${data.park_names}`;
-            // Clear form
-            document.getElementById('af-url').value = '';
-            document.getElementById('af-user').value = '';
-            document.getElementById('af-pass').value = '';
+            const data = await afPost('add', {api_type:'earthranger', service_url:url, username:user, password:pass, title,
+                interval_h:interval, backfill_since:backfill, visibility:_afAddVis.visibility, viewers:_afAddVis.pwds});
+            say(`Connected — parks: ${data.park_names || 'none found'}`, 'ok');
+            ['af-url','af-user','af-pass','af-title'].forEach(i => document.getElementById(i).value = '');
+            _afAddVis = {visibility:'owner', viewers:[], pwds:[]}; afRenderAddVis();
+            const add = document.getElementById('af-add'); if (add) add.open = false;
             loadAutofetchSources();
-            setTimeout(() => { status.style.display = 'none'; }, 5000);
+            setTimeout(() => say('', ''), 6000);
         } catch (err) {
-            status.style.color = '#ef4444';
-            status.textContent = err.message;
-        }
+            if (/not a login/.test(err.message)) {
+                say('One of the logins you added is not a password on this server — remove it and try again.', 'err');
+            } else say(err.message, 'err');
+        } finally { btn.disabled = false; }
     }
 
     async function autofetchDisable(id) {
-        if (!confirm('Disable this source? The password will be cleared.')) return;
+        if (!confirm('Pause this source? Fetching stops and the stored server password is purged; you will re-enter it to resume.')) return;
         try {
             const res = await fetch(`/api/admin/autofetch/disable?pwd=${getPwd()}&id=${id}`, {method: 'POST'});
             if (!res.ok) throw new Error((await res.json()).error);
-            showToast('Source disabled', 'info');
+            showToast('Source paused', 'info');
             loadAutofetchSources();
         } catch (err) { showToast(err.message, 'error'); }
     }
 
     async function autofetchEnable(id) {
-        const pw = prompt('Enter password to re-enable this source:');
+        const pw = prompt('Server password to resume fetching:');
         if (!pw) return;
         try {
-            const res = await fetch(`/api/admin/autofetch/enable?pwd=${getPwd()}`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({id: id, password: pw})
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error);
-            showToast('Source re-enabled', 'success');
+            await afPost('enable', {id, password: pw});
+            showToast('Fetching resumed', 'success');
             loadAutofetchSources();
         } catch (err) { showToast(err.message, 'error'); }
     }
 
     async function autofetchDelete(id) {
-        if (!confirm('Delete this source? All credentials will be permanently removed.')) return;
+        if (!confirm('Delete this source? Its credentials and sharing list are removed. Already-fetched pixels stay on record but are no longer shown to anyone.')) return;
         try {
             const res = await fetch(`/api/admin/autofetch/delete?pwd=${getPwd()}&id=${id}`, {method: 'POST'});
             if (!res.ok) throw new Error((await res.json()).error);
@@ -23758,12 +23891,11 @@ ${starredItems.narratives.map(n => {
         try {
             const res = await fetch(`/api/admin/autofetch/run?pwd=${getPwd()}&id=${id}`, {method: 'POST'});
             if (!res.ok) throw new Error((await res.json()).error);
-            showToast('Fetch started in background', 'success');
-            // Refresh after a short delay to show updated status
-            setTimeout(loadAutofetchSources, 3000);
+            showToast('Fetch started in the background', 'success');
+            setTimeout(loadAutofetchSources, 4000);
         } catch (err) { showToast(err.message, 'error'); }
     }
-    
+
     // Lazy-load fetch script source code on first expand
     let _afSourceLoaded = false;
     function initAfSourceViewer() {
@@ -25241,91 +25373,55 @@ ${starredItems.narratives.map(n => {
                 
                 <!-- Automated Fetch Tab -->
                 <div class="admin-tab-content" id="tab-autofetch">
-                    <div>
-                        <p style="color:#888;font-size:12px;margin-bottom:16px;line-height:1.6;">
-                            Connect to external GPS tracking services (e.g. EarthRanger / PAMDAS) to automatically
-                            fetch patrol tracks daily. Tracks are anonymised — no names or personal data are stored.
-                            Only person, vehicle, and aircraft tracks are fetched; animal collar data is excluded.
-                        </p>
-                        <div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.15);border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:11px;line-height:1.6;color:#9ca3af;">
-                            <span style="color:#22c55e;font-weight:600;"><i class="icon-shield icon-color-success" style="font-size:11px;"></i> Credential security</span><br>
-                            Passwords are encrypted with AES-256-GCM before storage — they are never saved in plaintext
-                            and never passed as command-line arguments. The encryption key is stored separately with
-                            restricted file permissions. Disabling a source immediately purges its stored password.
-                        </div>
-
-                        <!-- Add new source form -->
-                        <div id="autofetch-add-form" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:16px;margin-bottom:20px;">
-                            <h4 style="color:#fff;font-size:13px;font-weight:600;margin-bottom:12px;">Add New Source</h4>
-                            <div style="display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;align-items:end;">
-                                <div>
-                                    <label style="color:#888;font-size:11px;display:block;margin-bottom:4px;">API</label>
-                                    <select id="af-api-type" style="width:100%;background:#1a1a2e;border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#fff;padding:8px;font-size:12px;">
-                                        <option value="earthranger">EarthRanger</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label style="color:#888;font-size:11px;display:block;margin-bottom:4px;">Service URL</label>
-                                    <input id="af-url" type="text" placeholder="https://example.pamdas.org" style="width:100%;background:#1a1a2e;border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#fff;padding:8px;font-size:12px;box-sizing:border-box;">
-                                </div>
-                                <div>
-                                    <label style="color:#888;font-size:11px;display:block;margin-bottom:4px;">Username</label>
-                                    <input id="af-user" type="text" style="width:100%;background:#1a1a2e;border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#fff;padding:8px;font-size:12px;box-sizing:border-box;">
-                                </div>
-                                <div>
-                                    <label style="color:#888;font-size:11px;display:block;margin-bottom:4px;">Password</label>
-                                    <input id="af-pass" type="password" style="width:100%;background:#1a1a2e;border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#fff;padding:8px;font-size:12px;box-sizing:border-box;">
-                                </div>
-                            </div>
-                            <div style="display:grid;grid-template-columns:auto auto auto;gap:8px;align-items:end;margin-top:8px;justify-content:start;">
-                                <div>
-                                    <label style="color:#888;font-size:11px;display:block;margin-bottom:4px;">Interval</label>
-                                    <select id="af-interval" style="width:100%;background:#1a1a2e;border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#fff;padding:8px;font-size:12px;">
-                                        <option value="24">24h</option>
-                                        <option value="12">12h</option>
-                                        <option value="6">6h</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label style="color:#888;font-size:11px;display:block;margin-bottom:4px;">Backfill from <span style="color:#555;font-weight:normal;">(initial fetch start date)</span></label>
-                                    <input id="af-backfill" type="date" style="width:100%;background:#1a1a2e;border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#fff;padding:8px;font-size:12px;box-sizing:border-box;">
-                                </div>
-                                <div>
-                                    <button onclick="addAutofetchSource()" style="background:#22c55e;color:#000;border:none;border-radius:6px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;">Connect</button>
-                                </div>
-                            </div>
-                            <div id="af-add-status" style="margin-top:8px;font-size:12px;color:#888;display:none;"></div>
-                        </div>
-
-                        <!-- Source list -->
-                        <div class="admin-table-container" style="overflow-x:auto;">
-                            <table class="admin-table">
-                                <thead><tr>
-                                    <th>Parks</th>
-                                    <th>Service</th>
-                                    <th>Last Run</th>
-                                    <th>Next Run</th>
-                                    <th>Points</th>
-                                    <th>Status</th>
-                                    <th style="text-align:right;">Actions</th>
-                                </tr></thead>
-                                <tbody id="autofetch-table-body">
-                                    <tr><td colspan="7" style="text-align:center;color:#666;">Loading...</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <!-- Source code viewer -->
-                        <details id="af-source-details" style="margin-top:20px;">
-                            <summary style="cursor:pointer;color:#3b82f6;font-size:12px;font-weight:500;padding:8px 0;user-select:none;">
-                                <i class="icon-code icon-color-info" style="font-size:12px;"></i>
-                                View fetch script source code (fetch_earthranger_gpx.py)
-                            </summary>
-                            <div id="af-source-code" style="margin-top:8px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:16px;max-height:500px;overflow:auto;">
-                                <pre style="color:#d4d4d4;font-size:11px;line-height:1.5;margin:0;white-space:pre;font-family:'Fira Code',Consolas,Monaco,monospace;"><code id="af-source-text" style="color:#d4d4d4;">Loading...</code></pre>
-                            </div>
-                        </details>
+                    <p style="color:#888;font-size:12px;margin:0 0 12px;line-height:1.6;">
+                        Connect an EarthRanger / PAMDAS server and its patrol tracks are fetched on a schedule,
+                        anonymised (no names, no animal collars) and drawn as effort pixels. Each source decides
+                        <em>who</em> sees its pixels &mdash; only you, a few logins, or every account.
+                    </p>
+                    <div class="af-security">
+                        <i class="icon-shield icon-color-success" style="font-size:11px;"></i>
+                        <span>Server passwords are sealed with the installation&rsquo;s master key (AES-256-GCM) and never leave this
+                        server or appear in a URL. Disabling a source purges its password at once. Logins you share with are stored as
+                        hashes, never as passwords.</span>
                     </div>
+
+                    <div id="af-list" class="af-list"><div class="ts-empty">Loading&hellip;</div></div>
+
+                    <details id="af-add" class="af-add">
+                        <summary class="af-add-summary"><i class="icon-plus" style="font-size:12px;"></i> Connect a tracking server</summary>
+                        <div class="ts-form" style="margin-top:8px;">
+                            <div class="af-form-grid">
+                                <label class="ts-field" style="grid-column:1/-1;">Service URL
+                                    <input id="af-url" type="url" inputmode="url" autocomplete="off" placeholder="https://example.pamdas.org"></label>
+                                <label class="ts-field">Username
+                                    <input id="af-user" type="text" autocomplete="off" autocapitalize="off"></label>
+                                <label class="ts-field">Password
+                                    <input id="af-pass" type="password" autocomplete="new-password"></label>
+                                <label class="ts-field">Name <em>(optional)</em>
+                                    <input id="af-title" type="text" maxlength="80" placeholder="e.g. Nyerere rangers"></label>
+                                <label class="ts-field">Fetch every
+                                    <select id="af-interval"><option value="24">24 hours</option><option value="12">12 hours</option><option value="6">6 hours</option></select></label>
+                                <label class="ts-field">Backfill from <em>(first fetch)</em>
+                                    <input id="af-backfill" type="date"></label>
+                                <input id="af-api-type" type="hidden" value="earthranger">
+                            </div>
+                            <div class="af-vis-block" id="af-add-vis"></div>
+                            <div class="ts-form-acts">
+                                <span id="af-add-status" class="af-status"></span>
+                                <button class="sh-btn sh-btn-primary" id="af-connect-btn" onclick="addAutofetchSource()">Connect</button>
+                            </div>
+                        </div>
+                    </details>
+
+                    <details id="af-source-details" style="margin-top:14px;">
+                        <summary style="cursor:pointer;color:#3b82f6;font-size:12px;font-weight:500;padding:8px 0;user-select:none;">
+                            <i class="icon-code icon-color-info" style="font-size:12px;"></i>
+                            View the fetch script (fetch_earthranger_gpx.py)
+                        </summary>
+                        <div id="af-source-code" style="margin-top:8px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:16px;max-height:500px;overflow:auto;">
+                            <pre style="color:#d4d4d4;font-size:11px;line-height:1.5;margin:0;white-space:pre;font-family:'Fira Code',Consolas,Monaco,monospace;"><code id="af-source-text" style="color:#d4d4d4;">Loading...</code></pre>
+                        </div>
+                    </details>
                 </div>
 
                 <!-- Access & Sharing Tab: share links + AOI ownership/queue.
