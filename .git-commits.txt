@@ -1,3 +1,4 @@
+60e8035 2026-09-04 07:50:27 MBTiles estimate: reject sources not in TileSources whitelist (same as create)
 07eeaec 2026-09-04 07:48:18 Delete Esri/Google MBTiles Zenodo drafts (3 depositions) and clear manifest
 60301e1 2026-09-04 07:45:19 Footer: hover-intent popovers with fade, equal icon pills on phones
 d5b7fed 2026-09-04 07:39:42 Licence register, licensed-only imagery, footer credits, geology gated to partners
@@ -17,4 +18,3 @@ ac35d24 2026-08-31 10:49:04 Record corridor verification results for AP-RCA plan
 9a9a250 2026-08-27 06:29:45 Proxy CARTO base-map tiles server-side with our API key
 a0e1514 2026-08-20 10:13:13 Cron status: settlement_backfill, cropland, onboard_park report into the bell
 1178644 2026-08-19 17:38:29 Fix mobile black-map: WebGL context-loss recovery + floatui resize-listener leak
-41bd8da 2026-08-19 16:50:01 Deforestation narrative cache: see in-place enrichment writes

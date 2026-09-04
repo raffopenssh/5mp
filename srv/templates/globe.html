@@ -1401,6 +1401,9 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
         
         // Basemap switching function
         function switchBasemap(basemapId) {
+            // Retired providers (Google, Bing — removed 2026-09) fall back to
+            // the Esri imagery we still serve, whatever path names them.
+            if (/google|bing/i.test(basemapId || '')) basemapId = 'satellite-esri';
             if (currentBasemap === basemapId) return;
             
             console.log('Switching basemap to:', basemapId);
