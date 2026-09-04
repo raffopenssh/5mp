@@ -226,6 +226,8 @@ class DailyFireUpdater:
 
     def _notify_system(self, ntype, title, message):
         try:
+            from cron_notify import wal_suffix
+            message = message[:480] + wal_suffix(str(DB_PATH))
             self.conn.execute("""
                 INSERT INTO notifications (park_id, notification_type, title, message, created_at)
                 VALUES ('SYSTEM', ?, ?, ?, datetime('now'))
