@@ -1,0 +1,351 @@
+[
+ {
+  "name": "PARK CAF_Chinko",
+  "ref_km2": 19688,
+  "iou": 0.64,
+  "n_units": 17,
+  "redrawn_km2": 15900,
+  "ref_legible_pct": 67,
+  "ref_boundary": [
+   "Chinko on the S/NE (140 km)",
+   "unnamed river (order 4) on the S/W (130 km)",
+   "unnamed river (order 5) on the E/SE (100 km)",
+   "Mbari on the SW/W (82 km)"
+  ],
+  "class_mix": {
+   "core": 82,
+   "wilderness": 18
+  },
+  "units": [
+   46,
+   59,
+   71,
+   73,
+   85,
+   86,
+   98,
+   102,
+   111,
+   112,
+   114,
+   126,
+   127,
+   135,
+   151,
+   162,
+   177
+  ]
+ },
+ {
+  "name": "WDPA Bili-Uere (Hunting Area)",
+  "ref_km2": 672,
+  "iou": 0.0,
+  "n_units": 0,
+  "redrawn_km2": 0,
+  "ref_legible_pct": 64,
+  "ref_boundary": [
+   "study-area edge on the W/E (108 km)",
+   "CAF border on the NE (4 km)"
+  ],
+  "class_mix": {
+   "core": 100
+  },
+  "units": []
+ },
+ {
+  "name": "WDPA Zemongo (Faunal Reserve)",
+  "ref_km2": 7680,
+  "iou": 0.64,
+  "n_units": 7,
+  "redrawn_km2": 5052,
+  "ref_legible_pct": 88,
+  "ref_boundary": [
+   "study-area edge on the NE/E (120 km)",
+   "unnamed river (order 4) on the NW/N (90 km)",
+   "unnamed river (order 5) on the SW/W (74 km)",
+   "secondary road on the S/SE (54 km)"
+  ],
+  "class_mix": {
+   "core": 99,
+   "corridor": 1
+  },
+  "units": [
+   53,
+   66,
+   79,
+   91,
+   105,
+   117,
+   131
+  ]
+ },
+ {
+  "name": "WDPA Chinko (Conservation Area)",
+  "ref_km2": 19688,
+  "iou": 0.64,
+  "n_units": 17,
+  "redrawn_km2": 15900,
+  "ref_legible_pct": 67,
+  "ref_boundary": [
+   "Chinko on the S/NE (140 km)",
+   "unnamed river (order 4) on the S/W (130 km)",
+   "unnamed river (order 5) on the E/SE (100 km)",
+   "Mbari on the SW/W (82 km)"
+  ],
+  "class_mix": {
+   "core": 82,
+   "wilderness": 18
+  },
+  "units": [
+   46,
+   59,
+   71,
+   73,
+   85,
+   86,
+   98,
+   102,
+   111,
+   112,
+   114,
+   126,
+   127,
+   135,
+   151,
+   162,
+   177
+  ]
+ },
+ {
+  "assessed": [
+   {
+    "uid": 1,
+    "seed": "PARK CAF_Chinko",
+    "seed_kind": "empty-land",
+    "area_km2": 19688.0,
+    "area_ha": 1968800,
+    "country": "CAF",
+    "in_zones": [
+     "PARK CAF_Chinko",
+     "WDPA Chinko (Conservation Area)"
+    ],
+    "overlaps": [
+     "PARK CAF_Chinko 100%",
+     "WDPA Chinko (Conservation Area) 100%"
+    ],
+    "km_to_park": 0.0,
+    "clusters": 29,
+    "population_est": 826,
+    "pop_per_km2": 0.042,
+    "osm_places": 0,
+    "new_since_2015": 1,
+    "camps": 14,
+    "built_km2": 1.26,
+    "built_2000_km2": 0.01,
+    "built_2015_km2": 0.01,
+    "towns": [],
+    "fire_det_2024_25": 33960,
+    "fire_per_1000km2_yr": 862,
+    "fire_nov_feb_share": 0.76,
+    "fronts": 1129,
+    "fronts_per_1000km2": 57.3,
+    "fronts_transhumance_pct": 73,
+    "fronts_long": 141,
+    "fronts_long_per_1000km2": 7.16,
+    "front_dirs": {
+     "NE": 172,
+     "E": 172,
+     "SE": 156
+    },
+    "clearing_events": 238,
+    "clearing_km2": 5.05,
+    "clearing_since_2020_km2": 1.15,
+    "clearing_encroach_slash": 63,
+    "mine_reported": 0,
+    "mine_candidates": 0,
+    "mine_top05_cells": 0,
+    "mine_watchlist": 0,
+    "mining_measured": false,
+    "cropland_2003_pct": 0.0,
+    "cropland_2019_pct": 0.0,
+    "boundary_legibility": 0.61,
+    "built_growth_x": null,
+    "front_axis_coherence": 0.26,
+    "front_axis": "E\u2013W",
+    "rationale": [
+     "wilderness",
+     "long-front density/1000km2 7.16 >= 88.0: no",
+     "transhumance share % 73 >= 50: yes",
+     "axis coherence 0.26 >= 0.5: no",
+     "people/km2 0.042 <= 2: yes",
+     "\u2014 not a corridor; core?",
+     "people/km2 0.042 <= 0.02: no",
+     "cropland 2019 % 0 <= 0.05: yes",
+     "clearing since 2020 km2/1000km2 0.058 <= 0.5: yes",
+     "reported workings 0 <= 0: yes",
+     "\u2014 not core; wilderness?",
+     "people/km2 0.042 <= 0.5: yes",
+     "cropland 2019 % 0 <= 0.5: yes"
+    ],
+    "cls": "wilderness",
+    "boundary": [
+     "Chinko on the S/NE (140 km)",
+     "unnamed river (order 4) on the S/W (130 km)",
+     "unnamed river (order 5) on the E/SE (100 km)",
+     "Mbari on the SW/W (82 km)"
+    ],
+    "perimeter_km": 678,
+    "unattributed_pct": 33,
+    "name": "PARK CAF_Chinko"
+   },
+   {
+    "uid": 3,
+    "seed": "WDPA Bili-Uere (Hunting Area)",
+    "seed_kind": "empty-land",
+    "area_km2": 672.0,
+    "area_ha": 67200,
+    "country": "COD",
+    "in_zones": [
+     "WDPA Bili-Uere (Hunting Area)"
+    ],
+    "overlaps": [
+     "WDPA Bili-Uere (Hunting Area) 100%"
+    ],
+    "km_to_park": 56.9,
+    "clusters": 0,
+    "population_est": 0,
+    "pop_per_km2": 0.0,
+    "osm_places": 0,
+    "new_since_2015": 0,
+    "camps": 0,
+    "built_km2": 0.0,
+    "built_2000_km2": 0.0,
+    "built_2015_km2": 0.0,
+    "towns": [],
+    "fire_det_2024_25": 1682,
+    "fire_per_1000km2_yr": 1251,
+    "fire_nov_feb_share": 0.81,
+    "fronts": 21,
+    "fronts_per_1000km2": 31.2,
+    "fronts_transhumance_pct": 95,
+    "fronts_long": 3,
+    "fronts_long_per_1000km2": 4.46,
+    "front_dirs": {
+     "NW": 5,
+     "E": 5,
+     "S": 5
+    },
+    "clearing_events": 0,
+    "clearing_km2": 0.0,
+    "clearing_since_2020_km2": 0.0,
+    "clearing_encroach_slash": 0,
+    "mine_reported": 0,
+    "mine_candidates": 0,
+    "mine_top05_cells": 0,
+    "mine_watchlist": 0,
+    "mining_measured": false,
+    "cropland_2003_pct": null,
+    "cropland_2019_pct": null,
+    "boundary_legibility": null,
+    "built_growth_x": null,
+    "front_axis_coherence": 0.38,
+    "front_axis": "E\u2013W",
+    "rationale": [
+     "core",
+     "long-front density/1000km2 4.46 >= 88.0: no",
+     "transhumance share % 95 >= 50: yes",
+     "axis coherence 0.38 >= 0.5: no",
+     "people/km2 0.0 <= 2: yes",
+     "\u2014 not a corridor; core?",
+     "people/km2 0.0 <= 0.02: yes",
+     "cropland 2019 % 0 <= 0.05: yes",
+     "clearing since 2020 km2/1000km2 0.0 <= 0.5: yes",
+     "reported workings 0 <= 0: yes"
+    ],
+    "cls": "core",
+    "boundary": [
+     "study-area edge on the W/E (108 km)",
+     "CAF border on the NE (4 km)"
+    ],
+    "perimeter_km": 176,
+    "unattributed_pct": 36,
+    "name": "WDPA Bili-Uere (Hunting Area)"
+   },
+   {
+    "uid": 4,
+    "seed": "WDPA Zemongo (Faunal Reserve)",
+    "seed_kind": "empty-land",
+    "area_km2": 7668.0,
+    "area_ha": 766800,
+    "country": "CAF",
+    "in_zones": [
+     "WDPA Zemongo (Faunal Reserve)"
+    ],
+    "overlaps": [
+     "WDPA Zemongo (Faunal Reserve) 100%"
+    ],
+    "km_to_park": 2.0,
+    "clusters": 1,
+    "population_est": 0,
+    "pop_per_km2": 0.0,
+    "osm_places": 2,
+    "new_since_2015": 0,
+    "camps": 0,
+    "built_km2": 0.1,
+    "built_2000_km2": 0.0,
+    "built_2015_km2": 0.0,
+    "towns": [],
+    "fire_det_2024_25": 44154,
+    "fire_per_1000km2_yr": 2879,
+    "fire_nov_feb_share": 0.94,
+    "fronts": 1879,
+    "fronts_per_1000km2": 245.0,
+    "fronts_transhumance_pct": 90,
+    "fronts_long": 321,
+    "fronts_long_per_1000km2": 41.86,
+    "front_dirs": {
+     "SE": 297,
+     "S": 295,
+     "N": 273
+    },
+    "clearing_events": 2,
+    "clearing_km2": 0.0,
+    "clearing_since_2020_km2": 0.0,
+    "clearing_encroach_slash": 2,
+    "mine_reported": 0,
+    "mine_candidates": 0,
+    "mine_top05_cells": 0,
+    "mine_watchlist": 0,
+    "mining_measured": false,
+    "cropland_2003_pct": 0.0,
+    "cropland_2019_pct": 0.0,
+    "boundary_legibility": 0.61,
+    "built_growth_x": null,
+    "front_axis_coherence": 0.3,
+    "front_axis": "N\u2013S",
+    "rationale": [
+     "core",
+     "long-front density/1000km2 41.86 >= 88.0: no",
+     "transhumance share % 90 >= 50: yes",
+     "axis coherence 0.3 >= 0.5: no",
+     "people/km2 0.0 <= 2: yes",
+     "\u2014 not a corridor; core?",
+     "people/km2 0.0 <= 0.02: yes",
+     "cropland 2019 % 0 <= 0.05: yes",
+     "clearing since 2020 km2/1000km2 0.0 <= 0.5: yes",
+     "reported workings 0 <= 0: yes"
+    ],
+    "cls": "core",
+    "boundary": [
+     "study-area edge on the NE/E (120 km)",
+     "unnamed river (order 4) on the NW/N (90 km)",
+     "unnamed river (order 5) on the SW/W (72 km)",
+     "secondary road on the S/SE (54 km)"
+    ],
+    "perimeter_km": 382,
+    "unattributed_pct": 12,
+    "name": "WDPA Zemongo (Faunal Reserve)"
+   }
+  ]
+ }
+]

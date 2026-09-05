@@ -235,3 +235,6 @@ data/basemap_quota.json
 # EASY document dump (scripts/easydocs): sources, extracted text, ledger and
 # index are reproducible artefacts; the dossier lives in reports/ (untracked).
 data/easy_docs/
+data/plan_zones/conservancy_units*/state.pkl
+data/plan_zones/conservancy_units*/descriptions_*.json
+data/plan_zones/conservancies/

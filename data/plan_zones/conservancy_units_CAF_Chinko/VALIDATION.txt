@@ -1,0 +1,36 @@
+VALIDATION — does the planner, fed only rivers/ridges/borders + measurements, re-find the zones we drew by hand and the gazetted PAs?
+  IoU: re-drawn (union of units with >50% of their cells inside) vs reference.  ref-legible: % of the reference's own perimeter within 2.5 km of a nameable feature.
+  class mix: what the planner calls the land inside the reference, by area.  Agreement = the reference's intended class dominates.
+
+PARK CAF_Chinko
+  ref   19,688 km2  ref-legible 67%  :: Chinko on the S/NE (140 km); unnamed river (order 4) on the S/W (130 km); unnamed river (order 5) on the E/SE (100 km); Mbari on the SW/W (82 km)
+  re-drawn  15,900 km2 from 17 units  IoU 0.64   planner class mix {'core': 82, 'wilderness': 18}
+
+WDPA Zemongo (Faunal Reserve)
+  ref    7,680 km2  ref-legible 88%  :: study-area edge on the NE/E (120 km); unnamed river (order 4) on the NW/N (90 km); unnamed river (order 5) on the SW/W (74 km); secondary road on the S/SE (54 km)
+  re-drawn   5,052 km2 from 7 units  IoU 0.64   planner class mix {'core': 99, 'corridor': 1}
+
+WDPA Chinko (Conservation Area)
+  ref   19,688 km2  ref-legible 67%  :: Chinko on the S/NE (140 km); unnamed river (order 4) on the S/W (130 km); unnamed river (order 5) on the E/SE (100 km); Mbari on the SW/W (82 km)
+  re-drawn  15,900 km2 from 17 units  IoU 0.64   planner class mix {'core': 82, 'wilderness': 18}
+
+WDPA Bili-Uere (Hunting Area)
+  ref      672 km2  ref-legible 64%  :: study-area edge on the W/E (108 km); CAF border on the NE (4 km)
+  re-drawn       0 km2 from 0 units  IoU 0.00   planner class mix {'core': 100}
+
+Whole study area by planner class (km2): core 86,244, wilderness 3,656, community 0, corridor 400
+
+REFERENCES MEASURED WHOLE — the same evidence and the same classify() applied to each drawn polygon as one unit
+  (what the planner would call the land as drawn; the rationale lists every test with its number and threshold)
+  PARK CAF_Chinko                                             1,968,800 ha → wilderness people     826 (0.042/km2) crop 0.0% clear20 1.15 km2 fronts 1129 (73% herd, 141 long, 7.16/1000km2, axis E–W 0.26) legible 0.61 edge-unnamed 33%
+      long-front density/1000km2 7.16 >= 88.0: no | transhumance share % 73 >= 50: yes | axis coherence 0.26 >= 0.5: no | people/km2 0.042 <= 2: yes | — not a corridor; core? | people/km2 0.042 <= 0.02: no | cropland 2019 % 0 <= 0.05: yes | clearing since 2020 km2/1000km2 0.058 <= 0.5: yes | reported workings 0 <= 0: yes | — not core; wilderness? | people/km2 0.042 <= 0.5: yes | cropland 2019 % 0 <= 0.5: yes
+  WDPA Zemongo (Faunal Reserve)                                 766,800 ha → core       people       0 (0.0/km2) crop 0.0% clear20 0.0 km2 fronts 1879 (90% herd, 321 long, 41.86/1000km2, axis N–S 0.3) legible 0.61 edge-unnamed 12%
+      long-front density/1000km2 41.86 >= 88.0: no | transhumance share % 90 >= 50: yes | axis coherence 0.3 >= 0.5: no | people/km2 0.0 <= 2: yes | — not a corridor; core? | people/km2 0.0 <= 0.02: yes | cropland 2019 % 0 <= 0.05: yes | clearing since 2020 km2/1000km2 0.0 <= 0.5: yes | reported workings 0 <= 0: yes
+  WDPA Bili-Uere (Hunting Area)                                  67,200 ha → core       people       0 (0.0/km2) crop None% clear20 0.0 km2 fronts 21 (95% herd, 3 long, 4.46/1000km2, axis E–W 0.38) legible None edge-unnamed 36%
+      long-front density/1000km2 4.46 >= 88.0: no | transhumance share % 95 >= 50: yes | axis coherence 0.38 >= 0.5: no | people/km2 0.0 <= 2: yes | — not a corridor; core? | people/km2 0.0 <= 0.02: yes | cropland 2019 % 0 <= 0.05: yes | clearing since 2020 km2/1000km2 0.0 <= 0.5: yes | reported workings 0 <= 0: yes
+
+CORRIDOR as the herds walk TODAY (least-cost over long transhumance fronts, Radom → Garamba, 12 km half-width)
+  long-front density inside walked band 9.50/cell vs elsewhere 3.07/cell (3.1x)
+
+CORRIDOR DIVERTED: same, with the proposed park, Southern NP and the wilderness zones closed to herds
+  long-front density inside walked band 9.50/cell vs elsewhere 3.07/cell (3.1x)

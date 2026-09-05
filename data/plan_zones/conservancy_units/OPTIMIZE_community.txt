@@ -1,0 +1,52 @@
+OPTIMIZE want=community max 250,000 ha; 16 bootstrap draws per area, thresholds ±25%, greedy path jittered ±10%
+support = share of draws a fine unit lies inside the best-grown area; proposal = support ≥ 0.5; contested = 0.25–0.5
+model composite skill: top-5% cells capture 16% of known workings (lift 3.25); imagery targets, not mines
+
+#1    community  SSD   119,600 ha   16 cl    5,663 ppl (4.735/km2) new15  0 | fire/1000km2  3,012 fronts  805 (97% herd, 541 long) | clear20  0.15 km2 crop 0.0→0.0% | mine r/c/t5 0/1/17 | park 12.8 km | legible None score 
+      seed community proposal 1 (optimized); towns: Libu (1930s) 1,192, Bo River* 1,076; overlaps: PLAN Wau-Wilderness_30, 32%, PLAN Southern-NP-Wilderness 14%, PLAN zone-pâturage-durable_Numatina 13%
+      boundary (186 km, 5% unnamed): geological contact IU|PLp (sudan) on the N/NE (40 km); Bo River on the NW/N (32 km); Nahr al Jur on the E/NE (30 km); geological contact IU|PLu (sudan) on the W/NW (18 km); R. Duma (1930s sheet) on the S/SW (16 km); geological contact O|PLp (sudan) on the S/SE (12 km)
+      built 0.01 → 0.01 → 0.02 km2 (xNone); camps 8; front dirs {'N': 155, 'S': 123, 'NE': 113}; nov-feb 0.93; clearing all 1.12 km2/35 ev, encroach+slash 9; watchlist 1
+      rock: PLp Para schist 41%; IU Undifferentiated syn- to late-orogenic i 16% [gold,lithium] — affinity prior 0.71
+      as a whole → community; support 0.79; size across draws p10/p50/p90 [111400, 120400, 122800] ha; 4 contested fine units
+      rationale: long fronts per 10 km width 156.43 >= 154.41: yes | transhumance share % 97 >= 50: yes | axis coherence (0.25 = random) 0.35 >= 0.4: no | people/km2 4.735 <= 2: no | — not a corridor; core? | people/km2 4.735 <= 0.02: no | cropland 2019 % 0 <= 0.05: yes | clearing since 2020 km2/1000km2 0.125 <= 0.5: yes | reported workings 0 <= 0: yes | — not core; wilderness? | people/km2 4.735 <= 0.5: no | cropland 2019 % 0 <= 0.5: yes
+
+#2    community  SSD   130,800 ha   39 cl    1,161 ppl (0.888/km2) new15  0 | fire/1000km2  4,429 fronts 1551 (98% herd, 934 long) | clear20  0.51 km2 crop 0.0→0.01% | mine r/c/t5 0/1/12 | park 52.0 km | legible 0.75 score 
+      seed community proposal 2 (optimized); towns: -; overlaps: -
+      boundary (152 km, 21% unnamed): geological contact QF|PLu (sudan) on the SE/NW (36 km); Busseri River on the NW (18 km); Nahr al Jur on the NW/SW (18 km); K. Ateir (1930s sheet) on the S/SE (18 km); K. Nyadok (1930s sheet) on the W (14 km); R. Sue (1930s sheet) on the N/SW (10 km)
+      built 0.04 → 0.05 → 0.05 km2 (x1.2); camps 35; front dirs {'SE': 277, 'NW': 228, 'W': 218}; nov-feb 0.71; clearing all 3.18 km2/99 ev, encroach+slash 16; watchlist 0
+      rock: PLu Undifferentiated metamorphic rocks, migm 89%; QF Recent alluvium and wadi deposits 10% [gold] — affinity prior 0.1
+      as a whole → community; support 0.98; size across draws p10/p50/p90 [130800, 136400, 139000] ha; 3 contested fine units
+      rationale: long fronts per 10 km width 258.25 >= 154.41: yes | transhumance share % 98 >= 50: yes | axis coherence (0.25 = random) 0.33 >= 0.4: no | people/km2 0.888 <= 2: yes | — not a corridor; core? | people/km2 0.888 <= 0.02: no | cropland 2019 % 0.01 <= 0.05: yes | clearing since 2020 km2/1000km2 0.39 <= 0.5: yes | reported workings 0 <= 0: yes | — not core; wilderness? | people/km2 0.888 <= 0.5: no | cropland 2019 % 0.01 <= 0.5: yes
+
+#3    community  SSD   123,200 ha   35 cl      923 ppl (0.749/km2) new15  3 | fire/1000km2  4,561 fronts 1897 (99% herd, 1229 long) | clear20  0.23 km2 crop 0.0→0.01% | mine r/c/t5 0/0/7 | park 51.1 km | legible 0.44 score 
+      seed community proposal 3 (optimized); towns: -; overlaps: -
+      boundary (208 km, 23% unnamed): K. Ngoko (1930s sheet) on the W/E (34 km); geological contact QF|PLu (sudan) on the E/N (22 km); K. Megwalima (1930s sheet) on the SE (20 km); unnamed river (order 4) on the NW/NE (16 km); Busseri River on the SE (14 km); Gandu (1930s sheet) on the W/NW (12 km)
+      built 0.03 → 0.04 → 0.08 km2 (x2.7); camps 30; front dirs {'SE': 268, 'NW': 267, 'S': 250}; nov-feb 0.71; clearing all 8.88 km2/64 ev, encroach+slash 0; watchlist 0
+      rock: PLu Undifferentiated metamorphic rocks, migm 96% — affinity prior 0.03
+      as a whole → community; support 0.63; size across draws p10/p50/p90 [96000, 112000, 137200] ha; 6 contested fine units
+      rationale: long fronts per 10 km width 350.14 >= 154.41: yes | transhumance share % 99 >= 50: yes | axis coherence (0.25 = random) 0.28 >= 0.4: no | people/km2 0.749 <= 2: yes | — not a corridor; core? | people/km2 0.749 <= 0.02: no | cropland 2019 % 0.01 <= 0.05: yes | clearing since 2020 km2/1000km2 0.187 <= 0.5: yes | reported workings 0 <= 0: yes | — not core; wilderness? | people/km2 0.749 <= 0.5: no | cropland 2019 % 0.01 <= 0.5: yes
+
+#4    community  SSD    92,400 ha   20 cl      690 ppl (0.747/km2) new15  3 | fire/1000km2  2,795 fronts 1094 (98% herd, 769 long) | clear20  0.47 km2 crop 0.0→0.0% | mine r/c/t5 0/0/0 | park 33.9 km | legible 0.42 score 
+      seed community proposal 4 (optimized); towns: -; overlaps: -
+      boundary (120 km, 35% unnamed): K. Megwalima (1930s sheet) on the E/SE (20 km); K. Getti (1930s sheet) on the NW/N (14 km); K. Ngombara (1930s sheet) on the S/SE (14 km); K. Ngoko (1930s sheet) on the N/NE (12 km); geological contact QF|PLu (sudan) on the NE (6 km); Busseri River on the SE (6 km)
+      built 0.06 → 0.07 → 0.18 km2 (x3.0); camps 15; front dirs {'SE': 203, 'NW': 195, 'W': 139}; nov-feb 0.77; clearing all 4.36 km2/62 ev, encroach+slash 1; watchlist 1
+      rock: PLu Undifferentiated metamorphic rocks, migm 99% — affinity prior 0.01
+      as a whole → community; support 0.72; size across draws p10/p50/p90 [42800, 90400, 95000] ha; 0 contested fine units
+      rationale: long fronts per 10 km width 252.98 >= 154.41: yes | transhumance share % 98 >= 50: yes | axis coherence (0.25 = random) 0.36 >= 0.4: no | people/km2 0.747 <= 2: yes | — not a corridor; core? | people/km2 0.747 <= 0.02: no | cropland 2019 % 0 <= 0.05: yes | clearing since 2020 km2/1000km2 0.509 <= 0.5: no | reported workings 0 <= 0: yes | — not core; wilderness? | people/km2 0.747 <= 0.5: no | cropland 2019 % 0 <= 0.5: yes
+
+#5    community  SSD    67,600 ha    4 cl      477 ppl (0.706/km2) new15  0 | fire/1000km2  5,071 fronts  577 (98% herd, 429 long) | clear20  2.07 km2 crop 0.0→0.0% | mine r/c/t5 1/0/0 | park 55.3 km | legible None score 
+      seed community proposal 5 (optimized); towns: -; overlaps: -
+      boundary (102 km, 6% unnamed): R. Nangundi (1930s sheet) on the NE/N (28 km); geological contact PLu|PLp (sudan) on the W/SW (18 km); J. DOMBILI – J. BALI – AKOBO HILLS ridge on the S/SE (18 km); K.Gairi (1930s sheet) on the E/SE (10 km); geological contact IU|PLu (sudan) on the NW (8 km); K.Adonb (1930s sheet) on the SE (6 km)
+      built 0.02 → 0.02 → 0.04 km2 (x2.0); camps 3; front dirs {'NW': 117, 'W': 85, 'E': 74}; nov-feb 0.94; clearing all 2.81 km2/14 ev, encroach+slash 1; watchlist 0
+      rock: PLu Undifferentiated metamorphic rocks, migm 81%; IU Undifferentiated syn- to late-orogenic i 15% [gold,lithium] — affinity prior 0.44
+      as a whole → community; support 0.86; size across draws p10/p50/p90 [64000, 70000, 101200] ha; 1 contested fine units
+      rationale: long fronts per 10 km width 165.0 >= 154.41: yes | transhumance share % 98 >= 50: yes | axis coherence (0.25 = random) 0.33 >= 0.4: no | people/km2 0.706 <= 2: yes | — not a corridor; core? | people/km2 0.706 <= 0.02: no | cropland 2019 % 0 <= 0.05: yes | clearing since 2020 km2/1000km2 3.062 <= 0.5: no | reported workings 1 <= 0: no | — not core; wilderness? | people/km2 0.706 <= 0.5: no | cropland 2019 % 0 <= 0.5: yes
+
+#6    community  CAF    24,400 ha    2 cl      138 ppl (0.566/km2) new15  0 | fire/1000km2  4,770 fronts  182 (99% herd, 129 long) | clear20   0.0 km2 crop 0.0→0.0% | mine r/c/t5 0/0/0 | park 30.6 km | legible None score 
+      seed community proposal 6 (optimized); towns: -; overlaps: -
+      boundary (60 km, 0% unnamed): unnamed river (order 4) on the NW/N (38 km); Ouara on the S/E (18 km); geological contact Zeta|gamma_h (car) on the S/SE (4 km)
+      built 0.01 → 0.01 → 0.01 km2 (xNone); camps 2; front dirs {'S': 44, 'SW': 31, 'NW': 28}; nov-feb 1.0; clearing all 0.02 km2/1 ev, encroach+slash 0; watchlist 0
+      rock: gamma_h Granites heterogenes concordants: syncin 64% [lithium,uranium]; Zeta Gneiss a micas, amphibolites, a pyroxene 36% [uranium] — affinity prior 1.64
+      as a whole → community; support 0.69; size across draws p10/p50/p90 [16400, 24400, 24400] ha; 1 contested fine units
+      rationale: long fronts per 10 km width 82.58 >= 154.41: no | transhumance share % 99 >= 50: yes | axis coherence (0.25 = random) 0.34 >= 0.4: no | people/km2 0.566 <= 2: yes | — not a corridor; core? | people/km2 0.566 <= 0.02: no | cropland 2019 % 0 <= 0.05: yes | clearing since 2020 km2/1000km2 0.0 <= 0.5: yes | reported workings 0 <= 0: yes | — not core; wilderness? | people/km2 0.566 <= 0.5: no | cropland 2019 % 0 <= 0.5: yes
+

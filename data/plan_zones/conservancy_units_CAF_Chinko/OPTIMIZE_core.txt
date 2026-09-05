@@ -1,0 +1,18 @@
+OPTIMIZE want=core max 2,000,000 ha; 20 bootstrap draws per area, thresholds ±25%, greedy path jittered ±10%
+support = share of draws a fine unit lies inside the best-grown area; proposal = support ≥ 0.5; contested = 0.25–0.5
+mining: unmeasured (no detection model for this area)
+
+#1    core       CAF 1,954,400 ha    4 cl        0 ppl (0.0/km2) new15  0 | fire/1000km2  1,459 fronts 2238 (89% herd, 351 long) | clear20  0.35 km2 crop 0.0→0.0% | mine r/c/t5 0/0/0 | park 0.0 km | legible 1.0 score 
+      seed core proposal 1 (optimized); towns: -; overlaps: WDPA Zemongo (Faunal Reserve) 25%
+      boundary (1124 km, 21% unnamed): study-area edge on the NE/SW (378 km); Chinko on the W/SW (92 km); unnamed river (order 5) on the N/NW (88 km); Mbomou on the SW (76 km); primary road on the SW/SE (70 km); secondary road on the NE/N (64 km)
+      built 0.0 → 0.0 → 0.87 km2 (xNone); camps 1; front dirs {'SW': 354, 'SE': 298, 'NE': 293}; nov-feb 0.89; clearing all 0.35 km2/22 ev, encroach+slash 22; watchlist 0
+      as a whole → core; support 0.65; size across draws p10/p50/p90 [1910520, 1976000, 1996680] ha; 23 contested fine units
+      rationale: long-front density/1000km2 17.96 >= 88.0: no | transhumance share % 89 >= 50: yes | axis coherence 0.29 >= 0.5: no | people/km2 0.0 <= 2: yes | — not a corridor; core? | people/km2 0.0 <= 0.02: yes | cropland 2019 % 0 <= 0.05: yes | clearing since 2020 km2/1000km2 0.018 <= 0.5: yes | reported workings 0 <= 0: yes
+
+#2    core       CAF 1,929,600 ha   17 cl        0 ppl (0.0/km2) new15  0 | fire/1000km2  1,069 fronts 2535 (92% herd, 474 long) | clear20  1.37 km2 crop 0.0→0.0% | mine r/c/t5 0/0/0 | park 0.0 km | legible 1.0 score 
+      seed core proposal 2 (optimized); towns: -; overlaps: PARK CAF_Chinko 35%, WDPA Chinko (Conservation Area) 35%
+      boundary (950 km, 23% unnamed): secondary road on the NW/W (118 km); Mbari on the N/SW (118 km); Chinko on the E/SE (118 km); unnamed river (order 4) on the NE/N (108 km); study-area edge on the S/SW (86 km); tertiary road on the NW/N (64 km)
+      built 0.0 → 0.0 → 2.77 km2 (xNone); camps 0; front dirs {'S': 358, 'N': 348, 'SE': 330}; nov-feb 0.82; clearing all 3.91 km2/116 ev, encroach+slash 31; watchlist 0
+      as a whole → core; support 0.88; size across draws p10/p50/p90 [1911560, 1931000, 1994160] ha; 6 contested fine units
+      rationale: long-front density/1000km2 24.56 >= 88.0: no | transhumance share % 92 >= 50: yes | axis coherence 0.28 >= 0.5: no | people/km2 0.0 <= 2: yes | — not a corridor; core? | people/km2 0.0 <= 0.02: yes | cropland 2019 % 0 <= 0.05: yes | clearing since 2020 km2/1000km2 0.071 <= 0.5: yes | reported workings 0 <= 0: yes
+
