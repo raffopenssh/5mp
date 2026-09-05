@@ -5,7 +5,7 @@
   "iou": 0.54,
   "n_units": 6,
   "redrawn_km2": 9372,
-  "ref_legible_pct": 44,
+  "ref_legible_pct": 36,
   "ref_boundary": [
    "Bo River on the E/SE (30 km)",
    "unnamed river (order 4) on the S/W (18 km)",
@@ -31,12 +31,12 @@
   "iou": 0.73,
   "n_units": 5,
   "redrawn_km2": 2908,
-  "ref_legible_pct": 85,
+  "ref_legible_pct": 72,
   "ref_boundary": [
    "Low hill \u2013 J. ABU RASEIN \u2013 J. NGAYA ridge on the N/NW (60 km)",
    "CAF border on the S/SW (38 km)",
    "W. Tabyi (1930s sheet) on the SE/E (36 km)",
-   "geological contact PMs|PLp (sudan) on the N (14 km)"
+   "K. Kago (1930s sheet) on the N (12 km)"
   ],
   "class_mix": {
    "core": 94,
@@ -58,12 +58,12 @@
   "iou": 0.71,
   "n_units": 13,
   "redrawn_km2": 15140,
-  "ref_legible_pct": 61,
+  "ref_legible_pct": 52,
   "ref_boundary": [
    "CAF border on the NW/SW (82 km)",
    "1930s A. E. SUDAN (Bahr el Ghazal Province) on the SE/S (50 km)",
    "R. Timberi (1930s sheet) on the N/NW (30 km)",
-   "geological contact PLu|PLp (sudan) on the E/NE (20 km)"
+   "W. Tabyi (1930s sheet) on the NW (16 km)"
   ],
   "class_mix": {
    "core": 73,
@@ -93,12 +93,12 @@
   "iou": 0.77,
   "n_units": 26,
   "redrawn_km2": 34464,
-  "ref_legible_pct": 56,
+  "ref_legible_pct": 45,
   "ref_boundary": [
    "CAF border on the SW/W (116 km)",
    "Bo River on the E/SE (38 km)",
-   "geological contact PLu|PLp (sudan) on the E/SE (30 km)",
-   "Pongo on the N (24 km)"
+   "Pongo on the N (24 km)",
+   "Bo River (1930s sheet) on the E (12 km)"
   ],
   "class_mix": {
    "core": 70,
@@ -140,12 +140,12 @@
   "iou": 0.76,
   "n_units": 46,
   "redrawn_km2": 36632,
-  "ref_legible_pct": 56,
+  "ref_legible_pct": 46,
   "ref_boundary": [
    "Nahr al Jur on the NW/SW (86 km)",
-   "geological contact PLu|PLp (sudan) on the NW/W (36 km)",
    "unnamed river (order 4) on the SW/SE (28 km)",
-   "Wahko on the NE (22 km)"
+   "Wahko on the NE (22 km)",
+   "K. Daberi (1930s sheet) on the E (22 km)"
   ],
   "class_mix": {
    "core": 18,
@@ -208,12 +208,12 @@
   "iou": 0.65,
   "n_units": 16,
   "redrawn_km2": 14508,
-  "ref_legible_pct": 62,
+  "ref_legible_pct": 51,
   "ref_boundary": [
    "Nahr al Jur on the W/NW (90 km)",
    "Wahko on the E/SE (32 km)",
    "Ibba on the N/SW (26 km)",
-   "geological contact QF|PLu (sudan) on the N/NE (20 km)"
+   "K.Teh (1930s sheet) on the S (20 km)"
   ],
   "class_mix": {
    "core": 13,
@@ -246,7 +246,7 @@
   "iou": 0.21,
   "n_units": 11,
   "redrawn_km2": 5488,
-  "ref_legible_pct": 57,
+  "ref_legible_pct": 48,
   "ref_boundary": [
    "CAF border on the NW/W (172 km)",
    "Nahr al Jur on the SE (78 km)",
@@ -279,12 +279,12 @@
   "iou": 0.47,
   "n_units": 3,
   "redrawn_km2": 1544,
-  "ref_legible_pct": 81,
+  "ref_legible_pct": 64,
   "ref_boundary": [
    "COD border on the W/E (62 km)",
    "unnamed river (order 4) on the W/E (46 km)",
-   "study-area edge on the E/SW (40 km)",
-   "Solo on the W (12 km)"
+   "Solo on the W (12 km)",
+   "K. Aka (1930s sheet) on the E (6 km)"
   ],
   "class_mix": {
    "core": 17,
@@ -304,12 +304,12 @@
   "iou": 0.03,
   "n_units": 1,
   "redrawn_km2": 84,
-  "ref_legible_pct": 89,
+  "ref_legible_pct": 63,
   "ref_boundary": [
    "J. KOAYA \u2013 J. NOAYA 4428 \u2013 J. HELISI ridge on the N/NW (102 km)",
    "Low hill \u2013 J. ABU RASEIN \u2013 J. NGAYA ridge on the SE (40 km)",
    "unnamed river (order 4) on the SW/S (24 km)",
-   "geological contact O|IU (sudan) on the SE/S (22 km)"
+   "R. Adda (1930s sheet) on the S/SW (18 km)"
   ],
   "class_mix": {
    "core": 34,
@@ -326,7 +326,7 @@
   "iou": 0.69,
   "n_units": 5,
   "redrawn_km2": 7560,
-  "ref_legible_pct": 85,
+  "ref_legible_pct": 77,
   "ref_boundary": [
    "Chel River on the S/E (90 km)",
    "Lol on the N/NW (42 km)",
@@ -352,12 +352,12 @@
   "iou": 0.55,
   "n_units": 3,
   "redrawn_km2": 1740,
-  "ref_legible_pct": 83,
+  "ref_legible_pct": 67,
   "ref_boundary": [
    "Low hill \u2013 J. ABU RASEIN \u2013 J. NGAYA ridge on the NE/W (48 km)",
    "Boro on the S/N (14 km)",
    "W. Manga (1930s sheet) on the SW (12 km)",
-   "geological contact IU|PLu (sudan) on the E/SE (10 km)"
+   "W. Tabyi (1930s sheet) on the E (6 km)"
   ],
   "class_mix": {
    "core": 90,
@@ -375,12 +375,12 @@
   "iou": 0.65,
   "n_units": 1,
   "redrawn_km2": 436,
-  "ref_legible_pct": 76,
+  "ref_legible_pct": 54,
   "ref_boundary": [
-   "study-area edge on the SW/SE (24 km)",
    "unnamed river (order 4) on the NW/W (16 km)",
    "R. Aka (1930s sheet) on the S/SW (14 km)",
-   "COD border on the E/NW (12 km)"
+   "COD border on the E/NW (12 km)",
+   "K. Pirgala (1930s sheet) on the N/NW (10 km)"
   ],
   "class_mix": {
    "core": 3,
@@ -420,12 +420,12 @@
   "iou": 0.0,
   "n_units": 0,
   "redrawn_km2": 0,
-  "ref_legible_pct": 100,
+  "ref_legible_pct": 86,
   "ref_boundary": [
    "Khor Dabura on the NE/N (6 km)",
    "Lol on the S/NE (6 km)",
    "Boro on the SW/W (6 km)",
-   "geological contact QF|PLu (sudan) on the N/SE (4 km)"
+   "1930s Dist. Bdy. (Western) Northern on the W (2 km)"
   ],
   "class_mix": {
    "core": 91,
@@ -439,12 +439,12 @@
   "iou": 0.85,
   "n_units": 13,
   "redrawn_km2": 12952,
-  "ref_legible_pct": 84,
+  "ref_legible_pct": 57,
   "ref_boundary": [
-   "study-area edge on the W/SW (176 km)",
    "Mbomou on the NE/E (160 km)",
    "unnamed river (order 4) on the W/SE (88 km)",
-   "COD border on the E (24 km)"
+   "COD border on the E (24 km)",
+   "R.Uere (1930s sheet) on the E/SE (18 km)"
   ],
   "class_mix": {
    "core": 3,
@@ -473,12 +473,12 @@
   "iou": 0.26,
   "n_units": 1,
   "redrawn_km2": 260,
-  "ref_legible_pct": 100,
+  "ref_legible_pct": 62,
   "ref_boundary": [
    "unnamed river (order 4) on the N/SW (26 km)",
    "Yata on the NE/N (20 km)",
-   "geological contact Q|Xi (car) on the S/SE (20 km)",
-   "B.Yata (1930s sheet) on the W/SW (16 km)"
+   "B.Yata (1930s sheet) on the W/SW (16 km)",
+   "B. Ngaya (1930s sheet) on the NE (2 km)"
   ],
   "class_mix": {
    "core": 99,
@@ -494,7 +494,7 @@
   "iou": 0.93,
   "n_units": 10,
   "redrawn_km2": 13168,
-  "ref_legible_pct": 98,
+  "ref_legible_pct": 85,
   "ref_boundary": [
    "unnamed river (order 4) on the W/NW (142 km)",
    "CAF border on the NE/N (86 km)",
@@ -524,12 +524,12 @@
   "iou": 0.44,
   "n_units": 10,
   "redrawn_km2": 5876,
-  "ref_legible_pct": 83,
+  "ref_legible_pct": 50,
   "ref_boundary": [
    "J. KOAYA \u2013 J. NOAYA 4428 \u2013 J. HELISI ridge on the SE/E (62 km)",
    "unnamed river (order 4) on the N/W (54 km)",
-   "geological contact Q|Xi (car) on the W/N (40 km)",
-   "Yata on the N/NE (34 km)"
+   "Yata on the N/NE (34 km)",
+   "CAF border on the SE/E (30 km)"
   ],
   "class_mix": {
    "core": 51,
@@ -547,6 +547,41 @@
    377,
    379,
    404
+  ]
+ },
+ {
+  "name": "WDPA Radom (National Park, approx. circle of reported 12,500 km2)",
+  "ref_km2": 12488,
+  "iou": 0.58,
+  "n_units": 14,
+  "redrawn_km2": 11456,
+  "ref_legible_pct": 24,
+  "ref_boundary": [
+   "J. KOAYA \u2013 J. NOAYA 4428 \u2013 J. HELISI ridge on the W/SW (18 km)",
+   "unnamed river (order 4) on the SE (10 km)",
+   "SDN border on the NE/S (8 km)",
+   "Umbelasha on the W (6 km)"
+  ],
+  "class_mix": {
+   "core": 27,
+   "wilderness": 8,
+   "community": 64
+  },
+  "units": [
+   17,
+   65,
+   204,
+   206,
+   242,
+   243,
+   246,
+   247,
+   267,
+   268,
+   289,
+   290,
+   312,
+   313
   ]
  },
  {
@@ -575,12 +610,12 @@
   "iou": 0.4,
   "n_units": 5,
   "redrawn_km2": 2152,
-  "ref_legible_pct": 41,
+  "ref_legible_pct": 33,
   "ref_boundary": [
    "R. Busseri (1930s sheet) on the NE/W (16 km)",
-   "geological contact IU|PLu (sudan) on the NW/N (16 km)",
    "R. Basseri (1930s sheet) on the W/SW (14 km)",
-   "K. Ungobo (1930s sheet) on the NE (12 km)"
+   "K. Ungobo (1930s sheet) on the NE (12 km)",
+   "Busseri River on the NE (8 km)"
   ],
   "class_mix": {
    "core": 64,
@@ -600,7 +635,7 @@
   "iou": 0.81,
   "n_units": 13,
   "redrawn_km2": 21580,
-  "ref_legible_pct": 88,
+  "ref_legible_pct": 65,
   "ref_boundary": [
    "unnamed river (order 4) on the N/W (146 km)",
    "Chinko on the S/NE (138 km)",
@@ -634,7 +669,7 @@
   "iou": 0.68,
   "n_units": 26,
   "redrawn_km2": 26336,
-  "ref_legible_pct": 73,
+  "ref_legible_pct": 72,
   "ref_boundary": [
    "Nahr al Jur on the W/NW (142 km)",
    "Ibba on the W/NW (40 km)",
@@ -734,7 +769,7 @@
     "geo_affinity_mean": 0.05,
     "cropland_2003_pct": 0.0,
     "cropland_2019_pct": 0.0,
-    "boundary_legibility": 0.25,
+    "boundary_legibility": 0.22,
     "built_growth_x": null,
     "front_axis_coherence": 0.31,
     "front_axis": "N\u2013S",
@@ -757,10 +792,11 @@
      "K. Nfotoro (1930s sheet) on the NW (16 km)",
      "Kenarofe (1930s sheet) on the SW (16 km)",
      "R. Pongo (1930s sheet) on the N/NW (14 km)",
-     "Bo River (1930s sheet) on the E (14 km)"
+     "Bo River (1930s sheet) on the E (14 km)",
+     "44 km along a geological contact only (not visible on the ground \u2014 needs beacons)"
     ],
     "perimeter_km": 504,
-    "unattributed_pct": 56,
+    "unattributed_pct": 64,
     "name": "PLAN Pongo-Wau-Numatinna_National-Park_1587922ha"
    },
    {
@@ -820,7 +856,7 @@
     "geo_affinity_mean": 0.8,
     "cropland_2003_pct": 0.0,
     "cropland_2019_pct": 0.0,
-    "boundary_legibility": 0.66,
+    "boundary_legibility": 0.54,
     "built_growth_x": null,
     "front_axis_coherence": 0.3,
     "front_axis": "E\u2013W",
@@ -841,12 +877,13 @@
      "Low hill \u2013 J. ABU RASEIN \u2013 J. NGAYA ridge on the N/NW (60 km)",
      "CAF border on the S/SW (38 km)",
      "W. Tabyi (1930s sheet) on the SE/E (36 km)",
-     "geological contact PMs|PLp (sudan) on the N (14 km)",
      "K. Kago (1930s sheet) on the N (12 km)",
-     "geological contact IU|PLu (sudan) on the NE/E (8 km)"
+     "I.Dioro (1930s sheet) on the N (4 km)",
+     "SDN border on the N (4 km)",
+     "32 km along a geological contact only (not visible on the ground \u2014 needs beacons)"
     ],
     "perimeter_km": 240,
-    "unattributed_pct": 15,
+    "unattributed_pct": 28,
     "name": "PLAN Boro_Wilderness_3,180km2"
    },
    {
@@ -904,7 +941,7 @@
     "geo_affinity_mean": 0.06,
     "cropland_2003_pct": 0.0,
     "cropland_2019_pct": 0.0,
-    "boundary_legibility": 0.68,
+    "boundary_legibility": 0.38,
     "built_growth_x": null,
     "front_axis_coherence": 0.28,
     "front_axis": "E\u2013W",
@@ -925,12 +962,13 @@
      "CAF border on the NW/SW (82 km)",
      "1930s A. E. SUDAN (Bahr el Ghazal Province) on the SE/S (50 km)",
      "R. Timberi (1930s sheet) on the N/NW (30 km)",
-     "geological contact PLu|PLp (sudan) on the E/NE (20 km)",
      "W. Tabyi (1930s sheet) on the NW (16 km)",
-     "geological contact Zeta|M (car) on the W/SW (12 km)"
+     "R.Raga (1930s sheet) on the N (10 km)",
+     "Ugfukote (1930s sheet) on the S (8 km)",
+     "46 km along a geological contact only (not visible on the ground \u2014 needs beacons)"
     ],
     "perimeter_km": 516,
-    "unattributed_pct": 39,
+    "unattributed_pct": 48,
     "name": "PLAN Boro-Biri-headwaters_13,111km2"
    },
    {
@@ -987,7 +1025,7 @@
     "geo_affinity_mean": 0.05,
     "cropland_2003_pct": 0.0,
     "cropland_2019_pct": 0.0,
-    "boundary_legibility": 0.26,
+    "boundary_legibility": 0.29,
     "built_growth_x": null,
     "front_axis_coherence": 0.27,
     "front_axis": "N\u2013S",
@@ -1012,11 +1050,12 @@
      "Bo River on the E/SE (58 km)",
      "unnamed river (order 4) on the S/SW (34 km)",
      "Pongo on the N (32 km)",
-     "geological contact PLu|PLp (sudan) on the E/SE (26 km)",
-     "geological contact IU|PLp (sudan) on the SE (24 km)"
+     "Kenarofe (1930s sheet) on the SW (14 km)",
+     "Kuru on the NW (12 km)",
+     "114 km along a geological contact only (not visible on the ground \u2014 needs beacons)"
     ],
     "perimeter_km": 1146,
-    "unattributed_pct": 51,
+    "unattributed_pct": 61,
     "name": "PLAN Wau-Wilderness_30,329km2"
    },
    {
@@ -1076,7 +1115,7 @@
     "geo_affinity_mean": 0.07,
     "cropland_2003_pct": 0.0,
     "cropland_2019_pct": 0.0,
-    "boundary_legibility": 0.44,
+    "boundary_legibility": 0.35,
     "built_growth_x": 1.0,
     "front_axis_coherence": 0.28,
     "front_axis": "E\u2013W",
@@ -1099,13 +1138,14 @@
     "boundary": [
      "Nahr al Jur on the NW/SW (98 km)",
      "unnamed river (order 4) on the SW/SE (28 km)",
-     "geological contact PLu|PLp (sudan) on the NW/W (28 km)",
      "Wahko on the NE (22 km)",
      "K. Daberi (1930s sheet) on the E (22 km)",
-     "geological contact QF|PLu (sudan) on the N (20 km)"
+     "R. Yabo (1930s sheet) on the W (20 km)",
+     "Ibba on the N (16 km)",
+     "82 km along a geological contact only (not visible on the ground \u2014 needs beacons)"
     ],
     "perimeter_km": 848,
-    "unattributed_pct": 43,
+    "unattributed_pct": 53,
     "name": "PLAN Southern-NP-Wilderness_41'590km2"
    },
    {
@@ -1162,7 +1202,7 @@
     "geo_affinity_mean": 0.0,
     "cropland_2003_pct": 0.0,
     "cropland_2019_pct": 0.0,
-    "boundary_legibility": 0.1,
+    "boundary_legibility": 0.21,
     "built_growth_x": null,
     "front_axis_coherence": 0.33,
     "front_axis": "SE\u2013NW",
@@ -1241,7 +1281,7 @@
     "geo_affinity_mean": 0.28,
     "cropland_2003_pct": 0.0,
     "cropland_2019_pct": 0.0,
-    "boundary_legibility": 0.57,
+    "boundary_legibility": 0.42,
     "built_growth_x": null,
     "front_axis_coherence": 0.34,
     "front_axis": "E\u2013W",
@@ -1266,11 +1306,12 @@
      "Unsurveyed (1930s sheet) on the SE (30 km)",
      "Nahr al Jur on the SE (22 km)",
      "R. Duma (1930s sheet) on the SE/E (20 km)",
-     "geological contact IU|PLp (sudan) on the E/SE (14 km)",
-     "1930s Province Boundary on the SE (14 km)"
+     "1930s Province Boundary on the SE (14 km)",
+     "R. Riba (1930s sheet) on the SE (14 km)",
+     "46 km along a geological contact only (not visible on the ground \u2014 needs beacons)"
     ],
     "perimeter_km": 498,
-    "unattributed_pct": 30,
+    "unattributed_pct": 39,
     "name": "PLAN zone-p\u00e2turage-durable_Numatina_15'000km2"
    },
    {
@@ -1327,7 +1368,7 @@
     "geo_affinity_mean": 0.09,
     "cropland_2003_pct": 0.0,
     "cropland_2019_pct": 0.0,
-    "boundary_legibility": 0.69,
+    "boundary_legibility": 0.57,
     "built_growth_x": null,
     "front_axis_coherence": 0.34,
     "front_axis": "E\u2013W",
@@ -1350,13 +1391,14 @@
     "boundary": [
      "COD border on the W/E (62 km)",
      "unnamed river (order 4) on the W/E (46 km)",
-     "study-area edge on the E/SW (40 km)",
      "Solo on the W (12 km)",
      "K. Aka (1930s sheet) on the E (6 km)",
-     "R. Aka (1930s sheet) on the E (6 km)"
+     "R. Aka (1930s sheet) on the E (6 km)",
+     "K.Majir e Bari (1930s sheet) on the W (6 km)",
+     "40 km along a geological contact only (not visible on the ground \u2014 needs beacons)"
     ],
     "perimeter_km": 236,
-    "unattributed_pct": 19,
+    "unattributed_pct": 36,
     "name": "PLAN zone-p\u00e2turage-durable_Garamba_2'500km2"
    },
    {
@@ -1413,7 +1455,7 @@
     "geo_affinity_mean": 0.82,
     "cropland_2003_pct": 0.0,
     "cropland_2019_pct": 0.0,
-    "boundary_legibility": 0.69,
+    "boundary_legibility": 0.48,
     "built_growth_x": null,
     "front_axis_coherence": 0.3,
     "front_axis": "E\u2013W",
@@ -1434,12 +1476,13 @@
      "J. KOAYA \u2013 J. NOAYA 4428 \u2013 J. HELISI ridge on the N/NW (102 km)",
      "Low hill \u2013 J. ABU RASEIN \u2013 J. NGAYA ridge on the SE (40 km)",
      "unnamed river (order 4) on the SW/S (24 km)",
-     "geological contact O|IU (sudan) on the SE/S (22 km)",
      "R. Adda (1930s sheet) on the S/SW (18 km)",
-     "geological contact QB|PLu (sudan) on the NW/N (14 km)"
+     "R. Uroni (1930s sheet) on the SW/S (12 km)",
+     "Marsh (1930s sheet) on the N (10 km)",
+     "104 km along a geological contact only (not visible on the ground \u2014 needs beacons)"
     ],
     "perimeter_km": 402,
-    "unattributed_pct": 11,
+    "unattributed_pct": 37,
     "name": "PLAN zone-p\u00e2turage-durable_Radom-Sudan"
    },
    {
@@ -1466,9 +1509,9 @@
     "built_2000_km2": 0.12,
     "built_2015_km2": 0.44,
     "towns": [
-     "Agwat (1930s) 4,065",
-     "Busseri River* 1,779",
-     "Koko* 1,349"
+     "Langlen (1930s village) 4,065",
+     "Wongkurnuk (1930s village) 1,779",
+     "Asharo (1930s village) 1,349"
     ],
     "fire_det_2024_25": 45339,
     "fire_per_1000km2_yr": 4293,
@@ -1500,7 +1543,7 @@
     "geo_affinity_mean": 0.35,
     "cropland_2003_pct": 0.01,
     "cropland_2019_pct": 0.3,
-    "boundary_legibility": 0.75,
+    "boundary_legibility": 0.56,
     "built_growth_x": 15.3,
     "front_axis_coherence": 0.35,
     "front_axis": "SE\u2013NW",
@@ -1526,10 +1569,11 @@
      "Kuru River on the NE (20 km)",
      "Lol River on the NE/N (18 km)",
      "Sopo on the W/NW (14 km)",
-     "geological contact QF|PLu (sudan) on the E/N (12 km)"
+     "Khor Ang'egi on the W (10 km)",
+     "24 km along a geological contact only (not visible on the ground \u2014 needs beacons)"
     ],
     "perimeter_km": 284,
-    "unattributed_pct": 15,
+    "unattributed_pct": 23,
     "name": "WDPA Chelkou (Game Reserve)"
    },
    {
@@ -1587,7 +1631,7 @@
     "geo_affinity_mean": 0.8,
     "cropland_2003_pct": 0.0,
     "cropland_2019_pct": 0.0,
-    "boundary_legibility": 0.56,
+    "boundary_legibility": 0.42,
     "built_growth_x": null,
     "front_axis_coherence": 0.36,
     "front_axis": "SE\u2013NW",
@@ -1606,14 +1650,12 @@
     "cls": "core",
     "boundary": [
      "Low hill \u2013 J. ABU RASEIN \u2013 J. NGAYA ridge on the N/NE (18 km)",
-     "geological contact IU|PLu (sudan) on the SE/E (14 km)",
      "W. Tabyi (1930s sheet) on the S/SE (12 km)",
      "R. Zeizi (1930s sheet) on the E/N (8 km)",
-     "geological contact PLu|PLp (sudan) on the N (4 km)",
-     "geological contact O|PLp (sudan) on the W (4 km)"
+     "22 km along a geological contact only (not visible on the ground \u2014 needs beacons)"
     ],
     "perimeter_km": 64,
-    "unattributed_pct": 6,
+    "unattributed_pct": 41,
     "name": "WDPA Boro (Game Reserve)"
    },
    {
@@ -1667,7 +1709,7 @@
     "geo_affinity_mean": 0.0,
     "cropland_2003_pct": 0.0,
     "cropland_2019_pct": 0.0,
-    "boundary_legibility": 0.72,
+    "boundary_legibility": 0.7,
     "built_growth_x": null,
     "front_axis_coherence": 0.45,
     "front_axis": "E\u2013W",
@@ -1689,12 +1731,12 @@
     "cls": "wilderness",
     "boundary": [
      "R. Aka (1930s sheet) on the E/W (28 km)",
-     "study-area edge on the E/W (20 km)",
      "K. Aka (1930s sheet) on the W (6 km)",
-     "unnamed river (order 4) on the NW (2 km)"
+     "unnamed river (order 4) on the NW (2 km)",
+     "20 km along a geological contact only (not visible on the ground \u2014 needs beacons)"
     ],
     "perimeter_km": 56,
-    "unattributed_pct": 0,
+    "unattributed_pct": 36,
     "name": "WDPA Garamba (National Park)"
    },
    {
@@ -1750,7 +1792,7 @@
     "geo_affinity_mean": 0.0,
     "cropland_2003_pct": 0.0,
     "cropland_2019_pct": 0.0,
-    "boundary_legibility": 0.76,
+    "boundary_legibility": 0.45,
     "built_growth_x": null,
     "front_axis_coherence": 0.34,
     "front_axis": "E\u2013W",
@@ -1832,7 +1874,7 @@
     "geo_affinity_mean": 0.5,
     "cropland_2003_pct": 0.0,
     "cropland_2019_pct": 0.06,
-    "boundary_legibility": 0.75,
+    "boundary_legibility": 0.6,
     "built_growth_x": null,
     "front_axis_coherence": 0.33,
     "front_axis": "E\u2013W",
@@ -1856,12 +1898,13 @@
      "Khor Dabura on the NE/N (6 km)",
      "Lol on the S/NE (6 km)",
      "Boro on the SW/W (6 km)",
-     "geological contact QF|PLu (sudan) on the N/SE (4 km)",
      "1930s Dist. Bdy. (Western) Northern on the W (2 km)",
-     "J. ABB \u2013 J. TELGONA \u2013 J. ABU KUKU ridge on the W (2 km)"
+     "J. ABB \u2013 J. TELGONA \u2013 J. ABU KUKU ridge on the W (2 km)",
+     "R. Boro or Lol (1930s sheet) on the E (2 km)",
+     "4 km along a geological contact only (not visible on the ground \u2014 needs beacons)"
     ],
     "perimeter_km": 28,
-    "unattributed_pct": 0,
+    "unattributed_pct": 14,
     "name": "WDPA Ashana (Game Reserve)"
    },
    {
@@ -1917,7 +1960,7 @@
     "geo_affinity_mean": 0.0,
     "cropland_2003_pct": 0.0,
     "cropland_2019_pct": 0.0,
-    "boundary_legibility": 0.76,
+    "boundary_legibility": 0.62,
     "built_growth_x": 4.7,
     "front_axis_coherence": 0.33,
     "front_axis": "E\u2013W",
@@ -1938,15 +1981,16 @@
     ],
     "cls": "wilderness",
     "boundary": [
-     "study-area edge on the W/SW (176 km)",
      "Mbomou on the NE/E (160 km)",
      "unnamed river (order 4) on the W/SE (88 km)",
      "COD border on the E (24 km)",
      "R.Uere (1930s sheet) on the E/SE (18 km)",
-     "R. Uere (1930s sheet) on the E (16 km)"
+     "R. Uere (1930s sheet) on the E (16 km)",
+     "Asa on the W (12 km)",
+     "176 km along a geological contact only (not visible on the ground \u2014 needs beacons)"
     ],
     "perimeter_km": 658,
-    "unattributed_pct": 16,
+    "unattributed_pct": 43,
     "name": "WDPA Bili-Uere (Hunting Area)"
    },
    {
@@ -2003,7 +2047,7 @@
     "geo_affinity_mean": 1.31,
     "cropland_2003_pct": 0.0,
     "cropland_2019_pct": 0.0,
-    "boundary_legibility": 0.49,
+    "boundary_legibility": 0.41,
     "built_growth_x": null,
     "front_axis_coherence": 0.27,
     "front_axis": "N\u2013S",
@@ -2023,13 +2067,14 @@
     "boundary": [
      "unnamed river (order 4) on the N/SW (26 km)",
      "Yata on the NE/N (20 km)",
-     "geological contact Q|Xi (car) on the S/SE (20 km)",
      "B.Yata (1930s sheet) on the W/SW (16 km)",
-     "geological contact a1|Zeta (car) on the N/E (14 km)",
-     "geological contact Zeta|gamma_h (car) on the E (4 km)"
+     "B. Ngaya (1930s sheet) on the NE (2 km)",
+     "Water 10 wide (1930s sheet) on the E (2 km)",
+     "unnamed hills ridge on the E (2 km)",
+     "42 km along a geological contact only (not visible on the ground \u2014 needs beacons)"
     ],
     "perimeter_km": 110,
-    "unattributed_pct": 0,
+    "unattributed_pct": 38,
     "name": "WDPA Andre Felix (National Park)"
    },
    {
@@ -2087,7 +2132,7 @@
     "geo_affinity_mean": 1.76,
     "cropland_2003_pct": 0.0,
     "cropland_2019_pct": 0.0,
-    "boundary_legibility": 0.82,
+    "boundary_legibility": 0.54,
     "built_growth_x": null,
     "front_axis_coherence": 0.28,
     "front_axis": "N\u2013S",
@@ -2110,10 +2155,11 @@
      "unnamed river (order 5) on the SW/W (72 km)",
      "Ngoangoa on the SE/E (70 km)",
      "secondary road on the S (48 km)",
-     "geological contact Zeta|gamma_h (car) on the NE/E (24 km)"
+     "O. Yoredo (1930s sheet) on the N (12 km)",
+     "70 km along a geological contact only (not visible on the ground \u2014 needs beacons)"
     ],
     "perimeter_km": 540,
-    "unattributed_pct": 2,
+    "unattributed_pct": 15,
     "name": "WDPA Zemongo (Faunal Reserve)"
    },
    {
@@ -2172,7 +2218,7 @@
     "geo_affinity_mean": 1.65,
     "cropland_2003_pct": 0.0,
     "cropland_2019_pct": 0.0,
-    "boundary_legibility": 0.49,
+    "boundary_legibility": 0.42,
     "built_growth_x": 1.2,
     "front_axis_coherence": 0.27,
     "front_axis": "E\u2013W",
@@ -2195,14 +2241,107 @@
     "boundary": [
      "J. KOAYA \u2013 J. NOAYA 4428 \u2013 J. HELISI ridge on the SE/E (62 km)",
      "unnamed river (order 4) on the N/W (54 km)",
-     "geological contact Q|Xi (car) on the W/N (40 km)",
      "Yata on the N/NE (34 km)",
      "CAF border on the SE/E (30 km)",
-     "geological contact Xi|Zeta (car) on the NE/W (24 km)"
+     "J. YUBA \u2013 J. DOUGDIOU ridge on the N (12 km)",
+     "W. Serihama (1930s sheet) on the N/NE (10 km)",
+     "158 km along a geological contact only (not visible on the ground \u2014 needs beacons)"
     ],
     "perimeter_km": 478,
-    "unattributed_pct": 17,
+    "unattributed_pct": 50,
     "name": "WDPA Yata-Ngaya (Faunal Reserve)"
+   },
+   {
+    "uid": 19,
+    "seed": "WDPA Radom (National Park, approx. circle of reported 12,500 km2)",
+    "seed_kind": "empty-land",
+    "area_km2": 12488.0,
+    "area_ha": 1248800,
+    "country": "SDN",
+    "in_zones": [
+     "WDPA Radom (National Park, approx. circle of reported 12,500 km2)"
+    ],
+    "overlaps": [
+     "WDPA Radom (National Park, approx. circle of reported 12,500 km2) 100%"
+    ],
+    "km_to_park": 256.8,
+    "clusters": 39,
+    "population_est": 44344,
+    "pop_per_km2": 3.551,
+    "osm_places": 0,
+    "new_since_2015": 2,
+    "camps": 31,
+    "built_km2": 0.52,
+    "built_2000_km2": 0.21,
+    "built_2015_km2": 0.34,
+    "towns": [
+     "Jebel Mishmira* (nearest_place, unverified) 34,320",
+     "Redom (1930s village) 5,376",
+     "Jebel Mishmira* (nearest_place, unverified) 1,157"
+    ],
+    "fire_det_2024_25": 67523,
+    "fire_per_1000km2_yr": 2704,
+    "fire_nov_feb_share": 0.82,
+    "fronts": 2579,
+    "fronts_per_1000km2": 206.5,
+    "fronts_transhumance_pct": 96,
+    "fronts_long": 1508,
+    "fronts_long_per_1000km2": 120.76,
+    "long_front_intensity": 134.94,
+    "front_dirs": {
+     "E": 414,
+     "NE": 397,
+     "NW": 354
+    },
+    "clearing_events": 48,
+    "clearing_km2": 1.25,
+    "clearing_since_2020_km2": 0.32,
+    "clearing_encroach_slash": 3,
+    "mine_reported": 6,
+    "mine_candidates": 1,
+    "mine_top05_cells": 46,
+    "mine_watchlist": 1,
+    "mining_measured": true,
+    "geology": [
+     "PLu Undifferentiated metamorphic rocks, migm 37%",
+     "PLp Para schist 19%",
+     "QB Palaeolevees, old gravel and stabilized  15%"
+    ],
+    "geo_affinity_mean": 0.24,
+    "cropland_2003_pct": 1.27,
+    "cropland_2019_pct": 2.12,
+    "boundary_legibility": 0.2,
+    "built_growth_x": 2.5,
+    "front_axis_coherence": 0.27,
+    "front_axis": "E\u2013W",
+    "rationale": [
+     "community (settled / farmed / mining-exposed \u2014 none of the above held)",
+     "long fronts per 10 km width 134.94 >= 154.41: no",
+     "transhumance share % 96 >= 50: yes",
+     "axis coherence (0.25 = random) 0.27 >= 0.4: no",
+     "people/km2 3.551 <= 2: no",
+     "\u2014 not a corridor; core?",
+     "people/km2 3.551 <= 0.02: no",
+     "cropland 2019 % 2.12 <= 0.05: no",
+     "clearing since 2020 km2/1000km2 0.026 <= 0.5: yes",
+     "reported workings 6 <= 0: no",
+     "\u2014 not core; wilderness?",
+     "people/km2 3.551 <= 0.5: no",
+     "cropland 2019 % 2.12 <= 0.5: no"
+    ],
+    "cls": "community",
+    "boundary": [
+     "J. KOAYA \u2013 J. NOAYA 4428 \u2013 J. HELISI ridge on the W/SW (18 km)",
+     "unnamed river (order 4) on the SE (10 km)",
+     "SDN border on the NE/S (8 km)",
+     "Umbelasha on the W (6 km)",
+     "J. OROKULLA \u2013 J. DELETI \u2013 J. KURNU BANDA ridge on the SE (6 km)",
+     "K. Diofo (1930s sheet) on the S/SW (6 km)",
+     "68 km along a geological contact only (not visible on the ground \u2014 needs beacons)"
+    ],
+    "perimeter_km": 354,
+    "unattributed_pct": 76,
+    "name": "WDPA Radom (National Park, approx. circle of reported 12,500 km2)"
    },
    {
     "uid": 20,
@@ -2257,7 +2396,7 @@
     "geo_affinity_mean": 0.0,
     "cropland_2003_pct": 0.0,
     "cropland_2019_pct": 0.0,
-    "boundary_legibility": null,
+    "boundary_legibility": 0.47,
     "built_growth_x": null,
     "front_axis_coherence": 0.47,
     "front_axis": "E\u2013W",
@@ -2417,7 +2556,7 @@
     "geo_affinity_mean": 3.1,
     "cropland_2003_pct": 0.0,
     "cropland_2019_pct": 0.0,
-    "boundary_legibility": 0.6,
+    "boundary_legibility": 0.51,
     "built_growth_x": null,
     "front_axis_coherence": 0.32,
     "front_axis": "E\u2013W",
@@ -2442,11 +2581,10 @@
      "Chinko on the S/NE (138 km)",
      "unnamed river (order 5) on the E/SE (72 km)",
      "Mbari on the SW/W (72 km)",
-     "geological contact Xi|Zeta (car) on the NW/NE (60 km)",
-     "geological contact Xi|D (car) on the S/SW (18 km)"
+     "158 km along a geological contact only (not visible on the ground \u2014 needs beacons)"
     ],
     "perimeter_km": 670,
-    "unattributed_pct": 12,
+    "unattributed_pct": 36,
     "name": "WDPA Chinko (Conservation Area)"
    },
    {
@@ -2502,7 +2640,7 @@
     "geo_affinity_mean": 0.0,
     "cropland_2003_pct": 0.0,
     "cropland_2019_pct": 0.03,
-    "boundary_legibility": 0.59,
+    "boundary_legibility": 0.44,
     "built_growth_x": null,
     "front_axis_coherence": 0.32,
     "front_axis": "SE\u2013NW",
@@ -2526,12 +2664,13 @@
      "Wahko on the NW/S (34 km)",
      "River Gulnam on the SE/NW (32 km)",
      "River Rohl on the SE (14 km)",
-     "geological contact PMq|PLu (sudan) on the S (4 km)",
      "R. Karang (1930s sheet) on the SE (2 km)",
-     "geological contact IY|PMq (sudan) on the S (2 km)"
+     "K. M' Beleko or Wokko (1930s sheet) on the SE (2 km)",
+     "KALVEZ (1930s sheet) on the S (2 km)",
+     "6 km along a geological contact only (not visible on the ground \u2014 needs beacons)"
     ],
     "perimeter_km": 188,
-    "unattributed_pct": 51,
+    "unattributed_pct": 54,
     "name": "WDPA Southern (National Park)"
    }
   ]

@@ -1,0 +1,9 @@
+{
+ "_note": "Towns OSM (Geofabrik SSD extract) has no place node for, so the planner would fall back to park_settlements.nearest_place, which is a river name or a town 100+ km away (the 24,018-person cluster at 25.67E 8.477N is Raga/Raja, not 'Koko'). Coordinates are the GHSL cluster centroids; names verified against the 1930s Sudan Survey sheet labels (RAGA, WAU, Deim Zubeir, Rian Kuj) and the EASY field mission. Reach: 8 km like an OSM town.",
+ "towns": [
+  {"name": "Raga (Raja)", "lon": 25.67, "lat": 8.477, "source": "1930s sheet 'Raga' 25.694E 8.459N; Raja County HQ"},
+  {"name": "Wau", "lon": 27.983, "lat": 7.711, "source": "1930s sheet 'WAU' 27.976E 7.701N; state capital"},
+  {"name": "Deim Zubeir", "lon": 26.18, "lat": 7.71, "source": "1930s sheet 'Deim Zubeir' 26.175E 7.707N"},
+  {"name": "Koko (Rian Kuj)", "lon": 26.857, "lat": 9.221, "source": "1930s sheet 'Rian Kuj' 26.867E 9.246N; XSA review return town, 3 → 209 ha since 2000"}
+ ]
+}

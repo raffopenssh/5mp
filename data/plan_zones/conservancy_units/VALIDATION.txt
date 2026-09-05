@@ -3,67 +3,71 @@ VALIDATION — does the planner, fed only rivers/ridges/borders + measurements, 
   class mix: what the planner calls the land inside the reference, by area.  Agreement = the reference's intended class dominates.
 
 WDPA Zemongo (Faunal Reserve)
-  ref   13,660 km2  ref-legible 98%  :: unnamed river (order 4) on the W/NW (142 km); CAF border on the NE/N (86 km); unnamed river (order 5) on the SW/W (72 km); Ngoangoa on the SE/E (70 km)
+  ref   13,660 km2  ref-legible 85%  :: unnamed river (order 4) on the W/NW (142 km); CAF border on the NE/N (86 km); unnamed river (order 5) on the SW/W (72 km); Ngoangoa on the SE/E (70 km)
   re-drawn  13,168 km2 from 10 units  IoU 0.93   planner class mix {'core': 81, 'wilderness': 19}
 
 WDPA Bili-Uere (Hunting Area)
-  ref   11,384 km2  ref-legible 84%  :: study-area edge on the W/SW (176 km); Mbomou on the NE/E (160 km); unnamed river (order 4) on the W/SE (88 km); COD border on the E (24 km)
+  ref   11,384 km2  ref-legible 57%  :: Mbomou on the NE/E (160 km); unnamed river (order 4) on the W/SE (88 km); COD border on the E (24 km); R.Uere (1930s sheet) on the E/SE (18 km)
   re-drawn  12,952 km2 from 13 units  IoU 0.85   planner class mix {'core': 3, 'wilderness': 81, 'community': 16}
 
 WDPA Chinko (Conservation Area)
-  ref   19,700 km2  ref-legible 88%  :: unnamed river (order 4) on the N/W (146 km); Chinko on the S/NE (138 km); unnamed river (order 5) on the E/SE (80 km); Mbari on the SW/W (72 km)
+  ref   19,700 km2  ref-legible 65%  :: unnamed river (order 4) on the N/W (146 km); Chinko on the S/NE (138 km); unnamed river (order 5) on the E/SE (80 km); Mbari on the SW/W (72 km)
   re-drawn  21,580 km2 from 13 units  IoU 0.81   planner class mix {'core': 45, 'wilderness': 55, 'community': 0}
 
 PLAN Wau-Wilderness_30,329km2
-  ref   30,228 km2  ref-legible 56%  :: CAF border on the SW/W (116 km); Bo River on the E/SE (38 km); geological contact PLu|PLp (sudan) on the E/SE (30 km); Pongo on the N (24 km)
+  ref   30,228 km2  ref-legible 45%  :: CAF border on the SW/W (116 km); Bo River on the E/SE (38 km); Pongo on the N (24 km); Bo River (1930s sheet) on the E (12 km)
   re-drawn  34,464 km2 from 26 units  IoU 0.77   planner class mix {'core': 70, 'wilderness': 26, 'community': 3}
 
 PLAN Southern-NP-Wilderness_41'590km2
-  ref   38,716 km2  ref-legible 56%  :: Nahr al Jur on the NW/SW (86 km); geological contact PLu|PLp (sudan) on the NW/W (36 km); unnamed river (order 4) on the SW/SE (28 km); Wahko on the NE (22 km)
+  ref   38,716 km2  ref-legible 46%  :: Nahr al Jur on the NW/SW (86 km); unnamed river (order 4) on the SW/SE (28 km); Wahko on the NE (22 km); K. Daberi (1930s sheet) on the E (22 km)
   re-drawn  36,632 km2 from 46 units  IoU 0.76   planner class mix {'core': 18, 'wilderness': 52, 'community': 24, 'corridor': 6}
 
 PLAN Boro_Wilderness_3,180km2
-  ref    3,160 km2  ref-legible 85%  :: Low hill – J. ABU RASEIN – J. NGAYA ridge on the N/NW (60 km); CAF border on the S/SW (38 km); W. Tabyi (1930s sheet) on the SE/E (36 km); geological contact PMs|PLp (sudan) on the N (14 km)
+  ref    3,160 km2  ref-legible 72%  :: Low hill – J. ABU RASEIN – J. NGAYA ridge on the N/NW (60 km); CAF border on the S/SW (38 km); W. Tabyi (1930s sheet) on the SE/E (36 km); K. Kago (1930s sheet) on the N (12 km)
   re-drawn   2,908 km2 from 5 units  IoU 0.73   planner class mix {'core': 94, 'wilderness': 5, 'community': 1, 'corridor': 0}
 
 PLAN Boro-Biri-headwaters_13,111km2
-  ref   13,036 km2  ref-legible 61%  :: CAF border on the NW/SW (82 km); 1930s A. E. SUDAN (Bahr el Ghazal Province) on the SE/S (50 km); R. Timberi (1930s sheet) on the N/NW (30 km); geological contact PLu|PLp (sudan) on the E/NE (20 km)
+  ref   13,036 km2  ref-legible 52%  :: CAF border on the NW/SW (82 km); 1930s A. E. SUDAN (Bahr el Ghazal Province) on the SE/S (50 km); R. Timberi (1930s sheet) on the N/NW (30 km); W. Tabyi (1930s sheet) on the NW (16 km)
   re-drawn  15,140 km2 from 13 units  IoU 0.71   planner class mix {'core': 73, 'wilderness': 12, 'community': 12, 'corridor': 2}
 
 WDPA Chelkou (Game Reserve)
-  ref    5,280 km2  ref-legible 85%  :: Chel River on the S/E (90 km); Lol on the N/NW (42 km); Kuru River on the NE (20 km); Lol River on the NE/N (18 km)
+  ref    5,280 km2  ref-legible 77%  :: Chel River on the S/E (90 km); Lol on the N/NW (42 km); Kuru River on the NE (20 km); Lol River on the NE/N (18 km)
   re-drawn   7,560 km2 from 5 units  IoU 0.69   planner class mix {'core': 3, 'wilderness': 59, 'community': 37}
 
 WDPA Southern (National Park)
-  ref   19,236 km2  ref-legible 73%  :: Nahr al Jur on the W/NW (142 km); Ibba on the W/NW (40 km); River Gulnam on the E/NE (26 km); Wahko on the NE/SE (24 km)
+  ref   19,236 km2  ref-legible 72%  :: Nahr al Jur on the W/NW (142 km); Ibba on the W/NW (40 km); River Gulnam on the E/NE (26 km); Wahko on the NE/SE (24 km)
   re-drawn  26,336 km2 from 26 units  IoU 0.68   planner class mix {'core': 11, 'wilderness': 59, 'community': 26, 'corridor': 4}
 
 PLAN Southern NP
-  ref   13,684 km2  ref-legible 62%  :: Nahr al Jur on the W/NW (90 km); Wahko on the E/SE (32 km); Ibba on the N/SW (26 km); geological contact QF|PLu (sudan) on the N/NE (20 km)
+  ref   13,684 km2  ref-legible 51%  :: Nahr al Jur on the W/NW (90 km); Wahko on the E/SE (32 km); Ibba on the N/SW (26 km); K.Teh (1930s sheet) on the S (20 km)
   re-drawn  14,508 km2 from 16 units  IoU 0.65   planner class mix {'core': 13, 'wilderness': 42, 'community': 41, 'corridor': 4}
 
 WDPA Garamba (National Park)
-  ref      636 km2  ref-legible 76%  :: study-area edge on the SW/SE (24 km); unnamed river (order 4) on the NW/W (16 km); R. Aka (1930s sheet) on the S/SW (14 km); COD border on the E/NW (12 km)
+  ref      636 km2  ref-legible 54%  :: unnamed river (order 4) on the NW/W (16 km); R. Aka (1930s sheet) on the S/SW (14 km); COD border on the E/NW (12 km); K. Pirgala (1930s sheet) on the N/NW (10 km)
   re-drawn     436 km2 from 1 units  IoU 0.65   planner class mix {'core': 3, 'wilderness': 67, 'community': 30, 'corridor': 1}
 
+WDPA Radom (National Park, approx. circle of reported 12,500 km2)
+  ref   12,488 km2  ref-legible 24%  :: J. KOAYA – J. NOAYA 4428 – J. HELISI ridge on the W/SW (18 km); unnamed river (order 4) on the SE (10 km); SDN border on the NE/S (8 km); Umbelasha on the W (6 km)
+  re-drawn  11,456 km2 from 14 units  IoU 0.58   planner class mix {'core': 27, 'wilderness': 8, 'community': 64}
+
 WDPA Boro (Game Reserve)
-  ref    1,492 km2  ref-legible 83%  :: Low hill – J. ABU RASEIN – J. NGAYA ridge on the NE/W (48 km); Boro on the S/N (14 km); W. Manga (1930s sheet) on the SW (12 km); geological contact IU|PLu (sudan) on the E/SE (10 km)
+  ref    1,492 km2  ref-legible 67%  :: Low hill – J. ABU RASEIN – J. NGAYA ridge on the NE/W (48 km); Boro on the S/N (14 km); W. Manga (1930s sheet) on the SW (12 km); W. Tabyi (1930s sheet) on the E (6 km)
   re-drawn   1,740 km2 from 3 units  IoU 0.55   planner class mix {'core': 90, 'wilderness': 10}
 
 PLAN Pongo-Wau-Numatinna_National-Park_1587922ha
-  ref   15,792 km2  ref-legible 44%  :: Bo River on the E/SE (30 km); unnamed river (order 4) on the S/W (18 km); K. Nfotoro (1930s sheet) on the NW (16 km); Kenarofe (1930s sheet) on the SW (16 km)
+  ref   15,792 km2  ref-legible 36%  :: Bo River on the E/SE (30 km); unnamed river (order 4) on the S/W (18 km); K. Nfotoro (1930s sheet) on the NW (16 km); Kenarofe (1930s sheet) on the SW (16 km)
   re-drawn   9,372 km2 from 6 units  IoU 0.54   planner class mix {'core': 83, 'wilderness': 17}
 
 PLAN zone-pâturage-durable_Garamba_2'500km2
-  ref    1,500 km2  ref-legible 81%  :: COD border on the W/E (62 km); unnamed river (order 4) on the W/E (46 km); study-area edge on the E/SW (40 km); Solo on the W (12 km)
+  ref    1,500 km2  ref-legible 64%  :: COD border on the W/E (62 km); unnamed river (order 4) on the W/E (46 km); Solo on the W (12 km); K. Aka (1930s sheet) on the E (6 km)
   re-drawn   1,544 km2 from 3 units  IoU 0.47   planner class mix {'core': 17, 'wilderness': 20, 'community': 57, 'corridor': 6}
 
 WDPA Yata-Ngaya (Faunal Reserve)
-  ref    5,400 km2  ref-legible 83%  :: J. KOAYA – J. NOAYA 4428 – J. HELISI ridge on the SE/E (62 km); unnamed river (order 4) on the N/W (54 km); geological contact Q|Xi (car) on the W/N (40 km); Yata on the N/NE (34 km)
+  ref    5,400 km2  ref-legible 50%  :: J. KOAYA – J. NOAYA 4428 – J. HELISI ridge on the SE/E (62 km); unnamed river (order 4) on the N/W (54 km); Yata on the N/NE (34 km); CAF border on the SE/E (30 km)
   re-drawn   5,876 km2 from 10 units  IoU 0.44   planner class mix {'core': 51, 'wilderness': 23, 'community': 26}
 
 WDPA Numatina (Game Reserve)
-  ref    3,416 km2  ref-legible 41%  :: R. Busseri (1930s sheet) on the NE/W (16 km); geological contact IU|PLu (sudan) on the NW/N (16 km); R. Basseri (1930s sheet) on the W/SW (14 km); K. Ungobo (1930s sheet) on the NE (12 km)
+  ref    3,416 km2  ref-legible 33%  :: R. Busseri (1930s sheet) on the NE/W (16 km); R. Basseri (1930s sheet) on the W/SW (14 km); K. Ungobo (1930s sheet) on the NE (12 km); Busseri River on the NE (8 km)
   re-drawn   2,152 km2 from 5 units  IoU 0.40   planner class mix {'core': 64, 'wilderness': 36}
 
 WDPA Bire Kapatuos (Game Reserve)
@@ -71,7 +75,7 @@ WDPA Bire Kapatuos (Game Reserve)
   re-drawn     148 km2 from 1 units  IoU 0.30   planner class mix {'core': 12, 'wilderness': 38, 'community': 50}
 
 WDPA Andre Felix (National Park)
-  ref      956 km2  ref-legible 100%  :: unnamed river (order 4) on the N/SW (26 km); Yata on the NE/N (20 km); geological contact Q|Xi (car) on the S/SE (20 km); B.Yata (1930s sheet) on the W/SW (16 km)
+  ref      956 km2  ref-legible 62%  :: unnamed river (order 4) on the N/SW (26 km); Yata on the NE/N (20 km); B.Yata (1930s sheet) on the W/SW (16 km); B. Ngaya (1930s sheet) on the NE (2 km)
   re-drawn     260 km2 from 1 units  IoU 0.26   planner class mix {'core': 99, 'community': 1}
 
 WDPA Bangangai (Game Reserve)
@@ -79,62 +83,64 @@ WDPA Bangangai (Game Reserve)
   re-drawn      88 km2 from 1 units  IoU 0.25   planner class mix {'core': 29, 'wilderness': 2, 'community': 69}
 
 PLAN zone-pâturage-durable_Numatina_15'000km2
-  ref   14,432 km2  ref-legible 57%  :: CAF border on the NW/W (172 km); Nahr al Jur on the SE (78 km); unnamed river (order 4) on the SE/SW (56 km); 1930s A. E. SUDAN (Bahr el Ghazal Province) on the NW (36 km)
+  ref   14,432 km2  ref-legible 48%  :: CAF border on the NW/W (172 km); Nahr al Jur on the SE (78 km); unnamed river (order 4) on the SE/SW (56 km); 1930s A. E. SUDAN (Bahr el Ghazal Province) on the NW (36 km)
   re-drawn   5,488 km2 from 11 units  IoU 0.21   planner class mix {'core': 55, 'wilderness': 11, 'community': 22, 'corridor': 12}
 
 PLAN zone-pâturage-durable_Radom-Sudan
-  ref    1,648 km2  ref-legible 89%  :: J. KOAYA – J. NOAYA 4428 – J. HELISI ridge on the N/NW (102 km); Low hill – J. ABU RASEIN – J. NGAYA ridge on the SE (40 km); unnamed river (order 4) on the SW/S (24 km); geological contact O|IU (sudan) on the SE/S (22 km)
+  ref    1,648 km2  ref-legible 63%  :: J. KOAYA – J. NOAYA 4428 – J. HELISI ridge on the N/NW (102 km); Low hill – J. ABU RASEIN – J. NGAYA ridge on the SE (40 km); unnamed river (order 4) on the SW/S (24 km); R. Adda (1930s sheet) on the S/SW (18 km)
   re-drawn      84 km2 from 1 units  IoU 0.03   planner class mix {'core': 34, 'wilderness': 11, 'community': 55}
 
 WDPA Ashana (Game Reserve)
-  ref       88 km2  ref-legible 100%  :: Khor Dabura on the NE/N (6 km); Lol on the S/NE (6 km); Boro on the SW/W (6 km); geological contact QF|PLu (sudan) on the N/SE (4 km)
+  ref       88 km2  ref-legible 86%  :: Khor Dabura on the NE/N (6 km); Lol on the S/NE (6 km); Boro on the SW/W (6 km); 1930s Dist. Bdy. (Western) Northern on the W (2 km)
   re-drawn       0 km2 from 0 units  IoU 0.00   planner class mix {'core': 91, 'wilderness': 9}
 
 Whole study area by planner class (km2): core 154,872, wilderness 134,544, community 184,360, corridor 7,820
 
 REFERENCES MEASURED WHOLE — the same evidence and the same classify() applied to each drawn polygon as one unit
   (what the planner would call the land as drawn; the rationale lists every test with its number and threshold)
-  PLAN Southern-NP-Wilderness_41'590km2                       3,862,800 ha → wilderness people   3,241 (0.084/km2) crop 0.0% clear20 0.74 km2 fronts 6431 (96% herd, 3830 long, 99.15/1000km2, axis E–W 0.28) legible 0.44 edge-unnamed 43%
+  PLAN Southern-NP-Wilderness_41'590km2                       3,862,800 ha → wilderness people   3,241 (0.084/km2) crop 0.0% clear20 0.74 km2 fronts 6431 (96% herd, 3830 long, 99.15/1000km2, axis E–W 0.28) legible 0.35 edge-unnamed 53%
       long fronts per 10 km width 194.87 >= 154.41: yes | transhumance share % 96 >= 50: yes | axis coherence (0.25 = random) 0.28 >= 0.4: no | people/km2 0.084 <= 2: yes | — not a corridor; core? | people/km2 0.084 <= 0.02: no | cropland 2019 % 0 <= 0.05: yes | clearing since 2020 km2/1000km2 0.019 <= 0.5: yes | reported workings 0 <= 0: yes | — not core; wilderness? | people/km2 0.084 <= 0.5: yes | cropland 2019 % 0 <= 0.5: yes
-  WDPA Chinko (Conservation Area)                             1,968,000 ha → wilderness people     822 (0.042/km2) crop 0.0% clear20 1.15 km2 fronts 549 (75% herd, 148 long, 7.52/1000km2, axis E–W 0.32) legible 0.6 edge-unnamed 12%
+  WDPA Chinko (Conservation Area)                             1,968,000 ha → wilderness people     822 (0.042/km2) crop 0.0% clear20 1.15 km2 fronts 549 (75% herd, 148 long, 7.52/1000km2, axis E–W 0.32) legible 0.51 edge-unnamed 36%
       long fronts per 10 km width 10.55 >= 154.41: no | transhumance share % 75 >= 50: yes | axis coherence (0.25 = random) 0.32 >= 0.4: no | people/km2 0.042 <= 2: yes | — not a corridor; core? | people/km2 0.042 <= 0.02: no | cropland 2019 % 0 <= 0.05: yes | clearing since 2020 km2/1000km2 0.058 <= 0.5: yes | reported workings 2 <= 0: no | — not core; wilderness? | people/km2 0.042 <= 0.5: yes | cropland 2019 % 0 <= 0.5: yes
-  PLAN Pongo-Wau-Numatinna_National-Park_1587922ha            1,579,200 ha → core       people       1 (0.0/km2) crop 0.0% clear20 0.0 km2 fronts 2199 (96% herd, 1464 long, 92.71/1000km2, axis N–S 0.31) legible 0.25 edge-unnamed 56%
+  PLAN Pongo-Wau-Numatinna_National-Park_1587922ha            1,579,200 ha → core       people       1 (0.0/km2) crop 0.0% clear20 0.0 km2 fronts 2199 (96% herd, 1464 long, 92.71/1000km2, axis N–S 0.31) legible 0.22 edge-unnamed 64%
       long fronts per 10 km width 116.5 >= 154.41: no | transhumance share % 96 >= 50: yes | axis coherence (0.25 = random) 0.31 >= 0.4: no | people/km2 0.0 <= 2: yes | — not a corridor; core? | people/km2 0.0 <= 0.02: yes | cropland 2019 % 0 <= 0.05: yes | clearing since 2020 km2/1000km2 0.0 <= 0.5: yes | reported workings 0 <= 0: yes
-  PLAN Wau-Wilderness_30,329km2                               1,453,200 ha → wilderness people   1,738 (0.12/km2) crop 0.0% clear20 0.0 km2 fronts 3928 (98% herd, 2571 long, 176.92/1000km2, axis N–S 0.27) legible 0.26 edge-unnamed 51%
+  PLAN Wau-Wilderness_30,329km2                               1,453,200 ha → wilderness people   1,738 (0.12/km2) crop 0.0% clear20 0.0 km2 fronts 3928 (98% herd, 2571 long, 176.92/1000km2, axis N–S 0.27) legible 0.29 edge-unnamed 61%
       long fronts per 10 km width 213.27 >= 154.41: yes | transhumance share % 98 >= 50: yes | axis coherence (0.25 = random) 0.27 >= 0.4: no | people/km2 0.12 <= 2: yes | — not a corridor; core? | people/km2 0.12 <= 0.02: no | cropland 2019 % 0 <= 0.05: yes | clearing since 2020 km2/1000km2 0.0 <= 0.5: yes | reported workings 0 <= 0: yes | — not core; wilderness? | people/km2 0.12 <= 0.5: yes | cropland 2019 % 0 <= 0.5: yes
-  WDPA Zemongo (Faunal Reserve)                               1,362,800 ha → core       people     156 (0.011/km2) crop 0.0% clear20 1.49 km2 fronts 1549 (93% herd, 696 long, 51.07/1000km2, axis N–S 0.28) legible 0.82 edge-unnamed 2%
+  WDPA Zemongo (Faunal Reserve)                               1,362,800 ha → core       people     156 (0.011/km2) crop 0.0% clear20 1.49 km2 fronts 1549 (93% herd, 696 long, 51.07/1000km2, axis N–S 0.28) legible 0.54 edge-unnamed 15%
       long fronts per 10 km width 59.62 >= 154.41: no | transhumance share % 93 >= 50: yes | axis coherence (0.25 = random) 0.28 >= 0.4: no | people/km2 0.011 <= 2: yes | — not a corridor; core? | people/km2 0.011 <= 0.02: yes | cropland 2019 % 0 <= 0.05: yes | clearing since 2020 km2/1000km2 0.109 <= 0.5: yes | reported workings 0 <= 0: yes
-  PLAN Boro-Biri-headwaters_13,111km2                         1,303,200 ha → core       people     134 (0.01/km2) crop 0.0% clear20 0.0 km2 fronts 2228 (98% herd, 1514 long, 116.18/1000km2, axis E–W 0.28) legible 0.68 edge-unnamed 39%
+  PLAN Boro-Biri-headwaters_13,111km2                         1,303,200 ha → core       people     134 (0.01/km2) crop 0.0% clear20 0.0 km2 fronts 2228 (98% herd, 1514 long, 116.18/1000km2, axis E–W 0.28) legible 0.38 edge-unnamed 48%
       long fronts per 10 km width 132.62 >= 154.41: no | transhumance share % 98 >= 50: yes | axis coherence (0.25 = random) 0.28 >= 0.4: no | people/km2 0.01 <= 2: yes | — not a corridor; core? | people/km2 0.01 <= 0.02: yes | cropland 2019 % 0 <= 0.05: yes | clearing since 2020 km2/1000km2 0.0 <= 0.5: yes | reported workings 0 <= 0: yes
-  WDPA Bili-Uere (Hunting Area)                               1,138,400 ha → wilderness people   2,760 (0.242/km2) crop 0.0% clear20 14.92 km2 fronts 2426 (93% herd, 1098 long, 96.45/1000km2, axis E–W 0.33) legible 0.76 edge-unnamed 16%
+  WDPA Radom (National Park, approx. circle of reported 12,5  1,248,800 ha → community  people  44,344 (3.551/km2) crop 2.12% clear20 0.32 km2 fronts 2579 (96% herd, 1508 long, 120.76/1000km2, axis E–W 0.27) legible 0.2 edge-unnamed 76%
+      long fronts per 10 km width 134.94 >= 154.41: no | transhumance share % 96 >= 50: yes | axis coherence (0.25 = random) 0.27 >= 0.4: no | people/km2 3.551 <= 2: no | — not a corridor; core? | people/km2 3.551 <= 0.02: no | cropland 2019 % 2.12 <= 0.05: no | clearing since 2020 km2/1000km2 0.026 <= 0.5: yes | reported workings 6 <= 0: no | — not core; wilderness? | people/km2 3.551 <= 0.5: no | cropland 2019 % 2.12 <= 0.5: no
+  WDPA Bili-Uere (Hunting Area)                               1,138,400 ha → wilderness people   2,760 (0.242/km2) crop 0.0% clear20 14.92 km2 fronts 2426 (93% herd, 1098 long, 96.45/1000km2, axis E–W 0.33) legible 0.62 edge-unnamed 43%
       long fronts per 10 km width 102.91 >= 154.41: no | transhumance share % 93 >= 50: yes | axis coherence (0.25 = random) 0.33 >= 0.4: no | people/km2 0.242 <= 2: yes | — not a corridor; core? | people/km2 0.242 <= 0.02: no | cropland 2019 % 0 <= 0.05: yes | clearing since 2020 km2/1000km2 1.311 <= 0.5: no | reported workings 0 <= 0: yes | — not core; wilderness? | people/km2 0.242 <= 0.5: yes | cropland 2019 % 0 <= 0.5: yes
-  WDPA Yata-Ngaya (Faunal Reserve)                              540,000 ha → community  people  16,223 (3.004/km2) crop 0.0% clear20 0.0 km2 fronts 1547 (97% herd, 996 long, 184.44/1000km2, axis E–W 0.27) legible 0.49 edge-unnamed 17%
+  WDPA Yata-Ngaya (Faunal Reserve)                              540,000 ha → community  people  16,223 (3.004/km2) crop 0.0% clear20 0.0 km2 fronts 1547 (97% herd, 996 long, 184.44/1000km2, axis E–W 0.27) legible 0.42 edge-unnamed 50%
       long fronts per 10 km width 135.54 >= 154.41: no | transhumance share % 97 >= 50: yes | axis coherence (0.25 = random) 0.27 >= 0.4: no | people/km2 3.004 <= 2: no | — not a corridor; core? | people/km2 3.004 <= 0.02: no | cropland 2019 % 0 <= 0.05: yes | clearing since 2020 km2/1000km2 0.0 <= 0.5: yes | reported workings 10 <= 0: no | — not core; wilderness? | people/km2 3.004 <= 0.5: no | cropland 2019 % 0 <= 0.5: yes
-  WDPA Chelkou (Game Reserve)                                   528,000 ha → community  people   8,431 (1.597/km2) crop 0.3% clear20 0.0 km2 fronts 1734 (96% herd, 1095 long, 207.39/1000km2, axis SE–NW 0.35) legible 0.75 edge-unnamed 15%
+  WDPA Chelkou (Game Reserve)                                   528,000 ha → community  people   8,431 (1.597/km2) crop 0.3% clear20 0.0 km2 fronts 1734 (96% herd, 1095 long, 207.39/1000km2, axis SE–NW 0.35) legible 0.56 edge-unnamed 23%
       long fronts per 10 km width 150.69 >= 154.41: no | transhumance share % 96 >= 50: yes | axis coherence (0.25 = random) 0.35 >= 0.4: no | people/km2 1.597 <= 2: yes | — not a corridor; core? | people/km2 1.597 <= 0.02: no | cropland 2019 % 0.3 <= 0.05: no | clearing since 2020 km2/1000km2 0.0 <= 0.5: yes | reported workings 2 <= 0: no | — not core; wilderness? | people/km2 1.597 <= 0.5: no | cropland 2019 % 0.3 <= 0.5: yes
-  PLAN Boro_Wilderness_3,180km2                                 316,000 ha → core       people       0 (0.0/km2) crop 0.0% clear20 0.0 km2 fronts 1048 (97% herd, 791 long, 250.32/1000km2, axis E–W 0.3) legible 0.66 edge-unnamed 15%
+  PLAN Boro_Wilderness_3,180km2                                 316,000 ha → core       people       0 (0.0/km2) crop 0.0% clear20 0.0 km2 fronts 1048 (97% herd, 791 long, 250.32/1000km2, axis E–W 0.3) legible 0.54 edge-unnamed 28%
       long fronts per 10 km width 140.71 >= 154.41: no | transhumance share % 97 >= 50: yes | axis coherence (0.25 = random) 0.3 >= 0.4: no | people/km2 0.0 <= 2: yes | — not a corridor; core? | people/km2 0.0 <= 0.02: yes | cropland 2019 % 0 <= 0.05: yes | clearing since 2020 km2/1000km2 0.0 <= 0.5: yes | reported workings 0 <= 0: yes
-  PLAN zone-pâturage-durable_Radom-Sudan                        164,800 ha → core       people       0 (0.0/km2) crop 0.0% clear20 0.0 km2 fronts 1780 (99% herd, 1337 long, 811.29/1000km2, axis E–W 0.3) legible 0.69 edge-unnamed 11%
+  PLAN zone-pâturage-durable_Radom-Sudan                        164,800 ha → core       people       0 (0.0/km2) crop 0.0% clear20 0.0 km2 fronts 1780 (99% herd, 1337 long, 811.29/1000km2, axis E–W 0.3) legible 0.48 edge-unnamed 37%
       long fronts per 10 km width 329.35 >= 154.41: yes | transhumance share % 99 >= 50: yes | axis coherence (0.25 = random) 0.3 >= 0.4: no | people/km2 0.0 <= 2: yes | — not a corridor; core? | people/km2 0.0 <= 0.02: yes | cropland 2019 % 0 <= 0.05: yes | clearing since 2020 km2/1000km2 0.0 <= 0.5: yes | reported workings 0 <= 0: yes
-  PLAN zone-pâturage-durable_Garamba_2'500km2                   150,000 ha → wilderness people       4 (0.003/km2) crop 0.0% clear20 3.37 km2 fronts 847 (98% herd, 540 long, 360.0/1000km2, axis E–W 0.34) legible 0.69 edge-unnamed 19%
+  PLAN zone-pâturage-durable_Garamba_2'500km2                   150,000 ha → wilderness people       4 (0.003/km2) crop 0.0% clear20 3.37 km2 fronts 847 (98% herd, 540 long, 360.0/1000km2, axis E–W 0.34) legible 0.57 edge-unnamed 36%
       long fronts per 10 km width 139.43 >= 154.41: no | transhumance share % 98 >= 50: yes | axis coherence (0.25 = random) 0.34 >= 0.4: no | people/km2 0.003 <= 2: yes | — not a corridor; core? | people/km2 0.003 <= 0.02: yes | cropland 2019 % 0 <= 0.05: yes | clearing since 2020 km2/1000km2 2.247 <= 0.5: no | reported workings 0 <= 0: yes | — not core; wilderness? | people/km2 0.003 <= 0.5: yes | cropland 2019 % 0 <= 0.5: yes
-  PLAN zone-pâturage-durable_Numatina_15'000km2                 136,000 ha → community  people     930 (0.684/km2) crop 0.0% clear20 0.37 km2 fronts 3337 (99% herd, 2353 long, 1730.15/1000km2, axis E–W 0.34) legible 0.57 edge-unnamed 30%
+  PLAN zone-pâturage-durable_Numatina_15'000km2                 136,000 ha → community  people     930 (0.684/km2) crop 0.0% clear20 0.37 km2 fronts 3337 (99% herd, 2353 long, 1730.15/1000km2, axis E–W 0.34) legible 0.42 edge-unnamed 39%
       long fronts per 10 km width 638.05 >= 154.41: yes | transhumance share % 99 >= 50: yes | axis coherence (0.25 = random) 0.34 >= 0.4: no | people/km2 0.684 <= 2: yes | — not a corridor; core? | people/km2 0.684 <= 0.02: no | cropland 2019 % 0 <= 0.05: yes | clearing since 2020 km2/1000km2 0.272 <= 0.5: yes | reported workings 0 <= 0: yes | — not core; wilderness? | people/km2 0.684 <= 0.5: no | cropland 2019 % 0 <= 0.5: yes
-  WDPA Andre Felix (National Park)                               95,600 ha → core       people       0 (0.0/km2) crop 0.0% clear20 0.0 km2 fronts 625 (99% herd, 426 long, 445.61/1000km2, axis N–S 0.27) legible 0.49 edge-unnamed 0%
+  WDPA Andre Felix (National Park)                               95,600 ha → core       people       0 (0.0/km2) crop 0.0% clear20 0.0 km2 fronts 625 (99% herd, 426 long, 445.61/1000km2, axis N–S 0.27) legible 0.41 edge-unnamed 38%
       long fronts per 10 km width 137.78 >= 154.41: no | transhumance share % 99 >= 50: yes | axis coherence (0.25 = random) 0.27 >= 0.4: no | people/km2 0.0 <= 2: yes | — not a corridor; core? | people/km2 0.0 <= 0.02: yes | cropland 2019 % 0 <= 0.05: yes | clearing since 2020 km2/1000km2 0.0 <= 0.5: yes | reported workings 0 <= 0: yes
-  WDPA Southern (National Park)                                  88,400 ha → community  people   2,125 (2.404/km2) crop 0.03% clear20 0.05 km2 fronts 1376 (99% herd, 969 long, 1096.15/1000km2, axis SE–NW 0.32) legible 0.59 edge-unnamed 51%
+  WDPA Southern (National Park)                                  88,400 ha → community  people   2,125 (2.404/km2) crop 0.03% clear20 0.05 km2 fronts 1376 (99% herd, 969 long, 1096.15/1000km2, axis SE–NW 0.32) legible 0.44 edge-unnamed 54%
       long fronts per 10 km width 325.91 >= 154.41: yes | transhumance share % 99 >= 50: yes | axis coherence (0.25 = random) 0.32 >= 0.4: no | people/km2 2.404 <= 2: no | — not a corridor; core? | people/km2 2.404 <= 0.02: no | cropland 2019 % 0.03 <= 0.05: yes | clearing since 2020 km2/1000km2 0.057 <= 0.5: yes | reported workings 0 <= 0: yes | — not core; wilderness? | people/km2 2.404 <= 0.5: no | cropland 2019 % 0.03 <= 0.5: yes
-  WDPA Bire Kapatuos (Game Reserve)                              23,200 ha → wilderness people      10 (0.043/km2) crop 0.0% clear20 0.27 km2 fronts 257 (99% herd, 169 long, 728.45/1000km2, axis E–W 0.47) legible None edge-unnamed 44%
+  WDPA Bire Kapatuos (Game Reserve)                              23,200 ha → wilderness people      10 (0.043/km2) crop 0.0% clear20 0.27 km2 fronts 257 (99% herd, 169 long, 728.45/1000km2, axis E–W 0.47) legible 0.47 edge-unnamed 44%
       long fronts per 10 km width 110.95 >= 154.41: no | transhumance share % 99 >= 50: yes | axis coherence (0.25 = random) 0.47 >= 0.4: yes | people/km2 0.043 <= 2: yes | — not a corridor; core? | people/km2 0.043 <= 0.02: no | cropland 2019 % 0 <= 0.05: yes | clearing since 2020 km2/1000km2 1.164 <= 0.5: no | reported workings 0 <= 0: yes | — not core; wilderness? | people/km2 0.043 <= 0.5: yes | cropland 2019 % 0 <= 0.5: yes
-  WDPA Boro (Game Reserve)                                       19,600 ha → core       people       0 (0.0/km2) crop 0.0% clear20 0.0 km2 fronts 302 (99% herd, 250 long, 1275.51/1000km2, axis SE–NW 0.36) legible 0.56 edge-unnamed 6%
+  WDPA Boro (Game Reserve)                                       19,600 ha → core       people       0 (0.0/km2) crop 0.0% clear20 0.0 km2 fronts 302 (99% herd, 250 long, 1275.51/1000km2, axis SE–NW 0.36) legible 0.42 edge-unnamed 41%
       long fronts per 10 km width 178.57 >= 154.41: yes | transhumance share % 99 >= 50: yes | axis coherence (0.25 = random) 0.36 >= 0.4: no | people/km2 0.0 <= 2: yes | — not a corridor; core? | people/km2 0.0 <= 0.02: yes | cropland 2019 % 0 <= 0.05: yes | clearing since 2020 km2/1000km2 0.0 <= 0.5: yes | reported workings 0 <= 0: yes
-  WDPA Bangangai (Game Reserve)                                  19,200 ha → core       people       0 (0.0/km2) crop 0.0% clear20 0.01 km2 fronts 332 (99% herd, 211 long, 1098.96/1000km2, axis E–W 0.34) legible 0.76 edge-unnamed 28%
+  WDPA Bangangai (Game Reserve)                                  19,200 ha → core       people       0 (0.0/km2) crop 0.0% clear20 0.01 km2 fronts 332 (99% herd, 211 long, 1098.96/1000km2, axis E–W 0.34) legible 0.45 edge-unnamed 28%
       long fronts per 10 km width 152.28 >= 154.41: no | transhumance share % 99 >= 50: yes | axis coherence (0.25 = random) 0.34 >= 0.4: no | people/km2 0.0 <= 2: yes | — not a corridor; core? | people/km2 0.0 <= 0.02: yes | cropland 2019 % 0 <= 0.05: yes | clearing since 2020 km2/1000km2 0.052 <= 0.5: yes | reported workings 0 <= 0: yes
-  WDPA Garamba (National Park)                                   13,600 ha → wilderness people       0 (0.0/km2) crop 0.0% clear20 0.53 km2 fronts 29 (100% herd, 24 long, 176.47/1000km2, axis E–W 0.45) legible 0.72 edge-unnamed 0%
+  WDPA Garamba (National Park)                                   13,600 ha → wilderness people       0 (0.0/km2) crop 0.0% clear20 0.53 km2 fronts 29 (100% herd, 24 long, 176.47/1000km2, axis E–W 0.45) legible 0.7 edge-unnamed 36%
       long fronts per 10 km width 20.58 >= 154.41: no | transhumance share % 100 >= 50: yes | axis coherence (0.25 = random) 0.45 >= 0.4: yes | people/km2 0.0 <= 2: yes | — not a corridor; core? | people/km2 0.0 <= 0.02: yes | cropland 2019 % 0 <= 0.05: yes | clearing since 2020 km2/1000km2 3.897 <= 0.5: no | reported workings 0 <= 0: yes | — not core; wilderness? | people/km2 0.0 <= 0.5: yes | cropland 2019 % 0 <= 0.5: yes
-  WDPA Ashana (Game Reserve)                                      8,800 ha → wilderness people       0 (0.0/km2) crop 0.06% clear20 0.0 km2 fronts 221 (97% herd, 146 long, 1659.09/1000km2, axis E–W 0.33) legible 0.75 edge-unnamed 0%
+  WDPA Ashana (Game Reserve)                                      8,800 ha → wilderness people       0 (0.0/km2) crop 0.06% clear20 0.0 km2 fronts 221 (97% herd, 146 long, 1659.09/1000km2, axis E–W 0.33) legible 0.6 edge-unnamed 14%
       long fronts per 10 km width 155.64 >= 154.41: yes | transhumance share % 97 >= 50: yes | axis coherence (0.25 = random) 0.33 >= 0.4: no | people/km2 0.0 <= 2: yes | — not a corridor; core? | people/km2 0.0 <= 0.02: yes | cropland 2019 % 0.06 <= 0.05: no | clearing since 2020 km2/1000km2 0.0 <= 0.5: yes | reported workings 0 <= 0: yes | — not core; wilderness? | people/km2 0.0 <= 0.5: yes | cropland 2019 % 0.06 <= 0.5: yes
-  PLAN Southern NP                                                2,800 ha → core       people       0 (0.0/km2) crop 0.0% clear20 0.0 km2 fronts 184 (97% herd, 133 long, 4750.0/1000km2, axis SE–NW 0.33) legible 0.1 edge-unnamed 86%
+  PLAN Southern NP                                                2,800 ha → core       people       0 (0.0/km2) crop 0.0% clear20 0.0 km2 fronts 184 (97% herd, 133 long, 4750.0/1000km2, axis SE–NW 0.33) legible 0.21 edge-unnamed 86%
       long fronts per 10 km width 251.35 >= 154.41: yes | transhumance share % 97 >= 50: yes | axis coherence (0.25 = random) 0.33 >= 0.4: no | people/km2 0.0 <= 2: yes | — not a corridor; core? | people/km2 0.0 <= 0.02: yes | cropland 2019 % 0 <= 0.05: yes | clearing since 2020 km2/1000km2 0.0 <= 0.5: yes | reported workings 0 <= 0: yes
   WDPA Numatina (Game Reserve)                                      400 ha → core       people       0 (0.0/km2) crop 0.0% clear20 0.0 km2 fronts 33 (97% herd, 25 long, 6250.0/1000km2, axis N–S 0.3) legible 0.75 edge-unnamed 0%
       long fronts per 10 km width 125.0 >= 154.41: no | transhumance share % 97 >= 50: yes | axis coherence (0.25 = random) 0.3 >= 0.4: no | people/km2 0.0 <= 2: yes | — not a corridor; core? | people/km2 0.0 <= 0.02: yes | cropland 2019 % 0 <= 0.05: yes | clearing since 2020 km2/1000km2 0.0 <= 0.5: yes | reported workings 0 <= 0: yes

@@ -1,0 +1,44 @@
+OPTIMIZE want=community max 250,000 ha; 16 bootstrap draws per area, thresholds ±25%, greedy path jittered ±10%
+support = share of draws a fine unit lies inside the best-grown area; proposal = support ≥ 0.5; contested = 0.25–0.5
+model composite skill: top-5% cells capture 16% of known workings (lift 3.25); imagery targets, not mines
+
+#1    community  SSD   117,600 ha    9 cl   52,494 ppl (44.638/km2) new15  0 | fire/1000km2  4,593 fronts 1450 (99% herd, 1060 long) | clear20  0.68 km2 crop 0.01→0.74% | mine r/c/t5 0/0/0 | park 222.0 km | legible 0.5 score 
+      seed community proposal 1 (optimized); towns: Maridi 44,234, Maridi 4,344, Maridi* (nearest_place, unverified) 1,666, Maridi 1,220; overlaps: -
+      boundary (176 km, 16% unnamed): J. ROVO I.S. – J. DURUYANZI (Granite) – Ironstone hill D(Low) ridge on the N/NE (26 km); R. Meridi (1930s sheet) on the NW/S (26 km); R. Era or Naam (1930s sheet) on the NE/E (24 km); unnamed river (order 4) on the W/SE (22 km); I. Wohko (1930s sheet) on the N/NE (20 km); 1930s Province Boundary on the SW (12 km)
+      built 0.07 → 0.4 → 1.05 km2 (x15.0); camps 4; front dirs {'E': 298, 'W': 257, 'NE': 194}; nov-feb 0.86; clearing all 3.71 km2/66 ev, encroach+slash 22; watchlist 0
+      rock: PLu Undifferentiated metamorphic rocks, migm 100% — affinity prior 0.0
+      as a whole → community; support 0.88; size across draws p10/p50/p90 [112000, 117600, 134000] ha; 0 contested fine units
+      rationale: long fronts per 10 km width 309.1 >= 154.41: yes | transhumance share % 99 >= 50: yes | axis coherence (0.25 = random) 0.38 >= 0.4: no | people/km2 44.638 <= 2: no | — not a corridor; core? | people/km2 44.638 <= 0.02: no | cropland 2019 % 0.74 <= 0.05: no | clearing since 2020 km2/1000km2 0.578 <= 0.5: no | reported workings 0 <= 0: yes | — not core; wilderness? | people/km2 44.638 <= 0.5: no | cropland 2019 % 0.74 <= 0.5: no
+
+#2    community  SSD    80,800 ha   10 cl   71,924 ppl (89.015/km2) new15  8 | fire/1000km2  2,752 fronts  486 (97% herd, 272 long) | clear20   0.0 km2 crop 0.22→5.54% | mine r/c/t5 0/0/6 | park 148.7 km | legible 0.45 score 
+      seed community proposal 2 (optimized); towns: E. Kome (1930s village) 37,649, Pan Nyel (1930s village) 10,082, Win (1930s village) 7,558, Busseri River* (nearest_place, unverified) 5,192; overlaps: -
+      boundary (142 km, 44% unnamed): R.Lol (1930s sheet) on the NE/E (30 km); Lol on the W/NW (30 km); King River (1930s sheet) on the NW/NE (14 km); Lol Akway (1930s sheet) on the E/SE (4 km); unnamed river (order 4) on the E (2 km); 46 km along a geological contact only (not visible on the ground — needs beacons)
+      built 1.93 → 4.28 → 10.32 km2 (x5.3); camps 0; front dirs {'NW': 101, 'N': 90, 'E': 71}; nov-feb 0.59; clearing all 0.0 km2/0 ev, encroach+slash 0; watchlist 0
+      rock: QC Lacustrine deposits, alluvial fans, dune 64%; QF Recent alluvium and wadi deposits 26% [gold] — affinity prior 0.26
+      as a whole → community; support 0.83; size across draws p10/p50/p90 [63800, 80800, 85600] ha; 3 contested fine units
+      rationale: long fronts per 10 km width 95.69 >= 154.41: no | transhumance share % 97 >= 50: yes | axis coherence (0.25 = random) 0.31 >= 0.4: no | people/km2 89.015 <= 2: no | — not a corridor; core? | people/km2 89.015 <= 0.02: no | cropland 2019 % 5.54 <= 0.05: no | clearing since 2020 km2/1000km2 0.0 <= 0.5: yes | reported workings 0 <= 0: yes | — not core; wilderness? | people/km2 89.015 <= 0.5: no | cropland 2019 % 5.54 <= 0.5: no
+
+#3    community  SSD   109,600 ha   16 cl   29,181 ppl (26.625/km2) new15  7 | fire/1000km2  2,628 fronts  779 (98% herd, 487 long) | clear20   0.0 km2 crop 0.04→2.4% | mine r/c/t5 0/1/21 | park 160.0 km | legible 0.45 score 
+      seed community proposal 3 (optimized); towns: Koko (Rian Kuj) 9,914, Garren (1930s village) 4,920, Dulit (1930s) 4,843, Langlen (1930s village) 4,065; overlaps: WDPA Chelkou (Game Reserve) 17%
+      boundary (160 km, 49% unnamed): Lol River on the NE/NW (46 km); Kuru River on the SW/NW (14 km); Kuru on the S (10 km); Lol on the E (6 km); unnamed river (order 4) on the N (2 km); R. Makedik (1930s sheet) on the NW (2 km); 70 km along a geological contact only (not visible on the ground — needs beacons)
+      built 0.22 → 1.57 → 6.52 km2 (x29.6); camps 4; front dirs {'NW': 201, 'N': 140, 'E': 98}; nov-feb 0.64; clearing all 0.0 km2/0 ev, encroach+slash 0; watchlist 3
+      rock: QF Recent alluvium and wadi deposits 47% [gold]; PLu Undifferentiated metamorphic rocks, migm 41% — affinity prior 0.55
+      as a whole → community; support 0.97; size across draws p10/p50/p90 [108600, 109600, 112800] ha; 0 contested fine units
+      rationale: long fronts per 10 km width 147.1 >= 154.41: no | transhumance share % 98 >= 50: yes | axis coherence (0.25 = random) 0.37 >= 0.4: no | people/km2 26.625 <= 2: no | — not a corridor; core? | people/km2 26.625 <= 0.02: no | cropland 2019 % 2.4 <= 0.05: no | clearing since 2020 km2/1000km2 0.0 <= 0.5: yes | reported workings 0 <= 0: yes | — not core; wilderness? | people/km2 26.625 <= 0.5: no | cropland 2019 % 2.4 <= 0.5: no
+
+#4    community  SSD    72,800 ha    4 cl   24,310 ppl (33.393/km2) new15  0 | fire/1000km2  2,846 fronts  819 (99% herd, 568 long) | clear20   0.0 km2 crop 0.0→0.0% | mine r/c/t5 0/0/0 | park 133.0 km | legible 0.38 score 
+      seed community proposal 4 (optimized); towns: Raga (Raja) 24,018; overlaps: -
+      boundary (134 km, 46% unnamed): Raga River on the E/SE (26 km); 1930s sub-tribal boundary (1930s dotted) on the E (10 km); K. Birumbi (1930s sheet) on the SW/W (10 km); R. Boro (1930s sheet) on the W (8 km); unnamed river (order 4) on the SW/S (8 km); R. Timberi (1930s sheet) on the SW (6 km); 36 km along a geological contact only (not visible on the ground — needs beacons)
+      built 0.66 → 0.75 → 0.84 km2 (x1.3); camps 2; front dirs {'W': 139, 'NW': 127, 'SE': 118}; nov-feb 0.97; clearing all 0.0 km2/0 ev, encroach+slash 0; watchlist 0
+      rock: PLu Undifferentiated metamorphic rocks, migm 95% — affinity prior 0.0
+      as a whole → community; support 1.0; size across draws p10/p50/p90 [74000, 76400, 88000] ha; 2 contested fine units
+      rationale: long fronts per 10 km width 210.51 >= 154.41: yes | transhumance share % 99 >= 50: yes | axis coherence (0.25 = random) 0.31 >= 0.4: no | people/km2 33.393 <= 2: no | — not a corridor; core? | people/km2 33.393 <= 0.02: no | cropland 2019 % 0 <= 0.05: yes | clearing since 2020 km2/1000km2 0.0 <= 0.5: yes | reported workings 0 <= 0: yes | — not core; wilderness? | people/km2 33.393 <= 0.5: no | cropland 2019 % 0 <= 0.5: yes
+
+#5    community  SSD   268,000 ha   14 cl   28,190 ppl (10.519/km2) new15 12 | fire/1000km2  1,212 fronts  768 (95% herd, 367 long) | clear20   0.0 km2 crop 0.48→3.09% | mine r/c/t5 0/0/0 | park 172.2 km | legible 0.33 score 
+      seed community proposal 5 (optimized); towns: Busseri River* (nearest_place, unverified) 4,927, Aryat (1930s) 3,097, Mayong (1930s village) 2,757, Busseri River* (nearest_place, unverified) 2,622; overlaps: -
+      boundary (438 km, 60% unnamed): unnamed river (order 4) on the NW/E (52 km); Wet Mading (1930s sheet) on the N/NE (38 km); King River (1930s sheet) on the S/SW (26 km); Lol on the W/SE (18 km); R.Lol (1930s sheet) on the SE/S (18 km); Lol River on the W (14 km); 62 km along a geological contact only (not visible on the ground — needs beacons)
+      built 0.35 → 1.02 → 5.08 km2 (x14.5); camps 0; front dirs {'N': 172, 'NE': 129, 'NW': 121}; nov-feb 0.39; clearing all 0.0 km2/0 ev, encroach+slash 0; watchlist 0
+      rock: QC Lacustrine deposits, alluvial fans, dune 91%; QF Recent alluvium and wadi deposits 6% [gold] — affinity prior 0.06
+      as a whole → community; support 1.0; size across draws p10/p50/p90 [268000, 268000, 268000] ha; 0 contested fine units
+      rationale: long fronts per 10 km width 70.89 >= 154.41: no | transhumance share % 95 >= 50: yes | axis coherence (0.25 = random) 0.3 >= 0.4: no | people/km2 10.519 <= 2: no | — not a corridor; core? | people/km2 10.519 <= 0.02: no | cropland 2019 % 3.09 <= 0.05: no | clearing since 2020 km2/1000km2 0.0 <= 0.5: yes | reported workings 0 <= 0: yes | — not core; wilderness? | people/km2 10.519 <= 0.5: no | cropland 2019 % 3.09 <= 0.5: no
+
