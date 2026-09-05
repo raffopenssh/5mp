@@ -1,0 +1,46 @@
+RANK want=rim class=community exclude=[Pongo-Wau,Southern NP,Southern (National,Wilderness,headwaters] country=SSD min 2,000 ha — 52 eligible of 582
+model composite skill: top-5% cells capture 16% of known workings (lift 3.25); imagery targets, not mines
+#575  community  SSD   132,400 ha   28 cl  130,174 ppl (98.319/km2) new15  6 | fire/1000km2  3,997 fronts 1535 (98% herd, 1030 long) | clear20   0.4 km2 crop 0.01→0.61% | mine r/c/t5 0/1/21 | park 56.6 km | legible 0.71 score 1.47
+      seed empty land 285,175 (empty-land); towns: Nahr al Jur* 104,260, Nahr al Jur* 15,443, Busseri River* 3,816, Nahr al Jur* 3,072; overlaps: -
+      boundary (140 km, 1% unnamed): Nahr al Jur on the NE/E (34 km); Busseri River on the S/SE (32 km); R. Asetti (1930s sheet) on the N (14 km); K. Ngor (1930s sheet) on the SW (14 km); K. Relleh (1930s sheet) on the NW/W (10 km); K. Ngoko (1930s sheet) on the W/SW (10 km)
+#1077 community  SSD   220,400 ha   23 cl   36,629 ppl (16.619/km2) new15  0 | fire/1000km2  4,815 fronts 1585 (98% herd, 1011 long) | clear20   2.1 km2 crop 0.0→0.01% | mine r/c/t5 1/0/23 | park 55.2 km | legible 0.68 score 0.75
+      seed empty land 265,305 (empty-land); towns: Tambura 31,951, Yubo 2,911; overlaps: PLAN Southern-NP-Wilderness 22%, PLAN zone-pâturage-durable_Numatina 15%
+      boundary (220 km, 7% unnamed): unnamed river (order 4) on the S/SW (44 km); Nahr al Jur on the NE (32 km); Tambura - Yubo Road on the SW/W (30 km); R. Duma (1930s sheet) on the N/NE (16 km); K. Donga (1930s sheet) on the E/NE (16 km); Ezo - Yubo Road on the SW (14 km)
+#770  community  SSD   103,200 ha   16 cl   41,999 ppl (40.697/km2) new15  5 | fire/1000km2  3,490 fronts 1152 (98% herd, 802 long) | clear20  0.83 km2 crop 0.0→2.07% | mine r/c/t5 0/0/20 | park 128.2 km | legible 0.94 score -0.08
+      seed empty land 365,225 (empty-land); towns: Cueibet 14,319, River Gulnam* 10,872, Cueibet* 6,439, Cueibet 5,455; overlaps: -
+      boundary (116 km, 3% unnamed): Wahko on the NW/SW (62 km); River Gulnam on the E/NE (46 km); R. Nagot (1930s sheet) on the NE (2 km); R. Gel (1930s sheet) on the W (2 km)
+#513  community  SSD   382,000 ha   45 cl   67,525 ppl (17.677/km2) new15 10 | fire/1000km2  3,667 fronts 2199 (97% herd, 1227 long) | clear20  0.19 km2 crop 0.03→0.88% | mine r/c/t5 0/1/20 | park 82.2 km | legible 0.51 score -0.37
+      seed empty land 285,155 (empty-land); towns: Busseri River* 30,418, Nahr al Jur* 3,403, Busseri River* 2,618, Busseri River* 2,489; overlaps: -
+      boundary (326 km, 22% unnamed): unnamed river (order 4) on the NE/W (62 km); Nahr al Jur on the SE/E (50 km); 1930s Boundary (Northern) (Central) on the N/NW (40 km); R. K. (1930s sheet) on the SW (26 km); study-area edge on the NE (14 km); R. Asetti (1930s sheet) on the S (12 km)
+#613  community  SSD   266,000 ha   61 cl    8,690 ppl (3.267/km2) new15  1 | fire/1000km2  4,253 fronts 2067 (98% herd, 1192 long) | clear20  0.64 km2 crop 0.0→0.2% | mine r/c/t5 0/1/15 | park 64.6 km | legible 0.56 score -0.37
+      seed empty land 315,185 (empty-land); towns: Ibba River* 1,662, Nahr al Jur* 1,350; overlaps: -
+      boundary (226 km, 19% unnamed): Nahr al Jur on the SW/NW (56 km); Pools (1930s sheet) on the E/SE (44 km); 1930s Sub-tribal Boundary on the NE/N (22 km); 1930s W. District Boundary on the NW/N (20 km); A. Lingi (1930s sheet) on the S/SW (16 km); K. Nuduk (1930s sheet) on the W (12 km)
+#1036 community  SSD    82,000 ha   13 cl    3,501 ppl (4.27/km2) new15  0 | fire/1000km2  3,259 fronts  945 (99% herd, 597 long) | clear20 13.98 km2 crop 0.0→0.03% | mine r/c/t5 1/0/8 | park 60.0 km | legible 0.58 score -0.52
+      seed empty land 255,295 (empty-land); towns: Senekpuro 2,821; overlaps: -
+      boundary (114 km, 9% unnamed): Tambura - Yubo Road on the S/SE (26 km); CAF border on the W/SW (14 km); R. Lile (1930s sheet) on the N/NW (12 km); R. Chamika (1930s sheet) on the NE (12 km); K. Barange (1930s sheet) on the NE/E (12 km); K. Bashi (1930s sheet) on the NW/W (8 km)
+#956  community  SSD   310,400 ha   23 cl    2,415 ppl (0.778/km2) new15  0 | fire/1000km2  3,940 fronts 1378 (98% herd, 913 long) | clear20   0.9 km2 crop 0.0→0.0% | mine r/c/t5 0/2/20 | park 12.6 km | legible 0.52 score -0.59
+      seed empty land 255,275 (empty-land); towns: -; overlaps: PLAN Wau-Wilderness_30, 27%, PLAN zone-pâturage-durable_Numatina 23%
+      boundary (260 km, 32% unnamed): Nahr al Jur on the E/NE (32 km); R. Imatima (1930s sheet) on the W/NW (22 km); Bo River on the N/NE (20 km); R. Chamika (1930s sheet) on the S/SE (20 km); R. Kumi (1930s sheet) on the W (14 km); R. Yabo (1930s sheet) on the E (12 km)
+#654  community  SSD   243,600 ha   26 cl    6,884 ppl (2.826/km2) new15  3 | fire/1000km2  4,187 fronts 1202 (95% herd, 751 long) | clear20  1.31 km2 crop 0.05→0.42% | mine r/c/t5 0/0/2 | park 124.3 km | legible 0.72 score -0.98
+      seed empty land 365,195 (empty-land); towns: Wahko* 1,285; overlaps: -
+      boundary (174 km, 5% unnamed): Wahko on the E/SE (64 km); 1930s District By. TORN? on the W/NW (34 km); study-area edge on the NE/N (20 km); Wan Akel (Cataract) (1930s sheet) on the NW/N (12 km); Khor Ayak (1930s sheet) on the N (10 km); unnamed river (order 4) on the SW (10 km)
+#772  community  SSD   329,600 ha   38 cl  123,278 ppl (37.402/km2) new15 12 | fire/1000km2  3,560 fronts 1816 (96% herd, 1170 long) | clear20  1.58 km2 crop 0.02→2.0% | mine r/c/t5 0/0/23 | park 150.1 km | legible 0.7 score -1.0
+      seed empty land 385,225 (empty-land); towns: Rumbek 70,596, Malek Agok 24,990, Gorok 5,173, Ajijuit 4,952; overlaps: -
+      boundary (262 km, 17% unnamed): River Gulnam on the W/N (108 km); K. Fadgit (1930s sheet) on the NE/E (36 km); River Rohl on the SE/S (24 km); study-area edge on the N/NE (20 km); unnamed river (order 4) on the E/S (10 km); R. Naam (1930s sheet) on the SE/E (10 km)
+#1118 community  SSD    64,400 ha    8 cl   37,950 ppl (58.929/km2) new15  0 | fire/1000km2  2,570 fronts  836 (98% herd, 535 long) | clear20  0.21 km2 crop 0.01→0.01% | mine r/c/t5 0/1/3 | park 108.9 km | legible 0.66 score -1.18
+      seed empty land 265,315 (empty-land); towns: Ezo 37,516; overlaps: -
+      boundary (86 km, 21% unnamed): unnamed river (order 4) on the NE/N (22 km); CAF border on the W/SW (18 km); Ezo - Yangiri Road on the SE/S (14 km); Ezo - Yubo Road on the W (8 km); Mbomou on the S (4 km); Ezo - Nagasi Road on the S (2 km)
+#1219 community  SSD   281,200 ha   12 cl   47,858 ppl (17.019/km2) new15  0 | fire/1000km2  4,759 fronts 2133 (98% herd, 1586 long) | clear20  0.73 km2 crop 0.0→0.21% | mine r/c/t5 0/0/1 | park 198.5 km | legible 0.68 score -1.31
+      seed empty land 385,345 (empty-land); towns: Maridi 44,234, Maridi* 1,666, Maridi 1,220; overlaps: PLAN Southern-NP-Wilderness 19%
+      boundary (296 km, 9% unnamed): R. Meridi (1930s sheet) on the NW/SW (52 km); COD border on the S/SE (34 km); J. ROVO I.S. – Ironstone hill D(Low) – J. DURUYANZI (Granite) ridge on the N/NW (30 km); unnamed river (order 4) on the NW/S (28 km); Wahko on the NW/N (26 km); R. Era or Naam (1930s sheet) on the NE/E (24 km)
+#1168 community  SSD   102,000 ha   16 cl   14,332 ppl (14.051/km2) new15  1 | fire/1000km2  4,817 fronts 1274 (99% herd, 812 long) | clear20  0.01 km2 crop 0.01→0.12% | mine r/c/t5 0/0/9 | park 292.5 km | legible 0.68 score -1.34
+      seed empty land 435,325 (empty-land); towns: Yei River* 8,510, Gullu* 2,479, Yei River* 1,980; overlaps: -
+      boundary (170 km, 2% unnamed): Yei River on the NW/S (50 km); J. KOKA – J. DUMBI – J. GAMA ridge on the N/NW (40 km); unnamed river (order 4) on the SE/N (20 km); I.Musa (1930s sheet) on the S/SE (12 km); 1930s sub-tribal boundary (1930s dotted) on the S (12 km); K lu (1930s sheet) on the E (8 km)
+#120  community  SSD   136,000 ha   10 cl   25,270 ppl (18.581/km2) new15  0 | fire/1000km2  4,205 fronts 1362 (99% herd, 948 long) | clear20  0.73 km2 crop 0.0→0.02% | mine r/c/t5 0/0/0 | park 215.6 km | legible 0.72 score -1.35
+      seed Madebe (community); towns: Ibba 17,759, Madebe 5,506, Nabanga 1,014; overlaps: PLAN zone-pâturage-durable_Numatina 22%
+      boundary (154 km, 6% unnamed): Nahr al Jur on the NW/W (42 km); K. Ibba (1930s sheet) on the N/NE (28 km); COD border on the S (24 km); Unsurveyed (1930s sheet) on the SE/E (22 km); K. ... (1930s sheet) on the N (10 km); K. Manjeri (1930s sheet) on the NW (6 km)
+#889  community  SSD   185,200 ha   26 cl   36,534 ppl (19.727/km2) new15  8 | fire/1000km2  3,744 fronts 1415 (98% herd, 931 long) | clear20  0.85 km2 crop 0.14→2.44% | mine r/c/t5 0/0/12 | park 214.0 km | legible 0.6 score -1.4
+      seed empty land 405,255 (empty-land); towns: Akot* 10,394, Akot* 7,234, Tiit Agok 5,541, Akot 4,727; overlaps: -
+      boundary (184 km, 10% unnamed): R. Naam (1930s sheet) on the N/NW (30 km); Yei River on the SE/E (30 km); 1930s Province Boundary on the S/SE (30 km); K. Gol (1930s sheet) on the N/NE (22 km); Woinya Wol (1930s sheet) on the W/NW (20 km); River Rohl on the SW (16 km)
+
+Populations: GHSL lower bounds. Fire: 2024-25, 3-satellite fleet. Boundary names: HydroRIVERS / 1930s sheets — verify on the ground.

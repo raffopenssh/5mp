@@ -1,0 +1,24 @@
+CONSERVANCY CANDIDATES (rim60; used land = fine units with a cluster or within 8 km of one; grown across weakest edges to <= 150,000 ha; min 2,000 ha, min 300 people)
+model composite skill: top-5% cells capture 16% of known workings (lift 3.25); imagery targets, not mines
+
+[SE] #4    community  SSD   118,800 ha    5 cl    3,057 ppl (2.573/km2) new15  1 | fire/1000km2  3,879 fronts  722 (97% herd, 501 long) | clear20  1.58 km2 crop 0.0→0.0% | mine r/c/t5 0/0/7 | park 2.0 km | legible 0.51 score 
+      seed Libu (1930s) (conservancy); towns: Libu (1930s) 1,192, Bo River* 1,076; overlaps: PLAN Wau-Wilderness_30, 37%, PLAN Southern-NP-Wilderness 11%
+      boundary (202 km, 28% unnamed): Bo River on the SW/N (92 km); Nahr al Jur on the NE/SE (44 km); Islands (1930s sheet) on the E/SE (6 km); Rapids (1930s sheet) on the NE (4 km)
+      built 0.0 → 0.01 → 0.01 km2 (xNone); camps 1; front dirs {'N': 132, 'S': 114, 'NE': 96}; nov-feb 0.95; clearing all 6.41 km2/37 ev, encroach+slash 6; watchlist 0
+
+[SE] #3465 community  SSD   222,400 ha   18 cl    2,205 ppl (0.991/km2) new15  0 | fire/1000km2  4,986 fronts 1063 (98% herd, 708 long) | clear20  0.66 km2 crop 0.0→0.0% | mine r/c/t5 0/2/19 | park 4.0 km | legible 0.31 score 
+      seed unit 3465 (conservancy); towns: -; overlaps: PLAN Wau-Wilderness_30, 53%, PLAN zone-pâturage-durable_Numatina 32%
+      boundary (348 km, 63% unnamed): Bo River on the NE/N (32 km); Nahr al Jur on the E/NE (26 km); R. Imatima (1930s sheet) on the W (24 km); unnamed river (order 4) on the NW/W (14 km); R. Duma (1930s sheet) on the S/SE (14 km); R. Yabo (1930s sheet) on the SE/E (10 km)
+      built 0.01 → 0.01 → 0.01 km2 (xNone); camps 15; front dirs {'N': 221, 'S': 149, 'NW': 139}; nov-feb 0.97; clearing all 1.35 km2/33 ev, encroach+slash 14; watchlist 1
+
+[NE] #2026 corridor   SSD   117,200 ha   23 cl      642 ppl (0.548/km2) new15  3 | fire/1000km2  3,962 fronts 1292 (98% herd, 887 long) | clear20   0.5 km2 crop 0.0→0.0% | mine r/c/t5 0/0/0 | park 33.9 km | legible None score 
+      seed Ndogo (1930s) (conservancy); towns: -; overlaps: -
+      boundary (162 km, 32% unnamed): Busseri River on the SE/E (26 km); K. Megwalima (1930s sheet) on the NE/E (18 km); K. Ngoko (1930s sheet) on the N (16 km); K. Getti (1930s sheet) on the NW (14 km); K. Ngombara (1930s sheet) on the SW/S (14 km); K. Ungoa (1930s sheet) on the S/SE (10 km)
+      built 0.05 → 0.06 → 0.15 km2 (x3.0); camps 18; front dirs {'SE': 224, 'NW': 199, 'W': 174}; nov-feb 0.84; clearing all 4.48 km2/64 ev, encroach+slash 1; watchlist 2
+
+[SE] #5    community  SSD     2,400 ha    1 cl      466 ppl (19.417/km2) new15  0 | fire/1000km2      0 fronts  168 (97% herd, 125 long) | clear20  0.03 km2 crop 0.0→0.0% | mine r/c/t5 0/0/0 | park 41.2 km | legible 0.34 score 
+      seed Bandala (conservancy); towns: -; overlaps: PLAN Southern-NP-Wilderness 50%
+      boundary (12 km, 67% unnamed): Nahr al Jur on the E (4 km)
+      built 0.0 → 0.0 → 0.0 km2 (xNone); camps 0; front dirs {'N': 51, 'S': 34, 'SW': 29}; nov-feb None; clearing all 0.16 km2/9 ev, encroach+slash 2; watchlist 0
+
+4 candidates, 460,800 ha, 6,370 people (GHSL lower bound). Populations are satellite lower bounds; boundary names are HydroRIVERS / 1930s sheets — verify on the ground.

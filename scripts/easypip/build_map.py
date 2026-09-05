@@ -739,6 +739,10 @@ def main():
     ap.add_argument("--dpi", type=int, default=300)
     ap.add_argument("--date", default=date.today().isoformat(),
                     help="date stamp printed on the sheet")
+    ap.add_argument("--planner", default="",
+                    help="overlay scripts/plan_conservancy_units.py output: a conservancies_*.geojson "
+                         "(candidates, hatched violet, labelled with ha + people) plus corridor_walked.geojson "
+                         "and units.geojson from the same folder if present")
     a = ap.parse_args()
 
     zones = load_zones(a.kml_dir)
@@ -847,6 +851,52 @@ def main():
                                   zorder=s["z"] + 0.05):
                 ax.add_patch(p)
 
+    # 4b. PLANNER OVERLAY (opt-in). The machine's answer drawn over the hand's:
+    #     unit mesh as hairlines (where the legible edges are), the corridor the
+    #     fronts actually walk, and the conservancy candidates with their measure.
+    planner_labels = []
+    if a.planner:
+        pdir = Path(a.planner).parent
+        VIOLET, WALK = "#6a2c8f", "#b3261e"
+        upath = pdir / "units.geojson"
+        if upath.exists():
+            for f in json.load(open(upath))["features"]:
+                for p in poly_patches(shape(f["geometry"]), facecolor="none",
+                                      edgecolor="#5a5a5a", linewidth=0.35, alpha=0.5, zorder=2.35):
+                    ax.add_patch(p)
+        cpath = pdir / "corridor_walked.geojson"
+        if cpath.exists():
+            for f in json.load(open(cpath))["features"]:
+                k = f["properties"].get("kind", "")
+                ls = "solid" if k == "walked_today" else (0, (4, 3))
+                for p in poly_patches(shape(f["geometry"]), facecolor=WALK, alpha=0.06,
+                                      edgecolor=WALK, linewidth=1.1, linestyle=ls, zorder=2.45):
+                    ax.add_patch(p)
+        # optimiser proposals: core (dark green, solid), corridor (red band), community (violet hatch).
+        # Any optimize_<class>.geojson in the folder is drawn; the --planner file itself is drawn last.
+        OPT_STYLE = {"core": dict(fc="#1b5e20", ec="#1b5e20", hatch=None, lw=2.4),
+                     "corridor": dict(fc=WALK, ec=WALK, hatch=None, lw=1.4),
+                     "community": dict(fc=VIOLET, ec=VIOLET, hatch="///", lw=1.6),
+                     "wilderness": dict(fc="#4f7a5c", ec="#4f7a5c", hatch=None, lw=1.4)}
+        files = [pdir / f"optimize_{k}.geojson" for k in ("core", "corridor", "wilderness", "community") if (pdir / f"optimize_{k}.geojson").exists()]
+        if Path(a.planner) not in files: files.append(Path(a.planner))
+        for fp in files:
+            for f in json.load(open(fp))["features"]:
+                pr = f["properties"]; g = shape(f["geometry"])
+                cls = pr.get("cls") or "community"
+                if "corridor" in fp.name: cls = "corridor"
+                st = OPT_STYLE.get(cls, OPT_STYLE["community"])
+                for p in poly_patches(g, facecolor=st["fc"], alpha=0.10, edgecolor="none", zorder=3.1):
+                    ax.add_patch(p)
+                for p in poly_patches(g, facecolor="none", edgecolor=st["ec"], linewidth=st["lw"],
+                                      hatch=st["hatch"], zorder=3.15):
+                    p.set_alpha(0.6); ax.add_patch(p)
+                c = g.representative_point()
+                sup = f" · support {pr['support_mean']}" if pr.get("support_mean") is not None else ""
+                planner_labels.append((c.x, c.y,
+                                       f"{pr.get('seed', cls)}\n{pr['area_ha']:,} ha · {pr['population_est']:,} ppl{sup}",
+                                       st["ec"], 9.5))
+
     # 5. settlements: area by population, so an empty interior reads as empty
     if setl:
         lons = np.array([r[1] for r in setl])
@@ -939,7 +989,7 @@ def main():
         sz = 15 if role == "park" else 11
         lab = short_name(nm).upper().replace(" NATIONAL-PARK", "")
         area_entries.append((c.x, c.y, lab, col, sz))
-    area_boxes = draw_area_labels(fig, ax, area_entries)
+    area_boxes = draw_area_labels(fig, ax, area_entries + planner_labels)
 
     place_labels(fig, ax, label_pts,
                  avoid=[(s["lon"], s["lat"]) for s in sites]
