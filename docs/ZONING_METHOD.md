@@ -24,8 +24,9 @@ proposes and to what was drawn — the same numbers, side by side.
 
 Land is cut *only* along features a villager, herder or ranger can name:
 rivers (HydroRIVERS; unnamed reaches take their 1930s Sudan Survey name),
-ridge chains of the sheets' hill marks, 1930s tribal and district boundaries
-(customary land), named khors, roads, borders, and — faintly — geological
+ridge chains of the sheets' hill marks, 1930s district boundaries and the few
+sub-tribal boundaries the sheets mark (customary land; ~1,250 km on XSA, ~220 km of it
+explicitly tribal - none on a proposal's edge), named khors, roads, borders, and — faintly — geological
 contacts. A watershed algorithm floods from every village and from a lattice
 in empty land, so each unit ends on the strongest such feature between two
 seeds. Units under 2,000 ha are absorbed. Every unit's perimeter is then

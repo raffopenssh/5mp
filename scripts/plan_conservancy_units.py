@@ -193,8 +193,12 @@ def hist_boundaries(hcon, aoi):
     for name, style, pts in hcon.execute("SELECT name, style, pts FROM lines_stitched WHERE kind='boundary' AND minlon>? AND minlat>? AND maxlon<? AND maxlat<?", aoi.bounds):
         nm = (name or "").strip()
         if "Internat" in nm or re.match(r"^[\d°'\s]+$", nm): continue
-        tribal = bool(re.search(r"tribal|Tribal|District|Distr|Province|Prov\.|Bound", nm)) or style == "dotted"
-        if not tribal: continue
+        # Labelled tribal / sub-tribal / district / province lines, or unlabelled dotted lines (sheet key:
+        # dotted = sub-tribal). A bare "Bound" match let in "Limit of Toich (Swamp)" and dated exploration
+        # routes ("(Lemaere 1902)", "Furain") - routes are not customary edges. On XSA this layer is
+        # ~1,250 km, mostly district/province; explicitly tribal ~220 km. Prose must say "district", not "tribal".
+        tribal = bool(re.search(r"[Tt]rib|Distr|Dist\.|Province|Prov\.|Bdy|District", nm)) or (style == "dotted" and not nm)
+        if not tribal or re.search(r"Limit of|Toich|\d{4}", nm): continue
         try: xy = json.loads(pts)
         except Exception: continue
         if len(xy) < 2: continue

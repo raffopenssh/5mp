@@ -14,7 +14,7 @@ be a useful benchmark** (see "What Chinko taught").
 5MP already measures a park: people (GHSL clusters), fire detections and
 fronts, clearing, cropland, mining targets, rivers. The planner turns that
 into a zoning tool by (1) cutting the AOI **only along features a person can
-point at** (rivers, ridge chains, 1930s tribal boundaries and named khors,
+point at** (rivers, ridge chains, 1930s district and (rarely) sub-tribal boundaries, named khors,
 roads, borders, geological contacts), (2) measuring each piece with the *same*
 rasters, (3) classifying with **one rule** whose every test is stored with its
 number, (4) **growing** the best area of a wanted class from those pieces
