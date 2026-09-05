@@ -511,7 +511,7 @@ PT = 1 / 72.0  # inches per point
 
 
 def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
-                date):
+                date, planner_n=0):
     """Every row of the right-hand column, as (height_inches, render) pairs.
 
     Read top to bottom this is the argument of the whole PIP: what is here,
@@ -670,6 +670,22 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
     add(SP * 0.9, lambda ax, y: None)
     text(G["verdict"], 9.2, "#8a5a00", style="italic", x=TXT_X, gap=SP)
 
+    if planner_n:
+        # planner layers are drawn only with --planner; the legend says what they are and how sure the machine is
+        n_prop = planner_n
+        head("Zoning planner (machine proposals)", "#6a2c8f")
+        key("s", "Core \u2014 empty land the rule calls park-grade", "none", "#1b5e20", lw=2.4)
+        key("s", "Corridor the herds actually walk (support \u2265 0.5)", "none", "#b3261e", lw=1.4)
+        key("s", "Community conservancy proposal (s.14)", "none", "#6a2c8f", lw=1.6,
+            note="hatched; grown from the village mesh on the park rim (80 km) and from the boom towns, "
+                 "never inside the park or Southern NP")
+        key("_", "Legible mesh \u2014 rivers, ridges, 1930s boundaries, roads", "none", "#5a5a5a", lw=0.5, alpha=0.7)
+        add(SP * 0.9, lambda ax, y: None)
+        text(f"{n_prop} proposals labelled with hectares, GHSL people and support = share of "
+             f"perturbed runs (thresholds \u00b125%) that keep the land inside. Each is measured with the same "
+             f"rasters as the drawn zones; the text is in data/plan_zones/conservancy_units/AREAS.txt.",
+             9.2, MUTED, style="italic", x=TXT_X, gap=SP)
+
     head("The plan", PLAN)
     key("s", "Anchor station \u2014 staffed", PLAN, "white", ms=10, mew=1.3)
     key("o", "Seasonal outreach only", "white", PLAN, ms=9, mew=1.9)
@@ -782,8 +798,11 @@ def main():
     # tall enough to hold whichever column is longer. Sizing the page before
     # measuring the text is what pushed the legend off the sheet.
     unmatched = sorted({short_name(nm) for nm in zones if role_of(nm) == "other"})
+    planner_n = 0
+    if a.planner:
+        planner_n = sum(len(json.load(open(f))["features"]) for f in Path(a.planner).parent.glob("optimize_*.geojson") if "support" not in f.name)
     items = panel_items(st, fire, sites, belt, unmatched, rim_km, rim_km,
-                        a.date)
+                        a.date, planner_n)
     panel_h = panel_height_in(items) + 0.30
 
     map_w_deg = (x1 - x0) * kx
@@ -878,7 +897,9 @@ def main():
                      "corridor": dict(fc=WALK, ec=WALK, hatch=None, lw=1.4),
                      "community": dict(fc=VIOLET, ec=VIOLET, hatch="///", lw=1.6),
                      "wilderness": dict(fc="#4f7a5c", ec="#4f7a5c", hatch=None, lw=1.4)}
-        files = [pdir / f"optimize_{k}.geojson" for k in ("core", "corridor", "wilderness", "community") if (pdir / f"optimize_{k}.geojson").exists()]
+        # optimize_<class>.geojson and any tagged run optimize_<class>_<tag>.geojson (e.g. community_towns); support files skipped
+        files = sorted(f for f in pdir.glob("optimize_*.geojson") if "support" not in f.name)
+        files.sort(key=lambda f: next((i for i, k in enumerate(("core", "corridor", "wilderness", "community")) if k in f.name), 9))
         if Path(a.planner) not in files: files.append(Path(a.planner))
         for fp in files:
             for f in json.load(open(fp))["features"]:
@@ -893,8 +914,11 @@ def main():
                     p.set_alpha(0.6); ax.add_patch(p)
                 c = g.representative_point()
                 sup = f" · support {pr['support_mean']}" if pr.get("support_mean") is not None else ""
+                towns = json.loads(pr["towns"]) if isinstance(pr.get("towns"), str) else (pr.get("towns") or [])
+                town = (" · " + towns[0].split(" (")[0].rsplit(" ", 1)[0].replace("*", "")) if towns else ""
+                nm = str(pr.get("seed", cls)).replace(" proposal", "") + ("" if "_" not in fp.stem.replace("optimize_", "") else f" ({fp.stem.split('_', 2)[2]})")
                 planner_labels.append((c.x, c.y,
-                                       f"{pr.get('seed', cls)}\n{pr['area_ha']:,} ha · {pr['population_est']:,} ppl{sup}",
+                                       f"{nm}{town}\n{pr['area_ha']:,} ha · {pr['population_est']:,} ppl{sup}",
                                        st["ec"], 9.5))
 
     # 5. settlements: area by population, so an empty interior reads as empty
