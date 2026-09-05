@@ -95,7 +95,8 @@ before schema changes.
 in a snippet, not in a comment. Add a named var to `secrets.env` (+ placeholder
 in `secrets.env.example`) and refer to it by name; snippets start with
 `source secrets.env`. Only `test2026` (shared demo password) is written
-literally. Admin password and `$AOI_OWNER_PWD` live in `secrets.env`.
+literally. `$AOI_OWNER_PWD` lives in `secrets.env`. There is no separate admin
+password: `RequireAdmin` accepts any access password (alpha).
 API keys are read from the environment, never from a literal
 (`PROTECTEDPLANET_TOKEN` was a constant in three files until 2026-08-13; **it
 is in the git history and must be treated as public** — rotate upstream, do not

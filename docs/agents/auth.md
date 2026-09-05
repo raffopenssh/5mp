@@ -121,3 +121,13 @@ Require admin login (see `srv/server.go` lines with `RequireAdmin`):
 - `POST /api/admin/delete-upload`, `/api/admin/hide-notification`
 
 ---
+
+### There is no admin password
+
+`RequireAdmin` (`srv/auth_handlers.go`) accepts **any** valid access password
+during alpha; the email/session admin role (`users.role='admin'`) is a fallback
+nobody uses. `ADMIN_EMAIL`/`ADMIN_PASSWORD` sat in `secrets.env.example` from
+2026-07-09 to 2026-09-05 without a single reader in Go, Python or shell — a
+`?pwd=$ADMIN_PASSWORD` therefore 401'd, correctly, because only
+`ACCESS_PASSWORDS` grants access. Removed rather than wired: a credential in
+the template that nothing checks reads as a login and is not one.
