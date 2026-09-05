@@ -1,0 +1,4 @@
+OPTIMIZE want=corridor max 600,000 ha; 20 bootstrap draws per area, thresholds ±25%, greedy path jittered ±10%
+support = share of draws a fine unit lies inside the best-grown area; proposal = support ≥ 0.5; contested = 0.25–0.5
+mining: unmeasured (no detection model for this area)
+

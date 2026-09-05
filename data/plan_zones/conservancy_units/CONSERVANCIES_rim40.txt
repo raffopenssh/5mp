@@ -1,0 +1,19 @@
+CONSERVANCY CANDIDATES (rim40; used land = fine units with a cluster or within 8 km of one; grown across weakest edges to <= 150,000 ha; min 2,000 ha, min 100 people)
+model composite skill: top-5% cells capture 16% of known workings (lift 3.25); imagery targets, not mines
+
+[SE] #4    community  SSD   118,800 ha    5 cl    3,057 ppl (2.573/km2) new15  1 | fire/1000km2  3,879 fronts  722 (97% herd, 501 long) | clear20  1.58 km2 crop 0.0→0.0% | mine r/c/t5 0/0/7 | park 2.0 km | legible 0.51 score 
+      seed Nahr (conservancy); towns: Nahr al Jur* 1,192, Bo River* 1,076; overlaps: PLAN Wau-Wilderness_30, 37%, PLAN Southern-NP-Wilderness 11%
+      boundary (202 km, 28% unnamed): Bo River on the SW/N (92 km); Nahr al Jur on the NE/SE (44 km); Islands (1930s sheet) on the E/SE (6 km); Rapids (1930s sheet) on the NE (4 km)
+      built 0.0 → 0.01 → 0.01 km2 (xNone); camps 1; front dirs {'N': 132, 'S': 114, 'NE': 96}; nov-feb 0.95; clearing all 6.41 km2/37 ev, encroach+slash 6; watchlist 0
+
+[SE] #3463 community  SSD   222,800 ha   19 cl    2,671 ppl (1.199/km2) new15  0 | fire/1000km2  4,977 fronts 1063 (98% herd, 708 long) | clear20  0.66 km2 crop 0.0→0.0% | mine r/c/t5 0/2/19 | park 4.0 km | legible 0.33 score 
+      seed unit 3463 (conservancy); towns: -; overlaps: PLAN Wau-Wilderness_30, 53%, PLAN zone-pâturage-durable_Numatina 32%
+      boundary (344 km, 62% unnamed): Bo River on the NE/N (32 km); Nahr al Jur on the E/NE (26 km); R. Imatima (1930s sheet) on the W (24 km); unnamed river (order 4) on the NW/W (14 km); R. Duma (1930s sheet) on the S/SE (14 km); R. Yabo (1930s sheet) on the SE/E (10 km)
+      built 0.01 → 0.01 → 0.01 km2 (xNone); camps 15; front dirs {'N': 221, 'S': 149, 'NW': 139}; nov-feb 0.97; clearing all 1.42 km2/38 ev, encroach+slash 14; watchlist 1
+
+[S] #3462 community  SSD     3,600 ha    1 cl      115 ppl (3.194/km2) new15  0 | fire/1000km2      0 fronts  220 (100% herd, 152 long) | clear20  0.06 km2 crop 0.0→0.0% | mine r/c/t5 0/0/0 | park 30.0 km | legible 0.11 score 
+      seed unit 3462 (conservancy); towns: -; overlaps: PLAN zone-pâturage-durable_Numatina 11%
+      boundary (18 km, 78% unnamed): R. Imatima (1930s sheet) on the W (4 km)
+      built 0.0 → 0.0 → 0.01 km2 (xNone); camps 0; front dirs {'N': 42, 'NW': 38, 'SE': 33}; nov-feb None; clearing all 0.52 km2/12 ev, encroach+slash 2; watchlist 0
+
+3 candidates, 345,200 ha, 5,843 people (GHSL lower bound). Populations are satellite lower bounds; boundary names are HydroRIVERS / 1930s sheets — verify on the ground.

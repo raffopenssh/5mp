@@ -1,0 +1,94 @@
+CONSERVANCY CANDIDATES (rim120; used land = fine units with a cluster or within 8 km of one; grown across weakest edges to <= 150,000 ha; min 2,000 ha, min 500 people)
+model composite skill: top-5% cells capture 16% of known workings (lift 3.25); imagery targets, not mines
+
+[NE] #6    community  SSD   144,400 ha   34 cl  140,214 ppl (97.101/km2) new15  9 | fire/1000km2  4,772 fronts 1719 (98% herd, 1137 long) | clear20  0.36 km2 crop 0.01→0.82% | mine r/c/t5 0/1/28 | park 56.6 km | legible 0.66 score 
+      seed Nahr (conservancy); towns: Nahr al Jur* 104,260, Nahr al Jur* 15,443, Busseri River* 3,816, Nahr al Jur* 3,120; overlaps: -
+      boundary (188 km, 14% unnamed): Nahr al Jur on the NE/SE (46 km); Busseri River on the S/SE (32 km); K. Megwalima (1930s sheet) on the S/SW (20 km); R. Asetti (1930s sheet) on the N (16 km); K. Ngoko (1930s sheet) on the SW/W (10 km); unnamed river (order 4) on the W/NE (8 km)
+      built 6.25 → 7.63 → 11.61 km2 (x1.9); camps 14; front dirs {'NW': 347, 'SE': 326, 'E': 264}; nov-feb 0.68; clearing all 12.56 km2/105 ev, encroach+slash 2; watchlist 1
+
+[NE] #1661 community  SSD   246,800 ha   22 cl   40,898 ppl (16.571/km2) new15  3 | fire/1000km2  3,201 fronts 2003 (98% herd, 1141 long) | clear20  0.16 km2 crop 0.0→0.65% | mine r/c/t5 0/1/13 | park 87.2 km | legible 0.24 score 
+      seed Busseri (conservancy); towns: Busseri River* 30,418, Busseri River* 2,066, Busseri River* 1,498, Busseri River* 1,054; overlaps: -
+      boundary (422 km, 58% unnamed): Nahr al Jur on the E/SE (36 km); unnamed river (order 4) on the W/NW (28 km); R. Pongo (1930s sheet) on the NW/N (26 km); 1930s Boundary (Northern) (Central) on the N (24 km); R. K. (1930s sheet) on the SW/W (20 km); R. Asetti (1930s sheet) on the S/SE (10 km)
+      built 0.53 → 1.34 → 2.96 km2 (x5.6); camps 8; front dirs {'NW': 333, 'E': 321, 'N': 306}; nov-feb 0.63; clearing all 1.95 km2/73 ev, encroach+slash 0; watchlist 2
+
+[S] #2    community  SSD   139,200 ha   20 cl   36,615 ppl (26.304/km2) new15  0 | fire/1000km2  4,709 fronts 1292 (98% herd, 817 long) | clear20  2.32 km2 crop 0.0→0.01% | mine r/c/t5 1/0/14 | park 71.0 km | legible 0.56 score 
+      seed Tambura (conservancy); towns: Tambura 31,951, Yubo 2,911; overlaps: -
+      boundary (158 km, 16% unnamed): unnamed river (order 4) on the S/E (44 km); Tambura - Yubo Road on the W/NW (28 km); K. Barange (1930s sheet) on the N/NE (12 km); L. Mbanga (1930s sheet) on the E/SE (12 km); CAF border on the SW/W (8 km); primary road on the SW/W (8 km)
+      built 0.53 → 1.49 → 2.12 km2 (x4.0); camps 15; front dirs {'NW': 234, 'SE': 199, 'N': 191}; nov-feb 0.9; clearing all 31.24 km2/68 ev, encroach+slash 29; watchlist 2
+
+[E] #31   community  SSD   146,800 ha   29 cl   17,578 ppl (11.974/km2) new15  2 | fire/1000km2  3,991 fronts 1735 (98% herd, 1038 long) | clear20  0.45 km2 crop 0.01→0.28% | mine r/c/t5 0/1/11 | park 64.6 km | legible 0.43 score 
+      seed Ibba (conservancy); towns: Ibba River* 11,055, Ibba River* 2,271; overlaps: -
+      boundary (198 km, 38% unnamed): Pools (1930s sheet) on the NE/S (28 km); Nahr al Jur on the W (26 km); Ibba on the E (18 km); A. Lingi (1930s sheet) on the W/SW (16 km); K. Nuduk (1930s sheet) on the W/NW (12 km); K. Fagol (1930s sheet) on the NE (10 km)
+      built 0.34 → 0.59 → 1.29 km2 (x3.8); camps 19; front dirs {'SE': 332, 'NW': 307, 'N': 210}; nov-feb 0.65; clearing all 5.37 km2/90 ev, encroach+slash 7; watchlist 2
+
+[S] #3    community  CAF    26,400 ha    8 cl   17,518 ppl (66.356/km2) new15  0 | fire/1000km2  2,044 fronts  381 (97% herd, 224 long) | clear20 13.49 km2 crop 0.0→0.0% | mine r/c/t5 1/0/0 | park 90.4 km | legible None score 
+      seed Obo (conservancy); towns: Obo 17,249; overlaps: -
+      boundary (74 km, 16% unnamed): primary road on the S/SE (22 km); Gari (1930s sheet) on the NE/E (18 km); Ouarra River on the NW/N (14 km); tertiary road on the NW (8 km)
+      built 0.48 → 0.65 → 0.8 km2 (x1.7); camps 5; front dirs {'W': 91, 'SW': 79, 'E': 50}; nov-feb 0.76; clearing all 22.48 km2/29 ev, encroach+slash 14; watchlist 0
+
+[E] #62   community  SSD   135,600 ha   28 cl    8,448 ppl (6.23/km2) new15  1 | fire/1000km2  4,326 fronts 1666 (99% herd, 1020 long) | clear20  0.34 km2 crop 0.0→0.02% | mine r/c/t5 0/1/16 | park 52.0 km | legible 0.34 score 
+      seed Ibba (conservancy); towns: Ibba River* 6,913; overlaps: -
+      boundary (170 km, 47% unnamed): Ibba on the E/SE (22 km); K. Ateir (1930s sheet) on the W/SW (20 km); A. Lingi (1930s sheet) on the NW/W (18 km); Nahr al Jur on the W (16 km); Pools (1930s sheet) on the NE (4 km); unnamed river (order 4) on the E (4 km)
+      built 0.1 → 0.16 → 0.37 km2 (x3.7); camps 23; front dirs {'SE': 335, 'NW': 263, 'S': 231}; nov-feb 0.68; clearing all 1.52 km2/82 ev, encroach+slash 18; watchlist 1
+
+[NE] #69   community  SSD     4,400 ha    3 cl    4,456 ppl (101.273/km2) new15  2 | fire/1000km2      0 fronts  243 (100% herd, 171 long) | clear20   0.0 km2 crop 0.0→2.13% | mine r/c/t5 0/0/0 | park 115.6 km | legible 0.15 score 
+      seed Busseri (conservancy); towns: Busseri River* 2,489, Nahr al Jur* 1,780; overlaps: -
+      boundary (22 km, 82% unnamed): Nahr al Jur on the E (4 km)
+      built 0.02 → 0.07 → 0.37 km2 (x18.5); camps 0; front dirs {'SE': 52, 'NW': 50, 'N': 49}; nov-feb None; clearing all 0.01 km2/1 ev, encroach+slash 0; watchlist 0
+
+[NE] #20   community  SSD   139,600 ha   29 cl    3,642 ppl (2.609/km2) new15  0 | fire/1000km2  4,995 fronts 1609 (98% herd, 1031 long) | clear20  0.37 km2 crop 0.0→0.0% | mine r/c/t5 0/1/16 | park 57.6 km | legible 0.55 score 
+      seed unit 20 (conservancy); towns: -; overlaps: -
+      boundary (168 km, 20% unnamed): K Akali (1930s sheet) on the SE/S (24 km); unnamed river (order 4) on the N/SW (22 km); R.Keetar (1930s sheet) on the W/NW (20 km); R. K. (1930s sheet) on the NE (16 km); Gandu (1930s sheet) on the SW (12 km); K. Relleh (1930s sheet) on the E (10 km)
+      built 0.08 → 0.09 → 0.15 km2 (x1.9); camps 21; front dirs {'NW': 303, 'N': 239, 'SE': 219}; nov-feb 0.71; clearing all 1.5 km2/65 ev, encroach+slash 2; watchlist 1
+
+[S] #125  community  SSD   110,000 ha   16 cl    3,498 ppl (3.18/km2) new15  0 | fire/1000km2  3,532 fronts 1223 (99% herd, 794 long) | clear20 13.98 km2 crop 0.0→0.02% | mine r/c/t5 1/0/16 | park 50.5 km | legible 0.54 score 
+      seed Senekpuro (conservancy); towns: Senekpuro 2,821; overlaps: -
+      boundary (166 km, 8% unnamed): Tambura - Yubo Road on the SW/S (24 km); R. Chamika (1930s sheet) on the NE/N (18 km); R. Yangali (1930s sheet) on the NE/E (14 km); K. Barange (1930s sheet) on the E/SE (14 km); CAF border on the SW/W (14 km); R. Duma (1930s sheet) on the NE (12 km)
+      built 0.09 → 0.13 → 0.28 km2 (x3.1); camps 13; front dirs {'NW': 231, 'N': 205, 'SE': 163}; nov-feb 0.87; clearing all 33.78 km2/58 ev, encroach+slash 30; watchlist 0
+
+[SE] #33   community  SSD   118,800 ha    5 cl    3,057 ppl (2.573/km2) new15  1 | fire/1000km2  3,879 fronts  722 (97% herd, 501 long) | clear20  1.58 km2 crop 0.0→0.0% | mine r/c/t5 0/0/7 | park 2.0 km | legible 0.51 score 
+      seed Nahr (conservancy); towns: Nahr al Jur* 1,192, Bo River* 1,076; overlaps: PLAN Wau-Wilderness_30, 37%, PLAN Southern-NP-Wilderness 11%
+      boundary (202 km, 28% unnamed): Bo River on the SW/N (92 km); Nahr al Jur on the NE/SE (44 km); Islands (1930s sheet) on the E/SE (6 km); Rapids (1930s sheet) on the NE (4 km)
+      built 0.0 → 0.01 → 0.01 km2 (xNone); camps 1; front dirs {'N': 132, 'S': 114, 'NE': 96}; nov-feb 0.95; clearing all 6.41 km2/37 ev, encroach+slash 6; watchlist 0
+
+[NE] #112  community  SSD   148,400 ha   39 cl    2,339 ppl (1.576/km2) new15  1 | fire/1000km2  3,254 fronts 1536 (98% herd, 888 long) | clear20  0.25 km2 crop 0.0→0.16% | mine r/c/t5 0/1/7 | park 84.9 km | legible 0.42 score 
+      seed Nahr (conservancy); towns: Nahr al Jur* 1,350; overlaps: -
+      boundary (232 km, 51% unnamed): Pools (1930s sheet) on the SE/E (22 km); 1930s Sub-tribal Boundary on the NE/N (20 km); Nahr al Jur on the W/SW (18 km); 1930s W. District Boundary on the NW/N (16 km); K. Nuduk (1930s sheet) on the SW/W (16 km); K. Fagol (1930s sheet) on the E/SE (12 km)
+      built 0.03 → 0.04 → 0.1 km2 (x3.3); camps 36; front dirs {'NW': 278, 'SE': 246, 'N': 209}; nov-feb 0.67; clearing all 4.48 km2/92 ev, encroach+slash 6; watchlist 1
+
+[SE] #3498 community  SSD   222,400 ha   18 cl    2,205 ppl (0.991/km2) new15  0 | fire/1000km2  4,986 fronts 1063 (98% herd, 708 long) | clear20  0.66 km2 crop 0.0→0.0% | mine r/c/t5 0/2/19 | park 4.0 km | legible 0.31 score 
+      seed unit 3498 (conservancy); towns: -; overlaps: PLAN Wau-Wilderness_30, 53%, PLAN zone-pâturage-durable_Numatina 32%
+      boundary (348 km, 63% unnamed): Bo River on the NE/N (32 km); Nahr al Jur on the E/NE (26 km); R. Imatima (1930s sheet) on the W (24 km); unnamed river (order 4) on the NW/W (14 km); R. Duma (1930s sheet) on the S/SE (14 km); R. Yabo (1930s sheet) on the SE/E (10 km)
+      built 0.01 → 0.01 → 0.01 km2 (xNone); camps 15; front dirs {'N': 221, 'S': 149, 'NW': 139}; nov-feb 0.97; clearing all 1.35 km2/33 ev, encroach+slash 14; watchlist 1
+
+[NE] #21   community  SSD   101,200 ha   24 cl    2,068 ppl (2.043/km2) new15  0 | fire/1000km2  4,663 fronts 1382 (99% herd, 927 long) | clear20  0.29 km2 crop 0.0→0.13% | mine r/c/t5 0/0/13 | park 44.0 km | legible 0.7 score 
+      seed unit 21 (conservancy); towns: -; overlaps: -
+      boundary (130 km, 12% unnamed): Busseri River on the W/N (42 km); Nahr al Jur on the SE/E (32 km); K. Nyadok (1930s sheet) on the S/SW (18 km); K. Ungoa (1930s sheet) on the SW (10 km); R. Sue (1930s sheet) on the N/E (6 km); K. Nuduk (1930s sheet) on the NE (6 km)
+      built 0.05 → 0.06 → 0.1 km2 (x2.0); camps 18; front dirs {'SE': 310, 'NW': 261, 'W': 170}; nov-feb 0.79; clearing all 3.38 km2/61 ev, encroach+slash 4; watchlist 2
+
+[N] #1597 community  SSD    43,600 ha    6 cl    1,477 ppl (3.388/km2) new15  0 | fire/1000km2  4,472 fronts  911 (99% herd, 607 long) | clear20   0.0 km2 crop 0.0→0.01% | mine r/c/t5 0/0/9 | park 94.9 km | legible 0.31 score 
+      seed Busseri (conservancy); towns: Busseri River* 1,410; overlaps: -
+      boundary (80 km, 25% unnamed): unnamed river (order 4) on the SE/NE (26 km); I Kayak (1930s sheet) on the NW/N (20 km); R. Mannare (1930s sheet) on the S/SW (14 km)
+      built 0.02 → 0.04 → 0.13 km2 (x6.5); camps 5; front dirs {'NW': 192, 'N': 149, 'SE': 129}; nov-feb 0.76; clearing all 0.12 km2/10 ev, encroach+slash 1; watchlist 1
+
+[NE] #24   community  SSD    22,000 ha    5 cl    1,172 ppl (5.327/km2) new15  0 | fire/1000km2  1,000 fronts  486 (100% herd, 316 long) | clear20  0.04 km2 crop 0.0→0.33% | mine r/c/t5 0/0/3 | park 93.5 km | legible 0.69 score 
+      seed unit 24 (conservancy); towns: -; overlaps: -
+      boundary (52 km, 31% unnamed): Nahr al Jur on the SW/NW (20 km); 1930s W. District Boundary on the SE/E (10 km); K. Achikwet (1930s sheet) on the S/N (6 km)
+      built 0.01 → 0.02 → 0.05 km2 (xNone); camps 3; front dirs {'NW': 112, 'SE': 91, 'E': 76}; nov-feb 0.62; clearing all 0.11 km2/12 ev, encroach+slash 0; watchlist 1
+
+[NE] #64   community  SSD   129,600 ha   28 cl    1,012 ppl (0.781/km2) new15  4 | fire/1000km2  3,385 fronts 1570 (98% herd, 1042 long) | clear20  0.52 km2 crop 0.0→0.0% | mine r/c/t5 0/0/4 | park 33.9 km | legible 0.57 score 
+      seed unit 64 (conservancy); towns: -; overlaps: -
+      boundary (182 km, 29% unnamed): K. Ngoko (1930s sheet) on the NW/N (24 km); K Akali (1930s sheet) on the N/NW (22 km); K. Megwalima (1930s sheet) on the SE/E (20 km); K. Getti (1930s sheet) on the W/N (14 km); K. Ngombara (1930s sheet) on the SE/S (14 km); K. Nowondo (1930s sheet) on the N/NE (6 km)
+      built 0.07 → 0.08 → 0.22 km2 (x3.1); camps 21; front dirs {'NW': 251, 'SE': 248, 'W': 210}; nov-feb 0.72; clearing all 5.42 km2/89 ev, encroach+slash 1; watchlist 1
+
+[NE] #26   community  SSD     7,200 ha    1 cl      721 ppl (10.014/km2) new15  0 | fire/1000km2      0 fronts  265 (99% herd, 182 long) | clear20  0.02 km2 crop 0.0→1.86% | mine r/c/t5 0/0/0 | park 110.3 km | legible 1.0 score 
+      seed unit 26 (conservancy); towns: -; overlaps: -
+      boundary (36 km, 50% unnamed): K. Kwange (1930s sheet) on the W/NW (12 km); Nahr al Jur on the W (6 km)
+      built 0.01 → 0.01 → 0.04 km2 (xNone); camps 0; front dirs {'N': 53, 'NW': 52, 'SE': 48}; nov-feb None; clearing all 0.27 km2/8 ev, encroach+slash 0; watchlist 0
+
+[NE] #35   community  SSD     2,000 ha    1 cl      514 ppl (25.7/km2) new15  0 | fire/1000km2      0 fronts  253 (99% herd, 162 long) | clear20   0.0 km2 crop 0.0→0.0% | mine r/c/t5 0/0/0 | park 114.5 km | legible 0.03 score 
+      seed unit 35 (conservancy); towns: -; overlaps: -
+      boundary (10 km, 100% unnamed): 
+      built 0.01 → 0.01 → 0.02 km2 (xNone); camps 0; front dirs {'N': 59, 'NW': 47, 'SE': 33}; nov-feb None; clearing all 0.0 km2/0 ev, encroach+slash 0; watchlist 0
+
+18 candidates, 1,888,400 ha, 287,432 people (GHSL lower bound). Populations are satellite lower bounds; boundary names are HydroRIVERS / 1930s sheets — verify on the ground.
