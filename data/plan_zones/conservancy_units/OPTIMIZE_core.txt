@@ -2,27 +2,27 @@ OPTIMIZE want=core max 2,500,000 ha; 16 bootstrap draws per area, thresholds ±2
 support = share of draws a fine unit lies inside the best-grown area; proposal = support ≥ 0.5; contested = 0.25–0.5
 model composite skill: top-5% cells capture 16% of known workings (lift 3.25); imagery targets, not mines
 
-#1    core       SSD 2,340,400 ha   12 cl       79 ppl (0.003/km2) new15  0 | fire/1000km2  4,869 fronts 3539 (96% herd, 2237 long) | clear20  0.44 km2 crop 0.0→0.0% | mine r/c/t5 0/0/0 | park 0.0 km | legible 0.91 score 
-      seed core proposal 1 (optimized); towns: -; overlaps: PLAN Pongo-Wau-Numatinna_National-Park 52%, PLAN Wau-Wilderness_30, 81%, PLAN zone-pâturage-durable_Numatina 15%
-      boundary (866 km, 8% unnamed): CAF border on the S/SW (154 km); unnamed river (order 4) on the SE/S (56 km); Numatinna on the E/SE (52 km); Pongo on the N/NE (48 km); R. Biri (1930s sheet) on the NW/N (36 km); Busseri on the E (36 km)
-      built 0.0 → 0.01 → 0.01 km2 (xNone); camps 12; front dirs {'W': 571, 'SE': 510, 'SW': 504}; nov-feb 0.99; clearing all 7.95 km2/94 ev, encroach+slash 8; watchlist 0
-      rock: PLu Undifferentiated metamorphic rocks, migm 90% — affinity prior 0.15
-      as a whole → core; support 0.83; size across draws p10/p50/p90 [2218800, 2384200, 2485200] ha; 8 contested fine units
-      rationale: long fronts per 10 km width 146.22 >= 154.41: no | transhumance share % 96 >= 50: yes | axis coherence (0.25 = random) 0.28 >= 0.4: no | people/km2 0.003 <= 2: yes | — not a corridor; core? | people/km2 0.003 <= 0.02: yes | cropland 2019 % 0 <= 0.05: yes | clearing since 2020 km2/1000km2 0.019 <= 0.5: yes | reported workings 0 <= 0: yes
+#1    core       SSD 2,294,400 ha   10 cl       76 ppl (0.003/km2) new15  0 | fire/1000km2  4,899 fronts 3487 (96% herd, 2194 long) | clear20  0.44 km2 crop 0.0→0.0% | mine r/c/t5 0/0/0 | park 0.0 km | legible 0.57 score 
+      seed core proposal 1 (optimized); towns: -; overlaps: PLAN Pongo-Wau-Numatinna_National-Park 53%, PLAN Wau-Wilderness_30, 81%, PLAN zone-pâturage-durable_Numatina 15%
+      boundary (888 km, 18% unnamed): CAF border on the S/SW (148 km); unnamed river (order 4) on the SE/S (60 km); Numatinna on the E/SE (52 km); Pongo on the N/NE (48 km); Busseri on the E/NE (48 km); R. Biri (1930s sheet) on the NW/N (36 km); 70 km along a geological contact only (not visible on the ground — needs beacons)
+      built 0.0 → 0.0 → 0.01 km2 (xNone); camps 10; front dirs {'W': 556, 'SE': 501, 'SW': 501}; nov-feb 0.99; clearing all 7.92 km2/90 ev, encroach+slash 8; watchlist 0
+      rock: PLu Undifferentiated metamorphic rocks, migm 91% — affinity prior 0.14
+      as a whole → core; support 0.9; size across draws p10/p50/p90 [2314800, 2434600, 2498800] ha; 10 contested fine units
+      rationale: long fronts per 10 km width 144.84 >= 154.41: no | transhumance share % 96 >= 50: yes | axis coherence (0.25 = random) 0.28 >= 0.4: no | people/km2 0.003 <= 2: yes | — not a corridor; core? | people/km2 0.003 <= 0.02: yes | cropland 2019 % 0 <= 0.05: yes | clearing since 2020 km2/1000km2 0.019 <= 0.5: yes | reported workings 0 <= 0: yes
 
-#2    core       SSD 1,610,400 ha   21 cl      157 ppl (0.01/km2) new15  1 | fire/1000km2  3,868 fronts 3520 (96% herd, 2266 long) | clear20   0.0 km2 crop 0.0→0.01% | mine r/c/t5 0/2/15 | park 117.2 km | legible None score 
-      seed core proposal 2 (optimized); towns: -; overlaps: PLAN Boro_Wilderness_3, 13%
-      boundary (1056 km, 3% unnamed): SDN border on the N/NW (108 km); unnamed river (order 4) on the S/N (108 km); Low hill – J. ABU RASEIN – J. NGAYA ridge on the W/NW (84 km); CAF border on the S/SW (78 km); Boro on the SE/S (66 km); J. OROKULLA – J. DELETI – J. KURNU BANDA ridge on the NE (54 km)
-      built 0.01 → 0.01 → 0.01 km2 (xNone); camps 21; front dirs {'SE': 592, 'E': 591, 'NW': 472}; nov-feb 0.96; clearing all 0.59 km2/31 ev, encroach+slash 3; watchlist 4
-      rock: PLp Para schist 28%; Zeta Gneiss a micas, amphibolites, a pyroxene 26% [uranium]; PLu Undifferentiated metamorphic rocks, migm 16% — affinity prior 0.59
-      as a whole → core; support 0.6; size across draws p10/p50/p90 [1919000, 2456400, 2499800] ha; 34 contested fine units
-      rationale: long fronts per 10 km width 178.56 >= 154.41: yes | transhumance share % 96 >= 50: yes | axis coherence (0.25 = random) 0.3 >= 0.4: no | people/km2 0.01 <= 2: yes | — not a corridor; core? | people/km2 0.01 <= 0.02: yes | cropland 2019 % 0.01 <= 0.05: yes | clearing since 2020 km2/1000km2 0.0 <= 0.5: yes | reported workings 0 <= 0: yes
+#2    core       CAF 2,104,000 ha   40 cl      224 ppl (0.011/km2) new15  1 | fire/1000km2  4,244 fronts 3811 (96% herd, 2371 long) | clear20  0.03 km2 crop 0.0→0.01% | mine r/c/t5 0/2/12 | park 94.1 km | legible 0.6 score 
+      seed core proposal 2 (optimized); towns: -; overlaps: PLAN Boro_Wilderness_3, 12%, WDPA Zemongo (Faunal Reserve) 10%, WDPA Radom (National Park, approx. circle of reported 12,) 18%
+      boundary (1202 km, 22% unnamed): unnamed river (order 4) on the S/N (182 km); CAF border on the SE/W (136 km); Chinko on the S/SW (116 km); SDN border on the N/NW (94 km); Low hill – J. ABU RASEIN – J. NGAYA ridge on the NW/N (70 km); Rikki on the N (40 km); 212 km along a geological contact only (not visible on the ground — needs beacons)
+      built 0.01 → 0.01 → 0.01 km2 (xNone); camps 40; front dirs {'SE': 622, 'E': 604, 'W': 510}; nov-feb 0.97; clearing all 1.16 km2/83 ev, encroach+slash 4; watchlist 4
+      rock: Zeta Gneiss a micas, amphibolites, a pyroxene 44% [uranium]; PLp Para schist 18% — affinity prior 0.92
+      as a whole → core; support 0.59; size across draws p10/p50/p90 [2266400, 2439000, 2497600] ha; 32 contested fine units
+      rationale: long fronts per 10 km width 163.46 >= 154.41: yes | transhumance share % 96 >= 50: yes | axis coherence (0.25 = random) 0.3 >= 0.4: no | people/km2 0.011 <= 2: yes | — not a corridor; core? | people/km2 0.011 <= 0.02: yes | cropland 2019 % 0.01 <= 0.05: yes | clearing since 2020 km2/1000km2 0.001 <= 0.5: yes | reported workings 0 <= 0: yes
 
-#3    core       CAF 1,642,800 ha    5 cl      234 ppl (0.014/km2) new15  0 | fire/1000km2  2,306 fronts 2604 (92% herd, 1178 long) | clear20  2.89 km2 crop 0.0→0.0% | mine r/c/t5 0/0/9 | park 18.0 km | legible 0.91 score 
-      seed core proposal 3 (optimized); towns: -; overlaps: WDPA Bili-Uere (Hunting Area) 23%
-      boundary (950 km, 19% unnamed): Mbomou on the SE/W (134 km); Ouara on the N/NW (106 km); study-area edge on the S/SE (100 km); CAF border on the N/W (84 km); unnamed river (order 4) on the SW/NE (60 km); Ouarra River on the E/NE (60 km)
-      built 0.01 → 0.01 → 0.01 km2 (xNone); camps 4; front dirs {'W': 524, 'E': 360, 'SW': 351}; nov-feb 0.93; clearing all 11.47 km2/302 ev, encroach+slash 133; watchlist 2
-      rock: Xi Micaschistes dominants (a muscovite, a d 24% [gold,lithium]; Zeta Gneiss a micas, amphibolites, a pyroxene 24% [uranium] — affinity prior 1.04
-      as a whole → core; support 0.74; size across draws p10/p50/p90 [1410600, 1686000, 2184800] ha; 10 contested fine units
-      rationale: long fronts per 10 km width 91.91 >= 154.41: no | transhumance share % 92 >= 50: yes | axis coherence (0.25 = random) 0.34 >= 0.4: no | people/km2 0.014 <= 2: yes | — not a corridor; core? | people/km2 0.014 <= 0.02: yes | cropland 2019 % 0 <= 0.05: yes | clearing since 2020 km2/1000km2 0.176 <= 0.5: yes | reported workings 0 <= 0: yes
+#3    core       CAF 1,831,600 ha    4 cl      217 ppl (0.012/km2) new15  0 | fire/1000km2  2,411 fronts 2764 (92% herd, 1227 long) | clear20  2.82 km2 crop 0.0→0.0% | mine r/c/t5 0/0/10 | park 18.0 km | legible 0.56 score 
+      seed core proposal 3 (optimized); towns: -; overlaps: WDPA Bili-Uere (Hunting Area) 21%
+      boundary (990 km, 37% unnamed): Mbomou on the SE/SW (128 km); CAF border on the N/NE (84 km); unnamed river (order 4) on the SW/NE (66 km); Ouara on the N/NW (48 km); Kéré on the W/N (48 km); Ouarra River on the E (34 km); 160 km along a geological contact only (not visible on the ground — needs beacons)
+      built 0.01 → 0.01 → 0.01 km2 (xNone); camps 3; front dirs {'W': 534, 'SW': 378, 'E': 371}; nov-feb 0.93; clearing all 11.16 km2/302 ev, encroach+slash 124; watchlist 2
+      rock: Zeta Gneiss a micas, amphibolites, a pyroxene 33% [uranium]; Xi Micaschistes dominants (a muscovite, a d 19% [gold,lithium] — affinity prior 1.01
+      as a whole → core; support 0.74; size across draws p10/p50/p90 [1569000, 1802600, 2367000] ha; 13 contested fine units
+      rationale: long fronts per 10 km width 90.66 >= 154.41: no | transhumance share % 92 >= 50: yes | axis coherence (0.25 = random) 0.33 >= 0.4: no | people/km2 0.012 <= 2: yes | — not a corridor; core? | people/km2 0.012 <= 0.02: yes | cropland 2019 % 0 <= 0.05: yes | clearing since 2020 km2/1000km2 0.154 <= 0.5: yes | reported workings 0 <= 0: yes
 

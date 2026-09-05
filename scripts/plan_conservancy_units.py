@@ -63,18 +63,27 @@ RIDGE_LINK_KM, RIDGE_NAME_KM, RIVER_NAME_KM, RIDGE_MIN_PTS = 15.0, 6.0, 2.0, 3
 HILL_RE = re.compile(r"^(J\.|JEBEL|JABAL)\s|\bHILLS?\b|\bMTS?\b|\bMOUNT", re.I)
 COUNTRIES = ("SSD", "CAF", "SDN", "COD")
 CLASSES = ["core", "wilderness", "community", "corridor"]
+INVISIBLE_KINDS = ("geology", "frame")     # legible to the planner, not to a person standing there
 
 def dkm(a, b):
     return math.hypot((a[0]-b[0])*111*math.cos(math.radians((a[1]+b[1])/2)), (a[1]-b[1])*111)
 def log(*a): print(time.strftime("%H:%M:%S"), *a, file=sys.stderr, flush=True)
 
 # ============================================================ inputs
+def _valid_poly(pts):
+    """A hand-drawn ring may self-intersect (the Numatina grazing zone does: 93 points, one crossing). buffer(0)
+    silently keeps one lobe; make_valid keeps every lobe as polygons — take those, drop slivers."""
+    from shapely.validation import make_valid
+    p = Polygon(pts)
+    if p.is_valid: return p
+    mv = make_valid(p); parts = [g for g in getattr(mv, "geoms", [mv]) if g.geom_type == "Polygon" and g.area > 1e-4]
+    return unary_union(parts) if parts else p.buffer(0)
 def read_kml(path):
     t = path.read_text(encoding="utf-8", errors="replace"); out = {}
     for pm in re.findall(r"<Placemark>(.*?)</Placemark>", t, re.S):
         nm = re.search(r"<name>(.*?)</name>", pm, re.S)
         nm = (nm.group(1) if nm else path.stem).replace("&apos;", "'").strip()
-        polys = [Polygon([tuple(map(float, c.split(",")[:2])) for c in m.group(1).split()]).buffer(0)
+        polys = [_valid_poly([tuple(map(float, c.split(",")[:2])) for c in m.group(1).split()])
                  for m in re.finditer(r"<coordinates>(.*?)</coordinates>", pm, re.S) if len(m.group(1).split()) >= 4]
         pts = [Point(*map(float, m.group(1).split()[0].split(",")[:2])) for m in re.finditer(r"<Point>.*?<coordinates>(.*?)</coordinates>", pm, re.S)]
         if polys: out[nm] = unary_union(polys)
@@ -90,7 +99,13 @@ def existing_pas():
         pa = json.load(open(f)).get("protected_area") or {}
         g = (pa.get("geojson") or {}).get("geometry")
         des = pa.get("designation"); des = des.get("name") if isinstance(des, dict) else des
-        if g: out[f"{pa.get('name')} ({des})"] = shape(g).buffer(0)
+        if not g: continue
+        geom = shape(g)
+        if geom.geom_type == "Point":     # WDPA holds only a centroid (Radom): stand in a circle of the reported area, and say so in the name
+            km2_ = float(pa.get("reported_area") or 0)
+            if km2_ <= 0: continue
+            geom = transform(INV, transform(FWD, geom).buffer(math.sqrt(km2_*1e6/math.pi))); des = f"{des}, approx. circle of reported {km2_:,.0f} km2"
+        out[f"{pa.get('name')} ({des})"] = geom.buffer(0)
     return out
 def references():
     if AOI == "XSA_Study_Area":
@@ -235,12 +250,17 @@ def osm_towns(con, hcon=None):
     """Named places for honest town names: OSM city/town/village, plus 1930s sheet place labels in CAPITALS
     (the sheets set district towns in capitals — WAU, RAGA — which OSM lacks north of Wau)."""
     out = [(n, lo, la, t) for n, lo, la, t in con.execute("SELECT name, lon, lat, place_type FROM osm_places WHERE place_type IN ('city','town','village') AND name IS NOT NULL")]
+    tn = ZONES / "town_names.json"          # towns OSM lacks (Wau, Raga, Deim Zubeir, Koko) — verified against the sheets, see the file's _note
+    if tn.exists(): out += [(t["name"], t["lon"], t["lat"], "verified_town") for t in json.load(open(tn))["towns"]]
     hcon = hcon or sqlite3.connect(HDB)
     for t, lo, la in hcon.execute("SELECT text, lon, lat FROM labels_dedup WHERE category='place'"):
         t = re.sub(r"\s+", " ", t).strip()
-        if len(t) >= 3 and "?" not in t and not re.search(r"[a-z]", t) and re.match(r"^[A-Z][A-Z .'-]+$", t) and not re.search(r"FORT|MISSION|STA\b|W\.?S\.?|POLICE|POST|REST|CAMP|HILLS?|QOZ|JEBEL|^J\.|KHOR|^K\.|^R\.|RIVER|BAHR|WELLS?|POOL|RAPIDS|ISLAND", t):
-            out.append((t.title() + " (1930s)", lo, la, "hist_town"))
+        if len(t) < 3 or "?" in t or re.search(r"FORT|MISSION|STA\b|W\.?S\.?|POLICE|POST|REST|CAMP|HILLS?|QOZ|JEBEL|^J\.|KHOR|^K\.|^R\.|RIVER|BAHR|WELLS?|POOL|RAPIDS|ISLAND|DESERTED|UNINHABITED|SITE OF", t, re.I): continue
+        if not re.search(r"[a-z]", t) and re.match(r"^[A-Z][A-Z .'-]+$", t): out.append((t.title() + " (1930s)", lo, la, "hist_town"))
+        elif re.match(r"^[A-Z][A-Za-z' .-]{2,}$", t): out.append((t + " (1930s village)", lo, la, "hist_place"))
     return out
+TOWN_REACH_KM = {"city": 8.0, "town": 8.0, "village": 8.0, "verified_town": 8.0, "hist_town": 4.0, "hist_place": 3.0}   # how far a name may travel to a GHSL cluster
+TOWN_PENALTY_KM = {"hist_town": 4.0, "hist_place": 6.0}
 
 # ============================================================ raster planner
 class Grid:
@@ -283,10 +303,17 @@ def describe_mask(G, mask, feats, max_km=2.5):
     cr, cc0 = rr.mean(), cc.mean(); ang = np.degrees(np.arctan2(-(rr-cr), cc-cc0)) % 360
     sides = np.array(["E", "NE", "N", "NW", "W", "SW", "S", "SE"])[(((ang+22.5) % 360)//45).astype(int)]
     ok = G.fdist[rr, cc] <= max_km; ids = G.fid[rr, cc]; step = G.res/1000
-    tot = len(rr)*step; un = (~ok).sum()*step
+    tot = len(rr)*step
+    # a boundary a villager, herder or ranger can walk: rivers, khors, ridges, 1930s customary lines, roads, borders.
+    # A geological contact steers the mesh (weight 2) but nobody can see it on the ground — it counts as UNNAMED here
+    # and is reported separately so the reader knows that stretch needs beacons.
+    vis = np.array([feats[j][2] not in INVISIBLE_KINDS for j in ids]) & ok
+    un = (~vis).sum()*step; geo_km = (ok & ~vis).sum()*step
     by = Counter(); side = defaultdict(Counter)
-    for j, sd in zip(ids[ok], sides[ok]): by[feats[j][1]] += step; side[feats[j][1]][sd] += step
-    return [f"{nm} on the {'/'.join(k for k, _ in side[nm].most_common(2))} ({k:.0f} km)" for nm, k in by.most_common(6)], un, tot
+    for j, sd in zip(ids[vis], sides[vis]): by[feats[j][1]] += step; side[feats[j][1]][sd] += step
+    parts = [f"{nm} on the {'/'.join(k for k, _ in side[nm].most_common(2))} ({k:.0f} km)" for nm, k in by.most_common(6)]
+    if geo_km >= step: parts.append(f"{geo_km:.0f} km along a geological contact only (not visible on the ground — needs beacons)")
+    return parts, un, tot
 
 def seeds(con, G, seed_pop, empty_km):
     """Community seeds: settlement clusters (single-linkage 10 km, pop>=seed_pop) → 1 marker at pop-weighted centre.
@@ -497,18 +524,22 @@ def attributes(con, G, lab, surf, feats, names, ncomm, refs, ctry, park, thresho
     towns = defaultdict(list)
     OT = osm_towns(con); ottree = STRtree([Point(lo, la) for _, lo, la, _ in OT])
     def town_name(lon, lat, fallback):
-        best, bd = None, 8.0
+        best, bd = None, 99.0
         for j in ottree.query(Point(lon, lat).buffer(0.08)):
-            d = dkm((lon, lat), OT[j][1:3]) + (4.0 if OT[j][3] == "hist_town" else 0)
+            raw = dkm((lon, lat), OT[j][1:3]); t_ = OT[j][3]
+            if raw > TOWN_REACH_KM.get(t_, 8.0): continue
+            d = raw + TOWN_PENALTY_KM.get(t_, 0.0)
             if d < bd: best, bd = OT[j], d
-        return f"{best[0]}" if best else f"{fallback}*"
+        # `nearest_place` in park_settlements can be 100+ km off (the 24,018-person "Koko" is Raga town) — never trust it silently
+        return f"{best[0]}" if best else f"{fallback}* (nearest_place, unverified)"
     for lat, lon, pop, cls, per, place, *_ in G.settlements:
         if (pop or 0) < 1000: continue
         r, c = G.rc(lon, lat)
         if 0 <= r < G.h and 0 <= c < G.w and lab[r, c] > 0: towns[int(lab[r, c])].append((town_name(lon, lat, place), pop))
-    E = edges(lab, surf); leg = defaultdict(lambda: [0, 0.0])
-    for (a, b), (n_, s_) in E.items(): leg[a][0] += n_; leg[a][1] += s_; leg[b][0] += n_; leg[b][1] += s_
     polys = {} if light else vectorize(G, lab)
+    def edge_legibility(m):
+        e = m & ~ndimage.binary_erosion(m, border_value=0)
+        return round(float(surf[e].mean()), 2) if e.any() else None
     cmask = {iso: G.rasterize([(transform(FWD, g), 1)]) for iso, g in ctry.items()}
     rmask = {nm: G.rasterize([(transform(FWD, g), 1)]) for nm, g in refs.items() if g.geom_type != "Point"}
     pk = ndimage.distance_transform_edt(G.rasterize([(transform(FWD, park), 1)]) == 0) * G.res/1000 if park is not None else None
@@ -544,7 +575,7 @@ def attributes(con, G, lab, surf, feats, names, ncomm, refs, ctry, park, thresho
                  geo_affinity_mean=round(A["geo_aff"][u]/cnt[u], 2) if G.geo_meta and cnt[u] else None,   # mean commodity-affinity weight of the rock (prior; skill measured only for CAR junctions)
                  cropland_2003_pct=round(100*A["crop03"][u]/A["cropn"][u], 2) if A["cropn"][u] else None,
                  cropland_2019_pct=round(100*A["crop19"][u]/A["cropn"][u], 2) if A["cropn"][u] else None,
-                 boundary_legibility=round(leg[u][1]/leg[u][0], 2) if leg[u][0] else None)
+                 boundary_legibility=edge_legibility(m))
         d["built_growth_x"] = round(d["built_km2"]/d["built_2000_km2"], 1) if d["built_2000_km2"] > 0.01 else None
         d["cls"] = classify(d, thresholds)
         if light: U.append(d); continue
@@ -603,8 +634,10 @@ def vectorize(G, lab):
         g = transform(INV, shape(geom)).buffer(0)
         out[int(v)] = unary_union([out[int(v)], g]) if int(v) in out else g
     for k, g in out.items():
-        if isinstance(g, MultiPolygon): out[k] = max(g.geoms, key=lambda p: p.area)
-        out[k] = Polygon(out[k].exterior).simplify(0.004)
+        # keep EVERY part (a corridor band or a rim conservancy can be multi-part; dropping the small parts lost 13% of the
+        # corridor silently — invariant 8: serve whole or say you truncated). Holes are filled: a unit is its outline.
+        parts = [Polygon(p.exterior).simplify(0.004) for p in (g.geoms if isinstance(g, MultiPolygon) else [g]) if p.area > 0]
+        out[k] = unary_union(parts) if len(parts) > 1 else parts[0]
     return out
 
 def describe_boundary(poly, feats, ftree, step_km=2.0):
@@ -1054,13 +1087,73 @@ def fmt(u, full=False):
         if u.get("geology"): L.append(f"      rock: {'; '.join(u['geology'])} — affinity prior {u.get('geo_affinity_mean')}")
     return "\n".join(L)
 
+
+def narrate(u, gz=None, kind="", legal=""):
+    """One honest paragraph per area — proposed park, gazetted PA, hand-drawn zone, planner proposal — built only
+    from the measured dict (and the 1930s gazetteer inside it). No adjective without a number behind it."""
+    n = lambda x, d=0: (f"{x:,.{d}f}" if isinstance(x, (int, float)) and x is not None else "—")
+    nm = u.get("name") or u.get("seed") or f"unit {u['uid']}"
+    L = [f"{nm}" + (f" — {kind}" if kind else "") + (f" [{legal}]" if legal else "")]
+    L.append(f"  Size {n(u['area_ha'])} ha ({n(u['area_km2'])} km²), {u.get('country','?')}." + (f" {n(u['km_to_park'],1)} km from the proposed park." if u.get('km_to_park') not in (None, 0) else ""))
+    cls = u.get("cls"); R = u.get("rationale") or []
+    L.append(f"  Planner class as one unit: {cls}. " + ("; ".join(r for r in R[1:] if not r.startswith("—")) if R else ""))
+    ppl = u["population_est"]; cl = u["clusters"]
+    ptxt = (f"{cl} settlement clusters, about {n(ppl)} people (GHSL lower bound; {u['pop_per_km2']}/km²), {u['new_since_2015']} founded since 2015, {u['camps']} cattle camps"
+            if cl else "no settlement cluster at all")
+    if u.get("towns"): ptxt += "; largest: " + ", ".join(u["towns"][:4])
+    if u.get("built_km2") is not None and u["built_km2"] > 0: ptxt += f". Built-up surface {u.get('built_2000_km2')} → {u.get('built_2015_km2')} → {u['built_km2']} km² (2000 → 2015 → today" + (f", ×{u['built_growth_x']})" if u.get('built_growth_x') else ")")
+    L.append("  People: " + ptxt + ".")
+    ft = u.get("fronts") or 0
+    ftxt = f"{n(u['fire_det_2024_25'])} detections in 2024–25 ({n(u['fire_per_1000km2_yr'])}/1,000 km²/yr" + (f", {round(100*u['fire_nov_feb_share'])}% in Nov–Feb" if u.get('fire_nov_feb_share') is not None else "") + ")"
+    if ft: ftxt += f"; {ft} tracked fire fronts, {u.get('fronts_transhumance_pct') or 0}% typed transhumance, {u['fronts_long']} of them ≥150 km" + (f", dominant axis {u['front_axis']} (coherence {u['front_axis_coherence']}; 0.25 = random)" if u.get('front_axis') else "") + (f", most common headings {', '.join(f'{k} {v}' for k, v in list(u.get('front_dirs', {}).items())[:3])}" if u.get('front_dirs') else "")
+    L.append("  Fire: " + ftxt + ".")
+    L.append(f"  Land use: cropland {u.get('cropland_2003_pct')}% (2003) → {u.get('cropland_2019_pct')}% (2019) of the area; reviewed clearing {u['clearing_km2']} km² in {u.get('clearing_events', '—')} events since 2000, {u['clearing_since_2020_km2']} km² since 2020, {u['clearing_encroach_slash']} classed encroachment/slash-and-burn.")
+    if u.get("mining_measured", True):
+        L.append(f"  Mining exposure: {u['mine_reported']} reported workings, {u['mine_candidates']} modelled candidates, {u['mine_top05_cells']} top-5% target cells, {u.get('mine_watchlist', 0)} abandoned-village-on-gold watchlist places (targets, not mines)." + (f" Rock: {'; '.join(u['geology'])} (commodity prior {u.get('geo_affinity_mean')}, unmeasured skill here)." if u.get("geology") else ""))
+    else: L.append("  Mining exposure: unmeasured (no model for this area)." + (f" Rock: {'; '.join(u['geology'])}." if u.get("geology") else ""))
+    if u.get("boundary") is not None:
+        L.append(f"  Boundary ({u.get('perimeter_km')} km; {u.get('unattributed_pct')}% on no feature a person can point at): " + ("; ".join(u["boundary"]) or "—") + ".")
+    if gz:
+        bits = []
+        if gz["peaks"]: bits.append("hills " + ", ".join(gz["peaks"][:6]))
+        if gz["terrain"]: bits.append("terrain " + ", ".join(gz["terrain"][:4]))
+        if gz["water"]: bits.append("waters " + ", ".join(gz["water"][:6]))
+        des = [p for p in gz["places"] if re.search(r"deserted|uninhab|site of|old site", p, re.I)] + [x for x in gz["notes"] if re.search(r"deserted|uninhab|abandon", x, re.I)]
+        if gz["places"]: bits.append(f"{gz['counts']['places']} named places in the 1930s" + (f", {len(des)} of them marked deserted" if des else "") + (": " + ", ".join(gz["places"][:6]) if gz["places"] else ""))
+        if gz["boundary"]: bits.append("customary/district boundary notes " + ", ".join(gz["boundary"][:3]))
+        if gz["built"]: bits.append("built marks " + ", ".join(gz["built"][:4]))
+        if bits: L.append("  1930s Sudan Survey sheets inside: " + " | ".join(bits) + ".")
+    if u.get("support_mean") is not None:
+        L.append(f"  Bootstrap: support {u['support_mean']} (share of perturbed runs that keep each unit), size across runs p10/p50/p90 {u.get('area_ha_p10_p50_p90')} ha, {u.get('contested_units', 0)} contested units to walk with the community.")
+    if u.get("overlaps"): L.append("  Overlaps: " + ", ".join(u["overlaps"]) + ".")
+    return "\n".join(L)
+
+AREA_KINDS = (   # (name-substring, kind, legal hook) — how each reference is introduced
+    ("Pongo-Wau", "proposed national park (hand-drawn boundary, EASY plan)", "Wildlife Act 2026 national park; founding instrument must state the mining ban (Mining Act 2012)"),
+    ("Wilderness", "proposed wilderness / buffer zone (hand-drawn)", "Wildlife Act 2026 s.9"),
+    ("headwaters", "proposed headwater protection zone (hand-drawn)", "Wildlife Act 2026 s.9"),
+    ("pâturage", "proposed grazing zone (hand-drawn)", "Wildlife Act 2026 s.9 corridor"),
+    ("PLAN Southern NP", "Southern National Park as drawn in the plan", "gazetted 1939"),
+    ("National Park", "gazetted national park (WDPA)", "existing"),
+    ("Game Reserve", "gazetted game reserve (WDPA)", "existing"),
+    ("Faunal Reserve", "gazetted faunal reserve (WDPA)", "existing"),
+    ("Hunting Area", "gazetted hunting area (WDPA)", "existing"),
+    ("Conservation Area", "gazetted conservation area (WDPA)", "existing"),
+)
+def area_kind(name):
+    for sub, kind, legal in AREA_KINDS:
+        if sub in name: return kind, legal
+    return "reference polygon", ""
+
 KML_COL = {"core": "7f00a000", "wilderness": "7f00d0d0", "community": "7f0080ff", "corridor": "7fd000d0"}
 def kml_doc(items):
     """items: (name, description, polygon, class)"""
     pms = []
     for nm, desc, g, c in items:
-        coords = " ".join(f"{x:.5f},{y:.5f},0" for x, y in g.exterior.coords)
-        pms.append(f'<Placemark><name>{nm}</name><description><![CDATA[{desc}]]></description><styleUrl>#{c}</styleUrl><Polygon><outerBoundaryIs><LinearRing><coordinates>{coords}</coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark>')
+        polys = "".join(f'<Polygon><outerBoundaryIs><LinearRing><coordinates>{" ".join(f"{x:.5f},{y:.5f},0" for x, y in p.exterior.coords)}</coordinates></LinearRing></outerBoundaryIs></Polygon>'
+                        for p in (g.geoms if isinstance(g, MultiPolygon) else [g]))
+        geom = f"<MultiGeometry>{polys}</MultiGeometry>" if isinstance(g, MultiPolygon) else polys
+        pms.append(f'<Placemark><name>{nm}</name><description><![CDATA[{desc}]]></description><styleUrl>#{c}</styleUrl>{geom}</Placemark>')
     styles = "".join(f'<Style id="{c}"><LineStyle><color>ff{v[2:]}</color><width>1.5</width></LineStyle><PolyStyle><color>{v}</color></PolyStyle></Style>' for c, v in KML_COL.items())
     return f'<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document>{styles}{"".join(pms)}</Document></kml>'
 
@@ -1072,7 +1165,7 @@ def desc_of(u):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("mode", choices=["build", "validate", "rank", "show", "export", "conservancies", "optimize"]); ap.add_argument("arg", nargs="?")
+    ap.add_argument("mode", choices=["build", "validate", "rank", "show", "export", "conservancies", "optimize", "describe"]); ap.add_argument("arg", nargs="?")
     ap.add_argument("--cell-km", type=float, default=2); ap.add_argument("--min-ha", type=float, default=2000); ap.add_argument("--min-order", type=int, default=4)
     ap.add_argument("--seed-pop", type=int, default=150, help="build: a settlement cluster needs this many people to seed a unit")
     ap.add_argument("--empty-km", type=float, default=20, help="build: lattice spacing of empty-land seeds")
@@ -1093,6 +1186,8 @@ def main():
     ap.add_argument("--opt-max-ha", type=float, default=2_000_000, help="optimize: stop growing past this")
     ap.add_argument("--draws", type=int, default=40, help="optimize: bootstrap draws"); ap.add_argument("--perturb", type=float, default=0.25, help="optimize: ±fraction on every threshold per draw")
     ap.add_argument("--n-areas", type=int, default=3, help="optimize: how many disjoint areas to propose")
+    ap.add_argument("--seed-near", default="", help="optimize: grow only from the fine units containing these points, 'lon,lat[;lon,lat…]' (e.g. the boom towns the rim run cannot reach)")
+    ap.add_argument("--tag", default="", help="optimize: suffix for the output files (optimize_<class>_<tag>.*)")
     ap.add_argument("--reach-km", type=float, default=8, help="conservancies: land within this distance of a settlement cluster counts as used")
     ap.add_argument("--cons-target-ha", type=float, default=150000, help="conservancies: stop growing a conservancy past this")
     ap.add_argument("--cons-min-pop", type=int, default=100, help="conservancies: drop candidates with fewer people than this"); ap.add_argument("--want", default="balanced", choices=["people", "pressure", "rim", "balanced"])
@@ -1250,6 +1345,12 @@ def main():
         UT = UnitTable(con, G, mesh, surf, T); log(f"unit table: {len(UT.unit_cls)} fine units; classes {Counter(UT.unit_cls.values())}")
         # seeds: fine units already of the wanted class — for community the most populated, else the largest (top 40)
         seeds_ = sorted([u for u, c in UT.unit_cls.items() if c == want], key=lambda u: -(UT.S["pop"][u] if want == "community" else UT.cnt[u]))[:40]
+        if a.seed_near:
+            seeds_ = []
+            for pt in a.seed_near.split(";"):
+                lo_, la_ = map(float, pt.split(",")); r_, c_ = G.rc(lo_, la_); u_ = int(mesh[r_, c_]) if G.inside(np.array([r_]), np.array([c_]))[0] else 0
+                if u_ and UT.unit_cls.get(u_) == want: seeds_.append(u_)
+                else: log(f"seed-near {pt}: fine unit {u_} is {UT.unit_cls.get(u_)} — not '{want}', skipped")
         if not seeds_: sys.exit(f"no fine unit is '{want}' — nothing to grow from")
         forbid = set(); proposals = []; sup_all = np.zeros(UT.ML)
         for k in range(a.n_areas):
@@ -1275,7 +1376,7 @@ def main():
             u["seed"] = names[p_["rank"]]; u["seed_kind"] = "optimized"; u["support_mean"] = p_["support_mean"]; u["contested_units"] = len(p_["contested_units"]); u["area_ha_p10_p50_p90"] = p_["area_ha_p10_p50_p90"]
             L.append(fmt(u, full=True)); L.append(f"      as a whole → {u['cls']}; support {p_['support_mean']}; size across draws p10/p50/p90 {p_['area_ha_p10_p50_p90']} ha; {len(p_['contested_units'])} contested fine units")
             L.append("      rationale: " + " | ".join(u["rationale"][1:])); L.append("")
-        txt = "\n".join(L); print(txt); tag = f"{want}"
+        txt = "\n".join(L); print(txt); tag = f"{want}" + (f"_{a.tag}" if a.tag else "")
         (OUT / f"OPTIMIZE_{tag}.txt").write_text(txt + "\n")
         json.dump({"type": "FeatureCollection", "features": [{"type": "Feature", "properties": {k: (json.dumps(v) if isinstance(v, (list, dict)) else v) for k, v in byr[p_["rank"]].items()}, "geometry": mapping(polys[p_["rank"]])} for p_ in proposals if p_["rank"] in polys]}, open(OUT / f"optimize_{tag}.geojson", "w"))
         # support raster as polygons at 0.25/0.5/0.75 for the map
@@ -1288,6 +1389,43 @@ def main():
                 fc.append({"type": "Feature", "properties": dict(support=lvl, want=want), "geometry": mapping(gg)})
         json.dump({"type": "FeatureCollection", "features": fc}, open(OUT / f"optimize_{tag}_support.geojson", "w"))
         (OUT / f"optimize_{tag}.kml").write_text(kml_doc([(f"{want} proposal {p_['rank']} ({byr[p_['rank']]['area_ha']:,} ha, support {p_['support_mean']})", desc_of(byr[p_["rank"]]), polys[p_["rank"]], want) for p_ in proposals if p_["rank"] in polys]))
+    elif a.mode == "describe":
+        # every area the plan talks about — hand-drawn zones, gazetted PAs, and the planner's own proposals — measured with
+        # the same rasters and the same rule, then narrated. Output AREAS.txt / areas.json; the KMLs get the same text.
+        con = sqlite3.connect(DB); refs = references(); ctry = countries(); park = next((g for k, g in refs.items() if PARK_KEY in k), None)
+        G, surf, T, feats = st["G"], st["surf"], st["T"], st["feats"]
+        geoms = [(nm, g) for nm, g in refs.items() if g.geom_type != "Point"]
+        props = []
+        for f in sorted(OUT.glob("optimize_*.geojson")):
+            if "support" in f.name: continue
+            for ft in json.load(open(f))["features"]:
+                pp = ft["properties"]; nm = f"PROPOSAL {pp.get('seed', f.stem)}" + (f" ({f.stem.split('optimize_', 1)[1]})" if a.tag or "_" in f.stem.split("optimize_", 1)[1] else "")
+                geoms.append((nm, shape(ft["geometry"]))); props.append((nm, pp))
+        # one assess() per polygon: areas overlap (park inside wilderness inside grazing zone; proposals over all of them),
+        # and a shared label image would give each cell to whichever came first
+        A = []
+        for nm, g in geoms:
+            u_ = assess(con, G, [(nm, g)], refs, ctry, park, T, feats, surf)
+            if u_: A.append(u_[0])
+            else: log(f"describe: {nm} has no cell inside the grid")
+        extra = {nm: pp for nm, pp in props}
+        L = ["AREAS — every zone, gazetted protected area and planner proposal in the study area, measured with one yardstick and described in plain language",
+             "Populations are GHSL lower bounds; fire is the 2024–25 three-satellite fleet; boundary names are HydroRIVERS / 1930s Sudan Survey sheets and must be verified on the ground.", G.mining_note, ""]
+        out = []
+        for u in sorted(A, key=lambda u: (0 if u["name"].startswith("PROPOSAL") else 1 if u["name"].startswith("PLAN") else 2, -u["area_km2"])):
+            pp = extra.get(u["name"], {})
+            for k in ("support_mean", "area_ha_p10_p50_p90", "contested_units"):
+                if k in pp: u[k] = json.loads(pp[k]) if isinstance(pp[k], str) and pp[k].startswith("[") else pp[k]
+            kind, legal = area_kind(u["name"])
+            if u["name"].startswith("PROPOSAL"):
+                w = next((c for c in CLASSES if c in u["name"]), "")
+                kind, legal = {"core": ("planner proposal: core / park extension", "national park or s.9 reserve"), "community": ("planner proposal: community conservancy", "Wildlife Act 2026 s.14 (s.14(4) veto; Mining Act s.24 consent)"),
+                               "corridor": ("planner proposal: livestock / wildlife corridor (support ≥ 0.5 band)", "Wildlife Act 2026 s.9"), "wilderness": ("planner proposal: wilderness", "s.9")}.get(w, (kind, legal))
+            m = G.rasterize([(transform(FWD, dict(geoms)[u["name"]]), 1)]).astype(bool) & G.mask
+            gz = gazetteer(G, m)
+            txt = narrate(u, gz, kind, legal); L.append(txt); L.append("")
+            out.append(dict(name=u["name"], kind=kind, legal=legal, text=txt, measured={k: v for k, v in u.items() if k not in ("front_dirs_all",)}))
+        txt = "\n".join(L); print(txt); (OUT / "AREAS.txt").write_text(txt + "\n"); json.dump(out, open(OUT / "areas.json", "w"), ensure_ascii=False, indent=1)
     elif a.mode == "show": print(fmt(next(u for u in U if u["uid"] == int(a.arg)), full=True))
     elif a.mode == "export":
         ids = [int(x) for x in a.arg.split(",")]; by = {u["uid"]: u for u in U}
