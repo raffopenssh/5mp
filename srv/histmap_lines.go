@@ -3,9 +3,11 @@ package srv
 import (
 	"database/sql"
 	"encoding/json"
+	"math"
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 )
 
 // Traced linear features + captured point symbols from the Sudan 1:250k
@@ -253,32 +255,96 @@ func (s *Server) HandleAPIHistMapAround(w http.ResponseWriter, r *http.Request) 
 		}
 	}
 
-	// captured point symbols (wells, cairns, camps...)
+	// captured point symbols (wells, villages, peaks, forts...). Symbols are
+	// classified against the sheets' own legends and are the MOST reliable
+	// layer here (labels are OCR, lines are traced); each carries its
+	// distance and bearing from the asked point so an answer can say "well
+	// 2.3 km NE", and `?category=` narrows (e.g. water,settlement).
 	if histHasTable(db, "symbols") {
+		catFilter := ""
+		var catArgs []any
+		if cs := strings.TrimSpace(q.Get("category")); cs != "" {
+			ph := []string{}
+			for _, c := range strings.Split(cs, ",") {
+				if c = strings.TrimSpace(c); c != "" {
+					ph = append(ph, "?")
+					catArgs = append(catArgs, c)
+				}
+			}
+			if len(ph) > 0 {
+				catFilter = " AND COALESCE(category,'') IN (" + strings.Join(ph, ",") + ")"
+			}
+		}
+		symLimit := 60
+		if v, err := strconv.Atoi(q.Get("limit")); err == nil && v > 0 && v <= 500 {
+			symLimit = v
+		}
+		args := append([]any{minLon, maxLon, minLat, maxLat}, catArgs...)
+		args = append(args, lon, lon, lat, lat, symLimit+1)
 		rows, err := db.Query(`SELECT descr, COALESCE(category,''),
-			COALESCE(name,''), lon, lat FROM symbols
+			COALESCE(name,''), COALESCE(name_dist_km,-1), lon, lat FROM symbols
 			WHERE lon BETWEEN ? AND ? AND lat BETWEEN ? AND ?
-			AND COALESCE(category,'') NOT IN ('junk')
-			ORDER BY (lon-?)*(lon-?)+(lat-?)*(lat-?) LIMIT 60`,
-			minLon, maxLon, minLat, maxLat, lon, lon, lat, lat)
+			AND COALESCE(category,'') NOT IN ('junk','unknown')`+catFilter+`
+			ORDER BY (lon-?)*(lon-?)+(lat-?)*(lat-?) LIMIT ?`, args...)
 		if err == nil {
 			type sym struct {
-				Descr    string  `json:"descr"`
-				Category string  `json:"category,omitempty"`
-				Name     string  `json:"name,omitempty"`
-				Lon      float64 `json:"lon"`
-				Lat      float64 `json:"lat"`
+				Descr      string  `json:"descr"`
+				Category   string  `json:"category,omitempty"`
+				Name       string  `json:"name,omitempty"`
+				NameDistKm float64 `json:"name_dist_km,omitempty"` // how far the OCR label that named it sat; -1/absent = unnamed
+				Lon        float64 `json:"lon"`
+				Lat        float64 `json:"lat"`
+				DistKm     float64 `json:"dist_km"`
+				Bearing    string  `json:"bearing"`
 			}
 			syms := []sym{}
+			byCat := map[string]int{}
 			for rows.Next() {
 				var s sym
-				if rows.Scan(&s.Descr, &s.Category, &s.Name, &s.Lon, &s.Lat) == nil {
+				if rows.Scan(&s.Descr, &s.Category, &s.Name, &s.NameDistKm, &s.Lon, &s.Lat) == nil {
+					dx := (s.Lon - lon) * 111.0 * math.Cos(lat*math.Pi/180)
+					dy := (s.Lat - lat) * 111.0
+					s.DistKm = math.Round(math.Hypot(dx, dy)*10) / 10
+					s.Bearing = compass8(dx, dy)
+					if s.NameDistKm < 0 {
+						s.NameDistKm = 0
+					}
 					syms = append(syms, s)
+					byCat[s.Category]++
 				}
 			}
 			rows.Close()
+			out["symbols_truncated"] = len(syms) > symLimit
+			if len(syms) > symLimit {
+				syms = syms[:symLimit]
+			}
 			out["symbols"] = syms
+			out["symbols_by_category"] = byCat
 		}
+	}
+
+	// "can a team sit here?" -- the two sheet layers a field planner asks for
+	// first, answered as nearest-of-kind regardless of radius (up to 25 km),
+	// so a site 12 km from the only well says so instead of returning [].
+	if histHasTable(db, "symbols") {
+		nearest := func(cats string) map[string]any {
+			var d, n string
+			var slon, slat float64
+			err := db.QueryRow(`SELECT COALESCE(descr,''), COALESCE(name,''), lon, lat FROM symbols
+				WHERE category IN (`+cats+`) AND lon BETWEEN ? AND ? AND lat BETWEEN ? AND ?
+				ORDER BY (lon-?)*(lon-?)+(lat-?)*(lat-?) LIMIT 1`,
+				lon-25.0/111, lon+25.0/111, lat-25.0/111, lat+25.0/111, lon, lon, lat, lat).Scan(&d, &n, &slon, &slat)
+			if err != nil {
+				return map[string]any{"found_within_25km": false}
+			}
+			dx := (slon - lon) * 111.0 * math.Cos(lat*math.Pi/180)
+			dy := (slat - lat) * 111.0
+			return map[string]any{"found_within_25km": true, "descr": d, "name": n, "lon": slon, "lat": slat,
+				"dist_km": math.Round(math.Hypot(dx, dy)*10) / 10, "bearing": compass8(dx, dy)}
+		}
+		out["nearest_water_symbol"] = nearest("'water'")
+		out["nearest_village_symbol"] = nearest("'settlement'")
+		out["nearest_hill_symbol"] = nearest("'peak','trig_point'")
 	}
 
 	// honest completeness, per layer
@@ -312,4 +378,14 @@ func (s *Server) HandleAPIHistMapLinesDownload(w http.ResponseWriter, r *http.Re
 	w.Header().Set("Content-Type", "application/gzip")
 	w.Header().Set("Content-Disposition", `attachment; filename="sudan250k_lines.geojson.gz"`)
 	http.ServeContent(longDownload(w), r, "sudan250k_lines.geojson.gz", st.ModTime(), f)
+}
+
+// compass8 names the octant of a displacement (km east, km north).
+func compass8(dx, dy float64) string {
+	if dx == 0 && dy == 0 {
+		return "here"
+	}
+	a := math.Atan2(dy, dx) * 180 / math.Pi // 0 = E, 90 = N
+	names := []string{"E", "NE", "N", "NW", "W", "SW", "S", "SE"}
+	return names[int(math.Mod(a+360+22.5, 360)/45)]
 }

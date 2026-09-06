@@ -1,7 +1,7 @@
 # Zoning planner — legible units, four classes, bootstrapped proposals
 
-`scripts/plan_conservancy_units.py` (one file, ~1,300 lines; modes `build`,
-`validate`, `rank`, `conservancies`, `optimize`, `show`, `export`). Outputs in
+`scripts/plan_conservancy_units.py` (one file, ~1,600 lines; modes `build`,
+`validate`, `rank`, `conservancies`, `optimize`, `describe`, `teams`, `show`, `export`). Outputs in
 `data/plan_zones/conservancy_units/` (XSA) or `data/plan_zones/conservancy_units_<AOI>/`.
 The map: `scripts/easypip/build_map.py --planner <optimize_*.geojson>` →
 `reports/ZONING_PLANNER_MAP_2026-09.{png,pdf}` (gitignored, regenerate).
@@ -14,8 +14,9 @@ be a useful benchmark** (see "What Chinko taught").
 5MP already measures a park: people (GHSL clusters), fire detections and
 fronts, clearing, cropland, mining targets, rivers. The planner turns that
 into a zoning tool by (1) cutting the AOI **only along features a person can
-point at** (rivers, ridge chains, 1930s district and (rarely) sub-tribal boundaries, named khors,
-roads, borders, geological contacts), (2) measuring each piece with the *same*
+point at** (rivers, swamp/lake edges, ridge chains, named khors, roads,
+borders, 1930s *district* lines, geological contacts — **never 1930s tribal
+boundaries**, see "Legible features" below), (2) measuring each piece with the *same*
 rasters, (3) classifying with **one rule** whose every test is stored with its
 number, (4) **growing** the best area of a wanted class from those pieces
 under bootstrap perturbation so every proposal carries a support figure, and
@@ -30,7 +31,8 @@ classes.**
 | Step | What | Where |
 |---|---|---|
 | grid | 2 km cells, cylindrical equal-area `+proj=cea +lon_0=27 +lat_ts=7.5` (`CEA`; fixed for XSA — re-centre per AOI is a TODO) | `Grid` |
-| legible features | `rivers()` (HydroRIVERS ≥ order 4 or named; unnamed reaches take the 1930s water-label name when ≥2 vertices agree), `ridges()` (peak/trig symbols + `J./HILLS` labels, single-linkage ≤15 km, ≥3 pts → principal-axis polyline), `hist_boundaries()` (`lines_stitched kind='boundary'`, weight 5 = customary land, Land Act 2009 s.66-67), `hist_watercourses()` (≥15 km named khors), `roads()` (trunk…tertiary), `geology()` contacts (weight 2 — steers through open bush, never overrules a river), borders, AOI edge | |
+| legible features | `rivers()` … + `swamps()` (HydroLAKES ≥5 km² + JRC `park_waterbodies` dissolved, weight 4–5) + **point beacons** `G.beacons` (1930s village *symbols* and Capitalised place labels, 1930s water *symbols* + swamp/pool/lake labels, lone hill marks, today's OSM villages; weight 3, decay 0.7 cell) | `swamps()`, `hist_waters()`, `hist_villages()` |
+| legible features (lines) | `rivers()` (HydroRIVERS ≥ order 4 or named; unnamed reaches take the 1930s water-label name when ≥2 vertices agree), `ridges()` (peak/trig symbols + `J./HILLS` labels, single-linkage ≤15 km, ≥3 pts → principal-axis polyline), `hist_boundaries()` (**district/province lines only**, weight 4; tribal and sub-tribal lines are excluded by user decision 2026-09-06 — a 1930s tribal limit is not a boundary today's communities should be asked to accept), `hist_watercourses()` (≥15 km named khors), `roads()` (trunk…tertiary), `geology()` contacts (weight 2 — steers through open bush, never overrules a river), borders, AOI edge | |
 | legibility surface | 0..1, `w/8·exp(-d/1.5 cells)`, strongest feature wins; `G.fid/G.fdist` for boundary descriptions | `legibility()` |
 | seeds + watershed | village clusters (10 km single linkage, pop ≥150) + 20 km empty-land lattice → `skimage.watershed` on the surface | `seeds()`, `segment()` |
 | merge 1 | absorb < `--min-ha` (2,000) across least legible edge → **`lab1`** (fine units, 644 on XSA) | `merge_units()` |
@@ -39,7 +41,7 @@ classes.**
 | attributes | **`attributes()`** = one `bincount` per raster over any label image + front×unit incidence + towns + boundary description (`describe_mask`) + `classify()`. `freeze=T` reuses the mesh's corridor quantile so a merged unit is judged by the same bar | |
 | classify | order matters: **corridor → core → wilderness → community**. Every test appended to `d["rationale"]` as `"name value op threshold: yes/no"` | `classify()` |
 | merge 2 | like-with-like only, across weak edges (< `--weak` 0.35), to `--target-ha` 300k, never above `--max-ha` 600k → `lab` (510 units) | |
-| corridor axis | least-cost path over smoothed long-front density, penalised by people; XSA anchors Radom→Garamba, generic AOI anchors = densest rim cells on opposite sides; `closed=` re-routes around the park | `corridor_axis()` |
+| corridor axis | least-cost path over **coherence-weighted** long-front density (`G.coherence` = per-cell axial mean resultant length of long-front headings, 1 = one axis, 0 = every direction — what the eye reads as a "corridor" in the animation is density *and* coherence), penalised by people; XSA anchors Radom→Garamba, generic AOI anchors = densest rim cells on opposite sides; `closed=` re-routes around the park | `corridor_axis()` |
 | write | `units.{json,geojson,kml}`, `mesh_features.geojson`, `corridor_walked.geojson`, `state.pkl` (G, lab, lab1, labf, surf, feats, T) | |
 
 ### Class rules (`classify`, thresholds are CLI flags, defaults in brackets)
@@ -96,7 +98,7 @@ a threshold, re-run `validate`, read the IoU table.
   `optimize_<class>_support.geojson`. Each proposal is then measured like a
   park (towns, boundary by named feature and compass side, rock, rationale).
 
-### XSA results 2026-09-05 (what the map shows)
+### XSA results 2026-09-05 (superseded 2026-09-06 by the fine-mesh core, corridor network and beacons — re-read `OPTIMIZE_*.txt`)
 
 * **core**: #1 2.34 M ha, 79 people, support 0.83, 52 % inside the drawn
   Pongo-Wau park and 81 % inside Wau-Wilderness — the machine re-finds the
@@ -116,6 +118,87 @@ a threshold, re-run `validate`, read the IoU table.
   Southern NP 0.65, **Pongo-Wau park 0.54 (its perimeter only 44 % legible — a
   finding, not a bug)**, grazing zones ≤ 0.47 (they are not what the fronts
   walk; see corridor).
+
+## Legible features — what a boundary may be described by (2026-09-06)
+
+The description a villager hears must use today's vocabulary: rivers, khors,
+swamp edges, hills, village sites, wells. `describe_mask` therefore names a
+boundary by its *linear* features (river / khor / ridge / swamp edge / road /
+district line) and, for every stretch on none of those, lists the **point
+landmarks within `BEACON_KM`=3 km** ("landmarks on the unnamed stretches:
+Tidi (1930s village) (SW), Kuru pool (1930s sheet) (S) …"). Beacons come from
+the histmap DB: `symbols` (category `settlement`, `water`, `peak`/`trig_point`
+— the symbol layer is classified against the sheets' own legends and is more
+reliable than OCR text or traced lines) plus `labels_dedup` place/water labels,
+plus OSM villages. A geological contact still counts as *unnamed* (not
+visible). Rule: **a beacon is a point, never a line** — do not chain villages
+into a "boundary".
+
+The same histmap layers are exposed for tools/LLMs via
+`GET /api/histmap/sudan250k/around?lon=&lat=&radius_km=[&category=water,settlement&limit=]`
+(`srv/histmap_lines.go`): every symbol now carries `dist_km` + `bearing`,
+`symbols_by_category`, `symbols_truncated`, and three nearest-of-kind answers
+regardless of radius (`nearest_water_symbol`, `nearest_village_symbol`,
+`nearest_hill_symbol`, ≤25 km) — the "can a team sit here?" question.
+
+## Corridor NETWORK, not one path (2026-09-06)
+
+`optimize --want-class corridor` routes **one branch per origin–destination
+bundle** (`corridor_bundles()`: k-means k=12 on (start, end) of the long
+transhumance fronts, bundles ≥4 % kept) plus the Radom→Garamba through-route,
+each bootstrapped (`--draws`) on its own; the proposal is the union of per-branch
+support ≥0.5 bands. Each branch carries what operations need and
+`OPTIMIZE_corridor.txt` / `optimize_corridor.geojson` / `AREAS.txt` print it:
+`from_place → to_place` (nearest named place ≤40 km, towns preferred),
+`bundle_fronts`, `onset` + `months` histogram, `straight_km`, band km² with
+p10/p50/p90, and **the null**: `long_density_ratio` (long fronts inside ÷
+outside) vs `all_fire_ratio` (all fronts inside ÷ outside) →
+`excess_over_burning` (1.0 = the herds are simply where the burning is;
+>1 = the band is a herd route beyond the burning), and `coherence_in`.
+Several bundles begin *and* end inside the AOI (Wau→Tonj side, Raga→Deim
+Zubeir→south, Wau→north) — the single Radom→Garamba axis was an assumption.
+`build_map.py` labels each branch "from → to · N herds · onset".
+
+## Why core #1 covered only half the drawn park (answered 2026-09-06)
+
+Not the data: every fine unit inside the park is `core` (76 people in
+15,800 km²). Growth ran on the **coarse mesh `lab1`**, whose two 5,500 km²
+Busseri/Bo units straddled the park edge and carried 1,900 people *outside*
+the park; the whole unit classified `wilderness`, so 3,700 km² (24 %) of
+park-grade land inside them could never be added, and another 10 % was lost
+where units crossed the boundary. Fix: every class now grows from the fine
+mesh `labf` (invariant 15 — a constant calibrated at one scale). The
+remaining gap, if any, is the *drawn* line crossing bush where the mesh
+follows a river.
+
+## `teams` mode (2026-09-06)
+
+`teams` → `TEAMS.txt` + `teams.geojson`. Sizes fixed by the plan: **FP = 1
+person, ECHO = 2, TANGO = 2**. ECHO in each community proposal's largest
+village cluster **that has water** (2 teams if >20,000 people); TANGO per
+corridor branch at the densest long-front passage within 25 km of a village
+**that has water**, active from the branch's onset month; FP = verified town /
+OSM city-town ≥`--fp-min-pop` (5,000) within 25 km of proposals, ≥40 km apart,
+ranked by people served. **Water** = HydroRIVERS reach (order ≥4 or named),
+1930s water symbol / well-pool-hafir label, or perennial JRC surface water
+within `WATER_KM`=3 km (8 km for an FP); the source and distance are printed on
+every line, and a site with none says `WATER UNVERIFIED`. Every placement has a
+`why` built from the zone's numbers. `build_map.py` draws them (teal star /
+square / triangle).
+
+## Map (`scripts/easypip/build_map.py`, 2026-09-06)
+
+* **Print-scale LOD**: with `--planner`, built-up km² and reviewed-clearing km²
+  per 2 km cell (from the planner's `state.pkl` rasters) are drawn as amber /
+  magenta washes (PowerNorm 0.5, 98th-pct max); settlement dots then show only
+  towns ≥500 people. A footprint polygon is 0.7 px at this scale (`lod.md`).
+* **Legend is an inset card** (`draw_inset_legend`, `LEGEND_COMPACT=True`):
+  symbol + a few words per row, no title, no notes; provenance in a footer
+  strip under the frame. Frame widened east to `LANDSCAPE_ASPECT` 1.414 so
+  the sheet is a report-format landscape and the card sits over the blank
+  Sudan corner.
+* Planner labels are one short line each and routed by `place_labels`
+  (collision-avoiding) instead of centred on the polygon.
 
 ## What Chinko taught (2026-09-05)
 
@@ -173,6 +256,7 @@ python3 -W ignore scripts/plan_conservancy_units.py validate
 python3 -W ignore scripts/plan_conservancy_units.py optimize --want-class core --draws 16 --n-areas 3 --opt-max-ha 2500000
 python3 -W ignore scripts/plan_conservancy_units.py optimize --want-class corridor --draws 24
 python3 -W ignore scripts/plan_conservancy_units.py optimize --want-class community --draws 16 --n-areas 6 --opt-max-ha 250000 --rim-km 80
+python3 -W ignore scripts/plan_conservancy_units.py teams
 python3 -W ignore scripts/easypip/build_map.py --planner data/plan_zones/conservancy_units/optimize_community.geojson \
     --out reports/ZONING_PLANNER_MAP_2026-09.png --pdf --dpi 110      # draws optimize_{core,corridor,community}.geojson
 PLAN_AOI=CAF_Chinko python3 -W ignore scripts/plan_conservancy_units.py build   # any keystone park id
