@@ -141,6 +141,27 @@ The same histmap layers are exposed for tools/LLMs via
 regardless of radius (`nearest_water_symbol`, `nearest_village_symbol`,
 `nearest_hill_symbol`, ≤25 km) — the "can a team sit here?" question.
 
+## Metes-and-bounds (`scripts/plan_boundary.py`, 2026-09-06)
+
+`describe_mask` gives a *summary* ("Nahr al Jur on the SE/N (64 km)"). A drafter or a
+chief needs the *walk*: `python3 -W ignore scripts/plan_boundary.py [E1 T2 …] [--narrate]`
+→ `data/plan_zones/solver/boundaries.json` + `BOUNDARIES.txt`, one record per solved
+zone keyed by uid with the team codes that serve it. Method: simplify the raster outline
+(`SIMPLIFY_DEG` ≈ 1.3 km, so a leg is a walking length, not a staircase), start at the
+northernmost vertex, go clockwise, sample every 1 km, snap each sample to the nearest
+**walkable** feature ≤ 3.5 km (the mesh `feats` from `state.pkl`; geology and beacons
+excluded), run-length into legs, absorb legs < 3 km, merge same-name neighbours (a river
+exists twice: HydroRIVERS + 1930s sheet copy). Each leg: `kind`, `name`, `km`, 8-point
+`bearing`, `start`/`end` lon-lat, and for open-bush / geological-contact legs the
+landmarks ≤ 3 km with offset and side. `legal` is the rendered paragraph ("thence SE along
+Nahr al Jur for 45 km to the junction with K. Nuduk at 7.5150°N 28.1708°E"). `--narrate`
+adds `in_words` (muse-glimmer, 36 workers, ≤3 sentences, names only from the legs;
+`max_tokens` 4,000 — 1,500 returned "no JSON", the reasoning budget again). 264 zones ≈ 3 s
+without narration. `named_pct` here (91 % for E1) is by leg and differs from
+`unattributed_pct` (78 %) which is by raster edge cell — two units, two words; the summary
+text quotes the raster one. `easyplan.py` copies `legal`/`in_words`/`legs` into each team
+in facts.json.
+
 ## Corridor NETWORK, not one path (2026-09-06)
 
 `optimize --want-class corridor` routes **one branch per origin–destination
