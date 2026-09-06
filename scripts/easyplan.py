@@ -153,6 +153,25 @@ def facts(P):
             if "Pongo" in str(row.get("name", "")):
                 F["park"]["named_pct"] = row["ref_legible_pct"]
                 F["park"]["boundary"] = [re.sub(r" on the .*$", "", b).replace(" (1930s sheet)", "") for b in row["ref_boundary"] if not b.startswith("unnamed")]
+    # jurisdiction roll-up for the registration paragraph: distinct SSD counties and payams the staffed zones fall in
+    counties, payams = {}, set()
+    for t in F["deploy"]["teams"].values():
+        if t["kind"] == "FP": continue
+        for r in t.get("jurisdiction", []):
+            if r["country"] != "SSD": continue
+            counties.setdefault(r["county"], r["state"]); payams.update(q["payam"] for q in r["payams"])
+        t["counties_text"] = "; ".join(f"{r['county']}{' County' if r['country']=='SSD' else ''} {r['pct']}%" + (" (" + ", ".join(q["payam"] for q in r["payams"][:4]) + (", …" if len(r["payams"]) > 4 else "") + ")" if r["payams"] else "") for r in t.get("jurisdiction", []) if r["pct"] >= 5)
+    F["deploy"]["counties"] = sorted(counties); F["deploy"]["n_counties"] = len(counties); F["deploy"]["n_payams"] = len(payams)
+    F["deploy"]["states"] = sorted(set(counties.values()))
+    # which state's Ministry of Mining (the artisanal-licence desk under the Mining Act 2012) covers which staffed zone
+    by_state = {}
+    for t in F["deploy"]["teams"].values():
+        if t["kind"] == "FP": continue
+        for r in t.get("jurisdiction", []):
+            if r["country"] == "SSD" and r["pct"] >= 5: by_state.setdefault(r["state"], []).append(t["id"])
+    F["deploy"]["mining_desks"] = [dict(state=k, pcode=next((r["state_pcode"] for t in F["deploy"]["teams"].values() for r in t.get("jurisdiction", []) if r.get("state") == k and r.get("state_pcode")), None), teams=sorted(set(v))) for k, v in sorted(by_state.items())]
+    src = {r["source"] for t in F["deploy"]["teams"].values() for r in t.get("jurisdiction", []) if r["country"] == "SSD"}
+    F["deploy"]["admin_source"] = ", ".join(sorted(src))
     import build_budget as B
     F["budget"] = B.summary(F, P)
     return F
