@@ -213,6 +213,11 @@ square / triangle).
   per 2 km cell (from the planner's `state.pkl` rasters) are drawn as amber /
   magenta washes (PowerNorm 0.5, 98th-pct max); settlement dots then show only
   towns ≥500 people. A footprint polygon is 0.7 px at this scale (`lod.md`).
+  `load_density` falls back to `../conservancy_units/state.pkl` when
+  `--planner` points at `solver/` (which has no state.pkl of its own) — until
+  2026-09-06 it silently returned None there and the deploy sheet shipped with
+  no clearing layer; it now warns, and the legend rows are gated on the wash
+  being drawn.
 * **Legend is an inset card** (`draw_inset_legend`, `LEGEND_COMPACT=True`):
   symbol + a few words per row, no title, no notes; provenance in a footer
   strip under the frame. Frame widened east to `LANDSCAPE_ASPECT` 1.414 so
