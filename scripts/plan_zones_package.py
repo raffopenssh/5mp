@@ -16,6 +16,7 @@ Layers:
   teams                points    FP / ECHO / TANGO placements with size, water, season and the reason
   drawn_boundaries     polygons  what the authors sent (KML) + WDPA references, as the planner re-measured them
   mesh_features        lines     the legible mesh (rivers, swamp edges, ridges, roads, 1930s district lines …)
+  beacons              points    point landmarks (1930s villages / water / hills, OSM villages) the boundary text cites
   support              polygons  bootstrap support per fine unit for each run (0–1)
   units                polygons  the 506 coarse planning units with class and rationale (the assessment layer)
 Rasters (built-up km²/cell, clearing km²/cell) are written beside it as GeoTIFFs when rasterio is available.
@@ -104,6 +105,8 @@ def qml_categorized(field, cats, geom="polygon", label_expr=None):
         catxml.append(f'<category render="true" symbol="{i}" value="{val}" label="{lab}" type="string"/>')
     lab = ""
     if label_expr:
+        from xml.sax.saxutils import escape
+        label_expr = escape(label_expr, {'"': "&quot;"})
         lab = f'''<labeling type="simple"><settings calloutType="simple"><text-style fontSize="8" fontFamily="DejaVu Sans" textColor="40,40,40,255" isExpression="1" fieldName="{label_expr}">
 <text-buffer bufferDraw="1" bufferSize="0.8" bufferColor="255,255,255,220"/></text-style><placement placement="0" dist="1"/><rendering scaleVisibility="0" obstacle="1"/></settings></labeling>'''
     return f'''<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'><qgis version="3.34" styleCategories="Symbology|Labeling|Fields">
@@ -143,6 +146,7 @@ STYLES = {
                                            ("ridge", "Ridge chain of 1930s hill marks", "", rgba("#8a6b3a"), "0.35", False), ("hist_water", "1930s watercourse (traced — verify)", "", rgba("#9ab8d6"), "0.2", True),
                                            ("hist_boundary", "1930s district line", "", rgba("#5a5a5a"), "0.3", True), ("road", "Road", "", rgba("#8c8c86"), "0.3", False), ("border", "International border", "", rgba("#333333"), "0.5", True),
                                            ("geology", "Geological contact (not visible on the ground)", "", rgba("#c9b8a8"), "0.2", True), ("beacon", "Landmark (point beacon)", "", rgba("#8a6b3a"), "0.2", False), ("frame", "Study-area frame", "", rgba("#999999"), "0.2", True)], geom="line"),
+ "beacons": qml_categorized("kind", [("beacon", "Landmark (1930s village / water / hill, OSM village)", rgba("#8a6b3a"), rgba("#ffffff"), "0.2", "circle")], geom="point"),
  "support": qml_graduated_support(),
  "units": qml_categorized("cls", [("core", "core", rgba("#1b5e20", 60), rgba("#ffffff"), "0.15", False), ("wilderness", "wilderness", rgba("#7fae8b", 60), rgba("#ffffff"), "0.15", False),
                                   ("community", "community", rgba("#6a2c8f", 60), rgba("#ffffff"), "0.15", False), ("corridor", "corridor", rgba("#b3261e", 60), rgba("#ffffff"), "0.15", False)]),
@@ -214,7 +218,7 @@ def main():
 
     # drawn boundaries + WDPA, from areas.json (geometry from the planner's references) and validation.json
     import plan_conservancy_units as P
-    refs = P.references(); V = {v["name"]: v for v in json.load(open(D / "validation.json"))}
+    refs = P.references(); V = {v["name"]: v for v in json.load(open(D / "validation.json")) if "name" in v}   # last row is the {'assessed': …} summary
     drawn = []
     for k, g in refs.items():
         if g.geom_type == "Point": continue
@@ -226,7 +230,10 @@ def main():
         drawn.append((mapping(g), p))
     layers["drawn_boundaries"] = ("MultiPolygon", drawn, cols(drawn, ["name", "source", "area_ha", "cls", "population_est", "iou", "ref_legible_pct", "class_mix", "boundary", "rationale", "assessment"]))
 
-    mesh = rows_from(D / "mesh_features.geojson"); layers["mesh_features"] = ("MultiLineString", mesh, cols(mesh, ["kind", "name", "w"]))
+    mesh_all = rows_from(D / "mesh_features.geojson")
+    mesh = [r for r in mesh_all if "Line" in r[0]["type"]]; layers["mesh_features"] = ("MultiLineString", mesh, cols(mesh, ["kind", "name", "w"]))
+    beac = [({"type": "Point", "coordinates": c}, dict(r[1], kind="beacon")) for r in mesh_all if "Point" in r[0]["type"] for c in (r[0]["coordinates"] if r[0]["type"] == "MultiPoint" else [r[0]["coordinates"]])]
+    if beac: layers["beacons"] = ("Point", beac, cols(beac, ["kind", "name", "w"]))
     sup = []
     for run in ("core", "community", "community_towns", "corridor"):
         gj = D / f"optimize_{run}_support.geojson"
