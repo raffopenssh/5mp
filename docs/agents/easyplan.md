@@ -14,6 +14,19 @@
 
 `--check` exits 1 if the summary on disk differs from a fresh render (drift test).
 
+## Answering a question about a team or zone — read ONE file
+
+`data/plan_zones/solver/facts.json` → `deploy.teams[<code>]` (E1…E5 ECHO, T1…T5 TANGO,
+F1…F3 FP). Each team carries place, year, zone uid, area, people, gold, and the boundary
+three ways: `boundary` (≤4 names, for prose), `boundary_legal` (metes-and-bounds with
+coordinates, from `plan_boundary.py`), `boundary_in_words` (≤3 plain sentences) and
+`boundary_legs` (structured). There is no Numatina team; "Numatina" is the park's name and
+a hand-drawn grazing zone. Do not open `ZONES.txt`/`DEPLOY.txt` unless facts.json lacks it.
+
+```bash
+python3 -c "import json;t=json.load(open('data/plan_zones/solver/facts.json'))['deploy']['teams']['E1'];print(t['place'],t['boundary_legal'])"
+```
+
 ## Where to edit what
 
 | Change | Edit | Then |
@@ -21,7 +34,7 @@
 | horizon, start month, months paid, one-offs (survey, boreholes), per-team ratios | `docs/plan/plan.yaml` | `easyplan.py` |
 | a unit cost, a budget line's logic, a new line | `RATES` / `lines()` in `scripts/easybudget/build_budget.py` | `easyplan.py` |
 | the proposal's wording | `docs/plan/PIP_SUMMARY_template.txt` | `easyplan.py` |
-| which zones/teams | re-run `plan_solver.py solve` → `plan_deploy.py` → `build_map.py --planner` | `easyplan.py` |
+| which zones/teams | re-run `plan_solver.py solve` → `plan_deploy.py` → `plan_boundary.py --narrate` → `build_map.py --planner` | `easyplan.py` |
 
 **Never edit `reports/PIP_SUMMARY_EASY.txt` or `BUDGET_EASY_*.txt` by hand** — they are outputs.
 
