@@ -49,6 +49,7 @@ import numpy as np, pyproj
 from shapely.geometry import Polygon, MultiPolygon, LineString, Point, shape, mapping
 from shapely.ops import unary_union, transform
 from shapely.strtree import STRtree
+from shapely.prepared import prep
 
 ROOT = Path(__file__).resolve().parent.parent
 DB, HDB = ROOT / "db.sqlite3", ROOT / "data/histmaps/labels.sqlite3"
@@ -60,10 +61,12 @@ FWD = pyproj.Transformer.from_crs(4326, CEA, always_xy=True).transform
 INV = pyproj.Transformer.from_crs(CEA, 4326, always_xy=True).transform
 km2 = lambda g: transform(FWD, g).area / 1e6
 RIDGE_LINK_KM, RIDGE_NAME_KM, RIVER_NAME_KM, RIDGE_MIN_PTS = 15.0, 6.0, 2.0, 3
+BEACON_KM = 3.0        # a point landmark describes a boundary stretch within this distance
+WATER_KM = 3.0         # a team site must have a river, well/pool (1930s sheet) or perennial water within this distance
 HILL_RE = re.compile(r"^(J\.|JEBEL|JABAL)\s|\bHILLS?\b|\bMTS?\b|\bMOUNT", re.I)
 COUNTRIES = ("SSD", "CAF", "SDN", "COD")
 CLASSES = ["core", "wilderness", "community", "corridor"]
-INVISIBLE_KINDS = ("geology", "frame")     # legible to the planner, not to a person standing there
+INVISIBLE_KINDS = ("geology", "frame", "beacon")     # not a LINE a person can walk: geology invisible; beacons are named point-by-point below
 
 def dkm(a, b):
     return math.hypot((a[0]-b[0])*111*math.cos(math.radians((a[1]+b[1])/2)), (a[1]-b[1])*111)
@@ -187,27 +190,70 @@ def ridges(hcon, aoi):
     return lines, beacons
 
 def hist_boundaries(hcon, aoi):
-    """1930s tribal / sub-tribal / district boundaries from the traced sheets. These are the
-    customary edges the Land Act 2009 calls community land — the most defensible conservancy edge there is."""
+    """1930s DISTRICT / PROVINCE boundaries from the traced sheets — administrative lines a county official still
+    recognises. Tribal and sub-tribal lines are deliberately NOT used (user decision 2026-09-06): a 1930s tribal
+    limit is not a boundary today's communities should be asked to accept, and describing land by the tribe the
+    Condominium assigned to it is the wrong vocabulary. Boundaries are described instead by rivers, hills, swamps
+    and villages (hist_waters, hist_villages)."""
     out = []
     for name, style, pts in hcon.execute("SELECT name, style, pts FROM lines_stitched WHERE kind='boundary' AND minlon>? AND minlat>? AND maxlon<? AND maxlat<?", aoi.bounds):
         nm = (name or "").strip()
         if "Internat" in nm or re.match(r"^[\d°'\s]+$", nm): continue
-        # Labelled tribal / sub-tribal / district / province lines, or unlabelled dotted lines (sheet key:
-        # dotted = sub-tribal). A bare "Bound" match let in "Limit of Toich (Swamp)" and dated exploration
-        # routes ("(Lemaere 1902)", "Furain") - routes are not customary edges. On XSA this layer is
-        # ~1,250 km, mostly district/province; explicitly tribal ~220 km. Prose must say "district", not "tribal".
-        tribal = bool(re.search(r"[Tt]rib|Distr|Dist\.|Province|Prov\.|Bdy|District", nm)) or (style == "dotted" and not nm)
-        if not tribal or re.search(r"Limit of|Toich|\d{4}", nm): continue
+        if not re.search(r"Distr|Dist\.|Province|Prov\.", nm): continue          # labelled district/province only
+        if re.search(r"[Tt]rib|Limit of|Toich|\d{4}", nm): continue
         try: xy = json.loads(pts)
         except Exception: continue
         if len(xy) < 2: continue
         g = LineString([(p[0], p[1]) for p in xy]).intersection(aoi)
         if g.is_empty: continue
-        label = nm if nm else ("sub-tribal boundary (1930s dotted)" if style == "dotted" else "boundary (1930s sheet)")
-        out.append((g, f"1930s {label}", "hist_boundary", 5))
-    log(f"1930s tribal/district boundaries: {len(out)}")
+        out.append((g, f"1930s {nm}", "hist_boundary", 4))
+    log(f"1930s district/province boundaries: {len(out)} (tribal lines excluded by design)")
     return out
+
+def swamps(con, aoi, min_km2=5.0):
+    """Wetland edges people know: HydroLAKES polygons >= min_km2 (park_lakes_hydro) and JRC surface-water bodies
+    (park_waterbodies, perennial + intermittent) dissolved. A toich/swamp edge is the most-used grazing boundary in
+    Bahr el Ghazal — herds stand on it every dry season — so it is a legible feature at river weight."""
+    gs = []
+    for name, ar, gj in con.execute("SELECT COALESCE(name,''), area_km2, geojson FROM park_lakes_hydro WHERE park_id=? AND area_km2>=?", (AOI, min_km2)):
+        g = shape(json.loads(gj)).buffer(0)
+        if g.intersects(aoi): gs.append((g, name))
+    wb = [shape(json.loads(gj)).buffer(0) for (gj,) in con.execute("SELECT geojson FROM park_waterbodies WHERE park_id=?", (AOI,))]
+    wb = [g for g in wb if g.intersects(aoi)]
+    out = [(g.boundary, (f"{n} swamp/lake edge" if n else "swamp/lake edge (HydroLAKES)"), "swamp", 5) for g, n in gs]
+    if wb:
+        u = unary_union(wb).buffer(0.002).buffer(-0.002)      # close 200 m gaps so a wetland reads as one edge
+        parts = [p for p in getattr(u, "geoms", [u]) if km2(p) >= min_km2]
+        out += [(p.boundary, "seasonal water / toich edge (JRC surface water)", "swamp", 4) for p in parts]
+    log(f"swamps: {len(gs)} lakes >= {min_km2} km2, {len(out)-len(gs)} JRC wetland bodies >= {min_km2} km2 ({len(wb)} raw)")
+    return out
+
+def hist_waters(hcon, aoi):
+    """1930s sheet WATER SYMBOLS (wells, pools, hafirs — the symbol layer is more reliable than traced linework) and
+    swamp/pool/lake water LABELS, as point beacons. A boundary is described 'from X pool to Y well' by these."""
+    B = (aoi.bounds[0], aoi.bounds[2], aoi.bounds[1], aoi.bounds[3])
+    pts = [((lo, la), (n or d or "water point").strip() + " (1930s water symbol)") for d, n, lo, la in
+           hcon.execute("SELECT COALESCE(descr,''), name, lon, lat FROM symbols WHERE category='water' AND lon BETWEEN ? AND ? AND lat BETWEEN ? AND ?", B)]
+    for t, lo, la in hcon.execute("SELECT text, lon, lat FROM labels_dedup WHERE category IN ('water','place','terrain') AND lon BETWEEN ? AND ? AND lat BETWEEN ? AND ?", B):
+        t = re.sub(r"\s+", " ", t).strip()
+        if re.search(r"swamp|toich|marsh|pool|^L\. ?[A-Z]|^Lake|hafir|wells?$", t, re.I) and "?" not in t: pts.append(((lo, la), t + " (1930s sheet)"))
+    log(f"1930s water beacons: {len(pts)} (symbols + swamp/pool/lake labels)")
+    return pts
+
+def hist_villages(hcon, aoi):
+    """1930s village SYMBOLS (settlement category — more reliable than OCR'd text) and Capitalised place labels, as
+    beacons: a boundary is described as running 'past old X village site'. Never a line — a village is a point."""
+    B = (aoi.bounds[0], aoi.bounds[2], aoi.bounds[1], aoi.bounds[3])
+    pts = [((lo, la), (n.strip() if n else "village site") + " (1930s village symbol)") for n, lo, la in
+           hcon.execute("SELECT name, lon, lat FROM symbols WHERE category='settlement' AND lon BETWEEN ? AND ? AND lat BETWEEN ? AND ?", B)]
+    seen = {(round(p[0][0], 2), round(p[0][1], 2)) for p in pts}
+    for t, lo, la in hcon.execute("SELECT text, lon, lat FROM labels_dedup WHERE category='place' AND length(text)>=3 AND lon BETWEEN ? AND ? AND lat BETWEEN ? AND ?", B):
+        t = re.sub(r"\s+", " ", t).strip()
+        if "?" in t or not re.match(r"^[A-Z][a-z][A-Za-z' .-]+$", t) or (round(lo, 2), round(la, 2)) in seen: continue
+        if re.search(r"Toich|Swamp|Pool|Hills?|Jebel|Khor|River|Deserted", t): continue
+        pts.append(((lo, la), t + " (1930s village)"))
+    log(f"1930s village beacons: {len(pts)}")
+    return pts
 
 def hist_watercourses(hcon, aoi, min_km=15):
     """Named 1930s watercourses (khors) the HydroRIVERS net lacks — a khor a herder names is a boundary he can keep."""
@@ -293,7 +339,7 @@ def legibility(G, feats):
         if g.is_empty: continue
         r = G.rasterize([(transform(FWD, g), 1)], all_touched=True).astype(bool)
         d = ndimage.distance_transform_edt(~r)
-        surf = np.maximum(surf, (min(w, 8)/8.0) * np.exp(-d/1.5)); fid[r] = j
+        surf = np.maximum(surf, (min(w, 8)/8.0) * np.exp(-d/(0.7 if k == "beacon" else 1.5))); fid[r] = j
     d, (ir, ic) = ndimage.distance_transform_edt(fid < 0, return_indices=True)
     G.fid = fid[ir, ic]; G.fdist = d * G.res/1000
     return surf
@@ -312,11 +358,21 @@ def describe_mask(G, mask, feats, max_km=2.5):
     # A geological contact steers the mesh (weight 2) but nobody can see it on the ground — it counts as UNNAMED here
     # and is reported separately so the reader knows that stretch needs beacons.
     vis = np.array([feats[j][2] not in INVISIBLE_KINDS for j in ids]) & ok
-    un = (~vis).sum()*step; geo_km = (ok & ~vis).sum()*step
+    un = (~vis).sum()*step; geo_km = (ok & np.array([feats[j][2] == "geology" for j in ids])).sum()*step
     by = Counter(); side = defaultdict(Counter)
     for j, sd in zip(ids[vis], sides[vis]): by[feats[j][1]] += step; side[feats[j][1]][sd] += step
     parts = [f"{nm} on the {'/'.join(k for k, _ in side[nm].most_common(2))} ({k:.0f} km)" for nm, k in by.most_common(6)]
     if geo_km >= step: parts.append(f"{geo_km:.0f} km along a geological contact only (not visible on the ground — needs beacons)")
+    # stretches on nothing linear: name the POINT landmarks they pass (1930s village sites, wells, pools, lone hills,
+    # today's villages) so the sentence a villager hears is "from the Bo River past old Tidi to Kuru pool", not "64% unnamed"
+    B = getattr(G, "beacons", None)
+    if B is not None and (~vis).any():
+        rr_, cc_ = rr[~vis], cc[~vis]; xs, ys = G.tr * (cc_ + 0.5, rr_ + 0.5)
+        lons, lats = INV(xs, ys); hits = Counter(); near = {}
+        for lo, la, sd in zip(lons, lats, sides[~vis]):
+            for j in B["tree"].query(Point(lo, la).buffer(BEACON_KM/111)):
+                if dkm((lo, la), B["pts"][j]) <= BEACON_KM: hits[j] += 1; near.setdefault(j, sd)
+        if hits: parts.append("landmarks on the unnamed stretches: " + ", ".join(f"{B['names'][j]} ({near[j]})" for j, _ in hits.most_common(8)))
     return parts, un, tot
 
 def seeds(con, G, seed_pop, empty_km):
@@ -439,7 +495,7 @@ def cells(con, G):
         nf = np.array([r[0][5:7] in ("11", "12", "01", "02") for r in rows])
         add("fire", lon, lat, n); add("fire_nf", lon[nf], lat[nf], n[nf])
     # fronts: each trajectory → the set of cells it crosses, kept as index arrays (a front touching a unit counts once)
-    G.longdens = Z().astype(np.float32); G.alldens = Z().astype(np.float32); F = []
+    G.longdens = Z().astype(np.float32); G.alldens = Z().astype(np.float32); F = []; cx, sy = Z(), Z()
     for g in json.load(open(ROOT / "data/fire_groups_v5" / f"{AOI}.json")):
         t = g.get("trajectory") or []
         if len(t) < 2: continue
@@ -450,9 +506,17 @@ def cells(con, G):
         if not len(cl): continue
         th = g.get("group_type") == "transhumance"; lg = (g.get("distance_km") or 0) >= 150
         G.alldens.ravel()[cl] += 1
-        if th and lg: G.longdens.ravel()[cl] += 1
-        F.append((cl, th, lg, g.get("direction")))
+        if th and lg:
+            G.longdens.ravel()[cl] += 1
+            if g.get("direction") in AXIS:      # axial (180°-periodic) unit vector: N and S are the same corridor
+                a2 = np.radians(AXIS[g["direction"]]*45*2); cx.ravel()[cl] += np.cos(a2); sy.ravel()[cl] += np.sin(a2)
+        F.append((cl, th, lg, g.get("direction"), (t[0][0], t[0][1]), (t[-1][0], t[-1][1]), g.get("start_date", "")[5:7]))
     G.fronts = F
+    # per-cell AXIAL COHERENCE of the long fronts (mean resultant length of doubled headings: 1 = every front on one
+    # axis, 0 = fronts in all directions). What the eye sees as a "corridor" in the animation is high density AND high
+    # coherence together; a burnt plain has the density without the coherence. Smoothed over 3 cells before use.
+    with np.errstate(invalid="ignore", divide="ignore"):
+        G.coherence = np.where(G.longdens > 0, np.hypot(cx, sy)/np.maximum(G.longdens, 1), 0).astype(np.float32)
     # clearing (reviewed events only)
     D = con.execute("SELECT lat, lon, year, area_km2, classification FROM deforestation_events WHERE park_id=? AND needs_review=0", (AOI,)).fetchall()
     if D:
@@ -519,7 +583,7 @@ def attributes(con, G, lab, surf, feats, names, ncomm, refs, ctry, park, thresho
     A["crop03"], A["crop19"] = agg("crop03", True), agg("crop19", True); A["cropn"] = np.bincount(lab[(lab > 0) & ~np.isnan(C["crop19"])], minlength=ML)
     # fronts: a front counts once per unit it touches
     fr, fth, flg = np.zeros(ML), np.zeros(ML), np.zeros(ML); dirs = defaultdict(Counter); flat = lab.ravel()
-    for cl, th, lg, dr in G.fronts:
+    for cl, th, lg, dr, *_ in G.fronts:
         us = np.unique(flat[cl]); us = us[us > 0]
         fr[us] += 1; fth[us] += th; flg[us] += lg
         if dr:
@@ -661,12 +725,39 @@ def describe_boundary(poly, feats, ftree, step_km=2.0):
     return [f"{nm} on the {'/'.join(k for k, _ in side[nm].most_common(2))} ({k:.0f} km)" for nm, k in by.most_common(6)], un, tot
 
 # ============================================================ corridor from the fronts themselves
-def corridor_axis(G, refs, popkm2, width_km=12, closed=(), smooth=3, expo=1.5, pop_w=2.0, rng=None):
+def corridor_bundles(G, k=12, min_share=0.04, rng_seed=0):
+    """Origin–destination BUNDLES of the long transhumance fronts: k-means on (start, end) in km. The single
+    Radom→Garamba axis was an assumption; the fronts themselves form ~10 stable bundles, several of which begin and
+    end inside the AOI (Wau→Tonj side, Raga→Deim Zubeir, Wau→north). Each bundle = one corridor branch to route.
+    Returns [(n, (lon,lat) start, (lon,lat) end, onset month, straight km)] for bundles holding >= min_share of fronts."""
+    L = [(f[4], f[5], f[6]) for f in G.fronts if f[1] and f[2]]
+    if len(L) < 50: return []
+    kx = 111*math.cos(math.radians(7.5))
+    X = np.array([[a[0]*kx, a[1]*111, b[0]*kx, b[1]*111] for a, b, _ in L]); rng = np.random.default_rng(rng_seed)
+    C = X[rng.choice(len(X), k, replace=False)]
+    for _ in range(40):                                        # plain k-means (sklearn is not importable here)
+        lab = np.argmin(((X[:, None, :]-C[None])**2).sum(2), 1)
+        C2 = np.array([X[lab == i].mean(0) if (lab == i).any() else C[i] for i in range(k)])
+        if np.allclose(C2, C): break
+        C = C2
+    out = []
+    for i in range(k):
+        m = lab == i; n = int(m.sum())
+        if n < min_share*len(X): continue
+        s_, e_ = X[m, :2].mean(0), X[m, 2:].mean(0); d = float(np.hypot(*(e_-s_)))
+        months = Counter(L[j][2] for j in np.flatnonzero(m)); mon = months.most_common(1)[0][0]
+        out.append((n, (s_[0]/kx, s_[1]/111), (e_[0]/kx, e_[1]/111), mon, round(d), dict(sorted(months.items(), key=lambda t: (int(t[0]) + 12) % 15))))
+    out.sort(key=lambda t: -t[0]); log(f"corridor bundles: {len(out)} of {k} clusters hold >= {min_share:.0%} of {len(X)} long fronts")
+    return out
+
+def corridor_axis(G, refs, popkm2, width_km=12, closed=(), smooth=3, expo=1.5, pop_w=2.0, rng=None, anchors=None):
     """The herd corridor is not drawn, it is walked: least-cost path over the long-transhumance-front density
     (smoothed), penalised by people, from the Radom side to the Garamba side. Returns (band mask, axis rc list, stats)."""
     from scipy import ndimage
     from skimage.graph import route_through_array
-    dens = ndimage.gaussian_filter(G.longdens, smooth)
+    # density × coherence: a cell many long fronts cross ALONG ONE AXIS is cheap; a cell burning in every direction is not
+    coh = ndimage.gaussian_filter(G.longdens*getattr(G, "coherence", np.ones_like(G.longdens)), smooth)
+    dens = ndimage.gaussian_filter(G.longdens, smooth) * (0.5 + coh/np.maximum(ndimage.gaussian_filter(G.longdens, smooth), 1e-6))
     dn = dens/(np.percentile(dens[G.mask], 99) or 1)
     cost = 1.0/(0.02 + np.clip(dn, 0, 1))**expo * (1 + popkm2/pop_w)
     if rng is not None: cost *= rng.uniform(0.85, 1.15, cost.shape)   # bootstrap: jitter the cost field
@@ -680,7 +771,16 @@ def corridor_axis(G, refs, popkm2, width_km=12, closed=(), smooth=3, expo=1.5, p
         r = G.rasterize([(transform(FWD, g), 1)]).astype(bool) & G.mask
         if not r.any(): return None
         rr, cc = np.nonzero(r); i = np.argmin(cost[rr, cc]); return int(rr[i]), int(cc[i])
-    a, b = anchor("Radom"), anchor("Garamba (National")
+    if anchors is not None:
+        # an OD bundle: route from the cheapest cell within 15 km of the mean start to the same near the mean end
+        def near(lonlat):
+            r0, c0 = G.rc(*lonlat); rr, cc = np.mgrid[max(0, r0-8):min(G.h, r0+9), max(0, c0-8):min(G.w, c0+9)]
+            ok = G.mask[rr, cc]
+            if not ok.any(): return None
+            i = np.argmin(np.where(ok, cost[rr, cc], np.inf)); return int(rr.ravel()[i]), int(cc.ravel()[i])
+        a, b = near(anchors[0]), near(anchors[1])
+        if a is None or b is None: return None, [], dict(note="bundle end outside grid")
+    else: a, b = anchor("Radom"), anchor("Garamba (National")
     if a is None or b is None:
         # generic AOI: anchors are where the long fronts themselves enter and leave — the two densest
         # rim segments of long-front density on opposite sides of the area
@@ -845,7 +945,7 @@ class UnitTable:
         self.S = {k: np.bincount(lab1[(lab1 > 0) & ~np.isnan(C[k])], weights=C[k][(lab1 > 0) & ~np.isnan(C[k])], minlength=ML) for k in C if k != "geo_id"}
         self.S["cropn"] = np.bincount(lab1[(lab1 > 0) & ~np.isnan(C["crop19"])], minlength=ML).astype(float)
         flat = lab1.ravel(); rows, cols = [], []; self.fmeta = []
-        for j, (cl, th, lg, dr) in enumerate(G.fronts):
+        for j, (cl, th, lg, dr, *_) in enumerate(G.fronts):
             us = np.unique(flat[cl]); us = us[us > 0]; rows += [j]*len(us); cols += us.tolist(); self.fmeta.append((th, lg, dr))
         self.M = sp.csc_matrix((np.ones(len(rows), np.int8), (rows, cols)), shape=(len(G.fronts), ML))
         self.fth = np.array([m[0] for m in self.fmeta], bool); self.flg = np.array([m[1] for m in self.fmeta], bool)
@@ -989,6 +1089,114 @@ def describe_unit(u):
     sheet = {k: gz[k][:25] for k in ("peaks", "trig", "terrain", "water", "veg", "places", "boundary", "notes", "built")}
     return llm_json(DESCRIBE_SYS, "MEASURED TODAY:\n" + json.dumps(facts, ensure_ascii=False) + "\n\n1930s SHEET CONTENT INSIDE THE UNIT:\n" + json.dumps(sheet, ensure_ascii=False))
 
+# ============================================================ teams: where ECHO, TANGO and focal points sit, and why
+def teams_mode(con, G, refs, fp_min_pop):
+    """Place the three structures the plan funds on the planner's own proposals, and justify each placement with the
+    numbers of the zone it serves. Sizes are fixed by the plan: a focal point is ONE person (coordination with county and
+    traditional authorities); ECHO and TANGO are field teams of TWO.
+      ECHO  — in the community conservancies, inside the community: the most populated village cluster of each proposed
+              conservancy (one team per proposal; a second where people > 20,000).
+      TANGO — with the transhumant population: one team per corridor branch, stationed where the branch's band crosses
+              its most populated cell within 25 km of a village (herds meet residents there), active from the branch's
+              onset month; a branch whose herds never meet a village is covered from the nearest ECHO instead.
+      FP    — administrative centres and boom towns: every verified town / OSM city-town >= fp_min_pop inside or within
+              25 km of a proposal, ranked by people served in the proposals around it."""
+    S = G.settlements; C = cells(con, G)
+    props = []
+    for f in sorted(OUT.glob("optimize_*.geojson")):
+        if "support" in f.name: continue
+        for ft in json.load(open(f))["features"]:
+            pp = ft["properties"]; g = shape(ft["geometry"]); cls = "corridor" if "corridor" in f.name else (pp.get("cls") or f.stem.split("_")[1])
+            props.append(dict(name=f"{f.stem.replace('optimize_', '')} #{pp.get('uid')}: {pp.get('seed')}", cls=cls, geom=g, prep=prep(g), pp=pp,
+                              mask=G.rasterize([(transform(FWD, g), 1)]).astype(bool)))
+    OT = osm_towns(con); ottree = STRtree([Point(lo, la) for _, lo, la, _ in OT])
+    # WATER. A team without water is not a site. Sources we already hold: HydroRIVERS reaches (order >= 4 or named),
+    # 1930s water symbols and well/pool/hafir labels (the sheets marked what a caravan drank), JRC surface-water bodies.
+    hcon = sqlite3.connect(HDB); W = []
+    for n, gj in con.execute("SELECT COALESCE(name,''), geojson FROM park_rivers_hydro WHERE park_id=? AND (stream_order>=4 OR name!='')", (AOI,)): W.append((shape(json.loads(gj)), (n or "river") + " (HydroRIVERS)"))
+    for gj, in con.execute("SELECT geojson FROM park_waterbodies WHERE park_id=? AND waterbody_type LIKE '%perennial%'", (AOI,)): W.append((shape(json.loads(gj)), "perennial surface water (JRC)"))
+    for p_, n in hist_waters(hcon, G.aoi): W.append((Point(p_), n))
+    wtree = STRtree([g for g, _ in W])
+    def water_at(lon, lat, km=WATER_KM):
+        pt = Point(lon, lat); best = None
+        for j in wtree.query(pt.buffer(km/111)):
+            g = W[j][0]; d = dkm((lon, lat), g.interpolate(g.project(pt)).coords[0]) if g.geom_type in ("LineString", "MultiLineString") else g.distance(pt)*111
+            if d <= km and (best is None or d < best[0]): best = (d, W[j][1])
+        return best
+    def with_water(cands, key):
+        """first candidate (by key) with water within WATER_KM; returns (cand, (km, source)) or (best, None) if none has water"""
+        for c in sorted(cands, key=key):
+            w = water_at(*c[:2]) if isinstance(c, tuple) else water_at(c[1], c[0])
+            if w: return c, w
+        return (sorted(cands, key=key)[0], None) if cands else (None, None)
+    def name_at(lon, lat):
+        best = None
+        for j in ottree.query(Point(lon, lat).buffer(0.08)):
+            d = dkm((lon, lat), OT[j][1:3])
+            if d <= TOWN_REACH_KM.get(OT[j][3], 8) and (best is None or d + TOWN_PENALTY_KM.get(OT[j][3], 0) < best[0]): best = (d + TOWN_PENALTY_KM.get(OT[j][3], 0), OT[j][0])
+        return best[1] if best else None
+    out = []
+    # ECHO
+    for p in [p for p in props if p["cls"] == "community" and "corridor" not in p["name"]]:
+        inside = [x for x in S if p["prep"].contains(Point(x[1], x[0])) and x[3] != "temporary_camp"]
+        if not inside: continue
+        inside.sort(key=lambda x: -(x[2] or 0)); pop = sum(x[2] or 0 for x in inside)
+        n_teams = 2 if pop > 20000 else 1
+        halves = [inside] if n_teams == 1 else [inside[0::2], inside[1::2]]
+        for k in range(n_teams):
+            v, w = with_water(halves[k], key=lambda x: -(x[2] or 0))
+            if v is None: continue
+            nm = name_at(v[1], v[0]) or (v[5] + "* (nearest_place, unverified)")
+            pp = p["pp"]; wtxt = f"water: {w[1]} {w[0]:.1f} km" if w else "WATER UNVERIFIED — no river, 1930s well/pool or perennial water within 3 km of any village here"
+            out.append(dict(kind="ECHO", team_size=2, place=nm, lon=round(v[1], 4), lat=round(v[0], 4), zone=p["name"], season="year-round; village outreach in the rains, boundary walks Dec–Feb", water=wtxt,
+                            why=f"inside the conservancy's largest village cluster with water ({v[2] or 0:,} people; {wtxt}); conservancy holds {pp.get('clusters')} clusters, {pp.get('population_est'):,} people, {pp.get('new_since_2015')} founded since 2015, {pp.get('mine_top05_cells')} gold-target cells, {pp.get('unattributed_pct')}% of its {pp.get('perimeter_km')} km boundary still to be walked; support {pp.get('support_mean')}"))
+    # TANGO
+    for p in [p for p in props if p["cls"] == "corridor"]:
+        pp = p["pp"]; m = p["mask"]
+        # cells in the band with people within 25 km, weighted by long-front density: where the herds meet villages
+        from scipy import ndimage
+        near_people = ndimage.maximum_filter(C["pop"], size=int(25000/G.res)*2+1) > 0
+        score = G.longdens * m * near_people
+        if score.max() <= 0:
+            out.append(dict(kind="TANGO", team_size=0, place="—", zone=p["name"], why="band never comes within 25 km of a village: covered by the nearest ECHO team", lon=None, lat=None)); continue
+        sm = ndimage.gaussian_filter(score, 2); order = np.argsort(-sm.ravel())[:60]; w = None
+        for idx in order:                      # the densest passage cell that also has water within WATER_KM
+            r, c = np.unravel_index(idx, score.shape); x, y = G.tr * (c + 0.5, r + 0.5); lon, lat = INV(x, y); w = water_at(lon, lat)
+            if w: break
+        else:
+            r, c = np.unravel_index(order[0], score.shape); x, y = G.tr * (c + 0.5, r + 0.5); lon, lat = INV(x, y)
+        wtxt = f"water: {w[1]} {w[0]:.1f} km" if w else "WATER UNVERIFIED — none of the 60 densest passage cells has a known source within 3 km"
+        near = min(S, key=lambda x: dkm((lon, lat), (x[1], x[0]))); nm = name_at(near[1], near[0]) or (near[5] + "* (nearest_place, unverified)")
+        months = pp.get("months"); months = json.loads(months) if isinstance(months, str) else months
+        out.append(dict(kind="TANGO", team_size=2, place=f"near {nm}", lon=round(lon, 4), lat=round(lat, 4), zone=p["name"], season=f"{pp.get('onset')} onward; herd months {months}", water=wtxt,
+                        why=f"{wtxt}; the branch {pp.get('from_place')} → {pp.get('to_place')} carries {pp.get('bundle_fronts') or pp.get('fronts_long')} long fronts; this is where its band has the densest long-front passage within 25 km of a village ({dkm((lon, lat), (near[1], near[0])):.0f} km from {nm}); long-front density in the band ×{pp.get('long_density_ratio')} outside, excess over burning {pp.get('excess_over_burning')}"))
+    # focal points
+    towns = [(n, lo, la, t) for n, lo, la, t in OT if t in ("city", "town", "verified_town")]
+    fps = []
+    for n, lo, la, t in towns:
+        pop = sum(x[2] or 0 for x in S if dkm((lo, la), (x[1], x[0])) <= 8)
+        if pop < fp_min_pop: continue
+        pt = Point(lo, la); served = [p for p in props if p["cls"] != "corridor" and p["geom"].distance(pt)*111 <= 25]
+        if not served: continue
+        fps.append((sum(p["pp"].get("population_est") or 0 for p in served), n, lo, la, pop, served))
+    fps.sort(reverse=True); seen = []
+    for tot, n, lo, la, pop, served in fps:
+        if any(dkm((lo, la), s_) < 40 for s_ in seen): continue
+        seen.append((lo, la))
+        w = water_at(lo, la, km=8); wtxt = f"water: {w[1]} {w[0]:.1f} km" if w else "WATER UNVERIFIED within 8 km (a town supplies itself, but note it)"
+        out.append(dict(kind="FP", team_size=1, place=n, lon=round(lo, 4), lat=round(la, 4), zone="; ".join(p["name"] for p in served[:3]), season="year-round", water=wtxt,
+                        why=f"{wtxt}; administrative centre / boom town of {pop:,} people; {len(served)} proposals within 25 km holding {tot:,} people; county and traditional authorities are seated here"))
+    L = ["TEAMS — placement of ECHO (2), TANGO (2) and focal points (1) on the planner's proposals; every placement justified by the zone it serves",
+         f"every site needs water: a HydroRIVERS reach (order >= 4 or named), a 1930s sheet well/pool/water symbol, or perennial JRC surface water within {WATER_KM:g} km — the source is named on each line; a site with none says WATER UNVERIFIED", ""]
+    for kind in ("FP", "ECHO", "TANGO"):
+        for t in [t for t in out if t["kind"] == kind]:
+            L.append(f"{t['kind']:<5} x{t['team_size']}  {t['place']}" + (f"  ({t['lon']}, {t['lat']})" if t.get("lon") else "") + f"\n      zone: {t['zone']}\n      when: {t.get('season', '')}\n      why: {t['why']}\n")
+    tot = Counter(); [tot.__setitem__(t["kind"], tot[t["kind"]] + t["team_size"]) for t in out]
+    L.append(f"staff: {tot['FP']} focal points, {tot['ECHO']//2} ECHO teams ({tot['ECHO']} scouts), {tot['TANGO']//2} TANGO teams ({tot['TANGO']} scouts)")
+    txt = "\n".join(L); print(txt); (OUT / "TEAMS.txt").write_text(txt + "\n")
+    json.dump({"type": "FeatureCollection", "features": [{"type": "Feature", "properties": {k: v for k, v in t.items() if k not in ("lon", "lat")}, "geometry": {"type": "Point", "coordinates": [t["lon"], t["lat"]]}} for t in out if t.get("lon")]}, open(OUT / "teams.geojson", "w"))
+    return out
+
 # ============================================================ validation
 def assess(con, G, geoms, refs, ctry, park, T, feats, surf):
     """Measure arbitrary polygons (a park, a WDPA PA, a hand-drawn zone, a proposal) with the SAME evidence
@@ -1127,6 +1335,9 @@ def narrate(u, gz=None, kind="", legal=""):
         if gz["boundary"]: bits.append("customary/district boundary notes " + ", ".join(gz["boundary"][:3]))
         if gz["built"]: bits.append("built marks " + ", ".join(gz["built"][:4]))
         if bits: L.append("  1930s Sudan Survey sheets inside: " + " | ".join(bits) + ".")
+    if u.get("from_place"):
+        L.append(f"  Movement: {u['from_place']} → {u['to_place']}" + (f", {u['bundle_fronts']} long fronts in 2024–25, first movement {u['onset']}, by month {u['months']}, {u['straight_km']} km straight-line" if u.get('bundle_fronts') else "") +
+                 f". Band {u.get('km2'):,} km² (p10/p50/p90 across draws {u.get('km2_p10_p50_p90')}); long-front density ×{u.get('long_density_ratio')} outside vs all fire ×{u.get('all_fire_ratio')} → excess {u.get('excess_over_burning')} (1 = no more herds than burning); axial coherence {u.get('coherence_in')}.")
     if u.get("support_mean") is not None:
         L.append(f"  Bootstrap: support {u['support_mean']} (share of perturbed runs that keep each unit), size across runs p10/p50/p90 {u.get('area_ha_p10_p50_p90')} ha, {u.get('contested_units', 0)} contested units to walk with the community.")
     if u.get("overlaps"): L.append("  Overlaps: " + ", ".join(u["overlaps"]) + ".")
@@ -1169,7 +1380,7 @@ def desc_of(u):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("mode", choices=["build", "validate", "rank", "show", "export", "conservancies", "optimize", "describe"]); ap.add_argument("arg", nargs="?")
+    ap.add_argument("mode", choices=["build", "validate", "rank", "show", "export", "conservancies", "optimize", "describe", "teams"]); ap.add_argument("arg", nargs="?")
     ap.add_argument("--cell-km", type=float, default=2); ap.add_argument("--min-ha", type=float, default=2000); ap.add_argument("--min-order", type=int, default=4)
     ap.add_argument("--seed-pop", type=int, default=150, help="build: a settlement cluster needs this many people to seed a unit")
     ap.add_argument("--empty-km", type=float, default=20, help="build: lattice spacing of empty-land seeds")
@@ -1192,6 +1403,7 @@ def main():
     ap.add_argument("--n-areas", type=int, default=3, help="optimize: how many disjoint areas to propose")
     ap.add_argument("--seed-near", default="", help="optimize: grow only from the fine units containing these points, 'lon,lat[;lon,lat…]' (e.g. the boom towns the rim run cannot reach)")
     ap.add_argument("--tag", default="", help="optimize: suffix for the output files (optimize_<class>_<tag>.*)")
+    ap.add_argument("--fp-min-pop", type=int, default=5000, help="teams: a focal point needs a town of at least this many people (administrative centre or boom town)")
     ap.add_argument("--reach-km", type=float, default=8, help="conservancies: land within this distance of a settlement cluster counts as used")
     ap.add_argument("--cons-target-ha", type=float, default=150000, help="conservancies: stop growing a conservancy past this")
     ap.add_argument("--cons-min-pop", type=int, default=100, help="conservancies: drop candidates with fewer people than this"); ap.add_argument("--want", default="balanced", choices=["people", "pressure", "rim", "balanced"])
@@ -1203,7 +1415,16 @@ def main():
         con, hcon = sqlite3.connect(DB), sqlite3.connect(HDB)
         aoi = aoi_geom(con); G = Grid(aoi, a.cell_km); log(f"grid {G.w}x{G.h} @ {a.cell_km} km")
         feats = rivers(con, hcon, a.min_order); rl, beacons = ridges(hcon, aoi); feats += rl
-        feats += hist_boundaries(hcon, aoi) + hist_watercourses(hcon, aoi) + roads(con)
+        feats += hist_boundaries(hcon, aoi) + hist_watercourses(hcon, aoi) + roads(con) + swamps(con, aoi)
+        # point landmarks (never lines): 1930s village symbols/labels, water symbols, swamp/pool labels, lone hills,
+        # today's named OSM villages. They enter the legibility surface at weight 3 with a tight radius (a boundary
+        # that passes a known well beats one through bare bush) and describe the stretches no river or ridge covers.
+        beacons = [(p, n) for p, n in beacons] + hist_waters(hcon, aoi) + hist_villages(hcon, aoi)
+        beacons += [((lo, la), f"{n} (village today)") for n, lo, la in con.execute("SELECT name, lon, lat FROM osm_places WHERE park_id=? AND place_type IN ('village','hamlet') AND name IS NOT NULL", (AOI,))]
+        beacons = [(p, n) for p, n in beacons if aoi.contains(Point(p))]
+        G.beacons = dict(pts=[p for p, _ in beacons], names=[n for _, n in beacons], tree=STRtree([Point(p) for p, _ in beacons]))
+        if beacons: feats.append((unary_union([Point(p) for p, _ in beacons]), "landmark (village site / well / pool / hill)", "beacon", 3))
+        log(f"beacons: {len(beacons)} point landmarks")
         gunits, gcont = geology(aoi); feats += gcont; G.geo_units = gunits
         ctry = countries()
         for iso, g in ctry.items(): feats.append((g.boundary.intersection(aoi.buffer(0.05)), f"{iso} border", "border", 8))
@@ -1307,36 +1528,74 @@ def main():
         con = sqlite3.connect(DB); refs = references(); ctry = countries(); park = next((g for k, g in refs.items() if PARK_KEY in k), None)
         G, lab1, surf, T = st["G"], st["lab1"], st["surf"], st["T"]; want = a.want_class
         if want == "corridor":
-            # a corridor is a PATH, not a blob: bootstrap the least-cost path itself (cost field jitter, smoothing 2–5,
-            # people penalty, width 8–16 km); support = share of draws a cell lies in the band. Proposal = support ≥ 0.5.
+            # a corridor is a PATH, not a blob — and the herds walk a NETWORK, not one path. Each origin–destination bundle
+            # of the long fronts (corridor_bundles) is routed as its own least-cost path over coherence-weighted density and
+            # bootstrapped (cost jitter, smoothing 2–5, people penalty, half-width 8–16 km); support = share of draws a cell
+            # lies in that branch's band. Proposal = support ≥ 0.5 per branch; the union is the corridor network.
             popkm2 = np.zeros((G.h, G.w), np.float32)
             for u in U: popkm2[st["lab"] == u["uid"]] = u["pop_per_km2"]
-            rng = np.random.default_rng(0); sup = np.zeros((G.h, G.w)); n = 0; widths = []
-            for i in range(a.draws):
-                band, path, cs = corridor_axis(G, refs, popkm2, width_km=rng.uniform(8, 16), smooth=rng.uniform(2, 5), expo=rng.uniform(1.0, 2.0), pop_w=rng.uniform(1, 4), rng=rng)
-                if band is None: continue
-                sup += band; n += 1; widths.append(cs["km2"])
-            sup /= max(n, 1)
-            geoms = []
             from rasterio import features as rfeat
+            vec = lambda m: unary_union([transform(INV, shape(g)) for g, v in rfeat.shapes(m.astype(np.uint8), mask=m, transform=G.tr)])
+            bundles = corridor_bundles(G) if not a.seed_near else []
+            routes = [("Radom → Garamba (through-route)", None)] + [(f"bundle {i+1}", b) for i, b in enumerate(bundles)]
+            rng = np.random.default_rng(0); sup_all = np.zeros((G.h, G.w)); lab = np.zeros((G.h, G.w), np.int32); names = {}; branches = []
+            MON = {"09": "Sep", "10": "Oct", "11": "Nov", "12": "Dec", "01": "Jan", "02": "Feb", "03": "Mar", "04": "Apr", "05": "May", "06": "Jun"}
+            OT = osm_towns(con); ottree = STRtree([Point(lo, la) for _, lo, la, _ in OT]); RK = {"city": 0, "town": 0, "verified_town": 0, "hist_town": 1, "village": 2, "hist_place": 3}
+            def place(lonlat):
+                """nearest named place within 40 km, preferring towns; else the nearest reference polygon; else coordinates"""
+                best = None
+                for j in ottree.query(Point(lonlat).buffer(40/111)):
+                    d = dkm(lonlat, OT[j][1:3]); k = (RK.get(OT[j][3], 4), d)
+                    if d <= 40 and (best is None or k < best[0]): best = (k, f"{OT[j][0]} ({d:.0f} km)" if d > 8 else OT[j][0])
+                if best: return best[1]
+                pt = Point(lonlat); nm = min(((g.distance(pt)*111, k) for k, g in refs.items() if g.geom_type != "Point"), default=(999, ""))
+                return f"{nm[1].split(' ', 1)[-1].split('_')[0]} (~{nm[0]:.0f} km)" if nm[0] < 60 else f"{lonlat[0]:.2f}E {lonlat[1]:.2f}N"
+            for bi, (bname, b) in enumerate(routes, 1):
+                sup = np.zeros((G.h, G.w)); n = 0; widths = []
+                for i in range(a.draws):
+                    band, path, cs = corridor_axis(G, refs, popkm2, width_km=rng.uniform(8, 16), smooth=rng.uniform(2, 5), expo=rng.uniform(1.0, 2.0), pop_w=rng.uniform(1, 4), rng=rng,
+                                                   anchors=(b[1], b[2]) if b else None)
+                    if band is None: continue
+                    sup += band; n += 1; widths.append(cs["km2"])
+                if not n: continue
+                sup /= n; m50 = sup >= 0.5
+                if not m50.any(): continue
+                sup_all = np.maximum(sup_all, sup); lab[m50 & (lab == 0)] = bi; names[bi] = bname
+                # the branch's own evidence: fronts of the bundle, onset month, and the null — long fronts vs ALL fire on the same cells
+                ld_in, ld_out = G.longdens[m50].mean(), G.longdens[G.mask & ~m50].mean(); ad_in, ad_out = G.alldens[m50].mean(), G.alldens[G.mask & ~m50].mean()
+                coh_in = float(np.average(G.coherence[m50], weights=np.maximum(G.longdens[m50], 1e-9))) if G.longdens[m50].sum() else 0
+                branches.append(dict(branch=bi, name=bname, bundle_fronts=b[0] if b else None, onset=MON.get(b[3], b[3]) if b else None, straight_km=b[4] if b else None,
+                                     months={MON.get(k, k): v for k, v in b[5].items()} if b else None,
+                                     start=[round(x, 3) for x in b[1]] if b else None, end=[round(x, 3) for x in b[2]] if b else None,
+                                     from_place=place(b[1]) if b else "Radom", to_place=place(b[2]) if b else "Garamba",
+                                     km2=round(float(m50.sum()*G.cell_km2())), km2_p10_p50_p90=[int(np.percentile(widths, q)) for q in (10, 50, 90)], draws=n,
+                                     long_density_ratio=round(float(ld_in/max(ld_out, 1e-9)), 2), all_fire_ratio=round(float(ad_in/max(ad_out, 1e-9)), 2),
+                                     excess_over_burning=round(float((ld_in/max(ld_out, 1e-9))/max(ad_in/max(ad_out, 1e-9), 1e-9)), 2), coherence_in=round(coh_in, 2)))
+                log(f"branch {bi} {bname}: {branches[-1]['km2']:,} km2, long ×{branches[-1]['long_density_ratio']} all-fire ×{branches[-1]['all_fire_ratio']} excess {branches[-1]['excess_over_burning']}")
+            geoms = []
             for lvl in (0.25, 0.5, 0.75):
-                m = sup >= lvl
-                if m.any(): geoms.append((lvl, unary_union([transform(INV, shape(g)) for g, v in rfeat.shapes(m.astype(np.uint8), mask=m, transform=G.tr)])))
+                m = sup_all >= lvl
+                if m.any(): geoms.append((lvl, vec(m)))
             json.dump({"type": "FeatureCollection", "features": [{"type": "Feature", "properties": dict(support=l, want=want), "geometry": mapping(g)} for l, g in geoms]}, open(OUT / "optimize_corridor_support.geojson", "w"))
-            m50 = sup >= 0.5
-            lab = m50.astype(np.int32); names = {1: "corridor proposal (support ≥ 0.5)"}
             U2, polys, _ = attributes(con, G, lab, surf, st["feats"], names, 0, refs, ctry, park, T, freeze=T)
-            u = U2[0]; u["seed"] = names[1]; u["seed_kind"] = "optimized"
-            L = [f"OPTIMIZE corridor: {n} bootstrap draws of the least-cost herd path (cost jitter ±15%, smoothing 2–5 cells, people penalty 1–4, half-width 8–16 km)",
-                 f"band area across draws p10/p50/p90 {[int(np.percentile(widths, q)) for q in (10, 50, 90)]} km2; support ≥0.5 band {m50.sum()*G.cell_km2():,.0f} km2; ≥0.75 {(sup >= 0.75).sum()*G.cell_km2():,.0f} km2", ""]
-            L.append(fmt(u, full=True)); L.append("      rationale: " + " | ".join(u["rationale"][1:]))
-            L.append(f"      long-front density inside band {G.longdens[m50].mean():.2f}/cell vs outside {G.longdens[G.mask & ~m50].mean():.2f}/cell")
+            byb = {b["branch"]: b for b in branches}
+            for u in U2:
+                b = byb[u["uid"]]; u.update(seed=b["name"], seed_kind="optimized", **{k: v for k, v in b.items() if k not in ("branch", "name")})
+            net = lab > 0; cohw = float(np.average(G.coherence[net], weights=np.maximum(G.longdens[net], 1e-9))); cohout = float(np.average(G.coherence[G.mask & ~net], weights=np.maximum(G.longdens[G.mask & ~net], 1e-9)))
+            L = [f"OPTIMIZE corridor NETWORK: {len(branches)} branches (1 through-route + {len(branches)-1} origin–destination bundles of the {sum(1 for f in G.fronts if f[1] and f[2]):,} long transhumance fronts), each the least-cost path over coherence-weighted long-front density, {a.draws} bootstrap draws (cost jitter ±15%, smoothing 2–5 cells, people penalty 1–4, half-width 8–16 km); a branch is its support ≥ 0.5 band",
+                 f"network {net.sum()*G.cell_km2():,.0f} km2; long-front density inside ×{G.longdens[net].mean()/max(G.longdens[G.mask & ~net].mean(), 1e-9):.2f} outside; ALL fire fronts inside ×{G.alldens[net].mean()/max(G.alldens[G.mask & ~net].mean(), 1e-9):.2f} (the null: if the herds were just where the burning is, the two ratios would be equal); axial coherence inside {cohw:.2f} vs outside {cohout:.2f} (1 = one axis, 0 = every direction)", ""]
+            for u in sorted(U2, key=lambda u: u["uid"]):
+                L.append(f"[{u['uid']}] {u['seed']}: {u['from_place']} → {u['to_place']}" + (f"; {u['bundle_fronts']} long fronts 2024–25, first movement {u['onset']}, by month {u['months']}, {u['straight_km']} km straight-line" if u.get("start") else "") + f"; band {u['km2']:,} km2 (draws p10/p50/p90 {u['km2_p10_p50_p90']}); long-front density ×{u['long_density_ratio']} outside, all fire ×{u['all_fire_ratio']} → excess {u['excess_over_burning']}; axial coherence {u['coherence_in']}")
+                L.append(fmt(u, full=True)); L.append("      rationale: " + " | ".join(u["rationale"][1:])); L.append("")
             txt = "\n".join(L); print(txt); (OUT / "OPTIMIZE_corridor.txt").write_text(txt + "\n")
-            json.dump({"type": "FeatureCollection", "features": [{"type": "Feature", "properties": {k: (json.dumps(v) if isinstance(v, (list, dict)) else v) for k, v in u.items()}, "geometry": mapping(polys[1])}]}, open(OUT / "optimize_corridor.geojson", "w"))
-            (OUT / "optimize_corridor.kml").write_text(kml_doc([(f"corridor proposal ({u['area_ha']:,} ha)", desc_of(u), polys[1], "corridor")]))
+            json.dump({"type": "FeatureCollection", "features": [{"type": "Feature", "properties": {k: (json.dumps(v) if isinstance(v, (list, dict)) else v) for k, v in u.items()}, "geometry": mapping(polys[u["uid"]])} for u in U2 if u["uid"] in polys]}, open(OUT / "optimize_corridor.geojson", "w"))
+            (OUT / "optimize_corridor.kml").write_text(kml_doc([(f"corridor branch {u['uid']}: {u['seed']} ({u['area_ha']:,} ha)", desc_of(u), polys[u["uid"]], "corridor") for u in U2 if u["uid"] in polys]))
             return
         OBJ_TARGET_HA["community"] = a.cons_target_ha
-        mesh = st.get("labf", lab1) if want == "community" else lab1     # conservancies grow from the village-scale mesh
+        # every class grows from the FINE mesh. Growing core from the coarse lab1 left 3,700 km2 (24%) of the drawn park out of
+        # core #1: two 5,500 km2 Busseri/Bo units straddled the park edge, and their 1,900 people OUTSIDE the park made the whole
+        # unit 'wilderness', so the empty park land inside them could never be added. Fine units follow the edge.
+        mesh = st.get("labf", lab1)
         if a.rim_km and park is not None:      # rim: only fine units within rim_km of the park may be used
             from scipy import ndimage
             far = ndimage.distance_transform_edt(~G.rasterize([(transform(FWD, park), 1)]).astype(bool))*G.res/1000 > a.rim_km
@@ -1418,8 +1677,8 @@ def main():
         out = []
         for u in sorted(A, key=lambda u: (0 if u["name"].startswith("PROPOSAL") else 1 if u["name"].startswith("PLAN") else 2, -u["area_km2"])):
             pp = extra.get(u["name"], {})
-            for k in ("support_mean", "area_ha_p10_p50_p90", "contested_units"):
-                if k in pp: u[k] = json.loads(pp[k]) if isinstance(pp[k], str) and pp[k].startswith("[") else pp[k]
+            for k in ("support_mean", "area_ha_p10_p50_p90", "contested_units", "from_place", "to_place", "bundle_fronts", "onset", "months", "straight_km", "km2", "km2_p10_p50_p90", "long_density_ratio", "all_fire_ratio", "excess_over_burning", "coherence_in"):
+                if k in pp: u[k] = json.loads(pp[k]) if isinstance(pp[k], str) and pp[k][:1] in "[{" else pp[k]
             kind, legal = area_kind(u["name"])
             if u["name"].startswith("PROPOSAL"):
                 w = next((c for c in CLASSES if c in u["name"]), "")
@@ -1430,6 +1689,7 @@ def main():
             txt = narrate(u, gz, kind, legal); L.append(txt); L.append("")
             out.append(dict(name=u["name"], kind=kind, legal=legal, text=txt, measured={k: v for k, v in u.items() if k not in ("front_dirs_all",)}))
         txt = "\n".join(L); print(txt); (OUT / "AREAS.txt").write_text(txt + "\n"); json.dump(out, open(OUT / "areas.json", "w"), ensure_ascii=False, indent=1)
+    elif a.mode == "teams": teams_mode(sqlite3.connect(DB), st["G"], references(), a.fp_min_pop)
     elif a.mode == "show": print(fmt(next(u for u in U if u["uid"] == int(a.arg)), full=True))
     elif a.mode == "export":
         ids = [int(x) for x in a.arg.split(",")]; by = {u["uid"]: u for u in U}

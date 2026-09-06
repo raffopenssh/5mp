@@ -77,7 +77,10 @@ FRAME_PAD_DEG = 0.35
 # PANEL_W_IN, so widening the column re-wraps every note instead of letting
 # it run off the sheet.
 MAP_W_IN = 15.5
-PANEL_W_IN = 8.9
+PANEL_W_IN = 2.55          # one legend COLUMN; the legend is an inset card in the map's empty east strip
+PANEL_SCALE = 0.62
+LEGEND_COMPACT = True      # rows = symbol + a few words; every explanation lives in the report / docs, not on the sheet
+LANDSCAPE_ASPECT = 1.414   # A-series landscape: the map frame is widened (east, where the AOI is blank) to this ratio         # every legend font size is multiplied by this (2026-09-06: the map carries the page, the key serves it)
 
 # ---------------------------------------------------------------- palette
 # Light theme, matching the report's own SVG maps (srv/templates/globe.html
@@ -348,6 +351,43 @@ def unserved_belt(setl, sites, reach, min_pop=2000, reach_km=40.0):
     return dict(towns=far, people=int(sum(t[2] for t in far)),
                 clusters=len(far), min_pop=min_pop, reach_km=reach_km)
 
+def load_density(pdir):
+    """Print-scale LOD: the built-up km² and reviewed-clearing km² per 2 km cell that the planner's cells() computed
+    (state.pkl). At this sheet's scale a settlement footprint or a GLAD patch is 0.7 px — the sub-pixel stipple lod.md
+    warns about — so the honest print layer is DENSITY, not polygons. Returns dict(built=2D km², clear=2D km²,
+    extent=(x0,x1,y0,y1) in lon/lat, tr) or None if the planner has not been built."""
+    import pickle
+    sp = pdir / "state.pkl"
+    if not sp.exists():
+        return None
+    import plan_conservancy_units as P   # for Grid unpickling
+    import __main__
+    __main__.Grid = P.Grid
+    st = pickle.load(open(sp, "rb")); G = st["G"]; C = G.C
+    # re-project the CEA grid to lon/lat by nearest sampling onto a lon/lat grid of the same cell count
+    inv = pyproj.Transformer.from_crs(P.CEA, 4326, always_xy=True).transform
+    xs = G.x0 + (np.arange(G.w) + 0.5) * G.res; ys = G.y1 - (np.arange(G.h) + 0.5) * G.res
+    lon_edges = inv(np.array([G.x0, G.x0 + G.w * G.res]), np.array([ys[0], ys[0]]))[0]
+    lat_edges = inv(np.array([xs[0], xs[0]]), np.array([G.y1, G.y1 - G.h * G.res]))[1]
+    # CEA: lon is linear in x; lat is not linear in y → resample rows onto an even lat grid
+    lat_rows = inv(np.full(G.h, xs[0]), ys)[1]
+    even = np.linspace(lat_rows[0], lat_rows[-1], G.h)
+    idx = np.abs(lat_rows[None, :] - even[:, None]).argmin(1)
+    out = {k: np.asarray(C[k])[idx, :] for k in ("built", "clear", "clear20")}
+    out["clusters"] = np.asarray(C["clusters"])[idx, :]
+    out["extent"] = (float(lon_edges[0]), float(lon_edges[1]), float(lat_edges[1]), float(lat_edges[0]))
+    out["cell_km"] = G.res / 1000
+    return out
+
+
+def load_teams(pdir):
+    tp = pdir / "teams.geojson"
+    if not tp.exists():
+        return []
+    return [dict(f["properties"], lon=f["geometry"]["coordinates"][0], lat=f["geometry"]["coordinates"][1])
+            for f in json.load(open(tp))["features"]]
+
+
 def corridor_axis(st):
     """The NW-SE spine, drawn from the two corridor pins the authors sent.
 
@@ -534,7 +574,7 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
     # each pad by eye and the column drifted out of rhythm the moment a note
     # wrapped to a second line. Column geometry is derived from PANEL_W_IN, so
     # a wider sheet re-wraps instead of overflowing (root invariant 2).
-    SP = 0.055                 # inches: the vertical unit
+    SP = 0.055 * PANEL_SCALE   # inches: the vertical unit
     SYM_X = 0.030              # symbol centre, in axes fraction (0..1)
     TXT_X = 0.082              # label / note left edge
     LEAD = 1.38                # line leading
@@ -549,39 +589,46 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
         avail_in = PANEL_W_IN * (1.0 - x) - 0.12
         return max(24, int(avail_in / (EM * size * PT)))
 
-    def add(h, fn):
-        items.append((h, fn))
+    def add(h, fn, tag=""):
+        items.append((h, fn, tag))
 
     def text(txt, size=11.2, color=INK, weight="normal", x=0.0, style="normal",
-             lead=LEAD, gap=SP, wrap=True):
+             lead=LEAD, gap=SP, wrap=True, tag=""):
+        if LEGEND_COMPACT and tag == "blurb":
+            return 0.0
+        size *= PANEL_SCALE
         if wrap:
             import textwrap as _t
-            txt = "\n".join("\n".join(_t.wrap(p, wrap_chars(size, x)) or [""])
+            wc = wrap_chars(size, x) if tag != "footer" else int(MAP_W_IN / (EM * size * PT))
+            txt = "\n".join("\n".join(_t.wrap(p, wc) or [""])
                             for p in txt.split("\n"))
         n = txt.count("\n") + 1
         h = n * size * PT * lead + gap
         add(h, lambda ax, y, _t=txt: ax.text(
             x, y, _t, fontsize=size, color=color, weight=weight, style=style,
-            va="top", ha="left", transform=ax.transData, linespacing=lead))
+            va="top", ha="left", transform=ax.transData, linespacing=lead), tag)
         return h
 
     def head(txt, color=INK):
         """Section head: air above, hairline below, air under the line."""
-        add(SP * 3.4, lambda ax, y: None)
-        add(12.2 * PT * LEAD, lambda ax, y, _t=txt.upper(): ax.text(
-            0.0, y, _t, fontsize=12.2, color=color, weight="bold", va="top"))
+        add(SP * (1.2 if LEGEND_COMPACT else 3.4), lambda ax, y: None, tag="head")
+        add(12.2 * PANEL_SCALE * PT * LEAD, lambda ax, y, _t=txt.upper(): ax.text(
+            0.0, y, _t, fontsize=12.2 * PANEL_SCALE, color=MUTED, weight="bold", va="top"))
         add(SP * 1.5, lambda ax, y: ax.plot([0, 1], [y + SP * 0.35] * 2,
                                             color="#e2e2dc", lw=0.9,
                                             clip_on=False))
 
     def key(marker, label, mfc, mec, ms=9, mew=1.4, lw=0, ls="solid",
-            alpha=1.0, note=""):
+            alpha=1.0, note="", short=""):
+        if LEGEND_COMPACT:
+            label, note = (short or label), ""
         """One legend row: the symbol exactly as drawn on the map, then why.
 
         The note hangs under the label at the same left edge, so the symbol
         column stays a column and the eye can run down it.
         """
-        LS, NS = 10.6, 9.2
+        LS, NS = 10.6 * PANEL_SCALE, 9.2 * PANEL_SCALE
+        ms *= PANEL_SCALE; lw = lw * PANEL_SCALE if lw else lw
         import textwrap as _t
         nlines = (_t.wrap(note, wrap_chars(NS)) if note else [])
         h = LS * PT * LEAD + len(nlines) * NS * PT * 1.34 + SP * 0.85
@@ -605,21 +652,21 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
     # ---------------------------------------------------------------- title
     # The sheet is one of three EASY PIP documents and says so: a map that
     # travels without its report must still name the report it belongs to.
-    add(10.0 * PT * LEAD + SP * 0.6,
+    if not LEGEND_COMPACT: add(10.0 * PANEL_SCALE * PT * LEAD + SP * 0.6,
         lambda ax, y, _d=date: ax.text(
-            0.0, y, f"PRIORITY INTERVENTION PLAN  \u00b7  {_d}", fontsize=10.0,
+            0.0, y, f"PRIORITY INTERVENTION PLAN  \u00b7  {_d}", fontsize=10.0 * PANEL_SCALE,
             color=MUTED, weight="bold", va="top"))
-    text("PONGO\u2013WAU\u2013NUMATINNA", 26, GREEN, "bold", gap=SP * 0.5)
-    text("Proposed National Park \u2014 the assessment and the plan, on one map",
-         12.6, INK, gap=SP * 0.5)
+    text("PONGO\u2013WAU\u2013NUMATINNA", 22, GREEN, "bold", gap=SP * 0.4, tag="blurb")
+    text("Proposed national park \u2014 assessment, plan and zoning proposals",
+         11.0, INK, gap=SP * 0.6, tag="blurb")
     text(f"Western Bahr el Ghazal & Western Equatoria, South Sudan   \u00b7   "
          f"{fmt(P['area_km2'])} km\u00b2 as the boundary file draws it",
-         10.2, MUTED, gap=SP * 0.6)
+         10.2, MUTED, gap=SP * 0.6, tag="blurb")
     text("Reads with the Priority Intervention Plan report and its two-page "
          "summary. "
          "Everything drawn here is something those two documents argue about; "
          "nothing else is drawn.",
-         9.4, MUTED, style="italic", gap=SP)
+         9.4, MUTED, style="italic", gap=SP, tag="footer")
 
     # ---------------------------------------------------------------- legend
     # This is a LEGEND, not a summary. The argument - what the emptiness means,
@@ -632,14 +679,14 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
     head("Boundaries", GREEN)
     key("s", "The proposed park", "none", GREEN, lw=3.4)
     key("s", "Wilderness blocks around it \u2014 proposed, not park", "none",
-        GREEN_W, lw=1.6)
+        GREEN_W, lw=1.6, short="Proposed wilderness")
     key("s", "Southern National Park \u2014 already gazetted", "none", GREEN_E,
-        lw=2.0)
-    key("s", "Sustainable-grazing zones", "none", TAN, lw=1.6, ls=(0, (7, 4)))
+        lw=2.0, short="Southern NP (gazetted)")
+    key("s", "Sustainable-grazing zones", "none", TAN, lw=1.6, ls=(0, (7, 4)), short="Grazing zones (drawn)")
     key("_", "Corridor axis, as the two map pins imply it", "none", PLAN,
         lw=2.4, ls=(0, (5, 2)),
         note=f"we were sent markers {C['pins_apart_km']:g} km apart, "
-             f"not a polygon")
+             f"not a polygon", short="Corridor axis (two pins)")
     if unmatched:
         key("s", "Shape with no assigned role", "none", "#999", lw=1.2,
             ls=(0, (1, 2)), note="; ".join(sorted(set(unmatched))))
@@ -648,64 +695,71 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
          f"{fmt(SH['union_km2'])} km\u00b2 between them. Their areas sum to "
          f"{fmt(SH['sum_of_areas_km2'])} km\u00b2 because they are nested: "
          f"{fmt(SH['overlap_km2'])} km\u00b2 lies under more than one.",
-         9.4, MUTED, style="italic", x=TXT_X, gap=SP)
+         9.4, MUTED, style="italic", x=TXT_X, gap=SP, tag="blurb")
 
-    head("What is happening on the ground", GREEN)
+    head("On the ground", GREEN)
     key("_", "One hairline = one fire front, 2024\u20132026", "none", RED,
         lw=1.4, alpha=0.55,
         note=f"{fmt(len(fire))} of them in frame \u2014 the depth of the wash "
-             f"is the density, not one big fire")
+             f"is the density, not one big fire", short="Fire front 2024\u201326 (one hairline)")
+    if planner_n:
+        key("s", "Built-up density, km\u00b2 per 2 km cell (amber wash)", ORANGE, ORANGE, ms=8, mew=0.5, alpha=0.6,
+            note="GHSL footprints summed per cell \u2014 a footprint is 0.7 px at this scale, so density is drawn, not shapes; dots are towns \u2265 500 people", short="Built-up km\u00b2 per 2 km cell")
+        key("s", "Clearing density, km\u00b2 per 2 km cell (magenta wash)", "#b0186b", "#b0186b", ms=8, mew=0.5, alpha=0.6,
+            note="reviewed Hansen/GLAD loss events since 2000, area summed per cell", short="Clearing km\u00b2 per 2 km cell")
     key("o", "Settlement, area \u221d people", ORANGE, "#9a5d00", ms=9, mew=0.5,
-        note="a satellite estimate and a lower bound, never a census")
+        note="a satellite estimate and a lower bound, never a census", short="Town \u2265 500 people, area \u221d people")
     key("_", "Trunk rivers", "none", BLUE, lw=1.4)
 
-    head("Gold prospectivity", GOLD)
+    head("Gold", GOLD)
     key("s", "Top 5% of ground by model score", GOLD, GOLD, ms=9, mew=1.0,
         note=f"drawn only within {gold_clip_km:g} km of the proposed shapes \u2014 "
-             f"blank elsewhere means NOT DRAWN, not scored low")
+             f"blank elsewhere means NOT DRAWN, not scored low", short="Gold model top 5% (target, not mine)")
     key("^", "Imagery target \u2014 somewhere to look, never a mine", "none",
-        GOLD, ms=9)
+        GOLD, ms=9, short="Imagery target")
     key("D", "Reported working (OSM / Crisis Tracker)", GOLD, "#4a3a0a", ms=6,
-        mew=0.6)
+        mew=0.6, short="Reported working")
     add(SP * 0.9, lambda ax, y: None)
-    text(G["verdict"], 9.2, "#8a5a00", style="italic", x=TXT_X, gap=SP)
+    text(G["verdict"], 9.2, "#8a5a00", style="italic", x=TXT_X, gap=SP, tag="blurb")
 
     if planner_n:
         # planner layers are drawn only with --planner; the legend says what they are and how sure the machine is
         n_prop = planner_n
-        head("Zoning planner (machine proposals)", "#6a2c8f")
-        key("s", "Core \u2014 empty land the rule calls park-grade", "none", "#1b5e20", lw=2.4)
-        key("s", "Corridor the herds actually walk (support \u2265 0.5)", "none", "#b3261e", lw=1.4)
+        head("Zoning proposals (machine)", "#6a2c8f")
+        key("s", "Core \u2014 empty land the rule calls park-grade", "none", "#1b5e20", lw=2.4, short="Core proposal (park-grade)")
+        key("s", "Corridor network the herds actually walk (support \u2265 0.5)", "none", "#b3261e", lw=1.4,
+            note="one branch per origin\u2013destination bundle of the long transhumance fronts; each labelled from \u2192 to, fronts, onset month", short="Herd corridor branch (walked)")
         key("s", "Community conservancy proposal (s.14)", "none", "#6a2c8f", lw=1.6,
             note="hatched; grown from the village mesh on the park rim (80 km) and from the boom towns, "
-                 "never inside the park or Southern NP")
-        key("_", "Legible mesh \u2014 rivers, ridges, 1930s boundaries, roads", "none", "#5a5a5a", lw=0.5, alpha=0.7)
+                 "never inside the park or Southern NP", short="Conservancy proposal")
+        key("_", "Legible mesh \u2014 rivers, swamp edges, ridges, khors, roads, 1930s district lines", "none", "#5a5a5a", lw=0.5, alpha=0.7, short="Legible mesh (rivers, ridges, swamps\u2026)")
+        key("*", "Focal point (1 person) \u2014 county / boom town", "#0b7285", "white", ms=15, mew=1.0, short="Focal point (1)")
+        key("s", "ECHO team (2) \u2014 in the conservancy's largest village with water", "#0b7285", "white", ms=9, mew=1.0, short="ECHO team (2), in the conservancy")
+        key("^", "TANGO team (2) \u2014 where a herd branch meets villages and water", "#0b7285", "white", ms=10, mew=1.0,
+            note="placements and their reasons: data/plan_zones/conservancy_units/TEAMS.txt", short="TANGO team (2), on the herd branch")
         add(SP * 0.9, lambda ax, y: None)
         text(f"{n_prop} proposals labelled with hectares, GHSL people and support = share of "
              f"perturbed runs (thresholds \u00b125%) that keep the land inside. Each is measured with the same "
              f"rasters as the drawn zones; the text is in data/plan_zones/conservancy_units/AREAS.txt.",
-             9.2, MUTED, style="italic", x=TXT_X, gap=SP)
+             9.2, MUTED, style="italic", x=TXT_X, gap=SP, tag="blurb")
 
-    head("The plan", PLAN)
-    key("s", "Anchor station \u2014 staffed", PLAN, "white", ms=10, mew=1.3)
-    key("o", "Seasonal outreach only", "white", PLAN, ms=9, mew=1.9)
-    key("*", "Town focal point", PLAN, "white", ms=19, mew=1.2)
+    head("EASY plan sites", PLAN)
+    key("s", "Anchor station \u2014 staffed", PLAN, "white", ms=10, mew=1.3, short="Plan site: anchor")
+    key("o", "Seasonal outreach only", "white", PLAN, ms=9, mew=1.9, short="Plan site: seasonal")
+    key("*", "Town focal point", PLAN, "white", ms=19, mew=1.2, short="Plan focal point")
     key("o", "Town no site in the plan reaches", "none", "#8a2020",
         ms=11, mew=1.7,
         note=(f"{fmt(belt['people'])} people in {belt['clusters']} towns of "
               f"{fmt(belt['min_pop'])}+ beside the proposed area, all further "
               f"than {belt['reach_km']:g} km from every site"
               if belt else "none: every town of "
-                           f"{fmt(2000)}+ beside the area is within reach"))
+                           f"{fmt(2000)}+ beside the area is within reach"), short="Town >40 km from any plan site")
     add(SP * 0.9, lambda ax, y: None)
     text("A tilde after a site name means the assessment could not confirm its "
          "position on the ground.", 9.4, MUTED, style="italic", x=TXT_X,
-         gap=SP)
+         gap=SP, tag="blurb")
 
     # ------------------------------------------------------------ provenance
-    add(SP * 2.6, lambda ax, y: None)
-    add(SP * 1.4, lambda ax, y: ax.plot([0, 1], [y] * 2, color="#e2e2dc",
-                                        lw=0.9, clip_on=False))
     text(
         f"Sources.  Boundaries: the {SH['n_files']} KML files as received, "
         f"re-measured. Fire: VIIRS via NASA FIRMS, grouped into fronts by this "
@@ -715,16 +769,16 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
         f"Hansen/GLAD loss, verified subset. Gold: this project's model, "
         f"trained on {G['n_anchors']} known workings from OSM and Crisis "
         f"Tracker.",
-        8.4, MUTED, lead=1.48, gap=SP * 0.7)
-    text("Every figure on this sheet is generated from "
-         "data/eval/pip_facts.json \u2014 the same file the PIP report and the "
-         "two-page summary read. None is typed by hand.",
-         8.4, MUTED, style="italic", lead=1.48, gap=0.0)
+        8.4, MUTED, lead=1.48, gap=SP * 0.7, tag="footer")
+    text(f"Every figure on this sheet is generated from "
+         f"data/eval/pip_facts.json \u2014 the same file the PIP report and the "
+         f"two-page summary read. None is typed by hand. Sheet date {date}.",
+         8.4, MUTED, style="italic", lead=1.48, gap=0.0, tag="footer")
     return items
 
 
 def panel_height_in(items):
-    return sum(h for h, _ in items)
+    return sum(it[0] for it in items)
 
 
 def draw_panel(fig, items, x_in, w_in, fig_w, fig_h, top_pad=0.10):
@@ -742,9 +796,68 @@ def draw_panel(fig, items, x_in, w_in, fig_w, fig_h, top_pad=0.10):
     ax.set_ylim(h_in, 0)
     ax.axis("off")
     y = top_pad
-    for h, fn in items:
+    for h, fn, *_ in items:
         fn(ax, y)
         y += h
+
+
+def draw_inset_legend(fig, ax_map, items, n_cols=1, col_w_in=PANEL_W_IN, gutter_in=0.28, pad_in=0.18, x_in=0.30, y_in=0.30, anchor="ne"):
+    """The legend as a MAP INSET, not a second document beside the map.
+
+    The same measured items (each knows its height in inches) are flowed into n_cols columns, breaking only at section
+    heads so a key never splits from its title, balanced so the columns end within one block of each other. The card
+    sits in the lower-left of the map frame on a translucent paper panel with a hairline — a report figure keeps its
+    margins, and the map fills the sheet. The title block spans the columns."""
+    # split: the title block (everything before the first head) spans; the rest is flowed into columns
+    footer = [it for it in items if len(it) > 2 and it[2] == "footer"]
+    items = [it for it in items if not (len(it) > 2 and it[2] == "footer")]
+    first_head = next((i for i, it in enumerate(items) if len(it) > 2 and it[2] == "head"), len(items))
+    title, rest = items[:first_head], items[first_head:]
+    blocks, cur = [], []
+    for it in rest:
+        if len(it) > 2 and it[2] == "head" and cur:
+            blocks.append(cur); cur = []
+        cur.append(it)
+    if cur: blocks.append(cur)
+    bh = [sum(it[0] for it in b) for b in blocks]
+    # balanced greedy fill: each block goes to the column whose height would end up lowest
+    cols = [[] for _ in range(n_cols)]; ch = [0.0] * n_cols
+    for b, h in zip(blocks, bh):
+        k = int(np.argmin(ch)); cols[k].append(b); ch[k] += h
+    title_h = sum(it[0] for it in title)
+    card_w = pad_in * 2 + n_cols * col_w_in + (n_cols - 1) * gutter_in
+    card_h = pad_in * 2 + title_h + max(ch)
+    fig_w, fig_h = fig.get_size_inches()
+    bb = ax_map.get_position()                       # map axes in figure fraction
+    if anchor == "ne":
+        x0 = bb.x1 - (x_in + card_w) / fig_w; y0 = bb.y1 - (y_in + card_h) / fig_h
+    else:
+        x0 = bb.x0 + x_in / fig_w; y0 = bb.y0 + y_in / fig_h
+    card = fig.add_axes([x0, y0, card_w / fig_w, card_h / fig_h])
+    card.set_xlim(0, card_w); card.set_ylim(card_h, 0); card.axis("off")
+    card.add_patch(Rectangle((0, 0), card_w, card_h, facecolor=PAPER, edgecolor="#c9c9c2", linewidth=0.8, alpha=0.96, zorder=0))
+    card.add_patch(Rectangle((0, 0), card_w, 0.05, facecolor=GREEN, edgecolor="none", zorder=1))   # a thin brand rule on top
+    def column(items_, x_left, y_top):
+        # a nested axes per column so the items' 0..1 x-coordinates map onto the column width
+        h = sum(it[0] for it in items_) or 0.01
+        ax = fig.add_axes([x0 + x_left / fig_w, y0 + (card_h - y_top - h) / fig_h, col_w_in / fig_w, h / fig_h])
+        ax.set_facecolor("none"); ax.set_xlim(0, 1); ax.set_ylim(h, 0); ax.axis("off")
+        y = 0.0
+        for hh, fn, *_ in items_:
+            fn(ax, y); y += hh
+    column(title, pad_in, pad_in + 0.05)
+    for k in range(n_cols):
+        flat = [it for b in cols[k] for it in b]
+        if flat: column(flat, pad_in + k * (col_w_in + gutter_in), pad_in + 0.05 + title_h)
+    # provenance as a footer strip under the map frame — read after the map, never competing with it
+    if footer:
+        fh = sum(it[0] for it in footer)
+        fx = fig.add_axes([bb.x0, bb.y0 - (fh + 0.06) / fig_h, bb.width, fh / fig_h])
+        fx.set_facecolor("none"); fx.set_xlim(0, 1); fx.set_ylim(fh, 0); fx.axis("off")
+        y = 0.0
+        for hh, fn, *_ in footer:
+            fn(fx, y); y += hh
+    return card_w, card_h
 
 
 def main():
@@ -776,6 +889,12 @@ def main():
     x0, y0, x1, y1 = frame
     midlat = (y0 + y1) / 2
     kx = math.cos(math.radians(midlat))
+    # report format: widen the frame to a landscape A-series ratio. The extra width goes EAST, where the study
+    # area's diagonal edge leaves the frame blank — that strip is where the legend card sits, off the map content.
+    need_w = (y1 - y0) * LANDSCAPE_ASPECT / kx
+    if need_w > (x1 - x0):
+        x1 = x0 + need_w
+        frame = (x0, y0, x1, y1)
 
     fire, fire_types, fire_years = load_fire(frame)
     setl = load_settlements(frame)
@@ -803,13 +922,11 @@ def main():
         planner_n = sum(len(json.load(open(f))["features"]) for f in Path(a.planner).parent.glob("optimize_*.geojson") if "support" not in f.name)
     items = panel_items(st, fire, sites, belt, unmatched, rim_km, rim_km,
                         a.date, planner_n)
-    panel_h = panel_height_in(items) + 0.30
-
     map_w_deg = (x1 - x0) * kx
     map_h_deg = (y1 - y0)
     MAP_H_IN = MAP_W_IN * map_h_deg / map_w_deg
-    FIG_W = MAP_W_IN + PANEL_W_IN + 0.35
-    FIG_H = max(MAP_H_IN, panel_h) + 0.24
+    FIG_W = MAP_W_IN + 0.24
+    FIG_H = MAP_H_IN + 0.24 + 0.55        # + provenance footer strip under the frame
 
     fig = plt.figure(figsize=(FIG_W, FIG_H), facecolor=PAPER)
     ax = fig.add_axes([0.12 / FIG_W, 1 - (0.12 + MAP_H_IN) / FIG_H,
@@ -839,6 +956,23 @@ def main():
     if rivers:
         ax.add_collection(LineCollection(rivers, colors=BLUE, linewidths=0.9,
                                          alpha=0.75, zorder=1.6))
+
+    # 2b. PRINT-SCALE LOD: built-up and clearing DENSITY per 2 km cell (planner rasters). Amber = built-up km²,
+    #     magenta = reviewed clearing km². A footprint polygon would be 0.7 px here; a density cell is legible,
+    #     and it is the same number the planner's rule reads.
+    dens = load_density(Path(a.planner).parent) if a.planner else None
+    if dens is not None:
+        from matplotlib.colors import LinearSegmentedColormap, PowerNorm
+        ext = dens["extent"]
+        for key, col, vmax in (("clear", "#b0186b", None), ("built", ORANGE, None)):
+            arr = np.array(dens[key], float); arr[arr <= 0] = np.nan
+            if not np.isfinite(arr).any():
+                continue
+            vmax = vmax or float(np.nanpercentile(arr, 98))
+            cmap = LinearSegmentedColormap.from_list(key, [(1, 1, 1, 0), col])
+            ax.imshow(arr, extent=ext, origin="upper", cmap=cmap, norm=PowerNorm(0.5, vmin=0, vmax=vmax),
+                      interpolation="nearest", alpha=0.85 if key == "clear" else 0.75, zorder=1.9 if key == "clear" else 1.95, aspect="auto")
+            dens[key + "_vmax"] = vmax
 
     # 3. THE FIRE MASS. One hairline per front at low alpha: the quantity the
     #    reader is meant to take away is DENSITY, not any single path.
@@ -913,15 +1047,26 @@ def main():
                                       hatch=st["hatch"], zorder=3.15):
                     p.set_alpha(0.6); ax.add_patch(p)
                 c = g.representative_point()
+                if cls == "corridor" and pr.get("from_place"):
+                    # a corridor branch is labelled with what operations need: where from, where to, how many herds, when
+                    nf = pr.get("bundle_fronts") or pr.get("fronts_long")
+                    planner_labels.append((c.x, c.y, f"{pr['from_place'].split(' (')[0]} \u2192 {pr['to_place'].split(' (')[0]} · {nf:,} herds · {pr.get('onset')}", st["ec"], 8.2))
+                    continue
                 sup = f" · support {pr['support_mean']}" if pr.get("support_mean") is not None else ""
                 towns = json.loads(pr["towns"]) if isinstance(pr.get("towns"), str) else (pr.get("towns") or [])
-                town = (" · " + towns[0].split(" (")[0].rsplit(" ", 1)[0].replace("*", "")) if towns else ""
+                # towns entries look like "Raga (Raja) 24,310" or "E. Kome* (nearest_place, unverified) 71,924": drop the trailing
+                # count and any qualifier in parentheses, keep the name
+                import re as _re
+                town = (" · " + _re.sub(r"\s[\d,]+$", "", towns[0]).split(" (")[0].replace("*", "").strip()) if towns else ""
                 nm = str(pr.get("seed", cls)).replace(" proposal", "") + ("" if "_" not in fp.stem.replace("optimize_", "") else f" ({fp.stem.split('_', 2)[2]})")
+                kha = pr['area_ha'] / 1000
                 planner_labels.append((c.x, c.y,
-                                       f"{nm}{town}\n{pr['area_ha']:,} ha · {pr['population_est']:,} ppl{sup}",
-                                       st["ec"], 9.5))
+                                       f"{town.strip(' ·') or nm} · {kha:,.0f}k ha · {pr['population_est']:,} ppl",
+                                       st["ec"], 8.6))
 
     # 5. settlements: area by population, so an empty interior reads as empty
+    if setl and dens is not None:
+        setl = [r for r in setl if (r[2] or 0) >= 500]    # the raster carries the hamlets; dots are towns only
     if setl:
         lons = np.array([r[1] for r in setl])
         lats = np.array([r[0] for r in setl])
@@ -960,6 +1105,15 @@ def main():
             ax.plot(s["lon"], s["lat"], marker="o", ms=10, mfc="white",
                     mec=PLAN, mew=1.9, zorder=5.4)
 
+    # 7b. TEAMS as the planner places them (teams.geojson): FP = one person, star; ECHO = two, filled square in the
+    #     conservancy's village; TANGO = two, triangle where the herd branch meets villages and water.
+    teams = load_teams(Path(a.planner).parent) if a.planner else []
+    TEAM_C = "#0b7285"
+    for t in teams:
+        mk = {"FP": "*", "ECHO": "s", "TANGO": "^"}[t["kind"]]
+        ms = {"FP": 20, "ECHO": 10, "TANGO": 11}[t["kind"]]
+        ax.plot(t["lon"], t["lat"], marker=mk, ms=ms, mfc=TEAM_C, mec="white", mew=1.2, zorder=5.6)
+
     # The audience no site in the plan can reach. Ringed WHERE THEY ARE: an
     # earlier version put one marker at the population-weighted centre of the
     # set, which invented a place that is not a town and sat in ground where
@@ -994,6 +1148,8 @@ def main():
     for s in sites:
         tag = s["name"] + (" ~" if s["approx"] else "")
         label_pts.append((s["lon"], s["lat"], tag, PLAN, 12.5, "bold"))
+    for t in teams:
+        label_pts.append((t["lon"], t["lat"], f"{t['kind']} \u00b7 {t['place'].replace('near ', '').split(' (')[0].replace('*', '')}", TEAM_C, 9.4, "bold"))
     if belt:
         big = max(belt["towns"], key=lambda t: t[2])
         label_pts.append((big[0], big[1],
@@ -1013,10 +1169,13 @@ def main():
         sz = 15 if role == "park" else 11
         lab = short_name(nm).upper().replace(" NATIONAL-PARK", "")
         area_entries.append((c.x, c.y, lab, col, sz))
-    area_boxes = draw_area_labels(fig, ax, area_entries + planner_labels)
+    area_boxes = draw_area_labels(fig, ax, area_entries)
+    # planner proposals are labelled like sites: one short line, routed around everything already placed
+    for lon_, lat_, txt_, col_, sz_ in planner_labels:
+        label_pts.append((lon_, lat_, txt_, col_, sz_, "bold"))
 
     place_labels(fig, ax, label_pts,
-                 avoid=[(s["lon"], s["lat"]) for s in sites]
+                 avoid=[(s["lon"], s["lat"]) for s in sites] + [(t["lon"], t["lat"]) for t in teams]
                  + ([(t[0], t[1]) for t in belt["towns"]] if belt else []),
                  reserved=area_boxes)
 
@@ -1024,14 +1183,14 @@ def main():
     draw_graticule(ax, frame, kx)
     span_km = (x1 - x0) * kx * 111.0
     bar_km = next((k for k in (50, 100, 200, 300) if 0.12 < k / span_km < 0.32), 100)
-    draw_scalebar(ax, frame, kx, bar_km)
-    nx_, ny_ = x1 - (x1 - x0) * 0.045, y1 - (y1 - y0) * 0.10
+    draw_scalebar(ax, frame, kx, bar_km, x_frac=0.74)     # lower-right; the legend card holds the lower-left
+    nx_, ny_ = x1 - (x1 - x0) * 0.035, y0 + (y1 - y0) * 0.10
     ax.annotate("", xy=(nx_, ny_ + (y1 - y0) * 0.055), xytext=(nx_, ny_),
                 arrowprops=dict(arrowstyle="-|>", color=INK, lw=2.0), zorder=6.2)
     ax.text(nx_, ny_ - (y1 - y0) * 0.018, "N", fontsize=13, weight="bold",
             color=INK, ha="center", zorder=6.2)
 
-    draw_panel(fig, items, 0.12 + MAP_W_IN + 0.30, PANEL_W_IN, FIG_W, FIG_H)
+    draw_inset_legend(fig, ax, items)
 
     fig.savefig(a.out, dpi=a.dpi, facecolor=PAPER)
     print("wrote", a.out)
