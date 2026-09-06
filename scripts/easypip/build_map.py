@@ -538,15 +538,18 @@ def graduated_cells(dens, key, color, shape="square", vmax_pct=98, zorder=2.14, 
     return [PatchCollection(patches, facecolors=rgba, edgecolor=PAPER, linewidths=0.25, zorder=zorder)]
 
 
-TOWN_RIM = "#5a3200"
+TOWN_RIM = "#9a5d00"
 
 
 def town_symbol(ax, x, y, s, zorder=4.0, **kw):
-    """The topo-sheet town mark: a dark ring, a paper gap, an amber core - three concentric discs. A built-up cell
-    under it is a rimless amber disc, so on a black-and-white copy (hue gone) the town is still the one with the ring."""
+    """The town mark: an amber disc with a fine dark rim, sitting in a soft paper glow. A built-up cell under it is
+    a rimless amber disc laid straight on the wash, so on a black-and-white copy (hue gone) the town is still the
+    one lifted off the ground by its halo. snap=False keeps the layered discs concentric (independent pixel
+    snapping drifts them half a pixel apart)."""
     s = np.asarray(s, float)
-    ax.scatter(x, y, s=s, c=PAPER, edgecolors=TOWN_RIM, linewidths=0.45, zorder=zorder, **kw)
-    ax.scatter(x, y, s=s * 0.50, c=ORANGE, edgecolors="none", zorder=zorder + 0.01, **kw)
+    for k, a in ((2.6, 0.22), (1.9, 0.38), (1.4, 0.55)):      # three feathered rings = one soft glow
+        ax.scatter(x, y, s=s * k, c=PAPER, alpha=a, edgecolors="none", zorder=zorder, snap=False, **kw)
+    ax.scatter(x, y, s=s, c=ORANGE, edgecolors=TOWN_RIM, linewidths=0.4, zorder=zorder + 0.01, snap=False, **kw)
 
 
 def load_teams(pdir):
@@ -861,7 +864,7 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
                         lw=lw, ls=ls, alpha=alpha, clip_on=False,
                         solid_capstyle="butt")
             elif swatch == "town":   # the town mark, from the routine that draws it on the map
-                town_symbol(ax, [SYM_X], [yc], [ms ** 2], clip_on=False)
+                town_symbol(ax, [SYM_X], [yc], [(ms * 0.8) ** 2], clip_on=False)
             elif swatch == "cells":   # graduated cells: three squares small→large, exactly the map's clearing mark
                 for xo, f in ((-0.022, 0.36), (-0.008, 0.64), (0.012, 1.0)):   # markers are sized in points, so they keep their shape
                     ax.plot([SYM_X + xo], [yc], marker=marker, ms=ms * f, mfc=mfc, mec=PAPER,
@@ -953,7 +956,7 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
     if planner_n and dens_drawn:   # a legend row may only describe a layer that is actually drawn
         key("o", "Built-up, km\u00b2 per 2 km cell (amber discs, size \u221d area)", ORANGE, ORANGE, swatch="cells", mew=0.25, alpha=0.92,
             note="GHSL footprints summed per cell \u2014 a footprint is 0.7 px at this scale, so density is drawn, not shapes; dots are towns \u2265 500 people", short="Built-up, cell size \u221d area")
-    key("o", "Town, area \u221d people (ringed dot)", ORANGE, TOWN_RIM, ms=9, swatch="town",
+    key("o", "Town, area \u221d people (amber dot in a paper glow)", ORANGE, TOWN_RIM, ms=9, swatch="town",
         note="a satellite estimate and a lower bound, never a census", short="Town, size \u221d people")
     if planner_n and dens_drawn:
         key("s", "Clearing, km\u00b2 per 2 km cell (indigo squares, size \u221d area)", CLEAR, CLEAR, swatch="cells", mew=0.25, alpha=0.92,
