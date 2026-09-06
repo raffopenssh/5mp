@@ -101,6 +101,127 @@ GOLD = "#8a6d1f"           # the gold flank
 BLUE = "#7cb8e8"           # rivers
 PLAN = "#1f4e9c"           # the plan's own furniture: sites, axis, asks
 
+# ------------------------------------------------------------ point symbols
+# One symbol grammar for the whole sheet, so it survives a black-and-white
+# photocopy: the GOLD subject is drawn with PICTOGRAPHS (Lucide glyphs, the
+# icon set the app itself uses), the PLAN / TEAMS with plain GEOMETRIC shapes
+# (square, triangle, star, circle; hollow = year 2). No shape appears in both
+# families, so colour is never the only thing telling them apart. Every point
+# mark is drawn at ONE visual size (SYM_PT, the box each glyph is fitted to);
+# the geometric shapes carry a per-shape factor so a triangle or star fills
+# the same box as a square rather than the same nominal `ms`.
+SYM_PT = 10.5                      # points: the side of the box every symbol fills
+SHAPE_MS = {"s": 0.86, "^": 1.10, "*": 1.34, "o": 0.95, "D": 0.80, "x": 0.95}
+LUCIDE_TTF = Path(__file__).resolve().parent / "fonts" / "lucide.ttf"
+LUCIDE_CSS = Path(__file__).resolve().parent / "fonts" / "lucide.css"
+# the gold family, by meaning → Lucide icon name; fallback = a geometric shape
+# no plan symbol uses, in case the font is missing
+GOLD_ICON = {"working": ("pickaxe", "D"), "target": ("scan-search", "P"), "watch": ("eye", "x"),
+             "unreached": ("map-pin-x", "X")}   # a town beyond every site/team: same pictograph family, its own colour
+UNREACHED_C = "#8a2020"
+_GLYPH_CACHE = {}
+
+
+def lucide_marker(name):
+    """A Lucide icon as a matplotlib marker Path, fitted to the unit box and
+    centred, or None when the font is not shipped beside this script."""
+    if name in _GLYPH_CACHE:
+        return _GLYPH_CACHE[name]
+    out = None
+    if LUCIDE_TTF.exists() and LUCIDE_CSS.exists():
+        import re
+        from matplotlib.textpath import TextPath
+        from matplotlib.font_manager import FontProperties
+        from matplotlib.transforms import Affine2D
+        m = re.search(r'\.icon-' + re.escape(name) + r'::before\s*{\s*content:\s*"\\([0-9a-f]+)"', LUCIDE_CSS.read_text())
+        if m:
+            p = TextPath((0, 0), chr(int(m.group(1), 16)), size=1, prop=FontProperties(fname=str(LUCIDE_TTF)))
+            b = p.get_extents()
+            s = 1.0 / max(b.width, b.height)
+            out = Affine2D().translate(-(b.x0 + b.x1) / 2, -(b.y0 + b.y1) / 2).scale(s).transform_path(p)
+    _GLYPH_CACHE[name] = out
+    return out
+
+
+def sym(kind_or_shape):
+    """(marker, ms, is_glyph) for a gold kind ('working'/'target'/'watch') or a geometric shape."""
+    if kind_or_shape in GOLD_ICON:
+        icon, fb = GOLD_ICON[kind_or_shape]
+        g = lucide_marker(icon)
+        return (g, SYM_PT * 1.18, True) if g is not None else (fb, SYM_PT * SHAPE_MS.get(fb, 1.0), False)
+    return kind_or_shape, SYM_PT * SHAPE_MS.get(kind_or_shape, 1.0), False
+
+
+def draw_sym(ax, x, y, kind, color, scale=1.0, hollow=False, halo=None, zorder=5, edge="white", **kw):
+    """Draw one point symbol at the sheet's single symbol size.
+
+    Glyphs (gold) are filled in `color` over a paper halo; geometric shapes
+    (teams / plan) are filled with a white rim, or hollow (white fill, coloured
+    rim) for the year-2 state."""
+    mk, ms, glyph = sym(kind)
+    ms *= scale
+    if glyph:
+        h = halo or PAPER
+        ax.plot([x], [y], marker=mk, ms=ms, mfc=h, mec=h, mew=2.6 * scale, ls="none", zorder=zorder - 0.01, **kw)
+        ax.plot([x], [y], marker=mk, ms=ms, mfc=color, mec=color, mew=0.45 * scale, ls="none", zorder=zorder, **kw)
+    elif hollow:
+        ax.plot([x], [y], marker=mk, ms=ms, mfc="white", mec=color, mew=1.4 * scale, ls="none", zorder=zorder, **kw)
+    else:
+        ax.plot([x], [y], marker=mk, ms=ms, mfc=color, mec=edge, mew=0.9 * scale, ls="none", zorder=zorder, **kw)
+
+
+def draw_marks(fig, ax, marks, gap=1.15):
+    """Draw queued point marks, spreading the ones that would overlap on the page.
+
+    Marks closer than one symbol box (SYM_PT) in display space are grouped
+    (single linkage, so a chain spreads as one row) and laid side by side along
+    a short horizontal row, `gap` symbol widths apart in points, centred on
+    the group's mean position. A star on a square, or a pickaxe on an eye, read
+    as one blot; the row keeps each glyph legible while the label still points
+    at the site. Row order is stable: gold subject, then plan/team by shape."""
+    from matplotlib.transforms import offset_copy
+    fig.canvas.draw()
+    box = SYM_PT * fig.dpi / 72 * 1.05
+    pts = [ax.transData.transform((m[0], m[1])) for m in marks]
+    parent = list(range(len(marks)))
+
+    def find(i):
+        while parent[i] != i:
+            parent[i] = parent[parent[i]]; i = parent[i]
+        return i
+    for i in range(len(marks)):
+        for j in range(i):
+            if abs(pts[i][0] - pts[j][0]) < box and abs(pts[i][1] - pts[j][1]) < box:
+                parent[find(i)] = find(j)
+    groups = {}
+    for i in range(len(marks)):
+        groups.setdefault(find(i), []).append(i)
+    order = {"working": 0, "target": 1, "watch": 2, "unreached": 3, "s": 4, "^": 5, "o": 6, "*": 7}
+    for idx in groups.values():
+        idx.sort(key=lambda i: (order.get(marks[i][2], 9), marks[i][0]))
+        n = len(idx)
+        if n == 1:
+            lon, lat, kind, color, hollow, z = marks[idx[0]]
+            draw_sym(ax, lon, lat, kind, color, hollow=hollow, zorder=z)
+            continue
+        # the row sits on a translucent paper plate with rounded ends (the cartographer's "group halo"), centred on
+        # the MEDIAN of the members' page positions so one outlier does not drag the plate off the site it names
+        from matplotlib.patches import FancyBboxPatch
+        from matplotlib.transforms import Affine2D, ScaledTranslation
+        import statistics
+        cx = statistics.median(pts[i][0] for i in idx); cy = statistics.median(pts[i][1] for i in idx)
+        clon, clat = ax.transData.inverted().transform((cx, cy))
+        # points-offset frame around the data point; lazy, so it survives savefig at another dpi and the PDF
+        T = Affine2D().scale(1 / 72) + fig.dpi_scale_trans + ScaledTranslation(clon, clat, ax.transData)
+        W, H = (n - 1) * SYM_PT * gap + SYM_PT, SYM_PT * 1.05
+        ax.add_patch(FancyBboxPatch((-W / 2, -H / 2), W, H, boxstyle=f"round,pad={SYM_PT * 0.22:.2f},rounding_size={SYM_PT * 0.6:.2f}",
+                                    transform=T, facecolor=PAPER, edgecolor="none", alpha=0.72,
+                                    zorder=min(marks[i][5] for i in idx) - 0.02))
+        for k, i in enumerate(idx):
+            _lon, _lat, kind, color, hollow, z = marks[i]
+            dx = (k - (n - 1) / 2) * SYM_PT * gap
+            tr = offset_copy(ax.transData, fig=fig, x=dx, y=0, units="points")
+            draw_sym(ax, clon, clat, kind, color, hollow=hollow, zorder=z, transform=tr)
 
 def eqa():
     return pyproj.Transformer.from_crs(4326, "+proj=cea", always_xy=True).transform
@@ -672,7 +793,7 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
                                             clip_on=False))
 
     def key(marker, label, mfc, mec, ms=9, mew=1.4, lw=0, ls="solid",
-            alpha=1.0, note="", short=""):
+            alpha=1.0, note="", short="", kind=None, color=None, hollow=False, swatch=False):
         if LEGEND_COMPACT:
             label, note = (short or label), ""
         """One legend row: the symbol exactly as drawn on the map, then why.
@@ -692,11 +813,18 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
                 ax.plot([SYM_X - 0.024, SYM_X + 0.024], [yc, yc], color=mec,
                         lw=lw, ls=ls, alpha=alpha, clip_on=False,
                         solid_capstyle="butt")
+            elif swatch:   # an AREA: a wide rectangle - never a square, which is a point symbol (ECHO team)
+                w, hh = 0.050, 0.62 * LS * PT
+                ax.add_patch(Rectangle((SYM_X - w / 2, yc - hh / 2), w, hh, facecolor=mfc, edgecolor=mec,
+                                       lw=mew, alpha=alpha, clip_on=False))
+            elif kind:   # a point symbol: the SAME routine that draws it on the map, at the SAME size
+                draw_sym(ax, SYM_X, yc, kind, color, hollow=hollow, clip_on=False)
             elif ms:
                 ax.plot([SYM_X], [yc], marker=marker, ms=ms, mfc=mfc, mec=mec,
                         mew=mew, alpha=alpha, clip_on=False)
-            ax.text(TXT_X, y, label, fontsize=LS, color=INK if ms or lw else MUTED, va="top",
-                    style="normal" if ms or lw else "italic")
+            live = ms or lw or kind
+            ax.text(TXT_X, y, label, fontsize=LS, color=INK if live else MUTED, va="top",
+                    style="normal" if live else "italic")
             if nlines:
                 ax.text(TXT_X, y + LS * PT * LEAD, "\n".join(nlines),
                         fontsize=NS, color=MUTED, va="top", style="italic",
@@ -763,22 +891,23 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
         note=f"{fmt(len(fire))} of them in frame \u2014 the depth of the wash "
              f"is the density, not one big fire", short="Fire front 2024\u201326")
     if planner_n:
-        key("s", "Built-up density, km\u00b2 per 2 km cell (amber wash)", ORANGE, ORANGE, ms=8, mew=0.5, alpha=0.6,
+        key("s", "Built-up density, km\u00b2 per 2 km cell (amber wash)", ORANGE, ORANGE, swatch=True, mew=0.5, alpha=0.6,
             note="GHSL footprints summed per cell \u2014 a footprint is 0.7 px at this scale, so density is drawn, not shapes; dots are towns \u2265 500 people", short="Built-up, per 2 km cell")
-        key("s", "Clearing density, km\u00b2 per 2 km cell (magenta wash)", "#b0186b", "#b0186b", ms=8, mew=0.5, alpha=0.6,
+        key("s", "Clearing density, km\u00b2 per 2 km cell (magenta wash)", "#b0186b", "#b0186b", swatch=True, mew=0.5, alpha=0.6,
             note="reviewed Hansen/GLAD loss events since 2000, area summed per cell", short="Clearing, per 2 km cell")
     key("o", "Settlement, area \u221d people", ORANGE, "#9a5d00", ms=9, mew=0.5,
         note="a satellite estimate and a lower bound, never a census", short="Town, size \u221d people")
     key("_", "Trunk rivers", "none", BLUE, lw=1.4)
 
     head("Gold", GOLD)
-    key("s", "Top 5% of ground by model score", GOLD, GOLD, ms=9, mew=1.0,
+    key("s", "Top 5% of ground by model score", GOLD, GOLD, swatch=True, mew=0.9, alpha=0.45,
         note=f"drawn only within {gold_clip_km:g} km of the proposed shapes \u2014 "
              f"blank elsewhere means NOT DRAWN, not scored low", short="Gold model top 5 %")
-    key("^", "Imagery target \u2014 somewhere to look, never a mine", "none",
-        GOLD, ms=9, short="Imagery target")
-    key("D", "Reported working (OSM / Crisis Tracker)", GOLD, "#4a3a0a", ms=6,
-        mew=0.6, short="Reported working")
+    key(None, "Imagery target \u2014 somewhere to look, never a mine", None, None,
+        kind="target", color=GOLD, short="Imagery target")
+    key(None, "Abandoned-village watchlist", None, None, kind="watch", color=GOLD, short="Village watchlist")
+    key(None, "Reported working (OSM / Crisis Tracker)", None, None, kind="working", color=GOLD,
+        short="Reported working")
     add(SP * 0.9, lambda ax, y: None)
     text(G["verdict"], 9.2, "#8a5a00", style="italic", x=TXT_X, gap=SP, tag="blurb")
 
@@ -787,13 +916,14 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
         n1 = sum(1 for t in deploy["teams"] if t["year"] == 1); n2 = sum(1 for t in deploy["teams"] if t["year"] == 2)
         head("Teams", TEAM_C)
         for c, w in (("community", "Community zone (ECHO)"), ("corridor", "Corridor zone (TANGO)")):
-            key("s", w, ZONE_C[c], ZONE_C[c], ms=8, mew=0.6, alpha=0.55, short=w)
+            key("s", w, ZONE_C[c], ZONE_C[c], swatch=True, mew=0.6, alpha=0.55, short=w)
         key("s", "Fill depth = evidence for the class (people / herd use)", "none", "none", ms=0, mew=0,
             short="deeper fill = stronger evidence")
-        key("*", "Focal point (1 person)", TEAM_C, "white", ms=13, mew=0.8, short="Focal point (1)")
-        key("s", "ECHO team (5)", TEAM_C, "white", ms=7.5, mew=0.8, short="ECHO team (5)")
-        key("^", "TANGO team (5)", TEAM_C, "white", ms=8.5, mew=0.8, short="TANGO team (5)")
-        key("^", "Year-2 team: hollow", "white", TEAM_C, ms=8.5, mew=1.2, short=f"hollow = year 2 ({n1} year 1, +{n2} year 2)")
+        key(None, "Focal point (1 person)", None, None, kind="*", color=TEAM_C, short="Focal point (1)")
+        key(None, "ECHO team (5)", None, None, kind="s", color=TEAM_C, short="ECHO team (5)")
+        key(None, "TANGO team (5)", None, None, kind="^", color=TEAM_C, short="TANGO team (5)")
+        key(None, "Year-2 team: hollow", None, None, kind="^", color=TEAM_C, hollow=True,
+            short=f"hollow = year 2 ({n1} year 1, +{n2} year 2)")
     elif planner_n:
         # planner layers are drawn only with --planner; the legend says what they are and how sure the machine is
         n_prop = planner_n
@@ -805,9 +935,9 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
             note="hatched; grown from the village mesh on the park rim (80 km) and from the boom towns, "
                  "never inside the park or Southern NP", short="Conservancy proposal")
         key("_", "Legible mesh \u2014 rivers, swamp edges, ridges, khors, roads, 1930s district lines", "none", "#5a5a5a", lw=0.5, alpha=0.7, short="Legible mesh (rivers, ridges, swamps\u2026)")
-        key("*", "Focal point (1 person) \u2014 county / boom town", "#0b7285", "white", ms=15, mew=1.0, short="Focal point (1)")
-        key("s", "ECHO team (2) \u2014 in the conservancy's largest village with water", "#0b7285", "white", ms=9, mew=1.0, short="ECHO team (2), in the conservancy")
-        key("^", "TANGO team (2) \u2014 where a herd branch meets villages and water", "#0b7285", "white", ms=10, mew=1.0,
+        key(None, "Focal point (1 person) \u2014 county / boom town", None, None, kind="*", color=TEAM_C, short="Focal point (1)")
+        key(None, "ECHO team (2) \u2014 in the conservancy's largest village with water", None, None, kind="s", color=TEAM_C, short="ECHO team (2), in the conservancy")
+        key(None, "TANGO team (2) \u2014 where a herd branch meets villages and water", None, None, kind="^", color=TEAM_C,
             note="placements and their reasons: data/plan_zones/conservancy_units/TEAMS.txt", short="TANGO team (2), on the herd branch")
         add(SP * 0.9, lambda ax, y: None)
         text(f"{n_prop} proposals labelled with hectares, GHSL people and support = share of "
@@ -817,20 +947,20 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
 
     if not deploy:
         head("EASY plan sites", PLAN)
-        key("s", "Anchor station \u2014 staffed", PLAN, "white", ms=10, mew=1.3, short="Plan site: anchor")
-        key("o", "Seasonal outreach only", "white", PLAN, ms=9, mew=1.9, short="Plan site: seasonal")
-        key("*", "Town focal point", PLAN, "white", ms=19, mew=1.2, short="Plan focal point")
-    if deploy:
-        key("s", "", "none", "none", ms=0, mew=0,
-            short=(f"{belt['clusters']} towns, {fmt(belt['people'])} people, >{belt['reach_km']:g} km from a team"
-                   if belt else "every town of 2,000+ within 40 km of a team"))
-    else: key("o", "Town no site in the plan reaches", "none", "#8a2020",
-        ms=11, mew=1.7,
+        key(None, "Anchor station \u2014 staffed", None, None, kind="s", color=PLAN, short="Plan site: anchor")
+        key(None, "Seasonal outreach only", None, None, kind="o", color=PLAN, hollow=True, short="Plan site: seasonal")
+        key(None, "Town focal point", None, None, kind="*", color=PLAN, short="Plan focal point")
+    key(None, "Town no site in the plan reaches", None, None, kind="unreached", color=UNREACHED_C,
         note=(f"{fmt(belt['people'])} people in {belt['clusters']} towns of "
               f"{fmt(belt['min_pop'])}+ beside the proposed area, all further "
               f"than {belt['reach_km']:g} km from every site"
               if belt else "none: every town of "
-                           f"{fmt(2000)}+ beside the area is within reach"), short=("Town >40 km from any team" if deploy else "Town >40 km from any plan site"))
+                           f"{fmt(2000)}+ beside the area is within reach"),
+        short=(f"Town >{belt['reach_km']:g} km from any {'team' if deploy else 'plan site'}" if belt
+               else f"every town of 2,000+ within reach of a {'team' if deploy else 'plan site'}"))
+    if deploy and belt:
+        key("s", "", "none", "none", ms=0, mew=0,
+            short=f"{belt['clusters']} towns, {fmt(belt['people'])} people, >{belt['reach_km']:g} km from a team")
     add(SP * 0.9, lambda ax, y: None)
     text("A tilde after a site name means the assessment could not confirm its "
          "position on the ground.", 9.4, MUTED, style="italic", x=TXT_X,
@@ -1235,6 +1365,10 @@ def main():
         ax.scatter(lons, lats, s=sizes, c=ORANGE, alpha=0.62,
                    edgecolors="#9a5d00", linewidths=0.25, zorder=4.0)
 
+    # Every POINT mark on the sheet (gold pictographs, plan sites, teams, unreached towns) is queued here and drawn
+    # once by draw_marks(), which spreads marks that would overlap on the page into a short row (see there).
+    marks = []                        # (lon, lat, kind, color, hollow, zorder)
+
     # 6. THE GOLD FLANK, clipped to the ask (see load_gold)
     if gold:
         if gold["top5"]:
@@ -1244,15 +1378,14 @@ def main():
         # the candidates are the sheet's mining subject: a paper halo under each mark so it stays legible on the
         # fire mass and inside the team-zone fills, and drawn above the team points (z 5.6) so nothing covers them
         gz = 5.8 if deploy else 4.5
+        # pictographs (Lucide): scan-search = imagery target, eye = watchlist village, pickaxe = reported working.
+        # The plan family is geometric, so the two read apart in greyscale (see SYM_PT).
         for lon, lat, _c in gold["candidates"]:
-            ax.plot(lon, lat, marker="^", ms=10.5, mfc="none", mec=PAPER, mew=3.2, zorder=gz - 0.01)
-            ax.plot(lon, lat, marker="^", ms=9, mfc="none", mec=GOLD, mew=1.6, zorder=gz)
+            marks.append((lon, lat, "target", GOLD, False, gz))
         for lon, lat, _n in gold["watchlist"]:
-            ax.plot(lon, lat, marker="x", ms=8.5, mec=PAPER, mew=3.0, zorder=gz - 0.01)
-            ax.plot(lon, lat, marker="x", ms=7.5, mec=GOLD, mew=1.6, zorder=gz)
+            marks.append((lon, lat, "watch", GOLD, False, gz))
         for lon, lat, _s in gold["anchors"]:
-            ax.plot(lon, lat, marker="D", ms=6, mfc=GOLD, mec="#4a3a0a",
-                    mew=0.6, zorder=gz + 0.1)
+            marks.append((lon, lat, "working", GOLD, False, gz + 0.1))
 
     # 7. THE PLAN. Sites carry the assessment's verdict in their symbol:
     #    a filled square is an anchor (a real audience), a hollow circle is a
@@ -1260,36 +1393,30 @@ def main():
     #    be able to see the recommendation without reading the panel.
     for s in ([] if deploy else sites):
         if s["kind"] == "focal":
-            ax.plot(s["lon"], s["lat"], marker="*", ms=26, mfc=PLAN,
-                    mec="white", mew=1.4, zorder=5.4)
+            marks.append((s["lon"], s["lat"], "*", PLAN, False, 5.4))
         elif s["verdict"] == "anchor":
-            ax.plot(s["lon"], s["lat"], marker="s", ms=11, mfc=PLAN,
-                    mec="white", mew=1.3, zorder=5.4)
+            marks.append((s["lon"], s["lat"], "s", PLAN, False, 5.4))
         else:
-            ax.plot(s["lon"], s["lat"], marker="o", ms=10, mfc="white",
-                    mec=PLAN, mew=1.9, zorder=5.4)
+            marks.append((s["lon"], s["lat"], "o", PLAN, True, 5.4))
 
     # 7b. TEAMS as the planner places them (teams.geojson): FP = one person, star; ECHO = two, filled square in the
     #     conservancy's village; TANGO = two, triangle where the herd branch meets villages and water.
     teams = deploy["teams"] if deploy else (load_teams(Path(a.planner).parent) if a.planner else [])
     for t in teams:
         mk = {"FP": "*", "ECHO": "s", "TANGO": "^"}[t["kind"]]
-        ms = ({"FP": 14, "ECHO": 7.5, "TANGO": 8.5} if deploy else {"FP": 20, "ECHO": 10, "TANGO": 11})[t["kind"]]
-        if deploy and t["year"] == 2:      # year-2 team: hollow — same symbol, same place logic, one year later
-            ax.plot(t["lon"], t["lat"], marker=mk, ms=ms, mfc="white", mec=TEAM_C, mew=1.3, zorder=5.6)
-        else:
-            ax.plot(t["lon"], t["lat"], marker=mk, ms=ms, mfc=TEAM_C, mec="white", mew=0.9, zorder=5.6)
+        # year-2 team: hollow — same symbol, same size, same place logic, one year later
+        marks.append((t["lon"], t["lat"], mk, TEAM_C, bool(deploy and t["year"] == 2), 5.6))
 
     # The audience no site in the plan can reach. Ringed WHERE THEY ARE: an
     # earlier version put one marker at the population-weighted centre of the
     # set, which invented a place that is not a town and sat in ground where
     # nobody lives. A scattered finding has to be drawn scattered.
-    if belt and not deploy:
-        ax.scatter([t[0] for t in belt["towns"]], [t[1] for t in belt["towns"]],
-                   s=[70 + 240 * (t[2] / max(x[2] for x in belt["towns"]))
-                      for t in belt["towns"]],
-                   facecolors="none", edgecolors="#8a2020", linewidths=1.7,
-                   alpha=0.85, zorder=5.5)
+    # One size for every mark on the sheet (SYM_PT); the town's people are in the legend total, not in the glyph.
+    if belt:
+        for t in belt["towns"]:
+            marks.append((t[0], t[1], "unreached", UNREACHED_C, False, 5.5))
+
+    draw_marks(fig, ax, marks)
 
     # the corridor: the axis the two pins encode, drawn as the ask it is
     if axis and not deploy:
@@ -1349,7 +1476,7 @@ def main():
 
     place_labels(fig, ax, label_pts,
                  avoid=[(s["lon"], s["lat"]) for s in ([] if deploy else sites)] + [(t["lon"], t["lat"]) for t in teams]
-                 + ([(t[0], t[1]) for t in belt["towns"]] if belt and not deploy else [])
+                 + ([(t[0], t[1]) for t in belt["towns"]] if belt else [])
                  + ([(g[0], g[1]) for g in gold["candidates"] + gold["watchlist"] + gold["anchors"]] if deploy and gold else []),
                  reserved=area_boxes)
 

@@ -220,6 +220,16 @@ square / triangle).
   Sudan corner.
 * Planner labels are one short line each and routed by `place_labels`
   (collision-avoiding) instead of centred on the polygon.
+* **One symbol grammar** (`SYM_PT`, `draw_sym`): every point mark is one visual
+  size; the gold subject uses Lucide pictographs (`scripts/easypip/fonts/`,
+  pickaxe / scan-search / eye / map-pin-x), teams and plan sites plain
+  geometric shapes (hollow = year 2), areas are wide swatches in the legend —
+  so it survives greyscale. Legend rows call the same `draw_sym`.
+* **Spread, don't stack** (`draw_marks`): all point marks are queued and marks
+  closer than one symbol box *on the page* (single linkage) are laid in a
+  horizontal row on a translucent rounded paper plate centred on the group's
+  median page position. Group by display distance, never by rounded
+  coordinates.
 
 ## What Chinko taught (2026-09-05)
 
