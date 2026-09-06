@@ -453,6 +453,16 @@ Strahler. It is **not** the `basin` unit: mghydro/MERIT answers "what drains
 through here" and carries no river names; OSM answers "what is this called",
 which is what the narratives and KML folders key on. Both ship.
 
+**A `done` unit can predate its own fix.** `XSA_Study_Area/osm` finished
+2026-08-07 05:39 as "3/3 countries", two hours *before* 1867b10 taught
+`enrich_park_infra` the `append` mode — so countries 2 and 3 were no-ops and
+the AOI carried CAF roads only (12,956, all west of 27.5°E) until 2026-09-06.
+Nothing in the status table can show this; the tell was the data's extent
+against the bbox. Fix was a reset (`state='pending', cursor=NULL`) and a rerun:
+now 120,874 roads / 1,659 places across CAF+COD+SDN+SSD+TCD. When a runner
+unit's semantics change, check `last_run_at` of every `done` row against the
+commit and reset the stale ones — do not trust the state column.
+
 **AOIs are global since 2026-08-19** (Serra Bonita/BRA). `aoi_countries()`
 intersects the polygon with `data/world_countries.geojson` (NE 50m), and
 `osm_pbf.ensure_pbf` resolves non-African ISO3s via
