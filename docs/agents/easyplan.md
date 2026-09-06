@@ -11,6 +11,10 @@
    The xlsx is live formulae (VLOOKUP rates, SUMIF subtotals).
 3. **`reports/PIP_SUMMARY_EASY.txt`** (+ copy in `docs/plan/`) — Jinja render of
    `docs/plan/PIP_SUMMARY_template.txt`. Prose is prose; every number is `{{ }}`.
+4. **`reports/PIP_SUMMARY_EASY.pdf`** — `scripts/pip_pdf.py` (needs `python3-reportlab`): the .txt on
+   A4, all monospaced, prose re-wrapped; any table wider than a portrait line goes on a landscape
+   page of its own (ECHO/TANGO, jurisdiction). Tables are runs of 2-space-indented lines — keep that
+   indent in the template or the PDF will re-wrap them as prose.
 
 `--check` exits 1 if the summary on disk differs from a fresh render (drift test).
 

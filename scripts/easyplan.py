@@ -20,6 +20,7 @@ the team→zone mapping comes from deploy.json, so a re-deploy moves the prose w
 """
 import argparse
 import json
+import shutil
 import re
 import sys
 from datetime import date
@@ -32,7 +33,7 @@ SOLVER = ROOT / "data/plan_zones/solver"
 PLAN = ROOT / "docs/plan/plan.yaml"
 TEMPLATE = ROOT / "docs/plan/PIP_SUMMARY_template.txt"
 FACTS = SOLVER / "facts.json"
-sys.path.insert(0, str(ROOT / "scripts/easybudget"))
+sys.path.insert(0, str(ROOT / "scripts/easybudget")); sys.path.insert(0, str(ROOT / "scripts"))
 
 
 def j(p):
@@ -235,6 +236,11 @@ def main():
         sys.exit("summary: DRIFT — re-run without --check")
     out.write_text(txt); (ROOT / "docs/plan/PIP_SUMMARY_EASY.txt").write_text(txt)
     print(f"summary: {out} ({len(txt.splitlines())} lines); facts: {FACTS}")
+    try:
+        import pip_pdf
+        pdf = pip_pdf.build(out, out.with_suffix('.pdf')); shutil.copy(pdf, ROOT / "docs/plan/PIP_SUMMARY_EASY.pdf"); print(f"pdf: {pdf}")
+    except ImportError as e:   # python3-reportlab missing — the .txt is still the authority
+        print(f"pdf: skipped ({e})")
 
 
 if __name__ == "__main__":
