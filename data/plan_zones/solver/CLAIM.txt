@@ -1,0 +1,3 @@
+CUSTOMARY CLAIM — 1930s Sudan Survey village symbols/labels (5,843 sites) against GHSL clusters today, per 2 km cell:
+  continuous (then and now) 622 cells; abandoned (1930s site, nobody now) 16,411; new (people now, nothing marked then) 1,486; empty then and now 101,880 (85% of the AOI).
+  Sheet coverage is partial (the CAR and DRC parts have no 1930s Sudan sheet): 'empty' there means unrecorded, and the per-unit summary says so.

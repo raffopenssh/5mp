@@ -1,0 +1,29 @@
+FRONTIER — 27 re-solves sweeping the CONSTRAINTS (per-bundle corridor capture q × core cap × people-in-corridor cap); weights fixed at defaults, never tuned; corridors = fixed candidate bands (buffered least-cost axes), options {"pa_edge_km": 5.0, "wild_buffer_km": 15.0, "axis_draws": 12, "axis_width_km": [8.0, 16.0], "capture": 0.5, "max_width_km": 16.0}. ★ = Pareto-efficient on (core km² ↑, herd UD in corridor ↑, people in corridor ↓, open-bush boundary km ↓).
+      q  core cap ha   ppl cap |  core km2  corr km2  comm km2 UD in corr ppl in corr herd-mo out open bush km  legib zones
+   0.25    3,000,000      None |    79,404    48,872   196,656       0.17      17,589       6,739        6,245   0.51   201
+   0.25    3,000,000      5000 | INFEASIBLE — at q=0.25 no plan puts fewer than 17,589 people on corridor land
+   0.25    3,000,000     20000 |    79,404    48,872   196,656       0.17      17,589       6,739        6,245   0.51   201
+   0.25    6,000,000      None |   110,192    48,956   184,048       0.17      17,589       6,737        5,605   0.53   186
+   0.25    6,000,000      5000 | INFEASIBLE — at q=0.25 no plan puts fewer than 17,589 people on corridor land
+   0.25    6,000,000     20000 |   110,192    48,956   184,048       0.17      17,589       6,737        5,605   0.53   186
+★  0.25    9,000,000      None |   141,536    48,956   183,340       0.17      17,589       6,737        5,367   0.54   169
+   0.25    9,000,000      5000 | INFEASIBLE — at q=0.25 no plan puts fewer than 17,589 people on corridor land
+★  0.25    9,000,000     20000 |   141,536    48,956   183,340       0.17      17,589       6,737        5,367   0.54   169
+★  0.35    3,000,000      None |    79,336    63,160   185,496       0.21      34,049       6,395        6,341   0.51   200
+   0.35    3,000,000      5000 | INFEASIBLE — at q=0.35 no plan puts fewer than 34,039 people on corridor land
+★  0.35    3,000,000     20000 |    79,336    63,160   185,496       0.21      34,049       6,395        6,341   0.51   200
+   0.35    6,000,000      None |   110,332    62,992   175,632       0.21      34,049       6,398        5,781   0.52   176
+   0.35    6,000,000      5000 | INFEASIBLE — at q=0.35 no plan puts fewer than 34,039 people on corridor land
+   0.35    6,000,000     20000 |   110,332    62,992   175,632       0.21      34,049       6,398        5,781   0.52   176
+★  0.35    9,000,000      None |   141,600    63,032   175,632       0.21      34,049       6,398        5,542   0.53   158
+   0.35    9,000,000      5000 | INFEASIBLE — at q=0.35 no plan puts fewer than 34,039 people on corridor land
+★  0.35    9,000,000     20000 |   141,600    63,032   175,632       0.21      34,049       6,398        5,542   0.53   158
+    0.5    3,000,000      None |    79,516   111,912   169,804       0.33      47,417       5,422        6,221   0.50   190
+    0.5    3,000,000      5000 | INFEASIBLE — at q=0.5 no plan puts fewer than 47,417 people on corridor land
+    0.5    3,000,000     20000 | INFEASIBLE — at q=0.5 no plan puts fewer than 47,417 people on corridor land
+★   0.5    6,000,000      None |   111,324   111,740   160,464       0.33      47,417       5,424        5,539   0.52   165
+    0.5    6,000,000      5000 | INFEASIBLE — at q=0.5 no plan puts fewer than 47,417 people on corridor land
+    0.5    6,000,000     20000 | INFEASIBLE — at q=0.5 no plan puts fewer than 47,417 people on corridor land
+★   0.5    9,000,000      None |   141,264   111,520   165,152       0.33      47,417       5,426        5,977   0.51   167
+    0.5    9,000,000      5000 | INFEASIBLE — at q=0.5 no plan puts fewer than 47,417 people on corridor land
+    0.5    9,000,000     20000 | INFEASIBLE — at q=0.5 no plan puts fewer than 47,417 people on corridor land

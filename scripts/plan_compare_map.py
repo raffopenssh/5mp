@@ -35,10 +35,13 @@ def authors_label(G, refs):
         m = G.rasterize([(transform(P.FWD, g), 1)]).astype(bool); zl[m] = np.where(zl[m] == 0, CLASSES.index(c) + 1, zl[m])
     return zl
 
-def draw_lab(ax, G, lab, extent, alpha=0.55, outlines=True):
+def draw_lab(ax, G, lab, extent, alpha=0.55, outlines=True, inten=None):
+    """inten (0–1 per pixel, solver only) becomes OPACITY: a pale class is one the evidence barely supports — a community unit with
+    nobody in it reads as unzoned white, a corridor reads as strong as the herd utilisation under it."""
     rgba = np.zeros((G.h, G.w, 4))
     for i, c in enumerate(CLASSES, 1):
-        m = lab == i; col = matplotlib.colors.to_rgba(COL[c], alpha); rgba[m] = col
+        m = lab == i; col = np.array(matplotlib.colors.to_rgba(COL[c], alpha)); rgba[m] = col
+        if inten is not None: rgba[m, 3] = 0.08 + 0.82 * np.clip(inten[m], 0, 1)
     ax.imshow(rgba, extent=extent, origin="upper", interpolation="nearest", zorder=2)
     # outline every zone (connected component of one class) so a conservancy's shape can be judged
     from scipy import ndimage
@@ -59,6 +62,7 @@ def main():
     st = pickle.load(open(P.OUT / "state.pkl", "rb")); G = st["G"]
     lab_s = np.load(SOLVER / f"solve{a.tag}_lab.npy"); refs = P.references(); lab_a = authors_label(G, refs)
     lab_s = np.where(G.mask, lab_s, 0); lab_a = np.where(G.mask, lab_a, 0)
+    inten = np.load(SOLVER / f"solve{a.tag}_intensity.npy") if (SOLVER / f"solve{a.tag}_intensity.npy").exists() else None
     cmp_ = json.load(open(SOLVER / f"compare{a.tag}.json")) if (SOLVER / f"compare{a.tag}.json").exists() else None
     # projected extent (CEA metres) → draw everything in CEA so the raster is axis-aligned
     extent = (G.x0, G.x0 + G.w * G.res, G.y1 - G.h * G.res, G.y1)
@@ -71,10 +75,10 @@ def main():
     towns = [(n, *P.FWD(lo, la)) for n, lo, la, t in P.osm_towns(con) if t in ("city", "town", "verified_town")]
     ctry = P.countries()
     fig, axs = plt.subplots(1, 2, figsize=(22, 11.5), dpi=a.dpi); fig.subplots_adjust(left=0.02, right=0.98, top=0.93, bottom=0.16, wspace=0.03)
-    titles = ["AUTHORS — drawn KML zones + gazetted WDPA (white = undrawn)", f"SOLVER — solve{a.tag} (every fine unit one class; ILP)"]
+    titles = ["AUTHORS — drawn KML zones + gazetted WDPA (white = undrawn)", f"SOLVER — solve{a.tag} (every fine unit one class; ILP). Opacity = evidence: emptiness for core/wilderness, people for community, herd utilisation for corridor"]
     zones_gj = json.load(open(SOLVER / f"zones{a.tag}.geojson"))["features"] if (SOLVER / f"zones{a.tag}.geojson").exists() else None
     for ax, lab, t in zip(axs, (lab_a, lab_s), titles):
-        ax.set_facecolor("white"); draw_lab(ax, G, lab, extent, outlines=not (lab is lab_s and zones_gj))
+        ax.set_facecolor("white"); draw_lab(ax, G, lab, extent, outlines=not (lab is lab_s and zones_gj), inten=inten if lab is lab_s else None)
         if lab is lab_s and zones_gj:                                   # the exported zones (community split into committee-sized pieces): their outlines
             for f in zones_gj:
                 c = f["properties"]["solver_class"]; gg = transform(P.FWD, shape(f["geometry"]))

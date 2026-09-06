@@ -1,0 +1,1468 @@
+{
+ "hold_season": 2025,
+ "sigma_km": 4.0,
+ "capture_default": 0.5,
+ "k": 16,
+ "fronts_fit": 8222,
+ "fronts_holdout": 4956,
+ "network_km2": 262872,
+ "network_share_of_aoi": 0.546,
+ "network_holdout_capture": 0.9,
+ "network_holdout_capture_null_allfire": 0.91,
+ "bundles": [
+  {
+   "bundle": 1,
+   "fronts_fit": 490,
+   "fronts_holdout": 248,
+   "start": [
+    23.655,
+    8.022
+   ],
+   "end": [
+    23.61,
+    7.275
+   ],
+   "straight_km": 83,
+   "onset": "10",
+   "months": {
+    "Oct": 2,
+    "Nov": 45,
+    "Dec": 114,
+    "Jan": 286,
+    "Feb": 37,
+    "Mar": 6
+   },
+   "band_km2": 30096,
+   "capture": 0.6,
+   "skill_curve": [
+    {
+     "q": 0.1,
+     "km2": 3048,
+     "aoi_share": 0.006,
+     "holdout_capture": 0.0,
+     "null_allfire": 0.0,
+     "skill": -0.006
+    },
+    {
+     "q": 0.2,
+     "km2": 6936,
+     "aoi_share": 0.014,
+     "holdout_capture": 0.04,
+     "null_allfire": 0.0,
+     "skill": 0.026
+    },
+    {
+     "q": 0.3,
+     "km2": 11540,
+     "aoi_share": 0.024,
+     "holdout_capture": 0.105,
+     "null_allfire": 0.0,
+     "skill": 0.081
+    },
+    {
+     "q": 0.4,
+     "km2": 16896,
+     "aoi_share": 0.035,
+     "holdout_capture": 0.238,
+     "null_allfire": 0.0,
+     "skill": 0.203
+    },
+    {
+     "q": 0.5,
+     "km2": 23036,
+     "aoi_share": 0.048,
+     "holdout_capture": 0.339,
+     "null_allfire": 0.0,
+     "skill": 0.291
+    },
+    {
+     "q": 0.6,
+     "km2": 30096,
+     "aoi_share": 0.062,
+     "holdout_capture": 0.524,
+     "null_allfire": 0.0,
+     "skill": 0.462
+    },
+    {
+     "q": 0.7,
+     "km2": 38752,
+     "aoi_share": 0.08,
+     "holdout_capture": 0.669,
+     "null_allfire": 0.0,
+     "skill": 0.589
+    },
+    {
+     "q": 0.8,
+     "km2": 50848,
+     "aoi_share": 0.106,
+     "holdout_capture": 0.774,
+     "null_allfire": 0.0,
+     "skill": 0.669
+    }
+   ],
+   "skill": 0.462,
+   "holdout_capture": 0.52,
+   "holdout_capture_null_allfire": 0.0,
+   "median_inside_share_holdout": 0.5,
+   "people_in_band": 34619
+  },
+  {
+   "bundle": 2,
+   "fronts_fit": 738,
+   "fronts_holdout": 577,
+   "start": [
+    24.105,
+    9.436
+   ],
+   "end": [
+    23.398,
+    9.603
+   ],
+   "straight_km": 80,
+   "onset": "10",
+   "months": {
+    "Oct": 62,
+    "Nov": 153,
+    "Dec": 201,
+    "Jan": 222,
+    "Feb": 81,
+    "Mar": 8,
+    "Apr": 7,
+    "May": 4
+   },
+   "band_km2": 22636,
+   "capture": 0.5,
+   "skill_curve": [
+    {
+     "q": 0.1,
+     "km2": 3244,
+     "aoi_share": 0.007,
+     "holdout_capture": 0.003,
+     "null_allfire": 0.0,
+     "skill": -0.003
+    },
+    {
+     "q": 0.2,
+     "km2": 7116,
+     "aoi_share": 0.015,
+     "holdout_capture": 0.064,
+     "null_allfire": 0.0,
+     "skill": 0.049
+    },
+    {
+     "q": 0.3,
+     "km2": 11600,
+     "aoi_share": 0.024,
+     "holdout_capture": 0.203,
+     "null_allfire": 0.0,
+     "skill": 0.179
+    },
+    {
+     "q": 0.4,
+     "km2": 16772,
+     "aoi_share": 0.035,
+     "holdout_capture": 0.397,
+     "null_allfire": 0.0,
+     "skill": 0.362
+    },
+    {
+     "q": 0.5,
+     "km2": 22636,
+     "aoi_share": 0.047,
+     "holdout_capture": 0.516,
+     "null_allfire": 0.0,
+     "skill": 0.469
+    },
+    {
+     "q": 0.6,
+     "km2": 29368,
+     "aoi_share": 0.061,
+     "holdout_capture": 0.664,
+     "null_allfire": 0.0,
+     "skill": 0.603
+    },
+    {
+     "q": 0.7,
+     "km2": 37652,
+     "aoi_share": 0.078,
+     "holdout_capture": 0.761,
+     "null_allfire": 0.0,
+     "skill": 0.683
+    },
+    {
+     "q": 0.8,
+     "km2": 49048,
+     "aoi_share": 0.102,
+     "holdout_capture": 0.86,
+     "null_allfire": 0.007,
+     "skill": 0.758
+    }
+   ],
+   "skill": 0.469,
+   "holdout_capture": 0.52,
+   "holdout_capture_null_allfire": 0.0,
+   "median_inside_share_holdout": 0.5,
+   "people_in_band": 103709
+  },
+  {
+   "bundle": 3,
+   "fronts_fit": 554,
+   "fronts_holdout": 284,
+   "start": [
+    29.678,
+    5.874
+   ],
+   "end": [
+    28.602,
+    7.451
+   ],
+   "straight_km": 211,
+   "onset": "10",
+   "months": {
+    "Oct": 3,
+    "Nov": 79,
+    "Dec": 91,
+    "Jan": 238,
+    "Feb": 114,
+    "Mar": 24,
+    "Apr": 4,
+    "May": 1
+   },
+   "band_km2": 22600,
+   "capture": 0.5,
+   "skill_curve": [
+    {
+     "q": 0.1,
+     "km2": 2552,
+     "aoi_share": 0.005,
+     "holdout_capture": 0.021,
+     "null_allfire": 0.0,
+     "skill": 0.016
+    },
+    {
+     "q": 0.2,
+     "km2": 5868,
+     "aoi_share": 0.012,
+     "holdout_capture": 0.109,
+     "null_allfire": 0.0,
+     "skill": 0.097
+    },
+    {
+     "q": 0.3,
+     "km2": 9884,
+     "aoi_share": 0.021,
+     "holdout_capture": 0.25,
+     "null_allfire": 0.014,
+     "skill": 0.229
+    },
+    {
+     "q": 0.4,
+     "km2": 15324,
+     "aoi_share": 0.032,
+     "holdout_capture": 0.415,
+     "null_allfire": 0.025,
+     "skill": 0.384
+    },
+    {
+     "q": 0.5,
+     "km2": 22600,
+     "aoi_share": 0.047,
+     "holdout_capture": 0.532,
+     "null_allfire": 0.06,
+     "skill": 0.472
+    },
+    {
+     "q": 0.6,
+     "km2": 31736,
+     "aoi_share": 0.066,
+     "holdout_capture": 0.609,
+     "null_allfire": 0.144,
+     "skill": 0.465
+    },
+    {
+     "q": 0.7,
+     "km2": 43184,
+     "aoi_share": 0.09,
+     "holdout_capture": 0.775,
+     "null_allfire": 0.32,
+     "skill": 0.454
+    },
+    {
+     "q": 0.8,
+     "km2": 58368,
+     "aoi_share": 0.121,
+     "holdout_capture": 0.859,
+     "null_allfire": 0.528,
+     "skill": 0.331
+    }
+   ],
+   "skill": 0.472,
+   "holdout_capture": 0.53,
+   "holdout_capture_null_allfire": 0.06,
+   "median_inside_share_holdout": 0.52,
+   "people_in_band": 280374
+  },
+  {
+   "bundle": 4,
+   "fronts_fit": 764,
+   "fronts_holdout": 434,
+   "start": [
+    27.723,
+    7.737
+   ],
+   "end": [
+    28.298,
+    7.367
+   ],
+   "straight_km": 76,
+   "onset": "09",
+   "months": {
+    "Sep": 2,
+    "Oct": 60,
+    "Nov": 146,
+    "Dec": 118,
+    "Jan": 207,
+    "Feb": 122,
+    "Mar": 68,
+    "Apr": 32,
+    "May": 9
+   },
+   "band_km2": 16936,
+   "capture": 0.5,
+   "skill_curve": [
+    {
+     "q": 0.1,
+     "km2": 2528,
+     "aoi_share": 0.005,
+     "holdout_capture": 0.005,
+     "null_allfire": 0.002,
+     "skill": -0.001
+    },
+    {
+     "q": 0.2,
+     "km2": 5500,
+     "aoi_share": 0.011,
+     "holdout_capture": 0.039,
+     "null_allfire": 0.032,
+     "skill": 0.007
+    },
+    {
+     "q": 0.3,
+     "km2": 8784,
+     "aoi_share": 0.018,
+     "holdout_capture": 0.157,
+     "null_allfire": 0.062,
+     "skill": 0.094
+    },
+    {
+     "q": 0.4,
+     "km2": 12544,
+     "aoi_share": 0.026,
+     "holdout_capture": 0.293,
+     "null_allfire": 0.099,
+     "skill": 0.194
+    },
+    {
+     "q": 0.5,
+     "km2": 16936,
+     "aoi_share": 0.035,
+     "holdout_capture": 0.514,
+     "null_allfire": 0.143,
+     "skill": 0.371
+    },
+    {
+     "q": 0.6,
+     "km2": 22292,
+     "aoi_share": 0.046,
+     "holdout_capture": 0.636,
+     "null_allfire": 0.221,
+     "skill": 0.415
+    },
+    {
+     "q": 0.7,
+     "km2": 29764,
+     "aoi_share": 0.062,
+     "holdout_capture": 0.74,
+     "null_allfire": 0.3,
+     "skill": 0.44
+    },
+    {
+     "q": 0.8,
+     "km2": 41000,
+     "aoi_share": 0.085,
+     "holdout_capture": 0.841,
+     "null_allfire": 0.387,
+     "skill": 0.454
+    }
+   ],
+   "skill": 0.371,
+   "holdout_capture": 0.51,
+   "holdout_capture_null_allfire": 0.14,
+   "median_inside_share_holdout": 0.5,
+   "people_in_band": 201166
+  },
+  {
+   "bundle": 5,
+   "fronts_fit": 469,
+   "fronts_holdout": 196,
+   "start": [
+    27.946,
+    4.979
+   ],
+   "end": [
+    29.908,
+    5.428
+   ],
+   "straight_km": 222,
+   "onset": "11",
+   "months": {
+    "Nov": 52,
+    "Dec": 95,
+    "Jan": 241,
+    "Feb": 78,
+    "Mar": 3
+   },
+   "band_km2": 19184,
+   "capture": 0.5,
+   "skill_curve": [
+    {
+     "q": 0.1,
+     "km2": 2468,
+     "aoi_share": 0.005,
+     "holdout_capture": 0.02,
+     "null_allfire": 0.0,
+     "skill": 0.015
+    },
+    {
+     "q": 0.2,
+     "km2": 5708,
+     "aoi_share": 0.012,
+     "holdout_capture": 0.107,
+     "null_allfire": 0.0,
+     "skill": 0.095
+    },
+    {
+     "q": 0.3,
+     "km2": 9568,
+     "aoi_share": 0.02,
+     "holdout_capture": 0.214,
+     "null_allfire": 0.0,
+     "skill": 0.194
+    },
+    {
+     "q": 0.4,
+     "km2": 13976,
+     "aoi_share": 0.029,
+     "holdout_capture": 0.372,
+     "null_allfire": 0.01,
+     "skill": 0.343
+    },
+    {
+     "q": 0.5,
+     "km2": 19184,
+     "aoi_share": 0.04,
+     "holdout_capture": 0.546,
+     "null_allfire": 0.036,
+     "skill": 0.506
+    },
+    {
+     "q": 0.6,
+     "km2": 25660,
+     "aoi_share": 0.053,
+     "holdout_capture": 0.673,
+     "null_allfire": 0.097,
+     "skill": 0.577
+    },
+    {
+     "q": 0.7,
+     "km2": 34380,
+     "aoi_share": 0.071,
+     "holdout_capture": 0.76,
+     "null_allfire": 0.153,
+     "skill": 0.607
+    },
+    {
+     "q": 0.8,
+     "km2": 47396,
+     "aoi_share": 0.098,
+     "holdout_capture": 0.857,
+     "null_allfire": 0.327,
+     "skill": 0.531
+    }
+   ],
+   "skill": 0.506,
+   "holdout_capture": 0.55,
+   "holdout_capture_null_allfire": 0.04,
+   "median_inside_share_holdout": 0.52,
+   "people_in_band": 215353
+  },
+  {
+   "bundle": 6,
+   "fronts_fit": 375,
+   "fronts_holdout": 230,
+   "start": [
+    28.604,
+    7.334
+   ],
+   "end": [
+    30.201,
+    5.644
+   ],
+   "straight_km": 257,
+   "onset": "10",
+   "months": {
+    "Oct": 12,
+    "Nov": 65,
+    "Dec": 57,
+    "Jan": 137,
+    "Feb": 84,
+    "Mar": 18,
+    "Apr": 2
+   },
+   "band_km2": 25592,
+   "capture": 0.6,
+   "skill_curve": [
+    {
+     "q": 0.1,
+     "km2": 2068,
+     "aoi_share": 0.004,
+     "holdout_capture": 0.013,
+     "null_allfire": 0.0,
+     "skill": 0.009
+    },
+    {
+     "q": 0.2,
+     "km2": 4696,
+     "aoi_share": 0.01,
+     "holdout_capture": 0.057,
+     "null_allfire": 0.0,
+     "skill": 0.047
+    },
+    {
+     "q": 0.3,
+     "km2": 7920,
+     "aoi_share": 0.016,
+     "holdout_capture": 0.148,
+     "null_allfire": 0.0,
+     "skill": 0.131
+    },
+    {
+     "q": 0.4,
+     "km2": 11984,
+     "aoi_share": 0.025,
+     "holdout_capture": 0.27,
+     "null_allfire": 0.0,
+     "skill": 0.245
+    },
+    {
+     "q": 0.5,
+     "km2": 17492,
+     "aoi_share": 0.036,
+     "holdout_capture": 0.396,
+     "null_allfire": 0.022,
+     "skill": 0.359
+    },
+    {
+     "q": 0.6,
+     "km2": 25592,
+     "aoi_share": 0.053,
+     "holdout_capture": 0.596,
+     "null_allfire": 0.1,
+     "skill": 0.496
+    },
+    {
+     "q": 0.7,
+     "km2": 37716,
+     "aoi_share": 0.078,
+     "holdout_capture": 0.752,
+     "null_allfire": 0.278,
+     "skill": 0.474
+    },
+    {
+     "q": 0.8,
+     "km2": 55588,
+     "aoi_share": 0.115,
+     "holdout_capture": 0.861,
+     "null_allfire": 0.517,
+     "skill": 0.343
+    }
+   ],
+   "skill": 0.496,
+   "holdout_capture": 0.6,
+   "holdout_capture_null_allfire": 0.1,
+   "median_inside_share_holdout": 0.56,
+   "people_in_band": 305799
+  },
+  {
+   "bundle": 7,
+   "fronts_fit": 756,
+   "fronts_holdout": 446,
+   "start": [
+    29.897,
+    5.452
+   ],
+   "end": [
+    30.447,
+    5.484
+   ],
+   "straight_km": 61,
+   "onset": "10",
+   "months": {
+    "Oct": 3,
+    "Nov": 96,
+    "Dec": 170,
+    "Jan": 322,
+    "Feb": 142,
+    "Mar": 19,
+    "Apr": 4
+   },
+   "band_km2": 15364,
+   "capture": 0.5,
+   "skill_curve": [
+    {
+     "q": 0.1,
+     "km2": 2396,
+     "aoi_share": 0.005,
+     "holdout_capture": 0.009,
+     "null_allfire": 0.0,
+     "skill": 0.004
+    },
+    {
+     "q": 0.2,
+     "km2": 5204,
+     "aoi_share": 0.011,
+     "holdout_capture": 0.034,
+     "null_allfire": 0.0,
+     "skill": 0.023
+    },
+    {
+     "q": 0.3,
+     "km2": 8308,
+     "aoi_share": 0.017,
+     "holdout_capture": 0.121,
+     "null_allfire": 0.0,
+     "skill": 0.104
+    },
+    {
+     "q": 0.4,
+     "km2": 11668,
+     "aoi_share": 0.024,
+     "holdout_capture": 0.285,
+     "null_allfire": 0.007,
+     "skill": 0.261
+    },
+    {
+     "q": 0.5,
+     "km2": 15364,
+     "aoi_share": 0.032,
+     "holdout_capture": 0.5,
+     "null_allfire": 0.025,
+     "skill": 0.468
+    },
+    {
+     "q": 0.6,
+     "km2": 19572,
+     "aoi_share": 0.041,
+     "holdout_capture": 0.673,
+     "null_allfire": 0.058,
+     "skill": 0.614
+    },
+    {
+     "q": 0.7,
+     "km2": 24480,
+     "aoi_share": 0.051,
+     "holdout_capture": 0.823,
+     "null_allfire": 0.117,
+     "skill": 0.706
+    },
+    {
+     "q": 0.8,
+     "km2": 30368,
+     "aoi_share": 0.063,
+     "holdout_capture": 0.928,
+     "null_allfire": 0.222,
+     "skill": 0.706
+    }
+   ],
+   "skill": 0.468,
+   "holdout_capture": 0.5,
+   "holdout_capture_null_allfire": 0.03,
+   "median_inside_share_holdout": 0.5,
+   "people_in_band": 77874
+  },
+  {
+   "bundle": 8,
+   "fronts_fit": 266,
+   "fronts_holdout": 194,
+   "start": [
+    24.912,
+    8.824
+   ],
+   "end": [
+    27.748,
+    7.374
+   ],
+   "straight_km": 351,
+   "onset": "10",
+   "months": {
+    "Oct": 8,
+    "Nov": 48,
+    "Dec": 64,
+    "Jan": 114,
+    "Feb": 24,
+    "Mar": 6,
+    "Apr": 2
+   },
+   "band_km2": 60592,
+   "capture": 0.6,
+   "skill_curve": [
+    {
+     "q": 0.1,
+     "km2": 4724,
+     "aoi_share": 0.01,
+     "holdout_capture": 0.005,
+     "null_allfire": 0.0,
+     "skill": -0.005
+    },
+    {
+     "q": 0.2,
+     "km2": 11448,
+     "aoi_share": 0.024,
+     "holdout_capture": 0.057,
+     "null_allfire": 0.0,
+     "skill": 0.033
+    },
+    {
+     "q": 0.3,
+     "km2": 19968,
+     "aoi_share": 0.041,
+     "holdout_capture": 0.124,
+     "null_allfire": 0.0,
+     "skill": 0.082
+    },
+    {
+     "q": 0.4,
+     "km2": 30468,
+     "aoi_share": 0.063,
+     "holdout_capture": 0.232,
+     "null_allfire": 0.005,
+     "skill": 0.169
+    },
+    {
+     "q": 0.5,
+     "km2": 43644,
+     "aoi_share": 0.091,
+     "holdout_capture": 0.376,
+     "null_allfire": 0.021,
+     "skill": 0.286
+    },
+    {
+     "q": 0.6,
+     "km2": 60592,
+     "aoi_share": 0.126,
+     "holdout_capture": 0.531,
+     "null_allfire": 0.036,
+     "skill": 0.405
+    },
+    {
+     "q": 0.7,
+     "km2": 83020,
+     "aoi_share": 0.172,
+     "holdout_capture": 0.66,
+     "null_allfire": 0.113,
+     "skill": 0.487
+    },
+    {
+     "q": 0.8,
+     "km2": 114808,
+     "aoi_share": 0.238,
+     "holdout_capture": 0.784,
+     "null_allfire": 0.33,
+     "skill": 0.454
+    }
+   ],
+   "skill": 0.405,
+   "holdout_capture": 0.53,
+   "holdout_capture_null_allfire": 0.04,
+   "median_inside_share_holdout": 0.52,
+   "people_in_band": 129742
+  },
+  {
+   "bundle": 9,
+   "fronts_fit": 447,
+   "fronts_holdout": 263,
+   "start": [
+    27.108,
+    6.209
+   ],
+   "end": [
+    27.515,
+    4.922
+   ],
+   "straight_km": 150,
+   "onset": "10",
+   "months": {
+    "Oct": 1,
+    "Nov": 51,
+    "Dec": 90,
+    "Jan": 234,
+    "Feb": 68,
+    "Mar": 3
+   },
+   "band_km2": 32012,
+   "capture": 0.6,
+   "skill_curve": [
+    {
+     "q": 0.1,
+     "km2": 2332,
+     "aoi_share": 0.005,
+     "holdout_capture": 0.023,
+     "null_allfire": 0.0,
+     "skill": 0.018
+    },
+    {
+     "q": 0.2,
+     "km2": 5932,
+     "aoi_share": 0.012,
+     "holdout_capture": 0.118,
+     "null_allfire": 0.004,
+     "skill": 0.106
+    },
+    {
+     "q": 0.3,
+     "km2": 10480,
+     "aoi_share": 0.022,
+     "holdout_capture": 0.228,
+     "null_allfire": 0.004,
+     "skill": 0.206
+    },
+    {
+     "q": 0.4,
+     "km2": 16112,
+     "aoi_share": 0.033,
+     "holdout_capture": 0.354,
+     "null_allfire": 0.004,
+     "skill": 0.32
+    },
+    {
+     "q": 0.5,
+     "km2": 23176,
+     "aoi_share": 0.048,
+     "holdout_capture": 0.483,
+     "null_allfire": 0.004,
+     "skill": 0.435
+    },
+    {
+     "q": 0.6,
+     "km2": 32012,
+     "aoi_share": 0.066,
+     "holdout_capture": 0.551,
+     "null_allfire": 0.011,
+     "skill": 0.485
+    },
+    {
+     "q": 0.7,
+     "km2": 43124,
+     "aoi_share": 0.09,
+     "holdout_capture": 0.662,
+     "null_allfire": 0.038,
+     "skill": 0.572
+    },
+    {
+     "q": 0.8,
+     "km2": 58664,
+     "aoi_share": 0.122,
+     "holdout_capture": 0.749,
+     "null_allfire": 0.118,
+     "skill": 0.627
+    }
+   ],
+   "skill": 0.485,
+   "holdout_capture": 0.55,
+   "holdout_capture_null_allfire": 0.01,
+   "median_inside_share_holdout": 0.61,
+   "people_in_band": 184263
+  },
+  {
+   "bundle": 10,
+   "fronts_fit": 462,
+   "fronts_holdout": 243,
+   "start": [
+    28.149,
+    5.277
+   ],
+   "end": [
+    26.284,
+    5.915
+   ],
+   "straight_km": 217,
+   "onset": "10",
+   "months": {
+    "Oct": 1,
+    "Nov": 43,
+    "Dec": 96,
+    "Jan": 251,
+    "Feb": 62,
+    "Mar": 9
+   },
+   "band_km2": 24456,
+   "capture": 0.5,
+   "skill_curve": [
+    {
+     "q": 0.1,
+     "km2": 2752,
+     "aoi_share": 0.006,
+     "holdout_capture": 0.029,
+     "null_allfire": 0.0,
+     "skill": 0.023
+    },
+    {
+     "q": 0.2,
+     "km2": 6408,
+     "aoi_share": 0.013,
+     "holdout_capture": 0.091,
+     "null_allfire": 0.0,
+     "skill": 0.077
+    },
+    {
+     "q": 0.3,
+     "km2": 11024,
+     "aoi_share": 0.023,
+     "holdout_capture": 0.222,
+     "null_allfire": 0.0,
+     "skill": 0.199
+    },
+    {
+     "q": 0.4,
+     "km2": 16956,
+     "aoi_share": 0.035,
+     "holdout_capture": 0.383,
+     "null_allfire": 0.0,
+     "skill": 0.348
+    },
+    {
+     "q": 0.5,
+     "km2": 24456,
+     "aoi_share": 0.051,
+     "holdout_capture": 0.506,
+     "null_allfire": 0.012,
+     "skill": 0.455
+    },
+    {
+     "q": 0.6,
+     "km2": 33808,
+     "aoi_share": 0.07,
+     "holdout_capture": 0.572,
+     "null_allfire": 0.037,
+     "skill": 0.502
+    },
+    {
+     "q": 0.7,
+     "km2": 46600,
+     "aoi_share": 0.097,
+     "holdout_capture": 0.667,
+     "null_allfire": 0.062,
+     "skill": 0.57
+    },
+    {
+     "q": 0.8,
+     "km2": 67152,
+     "aoi_share": 0.139,
+     "holdout_capture": 0.786,
+     "null_allfire": 0.169,
+     "skill": 0.617
+    }
+   ],
+   "skill": 0.455,
+   "holdout_capture": 0.51,
+   "holdout_capture_null_allfire": 0.01,
+   "median_inside_share_holdout": 0.5,
+   "people_in_band": 187442
+  },
+  {
+   "bundle": 11,
+   "fronts_fit": 472,
+   "fronts_holdout": 339,
+   "start": [
+    26.193,
+    8.162
+   ],
+   "end": [
+    25.474,
+    7.097
+   ],
+   "straight_km": 142,
+   "onset": "10",
+   "months": {
+    "Oct": 22,
+    "Nov": 73,
+    "Dec": 86,
+    "Jan": 219,
+    "Feb": 62,
+    "Mar": 10
+   },
+   "band_km2": 40612,
+   "capture": 0.6,
+   "skill_curve": [
+    {
+     "q": 0.1,
+     "km2": 3540,
+     "aoi_share": 0.007,
+     "holdout_capture": 0.009,
+     "null_allfire": 0.006,
+     "skill": 0.001
+    },
+    {
+     "q": 0.2,
+     "km2": 8272,
+     "aoi_share": 0.017,
+     "holdout_capture": 0.059,
+     "null_allfire": 0.006,
+     "skill": 0.042
+    },
+    {
+     "q": 0.3,
+     "km2": 14064,
+     "aoi_share": 0.029,
+     "holdout_capture": 0.195,
+     "null_allfire": 0.012,
+     "skill": 0.165
+    },
+    {
+     "q": 0.4,
+     "km2": 21136,
+     "aoi_share": 0.044,
+     "holdout_capture": 0.316,
+     "null_allfire": 0.012,
+     "skill": 0.272
+    },
+    {
+     "q": 0.5,
+     "km2": 29848,
+     "aoi_share": 0.062,
+     "holdout_capture": 0.428,
+     "null_allfire": 0.018,
+     "skill": 0.366
+    },
+    {
+     "q": 0.6,
+     "km2": 40612,
+     "aoi_share": 0.084,
+     "holdout_capture": 0.566,
+     "null_allfire": 0.018,
+     "skill": 0.482
+    },
+    {
+     "q": 0.7,
+     "km2": 53920,
+     "aoi_share": 0.112,
+     "holdout_capture": 0.676,
+     "null_allfire": 0.029,
+     "skill": 0.564
+    },
+    {
+     "q": 0.8,
+     "km2": 71172,
+     "aoi_share": 0.148,
+     "holdout_capture": 0.838,
+     "null_allfire": 0.068,
+     "skill": 0.69
+    }
+   ],
+   "skill": 0.482,
+   "holdout_capture": 0.57,
+   "holdout_capture_null_allfire": 0.02,
+   "median_inside_share_holdout": 0.53,
+   "people_in_band": 33356
+  },
+  {
+   "bundle": 12,
+   "fronts_fit": 443,
+   "fronts_holdout": 184,
+   "start": [
+    25.225,
+    5.623
+   ],
+   "end": [
+    25.218,
+    5.67
+   ],
+   "straight_km": 5,
+   "onset": "09",
+   "months": {
+    "Sep": 1,
+    "Oct": 4,
+    "Nov": 67,
+    "Dec": 101,
+    "Jan": 213,
+    "Feb": 47,
+    "Mar": 10
+   },
+   "band_km2": 15648,
+   "capture": 0.5,
+   "skill_curve": [
+    {
+     "q": 0.1,
+     "km2": 1812,
+     "aoi_share": 0.004,
+     "holdout_capture": 0.011,
+     "null_allfire": 0.0,
+     "skill": 0.007
+    },
+    {
+     "q": 0.2,
+     "km2": 4240,
+     "aoi_share": 0.009,
+     "holdout_capture": 0.043,
+     "null_allfire": 0.0,
+     "skill": 0.035
+    },
+    {
+     "q": 0.3,
+     "km2": 7376,
+     "aoi_share": 0.015,
+     "holdout_capture": 0.201,
+     "null_allfire": 0.0,
+     "skill": 0.186
+    },
+    {
+     "q": 0.4,
+     "km2": 11156,
+     "aoi_share": 0.023,
+     "holdout_capture": 0.364,
+     "null_allfire": 0.0,
+     "skill": 0.341
+    },
+    {
+     "q": 0.5,
+     "km2": 15648,
+     "aoi_share": 0.032,
+     "holdout_capture": 0.511,
+     "null_allfire": 0.0,
+     "skill": 0.478
+    },
+    {
+     "q": 0.6,
+     "km2": 21008,
+     "aoi_share": 0.044,
+     "holdout_capture": 0.63,
+     "null_allfire": 0.0,
+     "skill": 0.587
+    },
+    {
+     "q": 0.7,
+     "km2": 27696,
+     "aoi_share": 0.058,
+     "holdout_capture": 0.755,
+     "null_allfire": 0.0,
+     "skill": 0.698
+    },
+    {
+     "q": 0.8,
+     "km2": 36692,
+     "aoi_share": 0.076,
+     "holdout_capture": 0.826,
+     "null_allfire": 0.0,
+     "skill": 0.75
+    }
+   ],
+   "skill": 0.478,
+   "holdout_capture": 0.51,
+   "holdout_capture_null_allfire": 0.0,
+   "median_inside_share_holdout": 0.5,
+   "people_in_band": 84610
+  },
+  {
+   "bundle": 13,
+   "fronts_fit": 648,
+   "fronts_holdout": 425,
+   "start": [
+    24.352,
+    9.229
+   ],
+   "end": [
+    25.459,
+    9.747
+   ],
+   "straight_km": 135,
+   "onset": "10",
+   "months": {
+    "Oct": 59,
+    "Nov": 119,
+    "Dec": 156,
+    "Jan": 207,
+    "Feb": 79,
+    "Mar": 12,
+    "Apr": 14,
+    "May": 2
+   },
+   "band_km2": 33276,
+   "capture": 0.6,
+   "skill_curve": [
+    {
+     "q": 0.1,
+     "km2": 2912,
+     "aoi_share": 0.006,
+     "holdout_capture": 0.014,
+     "null_allfire": 0.0,
+     "skill": 0.008
+    },
+    {
+     "q": 0.2,
+     "km2": 6704,
+     "aoi_share": 0.014,
+     "holdout_capture": 0.092,
+     "null_allfire": 0.0,
+     "skill": 0.078
+    },
+    {
+     "q": 0.3,
+     "km2": 11364,
+     "aoi_share": 0.024,
+     "holdout_capture": 0.202,
+     "null_allfire": 0.0,
+     "skill": 0.179
+    },
+    {
+     "q": 0.4,
+     "km2": 17060,
+     "aoi_share": 0.035,
+     "holdout_capture": 0.332,
+     "null_allfire": 0.0,
+     "skill": 0.296
+    },
+    {
+     "q": 0.5,
+     "km2": 24144,
+     "aoi_share": 0.05,
+     "holdout_capture": 0.468,
+     "null_allfire": 0.0,
+     "skill": 0.418
+    },
+    {
+     "q": 0.6,
+     "km2": 33276,
+     "aoi_share": 0.069,
+     "holdout_capture": 0.607,
+     "null_allfire": 0.0,
+     "skill": 0.538
+    },
+    {
+     "q": 0.7,
+     "km2": 45420,
+     "aoi_share": 0.094,
+     "holdout_capture": 0.746,
+     "null_allfire": 0.002,
+     "skill": 0.652
+    },
+    {
+     "q": 0.8,
+     "km2": 62640,
+     "aoi_share": 0.13,
+     "holdout_capture": 0.871,
+     "null_allfire": 0.035,
+     "skill": 0.741
+    }
+   ],
+   "skill": 0.538,
+   "holdout_capture": 0.61,
+   "holdout_capture_null_allfire": 0.0,
+   "median_inside_share_holdout": 0.61,
+   "people_in_band": 98676
+  },
+  {
+   "bundle": 14,
+   "fronts_fit": 538,
+   "fronts_holdout": 257,
+   "start": [
+    29.725,
+    5.309
+   ],
+   "end": [
+    28.043,
+    4.889
+   ],
+   "straight_km": 191,
+   "onset": "11",
+   "months": {
+    "Nov": 62,
+    "Dec": 115,
+    "Jan": 256,
+    "Feb": 102,
+    "Mar": 3
+   },
+   "band_km2": 19212,
+   "capture": 0.5,
+   "skill_curve": [
+    {
+     "q": 0.1,
+     "km2": 2640,
+     "aoi_share": 0.005,
+     "holdout_capture": 0.012,
+     "null_allfire": 0.0,
+     "skill": 0.006
+    },
+    {
+     "q": 0.2,
+     "km2": 5860,
+     "aoi_share": 0.012,
+     "holdout_capture": 0.078,
+     "null_allfire": 0.0,
+     "skill": 0.066
+    },
+    {
+     "q": 0.3,
+     "km2": 9540,
+     "aoi_share": 0.02,
+     "holdout_capture": 0.226,
+     "null_allfire": 0.0,
+     "skill": 0.206
+    },
+    {
+     "q": 0.4,
+     "km2": 13832,
+     "aoi_share": 0.029,
+     "holdout_capture": 0.397,
+     "null_allfire": 0.023,
+     "skill": 0.368
+    },
+    {
+     "q": 0.5,
+     "km2": 19212,
+     "aoi_share": 0.04,
+     "holdout_capture": 0.56,
+     "null_allfire": 0.062,
+     "skill": 0.498
+    },
+    {
+     "q": 0.6,
+     "km2": 25896,
+     "aoi_share": 0.054,
+     "holdout_capture": 0.696,
+     "null_allfire": 0.132,
+     "skill": 0.564
+    },
+    {
+     "q": 0.7,
+     "km2": 34244,
+     "aoi_share": 0.071,
+     "holdout_capture": 0.759,
+     "null_allfire": 0.222,
+     "skill": 0.537
+    },
+    {
+     "q": 0.8,
+     "km2": 45028,
+     "aoi_share": 0.093,
+     "holdout_capture": 0.887,
+     "null_allfire": 0.37,
+     "skill": 0.518
+    }
+   ],
+   "skill": 0.498,
+   "holdout_capture": 0.56,
+   "holdout_capture_null_allfire": 0.06,
+   "median_inside_share_holdout": 0.52,
+   "people_in_band": 149324
+  },
+  {
+   "bundle": 15,
+   "fronts_fit": 635,
+   "fronts_holdout": 509,
+   "start": [
+    27.266,
+    7.979
+   ],
+   "end": [
+    26.896,
+    9.049
+   ],
+   "straight_km": 126,
+   "onset": "10",
+   "months": {
+    "Oct": 47,
+    "Nov": 106,
+    "Dec": 93,
+    "Jan": 204,
+    "Feb": 101,
+    "Mar": 57,
+    "Apr": 23,
+    "May": 3,
+    "Jun": 1
+   },
+   "band_km2": 28716,
+   "capture": 0.6,
+   "skill_curve": [
+    {
+     "q": 0.1,
+     "km2": 2660,
+     "aoi_share": 0.006,
+     "holdout_capture": 0.018,
+     "null_allfire": 0.014,
+     "skill": 0.004
+    },
+    {
+     "q": 0.2,
+     "km2": 5920,
+     "aoi_share": 0.012,
+     "holdout_capture": 0.094,
+     "null_allfire": 0.026,
+     "skill": 0.069
+    },
+    {
+     "q": 0.3,
+     "km2": 9796,
+     "aoi_share": 0.02,
+     "holdout_capture": 0.191,
+     "null_allfire": 0.047,
+     "skill": 0.143
+    },
+    {
+     "q": 0.4,
+     "km2": 14636,
+     "aoi_share": 0.03,
+     "holdout_capture": 0.352,
+     "null_allfire": 0.071,
+     "skill": 0.281
+    },
+    {
+     "q": 0.5,
+     "km2": 20868,
+     "aoi_share": 0.043,
+     "holdout_capture": 0.464,
+     "null_allfire": 0.108,
+     "skill": 0.356
+    },
+    {
+     "q": 0.6,
+     "km2": 28716,
+     "aoi_share": 0.06,
+     "holdout_capture": 0.58,
+     "null_allfire": 0.151,
+     "skill": 0.428
+    },
+    {
+     "q": 0.7,
+     "km2": 38872,
+     "aoi_share": 0.081,
+     "holdout_capture": 0.699,
+     "null_allfire": 0.21,
+     "skill": 0.489
+    },
+    {
+     "q": 0.8,
+     "km2": 52956,
+     "aoi_share": 0.11,
+     "holdout_capture": 0.853,
+     "null_allfire": 0.291,
+     "skill": 0.562
+    }
+   ],
+   "skill": 0.428,
+   "holdout_capture": 0.58,
+   "holdout_capture_null_allfire": 0.15,
+   "median_inside_share_holdout": 0.59,
+   "people_in_band": 293578
+  }
+ ]
+}

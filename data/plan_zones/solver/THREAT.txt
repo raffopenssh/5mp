@@ -1,0 +1,11 @@
+THREAT — P(a 2 km cell converts within 10 years), fitted on what happened 2015 → today (320 of 118,291 unbuilt cells converted, base rate 0.3%).
+Validation: AUC 0.863 / 0.858 on spatially held-out 20-km blocks (0.5 = coin, 0.7 = usable, 0.8 = strong).
+Coefficients (standardised; negative = further away is safer):
+  log dist to 2015 built-up                  -1.239
+  log dist to town ≥1000                     -0.048
+  log dist to road                           -0.556
+  log dist to perennial water                -0.198
+  log built growth 2000→15 within 10 km      +0.055
+  log long-front density                     +0.252
+  cropland 2003 share                        -1.133
+AOI mean P10 2.0%; 90th percentile 0.6%.

@@ -19,6 +19,8 @@ Layers:
   beacons              points    point landmarks (1930s villages / water / hills, OSM villages) the boundary text cites
   support              polygons  bootstrap support per fine unit for each run (0–1)
   units                polygons  the 506 coarse planning units with class and rationale (the assessment layer)
+  solver_zones         polygons  plan_solver.py zones.geojson — the ILP plan (core / wilderness / community / corridor), every zone
+                                 measured by the same assessor, with the conservancy RANK (rank, rank_score, in_budget, shield …)
 Rasters (built-up km²/cell, clearing km²/cell) are written beside it as GeoTIFFs when rasterio is available.
 """
 import argparse, json, sqlite3, sys, time, datetime as dt
@@ -79,6 +81,7 @@ COLS = {
  "all_fire_ratio": "corridor: ALL-front density inside ÷ outside (the null: is it herds or just burning?)", "excess_over_burning": "corridor: long ÷ all ratio — 1.0 = no more herds than the burning predicts, >1 = a herd route", "coherence_in": "corridor: axial coherence inside the band",
  "kind": "team kind: FP (focal point, 1 person) | ECHO (community team, 2) | TANGO (transhumance team, 2)", "team_size": "people", "place": "the place the team sits at", "zone": "the proposal it serves", "season": "when it works", "water": "water source and distance (a site without water is flagged UNVERIFIED)", "why": "the reason for this placement, from the zone's numbers",
  "ref_km2": "reference polygon km²", "iou": "intersection-over-union between the drawn shape and its redraw on the legible mesh", "n_units": "planning units the redraw uses", "redrawn_km2": "km² of the redraw", "ref_legible_pct": "% of the drawn boundary on a nameable feature", "ref_boundary": "the drawn boundary described", "class_mix": "planner classes inside the drawn shape by km²",
+ "solver_class": "solver class: core | wilderness | community | corridor (plan_solver.py)", "rank_score": "rank: weighted mean of rank-percentiles of the measured terms (RANK.txt)", "in_budget": "rank: 1 = among the first --budget-n conservancies", "shield": "rank: share of perimeter touching core/corridor", "pressure_on_core": "rank: people × threat P10, edge-scaled", "herd_conflict": "rank: herd UD per 1,000 km²", "governance": "rank: committee-size term", "threat_p10_mean": "P(converted by 2035), mean", "people_x_threat": "people × threat P10", "herd_bundles": "herd bundles crossing the zone (share of band, fronts, onset, hold-out capture)",
  "w": "mesh feature weight (5 = river/border, 4 = swamp edge/district line, 3 = ridge/road)", "support": "bootstrap support 0–1", "in_walked_corridor_pct": "% of the unit inside the walked corridor band", "in_diverted_corridor_pct": "% inside the corridor with park + wilderness closed",
 }
 LEGAL = {"core": "national park or s.9 reserve (Wildlife Act 2026)", "wilderness": "wilderness / s.9 reserve", "community": "community conservancy, Wildlife Act 2026 s.14 (s.14(4) veto; Mining Act s.24 consent)", "corridor": "wildlife/livestock corridor — s.14 conservancy strip or gazetted corridor"}
@@ -150,6 +153,9 @@ STYLES = {
  "support": qml_graduated_support(),
  "units": qml_categorized("cls", [("core", "core", rgba("#1b5e20", 60), rgba("#ffffff"), "0.15", False), ("wilderness", "wilderness", rgba("#7fae8b", 60), rgba("#ffffff"), "0.15", False),
                                   ("community", "community", rgba("#6a2c8f", 60), rgba("#ffffff"), "0.15", False), ("corridor", "corridor", rgba("#b3261e", 60), rgba("#ffffff"), "0.15", False)]),
+ "solver_zones": qml_categorized("solver_class", [("core", "Solver: core", rgba("#1b5e20", 90), rgba("#0b3d12"), "0.4", False), ("wilderness", "Solver: wilderness", rgba("#7fae8b", 90), rgba("#3d6b4a"), "0.3", False),
+                                  ("community", "Solver: community conservancy", rgba("#b48ad0", 90), rgba("#4a1a66"), "0.3", False), ("corridor", "Solver: herd corridor (bundle band)", rgba("#d9534f", 90), rgba("#8b1a14"), "0.5", False)],
+                                 label_expr="CASE WHEN \"rank\" IS NOT NULL THEN 'C' || \"rank\" || ' · ' ELSE '' END || format_number(\"area_ha\",0) || ' ha · ' || format_number(\"population_est\",0) || ' ppl'"),
 }
 
 def write_layer(gpkg, name, geom_type, rows, ordered_cols):
@@ -240,6 +246,11 @@ def main():
         if gj.exists(): sup += rows_from(gj, extra={"run": run})
     layers["support"] = ("MultiPolygon", sup, cols(sup, ["run", "support"]))
     units = rows_from(D / "units.geojson"); layers["units"] = ("MultiPolygon", units, cols(units, ["uid", "cls", "area_ha", "population_est", "boundary_legibility", "boundary", "rationale"]))
+    sz = D.parent / "solver" / "zones.geojson"                         # the ILP plan (plan_solver.py solve + rank), if solved
+    if sz.exists():
+        szr = rows_from(sz)
+        for g, p_ in szr: p_["legal_basis"] = LEGAL.get(p_.get("solver_class"), "")
+        layers["solver_zones"] = ("MultiPolygon", szr, cols(szr, ["uid", "solver_class", "legal_basis", "rank", "rank_score", "in_budget", "area_ha", "population_est", "pop_per_km2", "threat_p10_mean", "shield", "pressure_on_core", "herd_conflict", "governance", "boundary_legibility", "boundary", "rationale", "herd_bundles"]))
 
     log(f"writing {gpkg}")
     for name, (gt, rows, cc) in layers.items():
