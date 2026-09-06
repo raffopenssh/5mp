@@ -261,9 +261,63 @@ def claim(st):
     return arr
 
 # =============================================================================================== 4. joint ILP
-def prep(st, p10=None, claim_arr=None, seed_perturb=None):
+# =============================================================================================== 3b. corridor axes (fixed candidate set)
+def corridor_axes(G, bud, mv, popkm2_r, wdpa_any, wdpa_deep, draws=12, width_km=(8, 16), seed=0, pa_deep_x=50.0, capture=0.5, max_width_km=40.0):
+    """One buffered least-cost AXIS per origin–destination bundle, bootstrapped — the corridor CANDIDATES the ILP chooses from.
+
+    A corridor a herder can be told is a line with a width, not a set of cells a solver found cheapest. For each bundle the
+    axis is the least-cost path over its own (validated) utilisation, penalised by people, from the bundle's mean start to
+    its mean end; `draws` re-routes jitter the cost (±15 %), the smoothing (2–5 cells), the people penalty (1–4) and the
+    half-width (8–16 km) — and the half-width is then WIDENED (≤ max_width_km) until the band holds `capture` of the bundle's own
+    utilisation, so a broad plain gets a broad corridor and a pinched pass a narrow one. A cell is in the bundle's band if ≥ 50 %
+    of draws put it there. A bundle whose mean start ≈ mean end (out-and-back, no OD axis) gets its UD isopleth at `capture` instead. The path may run along
+    a protected area's EDGE (≤ pa_edge_km inside, cost ×1) but not through its interior (`wdpa_deep`, cost ×pa_deep_x) —
+    the routes that hug Chinko/Garamba are real, the ones that cross them are what the plan redirects.
+    Returns per bundle: axis (rc path of the median-cost draw), band (support ≥ 0.5 mask), km, people, km inside PA edge/deep."""
+    from scipy import ndimage
+    from skimage.graph import route_through_array
+    rng = np.random.default_rng(seed); out = []
+    pop_c = np.nan_to_num(popkm2_r).astype(np.float32)
+    for b, meta in enumerate(mv["bundles"]):
+        ud = bud[b].astype(np.float32); sup = np.zeros(ud.shape, np.float32); paths = []; n = 0
+        ends = (meta["start"], meta["end"]); tot_ud = float(ud[G.mask].sum())
+        if meta.get("straight_km", 999) < 30:
+            flat = np.sort(ud[G.mask & ~wdpa_deep])[::-1]; thr = flat[min(np.searchsorted(np.cumsum(flat), capture * flat.sum()), len(flat) - 1)]
+            band = (ud >= max(thr, 1e-12)) & G.mask & ~wdpa_deep
+            out.append(dict(bundle=b + 1, kind="isopleth", axis=[], band=band, support=band.astype(np.float32), axis_km=0, band_km2=round(float(band.sum()) * G.cell_km2()), half_width_km=None,
+                            capture=round(float(ud[band].sum()) / max(tot_ud, 1e-9), 2), axis_km_pa_edge=0, axis_km_pa_deep=0, draws=1))
+            log(f"  bundle {b+1}: start ≈ end ({meta.get('straight_km')} km, out-and-back) — its {capture:.0%} isopleth is the candidate, not an axis"); continue
+        widths = []
+        for d in range(draws):
+            sm = rng.uniform(2, 5); pw = rng.uniform(1, 4); expo = rng.uniform(1.0, 2.0); wk = rng.uniform(*width_km)
+            dn = ndimage.gaussian_filter(ud, sm); dn = dn / (np.percentile(dn[G.mask], 99) or 1)
+            cost = 1.0 / (0.02 + np.clip(dn, 0, 1)) ** expo * (1 + pop_c / pw) * rng.uniform(0.85, 1.15, ud.shape)
+            cost[wdpa_deep] *= pa_deep_x; cost[~G.mask] = 1e6
+            def near(lonlat):
+                r0, c0 = G.rc(*lonlat); rr, cc = np.mgrid[max(0, r0 - 8):min(G.h, r0 + 9), max(0, c0 - 8):min(G.w, c0 + 9)]
+                ok = G.mask[rr, cc] & ~wdpa_deep[rr, cc]
+                if not ok.any(): return None
+                i = np.argmin(np.where(ok, cost[rr, cc], np.inf)); return int(rr.ravel()[i]), int(cc.ravel()[i])
+            s_, e_ = near(ends[0]), near(ends[1])
+            if s_ is None or e_ is None: continue
+            path, tot = route_through_array(cost, s_, e_, fully_connected=True, geometric=True)
+            ax = np.zeros(ud.shape, bool); ax[tuple(np.array(path).T)] = True
+            dil = ndimage.binary_dilation(ax, iterations=int(wk * 1000 / G.res)) & G.mask & ~wdpa_deep
+            while float(ud[dil].sum()) < capture * tot_ud and wk < max_width_km:      # widen until the band holds `capture` of this bundle's UD
+                wk += G.res / 1000; dil = ndimage.binary_dilation(dil, iterations=1) & G.mask & ~wdpa_deep
+            sup += dil; paths.append((tot, path)); widths.append(wk); n += 1
+        if not n: out.append(None); continue
+        sup /= n; band = sup >= 0.5; path = sorted(paths, key=lambda t: t[0])[len(paths) // 2][1]
+        pr, pc = np.array(path).T; step_km = G.res / 1000 * 1.2
+        out.append(dict(bundle=b + 1, kind="axis", axis=path, band=band, support=sup, axis_km=round(len(path) * step_km), band_km2=round(float(band.sum()) * G.cell_km2()), half_width_km=round(float(np.median(widths)), 1),
+                        capture=round(float(ud[band].sum()) / max(tot_ud, 1e-9), 2),
+                        axis_km_pa_edge=round(float((wdpa_any[pr, pc] & ~wdpa_deep[pr, pc]).sum()) * step_km), axis_km_pa_deep=round(float(wdpa_deep[pr, pc].sum()) * step_km), draws=n))
+    return out
+
+def prep(st, p10=None, claim_arr=None, seed_perturb=None, opts=None):
     """Everything the ILP reads, computed once per (data draw): unit table, feasibility masks, per-unit terms, edges,
     per-bundle utilisation and the bundle's origin/destination units (for the flow-connectivity constraint)."""
+    from scipy import ndimage
     G, labf, surf, T = st["G"], st["labf"], st["surf"], st["T"]
     con = sqlite3.connect(str(P.DB)); UT = P.UnitTable(con, G, labf, surf, T)
     ML = UT.ML; units = [u for u in range(1, ML) if UT.cnt[u] > 0]; U = len(units); ui = {u: i for i, u in enumerate(units)}
@@ -303,31 +357,46 @@ def prep(st, p10=None, claim_arr=None, seed_perturb=None):
     in_wdpa = wsh >= 0.5
     for i in range(U):
         if dsh[i] >= 0.5: (fixed_core.__setitem__(i, True) if can_core[i] else desig_fail.append(units[i]))
-    can_corr = can_corr & ~in_wdpa                          # no corridor inside ANY designated protected area (user decision 2026-09-07); herds crossing one are a ledger line
-    # per-bundle utilisation per unit + origin/destination units (the unit holding the bundle's mean start / end point)
-    bundles = []
+    O = dict(pa_edge_km=5.0, wild_buffer_km=15.0, axis_draws=12, axis_width_km=(8.0, 16.0), capture=0.35, max_width_km=16.0); O.update(opts or {}); O["axis_width_km"] = list(O["axis_width_km"])
+    # a protected area's INTERIOR is closed to corridors; its rim (≤ pa_edge_km inside, a NEGATIVE buffer) is open — the herds
+    # that skirt Chinko/Garamba are real and unconnected corridors make no sense (user decision 2026-09-07)
+    wdpa_deep = ndimage.binary_erosion(wdpa_any, iterations=max(1, int(O["pa_edge_km"] * 1000 / G.res)))
+    deep_sh = np.bincount(labf.ravel(), weights=wdpa_deep.ravel().astype(float), minlength=ML)[units] / np.maximum(UT.cnt[units], 1)
+    in_wdpa_deep = deep_sh >= 0.5
+    # WILDERNESS only as a buffer around core (≤ wild_buffer_km from a core-feasible/fixed-core cell) or on ground the authors DREW as
+    # wilderness — elsewhere empty land stays UNZONED (community, no restriction). A wilderness class a solver spreads over every
+    # empty km² is a land grab nobody asked for.
+    drawn_wild = np.zeros((G.h, G.w), bool)
+    for k_, g in P.references().items():
+        if k_.startswith("PLAN") and re.search(r"Wilderness|headwaters", k_) and g.geom_type != "Point": drawn_wild |= G.rasterize([(transform(P.FWD, g), 1)]).astype(bool)
+    wild_drawn_u = (np.bincount(labf.ravel(), weights=drawn_wild.ravel().astype(float), minlength=ML)[units] / np.maximum(UT.cnt[units], 1)) >= 0.5
+    rr_, cc_ = np.indices(labf.shape); cx = np.bincount(labf.ravel(), weights=(G.x0 + (cc_ + 0.5) * G.res).ravel(), minlength=ML)[units] / UT.cnt[units]; cy = np.bincount(labf.ravel(), weights=(G.y1 - (rr_ + 0.5) * G.res).ravel(), minlength=ML)[units] / UT.cnt[units]
+    # units within wild_buffer_km (centroid to centroid) of each unit — the ILP allows wilderness at u only if one of these is core
+    from scipy.spatial import cKDTree
+    wild_nbrs = cKDTree(np.c_[cx, cy]).query_ball_point(np.c_[cx, cy], r=O["wild_buffer_km"] * 1000)
+    # CORRIDOR CANDIDATES: one buffered least-cost axis per bundle (bootstrapped), a FIXED set the ILP picks from — no flow variables,
+    # every corridor is one line with a width a herder can be told. can_corr = unit ≥ 50 % inside some bundle's band, not deep in a PA.
+    bundles = []; axes = []; corr_band = np.zeros((G.h, G.w), bool)
     if (OUT / "movement_bundle_ud.npy").exists() and (OUT / "movement.json").exists() and not (seed_perturb and "band" in seed_perturb):
         bud = np.load(OUT / "movement_bundle_ud.npy").astype(np.float32); mv = json.load(open(OUT / "movement.json"))
-        rr_, cc_ = np.indices(labf.shape); cx = np.bincount(labf.ravel(), weights=(G.x0 + (cc_ + 0.5) * G.res).ravel(), minlength=ML)[units] / UT.cnt[units]; cy = np.bincount(labf.ravel(), weights=(G.y1 - (rr_ + 0.5) * G.res).ravel(), minlength=ML)[units] / UT.cnt[units]
-        for b, meta in enumerate(mv["bundles"]):
+        popr = np.zeros((G.h, G.w), np.float32)
+        for i in range(U): popr[labf == units[i]] = popkm2[i]
+        cache = OUT / f"corridor_axes_e{O['pa_edge_km']:g}_d{O['axis_draws']}_q{O['capture']:g}.pkl"
+        if cache.exists() and not seed_perturb: axes = pickle.load(open(cache, "rb"))
+        else:
+            axes = corridor_axes(G, bud, mv, popr, wdpa_any, wdpa_deep, draws=O["axis_draws"], width_km=O["axis_width_km"], seed=int((seed_perturb or {}).get("seed", 0)), capture=O["capture"], max_width_km=O["max_width_km"])
+            if not seed_perturb: pickle.dump(axes, open(cache, "wb"))
+        for b, ax in enumerate(axes):
+            if ax is None: continue
+            corr_band |= ax["band"]
             ub = np.bincount(labf.ravel(), weights=bud[b].ravel(), minlength=ML)[units]
-            # origin / destination = the corridor-feasible unit nearest the bundle's mean start / end point, restricted to the
-            # largest connected corridor-feasible component carrying this bundle's utilisation (so a route exists at all)
-            comp_of = _components(units, ui, E, can_corr); mass = defaultdict(float)
-            for i in range(U):
-                if can_corr[i]: mass[comp_of[i]] += ub[i]
-            main = max(mass, key=mass.get) if mass else None
-            ends = []
-            for lon, lat in (meta["start"], meta["end"]):
-                x_, y_ = P.FWD(lon, lat); best, bd_ = None, np.inf
-                for i in range(U):
-                    if not can_corr[i] or comp_of[i] != main or ub[i] <= 0 or fixed_core[i]: continue
-                    d_ = math.hypot(cx[i] - x_, cy[i] - y_)
-                    if d_ < bd_: bd_, best = d_, i
-                ends.append(best)
-            if ends[0] is None or ends[1] is None: continue
-            bundles.append(dict(b=b + 1, ub=ub, src=ends[0], dst=ends[1], months=meta["months"], fronts=meta["fronts_fit"] + meta["fronts_holdout"]))
-    return dict(fixed_core=fixed_core, in_wdpa=in_wdpa, designated_not_core_units=desig_fail, designated_fixed_ha=float(area[fixed_core].sum() * 100), G=G, labf=labf, T=T, UT=UT, ML=ML, units=units, U=U, ui=ui, area=area, pop=pop, popkm2=popkm2, crop=crop, clear20=clear20, mine=mine, ud=ud, band=band,
+            bsh = np.bincount(labf.ravel(), weights=ax["band"].ravel().astype(float), minlength=ML)[units] / np.maximum(UT.cnt[units], 1)
+            bundles.append(dict(b=b + 1, ub=ub, in_band=bsh >= 0.5, months=mv["bundles"][b]["months"], fronts=mv["bundles"][b]["fronts_fit"] + mv["bundles"][b]["fronts_holdout"],
+                                axis_km=ax["axis_km"], band_km2=ax["band_km2"], axis_km_pa_edge=ax["axis_km_pa_edge"], axis_km_pa_deep=ax["axis_km_pa_deep"], kind=ax["kind"], half_width_km=ax["half_width_km"], capture=ax["capture"]))
+        band_u = np.bincount(labf.ravel(), weights=corr_band.ravel().astype(float), minlength=ML)[units] / np.maximum(UT.cnt[units], 1)
+        can_corr = (band_u >= 0.5) & ~in_wdpa_deep & ~fixed_core & (popkm2 <= T.get("corridor_pop_km2", 2))   # a village inside a band stays community (an exclave), the band around it is corridor
+    else: can_corr = can_corr & ~in_wdpa_deep
+    return dict(fixed_core=fixed_core, in_wdpa=in_wdpa, in_wdpa_deep=in_wdpa_deep, axes=axes, opts=O, wild_drawn_u=wild_drawn_u, wild_nbrs=wild_nbrs, designated_not_core_units=desig_fail, designated_fixed_ha=float(area[fixed_core].sum() * 100), G=G, labf=labf, T=T, UT=UT, ML=ML, units=units, U=U, ui=ui, area=area, pop=pop, popkm2=popkm2, crop=crop, clear20=clear20, mine=mine, ud=ud, band=band,
                 ud_u=ud_u, band_u=band_u, p10_u=p10_u, cl_then=cl_then, can_core=can_core, can_wild=can_wild, can_corr=can_corr, empt=empt, E=E, img_u=img_u, img_skill=img_skill,
                 bundles=bundles, ud_cell_p95=float(np.percentile(ud[G.mask & (ud > 0)], 95)) if (ud[G.mask] > 0).any() else 1.0)
 
@@ -349,21 +418,24 @@ def _components(units, ui, E, ok):
 # herd_vs_core = 0: herds crossing a core are NOT a reason to refuse the park — zoning shapes future movement (vaccination
 # points, water, enforcement re-route herds; Chinko was a through-route and is now largely avoided). The redirection is a cost
 # the LEDGER states per bundle (herd-months to redirect out of core), never a silent veto in the objective.
+PREP_OPTS = {}
 DEFAULT_W = dict(lam_threat=1.0, lam_people=3.0, lam_claim=1.0, lam_move=0.5, lam_boundary=3.0, wild=0.4, herd_vs_core=0.0, lam_imagery=1.0, lam_corr_people=0.05, corridor_edge_x=2.0)
 
 def solve(st, a, D=None, p10=None, claim_arr=None, weights=None, tag="", seed_perturb=None, quiet=False, corridor_capture=None, max_core_ha=None, max_people_corridor=None, connect=None, min_people=False):
     """Every fine unit gets exactly one class in ONE integer programme (HiGHS via scipy.optimize.milp).
 
-    Variables  x[u,c] ∈ {0,1}  unit u in class c;  z[e] ∈ {0,1} edge e is a class change (boundary);
-               f[b,e→] ≥ 0     flow of bundle b along directed edge e (connectivity only).
+    Variables  x[u,c] ∈ {0,1}  unit u in class c;  z[e] ∈ {0,1} edge e is a class change (boundary); zc[e] corridor edge.
     Constraints
       Σ_c x[u,c] = 1
       class feasibility (per unit, LINEAR in the unit's own numbers): core only if people ≤ core_pop_km2, cropland ≤ core_crop,
-        clearing since 2020 ≤ core_clear, no reported working; wilderness if people ≤ wild_pop_km2 and crop ≤ wild_crop; corridor
-        only inside the movement network — a corridor is where the herds walk, not a class a solver may invent; community anywhere.
-      area of core ≤ max_core_ha; PER BUNDLE Σ x[u,corridor]·ud_b[u] ≥ q·Σ ud_b — every route keeps q of its own utilisation;
-      CONNECTIVITY (--connect): one unit of flow from each bundle's origin unit to its destination unit, allowed only through
-        corridor units (f[b,uv] ≤ x[v,corridor]) — so every bundle's corridor is ONE walkable route end to end, not confetti;
+        clearing since 2020 ≤ core_clear, no reported working; wilderness if people ≤ wild_pop_km2 and crop ≤ wild_crop AND within
+        wild_buffer_km of a unit the SAME solve makes core (x_wild[u] ≤ Σ_{v≤N km} x_core[v]) or on ground the authors drew as
+        wilderness (elsewhere empty land stays unzoned — a wilderness class spread over every empty km² is a claim nobody made);
+        corridor only inside a bundle's CANDIDATE BAND — the bootstrapped buffered least-cost axis of that bundle (prep/corridor_axes),
+        a fixed set of herder-legible shapes the ILP picks from (no flow variables: the band is connected by construction);
+        never deep inside a protected area (the ≤ pa_edge_km rim is open); community anywhere.
+      area of core ≤ max_core_ha; PER BUNDLE Σ_{u in band_b} x[u,corridor]·ud_b[u] ≥ q·Σ_{band_b} ud_b — every route keeps q of the
+        utilisation its own candidate band holds;
       Σ people in corridor ≤ max_people_corridor (the frontier axis: whose land the corridor takes);
       z[e] ≥ |x[u,c] − x[v,c]|.
     Objective (maximise)
@@ -374,17 +446,16 @@ def solve(st, a, D=None, p10=None, claim_arr=None, weights=None, tag="", seed_pe
     `frontier` sweeps the CONSTRAINTS (q, core cap, people in corridor) and reports the Pareto set — the weights are never tuned by eye."""
     from scipy.optimize import milp, LinearConstraint, Bounds
     from scipy import sparse as sp
-    if D is None: D = prep(st, p10, claim_arr, seed_perturb)
+    if D is None: D = prep(st, p10, claim_arr, seed_perturb, PREP_OPTS)
     G, labf, T, UT, ML, units, U, ui, area, pop, popkm2 = D["G"], D["labf"], D["T"], D["UT"], D["ML"], D["units"], D["U"], D["ui"], D["area"], D["pop"], D["popkm2"]
     E, can_core, can_wild, can_corr, empt = D["E"], D["can_core"], D["can_wild"], D["can_corr"], D["empt"]
     ud_u, band_u, p10_u, cl_then, img_u = D["ud_u"], D["band_u"], D["p10_u"], D["cl_then"], D["img_u"]
     W = dict(DEFAULT_W); W.update(weights or {}); img_w = W["lam_imagery"] * D["img_skill"]
     q = a.corridor_capture if corridor_capture is None else corridor_capture; cap = a.max_core_ha if max_core_ha is None else max_core_ha
-    connect = a.connect if connect is None else connect
-    ne = len(E); nx = U * 4; B = D["bundles"] if connect or True else []
-    nb = len(B) if connect else 0; nf = nb * 2 * ne              # directed flow vars per bundle
-    N = nx + ne + nf + ne                                         # + zc[e]: corridor-specific boundary indicator
-    if not quiet: log(f"solve{tag}: {U} units, {ne} edges, {len(B)} bundles{' (flow-connected)' if connect else ''}; feasible core {can_core.sum()}, wilderness {can_wild.sum()}, corridor {can_corr.sum()}; q={q} cap={cap:,.0f} ppl≤{max_people_corridor}")
+    connect = 0; B = D["bundles"]                                 # flow connectivity retired 2026-09-07: candidate bands are connected by construction
+    ne = len(E); nx = U * 4; nf = 0; nb = len(B)
+    N = nx + ne + nf + ne + nb                                    # + zc[e]: corridor-specific boundary indicator; + y[b]: bundle b's band is taken WHOLE
+    if not quiet: log(f"solve{tag}: {U} units, {ne} edges, {len(B)} bundle axes; feasible core {can_core.sum()}, wilderness {can_wild.sum()}, corridor {can_corr.sum()}; q={q} cap={cap:,.0f} ppl≤{max_people_corridor}")
     cvec = np.zeros(N)
     thr_n = p10_u / max(float(np.percentile(p10_u, 95)), 1e-9)
     udn_all = np.minimum(ud_u / np.maximum(UT.cnt[units], 1) / max(D["ud_cell_p95"], 1e-12), 1.0)
@@ -398,55 +469,66 @@ def solve(st, a, D=None, p10=None, claim_arr=None, weights=None, tag="", seed_pe
         leg = sm / max(n, 1); cvec[nx + j] = W["lam_boundary"] * n * (G.res / 1000) * (1 - leg)
         cvec[nx + ne + nf + j] = W["lam_boundary"] * W["corridor_edge_x"] * n * (G.res / 1000) * (0.3 + 0.7 * (1 - leg))   # a corridor edge costs even on a river: herders must be told it
     for i in range(U): cvec[i * 4 + 3] += W["lam_corr_people"] * pop[i]          # every person whose land becomes corridor costs lam_corr_people km²-equivalents
+    for k_, bd in enumerate(B): cvec[nx + ne + nf + ne + k_] = -W["lam_move"] * float(bd["ub"].sum()) / max(D["ud_cell_p95"], 1e-12) * 0.0   # taking a band has no bonus of its own; its units earn ud·lam_move
     if min_people:                                                                # feasibility edge: the fewest people any plan meeting the constraints must put in corridor
         cvec[:] = 0; cvec[[i * 4 + 3 for i in range(U)]] = pop
     rows, cols, vals, lo, hi = [], [], [], [], []; r = 0
     def add(cs, vs, l, h):
         nonlocal r; rows.extend([r] * len(cs)); cols.extend(cs); vals.extend(vs); lo.append(l); hi.append(h); r += 1
     for i in range(U): add([i * 4 + c for c in range(4)], [1] * 4, 1, 1)
+    ub_wild_zero = []
     for j, (u, v, n, sm) in enumerate(E):
         for c in range(4):
             add([nx + j, ui[u] * 4 + c, ui[v] * 4 + c], [1, -1, 1], 0, np.inf); add([nx + j, ui[u] * 4 + c, ui[v] * 4 + c], [1, 1, -1], 0, np.inf)
         zc = nx + ne + nf + j; add([zc, ui[u] * 4 + 3, ui[v] * 4 + 3], [1, -1, 1], 0, np.inf); add([zc, ui[u] * 4 + 3, ui[v] * 4 + 3], [1, 1, -1], 0, np.inf)
+    for i in range(U):                                                             # wilderness = a buffer around core (or drawn): x_wild[u] ≤ Σ_{v ≤ N km} x_core[v]
+        if can_wild[i] and not D["wild_drawn_u"][i]:
+            nb_ = [v for v in D["wild_nbrs"][i] if can_core[v]]
+            if not nb_: ub_wild_zero.append(i); continue
+            add([i * 4 + 1] + [v * 4 + 0 for v in nb_], [1] + [-1] * len(nb_), -np.inf, 0)
     newc = [i for i in range(U) if not (a.fix_designated and D["fixed_core"][i])]
     add([i * 4 for i in newc], list(area[newc] * 100), 0, cap)                   # the cap is on NEW core; gazetted parks are already the state's
-    per_bundle = []
-    for bd in D["bundles"]:
-        ub = bd["ub"]; tot_b = float(ub[can_corr].sum())
-        if tot_b <= 0: continue
-        idx = [i for i in range(U) if can_corr[i] and ub[i] > 0]; add([i * 4 + 3 for i in idx], [ub[i] for i in idx], q * tot_b, np.inf); per_bundle.append(bd["b"])
+    per_bundle = []; yb0 = nx + ne + nf + ne; in_any = np.zeros(U, bool)
+    for k_, bd in enumerate(B):
+        okb = can_corr & bd["in_band"]
+        if not okb.any(): continue
+        for i in np.flatnonzero(okb): add([i * 4 + 3, yb0 + k_], [1, -1], 0, np.inf)     # y_b = 1 → every feasible unit of band b is corridor: the band is taken WHOLE or not at all
+        in_any |= okb; per_bundle.append(bd["b"])
+        if not a.corridor_optional: add([yb0 + k_], [1], 1, 1)
+    for i in range(U):                                                                 # corridor only inside a taken band
+        bs = [yb0 + k_ for k_, bd in enumerate(B) if can_corr[i] and bd["in_band"][i]]
+        if can_corr[i] and bs: add([i * 4 + 3] + bs, [1] + [-1] * len(bs), -np.inf, 0)
+    can_corr = can_corr & in_any
     if max_people_corridor is not None: add([i * 4 + 3 for i in range(U)], list(pop), 0, max_people_corridor)
-    # flow connectivity: for bundle k, directed edge j→ (u→v) is var nx+ne+k*2*ne+2j, (v→u) is +1
-    if connect:
-        out_e = defaultdict(list); in_e = defaultdict(list)
-        for j, (u, v, n, sm) in enumerate(E): out_e[ui[u]].append((j, 0, ui[v])); in_e[ui[v]].append((j, 0)); out_e[ui[v]].append((j, 1, ui[u])); in_e[ui[u]].append((j, 1))
-        for k_, bd in enumerate(B):
-            base = nx + ne + k_ * 2 * ne; s_, t_ = bd["src"], bd["dst"]
-            if s_ == t_: continue
-            for i in range(U):                                   # conservation: out − in = 1 at src, −1 at dst, 0 elsewhere
-                cs = [base + 2 * j + d for (j, d, _) in out_e[i]] + [base + 2 * j + d for (j, d) in in_e[i]]
-                vs = [1] * len(out_e[i]) + [-1] * len(in_e[i]); rhs = 1 if i == s_ else (-1 if i == t_ else 0); add(cs, vs, rhs, rhs)
-            for j, (u, v, n, sm) in enumerate(E):                # flow may enter a unit only if it is corridor (and leave src only if corridor)
-                add([base + 2 * j, ui[v] * 4 + 3], [1, -1], -np.inf, 0); add([base + 2 * j + 1, ui[u] * 4 + 3], [1, -1], -np.inf, 0)
-            add([s_ * 4 + 3], [1], 1, 1); add([t_ * 4 + 3], [1], 1, 1)  # ends are corridor
     A = sp.csr_matrix((vals, (rows, cols)), shape=(r, N))
-    ub_ = np.ones(N); lb_ = np.zeros(N)
+    ub_ = np.ones(N); lb_ = np.zeros(N); ub_wild_zero_s = set(ub_wild_zero)
     for i in range(U):
         if not can_core[i]: ub_[i * 4 + 0] = 0
-        if not can_wild[i]: ub_[i * 4 + 1] = 0
+        if not can_wild[i] or i in ub_wild_zero_s: ub_[i * 4 + 1] = 0
         if not can_corr[i]: ub_[i * 4 + 3] = 0
         if a.fix_designated and D["fixed_core"][i]: lb_[i * 4 + 0] = 1
     t0 = time.time()
-    res = milp(cvec, constraints=LinearConstraint(A, lo, hi), integrality=np.r_[np.ones(nx), np.zeros(ne + nf + ne)], bounds=Bounds(lb_, ub_), options=dict(time_limit=a.time_limit, mip_rel_gap=a.gap, disp=False))
+    res = milp(cvec, constraints=LinearConstraint(A, lo, hi), integrality=np.r_[np.ones(nx), np.zeros(ne + nf + ne), np.ones(nb)], bounds=Bounds(lb_, ub_), options=dict(time_limit=a.time_limit, mip_rel_gap=a.gap, disp=False))
     if res.x is None:
         if quiet: return None
         sys.exit(f"solver failed: {res.message}")
-    x = res.x[:nx].reshape(U, 4); cls_i = x.argmax(1)
+    x = res.x[:nx].reshape(U, 4); cls_i = x.argmax(1); taken = [B[k_]["b"] for k_ in range(nb) if res.x[nx + ne + nf + ne + k_] > 0.5]
     if not quiet: log(f"solve{tag}: {res.message} in {time.time()-t0:.0f}s, objective {res.fun:,.0f}")
     cls_i, absorbed = simplify(D, cls_i, a.island_ha, fixed=(D["fixed_core"] if a.fix_designated else None))
     if not quiet and absorbed: log(f"solve{tag}: simplified — {len(absorbed)} islands < {a.island_ha:,.0f} ha absorbed into the class around them ({sum(x_['ha'] for x_ in absorbed):,} ha)")
-    lab = np.zeros_like(labf)
-    for i, u in enumerate(units): lab[labf == u] = cls_i[i] + 1
+    lab = np.zeros_like(labf); inten = np.zeros(labf.shape, np.float32)
+    # per-pixel INTENSITY (0–1) = how strongly the evidence backs the class here, drawn as opacity: core/wilderness by emptiness,
+    # community by people (0 people → 0: unzoned reads as white), corridor by the herd utilisation of the bundles whose band it is in
+    for i, u in enumerate(units):
+        m_ = labf == u; lab[m_] = cls_i[i] + 1
+        if cls_i[i] == 0: inten[m_] = empt[i]
+        elif cls_i[i] == 1: inten[m_] = 0.75 * empt[i]
+        elif cls_i[i] == 2: inten[m_] = min(popkm2[i] / 2.0, 1.0)
+    udr = np.zeros(labf.shape, np.float32)
+    for bd in B:
+        if bd["b"] in taken: udr += np.load(OUT / "movement_bundle_ud.npy")[bd["b"] - 1].astype(np.float32)
+    udn_r = np.minimum(udr / max(float(np.percentile(udr[udr > 0], 90)) if (udr > 0).any() else 1.0, 1e-12), 1.0)
+    inten[lab == 4] = np.maximum(0.25, udn_r[lab == 4])
     # ----- zones (connected components on the unit graph) and the LEDGER (who pays)
     comp = np.zeros(U, int); k = 0; adj = defaultdict(list)
     for u, v, n, sm in E: adj[ui[u]].append(ui[v]); adj[ui[v]].append(ui[u])
@@ -466,16 +548,17 @@ def solve(st, a, D=None, p10=None, claim_arr=None, weights=None, tag="", seed_pe
     zones.sort(key=lambda z: -z["area_ha"])
     bl = sum(n for (u, v, n, sm) in E if cls_i[ui[u]] != cls_i[ui[v]]); bleg = sum(sm for (u, v, n, sm) in E if cls_i[ui[u]] != cls_i[ui[v]])
     ledger = ledger_of(D, cls_i)
-    summary = dict(status=res.message, objective=float(res.fun), units=U, edges=len(E), weights=W, max_core_ha=cap, corridor_capture=q, max_people_corridor=max_people_corridor, connect=bool(connect),
+    summary = dict(status=res.message, objective=float(res.fun), units=U, edges=len(E), weights=W, max_core_ha=cap, corridor_capture=q, max_people_corridor=max_people_corridor, connect=False, opts=D["opts"],
+                   corridor_axes=[{k_: bd[k_] for k_ in ("b", "kind", "axis_km", "half_width_km", "capture", "band_km2", "axis_km_pa_edge", "axis_km_pa_deep")} for bd in B], bundles_taken=taken,
                    corridor_floor_per_bundle=per_bundle, islands_absorbed=absorbed, designated_fixed_core_ha=round(D["designated_fixed_ha"]) if a.fix_designated else 0, designated_units_failing_core_rule=len(D["designated_not_core_units"]), imagery_skill=round(D["img_skill"], 3), imagery_weight_effective=round(img_w, 3), solve_s=round(time.time() - t0, 1),
                    boundary_km=round(bl * G.res / 1000), boundary_legibility=round(bleg / max(bl, 1), 2),
                    by_class={c: dict(km2=round(float(area[cls_i == ci].sum())), people=int(pop[cls_i == ci].sum()), zones=sum(1 for z in zones if z["cls"] == c)) for ci, c in enumerate(CLASSES)},
                    ledger=ledger, zones=zones)
     if quiet: return lab, cls_i, units, summary
-    json.dump(summary, open(OUT / f"solve{tag}.json", "w"), indent=1); np.save(OUT / f"solve{tag}_lab.npy", lab)
+    json.dump(summary, open(OUT / f"solve{tag}.json", "w"), indent=1); np.save(OUT / f"solve{tag}_lab.npy", lab); np.save(OUT / f"solve{tag}_intensity.npy", inten)
     L = [f"SOLVE{tag} — one integer programme over {U} fine units / {len(E)} edges ({res.message}, {summary['solve_s']} s); boundary {summary['boundary_km']:,} km at mean legibility {summary['boundary_legibility']} (1 = every metre on a river/ridge/district line).",
          "weights " + json.dumps(W), f"imagery term: measured skill ρ̄ {D['img_skill']:.2f} → effective weight {img_w:.2f} (lam_imagery × skill; 0 = unmeasured)",
-         f"gazetted WDPA parks/reserves fixed as core: {D['designated_fixed_ha']:,.0f} ha ({len(D['designated_not_core_units'])} designated units fail the core rule and are left free)" if a.fix_designated else "gazetted parks NOT fixed", f"cap on NEW core {cap:,.0f} ha; corridor must hold ≥ {q:.0%} of the herd utilisation of EACH of {len(per_bundle)} origin–destination bundles" + ("; every bundle's corridor is one connected route origin→destination (flow constraint)" if connect else "") + (f"; ≤ {max_people_corridor:,} people in corridor" if max_people_corridor is not None else "") + ".", ""]
+         f"gazetted WDPA parks/reserves fixed as core: {D['designated_fixed_ha']:,.0f} ha ({len(D['designated_not_core_units'])} designated units fail the core rule and are left free)" if a.fix_designated else "gazetted parks NOT fixed", f"cap on NEW core {cap:,.0f} ha; corridors = {len(taken)}/{len(per_bundle)} bundle bands taken WHOLE (each a bootstrapped least-cost axis, {D['opts']['axis_draws']} draws, buffered from {D['opts']['axis_width_km'][0]:g} km half-width until it holds ≥ {D['opts']['capture']:.0%} of its bundle's utilisation, ≤ {D['opts']['max_width_km']:g} km; may run ≤ {D['opts']['pa_edge_km']:g} km inside a protected area's rim, never deeper)" + f"; wilderness only ≤ {D['opts']['wild_buffer_km']:g} km from a core unit of this solve, or where the authors drew it" + (f"; ≤ {max_people_corridor:,} people in corridor" if max_people_corridor is not None else "") + ".", ""]
     for c in CLASSES:
         b = summary["by_class"][c]; L.append(f"{c:<10} {b['km2']:>9,} km2  {b['people']:>9,} people  {b['zones']} zones")
     L += ["", "LEDGER — who pays for this plan (the numbers a commissioner is asked to sign):"] + ledger_lines(ledger) + [""]
@@ -509,7 +592,7 @@ def simplify(D, cls_i, island_ha, fixed=None):
             if len(nbc) != 1: continue
             to = nbc.pop()
             if fixed is not None and fixed[m].any(): continue
-            if to == 3 and D["in_wdpa"][m].any(): continue
+            if to == 3 and D["in_wdpa_deep"][m].any(): continue
             absorbed.append(dict(from_cls=CLASSES[cls_i[m[0]]], to_cls=CLASSES[to], ha=int(ha), units=int(len(m)))); cls_i[m] = to; changed = True
         if not changed: break
     return cls_i, absorbed
@@ -525,9 +608,9 @@ def ledger_of(D, cls_i):
                boundary_open_bush_km=round(sum(n * (1 - sm / max(n, 1)) for (u, v, n, sm) in E if cls_i[ui[u]] != cls_i[ui[v]]) * G.res / 1000),
                bundles=[])
     for bd in D["bundles"]:
-        tot = float(bd["ub"].sum()); inside = float(bd["ub"][corr].sum()) / max(tot, 1e-9); in_band = float(bd["ub"][D["can_corr"]].sum()) / max(tot, 1e-9)
+        tot = float(bd["ub"].sum()); inside = float(bd["ub"][corr].sum()) / max(tot, 1e-9); in_band = float(bd["ub"][D["can_corr"] & bd["in_band"]].sum()) / max(tot, 1e-9)
         herd_months = sum(bd["months"].values())
-        out["bundles"].append(dict(bundle=bd["b"], fronts=bd["fronts"], ud_in_corridor=round(inside, 2), ud_in_band=round(in_band, 2), herd_months_to_redirect_out_of_core=int(round(herd_months * float(bd["ub"][core].sum()) / max(tot, 1e-9))), ud_in_core=round(float(bd["ub"][core].sum()) / max(tot, 1e-9), 2),
+        out["bundles"].append(dict(bundle=bd["b"], fronts=bd["fronts"], kind=bd.get("kind"), half_width_km=bd.get("half_width_km"), capture=bd.get("capture"), axis_km=bd.get("axis_km"), axis_km_pa_edge=bd.get("axis_km_pa_edge"), axis_km_pa_deep=bd.get("axis_km_pa_deep"), ud_in_corridor=round(inside, 2), ud_in_band=round(in_band, 2), herd_months_to_redirect_out_of_core=int(round(herd_months * float(bd["ub"][core].sum()) / max(tot, 1e-9))), ud_in_core=round(float(bd["ub"][core].sum()) / max(tot, 1e-9), 2),
                                    ud_in_community=round(float(bd["ub"][cls_i == 2].sum()) / max(tot, 1e-9), 2), herd_months_outside_corridor=int(round(herd_months * (1 - inside))), months=bd["months"]))
     out["herd_months_outside_corridor"] = sum(b["herd_months_outside_corridor"] for b in out["bundles"]); out["herd_months_to_redirect_out_of_core"] = sum(b["herd_months_to_redirect_out_of_core"] for b in out["bundles"])
     return out
@@ -537,7 +620,7 @@ def ledger_lines(L_):
            f"  1930s-claimed cells (2 km) inside core: {L_['claim_cells_in_core']:,}   boundary through open bush to walk and mark: {L_['boundary_open_bush_km']:,} km",
            f"  herd-months (front × month) routed outside the corridor class: {L_['herd_months_outside_corridor']:,}; of these, herd-months now crossing CORE that the plan must redirect (water points, vaccination posts, enforcement): {L_['herd_months_to_redirect_out_of_core']:,}"]
     for b in L_["bundles"]:
-        out.append(f"    bundle {b['bundle']:>2} ({b['fronts']} fronts): UD in corridor {b['ud_in_corridor']:.2f} (of all; {b['ud_in_band']:.2f} lies in its band, the floor applies there), in core {b['ud_in_core']:.2f}, in community {b['ud_in_community']:.2f}; {b['herd_months_outside_corridor']:,} herd-months outside")
+        out.append(f"    bundle {b['bundle']:>2} ({b['fronts']} fronts; {b.get('kind')} {b.get('axis_km')} km, half-width {b.get('half_width_km')} km, band holds {b.get('capture')} of its UD; {b.get('axis_km_pa_edge')} km along a PA rim): UD in corridor {b['ud_in_corridor']:.2f} (of all; {b['ud_in_band']:.2f} in its candidate band), in core {b['ud_in_core']:.2f}, in community {b['ud_in_community']:.2f}; {b['herd_months_outside_corridor']:,} herd-months outside")
     return out
 
 def frontier(st, a):
@@ -546,10 +629,11 @@ def frontier(st, a):
     are listed. The commissioner chooses a point on the frontier; no λ is chosen for them."""
     p10 = np.load(OUT / "threat_p10.npy") if (OUT / "threat_p10.npy").exists() else None
     cl = np.load(OUT / "claim_state.npy") if (OUT / "claim_state.npy").exists() else None
-    D = prep(st, p10, cl); W = json.loads(a.weights) if a.weights else None
+    W = json.loads(a.weights) if a.weights else None
     Q = [float(v) for v in a.sweep_q.split(",")]; CAPS = [float(v) for v in a.sweep_core_ha.split(",")]; PP = [None] + [float(v) for v in a.sweep_people.split(",") if v]
     rows = []
     for q in Q:
+        D = prep(st, p10, cl, opts=dict(PREP_OPTS, capture=q))         # q = the capture each corridor band is widened to hold → new candidate bands per q
         for cap in CAPS:
             for pp in PP:
                 t0 = time.time(); r_ = solve(st, a, D=D, weights=W, quiet=True, corridor_capture=q, max_core_ha=cap, max_people_corridor=pp, connect=a.frontier_connect)
@@ -568,8 +652,8 @@ def frontier(st, a):
         return any((o["core_km2"] >= r_["core_km2"] and o["ud_in_corridor_mean"] >= r_["ud_in_corridor_mean"] and o["people_in_corridor"] <= r_["people_in_corridor"] and o["open_bush_km"] <= r_["open_bush_km"]) and
                    (o["core_km2"], o["ud_in_corridor_mean"], -o["people_in_corridor"], -o["open_bush_km"]) != (r_["core_km2"], r_["ud_in_corridor_mean"], -r_["people_in_corridor"], -r_["open_bush_km"]) for o in ok)
     for r_ in ok: r_["pareto"] = not dominated(r_)
-    json.dump(dict(rows=rows, weights=W or DEFAULT_W, connect=bool(a.frontier_connect)), open(OUT / "frontier.json", "w"), indent=1)
-    L = [f"FRONTIER — {len(rows)} re-solves sweeping the CONSTRAINTS (per-bundle corridor capture q × core cap × people-in-corridor cap); weights fixed at defaults, never tuned{'' if a.frontier_connect else '; flow-connectivity OFF for speed — re-solve the chosen row with `solve --connect 1`'}. ★ = Pareto-efficient on (core km² ↑, herd UD in corridor ↑, people in corridor ↓, open-bush boundary km ↓).",
+    json.dump(dict(rows=rows, weights=W or DEFAULT_W, opts=D["opts"]), open(OUT / "frontier.json", "w"), indent=1)
+    L = [f"FRONTIER — {len(rows)} re-solves sweeping the CONSTRAINTS (per-bundle corridor capture q × core cap × people-in-corridor cap); weights fixed at defaults, never tuned; corridors = fixed candidate bands (buffered least-cost axes), options {json.dumps(D['opts'])}. ★ = Pareto-efficient on (core km² ↑, herd UD in corridor ↑, people in corridor ↓, open-bush boundary km ↓).",
          f"{'':2}{'q':>5} {'core cap ha':>12} {'ppl cap':>9} | {'core km2':>9} {'corr km2':>9} {'comm km2':>9} {'UD in corr':>10} {'ppl in corr':>11} {'herd-mo out':>11} {'open bush km':>12} {'legib':>6} {'zones':>5}"]
     for r_ in rows:
         if not r_["feasible"]: L.append(f"  {r_['q']:>5} {r_['core_cap_ha']:>12,.0f} {str(None if r_['people_cap'] is None else int(r_['people_cap'])):>9} | INFEASIBLE — at q={r_['q']} no plan puts fewer than {r_['min_people_needed']:,} people on corridor land" if r_.get("min_people_needed") is not None else f"  {r_['q']:>5} {r_['core_cap_ha']:>12,.0f} | INFEASIBLE"); continue
@@ -587,7 +671,7 @@ def compare(st, a, tag=""):
     about evidence, not about method."""
     p10 = np.load(OUT / "threat_p10.npy") if (OUT / "threat_p10.npy").exists() else None
     cl = np.load(OUT / "claim_state.npy") if (OUT / "claim_state.npy").exists() else None
-    D = prep(st, p10, cl); G, labf, units, ui, U = D["G"], D["labf"], D["units"], D["ui"], D["U"]
+    D = prep(st, p10, cl, opts=PREP_OPTS); G, labf, units, ui, U = D["G"], D["labf"], D["units"], D["ui"], D["U"]
     refs = P.references(); zl = np.zeros_like(labf); UNZ = 4                # 0 empty, 1..4 classes, 5 = unzoned marker
     for k, g in refs.items():
         if g.geom_type == "Point": continue
@@ -806,10 +890,7 @@ def support(st, a, draws=12):
     ud0 = np.load(OUT / "movement_ud.npy"); band0 = np.load(OUT / "movement_band.npy") > 0
     from scipy import ndimage
     for d in range(draws):
-        pert = dict(pop_factor=float(rng.uniform(0.7, 1.6)))
-        # season resampling: jitter the UD by a bootstrap of bundle weights (a season out ≈ 1/3 of fronts gone)
-        w = rng.uniform(0.6, 1.4); ud = ud0 * w; band = ndimage.gaussian_filter(ud0, rng.uniform(1, 3)) >= np.percentile(ud0[G.mask][ud0[G.mask] > 0], rng.uniform(55, 75)) if (ud0[G.mask] > 0).any() else band0
-        pert.update(ud=ud, band=band & G.mask)
+        pert = dict(pop_factor=float(rng.uniform(0.7, 1.6)), seed=d + 1)      # seed re-draws every corridor axis (cost jitter, smoothing, people penalty, width)
         st2 = dict(st); st2["surf"] = np.where(rng.random(st["surf"].shape) < 0.3, np.minimum(st["surf"], 0.35), st["surf"])
         r_ = solve(st2, a, p10=p10, claim_arr=cl, tag=f"_draw{d}", seed_perturb=pert, quiet=True, connect=0)
         if r_ is None: log(f"  draw {d}: infeasible, skipped"); continue
@@ -895,7 +976,7 @@ def main():
     ap.add_argument("mode", choices=["movement", "threat", "claim", "solve", "frontier", "compare", "rank", "support", "narrate", "all"])
     ap.add_argument("--hold-season", type=int, default=2025); ap.add_argument("--capture", type=float, default=0.5); ap.add_argument("--sigma-km", type=float, default=4.0); ap.add_argument("--k", type=int, default=12)
     ap.add_argument("--max-core-ha", type=float, default=6_000_000, help="total NEW core (beyond gazetted WDPA parks) the state can gazette across the AOI")
-    ap.add_argument("--corridor-capture", type=float, default=0.25, help="share of EACH bundle's herd utilisation (inside its band) the corridor class must hold")
+    ap.add_argument("--corridor-capture", type=float, default=0.35, help="share of EACH bundle's herd utilisation its corridor band is widened to hold (the band's width axis of the frontier)")
     ap.add_argument("--time-limit", type=float, default=600); ap.add_argument("--gap", type=float, default=0.01)
     ap.add_argument("--weights", default="", help="JSON overrides for the objective weights")
     ap.add_argument("--min-ha", type=float, default=2000); ap.add_argument("--draws", type=int, default=12); ap.add_argument("--workers", type=int, default=8); ap.add_argument("--reviewers", type=int, default=2)
@@ -904,11 +985,17 @@ def main():
     ap.add_argument("--island-ha", type=float, default=30_000, help="post-solve: a zone smaller than this surrounded by one other class is absorbed into it (a corridor a herder can be told)")
     ap.add_argument("--budget-n", type=int, default=0, help="rank: how many conservancies the budget funds (0 = all)"); ap.add_argument("--budget-ha", type=float, default=0); ap.add_argument("--rank-weights", default="")
     ap.add_argument("--cons-target-ha", type=float, default=150_000); ap.add_argument("--cons-min-pop", type=float, default=2000)
-    ap.add_argument("--connect", type=int, default=1, help="1 = every bundle's corridor must be one connected origin→destination route (flow constraint)")
+    ap.add_argument("--connect", type=int, default=0, help="RETIRED 2026-09-07 (accepted, ignored): corridors are now fixed candidate bands, connected by construction")
+    ap.add_argument("--pa-edge-km", type=float, default=5.0, help="a corridor may run this far inside a protected area's rim (negative buffer); deeper is closed")
+    ap.add_argument("--wild-buffer-km", type=float, default=15.0, help="wilderness only within this distance (unit centroids) of a core unit of the same solve, or where the authors drew wilderness; elsewhere empty land stays unzoned")
+    ap.add_argument("--axis-draws", type=int, default=12); ap.add_argument("--axis-width-km", default="8,16", help="starting half-width range (km) of the bootstrapped corridor axis buffer")
+    ap.add_argument("--max-width-km", type=float, default=16.0, help="a corridor band is widened until it holds --corridor-capture of its bundle's UD, but never past this half-width")
+    ap.add_argument("--corridor-optional", type=int, default=0, help="1 = the ILP may drop a bundle's band entirely (default: every validated bundle gets its corridor)")
     ap.add_argument("--max-people-corridor", type=float, default=None, help="cap on people whose land becomes corridor (frontier axis)")
-    ap.add_argument("--frontier-connect", type=int, default=0); ap.add_argument("--sweep-q", default="0.15,0.25,0.35,0.5"); ap.add_argument("--sweep-core-ha", default="3000000,6000000,9000000"); ap.add_argument("--sweep-people", default="5000,20000")
+    ap.add_argument("--frontier-connect", type=int, default=0); ap.add_argument("--sweep-q", default="0.25,0.35,0.5"); ap.add_argument("--sweep-core-ha", default="3000000,6000000,9000000"); ap.add_argument("--sweep-people", default="5000,20000")
     a = ap.parse_args(); st = load_state()
     W = json.loads(a.weights) if a.weights else None
+    global PREP_OPTS; PREP_OPTS = dict(pa_edge_km=a.pa_edge_km, wild_buffer_km=a.wild_buffer_km, axis_draws=a.axis_draws, axis_width_km=tuple(float(v) for v in a.axis_width_km.split(",")), capture=a.corridor_capture, max_width_km=a.max_width_km)
     if a.mode in ("movement", "all"): movement(st, a.hold_season, a.capture, a.sigma_km, a.k)
     if a.mode in ("threat", "all"): threat(st)
     if a.mode in ("claim", "all"): claim(st)

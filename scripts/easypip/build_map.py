@@ -928,7 +928,7 @@ def main():
     unmatched = sorted({short_name(nm) for nm in zones if role_of(nm) == "other"})
     planner_n = 0
     if a.planner:
-        planner_n = sum(len(json.load(open(f))["features"]) for f in Path(a.planner).parent.glob("optimize_*.geojson") if "support" not in f.name)
+        planner_n = sum(len(json.load(open(f))["features"]) for f in Path(a.planner).parent.glob("optimize_*.geojson") if "support" not in f.name) or len(json.load(open(a.planner))["features"])
     items = panel_items(st, fire, sites, belt, unmatched, rim_km, rim_km,
                         a.date, planner_n)
     map_w_deg = (x1 - x0) * kx
@@ -1050,22 +1050,45 @@ def main():
         files = sorted(f for f in pdir.glob("optimize_*.geojson") if "support" not in f.name)
         files.sort(key=lambda f: next((i for i, k in enumerate(("core", "corridor", "wilderness", "community")) if k in f.name), 9))
         if Path(a.planner) not in files: files.append(Path(a.planner))
+        # the SOLVER plan (plan_solver.py) replaces the greedy optimize_* proposals when passed as --planner
+        # (…/solver/zones.geojson): its per-pixel intensity raster is drawn as opacity, its zones outlined, budget conservancies C1..n
+        if Path(a.planner).name == "zones.geojson" and "solver" in str(pdir):
+            files = [Path(a.planner)]
+            inten_p, lab_p, st_p = pdir / "solve_intensity.npy", pdir / "solve_lab.npy", pdir.parent / "conservancy_units" / "state.pkl"
+            if inten_p.exists() and lab_p.exists() and st_p.exists():
+                import pickle, sys as _sys; _sys.path.insert(0, str(ROOT / "scripts"))
+                import plan_conservancy_units as _P; import __main__ as _m; _m.Grid = _P.Grid
+                _G = pickle.load(open(st_p, "rb"))["G"]; _lab = np.load(lab_p); _int = np.load(inten_p)
+                _rgba = np.zeros((_G.h, _G.w, 4))
+                for _i, _c in enumerate(("core", "wilderness", "community", "corridor"), 1):
+                    _mm = _lab == _i; _rgba[_mm, :3] = matplotlib.colors.to_rgb(OPT_STYLE[_c]["fc"]); _rgba[_mm, 3] = 0.06 + 0.5 * np.clip(_int[_mm], 0, 1)
+                # CEA grid → lon/lat image: reproject corners; the grid is axis-aligned in CEA, lon is linear in x and lat ≈ monotone in y, so warp rows
+                _lon0, _ = _P.INV(_G.x0, _G.y1); _lon1, _ = _P.INV(_G.x0 + _G.w * _G.res, _G.y1)
+                _lats = np.array([_P.INV(_G.x0, _G.y1 - (r + 0.5) * _G.res)[1] for r in range(_G.h)])
+                _ylin = np.linspace(_lats[0], _lats[-1], _G.h * 2); _idx = np.clip(np.searchsorted(-_lats, -_ylin), 0, _G.h - 1)
+                ax.imshow(_rgba[_idx], extent=(_lon0, _lon1, _lats[-1], _lats[0]), origin="upper", interpolation="nearest", zorder=3.05)
         for fp in files:
             for f in json.load(open(fp))["features"]:
                 pr = f["properties"]; g = shape(f["geometry"])
-                cls = pr.get("cls") or "community"
+                cls = pr.get("solver_class") or pr.get("cls") or "community"
                 if "corridor" in fp.name: cls = "corridor"
                 st = OPT_STYLE.get(cls, OPT_STYLE["community"])
-                for p in poly_patches(g, facecolor=st["fc"], alpha=0.10, edgecolor="none", zorder=3.1):
-                    ax.add_patch(p)
-                for p in poly_patches(g, facecolor="none", edgecolor=st["ec"], linewidth=st["lw"],
-                                      hatch=st["hatch"], zorder=3.15):
-                    p.set_alpha(0.6); ax.add_patch(p)
+                if "solver_class" not in pr:                       # solver zones: the intensity raster is the fill
+                    for p in poly_patches(g, facecolor=st["fc"], alpha=0.10, edgecolor="none", zorder=3.1):
+                        ax.add_patch(p)
+                solver_z = "solver_class" in pr
+                for p in poly_patches(g, facecolor="none", edgecolor=st["ec"], linewidth=(0.5 if cls != "corridor" else 0.9) if solver_z else st["lw"],
+                                      hatch=None if solver_z else st["hatch"], zorder=3.15):
+                    p.set_alpha(0.6 if not solver_z else 0.8); ax.add_patch(p)
                 c = g.representative_point()
                 if cls == "corridor" and pr.get("from_place"):
                     # a corridor branch is labelled with what operations need: where from, where to, how many herds, when
                     nf = pr.get("bundle_fronts") or pr.get("fronts_long")
                     planner_labels.append((c.x, c.y, f"{pr['from_place'].split(' (')[0]} \u2192 {pr['to_place'].split(' (')[0]} · {nf:,} herds · {pr.get('onset')}", st["ec"], 8.2))
+                    continue
+                if "solver_class" in pr:                          # solver zone: label only budget conservancies (C<rank>) and core ≥ 300k ha
+                    if pr.get("in_budget"): planner_labels.append((c.x, c.y, f"C{pr['rank']} · {pr['area_ha']/1000:,.0f}k ha · {pr['population_est']:,} ppl", st["ec"], 8.2))
+                    elif cls == "core" and pr["area_ha"] >= 300_000: planner_labels.append((c.x, c.y, f"core · {pr['area_ha']/1000:,.0f}k ha", st["ec"], 7.8))
                     continue
                 sup = f" · support {pr['support_mean']}" if pr.get("support_mean") is not None else ""
                 towns = json.loads(pr["towns"]) if isinstance(pr.get("towns"), str) else (pr.get("towns") or [])
