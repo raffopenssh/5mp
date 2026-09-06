@@ -24,10 +24,16 @@ proposes and to what was drawn — the same numbers, side by side.
 
 Land is cut *only* along features a villager, herder or ranger can name:
 rivers (HydroRIVERS; unnamed reaches take their 1930s Sudan Survey name),
-ridge chains of the sheets' hill marks, 1930s district boundaries and the few
-sub-tribal boundaries the sheets mark (customary land; ~1,250 km on XSA, ~220 km of it
-explicitly tribal - none on a proposal's edge), named khors, roads, borders, and — faintly — geological
-contacts. A watershed algorithm floods from every village and from a lattice
+swamp and lake edges (the toich edge is the grazing boundary herders already
+keep), ridge chains of the sheets' hill marks, named khors, roads, borders,
+1930s *district* boundaries, and — faintly — geological contacts. **1930s
+tribal boundaries are not used**: they are the Condominium's assignment, not
+a line today's communities should be asked to accept, and a boundary must be
+described in words people use now. Where no river or ridge runs, the
+description names the point landmarks within 3 km — 1930s village sites and
+wells from the sheets' symbol layer, today's villages, lone hills — so a
+stretch reads "from the Bo River past old Tidi to Kuru pool", not "unnamed".
+A watershed algorithm floods from every village and from a lattice
 in empty land, so each unit ends on the strongest such feature between two
 seeds. Units under 2,000 ha are absorbed. Every unit's perimeter is then
 described by feature and compass side ("Nahr al Jur on the E/NE 34 km; K.
@@ -59,8 +65,14 @@ class term) rises. It repeats this dozens of times with every threshold
 perturbed ±25 % and the path jittered; the share of runs in which a unit ends
 inside the area is its **support**. A proposal is the land with support ≥ 0.5;
 0.25–0.5 is *contested* land to walk with the community; the spread of sizes
-across runs is the uncertainty. A corridor is treated as a path: the
-least-cost route over long-front density, bootstrapped the same way.
+across runs is the uncertainty. A corridor is treated as a *network of paths*:
+the long transhumance fronts are grouped by where they start and end (about
+ten bundles, several beginning and ending inside the study area), each bundle
+is routed as its own least-cost path over long-front density weighted by how
+much the fronts there agree on one axis, and each is bootstrapped the same
+way. Every branch reports where from, where to, how many fronts, which months,
+and whether the band holds more herd movement than the general burning
+would predict.
 
 ## 6. Reading the map
 
