@@ -85,7 +85,7 @@ LANDSCAPE_ASPECT = 1.414   # A-series landscape: the map frame is widened (east,
 # ---------------------------------------------------------------- palette
 # Light theme, matching the report's own SVG maps (srv/templates/globe.html
 # _buildParkMapSvgUncached): cream paper, green boundary, red fire, orange
-# settlements, magenta clearing, grey roads, blue rivers.
+# settlements, indigo clearing cells, grey roads, blue rivers.
 PAPER = "#fdfdfa"
 INK = "#2b2b2b"
 MUTED = "#6b6b6b"
@@ -97,6 +97,11 @@ USER_GREY = "#8c8c86"      # planner sheet: every hand-drawn boundary, one quiet
 TAN = "#b08d57"            # pastoral / grazing zones
 RED = "#c62828"            # fire
 ORANGE = "#e08a1e"         # settlements
+CLEAR = "#3b2a7a"          # clearing (deforestation). Indigo, the app's violet family pulled to the dark end: the
+                           # sheet's warm side is taken (fire red, corridor red, built-up amber, gold) and the
+                           # lavender side by the community zone, so clearing gets the one hue left AND a second
+                           # channel - it is the only layer drawn as discrete graduated cells (size ∝ km²), so it
+                           # survives a black-and-white print as the darkest crisp squares on the sheet
 GOLD = "#8a6d1f"           # the gold flank
 BLUE = "#7cb8e8"           # rivers
 PLAN = "#1f4e9c"           # the plan's own furniture: sites, axis, asks
@@ -366,12 +371,12 @@ def load_gold(reach):
     def keep(lon, lat):
         return pr.contains(Point(lon, lat))
 
-    top5 = [(f["geometry"]["coordinates"][0], f["geometry"]["coordinates"][1])
-            for f in feats if f["properties"].get("tier") == "top05"]
+    top5 = [(f["geometry"]["coordinates"][0], f["geometry"]["coordinates"][1], float(f["properties"].get("pctile") or 95))
+            for f in feats if f["properties"].get("tier") == "top05"]   # (lon, lat, model percentile 95..100)
     skill = (pred.get("composite_skill") or [{}])
     sk = next((s for s in skill if s.get("top_frac") == 0.2), skill[0])
     return dict(
-        top5=[p for p in top5 if keep(*p)],
+        top5=[p for p in top5 if keep(p[0], p[1])],
         candidates=[(c["lon"], c["lat"], c.get("character"))
                     for c in pred.get("candidates", []) if keep(c["lon"], c["lat"])],
         watchlist=[(w["lon"], w["lat"], w.get("name"))
@@ -502,6 +507,46 @@ def load_density(pdir):
     out["extent"] = (float(lon_edges[0]), float(lon_edges[1]), float(lat_edges[1]), float(lat_edges[0]))
     out["cell_km"] = G.res / 1000
     return out
+
+
+def graduated_cells(dens, key, color, shape="square", vmax_pct=98, zorder=2.14, ink=(0.35, 0.95)):
+    """A density raster as graduated symbols: for every 2 km cell with a value, one centred mark whose side (or
+    diameter) runs 0.22..1.0 of the cell with sqrt(v/vmax) - paper area ∝ quantity - and whose ink runs 0.35..0.95
+    with it, so the median hectare-scale cell stays a legible pale mark instead of a stipple field. Returns [] when
+    there is nothing to draw (caller gates the legend on that). Sets dens[key+"_vmax"], dens[key+"_n"]."""
+    from matplotlib.collections import PatchCollection
+    from matplotlib.colors import to_rgb
+    from matplotlib.patches import Ellipse
+    arr = np.array(dens[key], float)
+    ok = np.isfinite(arr) & (arr > 0)
+    if not ok.any():
+        return []
+    x0, x1, y0, y1 = dens["extent"]; h, w = arr.shape
+    dx, dy = (x1 - x0) / w, (y1 - y0) / h
+    vmax = float(np.percentile(arr[ok], vmax_pct)) or float(arr[ok].max())
+    rows, cols = np.nonzero(ok)
+    t = np.sqrt(np.clip(arr[rows, cols] / vmax, 0, 1))
+    frac = 0.22 + 0.78 * t
+    cx = x0 + (cols + 0.5) * dx; cy = y1 - (rows + 0.5) * dy
+    if shape == "circle":
+        patches = [Ellipse((x, y), f * dx, f * dy) for x, y, f in zip(cx, cy, frac)]
+    else:
+        patches = [Rectangle((x - f * dx / 2, y - f * dy / 2), f * dx, f * dy) for x, y, f in zip(cx, cy, frac)]
+    dens[key + "_vmax"], dens[key + "_n"] = vmax, int(ok.sum())
+    # a hair of paper around each mark separates neighbours and lifts it off a saturated fill
+    rgba = np.zeros((len(patches), 4)); rgba[:, :3] = to_rgb(color); rgba[:, 3] = ink[0] + (ink[1] - ink[0]) * t
+    return [PatchCollection(patches, facecolors=rgba, edgecolor=PAPER, linewidths=0.25, zorder=zorder)]
+
+
+TOWN_RIM = "#5a3200"
+
+
+def town_symbol(ax, x, y, s, zorder=4.0, **kw):
+    """The topo-sheet town mark: a dark ring, a paper gap, an amber core - three concentric discs. A built-up cell
+    under it is a rimless amber disc, so on a black-and-white copy (hue gone) the town is still the one with the ring."""
+    s = np.asarray(s, float)
+    ax.scatter(x, y, s=s, c=PAPER, edgecolors=TOWN_RIM, linewidths=0.45, zorder=zorder, **kw)
+    ax.scatter(x, y, s=s * 0.50, c=ORANGE, edgecolors="none", zorder=zorder + 0.01, **kw)
 
 
 def load_teams(pdir):
@@ -815,6 +860,19 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
                 ax.plot([SYM_X - 0.024, SYM_X + 0.024], [yc, yc], color=mec,
                         lw=lw, ls=ls, alpha=alpha, clip_on=False,
                         solid_capstyle="butt")
+            elif swatch == "town":   # the town mark, from the routine that draws it on the map
+                town_symbol(ax, [SYM_X], [yc], [ms ** 2], clip_on=False)
+            elif swatch == "cells":   # graduated cells: three squares small→large, exactly the map's clearing mark
+                for xo, f in ((-0.022, 0.36), (-0.008, 0.64), (0.012, 1.0)):   # markers are sized in points, so they keep their shape
+                    ax.plot([SYM_X + xo], [yc], marker=marker, ms=ms * f, mfc=mfc, mec=PAPER,
+                            mew=mew, alpha=alpha * (0.5 + 0.5 * f), ls="none", clip_on=False)
+            elif swatch == "graded":   # a choropleth area: the rectangle shades light→dark, one outline, as the map draws it
+                w, hh = 0.050, 0.62 * LS * PT
+                for i, f in enumerate((0.25, 0.55, 1.0)):
+                    ax.add_patch(Rectangle((SYM_X - w / 2 + i * w / 3, yc - hh / 2), w / 3, hh, facecolor=mfc,
+                                           edgecolor="none", alpha=0.12 + 0.30 * f, clip_on=False))
+                ax.add_patch(Rectangle((SYM_X - w / 2, yc - hh / 2), w, hh, facecolor="none", edgecolor=mec,
+                                       lw=mew, alpha=0.7, clip_on=False))
             elif swatch:   # an AREA: a wide rectangle - never a square, which is a point symbol (ECHO team)
                 w, hh = 0.050, 0.62 * LS * PT
                 ax.add_patch(Rectangle((SYM_X - w / 2, yc - hh / 2), w, hh, facecolor=mfc, edgecolor=mec,
@@ -893,16 +951,17 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
         note=f"{fmt(len(fire))} of them in frame \u2014 the depth of the wash "
              f"is the density, not one big fire", short="Fire front 2024\u201326")
     if planner_n and dens_drawn:   # a legend row may only describe a layer that is actually drawn
-        key("s", "Built-up density, km\u00b2 per 2 km cell (amber wash)", ORANGE, ORANGE, swatch=True, mew=0.5, alpha=0.6,
-            note="GHSL footprints summed per cell \u2014 a footprint is 0.7 px at this scale, so density is drawn, not shapes; dots are towns \u2265 500 people", short="Built-up, per 2 km cell")
-        key("s", "Clearing density, km\u00b2 per 2 km cell (magenta wash)", "#b0186b", "#b0186b", swatch=True, mew=0.5, alpha=0.6,
-            note="reviewed Hansen/GLAD loss events since 2000, area summed per cell", short="Clearing, per 2 km cell")
-    key("o", "Settlement, area \u221d people", ORANGE, "#9a5d00", ms=9, mew=0.5,
+        key("o", "Built-up, km\u00b2 per 2 km cell (amber discs, size \u221d area)", ORANGE, ORANGE, swatch="cells", mew=0.25, alpha=0.92,
+            note="GHSL footprints summed per cell \u2014 a footprint is 0.7 px at this scale, so density is drawn, not shapes; dots are towns \u2265 500 people", short="Built-up, cell size \u221d area")
+    key("o", "Town, area \u221d people (ringed dot)", ORANGE, TOWN_RIM, ms=9, swatch="town",
         note="a satellite estimate and a lower bound, never a census", short="Town, size \u221d people")
+    if planner_n and dens_drawn:
+        key("s", "Clearing, km\u00b2 per 2 km cell (indigo squares, size \u221d area)", CLEAR, CLEAR, swatch="cells", mew=0.25, alpha=0.92,
+            note="reviewed Hansen/GLAD loss events since 2000, area summed per cell", short="Clearing, cell size \u221d area")
     key("_", "Trunk rivers", "none", BLUE, lw=1.4)
 
     head("Gold", GOLD)
-    key("s", "Top 5% of ground by model score", GOLD, GOLD, swatch=True, mew=0.9, alpha=0.45,
+    key("s", "Top 5% of ground by model score", GOLD, GOLD, swatch="graded", mew=0.8, alpha=0.45,
         note=f"drawn only within {gold_clip_km:g} km of the proposed shapes \u2014 "
              f"blank elsewhere means NOT DRAWN, not scored low", short="Gold model top 5 %")
     key(None, "Imagery target \u2014 somewhere to look, never a mine", None, None,
@@ -1169,21 +1228,20 @@ def main():
         ax.add_collection(LineCollection(rivers, colors=BLUE, linewidths=0.9,
                                          alpha=0.75, zorder=1.6))
 
-    # 2b. PRINT-SCALE LOD: built-up and clearing DENSITY per 2 km cell (planner rasters). Amber = built-up km²,
-    #     magenta = reviewed clearing km². A footprint polygon would be 0.7 px here; a density cell is legible,
+    # 2b. PRINT-SCALE LOD: built-up and clearing DENSITY per 2 km cell (planner rasters). Amber circles = built-up
+    #     km², indigo squares = reviewed clearing km². A footprint polygon would be 0.7 px here; a density cell is legible,
     #     and it is the same number the planner's rule reads.
     if dens is not None:
-        from matplotlib.colors import LinearSegmentedColormap, PowerNorm
-        ext = dens["extent"]
-        for key, col, vmax in (("clear", "#b0186b", None), ("built", ORANGE, None)):
-            arr = np.array(dens[key], float); arr[arr <= 0] = np.nan
-            if not np.isfinite(arr).any():
-                continue
-            vmax = vmax or float(np.nanpercentile(arr, 98))
-            cmap = LinearSegmentedColormap.from_list(key, [(1, 1, 1, 0), col])
-            ax.imshow(arr, extent=ext, origin="upper", cmap=cmap, norm=PowerNorm(0.5, vmin=0, vmax=vmax),
-                      interpolation="nearest", alpha=0.85 if key == "clear" else 0.75, zorder=2.12 if key == "clear" else 2.08, aspect="auto")   # above the fire mass (z 2.0): a cell must not drown in hairlines
-            dens[key + "_vmax"] = vmax
+        # Both densities as GRADUATED SYMBOLS, not washes - a wash of any hue drowns in 40,000 red hairlines and
+        # reads as one more fill beside the corridor. Built-up: amber discs, rimless and translucent - a DENSITY.
+        # The town on top of them is a PLACE and wears the topo-sheet town symbol (dark ring, paper gap, amber
+        # core) so the two stay apart on a black-and-white copy, where hue is gone and only the ring is left. Clearing:
+        # indigo squares - sharp-edged and dark, distinct from every red and every amber whatever the printer does
+        # to hue, and the only square-shaped mark on the sheet besides the ECHO team glyph. Both above the fire mass.
+        for coll in graduated_cells(dens, "built", ORANGE, shape="circle", zorder=2.10):
+            ax.add_collection(coll)
+        for coll in graduated_cells(dens, "clear", CLEAR, shape="square", zorder=2.14):
+            ax.add_collection(coll)
 
     # 3. THE FIRE MASS. One hairline per front at low alpha: the quantity the
     #    reader is meant to take away is DENSITY, not any single path.
@@ -1214,6 +1272,9 @@ def main():
             style[r] = dict(fc="none", fa=0.0, ec=USER_GREY, lw=1.1, ls=(0, (6, 3)), z=2.3)
         style["existing"] = dict(fc=GREEN_E, fa=0.08, ec=USER_GREY, lw=1.1, ls="solid", z=2.3)
     for role in order:
+        if deploy and role == "pin":
+            continue    # the two corridor pins (buffered circles) are the ask the solver's corridor now answers; on the
+                        # deployment sheet they are two grey rings with no meaning of their own, so they are not drawn
         for nm, z in zones.items():
             if role_of(nm) != role:
                 continue
@@ -1364,8 +1425,7 @@ def main():
         lats = np.array([r[0] for r in setl])
         pops = np.array([max(r[2] or 0, 1) for r in setl], dtype=float)
         sizes = 3.0 + 62.0 * np.sqrt(pops / pops.max())
-        ax.scatter(lons, lats, s=sizes, c=ORANGE, alpha=0.62,
-                   edgecolors="#9a5d00", linewidths=0.25, zorder=4.0)
+        town_symbol(ax, lons, lats, sizes)
 
     # Every POINT mark on the sheet (gold pictographs, plan sites, teams, unreached towns) is queued here and drawn
     # once by draw_marks(), which spreads marks that would overlap on the page into a short row (see there).
@@ -1374,9 +1434,26 @@ def main():
     # 6. THE GOLD FLANK, clipped to the ask (see load_gold)
     if gold:
         if gold["top5"]:
-            ax.scatter([p[0] for p in gold["top5"]], [p[1] for p in gold["top5"]],
-                       s=170, marker="s", facecolors=GOLD, alpha=0.20,
-                       edgecolors=GOLD, linewidths=0.9, zorder=4.3)
+            # The top-5% cells as ONE choropleth region: each cell filled with ink ∝ its model percentile (the
+            # grade is visible - the 99th-percentile ground is darker than the 95th), no per-cell edges, and one
+            # dissolved outline round the region so it reads as an area, not a rash of 790 self-outlined squares
+            # competing with the clearing marks for the word "square". Cell pitch is derived, never typed.
+            from shapely.geometry import box as _box
+            from matplotlib.collections import PatchCollection
+            from matplotlib.colors import to_rgb
+            pts = np.array(gold["top5"])
+            pitch = [float(np.median(d[d > 1e-6])) for d in (np.diff(np.unique(np.round(pts[:, i], 5))) for i in (0, 1))]
+            cells = [_box(x - pitch[0] / 2, y - pitch[1] / 2, x + pitch[0] / 2, y + pitch[1] / 2) for x, y, _ in pts]
+            t = np.clip((pts[:, 2] - 95.0) / 5.0, 0, 1)                      # 95th → 100th percentile
+            rgba = np.zeros((len(cells), 4)); rgba[:, :3] = to_rgb(GOLD); rgba[:, 3] = 0.12 + 0.30 * t
+            ax.add_collection(PatchCollection([Rectangle((c.bounds[0], c.bounds[1]), pitch[0], pitch[1]) for c in cells],
+                                              facecolors=rgba, edgecolors="none", antialiased=False, zorder=4.28))
+            region = unary_union(cells)
+            eps = 0.08 * min(pitch)     # morphological close: abutting cells must not leave hairline seams
+            region = region.buffer(eps, join_style=2).buffer(-eps, join_style=2)
+            for ptch in poly_patches(region, facecolor="none", edgecolor=GOLD, linewidth=0.8, alpha=0.7,
+                                     joinstyle="round", zorder=4.3):
+                ax.add_patch(ptch)
         # the candidates are the sheet's mining subject: a paper halo under each mark so it stays legible on the
         # fire mass and inside the team-zone fills, and drawn above the team points (z 5.6) so nothing covers them
         gz = 5.8 if deploy else 4.5
