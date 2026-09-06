@@ -479,8 +479,10 @@ def load_density(pdir):
     warns about — so the honest print layer is DENSITY, not polygons. Returns dict(built=2D km², clear=2D km²,
     extent=(x0,x1,y0,y1) in lon/lat, tr) or None if the planner has not been built."""
     import pickle
-    sp = pdir / "state.pkl"
-    if not sp.exists():
+    # the solver folder carries no state.pkl of its own; its grid IS the planner's (see load_deploy / solve_lab)
+    sp = next((q for q in (pdir / "state.pkl", pdir.parent / "conservancy_units" / "state.pkl") if q.exists()), None)
+    if sp is None:
+        print("WARN: no state.pkl beside --planner - built-up / clearing washes NOT drawn", file=sys.stderr)
         return None
     import plan_conservancy_units as P   # for Grid unpickling
     import __main__
@@ -725,7 +727,7 @@ DASHDOT = (0, (5, 2.2, 1.2, 2.2))     # the one dash-dot used for every "context
 
 
 def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
-                date, planner_n=0, deploy=None):
+                date, planner_n=0, deploy=None, dens_drawn=False):
     """Every row of the right-hand column, as (height_inches, render) pairs.
 
     Read top to bottom this is the argument of the whole PIP: what is here,
@@ -890,7 +892,7 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
         lw=1.4, alpha=0.55,
         note=f"{fmt(len(fire))} of them in frame \u2014 the depth of the wash "
              f"is the density, not one big fire", short="Fire front 2024\u201326")
-    if planner_n:
+    if planner_n and dens_drawn:   # a legend row may only describe a layer that is actually drawn
         key("s", "Built-up density, km\u00b2 per 2 km cell (amber wash)", ORANGE, ORANGE, swatch=True, mew=0.5, alpha=0.6,
             note="GHSL footprints summed per cell \u2014 a footprint is 0.7 px at this scale, so density is drawn, not shapes; dots are towns \u2265 500 people", short="Built-up, per 2 km cell")
         key("s", "Clearing density, km\u00b2 per 2 km cell (magenta wash)", "#b0186b", "#b0186b", swatch=True, mew=0.5, alpha=0.6,
@@ -1129,8 +1131,9 @@ def main():
     planner_n = 0
     if a.planner:
         planner_n = sum(len(json.load(open(f))["features"]) for f in Path(a.planner).parent.glob("optimize_*.geojson") if "support" not in f.name) or len(json.load(open(a.planner))["features"])
+    dens = load_density(Path(a.planner).parent) if a.planner else None
     items = panel_items(st, fire, sites, belt, unmatched, rim_km, rim_km,
-                        a.date, planner_n, deploy)
+                        a.date, planner_n, deploy, dens_drawn=dens is not None)
     map_w_deg = (x1 - x0) * kx
     map_h_deg = (y1 - y0)
     MAP_H_IN = MAP_W_IN * map_h_deg / map_w_deg
@@ -1169,7 +1172,6 @@ def main():
     # 2b. PRINT-SCALE LOD: built-up and clearing DENSITY per 2 km cell (planner rasters). Amber = built-up km²,
     #     magenta = reviewed clearing km². A footprint polygon would be 0.7 px here; a density cell is legible,
     #     and it is the same number the planner's rule reads.
-    dens = load_density(Path(a.planner).parent) if a.planner else None
     if dens is not None:
         from matplotlib.colors import LinearSegmentedColormap, PowerNorm
         ext = dens["extent"]
