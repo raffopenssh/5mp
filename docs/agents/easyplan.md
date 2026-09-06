@@ -27,6 +27,19 @@ a hand-drawn grazing zone. Do not open `ZONES.txt`/`DEPLOY.txt` unless facts.jso
 python3 -c "import json;t=json.load(open('data/plan_zones/solver/facts.json'))['deploy']['teams']['E1'];print(t['place'],t['boundary_legal'])"
 ```
 
+## Jurisdiction (2026-09-06)
+
+Every team carries `jurisdiction` (from `plan_boundary.py`): county rows with `state`,
+`state_pcode`, `county_pcode`, `pct` of zone area, `payams[]` (name, p-code, pct ≥ 1 %) and
+`source`. South Sudan = **OCHA COD-AB v03 (2022-12-19)** — the ten post-2020 states with
+official spellings (Warrap, Western Bahr el Ghazal …), 79 counties, 512 payams; other
+countries = GADM 4.1 level-2 (no payam level). Roll-ups in `facts.json` `deploy`: `counties`,
+`n_counties`, `n_payams`, `states`, `admin_source`, `mining_desks` (state → team codes ≥ 5 %
+of a zone — the Mining Act 2012 licence desks). The template uses them in three places: the
+Mining Act paragraph ("state desks concerned are …"), the s.14 registration paragraph
+(counties/payams to sign), each ECHO sentence (`counties_text`), and the "Jurisdiction of the
+staffed zones" table. Never type a state or county name into the template.
+
 ## Where to edit what
 
 | Change | Edit | Then |
