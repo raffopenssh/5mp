@@ -335,5 +335,20 @@ Runs **after** `plan_solver.py solve/rank`; the solver decides classes, deploy d
   stored descriptions. 32 workers default.
 * Gotcha fixed on the way: `roads_heigit` XSA rows covered only the CAR extract until 2026-09-06 (Wau/Tambura "no road");
   now 1,484 segments to lon 31.4. `SOLVE_tune`/`ZONES_tune` (old formulation) deleted.
-* **Next (other conversation)**: `build_map.py --planner` legend still describes the greedy proposals; draw
-  `deploy_footprint.geojson` outlines per team, suppress all other outlines, high-opacity fills inside footprints.
+* **Deployment sheet** (2026-09-06): `build_map.py --planner data/plan_zones/solver/zones.geojson --out reports/DEPLOY_MAP_<date>.png --pdf`
+  picks up `deploy_footprint.geojson`/`deploy_teams.geojson` beside it (`--deploy ''` to switch off). Served zones are
+  filled by the solver's per-pixel intensity (`solve_lab.npy`/`solve_intensity.npy`, class colour, α = lo + hi·intensity),
+  all other zoning as dash-dot outlines in class colour, authors' KML one grey dash-dot; the 25 km discs are **not**
+  drawn. Draw order: fire hairlines (z 2.0) < clearing/built-up washes (2.08/2.12) < outlines < team fills (3.05) <
+  towns < teams (5.6) < gold marks with a paper halo (5.8) — the mining candidates are the subject and stay on top.
+  Legend rows are ≤4 words at the scale-bar size (PANEL_SCALE 0.80); provenance is one 7.2 pt line under the frame.
+* **QGIS package** = `plan_zones_package.py` then `QT_QPA_PLATFORM=offscreen python3 scripts/plan_zones_qgis.py`
+  (PyQGIS 3.34 is installed). Package adds `deploy_zones` / `deploy_teams` (`sym` = kind+year drives the hollow year-2
+  style) / `deploy_reach`, writes `<stem>_deploy_fill.tif` (RGBA — the sheet's own fill pixels) and `solve_class`/
+  `solve_intensity` rasters. The QGIS step copies the EASY layers (settlements, fire, gold, rivers, Southern NP) with
+  their styles, builds the grouped project (Deployment / Gold / Zoning found / Drawn by the authors / On the ground /
+  Reference mesh — every layer present, non-sheet ones unchecked), stores it **inside** the .gpkg
+  (Project ▸ Open from ▸ GeoPackage → `deployment_map`) and as `.qgs`, and renders `<stem>_qgis_check.png` to prove it.
+  Two bugs found by rendering, not by reading: point QML needs `<symbol type="marker">` (`"point"` drew nothing —
+  `teams`/`beacons` had been blank since they were written), and every GeoTIFF carried `+proj=cea` without the grid's
+  `+lon_0=27 +lat_ts=7.5` (3,000 km off). **Check a QGIS style by rendering it with QGIS**, not by parsing the XML.
