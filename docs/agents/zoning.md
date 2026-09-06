@@ -312,3 +312,28 @@ greedy `optimize_*` outputs — add the solver `zones.geojson` as a layer once t
 
 Next: pick the frontier row with the client (core cap is a political number), `solve --connect 1` there, `support`,
 `teams` (require water), package + `build_map.py --planner` with solver zones, regenerate report text.
+
+## Deploy (2026-09-06) — `scripts/plan_deploy.py`
+
+Runs **after** `plan_solver.py solve/rank`; the solver decides classes, deploy decides where a small staff stands first.
+`python3 -W ignore scripts/plan_deploy.py [--narrate] [--staff-y1 30 --staff-y2 80 --echo-y2 5 --tango-y2 5 --fp-y2 3]` →
+`data/plan_zones/solver/DEPLOY.txt`, `deploy.json`, `deploy_teams.geojson` (points), `deploy_footprint.geojson` (served zones +
+25 km disc per team, `year` attribute — the map should outline **only** these).
+
+* **Gold enters here, not in the ILP** (user decision): ECHO urgency = 0.5·gold-target rank (top-5 % cells + candidates +
+  watchlist + reported, from `cells()`) + 0.3·(people × mean P10) + 0.2·shield; **zero without a gold target**. TANGO urgency
+  = 0.4·herd UD in band + 0.35·UD within 25 km of residents + 0.25·gold in band. Rank-percentiles, weights fixed.
+* **Site** = GHSL settlement ≥150 people (residence implies water; mapped water still re-checked and printed). ECHO needs a
+  trunk…tertiary road ≤5 km or OSRM car trips (motorbikes); **TANGO has no road test** (walks with the herds; helicopter
+  in extremis). Shortlist of 3 scored by **OSRM reach** (`data/eval/xsa_mining/osrm_times.npz`: share of the zone's
+  targets within 4 h, car share, median min); **muse-glimmer adjudicates among the shortlist only** (`ADJ_SYS`; needs
+  `max_tokens` ≥ 2,500 — the model spends ~400 tokens in `reasoning_content` before the JSON, 400 returned "no JSON").
+  Two same-kind sites within 50 km collapse to one. A corridor zone ≥1 M ha spanning ≥3 bundles gets a second TANGO.
+* **Staging**: team = 5 (4 scouts + 1 leader), FP = 1; year 1 ≤30 staff (2 ECHO, 2 TANGO, 1 FP = 21), year 2 ≤80
+  (5/5/3 = 53). FPs by **marginal** coverage of team sites within 120 km (else three FPs pile onto Wau).
+* `--narrate`: `short` (one sentence) + `brief` (≤120 words) + `first_season` per team, built only from the served zones'
+  stored descriptions. 32 workers default.
+* Gotcha fixed on the way: `roads_heigit` XSA rows covered only the CAR extract until 2026-09-06 (Wau/Tambura "no road");
+  now 1,484 segments to lon 31.4. `SOLVE_tune`/`ZONES_tune` (old formulation) deleted.
+* **Next (other conversation)**: `build_map.py --planner` legend still describes the greedy proposals; draw
+  `deploy_footprint.geojson` outlines per team, suppress all other outlines, high-opacity fills inside footprints.
