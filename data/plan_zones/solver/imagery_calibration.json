@@ -1,0 +1,8 @@
+{
+ "units_with_reading": 2121,
+ "chips": 346,
+ "rho_cultivated_vs_cropland2019": 0.185,
+ "rho_water_toich_vs_jrc_share": 0.133,
+ "rho_footprint_vs_ghsl_people_km2": 0.133,
+ "rho_burnt_vs_fire_density": 0.047
+}

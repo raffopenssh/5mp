@@ -1,0 +1,24 @@
+{
+ "outcome": "converted 2015\u2192today: built-up +\u22650.005 km\u00b2, or cluster founded since 2015, or \u22650.05 km\u00b2 reviewed clearing since 2020",
+ "cells_at_risk": 118291,
+ "converted": 320,
+ "base_rate": 0.0027,
+ "auc_spatial_holdout": [
+  0.863,
+  0.858
+ ],
+ "coefficients": {
+  "log dist to 2015 built-up": -1.239,
+  "log dist to town \u22651000": -0.048,
+  "log dist to road": -0.556,
+  "log dist to perennial water": -0.198,
+  "log built growth 2000\u219215 within 10 km": 0.055,
+  "log long-front density": 0.252,
+  "cropland 2003 share": -1.133
+ },
+ "intercept": -7.119,
+ "horizon_years": 10,
+ "years_observed": 11.7,
+ "p10_mean_aoi": 0.0198,
+ "p10_p90": 0.0062
+}
