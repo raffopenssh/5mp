@@ -34,6 +34,7 @@ settlements, patrol tracking. ~17k-line single-page frontend + SQLite (~18 GB).
 | Nightlights (VNP46A3) — folded 2026-08-13; read before any nightlight work | `docs/agents/nightlights.md` |
 | The EASY document dump: 98 source files read, dated, legal-status-checked, scored against the plan | `docs/agents/easydocs.md` |
 | Zoning planner (park/wilderness/conservancy/corridor proposals, bootstrap support, planner map) | `docs/agents/zoning.md` (+ `docs/ZONING_METHOD.md`) |
+| EASY budget, PIP summary text, `plan.yaml`, facts.json — anything that quotes a plan number | `docs/agents/easyplan.md` |
 
 Other human docs: `docs/API.md`, `docs/DATABASE.md`, `docs/SCRIPTS.md`,
 `docs/ARCHITECTURE.md`, `docs/QUICK_TASKS.md`, `docs/DATA_FLOW.md`.

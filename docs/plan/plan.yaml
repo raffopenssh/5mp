@@ -1,0 +1,43 @@
+# THE PLAN'S DECISIONS — the only file to edit when the plan changes.
+# Everything numeric downstream (budget .txt/.xlsx, PIP summary) is derived from
+# this + data/plan_zones/solver/{deploy,solve}.json + zones.geojson by
+#   python3 scripts/easyplan.py            (facts -> budget -> summary)
+# Team COUNTS per year are NOT here: they come from deploy.json (plan_deploy.py).
+horizon_years: 2
+start: "Nov 2026"
+year_labels: ["Nov 2026 - Oct 2027", "Nov 2027 - Oct 2028"]
+gate_date: "30 November 2026"
+first_6_months: "Nov 2026 - Apr 2027"
+
+team:
+  scouts: 4
+  leader: 1
+
+# months each team kind is paid per year (seasonal contracts, not calendar years)
+months_paid:
+  echo:  [7, 9]     # rains outreach + Dec-Feb boundary walks
+  tango: [6, 6]     # herd onset (Sep/Oct) to end of dry season
+
+# backbone
+coordinator_months: [12, 12]
+finance_officer_months: [6, 6]      # 0.5 FTE hosted by AP South Sudan, Juba
+adviser_months: [3, 3]              # Chinko HQ technical adviser, non-resident
+adviser_rotations: [3, 3]           # Bangui-Juba return flights
+domestic_legs_base: [24, 30]        # plus 6 per focal point outside Wau
+juba_nights: [60, 40]
+
+# one-offs and programme
+survey_year: 2                      # aerial wildlife survey (first since 2007); 0 = none
+survey_hours: 40
+recon_flight_hours: [12, 12]
+boreholes: [0, 1]
+vet_campaigns: [0, 1]
+camera_traps: [0, 30]
+field_check_missions: [4, 3]        # x 12 vehicle-days each
+meetings_per_team: 4                # community/herder meetings per team per year, Dec-Feb
+facilitator_days_per_conservancy: 15   # scoping; the same again in the year it files
+landuse_workshop_pd: [0, 200]       # 4 workshops x 25 x 2 days, from year 2
+ssws_days_per_team: 60              # SSWS staff-days on joint missions per team-year
+train_induction_days: 14
+train_refresher_days: 7
+train_data_pd: [60, 75]

@@ -118,8 +118,8 @@ def load():
     F = json.load(open(FACTS))
     Z = json.load(open(ZONES))
     D = json.load(open(DOCS))
-    sys.path.insert(0, str(ROOT / "scripts" / "easybudget"))
-    import build_budget as B
+    sys.path.insert(0, str(ROOT / "scripts" / "deprecated"))  # 3-yr Aug-2026 budget the Aug PIP quotes
+    import build_budget_3yr_2026_08 as B
     rows, tot = B.compute()
     return F, Z, D, B, rows, tot
 

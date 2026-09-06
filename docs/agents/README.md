@@ -23,6 +23,7 @@ lives here, one file per subsystem, loaded only when a task touches it.
 | `settlements.md` | Settlement surface vs extent, measured population and its provenance, the GHSL backfill rotation, the classifier's inputs |
 | `nightlights.md` | VNP46A3 Black Marble — measured once (mine sites are dark), folded; read before any nightlight work |
 | `zoning.md` | Zoning planner: legible mesh, four classes with stored rationale, `optimize` bootstrap proposals, `assess()` recursion, validation vs drawn zones/WDPA, the planner map |
+| `easyplan.md` | `scripts/easyplan.py`: plan.yaml + solver/deploy outputs → facts.json → budget (.txt/.xlsx) → PIP summary from a Jinja template |
 | `easydocs.md` | The EASY document dump: extraction, vision OCR, relevance + legal-status tagging, people/org roster |
 
 ## Where a new note goes

@@ -44,7 +44,7 @@ from shapely.ops import transform, unary_union
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
-sys.path.insert(0, str(ROOT / "scripts" / "easybudget"))
+sys.path.insert(0, str(ROOT / "scripts" / "deprecated"))  # 3-yr Aug-2026 budget the Aug PIP quotes
 from plan_zone_stats import RIM_KM, km2, read_kml  # noqa: E402
 
 DB = ROOT / "db.sqlite3"
@@ -352,7 +352,7 @@ def fire_block(zs):
 
 
 def budget_block():
-    import build_budget as B
+    import build_budget_3yr_2026_08 as B
     rows, t = B.compute()
     a = t["a"]
     drv = t["drv"]
