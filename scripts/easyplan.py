@@ -13,6 +13,7 @@ WHERE TO EDIT WHAT
   unit costs / budget lines .................................. scripts/easybudget/build_budget.py
   team placements / zone classes ............................. re-run plan_solver.py solve, plan_deploy.py
   the map ..................................................... scripts/easypip/build_map.py --planner … (writes map_belt.json)
+  boundary wording (metes-and-bounds, coords, landmarks) ..... scripts/plan_boundary.py [--narrate]  (writes boundaries.json; read into facts)
 Every number in the summary is a template variable resolved from facts.json; none is typed
 (AGENTS.md invariant 2). Zone names in the text are keyed by TEAM CODE (E1, T1, F1 …) and
 the team→zone mapping comes from deploy.json, so a re-deploy moves the prose with it.
@@ -76,6 +77,7 @@ def facts(P):
     threat = j(SOLVER / "threat.json"); frontier = j(SOLVER / "frontier.json")
     pip = j(ROOT / "data/eval/pip_facts.json")
     belt = j(SOLVER / "map_belt.json") if (SOLVER / "map_belt.json").exists() else None
+    bnd = j(SOLVER / "boundaries.json")["zones"] if (SOLVER / "boundaries.json").exists() else {}   # plan_boundary.py: metes-and-bounds per zone
     N = len(P["year_labels"])
 
     teams = {}
@@ -97,6 +99,10 @@ def facts(P):
             if rr: d["shield_pct"] = round(rr["shield"] * 100); d["rank_all"] = len(rank["rows"])
             ec = next((e for e in deploy["echo_candidates"] if e["uid"] == z["uid"]), None)
             if ec: d["urgency_rank"] = ec["rank"]; d["watchlist"] = ec["gold_watch"]
+            b = bnd.get(str(z["uid"]))
+            if b:
+                d["boundary_summary"] = b["summary"]; d["boundary_in_words"] = b.get("in_words"); d["boundary_legal"] = b["legal"]
+                d["boundary_schedule"] = b["schedule"]; d["jurisdiction"] = b["jurisdiction"]; d["boundary_legs"] = b["legs"]; d["boundary_named_pct_legs"] = b["named_pct"]
         teams[t["id"]] = d
     # second TANGO on a zone already served
     seen = {}
@@ -179,7 +185,18 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--check", action="store_true")
     ap.add_argument("--no-budget", action="store_true")
+    ap.add_argument("--show", metavar="CODE", help="print one team card (E1, T2, F1 …) from facts.json and exit — the one-command answer to 'where is team X and what bounds it'")
     a = ap.parse_args()
+    if a.show:
+        t = json.load(open(FACTS))["deploy"]["teams"].get(a.show.upper()) or sys.exit(f"no team {a.show}; codes: {', '.join(json.load(open(FACTS))['deploy']['teams'])}")
+        print(f"{a.show.upper()} — {t['kind']} team at {t['place']}, year {t['year']}, zone(s) {t['zone_uids']}")
+        for k in ("area_ha", "people", "gold", "urgency_rank"):
+            if k in t: print(f"  {k}: {t[k]}")
+        print("  jurisdiction:", "; ".join(f"{r['county']} ({r['state']}, {r['country']}) {r['pct']}%" for r in t.get("jurisdiction", [])))
+        print("\n  IN WORDS: " + (t.get("boundary_in_words") or "—"))
+        print("\n  SUMMARY: " + (t.get("boundary_summary") or "—"))
+        print("\n  " + (t.get("boundary_schedule") or "").replace("\n", "\n  "))
+        return
     P = yaml.safe_load(open(PLAN))
     F = facts(P)
     FACTS.write_text(json.dumps(F, indent=1, default=str))
