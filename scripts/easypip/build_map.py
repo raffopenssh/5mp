@@ -93,6 +93,7 @@ FAINT = "#d8d8d2"
 GREEN = "#1a7a3a"          # the proposed park - the subject of the sheet
 GREEN_W = "#7fae8b"        # wilderness blocks - the frame around it
 GREEN_E = "#2f7f6f"        # Southern NP - existing, someone else's ground
+USER_GREY = "#8c8c86"      # planner sheet: every hand-drawn boundary, one quiet colour
 TAN = "#b08d57"            # pastoral / grazing zones
 RED = "#c62828"            # fire
 ORANGE = "#e08a1e"         # settlements
@@ -677,17 +678,22 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
     # a reader would quote rather than use to decode the picture belongs in the
     # text, where it can be qualified.
     head("Boundaries", GREEN)
-    key("s", "The proposed park", "none", GREEN, lw=3.4)
-    key("s", "Wilderness blocks around it \u2014 proposed, not park", "none",
-        GREEN_W, lw=1.6, short="Proposed wilderness")
-    key("s", "Southern National Park \u2014 already gazetted", "none", GREEN_E,
-        lw=2.0, short="Southern NP (gazetted)")
-    key("s", "Sustainable-grazing zones", "none", TAN, lw=1.6, ls=(0, (7, 4)), short="Grazing zones (drawn)")
-    key("_", "Corridor axis, as the two map pins imply it", "none", PLAN,
-        lw=2.4, ls=(0, (5, 2)),
-        note=f"we were sent markers {C['pins_apart_km']:g} km apart, "
-             f"not a polygon", short="Corridor axis (two pins)")
-    if unmatched:
+    if planner_n:
+        key("s", "Boundaries as drawn by the authors (park, wilderness, grazing, corridor pins)", "none", USER_GREY, lw=1.1, ls=(0, (6, 3)),
+            short="Boundaries as drawn by the authors")
+        key("s", "Southern National Park \u2014 already gazetted (tinted)", "none", USER_GREY, lw=1.1, short="Southern NP, gazetted (tinted)")
+    else:
+      key("s", "The proposed park", "none", GREEN, lw=3.4)
+      key("s", "Wilderness blocks around it \u2014 proposed, not park", "none",
+          GREEN_W, lw=1.6, short="Proposed wilderness")
+      key("s", "Southern National Park \u2014 already gazetted", "none", GREEN_E,
+          lw=2.0, short="Southern NP (gazetted)")
+      key("s", "Sustainable-grazing zones", "none", TAN, lw=1.6, ls=(0, (7, 4)), short="Grazing zones (drawn)")
+      key("_", "Corridor axis, as the two map pins imply it", "none", PLAN,
+          lw=2.4, ls=(0, (5, 2)),
+          note=f"we were sent markers {C['pins_apart_km']:g} km apart, "
+               f"not a polygon", short="Corridor axis (two pins)")
+    if unmatched and not planner_n:
         key("s", "Shape with no assigned role", "none", "#999", lw=1.2,
             ls=(0, (1, 2)), note="; ".join(sorted(set(unmatched))))
     add(SP * 0.9, lambda ax, y: None)
@@ -910,7 +916,10 @@ def main():
     reach = transform(inv, transform(fwd, polys).buffer(rim_km * 1000))
     gold, gold_note = load_gold(reach)
     sites = site_rows(st)
-    belt = unserved_belt(setl, sites, reach)
+    teams_early = load_teams(Path(a.planner).parent) if a.planner else []
+    # with the planner drawn, the proposals' teams ARE sites: a town 10 km from an ECHO team is served, and the
+    # "no site within 40 km" belt must be measured against everything the sheet proposes, or it contradicts itself
+    belt = unserved_belt(setl, sites + [dict(name=t["place"], lon=t["lon"], lat=t["lat"], approx=False, kind="team") for t in teams_early], reach)
     axis = corridor_axis(st)
 
     # ---- figure. The panel measures itself first, and the page is then made
@@ -991,6 +1000,12 @@ def main():
         "pin":        dict(fc=PLAN, fa=0.07, ec=PLAN, lw=1.2, ls=(0, (2, 2)), z=3.0),
         "other":      dict(fc="#999", fa=0.06, ec="#999", lw=1.0, ls=(0, (1, 2)), z=2.2),
     }
+    if a.planner:
+        # the planner sheet is about the machine proposals; what the authors DREW is context and takes one quiet grey
+        # style (gazetted Southern NP keeps a faint tint so "already a park" stays legible), one legend row
+        for r in ("grazing", "wilderness", "park", "pin", "other"):
+            style[r] = dict(fc="none", fa=0.0, ec=USER_GREY, lw=1.1, ls=(0, (6, 3)), z=2.3)
+        style["existing"] = dict(fc=GREEN_E, fa=0.08, ec=USER_GREY, lw=1.1, ls="solid", z=2.3)
     for role in order:
         for nm, z in zones.items():
             if role_of(nm) != role:
@@ -1167,6 +1182,8 @@ def main():
         col = {"park": GREEN, "wilderness": "#4f7a5c", "existing": GREEN_E,
                "grazing": "#8a6b3a"}.get(role, MUTED)
         sz = 15 if role == "park" else 11
+        if a.planner:
+            col, sz = USER_GREY, (11 if role == "park" else 8.5)
         lab = short_name(nm).upper().replace(" NATIONAL-PARK", "")
         area_entries.append((c.x, c.y, lab, col, sz))
     area_boxes = draw_area_labels(fig, ax, area_entries)
