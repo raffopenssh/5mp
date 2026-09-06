@@ -987,6 +987,9 @@ def main():
     # with the planner drawn, the proposals' teams ARE sites: a town 10 km from an ECHO team is served, and the
     # "no site within 40 km" belt must be measured against everything the sheet proposes, or it contradicts itself
     belt = unserved_belt(setl, ([] if deploy else sites) + [dict(name=t["place"], lon=t["lon"], lat=t["lat"], approx=False, kind="team") for t in teams_early], reach)
+    if deploy and belt:   # the summary text quotes this number (easyplan.py reads it)
+        json.dump({k: v for k, v in belt.items() if k != "towns"} | {"n_towns": len(belt["towns"])},
+                  open(Path(a.planner).parent / "map_belt.json", "w"))
     axis = corridor_axis(st)
 
     # ---- figure. The panel measures itself first, and the page is then made

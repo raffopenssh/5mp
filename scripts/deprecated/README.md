@@ -56,3 +56,10 @@ data and everything that depends on it is being retired:
 `--source json` was dropped from `rebuild_fire_trajectories_v5.py` +
 `fire_source.py` (SQLite is now the only fire source). Old A/B baselines built
 from the JSON window are still comparable via `data/eval/*` snapshots.
+
+## `build_budget_3yr_2026_08.py`
+
+The August 2026 three-year budget (USD 1.68 M; 3 teams, 4 focal points). Still imported by
+`scripts/easypip/pip_facts.py` / `build_docs.py`, which render the August PIP that quoted it.
+The live budget is `scripts/easybudget/build_budget.py`, driven by `scripts/easyplan.py`
+(see `docs/agents/easyplan.md`).
