@@ -262,41 +262,53 @@ python3 -W ignore scripts/easypip/build_map.py --planner data/plan_zones/conserv
 PLAN_AOI=CAF_Chinko python3 -W ignore scripts/plan_conservancy_units.py build   # any keystone park id
 ```
 
-## Solver + imagery (2026-09-06, in progress — continue here)
+## Solver (2026-09-06 → 07) — `scripts/plan_solver.py`
 
-`scripts/plan_solver.py` (`movement | threat | claim | solve | support | narrate | all`) is the step past the
-greedy grower: **one integer programme (HiGHS via scipy.milp, 2,150 fine units, 5,572 edges, solves in 2 s)**
-assigns every fine unit one class with a legibility-weighted boundary cost, class feasibility as linear
-constraints, a core cap and a herd-utilisation floor for corridor. Inputs it computes and validates:
-* `movement` — Brownian-bridge utilisation per origin–destination bundle of the 13,178 long fronts, **fitted on
-  seasons 2023–24, held out 2025/26**: per bundle the smallest isopleth that captures ≥50 % of next season's
-  fronts, with an equal-area all-fire null (bundle skill +0.45 … +0.85). Writes `movement.json`, `MOVEMENT.txt`,
-  `movement_{ud,band,bundle_masks}.npy`.
-* `threat` — logistic conversion model 2015→today (built-up +≥0.5 ha, new cluster, ≥5 ha clearing since 2020),
-  predictors as of 2015, **AUC 0.86 on spatially held-out 20 km blocks**; `threat_p10.npy` = P(convert in 10 y).
-* `claim` — 1930s village symbols/labels vs GHSL today per cell: continuous / abandoned / new / empty
-  (`claim_state.npy`); sheet coverage is partial (CAR/DRC unrecorded).
-* `solve` → `solve.json`, `SOLVE.txt`, `zones.geojson`/`ZONES.txt` (each zone measured by `attributes()` like a
-  park). **First run's weights are not tuned**: corridor took 283,000 km² (herd UD term too strong vs boundary
-  cost); rescaled weights (per-km² terms, `lam_boundary=2`) were written but the re-run was interrupted. Next:
-  re-run `movement --k 16` (default capture now 0.5), `solve`, inspect class km², iterate weights, then
-  `support` (data-resampling bootstrap) and `narrate` (parallel muse-glimmer panel, 2 readers/zone, `/around`).
-* Fixed `optimize`: `--first-near lon,lat` pins area #1 on the drawn park (free-roaming objective left it 25 %
-  covered); `grow()` is incremental (0.4 s vs hours on the fine mesh); `bootstrap()` runs draws in parallel.
+Modes `movement | threat | claim | solve | frontier | compare | support | narrate | all`; outputs in `data/plan_zones/solver/`.
+One integer programme (HiGHS via `scipy.milp`) gives every fine unit one class. What it does that no Marxan/prioritizr
+run does, and the rule each piece obeys:
 
-`scripts/plan_imagery.py` (`units | sites | spot | calibrate | raster`) reads the owner's satellite basemap
-(`tile_sources`, proxied owner-only, `AOI_OWNER_PWD`) with muse-glimmer. **Scope decided: LANDSCAPE, not
-settlements** — GHSL/OSM know the people. `units` = one ~40 km chip (z11, 2×2 tiles) per chip-square over the
-AOI (~300 chips, ~1,000 tokens each): toich/wetland, gallery forest, plateau/hills, drainage, burn, cultivated
-mosaic → `imagery_*.npy` for the solver after `calibrate` prints Spearman vs cropland/JRC/GHSL/fire. `spot` =
-sporadic z15 checks **only where a decision hinges on the ground** (team sites; clearing or cluster inside a
-proposed core; chip/raster conflicts), capped 60/run → `IMAGERY_SPOT.txt`. First 6 spot checks: four ECHO sites
-flagged `WATER UNVERIFIED` show **no village and no water** in imagery — move them (`teams_mode` should require
-water, not merely flag it). Keep workers ≤4; the model answers in `reasoning_content`, parse both fields.
+* **movement** (`--k 16`, default capture 0.5): Brownian-bridge utilisation per origin–destination bundle of the 13,178
+  long fronts, fit 2023–24, held out 2025/26. 15 bundles, per-bundle skill +0.37…+0.54. **Network-level the herds are
+  simply where the fire is** (hold-out 90 % vs all-fire null 91 %) — value is per route, never "the network". Writes
+  `movement_bundle_ud.npy` (per-bundle UD, float16) which the solver's per-bundle floor and flow constraint read.
+* **threat**: logistic conversion 2015→today, AUC 0.86 on 20 km spatial blocks. `threat_p10.npy`.
+* **imagery** (`plan_imagery.py`, 346 z11 chips, all read): calibration ρ 0.05–0.19 vs cropland/JRC/GHSL/fire — **noise
+  at 40 km**. It enters the solver at `lam_imagery × measured skill` (= 0.12, printed in SOLVE.txt), i.e. effectively
+  nothing, by invariant 12. Keep `spot` (z15) for decision-hinge checks only; four ECHO sites flagged `WATER UNVERIFIED`
+  had no village and no water in imagery → `teams` should *require* water.
+* **solve**: constraints are the plan's *decisions*, weights are fixed (`DEFAULT_W`) and never tuned by eye:
+  - **per-bundle corridor floor** `--corridor-capture` (0.25): each route keeps that share of *its own* utilisation in
+    the corridor class (one network floor let the solver satisfy it with the fat bundles and drop whole routes);
+  - **flow connectivity** `--connect 1`: one unit of flow per bundle from its origin unit to its destination unit,
+    allowed only through corridor units → every bundle's corridor is **one walkable route end to end**. Origin/destination
+    = nearest corridor-feasible unit to the bundle's mean start/end inside the largest feasible component (else
+    infeasible). Costs 8 min instead of 5 s; `frontier`/`support` run without it and the chosen point is re-solved with it;
+  - `--fix-designated 1`: units ≥50 % inside a gazetted WDPA NP/faunal reserve/conservation area are fixed core where
+    they meet the core rule (the ones that don't are counted, not hidden);
+  - `--max-people-corridor`: cap on people whose land becomes corridor (a frontier axis);
+  - `herd_vs_core = 0` **by user decision 2026-09-07**: herds crossing a candidate core are not a veto — zoning shapes
+    future movement (Chinko was a through-route and is now largely avoided). The redirection is a **ledger** line.
+* **LEDGER** (in `solve.json`/`SOLVE.txt`/`COMPARE.txt`): who pays — people whose land becomes core/wilderness/corridor,
+  1930s-claimed cells inside core, km of boundary through open bush to walk and mark, per bundle the UD share in
+  corridor/core/community, herd-months outside corridor and herd-months to redirect out of core.
+* **frontier**: ε-constraint sweep (q × core cap × people cap), Pareto rows starred, infeasible rows say *why*
+  ("at q no plan puts fewer than N people on corridor land", from a min-people re-solve). This replaces weight tuning.
+* **compare**: the authors' KML (+ WDPA designations as status quo; undrawn = *unzoned*, scored as community) under the
+  same objective and ledger, and the disagreement as connected blocks of one (authors → solver) class pair, largest
+  first, each with the numbers that drive it and `core_eligible` share ("meets the core rule but LOST TO THE CORE CAP"
+  vs "only 40 % of it meets the rule"). `scripts/plan_compare_map.py` draws both plans side by side, same colours,
+  blocks numbered → `reports/ZONING_COMPARE_<date>.png` (a judging aid, not the report map).
+* **support** (data resampling) and **narrate** (muse-glimmer panel) are unchanged; run them last.
 
-`scripts/plan_zones_package.py` writes the QGIS GeoPackage (embedded `layer_styles`, field aliases = column
-definitions) + Excel workbook of all zones/teams/boundaries; unfinished: `validation.json` rows are keyed by
-`name` differently — fix `V = {v["name"]…}` (KeyError) before first run.
+First honest results (q 0.35, connected, herd_vs_core 0.7 — superseded, re-read SOLVE/COMPARE): authors' plan scores
+420 k vs solver 463 k under the same objective; agreement 48 % of drawn ground; solver puts 67,690 people on corridor
+land vs 426 (the authors' pâturage zones are 2,732 km² and hold 0.3 % of herd UD); the drawn Pongo-Wau park was made
+*wilderness* only because of the herd penalty — 81/82 of its units meet the core rule.
 
-`build_map.py --planner`: authors' drawn boundaries now one grey dashed style + one legend row; unserved-belt
-label counts team sites as sites; legend is a compact inset card (no title), landscape frame.
+`scripts/plan_zones_package.py` (QGIS GeoPackage + Excel): fixed (validation.json summary row, beacons as their own
+point layer, XML-escaped label expressions; QML verified well-formed since QGIS is not on the VM). Still reads the
+greedy `optimize_*` outputs — add the solver `zones.geojson` as a layer once the chosen frontier point is solved.
+
+Next: pick the frontier row with the client (core cap is a political number), `solve --connect 1` there, `support`,
+`teams` (require water), package + `build_map.py --planner` with solver zones, regenerate report text.
