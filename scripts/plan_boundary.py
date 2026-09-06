@@ -88,12 +88,12 @@ def admin_units():
     if ssd.exists():
         for ft in json.load(open(ssd))["features"]:
             pr = ft["properties"]
-            out.append((shape(ft["geometry"]).buffer(0), "SSD", pr["adm1_name"], pr["adm2_name"], pr["adm3_name"], pr["adm3_pcode"], f"OCHA COD-AB {pr.get('version','')} ({pr.get('valid_on','')})"))
+            out.append((shape(ft["geometry"]).buffer(0), "SSD", pr["adm1_name"], pr["adm2_name"], pr["adm3_name"], pr["adm3_pcode"], f"OCHA COD-AB {pr.get('version','')} ({pr.get('valid_on','')})", pr["adm1_pcode"], pr["adm2_pcode"]))
     for f in sorted(GADM.glob("gadm41_*_2.json")):
         if "SSD" in f.name and ssd.exists(): continue
         for ft in json.load(open(f))["features"]:
             pr = ft["properties"]; sp = lambda n: re.sub(r"(?<=[a-z])(?=[A-Z])", " ", n or "")
-            out.append((shape(ft["geometry"]).buffer(0), pr["GID_0"], sp(pr["NAME_1"]), sp(pr["NAME_2"]), None, pr["GID_2"], "GADM 4.1"))
+            out.append((shape(ft["geometry"]).buffer(0), pr["GID_0"], sp(pr["NAME_1"]), sp(pr["NAME_2"]), None, pr["GID_2"], "GADM 4.1", pr["GID_1"], pr["GID_2"]))
     return out
 
 def jurisdiction(poly, admin, atree):
@@ -102,15 +102,20 @@ def jurisdiction(poly, admin, atree):
     rows = []; cty = {}
     A = transform(P.FWD, poly).area
     for j in atree.query(poly):
-        g, iso, st, co, pa, pc, src = admin[j]
+        g, iso, st, co, pa, pc, src, st_pc, co_pc = admin[j]
         if not g.intersects(poly): continue
         a = transform(P.FWD, g.intersection(poly)).area / A * 100
         if a < 0.05: continue
-        k = (iso, st, co); c = cty.setdefault(k, dict(country=iso, state=st, county=co, pct=0.0, payams=[], source=src))
+        k = (iso, st, co); c = cty.setdefault(k, dict(country=iso, state=st, state_pcode=st_pc, county=co, county_pcode=co_pc, pct=0.0, payams=[], source=src))
         c["pct"] += a
         if pa and a >= 1: c["payams"].append(dict(payam=pa, pcode=pc, pct=round(a)))
+    # two sources (COD-AB for SSD, GADM elsewhere) disagree about the border by a few km, so a border zone can sum past 100 %:
+    # rescale to the zone and record the overlap, rather than print 104 %
+    tot = sum(c["pct"] for c in cty.values()); f = 100 / tot if tot > 100 else 1
     for c in cty.values():
-        c["pct"] = round(c["pct"]); c["payams"].sort(key=lambda r: -r["pct"])
+        c["pct"] = round(c["pct"] * f); c["payams"].sort(key=lambda r: -r["pct"])
+        for q in c["payams"]: q["pct"] = max(1, round(q["pct"] * f))
+        if tot > 100: c["source_overlap_pct"] = round(tot - 100)
     return sorted([c for c in cty.values() if c["pct"] >= 1], key=lambda r: -r["pct"])
 
 def sheets_for(hcon, pts):
