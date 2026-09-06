@@ -261,3 +261,42 @@ python3 -W ignore scripts/easypip/build_map.py --planner data/plan_zones/conserv
     --out reports/ZONING_PLANNER_MAP_2026-09.png --pdf --dpi 110      # draws optimize_{core,corridor,community}.geojson
 PLAN_AOI=CAF_Chinko python3 -W ignore scripts/plan_conservancy_units.py build   # any keystone park id
 ```
+
+## Solver + imagery (2026-09-06, in progress — continue here)
+
+`scripts/plan_solver.py` (`movement | threat | claim | solve | support | narrate | all`) is the step past the
+greedy grower: **one integer programme (HiGHS via scipy.milp, 2,150 fine units, 5,572 edges, solves in 2 s)**
+assigns every fine unit one class with a legibility-weighted boundary cost, class feasibility as linear
+constraints, a core cap and a herd-utilisation floor for corridor. Inputs it computes and validates:
+* `movement` — Brownian-bridge utilisation per origin–destination bundle of the 13,178 long fronts, **fitted on
+  seasons 2023–24, held out 2025/26**: per bundle the smallest isopleth that captures ≥50 % of next season's
+  fronts, with an equal-area all-fire null (bundle skill +0.45 … +0.85). Writes `movement.json`, `MOVEMENT.txt`,
+  `movement_{ud,band,bundle_masks}.npy`.
+* `threat` — logistic conversion model 2015→today (built-up +≥0.5 ha, new cluster, ≥5 ha clearing since 2020),
+  predictors as of 2015, **AUC 0.86 on spatially held-out 20 km blocks**; `threat_p10.npy` = P(convert in 10 y).
+* `claim` — 1930s village symbols/labels vs GHSL today per cell: continuous / abandoned / new / empty
+  (`claim_state.npy`); sheet coverage is partial (CAR/DRC unrecorded).
+* `solve` → `solve.json`, `SOLVE.txt`, `zones.geojson`/`ZONES.txt` (each zone measured by `attributes()` like a
+  park). **First run's weights are not tuned**: corridor took 283,000 km² (herd UD term too strong vs boundary
+  cost); rescaled weights (per-km² terms, `lam_boundary=2`) were written but the re-run was interrupted. Next:
+  re-run `movement --k 16` (default capture now 0.5), `solve`, inspect class km², iterate weights, then
+  `support` (data-resampling bootstrap) and `narrate` (parallel muse-glimmer panel, 2 readers/zone, `/around`).
+* Fixed `optimize`: `--first-near lon,lat` pins area #1 on the drawn park (free-roaming objective left it 25 %
+  covered); `grow()` is incremental (0.4 s vs hours on the fine mesh); `bootstrap()` runs draws in parallel.
+
+`scripts/plan_imagery.py` (`units | sites | spot | calibrate | raster`) reads the owner's satellite basemap
+(`tile_sources`, proxied owner-only, `AOI_OWNER_PWD`) with muse-glimmer. **Scope decided: LANDSCAPE, not
+settlements** — GHSL/OSM know the people. `units` = one ~40 km chip (z11, 2×2 tiles) per chip-square over the
+AOI (~300 chips, ~1,000 tokens each): toich/wetland, gallery forest, plateau/hills, drainage, burn, cultivated
+mosaic → `imagery_*.npy` for the solver after `calibrate` prints Spearman vs cropland/JRC/GHSL/fire. `spot` =
+sporadic z15 checks **only where a decision hinges on the ground** (team sites; clearing or cluster inside a
+proposed core; chip/raster conflicts), capped 60/run → `IMAGERY_SPOT.txt`. First 6 spot checks: four ECHO sites
+flagged `WATER UNVERIFIED` show **no village and no water** in imagery — move them (`teams_mode` should require
+water, not merely flag it). Keep workers ≤4; the model answers in `reasoning_content`, parse both fields.
+
+`scripts/plan_zones_package.py` writes the QGIS GeoPackage (embedded `layer_styles`, field aliases = column
+definitions) + Excel workbook of all zones/teams/boundaries; unfinished: `validation.json` rows are keyed by
+`name` differently — fix `V = {v["name"]…}` (KeyError) before first run.
+
+`build_map.py --planner`: authors' drawn boundaries now one grey dashed style + one legend row; unserved-belt
+label counts team sites as sites; legend is a compact inset card (no title), landscape frame.

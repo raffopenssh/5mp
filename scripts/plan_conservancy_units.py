@@ -947,7 +947,7 @@ class UnitTable:
         flat = lab1.ravel(); rows, cols = [], []; self.fmeta = []
         for j, (cl, th, lg, dr, *_) in enumerate(G.fronts):
             us = np.unique(flat[cl]); us = us[us > 0]; rows += [j]*len(us); cols += us.tolist(); self.fmeta.append((th, lg, dr))
-        self.M = sp.csc_matrix((np.ones(len(rows), np.int8), (rows, cols)), shape=(len(G.fronts), ML))
+        self.M = sp.csc_matrix((np.ones(len(rows), np.int8), (rows, cols)), shape=(len(G.fronts), ML)); self._ucols = {}
         self.fth = np.array([m[0] for m in self.fmeta], bool); self.flg = np.array([m[1] for m in self.fmeta], bool)
         self.fdir = np.array([m[2] or "" for m in self.fmeta])
         E = edges(lab1, surf); self.nb = defaultdict(dict)
@@ -958,12 +958,55 @@ class UnitTable:
         self.unit_cls = {}
         for u in range(1, ML):
             if self.cnt[u]: self.unit_cls[u] = classify(self.measure([u]), T)
+    def ucols(self, u):
+        """Front indices touching fine unit u (cached column of M)."""
+        c = self._ucols.get(u)
+        if c is None:
+            c = self.M.indices[self.M.indptr[u]:self.M.indptr[u+1]].copy(); self._ucols[u] = c
+        return c
     def measure(self, members):
         """The same dict attributes() builds, for the union of fine units `members`."""
-        m = np.fromiter(members, int); area = self.cnt[m].sum()*self.G.cell_km2(); S = {k: v[m].sum() for k, v in self.S.items()}
+        m = np.fromiter(members, int); ncell = self.cnt[m].sum(); S = {k: v[m].sum() for k, v in self.S.items()}
         touch = np.asarray(self.M[:, m].sum(axis=1)).ravel() > 0
         fr = int(touch.sum()); fth = int((touch & self.fth).sum()); flg = int((touch & self.flg).sum())
         dirs = Counter(self.fdir[touch & (self.fdir != "")].tolist())
+        return self._dict_from(ncell, S, fr, fth, flg, dirs)
+    class Inc:
+        """Running state of a growing union, so a candidate can be measured in O(its own size) instead of
+        re-summing every member (the fine mesh has 3–4× the units of the coarse one, and re-summing made
+        each greedy step cubic — the 2026-09-06 core run would have taken hours)."""
+        __slots__ = ("ncell", "S", "touch", "fr", "fth", "flg", "dirs", "n", "sm", "ms")
+    def inc_new(self, u):
+        st = self.Inc(); st.ncell = 0; st.S = {k: 0.0 for k in self.S}; st.touch = np.zeros(self.M.shape[0], np.int32)
+        st.fr = st.fth = st.flg = 0; st.dirs = Counter(); st.n = st.sm = 0.0; st.ms = set(); self.inc_add(st, u); return st
+    def inc_add(self, st, b):
+        st.ncell += int(self.cnt[b])
+        for k, v in self.S.items(): st.S[k] += float(v[b])
+        cols = self.ucols(b); new = cols[st.touch[cols] == 0]; st.touch[cols] += 1
+        st.fr += len(new); st.fth += int(self.fth[new].sum()); st.flg += int(self.flg[new].sum())
+        for dd in self.fdir[new]:
+            if dd: st.dirs[dd] += 1
+        for nb_, (k, s_) in self.nb[b].items():
+            if nb_ in st.ms: st.n -= k; st.sm -= s_          # an inner edge now: no longer outer
+            else: st.n += k; st.sm += s_
+        st.ms.add(b)
+    def inc_peek(self, st, b):
+        """(measure dict, legibility, outer edge) of st ∪ {b} without mutating st."""
+        ncell = st.ncell + int(self.cnt[b]); S = {k: st.S[k] + float(v[b]) for k, v in self.S.items()}
+        cols = self.ucols(b); new = cols[st.touch[cols] == 0]
+        fr = st.fr + len(new); fth = st.fth + int(self.fth[new].sum()); flg = st.flg + int(self.flg[new].sum())
+        dirs = st.dirs
+        if len(new):
+            dirs = Counter(st.dirs)
+            for dd in self.fdir[new]:
+                if dd: dirs[dd] += 1
+        n, sm = st.n, st.sm
+        for nb_, (k, s_) in self.nb[b].items():
+            if nb_ in st.ms: n -= k; sm -= s_
+            else: n += k; sm += s_
+        return self._dict_from(ncell, S, fr, fth, flg, dirs), (sm/n if n else 0.0), n
+    def _dict_from(self, ncell, S, fr, fth, flg, dirs):
+        area = ncell*self.G.cell_km2()
         d = dict(area_km2=round(area, 1), area_ha=round(area*100), clusters=int(S["clusters"]), population_est=int(S["pop"]), pop_per_km2=round(S["pop"]/area, 3) if area else 0,
                  osm_places=int(S["osm_places"]), new_since_2015=int(S["new15"]), camps=int(S["camps"]),
                  fire_det_2024_25=int(S["fire"]), fire_per_1000km2_yr=round(S["fire"]/2/area*1000) if area else 0,
@@ -972,7 +1015,7 @@ class UnitTable:
                  clearing_since_2020_km2=round(S["clear20"], 2), clearing_encroach_slash=int(S["encroach"]), clearing_km2=round(S["clear"], 2),
                  mine_reported=int(S["mine_rep"]), mine_candidates=int(S["mine_cand"]), mine_top05_cells=int(S["mine_top05"]),
                  cropland_2019_pct=round(100*S["crop19"]/S["cropn"], 2) if S["cropn"] else None, cropland_2003_pct=round(100*S["crop03"]/S["cropn"], 2) if S["cropn"] else None,
-                 geo_affinity_mean=round(S["geo_aff"]/self.cnt[m].sum(), 2) if "geo_aff" in S and self.cnt[m].sum() else None)
+                 geo_affinity_mean=round(S["geo_aff"]/ncell, 2) if "geo_aff" in S and ncell else None)
         return d
     def legibility_of(self, members):
         """Mean legibility of the OUTER edge of the union (inner edges between members do not count)."""
@@ -1001,50 +1044,79 @@ OBJECTIVES = {
 }
 def objective(want, UT, d, L, P): return OBJECTIVES[want](d, L, P, compactness(d, P, UT.G.res/1000))
 
-def grow(UT, seed, want, T, max_ha, rng=None, forbid=frozenset()):
+def grow(UT, seed, want, T, max_ha, rng=None, forbid=frozenset(), recheck=None):
     """Greedy region growing over the fine units: from `seed`, repeatedly add the neighbour whose addition
     keeps the WHOLE candidate in class `want` (classify on the union) and best raises the objective.
     Prefers crossing weak edges (nothing on the ground) and stops at strong ones unless the gain is large.
+
+    Every frontier unit is re-scored every step (exhaustive greedy) on an INCREMENTAL union state — the
+    2026-09-06 fine mesh made the old re-sum-everything loop cubic (hours); this is the same pick in ~0.4 s.
+    `recheck=k` switches to lazy greedy (CELF: re-score only the top k stale candidates) — 6× faster but
+    NOT result-identical, because the objective is not submodular (area × legibility × compactness gains can
+    grow as a hole closes), so it is off by default: a plan must be the same plan whoever re-runs it.
+    Units rejected because they would change the class stay on the frontier and are re-tried every step —
+    more empty land can dilute them back into class.
     Returns (members, measured dict, objective)."""
-    members = [seed]; ms = {seed}; d = UT.measure(members); d["cls"] = classify(d, T)
+    members = [seed]; st = UT.inc_new(seed); ms = st.ms; d = UT._dict_from(st.ncell, st.S, st.fr, st.fth, st.flg, st.dirs); d["cls"] = classify(d, T)
     if d["cls"] != want: return None
-    L, P = UT.legibility_of(members); best = objective(want, UT, d, L, P)
-    while True:
-        cand = {}
-        for u in members:
-            for b, (n, sm) in UT.nb[u].items():
-                if b in ms or b in forbid: continue
-                cand[b] = cand.get(b, 0) + n
-        if not cand: break
+    L, P = (st.sm/st.n if st.n else 0.0), st.n; best = objective(want, UT, d, L, P)
+    stale = {}                                   # frontier unit -> last scored value (None = never scored)
+    def frontier_add(u):
+        for b in UT.nb[u]:
+            if b in ms or b in forbid or b in stale: continue
+            stale[b] = None
+    frontier_add(seed); cell_ha = UT.G.cell_km2()*100
+    def score(b):
+        if (UT.cnt[b] + st.ncell)*cell_ha > max_ha: return 0.0, None
+        d2, L2, P2 = UT.inc_peek(st, b); d2["cls"] = classify(d2, T)
+        if d2["cls"] != want: return 0.0, None
+        v = objective(want, UT, d2, L2, P2)
+        if rng is not None: v *= rng.uniform(0.9, 1.1)          # bootstrap: jitter the greedy path
+        return v, d2
+    while stale:
+        order = sorted(stale, key=lambda b: -(stale[b] if stale[b] is not None else float("inf")))   # unscored first, then by stale value
         pick = None
-        for b in cand:
-            if (UT.cnt[b] + sum(UT.cnt[m] for m in members))*UT.G.cell_km2()*100 > max_ha: continue
-            d2 = UT.measure(members + [b]); d2["cls"] = classify(d2, T)
-            if d2["cls"] != want: continue
-            L2, P2 = UT.legibility_of(members + [b]); v = objective(want, UT, d2, L2, P2)
-            if rng is not None: v *= rng.uniform(0.9, 1.1)          # bootstrap: jitter the greedy path
-            if v > best and (pick is None or v > pick[0]): pick = (v, b, d2)
+        for i, b in enumerate(order):
+            if recheck is not None and pick is not None and i >= recheck:
+                rest = stale[b]
+                if rest is not None and rest <= pick[0]: break          # every remaining stale value is an upper bound below the pick
+            v, d2 = score(b); stale[b] = v
+            if d2 is not None and v > best and (pick is None or v > pick[0]): pick = (v, b, d2)
         if pick is None: break
-        best, b, d = pick; members.append(b); ms.add(b)
+        best, b, d = pick; members.append(b); UT.inc_add(st, b); stale.pop(b, None); frontier_add(b)
     return members, d, best
+
+def _bootstrap_draw(args):
+    """One perturbed run (module-level so a forked worker can run it; UT is shared copy-on-write)."""
+    UT, want, T, max_ha, perturb, seeds, forbid, rng_seed, i = args
+    rng = np.random.default_rng([rng_seed, i])
+    keys = [k for k in T if not k.startswith("_") and isinstance(T[k], (int, float))]
+    Ti = dict(T)
+    for k in keys: Ti[k] = T[k]*rng.uniform(1-perturb, 1+perturb)
+    Ti["_corridor_long_fronts_abs"] = T["_corridor_long_fronts_abs"]*rng.uniform(1-perturb, 1+perturb)
+    order = list(seeds); rng.shuffle(order); taken = set(forbid); best = None
+    for sd in order:
+        if sd in taken: continue
+        g = grow(UT, sd, want, Ti, max_ha, rng, frozenset(taken))
+        if g and (best is None or g[2] > best[2]): best = g
+    return i, order[0] if order else None, best
 
 def bootstrap(UT, want, T, max_ha, draws, perturb, seeds, forbid=frozenset(), rng_seed=0):
     """Support for every fine unit: the share of perturbed runs (thresholds ±perturb, jittered greedy path,
     shuffled seed order) in which it ends up inside the grown area of class `want`. Support ≥ 0.5 is the
-    proposal; 0.25–0.5 is contested land to walk with the community; the run-to-run spread IS the uncertainty."""
-    rng = np.random.default_rng(rng_seed); sup = np.zeros(UT.ML); results = []
-    keys = [k for k in T if not k.startswith("_") and isinstance(T[k], (int, float))]
-    for i in range(draws):
-        Ti = dict(T); 
-        for k in keys: Ti[k] = T[k]*rng.uniform(1-perturb, 1+perturb)
-        Ti["_corridor_long_fronts_abs"] = T["_corridor_long_fronts_abs"]*rng.uniform(1-perturb, 1+perturb)
-        order = list(seeds); rng.shuffle(order); taken = set(forbid); best = None
-        for sd in order:
-            if sd in taken: continue
-            g = grow(UT, sd, want, Ti, max_ha, rng, frozenset(taken))
-            if g and (best is None or g[2] > best[2]): best = g
+    proposal; 0.25–0.5 is contested land to walk with the community; the run-to-run spread IS the uncertainty.
+    Draws are independent and run in parallel (fork, one worker per core); each draw has its own seeded RNG
+    so the result does not depend on the worker count."""
+    sup = np.zeros(UT.ML); results = []
+    jobs = [(UT, want, T, max_ha, perturb, seeds, forbid, rng_seed, i) for i in range(draws)]
+    n_proc = max(1, min(os.cpu_count() or 1, draws))
+    if n_proc > 1:
+        import multiprocessing as mp
+        with mp.get_context("fork").Pool(n_proc) as pool: outs = pool.map(_bootstrap_draw, jobs, chunksize=1)
+    else: outs = [_bootstrap_draw(j) for j in jobs]
+    for i, seed0, best in sorted(outs, key=lambda o: o[0]):
         if best:
-            sup[best[0]] += 1; results.append(dict(draw=i, n_units=len(best[0]), area_ha=best[1]["area_ha"], objective=round(best[2]), seed=int(order[0])))
+            sup[best[0]] += 1; results.append(dict(draw=i, n_units=len(best[0]), area_ha=best[1]["area_ha"], objective=round(best[2]), seed=int(seed0)))
     return sup/max(draws, 1), results
 
 # ============================================================ LLM reading of the sheets
@@ -1401,6 +1473,7 @@ def main():
     ap.add_argument("--opt-max-ha", type=float, default=2_000_000, help="optimize: stop growing past this")
     ap.add_argument("--draws", type=int, default=40, help="optimize: bootstrap draws"); ap.add_argument("--perturb", type=float, default=0.25, help="optimize: ±fraction on every threshold per draw")
     ap.add_argument("--n-areas", type=int, default=3, help="optimize: how many disjoint areas to propose")
+    ap.add_argument("--first-near", default="", help="optimize: area #1 grows from the fine unit at this 'lon,lat' (the drawn park's centre); later areas roam free")
     ap.add_argument("--seed-near", default="", help="optimize: grow only from the fine units containing these points, 'lon,lat[;lon,lat…]' (e.g. the boom towns the rim run cannot reach)")
     ap.add_argument("--tag", default="", help="optimize: suffix for the output files (optimize_<class>_<tag>.*)")
     ap.add_argument("--fp-min-pop", type=int, default=5000, help="teams: a focal point needs a town of at least this many people (administrative centre or boom town)")
@@ -1615,9 +1688,17 @@ def main():
                 if u_ and UT.unit_cls.get(u_) == want: seeds_.append(u_)
                 else: log(f"seed-near {pt}: fine unit {u_} is {UT.unit_cls.get(u_)} — not '{want}', skipped")
         if not seeds_: sys.exit(f"no fine unit is '{want}' — nothing to grow from")
+        # `--first-near`: area #1 must contain this point (the drawn park, for a plan that is ABOUT that park); the free-roaming
+        # objective otherwise walks to the biggest empty land in frame (Southern NP / CAR) and leaves the park 25% covered
+        first_seeds = None
+        if a.first_near:
+            lo_, la_ = map(float, a.first_near.split(",")); r_, c_ = G.rc(lo_, la_); u_ = int(mesh[r_, c_])
+            if UT.unit_cls.get(u_) == want: first_seeds = [u_]
+            else: log(f"first-near {a.first_near}: fine unit {u_} is {UT.unit_cls.get(u_)} — not '{want}', ignored")
         forbid = set(); proposals = []; sup_all = np.zeros(UT.ML)
         for k in range(a.n_areas):
-            sup, res = bootstrap(UT, want, T, a.opt_max_ha, a.draws, a.perturb, [s_ for s_ in seeds_ if s_ not in forbid], frozenset(forbid), rng_seed=k)
+            sd_k = first_seeds if (k == 0 and first_seeds) else [s_ for s_ in seeds_ if s_ not in forbid]
+            sup, res = bootstrap(UT, want, T, a.opt_max_ha, a.draws, a.perturb, sd_k, frozenset(forbid), rng_seed=k)
             core_set = [u for u in range(1, UT.ML) if sup[u] >= 0.5]
             if not core_set: log(f"area {k+1}: no unit reaches 50% support; stop"); break
             d = UT.measure(core_set); d["cls"] = classify(d, T); L, P = UT.legibility_of(core_set)
