@@ -21,7 +21,11 @@ Layers:
   units                polygons  the 506 coarse planning units with class and rationale (the assessment layer)
   solver_zones         polygons  plan_solver.py zones.geojson — the ILP plan (core / wilderness / community / corridor), every zone
                                  measured by the same assessor, with the conservancy RANK (rank, rank_score, in_budget, shield …)
-Rasters (built-up km²/cell, clearing km²/cell) are written beside it as GeoTIFFs when rasterio is available.
+  deploy_zones         polygons  plan_deploy.py: the solver zones a team WORKS (served zones), joined to the team's id, kind,
+                                 year, site, urgency, reach, brief — the filled shapes on the DEPLOYMENT map
+  deploy_teams         points    plan_deploy.py team placements (T1/E1/F1 …), year 1 filled / year 2 hollow, full brief
+  deploy_reach         polygons  the 25 km working disc per team (a reach geometry, not a finding; off by default on the map)
+Rasters (built-up km²/cell, clearing km²/cell, solver class + intensity = the map's fill depth) are written beside it as GeoTIFFs when rasterio is available.
 """
 import argparse, json, sqlite3, sys, time, datetime as dt
 from pathlib import Path
@@ -82,7 +86,7 @@ COLS = {
  "kind": "team kind: FP (focal point, 1 person) | ECHO (community team, 2) | TANGO (transhumance team, 2)", "team_size": "people", "place": "the place the team sits at", "zone": "the proposal it serves", "season": "when it works", "water": "water source and distance (a site without water is flagged UNVERIFIED)", "why": "the reason for this placement, from the zone's numbers",
  "ref_km2": "reference polygon km²", "iou": "intersection-over-union between the drawn shape and its redraw on the legible mesh", "n_units": "planning units the redraw uses", "redrawn_km2": "km² of the redraw", "ref_legible_pct": "% of the drawn boundary on a nameable feature", "ref_boundary": "the drawn boundary described", "class_mix": "planner classes inside the drawn shape by km²",
  "solver_class": "solver class: core | wilderness | community | corridor (plan_solver.py)", "rank_score": "rank: weighted mean of rank-percentiles of the measured terms (RANK.txt)", "in_budget": "rank: 1 = among the first --budget-n conservancies", "shield": "rank: share of perimeter touching core/corridor", "pressure_on_core": "rank: people × threat P10, edge-scaled", "herd_conflict": "rank: herd UD per 1,000 km²", "governance": "rank: committee-size term", "threat_p10_mean": "P(converted by 2035), mean", "people_x_threat": "people × threat P10", "herd_bundles": "herd bundles crossing the zone (share of band, fronts, onset, hold-out capture)",
- "w": "mesh feature weight (5 = river/border, 4 = swamp edge/district line, 3 = ridge/road)", "support": "bootstrap support 0–1", "in_walked_corridor_pct": "% of the unit inside the walked corridor band", "in_diverted_corridor_pct": "% inside the corridor with park + wilderness closed",
+ "w": "mesh feature weight (5 = river/border, 4 = swamp edge/district line, 3 = ridge/road)", "support": "bootstrap support 0–1", "team_id": "deploy team id (T = TANGO, E = ECHO, F = focal point; number = urgency rank within kind)", "sym": "symbol key: kind + deployment year", "staff": "people on the team", "urgency": "deploy urgency 0–1 (ECHO: gold-target rank, people × threat, shield; TANGO: herd UD, UD near residents, gold in band)", "footprint_km2": "area of the zones the team works, km²", "site_people": "GHSL people at the team's base settlement", "road_km": "km from the base to the nearest trunk…tertiary road", "reach": "OSRM reach of the base: share of the zone's targets within 4 h, car share, median minutes", "brief": "≤120-word brief for the team (muse-glimmer, from the served zones' stored descriptions)", "first_season": "what the team does in its first season", "short": "one-sentence brief", "adjudication": "why this base among the shortlist of 3", "alternatives": "the shortlist the base was chosen from", "in_walked_corridor_pct": "% of the unit inside the walked corridor band", "in_diverted_corridor_pct": "% inside the corridor with park + wilderness closed",
 }
 LEGAL = {"core": "national park or s.9 reserve (Wildlife Act 2026)", "wilderness": "wilderness / s.9 reserve", "community": "community conservancy, Wildlife Act 2026 s.14 (s.14(4) veto; Mining Act s.24 consent)", "corridor": "wildlife/livestock corridor — s.14 conservancy strip or gazetted corridor"}
 
@@ -95,7 +99,7 @@ def qml_categorized(field, cats, geom="polygon", label_expr=None):
             layer = f'''<layer class="SimpleFill" enabled="1" locked="0"><Option type="Map">
 <Option name="color" type="QString" value="{fill}"/><Option name="outline_color" type="QString" value="{stroke}"/>
 <Option name="outline_width" type="QString" value="{width}"/><Option name="outline_width_unit" type="QString" value="MM"/>
-<Option name="outline_style" type="QString" value="{'dash' if dash else 'solid'}"/><Option name="style" type="QString" value="{'no' if fill.endswith(',0') else 'solid'}"/></Option></layer>'''
+<Option name="outline_style" type="QString" value="{dash if isinstance(dash, str) else ('dash' if dash else 'solid')}"/><Option name="style" type="QString" value="{'no' if fill.endswith(',0') else 'solid'}"/></Option></layer>'''
         elif geom == "line":
             layer = f'''<layer class="SimpleLine" enabled="1" locked="0"><Option type="Map">
 <Option name="line_color" type="QString" value="{stroke}"/><Option name="line_width" type="QString" value="{width}"/><Option name="line_width_unit" type="QString" value="MM"/>
@@ -103,8 +107,8 @@ def qml_categorized(field, cats, geom="polygon", label_expr=None):
         else:
             layer = f'''<layer class="SimpleMarker" enabled="1" locked="0"><Option type="Map">
 <Option name="color" type="QString" value="{fill}"/><Option name="outline_color" type="QString" value="{stroke}"/><Option name="outline_width" type="QString" value="{width}"/>
-<Option name="name" type="QString" value="{dash or 'circle'}"/><Option name="size" type="QString" value="4"/><Option name="size_unit" type="QString" value="MM"/></Option></layer>'''
-        syms.append(f'<symbol type="{"fill" if geom=="polygon" else geom}" name="{i}" alpha="1" clip_to_extent="1">{layer}</symbol>')
+<Option name="name" type="QString" value="{(dash or 'circle').split('@')[0]}"/><Option name="size" type="QString" value="{(dash or '@4').split('@')[1] if '@' in (dash or '') else '4'}"/><Option name="size_unit" type="QString" value="MM"/></Option></layer>'''
+        syms.append(f'<symbol type="{ {"polygon": "fill", "line": "line", "point": "marker"}[geom] }" name="{i}" alpha="1" clip_to_extent="1">{layer}</symbol>')
         catxml.append(f'<category render="true" symbol="{i}" value="{val}" label="{lab}" type="string"/>')
     lab = ""
     if label_expr:
@@ -153,9 +157,16 @@ STYLES = {
  "support": qml_graduated_support(),
  "units": qml_categorized("cls", [("core", "core", rgba("#1b5e20", 60), rgba("#ffffff"), "0.15", False), ("wilderness", "wilderness", rgba("#7fae8b", 60), rgba("#ffffff"), "0.15", False),
                                   ("community", "community", rgba("#6a2c8f", 60), rgba("#ffffff"), "0.15", False), ("corridor", "corridor", rgba("#b3261e", 60), rgba("#ffffff"), "0.15", False)]),
- "solver_zones": qml_categorized("solver_class", [("core", "Solver: core", rgba("#1b5e20", 90), rgba("#0b3d12"), "0.4", False), ("wilderness", "Solver: wilderness", rgba("#7fae8b", 90), rgba("#3d6b4a"), "0.3", False),
-                                  ("community", "Solver: community conservancy", rgba("#b48ad0", 90), rgba("#4a1a66"), "0.3", False), ("corridor", "Solver: herd corridor (bundle band)", rgba("#d9534f", 90), rgba("#8b1a14"), "0.5", False)],
-                                 label_expr="CASE WHEN \"rank\" IS NOT NULL THEN 'C' || \"rank\" || ' · ' ELSE '' END || format_number(\"area_ha\",0) || ' ha · ' || format_number(\"population_est\",0) || ' ppl'"),
+ "solver_zones": qml_categorized("solver_class", [("core", "Zoning: core", "0,0,0,0", rgba("#1b5e20", 140), "0.3", "dash dot"), ("wilderness", "Zoning: wilderness", "0,0,0,0", rgba("#4f7a5c", 140), "0.3", "dash dot"),
+                                  ("community", "Zoning: community conservancy", "0,0,0,0", rgba("#6a2c8f", 140), "0.3", "dash dot"), ("corridor", "Zoning: herd corridor", "0,0,0,0", rgba("#b3261e", 140), "0.3", "dash dot")],
+                                 label_expr="CASE WHEN \"rank\" IS NOT NULL THEN 'C' || \"rank\" || ' · ' ELSE '' END || format_number(\"area_ha\",0) || ' ha · ' || format_number(\"population_est\",0) || ' ppl'"), "deploy_zones": qml_categorized("solver_class", [("community", "Community zone — ECHO team works here (fill: deploy_fill raster)", "0,0,0,0", rgba("#6a2c8f"), "0.55", False),
+                                                 ("corridor", "Corridor zone — TANGO team works here (fill: deploy_fill raster)", "0,0,0,0", rgba("#b3261e"), "0.55", False)],
+                                label_expr="\"team_id\" || ' · ' || format_number(\"area_ha\",0) || ' ha · ' || format_number(\"population_est\",0) || ' ppl'"),
+ "deploy_teams": qml_categorized("sym", [("FP1", "Focal point (1), year 1", rgba("#0b7285"), rgba("#ffffff"), "0.3", "star@5"), ("FP2", "Focal point (1), year 2", rgba("#ffffff"), rgba("#0b7285"), "0.45", "star@5"),
+                                        ("ECHO1", "ECHO team (5), year 1", rgba("#0b7285"), rgba("#ffffff"), "0.3", "square@3.2"), ("ECHO2", "ECHO team (5), year 2", rgba("#ffffff"), rgba("#0b7285"), "0.45", "square@3.2"),
+                                        ("TANGO1", "TANGO team (5), year 1", rgba("#0b7285"), rgba("#ffffff"), "0.3", "triangle@3.8"), ("TANGO2", "TANGO team (5), year 2", rgba("#ffffff"), rgba("#0b7285"), "0.45", "triangle@3.8")], geom="point",
+                                label_expr="\"id\" || ' · ' || regexp_replace(replace(\"place\",'near ',''),' \\\\(.*','')"),
+ "deploy_reach": qml_categorized("kind", [("ECHO", "ECHO 25 km working disc", "0,0,0,0", rgba("#0b7285", 90), "0.25", "dot"), ("TANGO", "TANGO 25 km working disc", "0,0,0,0", rgba("#0b7285", 90), "0.25", "dot"), ("FP", "FP 25 km disc", "0,0,0,0", rgba("#0b7285", 60), "0.2", "dot")]),
 }
 
 def write_layer(gpkg, name, geom_type, rows, ordered_cols):
@@ -252,6 +263,37 @@ def main():
         for g, p_ in szr: p_["legal_basis"] = LEGAL.get(p_.get("solver_class"), "")
         layers["solver_zones"] = ("MultiPolygon", szr, cols(szr, ["uid", "solver_class", "legal_basis", "rank", "rank_score", "in_budget", "area_ha", "population_est", "pop_per_km2", "threat_p10_mean", "shield", "pressure_on_core", "herd_conflict", "governance", "boundary_legibility", "boundary", "rationale", "herd_bundles"]))
 
+    dep_t = D.parent / "solver" / "deploy_teams.geojson"; dep_f = D.parent / "solver" / "deploy_footprint.geojson"
+    if dep_t.exists() and sz.exists():
+        import ast
+        tm = rows_from(dep_t)
+        for g, p_ in tm:
+            p_["year"] = int(p_.get("year") or 2); p_["team_id"] = p_.get("id"); p_["sym"] = f"{p_['kind']}{p_['year']}"
+            for k in ("reach", "alternatives", "towns", "zone_uids"):
+                if not isinstance(p_.get(k), str): p_[k] = json.dumps(p_.get(k))
+        layers["deploy_teams"] = ("Point", tm, cols(tm, ["id", "kind", "year", "staff", "place", "site_people", "urgency", "footprint_km2", "zone_uids", "road_km", "reach", "water", "season", "short", "brief", "first_season", "why", "adjudication", "alternatives", "sym"]))
+        byuid = {}
+        for g, p_ in tm:
+            for u in ast.literal_eval(p_["zone_uids"]) if isinstance(p_["zone_uids"], str) else p_["zone_uids"]: byuid.setdefault(int(u), p_)
+        dz = []
+        for g, p_ in szr:
+            t = byuid.get(int(p_["uid"]))
+            if t is None: continue
+            q = dict(p_); q.update(team_id=t["id"], team_kind=t["kind"], year=t["year"], team_place=t["place"], urgency=t["urgency"], staff=t["staff"], short=t.get("short"), brief=t.get("brief"), first_season=t.get("first_season"))
+            dz.append((g, q))
+        layers["deploy_zones"] = ("MultiPolygon", dz, cols(dz, ["uid", "solver_class", "team_id", "team_kind", "year", "team_place", "staff", "urgency", "area_ha", "population_est", "pop_per_km2", "threat_p10_mean", "short", "brief", "first_season", "rank", "in_budget", "boundary", "rationale", "herd_bundles"]))
+        if dep_f.exists():
+            # the footprint file = served zones ∪ 25 km disc; the disc alone is the working reach (the zones are deploy_zones)
+            served = {u: shape(g) for g, p_ in szr for u in [int(p_["uid"])] if u in byuid}
+            fr = []
+            for g, p_ in rows_from(dep_f):
+                from shapely.ops import unary_union
+                zs = [served[int(u)] for u in ast.literal_eval(p_["zone_uids"]) if int(u) in served] if isinstance(p_.get("zone_uids"), str) else []
+                disc = shape(g).difference(unary_union(zs).buffer(0)) if zs else shape(g)
+                if disc.is_empty: continue
+                fr.append((mapping(disc), dict(kind=p_["kind"], id=p_["id"], year=int(p_.get("year") or 2), place=p_.get("place"))))
+            layers["deploy_reach"] = ("MultiPolygon", fr, ["id", "kind", "year", "place"])
+
     log(f"writing {gpkg}")
     for name, (gt, rows, cc) in layers.items():
         write_layer(str(gpkg), name, gt, rows, cc); aliases[name] = cc
@@ -263,11 +305,33 @@ def main():
         from rasterio.transform import from_origin
         import __main__; __main__.Grid = P.Grid
         st = pickle.load(open(D / "state.pkl", "rb")); G = st["G"]; C = P.cells(sqlite3.connect(str(ROOT / "db.sqlite3")), G)
-        for key, desc in (("built", "built-up km2 per cell (GHSL)"), ("clear", "reviewed clearing km2 per cell since 2000"), ("clear20", "reviewed clearing km2 per cell since 2020"), ("pop", "people per cell (GHSL lower bound)"), ("longdens", "long transhumance fronts per cell")):
+        SD = D.parent / "solver"
+        if (SD / "solve_lab.npy").exists():
+            C["solve_class"] = np.load(SD / "solve_lab.npy").astype(np.float32); C["solve_intensity"] = np.load(SD / "solve_intensity.npy").astype(np.float32)
+        if "solve_class" in C and "deploy_zones" in layers:
+            # the DEPLOYMENT fill exactly as build_map.py draws it: class colour, opacity = lo + hi·intensity, only in the
+            # served zones and only where the solver's own class agrees — one RGBA raster, so QGIS shows the same picture
+            from shapely.ops import transform as _tf
+            import matplotlib.colors as mc
+            ZF = {"community": ("#8e5bb0", 0.12, 0.40), "corridor": ("#d4574d", 0.10, 0.34), "core": ("#2e7d32", 0.12, 0.40), "wilderness": ("#7fae8b", 0.12, 0.40)}
+            zid = G.rasterize([(_tf(P.FWD, shape(g)), int(q["uid"])) for g, q in layers["deploy_zones"][1]], fill=0)
+            rgba_ = np.zeros(C["solve_class"].shape + (4,), np.uint8)
+            for g, q in layers["deploy_zones"][1]:
+                cls = q["solver_class"]; col, lo, hi = ZF[cls]
+                m = (zid == int(q["uid"])) & (C["solve_class"] == ("core", "wilderness", "community", "corridor").index(cls) + 1)
+                rgba_[m, :3] = (np.array(mc.to_rgb(col)) * 255).astype(np.uint8); rgba_[m, 3] = (255 * (lo + hi * np.clip(C["solve_intensity"][m], 0, 1))).astype(np.uint8)
+            tp = out.parent / f"{out.name}_deploy_fill.tif"
+            with rasterio.open(tp, "w", driver="GTiff", height=G.h, width=G.w, count=4, dtype="uint8", crs=P.CEA + " +datum=WGS84 +units=m +no_defs", transform=from_origin(G.x0, G.y1, G.res, G.res), compress="deflate", photometric="RGB") as dst:
+                for b in range(4): dst.write(rgba_[:, :, b], b + 1)
+                dst.colorinterp = [rasterio.enums.ColorInterp.red, rasterio.enums.ColorInterp.green, rasterio.enums.ColorInterp.blue, rasterio.enums.ColorInterp.alpha]
+                dst.update_tags(description="deployment fill: team-zone class colour, alpha = evidence for the class (the sheet's fill)")
+            log(f"  raster {tp.name}: deployment fill (RGBA)")
+        for key, desc in (("solve_class", "solver class per cell: 1 core, 2 wilderness, 3 community, 4 corridor, 0 none"), ("solve_intensity", "solver evidence for the class per cell 0-1 (the map's fill depth inside team zones)"),
+                          ("built", "built-up km2 per cell (GHSL)"), ("clear", "reviewed clearing km2 per cell since 2000"), ("clear20", "reviewed clearing km2 per cell since 2020"), ("pop", "people per cell (GHSL lower bound)"), ("longdens", "long transhumance fronts per cell")):
             arr = C.get(key) if key in C else getattr(G, key, None)
             if arr is None: continue
             tp = out.parent / f"{out.name}_{key}.tif"
-            with rasterio.open(tp, "w", driver="GTiff", height=G.h, width=G.w, count=1, dtype="float32", crs=G.crs if hasattr(G, "crs") else "+proj=cea", transform=from_origin(G.x0, G.y1, G.res, G.res), nodata=-1, compress="deflate") as dst:
+            with rasterio.open(tp, "w", driver="GTiff", height=G.h, width=G.w, count=1, dtype="float32", crs=P.CEA + " +datum=WGS84 +units=m +no_defs", transform=from_origin(G.x0, G.y1, G.res, G.res), nodata=-1, compress="deflate") as dst:
                 dst.write(np.nan_to_num(np.asarray(arr, np.float32), nan=-1), 1); dst.update_tags(description=desc)
             log(f"  raster {tp.name}: {desc}")
     except Exception as e: log(f"rasters skipped: {e}")
