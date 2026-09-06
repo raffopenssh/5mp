@@ -48,7 +48,7 @@ def season_of(date):
     y, m = int(date[:4]), int(date[5:7]); return y if m >= 8 else y - 1
 
 # =============================================================================================== 1. movement
-def movement(st, hold_season=2025, capture=0.80, sigma_km=4.0, k=12):
+def movement(st, hold_season=2025, capture=0.50, sigma_km=4.0, k=12):
     """Utilisation distribution of each origin–destination bundle of the long transhumance fronts.
 
     Each trajectory segment is a Brownian bridge (Horne et al. 2007): the herd was somewhere between two dated
@@ -149,6 +149,7 @@ def movement(st, hold_season=2025, capture=0.80, sigma_km=4.0, k=12):
                bundles=[{k_: v for k_, v in b.items() if k_ not in ("mask", "ud")} for b in bundles])
     np.save(OUT / "movement_ud.npy", ud_all); np.save(OUT / "movement_band.npy", band_all)
     np.save(OUT / "movement_bundle_masks.npy", np.stack([b["mask"] for b in bundles]) if bundles else np.zeros((0, G.h, G.w), bool))
+    np.save(OUT / "movement_bundle_ud.npy", np.stack([b["ud"].astype(np.float16) for b in bundles]) if bundles else np.zeros((0, G.h, G.w), np.float16))
     json.dump(res, open(OUT / "movement.json", "w"), indent=1)
     for b in bundles: b["onset"] = MON[b["onset"]]
     L = [f"MOVEMENT — origin–destination bundles of the {len(T):,} long (≥150 km) transhumance fronts, Brownian-bridge utilisation (σ {sigma_km} km); each bundle's band is the SMALLEST isopleth that captures ≥ {capture:.0%} of the held-out season's fronts (skill = capture − max(equal-area all-fire null, band's share of the AOI)).",
@@ -300,7 +301,19 @@ def solve(st, a, mov=None, p10=None, claim_arr=None, weights=None, tag="", seed_
     if claim_arr is not None:
         cl_then = np.bincount(labf.ravel(), weights=((claim_arr == 1) | (claim_arr == 2)).ravel().astype(float), minlength=ML)[units] / np.maximum(UT.cnt[units], 1)
     else: cl_then = np.zeros(U)
-    W = dict(lam_threat=1.0, lam_people=3.0, lam_claim=1.0, lam_move=1.5, lam_boundary=2.0, wild=0.4, herd_vs_core=0.7); W.update(weights or {})
+    W = dict(lam_threat=1.0, lam_people=3.0, lam_claim=1.0, lam_move=0.5, lam_boundary=3.0, wild=0.4, herd_vs_core=0.7, lam_imagery=1.0); W.update(weights or {})
+    # imagery term (plan_imagery.py raster): habitat the rasters lack — gallery forest, wetland extent, closed forest — rewards
+    # core/wilderness. Its weight is lam_imagery × the MEASURED skill of the reading (mean Spearman of the checkable fields,
+    # imagery_calibration.json); an unmeasured reading enters at 0 (invariant 12). Printed in SOLVE.txt.
+    img_u = np.zeros(U); img_skill = 0.0; img_w = 0.0
+    calp = OUT / "imagery_calibration.json"
+    if calp.exists() and (OUT / "imagery_gallery_forest.npy").exists():
+        cal = json.load(open(calp)); rhos = [v for k_, v in cal.items() if k_.startswith("rho_") and v is not None]
+        img_skill = max(0.0, float(np.mean(rhos))) if rhos else 0.0; img_w = W["lam_imagery"] * img_skill
+        hab = np.zeros((G.h, G.w), np.float32)
+        for k_, wk in (("gallery_forest", 0.4), ("wetland_extent", 0.3), ("closed_forest", 0.3)):
+            arr = np.load(OUT / f"imagery_{k_}.npy"); hab += wk * np.nan_to_num(arr).astype(np.float32)
+        img_u = np.bincount(labf.ravel(), weights=hab.ravel(), minlength=ML)[units] / np.maximum(UT.cnt[units], 1)
     ud_cell_p95 = float(np.percentile(ud[G.mask & (ud > 0)], 95)) if (ud[G.mask] > 0).any() else 1.0
     # feasibility masks
     can_core = (popkm2 <= T["core_pop_km2"]) & (crop <= T["core_crop_pct"]) & (clear20 <= T["core_clear_km2"]) & (mine <= 0)
@@ -319,8 +332,8 @@ def solve(st, a, mov=None, p10=None, claim_arr=None, weights=None, tag="", seed_
     thr_n = p10_u / max(float(np.percentile(p10_u, 95)), 1e-9)                  # threat, 1 = 95th percentile unit
     for i in range(U):
         udn = min(ud_u[i] / max(UT.cnt[units][i], 1) / max(ud_cell_p95, 1e-12), 1.0)   # herd pressure per cell, 1 = 95th percentile
-        cvec[i * 4 + 0] = -area[i] * (1 + W["lam_threat"] * min(thr_n[i], 1)) * empt[i] * max(0.0, 1 - W["herd_vs_core"] * udn)
-        cvec[i * 4 + 1] = -area[i] * W["wild"] * empt[i]
+        cvec[i * 4 + 0] = -area[i] * ((1 + W["lam_threat"] * min(thr_n[i], 1)) * empt[i] * max(0.0, 1 - W["herd_vs_core"] * udn) + img_w * img_u[i])
+        cvec[i * 4 + 1] = -area[i] * (W["wild"] * empt[i] + img_w * img_u[i])
         cvec[i * 4 + 2] = -area[i] * (W["lam_people"] * min(popkm2[i], 5) / 5 + W["lam_claim"] * cl_then[i] + W["lam_threat"] * min(thr_n[i], 1))
         cvec[i * 4 + 3] = -area[i] * W["lam_move"] * udn * band_u[i]
     for j, (u, v, n, sm) in enumerate(E):
@@ -338,11 +351,23 @@ def solve(st, a, mov=None, p10=None, claim_arr=None, weights=None, tag="", seed_
     # core area cap; corridor capture floor
     for i in range(U): rows.append(r); cols.append(i * 4 + 0); vals.append(area[i] * 100)
     lo.append(0); hi.append(a.max_core_ha); r += 1
-    tot_ud = float(ud_u[can_corr].sum())
-    if tot_ud > 0:
-        for i in range(U):
-            if can_corr[i]: rows.append(r); cols.append(i * 4 + 3); vals.append(ud_u[i])
-        lo.append(a.corridor_capture * tot_ud); hi.append(np.inf); r += 1
+    # corridor floor PER BUNDLE: every origin–destination route must keep `corridor_capture` of ITS utilisation in the
+    # corridor class (one network-wide floor let the solver satisfy it with the fattest bundles and drop whole routes)
+    bud = np.load(OUT / "movement_bundle_ud.npy").astype(np.float32) if (OUT / "movement_bundle_ud.npy").exists() and not (seed_perturb and "band" in seed_perturb) else None
+    per_bundle = []
+    if bud is not None and len(bud):
+        for b in range(len(bud)):
+            ub = np.bincount(labf.ravel(), weights=bud[b].ravel(), minlength=ML)[units]; tot_b = float(ub[can_corr].sum())
+            if tot_b <= 0: continue
+            for i in range(U):
+                if can_corr[i] and ub[i] > 0: rows.append(r); cols.append(i * 4 + 3); vals.append(ub[i])
+            lo.append(a.corridor_capture * tot_b); hi.append(np.inf); r += 1; per_bundle.append(b + 1)
+    else:
+        tot_ud = float(ud_u[can_corr].sum())
+        if tot_ud > 0:
+            for i in range(U):
+                if can_corr[i]: rows.append(r); cols.append(i * 4 + 3); vals.append(ud_u[i])
+            lo.append(a.corridor_capture * tot_ud); hi.append(np.inf); r += 1
     A = sp.csr_matrix((vals, (rows, cols)), shape=(r, nx + ne))
     ub = np.ones(nx + ne); lb = np.zeros(nx + ne)
     for i in range(U):
@@ -373,15 +398,15 @@ def solve(st, a, mov=None, p10=None, claim_arr=None, weights=None, tag="", seed_
         m = comp == z; c = CLASSES[cls_i[np.flatnonzero(m)[0]]]
         zones.append(dict(zone=z, cls=c, units=[units[i] for i in np.flatnonzero(m)], area_ha=int(area[m].sum() * 100), people=int(pop[m].sum()),
                           threat_p10=round(float(np.average(p10_u[m], weights=area[m])), 3), claim_share=round(float(np.average(cl_then[m], weights=area[m])), 3),
-                          ud_share=round(float(ud_u[m].sum() / max(ud_u.sum(), 1e-9)), 3), empt=round(float(np.average(empt[m], weights=area[m])), 3)))
+                          ud_share=round(float(ud_u[m].sum() / max(ud_u.sum(), 1e-9)), 3), empt=round(float(np.average(empt[m], weights=area[m])), 3), habitat_img=round(float(np.average(img_u[m], weights=area[m])), 2)))
     zones.sort(key=lambda z: (-z["area_ha"]))
     bl = sum(n for (u, v, n, sm) in E if cls_i[ui[u]] != cls_i[ui[v]]); bleg = sum(sm for (u, v, n, sm) in E if cls_i[ui[u]] != cls_i[ui[v]])
-    summary = dict(status=res.message, objective=float(res.fun), units=U, edges=ne, weights=W, max_core_ha=a.max_core_ha, corridor_capture=a.corridor_capture,
+    summary = dict(status=res.message, objective=float(res.fun), units=U, edges=ne, weights=W, max_core_ha=a.max_core_ha, corridor_capture=a.corridor_capture, corridor_floor_per_bundle=per_bundle, imagery_skill=round(img_skill, 3), imagery_weight_effective=round(img_w, 3),
                    boundary_km=round(bl * G.res / 1000), boundary_legibility=round(bleg / max(bl, 1), 2), by_class={c: dict(km2=round(float(area[cls_i == ci].sum())), people=int(pop[cls_i == ci].sum()), zones=sum(1 for z in zones if z["cls"] == c)) for ci, c in enumerate(CLASSES)},
                    zones=zones)
     json.dump(summary, open(OUT / f"solve{tag}.json", "w"), indent=1); np.save(OUT / f"solve{tag}_lab.npy", lab)
     L = [f"SOLVE{tag} — one integer programme over {U} fine units / {ne} edges ({res.message}); boundary {summary['boundary_km']:,} km at mean legibility {summary['boundary_legibility']} (1 = every metre on a river/ridge/district line).",
-         "weights " + json.dumps(W), f"core cap {a.max_core_ha:,} ha; corridor must hold ≥ {a.corridor_capture:.0%} of the herd utilisation inside the movement network.", ""]
+         "weights " + json.dumps(W), f"imagery term: measured skill ρ̄ {img_skill:.2f} → effective weight {img_w:.2f} (lam_imagery {W['lam_imagery']} × skill; 0 = unmeasured or not read)", f"core cap {a.max_core_ha:,} ha; corridor must hold ≥ {a.corridor_capture:.0%} of the herd utilisation " + (f"of EACH of {len(per_bundle)} origin–destination bundles (inside its band)." if per_bundle else "inside the movement network."), ""]
     for c in CLASSES:
         b = summary["by_class"][c]; L.append(f"{c:<10} {b['km2']:>9,} km2  {b['people']:>9,} people  {b['zones']} zones")
     L.append("")
@@ -524,9 +549,9 @@ def narrate(st, tag="", workers=8, reviewers=2):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("mode", choices=["movement", "threat", "claim", "solve", "support", "narrate", "all"])
-    ap.add_argument("--hold-season", type=int, default=2025); ap.add_argument("--capture", type=float, default=0.8); ap.add_argument("--sigma-km", type=float, default=4.0); ap.add_argument("--k", type=int, default=12)
+    ap.add_argument("--hold-season", type=int, default=2025); ap.add_argument("--capture", type=float, default=0.5); ap.add_argument("--sigma-km", type=float, default=4.0); ap.add_argument("--k", type=int, default=12)
     ap.add_argument("--max-core-ha", type=float, default=6_000_000, help="total core the state can gazette across the AOI")
-    ap.add_argument("--corridor-capture", type=float, default=0.5, help="share of herd utilisation (inside the movement network) the corridor class must hold")
+    ap.add_argument("--corridor-capture", type=float, default=0.35, help="share of EACH bundle's herd utilisation (inside its band) the corridor class must hold")
     ap.add_argument("--time-limit", type=float, default=600); ap.add_argument("--gap", type=float, default=0.01)
     ap.add_argument("--weights", default="", help="JSON overrides for the objective weights")
     ap.add_argument("--min-ha", type=float, default=2000); ap.add_argument("--draws", type=int, default=12); ap.add_argument("--workers", type=int, default=8); ap.add_argument("--reviewers", type=int, default=2)
