@@ -238,3 +238,8 @@ data/easy_docs/
 data/plan_zones/conservancy_units*/state.pkl
 data/plan_zones/conservancy_units*/descriptions_*.json
 data/plan_zones/conservancies/
+
+# zoning: tagged/tuning runs and per-team subsets are scratch — only the untagged latest run is tracked
+data/plan_zones/solver/*_tune*
+data/plan_zones/solver/boundaries_*
+data/plan_zones/solver/BOUNDARIES_*

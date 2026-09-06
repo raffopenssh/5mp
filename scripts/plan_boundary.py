@@ -77,27 +77,41 @@ SOURCE = {"river": "HydroRIVERS v1.0 (WWF), named from the 1930s Sudan Survey sh
           "border": "GADM 4.1 country boundary", "hist_boundary": "1930s Sudan Survey district / province line",
           "open bush": "no linear feature — landmarks are 1930s sheet village/water symbols", "geological contact": "published geological map (Sudan 2004 / CAR 1964) — not visible on the ground"}
 GADM = ROOT / "data/gadm_geom"
+COD = ROOT / "data/admin_cod"          # OCHA COD-AB (HDX) — the government-endorsed admin set, with p-codes
 
 def admin_units():
-    """GADM 4.1 level-2 polygons (state/prefecture + county/sub-prefecture) for the four countries — the jurisdictions a
-    registration notice must name. Files: data/gadm_geom/gadm41_<ISO>_2.json (download_gadm_level2.py)."""
+    """Jurisdictions a registration notice must name. South Sudan: OCHA COD-AB v03 (2022-12-19) admin-3 payams, carrying
+    county (admin-2) and state (admin-1) with p-codes — data/admin_cod/ssd_admin3.geojson. Other countries: GADM 4.1 level-2
+    (prefecture/sub-prefecture), no payam level — data/gadm_geom/gadm41_<ISO>_2.json. Rows: (geom, iso, state, county, payam, pcode, source)."""
     out = []
+    ssd = COD / "ssd_admin3.geojson"
+    if ssd.exists():
+        for ft in json.load(open(ssd))["features"]:
+            pr = ft["properties"]
+            out.append((shape(ft["geometry"]).buffer(0), "SSD", pr["adm1_name"], pr["adm2_name"], pr["adm3_name"], pr["adm3_pcode"], f"OCHA COD-AB {pr.get('version','')} ({pr.get('valid_on','')})"))
     for f in sorted(GADM.glob("gadm41_*_2.json")):
+        if "SSD" in f.name and ssd.exists(): continue
         for ft in json.load(open(f))["features"]:
             pr = ft["properties"]; sp = lambda n: re.sub(r"(?<=[a-z])(?=[A-Z])", " ", n or "")
-            out.append((shape(ft["geometry"]).buffer(0), pr["GID_0"], sp(pr["NAME_1"]), sp(pr["NAME_2"]), pr.get("ENGTYPE_2") or pr.get("TYPE_2") or ""))
+            out.append((shape(ft["geometry"]).buffer(0), pr["GID_0"], sp(pr["NAME_1"]), sp(pr["NAME_2"]), None, pr["GID_2"], "GADM 4.1"))
     return out
 
 def jurisdiction(poly, admin, atree):
-    """Share of the zone's area by country / state / county, largest first (≥1 %)."""
-    rows = []
+    """Share of the zone's area by country / state / county / payam, largest first (≥1 % at payam level; counties
+    aggregate everything, so a county total can exceed the sum of its listed payams)."""
+    rows = []; cty = {}
     A = transform(P.FWD, poly).area
     for j in atree.query(poly):
-        g = admin[j][0]
+        g, iso, st, co, pa, pc, src = admin[j]
         if not g.intersects(poly): continue
         a = transform(P.FWD, g.intersection(poly)).area / A * 100
-        if a >= 1: rows.append(dict(country=admin[j][1], state=admin[j][2], county=admin[j][3], type=admin[j][4], pct=round(a)))
-    return sorted(rows, key=lambda r: -r["pct"])
+        if a < 0.05: continue
+        k = (iso, st, co); c = cty.setdefault(k, dict(country=iso, state=st, county=co, pct=0.0, payams=[], source=src))
+        c["pct"] += a
+        if pa and a >= 1: c["payams"].append(dict(payam=pa, pcode=pc, pct=round(a)))
+    for c in cty.values():
+        c["pct"] = round(c["pct"]); c["payams"].sort(key=lambda r: -r["pct"])
+    return sorted([c for c in cty.values() if c["pct"] >= 1], key=lambda r: -r["pct"])
 
 def sheets_for(hcon, pts):
     """1930s sheet ids covering these points (for the schedule's source line)."""
@@ -284,11 +298,14 @@ def narrate(out, workers):
 def schedule_text(name, p, rec, juris, sheets):
     """The formal schedule a gazette notice or a s.14 application carries: identity, jurisdiction, extent, the metes-and-bounds,
     sources, and what is NOT yet done (walked, beaconed, agreed)."""
-    j = "; ".join(f"{r['county']} {r['type'] or 'county'}, {r['state']} ({r['country']}) {r['pct']}%" for r in juris) or "no GADM unit resolved"
+    def jt(r):
+        pay = (" — payams " + ", ".join(f"{q['payam']} {q['pct']}%" for q in r["payams"])) if r["payams"] else ""
+        return f"{r['county']} County, {r['state']} State ({r['country']}) {r['pct']}%{pay}" if r["country"] == "SSD" else f"{r['county']}, {r['state']} ({r['country']}) {r['pct']}%"
+    j = ("; ".join(jt(r) for r in juris) or "no admin unit resolved") + ". Source: " + ", ".join(sorted({r["source"] for r in juris}))
     bbox = rec["bbox"]
     L = [f"SCHEDULE — {name}",
          f"1. Extent: {p['area_ha']:,} ha ({p['area_km2']:,.0f} km²); perimeter {rec['perimeter_km']} km; centroid {fmt_pt(rec['centroid'])}; bounding box {fmt_pt([bbox[0], bbox[1]])} to {fmt_pt([bbox[2], bbox[3]])}. Datum WGS 84 (EPSG:4326); areas in an equal-area projection.",
-         f"2. Jurisdiction (GADM 4.1, share of area): {j}.",
+         f"2. Jurisdiction (share of area): {j}.",
          f"3. Overlap with existing or proposed designations: {', '.join(json.loads(p['overlaps'])) if json.loads(p['overlaps']) else 'none'}. Distance to the nearest gazetted or proposed park boundary: {p['km_to_park']} km.",
          f"4. Boundary: {rec['summary']}",
          f"5. Metes and bounds: {rec['legal']}",
@@ -341,12 +358,18 @@ def main(codes, do_narrate=False, workers=36):
             gj.append({"type": "Feature", "properties": dict(uid=int(uid), teams="/".join(r["teams"]), leg=i + 1, kind=l["kind"], name=l["name"], km=l["km"], bearing=l["bearing"], source=SOURCE[l["kind"]]), "geometry": {"type": "LineString", "coordinates": [l["start"], l["end"]]}})
             for m in l.get("landmarks", []): gj.append({"type": "Feature", "properties": dict(uid=int(uid), leg=i + 1, kind="landmark", name=m["name"], km_off=m["km_off"]), "geometry": {"type": "Point", "coordinates": m["at"]}})
         for cn in r["corners"]: gj.append({"type": "Feature", "properties": dict(uid=int(uid), kind="corner", name=cn["text"]), "geometry": {"type": "Point", "coordinates": cn["at"]}})
+    prev = SOLVER / "boundaries.json"
+    if prev.exists():                        # keep an existing narration when the legal text it was written from is unchanged
+        old = json.load(open(prev))["zones"]
+        for k, r in out.items():
+            o = old.get(k)
+            if o and o.get("in_words") and o["legal"] == r["legal"] and not o["in_words"].startswith("(no"): r["in_words"] = o["in_words"]
     if do_narrate:
-        narrate(out, workers)
+        todo = {k: r for k, r in out.items() if not r.get("in_words")}
+        narrate(todo, workers)
         for i, l in enumerate(L):
-            if l.startswith("#"):
-                uid = l.split()[0][1:]
-                L[i] = l + "\n  In words: " + out[uid]["in_words"]
+            if l.startswith("#") and out[l.split()[0][1:]].get("in_words"):
+                L[i] = l + "\n  In words: " + out[l.split()[0][1:]]["in_words"]
     tag = "" if want is None else "_" + "_".join(codes)
     json.dump(dict(step_km=STEP, snap_km=SNAP, min_leg_km=MIN_LEG, beacon_km=BEACON, zones=out), open(SOLVER / f"boundaries{tag}.json", "w"), indent=1, ensure_ascii=False)
     (SOLVER / f"BOUNDARIES{tag}.txt").write_text("\n".join(L) + "\n")

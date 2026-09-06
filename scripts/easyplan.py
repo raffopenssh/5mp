@@ -192,7 +192,8 @@ def main():
         print(f"{a.show.upper()} — {t['kind']} team at {t['place']}, year {t['year']}, zone(s) {t['zone_uids']}")
         for k in ("area_ha", "people", "gold", "urgency_rank"):
             if k in t: print(f"  {k}: {t[k]}")
-        print("  jurisdiction:", "; ".join(f"{r['county']} ({r['state']}, {r['country']}) {r['pct']}%" for r in t.get("jurisdiction", [])))
+        for r in t.get("jurisdiction", []):
+            print(f"  jurisdiction: {r['county']} County, {r['state']} ({r['country']}) {r['pct']}%" + (" — payams " + ", ".join(f"{q['payam']} ({q['pcode']}) {q['pct']}%" for q in r["payams"]) if r.get("payams") else ""))
         print("\n  IN WORDS: " + (t.get("boundary_in_words") or "—"))
         print("\n  SUMMARY: " + (t.get("boundary_summary") or "—"))
         print("\n  " + (t.get("boundary_schedule") or "").replace("\n", "\n  "))
