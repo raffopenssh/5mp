@@ -160,7 +160,7 @@ def facts(P):
         for r in t.get("jurisdiction", []):
             if r["country"] != "SSD": continue
             counties.setdefault(r["county"], r["state"]); payams.update(q["payam"] for q in r["payams"])
-        t["counties_text"] = "; ".join(f"{r['county']}{' County' if r['country']=='SSD' else ''} {r['pct']}%" + (" (" + ", ".join(q["payam"] for q in r["payams"][:4]) + (", …" if len(r["payams"]) > 4 else "") + ")" if r["payams"] else "") for r in t.get("jurisdiction", []) if r["pct"] >= 5)
+        t["counties_text"] = "; ".join(f"{r['county']}{' County' if r['country']=='SSD' else ' (' + r['country'] + ')'} {r['pct']}%" + (" (" + ", ".join(q["payam"] for q in r["payams"][:4]) + (", …" if len(r["payams"]) > 4 else "") + ")" if r["payams"] else "") for r in t.get("jurisdiction", []) if r["pct"] >= 5)
     F["deploy"]["counties"] = sorted(counties); F["deploy"]["n_counties"] = len(counties); F["deploy"]["n_payams"] = len(payams)
     F["deploy"]["states"] = sorted(set(counties.values()))
     # which state's Ministry of Mining (the artisanal-licence desk under the Mining Act 2012) covers which staffed zone
@@ -212,7 +212,8 @@ def main():
         for k in ("area_ha", "people", "gold", "urgency_rank"):
             if k in t: print(f"  {k}: {t[k]}")
         for r in t.get("jurisdiction", []):
-            print(f"  jurisdiction: {r['county']} County, {r['state']} ({r['country']}) {r['pct']}%" + (" — payams " + ", ".join(f"{q['payam']} ({q['pcode']}) {q['pct']}%" for q in r["payams"]) if r.get("payams") else ""))
+            w = {"SSD": "County", "COD": "Territoire", "CAF": "Sous-préfecture", "SDN": "Locality"}[r["country"]]
+            print(f"  jurisdiction: {r['county']} {w}, {r['state']} ({r['country']}) {r['pct']}%" + (" — payams " + ", ".join(f"{q['payam']} ({q['pcode']}) {q['pct']}%" for q in r["payams"]) if r.get("payams") else ""))
         print("\n  IN WORDS: " + (t.get("boundary_in_words") or "—"))
         print("\n  SUMMARY: " + (t.get("boundary_summary") or "—"))
         print("\n  " + (t.get("boundary_schedule") or "").replace("\n", "\n  "))
