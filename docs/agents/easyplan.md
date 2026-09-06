@@ -31,9 +31,11 @@ python3 -c "import json;t=json.load(open('data/plan_zones/solver/facts.json'))['
 
 Every team carries `jurisdiction` (from `plan_boundary.py`): county rows with `state`,
 `state_pcode`, `county_pcode`, `pct` of zone area, `payams[]` (name, p-code, pct ≥ 1 %) and
-`source`. South Sudan = **OCHA COD-AB v03 (2022-12-19)** — the ten post-2020 states with
-official spellings (Warrap, Western Bahr el Ghazal …), 79 counties, 512 payams; other
-countries = GADM 4.1 level-2 (no payam level). Roll-ups in `facts.json` `deploy`: `counties`,
+`source`. All four countries = **OCHA COD-AB** (HDX, `data/admin_cod/`): SSD v03 2022-12-19
+(10 states, 79 counties, 512 payams — official spellings: Warrap, Western Bahr el Ghazal …),
+COD v01 admin-3 secteurs, CAF v02 admin-2 sous-préfectures, SDN v03 admin-2 localities. GADM
+was dropped 2026-09-06 because it was **wrong where it mattered**: it put E3 in "Buram" (COD-AB:
+Al Radoum locality) and merged Bambouti sous-préfecture into Obo (24 % of T4). Roll-ups in `facts.json` `deploy`: `counties`,
 `n_counties`, `n_payams`, `states`, `admin_source`, `mining_desks` (state → team codes ≥ 5 %
 of a zone — the Mining Act 2012 licence desks). The template uses them in three places: the
 Mining Act paragraph ("state desks concerned are …"), the s.14 registration paragraph

@@ -76,24 +76,23 @@ SOURCE = {"river": "HydroRIVERS v1.0 (WWF), named from the 1930s Sudan Survey sh
           "swamp": "JRC Global Surface Water (seasonal) / HydroLAKES edge", "road": "OpenStreetMap (HeiGIT extract)",
           "border": "GADM 4.1 country boundary", "hist_boundary": "1930s Sudan Survey district / province line",
           "open bush": "no linear feature — landmarks are 1930s sheet village/water symbols", "geological contact": "published geological map (Sudan 2004 / CAR 1964) — not visible on the ground"}
-GADM = ROOT / "data/gadm_geom"
-COD = ROOT / "data/admin_cod"          # OCHA COD-AB (HDX) — the government-endorsed admin set, with p-codes
+COD = ROOT / "data/admin_cod"          # OCHA COD-AB (HDX) — the government-endorsed admin set, with p-codes, all four countries
+COD_FILES = [("SSD", "ssd_admin3.geojson", 3, "payam"), ("COD", "cod_admin3.geojson", 3, "secteur/chefferie"),
+             ("CAF", "caf_admin2.geojson", 2, "sous-préfecture"), ("SDN", "sdn_admin2.geojson", 2, "locality")]
+ADMIN_WORDS = {"SSD": ("State", "County"), "COD": ("Province", "Territoire"), "CAF": ("Préfecture", "Sous-préfecture"), "SDN": ("State", "Locality")}
 
 def admin_units():
-    """Jurisdictions a registration notice must name. South Sudan: OCHA COD-AB v03 (2022-12-19) admin-3 payams, carrying
-    county (admin-2) and state (admin-1) with p-codes — data/admin_cod/ssd_admin3.geojson. Other countries: GADM 4.1 level-2
-    (prefecture/sub-prefecture), no payam level — data/gadm_geom/gadm41_<ISO>_2.json. Rows: (geom, iso, state, county, payam, pcode, source)."""
+    """Jurisdictions a registration notice must name, from OCHA COD-AB (HDX) for every country — the set the governments
+    themselves endorse, with p-codes. Deepest available level: SSD payam (admin-3), COD secteur (admin-3), CAF
+    sous-préfecture and SDN locality (admin-2, no third level). Rows: (geom, iso, adm1, adm2, adm3, pcode, source, adm1_pcode, adm2_pcode)."""
     out = []
-    ssd = COD / "ssd_admin3.geojson"
-    if ssd.exists():
-        for ft in json.load(open(ssd))["features"]:
-            pr = ft["properties"]
-            out.append((shape(ft["geometry"]).buffer(0), "SSD", pr["adm1_name"], pr["adm2_name"], pr["adm3_name"], pr["adm3_pcode"], f"OCHA COD-AB {pr.get('version','')} ({pr.get('valid_on','')})", pr["adm1_pcode"], pr["adm2_pcode"]))
-    for f in sorted(GADM.glob("gadm41_*_2.json")):
-        if "SSD" in f.name and ssd.exists(): continue
+    for iso, fn, lvl, _ in COD_FILES:
+        f = COD / fn
+        if not f.exists(): continue
         for ft in json.load(open(f))["features"]:
-            pr = ft["properties"]; sp = lambda n: re.sub(r"(?<=[a-z])(?=[A-Z])", " ", n or "")
-            out.append((shape(ft["geometry"]).buffer(0), pr["GID_0"], sp(pr["NAME_1"]), sp(pr["NAME_2"]), None, pr["GID_2"], "GADM 4.1", pr["GID_1"], pr["GID_2"]))
+            pr = ft["properties"]
+            a3, pc = (pr["adm3_name"], pr["adm3_pcode"]) if lvl == 3 else (None, pr["adm2_pcode"])
+            out.append((shape(ft["geometry"]).buffer(0), iso, pr["adm1_name"], pr["adm2_name"], a3, pc, f"OCHA COD-AB {iso} {pr.get('version','')} ({pr.get('valid_on','')})", pr["adm1_pcode"], pr["adm2_pcode"]))
     return out
 
 def jurisdiction(poly, admin, atree):
@@ -109,7 +108,7 @@ def jurisdiction(poly, admin, atree):
         k = (iso, st, co); c = cty.setdefault(k, dict(country=iso, state=st, state_pcode=st_pc, county=co, county_pcode=co_pc, pct=0.0, payams=[], source=src))
         c["pct"] += a
         if pa and a >= 1: c["payams"].append(dict(payam=pa, pcode=pc, pct=round(a)))
-    # two sources (COD-AB for SSD, GADM elsewhere) disagree about the border by a few km, so a border zone can sum past 100 %:
+    # neighbouring countries' COD-AB sets disagree about the border by a few km, so a border zone can sum past 100 %:
     # rescale to the zone and record the overlap, rather than print 104 %
     tot = sum(c["pct"] for c in cty.values()); f = 100 / tot if tot > 100 else 1
     for c in cty.values():
@@ -304,8 +303,9 @@ def schedule_text(name, p, rec, juris, sheets):
     """The formal schedule a gazette notice or a s.14 application carries: identity, jurisdiction, extent, the metes-and-bounds,
     sources, and what is NOT yet done (walked, beaconed, agreed)."""
     def jt(r):
-        pay = (" — payams " + ", ".join(f"{q['payam']} {q['pct']}%" for q in r["payams"])) if r["payams"] else ""
-        return f"{r['county']} County, {r['state']} State ({r['country']}) {r['pct']}%{pay}" if r["country"] == "SSD" else f"{r['county']}, {r['state']} ({r['country']}) {r['pct']}%"
+        pay = (f" — {dict((i, w) for i, _, _, w in COD_FILES)[r['country']]}s " + ", ".join(f"{q['payam']} {q['pct']}%" for q in r["payams"])) if r["payams"] else ""
+        w1, w2 = ADMIN_WORDS[r["country"]]
+        return f"{r['county']} {w2}, {r['state']} {w1} ({r['country']}) {r['pct']}%{pay}"
     j = ("; ".join(jt(r) for r in juris) or "no admin unit resolved") + ". Source: " + ", ".join(sorted({r["source"] for r in juris}))
     bbox = rec["bbox"]
     L = [f"SCHEDULE — {name}",
