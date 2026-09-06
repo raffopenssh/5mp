@@ -16,17 +16,17 @@ The proposed future Pongo-Wau-Numatina National Park recorded 158,844 fire detec
 
 Because most fire fronts reaching the area are associated with herder movement, field teams will operate primarily from December to February. Educational outreach in villages, legal and administrative work will continue during the rainy season.
 
-South Sudan's Mining Act 2012 allows state authorities to issue artisanal gold licenses, prohibiting mining within national parks only if explicitly stated in the park's founding instrument. The state desks concerned are those of Northern Bahr el Ghazal (E4, E5, T5), Warrap (E4), Western Bahr el Ghazal (E1, E3, E4, T1, T3), Western Equatoria (E2, T2, T4) - the four states whose ground the staffed zones lie on, by the OCHA COD-AB v03 (2022-12-19) administrative boundaries. To counter this vulnerability, the intervention will seek a Gazette closure order against new mineral-title applications and establish a clear boundary and explicit mining ban within the regulations of the 2026 Wildlife Act.
+South Sudan's Mining Act 2012 allows state authorities to issue artisanal gold licenses, prohibiting mining within national parks only if explicitly stated in the park's founding instrument. The state desks concerned are those of Northern Bahr el Ghazal (E4, E5, T5), Warrap (E4), Western Bahr el Ghazal (E1, E3, E4, T1, T3), Western Equatoria (E2, T2, T4) - the four states whose ground the staffed zones lie on, by the OCHA COD-AB SSD v03 (2022-12-19) boundaries. To counter this vulnerability, the intervention will seek a Gazette closure order against new mineral-title applications and establish a clear boundary and explicit mining ban within the regulations of the 2026 Wildlife Act.
 
 We will also register Community Conservancies under section 14 of the 2026 Act, each drawn to a boundary a villager can walk. The candidates were not sketched by hand (see "How the areas were drawn" below). The study area was cut into 2,150 units along rivers, khors, swamp edges, hill chains and 1930s district lines; every unit was measured with the same people, fire, cropland, clearing and gold-target layers that produced this report; and a single optimisation gave every unit one of four classes - park-grade core, wilderness, community conservancy or herd corridor - so that no two proposals overlap and each boundary is shared with its neighbour. Of the 119 community zones this produced, we take the five where people and modelled gold coincide most sharply, and station an ECHO team in each. Areas are in hectares; populations are satellite lower bounds.
 
-Year one: Wau and Tambura. The Wau conservancy (E1), 163,600 ha and 138,429 people in 42 clusters between Nahr al Jur, Busseri River, R. Asetti, K. Megwalima in Jur River County 58% (Udici, Marial Bai, Rocrocdong, Kuajiena, …); Wau County 42% (Bagari, Besselia, Wau South, Wau North), holds 34 gold-target cells, three abandoned villages on gold-bearing rock and eight settlements founded since 2015; it ranks first of all 119 community zones on gold-rush urgency. 78% of its boundary is on named features and 67% of its perimeter shields core or corridor land. The Tambura conservancy (E2), 119,600 ha and 36,536 people between K. Barange, CAF border, R. Lile, Tambura - Yubo Road in Tambura County 90% (Namutina, Mupoi, Tambura, Source Yubu); Obo 7%, holds 15 gold-target cells and two reported workings, two abandoned villages on gold-bearing rock. 75% of its boundary is on named features and 94% of its perimeter shields core or corridor land.
+Year one: Wau and Tambura. The Wau conservancy (E1), 163,600 ha and 138,429 people in 42 clusters between Nahr al Jur, Busseri River, R. Asetti, K. Megwalima in Jur River County 58% (Udici, Marial Bai, Rocrocdong, Kuajiena, …); Wau County 42% (Bagari, Besselia, Wau South, Wau North), holds 34 gold-target cells, three abandoned villages on gold-bearing rock and eight settlements founded since 2015; it ranks first of all 119 community zones on gold-rush urgency. 78% of its boundary is on named features and 67% of its perimeter shields core or corridor land. The Tambura conservancy (E2), 119,600 ha and 36,536 people between K. Barange, CAF border, R. Lile, Tambura - Yubo Road in Tambura County 90% (Namutina, Mupoi, Tambura, Source Yubu); Bambouti (CAF) 7%, holds 15 gold-target cells and two reported workings, two abandoned villages on gold-bearing rock. 75% of its boundary is on named features and 94% of its perimeter shields core or corridor land.
 
-Year two: Songo and Busseri River and Kuom. The Songo conservancy (E3), 215,600 ha and 40,599 people between SDN border, Umbelasha, Adda, W. OTO DO in Buram 85%; Raja County 15% (Ere, Ringi), holds 30 gold-target cells and seven reported workings, two abandoned villages on gold-bearing rock and two settlements founded since 2015. 72% of its boundary is on named features and 71% of its perimeter shields core or corridor land; it lies in another jurisdiction (SDN) and would be a partner conservancy, not ours. The Busseri River conservancy (E4), 279,200 ha and 51,736 people between Nahr al Jur, K Akali, R. Asetti, R. Abu-du-un in Jur River County 66% (Kangi, Udici, Wau Bai); Gogrial West County 21% (Kuac North, Kuac South); Aweil Centre County 12% (Bahr Mayen), holds 25 gold-target cells, three abandoned villages on gold-bearing rock and five settlements founded since 2015. 67% of its boundary is on named features and 42% of its perimeter shields core or corridor land. The Kuom conservancy (E5), 196,000 ha and 53,761 people between Lol, I Kayak, R.Lol, R. Pongo in Aweil Centre County 41% (Nyalath, Bahr Mayen, Awiil); Aweil West County 24% (Mariem East, Mariem West, Aweil Town); Aweil South County 19% (Wathmuok, Nyocawany II, Nyocawany I); Aweil East County 16% (Mayom-wel, Mangok, Wunlang, Yargot), holds 21 gold-target cells, one abandoned village on gold-bearing rock and eight settlements founded since 2015; cropland has grown from 0.07% to 4.23%. 48% of its boundary is on named features and 50% of its perimeter shields core or corridor land.
+Year two: Songo and Busseri River and Kuom. The Songo conservancy (E3), 215,600 ha and 40,599 people between SDN border, Umbelasha, Adda, W. OTO DO in Al Radoum (SDN) 84%; Raja County 16% (Ere, Ringi), holds 30 gold-target cells and seven reported workings, two abandoned villages on gold-bearing rock and two settlements founded since 2015. 72% of its boundary is on named features and 71% of its perimeter shields core or corridor land; it lies in another jurisdiction (SDN) and would be a partner conservancy, not ours. The Busseri River conservancy (E4), 279,200 ha and 51,736 people between Nahr al Jur, K Akali, R. Asetti, R. Abu-du-un in Jur River County 66% (Kangi, Udici, Wau Bai); Gogrial West County 21% (Kuac North, Kuac South); Aweil Centre County 12% (Bahr Mayen), holds 25 gold-target cells, three abandoned villages on gold-bearing rock and five settlements founded since 2015. 67% of its boundary is on named features and 42% of its perimeter shields core or corridor land. The Kuom conservancy (E5), 196,000 ha and 53,761 people between Lol, I Kayak, R.Lol, R. Pongo in Aweil Centre County 41% (Nyalath, Bahr Mayen, Awiil); Aweil West County 24% (Mariem East, Mariem West, Aweil Town); Aweil South County 19% (Wathmuok, Nyocawany II, Nyocawany I); Aweil East County 16% (Mayom-wel, Mangok, Wunlang, Yargot), holds 21 gold-target cells, one abandoned village on gold-bearing rock and eight settlements founded since 2015; cropland has grown from 0.07% to 4.23%. 48% of its boundary is on named features and 50% of its perimeter shields core or corridor land.
 
 Together the five hold about 974,000 ha and 321,061 people. All are herder country - 97-99% of their fire fronts are transhumance - which is why they must be conservancies with grazing rules, not exclusion zones.
 
-Registration will start at Wau and Tambura. A section 14 application is made through the county, so each proposed boundary has been laid over the government administrative set (OCHA COD-AB v03 (2022-12-19)): the staffed conservancies and corridors fall in 17 counties of Northern Bahr el Ghazal, Warrap, Western Bahr el Ghazal and Western Equatoria (Aweil Centre, Aweil East, Aweil South, Aweil West, Ezo, Gogrial West, Ibba, Jur River, Maridi, Mundri West, Mvolo, Nzara, Raja, Tambura, Tonj South, Wau, Yambio) and touch 55 payams, each listed with its share of the zone in the summary below, so the commissioners and payam administrators who must sign are known before the first meeting. Communities, a facilitator and legal counsel scope the applications during the first field season and file them in the 2027 rains, with the implementing partner registering in parallel with the Relief and Rehabilitation Commission. The target is at least one application accepted as complete in the first year and one conservancy authorized in the second, its community scouts registered under sections 15-16 as the legal form of the ECHO and TANGO teams. Each conservancy is framed around historic return: the traced 1930s sheets document, village by village, that these are families going back to their own ground, which the Act recognizes for long-standing residents. Between 22% and 52% of each proposed boundary still crosses ground with no river or hill to mark it, and those stretches are what the first season walks with the community. At USD 630,155 this is the largest single line in the budget.
+Registration will start at Wau and Tambura. A section 14 application is made through the county, so each proposed boundary has been laid over the government administrative set (OCHA COD-AB SSD v03 (2022-12-19); the CAR, Sudan and Congo sets likewise): the staffed conservancies and corridors fall in 17 counties of Northern Bahr el Ghazal, Warrap, Western Bahr el Ghazal and Western Equatoria (Aweil Centre, Aweil East, Aweil South, Aweil West, Ezo, Gogrial West, Ibba, Jur River, Maridi, Mundri West, Mvolo, Nzara, Raja, Tambura, Tonj South, Wau, Yambio) and touch 55 payams, each listed with its share of the zone in the summary below, so the commissioners and payam administrators who must sign are known before the first meeting. Communities, a facilitator and legal counsel scope the applications during the first field season and file them in the 2027 rains, with the implementing partner registering in parallel with the Relief and Rehabilitation Commission. The target is at least one application accepted as complete in the first year and one conservancy authorized in the second, its community scouts registered under sections 15-16 as the legal form of the ECHO and TANGO teams. Each conservancy is framed around historic return: the traced 1930s sheets document, village by village, that these are families going back to their own ground, which the Act recognizes for long-standing residents. Between 22% and 52% of each proposed boundary still crosses ground with no river or hill to mark it, and those stretches are what the first season walks with the community. At USD 630,155 this is the largest single line in the budget.
 
 The livestock corridors will be registered as wildlife corridors under section 9 of the same Act, which protects them and requires a funded impact plan from any infrastructure crossing them. Their outline is no longer a pair of map pins. The 13,178 long-range transhumance fronts of 2024-26 fall into fifteen origin-destination routes; for each route a least-cost path was traced and re-traced twelve times with the costs jittered, then widened until it holds at least 35% of that route's measured use, to at most 16 km either side. Fitted on 2023-24 and tested on the held-out 2025/26 season, each route's band captures 50-61% of the following year's movement where chance would give 0-14%. Four corridor zones are staffed. The Kuajiena corridor (T1), 2.45 million ha and 6,938 people along Low hill – J. ABU RASEIN – J. NGAYA ridge, Boro, Sopo, R. Timberi, carries four routes (2,137 fitted fronts) and 47 gold-target cells; herds enter in September. The Mvolo corridor (T2), 1.08 million ha and 12,361 people along Nahr al Jur, K. Daberi, 1930s Province Boundary, River Rohl, carries three routes (1,763 fitted fronts) and 31 gold-target cells; herds enter in October. The Yubo corridor (T4), 969,600 ha and 4,225 people along CAF border, R. Imatima, R.Biki, Mokoutou, carries two routes (909 fitted fronts) and 19 gold-target cells; herds enter in October. The Aroyo corridor (T5), 228,400 ha and 2,804 people along K. Wem, Chel River, Wad el Mek, Lol and 8 gold-target cells. Together they hold 4.73 million ha and 26,328 people; the whole corridor class in the plan holds 34,049 people, so what is registered is a corridor through communities, and its rules must be negotiated with the same conservancies it crosses. The corridors do not follow the grazing zones drawn in the plan: the Numatina zone holds 0.3% of measured herd use. Herder leadership - seated in Wau with a delegate in Raja - has stated its conditions for respecting protected areas: designated alternative ground, water points, veterinary and medical support. Those conditions are budgeted at USD 91,100, with the first water point and veterinary campaign delivered, not promised, and negotiations held only in the December-February window when the herders are present.
 
@@ -107,47 +107,48 @@ Herd corridors with a TANGO team (Wildlife Act 2026 s.9)
         total                   4,733,600  26,328
   herds = fitted long-range transhumance fronts 2024-26; from = month the herds arrive
 
-Jurisdiction of the staffed zones (OCHA COD-AB v03 (2022-12-19); share of zone area; payams ≥ 1%)
+Jurisdiction of the staffed zones (OCHA COD-AB, all four countries; share of zone area; third-level units ≥ 1%)
 
-  code  county / state (country)                              share  payams (share)
+  code  county / state (country)                              share  payams (SSD) / secteurs (COD), share
   ----  ----------------------------------------------------  -----  --------------------------------------------------------
-  E1    Jur River County, Western Bahr el Ghazal (SSD)          58%  Udici 21%, Marial Bai 12%, Rocrocdong 11%, Kuajiena 8%, Wau Bai 6%
-        Wau County, Western Bahr el Ghazal (SSD)                42%  Bagari 23%, Besselia 14%, Wau South 3%, Wau North 1%
-  E2    Tambura County, Western Equatoria (SSD)                 90%  Namutina 40%, Mupoi 29%, Tambura 15%, Source Yubu 7%
-        Obo, Haut-Mbomou (CAF)                                   7%  -
-        Ezo County, Western Equatoria (SSD)                      2%  -
-  E3    Buram, South Darfur (SDN)                               85%  -
-        Raja County, Western Bahr el Ghazal (SSD)               15%  Ere 14%, Ringi 1%
-  E4    Jur River County, Western Bahr el Ghazal (SSD)          66%  Kangi 35%, Udici 28%, Wau Bai 3%
-        Gogrial West County, Warrap (SSD)                       21%  Kuac North 12%, Kuac South 9%
-        Aweil Centre County, Northern Bahr el Ghazal (SSD)      12%  Bahr Mayen 12%
-        Aweil South County, Northern Bahr el Ghazal (SSD)        1%  -
-  E5    Aweil Centre County, Northern Bahr el Ghazal (SSD)      41%  Nyalath 20%, Bahr Mayen 17%, Awiil 4%
-        Aweil West County, Northern Bahr el Ghazal (SSD)        24%  Mariem East 15%, Mariem West 8%, Aweil Town 1%
-        Aweil South County, Northern Bahr el Ghazal (SSD)       19%  Wathmuok 7%, Nyocawany II 6%, Nyocawany I 6%
-        Aweil East County, Northern Bahr el Ghazal (SSD)        16%  Mayom-wel 9%, Mangok 3%, Wunlang 3%, Yargot 2%
-  T1    Raja County, Western Bahr el Ghazal (SSD)               60%  Uyujuku 37%, Ringi 14%, Raga 9%
-        Wau County, Western Bahr el Ghazal (SSD)                21%  Besselia 10%, Bagari 9%, Kpaile 1%
-        Jur River County, Western Bahr el Ghazal (SSD)          12%  Kuajiena 7%, Kangi 3%, Rocrocdong 1%, Udici 1%
-        Tonj South County, Warrap (SSD)                          2%  Wath-alel 1%
-        Aweil Centre County, Northern Bahr el Ghazal (SSD)       2%  Nyalath 1%
-        Buram, South Darfur (SDN)                                2%  -
-  T2    Ibba County, Western Equatoria (SSD)                    22%  Maruko 12%, Manikakara 10%
-        Mvolo County, Western Equatoria (SSD)                   21%  Bagori 12%, Yeri 4%, Mvolo 3%, Bahr El Grindi 1%
-        Maridi County, Western Equatoria (SSD)                  18%  Kozi 16%, Mambe 2%
-        Yambio County, Western Equatoria (SSD)                  17%  Ri-rangu 11%, Nadiangere 4%, Bangasu 2%
-        Nzara County, Western Equatoria (SSD)                    7%  Ringasi 7%
-        Ezo County, Western Equatoria (SSD)                      7%  Yangiri 6%
-        Mundri West County, Western Equatoria (SSD)              7%  Mundri 4%, Kotobi 2%
-  T4    Obo, Haut-Mbomou (CAF)                                  51%  -
-        Tambura County, Western Equatoria (SSD)                 41%  Namutina 23%, Mupoi 9%, Tambura 6%, Source Yubu 3%
-        Ezo County, Western Equatoria (SSD)                      5%  Bagidi 4%
-        Djemah, Haut-Mbomou (CAF)                                1%  -
-  T5    Aweil Centre County, Northern Bahr el Ghazal (SSD)      70%  Nyalath 32%, Aroyo 29%, Abul 7%, Chel South 2%
-        Aweil West County, Northern Bahr el Ghazal (SSD)        30%  Mariem West 26%, Gomjuer East 2%, Mariem East 2%
-  A county below 1% of a zone is not listed. Payam shares are of the whole zone, so a county's payams sum to its share.
-  Outside South Sudan the unit is the GADM 4.1 sub-prefecture / locality, which has no payam level; where the two sources
-  overlap along a border the shares are rescaled to 100%.
+  E1    Jur River, Western Bahr el Ghazal (SSD)                 58%  Udici 21%, Marial Bai 12%, Rocrocdong 11%, Kuajiena 8%, Wau Bai 6%
+        Wau, Western Bahr el Ghazal (SSD)                       42%  Bagari 23%, Besselia 14%, Wau South 3%, Wau North 1%
+  E2    Tambura, Western Equatoria (SSD)                        90%  Namutina 40%, Mupoi 29%, Tambura 15%, Source Yubu 7%
+        Bambouti, Haut-Mbomou (CAF)                              7%  -
+        Ezo, Western Equatoria (SSD)                             2%  -
+  E3    Al Radoum, South Darfur (SDN)                           84%  -
+        Raja, Western Bahr el Ghazal (SSD)                      16%  Ere 15%, Ringi 1%
+  E4    Jur River, Western Bahr el Ghazal (SSD)                 66%  Kangi 35%, Udici 28%, Wau Bai 3%
+        Gogrial West, Warrap (SSD)                              21%  Kuac North 12%, Kuac South 9%
+        Aweil Centre, Northern Bahr el Ghazal (SSD)             12%  Bahr Mayen 12%
+        Aweil South, Northern Bahr el Ghazal (SSD)               1%  -
+  E5    Aweil Centre, Northern Bahr el Ghazal (SSD)             41%  Nyalath 20%, Bahr Mayen 17%, Awiil 4%
+        Aweil West, Northern Bahr el Ghazal (SSD)               24%  Mariem East 15%, Mariem West 8%, Aweil Town 1%
+        Aweil South, Northern Bahr el Ghazal (SSD)              19%  Wathmuok 7%, Nyocawany II 6%, Nyocawany I 6%
+        Aweil East, Northern Bahr el Ghazal (SSD)               16%  Mayom-wel 9%, Mangok 3%, Wunlang 3%, Yargot 2%
+  T1    Raja, Western Bahr el Ghazal (SSD)                      60%  Uyujuku 37%, Ringi 14%, Raga 9%
+        Wau, Western Bahr el Ghazal (SSD)                       21%  Besselia 10%, Bagari 9%, Kpaile 1%
+        Jur River, Western Bahr el Ghazal (SSD)                 12%  Kuajiena 7%, Kangi 3%, Rocrocdong 1%, Udici 1%
+        Aweil Centre, Northern Bahr el Ghazal (SSD)              3%  Nyalath 1%
+        Al Radoum, South Darfur (SDN)                            2%  -
+        Tonj South, Warrap (SSD)                                 2%  Wath-alel 1%
+  T2    Ibba, Western Equatoria (SSD)                           22%  Maruko 12%, Manikakara 10%
+        Mvolo, Western Equatoria (SSD)                          21%  Bagori 12%, Yeri 4%, Mvolo 3%, Bahr El Grindi 1%
+        Maridi, Western Equatoria (SSD)                         18%  Kozi 16%, Mambe 2%
+        Yambio, Western Equatoria (SSD)                         17%  Ri-rangu 11%, Nadiangere 4%, Bangasu 2%
+        Nzara, Western Equatoria (SSD)                           7%  Ringasi 7%
+        Ezo, Western Equatoria (SSD)                             7%  Yangiri 6%
+        Mundri West, Western Equatoria (SSD)                     7%  Mundri 4%, Kotobi 2%
+  T4    Tambura, Western Equatoria (SSD)                        41%  Namutina 23%, Mupoi 9%, Tambura 6%, Source Yubu 3%
+        Bambouti, Haut-Mbomou (CAF)                             24%  -
+        Obo, Haut-Mbomou (CAF)                                  19%  -
+        Djémah, Haut-Mbomou (CAF)                                9%  -
+        Ezo, Western Equatoria (SSD)                             5%  Bagidi 4%
+  T5    Aweil Centre, Northern Bahr el Ghazal (SSD)             70%  Nyalath 32%, Aroyo 29%, Abul 7%, Chel South 2%
+        Aweil West, Northern Bahr el Ghazal (SSD)               30%  Mariem West 26%, Mariem East 2%, Gomjuer East 2%
+  A unit below 1% of a zone is not listed. Payam shares are of the whole zone, so a county's payams sum to its share.
+  CAF sous-préfectures and Sudan localities are the deepest official level (no payam equivalent). Where neighbouring
+  countries' official boundaries overlap along a border the shares are rescaled to 100%.
 
 Focal points (one person each)
 
