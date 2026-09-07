@@ -258,3 +258,9 @@ data/eval/xsa_mining_heldout/*
 !data/eval/xsa_mining_heldout/prediction.geojson
 !data/eval/regional_mining/nested_cv.xsa_scores.npz
 data/plan_zones/solver/deploy*.json.prev
+
+# PIP report builder: contains names from confidential field reporting and live share links - never public
+scripts/piptex/
+# PIP summary texts stay local (the proposal prose is not public; the generator scripts are)
+docs/plan/PIP_SUMMARY_*
+docs/plan/superseded_PIP_SUMMARY_*

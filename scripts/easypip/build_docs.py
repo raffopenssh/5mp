@@ -1203,7 +1203,7 @@ def part4_actions(F, Z, D, B, rows, tot, today):
     P("    Jan 2027  ############  SEASON 1  peak burning month")
     P("    Feb 2027  ########      SEASON 1 ends 15 Feb")
     P("    Mar-Sep   ####  paper: applications written, survey designed")
-    P("    Dec 2027  ############  SEASON 2  survey flown, first borehole")
+    P("    Dec 2027  ############  SEASON 2  survey flown, first solar pump")
     P("    Dec 2028  ############  SEASON 3  declaration package, hold it")
     P("")
     P("    MILESTONE                                          BY WHEN")
@@ -1273,7 +1273,7 @@ def part5_money(F, Z, D, B, rows, tot, today):
       f" {n(t[2]):>10} {n(sum(t)):>10}")
     P("")
     P(para(f"Year 2 is the peak, and only because two one-off items land in "
-           f"it - the aerial survey and the first corridor borehole, "
+           f"it - the aerial survey and the first corridor solar pump, "
            f"{usd(bud['y2_oneoffs'])} between them. Strip those and the "
            f"running cost is close to flat."))
     P("")
@@ -1348,7 +1348,7 @@ def part5_money(F, Z, D, B, rows, tot, today):
     P("       first corridor talks.")
     P("")
     P(f"    C. THE FULL THREE YEARS         {n(bud['three_year'])}")
-    P("       Adds the survey, the boreholes, the veterinary campaign, a fourth")
+    P("       Adds the survey, the solar pumps, the veterinary campaign, a fourth")
     P("       team and the land-use planning. This is the version that ends")
     P("       with a signed conservancy, a survey baseline and a fire number.")
     P("")
@@ -1645,7 +1645,7 @@ def two_pager(F, Z, D, B, rows, tot, today):
       f"   (a slice of Y1)")
     P(f"    Year 1          Oct 26 - Sep 27      {usd(bud['y1'])}")
     P(f"    Year 2          Oct 27 - Sep 28      {usd(bud['y2'])}"
-      f"   (survey + borehole)")
+      f"   (survey + solar pump)")
     P(f"    Year 3 and on   Oct 28 onward        {usd(bud['y3'])}"
       f"   (the running cost)")
     P(f"    THREE YEARS                          {usd(bud['three_year'])}")

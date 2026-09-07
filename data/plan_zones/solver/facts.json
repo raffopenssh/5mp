@@ -53,7 +53,7 @@
    12,
    12
   ],
-  "boreholes": [
+  "solar_pumps": [
    0,
    1
   ],
@@ -10571,14 +10571,14 @@
  },
  "budget": {
   "years": 2,
-  "total": 1920582,
+  "total": 1909556,
   "per_year": [
    648431,
-   1272151
+   1261126
   ],
   "direct": [
    522280,
-   1044985
+   1035585
   ],
   "first_6_months": 512367,
   "load_factor": 1.2415,
@@ -10588,7 +10588,7 @@
    "3  Ask for the s.24 gazette closure order": 0,
    "4  Register under the 2026 Act early, rim first": 929150,
    "5  Treat the road answer as final": 0,
-   "6  Keep the corridor axis, budget its price": 103700,
+   "6  Keep the corridor axis, budget its price": 94300,
    "7  Field-check and fly the rim": 107620,
    "8  Land-use planning with the boom towns": 6000,
    "9  Fix the site list": 30000,
@@ -10596,7 +10596,7 @@
    "11 Attach to the funding architecture": 0
   },
   "action4_register": 929150,
-  "corridor_price": 91100,
+  "corridor_price": 81700,
   "team_loaded": [
    169594,
    442087
@@ -10649,10 +10649,10 @@
     ]
    }
   },
-  "ssd_total": 1524621,
+  "ssd_total": 1513595,
   "ssd_per_year": [
    495405,
-   1029216
+   1018190
   ],
   "rates": {
    "FREIGHT_PCT": 0.4,

@@ -30,7 +30,7 @@ juba_nights: [60, 40]
 survey_year: 2                      # aerial wildlife survey (first since 2007); 0 = none
 survey_hours: 40
 recon_flight_hours: [12, 12]
-boreholes: [0, 1]
+solar_pumps: [0, 1]                 # solar pump fitted to an existing borehole on the corridor; we do not drill
 vet_campaigns: [0, 1]
 camera_traps: [0, 30]
 field_check_missions: [4, 3]        # x 12 vehicle-days each
