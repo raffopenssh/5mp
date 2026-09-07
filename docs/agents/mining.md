@@ -341,3 +341,23 @@ prose version. Rules that cost time:
   invariant 12) / 30 basins. Ramps + `cat_marker` rule renderer in
   `export_prediction_gpkg.py`. Verified by headless PyQGIS render
   (QT_QPA_PLATFORM=offscreen, `loadDefaultStyle()`), stacked and solo.
+
+## Truth-set gap over SDN/SSD — what ACLED v8 (1997-2017) did and did not add (2026-09-07)
+
+The plan text's "top 5 % captures 16 % of 89 known workings, 3.2×" is limited
+by the anchors, not the model: 63 % of `XSA_Study_Area` is South Sudan/Sudan
+and holds 21 of the 89. Current ACLED is 403 to a gmail account, but ACLED
+**Version 8** (public release, Kaggle mirror `jboysen/african-conflicts`,
+165,808 events) was tested as a text source with the same
+label-then-cluster method as Crisis Tracker/GED (muse-glimmer, per-record,
+24 workers, budget backstop, verbatim-evidence check; 327 keyword notes →
+59 sites: COD 34, SDN 13, CAF 9, TZA 3). **It does not move the XSA
+number**: inside the AOI it yields 3 CAF sites already held (Kono, Nzako,
+Yangou Bayoka); all 13 Sudan sites are north of 10.3°N (Darfur, Kordofan,
+Blue Nile, Red Sea Hills); South Sudan places **zero** mines in 5,144 events
+(its keyword hits are landmines). The 16 % stands until a South Sudan
+*mining* list exists — candidates: the Landfolio cadastre (decommissioned
+2025-12-30; archived scrape?), Cordaid 2016 Equatoria ASM assessment,
+Enough/Sentry Kapoeta lists. The ACLED derivation is **not committed**
+(scripts and data stay local); the Sudan sites could later feed the SDN
+sheet affinity eval, not the plan.
