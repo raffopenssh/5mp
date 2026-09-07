@@ -1,0 +1,20 @@
+SPOT CHECKS — high-resolution (~38.8 km) looks where a decision hinges on the ground, World Imagery, zoom 11
+
+team:ECHO:Bongo (1930s) (28.062,7.421)
+    Q: Is there a village with people and any water (river, pools, swamp) here, where a ECHO team of 2 is proposed? Planner says water: WATER UNVERIFIED — no river, 1930s well/pool or perennial water within 3 km of a
+    A: No village or homestead compounds are visible and no perennial surface water is seen, only a meandering dry river bed is present, so water remains unverified for the proposed ECHO team site. — compounds 0, fields old_fallow, cattle camp False, tracks none, water dry_bed, forest none, mining False (conf 0.35)
+team:ECHO:Busseri River* (nearest_place, unverified) (27.470,7.994)
+    Q: Is there a village with people and any water (river, pools, swamp) here, where a ECHO team of 2 is proposed? Planner says water: WATER UNVERIFIED — no river, 1930s well/pool or perennial water within 3 km of a
+    A: Scattered homestead compounds are visible suggesting people are present, but no clear river, pools or swamp water is discernible, only dry savanna with faint dry beds. — compounds 16, fields old_fallow, cattle camp False, tracks vehicle_track, water dry_bed, forest none, mining False (conf 0.4)
+team:ECHO:Busseri* (nearest_place, unverified) (26.846,8.035)
+    Q: Is there a village with people and any water (river, pools, swamp) here, where a ECHO team of 2 is proposed? Planner says water: WATER UNVERIFIED — no river, 1930s well/pool or perennial water within 3 km of a
+    A: No village compounds or people are visible and no river, pools or swamp water can be confirmed in the chip; the area looks like largely unsettled savanna with only faint tracks and no verifiable perennial water within the view. — compounds 0, fields old_fallow, cattle camp False, tracks road, water none, forest none, mining False (conf 0.35)
+team:ECHO:Deim Zubeir (26.195,7.715)
+    Q: Is there a village with people and any water (river, pools, swamp) here, where a ECHO team of 2 is proposed? Planner says water: WATER UNVERIFIED — no river, 1930s well/pool or perennial water within 3 km of a
+    A: No clear village compounds or perennial water are visible on the chip; only a faint road/track and dry drainage lines cross a savanna mosaic with no obvious pools, river water or swamp within view. — compounds 0, fields old_fallow, cattle camp False, tracks road, water dry_bed, forest gallery_strip, mining False (conf 0.35)
+team:ECHO:Karsing R.H. (1930s) (27.501,5.673)
+    Q: Is there a village with people and any water (river, pools, swamp) here, where a ECHO team of 2 is proposed? Planner says water: WATER UNVERIFIED — no river, 1930s well/pool or perennial water within 3 km of a
+    A: No village compounds or people and no river, pools or swamp water are discernible at this resolution; the chip shows sparsely patterned savanna with a faint track and no verifiable water within the view. — compounds 0, fields old_fallow, cattle camp False, tracks vehicle_track, water none, forest none, mining False (conf 0.3)
+team:ECHO:Ogali (1930s village) (27.818,7.517)
+    Q: Is there a village with people and any water (river, pools, swamp) here, where a ECHO team of 2 is proposed? Planner says water: WATER UNVERIFIED — no river, 1930s well/pool or perennial water within 3 km of a
+    A: No village compounds or people are visible and no clear perennial river, pools or swamp is evident, only faint seasonal drainage lines with gallery strips. — compounds 0, fields old_fallow, cattle camp False, tracks vehicle_track, water dry_bed, forest gallery_strip, mining False (conf 0.55)

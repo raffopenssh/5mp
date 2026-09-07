@@ -11,6 +11,8 @@
   "no_llm": false,
   "workers": 32
  },
+ "mining_model": "heldout",
+ "mining_note": "model (heldout) top-5% cells capture 28% of known workings (lift 5.66 uniform, 2.91 reach-corrected, p_reach 0.0007); held-out: L2 logistic regression on binary evidence layers, trained on 559 reported-site clusters in CAF/SSD/SDN outside a 50 km moat round the study area, recipe and settings chosen by spatial 5-fold cross-validation on that training region only, then scored ONCE on the 46 study-area clusters (scripts/regional_mining/nested_cv.py); imagery targets, not mines",
  "team_size": 5,
  "road_km": 5.0,
  "site_reach_km": 25.0,
@@ -21,161 +23,238 @@
    "kind": "TANGO",
    "staff": 5,
    "zone_uids": [
-    249
+    280
    ],
    "urgency": 1.0,
-   "place": "Kuajiena",
-   "lon": 28.2741,
-   "lat": 7.4963,
-   "site_people": 1350,
-   "road_km": 0.4,
+   "place": "Aluk (1930s village)",
+   "lon": 27.5076,
+   "lat": 8.457,
+   "site_people": 721,
+   "road_km": 2.0,
    "reach": {
-    "share": 0.345,
-    "median_min": 319,
-    "car_share": 1.0,
-    "n_cells": 814
+    "share": 0.285,
+    "median_min": 339,
+    "car_share": 0.96,
+    "n_cells": 847
    },
-   "water": "settlement of 1,350 people (water implied by residence); no mapped river/well/JRC water within 3 km — verify",
+   "water": "settlement of 211 people (water implied by residence); no mapped river/well/JRC water within 3 km — verify",
    "season": "from month 09 (bundle onset) through the dry season",
-   "why": "corridor zone 249 ranks 1/12 on herd × people × gold: bundles [4, 11, 8, 15] (2,137 fitted fronts), herd utilisation in band 487.00 of which 93% within 25 km of residents; 47 gold-target cells in the band; 6,938 people on corridor land. Site: 1,350 people, road 0.4 km, reaches 34% of the zone's targets within 4 h (100% of those trips by car/motorbike; median 319 min; OSRM car/foot/bush).",
+   "why": "corridor zone 280 ranks 1/11 on herd × people × gold: bundles [4, 11, 15, 8] (2,137 fitted fronts), herd utilisation in band 550.16 of which 94% within 25 km of residents; 36 gold-target cells in the band; 5,426 people on corridor land. Site (adjudicated): 721 people, road 2.0 km, reaches 28% of targets within 4 h (96% by car/motorbike).",
    "towns": [],
    "alternatives": [
-    {
-     "name": "Kuajiena",
-     "people": 1350,
-     "road_km": 0.4,
-     "reach": {
-      "share": 0.345,
-      "median_min": 319,
-      "car_share": 1.0,
-      "n_cells": 814
-     },
-     "score": 1.833,
-     "lon": 28.2741,
-     "lat": 7.4963
-    },
-    {
-     "name": "Busseri* (nearest_place, unverified)",
-     "people": 158,
-     "road_km": 0.2,
-     "reach": {
-      "share": 0.363,
-      "median_min": 299,
-      "car_share": 1.0,
-      "n_cells": 814
-     },
-     "score": 1.263,
-     "lon": 26.6985,
-     "lat": 7.7258
-    },
     {
      "name": "Bisellia",
      "people": 211,
      "road_km": 0.1,
      "reach": {
-      "share": 0.391,
-      "median_min": 292,
+      "share": 0.362,
+      "median_min": 300,
       "car_share": 0.99,
-      "n_cells": 814
+      "n_cells": 847
      },
-     "score": 1.209,
+     "score": 1.527,
      "lon": 27.7252,
      "lat": 7.7155
+    },
+    {
+     "name": "Abang",
+     "people": 305,
+     "road_km": 5.7,
+     "reach": {
+      "share": 0.344,
+      "median_min": 305,
+      "car_share": 1.0,
+      "n_cells": 847
+     },
+     "score": 1.098,
+     "lon": 28.0303,
+     "lat": 7.6296
+    },
+    {
+     "name": "Aluk (1930s village)",
+     "people": 721,
+     "road_km": 2.0,
+     "reach": {
+      "share": 0.285,
+      "median_min": 339,
+      "car_share": 0.96,
+      "n_cells": 847
+     },
+     "score": 1.039,
+     "lon": 27.5076,
+     "lat": 8.457
     }
    ],
-   "adjudication": "muse-glimmer chose #1 (Kuajiena): Kuajiena has 1,350 people with reach share 0.345. Bisellia reach share 0.391 and Busseri reach share 0.363 are both within 0.15 of the larger site's reach, so the under-1,000 hamlets are disallowed by rule 1.",
+   "adjudication": "muse-glimmer chose #3 (Aluk (1930s village)): Bisellia 211 has larger Abang 305 within 0.018 of its 0.362 reach share, and Abang 305 has larger Aluk 721 within 0.059 of its 0.344 reach share, so the only under-1000 hamlet with no larger site within 0.15 is Aluk 721 with reach share 0.285 and median 339 min.",
    "year": 1,
    "id": "T1",
-   "footprint_km2": 25182,
-   "brief": "Team is based at Kuajiena, a settlement of 1,350 people with 0.4 km of road and no mapped river or well within 3 km to verify. It serves corridor zone 249 in SSD covering about 2,452,400 ha with 6,938 people on corridor land. Ground is bounded on the NW by J. ABU RASEIN – J. NGAYA ridge, on the NW/E by unnamed river and on the W/NW by Boro, with 308 km along a geological contact that needs beacons. The team moves with herders from bundle onset month 09 through dry season following bundles 4, 11, 8 and 15 with 2,137 fitted fronts, 93% of herd use within 25 km of residents. It watches for 47 gold-target cells in the band, herd movements and people pressure across the corridor.",
-   "first_season": "First verify water access near Kuajiena and establish contact with herders for month 09 onset and dry season movement. Confirm road and motorbike access to reach the zone targets within 4 hours and begin beaconing the geological contact.",
-   "short": "Based at Kuajiena, TANGO team travels with transhumant herders in corridor zone 249 to monitor herd people gold contacts."
+   "footprint_km2": 26927,
+   "brief": "Team is based at Aluk 1930s village, 721 people with 2 km road, chosen for access to corridor zone 280 that covers 5,426 people and 36 gold-target cells with 2,137 fitted fronts. The zone is bounded by tertiary road on the E/W, unnamed river order 4 on the E/NW and Low hill J. ABU RASEIN – J. NGAYA ridge on the NW/W. Scouts move with transhumant herders from month 09 onset through dry season, accompanying four bundles as they cross the corridor. Work is to monitor herd movement near communities, where 94% of utilisation lies within 25 km of residents, and watch for activity around gold-target cells while verifying water near the settlement of 211 people.",
+   "first_season": "Verify water availability within 3 km of Aluk, as no mapped river, well or JRC water is recorded. Establish contact with herders of the month 09 onset bundle and map movement routes to gold-target cells reachable within 4 h on foot and 96% by car or motorbike.",
+   "short": "Based at Aluk 1930s village, team travels with transhumant herders across corridor zone 280 to monitor herd movement and gold-target cells."
   },
   {
    "kind": "ECHO",
    "staff": 5,
    "zone_uids": [
-    182
+    273
    ],
-   "urgency": 0.957,
-   "place": "Wau",
-   "lon": 27.9834,
-   "lat": 7.7111,
-   "site_people": 104260,
+   "urgency": 0.919,
+   "place": "Bandasi",
+   "lon": 25.1492,
+   "lat": 5.0537,
+   "site_people": 25446,
    "road_km": 0.3,
    "reach": {
-    "share": 1.0,
-    "median_min": 70,
+    "share": 0.818,
+    "median_min": 95,
     "car_share": 1.0,
-    "n_cells": 54
+    "n_cells": 49
    },
-   "water": "Nahr al Jur (HydroRIVERS) 2.6 km",
+   "water": "Mbomou (HydroRIVERS) 2.6 km",
    "season": "year-round; village outreach in the rains, boundary walks Dec–Feb",
-   "why": "community zone 182 ranks 1/100 on gold-rush urgency: 34 top-5% gold-target cells, 1 model candidates, 3 abandoned-village-on-gold watchlist places, 0 reported workings; 138,429 people, people×threat 15,089, 8 settlements founded since 2015; shields core/corridor on 67% of its edge; budget rank C1. Site: 104,260 people, road 0.3 km, reaches 100% of the zone's targets within 4 h (100% of those trips by car/motorbike; median 70 min; OSRM car/foot/bush).",
+   "why": "community zone 273 ranks 1/131 on gold-rush urgency: 11 top-5% gold-target cells, 0 model candidates, 0 abandoned-village-on-gold watchlist places, 2 reported workings; 29,158 people, people×threat 1,487, 1 settlements founded since 2015; shields core/corridor on 95% of its edge; budget rank C19. Site: 25,446 people, road 0.3 km, reaches 82% of the zone's targets within 4 h (100% of those trips by car/motorbike; median 95 min; OSRM car/foot/bush).",
    "towns": [
-    "Wau",
-    "Wau",
-    "Akej"
+    "Bandasi",
+    "Mboufo",
+    "Mboufo"
    ],
    "alternatives": [
     {
-     "name": "Wau",
-     "people": 104260,
+     "name": "Bandasi",
+     "people": 25446,
      "road_km": 0.3,
      "reach": {
-      "share": 1.0,
-      "median_min": 70,
+      "share": 0.818,
+      "median_min": 95,
       "car_share": 1.0,
-      "n_cells": 54
+      "n_cells": 49
      },
-     "score": 11.555,
-     "lon": 27.9834,
-     "lat": 7.7111
+     "score": 8.298,
+     "lon": 25.1492,
+     "lat": 5.0537
     },
     {
-     "name": "Wau",
-     "people": 15443,
-     "road_km": 0.7,
+     "name": "Mboufo",
+     "people": 2265,
+     "road_km": 0.4,
      "reach": {
-      "share": 1.0,
-      "median_min": 76,
-      "car_share": 1.0,
-      "n_cells": 54
+      "share": 0.818,
+      "median_min": 99,
+      "car_share": 0.95,
+      "n_cells": 49
      },
-     "score": 9.645,
-     "lon": 28.0256,
-     "lat": 7.6945
+     "score": 6.162,
+     "lon": 25.1019,
+     "lat": 5.0135
     },
     {
-     "name": "Akej (1930s village)",
-     "people": 3816,
-     "road_km": 1.9,
+     "name": "Mboufo",
+     "people": 1345,
+     "road_km": 0.5,
      "reach": {
-      "share": 1.0,
-      "median_min": 73,
-      "car_share": 1.0,
-      "n_cells": 54
+      "share": 0.727,
+      "median_min": 106,
+      "car_share": 0.91,
+      "n_cells": 49
      },
-     "score": 8.247,
-     "lon": 27.9375,
-     "lat": 7.7977
+     "score": 5.002,
+     "lon": 25.1469,
+     "lat": 4.9765
     }
    ],
-   "adjudication": "muse-glimmer chose #1 (Wau): All three sites have reach share 1.0. Site 1 has the shortest median 70 min versus 76 min and 73 min for sites 2 and 3, with 104260 people and road 0.3 km.",
+   "adjudication": "muse-glimmer chose #1 (Bandasi): Bandasi has reach share 0.818 with median 95 min, tying the 0.818 reach share of the second site but beating its 99 min median. The site has 25,446 people and road 0.3 km, satisfying the settlement requirement.",
    "year": 1,
    "id": "E1",
-   "footprint_km2": 2436,
-   "brief": "Team is based in Wau with 104,260 people, 0.3 km road and 2.6 km from Nahr al Jur to cover community zone 182 with high gold-rush urgency. Ground is bounded by Nahr al Jur 64 km on SE/N, Busseri River 18 km on S/E and R. Asetti 14 km on N. Work is year-round with community scouts, village outreach in the rains and boundary walks Dec–Feb, meeting settlements around Wau, Akej and Nahr al Jur. It watches for 34 gold-target cells, 1 model candidate and 3 abandoned-village-on-gold watchlist places with 0 reported workings.",
-   "first_season": "Establish beacons along the 16 km geological contact that is not visible on the ground. Begin village outreach in the rains and prepare boundary walks Dec–Feb.",
-   "short": "Based in Wau, ECHO team monitors community zone 182 for gold-rush pressure along rivers and villages."
+   "footprint_km2": 2748,
+   "brief": "Based in Bandasi, 25,446 people, road 0.3 km, Mbomou 2.6 km away, the team covers community zone 273 with 29,158 people including Bandasi and Mboufo. Ground is bounded by unnamed river on E/NE, Asa on SW/W and Mbomou on W/NW, with Gambara village marked on the west. Work is year-round with village outreach in the rains and boundary walks Dec–Feb, reaching 82% of targets within 4 h by car or motorbike with median 95 min. The team meets residents to watch 11 top-5% gold-target cells, 0 model candidates, 0 abandoned-village-on-gold watchlist places and 2 reported workings, amid 20 km2 clearing since 2020 and 94% transhumance share.",
+   "first_season": "Begin village outreach in the rains in Bandasi and Mboufo to map gold-target cells and reported workings. Conduct boundary walks Dec–Feb along Asa and Mbomou to check shields core/corridor edge and mark the 6 km geological contact.",
+   "short": "Based in Bandasi, team covers community zone 273 along Mbomou and Asa to monitor gold rush pressure and community exposure."
   },
   {
    "kind": "ECHO",
    "staff": 5,
    "zone_uids": [
-    171
+    145
    ],
-   "urgency": 0.926,
+   "urgency": 0.896,
+   "place": "Songo",
+   "lon": 24.3539,
+   "lat": 9.7814,
+   "site_people": 34320,
+   "road_km": 3.8,
+   "reach": {
+    "share": 0.779,
+    "median_min": 145,
+    "car_share": 0.94,
+    "n_cells": 45
+   },
+   "water": "Umbelasha (HydroRIVERS) 1.4 km",
+   "season": "year-round; village outreach in the rains, boundary walks Dec–Feb",
+   "why": "community zone 145 ranks 2/131 on gold-rush urgency: 6 top-5% gold-target cells, 0 model candidates, 0 abandoned-village-on-gold watchlist places, 6 reported workings; 37,847 people, people×threat 1,438, 1 settlements founded since 2015; shields core/corridor on 58% of its edge; budget rank C20. Site: 34,320 people, road 3.8 km, reaches 78% of the zone's targets within 4 h (94% of those trips by car/motorbike; median 145 min; OSRM car/foot/bush).",
+   "towns": [
+    "Songo",
+    "Songo"
+   ],
+   "alternatives": [
+    {
+     "name": "Songo",
+     "people": 34320,
+     "road_km": 3.8,
+     "reach": {
+      "share": 0.779,
+      "median_min": 145,
+      "car_share": 0.94,
+      "n_cells": 45
+     },
+     "score": 7.891,
+     "lon": 24.3539,
+     "lat": 9.7814
+    },
+    {
+     "name": "أم حجار",
+     "people": 579,
+     "road_km": 0.1,
+     "reach": {
+      "share": 0.779,
+      "median_min": 235,
+      "car_share": 1.0,
+      "n_cells": 45
+     },
+     "score": 4.957,
+     "lon": 24.5197,
+     "lat": 9.4923
+    },
+    {
+     "name": "Songo",
+     "people": 1157,
+     "road_km": 7.4,
+     "reach": {
+      "share": 0.779,
+      "median_min": 138,
+      "car_share": 1.0,
+      "n_cells": 45
+     },
+     "score": 3.847,
+     "lon": 24.3099,
+     "lat": 9.7904
+    }
+   ],
+   "adjudication": "muse-glimmer chose #1 (Songo): First entry has 34,320 people, reach share 0.779 and median 145 min. The 579-person hamlet shares reach 0.779 with larger sites within 0.15, so it is disqualified under rule 1.",
+   "year": 1,
+   "id": "E2",
+   "footprint_km2": 2511,
+   "brief": "Team is based in Songo with 34,320 people, 3.8 km road and Umbelasha 1.4 km away, covering community zone 145 with 37,847 people and 1 settlement founded since 2015. Ground is bounded on the N/NE by Umbelasha, on the SW by J. KOAYA – J. NOAYA 4428 – J. HELISI ridge and on the S/SE by Adda, with shields core/corridor on 58% of the edge. Work is year-round with village outreach in the rains and boundary walks Dec–Feb, meeting residents in Songo. It watches for activity on 6 top-5% gold-target cells and 6 reported workings.",
+   "first_season": "Begin village outreach in Songo during the rains and start boundary walks Dec–Feb along Umbelasha and the ridge. Place beacons for the 34 km geological contact stretch that is not visible on the ground.",
+   "short": "Based in Songo, team covers community zone 145 to monitor gold-target cells and reported workings along Umbelasha and ridge boundaries."
+  },
+  {
+   "kind": "ECHO",
+   "staff": 5,
+   "zone_uids": [
+    248
+   ],
+   "urgency": 0.895,
    "place": "Tambura",
    "lon": 27.5063,
    "lat": 5.5828,
@@ -183,16 +262,16 @@
    "road_km": 1.6,
    "reach": {
     "share": 1.0,
-    "median_min": 33,
+    "median_min": 74,
     "car_share": 1.0,
-    "n_cells": 37
+    "n_cells": 39
    },
    "water": "settlement of 31,951 people (water implied by residence); no mapped river/well/JRC water within 3 km — verify",
    "season": "year-round; village outreach in the rains, boundary walks Dec–Feb",
-   "why": "community zone 171 ranks 2/100 on gold-rush urgency: 15 top-5% gold-target cells, 0 model candidates, 2 abandoned-village-on-gold watchlist places, 2 reported workings; 36,536 people, people×threat 3,032, 0 settlements founded since 2015; shields core/corridor on 94% of its edge; budget rank C6. Site: 31,951 people, road 1.6 km, reaches 100% of the zone's targets within 4 h (100% of those trips by car/motorbike; median 33 min; OSRM car/foot/bush).",
+   "why": "community zone 248 ranks 3/131 on gold-rush urgency: 8 top-5% gold-target cells, 1 model candidates, 2 abandoned-village-on-gold watchlist places, 0 reported workings; 35,817 people, people×threat 2,579, 0 settlements founded since 2015; shields core/corridor on 49% of its edge; budget rank C18. Site: 31,951 people, road 1.6 km, reaches 100% of the zone's targets within 4 h (100% of those trips by car/motorbike; median 74 min; OSRM car/foot/bush).",
    "towns": [
     "Tambura",
-    "Senekpuro"
+    "Yubo"
    ],
    "alternatives": [
     {
@@ -201,72 +280,302 @@
      "road_km": 1.6,
      "reach": {
       "share": 1.0,
-      "median_min": 33,
+      "median_min": 74,
       "car_share": 1.0,
-      "n_cells": 37
+      "n_cells": 39
      },
      "score": 10.372,
      "lon": 27.5063,
      "lat": 5.5828
     },
     {
-     "name": "Senekpuro",
-     "people": 2821,
-     "road_km": 2.7,
+     "name": "Yubo",
+     "people": 2911,
+     "road_km": 2.0,
      "reach": {
       "share": 1.0,
-      "median_min": 67,
-      "car_share": 0.91,
-      "n_cells": 37
+      "median_min": 99,
+      "car_share": 1.0,
+      "n_cells": 39
      },
-     "score": 7.588,
-     "lon": 27.4194,
-     "lat": 5.5879
+     "score": 7.977,
+     "lon": 27.2867,
+     "lat": 5.3994
     },
     {
-     "name": "Karsing R.H. (1930s)",
-     "people": 748,
-     "road_km": 1.3,
+     "name": "Yubo* (nearest_place, unverified)",
+     "people": 391,
+     "road_km": 0.2,
      "reach": {
       "share": 1.0,
-      "median_min": 47,
-      "car_share": 0.97,
-      "n_cells": 37
+      "median_min": 117,
+      "car_share": 1.0,
+      "n_cells": 39
      },
-     "score": 6.519,
-     "lon": 27.5011,
-     "lat": 5.6729
+     "score": 5.971,
+     "lon": 27.3015,
+     "lat": 5.2797
     }
    ],
-   "adjudication": "muse-glimmer chose #1 (Tambura): Tambura has reach share 1.0 with median 33 min, shorter than Senekpuro 67 min and Karsing R.H. 47 min. It is 31,951 people, so the under-1,000 hamlet rule does not apply.",
-   "year": 1,
-   "id": "E2",
-   "footprint_km2": 2143,
-   "brief": "Based in Tambura with year-round presence, the ECHO team supports the community conservancy of zone 171 because the site reaches all gold-target cells within 4 hours by car or motorbike, median 33 minutes, from 31,951 residents. The ground covers about 120,000 ha with 15 gold-target cells, 2 abandoned-village-on-gold watchlist places and 2 reported workings along edges such as K. Barange, CAF border and R. Lile. Scouts meet villages in Tambura and Senekpuro during the rains for outreach and conduct boundary walks Dec–Feb. They watch for new artisanal mining, incursions along the 94% shields edge and movement on the unnamed river and Tambura - Yubo Road.",
-   "first_season": "Verify water access within 3 km of Tambura base as no mapped river or well is recorded. Walk the Dec–Feb boundary to mark the 28 km geological contact that needs beacons.",
-   "short": "Based in Tambura, team covers community zone 171 to monitor gold-target cells and mining pressure along the conservancy boundary."
+   "adjudication": "muse-glimmer chose #1 (Tambura): Tambura has reach share 1.0 with median 74 min, shorter than Yubo 99 min and Yubo* 117 min, both also at reach share 1.0. It has 31951 people and road 1.6 km, satisfying the preference rules.",
+   "year": 2,
+   "id": "E3",
+   "footprint_km2": 2243,
+   "brief": "Team is based in Tambura, about 32,000 people with 2 km road access, to cover community zone 248 because it holds 8 gold-target cells, 1 model candidate and 2 abandoned-village watchlist places with no reported workings. The zone around Tambura and Yubo is bounded by unnamed river order 4 on the east and south for 40 km, Tambura-Yubo Road on the west and north-west for 26 km, and Yambio-Tambura road on the east and north for 6 km. Village outreach happens in the rains and boundary walks run December to February, with all targets reachable within 4 hours by car or motorbike, median about 74 minutes. The team watches for new gold rush activity and pressure on shields core corridor along 49% of the edge.",
+   "first_season": "First verify water access within 3 km of the Tambura base as no mapped river, well or JRC water is recorded nearby. Then start village outreach in the rains and plan boundary walks December to February along the river and road edges.",
+   "short": "Based in Tambura, team covers community zone 248 on unnamed river, Tambura-Yubo Road and Yambio-Tambura road to monitor gold-target cells and abandoned villages."
+  },
+  {
+   "kind": "ECHO",
+   "staff": 5,
+   "zone_uids": [
+    195
+   ],
+   "urgency": 0.891,
+   "place": "Cueibet",
+   "lon": 29.3108,
+   "lat": 7.0026,
+   "site_people": 5455,
+   "road_km": 0.8,
+   "reach": {
+    "share": 0.883,
+    "median_min": 90,
+    "car_share": 1.0,
+    "n_cells": 30
+   },
+   "water": "Wahko (HydroRIVERS) 2.7 km",
+   "season": "year-round; village outreach in the rains, boundary walks Dec–Feb",
+   "why": "community zone 195 ranks 4/131 on gold-rush urgency: 15 top-5% gold-target cells, 1 model candidates, 1 abandoned-village-on-gold watchlist places, 0 reported workings; 43,227 people, people×threat 3,588, 6 settlements founded since 2015; shields core/corridor on 37% of its edge; budget rank C1. Site: 5,455 people, road 0.8 km, reaches 88% of the zone's targets within 4 h (100% of those trips by car/motorbike; median 90 min; OSRM car/foot/bush).",
+   "towns": [
+    "Cueibet",
+    "River Gulnam",
+    "Cueibet"
+   ],
+   "alternatives": [
+    {
+     "name": "Cueibet",
+     "people": 5455,
+     "road_km": 0.8,
+     "reach": {
+      "share": 0.883,
+      "median_min": 90,
+      "car_share": 1.0,
+      "n_cells": 30
+     },
+     "score": 7.598,
+     "lon": 29.3108,
+     "lat": 7.0026
+    },
+    {
+     "name": "Cueibet",
+     "people": 14319,
+     "road_km": 2.2,
+     "reach": {
+      "share": 0.883,
+      "median_min": 96,
+      "car_share": 0.63,
+      "n_cells": 30
+     },
+     "score": 6.887,
+     "lon": 29.2108,
+     "lat": 7.0034
+    },
+    {
+     "name": "River Gulnam* (nearest_place, unverified)",
+     "people": 10872,
+     "road_km": 3.2,
+     "reach": {
+      "share": 0.825,
+      "median_min": 109,
+      "car_share": 0.56,
+      "n_cells": 30
+     },
+     "score": 5.981,
+     "lon": 29.3962,
+     "lat": 6.9206
+    }
+   ],
+   "adjudication": "muse-glimmer chose #1 (Cueibet): First and second sites tie on reach share 0.883, but first has shorter median 90 min versus 96 min. Third site is lower at reach share 0.825 with median 109 min.",
+   "year": 2,
+   "id": "E4",
+   "footprint_km2": 2168,
+   "brief": "Based in Cueibet with 5,455 people and 0.8 km road access, water Wahko 2.7 km away, the community scouts serve zone 195 year-round with village outreach in rains and boundary walks Dec–Feb. The zone is bounded by Wahko on NW/SW for 44 km, River Gulnam on E/NE for 44 km and Rumbek-Tonj Road on N/NW for 10 km. The team reaches 88% of the zone's targets within 4 h by car or motorbike, median 90 min. It meets settled communities across 43,227 people with six settlements founded since 2015 and watches for 15 gold-target cells, one model candidate, one abandoned-village-on-gold watchlist place and zero reported workings.",
+   "first_season": "First walk the Wahko and River Gulnam edges in Dec–Feb to place beacons along the 4 km geological contact. Then run village outreach in the rains to check the 15 gold-target cells and the watchlist place near Cueibet.",
+   "short": "Based in Cueibet, team covers community zone 195 along Wahko and River Gulnam to monitor gold-target cells and community exposure."
+  },
+  {
+   "kind": "ECHO",
+   "staff": 5,
+   "zone_uids": [
+    170
+   ],
+   "urgency": 0.874,
+   "place": "Wau",
+   "lon": 27.9834,
+   "lat": 7.7111,
+   "site_people": 104260,
+   "road_km": 0.3,
+   "reach": {
+    "share": 1.0,
+    "median_min": 17,
+    "car_share": 1.0,
+    "n_cells": 28
+   },
+   "water": "Nahr al Jur (HydroRIVERS) 2.6 km",
+   "season": "year-round; village outreach in the rains, boundary walks Dec–Feb",
+   "why": "community zone 170 ranks 5/131 on gold-rush urgency: 8 top-5% gold-target cells, 1 model candidates, 1 abandoned-village-on-gold watchlist places, 0 reported workings; 117,344 people, people×threat 8,566, 3 settlements founded since 2015; shields core/corridor on 46% of its edge; budget rank C2. Site: 104,260 people, road 0.3 km, reaches 100% of the zone's targets within 4 h (100% of those trips by car/motorbike; median 17 min; OSRM car/foot/bush).",
+   "towns": [
+    "Wau",
+    "Akej",
+    "Nyin Akok"
+   ],
+   "alternatives": [
+    {
+     "name": "Wau",
+     "people": 104260,
+     "road_km": 0.3,
+     "reach": {
+      "share": 1.0,
+      "median_min": 17,
+      "car_share": 1.0,
+      "n_cells": 28
+     },
+     "score": 11.555,
+     "lon": 27.9834,
+     "lat": 7.7111
+    },
+    {
+     "name": "Akej (1930s village)",
+     "people": 3816,
+     "road_km": 1.9,
+     "reach": {
+      "share": 1.0,
+      "median_min": 34,
+      "car_share": 1.0,
+      "n_cells": 28
+     },
+     "score": 8.247,
+     "lon": 27.9375,
+     "lat": 7.7977
+    },
+    {
+     "name": "Alelchok (1930s village)",
+     "people": 3072,
+     "road_km": 3.0,
+     "reach": {
+      "share": 1.0,
+      "median_min": 39,
+      "car_share": 1.0,
+      "n_cells": 28
+     },
+     "score": 8.03,
+     "lon": 28.0047,
+     "lat": 7.7909
+    }
+   ],
+   "adjudication": "muse-glimmer chose #1 (Wau): Wau has reach share 1.0 with median 17 min, the shortest median among the three sites with equal reach share 1.0. Its people 104260 exceeds 1,000 so rule 1 does not apply.",
+   "year": 2,
+   "id": "E5",
+   "footprint_km2": 2193,
+   "brief": "Team is based in Wau with 104,260 people and 0.3 km road access, reaching all targets within 4 h with median 17 min by car or motorbike. Zone 170 spans 84,800 ha with 117,344 people, including Wau, Akej and Nyin Akok, and three settlements founded since 2015. Ground is bounded by Nahr al Jur on NE/E, Wau - Raja road on SW/S and R. Asetti on N, with a 12 km geological contact needing beacons. Work is year-round with village outreach in rains and boundary walks Dec–Feb with community members. Watch for eight top-5% gold-target cells, one model candidate and one abandoned-village-on-gold watchlist place with zero reported workings.",
+   "first_season": "Start village outreach in rains with Wau, Akej and Nyin Akok to map local knowledge of gold-target cells and watchlist sites. Begin Dec–Feb boundary walks along Nahr al Jur and Wau - Raja road and place beacons on the 12 km geological contact.",
+   "short": "Based in Wau, community scouts cover zone 170 to monitor gold rush pressure around settled farmland and mining-exposed villages."
   },
   {
    "kind": "TANGO",
    "staff": 5,
    "zone_uids": [
-    259
+    280
    ],
-   "urgency": 0.909,
-   "place": "Mvolo",
-   "lon": 29.9522,
-   "lat": 6.0544,
-   "site_people": 8713,
+   "urgency": 0.85,
+   "place": "Busseri* (nearest_place, unverified)",
+   "lon": 26.6985,
+   "lat": 7.7258,
+   "site_people": 158,
+   "road_km": 0.2,
+   "reach": {
+    "share": 0.345,
+    "median_min": 303,
+    "car_share": 1.0,
+    "n_cells": 847
+   },
+   "water": "settlement of 721 people (water implied by residence); no mapped river/well/JRC water within 3 km — verify",
+   "season": "from month 09 (bundle onset) through the dry season",
+   "why": "corridor zone 280 ranks 1/11 on herd × people × gold: bundles [4, 11, 15, 8] (2,137 fitted fronts), herd utilisation in band 550.16 of which 94% within 25 km of residents; 36 gold-target cells in the band; 5,426 people on corridor land. Second team: the zone spans 4 bundles and 2.6 M ha; this site is > 50 km from the first. Site: 721 people, road 2.0 km, reaches 28% of the zone's targets within 4 h (96% of those trips by car/motorbike; median 339 min; OSRM car/foot/bush).",
+   "towns": [],
+   "alternatives": [
+    {
+     "name": "Aluk (1930s village)",
+     "people": 721,
+     "road_km": 2.0,
+     "reach": {
+      "share": 0.285,
+      "median_min": 339,
+      "car_share": 0.96,
+      "n_cells": 847
+     },
+     "score": 1.039,
+     "lon": 27.5076,
+     "lat": 8.457
+    },
+    {
+     "name": "Busseri River* (nearest_place, unverified)",
+     "people": 599,
+     "road_km": 0.7,
+     "reach": {
+      "share": 0.289,
+      "median_min": 338,
+      "car_share": 0.99,
+      "n_cells": 847
+     },
+     "score": 0.707,
+     "lon": 27.506,
+     "lat": 8.5516
+    },
+    {
+     "name": "Busseri* (nearest_place, unverified)",
+     "people": 158,
+     "road_km": 0.2,
+     "reach": {
+      "share": 0.345,
+      "median_min": 303,
+      "car_share": 1.0,
+      "n_cells": 847
+     },
+     "score": 0.655,
+     "lon": 26.6985,
+     "lat": 7.7258
+    }
+   ],
+   "adjudication": "muse-glimmer chose #1 (Aluk (1930s village)): Aluk is 721 people with reach share 0.285 and median 339 min. No larger site exists in the shortlist, so the under-1,000 hamlet condition is met and the first entry is retained. → moved to Busseri* (nearest_place, unverified): the chosen site was within 50 km of a higher-urgency TANGO site",
+   "year": 1,
+   "id": "T2",
+   "footprint_km2": 26329,
+   "brief": "The team is based at Busseri near a settlement of 721 people with road 0.2 km away and water to verify within 3 km, covering corridor zone 280 of about 2.6 M ha in SSD with 5,426 people. Ground is bounded by tertiary road on the E/W, unnamed river order 4 on the E/NW, and Low hill J. ABU RASEIN J. NGAYA ridge on the NW/W, with 36 gold-target cells across four bundles. Scouts travel with transhumant herders from month 09 onset through the dry season, meeting herders moving along fronts. They watch for herd movement, use of land near residents, and activity around gold-target cells and reported workings.",
+   "first_season": "Verify water sources within 3 km of Busseri and confirm road access for car and motorbike trips with median 339 min. Establish contact with herders on bundle 4 as onset month 09 begins and map current front lines near Abu Ras and Rihan.",
+   "short": "Based at Busseri, scouts travel with transhumant herders across corridor zone 280 to monitor herd movement and gold-target cells."
+  },
+  {
+   "kind": "TANGO",
+   "staff": 5,
+   "zone_uids": [
+    292
+   ],
+   "urgency": 0.85,
+   "place": "Maridi",
+   "lon": 29.4123,
+   "lat": 4.9222,
+   "site_people": 4344,
    "road_km": 0.1,
    "reach": {
-    "share": 0.276,
-    "median_min": 428,
+    "share": 0.256,
+    "median_min": 333,
     "car_share": 1.0,
-    "n_cells": 348
+    "n_cells": 393
    },
    "water": "settlement of 430 people (water implied by residence); no mapped river/well/JRC water within 3 km — verify",
    "season": "from month 10 (bundle onset) through the dry season",
-   "why": "corridor zone 259 ranks 2/12 on herd × people × gold: bundles [14, 5, 7] (1,763 fitted fronts), herd utilisation in band 299.55 of which 100% within 25 km of residents; 31 gold-target cells in the band; 12,361 people on corridor land. Site (adjudicated): 8,713 people, road 0.1 km, reaches 28% of targets within 4 h (100% by car/motorbike).",
+   "why": "corridor zone 292 ranks 2/11 on herd × people × gold: bundles [5, 14, 7, 10] (2,225 fitted fronts), herd utilisation in band 391.88 of which 100% within 25 km of residents; 9 gold-target cells in the band; 3,345 people on corridor land. Site (adjudicated): 4,344 people, road 0.1 km, reaches 26% of targets within 4 h (100% by car/motorbike).",
    "towns": [],
    "alternatives": [
     {
@@ -274,549 +583,236 @@
      "people": 430,
      "road_km": 0.1,
      "reach": {
-      "share": 0.365,
-      "median_min": 320,
+      "share": 0.273,
+      "median_min": 375,
       "car_share": 0.98,
-      "n_cells": 348
+      "n_cells": 393
      },
-     "score": 2.125,
+     "score": 1.458,
      "lon": 29.6298,
      "lat": 5.3707
     },
     {
-     "name": "Abdulla* (nearest_place, unverified)",
-     "people": 220,
+     "name": "Makpandu* (nearest_place, unverified)",
+     "people": 1714,
      "road_km": 0.0,
      "reach": {
-      "share": 0.33,
-      "median_min": 381,
-      "car_share": 0.99,
-      "n_cells": 348
+      "share": 0.202,
+      "median_min": 353,
+      "car_share": 1.0,
+      "n_cells": 393
      },
-     "score": 1.122,
-     "lon": 29.8458,
-     "lat": 5.7411
+     "score": 0.868,
+     "lon": 28.6746,
+     "lat": 4.738
     },
     {
-     "name": "Mvolo",
-     "people": 8713,
+     "name": "Maridi",
+     "people": 4344,
      "road_km": 0.1,
      "reach": {
-      "share": 0.276,
-      "median_min": 428,
+      "share": 0.256,
+      "median_min": 333,
       "car_share": 1.0,
-      "n_cells": 348
+      "n_cells": 393
      },
-     "score": 1.094,
-     "lon": 29.9522,
-     "lat": 6.0544
+     "score": 0.589,
+     "lon": 29.4123,
+     "lat": 4.9222
     }
    ],
-   "adjudication": "muse-glimmer chose #3 (Mvolo): Kozi has 430 people and reach share 0.365, and Mvolo with 8713 people has reach share 0.276 which is within 0.15 of it, so the hamlet fails rule 1. Mvolo remains with reach share 0.276 and median 428 min.",
-   "year": 1,
-   "id": "T2",
-   "footprint_km2": 11621,
-   "brief": "Team is based in Mvolo in South Sudan, site of about 8,700 people with about 0.1 km road access and water implied by residence, though no mapped river or well is within 3 km to verify, and it reaches about 28% of targets within 4 hours. It covers corridor zone 259, bounded by Nahr al Jur on the south-west, unnamed river order 4 on the south-east, and K. Daberi on the north-east, with about 12,400 people on corridor land and 31 gold-target cells in the herd utilisation band. Scouts travel with transhumant herders from month 10 bundle onset through the dry season, following bundles 14, 5 and 7 with about 1,760 fitted fronts. They meet herders along the corridor and watch for herd use within 25 km of residents, new mining activity near gold-target cells, and clearing.",
-   "first_season": "First verify water sources within 3 km of Mvolo and confirm road access to the corridor. Then establish contact with herders for bundles 14, 5 and 7 at month 10 onset and map movement routes toward Nahr al Jur and unnamed river.",
-   "short": "Based in Mvolo, team travels corridor zone 259 with transhumant herders to monitor herd movements near people and gold-target cells."
-  },
-  {
-   "kind": "ECHO",
-   "staff": 5,
-   "zone_uids": [
-    204
-   ],
-   "urgency": 0.889,
-   "place": "Songo",
-   "lon": 24.3539,
-   "lat": 9.7814,
-   "site_people": 34320,
-   "road_km": 3.8,
-   "reach": {
-    "share": 0.94,
-    "median_min": 148,
-    "car_share": 0.96,
-    "n_cells": 74
-   },
-   "water": "Umbelasha (HydroRIVERS) 1.4 km",
-   "season": "year-round; village outreach in the rains, boundary walks Dec–Feb",
-   "why": "community zone 204 ranks 3/100 on gold-rush urgency: 30 top-5% gold-target cells, 0 model candidates, 2 abandoned-village-on-gold watchlist places, 7 reported workings; 40,599 people, people×threat 1,299, 2 settlements founded since 2015; shields core/corridor on 71% of its edge; budget rank C22. Site: 34,320 people, road 3.8 km, reaches 94% of the zone's targets within 4 h (96% of those trips by car/motorbike; median 148 min; OSRM car/foot/bush).",
-   "towns": [
-    "Jebel Mishmira",
-    "Said Bambas",
-    "Jebel Mishmira"
-   ],
-   "alternatives": [
-    {
-     "name": "Songo",
-     "people": 34320,
-     "road_km": 3.8,
-     "reach": {
-      "share": 0.94,
-      "median_min": 148,
-      "car_share": 0.96,
-      "n_cells": 74
-     },
-     "score": 9.621,
-     "lon": 24.3539,
-     "lat": 9.7814
-    },
-    {
-     "name": "كافيا كنجي",
-     "people": 2373,
-     "road_km": 0.1,
-     "reach": {
-      "share": 0.881,
-      "median_min": 98,
-      "car_share": 0.98,
-      "n_cells": 74
-     },
-     "score": 6.779,
-     "lon": 24.4158,
-     "lat": 9.2667
-    },
-    {
-     "name": "أم حجار",
-     "people": 579,
-     "road_km": 0.1,
-     "reach": {
-      "share": 1.0,
-      "median_min": 82,
-      "car_share": 1.0,
-      "n_cells": 74
-     },
-     "score": 6.363,
-     "lon": 24.5197,
-     "lat": 9.4923
-    }
-   ],
-   "adjudication": "muse-glimmer chose #1 (Songo): Songo has reach share 0.94 which is higher than 0.881 for كافيا كنجي. أم حجار is 579 people with reach share 1.0 but a larger site reaches 0.94, within 0.15 of its share, so it is disqualified under rule 1.",
-   "year": 2,
-   "id": "E3",
-   "footprint_km2": 3323,
-   "brief": "Based in Songo near Umbelasha 1.4 km away with 34,320 people and 3.8 km road, the team reaches 94% of zone 204 targets within 4 hours, median 148 minutes. Zone 204 is 215,600 ha with 40,599 people and 2 settlements founded since 2015, bounded by SDN border on SE/S, Umbelasha on NW/N and Adda on E/SW. Work is year-round with village outreach in the rains and boundary walks Dec–Feb, meeting communities around Jebel Mishmira and Said Bambas. Watch for 30 top-5% gold-target cells, 7 reported workings and 2 abandoned-village-on-gold watchlist places, with shields core/corridor on 71% of its edge.",
-   "first_season": "First, conduct village outreach in the rains to map gold workings and abandoned villages. Second, start boundary walks Dec–Feb along Umbelasha and SDN border to assess the 66 km geological contact that needs beacons.",
-   "short": "Based in Songo, team covers community zone 204 to monitor gold rush pressure and support community conservancy year-round."
-  },
-  {
-   "kind": "ECHO",
-   "staff": 5,
-   "zone_uids": [
-    158
-   ],
-   "urgency": 0.883,
-   "place": "Busseri River* (nearest_place, unverified)",
-   "lon": 27.6563,
-   "lat": 8.1644,
-   "site_people": 2066,
-   "road_km": 0.0,
-   "reach": {
-    "share": 1.0,
-    "median_min": 80,
-    "car_share": 1.0,
-    "n_cells": 91
-   },
-   "water": "settlement of 30,418 people (water implied by residence); no mapped river/well/JRC water within 3 km — verify",
-   "season": "year-round; village outreach in the rains, boundary walks Dec–Feb",
-   "why": "community zone 158 ranks 4/100 on gold-rush urgency: 25 top-5% gold-target cells, 3 model candidates, 3 abandoned-village-on-gold watchlist places, 0 reported workings; 51,736 people, people×threat 3,052, 5 settlements founded since 2015; shields core/corridor on 42% of its edge; budget rank C16. Site (adjudicated): 2,066 people, road 0.0 km, reaches 100% of targets within 4 h (100% by car/motorbike).",
-   "towns": [
-    "Agork",
-    "Malong Kway",
-    "Madud Nyok"
-   ],
-   "alternatives": [
-    {
-     "name": "Kuajok",
-     "people": 30418,
-     "road_km": 1.5,
-     "reach": {
-      "share": 1.0,
-      "median_min": 144,
-      "car_share": 0.98,
-      "n_cells": 91
-     },
-     "score": 10.22,
-     "lon": 27.9489,
-     "lat": 8.2618
-    },
-    {
-     "name": "Busseri River* (nearest_place, unverified)",
-     "people": 2066,
-     "road_km": 0.0,
-     "reach": {
-      "share": 1.0,
-      "median_min": 80,
-      "car_share": 1.0,
-      "n_cells": 91
-     },
-     "score": 7.634,
-     "lon": 27.6563,
-     "lat": 8.1644
-    },
-    {
-     "name": "Madud Nyok (1930s village)",
-     "people": 2107,
-     "road_km": 1.3,
-     "reach": {
-      "share": 1.0,
-      "median_min": 156,
-      "car_share": 0.99,
-      "n_cells": 91
-     },
-     "score": 7.615,
-     "lon": 28.0191,
-     "lat": 8.0738
-    }
-   ],
-   "adjudication": "muse-glimmer chose #2 (Busseri River* (nearest_place, unverified)): All three sites reach 1.0 share of the zone’s targets. With reach tied, the shorter median is preferred; Busseri River* has median 80 min versus 144 min for Kuajok and 156 min for Madud Nyok, people 2066 >1000 so rule 1 does not apply and the site has a settlement.",
-   "year": 2,
-   "id": "E4",
-   "footprint_km2": 3199,
-   "brief": "Team is based at Busseri River* with 2,066 people and 0 km road, covering community zone 158 in SSD with 51,736 people across four villages. The zone is bounded by unnamed river on NW/W 42 km, Nahr al Jur on E/NE 30 km and K Akali on SW/S 22 km, with 40 km along a geological contact needing beacons. Year-round presence with village outreach in rains and boundary walks Dec–Feb, meeting communities at Agork, Malong Kway and Madud Nyok. Watch for 25 gold-target cells, 3 model candidates and 3 abandoned-village-on-gold watchlist places with 0 reported workings, plus new settlement pressure from 5 settlements founded since 2015.",
-   "first_season": "Verify water access near settlement of 30,418 people where no mapped river/well/JRC water is within 3 km. Establish beacons along the 40 km geological contact section of the boundary.",
-   "short": "Based at Busseri River* with 2,066 people, cover community zone 158 to monitor gold rush risk and boundary integrity."
-  },
-  {
-   "kind": "ECHO",
-   "staff": 5,
-   "zone_uids": [
-    167
-   ],
-   "urgency": 0.868,
-   "place": "Kuom",
-   "lon": 27.4093,
-   "lat": 8.7302,
-   "site_people": 37649,
-   "road_km": 0.2,
-   "reach": {
-    "share": 1.0,
-    "median_min": 76,
-    "car_share": 1.0,
-    "n_cells": 61
-   },
-   "water": "settlement of 37,649 people (water implied by residence); no mapped river/well/JRC water within 3 km — verify",
-   "season": "year-round; village outreach in the rains, boundary walks Dec–Feb",
-   "why": "community zone 167 ranks 5/100 on gold-rush urgency: 21 top-5% gold-target cells, 1 model candidates, 1 abandoned-village-on-gold watchlist places, 0 reported workings; 53,761 people, people×threat 2,849, 8 settlements founded since 2015; shields core/corridor on 50% of its edge; budget rank C32. Site: 37,649 people, road 0.2 km, reaches 100% of the zone's targets within 4 h (100% of those trips by car/motorbike; median 76 min; OSRM car/foot/bush).",
-   "towns": [
-    "E. Kome",
-    "Busseri River",
-    "Girjok"
-   ],
-   "alternatives": [
-    {
-     "name": "Kuom",
-     "people": 37649,
-     "road_km": 0.2,
-     "reach": {
-      "share": 1.0,
-      "median_min": 76,
-      "car_share": 1.0,
-      "n_cells": 61
-     },
-     "score": 10.536,
-     "lon": 27.4093,
-     "lat": 8.7302
-    },
-    {
-     "name": "Maluil Akong",
-     "people": 1996,
-     "road_km": 1.1,
-     "reach": {
-      "share": 1.0,
-      "median_min": 92,
-      "car_share": 0.94,
-      "n_cells": 61
-     },
-     "score": 7.371,
-     "lon": 27.3161,
-     "lat": 8.8269
-    },
-    {
-     "name": "Maluil Akong",
-     "people": 1572,
-     "road_km": 2.6,
-     "reach": {
-      "share": 1.0,
-      "median_min": 112,
-      "car_share": 0.9,
-      "n_cells": 61
-     },
-     "score": 6.993,
-     "lon": 27.3075,
-     "lat": 8.7425
-    }
-   ],
-   "adjudication": "muse-glimmer chose #1 (Kuom): Kuom has reach share 1.0 with median 76 min, shorter than the other shortlisted sites at 92 min and 112 min, both also with share 1.0. It has 37,649 people and road 0.2 km.",
-   "year": 2,
-   "id": "E5",
-   "footprint_km2": 2464,
-   "brief": "Team is based in Kuom with 37,649 people and 0.2 km road access, reaching 100 percent of zone 167 targets within 4 hours median 76 minutes by car or motorbike. Zone 167 holds 53,761 people with 8 settlements founded since 2015 and is bounded by Lol on N/NE for 32 km, I Kayak on S for 16 km and unnamed river order 4 on SE/S for 14 km. Work is year-round with village outreach in the rains and boundary walks Dec–Feb. Scouts meet communities around E. Kome and Busseri River. They watch for 21 top-5 percent gold-target cells, 1 model candidate and 1 abandoned-village-on-gold watchlist place with 0 reported workings.",
-   "first_season": "Verify water sources within 3 km of Kuom as no mapped river or well is recorded, and begin village outreach in the rains. First boundary walk along Lol and I Kayak is scheduled Dec–Feb.",
-   "short": "Based in Kuom, team covers community zone 167 to monitor gold-target cells and support villages near E. Kome."
-  },
-  {
-   "kind": "TANGO",
-   "staff": 5,
-   "zone_uids": [
-    249
-   ],
-   "urgency": 0.85,
-   "place": "Bisellia",
-   "lon": 27.7252,
-   "lat": 7.7155,
-   "site_people": 211,
-   "road_km": 0.1,
-   "reach": {
-    "share": 0.391,
-    "median_min": 292,
-    "car_share": 0.99,
-    "n_cells": 814
-   },
-   "water": "settlement of 158 people (water implied by residence); no mapped river/well/JRC water within 3 km — verify",
-   "season": "from month 09 (bundle onset) through the dry season",
-   "why": "corridor zone 249 ranks 1/12 on herd × people × gold: bundles [4, 11, 8, 15] (2,137 fitted fronts), herd utilisation in band 487.00 of which 93% within 25 km of residents; 47 gold-target cells in the band; 6,938 people on corridor land. Second team: the zone spans 4 bundles and 2.5 M ha; this site is > 50 km from the first. Site (adjudicated): 211 people, road 0.1 km, reaches 39% of targets within 4 h (99% by car/motorbike).",
-   "towns": [],
-   "alternatives": [
-    {
-     "name": "Busseri* (nearest_place, unverified)",
-     "people": 158,
-     "road_km": 0.2,
-     "reach": {
-      "share": 0.363,
-      "median_min": 299,
-      "car_share": 1.0,
-      "n_cells": 814
-     },
-     "score": 1.263,
-     "lon": 26.6985,
-     "lat": 7.7258
-    },
-    {
-     "name": "Bisellia",
-     "people": 211,
-     "road_km": 0.1,
-     "reach": {
-      "share": 0.391,
-      "median_min": 292,
-      "car_share": 0.99,
-      "n_cells": 814
-     },
-     "score": 1.209,
-     "lon": 27.7252,
-     "lat": 7.7155
-    },
-    {
-     "name": "Raja",
-     "people": 289,
-     "road_km": 0.3,
-     "reach": {
-      "share": 0.171,
-      "median_min": 432,
-      "car_share": 1.0,
-      "n_cells": 814
-     },
-     "score": 0.539,
-     "lon": 25.698,
-     "lat": 8.4431
-    }
-   ],
-   "adjudication": "muse-glimmer chose #2 (Bisellia): Busseri with 158 people and reach share 0.363 is disqualified because Bisellia with 211 people has reach share 0.391 within 0.028 of it. Bisellia has the higher reach share 0.391 versus Raja's 0.171 with median 292 min versus 432 min.",
+   "adjudication": "muse-glimmer chose #3 (Maridi): Kozi has 430 people <1,000 and larger sites Maridi with reach share 0.256 and Makpandu* with reach share 0.202 are within 0.15 of its reach share 0.273, so it is disqualified under rule 1. Maridi has higher reach share 0.256 than Makpandu* 0.202 with median 333 min versus 353 min.",
    "year": 2,
    "id": "T3",
-   "footprint_km2": 25297,
-   "brief": "Based at Bisellia, a settlement of 211 people with 0.1 km road, the TANGO team covers corridor zone 249 in SSD because it serves 6,938 people and 47 gold-target cells across 2.5 M ha with 2,137 fitted fronts. The zone is bounded on the W/NW by Boro, on the SW/NW by Sopo, and on the W by R. Timberi, with villages Sirur, Abu Ras and Deim Zubeir along its edges. The team travels with transhumant herders from month 09 through the dry season as bundles 4, 11 and 8 move, meeting herders near Sirur and other settlements. It watches for new activity on gold-target cells and monitors herd utilisation that is 93% within 25 km of residents.",
-   "first_season": "Verify water at Bisellia as no mapped river or well is within 3 km and settlement water is implied by residence. Establish movement tracking with herders from month 09 onset and map access to gold-target cells within 4 h on foot and 99% by car/motorbike.",
-   "short": "Based at Bisellia, team travels with herders across corridor zone 249 to protect gold-target cells near people."
+   "footprint_km2": 13844,
+   "brief": "Team is based in Maridi, a settlement of 4,344 people with 0.1 km road and implied water from 430 residents, but no mapped river/well within 3 km to verify. It covers corridor zone 292 in SSD, about 1,225,600 ha with 3,345 people on corridor land, bounded by Juba-Rumbek-Bentiu Highway road, Nahr al Jur, and Maridi-Yambio Highway road. Scouts travel with transhumant herders whose four bundles start in month 10 or 11 and use 2,225 fitted fronts across the zone, with 100% of utilisation within 25 km of residents. Ground has 9 gold-target cells and 3,256 km of fronts, with nearest unverified town Makpandu with 1,714 people.",
+   "first_season": "Verify water sources within 3 km of the Maridi base and confirm car/motorbike access to reach targets within 4 h. Establish contact with herder groups as bundles onset in month 10 and map movement along the corridor edges.",
+   "short": "Base Maridi with 4,344 people, travel corridor zone 292 with herders from month 10 through dry season to protect people and gold-target cells."
   },
   {
    "kind": "TANGO",
    "staff": 5,
    "zone_uids": [
-    258
+    292
    ],
-   "urgency": 0.795,
-   "place": "Yubo",
-   "lon": 27.2867,
-   "lat": 5.3994,
-   "site_people": 2911,
-   "road_km": 2.0,
+   "urgency": 0.722,
+   "place": "Makpandu* (nearest_place, unverified)",
+   "lon": 28.6746,
+   "lat": 4.738,
+   "site_people": 1714,
+   "road_km": 0.0,
    "reach": {
-    "share": 0.452,
-    "median_min": 256,
+    "share": 0.202,
+    "median_min": 353,
     "car_share": 1.0,
-    "n_cells": 319
+    "n_cells": 393
    },
-   "water": "settlement of 2,911 people (water implied by residence); no mapped river/well/JRC water within 3 km — verify",
+   "water": "settlement of 1,714 people (water implied by residence); no mapped river/well/JRC water within 3 km — verify",
    "season": "from month 10 (bundle onset) through the dry season",
-   "why": "corridor zone 258 ranks 3/12 on herd × people × gold: bundles [10, 9] (909 fitted fronts), herd utilisation in band 150.74 of which 88% within 25 km of residents; 19 gold-target cells in the band; 4,225 people on corridor land. Site: 2,911 people, road 2.0 km, reaches 45% of the zone's targets within 4 h (100% of those trips by car/motorbike; median 256 min; OSRM car/foot/bush).",
+   "why": "corridor zone 292 ranks 2/11 on herd × people × gold: bundles [5, 14, 7, 10] (2,225 fitted fronts), herd utilisation in band 391.88 of which 100% within 25 km of residents; 9 gold-target cells in the band; 3,345 people on corridor land. Second team: the zone spans 4 bundles and 1.2 M ha; this site is > 50 km from the first. Site (adjudicated): 4,344 people, road 0.1 km, reaches 26% of targets within 4 h (100% by car/motorbike).",
    "towns": [],
    "alternatives": [
+    {
+     "name": "Makpandu* (nearest_place, unverified)",
+     "people": 1714,
+     "road_km": 0.0,
+     "reach": {
+      "share": 0.202,
+      "median_min": 353,
+      "car_share": 1.0,
+      "n_cells": 393
+     },
+     "score": 0.868,
+     "lon": 28.6746,
+     "lat": 4.738
+    },
+    {
+     "name": "Maridi",
+     "people": 4344,
+     "road_km": 0.1,
+     "reach": {
+      "share": 0.256,
+      "median_min": 333,
+      "car_share": 1.0,
+      "n_cells": 393
+     },
+     "score": 0.589,
+     "lon": 29.4123,
+     "lat": 4.9222
+    },
+    {
+     "name": "Diabio",
+     "people": 1854,
+     "road_km": 0.4,
+     "reach": {
+      "share": 0.203,
+      "median_min": 474,
+      "car_share": 1.0,
+      "n_cells": 393
+     },
+     "score": 0.574,
+     "lon": 28.0274,
+     "lat": 4.9548
+    }
+   ],
+   "adjudication": "muse-glimmer chose #2 (Maridi): Maridi has the highest reach share 0.256 versus Makpandu 0.202 and Diabio 0.203, with median 333 min shorter than Makpandu 353 min. → moved to Makpandu* (nearest_place, unverified): the chosen site was within 50 km of a higher-urgency TANGO site",
+   "year": 2,
+   "id": "T4",
+   "footprint_km2": 13474,
+   "brief": "Team is based at Makpandu*, an unverified settlement of 1,714 people with road access 0 km and water implied by residence but no mapped river or well within 3 km to verify. It operates from month 10 bundle onset through the dry season across corridor zone 292, about 1.2 M ha in SSD with 3,345 people, bounded east-northeast by Juba-Rumbek-Bentiu Highway road, west-southwest by Nahr al Jur and southwest-southeast by Maridi-Yambio Highway road. The zone holds four herd bundles with 2,225 fitted fronts and 9 gold-target cells, with 100% of herd utilisation within 25 km of residents. Scouts travel with transhumant herders as bundles onset in month 10 and month 11, meeting herders along the corridor and watching for new gold-target activity and pressure near villages such as Sungu, Tumburu and Mkareni.",
+   "first_season": "First verify water access near Makpandu* and confirm the 64 km geological contact boundary that needs beacons. Second establish contact with herders of the month 10 onset bundles and record movement and gold-target observations along the corridor.",
+   "short": "Base at Makpandu*, scouts travel with herders across corridor zone 292 to monitor herd movement and gold-target cells."
+  },
+  {
+   "kind": "TANGO",
+   "staff": 5,
+   "zone_uids": [
+    289
+   ],
+   "urgency": 0.7,
+   "place": "Tambura",
+   "lon": 27.5063,
+   "lat": 5.5828,
+   "site_people": 31951,
+   "road_km": 1.6,
+   "reach": {
+    "share": 0.386,
+    "median_min": 346,
+    "car_share": 1.0,
+    "n_cells": 260
+   },
+   "water": "settlement of 748 people (water implied by residence); no mapped river/well/JRC water within 3 km — verify",
+   "season": "from month 10 (bundle onset) through the dry season",
+   "why": "corridor zone 289 ranks 3/11 on herd × people × gold: bundles [10, 9] (909 fitted fronts), herd utilisation in band 106.79 of which 83% within 25 km of residents; 5 gold-target cells in the band; 330 people on corridor land. Site (adjudicated): 31,951 people, road 1.6 km, reaches 39% of targets within 4 h (100% by car/motorbike).",
+   "towns": [],
+   "alternatives": [
+    {
+     "name": "Karsing R.H. (1930s)",
+     "people": 748,
+     "road_km": 1.3,
+     "reach": {
+      "share": 0.386,
+      "median_min": 355,
+      "car_share": 0.97,
+      "n_cells": 260
+     },
+     "score": 1.272,
+     "lon": 27.5011,
+     "lat": 5.6729
+    },
     {
      "name": "Yubo",
      "people": 2911,
      "road_km": 2.0,
      "reach": {
-      "share": 0.452,
-      "median_min": 256,
+      "share": 0.324,
+      "median_min": 381,
       "car_share": 1.0,
-      "n_cells": 319
+      "n_cells": 260
      },
-     "score": 3.026,
+     "score": 0.448,
      "lon": 27.2867,
      "lat": 5.3994
     },
     {
-     "name": "Mopai",
-     "people": 338,
-     "road_km": 0.2,
+     "name": "Tambura",
+     "people": 31951,
+     "road_km": 1.6,
      "reach": {
-      "share": 0.512,
-      "median_min": 234,
-      "car_share": 0.98,
-      "n_cells": 319
-     },
-     "score": 1.463,
-     "lon": 27.6513,
-     "lat": 5.4691
-    },
-    {
-     "name": "Yubo* (nearest_place, unverified)",
-     "people": 391,
-     "road_km": 0.2,
-     "reach": {
-      "share": 0.431,
-      "median_min": 271,
+      "share": 0.386,
+      "median_min": 346,
       "car_share": 1.0,
-      "n_cells": 319
+      "n_cells": 260
      },
-     "score": 1.196,
-     "lon": 27.3015,
-     "lat": 5.2797
+     "score": 0.424,
+     "lon": 27.5063,
+     "lat": 5.5828
     }
    ],
-   "adjudication": "muse-glimmer chose #1 (Yubo): Yubo has 2911 people and reach share 0.452 with median 256 min. Mopai is 338 people with reach share 0.512, only 0.06 above Yubo's 0.452, so the under-1000 hamlet rule blocks the smaller site.",
-   "year": 2,
-   "id": "T4",
-   "footprint_km2": 10576,
-   "brief": "Team is based in Yubo, a settlement of 2,911 people with 2 km of road, chosen because it reaches 45% of zone 258 targets within 4 hours by car or motorbike. Zone 258 covers 969,600 ha in CAF with 4,225 people and is bounded by the CAF border, R. Imatima on the north and R. Biki on the southeast. The team travels with herders during bundles 10 and 9 from month 10 onset through the dry season, when 909 fitted fronts move through the band. It watches herd use within 25 km of residents and monitors the 19 gold-target cells in the band.",
-   "first_season": "First verify water access near Yubo as no mapped river or well is within 3 km. Then establish contact with herders at bundle 10 onset in month 10 to confirm movement corridors and access to gold-target cells.",
-   "short": "Based in Yubo, team travels with transhumant herders across corridor zone 258 to monitor herd use near gold-target cells and people."
-  },
-  {
-   "kind": "TANGO",
-   "staff": 5,
-   "zone_uids": [
-    250
-   ],
-   "urgency": 0.636,
-   "place": "Aroyo",
-   "lon": 26.8465,
-   "lat": 8.6667,
-   "site_people": 1110,
-   "road_km": 1.5,
-   "reach": {
-    "share": 0.704,
-    "median_min": 179,
-    "car_share": 1.0,
-    "n_cells": 77
-   },
-   "water": "Chel River (HydroRIVERS) 0.2 km",
-   "season": "dry season",
-   "why": "corridor zone 250 ranks 4/12 on herd × people × gold: bundles [] (0 fitted fronts), herd utilisation in band 72.20 of which 100% within 25 km of residents; 8 gold-target cells in the band; 2,804 people on corridor land. Site: 1,110 people, road 1.5 km, reaches 70% of the zone's targets within 4 h (100% of those trips by car/motorbike; median 179 min; OSRM car/foot/bush).",
-   "towns": [],
-   "alternatives": [
-    {
-     "name": "Aroyo",
-     "people": 1110,
-     "road_km": 1.5,
-     "reach": {
-      "share": 0.704,
-      "median_min": 179,
-      "car_share": 1.0,
-      "n_cells": 77
-     },
-     "score": 2.199,
-     "lon": 26.8465,
-     "lat": 8.6667
-    },
-    {
-     "name": "Riang Angon",
-     "people": 2551,
-     "road_km": 1.0,
-     "reach": {
-      "share": 0.653,
-      "median_min": 199,
-      "car_share": 0.98,
-      "n_cells": 77
-     },
-     "score": 1.518,
-     "lon": 27.2214,
-     "lat": 8.9343
-    },
-    {
-     "name": "Aroyo",
-     "people": 352,
-     "road_km": 7.0,
-     "reach": {
-      "share": 0.652,
-      "median_min": 196,
-      "car_share": 0.96,
-      "n_cells": 77
-     },
-     "score": 1.256,
-     "lon": 26.8498,
-     "lat": 8.7302
-    }
-   ],
-   "adjudication": "muse-glimmer chose #1 (Aroyo): Site 1 has reach share 0.704, higher than site 2 at 0.653 and site 3 at 0.652, with median 179 min. Site 1 has 1110 people, so rule 1 does not apply.",
+   "adjudication": "muse-glimmer chose #3 (Tambura): Karsing R.H. has 748 people with reach share 0.386 and median 355 min, while larger Yubo is 0.062 below its reach share. Tambura has reach share 0.386 with median 346 min, shorter than Karsing’s 355 min.",
    "year": 2,
    "id": "T5",
-   "footprint_km2": 3549,
-   "brief": "Team is based in Aroyo with 1,110 people, 1.5 km of road and Chel River 0.2 km away, operating in dry season year 2. From Aroyo it can reach 70% of the zone's targets within 4 h by car or motorbike with median 179 min to corridor zone 250 in SSD, 228,400 ha with 2,804 people. The zone is bounded by K. Wem on SW/S, Chel River on W/NW and Wad el Mek on W/NW. Scouts travel with transhumant herders in dry season and watch herd utilisation in the band 72.20, 100% within 25 km of residents, and 8 gold-target cells in the band.",
-   "first_season": "Establish contact with herders moving through Aroyo and map current routes along Chel River and K. Wem. Record herd utilisation and note activity around the 8 gold-target cells within 25 km of residents.",
-   "short": "Based in Aroyo, team travels with transhumant herders across corridor zone 250 to monitor herd movement and gold pressure."
+   "footprint_km2": 9489,
+   "brief": "Team is based at Tambura, a settlement of 748 people with 32,000 people in the adjudicated site and 2 km of road that reaches 39% of targets within 4 hours. It serves corridor zone 289 in CAF, about 791,000 ha with 330 people, bounded on the NW/SE by the CAF border, on the NE by R. Imatima and on the W/SW by Mokoutou. Work runs from month 10 onset through the dry season with transhumant herders moving on bundles 10 and 9 with 909 fitted fronts. The band contains 5 gold-target cells and herd use is 83% within 25 km of residents, so watch for new workings, clearing and pressure along the 138 km geological contact that needs beacons.",
+   "first_season": "Verify water access for the Tambura settlement as no mapped river, well or JRC water is within 3 km. At month 10 onset meet herders on bundles 10 and 9 and begin beacons on the 138 km geological contact.",
+   "short": "Base at Tambura, ground corridor zone 289 along CAF border and R. Imatima, purpose monitor transhumant herds and gold-target cells from month 10 through dry season."
   },
   {
    "kind": "FP",
    "staff": 1,
    "zone_uids": [
-    158,
-    182,
-    249
+    273
    ],
-   "urgency": 0.466,
-   "place": "Wau",
-   "lon": 27.9909,
-   "lat": 7.7001,
-   "site_people": 119818,
-   "road_km": 0.2,
+   "urgency": 0.462,
+   "place": "Zémio",
+   "lon": 25.1293,
+   "lat": 5.0248,
+   "site_people": 29065,
+   "road_km": 0.0,
    "water": "town (supplies itself)",
    "season": "year-round",
-   "why": "town of 119,818 people; 4 of this year's team sites within 120 km (Kuajiena, Wau, Busseri River* (nearest_place, unverified), Bisellia), 4 of them not held by an earlier focal point; county and traditional authorities are seated here",
+   "why": "town of 29,065 people; 1 of this year's team sites within 120 km (Bandasi), 1 of them not held by an earlier focal point; county and traditional authorities are seated here",
    "towns": [
-    "Wau"
+    "Zémio"
    ],
    "serves": [
-    "Kuajiena",
-    "Wau",
-    "Busseri River* (nearest_place, unverified)",
-    "Bisellia"
+    "Bandasi"
    ],
    "year": 1,
    "id": "F1",
-   "footprint_km2": 11189,
-   "brief": "Based in Wau, year-round focal point serves 119,818 people where county and traditional authorities are seated and four team sites lie within 120 km. Ground includes zone with towns Agork, Malong Kway and Madud Nyok bounded on NW by unnamed river and on E/NE by Nahr al Jur. A second zone with Wau is bounded by Nahr al Jur and Busseri River and R. Asetti. A third larger zone around Sirur is bounded by J. ABU RASEIN – J. NGAYA ridge and unnamed river and Boro. Meet county and traditional authorities in Wau regularly and herders moving in September and October; watch for mining exposure, gold-target cells and clearing since 2020.",
-   "first_season": "Prioritise beaconing the 40 km geological contact in the first zone and the 16 km contact near Wau before the rains. Meet authorities in Wau and leaders in Agork to confirm September herd onset and agree on reporting for gold-target cells and clearing.",
-   "short": "Focal point based in Wau covers zones bounded by Nahr al Jur, Busseri River and unnamed river to watch mining exposure and transhumance."
+   "footprint_km2": 11248,
+   "brief": "One-person focal point is based year-round in Zémio, town of 29,065 people where county and traditional authorities are seated, with one team site within 120 km at Bandasi and a new site not held before. It serves community zone 273 in COD, 144,400 ha bounded on E/NE by an unnamed river, on SW/W by Asa and on W/NW by Mbomou, with secondary road on SE and primary road on W/NW. Meetings happen year-round in town with authorities and communities from Bandasi and Mboufo. The zone has 11 gold-target cells and 2 reported workings, about 20 km2 clearing since 2020, 6% unattributed land and 314 km long fronts, with Gambara on the western stretch and a 6 km geological contact needing beacons.",
+   "first_season": "First, confirm contacts with county and traditional authorities in Zémio and register representatives from Bandasi and Mboufo. Second, walk the Asa, Mbomou and unnamed river edges to verify Gambara and mark the 6 km geological contact needing beacons.",
+   "short": "Focal point based in Zémio monitors a 144,400 ha community zone around Bandasi and Mboufo, linking county authorities to early reporting."
   },
   {
    "kind": "FP",
    "staff": 1,
    "zone_uids": [
-    171,
-    258
+    248,
+    289
    ],
-   "urgency": 0.266,
+   "urgency": 0.32,
    "place": "Tambura",
    "lon": 27.4683,
    "lat": 5.6096,
@@ -824,178 +820,175 @@
    "road_km": 0.6,
    "water": "town (supplies itself)",
    "season": "year-round",
-   "why": "town of 35,520 people; 2 of this year's team sites within 120 km (Tambura, Yubo), 2 of them not held by an earlier focal point; county and traditional authorities are seated here",
+   "why": "town of 35,520 people; 2 of this year's team sites within 120 km (Tambura, Tambura), 2 of them not held by an earlier focal point; county and traditional authorities are seated here",
    "towns": [
     "Tambura"
    ],
    "serves": [
     "Tambura",
-    "Yubo"
+    "Tambura"
    ],
    "year": 2,
    "id": "F2",
    "footprint_km2": 11237,
-   "brief": "The one-person focal point is based year-round in Tambura, a town of 35,520 people where county and traditional authorities are seated, covering two sites within 120 km not held by an earlier focal point. It covers a 119,600 ha community zone in South Sudan around Tambura and Senekpuro bounded by K. Barange, CAF border and Tambura - Yubo Road, and a 969,600 ha corridor in Central African Republic around Yubo bounded by CAF border, unnamed river and R. Imatima. In town it meets county and traditional authorities continuously, and it links with transhumant herder bundles moving through the corridor with onset 10. It watches for mining pressure on gold-target cells, reported workings and watchlist sites, and for clearing along fronts.",
-   "first_season": "First, meet county and traditional authorities in Tambura to confirm year-round access and reporting lines for the community zone and corridor. Second, ground-check gold-target cells and watchlist sites in the Tambura community zone and note where beacons are needed along the geological contact.",
-   "short": "Focal point based in Tambura watches the Tambura community zone in South Sudan and Yubo corridor in Central African Republic for mining pressure."
+   "brief": "The one-person focal point is based in Tambura year-round in year two, a town of about 36,000 people with town water and short road access, because county and traditional authorities are seated here. It covers a SSD community zone of about 126,000 ha around Tambura and Yubo bounded by an unnamed river on the E/S and Tambura - Yubo Road on the W/NW, with 8 gold-target cells, 1 candidate site and 2 watchlist sites and no reported workings. It also covers a CAF corridor of about 791,000 ha bounded by the CAF border on the NW/SE and R. Imatima on the NE, with 5 gold-target cells and 1 watchlist site and transhumance bundles with onset 10. The focal point meets county and traditional authorities in Tambura regularly and engages communities in Tambura and Yubo and herders moving through the corridor at onset. It watches for new mining exposure along long fronts, clearing since 2020, and unattributed land.",
+   "first_season": "First, confirm contact protocols with county and traditional authorities in Tambura and map the geological contact sections that need beacons on both zone boundaries. Second, visit Tambura and Yubo to ground-truth gold-target cells and watchlist sites and record any new workings.",
+   "short": "Focal point based in Tambura year-round to coordinate community and corridor zones and link county authorities with local and transhumant groups."
   },
   {
    "kind": "FP",
    "staff": 1,
    "zone_uids": [
-    158,
-    167,
-    250
+    170,
+    280
    ],
-   "urgency": 0.238,
-   "place": "Aweil",
-   "lon": 27.3962,
-   "lat": 8.7693,
-   "site_people": 37649,
-   "road_km": 0.1,
+   "urgency": 0.276,
+   "place": "Wau",
+   "lon": 27.9909,
+   "lat": 7.7001,
+   "site_people": 119818,
+   "road_km": 0.2,
    "water": "town (supplies itself)",
    "season": "year-round",
-   "why": "town of 37,649 people; 3 of this year's team sites within 120 km (Busseri River* (nearest_place, unverified), Kuom, Aroyo), 2 of them not held by an earlier focal point; county and traditional authorities are seated here",
+   "why": "town of 119,818 people; 2 of this year's team sites within 120 km (Aluk (1930s village), Wau), 2 of them not held by an earlier focal point; county and traditional authorities are seated here",
    "towns": [
-    "Aweil"
+    "Wau"
    ],
    "serves": [
-    "Busseri River* (nearest_place, unverified)",
-    "Kuom",
-    "Aroyo"
+    "Aluk (1930s village)",
+    "Wau"
    ],
    "year": 2,
    "id": "F3",
-   "footprint_km2": 11159,
-   "brief": "The focal point sits in Aweil, a town of 37,649 people where county and traditional authorities are seated, with three team sites within 120 km including Busseri River, Kuom and Aroyo and two not held by an earlier focal point. It serves zones 158, 167 and 250 that border unnamed river order 4, Nahr al Jur and Lol among other named edges, and includes villages such as Agork, Malong Kway and Madud Nyok. Year-round liaison is with county and traditional authorities in Aweil, and with herders of bundle 4 that move on zone 158 with onset in September. Watch for gold-target cells 25, 21 and 8, candidates 3, 1 and 0, watchlist 3, 1 and 0 with no reported workings, long fronts of about 1,269 km, 852 km and 1,019 km and very low clearing since 2020.",
-   "first_season": "First confirm reporting lines with county and traditional authorities in Aweil for zones 158, 167 and 250. Then mark the geological contact stretches that need beacons along boundaries of those zones.",
-   "short": "Focal point based in Aweil monitors three nearby zones and coordinates with county and traditional authorities year-round."
+   "footprint_km2": 11189,
+   "brief": "Based in Wau the focal point works from a town of 119,818 people where county and traditional authorities are seated. It serves the zone around Wau bounded by Nahr al Jur on the NE/E, Wau - Raja road on the SW/S and R. Asetti on the N, and the western zone bounded by Wau - Raja road on the SE/W, Raja-Kosho Road on the W/NW and Low hill – J. ABU RASEIN – J. NGAYA ridge on the NW/W. It meets county and traditional authorities and liaises with communities near Akej, Nyin Akok and Alelchok and with transhumant groups moving in September and October. It watches for gold-target cells, candidate and watchlist sites and reported workings across both zones.",
+   "first_season": "Confirm weekly reporting links with county and traditional authorities in Wau and with community contacts near Akej, Nyin Akok and Alelchok. Flag the 12 km geological contact needing beacons on the community zone boundary and the 312 km geological contact needing beacons on the corridor zone boundary.",
+   "short": "Based in Wau, the focal point covers the community area around Wau and the western corridor, coordinating reporting and liaison year-round."
   }
  ],
  "echo_candidates": [
   {
-   "uid": 182,
-   "gold": 42.0,
-   "gold_top05": 34,
-   "gold_cand": 1,
-   "gold_watch": 3,
-   "gold_rep": 0,
-   "people": 138429,
-   "people_x_threat": 15088.761,
-   "shield": 0.673,
-   "new15": 8,
-   "area_ha": 163600,
-   "towns": [
-    "Wau",
-    "Wau",
-    "Akej"
-   ],
-   "rank": 1,
-   "urgency": 0.957
-  },
-  {
-   "uid": 171,
-   "gold": 25.0,
-   "gold_top05": 15,
-   "gold_cand": 0,
-   "gold_watch": 2,
-   "gold_rep": 2,
-   "people": 36536,
-   "people_x_threat": 3032.4880000000003,
-   "shield": 0.944,
-   "new15": 0,
-   "area_ha": 119600,
-   "towns": [
-    "Tambura",
-    "Senekpuro"
-   ],
-   "rank": 6,
-   "urgency": 0.926
-  },
-  {
-   "uid": 204,
-   "gold": 55.0,
-   "gold_top05": 30,
-   "gold_cand": 0,
-   "gold_watch": 2,
-   "gold_rep": 7,
-   "people": 40599,
-   "people_x_threat": 1299.1680000000001,
-   "shield": 0.706,
-   "new15": 2,
-   "area_ha": 215600,
-   "towns": [
-    "Jebel Mishmira",
-    "Said Bambas",
-    "Jebel Mishmira"
-   ],
-   "rank": 22,
-   "urgency": 0.889
-  },
-  {
-   "uid": 158,
-   "gold": 37.0,
-   "gold_top05": 25,
-   "gold_cand": 3,
-   "gold_watch": 3,
-   "gold_rep": 0,
-   "people": 51736,
-   "people_x_threat": 3052.424,
-   "shield": 0.418,
-   "new15": 5,
-   "area_ha": 279200,
-   "towns": [
-    "Agork",
-    "Malong Kway",
-    "Madud Nyok"
-   ],
-   "rank": 16,
-   "urgency": 0.883
-  },
-  {
-   "uid": 167,
-   "gold": 25.0,
-   "gold_top05": 21,
-   "gold_cand": 1,
-   "gold_watch": 1,
-   "gold_rep": 0,
-   "people": 53761,
-   "people_x_threat": 2849.333,
-   "shield": 0.495,
-   "new15": 8,
-   "area_ha": 196000,
-   "towns": [
-    "E. Kome",
-    "Busseri River",
-    "Girjok"
-   ],
-   "rank": 32,
-   "urgency": 0.868
-  },
-  {
-   "uid": 242,
-   "gold": 19.0,
-   "gold_top05": 13,
+   "uid": 273,
+   "gold": 17.0,
+   "gold_top05": 11,
    "gold_cand": 0,
    "gold_watch": 0,
    "gold_rep": 2,
-   "people": 29122,
-   "people_x_threat": 2329.76,
-   "shield": 0.516,
+   "people": 29158,
+   "people_x_threat": 1487.058,
+   "shield": 0.953,
    "new15": 1,
-   "area_ha": 80000,
+   "area_ha": 144400,
    "towns": [
     "Bandasi",
     "Mboufo",
     "Mboufo"
    ],
-   "rank": 9,
-   "urgency": 0.837
+   "rank": 19,
+   "urgency": 0.919
   },
   {
-   "uid": 209,
-   "gold": 66.0,
-   "gold_top05": 4,
+   "uid": 145,
+   "gold": 24.0,
+   "gold_top05": 6,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 6,
+   "people": 37847,
+   "people_x_threat": 1438.186,
+   "shield": 0.576,
+   "new15": 1,
+   "area_ha": 134400,
+   "towns": [
+    "Songo",
+    "Songo"
+   ],
+   "rank": 20,
+   "urgency": 0.896
+  },
+  {
+   "uid": 248,
+   "gold": 14.0,
+   "gold_top05": 8,
+   "gold_cand": 1,
+   "gold_watch": 2,
+   "gold_rep": 0,
+   "people": 35817,
+   "people_x_threat": 2578.8239999999996,
+   "shield": 0.493,
+   "new15": 0,
+   "area_ha": 125600,
+   "towns": [
+    "Tambura",
+    "Yubo"
+   ],
+   "rank": 18,
+   "urgency": 0.895
+  },
+  {
+   "uid": 195,
+   "gold": 19.0,
+   "gold_top05": 15,
+   "gold_cand": 1,
+   "gold_watch": 1,
+   "gold_rep": 0,
+   "people": 43227,
+   "people_x_threat": 3587.8410000000003,
+   "shield": 0.371,
+   "new15": 6,
+   "area_ha": 105600,
+   "towns": [
+    "Cueibet",
+    "River Gulnam",
+    "Cueibet"
+   ],
+   "rank": 1,
+   "urgency": 0.891
+  },
+  {
+   "uid": 170,
+   "gold": 12.0,
+   "gold_top05": 8,
+   "gold_cand": 1,
+   "gold_watch": 1,
+   "gold_rep": 0,
+   "people": 117344,
+   "people_x_threat": 8566.112,
+   "shield": 0.455,
+   "new15": 3,
+   "area_ha": 84800,
+   "towns": [
+    "Wau",
+    "Akej",
+    "Nyin Akok"
+   ],
+   "rank": 2,
+   "urgency": 0.874
+  },
+  {
+   "uid": 165,
+   "gold": 13.0,
+   "gold_top05": 9,
+   "gold_cand": 2,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 43915,
+   "people_x_threat": 2634.9,
+   "shield": 0.402,
+   "new15": 3,
+   "area_ha": 129200,
+   "towns": [
+    "Kuajok",
+    "Malek Alel",
+    "Busseri River"
+   ],
+   "rank": 16,
+   "urgency": 0.866
+  },
+  {
+   "uid": 219,
+   "gold": 69.0,
+   "gold_top05": 7,
    "gold_cand": 0,
    "gold_watch": 1,
    "gold_rep": 20,
@@ -1007,92 +1000,13 @@
    "towns": [
     "Sam-Ouandja"
    ],
-   "rank": 27,
-   "urgency": 0.827
+   "rank": 47,
+   "urgency": 0.866
   },
   {
-   "uid": 157,
-   "gold": 24.0,
-   "gold_top05": 16,
-   "gold_cand": 1,
-   "gold_watch": 3,
-   "gold_rep": 0,
-   "people": 43448,
-   "people_x_threat": 2650.328,
-   "shield": 0.283,
-   "new15": 9,
-   "area_ha": 271600,
-   "towns": [
-    "Manyang",
-    "Ibba River",
-    "Afuk"
-   ],
-   "rank": 50,
-   "urgency": 0.815
-  },
-  {
-   "uid": 151,
-   "gold": 16.0,
-   "gold_top05": 16,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 17976,
-   "people_x_threat": 898.8000000000001,
-   "shield": 0.648,
-   "new15": 6,
-   "area_ha": 176400,
-   "towns": [
-    "River Gulnam",
-    "Gorok",
-    "River Gulnam"
-   ],
-   "rank": 5,
-   "urgency": 0.78
-  },
-  {
-   "uid": 160,
+   "uid": 267,
    "gold": 12.0,
-   "gold_top05": 12,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 43160,
-   "people_x_threat": 4013.88,
-   "shield": 0.286,
-   "new15": 9,
-   "area_ha": 97200,
-   "towns": [
-    "Cueibet",
-    "River Gulnam",
-    "Cueibet"
-   ],
-   "rank": 2,
-   "urgency": 0.779
-  },
-  {
-   "uid": 165,
-   "gold": 31.0,
-   "gold_top05": 19,
-   "gold_cand": 2,
-   "gold_watch": 4,
-   "gold_rep": 0,
-   "people": 9053,
-   "people_x_threat": 497.915,
-   "shield": 0.415,
-   "new15": 5,
-   "area_ha": 86400,
-   "towns": [
-    "Garren",
-    "Rian"
-   ],
-   "rank": 14,
-   "urgency": 0.765
-  },
-  {
-   "uid": 236,
-   "gold": 11.0,
-   "gold_top05": 6,
+   "gold_top05": 7,
    "gold_cand": 0,
    "gold_watch": 1,
    "gold_rep": 1,
@@ -1105,13 +1019,72 @@
     "M'Boki",
     "Camp Kpabo"
    ],
-   "rank": 12,
-   "urgency": 0.764
+   "rank": 24,
+   "urgency": 0.84
   },
   {
-   "uid": 216,
-   "gold": 35.0,
-   "gold_top05": 8,
+   "uid": 164,
+   "gold": 13.0,
+   "gold_top05": 13,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 26228,
+   "people_x_threat": 1363.856,
+   "shield": 0.447,
+   "new15": 8,
+   "area_ha": 178400,
+   "towns": [
+    "Gorok",
+    "Ajijuit",
+    "River Gulnam"
+   ],
+   "rank": 9,
+   "urgency": 0.833
+  },
+  {
+   "uid": 246,
+   "gold": 7.0,
+   "gold_top05": 7,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 138872,
+   "people_x_threat": 9721.04,
+   "shield": 0.554,
+   "new15": 0,
+   "area_ha": 51200,
+   "towns": [
+    "Yambio",
+    "Nzara",
+    "Saura"
+   ],
+   "rank": 8,
+   "urgency": 0.831
+  },
+  {
+   "uid": 172,
+   "gold": 21.0,
+   "gold_top05": 13,
+   "gold_cand": 2,
+   "gold_watch": 2,
+   "gold_rep": 0,
+   "people": 9053,
+   "people_x_threat": 506.968,
+   "shield": 0.385,
+   "new15": 5,
+   "area_ha": 84800,
+   "towns": [
+    "Nyamlell",
+    "Akewich"
+   ],
+   "rank": 22,
+   "urgency": 0.79
+  },
+  {
+   "uid": 226,
+   "gold": 38.0,
+   "gold_top05": 11,
    "gold_cand": 0,
    "gold_watch": 0,
    "gold_rep": 9,
@@ -1123,171 +1096,128 @@
    "towns": [
     "Zacko 4"
    ],
-   "rank": 67,
-   "urgency": 0.748
+   "rank": 102,
+   "urgency": 0.788
   },
   {
-   "uid": 170,
+   "uid": 220,
    "gold": 13.0,
-   "gold_top05": 13,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 14606,
-   "people_x_threat": 905.572,
-   "shield": 0.373,
-   "new15": 3,
-   "area_ha": 70800,
-   "towns": [
-    "Aduel",
-    "Aru",
-    "River Rohl"
-   ],
-   "rank": 3,
-   "urgency": 0.717
-  },
-  {
-   "uid": 206,
-   "gold": 16.0,
-   "gold_top05": 8,
-   "gold_cand": 0,
-   "gold_watch": 1,
-   "gold_rep": 2,
-   "people": 11991,
-   "people_x_threat": 155.88299999999998,
-   "shield": 0.71,
-   "new15": 1,
-   "area_ha": 36000,
-   "towns": [
-    "Bir Andem"
-   ],
-   "rank": 4,
-   "urgency": 0.714
-  },
-  {
-   "uid": 178,
-   "gold": 28.0,
-   "gold_top05": 18,
-   "gold_cand": 0,
-   "gold_watch": 2,
-   "gold_rep": 2,
-   "people": 9450,
-   "people_x_threat": 274.05,
-   "shield": 0.352,
-   "new15": 4,
-   "area_ha": 295200,
-   "towns": [
-    "Langlen",
-    "Wongkurnuk",
-    "Asharo"
-   ],
-   "rank": 70,
-   "urgency": 0.713
-  },
-  {
-   "uid": 161,
-   "gold": 10.0,
-   "gold_top05": 8,
-   "gold_cand": 0,
-   "gold_watch": 1,
-   "gold_rep": 0,
-   "people": 41366,
-   "people_x_threat": 1985.568,
-   "shield": 0.145,
-   "new15": 9,
-   "area_ha": 206800,
-   "towns": [
-    "Akot",
-    "Nijong",
-    "Tiit Agok"
-   ],
-   "rank": 17,
-   "urgency": 0.701
-  },
-  {
-   "uid": 169,
-   "gold": 15.0,
-   "gold_top05": 15,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 8536,
-   "people_x_threat": 401.192,
-   "shield": 0.402,
-   "new15": 8,
-   "area_ha": 173200,
-   "towns": [
-    "Toing",
-    "Malou-Pech",
-    "Shan e"
-   ],
-   "rank": 33,
-   "urgency": 0.689
-  },
-  {
-   "uid": 153,
-   "gold": 10.0,
-   "gold_top05": 8,
-   "gold_cand": 0,
-   "gold_watch": 1,
-   "gold_rep": 0,
-   "people": 108948,
-   "people_x_threat": 6101.088,
-   "shield": 0.0,
-   "new15": 9,
-   "area_ha": 199200,
-   "towns": [
-    "Rumbek",
-    "Malek Agok",
-    "Gorok"
-   ],
-   "rank": 47,
-   "urgency": 0.688
-  },
-  {
-   "uid": 162,
-   "gold": 9.0,
    "gold_top05": 9,
    "gold_cand": 0,
-   "gold_watch": 0,
+   "gold_watch": 2,
    "gold_rep": 0,
-   "people": 21969,
-   "people_x_threat": 1823.4270000000001,
-   "shield": 0.159,
-   "new15": 1,
-   "area_ha": 140000,
-   "towns": [
-    "Yei River",
-    "Kotobi",
-    "Gullu"
-   ],
-   "rank": 11,
-   "urgency": 0.686
-  },
-  {
-   "uid": 193,
-   "gold": 6.0,
-   "gold_top05": 6,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 26726,
-   "people_x_threat": 668.1500000000001,
-   "shield": 0.656,
+   "people": 24419,
+   "people_x_threat": 390.704,
+   "shield": 0.584,
    "new15": 0,
-   "area_ha": 284800,
+   "area_ha": 187600,
    "towns": [
-    "K Keribi",
-    "Yeri"
+    "Raga"
    ],
-   "rank": 41,
-   "urgency": 0.672
+   "rank": 17,
+   "urgency": 0.777
   },
   {
-   "uid": 208,
-   "gold": 5.0,
+   "uid": 245,
+   "gold": 11.0,
    "gold_top05": 5,
    "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 2,
+   "people": 4247,
+   "people_x_threat": 394.971,
+   "shield": 0.75,
+   "new15": 0,
+   "area_ha": 74400,
+   "towns": [
+    "Senekpuro"
+   ],
+   "rank": 5,
+   "urgency": 0.773
+  },
+  {
+   "uid": 257,
+   "gold": 10.0,
+   "gold_top05": 8,
+   "gold_cand": 0,
+   "gold_watch": 1,
+   "gold_rep": 0,
+   "people": 30775,
+   "people_x_threat": 830.925,
+   "shield": 0.397,
+   "new15": 0,
+   "area_ha": 290000,
+   "towns": [
+    "Ibba",
+    "Madebe",
+    "Maridi"
+   ],
+   "rank": 37,
+   "urgency": 0.758
+  },
+  {
+   "uid": 190,
+   "gold": 8.0,
+   "gold_top05": 6,
+   "gold_cand": 0,
+   "gold_watch": 1,
+   "gold_rep": 0,
+   "people": 7609,
+   "people_x_threat": 776.1179999999999,
+   "shield": 0.567,
+   "new15": 2,
+   "area_ha": 225200,
+   "towns": [
+    "Ibba River",
+    "Kuajiena"
+   ],
+   "rank": 30,
+   "urgency": 0.755
+  },
+  {
+   "uid": 191,
+   "gold": 14.0,
+   "gold_top05": 8,
+   "gold_cand": 1,
+   "gold_watch": 2,
+   "gold_rep": 0,
+   "people": 12366,
+   "people_x_threat": 618.3000000000001,
+   "shield": 0.188,
+   "new15": 5,
+   "area_ha": 250800,
+   "towns": [
+    "Malou-Pech",
+    "Malou-Pech"
+   ],
+   "rank": 54,
+   "urgency": 0.753
+  },
+  {
+   "uid": 185,
+   "gold": 10.0,
+   "gold_top05": 8,
+   "gold_cand": 1,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 7856,
+   "people_x_threat": 463.50399999999996,
+   "shield": 0.581,
+   "new15": 4,
+   "area_ha": 88400,
+   "towns": [
+    "Riang Angon",
+    "Maluil Akong",
+    "Maluil Akong"
+   ],
+   "rank": 27,
+   "urgency": 0.75
+  },
+  {
+   "uid": 218,
+   "gold": 6.0,
+   "gold_top05": 4,
+   "gold_cand": 1,
    "gold_watch": 0,
    "gold_rep": 0,
    "people": 6270,
@@ -1298,165 +1228,15 @@
    "towns": [
     "Ouanda Djallé"
    ],
-   "rank": 8,
-   "urgency": 0.67
-  },
-  {
-   "uid": 214,
-   "gold": 21.0,
-   "gold_top05": 0,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 7,
-   "people": 3950,
-   "people_x_threat": 27.650000000000002,
-   "shield": 0.61,
-   "new15": 0,
-   "area_ha": 513200,
-   "towns": [
-    "Mbangana 1"
-   ],
-   "rank": 110,
-   "urgency": 0.655
-  },
-  {
-   "uid": 183,
-   "gold": 14.0,
-   "gold_top05": 8,
-   "gold_cand": 1,
-   "gold_watch": 2,
-   "gold_rep": 0,
-   "people": 9678,
-   "people_x_threat": 483.90000000000003,
-   "shield": 0.15,
-   "new15": 4,
-   "area_ha": 242000,
-   "towns": [
-    "Malou-Pech"
-   ],
-   "rank": 43,
-   "urgency": 0.654
-  },
-  {
-   "uid": 210,
-   "gold": 6.0,
-   "gold_top05": 4,
-   "gold_cand": 0,
-   "gold_watch": 1,
-   "gold_rep": 0,
-   "people": 24087,
-   "people_x_threat": 385.392,
-   "shield": 0.776,
-   "new15": 0,
-   "area_ha": 134000,
-   "towns": [
-    "Raga"
-   ],
    "rank": 10,
-   "urgency": 0.652
+   "urgency": 0.743
   },
   {
-   "uid": 168,
-   "gold": 11.0,
-   "gold_top05": 8,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 1,
-   "people": 11840,
-   "people_x_threat": 378.88,
-   "shield": 0.341,
-   "new15": 4,
-   "area_ha": 269200,
-   "towns": [
-    "Koko"
-   ],
-   "rank": 63,
-   "urgency": 0.64
-  },
-  {
-   "uid": 197,
-   "gold": 8.0,
-   "gold_top05": 6,
+   "uid": 241,
+   "gold": 12.0,
+   "gold_top05": 10,
    "gold_cand": 1,
    "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 14223,
-   "people_x_threat": 284.46,
-   "shield": 0.557,
-   "new15": 0,
-   "area_ha": 250800,
-   "towns": [
-    "Diabio",
-    "Yangiri",
-    "Diabio"
-   ],
-   "rank": 36,
-   "urgency": 0.638
-  },
-  {
-   "uid": 229,
-   "gold": 17.0,
-   "gold_top05": 13,
-   "gold_cand": 1,
-   "gold_watch": 1,
-   "gold_rep": 0,
-   "people": 4075,
-   "people_x_threat": 138.55,
-   "shield": 0.187,
-   "new15": 1,
-   "area_ha": 160400,
-   "towns": [
-    "Libu",
-    "Dobola"
-   ],
-   "rank": 15,
-   "urgency": 0.622
-  },
-  {
-   "uid": 191,
-   "gold": 18.0,
-   "gold_top05": 12,
-   "gold_cand": 1,
-   "gold_watch": 2,
-   "gold_rep": 0,
-   "people": 7928,
-   "people_x_threat": 420.18399999999997,
-   "shield": 0.0,
-   "new15": 7,
-   "area_ha": 307200,
-   "towns": [
-    "Rumuh",
-    "Yei River"
-   ],
-   "rank": 95,
-   "urgency": 0.618
-  },
-  {
-   "uid": 181,
-   "gold": 5.0,
-   "gold_top05": 5,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 16212,
-   "people_x_threat": 1248.324,
-   "shield": 0.199,
-   "new15": 5,
-   "area_ha": 284000,
-   "towns": [
-    "Ibba River",
-    "Ibba River",
-    "Ibba River"
-   ],
-   "rank": 68,
-   "urgency": 0.612
-  },
-  {
-   "uid": 233,
-   "gold": 5.0,
-   "gold_top05": 1,
-   "gold_cand": 1,
-   "gold_watch": 1,
    "gold_rep": 0,
    "people": 8056,
    "people_x_threat": 161.12,
@@ -1468,90 +1248,265 @@
     "Banangui",
     "Djemah"
    ],
-   "rank": 53,
-   "urgency": 0.609
+   "rank": 89,
+   "urgency": 0.743
   },
   {
-   "uid": 188,
+   "uid": 269,
+   "gold": 7.0,
+   "gold_top05": 4,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 1,
+   "people": 17518,
+   "people_x_threat": 472.986,
+   "shield": 0.817,
+   "new15": 0,
+   "area_ha": 178800,
+   "towns": [
+    "Obo"
+   ],
+   "rank": 36,
+   "urgency": 0.742
+  },
+  {
+   "uid": 159,
+   "gold": 6.0,
+   "gold_top05": 4,
+   "gold_cand": 0,
+   "gold_watch": 1,
+   "gold_rep": 0,
+   "people": 48388,
+   "people_x_threat": 3387.1600000000003,
+   "shield": 0.13,
+   "new15": 9,
+   "area_ha": 238800,
+   "towns": [
+    "Tonj",
+    "Thiet",
+    "Akok"
+   ],
+   "rank": 56,
+   "urgency": 0.741
+  },
+  {
+   "uid": 167,
+   "gold": 13.0,
+   "gold_top05": 11,
+   "gold_cand": 1,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 18817,
+   "people_x_threat": 752.6800000000001,
+   "shield": 0.045,
+   "new15": 1,
+   "area_ha": 179600,
+   "towns": [
+    "Yei River",
+    "Kotobi",
+    "Kemande"
+   ],
+   "rank": 21,
+   "urgency": 0.733
+  },
+  {
+   "uid": 187,
+   "gold": 23.0,
+   "gold_top05": 13,
+   "gold_cand": 0,
+   "gold_watch": 2,
+   "gold_rep": 2,
+   "people": 9448,
+   "people_x_threat": 255.096,
+   "shield": 0.199,
+   "new15": 4,
+   "area_ha": 295600,
+   "towns": [
+    "Marial Baai",
+    "Wongkurnuk",
+    "K'er N'yang"
+   ],
+   "rank": 126,
+   "urgency": 0.725
+  },
+  {
+   "uid": 216,
+   "gold": 10.0,
+   "gold_top05": 4,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 2,
+   "people": 11991,
+   "people_x_threat": 155.88299999999998,
+   "shield": 0.71,
+   "new15": 1,
+   "area_ha": 36000,
+   "towns": [
+    "منجم أغبش"
+   ],
+   "rank": 3,
+   "urgency": 0.71
+  },
+  {
+   "uid": 224,
+   "gold": 31.0,
+   "gold_top05": 8,
+   "gold_cand": 1,
+   "gold_watch": 0,
+   "gold_rep": 7,
+   "people": 3950,
+   "people_x_threat": 27.650000000000002,
+   "shield": 0.61,
+   "new15": 0,
+   "area_ha": 513200,
+   "towns": [
+    "Mbangana 1"
+   ],
+   "rank": 143,
+   "urgency": 0.71
+  },
+  {
+   "uid": 206,
    "gold": 5.0,
    "gold_top05": 5,
    "gold_cand": 0,
    "gold_watch": 0,
    "gold_rep": 0,
-   "people": 9518,
-   "people_x_threat": 152.288,
-   "shield": 0.788,
+   "people": 28116,
+   "people_x_threat": 927.8280000000001,
+   "shield": 0.443,
    "new15": 0,
-   "area_ha": 248400,
+   "area_ha": 200000,
    "towns": [
-    "Domolotto"
+    "Liyoba",
+    "Yeri",
+    "Mvolo"
    ],
-   "rank": 26,
-   "urgency": 0.602
+   "rank": 25,
+   "urgency": 0.698
   },
   {
-   "uid": 180,
+   "uid": 155,
+   "gold": 9.0,
+   "gold_top05": 5,
+   "gold_cand": 1,
+   "gold_watch": 1,
+   "gold_rep": 0,
+   "people": 27219,
+   "people_x_threat": 1469.826,
+   "shield": 0.0,
+   "new15": 4,
+   "area_ha": 90000,
+   "towns": [
+    "Wau",
+    "Nyin Akok",
+    "Madud Nyok"
+   ],
+   "rank": 52,
+   "urgency": 0.685
+  },
+  {
+   "uid": 137,
+   "gold": 3.0,
+   "gold_top05": 3,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 29324,
+   "people_x_threat": 2404.568,
+   "shield": 0.353,
+   "new15": 0,
+   "area_ha": 250400,
+   "towns": [
+    "Beira B",
+    "Chama",
+    "Jebel Yarra"
+   ],
+   "rank": 106,
+   "urgency": 0.667
+  },
+  {
+   "uid": 168,
+   "gold": 16.0,
+   "gold_top05": 10,
+   "gold_cand": 1,
+   "gold_watch": 2,
+   "gold_rep": 0,
+   "people": 7476,
+   "people_x_threat": 366.324,
+   "shield": 0.0,
+   "new15": 2,
+   "area_ha": 108400,
+   "towns": [
+    "Malong Kway",
+    "Wun Iwel",
+    "Busseri River"
+   ],
+   "rank": 50,
+   "urgency": 0.658
+  },
+  {
+   "uid": 240,
+   "gold": 8.0,
+   "gold_top05": 4,
+   "gold_cand": 1,
+   "gold_watch": 1,
+   "gold_rep": 0,
+   "people": 3923,
+   "people_x_threat": 149.07399999999998,
+   "shield": 0.483,
+   "new15": 0,
+   "area_ha": 217600,
+   "towns": [
+    "Dobola"
+   ],
+   "rank": 82,
+   "urgency": 0.646
+  },
+  {
+   "uid": 264,
    "gold": 10.0,
-   "gold_top05": 8,
+   "gold_top05": 6,
+   "gold_cand": 2,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 3917,
+   "people_x_threat": 282.024,
+   "shield": 0.085,
+   "new15": 0,
+   "area_ha": 84000,
+   "towns": [
+    "Sakure",
+    "Yambio"
+   ],
+   "rank": 15,
+   "urgency": 0.642
+  },
+  {
+   "uid": 123,
+   "gold": 5.0,
+   "gold_top05": 3,
    "gold_cand": 0,
    "gold_watch": 1,
    "gold_rep": 0,
-   "people": 14783,
-   "people_x_threat": 931.329,
+   "people": 31933,
+   "people_x_threat": 2299.176,
    "shield": 0.0,
-   "new15": 5,
-   "area_ha": 202800,
+   "new15": 1,
+   "area_ha": 78000,
    "towns": [
-    "Nahr al Jur",
-    "Nahr al Jur",
-    "Dolab"
+    "Tissi 3",
+    "Abu Jradel",
+    "Abu Jradel"
    ],
-   "rank": 99,
-   "urgency": 0.6
+   "rank": 94,
+   "urgency": 0.641
   },
   {
-   "uid": 238,
-   "gold": 3.0,
-   "gold_top05": 0,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 1,
-   "people": 17518,
-   "people_x_threat": 490.504,
-   "shield": 0.625,
-   "new15": 0,
-   "area_ha": 176800,
-   "towns": [
-    "Obo"
-   ],
-   "rank": 19,
-   "urgency": 0.596
-  },
-  {
-   "uid": 195,
-   "gold": 7.0,
-   "gold_top05": 5,
-   "gold_cand": 1,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 7906,
-   "people_x_threat": 711.54,
-   "shield": 0.133,
-   "new15": 0,
-   "area_ha": 160800,
-   "towns": [
-    "Yei River",
-    "Dispensary",
-    "Anyanwa"
-   ],
-   "rank": 35,
-   "urgency": 0.593
-  },
-  {
-   "uid": 228,
+   "uid": 236,
    "gold": 9.0,
-   "gold_top05": 4,
-   "gold_cand": 1,
+   "gold_top05": 6,
+   "gold_cand": 0,
    "gold_watch": 0,
    "gold_rep": 1,
    "people": 1114,
@@ -1562,250 +1517,131 @@
    "towns": [
     "Yalinga"
    ],
-   "rank": 92,
-   "urgency": 0.588
+   "rank": 128,
+   "urgency": 0.636
   },
   {
-   "uid": 164,
-   "gold": 1.0,
-   "gold_top05": 1,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 32547,
-   "people_x_threat": 1041.5040000000001,
-   "shield": 0.52,
-   "new15": 1,
-   "area_ha": 292400,
-   "towns": [
-    "Ibba",
-    "Madebe",
-    "Maridi"
-   ],
-   "rank": 18,
-   "urgency": 0.569
-  },
-  {
-   "uid": 231,
-   "gold": 7.0,
-   "gold_top05": 7,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 1803,
-   "people_x_threat": 68.514,
-   "shield": 0.583,
-   "new15": 0,
-   "area_ha": 141200,
-   "towns": [],
-   "rank": 66,
-   "urgency": 0.568
-  },
-  {
-   "uid": 198,
+   "uid": 146,
    "gold": 8.0,
-   "gold_top05": 8,
+   "gold_top05": 6,
+   "gold_cand": 0,
+   "gold_watch": 1,
+   "gold_rep": 0,
+   "people": 2745,
+   "people_x_threat": 32.94,
+   "shield": 0.761,
+   "new15": 1,
+   "area_ha": 111600,
+   "towns": [
+    "كافيا كنجي"
+   ],
+   "rank": 14,
+   "urgency": 0.63
+  },
+  {
+   "uid": 161,
+   "gold": 4.0,
+   "gold_top05": 4,
    "gold_cand": 0,
    "gold_watch": 0,
    "gold_rep": 0,
-   "people": 5301,
-   "people_x_threat": 137.826,
-   "shield": 0.317,
-   "new15": 0,
-   "area_ha": 154800,
+   "people": 20583,
+   "people_x_threat": 1276.146,
+   "shield": 0.116,
+   "new15": 2,
+   "area_ha": 90400,
    "towns": [
-    "Mambe"
+    "Mvolo",
+    "Tiit Agok",
+    "Akot"
    ],
    "rank": 29,
-   "urgency": 0.563
+   "urgency": 0.63
   },
   {
-   "uid": 190,
-   "gold": 12.0,
-   "gold_top05": 12,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 8728,
-   "people_x_threat": 314.20799999999997,
-   "shield": 0.0,
-   "new15": 5,
-   "area_ha": 248400,
-   "towns": [
-    "Attoro",
-    "Dari"
-   ],
-   "rank": 104,
-   "urgency": 0.562
-  },
-  {
-   "uid": 154,
-   "gold": 1.0,
-   "gold_top05": 1,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 60210,
-   "people_x_threat": 2468.61,
-   "shield": 0.028,
-   "new15": 21,
-   "area_ha": 263200,
-   "towns": [
-    "Win",
-    "Dulit",
-    "Busseri River"
-   ],
-   "rank": 69,
-   "urgency": 0.535
-  },
-  {
-   "uid": 166,
-   "gold": 7.0,
-   "gold_top05": 5,
+   "uid": 193,
+   "gold": 5.0,
+   "gold_top05": 3,
    "gold_cand": 1,
    "gold_watch": 0,
    "gold_rep": 0,
-   "people": 597,
-   "people_x_threat": 26.267999999999997,
-   "shield": 0.525,
-   "new15": 0,
-   "area_ha": 107600,
-   "towns": [],
-   "rank": 30,
-   "urgency": 0.535
-  },
-  {
-   "uid": 163,
-   "gold": 3.0,
-   "gold_top05": 3,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 33050,
-   "people_x_threat": 1652.5,
-   "shield": 0.0,
-   "new15": 11,
-   "area_ha": 212000,
-   "towns": [
-    "Rian Bang",
-    "Najok",
-    "Agwar"
-   ],
-   "rank": 100,
-   "urgency": 0.533
-  },
-  {
-   "uid": 212,
-   "gold": 3.0,
-   "gold_top05": 0,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 1,
-   "people": 475,
-   "people_x_threat": 42.275,
-   "shield": 0.696,
-   "new15": 0,
-   "area_ha": 14000,
-   "towns": [],
-   "rank": 55,
-   "urgency": 0.513
-  },
-  {
-   "uid": 189,
-   "gold": 2.0,
-   "gold_top05": 2,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 6819,
-   "people_x_threat": 409.14,
-   "shield": 0.307,
-   "new15": 0,
-   "area_ha": 142000,
-   "towns": [
-    "Mbara",
-    "Madi Bizi",
-    "Kansuelo"
-   ],
-   "rank": 28,
-   "urgency": 0.499
-  },
-  {
-   "uid": 232,
-   "gold": 2.0,
-   "gold_top05": 2,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 679,
-   "people_x_threat": 23.765,
-   "shield": 1.056,
+   "people": 7967,
+   "people_x_threat": 374.449,
+   "shield": 0.418,
    "new15": 1,
-   "area_ha": 131200,
-   "towns": [],
-   "rank": 103,
-   "urgency": 0.486
+   "area_ha": 85600,
+   "towns": [
+    "Ibba River"
+   ],
+   "rank": 35,
+   "urgency": 0.625
   },
   {
    "uid": 152,
-   "gold": 1.0,
-   "gold_top05": 1,
+   "gold": 6.0,
+   "gold_top05": 6,
    "gold_cand": 0,
    "gold_watch": 0,
    "gold_rep": 0,
-   "people": 39591,
-   "people_x_threat": 1702.4129999999998,
+   "people": 21811,
+   "people_x_threat": 850.629,
    "shield": 0.0,
-   "new15": 18,
-   "area_ha": 198000,
+   "new15": 4,
+   "area_ha": 66000,
    "towns": [
-    "Busseri River",
-    "Busseri River",
-    "Nahr al Jur"
+    "Malualkon",
+    "Warawar",
+    "Bak-Kou"
    ],
-   "rank": 101,
-   "urgency": 0.483
+   "rank": 92,
+   "urgency": 0.612
   },
   {
-   "uid": 230,
+   "uid": 128,
    "gold": 3.0,
    "gold_top05": 3,
    "gold_cand": 0,
    "gold_watch": 0,
    "gold_rep": 0,
-   "people": 459,
-   "people_x_threat": 4.130999999999999,
-   "shield": 0.855,
-   "new15": 0,
-   "area_ha": 106400,
-   "towns": [],
-   "rank": 78,
-   "urgency": 0.468
+   "people": 42556,
+   "people_x_threat": 1744.796,
+   "shield": 0.1,
+   "new15": 1,
+   "area_ha": 300800,
+   "towns": [
+    "Al Toumat",
+    "Kimmemnia",
+    "Jebel Yarra"
+   ],
+   "rank": 125,
+   "urgency": 0.609
   },
   {
-   "uid": 241,
-   "gold": 2.0,
-   "gold_top05": 2,
-   "gold_cand": 0,
+   "uid": 247,
+   "gold": 5.0,
+   "gold_top05": 3,
+   "gold_cand": 1,
    "gold_watch": 0,
    "gold_rep": 0,
-   "people": 1862,
-   "people_x_threat": 40.964,
-   "shield": 0.643,
+   "people": 14242,
+   "people_x_threat": 398.776,
+   "shield": 0.237,
    "new15": 0,
-   "area_ha": 112400,
+   "area_ha": 184800,
    "towns": [
-    "Dembia"
+    "Diabio",
+    "Ezo",
+    "Fr. Yubu"
    ],
-   "rank": 75,
-   "urgency": 0.466
+   "rank": 26,
+   "urgency": 0.605
   },
   {
-   "uid": 147,
-   "gold": 3.0,
+   "uid": 144,
+   "gold": 9.0,
    "gold_top05": 3,
-   "gold_cand": 0,
-   "gold_watch": 0,
+   "gold_cand": 2,
+   "gold_watch": 1,
    "gold_rep": 0,
    "people": 5511,
    "people_x_threat": 77.154,
@@ -1813,436 +1649,34 @@
    "new15": 1,
    "area_ha": 126000,
    "towns": [
-    "Redom"
+    "Radoum"
    ],
-   "rank": 25,
-   "urgency": 0.461
+   "rank": 28,
+   "urgency": 0.603
   },
   {
-   "uid": 177,
-   "gold": 1.0,
-   "gold_top05": 1,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 21467,
-   "people_x_threat": 1245.086,
-   "shield": 0.0,
-   "new15": 14,
-   "area_ha": 188400,
-   "towns": [
-    "Busseri River",
-    "Busseri River",
-    "Busseri River"
-   ],
-   "rank": 102,
-   "urgency": 0.459
-  },
-  {
-   "uid": 155,
-   "gold": 5.0,
-   "gold_top05": 5,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 3753,
-   "people_x_threat": 157.626,
-   "shield": 0.0,
-   "new15": 4,
-   "area_ha": 163200,
-   "towns": [
-    "Kwek Atwot"
-   ],
-   "rank": 52,
-   "urgency": 0.444
-  },
-  {
-   "uid": 222,
-   "gold": 3.0,
-   "gold_top05": 3,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 171,
-   "people_x_threat": 16.929000000000002,
-   "shield": 0.444,
-   "new15": 0,
-   "area_ha": 64000,
-   "towns": [],
-   "rank": 38,
-   "urgency": 0.434
-  },
-  {
-   "uid": 240,
-   "gold": 2.0,
-   "gold_top05": 2,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 251,
-   "people_x_threat": 7.279000000000001,
-   "shield": 0.616,
-   "new15": 0,
-   "area_ha": 84000,
-   "towns": [],
-   "rank": 48,
-   "urgency": 0.419
-  },
-  {
-   "uid": 213,
-   "gold": 7.0,
+   "uid": 160,
+   "gold": 4.0,
    "gold_top05": 4,
    "gold_cand": 0,
    "gold_watch": 0,
-   "gold_rep": 1,
-   "people": 332,
-   "people_x_threat": 21.248,
-   "shield": 0.0,
-   "new15": 0,
-   "area_ha": 95200,
-   "towns": [],
-   "rank": 86,
-   "urgency": 0.402
-  },
-  {
-   "uid": 200,
-   "gold": 1.0,
-   "gold_top05": 1,
-   "gold_cand": 0,
-   "gold_watch": 0,
    "gold_rep": 0,
-   "people": 869,
-   "people_x_threat": 35.629000000000005,
-   "shield": 0.25,
-   "new15": 1,
-   "area_ha": 194400,
-   "towns": [],
-   "rank": 39,
-   "urgency": 0.372
-  },
-  {
-   "uid": 217,
-   "gold": 3.0,
-   "gold_top05": 0,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 1,
-   "people": 296,
-   "people_x_threat": 8.288,
-   "shield": 0.02,
-   "new15": 0,
-   "area_ha": 61200,
-   "towns": [],
-   "rank": 81,
-   "urgency": 0.352
-  },
-  {
-   "uid": 201,
-   "gold": 3.0,
-   "gold_top05": 0,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 1,
-   "people": 744,
-   "people_x_threat": 10.416,
-   "shield": 0.0,
-   "new15": 0,
-   "area_ha": 137200,
-   "towns": [],
-   "rank": 111,
-   "urgency": 0.324
-  },
-  {
-   "uid": 126,
-   "gold": 0.0,
-   "gold_top05": 0,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 14839,
-   "people_x_threat": 801.306,
-   "shield": 0.11,
-   "new15": 1,
-   "area_ha": 140400,
-   "towns": [
-    "Jebel Yarra",
-    "Jebel Yarra",
-    "Jebel Yarra"
-   ],
-   "rank": 82,
-   "urgency": 0.0
-  },
-  {
-   "uid": 127,
-   "gold": 0.0,
-   "gold_top05": 0,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 39108,
-   "people_x_threat": 5709.768,
-   "shield": 0.0,
-   "new15": 2,
-   "area_ha": 80000,
-   "towns": [
-    "Jebel Yarra",
-    "Beira B",
-    "Beira B"
-   ],
-   "rank": 116,
-   "urgency": 0.0
-  },
-  {
-   "uid": 128,
-   "gold": 0.0,
-   "gold_top05": 0,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 79896,
-   "people_x_threat": 9267.936,
+   "people": 40534,
+   "people_x_threat": 1945.632,
    "shield": 0.0,
    "new15": 4,
-   "area_ha": 83200,
+   "area_ha": 54000,
    "towns": [
-    "Abu Kief",
-    "Jebel Yarra",
-    "Kheir Waqi"
-   ],
-   "rank": 109,
-   "urgency": 0.0
-  },
-  {
-   "uid": 129,
-   "gold": 0.0,
-   "gold_top05": 0,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 32045,
-   "people_x_threat": 2563.6,
-   "shield": 0.0,
-   "new15": 2,
-   "area_ha": 80400,
-   "towns": [
-    "Tissi 3",
-    "Abu Jradel",
-    "Abu Jradel"
-   ],
-   "rank": 61,
-   "urgency": 0.0
-  },
-  {
-   "uid": 130,
-   "gold": 0.0,
-   "gold_top05": 0,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 93255,
-   "people_x_threat": 8113.1849999999995,
-   "shield": 0.0,
-   "new15": 3,
-   "area_ha": 238000,
-   "towns": [
-    "أم دافوق",
-    "Am Dafok",
-    "أم دافوق"
-   ],
-   "rank": 106,
-   "urgency": 0.0
-  },
-  {
-   "uid": 131,
-   "gold": 0.0,
-   "gold_top05": 0,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 40380,
-   "people_x_threat": 1494.06,
-   "shield": 0.0,
-   "new15": 1,
-   "area_ha": 265600,
-   "towns": [
-    "Barodi",
-    "At Tor",
-    "Jebel Yarra"
-   ],
-   "rank": 117,
-   "urgency": 0.0
-  },
-  {
-   "uid": 132,
-   "gold": 0.0,
-   "gold_top05": 0,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 596923,
-   "people_x_threat": 24473.843,
-   "shield": 0.008,
-   "new15": 0,
-   "area_ha": 287200,
-   "towns": [
-    "Jebel Yarra",
-    "Hameiar",
-    "Jebel Yarra"
-   ],
-   "rank": 96,
-   "urgency": 0.0
-  },
-  {
-   "uid": 133,
-   "gold": 0.0,
-   "gold_top05": 0,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 50435,
-   "people_x_threat": 3732.1899999999996,
-   "shield": 0.0,
-   "new15": 3,
-   "area_ha": 291600,
-   "towns": [
-    "Beira B",
-    "Gurgur",
-    "Hawak"
-   ],
-   "rank": 119,
-   "urgency": 0.0
-  },
-  {
-   "uid": 134,
-   "gold": 0.0,
-   "gold_top05": 0,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 11701,
-   "people_x_threat": 456.339,
-   "shield": 0.084,
-   "new15": 0,
-   "area_ha": 324000,
-   "towns": [
-    "Jebel Yarra",
-    "Small villages",
-    "Beira B"
-   ],
-   "rank": 115,
-   "urgency": 0.0
-  },
-  {
-   "uid": 135,
-   "gold": 0.0,
-   "gold_top05": 0,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 50900,
-   "people_x_threat": 1628.8,
-   "shield": 0.161,
-   "new15": 1,
-   "area_ha": 213200,
-   "towns": [
-    "Jebel Yarra",
-    "Ed Duqoinat",
-    "El Lafdi"
+    "Kuom",
+    "Malek Alel"
    ],
    "rank": 72,
-   "urgency": 0.0
-  },
-  {
-   "uid": 136,
-   "gold": 0.0,
-   "gold_top05": 0,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 3002,
-   "people_x_threat": 216.14399999999998,
-   "shield": 0.0,
-   "new15": 0,
-   "area_ha": 148400,
-   "towns": [],
-   "rank": 73,
-   "urgency": 0.0
-  },
-  {
-   "uid": 137,
-   "gold": 0.0,
-   "gold_top05": 0,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 674,
-   "people_x_threat": 22.916,
-   "shield": 0.0,
-   "new15": 0,
-   "area_ha": 51200,
-   "towns": [],
-   "rank": 88,
-   "urgency": 0.0
+   "urgency": 0.603
   },
   {
    "uid": 138,
-   "gold": 0.0,
-   "gold_top05": 0,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 21030,
-   "people_x_threat": 1598.28,
-   "shield": 0.211,
-   "new15": 0,
-   "area_ha": 197200,
-   "towns": [
-    "Beira B",
-    "Jebel Yarra",
-    "Beira B"
-   ],
-   "rank": 58,
-   "urgency": 0.0
-  },
-  {
-   "uid": 139,
-   "gold": 0.0,
-   "gold_top05": 0,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 8943,
-   "people_x_threat": 393.49199999999996,
-   "shield": 0.135,
-   "new15": 0,
-   "area_ha": 174800,
-   "towns": [
-    "Chama",
-    "Jebel Yarra"
-   ],
-   "rank": 85,
-   "urgency": 0.0
-  },
-  {
-   "uid": 141,
-   "gold": 0.0,
-   "gold_top05": 0,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 253,
-   "people_x_threat": 17.962999999999997,
-   "shield": 0.0,
-   "new15": 0,
-   "area_ha": 47200,
-   "towns": [],
-   "rank": 76,
-   "urgency": 0.0
-  },
-  {
-   "uid": 142,
-   "gold": 0.0,
-   "gold_top05": 0,
+   "gold": 3.0,
+   "gold_top05": 3,
    "gold_cand": 0,
    "gold_watch": 0,
    "gold_rep": 0,
@@ -2254,11 +1688,1158 @@
    "towns": [
     "Birao"
    ],
-   "rank": 21,
+   "rank": 33,
+   "urgency": 0.598
+  },
+  {
+   "uid": 207,
+   "gold": 7.0,
+   "gold_top05": 5,
+   "gold_cand": 0,
+   "gold_watch": 1,
+   "gold_rep": 0,
+   "people": 8581,
+   "people_x_threat": 523.441,
+   "shield": 0.0,
+   "new15": 6,
+   "area_ha": 143200,
+   "towns": [
+    "Tali",
+    "Tindalo"
+   ],
+   "rank": 59,
+   "urgency": 0.595
+  },
+  {
+   "uid": 249,
+   "gold": 5.0,
+   "gold_top05": 5,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 1458,
+   "people_x_threat": 77.274,
+   "shield": 0.614,
+   "new15": 0,
+   "area_ha": 71200,
+   "towns": [],
+   "rank": 48,
+   "urgency": 0.595
+  },
+  {
+   "uid": 243,
+   "gold": 2.0,
+   "gold_top05": 2,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 38127,
+   "people_x_threat": 1906.3500000000001,
+   "shield": 0.306,
+   "new15": 0,
+   "area_ha": 111600,
+   "towns": [
+    "Ezo"
+   ],
+   "rank": 13,
+   "urgency": 0.591
+  },
+  {
+   "uid": 196,
+   "gold": 3.0,
+   "gold_top05": 3,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 25725,
+   "people_x_threat": 2340.975,
+   "shield": 0.0,
+   "new15": 5,
+   "area_ha": 60400,
+   "towns": [
+    "Malek Agok"
+   ],
+   "rank": 57,
+   "urgency": 0.578
+  },
+  {
+   "uid": 205,
+   "gold": 9.0,
+   "gold_top05": 5,
+   "gold_cand": 1,
+   "gold_watch": 1,
+   "gold_rep": 0,
+   "people": 6537,
+   "people_x_threat": 209.184,
+   "shield": 0.0,
+   "new15": 4,
+   "area_ha": 296400,
+   "towns": [
+    "Tali",
+    "Kansuelo"
+   ],
+   "rank": 114,
+   "urgency": 0.563
+  },
+  {
+   "uid": 199,
+   "gold": 3.0,
+   "gold_top05": 3,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 24038,
+   "people_x_threat": 1826.888,
+   "shield": 0.0,
+   "new15": 5,
+   "area_ha": 83600,
+   "towns": [
+    "Akot",
+    "Nijong",
+    "Akot"
+   ],
+   "rank": 67,
+   "urgency": 0.562
+  },
+  {
+   "uid": 252,
+   "gold": 1.0,
+   "gold_top05": 1,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 46136,
+   "people_x_threat": 2076.12,
+   "shield": 0.406,
+   "new15": 0,
+   "area_ha": 59200,
+   "towns": [
+    "Maridi",
+    "Maridi"
+   ],
+   "rank": 6,
+   "urgency": 0.558
+  },
+  {
+   "uid": 225,
+   "gold": 6.0,
+   "gold_top05": 4,
+   "gold_cand": 1,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 1205,
+   "people_x_threat": 59.045,
+   "shield": 0.347,
+   "new15": 0,
+   "area_ha": 50000,
+   "towns": [],
+   "rank": 100,
+   "urgency": 0.557
+  },
+  {
+   "uid": 250,
+   "gold": 3.0,
+   "gold_top05": 3,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 7119,
+   "people_x_threat": 249.16500000000002,
+   "shield": 0.435,
+   "new15": 0,
+   "area_ha": 105600,
+   "towns": [
+    "Yangiri"
+   ],
+   "rank": 31,
+   "urgency": 0.544
+  },
+  {
+   "uid": 260,
+   "gold": 5.0,
+   "gold_top05": 5,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 2807,
+   "people_x_threat": 216.139,
+   "shield": 0.049,
+   "new15": 0,
+   "area_ha": 73200,
+   "towns": [
+    "Im...ngaru"
+   ],
+   "rank": 41,
+   "urgency": 0.544
+  },
+  {
+   "uid": 244,
+   "gold": 2.0,
+   "gold_top05": 2,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 6702,
+   "people_x_threat": 495.948,
+   "shield": 0.465,
+   "new15": 1,
+   "area_ha": 47600,
+   "towns": [
+    "I. Aymong..."
+   ],
+   "rank": 12,
+   "urgency": 0.543
+  },
+  {
+   "uid": 272,
+   "gold": 4.0,
+   "gold_top05": 4,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 1862,
+   "people_x_threat": 40.964,
+   "shield": 0.643,
+   "new15": 0,
+   "area_ha": 112400,
+   "towns": [
+    "Dembia"
+   ],
+   "rank": 115,
+   "urgency": 0.539
+  },
+  {
+   "uid": 234,
+   "gold": 5.0,
+   "gold_top05": 3,
+   "gold_cand": 1,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 443,
+   "people_x_threat": 6.645,
+   "shield": 0.739,
+   "new15": 0,
+   "area_ha": 235200,
+   "towns": [],
+   "rank": 137,
+   "urgency": 0.532
+  },
+  {
+   "uid": 175,
+   "gold": 5.0,
+   "gold_top05": 3,
+   "gold_cand": 0,
+   "gold_watch": 1,
+   "gold_rep": 0,
+   "people": 3378,
+   "people_x_threat": 378.336,
+   "shield": 0.0,
+   "new15": 0,
+   "area_ha": 48000,
+   "towns": [
+    "Muraddiba"
+   ],
+   "rank": 40,
+   "urgency": 0.528
+  },
+  {
+   "uid": 271,
+   "gold": 5.0,
+   "gold_top05": 5,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 251,
+   "people_x_threat": 7.279000000000001,
+   "shield": 0.663,
+   "new15": 0,
+   "area_ha": 84000,
+   "towns": [],
+   "rank": 62,
+   "urgency": 0.528
+  },
+  {
+   "uid": 200,
+   "gold": 2.0,
+   "gold_top05": 2,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 11527,
+   "people_x_threat": 311.229,
+   "shield": 0.552,
+   "new15": 1,
+   "area_ha": 86400,
+   "towns": [
+    "Domolotto",
+    "Wulu"
+   ],
+   "rank": 4,
+   "urgency": 0.522
+  },
+  {
+   "uid": 194,
+   "gold": 2.0,
+   "gold_top05": 2,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 70697,
+   "people_x_threat": 2191.607,
+   "shield": 0.0,
+   "new15": 1,
+   "area_ha": 100000,
+   "towns": [
+    "Rumbek"
+   ],
+   "rank": 46,
+   "urgency": 0.521
+  },
+  {
+   "uid": 157,
+   "gold": 2.0,
+   "gold_top05": 2,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 48421,
+   "people_x_threat": 2130.524,
+   "shield": 0.0,
+   "new15": 17,
+   "area_ha": 194800,
+   "towns": [
+    "Yargot",
+    "Makuei",
+    "Majak Kaar"
+   ],
+   "rank": 134,
+   "urgency": 0.519
+  },
+  {
+   "uid": 197,
+   "gold": 5.0,
+   "gold_top05": 5,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 521,
+   "people_x_threat": 3.6470000000000002,
+   "shield": 0.686,
+   "new15": 2,
+   "area_ha": 287600,
+   "towns": [],
+   "rank": 117,
+   "urgency": 0.519
+  },
+  {
+   "uid": 183,
+   "gold": 3.0,
+   "gold_top05": 0,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 1,
+   "people": 11221,
+   "people_x_threat": 280.52500000000003,
+   "shield": 0.237,
+   "new15": 3,
+   "area_ha": 155200,
+   "towns": [
+    "Koko"
+   ],
+   "rank": 75,
+   "urgency": 0.517
+  },
+  {
+   "uid": 223,
+   "gold": 12.0,
+   "gold_top05": 9,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 1,
+   "people": 332,
+   "people_x_threat": 21.248,
+   "shield": 0.0,
+   "new15": 0,
+   "area_ha": 95200,
+   "towns": [],
+   "rank": 118,
+   "urgency": 0.512
+  },
+  {
+   "uid": 178,
+   "gold": 2.0,
+   "gold_top05": 2,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 14606,
+   "people_x_threat": 890.966,
+   "shield": 0.034,
+   "new15": 3,
+   "area_ha": 72000,
+   "towns": [
+    "Aduel",
+    "Aru",
+    "River Rohl"
+   ],
+   "rank": 11,
+   "urgency": 0.509
+  },
+  {
+   "uid": 166,
+   "gold": 2.0,
+   "gold_top05": 2,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 2430,
+   "people_x_threat": 216.26999999999998,
+   "shield": 0.512,
+   "new15": 0,
+   "area_ha": 52000,
+   "towns": [],
+   "rank": 7,
+   "urgency": 0.507
+  },
+  {
+   "uid": 173,
+   "gold": 3.0,
+   "gold_top05": 3,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 9318,
+   "people_x_threat": 670.896,
+   "shield": 0.0,
+   "new15": 1,
+   "area_ha": 263600,
+   "towns": [
+    "Jambo",
+    "Kediba",
+    "Yei River"
+   ],
+   "rank": 86,
+   "urgency": 0.506
+  },
+  {
+   "uid": 255,
+   "gold": 3.0,
+   "gold_top05": 3,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 5164,
+   "people_x_threat": 82.624,
+   "shield": 0.257,
+   "new15": 0,
+   "area_ha": 203200,
+   "towns": [
+    "Mambe"
+   ],
+   "rank": 63,
+   "urgency": 0.475
+  },
+  {
+   "uid": 274,
+   "gold": 1.0,
+   "gold_top05": 1,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 929,
+   "people_x_threat": 104.048,
+   "shield": 1.235,
+   "new15": 0,
+   "area_ha": 9200,
+   "towns": [],
+   "rank": 64,
+   "urgency": 0.463
+  },
+  {
+   "uid": 259,
+   "gold": 3.0,
+   "gold_top05": 0,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 1,
+   "people": 4271,
+   "people_x_threat": 132.401,
+   "shield": 0.087,
+   "new15": 0,
+   "area_ha": 174000,
+   "towns": [
+    "Gangala"
+   ],
+   "rank": 90,
+   "urgency": 0.458
+  },
+  {
+   "uid": 163,
+   "gold": 3.0,
+   "gold_top05": 3,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 3507,
+   "people_x_threat": 284.067,
+   "shield": 0.0,
+   "new15": 4,
+   "area_ha": 58000,
+   "towns": [
+    "Wahko",
+    "Allairu Yang"
+   ],
+   "rank": 32,
+   "urgency": 0.451
+  },
+  {
+   "uid": 188,
+   "gold": 1.0,
+   "gold_top05": 1,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 15832,
+   "people_x_threat": 1139.904,
+   "shield": 0.0,
+   "new15": 5,
+   "area_ha": 138800,
+   "towns": [
+    "Warrap",
+    "Lunyaker",
+    "Nahr al Jur"
+   ],
+   "rank": 111,
+   "urgency": 0.431
+  },
+  {
+   "uid": 182,
+   "gold": 1.0,
+   "gold_top05": 1,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 21069,
+   "people_x_threat": 1116.657,
+   "shield": 0.0,
+   "new15": 14,
+   "area_ha": 292800,
+   "towns": [
+    "Omdurman",
+    "Busseri River",
+    "Busseri River"
+   ],
+   "rank": 151,
+   "urgency": 0.428
+  },
+  {
+   "uid": 227,
+   "gold": 5.0,
+   "gold_top05": 2,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 1,
+   "people": 296,
+   "people_x_threat": 8.288,
+   "shield": 0.02,
+   "new15": 0,
+   "area_ha": 61200,
+   "towns": [],
+   "rank": 108,
+   "urgency": 0.428
+  },
+  {
+   "uid": 242,
+   "gold": 3.0,
+   "gold_top05": 1,
+   "gold_cand": 1,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 263,
+   "people_x_threat": 22.355,
+   "shield": 0.308,
+   "new15": 0,
+   "area_ha": 6000,
+   "towns": [],
+   "rank": 120,
+   "urgency": 0.428
+  },
+  {
+   "uid": 251,
+   "gold": 2.0,
+   "gold_top05": 2,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 1807,
+   "people_x_threat": 46.982,
+   "shield": 0.455,
+   "new15": 1,
+   "area_ha": 87600,
+   "towns": [
+    "Ibba"
+   ],
+   "rank": 39,
+   "urgency": 0.427
+  },
+  {
+   "uid": 153,
+   "gold": 1.0,
+   "gold_top05": 1,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 19127,
+   "people_x_threat": 918.096,
+   "shield": 0.0,
+   "new15": 4,
+   "area_ha": 105200,
+   "towns": [
+    "Lunyaker",
+    "Fan Shum",
+    "Alak"
+   ],
+   "rank": 83,
+   "urgency": 0.417
+  },
+  {
+   "uid": 253,
+   "gold": 4.0,
+   "gold_top05": 2,
+   "gold_cand": 1,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 875,
+   "people_x_threat": 57.75,
+   "shield": 0.0,
+   "new15": 0,
+   "area_ha": 58800,
+   "towns": [],
+   "rank": 98,
+   "urgency": 0.413
+  },
+  {
+   "uid": 256,
+   "gold": 3.0,
+   "gold_top05": 3,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 496,
+   "people_x_threat": 12.895999999999999,
+   "shield": 0.345,
+   "new15": 0,
+   "area_ha": 67200,
+   "towns": [],
+   "rank": 49,
+   "urgency": 0.413
+  },
+  {
+   "uid": 237,
+   "gold": 1.0,
+   "gold_top05": 1,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 679,
+   "people_x_threat": 23.765,
+   "shield": 1.056,
+   "new15": 1,
+   "area_ha": 131200,
+   "towns": [],
+   "rank": 141,
+   "urgency": 0.406
+  },
+  {
+   "uid": 148,
+   "gold": 3.0,
+   "gold_top05": 3,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 5939,
+   "people_x_threat": 100.96300000000001,
+   "shield": 0.0,
+   "new15": 2,
+   "area_ha": 79600,
+   "towns": [
+    "Lang"
+   ],
+   "rank": 61,
+   "urgency": 0.405
+  },
+  {
+   "uid": 221,
+   "gold": 2.0,
+   "gold_top05": 2,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 2250,
+   "people_x_threat": 18.0,
+   "shield": 0.49,
+   "new15": 0,
+   "area_ha": 218800,
+   "towns": [
+    "Kosho"
+   ],
+   "rank": 99,
+   "urgency": 0.4
+  },
+  {
+   "uid": 169,
+   "gold": 1.0,
+   "gold_top05": 1,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 15204,
+   "people_x_threat": 623.364,
+   "shield": 0.0,
+   "new15": 6,
+   "area_ha": 182400,
+   "towns": [
+    "Botanyit",
+    "Tieraliet",
+    "Majak"
+   ],
+   "rank": 97,
+   "urgency": 0.392
+  },
+  {
+   "uid": 222,
+   "gold": 1.0,
+   "gold_top05": 1,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 475,
+   "people_x_threat": 36.1,
+   "shield": 0.591,
+   "new15": 0,
+   "area_ha": 16400,
+   "towns": [],
+   "rank": 95,
+   "urgency": 0.385
+  },
+  {
+   "uid": 189,
+   "gold": 2.0,
+   "gold_top05": 2,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 3407,
+   "people_x_threat": 211.234,
+   "shield": 0.0,
+   "new15": 2,
+   "area_ha": 129200,
+   "towns": [
+    "Ajak"
+   ],
+   "rank": 113,
+   "urgency": 0.38
+  },
+  {
+   "uid": 204,
+   "gold": 1.0,
+   "gold_top05": 1,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 646,
+   "people_x_threat": 10.336,
+   "shield": 0.761,
+   "new15": 0,
+   "area_ha": 142800,
+   "towns": [],
+   "rank": 76,
+   "urgency": 0.373
+  },
+  {
+   "uid": 232,
+   "gold": 2.0,
+   "gold_top05": 2,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 166,
+   "people_x_threat": 16.434,
+   "shield": 0.36,
+   "new15": 0,
+   "area_ha": 51200,
+   "towns": [],
+   "rank": 34,
+   "urgency": 0.37
+  },
+  {
+   "uid": 254,
+   "gold": 3.0,
+   "gold_top05": 3,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 1508,
+   "people_x_threat": 45.239999999999995,
+   "shield": 0.0,
+   "new15": 0,
+   "area_ha": 91200,
+   "towns": [
+    "Maridi"
+   ],
+   "rank": 105,
+   "urgency": 0.368
+  },
+  {
+   "uid": 140,
+   "gold": 1.0,
+   "gold_top05": 1,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 822,
+   "people_x_threat": 49.32,
+   "shield": 0.429,
+   "new15": 0,
+   "area_ha": 48000,
+   "towns": [],
+   "rank": 43,
+   "urgency": 0.365
+  },
+  {
+   "uid": 174,
+   "gold": 1.0,
+   "gold_top05": 1,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 5169,
+   "people_x_threat": 439.365,
+   "shield": 0.0,
+   "new15": 0,
+   "area_ha": 69200,
+   "towns": [
+    "Mbara",
+    "Madi Bizi"
+   ],
+   "rank": 38,
+   "urgency": 0.364
+  },
+  {
+   "uid": 180,
+   "gold": 1.0,
+   "gold_top05": 1,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 3377,
+   "people_x_threat": 81.048,
+   "shield": 0.255,
+   "new15": 1,
+   "area_ha": 105600,
+   "towns": [
+    "Kiir Adem",
+    "Koko"
+   ],
+   "rank": 70,
+   "urgency": 0.363
+  },
+  {
+   "uid": 239,
+   "gold": 1.0,
+   "gold_top05": 1,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 459,
+   "people_x_threat": 4.130999999999999,
+   "shield": 0.846,
+   "new15": 0,
+   "area_ha": 107200,
+   "towns": [],
+   "rank": 119,
+   "urgency": 0.362
+  },
+  {
+   "uid": 198,
+   "gold": 2.0,
+   "gold_top05": 2,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 2074,
+   "people_x_threat": 87.108,
+   "shield": 0.0,
+   "new15": 1,
+   "area_ha": 80000,
+   "towns": [
+    "Akot"
+   ],
+   "rank": 58,
+   "urgency": 0.35
+  },
+  {
+   "uid": 132,
+   "gold": 1.0,
+   "gold_top05": 1,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 3002,
+   "people_x_threat": 216.14399999999998,
+   "shield": 0.0,
+   "new15": 0,
+   "area_ha": 148400,
+   "towns": [],
+   "rank": 121,
+   "urgency": 0.329
+  },
+  {
+   "uid": 176,
+   "gold": 1.0,
+   "gold_top05": 1,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 2409,
+   "people_x_threat": 130.086,
+   "shield": 0.0,
+   "new15": 3,
+   "area_ha": 70800,
+   "towns": [
+    "Dilkwor"
+   ],
+   "rank": 69,
+   "urgency": 0.302
+  },
+  {
+   "uid": 212,
+   "gold": 1.0,
+   "gold_top05": 1,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 482,
+   "people_x_threat": 29.402,
+   "shield": 0.0,
+   "new15": 1,
+   "area_ha": 69600,
+   "towns": [],
+   "rank": 71,
+   "urgency": 0.248
+  },
+  {
+   "uid": 133,
+   "gold": 1.0,
+   "gold_top05": 1,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 674,
+   "people_x_threat": 22.916,
+   "shield": 0.0,
+   "new15": 0,
+   "area_ha": 51200,
+   "towns": [],
+   "rank": 131,
+   "urgency": 0.242
+  },
+  {
+   "uid": 121,
+   "gold": 0.0,
+   "gold_top05": 0,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 4331,
+   "people_x_threat": 467.748,
+   "shield": 0.0,
+   "new15": 0,
+   "area_ha": 67600,
+   "towns": [
+    "Beira B",
+    "Jebel Yarra"
+   ],
+   "rank": 139,
    "urgency": 0.0
   },
   {
-   "uid": 143,
+   "uid": 124,
+   "gold": 0.0,
+   "gold_top05": 0,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 94192,
+   "people_x_threat": 8194.704,
+   "shield": 0.0,
+   "new15": 4,
+   "area_ha": 257200,
+   "towns": [
+    "أم دافوق",
+    "Am Dafok",
+    "أم دافوق"
+   ],
+   "rank": 150,
+   "urgency": 0.0
+  },
+  {
+   "uid": 125,
+   "gold": 0.0,
+   "gold_top05": 0,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 38604,
+   "people_x_threat": 1428.348,
+   "shield": 0.0,
+   "new15": 1,
+   "area_ha": 240000,
+   "towns": [
+    "Barodi",
+    "Al Malwi",
+    "Al Malwi"
+   ],
+   "rank": 148,
+   "urgency": 0.0
+  },
+  {
+   "uid": 126,
+   "gold": 0.0,
+   "gold_top05": 0,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 588809,
+   "people_x_threat": 22963.551,
+   "shield": 0.0,
+   "new15": 0,
+   "area_ha": 189200,
+   "towns": [
+    "بورام",
+    "Hameiar",
+    "Jebel Yarra"
+   ],
+   "rank": 136,
+   "urgency": 0.0
+  },
+  {
+   "uid": 127,
+   "gold": 0.0,
+   "gold_top05": 0,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 49986,
+   "people_x_threat": 3948.8940000000002,
+   "shield": 0.0,
+   "new15": 3,
+   "area_ha": 285200,
+   "towns": [
+    "Seseiban",
+    "Gurgur",
+    "Hawak"
+   ],
+   "rank": 155,
+   "urgency": 0.0
+  },
+  {
+   "uid": 129,
+   "gold": 0.0,
+   "gold_top05": 0,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 91548,
+   "people_x_threat": 11351.952,
+   "shield": 0.0,
+   "new15": 5,
+   "area_ha": 110000,
+   "towns": [
+    "Sherab",
+    "Khayr Wajih",
+    "طلحاية"
+   ],
+   "rank": 138,
+   "urgency": 0.0
+  },
+  {
+   "uid": 130,
+   "gold": 0.0,
+   "gold_top05": 0,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 8452,
+   "people_x_threat": 202.848,
+   "shield": 0.109,
+   "new15": 0,
+   "area_ha": 220000,
+   "towns": [
+    "Abu Qasee",
+    "Jebel Yarra",
+    "Jargas"
+   ],
+   "rank": 142,
+   "urgency": 0.0
+  },
+  {
+   "uid": 131,
+   "gold": 0.0,
+   "gold_top05": 0,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 50900,
+   "people_x_threat": 1323.3999999999999,
+   "shield": 0.144,
+   "new15": 1,
+   "area_ha": 260800,
+   "towns": [
+    "Jebel Yarra",
+    "Ed Duqoinat",
+    "El Lafdi"
+   ],
+   "rank": 135,
+   "urgency": 0.0
+  },
+  {
+   "uid": 134,
+   "gold": 0.0,
+   "gold_top05": 0,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 8678,
+   "people_x_threat": 312.40799999999996,
+   "shield": 0.129,
+   "new15": 1,
+   "area_ha": 250800,
+   "towns": [
+    "Jebel Yarra",
+    "Kimmemnia"
+   ],
+   "rank": 140,
+   "urgency": 0.0
+  },
+  {
+   "uid": 136,
+   "gold": 0.0,
+   "gold_top05": 0,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 253,
+   "people_x_threat": 17.962999999999997,
+   "shield": 0.0,
+   "new15": 0,
+   "area_ha": 47200,
+   "towns": [],
+   "rank": 127,
+   "urgency": 0.0
+  },
+  {
+   "uid": 139,
    "gold": 0.0,
    "gold_top05": 0,
    "gold_cand": 0,
@@ -2270,59 +2851,23 @@
    "new15": 1,
    "area_ha": 54800,
    "towns": [],
-   "rank": 54,
+   "rank": 91,
    "urgency": 0.0
   },
   {
-   "uid": 144,
+   "uid": 141,
    "gold": 0.0,
    "gold_top05": 0,
    "gold_cand": 0,
    "gold_watch": 0,
    "gold_rep": 0,
-   "people": 822,
-   "people_x_threat": 49.32,
-   "shield": 0.429,
-   "new15": 0,
-   "area_ha": 48000,
-   "towns": [],
-   "rank": 24,
-   "urgency": 0.0
-  },
-  {
-   "uid": 145,
-   "gold": 0.0,
-   "gold_top05": 0,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 808,
-   "people_x_threat": 46.864000000000004,
+   "people": 977,
+   "people_x_threat": 52.758,
    "shield": 0.019,
    "new15": 0,
-   "area_ha": 49200,
+   "area_ha": 53600,
    "towns": [],
-   "rank": 113,
-   "urgency": 0.0
-  },
-  {
-   "uid": 148,
-   "gold": 0.0,
-   "gold_top05": 0,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 37410,
-   "people_x_threat": 1982.73,
-   "shield": 0.0,
-   "new15": 12,
-   "area_ha": 110800,
-   "towns": [
-    "Pan Nyel",
-    "Karyat",
-    "Busseri River"
-   ],
-   "rank": 59,
+   "rank": 145,
    "urgency": 0.0
   },
   {
@@ -2332,15 +2877,17 @@
    "gold_cand": 0,
    "gold_watch": 0,
    "gold_rep": 0,
-   "people": 4402,
-   "people_x_threat": 272.924,
+   "people": 17990,
+   "people_x_threat": 1007.44,
    "shield": 0.0,
-   "new15": 0,
-   "area_ha": 122000,
+   "new15": 6,
+   "area_ha": 45600,
    "towns": [
-    "Gangala"
+    "Mayen Ulem",
+    "Mayen Ulem",
+    "Ariath"
    ],
-   "rank": 57,
+   "rank": 73,
    "urgency": 0.0
   },
   {
@@ -2350,17 +2897,57 @@
    "gold_cand": 0,
    "gold_watch": 0,
    "gold_rep": 0,
-   "people": 32055,
-   "people_x_threat": 1538.64,
+   "people": 30154,
+   "people_x_threat": 1568.008,
    "shield": 0.0,
-   "new15": 7,
-   "area_ha": 254000,
+   "new15": 10,
+   "area_ha": 89200,
    "towns": [
-    "Yik",
-    "Nahr al Jur",
-    "Angwea"
+    "Gogrial",
+    "Akon",
+    "Najok"
    ],
-   "rank": 114,
+   "rank": 81,
+   "urgency": 0.0
+  },
+  {
+   "uid": 151,
+   "gold": 0.0,
+   "gold_top05": 0,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 15734,
+   "people_x_threat": 896.8380000000001,
+   "shield": 0.0,
+   "new15": 8,
+   "area_ha": 67200,
+   "towns": [
+    "Madhol",
+    "Dingdwel",
+    "Majak"
+   ],
+   "rank": 68,
+   "urgency": 0.0
+  },
+  {
+   "uid": 154,
+   "gold": 0.0,
+   "gold_top05": 0,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 14218,
+   "people_x_threat": 568.72,
+   "shield": 0.0,
+   "new15": 8,
+   "area_ha": 88000,
+   "towns": [
+    "Panthou",
+    "Ayein",
+    "Fan Dung"
+   ],
+   "rank": 74,
    "urgency": 0.0
   },
   {
@@ -2370,132 +2957,113 @@
    "gold_cand": 0,
    "gold_watch": 0,
    "gold_rep": 0,
-   "people": 19119,
-   "people_x_threat": 1147.1399999999999,
+   "people": 11625,
+   "people_x_threat": 778.875,
    "shield": 0.0,
    "new15": 4,
-   "area_ha": 161600,
+   "area_ha": 49600,
    "towns": [
-    "Akok",
-    "Atur",
-    "Niyom"
+    "Alek",
+    "Adium",
+    "Pajok Bek"
    ],
-   "rank": 77,
+   "rank": 60,
    "urgency": 0.0
   },
   {
-   "uid": 159,
+   "uid": 158,
    "gold": 0.0,
    "gold_top05": 0,
    "gold_cand": 0,
    "gold_watch": 0,
    "gold_rep": 0,
-   "people": 152003,
-   "people_x_threat": 11552.228,
-   "shield": 0.482,
-   "new15": 1,
-   "area_ha": 219200,
+   "people": 3753,
+   "people_x_threat": 157.626,
+   "shield": 0.0,
+   "new15": 4,
+   "area_ha": 162000,
    "towns": [
-    "Azana",
-    "Ringasi",
-    "I. Aymong..."
+    "Kwek Atwot"
    ],
-   "rank": 20,
+   "rank": 88,
    "urgency": 0.0
   },
   {
-   "uid": 173,
+   "uid": 162,
    "gold": 0.0,
    "gold_top05": 0,
    "gold_cand": 0,
    "gold_watch": 0,
    "gold_rep": 0,
-   "people": 48687,
-   "people_x_threat": 1071.114,
-   "shield": 0.397,
+   "people": 1195,
+   "people_x_threat": 65.725,
+   "shield": 0.0,
    "new15": 0,
-   "area_ha": 283600,
-   "towns": [
-    "Maridi",
-    "Maridi",
-    "Maridi"
-   ],
-   "rank": 23,
+   "area_ha": 46400,
+   "towns": [],
+   "rank": 112,
    "urgency": 0.0
   },
   {
-   "uid": 174,
+   "uid": 171,
+   "gold": 0.0,
+   "gold_top05": 0,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 12673,
+   "people_x_threat": 658.996,
+   "shield": 0.0,
+   "new15": 2,
+   "area_ha": 114000,
+   "towns": [
+    "Lunyaker",
+    "Jungkor",
+    "Dok"
+   ],
+   "rank": 78,
+   "urgency": 0.0
+  },
+  {
+   "uid": 177,
+   "gold": 0.0,
+   "gold_top05": 0,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 9510,
+   "people_x_threat": 485.01,
+   "shield": 0.095,
+   "new15": 5,
+   "area_ha": 157200,
+   "towns": [
+    "Dirdi",
+    "Wahko",
+    "Shan e"
+   ],
+   "rank": 53,
+   "urgency": 0.0
+  },
+  {
+   "uid": 179,
    "gold": 0.0,
    "gold_top05": 0,
    "gold_cand": 0,
    "gold_watch": 0,
    "gold_rep": 0,
    "people": 3709,
-   "people_x_threat": 74.18,
-   "shield": 0.107,
+   "people_x_threat": 70.471,
+   "shield": 0.125,
    "new15": 0,
-   "area_ha": 84000,
+   "area_ha": 86400,
    "towns": [
-    "Koko"
+    "Kiir Adem"
    ],
-   "rank": 80,
+   "rank": 107,
    "urgency": 0.0
   },
   {
-   "uid": 175,
-   "gold": 0.0,
-   "gold_top05": 0,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 170,
-   "people_x_threat": 5.27,
-   "shield": 0.143,
-   "new15": 0,
-   "area_ha": 54000,
-   "towns": [],
-   "rank": 93,
-   "urgency": 0.0
-  },
-  {
-   "uid": 176,
-   "gold": 0.0,
-   "gold_top05": 0,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 3384,
-   "people_x_threat": 77.832,
-   "shield": 0.0,
-   "new15": 1,
-   "area_ha": 125600,
-   "towns": [
-    "Koko",
-    "Koko"
-   ],
-   "rank": 84,
-   "urgency": 0.0
-  },
-  {
-   "uid": 185,
-   "gold": 0.0,
-   "gold_top05": 0,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 2304,
-   "people_x_threat": 110.592,
-   "shield": 0.0,
-   "new15": 1,
-   "area_ha": 97200,
-   "towns": [
-    "Akot"
-   ],
-   "rank": 44,
-   "urgency": 0.0
-  },
-  {
-   "uid": 186,
+   "uid": 201,
    "gold": 0.0,
    "gold_top05": 0,
    "gold_cand": 0,
@@ -2507,11 +3075,11 @@
    "new15": 0,
    "area_ha": 106400,
    "towns": [],
-   "rank": 97,
+   "rank": 133,
    "urgency": 0.0
   },
   {
-   "uid": 187,
+   "uid": 202,
    "gold": 0.0,
    "gold_top05": 0,
    "gold_cand": 0,
@@ -2523,65 +3091,7 @@
    "new15": 0,
    "area_ha": 258000,
    "towns": [],
-   "rank": 108,
-   "urgency": 0.0
-  },
-  {
-   "uid": 196,
-   "gold": 0.0,
-   "gold_top05": 0,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 44568,
-   "people_x_threat": 2050.128,
-   "shield": 0.032,
-   "new15": 0,
-   "area_ha": 122400,
-   "towns": [
-    "Ezo",
-    "Ezo",
-    "Fr. Yubu"
-   ],
-   "rank": 13,
-   "urgency": 0.0
-  },
-  {
-   "uid": 199,
-   "gold": 0.0,
-   "gold_top05": 0,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 5170,
-   "people_x_threat": 242.99,
-   "shield": 0.47,
-   "new15": 0,
-   "area_ha": 264800,
-   "towns": [
-    "Makpandu",
-    "Rimenze"
-   ],
-   "rank": 31,
-   "urgency": 0.0
-  },
-  {
-   "uid": 202,
-   "gold": 0.0,
-   "gold_top05": 0,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 14865,
-   "people_x_threat": 550.005,
-   "shield": 0.094,
-   "new15": 0,
-   "area_ha": 178000,
-   "towns": [
-    "Naisa",
-    "Zikilingi"
-   ],
-   "rank": 37,
+   "rank": 147,
    "urgency": 0.0
   },
   {
@@ -2591,19 +3101,65 @@
    "gold_cand": 0,
    "gold_watch": 0,
    "gold_rep": 0,
-   "people": 2629,
-   "people_x_threat": 162.998,
-   "shield": 0.02,
+   "people": 880,
+   "people_x_threat": 9.68,
+   "shield": 0.757,
    "new15": 0,
-   "area_ha": 54000,
-   "towns": [
-    "Nabiapay"
-   ],
-   "rank": 40,
+   "area_ha": 170000,
+   "towns": [],
+   "rank": 93,
    "urgency": 0.0
   },
   {
-   "uid": 205,
+   "uid": 208,
+   "gold": 0.0,
+   "gold_top05": 0,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 1130,
+   "people_x_threat": 66.67,
+   "shield": 0.0,
+   "new15": 0,
+   "area_ha": 56800,
+   "towns": [],
+   "rank": 80,
+   "urgency": 0.0
+  },
+  {
+   "uid": 209,
+   "gold": 0.0,
+   "gold_top05": 0,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 452,
+   "people_x_threat": 20.791999999999998,
+   "shield": 0.0,
+   "new15": 1,
+   "area_ha": 45200,
+   "towns": [],
+   "rank": 85,
+   "urgency": 0.0
+  },
+  {
+   "uid": 213,
+   "gold": 0.0,
+   "gold_top05": 0,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 410,
+   "people_x_threat": 18.86,
+   "shield": 0.352,
+   "new15": 0,
+   "area_ha": 73200,
+   "towns": [],
+   "rank": 42,
+   "urgency": 0.0
+  },
+  {
+   "uid": 214,
    "gold": 0.0,
    "gold_top05": 0,
    "gold_cand": 0,
@@ -2611,198 +3167,177 @@
    "gold_rep": 0,
    "people": 250,
    "people_x_threat": 1.75,
-   "shield": 0.756,
+   "shield": 0.5,
    "new15": 0,
-   "area_ha": 62400,
+   "area_ha": 58000,
    "towns": [],
-   "rank": 89,
+   "rank": 132,
    "urgency": 0.0
   },
   {
-   "uid": 211,
+   "uid": 238,
    "gold": 0.0,
    "gold_top05": 0,
    "gold_cand": 0,
    "gold_watch": 0,
    "gold_rep": 0,
-   "people": 2250,
-   "people_x_threat": 18.0,
-   "shield": 0.429,
-   "new15": 0,
-   "area_ha": 211200,
+   "people": 1955,
+   "people_x_threat": 62.56,
+   "shield": 0.267,
+   "new15": 1,
+   "area_ha": 87200,
    "towns": [
-    "Ambougoudiou"
+    "Libu"
    ],
-   "rank": 71,
+   "rank": 44,
    "urgency": 0.0
   },
   {
-   "uid": 215,
+   "uid": 258,
    "gold": 0.0,
    "gold_top05": 0,
    "gold_cand": 0,
    "gold_watch": 0,
    "gold_rep": 0,
-   "people": 1205,
-   "people_x_threat": 59.045,
-   "shield": 0.347,
+   "people": 191,
+   "people_x_threat": 1.1460000000000001,
+   "shield": 0.208,
    "new15": 0,
-   "area_ha": 50000,
-   "towns": [],
-   "rank": 56,
-   "urgency": 0.0
-  },
-  {
-   "uid": 224,
-   "gold": 0.0,
-   "gold_top05": 0,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 443,
-   "people_x_threat": 6.645,
-   "shield": 0.739,
-   "new15": 0,
-   "area_ha": 235200,
-   "towns": [],
-   "rank": 98,
-   "urgency": 0.0
-  },
-  {
-   "uid": 227,
-   "gold": 0.0,
-   "gold_top05": 0,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 327,
-   "people_x_threat": 111.18,
-   "shield": 1.556,
-   "new15": 0,
-   "area_ha": 3600,
-   "towns": [],
-   "rank": 7,
-   "urgency": 0.0
-  },
-  {
-   "uid": 234,
-   "gold": 0.0,
-   "gold_top05": 0,
-   "gold_cand": 0,
-   "gold_watch": 0,
-   "gold_rep": 0,
-   "people": 263,
-   "people_x_threat": 22.355,
-   "shield": 0.308,
-   "new15": 0,
-   "area_ha": 6000,
+   "area_ha": 83600,
    "towns": [],
    "rank": 79,
    "urgency": 0.0
   },
   {
-   "uid": 244,
+   "uid": 261,
    "gold": 0.0,
    "gold_top05": 0,
    "gold_cand": 0,
    "gold_watch": 0,
    "gold_rep": 0,
-   "people": 929,
-   "people_x_threat": 104.048,
-   "shield": 1.235,
+   "people": 2242,
+   "people_x_threat": 188.328,
+   "shield": 0.163,
    "new15": 0,
-   "area_ha": 9200,
-   "towns": [],
-   "rank": 46,
+   "area_ha": 86800,
+   "towns": [
+    "Rimenze"
+   ],
+   "rank": 23,
+   "urgency": 0.0
+  },
+  {
+   "uid": 262,
+   "gold": 0.0,
+   "gold_top05": 0,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 14841,
+   "people_x_threat": 653.0039999999999,
+   "shield": 0.0,
+   "new15": 0,
+   "area_ha": 108000,
+   "towns": [
+    "Naisa",
+    "Zikilingi"
+   ],
+   "rank": 87,
+   "urgency": 0.0
+  },
+  {
+   "uid": 265,
+   "gold": 0.0,
+   "gold_top05": 0,
+   "gold_cand": 0,
+   "gold_watch": 0,
+   "gold_rep": 0,
+   "people": 2629,
+   "people_x_threat": 162.998,
+   "shield": 0.0,
+   "new15": 0,
+   "area_ha": 54400,
+   "towns": [
+    "Nabiapay"
+   ],
+   "rank": 65,
    "urgency": 0.0
   }
  ],
  "tango_candidates": [
   {
-   "uid": 249,
-   "ud": 487.0030517578125,
-   "meet": 455.0654602050781,
-   "gold": 57.0,
-   "gold_top05": 47,
-   "people": 6938,
-   "area_ha": 2452400,
+   "uid": 280,
+   "ud": 550.1602783203125,
+   "meet": 518.4874267578125,
+   "gold": 64.0,
+   "gold_top05": 36,
+   "people": 5426,
+   "area_ha": 2584000,
    "bundles": [
     4,
     11,
-    8,
-    15
+    15,
+    8
    ],
    "onset": "09",
    "fronts": 2137,
    "urgency": 1.0
   },
   {
-   "uid": 259,
-   "ud": 299.54510498046875,
-   "meet": 299.54510498046875,
-   "gold": 39.0,
-   "gold_top05": 31,
-   "people": 12361,
-   "area_ha": 1083200,
+   "uid": 292,
+   "ud": 391.88177490234375,
+   "meet": 391.88177490234375,
+   "gold": 15.0,
+   "gold_top05": 9,
+   "people": 3345,
+   "area_ha": 1225600,
    "bundles": [
-    14,
     5,
-    7
+    14,
+    7,
+    10
    ],
    "onset": "10",
-   "fronts": 1763,
-   "urgency": 0.909
+   "fronts": 2225,
+   "urgency": 0.85
   },
   {
-   "uid": 258,
-   "ud": 150.7395782470703,
-   "meet": 132.96640014648438,
-   "gold": 21.0,
-   "gold_top05": 19,
-   "people": 4225,
-   "area_ha": 969600,
+   "uid": 289,
+   "ud": 106.79039001464844,
+   "meet": 89.01719665527344,
+   "gold": 7.0,
+   "gold_top05": 5,
+   "people": 330,
+   "area_ha": 791200,
    "bundles": [
     10,
     9
    ],
    "onset": "10",
    "fronts": 909,
-   "urgency": 0.795
+   "urgency": 0.7
   },
   {
-   "uid": 250,
-   "ud": 72.20487976074219,
-   "meet": 72.20487976074219,
-   "gold": 8.0,
-   "gold_top05": 8,
-   "people": 2804,
-   "area_ha": 228400,
-   "bundles": [],
-   "onset": null,
-   "fronts": 0,
-   "urgency": 0.636
-  },
-  {
-   "uid": 245,
-   "ud": 62.750579833984375,
-   "meet": 60.7127685546875,
+   "uid": 276,
+   "ud": 62.842987060546875,
+   "meet": 60.80517578125,
    "gold": 12.0,
-   "gold_top05": 4,
-   "people": 855,
-   "area_ha": 348400,
+   "gold_top05": 6,
+   "people": 862,
+   "area_ha": 348800,
    "bundles": [
     2
    ],
    "onset": "10",
    "fronts": 738,
-   "urgency": 0.614
+   "urgency": 0.675
   },
   {
-   "uid": 261,
+   "uid": 293,
    "ud": 58.012451171875,
    "meet": 58.012451171875,
-   "gold": 33.0,
-   "gold_top05": 31,
+   "gold": 42.0,
+   "gold_top05": 38,
    "people": 4137,
    "area_ha": 357600,
    "bundles": [
@@ -2810,75 +3345,62 @@
    ],
    "onset": "09",
    "fronts": 443,
-   "urgency": 0.614
+   "urgency": 0.675
   },
   {
-   "uid": 255,
-   "ud": 48.51959991455078,
-   "meet": 48.51959991455078,
-   "gold": 19.0,
+   "uid": 282,
+   "ud": 37.878170013427734,
+   "meet": 14.989557266235352,
+   "gold": 25.0,
    "gold_top05": 19,
-   "people": 2250,
-   "area_ha": 122800,
+   "people": 0,
+   "area_ha": 303600,
    "bundles": [],
    "onset": null,
    "fronts": 0,
    "urgency": 0.5
   },
   {
-   "uid": 257,
-   "ud": 29.268619537353516,
-   "meet": 29.268619537353516,
-   "gold": 6.0,
-   "gold_top05": 6,
-   "people": 405,
-   "area_ha": 70800,
-   "bundles": [],
-   "onset": null,
-   "fronts": 0,
-   "urgency": 0.257
-  },
-  {
-   "uid": 252,
-   "ud": 37.878170013427734,
-   "meet": 14.989557266235352,
-   "gold": 6.0,
-   "gold_top05": 0,
-   "people": 0,
-   "area_ha": 303600,
-   "bundles": [],
-   "onset": null,
-   "fronts": 0,
-   "urgency": 0.23
-  },
-  {
-   "uid": 260,
-   "ud": 21.826099395751953,
-   "meet": 21.826099395751953,
+   "uid": 284,
+   "ud": 24.354022979736328,
+   "meet": 24.354022979736328,
    "gold": 1.0,
    "gold_top05": 1,
-   "people": 24,
-   "area_ha": 57200,
+   "people": 709,
+   "area_ha": 76800,
    "bundles": [],
    "onset": null,
    "fronts": 0,
-   "urgency": 0.155
+   "urgency": 0.345
   },
   {
-   "uid": 247,
-   "ud": 37.92678451538086,
-   "meet": 4.911620616912842,
+   "uid": 278,
+   "ud": 43.16424560546875,
+   "meet": 10.149075508117676,
+   "gold": 5.0,
+   "gold_top05": 5,
+   "people": 0,
+   "area_ha": 240000,
+   "bundles": [],
+   "onset": null,
+   "fronts": 0,
+   "urgency": 0.31
+  },
+  {
+   "uid": 283,
+   "ud": 12.921703338623047,
+   "meet": 12.921703338623047,
    "gold": 0.0,
    "gold_top05": 0,
-   "people": 0,
-   "area_ha": 212800,
+   "people": 147,
+   "area_ha": 38800,
    "bundles": [],
    "onset": null,
    "fronts": 0,
-   "urgency": 0.145
+   "urgency": 0.198
   },
   {
-   "uid": 263,
+   "uid": 295,
    "ud": 6.72645378112793,
    "meet": 6.72645378112793,
    "gold": 10.0,
@@ -2888,7 +3410,20 @@
    "bundles": [],
    "onset": null,
    "fronts": 0,
-   "urgency": 0.145
+   "urgency": 0.125
+  },
+  {
+   "uid": 287,
+   "ud": 12.245352745056152,
+   "meet": 12.245352745056152,
+   "gold": 0.0,
+   "gold_top05": 0,
+   "people": 37,
+   "area_ha": 29200,
+   "bundles": [],
+   "onset": null,
+   "fronts": 0,
+   "urgency": 0.122
   }
  ]
 }

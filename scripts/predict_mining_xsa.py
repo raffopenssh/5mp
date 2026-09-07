@@ -53,7 +53,14 @@ from shapely.strtree import STRtree
 from shapely.ops import unary_union
 
 ROOT = Path(__file__).resolve().parent.parent
-OUT = ROOT / "data" / "eval" / "xsa_mining" / "prediction.json"
+sys.path.insert(0, str(ROOT / "scripts"))
+import mining_model as MM  # noqa: E402
+
+# MINING_MODEL=insample -> data/eval/xsa_mining (this file's own composite)
+# MINING_MODEL=heldout  -> data/eval/xsa_mining_heldout (regional model's XSA
+#                          scores substituted for the composite; see below)
+VARIANT = MM.variant()
+OUT = MM.prediction_json()
 DB = ROOT / "db.sqlite3"
 AOI = "XSA_Study_Area"
 CELL = 0.05          # degrees
@@ -316,8 +323,21 @@ def cluster_sites(anchors, lat0, link_km=10.0):
 # ---------------------------------------------------------------- signals
 def gold_contact_geoms(poly):
     """Gold-graded (w>=2) contact lines from every served sheet, clipped."""
+    # geology is gated to partner passwords (d5b7fed): the demo password
+    # returns an empty, `withheld` catalogue, which must fail here, not
+    # silently score every cell as "far from gold" (root invariant 1).
+    import os, urllib.parse
+    pwd = os.environ.get("HISTMAP_PWD")
+    if not pwd:
+        for line in open(ROOT / "secrets.env"):
+            if line.startswith("AOI_OWNER_PWD="):
+                pwd = line.split("=", 1)[1].strip().strip('"')
+    if not pwd:
+        raise SystemExit("geology catalogue needs HISTMAP_PWD or AOI_OWNER_PWD (secrets.env)")
     cat = json.loads(subprocess.check_output(
-        ["curl", "-fsS", "http://localhost:8000/api/geomap?pwd=test2026"]))
+        ["curl", "-fsS", "http://localhost:8000/api/geomap?pwd=" + urllib.parse.quote(pwd)]))
+    if cat.get("withheld") or not cat.get("sheets"):
+        raise SystemExit(f"geology catalogue withheld for this password: {cat.get('reason')}")
     geoms = []
     for s in cat["sheets"]:
         c = s["catalogue"]
@@ -801,13 +821,85 @@ def main():
         log("factors voting:", factors_voting)
         result_note = None
 
+    # ---- HELD-OUT VARIANT. The composite above selected its voters on the
+    # same 43 XSA clusters it is scored on (in-sample; reach-null p 0.057).
+    # scripts/regional_mining/nested_cv.py trains on CAF+SSD+SDN outside a
+    # 50 km moat round XSA, picks its recipe by spatial CV there, and scores
+    # XSA once. Under MINING_MODEL=heldout that surface REPLACES `comp` here,
+    # so candidates, watchlist ranking, tiers and the GeoJSON are derived
+    # from it with the same downstream code, and its skill row is the
+    # held-out one. Signal tables above are kept as the in-sample diagnostic
+    # they are; nothing below re-measures skill on XSA.
+    heldout = None
+    if VARIANT == "heldout":
+        if not (MM.NESTED_CV.exists() and MM.NESTED_CV_SCORES.exists()):
+            raise SystemExit(f"MINING_MODEL=heldout needs {MM.NESTED_CV} + "
+                             f"{MM.NESTED_CV_SCORES}: run scripts/regional_mining/nested_cv.py")
+        heldout = json.load(open(MM.NESTED_CV))
+        z = np.load(MM.NESTED_CV_SCORES)
+        from scipy.spatial import cKDTree as _KD
+        hz = proj(np.column_stack([z["lon"], z["lat"]]), lat0)
+        d_h, i_h = _KD(hz).query(gk)
+        # Both grids are 0.05 deg but offset by ~half a cell (the regional grid
+        # is aligned to .025/.075, this one to the AOI's bbox), so each XSA
+        # cell takes the nearest regional cell centre. Along the AOI edge the
+        # nearest scored centre can be up to ~1.4 cells away (the regional
+        # grid kept only centres inside the polygon); beyond that a cell is
+        # NaN, never 0 (root invariant 1).
+        pitch_km = CELL * KM_PER_DEG
+        comp = np.where(d_h <= 1.5 * pitch_km, z["score"][i_h], np.nan)
+        n_nan = int(np.isnan(comp).sum()); n_edge = int((d_h > 0.75 * pitch_km).sum() - n_nan)
+        log(f"held-out surface: {z['recipe']} on {len(z['lon'])} regional cells -> "
+            f"{len(gk) - n_nan}/{len(gk)} XSA cells ({n_edge} edge cells took a neighbour "
+            f">0.75 pitch away, {n_nan} uncovered)")
+        # The regional model covers CAF+SSD+SDN; the study area's Congolese strip
+        # (Garamba side) has no features there and stays NaN = unscored. Any
+        # uncovered cell NOT in COD means the grids disagree -> stop.
+        world = json.load(open(ROOT / "data/world_countries.geojson"))
+        cod = unary_union([shape(f["geometry"]) for f in world["features"]
+                           if f["properties"]["iso3"] == "COD"])
+        from shapely.prepared import prep as _prep
+        pc = _prep(cod.buffer(0.06))
+        un = np.nonzero(np.isnan(comp))[0]
+        not_cod = [i for i in un if not pc.contains(Point(*grid[i]))]
+        if len(not_cod) > 0.002 * len(gk):
+            raise SystemExit(f"held-out surface leaves {len(not_cod)} non-Congolese cells of "
+                             f"{len(gk)} unscored - grids disagree")
+        heldout["_regrid"] = dict(
+            xsa_cells=len(gk), regional_cells=int(len(z["lon"])),
+            edge_cells_nearest=n_edge, unscored=n_nan, unscored_outside_cod=len(not_cod),
+            note=("unscored cells are the study area's DR Congo strip: the regional model was "
+                  "trained and applied on CAF, SSD and SDN only, so it says nothing there"))
+        factors_voting = sorted({heldout["final_signal_stats"][k]["factor"]
+                                 for k in heldout["final_signals"]})
+        passing = list(heldout["final_signals"])
+
     # composite skill, measured the same way (top-X% of cells), plus a
     # per-source robustness split: OSM-tagged truth vs attack-record truth
     # (Crisis Tracker / UCDP). If the composite only captures one list's
     # clusters, it has learned that list's reporting reach, not mining.
     comp_skill = None
     robustness = None
-    if comp is not None:
+    if heldout is not None:
+        # skill rows come from the held-out evaluation, in this file's schema
+        X = heldout["xsa_claim"]
+        comp_skill = []
+        for topq, key in ((0.05, "top05"), (0.10, "top10"), (0.20, "top20")):
+            comp_skill.append(dict(
+                top_frac=topq, capture=X[key], baseline=topq,
+                lift=X[f"{key}_lift"], p=None,
+                min_detectable_lift=None,
+                baseline_reach=X[f"{key}_baseline_reach"],
+                lift_reach=X[f"{key}_lift_reach"],
+                p_reach=X.get(f"{key}_p_reach"),
+                ci90=X.get(f"{key}_ci90"),
+                basis="held-out: model fitted outside XSA, scored once on XSA"))
+            log("  held-out composite", comp_skill[-1])
+        robustness = {k: dict(n=v["n_clusters"], capture_top20=v["top20"],
+                              capture_top05=v["top05"], baseline=0.2,
+                              lift=round(v["top20"] / 0.2, 2))
+                      for k, v in heldout["robustness_chosen"].items()}
+    elif comp is not None:
         from scipy.spatial import cKDTree
         t = cKDTree(gk)
         _, tidx = t.query(ck)
@@ -868,7 +960,15 @@ def main():
     # selection step) on the TRAINING blocks only, rebuild the composite,
     # and ask what fraction of HELD-OUT clusters land in its top 20%.
     cv = None
-    if comp is not None:
+    if heldout is not None:
+        cv = dict(method=("not applicable: the held-out variant is validated by "
+                          "scripts/regional_mining/nested_cv.py (spatial 5-fold CV "
+                          "on the training region chooses the recipe; XSA is scored "
+                          "once)"),
+                  cv_summary=heldout["cv_summary"], chosen_recipe=heldout["chosen_recipe"],
+                  n_train_clusters=heldout["n_train_clusters"],
+                  n_xsa_clusters=heldout["n_xsa_clusters"])
+    elif comp is not None:
         lons = np.array([grid[int(np.argmin(np.hypot(*(gk - c["km"]).T)))][0]
                          for c in clusters])
         edges = np.quantile(lons, [0.25, 0.5, 0.75])
@@ -1210,12 +1310,16 @@ def main():
         graduated = dict(
             note=("Band membership is the increment (a top10 feature is in "
                   "the top 10% but not the top 5%), while each tier's "
-                  "capture/lift/p describes the CUMULATIVE top-X% cut, "
-                  "measured against the same permutation null as everything "
-                  "else (composite_skill). With 43 truth clusters each worth "
-                  "2.3% capture, only the top05 and top20 cuts are "
-                  "individually significant; top10 and top35 are drawn as "
-                  "graduation, not claimed as evidence. A feature's band "
+                  "capture/lift/p describes the CUMULATIVE top-X% cut "
+                  "(composite_skill). "
+                  + (f"Skill is HELD-OUT ({len(clusters)} XSA clusters never used "
+                     "to fit or choose the model); top35 carries no measured skill "
+                     "and is drawn as graduation only. "
+                     if heldout else
+                     "With 43 truth clusters each worth 2.3% capture, only the "
+                     "top05 and top20 cuts are individually significant; top10 "
+                     "and top35 are drawn as graduation, not claimed as evidence. ")
+                  + "A feature's band "
                   "describes the GROUND it stands on, not the feature: a "
                   "village in top05 is a village on ground that "
                   "concentrates reported mines, nothing more."),
@@ -1228,9 +1332,28 @@ def main():
 
 
     out = dict(
-        generated_by="scripts/predict_mining_xsa.py",
+        generated_by="scripts/predict_mining_xsa.py" + (" (MINING_MODEL=heldout)" if heldout else ""),
+        mining_model=VARIANT,
+        model_variant=VARIANT,
+        skill_basis=(
+            ("held-out: L2 logistic regression on binary evidence layers, trained on "
+             f"{heldout['n_train_clusters']} reported-site clusters in CAF/SSD/SDN outside a "
+             f"{heldout['truth']['moat_km']:.0f} km moat round the study area, recipe and settings chosen "
+             "by spatial 5-fold cross-validation on that training region only, then scored ONCE on the "
+             f"{heldout['n_xsa_clusters']} study-area clusters (scripts/regional_mining/nested_cv.py)")
+            if heldout else
+            "in-sample: signals selected and the composite scored on the same 43 study-area clusters "
+            "(scripts/predict_mining_xsa.py); spatial_cv is the only out-of-sample check"),
+        heldout_source=(dict(nested_cv=str(MM.NESTED_CV.relative_to(ROOT)),
+                             scores=str(MM.NESTED_CV_SCORES.relative_to(ROOT)),
+                             recipe=heldout["chosen_recipe"], truth=heldout["truth"],
+                             regrid=heldout.get("_regrid"),
+                             final_signals=heldout["final_signals"],
+                             cv_summary=heldout["cv_summary"],
+                             xsa_all_recipes=heldout["xsa"])
+                        if heldout else None),
         aoi=AOI,
-        question=("Do the context layers concentrate the 89 reported mine "
+        question=(f"Do the context layers concentrate the {len(anchors)} reported mine "
                   "sites, and if so where else does that context exist?"),
         truth_caveat=(
             "Anchors are OSM tags, Crisis Tracker attack records, UCDP GED "
@@ -1259,6 +1382,11 @@ def main():
         passing=passing,
         factors_voting=factors_voting if comp is not None else [],
         composite_method=(
+            f"{heldout['chosen_recipe']}: reach-weighted L2 logistic regression on binary "
+            "evidence layers (near/not-near each passing signal), environmental-analogue "
+            "weighting of training cells (WorldCover land-cover similarity to the study area), "
+            "l2 and temper chosen by inner CV on the training region; see heldout_source"
+            if heldout else
             "Factor-grouped equal vote: passing signals are averaged within "
             "their factor (settlement_fabric / deforestation / hydro / "
             "geology / historic), then factors vote equally. Grouping "

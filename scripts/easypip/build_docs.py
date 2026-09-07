@@ -1459,7 +1459,8 @@ def part6_references(F, Z, D, B, rows, tot, today):
          "Sudan Survey 1:250,000, 1930s, traced and georeferenced. "
          "Machine-read labels - verify names against the scans."),
         ("Mining prediction",
-         f"A model with a measured skill: the top 5% of ground holds "
+         f"A model with a measured skill ({g.get('skill_basis') or 'basis unmeasured'}): "
+         f"the top 5% of ground holds "
          f"{g['skill_top05']['lift_reach']}x the known workings after "
          f"correcting for where the anchor list can see "
          f"(p = {g['skill_top05']['p_reach']}). {n(g['n_candidates'])} "
@@ -1673,10 +1674,12 @@ def two_pager(F, Z, D, B, rows, tot, today):
     P(para("HOW SURE WE ARE. Strong on where people are NOT, on when this "
            "ground burns, and on what the law now allows. Weak - and saying "
            "so - on three: satellite population undercounts dispersed and "
-           f"seasonal living; the gold picture is a ranking with modest "
+           f"seasonal living; the gold picture is a ranking with a "
            f"measured skill ({gold['skill_top05']['lift_reach']}x the known "
            f"workings in the top 5% of ground, p = "
-           f"{gold['skill_top05']['p_reach']}) over a reported-site list that "
+           f"{gold['skill_top05']['p_reach']}, "
+           f"{'scored out of sample' if (gold.get('skill_basis') or '').startswith('held-out') else 'scored in sample'}) "
+           "over a reported-site list that "
            "barely covers this country; and no aerial wildlife survey has "
            "been flown here since 2007. One field season and one survey close "
            "all three."))

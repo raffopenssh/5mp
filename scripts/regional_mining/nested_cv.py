@@ -313,6 +313,14 @@ def main():
             v["top05_p_reach"] = round(float(np.mean(sims >= v["top05"])), 4)
             sims10 = np.nanmean(rk[RNG.choice(len(cells), size=(H.PERMS, len(xcid)), p=w)] < 0.10, axis=1)
             v["top10_p_reach"] = round(float(np.mean(sims10 >= v["top10"])), 4)
+            # lift = capture / baseline. Uniform baseline is the cut itself (top-5 % of cells = 0.05);
+            # the reach baseline is the reach-weighted share of cells in the cut (what a list that
+            # only sees reachable ground would capture by construction). The plan quotes lift_reach.
+            for fr, key in ((0.05, "top05"), (0.10, "top10"), (0.20, "top20")):
+                base_w = float(np.nansum(w[ok] * (rk[ok] < fr)) / w[ok].sum())
+                v[f"{key}_baseline_reach"] = round(base_w, 4)
+                v[f"{key}_lift"] = round(v[key] / fr, 2)
+                v[f"{key}_lift_reach"] = round(v[key] / base_w, 2) if base_w > 0 else None
             full = np.full(ncell, np.nan); full[cells] = rk; rr = full[xcid]; rr = rr[np.isfinite(rr)]
             bs = rr[RNG.integers(0, len(rr), size=(2000, len(rr)))]
             v["top05_ci90"] = [round(float(np.quantile((bs < .05).mean(1), q)), 3) for q in (.05, .95)]
@@ -343,7 +351,13 @@ def main():
                n_train_clusters=int(train_c.sum()), n_xsa_clusters=int(c_in_aoi.sum()), block_deg=BLOCK, folds=per_fold,
                cv_summary=summary, chosen_recipe=chosen, final_signals=passing,
                final_signal_stats={k: {x: v.get(x) for x in ("n", "capture", "lift", "lift_reach", "p_reach", "factor")} for k, v in res.items()},
-               fits=comps.get("_fit"), xsa=final, robustness_chosen=robust, xsa_claim=dict(recipe=chosen, **final[chosen]))
+               fits=comps.get("_fit"), xsa=final, robustness_chosen=robust, xsa_claim=dict(recipe=chosen, **final[chosen]),
+               truth=dict(sources="data/geology_truth/mining_anchors.geojson (OSM, Crisis Tracker, UCDP GED, USGS) + "
+                                  "data/eval/acled_legacy/mine_sites.json (ACLED v8 1997-2017, our labels)",
+                          n_sites_region=int(len(tk)), n_sites_xsa=int(sum(len(cl[i]["members"]) for i in np.nonzero(c_in_aoi)[0])),
+                          cluster_link_km=10.0, moat_km=H.MOAT_KM,
+                          n_clusters_region=len(cl), n_clusters_train=int(train_c.sum()), n_clusters_xsa=int(c_in_aoi.sum())),
+               scores_file=str(OUT.with_suffix(".xsa_scores.npz").relative_to(ROOT)))
     OUT.write_text(json.dumps(out, indent=1, default=float))
     H.log("wrote", OUT)
 

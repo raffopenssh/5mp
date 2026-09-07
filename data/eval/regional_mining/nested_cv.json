@@ -1146,6 +1146,15 @@
    "top20": 0.457,
    "top05_p_reach": 0.7253,
    "top10_p_reach": 0.6317,
+   "top05_baseline_reach": 0.1293,
+   "top05_lift": 1.74,
+   "top05_lift_reach": 0.67,
+   "top10_baseline_reach": 0.2278,
+   "top10_lift": 2.17,
+   "top10_lift_reach": 0.95,
+   "top20_baseline_reach": 0.3699,
+   "top20_lift": 2.29,
+   "top20_lift_reach": 1.24,
    "top05_ci90": [
     0.022,
     0.152
@@ -1161,6 +1170,15 @@
    "top20": 0.478,
    "top05_p_reach": 0.431,
    "top10_p_reach": 0.196,
+   "top05_baseline_reach": 0.1138,
+   "top05_lift": 2.6,
+   "top05_lift_reach": 1.14,
+   "top10_baseline_reach": 0.2198,
+   "top10_lift": 2.61,
+   "top10_lift_reach": 1.19,
+   "top20_baseline_reach": 0.3544,
+   "top20_lift": 2.39,
+   "top20_lift_reach": 1.35,
    "top05_ci90": [
     0.065,
     0.217
@@ -1176,6 +1194,15 @@
    "top20": 0.435,
    "top05_p_reach": 0.94,
    "top10_p_reach": 0.6023,
+   "top05_baseline_reach": 0.1308,
+   "top05_lift": 1.3,
+   "top05_lift_reach": 0.5,
+   "top10_baseline_reach": 0.2283,
+   "top10_lift": 2.17,
+   "top10_lift_reach": 0.95,
+   "top20_baseline_reach": 0.3663,
+   "top20_lift": 2.17,
+   "top20_lift_reach": 1.19,
    "top05_ci90": [
     0.022,
     0.13
@@ -1191,6 +1218,15 @@
    "top20": 0.318,
    "top05_p_reach": 0.0,
    "top10_p_reach": 0.006,
+   "top05_baseline_reach": 0.0438,
+   "top05_lift": 3.18,
+   "top05_lift_reach": 3.63,
+   "top10_baseline_reach": 0.0897,
+   "top10_lift": 2.05,
+   "top10_lift_reach": 2.29,
+   "top20_baseline_reach": 0.1851,
+   "top20_lift": 1.59,
+   "top20_lift_reach": 1.72,
    "top05_ci90": [
     0.068,
     0.25
@@ -1206,6 +1242,15 @@
    "top20": 0.095,
    "top05_p_reach": 0.166,
    "top10_p_reach": 0.5873,
+   "top05_baseline_reach": 0.0357,
+   "top05_lift": 0.96,
+   "top05_lift_reach": 1.34,
+   "top10_baseline_reach": 0.0789,
+   "top10_lift": 0.48,
+   "top10_lift_reach": 0.61,
+   "top20_baseline_reach": 0.1357,
+   "top20_lift": 0.47,
+   "top20_lift_reach": 0.7,
    "top05_ci90": [
     0.0,
     0.143
@@ -1221,6 +1266,15 @@
    "top20": 0.413,
    "top05_p_reach": 0.4967,
    "top10_p_reach": 0.104,
+   "top05_baseline_reach": 0.1198,
+   "top05_lift": 2.6,
+   "top05_lift_reach": 1.09,
+   "top10_baseline_reach": 0.2143,
+   "top10_lift": 3.04,
+   "top10_lift_reach": 1.42,
+   "top20_baseline_reach": 0.3704,
+   "top20_lift": 2.06,
+   "top20_lift_reach": 1.11,
    "top05_ci90": [
     0.065,
     0.217
@@ -1236,6 +1290,15 @@
    "top20": 0.457,
    "top05_p_reach": 0.244,
    "top10_p_reach": 0.1287,
+   "top05_baseline_reach": 0.0736,
+   "top05_lift": 1.74,
+   "top05_lift_reach": 1.18,
+   "top10_baseline_reach": 0.1297,
+   "top10_lift": 1.74,
+   "top10_lift_reach": 1.34,
+   "top20_baseline_reach": 0.2226,
+   "top20_lift": 2.29,
+   "top20_lift_reach": 2.05,
    "top05_ci90": [
     0.022,
     0.152
@@ -1251,6 +1314,15 @@
    "top20": 0.522,
    "top05_p_reach": 0.0663,
    "top10_p_reach": 0.0147,
+   "top05_baseline_reach": 0.0629,
+   "top05_lift": 2.18,
+   "top05_lift_reach": 1.73,
+   "top10_baseline_reach": 0.1144,
+   "top10_lift": 2.39,
+   "top10_lift_reach": 2.09,
+   "top20_baseline_reach": 0.2059,
+   "top20_lift": 2.61,
+   "top20_lift_reach": 2.54,
    "top05_ci90": [
     0.043,
     0.196
@@ -1266,6 +1338,15 @@
    "top20": 0.565,
    "top05_p_reach": 0.0007,
    "top10_p_reach": 0.0013,
+   "top05_baseline_reach": 0.0971,
+   "top05_lift": 5.66,
+   "top05_lift_reach": 2.91,
+   "top10_baseline_reach": 0.1588,
+   "top10_lift": 3.48,
+   "top10_lift_reach": 2.19,
+   "top20_baseline_reach": 0.2453,
+   "top20_lift": 2.82,
+   "top20_lift_reach": 2.3,
    "top05_ci90": [
     0.174,
     0.391
@@ -1327,6 +1408,15 @@
   "top20": 0.565,
   "top05_p_reach": 0.0007,
   "top10_p_reach": 0.0013,
+  "top05_baseline_reach": 0.0971,
+  "top05_lift": 5.66,
+  "top05_lift_reach": 2.91,
+  "top10_baseline_reach": 0.1588,
+  "top10_lift": 3.48,
+  "top10_lift_reach": 2.19,
+  "top20_baseline_reach": 0.2453,
+  "top20_lift": 2.82,
+  "top20_lift_reach": 2.3,
   "top05_ci90": [
    0.174,
    0.391
@@ -1335,5 +1425,16 @@
    0.239,
    0.457
   ]
- }
+ },
+ "truth": {
+  "sources": "data/geology_truth/mining_anchors.geojson (OSM, Crisis Tracker, UCDP GED, USGS) + data/eval/acled_legacy/mine_sites.json (ACLED v8 1997-2017, our labels)",
+  "n_sites_region": 2692,
+  "n_sites_xsa": 95,
+  "cluster_link_km": 10.0,
+  "moat_km": 50.0,
+  "n_clusters_region": 615,
+  "n_clusters_train": 559,
+  "n_clusters_xsa": 46
+ },
+ "scores_file": "data/eval/regional_mining/nested_cv.xsa_scores.npz"
 }

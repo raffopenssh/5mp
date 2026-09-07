@@ -1,8 +1,10 @@
 {
  "status": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
- "objective": -480185.3048452667,
- "units": 2150,
- "edges": 5572,
+ "objective": -475162.95567904494,
+ "mining_model": "heldout",
+ "mining_note": "model (heldout) top-5% cells capture 28% of known workings (lift 5.66 uniform, 2.91 reach-corrected, p_reach 0.0007); held-out: L2 logistic regression on binary evidence layers, trained on 559 reported-site clusters in CAF/SSD/SDN outside a 50 km moat round the study area, recipe and settings chosen by spatial 5-fold cross-validation on that training region only, then scored ONCE on the 46 study-area clusters (scripts/regional_mining/nested_cv.py); imagery targets, not mines",
+ "units": 2130,
+ "edges": 5566,
  "weights": {
   "lam_threat": 1.0,
   "lam_people": 3.0,
@@ -15,7 +17,7 @@
   "lam_corr_people": 0.05,
   "corridor_edge_x": 2.0
  },
- "max_core_ha": 6000000.0,
+ "max_core_ha": 6000000,
  "corridor_capture": 0.35,
  "max_people_corridor": null,
  "connect": false,
@@ -220,25 +222,7 @@
   {
    "from_cls": "community",
    "to_cls": "corridor",
-   "ha": 2000,
-   "units": 1
-  },
-  {
-   "from_cls": "community",
-   "to_cls": "corridor",
    "ha": 2400,
-   "units": 1
-  },
-  {
-   "from_cls": "community",
-   "to_cls": "corridor",
-   "ha": 6800,
-   "units": 2
-  },
-  {
-   "from_cls": "community",
-   "to_cls": "corridor",
-   "ha": 2000,
    "units": 1
   },
   {
@@ -256,7 +240,7 @@
   {
    "from_cls": "community",
    "to_cls": "corridor",
-   "ha": 3200,
+   "ha": 6400,
    "units": 1
   },
   {
@@ -267,14 +251,14 @@
   },
   {
    "from_cls": "community",
-   "to_cls": "corridor",
-   "ha": 2000,
+   "to_cls": "core",
+   "ha": 7600,
    "units": 1
   },
   {
-   "from_cls": "community",
-   "to_cls": "core",
-   "ha": 7600,
+   "from_cls": "corridor",
+   "to_cls": "community",
+   "ha": 4400,
    "units": 1
   },
   {
@@ -282,6 +266,18 @@
    "to_cls": "wilderness",
    "ha": 13600,
    "units": 1
+  },
+  {
+   "from_cls": "corridor",
+   "to_cls": "community",
+   "ha": 2400,
+   "units": 1
+  },
+  {
+   "from_cls": "core",
+   "to_cls": "community",
+   "ha": 6000,
+   "units": 2
   },
   {
    "from_cls": "core",
@@ -314,9 +310,9 @@
    "units": 1
   },
   {
-   "from_cls": "community",
+   "from_cls": "core",
    "to_cls": "wilderness",
-   "ha": 2800,
+   "ha": 9200,
    "units": 1
   },
   {
@@ -334,38 +330,20 @@
   {
    "from_cls": "core",
    "to_cls": "wilderness",
-   "ha": 2400,
-   "units": 1
-  },
-  {
-   "from_cls": "core",
-   "to_cls": "community",
-   "ha": 2000,
-   "units": 1
-  },
-  {
-   "from_cls": "wilderness",
-   "to_cls": "community",
-   "ha": 2400,
-   "units": 1
-  },
-  {
-   "from_cls": "core",
-   "to_cls": "wilderness",
-   "ha": 5200,
-   "units": 1
-  },
-  {
-   "from_cls": "core",
-   "to_cls": "wilderness",
-   "ha": 5200,
-   "units": 1
-  },
-  {
-   "from_cls": "core",
-   "to_cls": "wilderness",
-   "ha": 9600,
+   "ha": 26000,
    "units": 2
+  },
+  {
+   "from_cls": "core",
+   "to_cls": "wilderness",
+   "ha": 8000,
+   "units": 1
+  },
+  {
+   "from_cls": "core",
+   "to_cls": "wilderness",
+   "ha": 11200,
+   "units": 1
   },
   {
    "from_cls": "community",
@@ -436,8 +414,8 @@
   {
    "from_cls": "core",
    "to_cls": "wilderness",
-   "ha": 15200,
-   "units": 2
+   "ha": 2400,
+   "units": 1
   },
   {
    "from_cls": "core",
@@ -454,7 +432,13 @@
   {
    "from_cls": "core",
    "to_cls": "wilderness",
-   "ha": 13200,
+   "ha": 4400,
+   "units": 1
+  },
+  {
+   "from_cls": "core",
+   "to_cls": "wilderness",
+   "ha": 2000,
    "units": 1
   },
   {
@@ -490,18 +474,6 @@
   {
    "from_cls": "core",
    "to_cls": "wilderness",
-   "ha": 14000,
-   "units": 1
-  },
-  {
-   "from_cls": "core",
-   "to_cls": "wilderness",
-   "ha": 2800,
-   "units": 1
-  },
-  {
-   "from_cls": "core",
-   "to_cls": "wilderness",
    "ha": 2000,
    "units": 1
   },
@@ -532,18 +504,6 @@
   {
    "from_cls": "core",
    "to_cls": "wilderness",
-   "ha": 2400,
-   "units": 1
-  },
-  {
-   "from_cls": "wilderness",
-   "to_cls": "core",
-   "ha": 2400,
-   "units": 1
-  },
-  {
-   "from_cls": "core",
-   "to_cls": "wilderness",
    "ha": 2800,
    "units": 1
   },
@@ -558,12 +518,6 @@
    "to_cls": "wilderness",
    "ha": 2400,
    "units": 1
-  },
-  {
-   "from_cls": "core",
-   "to_cls": "wilderness",
-   "ha": 4400,
-   "units": 2
   },
   {
    "from_cls": "core",
@@ -598,13 +552,19 @@
   {
    "from_cls": "core",
    "to_cls": "wilderness",
-   "ha": 2800,
+   "ha": 2000,
+   "units": 1
+  },
+  {
+   "from_cls": "corridor",
+   "to_cls": "community",
+   "ha": 2400,
    "units": 1
   },
   {
    "from_cls": "core",
    "to_cls": "wilderness",
-   "ha": 2000,
+   "ha": 3600,
    "units": 1
   },
   {
@@ -674,6 +634,12 @@
    "units": 1
   },
   {
+   "from_cls": "corridor",
+   "to_cls": "community",
+   "ha": 3600,
+   "units": 1
+  },
+  {
    "from_cls": "wilderness",
    "to_cls": "core",
    "ha": 23600,
@@ -686,6 +652,12 @@
    "units": 1
   },
   {
+   "from_cls": "corridor",
+   "to_cls": "community",
+   "ha": 8000,
+   "units": 1
+  },
+  {
    "from_cls": "core",
    "to_cls": "wilderness",
    "ha": 10400,
@@ -695,6 +667,18 @@
    "from_cls": "core",
    "to_cls": "corridor",
    "ha": 2000,
+   "units": 1
+  },
+  {
+   "from_cls": "corridor",
+   "to_cls": "community",
+   "ha": 2800,
+   "units": 1
+  },
+  {
+   "from_cls": "corridor",
+   "to_cls": "community",
+   "ha": 2800,
    "units": 1
   },
   {
@@ -712,7 +696,7 @@
   {
    "from_cls": "corridor",
    "to_cls": "community",
-   "ha": 3600,
+   "ha": 4000,
    "units": 1
   },
   {
@@ -789,6 +773,12 @@
   },
   {
    "from_cls": "core",
+   "to_cls": "community",
+   "ha": 8400,
+   "units": 1
+  },
+  {
+   "from_cls": "core",
    "to_cls": "wilderness",
    "ha": 2400,
    "units": 1
@@ -798,49 +788,43 @@
    "to_cls": "community",
    "ha": 7600,
    "units": 1
-  },
-  {
-   "from_cls": "core",
-   "to_cls": "wilderness",
-   "ha": 2000,
-   "units": 1
   }
  ],
- "designated_fixed_core_ha": 5236400,
- "designated_units_failing_core_rule": 70,
+ "designated_fixed_core_ha": 5020800,
+ "designated_units_failing_core_rule": 67,
  "imagery_skill": 0.124,
  "imagery_weight_effective": 0.124,
- "solve_s": 5.3,
- "boundary_km": 12168,
- "boundary_legibility": 0.52,
+ "solve_s": 5.5,
+ "boundary_km": 11910,
+ "boundary_legibility": 0.54,
  "by_class": {
   "core": {
-   "km2": 110332,
-   "people": 902,
-   "zones": 88
+   "km2": 108148,
+   "people": 911,
+   "zones": 84
   },
   "wilderness": {
-   "km2": 132640,
-   "people": 957,
-   "zones": 37
+   "km2": 128620,
+   "people": 932,
+   "zones": 36
   },
   "community": {
-   "km2": 175632,
-   "people": 2596749,
-   "zones": 31
+   "km2": 183608,
+   "people": 2615745,
+   "zones": 32
   },
   "corridor": {
-   "km2": 62992,
-   "people": 34049,
-   "zones": 20
+   "km2": 61220,
+   "people": 15069,
+   "zones": 21
   }
  },
  "ledger": {
-  "people_in_core": 902,
-  "people_in_wilderness": 957,
-  "people_in_corridor": 34049,
-  "claim_cells_in_core": 1380,
-  "boundary_open_bush_km": 5781,
+  "people_in_core": 911,
+  "people_in_wilderness": 932,
+  "people_in_corridor": 15069,
+  "claim_cells_in_core": 1326,
+  "boundary_open_bush_km": 5521,
   "bundles": [
    {
     "bundle": 1,
@@ -853,10 +837,10 @@
     "axis_km_pa_deep": 0,
     "ud_in_corridor": 0.1,
     "ud_in_band": 0.07,
-    "herd_months_to_redirect_out_of_core": 111,
-    "ud_in_core": 0.23,
-    "ud_in_community": 0.23,
-    "herd_months_outside_corridor": 442,
+    "herd_months_to_redirect_out_of_core": 128,
+    "ud_in_core": 0.26,
+    "ud_in_community": 0.24,
+    "herd_months_outside_corridor": 443,
     "months": {
      "Oct": 2,
      "Nov": 45,
@@ -875,12 +859,12 @@
     "axis_km": 125,
     "axis_km_pa_edge": 46,
     "axis_km_pa_deep": 0,
-    "ud_in_corridor": 0.14,
+    "ud_in_corridor": 0.13,
     "ud_in_band": 0.09,
-    "herd_months_to_redirect_out_of_core": 231,
-    "ud_in_core": 0.31,
-    "ud_in_community": 0.29,
-    "herd_months_outside_corridor": 638,
+    "herd_months_to_redirect_out_of_core": 234,
+    "ud_in_core": 0.32,
+    "ud_in_community": 0.3,
+    "herd_months_outside_corridor": 640,
     "months": {
      "Oct": 62,
      "Nov": 153,
@@ -901,12 +885,12 @@
     "axis_km": 228,
     "axis_km_pa_edge": 36,
     "axis_km_pa_deep": 0,
-    "ud_in_corridor": 0.18,
-    "ud_in_band": 0.07,
-    "herd_months_to_redirect_out_of_core": 81,
-    "ud_in_core": 0.15,
-    "ud_in_community": 0.61,
-    "herd_months_outside_corridor": 454,
+    "ud_in_corridor": 0.13,
+    "ud_in_band": 0.04,
+    "herd_months_to_redirect_out_of_core": 66,
+    "ud_in_core": 0.12,
+    "ud_in_community": 0.68,
+    "herd_months_outside_corridor": 482,
     "months": {
      "Oct": 3,
      "Nov": 79,
@@ -929,9 +913,9 @@
     "axis_km_pa_deep": 0,
     "ud_in_corridor": 0.27,
     "ud_in_band": 0.13,
-    "herd_months_to_redirect_out_of_core": 36,
-    "ud_in_core": 0.05,
-    "ud_in_community": 0.49,
+    "herd_months_to_redirect_out_of_core": 21,
+    "ud_in_core": 0.03,
+    "ud_in_community": 0.5,
     "herd_months_outside_corridor": 557,
     "months": {
      "Sep": 2,
@@ -954,12 +938,12 @@
     "axis_km": 228,
     "axis_km_pa_edge": 0,
     "axis_km_pa_deep": 0,
-    "ud_in_corridor": 0.22,
-    "ud_in_band": 0.16,
-    "herd_months_to_redirect_out_of_core": 25,
-    "ud_in_core": 0.05,
-    "ud_in_community": 0.58,
-    "herd_months_outside_corridor": 365,
+    "ud_in_corridor": 0.25,
+    "ud_in_band": 0.19,
+    "herd_months_to_redirect_out_of_core": 26,
+    "ud_in_core": 0.06,
+    "ud_in_community": 0.56,
+    "herd_months_outside_corridor": 350,
     "months": {
      "Nov": 52,
      "Dec": 95,
@@ -977,12 +961,12 @@
     "axis_km": 247,
     "axis_km_pa_edge": 29,
     "axis_km_pa_deep": 0,
-    "ud_in_corridor": 0.18,
-    "ud_in_band": 0.1,
-    "herd_months_to_redirect_out_of_core": 46,
-    "ud_in_core": 0.12,
-    "ud_in_community": 0.62,
-    "herd_months_outside_corridor": 306,
+    "ud_in_corridor": 0.13,
+    "ud_in_band": 0.04,
+    "herd_months_to_redirect_out_of_core": 34,
+    "ud_in_core": 0.09,
+    "ud_in_community": 0.7,
+    "herd_months_outside_corridor": 325,
     "months": {
      "Oct": 12,
      "Nov": 65,
@@ -1002,12 +986,12 @@
     "axis_km": 86,
     "axis_km_pa_edge": 0,
     "axis_km_pa_deep": 0,
-    "ud_in_corridor": 0.18,
-    "ud_in_band": 0.07,
-    "herd_months_to_redirect_out_of_core": 43,
+    "ud_in_corridor": 0.16,
+    "ud_in_band": 0.09,
+    "herd_months_to_redirect_out_of_core": 45,
     "ud_in_core": 0.06,
-    "ud_in_community": 0.7,
-    "herd_months_outside_corridor": 622,
+    "ud_in_community": 0.73,
+    "herd_months_outside_corridor": 633,
     "months": {
      "Oct": 3,
      "Nov": 96,
@@ -1027,12 +1011,12 @@
     "axis_km": 437,
     "axis_km_pa_edge": 5,
     "axis_km_pa_deep": 0,
-    "ud_in_corridor": 0.27,
-    "ud_in_band": 0.16,
-    "herd_months_to_redirect_out_of_core": 29,
+    "ud_in_corridor": 0.26,
+    "ud_in_band": 0.15,
+    "herd_months_to_redirect_out_of_core": 28,
     "ud_in_core": 0.11,
-    "ud_in_community": 0.27,
-    "herd_months_outside_corridor": 195,
+    "ud_in_community": 0.29,
+    "herd_months_outside_corridor": 196,
     "months": {
      "Oct": 8,
      "Nov": 48,
@@ -1052,12 +1036,12 @@
     "axis_km": 137,
     "axis_km_pa_edge": 5,
     "axis_km_pa_deep": 0,
-    "ud_in_corridor": 0.23,
-    "ud_in_band": 0.08,
-    "herd_months_to_redirect_out_of_core": 36,
+    "ud_in_corridor": 0.22,
+    "ud_in_band": 0.06,
+    "herd_months_to_redirect_out_of_core": 38,
     "ud_in_core": 0.08,
-    "ud_in_community": 0.39,
-    "herd_months_outside_corridor": 343,
+    "ud_in_community": 0.41,
+    "herd_months_outside_corridor": 349,
     "months": {
      "Oct": 1,
      "Nov": 51,
@@ -1078,10 +1062,10 @@
     "axis_km_pa_deep": 0,
     "ud_in_corridor": 0.24,
     "ud_in_band": 0.11,
-    "herd_months_to_redirect_out_of_core": 39,
-    "ud_in_core": 0.08,
-    "ud_in_community": 0.42,
-    "herd_months_outside_corridor": 349,
+    "herd_months_to_redirect_out_of_core": 40,
+    "ud_in_core": 0.09,
+    "ud_in_community": 0.43,
+    "herd_months_outside_corridor": 350,
     "months": {
      "Oct": 1,
      "Nov": 43,
@@ -1100,12 +1084,12 @@
     "axis_km": 115,
     "axis_km_pa_edge": 2,
     "axis_km_pa_deep": 0,
-    "ud_in_corridor": 0.28,
+    "ud_in_corridor": 0.27,
     "ud_in_band": 0.07,
-    "herd_months_to_redirect_out_of_core": 71,
+    "herd_months_to_redirect_out_of_core": 69,
     "ud_in_core": 0.15,
-    "ud_in_community": 0.19,
-    "herd_months_outside_corridor": 339,
+    "ud_in_community": 0.21,
+    "herd_months_outside_corridor": 343,
     "months": {
      "Oct": 22,
      "Nov": 73,
@@ -1126,8 +1110,8 @@
     "axis_km_pa_deep": 0,
     "ud_in_corridor": 0.17,
     "ud_in_band": 0.15,
-    "herd_months_to_redirect_out_of_core": 169,
-    "ud_in_core": 0.38,
+    "herd_months_to_redirect_out_of_core": 172,
+    "ud_in_core": 0.39,
     "ud_in_community": 0.25,
     "herd_months_outside_corridor": 367,
     "months": {
@@ -1151,9 +1135,9 @@
     "axis_km_pa_deep": 0,
     "ud_in_corridor": 0.17,
     "ud_in_band": 0.06,
-    "herd_months_to_redirect_out_of_core": 120,
+    "herd_months_to_redirect_out_of_core": 116,
     "ud_in_core": 0.18,
-    "ud_in_community": 0.35,
+    "ud_in_community": 0.38,
     "herd_months_outside_corridor": 537,
     "months": {
      "Oct": 59,
@@ -1175,12 +1159,12 @@
     "axis_km": 230,
     "axis_km_pa_edge": 0,
     "axis_km_pa_deep": 0,
-    "ud_in_corridor": 0.21,
-    "ud_in_band": 0.16,
-    "herd_months_to_redirect_out_of_core": 30,
-    "ud_in_core": 0.06,
-    "ud_in_community": 0.61,
-    "herd_months_outside_corridor": 425,
+    "ud_in_corridor": 0.23,
+    "ud_in_band": 0.18,
+    "herd_months_to_redirect_out_of_core": 28,
+    "ud_in_core": 0.05,
+    "ud_in_community": 0.6,
+    "herd_months_outside_corridor": 415,
     "months": {
      "Nov": 62,
      "Dec": 115,
@@ -1198,12 +1182,12 @@
     "axis_km": 163,
     "axis_km_pa_edge": 12,
     "axis_km_pa_deep": 0,
-    "ud_in_corridor": 0.28,
-    "ud_in_band": 0.13,
-    "herd_months_to_redirect_out_of_core": 32,
-    "ud_in_core": 0.05,
+    "ud_in_corridor": 0.29,
+    "ud_in_band": 0.14,
+    "herd_months_to_redirect_out_of_core": 24,
+    "ud_in_core": 0.04,
     "ud_in_community": 0.46,
-    "herd_months_outside_corridor": 459,
+    "herd_months_outside_corridor": 450,
     "months": {
      "Oct": 47,
      "Nov": 106,
@@ -1217,277 +1201,245 @@
     }
    }
   ],
-  "herd_months_outside_corridor": 6398,
-  "herd_months_to_redirect_out_of_core": 1099
+  "herd_months_outside_corridor": 6437,
+  "herd_months_to_redirect_out_of_core": 1069
  },
  "zones": [
   {
    "zone": 2,
    "cls": "community",
    "units": [
+    2,
     5,
-    8,
-    12,
+    15,
     26,
-    29,
     32,
-    34,
-    38,
+    37,
     39,
-    55,
-    57,
+    50,
     62,
     68,
     70,
+    73,
     74,
-    76,
-    78,
-    79,
-    81,
     92,
-    95,
-    97,
-    98,
+    101,
     104,
-    106,
+    105,
     107,
     110,
+    119,
+    121,
+    122,
     124,
+    128,
     129,
     135,
     138,
     140,
     142,
-    143,
     144,
-    145,
+    146,
+    147,
     149,
-    150,
     151,
     153,
-    158,
-    162,
-    164,
-    171,
+    161,
+    166,
     172,
     173,
     181,
-    182,
     184,
     185,
+    186,
     187,
+    198,
     201,
-    202,
-    204,
     205,
+    206,
     207,
     209,
     211,
+    216,
+    218,
     221,
     225,
     226,
     227,
     231,
-    235,
-    238,
+    233,
+    240,
     242,
     246,
-    247,
     249,
     253,
     254,
-    255,
-    261,
+    258,
     263,
+    266,
     274,
     277,
-    278,
     286,
-    293,
     295,
     296,
+    297,
     299,
     302,
     314,
     317,
-    319,
     321,
-    325,
     331,
     333,
     336,
-    337,
+    340,
     341,
     343,
     350,
-    352,
     353,
     355,
     357,
     360,
-    361,
     363,
-    364,
     365,
-    368,
     369,
-    374,
-    380,
+    375,
     383,
-    384,
     386,
     390,
     395,
-    398,
     399,
     400,
+    403,
     406,
     409,
-    410,
-    412,
-    414,
+    415,
     416,
+    418,
+    421,
     422,
-    432,
     434,
     435,
-    437,
-    438,
     441,
-    443,
     450,
     451,
-    472,
     482,
+    483,
+    487,
     491,
+    496,
     499,
     500,
-    502,
+    503,
     509,
+    515,
     518,
-    522,
+    528,
     535,
-    537,
+    542,
     545,
-    554,
-    560,
+    547,
+    556,
     564,
-    566,
     567,
-    568,
+    571,
     573,
+    574,
     576,
     577,
     578,
     583,
     586,
-    588,
-    589,
     593,
-    596,
-    599,
-    600,
-    605,
     609,
-    610,
     611,
     618,
-    628,
     638,
-    639,
     648,
-    649,
     651,
-    664,
     671,
-    673,
     679,
-    687,
+    685,
     690,
     694,
     698,
-    699,
     700,
+    703,
     710,
     712,
-    714,
     716,
+    718,
     722,
+    724,
     729,
     737,
     745,
     747,
-    760,
+    755,
     763,
-    772,
-    774,
+    768,
     790,
-    794,
     797,
     806,
     808,
-    817,
+    814,
+    818,
     819,
     824,
     825,
-    826,
-    837,
     841,
-    855,
-    856,
     866,
     872,
-    874,
-    880,
-    882,
-    891,
-    894,
-    920,
+    885,
+    906,
     922,
     924,
-    926,
-    927,
-    928,
+    925,
     1287,
     1337,
     1338,
     1381,
     1383,
     1428,
+    1429,
     1430,
-    1525,
+    1477,
     1526,
     1527,
-    1528,
     1529,
     1614,
     1616,
+    1656,
+    1658,
+    1659,
     1660,
-    1661,
     1662,
-    1704,
-    1747,
+    1706,
     1749,
+    1752,
     1788,
     1790,
+    1791,
     1836,
     1837,
-    1838,
     1844,
     1845,
+    1880,
     1882,
     1883,
+    1884,
     1885,
     1887,
+    1931,
+    1933,
+    1974,
     1988,
     1989,
-    2034,
     2035,
-    2083,
-    2145,
+    2037,
     2197,
-    2252,
+    2198,
     2253,
+    2301,
     2302,
     2303,
     2304,
@@ -1500,15 +1452,18 @@
     2419,
     2420,
     2421,
+    2473,
     2474,
     2475,
     2476,
     2477,
-    2536,
     2537,
     2538,
     2540,
     2542,
+    2599,
+    2600,
+    2601,
     2602,
     2605,
     2664,
@@ -1523,29 +1478,39 @@
     2799,
     2867,
     2938,
-    2940,
+    2939,
     3003,
+    3007,
     3010,
-    3013,
+    3012,
     3082,
     3086,
     3087,
     3088,
     3089,
+    3158,
+    3161,
     3164,
+    3235,
+    3240,
     3242,
+    3314,
     3317,
+    3385,
     3389,
     3393,
     3394,
-    3468,
+    3546,
+    3547,
     3550,
+    3623,
     3626,
     3627,
     3628,
     3702,
     3781,
     3847,
+    3854,
     3859,
     3860,
     3937,
@@ -1554,105 +1519,82 @@
     4007,
     4008,
     4012,
+    4015,
     4019,
     4021,
     4022,
     4024,
-    4104,
+    4100,
+    4101,
     4107,
+    4184,
+    4185,
     4186,
     4188,
     4251,
-    4267,
     4268,
-    4312,
+    4269,
     4327,
     4328,
     4329,
+    4341,
     4342,
     4343,
     4345,
     4402,
     4403,
-    4412,
     4467,
     4481,
+    4482,
     4483,
-    4484,
-    4547,
+    4549,
     4550,
     4552,
-    4590,
-    4592,
-    4611,
-    4612,
     4613,
-    4616,
-    4651,
-    4653,
     4679,
     4681,
+    4682,
     4683,
-    4716,
-    4719,
-    4732,
-    4733,
-    4767,
-    4769,
-    4772,
-    4780,
-    4785,
+    4738,
     4791,
-    4818,
-    4820,
-    4824,
-    4831,
-    4833,
-    4859,
-    4861,
-    4862,
-    4864,
-    4866,
-    4867,
-    4869,
-    4872,
-    4879,
-    4900,
-    4901,
-    4906,
-    4908,
-    4910,
-    4919,
-    4925,
-    4932,
-    4960,
-    4963,
-    4970,
-    4979
+    4794
    ],
-   "area_ha": 9864400,
-   "people": 1303080,
-   "threat_p10": 0.045,
-   "claim_share": 0.334,
-   "ud_share": 0.328,
-   "empt": 0.122,
+   "area_ha": 8152400,
+   "people": 957763,
+   "threat_p10": 0.044,
+   "claim_share": 0.382,
+   "ud_share": 0.239,
+   "empt": 0.145,
    "habitat_img": 0.34
   },
   {
-   "zone": 16,
+   "zone": 12,
    "cls": "core",
    "units": [
     676,
+    2215,
+    2216,
+    2219,
+    2272,
+    2274,
+    2320,
+    2321,
     2323,
+    2380,
     2381,
     2382,
+    2384,
     2437,
     2439,
     2440,
     2442,
+    2491,
     2497,
+    2554,
+    2555,
     2559,
     2561,
+    2618,
     2620,
     2621,
     2622,
@@ -1857,6 +1799,7 @@
     4124,
     4138,
     4140,
+    4146,
     4195,
     4196,
     4199,
@@ -1865,6 +1808,7 @@
     4203,
     4218,
     4224,
+    4225,
     4274,
     4275,
     4276,
@@ -1883,16 +1827,208 @@
     4489,
     4558
    ],
-   "area_ha": 5457200,
-   "people": 170,
+   "area_ha": 5766400,
+   "people": 177,
    "threat_p10": 0.002,
-   "claim_share": 0.026,
-   "ud_share": 0.038,
-   "empt": 0.994,
+   "claim_share": 0.027,
+   "ud_share": 0.042,
+   "empt": 0.993,
    "habitat_img": 0.27
   },
   {
-   "zone": 26,
+   "zone": 1,
+   "cls": "community",
+   "units": [
+    1,
+    19,
+    40,
+    56,
+    58,
+    63,
+    72,
+    94,
+    111,
+    112,
+    127,
+    133,
+    200,
+    203,
+    213,
+    223,
+    232,
+    241,
+    279,
+    285,
+    288,
+    306,
+    320,
+    351,
+    373,
+    387,
+    392,
+    396,
+    442,
+    465,
+    486,
+    508,
+    516,
+    517,
+    526,
+    538,
+    546,
+    579,
+    635,
+    647,
+    662,
+    675,
+    707,
+    732,
+    738,
+    742,
+    744,
+    756,
+    764,
+    769,
+    786,
+    791,
+    793,
+    796,
+    804,
+    827,
+    848,
+    865,
+    873,
+    900,
+    933,
+    934,
+    936,
+    937,
+    938,
+    939,
+    940,
+    941,
+    942,
+    943,
+    946,
+    947,
+    949,
+    950,
+    954,
+    957,
+    961,
+    962,
+    963,
+    965,
+    966,
+    968,
+    975,
+    976,
+    979,
+    980,
+    982,
+    986,
+    987,
+    990,
+    991,
+    992,
+    993,
+    994,
+    996,
+    1001,
+    1002,
+    1003,
+    1006,
+    1008,
+    1009,
+    1011,
+    1015,
+    1016,
+    1017,
+    1019,
+    1020,
+    1021,
+    1023,
+    1024,
+    1029,
+    1034,
+    1035,
+    1036,
+    1038,
+    1039,
+    1040,
+    1044,
+    1047,
+    1048,
+    1049,
+    1050,
+    1051,
+    1052,
+    1053,
+    1054,
+    1058,
+    1062,
+    1063,
+    1070,
+    1072,
+    1079,
+    1080,
+    1081,
+    1085,
+    1087,
+    1088,
+    1091,
+    1101,
+    1103,
+    1104,
+    1111,
+    1112,
+    1120,
+    1122,
+    1125,
+    1126,
+    1136,
+    1138,
+    1140,
+    1141,
+    1143,
+    1151,
+    1160,
+    1165,
+    1167,
+    1169,
+    1172,
+    1174,
+    1175,
+    1179,
+    1181,
+    1184,
+    1185,
+    1218,
+    1224,
+    1225,
+    1227,
+    1228,
+    1264,
+    1265,
+    1266,
+    1267,
+    1269,
+    1404,
+    1452,
+    1500,
+    1501,
+    1636
+   ],
+   "area_ha": 3716000,
+   "people": 1106118,
+   "threat_p10": 0.048,
+   "claim_share": 0.233,
+   "ud_share": 0.046,
+   "empt": 0.269,
+   "habitat_img": 0.33
+  },
+  {
+   "zone": 22,
    "cls": "wilderness",
    "units": [
     902,
@@ -1918,11 +2054,11 @@
     1717,
     1723,
     1725,
+    1726,
     1767,
     1769,
     1770,
     1771,
-    1772,
     1807,
     1808,
     1809,
@@ -1982,7 +2118,6 @@
     2158,
     2161,
     2164,
-    2170,
     2172,
     2173,
     2201,
@@ -1991,13 +2126,9 @@
     2210,
     2212,
     2214,
-    2215,
-    2216,
     2218,
-    2219,
     2221,
     2222,
-    2223,
     2227,
     2228,
     2255,
@@ -2007,10 +2138,9 @@
     2265,
     2266,
     2268,
-    2272,
-    2274,
     2275,
     2277,
+    2278,
     2279,
     2281,
     2282,
@@ -2020,8 +2150,6 @@
     2307,
     2317,
     2319,
-    2320,
-    2321,
     2330,
     2331,
     2332,
@@ -2033,8 +2161,6 @@
     2365,
     2366,
     2367,
-    2380,
-    2384,
     2389,
     2390,
     2424,
@@ -2044,7 +2170,6 @@
     2450,
     2454,
     2480,
-    2491,
     2494,
     2499,
     2501,
@@ -2054,15 +2179,12 @@
     2508,
     2511,
     2545,
-    2554,
-    2555,
     2557,
     2565,
     2568,
     2569,
     2575,
     2607,
-    2618,
     2628,
     2631,
     2633,
@@ -2074,208 +2196,16 @@
     2756,
     2759
    ],
-   "area_ha": 3546000,
-   "people": 97,
+   "area_ha": 3330800,
+   "people": 90,
    "threat_p10": 0.004,
-   "claim_share": 0.03,
-   "ud_share": 0.06,
+   "claim_share": 0.035,
+   "ud_share": 0.058,
    "empt": 0.986,
    "habitat_img": 0.23
   },
   {
-   "zone": 1,
-   "cls": "community",
-   "units": [
-    1,
-    17,
-    19,
-    40,
-    56,
-    58,
-    63,
-    66,
-    72,
-    94,
-    111,
-    112,
-    123,
-    127,
-    133,
-    203,
-    208,
-    213,
-    223,
-    229,
-    241,
-    250,
-    279,
-    285,
-    288,
-    306,
-    320,
-    342,
-    351,
-    373,
-    381,
-    387,
-    392,
-    408,
-    442,
-    465,
-    479,
-    486,
-    508,
-    516,
-    517,
-    526,
-    538,
-    561,
-    579,
-    647,
-    662,
-    675,
-    677,
-    707,
-    728,
-    732,
-    738,
-    742,
-    743,
-    744,
-    756,
-    769,
-    775,
-    786,
-    791,
-    796,
-    804,
-    827,
-    848,
-    865,
-    873,
-    933,
-    934,
-    936,
-    937,
-    938,
-    939,
-    940,
-    941,
-    942,
-    943,
-    946,
-    947,
-    949,
-    950,
-    952,
-    954,
-    957,
-    961,
-    962,
-    963,
-    965,
-    966,
-    968,
-    970,
-    975,
-    976,
-    979,
-    980,
-    982,
-    986,
-    987,
-    990,
-    991,
-    992,
-    993,
-    994,
-    996,
-    1001,
-    1002,
-    1003,
-    1006,
-    1008,
-    1009,
-    1011,
-    1015,
-    1016,
-    1017,
-    1019,
-    1020,
-    1021,
-    1023,
-    1024,
-    1029,
-    1034,
-    1035,
-    1036,
-    1038,
-    1039,
-    1040,
-    1044,
-    1047,
-    1048,
-    1049,
-    1050,
-    1051,
-    1052,
-    1053,
-    1054,
-    1058,
-    1062,
-    1063,
-    1070,
-    1072,
-    1079,
-    1080,
-    1081,
-    1085,
-    1087,
-    1088,
-    1091,
-    1103,
-    1104,
-    1111,
-    1112,
-    1120,
-    1122,
-    1125,
-    1126,
-    1136,
-    1138,
-    1139,
-    1140,
-    1141,
-    1143,
-    1151,
-    1160,
-    1165,
-    1167,
-    1169,
-    1172,
-    1174,
-    1175,
-    1179,
-    1181,
-    1183,
-    1214,
-    1218,
-    1224,
-    1225,
-    1227,
-    1267,
-    1269
-   ],
-   "area_ha": 3424800,
-   "people": 1065487,
-   "threat_p10": 0.05,
-   "claim_share": 0.24,
-   "ud_share": 0.033,
-   "empt": 0.281,
-   "habitat_img": 0.32
-  },
-  {
-   "zone": 96,
+   "zone": 91,
    "cls": "wilderness",
    "units": [
     2645,
@@ -2327,7 +2257,6 @@
     2990,
     2993,
     2995,
-    2997,
     3000,
     3001,
     3002,
@@ -2344,6 +2273,7 @@
     3076,
     3077,
     3078,
+    3080,
     3129,
     3130,
     3131,
@@ -2356,6 +2286,8 @@
     3146,
     3147,
     3148,
+    3155,
+    3156,
     3205,
     3207,
     3208,
@@ -2368,6 +2300,7 @@
     3219,
     3220,
     3221,
+    3232,
     3280,
     3282,
     3284,
@@ -2386,6 +2319,7 @@
     3370,
     3372,
     3373,
+    3374,
     3429,
     3430,
     3431,
@@ -2414,61 +2348,71 @@
     3746,
     3748
    ],
-   "area_ha": 3094400,
-   "people": 5,
+   "area_ha": 3245600,
+   "people": 10,
    "threat_p10": 0.001,
-   "claim_share": 0.044,
-   "ud_share": 0.052,
-   "empt": 0.999,
+   "claim_share": 0.046,
+   "ud_share": 0.056,
+   "empt": 0.998,
    "habitat_img": 0.21
   },
   {
-   "zone": 15,
+   "zone": 11,
    "cls": "corridor",
    "units": [
-    563,
-    640,
-    645,
-    748,
+    597,
+    599,
+    664,
     777,
-    780,
-    844,
+    837,
     860,
     908,
-    1636,
+    1592,
     1639,
     1683,
-    1726,
     1728,
     1729,
+    1842,
+    1843,
     1867,
-    1912,
+    1890,
     1914,
-    1959,
+    1936,
+    1937,
     1960,
+    1963,
     1964,
-    2012,
+    1983,
+    1984,
+    1986,
     2013,
     2014,
+    2015,
+    2029,
+    2030,
+    2034,
     2060,
-    2062,
     2063,
     2064,
     2069,
-    2070,
+    2071,
     2072,
+    2085,
     2087,
     2121,
+    2125,
     2128,
     2143,
     2144,
     2175,
     2176,
     2178,
+    2179,
     2181,
     2194,
     2233,
     2234,
+    2235,
     2237,
     2288,
     2289,
@@ -2478,7 +2422,7 @@
     2339,
     2340,
     2341,
-    2342,
+    2343,
     2345,
     2346,
     2352,
@@ -2487,29 +2431,30 @@
     2356,
     2398,
     2400,
+    2403,
     2404,
     2406,
     2407,
-    2408,
     2409,
     2410,
     2412,
+    2413,
     2414,
     2415,
+    2416,
     2455,
     2458,
+    2461,
     2464,
-    2467,
     2468,
-    2470,
-    2471,
     2514,
     2519,
+    2521,
+    2524,
     2525,
     2527,
     2529,
     2533,
-    2534,
     2535,
     2576,
     2577,
@@ -2529,69 +2474,176 @@
     2721,
     2723,
     2725,
-    2726,
-    2727,
     2767,
-    2790
+    2790,
+    2791
    ],
-   "area_ha": 2452400,
-   "people": 6938,
-   "threat_p10": 0.027,
-   "claim_share": 0.164,
-   "ud_share": 0.078,
-   "empt": 0.653,
-   "habitat_img": 0.21
+   "area_ha": 2584000,
+   "people": 5426,
+   "threat_p10": 0.029,
+   "claim_share": 0.162,
+   "ud_share": 0.085,
+   "empt": 0.67,
+   "habitat_img": 0.25
   },
   {
-   "zone": 52,
+   "zone": 3,
+   "cls": "community",
+   "units": [
+    11,
+    79,
+    125,
+    162,
+    190,
+    224,
+    374,
+    414,
+    472,
+    494,
+    553,
+    560,
+    588,
+    673,
+    682,
+    699,
+    714,
+    760,
+    817,
+    826,
+    855,
+    856,
+    870,
+    891,
+    894,
+    915,
+    916,
+    926,
+    4236,
+    4312,
+    4384,
+    4479,
+    4546,
+    4547,
+    4590,
+    4592,
+    4611,
+    4651,
+    4665,
+    4716,
+    4718,
+    4730,
+    4732,
+    4735,
+    4769,
+    4771,
+    4772,
+    4784,
+    4785,
+    4787,
+    4818,
+    4820,
+    4822,
+    4823,
+    4825,
+    4829,
+    4831,
+    4832,
+    4833,
+    4835,
+    4861,
+    4864,
+    4865,
+    4869,
+    4871,
+    4877,
+    4878,
+    4900,
+    4901,
+    4906,
+    4907,
+    4909,
+    4910,
+    4932,
+    4935,
+    4937,
+    4947,
+    4960,
+    4965,
+    4968,
+    4969,
+    4970,
+    4979,
+    4982
+   ],
+   "area_ha": 2380000,
+   "people": 364267,
+   "threat_p10": 0.042,
+   "claim_share": 0.124,
+   "ud_share": 0.101,
+   "empt": 0.124,
+   "habitat_img": 0.34
+  },
+  {
+   "zone": 27,
    "cls": "wilderness",
    "units": [
+    1067,
+    1145,
+    1148,
+    1149,
+    1187,
+    1189,
+    1192,
+    1193,
+    1234,
+    1239,
+    1280,
+    1281,
+    1282,
+    1284,
+    1285,
+    1327,
+    1329,
+    1332,
+    1372,
     1421,
     1467,
-    1511,
+    1513,
     1515,
-    1559,
+    1560,
     1561,
     1564,
     1565,
-    1601,
-    1602,
     1604,
     1607,
-    1645,
     1650,
     1651,
     1653,
     1690,
-    1693,
+    1692,
+    1695,
     1697,
     1735,
     1740,
     1742,
-    1744,
+    1773,
     1776,
     1778,
     1779,
     1781,
-    1783,
     1784,
     1823,
     1828,
     1830,
     1831,
     1832,
-    1925,
     1926,
-    1931,
-    1933,
     1972,
     1973,
-    1974,
     1976,
     1979,
     1980,
     1981,
-    2017,
     2020,
     2022,
     2023,
@@ -2601,12 +2653,11 @@
     2134,
     2135,
     2136,
-    2139,
     2140,
     2183,
     2186,
     2187,
-    2189,
+    2191,
     2192,
     2240,
     2243,
@@ -2614,23 +2665,26 @@
     2294,
     2348
    ],
-   "area_ha": 1800400,
-   "people": 35,
+   "area_ha": 2154400,
+   "people": 94,
    "threat_p10": 0.002,
-   "claim_share": 0.126,
-   "ud_share": 0.028,
-   "empt": 0.99,
+   "claim_share": 0.109,
+   "ud_share": 0.029,
+   "empt": 0.978,
    "habitat_img": 0.36
   },
   {
-   "zone": 33,
+   "zone": 29,
    "cls": "core",
    "units": [
     1083,
     1162,
+    1168,
     1205,
     1207,
     1208,
+    1212,
+    1213,
     1249,
     1295,
     1296,
@@ -2698,80 +2752,82 @@
     2093,
     2094
    ],
-   "area_ha": 1486400,
-   "people": 31,
+   "area_ha": 1532400,
+   "people": 32,
    "threat_p10": 0.006,
-   "claim_share": 0.017,
-   "ud_share": 0.031,
+   "claim_share": 0.018,
+   "ud_share": 0.032,
    "empt": 0.99,
    "habitat_img": 0.16
   },
   {
-   "zone": 12,
-   "cls": "core",
+   "zone": 19,
+   "cls": "corridor",
    "units": [
-    401,
-    771,
-    3155,
-    3156,
-    3158,
-    3232,
-    3235,
-    3300,
-    3301,
-    3306,
-    3311,
-    3312,
-    3375,
-    3376,
-    3378,
-    3381,
-    3385,
-    3386,
-    3388,
-    3448,
-    3451,
-    3458,
-    3463,
-    3525,
-    3527,
-    3529,
-    3530,
-    3531,
-    3534,
-    3535,
-    3536,
-    3608,
-    3611,
-    3612,
-    3618,
-    3620,
-    3687,
-    3695,
-    3697,
-    3758,
-    3761,
-    3766,
-    3771,
-    3773,
-    3834,
-    3836,
-    3918,
-    3920,
-    3996,
-    3998,
-    3999
+    809,
+    3934,
+    3935,
+    4016,
+    4017,
+    4099,
+    4178,
+    4179,
+    4261,
+    4314,
+    4315,
+    4334,
+    4337,
+    4338,
+    4386,
+    4389,
+    4390,
+    4405,
+    4406,
+    4408,
+    4409,
+    4458,
+    4459,
+    4460,
+    4471,
+    4472,
+    4473,
+    4475,
+    4476,
+    4477,
+    4528,
+    4533,
+    4535,
+    4536,
+    4542,
+    4543,
+    4594,
+    4596,
+    4597,
+    4598,
+    4601,
+    4609,
+    4653,
+    4655,
+    4663,
+    4669,
+    4720,
+    4722,
+    4725,
+    4774,
+    4777,
+    4780,
+    4781
    ],
-   "area_ha": 1346400,
-   "people": 682,
-   "threat_p10": 0.002,
-   "claim_share": 0.105,
-   "ud_share": 0.023,
-   "empt": 0.979,
-   "habitat_img": 0.35
+   "area_ha": 1225600,
+   "people": 3345,
+   "threat_p10": 0.011,
+   "claim_share": 0.18,
+   "ud_share": 0.058,
+   "empt": 0.653,
+   "habitat_img": 0.21
   },
   {
-   "zone": 147,
+   "zone": 141,
    "cls": "wilderness",
    "units": [
     4450,
@@ -2801,7 +2857,6 @@
     4760,
     4762,
     4764,
-    4800,
     4801,
     4802,
     4803,
@@ -2825,188 +2880,76 @@
     4929,
     4931
    ],
-   "area_ha": 1118400,
+   "area_ha": 1129200,
    "people": 547,
    "threat_p10": 0.004,
-   "claim_share": 0.03,
+   "claim_share": 0.029,
    "ud_share": 0.016,
-   "empt": 0.755,
-   "habitat_img": 0.43
+   "empt": 0.758,
+   "habitat_img": 0.42
   },
   {
    "zone": 9,
-   "cls": "corridor",
-   "units": [
-    230,
-    661,
-    761,
-    3775,
-    3776,
-    3853,
-    3854,
-    3934,
-    4017,
-    4099,
-    4259,
-    4261,
-    4334,
-    4337,
-    4338,
-    4405,
-    4406,
-    4408,
-    4409,
-    4459,
-    4460,
-    4471,
-    4472,
-    4473,
-    4475,
-    4477,
-    4479,
-    4528,
-    4531,
-    4533,
-    4535,
-    4536,
-    4542,
-    4546,
-    4593,
-    4594,
-    4596,
-    4597,
-    4601,
-    4609,
-    4655,
-    4663,
-    4665,
-    4669,
-    4722,
-    4725,
-    4774,
-    4775,
-    4777,
-    4781
-   ],
-   "area_ha": 1083200,
-   "people": 12361,
-   "threat_p10": 0.015,
-   "claim_share": 0.213,
-   "ud_share": 0.05,
-   "empt": 0.641,
-   "habitat_img": 0.23
-  },
-  {
-   "zone": 44,
    "cls": "core",
    "units": [
-    1229,
-    1274,
-    1275,
-    1276,
-    1280,
-    1281,
-    1282,
-    1316,
-    1317,
-    1320,
-    1323,
-    1325,
-    1327,
-    1329,
-    1330,
-    1361,
-    1365,
-    1367,
-    1372,
-    1376,
-    1410,
-    1413,
-    1423,
-    1426,
-    1456,
-    1460,
-    1474,
-    1503,
-    1513,
-    1517,
-    1520,
-    1521,
-    1552,
-    1560,
-    1566,
-    1567,
-    1570,
-    1571,
-    1595,
-    1654,
-    1656,
-    1659,
-    1731,
-    1777,
-    1791
+    401,
+    771,
+    3300,
+    3301,
+    3306,
+    3311,
+    3312,
+    3375,
+    3376,
+    3378,
+    3381,
+    3386,
+    3388,
+    3448,
+    3451,
+    3458,
+    3463,
+    3525,
+    3527,
+    3529,
+    3530,
+    3531,
+    3534,
+    3535,
+    3536,
+    3608,
+    3611,
+    3612,
+    3618,
+    3620,
+    3687,
+    3695,
+    3697,
+    3758,
+    3761,
+    3766,
+    3771,
+    3773,
+    3774,
+    3834,
+    3836,
+    3918,
+    3920,
+    3932,
+    3996,
+    3998,
+    3999
    ],
-   "area_ha": 1049600,
-   "people": 0,
-   "threat_p10": 0.0,
-   "claim_share": 0.065,
-   "ud_share": 0.014,
-   "empt": 1.0,
-   "habitat_img": 0.41
+   "area_ha": 1079200,
+   "people": 682,
+   "threat_p10": 0.002,
+   "claim_share": 0.118,
+   "ud_share": 0.019,
+   "empt": 0.974,
+   "habitat_img": 0.34
   },
   {
-   "zone": 6,
-   "cls": "corridor",
-   "units": [
-    125,
-    870,
-    876,
-    3676,
-    3749,
-    3820,
-    3826,
-    3827,
-    3900,
-    3902,
-    3904,
-    3906,
-    3907,
-    3911,
-    3981,
-    3988,
-    3990,
-    3992,
-    3993,
-    4062,
-    4063,
-    4065,
-    4066,
-    4067,
-    4068,
-    4072,
-    4149,
-    4157,
-    4232,
-    4233,
-    4236,
-    4310,
-    4314,
-    4315,
-    4384,
-    4389,
-    4452,
-    4523
-   ],
-   "area_ha": 969600,
-   "people": 4225,
-   "threat_p10": 0.019,
-   "claim_share": 0.142,
-   "ud_share": 0.024,
-   "empt": 0.727,
-   "habitat_img": 0.22
-  },
-  {
-   "zone": 14,
+   "zone": 10,
    "cls": "community",
    "units": [
     461,
@@ -3054,18 +2997,58 @@
    "habitat_img": 0.26
   },
   {
-   "zone": 122,
+   "zone": 118,
+   "cls": "corridor",
+   "units": [
+    3676,
+    3749,
+    3820,
+    3826,
+    3827,
+    3900,
+    3902,
+    3904,
+    3906,
+    3907,
+    3911,
+    3981,
+    3988,
+    3990,
+    3992,
+    3993,
+    4062,
+    4063,
+    4065,
+    4066,
+    4067,
+    4068,
+    4072,
+    4074,
+    4149,
+    4156,
+    4157,
+    4232,
+    4233,
+    4310,
+    4452
+   ],
+   "area_ha": 791200,
+   "people": 330,
+   "threat_p10": 0.013,
+   "claim_share": 0.145,
+   "ud_share": 0.017,
+   "empt": 0.793,
+   "habitat_img": 0.25
+  },
+  {
+   "zone": 120,
    "cls": "wilderness",
    "units": [
     3688,
-    3754,
-    3832,
     3833,
     3841,
     3842,
-    3914,
     3923,
-    3994,
     4001,
     4002,
     4004,
@@ -3078,7 +3061,6 @@
     4159,
     4163,
     4164,
-    4166,
     4170,
     4239,
     4240,
@@ -3092,19 +3074,18 @@
     4324,
     4393,
     4395,
-    4397,
-    4463
+    4397
    ],
-   "area_ha": 786000,
+   "area_ha": 743200,
    "people": 26,
    "threat_p10": 0.003,
-   "claim_share": 0.148,
-   "ud_share": 0.017,
+   "claim_share": 0.158,
+   "ud_share": 0.015,
    "empt": 0.983,
    "habitat_img": 0.15
   },
   {
-   "zone": 124,
+   "zone": 122,
    "cls": "wilderness",
    "units": [
     3730,
@@ -3137,12 +3118,13 @@
    "habitat_img": 0.5
   },
   {
-   "zone": 4,
+   "zone": 5,
    "cls": "community",
    "units": [
     23,
     815,
     4221,
+    4228,
     4230,
     4231,
     4303,
@@ -3160,90 +3142,65 @@
     4515,
     4516
    ],
-   "area_ha": 474400,
+   "area_ha": 476400,
    "people": 57553,
    "threat_p10": 0.034,
-   "claim_share": 0.376,
+   "claim_share": 0.374,
    "ud_share": 0.008,
-   "empt": 0.702,
+   "empt": 0.703,
    "habitat_img": 0.25
   },
   {
-   "zone": 11,
-   "cls": "community",
+   "zone": 45,
+   "cls": "core",
    "units": [
-    289,
-    378,
-    426,
-    591,
-    604,
-    798,
-    3526,
-    3604,
-    3753,
-    3831
+    1316,
+    1317,
+    1320,
+    1365,
+    1367,
+    1410,
+    1413,
+    1456,
+    1460,
+    1503,
+    1552,
+    1595,
+    1731,
+    1777
    ],
-   "area_ha": 408000,
-   "people": 6337,
-   "threat_p10": 0.029,
-   "claim_share": 0.179,
-   "ud_share": 0.01,
-   "empt": 0.222,
-   "habitat_img": 0.18
-  },
-  {
-   "zone": 31,
-   "cls": "wilderness",
-   "units": [
-    1067,
-    1145,
-    1148,
-    1149,
-    1187,
-    1189,
-    1192,
-    1193,
-    1234,
-    1239,
-    1278,
-    1284,
-    1285,
-    1332
-   ],
-   "area_ha": 381200,
+   "area_ha": 429600,
    "people": 0,
    "threat_p10": 0.0,
-   "claim_share": 0.128,
-   "ud_share": 0.002,
+   "claim_share": 0.032,
+   "ud_share": 0.009,
    "empt": 1.0,
-   "habitat_img": 0.36
-  },
-  {
-   "zone": 3,
-   "cls": "community",
-   "units": [
-    14,
-    816,
-    4426,
-    4491,
-    4560,
-    4623,
-    4626,
-    4691,
-    4693,
-    4694,
-    4695
-   ],
-   "area_ha": 365600,
-   "people": 31271,
-   "threat_p10": 0.034,
-   "claim_share": 0.0,
-   "ud_share": 0.006,
-   "empt": 0.359,
-   "habitat_img": 0.36
+   "habitat_img": 0.43
   },
   {
    "zone": 8,
+   "cls": "community",
+   "units": [
+    378,
+    426,
+    591,
+    3523,
+    3526,
+    3753,
+    3754,
+    3831,
+    3832
+   ],
+   "area_ha": 412000,
+   "people": 6337,
+   "threat_p10": 0.029,
+   "claim_share": 0.172,
+   "ud_share": 0.01,
+   "empt": 0.059,
+   "habitat_img": 0.16
+  },
+  {
+   "zone": 7,
    "cls": "corridor",
    "units": [
     197,
@@ -3273,7 +3230,7 @@
    "habitat_img": 0.34
   },
   {
-   "zone": 19,
+   "zone": 14,
    "cls": "corridor",
    "units": [
     757,
@@ -3301,36 +3258,39 @@
     1544,
     1545
    ],
-   "area_ha": 348400,
-   "people": 855,
-   "threat_p10": 0.017,
+   "area_ha": 348800,
+   "people": 862,
+   "threat_p10": 0.018,
    "claim_share": 0.085,
    "ud_share": 0.013,
-   "empt": 0.566,
+   "empt": 0.556,
    "habitat_img": 0.4
   },
   {
-   "zone": 25,
-   "cls": "wilderness",
+   "zone": 4,
+   "cls": "community",
    "units": [
-    900,
-    1171,
-    1261,
-    1262,
-    1266,
-    1309,
-    1362
+    14,
+    816,
+    4426,
+    4491,
+    4560,
+    4623,
+    4626,
+    4691,
+    4695,
+    4747
    ],
-   "area_ha": 329600,
-   "people": 137,
-   "threat_p10": 0.012,
-   "claim_share": 0.028,
-   "ud_share": 0.01,
-   "empt": 0.808,
-   "habitat_img": 0.35
+   "area_ha": 340800,
+   "people": 31271,
+   "threat_p10": 0.036,
+   "claim_share": 0.0,
+   "ud_share": 0.006,
+   "empt": 0.153,
+   "habitat_img": 0.37
   },
   {
-   "zone": 86,
+   "zone": 82,
    "cls": "corridor",
    "units": [
     2263,
@@ -3357,7 +3317,7 @@
    "habitat_img": 0.23
   },
   {
-   "zone": 116,
+   "zone": 112,
    "cls": "wilderness",
    "units": [
     3474,
@@ -3386,7 +3346,24 @@
    "habitat_img": 0.23
   },
   {
-   "zone": 127,
+   "zone": 35,
+   "cls": "wilderness",
+   "units": [
+    1171,
+    1261,
+    1262,
+    1309
+   ],
+   "area_ha": 276400,
+   "people": 98,
+   "threat_p10": 0.011,
+   "claim_share": 0.032,
+   "ud_share": 0.007,
+   "empt": 0.823,
+   "habitat_img": 0.35
+  },
+  {
+   "zone": 126,
    "cls": "community",
    "units": [
     3809,
@@ -3404,7 +3381,76 @@
    "habitat_img": 0.36
   },
   {
-   "zone": 23,
+   "zone": 146,
+   "cls": "core",
+   "units": [
+    4505,
+    4569,
+    4571,
+    4632,
+    4697,
+    4698,
+    4798,
+    4800
+   ],
+   "area_ha": 253200,
+   "people": 0,
+   "threat_p10": 0.001,
+   "claim_share": 0.028,
+   "ud_share": 0.003,
+   "empt": 1.0,
+   "habitat_img": 0.45
+  },
+  {
+   "zone": 47,
+   "cls": "core",
+   "units": [
+    1330,
+    1376,
+    1423,
+    1426,
+    1474,
+    1517,
+    1520,
+    1521,
+    1566,
+    1567,
+    1570,
+    1571
+   ],
+   "area_ha": 250000,
+   "people": 0,
+   "threat_p10": 0.0,
+   "claim_share": 0.094,
+   "ud_share": 0.001,
+   "empt": 1.0,
+   "habitat_img": 0.37
+  },
+  {
+   "zone": 51,
+   "cls": "corridor",
+   "units": [
+    1414,
+    1415,
+    1463,
+    1507,
+    1508,
+    1509,
+    1596,
+    1600,
+    1687,
+    1689
+   ],
+   "area_ha": 240000,
+   "people": 0,
+   "threat_p10": 0.0,
+   "claim_share": 0.08,
+   "ud_share": 0.005,
+   "empt": 1.0,
+   "habitat_img": 0.52
+  },
+  {
+   "zone": 18,
    "cls": "community",
    "units": [
     787,
@@ -3421,32 +3467,7 @@
    "habitat_img": 0.35
   },
   {
-   "zone": 21,
-   "cls": "corridor",
-   "units": [
-    759,
-    1842,
-    1843,
-    1936,
-    1938,
-    1983,
-    1984,
-    1985,
-    1986,
-    2029,
-    2030,
-    2085
-   ],
-   "area_ha": 228400,
-   "people": 2804,
-   "threat_p10": 0.049,
-   "claim_share": 0.168,
-   "ud_share": 0.009,
-   "empt": 0.346,
-   "habitat_img": 0.51
-  },
-  {
-   "zone": 32,
+   "zone": 28,
    "cls": "wilderness",
    "units": [
     1076,
@@ -3462,95 +3483,33 @@
     1292,
     1293
    ],
-   "area_ha": 226000,
+   "area_ha": 224400,
    "people": 0,
    "threat_p10": 0.0,
-   "claim_share": 0.179,
+   "claim_share": 0.173,
    "ud_share": 0.001,
    "empt": 1.0,
    "habitat_img": 0.42
   },
   {
-   "zone": 7,
-   "cls": "community",
-   "units": [
-    159,
-    764,
-    793,
-    1264,
-    1265,
-    1404,
-    1452,
-    1501
-   ],
-   "area_ha": 215600,
-   "people": 40599,
-   "threat_p10": 0.032,
-   "claim_share": 0.182,
-   "ud_share": 0.01,
-   "empt": 0.015,
-   "habitat_img": 0.36
-  },
-  {
-   "zone": 50,
-   "cls": "corridor",
-   "units": [
-    1414,
-    1415,
-    1463,
-    1507,
-    1508,
-    1596,
-    1600,
-    1687,
-    1689
-   ],
-   "area_ha": 212800,
-   "people": 0,
-   "threat_p10": 0.0,
-   "claim_share": 0.079,
-   "ud_share": 0.005,
-   "empt": 1.0,
-   "habitat_img": 0.54
-  },
-  {
-   "zone": 152,
-   "cls": "core",
-   "units": [
-    4505,
-    4569,
-    4571,
-    4632,
-    4697,
-    4698,
-    4748
-   ],
-   "area_ha": 212400,
-   "people": 0,
-   "threat_p10": 0.001,
-   "claim_share": 0.034,
-   "ud_share": 0.002,
-   "empt": 1.0,
-   "habitat_img": 0.46
-  },
-  {
-   "zone": 80,
+   "zone": 75,
    "cls": "community",
    "units": [
     2061,
+    2062,
     2116,
     2224
    ],
-   "area_ha": 211200,
+   "area_ha": 218800,
    "people": 2250,
    "threat_p10": 0.008,
-   "claim_share": 0.021,
+   "claim_share": 0.02,
    "ud_share": 0.006,
-   "empt": 0.072,
+   "empt": 0.069,
    "habitat_img": 0.21
   },
   {
-   "zone": 142,
+   "zone": 137,
    "cls": "wilderness",
    "units": [
     4271,
@@ -3570,7 +3529,26 @@
    "habitat_img": 0.44
   },
   {
-   "zone": 98,
+   "zone": 70,
+   "cls": "community",
+   "units": [
+    1921,
+    1924,
+    1967,
+    1968,
+    2016,
+    2017
+   ],
+   "area_ha": 187600,
+   "people": 24419,
+   "threat_p10": 0.016,
+   "claim_share": 0.235,
+   "ud_share": 0.007,
+   "empt": 0.459,
+   "habitat_img": 0.35
+  },
+  {
+   "zone": 93,
    "cls": "community",
    "units": [
     2691,
@@ -3587,26 +3565,7 @@
    "habitat_img": 0.22
   },
   {
-   "zone": 161,
-   "cls": "wilderness",
-   "units": [
-    4737,
-    4790,
-    4835,
-    4921,
-    4922,
-    4923
-   ],
-   "area_ha": 163600,
-   "people": 46,
-   "threat_p10": 0.008,
-   "claim_share": 0.056,
-   "ud_share": 0.006,
-   "empt": 0.859,
-   "habitat_img": 0.21
-  },
-  {
-   "zone": 99,
+   "zone": 94,
    "cls": "wilderness",
    "units": [
     2811,
@@ -3625,7 +3584,7 @@
    "habitat_img": 0.25
   },
   {
-   "zone": 30,
+   "zone": 26,
    "cls": "core",
    "units": [
     1045,
@@ -3633,16 +3592,16 @@
     1240,
     1286
    ],
-   "area_ha": 146800,
+   "area_ha": 147200,
    "people": 0,
    "threat_p10": 0.0,
-   "claim_share": 0.289,
+   "claim_share": 0.291,
    "ud_share": 0.001,
    "empt": 1.0,
    "habitat_img": 0.51
   },
   {
-   "zone": 5,
+   "zone": 6,
    "cls": "community",
    "units": [
     25,
@@ -3661,24 +3620,26 @@
    "habitat_img": 0.14
   },
   {
-   "zone": 75,
-   "cls": "community",
+   "zone": 56,
+   "cls": "core",
    "units": [
-    1923,
-    1967,
-    1969,
-    2016
+    1601,
+    1645,
+    1649,
+    1691,
+    1693,
+    1782
    ],
-   "area_ha": 134000,
-   "people": 24087,
-   "threat_p10": 0.016,
-   "claim_share": 0.236,
-   "ud_share": 0.005,
-   "empt": 0.304,
-   "habitat_img": 0.36
+   "area_ha": 133600,
+   "people": 0,
+   "threat_p10": 0.0,
+   "claim_share": 0.237,
+   "ud_share": 0.002,
+   "empt": 1.0,
+   "habitat_img": 0.41
   },
   {
-   "zone": 114,
+   "zone": 110,
    "cls": "community",
    "units": [
     3405,
@@ -3695,26 +3656,7 @@
    "habitat_img": 0.23
   },
   {
-   "zone": 157,
-   "cls": "core",
-   "units": [
-    4682,
-    4794,
-    4839,
-    4840,
-    4886,
-    4926
-   ],
-   "area_ha": 131200,
-   "people": 8,
-   "threat_p10": 0.004,
-   "claim_share": 0.226,
-   "ud_share": 0.003,
-   "empt": 0.97,
-   "habitat_img": 0.25
-  },
-  {
-   "zone": 84,
+   "zone": 80,
    "cls": "core",
    "units": [
     2205,
@@ -3732,40 +3674,26 @@
    "habitat_img": 0.21
   },
   {
-   "zone": 10,
-   "cls": "corridor",
+   "zone": 158,
+   "cls": "core",
    "units": [
-    233,
-    3085,
-    3161,
-    3238
+    4837,
+    4838,
+    4884,
+    4885,
+    4922,
+    4923
    ],
-   "area_ha": 122800,
-   "people": 2250,
-   "threat_p10": 0.037,
-   "claim_share": 0.163,
-   "ud_share": 0.006,
-   "empt": 0.342,
-   "habitat_img": 0.29
+   "area_ha": 104400,
+   "people": 9,
+   "threat_p10": 0.009,
+   "claim_share": 0.169,
+   "ud_share": 0.004,
+   "empt": 0.957,
+   "habitat_img": 0.28
   },
   {
-   "zone": 165,
-   "cls": "wilderness",
-   "units": [
-    4874,
-    4947,
-    4974
-   ],
-   "area_ha": 102800,
-   "people": 0,
-   "threat_p10": 0.001,
-   "claim_share": 0.051,
-   "ud_share": 0.005,
-   "empt": 1.0,
-   "habitat_img": 0.46
-  },
-  {
-   "zone": 131,
+   "zone": 130,
    "cls": "core",
    "units": [
     3928,
@@ -3782,7 +3710,7 @@
    "habitat_img": 0.36
   },
   {
-   "zone": 139,
+   "zone": 135,
    "cls": "core",
    "units": [
     4210,
@@ -3798,7 +3726,7 @@
    "habitat_img": 0.55
   },
   {
-   "zone": 101,
+   "zone": 96,
    "cls": "wilderness",
    "units": [
     2887,
@@ -3813,7 +3741,21 @@
    "habitat_img": 0.35
   },
   {
-   "zone": 107,
+   "zone": 163,
+   "cls": "wilderness",
+   "units": [
+    4874
+   ],
+   "area_ha": 78800,
+   "people": 0,
+   "threat_p10": 0.001,
+   "claim_share": 0.081,
+   "ud_share": 0.004,
+   "empt": 1.0,
+   "habitat_img": 0.5
+  },
+  {
+   "zone": 101,
    "cls": "community",
    "units": [
     3104,
@@ -3829,39 +3771,53 @@
    "habitat_img": 0.21
   },
   {
-   "zone": 41,
+   "zone": 98,
+   "cls": "corridor",
+   "units": [
+    2936,
+    2937,
+    3085
+   ],
+   "area_ha": 76800,
+   "people": 709,
+   "threat_p10": 0.046,
+   "claim_share": 0.062,
+   "ud_share": 0.003,
+   "empt": 0.073,
+   "habitat_img": 0.27
+  },
+  {
+   "zone": 155,
    "cls": "wilderness",
    "units": [
-    1209,
+    4737,
+    4790,
+    4836
+   ],
+   "area_ha": 76000,
+   "people": 5,
+   "threat_p10": 0.006,
+   "claim_share": 0.1,
+   "ud_share": 0.003,
+   "empt": 0.967,
+   "habitat_img": 0.22
+  },
+  {
+   "zone": 39,
+   "cls": "wilderness",
+   "units": [
     1255
    ],
-   "area_ha": 74800,
-   "people": 1,
-   "threat_p10": 0.007,
-   "claim_share": 0.048,
+   "area_ha": 72000,
+   "people": 0,
+   "threat_p10": 0.001,
+   "claim_share": 0.05,
    "ud_share": 0.002,
-   "empt": 0.993,
+   "empt": 1.0,
    "habitat_img": 0.35
   },
   {
-   "zone": 117,
-   "cls": "corridor",
-   "units": [
-    3540,
-    3621,
-    3622,
-    3623
-   ],
-   "area_ha": 70800,
-   "people": 405,
-   "threat_p10": 0.008,
-   "claim_share": 0.52,
-   "ud_share": 0.004,
-   "empt": 0.277,
-   "habitat_img": 0.25
-  },
-  {
-   "zone": 162,
+   "zone": 156,
    "cls": "core",
    "units": [
     4807,
@@ -3878,7 +3834,7 @@
    "habitat_img": 0.5
   },
   {
-   "zone": 63,
+   "zone": 59,
    "cls": "community",
    "units": [
     1720,
@@ -3893,7 +3849,7 @@
    "habitat_img": 0.36
   },
   {
-   "zone": 109,
+   "zone": 104,
    "cls": "community",
    "units": [
     3249,
@@ -3909,7 +3865,7 @@
    "habitat_img": 0.22
   },
   {
-   "zone": 64,
+   "zone": 61,
    "cls": "core",
    "units": [
     1760,
@@ -3928,100 +3884,37 @@
    "habitat_img": 0.24
   },
   {
-   "zone": 82,
-   "cls": "core",
-   "units": [
-    2191,
-    2244,
-    2297
-   ],
-   "area_ha": 66000,
-   "people": 4,
-   "threat_p10": 0.013,
-   "claim_share": 0.17,
-   "ud_share": 0.002,
-   "empt": 0.97,
-   "habitat_img": 0.13
-  },
-  {
-   "zone": 92,
+   "zone": 88,
    "cls": "community",
    "units": [
     2580,
     2581
    ],
-   "area_ha": 64800,
+   "area_ha": 64400,
    "people": 67,
    "threat_p10": 0.007,
-   "claim_share": 0.321,
+   "claim_share": 0.317,
    "ud_share": 0.002,
-   "empt": 0.483,
+   "empt": 0.48,
    "habitat_img": 0.2
   },
   {
-   "zone": 22,
+   "zone": 46,
    "cls": "community",
    "units": [
-    781,
-    2858
-   ],
-   "area_ha": 64000,
-   "people": 171,
-   "threat_p10": 0.099,
-   "claim_share": 0.3,
-   "ud_share": 0.003,
-   "empt": 0.125,
-   "habitat_img": 0.35
-  },
-  {
-   "zone": 51,
-   "cls": "community",
-   "units": [
-    1416
-   ],
-   "area_ha": 62400,
-   "people": 250,
-   "threat_p10": 0.007,
-   "claim_share": 0.09,
-   "ud_share": 0.001,
-   "empt": 0.0,
-   "habitat_img": 0.2
-  },
-  {
-   "zone": 140,
-   "cls": "wilderness",
-   "units": [
-    4225
+    1323,
+    1464
    ],
    "area_ha": 58000,
-   "people": 0,
-   "threat_p10": 0.008,
-   "claim_share": 0.166,
+   "people": 250,
+   "threat_p10": 0.007,
+   "claim_share": 0.124,
    "ud_share": 0.001,
-   "empt": 1.0,
-   "habitat_img": 0.09
+   "empt": 0.938,
+   "habitat_img": 0.22
   },
   {
-   "zone": 137,
-   "cls": "corridor",
-   "units": [
-    4101,
-    4103,
-    4182,
-    4184,
-    4340,
-    4341
-   ],
-   "area_ha": 57200,
-   "people": 24,
-   "threat_p10": 0.016,
-   "claim_share": 0.413,
-   "ud_share": 0.003,
-   "empt": 0.79,
-   "habitat_img": 0.28
-  },
-  {
-   "zone": 155,
+   "zone": 149,
    "cls": "core",
    "units": [
     4520,
@@ -4036,7 +3929,37 @@
    "habitat_img": 0.14
   },
   {
-   "zone": 119,
+   "zone": 17,
+   "cls": "community",
+   "units": [
+    781
+   ],
+   "area_ha": 51200,
+   "people": 166,
+   "threat_p10": 0.099,
+   "claim_share": 0.336,
+   "ud_share": 0.002,
+   "empt": 0.0,
+   "habitat_img": 0.33
+  },
+  {
+   "zone": 43,
+   "cls": "core",
+   "units": [
+    1276,
+    1278,
+    1325
+   ],
+   "area_ha": 51200,
+   "people": 0,
+   "threat_p10": 0.0,
+   "claim_share": 0.109,
+   "ud_share": 0.0,
+   "empt": 1.0,
+   "habitat_img": 0.35
+  },
+  {
+   "zone": 115,
    "cls": "wilderness",
    "units": [
     3573
@@ -4050,22 +3973,21 @@
    "habitat_img": 0.24
   },
   {
-   "zone": 169,
+   "zone": 84,
    "cls": "core",
    "units": [
-    4937,
-    4966
+    2297
    ],
-   "area_ha": 49600,
-   "people": 0,
-   "threat_p10": 0.001,
-   "claim_share": 0.161,
+   "area_ha": 49200,
+   "people": 4,
+   "threat_p10": 0.017,
+   "claim_share": 0.228,
    "ud_share": 0.001,
-   "empt": 1.0,
-   "habitat_img": 0.43
+   "empt": 0.959,
+   "habitat_img": 0.0
   },
   {
-   "zone": 167,
+   "zone": 165,
    "cls": "wilderness",
    "units": [
     4916,
@@ -4082,7 +4004,7 @@
    "habitat_img": 0.37
   },
   {
-   "zone": 17,
+   "zone": 13,
    "cls": "community",
    "units": [
     702
@@ -4096,22 +4018,7 @@
    "habitat_img": 0.0
   },
   {
-   "zone": 134,
-   "cls": "wilderness",
-   "units": [
-    4015,
-    4258
-   ],
-   "area_ha": 44400,
-   "people": 0,
-   "threat_p10": 0.001,
-   "claim_share": 0.0,
-   "ud_share": 0.002,
-   "empt": 1.0,
-   "habitat_img": 0.21
-  },
-  {
-   "zone": 149,
+   "zone": 143,
    "cls": "corridor",
    "units": [
     4493,
@@ -4129,51 +4036,22 @@
   },
   {
    "zone": 160,
-   "cls": "core",
-   "units": [
-    4735,
-    4736,
-    4787
-   ],
-   "area_ha": 44400,
-   "people": 0,
-   "threat_p10": 0.001,
-   "claim_share": 0.108,
-   "ud_share": 0.002,
-   "empt": 1.0,
-   "habitat_img": 0.21
-  },
-  {
-   "zone": 39,
    "cls": "wilderness",
    "units": [
-    1168,
-    1212
+    4840,
+    4886,
+    4926
    ],
    "area_ha": 44000,
-   "people": 1,
-   "threat_p10": 0.012,
-   "claim_share": 0.036,
+   "people": 0,
+   "threat_p10": 0.0,
+   "claim_share": 0.318,
    "ud_share": 0.001,
-   "empt": 0.989,
-   "habitat_img": 0.36
-  },
-  {
-   "zone": 53,
-   "cls": "wilderness",
-   "units": [
-    1429
-   ],
-   "area_ha": 44000,
-   "people": 0,
-   "threat_p10": 0.001,
-   "claim_share": 0.082,
-   "ud_share": 0.0,
    "empt": 1.0,
-   "habitat_img": 0.35
+   "habitat_img": 0.31
   },
   {
-   "zone": 166,
+   "zone": 164,
    "cls": "core",
    "units": [
     4875,
@@ -4189,7 +4067,7 @@
    "habitat_img": 0.39
   },
   {
-   "zone": 97,
+   "zone": 92,
    "cls": "core",
    "units": [
     2670,
@@ -4205,7 +4083,37 @@
    "habitat_img": 0.13
   },
   {
-   "zone": 58,
+   "zone": 16,
+   "cls": "corridor",
+   "units": [
+    780,
+    844,
+    2727
+   ],
+   "area_ha": 38800,
+   "people": 147,
+   "threat_p10": 0.087,
+   "claim_share": 0.206,
+   "ud_share": 0.002,
+   "empt": 0.0,
+   "habitat_img": 0.3
+  },
+  {
+   "zone": 169,
+   "cls": "core",
+   "units": [
+    4966
+   ],
+   "area_ha": 36800,
+   "people": 0,
+   "threat_p10": 0.001,
+   "claim_share": 0.12,
+   "ud_share": 0.001,
+   "empt": 1.0,
+   "habitat_img": 0.44
+  },
+  {
+   "zone": 54,
    "cls": "community",
    "units": [
     1590
@@ -4219,7 +4127,7 @@
    "habitat_img": 0.56
   },
   {
-   "zone": 20,
+   "zone": 15,
    "cls": "community",
    "units": [
     758,
@@ -4234,7 +4142,7 @@
    "habitat_img": 0.01
   },
   {
-   "zone": 81,
+   "zone": 77,
    "cls": "core",
    "units": [
     2129,
@@ -4249,21 +4157,37 @@
    "habitat_img": 0.2
   },
   {
-   "zone": 56,
-   "cls": "core",
+   "zone": 108,
+   "cls": "corridor",
    "units": [
-    1500
+    3390,
+    3465,
+    3540
+   ],
+   "area_ha": 29200,
+   "people": 37,
+   "threat_p10": 0.017,
+   "claim_share": 0.425,
+   "ud_share": 0.002,
+   "empt": 0.603,
+   "habitat_img": 0.36
+  },
+  {
+   "zone": 42,
+   "cls": "wilderness",
+   "units": [
+    1275
    ],
    "area_ha": 26000,
    "people": 0,
-   "threat_p10": 0.001,
+   "threat_p10": 0.0,
    "claim_share": 0.0,
-   "ud_share": 0.001,
+   "ud_share": 0.0,
    "empt": 1.0,
-   "habitat_img": 0.57
+   "habitat_img": 0.36
   },
   {
-   "zone": 158,
+   "zone": 152,
    "cls": "core",
    "units": [
     4686,
@@ -4278,7 +4202,7 @@
    "habitat_img": 0.45
   },
   {
-   "zone": 68,
+   "zone": 66,
    "cls": "wilderness",
    "units": [
     1841,
@@ -4293,15 +4217,15 @@
    "habitat_img": 0.56
   },
   {
-   "zone": 49,
+   "zone": 50,
    "cls": "core",
    "units": [
     1405
    ],
-   "area_ha": 24400,
+   "area_ha": 24800,
    "people": 0,
    "threat_p10": 0.002,
-   "claim_share": 0.066,
+   "claim_share": 0.065,
    "ud_share": 0.001,
    "empt": 1.0,
    "habitat_img": 0.35
@@ -4321,21 +4245,7 @@
    "habitat_img": 0.56
   },
   {
-   "zone": 74,
-   "cls": "core",
-   "units": [
-    1921
-   ],
-   "area_ha": 20800,
-   "people": 0,
-   "threat_p10": 0.0,
-   "claim_share": 0.019,
-   "ud_share": 0.0,
-   "empt": 1.0,
-   "habitat_img": 0.36
-  },
-  {
-   "zone": 115,
+   "zone": 111,
    "cls": "wilderness",
    "units": [
     3471
@@ -4349,7 +4259,7 @@
    "habitat_img": 0.34
   },
   {
-   "zone": 173,
+   "zone": 170,
    "cls": "wilderness",
    "units": [
     4972
@@ -4363,22 +4273,36 @@
    "habitat_img": 0.3
   },
   {
-   "zone": 61,
+   "zone": 76,
    "cls": "core",
    "units": [
-    1691,
-    1692
+    2083,
+    2139
    ],
    "area_ha": 19600,
    "people": 0,
    "threat_p10": 0.0,
-   "claim_share": 0.143,
-   "ud_share": 0.0,
+   "claim_share": 0.204,
+   "ud_share": 0.001,
    "empt": 1.0,
-   "habitat_img": 0.25
+   "habitat_img": 0.5
   },
   {
-   "zone": 113,
+   "zone": 167,
+   "cls": "community",
+   "units": [
+    4925
+   ],
+   "area_ha": 19600,
+   "people": 13,
+   "threat_p10": 0.021,
+   "claim_share": 0.551,
+   "ud_share": 0.001,
+   "empt": 0.668,
+   "habitat_img": 0.35
+  },
+  {
+   "zone": 109,
    "cls": "wilderness",
    "units": [
     3400
@@ -4392,79 +4316,93 @@
    "habitat_img": 0.21
   },
   {
-   "zone": 172,
-   "cls": "core",
+   "zone": 150,
+   "cls": "corridor",
    "units": [
-    4969
+    4523
    ],
    "area_ha": 17600,
-   "people": 1,
-   "threat_p10": 0.026,
-   "claim_share": 0.136,
-   "ud_share": 0.001,
-   "empt": 0.972,
-   "habitat_img": 0.65
+   "people": 0,
+   "threat_p10": 0.006,
+   "claim_share": 0.227,
+   "ud_share": 0.0,
+   "empt": 1.0,
+   "habitat_img": 0.3
   },
   {
-   "zone": 13,
+   "zone": 21,
    "cls": "community",
    "units": [
-    452,
-    883
+    883,
+    2244
    ],
-   "area_ha": 14000,
+   "area_ha": 16400,
    "people": 475,
-   "threat_p10": 0.089,
+   "threat_p10": 0.076,
    "claim_share": 0.0,
-   "ud_share": 0.0,
-   "empt": 0.0,
-   "habitat_img": 0.41
+   "ud_share": 0.001,
+   "empt": 0.256,
+   "habitat_img": 0.47
   },
   {
-   "zone": 59,
-   "cls": "core",
+   "zone": 136,
+   "cls": "wilderness",
    "units": [
-    1592
+    4258
    ],
-   "area_ha": 14000,
+   "area_ha": 16400,
    "people": 0,
    "threat_p10": 0.001,
-   "claim_share": 0.114,
+   "claim_share": 0.0,
    "ud_share": 0.001,
    "empt": 1.0,
-   "habitat_img": 0.58
+   "habitat_img": 0.21
   },
   {
-   "zone": 76,
+   "zone": 157,
    "cls": "core",
    "units": [
-    1924
+    4827
+   ],
+   "area_ha": 16400,
+   "people": 1,
+   "threat_p10": 0.028,
+   "claim_share": 0.0,
+   "ud_share": 0.001,
+   "empt": 0.97,
+   "habitat_img": 0.29
+  },
+  {
+   "zone": 60,
+   "cls": "core",
+   "units": [
+    1744
    ],
    "area_ha": 13200,
    "people": 0,
-   "threat_p10": 0.002,
-   "claim_share": 0.394,
-   "ud_share": 0.001,
-   "empt": 1.0,
-   "habitat_img": 0.35
-  },
-  {
-   "zone": 103,
-   "cls": "corridor",
-   "units": [
-    2936,
-    2937
-   ],
-   "area_ha": 12800,
-   "people": 18,
-   "threat_p10": 0.067,
-   "claim_share": 0.438,
+   "threat_p10": 0.0,
+   "claim_share": 0.273,
    "ud_share": 0.0,
-   "empt": 0.297,
-   "habitat_img": 0.56
+   "empt": 1.0,
+   "habitat_img": 0.36
   },
   {
    "zone": 125,
+   "cls": "corridor",
+   "units": [
+    3775,
+    3776
+   ],
+   "area_ha": 13200,
+   "people": 57,
+   "threat_p10": 0.034,
+   "claim_share": 0.242,
+   "ud_share": 0.001,
+   "empt": 0.242,
+   "habitat_img": 0.3
+  },
+  {
+   "zone": 123,
    "cls": "core",
    "units": [
     3767,
@@ -4479,7 +4417,21 @@
    "habitat_img": 0.42
   },
   {
-   "zone": 154,
+   "zone": 52,
+   "cls": "community",
+   "units": [
+    1558
+   ],
+   "area_ha": 11600,
+   "people": 0,
+   "threat_p10": 0.0,
+   "claim_share": 0.724,
+   "ud_share": 0.0,
+   "empt": 1.0,
+   "habitat_img": 0.39
+  },
+  {
+   "zone": 148,
    "cls": "core",
    "units": [
     4514
@@ -4493,21 +4445,7 @@
    "habitat_img": 0.51
   },
   {
-   "zone": 72,
-   "cls": "core",
-   "units": [
-    1880
-   ],
-   "area_ha": 10800,
-   "people": 0,
-   "threat_p10": 0.001,
-   "claim_share": 0.407,
-   "ud_share": 0.0,
-   "empt": 1.0,
-   "habitat_img": 0.35
-  },
-  {
-   "zone": 91,
+   "zone": 87,
    "cls": "core",
    "units": [
     2481
@@ -4521,7 +4459,7 @@
    "habitat_img": 0.36
   },
   {
-   "zone": 37,
+   "zone": 33,
    "cls": "core",
    "units": [
     1130
@@ -4535,22 +4473,21 @@
    "habitat_img": 0.56
   },
   {
-   "zone": 93,
-   "cls": "core",
+   "zone": 55,
+   "cls": "corridor",
    "units": [
-    2600,
-    2601
+    1591
    ],
-   "area_ha": 10400,
+   "area_ha": 10000,
    "people": 0,
    "threat_p10": 0.003,
-   "claim_share": 0.0,
-   "ud_share": 0.0,
+   "claim_share": 0.2,
+   "ud_share": 0.001,
    "empt": 1.0,
-   "habitat_img": 0.3
+   "habitat_img": 0.37
   },
   {
-   "zone": 156,
+   "zone": 151,
    "cls": "corridor",
    "units": [
     4555
@@ -4564,7 +4501,7 @@
    "habitat_img": 0.43
   },
   {
-   "zone": 153,
+   "zone": 147,
    "cls": "core",
    "units": [
     4512
@@ -4578,7 +4515,7 @@
    "habitat_img": 0.51
   },
   {
-   "zone": 146,
+   "zone": 140,
    "cls": "wilderness",
    "units": [
     4439,
@@ -4593,7 +4530,7 @@
    "habitat_img": 0.26
   },
   {
-   "zone": 151,
+   "zone": 145,
    "cls": "community",
    "units": [
     4501
@@ -4607,49 +4544,50 @@
    "habitat_img": 0.42
   },
   {
-   "zone": 176,
-   "cls": "wilderness",
+   "zone": 159,
+   "cls": "core",
    "units": [
-    4982
+    4839
    ],
-   "area_ha": 8800,
+   "area_ha": 9200,
    "people": 0,
    "threat_p10": 0.002,
+   "claim_share": 0.174,
+   "ud_share": 0.0,
+   "empt": 1.0,
+   "habitat_img": 0.36
+  },
+  {
+   "zone": 78,
+   "cls": "core",
+   "units": [
+    2170,
+    2223
+   ],
+   "area_ha": 8400,
+   "people": 0,
+   "threat_p10": 0.0,
    "claim_share": 0.0,
    "ud_share": 0.0,
    "empt": 1.0,
-   "habitat_img": 0.65
-  },
-  {
-   "zone": 60,
-   "cls": "wilderness",
-   "units": [
-    1658
-   ],
-   "area_ha": 8000,
-   "people": 0,
-   "threat_p10": 0.0,
-   "claim_share": 0.05,
-   "ud_share": 0.0,
-   "empt": 1.0,
-   "habitat_img": 0.5
+   "habitat_img": 0.2
   },
   {
    "zone": 171,
-   "cls": "wilderness",
+   "cls": "core",
    "units": [
-    4965
+    4973
    ],
    "area_ha": 8000,
    "people": 0,
    "threat_p10": 0.001,
-   "claim_share": 0.05,
+   "claim_share": 0.0,
    "ud_share": 0.0,
    "empt": 1.0,
-   "habitat_img": 0.43
+   "habitat_img": 0.29
   },
   {
-   "zone": 57,
+   "zone": 53,
    "cls": "core",
    "units": [
     1588
@@ -4663,7 +4601,7 @@
    "habitat_img": 0.56
   },
   {
-   "zone": 77,
+   "zone": 72,
    "cls": "corridor",
    "units": [
     1935
@@ -4677,21 +4615,50 @@
    "habitat_img": 0.51
   },
   {
-   "zone": 174,
+   "zone": 71,
    "cls": "core",
    "units": [
-    4973
+    1925
    ],
-   "area_ha": 7200,
+   "area_ha": 6800,
    "people": 0,
    "threat_p10": 0.001,
-   "claim_share": 0.0,
+   "claim_share": 0.235,
    "ud_share": 0.0,
    "empt": 1.0,
-   "habitat_img": 0.3
+   "habitat_img": 0.35
   },
   {
-   "zone": 88,
+   "zone": 117,
+   "cls": "corridor",
+   "units": [
+    3621,
+    3622
+   ],
+   "area_ha": 6800,
+   "people": 0,
+   "threat_p10": 0.003,
+   "claim_share": 0.235,
+   "ud_share": 0.0,
+   "empt": 1.0,
+   "habitat_img": 0.35
+  },
+  {
+   "zone": 49,
+   "cls": "wilderness",
+   "units": [
+    1362
+   ],
+   "area_ha": 6400,
+   "people": 0,
+   "threat_p10": 0.002,
+   "claim_share": 0.062,
+   "ud_share": 0.0,
+   "empt": 1.0,
+   "habitat_img": 0.36
+  },
+  {
+   "zone": 83,
    "cls": "core",
    "units": [
     2292
@@ -4705,7 +4672,7 @@
    "habitat_img": 0.2
   },
   {
-   "zone": 145,
+   "zone": 139,
    "cls": "wilderness",
    "units": [
     4424
@@ -4719,7 +4686,21 @@
    "habitat_img": 0.25
   },
   {
-   "zone": 135,
+   "zone": 128,
+   "cls": "wilderness",
+   "units": [
+    3913
+   ],
+   "area_ha": 6000,
+   "people": 0,
+   "threat_p10": 0.005,
+   "claim_share": 0.0,
+   "ud_share": 0.0,
+   "empt": 1.0,
+   "habitat_img": 0.01
+  },
+  {
+   "zone": 133,
    "cls": "community",
    "units": [
     4047
@@ -4733,7 +4714,7 @@
    "habitat_img": 0.23
   },
   {
-   "zone": 170,
+   "zone": 168,
    "cls": "wilderness",
    "units": [
     4939
@@ -4747,7 +4728,7 @@
    "habitat_img": 0.43
   },
   {
-   "zone": 175,
+   "zone": 173,
    "cls": "wilderness",
    "units": [
     4980
@@ -4761,7 +4742,7 @@
    "habitat_img": 0.43
   },
   {
-   "zone": 71,
+   "zone": 69,
    "cls": "core",
    "units": [
     1868
@@ -4775,7 +4756,7 @@
    "habitat_img": 0.36
   },
   {
-   "zone": 102,
+   "zone": 97,
    "cls": "corridor",
    "units": [
     2933
@@ -4789,7 +4770,7 @@
    "habitat_img": 0.35
   },
   {
-   "zone": 28,
+   "zone": 24,
    "cls": "core",
    "units": [
     1027,
@@ -4804,7 +4785,7 @@
    "habitat_img": 0.56
   },
   {
-   "zone": 29,
+   "zone": 25,
    "cls": "core",
    "units": [
     1028,
@@ -4819,7 +4800,7 @@
    "habitat_img": 0.56
   },
   {
-   "zone": 47,
+   "zone": 44,
    "cls": "corridor",
    "units": [
     1300
@@ -4833,21 +4814,7 @@
    "habitat_img": 0.35
   },
   {
-   "zone": 65,
-   "cls": "core",
-   "units": [
-    1773
-   ],
-   "area_ha": 4800,
-   "people": 0,
-   "threat_p10": 0.0,
-   "claim_share": 0.0,
-   "ud_share": 0.0,
-   "empt": 1.0,
-   "habitat_img": 0.36
-  },
-  {
-   "zone": 79,
+   "zone": 74,
    "cls": "core",
    "units": [
     2044
@@ -4861,7 +4828,21 @@
    "habitat_img": 0.21
   },
   {
-   "zone": 27,
+   "zone": 85,
+   "cls": "core",
+   "units": [
+    2349
+   ],
+   "area_ha": 4800,
+   "people": 0,
+   "threat_p10": 0.002,
+   "claim_share": 0.0,
+   "ud_share": 0.0,
+   "empt": 1.0,
+   "habitat_img": 0.1
+  },
+  {
+   "zone": 23,
    "cls": "core",
    "units": [
     1010,
@@ -4876,7 +4857,21 @@
    "habitat_img": 0.35
   },
   {
-   "zone": 108,
+   "zone": 37,
+   "cls": "core",
+   "units": [
+    1214
+   ],
+   "area_ha": 4400,
+   "people": 0,
+   "threat_p10": 0.002,
+   "claim_share": 0.0,
+   "ud_share": 0.0,
+   "empt": 1.0,
+   "habitat_img": 0.36
+  },
+  {
+   "zone": 103,
    "cls": "wilderness",
    "units": [
     3245
@@ -4890,7 +4885,21 @@
    "habitat_img": 0.36
   },
   {
-   "zone": 118,
+   "zone": 113,
+   "cls": "corridor",
+   "units": [
+    3542
+   ],
+   "area_ha": 4400,
+   "people": 0,
+   "threat_p10": 0.001,
+   "claim_share": 1.0,
+   "ud_share": 0.0,
+   "empt": 1.0,
+   "habitat_img": 0.21
+  },
+  {
+   "zone": 114,
    "cls": "core",
    "units": [
     3563
@@ -4904,7 +4913,7 @@
    "habitat_img": 0.25
   },
   {
-   "zone": 150,
+   "zone": 144,
    "cls": "core",
    "units": [
     4496
@@ -4918,7 +4927,21 @@
    "habitat_img": 0.2
   },
   {
-   "zone": 85,
+   "zone": 63,
+   "cls": "wilderness",
+   "units": [
+    1792
+   ],
+   "area_ha": 4000,
+   "people": 0,
+   "threat_p10": 0.001,
+   "claim_share": 0.0,
+   "ud_share": 0.0,
+   "empt": 1.0,
+   "habitat_img": 0.36
+  },
+  {
+   "zone": 81,
    "cls": "core",
    "units": [
     2239
@@ -4932,7 +4955,7 @@
    "habitat_img": 0.37
   },
   {
-   "zone": 110,
+   "zone": 105,
    "cls": "wilderness",
    "units": [
     3255
@@ -4946,7 +4969,7 @@
    "habitat_img": 0.22
   },
   {
-   "zone": 112,
+   "zone": 107,
    "cls": "wilderness",
    "units": [
     3320
@@ -4960,21 +4983,21 @@
    "habitat_img": 0.35
   },
   {
-   "zone": 18,
-   "cls": "community",
+   "zone": 161,
+   "cls": "core",
    "units": [
-    724
+    4859
    ],
-   "area_ha": 3600,
-   "people": 327,
-   "threat_p10": 0.34,
+   "area_ha": 4000,
+   "people": 0,
+   "threat_p10": 0.001,
    "claim_share": 0.0,
    "ud_share": 0.0,
-   "empt": 0.0,
-   "habitat_img": 0.21
+   "empt": 1.0,
+   "habitat_img": 0.08
   },
   {
-   "zone": 36,
+   "zone": 32,
    "cls": "core",
    "units": [
     1109
@@ -4988,35 +5011,21 @@
    "habitat_img": 0.35
   },
   {
-   "zone": 106,
-   "cls": "community",
-   "units": [
-    3080
-   ],
-   "area_ha": 3600,
-   "people": 0,
-   "threat_p10": 0.001,
-   "claim_share": 0.667,
-   "ud_share": 0.0,
-   "empt": 1.0,
-   "habitat_img": 0.0
-  },
-  {
-   "zone": 133,
+   "zone": 132,
    "cls": "core",
    "units": [
-    3932
+    3994
    ],
    "area_ha": 3600,
    "people": 0,
-   "threat_p10": 0.0,
+   "threat_p10": 0.009,
    "claim_share": 0.0,
    "ud_share": 0.0,
    "empt": 1.0,
-   "habitat_img": 0.2
+   "habitat_img": 0.02
   },
   {
-   "zone": 35,
+   "zone": 31,
    "cls": "core",
    "units": [
     1106
@@ -5030,7 +5039,7 @@
    "habitat_img": 0.35
   },
   {
-   "zone": 45,
+   "zone": 40,
    "cls": "core",
    "units": [
     1263
@@ -5044,10 +5053,10 @@
    "habitat_img": 0.21
   },
   {
-   "zone": 73,
+   "zone": 62,
    "cls": "core",
    "units": [
-    1884
+    1772
    ],
    "area_ha": 3200,
    "people": 0,
@@ -5055,10 +5064,10 @@
    "claim_share": 0.0,
    "ud_share": 0.0,
    "empt": 1.0,
-   "habitat_img": 0.36
+   "habitat_img": 0.22
   },
   {
-   "zone": 90,
+   "zone": 86,
    "cls": "core",
    "units": [
     2376
@@ -5072,7 +5081,7 @@
    "habitat_img": 0.23
   },
   {
-   "zone": 104,
+   "zone": 99,
    "cls": "community",
    "units": [
     2961
@@ -5086,7 +5095,7 @@
    "habitat_img": 0.21
   },
   {
-   "zone": 136,
+   "zone": 134,
    "cls": "core",
    "units": [
     4049
@@ -5100,7 +5109,7 @@
    "habitat_img": 0.37
   },
   {
-   "zone": 148,
+   "zone": 142,
    "cls": "wilderness",
    "units": [
     4470
@@ -5114,7 +5123,7 @@
    "habitat_img": 0.21
   },
   {
-   "zone": 159,
+   "zone": 153,
    "cls": "core",
    "units": [
     4708
@@ -5128,7 +5137,7 @@
    "habitat_img": 0.22
   },
   {
-   "zone": 34,
+   "zone": 30,
    "cls": "core",
    "units": [
     1089
@@ -5142,7 +5151,21 @@
    "habitat_img": 0.36
   },
   {
-   "zone": 43,
+   "zone": 36,
+   "cls": "community",
+   "units": [
+    1209
+   ],
+   "area_ha": 2800,
+   "people": 1,
+   "threat_p10": 0.148,
+   "claim_share": 0.0,
+   "ud_share": 0.0,
+   "empt": 0.821,
+   "habitat_img": 0.36
+  },
+  {
+   "zone": 38,
    "cls": "core",
    "units": [
     1221
@@ -5156,7 +5179,7 @@
    "habitat_img": 0.35
   },
   {
-   "zone": 83,
+   "zone": 79,
    "cls": "core",
    "units": [
     2193
@@ -5170,7 +5193,7 @@
    "habitat_img": 0.3
   },
   {
-   "zone": 94,
+   "zone": 89,
    "cls": "core",
    "units": [
     2630
@@ -5184,7 +5207,7 @@
    "habitat_img": 0.23
   },
   {
-   "zone": 100,
+   "zone": 95,
    "cls": "core",
    "units": [
     2874
@@ -5198,7 +5221,21 @@
    "habitat_img": 0.24
   },
   {
-   "zone": 130,
+   "zone": 100,
+   "cls": "core",
+   "units": [
+    2997
+   ],
+   "area_ha": 2800,
+   "people": 0,
+   "threat_p10": 0.004,
+   "claim_share": 0.0,
+   "ud_share": 0.0,
+   "empt": 1.0,
+   "habitat_img": 0.33
+  },
+  {
+   "zone": 129,
    "cls": "core",
    "units": [
     3926
@@ -5212,21 +5249,7 @@
    "habitat_img": 0.22
   },
   {
-   "zone": 143,
-   "cls": "corridor",
-   "units": [
-    4390
-   ],
-   "area_ha": 2800,
-   "people": 0,
-   "threat_p10": 0.002,
-   "claim_share": 0.0,
-   "ud_share": 0.0,
-   "empt": 1.0,
-   "habitat_img": 0.0
-  },
-  {
-   "zone": 164,
+   "zone": 162,
    "cls": "core",
    "units": [
     4873
@@ -5240,7 +5263,21 @@
    "habitat_img": 0.5
   },
   {
-   "zone": 24,
+   "zone": 172,
+   "cls": "wilderness",
+   "units": [
+    4974
+   ],
+   "area_ha": 2800,
+   "people": 0,
+   "threat_p10": 0.001,
+   "claim_share": 0.0,
+   "ud_share": 0.0,
+   "empt": 1.0,
+   "habitat_img": 0.3
+  },
+  {
+   "zone": 20,
    "cls": "community",
    "units": [
     811
@@ -5254,35 +5291,7 @@
    "habitat_img": 0.36
   },
   {
-   "zone": 54,
-   "cls": "corridor",
-   "units": [
-    1464
-   ],
-   "area_ha": 2400,
-   "people": 0,
-   "threat_p10": 0.001,
-   "claim_share": 0.0,
-   "ud_share": 0.0,
-   "empt": 1.0,
-   "habitat_img": 0.2
-  },
-  {
-   "zone": 55,
-   "cls": "core",
-   "units": [
-    1477
-   ],
-   "area_ha": 2400,
-   "people": 0,
-   "threat_p10": 0.001,
-   "claim_share": 0.5,
-   "ud_share": 0.0,
-   "empt": 1.0,
-   "habitat_img": 0.35
-  },
-  {
-   "zone": 66,
+   "zone": 64,
    "cls": "core",
    "units": [
     1795
@@ -5296,21 +5305,7 @@
    "habitat_img": 0.55
   },
   {
-   "zone": 67,
-   "cls": "core",
-   "units": [
-    1829
-   ],
-   "area_ha": 2400,
-   "people": 0,
-   "threat_p10": 0.003,
-   "claim_share": 0.0,
-   "ud_share": 0.0,
-   "empt": 1.0,
-   "habitat_img": 0.21
-  },
-  {
-   "zone": 70,
+   "zone": 68,
    "cls": "core",
    "units": [
     1859
@@ -5324,35 +5319,7 @@
    "habitat_img": 0.22
   },
   {
-   "zone": 87,
-   "cls": "core",
-   "units": [
-    2278
-   ],
-   "area_ha": 2400,
-   "people": 0,
-   "threat_p10": 0.001,
-   "claim_share": 0.0,
-   "ud_share": 0.0,
-   "empt": 1.0,
-   "habitat_img": 0.02
-  },
-  {
-   "zone": 89,
-   "cls": "core",
-   "units": [
-    2349
-   ],
-   "area_ha": 2400,
-   "people": 0,
-   "threat_p10": 0.002,
-   "claim_share": 0.0,
-   "ud_share": 0.0,
-   "empt": 1.0,
-   "habitat_img": 0.0
-  },
-  {
-   "zone": 95,
+   "zone": 90,
    "cls": "community",
    "units": [
     2637
@@ -5366,21 +5333,21 @@
    "habitat_img": 0.02
   },
   {
-   "zone": 105,
+   "zone": 102,
    "cls": "corridor",
    "units": [
-    3007
+    3238
    ],
    "area_ha": 2400,
-   "people": 13,
-   "threat_p10": 0.173,
+   "people": 0,
+   "threat_p10": 0.002,
    "claim_share": 0.0,
    "ud_share": 0.0,
-   "empt": 0.0,
-   "habitat_img": 0.35
+   "empt": 1.0,
+   "habitat_img": 0.36
   },
   {
-   "zone": 120,
+   "zone": 116,
    "cls": "core",
    "units": [
     3606
@@ -5394,7 +5361,7 @@
    "habitat_img": 0.2
   },
   {
-   "zone": 123,
+   "zone": 121,
    "cls": "core",
    "units": [
     3693
@@ -5408,7 +5375,7 @@
    "habitat_img": 0.42
   },
   {
-   "zone": 128,
+   "zone": 127,
    "cls": "core",
    "units": [
     3848
@@ -5422,21 +5389,35 @@
    "habitat_img": 0.36
   },
   {
-   "zone": 129,
+   "zone": 138,
    "cls": "core",
    "units": [
-    3913
+    4407
    ],
    "area_ha": 2400,
    "people": 0,
-   "threat_p10": 0.008,
+   "threat_p10": 0.001,
+   "claim_share": 0.833,
+   "ud_share": 0.0,
+   "empt": 1.0,
+   "habitat_img": 0.21
+  },
+  {
+   "zone": 154,
+   "cls": "core",
+   "units": [
+    4736
+   ],
+   "area_ha": 2400,
+   "people": 0,
+   "threat_p10": 0.0,
    "claim_share": 0.0,
    "ud_share": 0.0,
    "empt": 1.0,
-   "habitat_img": 0.02
+   "habitat_img": 0.21
   },
   {
-   "zone": 38,
+   "zone": 34,
    "cls": "core",
    "units": [
     1150
@@ -5450,35 +5431,7 @@
    "habitat_img": 0.51
   },
   {
-   "zone": 40,
-   "cls": "core",
-   "units": [
-    1182
-   ],
-   "area_ha": 2000,
-   "people": 0,
-   "threat_p10": 0.0,
-   "claim_share": 0.0,
-   "ud_share": 0.0,
-   "empt": 1.0,
-   "habitat_img": 0.56
-  },
-  {
-   "zone": 42,
-   "cls": "core",
-   "units": [
-    1213
-   ],
-   "area_ha": 2000,
-   "people": 0,
-   "threat_p10": 0.004,
-   "claim_share": 0.0,
-   "ud_share": 0.0,
-   "empt": 1.0,
-   "habitat_img": 0.36
-  },
-  {
-   "zone": 46,
+   "zone": 41,
    "cls": "core",
    "units": [
     1268
@@ -5492,7 +5445,21 @@
    "habitat_img": 0.36
   },
   {
-   "zone": 62,
+   "zone": 57,
+   "cls": "core",
+   "units": [
+    1654
+   ],
+   "area_ha": 2000,
+   "people": 0,
+   "threat_p10": 0.0,
+   "claim_share": 0.0,
+   "ud_share": 0.0,
+   "empt": 1.0,
+   "habitat_img": 0.51
+  },
+  {
+   "zone": 58,
    "cls": "core",
    "units": [
     1719
@@ -5506,7 +5473,21 @@
    "habitat_img": 0.36
   },
   {
-   "zone": 69,
+   "zone": 65,
+   "cls": "core",
+   "units": [
+    1838
+   ],
+   "area_ha": 2000,
+   "people": 0,
+   "threat_p10": 0.001,
+   "claim_share": 0.0,
+   "ud_share": 0.0,
+   "empt": 1.0,
+   "habitat_img": 0.36
+  },
+  {
+   "zone": 67,
    "cls": "core",
    "units": [
     1858
@@ -5520,7 +5501,7 @@
    "habitat_img": 0.22
   },
   {
-   "zone": 78,
+   "zone": 73,
    "cls": "core",
    "units": [
     2019
@@ -5534,7 +5515,7 @@
    "habitat_img": 0.35
   },
   {
-   "zone": 111,
+   "zone": 106,
    "cls": "core",
    "units": [
     3279
@@ -5548,7 +5529,7 @@
    "habitat_img": 0.21
   },
   {
-   "zone": 121,
+   "zone": 119,
    "cls": "core",
    "units": [
     3682
@@ -5562,7 +5543,7 @@
    "habitat_img": 0.2
   },
   {
-   "zone": 126,
+   "zone": 124,
    "cls": "core",
    "units": [
     3769
@@ -5576,7 +5557,7 @@
    "habitat_img": 0.42
   },
   {
-   "zone": 132,
+   "zone": 131,
    "cls": "core",
    "units": [
     3930
@@ -5590,63 +5571,7 @@
    "habitat_img": 0.36
   },
   {
-   "zone": 138,
-   "cls": "core",
-   "units": [
-    4146
-   ],
-   "area_ha": 2000,
-   "people": 0,
-   "threat_p10": 0.001,
-   "claim_share": 0.4,
-   "ud_share": 0.0,
-   "empt": 1.0,
-   "habitat_img": 0.51
-  },
-  {
-   "zone": 141,
-   "cls": "core",
-   "units": [
-    4228
-   ],
-   "area_ha": 2000,
-   "people": 0,
-   "threat_p10": 0.001,
-   "claim_share": 0.0,
-   "ud_share": 0.0,
-   "empt": 1.0,
-   "habitat_img": 0.11
-  },
-  {
-   "zone": 144,
-   "cls": "core",
-   "units": [
-    4407
-   ],
-   "area_ha": 2000,
-   "people": 0,
-   "threat_p10": 0.001,
-   "claim_share": 0.8,
-   "ud_share": 0.0,
-   "empt": 1.0,
-   "habitat_img": 0.21
-  },
-  {
-   "zone": 163,
-   "cls": "core",
-   "units": [
-    4836
-   ],
-   "area_ha": 2000,
-   "people": 0,
-   "threat_p10": 0.001,
-   "claim_share": 0.0,
-   "ud_share": 0.0,
-   "empt": 1.0,
-   "habitat_img": 0.21
-  },
-  {
-   "zone": 168,
+   "zone": 166,
    "cls": "core",
    "units": [
     4918

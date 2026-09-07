@@ -8,7 +8,7 @@ The solver decides the CLASSES (zoning is a land question and its objective is f
 this step decides WHERE A SMALL STAFF STANDS FIRST, which is a triage question and is answered with measured numbers only:
 
   ECHO  (community conservancy zones): urgency = the gold-rush exposure of the zone — the XSA mining model's top-5 % target cells
-        (skill: lift 3.25 over 5 % of cells, p 0.006, data/eval/xsa_mining/prediction.json), its candidates and the abandoned-
+        (skill printed in DEPLOY.txt from the prediction.json MINING_MODEL selects - scripts/mining_model.py), its candidates and the abandoned-
         village-on-gold watchlist — multiplied by people × conversion threat P10 (the fitted 2015→today model, AUC 0.86) and
         by the zone's shield of core/corridor (RANK.txt). A zone with no gold target and no people scores 0 and is not staffed.
         The team SITE is a GHSL settlement inside the zone (a settlement is water: people live there) that lies within
@@ -258,10 +258,15 @@ def main():
     # focal points: towns ≥ fp_min_pop, ranked per stage by the CHOSEN team sites within FP_REACH_KM (an FP follows its teams)
     town_pop = [(n, lo, la, sum(x[2] or 0 for x in IX["S"] if P.dkm((lo, la), (x[1], x[0])) <= 8)) for n, lo, la in IX["towns"]]
     town_pop = [t for t in town_pop if t[3] >= a.fp_min_pop]
-    def focal_points(chosen, n_fp):
+    def focal_points(chosen, n_fp, seed=()):
         """greedy by MARGINAL coverage: each focal point scores only the team sites no earlier focal point already holds within
-        FP_REACH_KM, so three FPs do not pile onto one cluster of teams while another region's teams report to nobody"""
+        FP_REACH_KM, so three FPs do not pile onto one cluster of teams while another region's teams report to nobody.
+        `seed` = focal points already standing (year 1's, when staging year 2): they stay, and count against n_fp."""
         teams_ = [s for s in chosen if s["kind"] != "FP"]; covered = set(); out = []
+        for f0 in seed:
+            served = [s for s in teams_ if P.dkm((f0["lon"], f0["lat"]), (s["lon"], s["lat"])) <= FP_REACH_KM]
+            covered.update(id(s) for s in served)
+            out.append(dict(f0, zone_uids=sorted({u for s in served for u in s["zone_uids"]}) or f0["zone_uids"]))
         while len(out) < n_fp:
             best = None
             for n, lo, la, tp in town_pop:
@@ -277,7 +282,7 @@ def main():
                             water="town (supplies itself)", season="year-round", why=f"town of {tp:,} people; {len(served)} of this year's team sites within {FP_REACH_KM:g} km ({', '.join(s['place'] for s in served)}), {len(new)} of them not held by an earlier focal point; county and traditional authorities are seated here", towns=[n], serves=[s["place"] for s in served]))
         return out
     # ---------------------------------------------------------------- staging: year 1, year 2 under the staff caps
-    def stage(cap_staff, n_echo, n_tango, n_fp):
+    def stage(cap_staff, n_echo, n_tango, n_fp, seed_fp=()):
         chosen = []; staff = 0; cnt = Counter()
         # interleave by urgency across kinds so year 1 is not all ECHO; FP added last (they follow the teams)
         pool = sorted([s for s in placed], key=lambda s: -s["urgency"])
@@ -285,18 +290,15 @@ def main():
             lim = n_echo if s["kind"] == "ECHO" else n_tango
             if cnt[s["kind"]] >= lim or staff + s["staff"] > cap_staff: continue
             chosen.append(s); cnt[s["kind"]] += 1; staff += s["staff"]
-        for s in focal_points(chosen, n_fp):
+        for s in focal_points(chosen, n_fp, seed_fp):
             if staff + 1 > cap_staff: break
             chosen.append(s); staff += 1
         return chosen, staff
-    y2, staff2 = stage(a.staff_y2, a.echo_y2, a.tango_y2, a.fp_y2)
+    # year 1 first; year 2 then starts from year 1's focal points (a town office is not moved because the teams' centre moved)
     y1, staff1 = stage(a.staff_y1, max(2, a.echo_y2 // 2), max(2, a.tango_y2 // 2), max(1, a.fp_y2 // 2))
+    y2, staff2 = stage(a.staff_y2, a.echo_y2, a.tango_y2, a.fp_y2, seed_fp=[s for s in y1 if s["kind"] == "FP"])
     y1_keys = {(s["kind"], s["place"]) for s in y1}
     for s in y2: s["year"] = 1 if (s["kind"], s["place"]) in y1_keys else 2
-    for s in y2:                                              # a year-1 FP town not re-picked in year 2 (the teams moved its centre): keep it, it is already there
-        pass
-    for s in y1:
-        if s["kind"] == "FP" and (s["kind"], s["place"]) not in {(t["kind"], t["place"]) for t in y2}: s["year"] = 1; y2.append(s)
     for i, s in enumerate([s for s in y2 if s["kind"] == "ECHO"], 1): s["id"] = f"E{i}"
     for i, s in enumerate([s for s in y2 if s["kind"] == "TANGO"], 1): s["id"] = f"T{i}"
     for i, s in enumerate([s for s in y2 if s["kind"] == "FP"], 1): s["id"] = f"F{i}"
@@ -332,7 +334,7 @@ def main():
             L.append(f"  zone {e['uid']:<4} urgency {e['urgency']:.2f}  gold t5/cand/watch/rep {e['gold_top05']}/{e['gold_cand']}/{e['gold_watch']}/{e['gold_rep']}  {e['people']:,} ppl  {', '.join(e['towns']) or '—'}" + (f"  [{e['skipped']}]" if e.get("skipped") else ""))
         return L
     L = text_out()
-    json.dump(dict(params=vars(a), team_size=TEAM, road_km=ROAD_KM, site_reach_km=SITE_REACH_KM, year1_staff=staff1, year2_staff=staff2, teams=y2, echo_candidates=[{k: v for k, v in e.items()} for e in echo], tango_candidates=[{k: v for k, v in t.items() if k not in ("udr", "mask")} for t in tango]),
+    json.dump(dict(params=vars(a), mining_model=P.MM.variant(), mining_note=G.mining_note, team_size=TEAM, road_km=ROAD_KM, site_reach_km=SITE_REACH_KM, year1_staff=staff1, year2_staff=staff2, teams=y2, echo_candidates=[{k: v for k, v in e.items()} for e in echo], tango_candidates=[{k: v for k, v in t.items() if k not in ("udr", "mask")} for t in tango]),
               open(OUT / f"deploy{tag}.json", "w"), indent=1, ensure_ascii=False)
     (OUT / f"DEPLOY{tag}.txt").write_text("\n".join(L) + "\n"); print("\n".join(L))
     if a.narrate: narrate(tag, y2, zs, a.workers); L = text_out(); (OUT / f"DEPLOY{tag}.txt").write_text("\n".join(L) + "\n"); print("\n".join(L[:6]))

@@ -52,6 +52,8 @@ from shapely.strtree import STRtree
 from shapely.prepared import prep
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / "scripts"))
+import mining_model as MM   # MINING_MODEL=heldout|insample -> which prediction.json the unit table reads
 DB, HDB = ROOT / "db.sqlite3", ROOT / "data/histmaps/labels.sqlite3"
 ZONES = ROOT / "data/plan_zones"
 OUT = ROOT / "data/plan_zones" / ("conservancy_units" if os.environ.get("PLAN_AOI", "XSA_Study_Area") == "XSA_Study_Area" else f"conservancy_units_{os.environ['PLAN_AOI']}")
@@ -232,7 +234,9 @@ def hist_waters(hcon, aoi):
     """1930s sheet WATER SYMBOLS (wells, pools, hafirs — the symbol layer is more reliable than traced linework) and
     swamp/pool/lake water LABELS, as point beacons. A boundary is described 'from X pool to Y well' by these."""
     B = (aoi.bounds[0], aoi.bounds[2], aoi.bounds[1], aoi.bounds[3])
-    pts = [((lo, la), (n or d or "water point").strip() + " (1930s water symbol)") for d, n, lo, la in
+    # `descr` is the tracer's SHAPE note ("circled dot", "question mark") - not a name and not a feature type; a symbol
+    # without a name is an "unnamed water point", which the boundary writer then declines to use as a landmark
+    pts = [((lo, la), ((n.strip() + " (1930s water symbol)") if n and n.strip() else "unnamed water point (1930s water symbol)")) for d, n, lo, la in
            hcon.execute("SELECT COALESCE(descr,''), name, lon, lat FROM symbols WHERE category='water' AND lon BETWEEN ? AND ? AND lat BETWEEN ? AND ?", B)]
     for t, lo, la in hcon.execute("SELECT text, lon, lat FROM labels_dedup WHERE category IN ('water','place','terrain') AND lon BETWEEN ? AND ? AND lat BETWEEN ? AND ?", B):
         t = re.sub(r"\s+", " ", t).strip()
@@ -523,15 +527,18 @@ def cells(con, G):
         la = np.array([d[0] for d in D]); lo = np.array([d[1] for d in D]); ar = np.array([d[3] or 0 for d in D]); yr = np.array([d[2] or 0 for d in D]); enc = np.array([d[4] in ("encroachment", "slash_burn") for d in D])
         add("clear_ev", lo, la); add("clear", lo, la, ar); add("clear20", lo[yr >= 2020], la[yr >= 2020], ar[yr >= 2020]); add("encroach", lo[enc], la[enc])
     # mining (model exists for XSA only; elsewhere unmeasured)
-    pj, gj = ROOT / "data/eval/xsa_mining/prediction.json", ROOT / "data/eval/xsa_mining/prediction.geojson"
+    pj, gj = MM.prediction_json(), MM.prediction_geojson()
     if AOI == "XSA_Study_Area" and pj.exists() and gj.exists():
-        pred = json.load(open(pj))
+        pred = json.load(open(pj)); G.mining_model = pred.get("mining_model", "insample")
         for key, pts in (("mine_rep", [(a["lon"], a["lat"]) for a in pred.get("anchors", []) if a.get("lat") is not None]),
                          ("mine_cand", [(c["lon"], c["lat"]) for c in pred.get("candidates", [])]),
                          ("mine_watch", [(w["lon"], w["lat"]) for w in pred.get("abandoned_village_gold_watchlist", {}).get("places", [])]),
                          ("mine_top05", [tuple(f["geometry"]["coordinates"][:2]) for f in json.load(open(gj))["features"] if f["properties"].get("tier") == "top05"])):
             if pts: add(key, *map(np.array, zip(*pts)))
-        G.mining_note = f"model composite skill: top-5% cells capture {pred['composite_skill'][0]['capture']:.0%} of known workings (lift {pred['composite_skill'][0]['lift']}); imagery targets, not mines"
+        sk5 = MM.skill_top(pred, 0.05)
+        G.mining_note = (f"model ({G.mining_model}) top-5% cells capture {sk5['capture']:.0%} of known workings "
+                         f"(lift {sk5['lift']} uniform, {sk5['lift_reach']} reach-corrected, p_reach {sk5['p_reach']}); "
+                         f"{MM.describe(pred)}; imagery targets, not mines")
         G.mining_measured = True
     else: G.mining_note = "mining: unmeasured (no detection model for this area)"; G.mining_measured = False
     # cropland (GLAD 30 m clips) → fraction per cell
@@ -859,7 +866,7 @@ def conservancies(con, st, refs, ctry, T, exclude, rim_km, reach_km, min_ha, tar
     mined = np.zeros((G.h, G.w), bool)
     if mining:
         # the model's top-5% cells + candidates + reported workings: what a licence would be applied for
-        pj = ROOT / "data/eval/xsa_mining/prediction.geojson"
+        pj = MM.prediction_geojson()
         if AOI == "XSA_Study_Area" and pj.exists():
             pts = []
             for f in json.load(open(pj))["features"]:

@@ -1,0 +1,6 @@
+IMAGERY CALIBRATION — 346 landscape chips (zoom 11) → 2121 fine units; Spearman rank agreement with what we hold:
+  cultivated mosaic  vs GLAD cropland 2019      ρ = 0.185
+  toich + water      vs JRC/HydroLAKES share    ρ = 0.133
+  human footprint    vs GHSL people/km²          ρ = 0.133
+  burnt              vs VIIRS fire density 24-25 ρ = 0.047
+  Reading: ρ ≥ 0.5 = the model sees what the raster measures; the imagery-only fields (gallery forest, relief, drainage, wetland extent) have no raster to check against and enter the solver at the weight the checkable ones earn.

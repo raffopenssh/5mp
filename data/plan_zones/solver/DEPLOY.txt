@@ -1,151 +1,190 @@
 DEPLOY — ECHO / TANGO / focal-point footprint on the solved zoning (zones.geojson). Team = 5 (4 scouts + 1 leader), FP = 1.
   year 1 ≤ 30 staff → 21 placed ({'TANGO': 2, 'ECHO': 2, 'FP': 1});  year 2 ≤ 80 staff → 53 placed ({'TANGO': 5, 'ECHO': 5, 'FP': 3}); caps ECHO 5 TANGO 5 FP 3
-  ECHO urgency = 0.5·gold-target rank + 0.3·(people × mean P10) rank + 0.2·shield rank, zero without a gold target (model composite skill: top-5% cells capture 16% of known workings (lift 3.25); imagery targets, not mines); TANGO urgency = 0.4·herd UD + 0.35·UD within 25 km of residents + 0.25·gold targets in band (rank-percentiles).
+  ECHO urgency = 0.5·gold-target rank + 0.3·(people × mean P10) rank + 0.2·shield rank, zero without a gold target (model (heldout) top-5% cells capture 28% of known workings (lift 5.66 uniform, 2.91 reach-corrected, p_reach 0.0007); held-out: L2 logistic regression on binary evidence layers, trained on 559 reported-site clusters in CAF/SSD/SDN outside a 50 km moat round the study area, recipe and settings chosen by spatial 5-fold cross-validation on that training region only, then scored ONCE on the 46 study-area clusters (scripts/regional_mining/nested_cv.py); imagery targets, not mines); TANGO urgency = 0.4·herd UD + 0.35·UD within 25 km of residents + 0.25·gold targets in band (rank-percentiles).
   a site = GHSL settlement ≥ 150 people (residence implies water; mapped water re-checked and printed); ECHO needs a trunk…tertiary road ≤ 5 km or OSRM car trips (motorbikes); TANGO walks with the herds (no road test; helicopter in extremis). Shortlist scored by OSRM reach within 4 h; muse-glimmer adjudicates among the shortlisted sites only. Footprint = served zones + 25 km round the site.
 
 YEAR 1
-  F1  FP    x1  Wau  (27.9909, 7.7001)  urgency 0.47  zones [158, 182, 249]  footprint 11,189 km²
-        water: town (supplies itself); road 0.2 km; when: year-round
-        why: town of 119,818 people; 4 of this year's team sites within 120 km (Kuajiena, Wau, Busseri River* (nearest_place, unverified), Bisellia), 4 of them not held by an earlier focal point; county and traditional authorities are seated here
-        short: Focal point based in Wau covers zones bounded by Nahr al Jur, Busseri River and unnamed river to watch mining exposure and transhumance.
-        brief: Based in Wau, year-round focal point serves 119,818 people where county and traditional authorities are seated and four team sites lie within 120 km. Ground includes zone with towns Agork, Malong Kway and Madud Nyok bounded on NW by unnamed river and on E/NE by Nahr al Jur. A second zone with Wau is bounded by Nahr al Jur and Busseri River and R. Asetti. A third larger zone around Sirur is bounded by J. ABU RASEIN – J. NGAYA ridge and unnamed river and Boro. Meet county and traditional authorities in Wau regularly and herders moving in September and October; watch for mining exposure, gold-target cells and clearing since 2020.
-        first season: Prioritise beaconing the 40 km geological contact in the first zone and the 16 km contact near Wau before the rains. Meet authorities in Wau and leaders in Agork to confirm September herd onset and agree on reporting for gold-target cells and clearing.
-  E1  ECHO  x5  Wau  (27.9834, 7.7111)  urgency 0.96  zones [182]  footprint 2,436 km²
-        water: Nahr al Jur (HydroRIVERS) 2.6 km; road 0.3 km; when: year-round; village outreach in the rains, boundary walks Dec–Feb
-        why: community zone 182 ranks 1/100 on gold-rush urgency: 34 top-5% gold-target cells, 1 model candidates, 3 abandoned-village-on-gold watchlist places, 0 reported workings; 138,429 people, people×threat 15,089, 8 settlements founded since 2015; shields core/corridor on 67% of its edge; budget rank C1. Site: 104,260 people, road 0.3 km, reaches 100% of the zone's targets within 4 h (100% of those trips by car/motorbike; median 70 min; OSRM car/foot/bush).
-        site: muse-glimmer chose #1 (Wau): All three sites have reach share 1.0. Site 1 has the shortest median 70 min versus 76 min and 73 min for sites 2 and 3, with 104260 people and road 0.3 km.; shortlist [('Wau', 104260, 1.0), ('Wau', 15443, 1.0), ('Akej (1930s village)', 3816, 1.0)]
-        short: Based in Wau, ECHO team monitors community zone 182 for gold-rush pressure along rivers and villages.
-        brief: Team is based in Wau with 104,260 people, 0.3 km road and 2.6 km from Nahr al Jur to cover community zone 182 with high gold-rush urgency. Ground is bounded by Nahr al Jur 64 km on SE/N, Busseri River 18 km on S/E and R. Asetti 14 km on N. Work is year-round with community scouts, village outreach in the rains and boundary walks Dec–Feb, meeting settlements around Wau, Akej and Nahr al Jur. It watches for 34 gold-target cells, 1 model candidate and 3 abandoned-village-on-gold watchlist places with 0 reported workings.
-        first season: Establish beacons along the 16 km geological contact that is not visible on the ground. Begin village outreach in the rains and prepare boundary walks Dec–Feb.
-  E2  ECHO  x5  Tambura  (27.5063, 5.5828)  urgency 0.93  zones [171]  footprint 2,143 km²
-        water: settlement of 31,951 people (water implied by residence); no mapped river/well/JRC water within 3 km — verify; road 1.6 km; when: year-round; village outreach in the rains, boundary walks Dec–Feb
-        why: community zone 171 ranks 2/100 on gold-rush urgency: 15 top-5% gold-target cells, 0 model candidates, 2 abandoned-village-on-gold watchlist places, 2 reported workings; 36,536 people, people×threat 3,032, 0 settlements founded since 2015; shields core/corridor on 94% of its edge; budget rank C6. Site: 31,951 people, road 1.6 km, reaches 100% of the zone's targets within 4 h (100% of those trips by car/motorbike; median 33 min; OSRM car/foot/bush).
-        site: muse-glimmer chose #1 (Tambura): Tambura has reach share 1.0 with median 33 min, shorter than Senekpuro 67 min and Karsing R.H. 47 min. It is 31,951 people, so the under-1,000 hamlet rule does not apply.; shortlist [('Tambura', 31951, 1.0), ('Senekpuro', 2821, 1.0), ('Karsing R.H. (1930s)', 748, 1.0)]
-        short: Based in Tambura, team covers community zone 171 to monitor gold-target cells and mining pressure along the conservancy boundary.
-        brief: Based in Tambura with year-round presence, the ECHO team supports the community conservancy of zone 171 because the site reaches all gold-target cells within 4 hours by car or motorbike, median 33 minutes, from 31,951 residents. The ground covers about 120,000 ha with 15 gold-target cells, 2 abandoned-village-on-gold watchlist places and 2 reported workings along edges such as K. Barange, CAF border and R. Lile. Scouts meet villages in Tambura and Senekpuro during the rains for outreach and conduct boundary walks Dec–Feb. They watch for new artisanal mining, incursions along the 94% shields edge and movement on the unnamed river and Tambura - Yubo Road.
-        first season: Verify water access within 3 km of Tambura base as no mapped river or well is recorded. Walk the Dec–Feb boundary to mark the 28 km geological contact that needs beacons.
-  T1  TANGO x5  Kuajiena  (28.2741, 7.4963)  urgency 1.00  zones [249]  footprint 25,182 km²
-        water: settlement of 1,350 people (water implied by residence); no mapped river/well/JRC water within 3 km — verify; road 0.4 km; when: from month 09 (bundle onset) through the dry season
-        why: corridor zone 249 ranks 1/12 on herd × people × gold: bundles [4, 11, 8, 15] (2,137 fitted fronts), herd utilisation in band 487.00 of which 93% within 25 km of residents; 47 gold-target cells in the band; 6,938 people on corridor land. Site: 1,350 people, road 0.4 km, reaches 34% of the zone's targets within 4 h (100% of those trips by car/motorbike; median 319 min; OSRM car/foot/bush).
-        site: muse-glimmer chose #1 (Kuajiena): Kuajiena has 1,350 people with reach share 0.345. Bisellia reach share 0.391 and Busseri reach share 0.363 are both within 0.15 of the larger site's reach, so the under-1,000 hamlets are disallowed by rule 1.; shortlist [('Kuajiena', 1350, 0.345), ('Busseri* (nearest_place, unverified)', 158, 0.363), ('Bisellia', 211, 0.391)]
-        short: Based at Kuajiena, TANGO team travels with transhumant herders in corridor zone 249 to monitor herd people gold contacts.
-        brief: Team is based at Kuajiena, a settlement of 1,350 people with 0.4 km of road and no mapped river or well within 3 km to verify. It serves corridor zone 249 in SSD covering about 2,452,400 ha with 6,938 people on corridor land. Ground is bounded on the NW by J. ABU RASEIN – J. NGAYA ridge, on the NW/E by unnamed river and on the W/NW by Boro, with 308 km along a geological contact that needs beacons. The team moves with herders from bundle onset month 09 through dry season following bundles 4, 11, 8 and 15 with 2,137 fitted fronts, 93% of herd use within 25 km of residents. It watches for 47 gold-target cells in the band, herd movements and people pressure across the corridor.
-        first season: First verify water access near Kuajiena and establish contact with herders for month 09 onset and dry season movement. Confirm road and motorbike access to reach the zone targets within 4 hours and begin beaconing the geological contact.
-  T2  TANGO x5  Mvolo  (29.9522, 6.0544)  urgency 0.91  zones [259]  footprint 11,621 km²
-        water: settlement of 430 people (water implied by residence); no mapped river/well/JRC water within 3 km — verify; road 0.1 km; when: from month 10 (bundle onset) through the dry season
-        why: corridor zone 259 ranks 2/12 on herd × people × gold: bundles [14, 5, 7] (1,763 fitted fronts), herd utilisation in band 299.55 of which 100% within 25 km of residents; 31 gold-target cells in the band; 12,361 people on corridor land. Site (adjudicated): 8,713 people, road 0.1 km, reaches 28% of targets within 4 h (100% by car/motorbike).
-        site: muse-glimmer chose #3 (Mvolo): Kozi has 430 people and reach share 0.365, and Mvolo with 8713 people has reach share 0.276 which is within 0.15 of it, so the hamlet fails rule 1. Mvolo remains with reach share 0.276 and median 428 min.; shortlist [('Kozi', 430, 0.365), ('Abdulla* (nearest_place, unverified)', 220, 0.33), ('Mvolo', 8713, 0.276)]
-        short: Based in Mvolo, team travels corridor zone 259 with transhumant herders to monitor herd movements near people and gold-target cells.
-        brief: Team is based in Mvolo in South Sudan, site of about 8,700 people with about 0.1 km road access and water implied by residence, though no mapped river or well is within 3 km to verify, and it reaches about 28% of targets within 4 hours. It covers corridor zone 259, bounded by Nahr al Jur on the south-west, unnamed river order 4 on the south-east, and K. Daberi on the north-east, with about 12,400 people on corridor land and 31 gold-target cells in the herd utilisation band. Scouts travel with transhumant herders from month 10 bundle onset through the dry season, following bundles 14, 5 and 7 with about 1,760 fitted fronts. They meet herders along the corridor and watch for herd use within 25 km of residents, new mining activity near gold-target cells, and clearing.
-        first season: First verify water sources within 3 km of Mvolo and confirm road access to the corridor. Then establish contact with herders for bundles 14, 5 and 7 at month 10 onset and map movement routes toward Nahr al Jur and unnamed river.
+  F1  FP    x1  Zémio  (25.1293, 5.0248)  urgency 0.46  zones [273]  footprint 11,248 km²
+        water: town (supplies itself); road 0.0 km; when: year-round
+        why: town of 29,065 people; 1 of this year's team sites within 120 km (Bandasi), 1 of them not held by an earlier focal point; county and traditional authorities are seated here
+        short: Focal point based in Zémio monitors a 144,400 ha community zone around Bandasi and Mboufo, linking county authorities to early reporting.
+        brief: One-person focal point is based year-round in Zémio, town of 29,065 people where county and traditional authorities are seated, with one team site within 120 km at Bandasi and a new site not held before. It serves community zone 273 in COD, 144,400 ha bounded on E/NE by an unnamed river, on SW/W by Asa and on W/NW by Mbomou, with secondary road on SE and primary road on W/NW. Meetings happen year-round in town with authorities and communities from Bandasi and Mboufo. The zone has 11 gold-target cells and 2 reported workings, about 20 km2 clearing since 2020, 6% unattributed land and 314 km long fronts, with Gambara on the western stretch and a 6 km geological contact needing beacons.
+        first season: First, confirm contacts with county and traditional authorities in Zémio and register representatives from Bandasi and Mboufo. Second, walk the Asa, Mbomou and unnamed river edges to verify Gambara and mark the 6 km geological contact needing beacons.
+  E1  ECHO  x5  Bandasi  (25.1492, 5.0537)  urgency 0.92  zones [273]  footprint 2,748 km²
+        water: Mbomou (HydroRIVERS) 2.6 km; road 0.3 km; when: year-round; village outreach in the rains, boundary walks Dec–Feb
+        why: community zone 273 ranks 1/131 on gold-rush urgency: 11 top-5% gold-target cells, 0 model candidates, 0 abandoned-village-on-gold watchlist places, 2 reported workings; 29,158 people, people×threat 1,487, 1 settlements founded since 2015; shields core/corridor on 95% of its edge; budget rank C19. Site: 25,446 people, road 0.3 km, reaches 82% of the zone's targets within 4 h (100% of those trips by car/motorbike; median 95 min; OSRM car/foot/bush).
+        site: muse-glimmer chose #1 (Bandasi): Bandasi has reach share 0.818 with median 95 min, tying the 0.818 reach share of the second site but beating its 99 min median. The site has 25,446 people and road 0.3 km, satisfying the settlement requirement.; shortlist [('Bandasi', 25446, 0.818), ('Mboufo', 2265, 0.818), ('Mboufo', 1345, 0.727)]
+        short: Based in Bandasi, team covers community zone 273 along Mbomou and Asa to monitor gold rush pressure and community exposure.
+        brief: Based in Bandasi, 25,446 people, road 0.3 km, Mbomou 2.6 km away, the team covers community zone 273 with 29,158 people including Bandasi and Mboufo. Ground is bounded by unnamed river on E/NE, Asa on SW/W and Mbomou on W/NW, with Gambara village marked on the west. Work is year-round with village outreach in the rains and boundary walks Dec–Feb, reaching 82% of targets within 4 h by car or motorbike with median 95 min. The team meets residents to watch 11 top-5% gold-target cells, 0 model candidates, 0 abandoned-village-on-gold watchlist places and 2 reported workings, amid 20 km2 clearing since 2020 and 94% transhumance share.
+        first season: Begin village outreach in the rains in Bandasi and Mboufo to map gold-target cells and reported workings. Conduct boundary walks Dec–Feb along Asa and Mbomou to check shields core/corridor edge and mark the 6 km geological contact.
+  E2  ECHO  x5  Songo  (24.3539, 9.7814)  urgency 0.90  zones [145]  footprint 2,511 km²
+        water: Umbelasha (HydroRIVERS) 1.4 km; road 3.8 km; when: year-round; village outreach in the rains, boundary walks Dec–Feb
+        why: community zone 145 ranks 2/131 on gold-rush urgency: 6 top-5% gold-target cells, 0 model candidates, 0 abandoned-village-on-gold watchlist places, 6 reported workings; 37,847 people, people×threat 1,438, 1 settlements founded since 2015; shields core/corridor on 58% of its edge; budget rank C20. Site: 34,320 people, road 3.8 km, reaches 78% of the zone's targets within 4 h (94% of those trips by car/motorbike; median 145 min; OSRM car/foot/bush).
+        site: muse-glimmer chose #1 (Songo): First entry has 34,320 people, reach share 0.779 and median 145 min. The 579-person hamlet shares reach 0.779 with larger sites within 0.15, so it is disqualified under rule 1.; shortlist [('Songo', 34320, 0.779), ('أم حجار', 579, 0.779), ('Songo', 1157, 0.779)]
+        short: Based in Songo, team covers community zone 145 to monitor gold-target cells and reported workings along Umbelasha and ridge boundaries.
+        brief: Team is based in Songo with 34,320 people, 3.8 km road and Umbelasha 1.4 km away, covering community zone 145 with 37,847 people and 1 settlement founded since 2015. Ground is bounded on the N/NE by Umbelasha, on the SW by J. KOAYA – J. NOAYA 4428 – J. HELISI ridge and on the S/SE by Adda, with shields core/corridor on 58% of the edge. Work is year-round with village outreach in the rains and boundary walks Dec–Feb, meeting residents in Songo. It watches for activity on 6 top-5% gold-target cells and 6 reported workings.
+        first season: Begin village outreach in Songo during the rains and start boundary walks Dec–Feb along Umbelasha and the ridge. Place beacons for the 34 km geological contact stretch that is not visible on the ground.
+  T1  TANGO x5  Aluk (1930s village)  (27.5076, 8.457)  urgency 1.00  zones [280]  footprint 26,927 km²
+        water: settlement of 211 people (water implied by residence); no mapped river/well/JRC water within 3 km — verify; road 2.0 km; when: from month 09 (bundle onset) through the dry season
+        why: corridor zone 280 ranks 1/11 on herd × people × gold: bundles [4, 11, 15, 8] (2,137 fitted fronts), herd utilisation in band 550.16 of which 94% within 25 km of residents; 36 gold-target cells in the band; 5,426 people on corridor land. Site (adjudicated): 721 people, road 2.0 km, reaches 28% of targets within 4 h (96% by car/motorbike).
+        site: muse-glimmer chose #3 (Aluk (1930s village)): Bisellia 211 has larger Abang 305 within 0.018 of its 0.362 reach share, and Abang 305 has larger Aluk 721 within 0.059 of its 0.344 reach share, so the only under-1000 hamlet with no larger site within 0.15 is Aluk 721 with reach share 0.285 and median 339 min.; shortlist [('Bisellia', 211, 0.362), ('Abang', 305, 0.344), ('Aluk (1930s village)', 721, 0.285)]
+        short: Based at Aluk 1930s village, team travels with transhumant herders across corridor zone 280 to monitor herd movement and gold-target cells.
+        brief: Team is based at Aluk 1930s village, 721 people with 2 km road, chosen for access to corridor zone 280 that covers 5,426 people and 36 gold-target cells with 2,137 fitted fronts. The zone is bounded by tertiary road on the E/W, unnamed river order 4 on the E/NW and Low hill J. ABU RASEIN – J. NGAYA ridge on the NW/W. Scouts move with transhumant herders from month 09 onset through dry season, accompanying four bundles as they cross the corridor. Work is to monitor herd movement near communities, where 94% of utilisation lies within 25 km of residents, and watch for activity around gold-target cells while verifying water near the settlement of 211 people.
+        first season: Verify water availability within 3 km of Aluk, as no mapped river, well or JRC water is recorded. Establish contact with herders of the month 09 onset bundle and map movement routes to gold-target cells reachable within 4 h on foot and 96% by car or motorbike.
+  T2  TANGO x5  Busseri* (nearest_place, unverified)  (26.6985, 7.7258)  urgency 0.85  zones [280]  footprint 26,329 km²
+        water: settlement of 721 people (water implied by residence); no mapped river/well/JRC water within 3 km — verify; road 0.2 km; when: from month 09 (bundle onset) through the dry season
+        why: corridor zone 280 ranks 1/11 on herd × people × gold: bundles [4, 11, 15, 8] (2,137 fitted fronts), herd utilisation in band 550.16 of which 94% within 25 km of residents; 36 gold-target cells in the band; 5,426 people on corridor land. Second team: the zone spans 4 bundles and 2.6 M ha; this site is > 50 km from the first. Site: 721 people, road 2.0 km, reaches 28% of the zone's targets within 4 h (96% of those trips by car/motorbike; median 339 min; OSRM car/foot/bush).
+        site: muse-glimmer chose #1 (Aluk (1930s village)): Aluk is 721 people with reach share 0.285 and median 339 min. No larger site exists in the shortlist, so the under-1,000 hamlet condition is met and the first entry is retained. → moved to Busseri* (nearest_place, unverified): the chosen site was within 50 km of a higher-urgency TANGO site; shortlist [('Aluk (1930s village)', 721, 0.285), ('Busseri River* (nearest_place, unverified)', 599, 0.289), ('Busseri* (nearest_place, unverified)', 158, 0.345)]
+        short: Based at Busseri, scouts travel with transhumant herders across corridor zone 280 to monitor herd movement and gold-target cells.
+        brief: The team is based at Busseri near a settlement of 721 people with road 0.2 km away and water to verify within 3 km, covering corridor zone 280 of about 2.6 M ha in SSD with 5,426 people. Ground is bounded by tertiary road on the E/W, unnamed river order 4 on the E/NW, and Low hill J. ABU RASEIN J. NGAYA ridge on the NW/W, with 36 gold-target cells across four bundles. Scouts travel with transhumant herders from month 09 onset through the dry season, meeting herders moving along fronts. They watch for herd movement, use of land near residents, and activity around gold-target cells and reported workings.
+        first season: Verify water sources within 3 km of Busseri and confirm road access for car and motorbike trips with median 339 min. Establish contact with herders on bundle 4 as onset month 09 begins and map current front lines near Abu Ras and Rihan.
 
 YEAR 2 (adds to year 1)
-  F2  FP    x1  Tambura  (27.4683, 5.6096)  urgency 0.27  zones [171, 258]  footprint 11,237 km²
+  F2  FP    x1  Tambura  (27.4683, 5.6096)  urgency 0.32  zones [248, 289]  footprint 11,237 km²
         water: town (supplies itself); road 0.6 km; when: year-round
-        why: town of 35,520 people; 2 of this year's team sites within 120 km (Tambura, Yubo), 2 of them not held by an earlier focal point; county and traditional authorities are seated here
-        short: Focal point based in Tambura watches the Tambura community zone in South Sudan and Yubo corridor in Central African Republic for mining pressure.
-        brief: The one-person focal point is based year-round in Tambura, a town of 35,520 people where county and traditional authorities are seated, covering two sites within 120 km not held by an earlier focal point. It covers a 119,600 ha community zone in South Sudan around Tambura and Senekpuro bounded by K. Barange, CAF border and Tambura - Yubo Road, and a 969,600 ha corridor in Central African Republic around Yubo bounded by CAF border, unnamed river and R. Imatima. In town it meets county and traditional authorities continuously, and it links with transhumant herder bundles moving through the corridor with onset 10. It watches for mining pressure on gold-target cells, reported workings and watchlist sites, and for clearing along fronts.
-        first season: First, meet county and traditional authorities in Tambura to confirm year-round access and reporting lines for the community zone and corridor. Second, ground-check gold-target cells and watchlist sites in the Tambura community zone and note where beacons are needed along the geological contact.
-  F3  FP    x1  Aweil  (27.3962, 8.7693)  urgency 0.24  zones [158, 167, 250]  footprint 11,159 km²
-        water: town (supplies itself); road 0.1 km; when: year-round
-        why: town of 37,649 people; 3 of this year's team sites within 120 km (Busseri River* (nearest_place, unverified), Kuom, Aroyo), 2 of them not held by an earlier focal point; county and traditional authorities are seated here
-        short: Focal point based in Aweil monitors three nearby zones and coordinates with county and traditional authorities year-round.
-        brief: The focal point sits in Aweil, a town of 37,649 people where county and traditional authorities are seated, with three team sites within 120 km including Busseri River, Kuom and Aroyo and two not held by an earlier focal point. It serves zones 158, 167 and 250 that border unnamed river order 4, Nahr al Jur and Lol among other named edges, and includes villages such as Agork, Malong Kway and Madud Nyok. Year-round liaison is with county and traditional authorities in Aweil, and with herders of bundle 4 that move on zone 158 with onset in September. Watch for gold-target cells 25, 21 and 8, candidates 3, 1 and 0, watchlist 3, 1 and 0 with no reported workings, long fronts of about 1,269 km, 852 km and 1,019 km and very low clearing since 2020.
-        first season: First confirm reporting lines with county and traditional authorities in Aweil for zones 158, 167 and 250. Then mark the geological contact stretches that need beacons along boundaries of those zones.
-  E3  ECHO  x5  Songo  (24.3539, 9.7814)  urgency 0.89  zones [204]  footprint 3,323 km²
-        water: Umbelasha (HydroRIVERS) 1.4 km; road 3.8 km; when: year-round; village outreach in the rains, boundary walks Dec–Feb
-        why: community zone 204 ranks 3/100 on gold-rush urgency: 30 top-5% gold-target cells, 0 model candidates, 2 abandoned-village-on-gold watchlist places, 7 reported workings; 40,599 people, people×threat 1,299, 2 settlements founded since 2015; shields core/corridor on 71% of its edge; budget rank C22. Site: 34,320 people, road 3.8 km, reaches 94% of the zone's targets within 4 h (96% of those trips by car/motorbike; median 148 min; OSRM car/foot/bush).
-        site: muse-glimmer chose #1 (Songo): Songo has reach share 0.94 which is higher than 0.881 for كافيا كنجي. أم حجار is 579 people with reach share 1.0 but a larger site reaches 0.94, within 0.15 of its share, so it is disqualified under rule 1.; shortlist [('Songo', 34320, 0.94), ('كافيا كنجي', 2373, 0.881), ('أم حجار', 579, 1.0)]
-        short: Based in Songo, team covers community zone 204 to monitor gold rush pressure and support community conservancy year-round.
-        brief: Based in Songo near Umbelasha 1.4 km away with 34,320 people and 3.8 km road, the team reaches 94% of zone 204 targets within 4 hours, median 148 minutes. Zone 204 is 215,600 ha with 40,599 people and 2 settlements founded since 2015, bounded by SDN border on SE/S, Umbelasha on NW/N and Adda on E/SW. Work is year-round with village outreach in the rains and boundary walks Dec–Feb, meeting communities around Jebel Mishmira and Said Bambas. Watch for 30 top-5% gold-target cells, 7 reported workings and 2 abandoned-village-on-gold watchlist places, with shields core/corridor on 71% of its edge.
-        first season: First, conduct village outreach in the rains to map gold workings and abandoned villages. Second, start boundary walks Dec–Feb along Umbelasha and SDN border to assess the 66 km geological contact that needs beacons.
-  E4  ECHO  x5  Busseri River* (nearest_place, unverified)  (27.6563, 8.1644)  urgency 0.88  zones [158]  footprint 3,199 km²
-        water: settlement of 30,418 people (water implied by residence); no mapped river/well/JRC water within 3 km — verify; road 0.0 km; when: year-round; village outreach in the rains, boundary walks Dec–Feb
-        why: community zone 158 ranks 4/100 on gold-rush urgency: 25 top-5% gold-target cells, 3 model candidates, 3 abandoned-village-on-gold watchlist places, 0 reported workings; 51,736 people, people×threat 3,052, 5 settlements founded since 2015; shields core/corridor on 42% of its edge; budget rank C16. Site (adjudicated): 2,066 people, road 0.0 km, reaches 100% of targets within 4 h (100% by car/motorbike).
-        site: muse-glimmer chose #2 (Busseri River* (nearest_place, unverified)): All three sites reach 1.0 share of the zone’s targets. With reach tied, the shorter median is preferred; Busseri River* has median 80 min versus 144 min for Kuajok and 156 min for Madud Nyok, people 2066 >1000 so rule 1 does not apply and the site has a settlement.; shortlist [('Kuajok', 30418, 1.0), ('Busseri River* (nearest_place, unverified)', 2066, 1.0), ('Madud Nyok (1930s village)', 2107, 1.0)]
-        short: Based at Busseri River* with 2,066 people, cover community zone 158 to monitor gold rush risk and boundary integrity.
-        brief: Team is based at Busseri River* with 2,066 people and 0 km road, covering community zone 158 in SSD with 51,736 people across four villages. The zone is bounded by unnamed river on NW/W 42 km, Nahr al Jur on E/NE 30 km and K Akali on SW/S 22 km, with 40 km along a geological contact needing beacons. Year-round presence with village outreach in rains and boundary walks Dec–Feb, meeting communities at Agork, Malong Kway and Madud Nyok. Watch for 25 gold-target cells, 3 model candidates and 3 abandoned-village-on-gold watchlist places with 0 reported workings, plus new settlement pressure from 5 settlements founded since 2015.
-        first season: Verify water access near settlement of 30,418 people where no mapped river/well/JRC water is within 3 km. Establish beacons along the 40 km geological contact section of the boundary.
-  E5  ECHO  x5  Kuom  (27.4093, 8.7302)  urgency 0.87  zones [167]  footprint 2,464 km²
-        water: settlement of 37,649 people (water implied by residence); no mapped river/well/JRC water within 3 km — verify; road 0.2 km; when: year-round; village outreach in the rains, boundary walks Dec–Feb
-        why: community zone 167 ranks 5/100 on gold-rush urgency: 21 top-5% gold-target cells, 1 model candidates, 1 abandoned-village-on-gold watchlist places, 0 reported workings; 53,761 people, people×threat 2,849, 8 settlements founded since 2015; shields core/corridor on 50% of its edge; budget rank C32. Site: 37,649 people, road 0.2 km, reaches 100% of the zone's targets within 4 h (100% of those trips by car/motorbike; median 76 min; OSRM car/foot/bush).
-        site: muse-glimmer chose #1 (Kuom): Kuom has reach share 1.0 with median 76 min, shorter than the other shortlisted sites at 92 min and 112 min, both also with share 1.0. It has 37,649 people and road 0.2 km.; shortlist [('Kuom', 37649, 1.0), ('Maluil Akong', 1996, 1.0), ('Maluil Akong', 1572, 1.0)]
-        short: Based in Kuom, team covers community zone 167 to monitor gold-target cells and support villages near E. Kome.
-        brief: Team is based in Kuom with 37,649 people and 0.2 km road access, reaching 100 percent of zone 167 targets within 4 hours median 76 minutes by car or motorbike. Zone 167 holds 53,761 people with 8 settlements founded since 2015 and is bounded by Lol on N/NE for 32 km, I Kayak on S for 16 km and unnamed river order 4 on SE/S for 14 km. Work is year-round with village outreach in the rains and boundary walks Dec–Feb. Scouts meet communities around E. Kome and Busseri River. They watch for 21 top-5 percent gold-target cells, 1 model candidate and 1 abandoned-village-on-gold watchlist place with 0 reported workings.
-        first season: Verify water sources within 3 km of Kuom as no mapped river or well is recorded, and begin village outreach in the rains. First boundary walk along Lol and I Kayak is scheduled Dec–Feb.
-  T3  TANGO x5  Bisellia  (27.7252, 7.7155)  urgency 0.85  zones [249]  footprint 25,297 km²
-        water: settlement of 158 people (water implied by residence); no mapped river/well/JRC water within 3 km — verify; road 0.1 km; when: from month 09 (bundle onset) through the dry season
-        why: corridor zone 249 ranks 1/12 on herd × people × gold: bundles [4, 11, 8, 15] (2,137 fitted fronts), herd utilisation in band 487.00 of which 93% within 25 km of residents; 47 gold-target cells in the band; 6,938 people on corridor land. Second team: the zone spans 4 bundles and 2.5 M ha; this site is > 50 km from the first. Site (adjudicated): 211 people, road 0.1 km, reaches 39% of targets within 4 h (99% by car/motorbike).
-        site: muse-glimmer chose #2 (Bisellia): Busseri with 158 people and reach share 0.363 is disqualified because Bisellia with 211 people has reach share 0.391 within 0.028 of it. Bisellia has the higher reach share 0.391 versus Raja's 0.171 with median 292 min versus 432 min.; shortlist [('Busseri* (nearest_place, unverified)', 158, 0.363), ('Bisellia', 211, 0.391), ('Raja', 289, 0.171)]
-        short: Based at Bisellia, team travels with herders across corridor zone 249 to protect gold-target cells near people.
-        brief: Based at Bisellia, a settlement of 211 people with 0.1 km road, the TANGO team covers corridor zone 249 in SSD because it serves 6,938 people and 47 gold-target cells across 2.5 M ha with 2,137 fitted fronts. The zone is bounded on the W/NW by Boro, on the SW/NW by Sopo, and on the W by R. Timberi, with villages Sirur, Abu Ras and Deim Zubeir along its edges. The team travels with transhumant herders from month 09 through the dry season as bundles 4, 11 and 8 move, meeting herders near Sirur and other settlements. It watches for new activity on gold-target cells and monitors herd utilisation that is 93% within 25 km of residents.
-        first season: Verify water at Bisellia as no mapped river or well is within 3 km and settlement water is implied by residence. Establish movement tracking with herders from month 09 onset and map access to gold-target cells within 4 h on foot and 99% by car/motorbike.
-  T4  TANGO x5  Yubo  (27.2867, 5.3994)  urgency 0.80  zones [258]  footprint 10,576 km²
-        water: settlement of 2,911 people (water implied by residence); no mapped river/well/JRC water within 3 km — verify; road 2.0 km; when: from month 10 (bundle onset) through the dry season
-        why: corridor zone 258 ranks 3/12 on herd × people × gold: bundles [10, 9] (909 fitted fronts), herd utilisation in band 150.74 of which 88% within 25 km of residents; 19 gold-target cells in the band; 4,225 people on corridor land. Site: 2,911 people, road 2.0 km, reaches 45% of the zone's targets within 4 h (100% of those trips by car/motorbike; median 256 min; OSRM car/foot/bush).
-        site: muse-glimmer chose #1 (Yubo): Yubo has 2911 people and reach share 0.452 with median 256 min. Mopai is 338 people with reach share 0.512, only 0.06 above Yubo's 0.452, so the under-1000 hamlet rule blocks the smaller site.; shortlist [('Yubo', 2911, 0.452), ('Mopai', 338, 0.512), ('Yubo* (nearest_place, unverified)', 391, 0.431)]
-        short: Based in Yubo, team travels with transhumant herders across corridor zone 258 to monitor herd use near gold-target cells and people.
-        brief: Team is based in Yubo, a settlement of 2,911 people with 2 km of road, chosen because it reaches 45% of zone 258 targets within 4 hours by car or motorbike. Zone 258 covers 969,600 ha in CAF with 4,225 people and is bounded by the CAF border, R. Imatima on the north and R. Biki on the southeast. The team travels with herders during bundles 10 and 9 from month 10 onset through the dry season, when 909 fitted fronts move through the band. It watches herd use within 25 km of residents and monitors the 19 gold-target cells in the band.
-        first season: First verify water access near Yubo as no mapped river or well is within 3 km. Then establish contact with herders at bundle 10 onset in month 10 to confirm movement corridors and access to gold-target cells.
-  T5  TANGO x5  Aroyo  (26.8465, 8.6667)  urgency 0.64  zones [250]  footprint 3,549 km²
-        water: Chel River (HydroRIVERS) 0.2 km; road 1.5 km; when: dry season
-        why: corridor zone 250 ranks 4/12 on herd × people × gold: bundles [] (0 fitted fronts), herd utilisation in band 72.20 of which 100% within 25 km of residents; 8 gold-target cells in the band; 2,804 people on corridor land. Site: 1,110 people, road 1.5 km, reaches 70% of the zone's targets within 4 h (100% of those trips by car/motorbike; median 179 min; OSRM car/foot/bush).
-        site: muse-glimmer chose #1 (Aroyo): Site 1 has reach share 0.704, higher than site 2 at 0.653 and site 3 at 0.652, with median 179 min. Site 1 has 1110 people, so rule 1 does not apply.; shortlist [('Aroyo', 1110, 0.704), ('Riang Angon', 2551, 0.653), ('Aroyo', 352, 0.652)]
-        short: Based in Aroyo, team travels with transhumant herders across corridor zone 250 to monitor herd movement and gold pressure.
-        brief: Team is based in Aroyo with 1,110 people, 1.5 km of road and Chel River 0.2 km away, operating in dry season year 2. From Aroyo it can reach 70% of the zone's targets within 4 h by car or motorbike with median 179 min to corridor zone 250 in SSD, 228,400 ha with 2,804 people. The zone is bounded by K. Wem on SW/S, Chel River on W/NW and Wad el Mek on W/NW. Scouts travel with transhumant herders in dry season and watch herd utilisation in the band 72.20, 100% within 25 km of residents, and 8 gold-target cells in the band.
-        first season: Establish contact with herders moving through Aroyo and map current routes along Chel River and K. Wem. Record herd utilisation and note activity around the 8 gold-target cells within 25 km of residents.
+        why: town of 35,520 people; 2 of this year's team sites within 120 km (Tambura, Tambura), 2 of them not held by an earlier focal point; county and traditional authorities are seated here
+        short: Focal point based in Tambura year-round to coordinate community and corridor zones and link county authorities with local and transhumant groups.
+        brief: The one-person focal point is based in Tambura year-round in year two, a town of about 36,000 people with town water and short road access, because county and traditional authorities are seated here. It covers a SSD community zone of about 126,000 ha around Tambura and Yubo bounded by an unnamed river on the E/S and Tambura - Yubo Road on the W/NW, with 8 gold-target cells, 1 candidate site and 2 watchlist sites and no reported workings. It also covers a CAF corridor of about 791,000 ha bounded by the CAF border on the NW/SE and R. Imatima on the NE, with 5 gold-target cells and 1 watchlist site and transhumance bundles with onset 10. The focal point meets county and traditional authorities in Tambura regularly and engages communities in Tambura and Yubo and herders moving through the corridor at onset. It watches for new mining exposure along long fronts, clearing since 2020, and unattributed land.
+        first season: First, confirm contact protocols with county and traditional authorities in Tambura and map the geological contact sections that need beacons on both zone boundaries. Second, visit Tambura and Yubo to ground-truth gold-target cells and watchlist sites and record any new workings.
+  F3  FP    x1  Wau  (27.9909, 7.7001)  urgency 0.28  zones [170, 280]  footprint 11,189 km²
+        water: town (supplies itself); road 0.2 km; when: year-round
+        why: town of 119,818 people; 2 of this year's team sites within 120 km (Aluk (1930s village), Wau), 2 of them not held by an earlier focal point; county and traditional authorities are seated here
+        short: Based in Wau, the focal point covers the community area around Wau and the western corridor, coordinating reporting and liaison year-round.
+        brief: Based in Wau the focal point works from a town of 119,818 people where county and traditional authorities are seated. It serves the zone around Wau bounded by Nahr al Jur on the NE/E, Wau - Raja road on the SW/S and R. Asetti on the N, and the western zone bounded by Wau - Raja road on the SE/W, Raja-Kosho Road on the W/NW and Low hill – J. ABU RASEIN – J. NGAYA ridge on the NW/W. It meets county and traditional authorities and liaises with communities near Akej, Nyin Akok and Alelchok and with transhumant groups moving in September and October. It watches for gold-target cells, candidate and watchlist sites and reported workings across both zones.
+        first season: Confirm weekly reporting links with county and traditional authorities in Wau and with community contacts near Akej, Nyin Akok and Alelchok. Flag the 12 km geological contact needing beacons on the community zone boundary and the 312 km geological contact needing beacons on the corridor zone boundary.
+  E3  ECHO  x5  Tambura  (27.5063, 5.5828)  urgency 0.90  zones [248]  footprint 2,243 km²
+        water: settlement of 31,951 people (water implied by residence); no mapped river/well/JRC water within 3 km — verify; road 1.6 km; when: year-round; village outreach in the rains, boundary walks Dec–Feb
+        why: community zone 248 ranks 3/131 on gold-rush urgency: 8 top-5% gold-target cells, 1 model candidates, 2 abandoned-village-on-gold watchlist places, 0 reported workings; 35,817 people, people×threat 2,579, 0 settlements founded since 2015; shields core/corridor on 49% of its edge; budget rank C18. Site: 31,951 people, road 1.6 km, reaches 100% of the zone's targets within 4 h (100% of those trips by car/motorbike; median 74 min; OSRM car/foot/bush).
+        site: muse-glimmer chose #1 (Tambura): Tambura has reach share 1.0 with median 74 min, shorter than Yubo 99 min and Yubo* 117 min, both also at reach share 1.0. It has 31951 people and road 1.6 km, satisfying the preference rules.; shortlist [('Tambura', 31951, 1.0), ('Yubo', 2911, 1.0), ('Yubo* (nearest_place, unverified)', 391, 1.0)]
+        short: Based in Tambura, team covers community zone 248 on unnamed river, Tambura-Yubo Road and Yambio-Tambura road to monitor gold-target cells and abandoned villages.
+        brief: Team is based in Tambura, about 32,000 people with 2 km road access, to cover community zone 248 because it holds 8 gold-target cells, 1 model candidate and 2 abandoned-village watchlist places with no reported workings. The zone around Tambura and Yubo is bounded by unnamed river order 4 on the east and south for 40 km, Tambura-Yubo Road on the west and north-west for 26 km, and Yambio-Tambura road on the east and north for 6 km. Village outreach happens in the rains and boundary walks run December to February, with all targets reachable within 4 hours by car or motorbike, median about 74 minutes. The team watches for new gold rush activity and pressure on shields core corridor along 49% of the edge.
+        first season: First verify water access within 3 km of the Tambura base as no mapped river, well or JRC water is recorded nearby. Then start village outreach in the rains and plan boundary walks December to February along the river and road edges.
+  E4  ECHO  x5  Cueibet  (29.3108, 7.0026)  urgency 0.89  zones [195]  footprint 2,168 km²
+        water: Wahko (HydroRIVERS) 2.7 km; road 0.8 km; when: year-round; village outreach in the rains, boundary walks Dec–Feb
+        why: community zone 195 ranks 4/131 on gold-rush urgency: 15 top-5% gold-target cells, 1 model candidates, 1 abandoned-village-on-gold watchlist places, 0 reported workings; 43,227 people, people×threat 3,588, 6 settlements founded since 2015; shields core/corridor on 37% of its edge; budget rank C1. Site: 5,455 people, road 0.8 km, reaches 88% of the zone's targets within 4 h (100% of those trips by car/motorbike; median 90 min; OSRM car/foot/bush).
+        site: muse-glimmer chose #1 (Cueibet): First and second sites tie on reach share 0.883, but first has shorter median 90 min versus 96 min. Third site is lower at reach share 0.825 with median 109 min.; shortlist [('Cueibet', 5455, 0.883), ('Cueibet', 14319, 0.883), ('River Gulnam* (nearest_place, unverified)', 10872, 0.825)]
+        short: Based in Cueibet, team covers community zone 195 along Wahko and River Gulnam to monitor gold-target cells and community exposure.
+        brief: Based in Cueibet with 5,455 people and 0.8 km road access, water Wahko 2.7 km away, the community scouts serve zone 195 year-round with village outreach in rains and boundary walks Dec–Feb. The zone is bounded by Wahko on NW/SW for 44 km, River Gulnam on E/NE for 44 km and Rumbek-Tonj Road on N/NW for 10 km. The team reaches 88% of the zone's targets within 4 h by car or motorbike, median 90 min. It meets settled communities across 43,227 people with six settlements founded since 2015 and watches for 15 gold-target cells, one model candidate, one abandoned-village-on-gold watchlist place and zero reported workings.
+        first season: First walk the Wahko and River Gulnam edges in Dec–Feb to place beacons along the 4 km geological contact. Then run village outreach in the rains to check the 15 gold-target cells and the watchlist place near Cueibet.
+  E5  ECHO  x5  Wau  (27.9834, 7.7111)  urgency 0.87  zones [170]  footprint 2,193 km²
+        water: Nahr al Jur (HydroRIVERS) 2.6 km; road 0.3 km; when: year-round; village outreach in the rains, boundary walks Dec–Feb
+        why: community zone 170 ranks 5/131 on gold-rush urgency: 8 top-5% gold-target cells, 1 model candidates, 1 abandoned-village-on-gold watchlist places, 0 reported workings; 117,344 people, people×threat 8,566, 3 settlements founded since 2015; shields core/corridor on 46% of its edge; budget rank C2. Site: 104,260 people, road 0.3 km, reaches 100% of the zone's targets within 4 h (100% of those trips by car/motorbike; median 17 min; OSRM car/foot/bush).
+        site: muse-glimmer chose #1 (Wau): Wau has reach share 1.0 with median 17 min, the shortest median among the three sites with equal reach share 1.0. Its people 104260 exceeds 1,000 so rule 1 does not apply.; shortlist [('Wau', 104260, 1.0), ('Akej (1930s village)', 3816, 1.0), ('Alelchok (1930s village)', 3072, 1.0)]
+        short: Based in Wau, community scouts cover zone 170 to monitor gold rush pressure around settled farmland and mining-exposed villages.
+        brief: Team is based in Wau with 104,260 people and 0.3 km road access, reaching all targets within 4 h with median 17 min by car or motorbike. Zone 170 spans 84,800 ha with 117,344 people, including Wau, Akej and Nyin Akok, and three settlements founded since 2015. Ground is bounded by Nahr al Jur on NE/E, Wau - Raja road on SW/S and R. Asetti on N, with a 12 km geological contact needing beacons. Work is year-round with village outreach in rains and boundary walks Dec–Feb with community members. Watch for eight top-5% gold-target cells, one model candidate and one abandoned-village-on-gold watchlist place with zero reported workings.
+        first season: Start village outreach in rains with Wau, Akej and Nyin Akok to map local knowledge of gold-target cells and watchlist sites. Begin Dec–Feb boundary walks along Nahr al Jur and Wau - Raja road and place beacons on the 12 km geological contact.
+  T3  TANGO x5  Maridi  (29.4123, 4.9222)  urgency 0.85  zones [292]  footprint 13,844 km²
+        water: settlement of 430 people (water implied by residence); no mapped river/well/JRC water within 3 km — verify; road 0.1 km; when: from month 10 (bundle onset) through the dry season
+        why: corridor zone 292 ranks 2/11 on herd × people × gold: bundles [5, 14, 7, 10] (2,225 fitted fronts), herd utilisation in band 391.88 of which 100% within 25 km of residents; 9 gold-target cells in the band; 3,345 people on corridor land. Site (adjudicated): 4,344 people, road 0.1 km, reaches 26% of targets within 4 h (100% by car/motorbike).
+        site: muse-glimmer chose #3 (Maridi): Kozi has 430 people <1,000 and larger sites Maridi with reach share 0.256 and Makpandu* with reach share 0.202 are within 0.15 of its reach share 0.273, so it is disqualified under rule 1. Maridi has higher reach share 0.256 than Makpandu* 0.202 with median 333 min versus 353 min.; shortlist [('Kozi', 430, 0.273), ('Makpandu* (nearest_place, unverified)', 1714, 0.202), ('Maridi', 4344, 0.256)]
+        short: Base Maridi with 4,344 people, travel corridor zone 292 with herders from month 10 through dry season to protect people and gold-target cells.
+        brief: Team is based in Maridi, a settlement of 4,344 people with 0.1 km road and implied water from 430 residents, but no mapped river/well within 3 km to verify. It covers corridor zone 292 in SSD, about 1,225,600 ha with 3,345 people on corridor land, bounded by Juba-Rumbek-Bentiu Highway road, Nahr al Jur, and Maridi-Yambio Highway road. Scouts travel with transhumant herders whose four bundles start in month 10 or 11 and use 2,225 fitted fronts across the zone, with 100% of utilisation within 25 km of residents. Ground has 9 gold-target cells and 3,256 km of fronts, with nearest unverified town Makpandu with 1,714 people.
+        first season: Verify water sources within 3 km of the Maridi base and confirm car/motorbike access to reach targets within 4 h. Establish contact with herder groups as bundles onset in month 10 and map movement along the corridor edges.
+  T4  TANGO x5  Makpandu* (nearest_place, unverified)  (28.6746, 4.738)  urgency 0.72  zones [292]  footprint 13,474 km²
+        water: settlement of 1,714 people (water implied by residence); no mapped river/well/JRC water within 3 km — verify; road 0.0 km; when: from month 10 (bundle onset) through the dry season
+        why: corridor zone 292 ranks 2/11 on herd × people × gold: bundles [5, 14, 7, 10] (2,225 fitted fronts), herd utilisation in band 391.88 of which 100% within 25 km of residents; 9 gold-target cells in the band; 3,345 people on corridor land. Second team: the zone spans 4 bundles and 1.2 M ha; this site is > 50 km from the first. Site (adjudicated): 4,344 people, road 0.1 km, reaches 26% of targets within 4 h (100% by car/motorbike).
+        site: muse-glimmer chose #2 (Maridi): Maridi has the highest reach share 0.256 versus Makpandu 0.202 and Diabio 0.203, with median 333 min shorter than Makpandu 353 min. → moved to Makpandu* (nearest_place, unverified): the chosen site was within 50 km of a higher-urgency TANGO site; shortlist [('Makpandu* (nearest_place, unverified)', 1714, 0.202), ('Maridi', 4344, 0.256), ('Diabio', 1854, 0.203)]
+        short: Base at Makpandu*, scouts travel with herders across corridor zone 292 to monitor herd movement and gold-target cells.
+        brief: Team is based at Makpandu*, an unverified settlement of 1,714 people with road access 0 km and water implied by residence but no mapped river or well within 3 km to verify. It operates from month 10 bundle onset through the dry season across corridor zone 292, about 1.2 M ha in SSD with 3,345 people, bounded east-northeast by Juba-Rumbek-Bentiu Highway road, west-southwest by Nahr al Jur and southwest-southeast by Maridi-Yambio Highway road. The zone holds four herd bundles with 2,225 fitted fronts and 9 gold-target cells, with 100% of herd utilisation within 25 km of residents. Scouts travel with transhumant herders as bundles onset in month 10 and month 11, meeting herders along the corridor and watching for new gold-target activity and pressure near villages such as Sungu, Tumburu and Mkareni.
+        first season: First verify water access near Makpandu* and confirm the 64 km geological contact boundary that needs beacons. Second establish contact with herders of the month 10 onset bundles and record movement and gold-target observations along the corridor.
+  T5  TANGO x5  Tambura  (27.5063, 5.5828)  urgency 0.70  zones [289]  footprint 9,489 km²
+        water: settlement of 748 people (water implied by residence); no mapped river/well/JRC water within 3 km — verify; road 1.6 km; when: from month 10 (bundle onset) through the dry season
+        why: corridor zone 289 ranks 3/11 on herd × people × gold: bundles [10, 9] (909 fitted fronts), herd utilisation in band 106.79 of which 83% within 25 km of residents; 5 gold-target cells in the band; 330 people on corridor land. Site (adjudicated): 31,951 people, road 1.6 km, reaches 39% of targets within 4 h (100% by car/motorbike).
+        site: muse-glimmer chose #3 (Tambura): Karsing R.H. has 748 people with reach share 0.386 and median 355 min, while larger Yubo is 0.062 below its reach share. Tambura has reach share 0.386 with median 346 min, shorter than Karsing’s 355 min.; shortlist [('Karsing R.H. (1930s)', 748, 0.386), ('Yubo', 2911, 0.324), ('Tambura', 31951, 0.386)]
+        short: Base at Tambura, ground corridor zone 289 along CAF border and R. Imatima, purpose monitor transhumant herds and gold-target cells from month 10 through dry season.
+        brief: Team is based at Tambura, a settlement of 748 people with 32,000 people in the adjudicated site and 2 km of road that reaches 39% of targets within 4 hours. It serves corridor zone 289 in CAF, about 791,000 ha with 330 people, bounded on the NW/SE by the CAF border, on the NE by R. Imatima and on the W/SW by Mokoutou. Work runs from month 10 onset through the dry season with transhumant herders moving on bundles 10 and 9 with 909 fitted fronts. The band contains 5 gold-target cells and herd use is 83% within 25 km of residents, so watch for new workings, clearing and pressure along the 138 km geological contact that needs beacons.
+        first season: Verify water access for the Tambura settlement as no mapped river, well or JRC water is within 3 km. At month 10 onset meet herders on bundles 10 and 9 and begin beacons on the 138 km geological contact.
 
 NOT STAFFED (year 2 caps) — community zones with a gold target, by urgency:
-  zone 242  urgency 0.84  gold t5/cand/watch/rep 13/0/0/2  29,122 ppl  Bandasi, Mboufo, Mboufo
-  zone 209  urgency 0.83  gold t5/cand/watch/rep 4/0/1/20  17,360 ppl  Sam-Ouandja
-  zone 157  urgency 0.81  gold t5/cand/watch/rep 16/1/3/0  43,448 ppl  Manyang, Ibba River, Afuk
-  zone 151  urgency 0.78  gold t5/cand/watch/rep 16/0/0/0  17,976 ppl  River Gulnam, Gorok, River Gulnam
-  zone 160  urgency 0.78  gold t5/cand/watch/rep 12/0/0/0  43,160 ppl  Cueibet, River Gulnam, Cueibet
-  zone 165  urgency 0.77  gold t5/cand/watch/rep 19/2/4/0  9,053 ppl  Garren, Rian
-  zone 236  urgency 0.76  gold t5/cand/watch/rep 6/0/1/1  39,970 ppl  M'Boki, Camp Kpabo
-  zone 216  urgency 0.75  gold t5/cand/watch/rep 8/0/0/9  11,562 ppl  Zacko 4
-  zone 170  urgency 0.72  gold t5/cand/watch/rep 13/0/0/0  14,606 ppl  Aduel, Aru, River Rohl
-  zone 206  urgency 0.71  gold t5/cand/watch/rep 8/0/1/2  11,991 ppl  Bir Andem
-  zone 178  urgency 0.71  gold t5/cand/watch/rep 18/0/2/2  9,450 ppl  Langlen, Wongkurnuk, Asharo
-  zone 161  urgency 0.70  gold t5/cand/watch/rep 8/0/1/0  41,366 ppl  Akot, Nijong, Tiit Agok
-  zone 169  urgency 0.69  gold t5/cand/watch/rep 15/0/0/0  8,536 ppl  Toing, Malou-Pech, Shan e
-  zone 153  urgency 0.69  gold t5/cand/watch/rep 8/0/1/0  108,948 ppl  Rumbek, Malek Agok, Gorok
-  zone 162  urgency 0.69  gold t5/cand/watch/rep 9/0/0/0  21,969 ppl  Yei River, Kotobi, Gullu
-  zone 193  urgency 0.67  gold t5/cand/watch/rep 6/0/0/0  26,726 ppl  K Keribi, Yeri
-  zone 208  urgency 0.67  gold t5/cand/watch/rep 5/0/0/0  6,270 ppl  Ouanda Djallé
-  zone 214  urgency 0.66  gold t5/cand/watch/rep 0/0/0/7  3,950 ppl  Mbangana 1
-  zone 183  urgency 0.65  gold t5/cand/watch/rep 8/1/2/0  9,678 ppl  Malou-Pech
-  zone 210  urgency 0.65  gold t5/cand/watch/rep 4/0/1/0  24,087 ppl  Raga
-  zone 168  urgency 0.64  gold t5/cand/watch/rep 8/0/0/1  11,840 ppl  Koko
-  zone 197  urgency 0.64  gold t5/cand/watch/rep 6/1/0/0  14,223 ppl  Diabio, Yangiri, Diabio
-  zone 229  urgency 0.62  gold t5/cand/watch/rep 13/1/1/0  4,075 ppl  Libu, Dobola
-  zone 191  urgency 0.62  gold t5/cand/watch/rep 12/1/2/0  7,928 ppl  Rumuh, Yei River
-  zone 181  urgency 0.61  gold t5/cand/watch/rep 5/0/0/0  16,212 ppl  Ibba River, Ibba River, Ibba River
-  zone 233  urgency 0.61  gold t5/cand/watch/rep 1/1/1/0  8,056 ppl  Ngouyo 3, Banangui, Djemah
-  zone 188  urgency 0.60  gold t5/cand/watch/rep 5/0/0/0  9,518 ppl  Domolotto
-  zone 180  urgency 0.60  gold t5/cand/watch/rep 8/0/1/0  14,783 ppl  Nahr al Jur, Nahr al Jur, Dolab
-  zone 238  urgency 0.60  gold t5/cand/watch/rep 0/0/0/1  17,518 ppl  Obo
-  zone 195  urgency 0.59  gold t5/cand/watch/rep 5/1/0/0  7,906 ppl  Yei River, Dispensary, Anyanwa
-  zone 228  urgency 0.59  gold t5/cand/watch/rep 4/1/0/1  1,114 ppl  Yalinga
-  zone 164  urgency 0.57  gold t5/cand/watch/rep 1/0/0/0  32,547 ppl  Ibba, Madebe, Maridi
-  zone 231  urgency 0.57  gold t5/cand/watch/rep 7/0/0/0  1,803 ppl  —
-  zone 198  urgency 0.56  gold t5/cand/watch/rep 8/0/0/0  5,301 ppl  Mambe
-  zone 190  urgency 0.56  gold t5/cand/watch/rep 12/0/0/0  8,728 ppl  Attoro, Dari
-  zone 154  urgency 0.54  gold t5/cand/watch/rep 1/0/0/0  60,210 ppl  Win, Dulit, Busseri River
-  zone 166  urgency 0.54  gold t5/cand/watch/rep 5/1/0/0  597 ppl  —
-  zone 163  urgency 0.53  gold t5/cand/watch/rep 3/0/0/0  33,050 ppl  Rian Bang, Najok, Agwar
-  zone 212  urgency 0.51  gold t5/cand/watch/rep 0/0/0/1  475 ppl  —
-  zone 189  urgency 0.50  gold t5/cand/watch/rep 2/0/0/0  6,819 ppl  Mbara, Madi Bizi, Kansuelo
-  zone 232  urgency 0.49  gold t5/cand/watch/rep 2/0/0/0  679 ppl  —
-  zone 152  urgency 0.48  gold t5/cand/watch/rep 1/0/0/0  39,591 ppl  Busseri River, Busseri River, Nahr al Jur
-  zone 230  urgency 0.47  gold t5/cand/watch/rep 3/0/0/0  459 ppl  —
-  zone 241  urgency 0.47  gold t5/cand/watch/rep 2/0/0/0  1,862 ppl  Dembia
-  zone 147  urgency 0.46  gold t5/cand/watch/rep 3/0/0/0  5,511 ppl  Redom
-  zone 177  urgency 0.46  gold t5/cand/watch/rep 1/0/0/0  21,467 ppl  Busseri River, Busseri River, Busseri River
-  zone 155  urgency 0.44  gold t5/cand/watch/rep 5/0/0/0  3,753 ppl  Kwek Atwot
-  zone 222  urgency 0.43  gold t5/cand/watch/rep 3/0/0/0  171 ppl  —
-  zone 240  urgency 0.42  gold t5/cand/watch/rep 2/0/0/0  251 ppl  —
-  zone 213  urgency 0.40  gold t5/cand/watch/rep 4/0/0/1  332 ppl  —
-  zone 200  urgency 0.37  gold t5/cand/watch/rep 1/0/0/0  869 ppl  —
-  zone 217  urgency 0.35  gold t5/cand/watch/rep 0/0/0/1  296 ppl  —
-  zone 201  urgency 0.32  gold t5/cand/watch/rep 0/0/0/1  744 ppl  —
+  zone 165  urgency 0.87  gold t5/cand/watch/rep 9/2/0/0  43,915 ppl  Kuajok, Malek Alel, Busseri River
+  zone 219  urgency 0.87  gold t5/cand/watch/rep 7/0/1/20  17,360 ppl  Sam-Ouandja
+  zone 267  urgency 0.84  gold t5/cand/watch/rep 7/0/1/1  39,970 ppl  M'Boki, Camp Kpabo
+  zone 164  urgency 0.83  gold t5/cand/watch/rep 13/0/0/0  26,228 ppl  Gorok, Ajijuit, River Gulnam
+  zone 246  urgency 0.83  gold t5/cand/watch/rep 7/0/0/0  138,872 ppl  Yambio, Nzara, Saura
+  zone 172  urgency 0.79  gold t5/cand/watch/rep 13/2/2/0  9,053 ppl  Nyamlell, Akewich
+  zone 226  urgency 0.79  gold t5/cand/watch/rep 11/0/0/9  11,562 ppl  Zacko 4
+  zone 220  urgency 0.78  gold t5/cand/watch/rep 9/0/2/0  24,419 ppl  Raga
+  zone 245  urgency 0.77  gold t5/cand/watch/rep 5/0/0/2  4,247 ppl  Senekpuro
+  zone 257  urgency 0.76  gold t5/cand/watch/rep 8/0/1/0  30,775 ppl  Ibba, Madebe, Maridi
+  zone 190  urgency 0.76  gold t5/cand/watch/rep 6/0/1/0  7,609 ppl  Ibba River, Kuajiena
+  zone 191  urgency 0.75  gold t5/cand/watch/rep 8/1/2/0  12,366 ppl  Malou-Pech, Malou-Pech
+  zone 185  urgency 0.75  gold t5/cand/watch/rep 8/1/0/0  7,856 ppl  Riang Angon, Maluil Akong, Maluil Akong
+  zone 218  urgency 0.74  gold t5/cand/watch/rep 4/1/0/0  6,270 ppl  Ouanda Djallé
+  zone 241  urgency 0.74  gold t5/cand/watch/rep 10/1/0/0  8,056 ppl  Ngouyo 3, Banangui, Djemah
+  zone 269  urgency 0.74  gold t5/cand/watch/rep 4/0/0/1  17,518 ppl  Obo
+  zone 159  urgency 0.74  gold t5/cand/watch/rep 4/0/1/0  48,388 ppl  Tonj, Thiet, Akok
+  zone 167  urgency 0.73  gold t5/cand/watch/rep 11/1/0/0  18,817 ppl  Yei River, Kotobi, Kemande
+  zone 187  urgency 0.72  gold t5/cand/watch/rep 13/0/2/2  9,448 ppl  Marial Baai, Wongkurnuk, K'er N'yang
+  zone 216  urgency 0.71  gold t5/cand/watch/rep 4/0/0/2  11,991 ppl  منجم أغبش
+  zone 224  urgency 0.71  gold t5/cand/watch/rep 8/1/0/7  3,950 ppl  Mbangana 1
+  zone 206  urgency 0.70  gold t5/cand/watch/rep 5/0/0/0  28,116 ppl  Liyoba, Yeri, Mvolo
+  zone 155  urgency 0.69  gold t5/cand/watch/rep 5/1/1/0  27,219 ppl  Wau, Nyin Akok, Madud Nyok
+  zone 137  urgency 0.67  gold t5/cand/watch/rep 3/0/0/0  29,324 ppl  Beira B, Chama, Jebel Yarra
+  zone 168  urgency 0.66  gold t5/cand/watch/rep 10/1/2/0  7,476 ppl  Malong Kway, Wun Iwel, Busseri River
+  zone 240  urgency 0.65  gold t5/cand/watch/rep 4/1/1/0  3,923 ppl  Dobola
+  zone 264  urgency 0.64  gold t5/cand/watch/rep 6/2/0/0  3,917 ppl  Sakure, Yambio
+  zone 123  urgency 0.64  gold t5/cand/watch/rep 3/0/1/0  31,933 ppl  Tissi 3, Abu Jradel, Abu Jradel
+  zone 236  urgency 0.64  gold t5/cand/watch/rep 6/0/0/1  1,114 ppl  Yalinga
+  zone 146  urgency 0.63  gold t5/cand/watch/rep 6/0/1/0  2,745 ppl  كافيا كنجي
+  zone 161  urgency 0.63  gold t5/cand/watch/rep 4/0/0/0  20,583 ppl  Mvolo, Tiit Agok, Akot
+  zone 193  urgency 0.62  gold t5/cand/watch/rep 3/1/0/0  7,967 ppl  Ibba River
+  zone 152  urgency 0.61  gold t5/cand/watch/rep 6/0/0/0  21,811 ppl  Malualkon, Warawar, Bak-Kou
+  zone 128  urgency 0.61  gold t5/cand/watch/rep 3/0/0/0  42,556 ppl  Al Toumat, Kimmemnia, Jebel Yarra
+  zone 247  urgency 0.60  gold t5/cand/watch/rep 3/1/0/0  14,242 ppl  Diabio, Ezo, Fr. Yubu
+  zone 144  urgency 0.60  gold t5/cand/watch/rep 3/2/1/0  5,511 ppl  Radoum
+  zone 160  urgency 0.60  gold t5/cand/watch/rep 4/0/0/0  40,534 ppl  Kuom, Malek Alel
+  zone 138  urgency 0.60  gold t5/cand/watch/rep 3/0/0/0  13,754 ppl  Birao
+  zone 207  urgency 0.59  gold t5/cand/watch/rep 5/0/1/0  8,581 ppl  Tali, Tindalo
+  zone 249  urgency 0.59  gold t5/cand/watch/rep 5/0/0/0  1,458 ppl  —
+  zone 243  urgency 0.59  gold t5/cand/watch/rep 2/0/0/0  38,127 ppl  Ezo
+  zone 196  urgency 0.58  gold t5/cand/watch/rep 3/0/0/0  25,725 ppl  Malek Agok
+  zone 205  urgency 0.56  gold t5/cand/watch/rep 5/1/1/0  6,537 ppl  Tali, Kansuelo
+  zone 199  urgency 0.56  gold t5/cand/watch/rep 3/0/0/0  24,038 ppl  Akot, Nijong, Akot
+  zone 252  urgency 0.56  gold t5/cand/watch/rep 1/0/0/0  46,136 ppl  Maridi, Maridi
+  zone 225  urgency 0.56  gold t5/cand/watch/rep 4/1/0/0  1,205 ppl  —
+  zone 250  urgency 0.54  gold t5/cand/watch/rep 3/0/0/0  7,119 ppl  Yangiri
+  zone 260  urgency 0.54  gold t5/cand/watch/rep 5/0/0/0  2,807 ppl  Im...ngaru
+  zone 244  urgency 0.54  gold t5/cand/watch/rep 2/0/0/0  6,702 ppl  I. Aymong...
+  zone 272  urgency 0.54  gold t5/cand/watch/rep 4/0/0/0  1,862 ppl  Dembia
+  zone 234  urgency 0.53  gold t5/cand/watch/rep 3/1/0/0  443 ppl  —
+  zone 175  urgency 0.53  gold t5/cand/watch/rep 3/0/1/0  3,378 ppl  Muraddiba
+  zone 271  urgency 0.53  gold t5/cand/watch/rep 5/0/0/0  251 ppl  —
+  zone 200  urgency 0.52  gold t5/cand/watch/rep 2/0/0/0  11,527 ppl  Domolotto, Wulu
+  zone 194  urgency 0.52  gold t5/cand/watch/rep 2/0/0/0  70,697 ppl  Rumbek
+  zone 157  urgency 0.52  gold t5/cand/watch/rep 2/0/0/0  48,421 ppl  Yargot, Makuei, Majak Kaar
+  zone 197  urgency 0.52  gold t5/cand/watch/rep 5/0/0/0  521 ppl  —
+  zone 183  urgency 0.52  gold t5/cand/watch/rep 0/0/0/1  11,221 ppl  Koko
+  zone 223  urgency 0.51  gold t5/cand/watch/rep 9/0/0/1  332 ppl  —
+  zone 178  urgency 0.51  gold t5/cand/watch/rep 2/0/0/0  14,606 ppl  Aduel, Aru, River Rohl
+  zone 166  urgency 0.51  gold t5/cand/watch/rep 2/0/0/0  2,430 ppl  —
+  zone 173  urgency 0.51  gold t5/cand/watch/rep 3/0/0/0  9,318 ppl  Jambo, Kediba, Yei River
+  zone 255  urgency 0.47  gold t5/cand/watch/rep 3/0/0/0  5,164 ppl  Mambe
+  zone 274  urgency 0.46  gold t5/cand/watch/rep 1/0/0/0  929 ppl  —
+  zone 259  urgency 0.46  gold t5/cand/watch/rep 0/0/0/1  4,271 ppl  Gangala
+  zone 163  urgency 0.45  gold t5/cand/watch/rep 3/0/0/0  3,507 ppl  Wahko, Allairu Yang
+  zone 188  urgency 0.43  gold t5/cand/watch/rep 1/0/0/0  15,832 ppl  Warrap, Lunyaker, Nahr al Jur
+  zone 182  urgency 0.43  gold t5/cand/watch/rep 1/0/0/0  21,069 ppl  Omdurman, Busseri River, Busseri River
+  zone 227  urgency 0.43  gold t5/cand/watch/rep 2/0/0/1  296 ppl  —
+  zone 242  urgency 0.43  gold t5/cand/watch/rep 1/1/0/0  263 ppl  —
+  zone 251  urgency 0.43  gold t5/cand/watch/rep 2/0/0/0  1,807 ppl  Ibba
+  zone 153  urgency 0.42  gold t5/cand/watch/rep 1/0/0/0  19,127 ppl  Lunyaker, Fan Shum, Alak
+  zone 253  urgency 0.41  gold t5/cand/watch/rep 2/1/0/0  875 ppl  —
+  zone 256  urgency 0.41  gold t5/cand/watch/rep 3/0/0/0  496 ppl  —
+  zone 237  urgency 0.41  gold t5/cand/watch/rep 1/0/0/0  679 ppl  —
+  zone 148  urgency 0.41  gold t5/cand/watch/rep 3/0/0/0  5,939 ppl  Lang
+  zone 221  urgency 0.40  gold t5/cand/watch/rep 2/0/0/0  2,250 ppl  Kosho
+  zone 169  urgency 0.39  gold t5/cand/watch/rep 1/0/0/0  15,204 ppl  Botanyit, Tieraliet, Majak
+  zone 222  urgency 0.39  gold t5/cand/watch/rep 1/0/0/0  475 ppl  —
+  zone 189  urgency 0.38  gold t5/cand/watch/rep 2/0/0/0  3,407 ppl  Ajak
+  zone 204  urgency 0.37  gold t5/cand/watch/rep 1/0/0/0  646 ppl  —
+  zone 232  urgency 0.37  gold t5/cand/watch/rep 2/0/0/0  166 ppl  —
+  zone 254  urgency 0.37  gold t5/cand/watch/rep 3/0/0/0  1,508 ppl  Maridi
+  zone 140  urgency 0.36  gold t5/cand/watch/rep 1/0/0/0  822 ppl  —
+  zone 174  urgency 0.36  gold t5/cand/watch/rep 1/0/0/0  5,169 ppl  Mbara, Madi Bizi
+  zone 180  urgency 0.36  gold t5/cand/watch/rep 1/0/0/0  3,377 ppl  Kiir Adem, Koko
+  zone 239  urgency 0.36  gold t5/cand/watch/rep 1/0/0/0  459 ppl  —
+  zone 198  urgency 0.35  gold t5/cand/watch/rep 2/0/0/0  2,074 ppl  Akot
+  zone 132  urgency 0.33  gold t5/cand/watch/rep 1/0/0/0  3,002 ppl  —
+  zone 176  urgency 0.30  gold t5/cand/watch/rep 1/0/0/0  2,409 ppl  Dilkwor
+  zone 212  urgency 0.25  gold t5/cand/watch/rep 1/0/0/0  482 ppl  —
+  zone 133  urgency 0.24  gold t5/cand/watch/rep 1/0/0/0  674 ppl  —

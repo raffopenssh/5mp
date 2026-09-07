@@ -43,6 +43,8 @@ from shapely.prepared import prep
 from shapely import vectorized
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / "scripts"))
+import mining_model as MM  # noqa: E402  MINING_MODEL=heldout|insample
 DB = ROOT / "db.sqlite3"
 AOI = "XSA_Study_Area"
 GROUPS = ROOT / "data/fire_groups_v5" / f"{AOI}.json"
@@ -512,8 +514,7 @@ def mining(zones):
     Candidates and the watchlist are IMAGERY TARGETS with a measured but modest
     skill (prediction.json composite_skill) - never evidence of a mine.
     """
-    pj = ROOT / "data/eval/xsa_mining/prediction.json"
-    gj = ROOT / "data/eval/xsa_mining/prediction.geojson"
+    pj, gj = MM.prediction_json(), MM.prediction_geojson()
     if not (pj.exists() and gj.exists()):
         return {n: dict(note="unmeasured: prediction outputs missing") for n in zones}
     pred = json.load(open(pj))
@@ -542,8 +543,9 @@ def mining(zones):
             watchlist_villages=len(wa),
             watchlist_names=[w[2].get("name") for w in wa][:8],
             top05_cells=len(inside([(x, y, None) for x, y in top5])),
+            mining_model=pred.get("mining_model", "insample"),
             caveat="candidates and watchlist are imagery targets, not mines "
-                   "(composite_skill in prediction.json)",
+                   f"(composite_skill in {pj.relative_to(ROOT)}; {MM.describe(pred)})",
         )
     return out
 
@@ -711,6 +713,7 @@ def main():
         fire_connectivity=conn,
         mining=mining(allz),
         mining_rim=mining(rims),
+        mining_model=MM.variant(),
         plan_sites=plan_sites(zones),
     )
     names = list(zones)

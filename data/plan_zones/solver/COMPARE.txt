@@ -1,43 +1,43 @@
-COMPARE — the authors' drawn plan (KML: park/Southern NP → core, wilderness/headwaters → wilderness, pâturage zones → corridor) plus existing WDPA designations (NP/faunal reserve/conservation area → core, game reserve/hunting area → wilderness) and the solved plan, scored with the SAME objective, on the same 2150 fine units.
-  the authors drew or inherited a designation on 34% of the AOI; on that ground the two plans agree on 50%. Undrawn ground scores as community (no restriction).
-  on the UNZONED 66% the solver puts: core 54,592 km2 (80 people); wilderness 68,476 km2 (210 people); community 147,324 km2 (2,500,601 people); corridor 47,052 km2 (33,273 people)
+COMPARE — the authors' drawn plan (KML: park/Southern NP → core, wilderness/headwaters → wilderness, pâturage zones → corridor) plus existing WDPA designations (NP/faunal reserve/conservation area → core, game reserve/hunting area → wilderness) and the solved plan, scored with the SAME objective, on the same 2130 fine units.
+  the authors drew or inherited a designation on 34% of the AOI; on that ground the two plans agree on 51%. Undrawn ground scores as community (no restriction).
+  on the UNZONED 66% the solver puts: core 54,988 km2 (89 people); wilderness 63,788 km2 (219 people); community 153,308 km2 (2,506,449 people); corridor 45,992 km2 (12,581 people)
 
                              authors         solver
-objective                    429,819        499,719
-  value                      436,691        517,063
-  boundary cost                6,872         17,344
-  core km2                    70,084        110,332
-  wilderness km2              91,360        132,640
-  community km2              317,444        175,632
-  corridor km2                 2,708         62,992
-  core people                 76,029            902
-  wilderness people           22,038            957
-  community people         2,534,164      2,596,749
-  corridor people                426         34,049
-  units core_not_feasible            59              7
-  units wilderness_not_feasible            20              2
-  units corridor_outside_herd_band            18             10
-  people_in_core              76,029            902
-  people_in_wilderness        22,038            957
-  people_in_corridor             426         34,049
-  claim_cells_in_core            600          1,380
-  boundary_open_bush_km         2,291          5,781
-  herd_months_outside_corridor         7,998          6,398
-  herd_months_to_redirect_out_of_core           777          1,099
+objective                    419,205        493,743
+  value                      425,565        510,305
+  boundary cost                6,360         16,562
+  core km2                    69,004        108,148
+  wilderness km2              92,004        128,620
+  community km2              318,076        183,608
+  corridor km2                 2,512         61,220
+  core people                 65,895            911
+  wilderness people           47,253            932
+  community people         2,519,338      2,615,745
+  corridor people                171         15,069
+  units core_not_feasible            56              7
+  units wilderness_not_feasible            21              1
+  units corridor_outside_herd_band            16              5
+  people_in_core              65,895            911
+  people_in_wilderness        47,253            932
+  people_in_corridor             171         15,069
+  claim_cells_in_core            563          1,326
+  boundary_open_bush_km         2,120          5,521
+  herd_months_outside_corridor         8,006          6,437
+  herd_months_to_redirect_out_of_core           752          1,069
 
-WHERE THEY DISAGREE on drawn ground — 78 connected blocks of one class pair, largest first (the ≤ 15 worth a meeting):
-   15,356 km2 at 26.898,6.857 near Yapa (1930s) (28 km): authors core → solver wilderness.  meets the core rule (1 people, cropland 0.0%) but LOST TO THE CORE CAP — other ground scored higher (threat P10 here 0.0, herd UD share 0.021); raise the cap or pin this park
-   13,324 km2 at 28.616,6.416 near Da Molamudi P. (1930s village) (13 km): authors wilderness → solver core.  682 people (0.05/km²), cropland 0.0%, clearing 0.01 km²/1000 — meets the core rule the drawn plan leaves out
-    6,912 km2 at 29.135,5.801 near Armstrong B (1930s village) (20 km): authors wilderness → solver community.  1,939 people, 1930s claim 0.19, threat P10 0.01 — people and claim make it conservancy ground
-    5,728 km2 at 25.769,7.845 near Fungwanjini (1930s) (9 km): authors wilderness → solver corridor.  herds: UD share 0.012, 86% of it inside a validated bundle band; drawn as wilderness
-    5,684 km2 at 28.799,5.112 near Obakali (1930s) (4 km): authors wilderness → solver corridor.  herds: UD share 0.026, 85% of it inside a validated bundle band; drawn as wilderness
-    3,300 km2 at 25.081,10.072 near Telahun (1930s village) (2 km): authors core → solver community.  drawn as park but only 0% of it meets the core rule: 6,980 people / 2.12/km², cropland 4.78%, herd UD share 0.007, in herd band 0.0; 6,980 people, 1930s claim 0.24, threat P10 0.008 — people and claim make it conservancy ground
-    3,136 km2 at 24.317,9.901 near Hofrat elNahas (1930s village) (16 km): authors core → solver wilderness.  drawn as park but only 0% of it meets the core rule: 137 people / 0.04/km², cropland 0.4%, herd UD share 0.01, in herd band 0.02
-    2,968 km2 at 26.566,8.863 near Gall or Gori (1930s village) (20 km): authors wilderness → solver community.  9,448 people, 1930s claim 0.18, threat P10 0.027 — people and claim make it conservancy ground
-    2,488 km2 at 27.001,7.639 near L.A.T. R.H. (1930s) (12 km): authors wilderness → solver corridor.  herds: UD share 0.008, 90% of it inside a validated bundle band; drawn as wilderness
-    2,156 km2 at 24.488,9.534 near W. Nderri (1930s) (19 km): authors core → solver community.  drawn as park but only 0% of it meets the core rule: 40,599 people / 18.83/km², cropland 0.06%, herd UD share 0.01, in herd band 0.19; 40,599 people, 1930s claim 0.18, threat P10 0.032 — people and claim make it conservancy ground
-    2,092 km2 at 24.981,8.27 near Uru (1930s) (8 km): authors wilderness → solver community.  2,250 people, 1930s claim 0.02, threat P10 0.008 — people and claim make it conservancy ground
-    1,548 km2 at 25.36,4.915 near Bandakpa (27 km): authors wilderness → solver community.  1,406 people, 1930s claim 0.0, threat P10 0.027 — people and claim make it conservancy ground
+WHERE THEY DISAGREE on drawn ground — 75 connected blocks of one class pair, largest first (the ≤ 15 worth a meeting):
+   15,520 km2 at 26.908,6.855 near Yapa (1930s) (29 km): authors core → solver wilderness.  meets the core rule (1 people, cropland 0.0%) but LOST TO THE CORE CAP — other ground scored higher (threat P10 here 0.0, herd UD share 0.022); raise the cap or pin this park
+   10,148 km2 at 28.559,6.306 near Riani (1930s village) (15 km): authors wilderness → solver core.  682 people (0.07/km²), cropland 0.0%, clearing 0.01 km²/1000 — meets the core rule the drawn plan leaves out
+    6,916 km2 at 29.135,5.801 near Armstrong B (1930s village) (20 km): authors wilderness → solver community.  1,939 people, 1930s claim 0.19, threat P10 0.01 — people and claim make it conservancy ground
+    5,884 km2 at 28.783,5.093 near Obakali (1930s) (2 km): authors wilderness → solver corridor.  herds: UD share 0.028, 84% of it inside a validated bundle band; drawn as wilderness
+    5,504 km2 at 25.754,7.845 near Fungwanjini (1930s) (11 km): authors wilderness → solver corridor.  herds: UD share 0.012, 85% of it inside a validated bundle band; drawn as wilderness
+    5,236 km2 at 24.716,9.767 near Radoum (16 km): authors core → solver community.  drawn as park but only 0% of it meets the core rule: 46,146 people / 8.81/km², cropland 1.55%, herd UD share 0.019, in herd band 0.11; 46,146 people, 1930s claim 0.21, threat P10 0.018 — people and claim make it conservancy ground
+    3,028 km2 at 26.56,8.855 near Nyanalail (19 km): authors wilderness → solver community.  9,448 people, 1930s claim 0.19, threat P10 0.027 — people and claim make it conservancy ground
+    2,876 km2 at 28.83,6.808 near T. Akwir (1930s village) (14 km): authors wilderness → solver community.  521 people, 1930s claim 0.09, threat P10 0.007 — people and claim make it conservancy ground
+    2,604 km2 at 24.246,9.937 near Songo (19 km): authors core → solver wilderness.  drawn as park but only 0% of it meets the core rule: 98 people / 0.04/km², cropland 0.43%, herd UD share 0.007, in herd band 0.02
+    2,148 km2 at 24.985,8.272 near Uru (1930s) (8 km): authors wilderness → solver community.  1,892 people, 1930s claim 0.02, threat P10 0.006 — people and claim make it conservancy ground
+    2,076 km2 at 29.063,4.969 near Ibba (21 km): authors wilderness → solver community.  25,261 people, 1930s claim 0.21, threat P10 0.02 — people and claim make it conservancy ground
     1,312 km2 at 24.009,6.293: authors core → solver community.  drawn as park but only 0% of it meets the core rule: 679 people / 0.52/km², cropland 0.0%, herd UD share 0.0, in herd band 0.0; 679 people, 1930s claim 0.0, threat P10 0.035 — people and claim make it conservancy ground
-    1,304 km2 at 29.223,4.922 near Ibba (17 km): authors wilderness → solver community.  1,908 people, 1930s claim 0.18, threat P10 0.022 — people and claim make it conservancy ground
+    1,300 km2 at 25.381,4.94 near Gwene (1930s village) (25 km): authors wilderness → solver community.  1,406 people, 1930s claim 0.0, threat P10 0.032 — people and claim make it conservancy ground
     1,272 km2 at 27.069,6.07 near Sudan (1930s) (24 km): authors wilderness → solver corridor.  herds: UD share 0.004, 79% of it inside a validated bundle band; drawn as wilderness
+    1,072 km2 at 28.017,6.266 near Doku (1930s) (9 km): authors wilderness → solver community.  459 people, 1930s claim 0.12, threat P10 0.009 — people and claim make it conservancy ground

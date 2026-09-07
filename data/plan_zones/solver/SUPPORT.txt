@@ -1,0 +1,2 @@
+SUPPORT — 12 re-solves under resampled data (GHSL ×U(0.7,1.6), herd-band jitter, 30% traced-line dropout):
+  96% of the AOI keeps one class in ≥75% of draws (stable); 4% in 50–75% (contested — walk it); 0% undecided by the data.

@@ -23,7 +23,8 @@ Sources, all local and all re-derivable:
   data/eval/zone_stats.json          the eleven proposed shapes, measured
   db.sqlite3                         settlements, clearing, fire index
   data/fire_groups_v5/XSA_*.json     v5 fire trajectories
-  data/eval/xsa_mining/prediction*   the mining model and its measured skill
+  <MINING_MODEL dir>/prediction*     the mining model and its measured skill (scripts/mining_model.py:
+                                     heldout = data/eval/xsa_mining_heldout, insample = data/eval/xsa_mining)
   data/eval/mining_reference.json    reported mine occurrences (coverage!)
   data/eval/acled/adm1_conflict.json per-state conflict scalars (ours, not ACLED's)
   scripts/easybudget/build_budget.py the live budget model
@@ -46,6 +47,7 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT / "scripts" / "deprecated"))  # 3-yr Aug-2026 budget the Aug PIP quotes
 from plan_zone_stats import RIM_KM, km2, read_kml  # noqa: E402
+import mining_model as MM  # noqa: E402  MINING_MODEL=heldout|insample: which mining surface every number below reads
 
 DB = ROOT / "db.sqlite3"
 AOI = "XSA_Study_Area"
@@ -223,6 +225,23 @@ def park_block(zs, geoms):
     )
 
 
+def verdict_text(pred, s5):
+    """One sentence the report may print next to the gold shading."""
+    lift, p = s5["lift_reach"], s5["p_reach"]
+    basis = MM.describe(pred)
+    held = basis.startswith("held-out")
+    if lift is None or p is None:
+        return "unmeasured: the model's skill on this ground has not been scored"
+    strength = ("significant" if p < 0.05 else "suggestive, not significant")
+    how = ("measured out of sample - the model was fitted on reported workings outside the study "
+           "area and scored once on the study area's own"
+           if held else
+           "measured in sample - the signals were chosen on the same reported workings they are scored on")
+    return (f"{strength}, {how}: after correcting for where the reporting lists can see, the top 5% "
+            f"of ground holds {lift:.2f}x the known workings of average ground (p={p:.3f}; p<0.05 is the "
+            "usual bar). Treat the shading as WHERE TO LOOK FIRST, never as evidence a pit is there.")
+
+
 def gold_block(zs, geoms):
     """Where the gold exposure is, per zone, and what the model is worth.
 
@@ -231,7 +250,12 @@ def gold_block(zs, geoms):
     skill travels with them (root invariant 12: a grade drawn without its score
     beside it reads as a ranking).
     """
-    pred = json.load(open(ROOT / "data/eval/xsa_mining/prediction.json"))
+    pred = json.load(open(MM.prediction_json()))
+    # the unit table / zone stats were measured on ONE surface; refuse to quote another
+    zs_model = zs.get("mining_model", "insample")
+    if zs_model != MM.variant():
+        sys.exit(f"zone_stats.json was measured with mining_model={zs_model} but MINING_MODEL={MM.variant()}: "
+                 f"re-run scripts/plan_zone_stats.py (or set MINING_MODEL={zs_model})")
     sk = {s["top_frac"]: s for s in pred["composite_skill"]}
     anchor_src = dict(Counter(a["source"] for a in pred["anchors"]).most_common())
     per = {}
@@ -266,16 +290,14 @@ def gold_block(zs, geoms):
         per_zone=per,
         hottest=[dict(zone=n, top05_cells=c) for c, n in hot if c],
         skill_top05=sk.get(0.05), skill_top20=sk.get(0.2),
-        # The number that decides how hard the plan may lean on this model.
-        # Raw lift 3.25 (p=0.006) becomes 2.01 (p=0.057) once the anchor list's
-        # own reach is corrected for - i.e. NOT significant. Root invariant 12:
-        # a grade drawn without its score beside it reads as a ranking.
-        verdict=("suggestive, not significant: after correcting for where the "
-                 "anchor list can see, the top 5%% of ground holds %.2fx the "
-                 "known workings of average ground (p=%.3f, and p<0.05 is the "
-                 "usual bar). Treat the shading as WHERE TO LOOK FIRST, never "
-                 "as evidence a pit is there."
-                 % (sk[0.05]["lift_reach"], sk[0.05]["p_reach"])),
+        model_variant=pred.get("mining_model", "insample"),
+        skill_basis=MM.describe(pred),
+        heldout=(pred.get("heldout_source") or {}).get("truth"),
+        # The number that decides how hard the plan may lean on this model,
+        # and the WORD that goes with it, both derived (root invariant 12: a
+        # grade drawn without its score beside it reads as a ranking; and a
+        # measurement's basis - held-out or in-sample - is part of the score).
+        verdict=verdict_text(pred, sk[0.05]),
         n_anchors=pred["n_anchors"], n_clusters=pred["n_clusters"],
         anchor_sources=anchor_src,
         n_candidates=len(pred["candidates"]),
@@ -508,6 +530,7 @@ def main():
 
     facts = dict(
         generated_by="scripts/easypip/pip_facts.py",
+        mining_model=MM.variant(),
         rim_km=RIM_KM,
         xsa=xsa_block(),
         shapes=shapes_block(zs, geoms),

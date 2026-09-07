@@ -250,3 +250,10 @@ data/eval/regional_mining/*
 !data/eval/regional_mining/harness.json
 !data/eval/regional_mining/nested_cv.json
 !data/eval/regional_mining/nested_cv_belt.json
+# Held-out mining surface (MINING_MODEL=heldout, scripts/mining_model.py): the
+# prediction the plan chain reads; its .npz scores + nested_cv.json are above.
+!data/eval/xsa_mining_heldout/
+data/eval/xsa_mining_heldout/*
+!data/eval/xsa_mining_heldout/prediction.json
+!data/eval/xsa_mining_heldout/prediction.geojson
+!data/eval/regional_mining/nested_cv.xsa_scores.npz
