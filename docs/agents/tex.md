@@ -23,6 +23,7 @@ Needs TeX Live (`texlive-latex-extra`, `biber`, `latexmk`; installed 2026-09-07)
 - **Prose is the author's.** Edit wording in `build_pip_tex.py` in place; do not restructure or add
   enumerated summaries. Numbered `\section`s only for the seven chapters; `\subsection` is unnumbered
   italic run-in and used twice (General findings, Legally important). No TOC.
+- **Zone E1 schedule** is a breakable `tcolorbox` (same yellow as the title box) holding a `fvextra` `Verbatim` of the generated text, placed *after* the plan prose (end of §5), with `\vspace{\baselineskip}` before it; `build_docx.py` maps it to `quote`+`verbatim`. The zoning/staffed tables are `[H]` directly after the deployment-map page so figure → tables → prose keeps its order.
 - **Five tables**: AOI at a glance, zoning, staffed zones (tabularx, grey `\g{}` cells for the CAR/DRC/SDN
   strands), Tambura schedule (verbatim `boundary_schedule` from facts), budget (SSD + Sudan; CAR/DRC grey,
   excluded). Two landscape figures wrapped in `\afterpage{\clearpage\newgeometry{margin=10mm} … \restoregeometry}` so the preceding page fills; map pages are `\thispagestyle{empty}`, image `height=.93\textheight,keepaspectratio`, captions two lines ("legend on the map") — the long legend prose was clipped off the page bottom on 2026-09-07.
