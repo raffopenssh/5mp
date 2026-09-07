@@ -538,6 +538,13 @@ def _locations(F, P):
         else: drv, w = "TEAM", [(me if kind == "ECHO" else mt)[y] if t["year"] <= y + 1 else 0 for y in range(N)]
         out.append(dict(id=tid, place=t["place"], kind=kind, drv=drv, country=t.get("country") or {"CAR": "CAF", "COD": "COD", "SDN": "SDN"}.get(strand, "SSD"), year=t["year"], w=w))
     out.append(dict(id="HQ", place="Chinko HQ", kind="HQ", drv="HQ", country="CAF", year=1, w=[1] * N))
+    # The FP delivery unit is "focal points AND the Wau/Juba backbone": coordinator, finance officer, the national
+    # partner's grant, the Wau compound, Juba flights. Only the focal points' own salaries, desks and laptops belong to
+    # a town, so the regional row takes twice the towns' combined weight (2/3 of every FP line) - editable on the sheet.
+    fp_w = [sum(o["w"][y] for o in out if o["drv"] == "FP") for y in range(N)]
+    out.append(dict(id="REG", place="Regional overhead (Wau/Juba backbone)", kind="REGION", drv="FP", country="SSD", year=1, w=[2 * x for x in fp_w]))
+    # Programme-wide lines (survey, flights, counsel, audit, constitution facilitation) carry no delivery unit and land here too.
+    out.append(dict(id="REG", place="Regional overhead (Wau/Juba backbone)", kind="REGION", drv="NONE", country="SSD", year=1, w=[1] * N))
     return out
 
 
@@ -634,7 +641,9 @@ def build_xlsx(path, F, P):
     locs = _locations(F, P)
     wl = wb.create_sheet("Locations"); wl["A1"] = "LOCATIONS - every site the plan staffs, from the deployment; weights split each budget line across its delivery unit's sites"
     wl["A1"].font = Font(bold=True, size=12)
-    wl["A2"] = "Weight = months active in the year (an FP 12, Chinko HQ 1). Edit a weight to move money between sites; a site with 0 in a year gets nothing that year."; wl["A2"].font = Font(italic=True, size=9)
+    wl["A2"] = ("Weight = months active in the year (an FP 12, Chinko HQ 1); the regional row under FP is twice the towns' combined weight, so "
+                "two thirds of the backbone lines (coordinator, partner grant, Wau compound, Juba travel) stay regional. Edit a weight to move money "
+                "between sites; a site with 0 in a year gets nothing that year."); wl["A2"].font = Font(italic=True, size=9)
     wl.append([]); wl.append(["Team", "Place", "Kind", "Delivery unit", "Country", "Starts year"] + [f"Weight Y{y+1}" for y in range(N)]); style_header(wl, 4, 6 + N)
     loc_first = 5
     for L_ in locs:
@@ -643,7 +652,7 @@ def build_xlsx(path, F, P):
     loc_last = wl.max_row
     wl.append([]); wl.append(["Weight sums by delivery unit"]); wl.cell(row=wl.max_row, column=1).font = Font(bold=True)
     wsum_row = {}
-    for key in ("TEAM", "FP", "HQ") + STRAND_KEYS:
+    for key in ("TEAM", "FP", "HQ", "NONE") + STRAND_KEYS:
         wl.append([key]); r = wl.max_row; wsum_row[key] = r
         for y in range(N):
             wc = get_column_letter(7 + y)
@@ -665,7 +674,7 @@ def build_xlsx(path, F, P):
     arows = []
     for r_b, rv in zip(line_rows, line_vals):
         drv = rv["drv"] or "NONE"
-        targets = [(i + loc_first, L_) for i, L_ in enumerate(locs) if L_["drv"] == drv] or [(None, dict(id="-", place="Unallocated (Juba/Wau backbone)", country="SSD"))]
+        targets = [(i + loc_first, L_) for i, L_ in enumerate(locs) if L_["drv"] == drv] or [(None, dict(id="-", place="Unallocated", country="SSD"))]
         strand = strand_name.get(drv, "South Sudan request")
         for y in range(N):
             for r_l, L_ in targets:
