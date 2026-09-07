@@ -593,10 +593,24 @@ def solver_raster(pdir):
     sys.path.insert(0, str(ROOT / "scripts"))
     import plan_conservancy_units as P; import __main__ as _m; _m.Grid = P.Grid
     G = pickle.load(open(st_p, "rb"))["G"]; lab = np.load(lab_p); inten = np.load(int_p)
+    idx, extent = grid_rows_to_latlon(G)
+    return dict(lab=lab[idx], inten=inten[idx], extent=extent, G=G, idx=idx)
+
+
+def grid_rows_to_latlon(G):
+    """Row index + imshow extent that place a CEA-grid raster in lon/lat WITHOUT a half-cell shift.
+
+    Row r covers latitude [edge(r+1), edge(r)] where edge(r) is the lat of the grid line y1 - r*res; the even lon/lat
+    row grid runs edge-to-edge and each output row takes the source row whose EDGES bracket it. The earlier version
+    spanned cell CENTRES and searched on them, which pushed the whole fill ~half a cell (1 km) south of the vector
+    outlines drawn from the same grid - a visible seam along every zone's north edge.
+    """
+    import plan_conservancy_units as P
     lon0, _ = P.INV(G.x0, G.y1); lon1, _ = P.INV(G.x0 + G.w * G.res, G.y1)
-    lats = np.array([P.INV(G.x0, G.y1 - (r + 0.5) * G.res)[1] for r in range(G.h)])
-    ylin = np.linspace(lats[0], lats[-1], G.h * 2); idx = np.clip(np.searchsorted(-lats, -ylin), 0, G.h - 1)
-    return dict(lab=lab[idx], inten=inten[idx], extent=(lon0, lon1, lats[-1], lats[0]), G=G)
+    edges = np.array([P.INV(G.x0, G.y1 - r * G.res)[1] for r in range(G.h + 1)])        # descending, h+1 lines
+    ylin = np.linspace(edges[0], edges[-1], G.h * 2, endpoint=False) + (edges[-1] - edges[0]) / (G.h * 4)   # row centres
+    idx = np.clip(np.searchsorted(-edges, -ylin, side="right") - 1, 0, G.h - 1)
+    return idx, (lon0, lon1, edges[-1], edges[0])
 
 
 def corridor_axis(st):
@@ -879,7 +893,7 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
                 w, hh = 0.050, 0.62 * LS * PT
                 for i, f in enumerate((0.25, 0.55, 1.0)):
                     ax.add_patch(Rectangle((SYM_X - w / 2 + i * w / 3, yc - hh / 2), w / 3, hh, facecolor=mfc,
-                                           edgecolor="none", alpha=0.12 + 0.30 * f, clip_on=False))
+                                           edgecolor="none", alpha=0.26 + 0.34 * f, clip_on=False))
                 ax.add_patch(Rectangle((SYM_X - w / 2, yc - hh / 2), w, hh, facecolor="none", edgecolor=mec,
                                        lw=mew, alpha=0.7, clip_on=False))
             elif swatch:   # an AREA: a wide rectangle - never a square, which is a point symbol (ECHO team)
@@ -1333,8 +1347,7 @@ def main():
             import plan_conservancy_units as P
             G = R["G"]
             zid = G.rasterize([(transform(P.FWD, g), uid) for uid, (cls, g, pr) in served_geoms.items()], fill=0)
-            zid = zid[np.clip(np.searchsorted(-np.array([P.INV(G.x0, G.y1 - (r + 0.5) * G.res)[1] for r in range(G.h)]),
-                                              -np.linspace(*[P.INV(G.x0, G.y1 - (r + 0.5) * G.res)[1] for r in (0, G.h - 1)], G.h * 2)), 0, G.h - 1)]
+            zid = zid[R["idx"]]
             rgba = np.zeros(R["lab"].shape + (4,))
             for uid, (cls, g, pr) in served_geoms.items():
                 m = (zid == uid) & (R["lab"] == ("core", "wilderness", "community", "corridor").index(cls) + 1)
@@ -1394,10 +1407,8 @@ def main():
                 for _i, _c in enumerate(("core", "wilderness", "community", "corridor"), 1):
                     _mm = _lab == _i; _rgba[_mm, :3] = matplotlib.colors.to_rgb(OPT_STYLE[_c]["fc"]); _rgba[_mm, 3] = 0.06 + 0.5 * np.clip(_int[_mm], 0, 1)
                 # CEA grid → lon/lat image: reproject corners; the grid is axis-aligned in CEA, lon is linear in x and lat ≈ monotone in y, so warp rows
-                _lon0, _ = _P.INV(_G.x0, _G.y1); _lon1, _ = _P.INV(_G.x0 + _G.w * _G.res, _G.y1)
-                _lats = np.array([_P.INV(_G.x0, _G.y1 - (r + 0.5) * _G.res)[1] for r in range(_G.h)])
-                _ylin = np.linspace(_lats[0], _lats[-1], _G.h * 2); _idx = np.clip(np.searchsorted(-_lats, -_ylin), 0, _G.h - 1)
-                ax.imshow(_rgba[_idx], extent=(_lon0, _lon1, _lats[-1], _lats[0]), origin="upper", interpolation="nearest", zorder=3.05)
+                _idx, _ext = grid_rows_to_latlon(_G)
+                ax.imshow(_rgba[_idx], extent=_ext, origin="upper", interpolation="nearest", zorder=3.05)
         for fp in files:
             for f in json.load(open(fp))["features"]:
                 pr = f["properties"]; g = shape(f["geometry"])
@@ -1461,7 +1472,7 @@ def main():
             pitch = [float(np.median(d[d > 1e-6])) for d in (np.diff(np.unique(np.round(pts[:, i], 5))) for i in (0, 1))]
             cells = [_box(x - pitch[0] / 2, y - pitch[1] / 2, x + pitch[0] / 2, y + pitch[1] / 2) for x, y, _ in pts]
             t = np.clip((pts[:, 2] - 95.0) / 5.0, 0, 1)                      # 95th → 100th percentile
-            rgba = np.zeros((len(cells), 4)); rgba[:, :3] = to_rgb(GOLD); rgba[:, 3] = 0.12 + 0.30 * t
+            rgba = np.zeros((len(cells), 4)); rgba[:, :3] = to_rgb(GOLD); rgba[:, 3] = 0.26 + 0.34 * t   # floor high enough to read through a team-zone fill
             ax.add_collection(PatchCollection([Rectangle((c.bounds[0], c.bounds[1]), pitch[0], pitch[1]) for c in cells],
                                               facecolors=rgba, edgecolors="none", antialiased=False, zorder=4.28))
             region = unary_union(cells)
