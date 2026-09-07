@@ -414,6 +414,12 @@ is not. Correction to the section above: **all 89 XSA anchors are CAF** —
 "21 of the 89 in SSD/SDN" was wrong; 63 % of XSA has no truth at all, which
 is why the held-out test needs the region.
 
+**Secondary (pre-registered) `--belt` run** (train <16.3 N only, 387
+clusters): CV also picks the logit; held-out XSA top-5 % 23.9 % (p 0.0007),
+top-10 % 34.8 %, top-20 % 50 %. Same answer from a different training set —
+the analogue weighting on the full region does what the belt cut does by
+hand, slightly better.
+
 **Not yet done:** `predict_mining_xsa.py` / `prediction.json` (what
 `pip_facts.py` and the PIP map read) still ship the in-sample 2.01×/p 0.057
 verdict; the plan sentence should switch to the held-out number only by
