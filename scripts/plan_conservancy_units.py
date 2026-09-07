@@ -426,7 +426,7 @@ def edges(lab, surf):
         lo, hi = np.minimum(a[m], b[m]), np.maximum(a[m], b[m]); ss = s[m]
         key = lo.astype(np.int64)*10_000_000 + hi
         for kk, cnt, sm in zip(*np.unique(key, return_counts=True), np.bincount(np.unique(key, return_inverse=True)[1], weights=ss)):
-            E[(int(kk//10_000_000), int(kk % 10_000_000))] = [int(cnt), float(sm)]
+            e = E[(int(kk//10_000_000), int(kk % 10_000_000))]; e[0] += int(cnt); e[1] += float(sm)   # += : the two passes (E-W, N-S) share pairs; until 2026-09-07 the second overwrote the first, so a N-S strip counted 1 shared edge, not 15
     return E
 
 def merge_units(lab, surf, G, min_ha, cls=None, target_ha=0, weak=0.35, max_ha=0):
