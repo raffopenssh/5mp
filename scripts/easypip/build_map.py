@@ -80,7 +80,8 @@ FRAME_PAD_DEG = 0.35
 MAP_W_IN = 15.5
 PANEL_W_IN = 2.75          # one legend COLUMN; the legend is an inset card in the map's empty east strip
 PANEL_SCALE = 0.80           # legend row text = 10.6 × 0.80 ≈ 8.5 pt, the scale-bar size
-LEGEND_COMPACT = True      # rows = symbol + a few words; every explanation lives in the report / docs, not on the sheet
+LEGEND_COMPACT = True
+SITUATION = False          # --situation: the ground only (fire, people, clearing, gold) - no zoning, no plan, no teams      # rows = symbol + a few words; every explanation lives in the report / docs, not on the sheet
 LANDSCAPE_ASPECT = 1.414   # A-series landscape: the map frame is widened (east, where the AOI is blank) to this ratio         # every legend font size is multiplied by this (2026-09-06: the map carries the page, the key serves it)
 
 # ---------------------------------------------------------------- palette
@@ -416,6 +417,25 @@ def load_gold(reach):
                  if a.get("lat") is not None and keep(a["lon"], a["lat"])],
         skill=sk,
     ), None
+
+
+KEYSTONES = ROOT / "data/keystones_with_boundaries.json"
+
+
+def load_keystone_parks(frame):
+    """Gazetted protected areas the platform holds boundaries for (Protected Planet via the keystone list), in frame.
+    Only these are drawn; Radom, Numatina, Boro and the other reserves have no boundary here and are NOT drawn - the
+    legend says so rather than letting an absence read as 'no park'."""
+    if not KEYSTONES.exists():
+        return []
+    x0, y0, x1, y1 = frame
+    bx = Polygon([(x0, y0), (x1, y0), (x1, y1), (x0, y1)])
+    out = []
+    for pk in json.load(open(KEYSTONES)):
+        g = shape(pk["geometry"])
+        if g.intersects(bx):
+            out.append((pk["name"], pk["country_code"], g))
+    return out
 
 
 def load_borders(frame):
@@ -952,7 +972,7 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
                 w, hh = 0.050, 0.62 * LS * PT
                 for i, f in enumerate((0.25, 0.55, 1.0)):
                     ax.add_patch(Rectangle((SYM_X - w / 2 + i * w / 3, yc - hh / 2), w / 3, hh, facecolor=mfc,
-                                           edgecolor="none", alpha=0.26 + 0.34 * f, clip_on=False))
+                                           edgecolor="none", alpha=(0.06 + 0.89 * f ** 2) if SITUATION else (0.26 + 0.34 * f), clip_on=False))
                 ax.add_patch(Rectangle((SYM_X - w / 2, yc - hh / 2), w, hh, facecolor="none", edgecolor=mec,
                                        lw=mew, alpha=0.7, clip_on=False))
             elif swatch:   # an AREA: a wide rectangle - never a square, which is a point symbol (ECHO team)
@@ -1002,18 +1022,24 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
     # how many fronts are in the wash, how far the gold clip extends. Anything
     # a reader would quote rather than use to decode the picture belongs in the
     # text, where it can be qualified.
-    head("Boundaries", GREEN)
-    if deploy:
+    if SITUATION:
+        head("Boundaries", GREEN)
+        key("s", "International border", "none", "#b9b9b2", lw=1.1, ls=(0, (6, 3)), short="International border")
+        key("s", "Gazetted protected area with a boundary on file", GREEN_E, GREEN_E, swatch=True, mew=1.2, alpha=0.25,
+            short="Gazetted PA (boundary on file)")
+        text("Radom, Numatina, Boro and Chelkou have no boundary on file and are not drawn.", 8.2, MUTED, style="italic", x=TXT_X, gap=SP * 0.6)
+    elif deploy:
+        head("Boundaries", GREEN)
         key("s", "Boundaries as drawn by the authors", "none", USER_GREY, lw=1.0, ls=DASHDOT, alpha=0.8,
             short="Drawn by the authors")
         key("s", "Southern NP, gazetted", "none", USER_GREY, lw=1.0, alpha=0.8, short="Southern NP, gazetted")
         for c, w in (("core", "Core"), ("wilderness", "Wilderness"), ("community", "Community"), ("corridor", "Corridor")):
             key("s", w, "none", ZONE_C[c], lw=0.9, ls=DASHDOT, alpha=0.7, short=f"Zoning: {w.lower()}")
-    elif planner_n:
+    elif planner_n and not SITUATION:
         key("s", "Boundaries as drawn by the authors (park, wilderness, grazing, corridor pins)", "none", USER_GREY, lw=1.1, ls=(0, (6, 3)),
             short="Boundaries as drawn by the authors")
         key("s", "Southern National Park \u2014 already gazetted (tinted)", "none", USER_GREY, lw=1.1, short="Southern NP, gazetted (tinted)")
-    else:
+    elif not SITUATION:
       key("s", "The proposed park", "none", GREEN, lw=3.4)
       key("s", "Wilderness blocks around it \u2014 proposed, not park", "none",
           GREEN_W, lw=1.6, short="Proposed wilderness")
@@ -1039,12 +1065,12 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
         lw=1.4, alpha=0.55,
         note=f"{fmt(len(fire))} of them in frame \u2014 the depth of the wash "
              f"is the density, not one big fire", short="Fire front 2024\u201326")
-    if planner_n and dens_drawn:   # a legend row may only describe a layer that is actually drawn
+    if (planner_n or SITUATION) and dens_drawn:   # a legend row may only describe a layer that is actually drawn
         key("o", "Built-up, people per 2 km cell (solid amber discs, same size rule as the towns)", ORANGE, ORANGE, swatch="cells", mew=0.25, alpha=0.92,
             note="GHSL clusters binned per cell \u2014 a footprint is 0.7 px at this scale, so people are drawn, not shapes; unnamed clusters stay in this layer", short="Built-up, size \u221d people")
     key("o", "Named town, people (amber ring in a paper glow; the same size rule)", ORANGE, TOWN_RIM, ms=9, swatch="town",
         note="an OSM/verified name within 8 km of a GHSL cluster \u2265 500 people; people are a satellite estimate and a lower bound, never a census", short="Named town, size \u221d people")
-    if planner_n and dens_drawn:
+    if (planner_n or SITUATION) and dens_drawn:
         key("s", "Clearing, km\u00b2 per 2 km cell (indigo squares, size \u221d area)", CLEAR, CLEAR, swatch="cells", mew=0.25, alpha=0.92,
             note="reviewed Hansen/GLAD loss events since 2000, area summed per cell", short="Clearing, cell size \u221d area")
     key("_", "Trunk rivers", "none", BLUE, lw=1.4)
@@ -1059,10 +1085,11 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
                  if sk5.get("capture") is not None and sk5.get("lift_reach") is not None else "skill unmeasured")
     key("s", "Top 5% of ground by model score", GOLD, GOLD, swatch="graded", mew=0.8, alpha=0.45,
         note=f"{skill_txt} \u2014 drawn only within {gold_clip_km:g} km of the proposed shapes; "
-             f"blank elsewhere means NOT DRAWN, not scored low", short="Gold model top 5 %")
-    key(None, "Imagery target \u2014 the model's best cell, somewhere to look, never a mine", None, None,
-        kind="target", color=GOLD, short="Imagery target: top model cell \u00b7 not a mine")
-    key(None, "Abandoned-village watchlist", None, None, kind="watch", color=GOLD, short="Village watchlist")
+             f"blank elsewhere means NOT DRAWN, not scored low", short=("Gold model top 5 %: pale = 95th, solid = 100th percentile" if SITUATION else "Gold model top 5 %"))
+    if not SITUATION:
+        key(None, "Imagery target \u2014 the model's best cell, somewhere to look, never a mine", None, None,
+            kind="target", color=GOLD, short="Imagery target: top model cell \u00b7 not a mine")
+        key(None, "Abandoned-village watchlist", None, None, kind="watch", color=GOLD, short="Village watchlist")
     key(None, "Reported working (OSM / Crisis Tracker)", None, None, kind="working", color=GOLD,
         short="Reported working")
     add(SP * 0.9, lambda ax, y: None)
@@ -1093,7 +1120,7 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
         key(None, "TANGO team (5)", None, None, kind="^", color=TEAM_C, short="TANGO team (5)")
         key(None, "Year-2 team: hollow", None, None, kind=[k_ for k_, kd in (("*", "FP"), ("s", "ECHO"), ("^", "TANGO")) if any(t["year"] == 2 and t["kind"] == kd for t in deploy["teams"])], color=TEAM_C, hollow=True,
             short=f"hollow = year 2 ({n1} year 1, +{n2} year 2)")
-    elif planner_n:
+    elif planner_n and not SITUATION:
         # planner layers are drawn only with --planner; the legend says what they are and how sure the machine is
         n_prop = planner_n
         head("Zoning proposals (machine)", "#6a2c8f")
@@ -1114,12 +1141,12 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
              f"rasters as the drawn zones; the text is in data/plan_zones/conservancy_units/AREAS.txt.",
              9.2, MUTED, style="italic", x=TXT_X, gap=SP, tag="blurb")
 
-    if not deploy:
+    if not deploy and not SITUATION:
         head("EASY plan sites", PLAN)
         key(None, "Anchor station \u2014 staffed", None, None, kind="s", color=PLAN, short="Plan site: anchor")
         key(None, "Seasonal outreach only", None, None, kind="o", color=PLAN, hollow=True, short="Plan site: seasonal")
         key(None, "Town focal point", None, None, kind="*", color=PLAN, short="Plan focal point")
-    key(None, "Town no site in the plan reaches", None, None, kind="unreached", color=UNREACHED_C,
+    if not SITUATION: key(None, "Town no site in the plan reaches", None, None, kind="unreached", color=UNREACHED_C,
         note=(f"{fmt(belt['people'])} people in {belt['clusters']} towns of "
               f"{fmt(belt['min_pop'])}+ beside the proposed area, all further "
               f"than {belt['reach_km']:g} km from every site"
@@ -1130,14 +1157,13 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
     if deploy and belt:
         key("s", "", "none", "none", ms=0, mew=0,
             short=f"{belt['clusters']} towns, {fmt(belt['people'])} people, >{belt['reach_km']:g} km from a team")
-    add(SP * 0.9, lambda ax, y: None)
-    text("A tilde after a site name means the assessment could not confirm its "
+    if not SITUATION: text("A tilde after a site name means the assessment could not confirm its "
          "position on the ground.", 9.4, MUTED, style="italic", x=TXT_X,
          gap=SP, tag="blurb")
 
     # ------------------------------------------------------------ provenance
     # one line under the frame, at the legend's size: read after the map, never competing with it
-    text(f"Sources \u00b7 boundaries: {SH['n_files']} KML files as received \u00b7 fire: VIIRS/FIRMS, v5 fronts 2024\u201326 \u00b7 people: GHSL estimate, "
+    text(f"Sources \u00b7 boundaries: {'Protected Planet (WDPA), gazetted areas on file' if SITUATION else str(SH['n_files']) + ' KML files as received'} \u00b7 fire: VIIRS/FIRMS, v5 fronts 2024\u201326 \u00b7 people: GHSL estimate, "
          f"not a count \u00b7 clearing: Hansen/GLAD, verified \u00b7 gold: {G.get('model_variant', 'in-sample')} model, {G['n_anchors']} known workings \u00b7 "
          f"all figures from data/eval/pip_facts.json \u00b7 {date}",
          7.2 / PANEL_SCALE, MUTED, lead=1.3, gap=0.0, wrap=False, tag="footer")
@@ -1243,8 +1269,13 @@ def main():
                     help="deploy_footprint.geojson from scripts/plan_deploy.py (default: the one beside --planner if it exists; "
                          "'' to switch the deploy sheet off). With it the sheet becomes the DEPLOYMENT map: solver zones as "
                          "quiet dash-dot outlines, the team zones filled by evidence intensity, footprints outlined per year, teams as points")
+    ap.add_argument("--situation", action="store_true",
+                    help="the SITUATION sheet: fire, people, clearing, gold and rivers only - no zoning, no drawn "
+                         "boundaries, no teams. Needs --planner for the density rasters and the named-town rule")
     a = ap.parse_args()
-    deploy = load_deploy(Path(a.planner).parent if a.planner else None, a.deploy)
+    global SITUATION
+    SITUATION = bool(a.situation)
+    deploy = None if SITUATION else load_deploy(Path(a.planner).parent if a.planner else None, a.deploy)
 
     zones = load_zones(a.kml_dir)
     st = load_stats()
@@ -1282,13 +1313,15 @@ def main():
     polys = unary_union([z["geom"] for z in zones.values()
                          if z["kind"] == "polygon"])
     reach = transform(inv, transform(fwd, polys).buffer(rim_km * 1000))
+    if SITUATION:   # the situation sheet has no "ask" to clip to: the whole frame is the subject
+        reach = Polygon([(x0, y0), (x1, y0), (x1, y1), (x0, y1)])
     gold, gold_note = load_gold(reach)
     sites = site_rows(st)
     teams_early = deploy["teams"] if deploy else (load_teams(Path(a.planner).parent) if a.planner else [])
     # with the planner drawn, the proposals' teams ARE sites: a town 10 km from an ECHO team is served, and the
     # "no site within 40 km" belt must be measured against everything the sheet proposes, or it contradicts itself
     towns_only, n_unnamed_all = (named_towns(setl) if a.planner else (setl, 0))   # "towns" in the belt are NAMED towns, as on the sheet
-    belt = unserved_belt(towns_only, ([] if deploy else sites) + [dict(name=t["place"], lon=t["lon"], lat=t["lat"], approx=False, kind="team") for t in teams_early], reach)
+    belt = None if SITUATION else unserved_belt(towns_only, ([] if deploy else sites) + [dict(name=t["place"], lon=t["lon"], lat=t["lat"], approx=False, kind="team") for t in teams_early], reach)
     if deploy and belt:   # the summary text quotes this number (easyplan.py reads it)
         json.dump({k: v for k, v in belt.items() if k != "towns"} | {"n_towns": len(belt["towns"]), "named_towns_500": len(towns_only), "unnamed_clusters_500": n_unnamed_all},
                   open(Path(a.planner).parent / "map_belt.json", "w"))
@@ -1383,7 +1416,15 @@ def main():
         for r in ("grazing", "wilderness", "park", "pin", "other"):
             style[r] = dict(fc="none", fa=0.0, ec=USER_GREY, lw=1.1, ls=(0, (6, 3)), z=2.3)
         style["existing"] = dict(fc=GREEN_E, fa=0.08, ec=USER_GREY, lw=1.1, ls="solid", z=2.3)
-    for role in order:
+    if SITUATION:
+        for nm_, iso_, g_ in load_keystone_parks(frame):
+            for p in poly_patches(g_, facecolor=GREEN_E, alpha=0.10, edgecolor="none", zorder=2.6):
+                ax.add_patch(p)
+            for p in poly_patches(g_, facecolor="none", edgecolor=GREEN_E, linewidth=1.6, zorder=2.65):
+                ax.add_patch(p)
+            c_ = g_.representative_point()
+            ax.text(c_.x, c_.y, nm_.upper(), color=GREEN_E, fontsize=8.5, weight="bold", ha="center", va="center", zorder=2.66, alpha=0.9)
+    for role in ([] if SITUATION else order):
         if deploy and role == "pin":
             continue    # the two corridor pins (buffered circles) are the ask the solver's corridor now answers; on the
                         # deployment sheet they are two grey rings with no meaning of their own, so they are not drawn
@@ -1460,7 +1501,7 @@ def main():
                                    f"{size} · {ppl_s} ppl", ZONE_C[cls], 7.6, "normal"))
         # (iii) the 25 km discs in deploy_footprint.geojson are a working geometry (reach), not a finding: not drawn.
         #       The served zone is the footprint; the team point and its id say who and when.
-    elif a.planner:
+    elif a.planner and not SITUATION:
         pdir = Path(a.planner).parent
         VIOLET, WALK = "#6a2c8f", "#b3261e"
         upath = pdir / "units.geojson"
@@ -1566,23 +1607,33 @@ def main():
             pitch = [float(np.median(d[d > 1e-6])) for d in (np.diff(np.unique(np.round(pts[:, i], 5))) for i in (0, 1))]
             cells = [_box(x - pitch[0] / 2, y - pitch[1] / 2, x + pitch[0] / 2, y + pitch[1] / 2) for x, y, _ in pts]
             t = np.clip((pts[:, 2] - 95.0) / 5.0, 0, 1)                      # 95th → 100th percentile
-            rgba = np.zeros((len(cells), 4)); rgba[:, :3] = to_rgb(GOLD); rgba[:, 3] = 0.26 + 0.34 * t   # floor high enough to read through a team-zone fill
+            rgba = np.zeros((len(cells), 4)); rgba[:, :3] = to_rgb(GOLD)
+            if SITUATION:   # frame-wide sheet: the grade IS the message, so use the whole ramp (95th near-invisible, 100th solid)
+                rgba[:, 3] = 0.06 + 0.89 * t ** 2
+            else:
+                rgba[:, 3] = 0.26 + 0.34 * t   # floor high enough to read through a team-zone fill
             ax.add_collection(PatchCollection([Rectangle((c.bounds[0], c.bounds[1]), pitch[0], pitch[1]) for c in cells],
                                               facecolors=rgba, edgecolors="none", antialiased=False, zorder=4.28))
-            region = unary_union(cells)
-            eps = 0.08 * min(pitch)     # morphological close: abutting cells must not leave hairline seams
-            region = region.buffer(eps, join_style=2).buffer(-eps, join_style=2)
-            for ptch in poly_patches(region, facecolor="none", edgecolor=GOLD, linewidth=0.8, alpha=0.7,
-                                     joinstyle="round", zorder=4.3):
-                ax.add_patch(ptch)
+            region = unary_union(cells)   # morphological close below: abutting cells must not leave hairline seams
+            if SITUATION:
+                # outline only round the well-graded ground (>= 97.5th percentile); the pale cells carry no edge, so a
+                # 95th-percentile cell is a faint wash and not a drawn square
+                hi = [c for c, g in zip(cells, pts[:, 2]) if g >= 97.5]
+                region = unary_union(hi) if hi else None
+            if region is not None:
+                eps = 0.08 * min(pitch)
+                region = region.buffer(eps, join_style=2).buffer(-eps, join_style=2)
+                for ptch in poly_patches(region, facecolor="none", edgecolor=GOLD, linewidth=0.6 if SITUATION else 0.8, alpha=0.6 if SITUATION else 0.7,
+                                         joinstyle="round", zorder=4.3):
+                    ax.add_patch(ptch)
         # the candidates are the sheet's mining subject: a paper halo under each mark so it stays legible on the
         # fire mass and inside the team-zone fills, and drawn above the team points (z 5.6) so nothing covers them
         gz = 5.8 if deploy else 4.5
         # pictographs (Lucide): scan-search = imagery target, eye = watchlist village, pickaxe = reported working.
         # The plan family is geometric, so the two read apart in greyscale (see SYM_PT).
-        for lon, lat, _c in gold["candidates"]:
+        for lon, lat, _c in ([] if SITUATION else gold["candidates"]):   # the situation sheet shows ground and reports, not the model's shortlist
             marks.append((lon, lat, "target", GOLD, False, gz))
-        for lon, lat, _n in gold["watchlist"]:
+        for lon, lat, _n in ([] if SITUATION else gold["watchlist"]):
             marks.append((lon, lat, "watch", GOLD, False, gz))
         for lon, lat, _s in gold["anchors"]:
             marks.append((lon, lat, "working", GOLD, False, gz + 0.1))
@@ -1591,6 +1642,8 @@ def main():
     #    a filled square is an anchor (a real audience), a hollow circle is a
     #    site the assessment demoted to seasonal outreach. The reader should
     #    be able to see the recommendation without reading the panel.
+    if SITUATION:
+        sites = []
     for s in ([] if deploy else sites):
         if s["kind"] == "focal":
             marks.append((s["lon"], s["lat"], "*", PLAN, False, 5.4))
@@ -1619,7 +1672,7 @@ def main():
     draw_marks(fig, ax, marks)
 
     # the corridor: the axis the two pins encode, drawn as the ask it is
-    if axis and not deploy:
+    if axis and not deploy and not SITUATION:
         (ax0, ay0), (ax1_, ay1) = axis[0], axis[-1]
         dx, dy = ax1_ - ax0, ay1 - ay0
         n = math.hypot(dx, dy) or 1
@@ -1655,7 +1708,7 @@ def main():
     # Shape names go down FIRST, centred in their own polygon, and the site
     # labels then route around them.
     area_entries = []
-    for nm, z in zones.items():
+    for nm, z in ({} if SITUATION else zones).items():
         role = role_of(nm)
         if role in ("pin",):
             continue
@@ -1677,7 +1730,8 @@ def main():
     place_labels(fig, ax, label_pts,
                  avoid=[(s["lon"], s["lat"]) for s in ([] if deploy else sites)] + [(t["lon"], t["lat"]) for t in teams]
                  + ([(t[0], t[1]) for t in belt["towns"]] if belt else [])
-                 + ([(g[0], g[1]) for g in gold["candidates"] + gold["watchlist"] + gold["anchors"]] if deploy and gold else []),
+                 + ([(g[0], g[1]) for g in gold["candidates"] + gold["watchlist"] + gold["anchors"]] if deploy and gold else [])
+                 + ([(g[0], g[1]) for g in gold["anchors"]] if SITUATION and gold else []),
                  reserved=area_boxes)
 
     # 9. graticule, scale bar, north arrow

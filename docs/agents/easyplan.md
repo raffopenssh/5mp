@@ -8,7 +8,14 @@
    and `map_belt.json` (written by `build_map.py --planner …`, the "184,879 people beyond 40 km" line).
 2. **`reports/BUDGET_EASY_<yyyy-mm>.{txt,xlsx}`** — `scripts/easybudget/build_budget.py`. Quantities
    are *functions* of the deployment (teams per year, new teams, focal points) and `docs/plan/plan.yaml`.
-   The xlsx is live formulae (VLOOKUP rates, SUMIF subtotals).
+   The xlsx has **three editable sheets** (`Budget` line table with dropdowns for rate code and delivery
+   unit, `Rates`, `Assumptions`; yellow cells) plus `Locations` (per-site weights = months active), a
+   formula-only `Allocation` long table (line × site × year, direct and loaded), and **real pivot tables**
+   over it (`Summary`, `By action`, `By location`, `By strand`, `By delivery unit`; one shared cache,
+   `refreshOnLoad`). Helper columns go last and hidden. Verify with LibreOffice:
+   `soffice --headless --convert-to xlsx` then read with `data_only=True` — pivot totals must equal
+   `facts.budget.total` / `ssd_total` / `strands.*.total`. We do **not** drill: the corridor water line is
+   `solar_pumps` (pump on an existing borehole), not boreholes.
 3. **`reports/PIP_SUMMARY_EASY.txt`** (+ copy in `docs/plan/`) — Jinja render of
    `docs/plan/PIP_SUMMARY_template.txt`. Prose is prose; every number is `{{ }}`.
 4. **`reports/PIP_SUMMARY_EASY.pdf`** — `scripts/pip_pdf.py` (needs `python3-reportlab`): the .txt on
@@ -50,7 +57,7 @@ staffed zones" table. Never type a state or county name into the template.
 
 | Change | Edit | Then |
 |---|---|---|
-| horizon, start month, months paid, one-offs (survey, boreholes), per-team ratios | `docs/plan/plan.yaml` | `easyplan.py` |
+| horizon, start month, months paid, one-offs (survey, solar pumps), per-team ratios | `docs/plan/plan.yaml` | `easyplan.py` |
 | a unit cost, a budget line's logic, a new line | `RATES` / `lines()` in `scripts/easybudget/build_budget.py` | `easyplan.py` |
 | the proposal's wording | `docs/plan/PIP_SUMMARY_template.txt` | `easyplan.py` |
 | which zones/teams | re-run `plan_solver.py solve` → `plan_deploy.py` → `plan_boundary.py --narrate` → `build_map.py --planner` | `easyplan.py` |
@@ -113,3 +120,12 @@ The August 2026 three-year budget (1.68 M) lives in `scripts/deprecated/build_bu
 and is still imported by the August PIP generators (`easypip/pip_facts.py`, `build_docs.py`), which
 describe the *hand-drawn* zones. Superseded reports are in `reports/superseded/` (gitignored).
 Current result (2026-09-06): 2 years Nov 2026–Oct 2028, USD 1.52 M (0.50 / 1.03), 21 → 53 field staff.
+
+## PIP LaTeX report (2026-09, local only)
+
+`scripts/piptex/` (git-ignored: it carries names from confidential field reporting and live guest
+links) renders `reports/pip_latex/main.tex` from facts.json / pip_facts.json / harness.json / the budget
+txt; `share.py` uploads deliverables and mints 365-day guest links into `share.json`. Compile with
+`latexmk -pdf` in `reports/pip_latex/` (biblatex-ieee + biber; TeX Live installed 2026-09-07).
+`build_map.py --situation` draws Fig. 1 (no plan, keystone parks only, gold grade 95th pale → 100th solid).
+`docs/plan/PIP_SUMMARY_*` are untracked since 2026-09-07 (still in history).
