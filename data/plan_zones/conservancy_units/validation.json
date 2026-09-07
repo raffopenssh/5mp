@@ -4,8 +4,8 @@
   "ref_km2": 15792,
   "iou": 0.54,
   "n_units": 6,
-  "redrawn_km2": 9372,
-  "ref_legible_pct": 36,
+  "redrawn_km2": 9376,
+  "ref_legible_pct": 35,
   "ref_boundary": [
    "Bo River on the E/SE (30 km)",
    "unnamed river (order 4) on the S/W (18 km)",
@@ -13,8 +13,8 @@
    "Kenarofe (1930s sheet) on the SW (16 km)"
   ],
   "class_mix": {
-   "core": 83,
-   "wilderness": 17
+   "core": 81,
+   "wilderness": 19
   },
   "units": [
    715,
@@ -28,19 +28,19 @@
  {
   "name": "PLAN Boro_Wilderness_3,180km2",
   "ref_km2": 3160,
-  "iou": 0.73,
+  "iou": 0.74,
   "n_units": 5,
-  "redrawn_km2": 2908,
-  "ref_legible_pct": 72,
+  "redrawn_km2": 2872,
+  "ref_legible_pct": 70,
   "ref_boundary": [
    "Low hill \u2013 J. ABU RASEIN \u2013 J. NGAYA ridge on the N/NW (60 km)",
    "CAF border on the S/SW (38 km)",
-   "W. Tabyi (1930s sheet) on the SE/E (36 km)",
+   "W. Tabyi (1930s sheet) on the SE/E (32 km)",
    "K. Kago (1930s sheet) on the N (12 km)"
   ],
   "class_mix": {
-   "core": 94,
-   "wilderness": 5,
+   "core": 92,
+   "wilderness": 7,
    "community": 1,
    "corridor": 0
   },
@@ -55,9 +55,9 @@
  {
   "name": "PLAN Boro-Biri-headwaters_13,111km2",
   "ref_km2": 13036,
-  "iou": 0.71,
-  "n_units": 13,
-  "redrawn_km2": 15140,
+  "iou": 0.72,
+  "n_units": 14,
+  "redrawn_km2": 15628,
   "ref_legible_pct": 52,
   "ref_boundary": [
    "CAF border on the NW/SW (82 km)",
@@ -66,8 +66,8 @@
    "W. Tabyi (1930s sheet) on the NW (16 km)"
   ],
   "class_mix": {
-   "core": 73,
-   "wilderness": 12,
+   "core": 72,
+   "wilderness": 14,
    "community": 12,
    "corridor": 2
   },
@@ -78,6 +78,7 @@
    529,
    530,
    532,
+   533,
    566,
    596,
    633,
@@ -90,9 +91,9 @@
  {
   "name": "PLAN Wau-Wilderness_30,329km2",
   "ref_km2": 30228,
-  "iou": 0.77,
-  "n_units": 26,
-  "redrawn_km2": 34464,
+  "iou": 0.79,
+  "n_units": 27,
+  "redrawn_km2": 34936,
   "ref_legible_pct": 45,
   "ref_boundary": [
    "CAF border on the SW/W (116 km)",
@@ -101,9 +102,10 @@
    "Bo River (1930s sheet) on the E (12 km)"
   ],
   "class_mix": {
-   "core": 70,
-   "wilderness": 26,
-   "community": 3
+   "core": 66,
+   "wilderness": 30,
+   "community": 4,
+   "corridor": 0
   },
   "units": [
    606,
@@ -128,30 +130,31 @@
    833,
    834,
    870,
-   875,
    876,
    912,
-   914
+   914,
+   915,
+   916
   ]
  },
  {
   "name": "PLAN Southern-NP-Wilderness_41'590km2",
   "ref_km2": 38716,
-  "iou": 0.76,
-  "n_units": 46,
-  "redrawn_km2": 36632,
-  "ref_legible_pct": 46,
+  "iou": 0.78,
+  "n_units": 45,
+  "redrawn_km2": 35784,
+  "ref_legible_pct": 45,
   "ref_boundary": [
-   "Nahr al Jur on the NW/SW (86 km)",
-   "unnamed river (order 4) on the SW/SE (28 km)",
+   "Nahr al Jur on the NW/SW (82 km)",
+   "unnamed river (order 4) on the SW/N (24 km)",
    "Wahko on the NE (22 km)",
    "K. Daberi (1930s sheet) on the E (22 km)"
   ],
   "class_mix": {
-   "core": 18,
-   "wilderness": 52,
+   "core": 25,
+   "wilderness": 44,
    "community": 24,
-   "corridor": 6
+   "corridor": 8
   },
   "units": [
    86,
@@ -165,6 +168,7 @@
    766,
    803,
    837,
+   841,
    842,
    843,
    844,
@@ -187,38 +191,36 @@
    1006,
    1007,
    1038,
-   1042,
    1043,
    1047,
    1080,
    1081,
    1082,
+   1083,
    1084,
    1087,
-   1123,
    1160,
    1162,
-   1187,
    1189
   ]
  },
  {
   "name": "PLAN Southern NP",
   "ref_km2": 13684,
-  "iou": 0.65,
-  "n_units": 16,
-  "redrawn_km2": 14508,
+  "iou": 0.7,
+  "n_units": 17,
+  "redrawn_km2": 13168,
   "ref_legible_pct": 51,
   "ref_boundary": [
-   "Nahr al Jur on the W/NW (90 km)",
+   "Nahr al Jur on the W/NW (88 km)",
    "Wahko on the E/SE (32 km)",
    "Ibba on the N/SW (26 km)",
    "K.Teh (1930s sheet) on the S (20 km)"
   ],
   "class_mix": {
-   "core": 13,
-   "wilderness": 42,
-   "community": 41,
+   "core": 16,
+   "wilderness": 41,
+   "community": 39,
    "corridor": 4
   },
   "units": [
@@ -230,6 +232,7 @@
    764,
    766,
    803,
+   841,
    842,
    843,
    844,
@@ -243,19 +246,19 @@
  {
   "name": "PLAN zone-p\u00e2turage-durable_Numatina_15'000km2",
   "ref_km2": 14432,
-  "iou": 0.21,
+  "iou": 0.24,
   "n_units": 11,
-  "redrawn_km2": 5488,
+  "redrawn_km2": 6444,
   "ref_legible_pct": 48,
   "ref_boundary": [
-   "CAF border on the NW/W (172 km)",
+   "CAF border on the NW/W (170 km)",
    "Nahr al Jur on the SE (78 km)",
    "unnamed river (order 4) on the SE/SW (56 km)",
    "1930s A. E. SUDAN (Bahr el Ghazal Province) on the NW (36 km)"
   ],
   "class_mix": {
-   "core": 55,
-   "wilderness": 11,
+   "core": 63,
+   "wilderness": 3,
    "community": 22,
    "corridor": 12
   },
@@ -265,11 +268,11 @@
    672,
    673,
    829,
+   915,
+   916,
    1038,
    1080,
-   1123,
    1160,
-   1187,
    1189
   ]
  },
@@ -289,8 +292,8 @@
   "class_mix": {
    "core": 17,
    "wilderness": 20,
-   "community": 57,
-   "corridor": 6
+   "community": 56,
+   "corridor": 7
   },
   "units": [
    1239,
@@ -301,9 +304,9 @@
  {
   "name": "PLAN zone-p\u00e2turage-durable_Radom-Sudan",
   "ref_km2": 1648,
-  "iou": 0.03,
+  "iou": 0.02,
   "n_units": 1,
-  "redrawn_km2": 84,
+  "redrawn_km2": 72,
   "ref_legible_pct": 63,
   "ref_boundary": [
    "J. KOAYA \u2013 J. NOAYA 4428 \u2013 J. HELISI ridge on the N/NW (102 km)",
@@ -326,17 +329,17 @@
   "iou": 0.69,
   "n_units": 5,
   "redrawn_km2": 7560,
-  "ref_legible_pct": 77,
+  "ref_legible_pct": 75,
   "ref_boundary": [
    "Chel River on the S/E (90 km)",
    "Lol on the N/NW (42 km)",
-   "Kuru River on the NE (20 km)",
-   "Lol River on the NE/N (18 km)"
+   "Kuru River on the NE (18 km)",
+   "Lol River on the NE/N (16 km)"
   ],
   "class_mix": {
    "core": 3,
-   "wilderness": 59,
-   "community": 37
+   "wilderness": 61,
+   "community": 35
   },
   "units": [
    394,
@@ -349,9 +352,9 @@
  {
   "name": "WDPA Boro (Game Reserve)",
   "ref_km2": 1492,
-  "iou": 0.55,
+  "iou": 0.56,
   "n_units": 3,
-  "redrawn_km2": 1740,
+  "redrawn_km2": 1700,
   "ref_legible_pct": 67,
   "ref_boundary": [
    "Low hill \u2013 J. ABU RASEIN \u2013 J. NGAYA ridge on the NE/W (48 km)",
@@ -375,9 +378,9 @@
   "iou": 0.65,
   "n_units": 1,
   "redrawn_km2": 436,
-  "ref_legible_pct": 54,
+  "ref_legible_pct": 52,
   "ref_boundary": [
-   "unnamed river (order 4) on the NW/W (16 km)",
+   "unnamed river (order 4) on the W/NW (14 km)",
    "R. Aka (1930s sheet) on the S/SW (14 km)",
    "COD border on the E/NW (12 km)",
    "K. Pirgala (1930s sheet) on the N/NW (10 km)"
@@ -395,9 +398,9 @@
  {
   "name": "WDPA Bangangai (Game Reserve)",
   "ref_km2": 192,
-  "iou": 0.25,
-  "n_units": 1,
-  "redrawn_km2": 88,
+  "iou": 0.0,
+  "n_units": 0,
+  "redrawn_km2": 0,
   "ref_legible_pct": 72,
   "ref_boundary": [
    "K. Ndoro (1930s sheet) on the SE/E (14 km)",
@@ -406,13 +409,10 @@
    "K.Joyuri (1930s sheet) on the NW/W (8 km)"
   ],
   "class_mix": {
-   "core": 29,
    "wilderness": 2,
-   "community": 69
+   "community": 98
   },
-  "units": [
-   1185
-  ]
+  "units": []
  },
  {
   "name": "WDPA Ashana (Game Reserve)",
@@ -420,11 +420,11 @@
   "iou": 0.0,
   "n_units": 0,
   "redrawn_km2": 0,
-  "ref_legible_pct": 86,
+  "ref_legible_pct": 79,
   "ref_boundary": [
    "Khor Dabura on the NE/N (6 km)",
    "Lol on the S/NE (6 km)",
-   "Boro on the SW/W (6 km)",
+   "Boro on the SW (4 km)",
    "1930s Dist. Bdy. (Western) Northern on the W (2 km)"
   ],
   "class_mix": {
@@ -447,7 +447,7 @@
    "R.Uere (1930s sheet) on the E/SE (18 km)"
   ],
   "class_mix": {
-   "core": 3,
+   "core": 2,
    "wilderness": 81,
    "community": 16
   },
@@ -470,9 +470,9 @@
  {
   "name": "WDPA Andre Felix (National Park)",
   "ref_km2": 956,
-  "iou": 0.26,
-  "n_units": 1,
-  "redrawn_km2": 260,
+  "iou": 0.59,
+  "n_units": 2,
+  "redrawn_km2": 688,
   "ref_legible_pct": 62,
   "ref_boundary": [
    "unnamed river (order 4) on the N/SW (26 km)",
@@ -485,15 +485,16 @@
    "community": 1
   },
   "units": [
+   283,
    306
   ]
  },
  {
   "name": "WDPA Zemongo (Faunal Reserve)",
   "ref_km2": 13660,
-  "iou": 0.93,
+  "iou": 0.92,
   "n_units": 10,
-  "redrawn_km2": 13168,
+  "redrawn_km2": 13156,
   "ref_legible_pct": 85,
   "ref_boundary": [
    "unnamed river (order 4) on the W/NW (142 km)",
@@ -521,13 +522,13 @@
  {
   "name": "WDPA Yata-Ngaya (Faunal Reserve)",
   "ref_km2": 5400,
-  "iou": 0.44,
+  "iou": 0.45,
   "n_units": 10,
-  "redrawn_km2": 5876,
-  "ref_legible_pct": 50,
+  "redrawn_km2": 5456,
+  "ref_legible_pct": 49,
   "ref_boundary": [
    "J. KOAYA \u2013 J. NOAYA 4428 \u2013 J. HELISI ridge on the SE/E (62 km)",
-   "unnamed river (order 4) on the N/W (54 km)",
+   "unnamed river (order 4) on the N/W (52 km)",
    "Yata on the N/NE (34 km)",
    "CAF border on the SE/E (30 km)"
   ],
@@ -552,14 +553,14 @@
  {
   "name": "WDPA Radom (National Park, approx. circle of reported 12,500 km2)",
   "ref_km2": 12488,
-  "iou": 0.58,
-  "n_units": 14,
-  "redrawn_km2": 11456,
+  "iou": 0.61,
+  "n_units": 16,
+  "redrawn_km2": 14236,
   "ref_legible_pct": 24,
   "ref_boundary": [
    "J. KOAYA \u2013 J. NOAYA 4428 \u2013 J. HELISI ridge on the W/SW (18 km)",
    "unnamed river (order 4) on the SE (10 km)",
-   "SDN border on the NE/S (8 km)",
+   "SDN border on the S/NE (6 km)",
    "Umbelasha on the W (6 km)"
   ],
   "class_mix": {
@@ -568,16 +569,18 @@
    "community": 64
   },
   "units": [
+   11,
    17,
    65,
    204,
-   206,
    242,
    243,
+   245,
    246,
    247,
    267,
    268,
+   269,
    289,
    290,
    312,
@@ -587,22 +590,20 @@
  {
   "name": "WDPA Bire Kapatuos (Game Reserve)",
   "ref_km2": 232,
-  "iou": 0.3,
-  "n_units": 1,
-  "redrawn_km2": 148,
+  "iou": 0.0,
+  "n_units": 0,
+  "redrawn_km2": 0,
   "ref_legible_pct": 56,
   "ref_boundary": [
    "COD border on the W/SE (26 km)",
-   "R.Lingasi (1930s sheet) on the W (2 km)"
+   "R.Lingasi (1930s sheet) on the W (2 km)",
+   "landmarks on the unnamed stretches: Viah (1930s village) (N), Mihibike (1930s village) (N), Loronyo (village today) (E)"
   ],
   "class_mix": {
    "core": 12,
-   "wilderness": 38,
-   "community": 50
+   "community": 88
   },
-  "units": [
-   1210
-  ]
+  "units": []
  },
  {
   "name": "WDPA Numatina (Game Reserve)",
@@ -614,7 +615,7 @@
   "ref_boundary": [
    "R. Busseri (1930s sheet) on the NE/W (16 km)",
    "R. Basseri (1930s sheet) on the W/SW (14 km)",
-   "K. Ungobo (1930s sheet) on the NE (12 km)",
+   "K. Ungobo (1930s sheet) on the NE (10 km)",
    "Busseri River on the NE (8 km)"
   ],
   "class_mix": {
@@ -638,7 +639,7 @@
   "ref_legible_pct": 65,
   "ref_boundary": [
    "unnamed river (order 4) on the N/W (146 km)",
-   "Chinko on the S/NE (138 km)",
+   "Chinko on the S/NE (134 km)",
    "unnamed river (order 5) on the E/SE (80 km)",
    "Mbari on the SW/W (72 km)"
   ],
@@ -666,20 +667,20 @@
  {
   "name": "WDPA Southern (National Park)",
   "ref_km2": 19236,
-  "iou": 0.68,
-  "n_units": 26,
-  "redrawn_km2": 26336,
-  "ref_legible_pct": 72,
+  "iou": 0.73,
+  "n_units": 27,
+  "redrawn_km2": 24472,
+  "ref_legible_pct": 71,
   "ref_boundary": [
    "Nahr al Jur on the W/NW (142 km)",
-   "Ibba on the W/NW (40 km)",
+   "Ibba on the W/NW (38 km)",
    "River Gulnam on the E/NE (26 km)",
    "Wahko on the NE/SE (24 km)"
   ],
   "class_mix": {
-   "core": 11,
+   "core": 13,
    "wilderness": 59,
-   "community": 26,
+   "community": 24,
    "corridor": 4
   },
   "units": [
@@ -689,6 +690,7 @@
    94,
    727,
    809,
+   841,
    842,
    843,
    844,
@@ -769,13 +771,13 @@
     "geo_affinity_mean": 0.05,
     "cropland_2003_pct": 0.0,
     "cropland_2019_pct": 0.0,
-    "boundary_legibility": 0.22,
+    "boundary_legibility": 0.23,
     "built_growth_x": null,
     "front_axis_coherence": 0.31,
     "front_axis": "N\u2013S",
     "rationale": [
      "core",
-     "long fronts per 10 km width 116.5 >= 154.41: no",
+     "long fronts per 10 km width 116.5 >= 154.06: no",
      "transhumance share % 96 >= 50: yes",
      "axis coherence (0.25 = random) 0.31 >= 0.4: no",
      "people/km2 0.0 <= 2: yes",
@@ -792,11 +794,12 @@
      "K. Nfotoro (1930s sheet) on the NW (16 km)",
      "Kenarofe (1930s sheet) on the SW (16 km)",
      "R. Pongo (1930s sheet) on the N/NW (14 km)",
-     "Bo River (1930s sheet) on the E (14 km)",
-     "44 km along a geological contact only (not visible on the ground \u2014 needs beacons)"
+     "Bo River (1930s sheet) on the E (12 km)",
+     "44 km along a geological contact only (not visible on the ground \u2014 needs beacons)",
+     "landmarks on the unnamed stretches: unnamed hills (E), unnamed hills (SE), village site (1930s village symbol) (SW), Ngoia (1930s village) (S), Old iron forge (1930s village) (NW), Funadin (1930s village) (E)"
     ],
     "perimeter_km": 504,
-    "unattributed_pct": 64,
+    "unattributed_pct": 65,
     "name": "PLAN Pongo-Wau-Numatinna_National-Park_1587922ha"
    },
    {
@@ -862,7 +865,7 @@
     "front_axis": "E\u2013W",
     "rationale": [
      "core",
-     "long fronts per 10 km width 140.71 >= 154.41: no",
+     "long fronts per 10 km width 140.71 >= 154.06: no",
      "transhumance share % 97 >= 50: yes",
      "axis coherence (0.25 = random) 0.3 >= 0.4: no",
      "people/km2 0.0 <= 2: yes",
@@ -876,14 +879,15 @@
     "boundary": [
      "Low hill \u2013 J. ABU RASEIN \u2013 J. NGAYA ridge on the N/NW (60 km)",
      "CAF border on the S/SW (38 km)",
-     "W. Tabyi (1930s sheet) on the SE/E (36 km)",
+     "W. Tabyi (1930s sheet) on the SE/E (32 km)",
      "K. Kago (1930s sheet) on the N (12 km)",
      "I.Dioro (1930s sheet) on the N (4 km)",
      "SDN border on the N (4 km)",
-     "32 km along a geological contact only (not visible on the ground \u2014 needs beacons)"
+     "30 km along a geological contact only (not visible on the ground \u2014 needs beacons)",
+     "landmarks on the unnamed stretches: Abdalla (1930s village) (N), Abdullah (1930s village) (S), Bobat (1930s village) (S), flat rock marker (1930s water symbol) (SE), Said Bambas (village today) (NW), Yani (1930s village) (E)"
     ],
     "perimeter_km": 240,
-    "unattributed_pct": 28,
+    "unattributed_pct": 30,
     "name": "PLAN Boro_Wilderness_3,180km2"
    },
    {
@@ -941,13 +945,13 @@
     "geo_affinity_mean": 0.06,
     "cropland_2003_pct": 0.0,
     "cropland_2019_pct": 0.0,
-    "boundary_legibility": 0.38,
+    "boundary_legibility": 0.37,
     "built_growth_x": null,
     "front_axis_coherence": 0.28,
     "front_axis": "E\u2013W",
     "rationale": [
      "core",
-     "long fronts per 10 km width 132.62 >= 154.41: no",
+     "long fronts per 10 km width 132.62 >= 154.06: no",
      "transhumance share % 98 >= 50: yes",
      "axis coherence (0.25 = random) 0.28 >= 0.4: no",
      "people/km2 0.01 <= 2: yes",
@@ -965,7 +969,8 @@
      "W. Tabyi (1930s sheet) on the NW (16 km)",
      "R.Raga (1930s sheet) on the N (10 km)",
      "Ugfukote (1930s sheet) on the S (8 km)",
-     "46 km along a geological contact only (not visible on the ground \u2014 needs beacons)"
+     "46 km along a geological contact only (not visible on the ground \u2014 needs beacons)",
+     "landmarks on the unnamed stretches: rock marker (1930s water symbol) (E), Nyon Nyon (1930s village) (E), Low hills (E), unnamed hills (SE)"
     ],
     "perimeter_km": 516,
     "unattributed_pct": 48,
@@ -1031,7 +1036,7 @@
     "front_axis": "N\u2013S",
     "rationale": [
      "wilderness",
-     "long fronts per 10 km width 213.27 >= 154.41: yes",
+     "long fronts per 10 km width 213.27 >= 154.06: yes",
      "transhumance share % 98 >= 50: yes",
      "axis coherence (0.25 = random) 0.27 >= 0.4: no",
      "people/km2 0.12 <= 2: yes",
@@ -1047,15 +1052,16 @@
     "cls": "wilderness",
     "boundary": [
      "CAF border on the SW/W (116 km)",
-     "Bo River on the E/SE (58 km)",
+     "Bo River on the E/SE (54 km)",
      "unnamed river (order 4) on the S/SW (34 km)",
      "Pongo on the N (32 km)",
      "Kenarofe (1930s sheet) on the SW (14 km)",
      "Kuru on the NW (12 km)",
-     "114 km along a geological contact only (not visible on the ground \u2014 needs beacons)"
+     "110 km along a geological contact only (not visible on the ground \u2014 needs beacons)",
+     "landmarks on the unnamed stretches: Rabeh (1930s village) (NE), Udu Burnus (1930s village) (NE), village site (1930s village symbol) (SW), Isale (1930s village) (S), Kiringo Laringa (1930s village) (SE), Old iron forge (1930s village) (NW), unnamed hills (NE), Guma (1930s village) (NE)"
     ],
     "perimeter_km": 1146,
-    "unattributed_pct": 61,
+    "unattributed_pct": 62,
     "name": "PLAN Wau-Wilderness_30,329km2"
    },
    {
@@ -1121,7 +1127,7 @@
     "front_axis": "E\u2013W",
     "rationale": [
      "wilderness",
-     "long fronts per 10 km width 194.87 >= 154.41: yes",
+     "long fronts per 10 km width 194.87 >= 154.06: yes",
      "transhumance share % 96 >= 50: yes",
      "axis coherence (0.25 = random) 0.28 >= 0.4: no",
      "people/km2 0.084 <= 2: yes",
@@ -1136,16 +1142,17 @@
     ],
     "cls": "wilderness",
     "boundary": [
-     "Nahr al Jur on the NW/SW (98 km)",
-     "unnamed river (order 4) on the SW/SE (28 km)",
+     "Nahr al Jur on the NW/SW (94 km)",
+     "unnamed river (order 4) on the SW/N (24 km)",
      "Wahko on the NE (22 km)",
      "K. Daberi (1930s sheet) on the E (22 km)",
      "R. Yabo (1930s sheet) on the W (20 km)",
      "Ibba on the N (16 km)",
-     "82 km along a geological contact only (not visible on the ground \u2014 needs beacons)"
+     "74 km along a geological contact only (not visible on the ground \u2014 needs beacons)",
+     "landmarks on the unnamed stretches: Rongo Uku (1930s village) (NW), Mabudza (1930s village) (S), Kissi (1930s village) (S), Makunda (1930s village) (S), Mungara (1930s village) (N), Paragshom (1930s village) (NE), village site (1930s village symbol) (NW), unnamed hills (NW)"
     ],
     "perimeter_km": 848,
-    "unattributed_pct": 53,
+    "unattributed_pct": 54,
     "name": "PLAN Southern-NP-Wilderness_41'590km2"
    },
    {
@@ -1202,13 +1209,13 @@
     "geo_affinity_mean": 0.0,
     "cropland_2003_pct": 0.0,
     "cropland_2019_pct": 0.0,
-    "boundary_legibility": 0.21,
+    "boundary_legibility": 0.2,
     "built_growth_x": null,
     "front_axis_coherence": 0.33,
     "front_axis": "SE\u2013NW",
     "rationale": [
      "core",
-     "long fronts per 10 km width 251.35 >= 154.41: yes",
+     "long fronts per 10 km width 251.35 >= 154.06: yes",
      "transhumance share % 97 >= 50: yes",
      "axis coherence (0.25 = random) 0.33 >= 0.4: no",
      "people/km2 0.0 <= 2: yes",
@@ -1287,7 +1294,7 @@
     "front_axis": "E\u2013W",
     "rationale": [
      "community (settled / farmed / mining-exposed \u2014 none of the above held)",
-     "long fronts per 10 km width 638.05 >= 154.41: yes",
+     "long fronts per 10 km width 638.05 >= 154.06: yes",
      "transhumance share % 99 >= 50: yes",
      "axis coherence (0.25 = random) 0.34 >= 0.4: no",
      "people/km2 0.684 <= 2: yes",
@@ -1302,13 +1309,14 @@
     ],
     "cls": "community",
     "boundary": [
-     "CAF border on the NW (90 km)",
+     "CAF border on the NW (88 km)",
      "Unsurveyed (1930s sheet) on the SE (30 km)",
      "Nahr al Jur on the SE (22 km)",
      "R. Duma (1930s sheet) on the SE/E (20 km)",
      "1930s Province Boundary on the SE (14 km)",
      "R. Riba (1930s sheet) on the SE (14 km)",
-     "46 km along a geological contact only (not visible on the ground \u2014 needs beacons)"
+     "46 km along a geological contact only (not visible on the ground \u2014 needs beacons)",
+     "landmarks on the unnamed stretches: Nagbula (1930s village) (SE), Abdullah (1930s village) (NW), Bobat (1930s village) (NW), flat rock marker (1930s water symbol) (NW), Dazgz (1930s village) (NW), Danga (1930s village) (NW), L. Kortuba (1930s sheet) (E), L. Jinge (1930s sheet) (SE)"
     ],
     "perimeter_km": 498,
     "unattributed_pct": 39,
@@ -1374,7 +1382,7 @@
     "front_axis": "E\u2013W",
     "rationale": [
      "wilderness",
-     "long fronts per 10 km width 139.43 >= 154.41: no",
+     "long fronts per 10 km width 139.43 >= 154.06: no",
      "transhumance share % 98 >= 50: yes",
      "axis coherence (0.25 = random) 0.34 >= 0.4: no",
      "people/km2 0.003 <= 2: yes",
@@ -1395,7 +1403,7 @@
      "K. Aka (1930s sheet) on the E (6 km)",
      "R. Aka (1930s sheet) on the E (6 km)",
      "K.Majir e Bari (1930s sheet) on the W (6 km)",
-     "40 km along a geological contact only (not visible on the ground \u2014 needs beacons)"
+     "landmarks on the unnamed stretches: village site (1930s village symbol) (E)"
     ],
     "perimeter_km": 236,
     "unattributed_pct": 36,
@@ -1461,7 +1469,7 @@
     "front_axis": "E\u2013W",
     "rationale": [
      "core",
-     "long fronts per 10 km width 329.35 >= 154.41: yes",
+     "long fronts per 10 km width 329.35 >= 154.06: yes",
      "transhumance share % 99 >= 50: yes",
      "axis coherence (0.25 = random) 0.3 >= 0.4: no",
      "people/km2 0.0 <= 2: yes",
@@ -1479,7 +1487,8 @@
      "R. Adda (1930s sheet) on the S/SW (18 km)",
      "R. Uroni (1930s sheet) on the SW/S (12 km)",
      "Marsh (1930s sheet) on the N (10 km)",
-     "104 km along a geological contact only (not visible on the ground \u2014 needs beacons)"
+     "104 km along a geological contact only (not visible on the ground \u2014 needs beacons)",
+     "landmarks on the unnamed stretches: Old copper workings (1930s village) (SW), Pools (1930s sheet) (SE)"
     ],
     "perimeter_km": 402,
     "unattributed_pct": 37,
@@ -1543,13 +1552,13 @@
     "geo_affinity_mean": 0.35,
     "cropland_2003_pct": 0.01,
     "cropland_2019_pct": 0.3,
-    "boundary_legibility": 0.56,
+    "boundary_legibility": 0.57,
     "built_growth_x": 15.3,
     "front_axis_coherence": 0.35,
     "front_axis": "SE\u2013NW",
     "rationale": [
      "community (settled / farmed / mining-exposed \u2014 none of the above held)",
-     "long fronts per 10 km width 150.69 >= 154.41: no",
+     "long fronts per 10 km width 150.69 >= 154.06: no",
      "transhumance share % 96 >= 50: yes",
      "axis coherence (0.25 = random) 0.35 >= 0.4: no",
      "people/km2 1.597 <= 2: yes",
@@ -1566,14 +1575,15 @@
     "boundary": [
      "Chel River on the S/E (90 km)",
      "Lol on the N/NW (42 km)",
-     "Kuru River on the NE (20 km)",
-     "Lol River on the NE/N (18 km)",
+     "Kuru River on the NE (18 km)",
+     "Lol River on the NE/N (16 km)",
      "Sopo on the W/NW (14 km)",
      "Khor Ang'egi on the W (10 km)",
-     "24 km along a geological contact only (not visible on the ground \u2014 needs beacons)"
+     "20 km along a geological contact only (not visible on the ground \u2014 needs beacons)",
+     "landmarks on the unnamed stretches: unnamed hills (SW), Guru (1930s village) (SW), Maryal (1930s village) (NE), Arud (1930s village) (NE), Langlen (1930s village) (NE), Fankei (1930s village) (NE), Arol Dam (1930s village) (NE)"
     ],
     "perimeter_km": 284,
-    "unattributed_pct": 23,
+    "unattributed_pct": 25,
     "name": "WDPA Chelkou (Game Reserve)"
    },
    {
@@ -1631,13 +1641,13 @@
     "geo_affinity_mean": 0.8,
     "cropland_2003_pct": 0.0,
     "cropland_2019_pct": 0.0,
-    "boundary_legibility": 0.42,
+    "boundary_legibility": 0.43,
     "built_growth_x": null,
     "front_axis_coherence": 0.36,
     "front_axis": "SE\u2013NW",
     "rationale": [
      "core",
-     "long fronts per 10 km width 178.57 >= 154.41: yes",
+     "long fronts per 10 km width 178.57 >= 154.06: yes",
      "transhumance share % 99 >= 50: yes",
      "axis coherence (0.25 = random) 0.36 >= 0.4: no",
      "people/km2 0.0 <= 2: yes",
@@ -1652,7 +1662,8 @@
      "Low hill \u2013 J. ABU RASEIN \u2013 J. NGAYA ridge on the N/NE (18 km)",
      "W. Tabyi (1930s sheet) on the S/SE (12 km)",
      "R. Zeizi (1930s sheet) on the E/N (8 km)",
-     "22 km along a geological contact only (not visible on the ground \u2014 needs beacons)"
+     "18 km along a geological contact only (not visible on the ground \u2014 needs beacons)",
+     "landmarks on the unnamed stretches: Wogari (1930s village) (E), Minogo (1930s village) (E), Dyakege (1930s village) (SE), Abu Kapi (1930s village) (N), Pools (1930s sheet) (W)"
     ],
     "perimeter_km": 64,
     "unattributed_pct": 41,
@@ -1715,7 +1726,7 @@
     "front_axis": "E\u2013W",
     "rationale": [
      "wilderness",
-     "long fronts per 10 km width 20.58 >= 154.41: no",
+     "long fronts per 10 km width 20.58 >= 154.06: no",
      "transhumance share % 100 >= 50: yes",
      "axis coherence (0.25 = random) 0.45 >= 0.4: yes",
      "people/km2 0.0 <= 2: yes",
@@ -1732,8 +1743,7 @@
     "boundary": [
      "R. Aka (1930s sheet) on the E/W (28 km)",
      "K. Aka (1930s sheet) on the W (6 km)",
-     "unnamed river (order 4) on the NW (2 km)",
-     "20 km along a geological contact only (not visible on the ground \u2014 needs beacons)"
+     "unnamed river (order 4) on the NW (2 km)"
     ],
     "perimeter_km": 56,
     "unattributed_pct": 36,
@@ -1798,7 +1808,7 @@
     "front_axis": "E\u2013W",
     "rationale": [
      "core",
-     "long fronts per 10 km width 152.28 >= 154.41: no",
+     "long fronts per 10 km width 152.28 >= 154.06: no",
      "transhumance share % 99 >= 50: yes",
      "axis coherence (0.25 = random) 0.34 >= 0.4: no",
      "people/km2 0.0 <= 2: yes",
@@ -1880,7 +1890,7 @@
     "front_axis": "E\u2013W",
     "rationale": [
      "wilderness",
-     "long fronts per 10 km width 155.64 >= 154.41: yes",
+     "long fronts per 10 km width 155.64 >= 154.06: yes",
      "transhumance share % 97 >= 50: yes",
      "axis coherence (0.25 = random) 0.33 >= 0.4: no",
      "people/km2 0.0 <= 2: yes",
@@ -1897,14 +1907,15 @@
     "boundary": [
      "Khor Dabura on the NE/N (6 km)",
      "Lol on the S/NE (6 km)",
-     "Boro on the SW/W (6 km)",
+     "Boro on the SW (4 km)",
      "1930s Dist. Bdy. (Western) Northern on the W (2 km)",
      "J. ABB \u2013 J. TELGONA \u2013 J. ABU KUKU ridge on the W (2 km)",
      "R. Boro or Lol (1930s sheet) on the E (2 km)",
-     "4 km along a geological contact only (not visible on the ground \u2014 needs beacons)"
+     "2 km along a geological contact only (not visible on the ground \u2014 needs beacons)",
+     "landmarks on the unnamed stretches: Naf (1930s village) (N), Erincki (Large pool) (1930s sheet) (N), Abarud (1930s village) (W), Diwa (1930s village) (SE)"
     ],
     "perimeter_km": 28,
-    "unattributed_pct": 14,
+    "unattributed_pct": 21,
     "name": "WDPA Ashana (Game Reserve)"
    },
    {
@@ -1966,7 +1977,7 @@
     "front_axis": "E\u2013W",
     "rationale": [
      "wilderness",
-     "long fronts per 10 km width 102.91 >= 154.41: no",
+     "long fronts per 10 km width 102.91 >= 154.06: no",
      "transhumance share % 93 >= 50: yes",
      "axis coherence (0.25 = random) 0.33 >= 0.4: no",
      "people/km2 0.242 <= 2: yes",
@@ -1986,8 +1997,7 @@
      "COD border on the E (24 km)",
      "R.Uere (1930s sheet) on the E/SE (18 km)",
      "R. Uere (1930s sheet) on the E (16 km)",
-     "Asa on the W (12 km)",
-     "176 km along a geological contact only (not visible on the ground \u2014 needs beacons)"
+     "Asa on the W (12 km)"
     ],
     "perimeter_km": 658,
     "unattributed_pct": 43,
@@ -2053,7 +2063,7 @@
     "front_axis": "N\u2013S",
     "rationale": [
      "core",
-     "long fronts per 10 km width 137.78 >= 154.41: no",
+     "long fronts per 10 km width 137.78 >= 154.06: no",
      "transhumance share % 99 >= 50: yes",
      "axis coherence (0.25 = random) 0.27 >= 0.4: no",
      "people/km2 0.0 <= 2: yes",
@@ -2071,7 +2081,8 @@
      "B. Ngaya (1930s sheet) on the NE (2 km)",
      "Water 10 wide (1930s sheet) on the E (2 km)",
      "unnamed hills ridge on the E (2 km)",
-     "42 km along a geological contact only (not visible on the ground \u2014 needs beacons)"
+     "40 km along a geological contact only (not visible on the ground \u2014 needs beacons)",
+     "landmarks on the unnamed stretches: Tall gra (1930s village) (E)"
     ],
     "perimeter_km": 110,
     "unattributed_pct": 38,
@@ -2138,7 +2149,7 @@
     "front_axis": "N\u2013S",
     "rationale": [
      "core",
-     "long fronts per 10 km width 59.62 >= 154.41: no",
+     "long fronts per 10 km width 59.62 >= 154.06: no",
      "transhumance share % 93 >= 50: yes",
      "axis coherence (0.25 = random) 0.28 >= 0.4: no",
      "people/km2 0.011 <= 2: yes",
@@ -2156,7 +2167,8 @@
      "Ngoangoa on the SE/E (70 km)",
      "secondary road on the S (48 km)",
      "O. Yoredo (1930s sheet) on the N (12 km)",
-     "70 km along a geological contact only (not visible on the ground \u2014 needs beacons)"
+     "70 km along a geological contact only (not visible on the ground \u2014 needs beacons)",
+     "landmarks on the unnamed stretches: Louzia (village today) (SW), Louzia (village today) (SW)"
     ],
     "perimeter_km": 540,
     "unattributed_pct": 15,
@@ -2224,7 +2236,7 @@
     "front_axis": "E\u2013W",
     "rationale": [
      "community (settled / farmed / mining-exposed \u2014 none of the above held)",
-     "long fronts per 10 km width 135.54 >= 154.41: no",
+     "long fronts per 10 km width 135.54 >= 154.06: no",
      "transhumance share % 97 >= 50: yes",
      "axis coherence (0.25 = random) 0.27 >= 0.4: no",
      "people/km2 3.004 <= 2: no",
@@ -2240,15 +2252,16 @@
     "cls": "community",
     "boundary": [
      "J. KOAYA \u2013 J. NOAYA 4428 \u2013 J. HELISI ridge on the SE/E (62 km)",
-     "unnamed river (order 4) on the N/W (54 km)",
+     "unnamed river (order 4) on the N/W (52 km)",
      "Yata on the N/NE (34 km)",
      "CAF border on the SE/E (30 km)",
      "J. YUBA \u2013 J. DOUGDIOU ridge on the N (12 km)",
      "W. Serihama (1930s sheet) on the N/NE (10 km)",
-     "158 km along a geological contact only (not visible on the ground \u2014 needs beacons)"
+     "156 km along a geological contact only (not visible on the ground \u2014 needs beacons)",
+     "landmarks on the unnamed stretches: Tall gra (1930s village) (NE)"
     ],
     "perimeter_km": 478,
-    "unattributed_pct": 50,
+    "unattributed_pct": 51,
     "name": "WDPA Yata-Ngaya (Faunal Reserve)"
    },
    {
@@ -2310,13 +2323,13 @@
     "geo_affinity_mean": 0.24,
     "cropland_2003_pct": 1.27,
     "cropland_2019_pct": 2.12,
-    "boundary_legibility": 0.2,
+    "boundary_legibility": 0.21,
     "built_growth_x": 2.5,
     "front_axis_coherence": 0.27,
     "front_axis": "E\u2013W",
     "rationale": [
      "community (settled / farmed / mining-exposed \u2014 none of the above held)",
-     "long fronts per 10 km width 134.94 >= 154.41: no",
+     "long fronts per 10 km width 134.94 >= 154.06: no",
      "transhumance share % 96 >= 50: yes",
      "axis coherence (0.25 = random) 0.27 >= 0.4: no",
      "people/km2 3.551 <= 2: no",
@@ -2333,11 +2346,12 @@
     "boundary": [
      "J. KOAYA \u2013 J. NOAYA 4428 \u2013 J. HELISI ridge on the W/SW (18 km)",
      "unnamed river (order 4) on the SE (10 km)",
-     "SDN border on the NE/S (8 km)",
+     "SDN border on the S/NE (6 km)",
      "Umbelasha on the W (6 km)",
      "J. OROKULLA \u2013 J. DELETI \u2013 J. KURNU BANDA ridge on the SE (6 km)",
      "K. Diofo (1930s sheet) on the S/SW (6 km)",
-     "68 km along a geological contact only (not visible on the ground \u2014 needs beacons)"
+     "62 km along a geological contact only (not visible on the ground \u2014 needs beacons)",
+     "landmarks on the unnamed stretches: Buta el Humeir (1930s village) (N), Mireip (1930s village) (N), triangle survey marker (1930s water symbol) (NE), Zahad B (1930s village) (NE), Rahad Baruba (1930s village) (NE), J. UMM REIN(E.) (NW), J. UMM REIN(E.) (NW), Swamp (1930s sheet) (SW)"
     ],
     "perimeter_km": 354,
     "unattributed_pct": 76,
@@ -2402,7 +2416,7 @@
     "front_axis": "E\u2013W",
     "rationale": [
      "wilderness",
-     "long fronts per 10 km width 110.95 >= 154.41: no",
+     "long fronts per 10 km width 110.95 >= 154.06: no",
      "transhumance share % 99 >= 50: yes",
      "axis coherence (0.25 = random) 0.47 >= 0.4: yes",
      "people/km2 0.043 <= 2: yes",
@@ -2418,7 +2432,8 @@
     "cls": "wilderness",
     "boundary": [
      "COD border on the W/SE (26 km)",
-     "R.Lingasi (1930s sheet) on the W (2 km)"
+     "R.Lingasi (1930s sheet) on the W (2 km)",
+     "landmarks on the unnamed stretches: Viah (1930s village) (N), Mihibike (1930s village) (N), Loronyo (village today) (E)"
     ],
     "perimeter_km": 50,
     "unattributed_pct": 44,
@@ -2483,7 +2498,7 @@
     "front_axis": "N\u2013S",
     "rationale": [
      "core",
-     "long fronts per 10 km width 125.0 >= 154.41: no",
+     "long fronts per 10 km width 125.0 >= 154.06: no",
      "transhumance share % 97 >= 50: yes",
      "axis coherence (0.25 = random) 0.3 >= 0.4: no",
      "people/km2 0.0 <= 2: yes",
@@ -2562,7 +2577,7 @@
     "front_axis": "E\u2013W",
     "rationale": [
      "wilderness",
-     "long fronts per 10 km width 10.55 >= 154.41: no",
+     "long fronts per 10 km width 10.55 >= 154.06: no",
      "transhumance share % 75 >= 50: yes",
      "axis coherence (0.25 = random) 0.32 >= 0.4: no",
      "people/km2 0.042 <= 2: yes",
@@ -2578,9 +2593,10 @@
     "cls": "wilderness",
     "boundary": [
      "unnamed river (order 4) on the N/W (150 km)",
-     "Chinko on the S/NE (138 km)",
+     "Chinko on the S/NE (134 km)",
      "unnamed river (order 5) on the E/SE (72 km)",
      "Mbari on the SW/W (72 km)",
+     "seasonal water / toich edge (JRC surface water) on the SE/S (4 km)",
      "158 km along a geological contact only (not visible on the ground \u2014 needs beacons)"
     ],
     "perimeter_km": 670,
@@ -2646,7 +2662,7 @@
     "front_axis": "SE\u2013NW",
     "rationale": [
      "community (settled / farmed / mining-exposed \u2014 none of the above held)",
-     "long fronts per 10 km width 325.91 >= 154.41: yes",
+     "long fronts per 10 km width 325.91 >= 154.06: yes",
      "transhumance share % 99 >= 50: yes",
      "axis coherence (0.25 = random) 0.32 >= 0.4: no",
      "people/km2 2.404 <= 2: no",
@@ -2667,7 +2683,8 @@
      "R. Karang (1930s sheet) on the SE (2 km)",
      "K. M' Beleko or Wokko (1930s sheet) on the SE (2 km)",
      "KALVEZ (1930s sheet) on the S (2 km)",
-     "6 km along a geological contact only (not visible on the ground \u2014 needs beacons)"
+     "6 km along a geological contact only (not visible on the ground \u2014 needs beacons)",
+     "landmarks on the unnamed stretches: Naia (1930s village) (NW)"
     ],
     "perimeter_km": 188,
     "unattributed_pct": 54,

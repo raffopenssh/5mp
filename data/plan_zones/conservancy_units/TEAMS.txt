@@ -1,0 +1,189 @@
+TEAMS — placement of ECHO (2), TANGO (2) and focal points (1) on the planner's proposals; every placement justified by the zone it serves
+every site needs water: a HydroRIVERS reach (order >= 4 or named), a 1930s sheet well/pool/water symbol, or perennial JRC surface water within 3 km — the source is named on each line; a site with none says WATER UNVERIFIED
+
+FP    x1  Maridi  (29.4645, 4.9144)
+      zone: community_towns #1: community proposal 1
+      when: year-round
+      why: water: river (HydroRIVERS) 0.3 km; administrative centre / boom town of 50,584 people; 1 proposals within 25 km holding 52,494 people; county and traditional authorities are seated here
+
+FP    x1  Koko (Rian Kuj)  (26.857, 9.221)
+      zone: community_towns #3: community proposal 3
+      when: year-round
+      why: WATER UNVERIFIED within 8 km (a town supplies itself, but note it); administrative centre / boom town of 9,914 people; 1 proposals within 25 km holding 24,922 people; county and traditional authorities are seated here
+
+FP    x1  Tambura  (27.4683, 5.6096)
+      zone: community #2: community proposal 2
+      when: year-round
+      why: WATER UNVERIFIED within 8 km (a town supplies itself, but note it); administrative centre / boom town of 35,520 people; 1 proposals within 25 km holding 2,873 people; county and traditional authorities are seated here
+
+FP    x1  Wau  (27.983, 7.711)
+      zone: community #1: community proposal 1; community #3: community proposal 3; community #4: community proposal 4
+      when: year-round
+      why: water: Nahr al Jur (HydroRIVERS) 2.7 km; administrative centre / boom town of 119,818 people; 3 proposals within 25 km holding 2,242 people; county and traditional authorities are seated here
+
+FP    x1  Obo  (26.4927, 5.3941)
+      zone: core #1: core proposal 1
+      when: year-round
+      why: water: Ouarra River (HydroRIVERS) 1.4 km; administrative centre / boom town of 17,513 people; 1 proposals within 25 km holding 411 people; county and traditional authorities are seated here
+
+FP    x1  Cueibet  (29.247, 7.0147)
+      zone: core #1: core proposal 1
+      when: year-round
+      why: water: Wahko (HydroRIVERS) 2.3 km; administrative centre / boom town of 19,775 people; 1 proposals within 25 km holding 411 people; county and traditional authorities are seated here
+
+FP    x1  Raga (Raja)  (25.67, 8.477)
+      zone: core #2: core proposal 2
+      when: year-round
+      why: water: Raga River (HydroRIVERS) 0.1 km; administrative centre / boom town of 24,327 people; 1 proposals within 25 km holding 178 people; county and traditional authorities are seated here
+
+ECHO  x2  Bongo (1930s)  (28.0619, 7.4212)
+      zone: community #1: community proposal 1
+      when: year-round; village outreach in the rains, boundary walks Dec–Feb
+      why: inside the conservancy's largest village cluster with water (138 people; WATER UNVERIFIED — no river, 1930s well/pool or perennial water within 3 km of any village here); conservancy holds 31 clusters, 733 people, 0 founded since 2015, 10 gold-target cells, 42% of its 138 km boundary still to be walked; support 0.62
+
+ECHO  x2  Karsing R.H. (1930s)  (27.5011, 5.6729)
+      zone: community #2: community proposal 2
+      when: year-round; village outreach in the rains, boundary walks Dec–Feb
+      why: inside the conservancy's largest village cluster with water (748 people; WATER UNVERIFIED — no river, 1930s well/pool or perennial water within 3 km of any village here); conservancy holds 16 clusters, 2,873 people, 0 founded since 2015, 14 gold-target cells, 47% of its 234 km boundary still to be walked; support 0.5
+
+ECHO  x2  Busseri River* (nearest_place, unverified)  (27.4701, 7.9938)
+      zone: community #3: community proposal 3
+      when: year-round; village outreach in the rains, boundary walks Dec–Feb
+      why: inside the conservancy's largest village cluster with water (249 people; WATER UNVERIFIED — no river, 1930s well/pool or perennial water within 3 km of any village here); conservancy holds 31 clusters, 895 people, 3 founded since 2015, 7 gold-target cells, 44% of its 144 km boundary still to be walked; support 0.86
+
+ECHO  x2  Ogali (1930s village)  (27.8182, 7.5171)
+      zone: community #4: community proposal 4
+      when: year-round; village outreach in the rains, boundary walks Dec–Feb
+      why: inside the conservancy's largest village cluster with water (231 people; WATER UNVERIFIED — no river, 1930s well/pool or perennial water within 3 km of any village here); conservancy holds 17 clusters, 614 people, 1 founded since 2015, 0 gold-target cells, 43% of its 116 km boundary still to be walked; support 0.65
+
+ECHO  x2  Busseri* (nearest_place, unverified)  (26.8458, 8.0348)
+      zone: community #5: community proposal 5
+      when: year-round; village outreach in the rains, boundary walks Dec–Feb
+      why: inside the conservancy's largest village cluster with water (447 people; WATER UNVERIFIED — no river, 1930s well/pool or perennial water within 3 km of any village here); conservancy holds 4 clusters, 477 people, 0 founded since 2015, 0 gold-target cells, 43% of its 102 km boundary still to be walked; support 0.75
+
+ECHO  x2  Deim Zubeir  (26.1951, 7.7148)
+      zone: community #6: community proposal 6
+      when: year-round; village outreach in the rains, boundary walks Dec–Feb
+      why: inside the conservancy's largest village cluster with water (156 people; WATER UNVERIFIED — no river, 1930s well/pool or perennial water within 3 km of any village here); conservancy holds 1 clusters, 156 people, 0 founded since 2015, 0 gold-target cells, 19% of its 54 km boundary still to be walked; support 0.56
+
+ECHO  x2  Maridi  (29.4909, 4.9242)
+      zone: community_towns #1: community proposal 1
+      when: year-round; village outreach in the rains, boundary walks Dec–Feb
+      why: inside the conservancy's largest village cluster with water (44,234 people; WATER UNVERIFIED — no river, 1930s well/pool or perennial water within 3 km of any village here); conservancy holds 9 clusters, 52,494 people, 0 founded since 2015, 0 gold-target cells, 16% of its 170 km boundary still to be walked; support 0.96
+
+ECHO  x2  Maridi  (29.4123, 4.9222)
+      zone: community_towns #1: community proposal 1
+      when: year-round; village outreach in the rains, boundary walks Dec–Feb
+      why: inside the conservancy's largest village cluster with water (4,344 people; WATER UNVERIFIED — no river, 1930s well/pool or perennial water within 3 km of any village here); conservancy holds 9 clusters, 52,494 people, 0 founded since 2015, 0 gold-target cells, 16% of its 170 km boundary still to be walked; support 0.96
+
+ECHO  x2  E. Kome (1930s village)  (27.4093, 8.7302)
+      zone: community_towns #2: community proposal 2
+      when: year-round; village outreach in the rains, boundary walks Dec–Feb
+      why: inside the conservancy's largest village cluster with water (37,649 people; WATER UNVERIFIED — no river, 1930s well/pool or perennial water within 3 km of any village here); conservancy holds 5 clusters, 46,106 people, 4 founded since 2015, 6 gold-target cells, 54% of its 96 km boundary still to be walked; support 0.9
+
+ECHO  x2  Busseri River* (nearest_place, unverified)  (27.5143, 8.8667)
+      zone: community_towns #2: community proposal 2
+      when: year-round; village outreach in the rains, boundary walks Dec–Feb
+      why: inside the conservancy's largest village cluster with water (5,192 people; WATER UNVERIFIED — no river, 1930s well/pool or perennial water within 3 km of any village here); conservancy holds 5 clusters, 46,106 people, 4 founded since 2015, 6 gold-target cells, 54% of its 96 km boundary still to be walked; support 0.9
+
+ECHO  x2  Koko (Rian Kuj)  (26.8572, 9.2206)
+      zone: community_towns #3: community proposal 3
+      when: year-round; village outreach in the rains, boundary walks Dec–Feb
+      why: inside the conservancy's largest village cluster with water (9,914 people; WATER UNVERIFIED — no river, 1930s well/pool or perennial water within 3 km of any village here); conservancy holds 16 clusters, 24,922 people, 7 founded since 2015, 23 gold-target cells, 45% of its 154 km boundary still to be walked; support 0.94
+
+ECHO  x2  Garren (1930s village)  (26.9556, 9.1172)
+      zone: community_towns #3: community proposal 3
+      when: year-round; village outreach in the rains, boundary walks Dec–Feb
+      why: inside the conservancy's largest village cluster with water (4,920 people; WATER UNVERIFIED — no river, 1930s well/pool or perennial water within 3 km of any village here); conservancy holds 16 clusters, 24,922 people, 7 founded since 2015, 23 gold-target cells, 45% of its 154 km boundary still to be walked; support 0.94
+
+ECHO  x2  Pan Nyel (1930s village)  (27.6212, 9.0374)
+      zone: community_towns #4: community proposal 4
+      when: year-round; village outreach in the rains, boundary walks Dec–Feb
+      why: inside the conservancy's largest village cluster with water (10,082 people; WATER UNVERIFIED — no river, 1930s well/pool or perennial water within 3 km of any village here); conservancy holds 12 clusters, 35,576 people, 11 founded since 2015, 0 gold-target cells, 42% of its 114 km boundary still to be walked; support 0.83
+
+ECHO  x2  Karyat (1930s village)  (27.715, 9.0291)
+      zone: community_towns #4: community proposal 4
+      when: year-round; village outreach in the rains, boundary walks Dec–Feb
+      why: inside the conservancy's largest village cluster with water (6,136 people; WATER UNVERIFIED — no river, 1930s well/pool or perennial water within 3 km of any village here); conservancy holds 12 clusters, 35,576 people, 11 founded since 2015, 0 gold-target cells, 42% of its 114 km boundary still to be walked; support 0.83
+
+ECHO  x2  Win (1930s village)  (27.5215, 9.0322)
+      zone: community_towns #5: community proposal 5
+      when: year-round; village outreach in the rains, boundary walks Dec–Feb
+      why: inside the conservancy's largest village cluster with water (7,558 people; WATER UNVERIFIED — no river, 1930s well/pool or perennial water within 3 km of any village here); conservancy holds 10 clusters, 31,191 people, 10 founded since 2015, 0 gold-target cells, 49% of its 130 km boundary still to be walked; support 0.9
+
+ECHO  x2  Busseri River* (nearest_place, unverified)  (27.3378, 9.0409)
+      zone: community_towns #5: community proposal 5
+      when: year-round; village outreach in the rains, boundary walks Dec–Feb
+      why: inside the conservancy's largest village cluster with water (4,241 people; WATER UNVERIFIED — no river, 1930s well/pool or perennial water within 3 km of any village here); conservancy holds 10 clusters, 31,191 people, 10 founded since 2015, 0 gold-target cells, 49% of its 130 km boundary still to be walked; support 0.9
+
+TANGO x2  near Nahr al Jur* (nearest_place, unverified)  (28.3845, 5.0164)
+      zone: core #3: core proposal 3
+      when: None onward; herd months None
+      why: water: Nahr al Jur (HydroRIVERS) 1.4 km; the branch None → None carries 1517 long fronts; this is where its band has the densest long-front passage within 25 km of a village (10 km from Nahr al Jur* (nearest_place, unverified)); long-front density in the band ×None outside, excess over burning None
+
+TANGO x2  near Busseri River* (nearest_place, unverified)  (27.3336, 7.7773)
+      zone: corridor #1: Radom → Garamba (through-route)
+      when: None onward; herd months None
+      why: water: river (HydroRIVERS) 1.8 km; the branch Radom → Garamba carries 7252 long fronts; this is where its band has the densest long-front passage within 25 km of a village (3 km from Busseri River* (nearest_place, unverified)); long-front density in the band ×2.08 outside, excess over burning 1.12
+
+TANGO x2  near Kozi  (29.6892, 5.3405)
+      zone: corridor #2: bundle 1
+      when: Jan onward; herd months {'Mar': 31, 'Apr': 3, 'Oct': 8, 'Nov': 309, 'Dec': 376, 'Jan': 712, 'Feb': 296}
+      why: water: Pools (1930s sheet) 2.1 km; the branch Angeleri (1930s) (15 km) → A. J. Paia (1930s) (9 km) carries 1735 long fronts; this is where its band has the densest long-front passage within 25 km of a village (7 km from Kozi); long-front density in the band ×2.63 outside, excess over burning 1.14
+
+TANGO x2  near Limbo (1930s village)  (27.696, 7.8135)
+      zone: corridor #3: bundle 2
+      when: Nov onward; herd months {'Mar': 94, 'Apr': 49, 'May': 13, 'Sep': 4, 'Oct': 165, 'Nov': 346, 'Dec': 239, 'Jan': 333, 'Feb': 239}
+      why: water: river (HydroRIVERS) 2.6 km; the branch Wau (37 km) → Wau carries 1482 long fronts; this is where its band has the densest long-front passage within 25 km of a village (6 km from Limbo (1930s village)); long-front density in the band ×2.56 outside, excess over burning 1.02
+
+TANGO x2  near Jebel Mishmira* (nearest_place, unverified)  (24.09, 9.6455)
+      zone: corridor #4: bundle 3
+      when: Dec onward; herd months {'Mar': 10, 'Apr': 12, 'May': 4, 'Oct': 181, 'Nov': 341, 'Dec': 407, 'Jan': 324, 'Feb': 122}
+      why: water: Umbelasha (HydroRIVERS) 1.6 km; the branch Unowi (1930s) (16 km) → Dj.Seringa (1930s) (25 km) carries 1401 long fronts; this is where its band has the densest long-front passage within 25 km of a village (5 km from Jebel Mishmira* (nearest_place, unverified)); long-front density in the band ×1.65 outside, excess over burning 1.15
+
+TANGO x2  near Wanga (1930s)  (27.3879, 5.5387)
+      zone: corridor #5: bundle 4
+      when: Jan onward; herd months {'Mar': 11, 'Oct': 6, 'Nov': 168, 'Dec': 284, 'Jan': 623, 'Feb': 204}
+      why: WATER UNVERIFIED — none of the 60 densest passage cells has a known source within 3 km; the branch Tambura (11 km) → Barai (1930s) (15 km) carries 1296 long fronts; this is where its band has the densest long-front passage within 25 km of a village (2 km from Wanga (1930s)); long-front density in the band ×1.83 outside, excess over burning 0.93
+
+TANGO x2  near Raga (Raja)  (25.7027, 8.538)
+      zone: corridor #6: bundle 5
+      when: Nov onward; herd months {'Mar': 39, 'Apr': 16, 'May': 1, 'Jun': 1, 'Oct': 133, 'Nov': 324, 'Dec': 192, 'Jan': 288, 'Feb': 126}
+      why: water: Raga River (HydroRIVERS) 2.9 km; the branch Golo (1930s) (9 km) → J Undutu (1930s) (12 km) carries 1120 long fronts; this is where its band has the densest long-front passage within 25 km of a village (7 km from Raga (Raja)); long-front density in the band ×1.86 outside, excess over burning 1.11
+
+TANGO x2  near Said Bambas* (nearest_place, unverified)  (24.6518, 9.4092)
+      zone: corridor #7: bundle 6
+      when: Jan onward; herd months {'Mar': 12, 'Apr': 15, 'May': 2, 'Oct': 135, 'Nov': 238, 'Dec': 253, 'Jan': 279, 'Feb': 108}
+      why: water: river (HydroRIVERS) 0.3 km; the branch Banda (1930s) → Fundi (1930s) carries 1042 long fronts; this is where its band has the densest long-front passage within 25 km of a village (2 km from Said Bambas* (nearest_place, unverified)); long-front density in the band ×1.36 outside, excess over burning 1.1
+
+TANGO x2  near Ringwa* (nearest_place, unverified)  (29.4174, 5.1424)
+      zone: corridor #8: bundle 7
+      when: Jan onward; herd months {'Mar': 5, 'Oct': 1, 'Nov': 155, 'Dec': 205, 'Jan': 414, 'Feb': 143}
+      why: water: river (HydroRIVERS) 2.4 km; the branch Chau (1930s) (14 km) → Asbif (1930s) (13 km) carries 923 long fronts; this is where its band has the densest long-front passage within 25 km of a village (7 km from Ringwa* (nearest_place, unverified)); long-front density in the band ×2.11 outside, excess over burning 1.11
+
+TANGO x2  near Djebel Yingamba* (nearest_place, unverified)  (23.8726, 8.1393)
+      zone: corridor #9: bundle 8
+      when: Jan onward; herd months {'Mar': 10, 'Oct': 16, 'Nov': 92, 'Dec': 273, 'Jan': 441, 'Feb': 88}
+      why: WATER UNVERIFIED — none of the 60 densest passage cells has a known source within 3 km; the branch Chad (1930s) (23 km) → Chinko (Conservation Area) (~13 km) carries 920 long fronts; this is where its band has the densest long-front passage within 25 km of a village (22 km from Djebel Yingamba* (nearest_place, unverified)); long-front density in the band ×0.89 outside, excess over burning 1.07
+
+TANGO x2  near River Rohl* (nearest_place, unverified)  (29.7254, 6.0433)
+      zone: corridor #10: bundle 9
+      when: Jan onward; herd months {'Mar': 31, 'Apr': 7, 'May': 1, 'Oct': 13, 'Nov': 170, 'Dec': 203, 'Jan': 321, 'Feb': 159}
+      why: water: river (HydroRIVERS) 1.0 km; the branch Mvolo (38 km) → B O N (1930s) (31 km) carries 905 long fronts; this is where its band has the densest long-front passage within 25 km of a village (6 km from River Rohl* (nearest_place, unverified)); long-front density in the band ×2.22 outside, excess over burning 1.1
+
+TANGO x2  near Sopo* (nearest_place, unverified)  (26.5, 7.5602)
+      zone: corridor #11: bundle 10
+      when: Jan onward; herd months {'Mar': 14, 'Apr': 4, 'May': 1, 'Oct': 66, 'Nov': 184, 'Dec': 236, 'Jan': 276, 'Feb': 85}
+      why: water: Kuru (HydroRIVERS) 1.6 km; the branch Raga (Raja) (19 km) → Golo (1930s) (24 km) carries 866 long fronts; this is where its band has the densest long-front passage within 25 km of a village (18 km from Sopo* (nearest_place, unverified)); long-front density in the band ×1.7 outside, excess over burning 1.12
+
+TANGO x2  near Ngouyo 3  (25.286, 5.7909)
+      zone: corridor #12: bundle 11
+      when: Jan onward; herd months {'Mar': 12, 'Sep': 1, 'Oct': 5, 'Nov': 129, 'Dec': 170, 'Jan': 361, 'Feb': 105}
+      why: water: Ouara (HydroRIVERS) 2.7 km; the branch Djemah (34 km) → Djemah (37 km) carries 783 long fronts; this is where its band has the densest long-front passage within 25 km of a village (6 km from Ngouyo 3); long-front density in the band ×0.68 outside, excess over burning 0.77
+
+TANGO x2  near Rohl* (nearest_place, unverified)  (29.9429, 5.8811)
+      zone: corridor #13: bundle 12
+      when: Jan onward; herd months {'Mar': 20, 'Apr': 4, 'Oct': 49, 'Nov': 176, 'Dec': 140, 'Jan': 228, 'Feb': 88}
+      why: water: Rohl (HydroRIVERS) 1.5 km; the branch Wau (35 km) → Mvolo (35 km) carries 705 long fronts; this is where its band has the densest long-front passage within 25 km of a village (11 km from Rohl* (nearest_place, unverified)); long-front density in the band ×2.23 outside, excess over burning 1.07
+
+staff: 7 focal points, 16 ECHO teams (32 scouts), 14 TANGO teams (28 scouts)

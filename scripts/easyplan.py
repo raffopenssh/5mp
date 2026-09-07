@@ -34,6 +34,7 @@ PLAN = ROOT / "docs/plan/plan.yaml"
 TEMPLATE = ROOT / "docs/plan/PIP_SUMMARY_template.txt"
 FACTS = SOLVER / "facts.json"
 sys.path.insert(0, str(ROOT / "scripts/easybudget")); sys.path.insert(0, str(ROOT / "scripts"))
+import mining_model as MM  # noqa: E402  MINING_MODEL=heldout|insample - the same switch every upstream script read
 
 
 def j(p):
@@ -141,7 +142,10 @@ def facts(P):
                       holdout_max=max(b["holdout_capture"] for z in zones.values() for b in json.loads(z["herd_bundles"])),
                       null_max=max(c["null_allfire"] for b in movement["bundles"] for c in b["skill_curve"] if abs(c["q"] - 0.5) < 1e-9)),
         threat=dict(auc=min(threat["auc_spatial_holdout"]), block_km=20),
-        gold=dict(skill=pip["gold"]["skill_top05"], anchors=pip["gold"]["n_anchors"]),
+        gold=dict(skill=pip["gold"]["skill_top05"], anchors=pip["gold"]["n_anchors"], model=pip["gold"].get("model_variant", "insample"),
+                  basis=pip["gold"].get("skill_basis"), verdict=pip["gold"]["verdict"], heldout=pip["gold"].get("heldout"),
+                  n_signals=len((json.load(open(MM.prediction_json())).get("heldout_source") or {}).get("final_signals") or []) or None,
+                  candidates=pip["gold"]["n_candidates"], watchlist=pip["gold"]["n_watchlist"]),
         park=dict(area_km2=park["area_km2"], fires=park["fire_detections_2024_2025"], nov_feb=park["nov_feb_share"], people=park["people"],
                   clearing_km2=park["clearing_km2"], snp_fronts=pip["corridor"]["park_snp_shared_fronts"]),
         xsa=dict(area_km2=pip["xsa"]["area_km2"]),

@@ -132,7 +132,7 @@ def load_state():
 SIMPLIFY_DEG = 0.012   # ~1.3 km: turns the 2 km raster staircase into straight legs so lengths are walking lengths, not stair lengths
 
 def clockwise_from_north(poly):
-    """Exterior ring, clockwise, starting at the northernmost vertex (a corner a drafter can name)."""
+    """Exterior ring, clockwise, starting at the northernmost vertex (legs_of then rotates the walk to the first feature change)."""
     ring = LineString(poly.simplify(SIMPLIFY_DEG, preserve_topology=True).exterior.coords)
     coords = list(ring.coords)[:-1]
     if LineString(coords + [coords[0]]).is_ring and poly.exterior.is_ccw: coords = coords[::-1]
@@ -197,24 +197,27 @@ def legs_of(poly, feats, tree, beacons):
                     if runs[i][0] == runs[i + 1][0]: runs[i][2] = runs[i + 1][2]; runs.pop(i + 1); changed = True; break
         return runs
     runs = absorb(runs, MIN_LEG)
-    if len(runs) > 1 and runs[0][0] == runs[-1][0]:            # ring: first and last legs are one river
-        runs[0][1] = runs[-1][1] - len(pts); runs.pop()
-    runs[-1][2] = len(pts) - 2 if runs[-1][1] >= 0 else runs[-1][2]   # the last leg closes exactly on the point of commencement
+    n = len(pts) - 1                                            # pts[n] == pts[0] (the ring closes on itself)
+    if len(runs) > 1 and runs[0][0] == runs[-1][0]:            # ring: first and last legs are one river -> ROTATE so the
+        first = runs.pop(0); runs[-1][2] = first[2] + n          # walk starts where that river is first met (a real corner), not
+        shift = runs[0][1]                                       # at an arbitrary point mid-river; every leg keeps its true start/end
+        for r in runs: r[1] -= shift; r[2] -= shift
+        pts = pts[shift:n] + pts[:shift] + [pts[shift]]
+    runs[-1][2] = n - 1                                          # the last leg closes exactly on the point of commencement
     c = poly.centroid
     legs = []
     for k, a, b, l in runs:
-        n = len(pts) - 1
-        pa, pb = pts[a % n], pts[(b + 1) % n]; km = (b - a + 1) * step
+        pa, pb = pts[a], pts[b + 1]; km = (b - a + 1) * step
         if k is None: kind, name = "open bush", None
         elif k == "geo": kind, name = "geological contact", None
         else: kind, name = feats[l][2], clean(feats[l][1])
-        mid = pts[((a + b) // 2) % n]
+        mid = pts[(a + b) // 2]
         leg = dict(kind=kind, name=name, km=round(km), bearing=bearing((pa.x, pa.y), (pb.x, pb.y)), side=rel_side(c, (mid.x, mid.y)),
                    start=[round(pa.x, 4), round(pa.y, 4)], end=[round(pb.x, 4), round(pb.y, 4)])
         if kind in ("open bush", "geological contact") and beacons:
             best = {}
             for i in range(a, b + 1):
-                p = pts[i % n]
+                p = pts[i]
                 for j in beacons["tree"].query(p.buffer(BEACON / 111)):
                     d = P.dkm((p.x, p.y), beacons["pts"][j])
                     if d <= BEACON and (j not in best or d < best[j][0]): best[j] = (d, i, bearing((p.x, p.y), beacons["pts"][j]))
@@ -225,6 +228,10 @@ def legs_of(poly, feats, tree, beacons):
                 seen.add(nm); marks.append(dict(name=nm, km_off=round(d, 1), side=sd, at=[round(beacons["pts"][j][0], 4), round(beacons["pts"][j][1], 4)]))
             leg["landmarks"] = marks[:4]
         legs.append(leg)
+    ring_km = transform(P.FWD, ring).length / 1000
+    tot = sum((b - a + 1) * step for _, a, b, _ in runs)
+    assert abs(tot - ring_km) < 0.02 * ring_km + 2, f"legs {tot:.0f} km != ring {ring_km:.0f} km"   # every metre once, none twice
+    assert all(legs[i]["end"] == legs[i + 1]["start"] for i in range(len(legs) - 1)) and legs[-1]["end"] == legs[0]["start"], "walk does not close"
     return legs, round(sum(l["km"] for l in legs))
 
 
@@ -270,7 +277,7 @@ def legal_text(zone_name, legs, perimeter):
         if l["kind"] == "open bush": return "across open bush"
         if l["kind"] == "geological contact": return "along a geological contact (not visible on the ground — to be beaconed)"
         return f"along {l['name']}" + ("" if l["kind"] in ("river", "hist_water", "road", "border", "swamp") else f" ({l['kind'].replace('hist_boundary', '1930s district line')})")
-    S = [f"Commencing at the northernmost point ({fmt_pt(legs[0]['start'])})"]
+    S = [f"Commencing at {fmt_pt(legs[0]['start'])}" + (f", where {legs[-1]['name']} meets {legs[0]['name']}" if legs[-1].get('name') and legs[0].get('name') else "")]
     for i, l in enumerate(legs):
         nxt = legs[(i + 1) % len(legs)]
         end = fmt_pt(l["end"])
@@ -285,7 +292,7 @@ def legal_text(zone_name, legs, perimeter):
     return "; ".join(S)
 
 
-NARR_SYS = """You receive a summary and a metes-and-bounds description of a proposed community conservancy or corridor boundary in South Sudan / CAR. Write what a county official would put in a notice and a village chief would repeat: at most FOUR plain sentences, clockwise from the north. Name only the 4-8 features that carry most of the line (skip legs under ~8 km unless they are the only thing on that side), give a rounded distance for each, name the corner where one feature meets the next, and say plainly which stretches cross open ground and what landmark marks them. Use ONLY names, distances and landmarks given; never invent or add a name; do not repeat a name that was already said for the same stretch. Return JSON: {"in_words": "..."}"""
+NARR_SYS = """You receive a summary and a metes-and-bounds description of a proposed community conservancy or corridor boundary in South Sudan / CAR. Write what a county official would put in a notice and a village chief would repeat: at most FOUR plain sentences, clockwise from the point of commencement given. Name only the 4-8 features that carry most of the line (skip legs under ~8 km unless they are the only thing on that side), give a rounded distance for each, name the corner where one feature meets the next, and say plainly which stretches cross open ground and what landmark marks them. Use ONLY names, distances and landmarks given; never invent or add a name; do not repeat a name that was already said for the same stretch. Return JSON: {"in_words": "..."}"""
 
 def narrate(out, workers):
     from concurrent.futures import ThreadPoolExecutor
@@ -324,6 +331,12 @@ def main(codes, do_narrate=False, workers=36):
     st = load_state()
     admin = admin_units(); atree = STRtree([a[0] for a in admin]); import sqlite3; hcon = sqlite3.connect(str(P.HDB)); G, feats = st["G"], st["feats"]
     tree = STRtree([f[0] for f in feats]); beacons = getattr(G, "beacons", None)
+    if beacons:
+        # a 1930s water symbol with no name was cached under the tracer's SHAPE note ("circled dot", "question mark");
+        # that is not a landmark a chief can be sent to - rename to "unnamed …" so legs_of skips it (fixed at source in
+        # plan_conservancy_units.hist_waters; this covers a state.pkl built before that fix)
+        shapes = {(d or "").strip().lower() for (d,) in hcon.execute("SELECT DISTINCT descr FROM symbols WHERE category='water'")} | {"water point"}
+        beacons["names"] = [("unnamed water point (1930s water symbol)" if n.endswith("(1930s water symbol)") and n[:-len(" (1930s water symbol)")].strip().lower() in shapes else n) for n in beacons["names"]]
     Z = json.load(open(SOLVER / "zones.geojson"))
     deploy = json.load(open(SOLVER / "deploy.json")) if (SOLVER / "deploy.json").exists() else {"teams": []}
     team_of = {}
@@ -331,7 +344,7 @@ def main(codes, do_narrate=False, workers=36):
         for u in t["zone_uids"]: team_of.setdefault(u, []).append(t["id"])
     want = None
     if codes: want = {u for t in deploy["teams"] if t["id"] in codes for u in t["zone_uids"]}
-    out, L = {}, ["BOUNDARIES — metes-and-bounds of every solved zone, clockwise from the northernmost point.",
+    out, L = {}, ["BOUNDARIES — metes-and-bounds of every solved zone, clockwise from the corner where the last-named feature meets the first.",
                  f"Samples every {STEP:g} km snap to the nearest walkable feature within {SNAP} km; legs < {MIN_LEG:g} km are absorbed; landmarks within {BEACON:g} km of open-bush legs. Coordinates WGS84.", ""]
     for f in Z["features"]:
         p = f["properties"]; uid = p["uid"]
