@@ -548,7 +548,7 @@ def solve(st, a, D=None, p10=None, claim_arr=None, weights=None, tag="", seed_pe
     zones.sort(key=lambda z: -z["area_ha"])
     bl = sum(n for (u, v, n, sm) in E if cls_i[ui[u]] != cls_i[ui[v]]); bleg = sum(sm for (u, v, n, sm) in E if cls_i[ui[u]] != cls_i[ui[v]])
     ledger = ledger_of(D, cls_i)
-    summary = dict(status=res.message, objective=float(res.fun), units=U, edges=len(E), weights=W, max_core_ha=cap, corridor_capture=q, max_people_corridor=max_people_corridor, connect=False, opts=D["opts"],
+    summary = dict(status=res.message, objective=float(res.fun), mining_model=P.MM.variant(), mining_note=getattr(G, "mining_note", None), units=U, edges=len(E), weights=W, max_core_ha=cap, corridor_capture=q, max_people_corridor=max_people_corridor, connect=False, opts=D["opts"],
                    corridor_axes=[{k_: bd[k_] for k_ in ("b", "kind", "axis_km", "half_width_km", "capture", "band_km2", "axis_km_pa_edge", "axis_km_pa_deep")} for bd in B], bundles_taken=taken,
                    corridor_floor_per_bundle=per_bundle, islands_absorbed=absorbed, designated_fixed_core_ha=round(D["designated_fixed_ha"]) if a.fix_designated else 0, designated_units_failing_core_rule=len(D["designated_not_core_units"]), imagery_skill=round(D["img_skill"], 3), imagery_weight_effective=round(img_w, 3), solve_s=round(time.time() - t0, 1),
                    boundary_km=round(bl * G.res / 1000), boundary_legibility=round(bleg / max(bl, 1), 2),

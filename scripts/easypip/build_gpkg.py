@@ -596,8 +596,8 @@ def main():
         # The prediction grid's own cell size, read from its output - a
         # typed 0.05 here would survive a re-gridded model and draw the wrong
         # squares (root invariant 2).
-        half = json.load(open(ROOT / "data/eval/xsa_mining/prediction.json")
-                         )["cell_deg"] / 2
+        import mining_model as MM
+        half = json.load(open(MM.prediction_json()))["cell_deg"] / 2
         for lon, lat in gold["top5"]:
             ring = ogr.Geometry(ogr.wkbLinearRing)
             for dx, dy in ((-half, -half), (half, -half), (half, half),
