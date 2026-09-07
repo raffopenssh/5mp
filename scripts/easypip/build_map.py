@@ -326,6 +326,30 @@ def load_settlements(frame):
     return rows
 
 
+def named_towns(setl, min_pop=500):
+    """The TOWN dots: GHSL clusters ≥ min_pop that carry a NAME — an OSM city/town/village or a verified town within the
+    planner's TOWN_REACH_KM of the cluster centre. A cluster with people but no name is not drawn as a town: over the
+    Jur/Busseri homestead carpet north of Wau the clusterer's 15 km diameter bound (MAX_CLUSTER_DIAMETER_KM) tiles a
+    continuous scatter of compounds into 155–374-polygon pieces of 1–4k people each, on a regular ~9 km lattice — 78 of
+    the 99 such pieces have no named place within 5 km. They are built-up ground (drawn by the wash), not towns (user,
+    2026-09-07: "is this really all towns, or is this GHSL built up?"). Returns (towns, n_unnamed)."""
+    sys.path.insert(0, str(ROOT / "scripts"))
+    import plan_conservancy_units as P
+    from scipy.spatial import cKDTree
+    con = sqlite3.connect(f"file:{DB}?mode=ro", uri=True)
+    OT = [(n, lo, la, t) for n, lo, la, t in P.osm_towns(con) if t in ("city", "town", "village", "verified_town")]
+    con.close()
+    big = [r for r in setl if (r[2] or 0) >= min_pop]
+    if not OT or not big:
+        return big, 0
+    def xy(la, lo): return np.c_[np.asarray(lo) * 111 * np.cos(np.radians(np.asarray(la))), np.asarray(la) * 111]
+    tree = cKDTree(xy([o[2] for o in OT], [o[1] for o in OT]))
+    d, _ = tree.query(xy([r[0] for r in big], [r[1] for r in big]))
+    reach = P.TOWN_REACH_KM["town"]
+    towns = [r for r, dd in zip(big, d) if dd <= reach]
+    return towns, len(big) - len(towns)
+
+
 def load_rivers(frame, min_order):
     """Named trunk rivers only - the map is about ground, not hydrography."""
     x0, y0, x1, y1 = frame
@@ -508,7 +532,7 @@ def load_density(pdir):
     lat_rows = inv(np.full(G.h, xs[0]), ys)[1]
     even = np.linspace(lat_rows[0], lat_rows[-1], G.h)
     idx = np.abs(lat_rows[None, :] - even[:, None]).argmin(1)
-    out = {k: np.asarray(C[k])[idx, :] for k in ("built", "clear", "clear20")}
+    out = {k: np.asarray(C[k])[idx, :] for k in ("built", "clear", "clear20", "pop")}
     out["clusters"] = np.asarray(C["clusters"])[idx, :]
     out["extent"] = (float(lon_edges[0]), float(lon_edges[1]), float(lat_edges[1]), float(lat_edges[0]))
     out["cell_km"] = G.res / 1000
@@ -545,17 +569,50 @@ def graduated_cells(dens, key, color, shape="square", vmax_pct=98, zorder=2.14, 
 
 
 TOWN_RIM = "#9a5d00"
+POP_MAX = None    # set once per sheet: the largest GHSL cluster's people, the ONE scale every people-mark on the sheet uses
+
+
+def people_size(pop):
+    """Marker area (pt², scatter's unit) for `pop` people — the single people→size rule of the sheet. Towns (named
+    clusters) and built-up cells (every cluster, binned to 2 km) are the SAME GHSL population estimate and must sit on
+    one scale, or a 2,000-person named ring dwarfs a 9,000-person unnamed cell beside it (user 2026-09-07). Area ∝
+    sqrt(people) — a compromise between paper-area-∝-people (Jebel Yarra's 552k would cover 30 km) and legibility of
+    the 30-person median cell."""
+    pop = np.maximum(np.asarray(pop, float), 1.0)
+    return 3.0 + 62.0 * np.sqrt(pop / POP_MAX)
+
+
+def people_cells(dens, zorder=2.10):
+    """Built-up ground as one solid rimless amber disc per 2 km cell, sized by the cell's PEOPLE with people_size() — the
+    same rule as the town rings — so the wash and the towns read as one population surface. Sets dens["pop_n"]."""
+    arr = np.array(dens["pop"], float); ok = np.isfinite(arr) & (arr > 0)
+    if not ok.any():
+        return None
+    x0, x1, y0, y1 = dens["extent"]; h, w = arr.shape
+    rows, cols = np.nonzero(ok)
+    cx = x0 + (cols + 0.5) * (x1 - x0) / w; cy = y1 - (rows + 0.5) * (y1 - y0) / h
+    dens["pop_n"] = int(ok.sum())
+    return dict(x=cx, y=cy, s=people_size(arr[rows, cols]))
 
 
 def town_symbol(ax, x, y, s, zorder=4.0, **kw):
-    """The town mark: an amber disc with a fine dark rim, sitting in a soft paper glow. A built-up cell under it is
-    a rimless amber disc laid straight on the wash, so on a black-and-white copy (hue gone) the town is still the
-    one lifted off the ground by its halo. snap=False keeps the layered discs concentric (independent pixel
-    snapping drifts them half a pixel apart)."""
+    """The town mark: an amber RING (paper centre) with a fine dark rim, sitting in a soft paper glow. A built-up cell
+    under it is a rimless solid amber disc laid straight on the wash: kin, but not the same mark, and on a
+    black-and-white copy (hue gone) the town is still the one lifted off the ground by its halo.
+    Drawn as PATCHES anchored by ScaledTranslation, not scatter markers: Agg stamps each marker size from its own
+    cached bitmap at a rounded pixel position, so discs of different sizes drifted up to a pixel apart and the paper
+    centre sat off-centre (user 2026-09-07: "white is not in center — be rigorous"). A path is rasterised in place."""
+    from matplotlib.transforms import Affine2D, ScaledTranslation
     s = np.asarray(s, float)
-    for k, a in ((2.6, 0.22), (1.9, 0.38), (1.4, 0.55)):      # three feathered rings = one soft glow
-        ax.scatter(x, y, s=s * k, c=PAPER, alpha=a, edgecolors="none", zorder=zorder, snap=False, **kw)
-    ax.scatter(x, y, s=s, c=ORANGE, edgecolors=TOWN_RIM, linewidths=0.4, zorder=zorder + 0.01, snap=False, **kw)
+    kw.pop("snap", None)
+    for xi, yi, si in zip(np.atleast_1d(x), np.atleast_1d(y), np.atleast_1d(s)):
+        # patch coordinates in POINTS (dpi-independent, so savefig at any dpi keeps the size), anchored at the data point
+        tr = Affine2D().scale(1 / 72.0) + ax.figure.dpi_scale_trans + ScaledTranslation(float(xi), float(yi), ax.transData)
+        r = math.sqrt(si) / 2                                         # scatter's s is an area in pt²; radius in points
+        for k, a in ((2.6, 0.22), (1.9, 0.38), (1.4, 0.55)):          # three feathered rings = one soft glow
+            ax.add_patch(Circle((0, 0), r * math.sqrt(k), facecolor=PAPER, edgecolor="none", alpha=a, transform=tr, zorder=zorder, **kw))
+        ax.add_patch(Circle((0, 0), r, facecolor=ORANGE, edgecolor=TOWN_RIM, linewidth=0.4, transform=tr, zorder=zorder + 0.01, **kw))
+        ax.add_patch(Circle((0, 0), r * math.sqrt(0.22), facecolor=PAPER, edgecolor="none", alpha=0.9, transform=tr, zorder=zorder + 0.02, **kw))
 
 
 def load_teams(pdir):
@@ -580,7 +637,9 @@ def load_deploy(pdir, arg):
     for t in foot + teams:
         t["year"] = int(t.get("year") or 2)
         t["place_short"] = str(t.get("place", "")).replace("near ", "").split(" (")[0].replace("*", "").strip()
-    return dict(footprints=foot, teams=teams, path=fp)
+    dj = fp.with_name(fp.name.replace("_footprint.geojson", ".json"))     # deploy.json: the strand table (budget lines, prefixes, draw style)
+    strands = (json.load(open(dj)).get("strands") or {}) if dj.exists() else {}
+    return dict(footprints=foot, teams=teams, path=fp, strands=strands)
 
 
 def solver_raster(pdir):
@@ -885,9 +944,9 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
                         solid_capstyle="butt")
             elif swatch == "town":   # the town mark, from the routine that draws it on the map
                 town_symbol(ax, [SYM_X], [yc], [(ms * 0.8) ** 2], clip_on=False)
-            elif swatch == "cells":   # graduated cells: three squares small→large, exactly the map's clearing mark
+            elif swatch == "cells":   # graduated cells: three marks small→large, exactly the map's mark
                 for xo, f in ((-0.022, 0.36), (-0.008, 0.64), (0.012, 1.0)):   # markers are sized in points, so they keep their shape
-                    ax.plot([SYM_X + xo], [yc], marker=marker, ms=ms * f, mfc=mfc, mec=PAPER,
+                    ax.plot([SYM_X + xo], [yc], marker=marker, ms=ms * f, mfc=mfc, mec=(mfc if marker == "o" else PAPER),
                             mew=mew, alpha=alpha * (0.5 + 0.5 * f), ls="none", clip_on=False)
             elif swatch == "graded":   # a choropleth area: the rectangle shades light→dark, one outline, as the map draws it
                 w, hh = 0.050, 0.62 * LS * PT
@@ -899,9 +958,16 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
             elif swatch:   # an AREA: a wide rectangle - never a square, which is a point symbol (ECHO team)
                 w, hh = 0.050, 0.62 * LS * PT
                 ax.add_patch(Rectangle((SYM_X - w / 2, yc - hh / 2), w, hh, facecolor=mfc, edgecolor=mec,
-                                       lw=mew, alpha=alpha, clip_on=False))
+                                       lw=mew, alpha=alpha, clip_on=False, linestyle=ls))
             elif kind:   # a point symbol: the SAME routine that draws it on the map, at the SAME size
-                draw_sym(ax, SYM_X, yc, kind, color, hollow=hollow, clip_on=False)
+                kinds = kind if isinstance(kind, (list, tuple)) else [kind]     # a group (the hollow year-2 row shows every shape)
+                if len(kinds) == 1:
+                    draw_sym(ax, SYM_X, yc, kinds[0], color, hollow=hollow, clip_on=False)
+                else:   # a small cluster round the row's centre — a ring for 2/4+, a triangle for 3 — not a row that overruns the column
+                    rx, ry = 0.0125, 0.62 * LS * PT * 0.62
+                    for k_, ang in zip(kinds, np.linspace(90, 450, len(kinds), endpoint=False)):
+                        draw_sym(ax, SYM_X + rx * math.cos(math.radians(ang)), yc + ry * math.sin(math.radians(ang)) - (ry * 0.15 if len(kinds) == 3 else 0),
+                                 k_, color, hollow=hollow, scale=0.5, clip_on=False)
             elif ms:
                 ax.plot([SYM_X], [yc], marker=marker, ms=ms, mfc=mfc, mec=mec,
                         mew=mew, alpha=alpha, clip_on=False)
@@ -974,10 +1040,10 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
         note=f"{fmt(len(fire))} of them in frame \u2014 the depth of the wash "
              f"is the density, not one big fire", short="Fire front 2024\u201326")
     if planner_n and dens_drawn:   # a legend row may only describe a layer that is actually drawn
-        key("o", "Built-up, km\u00b2 per 2 km cell (amber discs, size \u221d area)", ORANGE, ORANGE, swatch="cells", mew=0.25, alpha=0.92,
-            note="GHSL footprints summed per cell \u2014 a footprint is 0.7 px at this scale, so density is drawn, not shapes; dots are towns \u2265 500 people", short="Built-up, cell size \u221d area")
-    key("o", "Town, area \u221d people (amber dot in a paper glow)", ORANGE, TOWN_RIM, ms=9, swatch="town",
-        note="a satellite estimate and a lower bound, never a census", short="Town, size \u221d people")
+        key("o", "Built-up, people per 2 km cell (solid amber discs, same size rule as the towns)", ORANGE, ORANGE, swatch="cells", mew=0.25, alpha=0.92,
+            note="GHSL clusters binned per cell \u2014 a footprint is 0.7 px at this scale, so people are drawn, not shapes; unnamed clusters stay in this layer", short="Built-up, size \u221d people")
+    key("o", "Named town, people (amber ring in a paper glow; the same size rule)", ORANGE, TOWN_RIM, ms=9, swatch="town",
+        note="an OSM/verified name within 8 km of a GHSL cluster \u2265 500 people; people are a satellite estimate and a lower bound, never a census", short="Named town, size \u221d people")
     if planner_n and dens_drawn:
         key("s", "Clearing, km\u00b2 per 2 km cell (indigo squares, size \u221d area)", CLEAR, CLEAR, swatch="cells", mew=0.25, alpha=0.92,
             note="reviewed Hansen/GLAD loss events since 2000, area summed per cell", short="Clearing, cell size \u221d area")
@@ -1008,12 +1074,24 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
         head("Teams", TEAM_C)
         for c, w in (("community", "Community zone (ECHO)"), ("corridor", "Corridor zone (TANGO)")):
             key("s", w, ZONE_C[c], ZONE_C[c], swatch=True, mew=0.6, alpha=0.55, short=w)
+        # foreign strands (deploy.json "strands": CAR / COD / SDN, each its own budget line). Dashed + lighter where the
+        # strand says so (CAR, DRC); Sudan is drawn like South Sudan and only its ids and budget line differ.
+        for k, v in (deploy.get("strands") or {}).items():
+            n_k = sum(1 for t in deploy["teams"] if t.get("strand") == k)
+            if not n_k: continue
+            ids = f"{v['prefix']}1\u2013{v['prefix']}{n_k}" if n_k > 1 else f"{v['prefix']}1"
+            if v.get("dashed"):
+                key("s", f"{v['name']} (ECHO, separate budget) \u2014 dashed, lighter", ZONE_C["community"], ZONE_C["community"], swatch=True, mew=0.9, alpha=0.28, ls=(0, (3.0, 1.6)),
+                    short=f"{v['name'].replace('conservancies', 'conservancy')}: separate budget ({ids})")
+            else:
+                key("s", f"{v['name']} (ECHO, separate budget)", ZONE_C["community"], ZONE_C["community"], swatch=True, mew=0.6, alpha=0.55,
+                    short=f"{v['name'].replace('conservancies', 'conservancy')}: separate budget ({ids})")
         key("s", "Fill depth = evidence for the class (people / herd use)", "none", "none", ms=0, mew=0,
             short="deeper fill = stronger evidence")
         key(None, "Focal point (1 person)", None, None, kind="*", color=TEAM_C, short="Focal point (1)")
         key(None, "ECHO team (5)", None, None, kind="s", color=TEAM_C, short="ECHO team (5)")
         key(None, "TANGO team (5)", None, None, kind="^", color=TEAM_C, short="TANGO team (5)")
-        key(None, "Year-2 team: hollow", None, None, kind="^", color=TEAM_C, hollow=True,
+        key(None, "Year-2 team: hollow", None, None, kind=[k_ for k_, kd in (("*", "FP"), ("s", "ECHO"), ("^", "TANGO")) if any(t["year"] == 2 and t["kind"] == kd for t in deploy["teams"])], color=TEAM_C, hollow=True,
             short=f"hollow = year 2 ({n1} year 1, +{n2} year 2)")
     elif planner_n:
         # planner layers are drawn only with --planner; the legend says what they are and how sure the machine is
@@ -1192,6 +1270,8 @@ def main():
 
     fire, fire_types, fire_years = load_fire(frame)
     setl = load_settlements(frame)
+    global POP_MAX
+    POP_MAX = max([r[2] or 0 for r in setl] + [1])      # one people scale for the whole sheet (towns AND built-up cells)
     rivers = load_rivers(frame, 6)
     borders = load_borders(frame)
 
@@ -1207,9 +1287,10 @@ def main():
     teams_early = deploy["teams"] if deploy else (load_teams(Path(a.planner).parent) if a.planner else [])
     # with the planner drawn, the proposals' teams ARE sites: a town 10 km from an ECHO team is served, and the
     # "no site within 40 km" belt must be measured against everything the sheet proposes, or it contradicts itself
-    belt = unserved_belt(setl, ([] if deploy else sites) + [dict(name=t["place"], lon=t["lon"], lat=t["lat"], approx=False, kind="team") for t in teams_early], reach)
+    towns_only, n_unnamed_all = (named_towns(setl) if a.planner else (setl, 0))   # "towns" in the belt are NAMED towns, as on the sheet
+    belt = unserved_belt(towns_only, ([] if deploy else sites) + [dict(name=t["place"], lon=t["lon"], lat=t["lat"], approx=False, kind="team") for t in teams_early], reach)
     if deploy and belt:   # the summary text quotes this number (easyplan.py reads it)
-        json.dump({k: v for k, v in belt.items() if k != "towns"} | {"n_towns": len(belt["towns"])},
+        json.dump({k: v for k, v in belt.items() if k != "towns"} | {"n_towns": len(belt["towns"]), "named_towns_500": len(towns_only), "unnamed_clusters_500": n_unnamed_all},
                   open(Path(a.planner).parent / "map_belt.json", "w"))
     axis = corridor_axis(st)
 
@@ -1268,8 +1349,9 @@ def main():
         # core) so the two stay apart on a black-and-white copy, where hue is gone and only the ring is left. Clearing:
         # indigo squares - sharp-edged and dark, distinct from every red and every amber whatever the printer does
         # to hue, and the only square-shaped mark on the sheet besides the ECHO team glyph. Both above the fire mass.
-        for coll in graduated_cells(dens, "built", ORANGE, shape="circle", zorder=2.10):
-            ax.add_collection(coll)
+        pc = people_cells(dens)
+        if pc is not None:   # solid discs: same size rule as the town rings, no rim, no glow — kin, not the same mark
+            ax.scatter(pc["x"], pc["y"], s=pc["s"], c=ORANGE, alpha=0.85, edgecolors="none", zorder=2.10, snap=False)
         for coll in graduated_cells(dens, "clear", CLEAR, shape="square", zorder=2.14):
             ax.add_collection(coll)
 
@@ -1326,6 +1408,8 @@ def main():
         zpath = Path(a.planner) if Path(a.planner).name == "zones.geojson" else pdir / "zones.geojson"
         zfeat = json.load(open(zpath))["features"]
         served = {u for t in deploy["footprints"] for u in (t.get("zone_uids") or [])}
+        dashed_strands = {k for k, v in (deploy.get("strands") or {}).items() if v.get("dashed")}
+        car_served = {u for t in deploy["footprints"] if t.get("strand") in dashed_strands for u in (t.get("zone_uids") or [])}   # dashed strands (CAR, DRC): separate budgets, drawn dashed + lighter
         # (i) every solved zone as a quiet dash-dot outline in its class colour — the zoning we found, as context
         for f in zfeat:
             pr = f["properties"]; cls = pr.get("solver_class") or pr.get("cls"); g = shape(f["geometry"])
@@ -1350,15 +1434,24 @@ def main():
             zid = zid[R["idx"]]
             rgba = np.zeros(R["lab"].shape + (4,))
             for uid, (cls, g, pr) in served_geoms.items():
-                m = (zid == uid) & (R["lab"] == ("core", "wilderness", "community", "corridor").index(cls) + 1)
-                lo, hi = (0.10, 0.34) if cls == "corridor" else (0.12, 0.40)     # the corridor sits ON the fire mass: keep the hairlines legible
-                rgba[m, :3] = matplotlib.colors.to_rgb(ZONE_FILL[cls]); rgba[m, 3] = lo + hi * np.clip(R["inten"][m], 0, 1)
+                # the fill is the ZONE POLYGON (what the outline draws and the budget pays for), not the solver's class
+                # raster: vectorize() fills holes and simplifies, so the two differed by enclosed specks and by the
+                # simplification tolerance and the outline stood off its own fill. Intensity still shades where the class
+                # raster backs it; a filled-in speck takes the floor alpha.
+                m = zid == uid
+                lo, hi = (0.10, 0.34) if cls == "corridor" else (0.24, 0.28)     # the corridor sits ON the fire mass: keep the hairlines legible;
+                # a community zone's floor is high enough that its EMPTY ground (people → 0 intensity) still reads as inside the
+                # outline — at 0.12 the unpeopled half of Songo looked unfilled and the outline seemed to miss its own fill
+                if uid in car_served: lo, hi = lo * 0.5, hi * 0.5                 # CAR strand: half the ink, the dashed outline carries the difference
+                own = R["lab"][m] == ("core", "wilderness", "community", "corridor").index(cls) + 1
+                rgba[m, :3] = matplotlib.colors.to_rgb(ZONE_FILL[cls]); rgba[m, 3] = lo + hi * np.clip(R["inten"][m], 0, 1) * own
             ax.imshow(rgba, extent=R["extent"], origin="upper", interpolation="nearest", zorder=3.05)
         for uid, (cls, g, pr) in served_geoms.items():
             if R is None:
                 for p in poly_patches(g, facecolor=ZONE_FILL[cls], alpha=0.22, edgecolor="none", zorder=3.05):
                     ax.add_patch(p)
-            for p in poly_patches(g, facecolor="none", edgecolor=ZONE_C[cls], linewidth=1.3, zorder=3.2):
+            for p in poly_patches(g, facecolor="none", edgecolor=ZONE_C[cls], linewidth=1.3, zorder=3.2,
+                                  linestyle=((0, (3.0, 1.6)) if uid in car_served else "solid")):
                 ax.add_patch(p)
             kha = pr["area_ha"] / 1000
             size = f"{kha/1000:.2f} M ha" if kha >= 1000 else f"{kha:,.0f}k ha"
@@ -1445,14 +1538,15 @@ def main():
                                        st["ec"], 8.6))
 
     # 5. settlements: area by population, so an empty interior reads as empty
+    n_unnamed = 0
     if setl and dens is not None:
-        setl = [r for r in setl if (r[2] or 0) >= 500]    # the raster carries the hamlets; dots are towns only
+        setl, n_unnamed = towns_only, n_unnamed_all    # the raster carries the hamlets AND the unnamed clusters; dots are named towns only
+        dens["towns_named"], dens["towns_unnamed"] = len(setl), n_unnamed
     if setl:
         lons = np.array([r[1] for r in setl])
         lats = np.array([r[0] for r in setl])
         pops = np.array([max(r[2] or 0, 1) for r in setl], dtype=float)
-        sizes = 3.0 + 62.0 * np.sqrt(pops / pops.max())
-        town_symbol(ax, lons, lats, sizes)
+        town_symbol(ax, lons, lats, people_size(pops))
 
     # Every POINT mark on the sheet (gold pictographs, plan sites, teams, unreached towns) is queued here and drawn
     # once by draw_marks(), which spreads marks that would overlap on the page into a short row (see there).

@@ -151,10 +151,25 @@ def pct_rank(v):
     from scipy.stats import rankdata
     v = np.asarray(v, float); return (rankdata(v) - 1) / max(len(v) - 1, 1) if len(v) > 1 else np.ones(len(v))
 
+# Budget STRANDS. The South Sudan request (SSD: ECHO + TANGO + FP under the staff caps) is the plan; a community zone in
+# another country is funded on that country's own line — capped, id-prefixed and legally framed separately — so a foreign
+# conservancy never displaces a South Sudanese one (user decisions 2026-09-07: CAR, then COD and SDN). strand code →
+# (ISO3 of the zone, team-id prefix, cap flag, legend/budget name, legal instrument).
+STRANDS = {
+    "CAR": dict(iso="CAF", prefix="K", flag="echo_car_y2", name="CAR conservancies", law="Code de protection de la faune (CAR)", dashed=True),
+    "COD": dict(iso="COD", prefix="D", flag="echo_cod_y2", name="DRC conservancies", law="Loi n° 14/003 relative à la conservation de la nature (DRC)", dashed=True),
+    "SDN": dict(iso="SDN", prefix="S", flag="echo_sdn_y2", name="Sudan conservancies", law="Wildlife Conservation and National Parks Act 1986 (Sudan)", dashed=False),
+}   # dashed: drawn dashed + lighter on the deployment sheet (user 2026-09-07: CAR and DRC dashed, Sudan like South Sudan)
+def strand_of(country): return next((k for k, v in STRANDS.items() if v["iso"] == country), "SSD")
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--tag", default=""); ap.add_argument("--staff-y1", type=int, default=30); ap.add_argument("--staff-y2", type=int, default=80)
     ap.add_argument("--echo-y2", type=int, default=5); ap.add_argument("--tango-y2", type=int, default=5); ap.add_argument("--fp-y2", type=int, default=3)
+    ap.add_argument("--echo-car-y2", type=int, default=2, help="ECHO teams on CAR community zones by year 2 — the CAR strand, a separate budget outside --staff-y1/--staff-y2 (0 = none)")
+    ap.add_argument("--echo-cod-y2", type=int, default=1, help="ECHO teams on DRC community zones by year 2 — the COD strand, its own budget (0 = none)")
+    ap.add_argument("--echo-sdn-y2", type=int, default=1, help="ECHO teams on Sudan community zones by year 2 — the SDN strand, its own budget (0 = none)")
+    ap.add_argument("--robust-draws", type=int, default=500, help="perturbation draws for the selection-robustness check (weights ±, gold/people/threat inputs ±20%%, zone dropout)")
     ap.add_argument("--fp-min-pop", type=int, default=5000); ap.add_argument("--narrate", action="store_true"); ap.add_argument("--no-llm", action="store_true", help="skip the muse-glimmer site adjudication"); ap.add_argument("--workers", type=int, default=32)
     a = ap.parse_args(); tag = a.tag
     st, G, zs, lab, p10, bud, mv, rk = load(tag)
@@ -172,7 +187,7 @@ def main():
         if p["solver_class"] != "community" or p["population_est"] < MIN_SITE_POP: continue
         m = masks[p["uid"]]; gold = float(gold_r[m].sum()); pxt = float(p["population_est"] * (p.get("threat_p10_mean") or 0))   # people × mean P10 of the zone's ground (built cells carry P10=1 and would make this = people)
         shield = rank_rows.get(p["uid"], {}).get("shield", 0.0)
-        echo.append(dict(uid=p["uid"], gold=gold, gold_top05=int(p["mine_top05_cells"]), gold_cand=int(p["mine_candidates"]), gold_watch=int(p.get("mine_watchlist") or 0), gold_rep=int(p["mine_reported"]),
+        echo.append(dict(uid=p["uid"], country=p.get("country"), strand=strand_of(p.get("country")), gold=gold, gold_top05=int(p["mine_top05_cells"]), gold_cand=int(p["mine_candidates"]), gold_watch=int(p.get("mine_watchlist") or 0), gold_rep=int(p["mine_reported"]),
                          people=int(p["population_est"]), people_x_threat=pxt, shield=shield, new15=int(p["new_since_2015"]), area_ha=p["area_ha"], towns=[re.sub(r"\s[\d,]+$", "", t).split(" (")[0].replace("*", "") for t in (p.get("towns") or [])[:3]], rank=p.get("rank")))
     if echo:
         g_, t_, s_ = pct_rank([e["gold"] for e in echo]), pct_rank([e["people_x_threat"] for e in echo]), pct_rank([e["shield"] for e in echo])
@@ -205,8 +220,11 @@ def main():
                     water=(f"{w[1]} {w[0]} km" if w else f"settlement of {int(x[2] or 0):,} people (water implied by residence); no mapped river/well/JRC water within {P.WATER_KM:g} km — verify"),
                     season=season, why=why + f" Site: {int(x[2] or 0):,} people, " + (f"road {cand['road_km']} km" if cand.get("road_km") is not None else f"no mapped road within {ROAD_FAR_KM:g} km") + f", {reach_txt}.", towns=towns, alternatives=[])
     placed = []; adjud = []
-    for e in echo[:a.echo_y2 * 4]:
-        if e["urgency"] <= 0: break
+    caps_f = {k: getattr(a, v["flag"]) for k, v in STRANDS.items()}
+    pools = [e for e in echo if e["strand"] == "SSD"][:a.echo_y2 * 4]
+    for k in STRANDS: pools += [e for e in echo if e["strand"] == k][:max(caps_f[k], 1) * 4]
+    for e in pools:
+        if e["urgency"] <= 0: continue
         f = next(f for f in zs if f["properties"]["uid"] == e["uid"]); gp = shape(f["geometry"]).buffer(0)
         inside = [x for x in IX["S"] if gp.contains(Point(x[1], x[0]))]
         tw = (gold_r + pop_r / max(float(pop_r[masks[e["uid"]]].sum()), 1) * max(float(gold_r[masks[e["uid"]]].sum()), 1)) * masks[e["uid"]]   # targets = gold cells and people, equal total weight
@@ -214,7 +232,7 @@ def main():
         if not sl: e["skipped"] = "no settlement ≥%d people on a road within %g km inside the zone" % (MIN_SITE_POP, ROAD_KM); continue
         why = (f"community zone {e['uid']} ranks {echo.index(e)+1}/{len(echo)} on gold-rush urgency: {e['gold_top05']} top-5% gold-target cells, {e['gold_cand']} model candidates, {e['gold_watch']} abandoned-village-on-gold watchlist places, {e['gold_rep']} reported workings; "
                f"{e['people']:,} people, people×threat {e['people_x_threat']:,.0f}, {e['new15']} settlements founded since 2015; shields core/corridor on {e['shield']:.0%} of its edge" + (f"; budget rank C{e['rank']}" if e.get("rank") else "") + ".")
-        s_ = mk("ECHO", sl[0], [e["uid"]], e["urgency"], "year-round; village outreach in the rains, boundary walks Dec–Feb", why, e["towns"])
+        s_ = mk("ECHO", sl[0], [e["uid"]], e["urgency"], "year-round; village outreach in the rains, boundary walks Dec–Feb", why, e["towns"]); s_["strand"] = e["strand"]
         s_["alternatives"] = [dict(name=c["name"], people=int(c["row"][2] or 0), road_km=c["road_km"], reach=c["reach"], score=c["score"], lon=round(c["row"][1], 4), lat=round(c["row"][0], 4)) for c in sl]
         placed.append(s_)
     for t in tango[:a.tango_y2 * 3]:
@@ -282,24 +300,44 @@ def main():
                             water="town (supplies itself)", season="year-round", why=f"town of {tp:,} people; {len(served)} of this year's team sites within {FP_REACH_KM:g} km ({', '.join(s['place'] for s in served)}), {len(new)} of them not held by an earlier focal point; county and traditional authorities are seated here", towns=[n], serves=[s["place"] for s in served]))
         return out
     # ---------------------------------------------------------------- staging: year 1, year 2 under the staff caps
-    def stage(cap_staff, n_echo, n_tango, n_fp, seed_fp=()):
+    for s in placed: s.setdefault("strand", "SSD")
+    # ECHO is staged by SELECTION STABILITY, not by point urgency (user decision 2026-09-07): the share of perturbed
+    # re-rankings that pick the zone (selection_robustness). Two zones a few hundredths apart on urgency are a coin toss;
+    # the one that survives the jitter is the one to fund. Frequencies are bucketed to 0.1 so 500-draw noise (±0.02) cannot
+    # reorder near-equals — urgency breaks the tie inside a bucket. TANGO/FP keep their urgency order.
+    rob_freq = selection_frequency(echo, a)
+    for s in placed:
+        if s["kind"] == "ECHO": s["robust"] = rob_freq.get(s["zone_uids"][0], 0.0)
+    def stage_key(s): return (-(round(s["robust"], 1) if s["kind"] == "ECHO" else s["urgency"]), -s["urgency"])
+    def stage(cap_staff, n_echo, n_tango, n_fp, caps_foreign, seed_fp=()):
+        """The South Sudan strand (ECHO SSD + TANGO + FP) is staged under the staff caps. A foreign strand (STRANDS: CAR,
+        COD, SDN — ECHO teams on community zones across the border) is a SEPARATE BUDGET: capped by caps_foreign[strand]
+        and not consuming the South Sudan caps, so a foreign conservancy never displaces one in SSD."""
         chosen = []; staff = 0; cnt = Counter()
         # interleave by urgency across kinds so year 1 is not all ECHO; FP added last (they follow the teams)
-        pool = sorted([s for s in placed], key=lambda s: -s["urgency"])
+        pool = sorted([s for s in placed], key=stage_key)
         for s in pool:
+            if s["strand"] != "SSD":
+                if cnt[s["strand"]] < caps_foreign.get(s["strand"], 0): chosen.append(s); cnt[s["strand"]] += 1
+                continue
             lim = n_echo if s["kind"] == "ECHO" else n_tango
             if cnt[s["kind"]] >= lim or staff + s["staff"] > cap_staff: continue
             chosen.append(s); cnt[s["kind"]] += 1; staff += s["staff"]
-        for s in focal_points(chosen, n_fp, seed_fp):
+        for s in focal_points([c for c in chosen if c["strand"] == "SSD"], n_fp, seed_fp):
             if staff + 1 > cap_staff: break
-            chosen.append(s); staff += 1
+            s["strand"] = "SSD"; chosen.append(s); staff += 1
         return chosen, staff
     # year 1 first; year 2 then starts from year 1's focal points (a town office is not moved because the teams' centre moved)
-    y1, staff1 = stage(a.staff_y1, max(2, a.echo_y2 // 2), max(2, a.tango_y2 // 2), max(1, a.fp_y2 // 2))
-    y2, staff2 = stage(a.staff_y2, a.echo_y2, a.tango_y2, a.fp_y2, seed_fp=[s for s in y1 if s["kind"] == "FP"])
+    y1, staff1 = stage(a.staff_y1, max(2, a.echo_y2 // 2), max(2, a.tango_y2 // 2), max(1, a.fp_y2 // 2), {k: (max(1, c // 2) if c else 0) for k, c in caps_f.items()})
+    y2, staff2 = stage(a.staff_y2, a.echo_y2, a.tango_y2, a.fp_y2, caps_f, seed_fp=[s for s in y1 if s["kind"] == "FP"])
     y1_keys = {(s["kind"], s["place"]) for s in y1}
     for s in y2: s["year"] = 1 if (s["kind"], s["place"]) in y1_keys else 2
-    for i, s in enumerate([s for s in y2 if s["kind"] == "ECHO"], 1): s["id"] = f"E{i}"
+    for s in y2: s.setdefault("strand", "SSD")
+    for i, s in enumerate([s for s in y2 if s["kind"] == "ECHO" and s["strand"] == "SSD"], 1): s["id"] = f"E{i}"
+    for k, v in STRANDS.items():   # K = CAR, D = DRC, S = Sudan (C is the planner's conservancy rank, E the SSD ECHO)
+        for i, s in enumerate([s for s in y2 if s["kind"] == "ECHO" and s["strand"] == k], 1): s["id"] = f"{v['prefix']}{i}"
+    strand_staff = {k: dict(year1=sum(s["staff"] for s in y2 if s["strand"] == k and s["year"] <= 1), year2=sum(s["staff"] for s in y2 if s["strand"] == k), cap_teams=caps_f[k], placed=sum(1 for s in y2 if s["strand"] == k), **v) for k, v in STRANDS.items()}
+    robust = selection_robustness(echo, y2, a, freq=rob_freq)
     for i, s in enumerate([s for s in y2 if s["kind"] == "TANGO"], 1): s["id"] = f"T{i}"
     for i, s in enumerate([s for s in y2 if s["kind"] == "FP"], 1): s["id"] = f"F{i}"
     # ---------------------------------------------------------------- footprints
@@ -315,29 +353,98 @@ def main():
     # ---------------------------------------------------------------- text
     def text_out():
         L = [f"DEPLOY{tag} — ECHO / TANGO / focal-point footprint on the solved zoning (zones{tag}.geojson). Team = {TEAM} (4 scouts + 1 leader), FP = 1.",
-             f"  year 1 ≤ {a.staff_y1} staff → {staff1} placed ({dict(Counter(s['kind'] for s in y1))});  year 2 ≤ {a.staff_y2} staff → {staff2} placed ({dict(Counter(s['kind'] for s in y2))}); caps ECHO {a.echo_y2} TANGO {a.tango_y2} FP {a.fp_y2}",
+             f"  SOUTH SUDAN STRAND: year 1 ≤ {a.staff_y1} staff → {staff1} placed ({dict(Counter(s['kind'] for s in y1 if s['strand'] == 'SSD'))});  year 2 ≤ {a.staff_y2} staff → {staff2} placed ({dict(Counter(s['kind'] for s in y2 if s['strand'] == 'SSD'))}); caps ECHO {a.echo_y2} TANGO {a.tango_y2} FP {a.fp_y2}",
+             *[f"  {k} STRAND (separate budget, {v['name']}; ids {v['prefix']}1..; {v['law']}): ECHO on {v['iso']} community zones, cap {v['cap_teams']} by year 2 → {v['placed']} placed, {v['year1']}/{v['year2']} staff in Y1/Y2 outside the caps above" for k, v in strand_staff.items()],
              f"  ECHO urgency = 0.5·gold-target rank + 0.3·(people × mean P10) rank + 0.2·shield rank, zero without a gold target ({G.mining_note}); TANGO urgency = 0.4·herd UD + 0.35·UD within 25 km of residents + 0.25·gold targets in band (rank-percentiles).",
              f"  a site = GHSL settlement ≥ {MIN_SITE_POP} people (residence implies water; mapped water re-checked and printed); ECHO needs a trunk…tertiary road ≤ {ROAD_KM:g} km or OSRM car trips (motorbikes); TANGO walks with the herds (no road test; helicopter in extremis). Shortlist scored by OSRM reach within {REACH_MIN//60} h; muse-glimmer adjudicates among the shortlisted sites only. Footprint = served zones + {SITE_REACH_KM:g} km round the site.", ""]
         for yr in (1, 2):
             L.append(f"YEAR {yr}" + (" (adds to year 1)" if yr == 2 else ""))
             for s in sorted([s for s in y2 if s["year"] == yr], key=lambda s: (s["kind"] != "FP", s["kind"], -s["urgency"])):
-                L.append(f"  {s['id']:<3} {s['kind']:<5} x{s['staff']}  {s['place']}  ({s['lon']}, {s['lat']})  urgency {s['urgency']:.2f}  zones {s['zone_uids']}  footprint {s.get('footprint_km2', 0):,} km²")
+                L.append(f"  {s['id']:<3} {s['kind']:<5} x{s['staff']}  {s['place']}  ({s['lon']}, {s['lat']})  urgency {s['urgency']:.2f}" + (f"  picked in {s['robust']:.0%} of perturbed re-rankings" if s.get("robust") is not None else "") + f"  zones {s['zone_uids']}  footprint {s.get('footprint_km2', 0):,} km²")
                 L.append(f"        water: {s['water']}; road {(str(s['road_km']) + ' km') if s.get('road_km') is not None else 'no mapped road within %g km (OSRM car trips say tracks exist)' % ROAD_FAR_KM}; when: {s['season']}"); L.append(f"        why: {s['why']}")
                 if s.get("adjudication"): L.append(f"        site: {s['adjudication']}; shortlist {[(c['name'], c['people'], (c['reach'] or {}).get('share')) for c in s.get('alternatives', [])]}")
                 if s.get("short"): L.append(f"        short: {s['short']}")
                 if s.get("brief"): L.append(f"        brief: {s['brief']}")
                 if s.get("first_season"): L.append(f"        first season: {s['first_season']}")
             L.append("")
+        L += robustness_lines(robust)
         L.append("NOT STAFFED (year 2 caps) — community zones with a gold target, by urgency:")
-        for e in echo[len([s for s in y2 if s['kind'] == 'ECHO']):]:
+        staffed_uids = {u for s in y2 if s["kind"] == "ECHO" for u in s["zone_uids"]}
+        for e in echo:
             if e["urgency"] <= 0: break
-            L.append(f"  zone {e['uid']:<4} urgency {e['urgency']:.2f}  gold t5/cand/watch/rep {e['gold_top05']}/{e['gold_cand']}/{e['gold_watch']}/{e['gold_rep']}  {e['people']:,} ppl  {', '.join(e['towns']) or '—'}" + (f"  [{e['skipped']}]" if e.get("skipped") else ""))
+            if e["uid"] in staffed_uids: continue
+            L.append(f"  zone {e['uid']:<4} {e['strand']}  urgency {e['urgency']:.2f}  gold t5/cand/watch/rep {e['gold_top05']}/{e['gold_cand']}/{e['gold_watch']}/{e['gold_rep']}  {e['people']:,} ppl  {', '.join(e['towns']) or '—'}" + (f"  [{e['skipped']}]" if e.get("skipped") else ""))
         return L
     L = text_out()
-    json.dump(dict(params=vars(a), mining_model=P.MM.variant(), mining_note=G.mining_note, team_size=TEAM, road_km=ROAD_KM, site_reach_km=SITE_REACH_KM, year1_staff=staff1, year2_staff=staff2, teams=y2, echo_candidates=[{k: v for k, v in e.items()} for e in echo], tango_candidates=[{k: v for k, v in t.items() if k not in ("udr", "mask")} for t in tango]),
+    if (OUT / f"deploy{tag}.json").exists(): (OUT / f"deploy{tag}.json").replace(OUT / f"deploy{tag}.json.prev")   # narration cache source
+    json.dump(dict(params=vars(a), mining_model=P.MM.variant(), mining_note=G.mining_note, team_size=TEAM, road_km=ROAD_KM, site_reach_km=SITE_REACH_KM, year1_staff=staff1, year2_staff=staff2, strands=strand_staff, car_staff=dict(year1=strand_staff["CAR"]["year1"], year2=strand_staff["CAR"]["year2"], cap_teams=caps_f["CAR"]), robustness=robust, teams=y2, echo_candidates=[{k: v for k, v in e.items()} for e in echo], tango_candidates=[{k: v for k, v in t.items() if k not in ("udr", "mask")} for t in tango]),
               open(OUT / f"deploy{tag}.json", "w"), indent=1, ensure_ascii=False)
     (OUT / f"DEPLOY{tag}.txt").write_text("\n".join(L) + "\n"); print("\n".join(L))
     if a.narrate: narrate(tag, y2, zs, a.workers); L = text_out(); (OUT / f"DEPLOY{tag}.txt").write_text("\n".join(L) + "\n"); print("\n".join(L[:6]))
+
+def selection_frequency(echo, a, draws=None, seed=0):
+    """Per ECHO candidate zone, the share of perturbed re-rankings that pick it (see selection_robustness). Computed once,
+    BEFORE staging, and used as the staging order for ECHO — so the check is not a post-hoc comment on a choice made by
+    point urgency but the choice itself. Deterministic (seed 0)."""
+    draws = draws or a.robust_draws; rng = np.random.default_rng(seed)
+    cand = [e for e in echo if e["urgency"] > 0 and not e.get("skipped")]
+    if not cand: return {}
+    caps = {"SSD": a.echo_y2, **{k: getattr(a, v["flag"]) for k, v in STRANDS.items()}}
+    G_ = np.array([e["gold"] for e in cand]); T_ = np.array([e["people_x_threat"] for e in cand]); S_ = np.array([e["shield"] for e in cand]); K_ = np.array([e["strand"] for e in cand])
+    hits = Counter()
+    for _ in range(draws):
+        w = np.clip(np.array([0.5, 0.3, 0.2]) + rng.normal(0, 0.1, 3), 0.05, None); w /= w.sum()
+        keep = rng.random(len(cand)) >= 0.1
+        g = G_ * rng.lognormal(0, 0.2, len(cand)); t = T_ * rng.lognormal(0, 0.2, len(cand)); sh = S_ * rng.lognormal(0, 0.2, len(cand))
+        idx = np.flatnonzero(keep)
+        if not len(idx): continue
+        u = (w[0] * pct_rank(g[idx]) + w[1] * pct_rank(t[idx]) + w[2] * pct_rank(sh[idx])) * (g[idx] > 0)
+        cnt = Counter()
+        for j in np.argsort(-u):
+            i = idx[j]; k = K_[i]
+            if u[j] <= 0 or cnt[k] >= caps.get(k, 0): continue
+            cnt[k] += 1; hits[cand[i]["uid"]] += 1
+    return {e["uid"]: round(hits[e["uid"]] / draws, 3) for e in cand}
+
+def selection_robustness(echo, y2, a, draws=None, seed=0, freq=None):
+    """Is the ECHO selection an artefact of the weights or of one noisy number? Re-run the urgency ranking `draws` times
+    with (i) the three weights jittered (N(0, 0.1) on 0.5/0.3/0.2, renormalised), (ii) every zone's gold, people×threat and
+    shield inputs multiplied by an independent log-normal (σ 0.2: GHSL's own bias band, one gold cell more or less),
+    (iii) one candidate zone in ten dropped (a zone the community vetoes, Wildlife Act s.14(4)); then re-select under the
+    same per-strand caps among zones that HAVE a site. Reports, per zone, the share of draws in which it is chosen. This
+    is the deployment's robustness; the zoning's is plan_solver.py support (SUPPORT.txt) and the two must be read together.
+    Solved analytically nowhere: the ranking is rank-percentile based, so the only honest test is to redo it."""
+    draws = draws or a.robust_draws
+    cand = [e for e in echo if e["urgency"] > 0 and not e.get("skipped")]
+    if not cand: return dict(draws=0, note="no ECHO candidates")
+    freq = freq if freq is not None else selection_frequency(echo, a, draws, seed)
+    chosen0 = {u for s_ in y2 if s_["kind"] == "ECHO" for u in s_["zone_uids"]}
+    # the by-urgency pick, for the record: what the point estimate alone would have funded
+    caps = {"SSD": a.echo_y2, **{k: getattr(a, v["flag"]) for k, v in STRANDS.items()}}; cnt = Counter(); by_urgency = set()
+    for e in cand:
+        if cnt[e["strand"]] < caps.get(e["strand"], 0): cnt[e["strand"]] += 1; by_urgency.add(e["uid"])
+    chosen = sorted([(e["uid"], e["strand"], freq[e["uid"]], ", ".join(e["towns"]) or "—") for e in cand if e["uid"] in chosen0], key=lambda r: -r[2])
+    bench = sorted([(e["uid"], e["strand"], freq[e["uid"]], ", ".join(e["towns"]) or "—") for e in cand if e["uid"] not in chosen0 and freq[e["uid"]] >= 0.10], key=lambda r: -r[2])[:8]
+    verdict = ("robust" if all(r[2] >= 0.75 for r in chosen) else "one or more marginal picks" if all(r[2] >= 0.5 for r in chosen) else "fragile")
+    swapped = [(u, ", ".join(next(e["towns"] for e in cand if e["uid"] == u)) or "—") for u in sorted(by_urgency - chosen0)]
+    swapped_in = [(u, ", ".join(next(e["towns"] for e in cand if e["uid"] == u)) or "—") for u in sorted(chosen0 - by_urgency)]
+    return dict(draws=draws, perturbation="weights N(0,0.1) renormalised; gold, people×threat, shield × lognormal(σ 0.2) per zone; 10% zone dropout",
+                staged_by="selection frequency (bucketed 0.1), urgency as tie-break", verdict=verdict, chosen=chosen, bench=bench, freq=freq,
+                by_urgency_only=sorted(by_urgency), swapped_out=swapped, swapped_in=swapped_in)
+
+def robustness_lines(R):
+    if not R or not R.get("draws"): return ["SELECTION ROBUSTNESS: not computed (" + str((R or {}).get("note", "")) + ")", ""]
+    L = [f"SELECTION ROBUSTNESS — {R['draws']} re-rankings under perturbation ({R['perturbation']}), same caps per strand: {R['verdict'].upper()}.",
+         f"  ECHO zones are STAGED by this share ({R['staged_by']}), not by point urgency; per zone, the share of draws that pick it (≥ 0.75 robust, 0.50–0.75 marginal, below: an artefact of the numbers as they stand):"]
+    for uid, k, f, towns in R["chosen"]: L.append(f"    chosen   zone {uid:<4} {k}  {f:.2f}  {towns}")
+    for uid, k, f, towns in R["bench"]: L.append(f"    bench    zone {uid:<4} {k}  {f:.2f}  {towns}")
+    for uid, k, f, towns in R["bench"]:
+        weaker = [c for c in R["chosen"] if c[1] == k and c[2] < f]
+        if weaker: L.append(f"  ⚠ bench zone {uid} ({towns}) is picked MORE often than chosen zone {weaker[-1][0]} ({weaker[-1][3]}) in the same strand — the two are a coin toss on today's numbers; the choice between them is a judgement, not a measurement")
+    for (uo, to), (ui, ti) in zip(R.get("swapped_out", []), R.get("swapped_in", [])):
+        L.append(f"  ↔ point urgency alone would have funded zone {uo} ({to}); stability funds zone {ui} ({ti}) instead")
+    L.append("  zoning-level robustness (classes under resampled data) is a different question: plan_solver.py support → SUPPORT.txt."); L.append("")
+    return L
 
 ADJ_SYS = """You are a field-operations adjudicator for a conservation team base in the Western Bahr el Ghazal / Western Equatoria / CAR border region.
 You receive the machine's SHORTLIST of up to three base sites for ONE team, each with measured numbers: people at the site (GHSL, a lower bound), distance to the nearest trunk-tertiary road, mapped water source, and OSRM reach (share of the zone's targets within 4 h by the best of car/foot/bush, car share of those trips, median minutes). You also receive the zone's stored description.
@@ -371,6 +478,21 @@ Answer ONLY a JSON object: {"short": "ONE sentence, <=30 words: base, ground, pu
 def narrate(tag, teams, zs, workers):
     from concurrent.futures import ThreadPoolExecutor
     byuid = {f["properties"]["uid"]: f["properties"] for f in zs}
+    # only NEW or changed teams are narrated: a brief written for the same kind, site, zones, year and machine reasons is
+    # kept from the previous deploy.json (the LLM is the expensive step; user 2026-09-07). The key deliberately excludes the
+    # id, which shifts when the order changes (E5 → E4) without the team changing.
+    prev = OUT / f"deploy{tag}.json.prev"
+    old = {}
+    if prev.exists():
+        for t in json.load(open(prev)).get("teams", []):
+            if t.get("brief") and not t["brief"].startswith("(brief failed"): old[(t["kind"], t["place"], tuple(t["zone_uids"]), t["year"], t["why"])] = t
+    todo = []
+    for s in teams:
+        o = old.get((s["kind"], s["place"], tuple(s["zone_uids"]), s["year"], s["why"]))
+        if o: s["brief"], s["first_season"], s["short"] = o["brief"], o.get("first_season"), o.get("short")
+        else: todo.append(s)
+    print(f"narrate: {len(teams) - len(todo)} briefs kept from the previous run, {len(todo)} to write", file=sys.stderr)
+    teams_all = teams; teams = todo
     def one(s):
         zdesc = []
         for u in s["zone_uids"][:4]:
@@ -383,6 +505,7 @@ def narrate(tag, teams, zs, workers):
             s = next(t for t in teams if t["id"] == tid)
             if "error" in out: s["brief"] = f"(brief failed: {out.get('error')})"; continue
             s["brief"] = (out.get("brief") or "").strip(); s["first_season"] = (out.get("first_season") or "").strip(); s["short"] = (out.get("short") or "").strip()
+    teams = teams_all
     for fn in (f"deploy{tag}_teams.geojson", f"deploy{tag}_footprint.geojson"):
         fc = json.load(open(OUT / fn))
         for f in fc["features"]:

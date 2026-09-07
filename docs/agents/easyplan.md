@@ -54,6 +54,33 @@ staffed zones" table. Never type a state or county name into the template.
 | a unit cost, a budget line's logic, a new line | `RATES` / `lines()` in `scripts/easybudget/build_budget.py` | `easyplan.py` |
 | the proposal's wording | `docs/plan/PIP_SUMMARY_template.txt` | `easyplan.py` |
 | which zones/teams | re-run `plan_solver.py solve` → `plan_deploy.py` → `plan_boundary.py --narrate` → `build_map.py --planner` | `easyplan.py` |
+| a cross-border budget strand (cap, id prefix, law, dashed style) | `STRANDS` in `scripts/plan_deploy.py` (+ `STRAND_CAT` in `build_budget.py`) | full chain below |
+| a country's ECHO cap | `plan_deploy.py --echo-car-y2 / --echo-cod-y2 / --echo-sdn-y2` | full chain below |
+
+**Full chain after a deploy change** (the cheap→expensive order; each step reads the previous one's file):
+
+```bash
+python3 -W ignore scripts/plan_deploy.py --no-llm          # 1 min, look at DEPLOY.txt first
+python3 -W ignore scripts/easypip/build_map.py --planner data/plan_zones/solver/zones.geojson --out /tmp/map.png   # 25 s, LOOK at it
+python3 -W ignore scripts/plan_deploy.py --narrate         # LLM: only new/moved teams (cache in deploy.json.prev)
+python3 -W ignore scripts/plan_boundary.py --narrate       # LLM: only zones whose legal text changed
+python3 -W ignore scripts/easypip/build_map.py --planner data/plan_zones/solver/zones.geojson --out reports/DEPLOY_MAP_2026-09.png --pdf
+python3 -W ignore scripts/plan_zones_package.py            # GPKG/xlsx with bd_* boundary columns
+python3 -W ignore scripts/easyplan.py                      # facts → budget → summary → pdf
+```
+
+Looking at the map without blowing the context (AGENTS.md invariant 17):
+
+```bash
+python3 -c "from PIL import Image; im=Image.open('/tmp/map.png'); s=im.size[0]/1000
+im.resize((1000,int(1000*im.size[1]/im.size[0]))).convert('RGB').save('/tmp/map_small.jpg', quality=70)   # overview, ~100 KB
+im.crop((int(87*s),int(46*s),int(176*s),int(120*s))).save('/tmp/crop.png')"   # detail: a box in overview-pixel coords × s
+```
+
+Show the user the `/tmp` map **before** the two `--narrate` steps: a wrong plan is cheap to fix before the LLM has
+written briefs for it. `deploy.json` has `robustness` (`chosen`, `bench`, `swapped_out/in`) and `strands`; if either
+key is missing the template silently drops those paragraphs — check `PIP_SUMMARY_EASY.txt` for "How firm" and
+"Across the borders".
 
 **Never edit `reports/PIP_SUMMARY_EASY.txt` or `BUDGET_EASY_*.txt` by hand** — they are outputs.
 

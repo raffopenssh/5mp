@@ -169,8 +169,15 @@ CATS = [
     "4 Field activities", "5 Equipment and supplies", "6 Transport",
     "7 Travel and accommodation", "8 Premises and utilities",
     "9 Communications and IT", "10 Training", "11 Legal, registration and audit",
+    "12 CAR conservancies (separate budget)", "13 DRC conservancies (separate budget)", "14 Sudan conservancies (separate budget)",
 ]
+# the foreign STRANDS (plan_deploy.py STRANDS → facts deploy.strands): each is its own category, delivery unit and total.
+# Order fixed so the category numbers are stable whether or not a strand has teams this run.
+STRAND_CAT = {"CAR": "12 CAR conservancies (separate budget)", "COD": "13 DRC conservancies (separate budget)", "SDN": "14 Sudan conservancies (separate budget)"}
+STRAND_KEYS = tuple(STRAND_CAT)
 GOODS_CATS = ("5 Equipment and supplies", "6 Transport")
+GOODS_CODES = ("UNIFORM", "FIELDKIT", "PHONE", "POWER", "MBIKE", "INREACH", "LAPTOP", "GEN", "SOLAR", "STARLINK_KIT", "CAMTRAP")   # imported goods wherever they sit (a strand's category holds both)
+def is_goods(r): return r["cat"] in GOODS_CATS or (r["cat"] in STRAND_CAT.values() and r["code"] in GOODS_CODES)
 
 ACTIONS = {
     "A1": "1  Secure SSWS backing first",
@@ -234,6 +241,9 @@ def lines(F, P):
     def s(lst):
         return ", ".join(f"Y{y+1} {lst[y]:g}" for y in Y)
     echo_s = s(echo); tango_s = s(tango); fp_s = s(fp)
+    # ---- the foreign strands: ECHO teams on CAR / DRC / Sudan community zones (K1.., D1.., S1..), costed as their own lines
+    #      with the strand code as delivery unit so each subtotals separately (not the South Sudan request). Same rates, same calendar.
+    SB = F["deploy"].get("strands") or {}
 
     L = []
     A = L.append
@@ -367,6 +377,30 @@ def lines(F, P):
     A(("11 Legal, registration and audit", "A4", "NGO/CBO registration, RRC renewal, no-objection letters",
        "Annual. Two clocks, both slow - start them in parallel", "REG_NGO", [1] * N, 1.0, None))
     A(("11 Legal, registration and audit", "A1", "Annual audit and statutory accounts", "NGO Act 2016 s.13", "AUDIT", [1] * N, 0.0, None))
+    # ---- 12/13/14 foreign strands (separate budgets), one block each
+    for k in STRAND_KEYS:
+        sb = SB.get(k) or {}
+        car = [by[y].get(f"echo_{k.lower()}", 0) for y in Y]; n_car = [by[y].get(f"new_echo_{k.lower()}", 0) for y in Y]
+        if not any(car): continue
+        car_months = [car[y] * me[y] for y in Y]; car_scout_pm = [car_months[y] * T["scouts"] for y in Y]; car_lead_pm = [car_months[y] * T["leader"] for y in Y]
+        car_s = s(car); C = STRAND_CAT[k]; nm = {"CAR": "CAR", "COD": "DRC", "SDN": "Sudan"}[k]; law = sb.get("law", "")
+        A((C, "A4", f"{nm}: community wildlife scouts", f"ECHO teams in {nm} {car_s} x {'/'.join(map(str, me))} months (same seasonal contract)", "SAL_SCOUT", car_scout_pm, 1.0, k))
+        A((C, "A4", f"{nm}: scout team leaders", f"One per {nm} team, same months", "SAL_LEAD", car_lead_pm, 1.0, k))
+        A((C, "A4", f"{nm}: food allowance", "Scouts plus leaders", "RATION", [car_scout_pm[y] + car_lead_pm[y] for y in Y], 1.0, k))
+        A((C, "A1", f"{nm}: healthcare contribution", f"All {nm} person-months", "HEALTH_N", [car_scout_pm[y] + car_lead_pm[y] for y in Y], 0.6, k))
+        A((C, "A4", f"{nm}: uniforms and personal kit", f"{tsize} x teams {car_s}", "UNIFORM", [car[y] * tsize for y in Y], 1.0, k))
+        A((C, "A4", f"{nm}: team field kit", f"One per new team ({s(n_car)})", "FIELDKIT", n_car, 1.0, k))
+        A((C, "A10", f"{nm}: rugged smartphones + power banks", "Two per new team", "PHONE", [2 * n for n in n_car], 1.0, k))
+        A((C, "A10", f"{nm}: solar power banks", "One with each phone", "POWER", [2 * n for n in n_car], 1.0, k))
+        A((C, "A4", f"{nm}: motorbikes", f"One per new team ({s(n_car)})", "MBIKE", n_car, 1.0, k))
+        A((C, "A4", f"{nm}: motorbike running costs", f"Team-months: {s(car_months)}", "MBIKE_RUN", car_months, 1.0, k))
+        A((C, "A10", f"{nm}: satellite messengers", f"One per new team ({s(n_car)})", "INREACH", n_car, 1.0, k))
+        A((C, "A10", f"{nm}: satellite messenger subscriptions", "Team-months in the field", "INREACH_SUB", car_months, 1.0, k))
+        A((C, "A6", f"{nm}: community meetings", f"{P['meetings_per_team']} per team per year; teams {car_s}", "MEETING", [car[y] * P["meetings_per_team"] for y in Y], 1.0, k))
+        A((C, "A4", f"{nm}: conservancy facilitation ({law})" if law else f"{nm}: conservancy facilitation", f"{fd} days per new conservancy + {fd} per conservancy per filing year", "FACILITATOR", [n_car[y] * fd + car[y] * fd for y in Y], 0.5, k))
+        A((C, "A4", f"{nm}: conservancy governance seed", "One per conservancy the year after scoping", "CBO_SEED", [0] + n_car[:-1], 0.0, k))
+        A((C, "A4", f"{nm}: scout induction and refresher training", f"{P['train_induction_days']} days per new field staff + {P['train_refresher_days']} refresher", "TRAIN_PD",
+           [n_car[y] * tsize * P["train_induction_days"] + (car[y] - n_car[y]) * tsize * P["train_refresher_days"] for y in Y], 1.0, k))
     return L
 
 
@@ -384,19 +418,26 @@ def compute(F, P):
         freight = goods * a["FREIGHT_PCT"]; bank = (direct + freight) * a["BANK_PCT"]
         sub = direct + freight + bank; supp = sub * a["SUPPORT_PCT"]; cont = (sub + supp) * a["CONTING_PCT"]
         return dict(direct=direct, freight=freight, bank=bank, sub=sub, supp=supp, cont=cont, total=sub + supp + cont)
-    per_year = [stack(sum(r["tot"][y] for r in rows), sum(r["tot"][y] for r in rows if r["cat"] in GOODS_CATS)) for y in Y]
+    per_year = [stack(sum(r["tot"][y] for r in rows), sum(r["tot"][y] for r in rows if is_goods(r))) for y in Y]
     t = {k: [p[k] for p in per_year] for k in per_year[0]}
     t["a"] = a; t["N"] = N
     t["load"] = t["total"][0] / t["direct"][0] if t["direct"][0] else 1.0
     t["h1"] = stack(sum(r["tot"][0] * r["h1"] for r in rows),
-                    sum(r["tot"][0] * r["h1"] for r in rows if r["cat"] in GOODS_CATS))
+                    sum(r["tot"][0] * r["h1"] for r in rows if is_goods(r)))
     t["drv"] = {}
-    for key in ("TEAM", "FP", "HQ"):
+    for key in ("TEAM", "FP", "HQ") + STRAND_KEYS:
         d = [sum(r["tot"][y] for r in rows if r["drv"] == key) for y in Y]
         t["drv"][key] = dict(direct=d, loaded=[x * t["load"] for x in d])
     t["by_action"] = {k: sum(sum(r["tot"]) for r in rows if r["act"] == k) for k in ACTIONS}
     t["by_cat"] = {c: [sum(r["tot"][y] for r in rows if r["cat"] == c) for y in Y] for c in CATS}
-    t["corridor_price"] = sum(sum(r["tot"]) for r in rows if r["act"] == "A6")
+    t["corridor_price"] = sum(sum(r["tot"]) for r in rows if r["act"] == "A6" and r["drv"] not in STRAND_KEYS)
+    # each foreign strand as its own loaded total, and the South Sudan request without them (several budgets, one workbook)
+    t["strand"] = {}
+    for k in STRAND_KEYS:
+        sd = [sum(r["tot"][y] for r in rows if r["drv"] == k) for y in Y]; sg = [sum(r["tot"][y] for r in rows if r["drv"] == k and is_goods(r)) for y in Y]
+        t["strand"][k] = {kk: [v[kk] for v in (stack(sd[y], sg[y]) for y in Y)] for kk in ("direct", "total")}
+    t["car"] = t["strand"]["CAR"]
+    t["ssd_total"] = [t["total"][y] - sum(t["strand"][k]["total"][y] for k in STRAND_KEYS) for y in Y]
     t["oneoffs"] = [sum(r["tot"][y] for r in rows if any(w in r["item"].lower() for w in ("survey", "borehole", "water point"))) for y in Y]
     return rows, t
 
@@ -476,7 +517,8 @@ def build_xlsx(path, F, P):
     wb_.append([])
     r_direct = totrow("DIRECT COSTS", lambda c, r: f"=SUM({c}{first}:{c}{last})")
     r_goods = totrow("of which equipment and transport (freight base)",
-                     lambda c, r: "=" + "+".join(f'SUMIF($A${first}:$A${last},"{g}",{c}${first}:{c}${last})' for g in GOODS_CATS))
+                     lambda c, r: "=" + "+".join(f'SUMIF($A${first}:$A${last},"{g}",{c}${first}:{c}${last})' for g in GOODS_CATS)
+                     + "+" + "+".join(f'SUMIFS({c}${first}:{c}${last},$A${first}:$A${last},"12 *",$E${first}:$E${last},"{k}")' for k in GOODS_CODES))
     r_freight = totrow("Freight, customs, clearing", lambda c, r: f"={c}{r_goods}*{keycell['FREIGHT_PCT']}")
     r_bank = totrow("Bank charges and FX", lambda c, r: f"=({c}{r_direct}+{c}{r_freight})*{keycell['BANK_PCT']}")
     r_sub = totrow("Subtotal", lambda c, r: f"={c}{r_direct}+{c}{r_freight}+{c}{r_bank}")
@@ -527,9 +569,10 @@ def build_xlsx(path, F, P):
     ws5.append([]); ws5.append(["Delivery unit", "Units per year"] + [f"Loaded Y{y+1}" for y in range(N)] + [f"Loaded per unit Y{y+1}" for y in range(N)])
     style_header(ws5, ws5.max_row, 2 + 2 * N)
     by = F["deploy"]["by_year"]
-    for key, label, counts in (("TEAM", "ECHO/TANGO scout teams (all teams)", [by[y]["echo"] + by[y]["tango"] for y in range(N)]),
+    for key, label, counts in (("TEAM", "ECHO/TANGO scout teams (South Sudan)", [by[y]["echo"] + by[y]["tango"] for y in range(N)]),
                                ("FP", "Focal points and the Wau/Juba backbone", [by[y]["fp"] for y in range(N)]),
-                               ("HQ", "Chinko HQ technical oversight", [1] * N)):
+                               ("HQ", "Chinko HQ technical oversight", [1] * N),
+                               *[(k, f"{ {'CAR': 'CAR', 'COD': 'DRC', 'SDN': 'Sudan'}[k] } conservancy teams (separate budget)", [by[y].get(f"echo_{k.lower()}", 0) for y in range(N)]) for k in STRAND_KEYS]):
         ws5.append([label, "/".join(map(str, counts))]); r = ws5.max_row
         for y in range(N):
             c = ws5.cell(row=r, column=3 + y)
@@ -566,10 +609,18 @@ def build_txt(path, xlsx_name, F, P):
     natl = sum(sum(t["by_cat"][c]) for c in ("2 National staff", "3 Local partners and SSWS"))
     staff = " -> ".join(str(b["staff"]) for b in by)
     Pp(f"  1  {N}-year total          USD {m(tot)}  ({' / '.join(m(v) for v in t['total'])})")
+    if any(any(t["strand"][k]["total"]) for k in STRAND_KEYS):
+        for k in STRAND_KEYS:
+            if any(t["strand"][k]["total"]):
+                Pp(f"     of which {k} strand   USD {m(sum(t['strand'][k]['total']))}  ({' / '.join(m(v) for v in t['strand'][k]['total'])}) - a SEPARATE budget")
+        Pp(f"     South Sudan request   USD {m(sum(t['ssd_total']))}  ({' / '.join(m(v) for v in t['ssd_total'])})")
     Pp("  2  Shape                 No new organisation. A national partner implements,")
     Pp("                           SSWS leads visibly, Chinko HQ oversees, AP South")
     Pp("                           Sudan carries Juba.")
     Pp(f"  3  People on the ground  {staff} field staff. " + "; ".join(f"Y{y+1} {by[y]['echo']} ECHO + {by[y]['tango']} TANGO + {by[y]['fp']} FP" for y in Y) + ".")
+    for k in STRAND_KEYS:
+        if any(b.get(f"echo_{k.lower()}") for b in by):
+            Pp(f"                           {k} strand, separately: " + "; ".join(f"Y{y+1} {by[y].get(f'echo_{k.lower()}', 0)} ECHO ({by[y].get(f'staff_{k.lower()}', 0)} staff)" for y in Y) + ".")
     Pp("                           A team is 4 scouts + 1 leader; a focal point one person.")
     Pp(f"  4  Money on the ground   {natl/tot:.0%} of the total is national staff, partner")
     Pp("                           grants and SSWS support.")
@@ -642,7 +693,9 @@ def build_txt(path, xlsx_name, F, P):
             f"{t['load']:.2f} on year one. These are the numbers to quote when somebody asks what one team costs to have."))
     Pp(""); d = t["drv"]
     Pp(f"    {'':38s}" + "".join(f" {('YEAR ' + str(y+1)):>12s}" for y in Y) + f" {f'{N} YR':>12s}"); Pp("    " + "-" * (W - 8))
-    for key, label in (("TEAM", "ECHO/TANGO teams, all"), ("FP", "Focal points + Wau/Juba backbone"), ("HQ", "Chinko HQ oversight")):
+    for key, label in (("TEAM", "ECHO/TANGO teams, all (South Sudan)"), ("FP", "Focal points + Wau/Juba backbone"), ("HQ", "Chinko HQ oversight"),
+                       *[(k, f"{ {'CAR': 'CAR', 'COD': 'DRC', 'SDN': 'Sudan'}[k] } conservancy teams (separate budget)") for k in STRAND_KEYS]):
+        if key in STRAND_KEYS and not any(d[key]["loaded"]): continue
         row(label, d[key]["loaded"])
     Pp("")
     yf = N - 1; nt = by[yf]["echo"] + by[yf]["tango"]; tm = d["TEAM"]["loaded"][yf]; fp = d["FP"]["loaded"][yf]
@@ -726,6 +779,9 @@ def summary(F, P):
                 by_action={ACTIONS[k]: round(v) for k, v in t["by_action"].items()},
                 action4_register=round(t["by_action"]["A4"]), corridor_price=round(t["corridor_price"]),
                 team_loaded=[round(v) for v in t["drv"]["TEAM"]["loaded"]], backbone_loaded=[round(v) for v in t["drv"]["FP"]["loaded"]],
+                car_total=round(sum(t["car"]["total"])), car_per_year=[round(v) for v in t["car"]["total"]], car_direct=[round(v) for v in t["car"]["direct"]],
+                strands={k: dict(total=round(sum(t["strand"][k]["total"])), per_year=[round(v) for v in t["strand"][k]["total"]], direct=[round(v) for v in t["strand"][k]["direct"]]) for k in STRAND_KEYS if any(t["strand"][k]["total"])},
+                ssd_total=round(sum(t["ssd_total"])), ssd_per_year=[round(v) for v in t["ssd_total"]],
                 rates={k: v for k, _l, v, _s in ASSUMPTIONS})
 
 

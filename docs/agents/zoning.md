@@ -367,10 +367,44 @@ Runs **after** `plan_solver.py solve/rank`; the solver decides classes, deploy d
   Two same-kind sites within 50 km collapse to one. A corridor zone ≥1 M ha spanning ≥3 bundles gets a second TANGO.
 * **Staging**: team = 5 (4 scouts + 1 leader), FP = 1; year 1 ≤30 staff (2 ECHO, 2 TANGO, 1 FP = 21), year 2 ≤80
   (5/5/3 = 53). FPs by **marginal** coverage of team sites within 120 km (else three FPs pile onto Wau).
+* **ECHO is staged by selection STABILITY, not point urgency** (2026-09-07). `selection_frequency()` re-runs the
+  urgency ranking 500× (weights N(0,0.1) renormalised; gold / people×threat / shield × lognormal σ0.2 per zone; 10 %
+  zone dropout; same per-strand caps) and each ECHO candidate carries `robust` = share of draws that pick it. Staging
+  sorts ECHO by `round(robust, 1)` then urgency (bucketed so 500-draw noise cannot reorder near-equals). Urgency 0.85 vs
+  0.86 was a coin toss that funded Kuajok over Songo; stability funded Songo (0.53 vs 0.37). `DEPLOY.txt` prints
+  "picked in N %" per team, the SELECTION ROBUSTNESS block and a `↔` line naming what point urgency alone would have
+  funded (`robustness.swapped_out/swapped_in`); the PIP summary says the same in prose. Zoning-level robustness is a
+  different question (`plan_solver.py support`).
+* **Budget STRANDS** (`STRANDS` table at the top of `plan_deploy.py`, 2026-09-07): a community zone outside South Sudan
+  is funded on its country's own line — CAR (`K1..`, `--echo-car-y2 2`, Code de protection de la faune), DRC (`D1..`,
+  `--echo-cod-y2 1`, Loi 14/003), Sudan (`S1..`, `--echo-sdn-y2 1`, Wildlife Act 1986) — capped separately and never
+  consuming the SSD staff caps, so a Bandasi or a Songo no longer displaces a South Sudanese conservancy. **To add a
+  strand, edit only that table** (+ `STRAND_CAT` in `build_budget.py` for its category number): `deploy.json`
+  `strands` carries the table + per-strand staff, `build_map.py` reads it for legend rows and the dashed style
+  (`dashed=True` → dashed outline, half-ink fill; Sudan is drawn like SSD), `easyplan.py` derives `by_year.echo_<k>` /
+  `new_echo_<k>` / `staff_<k>` and `B.strands[k]`, and the template iterates `echo_foreign` / `F.deploy.strands`.
+  Nothing else names a country.
+* **Narration cache**: `--narrate` keeps `short/brief/first_season` from `deploy.json.prev` (the previous deploy.json,
+  moved aside on every run, gitignored) for any team whose (kind, place, zones, year, why) is unchanged — only new or
+  moved teams hit the LLM ("narrate: 10 kept, 7 to write"). `plan_boundary.py --narrate` has the same cache keyed on the
+  legal text. Reordered ids (E5 → E4) are not a change. Delete the `.prev` to force a full re-narration.
 * `--narrate`: `short` (one sentence) + `brief` (≤120 words) + `first_season` per team, built only from the served zones'
   stored descriptions. 32 workers default.
 * Gotcha fixed on the way: `roads_heigit` XSA rows covered only the CAR extract until 2026-09-06 (Wau/Tambura "no road");
   now 1,484 segments to lon 31.4. `SOLVE_tune`/`ZONES_tune` (old formulation) deleted.
+* **People on the sheet, one scale** (2026-09-07): `people_size(pop)` is the single people→marker-area rule. Built-up is
+  a solid rimless amber disc per 2 km cell sized by the cell's GHSL *people* (`C["pop"]`, not `built` km²); a **named
+  town** (OSM city/town/village or verified town within `TOWN_REACH_KM` 8 km of a GHSL cluster ≥ 500) is a ring (paper
+  centre) with rim + glow, same rule. Before this, every cluster ≥ 500 was a "town": the Jur/Busseri homestead carpet
+  north of Wau is tiled by `MAX_CLUSTER_DIAMETER_KM` into 155–374-polygon pieces on a ~9 km lattice, 209 of 364 such
+  clusters have no name within 8 km, and they read as a grid of towns. `map_belt.json` carries `named_towns_500` /
+  `unnamed_clusters_500` and the belt ("towns > 40 km from a team") counts named towns only. `town_symbol` draws
+  Circle patches in points via `Affine2D + dpi_scale_trans + ScaledTranslation` — scatter markers of different sizes are
+  bitmap-stamped at rounded pixel positions and drifted a pixel apart (the paper centre sat off-centre).
+* **Served-zone fill = the zone polygon**, not the class raster: `vectorize()` fills holes and simplifies, so masking on
+  `lab == cls` left the polygon's enclosed specks unfilled; the fill now takes `zid == uid`, intensity only where the
+  class raster agrees, and the community floor alpha is 0.24 so unpeopled ground (intensity 0) still reads as inside
+  the outline (Songo's empty half looked unfilled at 0.12). Legend group symbols (`kind=[...]`) are arranged on a ring.
 * **Deployment sheet** (2026-09-06): `build_map.py --planner data/plan_zones/solver/zones.geojson --out reports/DEPLOY_MAP_<date>.png --pdf`
   picks up `deploy_footprint.geojson`/`deploy_teams.geojson` beside it (`--deploy ''` to switch off). Served zones are
   filled by the solver's per-pixel intensity (`solve_lab.npy`/`solve_intensity.npy`, class colour, α = lo + hi·intensity),
@@ -380,7 +414,10 @@ Runs **after** `plan_solver.py solve/rank`; the solver decides classes, deploy d
   Legend rows are ≤4 words at the scale-bar size (PANEL_SCALE 0.80); provenance is one 7.2 pt line under the frame.
 * **QGIS package** = `plan_zones_package.py` then `QT_QPA_PLATFORM=offscreen python3 scripts/plan_zones_qgis.py`
   (PyQGIS 3.34 is installed). Package adds `deploy_zones` / `deploy_teams` (`sym` = kind+year drives the hollow year-2
-  style) / `deploy_reach`, writes `<stem>_deploy_fill.tif` (RGBA — the sheet's own fill pixels) and `solve_class`/
+  style; `strand`, `robust`) / `deploy_reach`, and since 2026-09-07 every `solver_zones` / `deploy_zones` row carries
+  the metes-and-bounds as `bd_*` columns (`bd_legal`, `bd_in_words`, `bd_schedule`, `bd_legs` JSON, `bd_jurisdiction`
+  JSON, `bd_corners`, `bd_sheets_1930s`, `bd_teams`, …) from `boundaries.json` — absent, not blank, when that file is
+  missing, writes `<stem>_deploy_fill.tif` (RGBA — the sheet's own fill pixels) and `solve_class`/
   `solve_intensity` rasters. The QGIS step copies the EASY layers (settlements, fire, gold, rivers, Southern NP) with
   their styles, builds the grouped project (Deployment / Gold / Zoning found / Drawn by the authors / On the ground /
   Reference mesh — every layer present, non-sheet ones unchecked), stores it **inside** the .gpkg
