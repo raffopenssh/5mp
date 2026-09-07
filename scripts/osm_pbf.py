@@ -127,10 +127,22 @@ def ensure_pbf(iso, dest_dir="/tmp"):
         # stall, and an idle connection would otherwise hold the nightly cron
         # open indefinitely (same failure the histmap JP2 fetches hit).
         # <10 kB/s for 120 s = dead; 90 min hard cap covers the 750 MB PBFs.
+        # --retry alone only re-tries 408/429/5xx. Geofabrik rebuilds the
+        # *-latest redirect nightly and the dated target briefly 404s; two of
+        # 28 nightly runs (2026-08-28, 09-04) died on exit 22 within 10 s of
+        # starting, so retry every error with a 2-min back-off (~10 min total)
+        # and record the HTTP status so the next failure names itself.
         try:
-            subprocess.run(["curl", "-sfL", "--retry", "3",
-                            "--speed-limit", "10000", "--speed-time", "120",
-                            "--max-time", "5400", url, "-o", pbf], check=True)
+            res = subprocess.run(["curl", "-sSfL", "--retry", "5",
+                                  "--retry-delay", "120", "--retry-all-errors",
+                                  "--speed-limit", "10000", "--speed-time", "120",
+                                  "--max-time", "5400", "-w", "%{http_code}",
+                                  url, "-o", pbf],
+                                 capture_output=True, text=True)
+            if res.returncode != 0:
+                raise RuntimeError(
+                    f"curl exit {res.returncode} http={res.stdout.strip() or '?'} "
+                    f"{url}: {res.stderr.strip()[-300:]}")
         except Exception:
             # A truncated PBF is worse than no PBF: osmium would read it as a
             # smaller country and every park of it would silently thin out.
