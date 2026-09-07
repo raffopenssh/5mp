@@ -361,3 +361,60 @@ Blue Nile, Red Sea Hills); South Sudan places **zero** mines in 5,144 events
 Enough/Sentry Kapoeta lists. The ACLED derivation is **not committed**
 (scripts and data stay local); the Sudan sites could later feed the SDN
 sheet affinity eval, not the plan.
+
+## Regional model: train CAF+SSD+SDN, test XSA held out (2026-09-07)
+
+`scripts/regional_mining/` — `build_fabric_1km.py` (GHSL 1 km + WorldCover
+cropland & land-cover composition) → `build_features.py`
+(`data/eval/regional_mining/features.npz`, 104k 0.05° cells) →
+`harness.py` (per-signal reach-null tests, LOCO, variants A–J) →
+`nested_cv.py` (**the claim**; `nested_cv.json`, `--belt` secondary).
+
+**Protocol, pre-registered.** Truth = mining anchors + ACLED v8 sites,
+10 km single-link clusters (615; XSA 46, train 559 with 50 km moat). Signal
+selection + composite *recipe* + hyper-parameters are chosen by **spatial
+5-fold CV on the training region only** (2° blocks), then fitted once and
+applied once to XSA. XSA numbers are never used to choose anything;
+`xsa` in the JSON lists every recipe for the record, `xsa_claim` is the one
+CV picked. Reach null (KDE over OSM places + Crisis Tracker + UCDP + ACLED
+events) everywhere, BH q<.05.
+
+**Recipe chosen by CV: `logit_tuned`** — L2 logistic regression on binary
+evidence layers (Agterberg-style fix of Weights-of-Evidence's conditional
+independence), reach-weighted background, **environmental-analogue
+weighting** (density-ratio p_XSA/p_train on WorldCover tree/shrub/grass/
+crop/bare fractions, AUC 0.91; Nubian-shield desert clusters weigh 0.02,
+savanna Sudan 1.13, CAR 3.4 — no hand-drawn latitude cut), l2 and temper
+tuned by inner CV. CV top-10 % capture 0.269 vs 0.223 for the shipped
+equal-factor vote; the per-fold table is in `folds[*].scores`.
+
+**Held-out XSA (46 clusters):** top-5 % captures **28.3 %** (5.7× uniform;
+90 % CI 17–39 %; reach-null p = 0.0007), top-10 % **34.8 %** (p = 0.0013),
+top-20 % 56.5 %. The shipped in-sample design gets 8.7 % on the same test
+under the same protocol, so the gain is the model, not the leak.
+Robustness: holds on OSM-only (47 %/19) and Crisis-Tracker-only (21 %/29)
+truth, singletons 19 %, multi-report sites 50 %.
+
+**What carried the signal region-wide** (`final_signals`): gold contacts
+and units (geomap API), 1930s abandoned village/track/water-point *on* a
+gold contact, 1930s hill terrain and mine notes, and the settlement-fabric
+conjunctions the XSA model introduced — `sett1k_cropland_poor`,
+`sett1k_pop500_cropland_poor` (GHSL ≥2,500 m² built / ≥500 pop in 1 km²
+with <2 % WorldCover cropland in the 3×3 km box), and their `gold_contact_x_`
+forms. Plain settlement / road / OSM-place signals have lift_reach <1
+region-wide (they *are* the reach). Fitted weights (log-lift) and sklearn
+logreg on raw distances do not transfer — binary evidence does.
+
+**Data notes.** GHSL tile R7_C22 (31–39 E, 9–18 N) was missing from
+`data/ghsl/tiles/` and made most of Sudan read as unsettled; downloaded
+2026-09-07. WorldCover class 40 under-detects smallholder fields vs GLAD,
+but agrees with GLAD on "cropland-poor settlement" for 89 % of XSA
+settlements (ρ = 0.63), so it is used region-wide; GLAD (UMD server ~1 KB/s)
+is not. Correction to the section above: **all 89 XSA anchors are CAF** —
+"21 of the 89 in SSD/SDN" was wrong; 63 % of XSA has no truth at all, which
+is why the held-out test needs the region.
+
+**Not yet done:** `predict_mining_xsa.py` / `prediction.json` (what
+`pip_facts.py` and the PIP map read) still ship the in-sample 2.01×/p 0.057
+verdict; the plan sentence should switch to the held-out number only by
+pointing those at `nested_cv.json` + `nested_cv.xsa_scores.npz`.
