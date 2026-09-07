@@ -55,13 +55,14 @@ from shapely.prepared import prep
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 from plan_zone_stats import read_kml, km2  # noqa: E402  (one KML parser, not two)
+import mining_model as MM  # noqa: E402  MINING_MODEL=heldout|insample selects the gold surface
 
 DB = ROOT / "db.sqlite3"
 AOI = "XSA_Study_Area"
 ZONE_JSON = ROOT / "data/eval/zone_stats.json"
 GROUPS = ROOT / "data/fire_groups_v5" / f"{AOI}.json"
-PRED = ROOT / "data/eval/xsa_mining/prediction.json"
-PRED_GEO = ROOT / "data/eval/xsa_mining/prediction.geojson"
+PRED = MM.prediction_json()
+PRED_GEO = MM.prediction_geojson()
 WORLD = ROOT / "data/world_countries.geojson"
 # The panel's numbers come from the SAME file the PIP report and the two-pager
 # read. That is the whole point: a map whose legend is typed by hand is a third
@@ -103,6 +104,7 @@ CLEAR = "#3b2a7a"          # clearing (deforestation). Indigo, the app's violet 
                            # channel - it is the only layer drawn as discrete graduated cells (size ∝ km²), so it
                            # survives a black-and-white print as the darkest crisp squares on the sheet
 GOLD = "#8a6d1f"           # the gold flank
+TARGET_HALO = "#cdc19e"    # GOLD at the top cell's 0.42 alpha over PAPER: the cell an imagery target sits in
 BLUE = "#7cb8e8"           # rivers
 PLAN = "#1f4e9c"           # the plan's own furniture: sites, axis, asks
 
@@ -166,7 +168,9 @@ def draw_sym(ax, x, y, kind, color, scale=1.0, hollow=False, halo=None, zorder=5
     mk, ms, glyph = sym(kind)
     ms *= scale
     if glyph:
-        h = halo or PAPER
+        # an imagery target IS a top-5% cell; the cell (0.05 deg, ~11 px at 300 dpi) is smaller than the glyph
+        # and a paper halo would hide it, so the target's halo carries the cell's darkest tint instead
+        h = halo or (TARGET_HALO if kind == "target" else PAPER)
         ax.plot([x], [y], marker=mk, ms=ms, mfc=h, mec=h, mew=2.6 * scale, ls="none", zorder=zorder - 0.01, **kw)
         ax.plot([x], [y], marker=mk, ms=ms, mfc=color, mec=color, mew=0.45 * scale, ls="none", zorder=zorder, **kw)
     elif hollow:
@@ -375,7 +379,9 @@ def load_gold(reach):
             for f in feats if f["properties"].get("tier") == "top05"]   # (lon, lat, model percentile 95..100)
     skill = (pred.get("composite_skill") or [{}])
     sk = next((s for s in skill if s.get("top_frac") == 0.2), skill[0])
+    sk5 = MM.skill_top(pred, 0.05)
     return dict(
+        model=pred.get("mining_model", "insample"), skill_basis=MM.describe(pred), skill05=sk5,
         top5=[p for p in top5 if keep(p[0], p[1])],
         candidates=[(c["lon"], c["lat"], c.get("character"))
                     for c in pred.get("candidates", []) if keep(c["lon"], c["lat"])],
@@ -964,11 +970,18 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
     key("_", "Trunk rivers", "none", BLUE, lw=1.4)
 
     head("Gold", GOLD)
+    # the grade must carry its score (root invariant 12) and say how the score was measured:
+    # held-out (fitted elsewhere, scored once here) or in-sample (selected and scored on the same sites)
+    sk5, basis = G.get("skill_top05") or {}, G.get("skill_basis") or ""
+    how = "held-out" if basis.startswith("held-out") else ("in-sample" if basis.startswith("in-sample") else "unmeasured")
+    skill_txt = (f"{how}: top 5 % of ground holds {sk5['capture']*100:.0f} % of {G['n_anchors']} known workings, "
+                 f"{sk5['lift_reach']}\u00d7 what the reporting lists would find by their reach alone (p {sk5['p_reach']:.3f})"
+                 if sk5.get("capture") is not None and sk5.get("lift_reach") is not None else "skill unmeasured")
     key("s", "Top 5% of ground by model score", GOLD, GOLD, swatch="graded", mew=0.8, alpha=0.45,
-        note=f"drawn only within {gold_clip_km:g} km of the proposed shapes \u2014 "
+        note=f"{skill_txt} \u2014 drawn only within {gold_clip_km:g} km of the proposed shapes; "
              f"blank elsewhere means NOT DRAWN, not scored low", short="Gold model top 5 %")
-    key(None, "Imagery target \u2014 somewhere to look, never a mine", None, None,
-        kind="target", color=GOLD, short="Imagery target")
+    key(None, "Imagery target \u2014 the model's best cell, somewhere to look, never a mine", None, None,
+        kind="target", color=GOLD, short="Imagery target: top model cell \u00b7 not a mine")
     key(None, "Abandoned-village watchlist", None, None, kind="watch", color=GOLD, short="Village watchlist")
     key(None, "Reported working (OSM / Crisis Tracker)", None, None, kind="working", color=GOLD,
         short="Reported working")
@@ -1033,7 +1046,7 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
     # ------------------------------------------------------------ provenance
     # one line under the frame, at the legend's size: read after the map, never competing with it
     text(f"Sources \u00b7 boundaries: {SH['n_files']} KML files as received \u00b7 fire: VIIRS/FIRMS, v5 fronts 2024\u201326 \u00b7 people: GHSL estimate, "
-         f"not a count \u00b7 clearing: Hansen/GLAD, verified \u00b7 gold: project model on {G['n_anchors']} known workings \u00b7 "
+         f"not a count \u00b7 clearing: Hansen/GLAD, verified \u00b7 gold: {G.get('model_variant', 'in-sample')} model, {G['n_anchors']} known workings \u00b7 "
          f"all figures from data/eval/pip_facts.json \u00b7 {date}",
          7.2 / PANEL_SCALE, MUTED, lead=1.3, gap=0.0, wrap=False, tag="footer")
     return items
