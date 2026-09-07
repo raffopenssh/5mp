@@ -22,7 +22,7 @@ import textwrap
 
 import openpyxl
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
-from openpyxl.utils import get_column_letter
+from openpyxl.utils import get_column_letter, column_index_from_string
 
 # --------------------------------------------------------------------------
 # RATES: code, label, unit, USD, note (what the rate assumes; firmness)
@@ -128,9 +128,9 @@ RATES = [
      "allowance, hall hire and materials. FIRM"),
     ("MEETING", "Community/stakeholder meeting (refreshments, transport, hall)", "meeting", 450,
      "One community or leadership meeting including participants' transport. FIRM"),
-    ("BOREHOLE", "Borehole, drilled and equipped", "unit", 16900,
-     "Drilled, cased, hand-pump equipped, with a water-committee handover. "
-     "INDICATIVE - depth and haulage distance drive it"),
+    ("SOLAR_PUMP", "Solar pump fitted to an existing borehole", "unit", 7500,
+     "Submersible solar pump, panels, riser and trough fitted to an existing borehole, with a "
+     "water-committee handover; no drilling. INDICATIVE - head and trough length drive it"),
     ("VET_CAMP", "Veterinary campaign, one dry season (drugs, vaccination, handling)",
      "campaign", 14000,
      "One dry-season campaign along the corridor, delivered by the veterinary "
@@ -297,9 +297,9 @@ def lines(F, P):
     A(("4 Field activities", "A6", "Corridor and conservancy meetings with herder leadership and communities",
        f"{P['meetings_per_team']} per team per year, Dec-Feb only; teams {s(teams)}", "MEETING",
        [teams[y] * P["meetings_per_team"] for y in Y], 1.0, "FP"))
-    A(("4 Field activities", "A6", "Water points on the corridor (boreholes)",
-       f"{s(P['boreholes'])}. The herders named the price: ground, water, veterinary and medical support - delivered, not promised",
-       "BOREHOLE", P["boreholes"], 0.0, None))
+    A(("4 Field activities", "A6", "Water points on the corridor (solar pumps on existing boreholes)",
+       f"{s(P['solar_pumps'])}. The herders named the price: ground, water, veterinary and medical support - delivered, not promised",
+       "SOLAR_PUMP", P["solar_pumps"], 0.0, None))
     A(("4 Field activities", "A6", "Veterinary campaign, dry season", f"{s(P['vet_campaigns'])}, through the veterinary partner",
        "VET_CAMP", P["vet_campaigns"], 0.0, None))
     fd = P["facilitator_days_per_conservancy"]
@@ -330,8 +330,8 @@ def lines(F, P):
        "MBIKE", n_teams, 1.0, "TEAM"))
     A(("6 Transport", "A4", "Motorbike running costs", f"Team-months in the field: {s(team_months)}", "MBIKE_RUN", team_months, 1.0, "TEAM"))
     A(("6 Transport", "A4", "Charter rotations (teams and equipment to the corridor)",
-       f"One per TANGO team per year ({tango_s}) plus one in the survey/borehole year", "CHARTER",
-       [tango[y] + (1 if P["boreholes"][y] or (y + 1 == sy) else 0) for y in Y], 1.0, "TEAM"))
+       f"One per TANGO team per year ({tango_s}) plus one in the survey/pump year", "CHARTER",
+       [tango[y] + (1 if P["solar_pumps"][y] or (y + 1 == sy) else 0) for y in Y], 1.0, "TEAM"))
     # ---- 7 Travel
     A(("7 Travel and accommodation", "A1", "Regional flights, Bangui - Juba (adviser and Chinko oversight)",
        f"{s(P['adviser_rotations'])} rotations. CAR <-> South Sudan only", "FLT_REG", P["adviser_rotations"], 0.67, "HQ"))
@@ -438,7 +438,7 @@ def compute(F, P):
         t["strand"][k] = {kk: [v[kk] for v in (stack(sd[y], sg[y]) for y in Y)] for kk in ("direct", "total")}
     t["car"] = t["strand"]["CAR"]
     t["ssd_total"] = [t["total"][y] - sum(t["strand"][k]["total"][y] for k in STRAND_KEYS) for y in Y]
-    t["oneoffs"] = [sum(r["tot"][y] for r in rows if any(w in r["item"].lower() for w in ("survey", "borehole", "water point"))) for y in Y]
+    t["oneoffs"] = [sum(r["tot"][y] for r in rows if any(w in r["item"].lower() for w in ("survey", "solar pump", "water point"))) for y in Y]
     return rows, t
 
 
@@ -458,56 +458,157 @@ def style_header(ws, row, ncol):
     ws.row_dimensions[row].height = 30
 
 
+def _pivot_cache(src_ws, header_row, ncols, rows):
+    """One pivot cache over the Allocation table, shared by every pivot sheet (refreshOnLoad: Excel recomputes it from
+    the live formulae when the file is opened). rows = the current values. Returns (cache, hdr, shared_items)."""
+    from openpyxl.pivot.cache import CacheDefinition, CacheSource, WorksheetSource, CacheField, SharedItems
+    from openpyxl.pivot.record import RecordList, Record
+    from openpyxl.pivot.fields import Text, Number, Index
+    hdr = [src_ws.cell(row=header_row, column=c).value for c in range(1, ncols + 1)]
+    last = header_row + len(rows)
+    ref = f"A{header_row}:{get_column_letter(ncols)}{last}"
+    cfields, shared = [], {}
+    for h in hdr:
+        vals = [r[h] for r in rows]
+        if vals and all(isinstance(v, (int, float)) and not isinstance(v, bool) for v in vals):
+            cfields.append(CacheField(name=h, numFmtId=0, sharedItems=SharedItems(
+                containsSemiMixedTypes=False, containsString=False, containsNumber=True,
+                containsInteger=all(float(v).is_integer() for v in vals), minValue=min(vals), maxValue=max(vals))))
+        else:
+            uniq = list(dict.fromkeys(str(v) for v in vals)); shared[h] = uniq
+            cfields.append(CacheField(name=h, sharedItems=SharedItems(count=len(uniq), _fields=[Text(v=u) for u in uniq])))
+    recs = [Record(_fields=[Index(v=shared[h].index(str(r[h]))) if h in shared else Number(v=float(r[h])) for h in hdr]) for r in rows]
+    cache = CacheDefinition(refreshOnLoad=True, saveData=True, recordCount=len(recs), createdVersion=6, refreshedVersion=6,
+                            minRefreshableVersion=3, cacheSource=CacheSource(type="worksheet", worksheetSource=WorksheetSource(ref=ref, sheet=src_ws.title)),
+                            cacheFields=cfields)
+    cache.records = RecordList(r=recs)
+    return cache, hdr, shared
+
+
+def _pivot(cache, hdr, shared, target_ws, anchor, row_field, data_fields, name, col_field=None):
+    """A pivot table on target_ws reading the shared cache (workbook cacheId 1)."""
+    from openpyxl.pivot.table import (TableDefinition, Location, PivotField, FieldItem, RowColField, RowColItem, DataField, PivotTableStyle)
+    from openpyxl.pivot.fields import Index
+    rf = hdr.index(row_field); n_rows = len(shared[row_field])
+    cf = hdr.index(col_field) if col_field else None; n_cols = len(shared[col_field]) if col_field else 0
+    pfields = []
+    for i, h in enumerate(hdr):
+        if i == rf:
+            pfields.append(PivotField(axis="axisRow", showAll=False, items=[FieldItem(x=k) for k in range(n_rows)] + [FieldItem(t="default")]))
+        elif cf is not None and i == cf:
+            pfields.append(PivotField(axis="axisCol", showAll=False, items=[FieldItem(x=k) for k in range(n_cols)] + [FieldItem(t="default")]))
+        elif h in data_fields:
+            pfields.append(PivotField(dataField=True, showAll=False))
+        else:
+            pfields.append(PivotField(showAll=False))
+    nd = len(data_fields)
+    width = (n_cols + 1) * nd if col_field else nd
+    col, row0 = anchor
+    c0 = column_index_from_string(col)
+    loc = Location(ref=f"{col}{row0}:{get_column_letter(c0 + width)}{row0 + 2 + n_rows}", firstHeaderRow=1, firstDataRow=2, firstDataCol=1)
+    if col_field:
+        col_fields = [RowColField(x=cf)] + ([RowColField(x=-2)] if nd > 1 else [])
+        col_items = [RowColItem(x=[Index(v=k)] + ([Index(v=d)] if nd > 1 else [])) for k in range(n_cols) for d in range(nd)]
+        col_items += [RowColItem(t="grand", x=[Index(v=0)] + ([Index(v=d)] if nd > 1 else [])) for d in range(nd)]
+    else:
+        col_fields = [RowColField(x=-2)] if nd > 1 else []
+        col_items = [RowColItem(x=[Index(v=k)]) for k in range(nd)]
+    pt = TableDefinition(name=name, cacheId=1, dataCaption="Values", updatedVersion=6, minRefreshableVersion=3, createdVersion=6,
+                         useAutoFormatting=True, itemPrintTitles=True, indent=0, outline=True, outlineData=True, location=loc,
+                         pivotFields=pfields, rowFields=[RowColField(x=rf)],
+                         rowItems=[RowColItem(x=[Index(v=k)]) for k in range(n_rows)] + [RowColItem(t="grand", x=[Index(v=0)])],
+                         colFields=col_fields, colItems=col_items,
+                         dataFields=[DataField(name=f"Sum of {h}", fld=hdr.index(h), numFmtId=3) for h in data_fields],
+                         pivotTableStyleInfo=PivotTableStyle(name="PivotStyleLight16", showRowHeaders=True, showColHeaders=True, showLastColumn=True))
+    pt.cache = cache
+    target_ws._pivots.append(pt)
+    return pt
+
+
+def _locations(F, P):
+    """Every place the plan puts money, from facts: team sites (ECHO/TANGO/FP by strand) plus Chinko HQ.
+    weights[y] = months active in year y (an FP is 12, HQ is 1); the Allocation sheet splits each budget line's
+    delivery unit across its locations in proportion to these weights, so a line for 'all teams' becomes a cost per site."""
+    N = len(P["year_labels"]); me, mt = P["months_paid"]["echo"], P["months_paid"]["tango"]
+    out = []
+    for tid, t in sorted(F["deploy"]["teams"].items()):
+        kind, strand = t["kind"], t.get("strand", "SSD")
+        if kind == "FP": drv, w = "FP", [12 if t["year"] <= y + 1 else 0 for y in range(N)]
+        elif strand != "SSD": drv, w = strand, [me[y] if t["year"] <= y + 1 else 0 for y in range(N)]
+        else: drv, w = "TEAM", [(me if kind == "ECHO" else mt)[y] if t["year"] <= y + 1 else 0 for y in range(N)]
+        out.append(dict(id=tid, place=t["place"], kind=kind, drv=drv, country=t.get("country") or {"CAR": "CAF", "COD": "COD", "SDN": "SDN"}.get(strand, "SSD"), year=t["year"], w=w))
+    out.append(dict(id="HQ", place="Chinko HQ", kind="HQ", drv="HQ", country="CAF", year=1, w=[1] * N))
+    return out
+
+
 def build_xlsx(path, F, P):
+    from openpyxl.worksheet.datavalidation import DataValidation
     rows, t = compute(F, P); N = t["N"]; a = t["a"]
+    EDIT = PatternFill("solid", fgColor="FFF2CC")
     wb = openpyxl.Workbook()
-    # Rates
+    # ---- Rates (editable: unit cost)
     ws = wb.active; ws.title = "Rates"
     ws["A1"] = "UNIT COST CATALOGUE - every rate below is used by formula in the Budget sheet"; ws["A1"].font = Font(bold=True, size=12)
-    ws["A2"] = "Planning assumptions for this landscape, FIRM or INDICATIVE. None is a quotation."; ws["A2"].font = Font(italic=True, size=9)
+    ws["A2"] = "Planning assumptions for this landscape, FIRM or INDICATIVE. None is a quotation. Yellow cells are the ones to edit."; ws["A2"].font = Font(italic=True, size=9)
     ws.append([]); ws.append(["Code", "Item", "Unit", "Unit cost USD", "What the rate assumes / how firm it is"]); style_header(ws, 4, 5)
     for code, label, unit, usd, src in RATES:
         ws.append([code, label, unit, usd, src]); r = ws.max_row
-        ws.cell(row=r, column=4).number_format = '#,##0.000' if usd < 1 else MONEY
+        ws.cell(row=r, column=4).number_format = '#,##0.000' if usd < 1 else MONEY; ws.cell(row=r, column=4).fill = EDIT
         for i in (2, 5): ws.cell(row=r, column=i).alignment = Alignment(wrap_text=True, vertical="top")
     rate_first, rate_last = 5, ws.max_row
     for col, w in zip("ABCDE", (14, 46, 16, 14, 78)): ws.column_dimensions[col].width = w
     ws.freeze_panes = "A5"
-    # Assumptions
+    # ---- Assumptions (editable: the four loading rates)
     wa = wb.create_sheet("Assumptions"); wa["A1"] = "RATES APPLIED TO THE WHOLE BUDGET"; wa["A1"].font = Font(bold=True, size=12)
     wa.append([]); wa.append(["Code", "What it covers", "Rate", "Basis"]); style_header(wa, 3, 4); keycell = {}
     for code, label, val, src in ASSUMPTIONS:
         wa.append([code, label, val, src]); r = wa.max_row
-        wa.cell(row=r, column=3).number_format = '0.0%'; wa.cell(row=r, column=4).alignment = Alignment(wrap_text=True, vertical="top")
+        wa.cell(row=r, column=3).number_format = '0.0%'; wa.cell(row=r, column=3).fill = EDIT; wa.cell(row=r, column=4).alignment = Alignment(wrap_text=True, vertical="top")
         keycell[code] = f"Assumptions!$C${r}"
     for col, w in zip("ABCD", (16, 52, 10, 86)): wa.column_dimensions[col].width = w
-    # Budget: columns A..F fixed, then per year (Qty, Total), then Total, h1 share, h1 amount, delivery unit
+    # ---- Budget: THE line table. Editable: rate code (dropdown), quantities, first-6-month share, delivery unit (dropdown).
     wb_ = wb.create_sheet("Budget")
     wb_["A1"] = f"EASY / AP-RCA WESTERN SOUTH SUDAN - {N}-YEAR BUDGET ({P['year_labels'][0].split(' - ')[0]} - {P['year_labels'][-1].split(' - ')[-1]})"
     wb_["A1"].font = Font(bold=True, size=13)
-    wb_["A2"] = ("Quantities are derived from the deployment (teams per year) and docs/plan/plan.yaml; unit costs are "
-                 "formulae into the Rates sheet - change a rate there, not here."); wb_["A2"].font = Font(italic=True, size=9)
+    wb_["A2"] = ("THE SHEET TO EDIT (with Rates and Assumptions). Yellow cells: pick a rate code from the dropdown, type a quantity, "
+                 "pick a delivery unit. Unit cost, totals, the Allocation sheet and every pivot follow by formula; pivots refresh on opening "
+                 "(or Data > Refresh All). Quantities are derived from the deployment (teams per year) and docs/plan/plan.yaml.")
+    wb_["A2"].font = Font(italic=True, size=9)
     hdr = ["Category", "Plan action", "Line item", "Basis / quantity logic", "Rate code", "Unit", "Unit cost USD"]
     for y in range(N): hdr += [f"Qty Y{y+1}", f"Total Y{y+1}"]
-    hdr += [f"Total {N} yr", "Share in first 6 months", "Of which first 6 months", "Delivery unit"]
+    hdr += [f"Total {N} yr", "Share in first 6 months", "Of which first 6 months", "Delivery unit", "helper: goods flag (freight base)"]
     wb_.append([]); wb_.append(hdr); style_header(wb_, 4, len(hdr))
     qcol = [get_column_letter(8 + 2 * y) for y in range(N)]; tcol = [get_column_letter(9 + 2 * y) for y in range(N)]
     TOT = get_column_letter(8 + 2 * N); H1S = get_column_letter(9 + 2 * N); H1 = get_column_letter(10 + 2 * N); DRV = get_column_letter(11 + 2 * N)
+    GOODS = get_column_letter(12 + 2 * N)          # helper column, last and hidden: the user never edits it
+    wb_.column_dimensions[GOODS].hidden = True
     first = 5
+    goods_cats = ",".join(f'"{g}"' for g in GOODS_CATS); goods_codes = ",".join(f'"{g}"' for g in GOODS_CODES)
     for cat, act, item, basis, code, qty, h1, drv in lines(F, P):
         row = [cat, ACTIONS[act], item, basis, code, "", ""]
         for y in range(N): row += [qty[y], ""]
-        row += ["", h1, "", drv or ""]
+        row += ["", h1, "", drv or "NONE", ""]
         wb_.append(row); r = wb_.max_row
+        wb_.cell(row=r, column=5).fill = EDIT
         wb_.cell(row=r, column=6).value = f'=VLOOKUP($E{r},Rates!$A${rate_first}:$E${rate_last},3,FALSE)'
-        wb_.cell(row=r, column=7).value = f'=VLOOKUP($E{r},Rates!$A${rate_first}:$D${rate_last},4,FALSE)'
+        wb_.cell(row=r, column=7).value = f'=VLOOKUP($E{r},Rates!$A${rate_first}:$D${rate_last},4,FALSE)'; wb_.cell(row=r, column=7).number_format = MONEY
+        # goods flag as the sheet's own formula: equipment/transport categories, or an imported-goods code inside a strand category
+        strand_cats = ",".join(f'"{c}"' for c in STRAND_CAT.values())
+        wb_[f"{GOODS}{r}"] = (f'=IF(OR(ISNUMBER(MATCH($A{r},{{{goods_cats}}},0)),AND(ISNUMBER(MATCH($A{r},{{{strand_cats}}},0)),'
+                              f'ISNUMBER(MATCH($E{r},{{{goods_codes}}},0)))),1,0)')
         for y in range(N):
+            wb_[f"{qcol[y]}{r}"].fill = EDIT
             wb_[f"{tcol[y]}{r}"] = f"=$G{r}*{qcol[y]}{r}"; wb_[f"{tcol[y]}{r}"].number_format = MONEY
         wb_[f"{TOT}{r}"] = "=" + "+".join(f"{c}{r}" for c in tcol); wb_[f"{TOT}{r}"].number_format = MONEY
-        wb_[f"{H1S}{r}"].number_format = '0%'
+        wb_[f"{H1S}{r}"].number_format = '0%'; wb_[f"{H1S}{r}"].fill = EDIT
         wb_[f"{H1}{r}"] = f"={tcol[0]}{r}*{H1S}{r}"; wb_[f"{H1}{r}"].number_format = MONEY
+        wb_[f"{DRV}{r}"].fill = EDIT
         for c in (3, 4): wb_.cell(row=r, column=c).alignment = Alignment(wrap_text=True, vertical="top")
     last = wb_.max_row
+    dv_rate = DataValidation(type="list", formula1=f"=Rates!$A${rate_first}:$A${rate_last}", allow_blank=False); wb_.add_data_validation(dv_rate)
+    dv_rate.add(f"E{first}:E{last}")
+    dv_drv = DataValidation(type="list", formula1='"TEAM,FP,HQ,' + ",".join(STRAND_KEYS) + ',NONE"', allow_blank=False); wb_.add_data_validation(dv_drv)
+    dv_drv.add(f"{DRV}{first}:{DRV}{last}")
     cols = tcol + [TOT, H1]
     def totrow(label, formula_for):
         wb_.append([label]); r = wb_.max_row; wb_.cell(row=r, column=1).font = Font(bold=True)
@@ -516,9 +617,7 @@ def build_xlsx(path, F, P):
         return r
     wb_.append([])
     r_direct = totrow("DIRECT COSTS", lambda c, r: f"=SUM({c}{first}:{c}{last})")
-    r_goods = totrow("of which equipment and transport (freight base)",
-                     lambda c, r: "=" + "+".join(f'SUMIF($A${first}:$A${last},"{g}",{c}${first}:{c}${last})' for g in GOODS_CATS)
-                     + "+" + "+".join(f'SUMIFS({c}${first}:{c}${last},$A${first}:$A${last},"12 *",$E${first}:$E${last},"{k}")' for k in GOODS_CODES))
+    r_goods = totrow("of which equipment and transport (freight base)", lambda c, r: f"=SUMPRODUCT(${GOODS}${first}:${GOODS}${last},{c}${first}:{c}${last})")
     r_freight = totrow("Freight, customs, clearing", lambda c, r: f"={c}{r_goods}*{keycell['FREIGHT_PCT']}")
     r_bank = totrow("Bank charges and FX", lambda c, r: f"=({c}{r_direct}+{c}{r_freight})*{keycell['BANK_PCT']}")
     r_sub = totrow("Subtotal", lambda c, r: f"={c}{r_direct}+{c}{r_freight}+{c}{r_bank}")
@@ -527,59 +626,91 @@ def build_xlsx(path, F, P):
     r_tot = totrow("TOTAL REQUESTED, USD", lambda c, r: f"={c}{r_sub}+{c}{r_supp}+{c}{r_cont}")
     for c in cols: wb_[f"{c}{r_tot}"].fill = T_FILL
     for col, w in zip("ABCDEFG", (26, 34, 44, 60, 13, 13, 12)): wb_.column_dimensions[col].width = w
+    for c in qcol + tcol + [TOT, H1S, H1]: wb_.column_dimensions[c].width = 12
+    wb_.column_dimensions[DRV].width = 13
+    for r in range(first, last + 1): wb_.row_dimensions[r].height = 30
     wb_.freeze_panes = "C5"
-    # Summary
-    ws2 = wb.create_sheet("Summary"); ws2["A1"] = "SUMMARY BY COST CATEGORY (formulae over the Budget sheet)"; ws2["A1"].font = Font(bold=True, size=12)
-    ws2.append([]); ws2.append(["Category"] + [f"Y{y+1}" for y in range(N)] + [f"Total {N} yr", "% of direct"]); style_header(ws2, 3, N + 3)
-    for cat in CATS:
-        ws2.append([cat]); r = ws2.max_row
+    # ---- Locations: where the plan puts people (from facts), with months active per year as the allocation weight
+    locs = _locations(F, P)
+    wl = wb.create_sheet("Locations"); wl["A1"] = "LOCATIONS - every site the plan staffs, from the deployment; weights split each budget line across its delivery unit's sites"
+    wl["A1"].font = Font(bold=True, size=12)
+    wl["A2"] = "Weight = months active in the year (an FP 12, Chinko HQ 1). Edit a weight to move money between sites; a site with 0 in a year gets nothing that year."; wl["A2"].font = Font(italic=True, size=9)
+    wl.append([]); wl.append(["Team", "Place", "Kind", "Delivery unit", "Country", "Starts year"] + [f"Weight Y{y+1}" for y in range(N)]); style_header(wl, 4, 6 + N)
+    loc_first = 5
+    for L_ in locs:
+        wl.append([L_["id"], L_["place"], L_["kind"], L_["drv"], L_["country"], L_["year"]] + L_["w"]); r = wl.max_row
+        for y in range(N): wl.cell(row=r, column=7 + y).fill = EDIT
+    loc_last = wl.max_row
+    wl.append([]); wl.append(["Weight sums by delivery unit"]); wl.cell(row=wl.max_row, column=1).font = Font(bold=True)
+    wsum_row = {}
+    for key in ("TEAM", "FP", "HQ") + STRAND_KEYS:
+        wl.append([key]); r = wl.max_row; wsum_row[key] = r
         for y in range(N):
-            ws2.cell(row=r, column=2 + y).value = f'=SUMIF(Budget!$A${first}:$A${last},$A{r},Budget!${tcol[y]}${first}:${tcol[y]}${last})'
-            ws2.cell(row=r, column=2 + y).number_format = MONEY
-        ws2.cell(row=r, column=N + 2).value = f"=SUM(B{r}:{get_column_letter(N+1)}{r})"; ws2.cell(row=r, column=N + 2).number_format = MONEY
-    cf, cl = 4, ws2.max_row
-    ws2.append(["DIRECT TOTAL"]); rt = ws2.max_row
-    for i in range(2, N + 3):
-        L_ = get_column_letter(i); ws2.cell(row=rt, column=i).value = f"=SUM({L_}{cf}:{L_}{cl})"
-        ws2.cell(row=rt, column=i).number_format = MONEY; ws2.cell(row=rt, column=i).font = Font(bold=True)
-    for r in range(cf, cl + 1):
-        ws2.cell(row=r, column=N + 3).value = f"={get_column_letter(N+2)}{r}/{get_column_letter(N+2)}${rt}"; ws2.cell(row=r, column=N + 3).number_format = '0.0%'
-    ws2.append([])
-    for label, src in (("Freight, customs, clearing", r_freight), ("Bank charges and FX", r_bank),
-                       ("Chinko HQ + AP South Sudan support", r_supp), ("Contingency", r_cont), ("TOTAL REQUESTED, USD", r_tot)):
-        ws2.append([label]); r = ws2.max_row
-        for i, c in enumerate(tcol + [TOT], start=2):
-            ws2.cell(row=r, column=i).value = f"=Budget!${c}${src}"; ws2.cell(row=r, column=i).number_format = MONEY
-            if src == r_tot: ws2.cell(row=r, column=i).font = Font(bold=True); ws2.cell(row=r, column=i).fill = T_FILL
-    ws2.column_dimensions["A"].width = 40
-    # By action
-    ws3 = wb.create_sheet("By action"); ws3["A1"] = "COST BY PLAN ACTION"; ws3["A1"].font = Font(bold=True, size=12)
-    ws3.append([]); ws3.append(["Plan action"] + [f"Y{y+1}" for y in range(N)] + [f"Total {N} yr"]); style_header(ws3, 3, N + 2)
-    for key in sorted(ACTIONS, key=lambda k: int(k[1:])):
-        ws3.append([ACTIONS[key]]); r = ws3.max_row
+            wc = get_column_letter(7 + y)
+            wl.cell(row=r, column=7 + y).value = f'=SUMIF($D${loc_first}:$D${loc_last},$A{r},{wc}${loc_first}:{wc}${loc_last})'
+    for col, w in zip("ABCDEF", (8, 24, 8, 14, 10, 12)): wl.column_dimensions[col].width = w
+    for y in range(N): wl.column_dimensions[get_column_letter(7 + y)].width = 11
+    # ---- Allocation: the long table every pivot reads. One row per budget line x location x year; amounts are live formulae.
+    #      Loaded = direct x (1 + freight if goods) x (1 + bank) x (1 + support) x (1 + contingency): the loading stack is linear,
+    #      so these rows sum exactly to the Budget sheet's TOTAL REQUESTED and to each strand's total in the text.
+    wal = wb.create_sheet("Allocation"); wal["A1"] = "ALLOCATION - each budget line split over its delivery unit's locations and years (formulae; the source of every pivot). Do not edit."
+    wal["A1"].font = Font(bold=True, size=12)
+    ahdr = ["Category", "Plan action", "Line item", "Delivery unit", "Strand", "Team", "Location", "Country", "Year", "Direct USD", "Loaded USD"]
+    wal.append([]); wal.append(ahdr); style_header(wal, 3, len(ahdr)); a_hdr_row = 3
+    strand_name = {"CAR": "CAR conservancies (separate budget)", "COD": "DRC conservancies (separate budget)", "SDN": "Sudan conservancies (separate budget)"}
+    line_rows = list(range(first, last + 1)); line_vals = rows
+    def load_formula(r_b):
+        return (f"(1+Budget!${GOODS}${r_b}*{keycell['FREIGHT_PCT']})*(1+{keycell['BANK_PCT']})"
+                f"*(1+{keycell['SUPPORT_PCT']})*(1+{keycell['CONTING_PCT']})")
+    arows = []
+    for r_b, rv in zip(line_rows, line_vals):
+        drv = rv["drv"] or "NONE"
+        targets = [(i + loc_first, L_) for i, L_ in enumerate(locs) if L_["drv"] == drv] or [(None, dict(id="-", place="Unallocated (Juba/Wau backbone)", country="SSD"))]
+        strand = strand_name.get(drv, "South Sudan request")
         for y in range(N):
-            ws3.cell(row=r, column=2 + y).value = f'=SUMIF(Budget!$B${first}:$B${last},$A{r},Budget!${tcol[y]}${first}:${tcol[y]}${last})'
-            ws3.cell(row=r, column=2 + y).number_format = MONEY
-        ws3.cell(row=r, column=N + 2).value = f"=SUM(B{r}:{get_column_letter(N+1)}{r})"; ws3.cell(row=r, column=N + 2).number_format = MONEY
-    ws3.column_dimensions["A"].width = 44
-    # Loaded cost per delivery unit
-    ws5 = wb.create_sheet("Loaded cost"); ws5["A1"] = "LOADED COST OF EACH DELIVERY UNIT (direct x loading factor)"; ws5["A1"].font = Font(bold=True, size=12)
-    ws5.append([]); ws5.append(["Loading factor (total requested / direct, year 1)", "", f"=Budget!${tcol[0]}${r_tot}/Budget!${tcol[0]}${r_direct}"])
-    lf = f"$C${ws5.max_row}"; ws5.cell(row=ws5.max_row, column=3).number_format = '0.000'
-    ws5.append([]); ws5.append(["Delivery unit", "Units per year"] + [f"Loaded Y{y+1}" for y in range(N)] + [f"Loaded per unit Y{y+1}" for y in range(N)])
-    style_header(ws5, ws5.max_row, 2 + 2 * N)
-    by = F["deploy"]["by_year"]
-    for key, label, counts in (("TEAM", "ECHO/TANGO scout teams (South Sudan)", [by[y]["echo"] + by[y]["tango"] for y in range(N)]),
-                               ("FP", "Focal points and the Wau/Juba backbone", [by[y]["fp"] for y in range(N)]),
-                               ("HQ", "Chinko HQ technical oversight", [1] * N),
-                               *[(k, f"{ {'CAR': 'CAR', 'COD': 'DRC', 'SDN': 'Sudan'}[k] } conservancy teams (separate budget)", [by[y].get(f"echo_{k.lower()}", 0) for y in range(N)]) for k in STRAND_KEYS]):
-        ws5.append([label, "/".join(map(str, counts))]); r = ws5.max_row
-        for y in range(N):
-            c = ws5.cell(row=r, column=3 + y)
-            c.value = f'=SUMIF(Budget!${DRV}${first}:${DRV}${last},"{key}",Budget!${tcol[y]}${first}:${tcol[y]}${last})*{lf}'; c.number_format = MONEY
-            u = ws5.cell(row=r, column=3 + N + y); u.value = f"=IF({counts[y]}=0,\"\",{get_column_letter(3+y)}{r}/{counts[y]})"; u.number_format = MONEY
-    ws5.column_dimensions["A"].width = 40
-    wb.move_sheet("Summary", offset=-4)
+            for r_l, L_ in targets:
+                wal.append([f"=Budget!$A${r_b}", f"=Budget!$B${r_b}", f"=Budget!$C${r_b}", f"=Budget!${DRV}${r_b}", strand,
+                            L_["id"], L_["place"], L_["country"], f"Y{y+1}", "", ""]); r = wal.max_row
+                if r_l is None:
+                    share = "1"
+                else:
+                    wc = get_column_letter(7 + y)
+                    share = f"IF(Locations!${wc}${wsum_row[drv]}=0,0,Locations!${wc}${r_l}/Locations!${wc}${wsum_row[drv]})"
+                wal.cell(row=r, column=10).value = f"=Budget!${tcol[y]}${r_b}*{share}"; wal.cell(row=r, column=10).number_format = MONEY
+                wal.cell(row=r, column=11).value = f"=J{r}*{load_formula(r_b)}"; wal.cell(row=r, column=11).number_format = MONEY
+                # cache values for the pivot definitions (Excel refreshes them from the formulae on open)
+                w_ = 1.0 if r_l is None else ((L_["w"][y] / sum(x["w"][y] for x in locs if x["drv"] == drv)) if sum(x["w"][y] for x in locs if x["drv"] == drv) else 0.0)
+                direct = rv["tot"][y] * w_
+                load = (1 + (a["FREIGHT_PCT"] if is_goods(rv) else 0)) * (1 + a["BANK_PCT"]) * (1 + a["SUPPORT_PCT"]) * (1 + a["CONTING_PCT"])
+                arows.append(dict(zip(ahdr, [rv["cat"], ACTIONS[rv["act"]], rv["item"], drv, strand, L_["id"], L_["place"], L_["country"], f"Y{y+1}", direct, direct * load])))
+    for col, w in zip("ABCDEFGHIJK", (26, 34, 44, 12, 34, 8, 26, 8, 6, 14, 14)): wal.column_dimensions[col].width = w
+    wal.sheet_properties.tabColor = "BBBBBB"
+    wal.freeze_panes = "A4"
+    # ---- Pivots (real pivot tables over Allocation; refresh on load)
+    cache, phdr, pshared = _pivot_cache(wal, a_hdr_row, len(ahdr), arows)
+    def pivot_sheet(title, caption, row_field, name, data_fields=("Direct USD", "Loaded USD"), col_field="Year"):
+        p = wb.create_sheet(title); p["A1"] = caption; p["A1"].font = Font(bold=True, size=12)
+        p["A2"] = "Pivot table over the Allocation sheet - refreshes when the file is opened (Excel: Data > Refresh All if not)."; p["A2"].font = Font(italic=True, size=9)
+        _pivot(cache, phdr, pshared, p, ("A", 4), row_field, list(data_fields), name, col_field=col_field)
+        p.column_dimensions["A"].width = 44
+        for c in "BCDEFGHIJ": p.column_dimensions[c].width = 16
+        return p
+    pivot_sheet("Summary", "SUMMARY BY COST CATEGORY, direct and loaded, by year", "Category", "PivotCategory")
+    pivot_sheet("By action", "COST BY PLAN ACTION", "Plan action", "PivotAction")
+    pivot_sheet("By location", "COST PER LOCATION (as per the plan's team sites; lines for 'all teams' split by months active)", "Location", "PivotLocation")
+    pivot_sheet("By strand", "COST BY BUDGET STRAND (South Sudan request vs the separate CAR / DRC / Sudan conservancy budgets)", "Strand", "PivotStrand")
+    pivot_sheet("By delivery unit", "LOADED COST OF EACH DELIVERY UNIT (teams, focal points and backbone, Chinko HQ, strands)", "Delivery unit", "PivotUnit")
+    # ---- Phasing (plain formulae: the first six months are a slice of year one)
+    ws7 = wb.create_sheet("Phasing"); ws7["A1"] = "PHASING ON THE PLAN'S OWN CLOCK (first six months are a slice of year one, not an addition)"
+    ws7["A1"].font = Font(bold=True, size=12); ws7.append([]); ws7.append(["Period", "Direct", "Loaded"]); style_header(ws7, 3, 3)
+    ws7.append([f"First 6 months ({P['first_6_months']})", f"=Budget!${H1}${r_direct}", f"=Budget!${H1}${r_tot}"])
+    for y in range(N):
+        ws7.append([f"Year {y+1} ({P['year_labels'][y]})", f"=Budget!${tcol[y]}${r_direct}", f"=Budget!${tcol[y]}${r_tot}"])
+    ws7.append(["Total", f"=Budget!${TOT}${r_direct}", f"=Budget!${TOT}${r_tot}"])
+    for rr in range(4, ws7.max_row + 1):
+        for c in (2, 3): ws7.cell(row=rr, column=c).number_format = MONEY
+    ws7.column_dimensions["A"].width = 40; ws7.column_dimensions["B"].width = 14; ws7.column_dimensions["C"].width = 14
+    wb.move_sheet("Budget", offset=-2)
     wb.save(path); return path
 
 
@@ -668,7 +799,7 @@ def build_txt(path, xlsx_name, F, P):
     row("TOTAL REQUESTED, USD", t["total"])
     Pp("")
     peak = max(Y, key=lambda y: t["total"][y])
-    Pp(wrap(f"Year {peak+1} is the peak year: it carries the one-offs (aerial survey, first borehole: USD "
+    Pp(wrap(f"Year {peak+1} is the peak year: it carries the one-offs (aerial survey, first solar pump: USD "
             f"{m(t['oneoffs'][peak])} direct) and the full-strength deployment of {by[peak]['staff']} field staff."))
     Pp(""); Pp("")
     Pp("PHASING ON THE PLAN'S OWN CLOCK"); Pp("-" * W)
