@@ -1,91 +1,91 @@
-SOLVE — one integer programme over 2130 fine units / 5566 edges (Optimization terminated successfully. (HiGHS Status 7: Optimal), 5.5 s); boundary 11,910 km at mean legibility 0.54 (1 = every metre on a river/ridge/district line).
+SOLVE — one integer programme over 2130 fine units / 5566 edges (Optimization terminated successfully. (HiGHS Status 7: Optimal), 7.0 s); boundary 19,962 km at mean legibility 0.56 (1 = every metre on a river/ridge/district line).
 weights {"lam_threat": 1.0, "lam_people": 3.0, "lam_claim": 1.0, "lam_move": 0.5, "lam_boundary": 3.0, "wild": 0.4, "herd_vs_core": 0.0, "lam_imagery": 1.0, "lam_corr_people": 0.05, "corridor_edge_x": 2.0}
 imagery term: measured skill ρ̄ 0.12 → effective weight 0.12 (lam_imagery × skill; 0 = unmeasured)
 gazetted WDPA parks/reserves fixed as core: 5,020,800 ha (67 designated units fail the core rule and are left free)
 cap on NEW core 6,000,000 ha; corridors = 15/15 bundle bands taken WHOLE (each a bootstrapped least-cost axis, 12 draws, buffered from 8 km half-width until it holds ≥ 35% of its bundle's utilisation, ≤ 16 km; may run ≤ 5 km inside a protected area's rim, never deeper); wilderness only ≤ 15 km from a core unit of this solve, or where the authors drew it.
 
-core         108,148 km2        911 people  84 zones
-wilderness   128,620 km2        932 people  36 zones
-community    183,608 km2  2,615,745 people  32 zones
-corridor      61,220 km2     15,069 people  21 zones
+core         108,528 km2        901 people  62 zones
+wilderness   117,108 km2        858 people  28 zones
+community    194,572 km2  2,614,743 people  26 zones
+corridor      61,388 km2     16,155 people  22 zones
 
 LEDGER — who pays for this plan (the numbers a commissioner is asked to sign):
-  people whose land becomes core 911; wilderness 932; corridor 15,069
-  1930s-claimed cells (2 km) inside core: 1,326   boundary through open bush to walk and mark: 5,521 km
-  herd-months (front × month) routed outside the corridor class: 6,437; of these, herd-months now crossing CORE that the plan must redirect (water points, vaccination posts, enforcement): 1,069
-    bundle  1 (738 fronts; axis 79 km, half-width 21.2 km, band holds 0.08 of its UD; 0 km along a PA rim): UD in corridor 0.10 (of all; 0.07 in its candidate band), in core 0.26, in community 0.24; 443 herd-months outside
-    bundle  2 (1315 fronts; axis 125 km, half-width 21.0 km, band holds 0.11 of its UD; 46 km along a PA rim): UD in corridor 0.13 (of all; 0.09 in its candidate band), in core 0.32, in community 0.30; 640 herd-months outside
-    bundle  3 (838 fronts; axis 228 km, half-width 21.0 km, band holds 0.17 of its UD; 36 km along a PA rim): UD in corridor 0.13 (of all; 0.04 in its candidate band), in core 0.12, in community 0.68; 482 herd-months outside
-    bundle  4 (1198 fronts; axis 98 km, half-width 20.5 km, band holds 0.14 of its UD; 0 km along a PA rim): UD in corridor 0.27 (of all; 0.13 in its candidate band), in core 0.03, in community 0.50; 557 herd-months outside
-    bundle  5 (665 fronts; axis 228 km, half-width 20.7 km, band holds 0.2 of its UD; 0 km along a PA rim): UD in corridor 0.25 (of all; 0.19 in its candidate band), in core 0.06, in community 0.56; 350 herd-months outside
+  people whose land becomes core 901; wilderness 858; corridor 16,155
+  1930s-claimed cells (2 km) inside core: 1,287   boundary through open bush to walk and mark: 8,853 km
+  herd-months (front × month) routed outside the corridor class: 6,435; of these, herd-months now crossing CORE that the plan must redirect (water points, vaccination posts, enforcement): 1,012
+    bundle  1 (738 fronts; axis 79 km, half-width 21.2 km, band holds 0.08 of its UD; 0 km along a PA rim): UD in corridor 0.10 (of all; 0.07 in its candidate band), in core 0.19, in community 0.25; 443 herd-months outside
+    bundle  2 (1315 fronts; axis 125 km, half-width 21.0 km, band holds 0.11 of its UD; 46 km along a PA rim): UD in corridor 0.13 (of all; 0.09 in its candidate band), in core 0.30, in community 0.36; 640 herd-months outside
+    bundle  3 (838 fronts; axis 228 km, half-width 21.0 km, band holds 0.17 of its UD; 36 km along a PA rim): UD in corridor 0.13 (of all; 0.04 in its candidate band), in core 0.12, in community 0.69; 482 herd-months outside
+    bundle  4 (1198 fronts; axis 98 km, half-width 20.5 km, band holds 0.14 of its UD; 0 km along a PA rim): UD in corridor 0.27 (of all; 0.13 in its candidate band), in core 0.02, in community 0.50; 556 herd-months outside
+    bundle  5 (665 fronts; axis 228 km, half-width 20.7 km, band holds 0.2 of its UD; 0 km along a PA rim): UD in corridor 0.25 (of all; 0.19 in its candidate band), in core 0.04, in community 0.58; 350 herd-months outside
     bundle  6 (605 fronts; axis 247 km, half-width 21.4 km, band holds 0.21 of its UD; 29 km along a PA rim): UD in corridor 0.13 (of all; 0.04 in its candidate band), in core 0.09, in community 0.70; 325 herd-months outside
-    bundle  7 (1202 fronts; axis 86 km, half-width 20.3 km, band holds 0.12 of its UD; 0 km along a PA rim): UD in corridor 0.16 (of all; 0.09 in its candidate band), in core 0.06, in community 0.73; 633 herd-months outside
-    bundle  8 (460 fronts; axis 437 km, half-width 21.1 km, band holds 0.16 of its UD; 5 km along a PA rim): UD in corridor 0.26 (of all; 0.15 in its candidate band), in core 0.11, in community 0.29; 196 herd-months outside
-    bundle  9 (710 fronts; axis 137 km, half-width 20.9 km, band holds 0.13 of its UD; 5 km along a PA rim): UD in corridor 0.22 (of all; 0.06 in its candidate band), in core 0.08, in community 0.41; 349 herd-months outside
-    bundle 10 (705 fronts; axis 247 km, half-width 21.0 km, band holds 0.15 of its UD; 0 km along a PA rim): UD in corridor 0.24 (of all; 0.11 in its candidate band), in core 0.09, in community 0.43; 350 herd-months outside
-    bundle 11 (811 fronts; axis 115 km, half-width 20.6 km, band holds 0.08 of its UD; 2 km along a PA rim): UD in corridor 0.27 (of all; 0.07 in its candidate band), in core 0.15, in community 0.21; 343 herd-months outside
-    bundle 12 (627 fronts; isopleth 0 km, half-width None km, band holds 0.28 of its UD; 0 km along a PA rim): UD in corridor 0.17 (of all; 0.15 in its candidate band), in core 0.39, in community 0.25; 367 herd-months outside
-    bundle 13 (1073 fronts; axis 151 km, half-width 20.9 km, band holds 0.1 of its UD; 70 km along a PA rim): UD in corridor 0.17 (of all; 0.06 in its candidate band), in core 0.18, in community 0.38; 537 herd-months outside
-    bundle 14 (795 fronts; axis 230 km, half-width 21.1 km, band holds 0.2 of its UD; 0 km along a PA rim): UD in corridor 0.23 (of all; 0.18 in its candidate band), in core 0.05, in community 0.60; 415 herd-months outside
-    bundle 15 (1144 fronts; axis 163 km, half-width 21.2 km, band holds 0.16 of its UD; 12 km along a PA rim): UD in corridor 0.29 (of all; 0.14 in its candidate band), in core 0.04, in community 0.46; 450 herd-months outside
+    bundle  7 (1202 fronts; axis 86 km, half-width 20.3 km, band holds 0.12 of its UD; 0 km along a PA rim): UD in corridor 0.16 (of all; 0.09 in its candidate band), in core 0.03, in community 0.78; 633 herd-months outside
+    bundle  8 (460 fronts; axis 437 km, half-width 21.1 km, band holds 0.16 of its UD; 5 km along a PA rim): UD in corridor 0.26 (of all; 0.15 in its candidate band), in core 0.11, in community 0.32; 196 herd-months outside
+    bundle  9 (710 fronts; axis 137 km, half-width 20.9 km, band holds 0.13 of its UD; 5 km along a PA rim): UD in corridor 0.22 (of all; 0.06 in its candidate band), in core 0.08, in community 0.42; 349 herd-months outside
+    bundle 10 (705 fronts; axis 247 km, half-width 21.0 km, band holds 0.15 of its UD; 0 km along a PA rim): UD in corridor 0.24 (of all; 0.11 in its candidate band), in core 0.08, in community 0.43; 350 herd-months outside
+    bundle 11 (811 fronts; axis 115 km, half-width 20.6 km, band holds 0.08 of its UD; 2 km along a PA rim): UD in corridor 0.27 (of all; 0.07 in its candidate band), in core 0.14, in community 0.23; 343 herd-months outside
+    bundle 12 (627 fronts; isopleth 0 km, half-width None km, band holds 0.28 of its UD; 0 km along a PA rim): UD in corridor 0.17 (of all; 0.15 in its candidate band), in core 0.41, in community 0.26; 367 herd-months outside
+    bundle 13 (1073 fronts; axis 151 km, half-width 20.9 km, band holds 0.1 of its UD; 70 km along a PA rim): UD in corridor 0.17 (of all; 0.06 in its candidate band), in core 0.21, in community 0.44; 537 herd-months outside
+    bundle 14 (795 fronts; axis 230 km, half-width 21.1 km, band holds 0.2 of its UD; 0 km along a PA rim): UD in corridor 0.23 (of all; 0.18 in its candidate band), in core 0.04, in community 0.63; 415 herd-months outside
+    bundle 15 (1144 fronts; axis 163 km, half-width 21.2 km, band holds 0.16 of its UD; 12 km along a PA rim): UD in corridor 0.29 (of all; 0.14 in its candidate band), in core 0.04, in community 0.48; 449 herd-months outside
 
-zone 2    community   8,152,400 ha  957,763 ppl  threat P10 0.04  1930s-claim 0.38  herd UD share 0.24  emptiness 0.14  habitat(img) 0.34  (349 units)
-zone 12   core        5,766,400 ha      177 ppl  threat P10 0.00  1930s-claim 0.03  herd UD share 0.04  emptiness 0.99  habitat(img) 0.27  (255 units)
-zone 1    community   3,716,000 ha 1,106,118 ppl  threat P10 0.05  1930s-claim 0.23  herd UD share 0.05  emptiness 0.27  habitat(img) 0.33  (179 units)
-zone 22   wilderness  3,330,800 ha       90 ppl  threat P10 0.00  1930s-claim 0.04  herd UD share 0.06  emptiness 0.99  habitat(img) 0.23  (164 units)
-zone 91   wilderness  3,245,600 ha       10 ppl  threat P10 0.00  1930s-claim 0.05  herd UD share 0.06  emptiness 1.00  habitat(img) 0.21  (139 units)
-zone 11   corridor    2,584,000 ha    5,426 ppl  threat P10 0.03  1930s-claim 0.16  herd UD share 0.09  emptiness 0.67  habitat(img) 0.25  (117 units)
-zone 3    community   2,380,000 ha  364,267 ppl  threat P10 0.04  1930s-claim 0.12  herd UD share 0.10  emptiness 0.12  habitat(img) 0.34  (84 units)
-zone 27   wilderness  2,154,400 ha       94 ppl  threat P10 0.00  1930s-claim 0.11  herd UD share 0.03  emptiness 0.98  habitat(img) 0.36  (77 units)
-zone 29   core        1,532,400 ha       32 ppl  threat P10 0.01  1930s-claim 0.02  herd UD share 0.03  emptiness 0.99  habitat(img) 0.16  (74 units)
-zone 19   corridor    1,225,600 ha    3,345 ppl  threat P10 0.01  1930s-claim 0.18  herd UD share 0.06  emptiness 0.65  habitat(img) 0.21  (53 units)
-zone 141  wilderness  1,129,200 ha      547 ppl  threat P10 0.00  1930s-claim 0.03  herd UD share 0.02  emptiness 0.76  habitat(img) 0.42  (49 units)
-zone 9    core        1,079,200 ha      682 ppl  threat P10 0.00  1930s-claim 0.12  herd UD share 0.02  emptiness 0.97  habitat(img) 0.34  (47 units)
-zone 10   community     949,200 ha   17,345 ppl  threat P10 0.03  1930s-claim 0.00  herd UD share 0.01  emptiness 0.10  habitat(img) 0.26  (35 units)
-zone 118  corridor      791,200 ha      330 ppl  threat P10 0.01  1930s-claim 0.14  herd UD share 0.02  emptiness 0.79  habitat(img) 0.25  (31 units)
-zone 120  wilderness    743,200 ha       26 ppl  threat P10 0.00  1930s-claim 0.16  herd UD share 0.01  emptiness 0.98  habitat(img) 0.15  (31 units)
-zone 122  wilderness    480,000 ha        0 ppl  threat P10 0.00  1930s-claim 0.00  herd UD share 0.01  emptiness 1.00  habitat(img) 0.50  (20 units)
-zone 5    community     476,400 ha   57,553 ppl  threat P10 0.03  1930s-claim 0.37  herd UD share 0.01  emptiness 0.70  habitat(img) 0.25  (20 units)
-zone 45   core          429,600 ha        0 ppl  threat P10 0.00  1930s-claim 0.03  herd UD share 0.01  emptiness 1.00  habitat(img) 0.43  (14 units)
-zone 8    community     412,000 ha    6,337 ppl  threat P10 0.03  1930s-claim 0.17  herd UD share 0.01  emptiness 0.06  habitat(img) 0.16  (9 units)
-zone 7    corridor      357,600 ha    4,137 ppl  threat P10 0.05  1930s-claim 0.02  herd UD share 0.01  emptiness 0.14  habitat(img) 0.34  (17 units)
-zone 14   corridor      348,800 ha      862 ppl  threat P10 0.02  1930s-claim 0.09  herd UD share 0.01  emptiness 0.56  habitat(img) 0.40  (24 units)
-zone 4    community     340,800 ha   31,271 ppl  threat P10 0.04  1930s-claim 0.00  herd UD share 0.01  emptiness 0.15  habitat(img) 0.37  (10 units)
-zone 82   corridor      303,600 ha        0 ppl  threat P10 0.00  1930s-claim 0.00  herd UD share 0.01  emptiness 1.00  habitat(img) 0.23  (14 units)
-zone 112  wilderness    292,000 ha        0 ppl  threat P10 0.00  1930s-claim 0.00  herd UD share 0.00  emptiness 1.00  habitat(img) 0.23  (16 units)
-zone 35   wilderness    276,400 ha       98 ppl  threat P10 0.01  1930s-claim 0.03  herd UD share 0.01  emptiness 0.82  habitat(img) 0.35  (4 units)
-zone 126  community     264,000 ha    8,056 ppl  threat P10 0.02  1930s-claim 0.09  herd UD share 0.00  emptiness 0.02  habitat(img) 0.36  (5 units)
-zone 146  core          253,200 ha        0 ppl  threat P10 0.00  1930s-claim 0.03  herd UD share 0.00  emptiness 1.00  habitat(img) 0.45  (8 units)
-zone 47   core          250,000 ha        0 ppl  threat P10 0.00  1930s-claim 0.09  herd UD share 0.00  emptiness 1.00  habitat(img) 0.37  (12 units)
-zone 51   corridor      240,000 ha        0 ppl  threat P10 0.00  1930s-claim 0.08  herd UD share 0.01  emptiness 1.00  habitat(img) 0.52  (10 units)
-zone 18   community     235,200 ha      443 ppl  threat P10 0.01  1930s-claim 0.01  herd UD share 0.00  emptiness 0.25  habitat(img) 0.35  (4 units)
-zone 28   wilderness    224,400 ha        0 ppl  threat P10 0.00  1930s-claim 0.17  herd UD share 0.00  emptiness 1.00  habitat(img) 0.42  (12 units)
-zone 75   community     218,800 ha    2,250 ppl  threat P10 0.01  1930s-claim 0.02  herd UD share 0.01  emptiness 0.07  habitat(img) 0.21  (4 units)
-zone 137  wilderness    188,000 ha       17 ppl  threat P10 0.00  1930s-claim 0.00  herd UD share 0.00  emptiness 0.95  habitat(img) 0.44  (7 units)
-zone 70   community     187,600 ha   24,419 ppl  threat P10 0.02  1930s-claim 0.23  herd UD share 0.01  emptiness 0.46  habitat(img) 0.35  (6 units)
-zone 93   community     182,400 ha       56 ppl  threat P10 0.04  1930s-claim 0.03  herd UD share 0.00  emptiness 0.85  habitat(img) 0.22  (4 units)
-zone 94   wilderness    151,200 ha        0 ppl  threat P10 0.00  1930s-claim 0.00  herd UD share 0.00  emptiness 1.00  habitat(img) 0.25  (6 units)
-zone 26   core          147,200 ha        0 ppl  threat P10 0.00  1930s-claim 0.29  herd UD share 0.00  emptiness 1.00  habitat(img) 0.51  (4 units)
-zone 6    community     136,000 ha   17,360 ppl  threat P10 0.05  1930s-claim 0.03  herd UD share 0.00  emptiness 0.14  habitat(img) 0.14  (6 units)
-zone 56   core          133,600 ha        0 ppl  threat P10 0.00  1930s-claim 0.24  herd UD share 0.00  emptiness 1.00  habitat(img) 0.41  (6 units)
-zone 110  community     131,200 ha      679 ppl  threat P10 0.04  1930s-claim 0.00  herd UD share 0.00  emptiness 0.23  habitat(img) 0.23  (4 units)
-zone 80   core          130,000 ha        2 ppl  threat P10 0.00  1930s-claim 0.00  herd UD share 0.00  emptiness 0.99  habitat(img) 0.21  (5 units)
-zone 158  core          104,400 ha        9 ppl  threat P10 0.01  1930s-claim 0.17  herd UD share 0.00  emptiness 0.96  habitat(img) 0.28  (6 units)
-zone 130  core           91,600 ha        0 ppl  threat P10 0.00  1930s-claim 0.22  herd UD share 0.00  emptiness 1.00  habitat(img) 0.36  (4 units)
-zone 135  core           88,800 ha        0 ppl  threat P10 0.00  1930s-claim 0.00  herd UD share 0.00  emptiness 1.00  habitat(img) 0.55  (3 units)
-zone 96   wilderness     88,400 ha       22 ppl  threat P10 0.02  1930s-claim 0.00  herd UD share 0.00  emptiness 0.88  habitat(img) 0.35  (2 units)
-zone 163  wilderness     78,800 ha        0 ppl  threat P10 0.00  1930s-claim 0.08  herd UD share 0.00  emptiness 1.00  habitat(img) 0.50  (1 units)
-zone 101  community      77,600 ha      130 ppl  threat P10 0.02  1930s-claim 0.00  herd UD share 0.00  emptiness 0.20  habitat(img) 0.21  (3 units)
-zone 98   corridor       76,800 ha      709 ppl  threat P10 0.05  1930s-claim 0.06  herd UD share 0.00  emptiness 0.07  habitat(img) 0.27  (3 units)
-zone 155  wilderness     76,000 ha        5 ppl  threat P10 0.01  1930s-claim 0.10  herd UD share 0.00  emptiness 0.97  habitat(img) 0.22  (3 units)
-zone 39   wilderness     72,000 ha        0 ppl  threat P10 0.00  1930s-claim 0.05  herd UD share 0.00  emptiness 1.00  habitat(img) 0.35  (1 units)
-zone 156  core           70,000 ha        2 ppl  threat P10 0.01  1930s-claim 0.00  herd UD share 0.00  emptiness 0.99  habitat(img) 0.50  (4 units)
-zone 59   community      69,600 ha        0 ppl  threat P10 0.00  1930s-claim 0.02  herd UD share 0.00  emptiness 1.00  habitat(img) 0.36  (2 units)
-zone 104  community      68,800 ha    1,114 ppl  threat P10 0.04  1930s-claim 0.00  herd UD share 0.00  emptiness 0.40  habitat(img) 0.22  (3 units)
-zone 61   core           67,200 ha        0 ppl  threat P10 0.00  1930s-claim 0.00  herd UD share 0.00  emptiness 1.00  habitat(img) 0.24  (6 units)
-zone 88   community      64,400 ha       67 ppl  threat P10 0.01  1930s-claim 0.32  herd UD share 0.00  emptiness 0.48  habitat(img) 0.20  (2 units)
-zone 46   community      58,000 ha      250 ppl  threat P10 0.01  1930s-claim 0.12  herd UD share 0.00  emptiness 0.94  habitat(img) 0.22  (2 units)
-zone 149  core           54,400 ha        0 ppl  threat P10 0.00  1930s-claim 0.15  herd UD share 0.00  emptiness 1.00  habitat(img) 0.14  (2 units)
-zone 17   community      51,200 ha      166 ppl  threat P10 0.10  1930s-claim 0.34  herd UD share 0.00  emptiness 0.00  habitat(img) 0.33  (1 units)
-zone 43   core           51,200 ha        0 ppl  threat P10 0.00  1930s-claim 0.11  herd UD share 0.00  emptiness 1.00  habitat(img) 0.35  (3 units)
-zone 115  wilderness     51,200 ha       23 ppl  threat P10 0.02  1930s-claim 0.00  herd UD share 0.00  emptiness 0.78  habitat(img) 0.24  (1 units)
+zone 1    community  15,357,600 ha 2,451,966 ppl  threat P10 0.04  1930s-claim 0.29  herd UD share 0.42  emptiness 0.22  habitat(img) 0.34  (664 units)
+zone 10   core        5,528,000 ha      179 ppl  threat P10 0.00  1930s-claim 0.03  herd UD share 0.04  emptiness 0.99  habitat(img) 0.28  (230 units)
+zone 19   wilderness  3,734,000 ha      117 ppl  threat P10 0.00  1930s-claim 0.03  herd UD share 0.06  emptiness 0.98  habitat(img) 0.23  (184 units)
+zone 69   wilderness  3,222,800 ha       10 ppl  threat P10 0.00  1930s-claim 0.05  herd UD share 0.06  emptiness 1.00  habitat(img) 0.21  (136 units)
+zone 9    corridor    2,592,000 ha    6,147 ppl  threat P10 0.03  1930s-claim 0.16  herd UD share 0.09  emptiness 0.67  habitat(img) 0.25  (121 units)
+zone 22   core        1,751,600 ha        0 ppl  threat P10 0.00  1930s-claim 0.09  herd UD share 0.02  emptiness 1.00  habitat(img) 0.40  (68 units)
+zone 27   core        1,487,600 ha       38 ppl  threat P10 0.01  1930s-claim 0.02  herd UD share 0.03  emptiness 0.99  habitat(img) 0.16  (72 units)
+zone 17   corridor    1,225,600 ha    3,345 ppl  threat P10 0.01  1930s-claim 0.18  herd UD share 0.06  emptiness 0.65  habitat(img) 0.21  (53 units)
+zone 118  wilderness  1,184,400 ha      549 ppl  threat P10 0.00  1930s-claim 0.03  herd UD share 0.02  emptiness 0.77  habitat(img) 0.43  (52 units)
+zone 7    core        1,081,200 ha      682 ppl  threat P10 0.00  1930s-claim 0.12  herd UD share 0.02  emptiness 0.97  habitat(img) 0.34  (48 units)
+zone 8    community   1,024,800 ha   17,390 ppl  threat P10 0.03  1930s-claim 0.00  herd UD share 0.01  emptiness 0.17  habitat(img) 0.26  (43 units)
+zone 94   corridor      793,600 ha      330 ppl  threat P10 0.01  1930s-claim 0.14  herd UD share 0.02  emptiness 0.79  habitat(img) 0.25  (32 units)
+zone 3    community     779,600 ha   65,600 ppl  threat P10 0.03  1930s-claim 0.28  herd UD share 0.01  emptiness 0.49  habitat(img) 0.29  (28 units)
+zone 101  wilderness    741,200 ha       26 ppl  threat P10 0.00  1930s-claim 0.16  herd UD share 0.01  emptiness 0.98  habitat(img) 0.15  (30 units)
+zone 52   wilderness    722,800 ha       91 ppl  threat P10 0.01  1930s-claim 0.10  herd UD share 0.01  emptiness 0.94  habitat(img) 0.34  (27 units)
+zone 6    community     412,000 ha    6,337 ppl  threat P10 0.03  1930s-claim 0.17  herd UD share 0.01  emptiness 0.06  habitat(img) 0.16  (9 units)
+zone 5    corridor      357,600 ha    4,137 ppl  threat P10 0.05  1930s-claim 0.02  herd UD share 0.01  emptiness 0.14  habitat(img) 0.34  (17 units)
+zone 12   corridor      348,800 ha      862 ppl  threat P10 0.02  1930s-claim 0.09  herd UD share 0.01  emptiness 0.56  habitat(img) 0.40  (24 units)
+zone 2    community     344,800 ha   30,906 ppl  threat P10 0.03  1930s-claim 0.00  herd UD share 0.01  emptiness 0.17  habitat(img) 0.36  (10 units)
+zone 86   wilderness    334,000 ha        0 ppl  threat P10 0.00  1930s-claim 0.00  herd UD share 0.00  emptiness 1.00  habitat(img) 0.24  (18 units)
+zone 61   corridor      303,600 ha        0 ppl  threat P10 0.00  1930s-claim 0.00  herd UD share 0.01  emptiness 1.00  habitat(img) 0.23  (14 units)
+zone 44   wilderness    301,600 ha        3 ppl  threat P10 0.00  1930s-claim 0.09  herd UD share 0.01  emptiness 0.99  habitat(img) 0.22  (9 units)
+zone 110  wilderness    296,400 ha        0 ppl  threat P10 0.00  1930s-claim 0.00  herd UD share 0.00  emptiness 1.00  habitat(img) 0.54  (11 units)
+zone 116  core          255,200 ha        0 ppl  threat P10 0.00  1930s-claim 0.03  herd UD share 0.00  emptiness 1.00  habitat(img) 0.45  (9 units)
+zone 16   community     246,000 ha      443 ppl  threat P10 0.01  1930s-claim 0.01  herd UD share 0.00  emptiness 0.28  habitat(img) 0.35  (8 units)
+zone 37   corridor      240,000 ha        0 ppl  threat P10 0.00  1930s-claim 0.08  herd UD share 0.01  emptiness 1.00  habitat(img) 0.52  (10 units)
+zone 23   wilderness    224,400 ha        0 ppl  threat P10 0.00  1930s-claim 0.17  herd UD share 0.00  emptiness 1.00  habitat(img) 0.42  (12 units)
+zone 55   community     209,600 ha    2,230 ppl  threat P10 0.01  1930s-claim 0.02  herd UD share 0.01  emptiness 0.08  habitat(img) 0.21  (6 units)
+zone 71   community     205,600 ha       56 ppl  threat P10 0.03  1930s-claim 0.03  herd UD share 0.00  emptiness 0.86  habitat(img) 0.22  (8 units)
+zone 26   wilderness    194,800 ha        0 ppl  threat P10 0.00  1930s-claim 0.14  herd UD share 0.00  emptiness 1.00  habitat(img) 0.36  (8 units)
+zone 114  wilderness    188,000 ha       17 ppl  threat P10 0.00  1930s-claim 0.00  herd UD share 0.00  emptiness 0.95  habitat(img) 0.44  (7 units)
+zone 4    community     136,000 ha   17,360 ppl  threat P10 0.05  1930s-claim 0.03  herd UD share 0.00  emptiness 0.14  habitat(img) 0.14  (6 units)
+zone 85   community     131,200 ha      679 ppl  threat P10 0.04  1930s-claim 0.00  herd UD share 0.00  emptiness 0.23  habitat(img) 0.23  (4 units)
+zone 72   wilderness    130,400 ha        0 ppl  threat P10 0.00  1930s-claim 0.00  herd UD share 0.00  emptiness 1.00  habitat(img) 0.24  (4 units)
+zone 58   core          128,000 ha        2 ppl  threat P10 0.00  1930s-claim 0.00  herd UD share 0.00  emptiness 0.99  habitat(img) 0.21  (4 units)
+zone 105  core           91,600 ha        0 ppl  threat P10 0.00  1930s-claim 0.22  herd UD share 0.00  emptiness 1.00  habitat(img) 0.36  (4 units)
+zone 74   wilderness     88,400 ha       22 ppl  threat P10 0.02  1930s-claim 0.00  herd UD share 0.00  emptiness 0.88  habitat(img) 0.35  (2 units)
+zone 79   community      81,600 ha      130 ppl  threat P10 0.02  1930s-claim 0.00  herd UD share 0.00  emptiness 0.24  habitat(img) 0.21  (4 units)
+zone 130  wilderness     78,800 ha        0 ppl  threat P10 0.00  1930s-claim 0.08  herd UD share 0.00  emptiness 1.00  habitat(img) 0.50  (1 units)
+zone 77   corridor       76,800 ha      709 ppl  threat P10 0.05  1930s-claim 0.06  herd UD share 0.00  emptiness 0.07  habitat(img) 0.27  (3 units)
+zone 30   wilderness     72,000 ha        0 ppl  threat P10 0.00  1930s-claim 0.05  herd UD share 0.00  emptiness 1.00  habitat(img) 0.35  (1 units)
+zone 43   community      69,600 ha        0 ppl  threat P10 0.00  1930s-claim 0.02  herd UD share 0.00  emptiness 1.00  habitat(img) 0.36  (2 units)
+zone 82   community      68,800 ha    1,114 ppl  threat P10 0.04  1930s-claim 0.00  herd UD share 0.00  emptiness 0.40  habitat(img) 0.22  (3 units)
+zone 45   core           67,200 ha        0 ppl  threat P10 0.00  1930s-claim 0.00  herd UD share 0.00  emptiness 1.00  habitat(img) 0.24  (6 units)
+zone 18   community      65,600 ha      479 ppl  threat P10 0.03  1930s-claim 0.17  herd UD share 0.00  emptiness 0.78  habitat(img) 0.12  (3 units)
+zone 66   community      64,400 ha       67 ppl  threat P10 0.01  1930s-claim 0.32  herd UD share 0.00  emptiness 0.48  habitat(img) 0.20  (2 units)
+zone 34   community      58,000 ha      250 ppl  threat P10 0.01  1930s-claim 0.12  herd UD share 0.00  emptiness 0.94  habitat(img) 0.22  (2 units)
+zone 124  core           54,400 ha        0 ppl  threat P10 0.00  1930s-claim 0.15  herd UD share 0.00  emptiness 1.00  habitat(img) 0.14  (2 units)
+zone 15   community      51,200 ha      166 ppl  threat P10 0.10  1930s-claim 0.34  herd UD share 0.00  emptiness 0.00  habitat(img) 0.33  (1 units)
+zone 90   wilderness     51,200 ha       23 ppl  threat P10 0.02  1930s-claim 0.00  herd UD share 0.00  emptiness 0.78  habitat(img) 0.24  (1 units)
+zone 132  wilderness     47,600 ha        0 ppl  threat P10 0.00  1930s-claim 0.00  herd UD share 0.00  emptiness 1.00  habitat(img) 0.37  (4 units)
+zone 119  corridor       46,800 ha      365 ppl  threat P10 0.03  1930s-claim 0.00  herd UD share 0.00  emptiness 0.95  habitat(img) 0.51  (5 units)
+zone 11   community      45,600 ha      101 ppl  threat P10 0.01  1930s-claim 0.10  herd UD share 0.00  emptiness 0.00  habitat(img) 0.00  (1 units)
+zone 131  core           40,800 ha        0 ppl  threat P10 0.00  1930s-claim 0.00  herd UD share 0.00  emptiness 1.00  habitat(img) 0.39  (3 units)
+zone 14   corridor       38,800 ha      147 ppl  threat P10 0.09  1930s-claim 0.21  herd UD share 0.00  emptiness 0.00  habitat(img) 0.30  (3 units)
+zone 134  core           36,800 ha        0 ppl  threat P10 0.00  1930s-claim 0.12  herd UD share 0.00  emptiness 1.00  habitat(img) 0.44  (1 units)
+zone 40   community      36,000 ha   11,991 ppl  threat P10 0.01  1930s-claim 0.32  herd UD share 0.00  emptiness 0.00  habitat(img) 0.56  (1 units)
+zone 13   community      34,000 ha    6,270 ppl  threat P10 0.09  1930s-claim 0.19  herd UD share 0.00  emptiness 0.56  habitat(img) 0.01  (2 units)
+zone 57   core           34,000 ha        0 ppl  threat P10 0.00  1930s-claim 0.17  herd UD share 0.00  emptiness 1.00  habitat(img) 0.20  (2 units)
+zone 83   corridor       29,200 ha       37 ppl  threat P10 0.02  1930s-claim 0.42  herd UD share 0.00  emptiness 0.60  habitat(img) 0.36  (3 units)

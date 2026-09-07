@@ -1,315 +1,325 @@
-RANK — 155 solved community conservancies in budget order. Score = weighted mean of rank-percentiles of measured terms (weights {"shield": 1, "pressure_on_core": 1, "herd_conflict": 1, "governance": 1, "legibility": 1, "claim": 0.5, "reach": 0.5}); every raw value printed beside it.
+RANK — 160 solved community conservancies in budget order. Score = weighted mean of rank-percentiles of measured terms (weights {"shield": 1, "pressure_on_core": 1, "herd_conflict": 1, "governance": 1, "legibility": 1, "claim": 0.5, "reach": 0.5}); every raw value printed beside it.
   shield: share of the zone's perimeter that touches core or corridor — a conservancy that is a park's buffer or a corridor's flank does the plan's work; one in the open does not | pressure_on_core: people × threat P10 within the zone, scaled by min(shared core/corridor edge km / 20, 1) — where the people who will reach the core live; a zone touching no core scores 0 | herd_conflict: herd utilisation (all bundles) inside the zone per 1,000 km² — where herders and farmers meet, and where a conservancy committee earns its keep | governance: exp(−(ha / cons_target_ha)²)·(people ≥ cons_min_pop) — a size one committee can run, with enough people to form one | legibility: outer boundary legibility (0–1) — a boundary the members can walk and name | claim: 1930s continuous-occupation share — a customary claim the Land Act 2009 s.66 recognises; strengthens the case | reach: a verified town / OSM town within 25 km — a place a team can be based and supplied
 
-  budget: all → 155 conservancies, 18,360,800 ha, shielding 7,056 of the 13,180 km core+corridor rim that community land touches
+  budget: all → 160 conservancies, 19,457,200 ha, shielding 6,908 of the 11,878 km core+corridor rim that community land touches
 
- 1. ● [195]   105,600 ha   43,227 ppl  score 0.86  SSD  towns Cueibet 14,319, River Gulnam* (nearest_place, unverified) 10,872, Cueibet* (nearest_place, unverified) 6,439; base Agangrial (9 km)
+ 1. ● [172]   105,600 ha   43,227 ppl  score 0.87  SSD  towns Cueibet 14,319, River Gulnam* (nearest_place, unverified) 10,872, Cueibet* (nearest_place, unverified) 6,439; base Agangrial (9 km)
       shield 0.37 (46 km on core/corridor, 20 on core)  pressure 43,227 ppl×P10 (edge-scaled) (43,227 people×threat)  herd 45.9/1000 km²  governance 0.61  legibility 0.83  1930s claim 0.05  → +46 km rim newly shielded
- 2. ● [170]    84,800 ha  117,344 ppl  score 0.85  SSD  towns Wau 104,260, Akej (1930s village) 3,816, Nyin Akok 3,120; base Wau (19 km)
+ 2. ● [116]    84,800 ha  117,344 ppl  score 0.86  SSD  towns Wau 104,260, Akej (1930s village) 3,816, Nyin Akok 3,120; base Wau (19 km)
       shield 0.46 (50 km on core/corridor, 0 on core)  pressure 117,344 ppl×P10 (edge-scaled) (117,344 people×threat)  herd 41.6/1000 km²  governance 0.73  legibility 0.7  1930s claim 0.04  → +46 km rim newly shielded
- 3. ● [216]    36,000 ha   11,991 ppl  score 0.84  SDN  towns منجم أغبش 11,991; base منجم أغبش (12 km)
+ 3. ● [214]    36,000 ha   11,991 ppl  score 0.84  SDN  towns منجم أغبش 11,991; base منجم أغبش (12 km)
       shield 0.71 (44 km on core/corridor, 10 on core)  pressure 11,991 ppl×P10 (edge-scaled) (11,991 people×threat)  herd 40.1/1000 km²  governance 0.94  legibility 0.66  1930s claim 0.01  → +40 km rim newly shielded
- 4. ● [200]    86,400 ha   11,527 ppl  score 0.80  SSD  towns Domolotto (1930s village) 7,727, Wulu 2,620; base Wulu (16 km)
-      shield 0.55 (74 km on core/corridor, 26 on core)  pressure 11,527 ppl×P10 (edge-scaled) (11,527 people×threat)  herd 41.2/1000 km²  governance 0.72  legibility 0.65  1930s claim 0.02  → +70 km rim newly shielded
- 5. ● [245]    74,400 ha    4,247 ppl  score 0.76  SSD  towns Senekpuro 2,821; base Tambura (13 km)
+ 4. ● [176]    96,000 ha   11,550 ppl  score 0.81  SSD  towns Domolotto (1930s village) 7,727, Wulu 2,620; base Wulu (11 km)
+      shield 0.49 (74 km on core/corridor, 26 on core)  pressure 11,550 ppl×P10 (edge-scaled) (11,550 people×threat)  herd 41.6/1000 km²  governance 0.66  legibility 0.66  1930s claim 0.03  → +70 km rim newly shielded
+ 5. ● [125]    74,400 ha    4,247 ppl  score 0.77  SSD  towns Senekpuro 2,821; base Tambura (13 km)
       shield 0.75 (72 km on core/corridor, 0 on core)  pressure 4,247 ppl×P10 (edge-scaled) (4,247 people×threat)  herd 39.7/1000 km²  governance 0.78  legibility 0.58  1930s claim 0.01  → +66 km rim newly shielded
- 6. ● [252]    59,200 ha   46,136 ppl  score 0.76  SSD  towns Maridi 44,234, Maridi* (nearest_place, unverified) 1,666; base Maridi (16 km)
+ 6. ● [194]    59,200 ha   46,136 ppl  score 0.77  SSD  towns Maridi 44,234, Maridi* (nearest_place, unverified) 1,666; base Maridi (16 km)
       shield 0.41 (52 km on core/corridor, 0 on core)  pressure 46,136 ppl×P10 (edge-scaled) (46,136 people×threat)  herd 50.4/1000 km²  governance 0.86  legibility 0.55  1930s claim 0.01  → +50 km rim newly shielded
- 7. ● [166]    52,000 ha    2,430 ppl  score 0.76  SSD  towns —; base Bisellia (28 km)
+ 7. ● [112]    52,000 ha    2,430 ppl  score 0.77  SSD  towns —; base Bisellia (28 km)
       shield 0.51 (44 km on core/corridor, 0 on core)  pressure 2,430 ppl×P10 (edge-scaled) (2,430 people×threat)  herd 53.1/1000 km²  governance 0.89  legibility 0.59  1930s claim 0.04  → +44 km rim newly shielded
- 8. ● [246]    51,200 ha  138,872 ppl  score 0.75  SSD  towns Yambio 97,333, Nzara 33,534, Saura 4,969; base Yambio (19 km)
-      shield 0.55 (62 km on core/corridor, 22 on core)  pressure 138,872 ppl×P10 (edge-scaled) (138,872 people×threat)  herd 34.3/1000 km²  governance 0.89  legibility 0.49  1930s claim 0.02  → +60 km rim newly shielded
- 9. ● [164]   178,400 ha   26,228 ppl  score 0.74  SSD  towns Gorok 5,173, Ajijuit 4,952, River Gulnam* (nearest_place, unverified) 3,695; base Rumbek (16 km)
-      shield 0.45 (84 km on core/corridor, 52 on core)  pressure 26,228 ppl×P10 (edge-scaled) (26,228 people×threat)  herd 38.7/1000 km²  governance 0.24  legibility 0.65  1930s claim 0.02  → +84 km rim newly shielded
-10. ● [218]    34,000 ha    6,270 ppl  score 0.74  CAF  towns Ouanda Djallé 6,180; base Ouanda Djallé (8 km)
-      shield 0.89 (64 km on core/corridor, 64 on core)  pressure 6,270 ppl×P10 (edge-scaled) (6,270 people×threat)  herd 26.7/1000 km²  governance 0.95  legibility 0.44  1930s claim 0.04  → +60 km rim newly shielded
-11. ● [178]    72,000 ha   14,606 ppl  score 0.73  SSD  towns Aduel 9,911, Aru (1930s village) 2,903, River Rohl* (nearest_place, unverified) 1,255; base Aduel (24 km)
+ 8. ● [109]   168,800 ha   26,205 ppl  score 0.76  SSD  towns Gorok 5,173, Ajijuit 4,952, River Gulnam* (nearest_place, unverified) 3,695; base Rumbek (16 km)
+      shield 0.49 (84 km on core/corridor, 52 on core)  pressure 26,205 ppl×P10 (edge-scaled) (26,205 people×threat)  herd 38.4/1000 km²  governance 0.28  legibility 0.65  1930s claim 0.01  → +84 km rim newly shielded
+ 9. ● [124]    72,000 ha   14,606 ppl  score 0.75  SSD  towns Aduel 9,911, Aru (1930s village) 2,903, River Rohl* (nearest_place, unverified) 1,255; base Aduel (24 km)
       shield 0.03 (4 km on core/corridor, 0 on core)  pressure 2,921 ppl×P10 (edge-scaled) (14,606 people×threat)  herd 40.6/1000 km²  governance 0.79  legibility 0.65  1930s claim 0.03  → +4 km rim newly shielded
-12. ● [244]    47,600 ha    6,702 ppl  score 0.73  SSD  towns I. Aymong... (1930s village) 4,995; base Nzara (15 km)
-      shield 0.47 (40 km on core/corridor, 0 on core)  pressure 6,702 ppl×P10 (edge-scaled) (6,702 people×threat)  herd 34.3/1000 km²  governance 0.90  legibility 0.51  1930s claim 0.03  → +38 km rim newly shielded
-13. ● [243]   111,600 ha   38,127 ppl  score 0.71  SSD  towns Ezo 37,516; base Ezo (19 km)
+10. ● [216]    34,000 ha    6,270 ppl  score 0.74  CAF  towns Ouanda Djallé 6,180; base Ouanda Djallé (8 km)
+      shield 0.89 (64 km on core/corridor, 64 on core)  pressure 6,270 ppl×P10 (edge-scaled) (6,270 people×threat)  herd 26.7/1000 km²  governance 0.95  legibility 0.44  1930s claim 0.04  → +60 km rim newly shielded
+11. ● [209]    88,000 ha    3,936 ppl  score 0.72  SSD  towns Sakure 1,570, Yambio 1,508; base Yambio (17 km)
+      shield 0.10 (12 km on core/corridor, 12 on core)  pressure 2,362 ppl×P10 (edge-scaled) (3,936 people×threat)  herd 30.6/1000 km²  governance 0.71  legibility 0.73  1930s claim 0.02  → +12 km rim newly shielded
+12. ● [119]   111,600 ha   38,127 ppl  score 0.72  SSD  towns Ezo 37,516; base Ezo (19 km)
       shield 0.31 (38 km on core/corridor, 0 on core)  pressure 38,127 ppl×P10 (edge-scaled) (38,127 people×threat)  herd 39.7/1000 km²  governance 0.57  legibility 0.6  1930s claim 0.01  → +38 km rim newly shielded
-14. ● [146]   111,600 ha    2,745 ppl  score 0.71  SDN  towns كافيا كنجي 2,373; base أم حجار (10 km)
+13. ● [155]   111,600 ha    2,745 ppl  score 0.71  SDN  towns كافيا كنجي 2,373; base أم حجار (10 km)
       shield 0.76 (172 km on core/corridor, 64 on core)  pressure 2,745 ppl×P10 (edge-scaled) (2,745 people×threat)  herd 34.0/1000 km²  governance 0.57  legibility 0.6  1930s claim 0.00  → +172 km rim newly shielded
-15. ● [264]    84,000 ha    3,917 ppl  score 0.71  SSD  towns Sakure 1,570, Yambio 1,508; base Yambio (17 km)
-      shield 0.09 (10 km on core/corridor, 10 on core)  pressure 1,958 ppl×P10 (edge-scaled) (3,917 people×threat)  herd 30.4/1000 km²  governance 0.73  legibility 0.74  1930s claim 0.02  → +10 km rim newly shielded
-16. ● [165]   129,200 ha   43,915 ppl  score 0.70  SSD  towns Kuajok 30,418, Malek Alel 2,855, Busseri River* (nearest_place, unverified) 2,066; base Kuajok (21 km)
-      shield 0.40 (82 km on core/corridor, 0 on core)  pressure 43,915 ppl×P10 (edge-scaled) (43,915 people×threat)  herd 47.8/1000 km²  governance 0.48  legibility 0.45  1930s claim 0.02  → +74 km rim newly shielded
-17. ● [220]   187,600 ha   24,419 ppl  score 0.70  SSD  towns Raga (Raja) 24,018; base Raga (Raja) (9 km)
-      shield 0.58 (104 km on core/corridor, 12 on core)  pressure 24,419 ppl×P10 (edge-scaled) (24,419 people×threat)  herd 29.5/1000 km²  governance 0.21  legibility 0.59  1930s claim 0.01  → +104 km rim newly shielded
-18. ● [248]   125,600 ha   35,817 ppl  score 0.69  SSD  towns Tambura 31,951, Yubo 2,911; base Tambura (14 km)
+14. ● [110]   127,200 ha   43,194 ppl  score 0.71  SSD  towns Kuajok 30,418, Malek Alel 2,855, Busseri River* (nearest_place, unverified) 2,066; base Kuajok (21 km)
+      shield 0.34 (66 km on core/corridor, 0 on core)  pressure 43,194 ppl×P10 (edge-scaled) (43,194 people×threat)  herd 47.8/1000 km²  governance 0.49  legibility 0.46  1930s claim 0.02  → +66 km rim newly shielded
+15. ● [150]   192,400 ha   36,640 ppl  score 0.71  SDN  towns Songo 34,320; base حفرة النحاس (8 km)
+      shield 0.52 (118 km on core/corridor, 46 on core)  pressure 36,640 ppl×P10 (edge-scaled) (36,640 people×threat)  herd 39.2/1000 km²  governance 0.19  legibility 0.6  1930s claim 0.00  → +122 km rim newly shielded
+16. ● [105]   124,400 ha   24,085 ppl  score 0.70  SSD  towns Ibba 17,759, Madebe 5,506; base Ibba (27 km)
+      shield 0.54 (90 km on core/corridor, 0 on core)  pressure 24,085 ppl×P10 (edge-scaled) (24,085 people×threat)  herd 39.8/1000 km²  governance 0.50  legibility 0.58  1930s claim 0.00  → +84 km rim newly shielded
+17. ● [187]   125,600 ha   35,817 ppl  score 0.69  SSD  towns Tambura 31,951, Yubo 2,911; base Tambura (14 km)
       shield 0.49 (74 km on core/corridor, 0 on core)  pressure 35,817 ppl×P10 (edge-scaled) (35,817 people×threat)  herd 40.1/1000 km²  governance 0.50  legibility 0.48  1930s claim 0.01  → +74 km rim newly shielded
-19. ● [273]   144,400 ha   29,158 ppl  score 0.68  COD  towns Bandasi 25,446, Mboufo 2,265, Mboufo 1,345; base Zémio (23 km)
+18. ● [161]    92,400 ha   24,097 ppl  score 0.69  SSD  towns Raga (Raja) 24,018; base Raga (Raja) (27 km)
+      shield 0.50 (58 km on core/corridor, 0 on core)  pressure 24,097 ppl×P10 (edge-scaled) (24,097 people×threat)  herd 24.6/1000 km²  governance 0.68  legibility 0.6  1930s claim 0.01  → +56 km rim newly shielded
+19. ● [249]   144,400 ha   29,158 ppl  score 0.69  COD  towns Bandasi 25,446, Mboufo 2,265, Mboufo 1,345; base Zémio (23 km)
       shield 0.95 (162 km on core/corridor, 108 on core)  pressure 29,158 ppl×P10 (edge-scaled) (29,158 people×threat)  herd 17.6/1000 km²  governance 0.40  legibility 0.64  1930s claim 0.00  → +156 km rim newly shielded
-20. ● [145]   134,400 ha   37,847 ppl  score 0.68  SDN  towns Songo 34,320, Songo 1,157; base حفرة النحاس (13 km)
-      shield 0.58 (114 km on core/corridor, 62 on core)  pressure 37,847 ppl×P10 (edge-scaled) (37,847 people×threat)  herd 38.8/1000 km²  governance 0.45  legibility 0.47  1930s claim 0.00  → +118 km rim newly shielded
-21. ● [167]   179,600 ha   18,817 ppl  score 0.68  SSD  towns Yei River* (nearest_place, unverified) 8,510, Kotobi* (nearest_place, unverified) 3,165, Kemande 2,479; base Jambo (20 km)
-      shield 0.04 (8 km on core/corridor, 8 on core)  pressure 7,527 ppl×P10 (edge-scaled) (18,817 people×threat)  herd 29.9/1000 km²  governance 0.24  legibility 0.71  1930s claim 0.02  → +8 km rim newly shielded
-22. ● [172]    84,800 ha    9,053 ppl  score 0.67  SSD  towns Nyamlell 4,920, Akewich 2,202; base Nyamlell (12 km)
-      shield 0.39 (40 km on core/corridor, 0 on core)  pressure 9,053 ppl×P10 (edge-scaled) (9,053 people×threat)  herd 21.5/1000 km²  governance 0.73  legibility 0.56  1930s claim 0.02  → +40 km rim newly shielded
-23. ● [261]    86,800 ha    2,242 ppl  score 0.67  SSD  towns Rimenze* (nearest_place, unverified) 1,342; base Yambio (22 km)
-      shield 0.16 (16 km on core/corridor, 10 on core)  pressure 1,794 ppl×P10 (edge-scaled) (2,242 people×threat)  herd 39.0/1000 km²  governance 0.71  legibility 0.64  1930s claim 0.01  → +16 km rim newly shielded
-24. ● [267]   101,600 ha   39,970 ppl  score 0.66  CAF  towns M'Boki 38,611, Camp Kpabo 1,169; base Obo (66 km)
-      shield 0.36 (46 km on core/corridor, 46 on core)  pressure 39,970 ppl×P10 (edge-scaled) (39,970 people×threat)  herd 15.6/1000 km²  governance 0.63  legibility 0.77  1930s claim 0.01  → +42 km rim newly shielded
-25. ● [206]   200,000 ha   28,116 ppl  score 0.65  SSD  towns Liyoba 17,277, Yeri 6,370, Mvolo 1,625; base Mundri (35 km)
+20. ● [126]   142,800 ha  141,661 ppl  score 0.68  SSD  towns Yambio 97,333, Nzara 33,534, Saura 4,969; base Yambio (10 km)
+      shield 0.41 (78 km on core/corridor, 16 on core)  pressure 141,661 ppl×P10 (edge-scaled) (141,661 people×threat)  herd 32.2/1000 km²  governance 0.40  legibility 0.53  1930s claim 0.01  → +76 km rim newly shielded
+21. ● [182]   200,000 ha   28,116 ppl  score 0.66  SSD  towns Liyoba 17,277, Yeri 6,370, Mvolo 1,625; base Mundri (35 km)
       shield 0.44 (108 km on core/corridor, 0 on core)  pressure 28,116 ppl×P10 (edge-scaled) (28,116 people×threat)  herd 40.1/1000 km²  governance 0.17  legibility 0.62  1930s claim 0.01  → +110 km rim newly shielded
-26. ● [247]   184,800 ha   14,242 ppl  score 0.65  SSD  towns Diabio* (nearest_place, unverified) 6,636, Ezo 3,193, Fr. Yubu (1930s village) 2,359; base Doruma (25 km)
-      shield 0.24 (44 km on core/corridor, 0 on core)  pressure 14,242 ppl×P10 (edge-scaled) (14,242 people×threat)  herd 30.6/1000 km²  governance 0.22  legibility 0.67  1930s claim 0.01  → +42 km rim newly shielded
-27. ● [185]    88,400 ha    7,856 ppl  score 0.65  SSD  towns Riang Angon 2,551, Maluil Akong 1,996, Maluil Akong 1,572; base Aweil (11 km)
-      shield 0.58 (86 km on core/corridor, 0 on core)  pressure 7,856 ppl×P10 (edge-scaled) (7,856 people×threat)  herd 27.2/1000 km²  governance 0.71  legibility 0.47  1930s claim 0.01  → +82 km rim newly shielded
-28. ● [144]   126,000 ha    5,511 ppl  score 0.64  SDN  towns Radoum 5,376; base El Aburu (20 km)
+22. ● [104]    86,000 ha   41,434 ppl  score 0.66  SSD  towns Kuom 37,649, Malek Alel 1,440; base Aweil (8 km)
+      shield 0.31 (38 km on core/corridor, 0 on core)  pressure 41,434 ppl×P10 (edge-scaled) (41,434 people×threat)  herd 28.5/1000 km²  governance 0.72  legibility 0.51  1930s claim 0.01  → +34 km rim newly shielded
+23. ● [205]    86,800 ha    2,242 ppl  score 0.66  SSD  towns Rimenze* (nearest_place, unverified) 1,342; base Yambio (22 km)
+      shield 0.06 (6 km on core/corridor, 0 on core)  pressure 673 ppl×P10 (edge-scaled) (2,242 people×threat)  herd 39.0/1000 km²  governance 0.71  legibility 0.64  1930s claim 0.01  → +6 km rim newly shielded
+24. ● [149]   126,000 ha    5,511 ppl  score 0.65  SDN  towns Radoum 5,376; base El Aburu (20 km)
       shield 0.30 (52 km on core/corridor, 52 on core)  pressure 5,511 ppl×P10 (edge-scaled) (5,511 people×threat)  herd 26.7/1000 km²  governance 0.49  legibility 0.59  1930s claim 0.01  → +64 km rim newly shielded
-29. ● [161]    90,400 ha   20,583 ppl  score 0.64  SSD  towns Mvolo 8,713, Tiit Agok 5,541, Akot 4,727; base Mvolo (30 km)
-      shield 0.12 (16 km on core/corridor, 0 on core)  pressure 16,466 ppl×P10 (edge-scaled) (20,583 people×threat)  herd 32.8/1000 km²  governance 0.69  legibility 0.52  1930s claim 0.04  → +16 km rim newly shielded
-30. ● [190]   225,200 ha    7,609 ppl  score 0.63  SSD  towns Ibba River* (nearest_place, unverified) 1,662, Kuajiena 1,350; base Kuajiena (15 km)
-      shield 0.57 (118 km on core/corridor, 0 on core)  pressure 7,609 ppl×P10 (edge-scaled) (7,609 people×threat)  herd 35.1/1000 km²  governance 0.10  legibility 0.54  1930s claim 0.05  → +120 km rim newly shielded
-31. ● [250]   105,600 ha    7,119 ppl  score 0.63  SSD  towns Yangiri 5,646; base Ezo (31 km)
+25. ● [170]    85,600 ha    7,967 ppl  score 0.65  SSD  towns Ibba River* (nearest_place, unverified) 6,913; base Tonj (22 km)
+      shield 0.53 (58 km on core/corridor, 12 on core)  pressure 7,967 ppl×P10 (edge-scaled) (7,967 people×threat)  herd 38.4/1000 km²  governance 0.72  legibility 0.38  1930s claim 0.00  → +62 km rim newly shielded
+26. ● [192]   105,600 ha    7,119 ppl  score 0.64  SSD  towns Yangiri 5,646; base Ezo (31 km)
       shield 0.43 (60 km on core/corridor, 0 on core)  pressure 7,119 ppl×P10 (edge-scaled) (7,119 people×threat)  herd 39.0/1000 km²  governance 0.61  legibility 0.52  1930s claim 0.01  → +60 km rim newly shielded
-32. ● [163]    58,000 ha    3,507 ppl  score 0.63  SSD  towns Wahko* (nearest_place, unverified) 1,285, Allairu Yang (1930s village) 1,101; base Cueibet (20 km)
+27. ● [111]   225,200 ha    7,609 ppl  score 0.64  SSD  towns Ibba River* (nearest_place, unverified) 1,662, Kuajiena 1,350; base Kuajiena (15 km)
+      shield 0.57 (118 km on core/corridor, 0 on core)  pressure 7,609 ppl×P10 (edge-scaled) (7,609 people×threat)  herd 35.1/1000 km²  governance 0.10  legibility 0.54  1930s claim 0.05  → +120 km rim newly shielded
+28. ● [106]    90,400 ha   20,583 ppl  score 0.64  SSD  towns Mvolo 8,713, Tiit Agok 5,541, Akot 4,727; base Mvolo (30 km)
+      shield 0.12 (16 km on core/corridor, 0 on core)  pressure 16,466 ppl×P10 (edge-scaled) (20,583 people×threat)  herd 32.8/1000 km²  governance 0.69  legibility 0.52  1930s claim 0.04  → +16 km rim newly shielded
+29. ● [108]    58,000 ha    3,507 ppl  score 0.64  SSD  towns Wahko* (nearest_place, unverified) 1,285, Allairu Yang (1930s village) 1,101; base Cueibet (20 km)
       shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (3,507 people×threat)  herd 31.2/1000 km²  governance 0.86  legibility 0.8  1930s claim 0.03  → +0 km rim newly shielded
-33. ● [138]    56,000 ha   13,754 ppl  score 0.63  CAF  towns Birao 13,680; base Birao (18 km)
+30. ● [118]   139,200 ha   16,009 ppl  score 0.64  SSD  towns Nyamlell 4,920, Riang Angon 2,551, Akewich 2,202; base Nyamlell (21 km)
+      shield 0.41 (82 km on core/corridor, 0 on core)  pressure 16,009 ppl×P10 (edge-scaled) (16,009 people×threat)  herd 20.4/1000 km²  governance 0.42  legibility 0.54  1930s claim 0.02  → +84 km rim newly shielded
+31. ● [230]    51,200 ha      166 ppl  score 0.64  SSD  towns —; base Bagari (51 km)
+      shield 0.34 (34 km on core/corridor, 0 on core)  pressure 166 ppl×P10 (edge-scaled) (166 people×threat)  herd 34.7/1000 km²  governance 0.18  legibility 0.69  1930s claim 0.03  → +30 km rim newly shielded
+32. ● [241]   139,600 ha   39,981 ppl  score 0.63  CAF  towns M'Boki 38,611, Camp Kpabo 1,169; base Obo (62 km)
+      shield 0.37 (50 km on core/corridor, 50 on core)  pressure 39,981 ppl×P10 (edge-scaled) (39,981 people×threat)  herd 13.5/1000 km²  governance 0.42  legibility 0.77  1930s claim 0.01  → +50 km rim newly shielded
+33. ● [200]   165,600 ha    6,690 ppl  score 0.63  SSD  towns Maridi 4,344, Nabanga 1,014; base Ibba (15 km)
+      shield 0.15 (30 km on core/corridor, 22 on core)  pressure 6,690 ppl×P10 (edge-scaled) (6,690 people×threat)  herd 42.4/1000 km²  governance 0.30  legibility 0.55  1930s claim 0.00  → +32 km rim newly shielded
+34. ● [142]    56,000 ha   13,754 ppl  score 0.63  CAF  towns Birao 13,680; base Birao (18 km)
       shield 0.20 (22 km on core/corridor, 22 on core)  pressure 13,754 ppl×P10 (edge-scaled) (13,754 people×threat)  herd 16.1/1000 km²  governance 0.87  legibility 0.6  1930s claim 0.00  → +20 km rim newly shielded
-34. ● [232]    51,200 ha      166 ppl  score 0.62  SSD  towns —; base Bagari (51 km)
-      shield 0.36 (36 km on core/corridor, 2 on core)  pressure 166 ppl×P10 (edge-scaled) (166 people×threat)  herd 34.7/1000 km²  governance 0.18  legibility 0.69  1930s claim 0.03  → +32 km rim newly shielded
-35. ● [193]    85,600 ha    7,967 ppl  score 0.61  SSD  towns Ibba River* (nearest_place, unverified) 6,913; base Tonj (22 km)
-      shield 0.42 (46 km on core/corridor, 0 on core)  pressure 7,967 ppl×P10 (edge-scaled) (7,967 people×threat)  herd 38.4/1000 km²  governance 0.72  legibility 0.38  1930s claim 0.00  → +48 km rim newly shielded
-36. ● [269]   178,800 ha   17,518 ppl  score 0.61  CAF  towns Obo 17,249; base Obo (28 km)
-      shield 0.82 (134 km on core/corridor, 52 on core)  pressure 17,518 ppl×P10 (edge-scaled) (17,518 people×threat)  herd 14.6/1000 km²  governance 0.24  legibility 0.56  1930s claim 0.01  → +128 km rim newly shielded
-37. ● [257]   290,000 ha   30,775 ppl  score 0.61  SSD  towns Ibba 17,759, Madebe 5,506, Maridi 4,344; base Maridi (18 km)
-      shield 0.40 (120 km on core/corridor, 22 on core)  pressure 30,775 ppl×P10 (edge-scaled) (30,775 people×threat)  herd 41.3/1000 km²  governance 0.02  legibility 0.59  1930s claim 0.00  → +116 km rim newly shielded
-38. ● [174]    69,200 ha    5,169 ppl  score 0.61  SSD  towns Mbara* (nearest_place, unverified) 1,381, Madi Bizi (1930s village) 1,075; base Kediba (22 km)
+35. ● [121]    69,200 ha    5,169 ppl  score 0.62  SSD  towns Mbara* (nearest_place, unverified) 1,381, Madi Bizi (1930s village) 1,075; base Kediba (22 km)
       shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (5,169 people×threat)  herd 45.7/1000 km²  governance 0.81  legibility 0.63  1930s claim 0.02  → +0 km rim newly shielded
-39. ● [251]    87,600 ha    1,807 ppl  score 0.60  SSD  towns Ibba* (nearest_place, unverified) 1,259; base Ibba (23 km)
+36. ● [193]    87,600 ha    1,807 ppl  score 0.61  SSD  towns Ibba* (nearest_place, unverified) 1,259; base Ibba (23 km)
       shield 0.46 (50 km on core/corridor, 0 on core)  pressure 1,807 ppl×P10 (edge-scaled) (1,807 people×threat)  herd 44.1/1000 km²  governance 0.14  legibility 0.57  1930s claim 0.01  → +48 km rim newly shielded
-40. ● [175]    48,000 ha    3,378 ppl  score 0.60  SSD  towns Muraddiba (1930s village) 1,970; base Kediba (24 km)
-      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (3,378 people×threat)  herd 34.9/1000 km²  governance 0.90  legibility 0.6  1930s claim 0.06  → +0 km rim newly shielded
-41. ● [260]    73,200 ha    2,807 ppl  score 0.60  SSD  towns Im...ngaru (1930s village) 1,981; base Nzara (18 km)
-      shield 0.05 (6 km on core/corridor, 6 on core)  pressure 842 ppl×P10 (edge-scaled) (2,807 people×threat)  herd 30.7/1000 km²  governance 0.79  legibility 0.52  1930s claim 0.01  → +8 km rim newly shielded
-42. ● [213]    73,200 ha      410 ppl  score 0.60  SSD  towns —; base Jambo (38 km)
-      shield 0.35 (38 km on core/corridor, 38 on core)  pressure 410 ppl×P10 (edge-scaled) (410 people×threat)  herd 34.1/1000 km²  governance 0.16  legibility 0.68  1930s claim 0.03  → +36 km rim newly shielded
-43. ● [140]    48,000 ha      822 ppl  score 0.59  CAF  towns —; base Birao (14 km)
+37. ● [240]   106,400 ha    2,652 ppl  score 0.61  CAF  towns Banangui 2,330; base Djemah (48 km)
+      shield 0.88 (130 km on core/corridor, 88 on core)  pressure 2,652 ppl×P10 (edge-scaled) (2,652 people×threat)  herd 14.6/1000 km²  governance 0.60  legibility 0.61  1930s claim 0.00  → +124 km rim newly shielded
+38. ● [144]    48,000 ha      822 ppl  score 0.61  CAF  towns —; base Birao (14 km)
       shield 0.43 (36 km on core/corridor, 36 on core)  pressure 822 ppl×P10 (edge-scaled) (822 people×threat)  herd 17.2/1000 km²  governance 0.18  legibility 0.62  1930s claim 0.03  → +34 km rim newly shielded
-44. ● [238]    87,200 ha    1,955 ppl  score 0.58  SSD  towns Libu (1930s) 1,192; base Nagero (25 km)
+39. ● [243]   174,400 ha   17,509 ppl  score 0.61  CAF  towns Obo 17,249; base Obo (28 km)
+      shield 0.78 (118 km on core/corridor, 46 on core)  pressure 17,509 ppl×P10 (edge-scaled) (17,509 people×threat)  herd 14.5/1000 km²  governance 0.26  legibility 0.56  1930s claim 0.01  → +116 km rim newly shielded
+40. ● [123]    48,000 ha    3,378 ppl  score 0.60  SSD  towns Muraddiba (1930s village) 1,970; base Kediba (24 km)
+      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (3,378 people×threat)  herd 34.9/1000 km²  governance 0.90  legibility 0.6  1930s claim 0.06  → +0 km rim newly shielded
+41. ● [236]    87,200 ha    1,955 ppl  score 0.59  SSD  towns Libu (1930s) 1,192; base Nagero (25 km)
       shield 0.27 (40 km on core/corridor, 30 on core)  pressure 1,955 ppl×P10 (edge-scaled) (1,955 people×threat)  herd 25.2/1000 km²  governance 0.14  legibility 0.7  1930s claim 0.01  → +42 km rim newly shielded
-45. ● [228]    64,400 ha       67 ppl  score 0.58  SSD  towns —; base Deim Zubeir (12 km)
+42. ● [127]   232,400 ha   20,944 ppl  score 0.59  SSD  towns Diabio* (nearest_place, unverified) 6,636, I. Aymong... (1930s village) 4,995, Ezo 3,193; base Doruma (27 km)
+      shield 0.33 (82 km on core/corridor, 0 on core)  pressure 20,944 ppl×P10 (edge-scaled) (20,944 people×threat)  herd 31.4/1000 km²  governance 0.09  legibility 0.64  1930s claim 0.01  → +80 km rim newly shielded
+43. ● [227]    64,400 ha       67 ppl  score 0.58  SSD  towns —; base Deim Zubeir (12 km)
       shield 0.64 (56 km on core/corridor, 0 on core)  pressure 67 ppl×P10 (edge-scaled) (67 people×threat)  herd 24.0/1000 km²  governance 0.17  legibility 0.62  1930s claim 0.01  → +52 km rim newly shielded
-46. ● [194]   100,000 ha   70,697 ppl  score 0.58  SSD  towns Rumbek 70,596; base Rumbek (22 km)
-      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (70,697 people×threat)  herd 27.2/1000 km²  governance 0.64  legibility 0.74  1930s claim 0.02  → +0 km rim newly shielded
-47. ● [219]   136,000 ha   17,360 ppl  score 0.58  CAF  towns Sam-Ouandja 15,425; base Sam-Ouandja (11 km)
+44. ● [217]   136,000 ha   17,360 ppl  score 0.58  CAF  towns Sam-Ouandja 15,425; base Sam-Ouandja (11 km)
       shield 0.46 (80 km on core/corridor, 80 on core)  pressure 17,360 ppl×P10 (edge-scaled) (17,360 people×threat)  herd 24.2/1000 km²  governance 0.44  legibility 0.43  1930s claim 0.00  → +80 km rim newly shielded
-48. ● [249]    71,200 ha    1,458 ppl  score 0.57  SSD  towns —; base Mundri (52 km)
-      shield 0.61 (70 km on core/corridor, 0 on core)  pressure 1,458 ppl×P10 (edge-scaled) (1,458 people×threat)  herd 45.7/1000 km²  governance 0.16  legibility 0.44  1930s claim 0.01  → +70 km rim newly shielded
-49. ● [256]    67,200 ha      496 ppl  score 0.57  SSD  towns —; base Ibba (37 km)
+45. ● [201]    67,200 ha      496 ppl  score 0.58  SSD  towns —; base Ibba (37 km)
       shield 0.34 (38 km on core/corridor, 0 on core)  pressure 496 ppl×P10 (edge-scaled) (496 people×threat)  herd 40.9/1000 km²  governance 0.16  legibility 0.66  1930s claim 0.00  → +36 km rim newly shielded
-50. ● [168]   108,400 ha    7,476 ppl  score 0.56  SSD  towns Malong Kway (1930s village) 2,489, Wun Iwel (1930s village) 1,780, Busseri River* (nearest_place, unverified) 1,194; base Kuajok (25 km)
-      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (7,476 people×threat)  herd 35.5/1000 km²  governance 0.59  legibility 0.63  1930s claim 0.03  → +0 km rim newly shielded
-51. ● [275]    19,600 ha       13 ppl  score 0.56  SSD  towns —; base Tore (30 km)
-      shield 0.48 (22 km on core/corridor, 22 on core)  pressure 13 ppl×P10 (edge-scaled) (13 people×threat)  herd 21.2/1000 km²  governance 0.20  legibility 0.81  1930s claim 0.00  → +20 km rim newly shielded
-52. ● [155]    90,000 ha   27,219 ppl  score 0.56  SSD  towns Wau 15,443, Nyin Akok 2,827, Madud Nyok (1930s village) 2,107; base Nyin Akok (7 km)
+46. ● [184]    62,000 ha    4,890 ppl  score 0.58  SSD  towns Tali 3,685; base Kediba (19 km)
+      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (4,890 people×threat)  herd 37.5/1000 km²  governance 0.84  legibility 0.58  1930s claim 0.03  → +0 km rim newly shielded
+47. ● [167]   143,200 ha    7,948 ppl  score 0.58  SSD  towns Dirdi 2,840, Malou-Pech* (nearest_place, unverified) 2,688, Shan e (1930s village) 1,638; base Tonj (23 km)
+      shield 0.15 (24 km on core/corridor, 0 on core)  pressure 7,948 ppl×P10 (edge-scaled) (7,948 people×threat)  herd 20.7/1000 km²  governance 0.40  legibility 0.51  1930s claim 0.02  → +24 km rim newly shielded
+48. ● [171]   160,400 ha   96,422 ppl  score 0.58  SSD  towns Rumbek 70,596, Malek Agok 24,990; base Rumbek (14 km)
+      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (96,422 people×threat)  herd 26.9/1000 km²  governance 0.32  legibility 0.76  1930s claim 0.04  → +0 km rim newly shielded
+49. ● [98]    90,000 ha   27,219 ppl  score 0.57  SSD  towns Wau 15,443, Nyin Akok 2,827, Madud Nyok (1930s village) 2,107; base Nyin Akok (7 km)
       shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (27,219 people×threat)  herd 20.7/1000 km²  governance 0.70  legibility 0.73  1930s claim 0.03  → +0 km rim newly shielded
-53. ● [177]   157,200 ha    9,510 ppl  score 0.56  SSD  towns Dirdi 2,840, Wahko* (nearest_place, unverified) 1,856, Shan e (1930s village) 1,638; base Thiet (25 km)
-      shield 0.10 (18 km on core/corridor, 0 on core)  pressure 8,559 ppl×P10 (edge-scaled) (9,510 people×threat)  herd 19.4/1000 km²  governance 0.33  legibility 0.57  1930s claim 0.02  → +18 km rim newly shielded
-54. ● [191]   250,800 ha   12,366 ppl  score 0.56  SSD  towns Malou-Pech* (nearest_place, unverified) 2,688, Malou-Pech 2,383; base Cueibet (30 km)
-      shield 0.19 (36 km on core/corridor, 0 on core)  pressure 12,366 ppl×P10 (edge-scaled) (12,366 people×threat)  herd 26.4/1000 km²  governance 0.06  legibility 0.67  1930s claim 0.01  → +36 km rim newly shielded
-55. ● [270]    97,200 ha       37 ppl  score 0.55  CAF  towns —; base Obo (19 km)
-      shield 0.56 (70 km on core/corridor, 70 on core)  pressure 37 ppl×P10 (edge-scaled) (37 people×threat)  herd 13.9/1000 km²  governance 0.13  legibility 0.79  1930s claim 0.00  → +74 km rim newly shielded
-56. ● [159]   238,800 ha   48,388 ppl  score 0.55  SSD  towns Tonj 11,055, Thiet 4,705, Akok (1930s village) 3,944; base Thiet (10 km)
-      shield 0.13 (30 km on core/corridor, 0 on core)  pressure 48,388 ppl×P10 (edge-scaled) (48,388 people×threat)  herd 26.2/1000 km²  governance 0.08  legibility 0.5  1930s claim 0.03  → +32 km rim newly shielded
-57. ● [196]    60,400 ha   25,725 ppl  score 0.54  SSD  towns Malek Agok 24,990; base Rumbek (21 km)
-      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (25,725 people×threat)  herd 26.2/1000 km²  governance 0.85  legibility 0.55  1930s claim 0.06  → +0 km rim newly shielded
-58. ● [198]    80,000 ha    2,074 ppl  score 0.54  SSD  towns Akot* (nearest_place, unverified) 2,045; base Aduel (31 km)
+50. ● [114]   108,400 ha    7,476 ppl  score 0.57  SSD  towns Malong Kway (1930s village) 2,489, Wun Iwel (1930s village) 1,780, Busseri River* (nearest_place, unverified) 1,194; base Kuajok (25 km)
+      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (7,476 people×threat)  herd 35.5/1000 km²  governance 0.59  legibility 0.63  1930s claim 0.03  → +0 km rim newly shielded
+51. ● [191]    54,800 ha      119 ppl  score 0.57  SSD  towns —; base Mundri (17 km)
+      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (119 people×threat)  herd 45.1/1000 km²  governance 0.17  legibility 0.67  1930s claim 0.06  → +0 km rim newly shielded
+52. ● [190]    71,200 ha    1,458 ppl  score 0.57  SSD  towns —; base Mundri (52 km)
+      shield 0.61 (70 km on core/corridor, 0 on core)  pressure 1,458 ppl×P10 (edge-scaled) (1,458 people×threat)  herd 45.7/1000 km²  governance 0.16  legibility 0.44  1930s claim 0.01  → +70 km rim newly shielded
+53. ● [244]    97,200 ha       37 ppl  score 0.56  CAF  towns —; base Obo (19 km)
+      shield 0.54 (68 km on core/corridor, 68 on core)  pressure 37 ppl×P10 (edge-scaled) (37 people×threat)  herd 13.9/1000 km²  governance 0.13  legibility 0.79  1930s claim 0.00  → +72 km rim newly shielded
+54. ● [113]   179,600 ha   18,817 ppl  score 0.56  SSD  towns Yei River* (nearest_place, unverified) 8,510, Kotobi* (nearest_place, unverified) 3,165, Kemande 2,479; base Jambo (20 km)
+      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (18,817 people×threat)  herd 29.9/1000 km²  governance 0.24  legibility 0.71  1930s claim 0.02  → +0 km rim newly shielded
+55. ● [183]   138,000 ha    4,821 ppl  score 0.55  SSD  towns Tindalo 1,348; base Tindalo (20 km)
+      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (4,821 people×threat)  herd 25.6/1000 km²  governance 0.43  legibility 0.7  1930s claim 0.02  → +0 km rim newly shielded
+56. ● [174]    80,000 ha    2,074 ppl  score 0.55  SSD  towns Akot* (nearest_place, unverified) 2,045; base Aduel (31 km)
       shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (2,074 people×threat)  herd 22.3/1000 km²  governance 0.75  legibility 0.71  1930s claim 0.04  → +0 km rim newly shielded
-59. ● [207]   143,200 ha    8,581 ppl  score 0.54  SSD  towns Tali 3,685, Tindalo 1,348; base Tindalo (20 km)
-      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (8,581 people×threat)  herd 26.1/1000 km²  governance 0.40  legibility 0.69  1930s claim 0.03  → +0 km rim newly shielded
-60. ● [156]    49,600 ha   11,625 ppl  score 0.53  SSD  towns Alek 3,521, Adium (1930s village) 2,643, Pajok Bek (1930s village) 2,469; base Alek (11 km)
-      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (11,625 people×threat)  herd 2.1/1000 km²  governance 0.90  legibility 0.81  1930s claim 0.07  → +0 km rim newly shielded
-61. ● [148]    79,600 ha    5,939 ppl  score 0.53  SSD  towns Lang* (nearest_place, unverified) 5,492; base Aduel (22 km)
+57. ● [103]   238,800 ha   48,388 ppl  score 0.55  SSD  towns Tonj 11,055, Thiet 4,705, Akok (1930s village) 3,944; base Thiet (10 km)
+      shield 0.13 (30 km on core/corridor, 0 on core)  pressure 48,388 ppl×P10 (edge-scaled) (48,388 people×threat)  herd 26.2/1000 km²  governance 0.08  legibility 0.5  1930s claim 0.03  → +32 km rim newly shielded
+58. ● [91]    79,600 ha    5,939 ppl  score 0.55  SSD  towns Lang* (nearest_place, unverified) 5,492; base Aduel (22 km)
       shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (5,939 people×threat)  herd 24.9/1000 km²  governance 0.76  legibility 0.65  1930s claim 0.01  → +0 km rim newly shielded
-62. ● [271]    84,000 ha      251 ppl  score 0.53  COD  towns —; base Zémio (48 km)
-      shield 0.66 (114 km on core/corridor, 16 on core)  pressure 251 ppl×P10 (edge-scaled) (251 people×threat)  herd 11.6/1000 km²  governance 0.15  legibility 0.78  1930s claim 0.00  → +114 km rim newly shielded
-63. ● [255]   203,200 ha    5,164 ppl  score 0.53  SSD  towns Mambe 3,225; base Tore (51 km)
-      shield 0.26 (56 km on core/corridor, 36 on core)  pressure 5,164 ppl×P10 (edge-scaled) (5,164 people×threat)  herd 38.8/1000 km²  governance 0.16  legibility 0.53  1930s claim 0.00  → +58 km rim newly shielded
-64. ● [274]     9,200 ha      929 ppl  score 0.53  CAF  towns —; base Zémio (20 km)
+59. ● [163]    67,600 ha      305 ppl  score 0.55  SSD  towns —; base Raja (14 km)
+      shield 0.33 (36 km on core/corridor, 0 on core)  pressure 305 ppl×P10 (edge-scaled) (305 people×threat)  herd 32.7/1000 km²  governance 0.16  legibility 0.56  1930s claim 0.01  → +34 km rim newly shielded
+60. ● [168]   228,000 ha    9,678 ppl  score 0.55  SSD  towns Malou-Pech 2,383; base Cueibet (30 km)
+      shield 0.15 (32 km on core/corridor, 0 on core)  pressure 9,678 ppl×P10 (edge-scaled) (9,678 people×threat)  herd 26.4/1000 km²  governance 0.10  legibility 0.63  1930s claim 0.01  → +30 km rim newly shielded
+61. ● [94]    48,800 ha   13,522 ppl  score 0.54  SSD  towns Madhol 6,136, Dingdwel (1930s village) 2,474, Nababare (1930s village) 1,719; base Wanyjok (30 km)
+      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (13,522 people×threat)  herd 14.7/1000 km²  governance 0.90  legibility 0.69  1930s claim 0.06  → +0 km rim newly shielded
+62. ● [250]     9,200 ha      929 ppl  score 0.54  CAF  towns —; base Zémio (20 km)
       shield 1.24 (42 km on core/corridor, 20 on core)  pressure 929 ppl×P10 (edge-scaled) (929 people×threat)  herd 17.8/1000 km²  governance 0.20  legibility 0.38  1930s claim 0.00  → +34 km rim newly shielded
-65. ● [265]    54,400 ha    2,629 ppl  score 0.52  COD  towns Nabiapay 2,347; base Yambio (40 km)
+63. ● [100]    49,600 ha   11,625 ppl  score 0.54  SSD  towns Alek 3,521, Adium (1930s village) 2,643, Pajok Bek (1930s village) 2,469; base Alek (11 km)
+      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (11,625 people×threat)  herd 2.1/1000 km²  governance 0.90  legibility 0.81  1930s claim 0.07  → +0 km rim newly shielded
+64. ● [210]    54,400 ha    2,629 ppl  score 0.53  COD  towns Nabiapay 2,347; base Yambio (40 km)
       shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (2,629 people×threat)  herd 17.9/1000 km²  governance 0.88  legibility 0.79  1930s claim 0.01  → +0 km rim newly shielded
-66. ● [122]    45,600 ha       39 ppl  score 0.52  SDN  towns —; base الروتروتايا (15 km)
-      shield 0.15 (14 km on core/corridor, 14 on core)  pressure 27 ppl×P10 (edge-scaled) (39 people×threat)  herd 36.6/1000 km²  governance 0.18  legibility 0.57  1930s claim 0.00  → +14 km rim newly shielded
-67. ● [199]    83,600 ha   24,038 ppl  score 0.52  SSD  towns Akot* (nearest_place, unverified) 10,394, Nijong (1930s village) 7,234, Akot* (nearest_place, unverified) 2,195; base Mvolo (32 km)
+65. ● [247]    47,200 ha       56 ppl  score 0.53  COD  towns —; base Zémio (26 km)
+      shield 0.42 (38 km on core/corridor, 8 on core)  pressure 56 ppl×P10 (edge-scaled) (56 people×threat)  herd 11.6/1000 km²  governance 0.18  legibility 0.85  1930s claim 0.00  → +38 km rim newly shielded
+66. ● [120]   109,200 ha    6,203 ppl  score 0.53  SSD  towns Jambo 2,344, Kediba 1,362, Jambo 1,008; base Jambo (19 km)
+      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (6,203 people×threat)  herd 33.2/1000 km²  governance 0.59  legibility 0.58  1930s claim 0.02  → +0 km rim newly shielded
+67. ● [175]    83,600 ha   24,038 ppl  score 0.53  SSD  towns Akot* (nearest_place, unverified) 10,394, Nijong (1930s village) 7,234, Akot* (nearest_place, unverified) 2,195; base Mvolo (32 km)
       shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (24,038 people×threat)  herd 31.6/1000 km²  governance 0.73  legibility 0.58  1930s claim 0.04  → +0 km rim newly shielded
-68. ● [151]    67,200 ha   15,734 ppl  score 0.51  SSD  towns Madhol 6,136, Dingdwel (1930s village) 2,474, Majak (1930s village) 2,025; base Akak (30 km)
-      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (15,734 people×threat)  herd 13.0/1000 km²  governance 0.82  legibility 0.7  1930s claim 0.05  → +0 km rim newly shielded
-69. ● [176]    70,800 ha    2,409 ppl  score 0.51  SSD  towns Dilkwor (1930s village) 1,954; base Thiet (23 km)
-      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (2,409 people×threat)  herd 26.4/1000 km²  governance 0.80  legibility 0.54  1930s claim 0.03  → +0 km rim newly shielded
-70. ● [180]   105,600 ha    3,377 ppl  score 0.51  SDN  towns Kiir Adem 1,708, Koko* (nearest_place, unverified) 1,499; base Koko (Rian Kuj) (52 km)
-      shield 0.26 (28 km on core/corridor, 28 on core)  pressure 3,377 ppl×P10 (edge-scaled) (3,377 people×threat)  herd 6.6/1000 km²  governance 0.61  legibility 0.58  1930s claim 0.01  → +26 km rim newly shielded
-71. ● [212]    69,600 ha      482 ppl  score 0.49  SSD  towns —; base Mundri (23 km)
-      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (482 people×threat)  herd 44.1/1000 km²  governance 0.16  legibility 0.56  1930s claim 0.05  → +0 km rim newly shielded
-72. ● [160]    54,000 ha   40,534 ppl  score 0.49  SSD  towns Kuom 37,649, Malek Alel 1,440; base Aweil (9 km)
-      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (40,534 people×threat)  herd 21.0/1000 km²  governance 0.88  legibility 0.58  1930s claim 0.01  → +0 km rim newly shielded
-73. ● [149]    45,600 ha   17,990 ppl  score 0.49  SSD  towns Mayen Ulem 4,241, Mayen Ulem 3,747, Ariath 3,097; base Ariath (15 km)
-      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (17,990 people×threat)  herd 7.4/1000 km²  governance 0.91  legibility 0.6  1930s claim 0.04  → +0 km rim newly shielded
-74. ● [154]    88,000 ha   14,218 ppl  score 0.48  SSD  towns Panthou 3,559, Ayein (1930s) 2,509, Fan Dung (1930s village) 2,094; base Riang Aketh (20 km)
-      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (14,218 people×threat)  herd 12.5/1000 km²  governance 0.71  legibility 0.62  1930s claim 0.02  → +0 km rim newly shielded
-75. ● [183]   155,200 ha   11,221 ppl  score 0.48  SSD  towns Koko (Rian Kuj) 9,914; base Koko (Rian Kuj) (27 km)
-      shield 0.24 (44 km on core/corridor, 44 on core)  pressure 11,221 ppl×P10 (edge-scaled) (11,221 people×threat)  herd 10.9/1000 km²  governance 0.34  legibility 0.46  1930s claim 0.01  → +52 km rim newly shielded
-76. ● [204]   142,800 ha      646 ppl  score 0.48  SSD  towns —; base Mvolo (29 km)
-      shield 0.76 (178 km on core/corridor, 36 on core)  pressure 646 ppl×P10 (edge-scaled) (646 people×threat)  herd 29.5/1000 km²  governance 0.08  legibility 0.47  1930s claim 0.00  → +194 km rim newly shielded
-77. ● [266]    45,600 ha      101 ppl  score 0.48  SSD  towns —; base Tambura (76 km)
+68. ● [151]   105,600 ha    3,377 ppl  score 0.52  SDN  towns Kiir Adem 1,708, Koko* (nearest_place, unverified) 1,499; base Koko (Rian Kuj) (52 km)
+      shield 0.24 (26 km on core/corridor, 26 on core)  pressure 3,377 ppl×P10 (edge-scaled) (3,377 people×threat)  herd 6.6/1000 km²  governance 0.61  legibility 0.58  1930s claim 0.01  → +24 km rim newly shielded
+69. ● [154]   160,000 ha   11,221 ppl  score 0.49  SSD  towns Koko (Rian Kuj) 9,914; base Koko (Rian Kuj) (27 km)
+      shield 0.17 (28 km on core/corridor, 28 on core)  pressure 11,221 ppl×P10 (edge-scaled) (11,221 people×threat)  herd 10.8/1000 km²  governance 0.32  legibility 0.52  1930s claim 0.01  → +30 km rim newly shielded
+70. ● [246]    45,600 ha      101 ppl  score 0.49  SSD  towns —; base Tambura (76 km)
       shield 0.32 (24 km on core/corridor, 24 on core)  pressure 101 ppl×P10 (edge-scaled) (101 people×threat)  herd 15.0/1000 km²  governance 0.18  legibility 0.71  1930s claim 0.00  → +24 km rim newly shielded
-78. ● [171]   114,000 ha   12,673 ppl  score 0.48  SSD  towns Lunyaker 2,739, Jungkor (1930s village) 2,190, Dok (1930s village) 1,522; base Gogrial (23 km)
+71. ● [117]   114,000 ha   12,673 ppl  score 0.49  SSD  towns Lunyaker 2,739, Jungkor (1930s village) 2,190, Dok (1930s village) 1,522; base Gogrial (23 km)
       shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (12,673 people×threat)  herd 7.1/1000 km²  governance 0.56  legibility 0.72  1930s claim 0.04  → +0 km rim newly shielded
-79. ● [258]    83,600 ha      191 ppl  score 0.48  SSD  towns —; base Maridi (41 km)
-      shield 0.21 (30 km on core/corridor, 30 on core)  pressure 191 ppl×P10 (edge-scaled) (191 people×threat)  herd 26.5/1000 km²  governance 0.15  legibility 0.64  1930s claim 0.00  → +32 km rim newly shielded
-80. ● [208]    56,800 ha    1,130 ppl  score 0.47  SSD  towns —; base Kediba (15 km)
-      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (1,130 people×threat)  herd 37.2/1000 km²  governance 0.17  legibility 0.58  1930s claim 0.02  → +0 km rim newly shielded
-81. ● [150]    89,200 ha   30,154 ppl  score 0.47  SSD  towns Gogrial 5,309, Akon 5,072, Najok (1930s village) 3,828; base Alek (12 km)
+72. ● [97]    88,000 ha   14,218 ppl  score 0.49  SSD  towns Panthou 3,559, Ayein (1930s) 2,509, Fan Dung (1930s village) 2,094; base Riang Aketh (20 km)
+      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (14,218 people×threat)  herd 12.5/1000 km²  governance 0.71  legibility 0.62  1930s claim 0.02  → +0 km rim newly shielded
+73. ● [99]    60,000 ha    4,699 ppl  score 0.49  SSD  towns Wahko* (nearest_place, unverified) 1,856, Wahko* (nearest_place, unverified) 1,249, Waath (1930s village) 1,138; base Romich (36 km)
+      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (4,699 people×threat)  herd 20.8/1000 km²  governance 0.85  legibility 0.57  1930s claim 0.03  → +0 km rim newly shielded
+74. ● [239]   201,200 ha    5,404 ppl  score 0.49  CAF  towns Ngouyo 3 2,434, Djemah 1,802; base Djemah (41 km)
+      shield 0.85 (200 km on core/corridor, 132 on core)  pressure 5,404 ppl×P10 (edge-scaled) (5,404 people×threat)  herd 9.6/1000 km²  governance 0.17  legibility 0.54  1930s claim 0.00  → +200 km rim newly shielded
+75. ● [92]    63,600 ha   34,977 ppl  score 0.49  SSD  towns Yargot 7,558, Makuei 5,192, Mayen Ulem 4,241; base Akuem (14 km)
+      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (34,977 people×threat)  herd 7.2/1000 km²  governance 0.83  legibility 0.62  1930s claim 0.04  → +0 km rim newly shielded
+76. ● [93]    89,200 ha   30,154 ppl  score 0.49  SSD  towns Gogrial 5,309, Akon 5,072, Najok (1930s village) 3,828; base Alek (12 km)
       shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (30,154 people×threat)  herd 8.0/1000 km²  governance 0.70  legibility 0.65  1930s claim 0.03  → +0 km rim newly shielded
-82. ● [240]   217,600 ha    3,923 ppl  score 0.47  SSD  towns Dobola (1930s village) 1,076; base Nagero (43 km)
-      shield 0.48 (114 km on core/corridor, 0 on core)  pressure 3,923 ppl×P10 (edge-scaled) (3,923 people×threat)  herd 23.2/1000 km²  governance 0.12  legibility 0.37  1930s claim 0.01  → +112 km rim newly shielded
-83. ● [153]   105,200 ha   19,127 ppl  score 0.47  SSD  towns Lunyaker 5,259, Fan Shum (1930s village) 2,099, Alak (1930s village) 2,010; base Warrap (28 km)
+77. ● [198]   243,200 ha    5,165 ppl  score 0.49  SSD  towns Mambe 3,225; base Tore (51 km)
+      shield 0.07 (20 km on core/corridor, 0 on core)  pressure 5,165 ppl×P10 (edge-scaled) (5,165 people×threat)  herd 37.6/1000 km²  governance 0.07  legibility 0.56  1930s claim 0.00  → +20 km rim newly shielded
+78. ● [186]   154,400 ha    3,115 ppl  score 0.48  SSD  towns Yei River* (nearest_place, unverified) 1,129; base Rokon (29 km)
+      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (3,115 people×threat)  herd 34.2/1000 km²  governance 0.35  legibility 0.61  1930s claim 0.01  → +0 km rim newly shielded
+79. ● [199]    76,800 ha      410 ppl  score 0.48  SSD  towns —; base Jambo (41 km)
+      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (410 people×threat)  herd 33.7/1000 km²  governance 0.15  legibility 0.69  1930s claim 0.03  → +0 km rim newly shielded
+80. ● [96]   105,200 ha   19,127 ppl  score 0.48  SSD  towns Lunyaker 5,259, Fan Shum (1930s village) 2,099, Alak (1930s village) 2,010; base Warrap (28 km)
       shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (19,127 people×threat)  herd 7.5/1000 km²  governance 0.61  legibility 0.73  1930s claim 0.04  → +0 km rim newly shielded
-84. ● [233]     3,200 ha       15 ppl  score 0.46  CAF  towns —; base Djemah (141 km)
+81. ● [162]    47,600 ha       17 ppl  score 0.48  SSD  towns —; base Raga (Raja) (17 km)
+      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (17 people×threat)  herd 33.4/1000 km²  governance 0.18  legibility 0.66  1930s claim 0.00  → +0 km rim newly shielded
+82. ● [231]     3,200 ha       15 ppl  score 0.48  CAF  towns —; base Djemah (141 km)
       shield 0.57 (8 km on core/corridor, 8 on core)  pressure 6 ppl×P10 (edge-scaled) (15 people×threat)  herd 3.8/1000 km²  governance 0.20  legibility 0.76  1930s claim 0.00  → +6 km rim newly shielded
-85. ● [209]    45,200 ha      452 ppl  score 0.46  SSD  towns —; base Tindalo (22 km)
+83. ● [218]   209,600 ha    2,230 ppl  score 0.47  SSD  towns Kosho 1,871; base Kosho (28 km)
+      shield 0.55 (130 km on core/corridor, 6 on core)  pressure 2,230 ppl×P10 (edge-scaled) (2,230 people×threat)  herd 24.9/1000 km²  governance 0.14  legibility 0.47  1930s claim 0.00  → +142 km rim newly shielded
+84. ● [238]   217,600 ha    3,923 ppl  score 0.47  SSD  towns Dobola (1930s village) 1,076; base Nagero (43 km)
+      shield 0.48 (114 km on core/corridor, 0 on core)  pressure 3,923 ppl×P10 (edge-scaled) (3,923 people×threat)  herd 23.2/1000 km²  governance 0.12  legibility 0.37  1930s claim 0.01  → +112 km rim newly shielded
+85. ● [202]    83,600 ha      191 ppl  score 0.47  SSD  towns —; base Maridi (41 km)
+      shield 0.10 (14 km on core/corridor, 14 on core)  pressure 134 ppl×P10 (edge-scaled) (191 people×threat)  herd 26.5/1000 km²  governance 0.15  legibility 0.64  1930s claim 0.00  → +18 km rim newly shielded
+86. ● [180]   142,800 ha      646 ppl  score 0.47  SSD  towns —; base Mvolo (29 km)
+      shield 0.76 (178 km on core/corridor, 36 on core)  pressure 646 ppl×P10 (edge-scaled) (646 people×threat)  herd 29.5/1000 km²  governance 0.08  legibility 0.47  1930s claim 0.00  → +194 km rim newly shielded
+87. ● [166]    47,600 ha    1,960 ppl  score 0.47  SSD  towns Dilkwor (1930s village) 1,954; base Thiet (18 km)
+      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (1,960 people×threat)  herd 27.0/1000 km²  governance 0.18  legibility 0.57  1930s claim 0.03  → +0 km rim newly shielded
+88. ● [95]    84,400 ha   24,023 ppl  score 0.47  SSD  towns Malualkon 10,082, Warawar 4,927, Bak-Kou 2,622; base Wanyjok (23 km)
+      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (24,023 people×threat)  herd 6.8/1000 km²  governance 0.73  legibility 0.65  1930s claim 0.01  → +0 km rim newly shielded
+89. ● [185]    45,200 ha      452 ppl  score 0.47  SSD  towns —; base Tindalo (22 km)
       shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (452 people×threat)  herd 13.1/1000 km²  governance 0.18  legibility 0.75  1930s claim 0.01  → +0 km rim newly shielded
-86. ● [173]   263,600 ha    9,318 ppl  score 0.45  SSD  towns Jambo 2,344, Kediba 1,362, Yei River* (nearest_place, unverified) 1,129; base Rokon (18 km)
-      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (9,318 people×threat)  herd 33.8/1000 km²  governance 0.05  legibility 0.68  1930s claim 0.01  → +0 km rim newly shielded
-87. ● [262]   108,000 ha   14,841 ppl  score 0.45  COD  towns Naisa 12,847, Zikilingi 1,794; base Doruma (21 km)
+90. ● [204]   192,000 ha    4,271 ppl  score 0.47  COD  towns Gangala 3,459; base Doruma (40 km)
+      shield 0.04 (6 km on core/corridor, 6 on core)  pressure 1,281 ppl×P10 (edge-scaled) (4,271 people×threat)  herd 17.1/1000 km²  governance 0.19  legibility 0.59  1930s claim 0.00  → +8 km rim newly shielded
+91. ● [245]     6,000 ha      263 ppl  score 0.47  CAF  towns —; base Djemah (53 km)
+      shield 1.08 (28 km on core/corridor, 28 on core)  pressure 263 ppl×P10 (edge-scaled) (263 people×threat)  herd 12.8/1000 km²  governance 0.20  legibility 0.4  1930s claim 0.00  → +24 km rim newly shielded
+92. ● [207]   108,000 ha   14,841 ppl  score 0.46  COD  towns Naisa 12,847, Zikilingi 1,794; base Doruma (21 km)
       shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (14,841 people×threat)  herd 17.1/1000 km²  governance 0.59  legibility 0.65  1930s claim 0.00  → +0 km rim newly shielded
-88. ● [158]   162,000 ha    3,753 ppl  score 0.45  SSD  towns Kwek Atwot (1930s) 1,607; base Yirol (35 km)
-      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (3,753 people×threat)  herd 18.7/1000 km²  governance 0.31  legibility 0.65  1930s claim 0.02  → +0 km rim newly shielded
-89. ● [241]   264,000 ha    8,056 ppl  score 0.45  CAF  towns Ngouyo 3 2,434, Banangui 2,330, Djemah 1,802; base Djemah (41 km)
-      shield 0.78 (258 km on core/corridor, 158 on core)  pressure 8,056 ppl×P10 (edge-scaled) (8,056 people×threat)  herd 11.5/1000 km²  governance 0.04  legibility 0.51  1930s claim 0.00  → +250 km rim newly shielded
-90. ● [259]   174,000 ha    4,271 ppl  score 0.45  COD  towns Gangala 3,459; base Doruma (31 km)
-      shield 0.09 (18 km on core/corridor, 18 on core)  pressure 3,844 ppl×P10 (edge-scaled) (4,271 people×threat)  herd 17.0/1000 km²  governance 0.26  legibility 0.51  1930s claim 0.00  → +22 km rim newly shielded
-91. ● [139]    54,800 ha    1,177 ppl  score 0.45  CAF  towns —; base أم دافوق (25 km)
-      shield 0.67 (58 km on core/corridor, 58 on core)  pressure 1,177 ppl×P10 (edge-scaled) (1,177 people×threat)  herd 13.2/1000 km²  governance 0.17  legibility 0.43  1930s claim 0.00  → +52 km rim newly shielded
-92. ● [152]    66,000 ha   21,811 ppl  score 0.45  SSD  towns Malualkon 10,082, Warawar 4,927, Bak-Kou 2,622; base Wanyjok (17 km)
-      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (21,811 people×threat)  herd 6.3/1000 km²  governance 0.82  legibility 0.61  1930s claim 0.01  → +0 km rim newly shielded
-93. ● [203]   170,000 ha      880 ppl  score 0.45  SSD  towns —; base Mvolo (61 km)
-      shield 0.76 (156 km on core/corridor, 130 on core)  pressure 880 ppl×P10 (edge-scaled) (880 people×threat)  herd 25.0/1000 km²  governance 0.06  legibility 0.51  1930s claim 0.00  → +178 km rim newly shielded
-94. ● [123]    78,000 ha   31,933 ppl  score 0.44  SDN  towns Tissi 3 21,706, Abu Jradel 6,931, Abu Jradel* (nearest_place, unverified) 1,787; base Tissi (28 km)
+93. ● [128]    78,000 ha   31,933 ppl  score 0.46  SDN  towns Tissi 3 21,706, Abu Jradel 6,931, Abu Jradel* (nearest_place, unverified) 1,787; base Tissi (28 km)
       shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (31,933 people×threat)  herd 4.1/1000 km²  governance 0.76  legibility 0.77  1930s claim 0.01  → +0 km rim newly shielded
-95. ● [222]    16,400 ha      475 ppl  score 0.44  SSD  towns —; base Aroyo (67 km)
-      shield 0.59 (26 km on core/corridor, 16 on core)  pressure 475 ppl×P10 (edge-scaled) (475 people×threat)  herd 25.9/1000 km²  governance 0.20  legibility 0.28  1930s claim 0.00  → +24 km rim newly shielded
-96. ● [143]    95,600 ha        4 ppl  score 0.44  SSD  towns —; base Al Fifi (13 km)
-      shield 0.48 (54 km on core/corridor, 54 on core)  pressure 4 ppl×P10 (edge-scaled) (4 people×threat)  herd 13.6/1000 km²  governance 0.13  legibility 0.53  1930s claim 0.00  → +52 km rim newly shielded
-97. ● [169]   182,400 ha   15,204 ppl  score 0.44  SSD  towns Botanyit (1930s) 2,618, Tieraliet 2,380, Majak (1930s village) 1,895; base Malek Alel (23 km)
+94. ● [102]   162,000 ha    3,753 ppl  score 0.46  SSD  towns Kwek Atwot (1930s) 1,607; base Yirol (35 km)
+      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (3,753 people×threat)  herd 18.7/1000 km²  governance 0.31  legibility 0.65  1930s claim 0.02  → +0 km rim newly shielded
+95. ● [115]   182,400 ha   15,204 ppl  score 0.45  SSD  towns Botanyit (1930s) 2,618, Tieraliet 2,380, Majak (1930s village) 1,895; base Malek Alel (23 km)
       shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (15,204 people×threat)  herd 25.2/1000 km²  governance 0.23  legibility 0.54  1930s claim 0.02  → +0 km rim newly shielded
-98. ● [253]    58,800 ha      875 ppl  score 0.44  COD  towns —; base Ezo (22 km)
+96. ● [206]    82,400 ha       21 ppl  score 0.45  SSD  towns —; base Tore (13 km)
+      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (21 people×threat)  herd 25.6/1000 km²  governance 0.15  legibility 0.67  1930s claim 0.01  → +0 km rim newly shielded
+97. ● [143]   100,000 ha    1,421 ppl  score 0.45  CAF  towns —; base أم دافوق (24 km)
+      shield 0.25 (32 km on core/corridor, 32 on core)  pressure 1,421 ppl×P10 (edge-scaled) (1,421 people×threat)  herd 12.7/1000 km²  governance 0.13  legibility 0.5  1930s claim 0.02  → +32 km rim newly shielded
+98. ● [160]    56,400 ha    1,464 ppl  score 0.45  SSD  towns Aroyo 1,110; base Aroyo (16 km)
+      shield 0.32 (32 km on core/corridor, 0 on core)  pressure 1,464 ppl×P10 (edge-scaled) (1,464 people×threat)  herd 20.7/1000 km²  governance 0.17  legibility 0.28  1930s claim 0.00  → +36 km rim newly shielded
+99. ● [196]    58,800 ha      875 ppl  score 0.45  COD  towns —; base Ezo (22 km)
       shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (875 people×threat)  herd 23.7/1000 km²  governance 0.17  legibility 0.71  1930s claim 0.00  → +0 km rim newly shielded
-99. ● [221]   218,800 ha    2,250 ppl  score 0.43  SSD  towns Kosho 1,871; base Kosho (39 km)
-      shield 0.49 (152 km on core/corridor, 28 on core)  pressure 2,250 ppl×P10 (edge-scaled) (2,250 people×threat)  herd 23.8/1000 km²  governance 0.12  legibility 0.43  1930s claim 0.00  → +168 km rim newly shielded
-100. ● [225]    50,000 ha    1,205 ppl  score 0.43  CAF  towns —; base Nzako (45 km)
-      shield 0.35 (34 km on core/corridor, 34 on core)  pressure 1,205 ppl×P10 (edge-scaled) (1,205 people×threat)  herd 7.9/1000 km²  governance 0.18  legibility 0.58  1930s claim 0.00  → +34 km rim newly shielded
-101. ● [147]     2,800 ha        1 ppl  score 0.43  CAF  towns —; base أم دافوق (53 km)
+100. ● [147]    95,600 ha        4 ppl  score 0.44  SSD  towns —; base Al Fifi (13 km)
+      shield 0.48 (54 km on core/corridor, 54 on core)  pressure 4 ppl×P10 (edge-scaled) (4 people×threat)  herd 13.6/1000 km²  governance 0.13  legibility 0.53  1930s claim 0.00  → +52 km rim newly shielded
+101. ● [179]   170,000 ha      880 ppl  score 0.44  SSD  towns —; base Mvolo (61 km)
+      shield 0.76 (156 km on core/corridor, 130 on core)  pressure 880 ppl×P10 (edge-scaled) (880 people×threat)  herd 25.0/1000 km²  governance 0.06  legibility 0.51  1930s claim 0.00  → +178 km rim newly shielded
+102. ● [211]     2,800 ha        1 ppl  score 0.44  CAF  towns —; base أم دافوق (53 km)
       shield 1.14 (16 km on core/corridor, 16 on core)  pressure 1 ppl×P10 (edge-scaled) (1 people×threat)  herd 16.3/1000 km²  governance 0.20  legibility 0.11  1930s claim 0.00  → +12 km rim newly shielded
-102. ● [226]   229,600 ha   11,562 ppl  score 0.43  CAF  towns Zacko 4 10,364; base Nzako (20 km)
-      shield 0.22 (52 km on core/corridor, 52 on core)  pressure 11,562 ppl×P10 (edge-scaled) (11,562 people×threat)  herd 10.4/1000 km²  governance 0.10  legibility 0.51  1930s claim 0.00  → +50 km rim newly shielded
-103. ● [192]    78,800 ha        0 ppl  score 0.42  SSD  towns —; base Cueibet (44 km)
+103. ● [219]    65,600 ha      479 ppl  score 0.43  SSD  towns —; base Aroyo (73 km)
+      shield 0.60 (60 km on core/corridor, 0 on core)  pressure 479 ppl×P10 (edge-scaled) (479 people×threat)  herd 22.9/1000 km²  governance 0.17  legibility 0.42  1930s claim 0.00  → +56 km rim newly shielded
+104. ● [169]    78,800 ha        0 ppl  score 0.43  SSD  towns —; base Cueibet (44 km)
       shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (0 people×threat)  herd 27.3/1000 km²  governance 0.15  legibility 0.79  1930s claim 0.00  → +0 km rim newly shielded
-104. ● [210]   103,200 ha        8 ppl  score 0.42  SSD  towns —; base Maridi (73 km)
-      shield 0.68 (88 km on core/corridor, 36 on core)  pressure 8 ppl×P10 (edge-scaled) (8 people×threat)  herd 20.3/1000 km²  governance 0.12  legibility 0.55  1930s claim 0.00  → +84 km rim newly shielded
-105. ● [254]    91,200 ha    1,508 ppl  score 0.42  SSD  towns Maridi 1,220; base Maridi (24 km)
-      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (1,508 people×threat)  herd 42.1/1000 km²  governance 0.14  legibility 0.57  1930s claim 0.00  → +0 km rim newly shielded
-106. ● [137]   250,400 ha   29,324 ppl  score 0.42  SDN  towns Beira B* (nearest_place, unverified) 9,052, Chama (1930s village) 6,735, Jebel Yarra* (nearest_place, unverified) 4,631; base أم دافوق (39 km)
-      shield 0.35 (110 km on core/corridor, 100 on core)  pressure 29,324 ppl×P10 (edge-scaled) (29,324 people×threat)  herd 9.5/1000 km²  governance 0.06  legibility 0.26  1930s claim 0.02  → +112 km rim newly shielded
-107. ● [179]    86,400 ha    3,709 ppl  score 0.41  SDN  towns Kiir Adem 3,656; base Koko (Rian Kuj) (70 km)
-      shield 0.12 (14 km on core/corridor, 14 on core)  pressure 2,596 ppl×P10 (edge-scaled) (3,709 people×threat)  herd 7.6/1000 km²  governance 0.72  legibility 0.35  1930s claim 0.01  → +12 km rim newly shielded
-108. ● [227]    61,200 ha      296 ppl  score 0.41  CAF  towns —; base Bakouma (49 km)
+105. ● [225]   229,600 ha   11,562 ppl  score 0.42  CAF  towns Zacko 4 10,364; base Nzako (20 km)
+      shield 0.20 (48 km on core/corridor, 48 on core)  pressure 11,562 ppl×P10 (edge-scaled) (11,562 people×threat)  herd 10.4/1000 km²  governance 0.10  legibility 0.51  1930s claim 0.00  → +48 km rim newly shielded
+106. ● [224]    54,000 ha    1,205 ppl  score 0.42  CAF  towns —; base Nzako (45 km)
+      shield 0.40 (42 km on core/corridor, 42 on core)  pressure 1,205 ppl×P10 (edge-scaled) (1,205 people×threat)  herd 8.0/1000 km²  governance 0.18  legibility 0.54  1930s claim 0.00  → +42 km rim newly shielded
+107. ● [226]    61,200 ha      296 ppl  score 0.42  CAF  towns —; base Bakouma (49 km)
       shield 0.02 (2 km on core/corridor, 2 on core)  pressure 30 ppl×P10 (edge-scaled) (296 people×threat)  herd 6.7/1000 km²  governance 0.17  legibility 0.81  1930s claim 0.00  → +4 km rim newly shielded
-109. ● [215]    11,600 ha        0 ppl  score 0.40  SSD  towns —; base El Aburu (80 km)
-      shield 0.75 (24 km on core/corridor, 12 on core)  pressure 0 ppl×P10 (edge-scaled) (0 people×threat)  herd 14.2/1000 km²  governance 0.20  legibility 0.48  1930s claim 0.00  → +20 km rim newly shielded
-110. ● [263]    86,800 ha       24 ppl  score 0.40  COD  towns —; base Doruma (34 km)
-      shield 0.14 (18 km on core/corridor, 18 on core)  pressure 22 ppl×P10 (edge-scaled) (24 people×threat)  herd 14.1/1000 km²  governance 0.14  legibility 0.62  1930s claim 0.00  → +20 km rim newly shielded
-111. ● [188]   138,800 ha   15,832 ppl  score 0.40  SSD  towns Warrap 5,786, Lunyaker 2,938, Nahr al Jur* (nearest_place, unverified) 2,631; base Warrap (33 km)
+108. ● [188]   103,200 ha        8 ppl  score 0.42  SSD  towns —; base Maridi (73 km)
+      shield 0.68 (88 km on core/corridor, 36 on core)  pressure 8 ppl×P10 (edge-scaled) (8 people×threat)  herd 20.3/1000 km²  governance 0.12  legibility 0.55  1930s claim 0.00  → +84 km rim newly shielded
+109. ● [197]    91,200 ha    1,508 ppl  score 0.42  SSD  towns Maridi 1,220; base Maridi (24 km)
+      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (1,508 people×threat)  herd 42.1/1000 km²  governance 0.14  legibility 0.57  1930s claim 0.00  → +0 km rim newly shielded
+110. ● [248]   153,200 ha    1,692 ppl  score 0.42  CAF  towns Dembia 1,338; base Rafaï (39 km)
+      shield 0.75 (194 km on core/corridor, 68 on core)  pressure 1,692 ppl×P10 (edge-scaled) (1,692 people×threat)  herd 10.3/1000 km²  governance 0.07  legibility 0.51  1930s claim 0.00  → +200 km rim newly shielded
+111. ● [213]    11,600 ha        0 ppl  score 0.41  SSD  towns —; base El Aburu (80 km)
+      shield 1.25 (40 km on core/corridor, 28 on core)  pressure 0 ppl×P10 (edge-scaled) (0 people×threat)  herd 14.2/1000 km²  governance 0.20  legibility 0.48  1930s claim 0.00  → +32 km rim newly shielded
+112. ● [164]   138,800 ha   15,832 ppl  score 0.41  SSD  towns Warrap 5,786, Lunyaker 2,938, Nahr al Jur* (nearest_place, unverified) 2,631; base Warrap (33 km)
       shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (15,832 people×threat)  herd 17.7/1000 km²  governance 0.42  legibility 0.55  1930s claim 0.02  → +0 km rim newly shielded
-112. ● [162]    46,400 ha    1,195 ppl  score 0.40  SSD  towns —; base Liet-Nhom (23 km)
+113. ● [107]    46,400 ha    1,195 ppl  score 0.41  SSD  towns —; base Liet-Nhom (23 km)
       shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (1,195 people×threat)  herd 5.4/1000 km²  governance 0.18  legibility 0.62  1930s claim 0.04  → +0 km rim newly shielded
-113. ● [189]   129,200 ha    3,407 ppl  score 0.40  SSD  towns Ajak (1930s village) 1,086; base Warrap (15 km)
-      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (3,407 people×threat)  herd 20.0/1000 km²  governance 0.48  legibility 0.4  1930s claim 0.01  → +0 km rim newly shielded
-114. ● [205]   296,400 ha    6,537 ppl  score 0.40  SSD  towns Tali 2,348, Kansuelo (1930s village) 1,020; base Tali (27 km)
+114. ● [181]   296,400 ha    6,537 ppl  score 0.41  SSD  towns Tali 2,348, Kansuelo (1930s village) 1,020; base Tali (27 km)
       shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (6,537 people×threat)  herd 28.7/1000 km²  governance 0.02  legibility 0.66  1930s claim 0.02  → +0 km rim newly shielded
-115. ● [272]   112,400 ha    1,862 ppl  score 0.40  CAF  towns Dembia 1,338; base Rafaï (40 km)
-      shield 0.64 (126 km on core/corridor, 48 on core)  pressure 1,862 ppl×P10 (edge-scaled) (1,862 people×threat)  herd 10.7/1000 km²  governance 0.11  legibility 0.4  1930s claim 0.00  → +124 km rim newly shielded
-116. ● [217]    69,600 ha        0 ppl  score 0.39  SDN  towns —; base منجم أغبش (54 km)
-      shield 0.19 (22 km on core/corridor, 22 on core)  pressure 0 ppl×P10 (edge-scaled) (0 people×threat)  herd 24.7/1000 km²  governance 0.16  legibility 0.58  1930s claim 0.00  → +30 km rim newly shielded
-117. ● [197]   287,600 ha      521 ppl  score 0.39  SSD  towns —; base Agangrial (44 km)
-      shield 0.69 (192 km on core/corridor, 100 on core)  pressure 521 ppl×P10 (edge-scaled) (521 people×threat)  herd 18.7/1000 km²  governance 0.01  legibility 0.39  1930s claim 0.00  → +196 km rim newly shielded
-118. ● [223]    95,200 ha      332 ppl  score 0.39  CAF  towns —; base Nzako (10 km)
-      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (332 people×threat)  herd 13.8/1000 km²  governance 0.13  legibility 0.73  1930s claim 0.00  → +0 km rim newly shielded
-119. ● [239]   107,200 ha      459 ppl  score 0.39  SSD  towns —; base Nagero (29 km)
-      shield 0.85 (132 km on core/corridor, 132 on core)  pressure 459 ppl×P10 (edge-scaled) (459 people×threat)  herd 7.3/1000 km²  governance 0.12  legibility 0.46  1930s claim 0.00  → +138 km rim newly shielded
-120. ● [242]     6,000 ha      263 ppl  score 0.39  CAF  towns —; base Djemah (53 km)
-      shield 0.31 (8 km on core/corridor, 8 on core)  pressure 105 ppl×P10 (edge-scaled) (263 people×threat)  herd 12.8/1000 km²  governance 0.20  legibility 0.4  1930s claim 0.00  → +8 km rim newly shielded
-121. ● [132]   148,400 ha    3,002 ppl  score 0.38  CAF  towns —; base Tissi (32 km)
+115. ● [208]    86,800 ha       24 ppl  score 0.41  COD  towns —; base Doruma (34 km)
+      shield 0.14 (18 km on core/corridor, 18 on core)  pressure 22 ppl×P10 (edge-scaled) (24 people×threat)  herd 14.1/1000 km²  governance 0.14  legibility 0.62  1930s claim 0.00  → +20 km rim newly shielded
+116. ● [165]   129,200 ha    3,407 ppl  score 0.41  SSD  towns Ajak (1930s village) 1,086; base Warrap (15 km)
+      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (3,407 people×threat)  herd 20.0/1000 km²  governance 0.48  legibility 0.4  1930s claim 0.01  → +0 km rim newly shielded
+117. ● [139]   244,400 ha   21,084 ppl  score 0.40  SDN  towns Beira B* (nearest_place, unverified) 9,052, Jebel Yarra* (nearest_place, unverified) 4,631, Beira B 3,398; base أم دافوق (27 km)
+      shield 0.20 (46 km on core/corridor, 46 on core)  pressure 21,084 ppl×P10 (edge-scaled) (21,084 people×threat)  herd 9.1/1000 km²  governance 0.07  legibility 0.37  1930s claim 0.02  → +46 km rim newly shielded
+118. ● [148]   296,400 ha    1,513 ppl  score 0.40  SDN  towns Songo 1,157; base Songo (20 km)
+      shield 0.27 (74 km on core/corridor, 12 on core)  pressure 1,513 ppl×P10 (edge-scaled) (1,513 people×threat)  herd 21.7/1000 km²  governance 0.00  legibility 0.3  1930s claim 0.00  → +110 km rim newly shielded
+119. ● [212]    58,000 ha      250 ppl  score 0.40  SSD  towns —; base Al Fifi (63 km)
+      shield 1.08 (104 km on core/corridor, 90 on core)  pressure 250 ppl×P10 (edge-scaled) (250 people×threat)  herd 8.5/1000 km²  governance 0.17  legibility 0.41  1930s claim 0.00  → +96 km rim newly shielded
+120. ● [137]   148,400 ha    3,002 ppl  score 0.40  CAF  towns —; base Tissi (32 km)
       shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (3,002 people×threat)  herd 5.4/1000 km²  governance 0.38  legibility 0.66  1930s claim 0.02  → +0 km rim newly shielded
-122. ● [230]     2,400 ha        0 ppl  score 0.38  SSD  towns —; base Deim Zubeir (75 km)
+121. ● [215]    69,600 ha        0 ppl  score 0.40  SDN  towns —; base منجم أغبش (54 km)
+      shield 0.19 (22 km on core/corridor, 22 on core)  pressure 0 ppl×P10 (edge-scaled) (0 people×threat)  herd 24.7/1000 km²  governance 0.16  legibility 0.58  1930s claim 0.00  → +30 km rim newly shielded
+122. ● [157]    62,400 ha        0 ppl  score 0.39  SSD  towns —; base Raga (Raja) (41 km)
+      shield 0.37 (30 km on core/corridor, 30 on core)  pressure 0 ppl×P10 (edge-scaled) (0 people×threat)  herd 17.2/1000 km²  governance 0.17  legibility 0.57  1930s claim 0.00  → +30 km rim newly shielded
+123. ● [203]    53,200 ha        0 ppl  score 0.39  SSD  towns —; base Jambo (44 km)
+      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (0 people×threat)  herd 15.5/1000 km²  governance 0.18  legibility 0.72  1930s claim 0.00  → +0 km rim newly shielded
+124. ● [158]    96,400 ha       20 ppl  score 0.39  SSD  towns —; base Raja (50 km)
+      shield 0.24 (36 km on core/corridor, 36 on core)  pressure 20 ppl×P10 (edge-scaled) (20 people×threat)  herd 20.5/1000 km²  governance 0.13  legibility 0.51  1930s claim 0.00  → +34 km rim newly shielded
+125. ● [159]   272,800 ha    7,984 ppl  score 0.39  SSD  towns Marial Baai 4,065, Wongkurnuk (1930s village) 1,779, K'er N'yang 1,349; base Aroyo (48 km)
+      shield 0.06 (16 km on core/corridor, 0 on core)  pressure 6,387 ppl×P10 (edge-scaled) (7,984 people×threat)  herd 16.3/1000 km²  governance 0.04  legibility 0.48  1930s claim 0.01  → +14 km rim newly shielded
+126. ● [220]    95,200 ha      332 ppl  score 0.39  CAF  towns —; base Nzako (10 km)
+      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (332 people×threat)  herd 13.8/1000 km²  governance 0.13  legibility 0.73  1930s claim 0.00  → +0 km rim newly shielded
+127. ● [189]    57,200 ha       69 ppl  score 0.39  SSD  towns —; base Ibba (71 km)
+      shield 0.34 (36 km on core/corridor, 0 on core)  pressure 69 ppl×P10 (edge-scaled) (69 people×threat)  herd 22.5/1000 km²  governance 0.17  legibility 0.42  1930s claim 0.00  → +34 km rim newly shielded
+128. ● [173]   287,600 ha      521 ppl  score 0.39  SSD  towns —; base Agangrial (44 km)
+      shield 0.69 (192 km on core/corridor, 100 on core)  pressure 521 ppl×P10 (edge-scaled) (521 people×threat)  herd 18.7/1000 km²  governance 0.01  legibility 0.39  1930s claim 0.00  → +196 km rim newly shielded
+129. ● [242]    60,800 ha       17 ppl  score 0.39  CAF  towns —; base Obo (41 km)
+      shield 0.67 (74 km on core/corridor, 74 on core)  pressure 17 ppl×P10 (edge-scaled) (17 people×threat)  herd 5.4/1000 km²  governance 0.17  legibility 0.52  1930s claim 0.00  → +70 km rim newly shielded
+130. ● [229]     2,400 ha        0 ppl  score 0.39  SSD  towns —; base Deim Zubeir (75 km)
       shield 1.00 (12 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (0 people×threat)  herd 5.2/1000 km²  governance 0.20  legibility 0.55  1930s claim 0.00  → +10 km rim newly shielded
-123. ● [268]    98,800 ha       28 ppl  score 0.38  CAF  towns —; base Obo (42 km)
-      shield 0.67 (92 km on core/corridor, 92 on core)  pressure 28 ppl×P10 (edge-scaled) (28 people×threat)  herd 6.3/1000 km²  governance 0.13  legibility 0.55  1930s claim 0.00  → +90 km rim newly shielded
-124. ● [231]     2,400 ha       43 ppl  score 0.38  CAF  towns —; base Ouadda (93 km)
-      shield 2.17 (26 km on core/corridor, 26 on core)  pressure 43 ppl×P10 (edge-scaled) (43 people×threat)  herd 7.0/1000 km²  governance 0.20  legibility 0.29  1930s claim 0.00  → +12 km rim newly shielded
-125. ● [128]   300,800 ha   42,556 ppl  score 0.38  SDN  towns Al Toumat 23,727, Kimmemnia 5,729, Jebel Yarra* (nearest_place, unverified) 3,003; base Rahad-Angatu (23 km)
-      shield 0.10 (42 km on core/corridor, 42 on core)  pressure 42,556 ppl×P10 (edge-scaled) (42,556 people×threat)  herd 9.1/1000 km²  governance 0.02  legibility 0.13  1930s claim 0.01  → +120 km rim newly shielded
-126. ● [187]   295,600 ha    9,448 ppl  score 0.38  SSD  towns Marial Baai 4,065, Wongkurnuk (1930s village) 1,779, K'er N'yang 1,349; base Aroyo (62 km)
-      shield 0.20 (66 km on core/corridor, 22 on core)  pressure 9,448 ppl×P10 (edge-scaled) (9,448 people×threat)  herd 16.9/1000 km²  governance 0.02  legibility 0.43  1930s claim 0.01  → +84 km rim newly shielded
-127. ● [136]    47,200 ha      253 ppl  score 0.37  CAF  towns —; base أم دافوق (20 km)
-      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (253 people×threat)  herd 12.2/1000 km²  governance 0.18  legibility 0.5  1930s claim 0.03  → +0 km rim newly shielded
-128. ● [236]    68,800 ha    1,114 ppl  score 0.37  CAF  towns Yalinga* (nearest_place, unverified) 1,091; base Nzako (66 km)
+131. ● [237]   107,200 ha      459 ppl  score 0.38  SSD  towns —; base Nagero (29 km)
+      shield 0.85 (132 km on core/corridor, 132 on core)  pressure 459 ppl×P10 (edge-scaled) (459 people×threat)  herd 7.3/1000 km²  governance 0.12  legibility 0.46  1930s claim 0.00  → +138 km rim newly shielded
+132. ● [232]   246,000 ha      443 ppl  score 0.38  CAF  towns —; base Djemah (108 km)
+      shield 0.76 (148 km on core/corridor, 148 on core)  pressure 443 ppl×P10 (edge-scaled) (443 people×threat)  herd 8.6/1000 km²  governance 0.01  legibility 0.56  1930s claim 0.00  → +148 km rim newly shielded
+133. ● [195]    91,200 ha      368 ppl  score 0.38  SSD  towns —; base Mundri (39 km)
+      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (368 people×threat)  herd 36.3/1000 km²  governance 0.14  legibility 0.53  1930s claim 0.01  → +0 km rim newly shielded
+134. ● [234]    68,800 ha    1,114 ppl  score 0.38  CAF  towns Yalinga* (nearest_place, unverified) 1,091; base Nzako (66 km)
       shield 0.63 (72 km on core/corridor, 72 on core)  pressure 1,114 ppl×P10 (edge-scaled) (1,114 people×threat)  herd 9.3/1000 km²  governance 0.16  legibility 0.34  1930s claim 0.00  → +70 km rim newly shielded
-129. ● [211]    54,000 ha       69 ppl  score 0.37  SSD  towns —; base Ibba (71 km)
-      shield 0.28 (26 km on core/corridor, 0 on core)  pressure 69 ppl×P10 (edge-scaled) (69 people×threat)  herd 22.6/1000 km²  governance 0.18  legibility 0.39  1930s claim 0.00  → +26 km rim newly shielded
-130. ● [186]    96,400 ha       20 ppl  score 0.36  SSD  towns —; base Raja (50 km)
-      shield 0.05 (8 km on core/corridor, 8 on core)  pressure 8 ppl×P10 (edge-scaled) (20 people×threat)  herd 20.5/1000 km²  governance 0.13  legibility 0.51  1930s claim 0.00  → +8 km rim newly shielded
-131. ● [133]    51,200 ha      674 ppl  score 0.36  CAF  towns —; base أم دافوق (28 km)
+135. ● [138]    51,200 ha      674 ppl  score 0.37  CAF  towns —; base أم دافوق (28 km)
       shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (674 people×threat)  herd 8.4/1000 km²  governance 0.18  legibility 0.61  1930s claim 0.02  → +0 km rim newly shielded
-132. ● [214]    58,000 ha      250 ppl  score 0.36  SSD  towns —; base Al Fifi (63 km)
-      shield 0.50 (48 km on core/corridor, 34 on core)  pressure 250 ppl×P10 (edge-scaled) (250 people×threat)  herd 8.5/1000 km²  governance 0.17  legibility 0.41  1930s claim 0.00  → +48 km rim newly shielded
-133. ● [201]   106,400 ha      521 ppl  score 0.35  SSD  towns —; base Wulu (67 km)
+136. ● [177]   106,400 ha      521 ppl  score 0.35  SSD  towns —; base Wulu (67 km)
       shield 0.63 (118 km on core/corridor, 118 on core)  pressure 521 ppl×P10 (edge-scaled) (521 people×threat)  herd 11.9/1000 km²  governance 0.12  legibility 0.34  1930s claim 0.00  → +142 km rim newly shielded
-134. ● [157]   194,800 ha   48,421 ppl  score 0.35  SSD  towns Yargot 7,558, Makuei 5,192, Majak Kaar 4,843; base Mabior (17 km)
-      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (48,421 people×threat)  herd 7.3/1000 km²  governance 0.18  legibility 0.55  1930s claim 0.01  → +0 km rim newly shielded
-135. ● [131]   260,800 ha   50,900 ppl  score 0.35  SDN  towns Jebel Yarra* (nearest_place, unverified) 10,158, Ed Duqoinat (1930s village) 7,730, El Lafdi (1930s village) 6,421; base Al Akhdar (117 km)
-      shield 0.14 (34 km on core/corridor, 34 on core)  pressure 50,900 ppl×P10 (edge-scaled) (50,900 people×threat)  herd 1.0/1000 km²  governance 0.05  legibility 0.47  1930s claim 0.01  → +32 km rim newly shielded
-136. ● [126]   189,200 ha  588,809 ppl  score 0.34  SDN  towns بورام 552,141, Hameiar (1930s village) 8,031, Jebel Yarra* (nearest_place, unverified) 6,599; base Al Akhdar (17 km)
-      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (588,809 people×threat)  herd 4.8/1000 km²  governance 0.20  legibility 0.52  1930s claim 0.02  → +0 km rim newly shielded
-137. ● [234]   235,200 ha      443 ppl  score 0.34  CAF  towns —; base Djemah (107 km)
-      shield 0.74 (164 km on core/corridor, 164 on core)  pressure 443 ppl×P10 (edge-scaled) (443 people×threat)  herd 8.5/1000 km²  governance 0.02  legibility 0.47  1930s claim 0.00  → +168 km rim newly shielded
-138. ● [129]   110,000 ha   91,548 ppl  score 0.33  SDN  towns Sherab 23,651, Khayr Wajih 13,936, طلحاية 12,401; base Khayr Wajih (6 km)
+137. ● [101]   176,800 ha   31,434 ppl  score 0.35  SSD  towns Majak Kaar 4,843, Mabior 3,334, Mayong (1930s village) 2,757; base Ariath (16 km)
+      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (31,434 people×threat)  herd 7.3/1000 km²  governance 0.25  legibility 0.53  1930s claim 0.01  → +0 km rim newly shielded
+138. ● [131]   195,200 ha  586,030 ppl  score 0.35  SDN  towns بورام 552,141, Hameiar (1930s village) 8,031, Jebel Yarra* (nearest_place, unverified) 6,599; base Al Akhdar (17 km)
+      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (586,030 people×threat)  herd 4.9/1000 km²  governance 0.18  legibility 0.53  1930s claim 0.02  → +0 km rim newly shielded
+139. ● [134]   304,800 ha   42,556 ppl  score 0.35  SDN  towns Al Toumat 23,727, Kimmemnia 5,729, Jebel Yarra* (nearest_place, unverified) 3,003; base Al Toumat (26 km)
+      shield 0.08 (32 km on core/corridor, 32 on core)  pressure 42,556 ppl×P10 (edge-scaled) (42,556 people×threat)  herd 9.1/1000 km²  governance 0.02  legibility 0.14  1930s claim 0.01  → +80 km rim newly shielded
+140. ● [140]   300,000 ha   16,752 ppl  score 0.34  SDN  towns Chama (1930s village) 6,735, Jebel Yarra* (nearest_place, unverified) 3,247, Kimmemnia 2,397; base Seseiban (50 km)
+      shield 0.13 (38 km on core/corridor, 28 on core)  pressure 16,752 ppl×P10 (edge-scaled) (16,752 people×threat)  herd 9.4/1000 km²  governance 0.02  legibility 0.17  1930s claim 0.01  → +42 km rim newly shielded
+141. ● [146]   184,800 ha        0 ppl  score 0.34  SSD  towns —; base Al Fifi (45 km)
+      shield 0.47 (76 km on core/corridor, 76 on core)  pressure 0 ppl×P10 (edge-scaled) (0 people×threat)  herd 10.1/1000 km²  governance 0.04  legibility 0.59  1930s claim 0.00  → +74 km rim newly shielded
+142. ● [135]   110,000 ha   91,548 ppl  score 0.34  SDN  towns Sherab 23,651, Khayr Wajih 13,936, طلحاية 12,401; base Khayr Wajih (6 km)
       shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (91,548 people×threat)  herd 6.1/1000 km²  governance 0.58  legibility 0.32  1930s claim 0.02  → +0 km rim newly shielded
-139. ● [121]    67,600 ha    4,331 ppl  score 0.33  SDN  towns Beira B* (nearest_place, unverified) 2,136, Jebel Yarra* (nearest_place, unverified) 1,081; base Nkharh (14 km)
+143. ● [156]   162,000 ha        2 ppl  score 0.34  SSD  towns —; base Koko (Rian Kuj) (55 km)
+      shield 0.51 (76 km on core/corridor, 76 on core)  pressure 2 ppl×P10 (edge-scaled) (2 people×threat)  herd 11.4/1000 km²  governance 0.06  legibility 0.44  1930s claim 0.00  → +74 km rim newly shielded
+144. ● [122]    67,600 ha    4,331 ppl  score 0.33  SDN  towns Beira B* (nearest_place, unverified) 2,136, Jebel Yarra* (nearest_place, unverified) 1,081; base Nkharh (14 km)
       shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (4,331 people×threat)  herd 8.4/1000 km²  governance 0.82  legibility 0.16  1930s claim 0.00  → +0 km rim newly shielded
-140. ● [134]   250,800 ha    8,678 ppl  score 0.33  SDN  towns Jebel Yarra* (nearest_place, unverified) 3,247, Kimmemnia 2,397; base Seseiban (45 km)
-      shield 0.13 (36 km on core/corridor, 36 on core)  pressure 8,678 ppl×P10 (edge-scaled) (8,678 people×threat)  herd 8.8/1000 km²  governance 0.06  legibility 0.11  1930s claim 0.01  → +56 km rim newly shielded
-141. ● [237]   131,200 ha      679 ppl  score 0.33  CAF  towns —; base Nzako (121 km)
+145. ● [235]   131,200 ha      679 ppl  score 0.33  CAF  towns —; base Nzako (121 km)
       shield 1.06 (188 km on core/corridor, 188 on core)  pressure 679 ppl×P10 (edge-scaled) (679 people×threat)  herd 0.6/1000 km²  governance 0.09  legibility 0.37  1930s claim 0.00  → +206 km rim newly shielded
-142. ● [130]   220,000 ha    8,452 ppl  score 0.32  SDN  towns Abu Qasee (1930s village) 2,290, Jebel Yarra* (nearest_place, unverified) 2,147, Jargas (1930s village) 1,530; base Al Akhdar (64 km)
-      shield 0.11 (26 km on core/corridor, 26 on core)  pressure 8,452 ppl×P10 (edge-scaled) (8,452 people×threat)  herd 2.3/1000 km²  governance 0.12  legibility 0.39  1930s claim 0.02  → +38 km rim newly shielded
-143. ● [224]   513,200 ha    3,950 ppl  score 0.32  CAF  towns Mbangana 1 2,809; base Ouadda (116 km)
-      shield 0.61 (228 km on core/corridor, 160 on core)  pressure 3,950 ppl×P10 (edge-scaled) (3,950 people×threat)  herd 7.4/1000 km²  governance 0.00  legibility 0.37  1930s claim 0.00  → +246 km rim newly shielded
-144. ● [235]    77,600 ha      130 ppl  score 0.32  CAF  towns —; base Nzako (119 km)
-      shield 1.00 (114 km on core/corridor, 114 on core)  pressure 130 ppl×P10 (edge-scaled) (130 people×threat)  herd 0.6/1000 km²  governance 0.15  legibility 0.16  1930s claim 0.00  → +108 km rim newly shielded
-145. ● [141]    53,600 ha      977 ppl  score 0.31  SDN  towns —; base Rahad-Angatu (26 km)
+146. ● [132]   273,200 ha   11,257 ppl  score 0.33  SDN  towns Jebel Yarra* (nearest_place, unverified) 2,805, Abu Qasee (1930s village) 2,290, Jebel Yarra* (nearest_place, unverified) 2,147; base Al Akhdar (66 km)
+      shield 0.15 (34 km on core/corridor, 34 on core)  pressure 11,257 ppl×P10 (edge-scaled) (11,257 people×threat)  herd 2.3/1000 km²  governance 0.04  legibility 0.44  1930s claim 0.01  → +38 km rim newly shielded
+147. ● [145]    53,600 ha      977 ppl  score 0.33  SDN  towns —; base Rahad-Angatu (26 km)
       shield 0.02 (2 km on core/corridor, 2 on core)  pressure 98 ppl×P10 (edge-scaled) (977 people×threat)  herd 8.6/1000 km²  governance 0.18  legibility 0.16  1930s claim 0.01  → +4 km rim newly shielded
-146. ● [184]   162,000 ha        2 ppl  score 0.30  SSD  towns —; base Koko (Rian Kuj) (55 km)
-      shield 0.32 (48 km on core/corridor, 48 on core)  pressure 2 ppl×P10 (edge-scaled) (2 people×threat)  herd 11.4/1000 km²  governance 0.06  legibility 0.44  1930s claim 0.00  → +50 km rim newly shielded
-147. ● [202]   258,000 ha      461 ppl  score 0.30  SSD  towns —; base Wulu (98 km)
+148. ● [233]    81,600 ha      130 ppl  score 0.32  CAF  towns —; base Nzako (121 km)
+      shield 1.07 (128 km on core/corridor, 128 on core)  pressure 130 ppl×P10 (edge-scaled) (130 people×threat)  herd 0.6/1000 km²  governance 0.15  legibility 0.17  1930s claim 0.00  → +120 km rim newly shielded
+149. ● [152]   131,200 ha      166 ppl  score 0.32  SDN  towns —; base Koko (Rian Kuj) (59 km)
+      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (166 people×threat)  herd 6.5/1000 km²  governance 0.09  legibility 0.71  1930s claim 0.01  → +0 km rim newly shielded
+150. ● [178]   258,000 ha      461 ppl  score 0.32  SSD  towns —; base Wulu (98 km)
       shield 0.56 (176 km on core/corridor, 176 on core)  pressure 461 ppl×P10 (edge-scaled) (461 people×threat)  herd 11.2/1000 km²  governance 0.01  legibility 0.36  1930s claim 0.00  → +192 km rim newly shielded
-148. ● [125]   240,000 ha   38,604 ppl  score 0.30  SDN  towns Barodi (1930s village) 15,484, Al Malwi 9,128, Al Malwi 8,122; base Abu Gudul (15 km)
-      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (38,604 people×threat)  herd 7.4/1000 km²  governance 0.08  legibility 0.55  1930s claim 0.02  → +0 km rim newly shielded
-149. ● [181]   120,000 ha       50 ppl  score 0.30  SDN  towns —; base Koko (Rian Kuj) (55 km)
-      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (50 people×threat)  herd 6.7/1000 km²  governance 0.10  legibility 0.66  1930s claim 0.01  → +0 km rim newly shielded
-150. ● [124]   257,200 ha   94,192 ppl  score 0.30  SDN  towns أم دافوق 82,321, Am Dafok 4,280, أم دافوق* (nearest_place, unverified) 1,858; base أم دافوق (27 km)
+151. ● [153]   281,600 ha   20,953 ppl  score 0.31  SSD  towns Omdurman 4,820, Busseri River* (nearest_place, unverified) 2,765, Busseri River* (nearest_place, unverified) 2,486; base Ariath (30 km)
+      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (20,953 people×threat)  herd 8.4/1000 km²  governance 0.03  legibility 0.68  1930s claim 0.01  → +0 km rim newly shielded
+152. ● [129]   257,200 ha   94,192 ppl  score 0.31  SDN  towns أم دافوق 82,321, Am Dafok 4,280, أم دافوق* (nearest_place, unverified) 1,858; base أم دافوق (27 km)
       shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (94,192 people×threat)  herd 4.7/1000 km²  governance 0.05  legibility 0.67  1930s claim 0.02  → +0 km rim newly shielded
-151. ● [182]   292,800 ha   21,069 ppl  score 0.29  SSD  towns Omdurman 4,820, Busseri River* (nearest_place, unverified) 2,765, Busseri River* (nearest_place, unverified) 2,486; base Ariath (36 km)
-      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (21,069 people×threat)  herd 8.2/1000 km²  governance 0.02  legibility 0.66  1930s claim 0.01  → +0 km rim newly shielded
-152. ● [229]   182,400 ha       56 ppl  score 0.29  CAF  towns —; base Djemah (138 km)
-      shield 0.69 (150 km on core/corridor, 150 on core)  pressure 56 ppl×P10 (edge-scaled) (56 people×threat)  herd 8.0/1000 km²  governance 0.05  legibility 0.26  1930s claim 0.00  → +152 km rim newly shielded
-153. ● [142]   184,800 ha        0 ppl  score 0.28  SSD  towns —; base Al Fifi (45 km)
-      shield 0.07 (12 km on core/corridor, 12 on core)  pressure 0 ppl×P10 (edge-scaled) (0 people×threat)  herd 10.1/1000 km²  governance 0.04  legibility 0.59  1930s claim 0.00  → +10 km rim newly shielded
-154. ● [135]    48,800 ha        0 ppl  score 0.26  SDN  towns —; base Al Akhdar (119 km)
-      shield 0.49 (44 km on core/corridor, 44 on core)  pressure 0 ppl×P10 (edge-scaled) (0 people×threat)  herd 4.4/1000 km²  governance 0.18  legibility 0.27  1930s claim 0.00  → +44 km rim newly shielded
-155. ● [127]   285,200 ha   49,986 ppl  score 0.16  SDN  towns Seseiban 20,434, Gurgur (1930s village) 4,555, Hawak 4,305; base Aboure (28 km)
+153. ● [130]   232,800 ha   38,578 ppl  score 0.30  SDN  towns Barodi (1930s village) 15,484, Al Malwi 9,128, Al Malwi 8,122; base Abu Gudul (15 km)
+      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (38,578 people×threat)  herd 7.6/1000 km²  governance 0.09  legibility 0.53  1930s claim 0.02  → +0 km rim newly shielded
+154. ● [228]   205,600 ha       56 ppl  score 0.29  CAF  towns —; base Djemah (137 km)
+      shield 0.67 (132 km on core/corridor, 132 on core)  pressure 56 ppl×P10 (edge-scaled) (56 people×threat)  herd 7.9/1000 km²  governance 0.03  legibility 0.33  1930s claim 0.00  → +134 km rim newly shielded
+155. ● [221]    52,400 ha       45 ppl  score 0.28  CAF  towns —; base Ouadda (97 km)
+      shield 0.09 (14 km on core/corridor, 14 on core)  pressure 32 ppl×P10 (edge-scaled) (45 people×threat)  herd 7.3/1000 km²  governance 0.18  legibility 0.3  1930s claim 0.00  → +16 km rim newly shielded
+156. ● [222]   476,000 ha    3,950 ppl  score 0.27  CAF  towns Mbangana 1 2,809; base Ouadda (116 km)
+      shield 0.26 (122 km on core/corridor, 54 on core)  pressure 3,950 ppl×P10 (edge-scaled) (3,950 people×threat)  herd 7.6/1000 km²  governance 0.00  legibility 0.28  1930s claim 0.00  → +126 km rim newly shielded
+157. ● [223]    56,400 ha        0 ppl  score 0.23  CAF  towns —; base Nzako (94 km)
+      shield 0.24 (36 km on core/corridor, 36 on core)  pressure 0 ppl×P10 (edge-scaled) (0 people×threat)  herd 6.2/1000 km²  governance 0.17  legibility 0.19  1930s claim 0.00  → +36 km rim newly shielded
+158. ● [136]   213,200 ha   50,900 ppl  score 0.21  SDN  towns Jebel Yarra* (nearest_place, unverified) 10,158, Ed Duqoinat (1930s village) 7,730, El Lafdi (1930s village) 6,421; base Al Akhdar (114 km)
+      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (50,900 people×threat)  herd 0.6/1000 km²  governance 0.13  legibility 0.52  1930s claim 0.01  → +0 km rim newly shielded
+159. ● [133]   285,200 ha   49,986 ppl  score 0.16  SDN  towns Seseiban 20,434, Gurgur (1930s village) 4,555, Hawak 4,305; base Aboure (28 km)
       shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (49,986 people×threat)  herd 5.3/1000 km²  governance 0.03  legibility 0.29  1930s claim 0.01  → +0 km rim newly shielded
+160. ● [141]   282,400 ha    3,709 ppl  score 0.13  SDN  towns Kiir Adem 3,656; base Koko (Rian Kuj) (110 km)
+      shield 0.00 (0 km on core/corridor, 0 on core)  pressure 0 ppl×P10 (edge-scaled) (3,709 people×threat)  herd 4.6/1000 km²  governance 0.03  legibility 0.33  1930s claim 0.00  → +0 km rim newly shielded

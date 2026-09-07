@@ -27,6 +27,14 @@ Year {{ 'one' if y==1 else 'two' }}: {{ es|map(attribute='place')|join(' and ') 
 
 {% endfor %}
 Together the {{ F.deploy.n_echo|words }} hold about {{ F.deploy.echo_total_ha|num }} ha and {{ F.deploy.echo_total_people|num }} people. All are herder country - {{ F.deploy.echo_herd_min }}-{{ F.deploy.echo_herd_max }}% of their fire fronts are transhumance - which is why they must be conservancies with grazing rules, not exclusion zones.
+{% if echo_foreign %}
+
+Across the borders the same optimisation names community zones of the same character, and each country is a SEPARATE budget line so that the South Sudan request ({{ B.ssd_total|usd }}) buys South Sudanese conservancies only: {% for k, es in echo_foreign.items() if es %}{% set S = F.deploy.strands[k] %}{% set side = {'CAR': 'on the Central African side', 'COD': 'on the Congolese side', 'SDN': 'on the Sudanese side'}[k] %}{{ side }}, {% for e in es %}{{ e.place }} ({{ e.id }}, {{ e.area_ha|num }} ha, {{ e.people|num }} people, {{ e.gold }} gold-target cells{% if e.reported %}, {{ e.reported }} reported working{{ 's' if e.reported>1 }}{% endif %}){{ ' and ' if not loop.last }}{% endfor %} under the {{ S.law }}, {{ B.strands[k].total|usd }} over {{ F.years }} years{{ '; ' if not loop.last else '.' }}{% endfor %} The CAR line is Chinko's own conservancy budget. On the map the CAR and DRC conservancies are drawn with a dashed outline and a lighter fill; the Sudanese one is drawn like the South Sudanese.
+{% endif %}
+{% if F.deploy.robustness and F.deploy.robustness.draws %}
+
+How firm is this choice of conservancies? The conservancies were not chosen on a single score. The urgency ranking was re-run {{ F.deploy.robustness.draws|num }} times with the weights and every zone's gold, people and threat numbers jittered and one zone in ten dropped, and a zone is staffed in the order of how often it survives that test, the point score only breaking ties. {% set R = F.deploy.robustness %}{% set firm = R.chosen|selectattr(2, '>=', 0.75)|list %}{% set soft = R.chosen|rejectattr(2, '>=', 0.75)|list %}{{ firm|length|words|capitalize }} of the {{ R.chosen|length|words }} chosen zones ({% for c in firm %}{{ c[3].split(',')[0] }}{{ ', ' if not loop.last }}{% endfor %}) are picked in three draws of four or more{% if soft %}; {% for c in soft %}{{ c[3].split(',')[0] }} in {{ (c[2]*100)|round|int }}%{{ ', ' if not loop.last }}{% endfor %} of draws - {% if soft|length == 1 %}that seat is{% else %}those seats are{% endif %} a judgement between near-equals{% if R.bench %} ({% for b in R.bench[:3] %}{{ b[3].split(',')[0] }} {{ (b[2]*100)|round|int }}%{{ ', ' if not loop.last }}{% endfor %} would take {% if soft|length == 1 %}it{% else %}them{% endif %} on other days){% endif %}{% endif %}.{% if R.swapped_in %} The test changed the answer: on the point score alone {% for u, t in R.swapped_out %}{{ t.split(',')[0] }}{{ ', ' if not loop.last }}{% endfor %} would have been staffed; {% for u, t in R.swapped_in %}{{ t.split(',')[0] }}{{ ', ' if not loop.last }}{% endfor %} {{ 'is' if R.swapped_in|length == 1 else 'are' }} staffed instead because {{ 'it survives' if R.swapped_in|length == 1 else 'they survive' }} the perturbation more often.{% endif %} The zoning itself was tested separately under resampled data (SUPPORT.txt).
+{% endif %}
 
 Registration will start at {{ echo_by_year[1]|map(attribute='place')|join(' and ') }}. A section 14 application is made through the county, so each proposed boundary has been laid over the government administrative set ({{ F.deploy.admin_source }}; the CAR, Sudan and Congo sets likewise): the staffed conservancies and corridors fall in {{ F.deploy.n_counties }} counties of {{ F.deploy.states[:-1]|join(', ') }} and {{ F.deploy.states[-1] }} ({{ F.deploy.counties|join(', ') }}) and touch {{ F.deploy.n_payams }} payams, each listed with its share of the zone in the summary below, so the commissioners and payam administrators who must sign are known before the first meeting. Communities, a facilitator and legal counsel scope the applications during the first field season and file them in the 2027 rains, with the implementing partner registering in parallel with the Relief and Rehabilitation Commission. The target is at least one application accepted as complete in the first year and one conservancy authorized in the second, its community scouts registered under sections 15-16 as the legal form of the ECHO and TANGO teams. Each conservancy is framed around historic return: the traced 1930s sheets document, village by village, that these are families going back to their own ground, which the Act recognizes for long-standing residents. Between {{ F.deploy.echo_unnamed_min }}% and {{ F.deploy.echo_unnamed_max }}% of each proposed boundary still crosses ground with no river or hill to mark it, and those stretches are what the first season walks with the community. At {{ B.action4_register|usd }} this is the largest single line in the budget.
 
@@ -36,7 +44,7 @@ The 2026 Act requires their written permission before natural resources can be l
 
 Artisanal mining will be managed as a lawful livelihood: strictly prohibited within the proposed park and key headwaters, but licensed and supported within agreed zones outside them.
 
-The {{ 'two' if F.years==2 else F.years }}-year budget is fixed at {{ B.total|musd }} ({{ B.per_year|map('usd')|join(' / ') }}; the first six months {{ B.first_6_months|usd }}).
+The {{ 'two' if F.years==2 else F.years }}-year budget is fixed at {{ B.total|musd }} ({{ B.per_year|map('usd')|join(' / ') }}; the first six months {{ B.first_6_months|usd }}){% if B.strands %}, of which the South Sudan request is {{ B.ssd_total|musd }} and the cross-border conservancy strands, each budgeted separately, {% for k, v in B.strands.items() %}{{ {'CAR': 'CAR', 'COD': 'DRC', 'SDN': 'Sudan'}[k] }} {{ v.total|musd }} ({{ v.per_year|map('usd')|join(' / ') }}){{ ', ' if not loop.last }}{% endfor %}{% endif %}.
 
 No new organizations, vehicle fleets, aircraft, or enforcement equipment will be established. {% set y1 = F.deploy.by_year[0] %}{% set y2 = F.deploy.by_year[1] %}Year one fields {{ y1.staff }} people ({{ y1.echo|words }} ECHO teams, {{ y1.tango|words }} TANGO teams, {{ y1.fp|words }} focal point{{ 's' if y1.fp>1 }}); year two adds {{ y2.staff - y1.staff }} for {{ y2.staff }} in all ({{ y2.echo|words }} ECHO, {{ y2.tango|words }} TANGO, {{ y2.fp|words }} focal points).
 
@@ -68,7 +76,7 @@ What this procedure cannot do is also stated. Populations are satellite lower bo
 
 EASY - WHAT THE MAP SHOWS
 
-The map covers the study area from Radom in Sudan to Garamba in Congo. Faint red hairlines are individual fire fronts tracked from satellite in 2024-26; where they bunch into dark red bands, herds are moving. Orange dots are today's towns and villages, sized by population. Olive squares are the gold model's most likely target cells (targets, not mines), triangles are places where imagery shows working-like ground, and diamonds are workings reported by others. Thin dashed lines are the machine zoning of the whole area - green for park-grade core, grey-green for wilderness, purple for community conservancy, red for herd corridor - with the boundaries drawn by the plan's authors in grey behind them, and Southern National Park tinted as the one gazetted park. The solid, filled shapes are the only places where this intervention puts people: purple blocks are the {{ F.deploy.n_echo|words }} community conservancies served by an ECHO team, red blocks are the {{ F.deploy.n_tango_zones|words }} herd corridors served by a TANGO team, and each carries its area and population. Teal symbols are the team sites: a star for a focal point, a square for an ECHO team, a triangle for a TANGO team; filled symbols start in year one, hollow ones join in year two. Each label gives the team code and the settlement it is based in. {% if F.belt %}The legend also states what the plan does not reach: {{ F.belt.people|num }} people in {{ F.belt.n_towns }} towns of {{ F.belt.min_pop|num }} or more lie further than {{ F.belt.reach_km|int }} km from every team site.{% endif %}
+The map covers the study area from Radom in Sudan to Garamba in Congo. Faint red hairlines are individual fire fronts tracked from satellite in 2024-26; where they bunch into dark red bands, herds are moving. Orange marks are today's people: a solid amber disc for every 2 km cell with built-up ground, an amber ring where a cluster of 500 or more carries a name, both sized by the same GHSL population estimate{% if F.belt and F.belt.unnamed_clusters_500 %} ({{ F.belt.unnamed_clusters_500 }} clusters of 500 or more have no name in OpenStreetMap or on the 1930s sheets and stay discs){% endif %}. Olive squares are the gold model's most likely target cells (targets, not mines), triangles are places where imagery shows working-like ground, and diamonds are workings reported by others. Thin dashed lines are the machine zoning of the whole area - green for park-grade core, grey-green for wilderness, purple for community conservancy, red for herd corridor - with the boundaries drawn by the plan's authors in grey behind them, and Southern National Park tinted as the one gazetted park. The solid, filled shapes are the only places where this intervention puts people: purple blocks are the {{ F.deploy.n_echo|words }} community conservancies served by an ECHO team, red blocks are the {{ F.deploy.n_tango_zones|words }} herd corridors served by a TANGO team, and each carries its area and population. Teal symbols are the team sites: a star for a focal point, a square for an ECHO team, a triangle for a TANGO team; filled symbols start in year one, hollow ones join in year two. Each label gives the team code and the settlement it is based in. {% if F.belt %}The legend also states what the plan does not reach: {{ F.belt.people|num }} people in {{ F.belt.n_towns }} towns of {{ F.belt.min_pop|num }} or more lie further than {{ F.belt.reach_km|int }} km from every team site.{% endif %}
 
 
 EASY - PROPOSED ZONES AND LOCATIONS (SUMMARY)
@@ -94,6 +102,14 @@ Community conservancies with an ECHO team (Wildlife Act 2026 s.14)
   ----  -------------  --  -------  --------  -------  ----
         total                       {{ '%8s'|format(F.deploy.echo_total_ha|num) }}  {{ '%7s'|format(F.deploy.echo_total_people|num) }}  {{ '%3d'|format(F.deploy.echo_total_gold) }}
   gold = model top-5% target cells; * = also reported workings ({% for e in echo_all if e.reported %}{{ e.place }} {{ e.reported }}{{ ', ' if not loop.last }}{% endfor %})
+{% for k, es in echo_foreign.items() if es %}
+
+{{ F.deploy.strands[k].name }} - separate budget ({{ F.deploy.strands[k].law }})
+
+{% for e in es %}
+  {{ '%-4s'|format(e.id) }}  {{ '%-13s'|format(e.place[:13]) }}  {{ e.year }}   {{ '%-7s'|format(e.country) }}  {{ '%8s'|format(e.area_ha|num) }}  {{ '%7s'|format(e.people|num) }}  {{ '%3d'|format(e.gold) }}{{ '*' if e.reported else ' ' }} {{ e.boundary[:3]|join(', ') }}
+{% endfor %}
+{% endfor %}
 
 Herd corridors with a TANGO team (Wildlife Act 2026 s.9)
 
@@ -134,12 +150,18 @@ Focal points (one person each)
 Staffing
 
 {% for y in F.deploy.by_year %}
-  year {{ loop.index }}:  {{ y.echo }} ECHO + {{ y.tango }} TANGO + {{ y.fp }} FP  =  {{ y.staff }} people{% if not loop.first %} (+{{ y.staff - F.deploy.by_year[loop.index0-1].staff }}){% endif %}
+  year {{ loop.index }}:  {{ y.echo }} ECHO + {{ y.tango }} TANGO + {{ y.fp }} FP  =  {{ y.staff }} people{% if not loop.first %} (+{{ y.staff - F.deploy.by_year[loop.index0-1].staff }}){% endif %} (South Sudan){% for k in F.deploy.strands %}{% if y['echo_' ~ k|lower] %}; {{ {'CAR': 'CAR', 'COD': 'DRC', 'SDN': 'Sudan'}[k] }} {{ y['echo_' ~ k|lower] }} ECHO = {{ y['staff_' ~ k|lower] }}{% endif %}{% endfor %}
 
 {% endfor %}
 Budget ({{ F.years }} years, USD)
 
   year 1 {{ '%10s'|format(B.per_year[0]|num) }}   year 2 {{ '%10s'|format(B.per_year[1]|num) }}   total {{ '%10s'|format(B.total|num) }}   first six months {{ B.first_6_months|num }}
+{% if B.strands %}
+  of which South Sudan {{ '%10s'|format(B.ssd_per_year[0]|num) }}   {{ '%10s'|format(B.ssd_per_year[1]|num) }}         {{ '%10s'|format(B.ssd_total|num) }}
+{% for k, v in B.strands.items() %}
+  {{ '%-20s'|format({'CAR': 'CAR', 'COD': 'DRC', 'SDN': 'Sudan'}[k] ~ ' strand (sep.)') }} {{ '%10s'|format(v.per_year[0]|num) }}   {{ '%10s'|format(v.per_year[1]|num) }}         {{ '%10s'|format(v.total|num) }}
+{% endfor %}
+{% endif %}
   see BUDGET_EASY_*.txt / .xlsx (same generator)
 
 Sources: data/plan_zones/solver/{SOLVE,ZONES,RANK,DEPLOY}.txt via facts.json, {{ F.generated }}.

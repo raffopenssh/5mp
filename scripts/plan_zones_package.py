@@ -59,6 +59,10 @@ def areas_text():
 
 # ---------------------------------------------------------------- column definitions (the README sheet + QGIS aliases)
 COLS = {
+ "bd_perimeter_km": "metes-and-bounds (plan_boundary.py): perimeter km", "bd_named_pct": "% of the perimeter running along a named walkable feature", "bd_bush_km": "km of open-bush boundary (to be walked and marked)", "bd_geology_km": "km along a geological contact",
+ "bd_summary": "boundary summary: main features and sides", "bd_legal": "the legal metes-and-bounds paragraph (commencing at …; thence …)", "bd_in_words": "the same walk in plain words (muse-glimmer, names only from the legs)", "bd_schedule": "gazette-style SCHEDULE for the zone",
+ "bd_legs": "JSON: every leg — kind, name, km, bearing, side, start/end lon-lat, landmarks", "bd_corners": "JSON: named corners (where X meets Y) with coordinates", "bd_jurisdiction": "JSON: country / state / county (pcodes) with area shares", "bd_sheets_1930s": "JSON: 1:250k sheets (year) the boundary crosses", "bd_teams": "team codes serving the zone (E1, T2 …)",
+ "strand": "budget strand: SSD (South Sudan caps) or CAR (Chinko's own conservancy line)", "robust": "share of 500 perturbed re-rankings that pick this zone for ECHO (≥0.75 robust, 0.5–0.75 marginal) — ECHO is staged by this",
  "uid": "planner unit id (fine-mesh union) — internal", "seed": "what this proposal grew from", "seed_kind": "seed type",
  "run": "optimize run (core / corridor / community / community_towns)", "rank": "rank within its run (1 = grown first)",
  "cls": "planner class as ONE unit: core | wilderness | community | corridor", "legal": "instrument the class maps to (Wildlife Act 2026)",
@@ -260,8 +264,20 @@ def main():
     sz = D.parent / "solver" / "zones.geojson"                         # the ILP plan (plan_solver.py solve + rank), if solved
     if sz.exists():
         szr = rows_from(sz)
-        for g, p_ in szr: p_["legal_basis"] = LEGAL.get(p_.get("solver_class"), "")
-        layers["solver_zones"] = ("MultiPolygon", szr, cols(szr, ["uid", "solver_class", "legal_basis", "rank", "rank_score", "in_budget", "area_ha", "population_est", "pop_per_km2", "threat_p10_mean", "shield", "pressure_on_core", "herd_conflict", "governance", "boundary_legibility", "boundary", "rationale", "herd_bundles"]))
+        # metes-and-bounds (plan_boundary.py → boundaries.json): the legal paragraph, the schedule, the plain-words walk, the
+        # legs and the jurisdiction ride on every zone as attributes, so the GPKG carries the boundary DESCRIPTION, not only
+        # the polygon (user 2026-09-07). Missing file → the columns are absent, not empty (a blank would read as "no boundary").
+        bj = D.parent / "solver" / "boundaries.json"; B = json.load(open(bj))["zones"] if bj.exists() else {}
+        BCOLS = ["perimeter_km", "named_pct", "bush_km", "geology_km", "summary", "legal", "in_words", "schedule", "legs", "corners", "jurisdiction", "sheets_1930s"]
+        for g, p_ in szr:
+            p_["legal_basis"] = LEGAL.get(p_.get("solver_class"), "")
+            b = B.get(str(p_["uid"]))
+            if b:
+                for k in BCOLS:
+                    v = b.get(k); p_["bd_" + k] = json.dumps(v, ensure_ascii=False) if isinstance(v, (list, dict)) else v
+                p_["bd_teams"] = ", ".join(b.get("teams") or [])
+        bcols = (["bd_" + k for k in BCOLS] + ["bd_teams"]) if B else []
+        layers["solver_zones"] = ("MultiPolygon", szr, cols(szr, ["uid", "solver_class", "legal_basis", "rank", "rank_score", "in_budget", "area_ha", "population_est", "pop_per_km2", "threat_p10_mean", "shield", "pressure_on_core", "herd_conflict", "governance", "boundary_legibility", "boundary", "rationale", "herd_bundles"] + bcols))
 
     dep_t = D.parent / "solver" / "deploy_teams.geojson"; dep_f = D.parent / "solver" / "deploy_footprint.geojson"
     if dep_t.exists() and sz.exists():
@@ -271,7 +287,7 @@ def main():
             p_["year"] = int(p_.get("year") or 2); p_["team_id"] = p_.get("id"); p_["sym"] = f"{p_['kind']}{p_['year']}"
             for k in ("reach", "alternatives", "towns", "zone_uids"):
                 if not isinstance(p_.get(k), str): p_[k] = json.dumps(p_.get(k))
-        layers["deploy_teams"] = ("Point", tm, cols(tm, ["id", "kind", "year", "staff", "place", "site_people", "urgency", "footprint_km2", "zone_uids", "road_km", "reach", "water", "season", "short", "brief", "first_season", "why", "adjudication", "alternatives", "sym"]))
+        layers["deploy_teams"] = ("Point", tm, cols(tm, ["id", "kind", "strand", "robust", "year", "staff", "place", "site_people", "urgency", "footprint_km2", "zone_uids", "road_km", "reach", "water", "season", "short", "brief", "first_season", "why", "adjudication", "alternatives", "sym"]))
         byuid = {}
         for g, p_ in tm:
             for u in ast.literal_eval(p_["zone_uids"]) if isinstance(p_["zone_uids"], str) else p_["zone_uids"]: byuid.setdefault(int(u), p_)
@@ -279,9 +295,9 @@ def main():
         for g, p_ in szr:
             t = byuid.get(int(p_["uid"]))
             if t is None: continue
-            q = dict(p_); q.update(team_id=t["id"], team_kind=t["kind"], year=t["year"], team_place=t["place"], urgency=t["urgency"], staff=t["staff"], short=t.get("short"), brief=t.get("brief"), first_season=t.get("first_season"))
+            q = dict(p_); q.update(team_id=t["id"], team_kind=t["kind"], strand=t.get("strand"), robust=t.get("robust"), year=t["year"], team_place=t["place"], urgency=t["urgency"], staff=t["staff"], short=t.get("short"), brief=t.get("brief"), first_season=t.get("first_season"))
             dz.append((g, q))
-        layers["deploy_zones"] = ("MultiPolygon", dz, cols(dz, ["uid", "solver_class", "team_id", "team_kind", "year", "team_place", "staff", "urgency", "area_ha", "population_est", "pop_per_km2", "threat_p10_mean", "short", "brief", "first_season", "rank", "in_budget", "boundary", "rationale", "herd_bundles"]))
+        layers["deploy_zones"] = ("MultiPolygon", dz, cols(dz, ["uid", "solver_class", "team_id", "team_kind", "strand", "robust", "year", "team_place", "staff", "urgency", "area_ha", "population_est", "pop_per_km2", "threat_p10_mean", "short", "brief", "first_season", "rank", "in_budget", "boundary", "rationale", "herd_bundles"] + bcols))
         if dep_f.exists():
             # the footprint file = served zones ∪ 25 km disc; the disc alone is the working reach (the zones are deploy_zones)
             served = {u: shape(g) for g, p_ in szr for u in [int(p_["uid"])] if u in byuid}

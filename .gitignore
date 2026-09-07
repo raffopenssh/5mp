@@ -257,3 +257,4 @@ data/eval/xsa_mining_heldout/*
 !data/eval/xsa_mining_heldout/prediction.json
 !data/eval/xsa_mining_heldout/prediction.geojson
 !data/eval/regional_mining/nested_cv.xsa_scores.npz
+data/plan_zones/solver/deploy*.json.prev
