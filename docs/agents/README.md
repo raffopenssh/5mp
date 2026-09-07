@@ -50,3 +50,4 @@ These files record **measured facts and decisions, not tutorials**. Prefer:
 state the trap, the symptom it produced, the fix, and the command that proves
 it. Delete a handover section once its work is done — a finished plan read as
 an open task more than once.
+- `tex.md` — the PIP LaTeX report generator (local-only scripts; build, rules, share links).

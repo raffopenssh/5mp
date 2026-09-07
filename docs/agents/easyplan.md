@@ -121,11 +121,6 @@ and is still imported by the August PIP generators (`easypip/pip_facts.py`, `bui
 describe the *hand-drawn* zones. Superseded reports are in `reports/superseded/` (gitignored).
 Current result (2026-09-06): 2 years Nov 2026–Oct 2028, USD 1.52 M (0.50 / 1.03), 21 → 53 field staff.
 
-## PIP LaTeX report (2026-09, local only)
+## PIP LaTeX report
 
-`scripts/piptex/` (git-ignored: it carries names from confidential field reporting and live guest
-links) renders `reports/pip_latex/main.tex` from facts.json / pip_facts.json / harness.json / the budget
-txt; `share.py` uploads deliverables and mints 365-day guest links into `share.json`. Compile with
-`latexmk -pdf` in `reports/pip_latex/` (biblatex-ieee + biber; TeX Live installed 2026-09-07).
-`build_map.py --situation` draws Fig. 1 (no plan, keystone parks only, gold grade 95th pale → 100th solid).
-`docs/plan/PIP_SUMMARY_*` are untracked since 2026-09-07 (still in history).
+See `docs/agents/tex.md`.
