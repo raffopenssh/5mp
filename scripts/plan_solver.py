@@ -567,16 +567,45 @@ def solve(st, a, D=None, p10=None, claim_arr=None, weights=None, tag="", seed_pe
     (OUT / f"SOLVE{tag}.txt").write_text("\n".join(L) + "\n"); print("\n".join(L[:12 + len(ledger_lines(ledger))]))
     return lab, cls_i, units, summary
 
+def thin_units(D):
+    """Per unit: True when fewer than half its cells survive a 2x2 morphological opening, i.e. the unit is essentially a
+    one-cell-wide strip (the fine mesh cuts one along every river and track it uses as a legible edge). Derived from the
+    unit raster, never a typed list."""
+    from scipy import ndimage
+    labf, units = D["labf"], D["units"]; out = np.zeros(len(units), bool)
+    sl = ndimage.find_objects(labf)
+    for i, u in enumerate(units):
+        if u <= 0 or u > len(sl) or sl[u - 1] is None: continue
+        m = labf[sl[u - 1]] == u
+        out[i] = ndimage.binary_opening(m, structure=np.ones((2, 2))).sum() < 0.5 * m.sum()
+    return out
+
+
 def simplify(D, cls_i, island_ha, fixed=None):
     """A zone a herder can be told: absorb every connected same-class component smaller than island_ha whose neighbours are
     all ONE other class into that class (wilderness specks inside a corridor become corridor; corridor specks inside
     community become community). A fixed (gazetted) unit is never changed; corridor never enters a WDPA area. Iterates to a
     fixed point; returns the list of what was absorbed so the report can say it."""
     units, ui, E, area = D["units"], D["ui"], D["E"], D["area"]; U = len(units); cls_i = cls_i.copy(); absorbed = []
-    adj = defaultdict(set)
-    for u, v, n, sm in E: adj[ui[u]].add(ui[v]); adj[ui[v]].add(ui[u])
+    adj = defaultdict(set); wall = defaultdict(lambda: defaultdict(float))     # wall[i][j] = boundary cells unit i shares with unit j
+    for u, v, n, sm in E: adj[ui[u]].add(ui[v]); adj[ui[v]].add(ui[u]); wall[ui[u]][ui[v]] += n; wall[ui[v]][ui[u]] += n
+    thin = thin_units(D)
     for _ in range(10):
-        changed = False; comp = np.full(U, -1); k = 0
+        changed = False
+        # (a) HORNS: a thin unit (a one-cell river/track sliver of the fine mesh) that the ILP classed differently from the
+        #     ground most of its boundary touches is a 2 km-wide, 10 km-long spike no committee can hold and no herder can
+        #     be told; it takes the class along the majority of its wall. Corridor units are never flipped (a band is thin
+        #     by design), nor a fixed (gazetted) unit; corridor never enters a WDPA area.
+        for i in np.flatnonzero(thin):
+            if cls_i[i] == 3 or (fixed is not None and fixed[i]): continue
+            by = defaultdict(float)
+            for j, n in wall[i].items(): by[int(cls_i[j])] += n
+            if not by: continue
+            to, n_to = max(by.items(), key=lambda t: t[1])
+            if to == cls_i[i] or n_to <= sum(by.values()) / 2: continue
+            if to == 3 and D["in_wdpa_deep"][i]: continue
+            absorbed.append(dict(from_cls=CLASSES[cls_i[i]], to_cls=CLASSES[to], ha=int(area[i] * 100), units=1, horn=True)); cls_i[i] = to; changed = True
+        comp = np.full(U, -1); k = 0
         for i in range(U):
             if comp[i] >= 0: continue
             stack = [i]; comp[i] = k

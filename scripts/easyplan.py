@@ -82,10 +82,11 @@ def facts(P):
     bnd = j(SOLVER / "boundaries.json")["zones"] if (SOLVER / "boundaries.json").exists() else {}   # plan_boundary.py: metes-and-bounds per zone
     N = len(P["year_labels"])
 
+    STRANDS = deploy.get("strands") or {}     # plan_deploy.py STRANDS: CAR / COD / SDN, each a separate budget line
     teams = {}
     for t in deploy["teams"]:
         z = zones[t["zone_uids"][0]] if t["kind"] != "FP" else None
-        d = dict(id=t["id"], kind=t["kind"], year=t["year"], place=re.sub(r"\*.*$", "", t["place"]).strip(),
+        d = dict(id=t["id"], kind=t["kind"], strand=t.get("strand", "SSD"), year=t["year"], place=re.sub(r"\*.*$", "", t["place"]).strip(),
                  place_unverified="*" in t["place"], site_people=t["site_people"], zone_uids=t["zone_uids"],
                  lon=t["lon"], lat=t["lat"], water=t["water"], serves=t.get("serves"))
         if z:
@@ -113,12 +114,17 @@ def facts(P):
             key = tuple(t["zone_uids"]); t["second_team_of"] = seen.get(key); seen.setdefault(key, t["id"])
     by_year = []
     for y in range(1, N + 1):
-        cnt = lambda k, yy: sum(1 for t in teams.values() if t["kind"] == k and t["year"] == yy)
-        cum = lambda k: sum(1 for t in teams.values() if t["kind"] == k and t["year"] <= y)
-        by_year.append(dict(echo=cum("ECHO"), tango=cum("TANGO"), fp=cum("FP"),
-                            new_echo=cnt("ECHO", y), new_tango=cnt("TANGO", y), new_fp=cnt("FP", y),
-                            staff=cum("ECHO") * 5 + cum("TANGO") * 5 + cum("FP")))
-    echo = [t for t in teams.values() if t["kind"] == "ECHO"]
+        # ECHO counts are the SOUTH SUDAN strand only; the CAR strand (K-teams, a separate budget) is echo_car/new_echo_car
+        cnt = lambda k, yy, st="SSD": sum(1 for t in teams.values() if t["kind"] == k and t["year"] == yy and (t["strand"] == st or k != "ECHO"))
+        cum = lambda k, st="SSD": sum(1 for t in teams.values() if t["kind"] == k and t["year"] <= y and (t["strand"] == st or k != "ECHO"))
+        row = dict(echo=cum("ECHO"), tango=cum("TANGO"), fp=cum("FP"), new_echo=cnt("ECHO", y), new_tango=cnt("TANGO", y), new_fp=cnt("FP", y),
+                   staff=cum("ECHO") * 5 + cum("TANGO") * 5 + cum("FP"))
+        for k in STRANDS:   # echo_car / new_echo_car / staff_car, echo_cod / …, echo_sdn / … — one foreign budget line each
+            row[f"echo_{k.lower()}"] = cum("ECHO", k); row[f"new_echo_{k.lower()}"] = cnt("ECHO", y, k); row[f"staff_{k.lower()}"] = cum("ECHO", k) * 5
+        by_year.append(row)
+    echo_car = [t for t in teams.values() if t["kind"] == "ECHO" and t["strand"] == "CAR"]
+    echo_strand = {k: [t for t in teams.values() if t["kind"] == "ECHO" and t["strand"] == k] for k in STRANDS}
+    echo = [t for t in teams.values() if t["kind"] == "ECHO" and t["strand"] == "SSD"]
     tango = [t for t in teams.values() if t["kind"] == "TANGO" and not t["second_team_of"]]
     core_block = max((z for z in zones.values() if z["cls"] == "core"), key=lambda z: z["area_ha"])
     park = pip["park"]
@@ -127,6 +133,9 @@ def facts(P):
         deploy=dict(by_year=by_year, teams=teams, fp_places=[t["place"] for t in sorted(teams.values(), key=lambda x: x["id"]) if t["kind"] == "FP"],
                     echo_total_ha=sum(t["area_ha"] for t in echo), echo_total_people=sum(t["people"] for t in echo),
                     echo_total_gold=sum(t["gold"] for t in echo), n_echo=len(echo),
+                    n_echo_car=len(echo_car), echo_car_total_ha=sum(t["area_ha"] for t in echo_car), echo_car_total_people=sum(t["people"] for t in echo_car),
+                    strands={k: dict(deploy["strands"][k], n=len(v), total_ha=sum(t["area_ha"] for t in v), total_people=sum(t["people"] for t in v), ids=[t["id"] for t in sorted(v, key=lambda t: t["id"])]) for k, v in echo_strand.items() if v},
+                    robustness=deploy.get("robustness"),
                     tango_total_ha=sum(t["area_ha"] for t in tango), tango_total_people=sum(t["people"] for t in tango), n_tango_zones=len(tango),
                     echo_herd_min=min(t["herd_pct"] for t in echo), echo_herd_max=max(t["herd_pct"] for t in echo),
                     echo_unnamed_min=min(t["unnamed_pct"] for t in echo), echo_unnamed_max=max(t["unnamed_pct"] for t in echo)),
@@ -192,14 +201,16 @@ def render(F, P):
     env.filters["words"] = lambda n: WORDS.get(int(n), str(n))
     T = F["deploy"]["teams"]
     order = lambda ts: sorted(ts, key=lambda t: (t["year"], t["id"]))
-    echo_all = order([t for t in T.values() if t["kind"] == "ECHO"])
+    echo_all = order([t for t in T.values() if t["kind"] == "ECHO" and t["strand"] == "SSD"])
+    echo_car = order([t for t in T.values() if t["kind"] == "ECHO" and t["strand"] == "CAR"])
+    echo_foreign = {k: order([t for t in T.values() if t["kind"] == "ECHO" and t["strand"] == k]) for k in (F["deploy"].get("strands") or {})}
     tango_all = order([t for t in T.values() if t["kind"] == "TANGO"])
     fp_all = order([t for t in T.values() if t["kind"] == "FP"])
     for f in fp_all:   # serves: team codes standing in the zones this FP covers, by year
         f["serves_codes"] = [t["id"] for t in echo_all + tango_all if set(t["zone_uids"]) & set(f["zone_uids"])]
     core_block = F["solve"]["core_block"]
     return env.from_string(TEMPLATE.read_text()).render(
-        F=F, T=T, P=P, B=F["budget"], CB=core_block, echo_all=echo_all, tango_all=tango_all, fp_all=fp_all,
+        F=F, T=T, P=P, B=F["budget"], CB=core_block, echo_all=echo_all, echo_car=echo_car, echo_foreign=echo_foreign, tango_all=tango_all, fp_all=fp_all,
         tango_zones=[t for t in tango_all if not t["second_team_of"]],
         echo_by_year={y: [t for t in echo_all if t["year"] == y] for y in (1, 2)},
         fp_y1=[t["place"] for t in fp_all if t["year"] == 1], fp_y2=[t["place"] for t in fp_all if t["year"] == 2])

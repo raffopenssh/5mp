@@ -278,3 +278,10 @@ These apply no matter what you touch. Each cost real time at least once.
 16. Long writers **yield** (batched commits) so SQLite's single writer stays
     available. Before blaming the write lock, check `ps` — a lock wait is `S`,
     not `R`.
+
+17. **Never `read_image` a full-resolution sheet.** A 4,722 px map PNG killed a
+    conversation with HTTP 413 (the image is re-sent on every turn). Downscale
+    to ≤ 1,000 px JPEG q70 (~100 KB) for the overview and crop at full
+    resolution for detail; `docs/agents/easyplan.md` has the recipe. Ranked
+    choices made on a point score must be **re-drawn under perturbation**
+    before they are published (`plan_deploy.py selection_frequency`).
