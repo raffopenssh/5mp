@@ -30,7 +30,8 @@ Needs TeX Live (`texlive-latex-extra`, `biber`, `latexmk`; installed 2026-09-07)
   `reports/pip_latex/` by `build_all.sh`). Dossier file names use `\path{}` so they break. The 2022
   confidential field report is *never* cited; its names appear with “verify before contact”.
 - **Share links** come from `share.json`; `share.py [keys]` uploads (`POST /api/files`) and mints 365-day
-  guest links (server max), keys: `aoi_view geology_view gpkg pdf pdf_share maps budget dossier review`.
+  guest links (server max), keys: `aoi_view geology_view gpkg pdf pdf_share docx maps budget dossier review`.
+- **DOCX for reviewers**: `build_docx.py` (run by `build_all.sh`) pre-processes `main_share.tex` (tcolorbox→quote, tabularx/multicolumn/`>{}` column specs flattened, `\ref` numbered by order, table captions become a bold `Table N.` paragraph — pandoc 3.1 otherwise emits captions twice) and runs `pandoc --citeproc` with `ieee.csl`. The PDF stays the reference; the docx is for comments. LibreOffice Writer is not installed, so check with `pandoc x.docx -t plain`.
   `pdf_share` is minted **after** the full `pdf`, because the small PDF's box quotes the full one's URL.
 - **Re-uploading a PDF mints a new slug**: after `share.py pdf`, rebuild `--share`, then `share.py pdf_share`, then revoke the two old slugs (`UPDATE short_links SET revoked_at=…`). Audit rule (2026-09-07): the only live guest links in the XSA owner account (principal 6) minted on/after 2026-08-17 must be exactly those printed in the PDFs (+ `pdf_share`); everything earlier is phase I and stays.
 - **Checks after a build**: `grep -E "^!|undefined|Overfull .hbox .[0-9]{2}" main.log` must be empty;
