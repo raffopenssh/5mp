@@ -243,3 +243,10 @@ data/plan_zones/conservancies/
 data/plan_zones/solver/*_tune*
 data/plan_zones/solver/boundaries_*
 data/plan_zones/solver/BOUNDARIES_*
+# Regional mining-context model (scripts/regional_mining/): results only;
+# features.npz (~60 MB) and work/ (OSM extracts, GHSL/WorldCover rasters) regenerate.
+!data/eval/regional_mining/
+data/eval/regional_mining/*
+!data/eval/regional_mining/harness.json
+!data/eval/regional_mining/nested_cv.json
+!data/eval/regional_mining/nested_cv_belt.json
