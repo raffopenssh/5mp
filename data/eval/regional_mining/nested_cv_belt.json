@@ -1,0 +1,1378 @@
+{
+ "generated_by": "scripts/regional_mining/nested_cv.py --belt",
+ "protocol": "Pre-registered model selection for the regional mining-context composite.\n\n    python3 scripts/regional_mining/nested_cv.py   # -> data/eval/regional_mining/nested_cv.json\n\nharness.py showed that several composites can be built from the same\nregion-trained signal set and that they differ on XSA (46 clusters) by more\nthan their bootstrap CIs are narrow. Picking the best of them BY its XSA\nscore would be tuning on the test set - the thing the old model refused to\ndo. So the choice is made here, on the training region only:\n\n  * spatial 5-fold CV over 2 deg blocks of the non-XSA region (50 km moat);\n  * in each fold, signals are selected (reach null, BH q<.05, lift_reach>1)\n    on the 4 training folds and each composite RECIPE is scored on the held\n    -out fold by top-5/10/20 % capture, ranking within that fold's cells;\n  * the recipe with the best mean held-out top-10 % capture (top-5 % is too\n    granular for ~100 clusters/fold) is the pre-registered choice, fitted\n    once on the whole training region and applied ONCE to XSA.\n\nRecipes (all use the same signal library, build_signals in harness.py):\n  equal_factors      mean of factor means (each factor = mean rank of its\n                     passing signals)                    -- the shipped design\n  best_per_factor    one signal per factor (highest train lift_reach)\n  loglift_weights    signals weighted by log(lift_reach) within factor\n  core_x_fabric      geology+historic factors only\n  top3_signals       three highest-lift signals, equal weight, no factors\n  noisy_or           1 - prod(1 - rank) over best-per-factor  (any-of)",
+ "region": "savanna belt (<16.3N)",
+ "n_train_clusters": 387,
+ "n_xsa_clusters": 46,
+ "block_deg": 2.0,
+ "folds": [
+  {
+   "fold": 0,
+   "n_test": 78,
+   "n_train": 309,
+   "passing": [
+    "sett1k",
+    "sett1k_pop500",
+    "sett1k_cropland_poor",
+    "sett1k_pop500_cropland_poor",
+    "sett1k_recent_cropland_poor",
+    "sett1k_grew_cropland_poor",
+    "gold_contact_x_cropland_poor_sett",
+    "gold_contact_x_pop500_cropland_poor",
+    "gold_unit_x_cropland_poor_sett",
+    "hist_abandoned_village_x_cropland_poor_sett",
+    "gold_contact_w2",
+    "river_osm",
+    "gold_contact_x_river",
+    "gold_contact_x_settlement",
+    "gold_contact_x_pop500",
+    "gold_unit_x_settlement",
+    "road_osm",
+    "hist_abandoned_village_1930s",
+    "hist_abandoned_village_on_gold_contact",
+    "hist_abandoned_any_on_gold_contact",
+    "hist_hill_terrain_1930s"
+   ],
+   "scores": {
+    "equal_factors": {
+     "top05": 0.115,
+     "top10": 0.179,
+     "top20": 0.282
+    },
+    "best_per_factor": {
+     "top05": 0.115,
+     "top10": 0.192,
+     "top20": 0.231
+    },
+    "loglift_weights": {
+     "top05": 0.115,
+     "top10": 0.167,
+     "top20": 0.269
+    },
+    "core_x_fabric": {
+     "top05": 0.065,
+     "top10": 0.156,
+     "top20": 0.636
+    },
+    "top3_signals": {
+     "top05": 0.039,
+     "top10": 0.169,
+     "top20": 0.312
+    },
+    "noisy_or": {
+     "top05": 0.115,
+     "top10": 0.154,
+     "top20": 0.295
+    },
+    "wofe": {
+     "top05": 0.128,
+     "top10": 0.269,
+     "top20": 0.808
+    },
+    "logit_binary": {
+     "top05": 0.167,
+     "top10": 0.269,
+     "top20": 0.769
+    },
+    "logit_tuned": {
+     "top05": 0.179,
+     "top10": 0.526,
+     "top20": 0.744
+    }
+   },
+   "tuned": {
+    "feature_set": "passing",
+    "l2": 0.3,
+    "temper": 0.0,
+    "inner_top10": 0.412,
+    "inner_table": {
+     "passing|l2=0.003|temper=0.0": 0.318,
+     "passing|l2=0.003|temper=0.5": 0.271,
+     "passing|l2=0.003|temper=1.0": 0.319,
+     "passing|l2=0.01|temper=0.0": 0.321,
+     "passing|l2=0.01|temper=0.5": 0.271,
+     "passing|l2=0.01|temper=1.0": 0.313,
+     "passing|l2=0.03|temper=0.0": 0.397,
+     "passing|l2=0.03|temper=0.5": 0.288,
+     "passing|l2=0.03|temper=1.0": 0.3,
+     "passing|l2=0.1|temper=0.0": 0.397,
+     "passing|l2=0.1|temper=0.5": 0.326,
+     "passing|l2=0.1|temper=1.0": 0.31,
+     "passing|l2=0.3|temper=0.0": 0.412,
+     "passing|l2=0.3|temper=0.5": 0.321,
+     "passing|l2=0.3|temper=1.0": 0.296,
+     "passing|l2=1.0|temper=0.0": 0.354,
+     "passing|l2=1.0|temper=0.5": 0.346,
+     "passing|l2=1.0|temper=1.0": 0.303,
+     "passing|l2=3.0|temper=0.0": 0.371,
+     "passing|l2=3.0|temper=0.5": 0.352,
+     "passing|l2=3.0|temper=1.0": 0.298,
+     "all|l2=0.003|temper=0.0": 0.264,
+     "all|l2=0.003|temper=0.5": 0.232,
+     "all|l2=0.003|temper=1.0": 0.215,
+     "all|l2=0.01|temper=0.0": 0.284,
+     "all|l2=0.01|temper=0.5": 0.232,
+     "all|l2=0.01|temper=1.0": 0.224,
+     "all|l2=0.03|temper=0.0": 0.301,
+     "all|l2=0.03|temper=0.5": 0.244,
+     "all|l2=0.03|temper=1.0": 0.227,
+     "all|l2=0.1|temper=0.0": 0.314,
+     "all|l2=0.1|temper=0.5": 0.255,
+     "all|l2=0.1|temper=1.0": 0.24,
+     "all|l2=0.3|temper=0.0": 0.334,
+     "all|l2=0.3|temper=0.5": 0.273,
+     "all|l2=0.3|temper=1.0": 0.252,
+     "all|l2=1.0|temper=0.0": 0.338,
+     "all|l2=1.0|temper=0.5": 0.285,
+     "all|l2=1.0|temper=1.0": 0.262,
+     "all|l2=3.0|temper=0.0": 0.351,
+     "all|l2=3.0|temper=0.5": 0.282,
+     "all|l2=3.0|temper=1.0": 0.277
+    }
+   }
+  },
+  {
+   "fold": 1,
+   "n_test": 78,
+   "n_train": 309,
+   "passing": [
+    "sett1k",
+    "sett1k_pop500",
+    "sett1k_cropland_poor",
+    "sett1k_pop500_cropland_poor",
+    "sett1k_recent_cropland_poor",
+    "sett1k_grew_cropland_poor",
+    "gold_contact_x_cropland_poor_sett",
+    "gold_contact_x_pop500_cropland_poor",
+    "gold_contact_w2",
+    "gold_contact_x_settlement",
+    "gold_contact_x_pop500",
+    "settlement",
+    "hist_abandoned_village_1930s",
+    "hist_abandoned_village_on_gold_contact",
+    "hist_abandoned_track_on_gold_contact",
+    "hist_abandoned_any_on_gold_contact",
+    "hist_water_point_on_gold_contact",
+    "hist_hill_terrain_1930s"
+   ],
+   "scores": {
+    "equal_factors": {
+     "top05": 0.103,
+     "top10": 0.192,
+     "top20": 0.423
+    },
+    "best_per_factor": {
+     "top05": 0.103,
+     "top10": 0.179,
+     "top20": 0.462
+    },
+    "loglift_weights": {
+     "top05": 0.103,
+     "top10": 0.154,
+     "top20": 0.449
+    },
+    "core_x_fabric": {
+     "top05": 0.066,
+     "top10": 0.105,
+     "top20": 0.368
+    },
+    "top3_signals": {
+     "top05": 0.092,
+     "top10": 0.145,
+     "top20": 0.382
+    },
+    "noisy_or": {
+     "top05": 0.077,
+     "top10": 0.141,
+     "top20": 0.397
+    },
+    "wofe": {
+     "top05": 0.218,
+     "top10": 0.333,
+     "top20": 0.487
+    },
+    "logit_binary": {
+     "top05": 0.218,
+     "top10": 0.308,
+     "top20": 0.705
+    },
+    "logit_tuned": {
+     "top05": 0.154,
+     "top10": 0.295,
+     "top20": 0.654
+    }
+   },
+   "tuned": {
+    "feature_set": "passing",
+    "l2": 0.1,
+    "temper": 0.0,
+    "inner_top10": 0.399,
+    "inner_table": {
+     "passing|l2=0.003|temper=0.0": 0.373,
+     "passing|l2=0.003|temper=0.5": 0.267,
+     "passing|l2=0.003|temper=1.0": 0.286,
+     "passing|l2=0.01|temper=0.0": 0.373,
+     "passing|l2=0.01|temper=0.5": 0.263,
+     "passing|l2=0.01|temper=1.0": 0.269,
+     "passing|l2=0.03|temper=0.0": 0.377,
+     "passing|l2=0.03|temper=0.5": 0.33,
+     "passing|l2=0.03|temper=1.0": 0.237,
+     "passing|l2=0.1|temper=0.0": 0.399,
+     "passing|l2=0.1|temper=0.5": 0.355,
+     "passing|l2=0.1|temper=1.0": 0.265,
+     "passing|l2=0.3|temper=0.0": 0.383,
+     "passing|l2=0.3|temper=0.5": 0.263,
+     "passing|l2=0.3|temper=1.0": 0.244,
+     "passing|l2=1.0|temper=0.0": 0.364,
+     "passing|l2=1.0|temper=0.5": 0.259,
+     "passing|l2=1.0|temper=1.0": 0.265,
+     "passing|l2=3.0|temper=0.0": 0.377,
+     "passing|l2=3.0|temper=0.5": 0.264,
+     "passing|l2=3.0|temper=1.0": 0.266,
+     "all|l2=0.003|temper=0.0": 0.291,
+     "all|l2=0.003|temper=0.5": 0.207,
+     "all|l2=0.003|temper=1.0": 0.202,
+     "all|l2=0.01|temper=0.0": 0.298,
+     "all|l2=0.01|temper=0.5": 0.22,
+     "all|l2=0.01|temper=1.0": 0.168,
+     "all|l2=0.03|temper=0.0": 0.321,
+     "all|l2=0.03|temper=0.5": 0.236,
+     "all|l2=0.03|temper=1.0": 0.168,
+     "all|l2=0.1|temper=0.0": 0.318,
+     "all|l2=0.1|temper=0.5": 0.278,
+     "all|l2=0.1|temper=1.0": 0.208,
+     "all|l2=0.3|temper=0.0": 0.325,
+     "all|l2=0.3|temper=0.5": 0.272,
+     "all|l2=0.3|temper=1.0": 0.244,
+     "all|l2=1.0|temper=0.0": 0.312,
+     "all|l2=1.0|temper=0.5": 0.254,
+     "all|l2=1.0|temper=1.0": 0.219,
+     "all|l2=3.0|temper=0.0": 0.315,
+     "all|l2=3.0|temper=0.5": 0.238,
+     "all|l2=3.0|temper=1.0": 0.229
+    }
+   }
+  },
+  {
+   "fold": 2,
+   "n_test": 77,
+   "n_train": 310,
+   "passing": [
+    "sett1k",
+    "sett1k_pop500",
+    "sett1k_cropland_poor",
+    "sett1k_pop500_cropland_poor",
+    "sett1k_recent",
+    "sett1k_recent_cropland_poor",
+    "sett1k_grew_cropland_poor",
+    "gold_contact_x_cropland_poor_sett",
+    "gold_contact_x_pop500_cropland_poor",
+    "gold_unit_x_cropland_poor_sett",
+    "gold_contact_w2",
+    "gold_unit_w2",
+    "gold_contact_x_river",
+    "gold_contact_x_settlement",
+    "gold_contact_x_pop500",
+    "gold_unit_x_settlement",
+    "settlement",
+    "road_osm",
+    "hist_abandoned_village_1930s",
+    "hist_abandoned_village_on_gold_contact",
+    "hist_abandoned_track_on_gold_contact",
+    "hist_abandoned_any_on_gold_contact",
+    "hist_water_point_on_gold_contact",
+    "hist_hill_terrain_1930s"
+   ],
+   "scores": {
+    "equal_factors": {
+     "top05": 0.13,
+     "top10": 0.208,
+     "top20": 0.312
+    },
+    "best_per_factor": {
+     "top05": 0.182,
+     "top10": 0.247,
+     "top20": 0.299
+    },
+    "loglift_weights": {
+     "top05": 0.13,
+     "top10": 0.208,
+     "top20": 0.312
+    },
+    "core_x_fabric": {
+     "top05": 0.06,
+     "top10": 0.134,
+     "top20": 0.164
+    },
+    "top3_signals": {
+     "top05": 0.104,
+     "top10": 0.164,
+     "top20": 0.194
+    },
+    "noisy_or": {
+     "top05": 0.052,
+     "top10": 0.143,
+     "top20": 0.195
+    },
+    "wofe": {
+     "top05": 0.117,
+     "top10": 0.221,
+     "top20": 0.325
+    },
+    "logit_binary": {
+     "top05": 0.143,
+     "top10": 0.26,
+     "top20": 0.442
+    },
+    "logit_tuned": {
+     "top05": 0.143,
+     "top10": 0.26,
+     "top20": 0.442
+    }
+   },
+   "tuned": {
+    "feature_set": "passing",
+    "l2": 1.0,
+    "temper": 0.0,
+    "inner_top10": 0.415,
+    "inner_table": {
+     "passing|l2=0.003|temper=0.0": 0.352,
+     "passing|l2=0.003|temper=0.5": 0.288,
+     "passing|l2=0.003|temper=1.0": 0.29,
+     "passing|l2=0.01|temper=0.0": 0.365,
+     "passing|l2=0.01|temper=0.5": 0.295,
+     "passing|l2=0.01|temper=1.0": 0.278,
+     "passing|l2=0.03|temper=0.0": 0.342,
+     "passing|l2=0.03|temper=0.5": 0.34,
+     "passing|l2=0.03|temper=1.0": 0.331,
+     "passing|l2=0.1|temper=0.0": 0.352,
+     "passing|l2=0.1|temper=0.5": 0.363,
+     "passing|l2=0.1|temper=1.0": 0.363,
+     "passing|l2=0.3|temper=0.0": 0.392,
+     "passing|l2=0.3|temper=0.5": 0.377,
+     "passing|l2=0.3|temper=1.0": 0.362,
+     "passing|l2=1.0|temper=0.0": 0.415,
+     "passing|l2=1.0|temper=0.5": 0.331,
+     "passing|l2=1.0|temper=1.0": 0.377,
+     "passing|l2=3.0|temper=0.0": 0.356,
+     "passing|l2=3.0|temper=0.5": 0.314,
+     "passing|l2=3.0|temper=1.0": 0.311,
+     "all|l2=0.003|temper=0.0": 0.29,
+     "all|l2=0.003|temper=0.5": 0.262,
+     "all|l2=0.003|temper=1.0": 0.244,
+     "all|l2=0.01|temper=0.0": 0.287,
+     "all|l2=0.01|temper=0.5": 0.269,
+     "all|l2=0.01|temper=1.0": 0.253,
+     "all|l2=0.03|temper=0.0": 0.316,
+     "all|l2=0.03|temper=0.5": 0.254,
+     "all|l2=0.03|temper=1.0": 0.252,
+     "all|l2=0.1|temper=0.0": 0.333,
+     "all|l2=0.1|temper=0.5": 0.269,
+     "all|l2=0.1|temper=1.0": 0.25,
+     "all|l2=0.3|temper=0.0": 0.333,
+     "all|l2=0.3|temper=0.5": 0.299,
+     "all|l2=0.3|temper=1.0": 0.286,
+     "all|l2=1.0|temper=0.0": 0.327,
+     "all|l2=1.0|temper=0.5": 0.32,
+     "all|l2=1.0|temper=1.0": 0.294,
+     "all|l2=3.0|temper=0.0": 0.34,
+     "all|l2=3.0|temper=0.5": 0.294,
+     "all|l2=3.0|temper=1.0": 0.297
+    }
+   }
+  },
+  {
+   "fold": 3,
+   "n_test": 77,
+   "n_train": 310,
+   "passing": [
+    "sett1k_pop500",
+    "sett1k_cropland_poor",
+    "sett1k_pop500_cropland_poor",
+    "sett1k_recent_cropland_poor",
+    "sett1k_grew_cropland_poor",
+    "gold_contact_x_cropland_poor_sett",
+    "gold_contact_x_pop500_cropland_poor",
+    "gold_contact_w2",
+    "gold_contact_x_settlement",
+    "gold_contact_x_pop500",
+    "hist_abandoned_village_1930s",
+    "hist_abandoned_village_on_gold_contact",
+    "hist_abandoned_track_on_gold_contact",
+    "hist_abandoned_any_on_gold_contact",
+    "hist_water_point_on_gold_contact",
+    "hist_hill_terrain_1930s"
+   ],
+   "scores": {
+    "equal_factors": {
+     "top05": 0.178,
+     "top10": 0.315,
+     "top20": 0.712
+    },
+    "best_per_factor": {
+     "top05": 0.164,
+     "top10": 0.384,
+     "top20": 0.726
+    },
+    "loglift_weights": {
+     "top05": 0.178,
+     "top10": 0.301,
+     "top20": 0.726
+    },
+    "core_x_fabric": {
+     "top05": 0.071,
+     "top10": 0.186,
+     "top20": 0.5
+    },
+    "top3_signals": {
+     "top05": 0.025,
+     "top10": 0.1,
+     "top20": 0.175
+    },
+    "noisy_or": {
+     "top05": 0.178,
+     "top10": 0.26,
+     "top20": 0.589
+    },
+    "wofe": {
+     "top05": 0.26,
+     "top10": 0.37,
+     "top20": 0.671
+    },
+    "logit_binary": {
+     "top05": 0.301,
+     "top10": 0.397,
+     "top20": 0.507
+    },
+    "logit_tuned": {
+     "top05": 0.315,
+     "top10": 0.397,
+     "top20": 0.534
+    }
+   },
+   "tuned": {
+    "feature_set": "passing",
+    "l2": 0.1,
+    "temper": 0.0,
+    "inner_top10": 0.377,
+    "inner_table": {
+     "passing|l2=0.003|temper=0.0": 0.364,
+     "passing|l2=0.003|temper=0.5": 0.332,
+     "passing|l2=0.003|temper=1.0": 0.311,
+     "passing|l2=0.01|temper=0.0": 0.37,
+     "passing|l2=0.01|temper=0.5": 0.337,
+     "passing|l2=0.01|temper=1.0": 0.315,
+     "passing|l2=0.03|temper=0.0": 0.361,
+     "passing|l2=0.03|temper=0.5": 0.324,
+     "passing|l2=0.03|temper=1.0": 0.325,
+     "passing|l2=0.1|temper=0.0": 0.377,
+     "passing|l2=0.1|temper=0.5": 0.308,
+     "passing|l2=0.1|temper=1.0": 0.328,
+     "passing|l2=0.3|temper=0.0": 0.37,
+     "passing|l2=0.3|temper=0.5": 0.334,
+     "passing|l2=0.3|temper=1.0": 0.315,
+     "passing|l2=1.0|temper=0.0": 0.367,
+     "passing|l2=1.0|temper=0.5": 0.327,
+     "passing|l2=1.0|temper=1.0": 0.313,
+     "passing|l2=3.0|temper=0.0": 0.364,
+     "passing|l2=3.0|temper=0.5": 0.329,
+     "passing|l2=3.0|temper=1.0": 0.312,
+     "all|l2=0.003|temper=0.0": 0.263,
+     "all|l2=0.003|temper=0.5": 0.245,
+     "all|l2=0.003|temper=1.0": 0.187,
+     "all|l2=0.01|temper=0.0": 0.27,
+     "all|l2=0.01|temper=0.5": 0.246,
+     "all|l2=0.01|temper=1.0": 0.198,
+     "all|l2=0.03|temper=0.0": 0.283,
+     "all|l2=0.03|temper=0.5": 0.251,
+     "all|l2=0.03|temper=1.0": 0.229,
+     "all|l2=0.1|temper=0.0": 0.296,
+     "all|l2=0.1|temper=0.5": 0.219,
+     "all|l2=0.1|temper=1.0": 0.247,
+     "all|l2=0.3|temper=0.0": 0.292,
+     "all|l2=0.3|temper=0.5": 0.247,
+     "all|l2=0.3|temper=1.0": 0.249,
+     "all|l2=1.0|temper=0.0": 0.286,
+     "all|l2=1.0|temper=0.5": 0.242,
+     "all|l2=1.0|temper=1.0": 0.239,
+     "all|l2=3.0|temper=0.0": 0.312,
+     "all|l2=3.0|temper=0.5": 0.256,
+     "all|l2=3.0|temper=1.0": 0.259
+    }
+   }
+  },
+  {
+   "fold": 4,
+   "n_test": 77,
+   "n_train": 310,
+   "passing": [
+    "sett1k_pop500",
+    "sett1k_cropland_poor",
+    "sett1k_pop500_cropland_poor",
+    "sett1k_recent_cropland_poor",
+    "sett1k_grew_cropland_poor",
+    "gold_contact_x_cropland_poor_sett",
+    "gold_contact_x_pop500_cropland_poor",
+    "gold_contact_w2",
+    "river_osm",
+    "gold_contact_x_river",
+    "gold_contact_x_settlement",
+    "hist_abandoned_village_1930s",
+    "hist_abandoned_village_on_gold_contact",
+    "hist_abandoned_track_on_gold_contact",
+    "hist_abandoned_any_on_gold_contact",
+    "hist_hill_terrain_1930s"
+   ],
+   "scores": {
+    "equal_factors": {
+     "top05": 0.267,
+     "top10": 0.4,
+     "top20": 0.52
+    },
+    "best_per_factor": {
+     "top05": 0.253,
+     "top10": 0.373,
+     "top20": 0.52
+    },
+    "loglift_weights": {
+     "top05": 0.253,
+     "top10": 0.413,
+     "top20": 0.52
+    },
+    "core_x_fabric": {
+     "top05": 0.081,
+     "top10": 0.162,
+     "top20": 0.338
+    },
+    "top3_signals": {
+     "top05": 0.149,
+     "top10": 0.243,
+     "top20": 0.514
+    },
+    "noisy_or": {
+     "top05": 0.2,
+     "top10": 0.32,
+     "top20": 0.533
+    },
+    "wofe": {
+     "top05": 0.28,
+     "top10": 0.333,
+     "top20": 0.573
+    },
+    "logit_binary": {
+     "top05": 0.253,
+     "top10": 0.413,
+     "top20": 0.56
+    },
+    "logit_tuned": {
+     "top05": 0.253,
+     "top10": 0.413,
+     "top20": 0.56
+    }
+   },
+   "tuned": {
+    "feature_set": "passing",
+    "l2": 1.0,
+    "temper": 0.0,
+    "inner_top10": 0.383,
+    "inner_table": {
+     "passing|l2=0.003|temper=0.0": 0.369,
+     "passing|l2=0.003|temper=0.5": 0.34,
+     "passing|l2=0.003|temper=1.0": 0.291,
+     "passing|l2=0.01|temper=0.0": 0.379,
+     "passing|l2=0.01|temper=0.5": 0.352,
+     "passing|l2=0.01|temper=1.0": 0.299,
+     "passing|l2=0.03|temper=0.0": 0.383,
+     "passing|l2=0.03|temper=0.5": 0.346,
+     "passing|l2=0.03|temper=1.0": 0.328,
+     "passing|l2=0.1|temper=0.0": 0.376,
+     "passing|l2=0.1|temper=0.5": 0.359,
+     "passing|l2=0.1|temper=1.0": 0.352,
+     "passing|l2=0.3|temper=0.0": 0.383,
+     "passing|l2=0.3|temper=0.5": 0.365,
+     "passing|l2=0.3|temper=1.0": 0.359,
+     "passing|l2=1.0|temper=0.0": 0.383,
+     "passing|l2=1.0|temper=0.5": 0.347,
+     "passing|l2=1.0|temper=1.0": 0.35,
+     "passing|l2=3.0|temper=0.0": 0.377,
+     "passing|l2=3.0|temper=0.5": 0.341,
+     "passing|l2=3.0|temper=1.0": 0.291,
+     "all|l2=0.003|temper=0.0": 0.265,
+     "all|l2=0.003|temper=0.5": 0.259,
+     "all|l2=0.003|temper=1.0": 0.198,
+     "all|l2=0.01|temper=0.0": 0.275,
+     "all|l2=0.01|temper=0.5": 0.257,
+     "all|l2=0.01|temper=1.0": 0.217,
+     "all|l2=0.03|temper=0.0": 0.269,
+     "all|l2=0.03|temper=0.5": 0.292,
+     "all|l2=0.03|temper=1.0": 0.257,
+     "all|l2=0.1|temper=0.0": 0.272,
+     "all|l2=0.1|temper=0.5": 0.272,
+     "all|l2=0.1|temper=1.0": 0.284,
+     "all|l2=0.3|temper=0.0": 0.309,
+     "all|l2=0.3|temper=0.5": 0.292,
+     "all|l2=0.3|temper=1.0": 0.292,
+     "all|l2=1.0|temper=0.0": 0.322,
+     "all|l2=1.0|temper=0.5": 0.319,
+     "all|l2=1.0|temper=1.0": 0.31,
+     "all|l2=3.0|temper=0.0": 0.338,
+     "all|l2=3.0|temper=0.5": 0.302,
+     "all|l2=3.0|temper=1.0": 0.287
+    }
+   }
+  }
+ ],
+ "cv_summary": {
+  "equal_factors": {
+   "top05": 0.158,
+   "top10": 0.258,
+   "top20": 0.449
+  },
+  "best_per_factor": {
+   "top05": 0.163,
+   "top10": 0.275,
+   "top20": 0.447
+  },
+  "loglift_weights": {
+   "top05": 0.156,
+   "top10": 0.248,
+   "top20": 0.455
+  },
+  "core_x_fabric": {
+   "top05": 0.069,
+   "top10": 0.149,
+   "top20": 0.402
+  },
+  "top3_signals": {
+   "top05": 0.082,
+   "top10": 0.164,
+   "top20": 0.316
+  },
+  "noisy_or": {
+   "top05": 0.124,
+   "top10": 0.203,
+   "top20": 0.402
+  },
+  "wofe": {
+   "top05": 0.2,
+   "top10": 0.305,
+   "top20": 0.573
+  },
+  "logit_binary": {
+   "top05": 0.216,
+   "top10": 0.329,
+   "top20": 0.597
+  },
+  "logit_tuned": {
+   "top05": 0.209,
+   "top10": 0.378,
+   "top20": 0.587
+  }
+ },
+ "chosen_recipe": "logit_tuned",
+ "final_signals": [
+  "sett1k",
+  "sett1k_pop500",
+  "sett1k_cropland_poor",
+  "sett1k_pop500_cropland_poor",
+  "sett1k_recent_cropland_poor",
+  "sett1k_grew_cropland_poor",
+  "gold_contact_x_cropland_poor_sett",
+  "gold_contact_x_pop500_cropland_poor",
+  "gold_unit_x_cropland_poor_sett",
+  "gold_contact_w2",
+  "gold_contact_x_river",
+  "gold_contact_x_settlement",
+  "gold_contact_x_pop500",
+  "gold_unit_x_settlement",
+  "hist_abandoned_village_1930s",
+  "hist_abandoned_village_on_gold_contact",
+  "hist_abandoned_track_on_gold_contact",
+  "hist_abandoned_any_on_gold_contact",
+  "hist_water_point_on_gold_contact",
+  "hist_hill_terrain_1930s"
+ ],
+ "final_signal_stats": {
+  "sett1k": {
+   "n": 387,
+   "capture": 0.545,
+   "lift": 1.93,
+   "lift_reach": 1.16,
+   "p_reach": 0.005,
+   "factor": "settlement_fabric"
+  },
+  "sett1k_pop500": {
+   "n": 387,
+   "capture": 0.403,
+   "lift": 2.38,
+   "lift_reach": 1.41,
+   "p_reach": 0.0,
+   "factor": "settlement_fabric"
+  },
+  "sett1k_cropland_poor": {
+   "n": 387,
+   "capture": 0.408,
+   "lift": 2.41,
+   "lift_reach": 1.57,
+   "p_reach": 0.0,
+   "factor": "settlement_fabric"
+  },
+  "sett1k_pop500_cropland_poor": {
+   "n": 387,
+   "capture": 0.274,
+   "lift": 3.11,
+   "lift_reach": 1.97,
+   "p_reach": 0.0,
+   "factor": "settlement_fabric"
+  },
+  "sett1k_recent": {
+   "n": 387,
+   "capture": 0.328,
+   "lift": 2.01,
+   "lift_reach": 1.09,
+   "p_reach": 0.1483,
+   "factor": "settlement_fabric"
+  },
+  "sett1k_recent_cropland_poor": {
+   "n": 387,
+   "capture": 0.181,
+   "lift": 2.62,
+   "lift_reach": 1.49,
+   "p_reach": 0.0,
+   "factor": "settlement_fabric"
+  },
+  "sett1k_grew_cropland_poor": {
+   "n": 387,
+   "capture": 0.3,
+   "lift": 2.5,
+   "lift_reach": 1.55,
+   "p_reach": 0.0,
+   "factor": "settlement_fabric"
+  },
+  "gold_contact_x_cropland_poor_sett": {
+   "n": 308,
+   "capture": 0.146,
+   "lift": 3.11,
+   "lift_reach": 1.99,
+   "p_reach": 0.0,
+   "factor": "geology_x_settlement"
+  },
+  "gold_contact_x_pop500_cropland_poor": {
+   "n": 308,
+   "capture": 0.097,
+   "lift": 3.77,
+   "lift_reach": 2.36,
+   "p_reach": 0.0,
+   "factor": "geology_x_settlement"
+  },
+  "gold_unit_x_cropland_poor_sett": {
+   "n": 308,
+   "capture": 0.071,
+   "lift": 2.56,
+   "lift_reach": 1.56,
+   "p_reach": 0.02,
+   "factor": "geology_x_settlement"
+  },
+  "hist_abandoned_village_x_cropland_poor_sett": {
+   "n": 264,
+   "capture": 0.125,
+   "lift": 2.28,
+   "lift_reach": 1.39,
+   "p_reach": 0.0367,
+   "factor": "historic_x_settlement"
+  },
+  "gold_contact_w2": {
+   "n": 308,
+   "capture": 0.481,
+   "lift": 2.01,
+   "lift_reach": 1.76,
+   "p_reach": 0.0,
+   "factor": "geology"
+  },
+  "gold_unit_w2": {
+   "n": 308,
+   "capture": 0.13,
+   "lift": 1.26,
+   "lift_reach": 1.24,
+   "p_reach": 0.115,
+   "factor": "geology"
+  },
+  "gold_unit_w1": {
+   "n": 308,
+   "capture": 0.295,
+   "lift": 0.85,
+   "lift_reach": 0.94,
+   "p_reach": 0.2467,
+   "factor": "geology"
+  },
+  "river_osm": {
+   "n": 387,
+   "capture": 0.545,
+   "lift": 1.47,
+   "lift_reach": 1.04,
+   "p_reach": 0.1767,
+   "factor": "hydro"
+  },
+  "gold_contact_x_river": {
+   "n": 308,
+   "capture": 0.256,
+   "lift": 2.35,
+   "lift_reach": 1.47,
+   "p_reach": 0.0,
+   "factor": "geology_x_hydro"
+  },
+  "gold_contact_x_settlement": {
+   "n": 308,
+   "capture": 0.305,
+   "lift": 4.22,
+   "lift_reach": 2.25,
+   "p_reach": 0.0,
+   "factor": "geology_x_settlement"
+  },
+  "gold_contact_x_pop500": {
+   "n": 308,
+   "capture": 0.133,
+   "lift": 3.2,
+   "lift_reach": 1.63,
+   "p_reach": 0.0033,
+   "factor": "geology_x_settlement"
+  },
+  "gold_unit_x_settlement": {
+   "n": 308,
+   "capture": 0.078,
+   "lift": 3.01,
+   "lift_reach": 1.66,
+   "p_reach": 0.0117,
+   "factor": "geology_x_settlement"
+  },
+  "settlement": {
+   "n": 387,
+   "capture": 0.532,
+   "lift": 1.89,
+   "lift_reach": 1.07,
+   "p_reach": 0.1133,
+   "factor": "settlement_fabric"
+  },
+  "settlement_grew_33pct": {
+   "n": 387,
+   "capture": 0.256,
+   "lift": 1.63,
+   "lift_reach": 0.9,
+   "p_reach": 0.1183,
+   "factor": "settlement_fabric"
+  },
+  "settlement_pop500": {
+   "n": 387,
+   "capture": 0.313,
+   "lift": 1.83,
+   "lift_reach": 1.01,
+   "p_reach": 0.4533,
+   "factor": "settlement_fabric"
+  },
+  "settlement_recent_ghsl": {
+   "n": 387,
+   "capture": 0.075,
+   "lift": 1.62,
+   "lift_reach": 0.95,
+   "p_reach": 0.4483,
+   "factor": "settlement_fabric"
+  },
+  "osm_place": {
+   "n": 387,
+   "capture": 0.677,
+   "lift": 1.59,
+   "lift_reach": 0.96,
+   "p_reach": 0.135,
+   "factor": "settlement_fabric"
+  },
+  "road_osm": {
+   "n": 387,
+   "capture": 0.752,
+   "lift": 1.47,
+   "lift_reach": 1.04,
+   "p_reach": 0.14,
+   "factor": "access"
+  },
+  "hist_track_1930s": {
+   "n": 264,
+   "capture": 0.424,
+   "lift": 1.12,
+   "lift_reach": 0.94,
+   "p_reach": 0.2317,
+   "factor": "historic"
+  },
+  "hist_settlement_1930s": {
+   "n": 264,
+   "capture": 0.686,
+   "lift": 1.38,
+   "lift_reach": 1.05,
+   "p_reach": 0.1417,
+   "factor": "historic"
+  },
+  "hist_abandoned_village_1930s": {
+   "n": 264,
+   "capture": 0.591,
+   "lift": 1.55,
+   "lift_reach": 1.32,
+   "p_reach": 0.0,
+   "factor": "historic"
+  },
+  "hist_abandoned_village_on_gold_contact": {
+   "n": 264,
+   "capture": 0.371,
+   "lift": 3.8,
+   "lift_reach": 2.81,
+   "p_reach": 0.0,
+   "factor": "historic"
+  },
+  "hist_abandoned_track_1930s": {
+   "n": 264,
+   "capture": 0.133,
+   "lift": 0.78,
+   "lift_reach": 1.05,
+   "p_reach": 0.4,
+   "factor": "historic"
+  },
+  "hist_abandoned_track_on_gold_contact": {
+   "n": 264,
+   "capture": 0.11,
+   "lift": 1.73,
+   "lift_reach": 2.11,
+   "p_reach": 0.0,
+   "factor": "historic"
+  },
+  "hist_abandoned_any_on_gold_contact": {
+   "n": 264,
+   "capture": 0.39,
+   "lift": 2.95,
+   "lift_reach": 2.5,
+   "p_reach": 0.0,
+   "factor": "historic"
+  },
+  "hist_water_point_1930s": {
+   "n": 264,
+   "capture": 0.068,
+   "lift": 1.45,
+   "lift_reach": 1.25,
+   "p_reach": 0.21,
+   "factor": "historic"
+  },
+  "hist_water_point_on_gold_contact": {
+   "n": 264,
+   "capture": 0.034,
+   "lift": 2.78,
+   "lift_reach": 2.26,
+   "p_reach": 0.0183,
+   "factor": "historic"
+  },
+  "hist_hill_terrain_1930s": {
+   "n": 264,
+   "capture": 0.572,
+   "lift": 2.24,
+   "lift_reach": 1.73,
+   "p_reach": 0.0,
+   "factor": "historic"
+  },
+  "hist_mine_note_1930s": {
+   "n": 264,
+   "capture": 0.011,
+   "lift": 2.47,
+   "lift_reach": 1.53,
+   "p_reach": 0.32,
+   "factor": "historic"
+  }
+ },
+ "fits": {
+  "wofe": {
+   "sett1k": [
+    0.28,
+    -0.334
+   ],
+   "sett1k_pop500": [
+    0.43,
+    -0.238
+   ],
+   "sett1k_cropland_poor": [
+    0.678,
+    -0.409
+   ],
+   "sett1k_pop500_cropland_poor": [
+    0.893,
+    -0.258
+   ],
+   "sett1k_recent_cropland_poor": [
+    0.557,
+    -0.107
+   ],
+   "sett1k_grew_cropland_poor": [
+    0.639,
+    -0.239
+   ],
+   "gold_contact_x_cropland_poor_sett": [
+    0.941,
+    -0.129
+   ],
+   "gold_contact_x_pop500_cropland_poor": [
+    1.145,
+    -0.094
+   ],
+   "gold_unit_x_cropland_poor_sett": [
+    0.673,
+    -0.047
+   ],
+   "gold_contact_w2": [
+    0.424,
+    -0.22
+   ],
+   "gold_contact_x_river": [
+    0.238,
+    -0.058
+   ],
+   "gold_contact_x_settlement": [
+    0.641,
+    -0.149
+   ],
+   "gold_contact_x_pop500": [
+    0.71,
+    -0.095
+   ],
+   "gold_unit_x_settlement": [
+    0.692,
+    -0.05
+   ],
+   "hist_abandoned_village_1930s": [
+    0.072,
+    -0.063
+   ],
+   "hist_abandoned_village_on_gold_contact": [
+    0.599,
+    -0.133
+   ],
+   "hist_abandoned_track_on_gold_contact": [
+    0.323,
+    -0.021
+   ],
+   "hist_abandoned_any_on_gold_contact": [
+    0.548,
+    -0.144
+   ],
+   "hist_water_point_on_gold_contact": [
+    1.067,
+    -0.029
+   ],
+   "hist_hill_terrain_1930s": [
+    0.504,
+    -0.39
+   ]
+  },
+  "logit": {
+   "intercept": 0.414,
+   "sett1k": 0.031,
+   "sett1k_pop500": 0.046,
+   "sett1k_cropland_poor": 0.103,
+   "sett1k_pop500_cropland_poor": 0.079,
+   "sett1k_recent_cropland_poor": 0.02,
+   "sett1k_grew_cropland_poor": 0.056,
+   "gold_contact_x_cropland_poor_sett": 0.037,
+   "gold_contact_x_pop500_cropland_poor": 0.033,
+   "gold_unit_x_cropland_poor_sett": 0.021,
+   "gold_contact_w2": 0.061,
+   "gold_contact_x_river": 0.006,
+   "gold_contact_x_settlement": 0.044,
+   "gold_contact_x_pop500": 0.033,
+   "gold_unit_x_settlement": 0.026,
+   "hist_abandoned_village_1930s": 0.001,
+   "hist_abandoned_village_on_gold_contact": 0.067,
+   "hist_abandoned_track_on_gold_contact": 0.058,
+   "hist_abandoned_any_on_gold_contact": 0.062,
+   "hist_water_point_on_gold_contact": 0.073,
+   "hist_hill_terrain_1930s": 0.103
+  },
+  "logit_tuned": {
+   "feature_set": "passing",
+   "l2": 0.3,
+   "temper": 0.0,
+   "cv_top10": 0.394,
+   "cv_table": {
+    "passing|l2=0.003|temper=0.0": 0.329,
+    "passing|l2=0.003|temper=0.5": 0.327,
+    "passing|l2=0.003|temper=1.0": 0.282,
+    "passing|l2=0.01|temper=0.0": 0.342,
+    "passing|l2=0.01|temper=0.5": 0.328,
+    "passing|l2=0.01|temper=1.0": 0.317,
+    "passing|l2=0.03|temper=0.0": 0.378,
+    "passing|l2=0.03|temper=0.5": 0.33,
+    "passing|l2=0.03|temper=1.0": 0.337,
+    "passing|l2=0.1|temper=0.0": 0.389,
+    "passing|l2=0.1|temper=0.5": 0.323,
+    "passing|l2=0.1|temper=1.0": 0.321,
+    "passing|l2=0.3|temper=0.0": 0.394,
+    "passing|l2=0.3|temper=0.5": 0.335,
+    "passing|l2=0.3|temper=1.0": 0.311,
+    "passing|l2=1.0|temper=0.0": 0.384,
+    "passing|l2=1.0|temper=0.5": 0.3,
+    "passing|l2=1.0|temper=1.0": 0.286,
+    "passing|l2=3.0|temper=0.0": 0.383,
+    "passing|l2=3.0|temper=0.5": 0.283,
+    "passing|l2=3.0|temper=1.0": 0.283,
+    "all|l2=0.003|temper=0.0": 0.279,
+    "all|l2=0.003|temper=0.5": 0.268,
+    "all|l2=0.003|temper=1.0": 0.209,
+    "all|l2=0.01|temper=0.0": 0.29,
+    "all|l2=0.01|temper=0.5": 0.267,
+    "all|l2=0.01|temper=1.0": 0.202,
+    "all|l2=0.03|temper=0.0": 0.29,
+    "all|l2=0.03|temper=0.5": 0.266,
+    "all|l2=0.03|temper=1.0": 0.222,
+    "all|l2=0.1|temper=0.0": 0.308,
+    "all|l2=0.1|temper=0.5": 0.266,
+    "all|l2=0.1|temper=1.0": 0.248,
+    "all|l2=0.3|temper=0.0": 0.311,
+    "all|l2=0.3|temper=0.5": 0.286,
+    "all|l2=0.3|temper=1.0": 0.263,
+    "all|l2=1.0|temper=0.0": 0.314,
+    "all|l2=1.0|temper=0.5": 0.293,
+    "all|l2=1.0|temper=1.0": 0.269,
+    "all|l2=3.0|temper=0.0": 0.335,
+    "all|l2=3.0|temper=0.5": 0.283,
+    "all|l2=3.0|temper=1.0": 0.259
+   },
+   "analogue_weights": {
+    "coef": {
+     "intercept": -1.593,
+     "lc_tree": 0.902,
+     "lc_shrub": 1.827,
+     "lc_grass": 1.285,
+     "lc_crop": -0.751,
+     "lc_bare": -1.542,
+     "lc_tree^2": -0.257,
+     "lc_shrub^2": -0.926,
+     "lc_grass^2": -1.212,
+     "lc_crop^2": -0.572,
+     "lc_bare^2": -0.372
+    },
+    "separability_auc": 0.8565091001499816
+   },
+   "coef": {
+    "intercept": 0.613,
+    "sett1k": 0.003,
+    "sett1k_pop500": 0.063,
+    "sett1k_cropland_poor": 0.17,
+    "sett1k_pop500_cropland_poor": 0.124,
+    "sett1k_recent_cropland_poor": 0.011,
+    "sett1k_grew_cropland_poor": 0.068,
+    "gold_contact_x_cropland_poor_sett": 0.036,
+    "gold_contact_x_pop500_cropland_poor": 0.042,
+    "gold_unit_x_cropland_poor_sett": 0.021,
+    "gold_contact_w2": 0.107,
+    "gold_contact_x_river": -0.027,
+    "gold_contact_x_settlement": 0.064,
+    "gold_contact_x_pop500": 0.049,
+    "gold_unit_x_settlement": 0.043,
+    "hist_abandoned_village_1930s": -0.02,
+    "hist_abandoned_village_on_gold_contact": 0.106,
+    "hist_abandoned_track_on_gold_contact": 0.098,
+    "hist_abandoned_any_on_gold_contact": 0.082,
+    "hist_water_point_on_gold_contact": 0.155,
+    "hist_hill_terrain_1930s": 0.203
+   }
+  }
+ },
+ "xsa": {
+  "equal_factors": {
+   "top05": 0.065,
+   "top10": 0.261,
+   "top20": 0.478,
+   "top05_p_reach": 0.9583,
+   "top10_p_reach": 0.1983,
+   "top05_ci90": [
+    0.022,
+    0.13
+   ],
+   "top10_ci90": [
+    0.152,
+    0.37
+   ]
+  },
+  "best_per_factor": {
+   "top05": 0.087,
+   "top10": 0.196,
+   "top20": 0.348,
+   "top05_p_reach": 0.7563,
+   "top10_p_reach": 0.6083,
+   "top05_ci90": [
+    0.022,
+    0.152
+   ],
+   "top10_ci90": [
+    0.109,
+    0.304
+   ]
+  },
+  "loglift_weights": {
+   "top05": 0.043,
+   "top10": 0.239,
+   "top20": 0.478,
+   "top05_p_reach": 0.985,
+   "top10_p_reach": 0.4163,
+   "top05_ci90": [
+    0.0,
+    0.087
+   ],
+   "top10_ci90": [
+    0.13,
+    0.348
+   ]
+  },
+  "core_x_fabric": {
+   "top05": 0.136,
+   "top10": 0.182,
+   "top20": 0.227,
+   "top05_p_reach": 0.0053,
+   "top10_p_reach": 0.0403,
+   "top05_ci90": [
+    0.045,
+    0.227
+   ],
+   "top10_ci90": [
+    0.091,
+    0.273
+   ]
+  },
+  "top3_signals": {
+   "top05": 0.114,
+   "top10": 0.227,
+   "top20": 0.364,
+   "top05_p_reach": 0.4853,
+   "top10_p_reach": 0.3557,
+   "top05_ci90": [
+    0.045,
+    0.205
+   ],
+   "top10_ci90": [
+    0.136,
+    0.341
+   ]
+  },
+  "noisy_or": {
+   "top05": 0.152,
+   "top10": 0.196,
+   "top20": 0.283,
+   "top05_p_reach": 0.3263,
+   "top10_p_reach": 0.4667,
+   "top05_ci90": [
+    0.065,
+    0.261
+   ],
+   "top10_ci90": [
+    0.109,
+    0.304
+   ]
+  },
+  "wofe": {
+   "top05": 0.261,
+   "top10": 0.261,
+   "top20": 0.435,
+   "top05_p_reach": 0.0067,
+   "top10_p_reach": 0.123,
+   "top05_ci90": [
+    0.152,
+    0.37
+   ],
+   "top10_ci90": [
+    0.152,
+    0.37
+   ]
+  },
+  "logit_binary": {
+   "top05": 0.283,
+   "top10": 0.348,
+   "top20": 0.413,
+   "top05_p_reach": 0.0003,
+   "top10_p_reach": 0.0003,
+   "top05_ci90": [
+    0.174,
+    0.391
+   ],
+   "top10_ci90": [
+    0.217,
+    0.457
+   ]
+  },
+  "logit_tuned": {
+   "top05": 0.239,
+   "top10": 0.348,
+   "top20": 0.5,
+   "top05_p_reach": 0.0007,
+   "top10_p_reach": 0.0,
+   "top05_ci90": [
+    0.13,
+    0.348
+   ],
+   "top10_ci90": [
+    0.239,
+    0.478
+   ]
+  }
+ },
+ "robustness_chosen": {
+  "acled_v8": {
+   "n_clusters": 3,
+   "top05": 0.667,
+   "top10": 0.667,
+   "top20": 1.0
+  },
+  "crisistracker": {
+   "n_clusters": 29,
+   "top05": 0.172,
+   "top10": 0.31,
+   "top20": 0.517
+  },
+  "osm": {
+   "n_clusters": 19,
+   "top05": 0.368,
+   "top10": 0.474,
+   "top20": 0.526
+  },
+  "ucdp_ged": {
+   "n_clusters": 1,
+   "top05": 0.0,
+   "top10": 0.0,
+   "top20": 0.0
+  },
+  "usgs_africa": {
+   "n_clusters": 3,
+   "top05": 0.0,
+   "top10": 0.333,
+   "top20": 0.333
+  },
+  "singleton": {
+   "n_clusters": 32,
+   "top05": 0.156,
+   "top10": 0.281,
+   "top20": 0.469
+  },
+  "multi_report": {
+   "n_clusters": 14,
+   "top05": 0.429,
+   "top10": 0.5,
+   "top20": 0.571
+  }
+ },
+ "xsa_claim": {
+  "recipe": "logit_tuned",
+  "top05": 0.239,
+  "top10": 0.348,
+  "top20": 0.5,
+  "top05_p_reach": 0.0007,
+  "top10_p_reach": 0.0,
+  "top05_ci90": [
+   0.13,
+   0.348
+  ],
+  "top10_ci90": [
+   0.239,
+   0.478
+  ]
+ }
+}
