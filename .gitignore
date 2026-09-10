@@ -264,3 +264,4 @@ scripts/piptex/
 # PIP summary texts stay local (the proposal prose is not public; the generator scripts are)
 docs/plan/PIP_SUMMARY_*
 docs/plan/superseded_PIP_SUMMARY_*
+data/disk_watch/
