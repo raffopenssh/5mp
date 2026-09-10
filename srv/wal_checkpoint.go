@@ -27,9 +27,9 @@ const walTruncateBytes = 256 << 20
 // walWarnBytes is the WAL size above which a checkpoint that could not
 // complete is logged as an error and reported into the notification bell.
 // The database is ~23 GB; a healthy WAL after a checkpoint is well under
-// journal_size_limit (1 GiB, db/db.go). 4 GiB means checkpoints have been
-// failing for several nightly runs, not one.
-const walWarnBytes = 4 << 30
+// journal_size_limit (1 GiB, db/db.go). 2 GiB means the nightly chain ran and
+// nothing reclaimed it (one night's writes are ~0.3–1 GB).
+const walWarnBytes = 2 << 30
 
 // StartWALCheckpointWorker forces a WAL checkpoint every hour and truncates
 // the -wal file. Why the server has to do this rather than trusting SQLite:
@@ -58,39 +58,118 @@ func (s *Server) StartWALCheckpointWorker(ctx context.Context, dbPath string) {
 }
 
 // checkpointWAL runs one checkpoint (PASSIVE, or TRUNCATE once the WAL is
-// worth reclaiming) and reports the outcome.
+// worth reclaiming) and reports the outcome. If the checkpoint cannot pass
+// because of a reader and the pool reports no connection in use, the reader
+// is a snapshot leaked on an idle pooled connection (a *sql.Rows never
+// closed); recycling the idle connections releases it, and the checkpoint
+// is retried once. That is what turned "checkpoint could not finish" into a
+// 13 GB -wal on 2026-09-10: the leaked snapshot was at frame 511, the fire
+// job appended 3.26M frames behind it, and every hourly TRUNCATE stopped at
+// 511 — or, when the pool handed the leaked connection to the PRAGMA itself,
+// failed with SQLITE_LOCKED ("database table is locked (6)").
 func (s *Server) checkpointWAL(ctx context.Context, dbPath string) {
 	before := walSize(dbPath)
 	mode := "PASSIVE"
 	if before > walTruncateBytes {
 		mode = "TRUNCATE"
 	}
-	start := time.Now()
-	// PRAGMA wal_checkpoint returns (busy, log, checkpointed): busy=1 means
-	// it could not finish because of a reader; log/checkpointed are frame
-	// counts (−1 when not in WAL mode).
-	var busy, logFrames, ckptFrames int64
-	err := s.DB.QueryRowContext(ctx, "PRAGMA wal_checkpoint("+mode+")").Scan(&busy, &logFrames, &ckptFrames)
+	res := s.runCheckpoint(ctx, mode)
+	if res.stuck() && before > walTruncateBytes {
+		st := s.DB.Stats()
+		marks := walReadMarks(dbPath)
+		slog.Warn("wal checkpoint blocked; recycling idle connections", "mode", mode, "err", res.err,
+			"busy", res.busy, "checkpointed", res.ckpt, "wal_frames", res.frames, "read_marks", marks,
+			"pool_in_use", st.InUse, "pool_idle", st.Idle)
+		s.logWALBlockers()
+		s.recycleIdleConns()
+		res = s.runCheckpoint(ctx, mode)
+	}
 	after := walSize(dbPath)
-	took := time.Since(start).Round(time.Millisecond)
 	switch {
-	case err != nil:
-		slog.Error("wal checkpoint failed", "error", err, "wal_bytes", after)
+	case res.err != nil:
+		slog.Error("wal checkpoint failed", "error", res.err, "wal_bytes", after)
+		if after > walWarnBytes {
+			s.notifyWALStuck(ctx, after)
+		}
 	case mode == "PASSIVE" && after <= walWarnBytes:
 		// PASSIVE routinely stops short when readers are active; that is
 		// only a problem once the file is large, and the next tick will
 		// escalate. Log at debug so an idle hour is not noise.
-		slog.Debug("wal checkpoint", "mode", mode, "busy", busy, "wal_bytes", after, "took", took)
-	case busy != 0 || after > walWarnBytes:
-		slog.Error("wal checkpoint incomplete", "mode", mode, "busy", busy, "wal_frames", logFrames,
-			"checkpointed", ckptFrames, "wal_bytes_before", before, "wal_bytes_after", after, "took", took)
+		slog.Debug("wal checkpoint", "mode", mode, "busy", res.busy, "wal_bytes", after, "took", res.took)
+	case res.busy != 0 || after > walWarnBytes:
+		slog.Error("wal checkpoint incomplete", "mode", mode, "busy", res.busy, "wal_frames", res.frames,
+			"checkpointed", res.ckpt, "wal_bytes_before", before, "wal_bytes_after", after, "took", res.took,
+			"read_marks", walReadMarks(dbPath))
 		if after > walWarnBytes {
 			s.notifyWALStuck(ctx, after)
 		}
 	default:
-		slog.Info("wal checkpoint", "mode", mode, "wal_frames", logFrames, "wal_bytes_before", before,
-			"wal_bytes_after", after, "took", took)
+		slog.Info("wal checkpoint", "mode", mode, "wal_frames", res.frames, "wal_bytes_before", before,
+			"wal_bytes_after", after, "took", res.took)
 	}
+}
+
+type ckptResult struct {
+	busy, frames, ckpt int64
+	err                error
+	took               time.Duration
+}
+
+// stuck is true when the checkpoint did not reach the end of the WAL: an
+// error (SQLITE_LOCKED when the pooled connection running the PRAGMA itself
+// holds an open statement) or busy=1 with frames left over.
+func (r ckptResult) stuck() bool {
+	return r.err != nil || r.busy != 0 || (r.frames >= 0 && r.ckpt < r.frames)
+}
+
+func (s *Server) runCheckpoint(ctx context.Context, mode string) ckptResult {
+	start := time.Now()
+	// PRAGMA wal_checkpoint returns (busy, log, checkpointed): busy=1 means
+	// it could not finish because of a reader; log/checkpointed are frame
+	// counts (−1 when not in WAL mode).
+	var r ckptResult
+	r.err = s.DB.QueryRowContext(ctx, "PRAGMA wal_checkpoint("+mode+")").Scan(&r.busy, &r.frames, &r.ckpt)
+	r.took = time.Since(start).Round(time.Millisecond)
+	return r
+}
+
+// recycleIdleConns closes every idle pooled connection. database/sql has no
+// direct call for it, but lowering the idle cap to 0 evicts all idle
+// connections and restoring it lets the pool refill lazily. In-use
+// connections are not affected.
+func (s *Server) recycleIdleConns() {
+	s.DB.SetMaxIdleConns(0)
+	s.DB.SetMaxIdleConns(walPoolMaxIdle)
+}
+
+// walPoolMaxIdle mirrors db.Open's SetMaxIdleConns(4); recycleIdleConns
+// restores it after evicting.
+const walPoolMaxIdle = 4
+
+// walReadMarks reads the five reader marks out of the -shm header (WAL index
+// header is 2×48 bytes, then the checkpoint info: nBackfill u32 at offset 96,
+// aReadMark[5] u32 at 100). A mark equal to 0xffffffff is unused; the
+// smallest used mark below mxFrame is the snapshot the checkpoint cannot
+// pass. This is diagnostics only — which frame is pinned, so a leaked reader
+// at frame 511 of 3.2M reads as what it is.
+func walReadMarks(dbPath string) string {
+	b, err := os.ReadFile(dbPath + "-shm")
+	if err != nil || len(b) < 120 {
+		return ""
+	}
+	le := func(off int) uint32 {
+		return uint32(b[off]) | uint32(b[off+1])<<8 | uint32(b[off+2])<<16 | uint32(b[off+3])<<24
+	}
+	out := fmt.Sprintf("mxFrame=%d nBackfill=%d marks=", le(16), le(96))
+	for i := 0; i < 5; i++ {
+		m := le(100 + 4*i)
+		if m == 0xffffffff {
+			out += "- "
+		} else {
+			out += fmt.Sprintf("%d ", m)
+		}
+	}
+	return out
 }
 
 // logWALBlockers names what could be holding the read snapshot a checkpoint
@@ -160,6 +239,7 @@ func (s *Server) HandleAdminDBHealth(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(map[string]any{
 		"wal_bytes":               walSize("db.sqlite3"),
+		"wal_read_marks":          walReadMarks("db.sqlite3"),
 		"wal_frames":              logFrames,
 		"wal_frames_checkpointed": ckptFrames,
 		"checkpoint_busy":         busy != 0,

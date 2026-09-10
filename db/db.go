@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"sort"
 	"strconv"
+	"time"
 
 	_ "modernc.org/sqlite"
 )
@@ -62,6 +63,19 @@ func Open(path string) (*sql.DB, error) {
 	// the whole pool under concurrent load (star-report multi-park export).
 	db.SetMaxOpenConns(16)
 	db.SetMaxIdleConns(4)
+	// Idle connections are recycled. A pooled SQLite connection that was
+	// returned to the pool with a read snapshot still open (a *sql.Rows that
+	// was neither exhausted nor Closed, a stepped statement never reset) pins
+	// the WAL at that snapshot for as long as the connection lives — which,
+	// without this, is the life of the process. On 2026-09-10 one such idle
+	// connection held read-mark frame 511 while the 03:00 fire job appended
+	// 3.26M frames behind it: a 13 GB -wal, pool in_use=0, checkpoint
+	// "table is locked". Closing an idle connection releases its snapshot;
+	// an in-use connection is untouched, so a genuinely long query still runs
+	// to completion. Fixing the leak site is still required (invariant: the
+	// bug is upstream), but the pool must not turn one leak into a disk full.
+	db.SetConnMaxIdleTime(2 * time.Minute)
+	db.SetConnMaxLifetime(30 * time.Minute)
 	return db, nil
 }
 
