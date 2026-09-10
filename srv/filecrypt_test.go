@@ -1,17 +1,19 @@
 package srv
 
 import (
-	"sync"
 	"bytes"
 	"io"
 	"os"
+	"sync"
 	"testing"
 )
 
 func TestCryptReadSeekerRangesMatchPlain(t *testing.T) {
 	dir := t.TempDir()
 	os.Setenv("SHARED_FILES_KEY", "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff")
-	fileKeyOnce = sync.Once{}; fileKey = nil; fileKeyErr = nil
+	fileKeyOnce = sync.Once{}
+	fileKey = nil
+	fileKeyErr = nil
 	plain := make([]byte, 10_000)
 	for i := range plain {
 		plain[i] = byte(i * 7)
@@ -61,10 +63,10 @@ func TestCryptReadSeekerRangesMatchPlain(t *testing.T) {
 
 func TestTileURLSchemes(t *testing.T) {
 	cases := map[string]string{
-		"https://h/{z}/{x}/{y}.jpg":        "https://h/6/35/32.jpg",
-		"https://h/{z}/{x}/{-y}.png":       "https://h/6/35/31.png",
-		"https://t{s}.h/a{q}.jpeg?g=1":     "https://t3.h/a300011.jpeg?g=1",
-		"https://{a-c}.h/{z}/{x}/{y}":      "https://b.h/6/35/32",
+		"https://h/{z}/{x}/{y}.jpg":            "https://h/6/35/32.jpg",
+		"https://h/{z}/{x}/{-y}.png":           "https://h/6/35/31.png",
+		"https://t{s}.h/a{q}.jpeg?g=1":         "https://t3.h/a300011.jpeg?g=1",
+		"https://{a-c}.h/{z}/{x}/{y}":          "https://b.h/6/35/32",
 		"https://mt{s}.h/vt?x={x}&y={y}&z={z}": "https://mt3.h/vt?x=35&y=32&z=6",
 	}
 	for tpl, want := range cases {
