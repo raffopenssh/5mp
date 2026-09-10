@@ -955,9 +955,26 @@ class DailyFireUpdater:
                 self.conn.close()
             except Exception:
                 pass
+            self._reclaim_wal()
             raise
         self.write_status()
         self.conn.close()
+        self._reclaim_wal()
+
+    def _reclaim_wal(self):
+        """Truncate the WAL this run wrote. Steps 3/4 rewrite fire groups
+        (delete + reinsert with geometry blobs) and on 2026-09-10 left an
+        11 GB -wal that no checkpoint could pass for the rest of the morning
+        (a leaked reader in the server pinned frame 511). The job that wrote
+        it truncates it; if a reader blocks that, say so in the bell and
+        leave the retry to the server worker, which can recycle its pool.
+        Runs after self.conn is closed so this process is not the blocker."""
+        from cron_notify import checkpoint_wal, notify_status
+        busy, frames, ckpt, wal_gb = checkpoint_wal(log=log)
+        if busy and wal_gb >= 1.0:
+            notify_status('fire_wal_blocked', 'Fire update: WAL not reclaimed',
+                          f'checkpoint blocked at {ckpt}/{frames} frames; '
+                          f'a reader holds a snapshot. Server worker retries hourly.')
 
     def _run(self):
         log("=" * 70)
@@ -1001,7 +1018,7 @@ class DailyFireUpdater:
         
         # Step 7: Consistency check (cheap, read-only, catches silent drift)
         self.check_consistency()
-        
+
         log("")
         log("=" * 70)
         log("PIPELINE COMPLETE")
