@@ -278,7 +278,7 @@ func (s *Server) HandleAPISharedFileUpload(w http.ResponseWriter, r *http.Reques
 	}
 	if used, budget := s.sharedFileUsage(ref), sharedFileBudgetBytes(); used >= budget {
 		writeJSON(w, http.StatusInsufficientStorage, map[string]interface{}{
-			"error": fmt.Sprintf("storage budget of %s is used up (%s held) — delete a file first", gb(budget), gb(used)),
+			"error":             fmt.Sprintf("storage budget of %s is used up (%s held) — delete a file first", gb(budget), gb(used)),
 			"budget_used_bytes": used, "budget_max_bytes": budget})
 		return
 	}
@@ -386,7 +386,7 @@ func (s *Server) HandleAPISharedFileList(w http.ResponseWriter, r *http.Request)
 	writeJSON(w, http.StatusOK, map[string]interface{}{"files": out, "count": len(out),
 		"can_upload":        ref != "" && RequestEnv(r) != sandboxTenant && GuestFromRequest(r) == nil,
 		"budget_used_bytes": used, "budget_max_bytes": sharedFileBudgetBytes(),
-		"disk_free_bytes":   getAvailableDiskSpace(sharedFileDir)})
+		"disk_free_bytes": getAvailableDiskSpace(sharedFileDir)})
 }
 
 // loadSharedFile resolves an id. ownerOnly enforces pwd_ref scope with 404
