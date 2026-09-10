@@ -60,10 +60,10 @@ type TileSourceRow struct {
 }
 
 const (
-	tileSourcePrefix  = "src:" // basemap id / builder source-key prefix
-	tileSourceMaxPer  = 12
-	tileProbeTimeout  = 12 * time.Second
-	tileProxyTimeout  = 20 * time.Second
+	tileSourcePrefix = "src:" // basemap id / builder source-key prefix
+	tileSourceMaxPer = 12
+	tileProbeTimeout = 12 * time.Second
+	tileProxyTimeout = 20 * time.Second
 )
 
 var tileSourceUA = "5MP Conservation Monitoring (private tile source; https://github.com/raffopenssh/5mp)"
