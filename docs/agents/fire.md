@@ -119,19 +119,14 @@ Tiers come from the null: on the XSA box the shuffle produced 2 groups at
 multi-day detections; ≥2 bits ≈ 18 %; below 0 bits a coin toss. Real
 unsupported groups are many and small (207 groups, 9.9k detections).
 
-**Unsupported trajectories are not drawn** — a manager who has only ever seen
-fire *points* will trust the first line we show. `feature_geometries.
-evidence_tier` (migration 066, trigger-kept from `properties_json` like
-`stat_value`) and `fireDrawnSQL` (`srv/fire_containment.go`) apply to every
-surface that draws a line: `/api/features-in-bbox`, `/api/fire-anim-trajectories`
-(the animator), the park features layer, KML and GeoPackage exports. A request
-for **one** feature by id still resolves (a narrative link must not 404).
-`NULL` = pre-v8 row = drawn, tip says *unmeasured*. Detection counts
-(`stat_value` sums, narrative totals) are untouched — the detections are real,
-only the line joining them was in doubt. On the map `weak` is the layer colour
-pulled toward grey (`evColor` in `lodlayer.js`); width and opacity belong to the
-density ramp and must not be reused for this. The tip prints the tier, the
-bits and the chance rate (`fireEvidenceLine` in globe.html).
+**All tiers are drawn.** Hiding `unsupported` (migration 066, `fireDrawnSQL`,
+grey `evColor`) was tried and **reverted the same day**: the shuffled null
+keeps every corridor and only scrambles the order the days were visited, so
+"shuffled data draws the same line" means the line's *shape* does not depend
+on day order — it says nothing about whether the corridor is real (they recur
+every season). A herder chain is *expected* to score low on contiguity: scouts
+lay fire ahead, the burns do not touch. The tip words it as *day order
+confirmed / unconfirmed*, never *not real* (`fireEvidenceLine` in globe.html).
 
 **Measure it with `scripts/eval_fire_null.py`** (real vs shuffled on one
 area/window, `--bbox` for a 10 s iteration; `skill = 1 − null/real`). Read
@@ -147,6 +142,35 @@ should use `supported` (the report's route skill was measured against an
 all-fire null, not this one).
 
 ---
+
+## Where the day order IS recoverable: ahead of the season front (prototype, 2026-09-14)
+
+`scripts/fire_vanguard/` (README has the table; nothing is wired into the app).
+Ten more order-sensitive tests on XSA 2024/25 — astronomy shift-and-stack over
+1,214 velocity hypotheses, the space-time two-point function, a next-day drift
+field, along-streak Spearman against 3/7/30-day block-shuffled nulls — all came
+out **real ≈ shuffled** inside the burning season. The one that did not:
+
+* Define the **season front** per 2.5 km cell as the 20th-percentile first-burn
+  day within 60 km (smooth, E→W Nov→Jan, identical shape in 2024/25 and
+  2025/26). A detection's **lead** = front − its own day.
+* Run the *unchanged* production tracker only on detections with lead ≥ L days
+  (`van_null.py L`). Skill on links = **0.42–0.51 for every L in 5…25**
+  (whole field: ~0); at L=10 that is 611 chains, 2,859 vs 1,558 links, median
+  29 vs 19 km, mostly Oct–Nov, median 4 km/day, 74 % `unsupported` on
+  contiguity — separated ignitions, not fronts: the scouts' signature.
+* Per-chain FDR by (days, km) stays ≈0.5 at every cut, so **no arrows on single
+  chains yet**; the population beats chance 2:1. Regional mean direction
+  (`van_dir.py`) has three 0.75° cells at z>3 on one season — needs 2025/26.
+* **Traditional early-burn ground** (`recur.py`): 322 5-km cells burned ≥15 d
+  early in ≥4 of ≥6 seasons since 2018; independence predicts ~13. Routes,
+  boundary burns and village rings all live there; context, not fire, separates
+  them.
+
+The tracker was never the problem — its *input regime* was (invariant 15). If
+this ships: `lead` becomes a per-detection/per-link property, chains built on
+the lead-filtered field are a separate layer with the front isochrones as the
+map's backbone, and the day-shuffled null on the *vanguard field* is the gate.
 
 ## `protected_area_id` is a catchment, not a park (F10 — fixed 2026-08-13)
 
