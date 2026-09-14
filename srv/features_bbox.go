@@ -196,7 +196,7 @@ func (s *Server) HandleAPIFeaturesInBBox(w http.ResponseWriter, r *http.Request)
 	scanQ := `SELECT id, (bbox_minx + bbox_maxx) / 2, (bbox_miny + bbox_maxy) / 2,
 		         COALESCE(stat_value, 0),
 		         COALESCE((bbox_maxx - bbox_minx) * (bbox_maxy - bbox_miny), 0),
-		         start_date, feature_id, park_id` + where
+		         start_date, feature_id, park_id, COALESCE(vanguard, 0)` + where
 
 	rows, err := s.DB.QueryContext(r.Context(), scanQ, args...)
 	if err != nil {
@@ -219,10 +219,15 @@ func (s *Server) HandleAPIFeaturesInBBox(w http.ResponseWriter, r *http.Request)
 	countGroups := featureType == "settlement"
 	var groupMeta featureMetaCache
 	col := newSpreadCollector(limit, bbox, spread)
+	// Vanguard chains (began 10–60 d ahead of the season front) among the
+	// fire trajectories in view — counted over the whole set, like `total`,
+	// so a pinned chip can say "1,204 · 37 vanguard" whatever was sampled.
+	vanguardTotal := 0
 	for rows.Next() {
 		var c bboxCand
 		var featureID, rowPark string
-		if err := rows.Scan(&c.id, &c.cx, &c.cy, &c.stat, &c.area, &c.startDate, &featureID, &rowPark); err != nil {
+		var van int
+		if err := rows.Scan(&c.id, &c.cx, &c.cy, &c.stat, &c.area, &c.startDate, &featureID, &rowPark, &van); err != nil {
 			continue
 		}
 		// The filter is applied BEFORE the collector, so `total` counts what
@@ -234,6 +239,9 @@ func (s *Server) HandleAPIFeaturesInBBox(w http.ResponseWriter, r *http.Request)
 		}
 		if countGroups {
 			groupKeys[s.settlementGroupKey(rowPark, featureID, &groupMeta)] = true
+		}
+		if van == 1 {
+			vanguardTotal++
 		}
 		col.add(c)
 	}
@@ -255,6 +263,9 @@ func (s *Server) HandleAPIFeaturesInBBox(w http.ResponseWriter, r *http.Request)
 		if countGroups {
 			out["groups"] = groups
 			out["group_unit"] = "settlements"
+		}
+		if featureType == "fire_trajectory" {
+			out["vanguard_total"] = vanguardTotal
 		}
 		return out
 	}

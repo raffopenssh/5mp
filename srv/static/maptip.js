@@ -138,6 +138,12 @@
 .maptip-body { color: #d1d5db; }
 .maptip-meta { color: #9ca3af; font-size: 11px; margin-top: 4px; }
 .maptip-dim { color: #6b7280; font-size: 10px; margin-top: 4px; }
+/* Season line on a region tip (globe.html seasonTipLine): the front's own
+   pale ember (fireseason.js frontColor), the glyph is the Season chip's. Lit a little when vanguard chains are in the
+   window, because that is the number worth a second look. */
+.maptip-season { color: #fca5a5; opacity: 0.8; display: flex; align-items: center; gap: 4px; }
+.maptip-season i { font-size: 10px; flex: none; }
+.maptip-season.has-van { opacity: 1; }
 .maptip-hot { color: #f87171; }
 .maptip-warn { color: #fbbf24; }
 .maptip-cool { color: #60a5fa; }

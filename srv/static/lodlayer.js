@@ -635,7 +635,12 @@
             s.unit = d.unit || 'features';
             s.groups = (typeof d.groups === 'number') ? d.groups : null;
             s.groupUnit = d.group_unit || '';
-            if (s.onCount) s.onCount(s.count, s.total, render, d.truncated);
+            // Fire trajectories only: how many of the `total` in view began
+            // 10–60 d ahead of the season front (features_bbox.go). Counted
+            // over the whole set, so it is a fact about the view, not about
+            // the sample drawn.
+            s.vanguard = (typeof d.vanguard_total === 'number') ? d.vanguard_total : null;
+            if (s.onCount) s.onCount(s.count, s.total, render, d.truncated, s.vanguard);
             // One event, so anything that shows this layer's state (the stats
             // row, a pinned chip) is told rather than polling.
             try {
@@ -643,7 +648,7 @@
                     detail: { key: key, render: render, count: s.count,
                               total: s.total, truncated: !!d.truncated,
                               unit: s.unit, groups: s.groups, group_unit: s.groupUnit,
-                              basis: s.basis,
+                              vanguard: s.vanguard, basis: s.basis,
                               detail_mode: s.detail || 'auto' }
                 }));
             } catch (e) {}

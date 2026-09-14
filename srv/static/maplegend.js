@@ -1212,7 +1212,7 @@
         // chip's own menu rather than toggling blindly — "on" here would
         // have to pick one of them for the reader.
         if (typeof FireSeason !== 'undefined') {
-            html += row('', 'menuitemcheckbox', fsOn(), 'Fire season', 'icon-flame',
+            html += row('', 'menuitemcheckbox', fsOn(), 'Fire season', 'icon-waves',
                 'Where the burning season had arrived by when, and the fire chains that ran ahead of it',
                 fsOn() ? 'MapLegend.fireSeasonOff()' : 'MapLegend.fireSeasonOn(this)', 'check');
         }
@@ -1311,6 +1311,10 @@
         // beside a slider that already says the year is a second control for
         // one question.
         if (fm.stats && fm.stats.front_first) {
+            // Where the front stands at the slider's end — the same sentence
+            // the stats row and the region tips print (seasonFrontWords).
+            var standing = (typeof seasonFrontWords === 'function') ? seasonFrontWords(fm) : '';
+            if (standing) html += '<div class="ml-note" style="padding:6px 12px 0;font-size:11px;color:#fca5a5">At the slider\u2019s end: ' + esc(standing) + '</div>';
             html += '<div class="ml-note" style="padding:6px 12px;opacity:.7;font-size:11px">Season ' + esc(fm.season || '') +
                 ' (follows the time slider) \u00b7 front first reached ' +
                 esc(fm.stats.front_first) + ', half the area by ' + esc(fm.stats.front_median) + ', last ' +
@@ -3721,7 +3725,14 @@
             var fm = FireSeason.meta(), fv = FireSeason.vanguard();
             var parts = [];
             if (FireSeason.frontOn()) {
-                if (fm && fm.contours && fm.contours.length) parts.push('front ' + esc(fm.season || ''));
+                if (fm && fm.contours && fm.contours.length) {
+                    // The chip says where the front STANDS at the slider's
+                    // end, not just which season: "front 63 %" is the state.
+                    var pct = fm.front_reached_pct;
+                    parts.push(typeof pct === 'number'
+                        ? (pct <= 0 ? 'front not yet' : pct >= 99.5 ? 'front complete' : 'front ' + Math.round(pct) + ' %')
+                        : 'front ' + esc(fm.season || ''));
+                }
                 else if (fm && fm.area === null) parts.push('no area here');
                 else if (fm && fm.status) parts.push('front not yet computed');
             }
@@ -3734,7 +3745,7 @@
                 '<button type="button" class="ml-chip-main" title="' +
                 esc('Fire season: the season front and the vanguard chains ahead of it — tap to choose season and layers') + '" ' +
                 'onclick="event.stopPropagation();MapLegend.fireSeasonMenu(this.parentNode)">' +
-                '<i class="icon-flame"></i><span class="ml-chip-label">Season</span>' +
+                '<i class="icon-waves"></i><span class="ml-chip-label">Season</span>' +
                 (fsNote ? '<em>' + esc(fsNote) + '</em>' : '') +
                 '<i class="icon-chevron-down ml-caret"></i></button>' +
                 '<button type="button" class="ml-chip-x" aria-label="Hide the fire season layers" ' +

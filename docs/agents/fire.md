@@ -210,25 +210,78 @@ format + `leads[]`, all chains (no spread collector — the population is
 ~1 % and the point is to draw all of it; `truncated` still reported).
 `/api/fire-anim-trajectories` carries `vanguard`/`lead_start`.
 
+**Read side, additions (2026-09-14 pm).** `/api/fire-season` also takes
+`summary=1` (no contour JSON — up to 300 KB; the tips and the stats row use
+it), `from`/`to` → `vanguard_in_window` (the panel's basis; `vanguard_groups`
+is the whole season), and with `at=` reads the packed int16 grids
+(`frontProgress`) → `front_reached_pct` (share of front-bearing cells reached
+by `at`) and `usual_offset_days` (median front − usual over those cells, ≥ 20
+cells; + = later than usual; Chinko 2024/25 was −21 d, checked against numpy).
+`/api/stats` carries `vanguard_groups` under the fire row's own
+scope/window/bbox; `/api/features-in-bbox?type=fire_trajectory` carries
+`vanguard_total` (over the whole set in view, like `total`);
+`/api/fire-anim-trajectories` carries `leads[]`/`lead_basis`/`ahead_km` for
+vanguard groups only.
+
 **UI** (`srv/static/fireseason.js`; Map-strip chip in `maplegend.js`, body =
-configure, × = off, sub-label = state incl. "not yet computed" vs "no area
-here"): share param `season=front,vanguard`; contours cool ramp early→late
-(never warm — fire lines are red), vanguard yellow→cyan by `lead_start`, chain
+configure, × = off, sub-label = state: `front 63 %` / `front not yet` /
+`front complete`, "not yet computed" vs "no area here"): share param
+`season=front,vanguard`. **One fire palette, roles told apart by line style
+first** so greyscale survives: trajectories solid red with a head; the front
+thin **dashed** isochrones, ember red (early) → pale rose (late), never a
+cool hue (a blue line beside fire read as a second data family); vanguard
+solid, wider, haloed, **yellow (10 d) → white (60 d)** by `lead_start`, chain
 split client-side at lead 0 into `ahead` (bright) + `after` (faint) because
-MapLibre cannot colour one LineString per vertex; glyphs must be
-`Noto Sans Regular` (the demotiles font server 404s anything else and the
-whole source then draws nothing). Animator: `FireSeason.animAt(t)` filters
-contours to `date ≤ t`, emphasises the last 5 d, hides the whole-season
-vanguard layer while `anim.js` draws vanguard chains in lead colour
-(`vanColor`). Fire tip: `fireSeasonLine()`; fire_alert notifications append
+MapLibre cannot colour one LineString per vertex; glyphs must be `Noto Sans
+Regular` (the demotiles font server 404s anything else and the whole source
+then draws nothing).
+
+**No row of its own.** The front and the vanguard are two more renderings of
+the fire subject, so they live on the **Fire Activity row**: its rendering
+menu (`openModeMenu` 'fires') has a *Season* group (front / vanguard
+checkboxes, refused with the reason where no front is built), its readout
+line prints `front 60 % · 26 d early · 149 vanguard` (`seasonFrontWords`,
+one writer shared with the chip menu and the region tips), the pill says
+`front · vanguard`, and the eye becomes a dashed-contour glyph
+(`.layer-season`) when only the overlay draws. A sixth "Season Front" row was
+built first and removed: it said "Season Front" over a count of fire chains
+and cost a phone a third row of cards. **Fire pins** carry a `.chip-van`
+mark (`87` in lead yellow) — the vanguard share of the pin's chains, and
+the switch for that rendering. **Park/AOI hover tips** carry a season line
+(`seasonTipLine`, `FireSeason.summary()` cache per area+window, tip
+re-renders once when it lands; says nothing where no front is built).
+
+**Animator.** The front animates through data-driven paint on its own
+MapLibre layers (`FireSeason.animAt(t)`, ≤ ~12 repaints/s with a trailing
+update so the last scrub position lands): contours the season has not reached
+are filtered out; those reached in the last ~6 d are the **wave** — a wide
+blurred stroke (`fireseason-front-wave`) plus a heavy crisp line, its date
+labelled even on an unlabelled 5-day contour; older lines thin and dim with
+age. Vanguard chains are drawn by `anim.js drawVanguard` after the field:
+ignition ring opening over the first 4 d, lead-coloured run with halo,
+pulsing lead-coloured head while ahead, **ordinary fire red from the vertex
+where `leads[i] < 0`** (the season caught up), same ash-out as every
+trajectory. The paused-frame tip says "Still N d ahead" / "The season caught
+up N d ago". Fire tip: `fireSeasonLine()`; fire_alert notifications append
 "began N d ahead of the season front — early movement ahead of the season"
 and rank the group at priority 20. Methods block: "Season Front & Vanguard
-Fires". Test: `?test=1` → `TEST.fireSeason()`.
+Fires". Test: `?test=1` → `TEST.fireSeason()`; API: `tests/api_tests.sh`
+"Season front & vanguard".
 
-**Not done / candidates:** park & AOI hover tips and the stats panel do not
-yet print the season count (`vanguard_groups` is in `/api/fire-season`);
-speed map layer; shift-calibrated `usual`; XSA AOI fires end 2026-08-06 (AOI
-runner has not ingested 2026/27).
+**Exports** (`gpkgFormatVersion` v4). `fire_trajectories` (area and view)
+carry `fire_season, lead_start_days, lead_basis, vanguard, ahead_km,
+ahead_days`. New layer **`fire_season_front`**: area exports hold every
+season overlapping the window; view exports (animator → GeoPackage adds
+`season` to `layers` while the front is on) hold one season per area in
+view, the one the instant falls in, with `reached_at_instant`. Styled dashed
+ember red, labelled by date (`styleFireSeasonFront`), temporal on
+`front_date`.
+
+**Not done / candidates:** speed map layer; shift-calibrated `usual` (the
+`usual_offset_days` now measured per request is the input it needs); the
+stats readout's front position is at the *window's end*, not the animator's
+playhead (would need a per-day request or the grid client-side); XSA AOI
+fires end 2026-08-06 (AOI runner has not ingested 2026/27).
 
 ## `protected_area_id` is a catchment, not a park (F10 — fixed 2026-08-13)
 

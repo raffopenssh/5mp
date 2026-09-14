@@ -134,6 +134,7 @@ func (s *Server) buildAreaGeoPackage(path string, o gpkgExportOpts) ([]gpkgLayer
 			return s.gpkgProtectedAreas(w, o)
 		}},
 		{"fire trajectories", func() error { return s.gpkgFireTrajectories(w, o) }},
+		{"fire season front", func() error { return s.gpkgFireSeasonFront(w, o) }},
 		{"fire detections", func() error { return s.gpkgFireDetections(w, o, boundary) }},
 		{"deforestation", func() error { return s.gpkgDeforestation(w, o) }},
 		{"settlements", func() error { return s.gpkgSettlements(w, o) }},
@@ -397,6 +398,19 @@ func (s *Server) gpkgFireTrajectories(w *gpkgWriter, o gpkgExportOpts) error {
 			{"start_park", "TEXT"},
 			{"end_park", "TEXT"},
 			{"parks_touched", "TEXT"},
+			// Season position (scripts/fire_front.py; docs/agents/fire.md
+			// "Season front & vanguard"). lead_start = days the line BEGAN
+			// ahead of the season front at its first vertex (NULL = the
+			// area's front is not built); vanguard = began 10–60 d ahead,
+			// the one population whose day order is measurably real.
+			// lead_basis 'usual' = this season's front had not arrived, the
+			// median of past seasons stood in.
+			{"fire_season", "TEXT"},
+			{"lead_start_days", "INTEGER"},
+			{"lead_basis", "TEXT"},
+			{"vanguard", "BOOLEAN"},
+			{"ahead_km", "REAL"},
+			{"ahead_days", "INTEGER"},
 			{"narrative", "TEXT"},
 		})
 	if err != nil {
@@ -477,10 +491,89 @@ func (s *Server) gpkgFireTrajectories(w *gpkgWriter, o gpkgExportOpts) error {
 			gpkgJSONStr(p, "nearest_river"),
 			gpkgJSONNum(p, "nearest_river_dist"),
 			startPark, endPark, parksTouched,
+			gpkgJSONStr(p, "fire_season"),
+			gpkgJSONInt(p, "lead_start"),
+			gpkgJSONStr(p, "lead_basis"),
+			gpkgJSONBool(p, "vanguard"),
+			gpkgJSONNum(p, "ahead_km"),
+			gpkgJSONInt(p, "ahead_days"),
 			gpkgJSONStr(p, "narrative"),
 		)
 	}
 	w.SetStyle("fire_trajectories", styleFireTrajectory(), "Coloured by fire behaviour type")
+	return nil
+}
+
+// gpkgFireSeasonFront writes the season-front isochrones (table
+// fire_season_front, one writer: scripts/fire_front.py) for every season of
+// the area that overlaps the export window. Each row is one contour: "by
+// `date`, a fifth of the land that burns in a season had burned within
+// ~60 km". The SAME features the app draws, so a QGIS reader and a browser
+// reader see one front.
+func (s *Server) gpkgFireSeasonFront(w *gpkgWriter, o gpkgExportOpts) error {
+	q := `SELECT season, season_start, season_end, complete, COALESCE(latest_day,''), contours_json
+		FROM fire_season_front WHERE area_id = ? AND contours_json IS NOT NULL`
+	args := []interface{}{o.AreaID}
+	if o.FromDate != "" {
+		q += " AND season_end >= ?"
+		args = append(args, o.FromDate)
+	}
+	if o.ToDate != "" {
+		q += " AND season_start <= ?"
+		args = append(args, o.ToDate)
+	}
+	q += " ORDER BY season_start"
+	rows, err := s.DB.Query(q, args...)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	var l *gpkgLayer
+	for rows.Next() {
+		var season, s0, s1, latest, cj string
+		var complete int
+		if rows.Scan(&season, &s0, &s1, &complete, &latest, &cj) != nil {
+			continue
+		}
+		var feats []struct {
+			Geometry   json.RawMessage `json:"geometry"`
+			Properties struct {
+				Dos   int    `json:"dos"`
+				Date  string `json:"date"`
+				Label bool   `json:"label"`
+				Text  string `json:"text"`
+			} `json:"properties"`
+		}
+		if json.Unmarshal([]byte(cj), &feats) != nil || len(feats) == 0 {
+			continue
+		}
+		if l == nil {
+			l, err = w.AddLayer("fire_season_front", "GEOMETRY",
+				"Fire season front (scripts/fire_front.py): isochrones every 5 days of the day on which "+
+					"20 % of the land that burns in a season had burned within 60 km — where the burning "+
+					"season had arrived by when. Fire trajectories that began 10–60 days ahead of this "+
+					"front are flagged vanguard in fire_trajectories.", []gpkgCol{
+					{"season", "TEXT"},
+					{"season_start", "DATE"},
+					{"season_end", "DATE"},
+					{"season_complete", "BOOLEAN"},
+					{"day_of_season", "INTEGER"},
+					{"front_date", "DATE"},
+					{"labelled", "BOOLEAN"},
+					{"label", "TEXT"},
+				})
+			if err != nil {
+				return err
+			}
+		}
+		for _, f := range feats {
+			l.Add(string(f.Geometry), season, gpkgDate(s0), gpkgDate(s1), gpkgBool(complete == 1),
+				f.Properties.Dos, gpkgDate(f.Properties.Date), gpkgBool(f.Properties.Label), f.Properties.Text)
+		}
+	}
+	if l != nil {
+		w.SetStyle("fire_season_front", styleFireSeasonFront(), "Season front isochrones, coloured early→late within the season")
+	}
 	return nil
 }
 
