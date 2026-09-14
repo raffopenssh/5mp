@@ -1464,6 +1464,7 @@
         .starred-md-toolbar button { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #ccc; font-size: 10px; padding: 3px 10px; border-radius: 5px; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
         .starred-md-toolbar button:hover { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.4); color: #22c55e; }
         .md-h2 { font-size: 13px; font-weight: 700; color: #fff; margin: 4px 0 8px; }
+        .md-h4 { font-size: 11px; font-weight: 600; color: #fde047; margin: 10px 0 4px; letter-spacing: 0.2px; }
         .md-hr { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 14px 0; }
         .md-p { margin: 4px 0 8px; color: #999; }
         .md-list { margin: 2px 0 8px; padding-left: 16px; }
@@ -1492,6 +1493,8 @@
         .md-sec-pubs .md-sec-title { color: #3b82f6; }
         .md-sec-legal { border-color: #94a3b8; }
         .md-sec-legal .md-sec-title { color: #94a3b8; }
+        .md-table-wrap { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+        .md-table-wrap.wide .md-table td, .md-table-wrap.wide .md-table th { white-space: nowrap; }
         .md-table { border-collapse: collapse; margin: 6px 0 4px; font-size: 10.5px; width: 100%; }
         .md-table th { text-align: left; color: #888; font-weight: 600; padding: 3px 8px 3px 0; border-bottom: 1px solid rgba(255,255,255,0.12); }
         .md-table td { padding: 3px 8px 3px 0; border-bottom: 1px solid rgba(255,255,255,0.05); color: #aaa; }
@@ -4730,3 +4733,19 @@ body.is-guest .session-chip-logout:hover { opacity: 1; background: rgba(251,191,
     .admin-panel-tabs::-webkit-scrollbar { display: none; }
     .admin-tab { flex: none; white-space: nowrap; scroll-snap-align: start; padding: 9px 12px; }
 }
+
+/* Fire-season vanguard legend: the ramp is sampled from FireSeason.leadColor
+   (fireseason.js legendHTML) so every panel shows the ramp the map draws. */
+.fs-legend { font-size: 10.5px; color: #cbd5e1; line-height: 1.35; }
+.fs-legend.in-menu { padding: 6px 12px 8px; max-width: 280px; }
+.fs-ramp-cap { opacity: .75; margin-bottom: 3px; }
+.fs-ramp { height: 6px; border-radius: 3px; box-shadow: 0 0 0 1px rgba(255,255,255,.08) inset; }
+.fs-ramp-ticks { display: flex; justify-content: space-between; opacity: .7; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.fs-ramp-width { display: flex; flex-wrap: wrap; align-items: center; gap: 3px 10px; margin-top: 5px; opacity: .85; }
+.fs-wi { white-space: nowrap; }
+.fs-w { display: inline-block; width: 18px; margin-right: 5px; border-radius: 2px; background: #fde047; vertical-align: middle; }
+.fs-w-wide { height: 3.5px; }
+.fs-w-thin { height: 1.5px; }
+.fs-w-ash { height: 1.5px; background: #9ca3af; opacity: .6; }
+#methods-season-legend { list-style: none; margin-left: -20px; }
+#methods-season-legend .fs-legend { max-width: 360px; padding: 4px 0 0; }

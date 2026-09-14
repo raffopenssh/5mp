@@ -614,7 +614,8 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                     <li><strong style="color:#38bdf8">Season front</strong> — for each 2.5 km cell we note the day by which a fifth of the land that burns in a season had burned within ~60 km. Joining cells with the same day gives the contour lines (every 5 days). The season starts in the area’s quietest month, measured from its own history, never assumed.</li>
                     <li><strong>Lead</strong> — how many days before that front a fire burned. Live, where this season’s front has not arrived yet, we measure against the usual front of past seasons and say so.</li>
                     <li><strong style="color:#fde047">Vanguard fires</strong> — fire chains that <em>began</em> 10–60 days ahead of the front. This is the one group where the tracker beats the shuffle clearly (about half the day-to-day links are real signal, in every season we have tested), so these are the lines whose direction and pace mean something. On the ground this is where people move ahead of the season, burning along the route; the map says “ahead of the season”, not who or why.</li>
-                    <li>Each vanguard chain is drawn bright while it is still ahead of the front and faint once the season has caught up with it; in the animation the front moves with the playhead.</li>
+                    <li>Each vanguard chain is coloured <em>along its length</em> by how far ahead of the front it was at that point — white far ahead, yellow at two weeks, orange as the season arrives — and faint ash once the season has caught up with it. A <strong>wide</strong> line means the day order along the chain is confirmed against the shuffle (evidence tier <em>supported</em> or <em>weak</em>); a thin one is unconfirmed or unmeasured. In the animation the front moves with the playhead.</li>
+                    <li id="methods-season-legend"></li>
                     <li>Fronts are rebuilt nightly for ~25 areas in rotation and refreshed daily for the season in progress; a park whose front has not been built yet says so rather than showing an empty layer.</li>
                 </ul>
 
@@ -5760,6 +5761,51 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             });
         }
 
+        // Season front & vanguard for the report (docs/agents/fire.md). Reads
+        // /api/fire-season?summary=1&leads=N: the server's own sentence
+        // (`words`, one writer for tips, reports and agents), the tier
+        // breakdown, and the ranked chains. Says "not yet computed" where the
+        // nightly rotation has not reached the area — an absent section would
+        // read as "no early fire", which is a different claim.
+        function mdSeasonBlock(season, detail) {
+            const out = [];
+            if (!season || (!season.season && !season.status)) return out;
+            out.push('#### Season front & vanguard fires');
+            out.push('');
+            if (!season.season) {
+                out.push(`Season front ${season.status || 'not available'} for this area — vanguard fires cannot be told apart from the season here yet.`);
+                out.push('');
+                return out;
+            }
+            if (season.words) { out.push(season.words); out.push(''); }
+            const tiers = season.vanguard_tiers || {};
+            const top = season.vanguard_top || [];
+            const nWin = typeof season.vanguard_in_window === 'number' ? season.vanguard_in_window : season.vanguard_groups;
+            if (top.length) {
+                const limit = detail === 'comprehensive' ? top.length : (detail === 'standard' ? 8 : 3);
+                out.push(`Vanguard chains ranked by the distance they ran ahead of the front (${Math.min(limit, top.length)} of ${nWin}; day order = link evidence against the day-shuffled null; wide lines on the map = supported/weak):`);
+                out.push('');
+                out.push('| Began | Ahead by | Ran ahead | Day order | Fires | Where |');
+                out.push('|-------|----------|-----------|-----------|-------|-------|');
+                for (const v of top.slice(0, limit)) {
+                    const lead = v.lead_start != null ? `${v.lead_start} d${v.lead_basis === 'usual' ? ' (usual front)' : ''}` : '—';
+                    const ran = v.ahead_km ? `${Math.round(v.ahead_km)} km / ${v.ahead_days} d` : '—';
+                    const where = v.nearest_place ? `${v.nearest_place}${v.nearest_place_km ? ` (${Math.round(v.nearest_place_km)} km)` : ''}` : `${v.lat.toFixed(2)}, ${v.lon.toFixed(2)}`;
+                    out.push(`| ${v.start} | ${lead} | ${ran} | ${v.tier || 'unmeasured'} | ${v.fires || 0} | ${where}${v.direction ? ` → ${v.direction}` : ''} |`);
+                }
+                out.push('');
+                if (Object.keys(tiers).length) {
+                    const order = ['supported', 'weak', 'unsupported', 'single', 'unmeasured'];
+                    const parts = order.filter(k => tiers[k]).map(k => `${k} ${tiers[k]}`);
+                    out.push(`Day-order evidence over all ${nWin} vanguard chains in the window: ${parts.join(', ')}.`);
+                    out.push('');
+                }
+            }
+            out.push('_Method: the season front is the day by which a fifth of the land that burns in a season had burned within ~60 km (2.5 km cells). A vanguard chain began 10–60 days ahead of it — the one population whose day-to-day order beats a day-shuffled null (link skill ≈0.5; inside the season ≈0). "Ahead of the season" is what is measured, not who lit it or why._');
+            out.push('');
+            return out;
+        }
+
         function buildParkMarkdown(park, data, sections = null) {
             // sections: optional Set of starred narrative types ('fire',
             // 'deforestation', 'settlement', 'road') — when set, only those
@@ -5834,6 +5880,13 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             // Overview: key summary stats as a compact Markdown table
             const kv = [];
             if (has('fire') && fireDetections) kv.push(['Fire detections', `${fmt(fireDetections)} in ${fmt(fireNarratives.length)} group${fireNarratives.length !== 1 ? 's' : ''} (${respRate}% stopped)`]);
+            const season = data.season || {};
+            if (has('fire') && season.season) {
+                // The short form the stats row prints (seasonFrontWords), so
+                // the overview and the panel say one thing.
+                const sw = (typeof seasonFrontWords === 'function') ? seasonFrontWords(season, { vanguard: true }) : '';
+                if (sw) kv.push(['Fire season', sw]);
+            }
             if (has('deforestation') && deforest.total_loss_km2) kv.push(['Forest loss', `${deforest.total_loss_km2.toFixed(1)} km2${deforest.worst_year ? ` (worst: ${deforest.worst_year})` : ''}`]);
             if (has('deforestation') && deforest.cropland_measured_for > 0) kv.push(['Cropland expansion', `${(deforest.cropland_conversion_km2 || 0).toFixed(1)} km2 of loss on land newly cropped by 2016-19 (GLAD 30 m)`]);
             if (has('settlement') && settle.settlement_count) kv.push(['Settlements', `${fmt(settle.settlement_count)}${settle.total_population ? ` (~${fmt(settle.total_population)} people)` : ''}${typeof settle.built_up_km2 === 'number' ? `, ${settle.built_up_km2.toFixed(2)} km2 built-up surface` : ''}`]);
@@ -5885,10 +5938,14 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 for (const n of fireNarratives.slice(0, limit)) {
                     const d = n.entry_date || n.start_date || '';
                     const txt = plain(n.narrative || n.title || 'Fire group');
-                    lines.push(`- ${d ? d + ' - ' : ''}${txt}`);
+                    // A chain that began ahead of the season says so beside
+                    // its line, as the popup does (fireSeasonLine).
+                    const van = n.vanguard && n.lead_start != null ? ` **Vanguard: began ${n.lead_start} d ahead of the ${n.lead_basis === 'usual' ? 'usual' : 'season'} front**${n.ahead_km ? `, ran ${Math.round(n.ahead_km)} km before it caught up` : ''}.` : '';
+                    lines.push(`- ${d ? d + ' - ' : ''}${txt}${van}`);
                 }
                 if (fireNarratives.length > limit) lines.push(`- ... ${fireNarratives.length - limit} more fire groups omitted (set detail level to comprehensive to include all)`);
                 lines.push('');
+                lines.push(...mdSeasonBlock(season, detail));
             }
 
             // Deforestation
@@ -6349,6 +6406,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 }
                 if (/^# /.test(line)) return `<h1>${line.slice(2)}</h1>`;
                 if (/^## /.test(line)) return `<h2>${line.slice(3)}</h2>`;
+                if (/^#### /.test(line)) return `<h4>${line.slice(5)}</h4>`;
                 if (/^### /.test(line)) return `<h3>${line.slice(4)}</h3>`;
                 if (/^---\s*$/.test(line)) return '<hr>';
                 if (/^```/.test(line)) return ''; // fence markers: body is already <pre> mono
@@ -6357,8 +6415,8 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             const html = `<!DOCTYPE html><html><head><title>5MP Conservation Report</title><style>
                 body { font: 11px/1.6 ui-monospace, Menlo, Consolas, monospace; color: #111; margin: 15mm; }
                 pre { white-space: pre-wrap; word-wrap: break-word; margin: 0; font: inherit; }
-                h1 { font-size: 16px; margin: 0 0 6px; } h2 { font-size: 13px; margin: 14px 0 4px; page-break-after: avoid; } h3 { font-size: 11px; margin: 10px 0 3px; page-break-after: avoid; }
-                h1, h2, h3 { font-family: inherit; }
+                h1 { font-size: 16px; margin: 0 0 6px; } h2 { font-size: 13px; margin: 14px 0 4px; page-break-after: avoid; } h3 { font-size: 11px; margin: 10px 0 3px; page-break-after: avoid; } h4 { font-size: 11px; margin: 8px 0 2px; font-weight: 600; page-break-after: avoid; }
+                h1, h2, h3, h4 { font-family: inherit; }
                 hr { border: none; border-top: 1px solid #999; margin: 12px 0; }
                 .parkmap { margin: 8px 0; page-break-inside: avoid; }
                 .parkmap svg { max-width: 100%; height: auto; }
@@ -15184,6 +15242,21 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             el.dataset.for = o.id;
             let html = '';
 
+            // Map: the row's own viewport layer as a checkbox, so a row that
+            // also offers Season renderings (fires) can switch its paths and
+            // its front/vanguard from ONE menu instead of an eye here and a
+            // checkbox there. Generic for every stats row; placed first
+            // because it is the layer the rest of the menu configures.
+            if (o.animRow && VIEW_LAYER_META[o.animRow]) {
+                const on = !!viewLayers[o.animRow];
+                const label = ROW_LAYER_LABEL[o.animRow] || o.animRow;
+                html += `<div class="mode-menu-head">Map</div>`;
+                html += `<button type="button" class="aoi-menu-item mode-opt${on ? ' on' : ''}" role="menuitemcheckbox" `
+                      + `aria-checked="${on}" title="${escapeHtml(ROW_LAYER_DESC[o.animRow] || ('Draw ' + label + ' in the viewport'))}" `
+                      + `onclick="event.stopPropagation();setRowLayer('${o.animRow}')">`
+                      + `<span class="mode-mark check"></span>${label}</button>`;
+            }
+
             if (o.lodKey) {
                 const cur = o.detail || (window.LODLayer ? LODLayer.detail(o.lodKey) : 'auto');
                 html += `<div class="mode-menu-head">Map detail</div>`;
@@ -15235,6 +15308,8 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                           + `onclick="event.stopPropagation();setRowSeason('${k}',${!on})">`
                           + `<span class="mode-mark check"></span>${label}</button>`;
                 });
+                // The same ramp the map draws (sampled from FireSeason.leadColor).
+                if (FireSeason.legendHTML && (FireSeason.vanguardOn() || !refusal)) html += FireSeason.legendHTML({ cls: 'in-menu' });
             }
             if (!html) return;
 
@@ -15267,6 +15342,19 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
         // The fire row's Season switches: the same state the Map-strip chip
         // and the fire pins' vanguard mark switch (fireseason.js is the one
         // owner; everything else re-renders from its onChange).
+        // The Map group's labels: what the row draws, in the words the tips use.
+        const ROW_LAYER_LABEL = { fires: 'Fire trajectories', deforest: 'Deforestation', settlements: 'Settlements' };
+        const ROW_LAYER_DESC = {
+            fires: 'Fire paths in view — VIIRS detections linked day to day into trajectories (solid red, a head at the latest point)',
+            deforest: 'Forest-loss patches in view',
+            settlements: 'Settlement footprints in view'
+        };
+        function setRowLayer(name) {
+            closeLayerModeMenu();
+            toggleViewLayer(name);
+        }
+        window.setRowLayer = setRowLayer;
+
         function setRowSeason(which, on) {
             closeLayerModeMenu();
             if (!window.FireSeason) return;
@@ -17196,9 +17284,12 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
         const flushTable = () => {
             if (!tableRows || !tableRows.length) { tableRows = null; return; }
             const [head, ...rows] = tableRows;
-            html += '<table class="md-table"><thead><tr>' + head.map(c => '<th>' + mdInline(c) + '</th>').join('') + '</tr></thead><tbody>';
+            // A table of 4+ columns keeps its rows on one line and scrolls
+            // sideways on a phone; a two-column key/value table wraps.
+            const wide = head.length >= 4;
+            html += '<div class="md-table-wrap' + (wide ? ' wide' : '') + '"><table class="md-table"><thead><tr>' + head.map(c => '<th>' + mdInline(c) + '</th>').join('') + '</tr></thead><tbody>';
             html += rows.map(r => '<tr>' + r.map(c => '<td>' + mdInline(c) + '</td>').join('') + '</tr>').join('');
-            html += '</tbody></table>';
+            html += '</tbody></table></div>';
             tableRows = null;
         };
         const openSec = (cls, title) => {
@@ -17220,6 +17311,13 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             }
             flushTable();
             if (!line) { closeList(); continue; }
+            if (line.startsWith('#### ')) {
+                // A sub-heading INSIDE the open section (season front &
+                // vanguard under Fire activity): same card, its own title.
+                closeList();
+                html += `<div class="md-h4">${mdInline(line.slice(5))}</div>`;
+                continue;
+            }
             if (line.startsWith('### ')) {
                 const t = line.slice(4);
                 openSec(MD_SECTION_STYLE[t.toLowerCase()] || 'neutral', t);
@@ -18776,7 +18874,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
         
         try {
             // Fetch all data in parallel (same as popups do)
-            const [fire, ghsl, deforest, settlement, road, species, climate, research, legal, grid, stats, turbidity] = await Promise.all([
+            const [fire, ghsl, deforest, settlement, road, species, climate, research, legal, grid, stats, turbidity, season] = await Promise.all([
                 fetchFireDataDirect(parkId, {from, to, pwd}),
                 fetchGHSLDataDirect(parkId, {pwd}),
                 fetchDeforestDataDirect(parkId, {pwd}),
@@ -18790,12 +18888,14 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 forAOI ? none() : fetchStatsDirect(parkId, {pwd}),
                 // mining/turbidity retired (§10): resolve empty rather than
                 // hitting the now-disabled endpoint
-                (MINING_ENABLED && !forAOI) ? fetchTurbidityDataDirect(parkId, {pwd}) : Promise.resolve({})
+                (MINING_ENABLED && !forAOI) ? fetchTurbidityDataDirect(parkId, {pwd}) : Promise.resolve({}),
+                fetchFireSeasonDirect(parkId, {from, to, pwd})
             ]);
             
             return {
                 ...result,
                 fire,
+                season,
                 ghsl,
                 deforestation: deforest,  // Map to expected key
                 settlement,
@@ -18817,6 +18917,23 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
         }
     }
     
+    // Season front & vanguard — /api/fire-season?summary=1&leads=N (the same
+    // answer the stats row, the chip menu and the region tips read, plus the
+    // ranked vanguard chains and their evidence tiers for the report). An
+    // area whose front is not built answers {status}, and the report says so
+    // rather than printing nothing (invariant 1). Parks AND AOIs: the route
+    // is area-agnostic, visibility is enforced server-side (404 → {}).
+    async function fetchFireSeasonDirect(parkId, {from, to, pwd}) {
+        try {
+            const params = [`area=${encodeURIComponent(parkId)}`, 'summary=1', 'leads=200', `pwd=${encodeURIComponent(pwd)}`];
+            if (from) params.push(`from=${from}`);
+            if (to) { params.push(`to=${to}`); params.push(`at=${to}`); }
+            const resp = await fetch(`/api/fire-season?${params.join('&')}`);
+            if (!resp.ok) return {};
+            return await resp.json();
+        } catch (e) { return {}; }
+    }
+
     // Fire data - Uses fire-narrative API (same as popup)
     async function fetchFireDataDirect(parkId, {from, to, pwd}) {
         try {
@@ -19347,8 +19464,10 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
     // chains are laid ahead of the previous day's burn and are expected to
     // score low here; their support comes from recurrence along the route.
     function fireEvidenceLine(props, fs) {
-        const tier = props.evidence_tier || props.ev;
-        if (!tier || tier === 'unmeasured') return '';
+        // Absent prints the word (invariant 12): a line with no score beside
+        // it reads as a line with a good one.
+        const tier = props.evidence_tier || props.ev || 'unmeasured';
+        if (tier === 'unmeasured') return `<div style="margin-top: 4px; font-size: ${fs}; color: #6b7280;">Day order unmeasured — not yet scored against the day-shuffled null</div>`;
         const bits = (props.evidence_bits !== undefined && props.evidence_bits !== null) ? ` (${props.evidence_bits} bits)` : '';
         const words = {
             supported: ['Consecutive days touch — a spreading front', '#166534'],

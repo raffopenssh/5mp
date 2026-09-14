@@ -166,6 +166,14 @@ class NarrativeGeneratorV5:
                     'zigzag_ratio': t.get('zigzag_ratio', 0),
                     'evidence_bits': t.get('evidence_bits'),
                     'evidence_tier': t.get('evidence_tier', 'unmeasured'),
+                    # Season position (scripts/fire_front.py): absent until
+                    # the area's front is built; the report and the popup
+                    # print the vanguard flag and the lead beside the line.
+                    'lead_start': t.get('lead_start'),
+                    'lead_basis': t.get('lead_basis'),
+                    'vanguard': bool(t.get('vanguard', False)),
+                    'ahead_km': t.get('ahead_km'),
+                    'ahead_days': t.get('ahead_days'),
                     'origin': {
                         'nearest_place': {'name': t.get('nearest_place'), 'distance_km': t.get('nearest_place_dist')} if t.get('nearest_place') else None,
                         'nearest_river': {'name': t.get('nearest_river'), 'distance_km': t.get('nearest_river_dist')} if t.get('nearest_river') else None
