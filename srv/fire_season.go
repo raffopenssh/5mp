@@ -151,7 +151,7 @@ func (s *Server) HandleAPIFireSeason(w http.ResponseWriter, r *http.Request) {
 			if t0, ok := parseISODate(seasonStart.String); ok {
 				d := int(t.Sub(t0).Hours() / 24)
 				atDos = &d
-				frontPct, usualOffset = frontProgress(frontBlob, usualBlob, nx, ny, d)
+				frontPct, usualOffset = frontProgress(frontBlob, usualBlob, nx, ny, d, complete == 1)
 			}
 		}
 	}
@@ -214,7 +214,7 @@ func (s *Server) HandleAPIFireSeason(w http.ResponseWriter, r *http.Request) {
 	// playhead's day of season; `front_reached_pct` here is at `at`). ~75
 	// numbers, so it rides along with the contours too.
 	var curve interface{}
-	if fc, uc := frontCurve(frontBlob, usualBlob, nx, ny, 5); fc != nil {
+	if fc, uc := frontCurve(frontBlob, usualBlob, nx, ny, 5, complete == 1); fc != nil {
 		curve = map[string]interface{}{"step_days": 5, "front": fc, "usual": uc}
 	}
 	var frontStats struct {
@@ -365,8 +365,13 @@ func seasonWords(season string, complete bool, first, median, last string, pct, 
 	nVan int, nVanWin interface{}, tiers map[string]int) string {
 	var b strings.Builder
 	fmt.Fprintf(&b, "Fire season %s", season)
-	if first != "" {
+	// "half" and "the last of it" are medians over the cells the front has
+	// reached; for a season in progress that is a share of itself, so only
+	// a complete season may say them.
+	if first != "" && complete {
 		fmt.Fprintf(&b, ": the front first arrived %s, had reached half the area by %s and the last of it by %s", first, median, last)
+	} else if first != "" {
+		fmt.Fprintf(&b, ": the front first arrived %s", first)
 	}
 	if pct != nil {
 		if *pct >= 99.5 {
@@ -427,7 +432,14 @@ func plural(n int) string {
 // fire_front.py pack(): -1 = no front) and answers, for day-of-season d:
 // the share of front-bearing cells reached by d, and the median (front −
 // usual) over those cells where both are known. nil = nothing to measure.
-func frontProgress(front, usual []byte, nx, ny, d int) (*float64, *float64) {
+// The denominator is the season's front-bearing cells — but a season IN
+// PROGRESS only bears a front where it has already arrived, so measured
+// against itself it is "100 % complete" on its own latest day (XSA 2026/27
+// read 100 % six weeks in, with the burning months still ahead). An
+// incomplete season is therefore measured against the union of its own
+// front cells and the cells the USUAL front reaches (a no-op must not read
+// as an answer — AGENTS.md invariant 1).
+func frontProgress(front, usual []byte, nx, ny, d int, complete bool) (*float64, *float64) {
 	n := nx * ny
 	if n <= 0 || len(front) < 2*n {
 		return nil, nil
@@ -438,6 +450,9 @@ func frontProgress(front, usual []byte, nx, ny, d int) (*float64, *float64) {
 	for i := 0; i < n; i++ {
 		f := int(int16(uint16(front[2*i]) | uint16(front[2*i+1])<<8))
 		if f < 0 {
+			if !complete && haveUsual && int16(uint16(usual[2*i])|uint16(usual[2*i+1])<<8) >= 0 {
+				total++ // usually reached, not yet this season
+			}
 			continue
 		}
 		total++
@@ -641,7 +656,9 @@ func (s *Server) fireSeasonAreaAt(r *http.Request, lon, lat float64) string {
 // S-curve beside the usual one. `usual` is nil when no past season exists.
 // nil, nil when nothing carries a front. The popup's season sparkline is
 // drawn from this; nothing there is computed client-side.
-func frontCurve(front, usual []byte, nx, ny, step int) (fc, uc []float64) {
+// Same denominator rule as frontProgress: an incomplete season's curve is
+// a share of the cells the front usually reaches, not of itself.
+func frontCurve(front, usual []byte, nx, ny, step int, complete bool) (fc, uc []float64) {
 	n := nx * ny
 	if n <= 0 || len(front) < 2*n || step <= 0 {
 		return nil, nil
@@ -668,6 +685,9 @@ func frontCurve(front, usual []byte, nx, ny, step int) (fc, uc []float64) {
 				}
 				hu[u]++
 				tu++
+				if f < 0 && !complete {
+					tf++ // usually reached, not yet this season: in the denominator, never in the histogram
+				}
 			}
 		}
 	}

@@ -15258,7 +15258,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 const seasonTxt = bits.join(' \u00b7 ');
                 if (seasonTxt) countTxt = countTxt ? countTxt + ` <span class="lod-sub">\u00b7 ${escapeHtml(seasonTxt)}</span>` : escapeHtml(seasonTxt);
                 if (fm && fm.stats && !countTitle) countTitle = 'Season front: the day a fifth of the land that burns in a season had burned within ~60 km '
-                    + '(first ' + fm.stats.front_first + ', last ' + fm.stats.front_last + '). '
+                    + '(first ' + fm.stats.front_first + (fm.complete ? ', last ' + fm.stats.front_last : ', season in progress') + '). '
                     + 'Vanguard: fire chains that began ' + FireSeason.LEAD_DAYS + '\u2013' + FireSeason.LEAD_MAX + ' days ahead of it.';
             }
 
