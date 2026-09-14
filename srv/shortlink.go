@@ -406,8 +406,41 @@ func (s *Server) HandleShortLink(w http.ResponseWriter, r *http.Request) {
 	if pwd := r.URL.Query().Get("pwd"); pwd != "" && !l.Guest && isValidPassword(pwd) {
 		SetAccessPwdCookie(w, pwd)
 	}
+	// Non-credential query params arriving on the short link ride onto the
+	// target, without overriding what the link itself says. This is how a
+	// guest — who cannot mint — points a colleague at one section of the
+	// page they hold a key for: /s/g-…?methods=fire. Nothing here widens a
+	// capability: scope and dates are enforced in the middleware on every
+	// request, whatever the query says.
+	target = forwardQuery(target, r.URL.Query())
 	go s.bumpShortLinkHit(l.Slug)
 	http.Redirect(w, r, target, http.StatusFound)
+}
+
+// forwardQuery merges q into target's query; `pwd` never travels, and a key
+// the target already has keeps the target's value (the link's intent wins).
+func forwardQuery(target string, q url.Values) string {
+	if len(q) == 0 {
+		return target
+	}
+	u, err := url.Parse(target)
+	if err != nil {
+		return target
+	}
+	tq := u.Query()
+	changed := false
+	for k, vs := range q {
+		if k == "pwd" || len(vs) == 0 || tq.Has(k) {
+			continue
+		}
+		tq.Set(k, vs[0])
+		changed = true
+	}
+	if !changed {
+		return target
+	}
+	u.RawQuery = tq.Encode()
+	return u.String()
 }
 
 func (s *Server) shortLinkGone(w http.ResponseWriter, head, body string) {

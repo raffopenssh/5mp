@@ -563,3 +563,28 @@ manufactures the exact thing this feature exists to keep countable. The ledger
 is a *file* — `mint()` runs inside `$(...)`, and a bash array appended in that
 subshell is discarded, which "cleaned up" one slug of eleven and reported
 success.
+
+## Section links — `srv/static/sectionlink.js` (2026-09-14)
+
+One component puts a link button on every heading of a surface and opens the
+app at that heading when the link arrives (`?methods=fire`,
+`?panel=admin&admin_tab=access&section=files`). Adding a surface is one
+`SectionLink.mount({...})` at the end of the file: root to watch, heading
+selector, `slugOf`, `urlFor`, `open`/`isOpen`; the button, idempotent
+decoration under re-render (MutationObserver), the reveal (poll for the
+heading, scroll its *actual* scroller, re-align while late content settles,
+highlight once, focus), the address-bar mirror (replaceState; cleared only
+on the open→closed transition — clearing on any mutation while closed wiped
+the param before the restore pass read it) and `openFromURL` are shared.
+Headings opt in with a stable `id` (`methods-*`, `adm-*`) + class
+(`methods-h`, `adm-h`) — never a slug derived from the text, which renames.
+
+Auth: the link is a **name** through `ShareLink.open` (pwd-stripped,
+proposed readable slug `methods-fire` / `admin-files`; `opts.slug` is new and
+ignored for guest keys). A guest cannot mint, so ShareLink hands them their
+own **held** key with the query carried: `current()` appends the long URL's
+query to `/s/{guest}` and `HandleShortLink` merges non-`pwd` request params
+into the target without overriding what the link fixes (`forwardQuery`,
+`TestForwardQueryCarriesSectionNeverPwd`,
+`short_link_forwards_section_query_never_pwd`). Scope/dates stay enforced in
+the middleware, so a forwarded param can never widen a capability.

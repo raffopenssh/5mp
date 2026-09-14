@@ -926,6 +926,15 @@ if [[ -n "$CLIENT_PWD" ]]; then
         jq -r '.scope // ""' <<< "$j"
     }
 
+    printf "%-50s" "short_link_forwards_section_query_never_pwd"
+    # /s/{slug}?methods=fire → target gains methods=fire (a guest pointing at
+    # a section of the page they hold a key for); pwd never rides along and a
+    # param the link already fixes is not overridden (srv/shortlink.go forwardQuery).
+    SQ=$(mint '{"url":"/?layers=fires","title":"apitest section"}')
+    loc=$(curl -s -m 30 -o /dev/null -w "%{redirect_url}" "${BASE_URL}/s/${SQ}?methods=fire&layers=pixels&pwd=nope")
+    if [[ "$loc" == *"methods=fire"* && "$loc" == *"layers=fires"* && "$loc" != *"pwd="* && "$loc" != *"pixels"* ]]; then green "✓"; PASSED=$((PASSED + 1))
+    else red "FAIL ($loc)"; FAILED=$((FAILED + 1)); ERRORS+=("short link query forwarding: $loc"); fi
+
     printf "%-50s" "guest_link_reads_without_a_password"
     G=$(mint '{"url":"/?layers=pixels,fires","guest":true}')
     JAR=$(mktemp); curl -s -m 30 -o /dev/null -c "$JAR" "${BASE_URL}/s/${G}"
