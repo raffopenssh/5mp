@@ -172,6 +172,11 @@ type FireGroupStory struct {
 	// v5 trajectory analysis
 	TrajectoryType string  `json:"trajectory_type,omitempty"`
 	ZigzagRatio    float64 `json:"zigzag_ratio,omitempty"`
+	// v8 link evidence: log2 likelihood ratio (real vs day-shuffled null)
+	// summed over the links that built the trajectory, and its tier word
+	// (single/supported/weak/unsupported/unmeasured).
+	EvidenceBits *float64 `json:"evidence_bits,omitempty"`
+	EvidenceTier string   `json:"evidence_tier,omitempty"`
 }
 
 // DeforestationNarrative contains rich textual description of forest loss
