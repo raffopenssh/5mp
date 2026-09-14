@@ -138,6 +138,9 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 url: absolute(url), title: opts.title || '',
+                // A proposed NAME (never for a guest key): the server takes it
+                // if free, else dedupes on the URL or falls back to a token.
+                slug: opts.guest ? '' : (opts.slug || ''),
                 kind: opts.kind || 'view', guest: !!opts.guest,
                 days: opts.days || 0,
                 // lock_dates: confine the KEY to the window it opens on. Only
@@ -211,6 +214,7 @@
             '    <span class="sl-prefix" id="sl-prefix"></span>' +
             '    <span class="sl-slug" id="sl-slug" spellcheck="false" autocapitalize="off" ' +
             '          autocorrect="off" role="textbox" aria-label="Link name — edit to rename"></span>' +
+            '    <span class="sl-suffix" id="sl-suffix"></span>' +
             '    <button class="sl-pen" id="sl-pen" type="button" tabindex="-1" aria-hidden="true">' +
             '      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
             '           stroke-linecap="round" stroke-linejoin="round">' +
@@ -357,7 +361,21 @@
 
     function current() {
         if (!state) return '';
-        return state.slug ? shortURL(state.slug, state.guest) : absolute(state.long);
+        if (!state.slug) return absolute(state.long);
+        // A HELD key is the guest's own /s/ link; the section or view query of
+        // what they are looking at rides along (server forwards non-credential
+        // params, srv/shortlink.go forwardQuery) so a guest can point at a
+        // section of the page without minting anything.
+        if (state.held) return shortURL(state.slug, state.guest) + queryOf(state.long);
+        return shortURL(state.slug, state.guest);
+    }
+    function queryOf(u) {
+        try {
+            var url = new URL(u, window.location.href);
+            url.searchParams.delete('pwd');
+            var q = url.searchParams.toString();
+            return q ? '?' + q : '';
+        } catch (e) { return ''; }
     }
 
     // renderSlug — crossfades when the NAME actually changes.
@@ -387,6 +405,10 @@
 
         el.querySelector('#sl-prefix').textContent = window.location.host + '/s/';
         renderSlug();
+        // A held key carries the section/view query it was opened with (see
+        // current()); show it, so the line IS what is on the clipboard.
+        var suf = el.querySelector('#sl-suffix');
+        if (suf) suf.textContent = (state && state.held) ? queryOf(state.long) : '';
         el.classList.toggle('is-guest', guest);
         el.classList.toggle('is-pending', !ready);
 
@@ -1070,7 +1092,7 @@
             return false;
         }
 
-        create(long, { title: opts.title, kind: opts.kind, guest: !!opts.guest, tags: state.tags })
+        create(long, { title: opts.title, kind: opts.kind, guest: !!opts.guest, tags: state.tags, slug: opts.slug })
             .then(function (d) {
                 if (!state || state.long !== long) return; // dialog moved on
                 apply({ slug: d.slug, guest: !!d.guest, expires: d.expires_at, scope: d.scope || '',

@@ -576,7 +576,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 
                 <!-- Quick Start -->
                 <!-- Quick Start -->
-                <h3 style="color: #22c55e; margin: 16px 0 12px; font-size: 15px;">Quick Start</h3>
+                <h3 style="color: #22c55e; margin: 16px 0 12px; font-size: 15px;" id="methods-quick-start" class="methods-h">Quick Start</h3>
                 <ul style="margin: 0 0 16px; padding-left: 18px; font-size: 13px;">
                     <li><strong>Click a park</strong> to see fire, settlement & deforestation data</li>
                     <li><strong>Use time slider</strong> to filter data by date range</li>
@@ -586,7 +586,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 </ul>
 
                 <!-- What You See -->
-                <h3 style="color: #22c55e; margin: 20px 0 12px; font-size: 15px;">Data Layers</h3>
+                <h3 style="color: #22c55e; margin: 20px 0 12px; font-size: 15px;" id="methods-layers" class="methods-h">Data Layers</h3>
                 <ul style="margin-bottom: 16px; padding-left: 20px; font-size: 13px;">
                     <li style="margin-bottom: 6px;"><span style="color: #f97316;">Fire Activity</span> – Satellite detections grouped into trajectories with origin/destination</li>
                     <li style="margin-bottom: 6px;"><span style="color: #a855f7;">Settlements</span> – Built-up areas classified by type and distance to park</li>
@@ -595,9 +595,9 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 </ul>
 
                 <!-- Data Processing -->
-                <h3 style="color: #22c55e; margin: 20px 0 12px; font-size: 15px;">How We Process Data</h3>
+                <h3 style="color: #22c55e; margin: 20px 0 12px; font-size: 15px;" id="methods-processing" class="methods-h">How We Process Data</h3>
                 
-                <h4 style="color: #f97316; margin: 14px 0 6px; font-size: 13px;">Fire: Detections, Fire Lines, Season Front &amp; Vanguard</h4>
+                <h4 style="color: #f97316; margin: 14px 0 6px; font-size: 13px;" id="methods-fire" class="methods-h">Fire: Detections, Fire Lines, Season Front &amp; Vanguard</h4>
                 <p style="margin: 0 0 8px; font-size: 12px; color: #aaa;">Every red line on the map is a chain of satellite fire detections that we believe belong to one fire, followed from day to day. This is how the chain is built, and how we say how sure we are of it.</p>
                 <ul style="margin-bottom: 14px; padding-left: 20px; font-size: 12px; color: #aaa;">
                     <li><strong>What the satellite sees.</strong> NASA’s VIIRS instruments (on the Suomi-NPP, NOAA-20 and NOAA-21 satellites) pass over twice a day and report every 375 m pixel that is burning at that moment. We fetch the new detections every day from NASA FIRMS and keep them all in one archive; each park or drawn area reads the detections inside its own boundary plus 30 km around it. The number of satellites in the archive has changed over the years, so a chart cuts its line where that happens rather than showing more satellites as more fire.</li>
@@ -616,7 +616,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                     <li>Chains are rebuilt every night with the same rules for the archive and for this morning’s detections (a chain spanning the edge of last night’s window is rebuilt whole, not cut); fronts are rebuilt nightly for ~25 areas in rotation and refreshed daily for the season in progress. A park whose front has not been built yet says so rather than showing an empty layer.</li>
                 </ul>
 
-                <h4 style="color: #a855f7; margin: 14px 0 6px; font-size: 13px;">Settlement Detection</h4>
+                <h4 style="color: #a855f7; margin: 14px 0 6px; font-size: 13px;" id="methods-settlements" class="methods-h">Settlement Detection</h4>
                 <ul style="margin-bottom: 14px; padding-left: 20px; font-size: 12px; color: #aaa;">
                     <li>Source: EU Global Human Settlement Layer (10m resolution)</li>
                     <li>Built-up pixels clustered into settlement polygons</li>
@@ -624,7 +624,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                     <li>Classified: village, farm compound, herding camp, fishing camp, seasonal camp, possible mining site — inferred from river proximity, deforestation shape, fire seasonality and remoteness</li>
                 </ul>
 
-                <h4 style="color: #ef4444; margin: 14px 0 6px; font-size: 13px;">Deforestation Analysis</h4>
+                <h4 style="color: #ef4444; margin: 14px 0 6px; font-size: 13px;" id="methods-deforestation" class="methods-h">Deforestation Analysis</h4>
                 <ul style="margin-bottom: 14px; padding-left: 20px; font-size: 12px; color: #aaa;">
                     <li>Source: Hansen Global Forest Change (30m resolution)</li>
                     <li>Annual tree cover loss 2001-2024</li>
@@ -633,7 +633,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                     <li>Near-real-time: GFW integrated alerts (GLAD-S2/RADD, ~10m) with 100km buffer — one park rescanned per day</li>
                 </ul>
 
-                <h4 style="color: #22c55e; margin: 14px 0 6px; font-size: 13px;">Patrol Tracking</h4>
+                <h4 style="color: #22c55e; margin: 14px 0 6px; font-size: 13px;" id="methods-patrols" class="methods-h">Patrol Tracking</h4>
                 <ul style="margin-bottom: 14px; padding-left: 20px; font-size: 12px; color: #aaa;">
                     <li>Upload GPX tracks from GPS devices or apps</li>
                     <li>Tracks split into 10×10 km grid cells</li>
@@ -642,7 +642,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 </ul>
 
                 <!-- Update Schedule -->
-                <h3 style="color: #22c55e; margin: 20px 0 12px; font-size: 15px;">Update Schedule</h3>
+                <h3 style="color: #22c55e; margin: 20px 0 12px; font-size: 15px;" id="methods-schedule" class="methods-h">Update Schedule</h3>
                 <table style="width: 100%; font-size: 12px; border-collapse: collapse; margin-bottom: 16px;">
                     <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
                         <td style="padding: 6px 0; color: #f97316;">Fire data</td>
@@ -673,7 +673,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 <!-- Data sources & licences: rendered from /api/licenses by
                      renderAboutLicences() so this list and the Impressum and
                      the MBTiles metadata cannot disagree about who we owe credit. -->
-                <h3 style="color: #22c55e; margin: 20px 0 12px; font-size: 15px;">Data Sources &amp; Licences</h3>
+                <h3 style="color: #22c55e; margin: 20px 0 12px; font-size: 15px;" id="methods-sources" class="methods-h">Data Sources &amp; Licences</h3>
                 <p style="font-size: 12px; color: #888; margin: 0 0 10px;">Everything here was measured, drawn or published by somebody else first. Each source is listed with the terms its publisher granted; the full register with citations is at <a href="/licenses" target="_blank" style="color:#22c55e;">/licenses</a>.</p>
                 <div id="about-licences" style="font-size: 11px;"><span style="color:#666;">Loading…</span></div>
 
@@ -25745,6 +25745,13 @@ ${starredItems.narratives.map(n => {
             }
         }
         
+        // ?methods=<section> opens "How this map works" at that heading;
+        // ?panel=admin&admin_tab=…&section=<heading> lands inside a tab
+        // (srv/static/sectionlink.js). A link about the section, not the view.
+        if (params.get('methods') || params.get('section')) {
+            setTimeout(() => { if (window.SectionLink) SectionLink.openFromURL(params); }, 600);
+        }
+
         // Restore panel states
         const panelParam = params.get('panel');
         if (panelParam) {
@@ -26012,7 +26019,7 @@ ${starredItems.narratives.map(n => {
                 <!-- Access & Sharing Tab: share links + AOI ownership/queue.
                      See docs/agents/sharing.md. -->
                 <div class="admin-tab-content" id="tab-access" role="tabpanel" aria-labelledby="tab-access">
-                    <h4 style="color:#fff;font-size:13px;font-weight:600;margin:0 0 6px;">Share links</h4>
+                    <h4 style="color:#fff;font-size:13px;font-weight:600;margin:0 0 6px;" id="adm-share-links" class="adm-h">Share links</h4>
                     <p class="sh-intro">The short links <em>this login</em> has issued. Other logins keep their own list.</p>
                     <dl class="sh-legend">
                         <div><dt style="color:#4ade80;">named link</dt><dd>a short name for a view &mdash; it still asks for the password, so the name is safe to say out loud.</dd></div>
@@ -26021,12 +26028,12 @@ ${starredItems.narratives.map(n => {
                     </dl>
                     <div id="sharing-body">Loading&hellip;</div>
 
-                    <h4 style="color:#fff;font-size:13px;font-weight:600;margin:28px 0 6px;">Shared files</h4>
+                    <h4 style="color:#fff;font-size:13px;font-weight:600;margin:28px 0 6px;" id="adm-files" class="adm-h">Shared files</h4>
                     <p class="sh-intro">Upload a file (a styled GeoPackage, a PDF&hellip;) and hand it out with an expiring key. The file lives 21 days by default and is kept as long as any live key points at it &mdash; a 90-day key keeps the file 90 days. When the last key dies, the file is swept.</p>
                     <div id="files-upload" style="margin-bottom:10px;"></div>
                     <div id="files-body">Loading&hellip;</div>
 
-                    <h4 style="color:#fff;font-size:13px;font-weight:600;margin:28px 0 6px;">Areas of interest &amp; ingest</h4>
+                    <h4 style="color:#fff;font-size:13px;font-weight:600;margin:28px 0 6px;" id="adm-aois" class="adm-h">Areas of interest &amp; ingest</h4>
                     <p style="color:#888;font-size:12px;margin-bottom:16px;line-height:1.6;max-width:70ch;">
                         Areas of interest visible to <em>this</em> login, their owners, and what each
                         dataset's ingest queue is doing. Passwords are never shown &mdash; a principal is
@@ -26035,7 +26042,7 @@ ${starredItems.narratives.map(n => {
                     </p>
                     <div id="access-runner" style="font-size:11px;color:#9ca3af;margin-bottom:16px;"></div>
                     <div id="access-aois">Loading&hellip;</div>
-                    <h4 style="color:#fff;font-size:13px;font-weight:600;margin:24px 0 8px;">Principals</h4>
+                    <h4 style="color:#fff;font-size:13px;font-weight:600;margin:24px 0 8px;" id="adm-principals" class="adm-h">Principals</h4>
                     <div id="access-principals"></div>
                 </div>
 
@@ -26043,14 +26050,14 @@ ${starredItems.narratives.map(n => {
                 <div class="admin-tab-content" id="tab-map-settings" role="tabpanel" aria-labelledby="tab-map-settings">
                     <div style="max-width:600px;">
                         <div style="margin-bottom:24px;" data-mapsettings="basemap">
-                            <h3 style="color:#fff;font-size:14px;font-weight:600;margin-bottom:12px;">Background Map</h3>
+                            <h3 style="color:#fff;font-size:14px;font-weight:600;margin-bottom:12px;" id="adm-basemap" class="adm-h">Background Map</h3>
                             <p style="color:#888;font-size:12px;margin-bottom:16px;line-height:1.5;">Choose what the globe draws under the data. Sentinel-2 is the imagery this server may show to everyone; the satellite sources you add below are yours alone. Hover a card to make it your default.</p>
                             <div id="basemap-grid" class="bm-grid"></div>
                         </div>
 
                         <!-- Private tile sources: XYZ imagery a login adds for its own use (srv/tile_sources.go) -->
                         <div style="margin-bottom:24px;" id="tile-sources-block" data-mapsettings="sources">
-                            <h3 style="color:#fff;font-size:14px;font-weight:600;margin-bottom:12px;">Your imagery sources</h3>
+                            <h3 style="color:#fff;font-size:14px;font-weight:600;margin-bottom:12px;" id="adm-imagery" class="adm-h">Your imagery sources</h3>
                             <p style="color:#888;font-size:12px;margin-bottom:12px;line-height:1.5;">
                                 Add any XYZ tile service you have the right to use &mdash; paste the URL template exactly as
                                 you would in QGIS. The URL is stored encrypted and only your login can see or use it;
@@ -26062,7 +26069,7 @@ ${starredItems.narratives.map(n => {
 
                         <!-- Historical map overlay: scanned survey sheets draped on the basemap -->
                         <div style="margin-bottom:24px;" id="histmap-block">
-                            <h3 style="color:#fff;font-size:14px;font-weight:600;margin-bottom:12px;">Historical Maps</h3>
+                            <h3 style="color:#fff;font-size:14px;font-weight:600;margin-bottom:12px;" id="adm-histmaps" class="adm-h">Historical Maps</h3>
                             <p style="color:#888;font-size:12px;margin-bottom:16px;line-height:1.5;">
                                 Drape a scanned survey series over the current basemap. On screen the ink is
                                 inverted to white so the imagery underneath stays readable; the download keeps
@@ -26076,7 +26083,7 @@ ${starredItems.narratives.map(n => {
                              historical maps because both answer "what does an older survey
                              say about this ground", and above nothing else. -->
                         <div style="margin-bottom:24px;" id="geomap-block">
-                            <h3 style="color:#fff;font-size:14px;font-weight:600;margin-bottom:12px;">Geology</h3>
+                            <h3 style="color:#fff;font-size:14px;font-weight:600;margin-bottom:12px;" id="adm-geology" class="adm-h">Geology</h3>
                             <p style="color:#888;font-size:12px;margin-bottom:16px;line-height:1.5;">
                                 Scanned regional geological maps, vectorized into one layer: every unit is a
                                 polygon, coloured by age (ICS/CGMW chart) and patterned by rock type
@@ -26341,4 +26348,7 @@ ${starredItems.narratives.map(n => {
          docs/agents/sharing.md). Loaded last because it only ever reacts to a
          click; nothing on the page waits for it. -->
     <script src="/static/sharelink.js?v={{.Version}}"></script>
+    <!-- A share link on every heading of a surface: "How this map works"
+         (?methods=<section>) and admin sub-sections (&section=). -->
+    <script src="/static/sectionlink.js?v={{.Version}}"></script>
 </body></html>
