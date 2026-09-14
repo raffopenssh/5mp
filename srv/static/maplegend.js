@@ -3742,7 +3742,7 @@
                 else if (fm && fm.status) parts.push('front not yet computed');
             }
             if (FireSeason.vanguardOn()) {
-                if (fv && fv.count) parts.push(fv.count + (fv.truncated ? '+' : '') + ' vanguard');
+                if (fv && fv.count) parts.push(fv.count + (fv.truncated ? '+' : '') + ' vanguard in view');
                 else if (fv) parts.push('no vanguard in view');
             }
             if (FireSeason.speedOn()) {
