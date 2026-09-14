@@ -121,8 +121,8 @@ func (s *Server) HandleAPIFireSeason(w http.ResponseWriter, r *http.Request) {
 	}
 	var (
 		seasonStart, latest, contours, stats sql.NullString
-		complete, startMonth              int
-		computedAt                        string
+		complete, startMonth                 int
+		computedAt                           string
 	)
 	err = s.DB.QueryRowContext(r.Context(), `
 		SELECT season_start, complete, start_month, latest_day, contours_json, stats_json, computed_at
@@ -132,17 +132,31 @@ func (s *Server) HandleAPIFireSeason(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, `{"error":"no such season"}`, http.StatusNotFound)
 		return
 	}
+	// Vanguard chains of this area in this season: the count the chip menu
+	// prints, from the same rows the layer draws (invariant 7: one number).
+	var nVan int
+	var sEnd string
+	for _, sr := range seasons {
+		if sr.Label == want {
+			sEnd = sr.End
+		}
+	}
+	s.DB.QueryRowContext(r.Context(), `
+		SELECT COUNT(*) FROM feature_geometries
+		WHERE feature_type='fire_trajectory' AND vanguard=1 AND park_id=?
+		  AND start_date >= ? AND start_date <= ?`, area, seasonStart.String, sEnd).Scan(&nVan)
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"area":         area,
-		"season":       want,
-		"seasons":      seasons,
-		"season_start": seasonStart.String,
-		"start_month":  startMonth,
-		"complete":     complete == 1,
-		"latest_day":   latest.String,
-		"computed_at":  computedAt,
-		"stats":        json.RawMessage(orNull(stats)),
-		"contours":     json.RawMessage(orNull(contours)),
+		"area":            area,
+		"vanguard_groups": nVan,
+		"season":          want,
+		"seasons":         seasons,
+		"season_start":    seasonStart.String,
+		"start_month":     startMonth,
+		"complete":        complete == 1,
+		"latest_day":      latest.String,
+		"computed_at":     computedAt,
+		"stats":           json.RawMessage(orNull(stats)),
+		"contours":        json.RawMessage(orNull(contours)),
 	})
 }
 

@@ -827,6 +827,19 @@ class DailyFireUpdater:
             # Get enhanced status
             status_emoji, status_text, status_detail = self.analyze_fire_status(props, end_date)
             priority = get_priority(status_text)
+
+            # Season position (scripts/fire_front.py). A chain that began
+            # 10-60 d ahead of the season front is the one kind of line whose
+            # day order is measurably real (docs/agents/fire.md), and early in
+            # the season it is the first sign that people are moving ahead of
+            # it. Worded as a signal, not a verdict: the data says "ahead of
+            # the season", not who lit it or why. Ranked just below the
+            # boundary statuses so it survives the per-park cap.
+            if props.get('vanguard') and props.get('lead_start') is not None:
+                basis = 'usual' if props.get('lead_basis') == 'usual' else 'season'
+                status_detail += (f" \u2022 began {props['lead_start']} d ahead of the {basis} front "
+                                  f"\u2014 early movement ahead of the season")
+                priority = min(priority, 20)
             
             all_groups_with_priority.append({
                 'park_id': park_id,

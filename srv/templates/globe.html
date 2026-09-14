@@ -608,6 +608,16 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                     <li>Position classified: stopped inside, transited, entirely outside</li>
                 </ul>
 
+                <h4 style="color: #fde047; margin: 14px 0 6px; font-size: 13px;">Season Front &amp; Vanguard Fires</h4>
+                <p style="margin: 0 0 8px; font-size: 12px; color: #aaa;">Every fire line above is drawn the same way, but they are not all equally trustworthy. We test that with a simple trick: shuffle the <em>days</em> of the detections and run the tracker again. Where the real day order produces no more day-to-day links than the shuffled one, the line still shows a real corridor, but the order it burned in is not something the satellite can tell us. That is the case for almost everything <em>inside</em> the burning season, when fire is everywhere.</p>
+                <ul style="margin-bottom: 14px; padding-left: 20px; font-size: 12px; color: #aaa;">
+                    <li><strong style="color:#38bdf8">Season front</strong> — for each 2.5 km cell we note the day by which a fifth of the land that burns in a season had burned within ~60 km. Joining cells with the same day gives the contour lines (every 5 days). The season starts in the area’s quietest month, measured from its own history, never assumed.</li>
+                    <li><strong>Lead</strong> — how many days before that front a fire burned. Live, where this season’s front has not arrived yet, we measure against the usual front of past seasons and say so.</li>
+                    <li><strong style="color:#fde047">Vanguard fires</strong> — fire chains that <em>began</em> 10–60 days ahead of the front. This is the one group where the tracker beats the shuffle clearly (about half the day-to-day links are real signal, in every season we have tested), so these are the lines whose direction and pace mean something. On the ground this is where people move ahead of the season, burning along the route; the map says “ahead of the season”, not who or why.</li>
+                    <li>Each vanguard chain is drawn bright while it is still ahead of the front and faint once the season has caught up with it; in the animation the front moves with the playhead.</li>
+                    <li>Fronts are rebuilt nightly for ~25 areas in rotation and refreshed daily for the season in progress; a park whose front has not been built yet says so rather than showing an empty layer.</li>
+                </ul>
+
                 <h4 style="color: #a855f7; margin: 14px 0 6px; font-size: 13px;">Settlement Detection</h4>
                 <ul style="margin-bottom: 14px; padding-left: 20px; font-size: 12px; color: #aaa;">
                     <li>Source: EU Global Human Settlement Layer (10m resolution)</li>
@@ -19226,6 +19236,29 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
         return `<div style="margin-top: 4px; font-size: ${fs}; color: ${words[1]};">${words[0]}${bits}</div>`;
     }
 
+    // Season position of a fire trajectory, in plain words (scripts/fire_front.py,
+    // docs/agents/fire.md "Season front & vanguard"). lead_start = days the
+    // line BEGAN ahead of the season front at its first vertex; vanguard =
+    // 10..60 days ahead, the one population whose day-to-day links are
+    // measurably better than chance. Absent = the area's front is not built
+    // yet, and the line says nothing rather than "0 days".
+    function fireSeasonLine(props, fs) {
+        const L = props.lead_start;
+        if (L === undefined || L === null) return '';
+        const basis = props.lead_basis === 'usual' ? 'usual front (this season\u2019s had not arrived)' : 'season front';
+        let words, color = '#6b7280';
+        if (props.vanguard) {
+            words = `Vanguard \u2014 began ${L} days ahead of the ${basis}`;
+            if (props.ahead_km) words += `, ran ${Math.round(props.ahead_km)} km before the season caught up`;
+            color = '#a16207';
+        } else if (L >= 0) {
+            words = `Began ${L} day${L === 1 ? '' : 's'} ahead of the ${basis}`;
+        } else {
+            words = `Began ${-L} day${L === -1 ? '' : 's'} into the season`;
+        }
+        return `<div style="margin-top: 3px; font-size: ${fs}; color: ${color};">${words}</div>`;
+    }
+
     function generateReportHTML(now, total, parkDataMap, bboxParksData) {
         const formatNumber = n => n ? n.toLocaleString() : '0';
         
@@ -21858,6 +21891,7 @@ ${starredItems.narratives.map(n => {
             
             if (props.total_frp) html += `<div style="color: #6b7280; font-size: 11px;">Intensity: ${props.total_frp.toFixed(0)} MW</div>`;
             html += fireEvidenceLine(props, '11px');
+            html += fireSeasonLine(props, '11px');
             html += `</div>`;
             
         } else if (type === 'visits') {
@@ -22020,6 +22054,7 @@ ${starredItems.narratives.map(n => {
             if (position) html += `<div style="margin-bottom: 4px; color: #6b7280; text-transform: capitalize;">${position}</div>`;
             if (props.pct_inside !== undefined) html += `<div style="color: #6b7280;">${props.pct_inside.toFixed(0)}% inside park</div>`;
             html += fireEvidenceLine(props, '12px');
+            html += fireSeasonLine(props, '12px');
             html += `</div>`;
             
         } else if (type === 'settlement' || type === 'place') {

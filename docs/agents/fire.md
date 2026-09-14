@@ -143,34 +143,92 @@ all-fire null, not this one).
 
 ---
 
-## Where the day order IS recoverable: ahead of the season front (prototype, 2026-09-14)
+## Season front & vanguard (shipped 2026-09-14)
 
-`scripts/fire_vanguard/` (README has the table; nothing is wired into the app).
-Ten more order-sensitive tests on XSA 2024/25 — astronomy shift-and-stack over
-1,214 velocity hypotheses, the space-time two-point function, a next-day drift
-field, along-streak Spearman against 3/7/30-day block-shuffled nulls — all came
-out **real ≈ shuffled** inside the burning season. The one that did not:
+Prototype history and the ten order-sensitive tests that came out real ≈
+shuffled inside the season: `scripts/fire_vanguard/README.md`. What shipped:
 
-* Define the **season front** per 2.5 km cell as the 20th-percentile first-burn
-  day within 60 km (smooth, E→W Nov→Jan, identical shape in 2024/25 and
-  2025/26). A detection's **lead** = front − its own day.
-* Run the *unchanged* production tracker only on detections with lead ≥ L days
-  (`van_null.py L`). Skill on links = **0.42–0.51 for every L in 5…25**
-  (whole field: ~0); at L=10 that is 611 chains, 2,859 vs 1,558 links, median
-  29 vs 19 km, mostly Oct–Nov, median 4 km/day, 74 % `unsupported` on
-  contiguity — separated ignitions, not fronts: the scouts' signature.
-* Per-chain FDR by (days, km) stays ≈0.5 at every cut, so **no arrows on single
-  chains yet**; the population beats chance 2:1. Regional mean direction
-  (`van_dir.py`) has three 0.75° cells at z>3 on one season — needs 2025/26.
-* **Traditional early-burn ground** (`recur.py`): 322 5-km cells burned ≥15 d
-  early in ≥4 of ≥6 seasons since 2018; independence predicts ~13. Routes,
-  boundary burns and village rings all live there; context, not fire, separates
-  them.
+**Definition** (`scripts/fire_front.py`, table `fire_season_front`, migration
+066). Per area (park or AOI) and season: 2.5 km cells; *burnable* = cells that
+burned in any season held; the **front** at a cell is the day-of-season when
+20 % of the burnable cells within ±60 km have burned — **causal** (known the
+day it happens, so archive and this morning's detections meet the same rule),
+normalised-convolution smoothed σ=3 cells. Season starts in the area's quietest
+month (climatology trough), measured, never assumed; a season whose data begins
+> 15 d after its start is skipped (XSA 2023/24 was an artefact: data starts
+2024-01-01). **usual** = median front of previous complete seasons; live, where
+this season's front has not arrived, `lead_basis:'usual'` stands in — and the
+front follows the time slider (`?at=`), there is no season picker. **Lead** of
+a detection = front − its day. A group's `lead_start` is its first vertex;
+**vanguard** = `10 ≤ lead_start ≤ 60` (`VANGUARD_LEAD_DAYS/_MAX`).
 
-The tracker was never the problem — its *input regime* was (invariant 15). If
-this ships: `lead` becomes a per-detection/per-link property, chains built on
-the lead-filtered field are a separate layer with the front isochrones as the
-map's backbone, and the day-shuffled null on the *vanguard field* is the gate.
+**Measured, and the gate** (`scripts/eval_fire_vanguard.py`: production tracker
+on detections with lead ≥ L, real vs `shuffle_days`). XSA 2024/25 and 2025/26
+against the *stored* front: link skill **+0.46/+0.50/+0.51** (L=5/10/15) and
+**+0.49/+0.49/+0.49**; long-chain skill 0.7–1.0; whole field ≈0. Bands at
+equal density (60k detections each): +0.58 (lead −10…0), +0.55, +0.44, +0.31,
++0.16 (> 80 d in) — lead is a continuous confidence axis, which is why a chain
+is drawn bright while ahead and faint after. Beyond 60 d ahead: a few hundred
+detections, skill ≈0.1, and a January fire 193 d ahead of a July front is a
+wet-season fire, not a scout — hence the cap. **Do not read the COUNT of
+vanguard groups after shuffling the whole field as skill**: shuffling moves
+detections onto pre-front days and the null gets *more* (749 real vs 1,117).
+
+Probes from other domains, same harness, XSA 2024/25: **Hawkes/ETAS
+declustering** (`fire_vanguard/hawkes.py`, background = no fire within 10 km
+in the previous 3 d) — no skill in season (−0.07) and 74 % of vanguard
+detections are not "background" (scouts light chains); the front position is
+the separator, not independence. **Eikonal / first-arrival**
+(`fire_vanguard/eikonal.py`): the front's gradient gives a season-speed map
+(XSA median 4.6 km/d, p10 1.9, p90 14.7 — a good descriptive product, not
+drawn yet); as a live *predictor* Dijkstra travel time from the early arrivals
+loses badly to last season's front (MAE 59 vs 7.8 d at day 45–60). Cheap win
+it exposed, **not yet done**: `usual` shifted by the median offset observed so
+far beats plain `usual` (6.7 vs 7.8 d) — the live `lead_basis:'usual'` should
+be shift-calibrated. Also untried: DTW of this season's front against usual
+per corridor ("12 days early here"), moveHMM transit/encamped on vanguard
+chains.
+
+**Plumbing.** One writer of the front: `fire_front.py`. `--current` runs in
+`daily_fire_update.py` before the rebuild (parks) and `--area` in
+`aoi_runner.run_fire_v5` before the AOI rebuild; `rebuild_fire_trajectories_v5`
+calls `fire_front.tag_groups` at the end (annotation only — linking untouched);
+`load_fire_groups_to_db.py` writes `lead_start`/`vanguard` columns + the lead
+fields in `properties_json` (`fire_season, lead_start, lead_basis, lead_max,
+leads[], ahead_km, ahead_days, vanguard`). Backfill/catch-up: cron 04:40
+`fire_front.py --rotate 25` (oldest first, all seasons, re-tags the group JSON
+and patches `feature_geometries` in place, batched; reports `fire_front_success/
+_failed` to the bell). First full pass ran 2026-09-14 (162 areas, ~8 s each).
+Index `idx_fg_vanguard` (partial, `vanguard=1`) makes the map question
+indexed.
+
+**Read side.** `GET /api/fire-season?area=|lon=&lat=[&at=YYYY-MM-DD]` →
+contours (GeoJSON features, `dos/date/label/text`), seasons, stats,
+`vanguard_groups`; AOI ids answered only if visible (404 otherwise); no
+area → `status`. `GET /api/fire-vanguard?bbox=&from=&to=` → animator wire
+format + `leads[]`, all chains (no spread collector — the population is
+~1 % and the point is to draw all of it; `truncated` still reported).
+`/api/fire-anim-trajectories` carries `vanguard`/`lead_start`.
+
+**UI** (`srv/static/fireseason.js`; Map-strip chip in `maplegend.js`, body =
+configure, × = off, sub-label = state incl. "not yet computed" vs "no area
+here"): share param `season=front,vanguard`; contours cool ramp early→late
+(never warm — fire lines are red), vanguard yellow→cyan by `lead_start`, chain
+split client-side at lead 0 into `ahead` (bright) + `after` (faint) because
+MapLibre cannot colour one LineString per vertex; glyphs must be
+`Noto Sans Regular` (the demotiles font server 404s anything else and the
+whole source then draws nothing). Animator: `FireSeason.animAt(t)` filters
+contours to `date ≤ t`, emphasises the last 5 d, hides the whole-season
+vanguard layer while `anim.js` draws vanguard chains in lead colour
+(`vanColor`). Fire tip: `fireSeasonLine()`; fire_alert notifications append
+"began N d ahead of the season front — early movement ahead of the season"
+and rank the group at priority 20. Methods block: "Season Front & Vanguard
+Fires". Test: `?test=1` → `TEST.fireSeason()`.
+
+**Not done / candidates:** park & AOI hover tips and the stats panel do not
+yet print the season count (`vanguard_groups` is in `/api/fire-season`);
+speed map layer; shift-calibrated `usual`; XSA AOI fires end 2026-08-06 (AOI
+runner has not ingested 2026/27).
 
 ## `protected_area_id` is a catchment, not a park (F10 — fixed 2026-08-13)
 
