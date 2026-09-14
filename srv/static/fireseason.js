@@ -295,6 +295,13 @@
     var animDay = null;
     function animAt(t) {
         if (!map || !map.getLayer(FRONT_LYR)) return;
+        // While the animator runs it draws the vanguard chains itself, built
+        // up to the playhead; the whole-season layer would show them ahead
+        // of it. Hidden for the duration, back on teardown.
+        var animating = t != null;
+        [VAN_LYR, VAN_DIM_LYR].forEach(function (id) {
+            if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', (st.van && !animating) ? 'visible' : 'none');
+        });
         if (t == null) {
             if (animDay === null) return;
             animDay = null;

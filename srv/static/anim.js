@@ -1580,7 +1580,7 @@
         if (!A) return;
         // The season front is a MapLibre layer, not canvas: tell it the
         // playhead so it shows the isochrones the season had reached by t.
-        if (window.FireSeason && FireSeason.frontOn()) FireSeason.animAt(t);
+        if (window.FireSeason && FireSeason.isOn()) FireSeason.animAt(t);
         const ctx = A.ctx;
         const w = A.canvas.clientWidth, h = A.canvas.clientHeight;
         ctx.clearRect(0, 0, w, h);
