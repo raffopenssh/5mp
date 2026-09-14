@@ -182,12 +182,17 @@ the separator, not independence. **Eikonal / first-arrival**
 (`fire_vanguard/eikonal.py`): the front's gradient gives a season-speed map
 (XSA median 4.6 km/d, p10 1.9, p90 14.7 — a good descriptive product, not
 drawn yet); as a live *predictor* Dijkstra travel time from the early arrivals
-loses badly to last season's front (MAE 59 vs 7.8 d at day 45–60). Cheap win
-it exposed, **not yet done**: `usual` shifted by the median offset observed so
-far beats plain `usual` (6.7 vs 7.8 d) — the live `lead_basis:'usual'` should
-be shift-calibrated. Also untried: DTW of this season's front against usual
-per corridor ("12 days early here"), moveHMM transit/encamped on vanguard
-chains.
+loses badly to last season's front (MAE 59 vs 7.8 d at day 45–60). The
+speed map is now drawn (below). **Shift-calibrated `usual` was measured and
+declined** (`scripts/eval_usual_shift.py`, 39 complete park seasons, front
+truncated at day 45/60/90 and `usual` shifted by the median or quantile
+offset seen so far): MAE none **14.5/16.0/15.7 d** vs median-shift
+74/37/30 vs quantile-shift 38.5/26.2/20.1. The single-area XSA 6.7-vs-7.8
+number did not generalise — early arrivals are a biased sample of the season
+(Kafue 2024: −173 d at day 45 against −25 d at the end). Live `usual` stays
+unshifted; do not re-add a shift without beating those numbers. Also untried:
+DTW of this season's front against usual per corridor ("12 days early
+here"), moveHMM transit/encamped on vanguard chains.
 
 **Plumbing.** One writer of the front: `fire_front.py`. `--current` runs in
 `daily_fire_update.py` before the rebuild (parks) and `--area` in
@@ -315,12 +320,48 @@ now carry `lead_start/lead_basis/vanguard/ahead_km/ahead_days`. Fire-row
 rendering menu has a **Map** group (the row's own layer as a checkbox) above
 Season. `db.sqlite3.bak` deleted (+22 GB).
 
-**Open (priority order):** stats readout's front position is at the
-*window's end*, not the animator's playhead (needs the grid client-side or a
-per-day call); `usual_offset_days` is measured per request → shift-calibrated
-live `usual` (`lead_basis:'usual'`) is a cheap win; speed map layer (eikonal
-gradient) not drawn; XSA AOI fires end 2026-08-06 (AOI runner has not
-ingested 2026/27).
+**Playhead readout (2026-09-14).** `/api/fire-season` always sends
+`front_curve` (per-day `front_reached_pct`, small), and `fireseason.js`
+`curveAt()/playheadMeta(t)` re-derive the chip / fire-row / tip readout at
+the animator's instant (`FireSeason.meta()` returns `animMeta || front`).
+`usual_offset_days` is deliberately `null` at the playhead — a curve
+quantile would be a second estimator under the one word (invariant 7).
+
+**Season speed map (2026-09-14).** `GET /api/fire-season-speed?area=|lon=&lat=
+[&at=|&season=]` (`srv/fire_season_speed.go`) → the eikonal gradient of the
+stored front as a **PNG data URL** on a fixed log ramp 1–50 km/d
+(`legend` 5 stops, areas comparable), σ=2 normalised-convolution smoothing,
+central differences; `stats{cells, p10/median/p90_km_d}` (Chinko 2024/25:
+18,770 cells, median 5.1 — matches numpy exactly), `grid{x0,y0,res,nx,ny}`
+(row 0 = south; PNG written top-down). The 256-entry `palette` is unique per
+level (blue-LSB nudge) so the image is **invertible**: the client decodes it
+once and a click-only MapTip backdrop probe (`fireseason-speed-probe`,
+priority −10) prints the km/d under the pointer — no second grid payload
+(XSA would be ~233 KB). Index by `grid.x0/y0/res` arithmetic, not bbox
+scaling (last-bit drift shifted a row). UI: fire-row Season menu → *Season
+speed*, chip `speed N km/d` (`icon-gauge`), share `season=front,vanguard,speed`,
+`TEST.fireSeason().speed/speedStats`. Not a GeoPackage layer. Tests:
+`fire_season_speed_*` (api), `season_front_vanguard_speed` (ui).
+
+**Covering index `(feature_type, park_id, vanguard)` measured unnecessary:**
+`fire_season.go` 0.00 s (`idx_fg_park_type_date`), stats 0.07 s, export GROUP
+BY 0.57 s via partial `idx_fg_vanguard`. The `/api/export/parks` CSV's 30 s
+was the `fire_detections` GROUP BY — now `parkFireCountMemo` in
+`srv/export.go`, keyed on `MAX(rowid)` (append-only table → O(1)
+fingerprint), stale-while-revalidate; warm 0.45 s.
+
+**AOI fire catch-up (2026-09-14).** XSA fires stopped 2026-08-06 because
+`fire_v5` stayed `done` with a stale cursor. `aoi_runner.py daily()` now
+calls `catch_up_fires()` first (`FIRE_CATCHUP_DAYS = 7`): live open-ended
+AOIs whose fire_v5/fire_gap ran > 7 d ago **and** have newer detections in
+their bbox get fire_v5 requeued (cursor NULL, units_done 0). `HandleAPIAOIRefresh`
+resets cursor/units_done for `aoiDerivedDatasetsSQL` (clip, fire_v5,
+deforestation, basin) — before, refresh only re-ran narratives. The XSA run
+(~1 h 50 m) is due after the v8 rebuild finishes (do not run both: lock/CPU).
+
+**Open:** confirm the v8 rebuild landed (`evidence_tier` count above > 0,
+`/api/parks/CAF_Chinko/fire-narrative` rows carry `vanguard`/`lead_start`);
+run/let cron run the XSA fire_v5 catch-up.
 
 ## `protected_area_id` is a catchment, not a park (F10 — fixed 2026-08-13)
 
