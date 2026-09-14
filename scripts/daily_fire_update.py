@@ -916,7 +916,14 @@ class DailyFireUpdater:
                 'type': 'fire_trajectory',
                 'group_name': friendly_name,
                 'status': status_text,
-                'status_detail': status_detail
+                'status_detail': status_detail,
+                # Season position, so the bell can draw the lead mark the
+                # accordion draws (globe.html fireVanMark) instead of
+                # re-parsing the sentence above. Absent = front not built.
+                'vanguard': bool(props.get('vanguard')),
+                'lead_start': props.get('lead_start'),
+                'lead_basis': props.get('lead_basis'),
+                'ahead_km': props.get('ahead_km'),
             })
             
             self.conn.execute("""

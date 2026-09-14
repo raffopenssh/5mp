@@ -3128,7 +3128,22 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                         drawnFront: map.getLayer('fireseason-front') ? map.queryRenderedFeatures({ layers: ['fireseason-front'] }).length : 0,
                         drawnVanguard: map.getLayer('fireseason-van') ? map.queryRenderedFeatures({ layers: ['fireseason-van', 'fireseason-van-dim'] }).length : 0,
                         share: { season: share.get('season') },
-                        chip: (document.querySelector('#stats-map .ml-chip.fs em') || {}).textContent || null
+                        chip: (document.querySelector('#stats-map .ml-chip.fs em') || {}).textContent || null,
+                        // The Fire accordion's season block (fireSeasonBlock),
+                        // per open popup: summary held, curve drawn, ticks,
+                        // and the vanguard marks on the narrative rows.
+                        accordion: Object.fromEntries(Object.entries(window._fireSeasonStore || {}).map(([id, fs]) => {
+                            const el = document.getElementById(`fire-season-${id}`);
+                            return [id, {
+                                season: fs && fs.season || null, status: fs && fs.status || null,
+                                vanguardInWindow: fs ? fs.vanguard_in_window : null,
+                                curvePoints: fs && fs.front_curve ? fs.front_curve.front.length : 0,
+                                ticks: el ? el.querySelectorAll('svg line[onclick]').length : 0,
+                                text: el ? el.innerText.replace(/\s+/g, ' ').trim() : null,
+                                rowMarks: document.querySelectorAll(`#fire-narratives-${id} .fire-van-mark`).length,
+                                vanOnlyChip: !!document.querySelector(`#fire-list-head-${id} [data-chip="vanguard"]`),
+                            }];
+                        }))
                     };
                 },
 
@@ -6528,14 +6543,20 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             // Cropland_Expansion_km2 (GLAD 30 m): loss attributable to cropland
             // expansion (cropped 2016-19 AND NOT 2000-03); blank = unmeasured.
             // BuiltUp_km2 is SURFACE, not cluster extent (invariant 15).
-            rows.push(['Park', 'Country', 'Area_km2', 'Fire_Detections', 'Fire_Groups', 'Stopped_%', 'Peak_Season',
+            // Vanguard_Groups: chains that began 10-60 d ahead of the season
+            // front in the period (blank = front not yet computed, not 0).
+            rows.push(['Park', 'Country', 'Area_km2', 'Fire_Detections', 'Fire_Groups', 'Vanguard_Groups', 'Season_Front', 'Stopped_%', 'Peak_Season',
                 'Deforest_km2', 'Cropland_Expansion_km2', 'Settlements', 'BuiltUp_km2', 'Population', 'Species', 'Roads', 'Rivers',
                 'Patrol_Pixels', 'Patrol_km', 'Publications', 'Legal_Docs', 'Source'].join(','));
-            const totals = { area: 0, fires: 0, groups: 0, deforest: 0, cropconv: 0, settle: 0, builtup: 0, pop: 0, pixels: 0, km: 0, n: 0 };
+            const totals = { area: 0, fires: 0, groups: 0, van: 0, deforest: 0, cropconv: 0, settle: 0, builtup: 0, pop: 0, pixels: 0, km: 0, n: 0 };
             for (const { park, data, source } of results) {
                 if (data.error) { rows.push([esc(park.name || park.id), '', '', 'ERROR: ' + esc(data.error)].join(',')); continue; }
                 const fire = data.fire || {}, deforestation = data.deforestation || {}, settle = data.settlement || {};
                 const grid = data.grid || {}, species = data.species || {}, road = data.road || {};
+                const season = data.season || {};
+                const vanN = typeof season.vanguard_in_window === 'number' ? season.vanguard_in_window
+                           : (typeof season.vanguard_groups === 'number' && season.season ? season.vanguard_groups : '');
+                if (typeof vanN === 'number') totals.van += vanN;
                 totals.area += park.area_km2 || 0; totals.fires += fire.total_fires || 0; totals.groups += fire.fire_groups || 0;
                 totals.deforest += deforestation.total_loss_km2 || 0; totals.settle += settle.settlement_count || 0;
                 totals.cropconv += deforestation.cropland_conversion_km2 || 0;
@@ -6545,7 +6566,9 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 rows.push([
                     esc(park.name || park.id), esc(park.country || ''),
                     (park.area_km2 || 0).toFixed(0),
-                    fire.total_fires || 0, fire.fire_groups || 0, fire.response_rate || 0, esc(fire.peak_month || ''),
+                    fire.total_fires || 0, fire.fire_groups || 0, vanN,
+                    esc(season.season ? (typeof seasonFrontWords === 'function' ? seasonFrontWords(season, {}) : season.season) : (season.status || '')),
+                    fire.response_rate || 0, esc(fire.peak_month || ''),
                     (deforestation.total_loss_km2 || 0).toFixed(2),
                     deforestation.cropland_measured_for > 0 ? (deforestation.cropland_conversion_km2 || 0).toFixed(2) : '',
                     settle.settlement_count || 0,
@@ -6558,7 +6581,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                     esc(source || '')
                 ].join(','));
             }
-            rows.push([esc(`TOTAL (${totals.n} parks)`), '', totals.area.toFixed(0), totals.fires, totals.groups, '', '',
+            rows.push([esc(`TOTAL (${totals.n} parks)`), '', totals.area.toFixed(0), totals.fires, totals.groups, totals.van, '', '', '',
                 totals.deforest.toFixed(2), totals.cropconv.toFixed(2), totals.settle, totals.builtup.toFixed(2), totals.pop, '', '', '',
                 totals.pixels, totals.km.toFixed(1), '', '', ''].join(','));
             rows.push('');
@@ -6793,7 +6816,10 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             // Cropland_Expansion_km2: GLAD 30 m, loss on land cropped by 2016-19
             // but not 2000-03; blank = unmeasured (invariant 1). BuiltUp_km2 is
             // SURFACE (Σ fractional raster), not cluster extent.
-            const sumHdr = ['Park', 'Country', 'Area_km2', 'Fire_Detections', 'Fire_Groups', 'Stopped_%', 'Peak_Season',
+            // Vanguard_Groups: fire chains that began 10-60 d ahead of the
+            // season front in the period (blank = front not yet computed, not 0);
+            // Season_Front: the stats row's words for the period's end.
+            const sumHdr = ['Park', 'Country', 'Area_km2', 'Fire_Detections', 'Fire_Groups', 'Vanguard_Groups', 'Season_Front', 'Stopped_%', 'Peak_Season',
                 'Deforest_km2', 'Cropland_Expansion_km2', 'Settlements', 'BuiltUp_km2', 'Population', 'Species', 'Patrol_Pixels', 'Patrol_km'];
             const summaryData = [
                 ['5MP Conservation Report'],
@@ -6802,11 +6828,15 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 [],
                 sumHdr
             ];
-            const tot = { area: 0, fires: 0, deforest: 0, cropconv: 0, settle: 0, builtup: 0, pop: 0, pixels: 0, km: 0 };
+            const tot = { area: 0, fires: 0, van: 0, deforest: 0, cropconv: 0, settle: 0, builtup: 0, pop: 0, pixels: 0, km: 0 };
             for (const { park, data } of parkReports) {
                 if (data.error) { summaryData.push([park.name || park.id, 'ERROR: ' + data.error]); continue; }
                 const fire = data.fire || {}, deforestation = data.deforestation || {}, settle = data.settlement || {};
                 const grid = data.grid || {}, species = data.species || {};
+                const season = data.season || {};
+                const vanN = typeof season.vanguard_in_window === 'number' ? season.vanguard_in_window
+                           : (typeof season.vanguard_groups === 'number' && season.season ? season.vanguard_groups : '');
+                if (typeof vanN === 'number') tot.van += vanN;
                 tot.area += park.area_km2 || 0; tot.fires += fire.total_fires || 0;
                 tot.deforest += deforestation.total_loss_km2 || 0; tot.settle += settle.settlement_count || 0;
                 tot.cropconv += deforestation.cropland_conversion_km2 || 0;
@@ -6814,7 +6844,9 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 tot.pop += settle.total_population || 0; tot.pixels += grid.activePixels || 0; tot.km += grid.totalDistanceKm || 0;
                 summaryData.push([
                     park.name || park.id, park.country || '', Math.round(park.area_km2 || 0),
-                    fire.total_fires || 0, fire.fire_groups || 0, fire.response_rate || 0, fire.peak_month || '',
+                    fire.total_fires || 0, fire.fire_groups || 0, vanN,
+                    season.season ? (typeof seasonFrontWords === 'function' ? seasonFrontWords(season, {}) : season.season) : (season.status || ''),
+                    fire.response_rate || 0, fire.peak_month || '',
                     Math.round((deforestation.total_loss_km2 || 0) * 100) / 100,
                     deforestation.cropland_measured_for > 0 ? Math.round((deforestation.cropland_conversion_km2 || 0) * 100) / 100 : '',
                     settle.settlement_count || 0,
@@ -6824,7 +6856,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 ]);
             }
             summaryData.push([]);
-            summaryData.push(['TOTALS', '', Math.round(tot.area), tot.fires, '', '', '',
+            summaryData.push(['TOTALS', '', Math.round(tot.area), tot.fires, '', tot.van, '', '', '',
                 Math.round(tot.deforest * 100) / 100, Math.round(tot.cropconv * 100) / 100, tot.settle,
                 Math.round(tot.builtup * 100) / 100, tot.pop, '', tot.pixels, Math.round(tot.km * 10) / 10]);
             const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
@@ -6864,7 +6896,11 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             }
 
             // === ALL FIRES SHEET ===
-            const allFiresData = [['Park', 'Date', 'Description', 'Fires_Count', 'Status', 'Stopped', 'Coords']];
+            // Lead_Days: days the chain BEGAN ahead of the season front
+            // (negative = into the season; blank = front not built).
+            // Vanguard: Yes when 10 <= lead <= 60 (scripts/fire_front.py).
+            const allFiresData = [['Park', 'Date', 'Description', 'Fires_Count', 'Status', 'Stopped', 'Lead_Days', 'Vanguard', 'Ahead_km', 'Coords']];
+            const vanguardData = [['Park', 'Season', 'Start', 'End', 'Days', 'Fires', 'Lead_Days', 'Lead_Basis', 'Ahead_km', 'Ahead_Days', 'Day_Order', 'Direction', 'Nearest_Place', 'Lon', 'Lat', 'Feature_ID']];
             for (const { park, data } of parkReports) {
                 if (data.error) continue;
                 for (const n of ((data.fire || {}).narratives || [])) {
@@ -6875,15 +6911,34 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                         n.fires_inside || n.fires_total || n.fires || 0,
                         n.outcome || n.status || '',
                         isFireStopped(n) ? 'Yes' : 'No',
+                        n.lead_start == null ? '' : n.lead_start,
+                        n.lead_start == null ? '' : (n.vanguard ? 'Yes' : 'No'),
+                        n.vanguard && n.ahead_km ? Math.round(n.ahead_km * 10) / 10 : '',
                         formatCoords(n.center)
                     ]);
+                }
+                const season = data.season || {};
+                for (const v of (season.vanguard_top || [])) {
+                    vanguardData.push([park.name || park.id, season.season || '', v.start || '', v.end || '', v.days || 0, v.fires || 0,
+                        v.lead_start == null ? '' : v.lead_start, v.lead_basis || '', Math.round((v.ahead_km || 0) * 10) / 10, v.ahead_days || 0,
+                        v.tier || 'unmeasured', v.direction || '', v.nearest_place ? `${v.nearest_place} (${Math.round(v.nearest_place_km || 0)} km)` : '',
+                        v.lon, v.lat, v.id || '']);
                 }
             }
             if (allFiresData.length > 1) {
                 const firesSheet = XLSX.utils.aoa_to_sheet(allFiresData);
-                firesSheet['!cols'] = [{ wch: 25 }, { wch: 12 }, { wch: 60 }, { wch: 11 }, { wch: 14 }, { wch: 8 }, { wch: 20 }];
-                styleHeaderRow(firesSheet, 0, 7);
+                firesSheet['!cols'] = [{ wch: 25 }, { wch: 12 }, { wch: 60 }, { wch: 11 }, { wch: 14 }, { wch: 8 }, { wch: 10 }, { wch: 9 }, { wch: 9 }, { wch: 20 }];
+                styleHeaderRow(firesSheet, 0, 10);
                 XLSX.utils.book_append_sheet(wb, firesSheet, 'All_Fires');
+            }
+            // === VANGUARD SHEET === the chains that began ahead of the season
+            // front, ranked by how far they ran before it caught up — the same
+            // list the star report prints (/api/fire-season leads=200).
+            if (vanguardData.length > 1) {
+                const vanSheet = XLSX.utils.aoa_to_sheet(vanguardData);
+                vanSheet['!cols'] = [{ wch: 25 }, { wch: 9 }, { wch: 11 }, { wch: 11 }, { wch: 6 }, { wch: 7 }, { wch: 10 }, { wch: 10 }, { wch: 9 }, { wch: 10 }, { wch: 12 }, { wch: 9 }, { wch: 24 }, { wch: 9 }, { wch: 9 }, { wch: 30 }];
+                styleHeaderRow(vanSheet, 0, vanguardData[0].length);
+                XLSX.utils.book_append_sheet(wb, vanSheet, 'Vanguard_Fires');
             }
 
             // === ALL DEFORESTATION SHEET ===
@@ -8595,8 +8650,9 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                     if (daysMatch) totalDays += parseInt(daysMatch[1]);
                 });
                 const avgDays = Math.round(totalDays / count);
+                const nVan = notif._groupItems.filter(it => it.reference_data && it.reference_data.vanguard).length;
                 
-                const subtitle = `${totalFires.toLocaleString()} fires total • avg ${avgDays} days active`;
+                const subtitle = `${totalFires.toLocaleString()} fires total • avg ${avgDays} days active${nVan ? ` • ${nVan} ahead of the season` : ''}`;
                 
                 const groupHtml = `
                     <div class="notification-item clickable notification-group" data-type="group" data-action="toggle_group" data-group-key="${notif._groupKey}">
@@ -8631,12 +8687,21 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             const title = notif.title || groupName;
             const location = title ? `${escapeHtml(parkName)} • ${escapeHtml(title)}` : escapeHtml(parkName);
             
+            // A vanguard chain wears the same lead mark as its accordion row
+            // (fireVanMark), and its icon takes the lead colour: early
+            // movement ahead of the season is the one alert whose day order
+            // is measurably real. The words are already in the message.
+            const van = data.vanguard && data.lead_start != null && window.FireSeason;
+            const vanMark = van ? fireVanMark(data) : '';
+            const iconStyle = van
+                ? `background: ${FireSeason.leadColor(data.lead_start)}26; color: ${FireSeason.leadColor(data.lead_start)};`
+                : 'background: rgba(239,68,68,0.15); color: #ef4444;';
             // Single action: view on map (whole item clickable)
             return `
-                <div class="notification-item clickable" data-type="fire_alert" data-action="view_fire" data-park-id="${escapeHtml(parkId)}" data-park-name="${escapeHtml(parkName)}" data-feature-id="${escapeHtml(featureId)}" data-group-name="${escapeHtml(groupName)}">
-                    <div class="notification-icon" style="background: rgba(239,68,68,0.15); color: #ef4444;">${icon('flame', 'fire')}</div>
+                <div class="notification-item clickable${van ? ' is-vanguard' : ''}" data-type="fire_alert" data-action="view_fire" data-park-id="${escapeHtml(parkId)}" data-park-name="${escapeHtml(parkName)}" data-feature-id="${escapeHtml(featureId)}" data-group-name="${escapeHtml(groupName)}">
+                    <div class="notification-icon" style="${iconStyle}">${icon(van ? 'footprints' : 'flame', 'fire')}</div>
                     <div class="notification-content">
-                        <div class="notification-location">${location}</div>
+                        <div class="notification-location">${location}${vanMark}</div>
                         <div class="notification-subtitle">${escapeHtml(notif.message)}</div>
                         <div class="notification-time">${time}</div>
                     </div>
@@ -12049,6 +12114,159 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             }
         }
         
+        // ── Season front & vanguard, in the Fire accordion ─────────────
+        // The accordion is the fire subject's long form, so the season lives
+        // here as a SPARKLINE like the weekly one above it, not as a
+        // paragraph: the front's S-curve (share of the land that burns this
+        // season whose front has passed, per 5 d), the usual season dashed
+        // beside it, and every vanguard ignition ticked along the top in its
+        // lead colour — before the curve rises, which is the whole point.
+        // Numbers come from /api/fire-season?summary=1 (one writer shared
+        // with the tips, the stats row and the ★ report); nothing is
+        // computed here. Where no front is built the block says "not yet
+        // computed" (invariant 1), never nothing.
+        const fireNarrativeStore = {};     // paId -> narratives in the window
+        const fireNarrativeRenderers = {}; // paId -> {render, name}
+        const fireVanOnly = {};            // paId -> list narrowed to vanguard?
+        window._fireSeasonStore = {};      // paId -> last summary (TEST.fireSeason)
+        function fireVanMark(n) {
+            if (!n || !n.vanguard || n.lead_start == null || !window.FireSeason) return '';
+            const c = FireSeason.leadColor(n.lead_start);
+            return `<span class="fire-van-mark" style="color:${c};border-color:${c}55;background:${c}1a;">${n.lead_start} d</span>`;
+        }
+        function fireVanTitle(n) {
+            if (!n || n.lead_start == null) return '';
+            const basis = n.lead_basis === 'usual' ? 'usual front' : 'season front';
+            if (n.vanguard) return `\nVanguard: began ${n.lead_start} d ahead of the ${basis}${n.ahead_km ? `, ran ${Math.round(n.ahead_km)} km before it caught up` : ''}.`;
+            return n.lead_start >= 0 ? `\nBegan ${n.lead_start} d ahead of the ${basis}.` : `\nBegan ${-n.lead_start} d into the season.`;
+        }
+        function fireListHead(paId, all) {
+            const nVan = all.filter(n => n.vanguard).length;
+            const on = !!fireVanOnly[paId];
+            let h = `<span style="flex:1;">Fire group details (${all.length.toLocaleString()} total):</span>`;
+            if (nVan > 0 && window.FireSeason) {
+                h += `<button class="filter-chip${on ? ' on' : ''}" style="--chip:#fde047;" data-chip="vanguard" `
+                   + `onclick="event.stopPropagation(); toggleFireVanOnly('${paId}')" `
+                   + `title="Only the chains that began ${FireSeason.LEAD_DAYS}–${FireSeason.LEAD_MAX} days ahead of the season front">vanguard<span class="filter-chip-n">${nVan}</span></button>`;
+            }
+            return h;
+        }
+        function toggleFireVanOnly(paId) {
+            fireVanOnly[paId] = !fireVanOnly[paId];
+            const all = fireNarrativeStore[paId] || [];
+            const r = fireNarrativeRenderers[paId];
+            const head = document.getElementById(`fire-list-head-${paId}`);
+            const box = document.getElementById(`fire-narratives-${paId}`);
+            if (!r || !box) return;
+            const list = fireVanOnly[paId] ? all.filter(n => n.vanguard) : all;
+            if (head) head.innerHTML = fireListHead(paId, all);
+            box.innerHTML = list.slice(0, 10).map((n, i) => r.render(n, i)).join('');
+            const more = document.getElementById(`fire-load-more-${paId}`);
+            if (more) more.remove();
+            if (list.length > 10) {
+                const b = document.createElement('button');
+                b.id = `fire-load-more-${paId}`;
+                b.style.cssText = 'margin-top:6px;padding:4px 8px;font-size:9px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:4px;color:#aaa;cursor:pointer;width:100%;';
+                b.textContent = `Show more (${list.length - 10} remaining)`;
+                b.onclick = (e) => { e.stopPropagation(); box.innerHTML += list.slice(10).map((n, i) => r.render(n, i + 10)).join(''); b.remove(); };
+                box.after(b);
+            }
+        }
+        window.toggleFireVanOnly = toggleFireVanOnly;
+        // Map toggles from inside the accordion (the fire row's Season group,
+        // reachable from the place that just explained what they draw).
+        function fireSeasonToggle(paId, which) {
+            const on = which === 'front' ? FireSeason.frontOn() : FireSeason.vanguardOn();
+            setRowSeason(which, !on);
+            refreshFireSeasonBlock(paId);
+        }
+        window.fireSeasonToggle = fireSeasonToggle;
+        function refreshFireSeasonBlock(paId) {
+            const el = document.getElementById(`fire-season-${paId}`);
+            if (el) el.innerHTML = fireSeasonBlock(paId, window._fireSeasonStore[paId], fireNarrativeStore[paId] || []);
+        }
+        function sparkVanClick(paId, fid) {
+            const r = fireNarrativeRenderers[paId];
+            toggleSingleFeaturePin(paId, r ? r.name : paId, 'fire', fid, null, window.event);
+        }
+        window.sparkVanClick = sparkVanClick;
+        function fireSeasonSpark(paId, fs) {
+            const cv = fs.front_curve;
+            if (!cv || !cv.front || cv.front.length < 2 || !fs.season_start) return '';
+            const w = 232, h = 42, top = 10, pad = 2;
+            const step = cv.step_days || 5, days = (cv.front.length - 1) * step;
+            const t0 = new Date(fs.season_start + 'T00:00:00Z');
+            const dos = d => Math.round((new Date(d + 'T00:00:00Z') - t0) / 86400000);
+            const xs = d => pad + Math.max(0, Math.min(days, d)) * (w - 2 * pad) / days;
+            const ys = pct => h - pad - (pct / 100) * (h - pad - top);
+            let lastDos = days;
+            if (!fs.complete && fs.latest_day) lastDos = Math.max(0, Math.min(days, dos(fs.latest_day)));
+            const path = (arr, upto) => {
+                let out = '';
+                arr.forEach((v, i) => { const d = i * step; if (v == null || d > upto) return; out += `${out ? 'L' : 'M'}${xs(d).toFixed(1)},${ys(v).toFixed(1)}`; });
+                return out;
+            };
+            const main = path(cv.front, lastDos);
+            const fill = main ? `${main} L${xs(lastDos).toFixed(1)},${h - pad} L${xs(0).toFixed(1)},${h - pad} Z` : '';
+            const usual = cv.usual && cv.usual.length ? `<path d="${path(cv.usual, days)}" fill="none" stroke="#9ca3af" stroke-width="1" stroke-dasharray="3,2" opacity="0.8"><title>Usual season: the median front of ${fs.stats && fs.stats.usual_seasons ? fs.stats.usual_seasons + ' past seasons' : 'past seasons'}</title></path>` : '';
+            let atRule = '';
+            if (typeof fs.at_dos === 'number' && fs.at_dos >= 0 && fs.at_dos <= days) {
+                const x = xs(fs.at_dos).toFixed(1);
+                atRule = `<line x1="${x}" y1="${top - 2}" x2="${x}" y2="${h}" stroke="#e5e7eb" stroke-width="1" stroke-dasharray="2,2" opacity="0.7"><title>Time window ends here${typeof fs.front_reached_pct === 'number' ? ` — front ${Math.round(fs.front_reached_pct)} % reached` : ''}</title></line>`;
+            }
+            // Ticks: one per vanguard chain in the window, at the day it
+            // began, in its lead colour; click pins that chain.
+            const marks = (fs.vanguard_marks || []).map(m => {
+                const d = dos(m.d); if (d < 0 || d > days) return '';
+                const c = FireSeason.leadColor(m.lead);
+                // Tick height grows with lead (10 d short → 60 d tall), so the
+                // band reads as a histogram of how far ahead they began.
+                const hh = m.lead == null ? 3 : 3 + 5 * Math.max(0, Math.min(1, (m.lead - FireSeason.LEAD_DAYS) / (FireSeason.LEAD_MAX - FireSeason.LEAD_DAYS)));
+                return `<line x1="${xs(d).toFixed(1)}" y1="${(top - 2 - hh).toFixed(1)}" x2="${xs(d).toFixed(1)}" y2="${top - 2}" stroke="${c}" stroke-width="${FireSeason.tierWide(m.tier) ? 2 : 1.2}" style="cursor:pointer" onclick="event.stopPropagation(); sparkVanClick('${paId}', '${m.id}')"><title>${m.d}: began ${m.lead == null ? '?' : m.lead} d ahead of the season front · day order ${FireSeason.tierWord(m.tier)}\nClick to pin on map</title></line>`;
+            }).join('');
+            // Month ticks along the season, derived from its start.
+            const months = [0, 3, 6, 9, 12].map(k => { const dt = new Date(t0); dt.setUTCMonth(dt.getUTCMonth() + k); return dt.toLocaleString('en', { month: 'short', timeZone: 'UTC' }); });
+            return `<svg width="${w}" height="${h}" style="display:block;" viewBox="0 0 ${w} ${h}">
+                    ${fill ? `<path d="${fill}" fill="#ef4444" opacity="0.18"/>` : ''}
+                    ${usual}
+                    ${main ? `<path d="${main}" fill="none" stroke="#ef4444" stroke-width="1.4"><title>Season front: share of the land that burns this season whose front has passed</title></path>` : ''}
+                    ${atRule}${marks}
+                    <text x="1" y="${top + 7}" font-size="7" fill="#ef4444" opacity="0.85">100 %</text>
+                </svg>
+                <div style="display:flex;justify-content:space-between;font-size:8px;color:#666;">${months.map(m => `<span>${m}</span>`).join('')}</div>`;
+        }
+        function fireSeasonBlock(paId, fs, all) {
+            if (!window.FireSeason) return '';
+            window._fireSeasonStore[paId] = fs;
+            const wrap = inner => `<div class="fire-season-block" style="margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.08);">${inner}</div>`;
+            if (!fs || (fs.status && !fs.season)) {
+                const st = fs && fs.status ? fs.status : 'not available';
+                if (st === 'not available') return '';
+                return wrap(`<div style="font-size: 9px; color: #666;"><i class="icon-waves"></i> Fire season front: ${escapeHtml(st)}</div>`);
+            }
+            const words = seasonFrontWords(fs, {});
+            const fOn = FireSeason.frontOn(), vOn = FireSeason.vanguardOn();
+            const chip = (which, label, color, on, tip) =>
+                `<button class="filter-chip${on ? ' on' : ''}" style="--chip:${color};" data-chip="season-${which}" title="${escapeHtml(tip)}" onclick="event.stopPropagation(); fireSeasonToggle('${paId}', '${which}')">${label}</button>`;
+            const nVan = typeof fs.vanguard_in_window === 'number' ? fs.vanguard_in_window : fs.vanguard_groups;
+            const tiers = fs.vanguard_tiers || {};
+            const measured = (tiers.supported || 0) + (tiers.weak || 0);
+            const tierWords = nVan > 0
+                ? (measured > 0 ? `day order confirmed for ${measured.toLocaleString()}${tiers.unmeasured ? `, ${tiers.unmeasured.toLocaleString()} unmeasured` : ''}` : 'day order not yet scored')
+                : '';
+            const head = `<div style="display:flex; align-items:center; gap:6px; font-size: 9px; color: #888;">
+                    <span style="flex:1;" title="Season front: the day a fifth of the land that burns in a season had burned within ~60 km. Usual = median of past seasons."><i class="icon-waves"></i> Fire ${escapeHtml(words)}</span>
+                    ${chip('front', 'front', '#fb923c', fOn, (fOn ? 'Hide' : 'Draw') + ' the season front isochrones on the map')}
+                    ${chip('vanguard', 'vanguard', '#fde047', vOn, (vOn ? 'Hide' : 'Draw') + ' the vanguard chains on the map, in lead colour')}
+                </div>`;
+            const spark = fireSeasonSpark(paId, fs);
+            const vanLine = `<div style="font-size: 9px; color: #aaa; margin-top: 4px;">
+                    <span style="color:${FireSeason.leadColor(20)};">▎</span>${(nVan || 0).toLocaleString()} vanguard chain${nVan === 1 ? '' : 's'} began ${FireSeason.LEAD_DAYS}–${FireSeason.LEAD_MAX} d ahead of the front${tierWords ? ` · <span style="color:#777;">${tierWords}</span>` : ''}</div>
+                <div style="font-size: 8px; color: #666; margin-top: 2px;">Red: share of this season's burnable land the front has passed · dashed: usual season${(fs.vanguard_marks || []).length ? ' · ticks: vanguard ignitions, click to pin' : ''}</div>`;
+            return wrap(head + (spark ? `<div style="margin-top:6px;">${spark}</div>` : '') + vanLine);
+        }
+        window.fireSeasonBlock = fireSeasonBlock;
+
         // Popup section data fetching functions
         async function fetchPopupFireData(paId) {
             const el = document.getElementById(`fire-content-${paId}`);
@@ -12061,15 +12279,18 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 if (dateTo) params.push('to=' + dateTo);
                 url += '?' + params.join('&');
                 
-                const resp = await fetch(url);
-                const data = await resp.json();
-
-                // Also fetch real-time fire groups
-                let realtimeData = null;
-                try {
-                    const rtResp = await fetch(`${apiBase(paId)}/fire-realtime?days=28&pwd=${encodeURIComponent(getPwd())}`);
-                    if (rtResp.ok) realtimeData = await rtResp.json();
-                } catch (e) { console.log('Fire realtime not available'); }
+                // Three questions, one round trip: the groups, what is burning
+                // now, and where the season stands (front + vanguard — the
+                // same summary the ★ report and the tips read, so the accordion
+                // cannot say a fourth thing).
+                const [data, realtimeData, seasonData] = await Promise.all([
+                    fetch(url).then(r => r.json()),
+                    fetch(`${apiBase(paId)}/fire-realtime?days=28&pwd=${encodeURIComponent(getPwd())}`)
+                        .then(r => r.ok ? r.json() : null).catch(() => { console.log('Fire realtime not available'); return null; }),
+                    (typeof fetchFireSeasonDirect === 'function')
+                        ? fetchFireSeasonDirect(paId, { from: dateFrom, to: dateTo, pwd: getPwd() }).catch(() => null)
+                        : Promise.resolve(null),
+                ]);
 
                 
                 // Get date range label
@@ -12104,8 +12325,14 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                             return startDate >= fromDate && startDate <= toDate;
                         });
                     }
-                    const initialNarratives = allNarratives.slice(0, 10);
-                    const remainingNarratives = allNarratives.slice(10);
+                    // The list can be narrowed to the vanguard chains (the
+                    // season block's chip); the narratives are kept so the
+                    // list re-renders without re-asking for 3,000 rows.
+                    fireNarrativeStore[paId] = allNarratives;
+                    const vanOnly = !!fireVanOnly[paId];
+                    const listNarratives = vanOnly ? allNarratives.filter(n => n.vanguard) : allNarratives;
+                    const initialNarratives = listNarratives.slice(0, 10);
+                    const remainingNarratives = listNarratives.slice(10);
                     const narrativeContainerId = `fire-narratives-${paId}`;
                     const loadMoreBtnId = `fire-load-more-${paId}`;
                     
@@ -12130,8 +12357,9 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                         const isPinned = isSingleFeaturePinned(paId, 'fire', fireFeatureId);
                         const rowStyle = isPinned ? 'background: rgba(34,197,94,0.15); border-left: 2px solid #22c55e;' : 'background: rgba(0,0,0,0.2);';
                         const testBadge = window.TEST ? `<span class="test-entry-id" data-entry="fire-${idx}" style="display: inline-block; background: #3b82f6; color: white; font-size: 8px; font-weight: 600; padding: 1px 4px; border-radius: 3px; margin-right: 4px;">${idx}</span>` : '';
-                        return `<div class="narrative-row" data-park="${paId}" data-type="fire" data-feature="${fireFeatureId}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(data.park_name || paId)}', 'fire', '${fireFeatureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; ${rowStyle} border-radius: 4px; cursor: pointer; display: flex; align-items: center; transition: all 0.2s;" title="Click to pin on map. ${escapeHtml(fullText)}">${testBadge}<span style="color: ${outcomeColor}; margin-right: 4px;">●</span> <span style="flex:1;">${escapeHtml(text)}</span></div>`;
+                        return `<div class="narrative-row" data-park="${paId}" data-type="fire" data-feature="${fireFeatureId}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(data.park_name || paId)}', 'fire', '${fireFeatureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; ${rowStyle} border-radius: 4px; cursor: pointer; display: flex; align-items: center; transition: all 0.2s;" title="Click to pin on map. ${escapeHtml(fullText)}${fireVanTitle(n)}">${testBadge}<span style="color: ${outcomeColor}; margin-right: 4px;">●</span> <span style="flex:1;">${escapeHtml(text)}</span>${fireVanMark(n)}</div>`;
                     };
+                    fireNarrativeRenderers[paId] = { render: renderNarrative, name: data.park_name || paId };
                     
                     // Render active fire groups alert
                     const renderActiveGroups = () => {
@@ -12159,7 +12387,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                                 return `<div class="fire-alert-group" style="cursor: pointer;" onclick="event.stopPropagation(); showRealtimeTrajectory('${paId}', '${escapeHtml(data.park_name || paId)}', '${escapeHtml(g.name)}', ${JSON.stringify(g.trajectory || []).replace(/"/g, '&quot;')})">
                                     <div style="display: flex; justify-content: space-between; align-items: start; width: 100%;">
                                         <span style="flex: 1;">
-                                            ${iconHtml} <strong>${escapeHtml(g.name)}</strong> (${escapeHtml(statusLabel)})<br>
+                                            ${iconHtml} <strong>${escapeHtml(g.name)}</strong> (${escapeHtml(statusLabel)})${fireVanMark(g)}<br>
                                             <span style="font-size: 9px; color: #999;">${fires} fires, ${days}d • ${escapeHtml(statusDetail)}</span>
                                         </span>
                                     </div>
@@ -12234,9 +12462,10 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                         </div>` : ''}
                         ${trendData.latitude_comparison ? `<div style="font-size: 10px; color: ${trendData.latitude_comparison.percentile > 70 ? '#f59e0b' : trendData.latitude_comparison.percentile < 30 ? '#22c55e' : '#888'}; margin-bottom: 4px;">${trendData.latitude_comparison.percentile > 70 ? 'Higher' : trendData.latitude_comparison.percentile < 30 ? 'Lower' : 'Similar'} fire activity than ${100 - Math.round(trendData.latitude_comparison.percentile)}% of ${trendData.latitude_comparison.latitude_band} parks</div>` : ''}
                         
-                        ${initialNarratives.length > 0 ? `
+                        <div id="fire-season-${paId}">${fireSeasonBlock(paId, seasonData, allNarratives)}</div>
+                        ${allNarratives.length > 0 ? `
                         <div style="margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">
-                            <div style="font-size: 9px; color: #666; margin-bottom: 6px;">Fire group details (${allNarratives.length} total):</div>
+                            <div id="fire-list-head-${paId}" style="font-size: 9px; color: #666; margin-bottom: 6px; display:flex; align-items:center; gap:6px;">${fireListHead(paId, allNarratives)}</div>
                             <div id="${narrativeContainerId}">
                                 ${initialNarratives.map((n, i) => renderNarrative(n, i)).join('')}
                             </div>

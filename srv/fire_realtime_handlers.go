@@ -146,6 +146,12 @@ type FireGroup struct {
 	Metrics      map[string]interface{}   `json:"metrics"`
 	Trajectory   []FireCluster            `json:"trajectory"`
 	PointsInside []map[string]interface{} `json:"points_inside,omitempty"`
+	// Season position (scripts/fire_front.py, docs/agents/fire.md "Season
+	// front & vanguard"): absent when the area's front is not built.
+	Vanguard  bool    `json:"vanguard"`
+	LeadStart *int    `json:"lead_start,omitempty"`
+	LeadBasis string  `json:"lead_basis,omitempty"`
+	AheadKm   float64 `json:"ahead_km,omitempty"`
 }
 
 // FireRealtimeResponse is the API response for real-time fire analysis
@@ -1217,6 +1223,26 @@ func (s *Server) handleFireRealtimeFromFeatures(w http.ResponseWriter, r *http.R
 				"narrative":   narrative,
 			},
 			Trajectory: trajectory,
+		}
+		// A chain that began 10–60 d ahead of the season front: the same
+		// words and the same rank the nightly notifier gives it
+		// (daily_fire_update.py) — a signal, not a verdict.
+		if ls, ok := props["lead_start"].(float64); ok {
+			l := int(ls)
+			group.LeadStart = &l
+			group.LeadBasis, _ = props["lead_basis"].(string)
+			group.AheadKm, _ = props["ahead_km"].(float64)
+			if v, ok := props["vanguard"].(bool); ok && v {
+				group.Vanguard = true
+				basis := "season"
+				if group.LeadBasis == "usual" {
+					basis = "usual"
+				}
+				group.StatusDetail += fmt.Sprintf(" • began %d d ahead of the %s front — early movement ahead of the season", l, basis)
+				if group.Priority > 20 {
+					group.Priority = 20
+				}
+			}
 		}
 
 		groups = append(groups, group)

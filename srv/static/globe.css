@@ -4749,3 +4749,7 @@ body.is-guest .session-chip-logout:hover { opacity: 1; background: rgba(251,191,
 .fs-w-ash { height: 1.5px; background: #9ca3af; opacity: .6; }
 #methods-season-legend { list-style: none; margin-left: -20px; }
 #methods-season-legend .fs-legend { max-width: 360px; padding: 4px 0 0; }
+/* Vanguard lead beside a fire narrative row (Fire accordion): the Season
+   overlay's lead colour, inline; the row's title carries the words. */
+.fire-van-mark { flex: none; margin-left: 5px; padding: 1px 4px; border-radius: 6px; border: 1px solid;
+    font-size: 8px; font-weight: 600; line-height: 1.2; font-variant-numeric: tabular-nums; white-space: nowrap; }
