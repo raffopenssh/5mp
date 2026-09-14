@@ -360,7 +360,10 @@ func gpkgTrajPoints(geojson string) [][2]float64 {
 
 func (s *Server) gpkgFireTrajectories(w *gpkgWriter, o gpkgExportOpts) error {
 	l, err := w.AddLayer("fire_trajectories", "GEOMETRY",
-		"VIIRS fire groups tracked over time (v5 pipeline)", []gpkgCol{
+		"VIIRS fire groups tracked over time (v8 pipeline). evidence_bits is log2 of the "+
+			"likelihood ratio, summed over day-to-day links, that consecutive days touch as a "+
+			"spreading fire would (measured against day-shuffled data); it rates the ORDER of "+
+			"the line, not the corridor it lies in.", []gpkgCol{
 			{"feature_id", "TEXT"},
 			{"group_name", "TEXT"},
 			{"group_type", "TEXT"},
@@ -380,6 +383,8 @@ func (s *Server) gpkgFireTrajectories(w *gpkgWriter, o gpkgExportOpts) error {
 			{"season", "TEXT"},
 			{"trajectory_type", "TEXT"},
 			{"zigzag_ratio", "REAL"},
+			{"evidence_bits", "REAL"},
+			{"evidence_tier", "TEXT"},
 			{"nearest_place", "TEXT"},
 			{"nearest_place_dist_km", "REAL"},
 			{"nearest_river", "TEXT"},
@@ -465,6 +470,8 @@ func (s *Server) gpkgFireTrajectories(w *gpkgWriter, o gpkgExportOpts) error {
 			gpkgJSONStr(p, "season"),
 			gpkgJSONStr(p, "trajectory_type"),
 			gpkgJSONNum(p, "zigzag_ratio"),
+			gpkgJSONNum(p, "evidence_bits"),
+			gpkgJSONStr(p, "evidence_tier"),
 			gpkgJSONStr(p, "nearest_place"),
 			gpkgJSONNum(p, "nearest_place_dist"),
 			gpkgJSONStr(p, "nearest_river"),

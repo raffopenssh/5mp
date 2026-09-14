@@ -64,6 +64,31 @@ def narrative_feature_ids(conn):
     return out
 
 
+def evidence_drift():
+    """Link-evidence model drift (docs/agents/fire.md "Link evidence").
+
+    Every scored group records `evidence_model`, the hash of the
+    data/fire_link_lr.json it was scored with. Incremental rebuilds carry
+    old groups forward, so a recalibration silently mixes two scales in one
+    archive until a full rebuild - unless something compares. Returns
+    {'current': id, 'stale_groups': n, 'unscored_groups': n}."""
+    import hashlib
+    lr = BASE_DIR / "data" / "fire_link_lr.json"
+    cur = hashlib.sha256(lr.read_bytes()).hexdigest()[:8] if lr.exists() else None
+    stale = unscored = 0
+    for f in glob.glob(str(GROUPS_DIR / "*.json")):
+        try:
+            for g in json.load(open(f)):
+                m = g.get('evidence_model')
+                if m is None:
+                    unscored += 1
+                elif m != cur:
+                    stale += 1
+        except Exception:
+            continue
+    return {'current': cur, 'stale_groups': stale, 'unscored_groups': unscored}
+
+
 def check():
     conn = sqlite3.connect(f"file:{DB_PATH}?mode=ro", uri=True)
     js = load_json_groups()
@@ -108,12 +133,18 @@ def check():
             elif k == 'no_json_file' and v:
                 report['totals']['parks_without_json'] += 1
     report['totals'] = dict(report['totals'])
+    ev = evidence_drift()
+    report['evidence'] = ev
+    # Stale = scored with a different LR table than the one on disk: a full
+    # rebuild is due. Unscored (pre-v8 archive) is reported, not failed - it
+    # is drawn as 'unmeasured', which is honest.
+    report['totals']['evidence_model_stale'] = ev['stale_groups']
     conn.close()
     return report
 
 
 BAD_KEYS = ('duplicate_ids', 'missing_in_db', 'stale_in_db',
-            'narrative_dangling', 'narrative_ambiguous')
+            'narrative_dangling', 'narrative_ambiguous', 'evidence_model_stale')
 
 
 def main():
@@ -133,6 +164,8 @@ def main():
               f"({t.get('json_unique', 0):,} unique)")
         print(f"  DB fire_trajectory:    {t.get('db_groups', 0):,}")
         print(f"  narrative references:  {t.get('narrative_refs', 0):,}")
+        print(f"  evidence model:        {rep['evidence']['current']} "
+              f"({rep['evidence']['unscored_groups']:,} groups unscored = pre-v8, drawn as unmeasured)")
         print("  --- drift ---")
         for k in BAD_KEYS:
             print(f"  {k + ':':<24} {t.get(k, 0):,}")

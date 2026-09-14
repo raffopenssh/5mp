@@ -58,6 +58,7 @@ from fire_source import (load_park_fires as _load_fires,
 
 try:
     from scipy.optimize import linear_sum_assignment
+    from scipy.spatial import cKDTree
     HAVE_SCIPY = True
 except ImportError:  # fall back to greedy assignment
     HAVE_SCIPY = False
@@ -104,6 +105,53 @@ GATE_MIN_GAP_DAYS = 1.0
 # 3.0 chosen by ablation (scripts/eval_fire_trajectories.py): best zigzag_bad
 # (-36%) and the only value that improved geometry on all 6 golden parks.
 MASS_PENALTY_KM = 3.0
+
+# --- Link evidence (v8) ---
+# Measured on XSA 2024 (830k detections, 485k km2): the v7 tracker produced
+# the SAME output on day-shuffled input as on real input (9,500 vs 10,468
+# groups, median 16 days both, MORE >=150 km fronts on noise). In a dense
+# field there is always a candidate inside the 13 km gate, and the heading
+# gate then *selects* a straight continuation from noise.
+#
+# What separates a real link from a coincidence is NOT speed (herders walk
+# 800 km one way, hunters 80 km in a day) but contiguity: a fire advances
+# from its own edge and an ignition chain is a string of adjacent burns, so
+# the nearest detection pair between yesterday's and today's cluster abuts
+# (<1 km) ~4-6x more often in real data than in shuffled data, and is >10 km
+# apart LESS often. scripts/calibrate_fire_link_lr.py measures that ratio
+# (real vs day-shuffled, three regimes) into data/fire_link_lr.json; every
+# link then carries log2 of its likelihood ratio as evidence.
+#
+# Three uses, each switchable for A/B (scripts/eval_fire_null.py):
+#   * assignment: one bit of evidence is worth this many km of centroid
+#     distance, so the Hungarian step prefers the contiguous candidate over
+#     the nearer-centroid one. 0 = distance only (v7).
+LLR_COST_BITS_KM = 0.0
+#   * termination (sequential probability ratio test): a track is cut where
+#     its running evidence has fallen this many bits below its peak - a run
+#     of coin-toss links ends the track at the last well-evidenced point,
+#     while a single long ignition jump followed by contiguous burning
+#     survives. 0 = never cut (v7).
+SPRT_CUT_BITS = 0.0
+#   * reporting: each group emits evidence_bits (sum over links) and
+#     link_margin, so a drawn trajectory carries its own score.
+# Tiers, set from the null run on the XSA box (2026-09-14): at >=6 bits the
+# day-shuffled null produced 2 groups where the real data produced 220
+# (~1% by chance); at >=2 bits ~18%; below 0 bits it is a coin toss.
+EVIDENCE_SUPPORTED_BITS = 6.0
+EVIDENCE_WEAK_BITS = 2.0
+LINK_LR_FILE = BASE_DIR / "data" / "fire_link_lr.json"
+LINK_LR = None   # loaded lazily: (bin_edges_km, log2_lr)
+LINK_LR_ID = None  # short id of the table a group was scored with (recorded per group)
+
+# --- Hard gates, measured and OFF ---
+# Ambiguity/contiguity/density gates were the first attempt (2026-09-14). On
+# the XSA box they lifted null skill from +0.12 to +0.26 but cut real
+# >=150 km fronts from 112 to 6: a gate that ends every contested track
+# also ends every herder chain. Kept as ablation switches only.
+AMBIGUITY_RATIO = 0.0      # accept a link only if runner-up cost >= ratio x best
+CONTIGUITY_KM = 0.0        # hard cap on min_pair_km per day of gap
+DENSITY_GATE_K = 0.0       # cap centroid gate at K x median NN cluster spacing
 
 # --- Post-hoc chaining of track fragments ---
 CHAIN_MAX_GAP_DAYS = 4     # A ends, B starts within N days
@@ -388,7 +436,37 @@ def _make_day_cluster(cf, slice_t, slice_date, slice_hhmm=None):
     # slice_date is the date of the overpass midpoint, so a 23:5x pass is not
     # attributed to the following day.
     return {'t': slice_t, 'date': slice_date, 'fires': cf,
-            'centroid': (cx, cy), 'n': len(cf), 'hhmm': slice_hhmm}
+            'centroid': (cx, cy), 'n': len(cf), 'hhmm': slice_hhmm,
+            'xy': None, 'tree': None}
+
+
+_KM_LON = 111.32
+_KM_LAT = 110.57
+
+
+def _cluster_xy(dc):
+    """Detection coordinates of a slice-cluster in km (equirectangular about
+    the cluster's own latitude - errors are <1% over the few km we test)."""
+    if dc['xy'] is None:
+        lat0 = math.cos(math.radians(dc['centroid'][1]))
+        dc['xy'] = np.array([[f['longitude'] * _KM_LON * lat0, f['latitude'] * _KM_LAT]
+                             for f in dc['fires']])
+    return dc['xy']
+
+
+def _min_pair_km(a, b):
+    """Nearest detection-to-detection distance between two slice-clusters.
+    This is what 'the front advanced from its own edge' means; the centroid
+    distance says nothing about it for a 20 km long cluster."""
+    xa, xb = _cluster_xy(a), _cluster_xy(b)
+    if HAVE_SCIPY and len(xa) > 8:
+        if a['tree'] is None:
+            a['tree'] = cKDTree(xa)
+        d, _ = a['tree'].query(xb, k=1)
+        return float(d.min())
+    # tiny clusters: brute force
+    d = xa[:, None, :] - xb[None, :, :]
+    return float(np.sqrt((d * d).sum(-1)).min())
 
 
 # ---------------------------------------------------------------------------
@@ -396,26 +474,38 @@ def _make_day_cluster(cf, slice_t, slice_date, slice_hhmm=None):
 # ---------------------------------------------------------------------------
 
 class Track:
-    __slots__ = ('points', 'fires', 'vel', 'last_t', 'last_date', 'last_bearing',
-                 'moved_km', 'last_n')
+    __slots__ = ('points', 'dcs', 'vel', 'last_t', 'last_date', 'last_bearing',
+                 'moved_km', 'last_n', 'last_dc', 'margins', 'llrs')
 
     def __init__(self, dc):
         self.points = [(dc['centroid'][0], dc['centroid'][1], dc['date'], dc['t'],
                         dc.get('hhmm'))]
-        self.fires = list(dc['fires'])
+        self.dcs = [dc]
         self.vel = (0.0, 0.0)          # deg/day (lon, lat)
         self.last_t = dc['t']
         self.last_date = dc['date']
         self.last_bearing = None
         self.moved_km = 0.0
         self.last_n = dc['n']
+        self.last_dc = dc
+        # Per-link ambiguity margin in [0,1] (1 = uncontested) and per-link
+        # log2 likelihood ratio real/noise from the contiguity model.
+        self.margins = []
+        self.llrs = []
+
+    @property
+    def fires(self):
+        out = []
+        for dc in self.dcs:
+            out.extend(dc['fires'])
+        return out
 
     def predict(self, t):
         gap = t - self.last_t
         lon, lat = self.points[-1][0], self.points[-1][1]
         return (lon + self.vel[0] * gap, lat + self.vel[1] * gap)
 
-    def extend(self, dc):
+    def extend(self, dc, margin=1.0, llr=0.0):
         lon0, lat0 = self.points[-1][0], self.points[-1][1]
         lon1, lat1 = dc['centroid']
         # Real elapsed time between overpasses, floored so a same-pass merge
@@ -430,10 +520,52 @@ class Track:
         self.vel = (VELOCITY_ALPHA * vlon + (1 - VELOCITY_ALPHA) * self.vel[0],
                     VELOCITY_ALPHA * vlat + (1 - VELOCITY_ALPHA) * self.vel[1])
         self.points.append((lon1, lat1, dc['date'], dc['t'], dc.get('hhmm')))
-        self.fires.extend(dc['fires'])
+        self.dcs.append(dc)
         self.last_t = dc['t']
         self.last_date = dc['date']
         self.last_n = dc['n']
+        self.last_dc = dc
+        self.margins.append(margin)
+        self.llrs.append(llr)
+
+    @classmethod
+    def from_segment(cls, dcs, margins, llrs):
+        """Rebuild a track from a slice of another track's clusters."""
+        t = cls(dcs[0])
+        for dc, m, l in zip(dcs[1:], margins, llrs):
+            t.extend(dc, m, l)
+        return t
+
+
+def load_link_lr():
+    """Contiguity likelihood-ratio table from calibrate_fire_link_lr.py.
+    Returns (edges_km, log2_lr) or None when absent (=> every link scores 0
+    bits; the run then says so, it does not pretend to have measured)."""
+    global LINK_LR, LINK_LR_ID
+    if LINK_LR is not None:
+        return LINK_LR or None
+    try:
+        raw = Path(LINK_LR_FILE).read_bytes()
+        d = json.loads(raw)
+        edges = [float('inf') if b is None else float(b) for b in d['bins_km']]
+        LINK_LR = (edges, [float(v) for v in d['log2_lr']])
+        # Incremental runs carry old groups forward unscored-again; a group
+        # names the table it was scored with so a recalibration is visible
+        # as drift (scripts/check_fire_consistency.py) instead of silently
+        # mixing two scales in one archive.
+        LINK_LR_ID = hashlib.sha256(raw).hexdigest()[:8]
+    except Exception as e:
+        log(f"link evidence model unavailable ({e}); evidence_bits will be 0")
+        LINK_LR = ()
+    return LINK_LR or None
+
+
+def link_llr(min_pair_km_per_day, model):
+    if model is None:
+        return 0.0
+    edges, vals = model
+    i = bisect.bisect_right(edges, min_pair_km_per_day) - 1
+    return vals[max(0, min(i, len(vals) - 1))]
 
 
 _date_cache = {}
@@ -481,6 +613,8 @@ def build_tracks(day_clusters):
 
     active = []
     closed = []
+    lr_model = load_link_lr()
+    llr_max = max(lr_model[1]) if lr_model else 0.0
 
     for t in sorted(by_t.keys()):
         # retire stale tracks
@@ -493,12 +627,21 @@ def build_tracks(day_clusters):
         active = still_active
 
         clusters = by_t[t]
-        # Build sparse cost list, applying hard gates (radius / turn).
-        costs = {}
+        # Density-adaptive cap on the centroid gate: in a field where clusters
+        # sit ~8 km apart, a 13 km gate always finds *something*, and the
+        # tracker then draws noise (measured: identical output on shuffled
+        # days). Cap it at DENSITY_GATE_K x the median nearest-neighbour
+        # spacing of this slice.
+        gate_cap = float('inf')
+        if DENSITY_GATE_K > 0 and len(clusters) >= 3:
+            gate_cap = DENSITY_GATE_K * _median_nn_km(clusters)
+        # Build sparse cost list, applying hard gates (radius / turn / contiguity).
+        costs, llrs = {}, {}
         for ti, tr in enumerate(active):
             gap = t - tr.last_t
             pred = tr.predict(t)
             gate = BASE_LINK_KM + max(gap, GATE_MIN_GAP_DAYS) * SPREAD_KM_PER_DAY
+            gate = min(gate, max(gate_cap, DAY_EPS_KM))
             lon0, lat0 = tr.points[-1][0], tr.points[-1][1]
             for ci, dc in enumerate(clusters):
                 lon1, lat1 = dc['centroid']
@@ -511,13 +654,33 @@ def build_tracks(day_clusters):
                     turn = bearing_diff(tr.last_bearing, bearing(lon0, lat0, lon1, lat1))
                     if turn > TURN_LIMIT_DEG:
                         continue
-                costs[(ti, ci)] = dist + _mass_penalty(tr.last_n, dc['n'])
+                # Front contiguity: nearest detection pair between yesterday's
+                # cluster and today's, per day of gap. Scored as evidence
+                # (see LLR_COST_BITS_KM); optionally hard-capped.
+                mp = _min_pair_km(tr.last_dc, dc) / max(gap, GATE_MIN_GAP_DAYS)
+                if CONTIGUITY_KM > 0 and mp > CONTIGUITY_KM:
+                    continue
+                llr = link_llr(mp, lr_model)
+                llrs[(ti, ci)] = llr
+                costs[(ti, ci)] = (dist + _mass_penalty(tr.last_n, dc['n'])
+                                   + LLR_COST_BITS_KM * (llr_max - llr))
 
         pairs = _solve_assignment(costs, len(active), len(clusters))
 
+        # Ambiguity gate: a link must beat its runner-up, on both sides. If
+        # the track had a second candidate nearly as good, or the cluster a
+        # second suitor, the data does not tell us which continuation is
+        # real, so we refuse to guess: the track ends and the cluster seeds
+        # a new one. This is what lets a null run (shuffled days) come out
+        # short while a real fire front survives.
+        margins = _link_margins(costs, pairs)
+        if AMBIGUITY_RATIO > 0:
+            pairs = [(ti, ci) for ti, ci in pairs
+                     if margins[(ti, ci)] >= 1.0 - 1.0 / AMBIGUITY_RATIO]
+
         used_clusters = set()
         for ti, ci in pairs:
-            active[ti].extend(clusters[ci])
+            active[ti].extend(clusters[ci], margins[(ti, ci)], llrs[(ti, ci)])
             used_clusters.add(ci)
 
         for ci, dc in enumerate(clusters):
@@ -526,6 +689,40 @@ def build_tracks(day_clusters):
 
     closed.extend(active)
     return closed
+
+
+def _median_nn_km(clusters):
+    """Median centroid-to-nearest-centroid spacing of one slice's clusters."""
+    lat0 = math.cos(math.radians(clusters[0]['centroid'][1]))
+    xy = np.array([[c['centroid'][0] * _KM_LON * lat0, c['centroid'][1] * _KM_LAT]
+                   for c in clusters])
+    if HAVE_SCIPY:
+        d, _ = cKDTree(xy).query(xy, k=2)
+        return float(np.median(d[:, 1]))
+    diff = xy[:, None, :] - xy[None, :, :]
+    dd = np.sqrt((diff * diff).sum(-1))
+    np.fill_diagonal(dd, np.inf)
+    return float(np.median(dd.min(1)))
+
+
+def _link_margins(costs, pairs):
+    """For each assigned (track, cluster): 1 - best/runner_up where runner_up
+    is the cheaper of (track's next-best cluster, cluster's next-best track).
+    1.0 when uncontested, ~0 when a coin toss."""
+    by_t, by_c = defaultdict(list), defaultdict(list)
+    for (ti, ci), c in costs.items():
+        by_t[ti].append((c, ci))
+        by_c[ci].append((c, ti))
+    out = {}
+    for ti, ci in pairs:
+        best = costs[(ti, ci)]
+        rival = min([c for c, cj in by_t[ti] if cj != ci] +
+                    [c for c, tj in by_c[ci] if tj != ti], default=None)
+        if rival is None:
+            out[(ti, ci)] = 1.0
+        else:
+            out[(ti, ci)] = max(0.0, 1.0 - best / max(rival, 1e-9))
+    return out
 
 
 def _solve_assignment(costs, n_tracks, n_clusters):
@@ -556,6 +753,41 @@ def _solve_assignment(costs, n_tracks, n_clusters):
     r_idx, c_idx = linear_sum_assignment(m)
     return [(rows[r], cols[c]) for r, c in zip(r_idx, c_idx)
             if m[r, c] < BIG]
+
+
+def split_tracks_sprt(tracks):
+    """Cut each track where its running link evidence has fallen
+    SPRT_CUT_BITS below its running peak (Wald's sequential test, applied
+    backwards from the peak). The head keeps everything up to the peak; the
+    remainder is re-tracked as its own segment (which may itself be cut).
+    One ambiguous jump does not end a well-evidenced front; a run of them
+    does, at the last point the data supported."""
+    if SPRT_CUT_BITS <= 0:
+        return tracks
+    out = []
+    stack = list(tracks)
+    while stack:
+        tr = stack.pop()
+        cum = peak = 0.0
+        peak_i = 0             # index of the last point supported by evidence
+        cut = None
+        for i, l in enumerate(tr.llrs):
+            cum += l
+            if cum >= peak:
+                peak, peak_i = cum, i + 1
+            elif peak - cum > SPRT_CUT_BITS:
+                cut = peak_i
+                break
+        if cut is None or cut >= len(tr.dcs) - 1:
+            out.append(tr)
+            continue
+        if cut == 0:
+            # the very first link(s) were noise: drop point 0 as its own track
+            out.append(Track(tr.dcs[0]))
+            cut = 1
+        out.append(Track.from_segment(tr.dcs[:cut], tr.margins[:cut - 1], tr.llrs[:cut - 1]))
+        stack.append(Track.from_segment(tr.dcs[cut:], tr.margins[cut:], tr.llrs[cut:]))
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -645,6 +877,7 @@ def chain_tracks(tracks):
         next_of[a] = b
         prev_of[b] = a
 
+    lr_model = load_link_lr()
     merged = []
     consumed = set()
     for i in order_by_start:
@@ -656,8 +889,14 @@ def chain_tracks(tracks):
         while j in next_of:
             j = next_of[j]
             nxt = tracks[j]
+            gap = max(nxt.points[0][3] - t.last_t, GATE_MIN_GAP_DAYS)
+            join_llr = link_llr(_min_pair_km(t.last_dc, nxt.dcs[0]) / gap, lr_model)
             t.points.extend(nxt.points)
-            t.fires.extend(nxt.fires)
+            t.dcs.extend(nxt.dcs)
+            t.margins.extend([0.5] + nxt.margins)  # a chained join is contested by construction
+            t.llrs.extend([join_llr] + nxt.llrs)
+            t.last_dc = nxt.last_dc
+            t.last_n = nxt.last_n
             t.last_t = nxt.last_t
             t.last_date = nxt.last_date
             consumed.add(j)
@@ -846,7 +1085,33 @@ def track_to_group(track, park_id, park_geometry, park_shape=None, inside_test=N
         'first_point': first_point[:2],
         'trajectory_type': trajectory_type,
         'zigzag_ratio': round(zigzag_ratio, 2),
+        # Mean ambiguity margin of the links that built this trajectory
+        # (1 = every link uncontested, 0 = coin tosses). A trajectory is a
+        # chain of inferences; this is its score, printed beside it.
+        'link_margin': round(sum(track.margins) / len(track.margins), 2) if track.margins else 1.0,
+        # Sum of per-link log2 likelihood ratios (real vs day-shuffled) from
+        # the contiguity model. 0 for a single-slice group. Negative means
+        # the links look more like coincidence than like one fire; a
+        # consumer that wants only what the data supports filters on this.
+        'evidence_bits': round(sum(track.llrs), 1),
+        'evidence_tier': evidence_tier(sum(track.llrs), len(track.llrs)),
+        'evidence_model': LINK_LR_ID,
     }
+
+
+def evidence_tier(bits, n_links):
+    """One word for the reader: 'single' (no links to judge), 'supported'
+    (>= EVIDENCE_SUPPORTED_BITS), 'weak', or 'unsupported' (the links look
+    like coincidence). 'unmeasured' when no LR table was loaded."""
+    if n_links == 0:
+        return 'single'
+    if not load_link_lr():
+        return 'unmeasured'
+    if bits >= EVIDENCE_SUPPORTED_BITS:
+        return 'supported'
+    if bits >= EVIDENCE_WEAK_BITS:
+        return 'weak'
+    return 'unsupported'
 
 
 def dedupe_feature_ids(groups, park_id):
@@ -903,6 +1168,7 @@ def dedupe_feature_ids(groups, park_id):
 def process_park_fires(fires, park_id, park_geometry, persistent_mask=None):
     dcs = daily_clusters(fires, persistent_mask)
     tracks = build_tracks(dcs)
+    tracks = split_tracks_sprt(tracks)
     tracks = chain_tracks(tracks)
     park_shape = None
     try:
@@ -955,6 +1221,9 @@ def main():
     parser.add_argument('--no-hotspot-mask', action='store_true',
                         help='Let persistent hotspots (flares/lava/kilns) seed '
                              'clusters again - reproduces pre-v7.1 output')
+    parser.add_argument('--v7', action='store_true',
+                        help='Disable v8 link evidence (LLR cost, SPRT cut) and the '
+                             'ablation gates - reproduces v7 linking')
     parser.add_argument('--set', action='append', metavar='NAME=VALUE', default=[],
                         help='Override a tuning constant, e.g. --set MASS_PENALTY_KM=3')
     args = parser.parse_args()
@@ -969,6 +1238,10 @@ def main():
     if args.no_hungarian:
         HAVE_SCIPY = False
     use_mask = not args.no_hotspot_mask
+    if args.v7:
+        for k in ('AMBIGUITY_RATIO', 'CONTIGUITY_KM', 'DENSITY_GATE_K',
+                  'LLR_COST_BITS_KM', 'SPRT_CUT_BITS'):
+            globals()[k] = 0.0
     for kv in args.set:
         name, _, val = kv.partition('=')
         name = name.strip().upper()

@@ -19183,10 +19183,33 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
         return generateReportHTML(now, total, parkDataMap, bboxParksData);
     }
     
+    // Link evidence of a fire trajectory, in plain words. `evidence_bits`
+    // measures ONE thing: whether consecutive days of this line touch each
+    // other the way a spreading fire's edge does, compared with the same
+    // detections with their days shuffled (docs/agents/fire.md "Link
+    // evidence"). It does NOT rate whether the corridor is real — corridors
+    // survive the shuffle because they are spatial facts — so a low score is
+    // reported as "order not confirmed", never as "not real". Herder ignition
+    // chains are laid ahead of the previous day's burn and are expected to
+    // score low here; their support comes from recurrence along the route.
+    function fireEvidenceLine(props, fs) {
+        const tier = props.evidence_tier || props.ev;
+        if (!tier || tier === 'unmeasured') return '';
+        const bits = (props.evidence_bits !== undefined && props.evidence_bits !== null) ? ` (${props.evidence_bits} bits)` : '';
+        const words = {
+            supported: ['Consecutive days touch — a spreading front', '#166534'],
+            weak: ['Consecutive days touch on some days', '#6b7280'],
+            unsupported: ['Consecutive days do not touch — ignitions laid ahead, or day order unconfirmed', '#6b7280'],
+            single: ['Single day — no movement inferred', '#6b7280']
+        }[tier] || [tier, '#6b7280'];
+        return `<div style="margin-top: 4px; font-size: ${fs}; color: ${words[1]};">${words[0]}${bits}</div>`;
+    }
+
     function generateReportHTML(now, total, parkDataMap, bboxParksData) {
         const formatNumber = n => n ? n.toLocaleString() : '0';
         
         // Generate park section with full nested data
+
         function renderParkFull(park, fullData) {
             // ALWAYS render park header - never filter entire parks, only skip empty sections
             
@@ -21798,7 +21821,7 @@ ${starredItems.narratives.map(n => {
 
         if (type === 'fire') {
             html += `<div style="font-size: 13px; line-height: 1.6; color: #374151;">`;
-            
+
             // Use narrative if available
             if (props.narrative) {
                 html += `<div style="font-size: 12px; line-height: 1.5; margin-bottom: 4px;">${props.narrative}</div>`;
@@ -21813,6 +21836,7 @@ ${starredItems.narratives.map(n => {
             if (details.length) html += `<div style="margin-bottom: 3px; color: #6b7280; font-size: 11px;">${details.join(' • ')}</div>`;
             
             if (props.total_frp) html += `<div style="color: #6b7280; font-size: 11px;">Intensity: ${props.total_frp.toFixed(0)} MW</div>`;
+            html += fireEvidenceLine(props, '11px');
             html += `</div>`;
             
         } else if (type === 'visits') {
@@ -21974,6 +21998,7 @@ ${starredItems.narratives.map(n => {
             if (props.total_frp) html += `<div style="margin-bottom: 4px;">Intensity: ${props.total_frp.toFixed(0)} MW</div>`;
             if (position) html += `<div style="margin-bottom: 4px; color: #6b7280; text-transform: capitalize;">${position}</div>`;
             if (props.pct_inside !== undefined) html += `<div style="color: #6b7280;">${props.pct_inside.toFixed(0)}% inside park</div>`;
+            html += fireEvidenceLine(props, '12px');
             html += `</div>`;
             
         } else if (type === 'settlement' || type === 'place') {

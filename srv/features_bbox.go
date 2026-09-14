@@ -843,6 +843,15 @@ func (s *Server) fetchFeatureRows(ctx context.Context, cands []bboxCand, tol flo
 			if propsJSON.Valid && !slim {
 				json.Unmarshal([]byte(propsJSON.String), &props)
 			}
+			// `ev` — the trajectory's link-evidence tier (supported / weak /
+			// unsupported / single), carried even in the slim answer because
+			// the LINE is painted from it: a drawn trajectory must carry its
+			// own score (invariant 12), and a slim feature is still drawn.
+			if fType == "fire_trajectory" && propsJSON.Valid {
+				if ev := evidenceTier(propsJSON.String); ev != "" {
+					props["ev"] = ev
+				}
+			}
 			props["feature_type"] = fType
 			props["feature_id"] = fID
 			props["park_id"] = parkID
@@ -873,6 +882,22 @@ func (s *Server) fetchFeatureRows(ctx context.Context, cands []bboxCand, tol flo
 		}
 	}
 	return features, nil
+}
+
+// evidenceTier pulls "evidence_tier" out of a properties_json without
+// decoding the whole document (slim mode exists to avoid that cost).
+func evidenceTier(propsJSON string) string {
+	const key = `"evidence_tier":"`
+	i := strings.Index(propsJSON, key)
+	if i < 0 {
+		return ""
+	}
+	rest := propsJSON[i+len(key):]
+	j := strings.IndexByte(rest, '"')
+	if j < 0 || j > 16 {
+		return ""
+	}
+	return rest[:j]
 }
 
 func minStartDate(c []bboxCand) string {

@@ -15,7 +15,9 @@ flag; don't reintroduce a second copy of the detections.
 
 **Never tune the fire algorithm by eye** — use
 `scripts/eval_fire_trajectories.py` (6-park golden set;
-`--snapshot`/`--baseline`/`--candidate`). The builder's ablation flags
+`--snapshot`/`--baseline`/`--candidate`) **and** `scripts/eval_fire_null.py`
+(real vs day-shuffled; the A/B harness cannot tell linking from over-linking —
+see "Link evidence" below). The builder's ablation flags
 (`--no-hungarian --no-mass-penalty --no-overpass`) reproduce the old v6 output
 bit-exactly; verify that before trusting any delta.
 See `docs/FIRE_PIPELINE.md` § v7.
@@ -74,6 +76,75 @@ handle it explicitly or the old rows become immortal:
   parks. Do *not* delete the row instead: a cache miss drops
   `HandleAPIFireNarrative` into the deprecated Go slow path (17s,
   `feature_id: null`) — the exact Single-Writer-Rule failure.
+
+---
+
+## Link evidence (v8, 2026-09-14): a trajectory carries its own score
+
+**The finding.** On XSA 2024 (830k detections, 485k km²) the v7 tracker gave
+the *same* output on real data as on data whose calendar days were randomly
+permuted within each month (spatial field and seasonal march kept, every
+day-to-day continuity destroyed): 9,500 vs 10,468 groups, median 16 days on
+both, **more** ≥150 km fronts on the shuffled data (2,912 vs 3,675), and
+straighter ones. In a dense field there is always a cluster inside the 13 km
+gate, and the heading gate then *selects* a straight continuation out of
+noise. Every A/B metric in `eval_fire_trajectories.py` rewards linking; none
+asked whether the links beat chance. Invariant 15 (constants calibrated at
+park scale) and invariant 12 (a grade without its score) in one.
+
+**What does separate a real link from a coincidence is contiguity, not speed.**
+A front advances from its own edge and a herder's ignition chain is a string
+of adjacent burns, so the nearest detection pair between yesterday's and
+today's cluster abuts (<0.25 km) ~6× more often in real data than in shuffled
+data, and is >10 km apart *less* often — the same ratio curve on dense XSA,
+Chinko and Serengeti grassland. Speed is deliberately **not** a feature:
+herders walk 800 km one way and hunters cover 80 km in a day; every gate that
+capped distance or ended contested tracks (`AMBIGUITY_RATIO`, `CONTIGUITY_KM`,
+`DENSITY_GATE_K`) cut real ≥150 km fronts from 112 to 6 on the test box.
+They are kept as ablation switches, all 0.
+
+**What ships.** Linking is **bit-identical to v7** (verified on
+TZA_Serengeti + CMR_Nki; no id or name migration). Each link gets
+`log2 LR(min_pair_km / gap_days)` from `data/fire_link_lr.json`, written by
+`scripts/calibrate_fire_link_lr.py` (real vs 2 shuffles × 3 regimes; the file
+records its histograms and the builder's hash). Each group emits:
+
+* `evidence_bits` — the sum over its links (unit: bits, log2 real/shuffled);
+* `evidence_tier` — `supported` (≥6 bits), `weak` (≥2), `unsupported`,
+  `single` (one slice, nothing to judge), `unmeasured` (no LR table);
+* `link_margin` — mean assignment margin, 1 = every link uncontested.
+
+Tiers come from the null: on the XSA box the shuffle produced 2 groups at
+≥6 bits where the real data produced 220 (~1 % by chance) carrying 74 % of all
+multi-day detections; ≥2 bits ≈ 18 %; below 0 bits a coin toss. Real
+unsupported groups are many and small (207 groups, 9.9k detections).
+
+**Unsupported trajectories are not drawn** — a manager who has only ever seen
+fire *points* will trust the first line we show. `feature_geometries.
+evidence_tier` (migration 066, trigger-kept from `properties_json` like
+`stat_value`) and `fireDrawnSQL` (`srv/fire_containment.go`) apply to every
+surface that draws a line: `/api/features-in-bbox`, `/api/fire-anim-trajectories`
+(the animator), the park features layer, KML and GeoPackage exports. A request
+for **one** feature by id still resolves (a narrative link must not 404).
+`NULL` = pre-v8 row = drawn, tip says *unmeasured*. Detection counts
+(`stat_value` sums, narrative totals) are untouched — the detections are real,
+only the line joining them was in doubt. On the map `weak` is the layer colour
+pulled toward grey (`evColor` in `lodlayer.js`); width and opacity belong to the
+density ramp and must not be reused for this. The tip prints the tier, the
+bits and the chance rate (`fireEvidenceLine` in globe.html).
+
+**Measure it with `scripts/eval_fire_null.py`** (real vs shuffled on one
+area/window, `--bbox` for a 10 s iteration; `skill = 1 − null/real`). Read
+`long_ev_ge6` (supported long fronts: real vs null) and *real long fronts
+retained* together; a change that raises skill by deleting herder chains is a
+regression. Re-run `calibrate_fire_link_lr.py` after any change to
+`daily_clusters`/`build_tracks` — the LR describes the links *as the tracker
+selects them*.
+
+**Downstream to revisit:** `plan_solver.movement()` bundles the ≥150 km
+transhumance fronts for the herder model without reading `evidence_tier`; it
+should use `supported` (the report's route skill was measured against an
+all-fire null, not this one).
 
 ---
 
