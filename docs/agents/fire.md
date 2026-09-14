@@ -277,46 +277,50 @@ view, the one the instant falls in, with `reached_at_instant`. Styled dashed
 ember red, labelled by date (`styleFireSeasonFront`), temporal on
 `front_date`.
 
-**HANDOVER (2026-09-14 evening) — open points, in priority order.** Delete
-this block when done.
+**Vanguard rendering (done 2026-09-14 late).** `fireseason.js splitChain`
+emits one feature per **segment**, colour = `leadColor(mean of the two
+vertex leads)` on the ramp 0 d orange `#fb923c` → 15 d yellow `#fde047` →
+≥ 40 d white; `part:'after'` (lead < 0) is ash grey. `line-width` is
+`tierWidth()` — ×1.35 for `tier ∈ {supported, weak}`; the tier factor sits
+*inside* each zoom stop because MapLibre refuses `zoom` under `*`. Absent
+tier prints `unmeasured` (`tierWord`) and never widens. `FireSeason.legendHTML()`
+samples that same ramp for the fire-row menu, the chip menu and the Methods
+block — the legend cannot drift from the map. `anim.js drawVanguard` mirrors
+all three rules per segment. `lodlayer.js widthExpr` applies the same ×1.35
+to plain trajectories from the `ev` tier `/api/features-in-bbox` sends (it
+was sent and unread). No start/end dots (asked for, then declined).
 
-1. **Vanguard width by evidence tier + per-segment lead colour** (asked for;
-   the prototype `scripts/fire_vanguard/render3.py` did both). Plumbing is
-   in: `/api/fire-vanguard` and `/api/fire-anim-trajectories` carry `tier`
-   from `properties_json.evidence_tier` — **but 0 of 8,753 Chinko rows (0
-   overall) have `evidence_tier` in `feature_geometries.properties_json`**
-   even though `load_fire_groups_to_db.py:551` writes it (default
-   `'unmeasured'`) and `rebuild_fire_trajectories_v5.py:1097` computes it.
-   First find out why (rows predate the field? a slimmed properties_json?
-   `fire_front.tag_groups` re-tag dropping keys?) — `SELECT COUNT(*) …
-   properties_json LIKE '%evidence_tier%'` is the check. Then: fireseason.js
-   `splitChain` → one feature per **segment**, colour = `leadColor(mean of the
-   two vertex leads)` with a ramp 0 d orange `#fb923c` → 15 d yellow → ≥ 40 d
-   white (the season arriving turns the line towards fire red; the after-part
-   stays faint ash); `line-width` × 1.35 for `tier ∈ {supported, weak}`
-   (`['match', ['get','tier'], …]` on top of the zoom interpolate); a small
-   white **start dot** (circle layer, `part:'start'`, same source). Mirror the
-   same three rules in `anim.js drawVanguard` (per-segment strokes, tier
-   width, the ignition ring already exists). `tier` must print
-   `unmeasured` when absent (invariant 12), never widen by default.
-2. **Fire-row rendering menu: a "Map" group** with the row's own layer as a
-   checkbox ("Fire trajectories", `toggleViewLayer('fires')`) so trajectories
-   and Season renderings can be switched from one menu (asked for). Generic
-   for every stats row (`openModeMenu` when `o.animRow`): label from
-   `VIEW_LAYER_META`/row name. Placed **above** Season.
-3. Stats readout's front position is at the *window's end*, not the
-   animator's playhead (would need the grid client-side or a per-day call).
-4. `usual_offset_days` is measured per request now → shift-calibrated live
-   `usual` (`lead_basis:'usual'`) is a cheap win still not done.
-5. Speed map layer (eikonal gradient) — descriptive product, not drawn.
-6. XSA AOI fires end 2026-08-06 (AOI runner has not ingested 2026/27).
-7. `db.sqlite3.bak` (23 GB, pre-migration-066) is still on disk.
+**Why every tier was `unmeasured`:** `data/fire_groups_v5/*.json` predated
+the v8 evidence fields — the nightly `--incremental` carries old groups
+forward unscored (`rebuild_fire_trajectories_v5.py` only scores what it
+re-forms). Fix is a **full rebuild**: `rebuild_fire_trajectories_v5.py &&
+load_fire_groups_to_db.py --force && precompute_narratives_v5.py` (started
+17:08 in tmux `firev8`, `logs/fire_v8_rebuild_YYYYMMDD.log`, ~2 min/park,
+hours). Check: `SELECT COUNT(*) FROM feature_geometries WHERE
+feature_type='fire_trajectory' AND properties_json LIKE '%evidence_tier%'`.
+Until it lands, `vanguard_tiers` says `unmeasured: N` and the report prints
+"their day order has not yet been scored".
 
-**Not done / candidates:** speed map layer; shift-calibrated `usual` (the
-`usual_offset_days` now measured per request is the input it needs); the
-stats readout's front position is at the *window's end*, not the animator's
-playhead (would need a per-day request or the grid client-side); XSA AOI
-fires end 2026-08-06 (AOI runner has not ingested 2026/27).
+**Report side.** `/api/fire-season?…&summary=1&leads=N` adds `vanguard_top`
+(ranked by `ahead_km`, each with `tier`, `nearest_place`, start lon/lat,
+narrative), `vanguard_tiers` (histogram over **all** vanguard chains in the
+window, not the shortlist) and `words` — the server's one-sentence summary
+(`seasonWords`, every number derived). The ★ report (`buildParkMarkdown`)
+fetches it (`fetchFireSeasonDirect`, parks and AOIs) → a "Fire season"
+overview row (`seasonFrontWords`), a vanguard mark on each group line, and a
+`#### Season front & vanguard fires` sub-section (words, ranked table, tier
+histogram, method line); an unbuilt front prints "not yet computed", not
+nothing. Fire narratives (`precompute_narratives_v5.py`, `FireGroupStory`)
+now carry `lead_start/lead_basis/vanguard/ahead_km/ahead_days`. Fire-row
+rendering menu has a **Map** group (the row's own layer as a checkbox) above
+Season. `db.sqlite3.bak` deleted (+22 GB).
+
+**Open (priority order):** stats readout's front position is at the
+*window's end*, not the animator's playhead (needs the grid client-side or a
+per-day call); `usual_offset_days` is measured per request → shift-calibrated
+live `usual` (`lead_basis:'usual'`) is a cheap win; speed map layer (eikonal
+gradient) not drawn; XSA AOI fires end 2026-08-06 (AOI runner has not
+ingested 2026/27).
 
 ## `protected_area_id` is a catchment, not a park (F10 — fixed 2026-08-13)
 
