@@ -550,6 +550,20 @@ class FireGroupLoader:
                 "evidence_bits": group.get('evidence_bits'),
                 "evidence_tier": group.get('evidence_tier', 'unmeasured'),
                 "link_margin": group.get('link_margin'),
+                # Season position (scripts/fire_front.py): days the group began
+                # ahead of the season front at its first vertex, what that was
+                # measured against ('front' = this season, 'usual' = prior
+                # seasons, live), per-vertex leads, the stretch run while still
+                # ahead, and the vanguard flag (>= VANGUARD_LEAD_DAYS). Absent
+                # (None) until the area's front has been built.
+                "fire_season": group.get('season'),
+                "lead_start": group.get('lead_start'),
+                "lead_basis": group.get('lead_basis'),
+                "lead_max": group.get('lead_max'),
+                "leads": group.get('leads'),
+                "ahead_km": group.get('ahead_km'),
+                "ahead_days": group.get('ahead_days'),
+                "vanguard": bool(group.get('vanguard', False)),
                 "year": group.get('year', 2024),
             }
             
@@ -580,12 +594,14 @@ class FireGroupLoader:
                 INSERT OR REPLACE INTO feature_geometries 
                 (feature_type, feature_id, park_id, geojson, 
                  bbox_minx, bbox_miny, bbox_maxx, bbox_maxy,
-                 start_date, end_date, properties_json, dist_to_park_km, traj_days)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 start_date, end_date, properties_json, dist_to_park_km, traj_days,
+                 lead_start, vanguard)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 'fire_trajectory', feature_id, park_id, geojson,
                 min(lons), min(lats), max(lons), max(lats),
-                start_date, end_date, json.dumps(props), dist_to_park, traj_days
+                start_date, end_date, json.dumps(props), dist_to_park, traj_days,
+                group.get('lead_start'), 1 if group.get('vanguard') else 0
             ))
             
             # Per-park stats: only count groups relevant to the park

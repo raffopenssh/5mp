@@ -590,7 +590,7 @@
                     // fires/days/frp/narrative are carried so a PAUSED frame
                     // can answer a hover without a second request (probeFrame).
                     return { pts, t0: pts[0][2], t1: pts[pts.length - 1][2], type: g.type, kmd: g.kmd,
-                             id: g.id, park: g.park, km: g.km,
+                             id: g.id, park: g.park, km: g.km, vanguard: !!g.vanguard, lead_start: g.lead_start,
                              fires: g.fires, days: g.days, frp: g.frp, narrative: g.narrative };
                 }).filter(g => g.pts.length >= 2);
                 if (j.truncated) truncNote('fire paths', 'trajs', j.count, j.total);
@@ -998,6 +998,14 @@
     }
 
     // red → ash-grey interpolation for trajectory fade-out
+    // Lead colour (FireSeason.leadColor, yellow→cyan by days ahead), ashed
+    // towards the same grey as fire red so the two populations age alike.
+    function vanColor(lead, k, alpha) {
+        const hex = (window.FireSeason ? FireSeason.leadColor(lead == null ? 10 : lead) : '#fde047');
+        const r0 = parseInt(hex.slice(1, 3), 16), g0 = parseInt(hex.slice(3, 5), 16), b0 = parseInt(hex.slice(5, 7), 16);
+        const r = Math.round(r0 + (140 - r0) * k), g = Math.round(g0 + (140 - g0) * k), b = Math.round(b0 + (140 - b0) * k);
+        return `rgba(${r},${g},${b},${alpha})`;
+    }
     function ashColor(k, alpha) {
         // k: 0 = fresh red, 1 = fully ash
         const r = Math.round(239 + (140 - 239) * k);
@@ -1570,6 +1578,9 @@
     // ---------- draw ----------
     function draw(t) {
         if (!A) return;
+        // The season front is a MapLibre layer, not canvas: tell it the
+        // playhead so it shows the isochrones the season had reached by t.
+        if (window.FireSeason && FireSeason.frontOn()) FireSeason.animAt(t);
         const ctx = A.ctx;
         const w = A.canvas.clientWidth, h = A.canvas.clientHeight;
         ctx.clearRect(0, 0, w, h);
@@ -1846,6 +1857,12 @@
             const inkW = nLive > 4000 ? 1.0 : nLive > 2000 ? 1.4 : nLive > 800 ? 1.9 : 2.5;
             const inkA = nLive > 4000 ? 0.45 : nLive > 2000 ? 0.6 : nLive > 800 ? 0.8 : 0.95;
             const headR = nLive > 2000 ? 4 : 7;
+            // VANGUARD chains (began 10–60 d ahead of the season front) take
+            // the Season overlay's lead colour instead of fire red — only
+            // while that overlay is on, so the animation never says something
+            // the map does not. Same ash-out; a little more ink, since they
+            // are the few hundred lines that carry measured information.
+            const vanOn = !!(window.FireSeason && FireSeason.vanguardOn());
             for (const g of D.trajs) {
                 if (g.t0 > t) continue;
                 if (g._off) continue;
@@ -1858,8 +1875,9 @@
                     ash = Math.min(1, fade * 1.6);         // grey out first…
                     alpha = inkA * (1 - fade);             // …then vanish
                 }
-                ctx.strokeStyle = ashColor(ash, alpha);
-                ctx.lineWidth = t <= g.t1 ? inkW : inkW * 0.6;
+                const isVan = vanOn && g.vanguard;
+                ctx.strokeStyle = isVan ? vanColor(g.lead_start, ash, alpha) : ashColor(ash, alpha);
+                ctx.lineWidth = (t <= g.t1 ? inkW : inkW * 0.6) * (isVan ? 1.35 : 1);
                 ctx.lineJoin = 'round'; ctx.lineCap = 'round';
                 ctx.beginPath();
                 let started = false, headX = null, headY = null;
@@ -2872,6 +2890,7 @@
     }
 
     function teardownUI() {
+        if (window.FireSeason) FireSeason.animAt(null);   // back to the whole season
         const container = document.getElementById('time-slider-container');
         if (container) container.classList.remove('animating');
         ['anim-inline', 'anim-chips', 'anim-playhead', 'anim-progress'].forEach(id => {

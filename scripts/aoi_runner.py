@@ -474,6 +474,8 @@ def run_fire_v5(conn, aoi, ds, deadline, budget):
     aid = aoi["id"]
     steps = [
         ["python3", "scripts/build_aoi_fires.py", "--aoi", aid],
+        # Season front (all seasons of the AOI) before the rebuild tags leads.
+        ["python3", "scripts/fire_front.py", "--area", aid, "--quiet"],
         ["python3", "scripts/rebuild_fire_trajectories_v5.py", "--aoi", aid],
         ["python3", "scripts/load_fire_groups_to_db.py", "--aoi", aid, "--force"],
         # Single writer of fire_narrative_cache (AGENTS.md) — always shelled
