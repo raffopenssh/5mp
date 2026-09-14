@@ -206,15 +206,16 @@ func (s *Server) HandleAPIFireSeason(w http.ResponseWriter, r *http.Request) {
 		}
 		vanTop, vanTiers, vanMarks = s.vanguardLeads(r, area, wf, wt, n)
 	}
-	// The season as a curve (summary=1): share of front-bearing cells
-	// reached per 5 d of season, this season and the usual one, so the
-	// popup can draw the S-curve with the vanguard ignitions ticked along
-	// it. ~75 numbers, not 300 KB of contours.
+	// The season as a curve: share of front-bearing cells reached per 5 d
+	// of season, this season and the usual one, so the popup can draw the
+	// S-curve with the vanguard ignitions ticked along it — and so the
+	// animator can say where the front stands at its PLAYHEAD without a
+	// request per frame (`FireSeason.meta()` reads the curve at the
+	// playhead's day of season; `front_reached_pct` here is at `at`). ~75
+	// numbers, so it rides along with the contours too.
 	var curve interface{}
-	if q.Get("summary") != "" {
-		if fc, uc := frontCurve(frontBlob, usualBlob, nx, ny, 5); fc != nil {
-			curve = map[string]interface{}{"step_days": 5, "front": fc, "usual": uc}
-		}
+	if fc, uc := frontCurve(frontBlob, usualBlob, nx, ny, 5); fc != nil {
+		curve = map[string]interface{}{"step_days": 5, "front": fc, "usual": uc}
 	}
 	var frontStats struct {
 		First  string `json:"front_first"`

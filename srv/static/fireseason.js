@@ -248,6 +248,8 @@
             inflight--;
             frontKey = key;
             front = j || { status: 'request failed', seasons: [] };
+            animMeta = null; animPctKey = null;
+            if (animT !== null) playheadMeta(animT);   // a new front under a running animator
             var feats = [];
             if (j && j.contours && j.contours.length) {
                 var ds = j.contours.map(function (f) { return f.properties.dos; });
@@ -396,6 +398,35 @@
      * but not 60 times a second on top of the canvas. null = whole season. */
     var animDay = null, animWall = 0, animT = null, animTrail = null;
     var DAY_MS = 86400000;
+    /* Where the front stands at the playhead, from `front_curve` (share of
+     * front-bearing cells reached per step_days of season) — the server
+     * computes `front_reached_pct` at the window's end only.
+     * Listeners are told only when the rounded % changes, not per frame. */
+    var animMeta = null, animPctKey = null;
+    function curveAt(c, step, dos) {
+        if (!c || !c.length) return null;
+        var x = dos / step, i = Math.floor(x);
+        if (i < 0) return 0;
+        if (i >= c.length - 1) return c[c.length - 1];
+        return c[i] + (c[i + 1] - c[i]) * (x - i);
+    }
+    function playheadMeta(t) {
+        if (!front || !front.front_curve || !front.season_start) { animMeta = null; return; }
+        var cv = front.front_curve, step = cv.step_days || 5;
+        var dos = (t - Date.parse(front.season_start + 'T00:00:00Z')) / DAY_MS;
+        var pct = curveAt(cv.front, step, dos);
+        if (pct === null) { animMeta = null; return; }
+        // No offset against usual at the playhead: the server's
+        // `usual_offset_days` is median(front - usual) over reached cells,
+        // and a curve-quantile reading here would be a second estimator
+        // under the same word (invariant 7) -- and scripts/eval_usual_shift.py
+        // shows both are biased tens of days early until late season.
+        var key = Math.round(pct);
+        if (key === animPctKey && animMeta) return;
+        animPctKey = key;
+        animMeta = Object.assign({}, front, { front_reached_pct: pct, usual_offset_days: null, at_playhead: true });
+        emit();
+    }
     function animAt(t) {
         if (!map || !map.getLayer(FRONT_LYR)) return;
         // While the animator runs it draws the vanguard chains itself, built
@@ -407,6 +438,7 @@
         });
         if (t == null) {
             clearTimeout(animTrail);
+            if (animMeta) { animMeta = null; emit(); }
             if (animDay === null) return;
             animDay = null; animT = null;
             map.setFilter(FRONT_LYR, null);
@@ -419,6 +451,7 @@
         }
         var now = performance.now();
         if (animT !== null && Math.abs(t - animT) < 0.1 * DAY_MS) return;   // same tenth of a day: nothing to say
+        playheadMeta(t);
         if (animT !== null && now - animWall < 80) {                          // ~12 repaints/s is plenty…
             // …but the LAST position of a scrub must land: trail it.
             clearTimeout(animTrail);
@@ -452,7 +485,11 @@
         isOn: anyOn,
         frontOn: function () { return st.front; },
         vanguardOn: function () { return st.van; },
-        meta: function () { return front; },
+        // The front as loaded, or — while the animator runs — the same
+        // object with `front_reached_pct` / `usual_offset_days` read off the
+        // season curve at the playhead (the server's numbers are at the
+        // window's END, which is where the slider rests, not where it is).
+        meta: function () { return animMeta || front; },
         vanguard: function () { return van; },
         summary: summary,
         busy: function () { return inflight > 0; },
