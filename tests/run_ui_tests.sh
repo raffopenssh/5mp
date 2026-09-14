@@ -125,6 +125,8 @@ test_url_param "viewport_with_animation" "&lat=6.5&lng=24.5&z=7&date_preset=90d&
 # degrade to "not drawn", never to an error page.
 test_url_param "geomap_structural" "&geomap_structural=active_faults,craton_edges" "" ""
 test_url_param "geomap_structural_stale_id" "&geomap=car&geomap_structural=nosuchlayer" "" ""
+# Season overlay: front, vanguard and the speed map ride one param (fireseason.js).
+test_url_param "season_front_vanguard_speed" "&lat=6.4&lng=24&z=7.6&from=2024-11-01&to=2025-04-30&season=front,vanguard,speed" "" ""
 
 # ── Source guards: a click must not be swallowed ──────────────────────
 #

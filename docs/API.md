@@ -321,7 +321,12 @@ GET /api/fire-season?area=CAF_Chinko&summary=1&from=2024-10-01&to=2025-02-28&at=
 ```
 GET /api/fire-season?area=CAF_Chinko&at=2024-12-15          # + contours (GeoJSON, dos/date/label)
 GET /api/fire-vanguard?bbox=23,5,26,8&from=2024-10-01&to=2025-02-28   # chains in view: pts, per-vertex leads, tier
+GET /api/fire-season-speed?area=CAF_Chinko&at=2025-01-15    # season speed map: one PNG (data URL) at the
+                                                             # 2.5 km grid + bbox, km/day legend (fixed log stops
+                                                             # 1/3/8/20/50), stats {cells, p10/median/p90_km_d}
 ```
+`front_curve` (share of front-bearing cells reached per 5 d of season, this
+season and usual) is in every `/api/fire-season` answer, contours or not.
 
 Fire narratives (`/api/parks/{id}/fire-narrative`) carry the same fields per
 group: `lead_start`, `lead_basis`, `vanguard`, `ahead_km`, `ahead_days`,

@@ -8,6 +8,10 @@
  *   FRONT     isochrones of the burning season: "by this date a fifth of the
  *             land that burns had burned, within ~60 km". Drawn as thin lines
  *             every 5 days, labelled every 15, coloured early→late.
+ *   SPEED     how fast the front travels, km/day — the gradient of the
+ *             front as an arrival-time surface (1/|∇T|), drawn as one PNG
+ *             at the grid's 2.5 km cells (/api/fire-season-speed). Where the
+ *             season runs and where it stalls. Descriptive, not a forecast.
  *   VANGUARD  the fire chains that BEGAN 10–60 days ahead of that front —
  *             the one population where the tracker's day-to-day links are
  *             measurably better than chance (link skill ≈0.5; in season ≈0).
@@ -16,7 +20,7 @@
  *
  * Lives in the stats-panel Map strip like Geology and Historical maps: a
  * chip is the state, its body configures, its × switches off
- * (srv/static/maplegend.js). Share-link: `season=front,vanguard`. Which
+ * (srv/static/maplegend.js). Share-link: `season=front,vanguard,speed`. Which
  * season is drawn follows the time slider (the season the window ends in),
  * exactly as the vanguard chains are filtered by it — one control, not two.
  *
@@ -30,13 +34,15 @@
     var FRONT_SRC = 'fireseason-front-src', FRONT_LYR = 'fireseason-front',
         FRONT_LBL = 'fireseason-front-label', FRONT_WAVE = 'fireseason-front-wave',
         VAN_SRC = 'fireseason-van-src', VAN_LYR = 'fireseason-van',
-        VAN_DIM_LYR = 'fireseason-van-dim';
+        VAN_DIM_LYR = 'fireseason-van-dim',
+        SPEED_SRC = 'fireseason-speed-src', SPEED_LYR = 'fireseason-speed';
 
     var map = null;
-    var st = { front: false, van: false };   // the season shown follows the time slider
+    var st = { front: false, van: false, speed: false };   // the season shown follows the time slider
     var front = null;      // last /api/fire-season answer
     var van = null;        // last /api/fire-vanguard answer
-    var frontKey = '', vanKey = '';
+    var speed = null;      // last /api/fire-season-speed answer
+    var frontKey = '', vanKey = '', speedKey = '';
     var moveTimer = null, inflight = 0;
     var listeners = [];
 
@@ -47,7 +53,7 @@
         var t = (typeof dateTo !== 'undefined' && dateTo) ? dateTo : '';
         return { from: f, to: t };
     }
-    function anyOn() { return st.front || st.van; }
+    function anyOn() { return st.front || st.van || st.speed; }
     function emit() { listeners.forEach(function (fn) { try { fn(); } catch (e) { /* listener's problem */ } }); }
     function refreshStrip() {
         if (window.MapLegend && MapLegend.refresh) MapLegend.refresh();
@@ -126,6 +132,16 @@
     /* ── layers ─────────────────────────────────────────────────────────── */
     function ensureLayers() {
         if (!map || !map.getStyle()) return;
+        if (!map.getSource(SPEED_SRC)) {
+            // A raster field under every line: added first so the contours
+            // and chains draw over it. Coordinates are replaced per answer.
+            map.addSource(SPEED_SRC, { type: 'image', url: BLANK_PNG,
+                coordinates: [[0, 0.001], [0.001, 0.001], [0.001, 0], [0, 0]] });
+        }
+        if (!map.getLayer(SPEED_LYR)) {
+            map.addLayer({ id: SPEED_LYR, type: 'raster', source: SPEED_SRC,
+                paint: { 'raster-opacity': 0.5, 'raster-resampling': 'linear', 'raster-fade-duration': 0 } });
+        }
         if (!map.getSource(FRONT_SRC)) map.addSource(FRONT_SRC, { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
         if (!map.getSource(VAN_SRC)) map.addSource(VAN_SRC, { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
         if (!map.getLayer(FRONT_WAVE)) {
@@ -193,6 +209,19 @@
         if (!map) return;
         [FRONT_LYR, FRONT_LBL, FRONT_WAVE].forEach(function (id) { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', st.front ? 'visible' : 'none'); });
         [VAN_LYR, VAN_DIM_LYR].forEach(function (id) { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', st.van ? 'visible' : 'none'); });
+        if (map.getLayer(SPEED_LYR)) map.setLayoutProperty(SPEED_LYR, 'visibility', st.speed ? 'visible' : 'none');
+    }
+    // 1×1 transparent PNG: an image source needs a url at creation.
+    var BLANK_PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
+    function setSpeedImage(j) {
+        var src = map && map.getSource(SPEED_SRC);
+        if (!src) return;
+        if (!j || !j.png || !j.bbox) {
+            src.updateImage({ url: BLANK_PNG, coordinates: [[0, 0.001], [0.001, 0.001], [0.001, 0], [0, 0]] });
+            return;
+        }
+        var b = j.bbox;   // [w, s, e, n] → MapLibre wants TL, TR, BR, BL
+        src.updateImage({ url: j.png, coordinates: [[b[0], b[3]], [b[2], b[3]], [b[2], b[1]], [b[0], b[1]]] });
     }
     function setData(src, features) {
         var s = map && map.getSource(src);
@@ -274,6 +303,49 @@
             setData(FRONT_SRC, feats);
             refreshStrip();
         }).catch(function () { inflight--; emit(); });
+    }
+
+    /* ── speed ──────────────────────────────────────────────────────────
+     * Same area rule as the front (focus, else the grid under the view
+     * centre; the server resolves both), same season (the one the window
+     * ends in). One PNG per area+season; nothing is computed here. */
+    function speedURL() {
+        var f = focusId(), c = map.getCenter();
+        var u = '/api/fire-season-speed?pwd=' + pwd() + (f ? '&area=' + encodeURIComponent(f)
+            : '&lon=' + c.lng.toFixed(3) + '&lat=' + c.lat.toFixed(3));
+        var d = dates();
+        if (d.to) u += '&at=' + d.to;
+        return u;
+    }
+    function speedInView() {
+        if (!speed || !speed.bbox) return false;
+        var c = map.getCenter(), b = speed.bbox;
+        return c.lng >= b[0] && c.lng <= b[2] && c.lat >= b[1] && c.lat <= b[3];
+    }
+    function loadSpeed(force) {
+        if (!st.speed || !map) return Promise.resolve();
+        var key = (focusId() || 'pt') + '|@' + dates().to;
+        if (!force && key === speedKey && speed && (focusId() || speedInView())) return Promise.resolve();
+        inflight++; emit();
+        return fetch(speedURL()).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+            inflight--;
+            speedKey = key;
+            speed = j || { status: 'request failed' };
+            setSpeedImage(j);
+            refreshStrip();
+        }).catch(function () { inflight--; emit(); });
+    }
+    // Speed legend, sampled from the server's fixed stops (km/day, log
+    // ramp) so the panel cannot say one ramp while the PNG draws another.
+    function speedLegendHTML(opts) {
+        opts = opts || {};
+        var lg = (speed && speed.legend) || [];
+        if (!lg.length) return '';
+        var stops = lg.map(function (st, i) { return st.color + ' ' + (i / (lg.length - 1) * 100).toFixed(0) + '%'; });
+        var bar = '<div class="fs-ramp" style="background:linear-gradient(90deg,' + stops.join(',') + ')"></div>';
+        var ticks = '<div class="fs-ramp-ticks">' + lg.map(function (st) { return '<span>' + st.km_d + '</span>'; }).join('') + '</div>';
+        var stt = speed.stats ? '<div class="fs-ramp-width">here: median ' + speed.stats.median_km_d + ' km/d (p10 ' + speed.stats.p10_km_d + ', p90 ' + speed.stats.p90_km_d + ')</div>' : '';
+        return '<div class="fs-legend' + (opts.cls ? ' ' + opts.cls : '') + '"><div class="fs-ramp-cap">Season speed, km/day (how fast the front travels; log scale)</div>' + bar + ticks + stt + '</div>';
     }
 
     /* ── vanguard ───────────────────────────────────────────────────────── */
@@ -370,13 +442,14 @@
     function onMove() {
         if (!anyOn()) return;
         clearTimeout(moveTimer);
-        moveTimer = setTimeout(function () { loadFront(false); loadVan(false); }, 350);
+        moveTimer = setTimeout(function () { loadFront(false); loadVan(false); loadSpeed(false); }, 350);
     }
     function onDates() {
         if (st.van) { vanKey = ''; loadVan(true); }
         if (st.front) loadFront(false);   // the front follows the window
+        if (st.speed) loadSpeed(false);   // so does the speed map (one season per answer)
     }
-    function onFocus() { if (anyOn()) { frontKey = ''; loadFront(true); loadVan(true); } }
+    function onFocus() { if (anyOn()) { frontKey = ''; speedKey = ''; loadFront(true); loadVan(true); loadSpeed(true); } }
 
     /* ── animator ───────────────────────────────────────────────────────
      * The animator hands us its playhead (ms). The front is a MapLibre
@@ -485,6 +558,9 @@
         isOn: anyOn,
         frontOn: function () { return st.front; },
         vanguardOn: function () { return st.van; },
+        speedOn: function () { return st.speed; },
+        speedMeta: function () { return speed; },
+        speedLegendHTML: speedLegendHTML,
         // The front as loaded, or — while the animator runs — the same
         // object with `front_reached_pct` / `usual_offset_days` read off the
         // season curve at the playhead (the server's numbers are at the
@@ -506,20 +582,26 @@
             ensureLayers();
             if (st.van) loadVan(true); else { setData(VAN_SRC, []); refreshStrip(); }
         },
-        off: function () { this.setFront(false); this.setVanguard(false); },
+        setSpeed: function (want) {
+            st.speed = !!want;
+            if (!map) return;
+            ensureLayers();
+            if (st.speed) loadSpeed(true); else { setSpeedImage(null); refreshStrip(); }
+        },
+        off: function () { this.setFront(false); this.setVanguard(false); this.setSpeed(false); },
         animAt: animAt,
         // switchBasemap() rebuilds the style; put the layers back on idle.
         reattach: function () {
             if (!anyOn() || !map) return;
             map.once('idle', function () {
                 ensureLayers();
-                frontKey = ''; vanKey = '';
-                loadFront(true); loadVan(true);
+                frontKey = ''; vanKey = ''; speedKey = '';
+                loadFront(true); loadVan(true); loadSpeed(true);
             });
         },
         getShareParams: function () {
             if (!anyOn()) return null;
-            return { season: [st.front ? 'front' : '', st.van ? 'vanguard' : ''].filter(Boolean).join(',') };
+            return { season: [st.front ? 'front' : '', st.van ? 'vanguard' : '', st.speed ? 'speed' : ''].filter(Boolean).join(',') };
         },
         restoreFromParams: function (params) {
             var v = params.get('season');
@@ -527,6 +609,7 @@
             var parts = v.split(',');
             if (parts.indexOf('front') >= 0) this.setFront(true);
             if (parts.indexOf('vanguard') >= 0) this.setVanguard(true);
+            if (parts.indexOf('speed') >= 0) this.setSpeed(true);
         },
         // The words the strip and the fire tip share; one definition.
         LEAD_DAYS: 10, LEAD_MAX: 60,

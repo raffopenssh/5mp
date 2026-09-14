@@ -1306,7 +1306,11 @@
             'Fire chains that began ' + FireSeason.LEAD_DAYS + '\u2013' + FireSeason.LEAD_MAX +
             ' days ahead of the season front \u2014 bright while ahead, faint once the season caught up',
             'MapLegend.fireSeasonSet(\'vanguard\',' + (!FireSeason.vanguardOn()) + ')', 'check');
+        html += row('', 'menuitemcheckbox', FireSeason.speedOn(), 'Season speed', 'icon-gauge',
+            'How fast the front travels, km/day (gradient of its arrival-time surface): pale where the season sweeps through, rust where it stalls. Descriptive, not a forecast',
+            'MapLegend.fireSeasonSet(\'speed\',' + (!FireSeason.speedOn()) + ')', 'check');
         if (FireSeason.legendHTML && (FireSeason.vanguardOn() || fm.season)) html += FireSeason.legendHTML({ cls: 'in-menu' });
+        if (FireSeason.speedOn() && FireSeason.speedLegendHTML) html += FireSeason.speedLegendHTML({ cls: 'in-menu' });
         // No season picker: the front FOLLOWS THE TIME SLIDER (the season the
         // window ends in), as the vanguard chains do. A list of eight years
         // beside a slider that already says the year is a second control for
@@ -3741,6 +3745,12 @@
                 if (fv && fv.count) parts.push(fv.count + (fv.truncated ? '+' : '') + ' vanguard');
                 else if (fv) parts.push('no vanguard in view');
             }
+            if (FireSeason.speedOn()) {
+                var sp = FireSeason.speedMeta();
+                if (sp && sp.stats) parts.push('speed ' + sp.stats.median_km_d + ' km/d');
+                else if (sp && sp.area === null) parts.push('no area here');
+                else if (sp && sp.status) parts.push('speed not yet computed');
+            }
             var fsNote = FireSeason.busy() && !parts.length ? 'loading…' : parts.join(' · ');
             chips += '<span class="ml-chip fs' + (/no |not yet/.test(fsNote) ? ' offview' : '') + '">' +
                 '<button type="button" class="ml-chip-main" title="' +
@@ -4270,7 +4280,9 @@
         },
         fireSeasonSet: function (which, on) {
             if (typeof FireSeason === 'undefined') return;
-            if (which === 'front') FireSeason.setFront(on); else FireSeason.setVanguard(on);
+            if (which === 'front') FireSeason.setFront(on);
+            else if (which === 'speed') FireSeason.setSpeed(on);
+            else FireSeason.setVanguard(on);
             render();
             // Keep the menu: the reader is composing the picture. Rebuilt so
             // its checkmarks and the season list follow the state.
