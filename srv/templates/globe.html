@@ -15241,7 +15241,9 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 countTxt = 'animated';
             }
             if (seasonOn) {
-                // Where the season stands at the slider's end, and how many
+                // Where the season stands at the slider's end — or, while
+                // the animator runs, at its playhead (FireSeason.meta() reads
+                // the season curve there) — and how many
                 // of the chains in view began ahead of it (from /api/stats —
                 // same scope, window and bbox as the row's own number). The
                 // vanguard count is said only while the vanguard rendering is
