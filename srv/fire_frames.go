@@ -510,6 +510,10 @@ func (s *Server) HandleAPIFireAnimTrajectories(w http.ResponseWriter, r *http.Re
 		Start string  `json:"start,omitempty"`
 		End   string  `json:"end,omitempty"`
 		Narr  string  `json:"narrative,omitempty"`
+		// Season position (scripts/fire_front.py): the animator colours a
+		// vanguard chain differently when the Season overlay is on.
+		Vanguard  bool `json:"vanguard,omitempty"`
+		LeadStart *int `json:"lead_start,omitempty"`
 	}
 	out := make([]animGroup, 0, len(cands))
 	const chunk = 900
@@ -551,8 +555,11 @@ func (s *Server) HandleAPIFireAnimTrajectories(w http.ResponseWriter, r *http.Re
 				Days      int     `json:"days"`
 				FRP       float64 `json:"total_frp"`
 				Narrative string  `json:"narrative"`
+				Vanguard  bool    `json:"vanguard"`
+				LeadStart *int    `json:"lead_start"`
 			}
 			if json.Unmarshal([]byte(propsJSON), &props) == nil {
+				g.Vanguard, g.LeadStart = props.Vanguard, props.LeadStart
 				g.Type = props.GroupType
 				g.Km = props.Km
 				g.Kmd = props.Kmd

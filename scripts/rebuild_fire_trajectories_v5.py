@@ -1372,6 +1372,19 @@ def main():
         if renamed:
             log(f"  {park_id}: disambiguated {renamed} duplicate feature_id(s)")
 
+        # Season position (fire_front.py): lead against the stored season
+        # front, per vertex, and the vanguard flag. Linking is untouched; this
+        # only ANNOTATES. No stored front for the area = fields absent, and
+        # the nightly fire_front rotation fills them in later.
+        try:
+            import fire_front
+            n_van = fire_front.tag_groups(groups, park_id, conn=shared_conn)
+            if n_van:
+                log(f"  {park_id}: {n_van} vanguard group(s) (began >= "
+                    f"{fire_front.VANGUARD_LEAD_DAYS} d ahead of the season front)")
+        except Exception as e:
+            log(f"  {park_id}: season-front tagging skipped ({e})")
+
         park_stats = {'clean': 0, 'cleaned': 0, 'cluster': 0}
         for g in groups:
             ttype = g.get('trajectory_type', 'cluster')

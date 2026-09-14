@@ -1579,7 +1579,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             if (style && style.sources) {
                 Object.keys(style.sources).forEach(sourceId => {
                     if (sourceId !== 'osm' && sourceId !== 'satellite' && sourceId !== 'histmap-src'
-                        && sourceId.indexOf('geomap-') !== 0) {
+                        && sourceId.indexOf('geomap-') !== 0 && sourceId.indexOf('fireseason-') !== 0) {
                         customSources.push({
                             id: sourceId,
                             spec: style.sources[sourceId]
@@ -1637,6 +1637,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 // from the capture above so it can be re-inserted below the
                 // park outlines rather than appended on top of them.
                 if (typeof GeoMap !== 'undefined') { GeoMap.reattach(); GeoMap.basemapChanged(); }
+                if (typeof FireSeason !== 'undefined') FireSeason.reattach();
                 if (window.MapLegend) MapLegend.refresh();
                 
                 showToast('Basemap changed', `Switched to ${newStyle.name}`, null, null, 'success');
@@ -3102,6 +3103,24 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 errors: [],
                 startTime: Date.now(),
                 
+                // Season front / vanguard state (srv/static/fireseason.js):
+                // what is on, what was fetched, what is drawn, and whether the
+                // share URL carries it. TEST.fireSeason() after ?season=front,vanguard.
+                fireSeason() {
+                    const FS = window.FireSeason, m = FS && FS.meta(), v = FS && FS.vanguard();
+                    const share = new URLSearchParams(buildShareUrl(false).split('?')[1] || '');
+                    return {
+                        on: !!(FS && FS.isOn()), front: !!(FS && FS.frontOn()), vanguard: !!(FS && FS.vanguardOn()),
+                        area: m ? m.area : null, seasonShown: m ? m.season : null,
+                        contours: (m && m.contours || []).length, status: m ? m.status : null,
+                        vanguardCount: v ? v.count : null, vanguardTotal: v ? v.total : null,
+                        drawnFront: map.getLayer('fireseason-front') ? map.queryRenderedFeatures({ layers: ['fireseason-front'] }).length : 0,
+                        drawnVanguard: map.getLayer('fireseason-van') ? map.queryRenderedFeatures({ layers: ['fireseason-van', 'fireseason-van-dim'] }).length : 0,
+                        share: { season: share.get('season') },
+                        chip: (document.querySelector('#stats-map .ml-chip.fs em') || {}).textContent || null
+                    };
+                },
+
                 // State queries
                 isPanelOpen(name) {
                     const selectors = {
@@ -4218,6 +4237,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
 
             // Single unified hover/tap tooltip for every pinned/interactive layer.
             // (Replaces the per-layer maplibregl.Popup pile-up.)
+            if (window.FireSeason) window.FireSeason.init(map);
             if (window.MapTip) {
                 window.MapTip.init(map);
                 // NO BACKDROP GUARD ANY MORE. There used to be one here: "if a
@@ -10593,6 +10613,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             }
             aoiFocusID = id || null;
             window.aoiFocusID = aoiFocusID;
+            window.dispatchEvent(new CustomEvent('5mp:focus-changed', { detail: { id: aoiFocusID } }));
             updatePAHighlighting();
             updateAOITagsDisplay();
             updateAOIFocusBanner();
@@ -24322,6 +24343,11 @@ ${starredItems.narratives.map(n => {
             const gp = GeoMap.getShareParams();
             if (gp) Object.keys(gp).forEach(k => params.set(k, gp[k]));
         }
+        // Season front / vanguard: `season=front,vanguard`.
+        if (typeof FireSeason !== 'undefined') {
+            const sp = FireSeason.getShareParams();
+            if (sp) Object.keys(sp).forEach(k => params.set(k, sp[k]));
+        }
         // The geology PANEL is a second object: which table was on screen, and
         // whether the key was expanded. GeoMap answers for the drape, MapLegend
         // for the surface the reader read it through, and a link that carries
@@ -24640,6 +24666,9 @@ ${starredItems.narratives.map(n => {
             HistMap.set(true, { quiet: true, fly: false });
             const ho = parseInt(params.get('histmap_opacity') || '', 10);
             if (!isNaN(ho) && ho >= 0 && ho <= 100) HistMap.setOpacity(ho / 100);
+        }
+        if (params.get('season') && typeof FireSeason !== 'undefined') {
+            FireSeason.restoreFromParams(params);
         }
         if ((params.get('geomap') || params.get('geomap_structural')) && typeof GeoMap !== 'undefined') {
             // restoreFromParams reads the class selection BEFORE adding any
@@ -25768,6 +25797,9 @@ ${starredItems.narratives.map(n => {
     <!-- The stats panel's "Map" strip. After geomap.js/HistMap because it
          only reports what those two are doing; it owns no map layer of its
          own and adds nothing to the page when both are off. -->
+    <!-- Season front + vanguard fire chains (docs/agents/fire.md). Before
+         maplegend.js for the same reason as geomap.js: the strip reports it. -->
+    <script src="/static/fireseason.js?v={{.Version}}"></script>
     <script src="/static/maplegend.js?v={{.Version}}"></script>
     <script src="/static/floatui.js?v={{.Version}}"></script>
     <!-- One tag control for every surface that shows a purpose tag: the share

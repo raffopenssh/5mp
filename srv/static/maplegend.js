@@ -75,6 +75,7 @@
     function histOn() { return typeof HistMap !== 'undefined' && HistMap.isOn(); }
     function histMeta() { return (typeof HistMap !== 'undefined' && HistMap.meta()) || null; }
     function geoOn() { return typeof GeoMap !== 'undefined' && GeoMap.anyOn(); }
+    function fsOn() { return typeof FireSeason !== 'undefined' && FireSeason.isOn(); }
 
     /* The scanned series covers 8 of 22 blocks of one country, so "on, but not
      * here" is the ordinary case — the same trap as the geology chip's
@@ -1207,6 +1208,15 @@
                    : ('Historical maps: ' + ((hm && hm.reason) || 'no archive installed')),
             hAvail ? 'MapLegend.toggleHist()' : 'void 0', 'check');
 
+        // Fire season: two switches in one drape, so the row opens the
+        // chip's own menu rather than toggling blindly — "on" here would
+        // have to pick one of them for the reader.
+        if (typeof FireSeason !== 'undefined') {
+            html += row('', 'menuitemcheckbox', fsOn(), 'Fire season', 'icon-flame',
+                'Where the burning season had arrived by when, and the fire chains that ran ahead of it',
+                fsOn() ? 'MapLegend.fireSeasonOff()' : 'MapLegend.fireSeasonOn(this)', 'check');
+        }
+
         // The full legend, per-unit toggles, opacity and the downloads live in
         // Map Settings. This strip is deliberately not a second home for them.
         html += '<button type="button" class="aoi-menu-item ml-more" ' +
@@ -1264,6 +1274,55 @@
             'onclick="event.stopPropagation();MapLegend.openSettings()">' +
             '<i class="icon-sliders-horizontal ml-mi"></i>Map settings\u2026' +
             '<em>provenance, download</em></button>';
+        el.innerHTML = html;
+        place(el, btn);
+    }
+
+    /* ── The fire-season chip's own menu ─────────────────────────────────
+     *
+     * Two checkboxes and a season list. The head names the area the front
+     * belongs to and how it was measured, because a contour with no area
+     * named is a line on a map, and a director's first question is "whose
+     * season is this". The method line is the one sentence the legend can
+     * afford; the full account is in the methods block ("How this map works").
+     */
+    function openFireSeasonMenu(btn) {
+        var already = menuEl && menuEl.dataset.kind === 'fs';
+        closeMenu();
+        if (already || typeof FireSeason === 'undefined') return;
+        var el = document.createElement('div');
+        el.className = 'aoi-menu mode-menu ml-menu';
+        el.dataset.kind = 'fs';
+        el.style.maxWidth = '360px';
+        el.setAttribute('role', 'menu');
+        el.setAttribute('aria-label', 'Fire season layers');
+        var fm = FireSeason.meta() || {};
+        var areaName = fm.area ? ((typeof focusName === 'function' && focusName(fm.area)) || fm.area) : '';
+        var html = '<div class="mode-menu-head">Fire season' + (areaName ? ' · ' + esc(areaName) : '') + '</div>';
+        html += row('', 'menuitemcheckbox', FireSeason.frontOn(), 'Season front', 'icon-waves',
+            'Lines every 5 days: by this date a fifth of the land that burns in a season had burned within ~60 km',
+            'MapLegend.fireSeasonSet(\'front\',' + (!FireSeason.frontOn()) + ')', 'check');
+        html += row('', 'menuitemcheckbox', FireSeason.vanguardOn(), 'Vanguard fires', 'icon-footprints',
+            'Fire chains that began ' + FireSeason.LEAD_DAYS + '\u2013' + FireSeason.LEAD_MAX +
+            ' days ahead of the season front \u2014 bright while ahead, faint once the season caught up',
+            'MapLegend.fireSeasonSet(\'vanguard\',' + (!FireSeason.vanguardOn()) + ')', 'check');
+        // No season picker: the front FOLLOWS THE TIME SLIDER (the season the
+        // window ends in), as the vanguard chains do. A list of eight years
+        // beside a slider that already says the year is a second control for
+        // one question.
+        if (fm.stats && fm.stats.front_first) {
+            html += '<div class="ml-note" style="padding:6px 12px;opacity:.7;font-size:11px">Season ' + esc(fm.season || '') +
+                ' (follows the time slider) \u00b7 front first reached ' +
+                esc(fm.stats.front_first) + ', half the area by ' + esc(fm.stats.front_median) + ', last ' +
+                esc(fm.stats.front_last) + ' \u00b7 ' + (fm.complete ? 'season complete' : 'season in progress') + '</div>';
+        } else if (fm.status) {
+            html += '<div class="ml-note" style="padding:6px 12px;opacity:.7;font-size:11px">' + esc(fm.status) +
+                (fm.area === null ? '' : ' \u2014 the nightly rotation builds ~25 areas a night') + '</div>';
+        }
+        html += '<button type="button" class="aoi-menu-item ml-more" ' +
+            'onclick="event.stopPropagation();MapLegend.closeMenu();if(typeof showModal===\'function\')showModal(\'manifest\')">' +
+            '<i class="icon-book-open ml-mi"></i>How this is measured\u2026' +
+            '<em>season front, lead, vanguard</em></button>';
         el.innerHTML = html;
         place(el, btn);
     }
@@ -3542,7 +3601,7 @@
         if (!host) return;
         measureCoverage();
         measureSourceAges();
-        var b = bm(), quiet = (b === 'dark') && !histOn() && !geoOn();
+        var b = bm(), quiet = (b === 'dark') && !histOn() && !geoOn() && !fsOn();
         host.classList.toggle('quiet', quiet);
         wireRest(host);
 
@@ -3647,6 +3706,38 @@
                 '<button type="button" class="ml-chip-x" aria-label="Hide the geology layer" ' +
                 'title="Hide the geology layer" ' +
                 'onclick="event.stopPropagation();MapLegend.toggleGeo()">\u00d7</button></span>';
+        }
+
+        if (fsOn()) {
+            // Same two targets: body = configure (which season, front and/or
+            // vanguard), × = off. The sub-label is the STATE the chip is in,
+            // which here has three honest answers — what is drawn, "not yet
+            // computed" for an area the nightly rotation has not reached,
+            // and "nothing here" for a view over no area at all. The two
+            // absences are different sentences, and both must be said, or a
+            // blank drape reads as a broken one.
+            var fm = FireSeason.meta(), fv = FireSeason.vanguard();
+            var parts = [];
+            if (FireSeason.frontOn()) {
+                if (fm && fm.contours && fm.contours.length) parts.push('front ' + esc(fm.season || ''));
+                else if (fm && fm.area === null) parts.push('no area here');
+                else if (fm && fm.status) parts.push('front not yet computed');
+            }
+            if (FireSeason.vanguardOn()) {
+                if (fv && fv.count) parts.push(fv.count + (fv.truncated ? '+' : '') + ' vanguard');
+                else if (fv) parts.push('no vanguard in view');
+            }
+            var fsNote = FireSeason.busy() && !parts.length ? 'loading…' : parts.join(' · ');
+            chips += '<span class="ml-chip fs' + (/no |not yet/.test(fsNote) ? ' offview' : '') + '">' +
+                '<button type="button" class="ml-chip-main" title="' +
+                esc('Fire season: the season front and the vanguard chains ahead of it — tap to choose season and layers') + '" ' +
+                'onclick="event.stopPropagation();MapLegend.fireSeasonMenu(this.parentNode)">' +
+                '<i class="icon-flame"></i><span class="ml-chip-label">Season</span>' +
+                (fsNote ? '<em>' + esc(fsNote) + '</em>' : '') +
+                '<i class="icon-chevron-down ml-caret"></i></button>' +
+                '<button type="button" class="ml-chip-x" aria-label="Hide the fire season layers" ' +
+                'title="Hide the fire season layers" ' +
+                'onclick="event.stopPropagation();MapLegend.fireSeasonOff()">×</button></span>';
         }
 
         // ── AN IDENTICAL REPAINT IS NOT A REPAINT, IT IS A RESET ──────────
@@ -4142,6 +4233,36 @@
             closeMenu();
             if (typeof GeoMap === 'undefined') return;
             Promise.resolve(GeoMap.toggleAll()).then(render);
+        },
+
+        fireSeasonMenu: openFireSeasonMenu,
+        closeMenu: closeMenu,
+        /* From the layers menu: switching the drape on turns on BOTH parts —
+         * the front alone is context, the vanguard alone is unexplained
+         * lines — and then opens the chip menu so the reader sees the two
+         * switches they can now separate. */
+        fireSeasonOn: function () {
+            closeMenu();
+            if (typeof FireSeason === 'undefined') return;
+            FireSeason.setFront(true); FireSeason.setVanguard(true);
+            render();
+            var chip = document.querySelector('#stats-map .ml-chip.fs');
+            if (chip) setTimeout(function () { openFireSeasonMenu(chip); }, 60);
+        },
+        fireSeasonOff: function () {
+            closeMenu();
+            if (typeof FireSeason === 'undefined') return;
+            FireSeason.off(); render();
+        },
+        fireSeasonSet: function (which, on) {
+            if (typeof FireSeason === 'undefined') return;
+            if (which === 'front') FireSeason.setFront(on); else FireSeason.setVanguard(on);
+            render();
+            // Keep the menu: the reader is composing the picture. Rebuilt so
+            // its checkmarks and the season list follow the state.
+            var chip = document.querySelector('#stats-map .ml-chip.fs');
+            closeMenu();
+            if (chip && FireSeason.isOn()) openFireSeasonMenu(chip);
         },
 
         openSettings: function () {
