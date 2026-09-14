@@ -1491,6 +1491,23 @@ test_api "fire_season_speed_png" "/api/fire-season-speed?area=CAF_Chinko&at=2025
 test_api "fire_season_speed_by_point" "/api/fire-season-speed?lon=24.0&lat=6.4&at=2025-01-15" "200" '.area == "CAF_Chinko"'
 test_api "fire_season_speed_no_area" "/api/fire-season-speed?lon=0&lat=0" "200" '.area == null and (.status | test("no area"))'
 test_api "fire_season_speed_invisible_aoi_404" "/api/fire-season-speed?area=aoi_nobody_000000000000" "404" ''
+
+# A season IN PROGRESS bears a front only where it has already arrived, so
+# measured against itself it is "100 % complete" on its own latest day. It
+# must be measured against the cells the front usually reaches, and its
+# words must not claim "half the area" / "the last of it". Needs the AOI
+# owner (XSA is the open-ended area whose current season is incomplete).
+if [ -n "${AOI_OWNER_PWD:-}" ]; then
+    printf "%-50s" "fire_season_in_progress_not_100pct"
+    at=$(curl -s -m 60 --get --data-urlencode "pwd=$AOI_OWNER_PWD" --data-urlencode "area=XSA_Study_Area" --data-urlencode "summary=1" "${BASE_URL}/api/fire-season" | jq -r '.seasons[-1].latest_day')
+    body=$(curl -s -m 60 --get --data-urlencode "pwd=$AOI_OWNER_PWD" --data-urlencode "area=XSA_Study_Area" --data-urlencode "summary=1" --data-urlencode "at=$at" "${BASE_URL}/api/fire-season")
+    ok=$(echo "$body" | jq -r '.complete == false and .front_reached_pct < 99.5 and (.words | test("half the area") | not) and (.words | test("season in progress"))')
+    if [ "$ok" = "true" ]; then
+        green "✓"; PASSED=$((PASSED + 1))
+    else
+        red "FAIL ($(echo "$body" | jq -c '{complete, front_reached_pct, w:.words[0:120]}'))"; FAILED=$((FAILED + 1)); ERRORS+=("fire_season_in_progress")
+    fi
+fi
 test_api "anim_trajs_vanguard_leads" "/api/fire-anim-trajectories?bbox=23,5,26,8&from=2024-11-01&to=2024-12-31&limit=4000" "200" \
     '([.groups[] | select(.vanguard)] | length > 0) and ([.groups[] | select(.vanguard) | (.leads | length) == (.pts | length)] | all) and ([.groups[] | select(.vanguard | not) | has("leads") | not] | all)'
 

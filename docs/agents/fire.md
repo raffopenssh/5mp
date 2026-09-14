@@ -373,7 +373,18 @@ bbox, says "in view"), the fire row / tips count the area's window
 and run in tmux `xsafire` (`logs/aoi_xsa_fire_20260914.log`, ~1 h 50 m).
 A `rebuild_fire_trajectories_v5.py --aoi` alone does **not** refresh an
 AOI's fires: it reads `build_aoi_fires.py` output (step 0 of `run_fire_v5`),
-so run the runner, not the script.
+so run the runner, not the script. XSA caught up 20:45 (38,789 trajectories
+to 2026-09-07, all tiered). **That exposed a no-op reading as an answer:**
+a season *in progress* bears a front only where it has already arrived, so
+`front_reached_pct` measured against its own cells read **100 %** on its
+latest day (XSA 2026/27, six weeks in) and `words` said "half the area by
+2026-08-28". `frontProgress`/`frontCurve` now take `complete`; an incomplete
+season's denominator is the union of its front cells and the cells the
+**usual** front reaches (XSA 2026/27 → 0.8 %), and `seasonWords` speaks
+"half"/"the last of it" only for a complete season. Test
+`fire_season_in_progress_not_100pct` (owner-gated). The early-season
+`usual_offset_days` (−39 d at 1 %) is the selection bias measured above;
+it prints beside its pct, which is the reader's warning.
 
 ## `protected_area_id` is a catchment, not a park (F10 — fixed 2026-08-13)
 
