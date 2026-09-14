@@ -63,10 +63,14 @@
      *                 (late): the season's own colour, ageing to ash as it
      *                 passes, and dashed because an isochrone is a contour,
      *                 not a thing that burned
-     *   vanguard      solid, wider, with a halo, yellow (10 d ahead) → white
-     *                 (60 d): the hottest, brightest lines on the map — the
-     *                 few that carry measured information — and in greyscale
-     *                 simply the lightest
+     *   vanguard      solid, wider, with a halo, coloured PER SEGMENT by how
+     *                 far ahead of the season it was there: orange (0 d, the
+     *                 season arriving) → yellow (15 d) → white (≥ 40 d); the
+     *                 hottest, brightest lines on the map — the few that
+     *                 carry measured information — and in greyscale simply
+     *                 the lightest. Width says whether the day order along
+     *                 the chain is measured (evidence tier). legendHTML()
+     *                 samples this same ramp for every panel that shows it.
      *
      * Nothing cool-hued: a blue line beside red fire read as a second data
      * family (water, roads), and the reader had to be told it was fire. */
@@ -78,9 +82,45 @@
         if (t < 0.5) { var u = t / 0.5; return hex(lerp(239, 251, u), lerp(68, 146, u), lerp(68, 60, u)); }
         var v = (t - 0.5) / 0.5; return hex(lerp(251, 254, v), lerp(146, 205, v), lerp(60, 211, v));
     }
-    function leadColor(lead) {         // 10 d → yellow #fde047, 60 d → white
-        var t = Math.max(0, Math.min(1, (lead - 10) / 50));
+    // Lead ramp, per SEGMENT: 0 d orange #fb923c (the season is arriving —
+    // the line turns towards fire red) → 15 d yellow #fde047 → ≥ 40 d white.
+    // Below 0 the chain is 'after' and drawn as faint ash, not by this ramp.
+    function leadColor(lead) {
+        if (lead == null) lead = 10;
+        if (lead < 15) { var u = Math.max(0, lead) / 15; return hex(lerp(251, 253, u), lerp(146, 224, u), lerp(60, 71, u)); }
+        var t = Math.min(1, (lead - 15) / 25);
         return hex(lerp(253, 255, t), lerp(224, 255, t), lerp(71, 255, t));
+    }
+    // Evidence tier → the width the map draws. Only a MEASURED day order
+    // ('supported'/'weak', rebuild_fire_trajectories_v5 evidence_tier) earns
+    // the wider stroke; absent prints 'unmeasured' and stays thin.
+    var WIDE_TIERS = ['supported', 'weak'];
+    function tierWord(t) { return t || 'unmeasured'; }
+    function tierWide(t) { return WIDE_TIERS.indexOf(t) >= 0; }
+    // "zoom" may only feed a top-level interpolate, so the tier factor goes
+    // inside each stop: stops = [[zoom, width], ...] or a plain number.
+    function tierMul(w) { return ['*', w, ['match', ['get', 'tier'], WIDE_TIERS, 1.35, 1]]; }
+    function tierWidth(stops) {
+        if (typeof stops === 'number') return tierMul(stops);
+        var e = ['interpolate', ['linear'], ['zoom']];
+        stops.forEach(function (st) { e.push(st[0], tierMul(st[1])); });
+        return e;
+    }
+    // The legend's swatch is SAMPLED from leadColor, so the panel cannot say
+    // one ramp while the map draws another. Returns HTML: gradient bar with
+    // its three ticks, and the width rule in one line.
+    function legendHTML(opts) {
+        opts = opts || {};
+        var stops = [];
+        for (var d = 0; d <= 40; d += 5) stops.push(leadColor(d) + ' ' + (d / 40 * 100).toFixed(0) + '%');
+        var bar = '<div class="fs-ramp" style="background:linear-gradient(90deg,' + stops.join(',') + ')"></div>';
+        var ticks = '<div class="fs-ramp-ticks"><span>season arrives</span><span>15 d ahead</span><span>40+ d</span></div>';
+        var width = '<div class="fs-ramp-width">' +
+            '<span class="fs-wi"><span class="fs-w fs-w-wide"></span>day order confirmed (' + WIDE_TIERS.join(' / ') + ')</span>' +
+            '<span class="fs-wi"><span class="fs-w fs-w-thin"></span>unconfirmed / unmeasured</span>' +
+            '<span class="fs-wi"><span class="fs-w fs-w-ash"></span>season caught up</span></div>';
+        return '<div class="fs-legend' + (opts.cls ? ' ' + opts.cls : '') + '"' + (opts.title ? ' title="' + esc(opts.title) + '"' : '') + '>' +
+            '<div class="fs-ramp-cap">Line colour: days ahead of the season front</div>' + bar + ticks + width + '</div>';
     }
 
     /* ── layers ─────────────────────────────────────────────────────────── */
@@ -131,7 +171,7 @@
                 id: VAN_DIM_LYR, type: 'line', source: VAN_SRC,
                 filter: ['==', ['get', 'part'], 'after'],
                 layout: { 'line-cap': 'round', 'line-join': 'round' },
-                paint: { 'line-color': ['get', 'color'], 'line-width': 1.3, 'line-opacity': 0.3 }
+                paint: { 'line-color': '#9ca3af', 'line-width': tierWidth(1.3), 'line-opacity': 0.3 }
             });
         }
         if (!map.getLayer(VAN_LYR)) {
@@ -141,7 +181,7 @@
                 layout: { 'line-cap': 'round', 'line-join': 'round' },
                 paint: {
                     'line-color': ['get', 'color'],
-                    'line-width': ['interpolate', ['linear'], ['zoom'], 5, 1.6, 9, 2.6, 12, 3.4],
+                    'line-width': tierWidth([[5, 1.6], [9, 2.6], [12, 3.4]]),
                     'line-opacity': 0.95
                 }
             });
@@ -244,35 +284,33 @@
         if (f && typeof focusIsAOI === 'function' && focusIsAOI(f)) u += '&aoi=' + encodeURIComponent(f);
         return u;
     }
-    // Split one chain where the season catches up: vertices with lead >= 0
-    // are "ahead", the rest "after". The vertex at the seam belongs to both
-    // parts so the line has no gap. MapLibre cannot colour one LineString
-    // per vertex, hence two features.
+    // One feature per SEGMENT, so each carries its own lead colour: MapLibre
+    // cannot colour one LineString per vertex. A segment's lead is the mean
+    // of its two vertex leads; >= 0 is 'ahead' (bright, lead ramp), < 0 is
+    // 'after' (faint ash — the season caught up). The chain's evidence tier
+    // rides on every segment for the width rule.
+    function chainProps(g, part) {
+        return { part: part, id: g.id, park: g.park, lead_start: g.lead_start, lead_basis: g.lead_basis,
+            tier: tierWord(g.tier), ahead_km: g.ahead_km, ahead_days: g.ahead_days, km: g.km, kmd: g.kmd,
+            fires: g.fires, days: g.days, start: g.start, end: g.end, season: g.season, type: g.type };
+    }
     function splitChain(g) {
         var pts = g.pts || [], leads = g.leads || [];
-        var out = [], cur = [], curPart = null;
-        var color = leadColor(g.lead_start == null ? 10 : g.lead_start);
-        function flush() {
-            if (cur.length >= 2) {
-                out.push({ type: 'Feature', properties: { part: curPart, color: color, id: g.id, park: g.park, lead_start: g.lead_start,
-                    lead_basis: g.lead_basis, ahead_km: g.ahead_km, ahead_days: g.ahead_days, km: g.km, kmd: g.kmd, fires: g.fires, days: g.days,
-                    start: g.start, end: g.end, season: g.season, type: g.type },
-                    geometry: { type: 'LineString', coordinates: cur.slice() } });
-            }
+        var out = [];
+        var lead0 = g.lead_start == null ? 10 : g.lead_start;
+        for (var i = 0; i + 1 < pts.length; i++) {
+            var a = leads[i], b = leads[i + 1];
+            var L = (a == null && b == null) ? lead0 : (a == null ? b : (b == null ? a : (a + b) / 2));
+            var pr = chainProps(g, L >= 0 ? 'ahead' : 'after');
+            pr.lead = Math.round(L); pr.color = L >= 0 ? leadColor(L) : '#9ca3af';
+            out.push({ type: 'Feature', properties: pr,
+                geometry: { type: 'LineString', coordinates: [[pts[i][0], pts[i][1]], [pts[i + 1][0], pts[i + 1][1]]] } });
         }
-        for (var i = 0; i < pts.length; i++) {
-            var L = leads[i];
-            var part = (L == null || L >= 0) ? 'ahead' : 'after';
-            if (curPart !== null && part !== curPart) { flush(); cur = [cur[cur.length - 1]]; }
-            curPart = part;
-            cur.push([pts[i][0], pts[i][1]]);
-        }
-        flush();
         if (pts.length === 1) {
             // A one-vertex chain still deserves a mark: a very short line.
-            var p = pts[0], e = 0.004;
-            out.push({ type: 'Feature', properties: { part: 'ahead', color: color, id: g.id, park: g.park, lead_start: g.lead_start, lead_basis: g.lead_basis,
-                ahead_km: g.ahead_km, ahead_days: g.ahead_days, km: g.km, fires: g.fires, days: g.days, start: g.start, end: g.end, season: g.season },
+            var p = pts[0], e = 0.004, pr1 = chainProps(g, 'ahead');
+            pr1.lead = lead0; pr1.color = leadColor(lead0);
+            out.push({ type: 'Feature', properties: pr1,
                 geometry: { type: 'LineString', coordinates: [[p[0] - e, p[1]], [p[0] + e, p[1]]] } });
         }
         return out;
@@ -306,6 +344,11 @@
         h += '<div>Began <b>' + esc(ls) + ' days ahead</b> of the ' + (p.lead_basis === 'usual' ? 'usual' : 'season') +
              ' front' + (p.lead_basis === 'usual' ? ' <span style="opacity:.7">(this season\u2019s front had not arrived yet)</span>' : '') + '</div>';
         if (p.ahead_km) h += '<div>Ran <b>' + Number(p.ahead_km).toFixed(0) + ' km</b> over ' + esc(p.ahead_days) + ' d before the season caught up</div>';
+        if (p.part === 'after') h += '<div style="color:#9ca3af">Here the season had caught up ' + esc(-p.lead) + ' d earlier \u2014 one fire among the field\u2019s</div>';
+        else if (p.part === 'ahead' && p.lead != null && p.lead !== ls) h += '<div>Still <b>' + esc(p.lead) + ' d ahead</b> here</div>';
+        var tw = tierWord(p.tier);
+        h += '<div style="opacity:.8">Day order ' + (tierWide(tw) ? '<b>' + esc(tw) + '</b> (drawn wide)' : esc(tw)) +
+             ' <span style="opacity:.7">\u2014 link evidence vs day-shuffled null</span></div>';
         h += '<div style="opacity:.75;margin-top:3px">' + fmtDate(p.start) + ' \u2013 ' + fmtDate(p.end) + ' \u00b7 ' + esc(p.fires) + ' detections \u00b7 ' +
              (p.km ? Number(p.km).toFixed(0) + ' km' : '') + (p.season ? ' \u00b7 season ' + esc(p.season) : '') + '</div>';
         h += '<div style="opacity:.6;font-size:11px;margin-top:4px">An early signal that people are moving ahead of the season \u2014 not a proof of who or why.</div>';
@@ -450,7 +493,7 @@
         },
         // The words the strip and the fire tip share; one definition.
         LEAD_DAYS: 10, LEAD_MAX: 60,
-        leadColor: leadColor, frontColor: frontColor
+        leadColor: leadColor, frontColor: frontColor, tierWord: tierWord, tierWide: tierWide, legendHTML: legendHTML
     };
     window.FireSeason = FireSeason;
 })();

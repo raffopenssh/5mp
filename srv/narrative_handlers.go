@@ -177,6 +177,16 @@ type FireGroupStory struct {
 	// (single/supported/weak/unsupported/unmeasured).
 	EvidenceBits *float64 `json:"evidence_bits,omitempty"`
 	EvidenceTier string   `json:"evidence_tier,omitempty"`
+	// Season position (scripts/fire_front.py, docs/agents/fire.md): days the
+	// chain began ahead of the season front, what that was measured against
+	// ('front' this season / 'usual' prior seasons), the vanguard flag
+	// (>= 10 d ahead) and the run before the season caught up. Absent until
+	// the area's front is built.
+	LeadStart *int    `json:"lead_start,omitempty"`
+	LeadBasis string  `json:"lead_basis,omitempty"`
+	Vanguard  bool    `json:"vanguard,omitempty"`
+	AheadKm   float64 `json:"ahead_km,omitempty"`
+	AheadDays int     `json:"ahead_days,omitempty"`
 }
 
 // DeforestationNarrative contains rich textual description of forest loss

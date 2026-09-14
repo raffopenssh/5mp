@@ -25,6 +25,8 @@ package srv
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
+	"math"
 	"net/http"
 	"sort"
 	"strconv"
@@ -186,23 +188,213 @@ func (s *Server) HandleAPIFireSeason(w http.ResponseWriter, r *http.Request) {
 	if q.Get("summary") == "" {
 		contoursOut = json.RawMessage(orNull(contours))
 	}
+	// The report side (`leads=N`): the vanguard chains themselves, ranked by
+	// how far they ran ahead, with their evidence tier, plus the tier
+	// breakdown of every vanguard chain in the window — so one call tells a
+	// report writer (human or agent) what the layer shows and how much of it
+	// is measured. Window = from/to when given, else the season.
+	var vanTop []vanLead
+	var vanTiers map[string]int
+	if n, _ := strconv.Atoi(q.Get("leads")); n > 0 {
+		wf, wt := q.Get("from"), q.Get("to")
+		if wf == "" {
+			wf = seasonStart.String
+		}
+		if wt == "" {
+			wt = sEnd
+		}
+		vanTop, vanTiers = s.vanguardLeads(r, area, wf, wt, n)
+	}
+	var frontStats struct {
+		First  string `json:"front_first"`
+		Median string `json:"front_median"`
+		Last   string `json:"front_last"`
+	}
+	if stats.Valid {
+		json.Unmarshal([]byte(stats.String), &frontStats)
+	}
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"area":               area,
 		"vanguard_groups":    nVan,
 		"vanguard_in_window": nVanWin,
+		"vanguard_top":       vanTop,
+		"vanguard_tiers":     vanTiers,
 		"at_dos":             atDos,
 		"front_reached_pct":  frontPct,
 		"usual_offset_days":  usualOffset,
-		"season":          want,
-		"seasons":         seasons,
-		"season_start":    seasonStart.String,
-		"start_month":     startMonth,
-		"complete":        complete == 1,
-		"latest_day":      latest.String,
-		"computed_at":     computedAt,
-		"stats":           json.RawMessage(orNull(stats)),
-		"contours":        contoursOut,
+		"season":             want,
+		"seasons":            seasons,
+		"season_start":       seasonStart.String,
+		"start_month":        startMonth,
+		"complete":           complete == 1,
+		"latest_day":         latest.String,
+		"computed_at":        computedAt,
+		"stats":              json.RawMessage(orNull(stats)),
+		"contours":           contoursOut,
+		// One sentence, written once here so a report, a tip and an agent
+		// quote the same words (the UI's seasonFrontWords is its short form).
+		"words": seasonWords(want, complete == 1, frontStats.First, frontStats.Median, frontStats.Last,
+			frontPct, usualOffset, nVan, nVanWin, vanTiers),
 	})
+}
+
+// vanLead is one vanguard chain as a report lists it: where it began, how far
+// ahead of the season, how far it ran before the season caught up, and the
+// evidence tier of its day order. `tier` prints "unmeasured" when the rebuild
+// has not scored it (invariant 12), never an empty string.
+type vanLead struct {
+	ID        string  `json:"id"`
+	Start     string  `json:"start"`
+	End       string  `json:"end"`
+	Days      int     `json:"days"`
+	Fires     int     `json:"fires"`
+	Km        float64 `json:"km"`
+	Direction string  `json:"direction,omitempty"`
+	LeadStart *int    `json:"lead_start"`
+	LeadBasis string  `json:"lead_basis,omitempty"`
+	AheadKm   float64 `json:"ahead_km"`
+	AheadDays int     `json:"ahead_days"`
+	Tier      string  `json:"tier"`
+	Lon       float64 `json:"lon"`
+	Lat       float64 `json:"lat"`
+	Place     string  `json:"nearest_place,omitempty"`
+	PlaceKm   float64 `json:"nearest_place_km,omitempty"`
+	Narrative string  `json:"narrative,omitempty"`
+}
+
+// vanguardLeads returns the area's vanguard chains that began in [from, to],
+// the top n by ahead_km (ties: lead_start), and the evidence-tier histogram
+// over ALL of them — the histogram must describe the population the count
+// describes, not the shortlist.
+func (s *Server) vanguardLeads(r *http.Request, area, from, to string, n int) ([]vanLead, map[string]int) {
+	rows, err := s.DB.QueryContext(r.Context(), `
+		SELECT feature_id, start_date, end_date, geojson, properties_json
+		FROM feature_geometries INDEXED BY idx_fg_vanguard
+		WHERE vanguard=1 AND park_id=? AND start_date >= ? AND start_date <= ?`, area, from, to)
+	if err != nil {
+		return nil, nil
+	}
+	defer rows.Close()
+	tiers := map[string]int{}
+	var all []vanLead
+	for rows.Next() {
+		var fid, sd, ed, geojson, propsJSON string
+		if rows.Scan(&fid, &sd, &ed, &geojson, &propsJSON) != nil {
+			continue
+		}
+		var p struct {
+			Days      int     `json:"days"`
+			Fires     int     `json:"fires_total"`
+			Km        float64 `json:"distance_km"`
+			Direction string  `json:"direction"`
+			LeadStart *int    `json:"lead_start"`
+			LeadBasis string  `json:"lead_basis"`
+			AheadKm   float64 `json:"ahead_km"`
+			AheadDays int     `json:"ahead_days"`
+			Tier      string  `json:"evidence_tier"`
+			Place     string  `json:"nearest_place"`
+			PlaceKm   float64 `json:"nearest_place_dist"`
+			Narrative string  `json:"narrative"`
+		}
+		if json.Unmarshal([]byte(propsJSON), &p) != nil {
+			continue
+		}
+		if p.Tier == "" {
+			p.Tier = "unmeasured"
+		}
+		tiers[p.Tier]++
+		l := vanLead{ID: fid, Start: sd, End: ed, Days: p.Days, Fires: p.Fires, Km: p.Km, Direction: p.Direction,
+			LeadStart: p.LeadStart, LeadBasis: p.LeadBasis, AheadKm: p.AheadKm, AheadDays: p.AheadDays, Tier: p.Tier,
+			Place: p.Place, PlaceKm: p.PlaceKm, Narrative: p.Narrative}
+		if pts := datedPoints(geojson, "", sd, ed); len(pts) > 0 {
+			l.Lon, l.Lat = pts[0][0], pts[0][1]
+		}
+		all = append(all, l)
+	}
+	sort.SliceStable(all, func(i, j int) bool {
+		if all[i].AheadKm != all[j].AheadKm {
+			return all[i].AheadKm > all[j].AheadKm
+		}
+		li, lj := 0, 0
+		if all[i].LeadStart != nil {
+			li = *all[i].LeadStart
+		}
+		if all[j].LeadStart != nil {
+			lj = *all[j].LeadStart
+		}
+		return li > lj
+	})
+	if len(all) > n {
+		all = all[:n]
+	}
+	if all == nil {
+		all = []vanLead{}
+	}
+	return all, tiers
+}
+
+// seasonWords is the season's one-sentence summary. Every number in it is
+// derived from the same values the JSON carries beside it; nothing is typed.
+func seasonWords(season string, complete bool, first, median, last string, pct, usual *float64,
+	nVan int, nVanWin interface{}, tiers map[string]int) string {
+	var b strings.Builder
+	fmt.Fprintf(&b, "Fire season %s", season)
+	if first != "" {
+		fmt.Fprintf(&b, ": the front first arrived %s, had reached half the area by %s and the last of it by %s", first, median, last)
+	}
+	if pct != nil {
+		if *pct >= 99.5 {
+			b.WriteString("; at the window's end the front was complete")
+		} else if *pct <= 0 {
+			b.WriteString("; at the window's end the front had not yet arrived")
+		} else {
+			fmt.Fprintf(&b, "; at the window's end the front had reached %.0f%% of the area", *pct)
+			if usual != nil && math.Abs(*usual) >= 1 {
+				if *usual < 0 {
+					fmt.Fprintf(&b, ", %.0f days earlier than usual", -*usual)
+				} else {
+					fmt.Fprintf(&b, ", %.0f days later than usual", *usual)
+				}
+			}
+		}
+	}
+	if !complete {
+		b.WriteString(" (season in progress)")
+	}
+	b.WriteString(". ")
+	n := nVan
+	scope := "this season"
+	if v, ok := nVanWin.(int); ok {
+		n = v
+		scope = "the window"
+	}
+	if n == 0 {
+		fmt.Fprintf(&b, "No fire chain in %s began 10 or more days ahead of the front.", scope)
+	} else {
+		fmt.Fprintf(&b, "%d fire chain%s in %s began 10–60 days ahead of the front (vanguard) — the one population whose day-to-day order is measurably better than chance",
+			n, plural(n), scope)
+		if len(tiers) > 0 {
+			meas := tiers["supported"] + tiers["weak"]
+			unm := tiers["unmeasured"]
+			if unm == n {
+				b.WriteString("; their day order has not yet been scored (unmeasured)")
+			} else {
+				fmt.Fprintf(&b, "; %d of them with a confirmed day order (supported %d, weak %d)", meas, tiers["supported"], tiers["weak"])
+				if unm > 0 {
+					fmt.Fprintf(&b, ", %d unmeasured", unm)
+				}
+			}
+		}
+		b.WriteString(".")
+	}
+	return b.String()
+}
+
+func plural(n int) string {
+	if n == 1 {
+		return ""
+	}
+	return "s"
 }
 
 // frontProgress reads the packed int16 day-of-season grids (scripts/
