@@ -322,6 +322,77 @@
         var c = map.getCenter(), b = speed.bbox;
         return c.lng >= b[0] && c.lng <= b[2] && c.lat >= b[1] && c.lat <= b[3];
     }
+    // The PNG, decoded once into pixels, and the palette inverted: a click
+    // on the field answers "how fast does the season travel HERE" from the
+    // very image the map draws (one payload, one truth). Grid row 0 is the
+    // south edge; the image was written top-down, so row = ny-1-iy.
+    var speedPix = null;   // {data, w, h, bbox, byColor: {rgbKey: level}, lv}
+    function decodeSpeed(j) {
+        speedPix = null;
+        if (!j || !j.png || !j.palette || !j.grid) return;
+        var img = new Image();
+        img.onload = function () {
+            try {
+                var cv = document.createElement('canvas');
+                cv.width = img.width; cv.height = img.height;
+                var ctx = cv.getContext('2d', { willReadFrequently: true });
+                ctx.drawImage(img, 0, 0);
+                var byColor = {};
+                j.palette.forEach(function (hx, i) { byColor[parseInt(hx.slice(1), 16)] = i; });
+                speedPix = { data: ctx.getImageData(0, 0, cv.width, cv.height).data, w: cv.width, h: cv.height,
+                    bbox: j.bbox, grid: j.grid, byColor: byColor, lv: j.levels, season: j.season, area: j.area };
+            } catch (e) { speedPix = null; }
+        };
+        img.src = j.png;
+    }
+    function speedAt(lng, lat) {
+        var P = speedPix;
+        if (!P) return null;
+        var b = P.bbox;
+        if (lng < b[0] || lng > b[2] || lat < b[1] || lat > b[3]) return null;
+        // The grid's own arithmetic ((v - origin) / res, floor from the SOUTH
+        // edge, then flip), so a point on a cell edge lands in the cell the
+        // server put it in; scaling by the bbox instead differed in the last
+        // bit and moved an edge point one row.
+        var G = P.grid;
+        var ix = Math.max(0, Math.min(P.w - 1, Math.floor((lng - G.x0) / G.res)));
+        var iy = P.h - 1 - Math.max(0, Math.min(P.h - 1, Math.floor((lat - G.y0) / G.res)));
+        var o = (iy * P.w + ix) * 4;
+        if (P.data[o + 3] === 0) return null;   // no front here this season
+        var lvl = P.byColor[(P.data[o] << 16) | (P.data[o + 1] << 8) | P.data[o + 2]];
+        if (lvl == null) return null;
+        var lo = Math.log(P.lv.km_d_min), hi = Math.log(P.lv.km_d_max);
+        return { kmd: Math.exp(lo + (hi - lo) * lvl / (P.lv.n - 1)), level: lvl, season: P.season, area: P.area,
+            atMax: lvl === P.lv.n - 1, atMin: lvl === 0 };
+    }
+    function speedWords(kmd) {
+        return kmd < 2 ? 'the season stalls here' : kmd < 6 ? 'the season walks here' : kmd < 15 ? 'the season runs here' : 'the season sweeps through here';
+    }
+    function speedTipHTML(h) {
+        var v = h.atMax ? '\u2265 ' + Math.round(h.kmd) : h.atMin ? '\u2264 ' + h.kmd.toFixed(1) : (h.kmd < 10 ? h.kmd.toFixed(1) : Math.round(h.kmd));
+        var stt = speed && speed.stats ? '<div class="maptip-meta">this area: median ' + speed.stats.median_km_d + ' km/d (p10 ' + speed.stats.p10_km_d + ', p90 ' + speed.stats.p90_km_d + ')</div>' : '';
+        return '<div class="maptip-title">Season speed: <b>' + v + ' km/day</b></div>' +
+            '<div class="maptip-body">' + speedWords(h.kmd) + ' \u2014 how fast the ' + esc(h.season || '') + ' front travelled, from the gradient of its arrival-time surface.</div>' + stt +
+            '<div class="maptip-dim">Describes the season drawn; not a forecast.</div>';
+    }
+    var SPEED_PROBE = 'fireseason-speed-probe', speedProbeOn = false;
+    function ensureSpeedProbe() {
+        if (speedProbeOn || !window.MapTip || !MapTip.registerProbe) return;
+        // A backdrop (negative priority, click only): the field sits under
+        // every line and pin over the area, so it must never outrank a chain
+        // or a settlement, and a hover tip over a whole-viewport fill would
+        // follow the cursor forever (maptip.js "PRECEDENCE").
+        MapTip.registerProbe(SPEED_PROBE, {
+            priority: -10, clickOnly: true, tabLabel: 'Season speed', tabColor: '#f59e0b',
+            probe: function (e) {
+                if (!st.speed || !e || !e.lngLat) return null;
+                var h = speedAt(e.lngLat.lng, e.lngLat.lat);
+                if (!h) return null;
+                return { html: speedTipHTML(h), properties: { kmd: h.kmd, season: h.season, area: h.area }, dist: 0 };
+            }
+        });
+        speedProbeOn = true;
+    }
     function loadSpeed(force) {
         if (!st.speed || !map) return Promise.resolve();
         var key = (focusId() || 'pt') + '|@' + dates().to;
@@ -332,6 +403,8 @@
             speedKey = key;
             speed = j || { status: 'request failed' };
             setSpeedImage(j);
+            decodeSpeed(j);
+            ensureSpeedProbe();
             refreshStrip();
         }).catch(function () { inflight--; emit(); });
     }
@@ -560,6 +633,7 @@
         vanguardOn: function () { return st.van; },
         speedOn: function () { return st.speed; },
         speedMeta: function () { return speed; },
+        speedAt: speedAt,
         speedLegendHTML: speedLegendHTML,
         // The front as loaded, or — while the animator runs — the same
         // object with `front_reached_pct` / `usual_offset_days` read off the
@@ -586,7 +660,7 @@
             st.speed = !!want;
             if (!map) return;
             ensureLayers();
-            if (st.speed) loadSpeed(true); else { setSpeedImage(null); refreshStrip(); }
+            if (st.speed) loadSpeed(true); else { setSpeedImage(null); speedPix = null; refreshStrip(); }
         },
         off: function () { this.setFront(false); this.setVanguard(false); this.setSpeed(false); },
         animAt: animAt,

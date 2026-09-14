@@ -1478,7 +1478,7 @@ test_api "fire_season_curve_with_contours" "/api/fire-season?area=CAF_Chinko&at=
 # that match the numpy probe (Chinko 2024/25: median 5.1, p10 1.6, p90 24.3
 # — scripts/fire_vanguard/eikonal.py's method). Same season rule as the front.
 test_api "fire_season_speed_png" "/api/fire-season-speed?area=CAF_Chinko&at=2025-01-15" "200" \
-    '.season == "2024/25" and (.png | startswith("data:image/png;base64,")) and (.bbox | length) == 4 and .stats.cells == 18770 and .stats.median_km_d == 5.1 and (.legend | length) == 5 and (.legend[0].km_d) == 1'
+    '.season == "2024/25" and (.png | startswith("data:image/png;base64,")) and (.bbox | length) == 4 and .stats.cells == 18770 and .stats.median_km_d == 5.1 and (.legend | length) == 5 and (.legend[0].km_d) == 1 and (.palette | length) == 256 and (.palette | unique | length) == 256 and .grid.nx == 137'
 test_api "fire_season_speed_by_point" "/api/fire-season-speed?lon=24.0&lat=6.4&at=2025-01-15" "200" '.area == "CAF_Chinko"'
 test_api "fire_season_speed_no_area" "/api/fire-season-speed?lon=0&lat=0" "200" '.area == null and (.status | test("no area"))'
 test_api "fire_season_speed_invisible_aoi_404" "/api/fire-season-speed?area=aoi_nobody_000000000000" "404" ''
