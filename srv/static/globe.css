@@ -271,6 +271,7 @@
         .stats-item.layer-toggle.fire.layer-on { border-left-color: #ef4444; background: rgba(239,68,68,0.08); }
         .stats-item.layer-toggle.deforest.layer-on { border-left-color: #a855f7; background: rgba(168,85,247,0.08); }
         .stats-item.layer-toggle.settlement.layer-on { border-left-color: #fbbf24; background: rgba(251,191,36,0.08); }
+
         .stats-item.layer-toggle:not(.layer-on) .stats-label { opacity: 0.55; }
         /* Drawn by a pinned layer, not by this row (see duplicatePinKey): the
            eye becomes a pin, because the row's × will remove something the
@@ -291,6 +292,15 @@
             mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolygon points='6 3 20 12 6 21 6 3'/%3E%3C/svg%3E");
             opacity: 0.9;
         }
+        /* Drawn by the Season overlay only: the glyph is a dashed contour —
+           the front's own line — so the icon says what is on the map. */
+        .stats-item.layer-toggle.layer-season:not(.layer-on) .stats-label::before {
+            -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-dasharray='3.5 3'%3E%3Cpath d='M2 16c4-6 8-6 12 0s6 2 8-2'/%3E%3C/svg%3E");
+            mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-dasharray='3.5 3'%3E%3Cpath d='M2 16c4-6 8-6 12 0s6 2 8-2'/%3E%3C/svg%3E");
+            opacity: 0.9;
+        }
+        .stats-item.layer-season:not(.layer-on) .stats-label,
+        .stats-item.layer-season:not(.layer-on) .stats-value { opacity: 0.85; }
         .stats-item.layer-toggle:not(.layer-on) .stats-value { opacity: 0.55; }
         /* Patrol effort is owned by the account it was uploaded in
            (srv/tenant.go). For another account the layer is legitimately
@@ -1171,6 +1181,10 @@
         .stats-lod .lod-mode.anim::before { width: 7px; height: 7px; border-radius: 2px;
             background: currentColor; box-shadow: 0 0 4px currentColor; }
         .stats-lod .lod-mode.anim { opacity: 0.95; }
+        /* The Season overlay alone (fire layer off): a dashed stroke, the
+           front's own glyph. */
+        .stats-lod .lod-mode.season::before { width: 9px; height: 0; border-radius: 0;
+            background: none; border-top: 2px dashed currentColor; }
         .lod-caret { margin-left: 3px; font-size: 8px; opacity: 0.7; }
         .stats-item.fire .stats-lod { color: var(--color-fire); }
         .stats-item.deforest .stats-lod { color: var(--color-deforestation); }
@@ -1971,6 +1985,16 @@
             cursor: pointer; color: inherit; opacity: 0.6;
             background: rgba(255,255,255,0.08); border: 1px solid transparent; }
         .pinned-layer-chip .chip-lod:hover { opacity: 1; background: rgba(255,255,255,0.18); }
+        /* Vanguard count on a fire pin: the Season overlay's lead yellow,
+           lit when that overlay is drawing them. Same pill as .chip-lod. */
+        .pinned-layer-chip .chip-van { flex: none; display: inline-flex; align-items: center; gap: 2px;
+            height: 14px; margin-left: 3px; padding: 0 5px; border-radius: 7px;
+            font-family: inherit; font-size: 8px; font-weight: 600; line-height: 1;
+            cursor: pointer; color: #fde047; opacity: 0.7;
+            background: rgba(253,224,71,0.1); border: 1px solid transparent; }
+        .pinned-layer-chip .chip-van i { font-size: 9px; }
+        .pinned-layer-chip .chip-van:hover { opacity: 1; background: rgba(253,224,71,0.22); }
+        .pinned-layer-chip .chip-van.on { opacity: 1; border-color: rgba(253,224,71,0.6); }
         .pinned-layer-chip .chip-lod.forced { opacity: 0.95; border-color: currentColor; }
         /* An individual pin is served whole, so its mark states a fact rather
            than offering a choice: same words, no pointer, no hover lift. */

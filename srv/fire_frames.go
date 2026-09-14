@@ -514,6 +514,14 @@ func (s *Server) HandleAPIFireAnimTrajectories(w http.ResponseWriter, r *http.Re
 		// vanguard chain differently when the Season overlay is on.
 		Vanguard  bool `json:"vanguard,omitempty"`
 		LeadStart *int `json:"lead_start,omitempty"`
+		// Per-vertex lead (days ahead of the front), vanguard chains only:
+		// the animator switches a chain from lead colour to fire red at the
+		// vertex where the season caught up, as the map layer does. Omitted
+		// for the other 99 % so the payload does not grow for them.
+		Leads     []*int  `json:"leads,omitempty"`
+		LeadBasis string  `json:"lead_basis,omitempty"`
+		AheadKm   float64 `json:"ahead_km,omitempty"`
+		AheadDays int     `json:"ahead_days,omitempty"`
 	}
 	out := make([]animGroup, 0, len(cands))
 	const chunk = 900
@@ -557,9 +565,16 @@ func (s *Server) HandleAPIFireAnimTrajectories(w http.ResponseWriter, r *http.Re
 				Narrative string  `json:"narrative"`
 				Vanguard  bool    `json:"vanguard"`
 				LeadStart *int    `json:"lead_start"`
+				Leads     []*int  `json:"leads"`
+				LeadBasis string  `json:"lead_basis"`
+				AheadKm   float64 `json:"ahead_km"`
+				AheadDays int     `json:"ahead_days"`
 			}
 			if json.Unmarshal([]byte(propsJSON), &props) == nil {
 				g.Vanguard, g.LeadStart = props.Vanguard, props.LeadStart
+				if props.Vanguard {
+					g.Leads, g.LeadBasis, g.AheadKm, g.AheadDays = props.Leads, props.LeadBasis, props.AheadKm, props.AheadDays
+				}
 				g.Type = props.GroupType
 				g.Km = props.Km
 				g.Kmd = props.Kmd

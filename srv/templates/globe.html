@@ -4247,7 +4247,15 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
 
             // Single unified hover/tap tooltip for every pinned/interactive layer.
             // (Replaces the per-layer maplibregl.Popup pile-up.)
-            if (window.FireSeason) window.FireSeason.init(map);
+            if (window.FireSeason) {
+                window.FireSeason.init(map);
+                // The stats row and the fire pins mirror the overlay's state;
+                // one listener, so neither can lag the map.
+                window.FireSeason.onChange(function () {
+                    if (typeof renderRowModes === 'function') renderRowModes('fires');
+                    if (typeof updatePinnedIndicator === 'function') updatePinnedIndicator();
+                });
+            }
             if (window.MapTip) {
                 window.MapTip.init(map);
                 // NO BACKDROP GUARD ANY MORE. There used to be one here: "if a
@@ -5059,6 +5067,37 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             });
         }
 
+        // ── Season front & vanguard, on the FIRE row ───────────────────
+        // Not a row of their own: the front and the vanguard chains are two
+        // more renderings of the fire subject, so they live where the fire
+        // row's other renderings do — in its readout line and its rendering
+        // menu (renderRowModes / openModeMenu 'fires'). A sixth row said
+        // "Season Front" over a number that was a count of fire chains, and
+        // cost a phone a third row of cards.
+        // Front position in words. One writer, shared with the park/AOI
+        // hover tips and the chip menu so the three cannot say three things.
+        function seasonFrontWords(fm, opts) {
+            opts = opts || {};
+            if (!fm) return '';
+            if (fm.status && !fm.season) return opts.terse ? '' : fm.status;   // 'not yet computed' / 'no area…'
+            const parts = [];
+            if (fm.season && !opts.terse) parts.push('season ' + fm.season);
+            const pct = fm.front_reached_pct;
+            if (typeof pct === 'number') {
+                if (pct <= 0) parts.push('front not yet arrived');
+                else if (pct >= 99.5) parts.push(fm.complete ? 'season complete' : 'front complete');
+                else parts.push('front ' + Math.round(pct) + ' %');
+            }
+            const off = fm.usual_offset_days;
+            if (typeof off === 'number' && Math.abs(off) >= 1 && typeof pct === 'number' && pct > 0 && pct < 99.5) {
+                parts.push(Math.abs(Math.round(off)) + ' d ' + (off < 0 ? 'early' : 'late'));
+            }
+            if (opts.vanguard && typeof fm.vanguard_in_window === 'number') {
+                parts.push(fm.vanguard_in_window.toLocaleString() + ' vanguard');
+            }
+            return parts.join(' · ');
+        }
+        window.seasonFrontWords = seasonFrontWords;
         // The arrival animation fires ONLY when the value actually changed.
         // Running it on every refresh would twitch every row each time the map
         // settles, to report that nothing happened.
@@ -5160,6 +5199,10 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                     
                     // Conservation data
                     setIfExists('stats-fires', formatNumber(stats.total_fires || 0));
+                    // Vanguard chains under the same scope/window/bbox: the
+                    // fire row's readout prints them (renderRowModes 'fires').
+                    window._statsVanguard = (typeof stats.vanguard_groups === 'number') ? stats.vanguard_groups : null;
+                    if (typeof renderRowModes === 'function') renderRowModes('fires');
                     const fireTrend = stats.fire_trend || 'stable';
                     const fireTrendEl = document.getElementById('stats-fire-trend');
                     if (fireTrendEl) {
@@ -11070,7 +11113,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                         <div class="maptip-title">${escapeHtml(p.name || p.id)}</div>
                         <div class="maptip-body">${area}</div>
                         <div class="maptip-meta">Window ${escapeHtml(win)}</div>
-                        <div class="maptip-dim">${escapeHtml(line)}</div>
+                        <div class="maptip-dim">${escapeHtml(line)}</div>${seasonTipLine(p.id, 'aois-fill')}
                         <div class="maptip-exports">${aoiActionsHTML(p.id, p.name || p.id, { isOwner: !!p.is_owner })}</div>`;
                 }
             });
@@ -11101,6 +11144,23 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
         // (geology, a fire path), the card pins with one tab per answer, Park
         // selected and carrying the same button. Nothing becomes unreachable
         // and nothing needs a modifier key.
+        // WHERE THE SEASON STANDS HERE, on the region's own tip. The same
+        // words as the stats row (seasonFrontWords), for the area under the
+        // pointer rather than the one focused, at the slider's end. Answered
+        // from a per-area summary (no contour geometry) that FireSeason
+        // caches; the tip re-renders once when it lands. Says nothing —
+        // rather than "0" — where no front is built (invariant 1).
+        function seasonTipLine(areaId, layerId) {
+            if (!window.FireSeason || !areaId) return '';
+            const fs = FireSeason.summary(areaId, () => { if (window.MapTip) MapTip.refresh(layerId); });
+            if (!fs) return '';
+            const words = seasonFrontWords(fs, { vanguard: true, terse: true });
+            if (!words) return '';
+            const van = typeof fs.vanguard_in_window === 'number' && fs.vanguard_in_window > 0;
+            return `<div class="maptip-dim maptip-season${van ? ' has-van' : ''}" title="Fire season front: the day a fifth of the land that burns in a season had burned within ~60 km. Vanguard: fire chains that began ${FireSeason.LEAD_DAYS}–${FireSeason.LEAD_MAX} days ahead of it, in the time window."><i class="icon-waves"></i> ${escapeHtml(words)}</div>`;
+        }
+        window.seasonTipLine = seasonTipLine;
+
         function registerParkTip() {
             if (!window.MapTip || !map.getLayer('areas-fill') || window._parkTipRegistered) return;
             window._parkTipRegistered = true;
@@ -11123,7 +11183,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                     const sub = [escapeHtml(p.country || ''), area].filter(Boolean).join(' \u2022 ');
                     return `<div class="maptip-label">Protected area</div>
                         <div class="maptip-title">${escapeHtml(p.name || p.id || 'Protected area')}</div>
-                        <div class="maptip-body">${sub}</div>`;
+                        <div class="maptip-body">${sub}</div>${seasonTipLine(p.id, 'areas-fill')}`;
                 }
             });
         }
@@ -14834,6 +14894,8 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             if (!el) return;
             const st = lodState[name] || null;
             const anim = animRowLayers(name);          // animation renderings on for this row
+            const season = seasonRowState(name);       // Season overlay renderings (fire row only)
+            const seasonOn = !!(season && (season.front || season.van));
             // The readout is shown whenever the row is drawing SOMETHING. A row
             // switched off in the panel but animated on the map is still on
             // screen, and a legend that hides it is the same wrong answer as a
@@ -14841,8 +14903,12 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             const item = document.getElementById(VIEW_LAYER_META[name]?.statId || ('stat-' + name));
             if (item) {
                 if (!item.dataset.baseTitle) item.dataset.baseTitle = item.title || '';
-                item.classList.toggle('has-modes', !!(st || anim.length));
+                item.classList.toggle('has-modes', !!(st || anim.length || seasonOn));
                 item.classList.toggle('layer-animated', !!anim.length);
+                // Drawn by the Season overlay while the row's own layer is
+                // off: the eye must not say "hidden" over dashed lines that
+                // are plainly there (same rule as .layer-animated).
+                item.classList.toggle('layer-season', seasonOn && !anim.length && !viewLayers[name]);
                 // The eye becomes a ▷ when the animation is drawing this row
                 // (see .layer-animated in globe.css) — so the row must say what
                 // its own switch still does, or the glyph reads as a toggle
@@ -14852,7 +14918,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                       + ' use the menu below to change how it is drawn.'
                     : item.dataset.baseTitle;
             }
-            if (!st && !anim.length) { el.textContent = ''; el.title = ''; delete el.dataset.render; return; }
+            if (!st && !anim.length && !seasonOn) { el.textContent = ''; el.title = ''; delete el.dataset.render; return; }
 
             let countTxt = '', pinned = '', countTitle = '';
             if (st) {
@@ -14887,8 +14953,27 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 // the readout says the word and not the glyph twice.
                 countTxt = 'animated';
             }
+            if (seasonOn) {
+                // Where the season stands at the slider's end, and how many
+                // of the chains in view began ahead of it (from /api/stats —
+                // same scope, window and bbox as the row's own number). The
+                // vanguard count is said only while the vanguard rendering is
+                // on: a number about lines that are not drawn is clutter.
+                const fm = FireSeason.meta();
+                const bits = [];
+                if (season.front) {
+                    const w = seasonFrontWords(fm, { terse: true }) || (FireSeason.busy() ? 'front loading\u2026' : '');
+                    if (w) bits.push(w);
+                }
+                if (season.van && typeof window._statsVanguard === 'number') bits.push(window._statsVanguard.toLocaleString() + ' vanguard');
+                const seasonTxt = bits.join(' \u00b7 ');
+                if (seasonTxt) countTxt = countTxt ? countTxt + ` <span class="lod-sub">\u00b7 ${escapeHtml(seasonTxt)}</span>` : escapeHtml(seasonTxt);
+                if (fm && fm.stats && !countTitle) countTitle = 'Season front: the day a fifth of the land that burns in a season had burned within ~60 km '
+                    + '(first ' + fm.stats.front_first + ', last ' + fm.stats.front_last + '). '
+                    + 'Vanguard: fire chains that began ' + FireSeason.LEAD_DAYS + '\u2013' + FireSeason.LEAD_MAX + ' days ahead of it.';
+            }
 
-            const summary = rowModeSummary(name, st, anim);
+            const summary = rowModeSummary(name, st, anim, season);
             el.innerHTML = `<span class="lod-count"${countTitle ? ` title="${escapeHtml(countTitle)}"` : ''}>${pinned}${countTxt}</span>`
                          + `<button type="button" class="lod-mode ${summary.cls}${summary.forced ? ' forced' : ''}" `
                          + `aria-haspopup="true" `
@@ -14962,7 +15047,13 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                    + ' would add vertices but no visible shape — zoom in for full paths.'
         };
 
-        function rowModeSummary(name, st, anim) {
+        // The Season overlay, as the fire row sees it: two more renderings
+        // (fireseason.js), or null for every other row.
+        function seasonRowState(name) {
+            if (name !== 'fires' || !window.FireSeason) return null;
+            return { front: FireSeason.frontOn(), van: FireSeason.vanguardOn() };
+        }
+        function rowModeSummary(name, st, anim, season) {
             const parts = [];
             let cls = 'dots', forced = false;
             if (st) {
@@ -14974,6 +15065,9 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             }
             anim.forEach(l => parts.push(ANIM_MODE_LABEL[l] || l));
             if (anim.length) cls = 'anim';
+            if (season && season.front) parts.push('front');
+            if (season && season.van) parts.push('vanguard');
+            if (!st && !anim.length && season && (season.front || season.van)) cls = 'season';
             const label = parts.length === 0 ? 'off'
                         : parts.length <= 2 ? parts.join(' · ')
                         : parts.length + ' modes';
@@ -15120,10 +15214,27 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                           + `onclick="event.stopPropagation();setRowAnimLayer('${o.animRow}','${l}')">`
                           + `<span class="mode-mark check"></span>${label.charAt(0).toUpperCase() + label.slice(1)}</button>`;
                 });
-            } else if (animLayers.length) {
-                // Not an offer — a statement, so the absence of the animation
-                // group does not read as "this layer cannot be animated".
-                html += `<div class="mode-menu-note">Open ▶ Animate in the time slider for animated renderings.</div>`;
+            }
+            // (No "open ▶ Animate…" hint when the animator is closed: the
+            // menu says what is on offer now, not what would be elsewhere.)
+            // Season: two renderings of the fire subject read from what
+            // scripts/fire_front.py measured (docs/agents/fire.md). Always
+            // offered on the fire row — they need no animator — and refused
+            // with the reason where the area's front is not built.
+            if (o.animRow === 'fires' && window.FireSeason) {
+                const fm = FireSeason.meta();
+                const refusal = fm && fm.status && !fm.season ? fm.status : null;
+                html += `<div class="mode-menu-head">Season</div>`;
+                [['front', FireSeason.frontOn(), 'Season front',
+                  'Dashed isochrones every 5 days: by this date a fifth of the land that burns in a season had burned within ~60 km. Follows the time slider.'],
+                 ['vanguard', FireSeason.vanguardOn(), 'Vanguard fires',
+                  `Fire chains that began ${FireSeason.LEAD_DAYS}\u2013${FireSeason.LEAD_MAX} days ahead of the season front \u2014 the one population whose day order is measurably real. Bright while ahead, ordinary red once the season caught up.`]
+                ].forEach(([k, on, label, desc]) => {
+                    html += `<button type="button" class="aoi-menu-item mode-opt${on ? ' on' : ''}${refusal && !on ? ' refused' : ''}" `
+                          + `role="menuitemcheckbox" aria-checked="${on}" title="${escapeHtml(refusal && !on ? refusal + ' here \u2014 ' + desc : desc)}" `
+                          + `onclick="event.stopPropagation();setRowSeason('${k}',${!on})">`
+                          + `<span class="mode-mark check"></span>${label}</button>`;
+                });
             }
             if (!html) return;
 
@@ -15152,6 +15263,18 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                                 truncated: s.lastTruncated, detail: mode });
         }
         window.setRowDetail = setRowDetail;
+
+        // The fire row's Season switches: the same state the Map-strip chip
+        // and the fire pins' vanguard mark switch (fireseason.js is the one
+        // owner; everything else re-renders from its onChange).
+        function setRowSeason(which, on) {
+            closeLayerModeMenu();
+            if (!window.FireSeason) return;
+            if (which === 'front') FireSeason.setFront(on); else FireSeason.setVanguard(on);
+            if (window.MapLegend && MapLegend.refresh) MapLegend.refresh();
+            if (typeof updateShareURL === 'function') updateShareURL();
+        }
+        window.setRowSeason = setRowSeason;
 
         function setRowAnimLayer(name, layer) {
             closeLayerModeMenu();
@@ -20848,9 +20971,9 @@ ${starredItems.narratives.map(n => {
                         p.loading = !!busy;
                         if (typeof updatePinnedIndicator === 'function') updatePinnedIndicator();
                     },
-                    onCount: (count, total, render) => {
+                    onCount: (count, total, render, truncated, vanguard) => {
                         const p = pinnedLayers[key];
-                        if (p) { p.featureCount = count; p.totalCount = total; p.render = render; }
+                        if (p) { p.featureCount = count; p.totalCount = total; p.render = render; p.vanguard = vanguard; }
                         if (typeof updatePinnedIndicator === 'function') updatePinnedIndicator();
                     }
                 });
@@ -20863,6 +20986,7 @@ ${starredItems.narratives.map(n => {
                 Object.assign(pinnedLayers[key], {
                     featureCount: st.count || 0,
                     totalCount: st.total || 0,
+                    vanguard: (typeof st.vanguard === 'number') ? st.vanguard : null,
                     loading: false
                 });
                 // The pin is COMPLETE only NOW — icon syncs that ran while the
@@ -21573,7 +21697,7 @@ ${starredItems.narratives.map(n => {
                                 lod: layer.lod, render: layer.render, loading: !!layer.loading,
                                 detail: layer.lod && window.LODLayer ? LODLayer.detail(key) : null,
                                 classification: [layer.classification, layer.age, layer.crop].filter(Boolean).join(' ') || null,
-                                total: layer.totalCount });
+                                total: layer.totalCount, vanguard: layer.vanguard });
         });
         singleKeys.forEach(key => {
             const pin = singlePinnedFeatures[key];
@@ -21668,9 +21792,25 @@ ${starredItems.narratives.map(n => {
                     const chipTitle = p.loading
                         ? `${typeLabels[p.type] || p.type}: loading this view…${clsNote} - × to cancel`
                         : `${typeLabels[p.type] || p.type}: ${count} features${tierNote}${clsNote} - Click to fly to`;
+                    // VANGUARD, ON THE PIN THAT HOLDS THEM. A fire pin's count
+                    // is every chain in view; the few that began 10–60 d ahead
+                    // of the season front are the ones whose day order is
+                    // measurably real (docs/agents/fire.md), so the chip names
+                    // them — in the Season overlay's lead colour, and the mark
+                    // is the switch for that overlay, because "which ones?"
+                    // is the question it raises.
+                    let vanMark = '';
+                    if (!p.loading && typeof p.vanguard === 'number' && p.vanguard > 0 && window.FireSeason) {
+                        const vOn = FireSeason.vanguardOn();
+                        vanMark = `<button type="button" class="chip-van${vOn ? ' on' : ''}" `
+                                + `onclick="event.stopPropagation();setRowSeason('vanguard',${!vOn})" `
+                                + `title="${p.vanguard.toLocaleString()} of these began ${FireSeason.LEAD_DAYS}–${FireSeason.LEAD_MAX} days ahead of the season front (vanguard). `
+                                + `Click to ${vOn ? 'hide' : 'show'} them in lead colour.">`
+                                + `<i class="icon-footprints"></i>${p.vanguard.toLocaleString()}</button>`;
+                    }
                     html += `<span class="pinned-layer-chip ${p.type}${p.loading ? ' is-loading' : ''}" data-chip-key="b:${p.key}" style="cursor:pointer;" onclick="event.stopPropagation(); flyToPinnedLayer('${p.key}')" title="${escapeHtml(chipTitle)}">`;
                     html += `<span class="chip-icon">${icon}</span>`;
-                    html += `${countMark}${p.loading ? '' : lodMark}`;
+                    html += `${countMark}${vanMark}${p.loading ? '' : lodMark}`;
                     html += `<span class="chip-remove" onclick="event.stopPropagation(); removePinnedLayer('${p.key}')" title="Remove">×</span>`;
                     html += `</span>`;
                 } else if (p.isSingle) {
