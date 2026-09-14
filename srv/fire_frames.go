@@ -522,6 +522,7 @@ func (s *Server) HandleAPIFireAnimTrajectories(w http.ResponseWriter, r *http.Re
 		LeadBasis string  `json:"lead_basis,omitempty"`
 		AheadKm   float64 `json:"ahead_km,omitempty"`
 		AheadDays int     `json:"ahead_days,omitempty"`
+		Tier      string  `json:"tier,omitempty"`
 	}
 	out := make([]animGroup, 0, len(cands))
 	const chunk = 900
@@ -569,11 +570,12 @@ func (s *Server) HandleAPIFireAnimTrajectories(w http.ResponseWriter, r *http.Re
 				LeadBasis string  `json:"lead_basis"`
 				AheadKm   float64 `json:"ahead_km"`
 				AheadDays int     `json:"ahead_days"`
+				Tier      string  `json:"evidence_tier"`
 			}
 			if json.Unmarshal([]byte(propsJSON), &props) == nil {
 				g.Vanguard, g.LeadStart = props.Vanguard, props.LeadStart
 				if props.Vanguard {
-					g.Leads, g.LeadBasis, g.AheadKm, g.AheadDays = props.Leads, props.LeadBasis, props.AheadKm, props.AheadDays
+					g.Leads, g.LeadBasis, g.AheadKm, g.AheadDays, g.Tier = props.Leads, props.LeadBasis, props.AheadKm, props.AheadDays, props.Tier
 				}
 				g.Type = props.GroupType
 				g.Km = props.Km

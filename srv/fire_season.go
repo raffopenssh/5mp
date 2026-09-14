@@ -333,6 +333,7 @@ func (s *Server) HandleAPIFireVanguard(w http.ResponseWriter, r *http.Request) {
 		Leads     []*int       `json:"leads"`
 		LeadStart *int         `json:"lead_start"`
 		LeadBasis string       `json:"lead_basis,omitempty"`
+		Tier      string       `json:"tier,omitempty"` // evidence_tier: the width the map draws (supported/weak wider)
 		AheadKm   float64      `json:"ahead_km,omitempty"`
 		AheadDays int          `json:"ahead_days,omitempty"`
 		Season    string       `json:"season,omitempty"`
@@ -365,10 +366,11 @@ func (s *Server) HandleAPIFireVanguard(w http.ResponseWriter, r *http.Request) {
 			AheadKm   float64 `json:"ahead_km"`
 			AheadDays int     `json:"ahead_days"`
 			Season    string  `json:"fire_season"`
+			Tier      string  `json:"evidence_tier"`
 		}
 		if json.Unmarshal([]byte(propsJSON), &props) == nil {
 			g.Type, g.Km, g.Kmd, g.Fires, g.Days = props.GroupType, props.Km, props.Kmd, props.Fires, props.Days
-			g.Leads, g.LeadStart, g.LeadBasis = props.Leads, props.LeadStart, props.LeadBasis
+			g.Leads, g.LeadStart, g.LeadBasis, g.Tier = props.Leads, props.LeadStart, props.LeadBasis, props.Tier
 			g.AheadKm, g.AheadDays, g.Season = props.AheadKm, props.AheadDays, props.Season
 		}
 		out = append(out, g)

@@ -277,6 +277,41 @@ view, the one the instant falls in, with `reached_at_instant`. Styled dashed
 ember red, labelled by date (`styleFireSeasonFront`), temporal on
 `front_date`.
 
+**HANDOVER (2026-09-14 evening) — open points, in priority order.** Delete
+this block when done.
+
+1. **Vanguard width by evidence tier + per-segment lead colour** (asked for;
+   the prototype `scripts/fire_vanguard/render3.py` did both). Plumbing is
+   in: `/api/fire-vanguard` and `/api/fire-anim-trajectories` carry `tier`
+   from `properties_json.evidence_tier` — **but 0 of 8,753 Chinko rows (0
+   overall) have `evidence_tier` in `feature_geometries.properties_json`**
+   even though `load_fire_groups_to_db.py:551` writes it (default
+   `'unmeasured'`) and `rebuild_fire_trajectories_v5.py:1097` computes it.
+   First find out why (rows predate the field? a slimmed properties_json?
+   `fire_front.tag_groups` re-tag dropping keys?) — `SELECT COUNT(*) …
+   properties_json LIKE '%evidence_tier%'` is the check. Then: fireseason.js
+   `splitChain` → one feature per **segment**, colour = `leadColor(mean of the
+   two vertex leads)` with a ramp 0 d orange `#fb923c` → 15 d yellow → ≥ 40 d
+   white (the season arriving turns the line towards fire red; the after-part
+   stays faint ash); `line-width` × 1.35 for `tier ∈ {supported, weak}`
+   (`['match', ['get','tier'], …]` on top of the zoom interpolate); a small
+   white **start dot** (circle layer, `part:'start'`, same source). Mirror the
+   same three rules in `anim.js drawVanguard` (per-segment strokes, tier
+   width, the ignition ring already exists). `tier` must print
+   `unmeasured` when absent (invariant 12), never widen by default.
+2. **Fire-row rendering menu: a "Map" group** with the row's own layer as a
+   checkbox ("Fire trajectories", `toggleViewLayer('fires')`) so trajectories
+   and Season renderings can be switched from one menu (asked for). Generic
+   for every stats row (`openModeMenu` when `o.animRow`): label from
+   `VIEW_LAYER_META`/row name. Placed **above** Season.
+3. Stats readout's front position is at the *window's end*, not the
+   animator's playhead (would need the grid client-side or a per-day call).
+4. `usual_offset_days` is measured per request now → shift-calibrated live
+   `usual` (`lead_basis:'usual'`) is a cheap win still not done.
+5. Speed map layer (eikonal gradient) — descriptive product, not drawn.
+6. XSA AOI fires end 2026-08-06 (AOI runner has not ingested 2026/27).
+7. `db.sqlite3.bak` (23 GB, pre-migration-066) is still on disk.
+
 **Not done / candidates:** speed map layer; shift-calibrated `usual` (the
 `usual_offset_days` now measured per request is the input it needs); the
 stats readout's front position is at the *window's end*, not the animator's
