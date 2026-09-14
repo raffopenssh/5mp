@@ -1106,12 +1106,71 @@ def run_once(conn, aoi_id=None, dataset=None, budget=120, deadline=None):
             "state": state, "detail": detail}
 
 
+FIRE_CATCHUP_DAYS = 7      # an open-ended AOI's fire chain is re-run this often
+
+
+def catch_up_fires(conn):
+    """Requeue fire_v5 for live, open-ended AOIs whose fire chain has gone
+    stale.
+
+    The nightly park job downloads the whole Africa bbox, so fire_detections
+    already holds an AOI's new detections; what does not follow them is the
+    AOI's own derived rows -- aoi_fires membership, trajectories, front,
+    narratives -- because a dataset that reached 'done' is never claimed
+    again. XSA's fires stopped at 2026-08-06 for six weeks that way while the
+    parks under it were current (fire.md "Season front & vanguard", open
+    item 6). Rule: fire_v5 done, fire_gap done (so we are not racing a
+    backfill), no to_date (an AOI with an end date asked a closed question),
+    not archived, last run > FIRE_CATCHUP_DAYS ago, and fire_detections has
+    rows newer than that run inside the AOI bbox -- otherwise a re-run would
+    be two hours of CPU to draw the same picture. Cursor reset, as the
+    /refresh endpoint does for derived datasets: a kept cursor re-runs only
+    the last step.
+    """
+    cutoff = (utcnow() - timedelta(days=FIRE_CATCHUP_DAYS)).isoformat(" ", "seconds")
+    rows = conn.execute("""
+        SELECT d.aoi_id, d.last_run_at FROM aoi_datasets d
+        JOIN aois a ON a.id = d.aoi_id
+        JOIN aoi_datasets g ON g.aoi_id = d.aoi_id AND g.dataset = 'fire_gap'
+        WHERE d.dataset = 'fire_v5' AND d.enabled = 1 AND d.state = 'done'
+          AND g.state = 'done'
+          AND a.archived_at IS NULL AND a.superseded_by IS NULL
+          AND (a.to_date IS NULL OR a.to_date = '')
+          AND (d.last_run_at IS NULL OR d.last_run_at < ?)""", (cutoff,)).fetchall()
+    out = []
+    for r in rows:
+        aoi = aoi_lib.load_aoi(conn, r["aoi_id"])
+        x0, y0, x1, y1 = aoi_lib.aoi_bbox(aoi)
+        since = (r["last_run_at"] or "2000-01-01")[:10]
+        newer = conn.execute("""
+            SELECT 1 FROM fire_detections INDEXED BY idx_fire_date
+            WHERE acq_date > ? AND latitude BETWEEN ? AND ? AND longitude BETWEEN ? AND ?
+            LIMIT 1""", (since, y0, y1, x0, x1)).fetchone()
+        if not newer:
+            continue
+
+        def go(a=r["aoi_id"]):
+            conn.execute("""UPDATE aoi_datasets SET state='pending', cursor=NULL,
+                            units_done=0, next_run_at=NULL, lease_owner=NULL,
+                            lease_until=NULL, detail='catch-up: detections newer than last run'
+                            WHERE aoi_id=? AND dataset='fire_v5' AND state='done'""", (a,))
+            conn.commit()
+        try:
+            retry_write(go, total_wait=BOOKKEEPING_WAIT_S)
+        except sqlite3.OperationalError:
+            continue            # next run
+        log(f"  fire catch-up: requeued {r['aoi_id']}/fire_v5 (last run {r['last_run_at']})")
+        out.append(r["aoi_id"])
+    return out
+
+
 def daily(conn, minutes, budget):
     started = datetime.now()
     deadline = time.time() + minutes * 60
     results = []
     fatal = None
     try:
+        catch_up_fires(conn)
         while time.time() < deadline:
             r = run_once(conn, budget=budget, deadline=deadline)
             if r is None:
