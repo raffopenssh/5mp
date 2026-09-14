@@ -62,6 +62,15 @@
     // Polygons keep dots: a settlement's centroid IS the settlement, at the
     // zoom where this tier applies.
     var SEG_TYPES = { fire_trajectory: true };
+    // A fire trajectory's stroke width carries its link-evidence tier (`ev`,
+    // srv/features_bbox.go — supported / weak / unsupported / single; absent
+    // = unmeasured): a chain whose day order is measured against the
+    // day-shuffled null is drawn x1.35, the same rule the vanguard layer uses
+    // (fireseason.js tierWidth). Unmeasured never widens (invariant 12).
+    function widthExpr(s, w) {
+        if (!s || s.featureType !== 'fire_trajectory') return w;
+        return ['*', w, ['match', ['coalesce', ['get', 'ev'], 'unmeasured'], ['supported', 'weak'], 1.35, 1]];
+    }
 
     // Per-layer detail preference, cycled from the layer's own readout:
     //   'auto'   — the server decides from the true count in view (default)
@@ -182,7 +191,7 @@
                 map.addLayer({
                     id: L.line, type: 'line', source: L.src,
                     filter: ['any', ['==', ['geometry-type'], 'LineString'], ['==', ['geometry-type'], 'MultiLineString']],
-                    paint: { 'line-color': color, 'line-width': s.lineWidth || 2, 'line-opacity': 0 }
+                    paint: { 'line-color': color, 'line-width': widthExpr(s, s.lineWidth || 2), 'line-opacity': 0 }
                 });
                 registerTip(key, L.line, false);
             }
@@ -262,7 +271,7 @@
             // Settle back to the DENSITY width, not to a constant: a
             // hard-coded 2 here silently undid applyDensity and put the red
             // sheet back every time the layer crossed the threshold.
-            : [[L.line, 'line-width', (s.lineWidth || 2) * 3, s.lineWidth || 2],
+            : [[L.line, 'line-width', widthExpr(s, (s.lineWidth || 2) * 3), widthExpr(s, s.lineWidth || 2)],
                [L.point, 'circle-radius', (s.pointRadius || 4) * 2.2, s.pointRadius || 4]];        steps.forEach(function (st) {
             if (!map.getLayer(st[0])) return;
             try {
@@ -341,7 +350,7 @@
                 map.setPaintProperty(id, prop, val);
             } catch (e) {}
         };
-        set(L.line, 'line-width', d.w);
+        set(L.line, 'line-width', widthExpr(s0, d.w));
         set(L.point, 'circle-radius', d.r);
         set(L.point, 'circle-stroke-opacity', d.ring);
         // Opacity is only pushed for layers already visible; fade() owns the

@@ -1461,6 +1461,14 @@ test_api "bbox_fire_vanguard_total" "/api/features-in-bbox?type=fire_trajectory&
 # The animator draws a vanguard chain in lead colour up to the vertex where
 # the season caught up, so its wire format carries per-vertex leads for
 # vanguard groups only.
+# The report side: `leads=N` adds the ranked chains and the tier histogram
+# over ALL vanguard chains in the window, and `words` is the server's one
+# sentence. A tier is a word, never empty ('unmeasured' when unscored), the
+# histogram sums to the window count, and the shortlist is sorted by ahead_km.
+test_api "fire_season_report_leads" "/api/fire-season?area=CAF_Chinko&at=2025-02-28&from=2024-10-01&to=2025-02-28&summary=1&leads=5" "200" \
+    '(.vanguard_top | length) == 5 and ([.vanguard_top[] | .tier | length > 0] | all) and ([.vanguard_top[] | .lead_start >= 10] | all) and (.vanguard_top | map(.ahead_km)) == (.vanguard_top | map(.ahead_km) | sort | reverse) and ([.vanguard_tiers[]] | add) == .vanguard_in_window and (.words | test("^Fire season 2024/25")) and (.words | test("86 fire chains"))'
+test_api "fire_season_no_leads_by_default" "/api/fire-season?area=CAF_Chinko&at=2025-02-28&summary=1" "200" \
+    '.vanguard_top == null and .vanguard_tiers == null and (.words | type == "string")'
 test_api "anim_trajs_vanguard_leads" "/api/fire-anim-trajectories?bbox=23,5,26,8&from=2024-11-01&to=2024-12-31&limit=4000" "200" \
     '([.groups[] | select(.vanguard)] | length > 0) and ([.groups[] | select(.vanguard) | (.leads | length) == (.pts | length)] | all) and ([.groups[] | select(.vanguard | not) | has("leads") | not] | all)'
 

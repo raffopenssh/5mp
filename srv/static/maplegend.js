@@ -1306,6 +1306,7 @@
             'Fire chains that began ' + FireSeason.LEAD_DAYS + '\u2013' + FireSeason.LEAD_MAX +
             ' days ahead of the season front \u2014 bright while ahead, faint once the season caught up',
             'MapLegend.fireSeasonSet(\'vanguard\',' + (!FireSeason.vanguardOn()) + ')', 'check');
+        if (FireSeason.legendHTML && (FireSeason.vanguardOn() || fm.season)) html += FireSeason.legendHTML({ cls: 'in-menu' });
         // No season picker: the front FOLLOWS THE TIME SLIDER (the season the
         // window ends in), as the vanguard chains do. A list of eight years
         // beside a slider that already says the year is a second control for
