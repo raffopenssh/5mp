@@ -4753,3 +4753,31 @@ body.is-guest .session-chip-logout:hover { opacity: 1; background: rgba(251,191,
    overlay's lead colour, inline; the row's title carries the words. */
 .fire-van-mark { flex: none; margin-left: 5px; padding: 1px 4px; border-radius: 6px; border: 1px solid;
     font-size: 8px; font-weight: 600; line-height: 1.2; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.sl-suffix { color: #8b9bb4; flex: 0 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ── SectionLink (srv/static/sectionlink.js): a link button on a heading ── */
+.seclink {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; margin-left: 6px; padding: 0; vertical-align: middle;
+    border: 0; border-radius: 6px; background: transparent; color: inherit; cursor: pointer;
+    opacity: 0; transition: opacity .15s ease, background .15s ease;
+}
+.seclink i { font-size: 13px; line-height: 1; }
+.seclink:hover, .seclink:focus-visible { background: rgba(255,255,255,0.10); opacity: 1; }
+.seclink:focus-visible { outline: 2px solid #22c55e; outline-offset: 1px; }
+h1:hover > .seclink, h2:hover > .seclink, h3:hover > .seclink, h4:hover > .seclink,
+[data-seclink]:focus > .seclink, [data-seclink]:hover > .seclink { opacity: 0.75; }
+@media (hover: none) { .seclink { opacity: 0.45; } }   /* no hover on touch: keep it discoverable */
+/* the once-highlight when a link lands on a section */
+[data-seclink] { outline: none; scroll-margin-top: 16px; }
+.seclink-target { animation: seclink-flash 2.2s ease-out 1; border-radius: 6px; }
+@keyframes seclink-flash {
+    0%   { background: rgba(34,197,94,0.35); box-shadow: 0 0 0 6px rgba(34,197,94,0.35); }
+    60%  { background: rgba(34,197,94,0.12); box-shadow: 0 0 0 6px rgba(34,197,94,0.12); }
+    100% { background: transparent; box-shadow: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .seclink { transition: none; }
+    .seclink-target { animation: none; background: rgba(34,197,94,0.18); box-shadow: 0 0 0 6px rgba(34,197,94,0.18); }
+}
