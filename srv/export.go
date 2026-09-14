@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"net/http"
+	"sync"
 	"time"
 )
 
@@ -19,6 +20,86 @@ type ParkExportRow struct {
 	SettlementCount  int64
 	DeforestationKm2 float64
 	RoadlessPct      float64
+}
+
+// parkFireCountMemo holds the per-park inside-boundary detection count.
+// The GROUP BY behind it walks 7.9M index entries and then the table for
+// `protected_area_id` (idx_fire_infraction is not covering) — ~20 s warm,
+// 60 s+ cold. Detections are append-only (daily FIRMS ingest), so
+// MAX(rowid) is an O(1) fingerprint of the input: same rowid → same answer.
+// When the fingerprint moves, the previous answer is served once more while
+// one goroutine recomputes (stale-while-revalidate); only the very first
+// request after a restart pays the full price.
+type parkFireCountMemo struct {
+	mu         sync.Mutex
+	maxRowid   int64
+	counts     map[string]int64
+	refreshing bool
+}
+
+var parkFireCounts = &parkFireCountMemo{}
+
+func (s *Server) parkFireCounts() map[string]int64 {
+	var maxRowid int64
+	_ = s.DB.QueryRow(`SELECT COALESCE(MAX(rowid), 0) FROM fire_detections`).Scan(&maxRowid)
+
+	m := parkFireCounts
+	m.mu.Lock()
+	if m.counts != nil && (m.maxRowid == maxRowid || m.refreshing) {
+		c := m.counts
+		m.mu.Unlock()
+		return c
+	}
+	if m.counts != nil {
+		// Stale but present: hand back the old answer, refresh off the request.
+		m.refreshing = true
+		c := m.counts
+		m.mu.Unlock()
+		go func() {
+			counts := s.queryParkFireCounts()
+			m.mu.Lock()
+			if counts != nil {
+				m.counts, m.maxRowid = counts, maxRowid
+			}
+			m.refreshing = false
+			m.mu.Unlock()
+		}()
+		return c
+	}
+	m.mu.Unlock()
+
+	counts := s.queryParkFireCounts()
+	if counts == nil {
+		return map[string]int64{}
+	}
+	m.mu.Lock()
+	m.counts, m.maxRowid = counts, maxRowid
+	m.mu.Unlock()
+	return counts
+}
+
+func (s *Server) queryParkFireCounts() map[string]int64 {
+	rows, err := s.DB.Query(`
+		SELECT protected_area_id, COUNT(*) AS fire_count
+		FROM fire_detections
+		WHERE protected_area_id IS NOT NULL AND protected_area_id != ''` + fireInsideOnlySQL + `
+		GROUP BY protected_area_id`)
+	if err != nil {
+		return nil
+	}
+	defer rows.Close()
+	counts := map[string]int64{}
+	for rows.Next() {
+		var parkID string
+		var n int64
+		if err := rows.Scan(&parkID, &n); err == nil {
+			counts[parkID] = n
+		}
+	}
+	if len(counts) == 0 {
+		return nil // a no-op must not read as an answer (invariant 1)
+	}
+	return counts
 }
 
 // HandleAPIExportParks exports park data as CSV.
@@ -47,25 +128,12 @@ func (s *Server) HandleAPIExportParks(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Query fire_detections: count per park. Inside the boundary only —
-	// `protected_area_id` alone is a 100 km catchment (srv/fire_containment.go),
-	// and a published CSV is the figure people quote.
-	fireRows, err := s.DB.Query(`
-		SELECT protected_area_id, COUNT(*) as fire_count 
-		FROM fire_detections 
-		WHERE protected_area_id IS NOT NULL AND protected_area_id != ''` + fireInsideOnlySQL + `
-		GROUP BY protected_area_id
-	`)
-	if err == nil {
-		defer fireRows.Close()
-		for fireRows.Next() {
-			var parkID string
-			var count int64
-			if err := fireRows.Scan(&parkID, &count); err == nil {
-				if row, ok := parkData[parkID]; ok {
-					row.FireCount = count
-				}
-			}
+	// Fire count per park, inside the boundary only — `protected_area_id`
+	// alone is a 100 km catchment (srv/fire_containment.go), and a published
+	// CSV is the figure people quote. Memoised: see parkFireCounts.
+	for parkID, count := range s.parkFireCounts() {
+		if row, ok := parkData[parkID]; ok {
+			row.FireCount = count
 		}
 	}
 
