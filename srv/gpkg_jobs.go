@@ -100,7 +100,7 @@ func gpkgCacheKey(areaID, from, to string, effort, rawFire bool, env string) str
 	// dissolve reproduces the app's published cluster counts) and
 	// hist_place/_dist_km/_source on settlements + deforestation where the
 	// 1908-1976 Sudan survey sheets overlap the area.
-	const gpkgFormatVersion = "v3"
+	const gpkgFormatVersion = "v4"
 	return strings.Join([]string{gpkgFormatVersion, areaID, from, to, fmt.Sprint(effort), fmt.Sprint(rawFire), env}, "|")
 }
 

@@ -1439,6 +1439,31 @@ if [[ -n "$CLIENT_PWD" ]]; then
     fi
 fi
 
+yellow "\n=== Season front & vanguard (docs/agents/fire.md) ==="
+# Where the front stands at `at`, from the stored int16 grids: a share in
+# (0,100] mid-season, a measured early/late offset, and the vanguard count
+# in the reader's window — the numbers the stats row, the chip and the
+# region tips print. Chinko 2024/25 is a complete season with a front.
+test_api "fire_season_summary_no_contours" "/api/fire-season?area=CAF_Chinko&at=2024-12-01&summary=1" "200" \
+    '.season == "2024/25" and .contours == null and (.front_reached_pct | . > 0 and . < 100) and (.usual_offset_days | type == "number")'
+test_api "fire_season_window_count" "/api/fire-season?area=CAF_Chinko&at=2025-03-31&from=2024-08-01&to=2025-03-31&summary=1" "200" \
+    '(.vanguard_in_window | type == "number") and .vanguard_in_window <= .vanguard_groups and .front_reached_pct > 99'
+test_api "fire_season_before_front" "/api/fire-season?area=CAF_Chinko&at=2024-08-15&summary=1" "200" \
+    '.front_reached_pct == 0 and .usual_offset_days == null'
+test_api "fire_season_full_has_contours" "/api/fire-season?area=CAF_Chinko&at=2024-12-01" "200" '(.contours | length) > 0'
+# The stats panel's season row is fed by /api/stats under the fire row's
+# own scope and window (one view, one basis).
+test_api "stats_vanguard_groups" "/api/stats?park_focus=CAF_Chinko&from=2024-08-01&to=2025-03-31" "200" \
+    '(.vanguard_groups | type == "number") and .vanguard_groups > 0 and .vanguard_groups < .total_fires'
+# A fire pin names its vanguard share over the WHOLE set in view.
+test_api "bbox_fire_vanguard_total" "/api/features-in-bbox?type=fire_trajectory&bbox=23,5,26,8&from=2024-08-01&to=2025-03-31&limit=10" "200" \
+    '(.vanguard_total | type == "number") and .vanguard_total > 0 and .vanguard_total <= .total and .count == 10'
+# The animator draws a vanguard chain in lead colour up to the vertex where
+# the season caught up, so its wire format carries per-vertex leads for
+# vanguard groups only.
+test_api "anim_trajs_vanguard_leads" "/api/fire-anim-trajectories?bbox=23,5,26,8&from=2024-11-01&to=2024-12-31&limit=4000" "200" \
+    '([.groups[] | select(.vanguard)] | length > 0) and ([.groups[] | select(.vanguard) | (.leads | length) == (.pts | length)] | all) and ([.groups[] | select(.vanguard | not) | has("leads") | not] | all)'
+
 echo
 echo "======================================="
 if [[ $FAILED -eq 0 ]]; then

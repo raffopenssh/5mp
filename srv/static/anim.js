@@ -591,6 +591,10 @@
                     // can answer a hover without a second request (probeFrame).
                     return { pts, t0: pts[0][2], t1: pts[pts.length - 1][2], type: g.type, kmd: g.kmd,
                              id: g.id, park: g.park, km: g.km, vanguard: !!g.vanguard, lead_start: g.lead_start,
+                             // per-vertex lead, vanguard chains only: where the
+                             // season caught up with the chain (drawVanguard)
+                             leads: Array.isArray(g.leads) && g.leads.length === pts.length ? g.leads : null,
+                             lead_basis: g.lead_basis, ahead_km: g.ahead_km, ahead_days: g.ahead_days,
                              fires: g.fires, days: g.days, frp: g.frp, narrative: g.narrative };
                 }).filter(g => g.pts.length >= 2);
                 if (j.truncated) truncNote('fire paths', 'trajs', j.count, j.total);
@@ -1863,6 +1867,7 @@
             // the map does not. Same ash-out; a little more ink, since they
             // are the few hundred lines that carry measured information.
             const vanOn = !!(window.FireSeason && FireSeason.vanguardOn());
+            const vanLater = [];   // vanguard chains draw after the field, on top
             for (const g of D.trajs) {
                 if (g.t0 > t) continue;
                 if (g._off) continue;
@@ -1876,8 +1881,9 @@
                     alpha = inkA * (1 - fade);             // …then vanish
                 }
                 const isVan = vanOn && g.vanguard;
-                ctx.strokeStyle = isVan ? vanColor(g.lead_start, ash, alpha) : ashColor(ash, alpha);
-                ctx.lineWidth = (t <= g.t1 ? inkW : inkW * 0.6) * (isVan ? 1.35 : 1);
+                if (isVan) { vanLater.push([g, alpha, ash]); continue; }
+                ctx.strokeStyle = ashColor(ash, alpha);
+                ctx.lineWidth = (t <= g.t1 ? inkW : inkW * 0.6);
                 ctx.lineJoin = 'round'; ctx.lineCap = 'round';
                 ctx.beginPath();
                 let started = false, headX = null, headY = null;
@@ -1918,9 +1924,144 @@
                     ctx.beginPath(); ctx.arc(headX, headY, headR, 0, 6.283); ctx.fill();
                 }
             }
+            for (const [g, alpha, ash] of vanLater) drawVanguard(ctx, g, t, alpha, ash, inkW, headR);
         }
 
         if (clipped) ctx.restore();
+    }
+
+    // ---------- vanguard chains ----------
+    //
+    // A vanguard chain is a fire that BEGAN 10–60 days ahead of the season
+    // front and is the one population whose day-to-day order is measurably
+    // real (docs/agents/fire.md § Season front & vanguard). The plain
+    // trajectory drawing says none of that, so while the Season overlay is on
+    // these chains are drawn as what they are:
+    //
+    //   * IGNITION — a ring that opens at the first vertex over the chain's
+    //     first days, in lead colour: a light struck where nothing was
+    //     burning yet.
+    //   * AHEAD — the run is drawn in lead colour (yellow 10 d → cyan 60 d,
+    //     FireSeason.leadColor) with a wide soft halo, the head a
+    //     lead-coloured glow with a slow pulse: this movement is ahead of the
+    //     season, and the colour says by how much.
+    //   * CAUGHT UP — from the vertex where its per-vertex lead crosses zero
+    //     the chain continues in ordinary fire red: the season has arrived
+    //     and the line is now one fire among the field's. (The map layer
+    //     splits the same chain at the same vertex, fireseason.js.)
+    //   * ASH — the same ash-out as every trajectory, so the two populations
+    //     age alike.
+    //
+    // Drawn after the field so the few hundred chains that carry information
+    // sit on top of the thousands that do not.
+    function drawVanguard(ctx, g, t, alpha, ash, inkW, headR) {
+        const scr = g._scr, pts = g.pts, leads = g.leads;
+        const lead = g.lead_start == null ? 10 : g.lead_start;
+        const live = t <= g.t1;
+        const w = (live ? inkW : inkW * 0.6) * 1.4;
+        ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+
+        // Walk the chain up to t, splitting where the lead crosses zero.
+        // parts: [{ahead:bool, xs:[x,y,...]}]
+        const parts = [];
+        let cur = null, curAhead = null, headX = null, headY = null, headAhead = true;
+        const push = (x, y, ahead) => {
+            if (cur === null || ahead !== curAhead) {
+                const seam = cur ? [cur.xs[cur.xs.length - 2], cur.xs[cur.xs.length - 1]] : null;
+                cur = { ahead, xs: seam ? seam.slice() : [] };
+                curAhead = ahead;
+                parts.push(cur);
+            }
+            cur.xs.push(x, y);
+            headX = x; headY = y; headAhead = ahead;
+        };
+        for (let i = 0; i < pts.length; i++) {
+            const pt = pts[i];
+            const ahead = !leads || leads[i] == null || leads[i] >= 0;
+            if (pt[2] <= t) { push(scr[i * 2], scr[i * 2 + 1], ahead); continue; }
+            if (i > 0) {
+                const prev = pts[i - 1], span = pt[2] - prev[2];
+                if (span > 0) {
+                    const frac = (t - prev[2]) / span;
+                    if (frac > 0) {
+                        const x = scr[(i - 1) * 2] + (scr[i * 2] - scr[(i - 1) * 2]) * frac;
+                        const y = scr[(i - 1) * 2 + 1] + (scr[i * 2 + 1] - scr[(i - 1) * 2 + 1]) * frac;
+                        push(x, y, curAhead === null ? ahead : curAhead);
+                    }
+                }
+            }
+            break;
+        }
+        if (!parts.length) return;
+
+        // Halo under the ahead run: wide, soft, lead-coloured. Fresh only —
+        // ash has no halo, the point of ash is that the story is over.
+        if (ash < 0.6) {
+            ctx.strokeStyle = vanColor(lead, ash, alpha * 0.22 * (1 - ash / 0.6));
+            ctx.lineWidth = w * 3.2;
+            for (const p of parts) {
+                if (!p.ahead || p.xs.length < 4) continue;
+                ctx.beginPath(); ctx.moveTo(p.xs[0], p.xs[1]);
+                for (let k = 2; k < p.xs.length; k += 2) ctx.lineTo(p.xs[k], p.xs[k + 1]);
+                ctx.stroke();
+            }
+        }
+        for (const p of parts) {
+            ctx.strokeStyle = p.ahead ? vanColor(lead, ash, alpha) : ashColor(ash, alpha);
+            ctx.lineWidth = p.ahead ? w : w / 1.4;
+            if (p.xs.length >= 4) {
+                ctx.beginPath(); ctx.moveTo(p.xs[0], p.xs[1]);
+                for (let k = 2; k < p.xs.length; k += 2) ctx.lineTo(p.xs[k], p.xs[k + 1]);
+                ctx.stroke();
+            } else if (p.xs.length === 2 && parts.length === 1) {
+                // one vertex so far: a dot, so a chain that has just begun is
+                // still on screen rather than waiting for its second day
+                ctx.fillStyle = ctx.strokeStyle;
+                ctx.beginPath(); ctx.arc(p.xs[0], p.xs[1], w * 0.8, 0, 6.283); ctx.fill();
+            }
+        }
+
+        // Ignition ring: opens over the first 4 days at the first vertex.
+        const age = (t - g.t0) / DAY;
+        if (age >= 0 && age < 4) {
+            const k = age / 4;
+            const r = 3 + k * 16;
+            ctx.strokeStyle = vanColor(lead, 0, 0.9 * (1 - k));
+            ctx.lineWidth = 1.5 * (1 - k) + 0.5;
+            ctx.beginPath(); ctx.arc(scr[0], scr[1], r, 0, 6.283); ctx.stroke();
+            if (k < 0.5) {
+                ctx.fillStyle = vanColor(lead, 0, 0.9 * (1 - k * 2));
+                ctx.beginPath(); ctx.arc(scr[0], scr[1], 2.5, 0, 6.283); ctx.fill();
+            }
+        }
+
+        // Head: while the run is ahead of the season it glows in lead colour
+        // with a slow pulse; once caught up it is the ordinary fire head.
+        if (headX !== null && t <= g.t1 + 2 * DAY) {
+            if (headAhead && live) {
+                const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 420 + (scr[0] % 7));
+                const R = headR * (1.3 + 0.35 * pulse);
+                const hex = FireSeason.leadColor(lead);
+                const r0 = parseInt(hex.slice(1, 3), 16), g0 = parseInt(hex.slice(3, 5), 16), b0 = parseInt(hex.slice(5, 7), 16);
+                const gr = ctx.createRadialGradient(headX, headY, 0, headX, headY, R);
+                gr.addColorStop(0, 'rgba(255,255,255,0.95)');
+                gr.addColorStop(0.35, `rgba(${r0},${g0},${b0},0.85)`);
+                gr.addColorStop(1, `rgba(${r0},${g0},${b0},0)`);
+                ctx.fillStyle = gr;
+                ctx.beginPath(); ctx.arc(headX, headY, R, 0, 6.283); ctx.fill();
+                // a thin ring at the pulse's edge: the scout, not just a spark
+                ctx.strokeStyle = `rgba(${r0},${g0},${b0},${0.35 * (1 - pulse)})`;
+                ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.arc(headX, headY, R * (1.1 + 0.5 * pulse), 0, 6.283); ctx.stroke();
+            } else {
+                const gr = ctx.createRadialGradient(headX, headY, 0, headX, headY, headR);
+                gr.addColorStop(0, 'rgba(255,220,120,0.95)');
+                gr.addColorStop(0.4, 'rgba(255,120,50,0.7)');
+                gr.addColorStop(1, 'rgba(255,120,50,0)');
+                ctx.fillStyle = gr;
+                ctx.beginPath(); ctx.arc(headX, headY, headR, 0, 6.283); ctx.fill();
+            }
+        }
     }
 
     // ---------- playback ----------
@@ -2269,11 +2410,24 @@
             g.frp ? 'Intensity ' + Math.round(g.frp) + ' MW' : null,
             g.kmd ? g.kmd.toFixed(1) + ' km/day' : null
         ];
+        // Season position, in the same words the pinned-layer tip uses
+        // (globe.html fireSeasonLine) — a paused frame answers like a layer.
+        // At the playhead a vanguard chain also says whether the season has
+        // caught up with it YET, which is what the colour on screen means.
+        let season = (typeof fireSeasonLine === 'function') ? fireSeasonLine(g, '11px') : '';
+        if (g.vanguard && g.leads && active) {
+            let i = 0;
+            while (i + 1 < g.pts.length && g.pts[i + 1][2] <= t) i++;
+            const L = g.leads[i];
+            if (L != null) season += '<div class="maptip-meta" style="color:' + (L >= 0 ? '#fde047' : '#9ca3af') + '">' +
+                (L >= 0 ? 'Still ' + L + ' d ahead of the season front here' : 'The season caught up ' + (-L) + ' d ago — now one fire among the field’s') + '</div>';
+        }
         return {
-            html: '<div class="maptip-label">Fire path · ' +
+            html: '<div class="maptip-label">' + (g.vanguard ? 'Vanguard fire path' : 'Fire path') + ' · ' +
                       (active ? '<span class="maptip-hot">burning</span>' : 'ended') +
                       ' at ' + fmtDateHuman(t) + '</div>' +
                   (g.narrative ? '<div class="maptip-body">' + g.narrative + '</div>' : '') +
+                  season +
                   '<div class="maptip-meta">' + bits.filter(Boolean).join(' · ') + '</div>'
         };
     }
@@ -2429,7 +2583,9 @@
                 // both keeps the cache key honest about which frame it was.
                 to: A.toISO,
                 at: fmtDate(A.t),
-                layers: on,
+                // The Season overlay is not an animator chip but it IS on
+                // screen: the file carries its front contours too.
+                layers: (window.FireSeason && FireSeason.frontOn()) ? on.concat(['season']) : on,
                 aoi: A.aoiID || '',
                 label: 'this view at ' + fmtDateHuman(A.t),
             });

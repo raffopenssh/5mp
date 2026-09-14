@@ -1213,6 +1213,30 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Vanguard chains — fire trajectories that began 10–60 d ahead of the
+	// season front (scripts/fire_front.py) — under the SAME scope, window and
+	// bbox as the fire count above, so the panel's season row and its fire
+	// row describe one view. Partial index idx_fg_vanguard keeps it ~ms.
+	var vanguardGroups int
+	{
+		q := `SELECT COUNT(*) FROM feature_geometries INDEXED BY idx_fg_vanguard
+			WHERE vanguard = 1` + scopeSQL("park_id")
+		var args []interface{}
+		if fromStr != "" {
+			q += " AND start_date >= ?"
+			args = append(args, fromStr)
+		}
+		if toStr != "" {
+			q += " AND start_date <= ?"
+			args = append(args, toStr)
+		}
+		if len(bbox) == 4 {
+			q += " AND bbox_maxx >= ? AND bbox_minx <= ? AND bbox_maxy >= ? AND bbox_miny <= ?"
+			args = append(args, bbox[0], bbox[2], bbox[1], bbox[3])
+		}
+		s.DB.QueryRow(q, args...).Scan(&vanguardGroups)
+	}
+
 	// Deforestation stats from feature_geometries with bbox + date filtering
 	// Uses precomputed stat_value column (= area_km2) for fast aggregation
 	{
@@ -1293,6 +1317,7 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 		"total_patrols":       totalUploads,
 		"total_fires":         totalFires,
 		"fire_trend":          fireTrend,
+		"vanguard_groups":     vanguardGroups,
 		"total_deforestation": totalDeforestation,
 		"deforest_trend":      deforestTrend,
 		"total_settlements":   totalSettlements,

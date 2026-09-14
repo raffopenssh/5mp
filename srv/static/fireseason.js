@@ -28,7 +28,7 @@
     'use strict';
 
     var FRONT_SRC = 'fireseason-front-src', FRONT_LYR = 'fireseason-front',
-        FRONT_LBL = 'fireseason-front-label',
+        FRONT_LBL = 'fireseason-front-label', FRONT_WAVE = 'fireseason-front-wave',
         VAN_SRC = 'fireseason-van-src', VAN_LYR = 'fireseason-van',
         VAN_DIM_LYR = 'fireseason-van-dim';
 
@@ -55,22 +55,32 @@
     }
 
     /* ── colour ───────────────────────────────────────────────────────────
-     * Front: cool ramp, early (pale) → late (deep blue-violet). Deliberately
-     * not a warm colour: the fire lines are red and orange, and a contour in
-     * the same family would read as another fire. Vanguard: yellow → cyan by
-     * how far ahead the chain began; both ends are far from the fire red. */
+     * One fire palette, three roles told apart by LINE STYLE first and hue
+     * second, so the picture survives greyscale:
+     *
+     *   trajectories  solid red, glowing head            (anim.js / lodlayer)
+     *   front         thin DASHED isochrones, ember red (early) → pale rose
+     *                 (late): the season's own colour, ageing to ash as it
+     *                 passes, and dashed because an isochrone is a contour,
+     *                 not a thing that burned
+     *   vanguard      solid, wider, with a halo, yellow (10 d ahead) → white
+     *                 (60 d): the hottest, brightest lines on the map — the
+     *                 few that carry measured information — and in greyscale
+     *                 simply the lightest
+     *
+     * Nothing cool-hued: a blue line beside red fire read as a second data
+     * family (water, roads), and the reader had to be told it was fire. */
     function lerp(a, b, t) { return a + (b - a) * t; }
     function hex(r, g, b) {
         return '#' + [r, g, b].map(function (v) { v = Math.max(0, Math.min(255, Math.round(v))); return (v < 16 ? '0' : '') + v.toString(16); }).join('');
     }
-    function frontColor(t) {           // t 0..1 early→late
-        // #e0f2fe → #38bdf8 → #6d28d9
-        if (t < 0.5) { var u = t / 0.5; return hex(lerp(224, 56, u), lerp(242, 189, u), lerp(254, 248, u)); }
-        var v = (t - 0.5) / 0.5; return hex(lerp(56, 109, v), lerp(189, 40, v), lerp(248, 217, v));
+    function frontColor(t) {           // t 0..1 early→late: #ef4444 → #fb923c → #fecdd3
+        if (t < 0.5) { var u = t / 0.5; return hex(lerp(239, 251, u), lerp(68, 146, u), lerp(68, 60, u)); }
+        var v = (t - 0.5) / 0.5; return hex(lerp(251, 254, v), lerp(146, 205, v), lerp(60, 211, v));
     }
-    function leadColor(lead) {         // 10 d → yellow, 60 d → cyan
+    function leadColor(lead) {         // 10 d → yellow #fde047, 60 d → white
         var t = Math.max(0, Math.min(1, (lead - 10) / 50));
-        return hex(lerp(253, 34, t), lerp(224, 211, t), lerp(71, 238, t));
+        return hex(lerp(253, 255, t), lerp(224, 255, t), lerp(71, 255, t));
     }
 
     /* ── layers ─────────────────────────────────────────────────────────── */
@@ -78,12 +88,23 @@
         if (!map || !map.getStyle()) return;
         if (!map.getSource(FRONT_SRC)) map.addSource(FRONT_SRC, { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
         if (!map.getSource(VAN_SRC)) map.addSource(VAN_SRC, { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+        if (!map.getLayer(FRONT_WAVE)) {
+            // The animator's wave: a wide blurred stroke on the contours the
+            // season reached in the last few days, fading as they age. Silent
+            // (opacity 0) outside an animation; drawn under the crisp lines.
+            map.addLayer({
+                id: FRONT_WAVE, type: 'line', source: FRONT_SRC,
+                layout: { 'line-cap': 'round', 'line-join': 'round' },
+                paint: { 'line-color': ['get', 'color'], 'line-width': 14, 'line-blur': 6, 'line-opacity': 0 }
+            });
+        }
         if (!map.getLayer(FRONT_LYR)) {
             map.addLayer({
                 id: FRONT_LYR, type: 'line', source: FRONT_SRC,
                 layout: { 'line-cap': 'round', 'line-join': 'round' },
                 paint: {
                     'line-color': ['get', 'color'],
+                    'line-dasharray': [2.5, 2],   // a contour, not a fire line — legible in greyscale
                     'line-width': ['case', ['get', 'label'], 1.6, 0.7],
                     'line-opacity': ['case', ['get', 'label'], 0.9, 0.55]
                 }
@@ -130,7 +151,7 @@
     }
     function applyVisibility() {
         if (!map) return;
-        [FRONT_LYR, FRONT_LBL].forEach(function (id) { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', st.front ? 'visible' : 'none'); });
+        [FRONT_LYR, FRONT_LBL, FRONT_WAVE].forEach(function (id) { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', st.front ? 'visible' : 'none'); });
         [VAN_LYR, VAN_DIM_LYR].forEach(function (id) { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', st.van ? 'visible' : 'none'); });
     }
     function setData(src, features) {
@@ -143,8 +164,32 @@
         var f = focusId(), c = map.getCenter();
         var u = '/api/fire-season?pwd=' + pwd() + (f ? '&area=' + encodeURIComponent(f)
             : '&lon=' + c.lng.toFixed(3) + '&lat=' + c.lat.toFixed(3));
-        if (dates().to) u += '&at=' + dates().to;   // the season the window ends in
+        var d = dates();
+        if (d.to) u += '&at=' + d.to;   // the season the window ends in
+        if (d.from) u += '&from=' + d.from;   // vanguard_in_window: the panel's basis
+        if (d.to) u += '&to=' + d.to;
         return u;
+    }
+
+    /* ── summary for tips ───────────────────────────────────────────────
+     * The park/AOI hover tips ask "where does the season stand here" for
+     * an area that may not be the one drawn. summary=1 skips the contour
+     * geometry (up to 300 KB), the answer is cached per area+window, and
+     * the caller is told once when it lands (a tip re-renders itself). */
+    var sumCache = {};
+    function summary(areaId, onDone) {
+        if (!areaId) return null;
+        var d = dates();
+        var key = areaId + '|' + d.from + '|' + d.to;
+        if (key in sumCache) return sumCache[key];
+        sumCache[key] = null;   // in flight
+        var u = '/api/fire-season?pwd=' + pwd() + '&area=' + encodeURIComponent(areaId) + '&summary=1';
+        if (d.to) u += '&at=' + d.to + '&to=' + d.to;
+        if (d.from) u += '&from=' + d.from;
+        fetch(u).then(function (r) { return r.ok ? r.json() : { status: 'not available' }; })
+            .catch(function () { return { status: 'not available' }; })
+            .then(function (j) { sumCache[key] = j || { status: 'not available' }; if (onDone) onDone(sumCache[key]); });
+        return null;
     }
     function frontInView() {
         // Cheap: is the view centre inside the grid we already hold? Only
@@ -158,7 +203,7 @@
         if (!st.front || !map) return Promise.resolve();
         var key = (focusId() || 'pt') + '|@' + dates().to;
         if (!force && key === frontKey && front && (focusId() || frontInView())) return Promise.resolve();
-        inflight++;
+        inflight++; emit();
         return fetch(frontURL()).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
             inflight--;
             frontKey = key;
@@ -172,6 +217,8 @@
                     var t = hi > lo ? (f.properties.dos - lo) / (hi - lo) : 0.5;
                     f.properties.color = frontColor(t);
                     f.properties.label = !!f.properties.label;
+                    // numeric time for the animator's age expressions
+                    f.properties.t = Date.parse((f.properties.date || '') + 'T00:00:00Z') || 0;
                     (f.geometry.coordinates || []).forEach(function (line) {
                         line.forEach(function (p) {
                             if (p[0] < bb[0]) bb[0] = p[0]; if (p[1] < bb[1]) bb[1] = p[1];
@@ -184,7 +231,7 @@
             }
             setData(FRONT_SRC, feats);
             refreshStrip();
-        }).catch(function () { inflight--; });
+        }).catch(function () { inflight--; emit(); });
     }
 
     /* ── vanguard ───────────────────────────────────────────────────────── */
@@ -234,7 +281,7 @@
         if (!st.van || !map) return Promise.resolve();
         var key = vanURL();
         if (!force && key === vanKey) return Promise.resolve();
-        inflight++;
+        inflight++; emit();
         return fetch(key).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
             inflight--;
             vanKey = key;
@@ -243,7 +290,7 @@
             ((j && j.groups) || []).forEach(function (g) { feats = feats.concat(splitChain(g)); });
             setData(VAN_SRC, feats);
             refreshStrip();
-        }).catch(function () { inflight--; });
+        }).catch(function () { inflight--; emit(); });
     }
 
     /* ── tip ─────────────────────────────────────────────────────────────── */
@@ -287,12 +334,25 @@
     function onFocus() { if (anyOn()) { frontKey = ''; loadFront(true); loadVan(true); } }
 
     /* ── animator ───────────────────────────────────────────────────────
-     * The animator hands us its playhead (ms). Contours the season had not
-     * reached by then are hidden; the one it reached most recently is drawn
-     * heavier, so the reader sees the front MOVE as the fires build up under
-     * it. Updated only when the day changes: setFilter on a 30-feature source
-     * is cheap, but not 60 times a second. null = whole season again. */
-    var animDay = null;
+     * The animator hands us its playhead (ms). The front is a MapLibre
+     * layer, not canvas, so it animates through data-driven paint: every
+     * contour carries its own time `t`, and the expressions below turn
+     * (playhead − t) into ink —
+     *
+     *   * not yet reached      → hidden (filter)
+     *   * reached < ~5 d ago   → the WAVE: a wide soft glow plus a heavy
+     *                            crisp line, its date labelled even on an
+     *                            unlabelled 5-day contour, so the reader
+     *                            sees the season ARRIVE and reads when
+     *   * older                → thins and dims with age, the labelled
+     *                            15-day lines staying legible as the wake
+     *
+     * so the front MOVES across the area as the fires build up under it,
+     * the way the trajectories build vertex by vertex. Repainting is
+     * throttled to ~12/s: setPaintProperty on a 30-feature source is cheap,
+     * but not 60 times a second on top of the canvas. null = whole season. */
+    var animDay = null, animWall = 0, animT = null, animTrail = null;
+    var DAY_MS = 86400000;
     function animAt(t) {
         if (!map || !map.getLayer(FRONT_LYR)) return;
         // While the animator runs it draws the vanguard chains itself, built
@@ -303,23 +363,39 @@
             if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', (st.van && !animating) ? 'visible' : 'none');
         });
         if (t == null) {
+            clearTimeout(animTrail);
             if (animDay === null) return;
-            animDay = null;
+            animDay = null; animT = null;
             map.setFilter(FRONT_LYR, null);
             map.setFilter(FRONT_LBL, ['==', ['get', 'label'], true]);
+            map.setFilter(FRONT_WAVE, null);
+            map.setPaintProperty(FRONT_WAVE, 'line-opacity', 0);
             map.setPaintProperty(FRONT_LYR, 'line-width', ['case', ['get', 'label'], 1.6, 0.7]);
             map.setPaintProperty(FRONT_LYR, 'line-opacity', ['case', ['get', 'label'], 0.9, 0.55]);
             return;
         }
-        var iso = new Date(t).toISOString().slice(0, 10);
-        if (iso === animDay) return;
-        animDay = iso;
-        map.setFilter(FRONT_LYR, ['<=', ['get', 'date'], iso]);
-        map.setFilter(FRONT_LBL, ['all', ['==', ['get', 'label'], true], ['<=', ['get', 'date'], iso]]);
-        // "Recent" = within one contour step (5 d) of the playhead.
-        var recent = new Date(t - 5 * 86400000).toISOString().slice(0, 10);
-        map.setPaintProperty(FRONT_LYR, 'line-width', ['case', ['>=', ['get', 'date'], recent], 2.6, ['get', 'label'], 1.4, 0.6]);
-        map.setPaintProperty(FRONT_LYR, 'line-opacity', ['case', ['>=', ['get', 'date'], recent], 1.0, ['get', 'label'], 0.8, 0.45]);
+        var now = performance.now();
+        if (animT !== null && Math.abs(t - animT) < 0.1 * DAY_MS) return;   // same tenth of a day: nothing to say
+        if (animT !== null && now - animWall < 80) {                          // ~12 repaints/s is plenty…
+            // …but the LAST position of a scrub must land: trail it.
+            clearTimeout(animTrail);
+            animTrail = setTimeout(function () { if (animDay !== null) animAt(t); }, 90);
+            return;
+        }
+        clearTimeout(animTrail);
+        animWall = now; animT = t; animDay = new Date(t).toISOString().slice(0, 10);
+        var ageD = ['/', ['-', t, ['get', 't']], DAY_MS];                    // days since the season reached this line
+        var reached = ['<=', ['get', 't'], t];
+        map.setFilter(FRONT_LYR, reached);
+        map.setFilter(FRONT_WAVE, ['all', reached, ['>=', ['get', 't'], t - 6 * DAY_MS]]);
+        map.setFilter(FRONT_LBL, ['all', reached, ['any', ['==', ['get', 'label'], true], ['>=', ['get', 't'], t - 6 * DAY_MS]]]);
+        map.setPaintProperty(FRONT_WAVE, 'line-opacity',
+            ['interpolate', ['linear'], ageD, 0, 0.6, 2.5, 0.4, 6, 0]);
+        map.setPaintProperty(FRONT_LYR, 'line-width',
+            ['*', ['case', ['get', 'label'], 1.0, 0.6],
+                ['interpolate', ['linear'], ageD, 0, 3.6, 4, 2.6, 10, 1.9, 40, 1.5, 120, 1.3]]);
+        map.setPaintProperty(FRONT_LYR, 'line-opacity',
+            ['interpolate', ['linear'], ageD, 0, 1.0, 5, 0.9, 20, 0.65, 60, 0.4, 150, 0.3]);
     }
 
     /* ── public ─────────────────────────────────────────────────────────── */
@@ -335,6 +411,7 @@
         vanguardOn: function () { return st.van; },
         meta: function () { return front; },
         vanguard: function () { return van; },
+        summary: summary,
         busy: function () { return inflight > 0; },
         onChange: function (fn) { listeners.push(fn); },
         setFront: function (want) {

@@ -175,6 +175,32 @@ func styleFireTrajectory() string {
 	}, colFire, 0.5, 0))
 }
 
+// Season front isochrones: dashed (a contour, not a fire line — legible in
+// greyscale), in the app's ember red, the labelled 15-day lines heavier.
+// Labels carry the date.
+func styleFireSeasonFront() string {
+	mk := func(name, rgb string, width float64) string {
+		return qmlSymbol("line", name,
+			qmlOpt("line_color", rgb+",255"),
+			qmlOpt("line_width", fmt.Sprintf("%g", width)),
+			qmlOpt("line_width_unit", "MM"),
+			qmlOpt("use_custom_dash", "1"),
+			qmlOpt("customdash", "2.5;1.5"),
+			qmlOpt("customdash_unit", "MM"),
+			qmlOpt("capstyle", "round"),
+			qmlOpt("joinstyle", "round"))
+	}
+	return qmlDoc(`<renderer-v2 type="categorizedSymbol" attr="labelled" forceraster="0" symbollevels="0" enableorderby="0">
+  <categories>
+<category render="1" value="1" label="Every 15 days (labelled)" symbol="0"/>
+<category render="1" value="0" label="Every 5 days" symbol="1"/>
+  </categories>
+  <symbols>
+`+mk("0", "251,146,60", 0.5)+"\n"+mk("1", "220,38,38", 0.3)+`
+  </symbols>
+</renderer-v2>`+"\n"+qmlLabels("label", 7, "254,205,211", 2))
+}
+
 // Detections come from the area's BOUNDING BOX, so the layer legitimately
 // contains points outside the area (kept as context, flagged in_area). The
 // renderer says so: inside is the hot orange the app uses, outside a muted

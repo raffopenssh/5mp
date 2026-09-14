@@ -63,6 +63,10 @@ var viewLayerTables = map[string][]string{
 	"effortGrid":  {"patrol_effort"},
 	"effortPts":   {"patrol_effort"},
 	"infra":       {"roads", "rivers", "places", "waterbodies"},
+	// Not an animator chip but the Map-strip Season overlay; anim.js adds
+	// it to `layers` when FireSeason is on, so the file holds what the
+	// screen showed.
+	"season": {"fire_season_front"},
 }
 
 func (v gpkgViewOpts) wants(table string) bool {
@@ -130,6 +134,7 @@ func (s *Server) buildViewGeoPackage(path string, o gpkgExportOpts) ([]gpkgLayer
 	}{
 		{"view frame", func() error { return s.gpkgViewFrame(w, o) }},
 		{"fire trajectories", func() error { return s.gpkgViewTrajectories(w, o) }},
+		{"fire season front", func() error { return s.gpkgViewSeasonFront(w, o) }},
 		{"fire detections", func() error { return s.gpkgViewDetections(w, o) }},
 		{"deforestation", func() error { return s.gpkgViewPolygons(w, o, "deforestation") }},
 		{"settlements", func() error { return s.gpkgViewPolygons(w, o, "settlement") }},
@@ -232,7 +237,10 @@ func (s *Server) gpkgViewTrajectories(w *gpkgWriter, o gpkgExportOpts) error {
 			{"distance_km", "REAL"}, {"avg_speed_km_day", "REAL"}, {"direction", "TEXT"},
 			{"position", "TEXT"}, {"pct_inside", "REAL"}, {"dist_to_park_km", "REAL"},
 			{"season", "TEXT"}, {"nearest_place", "TEXT"}, {"nearest_river", "TEXT"},
-			{"active_at_instant", "BOOLEAN"}, {"narrative", "TEXT"},
+			{"active_at_instant", "BOOLEAN"},
+			{"fire_season", "TEXT"}, {"lead_start_days", "INTEGER"}, {"lead_basis", "TEXT"},
+			{"vanguard", "BOOLEAN"}, {"ahead_km", "REAL"}, {"ahead_days", "INTEGER"},
+			{"narrative", "TEXT"},
 		})
 	if err != nil {
 		return err
@@ -280,9 +288,106 @@ func (s *Server) gpkgViewTrajectories(w *gpkgWriter, o gpkgExportOpts) error {
 			gpkgJSONStr(p, "direction"), gpkgJSONStr(p, "position"),
 			gpkgJSONNum(p, "pct_inside"), gpkgJSONNum(p, "dist_to_park_km"),
 			gpkgJSONStr(p, "season"), gpkgJSONStr(p, "nearest_place"),
-			gpkgJSONStr(p, "nearest_river"), active, gpkgJSONStr(p, "narrative"))
+			gpkgJSONStr(p, "nearest_river"), active,
+			gpkgJSONStr(p, "fire_season"), gpkgJSONInt(p, "lead_start"), gpkgJSONStr(p, "lead_basis"),
+			gpkgJSONBool(p, "vanguard"), gpkgJSONNum(p, "ahead_km"), gpkgJSONInt(p, "ahead_days"),
+			gpkgJSONStr(p, "narrative"))
 	}
 	w.SetStyle("fire_trajectories", styleFireTrajectory(), "Coloured by fire behaviour type")
+	return nil
+}
+
+// gpkgViewSeasonFront: the front contours of every area whose season grid
+// overlaps the view, for the season the paused instant (or the window's end)
+// falls in — the same choice fireseason.js makes from the slider. AOIs only
+// when the view is scoped to that AOI (the job runs without the reader's
+// session, so this is the one visibility rule it can honour).
+func (s *Server) gpkgViewSeasonFront(w *gpkgWriter, o gpkgExportOpts) error {
+	v := o.View
+	if !v.wants("fire_season_front") {
+		return nil
+	}
+	at := o.viewTo()
+	q := `SELECT area_id, season, season_start, season_end, complete, contours_json
+		FROM fire_season_front
+		WHERE contours_json IS NOT NULL
+		  AND x0 <= ? AND x0 + res * nx >= ? AND y0 <= ? AND y0 + res * ny >= ?`
+	args := []interface{}{v.BBox[2], v.BBox[0], v.BBox[3], v.BBox[1]}
+	// Parks always; this AOI's own front when the view is scoped to it.
+	q += " AND (area_id NOT IN (SELECT id FROM aois) OR area_id = ?)"
+	args = append(args, v.AOIID)
+	q += " ORDER BY area_id, season_start"
+	rows, err := s.DB.Query(q, args...)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	type row struct {
+		area, season, s0, s1, cj string
+		complete                 int
+	}
+	byArea := map[string][]row{}
+	order := []string{}
+	for rows.Next() {
+		var r row
+		if rows.Scan(&r.area, &r.season, &r.s0, &r.s1, &r.complete, &r.cj) != nil {
+			continue
+		}
+		if _, ok := byArea[r.area]; !ok {
+			order = append(order, r.area)
+		}
+		byArea[r.area] = append(byArea[r.area], r)
+	}
+	var l *gpkgLayer
+	for _, a := range order {
+		rs := byArea[a]
+		pick := rs[len(rs)-1]
+		if at != "" {
+			for _, r := range rs {
+				if r.s0 <= at && at <= r.s1 {
+					pick = r
+					break
+				}
+			}
+		}
+		var feats []struct {
+			Geometry   json.RawMessage `json:"geometry"`
+			Properties struct {
+				Dos   int    `json:"dos"`
+				Date  string `json:"date"`
+				Label bool   `json:"label"`
+				Text  string `json:"text"`
+			} `json:"properties"`
+		}
+		if json.Unmarshal([]byte(pick.cj), &feats) != nil || len(feats) == 0 {
+			continue
+		}
+		if l == nil {
+			l, err = w.AddLayer("fire_season_front", "GEOMETRY",
+				"Fire season front (scripts/fire_front.py): isochrones every 5 days of the day on which "+
+					"20 % of the land that burns in a season had burned within 60 km. One season per area: "+
+					"the one the exported instant falls in.", []gpkgCol{
+					{"area_id", "TEXT"}, {"season", "TEXT"}, {"season_start", "DATE"}, {"season_end", "DATE"},
+					{"season_complete", "BOOLEAN"}, {"day_of_season", "INTEGER"}, {"front_date", "DATE"},
+					{"reached_at_instant", "BOOLEAN"}, {"labelled", "BOOLEAN"}, {"label", "TEXT"},
+				})
+			if err != nil {
+				return err
+			}
+		}
+		for _, f := range feats {
+			reached := interface{}(nil)
+			if v.At != "" {
+				reached = gpkgBool(f.Properties.Date <= v.At)
+			}
+			l.Add(string(f.Geometry), pick.area, pick.season, gpkgDate(pick.s0), gpkgDate(pick.s1),
+				gpkgBool(pick.complete == 1), f.Properties.Dos, gpkgDate(f.Properties.Date), reached,
+				gpkgBool(f.Properties.Label), f.Properties.Text)
+		}
+	}
+	if l != nil {
+		w.SetStyle("fire_season_front", styleFireSeasonFront(), "Season front isochrones")
+	}
 	return nil
 }
 

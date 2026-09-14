@@ -26,6 +26,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -121,16 +122,36 @@ func (s *Server) HandleAPIFireSeason(w http.ResponseWriter, r *http.Request) {
 	}
 	var (
 		seasonStart, latest, contours, stats sql.NullString
-		complete, startMonth                 int
+		complete, startMonth, nx, ny         int
 		computedAt                           string
+		frontBlob, usualBlob                 []byte
 	)
 	err = s.DB.QueryRowContext(r.Context(), `
-		SELECT season_start, complete, start_month, latest_day, contours_json, stats_json, computed_at
+		SELECT season_start, complete, start_month, latest_day, contours_json, stats_json, computed_at,
+		       nx, ny, front, usual
 		FROM fire_season_front WHERE area_id = ? AND season = ?`, area, want).
-		Scan(&seasonStart, &complete, &startMonth, &latest, &contours, &stats, &computedAt)
+		Scan(&seasonStart, &complete, &startMonth, &latest, &contours, &stats, &computedAt,
+			&nx, &ny, &frontBlob, &usualBlob)
 	if err != nil {
 		http.Error(w, `{"error":"no such season"}`, http.StatusNotFound)
 		return
+	}
+	// Where the front stands at `at` (the slider's end): the share of cells
+	// that will carry a front this season which it has reached, and how
+	// this season compares with the usual one over those cells (median of
+	// front − usual, days; + = later than usual). Both from the stored
+	// int16 grids — 40 KB, not the 300 KB contour JSON — so the stats row
+	// and the hover tips can ask with summary=1 and get no geometry.
+	var atDos *int
+	var frontPct, usualOffset *float64
+	if at := q.Get("at"); at != "" && seasonStart.Valid {
+		if t, ok := parseISODate(at); ok {
+			if t0, ok := parseISODate(seasonStart.String); ok {
+				d := int(t.Sub(t0).Hours() / 24)
+				atDos = &d
+				frontPct, usualOffset = frontProgress(frontBlob, usualBlob, nx, ny, d)
+			}
+		}
 	}
 	// Vanguard chains of this area in this season: the count the chip menu
 	// prints, from the same rows the layer draws (invariant 7: one number).
@@ -145,9 +166,33 @@ func (s *Server) HandleAPIFireSeason(w http.ResponseWriter, r *http.Request) {
 		SELECT COUNT(*) FROM feature_geometries
 		WHERE feature_type='fire_trajectory' AND vanguard=1 AND park_id=?
 		  AND start_date >= ? AND start_date <= ?`, area, seasonStart.String, sEnd).Scan(&nVan)
+	// …and in the reader's window (from/to), which is what the stats panel
+	// counts everything else by. Two numbers, two names (invariant 7).
+	var nVanWin interface{}
+	if from, to := q.Get("from"), q.Get("to"); from != "" || to != "" {
+		if from == "" {
+			from = "2012-01-01"
+		}
+		if to == "" {
+			to = time.Now().UTC().Format("2006-01-02")
+		}
+		var n int
+		s.DB.QueryRowContext(r.Context(), `
+			SELECT COUNT(*) FROM feature_geometries INDEXED BY idx_fg_vanguard
+			WHERE vanguard=1 AND park_id=? AND start_date >= ? AND start_date <= ?`, area, from, to).Scan(&n)
+		nVanWin = n
+	}
+	var contoursOut json.RawMessage
+	if q.Get("summary") == "" {
+		contoursOut = json.RawMessage(orNull(contours))
+	}
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"area":            area,
-		"vanguard_groups": nVan,
+		"area":               area,
+		"vanguard_groups":    nVan,
+		"vanguard_in_window": nVanWin,
+		"at_dos":             atDos,
+		"front_reached_pct":  frontPct,
+		"usual_offset_days":  usualOffset,
 		"season":          want,
 		"seasons":         seasons,
 		"season_start":    seasonStart.String,
@@ -156,8 +201,52 @@ func (s *Server) HandleAPIFireSeason(w http.ResponseWriter, r *http.Request) {
 		"latest_day":      latest.String,
 		"computed_at":     computedAt,
 		"stats":           json.RawMessage(orNull(stats)),
-		"contours":        json.RawMessage(orNull(contours)),
+		"contours":        contoursOut,
 	})
+}
+
+// frontProgress reads the packed int16 day-of-season grids (scripts/
+// fire_front.py pack(): -1 = no front) and answers, for day-of-season d:
+// the share of front-bearing cells reached by d, and the median (front −
+// usual) over those cells where both are known. nil = nothing to measure.
+func frontProgress(front, usual []byte, nx, ny, d int) (*float64, *float64) {
+	n := nx * ny
+	if n <= 0 || len(front) < 2*n {
+		return nil, nil
+	}
+	haveUsual := len(usual) >= 2*n
+	total, reached := 0, 0
+	offs := make([]int, 0, 1024)
+	for i := 0; i < n; i++ {
+		f := int(int16(uint16(front[2*i]) | uint16(front[2*i+1])<<8))
+		if f < 0 {
+			continue
+		}
+		total++
+		if f <= d {
+			reached++
+			if haveUsual {
+				u := int(int16(uint16(usual[2*i]) | uint16(usual[2*i+1])<<8))
+				if u >= 0 {
+					offs = append(offs, f-u)
+				}
+			}
+		}
+	}
+	if total == 0 {
+		return nil, nil
+	}
+	pct := 100 * float64(reached) / float64(total)
+	var off *float64
+	if len(offs) >= 20 { // a handful of cells is not a season's tendency
+		sort.Ints(offs)
+		m := float64(offs[len(offs)/2])
+		if len(offs)%2 == 0 {
+			m = (float64(offs[len(offs)/2-1]) + m) / 2
+		}
+		off = &m
+	}
+	return &pct, off
 }
 
 func orNull(n sql.NullString) string {
