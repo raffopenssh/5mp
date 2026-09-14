@@ -273,6 +273,62 @@ Triggers re-analysis of all parks with recent fire activity.
 
 ---
 
+## Fire Season Front & Vanguard
+
+Where the burning season had arrived by when, and the fire chains that ran
+ahead of it (method: `docs/agents/fire.md`). Parks **and** AOIs (AOI ids
+answer only if visible to the caller; otherwise 404).
+
+### Season summary (the call a report wants)
+```
+GET /api/fire-season?area=CAF_Chinko&summary=1&from=2024-10-01&to=2025-02-28&at=2025-02-28&leads=20
+```
+
+| param | meaning |
+|---|---|
+| `area` | park or AOI id (or `lon`/`lat` → the area whose front grid holds the point) |
+| `summary=1` | no contour GeoJSON (up to 300 KB) |
+| `at` | picks the season the date falls in and measures the front's standing that day |
+| `from`/`to` | window for `vanguard_in_window`, `vanguard_top`, `vanguard_tiers` |
+| `leads=N` | add the N vanguard chains that ran furthest ahead, plus the tier histogram |
+
+**Response (summary):**
+```json
+{
+  "season": "2024/25", "complete": true,
+  "stats": {"front_first": "2024-11-03", "front_median": "2024-12-09", "front_last": "2025-01-24", "detections": 234615},
+  "front_reached_pct": 100, "usual_offset_days": -21,
+  "vanguard_groups": 87, "vanguard_in_window": 86,
+  "vanguard_tiers": {"supported": 30, "weak": 41, "unsupported": 12, "unmeasured": 3},
+  "vanguard_top": [{"id": "CAF_Chinko_2024_grp_fe4fb7b6", "start": "2024-10-16", "lead_start": 38, "lead_basis": "front",
+                    "ahead_km": 106.8, "ahead_days": 8, "tier": "supported", "fires": 12, "direction": "NE",
+                    "nearest_place": "Guérékindo", "nearest_place_km": 20.5, "lon": 23.64, "lat": 5.0, "narrative": "…"}],
+  "words": "Fire season 2024/25: the front first arrived 2024-11-03, … 86 fire chains in the window began 10–60 days ahead of the front (vanguard) …"
+}
+```
+
+- `words` is the server's one sentence — quote it rather than re-deriving.
+- `tier` is the day-order evidence of the chain against a day-shuffled null:
+  `supported` / `weak` (drawn wide on the map) / `unsupported` / `single` /
+  `unmeasured` (not yet scored — never treat as good).
+- `lead_basis`: `front` = this season's measured front; `usual` = prior
+  seasons (live, before this season's front arrived).
+- `usual_offset_days`: median (front − usual) over reached cells; negative =
+  earlier than usual. `null` = nothing to measure.
+- No front built yet → `{"status": "not yet computed", "season": null}`.
+
+### Contours and chains for a map
+```
+GET /api/fire-season?area=CAF_Chinko&at=2024-12-15          # + contours (GeoJSON, dos/date/label)
+GET /api/fire-vanguard?bbox=23,5,26,8&from=2024-10-01&to=2025-02-28   # chains in view: pts, per-vertex leads, tier
+```
+
+Fire narratives (`/api/parks/{id}/fire-narrative`) carry the same fields per
+group: `lead_start`, `lead_basis`, `vanguard`, `ahead_km`, `ahead_days`,
+`evidence_tier`.
+
+---
+
 ## Grid/Effort Data
 
 ### Get Grid Data
