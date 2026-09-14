@@ -14,6 +14,8 @@ type ParkExportRow struct {
 	Country          string
 	AreaKm2          float64
 	FireCount        int64
+	FireGroups       int64 // fire_trajectory chains (feature_geometries)
+	VanguardGroups   int64 // of those, began 10–60 d ahead of the season front (NULL front → 0, and fire_groups says so)
 	SettlementCount  int64
 	DeforestationKm2 float64
 	RoadlessPct      float64
@@ -62,6 +64,46 @@ func (s *Server) HandleAPIExportParks(w http.ResponseWriter, r *http.Request) {
 			if err := fireRows.Scan(&parkID, &count); err == nil {
 				if row, ok := parkData[parkID]; ok {
 					row.FireCount = count
+				}
+			}
+		}
+	}
+
+	// Fire chains and the vanguard among them — from one table, so the two
+	// columns are a ratio a reader may take. `vanguard` is NULL where the
+	// area's season front is not built; it counts as 0 here because the CSV
+	// has no NULL, and fire_groups beside it says how much was looked at.
+	//
+	// Two queries, not one: SUM(vanguard) over the whole table is not
+	// covered by any index (4.3 s, reads every page); COUNT(*) per park is
+	// covered by idx_fg_dist_park (0.1 s) and the vanguard rows by the
+	// partial idx_fg_vanguard (51k rows, 0.1 s).
+	chainRows, err := s.DB.Query(`
+		SELECT park_id, COUNT(*) FROM feature_geometries
+		WHERE feature_type = 'fire_trajectory' GROUP BY park_id`)
+	if err == nil {
+		defer chainRows.Close()
+		for chainRows.Next() {
+			var parkID string
+			var n int64
+			if err := chainRows.Scan(&parkID, &n); err == nil {
+				if row, ok := parkData[parkID]; ok {
+					row.FireGroups = n
+				}
+			}
+		}
+	}
+	vanRows, err := s.DB.Query(`
+		SELECT park_id, COUNT(*) FROM feature_geometries INDEXED BY idx_fg_vanguard
+		WHERE vanguard = 1 GROUP BY park_id`)
+	if err == nil {
+		defer vanRows.Close()
+		for vanRows.Next() {
+			var parkID string
+			var v int64
+			if err := vanRows.Scan(&parkID, &v); err == nil {
+				if row, ok := parkData[parkID]; ok {
+					row.VanguardGroups = v
 				}
 			}
 		}
@@ -137,7 +179,7 @@ func (s *Server) HandleAPIExportParks(w http.ResponseWriter, r *http.Request) {
 	defer csvWriter.Flush()
 
 	// Write header
-	header := []string{"park_id", "name", "country", "area_km2", "fire_count", "settlement_count", "deforestation_km2", "roadless_pct"}
+	header := []string{"park_id", "name", "country", "area_km2", "fire_count", "fire_groups", "vanguard_groups", "settlement_count", "deforestation_km2", "roadless_pct"}
 	if err := csvWriter.Write(header); err != nil {
 		http.Error(w, "Failed to write CSV header", http.StatusInternalServerError)
 		return
@@ -151,6 +193,8 @@ func (s *Server) HandleAPIExportParks(w http.ResponseWriter, r *http.Request) {
 			row.Country,
 			fmt.Sprintf("%.2f", row.AreaKm2),
 			fmt.Sprintf("%d", row.FireCount),
+			fmt.Sprintf("%d", row.FireGroups),
+			fmt.Sprintf("%d", row.VanguardGroups),
 			fmt.Sprintf("%d", row.SettlementCount),
 			fmt.Sprintf("%.4f", row.DeforestationKm2),
 			fmt.Sprintf("%.2f", row.RoadlessPct),

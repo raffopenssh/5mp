@@ -195,6 +195,7 @@ func (s *Server) HandleAPIFireSeason(w http.ResponseWriter, r *http.Request) {
 	// is measured. Window = from/to when given, else the season.
 	var vanTop []vanLead
 	var vanTiers map[string]int
+	var vanMarks []vanMark
 	if n, _ := strconv.Atoi(q.Get("leads")); n > 0 {
 		wf, wt := q.Get("from"), q.Get("to")
 		if wf == "" {
@@ -203,7 +204,17 @@ func (s *Server) HandleAPIFireSeason(w http.ResponseWriter, r *http.Request) {
 		if wt == "" {
 			wt = sEnd
 		}
-		vanTop, vanTiers = s.vanguardLeads(r, area, wf, wt, n)
+		vanTop, vanTiers, vanMarks = s.vanguardLeads(r, area, wf, wt, n)
+	}
+	// The season as a curve (summary=1): share of front-bearing cells
+	// reached per 5 d of season, this season and the usual one, so the
+	// popup can draw the S-curve with the vanguard ignitions ticked along
+	// it. ~75 numbers, not 300 KB of contours.
+	var curve interface{}
+	if q.Get("summary") != "" {
+		if fc, uc := frontCurve(frontBlob, usualBlob, nx, ny, 5); fc != nil {
+			curve = map[string]interface{}{"step_days": 5, "front": fc, "usual": uc}
+		}
 	}
 	var frontStats struct {
 		First  string `json:"front_first"`
@@ -219,6 +230,8 @@ func (s *Server) HandleAPIFireSeason(w http.ResponseWriter, r *http.Request) {
 		"vanguard_in_window": nVanWin,
 		"vanguard_top":       vanTop,
 		"vanguard_tiers":     vanTiers,
+		"vanguard_marks":     vanMarks,
+		"front_curve":        curve,
 		"at_dos":             atDos,
 		"front_reached_pct":  frontPct,
 		"usual_offset_days":  usualOffset,
@@ -266,17 +279,27 @@ type vanLead struct {
 // the top n by ahead_km (ties: lead_start), and the evidence-tier histogram
 // over ALL of them — the histogram must describe the population the count
 // describes, not the shortlist.
-func (s *Server) vanguardLeads(r *http.Request, area, from, to string, n int) ([]vanLead, map[string]int) {
+// vanMark is the least a timeline needs of one vanguard chain: the day it
+// began, how far ahead of the front, and its id so a tick can be clicked.
+type vanMark struct {
+	ID   string `json:"id"`
+	Day  string `json:"d"`
+	Lead *int   `json:"lead"`
+	Tier string `json:"tier"`
+}
+
+func (s *Server) vanguardLeads(r *http.Request, area, from, to string, n int) ([]vanLead, map[string]int, []vanMark) {
 	rows, err := s.DB.QueryContext(r.Context(), `
 		SELECT feature_id, start_date, end_date, geojson, properties_json
 		FROM feature_geometries INDEXED BY idx_fg_vanguard
 		WHERE vanguard=1 AND park_id=? AND start_date >= ? AND start_date <= ?`, area, from, to)
 	if err != nil {
-		return nil, nil
+		return nil, nil, nil
 	}
 	defer rows.Close()
 	tiers := map[string]int{}
 	var all []vanLead
+	marks := []vanMark{}
 	for rows.Next() {
 		var fid, sd, ed, geojson, propsJSON string
 		if rows.Scan(&fid, &sd, &ed, &geojson, &propsJSON) != nil {
@@ -310,6 +333,7 @@ func (s *Server) vanguardLeads(r *http.Request, area, from, to string, n int) ([
 			l.Lon, l.Lat = pts[0][0], pts[0][1]
 		}
 		all = append(all, l)
+		marks = append(marks, vanMark{ID: fid, Day: sd, Lead: p.LeadStart, Tier: p.Tier})
 	}
 	sort.SliceStable(all, func(i, j int) bool {
 		if all[i].AheadKm != all[j].AheadKm {
@@ -330,7 +354,8 @@ func (s *Server) vanguardLeads(r *http.Request, area, from, to string, n int) ([
 	if all == nil {
 		all = []vanLead{}
 	}
-	return all, tiers
+	sort.Slice(marks, func(i, j int) bool { return marks[i].Day < marks[j].Day })
+	return all, tiers, marks
 }
 
 // seasonWords is the season's one-sentence summary. Every number in it is
@@ -607,4 +632,60 @@ func (s *Server) fireSeasonAreaAt(r *http.Request, lon, lat float64) string {
 		}
 	}
 	return park
+}
+
+// frontCurve is the season as one line: for every `step` days of season, the
+// share of front-bearing cells the front has reached — and the same for the
+// usual (median of past seasons) grid, so the reader sees this season's
+// S-curve beside the usual one. `usual` is nil when no past season exists.
+// nil, nil when nothing carries a front. The popup's season sparkline is
+// drawn from this; nothing there is computed client-side.
+func frontCurve(front, usual []byte, nx, ny, step int) (fc, uc []float64) {
+	n := nx * ny
+	if n <= 0 || len(front) < 2*n || step <= 0 {
+		return nil, nil
+	}
+	const days = 366
+	hf := make([]int, days+1)
+	hu := make([]int, days+1)
+	tf, tu := 0, 0
+	haveUsual := len(usual) >= 2*n
+	for i := 0; i < n; i++ {
+		f := int(int16(uint16(front[2*i]) | uint16(front[2*i+1])<<8))
+		if f >= 0 {
+			if f > days {
+				f = days
+			}
+			hf[f]++
+			tf++
+		}
+		if haveUsual {
+			u := int(int16(uint16(usual[2*i]) | uint16(usual[2*i+1])<<8))
+			if u >= 0 {
+				if u > days {
+					u = days
+				}
+				hu[u]++
+				tu++
+			}
+		}
+	}
+	if tf == 0 {
+		return nil, nil
+	}
+	cum := func(h []int, total int) []float64 {
+		if total == 0 {
+			return nil
+		}
+		out := make([]float64, 0, days/step+2)
+		acc := 0
+		for d := 0; d <= days; d++ {
+			acc += h[d]
+			if d%step == 0 || d == days {
+				out = append(out, math.Round(1000*float64(acc)/float64(total))/10)
+			}
+		}
+		return out
+	}
+	return cum(hf, tf), cum(hu, tu)
 }
