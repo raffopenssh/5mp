@@ -1314,7 +1314,9 @@
             html += '<div class="ml-note" style="padding:6px 12px;opacity:.7;font-size:11px">Season ' + esc(fm.season || '') +
                 ' (follows the time slider) \u00b7 front first reached ' +
                 esc(fm.stats.front_first) + ', half the area by ' + esc(fm.stats.front_median) + ', last ' +
-                esc(fm.stats.front_last) + ' \u00b7 ' + (fm.complete ? 'season complete' : 'season in progress') + '</div>';
+                esc(fm.stats.front_last) + ' \u00b7 ' + (fm.complete ? 'season complete' : 'season in progress') +
+                (fm.vanguard_groups != null ? ' \u00b7 ' + fm.vanguard_groups + ' fire chain' + (fm.vanguard_groups === 1 ? '' : 's') +
+                    ' began ' + FireSeason.LEAD_DAYS + '\u2013' + FireSeason.LEAD_MAX + ' d ahead of it' : '') + '</div>';
         } else if (fm.status) {
             html += '<div class="ml-note" style="padding:6px 12px;opacity:.7;font-size:11px">' + esc(fm.status) +
                 (fm.area === null ? '' : ' \u2014 the nightly rotation builds ~25 areas a night') + '</div>';
