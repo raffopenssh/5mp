@@ -164,6 +164,8 @@ class NarrativeGeneratorV5:
                     # V5 fields
                     'trajectory_type': t.get('trajectory_type', 'unknown'),
                     'zigzag_ratio': t.get('zigzag_ratio', 0),
+                    'evidence_bits': t.get('evidence_bits'),
+                    'evidence_tier': t.get('evidence_tier', 'unmeasured'),
                     'origin': {
                         'nearest_place': {'name': t.get('nearest_place'), 'distance_km': t.get('nearest_place_dist')} if t.get('nearest_place') else None,
                         'nearest_river': {'name': t.get('nearest_river'), 'distance_km': t.get('nearest_river_dist')} if t.get('nearest_river') else None

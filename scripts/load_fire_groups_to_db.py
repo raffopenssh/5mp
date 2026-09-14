@@ -545,6 +545,11 @@ class FireGroupLoader:
                 # V5 fields
                 "trajectory_type": group.get('trajectory_type', 'unknown'),
                 "zigzag_ratio": group.get('zigzag_ratio', 0),
+                # V8 link evidence: log2 likelihood ratio (real vs day-shuffled)
+                # summed over links; tier word; mean assignment margin.
+                "evidence_bits": group.get('evidence_bits'),
+                "evidence_tier": group.get('evidence_tier', 'unmeasured'),
+                "link_margin": group.get('link_margin'),
                 "year": group.get('year', 2024),
             }
             

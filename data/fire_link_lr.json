@@ -1,0 +1,91 @@
+{
+ "feature": "min_pair_km_per_day",
+ "description": "nearest detection-to-detection distance between consecutive linked slice-clusters, divided by the gap in days; LR = P(real)/P(day-shuffled)",
+ "bins_km": [
+  0,
+  0.25,
+  0.5,
+  1,
+  2,
+  3,
+  4,
+  6,
+  8,
+  12,
+  16,
+  null
+ ],
+ "log2_lr": [
+  2.55,
+  1.44,
+  0.755,
+  0.05,
+  -0.144,
+  -0.339,
+  -0.29,
+  -0.296,
+  -0.361,
+  -0.469,
+  -0.661
+ ],
+ "real_hist": [
+  3384,
+  1586,
+  1949,
+  2249,
+  1983,
+  1776,
+  3689,
+  3403,
+  4834,
+  1807,
+  579
+ ],
+ "null_hist": [
+  1102,
+  1115,
+  2203,
+  4143,
+  4181,
+  4287,
+  8601,
+  7970,
+  11839,
+  4773,
+  1747
+ ],
+ "calibration": [
+  {
+   "aoi": "XSA_Study_Area",
+   "park": null,
+   "date_from": "2024-01-01",
+   "date_to": "2024-03-31",
+   "bbox": "24,6,26,8",
+   "detections": 140075,
+   "real_links": 7862,
+   "null_links": 14915
+  },
+  {
+   "aoi": null,
+   "park": "CAF_Chinko",
+   "date_from": "2023-11-01",
+   "date_to": "2024-04-30",
+   "bbox": null,
+   "detections": 153000,
+   "real_links": 16598,
+   "null_links": 31908
+  },
+  {
+   "aoi": null,
+   "park": "TZA_Serengeti",
+   "date_from": "2024-06-01",
+   "date_to": "2024-10-31",
+   "bbox": null,
+   "detections": 40010,
+   "real_links": 2779,
+   "null_links": 5138
+  }
+ ],
+ "builder_sha256": "0a5d33edf9dd0eb5",
+ "computed_at": "2026-09-14T11:23:22+00:00"
+}
