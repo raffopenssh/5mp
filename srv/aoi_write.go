@@ -439,8 +439,16 @@ func (s *Server) HandleAPIAOIRefresh(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Cursor reset only for the derived layers; the downloads keep theirs.
+	// A derived dataset's cursor is its position in a chain of steps, and a
+	// "recompute" that keeps it recomputes nothing: fire_v5 sat at
+	// {"i":4} of a 4-step chain, so a refresh re-ran only the narratives
+	// (until 2026-09-14). Downloads (fire_gap, gfw, …) keep theirs — that
+	// is unspent FIRMS quota.
 	q := `UPDATE aoi_datasets SET state='pending', next_run_at=NULL,
-	          lease_owner=NULL, lease_until=NULL
+	          lease_owner=NULL, lease_until=NULL,
+	          cursor=CASE WHEN dataset IN (` + aoiDerivedDatasetsSQL + `) THEN NULL ELSE cursor END,
+	          units_done=CASE WHEN dataset IN (` + aoiDerivedDatasetsSQL + `) THEN 0 ELSE units_done END
 	      WHERE aoi_id = ? AND enabled = 1 AND state != 'running'`
 	args := []any{a.ID}
 	if only != "" {
@@ -451,8 +459,7 @@ func (s *Server) HandleAPIAOIRefresh(w http.ResponseWriter, r *http.Request) {
 		q += ` AND dataset = ?`
 		args = append(args, only)
 	} else {
-		// Cursor reset only for the derived layers; the downloads keep theirs.
-		q += ` AND dataset IN ('clip','fire_v5','deforestation','basin')`
+		q += ` AND dataset IN (` + aoiDerivedDatasetsSQL + `)`
 	}
 	// Same wait-it-out treatment as archive/cancel: this is the Resume button
 	// on the progress card, and a batch job holding the writer must not turn it
@@ -507,6 +514,11 @@ func (s *Server) HandleAPIAOICancel(w http.ResponseWriter, r *http.Request) {
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"cancelled": n, "aoi": a.ID})
 }
+
+// aoiDerivedDatasetsSQL names the datasets computed from rows we already
+// hold (no download, no quota); a refresh restarts these from step 0.
+// scripts/aoi_runner.py catch_up_fires() requeues fire_v5 the same way.
+const aoiDerivedDatasetsSQL = `'clip','fire_v5','deforestation','basin'`
 
 func isKnownAOIDataset(name string) bool {
 	for _, d := range defaultAOIDatasets {
