@@ -359,9 +359,21 @@ resets cursor/units_done for `aoiDerivedDatasetsSQL` (clip, fire_v5,
 deforestation, basin) — before, refresh only re-ran narratives. The XSA run
 (~1 h 50 m) is due after the v8 rebuild finishes (do not run both: lock/CPU).
 
-**Open:** confirm the v8 rebuild landed (`evidence_tier` count above > 0,
-`/api/parks/CAF_Chinko/fire-narrative` rows carry `vanguard`/`lead_start`);
-run/let cron run the XSA fire_v5 catch-up.
+**Rebuild landed 2026-09-14 20:06** (`EXIT=0`, 38.9M fires → 752,312
+groups, 157 park narratives): Chinko 9,362/9,362 trajectories carry
+`evidence_tier`, `fire-narrative` rows carry `vanguard/lead_start/lead_basis/
+ahead_km/ahead_days` + `evidence_tier`, the map draws
+supported/weak/unsupported/single (no `unmeasured`). The rebuild re-formed
+groups, so vanguard counts moved (Chinko 2024/25 window 86 → 90 chains) —
+`tests/api_tests.sh fire_season_report_leads` now derives the count it looks
+for in `words` from `vanguard_in_window` (invariant 2). Two surfaces, two
+bases: the Map-strip chip counts chains **in view** (`/api/fire-vanguard`
+bbox, says "in view"), the fire row / tips count the area's window
+(`vanguard_in_window`). XSA fire_v5 catch-up requeued via `catch_up_fires`
+and run in tmux `xsafire` (`logs/aoi_xsa_fire_20260914.log`, ~1 h 50 m).
+A `rebuild_fire_trajectories_v5.py --aoi` alone does **not** refresh an
+AOI's fires: it reads `build_aoi_fires.py` output (step 0 of `run_fire_v5`),
+so run the runner, not the script.
 
 ## `protected_area_id` is a catchment, not a park (F10 — fixed 2026-08-13)
 

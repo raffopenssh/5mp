@@ -1475,7 +1475,7 @@ test_api "bbox_fire_vanguard_total" "/api/features-in-bbox?type=fire_trajectory&
 # sentence. A tier is a word, never empty ('unmeasured' when unscored), the
 # histogram sums to the window count, and the shortlist is sorted by ahead_km.
 test_api "fire_season_report_leads" "/api/fire-season?area=CAF_Chinko&at=2025-02-28&from=2024-10-01&to=2025-02-28&summary=1&leads=5" "200" \
-    '(.vanguard_top | length) == 5 and ([.vanguard_top[] | .tier | length > 0] | all) and ([.vanguard_top[] | .lead_start >= 10] | all) and (.vanguard_top | map(.ahead_km)) == (.vanguard_top | map(.ahead_km) | sort | reverse) and ([.vanguard_tiers[]] | add) == .vanguard_in_window and (.words | test("^Fire season 2024/25")) and (.words | test("86 fire chains"))'
+    '(.vanguard_top | length) == 5 and ([.vanguard_top[] | .tier | length > 0] | all) and ([.vanguard_top[] | .lead_start >= 10] | all) and (.vanguard_top | map(.ahead_km)) == (.vanguard_top | map(.ahead_km) | sort | reverse) and ([.vanguard_tiers[]] | add) == .vanguard_in_window and (.words | test("^Fire season 2024/25")) and ((.vanguard_in_window|tostring) as $n | .words | contains($n + " fire chains"))'
 test_api "fire_season_no_leads_by_default" "/api/fire-season?area=CAF_Chinko&at=2025-02-28&summary=1" "200" \
     '.vanguard_top == null and .vanguard_tiers == null and (.words | type == "string")'
 # The season curve rides with the contours too (the animator reads the
