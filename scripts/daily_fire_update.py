@@ -465,6 +465,20 @@ class DailyFireUpdater:
         parks = sorted(self.affected_parks)
         log(f"Step 3: Rebuilding fire groups (incremental) for {len(parks)} parks...")
 
+        # Season front first (scripts/fire_front.py --current): the rebuild
+        # tags each group's lead against it, so today's detections meet a
+        # front that includes yesterday. Only the live season; the full
+        # history is the nightly `fire_front.py --rotate` cron. Best effort:
+        # no front = groups simply carry no lead fields.
+        try:
+            r = subprocess.run(
+                ['python3', 'scripts/fire_front.py', '--areas', ','.join(parks), '--current', '--quiet'],
+                cwd=str(BASE_DIR), capture_output=True, text=True, timeout=1800)
+            if r.returncode != 0:
+                log(f"  WARN: fire_front --current rc={r.returncode}: {r.stderr[-300:]}")
+        except Exception as e:
+            log(f"  WARN: fire_front --current skipped: {e}")
+
         # One process for all parks (--parks) instead of one subprocess each.
         # Spawning ~100 interpreters re-paid the sklearn/scipy import, the
         # keystone-boundary load and the DB connection every time; this took

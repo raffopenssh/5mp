@@ -513,6 +513,8 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("GET /api/fire-alerts", s.HandleAPIFireAlerts)
 	mux.HandleFunc("GET /api/fire-frames", s.HandleAPIFireFrames)
 	mux.HandleFunc("GET /api/fire-anim-trajectories", s.HandleAPIFireAnimTrajectories)
+	mux.HandleFunc("GET /api/fire-season", s.HandleAPIFireSeason)
+	mux.HandleFunc("GET /api/fire-vanguard", s.HandleAPIFireVanguard)
 	mux.HandleFunc("POST /api/admin/update-fire-alerts", s.RequireAdmin(s.HandleAPIUpdateFireAlerts))
 	mux.HandleFunc("POST /api/update-fire-alerts", s.RequireAdminOrLocal(s.HandleAPIUpdateFireAlerts))
 	mux.HandleFunc("POST /api/refresh-park", s.RequireAdminOrLocal(s.HandleAPIRefreshPark))
