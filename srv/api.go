@@ -4424,6 +4424,11 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 	// Define styles
 	kml.WriteString("<Style id=\"boundary\"><LineStyle><color>ff00ff00</color><width>3</width></LineStyle><PolyStyle><color>2000ff00</color></PolyStyle></Style>\n")
 	kml.WriteString("<Style id=\"fire\"><IconStyle><color>ff0000ff</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/firedept.png</href></Icon></IconStyle><LineStyle><color>ff0000ff</color><width>2</width></LineStyle></Style>\n")
+	// Vanguard chains (began 10–60 d ahead of the season front) in the
+	// Season overlay's lead yellow, wider; the front's isochrones thin ember
+	// red. Same palette as the map (srv/static/fireseason.js).
+	kml.WriteString("<Style id=\"fire-vanguard\"><IconStyle><color>ff47e0fd</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/firedept.png</href></Icon></IconStyle><LineStyle><color>ff47e0fd</color><width>3</width></LineStyle></Style>\n")
+	kml.WriteString("<Style id=\"season-front\"><LineStyle><color>b33c92fb</color><width>1</width></LineStyle></Style>\n")
 	kml.WriteString("<Style id=\"settlement\"><IconStyle><color>ff00d7ff</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/homegardenbusiness.png</href></Icon></IconStyle><PolyStyle><color>5000d7ff</color></PolyStyle></Style>\n")
 	kml.WriteString("<Style id=\"deforestation\"><IconStyle><color>ffff00ff</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/triangle.png</href></Icon></IconStyle><PolyStyle><color>50ff00ff</color></PolyStyle></Style>\n")
 	kml.WriteString("<Style id=\"road\"><LineStyle><color>ff60a5fa</color><width>2</width></LineStyle></Style>\n")
@@ -4597,9 +4602,8 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 	kml.WriteString("</Folder>\n") // /Deforestation
 	kml.WriteString("</Folder>\n") // /Human Activity
 
-	// Fire trajectories folder with narratives, grouped by year
-	kml.WriteString("<Folder><name>Fire Trajectories</name>\n")
-
+	// Fire trajectories folder with narratives, grouped by year (the folder
+	// element is opened after the loop so its description can count).
 	fireQuery := `SELECT geojson, properties_json, start_date, end_date FROM feature_geometries WHERE park_id = ? AND feature_type = 'fire_trajectory'`
 	fireArgs := []interface{}{parkID}
 	if fromDate != "" {
@@ -4610,9 +4614,13 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 		fireQuery += " AND (start_date IS NULL OR start_date <= ?)"
 		fireArgs = append(fireArgs, toDate)
 	}
-	fireQuery += " ORDER BY start_date DESC LIMIT 500"
+	// Vanguard chains first: the 500 cap is a corner (invariant 8) and the
+	// newest corner of a window is exactly where the early-season chains
+	// are not. The folder description says when the cap was hit.
+	fireQuery += " ORDER BY COALESCE(vanguard,0) DESC, start_date DESC LIMIT 500"
 	firePlacemarksByYear := map[string][]string{}
 	var fireYears []string
+	nVanguard := 0
 	fireRows, _ := s.DB.Query(fireQuery, fireArgs...)
 	if fireRows != nil {
 		defer fireRows.Close()
@@ -4674,12 +4682,40 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 			if len(startDate.String) >= 4 {
 				year = startDate.String[:4]
 			}
+			// Season position, in the same words as the popup
+			// (fireSeasonLine): absent = the area's front is not built.
+			style := "fire"
+			if line := fireSeasonWords(propMap); line != "" {
+				description += " | " + line
+				if v, _ := propMap["vanguard"].(bool); v {
+					style = "fire-vanguard"
+					name = "\u25B2 " + name // vanguard flag in the tree
+					nVanguard++
+				}
+			}
 			var pmb strings.Builder
-			writeGeoJSONToKMLWithDesc(&pmb, geojson, "fire", xmlEscape(name), description, startDate.String, endDate.String)
+			writeGeoJSONToKMLWithDesc(&pmb, geojson, style, xmlEscape(name), description, startDate.String, endDate.String)
 			if _, seen := firePlacemarksByYear[year]; !seen {
 				fireYears = append(fireYears, year)
 			}
 			firePlacemarksByYear[year] = append(firePlacemarksByYear[year], pmb.String())
+		}
+	}
+	kml.WriteString("<Folder><name>Fire Trajectories</name>\n")
+	{
+		nFire := 0
+		for _, pms := range firePlacemarksByYear {
+			nFire += len(pms)
+		}
+		var d []string
+		if nVanguard > 0 {
+			d = append(d, fmt.Sprintf("%d of these %d chains began 10–60 days ahead of the season front (vanguard, \u25B2, drawn yellow and wider): the population whose day-to-day links are measurably better than chance. See the Season front folder.", nVanguard, nFire))
+		}
+		if nFire >= 500 {
+			d = append(d, "Truncated: the export holds 500 chains, vanguard first, then newest first. Narrow the date range for the rest.")
+		}
+		if len(d) > 0 {
+			kml.WriteString("<description><![CDATA[" + strings.Join(d, " ") + "]]></description>\n")
 		}
 	}
 	for yi, year := range fireYears {
@@ -4694,6 +4730,12 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 		kml.WriteString("</Folder>\n")
 	}
 	kml.WriteString("</Folder>\n")
+
+	// Season front isochrones (fire_season_front, one writer:
+	// scripts/fire_front.py), every season overlapping the window, hidden
+	// by default except the latest. Same features the app and the
+	// GeoPackage draw (gpkgFireSeasonFront).
+	s.writeSeasonFrontKML(&kml, parkID, fromDate, toDate)
 
 	// Roads folder (from feature_geometries) - only create if data exists.
 	// These are patrol-learned roads (client data) — omitted in the test tenant.
@@ -5158,6 +5200,22 @@ func writeGeoJSONToKMLWithDesc(kml *strings.Builder, geojsonStr, styleID, name, 
 			}
 		}
 		kml.WriteString("</coordinates></LineString>")
+	case "MultiLineString":
+		kml.WriteString("<MultiGeometry>")
+		if lines, ok := coords.([]interface{}); ok {
+			for _, ln := range lines {
+				kml.WriteString("<LineString><coordinates>")
+				if c, ok := ln.([]interface{}); ok {
+					for _, pt := range c {
+						if p, ok := pt.([]interface{}); ok && len(p) >= 2 {
+							kml.WriteString(fmt.Sprintf("%v,%v,0 ", p[0], p[1]))
+						}
+					}
+				}
+				kml.WriteString("</coordinates></LineString>")
+			}
+		}
+		kml.WriteString("</MultiGeometry>")
 	case "Polygon":
 		kml.WriteString("<Polygon><outerBoundaryIs><LinearRing><coordinates>")
 		if rings, ok := coords.([]interface{}); ok && len(rings) > 0 {
@@ -5217,6 +5275,22 @@ func writeGeoJSONToKML(kml *strings.Builder, geojsonStr, styleID, name string) {
 			}
 		}
 		kml.WriteString("</coordinates></LineString>")
+	case "MultiLineString":
+		kml.WriteString("<MultiGeometry>")
+		if lines, ok := coords.([]interface{}); ok {
+			for _, ln := range lines {
+				kml.WriteString("<LineString><coordinates>")
+				if c, ok := ln.([]interface{}); ok {
+					for _, pt := range c {
+						if p, ok := pt.([]interface{}); ok && len(p) >= 2 {
+							kml.WriteString(fmt.Sprintf("%v,%v,0 ", p[0], p[1]))
+						}
+					}
+				}
+				kml.WriteString("</coordinates></LineString>")
+			}
+		}
+		kml.WriteString("</MultiGeometry>")
 	case "Polygon":
 		kml.WriteString("<Polygon><outerBoundaryIs><LinearRing><coordinates>")
 		if rings, ok := coords.([]interface{}); ok && len(rings) > 0 {
@@ -5624,6 +5698,11 @@ func (s *Server) HandleAPIMergedKML(w http.ResponseWriter, r *http.Request) {
 	// Define shared styles
 	kml.WriteString("<Style id=\"boundary\"><LineStyle><color>ff00ff00</color><width>3</width></LineStyle><PolyStyle><color>2000ff00</color></PolyStyle></Style>\n")
 	kml.WriteString("<Style id=\"fire\"><IconStyle><color>ff0000ff</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/firedept.png</href></Icon></IconStyle><LineStyle><color>ff0000ff</color><width>2</width></LineStyle></Style>\n")
+	// Vanguard chains (began 10–60 d ahead of the season front) in the
+	// Season overlay's lead yellow, wider; the front's isochrones thin ember
+	// red. Same palette as the map (srv/static/fireseason.js).
+	kml.WriteString("<Style id=\"fire-vanguard\"><IconStyle><color>ff47e0fd</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/firedept.png</href></Icon></IconStyle><LineStyle><color>ff47e0fd</color><width>3</width></LineStyle></Style>\n")
+	kml.WriteString("<Style id=\"season-front\"><LineStyle><color>b33c92fb</color><width>1</width></LineStyle></Style>\n")
 	kml.WriteString("<Style id=\"settlement\"><IconStyle><color>ff00d7ff</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/homegardenbusiness.png</href></Icon></IconStyle><PolyStyle><color>5000d7ff</color></PolyStyle></Style>\n")
 	kml.WriteString("<Style id=\"deforestation\"><IconStyle><color>ffff00ff</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/triangle.png</href></Icon></IconStyle><PolyStyle><color>50ff00ff</color></PolyStyle></Style>\n")
 	kml.WriteString("<Style id=\"road\"><LineStyle><color>ff60a5fa</color><width>2</width></LineStyle></Style>\n")
@@ -5686,11 +5765,19 @@ func (s *Server) HandleAPIMergedKML(w http.ResponseWriter, r *http.Request) {
 				if narrative, ok := propMap["narrative"].(string); ok {
 					desc = narrative
 				}
-				writeGeoJSONToKMLWithDesc(&kml, geojson, "fire", name, desc, startDate.String, endDate.String)
+				style := "fire"
+				if line := fireSeasonWords(propMap); line != "" {
+					desc += " | " + line
+					if v, _ := propMap["vanguard"].(bool); v {
+						style, name = "fire-vanguard", "\u25B2 "+name
+					}
+				}
+				writeGeoJSONToKMLWithDesc(&kml, geojson, style, name, desc, startDate.String, endDate.String)
 			}
 			fireRows.Close()
 		}
 		kml.WriteString("</Folder>\n")
+		s.writeSeasonFrontKML(&kml, parkID, fromDate, toDate)
 
 		// Settlements
 		kml.WriteString("<Folder><name>Settlements</name>\n")
@@ -6146,4 +6233,123 @@ func (s *Server) HandleAPINearbyPlaces(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{"places": places})
+}
+
+// fireSeasonWords is the season position of one fire trajectory in plain
+// words (scripts/fire_front.py; docs/agents/fire.md "Season front &
+// vanguard"), shared by the KML and Locus exports. lead_start = days the
+// chain BEGAN ahead of the season front; vanguard = 10–60 d ahead. Empty
+// when the area's front is not built — the line says nothing, not "0 days".
+func fireSeasonWords(props map[string]interface{}) string {
+	ls, ok := props["lead_start"].(float64)
+	if !ok {
+		return ""
+	}
+	l := int(ls)
+	basis := "season front"
+	if b, _ := props["lead_basis"].(string); b == "usual" {
+		basis = "usual front (this season's had not arrived)"
+	}
+	if v, _ := props["vanguard"].(bool); v {
+		w := fmt.Sprintf("Vanguard — began %d days ahead of the %s", l, basis)
+		if km, _ := props["ahead_km"].(float64); km > 0 {
+			w += fmt.Sprintf(", ran %.0f km before the season caught up", km)
+		}
+		return w
+	}
+	if l >= 0 {
+		return fmt.Sprintf("Began %d days ahead of the %s", l, basis)
+	}
+	return fmt.Sprintf("Began %d days into the season", -l)
+}
+
+// seasonFrontContour is one season's front isochrones as the KML and Locus
+// exports read them (the GeoPackage has its own typed layer).
+type seasonFrontContour struct {
+	Season, Start, End string
+	Complete           bool
+	Features           []struct {
+		Geometry   json.RawMessage `json:"geometry"`
+		Properties struct {
+			Dos   int    `json:"dos"`
+			Date  string `json:"date"`
+			Label bool   `json:"label"`
+			Text  string `json:"text"`
+		} `json:"properties"`
+	}
+}
+
+// seasonFrontContours reads every season of an area overlapping [from, to]
+// (empty = unbounded), newest first.
+func (s *Server) seasonFrontContours(areaID, from, to string) []seasonFrontContour {
+	q := `SELECT season, season_start, season_end, complete, contours_json
+		FROM fire_season_front WHERE area_id = ? AND contours_json IS NOT NULL`
+	args := []interface{}{areaID}
+	if from != "" {
+		q += " AND season_end >= ?"
+		args = append(args, from)
+	}
+	if to != "" {
+		q += " AND season_start <= ?"
+		args = append(args, to)
+	}
+	q += " ORDER BY season_start DESC"
+	rows, err := s.DB.Query(q, args...)
+	if err != nil {
+		return nil
+	}
+	defer rows.Close()
+	var out []seasonFrontContour
+	for rows.Next() {
+		var c seasonFrontContour
+		var complete int
+		var cj string
+		if rows.Scan(&c.Season, &c.Start, &c.End, &complete, &cj) != nil {
+			continue
+		}
+		c.Complete = complete == 1
+		if json.Unmarshal([]byte(cj), &c.Features) != nil || len(c.Features) == 0 {
+			continue
+		}
+		out = append(out, c)
+	}
+	return out
+}
+
+// writeSeasonFrontKML adds a "Season front" folder: one sub-folder per
+// season, each isochrone a placemark named by its date with a TimeSpan
+// beginning that day, so the Google Earth slider walks the front across
+// the area. Only the latest season is visible by default, like the fire
+// years above it.
+func (s *Server) writeSeasonFrontKML(kml *strings.Builder, areaID, from, to string) {
+	seasons := s.seasonFrontContours(areaID, from, to)
+	if len(seasons) == 0 {
+		return
+	}
+	kml.WriteString("<Folder><name>Season front</name>")
+	kml.WriteString("<description><![CDATA[Fire season front (scripts/fire_front.py): isochrones every 5 days of the day on which 20 % of the land that burns in a season had burned within 60 km — where the burning season had arrived by when. Fire chains that began 10–60 days ahead of this front are the vanguard (yellow, wider, \u25B2 in the Fire Trajectories folder).]]></description>\n")
+	for i, c := range seasons {
+		vis := ""
+		if i > 0 {
+			vis = "<visibility>0</visibility>"
+		}
+		state := "complete"
+		if !c.Complete {
+			state = "in progress"
+		}
+		kml.WriteString(fmt.Sprintf("<Folder><name>%s (%d contours, %s)</name>%s\n", xmlEscape(c.Season), len(c.Features), state, vis))
+		for _, f := range c.Features {
+			name := f.Properties.Date
+			if f.Properties.Text != "" {
+				name = f.Properties.Text
+			}
+			desc := fmt.Sprintf("Season %s: by %s (day %d of the season) a fifth of the land that burns had burned within ~60 km of this line.",
+				c.Season, f.Properties.Date, f.Properties.Dos)
+			var pmb strings.Builder
+			writeGeoJSONToKMLWithDesc(&pmb, string(f.Geometry), "season-front", xmlEscape(name), desc, f.Properties.Date, "")
+			kml.WriteString(pmb.String())
+		}
+		kml.WriteString("</Folder>\n")
+	}
+	kml.WriteString("</Folder>\n")
 }

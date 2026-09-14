@@ -594,8 +594,12 @@ func (s *Server) buildLocusContent(tdb, wdb *locusDB, parkID, parkName, boundary
 		fireQuery += " AND (start_date IS NULL OR start_date <= ?)"
 		fireArgs = append(fireArgs, toDate)
 	}
-	fireQuery += " ORDER BY start_date DESC LIMIT 500"
+	// Vanguard chains first: the 500 cap is a corner (invariant 8) and the
+	// newest corner of a window is exactly where the early-season chains
+	// are not. The folder description says when the cap was hit.
+	fireQuery += " ORDER BY COALESCE(vanguard,0) DESC, start_date DESC LIMIT 500"
 	fireGroups := map[string]int64{} // year -> group id
+	vanGroups := map[string]int64{}  // year -> vanguard group id
 	latestFireYear := ""
 	fireRows, _ := s.DB.Query(fireQuery, fireArgs...)
 	if fireRows != nil {
@@ -631,15 +635,41 @@ func (s *Server) buildLocusContent(tdb, wdb *locusDB, parkID, parkName, boundary
 					latestFireYear = year
 				}
 			}
+			// Vanguard chains (began 10–60 d ahead of the season front) go
+			// to a sibling folder per year in the Season overlay's lead
+			// yellow, wider — on a phone in the field the question is
+			// "which of these lines is early movement", so they are a
+			// folder one can switch on alone. Words in the name, because
+			// Locus tracks have no description a tap shows.
+			if v, _ := propMap["vanguard"].(bool); v {
+				if words := fireSeasonWords(propMap); words != "" {
+					name = "\u25B2 " + name + " \u2014 " + words
+				}
+				vgid, ok := vanGroups[year]
+				if !ok {
+					vgid, _ = tdb.addGroup("FIRES "+year+" \u00B7 VANGUARD", 0, "ic_tracks", locusGroupStyle(0xFFFDE047, 3), tMission)
+					vanGroups[year] = vgid
+					fireGroups[year+"/van"] = vgid // trimmed to latest year below, like the rest
+				}
+				gid = vgid
+			} else if words := fireSeasonWords(propMap); words != "" {
+				name = name + " \u2014 " + words
+			}
+			width := float32(2)
+			color := uint32(0xFFFF3B30)
+			if gid == vanGroups[year] && vanGroups[year] != 0 {
+				width, color = 3, 0xFFFDE047
+			}
 			for _, path := range extractPaths(geojson) {
 				// visibility fixed below (only latest year); mark later
-				tdb.addTrack(gid, name, path, locusTrackStyle(0xFFFF3B30, 2), true) // trimmed to latest year below
+				tdb.addTrack(gid, name, path, locusTrackStyle(color, width), true) // trimmed to latest year below
 			}
 		}
 	}
 	// Fix visibility: keep only latest fire year in the visible list
 	if latestFireYear != "" {
 		latestGid := fireGroups[latestFireYear]
+		latestVan := vanGroups[latestFireYear]
 		var kept [][2]int64
 		for _, pair := range tdb.visible {
 			isFire := false
@@ -649,11 +679,27 @@ func (s *Server) buildLocusContent(tdb, wdb *locusDB, parkID, parkName, boundary
 					break
 				}
 			}
-			if !isFire || pair[1] == latestGid {
+			if !isFire || pair[1] == latestGid || (latestVan != 0 && pair[1] == latestVan) {
 				kept = append(kept, pair)
 			}
 		}
 		tdb.visible = kept
+	}
+
+	// Season front isochrones (fire_season_front): one folder per season
+	// overlapping the window, hidden by default — the same lines the app
+	// and the KML/GeoPackage draw, thin ember red, named by date.
+	for _, c := range s.seasonFrontContours(parkID, fromDate, toDate) {
+		gid, _ := tdb.addGroup("SEASON FRONT "+c.Season, 0, "ic_tracks", locusGroupStyle(0xFFFB923C, 1), tMission)
+		for _, f := range c.Features {
+			name := "Front " + f.Properties.Date
+			if f.Properties.Text != "" {
+				name = "Front " + f.Properties.Text
+			}
+			for _, path := range extractPaths(string(f.Geometry)) {
+				tdb.addTrack(gid, name, path, locusTrackStyle(0xFFFB923C, 1), false)
+			}
+		}
 	}
 
 	// Settlements (closed rings, hidden by default). Footprint -> cluster via
