@@ -196,9 +196,9 @@ func styleFireSeasonFront() string {
 <category render="1" value="0" label="Every 5 days" symbol="1"/>
   </categories>
   <symbols>
-`+mk("0", "251,146,60", 0.5)+"\n"+mk("1", "220,38,38", 0.3)+`
+` + mk("0", "251,146,60", 0.5) + "\n" + mk("1", "220,38,38", 0.3) + `
   </symbols>
-</renderer-v2>`+"\n"+qmlLabels("label", 7, "254,205,211", 2))
+</renderer-v2>` + "\n" + qmlLabels("label", 7, "254,205,211", 2))
 }
 
 // Detections come from the area's BOUNDING BOX, so the layer legitimately
