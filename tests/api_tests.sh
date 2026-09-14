@@ -1469,6 +1469,19 @@ test_api "fire_season_report_leads" "/api/fire-season?area=CAF_Chinko&at=2025-02
     '(.vanguard_top | length) == 5 and ([.vanguard_top[] | .tier | length > 0] | all) and ([.vanguard_top[] | .lead_start >= 10] | all) and (.vanguard_top | map(.ahead_km)) == (.vanguard_top | map(.ahead_km) | sort | reverse) and ([.vanguard_tiers[]] | add) == .vanguard_in_window and (.words | test("^Fire season 2024/25")) and (.words | test("86 fire chains"))'
 test_api "fire_season_no_leads_by_default" "/api/fire-season?area=CAF_Chinko&at=2025-02-28&summary=1" "200" \
     '.vanguard_top == null and .vanguard_tiers == null and (.words | type == "string")'
+# The season curve rides with the contours too (the animator reads the
+# front's position at its playhead off it; the server's front_reached_pct
+# is at the window's end only): step 5 d, monotone, ends at 100.
+test_api "fire_season_curve_with_contours" "/api/fire-season?area=CAF_Chinko&at=2024-12-01" "200" \
+    '.front_curve.step_days == 5 and (.front_curve.front | length) > 30 and (.front_curve.front | . == sort) and (.front_curve.front | last) == 100'
+# Season speed map: one PNG at the grid's cells, fixed km/day legend, stats
+# that match the numpy probe (Chinko 2024/25: median 5.1, p10 1.6, p90 24.3
+# — scripts/fire_vanguard/eikonal.py's method). Same season rule as the front.
+test_api "fire_season_speed_png" "/api/fire-season-speed?area=CAF_Chinko&at=2025-01-15" "200" \
+    '.season == "2024/25" and (.png | startswith("data:image/png;base64,")) and (.bbox | length) == 4 and .stats.cells == 18770 and .stats.median_km_d == 5.1 and (.legend | length) == 5 and (.legend[0].km_d) == 1'
+test_api "fire_season_speed_by_point" "/api/fire-season-speed?lon=24.0&lat=6.4&at=2025-01-15" "200" '.area == "CAF_Chinko"'
+test_api "fire_season_speed_no_area" "/api/fire-season-speed?lon=0&lat=0" "200" '.area == null and (.status | test("no area"))'
+test_api "fire_season_speed_invisible_aoi_404" "/api/fire-season-speed?area=aoi_nobody_000000000000" "404" ''
 test_api "anim_trajs_vanguard_leads" "/api/fire-anim-trajectories?bbox=23,5,26,8&from=2024-11-01&to=2024-12-31&limit=4000" "200" \
     '([.groups[] | select(.vanguard)] | length > 0) and ([.groups[] | select(.vanguard) | (.leads | length) == (.pts | length)] | all) and ([.groups[] | select(.vanguard | not) | has("leads") | not] | all)'
 
