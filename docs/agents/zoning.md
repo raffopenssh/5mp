@@ -164,9 +164,10 @@ in facts.json.
 
 ## Corridor NETWORK, not one path (2026-09-06)
 
-`optimize --want-class corridor` routes **one branch per origin–destination
+`optimize --want-class corridor` routes **one branch per corridor
 bundle** (`corridor_bundles()`: k-means k=12 on (start, end) of the long
-transhumance fronts, bundles ≥4 % kept) plus the Radom→Garamba through-route,
+transhumance fronts, bundles ≥4 % kept — note this planner-side k-means is
+still *directed*; the solver's `movement()` is undirected, see below) plus the Radom→Garamba through-route,
 each bootstrapped (`--draws`) on its own; the proposal is the union of per-branch
 support ≥0.5 bands. Each branch carries what operations need and
 `OPTIMIZE_corridor.txt` / `optimize_corridor.geojson` / `AREAS.txt` print it:
@@ -304,10 +305,26 @@ Modes `movement | threat | claim | solve | frontier | compare | support | narrat
 One integer programme (HiGHS via `scipy.milp`) gives every fine unit one class. What it does that no Marxan/prioritizr
 run does, and the rule each piece obeys:
 
-* **movement** (`--k 16`, default capture 0.5): Brownian-bridge utilisation per origin–destination bundle of the 13,178
-  long fronts, fit 2023–24, held out 2025/26. 15 bundles, per-bundle skill +0.37…+0.54. **Network-level the herds are
-  simply where the fire is** (hold-out 90 % vs all-fire null 91 %) — value is per route, never "the network". Writes
-  `movement_bundle_ud.npy` (per-bundle UD, float16) which the solver's per-bundle floor and flow constraint read.
+* **movement** (`--k 16`, default capture 0.5): Brownian-bridge utilisation per **undirected corridor bundle** of the
+  13,180 long fronts, fit 2023–24, held out 2025/26. **Bundling is undirected since 2026-09-15**
+  (`undirected_kmeans()`: distance to a centroid is `min(d(x,c), d(rev x,c))`, members oriented to the centroid before
+  the mean; `eval_herd_vanguard.py` imports it): the directed run's 15 "origin–destination routes" held two reversed
+  pairs (b3↔b6, b5↔b14: 39–76 km apart, same months) and three near-loops (b4/b7/b12 straight 5–76 km); undirected
+  → **14 corridors, every one ≥ 123 km straight**, `share_forward` 0.33–0.72 (a corridor is read both ways — the
+  premise, measured). Old vs new: mean per-bundle skill +0.47 → +0.49, hold-out capture 0.54 → 0.58, Σ band
+  407k → 346k km², network 55 % → 53 % of the AOI (90 % vs null 91 % → 88 % vs 90 %: **network-level the herds
+  are still simply where the fire is** — value is per route, never "the network"). The honest ladder
+  (`eval_fire_baseline.py --xsa`, `report_bands`/`_ud` top-20 %) is unchanged to ±0.01: KF vanguard chains 0.43 /
+  0.50, long fronts 0.43 / 0.62 vs 0.24 / 0.26 for fire density. `eval_herd_vanguard.py` (K=12): 11 bundles, vanguard
+  capture 0.71 vs null 0.15 per bundle (was 0.71 vs 0.23); its "heading agreement" is now 48 % **by construction**
+  (an undirected bundle has no mean heading) — ignore that block. A bundle's `start`/`end` are the corridor's two
+  ends in arbitrary order; `bundling: "undirected"` in `movement.json`. Writes `movement_bundle_ud.npy` (per-bundle
+  UD, float16) which the solver's per-bundle floor reads. **The solve has not been re-run on the new bundles:**
+  `zones.geojson.herd_bundles` was re-derived from the new masks with `export_zones()`'s rule (share ≥ 0.1, top 4;
+  17 zones changed) so `facts.json` is consistent (14 routes, hold-out 50–68 %, null max 18 %), but corridor
+  geometry is the directed-bundle solve until `solve` reruns. TANGO route counts: T1/T2 (zone 255) 4 → 4 (different
+  bundles), T3/T4 (zone 267) 4 → 3, T5 (zone 264) 2 → 1. Onset for T3/T4 now prints "August" from 2 of 744 fronts
+  (`onset = min month` — a fragile rule the author should look at; the bundle's mass is Dec–Jan).
 * **threat**: logistic conversion 2015→today, AUC 0.86 on 20 km spatial blocks. `threat_p10.npy`.
 * **imagery** (`plan_imagery.py`, 346 z11 chips, all read): calibration ρ 0.05–0.19 vs cropland/JRC/GHSL/fire — **noise
   at 40 km**. It enters the solver at `lam_imagery × measured skill` (= 0.12, printed in SOLVE.txt), i.e. effectively
