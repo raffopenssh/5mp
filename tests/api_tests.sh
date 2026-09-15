@@ -905,11 +905,11 @@ if [[ -n "$CLIENT_PWD" ]]; then
     # the apitest- tag namespace and that exact slug, never a LIKE over url.
     while IFS= read -r sl; do
         [[ -z "$sl" ]] && continue
-        sqlite3 db.sqlite3 "DELETE FROM short_link_tags WHERE slug = '${sl}'" 2>/dev/null
-        sqlite3 db.sqlite3 "DELETE FROM short_links WHERE slug = '${sl}' OR alias_of = '${sl}'" 2>/dev/null
+        sqlite3 -cmd ".timeout 30000" db.sqlite3 "DELETE FROM short_link_tags WHERE slug = '${sl}'" 2>/dev/null || true
+        sqlite3 -cmd ".timeout 30000" db.sqlite3 "DELETE FROM short_links WHERE slug = '${sl}' OR alias_of = '${sl}'" 2>/dev/null || true
     done < <(sqlite3 db.sqlite3 "SELECT DISTINCT slug FROM short_link_tags WHERE tag LIKE 'apitest-%'" 2>/dev/null)
-    sqlite3 db.sqlite3 "DELETE FROM short_link_tags WHERE slug = 'apitest-renamed-tags'" 2>/dev/null
-    sqlite3 db.sqlite3 "DELETE FROM short_links WHERE slug = 'apitest-renamed-tags' OR alias_of = 'apitest-renamed-tags'" 2>/dev/null
+    sqlite3 -cmd ".timeout 30000" db.sqlite3 "DELETE FROM short_link_tags WHERE slug = 'apitest-renamed-tags'" 2>/dev/null || true
+    sqlite3 -cmd ".timeout 30000" db.sqlite3 "DELETE FROM short_links WHERE slug = 'apitest-renamed-tags' OR alias_of = 'apitest-renamed-tags'" 2>/dev/null || true
     mint() {  # mint <json-body> -> slug
         local sl
         sl=$(curl -s -m 30 -X POST "${BASE_URL}/api/shortlink?pwd=${CLIENT_PWD}" \
@@ -1424,8 +1424,8 @@ if [[ -n "$CLIENT_PWD" ]]; then
         # LIKE over url, which would eventually match a real link.
         # Tag rows are keyed on the slug, so a fixture's tags would outlive it
         # and keep showing up in the vocabulary and in every count.
-        sqlite3 db.sqlite3 "DELETE FROM short_link_tags WHERE slug = '${sl}'" 2>/dev/null
-        sqlite3 db.sqlite3 "DELETE FROM short_links WHERE slug = '${sl}' OR alias_of = '${sl}'" 2>/dev/null
+        sqlite3 -cmd ".timeout 30000" db.sqlite3 "DELETE FROM short_link_tags WHERE slug = '${sl}'" 2>/dev/null || true
+        sqlite3 -cmd ".timeout 30000" db.sqlite3 "DELETE FROM short_links WHERE slug = '${sl}' OR alias_of = '${sl}'" 2>/dev/null || true
         n=$(sqlite3 db.sqlite3 "SELECT COUNT(*) FROM short_links WHERE slug = '${sl}'" 2>/dev/null || echo 1)
         left=$((left + n))
     done
