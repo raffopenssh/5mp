@@ -44,6 +44,7 @@
         VAN_SRC = 'fireseason-van-src', VAN_LYR = 'fireseason-van',
         VAN_DIM_LYR = 'fireseason-van-dim', VAN_GAP_LYR = 'fireseason-van-gap',
         VAN_HEAD_LYR = 'fireseason-van-head', VAN_HEAD_HALO = 'fireseason-van-head-halo',
+        VAN_ARROW_LYR = 'fireseason-van-arrow',
         SPEED_SRC = 'fireseason-speed-src', SPEED_LYR = 'fireseason-speed';
 
     var map = null;
@@ -169,7 +170,8 @@
             '<span class="fs-wi"><span class="fs-w fs-w-thin"></span>thin = unsure</span>' +
             '<span class="fs-wi"><span class="fs-w fs-w-dash"></span>dashed = a day not seen</span>' +
             '<span class="fs-wi"><span class="fs-w fs-w-ash"></span>season caught up</span>' +
-            (kfShown() ? '<span class="fs-wi"><span class="fs-w fs-w-head"></span>live head = still moving, arrow = heading</span>' : '') + '</div>';
+            '<span class="fs-wi"><span class="fs-w fs-w-arrow"></span>arrows = direction of travel (zoomed in)</span>' +
+            (kfShown() ? '<span class="fs-wi"><span class="fs-w fs-w-head"></span>large arrowhead at the end = still moving (points its heading)</span>' : '') + '</div>';
         var how = kfShown()
             ? '<div class="fs-ramp-how">Chains are born only ahead of the front and followed by a Kalman filter into the arriving season (seed-ahead tracker)' +
               (van && van.trackers && van.trackers.groups ? '; ' + van.trackers.groups + ' in view are plain chains where that has not run yet' : '') + '.</div>'
@@ -262,34 +264,76 @@
                 layout: { 'line-cap': 'butt', 'line-join': 'round' },
                 paint: Object.assign({}, vanPaint, { 'line-dasharray': [3, 1.4] })
             });
+            // Direction. A chain has a day order, so at the zoom where it is
+            // a route rather than a stroke it carries arrowheads along it —
+            // the same SDF glyph the LOD trajectories use (globe.html
+            // makeArrowheadSDF), in the segment's own colour: lead ramp while
+            // ahead, ash after. Hidden below z7, where they would only be
+            // texture. Not a tip target: the line underneath answers.
+            if (map.hasImage && map.hasImage('arrow-right')) {
+                map.addLayer({
+                    id: VAN_ARROW_LYR, type: 'symbol', source: VAN_SRC, minzoom: 7,
+                    filter: ['all', ['==', ['geometry-type'], 'LineString'], ['any', ['==', ['get', 'part'], 'ahead'], ['==', ['get', 'part'], 'after']]],
+                    layout: {
+                        'symbol-placement': 'line',
+                        'symbol-spacing': ['interpolate', ['linear'], ['zoom'], 7, 90, 11, 130],
+                        'icon-image': 'arrow-right', 'icon-rotate': 90,
+                        'icon-size': ['interpolate', ['linear'], ['zoom'], 7, 0.38, 10, 0.5, 13, 0.64],
+                        'icon-rotation-alignment': 'map',
+                        'icon-allow-overlap': true, 'icon-ignore-placement': true
+                    },
+                    paint: {
+                        'icon-color': ['get', 'color'],
+                        'icon-opacity': ['case', ['==', ['get', 'part'], 'after'], 0.45, ['coalesce', ['get', 'alpha'], 0.95]],
+                        'icon-halo-color': 'rgba(8,10,16,0.85)', 'icon-halo-width': 0.8
+                    }
+                });
+            }
             // The live head: a chain whose last sighting is within the gap
-            // budget of the newest data we hold is still moving. A ring in
-            // the lead colour, a soft halo, and a chevron (drawn as a line
-            // in the source, `part:'heading'`) for the filter's heading.
+            // budget of the newest data we hold is still moving. It is drawn
+            // as a LARGER arrowhead at the chain's end, turned to the filter's
+            // heading, over a soft lead-coloured glow — an arrow at the end
+            // of a line can only be the line's head, where a dot read as one
+            // more point feature next to settlements and deforestation.
             map.addLayer({
                 id: VAN_HEAD_HALO, type: 'circle', source: VAN_SRC,
                 filter: ['==', ['get', 'part'], 'head'],
-                paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 5, 7, 10, 13], 'circle-color': ['get', 'color'],
-                    'circle-opacity': 0.22, 'circle-blur': 0.8 }
+                paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 5, 9, 10, 15], 'circle-color': ['get', 'color'],
+                    'circle-opacity': 0.2, 'circle-blur': 1 }
             });
-            map.addLayer({
-                id: VAN_HEAD_LYR, type: 'circle', source: VAN_SRC,
-                filter: ['==', ['get', 'part'], 'head'],
-                paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 5, 3, 10, 5.5], 'circle-color': ['get', 'color'],
-                    'circle-stroke-color': 'rgba(8,10,16,0.9)', 'circle-stroke-width': 1.2, 'circle-opacity': 0.95 }
-            });
+            if (map.hasImage && map.hasImage('arrow-right')) {
+                map.addLayer({
+                    id: VAN_HEAD_LYR, type: 'symbol', source: VAN_SRC,
+                    filter: ['==', ['get', 'part'], 'head'],
+                    layout: {
+                        'icon-image': 'arrow-right',
+                        'icon-rotate': ['coalesce', ['get', 'heading_deg'], 0],
+                        'icon-size': ['interpolate', ['linear'], ['zoom'], 5, 0.7, 10, 1.05],
+                        'icon-rotation-alignment': 'map', 'icon-pitch-alignment': 'map',
+                        'icon-allow-overlap': true, 'icon-ignore-placement': true
+                    },
+                    paint: { 'icon-color': ['get', 'color'], 'icon-opacity': 0.97, 'icon-halo-color': 'rgba(8,10,16,0.95)', 'icon-halo-width': 1.4 }
+                });
+            } else {
+                map.addLayer({
+                    id: VAN_HEAD_LYR, type: 'circle', source: VAN_SRC,
+                    filter: ['==', ['get', 'part'], 'head'],
+                    paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 5, 3, 10, 5.5], 'circle-color': ['get', 'color'],
+                        'circle-stroke-color': 'rgba(8,10,16,0.9)', 'circle-stroke-width': 1.2, 'circle-opacity': 0.95 }
+                });
+            }
             registerTip();
         }
         applyVisibility();
     }
     function lift() {
         if (!map) return;
-        [VAN_DIM_LYR, VAN_GAP_LYR, VAN_LYR, VAN_HEAD_HALO, VAN_HEAD_LYR].forEach(function (id) { if (map.getLayer(id)) map.moveLayer(id); });
+        [VAN_DIM_LYR, VAN_GAP_LYR, VAN_LYR, VAN_ARROW_LYR, VAN_HEAD_HALO, VAN_HEAD_LYR].forEach(function (id) { if (map.getLayer(id)) map.moveLayer(id); });
     }
     function applyVisibility() {
         if (!map) return;
         [FRONT_LYR, FRONT_LBL, FRONT_WAVE].forEach(function (id) { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', st.front ? 'visible' : 'none'); });
-        [VAN_LYR, VAN_GAP_LYR, VAN_DIM_LYR, VAN_HEAD_LYR].forEach(function (id) { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', st.van ? 'visible' : 'none'); });
+        [VAN_LYR, VAN_GAP_LYR, VAN_DIM_LYR, VAN_ARROW_LYR, VAN_HEAD_HALO, VAN_HEAD_LYR].forEach(function (id) { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', st.van ? 'visible' : 'none'); });
         if (map.getLayer(SPEED_LYR)) map.setLayoutProperty(SPEED_LYR, 'visibility', st.speed ? 'visible' : 'none');
     }
     // 1×1 transparent PNG: an image source needs a url at creation.
@@ -524,14 +568,12 @@
             tracker: g.tracker || 'groups', end_cause: g.end_cause || null, heading_deg: g.heading_deg == null ? null : g.heading_deg,
             speed_kmd: g.speed_kmd == null ? null : g.speed_kmd, seed_lead: g.seed_lead == null ? null : g.seed_lead };
     }
-    // Chevron at the live head, pointing along the filter's heading: two
-    // short strokes (~3 km at the head) — geometry, not a glyph, so it needs
-    // no font the tile server may lack.
-    function headingChevron(lon, lat, hd) {
-        var L = 0.03, half = 32 * Math.PI / 180, th = hd * Math.PI / 180, cl = Math.max(0.2, Math.cos(lat * Math.PI / 180));
-        function from(x, y, len, ang) { return [x + Math.sin(ang) * len / cl, y + Math.cos(ang) * len]; }
-        var tip = from(lon, lat, L * 1.6, th);
-        return [from(tip[0], tip[1], L * 0.9, th + Math.PI - half), tip, from(tip[0], tip[1], L * 0.9, th + Math.PI + half)];
+    // Heading (degrees clockwise from north) from one point to the next,
+    // for a live head the filter left without one.
+    function bearing(a, b) {
+        var toR = Math.PI / 180, la1 = a[1] * toR, la2 = b[1] * toR, dl = (b[0] - a[0]) * toR;
+        var y = Math.sin(dl) * Math.cos(la2), x = Math.cos(la1) * Math.sin(la2) - Math.sin(la1) * Math.cos(la2) * Math.cos(dl);
+        return (Math.atan2(y, x) / toR + 360) % 360;
     }
     function splitChain(g) {
         var pts = g.pts || [], leads = g.leads || [];
@@ -553,13 +595,9 @@
             if (lastLead == null) lastLead = lead0;
             var ph = chainProps(g, 'head');
             ph.lead = Math.round(lastLead); ph.color = lastLead >= 0 ? leadColor(lastLead) : '#fb923c'; ph.alpha = 0.95; ph.gap = 1;
+            // the head arrow turns to the filter's heading; failing that, the last step's
+            if (ph.heading_deg == null && pts.length > 1) ph.heading_deg = Math.round(bearing(pts[pts.length - 2], last));
             out.push({ type: 'Feature', properties: ph, geometry: { type: 'Point', coordinates: [last[0], last[1]] } });
-            if (g.heading_deg != null) {
-                var pc = chainProps(g, 'heading');
-                pc.lead = ph.lead; pc.color = ph.color; pc.alpha = 0.9; pc.gap = 1; pc.part = 'ahead';   // drawn by the solid layer
-                pc.heading_stub = true;
-                out.push({ type: 'Feature', properties: pc, geometry: { type: 'LineString', coordinates: headingChevron(last[0], last[1], g.heading_deg) } });
-            }
         }
         if (pts.length === 1) {
             // A one-vertex chain still deserves a mark: a very short line.
@@ -618,7 +656,7 @@
         if (p.ahead_km) h += '<div>Ran <b>' + Number(p.ahead_km).toFixed(0) + ' km</b> over ' + esc(p.ahead_days) + ' d ' +
             (p.end_cause === 'season' || (!p.end_cause && p.part === 'after') ? 'before the season caught up' : 'ahead of the season' + (p.end_cause === 'ongoing' ? ' so far' : '')) + '</div>';
         if (p.part === 'after') h += '<div style="color:#9ca3af">Here the season had caught up ' + esc(-p.lead) + ' d earlier \u2014 one fire among the field\u2019s</div>';
-        else if (p.part === 'ahead' && p.lead != null && p.lead !== ls && !p.heading_stub) h += '<div>Still <b>' + esc(p.lead) + ' d ahead</b> here</div>';
+        else if (p.part === 'ahead' && p.lead != null && p.lead !== ls) h += '<div>Still <b>' + esc(p.lead) + ' d ahead</b> here</div>';
         h += endWords(p);
         h += '<div style="opacity:.8">' + evidenceWords(p.tier, p.bits) + '</div>';
         h += '<div style="opacity:.75;margin-top:3px">' + fmtDate(p.start) + ' \u2013 ' + fmtDate(p.end) + ' \u00b7 ' + esc(p.fires) + ' detections \u00b7 ' +

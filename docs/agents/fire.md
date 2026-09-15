@@ -475,20 +475,57 @@ they are no longer what the layer or a count means.
 **UI — the same rendering, no new control.** The Vanguard rendering
 (`fireseason.js`) draws whatever `/api/fire-vanguard` returns: lead colour,
 evidence width, dash for a missed day, ash after the season caught up — as
-before. New for KF chains: a **live head** (`fireseason-van-head` circle +
-halo, a geometry chevron for `heading_deg` — no glyph font) on `ongoing`
-chains; the chip says `12 vanguard in view · 1 still moving`; the tip says
-*Still moving — last seen 11 Sept heading S at ~7 km/d* / *Followed until
-the season arrived* / *Trail lost: no fire within reach for 3 days*, with
-"Kalman-tracked" as a small secondary note and one method sentence at the
-foot. Legend gains the head line and a one-line method when KF chains are
-in view (`kfShown()`). **Animator:** the `trajs` loader also fetches
-`/api/fire-vanguard` for the view and window; those chains (`_van`) are
-drawn by `drawVanguard` while the overlay is on, plain trajectories with the
-same id step aside (`_hideWhenVan`), and KF chains are not drawn at all with
-the overlay off — the map does not draw them either. Paused-frame probe
-skips whichever is hidden. `TEST.fireSeason()` → `trackers`, `kfShown`,
-`drawnLiveHeads`.
+before. **Direction** (2026-09-15): fires have dates, so a chain has an
+order, and from z7 every chain carries small arrowheads along it
+(`fireseason-van-arrow`, `symbol-placement: line`) in the segment's own
+colour (lead ramp ahead, ash after). The glyph is one **SDF** image,
+`arrow-right` (`globe.html makeArrowheadSDF`, points north at rotate 0 as
+the old bitmap did), so every arrow layer — LOD fire trajectories
+(`lodlayer.js`), pinned trajectories, vanguard — colours it with its own
+line colour and rims it with a dark halo; the old bitmap was a fixed red
+arrow on every colour of line. New for KF chains: a **live head** on
+`ongoing` chains — a *large arrowhead* at the chain's end turned to
+`heading_deg` (falls back to the last step's bearing) over a soft lead
+glow (`fireseason-van-head` symbol + `-halo` circle). It was a ringed dot
+with a geometry chevron until 2026-09-15; with settlement and deforestation
+dots on at the same time a dot read as one more point feature, and an arrow
+at the end of a line can only be the line's head. The chip says `12
+vanguard in view · 1 still moving`; the tip says *Still moving — last seen
+11 Sept heading S at ~7 km/d* / *Followed until the season arrived* /
+*Trail lost: no fire within reach for 3 days*, with "Kalman-tracked" as a
+small secondary note and one method sentence at the foot. Legend gains the
+arrow line, the head line and a one-line method when KF chains are in view
+(`kfShown()`); the Methods page and the Season menu item say the same words.
+**Animator:** the `trajs` loader also fetches `/api/fire-vanguard` for the
+view and window; those chains (`_van`) are drawn by `drawVanguard` while the
+overlay is on (direction there is motion — no arrows), plain trajectories
+with the same id step aside (`_hideWhenVan`), and KF chains are not drawn at
+all with the overlay off — the map does not draw them either. Paused-frame
+probe skips whichever is hidden. `TEST.fireSeason()` → `trackers`,
+`kfShown`, `drawnLiveHeads`.
+
+**Exports carry the population (2026-09-15).** One reader,
+`srv/fire_vanguard_export.go vanguardChains` (vanguardRowsSQL through
+`idx_fg_vanguard`, `tracker` named per row, `truncated` when a cap cut it),
+feeds: the park and merged **KML** (`writeVanguardKML`: a "Fire vanguard"
+folder, one subfolder per year, newest visible, the folder description
+counts how they ended and states its basis — *every chain overlapping the
+window*, as the map draws, where the season summary / ★ report count chains
+that *began* in it, so 149 vs 148 is two bases, not a bug); **Locus** (a
+`FIRES <year> · VANGUARD` folder per year, the end words in the track name);
+the **GeoPackage** `fire_vanguard` layer (area + view export; columns
+`tracker`, `seed_lead_days`, `end_cause`, `end_words`, `heading_deg`,
+`speed_kmd`, `kf_hits`; QML categorised by `end_cause`; format key `v5`).
+`fire_trajectories.vanguard` still means "plain chain that began ahead" and
+the layer description says the vanguard layer is what the app counts. The
+**parks CSV** adds `vanguard_tracker` / `vanguard_moving`; its per-park
+fire count memo now persists in `server_memo` (migration 068, fingerprint =
+`MAX(rowid)` of `fire_detections`) and is warmed at startup, so a cold
+request is 2.8 s, not 30 s. `fireSeasonWords` says "ran N km *ahead of the
+season*" (lost) / "*so far*" (ongoing) instead of "before the season caught
+up" for a chain the season never caught. The ★ report table prints
+`end_cause`/heading (MD/PDF/XLSX/CSV). Tests `kml_fire_vanguard_folder`,
+`parks_csv_vanguard_tracker`.
 
 **Cron / pipeline.** `daily_fire_update.py` runs `fire_vanguard_kf.py
 --areas … --current` right after `fire_front.py --current` (live season of
@@ -502,14 +539,10 @@ pass `--all` ran 2026-09-15 (tmux `kfall`, `logs/fire_vanguard_kf_all_20260915.l
 Tests: `vanguard_kf_one_population`, `fire_season_vanguard_tracker_kf`,
 `vanguard_kf_no_ongoing_in_past`.
 
-**Open.** Exports do not yet carry a `fire_vanguard` layer (the GeoPackage
-`fire_trajectories.vanguard` column still means "plain chain that began
-ahead"); the ★ report's vanguard table now lists KF chains with
-`end_cause`/`heading_deg` available but does not print them; the herd model
-(`eval_herd_vanguard.py`) has not been re-run on the KF set — it was the
-reason to ship these (5× the long chains would make a vanguard-only fit
-feasible). "Cattle follow 1–2 weeks behind" in the tip is field knowledge
-from the user, not a measurement, and is worded as such.
+**Not a measurement.** "Cattle follow 1–2 weeks behind" in the tip is
+field knowledge from the user, not a measurement, and is worded as such.
+`scripts/eval_herd_vanguard.py` now reads the KF set (runs F/G: a
+vanguard-only fit) and has **not been re-run** since — a separate task.
 
 ## `protected_area_id` is a catchment, not a park (F10 — fixed 2026-08-13)
 
