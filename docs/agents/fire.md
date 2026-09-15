@@ -150,8 +150,9 @@ lifts vanguard capture 0.71 → 0.82 — an option, not applied. What vanguard
 vanguard chains per bundle vs 0.23 for an equal-area all-fire mask (743
 chains; ≥150 km: 0.84), and 79 % of ≥150 km chains head within 90° of their
 bundle's day-order heading (all chains 63 %; bundle 9, R 0.03, has no
-direction). `movement()`'s assert trips until `build` reruns (state.pkl
-13,178 vs 13,180 fronts) — trivial.
+direction). `build` re-ran 2026-09-15 (state.pkl 13,180 fronts) and
+`movement()` bundling went **undirected** — numbers and the report sentences
+that must change are in `docs/agents/zoning.md` (movement bullet).
 
 ### The quirk: the nulls hold the heuristic fixed (2026-09-15)
 

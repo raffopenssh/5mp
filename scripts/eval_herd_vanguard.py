@@ -67,13 +67,9 @@ def inside_share(j, band):
     t = T[j]["t"]; rr, cc = G.rc_arr([p[0] for p in t], [p[1] for p in t]); ok = G.inside(rr, cc); return float(band[rr[ok], cc[ok]].mean()) if ok.any() else 0.0
 def capture(idx, band): return float(np.mean([inside_share(j, band) >= 0.5 for j in idx])) if len(idx) else float("nan")
 def kmeans(fit):
-    rng = np.random.default_rng(0); C = X[fit][rng.choice(fit.sum(), K, replace=False)]
-    for _ in range(60):
-        lab = np.argmin(((X[:, None, :] - C[None]) ** 2).sum(2), 1)
-        C2 = np.array([X[fit & (lab == i)].mean(0) if (fit & (lab == i)).any() else C[i] for i in range(K)])
-        if np.allclose(C2, C): break
-        C = C2
-    return np.argmin(((X[:, None, :] - C[None]) ** 2).sum(2), 1)
+    # the SAME bundling as plan_solver.movement(): undirected since 2026-09-15 (a front and its reversal are one corridor)
+    sys.path.insert(0, str(ROOT / "scripts")); from plan_solver import undirected_kmeans
+    lab, _flip, _C = undirected_kmeans(X, fit, K); return lab
 Q = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
 def run(name, fit_sel, weights=None, lab=None, capture_min=0.5):
     """fit_sel: bool mask of fronts used to build UDs (subset of non-hold seasons). Bands chosen exactly as movement():
