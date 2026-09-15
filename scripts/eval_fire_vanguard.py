@@ -47,6 +47,11 @@ def _run(job):
     import rebuild_fire_trajectories_v5 as B
     B.AOI_IDS.add(pid)  # harmless for parks (only consulted for AOI ids)
     t = time.time()
+    if kf == "kf_all":
+        # Control: the same Kalman tracker over the WHOLE field, a track born
+        # anywhere. Answers "would a Kalman filter beat v7 inside the season?"
+        import fire_vanguard_kf as K
+        K.FIELD_LEAD_MIN, K.SEED_LEAD_MIN, K.SEED_LEAD_MAX = -1e9, -1e9, 1e9
     if kf:
         # The Kalman seed-ahead tracker (fire_vanguard_kf.py): leads are
         # re-measured on the (possibly shuffled) dates, exactly as the
@@ -67,12 +72,14 @@ def main():
     ap.add_argument("--leads", default="5,10,15", help="lead thresholds in days; 'all' = whole field control")
     ap.add_argument("--seeds", type=int, default=1)
     ap.add_argument("--json")
-    ap.add_argument("--tracker", choices=["groups", "kf"], default="groups",
+    ap.add_argument("--tracker", choices=["groups", "kf", "kf_all"], default="groups",
                     help="groups = production tracker on detections with lead >= L; "
                          "kf = fire_vanguard_kf seed-ahead Kalman tracker on the whole season "
-                         "(its own field/seed rules; --leads ignored)")
+                         "(its own field/seed rules; --leads ignored); "
+                         "kf_all = the Kalman tracker over the whole field, seeds anywhere "
+                         "(control: does a KF beat v7 inside the season? measured 2026-09-15: no)")
     a = ap.parse_args()
-    leads = [None] if a.tracker == "kf" else [None if x == "all" else float(x) for x in a.leads.split(",")]
+    leads = [None] if a.tracker != "groups" else [None if x == "all" else float(x) for x in a.leads.split(",")]
 
     conn = sqlite3.connect(f"file:{DB_PATH}?mode=ro", uri=True)
     fs = FF.FrontSet(conn, a.area)
@@ -96,7 +103,9 @@ def main():
 
     out = {}
     for L in leads:
-        if a.tracker == "kf":
+        if a.tracker == "kf_all":
+            sel, tag = fires, "kf_all"
+        elif a.tracker == "kf":
             # The prototype's null (van3.py SEED): the FIELD is fixed by the
             # real leads, its days are shuffled, and the seed rule then reads
             # the lead of the shuffled day. Shuffling the whole season instead
@@ -112,7 +121,7 @@ def main():
         if len(sel) < 500:
             print("  too few detections")
             continue
-        kf = a.tracker == "kf"
+        kf = a.tracker if a.tracker != "groups" else False
         jobs = [("real", a.area, pk["geometry"], sel, kf)]
         for s in range(a.seeds):
             jobs.append((f"null{s}", a.area, pk["geometry"], shuffle_days(sel, 7 + s), kf))
