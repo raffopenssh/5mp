@@ -336,8 +336,8 @@ says "the rule needs 2"; XSA every cell "2 of 2", owner-gated); ui
 share link, rose grade swatch + life row in the menu, tip words,
 `entryState` at four playhead positions of a real cell);
 `TEST.fireEntry(lng, lat)`. The `ui_tests.js` fn assertions run in the
-browser only: load the file's text at `/?test=1&…`, `new Function(text +
-';return UI_TESTS')()` (it reads `process.env`; stub `window.process`).
+browser only: at `/?pwd=test2026&test=1&<the test's url>` paste the file
+into the console, then `await runUITests(['season_entry_ground'])`.
 
 ---
 
