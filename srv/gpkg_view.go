@@ -55,7 +55,7 @@ type gpkgViewOpts struct {
 // they translate — an export that silently renamed them would be a second
 // vocabulary to keep in sync.
 var viewLayerTables = map[string][]string{
-	"trajs":       {"fire_trajectories"},
+	"trajs":       {"fire_trajectories", "fire_vanguard"},
 	"fireGrid":    {"fire_detections"},
 	"firePts":     {"fire_detections"},
 	"deforest":    {"deforestation"},
@@ -66,7 +66,7 @@ var viewLayerTables = map[string][]string{
 	// Not an animator chip but the Map-strip Season overlay; anim.js adds
 	// it to `layers` when FireSeason is on, so the file holds what the
 	// screen showed.
-	"season": {"fire_season_front"},
+	"season": {"fire_season_front", "fire_vanguard"},
 }
 
 func (v gpkgViewOpts) wants(table string) bool {
@@ -134,6 +134,7 @@ func (s *Server) buildViewGeoPackage(path string, o gpkgExportOpts) ([]gpkgLayer
 	}{
 		{"view frame", func() error { return s.gpkgViewFrame(w, o) }},
 		{"fire trajectories", func() error { return s.gpkgViewTrajectories(w, o) }},
+		{"fire vanguard", func() error { return s.gpkgViewVanguard(w, o) }},
 		{"fire season front", func() error { return s.gpkgViewSeasonFront(w, o) }},
 		{"fire detections", func() error { return s.gpkgViewDetections(w, o) }},
 		{"deforestation", func() error { return s.gpkgViewPolygons(w, o, "deforestation") }},
@@ -295,6 +296,20 @@ func (s *Server) gpkgViewTrajectories(w *gpkgWriter, o gpkgExportOpts) error {
 	}
 	w.SetStyle("fire_trajectories", styleFireTrajectory(), "Coloured by fire behaviour type")
 	return nil
+}
+
+// gpkgViewVanguard: the vanguard chains in the view (the same rows
+// /api/fire-vanguard draws for it — vanguardRowsSQL through the shared
+// reader), whole, into the fire_vanguard layer the area export writes.
+func (s *Server) gpkgViewVanguard(w *gpkgWriter, o gpkgExportOpts) error {
+	v := o.View
+	if !v.wants("fire_vanguard") {
+		return nil
+	}
+	scope, args := v.scopeSQL(o.AreaID)
+	bb, bargs := v.bboxSQL()
+	chains, _ := s.vanguardChainsWhere(scope+bb, append(args, bargs...), o.FromDate, o.viewTo(), 0)
+	return gpkgVanguardLayer(w, chains)
 }
 
 // gpkgViewSeasonFront: the front contours of every area whose season grid

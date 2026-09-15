@@ -583,7 +583,12 @@ func (s *Server) buildLocusContent(tdb, wdb *locusDB, parkID, parkName, boundary
 	}
 
 	// ---- Mission content ----
-	// Fire trajectories grouped per year (latest year visible)
+	// Fire trajectories grouped per year (latest year visible). The
+	// vanguard population is a sibling folder per year, read through the
+	// shared vanguardChains (the same rows as the KML, GeoPackage and the
+	// app): where the Kalman tracker has run those are its chains and a
+	// plain chain that began ahead stays in FIRES with its words; elsewhere
+	// the plain flagged chains ARE the population and move to the folder.
 	fireQuery := `SELECT geojson, properties_json, start_date, end_date FROM feature_geometries WHERE park_id = ? AND feature_type = 'fire_trajectory'`
 	fireArgs := []interface{}{parkID}
 	if fromDate != "" {
@@ -596,8 +601,13 @@ func (s *Server) buildLocusContent(tdb, wdb *locusDB, parkID, parkName, boundary
 	}
 	// Vanguard chains first: the 500 cap is a corner (invariant 8) and the
 	// newest corner of a window is exactly where the early-season chains
-	// are not. The folder description says when the cap was hit.
+	// are not.
 	fireQuery += " ORDER BY COALESCE(vanguard,0) DESC, start_date DESC LIMIT 500"
+	vanChains, _ := s.vanguardChains(parkID, fromDate, toDate, 500)
+	vanIDs := map[string]bool{}
+	for _, c := range vanChains {
+		vanIDs[c.FeatureID] = true
+	}
 	fireGroups := map[string]int64{} // year -> group id
 	vanGroups := map[string]int64{}  // year -> vanguard group id
 	latestFireYear := ""
@@ -613,6 +623,9 @@ func (s *Server) buildLocusContent(tdb, wdb *locusDB, parkID, parkName, boundary
 			}
 			var propMap map[string]interface{}
 			json.Unmarshal([]byte(props), &propMap)
+			if fid, _ := propMap["feature_id"].(string); fid != "" && vanIDs[fid] {
+				continue // this plain chain IS the vanguard population here; it goes to the VANGUARD folder below
+			}
 			name := "Fire"
 			if featureID, ok := propMap["feature_id"].(string); ok && featureID != "" {
 				if parts := strings.Split(featureID, "_grp_"); len(parts) == 2 && len(parts[1]) >= 8 {
@@ -635,35 +648,45 @@ func (s *Server) buildLocusContent(tdb, wdb *locusDB, parkID, parkName, boundary
 					latestFireYear = year
 				}
 			}
-			// Vanguard chains (began 10–60 d ahead of the season front) go
-			// to a sibling folder per year in the Season overlay's lead
-			// yellow, wider — on a phone in the field the question is
-			// "which of these lines is early movement", so they are a
-			// folder one can switch on alone. Words in the name, because
-			// Locus tracks have no description a tap shows.
-			if v, _ := propMap["vanguard"].(bool); v {
-				if words := fireSeasonWords(propMap); words != "" {
-					name = "\u25B2 " + name + " \u2014 " + words
+			if words := fireSeasonWords(propMap); words != "" {
+				if v, _ := propMap["vanguard"].(bool); v {
+					name = "\u25B2 " + name
 				}
-				vgid, ok := vanGroups[year]
-				if !ok {
-					vgid, _ = tdb.addGroup("FIRES "+year+" \u00B7 VANGUARD", 0, "ic_tracks", locusGroupStyle(0xFFFDE047, 3), tMission)
-					vanGroups[year] = vgid
-					fireGroups[year+"/van"] = vgid // trimmed to latest year below, like the rest
-				}
-				gid = vgid
-			} else if words := fireSeasonWords(propMap); words != "" {
 				name = name + " \u2014 " + words
 			}
-			width := float32(2)
-			color := uint32(0xFFFF3B30)
-			if gid == vanGroups[year] && vanGroups[year] != 0 {
-				width, color = 3, 0xFFFDE047
-			}
 			for _, path := range extractPaths(geojson) {
-				// visibility fixed below (only latest year); mark later
-				tdb.addTrack(gid, name, path, locusTrackStyle(color, width), true) // trimmed to latest year below
+				tdb.addTrack(gid, name, path, locusTrackStyle(0xFFFF3B30, 2), true) // trimmed to latest year below
 			}
+		}
+	}
+	// The vanguard folder per year, in the Season overlay's lead yellow,
+	// wider — on a phone in the field the question is "which of these
+	// lines is early movement", so it is a folder one can switch on alone.
+	// Words in the name (season position, how it ended), because Locus
+	// tracks have no description a tap shows.
+	for _, c := range vanChains {
+		year := "undated"
+		if len(c.Start) >= 4 {
+			year = c.Start[:4]
+		}
+		vgid, ok := vanGroups[year]
+		if !ok {
+			vgid, _ = tdb.addGroup("FIRES "+year+" \u00B7 VANGUARD", 0, "ic_tracks", locusGroupStyle(0xFFFDE047, 3), tMission)
+			vanGroups[year] = vgid
+			fireGroups[year+"/van"] = vgid // trimmed to latest year below, like the rest
+			if year > latestFireYear && year != "undated" {
+				latestFireYear = year
+			}
+		}
+		name := vanguardChainName(c)
+		if words := fireSeasonWords(c.Props); words != "" {
+			name += " \u2014 " + words
+		}
+		if ew := vanguardEndWords(c.Props); ew != "" {
+			name += " \u2014 " + ew
+		}
+		for _, path := range extractPaths(c.GeoJSON) {
+			tdb.addTrack(vgid, name, path, locusTrackStyle(0xFFFDE047, 3), true) // trimmed to latest year below
 		}
 	}
 	// Fix visibility: keep only latest fire year in the visible list

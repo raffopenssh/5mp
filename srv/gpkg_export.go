@@ -134,6 +134,7 @@ func (s *Server) buildAreaGeoPackage(path string, o gpkgExportOpts) ([]gpkgLayer
 			return s.gpkgProtectedAreas(w, o)
 		}},
 		{"fire trajectories", func() error { return s.gpkgFireTrajectories(w, o) }},
+		{"fire vanguard", func() error { return s.gpkgFireVanguard(w, o) }},
 		{"fire season front", func() error { return s.gpkgFireSeasonFront(w, o) }},
 		{"fire detections", func() error { return s.gpkgFireDetections(w, o, boundary) }},
 		{"deforestation", func() error { return s.gpkgDeforestation(w, o) }},
@@ -501,6 +502,113 @@ func (s *Server) gpkgFireTrajectories(w *gpkgWriter, o gpkgExportOpts) error {
 		)
 	}
 	w.SetStyle("fire_trajectories", styleFireTrajectory(), "Coloured by fire behaviour type")
+	return nil
+}
+
+// gpkgFireVanguard writes the area's vanguard population — the SAME rows
+// /api/fire-vanguard draws and /api/fire-season counts (vanguardRowsSQL,
+// through the shared vanguardChains reader): Kalman seed-ahead chains where
+// scripts/fire_vanguard_kf.py has run, plain chains flagged vanguard=1
+// elsewhere. `tracker` names which, per row; the KF-only columns
+// (seed_lead, end_cause, heading_deg, speed_kmd, kf_hits) are NULL for plain
+// chains. Whole population, no LIMIT. Dropped when empty (the writer drops
+// empty layers), so a missing layer means "none in the window", not "not
+// computed" — fire_season_front's presence says whether the front exists.
+func (s *Server) gpkgFireVanguard(w *gpkgWriter, o gpkgExportOpts) error {
+	chains, _ := s.vanguardChains(o.AreaID, o.FromDate, o.ToDate, 0)
+	return gpkgVanguardLayer(w, chains)
+}
+
+// gpkgVanguardLayer writes the fire_vanguard layer from an already-read
+// population; shared by the area export (gpkgFireVanguard) and the view
+// export (gpkgViewVanguard). Writes nothing for an empty slice.
+func gpkgVanguardLayer(w *gpkgWriter, chains []vanguardChain) error {
+	if len(chains) == 0 {
+		return nil
+	}
+	l, err := w.AddLayer("fire_vanguard", "GEOMETRY",
+		"Vanguard fire chains: lines that began 10–60 days ahead of the season front (fire_season_front) — "+
+			"the one population whose day-to-day order is measurably better than a day-shuffled null. "+
+			"tracker 'kf' = Kalman seed-ahead tracker (scripts/fire_vanguard_kf.py): seeded ahead of the "+
+			"front, followed into the arriving season; end_cause ongoing = still moving at the newest data, "+
+			"season = the front arrived, lost = no fire within reach for 3 days; heading_deg/speed_kmd = the "+
+			"filter state at the end. tracker 'groups' = plain trajectory flagged vanguard (KF not run here). "+
+			"This layer, not fire_trajectories.vanguard, is what the app counts as vanguard.", []gpkgCol{
+			{"feature_id", "TEXT"},
+			{"park_id", "TEXT"},
+			{"tracker", "TEXT"},
+			{"tracker_version", "TEXT"},
+			{"group_type", "TEXT"},
+			{"start_date", "DATE"},
+			{"end_date", "DATE"},
+			{"year", "INTEGER"},
+			{"days", "INTEGER"},
+			{"fires_total", "INTEGER"},
+			{"total_frp_mw", "REAL"},
+			{"distance_km", "REAL"},
+			{"avg_speed_km_day", "REAL"},
+			{"direction", "TEXT"},
+			{"evidence_bits", "REAL"},
+			{"evidence_tier", "TEXT"},
+			{"fire_season", "TEXT"},
+			{"lead_start_days", "INTEGER"},
+			{"lead_basis", "TEXT"},
+			{"lead_max_days", "INTEGER"},
+			{"ahead_km", "REAL"},
+			{"ahead_days", "INTEGER"},
+			{"seed_lead_days", "REAL"},
+			{"end_cause", "TEXT"},
+			{"end_words", "TEXT"},
+			{"heading_deg", "INTEGER"},
+			{"speed_kmd", "REAL"},
+			{"kf_hits", "INTEGER"},
+			{"nearest_place", "TEXT"},
+			{"nearest_place_dist_km", "REAL"},
+			{"narrative", "TEXT"},
+		})
+	if err != nil {
+		return err
+	}
+	for _, c := range chains {
+		p := c.Props
+		var endWords interface{}
+		if ew := vanguardEndWords(p); ew != "" {
+			endWords = ew
+		}
+		l.Add(c.GeoJSON,
+			c.FeatureID,
+			c.ParkID,
+			c.Tracker,
+			gpkgJSONStr(p, "tracker_version"),
+			gpkgJSONStr(p, "group_type"),
+			gpkgDate(c.Start), gpkgDate(c.End),
+			gpkgJSONInt(p, "year"),
+			gpkgJSONInt(p, "days"),
+			gpkgJSONInt(p, "fires_total"),
+			gpkgJSONNum(p, "total_frp"),
+			gpkgJSONNum(p, "distance_km"),
+			gpkgJSONNum(p, "avg_speed_km_day"),
+			gpkgJSONStr(p, "direction"),
+			gpkgJSONNum(p, "evidence_bits"),
+			gpkgJSONStr(p, "evidence_tier"),
+			gpkgJSONStr(p, "fire_season"),
+			gpkgJSONInt(p, "lead_start"),
+			gpkgJSONStr(p, "lead_basis"),
+			gpkgJSONInt(p, "lead_max"),
+			gpkgJSONNum(p, "ahead_km"),
+			gpkgJSONInt(p, "ahead_days"),
+			gpkgJSONNum(p, "seed_lead"),
+			gpkgJSONStr(p, "end_cause"),
+			endWords,
+			gpkgJSONInt(p, "heading_deg"),
+			gpkgJSONNum(p, "speed_kmd"),
+			gpkgJSONInt(p, "kf_hits"),
+			gpkgJSONStr(p, "nearest_place"),
+			gpkgJSONNum(p, "nearest_place_dist"),
+			gpkgJSONStr(p, "narrative"),
+		)
+	}
+	w.SetStyle("fire_vanguard", styleFireVanguard(), "Vanguard chains by how they ended (still moving / season arrived / lost)")
 	return nil
 }
 

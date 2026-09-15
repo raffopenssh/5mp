@@ -1534,6 +1534,30 @@ test_api "fire_season_vanguard_tracker_kf" "/api/fire-season?area=CAF_Chinko&sum
 # the newest data the area holds — never for a finished season.
 test_api "vanguard_kf_no_ongoing_in_past" "/api/fire-vanguard?bbox=20,-30,40,15&from=2024-08-01&to=2025-07-31&limit=6000" "200" \
     '([.groups[] | select(.tracker == "kf" and .end_cause == "ongoing")] | length == 0)'
+# Exports carry the same population (srv/fire_vanguard_export.go, one reader
+# for KML / Locus / GeoPackage): the park KML has a "Fire vanguard" folder
+# whose chain count is the folder description's own number, every chain in it
+# is styled fire-vanguard and says how it ended, and the count is at least the
+# season summary's began-in-window count (the folder counts overlap).
+printf "%-50s" "kml_fire_vanguard_folder"
+KML_V=$(curl -s -b "$COOKIE_FILE" "${BASE_URL}/api/parks/CAF_Chinko/export.kml?effort=0&from=2024-10-01&to=2025-02-01")
+KML_VN=$(printf '%s' "$KML_V" | grep -A1 'Fire vanguard</name>' | grep -o 'CDATA\[[0-9]* vanguard chains' | grep -o '[0-9]*' | head -1)
+KML_VPM=$(printf '%s' "$KML_V" | awk '/<Folder><name>Fire vanguard<\/name>/{f=1} f&&/<Folder><name>Season front/{f=0} f' | grep -c '<Placemark' || true)
+KML_VEND=$(printf '%s' "$KML_V" | awk '/<Folder><name>Fire vanguard<\/name>/{f=1} f&&/<Folder><name>Season front/{f=0} f' | grep -c 'Still moving\|Followed until the season arrived\|Trail lost' || true)
+SEASON_VN=$(curl -s -b "$COOKIE_FILE" "${BASE_URL}/api/fire-season?area=CAF_Chinko&summary=1&from=2024-10-01&to=2025-02-01" | jq -r '.vanguard_in_window // 0')
+if [[ "${KML_VN:-0}" -gt 0 && "$KML_VN" -eq "$KML_VPM" && "$KML_VEND" -eq "$KML_VPM" && "$KML_VN" -ge "$SEASON_VN" ]]; then
+    green "✓"; PASSED=$((PASSED + 1))
+else
+    red "FAIL (desc $KML_VN, placemarks $KML_VPM, end words $KML_VEND, season $SEASON_VN)"; FAILED=$((FAILED + 1)); ERRORS+=("kml fire vanguard folder")
+fi
+# The parks CSV names which population vanguard_groups counts, per park.
+printf "%-50s" "parks_csv_vanguard_tracker"
+CSV_HDR=$(curl -s -b "$COOKIE_FILE" "${BASE_URL}/api/export/parks?format=csv" | head -1)
+if [[ "$CSV_HDR" == *",vanguard_groups,vanguard_tracker,vanguard_moving,"* ]]; then
+    green "✓"; PASSED=$((PASSED + 1))
+else
+    red "FAIL ($CSV_HDR)"; FAILED=$((FAILED + 1)); ERRORS+=("parks csv vanguard tracker")
+fi
 
 echo
 echo "======================================="
