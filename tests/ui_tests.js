@@ -8,8 +8,10 @@
  * so testing is: navigate → wait → assert DOM state.
  */
 
-const BASE_URL = process.env.BASE_URL || 'http://localhost:8000';
-const PWD = process.env.PWD || 'test2026';
+// Runs under Node (module export) and pasted into a browser console (no `process`).
+const ENV = (typeof process !== 'undefined' && process.env) || {};
+const BASE_URL = ENV.BASE_URL || 'http://localhost:8000';
+const PWD = ENV.PWD || 'test2026';
 
 // Test definitions: each test has a URL (relative) and assertions to run
 const UI_TESTS = [
