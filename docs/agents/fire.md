@@ -212,6 +212,100 @@ instead (bands top-20 %: 61 % of fronts / 50 % of vanguard chains vs 26 % /
 
 ---
 
+## Early-burn ground — the `entry` layer (shipped 2026-09-15)
+
+The second map from the baseline above, shipped as a native layer: **where
+the season enters**, season after season. Table `fire_early_ground`
+(migration 069), **one writer** `scripts/fire_front.py` (same `build_area`
+pass, same 04:40 `--rotate 25` cron; `--all` ran 2026-09-15). Rule
+(`EARLY_AHEAD_DAYS=15`, `EARLY_MIN_SHARE=0.40`, `EARLY_MIN_SEASONS=2`,
+`EARLY_MIN_EARLY=2`): a 2.5 km front-grid cell whose **first burn** of the
+season came ≥ 15 d before the local front in ≥ 40 % of the complete seasons
+that carried a front at it, and in at least two of them. Per cell:
+`[ix, iy, early, held, median_days_ahead, month_mode, usual_front_dos]`;
+`first_burn_json` holds every season's first-burn day per chosen cell (the
+animator's flash). Fewer than 2 complete seasons → a row with `cells_json
+NULL` and `stats_json.status="insufficient"` + reason; a missing row is
+`"not yet computed"` — three states, three words (invariant 1).
+
+**Chosen by the number, not by eye** (`scripts/eval_fire_baseline.py`,
+`data/eval/fire_baseline.json`, held-out season, Gini of the capture curve,
+medians over area-seasons):
+
+| predictor of the leading edge (10–60 d ahead of the front) | 806 area-seasons | 93 dense areas |
+|---|---|---|
+| clim (whole-season density) | +0.24 | +0.14 |
+| clim_early (prior seasons' first 45 d at the front) — **the loser** | +0.33 | +0.31 |
+| **recur** (share of held seasons early — the squares as drawn) | **+0.37** | **+0.38** |
+| recur5 (2×2 blocks, the prototype's 5 km cell) | +0.40 | +0.42 |
+| recur_s (recur smoothed σ 4 km) | +0.48 | +0.50 |
+
+Paired: recur beats clim_early in 55 % of area-seasons (+0.02 median), the
+smoothed form in 77 % (+0.10). We draw **recur raw** — a cell is a cell, and
+a smoothed field would be a second speed-raster look for a different
+question; the smoothing gain is noted, not shipped. On *all* detections the
+recur rule is useless (+0.07 vs clim +0.29): two questions, two maps, and
+the Methods paragraph says which this one answers. `EARLY_MIN_EARLY=2`
+because with two seasons held "1 of 2" is *below* chance (XSA 3,868 cells
+vs 5,528 expected) while "2 of 2" is 8.7× it (881 vs ~102). Chinko: 429
+cells / 8 seasons, ~9 by chance; Serengeti 320 / 7 (chance 44 — a weak
+signal, and the legend prints the chance beside the count); Nki 4 / 3.
+
+**Wire.** `/api/fire-season?…&early=1` adds `early_ground{status, rule,
+ahead_days, min_share, min_early, seasons_held, seasons[], grid, bbox,
+cells[], cell_fields, count, km2, chance_cells, first_burn_season,
+first_burn[]}` (~20 KB Chinko, ~50 KB XSA); `summary=1` without `early=1`
+carries nothing. `srv/fire_early_ground.go` reads; `earlyGroundWords()` is
+the one sentence tip, KML and GeoPackage share.
+
+**Rendering — one renderer for every per-cell field.** `srv/static/cellfield.js`
+(`CellField.create/setGrid/render/cellAt/cellsIn`): grid + values → colour
+per cell → offscreen canvas → MapLibre **image source** with nearest
+resampling, rows resampled to mercator (the same seam anim.js's heatBuffer
+removes). The **season speed map now goes through it too**: `/api/fire-
+season-speed` returns packed `values` (base64 uint8, 0 = none, 1..255 =
+log-spaced km/d levels, `encoding{}`, `levels{n, km_d_min, km_d_max}`)
+instead of the invertible PNG, and the tip reads the level under the pointer
+from the array it drew from. Entry: cyan-400 `#22d3ee` (no other layer's
+family), alpha by share (`entryAlpha`: 40 % → 0.35, 70 %+ → 0.85), thinned
+by confidence below z7 (`entryMinShare`: z<5.5 ≥70 %, z<7 ≥50 %) never
+dropped, a hairline rim from z8, layer below trajectories/vanguard/front
+lines. **Time by front, not date** (`entryTimeMul`): full weight until the
+`usual` front's day at the cell, then −70 % over `ENTRY_FADE_DAYS=60` past it.
+Animator: same rows as ground under the fires (`anim-chip[data-layer=entry]`);
+a cell flashes white-cyan for a few frames when this season's first
+detection (`first_burn`) lands in it. Re-render only on zoom-band crossing or
+playhead step (a paint pass over XSA's 93k cells is a few ms).
+
+**UX.** Season menu fourth row *Entry ground* (`icon-grid-2x2`), default
+off, share `season=front,vanguard,speed,entry`; Map-strip chip `N early-burn
+cells in view · km² · M seasons` (`FireSeason.entryInView()`); tip via
+`maptip.js` backdrop probe `fireseason-entry-probe` — *"Early-burn ground ·
+Herds have entered here early in N of M seasons · typically ~D days before
+the local front · usually <month>"* + this season's first detection + the
+rule with the area's count and chance. Legend swatch `.fs-entry-sw` (three
+graded squares). Methods: one paragraph under the fire section.
+
+**Exports** (`srv/fire_early_ground_export.go`): KML folder *Early-burn
+ground (N cells, M seasons)*, hidden, sub-folders by grade
+(`solid ≥70 % / firm 55–70 % / faint 40–55 %`), one polygon per cell with
+its footprint; GeoPackage layer `fire_early_ground` (rule, ahead_days,
+min_share, seasons_early/held, share_early, grade, days_ahead_median,
+first_burn_month, usual_front_day_of_season, seasons, cell_km2, basis) with
+a graded cyan QML, off by default in the QGIS project; Locus group
+*EARLY-BURN GROUND (M seasons)* of closed rings. Area exports only (a view
+export would need every overlapping area's grid — not done).
+
+**Tests.** Go `TestEarlyGround*` (live db: KML placemarks == cells, gpkg rows
+== cells, highest share grades solid; unknown area = "not yet computed");
+api `fire_early_ground_{basis,off_by_default,insufficient,xsa_two_seasons}`
+(Chinko basis fields + `early ≤ held`, `days_ahead ≥ 15`; NAM_Skeleton_Coast
+says "the rule needs 2"; XSA every cell "2 of 2", owner-gated); ui
+`season_entry_ground` (URL + `ui_tests.js` fn assertions: chip toggles and
+share link, menu swatch, tip words); `TEST.fireEntry(lng, lat)`.
+
+---
+
 ## Season front & vanguard (shipped 2026-09-14)
 
 Prototype history and the ten order-sensitive tests that came out real ≈
@@ -422,18 +516,19 @@ the animator's instant (`FireSeason.meta()` returns `animMeta || front`).
 `usual_offset_days` is deliberately `null` at the playhead — a curve
 quantile would be a second estimator under the one word (invariant 7).
 
-**Season speed map (2026-09-14).** `GET /api/fire-season-speed?area=|lon=&lat=
-[&at=|&season=]` (`srv/fire_season_speed.go`) → the eikonal gradient of the
-stored front as a **PNG data URL** on a fixed log ramp 1–50 km/d
-(`legend` 5 stops, areas comparable), σ=2 normalised-convolution smoothing,
-central differences; `stats{cells, p10/median/p90_km_d}` (Chinko 2024/25:
-18,770 cells, median 5.1 — matches numpy exactly), `grid{x0,y0,res,nx,ny}`
-(row 0 = south; PNG written top-down). The 256-entry `palette` is unique per
-level (blue-LSB nudge) so the image is **invertible**: the client decodes it
-once and a click-only MapTip backdrop probe (`fireseason-speed-probe`,
-priority −10) prints the km/d under the pointer — no second grid payload
-(XSA would be ~233 KB). Index by `grid.x0/y0/res` arithmetic, not bbox
-scaling (last-bit drift shifted a row). UI: fire-row Season menu → *Season
+**Season speed map (2026-09-14; wire changed 2026-09-15).** `GET
+/api/fire-season-speed?area=|lon=&lat=[&at=|&season=]`
+(`srv/fire_season_speed.go`) → the eikonal gradient of the stored front on a
+fixed log ramp 1–50 km/d (`legend` 5 stops, areas comparable), σ=2
+normalised-convolution smoothing, central differences; `stats{cells,
+p10/median/p90_km_d}` (Chinko 2024/25: 18,770 cells, median 5.1 — matches
+numpy exactly), `grid{x0,y0,res,nx,ny}` (row 0 = south). Since 2026-09-15
+the field travels as packed `values` (base64 uint8 per cell, 0 = none,
+1..255 = levels; `encoding{}`, `levels{}`) and is painted client-side by
+`cellfield.js` — the same renderer and probe as the early-burn ground (see
+that section); the invertible PNG + 256-colour `palette` is gone. Index by
+`grid.x0/y0/res` arithmetic, not bbox scaling (last-bit drift shifted a
+row). UI: fire-row Season menu → *Season
 speed*, chip `speed N km/d` (`icon-gauge`), share `season=front,vanguard,speed`,
 `TEST.fireSeason().speed/speedStats`. Not a GeoPackage layer. Tests:
 `fire_season_speed_*` (api), `season_front_vanguard_speed` (ui).
