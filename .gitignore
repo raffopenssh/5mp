@@ -72,6 +72,9 @@ data/eval/*
 # negative result documented in docs/FIRE_PIPELINE.md, and re-measuring each
 # costs a FIRMS round-trip.
 !data/eval/nrt_sp/
+# the herd-heuristic baseline ladder (summary only; _rows is 2 MB and regenerates in 7 min)
+!data/eval/fire_baseline.json
+!data/eval/fire_baseline_xsa.json
 # ...and the nightlights measurement (600K): the evidence for the negative
 # result in docs/agents/nightlights.md (mine sites are dark; layer folded).
 # The raw pixel extracts behind it are untracked and cost ~33 GB of LAADS
