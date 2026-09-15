@@ -1,7 +1,7 @@
 package srv
 
 // Exports of the early-burn ground (srv/fire_early_ground.go): KML folder,
-// GeoPackage layer, Locus group — the SAME cells the map draws as cyan
+// GeoPackage layer, Locus group — the SAME cells the map draws as rose
 // squares, one polygon per cell with its true footprint, every row naming
 // its basis (rule, thresholds, seasons early / held, days ahead). Follows
 // srv/fire_vanguard_export.go: nothing is written when the area has no
@@ -105,10 +105,11 @@ func (s *Server) writeEarlyGroundKML(kml *strings.Builder, areaID string) int {
 }
 
 // earlyGroundKMLStyles are the three graded fills (KML colour is aabbggrr;
-// cyan-400 #22d3ee → eed322).
-const earlyGroundKMLStyles = "<Style id=\"early-ground-faint\"><LineStyle><color>60eed322</color><width>0.5</width></LineStyle><PolyStyle><color>59eed322</color></PolyStyle></Style>\n" +
-	"<Style id=\"early-ground-firm\"><LineStyle><color>90eed322</color><width>0.5</width></LineStyle><PolyStyle><color>99eed322</color></PolyStyle></Style>\n" +
-	"<Style id=\"early-ground-solid\"><LineStyle><color>c0eed322</color><width>0.5</width></LineStyle><PolyStyle><color>d9eed322</color></PolyStyle></Style>\n"
+// the map's rose ramp: faint rose-800 #9f1239 → 39129f, firm rose-600
+// #e11d48 → 481de1, solid rose-400 #fb7185 → 8571fb).
+const earlyGroundKMLStyles = "<Style id=\"early-ground-faint\"><LineStyle><color>8039129f</color><width>0.5</width></LineStyle><PolyStyle><color>8039129f</color></PolyStyle></Style>\n" +
+	"<Style id=\"early-ground-firm\"><LineStyle><color>a0481de1</color><width>0.5</width></LineStyle><PolyStyle><color>b3481de1</color></PolyStyle></Style>\n" +
+	"<Style id=\"early-ground-solid\"><LineStyle><color>c08571fb</color><width>0.5</width></LineStyle><PolyStyle><color>eb8571fb</color></PolyStyle></Style>\n"
 
 // gpkgFireEarlyGround writes the fire_early_ground layer: one polygon per
 // cell with its basis columns. Writes nothing for an area without cells.
@@ -157,7 +158,7 @@ func (s *Server) gpkgFireEarlyGround(w *gpkgWriter, o gpkgExportOpts) error {
 	return nil
 }
 
-// styleFireEarlyGround: cyan fills, three grades of opacity like the map.
+// styleFireEarlyGround: the map's rose ramp, three grades like the map.
 func styleFireEarlyGround() string {
 	return qmlDoc(`<renderer-v2 type="categorizedSymbol" attr="grade" forceraster="0" symbollevels="0" enableorderby="0">
   <categories>
@@ -166,7 +167,7 @@ func styleFireEarlyGround() string {
 <category render="1" value="faint" label="Early in 40–55 %" symbol="2"/>
   </categories>
   <symbols>
-` + qmlFillSymbol("0", "34,211,238", 217, 0.1) + "\n" + qmlFillSymbol("1", "34,211,238", 153, 0.1) + "\n" + qmlFillSymbol("2", "34,211,238", 89, 0.1) + `
+` + qmlFillSymbol("0", "251,113,133", 235, 0.1) + "\n" + qmlFillSymbol("1", "225,29,72", 179, 0.1) + "\n" + qmlFillSymbol("2", "159,18,57", 128, 0.1) + `
   </symbols>
 </renderer-v2>`)
 }
@@ -182,7 +183,7 @@ func (s *Server) locusEarlyGround(tdb *locusDB, areaID string, parent int64) int
 	if len(cells) == 0 {
 		return 0
 	}
-	gid, err := tdb.addGroup(fmt.Sprintf("EARLY-BURN GROUND (%d seasons)", r.SeasonsHeld), 0, "ic_tracks", locusGroupStyle(0xFF22D3EE, 1), parent)
+	gid, err := tdb.addGroup(fmt.Sprintf("EARLY-BURN GROUND (%d seasons)", r.SeasonsHeld), 0, "ic_tracks", locusGroupStyle(0xFFFB7185, 1), parent)
 	if err != nil {
 		return 0
 	}

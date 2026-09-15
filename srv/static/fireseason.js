@@ -564,9 +564,30 @@
      * ahead, month, usual front dos] + this season's first-burn day per
      * cell) and are drawn as squares by CellField. Nothing is computed
      * here but colour. */
-    var ENTRY_RGB = [34, 211, 238];          // cyan-400: a family no other layer uses
-    var ENTRY_FLASH = [236, 254, 255];       // the season's first detection lands: a brief light
-    var ENTRY_FADE_DAYS = 60;                // full weight to the usual front, ~30 % once 60 d past it
+    /* Colour: the fire family's ROSE end, graded by share of seasons like
+     * the front's isochrones are graded by date. Ember red is the fires and
+     * the front, orange→yellow→white the vanguard, rust→cream the speed
+     * field, amber settlements, violet clearings: rose/crimson is the one
+     * warm hue none of them draw, and a square is a shape no line has.
+     * Grade (share of seasons early): 40 % deep crimson → 55 % rose →
+     * 70 %+ light rose, alpha rising with it. */
+    var ENTRY_STOPS = [[0.40, [159, 18, 57]], [0.55, [225, 29, 72]], [0.70, [251, 113, 133]]];   // rose-800 → rose-600 → rose-400
+    var ENTRY_FLASH = [255, 241, 242];       // the season's first detection lands: white-hot, cooling back to the grade over ~8 d
+    var ENTRY_FADE_DAYS = 60;                // once the usual front is past a cell: −70 % over 60 d, never off
+    var ENTRY_DUE_DAYS = 30;                 // the window opens: a cell brightens from dormant over the 30 d before its usual entry
+    var ENTRY_FLASH_DAYS = 8;                // ignition afterglow length (days of season)
+    function entryRGB(share) {
+        var st = ENTRY_STOPS;
+        if (share <= st[0][0]) return st[0][1];
+        for (var i = 1; i < st.length; i++) {
+            if (share <= st[i][0]) {
+                var t = (share - st[i - 1][0]) / (st[i][0] - st[i - 1][0]), a = st[i - 1][1], b = st[i][1];
+                return [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)];
+            }
+        }
+        return st[st.length - 1][1];
+    }
+    function entryHex(share) { var c = entryRGB(share); return hex(c[0], c[1], c[2]); }
     function entryURL() {
         var f = focusId(), c = map.getCenter();
         var u = '/api/fire-season?pwd=' + pwd() + '&summary=1&early=1' + (f ? '&area=' + encodeURIComponent(f)
@@ -583,16 +604,43 @@
     // share of seasons → alpha: the rule's floor (40 %) is faint, 70 %+
     // solid; "2 of 2" is solid too (it is the most a two-season area can say,
     // and the tip prints the 2).
-    function entryAlpha(share) { return 0.35 + 0.5 * Math.max(0, Math.min(1, (share - 0.4) / 0.3)); }
-    // time: dos = day of season at the slider's end / playhead; c.uf = the
-    // usual front's day at this cell. Entry ground is a statement about
-    // where the season BEGINS, so once the season is long past here it
-    // steps back (never off: the pattern stays legible under the fires).
-    function entryTimeMul(c, dos) {
-        if (dos == null || c.uf == null || c.uf < 0) return 1;
-        var past = dos - c.uf;
-        if (past <= 0) return 1;
-        return 1 - 0.7 * Math.min(1, past / ENTRY_FADE_DAYS);
+    function entryAlpha(share) { return 0.5 + 0.42 * Math.max(0, Math.min(1, (share - 0.4) / 0.3)); }
+    /* Time. dos = day of season at the slider's end / playhead; c.uf = the
+     * usual front's day at this cell, c.days = how far ahead of it this
+     * cell usually burns, c.fb = this season's first detection here. Entry
+     * ground is a statement about where the season BEGINS, so a cell has a
+     * life over the season and the animation shows it:
+     *
+     *   dormant   long before its usual entry: half weight — the ground is
+     *             known, nothing is due
+     *   due       the 30 d before its usual entry (uf − days): rises to
+     *             full weight, so the season's expected arrival sweeps the
+     *             ground ahead of the front as a wave, not a switch
+     *   ignition  this season's first detection lands: white-hot, cooling
+     *             back to the grade over 8 d (an ember, not a strobe)
+     *   burnt     it did what it does this year: full weight
+     *   past      the usual front is past and it has not burned: steps back
+     *             −70 % over 60 d, never off (the pattern stays legible)
+     *
+     * With no playhead (dos null) every cell is at full weight. entryState()
+     * returns {mul, flash} and is the one function the paint, the tip and
+     * the legend read. */
+    function entryState(c, dos) {
+        if (dos == null) return { mul: 1, flash: 0, word: '' };
+        var fb = c.fb, burnt = fb != null && dos >= fb;
+        if (burnt) {
+            var age = dos - fb;
+            if (age <= ENTRY_FLASH_DAYS) { var k = Math.exp(-age / (ENTRY_FLASH_DAYS / 3)); return { mul: 1, flash: k, word: age < 1 ? 'first detection today' : 'burned ' + Math.round(age) + ' d ago' }; }
+            return { mul: 1, flash: 0, word: 'burned ' + Math.round(age) + ' d ago' };
+        }
+        var uf = (c.uf != null && c.uf >= 0) ? c.uf : null;
+        if (uf == null) return { mul: 1, flash: 0, word: '' };
+        var past = dos - uf;
+        if (past > 0) return { mul: 1 - 0.7 * Math.min(1, past / ENTRY_FADE_DAYS), flash: 0, word: 'usual front passed ' + Math.round(past) + ' d ago, not yet burned' };
+        var due = uf - Math.max(0, c.days || 0), lead = due - dos;   // days until the usual entry here
+        if (lead <= 0) return { mul: 1, flash: 0, word: 'usual entry ' + Math.round(-lead) + ' d ago, not yet burned' };
+        if (lead >= ENTRY_DUE_DAYS) return { mul: 0.5, flash: 0, word: 'usual entry in ' + Math.round(lead) + ' d' };
+        return { mul: 0.5 + 0.5 * (1 - lead / ENTRY_DUE_DAYS), flash: 0, word: 'usual entry in ' + Math.round(lead) + ' d' };
     }
     // zoom bands: below the zoom where a cell is a few pixels, thin by
     // confidence (highest share first) so the pattern survives, like the
@@ -616,14 +664,13 @@
         var key = ['entry', entry.area, entry.season, minShare, hi ? 1 : 0, z < 7 ? 'h' : '', dos == null ? 'x' : Math.round(dos * 4)].join('|');
         entryField.render(function (c) {
             if (c.share < minShare) return null;
-            var a = entryAlpha(c.share) * entryTimeMul(c, dos);
-            // this season's first detection lands here: light up for 4 days
-            if (dos != null && c.fb != null && dos >= c.fb && dos - c.fb <= 4) {
-                var k = 1 - (dos - c.fb) / 4;
-                return [ENTRY_RGB[0] + (ENTRY_FLASH[0] - ENTRY_RGB[0]) * k, ENTRY_RGB[1] + (ENTRY_FLASH[1] - ENTRY_RGB[1]) * k,
-                    ENTRY_RGB[2] + (ENTRY_FLASH[2] - ENTRY_RGB[2]) * k, 255 * Math.max(a, 0.6 + 0.4 * k)];
+            var rgb = entryRGB(c.share), stt = entryState(c, dos);
+            var a = entryAlpha(c.share) * stt.mul;
+            if (stt.flash > 0) {
+                var k = Math.pow(stt.flash, 0.7);   // hold the white a little, then cool
+                return [lerp(rgb[0], ENTRY_FLASH[0], k), lerp(rgb[1], ENTRY_FLASH[1], k), lerp(rgb[2], ENTRY_FLASH[2], k), 255 * Math.max(a, 0.7 + 0.3 * k), k > 0.3 ? 1 : 0];
             }
-            return [ENTRY_RGB[0], ENTRY_RGB[1], ENTRY_RGB[2], 255 * a];
+            return [rgb[0], rgb[1], rgb[2], 255 * a];
         }, { scale: hi ? 6 : 1, rim: hi ? { alpha: 0.55, dark: 0.45 } : null, halo: z < 7 ? 0.4 : 0, key: key });
     }
     function windowEndMs() { var d = dates(); return d.to ? Date.parse(d.to + 'T00:00:00Z') : null; }
@@ -655,7 +702,7 @@
     var MONTHS = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     function entryTipHTML(c) {
         var eg = entry.early_ground;
-        var h = '<div class="maptip-title" style="color:#67e8f9">Early-burn ground</div>';
+        var h = '<div class="maptip-title" style="color:' + entryHex(Math.max(0.55, c.share)) + '">Early-burn ground</div>';
         h += '<div class="maptip-body">Herds have entered here early in <b>' + c.early + ' of ' + c.held + ' seasons</b>' +
             (c.days > 0 ? ' \u00b7 typically ~<b>' + c.days + ' days</b> before the local front' : '') +
             (c.month ? ' \u00b7 usually <b>' + MONTHS[c.month] + '</b>' : '') + '</div>';
@@ -665,6 +712,8 @@
             h += '<div class="maptip-meta">Season ' + esc(eg.first_burn_season) + ': first detection here ' + fmtDate(d) +
                 (before != null ? (before > 0 ? ' \u2014 ' + Math.round(before) + ' d before the usual front' : ' \u2014 ' + Math.round(-before) + ' d after the usual front') : '') + '</div>';
         }
+        var stw = entryState(c, entryRenderT == null ? null : entryDos(entryRenderT)).word;
+        if (stw) h += '<div class="maptip-meta">At the playhead: ' + esc(stw) + '</div>';
         h += '<div class="maptip-dim">Rule: first burn of the season \u2265 ' + eg.ahead_days + ' d ahead of the front in \u2265 ' + Math.round(eg.min_share * 100) +
             ' % of seasons (at least ' + eg.min_early + '); ' + eg.count.toLocaleString() + ' cells over ' + eg.seasons_held + ' seasons, ~' +
             Math.round(eg.chance_cells || 0) + ' expected by chance. Where the season usually enters \u2014 not this year\u2019s herds (the vanguard chains are that).</div>';
@@ -677,7 +726,7 @@
         // to); ranked under every line and pin (priority −5) and above the
         // speed backdrop (−10): a chain on top of a square is the answer.
         MapTip.registerProbe(ENTRY_PROBE, {
-            priority: -5, tabLabel: 'Early-burn ground', tabColor: '#22d3ee',
+            priority: -5, tabLabel: 'Early-burn ground', tabColor: entryHex(0.7),
             probe: function (e) {
                 if (!st.entry || !entryField || !e || !e.lngLat) return null;
                 var c = entryField.at(e.lngLat.lng, e.lngLat.lat);
@@ -692,16 +741,37 @@
     function entryLegendHTML(opts) {
         opts = opts || {};
         var eg = entry && entry.early_ground;
-        var sw = '<span class="fs-entry-sw"><i style="opacity:' + entryAlpha(0.4) + '"></i><i style="opacity:' + entryAlpha(0.55) + '"></i><i style="opacity:' + entryAlpha(0.7) + '"></i></span>';
-        var cap = '<div class="fs-ramp-cap">' + sw + ' Early-burn ground: squares = 2.5 km cells that burn ahead of their surroundings season after season (faint 40 % of seasons \u2192 solid 70 %+)</div>';
+        var sw = '<span class="fs-entry-sw">' + entrySwatches() + '</span>';
+        var cap = '<div class="fs-ramp-cap">' + sw + ' Early-burn ground: squares = 2.5 km cells that burn ahead of their surroundings season after season (deep crimson 40 % of seasons \u2192 light rose 70 %+)</div>';
         var line = '';
         if (eg && eg.status === 'ok') {
             line = '<div class="fs-ramp-width">' + eg.count.toLocaleString() + ' cells (' + Math.round(eg.km2).toLocaleString() + ' km\u00b2) early in \u2265 ' +
-                Math.round(eg.min_share * 100) + ' % of ' + eg.seasons_held + ' seasons \u00b7 ~' + Math.round(eg.chance_cells || 0) + ' expected by chance \u00b7 fades once the slider is past the usual front here</div>';
+                Math.round(eg.min_share * 100) + ' % of ' + eg.seasons_held + ' seasons \u00b7 ~' + Math.round(eg.chance_cells || 0) + ' expected by chance</div>' +
+                '<div class="fs-ramp-width fs-entry-life">' + entryLifeHTML() + '</div>';
         } else if (eg && eg.status) {
             line = '<div class="fs-ramp-width">' + esc(eg.reason || eg.status) + '</div>';
         }
         return '<div class="fs-legend' + (opts.cls ? ' ' + opts.cls : '') + '">' + cap + line + '</div>';
+    }
+    // The graded swatch (the rule's floor, midway, 70 %+), sampled from the
+    // same stops the squares draw — the panel cannot say one ramp while the
+    // map draws another.
+    function entrySwatches() {
+        return [0.4, 0.55, 0.7].map(function (sh) { var c = entryRGB(sh); return '<i style="background:rgba(' + Math.round(c[0]) + ',' + Math.round(c[1]) + ',' + Math.round(c[2]) + ',' + entryAlpha(sh).toFixed(2) + ')"></i>'; }).join('');
+    }
+    // A cell's life over the season, as the animation draws it: the same
+    // colours entryState() gives, so the legend is a sample of the map.
+    function entryLifeHTML() {
+        var c = entryRGB(0.7), a = entryAlpha(0.7);
+        function sq(mul, flash) {
+            var r = c[0], g = c[1], b = c[2];
+            if (flash) { var k = Math.pow(flash, 0.7); r = lerp(r, ENTRY_FLASH[0], k); g = lerp(g, ENTRY_FLASH[1], k); b = lerp(b, ENTRY_FLASH[2], k); }
+            return '<i style="background:rgba(' + Math.round(r) + ',' + Math.round(g) + ',' + Math.round(b) + ',' + (flash ? Math.max(a, 0.7 + 0.3 * flash) : a * mul).toFixed(2) + ')"></i>';
+        }
+        function item(sw, words) { return '<span class="fs-entry-life-i"><span class="fs-entry-sw">' + sw + '</span>' + words + '</span>'; }
+        return 'Over a season (animated): ' + item(sq(0.5), 'dormant') + ' \u2192 ' + item(sq(1), 'due, the 30 d before its usual entry') + ' \u2192 ' +
+            item(sq(1, 1) + sq(1, 0.4), 'first detection lands, cools over ' + ENTRY_FLASH_DAYS + ' d') + ' \u2192 ' +
+            item(sq(0.3), 'usual front past, unburned (\u221270 % over ' + ENTRY_FADE_DAYS + ' d)');
     }
     // The strip's count: cells / km² of early-burn ground in the viewport
     // (the same cells the squares draw; the thinning band is honoured).
@@ -980,7 +1050,7 @@
         entryLegendHTML: entryLegendHTML,
         entryAt: function (lng, lat) { return entryField ? entryField.at(lng, lat) : null; },
         entryRenderedFor: function () { return entryRenderT; },
-        ENTRY_COLOR: '#22d3ee',
+        ENTRY_COLOR: entryHex(0.7), entryColor: entryHex, entryState: entryState,
         speedAt: speedAt,
         speedLegendHTML: speedLegendHTML,
         // The front as loaded, or — while the animator runs — the same

@@ -724,7 +724,7 @@ func (s *Server) buildLocusContent(tdb, wdb *locusDB, parkID, parkName, boundary
 			}
 		}
 	}
-	// Early-burn ground (fire_early_ground): the cells the map draws as cyan
+	// Early-burn ground (fire_early_ground): the cells the map draws as rose
 	// squares, closed rings in one hidden group; each named by its basis.
 	s.locusEarlyGround(tdb, parkID, tMission)
 

@@ -9,9 +9,14 @@
  *   wire     grid {x0, y0, res, nx, ny} + either a dense uint8 array (base64,
  *            one byte per cell, row 0 = SOUTH) or a sparse list of cells
  *   client   colour per cell (a paint function the layer owns) → an offscreen
- *            canvas → a MapLibre image source drawn with NEAREST resampling,
+ *            canvas → a MapLibre CANVAS source drawn with NEAREST resampling,
  *            so a cell is a true square that scales with zoom, never a
- *            pixel-sized symbol pasted on the map
+ *            pixel-sized symbol pasted on the map. A canvas source, not an
+ *            image source: an image source takes a data-URL PNG (encode,
+ *            then an async decode that can land out of order under a
+ *            scrubbing playhead); the canvas is uploaded to the GPU
+ *            synchronously the frame it is drawn (play() then pause() on
+ *            the source — pause() uploads once and stops re-reading).
  *   probe    lng/lat → cell index by the grid's own arithmetic, so a tip
  *            reads the value under the pointer from the array it drew from
  *
@@ -30,9 +35,13 @@
 (function () {
     'use strict';
 
-    var BLANK_PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
     var BLANK_COORDS = [[0, 0.001], [0.001, 0.001], [0.001, 0], [0, 0]];
-
+    // MapLibre binds a raster tile's texture with LINEAR_MIPMAP_NEAREST when
+    // its size is a power of two, and a canvas texture has no mipmaps: a
+    // 128×64 field draws as an opaque black quad. So a canvas here is never
+    // POT on either side (an extra transparent column/row, and the quad's
+    // coordinates stretched by the same fraction so a cell keeps its
+    // footprint). 1×1 is POT too — the blank is 3×3.
     function merc(lat) { return Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360)); }
     function unmerc(y) { return (2 * Math.atan(Math.exp(y)) - Math.PI / 2) * 180 / Math.PI; }
 
@@ -41,19 +50,43 @@
         for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
         return out;
     }
+    function isPOT(n) { return n > 0 && (n & (n - 1)) === 0; }
+    function blank(canvas) {
+        canvas.width = 3; canvas.height = 3;
+        canvas.getContext('2d').clearRect(0, 0, 3, 3);
+    }
+    // Push the canvas' current pixels to the GPU, then stop re-reading it
+    // every frame (a static field costs nothing between repaints). pause()
+    // uploads once — but only if the source already has a tile, so keep
+    // playing until a render has both the tile and a texture of the
+    // canvas' size (bounded: a source out of view never gets a tile).
+    function upload(map, src) {
+        if (!src || !src.play) return;
+        if (src.__cfOff) { map.off('render', src.__cfOff); src.__cfOff = null; }
+        src.play();
+        var tries = 0;
+        function onRender() {
+            var tx = src.texture, ok = tx && tx.size && tx.size[0] === src.canvas.width && tx.size[1] === src.canvas.height &&
+                Object.keys(src.tiles || {}).length > 0;
+            if (ok || ++tries > 40) { map.off('render', onRender); src.__cfOff = null; if (src.pause) src.pause(); }
+        }
+        src.__cfOff = onRender;
+        map.on('render', onRender);
+    }
 
-    /* A field: one image source + one raster layer. `beforeId` places the
+    /* A field: one canvas source + one raster layer. `beforeId` places the
      * layer under the lines that must stay legible over it. */
     function create(map, id, opts) {
         opts = opts || {};
         var SRC = id + '-src', LYR = id;
         var grid = null, dense = null, sparse = null, sparseIndex = null;
         var canvas = document.createElement('canvas');
+        blank(canvas);
         var lastKey = null;
 
         function ensure() {
             if (!map || !map.getStyle()) return false;
-            if (!map.getSource(SRC)) map.addSource(SRC, { type: 'image', url: BLANK_PNG, coordinates: BLANK_COORDS });
+            if (!map.getSource(SRC)) map.addSource(SRC, { type: 'canvas', canvas: canvas, coordinates: BLANK_COORDS, animate: false });
             if (!map.getLayer(LYR)) {
                 var before = opts.beforeId && map.getLayer(opts.beforeId) ? opts.beforeId : undefined;
                 map.addLayer({ id: LYR, type: 'raster', source: SRC,
@@ -64,7 +97,8 @@
         }
         function clear() {
             var s = map && map.getSource(SRC);
-            if (s) s.updateImage({ url: BLANK_PNG, coordinates: BLANK_COORDS });
+            blank(canvas);
+            if (s) { s.setCoordinates(BLANK_COORDS); upload(map, s); }
             lastKey = null;
         }
         function setGrid(g) { grid = g; sparseIndex = null; }
@@ -74,7 +108,9 @@
             sparseIndex = {};
             for (var i = 0; i < sparse.length; i++) sparseIndex[sparse[i].iy * grid.nx + sparse[i].ix] = i;
         }
-        /* paint(cell) → [r,g,b,a] (0..255) or null. For a dense field `cell`
+        /* paint(cell) → [r,g,b,a] (0..255) or null; a 5th element > 0 marks
+         * the cell HOT: its rim is drawn in its own colour instead of the
+         * dark tile edge, so an igniting square glows to its edge. For a dense field `cell`
          * is {i, ix, iy, v}; for a sparse one it is the cell object itself.
          * scale = px per cell; rim = {alpha: 0..1, dark: 0..1} draws the
          * outer pixel ring of each square darker/fainter, so squares read as
@@ -87,9 +123,10 @@
             var S = Math.max(1, Math.round(o.scale || 1));
             var nx = grid.nx, ny = grid.ny, W = nx * S, H = ny * S;
             if (W * H > 12e6) { S = 1; W = nx; H = ny; }
-            canvas.width = W; canvas.height = H;
+            var CW = isPOT(W) ? W + 1 : W, CH = isPOT(H) ? H + 1 : H;   // never POT (see isPOT)
+            canvas.width = CW; canvas.height = CH;
             var ctx = canvas.getContext('2d');
-            var img = ctx.createImageData(W, H), d = img.data;
+            var img = ctx.createImageData(CW, CH), d = img.data;
             // output row j (top-down) → grid row iy, uniform in mercator
             var N = grid.y0 + grid.res * ny, Sy = grid.y0, mN = merc(N), mS = merc(Sy);
             var rowIy = new Int32Array(H);
@@ -99,21 +136,21 @@
                 rowIy[j] = iy < 0 ? 0 : iy >= ny ? ny - 1 : iy;
             }
             // colour per grid cell, computed once per cell (not per pixel)
-            var col = new Uint8ClampedArray(nx * ny * 4), has = new Uint8Array(nx * ny);
+            var col = new Uint8ClampedArray(nx * ny * 4), has = new Uint8Array(nx * ny), hot = new Uint8Array(nx * ny);
             var any = false;
             if (dense) {
                 for (var i = 0; i < nx * ny; i++) {
                     var v = dense[i]; if (!v) continue;
                     var c = paint({ i: i, ix: i % nx, iy: (i / nx) | 0, v: v });
                     if (!c || !c[3]) continue;
-                    col[i * 4] = c[0]; col[i * 4 + 1] = c[1]; col[i * 4 + 2] = c[2]; col[i * 4 + 3] = c[3]; has[i] = 1; any = true;
+                    col[i * 4] = c[0]; col[i * 4 + 1] = c[1]; col[i * 4 + 2] = c[2]; col[i * 4 + 3] = c[3]; has[i] = 1; hot[i] = c[4] > 0 ? 1 : 0; any = true;
                 }
             } else if (sparse) {
                 for (var k = 0; k < sparse.length; k++) {
                     var cl = sparse[k], ci = cl.iy * nx + cl.ix;
                     var cc = paint(cl);
                     if (!cc || !cc[3]) continue;
-                    col[ci * 4] = cc[0]; col[ci * 4 + 1] = cc[1]; col[ci * 4 + 2] = cc[2]; col[ci * 4 + 3] = cc[3]; has[ci] = 1; any = true;
+                    col[ci * 4] = cc[0]; col[ci * 4 + 1] = cc[1]; col[ci * 4 + 2] = cc[2]; col[ci * 4 + 3] = cc[3]; has[ci] = 1; hot[ci] = cc[4] > 0 ? 1 : 0; any = true;
                 }
             }
             if (!any) { clear(); return true; }
@@ -143,13 +180,13 @@
             for (var jj = 0; jj < H; jj++) {
                 var gy = rowIy[jj];
                 var edgeY = rim && (jj === 0 || rowIy[jj - 1] !== gy || jj === H - 1 || rowIy[jj + 1] !== gy);
-                var rowOff = jj * W * 4, base = gy * nx;
+                var rowOff = jj * CW * 4, base = gy * nx;
                 for (var ix = 0; ix < nx; ix++) {
                     var gi = base + ix;
                     if (!has[gi]) continue;
-                    var r = col[gi * 4], g = col[gi * 4 + 1], b = col[gi * 4 + 2], a = col[gi * 4 + 3];
+                    var r = col[gi * 4], g = col[gi * 4 + 1], b = col[gi * 4 + 2], a = col[gi * 4 + 3], isHot = hot[gi];
                     for (var px = 0; px < S; px++) {
-                        var edge = edgeY || (rim && (px === 0 || px === S - 1));
+                        var edge = !isHot && (edgeY || (rim && (px === 0 || px === S - 1)));
                         var off = rowOff + (ix * S + px) * 4;
                         if (edge) {
                             d[off] = r * (1 - rim.dark); d[off + 1] = g * (1 - rim.dark); d[off + 2] = b * (1 - rim.dark); d[off + 3] = a * rim.alpha;
@@ -158,9 +195,12 @@
                 }
             }
             ctx.putImageData(img, 0, 0);
-            var E = grid.x0 + grid.res * nx, Wd = grid.x0;
+            // the quad covers the padded canvas: stretch east / south by the
+            // padding's share so every drawn pixel lands on its cell
+            var Wd = grid.x0, E = grid.x0 + grid.res * nx * (CW / W);
+            var Sy2 = unmerc(mN + (mS - mN) * (CH / H));
             var src = map.getSource(SRC);
-            if (src) src.updateImage({ url: canvas.toDataURL('image/png'), coordinates: [[Wd, N], [E, N], [E, Sy], [Wd, Sy]] });
+            if (src) { src.setCoordinates([[Wd, N], [E, N], [E, Sy2], [Wd, Sy2]]); upload(map, src); }
             return true;
         }
         /* The cell under a point, by the grid's own arithmetic (floor from
