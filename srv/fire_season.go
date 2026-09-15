@@ -34,6 +34,27 @@ import (
 	"time"
 )
 
+// vanguardRowsSQL is THE definition of "a vanguard chain" for every counting
+// and drawing surface: the Kalman seed-ahead chains (feature_type
+// 'fire_vanguard', scripts/fire_vanguard_kf.py) for every area listed in
+// fire_vanguard_kf, and the plain trajectories flagged vanguard=1 for the
+// rest — one population per area, never both (invariant 7). The subquery is
+// a ≤ 200-row table; idx_fg_vanguard covers both feature types.
+const vanguardRowsSQL = ` vanguard = 1 AND (feature_type = 'fire_vanguard' OR (feature_type = 'fire_trajectory' AND park_id NOT IN (SELECT area_id FROM fire_vanguard_kf)))`
+
+// vanguardTracker says which population vanguardRowsSQL selects for an area:
+// "kf" (Kalman seed-ahead chains) or "groups" (plain trajectories that began
+// ahead). The word travels with every count so two surfaces cannot disagree
+// silently.
+func (s *Server) vanguardTracker(r *http.Request, area string) string {
+	var n int
+	s.DB.QueryRowContext(r.Context(), `SELECT COUNT(*) FROM fire_vanguard_kf WHERE area_id = ?`, area).Scan(&n)
+	if n > 0 {
+		return "kf"
+	}
+	return "groups"
+}
+
 func (s *Server) HandleAPIFireSeason(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	area := strings.TrimSpace(q.Get("area"))
@@ -165,9 +186,10 @@ func (s *Server) HandleAPIFireSeason(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	s.DB.QueryRowContext(r.Context(), `
-		SELECT COUNT(*) FROM feature_geometries
-		WHERE feature_type='fire_trajectory' AND vanguard=1 AND park_id=?
+		SELECT COUNT(*) FROM feature_geometries INDEXED BY idx_fg_vanguard
+		WHERE`+vanguardRowsSQL+` AND park_id=?
 		  AND start_date >= ? AND start_date <= ?`, area, seasonStart.String, sEnd).Scan(&nVan)
+	vanTracker := s.vanguardTracker(r, area)
 	// …and in the reader's window (from/to), which is what the stats panel
 	// counts everything else by. Two numbers, two names (invariant 7).
 	var nVanWin interface{}
@@ -181,7 +203,7 @@ func (s *Server) HandleAPIFireSeason(w http.ResponseWriter, r *http.Request) {
 		var n int
 		s.DB.QueryRowContext(r.Context(), `
 			SELECT COUNT(*) FROM feature_geometries INDEXED BY idx_fg_vanguard
-			WHERE vanguard=1 AND park_id=? AND start_date >= ? AND start_date <= ?`, area, from, to).Scan(&n)
+			WHERE`+vanguardRowsSQL+` AND park_id=? AND start_date >= ? AND start_date <= ?`, area, from, to).Scan(&n)
 		nVanWin = n
 	}
 	var contoursOut json.RawMessage
@@ -229,6 +251,7 @@ func (s *Server) HandleAPIFireSeason(w http.ResponseWriter, r *http.Request) {
 		"area":               area,
 		"vanguard_groups":    nVan,
 		"vanguard_in_window": nVanWin,
+		"vanguard_tracker":   vanTracker,
 		"vanguard_top":       vanTop,
 		"vanguard_tiers":     vanTiers,
 		"vanguard_marks":     vanMarks,
@@ -257,23 +280,27 @@ func (s *Server) HandleAPIFireSeason(w http.ResponseWriter, r *http.Request) {
 // evidence tier of its day order. `tier` prints "unmeasured" when the rebuild
 // has not scored it (invariant 12), never an empty string.
 type vanLead struct {
-	ID        string  `json:"id"`
-	Start     string  `json:"start"`
-	End       string  `json:"end"`
-	Days      int     `json:"days"`
-	Fires     int     `json:"fires"`
-	Km        float64 `json:"km"`
-	Direction string  `json:"direction,omitempty"`
-	LeadStart *int    `json:"lead_start"`
-	LeadBasis string  `json:"lead_basis,omitempty"`
-	AheadKm   float64 `json:"ahead_km"`
-	AheadDays int     `json:"ahead_days"`
-	Tier      string  `json:"tier"`
-	Lon       float64 `json:"lon"`
-	Lat       float64 `json:"lat"`
-	Place     string  `json:"nearest_place,omitempty"`
-	PlaceKm   float64 `json:"nearest_place_km,omitempty"`
-	Narrative string  `json:"narrative,omitempty"`
+	ID        string   `json:"id"`
+	Start     string   `json:"start"`
+	End       string   `json:"end"`
+	Days      int      `json:"days"`
+	Fires     int      `json:"fires"`
+	Km        float64  `json:"km"`
+	Direction string   `json:"direction,omitempty"`
+	LeadStart *int     `json:"lead_start"`
+	LeadBasis string   `json:"lead_basis,omitempty"`
+	AheadKm   float64  `json:"ahead_km"`
+	AheadDays int      `json:"ahead_days"`
+	Tier      string   `json:"tier"`
+	Lon       float64  `json:"lon"`
+	Lat       float64  `json:"lat"`
+	Place     string   `json:"nearest_place,omitempty"`
+	PlaceKm   float64  `json:"nearest_place_km,omitempty"`
+	Narrative string   `json:"narrative,omitempty"`
+	Tracker   string   `json:"tracker,omitempty"`
+	EndCause  string   `json:"end_cause,omitempty"`
+	Heading   *int     `json:"heading_deg,omitempty"`
+	SpeedKmd  *float64 `json:"speed_kmd,omitempty"`
 }
 
 // vanguardLeads returns the area's vanguard chains that began in [from, to],
@@ -293,7 +320,7 @@ func (s *Server) vanguardLeads(r *http.Request, area, from, to string, n int) ([
 	rows, err := s.DB.QueryContext(r.Context(), `
 		SELECT feature_id, start_date, end_date, geojson, properties_json
 		FROM feature_geometries INDEXED BY idx_fg_vanguard
-		WHERE vanguard=1 AND park_id=? AND start_date >= ? AND start_date <= ?`, area, from, to)
+		WHERE`+vanguardRowsSQL+` AND park_id=? AND start_date >= ? AND start_date <= ?`, area, from, to)
 	if err != nil {
 		return nil, nil, nil
 	}
@@ -307,18 +334,22 @@ func (s *Server) vanguardLeads(r *http.Request, area, from, to string, n int) ([
 			continue
 		}
 		var p struct {
-			Days      int     `json:"days"`
-			Fires     int     `json:"fires_total"`
-			Km        float64 `json:"distance_km"`
-			Direction string  `json:"direction"`
-			LeadStart *int    `json:"lead_start"`
-			LeadBasis string  `json:"lead_basis"`
-			AheadKm   float64 `json:"ahead_km"`
-			AheadDays int     `json:"ahead_days"`
-			Tier      string  `json:"evidence_tier"`
-			Place     string  `json:"nearest_place"`
-			PlaceKm   float64 `json:"nearest_place_dist"`
-			Narrative string  `json:"narrative"`
+			Days      int      `json:"days"`
+			Fires     int      `json:"fires_total"`
+			Km        float64  `json:"distance_km"`
+			Direction string   `json:"direction"`
+			LeadStart *int     `json:"lead_start"`
+			LeadBasis string   `json:"lead_basis"`
+			AheadKm   float64  `json:"ahead_km"`
+			AheadDays int      `json:"ahead_days"`
+			Tier      string   `json:"evidence_tier"`
+			Place     string   `json:"nearest_place"`
+			PlaceKm   float64  `json:"nearest_place_dist"`
+			Narrative string   `json:"narrative"`
+			Tracker   string   `json:"tracker"`
+			EndCause  string   `json:"end_cause"`
+			Heading   *int     `json:"heading_deg"`
+			SpeedKmd  *float64 `json:"speed_kmd"`
 		}
 		if json.Unmarshal([]byte(propsJSON), &p) != nil {
 			continue
@@ -329,7 +360,8 @@ func (s *Server) vanguardLeads(r *http.Request, area, from, to string, n int) ([
 		tiers[p.Tier]++
 		l := vanLead{ID: fid, Start: sd, End: ed, Days: p.Days, Fires: p.Fires, Km: p.Km, Direction: p.Direction,
 			LeadStart: p.LeadStart, LeadBasis: p.LeadBasis, AheadKm: p.AheadKm, AheadDays: p.AheadDays, Tier: p.Tier,
-			Place: p.Place, PlaceKm: p.PlaceKm, Narrative: p.Narrative}
+			Place: p.Place, PlaceKm: p.PlaceKm, Narrative: p.Narrative,
+			Tracker: p.Tracker, EndCause: p.EndCause, Heading: p.Heading, SpeedKmd: p.SpeedKmd}
 		if pts := datedPoints(geojson, "", sd, ed); len(pts) > 0 {
 			l.Lon, l.Lat = pts[0][0], pts[0][1]
 		}
@@ -532,7 +564,7 @@ func (s *Server) HandleAPIFireVanguard(w http.ResponseWriter, r *http.Request) {
 	var total int
 	s.DB.QueryRowContext(r.Context(), `
 		SELECT COUNT(*) FROM feature_geometries INDEXED BY idx_fg_vanguard
-		WHERE vanguard = 1
+		WHERE`+vanguardRowsSQL+`
 		  AND bbox_maxx >= ? AND bbox_minx <= ? AND bbox_maxy >= ? AND bbox_miny <= ?
 		  AND start_date >= ? AND start_date <= ?
 		  AND (end_date IS NULL OR end_date >= ?)`+
@@ -542,7 +574,7 @@ func (s *Server) HandleAPIFireVanguard(w http.ResponseWriter, r *http.Request) {
 		SELECT feature_id, park_id, geojson, traj_days, properties_json,
 		       COALESCE(start_date,''), COALESCE(end_date,'')
 		FROM feature_geometries INDEXED BY idx_fg_vanguard
-		WHERE vanguard = 1
+		WHERE`+vanguardRowsSQL+`
 		  AND bbox_maxx >= ? AND bbox_minx <= ? AND bbox_maxy >= ? AND bbox_miny <= ?
 		  AND start_date >= ? AND start_date <= ?
 		  AND (end_date IS NULL OR end_date >= ?)`+
@@ -575,8 +607,18 @@ func (s *Server) HandleAPIFireVanguard(w http.ResponseWriter, r *http.Request) {
 		Days      int          `json:"days,omitempty"`
 		Start     string       `json:"start,omitempty"`
 		End       string       `json:"end,omitempty"`
+		// Kalman seed-ahead chains only (scripts/fire_vanguard_kf.py):
+		// which tracker drew this line, why it ended ('ongoing' = last seen
+		// within the gap budget of the newest data — still moving), and the
+		// filter's heading/speed at the end.
+		Tracker  string   `json:"tracker"`
+		EndCause string   `json:"end_cause,omitempty"`
+		Heading  *int     `json:"heading_deg,omitempty"`
+		SpeedKmd *float64 `json:"speed_kmd,omitempty"`
+		SeedLead *float64 `json:"seed_lead,omitempty"`
 	}
 	out := make([]vanGroup, 0, 256)
+	trackers := map[string]int{}
 	for rows.Next() {
 		var fid, park, geojson, propsJSON, sd, ed string
 		var days sql.NullString
@@ -602,12 +644,22 @@ func (s *Server) HandleAPIFireVanguard(w http.ResponseWriter, r *http.Request) {
 			Season    string   `json:"fire_season"`
 			Tier      string   `json:"evidence_tier"`
 			Bits      *float64 `json:"evidence_bits"`
+			Tracker   string   `json:"tracker"`
+			EndCause  string   `json:"end_cause"`
+			Heading   *int     `json:"heading_deg"`
+			SpeedKmd  *float64 `json:"speed_kmd"`
+			SeedLead  *float64 `json:"seed_lead"`
 		}
+		g.Tracker = "groups"
 		if json.Unmarshal([]byte(propsJSON), &props) == nil {
 			g.Type, g.Km, g.Kmd, g.Fires, g.Days = props.GroupType, props.Km, props.Kmd, props.Fires, props.Days
 			g.Leads, g.LeadStart, g.LeadBasis, g.Tier, g.Bits = props.Leads, props.LeadStart, props.LeadBasis, props.Tier, props.Bits
 			g.AheadKm, g.AheadDays, g.Season = props.AheadKm, props.AheadDays, props.Season
+			if props.Tracker == "kf" {
+				g.Tracker, g.EndCause, g.Heading, g.SpeedKmd, g.SeedLead = "kf", props.EndCause, props.Heading, props.SpeedKmd, props.SeedLead
+			}
 		}
+		trackers[g.Tracker]++
 		out = append(out, g)
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -616,7 +668,8 @@ func (s *Server) HandleAPIFireVanguard(w http.ResponseWriter, r *http.Request) {
 		"from": from, "to": to, "limit": limit,
 		"count": len(out), "total": total, "truncated": total > len(out),
 		"lead_days": 10, "lead_max_days": 60, // VANGUARD_LEAD_DAYS/_MAX in scripts/fire_front.py — the flag is written there
-		"groups": out,
+		"trackers": trackers, // how many of the chains each tracker drew: 'kf' (Kalman seed-ahead) / 'groups' (plain trajectories that began ahead)
+		"groups":   out,
 	})
 }
 

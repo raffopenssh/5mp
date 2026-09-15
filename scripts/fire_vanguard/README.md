@@ -1,4 +1,11 @@
-# fire_vanguard — prototype (2026-09-14), NOT wired into the app
+# fire_vanguard — prototype (2026-09-14)
+
+**Shipped 2026-09-15:** the round-2 winner (`van3.py SEED`, "KF_seed_gap3") is
+now production code in `scripts/fire_vanguard_kf.py` — the vanguard layer's
+population wherever it has run (`docs/agents/fire.md` § Kalman seed-ahead
+chains; harness `eval_fire_vanguard.py --tracker kf`). Everything below is the
+measurement record; the scripts here still read `/tmp/fx/` and are not wired.
+
 
 Question: can the day order of fires along a line be recovered from VIIRS in the
 XSA, and if so where? Answer, measured against the day-shuffled null

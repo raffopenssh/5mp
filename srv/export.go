@@ -163,7 +163,7 @@ func (s *Server) HandleAPIExportParks(w http.ResponseWriter, r *http.Request) {
 	}
 	vanRows, err := s.DB.Query(`
 		SELECT park_id, COUNT(*) FROM feature_geometries INDEXED BY idx_fg_vanguard
-		WHERE vanguard = 1 GROUP BY park_id`)
+		WHERE` + vanguardRowsSQL + ` GROUP BY park_id`)
 	if err == nil {
 		defer vanRows.Close()
 		for vanRows.Next() {

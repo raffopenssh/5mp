@@ -601,6 +601,34 @@
                              fires: g.fires, days: g.days, frp: g.frp, narrative: g.narrative };
                 }).filter(g => g.pts.length >= 2);
                 if (j.truncated) truncNote('fire paths', 'trajs', j.count, j.total);
+                // The vanguard chains the MAP draws (/api/fire-vanguard: the
+                // Kalman seed-ahead chains where built, plain groups that
+                // began ahead elsewhere) ride along, so the animation and the
+                // layer say the same thing. A chain from that answer is drawn
+                // by drawVanguard while the Season overlay is on; a plain
+                // trajectory with the same id steps aside for it then (it is
+                // the same line), and the KF chains (own ids) are not drawn
+                // at all while the overlay is off — the map does not draw
+                // them either. The `vanguard` flag of the plain trajectories
+                // is NOT used for drawing any more: the population is one.
+                try {
+                    const v = await fetchJSON(`/api/fire-vanguard?bbox=${bb}&from=${fromISO}&to=${toISO}&limit=6000&pwd=${pwd}${aoiQ}`);
+                    const ids = new Set();
+                    const vans = (v.groups || []).map(g => {
+                        const base = parseD(g.t0 || g.start);
+                        const pts = g.pts.map(p => [p[0], p[1], base + p[2] * DAY]);
+                        ids.add(g.id);
+                        return { pts, t0: pts[0][2], t1: pts[pts.length - 1][2], type: g.type, kmd: g.kmd,
+                                 id: g.id, park: g.park, km: g.km, vanguard: true, _van: true, lead_start: g.lead_start,
+                                 leads: Array.isArray(g.leads) && g.leads.length === pts.length ? g.leads : null,
+                                 lead_basis: g.lead_basis, ahead_km: g.ahead_km, ahead_days: g.ahead_days,
+                                 tier: g.tier || 'unmeasured', bits: g.bits, tracker: g.tracker, end_cause: g.end_cause,
+                                 heading_deg: g.heading_deg, speed_kmd: g.speed_kmd,
+                                 fires: g.fires, days: g.days, start: g.start, end: g.end };
+                    }).filter(g => g.pts.length >= 2);
+                    for (const g of D.trajs) { g._hideWhenVan = ids.has(g.id); g.vanguard = false; }
+                    D.trajs = D.trajs.concat(vans);
+                } catch (e) { /* no vanguard answer: the field still animates */ }
                 break;
             }
             case 'effortGrid': {
@@ -1857,8 +1885,10 @@
             // thinning when a FRAME really is a red sheet. Same rule as
             // densityPaint() in lodlayer.js, applied to the right number.
             let nLive = 0;
+            const vanOn0 = !!(window.FireSeason && FireSeason.vanguardOn());
             for (const g of D.trajs) {
                 if (g._off || g.t0 > t) continue;
+                if (vanOn0 ? g._hideWhenVan : g._van) continue;
                 if (t > g.t1 && (t - g.t1) >= TRAJ_FADE_DAYS * DAY) continue;
                 nLive++;
             }
@@ -1875,6 +1905,7 @@
             for (const g of D.trajs) {
                 if (g.t0 > t) continue;
                 if (g._off) continue;
+                if (vanOn ? g._hideWhenVan : g._van) continue;   // one population, drawn once
                 let alpha, ash;
                 if (t <= g.t1) {
                     alpha = inkA; ash = 0;
@@ -2259,6 +2290,7 @@
         if (on.trajs && D.trajs) {
             projectTrajs(D.trajs, proj, w, h);
             const ti = trajIndex(D.trajs, w, h);
+            const probeVanOn = !!(window.FireSeason && FireSeason.vanguardOn());
             const c0 = Math.floor((pt.x + 64 - rad) / IDX_CELL), c1 = Math.floor((pt.x + 64 + rad) / IDX_CELL);
             const r0 = Math.floor((pt.y + 64 - rad) / IDX_CELL), r1 = Math.floor((pt.y + 64 + rad) / IDX_CELL);
             const seen = new Set();
@@ -2268,6 +2300,7 @@
                         const gk = ti.gi[id], i = ti.pi[id];
                         const g = D.trajs[gk];
                         if (g.t0 > t) continue;
+                        if (probeVanOn ? g._hideWhenVan : g._van) continue;   // not drawn → not a feature
                         // AN ASHED PATH IS STILL A FEATURE. It is drawn (grey,
                         // thin) for TRAJ_FADE_DAYS after the fire ended, and
                         // "why is that grey line there" is precisely the
@@ -2439,6 +2472,10 @@
             const ew = (window.FireSeason && FireSeason.evidenceWords) ? FireSeason.evidenceWords(g.tier, g.bits)
                 : 'Day order ' + (g.tier || 'unmeasured');
             season += '<div class="maptip-meta">' + ew + '</div>';
+            // Kalman seed-ahead chain: how it ended, in the layer tip's words
+            if (g.tracker === 'kf' && window.FireSeason && FireSeason.endWords) {
+                season += '<div class="maptip-meta">' + FireSeason.endWords(g) + '</div>';
+            }
         }
         return {
             html: '<div class="maptip-label">' + (g.vanguard ? 'Vanguard fire path' : 'Fire path') + ' · ' +

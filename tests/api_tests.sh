@@ -1519,6 +1519,21 @@ test_api "bbox_fire_eb_beside_ev" "/api/features-in-bbox?type=fire_trajectory&bb
     '([.features[] | select(.properties.ev != null)] | length > 0) and ([.features[] | select(.properties.ev == "supported") | .properties.eb >= 6] | all) and ([.features[] | select(.properties.ev == "weak") | .properties.eb >= 2 and .properties.eb < 6] | all)'
 test_api "anim_trajs_vanguard_bits" "/api/fire-anim-trajectories?bbox=23,5,26,8&from=2024-11-01&to=2024-12-31&limit=4000" "200" \
     '([.groups[] | select(.vanguard and .tier == "supported")] | length > 0) and ([.groups[] | select(.vanguard and .tier == "supported") | .bits >= 6] | all)'
+# Kalman seed-ahead chains (scripts/fire_vanguard_kf.py, docs/agents/fire.md
+# § Kalman seed-ahead chains). One population per area: where fire_vanguard_kf
+# lists the area every chain on the wire is tracker 'kf' (own ids `kf_…`),
+# elsewhere 'groups'; the answer counts both by name, every chain names its
+# tracker, and a KF chain says why it ended.
+test_api "vanguard_kf_one_population" "/api/fire-vanguard?bbox=23,5,26,8&from=2024-10-01&to=2025-02-01&limit=400" "200" \
+    '(.trackers | type == "object") and ([.groups[] | .tracker] | all(. == "kf" or . == "groups")) and ((.trackers.kf // 0) + (.trackers.groups // 0) == .count) and ([.groups[] | select(.tracker == "kf")] | all(.id | startswith("kf_"))) and ([.groups[] | select(.tracker == "kf") | .end_cause] | all(. == "ongoing" or . == "season" or . == "lost"))'
+# CAF_Chinko carries KF chains (first pass 2026-09-15): the season summary
+# names the tracker and counts the same rows the layer draws.
+test_api "fire_season_vanguard_tracker_kf" "/api/fire-season?area=CAF_Chinko&summary=1&leads=3&from=2024-10-01&to=2025-02-01" "200" \
+    '.vanguard_tracker == "kf" and (.vanguard_in_window > 0) and ([.vanguard_top[] | .tracker == "kf"] | all)'
+# A live chain is 'ongoing' only when last seen within the gap budget (3 d) of
+# the newest data the area holds — never for a finished season.
+test_api "vanguard_kf_no_ongoing_in_past" "/api/fire-vanguard?bbox=20,-30,40,15&from=2024-08-01&to=2025-07-31&limit=6000" "200" \
+    '([.groups[] | select(.tracker == "kf" and .end_cause == "ongoing")] | length == 0)'
 
 echo
 echo "======================================="

@@ -3131,6 +3131,10 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                         drawnGapDashed: map.getLayer('fireseason-van-gap') ? map.queryRenderedFeatures({ layers: ['fireseason-van-gap'] }).length : 0,
                         vanguardWidthFactors: map.getSource('fireseason-van-src') ? [...new Set(map.querySourceFeatures('fireseason-van-src').map(f => f.properties.wf))].sort() : [],
                         vanguardAlphas: map.getSource('fireseason-van-src') ? [...new Set(map.querySourceFeatures('fireseason-van-src').map(f => f.properties.alpha))].sort() : [],
+                        // Kalman seed-ahead chains (fire_vanguard_kf.py): which
+                        // tracker drew what is in view, and the live heads.
+                        trackers: v ? v.trackers : null, kfShown: !!(FS && FS.kfShown && FS.kfShown()),
+                        drawnLiveHeads: map.getLayer('fireseason-van-head') ? map.queryRenderedFeatures({ layers: ['fireseason-van-head'] }).length : 0,
                         share: { season: share.get('season') },
                         chip: (document.querySelector('#stats-map .ml-chip.fs em') || {}).textContent || null,
                         // The Fire accordion's season block (fireSeasonBlock),

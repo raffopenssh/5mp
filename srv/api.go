@@ -1220,7 +1220,7 @@ func (s *Server) HandleAPIStats(w http.ResponseWriter, r *http.Request) {
 	var vanguardGroups int
 	{
 		q := `SELECT COUNT(*) FROM feature_geometries INDEXED BY idx_fg_vanguard
-			WHERE vanguard = 1` + scopeSQL("park_id")
+			WHERE` + vanguardRowsSQL + scopeSQL("park_id")
 		var args []interface{}
 		if fromStr != "" {
 			q += " AND start_date >= ?"

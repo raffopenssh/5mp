@@ -17,6 +17,14 @@
  *             measurably better than chance (link skill ≈0.5; in season ≈0).
  *             Each chain is drawn bright while it is still ahead of the
  *             front and faint once the season has caught up with it.
+ *             Where scripts/fire_vanguard_kf.py has run (`tracker:'kf'`),
+ *             the chains are the KALMAN SEED-AHEAD ones: born only ahead
+ *             of the front and followed by a Kalman filter into the
+ *             arriving season (5× the long chains at the same null ratio);
+ *             a chain still moving at the newest data carries a live head
+ *             with its heading. Elsewhere the plain trajectories that began
+ *             ahead stand in (`tracker:'groups'`). The server decides per
+ *             area (vanguardRowsSQL); every answer says which.
  *
  * Lives in the stats-panel Map strip like Geology and Historical maps: a
  * chip is the state, its body configures, its × switches off
@@ -35,6 +43,7 @@
         FRONT_LBL = 'fireseason-front-label', FRONT_WAVE = 'fireseason-front-wave',
         VAN_SRC = 'fireseason-van-src', VAN_LYR = 'fireseason-van',
         VAN_DIM_LYR = 'fireseason-van-dim', VAN_GAP_LYR = 'fireseason-van-gap',
+        VAN_HEAD_LYR = 'fireseason-van-head', VAN_HEAD_HALO = 'fireseason-van-head-halo',
         SPEED_SRC = 'fireseason-speed-src', SPEED_LYR = 'fireseason-speed';
 
     var map = null;
@@ -147,6 +156,8 @@
     // The legend's swatch is SAMPLED from leadColor, so the panel cannot say
     // one ramp while the map draws another. Returns HTML: gradient bar with
     // its three ticks, and the width rule in one line.
+    // Whether any chain now drawn came from the Kalman seed-ahead tracker.
+    function kfShown() { return !!(van && van.trackers && van.trackers.kf); }
     function legendHTML(opts) {
         opts = opts || {};
         var stops = [];
@@ -157,9 +168,14 @@
             '<span class="fs-wi"><span class="fs-w fs-w-wide"></span>wider = surer of the day order</span>' +
             '<span class="fs-wi"><span class="fs-w fs-w-thin"></span>thin = unsure</span>' +
             '<span class="fs-wi"><span class="fs-w fs-w-dash"></span>dashed = a day not seen</span>' +
-            '<span class="fs-wi"><span class="fs-w fs-w-ash"></span>season caught up</span></div>';
+            '<span class="fs-wi"><span class="fs-w fs-w-ash"></span>season caught up</span>' +
+            (kfShown() ? '<span class="fs-wi"><span class="fs-w fs-w-head"></span>live head = still moving, arrow = heading</span>' : '') + '</div>';
+        var how = kfShown()
+            ? '<div class="fs-ramp-how">Chains are born only ahead of the front and followed by a Kalman filter into the arriving season (seed-ahead tracker)' +
+              (van && van.trackers && van.trackers.groups ? '; ' + van.trackers.groups + ' in view are plain chains where that has not run yet' : '') + '.</div>'
+            : '';
         return '<div class="fs-legend' + (opts.cls ? ' ' + opts.cls : '') + '"' + (opts.title ? ' title="' + esc(opts.title) + '"' : '') + '>' +
-            '<div class="fs-ramp-cap">Line colour: days ahead of the season front</div>' + bar + ticks + width + '</div>';
+            '<div class="fs-ramp-cap">Line colour: days ahead of the season front</div>' + bar + ticks + width + how + '</div>';
     }
 
     /* ── layers ─────────────────────────────────────────────────────────── */
@@ -246,18 +262,34 @@
                 layout: { 'line-cap': 'butt', 'line-join': 'round' },
                 paint: Object.assign({}, vanPaint, { 'line-dasharray': [3, 1.4] })
             });
+            // The live head: a chain whose last sighting is within the gap
+            // budget of the newest data we hold is still moving. A ring in
+            // the lead colour, a soft halo, and a chevron (drawn as a line
+            // in the source, `part:'heading'`) for the filter's heading.
+            map.addLayer({
+                id: VAN_HEAD_HALO, type: 'circle', source: VAN_SRC,
+                filter: ['==', ['get', 'part'], 'head'],
+                paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 5, 7, 10, 13], 'circle-color': ['get', 'color'],
+                    'circle-opacity': 0.22, 'circle-blur': 0.8 }
+            });
+            map.addLayer({
+                id: VAN_HEAD_LYR, type: 'circle', source: VAN_SRC,
+                filter: ['==', ['get', 'part'], 'head'],
+                paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 5, 3, 10, 5.5], 'circle-color': ['get', 'color'],
+                    'circle-stroke-color': 'rgba(8,10,16,0.9)', 'circle-stroke-width': 1.2, 'circle-opacity': 0.95 }
+            });
             registerTip();
         }
         applyVisibility();
     }
     function lift() {
         if (!map) return;
-        [VAN_DIM_LYR, VAN_GAP_LYR, VAN_LYR].forEach(function (id) { if (map.getLayer(id)) map.moveLayer(id); });
+        [VAN_DIM_LYR, VAN_GAP_LYR, VAN_LYR, VAN_HEAD_HALO, VAN_HEAD_LYR].forEach(function (id) { if (map.getLayer(id)) map.moveLayer(id); });
     }
     function applyVisibility() {
         if (!map) return;
         [FRONT_LYR, FRONT_LBL, FRONT_WAVE].forEach(function (id) { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', st.front ? 'visible' : 'none'); });
-        [VAN_LYR, VAN_GAP_LYR, VAN_DIM_LYR].forEach(function (id) { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', st.van ? 'visible' : 'none'); });
+        [VAN_LYR, VAN_GAP_LYR, VAN_DIM_LYR, VAN_HEAD_LYR].forEach(function (id) { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', st.van ? 'visible' : 'none'); });
         if (map.getLayer(SPEED_LYR)) map.setLayoutProperty(SPEED_LYR, 'visibility', st.speed ? 'visible' : 'none');
     }
     // 1×1 transparent PNG: an image source needs a url at creation.
@@ -488,7 +520,18 @@
     function chainProps(g, part) {
         return { part: part, id: g.id, park: g.park, lead_start: g.lead_start, lead_basis: g.lead_basis,
             tier: tierWord(g.tier), bits: g.bits, wf: +evidenceMul(g.tier, g.bits).toFixed(2), ahead_km: g.ahead_km, ahead_days: g.ahead_days, km: g.km, kmd: g.kmd,
-            fires: g.fires, days: g.days, start: g.start, end: g.end, season: g.season, type: g.type };
+            fires: g.fires, days: g.days, start: g.start, end: g.end, season: g.season, type: g.type,
+            tracker: g.tracker || 'groups', end_cause: g.end_cause || null, heading_deg: g.heading_deg == null ? null : g.heading_deg,
+            speed_kmd: g.speed_kmd == null ? null : g.speed_kmd, seed_lead: g.seed_lead == null ? null : g.seed_lead };
+    }
+    // Chevron at the live head, pointing along the filter's heading: two
+    // short strokes (~3 km at the head) — geometry, not a glyph, so it needs
+    // no font the tile server may lack.
+    function headingChevron(lon, lat, hd) {
+        var L = 0.03, half = 32 * Math.PI / 180, th = hd * Math.PI / 180, cl = Math.max(0.2, Math.cos(lat * Math.PI / 180));
+        function from(x, y, len, ang) { return [x + Math.sin(ang) * len / cl, y + Math.cos(ang) * len]; }
+        var tip = from(lon, lat, L * 1.6, th);
+        return [from(tip[0], tip[1], L * 0.9, th + Math.PI - half), tip, from(tip[0], tip[1], L * 0.9, th + Math.PI + half)];
     }
     function splitChain(g) {
         var pts = g.pts || [], leads = g.leads || [];
@@ -504,6 +547,19 @@
             pr.gap = (pts[i][2] != null && pts[i + 1][2] != null) ? Math.round(pts[i + 1][2] - pts[i][2]) : 1;
             out.push({ type: 'Feature', properties: pr,
                 geometry: { type: 'LineString', coordinates: [[pts[i][0], pts[i][1]], [pts[i + 1][0], pts[i + 1][1]]] } });
+        }
+        if (g.end_cause === 'ongoing' && pts.length) {
+            var last = pts[pts.length - 1], lastLead = leads.length ? leads[leads.length - 1] : lead0;
+            if (lastLead == null) lastLead = lead0;
+            var ph = chainProps(g, 'head');
+            ph.lead = Math.round(lastLead); ph.color = lastLead >= 0 ? leadColor(lastLead) : '#fb923c'; ph.alpha = 0.95; ph.gap = 1;
+            out.push({ type: 'Feature', properties: ph, geometry: { type: 'Point', coordinates: [last[0], last[1]] } });
+            if (g.heading_deg != null) {
+                var pc = chainProps(g, 'heading');
+                pc.lead = ph.lead; pc.color = ph.color; pc.alpha = 0.9; pc.gap = 1; pc.part = 'ahead';   // drawn by the solid layer
+                pc.heading_stub = true;
+                out.push({ type: 'Feature', properties: pc, geometry: { type: 'LineString', coordinates: headingChevron(last[0], last[1], g.heading_deg) } });
+            }
         }
         if (pts.length === 1) {
             // A one-vertex chain still deserves a mark: a very short line.
@@ -541,23 +597,39 @@
         var d = new Date(s + 'T00:00:00Z');
         return isNaN(d) ? s : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
     }
+    var COMPASS = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+    function compass(deg) { return COMPASS[Math.round((((deg % 360) + 360) % 360) / 22.5) % 16]; }
+    // Why the chain ends, in the words a ranger would use. 'ongoing' is the
+    // one that matters live: last seen within the gap budget of the newest
+    // data, so someone is still moving out there.
+    function endWords(p) {
+        if (p.tracker !== 'kf' || !p.end_cause) return '';
+        var hd = (p.heading_deg != null) ? ' heading <b>' + compass(p.heading_deg) + '</b>' + (p.speed_kmd ? ' at ~' + Number(p.speed_kmd).toFixed(0) + ' km/d' : '') : '';
+        if (p.end_cause === 'ongoing') return '<div style="color:#fde047"><b>Still moving</b> \u2014 last seen ' + fmtDate(p.end) + hd + '. Field staff report the herds following the scouts 1\u20132 weeks behind.</div>';
+        if (p.end_cause === 'season') return '<div style="opacity:.85">Followed until the season arrived around it' + hd + '; from there it is one fire among the field\u2019s.</div>';
+        return '<div style="opacity:.85">Trail lost' + hd + ': no fire within reach for 3 days \u2014 cloud, a fire too small to see, or they stopped.</div>';
+    }
     function tipHTML(p) {
         var ls = p.lead_start;
-        var h = '<div style="font-weight:600;margin-bottom:3px">Vanguard fire chain</div>';
+        var h = '<div style="font-weight:600;margin-bottom:3px">Vanguard fire chain' + (p.tracker === 'kf' ? ' <span style="opacity:.6;font-weight:400">\u00b7 Kalman-tracked</span>' : '') + '</div>';
+        if (p.part === 'head') h += '<div style="color:#fde047;font-weight:600">Live head</div>';
         h += '<div>Began <b>' + esc(ls) + ' days ahead</b> of the ' + (p.lead_basis === 'usual' ? 'usual' : 'season') +
              ' front' + (p.lead_basis === 'usual' ? ' <span style="opacity:.7">(this season\u2019s front had not arrived yet)</span>' : '') + '</div>';
-        if (p.ahead_km) h += '<div>Ran <b>' + Number(p.ahead_km).toFixed(0) + ' km</b> over ' + esc(p.ahead_days) + ' d before the season caught up</div>';
+        if (p.ahead_km) h += '<div>Ran <b>' + Number(p.ahead_km).toFixed(0) + ' km</b> over ' + esc(p.ahead_days) + ' d ' +
+            (p.end_cause === 'season' || (!p.end_cause && p.part === 'after') ? 'before the season caught up' : 'ahead of the season' + (p.end_cause === 'ongoing' ? ' so far' : '')) + '</div>';
         if (p.part === 'after') h += '<div style="color:#9ca3af">Here the season had caught up ' + esc(-p.lead) + ' d earlier \u2014 one fire among the field\u2019s</div>';
-        else if (p.part === 'ahead' && p.lead != null && p.lead !== ls) h += '<div>Still <b>' + esc(p.lead) + ' d ahead</b> here</div>';
+        else if (p.part === 'ahead' && p.lead != null && p.lead !== ls && !p.heading_stub) h += '<div>Still <b>' + esc(p.lead) + ' d ahead</b> here</div>';
+        h += endWords(p);
         h += '<div style="opacity:.8">' + evidenceWords(p.tier, p.bits) + '</div>';
         h += '<div style="opacity:.75;margin-top:3px">' + fmtDate(p.start) + ' \u2013 ' + fmtDate(p.end) + ' \u00b7 ' + esc(p.fires) + ' detections \u00b7 ' +
              (p.km ? Number(p.km).toFixed(0) + ' km' : '') + (p.season ? ' \u00b7 season ' + esc(p.season) : '') + '</div>';
-        h += '<div style="opacity:.6;font-size:11px;margin-top:4px">An early signal that people are moving ahead of the season \u2014 not a proof of who or why.</div>';
+        h += '<div style="opacity:.6;font-size:11px;margin-top:4px">An early signal that people are moving ahead of the season \u2014 not a proof of who or why.' +
+             (p.tracker === 'kf' ? ' Born ahead of the front, followed by a Kalman filter into the season.' : '') + '</div>';
         return h;
     }
     function registerTip() {
         if (!window.MapTip || !MapTip.register) return;
-        [VAN_LYR, VAN_GAP_LYR, VAN_DIM_LYR].forEach(function (id) {
+        [VAN_LYR, VAN_GAP_LYR, VAN_DIM_LYR, VAN_HEAD_LYR].forEach(function (id) {
             MapTip.register(id, {
                 html: function (props) { return props && props.lead_start != null ? tipHTML(props) : ''; },
                 tabLabel: 'Vanguard', tabColor: '#fde047', priority: 5
@@ -633,7 +705,7 @@
         // up to the playhead; the whole-season layer would show them ahead
         // of it. Hidden for the duration, back on teardown.
         var animating = t != null;
-        [VAN_LYR, VAN_GAP_LYR, VAN_DIM_LYR].forEach(function (id) {
+        [VAN_LYR, VAN_GAP_LYR, VAN_DIM_LYR, VAN_HEAD_LYR].forEach(function (id) {
             if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', (st.van && !animating) ? 'visible' : 'none');
         });
         if (t == null) {
@@ -685,6 +757,7 @@
         isOn: anyOn,
         frontOn: function () { return st.front; },
         vanguardOn: function () { return st.van; },
+        endWords: endWords, kfShown: kfShown,
         speedOn: function () { return st.speed; },
         speedMeta: function () { return speed; },
         speedAt: speedAt,

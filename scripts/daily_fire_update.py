@@ -478,6 +478,18 @@ class DailyFireUpdater:
                 log(f"  WARN: fire_front --current rc={r.returncode}: {r.stderr[-300:]}")
         except Exception as e:
             log(f"  WARN: fire_front --current skipped: {e}")
+        # Kalman seed-ahead chains for the live season (scripts/fire_vanguard_kf.py):
+        # the vanguard layer's population. Reads the front just written; a
+        # park without a front is skipped there, not failed. Full history is
+        # the nightly `fire_vanguard_kf.py --rotate` cron.
+        try:
+            r = subprocess.run(
+                ['python3', 'scripts/fire_vanguard_kf.py', '--areas', ','.join(parks), '--current', '--quiet'],
+                cwd=str(BASE_DIR), capture_output=True, text=True, timeout=1800)
+            if r.returncode != 0:
+                log(f"  WARN: fire_vanguard_kf --current rc={r.returncode}: {r.stderr[-300:]}")
+        except Exception as e:
+            log(f"  WARN: fire_vanguard_kf --current skipped: {e}")
 
         # One process for all parks (--parks) instead of one subprocess each.
         # Spawning ~100 interpreters re-paid the sklearn/scipy import, the
