@@ -136,10 +136,22 @@ regression. Re-run `calibrate_fire_link_lr.py` after any change to
 `daily_clusters`/`build_tracks` — the LR describes the links *as the tracker
 selects them*.
 
-**Downstream to revisit:** `plan_solver.movement()` bundles the ≥150 km
-transhumance fronts for the herder model without reading `evidence_tier`; it
-should use `supported` (the report's route skill was measured against an
-all-fire null, not this one).
+**Herd model × vanguard (measured 2026-09-15, `scripts/eval_herd_vanguard.py`;
+report unchanged).** `plan_solver.movement()` fits on all ≥150 km transhumance
+fronts and must stay that way: fitting on `supported` only (759 of 8,224 fit
+fronts) widens every band to the 80 % isopleth, mean per-bundle skill
++0.47 → +0.37, network capture 0.79 *below* the all-fire null 0.95;
+`supported+weak` +0.43. Lead-weighting the UD (+0.48) and fitting on
+pre-front fronts only (+0.45) are within noise of the current +0.47. Tier is
+day-order evidence, not route evidence — 184 of the 205 held-out vanguard
+chains are `unsupported`. What vanguard *does* add is independent validation:
+the current bands, fitted on 2023–24, capture **64 %** of the 2025/26 vanguard
+chains per bundle vs 19 % for an equal-area all-fire band (ordinary fronts:
+0.57), and 80 % of vanguard chains head within 90° of their bundle's day-order
+heading (50 % = chance; bundle 9 at 58 % with R 0.03 has no direction to
+trust). Per bundle only 7–32 vanguard chains a season, so report these as a
+second skill column, not a fit. `movement()`'s assert trips until `build`
+reruns (state.pkl 13,178 fronts vs 13,180 in the v8 file).
 
 ---
 
