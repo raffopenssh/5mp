@@ -261,22 +261,52 @@ the one sentence tip, KML and GeoPackage share.
 
 **Rendering — one renderer for every per-cell field.** `srv/static/cellfield.js`
 (`CellField.create/setGrid/render/cellAt/cellsIn`): grid + values → colour
-per cell → offscreen canvas → MapLibre **image source** with nearest
+per cell → offscreen canvas → MapLibre **canvas source** (since 2026-09-15;
+was an image source: a data-URL PNG per frame, encoded then decoded async,
+which could land out of order under a scrubbing playhead) with nearest
 resampling, rows resampled to mercator (the same seam anim.js's heatBuffer
-removes). The **season speed map now goes through it too**: `/api/fire-
-season-speed` returns packed `values` (base64 uint8, 0 = none, 1..255 =
-log-spaced km/d levels, `encoding{}`, `levels{n, km_d_min, km_d_max}`)
-instead of the invertible PNG, and the tip reads the level under the pointer
-from the array it drew from. Entry: cyan-400 `#22d3ee` (no other layer's
-family), alpha by share (`entryAlpha`: 40 % → 0.35, 70 %+ → 0.85), thinned
-by confidence below z7 (`entryMinShare`: z<5.5 ≥70 %, z<7 ≥50 %) never
-dropped, a hairline rim from z8, layer below trajectories/vanguard/front
-lines. **Time by front, not date** (`entryTimeMul`): full weight until the
-`usual` front's day at the cell, then −70 % over `ENTRY_FADE_DAYS=60` past it.
-Animator: same rows as ground under the fires (`anim-chip[data-layer=entry]`);
-a cell flashes white-cyan for a few frames when this season's first
-detection (`first_burn`) lands in it. Re-render only on zoom-band crossing or
-playhead step (a paint pass over XSA's 93k cells is a few ms).
+removes). Two MapLibre traps the file works around, do not undo them: (a)
+a raster tile whose texture is a **power-of-two** size is bound with
+`LINEAR_MIPMAP_NEAREST`, a canvas texture has no mipmaps, and the quad
+draws **opaque black** — so the canvas is padded by one column/row when
+`W`/`H` is POT (quad coordinates stretched by the same share; the blank is
+3×3, 1×1 being POT); (b) `pause()` only uploads if the source already has a
+tile, so `upload()` keeps `play()`ing until a render has both the tile and
+a texture of the canvas' size (bounded at 40 renders). The **season speed
+map goes through it too**: `/api/fire-season-speed` returns packed `values`
+(base64 uint8, 0 = none, 1..255 = log-spaced km/d levels, `encoding{}`,
+`levels{n, km_d_min, km_d_max}`) instead of the invertible PNG, and the tip
+reads the level under the pointer from the array it drew from.
+
+Entry colour: the fire family's **rose end**, graded by share like the
+front's isochrones are graded by date — `ENTRY_STOPS` rose-800 `#9f1239`
+(40 %) → rose-600 `#e11d48` (55 %) → rose-400 `#fb7185` (70 %+), alpha
+0.5 → 0.92 (`entryAlpha`). It was cyan until 2026-09-15 ("a family no other
+layer uses"), which read as a second data family beside red fire; rose is
+the one warm hue nothing else draws (red = fires + front, orange→white =
+vanguard, rust→cream = speed, amber = settlements, violet = clearings) and a
+square is a shape no line has. Every surface samples the same stops:
+`FireSeason.entryColor(share)`, `entrySwatches()` (legend, inline
+backgrounds — the CSS has no colour of its own), tip title, probe tab, anim
+chip, stats-panel chip, KML/QML/Locus styles. Thinned by confidence below z7
+(`entryMinShare`: z<5.5 ≥70 %, z<7 ≥50 %) never dropped, a hairline rim
+from z8, layer below trajectories/vanguard/front lines.
+
+**Time — a cell's life over the season** (`entryState(c, dos)` → `{mul,
+flash, word}`, the one function the paint, the tip's "At the playhead" line
+and the legend's life row read; `dos` = day of season at the window end or
+the playhead, `null` = every cell at full weight): *dormant* (> 30 d before
+its usual entry `uf − days`) ×0.5 → *due* rises to ×1 over
+`ENTRY_DUE_DAYS=30` (the expected arrival sweeps the ground ahead of the
+front as a wave) → *ignition* when this season's `first_burn` lands:
+`flash = exp(−age/(8/3))` over `ENTRY_FLASH_DAYS=8`, colour lerped to
+`ENTRY_FLASH` near-white by `flash^0.7`, and the cell is marked **hot**
+(paint's 5th element) so CellField draws its rim in its own colour, not the
+dark tile edge → *burnt* ×1 → *past* (usual front passed, no burn) −70 %
+over `ENTRY_FADE_DAYS=60`, never off. Animator: `anim-chip[data-layer=entry]`;
+`animAt(t)` repaints at ≤ 12/s, key rounds `dos` to a quarter day (~4 ms a
+frame at Chinko z9, scale 6). An animator opened with only Season layers
+on no longer toasts "No animatable data" (`seasonAny` in anim.js).
 
 **UX.** Season menu fourth row *Entry ground* (`icon-grid-2x2`), default
 off, share `season=front,vanguard,speed,entry`; Map-strip chip `N early-burn
@@ -293,7 +323,7 @@ ground (N cells, M seasons)*, hidden, sub-folders by grade
 its footprint; GeoPackage layer `fire_early_ground` (rule, ahead_days,
 min_share, seasons_early/held, share_early, grade, days_ahead_median,
 first_burn_month, usual_front_day_of_season, seasons, cell_km2, basis) with
-a graded cyan QML, off by default in the QGIS project; Locus group
+a graded rose QML, off by default in the QGIS project; Locus group
 *EARLY-BURN GROUND (M seasons)* of closed rings. Area exports only (a view
 export would need every overlapping area's grid — not done).
 
@@ -303,7 +333,11 @@ api `fire_early_ground_{basis,off_by_default,insufficient,xsa_two_seasons}`
 (Chinko basis fields + `early ≤ held`, `days_ahead ≥ 15`; NAM_Skeleton_Coast
 says "the rule needs 2"; XSA every cell "2 of 2", owner-gated); ui
 `season_entry_ground` (URL + `ui_tests.js` fn assertions: chip toggles and
-share link, menu swatch, tip words); `TEST.fireEntry(lng, lat)`.
+share link, rose grade swatch + life row in the menu, tip words,
+`entryState` at four playhead positions of a real cell);
+`TEST.fireEntry(lng, lat)`. The `ui_tests.js` fn assertions run in the
+browser only: load the file's text at `/?test=1&…`, `new Function(text +
+';return UI_TESTS')()` (it reads `process.env`; stub `window.process`).
 
 ---
 

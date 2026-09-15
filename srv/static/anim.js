@@ -87,7 +87,7 @@
         trajs:    LAYERS.trajs,
         front:    { label: 'front',    color: '#fb923c', title: 'Season front \u2014 dashed isochrones every 5 days, drawn as the playhead reaches them' },
         vanguard: { label: 'vanguard', color: '#fde047', title: 'Vanguard fires \u2014 chains that began 10\u201360 days ahead of the season front, in lead colour (turns on paths)' },
-        entry:    { label: 'entry',    color: '#22d3ee', title: 'Early-burn ground \u2014 cells that burn ahead of their surroundings season after season; a square lights up when this season\u2019s first detection lands in it' },
+        entry:    { label: 'entry',    color: '#fb7185', title: 'Early-burn ground \u2014 cells that burn ahead of their surroundings season after season; a square brightens as its usual entry comes due, flashes white when this season\u2019s first detection lands in it and cools back over a week' },
         patrol:   { label: 'patrol',   color: '#4ade80', title: 'Patrol effort \u2014 a heat field zoomed out, circles like the live map zoomed in; cools over 90 days' },
         deforest: LAYERS.deforest,
         settlements: LAYERS.settlements
@@ -3483,7 +3483,13 @@
                 Array.isArray(A.data[n]) ? A.data[n].length :
                 (A.data[n].frames ? A.data[n].frames.length :
                  (A.data[n].points ? A.data[n].points.length : true))));
-            if (!any) toast('No animatable data in view for this window — toggle layers or adjust dates', 'warning');
+            // The Season layers animate too (the front builds up, the entry
+            // ground lives through the season): an open with only those on
+            // is not an empty one.
+            const FS = window.FireSeason;
+            const seasonAny = !!(FS && ((FS.frontOn() && (FS.meta() || {}).season) ||
+                (FS.entryOn && FS.entryOn() && ((FS.entryMeta && FS.entryMeta()) || {}).status === 'ok')));
+            if (!any && !seasonAny) toast('No animatable data in view for this window — toggle layers or adjust dates', 'warning');
 
             A.mapHandler = () => { if (A) draw(A.t); };
             A.moveEndHandler = onMoveEnd;
