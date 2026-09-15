@@ -724,6 +724,9 @@ func (s *Server) buildLocusContent(tdb, wdb *locusDB, parkID, parkName, boundary
 			}
 		}
 	}
+	// Early-burn ground (fire_early_ground): the cells the map draws as cyan
+	// squares, closed rings in one hidden group; each named by its basis.
+	s.locusEarlyGround(tdb, parkID, tMission)
 
 	// Settlements (closed rings, hidden by default). Footprint -> cluster via
 	// settlementMetaByPolygon: resolved in Go (invariant 4) and provenance-
