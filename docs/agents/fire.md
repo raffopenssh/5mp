@@ -136,22 +136,79 @@ regression. Re-run `calibrate_fire_link_lr.py` after any change to
 `daily_clusters`/`build_tracks` — the LR describes the links *as the tracker
 selects them*.
 
-**Herd model × vanguard (measured 2026-09-15, `scripts/eval_herd_vanguard.py`;
-report unchanged).** `plan_solver.movement()` fits on all ≥150 km transhumance
-fronts and must stay that way: fitting on `supported` only (759 of 8,224 fit
-fronts) widens every band to the 80 % isopleth, mean per-bundle skill
-+0.47 → +0.37, network capture 0.79 *below* the all-fire null 0.95;
-`supported+weak` +0.43. Lead-weighting the UD (+0.48) and fitting on
-pre-front fronts only (+0.45) are within noise of the current +0.47. Tier is
-day-order evidence, not route evidence — 184 of the 205 held-out vanguard
-chains are `unsupported`. What vanguard *does* add is independent validation:
-the current bands, fitted on 2023–24, capture **64 %** of the 2025/26 vanguard
-chains per bundle vs 19 % for an equal-area all-fire band (ordinary fronts:
-0.57), and 80 % of vanguard chains head within 90° of their bundle's day-order
-heading (50 % = chance; bundle 9 at 58 % with R 0.03 has no direction to
-trust). Per bundle only 7–32 vanguard chains a season, so report these as a
-second skill column, not a fit. `movement()`'s assert trips until `build`
-reruns (state.pkl 13,178 fronts vs 13,180 in the v8 file).
+**Herd model × vanguard (`scripts/eval_herd_vanguard.py`, re-run 2026-09-15 pm
+on the KF set; report unchanged).** `plan_solver.movement()` fits on all
+≥150 km transhumance fronts and must stay that way: `supported` only (759 of
+8,224) widens every band, mean per-bundle skill +0.47 → +0.37;
+`supported+weak` +0.43; lead-weighting +0.48 and pre-front-only +0.45 are
+noise. Tier is day-order evidence, not route evidence — 673 of the 743
+held-out KF vanguard chains are `unsupported`. **A vanguard-only fit is not
+feasible** (runs F/G: 871 / 155 chains → skill +0.13 / +0.08, network 31 %
+/ 26 %); adding KF chains at 3× to the plain fit (run H) keeps +0.48 and
+lifts vanguard capture 0.71 → 0.82 — an option, not applied. What vanguard
+*adds* is validation: the current bands capture **0.71** of the 2025/26 KF
+vanguard chains per bundle vs 0.23 for an equal-area all-fire mask (743
+chains; ≥150 km: 0.84), and 79 % of ≥150 km chains head within 90° of their
+bundle's day-order heading (all chains 63 %; bundle 9, R 0.03, has no
+direction). `movement()`'s assert trips until `build` reruns (state.pkl
+13,178 vs 13,180 fronts) — trivial.
+
+### The quirk: the nulls hold the heuristic fixed (2026-09-15)
+
+Field truth: fire density *is* herd movement; managers read this morning's
+NASA fires, fly there, drop leaflets, herders change course. Yet every
+"skill" number above is near zero. Both are right, because every null in
+this section **keeps the answer constant**:
+
+* the day-shuffle null permutes days *within a month* — spatial field and
+  monthly march are exactly what the heuristic uses, so "real ≈ shuffled"
+  says only that the *order* of burns inside a corridor cannot be read;
+* `movement()`'s all-fire null is the herd map itself, and it is a *global*
+  equal-area mask, so a local band trivially beats it (+0.47) while the
+  network cannot (0.90 vs 0.91). Neither number measures route knowledge.
+* A "150 km front" is a path threaded through many herds' fires at once. In
+  the report's 15 routes, **b3↔b6 and b5↔b14 are one corridor with the ends
+  swapped** (reversed-pair distance 76 / 39 km vs 400+ same-direction, same
+  months Nov–Feb) — not out-and-back, the tracker reading a full corridor
+  both ways. Routes are undirected corridors; 15 is ≤ 13.
+
+Nowcasting is not the problem (the map shows what happens absent a change);
+the eval question was the wrong one. **The honest baseline for the heuristic
+is `scripts/eval_fire_baseline.py`** (data/eval/fire_baseline{,_xsa}.json):
+rolling origin on every area with a season front (151 areas, 864
+area-seasons; for held-out season *s* only seasons < *s* are seen), scored
+over the cells already known burnable (uniform = 0 by construction), Gini of
+the capture curve, medians across area-seasons, nothing tuned:
+
+| target (held-out season) | uniform | persist (last season) | clim (all prior) | clim_early (prior seasons' first 45 d at the front) |
+|---|---|---|---|---|
+| all detections | 0 | +0.28 | **+0.29** [0.19, 0.41]; 36 % of fires in the densest 20 % | +0.22 |
+| leading edge (10–60 d ahead of the front) | 0 | +0.22 | +0.23 | **+0.33** [0.20, 0.46] |
+| leading edge, dense areas (≥20k det./season, 93 areas) | 0 | +0.14 | +0.14 | **+0.31** |
+
+Read: the heuristic holds (clim beats uniform in 99 % of area-seasons), last
+season is as good as eight (paired +0.01), and only 1.5–4 % of a season's
+fires fall on ground never burned before — the "no intervention change"
+counterfactual is closed. But **where the herds go *next*** (the leading
+edge the flights go to) whole-season density is weak, and the map that
+predicts it is the **early-season climatology** — where earlier seasons
+*started* (better than persistence in 78 % of 806 area-seasons, +0.08).
+Two questions, two maps: season density for where the herds will be,
+early-season density for where they enter.
+
+XSA (2 prior seasons only, one partial): on the *line* targets the report's
+band UD does carry information beyond density — 61 % of held-out long fronts
+and **50 % of KF vanguard chains in its top 20 % of ground vs 26 % / 24 %
+for climatology**; non-fire covariates (river proximity, few people, open
+grassland) carry none (≤ 0.28). So the bands' value is real and local; the
+network number was measured at 55 % of the AOI where every predictor
+saturates.
+
+**For `/report` (not edited):** "origin–destination" / "from → to" is
+unsupported (undirected corridors, ≤ 13 distinct); "captured 51–61 % vs
+0–15 % chance" compares a local band to a global mask — quote the ladder
+instead (bands top-20 %: 61 % of fronts / 50 % of vanguard chains vs 26 % /
+24 % for fire density); "13,178 fronts" is 13,180.
 
 ---
 
@@ -543,8 +600,9 @@ Tests: `vanguard_kf_one_population`, `fire_season_vanguard_tracker_kf`,
 
 **Not a measurement.** "Cattle follow 1–2 weeks behind" in the tip is
 field knowledge from the user, not a measurement, and is worded as such.
-`scripts/eval_herd_vanguard.py` now reads the KF set (runs F/G: a
-vanguard-only fit) and has **not been re-run** since — a separate task.
+`scripts/eval_herd_vanguard.py` reads the KF set (runs F/G: a
+vanguard-only fit) — re-run 2026-09-15 pm, results under "Herd model ×
+vanguard" above.
 
 **Can the KF improve the plain trajectories? Measured 2026-09-15: no.**
 With the full pass done (162 areas, 8–9 seasons each, 5 areas honestly at
