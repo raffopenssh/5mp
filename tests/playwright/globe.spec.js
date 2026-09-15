@@ -283,7 +283,7 @@ test.describe('Legend reflects the animation', () => {
         // deforest is OFF as a map layer but ON in the animation.
         await expect(page.locator('#stat-deforest')).toHaveClass(/layer-animated/);
         await expect(page.locator('#lod-deforest .lod-mode')).toBeVisible();
-        await expect(page.locator('#lod-fires .lod-mode')).toContainText('grid');
+        await expect(page.locator('#lod-fires .lod-mode')).toContainText('fires');
 
         // The menu is the same switch as the chip, in the other place.
         await page.locator('#lod-fires .lod-mode').click();

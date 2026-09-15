@@ -5807,15 +5807,17 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             const nWin = typeof season.vanguard_in_window === 'number' ? season.vanguard_in_window : season.vanguard_groups;
             if (top.length) {
                 const limit = detail === 'comprehensive' ? top.length : (detail === 'standard' ? 8 : 3);
-                out.push(`Vanguard chains ranked by the distance they ran ahead of the front (${Math.min(limit, top.length)} of ${nWin}; day order = link evidence against the day-shuffled null; wide lines on the map = supported/weak):`);
+                const kf = season.vanguard_tracker === 'kf';
+                const moving = top.filter(v => v.end_cause === 'ongoing');
+                out.push(`Vanguard chains ranked by the distance they ran ahead of the front (${Math.min(limit, top.length)} of ${nWin}; day order = link evidence against the day-shuffled null; wide lines on the map = supported/weak)${kf ? `. Kalman-tracked: seeded 10–60 d ahead of the front and followed into the arriving season${moving.length ? `; **${moving.length} still moving** at the newest data` : ''}` : ''}:`);
                 out.push('');
-                out.push('| Began | Ahead by | Ran ahead | Day order | Fires | Where |');
-                out.push('|-------|----------|-----------|-----------|-------|-------|');
+                out.push(`| Began | Ahead by | Ran ahead | Day order | Fires | Where |${kf ? ' Ended |' : ''}`);
+                out.push(`|-------|----------|-----------|-----------|-------|-------|${kf ? '-------|' : ''}`);
                 for (const v of top.slice(0, limit)) {
                     const lead = v.lead_start != null ? `${v.lead_start} d${v.lead_basis === 'usual' ? ' (usual front)' : ''}` : '—';
                     const ran = v.ahead_km ? `${Math.round(v.ahead_km)} km / ${v.ahead_days} d` : '—';
                     const where = v.nearest_place ? `${v.nearest_place}${v.nearest_place_km ? ` (${Math.round(v.nearest_place_km)} km)` : ''}` : `${v.lat.toFixed(2)}, ${v.lon.toFixed(2)}`;
-                    out.push(`| ${v.start} | ${lead} | ${ran} | ${v.tier || 'unmeasured'} | ${v.fires || 0} | ${where}${v.direction ? ` → ${v.direction}` : ''} |`);
+                    out.push(`| ${v.start} | ${lead} | ${ran} | ${v.tier || 'unmeasured'} | ${v.fires || 0} | ${where}${v.direction ? ` → ${v.direction}` : ''} |${kf ? ` ${vanguardEndWords(v)} |` : ''}`);
                 }
                 out.push('');
                 if (Object.keys(tiers).length) {
@@ -5825,9 +5827,24 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                     out.push('');
                 }
             }
-            out.push('_Method: the season front is the day by which a fifth of the land that burns in a season had burned within ~60 km (2.5 km cells). A vanguard chain began 10–60 days ahead of it — the one population whose day-to-day order beats a day-shuffled null (link skill ≈0.5; inside the season ≈0). "Ahead of the season" is what is measured, not who lit it or why._');
+            out.push('_Method: the season front is the day by which a fifth of the land that burns in a season had burned within ~60 km (2.5 km cells). A vanguard chain began 10–60 days ahead of it — the one population whose day-to-day order beats a day-shuffled null (link skill ≈0.5; inside the season ≈0). "Ahead of the season" is what is measured, not who lit it or why._'
+                + (season.vanguard_tracker === 'kf' ? ' _Chains here are Kalman-tracked (scripts/fire_vanguard_kf.py): a track may be born only in that window, then followed into the season; a missed day is drawn dashed, never bridged. "Ended" says why the trail stops: still moving (last seen within 3 days of the newest data, with the filter\'s heading and speed), the season arrived around it, or lost (no fire within reach for 3 days — cloud, a fire too small to see, or they stopped)._' : ''));
             out.push('');
             return out;
+        }
+
+        // How a Kalman-tracked vanguard chain ended, in the same words as the
+        // map tip (fireseason.js endWords) and the KML/GeoPackage
+        // (srv/fire_vanguard_export.go vanguardEndWords). Shared by the
+        // report's MD/PDF table, the XLSX sheet and the CSV. '' for a plain
+        // chain: the plain tracker records no cause, and '' is not 'lost'.
+        function vanguardEndWords(v) {
+            if (!v || v.tracker !== 'kf' || !v.end_cause) return '';
+            const COMPASS8 = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+            const hd = v.heading_deg != null ? ` heading ${COMPASS8[Math.round((((v.heading_deg % 360) + 360) % 360) / 45) % 8]}${v.speed_kmd ? ` at ~${Math.round(v.speed_kmd)} km/d` : ''}` : '';
+            if (v.end_cause === 'ongoing') return `still moving — last seen ${v.end || ''}${hd}`;
+            if (v.end_cause === 'season') return 'season arrived';
+            return 'lost (no fire within reach for 3 d)';
         }
 
         function buildParkMarkdown(park, data, sections = null) {
@@ -6595,6 +6612,29 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 totals.pixels, totals.km.toFixed(1), '', '', ''].join(','));
             rows.push('');
 
+            // === Section 1b: Vanguard fires (the same ranked list the
+            // report prints and the XLSX Vanguard_Fires sheet holds) ===
+            {
+                const vrows = [];
+                for (const { park, data } of results) {
+                    if (data.error) continue;
+                    const season = data.season || {};
+                    for (const v of (season.vanguard_top || [])) {
+                        vrows.push([esc(park.name || park.id), esc(season.season || ''), v.start || '', v.end || '', v.days || 0, v.fires || 0,
+                            v.lead_start == null ? '' : v.lead_start, esc(v.lead_basis || ''), Math.round((v.ahead_km || 0) * 10) / 10, v.ahead_days || 0,
+                            esc(v.tier || 'unmeasured'), esc(v.direction || ''), esc(v.nearest_place ? `${v.nearest_place} (${Math.round(v.nearest_place_km || 0)} km)` : ''),
+                            v.tracker || 'groups', v.end_cause || '', esc(vanguardEndWords(v)), v.heading_deg == null ? '' : v.heading_deg, v.speed_kmd == null ? '' : Math.round(v.speed_kmd * 10) / 10,
+                            v.lon, v.lat, esc(v.id || '')].join(','));
+                    }
+                }
+                if (vrows.length) {
+                    rows.push('VANGUARD FIRES (began 10-60 d ahead of the season front; Tracker kf = Kalman seed-ahead chains, End_Cause ongoing = still moving at newest data)');
+                    rows.push(['Park', 'Season', 'Start', 'End', 'Days', 'Fires', 'Lead_Days', 'Lead_Basis', 'Ahead_km', 'Ahead_Days', 'Day_Order', 'Direction', 'Nearest_Place', 'Tracker', 'End_Cause', 'Ended', 'Heading_deg', 'Speed_km_d', 'Lon', 'Lat', 'Feature_ID'].join(','));
+                    rows.push(...vrows);
+                    rows.push('');
+                }
+            }
+
             // === Section 2: Patrol effort by movement type ===
             rows.push('PATROL EFFORT BY TYPE');
             rows.push(['Park', 'Type', 'Distance_km', 'Cells_Visited', 'Visit_Days', 'Uploads', 'Avg_Speed_kmh'].join(','));
@@ -6909,7 +6949,10 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             // (negative = into the season; blank = front not built).
             // Vanguard: Yes when 10 <= lead <= 60 (scripts/fire_front.py).
             const allFiresData = [['Park', 'Date', 'Description', 'Fires_Count', 'Status', 'Stopped', 'Lead_Days', 'Vanguard', 'Ahead_km', 'Coords']];
-            const vanguardData = [['Park', 'Season', 'Start', 'End', 'Days', 'Fires', 'Lead_Days', 'Lead_Basis', 'Ahead_km', 'Ahead_Days', 'Day_Order', 'Direction', 'Nearest_Place', 'Lon', 'Lat', 'Feature_ID']];
+            // Tracker/End_Cause/Heading/Speed are the Kalman tracker's
+            // (docs/agents/fire.md "Kalman seed-ahead chains"); blank for a
+            // plain chain, which records no cause.
+            const vanguardData = [['Park', 'Season', 'Start', 'End', 'Days', 'Fires', 'Lead_Days', 'Lead_Basis', 'Ahead_km', 'Ahead_Days', 'Day_Order', 'Direction', 'Nearest_Place', 'Tracker', 'End_Cause', 'Ended', 'Heading_deg', 'Speed_km_d', 'Lon', 'Lat', 'Feature_ID']];
             for (const { park, data } of parkReports) {
                 if (data.error) continue;
                 for (const n of ((data.fire || {}).narratives || [])) {
@@ -6931,6 +6974,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                     vanguardData.push([park.name || park.id, season.season || '', v.start || '', v.end || '', v.days || 0, v.fires || 0,
                         v.lead_start == null ? '' : v.lead_start, v.lead_basis || '', Math.round((v.ahead_km || 0) * 10) / 10, v.ahead_days || 0,
                         v.tier || 'unmeasured', v.direction || '', v.nearest_place ? `${v.nearest_place} (${Math.round(v.nearest_place_km || 0)} km)` : '',
+                        v.tracker || 'groups', v.end_cause || '', vanguardEndWords(v), v.heading_deg == null ? '' : v.heading_deg, v.speed_kmd == null ? '' : Math.round(v.speed_kmd * 10) / 10,
                         v.lon, v.lat, v.id || '']);
                 }
             }
@@ -6945,7 +6989,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             // list the star report prints (/api/fire-season leads=200).
             if (vanguardData.length > 1) {
                 const vanSheet = XLSX.utils.aoa_to_sheet(vanguardData);
-                vanSheet['!cols'] = [{ wch: 25 }, { wch: 9 }, { wch: 11 }, { wch: 11 }, { wch: 6 }, { wch: 7 }, { wch: 10 }, { wch: 10 }, { wch: 9 }, { wch: 10 }, { wch: 12 }, { wch: 9 }, { wch: 24 }, { wch: 9 }, { wch: 9 }, { wch: 30 }];
+                vanSheet['!cols'] = [{ wch: 25 }, { wch: 9 }, { wch: 11 }, { wch: 11 }, { wch: 6 }, { wch: 7 }, { wch: 10 }, { wch: 10 }, { wch: 9 }, { wch: 10 }, { wch: 12 }, { wch: 9 }, { wch: 24 }, { wch: 8 }, { wch: 10 }, { wch: 40 }, { wch: 11 }, { wch: 10 }, { wch: 9 }, { wch: 9 }, { wch: 30 }];
                 styleHeaderRow(vanSheet, 0, vanguardData[0].length);
                 XLSX.utils.book_append_sheet(wb, vanSheet, 'Vanguard_Fires');
             }
@@ -10820,7 +10864,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 const st = Animator.getState();
                 Animator.close();
                 Animator.open({ layers: st.layers, speed: st.speed, t: st.tISO,
-                                paused: !st.playing,
+                                paused: !st.playing, highlight: st.highlight,
                                 // null, not undefined: un-focusing must reopen
                                 // UNSCOPED, and undefined is the animator's cue
                                 // to guess a subject (autoFocusAOI) — which
@@ -15305,19 +15349,22 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
         // through "auto → shapes → fast → grid → points → paths" would make the
         // common case (change one thing) take five taps, and on a phone a cycle
         // button gives no way to see what the other states even are.
+        // `patrol` and `fires` (fireGrid) each choose their rendering by zoom
+        // (anim.js CHIPS, 2026-09-15); the menu offers what the chip row does.
         const ANIM_ROW_LAYERS = {
-            pixels:      ['effortGrid', 'effortPts'],
-            fires:       ['fireGrid', 'firePts', 'trajs'],
+            pixels:      ['patrol'],
+            fires:       ['fireGrid', 'trajs'],
             deforest:    ['deforest'],
             settlements: ['settlements']
         };
         const ANIM_MODE_LABEL = {
-            fireGrid: 'grid', firePts: 'points', trajs: 'paths',
-            effortGrid: 'grid', effortPts: 'circles',
+            fireGrid: 'fires', firePts: 'points', trajs: 'paths',
+            effortGrid: 'grid', effortPts: 'circles', patrol: 'patrol',
             deforest: 'dots', settlements: 'dots'
         };
         const ANIM_MODE_DESC = {
-            fireGrid: 'Heat field over a 0.1° grid — every detection in the window, summed and cooled over time',
+            fireGrid: 'Every detection in the window as a heat field, summed and cooled over time — the detections themselves once zoomed in',
+            patrol: 'Patrol effort — a heat field zoomed out, circles like the live map zoomed in; cools over 90 days',
             firePts:  'Individual VIIRS detections, one dot each',
             trajs:    'Fire paths — trajectories building at true dated speed, then ashing out',
             effortGrid: 'Patrol effort as grid pixels',
@@ -25131,6 +25178,7 @@ ${starredItems.narratives.map(n => {
                 params.set('anim_t', st.tISO);
                 if (st.aoi) params.set('anim_aoi', st.aoi);
                 if (!st.playing) params.set('anim_paused', '1');
+                if (st.highlight) params.set('anim_hl', '1');
                 // An open download menu, and which entry it points at. Same
                 // contract as aoi_menu_item: a hint the recipient clicks, never
                 // an export that starts itself.
@@ -25303,6 +25351,7 @@ ${starredItems.narratives.map(n => {
                 t: params.get('anim_t') || undefined,
                 aoi: params.get('anim_aoi') || undefined,
                 paused: params.get('anim_paused') === '1',
+                highlight: params.get('anim_hl') === '1',
                 exportItem: params.get('anim_export') || undefined
             };
         }
