@@ -170,8 +170,8 @@
             '<span class="fs-wi"><span class="fs-w fs-w-thin"></span>thin = unsure</span>' +
             '<span class="fs-wi"><span class="fs-w fs-w-dash"></span>dashed = a day not seen</span>' +
             '<span class="fs-wi"><span class="fs-w fs-w-ash"></span>season caught up</span>' +
-            '<span class="fs-wi"><span class="fs-w fs-w-arrow"></span>arrows = direction of travel (zoomed in)</span>' +
-            (kfShown() ? '<span class="fs-wi"><span class="fs-w fs-w-head"></span>large arrowhead at the end = still moving (points its heading)</span>' : '') + '</div>';
+            '<span class="fs-wi"><span class="fs-w fs-w-arrow"></span>chevrons = direction of travel (zoomed in)</span>' +
+            (kfShown() ? '<span class="fs-wi"><span class="fs-w fs-w-head"></span>large chevron at the end = still moving (points its heading)</span>' : '') + '</div>';
         var how = kfShown()
             ? '<div class="fs-ramp-how">Chains are born only ahead of the front and followed by a Kalman filter into the arriving season (seed-ahead tracker)' +
               (van && van.trackers && van.trackers.groups ? '; ' + van.trackers.groups + ' in view are plain chains where that has not run yet' : '') + '.</div>'
@@ -265,9 +265,9 @@
                 paint: Object.assign({}, vanPaint, { 'line-dasharray': [3, 1.4] })
             });
             // Direction. A chain has a day order, so at the zoom where it is
-            // a route rather than a stroke it carries arrowheads along it —
+            // a route rather than a stroke it carries chevrons along it —
             // the same SDF glyph the LOD trajectories use (globe.html
-            // makeArrowheadSDF), in the segment's own colour: lead ramp while
+            // makeChevronSDF), in the segment's own colour: lead ramp while
             // ahead, ash after. Hidden below z7, where they would only be
             // texture. Not a tip target: the line underneath answers.
             if (map.hasImage && map.hasImage('arrow-right')) {
@@ -285,13 +285,13 @@
                     paint: {
                         'icon-color': ['get', 'color'],
                         'icon-opacity': ['case', ['==', ['get', 'part'], 'after'], 0.45, ['coalesce', ['get', 'alpha'], 0.95]],
-                        'icon-halo-color': 'rgba(8,10,16,0.85)', 'icon-halo-width': 0.8
+                        'icon-halo-color': 'rgba(8,10,16,0.8)', 'icon-halo-width': 0.6
                     }
                 });
             }
             // The live head: a chain whose last sighting is within the gap
             // budget of the newest data we hold is still moving. It is drawn
-            // as a LARGER arrowhead at the chain's end, turned to the filter's
+            // as a LARGER chevron at the chain's end, turned to the filter's
             // heading, over a soft lead-coloured glow — an arrow at the end
             // of a line can only be the line's head, where a dot read as one
             // more point feature next to settlements and deforestation.
@@ -312,7 +312,7 @@
                         'icon-rotation-alignment': 'map', 'icon-pitch-alignment': 'map',
                         'icon-allow-overlap': true, 'icon-ignore-placement': true
                     },
-                    paint: { 'icon-color': ['get', 'color'], 'icon-opacity': 0.97, 'icon-halo-color': 'rgba(8,10,16,0.95)', 'icon-halo-width': 1.4 }
+                    paint: { 'icon-color': ['get', 'color'], 'icon-opacity': 0.97, 'icon-halo-color': 'rgba(8,10,16,0.95)', 'icon-halo-width': 1.1 }
                 });
             } else {
                 map.addLayer({
