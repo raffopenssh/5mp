@@ -23,6 +23,12 @@ API: `POST /api/shortlink {url,title?,kind?,slug?,guest?,days?,patrol?,lock_date
 `POST /api/shortlink/{slug}/rename {slug}`; `DELETE /api/shortlink/{slug}`;
 `GET /api/shortlinks` → `{groups:[{ref,label,env,mine,links:[…]}],guest_ttl_days}`.
 
+URL params that name an area: `?aoi=<id>[&aoi_sections=]` opens the AOI popup
+(only if visible); `?park=<id>[&sections=]` (2026-09-15) is its park
+counterpart — flies to the park via the cached `/api/areas` and opens its popup
+(`?popup=` opens without moving). `?park_focus=`/`?aoi_focus=` set focus
+*scope*, not the camera. `?lat/lng/z` on the same link outrank all of them.
+
 ## ⚠️ A link never carries the password (2026-08-12)
 
 `buildShareUrl()` defaulted to `includePwd = true`. So the first thing every
