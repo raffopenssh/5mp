@@ -51,16 +51,48 @@
     const GIF_MAX_FRAMES = 160;    // size ceiling; duration is preserved by delay
 
     let A = null; // active animator state
+    let openSeq = 0; // open() generation, see Animator.open
 
     const LAYERS = {
-        fireGrid:    { label: 'fire grid',     color: '#ef4444', title: 'Aggregated fire heatmap (0.1° grid)' },
+        fireGrid:    { label: 'fires',         color: '#ef4444', title: 'Every detection in the window as a heat field \u2014 the detections themselves once zoomed in' },
         firePts:     { label: 'fire points',   color: '#ff7043', title: 'Individual VIIRS detections (high zoom)' },
-        trajs:       { label: 'fire paths',    color: '#fda668', title: 'Fire movement trajectories (build up, then ashen out)' },
+        trajs:       { label: 'paths',         color: '#fda668', title: 'Fire paths \u2014 trajectories build at true dated speed, then ashen out' },
         effortGrid:  { label: 'patrol grid',   color: '#4ade80', title: 'Aggregated patrol effort (0.1° grid pixels)' },
         effortPts:   { label: 'patrol circles', color: '#86efac', title: 'Patrol effort circles (like the live map) — age and ashen over 90d' },
         deforest:    { label: 'deforest',      color: '#a855f7', title: 'Deforestation \u2014 new clearings flash purple, older ones grey out over years (never vanish)' },
         settlements: { label: 'settlements',   color: '#fbbf24', title: 'Settlements (static context)' }
     };
+    // THE CHIP ROW IS NOT THE LAYER TABLE (2026-09-15). Seven data layers had
+    // become seven chips plus two Season switches hidden in a stats-panel
+    // menu, and the animation obeyed those hidden switches without saying
+    // so. The row now says everything the animation does, in as few words
+    // as it can, and nothing twice:
+    //   * `firePts` is not a chip. fireGrid already swaps itself for the
+    //     detections when the view is close enough (asPoints), so a second
+    //     chip forcing the same rendering was a duplicate switch. The name
+    //     survives for share links (aliased to fireGrid in open()).
+    //   * `patrol` is ONE chip for effortGrid/effortPts: the zoom chooses
+    //     the rendering, as it does for fires. The legend menu keeps the
+    //     explicit grid/circles choice for whoever wants it.
+    //   * `front` and `vanguard` are the Season overlay's own switches
+    //     (fireseason.js owns the state; this is a second place to reach
+    //     it, like the legend). The animator DRAWS both — the front up to
+    //     the playhead, the vanguard chains in lead colour — so a row that
+    //     did not offer them was lying about what it animates.
+    //   * `highlight` is not a layer but a way of looking: it dims the
+    //     surfaces (heat fields, static sprites) so what is happening AT
+    //     the playhead stands out of a cluttered dry season.
+    const CHIPS = {
+        fireGrid: LAYERS.fireGrid,
+        trajs:    LAYERS.trajs,
+        front:    { label: 'front',    color: '#fb923c', title: 'Season front \u2014 dashed isochrones every 5 days, drawn as the playhead reaches them' },
+        vanguard: { label: 'vanguard', color: '#fde047', title: 'Vanguard fires \u2014 chains that began 10\u201360 days ahead of the season front, in lead colour (turns on paths)' },
+        patrol:   { label: 'patrol',   color: '#4ade80', title: 'Patrol effort \u2014 a heat field zoomed out, circles like the live map zoomed in; cools over 90 days' },
+        deforest: LAYERS.deforest,
+        settlements: LAYERS.settlements
+    };
+    const CHIP_ORDER = ['fireGrid', 'trajs', 'front', 'vanguard', 'patrol', 'deforest', 'settlements'];
+    const HIGHLIGHT_TITLE = 'Highlight what is happening now \u2014 dims the heat fields and static context so live fire paths, fresh clearings and patrol stand out';
     // 'turb' (turbidity plume + mining sites) removed 2026-08-06 --
     // docs/MINING_FINDINGS_2026-08.md §10. The turbidity endpoint is disabled, so
     // there is nothing to animate. Remaining turb branches below are inert.
@@ -79,6 +111,31 @@
     // animator neither hides nor duplicates it. The snapshotPinned() statics
     // and the D.infra draw branch are gone with it.
     const LAYER_ORDER = ['fireGrid', 'firePts', 'trajs', 'effortGrid', 'effortPts', 'deforest', 'settlements'];
+    // Which patrol rendering the view deserves, same rule as the fires'
+    // initial choice in open(): circles when a 0.1° cell is big on screen.
+    function patrolLayerForView() { return patrolLayerForViewBbox((A && A.fetchBbox) || activeBbox().bbox); }
+    function patrolLayerForViewBbox(bb) {
+        const hiZoom = map.getZoom() >= POINTS_ZOOM && bboxArea(bb) <= POINTS_MAX_AREA;
+        return hiZoom ? 'effortPts' : 'effortGrid';
+    }
+    // The chip that speaks for a data layer (patrol has two layers, one chip).
+    function chipFor(name) {
+        const c = name === 'effortGrid' || name === 'effortPts' ? 'patrol' : name === 'firePts' ? 'fireGrid' : name;
+        return document.querySelector(`.anim-chip[data-layer="${c}"]`);
+    }
+    function seasonRefusal() {
+        const fm = window.FireSeason && FireSeason.meta && FireSeason.meta();
+        return (fm && fm.status && !fm.season) ? fm.status : null;
+    }
+    // A chip's on/off: data layers read A.on, the two composites read what
+    // they compose, the Season pair read their owner.
+    function chipOn(name) {
+        if (!A) return false;
+        if (name === 'patrol') return !!(A.on.effortGrid || A.on.effortPts);
+        if (name === 'front') return !!(window.FireSeason && FireSeason.frontOn());
+        if (name === 'vanguard') return !!(window.FireSeason && FireSeason.vanguardOn());
+        return !!A.on[name];
+    }
 
     function getPwdSafe() { return (typeof getPwd === 'function' ? getPwd() : '') || ''; }
     function toast(msg, type, opts) { if (typeof showToast === 'function') showToast(msg, type || 'info', opts); }
@@ -197,6 +254,15 @@
     .anim-chip.unavailable { opacity: .38; cursor: not-allowed; }
     .anim-chip.unavailable:hover { border-color: rgba(255,255,255,0.15); color: #999; }
     .anim-chip.hidden { display: none; }
+    /* The way-of-looking chip: same size as its neighbours, set apart by a
+       gutter and a half-disc mark instead of a status dot, so it does not read
+       as an eighth layer. On, it is white — it is about all the colours. */
+    .anim-chip-mode { margin-left: auto; }
+    .anim-chip-mode > i { border-radius: 50%; background: transparent !important;
+        border: 1.5px solid currentColor; box-sizing: border-box; width: 8px; height: 8px;
+        background-image: linear-gradient(90deg, currentColor 50%, transparent 50%) !important; opacity: .7; }
+    .anim-chip-mode.on { color: #fff; border-color: rgba(255,255,255,0.45); background: rgba(255,255,255,0.14); }
+    .anim-chip-mode.on > i { opacity: 1; box-shadow: none; }
 
     /* playhead + progress inside the slider track */
     #anim-progress { position: absolute; height: 100%; background: rgba(255,255,255,0.35); border-radius: 3px;
@@ -685,7 +751,7 @@
         // `is-loading` (not `loading`) — the same class, and the same three
         // dots, a pinned layer chip uses in globe.css. One vocabulary for one
         // kind of wait.
-        const chip = document.querySelector(`.anim-chip[data-layer="${name}"]`);
+        const chip = chipFor(name);
         if (chip) setChipLoading(chip, true);
         A.loading[name] = loadLayer(name).catch(e => {
             A.on[name] = false;
@@ -1625,6 +1691,12 @@
         const D = A.data, on = A.on;
         const step = (D.fireGrid && D.fireGrid.step) || chooseStep((A.t1 - A.t0) / DAY);
         const bMs = bucketMs(step);
+        // HIGHLIGHT dims the SURFACES — heat fields and the static/settled
+        // sprites — and leaves every dated event at full ink, so the eye goes
+        // to what is happening at the playhead. It is a way of looking, not a
+        // layer: nothing is removed, and the hover probe still answers for
+        // everything drawn.
+        const dim = A.highlight ? 0.3 : 1;
 
         // Clip to the selection, if there is one. Two shapes:
         //   * a drawn bbox  -> rectangle (what this always did)
@@ -1705,7 +1777,9 @@
         // trajectories stay additive — they are sparse, and that is what makes
         // a cluster of them glow.
         if (on.fireGrid && D.fireGrid && !D.fireGrid.asPoints) {
+            ctx.globalAlpha = dim;
             drawHeatField(ctx, D.fireGrid, t, proj, w, h, bMs);
+            ctx.globalAlpha = 1;
         }
 
         // --- settlements (static) ---
@@ -1716,7 +1790,7 @@
         // when the map moves, so a play-through composites one bitmap.
         if (on.settlements && D.settlements) {
             const sprite = settlementSprite(D.settlements, proj, w, h);
-            if (sprite) ctx.drawImage(sprite, 0, 0, w, h);
+            if (sprite) { ctx.globalAlpha = dim; ctx.drawImage(sprite, 0, 0, w, h); ctx.globalAlpha = 1; }
         }
 
         // --- deforestation (accumulate + flash) ---
@@ -1731,7 +1805,7 @@
             const nowIdx = upperBound(arr, t);
             const settledIdx = upperBound(arr, t - DEFOREST_FLASH_DAYS * DAY);
             const sprite = deforestSprite(arr, settledIdx, t, proj, w, h, zoom);
-            if (sprite) ctx.drawImage(sprite, 0, 0, w, h);
+            if (sprite) { ctx.globalAlpha = dim; ctx.drawImage(sprite, 0, 0, w, h); ctx.globalAlpha = 1; }
             for (let i = settledIdx; i < nowIdx; i++) {
                 const d = arr[i];
                 const p = proj(d.lon, d.lat);
@@ -1768,7 +1842,9 @@
                 E.tauMs = EFFORT_FADE_DAYS / 3 * DAY;
                 E.alphaCap = 0.78;
             }
+            ctx.globalAlpha = dim;
             drawHeatField(ctx, E, t, proj, w, h, bMs);
+            ctx.globalAlpha = 1;
         }
 
         // --- patrol circles: exact replica of the live pixel stack, animated ---
@@ -1864,7 +1940,10 @@
         ctx.globalCompositeOperation = 'source-over';
 
         // --- fire trajectories: build up one-by-one, then ashen out (red → grey → gone) ---
-        if (on.trajs && D.trajs) {
+        // Vanguard on, paths off: the chains are still drawn — they are the
+        // `vanguard` chip's own picture, the plain trajectories are not.
+        const vanOnly = !on.trajs && !!(window.FireSeason && FireSeason.vanguardOn());
+        if ((on.trajs || vanOnly) && D.trajs) {
             // Project each group's points once per view transform, not once per
             // frame: at 800 groups x ~30 points that was ~24k projections at
             // 60 fps, and the geometry does not depend on t — only how much of
@@ -1889,6 +1968,7 @@
             for (const g of D.trajs) {
                 if (g._off || g.t0 > t) continue;
                 if (vanOn0 ? g._hideWhenVan : g._van) continue;
+                if (vanOnly && !g.vanguard) continue;
                 if (t > g.t1 && (t - g.t1) >= TRAJ_FADE_DAYS * DAY) continue;
                 nLive++;
             }
@@ -1906,6 +1986,7 @@
                 if (g.t0 > t) continue;
                 if (g._off) continue;
                 if (vanOn ? g._hideWhenVan : g._van) continue;   // one population, drawn once
+                if (vanOnly && !g.vanguard) continue;
                 let alpha, ash;
                 if (t <= g.t1) {
                     alpha = inkA; ash = 0;
@@ -2287,10 +2368,11 @@
         // vertex test refuses a path the cursor is sitting exactly on top of.
         // Segments are pre-projected (projectTrajs) and bucketed into every
         // cell they cross (trajIndex), so a hover touches a handful of cells.
-        if (on.trajs && D.trajs) {
+        const probeVanOn = !!(window.FireSeason && FireSeason.vanguardOn());
+        const probeVanOnly = !on.trajs && probeVanOn;
+        if ((on.trajs || probeVanOnly) && D.trajs) {
             projectTrajs(D.trajs, proj, w, h);
             const ti = trajIndex(D.trajs, w, h);
-            const probeVanOn = !!(window.FireSeason && FireSeason.vanguardOn());
             const c0 = Math.floor((pt.x + 64 - rad) / IDX_CELL), c1 = Math.floor((pt.x + 64 + rad) / IDX_CELL);
             const r0 = Math.floor((pt.y + 64 - rad) / IDX_CELL), r1 = Math.floor((pt.y + 64 + rad) / IDX_CELL);
             const seen = new Set();
@@ -2301,6 +2383,7 @@
                         const g = D.trajs[gk];
                         if (g.t0 > t) continue;
                         if (probeVanOn ? g._hideWhenVan : g._van) continue;   // not drawn → not a feature
+                        if (probeVanOnly && !g.vanguard) continue;
                         // AN ASHED PATH IS STILL A FEATURE. It is drawn (grey,
                         // thin) for TRAJ_FADE_DAYS after the fire ended, and
                         // "why is that grey line there" is precisely the
@@ -2809,18 +2892,21 @@
 
     function updateChips() {
         if (!A) return;
-        const refusal = firePtsRefusal();
-        document.querySelectorAll('.anim-chip').forEach(chip => {
+        const seasonNo = seasonRefusal();
+        document.querySelectorAll('.anim-chip[data-layer]').forEach(chip => {
             const name = chip.dataset.layer;
-            chip.classList.toggle('on', !!A.on[name]);
+            const on = chipOn(name);
+            chip.classList.toggle('on', on);
             const dot = chip.querySelector('i');
-            if (dot) dot.style.background = A.on[name] ? LAYERS[name].color : '#555';
-            if (A.on[name]) chip.style.color = '';
-            if (name === 'firePts') {
-                chip.classList.toggle('unavailable', !!refusal && !A.on[name]);
-                chip.title = refusal || LAYERS.firePts.title;
+            if (dot) dot.style.background = on ? CHIPS[name].color : '#555';
+            if (on) chip.style.color = '';
+            if (name === 'front' || name === 'vanguard') {
+                chip.classList.toggle('unavailable', !!seasonNo && !on);
+                chip.title = seasonNo && !on ? seasonNo + ' here \u2014 ' + CHIPS[name].title : CHIPS[name].title;
             }
         });
+        const hl = document.getElementById('anim-highlight');
+        if (hl) { hl.classList.toggle('on', !!A.highlight); hl.setAttribute('aria-pressed', A.highlight ? 'true' : 'false'); }
         announceLayers();
     }
 
@@ -2841,7 +2927,7 @@
         } catch (e) {}
     }
     function chipUnavailable(name) {
-        const chip = document.querySelector(`.anim-chip[data-layer="${name}"]`);
+        const chip = chipFor(name);
         return !!(chip && chip.classList.contains('unavailable'));
     }
 
@@ -2859,22 +2945,67 @@
 
     async function toggleChip(name, want) {
         if (!A) return;
-        if (want !== undefined && !!A.on[name] === !!want) return;
-        // A refused layer answers the click with its reason instead of doing
+        // Legacy names a share link or the legend may still use.
+        if (name === 'firePts') name = 'fireGrid';
+        if (name === 'effortGrid' || name === 'effortPts') return toggleDataLayer(name, want);
+        const cur = chipOn(name);
+        if (want !== undefined && cur === !!want) return;
+        // A refused chip answers the click with its reason instead of doing
         // nothing: the chip is dimmed, so a click on it is a question.
-        if (!A.on[name]) {
-            const chip = document.querySelector(`.anim-chip[data-layer="${name}"]`);
+        if (!cur) {
+            const chip = chipFor(name);
             if (chip && chip.classList.contains('unavailable')) {
                 toast(chip.title, 'info', { key: 'anim-chip-' + name });
                 return;
             }
         }
+        if (name === 'front' || name === 'vanguard') {
+            if (!window.FireSeason) return;
+            // fireseason.js owns the state and emits onChange, which redraws
+            // us and re-reads the chips (see wireSeason). Vanguard chains are
+            // drawn from the trajectories, so they need them loaded — but not
+            // shown: draw() keeps the vanguard population when paths are off.
+            if (name === 'front') FireSeason.setFront(!cur); else FireSeason.setVanguard(!cur);
+            if (name === 'vanguard' && !cur && A.data.trajs === undefined) await ensureLayer('trajs');
+            updateChips();
+            draw(A.t);
+            if (typeof updateShareURL === 'function') updateShareURL();
+            return;
+        }
+        if (name === 'patrol') {
+            if (cur) { A.on.effortGrid = false; A.on.effortPts = false; return finishToggle(); }
+            return toggleDataLayer(patrolLayerForView(), true);
+        }
+        return toggleDataLayer(name, want);
+    }
+    async function toggleDataLayer(name, want) {
+        if (want !== undefined && !!A.on[name] === !!want) return;
         A.on[name] = !A.on[name];
+        if (A.on[name]) { updateChips(); syncBaseEffortVisibility(); await ensureLayer(name); }
+        return finishToggle();
+    }
+    function finishToggle() {
+        if (!A) return;
         updateChips();
         syncBaseEffortVisibility();
-        if (A.on[name]) await ensureLayer(name);
         draw(A.t);
         if (typeof updateShareURL === 'function') updateShareURL();
+    }
+    function toggleHighlight(want) {
+        if (!A) return;
+        const next = want === undefined ? !A.highlight : !!want;
+        if (next === !!A.highlight) return;
+        A.highlight = next;
+        finishToggle();
+    }
+    // The Season overlay can be switched from the legend menu or the Map
+    // strip while we run; the chips must follow, and the canvas must redraw
+    // because the vanguard chains are ours to draw.
+    let seasonWired = false;
+    function wireSeason() {
+        if (seasonWired || !window.FireSeason) return;
+        seasonWired = true;
+        FireSeason.onChange(() => { if (A) { updateChips(); draw(A.t); } });
     }
 
     // ---------- UI build / teardown ----------
@@ -2902,40 +3033,49 @@
         });
 
         // chips row
+        wireSeason();
         const chips = document.createElement('div');
         chips.id = 'anim-chips';
-        for (const name of LAYER_ORDER) {
-            const def = LAYERS[name];
-            const chip = document.createElement('span');
+        for (const name of CHIP_ORDER) {
+            const def = CHIPS[name];
+            const chip = document.createElement('button');
+            chip.type = 'button';
             chip.className = 'anim-chip';
             chip.dataset.layer = name;
             chip.title = def.title;
+            chip.setAttribute('aria-pressed', 'false');
             chip.innerHTML = `<i></i>${def.label}`;
             chip.onclick = () => toggleChip(name);
-            // hide chips with no possible data
-            if (name === 'turb') {
-                const snap = A.snapPreview || (A.snapPreview = snapshotPinned());
-                if (!(snap.turb.plume.length || snap.turb.mines.length)) chip.classList.add('unavailable');
-            }
-            // patrol layers: hidden entirely when the pixels toggle is off
-            // (unless a share link explicitly enabled them). When the account
-            // owns no patrol data at all they are shown but inert -- patrol
-            // effort is scoped to the account it was uploaded in
-            // (srv/tenant.go), so animating it here would only ever play an
-            // empty layer, and a silently empty layer reads as a broken
-            // feature rather than as "not yours".
-            if (name === 'effortGrid' || name === 'effortPts') {
+            // patrol: hidden entirely when the pixels toggle is off (unless a
+            // share link explicitly enabled it). When the account owns no
+            // patrol data at all it is shown but inert -- patrol effort is
+            // scoped to the account it was uploaded in (srv/tenant.go), so
+            // animating it here would only ever play an empty layer, and a
+            // silently empty layer reads as a broken feature rather than as
+            // "not yours".
+            if (name === 'patrol') {
                 if (window.HAS_PATROL === false) {
                     chip.classList.add('unavailable');
                     chip.title = window.IS_GUEST
                         ? 'Patrol effort was not included in this shared link'
-                        : 'No patrol tracks in this account — patrol effort is only visible to the account it was uploaded in';
-                } else if (!(window.viewLayers && window.viewLayers.pixels) && !A.on[name]) {
+                        : 'No patrol tracks in this account \u2014 patrol effort is only visible to the account it was uploaded in';
+                } else if (!(window.viewLayers && window.viewLayers.pixels) && !chipOn('patrol')) {
                     chip.classList.add('hidden');
                 }
             }
             chips.appendChild(chip);
         }
+        // The way of looking, set apart from the layers: it is about all of
+        // them, not one of them.
+        const hl = document.createElement('button');
+        hl.type = 'button';
+        hl.id = 'anim-highlight';
+        hl.className = 'anim-chip anim-chip-mode';
+        hl.title = HIGHLIGHT_TITLE;
+        hl.setAttribute('aria-pressed', 'false');
+        hl.innerHTML = '<i></i>highlight';
+        hl.onclick = () => toggleHighlight();
+        chips.appendChild(hl);
         header.appendChild(chips);
         // staggered reveal (same behaviour as date preset tags)
         Array.from(chips.children).filter(c => !c.classList.contains('hidden')).forEach((chip, i) => {
@@ -3191,6 +3331,13 @@
         async open(opts) {
             opts = opts || {};
             if (A) this.close();
+            // open() awaits (autoFocusAOI, an AOI geometry fetch) before it
+            // builds anything, so two calls in flight — a focus change and a
+            // date change in the same second — both reached buildUI() and the
+            // footer showed every control twice. The later call wins; an
+            // earlier one that wakes to find itself superseded stops.
+            const seq = (openSeq = (openSeq || 0) + 1);
+            const stale = () => openSeq !== seq;
             injectCSS();
             const fromISO = (typeof dateFrom !== 'undefined' && dateFrom) ? dateFrom : '2023-01-01';
             const toISO = (typeof dateTo !== 'undefined' && dateTo) ? dateTo : fmtDate(Date.now());
@@ -3213,6 +3360,7 @@
             let autoFocused = null;
             if (!wantAOI && opts.aoi === undefined) {
                 wantAOI = autoFocused = await autoFocusAOI(bbox);
+                if (stale()) return;
             }
             if (wantAOI) {
                 // window._aois is filled by an async loadAOIs(); a share link
@@ -3228,6 +3376,7 @@
                             + encodeURIComponent(getPwdSafe()));
                         if (r.ok) { const j = await r.json(); a = j.aoi || j; }
                     } catch (e) { /* fall through: animate as bbox */ }
+                    if (stale()) return;
                 }
                 if (a && a.geometry) {
                     clipGeom = a.geometry;
@@ -3250,6 +3399,7 @@
                     'info', { key: 'anim-auto-focus' });
             }
 
+            if (stale() || A) return;
             const { canvas, resize } = makeCanvas();
             A = {
                 canvas, ctx: canvas.getContext('2d'), resize,
@@ -3264,7 +3414,8 @@
                 trunc: {},
                 clipGeom, aoiID,
                 t0: parseD(fromISO), t1: parseD(toISO) + DAY - 1,
-                playing: false, speed: 1, raf: null, recording: false
+                playing: false, speed: 1, raf: null, recording: false,
+                highlight: !!opts.highlight
             };
             A.t = A.t0;
             const spanDays = (A.t1 - A.t0) / DAY;
@@ -3279,8 +3430,11 @@
                 // uploaded in, srv/tenant.go). Drop them rather than switching
                 // them on: an "on" chip that draws nothing is the same wrong
                 // answer as an empty layer.
-                initial = opts.layers.filter(n => LAYERS[n] &&
-                    !(window.HAS_PATROL === false && (n === 'effortGrid' || n === 'effortPts')));
+                initial = opts.layers
+                    .map(n => n === 'firePts' ? 'fireGrid' : n)          // one fire chip since 2026-09-15
+                    .map(n => n === 'patrol' ? patrolLayerForViewBbox(bbox) : n)
+                    .filter((n, i, arr) => LAYERS[n] && arr.indexOf(n) === i &&
+                        !(window.HAS_PATROL === false && (n === 'effortGrid' || n === 'effortPts')));
             } else {
                 initial = [];
                 const v = window.viewLayers || {};
@@ -3295,6 +3449,10 @@
             initial.forEach(n => { A.on[n] = true; });
 
             buildUI();
+            // The vanguard chip may already be on (fireseason.js state) while
+            // paths are not: its chains come from the trajectories, so load
+            // them without switching paths on.
+            if (!A.on.trajs && window.FireSeason && FireSeason.vanguardOn()) ensureLayer('trajs');
             syncBaseEffortVisibility();
 
             // load initial layers with progress modal
@@ -3377,12 +3535,13 @@
         isOpen() { return !!A; },
         /** Which animation renderings are on right now. */
         layers() { return A ? LAYER_ORDER.filter(n => A.on[n]) : []; },
-        isLayerOn(name) { return !!(A && A.on[name]); },
+        isLayerOn(name) { return chipOn(name); },
         /** Why a rendering is refused here, or null. Used by the legend menu. */
         layerRefusal(name) {
             if (!A) return null;
             if (name === 'firePts') return firePtsRefusal();
-            const chip = document.querySelector(`.anim-chip[data-layer="${name}"]`);
+            if (name === 'front' || name === 'vanguard') return chipOn(name) ? null : seasonRefusal();
+            const chip = chipFor(name);
             if (chip && chip.classList.contains('unavailable')) return chip.title || 'Not available here';
             return null;
         },
@@ -3392,6 +3551,8 @@
          * control. `on` omitted toggles.
          */
         setLayer(name, on) { return toggleChip(name, on); },
+        highlight() { return !!(A && A.highlight); },
+        setHighlight(on) { return toggleHighlight(on); },
         toggle() { A ? this.close() : this.open(); },
         // Called by the time slider whenever the date window changes
         // (preset tap like td/90d, slider drag, or precise date edit).
@@ -3408,9 +3569,10 @@
                 const layers = LAYER_ORDER.filter(n => A.on[n]);
                 const paused = !A.playing;
                 const aoi = A.aoiID || null;
+                const highlight = !!A.highlight;
                 this.close();
                 // speed intentionally recomputed for the new span
-                this.open({ layers, paused, aoi });
+                this.open({ layers, paused, aoi, highlight });
             }, 350);
         },
         getState() {
@@ -3421,6 +3583,7 @@
                 tISO: fmtDate(A.t),
                 playing: A.playing,
                 aoi: A.aoiID || null,
+                highlight: !!A.highlight,
                 // Which download the open menu is pointing at, so the share
                 // link reproduces what is on screen — an open menu IS on
                 // screen, and it is the one piece of UI whose whole purpose is
