@@ -481,6 +481,9 @@ def run_fire_v5(conn, aoi, ds, deadline, budget):
         # Single writer of fire_narrative_cache (AGENTS.md) — always shelled
         # out to, never reimplemented here.
         ["python3", "scripts/precompute_narratives_v5.py", "--aoi", aid],
+        # Kalman seed-ahead vanguard chains, all seasons (docs/agents/fire.md).
+        # Last, so a cursor mid-run before this step was added still resumes.
+        ["python3", "scripts/fire_vanguard_kf.py", "--area", aid, "--quiet"],
     ]
     cur = load_cursor(ds) or {"i": 0}
     while cur["i"] < len(steps):

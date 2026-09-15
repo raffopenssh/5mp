@@ -19,6 +19,7 @@ gets more of them (measured 2026-09-14: 749 real vs 1,117 null at L=10).
 
     python3 scripts/eval_fire_vanguard.py --area XSA_Study_Area --season 2024/25
     python3 scripts/eval_fire_vanguard.py --area XSA_Study_Area --season 2025/26 --leads 10 --seeds 2
+    python3 scripts/eval_fire_vanguard.py --area XSA_Study_Area --season 2024/25 --tracker kf --seeds 2
 """
 import argparse
 import json
@@ -42,10 +43,20 @@ SHOW = ["groups", "links", "fires_per_grp", "mean_days", "p90_days", "med_dist_k
 
 
 def _run(job):
-    tag, pid, geom, fires = job
+    tag, pid, geom, fires, kf = job
     import rebuild_fire_trajectories_v5 as B
     B.AOI_IDS.add(pid)  # harmless for parks (only consulted for AOI ids)
     t = time.time()
+    if kf:
+        # The Kalman seed-ahead tracker (fire_vanguard_kf.py): leads are
+        # re-measured on the (possibly shuffled) dates, exactly as the
+        # tracker would see them on that data.
+        import fire_vanguard_kf as K
+        fs = FF.FrontSet(sqlite3.connect(f"file:{DB_PATH}?mode=ro", uri=True), pid)
+        K.build_groups.frontset = fs
+        lead = fs.lead_array([f["longitude"] for f in fires], [f["latitude"] for f in fires],
+                             [f["acq_date"] for f in fires])
+        return tag, K.build_groups(fires, lead, pid, geom), time.time() - t
     return tag, B.process_park_fires(fires, pid, geom), time.time() - t
 
 
@@ -56,8 +67,12 @@ def main():
     ap.add_argument("--leads", default="5,10,15", help="lead thresholds in days; 'all' = whole field control")
     ap.add_argument("--seeds", type=int, default=1)
     ap.add_argument("--json")
+    ap.add_argument("--tracker", choices=["groups", "kf"], default="groups",
+                    help="groups = production tracker on detections with lead >= L; "
+                         "kf = fire_vanguard_kf seed-ahead Kalman tracker on the whole season "
+                         "(its own field/seed rules; --leads ignored)")
     a = ap.parse_args()
-    leads = [None if x == "all" else float(x) for x in a.leads.split(",")]
+    leads = [None] if a.tracker == "kf" else [None if x == "all" else float(x) for x in a.leads.split(",")]
 
     conn = sqlite3.connect(f"file:{DB_PATH}?mode=ro", uri=True)
     fs = FF.FrontSet(conn, a.area)
@@ -81,15 +96,26 @@ def main():
 
     out = {}
     for L in leads:
-        sel = fires if L is None else [f for f, v in zip(fires, lead) if v >= L]
-        tag = "all" if L is None else f"L>={L:g}"
+        if a.tracker == "kf":
+            # The prototype's null (van3.py SEED): the FIELD is fixed by the
+            # real leads, its days are shuffled, and the seed rule then reads
+            # the lead of the shuffled day. Shuffling the whole season instead
+            # moves in-season fires onto pre-front days and the null simply
+            # gets a bigger field (more seeds) -- not a test of linking.
+            import fire_vanguard_kf as K
+            sel = [f for f, v in zip(fires, lead) if v >= K.FIELD_LEAD_MIN]
+            tag = "kf"
+        else:
+            sel = fires if L is None else [f for f, v in zip(fires, lead) if v >= L]
+            tag = "all" if L is None else f"L>={L:g}"
         print(f"\n[{tag}] {len(sel):,} detections ({100 * len(sel) / max(1, len(fires)):.1f}%)", flush=True)
         if len(sel) < 500:
             print("  too few detections")
             continue
-        jobs = [("real", a.area, pk["geometry"], sel)]
+        kf = a.tracker == "kf"
+        jobs = [("real", a.area, pk["geometry"], sel, kf)]
         for s in range(a.seeds):
-            jobs.append((f"null{s}", a.area, pk["geometry"], shuffle_days(sel, 7 + s)))
+            jobs.append((f"null{s}", a.area, pk["geometry"], shuffle_days(sel, 7 + s), kf))
         with Pool(min(len(jobs), 3)) as pool:
             res = {t: (g, dt) for t, g, dt in pool.imap_unordered(_run, jobs)}
         real = metrics(res["real"][0])
