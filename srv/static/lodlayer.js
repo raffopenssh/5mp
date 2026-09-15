@@ -208,12 +208,16 @@
                     id: L.arrow, type: 'symbol', source: L.src,
                     filter: ['==', ['geometry-type'], 'LineString'],
                     layout: {
-                        'symbol-placement': 'line', 'symbol-spacing': 100,
-                        'icon-image': 'arrow-right', 'icon-size': 0.5, 'icon-rotate': 90,
+                        'symbol-placement': 'line',
+                        'symbol-spacing': ['interpolate', ['linear'], ['zoom'], 6, 70, 10, 110],
+                        'icon-image': 'arrow-right', 'icon-rotate': 90,
+                        // small at the zoom where a chain is a stroke, larger where it is a route
+                        'icon-size': ['interpolate', ['linear'], ['zoom'], 6, 0.36, 9, 0.5, 12, 0.66],
                         'icon-rotation-alignment': 'map',
                         'icon-allow-overlap': true, 'icon-ignore-placement': true
                     },
-                    paint: { 'icon-color': color, 'icon-opacity': 0 }
+                    // SDF glyph (globe.html makeArrowheadSDF): line colour, dark rim
+                    paint: { 'icon-color': color, 'icon-opacity': 0, 'icon-halo-color': 'rgba(8,10,16,0.85)', 'icon-halo-width': 0.9 }
                 });
             }
             if (!map.getLayer(L.point)) {
