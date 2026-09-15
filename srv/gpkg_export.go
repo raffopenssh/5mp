@@ -136,6 +136,7 @@ func (s *Server) buildAreaGeoPackage(path string, o gpkgExportOpts) ([]gpkgLayer
 		{"fire trajectories", func() error { return s.gpkgFireTrajectories(w, o) }},
 		{"fire vanguard", func() error { return s.gpkgFireVanguard(w, o) }},
 		{"fire season front", func() error { return s.gpkgFireSeasonFront(w, o) }},
+		{"fire early-burn ground", func() error { return s.gpkgFireEarlyGround(w, o) }},
 		{"fire detections", func() error { return s.gpkgFireDetections(w, o, boundary) }},
 		{"deforestation", func() error { return s.gpkgDeforestation(w, o) }},
 		{"settlements", func() error { return s.gpkgSettlements(w, o) }},

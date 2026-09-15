@@ -4429,6 +4429,7 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 	// red. Same palette as the map (srv/static/fireseason.js).
 	kml.WriteString("<Style id=\"fire-vanguard\"><IconStyle><color>ff47e0fd</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/firedept.png</href></Icon></IconStyle><LineStyle><color>ff47e0fd</color><width>3</width></LineStyle></Style>\n")
 	kml.WriteString("<Style id=\"season-front\"><LineStyle><color>b33c92fb</color><width>1</width></LineStyle></Style>\n")
+	kml.WriteString(earlyGroundKMLStyles)
 	kml.WriteString("<Style id=\"settlement\"><IconStyle><color>ff00d7ff</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/homegardenbusiness.png</href></Icon></IconStyle><PolyStyle><color>5000d7ff</color></PolyStyle></Style>\n")
 	kml.WriteString("<Style id=\"deforestation\"><IconStyle><color>ffff00ff</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/triangle.png</href></Icon></IconStyle><PolyStyle><color>50ff00ff</color></PolyStyle></Style>\n")
 	kml.WriteString("<Style id=\"road\"><LineStyle><color>ff60a5fa</color><width>2</width></LineStyle></Style>\n")
@@ -4741,6 +4742,7 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 	// by default except the latest. Same features the app and the
 	// GeoPackage draw (gpkgFireSeasonFront).
 	s.writeSeasonFrontKML(&kml, parkID, fromDate, toDate)
+	s.writeEarlyGroundKML(&kml, parkID)
 
 	// Roads folder (from feature_geometries) - only create if data exists.
 	// These are patrol-learned roads (client data) — omitted in the test tenant.
@@ -5708,6 +5710,7 @@ func (s *Server) HandleAPIMergedKML(w http.ResponseWriter, r *http.Request) {
 	// red. Same palette as the map (srv/static/fireseason.js).
 	kml.WriteString("<Style id=\"fire-vanguard\"><IconStyle><color>ff47e0fd</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/firedept.png</href></Icon></IconStyle><LineStyle><color>ff47e0fd</color><width>3</width></LineStyle></Style>\n")
 	kml.WriteString("<Style id=\"season-front\"><LineStyle><color>b33c92fb</color><width>1</width></LineStyle></Style>\n")
+	kml.WriteString(earlyGroundKMLStyles)
 	kml.WriteString("<Style id=\"settlement\"><IconStyle><color>ff00d7ff</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/homegardenbusiness.png</href></Icon></IconStyle><PolyStyle><color>5000d7ff</color></PolyStyle></Style>\n")
 	kml.WriteString("<Style id=\"deforestation\"><IconStyle><color>ffff00ff</color><Icon><href>http://maps.google.com/mapfiles/kml/shapes/triangle.png</href></Icon></IconStyle><PolyStyle><color>50ff00ff</color></PolyStyle></Style>\n")
 	kml.WriteString("<Style id=\"road\"><LineStyle><color>ff60a5fa</color><width>2</width></LineStyle></Style>\n")
@@ -5784,6 +5787,7 @@ func (s *Server) HandleAPIMergedKML(w http.ResponseWriter, r *http.Request) {
 		kml.WriteString("</Folder>\n")
 		s.writeVanguardKML(&kml, parkID, fromDate, toDate, 500)
 		s.writeSeasonFrontKML(&kml, parkID, fromDate, toDate)
+	s.writeEarlyGroundKML(&kml, parkID)
 
 		// Settlements
 		kml.WriteString("<Folder><name>Settlements</name>\n")

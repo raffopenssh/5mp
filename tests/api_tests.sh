@@ -1478,16 +1478,42 @@ test_api "fire_season_report_leads" "/api/fire-season?area=CAF_Chinko&at=2025-02
     '(.vanguard_top | length) == 5 and ([.vanguard_top[] | .tier | length > 0] | all) and ([.vanguard_top[] | .lead_start >= 10] | all) and (.vanguard_top | map(.ahead_km)) == (.vanguard_top | map(.ahead_km) | sort | reverse) and ([.vanguard_tiers[]] | add) == .vanguard_in_window and (.words | test("^Fire season 2024/25")) and ((.vanguard_in_window|tostring) as $n | .words | contains($n + " fire chains"))'
 test_api "fire_season_no_leads_by_default" "/api/fire-season?area=CAF_Chinko&at=2025-02-28&summary=1" "200" \
     '.vanguard_top == null and .vanguard_tiers == null and (.words | type == "string")'
+# Early-burn ground (fire_early_ground, docs/agents/fire.md "Early-burn
+# ground"): rides along only with early=1; an area with >= 3 complete
+# seasons has cells and every basis field; the season count is the writer's
+# (never typed); a cell's early <= held and its median lead >= the rule's
+# threshold; this season's first-burn column aligns with the cells.
+test_api "fire_early_ground_basis" "/api/fire-season?area=CAF_Chinko&at=2024-12-01&early=1&summary=1" "200" \
+    '.early_ground.status == "ok" and .early_ground.rule == "recur" and .early_ground.ahead_days == 15 and .early_ground.min_share == 0.4 and .early_ground.seasons_held >= 3 and (.early_ground.seasons | length) == .early_ground.seasons_held and .early_ground.count > 0 and (.early_ground.cells | length) == .early_ground.count and .early_ground.km2 > 0 and (.early_ground.chance_cells | type == "number") and ([.early_ground.cells[] | .[2] >= 2 and .[2] <= .[3] and .[3] <= 8 and .[4] >= 15] | all) and .early_ground.first_burn_season == "2024/25" and (.early_ground.first_burn | length) == .early_ground.count'
+test_api "fire_early_ground_off_by_default" "/api/fire-season?area=CAF_Chinko&at=2024-12-01&summary=1" "200" '.early_ground == null'
+# An area with < 2 complete seasons is an explicit 'insufficient' with its
+# reason and no cells, not an empty success (invariant 1).
+test_api "fire_early_ground_insufficient" "/api/fire-season?area=NAM_Skeleton_Coast&at=2025-12-01&early=1&summary=1" "200" \
+    '.early_ground.status == "insufficient" and .early_ground.cells == null and (.early_ground.reason | contains("the rule needs 2")) and .early_ground.seasons_held < 2'
+# XSA holds two complete seasons: the wire says 2, and every cell is "2 of 2".
+if [ -n "${AOI_OWNER_PWD:-}" ]; then
+    printf "%-50s" "fire_early_ground_xsa_two_seasons"
+    body=$(curl -s -m 60 "${BASE_URL}/api/fire-season?area=XSA_Study_Area&at=2025-12-01&early=1&summary=1&pwd=${AOI_OWNER_PWD}")
+    if [ "$(echo "$body" | jq -r '.early_ground.status == "ok" and .early_ground.seasons_held == 2 and .early_ground.count > 0 and ([.early_ground.cells[] | .[2] == 2 and .[3] == 2] | all)')" = "true" ]; then
+        green "✓"; PASSED=$((PASSED + 1))
+    else
+        red "FAIL ($(echo "$body" | jq -c '.early_ground | {status, seasons_held, count}'))"; FAILED=$((FAILED + 1)); ERRORS+=("fire_early_ground_xsa_two_seasons")
+    fi
+else
+    yellow "fire_early_ground_xsa_two_seasons: SKIP (AOI_OWNER_PWD unset)"
+fi
 # The season curve rides with the contours too (the animator reads the
 # front's position at its playhead off it; the server's front_reached_pct
 # is at the window's end only): step 5 d, monotone, ends at 100.
 test_api "fire_season_curve_with_contours" "/api/fire-season?area=CAF_Chinko&at=2024-12-01" "200" \
     '.front_curve.step_days == 5 and (.front_curve.front | length) > 30 and (.front_curve.front | . == sort) and (.front_curve.front | last) == 100'
-# Season speed map: one PNG at the grid's cells, fixed km/day legend, stats
+# Season speed map: one packed uint8 per grid cell (0 = no front, 1..255 =
+# log-spaced km/day levels; the client paints it through CellField, the same
+# renderer as the early-burn ground), fixed km/day legend, stats
 # that match the numpy probe (Chinko 2024/25: median 5.1, p10 1.6, p90 24.3
 # — scripts/fire_vanguard/eikonal.py's method). Same season rule as the front.
 test_api "fire_season_speed_png" "/api/fire-season-speed?area=CAF_Chinko&at=2025-01-15" "200" \
-    '.season == "2024/25" and (.png | startswith("data:image/png;base64,")) and (.bbox | length) == 4 and .stats.cells == 18770 and .stats.median_km_d == 5.1 and (.legend | length) == 5 and (.legend[0].km_d) == 1 and (.palette | length) == 256 and (.palette | unique | length) == 256 and .grid.nx == 137'
+    '.season == "2024/25" and (.values | type == "string") and (.values | length) == ((.grid.nx * .grid.ny + 2) / 3 | floor) * 4 and .encoding.type == "uint8" and .encoding.none == 0 and .levels.n == 255 and (.bbox | length) == 4 and .stats.cells == 18770 and .stats.median_km_d == 5.1 and (.legend | length) == 5 and (.legend[0].km_d) == 1 and .grid.nx == 137'
 test_api "fire_season_speed_by_point" "/api/fire-season-speed?lon=24.0&lat=6.4&at=2025-01-15" "200" '.area == "CAF_Chinko"'
 test_api "fire_season_speed_no_area" "/api/fire-season-speed?lon=0&lat=0" "200" '.area == null and (.status | test("no area"))'
 test_api "fire_season_speed_invisible_aoi_404" "/api/fire-season-speed?area=aoi_nobody_000000000000" "404" ''
