@@ -9,9 +9,20 @@
  *             land that burns had burned, within ~60 km". Drawn as thin lines
  *             every 5 days, labelled every 15, coloured early→late.
  *   SPEED     how fast the front travels, km/day — the gradient of the
- *             front as an arrival-time surface (1/|∇T|), drawn as one PNG
- *             at the grid's 2.5 km cells (/api/fire-season-speed). Where the
- *             season runs and where it stalls. Descriptive, not a forecast.
+ *             front as an arrival-time surface (1/|∇T|), one byte per 2.5 km
+ *             cell (/api/fire-season-speed), drawn as squares by CellField.
+ *             Where the season runs and where it stalls. Descriptive, not a
+ *             forecast.
+ *   ENTRY     "traditional early-burn ground": the cells whose FIRST burn of
+ *             the season came >= 15 d before the local front in >= 40 % of
+ *             the complete seasons held (and in at least 2) — where the
+ *             season ENTERS, year after year; the leading edge the first
+ *             flights go to. Cyan squares graded by the share of seasons,
+ *             fading once the slider is well past the usual front here (its
+ *             question is entry, not the season). Same grid, same renderer
+ *             as the speed map (srv/static/cellfield.js); rows of
+ *             fire_early_ground, written by scripts/fire_front.py, chosen
+ *             over the early-season density by eval_fire_baseline.py.
  *   VANGUARD  the fire chains that BEGAN 10–60 days ahead of that front —
  *             the one population where the tracker's day-to-day links are
  *             measurably better than chance (link skill ≈0.5; in season ≈0).
@@ -45,14 +56,16 @@
         VAN_DIM_LYR = 'fireseason-van-dim', VAN_GAP_LYR = 'fireseason-van-gap',
         VAN_HEAD_LYR = 'fireseason-van-head', VAN_HEAD_HALO = 'fireseason-van-head-halo',
         VAN_ARROW_LYR = 'fireseason-van-arrow',
-        SPEED_SRC = 'fireseason-speed-src', SPEED_LYR = 'fireseason-speed';
+        SPEED_LYR = 'fireseason-speed', ENTRY_LYR = 'fireseason-entry';
 
     var map = null;
-    var st = { front: false, van: false, speed: false };   // the season shown follows the time slider
+    var st = { front: false, van: false, speed: false, entry: false };   // the season shown follows the time slider
     var front = null;      // last /api/fire-season answer
     var van = null;        // last /api/fire-vanguard answer
     var speed = null;      // last /api/fire-season-speed answer
-    var frontKey = '', vanKey = '', speedKey = '';
+    var entry = null;      // last /api/fire-season?early=1 answer (its early_ground + season_start)
+    var frontKey = '', vanKey = '', speedKey = '', entryKey = '';
+    var speedField = null, entryField = null;   // CellField renderers (one grid, two fields)
     var moveTimer = null, inflight = 0;
     var listeners = [];
 
@@ -63,7 +76,7 @@
         var t = (typeof dateTo !== 'undefined' && dateTo) ? dateTo : '';
         return { from: f, to: t };
     }
-    function anyOn() { return st.front || st.van || st.speed; }
+    function anyOn() { return st.front || st.van || st.speed || st.entry; }
     function emit() { listeners.forEach(function (fn) { try { fn(); } catch (e) { /* listener's problem */ } }); }
     function refreshStrip() {
         if (window.MapLegend && MapLegend.refresh) MapLegend.refresh();
@@ -196,15 +209,14 @@
     /* ── layers ─────────────────────────────────────────────────────────── */
     function ensureLayers() {
         if (!map || !map.getStyle()) return;
-        if (!map.getSource(SPEED_SRC)) {
-            // A raster field under every line: added first so the contours
-            // and chains draw over it. Coordinates are replaced per answer.
-            map.addSource(SPEED_SRC, { type: 'image', url: BLANK_PNG,
-                coordinates: [[0, 0.001], [0.001, 0.001], [0.001, 0], [0, 0]] });
-        }
-        if (!map.getLayer(SPEED_LYR)) {
-            map.addLayer({ id: SPEED_LYR, type: 'raster', source: SPEED_SRC,
-                paint: { 'raster-opacity': 0.5, 'raster-resampling': 'linear', 'raster-fade-duration': 0 } });
+        // Two raster fields under every line, added first so the contours
+        // and chains draw over them: the speed map (dense) and the
+        // early-burn ground (sparse squares). One renderer (CellField).
+        if (window.CellField) {
+            if (!speedField) speedField = CellField.create(map, SPEED_LYR, { opacity: 0.5 });
+            speedField.ensure();
+            if (!entryField) entryField = CellField.create(map, ENTRY_LYR, { opacity: 1, minzoom: 4 });
+            entryField.ensure();
         }
         if (!map.getSource(FRONT_SRC)) map.addSource(FRONT_SRC, { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
         if (!map.getSource(VAN_SRC)) map.addSource(VAN_SRC, { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
@@ -347,19 +359,8 @@
         if (!map) return;
         [FRONT_LYR, FRONT_LBL, FRONT_WAVE].forEach(function (id) { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', st.front ? 'visible' : 'none'); });
         [VAN_LYR, VAN_GAP_LYR, VAN_DIM_LYR, VAN_ARROW_LYR, VAN_HEAD_HALO, VAN_HEAD_LYR].forEach(function (id) { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', st.van ? 'visible' : 'none'); });
-        if (map.getLayer(SPEED_LYR)) map.setLayoutProperty(SPEED_LYR, 'visibility', st.speed ? 'visible' : 'none');
-    }
-    // 1×1 transparent PNG: an image source needs a url at creation.
-    var BLANK_PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
-    function setSpeedImage(j) {
-        var src = map && map.getSource(SPEED_SRC);
-        if (!src) return;
-        if (!j || !j.png || !j.bbox) {
-            src.updateImage({ url: BLANK_PNG, coordinates: [[0, 0.001], [0.001, 0.001], [0.001, 0], [0, 0]] });
-            return;
-        }
-        var b = j.bbox;   // [w, s, e, n] → MapLibre wants TL, TR, BR, BL
-        src.updateImage({ url: j.png, coordinates: [[b[0], b[3]], [b[2], b[3]], [b[2], b[1]], [b[0], b[1]]] });
+        if (speedField) speedField.setVisible(st.speed);
+        if (entryField) entryField.setVisible(st.entry);
     }
     function setData(src, features) {
         var s = map && map.getSource(src);
@@ -460,48 +461,45 @@
         var c = map.getCenter(), b = speed.bbox;
         return c.lng >= b[0] && c.lng <= b[2] && c.lat >= b[1] && c.lat <= b[3];
     }
-    // The PNG, decoded once into pixels, and the palette inverted: a click
-    // on the field answers "how fast does the season travel HERE" from the
-    // very image the map draws (one payload, one truth). Grid row 0 is the
-    // south edge; the image was written top-down, so row = ny-1-iy.
-    var speedPix = null;   // {data, w, h, bbox, byColor: {rgbKey: level}, lv}
-    function decodeSpeed(j) {
-        speedPix = null;
-        if (!j || !j.png || !j.palette || !j.grid) return;
-        var img = new Image();
-        img.onload = function () {
-            try {
-                var cv = document.createElement('canvas');
-                cv.width = img.width; cv.height = img.height;
-                var ctx = cv.getContext('2d', { willReadFrequently: true });
-                ctx.drawImage(img, 0, 0);
-                var byColor = {};
-                j.palette.forEach(function (hx, i) { byColor[parseInt(hx.slice(1), 16)] = i; });
-                speedPix = { data: ctx.getImageData(0, 0, cv.width, cv.height).data, w: cv.width, h: cv.height,
-                    bbox: j.bbox, grid: j.grid, byColor: byColor, lv: j.levels, season: j.season, area: j.area };
-            } catch (e) { speedPix = null; }
-        };
-        img.src = j.png;
+    // The field, decoded once into a byte per cell (0 = no front, b = level
+    // b−1 on the server's log ramp) and coloured here from the SAME stops
+    // the legend prints; a click reads the byte under the pointer back.
+    var speedStops = null;
+    function speedRGB(kmd) {
+        var lg = speedStops || [];
+        if (!lg.length) return [245, 158, 11];
+        function rgb(h) { return [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]; }
+        if (kmd <= lg[0].km_d) return rgb(lg[0].color);
+        for (var i = 1; i < lg.length; i++) {
+            if (kmd <= lg[i].km_d) {
+                var a = lg[i - 1], b = lg[i], t = (Math.log(kmd) - Math.log(a.km_d)) / (Math.log(b.km_d) - Math.log(a.km_d));
+                var ca = rgb(a.color), cb = rgb(b.color);
+                return [ca[0] + (cb[0] - ca[0]) * t, ca[1] + (cb[1] - ca[1]) * t, ca[2] + (cb[2] - ca[2]) * t];
+            }
+        }
+        return rgb(lg[lg.length - 1].color);
+    }
+    function speedOfByte(b) {
+        var lv = speed && speed.levels;
+        if (!lv || !b) return null;
+        var lo = Math.log(lv.km_d_min), hi = Math.log(lv.km_d_max);
+        return Math.exp(lo + (hi - lo) * (b - 1) / (lv.n - 1));
+    }
+    function drawSpeed(j) {
+        if (!speedField) return;
+        if (!j || !j.values || !j.grid) { speedField.clear(); return; }
+        speedStops = j.legend || null;
+        speedField.setGrid(j.grid);
+        speedField.setDense(j.values);
+        speedField.render(function (c) { var k = speedRGB(speedOfByte(c.v)); return [k[0], k[1], k[2], 255]; }, { scale: 1, key: 'speed|' + j.area + '|' + j.season });
     }
     function speedAt(lng, lat) {
-        var P = speedPix;
-        if (!P) return null;
-        var b = P.bbox;
-        if (lng < b[0] || lng > b[2] || lat < b[1] || lat > b[3]) return null;
-        // The grid's own arithmetic ((v - origin) / res, floor from the SOUTH
-        // edge, then flip), so a point on a cell edge lands in the cell the
-        // server put it in; scaling by the bbox instead differed in the last
-        // bit and moved an edge point one row.
-        var G = P.grid;
-        var ix = Math.max(0, Math.min(P.w - 1, Math.floor((lng - G.x0) / G.res)));
-        var iy = P.h - 1 - Math.max(0, Math.min(P.h - 1, Math.floor((lat - G.y0) / G.res)));
-        var o = (iy * P.w + ix) * 4;
-        if (P.data[o + 3] === 0) return null;   // no front here this season
-        var lvl = P.byColor[(P.data[o] << 16) | (P.data[o + 1] << 8) | P.data[o + 2]];
-        if (lvl == null) return null;
-        var lo = Math.log(P.lv.km_d_min), hi = Math.log(P.lv.km_d_max);
-        return { kmd: Math.exp(lo + (hi - lo) * lvl / (P.lv.n - 1)), level: lvl, season: P.season, area: P.area,
-            atMax: lvl === P.lv.n - 1, atMin: lvl === 0 };
+        if (!speedField || !speed || !speed.levels) return null;
+        var h = speedField.at(lng, lat);
+        if (!h) return null;   // no front here this season
+        var lv = speed.levels, lvl = h.v - 1;
+        return { kmd: speedOfByte(h.v), level: lvl, season: speed.season, area: speed.area,
+            atMax: lvl === lv.n - 1, atMin: lvl === 0 };
     }
     function speedWords(kmd) {
         return kmd < 2 ? 'the season stalls here' : kmd < 6 ? 'the season walks here' : kmd < 15 ? 'the season runs here' : 'the season sweeps through here';
@@ -540,8 +538,7 @@
             inflight--;
             speedKey = key;
             speed = j || { status: 'request failed' };
-            setSpeedImage(j);
-            decodeSpeed(j);
+            drawSpeed(j);
             ensureSpeedProbe();
             refreshStrip();
         }).catch(function () { inflight--; emit(); });
@@ -557,6 +554,162 @@
         var ticks = '<div class="fs-ramp-ticks">' + lg.map(function (st) { return '<span>' + st.km_d + '</span>'; }).join('') + '</div>';
         var stt = speed.stats ? '<div class="fs-ramp-width">here: median ' + speed.stats.median_km_d + ' km/d (p10 ' + speed.stats.p10_km_d + ', p90 ' + speed.stats.p90_km_d + ')</div>' : '';
         return '<div class="fs-legend' + (opts.cls ? ' ' + opts.cls : '') + '"><div class="fs-ramp-cap">Season speed, km/day (how fast the front travels; log scale)</div>' + bar + ticks + stt + '</div>';
+    }
+
+
+    /* ── entry ground ───────────────────────────────────────────────────
+     * The early-burn ground rides /api/fire-season (early=1, summary=1):
+     * same area rule, same season (the one the window ends in), one fetch
+     * per area+window. Cells arrive compact ([ix, iy, early, held, days
+     * ahead, month, usual front dos] + this season's first-burn day per
+     * cell) and are drawn as squares by CellField. Nothing is computed
+     * here but colour. */
+    var ENTRY_RGB = [34, 211, 238];          // cyan-400: a family no other layer uses
+    var ENTRY_FLASH = [236, 254, 255];       // the season's first detection lands: a brief light
+    var ENTRY_FADE_DAYS = 60;                // full weight to the usual front, ~30 % once 60 d past it
+    function entryURL() {
+        var f = focusId(), c = map.getCenter();
+        var u = '/api/fire-season?pwd=' + pwd() + '&summary=1&early=1' + (f ? '&area=' + encodeURIComponent(f)
+            : '&lon=' + c.lng.toFixed(3) + '&lat=' + c.lat.toFixed(3));
+        var d = dates();
+        if (d.to) u += '&at=' + d.to;
+        return u;
+    }
+    function entryInView() {
+        if (!entry || !entry.early_ground || !entry.early_ground.bbox) return false;
+        var c = map.getCenter(), b = entry.early_ground.bbox;
+        return c.lng >= b[0] && c.lng <= b[2] && c.lat >= b[1] && c.lat <= b[3];
+    }
+    // share of seasons → alpha: the rule's floor (40 %) is faint, 70 %+
+    // solid; "2 of 2" is solid too (it is the most a two-season area can say,
+    // and the tip prints the 2).
+    function entryAlpha(share) { return 0.35 + 0.5 * Math.max(0, Math.min(1, (share - 0.4) / 0.3)); }
+    // time: dos = day of season at the slider's end / playhead; c.uf = the
+    // usual front's day at this cell. Entry ground is a statement about
+    // where the season BEGINS, so once the season is long past here it
+    // steps back (never off: the pattern stays legible under the fires).
+    function entryTimeMul(c, dos) {
+        if (dos == null || c.uf == null || c.uf < 0) return 1;
+        var past = dos - c.uf;
+        if (past <= 0) return 1;
+        return 1 - 0.7 * Math.min(1, past / ENTRY_FADE_DAYS);
+    }
+    // zoom bands: below the zoom where a cell is a few pixels, thin by
+    // confidence (highest share first) so the pattern survives, like the
+    // front's labels do — never drop the layer.
+    function entryMinShare(z) { return z < 5.5 ? 0.7 : z < 7 ? 0.5 : 0; }
+    function entryDos(t) {
+        // day of season for a playhead / window end against the season the
+        // answer names; null when unknown
+        if (!entry || !entry.season_start) return null;
+        var t0 = Date.parse(entry.season_start + 'T00:00:00Z');
+        return isFinite(t0) ? (t - t0) / DAY_MS : null;
+    }
+    var entryRenderT = null;   // the instant the squares are drawn for (window end, or the playhead)
+    function drawEntry(t) {
+        if (!entryField || !map) return;
+        var eg = entry && entry.early_ground;
+        if (!eg || eg.status !== 'ok' || !eg.cells) { entryField.clear(); return; }
+        var z = map.getZoom(), minShare = entryMinShare(z), hi = z >= 8;
+        entryRenderT = t;
+        var dos = t == null ? null : entryDos(t);
+        var key = ['entry', entry.area, entry.season, minShare, hi ? 1 : 0, z < 7 ? 'h' : '', dos == null ? 'x' : Math.round(dos * 4)].join('|');
+        entryField.render(function (c) {
+            if (c.share < minShare) return null;
+            var a = entryAlpha(c.share) * entryTimeMul(c, dos);
+            // this season's first detection lands here: light up for 4 days
+            if (dos != null && c.fb != null && dos >= c.fb && dos - c.fb <= 4) {
+                var k = 1 - (dos - c.fb) / 4;
+                return [ENTRY_RGB[0] + (ENTRY_FLASH[0] - ENTRY_RGB[0]) * k, ENTRY_RGB[1] + (ENTRY_FLASH[1] - ENTRY_RGB[1]) * k,
+                    ENTRY_RGB[2] + (ENTRY_FLASH[2] - ENTRY_RGB[2]) * k, 255 * Math.max(a, 0.6 + 0.4 * k)];
+            }
+            return [ENTRY_RGB[0], ENTRY_RGB[1], ENTRY_RGB[2], 255 * a];
+        }, { scale: hi ? 6 : 1, rim: hi ? { alpha: 0.55, dark: 0.45 } : null, halo: z < 7 ? 0.4 : 0, key: key });
+    }
+    function windowEndMs() { var d = dates(); return d.to ? Date.parse(d.to + 'T00:00:00Z') : null; }
+    function loadEntry(force) {
+        if (!st.entry || !map) return Promise.resolve();
+        var key = (focusId() || 'pt') + '|@' + dates().to;
+        if (!force && key === entryKey && entry && (focusId() || entryInView())) return Promise.resolve();
+        inflight++; emit();
+        return fetch(entryURL()).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+            inflight--;
+            entryKey = key;
+            entry = j || { status: 'request failed' };
+            var eg = entry.early_ground;
+            if (eg && eg.status === 'ok' && eg.cells && entryField) {
+                var fb = eg.first_burn || null;
+                var cells = eg.cells.map(function (c, i) {
+                    return { ix: c[0], iy: c[1], early: c[2], held: c[3], share: c[3] ? c[2] / c[3] : 0, days: c[4], month: c[5],
+                        uf: c[6], fb: fb ? fb[i] : null };
+                });
+                entryField.setGrid(eg.grid);
+                entryField.setSparse(cells);
+                entryField.invalidate();
+                drawEntry(animT !== null ? animT : windowEndMs());
+            } else if (entryField) entryField.clear();
+            ensureEntryProbe();
+            refreshStrip();
+        }).catch(function () { inflight--; emit(); });
+    }
+    var MONTHS = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    function entryTipHTML(c) {
+        var eg = entry.early_ground;
+        var h = '<div class="maptip-title" style="color:#67e8f9">Early-burn ground</div>';
+        h += '<div class="maptip-body">Herds have entered here early in <b>' + c.early + ' of ' + c.held + ' seasons</b>' +
+            (c.days > 0 ? ' \u00b7 typically ~<b>' + c.days + ' days</b> before the local front' : '') +
+            (c.month ? ' \u00b7 usually <b>' + MONTHS[c.month] + '</b>' : '') + '</div>';
+        if (c.fb != null && eg.first_burn_season) {
+            var d0 = Date.parse(entry.season_start + 'T00:00:00Z'), d = new Date(d0 + c.fb * DAY_MS).toISOString().slice(0, 10);
+            var before = (c.uf != null && c.uf >= 0) ? c.uf - c.fb : null;
+            h += '<div class="maptip-meta">Season ' + esc(eg.first_burn_season) + ': first detection here ' + fmtDate(d) +
+                (before != null ? (before > 0 ? ' \u2014 ' + Math.round(before) + ' d before the usual front' : ' \u2014 ' + Math.round(-before) + ' d after the usual front') : '') + '</div>';
+        }
+        h += '<div class="maptip-dim">Rule: first burn of the season \u2265 ' + eg.ahead_days + ' d ahead of the front in \u2265 ' + Math.round(eg.min_share * 100) +
+            ' % of seasons (at least ' + eg.min_early + '); ' + eg.count.toLocaleString() + ' cells over ' + eg.seasons_held + ' seasons, ~' +
+            Math.round(eg.chance_cells || 0) + ' expected by chance. Where the season usually enters \u2014 not this year\u2019s herds (the vanguard chains are that).</div>';
+        return h;
+    }
+    var ENTRY_PROBE = 'fireseason-entry-probe', entryProbeOn = false;
+    function ensureEntryProbe() {
+        if (entryProbeOn || !window.MapTip || !MapTip.registerProbe) return;
+        // Sparse squares, so a hover tip is fine (there is "off it" to move
+        // to); ranked under every line and pin (priority −5) and above the
+        // speed backdrop (−10): a chain on top of a square is the answer.
+        MapTip.registerProbe(ENTRY_PROBE, {
+            priority: -5, tabLabel: 'Early-burn ground', tabColor: '#22d3ee',
+            probe: function (e) {
+                if (!st.entry || !entryField || !e || !e.lngLat) return null;
+                var c = entryField.at(e.lngLat.lng, e.lngLat.lat);
+                if (!c || c.share < entryMinShare(map.getZoom())) return null;
+                return { html: entryTipHTML(c), properties: { early: c.early, held: c.held, days_ahead: c.days, month: c.month }, dist: 0 };
+            }
+        });
+        entryProbeOn = true;
+    }
+    // Legend: a graded square (the rule's floor faint → solid), and the
+    // area's count beside its chance — every number from the answer.
+    function entryLegendHTML(opts) {
+        opts = opts || {};
+        var eg = entry && entry.early_ground;
+        var sw = '<span class="fs-entry-sw"><i style="opacity:' + entryAlpha(0.4) + '"></i><i style="opacity:' + entryAlpha(0.55) + '"></i><i style="opacity:' + entryAlpha(0.7) + '"></i></span>';
+        var cap = '<div class="fs-ramp-cap">' + sw + ' Early-burn ground: squares = 2.5 km cells that burn ahead of their surroundings season after season (faint 40 % of seasons \u2192 solid 70 %+)</div>';
+        var line = '';
+        if (eg && eg.status === 'ok') {
+            line = '<div class="fs-ramp-width">' + eg.count.toLocaleString() + ' cells (' + Math.round(eg.km2).toLocaleString() + ' km\u00b2) early in \u2265 ' +
+                Math.round(eg.min_share * 100) + ' % of ' + eg.seasons_held + ' seasons \u00b7 ~' + Math.round(eg.chance_cells || 0) + ' expected by chance \u00b7 fades once the slider is past the usual front here</div>';
+        } else if (eg && eg.status) {
+            line = '<div class="fs-ramp-width">' + esc(eg.reason || eg.status) + '</div>';
+        }
+        return '<div class="fs-legend' + (opts.cls ? ' ' + opts.cls : '') + '">' + cap + line + '</div>';
+    }
+    // The strip's count: cells / km² of early-burn ground in the viewport
+    // (the same cells the squares draw; the thinning band is honoured).
+    function entryInViewCount() {
+        if (!entryField || !map || !entry || !entry.early_ground || entry.early_ground.status !== 'ok') return null;
+        var b = map.getBounds(), minShare = entryMinShare(map.getZoom());
+        var cells = entryField.cellsIn([b.getWest(), b.getSouth(), b.getEast(), b.getNorth()]).filter(function (c) { return c.share >= minShare; });
+        return { cells: cells.length, km2: Math.round(cells.length * entryField.cellKm2()), total: entry.early_ground.count, seasons: entry.early_ground.seasons_held };
     }
 
     /* ── vanguard ───────────────────────────────────────────────────────── */
@@ -692,14 +845,19 @@
     function onMove() {
         if (!anyOn()) return;
         clearTimeout(moveTimer);
-        moveTimer = setTimeout(function () { loadFront(false); loadVan(false); loadSpeed(false); }, 350);
+        moveTimer = setTimeout(function () {
+            loadFront(false); loadVan(false); loadSpeed(false);
+            loadEntry(false).then(function () { if (st.entry && animT === null) drawEntry(windowEndMs()); });   // zoom band may have changed
+            if (st.entry) refreshStrip();   // the in-view count
+        }, 350);
     }
     function onDates() {
         if (st.van) { vanKey = ''; loadVan(true); }
         if (st.front) loadFront(false);   // the front follows the window
         if (st.speed) loadSpeed(false);   // so does the speed map (one season per answer)
+        if (st.entry) loadEntry(false).then(function () { if (st.entry && animT === null) drawEntry(windowEndMs()); });   // and the fade follows the window's end
     }
-    function onFocus() { if (anyOn()) { frontKey = ''; speedKey = ''; loadFront(true); loadVan(true); loadSpeed(true); } }
+    function onFocus() { if (anyOn()) { frontKey = ''; speedKey = ''; entryKey = ''; loadFront(true); loadVan(true); loadSpeed(true); loadEntry(true); } }
 
     /* ── animator ───────────────────────────────────────────────────────
      * The animator hands us its playhead (ms). The front is a MapLibre
@@ -762,6 +920,7 @@
         if (t == null) {
             clearTimeout(animTrail);
             if (animMeta) { animMeta = null; emit(); }
+            if (st.entry) drawEntry(windowEndMs());   // back to the slider's end
             if (animDay === null) return;
             animDay = null; animT = null;
             map.setFilter(FRONT_LYR, null);
@@ -783,6 +942,10 @@
         }
         clearTimeout(animTrail);
         animWall = now; animT = t; animDay = new Date(t).toISOString().slice(0, 10);
+        // The ground under the animated fires: full weight until the usual
+        // front arrives at a cell, stepping back after; a cell lights up for
+        // four days when this season's first detection lands in it.
+        if (st.entry) drawEntry(t);
         var ageD = ['/', ['-', t, ['get', 't']], DAY_MS];                    // days since the season reached this line
         var reached = ['<=', ['get', 't'], t];
         map.setFilter(FRONT_LYR, reached);
@@ -811,6 +974,13 @@
         endWords: endWords, kfShown: kfShown,
         speedOn: function () { return st.speed; },
         speedMeta: function () { return speed; },
+        entryOn: function () { return st.entry; },
+        entryMeta: function () { return entry && entry.early_ground ? Object.assign({ area: entry.area, season: entry.season, season_start: entry.season_start }, entry.early_ground) : (entry || null); },
+        entryInView: entryInViewCount,
+        entryLegendHTML: entryLegendHTML,
+        entryAt: function (lng, lat) { return entryField ? entryField.at(lng, lat) : null; },
+        entryRenderedFor: function () { return entryRenderT; },
+        ENTRY_COLOR: '#22d3ee',
         speedAt: speedAt,
         speedLegendHTML: speedLegendHTML,
         // The front as loaded, or — while the animator runs — the same
@@ -838,9 +1008,15 @@
             st.speed = !!want;
             if (!map) return;
             ensureLayers();
-            if (st.speed) loadSpeed(true); else { setSpeedImage(null); speedPix = null; refreshStrip(); }
+            if (st.speed) loadSpeed(true); else { if (speedField) speedField.clear(); refreshStrip(); }
         },
-        off: function () { this.setFront(false); this.setVanguard(false); this.setSpeed(false); },
+        setEntry: function (want) {
+            st.entry = !!want;
+            if (!map) return;
+            ensureLayers();
+            if (st.entry) loadEntry(true); else { if (entryField) entryField.clear(); refreshStrip(); }
+        },
+        off: function () { this.setFront(false); this.setVanguard(false); this.setSpeed(false); this.setEntry(false); },
         animAt: animAt,
         lift: lift,      // lodlayer.js calls it after adding a line layer
         // switchBasemap() rebuilds the style; put the layers back on idle.
@@ -848,13 +1024,15 @@
             if (!anyOn() || !map) return;
             map.once('idle', function () {
                 ensureLayers();
-                frontKey = ''; vanKey = ''; speedKey = '';
-                loadFront(true); loadVan(true); loadSpeed(true);
+                frontKey = ''; vanKey = ''; speedKey = ''; entryKey = '';
+                if (speedField) speedField.invalidate();
+                if (entryField) entryField.invalidate();
+                loadFront(true); loadVan(true); loadSpeed(true); loadEntry(true);
             });
         },
         getShareParams: function () {
             if (!anyOn()) return null;
-            return { season: [st.front ? 'front' : '', st.van ? 'vanguard' : '', st.speed ? 'speed' : ''].filter(Boolean).join(',') };
+            return { season: [st.front ? 'front' : '', st.van ? 'vanguard' : '', st.speed ? 'speed' : '', st.entry ? 'entry' : ''].filter(Boolean).join(',') };
         },
         restoreFromParams: function (params) {
             var v = params.get('season');
@@ -863,6 +1041,7 @@
             if (parts.indexOf('front') >= 0) this.setFront(true);
             if (parts.indexOf('vanguard') >= 0) this.setVanguard(true);
             if (parts.indexOf('speed') >= 0) this.setSpeed(true);
+            if (parts.indexOf('entry') >= 0) this.setEntry(true);
         },
         // The words the strip and the fire tip share; one definition.
         LEAD_DAYS: 10, LEAD_MAX: 60,

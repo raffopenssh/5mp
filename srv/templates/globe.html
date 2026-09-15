@@ -607,6 +607,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                     <li><strong style="color:#f87171">Season front.</strong> For each 2.5 km cell, the day by which a fifth of the land that burns in a season had burned within ~60 km; equal days join into contours every 5 days. The season starts in the area’s quietest month, measured from its own history. <strong>Lead</strong> is how many days before that front a fire burned; live, before this season’s front arrives, we measure against the usual front of past seasons and say so.</li>
                     <li><strong style="color:#fde047">Vanguard: the lines that carry information.</strong> Ahead of the front the field is sparse and the real order wins clearly — about half of all day-to-day links are signal, in every season and area tested. Vanguard chains are built by a dedicated tracker with two rules: a chain may be <em>born</em> only 10–60 days ahead of the front, and once born it is <em>followed</em> with a Kalman filter — the standard tool for tracking a moving object through noisy sightings (radar, particle physics): predict tomorrow’s position and its uncertainty, accept only a patch that fits, update speed and heading — on into the arriving season. This repairs the 43 % of chains the ordinary tracker cut short when the season arrived around them. Against the shuffle (XSA 2024/25): chains 74 km instead of 44, fires in chains over 150 km +61 %. Coasting through cloud was tried and rejected: after two unseen days the next fire is someone else’s. An unseen day is drawn dashed, never guessed. These chains are now built for every park and drawn area, every season since 2018, and refreshed nightly. On the ground this is where people move ahead of the season, burning along the route; the map says “ahead of the season”, not who or why.</li>
                     <li><strong>Reading a vanguard chain.</strong> Colour along its length is lead — white far ahead, yellow at two weeks, orange as the season arrives, ash once it has. Width is the evidence tier. Small chevrons give the direction of travel on every vanguard chain — here the direction is backed by the seed-ahead test above, not by the per-chain score, which a herder chain is expected to fail (its burns are laid ahead and do not touch); a large chevron at the end means it is <em>still moving</em> at the newest data, pointing the filter’s last heading. Its tip says why a chain ended: the season arrived, or the trail was lost (cloud, a fire too small to see, or they stopped). Field staff report herds one to two weeks behind the scouts — their knowledge, not our measurement.</li>
+                    <li><strong style="color:#22d3ee">Early-burn ground</strong> (“entry ground”) — the squares. Some ground burns before its surroundings <em>every</em> year: the routes herds come in on, boundary burns, the rings around villages. For each 2.5 km cell we take the first burn of each season and ask whether it came at least 15 days before the local season front; a cell that did so in at least 40 % of the seasons we hold (and in at least two of them) is drawn as a cyan square, solid where more seasons agree. Chinko: 449 such cells over 8 seasons where chance would give about 10; the XSA has only two complete seasons, so its squares mean “early in both” (881 cells vs ~100 by chance) and the tip says so. This is the map of <strong>where the season enters</strong> — measured on 151 areas, it places the leading edge (fires 10–60 days ahead of the front) better than whole-season fire density does (capture Gini about +0.3 against +0.1 for density in the areas tested; <code>scripts/eval_fire_baseline.py</code>), so it is where to send the first flights. It is <em>not</em> this year’s herds: the vanguard chains are that. The squares fade once the slider is two months past the usual front at a cell, and in the animation a square lights up briefly when the season’s first detection lands in it. Same grid and renderer as the speed map, so the two fields register to the metre.</li>
                     <li><strong style="color:#f59e0b">Season speed</strong> — how fast the front travels, read as 1/|∇T| off the front grid: pale where the season sweeps through (tens of km a day), rust where it stalls. It describes the season shown; it is not a forecast.</li>
                     <li>Lines are rebuilt every night with the same rules for the archive and this morning’s detections; fronts and vanguard chains refresh daily for the season in progress and in rotation for past ones. An area whose front is not built yet says so rather than showing an empty layer.</li>
                 </ul>
@@ -3108,6 +3109,34 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 
                 // Season front / vanguard state (srv/static/fireseason.js):
                 // what is on, what was fetched, what is drawn, and whether the
+                // Early-burn ground (fireseason.js ENTRY / cellfield.js):
+                // state, the answer's basis (seasons held, count, chance),
+                // what the strip counts in view, the chip/legend words, and
+                // the tip text at a cell (probe by lng/lat). ?season=entry.
+                fireEntry(lng, lat) {
+                    const FS = window.FireSeason, m = FS && FS.entryMeta && FS.entryMeta();
+                    const share = new URLSearchParams(buildShareUrl(false).split('?')[1] || '');
+                    const legend = document.querySelector('#stats-map .fs-entry-sw, .mode-menu .fs-entry-sw');
+                    const cell = (FS && FS.entryAt && lng != null) ? FS.entryAt(lng, lat) : null;
+                    let tip = null;
+                    if (cell && window.MapTip && MapTip.probeHTML) tip = MapTip.probeHTML('fireseason-entry-probe', { lngLat: { lng, lat } });
+                    return {
+                        on: !!(FS && FS.entryOn && FS.entryOn()),
+                        drawn: !!(map.getLayer('fireseason-entry') && map.getLayoutProperty('fireseason-entry', 'visibility') === 'visible'),
+                        status: m ? m.status : null, area: m ? m.area : null, season: m ? m.season : null,
+                        seasonsHeld: m ? m.seasons_held : null, count: m ? m.count : null, km2: m ? m.km2 : null,
+                        chanceCells: m ? m.chance_cells : null, reason: m ? m.reason || null : null,
+                        rule: m ? { rule: m.rule, aheadDays: m.ahead_days, minShare: m.min_share, minEarly: m.min_early } : null,
+                        inView: FS && FS.entryInView ? FS.entryInView() : null,
+                        renderedFor: FS && FS.entryRenderedFor ? FS.entryRenderedFor() : null,
+                        cell: cell ? { early: cell.early, held: cell.held, days: cell.days, month: cell.month, fb: cell.fb } : null,
+                        tip,
+                        legendSwatch: !!legend,
+                        share: { season: share.get('season') },
+                        chip: (document.querySelector('#stats-map .ml-chip.fs em') || {}).textContent || null,
+                        animChip: !!document.querySelector('.anim-chip[data-layer="entry"]')
+                    };
+                },
                 // share URL carries it. TEST.fireSeason() after ?season=front,vanguard.
                 fireSeason() {
                     const FS = window.FireSeason, m = FS && FS.meta(), v = FS && FS.vanguard();
@@ -3116,6 +3145,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                         on: !!(FS && FS.isOn()), front: !!(FS && FS.frontOn()), vanguard: !!(FS && FS.vanguardOn()),
                         speed: !!(FS && FS.speedOn()), speedStats: (FS && FS.speedMeta() && FS.speedMeta().stats) || null,
                         drawnSpeed: !!(map.getLayer('fireseason-speed') && map.getLayoutProperty('fireseason-speed', 'visibility') === 'visible'),
+                        entry: !!(FS && FS.entryOn && FS.entryOn()),
                         area: m ? m.area : null, seasonShown: m ? m.season : null,
                         contours: (m && m.contours || []).length, status: m ? m.status : null,
                         vanguardCount: v ? v.count : null, vanguardTotal: v ? v.total : null,
@@ -12288,7 +12318,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
         // Map toggles from inside the accordion (the fire row's Season group,
         // reachable from the place that just explained what they draw).
         function fireSeasonToggle(paId, which) {
-            const on = which === 'front' ? FireSeason.frontOn() : which === 'speed' ? FireSeason.speedOn() : FireSeason.vanguardOn();
+            const on = which === 'front' ? FireSeason.frontOn() : which === 'speed' ? FireSeason.speedOn() : which === 'entry' ? FireSeason.entryOn() : FireSeason.vanguardOn();
             setRowSeason(which, !on);
             refreshFireSeasonBlock(paId);
         }
@@ -12357,7 +12387,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 return wrap(`<div style="font-size: 9px; color: #666;"><i class="icon-waves"></i> Fire season front: ${escapeHtml(st)}</div>`);
             }
             const words = seasonFrontWords(fs, {});
-            const fOn = FireSeason.frontOn(), vOn = FireSeason.vanguardOn(), sOn = FireSeason.speedOn();
+            const fOn = FireSeason.frontOn(), vOn = FireSeason.vanguardOn(), sOn = FireSeason.speedOn(), eOn = !!(FireSeason.entryOn && FireSeason.entryOn());
             const chip = (which, label, color, on, tip) =>
                 `<button class="filter-chip${on ? ' on' : ''}" style="--chip:${color};" data-chip="season-${which}" title="${escapeHtml(tip)}" onclick="event.stopPropagation(); fireSeasonToggle('${paId}', '${which}')">${label}</button>`;
             const nVan = typeof fs.vanguard_in_window === 'number' ? fs.vanguard_in_window : fs.vanguard_groups;
@@ -12371,6 +12401,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                     ${chip('front', 'front', '#fb923c', fOn, (fOn ? 'Hide' : 'Draw') + ' the season front isochrones on the map')}
                     ${chip('vanguard', 'vanguard', '#fde047', vOn, (vOn ? 'Hide' : 'Draw') + ' the vanguard chains on the map, in lead colour')}
                     ${chip('speed', 'speed', '#c2410c', sOn, (sOn ? 'Hide' : 'Draw') + ' the season speed map (km/day the front travels; where it runs, where it stalls)')}
+                    ${chip('entry', 'entry ground', '#22d3ee', eOn, (eOn ? 'Hide' : 'Draw') + ' the early-burn ground: cells that burn ahead of their surroundings season after season — where the season usually enters')}
                 </div>`;
             const spark = fireSeasonSpark(paId, fs);
             const vanLine = `<div style="font-size: 9px; color: #aaa; margin-top: 4px;">
@@ -15456,7 +15487,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
         // (fireseason.js), or null for every other row.
         function seasonRowState(name) {
             if (name !== 'fires' || !window.FireSeason) return null;
-            return { front: FireSeason.frontOn(), van: FireSeason.vanguardOn(), speed: FireSeason.speedOn() };
+            return { front: FireSeason.frontOn(), van: FireSeason.vanguardOn(), speed: FireSeason.speedOn(), entry: !!(FireSeason.entryOn && FireSeason.entryOn()) };
         }
         function rowModeSummary(name, st, anim, season) {
             const parts = [];
@@ -15473,7 +15504,8 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             if (season && season.front) parts.push('front');
             if (season && season.van) parts.push('vanguard');
             if (season && season.speed) parts.push('speed');
-            if (!st && !anim.length && season && (season.front || season.van || season.speed)) cls = 'season';
+            if (season && season.entry) parts.push('entry ground');
+            if (!st && !anim.length && season && (season.front || season.van || season.speed || season.entry)) cls = 'season';
             const label = parts.length === 0 ? 'off'
                         : parts.length <= 2 ? parts.join(' · ')
                         : parts.length + ' modes';
@@ -15651,7 +15683,9 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                  ['vanguard', FireSeason.vanguardOn(), 'Vanguard fires',
                   `Fire chains that began ${FireSeason.LEAD_DAYS}\u2013${FireSeason.LEAD_MAX} days ahead of the season front \u2014 the one population whose day order is measurably real. Bright while ahead, ordinary red once the season caught up.`],
                  ['speed', FireSeason.speedOn(), 'Season speed',
-                  'How fast the front travels, km/day, from the gradient of its arrival-time surface: where the season runs (pale) and where it stalls (rust). A description of the season drawn, not a forecast.']
+                  'How fast the front travels, km/day, from the gradient of its arrival-time surface: where the season runs (pale) and where it stalls (rust). A description of the season drawn, not a forecast.'],
+                 ['entry', !!(FireSeason.entryOn && FireSeason.entryOn()), 'Entry ground',
+                  'Traditional early-burn ground: 2.5 km cells whose first burn came \u2265 15 days before the local front in \u2265 40 % of the seasons held (at least 2) \u2014 where the season usually enters, the leading edge the first flights go to. Cyan squares, solid where more seasons agree; fades once the slider is well past the usual front here. Not this year\u2019s herds \u2014 the vanguard chains are that.']
                 ].forEach(([k, on, label, desc]) => {
                     html += `<button type="button" class="aoi-menu-item mode-opt${on ? ' on' : ''}${refusal && !on ? ' refused' : ''}" `
                           + `role="menuitemcheckbox" aria-checked="${on}" title="${escapeHtml(refusal && !on ? refusal + ' here \u2014 ' + desc : desc)}" `
@@ -15661,6 +15695,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 // The same ramp the map draws (sampled from FireSeason.leadColor).
                 if (FireSeason.legendHTML && (FireSeason.vanguardOn() || !refusal)) html += FireSeason.legendHTML({ cls: 'in-menu' });
                 if (FireSeason.speedOn() && FireSeason.speedLegendHTML) html += FireSeason.speedLegendHTML({ cls: 'in-menu' });
+                if (FireSeason.entryOn && FireSeason.entryOn() && FireSeason.entryLegendHTML) html += FireSeason.entryLegendHTML({ cls: 'in-menu' });
             }
             if (!html) return;
 
@@ -15711,6 +15746,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             if (!window.FireSeason) return;
             if (which === 'front') FireSeason.setFront(on);
             else if (which === 'speed') FireSeason.setSpeed(on);
+            else if (which === 'entry') FireSeason.setEntry(on);
             else FireSeason.setVanguard(on);
             if (window.MapLegend && MapLegend.refresh) MapLegend.refresh();
             if (typeof updateShareURL === 'function') updateShareURL();
@@ -26511,6 +26547,7 @@ ${starredItems.narratives.map(n => {
          own and adds nothing to the page when both are off. -->
     <!-- Season front + vanguard fire chains (docs/agents/fire.md). Before
          maplegend.js for the same reason as geomap.js: the strip reports it. -->
+    <script src="/static/cellfield.js?v={{.Version}}"></script>
     <script src="/static/fireseason.js?v={{.Version}}"></script>
     <script src="/static/maplegend.js?v={{.Version}}"></script>
     <script src="/static/floatui.js?v={{.Version}}"></script>

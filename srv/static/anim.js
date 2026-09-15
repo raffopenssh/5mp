@@ -87,11 +87,12 @@
         trajs:    LAYERS.trajs,
         front:    { label: 'front',    color: '#fb923c', title: 'Season front \u2014 dashed isochrones every 5 days, drawn as the playhead reaches them' },
         vanguard: { label: 'vanguard', color: '#fde047', title: 'Vanguard fires \u2014 chains that began 10\u201360 days ahead of the season front, in lead colour (turns on paths)' },
+        entry:    { label: 'entry',    color: '#22d3ee', title: 'Early-burn ground \u2014 cells that burn ahead of their surroundings season after season; a square lights up when this season\u2019s first detection lands in it' },
         patrol:   { label: 'patrol',   color: '#4ade80', title: 'Patrol effort \u2014 a heat field zoomed out, circles like the live map zoomed in; cools over 90 days' },
         deforest: LAYERS.deforest,
         settlements: LAYERS.settlements
     };
-    const CHIP_ORDER = ['fireGrid', 'trajs', 'front', 'vanguard', 'patrol', 'deforest', 'settlements'];
+    const CHIP_ORDER = ['fireGrid', 'trajs', 'front', 'vanguard', 'entry', 'patrol', 'deforest', 'settlements'];
     const HIGHLIGHT_TITLE = 'Highlight what is happening now \u2014 dims the heat fields and static context so live fire paths, fresh clearings and patrol stand out';
     // 'turb' (turbidity plume + mining sites) removed 2026-08-06 --
     // docs/MINING_FINDINGS_2026-08.md §10. The turbidity endpoint is disabled, so
@@ -134,6 +135,7 @@
         if (name === 'patrol') return !!(A.on.effortGrid || A.on.effortPts);
         if (name === 'front') return !!(window.FireSeason && FireSeason.frontOn());
         if (name === 'vanguard') return !!(window.FireSeason && FireSeason.vanguardOn());
+        if (name === 'entry') return !!(window.FireSeason && FireSeason.entryOn && FireSeason.entryOn());
         return !!A.on[name];
     }
 
@@ -2900,7 +2902,7 @@
             const dot = chip.querySelector('i');
             if (dot) dot.style.background = on ? CHIPS[name].color : '#555';
             if (on) chip.style.color = '';
-            if (name === 'front' || name === 'vanguard') {
+            if (name === 'front' || name === 'vanguard' || name === 'entry') {
                 chip.classList.toggle('unavailable', !!seasonNo && !on);
                 chip.title = seasonNo && !on ? seasonNo + ' here \u2014 ' + CHIPS[name].title : CHIPS[name].title;
             }
@@ -2959,13 +2961,13 @@
                 return;
             }
         }
-        if (name === 'front' || name === 'vanguard') {
+        if (name === 'front' || name === 'vanguard' || name === 'entry') {
             if (!window.FireSeason) return;
             // fireseason.js owns the state and emits onChange, which redraws
             // us and re-reads the chips (see wireSeason). Vanguard chains are
             // drawn from the trajectories, so they need them loaded — but not
             // shown: draw() keeps the vanguard population when paths are off.
-            if (name === 'front') FireSeason.setFront(!cur); else FireSeason.setVanguard(!cur);
+            if (name === 'front') FireSeason.setFront(!cur); else if (name === 'entry') FireSeason.setEntry(!cur); else FireSeason.setVanguard(!cur);
             if (name === 'vanguard' && !cur && A.data.trajs === undefined) await ensureLayer('trajs');
             updateChips();
             draw(A.t);
@@ -3540,7 +3542,7 @@
         layerRefusal(name) {
             if (!A) return null;
             if (name === 'firePts') return firePtsRefusal();
-            if (name === 'front' || name === 'vanguard') return chipOn(name) ? null : seasonRefusal();
+            if (name === 'front' || name === 'vanguard' || name === 'entry') return chipOn(name) ? null : seasonRefusal();
             const chip = chipFor(name);
             if (chip && chip.classList.contains('unavailable')) return chip.title || 'Not available here';
             return null;

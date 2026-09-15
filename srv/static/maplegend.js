@@ -1309,8 +1309,13 @@
         html += row('', 'menuitemcheckbox', FireSeason.speedOn(), 'Season speed', 'icon-gauge',
             'How fast the front travels, km/day (gradient of its arrival-time surface): pale where the season sweeps through, rust where it stalls. Descriptive, not a forecast',
             'MapLegend.fireSeasonSet(\'speed\',' + (!FireSeason.speedOn()) + ')', 'check');
+        var eOn = !!(FireSeason.entryOn && FireSeason.entryOn());
+        html += row('', 'menuitemcheckbox', eOn, 'Entry ground', 'icon-grid-2x2',
+            'Traditional early-burn ground: cells whose first burn came \u2265 15 days before the local front in \u2265 40 % of the seasons held (at least 2) \u2014 where the season usually enters. Squares, solid where more seasons agree; fades once the slider is past the usual front here. Not this year\u2019s herds (the vanguard chains are that)',
+            'MapLegend.fireSeasonSet(\'entry\',' + (!eOn) + ')', 'check');
         if (FireSeason.legendHTML && (FireSeason.vanguardOn() || fm.season)) html += FireSeason.legendHTML({ cls: 'in-menu' });
         if (FireSeason.speedOn() && FireSeason.speedLegendHTML) html += FireSeason.speedLegendHTML({ cls: 'in-menu' });
+        if (eOn && FireSeason.entryLegendHTML) html += FireSeason.entryLegendHTML({ cls: 'in-menu' });
         // No season picker: the front FOLLOWS THE TIME SLIDER (the season the
         // window ends in), as the vanguard chains do. A list of eight years
         // beside a slider that already says the year is a second control for
@@ -3756,6 +3761,16 @@
                 else if (sp && sp.area === null) parts.push('no area here');
                 else if (sp && sp.status) parts.push('speed not yet computed');
             }
+            if (FireSeason.entryOn && FireSeason.entryOn()) {
+                // One count, one unit: cells (and their km²) of early-burn
+                // ground in view, over the seasons the rule held. An area
+                // with too few seasons says why, not "0".
+                var em = FireSeason.entryMeta(), ev = FireSeason.entryInView();
+                if (em && em.status === 'ok' && ev) parts.push(ev.cells.toLocaleString() + ' early-burn cells in view · ' + ev.km2.toLocaleString() + ' km² · ' + em.seasons_held + ' seasons');
+                else if (em && em.status === 'insufficient') parts.push('entry ground: ' + (em.seasons_held || 0) + ' season' + (em.seasons_held === 1 ? '' : 's') + ' held, needs 2');
+                else if (em && em.area === null) parts.push('no area here');
+                else if (em && em.status) parts.push('entry ground not yet computed');
+            }
             var fsNote = FireSeason.busy() && !parts.length ? 'loading…' : parts.join(' · ');
             chips += '<span class="ml-chip fs' + (/no |not yet/.test(fsNote) ? ' offview' : '') + '">' +
                 '<button type="button" class="ml-chip-main" title="' +
@@ -4287,6 +4302,7 @@
             if (typeof FireSeason === 'undefined') return;
             if (which === 'front') FireSeason.setFront(on);
             else if (which === 'speed') FireSeason.setSpeed(on);
+            else if (which === 'entry') FireSeason.setEntry(on);
             else FireSeason.setVanguard(on);
             render();
             // Keep the menu: the reader is composing the picture. Rebuilt so

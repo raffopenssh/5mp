@@ -89,6 +89,17 @@ VANGUARD_LEAD_DAYS = 10    # a group that began this far ahead is a vanguard
 # January), and would have been the top-ranked "vanguard" of the park.
 VANGUARD_LEAD_MAX = 60
 CONTOUR_STEP_DAYS = 5
+# Early-burn ground (table fire_early_ground, migration 069): a cell whose
+# FIRST burn of the season came EARLY_AHEAD_DAYS or more before the local
+# front, in at least EARLY_MIN_SHARE of the complete seasons that carried a
+# front at it. Chosen over the early-season density (prior seasons' first 45
+# d at the front) by scripts/eval_fire_baseline.py on the leading-edge
+# target — docs/agents/fire.md "Early-burn ground" has both numbers.
+EARLY_AHEAD_DAYS = 15
+EARLY_MIN_SHARE = 0.40
+EARLY_MIN_SEASONS = 2      # fewer complete seasons -> an explicit 'insufficient' row, no cells
+EARLY_MIN_EARLY = 2        # ...and a cell must be early in at least this many: with 2 seasons held,
+                           # "1 of 2" (3,868 XSA cells) is BELOW chance (5,528); "2 of 2" (881) is 8.7x it
 LABEL_STEP_DAYS = 15
 COMPLETE_AFTER_DAYS = 330  # a season with data this far in is complete
 MIN_SEASON_DETECTIONS = 200
@@ -323,6 +334,92 @@ def ensure_table(conn):
         PRIMARY KEY (area_id, season))""")
 
 
+def ensure_early_table(conn):
+    conn.execute("""CREATE TABLE IF NOT EXISTS fire_early_ground (
+        area_id TEXT PRIMARY KEY, rule TEXT NOT NULL, ahead_days INTEGER NOT NULL,
+        min_share REAL NOT NULL, seasons_held INTEGER NOT NULL, seasons_json TEXT NOT NULL,
+        res REAL, x0 REAL, y0 REAL, nx INTEGER, ny INTEGER,
+        cells_json TEXT, first_burn_json TEXT, stats_json TEXT, computed_at TEXT NOT NULL)""")
+
+
+def early_ground(seasons):
+    """The recur rule over the complete seasons. `seasons`: {label: dict(start=date,
+    complete=bool, front=grid|None, onset=grid)} — every season the area holds;
+    only complete seasons with a front enter the rule, but every season's
+    first-burn day is reported per chosen cell (the animator lights a cell up
+    when this season's first detection lands in it).
+    Returns (cells, first_burn, stats):
+      cells      [[ix, iy, early, held, median_days_ahead, month_mode, usual_front_dos], ...]
+      first_burn {label: [dos or None per cell]}
+    Every number names its basis; nothing here is a constant of the area."""
+    labels = sorted(l for l, S in seasons.items() if S["complete"] and S.get("front") is not None
+                    and np.isfinite(S["front"]).any())
+    n = len(labels)
+    if n < EARLY_MIN_SEASONS:
+        return None, None, {"status": "insufficient", "seasons_held": n, "seasons": labels,
+                            "reason": f"{n} complete season{'s' if n != 1 else ''} with a front; the rule needs {EARLY_MIN_SEASONS}"}
+    F = np.stack([seasons[l]["front"] for l in labels])           # (n, ny, nx)
+    O = np.stack([seasons[l]["onset"] for l in labels])
+    held = np.isfinite(F)
+    ahead = np.where(held & np.isfinite(O), F - O, np.nan)     # + = first burn BEFORE the local front
+    early = np.isfinite(ahead) & (ahead >= EARLY_AHEAD_DAYS)
+    n_held = held.sum(0); n_early = early.sum(0)
+    import warnings as _w
+    with np.errstate(all="ignore"), _w.catch_warnings():
+        _w.simplefilter("ignore")
+        share = np.where(n_held > 0, n_early / np.maximum(n_held, 1), 0.0)
+        usual = np.nanmedian(F, axis=0)
+    pick = (n_held >= EARLY_MIN_SEASONS) & (share >= EARLY_MIN_SHARE) & (n_early >= EARLY_MIN_EARLY)
+    iy, ix = np.nonzero(pick)
+    starts = [seasons[l]["start"] for l in labels]
+    cells = []
+    for y, x in zip(iy.tolist(), ix.tolist()):
+        a = ahead[:, y, x]; e = early[:, y, x]
+        med = float(np.median(a[e])) if e.any() else 0.0
+        months = [(starts[k] + timedelta(days=int(O[k, y, x]))).month for k in range(n) if e[k]]
+        mode = max(sorted(set(months)), key=months.count) if months else 0
+        cells.append([x, y, int(n_early[y, x]), int(n_held[y, x]), int(round(med)), mode,
+                      int(round(usual[y, x])) if np.isfinite(usual[y, x]) else -1])
+    first_burn = {}
+    for l, S in seasons.items():
+        o = S["onset"][iy, ix]
+        first_burn[l] = [int(v) if np.isfinite(v) else None for v in o.tolist()]
+    # chance: with per-season early rate p (over held cells), how many cells would
+    # be early in >= min_share of their held seasons by independence
+    from math import comb
+    p = float(early.sum() / max(held.sum(), 1))
+    chance = 0.0
+    for k in range(EARLY_MIN_SEASONS, n + 1):
+        nk = int((n_held == k).sum()); need = max(EARLY_MIN_EARLY, int(math.ceil(EARLY_MIN_SHARE * k - 1e-9)))
+        chance += nk * sum(comb(k, j) * p ** j * (1 - p) ** (k - j) for j in range(need, k + 1))
+    return cells, first_burn, {"status": "ok", "seasons_held": n, "seasons": labels, "cells": len(cells), "min_early": EARLY_MIN_EARLY,
+                               "cells_held": int((n_held >= EARLY_MIN_SEASONS).sum()),
+                               "early_rate_per_season": round(p, 4), "chance_cells": round(chance, 1),
+                               "km2_per_cell": round((RES_DEG * 111.0) ** 2 * math.cos(math.radians(float(np.mean([S["lat_mid"] for S in seasons.values()])))), 2)}
+
+
+def write_early_ground(conn, area_id, grid, seasons, verbose=True):
+    """Compute + store the area's early-burn ground row (INSERT OR REPLACE; one
+    statement, so the single writer is held for milliseconds)."""
+    ensure_early_table(conn)
+    cells, fb, stats = early_ground(seasons)
+    conn.execute("""INSERT OR REPLACE INTO fire_early_ground
+        (area_id, rule, ahead_days, min_share, seasons_held, seasons_json, res, x0, y0, nx, ny,
+         cells_json, first_burn_json, stats_json, computed_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                 (area_id, "recur", EARLY_AHEAD_DAYS, EARLY_MIN_SHARE, stats["seasons_held"], json.dumps(stats.get("seasons", [])),
+                  grid.res, grid.x0, grid.y0, grid.nx, grid.ny,
+                  json.dumps(cells, separators=(",", ":")) if cells is not None else None,
+                  json.dumps(fb, separators=(",", ":")) if fb is not None else None,
+                  json.dumps(stats), datetime.now().astimezone().isoformat(timespec="seconds")))
+    conn.commit()
+    if verbose:
+        if stats["status"] == "ok":
+            log(f"{area_id}: early-burn ground {stats['cells']:,} cells (chance ~{stats['chance_cells']}) over {stats['seasons_held']} seasons")
+        else:
+            log(f"{area_id}: early-burn ground insufficient — {stats['reason']}")
+    return stats
+
+
 def pack(g):
     a = np.where(np.isfinite(g), np.round(g), -1).astype("<i2")
     return a.tobytes()
@@ -372,16 +469,22 @@ def build_area(conn, area_id, current_only=False, verbose=True):
     existing = {r[0]: r for r in conn.execute(
         "SELECT season, complete, front FROM fire_season_front WHERE area_id=?", (area_id,))}
     written = []
+    for_early = {}   # label -> dict(start, complete, front, onset, lat_mid): the early-burn ground's input
     for s in seasons:
         s0, s1 = season_bounds(s, sm)
         complete = (latest - s0).days >= COMPLETE_AFTER_DAYS
+        m = (day >= s0.toordinal()) & (day <= s1.toordinal())
         if current_only and s != season_of(latest, sm):
-            # Reuse the stored complete front for the usual-front stack.
+            # Reuse the stored complete front for the usual-front stack (and
+            # for the early-burn ground, whose input is every complete season).
             row = existing.get(s)
             if row and row[1]:
-                completed.append(unpack(row[2], grid.ny, grid.nx) if len(row[2]) == grid.ny * grid.nx * 2 else None)
+                f = unpack(row[2], grid.ny, grid.nx) if len(row[2]) == grid.ny * grid.nx * 2 else None
+                completed.append(f)
+                if f is not None and m.any():
+                    for_early[s] = dict(start=s0, complete=True, front=f, lat_mid=lat_mid,
+                                        onset=onset_grid(grid, lon[m], lat[m], day[m] - s0.toordinal()))
             continue
-        m = (day >= s0.toordinal()) & (day <= s1.toordinal())
         if m.sum() < MIN_SEASON_DETECTIONS:
             continue
         # A season whose data begins after the season did cannot show where
@@ -426,12 +529,14 @@ def build_area(conn, area_id, current_only=False, verbose=True):
                       json.dumps(stats), datetime.now().astimezone().isoformat(timespec="seconds")))
         conn.commit()
         written.append(s)
+        for_early[s] = dict(start=s0, complete=complete, front=front, onset=onset, lat_mid=lat_mid)
         if complete:
             completed.append(front)
         if verbose:
             log(f"{area_id} {s}{'' if complete else ' (live)'}: {stats['detections']:,} det, "
                 f"front on {stats['cells_with_front']:,} cells ({stats['cells_burned']:,} burned), "
                 f"{stats['front_first']} → {stats['front_last']}, {len(feats)} contours")
+    write_early_ground(conn, area_id, grid, for_early, verbose=verbose)
     if verbose:
         log(f"{area_id}: season starts month {sm}; {len(written)} season(s) in {time.time() - t0:.1f}s")
     return written
