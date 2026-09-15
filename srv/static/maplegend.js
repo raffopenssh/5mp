@@ -1304,7 +1304,7 @@
             'MapLegend.fireSeasonSet(\'front\',' + (!FireSeason.frontOn()) + ')', 'check');
         html += row('', 'menuitemcheckbox', FireSeason.vanguardOn(), 'Vanguard fires', 'icon-footprints',
             'Fire chains that began ' + FireSeason.LEAD_DAYS + '\u2013' + FireSeason.LEAD_MAX +
-            ' days ahead of the season front, followed into the season \u2014 bright while ahead, faint once the season caught up; a ringed head is still moving',
+            ' days ahead of the season front, followed into the season \u2014 bright while ahead, faint once the season caught up; arrows give the direction of travel, and a large arrowhead at the end marks a chain still moving',
             'MapLegend.fireSeasonSet(\'vanguard\',' + (!FireSeason.vanguardOn()) + ')', 'check');
         html += row('', 'menuitemcheckbox', FireSeason.speedOn(), 'Season speed', 'icon-gauge',
             'How fast the front travels, km/day (gradient of its arrival-time surface): pale where the season sweeps through, rust where it stalls. Descriptive, not a forecast',
