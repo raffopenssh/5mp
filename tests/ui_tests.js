@@ -169,11 +169,24 @@ const UI_TESTS = [
             }, msg: 'Tip at a cell says "early in N of M seasons", days ahead, month' },
             { type: 'fn', fn: () => {
                 MapLegend.fireSeasonMenu(document.querySelector('#stats-map .ml-chip.fs'));
-                const sw = document.querySelectorAll('.mode-menu .fs-entry-sw').length === 1;
+                const grade = document.querySelectorAll('.mode-menu .fs-ramp-cap .fs-entry-sw');
+                const sw = grade.length === 1 && /159, ?18, ?57/.test(grade[0].firstChild.style.background) && /251, ?113, ?133/.test(grade[0].lastChild.style.background)
+                    && document.querySelectorAll('.mode-menu .fs-entry-life .fs-entry-sw').length >= 4 && /dormant/.test(document.querySelector('.mode-menu .fs-entry-life').textContent);
                 MapLegend.fireSeasonSet('entry', false); const off = TEST.fireEntry();
                 MapLegend.fireSeasonSet('entry', true); const on = TEST.fireEntry();
                 return sw && !off.on && !off.drawn && off.share.season === 'front' && on.on && on.drawn && /entry/.test(on.share.season);
-            }, msg: 'Season menu shows the graded swatch; the chip toggles the layer and the share link' },
+            }, msg: 'Season menu shows the rose grade swatch (rose-800 → rose-400) and the season-life row; the chip toggles the layer and the share link' },
+            // The cell's life over the season, as the animator draws it: the
+            // same function the paint reads (entryState), checked at four
+            // playhead positions of one real cell.
+            { type: 'fn', fn: () => {
+                const m = FireSeason.entryMeta(), g = m.grid, c = m.cells.slice().sort((a, b) => b[2] - a[2])[0];
+                const cell = FireSeason.entryAt(g.x0 + g.res * (c[0] + 0.5), g.y0 + g.res * (c[1] + 0.5));
+                if (!cell || cell.fb == null || cell.uf == null) return false;
+                const S = FireSeason.entryState, due = cell.uf - cell.days;
+                const ign = S(cell, cell.fb + 0.5), cooled = S(cell, cell.fb + 30), dormant = S(cell, Math.min(cell.fb, due) - 60), later = S(cell, Math.min(cell.fb, due) - 10);
+                return ign.flash > 0.8 && /first detection today/.test(ign.word) && cooled.flash === 0 && cooled.mul === 1 && dormant.mul === 0.5 && later.mul > dormant.mul && FireSeason.entryColor(0.4) === '#9f1239' && FireSeason.entryColor(0.7) === '#fb7185';
+            }, msg: 'entryState: dormant 0.5 → due rising → ignition flash → cooled full weight; the rose ramp ends are the documented ones' },
         ]
     },
     
@@ -259,7 +272,7 @@ if (typeof window !== 'undefined' && window.TEST) {
         console.log(`Running ${tests.length} UI tests...`);
         
         for (const test of tests) {
-            console.log(`\n=== ${test.name} ===");
+            console.log(`\n=== ${test.name} ===`);
             // Note: In browser, we can only run assertions for current URL state
             // Full URL navigation requires Playwright/Puppeteer
             for (const a of test.assertions) {
