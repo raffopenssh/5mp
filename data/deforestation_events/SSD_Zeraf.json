@@ -3080,7 +3080,7 @@
     "polygon_ids": "deforest_SSD_Zeraf_2023_320,deforest_SSD_Zeraf_2023_321"
   },
   {
-    "id": 44136,
+    "id": 44378,
     "park_id": "SSD_Zeraf",
     "year": 2025,
     "area_km2": 0.0009,
@@ -3098,7 +3098,7 @@
     "fires_same_year": 123,
     "fire_ratio": 12300.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-09-01T07:30:02.729051",
+    "classified_at": "2026-09-09T07:30:06.330124",
     "polygon_ids": "deforest_gfw_SSD_Zeraf_2025_8.89_30.73"
   }
 ]

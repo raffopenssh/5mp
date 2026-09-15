@@ -25560,13 +25560,21 @@ ${starredItems.narratives.map(n => {
         // camera move comes from /api/areas (public, one fetch, cached), not
         // from querySourceFeatures, which only sees tiles already in view;
         // an explicit ?lat/lng/z on the same link still wins (_urlView).
+        // A jump, not a flight: at page open there is no reader-built view to
+        // animate away from, and a 900 ms glide under the popup landing at
+        // 2 s is exactly the hectic opening the calm-map rule forbids
+        // (docs/agents/map-ui.md). The hold-down mirrors _urlView: a person
+        // who has already touched the map outranks the link.
         const parkParam = params.get('park');
         if (parkParam && !params.get('popup')) {
+            let _parkMoved = false;
+            ['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(ev =>
+                document.addEventListener(ev, () => { _parkMoved = true; }, { capture: true, once: true }));
             ensureAreasCache().then(() => {
-                if (window._urlView) return;
+                if (window._urlView || _parkMoved) return;
                 const f = getParkFeature(parkParam);
                 const bb = f && geometryBbox(f.geometry);
-                if (bb) map.fitBounds([[bb[0], bb[1]], [bb[2], bb[3]]], { padding: 60, duration: 900 });
+                if (bb) map.fitBounds([[bb[0], bb[1]], [bb[2], bb[3]]], { padding: 60, duration: 0 });
             });
         }
 

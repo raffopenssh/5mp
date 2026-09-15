@@ -1671,7 +1671,7 @@
     "fires_5km": 1992,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.48219999999999996,
-    "classified_at": "2026-09-03 07:30:43",
+    "classified_at": "2026-09-11 07:30:34",
     "polygon_ids": "settlement_CAF_Manovo_Gounda_St_Floris_9.71928_21.59050"
   },
   {
@@ -1696,7 +1696,7 @@
     "fires_5km": 1973,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.48219999999999996,
-    "classified_at": "2026-09-03 07:30:46",
+    "classified_at": "2026-09-11 07:30:35",
     "polygon_ids": "settlement_CAF_Manovo_Gounda_St_Floris_9.68712_21.59170"
   },
   {
@@ -1721,7 +1721,7 @@
     "fires_5km": 1596,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 2.4844,
-    "classified_at": "2026-09-03 07:30:52",
+    "classified_at": "2026-09-11 07:30:40",
     "polygon_ids": "settlement_CAF_Manovo_Gounda_St_Floris_9.50443_21.03473"
   },
   {
@@ -1746,7 +1746,7 @@
     "fires_5km": 2064,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 3.6969,
-    "classified_at": "2026-09-03 07:30:57",
+    "classified_at": "2026-09-11 07:30:43",
     "polygon_ids": "settlement_CAF_Manovo_Gounda_St_Floris_9.41351_20.87870"
   },
   {
@@ -1771,7 +1771,7 @@
     "fires_5km": 1753,
     "fire_seasonality": "year_round",
     "deforest_nearby_km2": 4.559,
-    "classified_at": "2026-09-03 07:31:00",
+    "classified_at": "2026-09-11 07:30:44",
     "polygon_ids": "settlement_CAF_Manovo_Gounda_St_Floris_9.39116_20.74657,settlement_CAF_Manovo_Gounda_St_Floris_9.38303_20.74274"
   },
   {
@@ -1796,7 +1796,7 @@
     "fires_5km": 1425,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.020999999999999998,
-    "classified_at": "2026-09-03 07:31:01",
+    "classified_at": "2026-09-11 07:30:44",
     "polygon_ids": "settlement_CAF_Manovo_Gounda_St_Floris_9.39034_21.31449"
   },
   {
@@ -1821,7 +1821,7 @@
     "fires_5km": 1730,
     "fire_seasonality": "year_round",
     "deforest_nearby_km2": 5.1669,
-    "classified_at": "2026-09-03 07:31:02",
+    "classified_at": "2026-09-11 07:30:44",
     "polygon_ids": "settlement_CAF_Manovo_Gounda_St_Floris_9.38831_20.72282"
   },
   {
@@ -1846,7 +1846,7 @@
     "fires_5km": 1773,
     "fire_seasonality": "year_round",
     "deforest_nearby_km2": 4.0158,
-    "classified_at": "2026-09-03 07:31:06",
+    "classified_at": "2026-09-11 07:30:47",
     "polygon_ids": "settlement_CAF_Manovo_Gounda_St_Floris_9.32775_20.60238"
   },
   {
@@ -1871,7 +1871,7 @@
     "fires_5km": 1636,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 4.3995999999999995,
-    "classified_at": "2026-09-03 07:31:08",
+    "classified_at": "2026-09-11 07:30:48",
     "polygon_ids": "settlement_CAF_Manovo_Gounda_St_Floris_9.31718_20.61960,settlement_CAF_Manovo_Gounda_St_Floris_9.31149_20.62543"
   },
   {
@@ -1896,7 +1896,7 @@
     "fires_5km": 1702,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 3.7573,
-    "classified_at": "2026-09-03 07:31:11",
+    "classified_at": "2026-09-11 07:30:50",
     "polygon_ids": "settlement_CAF_Manovo_Gounda_St_Floris_9.26841_20.89445"
   },
   {
@@ -1921,7 +1921,7 @@
     "fires_5km": 1648,
     "fire_seasonality": "year_round",
     "deforest_nearby_km2": 3.4576,
-    "classified_at": "2026-09-03 07:31:12",
+    "classified_at": "2026-09-11 07:30:51",
     "polygon_ids": "settlement_CAF_Manovo_Gounda_St_Floris_9.26380_20.51271"
   },
   {
@@ -1946,7 +1946,7 @@
     "fires_5km": 1780,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 4.5016,
-    "classified_at": "2026-09-03 07:31:15",
+    "classified_at": "2026-09-11 07:30:53",
     "polygon_ids": "settlement_CAF_Manovo_Gounda_St_Floris_9.23671_20.55834"
   },
   {
@@ -1971,7 +1971,7 @@
     "fires_5km": 1656,
     "fire_seasonality": "year_round",
     "deforest_nearby_km2": 0.1991,
-    "classified_at": "2026-09-03 07:31:20",
+    "classified_at": "2026-09-11 07:30:56",
     "polygon_ids": "settlement_CAF_Manovo_Gounda_St_Floris_9.14161_21.90607,settlement_CAF_Manovo_Gounda_St_Floris_9.13818_21.90588"
   },
   {
@@ -1996,7 +1996,7 @@
     "fires_5km": 2199,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.0362,
-    "classified_at": "2026-09-03 07:31:28",
+    "classified_at": "2026-09-11 07:31:02",
     "polygon_ids": "settlement_CAF_Manovo_Gounda_St_Floris_8.70121_21.01898"
   },
   {
@@ -2021,7 +2021,7 @@
     "fires_5km": 2232,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.058,
-    "classified_at": "2026-09-03 07:31:31",
+    "classified_at": "2026-09-11 07:31:03",
     "polygon_ids": "settlement_CAF_Manovo_Gounda_St_Floris_8.68171_21.25647"
   },
   {
@@ -2046,7 +2046,7 @@
     "fires_5km": 1936,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.0896,
-    "classified_at": "2026-09-03 07:31:35",
+    "classified_at": "2026-09-11 07:31:06",
     "polygon_ids": "settlement_CAF_Manovo_Gounda_St_Floris_8.63216_22.09577"
   },
   {
@@ -2071,7 +2071,7 @@
     "fires_5km": 2083,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.2553,
-    "classified_at": "2026-09-03 07:31:39",
+    "classified_at": "2026-09-11 07:31:08",
     "polygon_ids": "settlement_CAF_Manovo_Gounda_St_Floris_8.58180_21.79153"
   },
   {
@@ -2096,7 +2096,7 @@
     "fires_5km": 2134,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 1.9323000000000001,
-    "classified_at": "2026-09-03 07:31:42",
+    "classified_at": "2026-09-11 07:31:10",
     "polygon_ids": "settlement_CAF_Manovo_Gounda_St_Floris_8.55256_21.51321"
   },
   {
@@ -2121,7 +2121,7 @@
     "fires_5km": 1992,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.06709999999999999,
-    "classified_at": "2026-09-03 07:31:46",
+    "classified_at": "2026-09-11 07:31:12",
     "polygon_ids": "settlement_CAF_Manovo_Gounda_St_Floris_8.52088_21.19564,settlement_CAF_Manovo_Gounda_St_Floris_8.51763_21.18046"
   },
   {
@@ -2146,7 +2146,7 @@
     "fires_5km": 1976,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.1604,
-    "classified_at": "2026-09-03 07:31:48",
+    "classified_at": "2026-09-11 07:31:13",
     "polygon_ids": "settlement_CAF_Manovo_Gounda_St_Floris_8.49232_21.79893"
   }
 ]
