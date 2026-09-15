@@ -198,15 +198,20 @@
                 });
                 registerTip(key, L.line, false);
             }
-            // Directional arrows: a fire trajectory is a MOVEMENT, and a line
-            // without them says where it burned but not which way it went.
-            // The legacy pin path drew these and the first LOD version lost
-            // them, which read as the vectors being a lesser rendering.
+            // Directional chevrons: a fire trajectory is a MOVEMENT, and a
+            // line without them says where it burned but not which way it
+            // went. But the chevron is a claim about day ORDER, so it is
+            // drawn only where the tier confirms that order (`ev` supported /
+            // weak — the same lines drawn wide). 87 % of chains are
+            // 'unsupported' (a coin toss on order; docs/agents/fire.md "Link
+            // evidence") and stay plain corridors, as the Methods promise.
             // Registered as no-tip: the line underneath answers the hover.
             if (wantArrow && !map.getLayer(L.arrow) && map.hasImage && map.hasImage('arrow-right')) {
+                var dirF = (window.FireSeason && FireSeason.directionFilter) ? FireSeason.directionFilter('ev')
+                    : ['in', ['coalesce', ['get', 'ev'], 'unmeasured'], ['literal', ['supported', 'weak']]];
                 map.addLayer({
                     id: L.arrow, type: 'symbol', source: L.src,
-                    filter: ['==', ['geometry-type'], 'LineString'],
+                    filter: ['all', ['==', ['geometry-type'], 'LineString'], dirF],
                     layout: {
                         'symbol-placement': 'line',
                         'symbol-spacing': ['interpolate', ['linear'], ['zoom'], 6, 70, 10, 110],

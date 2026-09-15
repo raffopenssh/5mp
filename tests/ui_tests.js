@@ -145,6 +145,9 @@ const UI_TESTS = [
         assertions: [
             { type: 'exists', selector: '.pinned-layer-item', msg: 'Pinned layer item exists' },
             { type: 'countMin', selector: '.pinned-layer-item', n: 1, msg: 'At least 1 pinned layer' },
+            // A chevron is a claim about day order; only supported/weak
+            // chains may carry one (docs/agents/fire.md "Link evidence").
+            { type: 'fn', fn: () => { const d = TEST.fireDirection(); return d.length >= 1 && d.every(x => x.gated); }, msg: 'Every fire arrow layer is gated on the evidence tier' },
         ]
     },
     

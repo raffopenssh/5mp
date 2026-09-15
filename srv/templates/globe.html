@@ -602,11 +602,11 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 <ul style="margin-bottom: 14px; padding-left: 20px; font-size: 12px; color: #aaa;">
                     <li><strong>What the satellite sees.</strong> NASA’s VIIRS instruments (Suomi-NPP, NOAA-20, NOAA-21) pass twice a day and report every 375 m pixel burning at that moment; we fetch them daily from FIRMS. Each area reads the detections inside its boundary plus 30 km. The satellite fleet grew in 2024, so charts cut their line there instead of showing more satellites as more fire.</li>
                     <li><strong>From detections to lines.</strong> Same-day detections within 3 km (three or more) form a <em>patch</em>; places that burn every year (flares, kilns, dumps) are removed first. Today’s patch is linked to yesterday’s if it lies where the fire was heading — within 5 km plus 8 km for each unseen day, no turn sharper than 100°, at most 3 unseen days. All of a day’s pairings are decided together, so two fronts side by side cannot swap. A line needs 10 detections over 2 days; its length, duration and speed give it a type (<em>spot fire</em>, <em>controlled burn</em>, <em>spreading fire</em>, <em>moving front</em>). Speed is never used to reject a link: herders walk 800 km and hunters cover 80 km a day, and every rule that capped speed removed exactly those chains.</li>
-                    <li><strong>How sure are we?</strong> We test every method the same way: shuffle the <em>days</em> of all detections in a region (the burnt ground stays, the order goes), rebuild, and compare. A real link usually has yesterday’s and today’s patches nearly touching — a fire spreads from its own edge — a chance link does not, so each link gets a score from that ratio and the sum along a chain gives its <em>evidence tier</em>: <em>supported</em> (about 1 in 100 by chance), <em>weak</em>, <em>unsupported</em> (a coin toss), <em>single</em>, <em>unmeasured</em>. A <strong>wide</strong> line means the day order is confirmed; a thin one means only the corridor is. The tier never moves a line.</li>
-                    <li><strong style="color:#f87171">Inside the burning season the order cannot be read — by anyone.</strong> When fire is everywhere, the shuffled data gives as many chains, as long, as the real data. That held for our tracker and, tested the same way, for a Kalman filter run over the whole field: no gain on links, fewer long fronts than chance. The red lines in season are real corridors — the same ground burns every year — but the satellite cannot tell us the direction they burned in. We say so rather than draw arrows we cannot back.</li>
+                    <li><strong>How sure are we?</strong> We test every method the same way: shuffle the <em>days</em> of all detections in a region (the burnt ground stays, the order goes), rebuild, and compare. A real link usually has yesterday’s and today’s patches nearly touching — a fire spreads from its own edge — a chance link does not, so each link gets a score from that ratio and the sum along a chain gives its <em>evidence tier</em>: <em>supported</em> (about 1 in 100 by chance), <em>weak</em>, <em>unsupported</em> (a coin toss), <em>single</em>, <em>unmeasured</em>. A <strong>wide</strong> line means the day order is confirmed, and only those lines carry <strong>direction chevrons</strong>; a thin one means only the corridor is, and it carries none. The tier never moves a line.</li>
+                    <li><strong style="color:#f87171">Inside the burning season the order cannot be read — by anyone.</strong> When fire is everywhere, the shuffled data gives as many chains, as long, as the real data. That held for our tracker and, tested the same way, for a Kalman filter run over the whole field: no gain on links, fewer long fronts than chance. The red lines in season are real corridors — the same ground burns every year — but the satellite cannot tell us the direction they burned in. We say so rather than draw arrows we cannot back: a chain scored <em>unsupported</em>, <em>single</em> or <em>unmeasured</em> is drawn thin and without chevrons.</li>
                     <li><strong style="color:#f87171">Season front.</strong> For each 2.5 km cell, the day by which a fifth of the land that burns in a season had burned within ~60 km; equal days join into contours every 5 days. The season starts in the area’s quietest month, measured from its own history. <strong>Lead</strong> is how many days before that front a fire burned; live, before this season’s front arrives, we measure against the usual front of past seasons and say so.</li>
                     <li><strong style="color:#fde047">Vanguard: the lines that carry information.</strong> Ahead of the front the field is sparse and the real order wins clearly — about half of all day-to-day links are signal, in every season and area tested. Vanguard chains are built by a dedicated tracker with two rules: a chain may be <em>born</em> only 10–60 days ahead of the front, and once born it is <em>followed</em> with a Kalman filter — the standard tool for tracking a moving object through noisy sightings (radar, particle physics): predict tomorrow’s position and its uncertainty, accept only a patch that fits, update speed and heading — on into the arriving season. This repairs the 43 % of chains the ordinary tracker cut short when the season arrived around them. Against the shuffle (XSA 2024/25): chains 74 km instead of 44, fires in chains over 150 km +61 %. Coasting through cloud was tried and rejected: after two unseen days the next fire is someone else’s. An unseen day is drawn dashed, never guessed. These chains are now built for every park and drawn area, every season since 2018, and refreshed nightly. On the ground this is where people move ahead of the season, burning along the route; the map says “ahead of the season”, not who or why.</li>
-                    <li><strong>Reading a vanguard chain.</strong> Colour along its length is lead — white far ahead, yellow at two weeks, orange as the season arrives, ash once it has. Width is the evidence tier. Small chevrons give the direction of travel; a large chevron at the end means it is <em>still moving</em> at the newest data, pointing the filter’s last heading. Its tip says why a chain ended: the season arrived, or the trail was lost (cloud, a fire too small to see, or they stopped). Field staff report herds one to two weeks behind the scouts — their knowledge, not our measurement.</li>
+                    <li><strong>Reading a vanguard chain.</strong> Colour along its length is lead — white far ahead, yellow at two weeks, orange as the season arrives, ash once it has. Width is the evidence tier. Small chevrons give the direction of travel on every vanguard chain — here the direction is backed by the seed-ahead test above, not by the per-chain score, which a herder chain is expected to fail (its burns are laid ahead and do not touch); a large chevron at the end means it is <em>still moving</em> at the newest data, pointing the filter’s last heading. Its tip says why a chain ended: the season arrived, or the trail was lost (cloud, a fire too small to see, or they stopped). Field staff report herds one to two weeks behind the scouts — their knowledge, not our measurement.</li>
                     <li><strong style="color:#f59e0b">Season speed</strong> — how fast the front travels, read as 1/|∇T| off the front grid: pale where the season sweeps through (tens of km a day), rust where it stalls. It describes the season shown; it is not a forecast.</li>
                     <li>Lines are rebuilt every night with the same rules for the archive and this morning’s detections; fronts and vanguard chains refresh daily for the season in progress and in rotation for past ones. An area whose front is not built yet says so rather than showing an empty layer.</li>
                 </ul>
@@ -3148,6 +3148,19 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                             }];
                         }))
                     };
+                },
+
+                // Direction chevrons on plain fire trajectories are gated by
+                // the evidence tier (FireSeason.directionFilter): every
+                // '-arrows' layer on a fire source must filter on the tier
+                // word. Vanguard chevrons (fireseason-van-arrow) are exempt.
+                fireDirection() {
+                    return map.getStyle().layers
+                        .filter(l => l.type === 'symbol' && /-arrows$/.test(l.id))
+                        .map(l => {
+                            const f = JSON.stringify(map.getFilter(l.id) || null);
+                            return { id: l.id, gated: /"(ev|evidence_tier)"/.test(f) && /supported/.test(f) && /weak/.test(f) };
+                        });
                 },
 
                 // State queries
@@ -9096,7 +9109,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                             // Display the trajectory
                             // Note: showRealtimeTrajectory adds the individual fire to realtimeFireLayers
                             // We don't auto-pin the bulk fire_trajectory layer to avoid confusion
-                            showRealtimeTrajectory(parkId, parkName, displayName, trajectory);
+                            showRealtimeTrajectory(parkId, parkName, displayName, trajectory, feature.properties?.evidence_tier);
                         } else {
                             console.warn('Fire feature not found:', featureId);
                             showToast(`Fire group not found`, 'error');
@@ -12484,7 +12497,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                                 const statusDetail = g.status_detail || '';
                                 const fires = g.metrics?.fires || g.fires_inside || '?';
                                 const days = g.metrics?.days || g.days_inside || '?';
-                                return `<div class="fire-alert-group" style="cursor: pointer;" onclick="event.stopPropagation(); showRealtimeTrajectory('${paId}', '${escapeHtml(data.park_name || paId)}', '${escapeHtml(g.name)}', ${JSON.stringify(g.trajectory || []).replace(/"/g, '&quot;')})">
+                                return `<div class="fire-alert-group" style="cursor: pointer;" onclick="event.stopPropagation(); showRealtimeTrajectory('${paId}', '${escapeHtml(data.park_name || paId)}', '${escapeHtml(g.name)}', ${JSON.stringify(g.trajectory || []).replace(/"/g, '&quot;')}, '${escapeHtml(g.evidence_tier || '')}')">
                                     <div style="display: flex; justify-content: space-between; align-items: start; width: 100%;">
                                         <span style="flex: 1;">
                                             ${iconHtml} <strong>${escapeHtml(g.name)}</strong> (${escapeHtml(statusLabel)})${fireVanMark(g)}<br>
@@ -19803,17 +19816,32 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
     // reported as "order not confirmed", never as "not real". Herder ignition
     // chains are laid ahead of the previous day's burn and are expected to
     // score low here; their support comes from recurrence along the route.
+    // The direction-chevron filter for a plain fire trajectory drawn from
+    // full properties: chevrons only where the day order is confirmed
+    // (evidence_tier supported / weak — the lines drawn wide). One rule with
+    // lodlayer.js (`ev`) and FireSeason.directionFilter; see fire.md "Link
+    // evidence". An unsupported chain keeps its line and loses its arrows.
+    function fireDirectionFilter() {
+        return (window.FireSeason && FireSeason.directionFilter) ? FireSeason.directionFilter('evidence_tier')
+            : ['in', ['coalesce', ['get', 'evidence_tier'], 'unmeasured'], ['literal', ['supported', 'weak']]];
+    }
+    function fireTierDirectional(tier) {
+        return (window.FireSeason && FireSeason.tierDirectional) ? FireSeason.tierDirectional(tier) : (tier === 'supported' || tier === 'weak');
+    }
+
     function fireEvidenceLine(props, fs) {
         // Absent prints the word (invariant 12): a line with no score beside
         // it reads as a line with a good one.
         const tier = props.evidence_tier || props.ev || 'unmeasured';
-        if (tier === 'unmeasured') return `<div style="margin-top: 4px; font-size: ${fs}; color: #6b7280;">Day order unmeasured — not yet scored against the day-shuffled null</div>`;
+        if (tier === 'unmeasured') return `<div style="margin-top: 4px; font-size: ${fs}; color: #6b7280;">Day order unmeasured — not yet scored against the day-shuffled null; drawn without direction</div>`;
         const bits = (props.evidence_bits !== undefined && props.evidence_bits !== null) ? ` (${props.evidence_bits} bits)` : '';
+        // The chevron words follow fireTierDirectional: the same tiers that
+        // widen the line are the only ones that carry direction chevrons.
         const words = {
-            supported: ['Consecutive days touch — a spreading front', '#166534'],
-            weak: ['Consecutive days touch on some days', '#6b7280'],
-            unsupported: ['Consecutive days do not touch — ignitions laid ahead, or day order unconfirmed', '#6b7280'],
-            single: ['Single day — no movement inferred', '#6b7280']
+            supported: ['Consecutive days touch — a spreading front; direction shown', '#166534'],
+            weak: ['Consecutive days touch on some days; direction shown', '#6b7280'],
+            unsupported: ['Consecutive days do not touch — ignitions laid ahead, or day order unconfirmed; drawn without direction', '#6b7280'],
+            single: ['Single day — no movement inferred; drawn without direction', '#6b7280']
         }[tier] || [tier, '#6b7280'];
         return `<div style="margin-top: 4px; font-size: ${fs}; color: ${words[1]};">${words[0]}${bits}</div>`;
     }
@@ -20461,7 +20489,9 @@ ${starredItems.narratives.map(n => {
     let realtimeFireLayers = {}; // Track realtime fire trajectories for clearing
     
     // Show realtime fire group trajectory on map
-    function showRealtimeTrajectory(parkId, parkName, groupName, trajectory) {
+    // `tier` — the chain's evidence_tier; chevrons are drawn only where it
+    // confirms the day order (fireTierDirectional). Absent = unmeasured = none.
+    function showRealtimeTrajectory(parkId, parkName, groupName, trajectory, tier) {
         if (!trajectory || trajectory.length < 2) {
             showToast('No trajectory data for this group', 'info');
             return;
@@ -20519,8 +20549,10 @@ ${starredItems.narratives.map(n => {
             }
         });
         
-        // Add arrow symbols along the line
-        map.addLayer({
+        // Direction chevrons along the line — only where the day order is
+        // confirmed (evidence tier supported / weak); a coin-toss chain is a
+        // corridor and carries none.
+        if (fireTierDirectional(tier)) map.addLayer({
             id: arrowLayerId,
             type: 'symbol',
             source: sourceId,
@@ -20594,7 +20626,7 @@ ${starredItems.narratives.map(n => {
 
         // Hover/tap tip for realtime trajectories too (these had none before)
         if (window.MapTip) {
-            [layerId, arrowLayerId, frontLayerId].forEach(id => window.MapTip.register(id, {
+            [layerId, arrowLayerId, frontLayerId].filter(id => map.getLayer(id)).forEach(id => window.MapTip.register(id, {
                 html: (props) => {
                     let h = `<div class="maptip-label">Active Fire · ${parkName}</div>`;
                     h += `<div class="maptip-title">${groupName}</div>`;
@@ -20924,13 +20956,15 @@ ${starredItems.narratives.map(n => {
                     }
                 });
                 
-                // Add directional arrows for fire trajectories
+                // Direction chevrons for fire trajectories — only where the
+                // day order is confirmed (fireDirectionFilter)
                 if (type === 'fire') {
                     const arrowLayerId = layerId + '-arrows';
                     map.addLayer({
                         id: arrowLayerId,
                         type: 'symbol',
                         source: sourceId,
+                        filter: fireDirectionFilter(),
                         layout: {
                             'symbol-placement': 'line',
                             'symbol-spacing': 80,
@@ -21713,13 +21747,14 @@ ${starredItems.narratives.map(n => {
                         });
                         pinnedLayers[key].lineLayerId = lineLayerId;
                         
-                        // Add directional arrows for fire trajectories
+                        // Direction chevrons for fire trajectories — only
+                        // where the day order is confirmed (fireDirectionFilter)
                         const arrowLayerId = `${layerId}-arrows`;
                         map.addLayer({
                             id: arrowLayerId,
                             type: 'symbol',
                             source: sourceId,
-                            filter: ['==', ['geometry-type'], 'LineString'],
+                            filter: ['all', ['==', ['geometry-type'], 'LineString'], fireDirectionFilter()],
                             layout: {
                                 'symbol-placement': 'line',
                                 'symbol-spacing': 100,
@@ -21845,13 +21880,14 @@ ${starredItems.narratives.map(n => {
                 
                 // Add directional arrows for fire trajectories
                 if (normalizedType === 'fire') {
-                    // Arrows along the trajectory line (only show at closer zoom)
+                    // Chevrons along the line (closer zoom) — only where the
+                    // day order is confirmed (fireDirectionFilter)
                     const arrowLayerId = `${layerId}-arrows`;
                     map.addLayer({
                         id: arrowLayerId,
                         type: 'symbol',
                         source: sourceId,
-                        filter: ['==', ['geometry-type'], 'LineString'],
+                        filter: ['all', ['==', ['geometry-type'], 'LineString'], fireDirectionFilter()],
                         minzoom: 7,  // Only show arrows when zoomed in enough
                         layout: {
                             'symbol-placement': 'line',
