@@ -146,6 +146,10 @@ type FireGroup struct {
 	Metrics      map[string]interface{}   `json:"metrics"`
 	Trajectory   []FireCluster            `json:"trajectory"`
 	PointsInside []map[string]interface{} `json:"points_inside,omitempty"`
+	// Day-order evidence of the chain (docs/agents/fire.md "Link evidence"):
+	// the map draws direction chevrons only for supported / weak, so the
+	// tier must travel with the trajectory it qualifies. Empty = unmeasured.
+	EvidenceTier string `json:"evidence_tier,omitempty"`
 	// Season position (scripts/fire_front.py, docs/agents/fire.md "Season
 	// front & vanguard"): absent when the area's front is not built.
 	Vanguard  bool    `json:"vanguard"`
@@ -1223,6 +1227,9 @@ func (s *Server) handleFireRealtimeFromFeatures(w http.ResponseWriter, r *http.R
 				"narrative":   narrative,
 			},
 			Trajectory: trajectory,
+		}
+		if t, ok := props["evidence_tier"].(string); ok {
+			group.EvidenceTier = t
 		}
 		// A chain that began 10–60 d ahead of the season front: the same
 		// words and the same rank the nightly notifier gives it

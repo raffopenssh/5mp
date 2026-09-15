@@ -130,6 +130,19 @@
             ['match', ['coalesce', ['get', tierKey], 'unmeasured'], 'supported', SUPPORTED_BITS, 'weak', 3.6, 0]];
         return ['+', 1, ['*', WIDE_MAX, ['min', 1, ['max', 0, ['/', bits, SUPPORTED_BITS]]]]];
     }
+    // A direction chevron is a claim about the ORDER the days were visited
+    // in, and that is exactly what the evidence tier measures. So a plain
+    // trajectory carries chevrons only where it is drawn wide (supported /
+    // weak); an unsupported, single or unmeasured chain is a corridor and
+    // gets none — the Methods page says "we say so rather than draw arrows
+    // we cannot back", and this is the filter that keeps that promise.
+    // (Vanguard chains are exempt: their direction is backed by the
+    // seed-ahead population test, not the per-chain contiguity score.)
+    // MapLibre filter over a feature property holding the tier word.
+    function directionFilter(tierKey) {
+        return ['in', ['coalesce', ['get', tierKey], 'unmeasured'], ['literal', WIDE_TIERS]];
+    }
+    function tierDirectional(t) { return tierWide(t); }
     // "zoom" may only feed a top-level interpolate, so the factor goes
     // inside each stop: stops = [[zoom, width], ...] or a plain number.
     // Vanguard segments carry their factor pre-computed as 'wf'.
@@ -854,7 +867,8 @@
         // The words the strip and the fire tip share; one definition.
         LEAD_DAYS: 10, LEAD_MAX: 60,
         leadColor: leadColor, frontColor: frontColor, tierWord: tierWord, tierWide: tierWide, legendHTML: legendHTML,
-        evidenceMul: evidenceMul, widthMulExpr: widthMulExpr, leadAlpha: leadAlpha, evidenceWords: evidenceWords
+        evidenceMul: evidenceMul, widthMulExpr: widthMulExpr, leadAlpha: leadAlpha, evidenceWords: evidenceWords,
+        directionFilter: directionFilter, tierDirectional: tierDirectional
     };
     window.FireSeason = FireSeason;
 })();
