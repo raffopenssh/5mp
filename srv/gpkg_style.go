@@ -175,6 +175,18 @@ func styleFireTrajectory() string {
 	}, colFire, 0.5, 0))
 }
 
+// Vanguard chains: the Season overlay's lead yellow, wider than a plain
+// trajectory, categorised by end_cause so a still-moving head is the one an
+// analyst finds first. Plain-tracker chains (end_cause NULL) fall through to
+// the base yellow.
+func styleFireVanguard() string {
+	return qmlDoc(qmlCategorized("end_cause", "line", []qmlCat{
+		{"ongoing", "Still moving (last seen within 3 d of newest data)", "253,224,71"},
+		{"season", "Followed until the season arrived", "251,146,60"},
+		{"lost", "Trail lost (no fire within reach for 3 d)", "202,138,4"},
+	}, "253,224,71", 0.8, 0))
+}
+
 // Season front isochrones: dashed (a contour, not a fire line — legible in
 // greyscale), in the app's ember red, the labelled 15-day lines heavier.
 // Labels carry the date.

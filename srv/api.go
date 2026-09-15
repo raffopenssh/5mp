@@ -4709,7 +4709,7 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 		}
 		var d []string
 		if nVanguard > 0 {
-			d = append(d, fmt.Sprintf("%d of these %d chains began 10–60 days ahead of the season front (vanguard, \u25B2, drawn yellow and wider): the population whose day-to-day links are measurably better than chance. See the Season front folder.", nVanguard, nFire))
+			d = append(d, fmt.Sprintf("%d of these %d chains began 10–60 days ahead of the season front (\u25B2, drawn yellow and wider). The Fire vanguard folder holds the vanguard population itself — Kalman-tracked chains where that tracker has run — and the Season front folder the front they ran ahead of.", nVanguard, nFire))
 		}
 		if nFire >= 500 {
 			d = append(d, "Truncated: the export holds 500 chains, vanguard first, then newest first. Narrow the date range for the rest.")
@@ -4730,6 +4730,11 @@ func (s *Server) HandleAPIParkKML(w http.ResponseWriter, r *http.Request) {
 		kml.WriteString("</Folder>\n")
 	}
 	kml.WriteString("</Folder>\n")
+
+	// The vanguard population (vanguardRowsSQL — Kalman seed-ahead chains
+	// where tracked, plain flagged chains elsewhere), its own folder so it
+	// can be switched on alone; shared writer with the merged KML.
+	s.writeVanguardKML(&kml, parkID, fromDate, toDate, 500)
 
 	// Season front isochrones (fire_season_front, one writer:
 	// scripts/fire_front.py), every season overlapping the window, hidden
@@ -5777,6 +5782,7 @@ func (s *Server) HandleAPIMergedKML(w http.ResponseWriter, r *http.Request) {
 			fireRows.Close()
 		}
 		kml.WriteString("</Folder>\n")
+		s.writeVanguardKML(&kml, parkID, fromDate, toDate, 500)
 		s.writeSeasonFrontKML(&kml, parkID, fromDate, toDate)
 
 		// Settlements
@@ -6253,7 +6259,16 @@ func fireSeasonWords(props map[string]interface{}) string {
 	if v, _ := props["vanguard"].(bool); v {
 		w := fmt.Sprintf("Vanguard — began %d days ahead of the %s", l, basis)
 		if km, _ := props["ahead_km"].(float64); km > 0 {
-			w += fmt.Sprintf(", ran %.0f km before the season caught up", km)
+			// A KF chain that was lost or is still moving was NOT caught up
+			// by the season — the same distinction the map tip makes.
+			switch props["end_cause"] {
+			case "lost":
+				w += fmt.Sprintf(", ran %.0f km ahead of the season", km)
+			case "ongoing":
+				w += fmt.Sprintf(", ran %.0f km ahead of the season so far", km)
+			default:
+				w += fmt.Sprintf(", ran %.0f km before the season caught up", km)
+			}
 		}
 		return w
 	}
