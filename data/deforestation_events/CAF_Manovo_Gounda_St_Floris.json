@@ -4818,10 +4818,10 @@
     "polygon_ids": "deforest_CAF_Manovo_Gounda_St_Floris_2023_670"
   },
   {
-    "id": 44139,
+    "id": 44381,
     "park_id": "CAF_Manovo_Gounda_St_Floris",
     "year": 2025,
-    "area_km2": 0.001,
+    "area_km2": 0.0004,
     "event_type": null,
     "lat": 8.23,
     "lon": 20.85,
@@ -4836,29 +4836,7 @@
     "fires_same_year": 1270,
     "fire_ratio": 127000.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-09-03T07:30:10.398268",
+    "classified_at": "2026-09-11T07:30:07.342698",
     "polygon_ids": "deforest_gfw_CAF_Manovo_Gounda_St_Floris_2025_8.23_20.85"
-  },
-  {
-    "id": 44140,
-    "park_id": "CAF_Manovo_Gounda_St_Floris",
-    "year": 2026,
-    "area_km2": 0.0024,
-    "event_type": null,
-    "lat": 8.24,
-    "lon": 20.85,
-    "geojson": null,
-    "description": null,
-    "pattern_type": "fire_associated",
-    "pixel_count": null,
-    "created_at": null,
-    "classification": "slash_burn",
-    "classification_confidence": 0.85,
-    "narrative": "Slash-and-burn clearing detected in 2026. Affected 0.00 km\u00b2 across 1 patch. Strong fire correlation indicates agricultural burning. Located 20.3km from Mbolo Abetlanga.",
-    "fires_same_year": 848,
-    "fire_ratio": 84800.0,
-    "nearest_settlement_km": 0.0,
-    "classified_at": "2026-09-03T07:30:11.088230",
-    "polygon_ids": "deforest_gfw_CAF_Manovo_Gounda_St_Floris_2026_8.24_20.85"
   }
 ]

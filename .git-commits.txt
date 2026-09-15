@@ -1,20 +1,20 @@
-b3be8ad 2026-09-04 11:52:30 WAL visibility: blockers logged when checkpoint is busy, /api/admin/db-health, WAL size in every cron notification
-49bb1fa 2026-09-04 11:25:37 WAL: hourly checkpoint worker, journal_size_limit, pragmas on every pooled connection
-185c1fe 2026-09-04 08:04:51 Map: detect dead WebGL at startup; banner instead of black map, safe-mode retry for AA/preserve buffer failures
-566a35c 2026-09-04 07:52:27 switchBasemap: any google/bing basemap id falls back to satellite-esri
-60e8035 2026-09-04 07:50:27 MBTiles estimate: reject sources not in TileSources whitelist (same as create)
-07eeaec 2026-09-04 07:48:18 Delete Esri/Google MBTiles Zenodo drafts (3 depositions) and clear manifest
-60301e1 2026-09-04 07:45:19 Footer: hover-intent popovers with fade, equal icon pills on phones
-d5b7fed 2026-09-04 07:39:42 Licence register, licensed-only imagery, footer credits, geology gated to partners
-17856a4 2026-08-31 19:49:59 easypip: styled GeoPackage of the PIP map, plus the full PIP and two-pager
-8d5a535 2026-08-31 19:24:04 EASY PIP map: one clean sheet, measured legend spacing, collision-free labels
-d9af8e8 2026-08-31 18:14:23 Per-zone stats for the six proposed Pongo-Wau-Numatinna KMLs
-ffb135b 2026-08-31 17:31:11 Add EASY budget generator for the AP-RCA Western South Sudan plan
-6cf5932 2026-08-31 16:42:54 easydocs: record section 8 shape, RWF/Keystone funding route, DG Khamis as entry point, and how ACLED-derived scalars were used in the gold section
-4e5d3f7 2026-08-31 16:29:10 easydocs: dump is authoritative on law, stale on people (FFI in Southern NP, AP/UNESCO, minister changed)
-8dfbff8 2026-08-31 16:25:23 easydocs: note contact-sheet vintage and the NGO Forum roster as the fresh counterpart source
-8285f5b 2026-08-31 16:19:40 easydocs: record what the plan took from the dump (gold flank, Numatina double claim, missing baseline)
-b1ee141 2026-08-31 16:02:06 docs: easydocs subsystem — how the EASY document dump was read
-6a3a5bd 2026-08-31 16:00:36 gitignore: EASY document dump artefacts (256 MB raw + 5.6 MB ledger)
-b677621 2026-08-31 16:00:04 easydocs: read the EASY document dump and score it against the AP-RCA plan
-ac35d24 2026-08-31 10:49:04 Record corridor verification results for AP-RCA plan assessment rewrite
+c7e5081 2026-09-15 03:39:23 URL ?park=<id>: fly to the park and open its popup (counterpart of ?aoi=); it was listed as a viewport param but never read. Popup restore falls back to the cached /api/areas when source tiles are not yet in view
+a624e95 2026-09-15 03:36:15 api_tests: short-link fixture cleanup waits on the SQLite lock (.timeout 30s) instead of aborting the suite under set -e when the nightly writer holds it
+aa9db3a 2026-09-14 22:03:28 Season front in progress: measure reached-share against the cells the usual front reaches, not against itself (XSA 2026/27 read 100 % six weeks in); words say 'half'/'last' only for a complete season
+9750c44 2026-09-14 20:25:09 v8 rebuild verified: tiers populated; derive vanguard count in report_leads test; Season chip names its basis ('in view'); fire.md closes the handover
+8476b48 2026-09-14 19:08:43 Section links: share any heading of How-this-map-works and admin sub-sections
+4519daf 2026-09-14 18:52:05 Methods: one plain-language fire section (detections → chains → evidence tier → season front/vanguard/speed)
+57a41d0 2026-09-14 18:44:51 fire.md: close season-front open items (playhead readout, shift-calibration declined by measurement, speed map, index measured unnecessary, AOI fire catch-up)
+9f0d5b4 2026-09-14 18:39:19 Season speed: click the field for the speed under the pointer — PNG made invertible (unique palette per log level), decoded once client-side, MapTip backdrop probe
+986aa28 2026-09-14 18:30:25 Season speed map: /api/fire-season-speed (1/|∇T| of the front grid as a PNG field) drawn as a third Season rendering
+0b2611f 2026-09-14 18:18:27 AOI fires catch up: aoi_runner requeues a stale fire_v5 weekly; /refresh resets derived-dataset cursors
+100e9de 2026-09-14 18:15:01 Fire season: readout follows the animator playhead (front_curve always sent); parks CSV memoises the 30 s fire count; shift-calibrated usual measured and declined
+44a37c9 2026-09-14 18:07:04 gofmt gpkg_style.go
+592950f 2026-09-14 18:00:25 Vanguard everywhere the fire subject speaks: accordion season sparkline, bell, realtime, KML/Locus/CSV/XLSX
+62c9a64 2026-09-14 17:34:39 fire.md: close handover items 1, 2, 7; document /api/fire-season leads/words in API.md
+06a0ce5 2026-09-14 17:31:06 Vanguard: per-segment lead colour, evidence-tier width, Map group in fire-row menu, season block in the star report
+ad9bc4c 2026-09-14 17:01:37 Vanguard wire format carries evidence tier (for width); fire.md handover of open points
+bb11cc1 2026-09-14 16:56:43 Season front & vanguard: native to the fire row, tips, pins, animator, exports
+3858868 2026-09-14 15:48:31 Season front: vanguard count in the chip menu, fire tip season line, notification wording, methods block, fire.md
+b8a418b 2026-09-14 15:41:26 FireSeason: hide the whole-season vanguard layer while the animator draws the chains
+2aeb8d5 2026-09-14 15:40:17 Fire season front + vanguard: measured lead per trajectory, Map-strip overlay, animator, cron backfill
