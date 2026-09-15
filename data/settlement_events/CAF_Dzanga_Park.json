@@ -3065,13 +3065,13 @@
     "tile_row": null,
     "tile_col": null,
     "detected_at": "2026-08-13 18:33:54",
-    "classification": "temporary_camp",
+    "classification": "mining",
     "classification_confidence": 0.6000000000000001,
-    "narrative": "Temporary camp 14km east of Batali, 3.8km from Mossapoula River. Small footprint (10000 m\u00b2) and remote location suggest seasonal occupation, possibly hunting or resource extraction.",
+    "narrative": "Possible mining site 14km east of Batali, 3.8km from Mossapoula River. Low fire activity but 2.76 km\u00b2 of forest loss with linear,fire_associated,scattered pattern. Proximity to Mossapoula suggests alluvial extraction. 314 GFW canopy-disturbance alerts within 5km corroborate recent ground activity.",
     "fires_5km": 0,
     "fire_seasonality": "",
-    "deforest_nearby_km2": 2.7227,
-    "classified_at": "2026-08-29 07:30:11",
+    "deforest_nearby_km2": 2.7569,
+    "classified_at": "2026-09-14 07:30:13",
     "polygon_ids": "settlement_CAF_Dzanga_Park_2.91833_16.38923"
   },
   {
@@ -3092,11 +3092,11 @@
     "detected_at": "2026-08-13 18:33:54",
     "classification": "mining",
     "classification_confidence": 0.7,
-    "narrative": "Possible mining site 23km east of Yandoumbe, 2.1km from Kenie River. Low fire activity but 1.19 km\u00b2 of forest loss with scattered,fire_associated,linear pattern. Proximity to Kenie suggests alluvial extraction. 585 GFW canopy-disturbance alerts within 5km corroborate recent ground activity.",
+    "narrative": "Possible mining site 23km east of Yandoumbe, 2.1km from Kenie River. Low fire activity but 1.20 km\u00b2 of forest loss with linear,scattered,fire_associated pattern. Proximity to Kenie suggests alluvial extraction. 587 GFW canopy-disturbance alerts within 5km corroborate recent ground activity.",
     "fires_5km": 0,
     "fire_seasonality": "",
-    "deforest_nearby_km2": 1.1924,
-    "classified_at": "2026-08-29 07:30:11",
+    "deforest_nearby_km2": 1.2021,
+    "classified_at": "2026-09-14 07:30:13",
     "polygon_ids": "settlement_CAF_Dzanga_Park_2.86007_16.46760"
   },
   {
@@ -3117,11 +3117,11 @@
     "detected_at": "2026-08-13 18:33:54",
     "classification": "mining",
     "classification_confidence": 0.7,
-    "narrative": "Possible mining site 21km east-southeast of Yandoumbe, 6.4km from Kenie River. Low fire activity but 0.62 km\u00b2 of forest loss with scattered,fire_associated,linear pattern. Proximity to Kenie suggests alluvial extraction. 233 GFW canopy-disturbance alerts within 5km corroborate recent ground activity.",
+    "narrative": "Possible mining site 21km east-southeast of Yandoumbe, 6.4km from Kenie River. Low fire activity but 0.64 km\u00b2 of forest loss with linear,scattered,fire_associated pattern. Proximity to Kenie suggests alluvial extraction. 246 GFW canopy-disturbance alerts within 5km corroborate recent ground activity.",
     "fires_5km": 0,
     "fire_seasonality": "",
-    "deforest_nearby_km2": 0.6232,
-    "classified_at": "2026-08-29 07:30:11",
+    "deforest_nearby_km2": 0.6353,
+    "classified_at": "2026-09-14 07:30:14",
     "polygon_ids": "settlement_CAF_Dzanga_Park_2.79372_16.42907"
   },
   {
@@ -3142,11 +3142,11 @@
     "detected_at": "2026-08-13 18:33:54",
     "classification": "mining",
     "classification_confidence": 0.6000000000000001,
-    "narrative": "Possible mining site 0km north of Brigade Tri-Nationale de Lutte Anti-Braconnage, 4.1km from K\u00e9ni\u00e9 River. Low fire activity but 1.10 km\u00b2 of forest loss with fire_associated,scattered,linear pattern. Proximity to K\u00e9ni\u00e9 suggests alluvial extraction. 317 GFW canopy-disturbance alerts within 5km corroborate recent ground activity.",
+    "narrative": "Possible mining site 0km north of Brigade Tri-Nationale de Lutte Anti-Braconnage, 4.1km from K\u00e9ni\u00e9 River. Low fire activity but 1.11 km\u00b2 of forest loss with fire_associated,scattered,linear pattern. Proximity to K\u00e9ni\u00e9 suggests alluvial extraction. 295 GFW canopy-disturbance alerts within 5km corroborate recent ground activity.",
     "fires_5km": 0,
     "fire_seasonality": "",
-    "deforest_nearby_km2": 1.0982,
-    "classified_at": "2026-08-29 07:30:12",
+    "deforest_nearby_km2": 1.1122,
+    "classified_at": "2026-09-14 07:30:14",
     "polygon_ids": "settlement_CAF_Dzanga_Park_2.41790_16.10658"
   }
 ]

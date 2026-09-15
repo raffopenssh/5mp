@@ -1917,11 +1917,11 @@
     "detected_at": "2026-08-13 18:36:31",
     "classification": "agricultural",
     "classification_confidence": 0.7999999999999999,
-    "narrative": "Agricultural settlement 46km northeast of Ngaragam. Fire activity (3020 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 0.41 km\u00b2 deforestation nearby indicates active land conversion.",
-    "fires_5km": 3020,
+    "narrative": "Agricultural settlement 46km northeast of Ngaragam. Fire activity (3023 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 0.41 km\u00b2 deforestation nearby indicates active land conversion.",
+    "fires_5km": 3023,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.4079,
-    "classified_at": "2026-08-30 07:30:47",
+    "classified_at": "2026-09-07 07:31:00",
     "polygon_ids": "settlement_SSD_Boma_7.10722_33.47917,settlement_SSD_Boma_7.10235_33.46993,settlement_SSD_Boma_7.10073_33.45782,settlement_SSD_Boma_7.08937_33.44929,settlement_SSD_Boma_7.08613_33.44013,settlement_SSD_Boma_7.06828_33.44133,settlement_SSD_Boma_7.09424_33.45352,settlement_SSD_Boma_7.09586_33.44808,settlement_SSD_Boma_7.08613_33.46820,settlement_SSD_Boma_7.09870_33.46375"
   },
   {
@@ -1942,11 +1942,11 @@
     "detected_at": "2026-08-13 18:36:31",
     "classification": "agricultural",
     "classification_confidence": 0.7999999999999999,
-    "narrative": "Agricultural settlement 49km northeast of Ngaragam. Fire activity (3086 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 0.48 km\u00b2 deforestation nearby indicates active land conversion.",
-    "fires_5km": 3086,
+    "narrative": "Agricultural settlement 49km northeast of Ngaragam. Fire activity (3087 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 0.48 km\u00b2 deforestation nearby indicates active land conversion.",
+    "fires_5km": 3087,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.4845,
-    "classified_at": "2026-08-30 07:30:48",
+    "classified_at": "2026-09-07 07:31:00",
     "polygon_ids": "settlement_SSD_Boma_7.09464_33.49565,settlement_SSD_Boma_7.08937_33.49240,settlement_SSD_Boma_7.09018_33.49344"
   },
   {
@@ -1967,11 +1967,11 @@
     "detected_at": "2026-08-13 18:36:31",
     "classification": "agricultural",
     "classification_confidence": 0.7,
-    "narrative": "Agricultural settlement 36km east-northeast of h\u00f6kkel\u00f6skyl\u00e4. Fire activity (2694 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 0.27 km\u00b2 deforestation nearby indicates active land conversion.",
-    "fires_5km": 2694,
+    "narrative": "Agricultural settlement 36km east-northeast of h\u00f6kkel\u00f6skyl\u00e4. Fire activity (2723 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 0.27 km\u00b2 deforestation nearby indicates active land conversion.",
+    "fires_5km": 2723,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.2653,
-    "classified_at": "2026-08-30 07:30:48",
+    "classified_at": "2026-09-07 07:31:00",
     "polygon_ids": "settlement_SSD_Boma_7.09181_33.41532,settlement_SSD_Boma_7.08897_33.40617,settlement_SSD_Boma_7.08450_33.39294,settlement_SSD_Boma_7.08207_33.38481,settlement_SSD_Boma_7.08559_33.36959,settlement_SSD_Boma_7.08450_33.35384,settlement_SSD_Boma_7.06909_33.34914,settlement_SSD_Boma_7.05388_33.34320,settlement_SSD_Boma_7.04638_33.32959,settlement_SSD_Boma_7.03462_33.33358,settlement_SSD_Boma_7.05044_33.33327,settlement_SSD_Boma_7.03827_33.34075,settlement_SSD_Boma_7.05584_33.34889,settlement_SSD_Boma_7.05693_33.33958,settlement_SSD_Boma_7.05837_33.35123,settlement_SSD_Boma_7.06098_33.34678,settlement_SSD_Boma_7.06179_33.33779,settlement_SSD_Boma_7.07112_33.36828,settlement_SSD_Boma_7.07193_33.36531,settlement_SSD_Boma_7.07720_33.36354,settlement_SSD_Boma_7.07842_33.36159,settlement_SSD_Boma_7.08045_33.35867,settlement_SSD_Boma_7.08369_33.36683,settlement_SSD_Boma_7.08369_33.38187,settlement_SSD_Boma_7.08369_33.37987,settlement_SSD_Boma_7.08396_33.37620,settlement_SSD_Boma_7.08450_33.38492,settlement_SSD_Boma_7.08545_33.37844,settlement_SSD_Boma_7.07923_33.38268,settlement_SSD_Boma_7.09018_33.41424,settlement_SSD_Boma_7.08450_33.39995,settlement_SSD_Boma_7.06788_33.40623,settlement_SSD_Boma_7.06666_33.40718"
   },
   {
@@ -1992,11 +1992,11 @@
     "detected_at": "2026-08-13 18:36:31",
     "classification": "agricultural",
     "classification_confidence": 0.7999999999999999,
-    "narrative": "Agricultural settlement at coordinates (7.078\u00b0, 33.525\u00b0). Fire activity (2841 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 0.49 km\u00b2 deforestation nearby indicates active land conversion.",
-    "fires_5km": 2841,
+    "narrative": "Agricultural settlement at coordinates (7.078\u00b0, 33.525\u00b0). Fire activity (2842 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 0.49 km\u00b2 deforestation nearby indicates active land conversion.",
+    "fires_5km": 2842,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.4898,
-    "classified_at": "2026-08-30 07:30:49",
+    "classified_at": "2026-09-07 07:31:01",
     "polygon_ids": "settlement_SSD_Boma_7.07964_33.52655,settlement_SSD_Boma_7.07720_33.52293"
   },
   {
@@ -2017,11 +2017,11 @@
     "detected_at": "2026-08-13 18:36:32",
     "classification": "agricultural",
     "classification_confidence": 0.7999999999999999,
-    "narrative": "Agricultural settlement 36km east-northeast of h\u00f6kkel\u00f6skyl\u00e4. Fire activity (2964 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 0.28 km\u00b2 deforestation nearby indicates active land conversion.",
-    "fires_5km": 2964,
+    "narrative": "Agricultural settlement 36km east-northeast of h\u00f6kkel\u00f6skyl\u00e4. Fire activity (3015 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 0.28 km\u00b2 deforestation nearby indicates active land conversion.",
+    "fires_5km": 3015,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.2767,
-    "classified_at": "2026-08-30 07:30:49",
+    "classified_at": "2026-09-07 07:31:01",
     "polygon_ids": "settlement_SSD_Boma_7.05125_33.36840,settlement_SSD_Boma_7.04800_33.37627,settlement_SSD_Boma_7.04881_33.37731"
   },
   {
@@ -2043,10 +2043,10 @@
     "classification": "pastoral",
     "classification_confidence": 0.8,
     "narrative": "Pastoral settlement 35km east-northeast of Ngaragam. Seasonal fire pattern suggests grazing management. Minimal deforestation (0.18 km\u00b2) indicates grassland/savanna habitat.",
-    "fires_5km": 2809,
+    "fires_5km": 3011,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.1774,
-    "classified_at": "2026-08-30 07:30:50",
+    "classified_at": "2026-09-07 07:31:02",
     "polygon_ids": "settlement_SSD_Boma_6.95838_33.43145"
   },
   {
@@ -2071,7 +2071,7 @@
     "fires_5km": 1255,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.0053,
-    "classified_at": "2026-08-30 07:30:52",
+    "classified_at": "2026-09-07 07:31:05",
     "polygon_ids": "settlement_SSD_Boma_6.62386_33.29087,settlement_SSD_Boma_6.61332_33.29344,settlement_SSD_Boma_6.59629_33.29173,settlement_SSD_Boma_6.58575_33.28829,settlement_SSD_Boma_6.58940_33.29094,settlement_SSD_Boma_6.60440_33.28806,settlement_SSD_Boma_6.61737_33.29261,settlement_SSD_Boma_6.62224_33.29080"
   },
   {
@@ -2096,7 +2096,7 @@
     "fires_5km": 1081,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.0,
-    "classified_at": "2026-08-30 07:30:55",
+    "classified_at": "2026-09-07 07:31:09",
     "polygon_ids": "settlement_SSD_Boma_6.26106_33.48950,settlement_SSD_Boma_6.25984_33.49145"
   },
   {
@@ -2117,11 +2117,11 @@
     "detected_at": "2026-08-13 18:36:32",
     "classification": "agricultural",
     "classification_confidence": 0.7999999999999999,
-    "narrative": "Agricultural settlement 44km west of Boma. Fire activity (1286 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 0.02 km\u00b2 deforestation nearby indicates active land conversion.",
-    "fires_5km": 1286,
+    "narrative": "Agricultural settlement 44km west of Boma. Fire activity (1308 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 0.02 km\u00b2 deforestation nearby indicates active land conversion.",
+    "fires_5km": 1308,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.024300000000000002,
-    "classified_at": "2026-08-30 07:30:55",
+    "classified_at": "2026-09-07 07:31:10",
     "polygon_ids": "settlement_SSD_Boma_6.19905_33.99051,settlement_SSD_Boma_6.19769_33.99638"
   }
 ]

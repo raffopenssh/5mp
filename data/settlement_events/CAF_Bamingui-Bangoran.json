@@ -2596,7 +2596,7 @@
     "fires_5km": 2036,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.0,
-    "classified_at": "2026-09-02 07:30:37",
+    "classified_at": "2026-09-10 07:30:30",
     "polygon_ids": "settlement_CAF_Bamingui-Bangoran_8.70654_19.10594,settlement_CAF_Bamingui-Bangoran_8.69892_19.11601"
   },
   {
@@ -2621,7 +2621,7 @@
     "fires_5km": 1962,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.0,
-    "classified_at": "2026-09-02 07:30:39",
+    "classified_at": "2026-09-10 07:30:31",
     "polygon_ids": "settlement_CAF_Bamingui-Bangoran_8.68064_19.11845"
   },
   {
@@ -2646,7 +2646,7 @@
     "fires_5km": 1933,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.0,
-    "classified_at": "2026-09-02 07:30:40",
+    "classified_at": "2026-09-10 07:30:32",
     "polygon_ids": "settlement_CAF_Bamingui-Bangoran_8.67698_19.53134"
   },
   {
@@ -2671,7 +2671,7 @@
     "fires_5km": 1914,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.0,
-    "classified_at": "2026-09-02 07:30:46",
+    "classified_at": "2026-09-10 07:30:36",
     "polygon_ids": "settlement_CAF_Bamingui-Bangoran_8.58195_19.04627"
   },
   {
@@ -2696,7 +2696,7 @@
     "fires_5km": 2023,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.0,
-    "classified_at": "2026-09-02 07:30:53",
+    "classified_at": "2026-09-10 07:30:41",
     "polygon_ids": "settlement_CAF_Bamingui-Bangoran_8.00831_19.50871"
   },
   {
@@ -2721,7 +2721,7 @@
     "fires_5km": 1922,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.1177,
-    "classified_at": "2026-09-02 07:30:53",
+    "classified_at": "2026-09-10 07:30:41",
     "polygon_ids": "settlement_CAF_Bamingui-Bangoran_8.01155_20.22525"
   },
   {
@@ -2746,7 +2746,7 @@
     "fires_5km": 1804,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.1237,
-    "classified_at": "2026-09-02 07:30:54",
+    "classified_at": "2026-09-10 07:30:43",
     "polygon_ids": "settlement_CAF_Bamingui-Bangoran_7.98152_20.20726"
   },
   {
@@ -2771,7 +2771,7 @@
     "fires_5km": 1875,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.0943,
-    "classified_at": "2026-09-02 07:30:59",
+    "classified_at": "2026-09-10 07:30:47",
     "polygon_ids": "settlement_CAF_Bamingui-Bangoran_7.85326_20.18080"
   },
   {
@@ -2796,7 +2796,7 @@
     "fires_5km": 1843,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.061900000000000004,
-    "classified_at": "2026-09-02 07:31:02",
+    "classified_at": "2026-09-10 07:30:49",
     "polygon_ids": "settlement_CAF_Bamingui-Bangoran_7.78752_20.10458"
   },
   {
@@ -2821,7 +2821,7 @@
     "fires_5km": 1882,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.0,
-    "classified_at": "2026-09-02 07:31:05",
+    "classified_at": "2026-09-10 07:30:52",
     "polygon_ids": "settlement_CAF_Bamingui-Bangoran_7.65442_19.76155,settlement_CAF_Bamingui-Bangoran_7.65360_19.76253"
   },
   {
@@ -2846,7 +2846,7 @@
     "fires_5km": 2246,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.41,
-    "classified_at": "2026-09-02 07:31:07",
+    "classified_at": "2026-09-10 07:30:53",
     "polygon_ids": "settlement_CAF_Bamingui-Bangoran_7.57245_20.13943,settlement_CAF_Bamingui-Bangoran_7.57002_20.15641"
   }
 ]

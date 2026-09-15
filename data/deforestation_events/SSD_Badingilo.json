@@ -792,7 +792,7 @@
     "polygon_ids": "deforest_SSD_Badingilo_2023_104"
   },
   {
-    "id": 44141,
+    "id": 44382,
     "park_id": "SSD_Badingilo",
     "year": 2025,
     "area_km2": 0.0009,
@@ -810,11 +810,11 @@
     "fires_same_year": 793,
     "fire_ratio": 79300.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-09-04T07:30:08.611467",
+    "classified_at": "2026-09-12T07:30:12.086972",
     "polygon_ids": "deforest_gfw_SSD_Badingilo_2025_4.84_31.64"
   },
   {
-    "id": 44142,
+    "id": 44383,
     "park_id": "SSD_Badingilo",
     "year": 2025,
     "area_km2": 0.0004,
@@ -832,7 +832,7 @@
     "fires_same_year": 529,
     "fire_ratio": 52900.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-09-04T07:30:08.643016",
+    "classified_at": "2026-09-12T07:30:12.115688",
     "polygon_ids": "deforest_gfw_SSD_Badingilo_2025_5.34_31.76"
   }
 ]

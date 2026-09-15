@@ -21,7 +21,7 @@
     "fires_5km": 2433,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.2134,
-    "classified_at": "2026-08-31 07:30:49",
+    "classified_at": "2026-09-08 07:30:45",
     "polygon_ids": "settlement_SSD_Southern_6.72374_29.16393,settlement_SSD_Southern_6.72131_29.16384,settlement_SSD_Southern_6.70591_29.16929,settlement_SSD_Southern_6.72212_29.16488,settlement_SSD_Southern_6.71807_29.16172"
   },
   {
@@ -46,7 +46,7 @@
     "fires_5km": 2478,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.2134,
-    "classified_at": "2026-08-31 07:30:50",
+    "classified_at": "2026-09-08 07:30:45",
     "polygon_ids": "settlement_SSD_Southern_6.70307_29.14313"
   },
   {
@@ -71,7 +71,7 @@
     "fires_5km": 1914,
     "fire_seasonality": "year_round",
     "deforest_nearby_km2": 0.2134,
-    "classified_at": "2026-08-31 07:30:51",
+    "classified_at": "2026-09-08 07:30:47",
     "polygon_ids": "settlement_SSD_Southern_6.68563_29.21964,settlement_SSD_Southern_6.68320_29.22256,settlement_SSD_Southern_6.68401_29.22058"
   },
   {
@@ -93,10 +93,10 @@
     "classification": "pastoral",
     "classification_confidence": 0.6000000000000001,
     "narrative": "Pastoral settlement 25km south-southeast of Agangrial. Seasonal fire pattern suggests grazing management. Minimal deforestation (0.24 km\u00b2) indicates grassland/savanna habitat.",
-    "fires_5km": 1840,
+    "fires_5km": 1845,
     "fire_seasonality": "year_round",
     "deforest_nearby_km2": 0.2446,
-    "classified_at": "2026-08-31 07:30:53",
+    "classified_at": "2026-09-08 07:30:49",
     "polygon_ids": "settlement_SSD_Southern_6.63779_29.30004,settlement_SSD_Southern_6.63617_29.30098,settlement_SSD_Southern_6.63779_29.31206"
   },
   {
@@ -118,10 +118,10 @@
     "classification": "pastoral",
     "classification_confidence": 0.6000000000000001,
     "narrative": "Pastoral settlement 29km south-southeast of Agangrial. Seasonal fire pattern suggests grazing management. Minimal deforestation (0.27 km\u00b2) indicates grassland/savanna habitat.",
-    "fires_5km": 1819,
+    "fires_5km": 1824,
     "fire_seasonality": "year_round",
     "deforest_nearby_km2": 0.2697,
-    "classified_at": "2026-08-31 07:30:55",
+    "classified_at": "2026-09-08 07:30:50",
     "polygon_ids": "settlement_SSD_Southern_6.62157_29.32049,settlement_SSD_Southern_6.61428_29.32222,settlement_SSD_Southern_6.59725_29.31709,settlement_SSD_Southern_6.59644_29.31055,settlement_SSD_Southern_6.60779_29.31547"
   },
   {
@@ -143,10 +143,10 @@
     "classification": "pastoral",
     "classification_confidence": 0.8,
     "narrative": "Pastoral settlement 33km south-southeast of Agangrial. Seasonal fire pattern suggests grazing management. Minimal deforestation (0.26 km\u00b2) indicates grassland/savanna habitat.",
-    "fires_5km": 1753,
+    "fires_5km": 1756,
     "fire_seasonality": "year_round",
     "deforest_nearby_km2": 0.2553,
-    "classified_at": "2026-08-31 07:30:56",
+    "classified_at": "2026-09-08 07:30:51",
     "polygon_ids": "settlement_SSD_Southern_6.57536_29.33683"
   },
   {
@@ -171,7 +171,7 @@
     "fires_5km": 1687,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.1505,
-    "classified_at": "2026-08-31 07:31:01",
+    "classified_at": "2026-09-08 07:30:56",
     "polygon_ids": "settlement_SSD_Southern_6.42739_28.32283"
   },
   {
@@ -196,7 +196,7 @@
     "fires_5km": 2181,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.3262,
-    "classified_at": "2026-08-31 07:31:04",
+    "classified_at": "2026-09-08 07:31:00",
     "polygon_ids": "settlement_SSD_Southern_6.32585_28.01590"
   },
   {
@@ -221,7 +221,7 @@
     "fires_5km": 2665,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.3718,
-    "classified_at": "2026-08-31 07:31:06",
+    "classified_at": "2026-09-08 07:31:02",
     "polygon_ids": "settlement_SSD_Southern_6.27620_28.09236"
   },
   {
@@ -246,7 +246,7 @@
     "fires_5km": 2237,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.4519,
-    "classified_at": "2026-08-31 07:31:07",
+    "classified_at": "2026-09-08 07:31:02",
     "polygon_ids": "settlement_SSD_Southern_6.27215_28.87338"
   },
   {
@@ -271,7 +271,7 @@
     "fires_5km": 2497,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.4185,
-    "classified_at": "2026-08-31 07:31:08",
+    "classified_at": "2026-09-08 07:31:04",
     "polygon_ids": "settlement_SSD_Southern_6.23689_28.95530"
   },
   {
@@ -296,7 +296,7 @@
     "fires_5km": 2743,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.17099999999999999,
-    "classified_at": "2026-08-31 07:31:09",
+    "classified_at": "2026-09-08 07:31:04",
     "polygon_ids": "settlement_SSD_Southern_6.22756_28.17887"
   },
   {
@@ -321,7 +321,7 @@
     "fires_5km": 2330,
     "fire_seasonality": "year_round",
     "deforest_nearby_km2": 0.8388,
-    "classified_at": "2026-08-31 07:31:10",
+    "classified_at": "2026-09-08 07:31:05",
     "polygon_ids": "settlement_SSD_Southern_6.20730_29.62022,settlement_SSD_Southern_6.20487_29.62214,settlement_SSD_Southern_6.19392_29.63157"
   },
   {
@@ -346,7 +346,7 @@
     "fires_5km": 1966,
     "fire_seasonality": "year_round",
     "deforest_nearby_km2": 0.6593,
-    "classified_at": "2026-08-31 07:31:12",
+    "classified_at": "2026-09-08 07:31:08",
     "polygon_ids": "settlement_SSD_Southern_6.14407_29.50389"
   },
   {
@@ -371,7 +371,7 @@
     "fires_5km": 2909,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.6979,
-    "classified_at": "2026-08-31 07:31:15",
+    "classified_at": "2026-09-08 07:31:11",
     "polygon_ids": "settlement_SSD_Southern_6.05329_29.01722,settlement_SSD_Southern_6.05248_29.02119"
   },
   {
@@ -396,7 +396,7 @@
     "fires_5km": 2886,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.2338,
-    "classified_at": "2026-08-31 07:31:16",
+    "classified_at": "2026-09-08 07:31:12",
     "polygon_ids": "settlement_SSD_Southern_6.02655_28.19936"
   },
   {
@@ -421,7 +421,7 @@
     "fires_5km": 1966,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.4439,
-    "classified_at": "2026-08-31 07:31:17",
+    "classified_at": "2026-09-08 07:31:13",
     "polygon_ids": "settlement_SSD_Southern_6.00264_29.42002"
   },
   {
@@ -446,7 +446,7 @@
     "fires_5km": 2202,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.6082,
-    "classified_at": "2026-08-31 07:31:19",
+    "classified_at": "2026-09-08 07:31:14",
     "polygon_ids": "settlement_SSD_Southern_5.95766_29.13721,settlement_SSD_Southern_5.95199_29.13702,settlement_SSD_Southern_5.95361_29.13808,settlement_SSD_Southern_5.95482_29.14012,settlement_SSD_Southern_5.95523_29.13563,settlement_SSD_Southern_5.95361_29.13307"
   },
   {
@@ -471,7 +471,7 @@
     "fires_5km": 2879,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.6317,
-    "classified_at": "2026-08-31 07:31:19",
+    "classified_at": "2026-09-08 07:31:15",
     "polygon_ids": "settlement_SSD_Southern_5.95523_29.01900"
   },
   {
@@ -496,7 +496,7 @@
     "fires_5km": 2382,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.6151,
-    "classified_at": "2026-08-31 07:31:20",
+    "classified_at": "2026-09-08 07:31:15",
     "polygon_ids": "settlement_SSD_Southern_5.93983_29.07206"
   },
   {
@@ -521,7 +521,7 @@
     "fires_5km": 2232,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.1928,
-    "classified_at": "2026-08-31 07:31:21",
+    "classified_at": "2026-09-08 07:31:16",
     "polygon_ids": "settlement_SSD_Southern_5.93805_28.10384"
   },
   {
@@ -546,7 +546,7 @@
     "fires_5km": 2538,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.3296,
-    "classified_at": "2026-08-31 07:31:21",
+    "classified_at": "2026-09-08 07:31:16",
     "polygon_ids": "settlement_SSD_Southern_5.93213_29.36863,settlement_SSD_Southern_5.92848_29.37151,settlement_SSD_Southern_5.92929_29.36903"
   },
   {
@@ -571,7 +571,7 @@
     "fires_5km": 2808,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.6386000000000001,
-    "classified_at": "2026-08-31 07:31:22",
+    "classified_at": "2026-09-08 07:31:17",
     "polygon_ids": "settlement_SSD_Southern_5.91471_28.99766,settlement_SSD_Southern_5.91390_29.00514"
   },
   {
@@ -596,7 +596,7 @@
     "fires_5km": 2596,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.2544,
-    "classified_at": "2026-08-31 07:31:25",
+    "classified_at": "2026-09-08 07:31:20",
     "polygon_ids": "settlement_SSD_Southern_5.82556_28.95676"
   },
   {
@@ -621,7 +621,7 @@
     "fires_5km": 1788,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.19490000000000002,
-    "classified_at": "2026-08-31 07:31:26",
+    "classified_at": "2026-09-08 07:31:21",
     "polygon_ids": "settlement_SSD_Southern_5.78910_29.14678"
   },
   {
@@ -646,7 +646,7 @@
     "fires_5km": 2199,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.1387,
-    "classified_at": "2026-08-31 07:31:28",
+    "classified_at": "2026-09-08 07:31:23",
     "polygon_ids": "settlement_SSD_Southern_5.69510_29.40503"
   },
   {
@@ -671,7 +671,7 @@
     "fires_5km": 2044,
     "fire_seasonality": "year_round",
     "deforest_nearby_km2": 0.4265,
-    "classified_at": "2026-08-31 07:31:29",
+    "classified_at": "2026-09-08 07:31:24",
     "polygon_ids": "settlement_SSD_Southern_6.17082_29.68184,settlement_SSD_Southern_6.16920_29.69781,settlement_SSD_Southern_6.16839_29.70579,settlement_SSD_Southern_6.16880_29.70280,settlement_SSD_Southern_6.16920_29.69480,settlement_SSD_Southern_6.16569_29.68534,settlement_SSD_Southern_6.16758_29.68273,settlement_SSD_Southern_6.17001_29.67781"
   },
   {
@@ -696,7 +696,7 @@
     "fires_5km": 2613,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.3366,
-    "classified_at": "2026-08-31 07:31:29",
+    "classified_at": "2026-09-08 07:31:24",
     "polygon_ids": "settlement_SSD_Southern_6.09544_29.76837,settlement_SSD_Southern_6.09463_29.76934"
   },
   {
@@ -721,7 +721,7 @@
     "fires_5km": 2502,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.3366,
-    "classified_at": "2026-08-31 07:31:29",
+    "classified_at": "2026-09-08 07:31:24",
     "polygon_ids": "settlement_SSD_Southern_6.09139_29.74420"
   }
 ]

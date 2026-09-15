@@ -3256,7 +3256,7 @@
     "polygon_ids": "deforest_SSD_Southern_2023_354"
   },
   {
-    "id": 44135,
+    "id": 44377,
     "park_id": "SSD_Southern",
     "year": 2025,
     "area_km2": 0.0063,
@@ -3274,7 +3274,7 @@
     "fires_same_year": 1997,
     "fire_ratio": 199700.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-08-31T07:30:05.888505",
+    "classified_at": "2026-09-08T07:30:06.077804",
     "polygon_ids": "deforest_gfw_SSD_Southern_2025_5.60_28.48,deforest_gfw_SSD_Southern_2025_5.60_28.49"
   }
 ]

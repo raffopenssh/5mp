@@ -17,11 +17,11 @@
     "detected_at": "2026-08-13 18:38:07",
     "classification": "agricultural",
     "classification_confidence": 1.0,
-    "narrative": "Agricultural settlement 7km southeast of Maluo. Fire activity (1023 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 1.14 km\u00b2 deforestation nearby indicates active land conversion. 27% of the surrounding 1km is mapped cropland (GLAD 30m, 2016-2019 epoch), none of it present in 2000-2003 \u2014 new agricultural conversion.",
-    "fires_5km": 1023,
+    "narrative": "Agricultural settlement 7km southeast of Maluo. Fire activity (1028 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 1.14 km\u00b2 deforestation nearby indicates active land conversion. 27% of the surrounding 1km is mapped cropland (GLAD 30m, 2016-2019 epoch), none of it present in 2000-2003 \u2014 new agricultural conversion.",
+    "fires_5km": 1028,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 1.1437,
-    "classified_at": "2026-09-04 07:30:23",
+    "classified_at": "2026-09-12 07:30:33",
     "polygon_ids": "settlement_SSD_Badingilo_5.86523_31.74705"
   },
   {
@@ -42,11 +42,11 @@
     "detected_at": "2026-08-13 18:38:07",
     "classification": "agricultural",
     "classification_confidence": 0.9999999999999999,
-    "narrative": "Agricultural settlement 6km south-southeast of Maluo. Fire activity (743 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 1.14 km\u00b2 deforestation nearby indicates active land conversion.",
-    "fires_5km": 743,
+    "narrative": "Agricultural settlement 6km south-southeast of Maluo. Fire activity (748 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 1.14 km\u00b2 deforestation nearby indicates active land conversion.",
+    "fires_5km": 748,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 1.1437,
-    "classified_at": "2026-09-04 07:30:24",
+    "classified_at": "2026-09-12 07:30:33",
     "polygon_ids": "settlement_SSD_Badingilo_5.86376_31.72062"
   },
   {
@@ -67,11 +67,11 @@
     "detected_at": "2026-08-13 18:38:07",
     "classification": "agricultural",
     "classification_confidence": 0.7999999999999999,
-    "narrative": "Agricultural settlement 5km northwest of Gwojo-Adung. Fire activity (964 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 1.15 km\u00b2 deforestation nearby indicates active land conversion.",
-    "fires_5km": 964,
+    "narrative": "Agricultural settlement 5km northwest of Gwojo-Adung. Fire activity (972 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 1.15 km\u00b2 deforestation nearby indicates active land conversion.",
+    "fires_5km": 972,
     "fire_seasonality": "year_round",
     "deforest_nearby_km2": 1.149,
-    "classified_at": "2026-09-04 07:30:26",
+    "classified_at": "2026-09-12 07:30:36",
     "polygon_ids": "settlement_SSD_Badingilo_5.80014_31.75494,settlement_SSD_Badingilo_5.78637_31.75896"
   },
   {
@@ -92,11 +92,11 @@
     "detected_at": "2026-08-13 18:38:07",
     "classification": "agricultural",
     "classification_confidence": 0.9999999999999999,
-    "narrative": "Agricultural settlement 0km south-southeast of Sudan Safari. Fire activity (1061 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 1.18 km\u00b2 deforestation nearby indicates active land conversion. 3% of the surrounding 1km is mapped cropland (GLAD 30m, 2016-2019 epoch), up from 0% in 2000-2003.",
-    "fires_5km": 1061,
+    "narrative": "Agricultural settlement 0km south-southeast of Sudan Safari. Fire activity (1066 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 1.18 km\u00b2 deforestation nearby indicates active land conversion. 3% of the surrounding 1km is mapped cropland (GLAD 30m, 2016-2019 epoch), up from 0% in 2000-2003.",
+    "fires_5km": 1066,
     "fire_seasonality": "year_round",
     "deforest_nearby_km2": 1.184,
-    "classified_at": "2026-09-04 07:30:27",
+    "classified_at": "2026-09-12 07:30:38",
     "polygon_ids": "settlement_SSD_Badingilo_5.74004_31.78911"
   },
   {
@@ -115,13 +115,13 @@
     "tile_row": null,
     "tile_col": null,
     "detected_at": "2026-08-13 18:38:07",
-    "classification": "temporary_camp",
+    "classification": "pastoral",
     "classification_confidence": 0.8,
-    "narrative": "Temporary camp 47km east-northeast of Kanyawal. Small footprint (10000 m\u00b2) and remote location suggest seasonal occupation, possibly hunting or resource extraction.",
+    "narrative": "Pastoral settlement 47km east-northeast of Kanyawal. Seasonal fire pattern suggests grazing management. Minimal deforestation (0.00 km\u00b2) indicates grassland/savanna habitat.",
     "fires_5km": 1021,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.0,
-    "classified_at": "2026-09-04 07:30:28",
+    "classified_at": "2026-09-12 07:30:39",
     "polygon_ids": "settlement_SSD_Badingilo_5.72316_32.24721"
   },
   {
@@ -146,7 +146,7 @@
     "fires_5km": 587,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.1638,
-    "classified_at": "2026-09-04 07:30:30",
+    "classified_at": "2026-09-12 07:30:41",
     "polygon_ids": "settlement_SSD_Badingilo_5.70858_32.03552,settlement_SSD_Badingilo_5.70858_32.04253,settlement_SSD_Badingilo_5.70696_32.03546,settlement_SSD_Badingilo_5.68913_32.03385,settlement_SSD_Badingilo_5.67778_32.03046,settlement_SSD_Badingilo_5.66198_32.02391,settlement_SSD_Badingilo_5.65915_32.02181,settlement_SSD_Badingilo_5.65915_32.00380,settlement_SSD_Badingilo_5.66239_32.00291,settlement_SSD_Badingilo_5.66239_31.98490,settlement_SSD_Badingilo_5.66806_31.97308,settlement_SSD_Badingilo_5.67130_32.00021,settlement_SSD_Badingilo_5.65996_31.98781,settlement_SSD_Badingilo_5.66158_31.99387,settlement_SSD_Badingilo_5.66563_31.98801,settlement_SSD_Badingilo_5.66806_31.99410,settlement_SSD_Badingilo_5.64456_32.00931,settlement_SSD_Badingilo_5.64110_32.00691,settlement_SSD_Badingilo_5.62593_32.00367,settlement_SSD_Badingilo_5.63376_32.01027,settlement_SSD_Badingilo_5.63578_32.00684,settlement_SSD_Badingilo_5.63160_31.99686,settlement_SSD_Badingilo_5.65672_32.00272,settlement_SSD_Badingilo_5.65023_31.98848,settlement_SSD_Badingilo_5.65023_32.00650,settlement_SSD_Badingilo_5.65915_32.01281,settlement_SSD_Badingilo_5.66523_32.01201,settlement_SSD_Badingilo_5.66806_32.01211,settlement_SSD_Badingilo_5.65348_32.00911,settlement_SSD_Badingilo_5.66382_32.02191,settlement_SSD_Badingilo_5.66239_32.02743,settlement_SSD_Badingilo_5.66806_32.02112,settlement_SSD_Badingilo_5.66847_32.02714,settlement_SSD_Badingilo_5.67090_32.02722,settlement_SSD_Badingilo_5.67130_32.02423,settlement_SSD_Badingilo_5.68022_32.03304,settlement_SSD_Badingilo_5.68346_32.03015,settlement_SSD_Badingilo_5.69237_32.01495,settlement_SSD_Badingilo_5.69845_32.01215,settlement_SSD_Badingilo_5.70750_32.01513,settlement_SSD_Badingilo_5.68913_32.01283,settlement_SSD_Badingilo_5.68751_32.02329,settlement_SSD_Badingilo_5.68913_32.02384,settlement_SSD_Badingilo_5.69237_32.01845,settlement_SSD_Badingilo_5.67130_32.03624,settlement_SSD_Badingilo_5.67454_32.03035"
   },
   {
@@ -165,13 +165,13 @@
     "tile_row": null,
     "tile_col": null,
     "detected_at": "2026-08-13 18:38:07",
-    "classification": "pastoral",
+    "classification": "temporary_camp",
     "classification_confidence": 0.8,
-    "narrative": "Pastoral settlement 20km east of Gabur. Seasonal fire pattern suggests grazing management. Minimal deforestation (0.16 km\u00b2) indicates grassland/savanna habitat.",
+    "narrative": "Temporary camp 20km east of Gabur. Small footprint (10000 m\u00b2) and remote location suggest seasonal occupation, possibly hunting or resource extraction.",
     "fires_5km": 580,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.1638,
-    "classified_at": "2026-09-04 07:30:32",
+    "classified_at": "2026-09-12 07:30:43",
     "polygon_ids": "settlement_SSD_Badingilo_5.59271_32.01555"
   },
   {
@@ -190,13 +190,13 @@
     "tile_row": null,
     "tile_col": null,
     "detected_at": "2026-08-13 18:38:07",
-    "classification": "residential",
+    "classification": "agricultural",
     "classification_confidence": 0.7,
-    "narrative": "Permanent settlement 2km east-southeast of Jamus. Population ~92 with 1250000 m\u00b2 built area. Established community with moderate surrounding land use.",
-    "fires_5km": 836,
+    "narrative": "Agricultural settlement 2km east-southeast of Jamus. Fire activity (847 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 0.56 km\u00b2 deforestation nearby indicates active land conversion.",
+    "fires_5km": 847,
     "fire_seasonality": "year_round",
     "deforest_nearby_km2": 0.5556,
-    "classified_at": "2026-09-04 07:30:35",
+    "classified_at": "2026-09-12 07:30:48",
     "polygon_ids": "settlement_SSD_Badingilo_5.08719_31.73321,settlement_SSD_Badingilo_5.08395_31.73511,settlement_SSD_Badingilo_5.08638_31.73519,settlement_SSD_Badingilo_5.08233_31.72406,settlement_SSD_Badingilo_5.06532_31.72555,settlement_SSD_Badingilo_5.06370_31.72450,settlement_SSD_Badingilo_5.05479_31.70973,settlement_SSD_Badingilo_5.04588_31.69795,settlement_SSD_Badingilo_5.02968_31.69747,settlement_SSD_Badingilo_5.02725_31.69679,settlement_SSD_Badingilo_5.02725_31.69314,settlement_SSD_Badingilo_5.02968_31.69447,settlement_SSD_Badingilo_5.03211_31.70154,settlement_SSD_Badingilo_5.02442_31.71631,settlement_SSD_Badingilo_5.03697_31.69669,settlement_SSD_Badingilo_5.03778_31.69871,settlement_SSD_Badingilo_5.03940_31.69376,settlement_SSD_Badingilo_5.04143_31.69682,settlement_SSD_Badingilo_5.04831_31.69903,settlement_SSD_Badingilo_5.04912_31.70705,settlement_SSD_Badingilo_5.05074_31.70310,settlement_SSD_Badingilo_5.05277_31.70416,settlement_SSD_Badingilo_5.05452_31.70655,settlement_SSD_Badingilo_5.05560_31.70425,settlement_SSD_Badingilo_5.03738_31.70770,settlement_SSD_Badingilo_5.03994_31.70644,settlement_SSD_Badingilo_5.04426_31.69791,settlement_SSD_Badingilo_5.05601_31.70826,settlement_SSD_Badingilo_5.06451_31.71202,settlement_SSD_Badingilo_5.06532_31.71755,settlement_SSD_Badingilo_5.06316_31.70948,settlement_SSD_Badingilo_5.06532_31.71054,settlement_SSD_Badingilo_5.06532_31.70854,settlement_SSD_Badingilo_5.06785_31.71086,settlement_SSD_Badingilo_5.05560_31.72025,settlement_SSD_Badingilo_5.05803_31.72233,settlement_SSD_Badingilo_5.05884_31.71335,settlement_SSD_Badingilo_5.06109_31.72153,settlement_SSD_Badingilo_5.06127_31.71442,settlement_SSD_Badingilo_5.06613_31.72457,settlement_SSD_Badingilo_5.06730_31.71749,settlement_SSD_Badingilo_5.06897_31.71966,settlement_SSD_Badingilo_5.07045_31.72137,settlement_SSD_Badingilo_5.07221_31.71675,settlement_SSD_Badingilo_5.07423_31.71682,settlement_SSD_Badingilo_5.07504_31.71784,settlement_SSD_Badingilo_5.07261_31.73127,settlement_SSD_Badingilo_5.07531_31.73719,settlement_SSD_Badingilo_5.07357_31.72434,settlement_SSD_Badingilo_5.07423_31.72782,settlement_SSD_Badingilo_5.07545_31.72685,settlement_SSD_Badingilo_5.07626_31.71888,settlement_SSD_Badingilo_5.07747_31.72692,settlement_SSD_Badingilo_5.08071_31.72301"
   },
   {
@@ -217,11 +217,11 @@
     "detected_at": "2026-08-13 18:38:07",
     "classification": "agricultural",
     "classification_confidence": 0.7,
-    "narrative": "Agricultural settlement 16km north of Mogiri. Fire activity (1691 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 0.56 km\u00b2 deforestation nearby indicates active land conversion.",
-    "fires_5km": 1691,
+    "narrative": "Agricultural settlement 16km north of Mogiri. Fire activity (1695 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 0.56 km\u00b2 deforestation nearby indicates active land conversion.",
+    "fires_5km": 1695,
     "fire_seasonality": "year_round",
     "deforest_nearby_km2": 0.5556,
-    "classified_at": "2026-09-04 07:30:36",
+    "classified_at": "2026-09-12 07:30:49",
     "polygon_ids": "settlement_SSD_Badingilo_5.03697_31.86171"
   },
   {
@@ -240,13 +240,13 @@
     "tile_row": null,
     "tile_col": null,
     "detected_at": "2026-08-13 18:38:07",
-    "classification": "agricultural",
+    "classification": "residential",
     "classification_confidence": 0.7,
-    "narrative": "Agricultural settlement 3km south-southeast of Nyuwa. Fire activity (1263 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 0.55 km\u00b2 deforestation nearby indicates active land conversion.",
-    "fires_5km": 1263,
+    "narrative": "Permanent settlement 3km south-southeast of Nyuwa. Population ~22 with 370000 m\u00b2 built area. Established community with moderate surrounding land use.",
+    "fires_5km": 1264,
     "fire_seasonality": "year_round",
     "deforest_nearby_km2": 0.5475,
-    "classified_at": "2026-09-04 07:30:38",
+    "classified_at": "2026-09-12 07:30:51",
     "polygon_ids": "settlement_SSD_Badingilo_5.00701_31.70579,settlement_SSD_Badingilo_5.00041_31.68973,settlement_SSD_Badingilo_4.99648_31.68547,settlement_SSD_Badingilo_4.98053_31.67799,settlement_SSD_Badingilo_4.97326_31.67745,settlement_SSD_Badingilo_4.95841_31.66734,settlement_SSD_Badingilo_4.97461_31.67882,settlement_SSD_Badingilo_4.97704_31.67806,settlement_SSD_Badingilo_4.98674_31.67936,settlement_SSD_Badingilo_4.98999_31.68031,settlement_SSD_Badingilo_5.00404_31.69303,settlement_SSD_Badingilo_5.00404_31.69003"
   },
   {
@@ -267,11 +267,11 @@
     "detected_at": "2026-08-13 18:38:07",
     "classification": "agricultural",
     "classification_confidence": 0.8999999999999999,
-    "narrative": "Agricultural settlement 12km north of Mogiri. Fire activity (1788 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 0.54 km\u00b2 deforestation nearby indicates active land conversion. 4% of the surrounding 1km is mapped cropland (GLAD 30m, 2016-2019 epoch), up from 0% in 2000-2003.",
-    "fires_5km": 1788,
+    "narrative": "Agricultural settlement 12km north of Mogiri. Fire activity (1793 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 0.54 km\u00b2 deforestation nearby indicates active land conversion. 4% of the surrounding 1km is mapped cropland (GLAD 30m, 2016-2019 epoch), up from 0% in 2000-2003.",
+    "fires_5km": 1793,
     "fire_seasonality": "year_round",
     "deforest_nearby_km2": 0.5441,
-    "classified_at": "2026-09-04 07:30:38",
+    "classified_at": "2026-09-12 07:30:51",
     "polygon_ids": "settlement_SSD_Badingilo_4.99402_31.86603"
   },
   {
@@ -292,11 +292,11 @@
     "detected_at": "2026-08-13 18:38:07",
     "classification": "agricultural",
     "classification_confidence": 0.7,
-    "narrative": "Agricultural settlement 9km north of Mogiri. Fire activity (1870 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 0.56 km\u00b2 deforestation nearby indicates active land conversion.",
-    "fires_5km": 1870,
+    "narrative": "Agricultural settlement 9km north of Mogiri. Fire activity (1875 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 0.56 km\u00b2 deforestation nearby indicates active land conversion.",
+    "fires_5km": 1875,
     "fire_seasonality": "year_round",
     "deforest_nearby_km2": 0.5556,
-    "classified_at": "2026-09-04 07:30:39",
+    "classified_at": "2026-09-12 07:30:52",
     "polygon_ids": "settlement_SSD_Badingilo_4.96712_31.85644"
   },
   {
@@ -317,11 +317,11 @@
     "detected_at": "2026-08-13 18:38:07",
     "classification": "agricultural",
     "classification_confidence": 0.7999999999999999,
-    "narrative": "Agricultural settlement 2km north of Gondokoro \u063a\u0646\u062f\u0643\u0631\u0648. Fire activity (1604 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 0.54 km\u00b2 deforestation nearby indicates active land conversion.",
-    "fires_5km": 1604,
+    "narrative": "Agricultural settlement 2km north of Gondokoro \u063a\u0646\u062f\u0643\u0631\u0648. Fire activity (1605 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 0.54 km\u00b2 deforestation nearby indicates active land conversion.",
+    "fires_5km": 1605,
     "fire_seasonality": "year_round",
     "deforest_nearby_km2": 0.5391,
-    "classified_at": "2026-09-04 07:30:40",
+    "classified_at": "2026-09-12 07:30:53",
     "polygon_ids": "settlement_SSD_Badingilo_4.93249_31.65857,settlement_SSD_Badingilo_4.92723_31.66892"
   }
 ]
