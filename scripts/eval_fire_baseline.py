@@ -43,6 +43,7 @@ A_FRACS = [0.05, 0.10, 0.20, 0.30, 0.50]
 SIGMA_KM = 4.0
 LEAD_LO, LEAD_HI = FF.VANGUARD_LEAD_DAYS, FF.VANGUARD_LEAD_MAX
 EARLY_D = 45
+RECUR_D = 15   # recur.py's 'ahead of the local front by' threshold
 
 
 def capture_curve(score, target, mask, fracs=A_FRACS):
@@ -56,6 +57,19 @@ def capture_curve(score, target, mask, fracs=A_FRACS):
 
 
 def smooth(a, sig_cells): return ndimage.gaussian_filter(a.astype(np.float32), sig_cells)
+
+
+def block_recur(onset, fr, dens, b=2):
+    """recur rule on b x b blocks (5 km at RES 0.025): block onset = earliest cell, block front = mean over cells with a
+    front, early if onset <= front - RECUR_D and the block holds >= 2 detections. Returned at cell resolution."""
+    ny, nx = onset.shape; NY, NX = -(-ny // b) * b, -(-nx // b) * b
+    def pad(a, v): o = np.full((NY, NX), v, np.float32); o[:ny, :nx] = a; return o
+    o = pad(onset, np.nan).reshape(NY // b, b, NX // b, b); f = pad(fr, np.nan).reshape(NY // b, b, NX // b, b); d = pad(dens, 0).reshape(NY // b, b, NX // b, b)
+    with np.errstate(all="ignore"):
+        bo = np.nanmin(o, axis=(1, 3)); bf = np.nanmean(f, axis=(1, 3)); bd = d.sum(axis=(1, 3))
+    held = np.isfinite(bf); rec = held & (bo <= bf - RECUR_D) & (bd >= 2)
+    up = lambda a: np.repeat(np.repeat(a, b, 0), b, 1)[:ny, :nx]
+    return up(rec), up(held)
 
 
 def load_area(conn, area_id):
@@ -91,8 +105,14 @@ def load_area(conn, area_id):
         dos = (day[sel] - o0).astype(float); lead = fr[iy[sel], ix[sel]] - dos  # front day - detection day
         van = np.zeros((ny, nx), np.float32); vs = (lead >= LEAD_LO) & (lead <= LEAD_HI); np.add.at(van, (iy[sel][vs], ix[sel][vs]), 1)
         early = np.zeros((ny, nx), np.float32); es = lead >= -EARLY_D; np.add.at(early, (iy[sel][es], ix[sel][es]), 1)
+        # the recur rule (scripts/fire_vanguard/recur.py): a cell whose FIRST burn came >= RECUR_D days before the
+        # local front is "early" this season; held = the cell carried a front. recur5: the same on 2x2 (5 km) blocks
+        # with >= 2 detections, the prototype's cell. Both are the rule the map would draw as squares.
+        onset = np.full((ny, nx), np.inf); np.minimum.at(onset, (iy[sel], ix[sel]), dos); onset[~np.isfinite(onset)] = np.nan
+        held = np.isfinite(fr); rec = held & (onset <= fr - RECUR_D)
+        rec5, held5 = block_recur(onset, fr, dens)
         seasons.append(dict(season=season, complete=bool(complete), synthetic=front is None, n=int(sel.sum()), n_van=int(vs.sum()), dens=dens, van=van, early=early,
-                            has_front=bool(np.isfinite(fr).any())))
+                            rec=rec, held=held, rec5=rec5, held5=held5, has_front=bool(np.isfinite(fr).any())))
     if len(seasons) < 3: return None
     cell_km = res * 111 * math.cos(math.radians(y0 + ny * res / 2))
     mask = np.ones((ny, nx), bool)
@@ -115,6 +135,14 @@ def ladder_area(A, extra=None):
             "clim": smooth(np.mean([p["dens"] for p in prior], 0), sig),
             "clim_early": smooth(np.mean([p["early"] for p in prior if p["has_front"]] or [np.zeros(mask.shape)], 0), sig),
         }
+        # recur rule: share of held seasons in which the cell burned early (raw = the squares as drawn; _s = smoothed like the others)
+        pf = [p for p in prior if p["has_front"]]
+        if pf:
+            held = np.sum([p["held"] for p in pf], 0); rec = np.sum([p["rec"] for p in pf], 0)
+            preds["recur"] = np.where(held > 0, rec / np.maximum(held, 1), 0).astype(np.float32)
+            preds["recur_s"] = smooth(preds["recur"], sig)
+            held5 = np.sum([p["held5"] for p in pf], 0); rec5 = np.sum([p["rec5"] for p in pf], 0)
+            preds["recur5"] = np.where(held5 > 0, rec5 / np.maximum(held5, 1), 0).astype(np.float32)
         if extra: preds.update(extra)
         for tname, tgt in (("all", hold["dens"]), ("vanguard", hold["van"])):
             if tgt.sum() < 50: continue
@@ -152,7 +180,7 @@ def summarise(rows, label):
         v = np.array([x[p1] - x[p2] for x in d.values() if p1 in x and p2 in x])
         return (float(np.median(v)), float(np.mean(v > 0)), len(v)) if len(v) else (float("nan"), float("nan"), 0)
     for t in ("all", "vanguard"):
-        for p1, p2 in (("clim", "persist"), ("clim_early", "clim"), ("clim", "uniform")):
+        for p1, p2 in (("clim", "persist"), ("clim_early", "clim"), ("clim", "uniform"), ("clim_early", "recur"), ("clim_early", "recur_s"), ("clim_early", "recur5"), ("recur_s", "recur")):
             m, w, n = paired(t, p1, p2)
             if n: print(f"   paired gini {t:9} {p1} - {p2}: median {m:+.3f}, {p1} better in {w:.0%} of {n}"); summ[f"paired/{t}/{p1}-{p2}"] = dict(median=m, share_better=w, n=n)
     return summ

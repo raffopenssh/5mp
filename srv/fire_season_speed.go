@@ -10,27 +10,22 @@ package srv
 // field lost to last season's front, MAE 59 vs 7.8 d).
 //
 //	GET /api/fire-season-speed?area=<park|aoi>|lon=&lat=[&at=YYYY-MM-DD|&season=2024/25]
-//	    → {"area","season","bbox":[w,s,e,n],"png":"data:image/png;base64,…",
+//	    → {"area","season","bbox":[w,s,e,n],"grid":{x0,y0,res,nx,ny},
+//	       "values":"<base64 uint8 per cell>", "encoding":{…},
 //	       "stats":{"cells","p10_km_d","median_km_d","p90_km_d"},
-//	       "legend":[{"km_d":…, "color":"#…"}…],
-//	       "palette":["#…"×256], "levels":{"n":256,"km_d_min":1,"km_d_max":50}}
-//	    The PNG is invertible through `palette` (unique colour per level, log
-//	    scale between km_d_min and km_d_max) — that is how the map tip reads
-//	    the speed under the pointer without a second payload.
+//	       "legend":[{"km_d":…, "color":"#…"}…], "levels":{"n":255,"km_d_min":1,"km_d_max":50}}
 //
-// One PNG at the grid's own resolution (2.5 km cells, so a 137×147 park is
-// a 20k-pixel image), drawn by the client as a MapLibre image source. Cells
-// with no front this season are transparent. Colour is a FIXED log ramp in
-// km/day (legend below) so two areas can be compared; per-area stretching
-// would make every map look the same.
+// One byte per cell at the grid's own resolution (2.5 km), the same wire
+// shape as the early-burn ground in /api/fire-season: the client
+// (srv/static/cellfield.js) colours it, draws true squares that scale with
+// zoom, and reads the value under the pointer from the array. Colour is a
+// FIXED log ramp in km/day (legend below) so two areas can be compared;
+// per-area stretching would make every map look the same.
 
 import (
-	"bytes"
 	"encoding/base64"
 	"encoding/json"
-	"image"
 	"image/color"
-	"image/png"
 	"math"
 	"net/http"
 	"sort"
@@ -53,12 +48,8 @@ var speedStops = []struct {
 }
 
 // speedLevels quantise km/day to a byte on the log scale between the first
-// and last stop, and speedPalette gives each level a UNIQUE colour (the ramp
-// colour, nudged in the blue LSB where two levels would collide). The PNG is
-// therefore invertible: the client reads a pixel, looks the colour up in
-// the palette it was sent, and has the speed under the pointer — no second
-// payload, no per-pixel request.
-const speedLevels = 256
+// and last stop (byte 0 is reserved for "no front", so 255 levels).
+const speedLevels = 255
 
 func speedOfLevel(l int) float64 {
 	lo, hi := math.Log(speedStops[0].KmD), math.Log(speedStops[len(speedStops)-1].KmD)
@@ -79,24 +70,6 @@ func levelOfSpeed(kmd float64) int {
 	}
 	return l
 }
-
-var speedPalette = func() []color.NRGBA {
-	pal := make([]color.NRGBA, speedLevels)
-	seen := map[uint32]bool{}
-	for l := 0; l < speedLevels; l++ {
-		c := speedColor(speedOfLevel(l))
-		for {
-			k := uint32(c.R)<<16 | uint32(c.G)<<8 | uint32(c.B)
-			if !seen[k] {
-				seen[k] = true
-				break
-			}
-			c.B ^= 1 // nudge the LSB; invisible, unique
-		}
-		pal[l] = c
-	}
-	return pal
-}()
 
 func speedColor(kmd float64) color.NRGBA {
 	if kmd <= speedStops[0].KmD {
@@ -316,17 +289,21 @@ func (s *Server) HandleAPIFireSeasonSpeed(w http.ResponseWriter, r *http.Request
 		json.NewEncoder(w).Encode(map[string]interface{}{"area": area, "season": season, "status": "no front this season"})
 		return
 	}
-	img := image.NewNRGBA(image.Rect(0, 0, nx, ny))
+	// One byte per cell, row 0 = the grid's SOUTH edge: 0 = no front this
+	// season, 1..speedLevels = level + 1 on the log ramp. The client
+	// (srv/static/cellfield.js) decodes it once, draws it as squares, and
+	// reads the speed under the pointer straight from the array — the same
+	// wire shape as the early-burn ground, so the two fields share one
+	// renderer and one probe. Until 2026-09-15 this was a PNG with a unique
+	// colour per level and the client inverted the palette per pixel.
+	levels := make([]byte, nx*ny)
 	vals := make([]float64, 0, nx*ny)
-	for y := 0; y < ny; y++ {
-		for x := 0; x < nx; x++ {
-			v := speed[y*nx+x]
-			if math.IsNaN(v) {
-				continue
-			}
-			vals = append(vals, v)
-			img.SetNRGBA(x, ny-1-y, speedPalette[levelOfSpeed(v)]) // row 0 of the grid is the SOUTH edge
+	for i, v := range speed {
+		if math.IsNaN(v) {
+			continue
 		}
+		vals = append(vals, v)
+		levels[i] = byte(levelOfSpeed(v) + 1)
 	}
 	sort.Float64s(vals)
 	pct := func(p float64) float64 {
@@ -336,15 +313,6 @@ func (s *Server) HandleAPIFireSeasonSpeed(w http.ResponseWriter, r *http.Request
 		i := int(p * float64(len(vals)-1))
 		return math.Round(vals[i]*10) / 10
 	}
-	var buf bytes.Buffer
-	if err := png.Encode(&buf, img); err != nil {
-		internalError(w, "png", err)
-		return
-	}
-	palette := make([]string, speedLevels)
-	for l, c := range speedPalette {
-		palette[l] = rgbHex([3]uint8{c.R, c.G, c.B})
-	}
 	legend := make([]map[string]interface{}, 0, len(speedStops))
 	for _, st := range speedStops {
 		legend = append(legend, map[string]interface{}{
@@ -352,19 +320,19 @@ func (s *Server) HandleAPIFireSeasonSpeed(w http.ResponseWriter, r *http.Request
 		})
 	}
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"area":   area,
-		"season": season,
-		"bbox":   []float64{x0, y0, x0 + res*float64(nx), y0 + res*float64(ny)},
-		"grid":   map[string]interface{}{"x0": x0, "y0": y0, "res": res, "nx": nx, "ny": ny},
-		"png":    "data:image/png;base64," + base64.StdEncoding.EncodeToString(buf.Bytes()),
+		"area":     area,
+		"season":   season,
+		"bbox":     []float64{x0, y0, x0 + res*float64(nx), y0 + res*float64(ny)},
+		"grid":     map[string]interface{}{"x0": x0, "y0": y0, "res": res, "nx": nx, "ny": ny},
+		"values":   base64.StdEncoding.EncodeToString(levels), // uint8 per cell, see above
+		"encoding": map[string]interface{}{"type": "uint8", "none": 0, "offset": 1, "order": "row-major, row 0 = south"},
 		"stats": map[string]interface{}{
 			"cells": len(vals), "p10_km_d": pct(0.10), "median_km_d": pct(0.50), "p90_km_d": pct(0.90),
 			"smoothing_sigma_cells": 2, "cell_km": math.Round(res*111*10) / 10,
 		},
 		"legend": legend,
-		// Pixel → km/day: palette[i] is level i, level i is km_d_min·(km_d_max/km_d_min)^(i/255).
-		"palette": palette,
-		"levels":  map[string]interface{}{"n": speedLevels, "km_d_min": speedStops[0].KmD, "km_d_max": speedStops[len(speedStops)-1].KmD},
+		// byte b > 0 → level b-1 → km/day = km_d_min·(km_d_max/km_d_min)^(level/(n-1)); `stops` is the colour ramp
+		"levels": map[string]interface{}{"n": speedLevels, "km_d_min": speedStops[0].KmD, "km_d_max": speedStops[len(speedStops)-1].KmD},
 		"words": "How fast the season front travels, km/day, from the gradient of its arrival-time surface " +
 			"(smoothed σ=2 cells). Descriptive, not a forecast.",
 	})

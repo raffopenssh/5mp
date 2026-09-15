@@ -1048,6 +1048,13 @@
             probes.delete(id);
             if (pin && pin.stack[pin.idx] && pin.stack[pin.idx].layerId === id) unpin();
         },
+        /** Ask one probe directly (tests): its html at a synthetic event, or null. */
+        probeHTML: function (id, e) {
+            var p = probes.get(id);
+            if (!p) return null;
+            var r = p.probe(e);
+            return r ? r.html : null;
+        },
         setBackdropGuard: function (fn) { backdropGuard = fn; },
         hide: function () { hideHover(true); unpin(); },
         /** Only the transient preview — used before opening a popup. */

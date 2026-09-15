@@ -210,6 +210,14 @@ func (s *Server) HandleAPIFireSeason(w http.ResponseWriter, r *http.Request) {
 	if q.Get("summary") == "" {
 		contoursOut = json.RawMessage(orNull(contours))
 	}
+	// Early-burn ground (srv/fire_early_ground.go) rides along only when
+	// asked (`early=1`): ~20 KB of cells the summary path must not pay for.
+	// Its first-burn column is this season's, so the animator can light a
+	// cell up when the season's first detection lands in it.
+	var earlyOut interface{}
+	if q.Get("early") != "" {
+		earlyOut = s.earlyGround(area, want).wire(want)
+	}
 	// The report side (`leads=N`): the vanguard chains themselves, ranked by
 	// how far they ran ahead, with their evidence tier, plus the tier
 	// breakdown of every vanguard chain in the window — so one call tells a
@@ -268,6 +276,7 @@ func (s *Server) HandleAPIFireSeason(w http.ResponseWriter, r *http.Request) {
 		"computed_at":        computedAt,
 		"stats":              json.RawMessage(orNull(stats)),
 		"contours":           contoursOut,
+		"early_ground":       earlyOut,
 		// One sentence, written once here so a report, a tip and an agent
 		// quote the same words (the UI's seasonFrontWords is its short form).
 		"words": seasonWords(want, complete == 1, frontStats.First, frontStats.Median, frontStats.Last,
