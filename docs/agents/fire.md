@@ -544,6 +544,21 @@ field knowledge from the user, not a measurement, and is worded as such.
 `scripts/eval_herd_vanguard.py` now reads the KF set (runs F/G: a
 vanguard-only fit) and has **not been re-run** since — a separate task.
 
+**Can the KF improve the plain trajectories? Measured 2026-09-15: no.**
+With the full pass done (162 areas, 8–9 seasons each, 5 areas honestly at
+0 chains — rainforest/desert), the open question was whether the Kalman
+tracker beats v7 *inside* the season. `eval_fire_vanguard.py --tracker
+kf_all` (KF over the whole field, seeds anywhere) vs `--tracker groups
+--leads all`, 2 shuffles: CAF_Chinko 2024/25 links +0.02 vs +0.03,
+long fronts −0.47 vs −0.35, fires in long −0.22 vs −0.23; TZA_Serengeti
+2024/25 links +0.13 vs +0.17, long fronts −0.21 vs −0.83. Same null-level
+skill, same shape: the Mahalanobis gate is no more selective than the
+13 km + heading gate when every gate contains a patch. The seed-ahead rule,
+not the filter, is what carries the vanguard skill, and merging KF chains
+into the plain population would break "one population per area". Plain
+trajectories stay v7/v8; the Methods page now states this as a tested
+result ("cannot be read — by anyone") rather than a caveat.
+
 ## `protected_area_id` is a catchment, not a park (F10 — fixed 2026-08-13)
 
 `park_assigner.ASSIGN_MAX_DIST_KM = 100`, so `WHERE protected_area_id = ?`

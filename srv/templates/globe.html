@@ -597,24 +597,18 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 <!-- Data Processing -->
                 <h3 style="color: #22c55e; margin: 20px 0 12px; font-size: 15px;" id="methods-processing" class="methods-h">How We Process Data</h3>
                 
-                <h4 style="color: #f97316; margin: 14px 0 6px; font-size: 13px;" id="methods-fire" class="methods-h">Fire: Detections, Fire Lines, Season Front &amp; Vanguard</h4>
-                <p style="margin: 0 0 8px; font-size: 12px; color: #aaa;">Every red line on the map is a chain of satellite fire detections that we believe belong to one fire, followed from day to day. This is how the chain is built, and how we say how sure we are of it.</p>
+                <h4 style="color: #f97316; margin: 14px 0 6px; font-size: 13px;" id="methods-fire" class="methods-h">Fire: Lines, Season Front &amp; Vanguard</h4>
+                <p style="margin: 0 0 8px; font-size: 12px; color: #ddd; border-left: 3px solid #fde047; padding-left: 10px;"><strong>In short.</strong> Red lines are satellite fire detections followed from day to day. Inside the burning season they mark real corridors, but no method can read the direction they burned in — we tested. The <span style="color:#fde047">vanguard</span> chains, which start 10–60 days ahead of the season, are the ones whose direction and pace are confirmed against chance; they are built for every area and refreshed nightly. Act on those.</p>
                 <ul style="margin-bottom: 14px; padding-left: 20px; font-size: 12px; color: #aaa;">
-                    <li><strong>What the satellite sees.</strong> NASA’s VIIRS instruments (on the Suomi-NPP, NOAA-20 and NOAA-21 satellites) pass over twice a day and report every 375 m pixel that is burning at that moment. We fetch the new detections every day from NASA FIRMS and keep them all in one archive; each park or drawn area reads the detections inside its own boundary plus 30 km around it. The number of satellites in the archive has changed over the years, so a chart cuts its line where that happens rather than showing more satellites as more fire.</li>
-                    <li><strong>One day’s fires become patches.</strong> Detections from the same day that lie within 3 km of each other (at least three of them) are grouped into one patch. Places that burn every single year — gas flares, kilns, rubbish dumps — are removed first.</li>
-                    <li><strong>Patches are followed from day to day.</strong> A fire moving across the land leaves a patch each day. We connect today’s patch to yesterday’s if it lies where the fire was heading, within 5 km plus 8 km for every day it was not seen, and without a turn sharper than 100°. A fire may go unseen for up to 3 days (cloud, a satellite outage) and still be picked up. When several patches could continue several fires, all the pairings of that day are decided together, so two fronts running side by side cannot swap places, and a single stray pixel cannot steal a large front’s place.</li>
-                    <li><strong>Gaps and jitter.</strong> Two pieces of a chain broken by cloud are re-joined if they line up and are less than 4 days apart. The daily position is the centre of the patch weighted by fire intensity, then lightly smoothed; a lone point far off the line is dropped, and how much a line zig-zags is kept as a quality mark.</li>
-                    <li><strong>What counts as a line.</strong> A chain needs at least 10 detections over 2 or more days. Its length, duration, speed and how much of it lies inside the boundary give it a type: <em>spot fire</em>, <em>controlled burn</em>, <em>spreading fire</em>, <em>moving front</em> (labelled <em>transhumance</em>: 5 days or more, over 20 km, faster than 2 km a day — a front that travels, whether or not people are behind it), <em>local</em> or <em>outside</em>.</li>
-                    <li><strong>How sure are we of a chain?</strong> Where fire is everywhere, there is always <em>some</em> patch to connect to, so a chain can look convincing and still be a coincidence. We check each day-to-day connection against a simple test: a fire spreads from its own edge, so in a real connection the nearest pixels of yesterday’s and today’s patches nearly touch; in a chance connection they usually do not. We measured how often each happens on real data and on data with the days shuffled, and each connection is scored by that ratio. Adding the scores along a chain gives its evidence tier: <em>supported</em> (about 1 chance in 100 of arising by accident), <em>weak</em>, <em>unsupported</em> (no better than a coin toss), <em>single</em> (one day only, nothing to judge) or <em>unmeasured</em>. The tier does not move the line; it says whether the <em>order</em> it burned in can be trusted. Speed is deliberately not part of the test: herders walk 800 km one way and hunters cover 80 km in a day, and any rule that rejected fast movement removed exactly those chains.</li>
-                    <li><strong style="color:#fde047">Where the order can be trusted.</strong> The shuffle test above can also be run on a whole region at once: shuffle the <em>days</em> of all its detections and build the chains again. Where the real day order gives no more connections than the shuffled one, the lines still mark real corridors — the same ground burns every year — but the order it burned in is not something the satellite can tell us. That is the case for almost everything <em>inside</em> the burning season, when fire is everywhere. The one place the real order clearly wins is <em>ahead</em> of the season, which is what the next two ideas measure.</li>
-                    <li><strong style="color:#f87171">Season front</strong> — for each 2.5 km cell we note the day by which a fifth of the land that burns in a season had burned within ~60 km. Joining cells with the same day gives the contour lines (every 5 days). The season starts in the area’s quietest month, measured from its own history, never assumed.</li>
-                    <li><strong>Lead</strong> — how many days before that front a fire burned. Live, where this season’s front has not arrived yet, we measure against the usual front of past seasons and say so.</li>
-                    <li><strong style="color:#fde047">Vanguard fires</strong> — fire chains that <em>began</em> 10–60 days ahead of the front. This is the one group where the tracker beats the shuffle clearly (about half the day-to-day links are real signal, in every season we have tested), so these are the lines whose direction and pace mean something. On the ground this is where people move ahead of the season, burning along the route; the map says “ahead of the season”, not who or why.</li>
-                    <li><strong style="color:#fde047">Following them into the season.</strong> The ordinary tracker looks at all fires at once, so a chain that began ahead of the season was cut the moment the season’s own fires arrived around it — we measured that this ended 43 % of vanguard chains. So the vanguard chains are now built by a second, dedicated tracker with two rules. First, a chain may only be <em>born</em> ahead of the front (10–60 days): nothing inside the season starts one. Second, once born, it is <em>followed</em> with a Kalman filter — the standard way to follow a moving object from noisy sightings (used for aircraft radar and for particle tracks in physics): from each day’s position it predicts where the fire should be tomorrow and how sure it is, accepts a new patch only if it falls within that expectation, and updates its estimate of speed and heading. It keeps following as the season arrives around it, until about 10 days after the front has passed. Everything else — the 3-day gap limit, the patches, the evidence score — is unchanged. Measured against the shuffle on the XSA 2024/25 season: chains are 74 km long instead of 44, and the fires in chains over 150 km beat the shuffled data by 61 % (the ordinary tracker: 0 %). We tried letting a chain <em>coast</em> through cloudy days and rejected it: after two unseen days the next fire is almost always someone else’s. An unseen day is drawn dashed, never guessed.</li>
-                    <li>Each vanguard chain is coloured <em>along its length</em> by how far ahead of the front it was at that point — white far ahead, yellow at two weeks, orange as the season arrives — and faint ash once the season has caught up with it. A <strong>wide</strong> line means the day order along the chain is confirmed against the shuffle (evidence tier <em>supported</em> or <em>weak</em>); a thin one is unconfirmed or unmeasured. Zoomed in, every chain carries small arrowheads for its direction of travel (fires have dates, so a chain has an order). A chain whose last fire is within 3 days of the newest data ends in a <strong>large arrowhead</strong>: it is <em>still moving</em>, and the arrowhead points the heading the filter last estimated. Its tip says where it was last seen and why other chains ended — the season arrived around them, or the trail was lost (cloud, a fire too small to see, or they stopped). Field staff report the herds following the scouts one to two weeks behind; that is their knowledge, not our measurement. Where the second tracker has not run yet for an area, the plain chains that began ahead stand in and the layer says so. In the animation the front moves with the playhead.</li>
-                    <li id="methods-season-legend"></li>
-                    <li><strong style="color:#f59e0b">Season speed</strong> — the front is an arrival-time surface; how steeply it climbs is how slowly the season travels. We read <em>1/|∇T|</em> off the smoothed front grid (σ = 2 cells) and draw it as a field: pale where the season sweeps through (tens of km a day), rust where it stalls (a kilometre a day or less). The scale is fixed in km/day so two areas compare; the legend prints the median and spread of the area drawn. It describes the season shown — it is not a forecast, and as one it loses to last season’s front.</li>
-                    <li>Chains are rebuilt every night with the same rules for the archive and for this morning’s detections (a chain spanning the edge of last night’s window is rebuilt whole, not cut); fronts and vanguard chains are rebuilt nightly for ~25 areas in rotation and refreshed daily for the season in progress. A park whose front has not been built yet says so rather than showing an empty layer.</li>
+                    <li><strong>What the satellite sees.</strong> NASA’s VIIRS instruments (Suomi-NPP, NOAA-20, NOAA-21) pass twice a day and report every 375 m pixel burning at that moment; we fetch them daily from FIRMS. Each area reads the detections inside its boundary plus 30 km. The satellite fleet grew in 2024, so charts cut their line there instead of showing more satellites as more fire.</li>
+                    <li><strong>From detections to lines.</strong> Same-day detections within 3 km (three or more) form a <em>patch</em>; places that burn every year (flares, kilns, dumps) are removed first. Today’s patch is linked to yesterday’s if it lies where the fire was heading — within 5 km plus 8 km for each unseen day, no turn sharper than 100°, at most 3 unseen days. All of a day’s pairings are decided together, so two fronts side by side cannot swap. A line needs 10 detections over 2 days; its length, duration and speed give it a type (<em>spot fire</em>, <em>controlled burn</em>, <em>spreading fire</em>, <em>moving front</em>). Speed is never used to reject a link: herders walk 800 km and hunters cover 80 km a day, and every rule that capped speed removed exactly those chains.</li>
+                    <li><strong>How sure are we?</strong> We test every method the same way: shuffle the <em>days</em> of all detections in a region (the burnt ground stays, the order goes), rebuild, and compare. A real link usually has yesterday’s and today’s patches nearly touching — a fire spreads from its own edge — a chance link does not, so each link gets a score from that ratio and the sum along a chain gives its <em>evidence tier</em>: <em>supported</em> (about 1 in 100 by chance), <em>weak</em>, <em>unsupported</em> (a coin toss), <em>single</em>, <em>unmeasured</em>. A <strong>wide</strong> line means the day order is confirmed; a thin one means only the corridor is. The tier never moves a line.</li>
+                    <li><strong style="color:#f87171">Inside the burning season the order cannot be read — by anyone.</strong> When fire is everywhere, the shuffled data gives as many chains, as long, as the real data. That held for our tracker and, tested the same way, for a Kalman filter run over the whole field: no gain on links, fewer long fronts than chance. The red lines in season are real corridors — the same ground burns every year — but the satellite cannot tell us the direction they burned in. We say so rather than draw arrows we cannot back.</li>
+                    <li><strong style="color:#f87171">Season front.</strong> For each 2.5 km cell, the day by which a fifth of the land that burns in a season had burned within ~60 km; equal days join into contours every 5 days. The season starts in the area’s quietest month, measured from its own history. <strong>Lead</strong> is how many days before that front a fire burned; live, before this season’s front arrives, we measure against the usual front of past seasons and say so.</li>
+                    <li><strong style="color:#fde047">Vanguard: the lines that carry information.</strong> Ahead of the front the field is sparse and the real order wins clearly — about half of all day-to-day links are signal, in every season and area tested. Vanguard chains are built by a dedicated tracker with two rules: a chain may be <em>born</em> only 10–60 days ahead of the front, and once born it is <em>followed</em> with a Kalman filter — the standard tool for tracking a moving object through noisy sightings (radar, particle physics): predict tomorrow’s position and its uncertainty, accept only a patch that fits, update speed and heading — on into the arriving season. This repairs the 43 % of chains the ordinary tracker cut short when the season arrived around them. Against the shuffle (XSA 2024/25): chains 74 km instead of 44, fires in chains over 150 km +61 %. Coasting through cloud was tried and rejected: after two unseen days the next fire is someone else’s. An unseen day is drawn dashed, never guessed. These chains are now built for every park and drawn area, every season since 2018, and refreshed nightly. On the ground this is where people move ahead of the season, burning along the route; the map says “ahead of the season”, not who or why.</li>
+                    <li><strong>Reading a vanguard chain.</strong> Colour along its length is lead — white far ahead, yellow at two weeks, orange as the season arrives, ash once it has. Width is the evidence tier. Small chevrons give the direction of travel; a large chevron at the end means it is <em>still moving</em> at the newest data, pointing the filter’s last heading. Its tip says why a chain ended: the season arrived, or the trail was lost (cloud, a fire too small to see, or they stopped). Field staff report herds one to two weeks behind the scouts — their knowledge, not our measurement.</li>
+                    <li><strong style="color:#f59e0b">Season speed</strong> — how fast the front travels, read as 1/|∇T| off the front grid: pale where the season sweeps through (tens of km a day), rust where it stalls. It describes the season shown; it is not a forecast.</li>
+                    <li>Lines are rebuilt every night with the same rules for the archive and this morning’s detections; fronts and vanguard chains refresh daily for the season in progress and in rotation for past ones. An area whose front is not built yet says so rather than showing an empty layer.</li>
                 </ul>
 
                 <h4 style="color: #a855f7; margin: 14px 0 6px; font-size: 13px;" id="methods-settlements" class="methods-h">Settlement Detection</h4>
@@ -3823,24 +3817,27 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             console.log('TIP: For full UI testing, resize browser to 1280x1400+ to see all popup sections.');
         }
         
-        // makeArrowheadSDF: a compact filled arrowhead (a chevron with a
-        // closed back, pointing up) as a signed-distance field. MapLibre reads
-        // an SDF icon's alpha as distance: 0.75 is the edge, higher is inside,
-        // so a shape rasterised at 4× and turned into distances draws crisply
-        // at any icon-size and takes icon-color / icon-halo-*.
-        function makeArrowheadSDF(size) {
+        // makeChevronSDF: an open chevron (a "›" turned to point up) with
+        // round caps, drawn as a stroke — the route-direction glyph a map
+        // reader already knows, and unlike a filled head it sits ON the line
+        // without hiding it. Rendered as a signed-distance field: MapLibre
+        // reads an SDF icon's alpha as distance, 0.75 is the edge, higher is
+        // inside, so a shape rasterised at 4× and turned into distances draws
+        // crisply at any icon-size and takes icon-color / icon-halo-*.
+        function makeChevronSDF(size) {
             const S = 4, N = size * S, cv = document.createElement('canvas');
             cv.width = cv.height = N;
             const c = cv.getContext('2d');
-            c.fillStyle = '#fff';
+            c.strokeStyle = '#fff';
+            c.lineWidth = N * 0.17;
+            c.lineCap = 'round'; c.lineJoin = 'round';
             c.beginPath();
-            // tip at top-centre, wings at the sides, a notch at the back
-            c.moveTo(N * 0.5, N * 0.16);
-            c.lineTo(N * 0.86, N * 0.80);
-            c.lineTo(N * 0.5, N * 0.64);
-            c.lineTo(N * 0.14, N * 0.80);
-            c.closePath();
-            c.fill();
+            // apex at top-centre, two arms down and out at 90°; fills the
+            // canvas so icon-size 0.5 is still a legible glyph
+            c.moveTo(N * 0.12, N * 0.70);
+            c.lineTo(N * 0.5, N * 0.32);
+            c.lineTo(N * 0.88, N * 0.70);
+            c.stroke();
             const a = c.getImageData(0, 0, N, N).data;
             const inside = new Uint8Array(N * N);
             for (let i = 0; i < N * N; i++) inside[i] = a[i * 4 + 3] > 127 ? 1 : 0;
@@ -3851,7 +3848,9 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 if (x === 0 || y === 0 || x === N - 1 || y === N - 1 || !inside[y * N + x - 1] || !inside[y * N + x + 1] || !inside[(y - 1) * N + x] || !inside[(y + 1) * N + x]) { ex.push(x); ey.push(y); }
             }
             const out = new Uint8ClampedArray(size * size * 4);
-            const R = size / 3;   // distance (px) mapped onto the 0.25 alpha range either side of the edge
+            // MapLibre's SDF convention (tiny-sdf): 8 image px of distance
+            // span the 0.25 alpha either side of the 0.75 edge
+            const R = 8;
             for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
                 const cx = (x + 0.5) * S, cy = (y + 0.5) * S;
                 let best = Infinity;
@@ -3869,14 +3868,16 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             renderBasemapAttribution();
             map.on('sourcedata', scheduleAttributionRender);
             map.on('styledata', scheduleAttributionRender);
-            // Direction arrowhead for every line that is a MOVEMENT (fire
+            // Direction chevron for every line that is a MOVEMENT (fire
             // trajectories, vanguard chains): one SDF image, so each layer
             // colours it with its own line colour (`icon-color`) and gives it
             // a halo — the old bitmap was a fixed red arrow on every colour of
             // line. Points UP (north) at rotate 0, as the bitmap did, so the
             // existing `icon-rotate: 90` along-line placements and a
             // `icon-rotate: heading_deg` at a head both read correctly.
-            map.addImage('arrow-right', makeArrowheadSDF(24), { sdf: true, pixelRatio: 1 });
+            // 48 px at pixelRatio 2 = 24 CSS px at icon-size 1, rendered
+            // from a 2× field so the small along-line glyphs stay crisp.
+            map.addImage('arrow-right', makeChevronSDF(48), { sdf: true, pixelRatio: 2 });
             
             map.addSource('areas', {
                 type: 'geojson',
