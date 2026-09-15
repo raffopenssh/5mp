@@ -2,8 +2,10 @@ package srv
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -15,8 +17,10 @@ type ParkExportRow struct {
 	Country          string
 	AreaKm2          float64
 	FireCount        int64
-	FireGroups       int64 // fire_trajectory chains (feature_geometries)
-	VanguardGroups   int64 // of those, began 10–60 d ahead of the season front (NULL front → 0, and fire_groups says so)
+	FireGroups       int64  // fire_trajectory chains (feature_geometries)
+	VanguardGroups   int64  // the vanguard population (vanguardRowsSQL) — KF chains where tracked, else plain chains that began 10–60 d ahead (NULL front → 0, and fire_groups says so)
+	VanguardTracker  string // "kf" | "groups": which population vanguard_groups counts (srv/fire_season.go vanguardTracker)
+	VanguardMoving   int64  // KF chains still moving (end_cause = ongoing: last seen within 3 d of the area's newest data); 0 for "groups"
 	SettlementCount  int64
 	DeforestationKm2 float64
 	RoadlessPct      float64
@@ -28,8 +32,10 @@ type ParkExportRow struct {
 // 60 s+ cold. Detections are append-only (daily FIRMS ingest), so
 // MAX(rowid) is an O(1) fingerprint of the input: same rowid → same answer.
 // When the fingerprint moves, the previous answer is served once more while
-// one goroutine recomputes (stale-while-revalidate); only the very first
-// request after a restart pays the full price.
+// one goroutine recomputes (stale-while-revalidate). The memo is persisted
+// in server_memo (db/migrations/068) so a restart costs nothing, and
+// WarmParkFireCounts fills it off the request path at startup — no request
+// pays the full price unless the table is empty AND the process is fresh.
 type parkFireCountMemo struct {
 	mu         sync.Mutex
 	maxRowid   int64
@@ -39,12 +45,29 @@ type parkFireCountMemo struct {
 
 var parkFireCounts = &parkFireCountMemo{}
 
+const parkFireCountMemoKey = "park_fire_counts"
+
+// WarmParkFireCounts loads the persisted memo (or computes it once) in the
+// background so the first parks-CSV request after a restart is fast.
+func (s *Server) WarmParkFireCounts() {
+	time.Sleep(5 * time.Second) // let the listener come up first
+	s.parkFireCounts()
+}
+
 func (s *Server) parkFireCounts() map[string]int64 {
 	var maxRowid int64
 	_ = s.DB.QueryRow(`SELECT COALESCE(MAX(rowid), 0) FROM fire_detections`).Scan(&maxRowid)
 
 	m := parkFireCounts
 	m.mu.Lock()
+	if m.counts == nil {
+		// Fresh process: the persisted memo, whatever its fingerprint —
+		// a stale one is served once and refreshed below, exactly like an
+		// in-memory stale answer.
+		if counts, fp, ok := s.loadParkFireCountMemo(); ok {
+			m.counts, m.maxRowid = counts, fp
+		}
+	}
 	if m.counts != nil && (m.maxRowid == maxRowid || m.refreshing) {
 		c := m.counts
 		m.mu.Unlock()
@@ -63,6 +86,9 @@ func (s *Server) parkFireCounts() map[string]int64 {
 			}
 			m.refreshing = false
 			m.mu.Unlock()
+			if counts != nil {
+				s.storeParkFireCountMemo(counts, maxRowid)
+			}
 		}()
 		return c
 	}
@@ -75,7 +101,36 @@ func (s *Server) parkFireCounts() map[string]int64 {
 	m.mu.Lock()
 	m.counts, m.maxRowid = counts, maxRowid
 	m.mu.Unlock()
+	s.storeParkFireCountMemo(counts, maxRowid)
 	return counts
+}
+
+// loadParkFireCountMemo reads the persisted memo and the MAX(rowid) it was
+// computed for. ok=false when there is none (or it does not parse).
+func (s *Server) loadParkFireCountMemo() (map[string]int64, int64, bool) {
+	var fp, val string
+	if err := s.DB.QueryRow(`SELECT fingerprint, value_json FROM server_memo WHERE key = ?`, parkFireCountMemoKey).Scan(&fp, &val); err != nil {
+		return nil, 0, false
+	}
+	var counts map[string]int64
+	if json.Unmarshal([]byte(val), &counts) != nil || len(counts) == 0 {
+		return nil, 0, false
+	}
+	rowid, err := strconv.ParseInt(fp, 10, 64)
+	if err != nil {
+		return nil, 0, false
+	}
+	return counts, rowid, true
+}
+
+func (s *Server) storeParkFireCountMemo(counts map[string]int64, maxRowid int64) {
+	b, err := json.Marshal(counts)
+	if err != nil {
+		return
+	}
+	_, _ = s.DB.Exec(`INSERT INTO server_memo(key, fingerprint, value_json, computed_at) VALUES (?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+		ON CONFLICT(key) DO UPDATE SET fingerprint = excluded.fingerprint, value_json = excluded.value_json, computed_at = excluded.computed_at`,
+		parkFireCountMemoKey, strconv.FormatInt(maxRowid, 10), string(b))
 }
 
 func (s *Server) queryParkFireCounts() map[string]int64 {
@@ -161,17 +216,36 @@ func (s *Server) HandleAPIExportParks(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
+	// One pass over the partial index for the count and the still-moving
+	// count (json_extract on ~60k rows, ~0.1 s); the tracker word comes
+	// from the ≤ 200-row fire_vanguard_kf table.
 	vanRows, err := s.DB.Query(`
-		SELECT park_id, COUNT(*) FROM feature_geometries INDEXED BY idx_fg_vanguard
+		SELECT park_id, COUNT(*),
+		       SUM(CASE WHEN feature_type = 'fire_vanguard' AND json_extract(properties_json, '$.end_cause') = 'ongoing' THEN 1 ELSE 0 END)
+		FROM feature_geometries INDEXED BY idx_fg_vanguard
 		WHERE` + vanguardRowsSQL + ` GROUP BY park_id`)
 	if err == nil {
 		defer vanRows.Close()
 		for vanRows.Next() {
 			var parkID string
-			var v int64
-			if err := vanRows.Scan(&parkID, &v); err == nil {
+			var v, moving int64
+			if err := vanRows.Scan(&parkID, &v, &moving); err == nil {
 				if row, ok := parkData[parkID]; ok {
-					row.VanguardGroups = v
+					row.VanguardGroups, row.VanguardMoving = v, moving
+				}
+			}
+		}
+	}
+	for _, row := range parkData {
+		row.VanguardTracker = "groups"
+	}
+	if kfRows, err := s.DB.Query(`SELECT area_id FROM fire_vanguard_kf`); err == nil {
+		defer kfRows.Close()
+		for kfRows.Next() {
+			var id string
+			if kfRows.Scan(&id) == nil {
+				if row, ok := parkData[id]; ok {
+					row.VanguardTracker = "kf"
 				}
 			}
 		}
@@ -247,7 +321,7 @@ func (s *Server) HandleAPIExportParks(w http.ResponseWriter, r *http.Request) {
 	defer csvWriter.Flush()
 
 	// Write header
-	header := []string{"park_id", "name", "country", "area_km2", "fire_count", "fire_groups", "vanguard_groups", "settlement_count", "deforestation_km2", "roadless_pct"}
+	header := []string{"park_id", "name", "country", "area_km2", "fire_count", "fire_groups", "vanguard_groups", "vanguard_tracker", "vanguard_moving", "settlement_count", "deforestation_km2", "roadless_pct"}
 	if err := csvWriter.Write(header); err != nil {
 		http.Error(w, "Failed to write CSV header", http.StatusInternalServerError)
 		return
@@ -263,6 +337,8 @@ func (s *Server) HandleAPIExportParks(w http.ResponseWriter, r *http.Request) {
 			fmt.Sprintf("%d", row.FireCount),
 			fmt.Sprintf("%d", row.FireGroups),
 			fmt.Sprintf("%d", row.VanguardGroups),
+			row.VanguardTracker,
+			fmt.Sprintf("%d", row.VanguardMoving),
 			fmt.Sprintf("%d", row.SettlementCount),
 			fmt.Sprintf("%.4f", row.DeforestationKm2),
 			fmt.Sprintf("%.2f", row.RoadlessPct),
