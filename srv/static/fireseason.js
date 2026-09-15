@@ -34,7 +34,7 @@
     var FRONT_SRC = 'fireseason-front-src', FRONT_LYR = 'fireseason-front',
         FRONT_LBL = 'fireseason-front-label', FRONT_WAVE = 'fireseason-front-wave',
         VAN_SRC = 'fireseason-van-src', VAN_LYR = 'fireseason-van',
-        VAN_DIM_LYR = 'fireseason-van-dim',
+        VAN_DIM_LYR = 'fireseason-van-dim', VAN_GAP_LYR = 'fireseason-van-gap',
         SPEED_SRC = 'fireseason-speed-src', SPEED_LYR = 'fireseason-speed';
 
     var map = null;
@@ -97,20 +97,52 @@
         var t = Math.min(1, (lead - 15) / 25);
         return hex(lerp(253, 255, t), lerp(224, 255, t), lerp(71, 255, t));
     }
-    // Evidence tier → the width the map draws. Only a MEASURED day order
-    // ('supported'/'weak', rebuild_fire_trajectories_v5 evidence_tier) earns
-    // the wider stroke; absent prints 'unmeasured' and stays thin.
+    // Certainty → width. The width of a chain says how sure we are of its
+    // DAY ORDER: evidence_bits (rebuild_fire_trajectories_v5, log2 likelihood
+    // ratio of its links vs the day-shuffled null) is graded linearly from
+    // 0 bits (x1, a coin toss — the ordinary trajectory width) to 6 bits
+    // ('supported', x1.5); negative never thins below x1, the line still
+    // marks where fire ran. When only the tier word is known (old wire),
+    // supported reads x1.5 and weak x1.3. 'unmeasured' never widens.
     var WIDE_TIERS = ['supported', 'weak'];
+    var SUPPORTED_BITS = 6, WIDE_MAX = 0.5;
     function tierWord(t) { return t || 'unmeasured'; }
     function tierWide(t) { return WIDE_TIERS.indexOf(t) >= 0; }
-    // "zoom" may only feed a top-level interpolate, so the tier factor goes
+    function tierBits(t) { return t === 'supported' ? SUPPORTED_BITS : (t === 'weak' ? 3.6 : 0); }
+    function evidenceMul(tier, bits) {
+        var b = (typeof bits === 'number' && isFinite(bits)) ? bits : tierBits(tier);
+        return 1 + WIDE_MAX * Math.max(0, Math.min(1, b / SUPPORTED_BITS));
+    }
+    // The same rule as a MapLibre expression over feature properties
+    // bitsKey (number) / tierKey (word). lodlayer.js reads it with 'eb'/'ev'.
+    function widthMulExpr(bitsKey, tierKey) {
+        var bits = ['coalesce', ['get', bitsKey],
+            ['match', ['coalesce', ['get', tierKey], 'unmeasured'], 'supported', SUPPORTED_BITS, 'weak', 3.6, 0]];
+        return ['+', 1, ['*', WIDE_MAX, ['min', 1, ['max', 0, ['/', bits, SUPPORTED_BITS]]]]];
+    }
+    // "zoom" may only feed a top-level interpolate, so the factor goes
     // inside each stop: stops = [[zoom, width], ...] or a plain number.
-    function tierMul(w) { return ['*', w, ['match', ['get', 'tier'], WIDE_TIERS, 1.35, 1]]; }
+    // Vanguard segments carry their factor pre-computed as 'wf'.
+    function tierMul(w) { return ['*', w, ['coalesce', ['get', 'wf'], 1]]; }
     function tierWidth(stops) {
         if (typeof stops === 'number') return tierMul(stops);
         var e = ['interpolate', ['linear'], ['zoom']];
         stops.forEach(function (st) { e.push(st[0], tierMul(st[1])); });
         return e;
+    }
+    // Presence → opacity: a chain fades as the season closes in on it
+    // (0 d ahead: 0.55) and is fully present 10+ d ahead (0.95) — the
+    // original XSA render's alpha rule, so the eye reads "far ahead" as
+    // both whiter and firmer.
+    function leadAlpha(L) { return 0.55 + 0.4 * Math.max(0, Math.min(1, (L == null ? 10 : L) / 10)); }
+    // One word for the tip: how sure, and what that did to the line.
+    function evidenceWords(tier, bits) {
+        var tw = tierWord(tier);
+        var how = tw === 'supported' ? 'Confident' : tw === 'weak' ? 'Fairly sure' : tw === 'unsupported' ? 'Unsure' : tw === 'single' ? 'One day only' : 'Not measured';
+        var rest = tw === 'single' ? ' \u2014 no day order to judge'
+            : ' of the day order along this chain' + (evidenceMul(tier, bits) > 1.1 ? ', so it is drawn wider' : '');
+        var b = (typeof bits === 'number' && isFinite(bits)) ? esc(tw) + ' evidence, ' + bits.toFixed(1) + ' bits' : esc(tw);
+        return '<b>' + how + '</b>' + rest + ' <span style="opacity:.6">(' + b + ')</span>';
     }
     // The legend's swatch is SAMPLED from leadColor, so the panel cannot say
     // one ramp while the map draws another. Returns HTML: gradient bar with
@@ -122,8 +154,9 @@
         var bar = '<div class="fs-ramp" style="background:linear-gradient(90deg,' + stops.join(',') + ')"></div>';
         var ticks = '<div class="fs-ramp-ticks"><span>season arrives</span><span>15 d ahead</span><span>40+ d</span></div>';
         var width = '<div class="fs-ramp-width">' +
-            '<span class="fs-wi"><span class="fs-w fs-w-wide"></span>day order confirmed (' + WIDE_TIERS.join(' / ') + ')</span>' +
-            '<span class="fs-wi"><span class="fs-w fs-w-thin"></span>unconfirmed / unmeasured</span>' +
+            '<span class="fs-wi"><span class="fs-w fs-w-wide"></span>wider = surer of the day order</span>' +
+            '<span class="fs-wi"><span class="fs-w fs-w-thin"></span>thin = unsure</span>' +
+            '<span class="fs-wi"><span class="fs-w fs-w-dash"></span>dashed = a day not seen</span>' +
             '<span class="fs-wi"><span class="fs-w fs-w-ash"></span>season caught up</span></div>';
         return '<div class="fs-legend' + (opts.cls ? ' ' + opts.cls : '') + '"' + (opts.title ? ' title="' + esc(opts.title) + '"' : '') + '>' +
             '<div class="fs-ramp-cap">Line colour: days ahead of the season front</div>' + bar + ticks + width + '</div>';
@@ -191,24 +224,40 @@
             });
         }
         if (!map.getLayer(VAN_LYR)) {
+            // Two layers, one rule: a segment whose two days are consecutive
+            // is solid; one that bridges a day nobody saw (cloud, or a fire
+            // too small for the satellite) is dashed. line-dasharray is not
+            // data-driven, so the split is a filter on 'gap' (days).
+            var vanPaint = {
+                'line-color': ['get', 'color'],
+                'line-width': tierWidth([[5, 1.6], [9, 2.6], [12, 3.4]]),
+                'line-opacity': ['coalesce', ['get', 'alpha'], 0.95],
+                'line-opacity-transition': { duration: 450 }
+            };
             map.addLayer({
                 id: VAN_LYR, type: 'line', source: VAN_SRC,
-                filter: ['==', ['get', 'part'], 'ahead'],
+                filter: ['all', ['==', ['get', 'part'], 'ahead'], ['<=', ['coalesce', ['get', 'gap'], 1], 1]],
                 layout: { 'line-cap': 'round', 'line-join': 'round' },
-                paint: {
-                    'line-color': ['get', 'color'],
-                    'line-width': tierWidth([[5, 1.6], [9, 2.6], [12, 3.4]]),
-                    'line-opacity': 0.95
-                }
+                paint: vanPaint
+            });
+            map.addLayer({
+                id: VAN_GAP_LYR, type: 'line', source: VAN_SRC,
+                filter: ['all', ['==', ['get', 'part'], 'ahead'], ['>', ['coalesce', ['get', 'gap'], 1], 1]],
+                layout: { 'line-cap': 'butt', 'line-join': 'round' },
+                paint: Object.assign({}, vanPaint, { 'line-dasharray': [3, 1.4] })
             });
             registerTip();
         }
         applyVisibility();
     }
+    function lift() {
+        if (!map) return;
+        [VAN_DIM_LYR, VAN_GAP_LYR, VAN_LYR].forEach(function (id) { if (map.getLayer(id)) map.moveLayer(id); });
+    }
     function applyVisibility() {
         if (!map) return;
         [FRONT_LYR, FRONT_LBL, FRONT_WAVE].forEach(function (id) { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', st.front ? 'visible' : 'none'); });
-        [VAN_LYR, VAN_DIM_LYR].forEach(function (id) { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', st.van ? 'visible' : 'none'); });
+        [VAN_LYR, VAN_GAP_LYR, VAN_DIM_LYR].forEach(function (id) { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', st.van ? 'visible' : 'none'); });
         if (map.getLayer(SPEED_LYR)) map.setLayoutProperty(SPEED_LYR, 'visibility', st.speed ? 'visible' : 'none');
     }
     // 1×1 transparent PNG: an image source needs a url at creation.
@@ -438,7 +487,7 @@
     // rides on every segment for the width rule.
     function chainProps(g, part) {
         return { part: part, id: g.id, park: g.park, lead_start: g.lead_start, lead_basis: g.lead_basis,
-            tier: tierWord(g.tier), ahead_km: g.ahead_km, ahead_days: g.ahead_days, km: g.km, kmd: g.kmd,
+            tier: tierWord(g.tier), bits: g.bits, wf: +evidenceMul(g.tier, g.bits).toFixed(2), ahead_km: g.ahead_km, ahead_days: g.ahead_days, km: g.km, kmd: g.kmd,
             fires: g.fires, days: g.days, start: g.start, end: g.end, season: g.season, type: g.type };
     }
     function splitChain(g) {
@@ -450,13 +499,16 @@
             var L = (a == null && b == null) ? lead0 : (a == null ? b : (b == null ? a : (a + b) / 2));
             var pr = chainProps(g, L >= 0 ? 'ahead' : 'after');
             pr.lead = Math.round(L); pr.color = L >= 0 ? leadColor(L) : '#9ca3af';
+            pr.alpha = +leadAlpha(L).toFixed(2);
+            // days between the two vertices (pts[i][2] is the day offset)
+            pr.gap = (pts[i][2] != null && pts[i + 1][2] != null) ? Math.round(pts[i + 1][2] - pts[i][2]) : 1;
             out.push({ type: 'Feature', properties: pr,
                 geometry: { type: 'LineString', coordinates: [[pts[i][0], pts[i][1]], [pts[i + 1][0], pts[i + 1][1]]] } });
         }
         if (pts.length === 1) {
             // A one-vertex chain still deserves a mark: a very short line.
             var p = pts[0], e = 0.004, pr1 = chainProps(g, 'ahead');
-            pr1.lead = lead0; pr1.color = leadColor(lead0);
+            pr1.lead = lead0; pr1.color = leadColor(lead0); pr1.alpha = +leadAlpha(lead0).toFixed(2); pr1.gap = 1;
             out.push({ type: 'Feature', properties: pr1,
                 geometry: { type: 'LineString', coordinates: [[p[0] - e, p[1]], [p[0] + e, p[1]]] } });
         }
@@ -474,6 +526,10 @@
             var feats = [];
             ((j && j.groups) || []).forEach(function (g) { feats = feats.concat(splitChain(g)); });
             setData(VAN_SRC, feats);
+            // The few hundred chains that carry information sit on top of
+            // the thousands of plain trajectories (lodlayer adds its line
+            // layer later and would otherwise bury them).
+            lift();
             refreshStrip();
         }).catch(function () { inflight--; emit(); });
     }
@@ -493,9 +549,7 @@
         if (p.ahead_km) h += '<div>Ran <b>' + Number(p.ahead_km).toFixed(0) + ' km</b> over ' + esc(p.ahead_days) + ' d before the season caught up</div>';
         if (p.part === 'after') h += '<div style="color:#9ca3af">Here the season had caught up ' + esc(-p.lead) + ' d earlier \u2014 one fire among the field\u2019s</div>';
         else if (p.part === 'ahead' && p.lead != null && p.lead !== ls) h += '<div>Still <b>' + esc(p.lead) + ' d ahead</b> here</div>';
-        var tw = tierWord(p.tier);
-        h += '<div style="opacity:.8">Day order ' + (tierWide(tw) ? '<b>' + esc(tw) + '</b> (drawn wide)' : esc(tw)) +
-             ' <span style="opacity:.7">\u2014 link evidence vs day-shuffled null</span></div>';
+        h += '<div style="opacity:.8">' + evidenceWords(p.tier, p.bits) + '</div>';
         h += '<div style="opacity:.75;margin-top:3px">' + fmtDate(p.start) + ' \u2013 ' + fmtDate(p.end) + ' \u00b7 ' + esc(p.fires) + ' detections \u00b7 ' +
              (p.km ? Number(p.km).toFixed(0) + ' km' : '') + (p.season ? ' \u00b7 season ' + esc(p.season) : '') + '</div>';
         h += '<div style="opacity:.6;font-size:11px;margin-top:4px">An early signal that people are moving ahead of the season \u2014 not a proof of who or why.</div>';
@@ -503,7 +557,7 @@
     }
     function registerTip() {
         if (!window.MapTip || !MapTip.register) return;
-        [VAN_LYR, VAN_DIM_LYR].forEach(function (id) {
+        [VAN_LYR, VAN_GAP_LYR, VAN_DIM_LYR].forEach(function (id) {
             MapTip.register(id, {
                 html: function (props) { return props && props.lead_start != null ? tipHTML(props) : ''; },
                 tabLabel: 'Vanguard', tabColor: '#fde047', priority: 5
@@ -579,7 +633,7 @@
         // up to the playhead; the whole-season layer would show them ahead
         // of it. Hidden for the duration, back on teardown.
         var animating = t != null;
-        [VAN_LYR, VAN_DIM_LYR].forEach(function (id) {
+        [VAN_LYR, VAN_GAP_LYR, VAN_DIM_LYR].forEach(function (id) {
             if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', (st.van && !animating) ? 'visible' : 'none');
         });
         if (t == null) {
@@ -664,6 +718,7 @@
         },
         off: function () { this.setFront(false); this.setVanguard(false); this.setSpeed(false); },
         animAt: animAt,
+        lift: lift,      // lodlayer.js calls it after adding a line layer
         // switchBasemap() rebuilds the style; put the layers back on idle.
         reattach: function () {
             if (!anyOn() || !map) return;
@@ -687,7 +742,8 @@
         },
         // The words the strip and the fire tip share; one definition.
         LEAD_DAYS: 10, LEAD_MAX: 60,
-        leadColor: leadColor, frontColor: frontColor, tierWord: tierWord, tierWide: tierWide, legendHTML: legendHTML
+        leadColor: leadColor, frontColor: frontColor, tierWord: tierWord, tierWide: tierWide, legendHTML: legendHTML,
+        evidenceMul: evidenceMul, widthMulExpr: widthMulExpr, leadAlpha: leadAlpha, evidenceWords: evidenceWords
     };
     window.FireSeason = FireSeason;
 })();
