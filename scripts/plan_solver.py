@@ -48,6 +48,24 @@ def season_of(date):
     y, m = int(date[:4]), int(date[5:7]); return y if m >= 8 else y - 1
 
 # =============================================================================================== 1. movement
+def undirected_kmeans(X, fit, k, iters=60, seed=0):
+    """k-means on (start, end) rows where a row and its reversal are the same point: distance to a centroid is
+    min(d(x, c), d(rev x, c)), and a member is oriented to its centroid before the mean. Fit on rows `fit`; every
+    row gets a label. Returns (lab, flip, C): flip[i] = row i is nearer its centroid reversed."""
+    def rev(A): return A[:, [2, 3, 0, 1]]
+    def assign(C):
+        d1 = ((X[:, None, :] - C[None]) ** 2).sum(2); d2 = ((rev(X)[:, None, :] - C[None]) ** 2).sum(2)
+        lab = np.argmin(np.minimum(d1, d2), 1); ar = np.arange(len(X))
+        return lab, d2[ar, lab] < d1[ar, lab]
+    rng = np.random.default_rng(seed); C = X[fit][rng.choice(int(fit.sum()), k, replace=False)]
+    for _ in range(iters):
+        lab, flip = assign(C); Xo = np.where(flip[:, None], rev(X), X)
+        C2 = np.array([Xo[fit & (lab == i)].mean(0) if (fit & (lab == i)).any() else C[i] for i in range(k)])
+        if np.allclose(C2, C): break
+        C = C2
+    lab, flip = assign(C)
+    return lab, flip, C
+
 def movement(st, hold_season=2025, capture=0.50, sigma_km=4.0, k=12):
     """Utilisation distribution of each origin–destination bundle of the long transhumance fronts.
 
@@ -75,14 +93,14 @@ def movement(st, hold_season=2025, capture=0.50, sigma_km=4.0, k=12):
     kx = 111 * math.cos(math.radians(G.aoi.centroid.y))
     X = np.array([[t[0][0][0] * kx, t[0][0][1] * 111, t[0][-1][0] * kx, t[0][-1][1] * 111] for t in T])
     fit = np.array([season_of(t[1]) != hold_season for t in T])
-    # OD bundles on the FIT seasons only (k-means, deterministic seed), assign held-out fronts to the nearest centroid
-    rng = np.random.default_rng(0); C = X[fit][rng.choice(fit.sum(), k, replace=False)]
-    for _ in range(60):
-        lab = np.argmin(((X[:, None, :] - C[None]) ** 2).sum(2), 1)
-        C2 = np.array([X[fit & (lab == i)].mean(0) if (fit & (lab == i)).any() else C[i] for i in range(k)])
-        if np.allclose(C2, C): break
-        C = C2
-    lab = np.argmin(((X[:, None, :] - C[None]) ** 2).sum(2), 1)
+    # Bundles on the FIT seasons only (k-means, deterministic seed), held-out fronts assigned to the nearest centroid.
+    # UNDIRECTED (2026-09-15): a front and its reversal are ONE corridor — the tracker reads a corridor both ways
+    # (in the directed run b3<->b6 and b5<->b14 were reversed pairs 39–76 km apart, same months). Distance to a
+    # centroid is min(d(x, c), d(rev x, c)) and a member is oriented to its centroid before the mean is taken, so a
+    # bundle's `start`/`end` are the two ENDS of a corridor in an arbitrary order; `share_forward` says how many of
+    # its fit fronts ran start->end (0.5 = read equally both ways).
+    lab, flip, C = undirected_kmeans(X, fit, k)
+    Xo = np.where(flip[:, None], X[:, [2, 3, 0, 1]], X)
     cell_km = G.res / 1000; sig_c = sigma_km / cell_km
     def bridge_ud(idx):
         """UD raster of the fronts idx: each segment rasterised as a line, then Gaussian-spread by sigma — the
@@ -132,8 +150,9 @@ def movement(st, hold_season=2025, capture=0.50, sigma_km=4.0, k=12):
         ud_all += ud; band_all = np.maximum(band_all, band)
         ho = [inside_share(j, band) for j in hi]; ho_hit = best["holdout_capture"] if hi.size else None; ho_null = best["null_allfire"] if hi.size else None
         months = Counter(T[j][1][5:7] for j in fi); mon_sorted = dict(sorted(((MON[m_], n_) for m_, n_ in months.items()), key=lambda kv: (list(MON.values()).index(kv[0]))))
-        s_, e_ = X[fi, :2].mean(0), X[fi, 2:].mean(0); s_ = [float(v) for v in s_]; e_ = [float(v) for v in e_]
+        s_, e_ = Xo[fi, :2].mean(0), Xo[fi, 2:].mean(0); s_ = [float(v) for v in s_]; e_ = [float(v) for v in e_]
         bundles.append(dict(bundle=len(bundles) + 1, fronts_fit=int(len(fi)), fronts_holdout=int(len(hi)), start=[round(s_[0] / kx, 3), round(s_[1] / 111, 3)], end=[round(e_[0] / kx, 3), round(e_[1] / 111, 3)],
+                            undirected=True, share_forward=round(float(1.0 - flip[fi].mean()), 2),
                             straight_km=round(float(math.hypot(e_[0] - s_[0], e_[1] - s_[1]))), onset=min(months, key=lambda m_: (int(m_) + 4) % 12), months=mon_sorted,
                             band_km2=round(float(band.sum()) * G.cell_km2()), capture=best["q"], skill_curve=curve, skill=best["skill"], holdout_capture=None if ho_hit is None else round(ho_hit, 2),
                             holdout_capture_null_allfire=None if ho_null is None else round(ho_null, 2), median_inside_share_holdout=None if not ho else round(float(np.median(ho)), 2),
@@ -143,7 +162,7 @@ def movement(st, hold_season=2025, capture=0.50, sigma_km=4.0, k=12):
     hi_all = np.flatnonzero(~fit); net_hit = float(np.mean([inside_share(j, band_all > 0) >= 0.5 for j in hi_all])) if hi_all.size else None
     null_all = top_n(alld_s, int((band_all > 0).sum()))
     net_null = float(np.mean([inside_share(j, null_all) >= 0.5 for j in hi_all])) if hi_all.size else None
-    res = dict(hold_season=hold_season, sigma_km=sigma_km, capture_default=capture, k=k, fronts_fit=n_fit_total, fronts_holdout=int((~fit).sum()),
+    res = dict(hold_season=hold_season, sigma_km=sigma_km, capture_default=capture, k=k, bundling="undirected", fronts_fit=n_fit_total, fronts_holdout=int((~fit).sum()),
                network_km2=round(float((band_all > 0).sum()) * G.cell_km2()), network_share_of_aoi=round(float((band_all > 0).sum() / G.mask.sum()), 3),
                network_holdout_capture=None if net_hit is None else round(net_hit, 2), network_holdout_capture_null_allfire=None if net_null is None else round(net_null, 2),
                bundles=[{k_: v for k_, v in b.items() if k_ not in ("mask", "ud")} for b in bundles])
@@ -152,12 +171,12 @@ def movement(st, hold_season=2025, capture=0.50, sigma_km=4.0, k=12):
     np.save(OUT / "movement_bundle_ud.npy", np.stack([b["ud"].astype(np.float16) for b in bundles]) if bundles else np.zeros((0, G.h, G.w), np.float16))
     json.dump(res, open(OUT / "movement.json", "w"), indent=1)
     for b in bundles: b["onset"] = MON[b["onset"]]
-    L = [f"MOVEMENT — origin–destination bundles of the {len(T):,} long (≥150 km) transhumance fronts, Brownian-bridge utilisation (σ {sigma_km} km); each bundle's band is the SMALLEST isopleth that captures ≥ {capture:.0%} of the held-out season's fronts (skill = capture − max(equal-area all-fire null, band's share of the AOI)).",
+    L = [f"MOVEMENT — UNDIRECTED corridor bundles of the {len(T):,} long (≥150 km) transhumance fronts (a front and its reversal are one corridor), Brownian-bridge utilisation (σ {sigma_km} km); each bundle's band is the SMALLEST isopleth that captures ≥ {capture:.0%} of the held-out season's fronts (skill = capture − max(equal-area all-fire null, band's share of the AOI)).",
          f"Fitted on seasons {sorted(s for s in seasons if s != hold_season)} ({n_fit_total:,} fronts); HELD OUT season {hold_season}/{hold_season+1} ({int((~fit).sum()):,} fronts): {res['network_holdout_capture']:.0%} of them run ≥50% inside the fitted network"
          f" ({res['network_share_of_aoi']:.0%} of the AOI); a band of the same area drawn on ALL fire would have caught {res['network_holdout_capture_null_allfire']:.0%}.", ""]
     for b in bundles:
         L.append(f"bundle {b['bundle']}: {b['fronts_fit']} fronts fit, {b['fronts_holdout']} held out → {b['holdout_capture']} captured (null {b['holdout_capture_null_allfire']}, skill {b['skill']:+.2f} at the {b['capture']:.0%} isopleth); band {b['band_km2']:,} km2, {b['people_in_band']:,} people in it; "
-                 f"{b['start']} → {b['end']} {b['straight_km']} km straight; first movement {b['onset']}, by month {b['months']}")
+                 f"{b['start']} ↔ {b['end']} {b['straight_km']} km straight ({b['share_forward']:.0%} of fit fronts read in that order); first movement {b['onset']}, by month {b['months']}")
     (OUT / "MOVEMENT.txt").write_text("\n".join(L) + "\n"); print("\n".join(L))
     return res
 
