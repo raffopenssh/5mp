@@ -150,6 +150,32 @@ const UI_TESTS = [
             { type: 'fn', fn: () => { const d = TEST.fireDirection(); return d.length >= 1 && d.every(x => x.gated); }, msg: 'Every fire arrow layer is gated on the evidence tier' },
         ]
     },
+
+    // === SEASON: EARLY-BURN GROUND (docs/agents/fire.md "Early-burn ground") ===
+    // The chip toggles the layer and the share link follows; the Season menu
+    // shows the graded swatch; the tip at a cell names seasons early / held,
+    // days ahead and the month — every number from the answer, none typed.
+    {
+        name: 'season_entry_ground',
+        url: '&lat=6.4&lng=24&z=7.5&from=2024-08-01&to=2024-12-01&season=front,entry',
+        wait: 8000,
+        assertions: [
+            { type: 'fn', fn: () => { const e = TEST.fireEntry(); return e.on && e.drawn && e.status === 'ok' && e.area === 'CAF_Chinko' && e.seasonsHeld >= 3 && e.count > 0; }, msg: 'Entry ground on, drawn, with cells and a season count from the writer' },
+            { type: 'fn', fn: () => { const e = TEST.fireEntry(); return /early-burn cells in view/.test(e.chip || '') && new RegExp(e.seasonsHeld + ' seasons').test(e.chip); }, msg: 'Map-strip chip counts cells in view and names the seasons held' },
+            { type: 'fn', fn: () => {
+                const m = FireSeason.entryMeta(), g = m.grid, c = m.cells.slice().sort((a, b) => b[2] - a[2])[0];
+                const e = TEST.fireEntry(g.x0 + g.res * (c[0] + 0.5), g.y0 + g.res * (c[1] + 0.5));
+                return e.cell && e.cell.early === c[2] && e.cell.held === c[3] && new RegExp(c[2] + ' of ' + c[3] + ' seasons').test(e.tip || '') && /days.*before the local front/.test(e.tip) && /Early-burn ground/.test(e.tip);
+            }, msg: 'Tip at a cell says "early in N of M seasons", days ahead, month' },
+            { type: 'fn', fn: () => {
+                MapLegend.fireSeasonMenu(document.querySelector('#stats-map .ml-chip.fs'));
+                const sw = document.querySelectorAll('.mode-menu .fs-entry-sw').length === 1;
+                MapLegend.fireSeasonSet('entry', false); const off = TEST.fireEntry();
+                MapLegend.fireSeasonSet('entry', true); const on = TEST.fireEntry();
+                return sw && !off.on && !off.drawn && off.share.season === 'front' && on.on && on.drawn && /entry/.test(on.share.season);
+            }, msg: 'Season menu shows the graded swatch; the chip toggles the layer and the share link' },
+        ]
+    },
     
     // === SEARCH ===
     {

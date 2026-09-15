@@ -309,6 +309,7 @@ func gpkgProjectSpecs(present map[string]bool, isAOI bool) []gpkgLayerSpec {
 		{Table: "fire_trajectories", Title: "Fire trajectories", Group: "Fire", Geometry: "Line", WKBType: "Unknown", QML: styleFireTrajectory(), Visible: true, TemporalStart: "start_date", TemporalEnd: "end_date"},
 		{Table: "fire_vanguard", Title: "Fire vanguard (began ahead of the season)", Group: "Fire", Geometry: "Line", WKBType: "Unknown", QML: styleFireVanguard(), Visible: true, TemporalStart: "start_date", TemporalEnd: "end_date"},
 		{Table: "fire_season_front", Title: "Fire season front", Group: "Fire", Geometry: "Line", WKBType: "Unknown", QML: styleFireSeasonFront(), Visible: true, TemporalStart: "front_date"},
+		{Table: "fire_early_ground", Title: "Early-burn ground (where the season enters)", Group: "Fire", Geometry: "Polygon", WKBType: "Polygon", QML: styleFireEarlyGround(), Visible: false},
 
 		{Table: "places", Title: "Places", Group: "Reference", Geometry: "Point", WKBType: "Point", QML: stylePlaces(), Visible: true},
 	}

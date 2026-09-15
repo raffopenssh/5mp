@@ -127,6 +127,9 @@ test_url_param "geomap_structural" "&geomap_structural=active_faults,craton_edge
 test_url_param "geomap_structural_stale_id" "&geomap=car&geomap_structural=nosuchlayer" "" ""
 # Season overlay: front, vanguard and the speed map ride one param (fireseason.js).
 test_url_param "season_front_vanguard_speed" "&lat=6.4&lng=24&z=7.6&from=2024-11-01&to=2025-04-30&season=front,vanguard,speed" "" ""
+# Early-burn ground is the fourth word (default off); the DOM assertion
+# (chip toggles, legend swatch, tip words) is ui_tests.js season_entry_ground.
+test_url_param "season_entry_ground" "&lat=6.4&lng=24&z=7.5&from=2024-08-01&to=2024-12-01&season=front,entry" "" ""
 
 # ── Source guards: a click must not be swallowed ──────────────────────
 #
