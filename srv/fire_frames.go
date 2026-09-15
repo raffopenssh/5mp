@@ -518,11 +518,12 @@ func (s *Server) HandleAPIFireAnimTrajectories(w http.ResponseWriter, r *http.Re
 		// the animator switches a chain from lead colour to fire red at the
 		// vertex where the season caught up, as the map layer does. Omitted
 		// for the other 99 % so the payload does not grow for them.
-		Leads     []*int  `json:"leads,omitempty"`
-		LeadBasis string  `json:"lead_basis,omitempty"`
-		AheadKm   float64 `json:"ahead_km,omitempty"`
-		AheadDays int     `json:"ahead_days,omitempty"`
-		Tier      string  `json:"tier,omitempty"`
+		Leads     []*int   `json:"leads,omitempty"`
+		LeadBasis string   `json:"lead_basis,omitempty"`
+		AheadKm   float64  `json:"ahead_km,omitempty"`
+		AheadDays int      `json:"ahead_days,omitempty"`
+		Tier      string   `json:"tier,omitempty"`
+		Bits      *float64 `json:"bits,omitempty"` // evidence_bits → stroke width (FireSeason.evidenceMul)
 	}
 	out := make([]animGroup, 0, len(cands))
 	const chunk = 900
@@ -557,25 +558,26 @@ func (s *Server) HandleAPIFireAnimTrajectories(w http.ResponseWriter, r *http.Re
 			}
 			g := animGroup{ID: fid, Park: park, Pts: pts, Start: sd, End: ed, T0: sd}
 			var props struct {
-				GroupType string  `json:"group_type"`
-				Km        float64 `json:"distance_km"`
-				Kmd       float64 `json:"avg_speed_km_day"`
-				Fires     int     `json:"fires_total"`
-				Days      int     `json:"days"`
-				FRP       float64 `json:"total_frp"`
-				Narrative string  `json:"narrative"`
-				Vanguard  bool    `json:"vanguard"`
-				LeadStart *int    `json:"lead_start"`
-				Leads     []*int  `json:"leads"`
-				LeadBasis string  `json:"lead_basis"`
-				AheadKm   float64 `json:"ahead_km"`
-				AheadDays int     `json:"ahead_days"`
-				Tier      string  `json:"evidence_tier"`
+				GroupType string   `json:"group_type"`
+				Km        float64  `json:"distance_km"`
+				Kmd       float64  `json:"avg_speed_km_day"`
+				Fires     int      `json:"fires_total"`
+				Days      int      `json:"days"`
+				FRP       float64  `json:"total_frp"`
+				Narrative string   `json:"narrative"`
+				Vanguard  bool     `json:"vanguard"`
+				LeadStart *int     `json:"lead_start"`
+				Leads     []*int   `json:"leads"`
+				LeadBasis string   `json:"lead_basis"`
+				AheadKm   float64  `json:"ahead_km"`
+				AheadDays int      `json:"ahead_days"`
+				Tier      string   `json:"evidence_tier"`
+				Bits      *float64 `json:"evidence_bits"`
 			}
 			if json.Unmarshal([]byte(propsJSON), &props) == nil {
 				g.Vanguard, g.LeadStart = props.Vanguard, props.LeadStart
 				if props.Vanguard {
-					g.Leads, g.LeadBasis, g.AheadKm, g.AheadDays, g.Tier = props.Leads, props.LeadBasis, props.AheadKm, props.AheadDays, props.Tier
+					g.Leads, g.LeadBasis, g.AheadKm, g.AheadDays, g.Tier, g.Bits = props.Leads, props.LeadBasis, props.AheadKm, props.AheadDays, props.Tier, props.Bits
 				}
 				g.Type = props.GroupType
 				g.Km = props.Km

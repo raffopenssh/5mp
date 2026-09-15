@@ -862,6 +862,11 @@ func (s *Server) fetchFeatureRows(ctx context.Context, cands []bboxCand, tol flo
 				if ev := evidenceTier(propsJSON.String); ev != "" {
 					props["ev"] = ev
 				}
+				// `eb` — evidence_bits, the continuous score behind `ev`:
+				// the stroke width is graded from it (FireSeason.evidenceMul).
+				if eb, ok := evidenceBits(propsJSON.String); ok {
+					props["eb"] = eb
+				}
 			}
 			props["feature_type"] = fType
 			props["feature_id"] = fID
@@ -896,19 +901,52 @@ func (s *Server) fetchFeatureRows(ctx context.Context, cands []bboxCand, tol flo
 }
 
 // evidenceTier pulls "evidence_tier" out of a properties_json without
-// decoding the whole document (slim mode exists to avoid that cost).
+// decoding the whole document (slim mode exists to avoid that cost). The
+// stored JSON is Python's (`"key": value`, a space after the colon), so the
+// scan skips whitespace after the colon rather than assuming Go's layout —
+// the first version assumed `":"` and never matched a single row.
 func evidenceTier(propsJSON string) string {
-	const key = `"evidence_tier":"`
-	i := strings.Index(propsJSON, key)
-	if i < 0 {
+	rest, ok := afterJSONKey(propsJSON, `"evidence_tier"`)
+	if !ok || len(rest) == 0 || rest[0] != '"' {
 		return ""
 	}
-	rest := propsJSON[i+len(key):]
+	rest = rest[1:]
 	j := strings.IndexByte(rest, '"')
 	if j < 0 || j > 16 {
 		return ""
 	}
 	return rest[:j]
+}
+
+// evidenceBits pulls "evidence_bits" the same cheap way (a number, possibly
+// negative, possibly with a decimal).
+func evidenceBits(propsJSON string) (float64, bool) {
+	rest, ok := afterJSONKey(propsJSON, `"evidence_bits"`)
+	if !ok {
+		return 0, false
+	}
+	j := 0
+	for j < len(rest) && j < 12 && (rest[j] == '-' || rest[j] == '.' || (rest[j] >= '0' && rest[j] <= '9')) {
+		j++
+	}
+	v, err := strconv.ParseFloat(rest[:j], 64)
+	if err != nil {
+		return 0, false
+	}
+	return v, true
+}
+
+// afterJSONKey returns the text after `"key":` with any whitespace skipped.
+func afterJSONKey(doc, key string) (string, bool) {
+	i := strings.Index(doc, key)
+	if i < 0 {
+		return "", false
+	}
+	rest := strings.TrimLeft(doc[i+len(key):], " \t\r\n")
+	if len(rest) == 0 || rest[0] != ':' {
+		return "", false
+	}
+	return strings.TrimLeft(rest[1:], " \t\r\n"), true
 }
 
 func minStartDate(c []bboxCand) string {

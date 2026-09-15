@@ -294,18 +294,44 @@ view, the one the instant falls in, with `reached_at_instant`. Styled dashed
 ember red, labelled by date (`styleFireSeasonFront`), temporal on
 `front_date`.
 
-**Vanguard rendering (done 2026-09-14 late).** `fireseason.js splitChain`
+**Vanguard rendering (2026-09-14, graded 2026-09-15).** `fireseason.js splitChain`
 emits one feature per **segment**, colour = `leadColor(mean of the two
 vertex leads)` on the ramp 0 d orange `#fb923c` → 15 d yellow `#fde047` →
-≥ 40 d white; `part:'after'` (lead < 0) is ash grey. `line-width` is
-`tierWidth()` — ×1.35 for `tier ∈ {supported, weak}`; the tier factor sits
-*inside* each zoom stop because MapLibre refuses `zoom` under `*`. Absent
-tier prints `unmeasured` (`tierWord`) and never widens. `FireSeason.legendHTML()`
-samples that same ramp for the fire-row menu, the chip menu and the Methods
-block — the legend cannot drift from the map. `anim.js drawVanguard` mirrors
-all three rules per segment. `lodlayer.js widthExpr` applies the same ×1.35
-to plain trajectories from the `ev` tier `/api/features-in-bbox` sends (it
-was sent and unread). No start/end dots (asked for, then declined).
+≥ 40 d white; `part:'after'` (lead < 0) is ash grey. Three more things the
+original XSA render (`/tmp/fx/render3.py`) said and the app now says too:
+
+* **Width = certainty of the day order**, continuous. `evidenceMul(tier,
+  bits)` grades `evidence_bits` (log2 LR vs the day-shuffled null) linearly
+  ×1 at ≤ 0 bits → ×1.5 at 6 (`supported`); bits absent → tier word
+  (supported ×1.5, weak ×1.3, else ×1); `unmeasured` never widens. The
+  segment carries it pre-computed as `wf`; `tierWidth()` multiplies it
+  inside each zoom stop (MapLibre refuses `zoom` under `*`).
+  `widthMulExpr('eb','ev')` is the same rule as an expression for
+  `lodlayer.js widthExpr` on plain trajectories, and `anim.js drawVanguard`
+  calls `evidenceMul` — one rule, three drawers. Wires: `/api/fire-vanguard`
+  and `/api/fire-anim-trajectories` send `bits`; `/api/features-in-bbox`
+  sends `eb` beside `ev` (both via a whitespace-tolerant scan —
+  `afterJSONKey` — because the stored JSON is Python's `"key": value`; the
+  first `ev` extractor assumed `":"` and had matched **no row**, so LOD
+  trajectories were never widened until 2026-09-15).
+* **Opacity = presence**: `leadAlpha(L)` 0.55 at 0 d ahead → 0.95 at ≥ 10 d
+  (`alpha` on the segment; `line-opacity` reads it). A chain fades as the
+  season closes on it.
+* **Dashed = a day not seen**: segment `gap` (days between its two vertices)
+  > 1 draws on `fireseason-van-gap` (`line-dasharray [3,1.4]`; dasharray is
+  not data-driven, so it is a filter split with `fireseason-van`). The
+  animator uses `setLineDash` per segment.
+
+`FireSeason.legendHTML()` samples the ramp and says the width/dash rule in
+park-manager words (wider = surer of the day order · thin = unsure · dashed
+= a day not seen · season caught up). Tips say `evidenceWords()`:
+"**Fairly sure** of the day order along this chain, so it is drawn wider
+(weak evidence, 2.8 bits)". `FireSeason.lift()` moves the three vanguard
+layers to the top; `lodlayer.js restack()` calls it, so the chains that
+carry information sit above the pinned trajectories. Tests:
+`vanguard_wire_bits`, `bbox_fire_eb_beside_ev`, `anim_trajs_vanguard_bits`;
+`TEST.fireSeason()` → `drawnGapDashed`, `vanguardWidthFactors`,
+`vanguardAlphas`. No start/end dots (asked for, then declined).
 
 **Why every tier was `unmeasured`:** `data/fire_groups_v5/*.json` predated
 the v8 evidence fields — the nightly `--incremental` carries old groups
