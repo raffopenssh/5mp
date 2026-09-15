@@ -62,14 +62,17 @@
     // Polygons keep dots: a settlement's centroid IS the settlement, at the
     // zoom where this tier applies.
     var SEG_TYPES = { fire_trajectory: true };
-    // A fire trajectory's stroke width carries its link-evidence tier (`ev`,
-    // srv/features_bbox.go — supported / weak / unsupported / single; absent
-    // = unmeasured): a chain whose day order is measured against the
-    // day-shuffled null is drawn x1.35, the same rule the vanguard layer uses
-    // (fireseason.js tierWidth). Unmeasured never widens (invariant 12).
+    // A fire trajectory's stroke width carries how sure we are of its day
+    // order: `eb` (evidence_bits, srv/features_bbox.go) graded x1 → x1.5 at
+    // 6 bits, falling back to the tier word `ev` on an old wire — the ONE
+    // rule the vanguard layer and the animator draw with
+    // (fireseason.js evidenceMul / widthMulExpr). Unmeasured never widens
+    // (invariant 12).
     function widthExpr(s, w) {
         if (!s || s.featureType !== 'fire_trajectory') return w;
-        return ['*', w, ['match', ['coalesce', ['get', 'ev'], 'unmeasured'], ['supported', 'weak'], 1.35, 1]];
+        var mul = (window.FireSeason && FireSeason.widthMulExpr) ? FireSeason.widthMulExpr('eb', 'ev')
+            : ['match', ['coalesce', ['get', 'ev'], 'unmeasured'], ['supported', 'weak'], 1.35, 1];
+        return ['*', w, mul];
     }
 
     // Per-layer detail preference, cycled from the layer's own readout:
@@ -248,6 +251,9 @@
                     try { if (map.getLayer(id)) map.moveLayer(id); } catch (e) {}
                 });
             });
+        // The vanguard chains — the few hundred trajectories that carry
+        // information — sit above every pinned rendering (fireseason.js).
+        if (window.FireSeason && FireSeason.lift) FireSeason.lift();
     }
 
     // ---- the transition, made visible ------------------------------------

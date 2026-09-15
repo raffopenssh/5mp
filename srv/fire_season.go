@@ -566,7 +566,8 @@ func (s *Server) HandleAPIFireVanguard(w http.ResponseWriter, r *http.Request) {
 		Leads     []*int       `json:"leads"`
 		LeadStart *int         `json:"lead_start"`
 		LeadBasis string       `json:"lead_basis,omitempty"`
-		Tier      string       `json:"tier,omitempty"` // evidence_tier: the width the map draws (supported/weak wider)
+		Tier      string       `json:"tier,omitempty"` // evidence_tier: one word for the day-order evidence
+		Bits      *float64     `json:"bits,omitempty"` // evidence_bits: log2 LR vs day-shuffled null — the width the map draws (FireSeason.evidenceMul)
 		AheadKm   float64      `json:"ahead_km,omitempty"`
 		AheadDays int          `json:"ahead_days,omitempty"`
 		Season    string       `json:"season,omitempty"`
@@ -588,22 +589,23 @@ func (s *Server) HandleAPIFireVanguard(w http.ResponseWriter, r *http.Request) {
 		}
 		g := vanGroup{ID: fid, Park: park, Pts: pts, Start: sd, End: ed, T0: sd}
 		var props struct {
-			GroupType string  `json:"group_type"`
-			Km        float64 `json:"distance_km"`
-			Kmd       float64 `json:"avg_speed_km_day"`
-			Fires     int     `json:"fires_total"`
-			Days      int     `json:"days"`
-			Leads     []*int  `json:"leads"`
-			LeadStart *int    `json:"lead_start"`
-			LeadBasis string  `json:"lead_basis"`
-			AheadKm   float64 `json:"ahead_km"`
-			AheadDays int     `json:"ahead_days"`
-			Season    string  `json:"fire_season"`
-			Tier      string  `json:"evidence_tier"`
+			GroupType string   `json:"group_type"`
+			Km        float64  `json:"distance_km"`
+			Kmd       float64  `json:"avg_speed_km_day"`
+			Fires     int      `json:"fires_total"`
+			Days      int      `json:"days"`
+			Leads     []*int   `json:"leads"`
+			LeadStart *int     `json:"lead_start"`
+			LeadBasis string   `json:"lead_basis"`
+			AheadKm   float64  `json:"ahead_km"`
+			AheadDays int      `json:"ahead_days"`
+			Season    string   `json:"fire_season"`
+			Tier      string   `json:"evidence_tier"`
+			Bits      *float64 `json:"evidence_bits"`
 		}
 		if json.Unmarshal([]byte(propsJSON), &props) == nil {
 			g.Type, g.Km, g.Kmd, g.Fires, g.Days = props.GroupType, props.Km, props.Kmd, props.Fires, props.Days
-			g.Leads, g.LeadStart, g.LeadBasis, g.Tier = props.Leads, props.LeadStart, props.LeadBasis, props.Tier
+			g.Leads, g.LeadStart, g.LeadBasis, g.Tier, g.Bits = props.Leads, props.LeadStart, props.LeadBasis, props.Tier, props.Bits
 			g.AheadKm, g.AheadDays, g.Season = props.AheadKm, props.AheadDays, props.Season
 		}
 		out = append(out, g)

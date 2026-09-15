@@ -3125,7 +3125,12 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                         contours: (m && m.contours || []).length, status: m ? m.status : null,
                         vanguardCount: v ? v.count : null, vanguardTotal: v ? v.total : null,
                         drawnFront: map.getLayer('fireseason-front') ? map.queryRenderedFeatures({ layers: ['fireseason-front'] }).length : 0,
-                        drawnVanguard: map.getLayer('fireseason-van') ? map.queryRenderedFeatures({ layers: ['fireseason-van', 'fireseason-van-dim'] }).length : 0,
+                        drawnVanguard: map.getLayer('fireseason-van') ? map.queryRenderedFeatures({ layers: ['fireseason-van', 'fireseason-van-gap', 'fireseason-van-dim'] }).length : 0,
+                        // certainty → width, lead → opacity, missed day → dash
+                        // (fireseason.js evidenceMul / leadAlpha / gap):
+                        drawnGapDashed: map.getLayer('fireseason-van-gap') ? map.queryRenderedFeatures({ layers: ['fireseason-van-gap'] }).length : 0,
+                        vanguardWidthFactors: map.getSource('fireseason-van-src') ? [...new Set(map.querySourceFeatures('fireseason-van-src').map(f => f.properties.wf))].sort() : [],
+                        vanguardAlphas: map.getSource('fireseason-van-src') ? [...new Set(map.querySourceFeatures('fireseason-van-src').map(f => f.properties.alpha))].sort() : [],
                         share: { season: share.get('season') },
                         chip: (document.querySelector('#stats-map .ml-chip.fs em') || {}).textContent || null,
                         // The Fire accordion's season block (fireSeasonBlock),

@@ -597,7 +597,7 @@
                              lead_basis: g.lead_basis, ahead_km: g.ahead_km, ahead_days: g.ahead_days,
                              // evidence tier → stroke width (fireseason.js
                              // tierWide); absent reads 'unmeasured', never wide
-                             tier: g.tier || 'unmeasured',
+                             tier: g.tier || 'unmeasured', bits: g.bits,
                              fires: g.fires, days: g.days, frp: g.frp, narrative: g.narrative };
                 }).filter(g => g.pts.length >= 2);
                 if (j.truncated) truncNote('fire paths', 'trajs', j.count, j.total);
@@ -1966,8 +1966,14 @@
         const scr = g._scr, pts = g.pts, leads = g.leads;
         const lead = g.lead_start == null ? 10 : g.lead_start;
         const live = t <= g.t1;
-        const wide = !!(window.FireSeason && FireSeason.tierWide && FireSeason.tierWide(g.tier));
-        const w = (live ? inkW : inkW * 0.6) * 1.4 * (wide ? 1.35 : 1);
+        // width = certainty of the day order (FireSeason.evidenceMul, the
+        // same grade the map layer draws); opacity = how far ahead the
+        // season the segment was (leadAlpha); a segment bridging a day
+        // nobody saw is dashed.
+        const FS = window.FireSeason;
+        const mul = FS && FS.evidenceMul ? FS.evidenceMul(g.tier, g.bits) : 1;
+        const lAlpha = FS && FS.leadAlpha ? FS.leadAlpha : (() => 0.95);
+        const w = (live ? inkW : inkW * 0.6) * 1.4 * mul;
         ctx.lineJoin = 'round'; ctx.lineCap = 'round';
 
         // Walk the chain up to t, one SEGMENT at a time: each carries the
@@ -1995,7 +2001,7 @@
                 if (frac <= 0) break;
                 x1 = x0 + (x1 - x0) * frac; y1 = y0 + (y1 - y0) * frac;
             }
-            segs.push({ ahead: L >= 0, lead: L, x0, y0, x1, y1 });
+            segs.push({ ahead: L >= 0, lead: L, x0, y0, x1, y1, gap: Math.round((pt[2] - pts[i][2]) / DAY) });
             headX = x1; headY = y1; headAhead = L >= 0; headLead = L;
             if (pt[2] > t) break;
         }
@@ -2012,11 +2018,15 @@
                 ctx.beginPath(); ctx.moveTo(sg.x0, sg.y0); ctx.lineTo(sg.x1, sg.y1); ctx.stroke();
             }
         }
+        let dashed = false;
         for (const sg of segs) {
-            ctx.strokeStyle = sg.ahead ? vanColor(sg.lead, ash, alpha) : ashColor(ash, alpha);
+            ctx.strokeStyle = sg.ahead ? vanColor(sg.lead, ash, alpha * lAlpha(sg.lead) / 0.95) : ashColor(ash, alpha);
             ctx.lineWidth = sg.ahead ? w : w / 1.4;
+            const wantDash = sg.gap > 1;
+            if (wantDash !== dashed) { ctx.setLineDash(wantDash ? [w * 3, w * 1.4] : []); dashed = wantDash; }
             ctx.beginPath(); ctx.moveTo(sg.x0, sg.y0); ctx.lineTo(sg.x1, sg.y1); ctx.stroke();
         }
+        if (dashed) ctx.setLineDash([]);
         if (!segs.length) {
             // one vertex so far: a dot, so a chain that has just begun is
             // still on screen rather than waiting for its second day
@@ -2426,9 +2436,9 @@
                 (L >= 0 ? 'Still ' + L + ' d ahead of the season front here' : 'The season caught up ' + (-L) + ' d ago — now one fire among the field’s') + '</div>';
         }
         if (g.vanguard) {
-            const tw = (window.FireSeason && FireSeason.tierWord) ? FireSeason.tierWord(g.tier) : (g.tier || 'unmeasured');
-            const wide = !!(window.FireSeason && FireSeason.tierWide && FireSeason.tierWide(tw));
-            season += '<div class="maptip-meta">Day order ' + (wide ? '<b>' + tw + '</b> (drawn wide)' : tw) + ' — link evidence vs day-shuffled null</div>';
+            const ew = (window.FireSeason && FireSeason.evidenceWords) ? FireSeason.evidenceWords(g.tier, g.bits)
+                : 'Day order ' + (g.tier || 'unmeasured');
+            season += '<div class="maptip-meta">' + ew + '</div>';
         }
         return {
             html: '<div class="maptip-label">' + (g.vanguard ? 'Vanguard fire path' : 'Fire path') + ' · ' +

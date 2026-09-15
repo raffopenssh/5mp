@@ -4747,6 +4747,7 @@ body.is-guest .session-chip-logout:hover { opacity: 1; background: rgba(251,191,
 .fs-w-wide { height: 3.5px; }
 .fs-w-thin { height: 1.5px; }
 .fs-w-ash { height: 1.5px; background: #9ca3af; opacity: .6; }
+.fs-w-dash { height: 2px; background: repeating-linear-gradient(90deg, #fde047 0 5px, transparent 5px 8px); border-radius: 0; }
 #methods-season-legend { list-style: none; margin-left: -20px; }
 #methods-season-legend .fs-legend { max-width: 360px; padding: 4px 0 0; }
 /* Vanguard lead beside a fire narrative row (Fire accordion): the Season

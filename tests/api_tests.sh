@@ -1510,6 +1510,15 @@ if [ -n "${AOI_OWNER_PWD:-}" ]; then
 fi
 test_api "anim_trajs_vanguard_leads" "/api/fire-anim-trajectories?bbox=23,5,26,8&from=2024-11-01&to=2024-12-31&limit=4000" "200" \
     '([.groups[] | select(.vanguard)] | length > 0) and ([.groups[] | select(.vanguard) | (.leads | length) == (.pts | length)] | all) and ([.groups[] | select(.vanguard | not) | has("leads") | not] | all)'
+# Certainty → width (fireseason.js evidenceMul): the continuous score behind
+# the tier word rides every wire that draws a chain — vanguard layer, LOD
+# trajectories (`eb` beside `ev`), animator — so all three grade alike.
+test_api "vanguard_wire_bits" "/api/fire-vanguard?bbox=23,5,26,8&from=2024-10-01&to=2025-02-01&limit=200" "200" \
+    '([.groups[] | select(.tier != null and .tier != "single")] | length > 0) and ([.groups[] | select(.tier == "supported") | .bits >= 6] | all) and ([.groups[] | select(.tier == "unsupported") | .bits <= 2] | all)'
+test_api "bbox_fire_eb_beside_ev" "/api/features-in-bbox?type=fire_trajectory&bbox=23,5,26,8&from=2024-10-01&to=2025-02-01&limit=50" "200" \
+    '([.features[] | select(.properties.ev != null)] | length > 0) and ([.features[] | select(.properties.ev == "supported") | .properties.eb >= 6] | all) and ([.features[] | select(.properties.ev == "weak") | .properties.eb >= 2 and .properties.eb < 6] | all)'
+test_api "anim_trajs_vanguard_bits" "/api/fire-anim-trajectories?bbox=23,5,26,8&from=2024-11-01&to=2024-12-31&limit=4000" "200" \
+    '([.groups[] | select(.vanguard and .tier == "supported")] | length > 0) and ([.groups[] | select(.vanguard and .tier == "supported") | .bits >= 6] | all)'
 
 echo
 echo "======================================="

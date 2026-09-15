@@ -128,7 +128,11 @@ reasonably concludes the app threw the detail away. So:
 * the incoming one **overshoots and settles** (`focusPulse`, 380 ms) — the same
   gesture in both directions, because the claim is that nothing was lost either
   way. `focusPulse` must settle back to the **density** width, not a constant,
-  or it silently undoes `densityPaint` on every crossing;
+  or it silently undoes `densityPaint` on every crossing. Every fire
+  trajectory width goes through `widthExpr`, which multiplies in the
+  certainty grade `FireSeason.widthMulExpr('eb','ev')` (evidence bits →
+  ×1…×1.5; see fire.md "Vanguard rendering"); `restack()` ends by lifting the
+  vanguard layers above the pinned ones (`FireSeason.lift`);
 * the state is written into the control that switches the layer on —
   `.stats-lod` inside the stats row (`setLayerLOD`), and a ◇/· mark on the
   pinned chip. **Not a floating HUD**: the question is about one layer, and a
