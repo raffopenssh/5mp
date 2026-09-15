@@ -1304,7 +1304,7 @@
             'MapLegend.fireSeasonSet(\'front\',' + (!FireSeason.frontOn()) + ')', 'check');
         html += row('', 'menuitemcheckbox', FireSeason.vanguardOn(), 'Vanguard fires', 'icon-footprints',
             'Fire chains that began ' + FireSeason.LEAD_DAYS + '\u2013' + FireSeason.LEAD_MAX +
-            ' days ahead of the season front \u2014 bright while ahead, faint once the season caught up',
+            ' days ahead of the season front, followed into the season \u2014 bright while ahead, faint once the season caught up; a ringed head is still moving',
             'MapLegend.fireSeasonSet(\'vanguard\',' + (!FireSeason.vanguardOn()) + ')', 'check');
         html += row('', 'menuitemcheckbox', FireSeason.speedOn(), 'Season speed', 'icon-gauge',
             'How fast the front travels, km/day (gradient of its arrival-time surface): pale where the season sweeps through, rust where it stalls. Descriptive, not a forecast',
@@ -3742,7 +3742,12 @@
                 else if (fm && fm.status) parts.push('front not yet computed');
             }
             if (FireSeason.vanguardOn()) {
-                if (fv && fv.count) parts.push(fv.count + (fv.truncated ? '+' : '') + ' vanguard in view');
+                // The chip's number is what the layer draws; a live count
+                // beside it is the one thing a manager wants first.
+                if (fv && fv.count) {
+                    var live = (fv.groups || []).filter(function (g) { return g.end_cause === 'ongoing'; }).length;
+                    parts.push(fv.count + (fv.truncated ? '+' : '') + ' vanguard in view' + (live ? ' \u00b7 ' + live + ' still moving' : ''));
+                }
                 else if (fv) parts.push('no vanguard in view');
             }
             if (FireSeason.speedOn()) {

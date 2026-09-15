@@ -552,6 +552,8 @@ func (s *Server) HandleAPIAOIDelete(w http.ResponseWriter, r *http.Request) {
 		{`DELETE FROM park_settlements WHERE park_id = ?`, []any{a.ID}},
 		{`DELETE FROM deforestation_events WHERE park_id = ?`, []any{a.ID}},
 		{`DELETE FROM fire_narrative_cache WHERE park_id = ?`, []any{a.ID}},
+		{`DELETE FROM fire_season_front WHERE area_id = ?`, []any{a.ID}},
+		{`DELETE FROM fire_vanguard_kf WHERE area_id = ?`, []any{a.ID}},
 		{`DELETE FROM aoi_fires WHERE aoi_id = ?`, []any{a.ID}},
 		{`DELETE FROM aoi_parks WHERE aoi_id = ?`, []any{a.ID}},
 		{`DELETE FROM aoi_datasets WHERE aoi_id = ?`, []any{a.ID}},

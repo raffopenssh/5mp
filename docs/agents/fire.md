@@ -424,6 +424,93 @@ season's denominator is the union of its front cells and the cells the
 `usual_offset_days` (−39 d at 1 %) is the selection bias measured above;
 it prints beside its pct, which is the reader's warning.
 
+## Kalman seed-ahead chains — the vanguard layer's population (shipped 2026-09-15)
+
+**What and why, in plain words.** The plain tracker runs over the whole
+field, so a chain that began ahead of the season was cut the moment the
+season's own fires arrived around it (43 % of vanguard chain ends, measured;
+`scripts/fire_vanguard/README.md` round 2). `scripts/fire_vanguard_kf.py`
+tracks only the sparse field from 10 d after the front backwards
+(`FIELD_LEAD_MIN = −10`), lets a track be **born only 10–60 d ahead** of the
+front (the vanguard window), and **follows it with a Kalman filter** (state
+x, y, vx, vy; Mahalanobis gate χ² < 9.21; σv0 5 km/d, q 1.5, R floor 1.5 km,
+lost at σ 30 km) into the arriving season. Gap budget is the production 3 d;
+cloud coasting and "dead layers" were measured and **rejected** (README:
+beyond two missed days the next sighting is someone else's fire) — a missed
+day is drawn dashed, never bridged. Everything after linking is production
+code untouched (SPRT, `chain_tracks`, `track_to_group`, evidence bits,
+`fire_front.tag_group`).
+
+**Measured** (`eval_fire_vanguard.py --tracker kf`, XSA 2024/25, field fixed
+by real leads and its days shuffled — the prototype's null): links 7,959 vs
+5,663 (**+0.29**), ≥150 km fronts 154 vs 74 (+0.52), fires in long chains
+11,494 vs 4,456 (**+0.61**), median chain 74 km vs 44. Reproduces the
+prototype (0.29 / 0.60). XSA 2024/25: 847 chains in 9 s; a park season ~1–3 s.
+Shuffling the *whole season* instead is not a test of linking: in-season
+fires land on pre-front days and the null simply gets a bigger field (1,380
+groups vs 848) — the harness fixes the field first.
+
+**Storage.** `feature_geometries` rows `feature_type='fire_vanguard'`,
+`vanguard=1` (so `idx_fg_vanguard` covers them), ids `kf_<area>_<year>_grp_…`,
+`properties_json` = a trajectory's props + `tracker:'kf'`, `tracker_version`,
+`seed_lead`, `end_cause` (`ongoing` = last seen within 3 d of the area's
+newest data · `season` = the front had arrived at the end · `lost` = still
+ahead, no fire within reach for 3 d), `heading_deg`/`speed_kmd` (the filter
+state at the end), `kf_hits`. Table `fire_vanguard_kf` (migration 067): one
+row per area that has been tracked. `data/fire_vanguard_kf/{area}.json` holds
+the group dicts. An AOI delete removes both (`aoi_write.go`).
+
+**One population per area (invariant 7).** `srv/fire_season.go
+vanguardRowsSQL` is *the* definition of "a vanguard chain" for every surface
+— `/api/fire-vanguard`, `/api/fire-season` (`vanguard_groups`,
+`vanguard_in_window`, `vanguard_top`, `vanguard_tiers`), `/api/stats
+vanguard_groups`, the parks CSV: KF chains where `fire_vanguard_kf` lists the
+area, the plain groups flagged `vanguard=1` elsewhere, never both. Every
+answer names it: `/api/fire-season` → `vanguard_tracker: 'kf'|'groups'`;
+`/api/fire-vanguard` → `trackers: {kf: n, groups: n}` and `tracker` per
+chain. The plain trajectory's own `vanguard`/`lead_start` **properties**
+stay (a fact about that line: tips, ▲ in KML/Locus, GeoPackage columns) —
+they are no longer what the layer or a count means.
+
+**UI — the same rendering, no new control.** The Vanguard rendering
+(`fireseason.js`) draws whatever `/api/fire-vanguard` returns: lead colour,
+evidence width, dash for a missed day, ash after the season caught up — as
+before. New for KF chains: a **live head** (`fireseason-van-head` circle +
+halo, a geometry chevron for `heading_deg` — no glyph font) on `ongoing`
+chains; the chip says `12 vanguard in view · 1 still moving`; the tip says
+*Still moving — last seen 11 Sept heading S at ~7 km/d* / *Followed until
+the season arrived* / *Trail lost: no fire within reach for 3 days*, with
+"Kalman-tracked" as a small secondary note and one method sentence at the
+foot. Legend gains the head line and a one-line method when KF chains are
+in view (`kfShown()`). **Animator:** the `trajs` loader also fetches
+`/api/fire-vanguard` for the view and window; those chains (`_van`) are
+drawn by `drawVanguard` while the overlay is on, plain trajectories with the
+same id step aside (`_hideWhenVan`), and KF chains are not drawn at all with
+the overlay off — the map does not draw them either. Paused-frame probe
+skips whichever is hidden. `TEST.fireSeason()` → `trackers`, `kfShown`,
+`drawnLiveHeads`.
+
+**Cron / pipeline.** `daily_fire_update.py` runs `fire_vanguard_kf.py
+--areas … --current` right after `fire_front.py --current` (live season of
+the affected parks, nightly 03:00); `aoi_runner.run_fire_v5` has it as its
+last step (all seasons of the AOI — appended last so a mid-run cursor still
+resumes); cron 04:50 `fire_vanguard_kf.py --rotate 25 --quiet` redoes the
+oldest / missing / older-`tracker_version` areas (bell:
+`fire_vanguard_kf_success/_failed`). An area without a front is **skipped and
+counted as such**, not written as zero chains (invariant 1). First full
+pass `--all` ran 2026-09-15 (tmux `kfall`, `logs/fire_vanguard_kf_all_20260915.log`).
+Tests: `vanguard_kf_one_population`, `fire_season_vanguard_tracker_kf`,
+`vanguard_kf_no_ongoing_in_past`.
+
+**Open.** Exports do not yet carry a `fire_vanguard` layer (the GeoPackage
+`fire_trajectories.vanguard` column still means "plain chain that began
+ahead"); the ★ report's vanguard table now lists KF chains with
+`end_cause`/`heading_deg` available but does not print them; the herd model
+(`eval_herd_vanguard.py`) has not been re-run on the KF set — it was the
+reason to ship these (5× the long chains would make a vanguard-only fit
+feasible). "Cattle follow 1–2 weeks behind" in the tip is field knowledge
+from the user, not a measurement, and is worded as such.
+
 ## `protected_area_id` is a catchment, not a park (F10 — fixed 2026-08-13)
 
 `park_assigner.ASSIGN_MAX_DIST_KM = 100`, so `WHERE protected_area_id = ?`
