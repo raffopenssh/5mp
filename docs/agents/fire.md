@@ -476,15 +476,17 @@ they are no longer what the layer or a count means.
 (`fireseason.js`) draws whatever `/api/fire-vanguard` returns: lead colour,
 evidence width, dash for a missed day, ash after the season caught up — as
 before. **Direction** (2026-09-15): fires have dates, so a chain has an
-order, and from z7 every chain carries small arrowheads along it
+order, and from z7 every chain carries small chevrons along it
 (`fireseason-van-arrow`, `symbol-placement: line`) in the segment's own
 colour (lead ramp ahead, ash after). The glyph is one **SDF** image,
-`arrow-right` (`globe.html makeArrowheadSDF`, points north at rotate 0 as
-the old bitmap did), so every arrow layer — LOD fire trajectories
-(`lodlayer.js`), pinned trajectories, vanguard — colours it with its own
-line colour and rims it with a dark halo; the old bitmap was a fixed red
-arrow on every colour of line. New for KF chains: a **live head** on
-`ongoing` chains — a *large arrowhead* at the chain's end turned to
+`arrow-right` (`globe.html makeChevronSDF`: an open round-capped chevron —
+the route-direction glyph — 48 px at `pixelRatio: 2`, points north at
+rotate 0 as the old bitmap did), so every arrow layer — LOD fire
+trajectories (`lodlayer.js`), pinned trajectories, vanguard — colours it
+with its own line colour and rims it with a thin dark halo (0.6 px; wider
+halos on a sub-1 `icon-size` smear an SDF into a blob, which is why a
+filled arrowhead was reverted the same day). New for KF chains: a **live
+head** on `ongoing` chains — a *large chevron* at the chain's end turned to
 `heading_deg` (falls back to the last step's bearing) over a soft lead
 glow (`fireseason-van-head` symbol + `-halo` circle). It was a ringed dot
 with a geometry chevron until 2026-09-15; with settlement and deforestation
@@ -494,7 +496,7 @@ vanguard in view · 1 still moving`; the tip says *Still moving — last seen
 11 Sept heading S at ~7 km/d* / *Followed until the season arrived* /
 *Trail lost: no fire within reach for 3 days*, with "Kalman-tracked" as a
 small secondary note and one method sentence at the foot. Legend gains the
-arrow line, the head line and a one-line method when KF chains are in view
+chevron line, the head line and a one-line method when KF chains are in view
 (`kfShown()`); the Methods page and the Season menu item say the same words.
 **Animator:** the `trajs` loader also fetches `/api/fire-vanguard` for the
 view and window; those chains (`_van`) are drawn by `drawVanguard` while the

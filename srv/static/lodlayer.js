@@ -216,8 +216,8 @@
                         'icon-rotation-alignment': 'map',
                         'icon-allow-overlap': true, 'icon-ignore-placement': true
                     },
-                    // SDF glyph (globe.html makeArrowheadSDF): line colour, dark rim
-                    paint: { 'icon-color': color, 'icon-opacity': 0, 'icon-halo-color': 'rgba(8,10,16,0.85)', 'icon-halo-width': 0.9 }
+                    // SDF chevron (globe.html makeChevronSDF): line colour, dark rim
+                    paint: { 'icon-color': color, 'icon-opacity': 0, 'icon-halo-color': 'rgba(8,10,16,0.8)', 'icon-halo-width': 0.6 }
                 });
             }
             if (!map.getLayer(L.point)) {
