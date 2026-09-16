@@ -660,3 +660,23 @@ and in the footer), and the privacy pages no longer list
 (`srv/legal_pages.go`, both languages). CARTO is retiring raster in favour of
 vector; the same key covers both, so that migration is a change of URL and
 style spec, not of credential.
+
+---
+
+### The stats-row rendering pill (2026-09-16)
+
+The `.stats-lod` pill and the pinned chip's `.chip-lod` now speak the one
+vocabulary in `srv/static/renderings.js` (glyph + deduped category words, e.g.
+`shapes · grid · contours`, capped at 3 / 2 on a phone with `+n`). Details and
+the reasoning live in **`docs/agents/animator.md` → "One rendering vocabulary;
+the chip row rests"** — including why there are still exactly five legend rows,
+why the season renderings hang off the `pixels` and `fires` rows, and why the
+pill no longer pulses while an animation runs.
+
+Two rules that bite from this side:
+
+* **Rows that own season renderings are derived** (`SEASON_ROWS`,
+  `renderSeasonRows()`), never typed at a call site.
+* **The pill must not truncate silently** (invariant 8): the word count is a
+  property of the cell (`matchMedia('(max-width: 768px)')`), and the label
+  ellipsizes inside the pill rather than being sliced by the grid cell.

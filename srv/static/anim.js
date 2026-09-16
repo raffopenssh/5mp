@@ -54,14 +54,28 @@
     let A = null; // active animator state
     let openSeq = 0; // open() generation, see Animator.open
 
+    // THE CHIPS SAY WHAT INK IS ON THE MAP (2026-09-16). Every chip used to
+    // carry the same mark — a coloured dot meaning only "on" — and a label in
+    // its own private vocabulary ('fires', 'patrol circles', 'entry'), while
+    // the legend row above described the very same renderings with different
+    // words again. A chip row is the one place where eleven renderings are
+    // side by side, so it is exactly where two names for one thing are read as
+    // two things.
+    //
+    // So: `glyph` is the category's mark from srv/static/renderings.js (a
+    // lattice for a summed field, outlined cells for a 2.5 km raster, a dashed
+    // contour for the front, nested loops for isopleths, chevrons for the
+    // chains ahead of it) in the layer's own colour, and `label` is
+    // `subject category` — the same word the legend's pill and menu use. The
+    // dot survives only where a layer HAS no distinct ink of its own.
     const LAYERS = {
-        fireGrid:    { label: 'fires',         color: '#ef4444', title: 'Every detection in the window as a heat field \u2014 the detections themselves once zoomed in' },
-        firePts:     { label: 'fire points',   color: '#ff7043', title: 'Individual VIIRS detections (high zoom)' },
-        trajs:       { label: 'paths',         color: '#fda668', title: 'Fire paths \u2014 trajectories build at true dated speed, then ashen out' },
-        effortGrid:  { label: 'patrol grid',   color: '#4ade80', title: 'Aggregated patrol effort (0.1° grid pixels)' },
-        effortPts:   { label: 'patrol circles', color: '#86efac', title: 'Patrol effort circles (like the live map) — age and ashen over 90d' },
-        deforest:    { label: 'deforest',      color: '#a855f7', title: 'Deforestation \u2014 new clearings flash purple, older ones grey out over years (never vanish)' },
-        settlements: { label: 'settlements',   color: '#fbbf24', title: 'Settlements (static context)' }
+        fireGrid:    { label: 'fire grid',     color: '#ef4444', title: 'Every detection in the window as a heat field \u2014 the detections themselves once zoomed in' },
+        firePts:     { label: 'fire dots',     color: '#ff7043', title: 'Individual VIIRS detections (high zoom)' },
+        trajs:       { label: 'fire paths',    color: '#fda668', title: 'Fire paths \u2014 trajectories build at true dated speed, then ashen out' },
+        effortGrid:  { label: 'patrol grid',   color: '#4ade80', title: 'Aggregated patrol effort as a heat field (0.1° grid), cooling over 90 days' },
+        effortPts:   { label: 'patrol dots',   color: '#86efac', title: 'Patrol effort as circles (like the live map) — age and ashen over 90d' },
+        deforest:    { label: 'clearing dots', color: '#a855f7', title: 'Deforestation \u2014 new clearings flash purple, older ones grey out over years (never vanish)' },
+        settlements: { label: 'settlement dots', color: '#fbbf24', title: 'Settlements (static context)' }
     };
     // THE CHIP ROW IS NOT THE LAYER TABLE (2026-09-15). Seven data layers had
     // become seven chips plus two Season switches hidden in a stats-panel
@@ -86,13 +100,13 @@
     const CHIPS = {
         fireGrid: LAYERS.fireGrid,
         trajs:    LAYERS.trajs,
-        front:    { label: 'front',    color: '#fb923c', title: 'Season front \u2014 dashed isochrones every 5 days, drawn as the playhead reaches them' },
+        front:    { label: 'season contours', color: '#fb923c', title: 'Season front \u2014 dashed isochrones every 5 days, drawn as the playhead reaches them' },
         vanguard: { label: 'vanguard', color: '#fde047', title: 'Vanguard fires \u2014 chains that began 10\u201360 days ahead of the season front, in lead colour (turns on paths)' },
-        entry:    { label: 'entry',    color: '#fb7185', title: 'Early-burn ground \u2014 cells that burn ahead of their surroundings season after season; a square brightens as its usual entry comes due, flares white when this season\u2019s first detection lands in it, cools over a week and ashens over the months after' },
-        speed:    { label: 'speed',    color: '#f59e0b', title: 'Season speed \u2014 how fast the front travelled, cell by cell as it arrives at the playhead; last season\u2019s answer stays as ash until this season\u2019s front overwrites it' },
+        entry:    { label: 'entry cells', color: '#fb7185', title: 'Early-burn ground \u2014 cells that burn ahead of their surroundings season after season; a square brightens as its usual entry comes due, flares white when this season\u2019s first detection lands in it, cools over a week and ashens over the months after' },
+        speed:    { label: 'speed cells', color: '#f59e0b', title: 'Season speed \u2014 how fast the front travelled, cell by cell as it arrives at the playhead; last season\u2019s answer stays as ash until this season\u2019s front overwrites it' },
         patrol:   { label: 'patrol',   color: '#4ade80', title: 'Patrol effort \u2014 a heat field zoomed out, circles like the live map zoomed in; cools over 90 days' },
-        patrolfront: { label: 'patrol front', color: '#86efac', title: 'Patrol isochrones \u2014 dash-dot lines marking when patrol presence had built up (\u2265 3 patrol-days within ~5 km), drawn as the playhead reaches them, like the fire front' },
-        patrolpressure: { label: 'patrol pressure', color: '#bef264', title: 'Pressure isopleths \u2014 solid lines at 1, 2, 5, 10 \u2026 patrol-days within ~5 km, rebuilt at the playhead so the rings grow as the effort lands' },
+        patrolfront: { label: 'patrol iso', color: '#86efac', title: 'Patrol isochrones \u2014 dash-dot lines marking when patrol presence had built up (\u2265 3 patrol-days within ~5 km), drawn as the playhead reaches them, like the fire front' },
+        patrolpressure: { label: 'pressure iso', color: '#bef264', title: 'Pressure isopleths \u2014 solid lines at 1, 2, 5, 10 \u2026 patrol-days within ~5 km, rebuilt at the playhead so the rings grow as the effort lands' },
         deforest: LAYERS.deforest,
         settlements: LAYERS.settlements
     };
@@ -216,7 +230,13 @@
     #anim-open-btn { font-size: 9px; font-weight: 600; color: #22c55e; background: rgba(34,197,94,0.10);
         border: 1px solid rgba(34,197,94,0.35); border-radius: 3px; padding: 1px 5px; margin-left: 8px;
         cursor: pointer; letter-spacing: 0.3px; line-height: 1.3; white-space: nowrap; user-select: none;
-        vertical-align: middle; transition: background .15s, border-color .15s; font-family: inherit; }
+        vertical-align: middle; transition: background .15s, border-color .15s; font-family: inherit;
+        display: inline-flex; align-items: center; gap: 4px; }
+    /* The glyph is Lucide, like every other control here, and the word is
+       capitalised like every other button: "▶ animate" was a text triangle at
+       the platform's emoji metrics beside a lowercase verb, which is two
+       exceptions in one 50 px button. */
+    #anim-open-btn i, .anim-btn i { font-size: 10px; line-height: 1; display: inline-block; }
     #anim-open-btn:hover { background: rgba(34,197,94,0.22); border-color: #22c55e; }
     #anim-open-btn:active { transform: scale(0.93); }
     .time-slider-container.animating #anim-open-btn { display: none; }
@@ -275,6 +295,16 @@
        instability, which is the opposite of what a loading indicator is for.) */
     .anim-chip > i { width: 6px; height: 6px; border-radius: 50%; display: inline-block; flex: none;
         margin: 0 4px; background: #555; transition: background .15s, box-shadow .15s; }
+    /* A rendering that has ink of its own wears its own mark (the .rg glyphs
+       in globe.css — the same ones the legend's pill and menu use), in the
+       layer's colour. Dim while off: the chip then shows WHAT it would draw
+       rather than only that it is switched off. Same 12 px slot as the dot and
+       the loading dots, so nothing reflows. */
+    .anim-chip > i.rg { width: 11px; height: 11px; border-radius: 0; margin: 0 2px;
+        background: currentColor; opacity: .45; box-shadow: none;
+        transition: opacity .15s; }
+    .anim-chip.on > i.rg { opacity: 1; box-shadow: none; }
+    .anim-chip-lbl { display: inline-block; }
     .anim-chip.on { color: #ddd; background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.25); }
     .anim-chip.on i { box-shadow: 0 0 5px currentColor; }
     /* WAITING IS DRAWN WHERE THE ANSWER WILL BE, in the app's one waiting
@@ -309,6 +339,45 @@
     .anim-chip.unavailable { opacity: .38; cursor: not-allowed; }
     .anim-chip.unavailable:hover { border-color: rgba(255,255,255,0.15); color: #999; }
     .anim-chip.hidden { display: none; }
+
+    /* ── THE ROW RESTS TO WHAT IS ACTUALLY DRAWN ─────────────────────
+       Eleven renderings is a complete row and an unreadable one: while the
+       animation plays, ten of the eleven chips are saying "not me", and on a
+       phone they wrap to three lines over the map — which is the picture the
+       reader opened the animator to see. So once the choosing is done the row
+       settles to the chips that are ON, plus one ⋯ button carrying the number
+       it folded. Nothing is removed: the ⋯ reopens the full row, every chip
+       keeps its title and its accessible name, and the set comes back in the
+       same order it left.
+
+       Width + opacity, never display:none, so the row GROWS back instead of
+       jumping, and the negative margin swallows the flex gap a zero-width
+       chip would otherwise still occupy (eleven of those is 30 px of dead
+       space that reads as a broken layout). Same technique, same reason, as
+       the stats-panel legend's resting state (.ml-rest in globe.css) — one
+       idea, two surfaces.
+
+       It rests when the animation starts playing (the eye is on the map now),
+       and a few seconds after the last chip was touched. It wakes on hover
+       with a mouse, on the ⋯ anywhere, and it will not rest at all while the
+       reader is hovering the row or has pinned it open. */
+    #anim-chips.rested > .anim-chip.visible:not(.on):not(.anim-chip-more):not(.anim-chip-mode) {
+        max-width: 0; opacity: 0; padding-left: 0; padding-right: 0; border-width: 0;
+        margin-left: -3px; pointer-events: none; }
+    /* The highlight chip is exempt: it is not a layer but a WAY OF LOOKING,
+       and it
+       is the control that chooses layers for you. Folding it away would put
+       the one switch that can rebuild the whole set behind the ⋯. */
+    .anim-chip-more { color: #9ca3af; letter-spacing: 0; font-variant-numeric: tabular-nums; }
+    .anim-chip-more > i { width: auto; height: auto; background: none; border-radius: 0;
+        margin: 0; font-size: 11px; line-height: 1; opacity: .85; box-shadow: none; }
+    .anim-chip-more:hover { color: #e5e7eb; border-color: rgba(34,197,94,0.45); }
+    #anim-chips:not(.rested) > .anim-chip-more { color: #6b7280; }
+    /* A row that folded nothing must not offer to unfold it. */
+    .anim-chip-more.hidden { display: none; }
+    @media (prefers-reduced-motion: reduce) {
+        #anim-chips.rested > .anim-chip.visible:not(.on) { transition: none; }
+    }
     /* The way-of-looking chip: same size as its neighbours, set apart by a
        gutter and a half-disc mark instead of a status dot, so it does not read
        as an eighth layer. On, it is white — it is about all the colours. */
@@ -393,6 +462,11 @@
         #anim-date-lbl { font-size: 11px; }
 
         #anim-chips { gap: 7px; margin: 5px 0 5px; }
+        /* The gap is 7px here, so a folded chip must eat 7px — with -3px the
+           row kept a visible hole where the folded renderings had been, which
+           reads as a chip that failed to load rather than as a tidy row. */
+        #anim-chips.rested > .anim-chip.visible:not(.on):not(.anim-chip-more):not(.anim-chip-mode) {
+            margin-left: -7px; }
         .anim-chip { font-size: 9px; min-height: 17px; border-radius: 3px; }
         .anim-chip.visible { max-width: 190px; padding: 1px 7px 1px 5px; gap: 5px; overflow: visible; }
         .anim-chip.visible::before { content: ''; position: absolute; inset: -2px -3px; }
@@ -1733,11 +1807,13 @@
     }
 
     // ---------- draw ----------
-    function draw(t) {
+    function draw(t, force) {
         if (!A) return;
         // The season front is a MapLibre layer, not canvas: tell it the
         // playhead so it shows the isochrones the season had reached by t.
-        if (window.FireSeason && FireSeason.isOn()) FireSeason.animAt(t);
+        // `force` while exporting: every requested instant must land (see
+        // fireseason.js animAt).
+        if (window.FireSeason && FireSeason.isOn()) FireSeason.animAt(t, force);
         const ctx = A.ctx;
         const w = A.canvas.clientWidth, h = A.canvas.clientHeight;
         ctx.clearRect(0, 0, w, h);
@@ -2325,7 +2401,14 @@
 
     function updatePlayBtn() {
         const b = document.getElementById('anim-play');
-        if (b) b.textContent = A.playing ? '⏸' : '▶';
+        if (!b) return;
+        // Lucide, like every other control in this app: ▶/⏸ as TEXT rendered
+        // at whatever the platform emoji font decided, which on Android drew a
+        // yellow rounded box where the app's other glyphs are hairline
+        // strokes. A button that looks foreign reads as a different app's
+        // button.
+        b.innerHTML = '<i class="' + (A.playing ? 'icon-pause' : 'icon-play') + '"></i>';
+        b.setAttribute('aria-label', A.playing ? 'Pause' : 'Play');
     }
 
     // ---------- interaction while paused ----------
@@ -2648,6 +2731,10 @@
         if (!A) return;
         if (A.t >= A.t1 - 1) A.t = A.t0;
         A.playing = true; A.lastNow = null;
+        // Playing is the answer arriving: the eye belongs on the map, so the
+        // row folds to what is actually being drawn (unless the reader has
+        // pinned it open with the ⋯).
+        if (!A.chipsPinned) setChipsRested(true);
         updatePlayBtn();
         syncProbe();
         A.raf = requestAnimationFrame(loop);
@@ -2661,6 +2748,42 @@
     }
 
     // ---------- GIF export ----------
+    //
+    // One frame of the MAP (basemap + every MapLibre layer, which since the
+    // season overlays landed includes the contours, the patrol isochrones and
+    // the pressure isopleths), composited into `octx` at the output size.
+    //
+    // `preserveDrawingBuffer` is false (globe.html — it doubles the GL memory
+    // of an 18 GB-dataset map on a phone), so the colour buffer is only
+    // guaranteed readable while the GL frame is still current: inside a
+    // `render`/`idle` turn. We therefore ask MapLibre to repaint
+    // (`triggerRepaint`) and read the canvas from the `render` event it fires,
+    // with `idle` and a short timeout as fallbacks so an export can never
+    // hang on a map that decided nothing changed.
+    function mapFrameInto(octx, outW, outH) {
+        const mapCanvas = map.getCanvas();
+        const paint = () => {
+            octx.fillStyle = '#0a0a0a';
+            octx.fillRect(0, 0, outW, outH);
+            try { octx.drawImage(mapCanvas, 0, 0, outW, outH); } catch (e) { /* tainted/lost ctx: keep the fires */ }
+        };
+        return new Promise(resolve => {
+            let done = false;
+            const finish = () => {
+                if (done) return;
+                done = true;
+                map.off('render', onRender);
+                clearTimeout(timer);
+                paint();
+                resolve();
+            };
+            const onRender = () => finish();
+            map.on('render', onRender);
+            const timer = setTimeout(finish, 180);
+            map.triggerRepaint();
+        });
+    }
+
     async function exportGIF() {
         if (!A || A.recording) return;
         A.recording = true;
@@ -2674,7 +2797,6 @@
             btn.textContent = '0%';
             const gifenc = await import('https://unpkg.com/gifenc@1.0.3/dist/gifenc.esm.js');
             const { GIFEncoder, quantize, applyPalette } = gifenc;
-            const mapCanvas = map.getCanvas();
             const srcW = A.canvas.clientWidth, srcH = A.canvas.clientHeight;
             const outW = Math.min(720, srcW);
             const outH = Math.round(srcH * outW / srcW);
@@ -2696,10 +2818,21 @@
             const delayMs = Math.max(20, Math.min(500, Math.round(durSec * 1000 / frames)));
             for (let i = 0; i < frames; i++) {
                 const t = A.t0 + span * i / (frames - 1);
-                draw(t);
-                octx.fillStyle = '#0a0a0a';
-                octx.fillRect(0, 0, outW, outH);
-                octx.drawImage(mapCanvas, 0, 0, outW, outH);
+                draw(t, true);
+                // THE MAP IS PART OF THE FRAME, AND IT IS ASYNCHRONOUS.
+                // The season contours, the patrol isochrones and the pressure
+                // isopleths are MapLibre layers (fireseason.js): draw(t) only
+                // hands them the playhead, and MapLibre repaints on its own
+                // schedule. Grabbing the GL canvas straight afterwards copied
+                // whatever frame happened to be on it — for a fast export,
+                // the same contour date in every frame, i.e. a GIF in which
+                // the lines the reader switched on do not move. Worse, with
+                // `preserveDrawingBuffer: false` (globe.html, for memory) the
+                // buffer is only guaranteed readable INSIDE the render
+                // callback; outside it a browser may hand back a blank
+                // canvas. So we wait for the map's own repaint and copy the
+                // basemap + vector layers there.
+                await mapFrameInto(octx, outW, outH);
                 octx.drawImage(A.canvas, 0, 0, outW, outH);
                 octx.font = 'bold 16px sans-serif';
                 octx.fillStyle = 'rgba(0,0,0,0.55)';
@@ -2757,13 +2890,26 @@
     // Small views come back as an immediate download; big ones become a
     // notification card with a progress bar, a delete button and a 21-day
     // link. GPKGExport owns all of that — there is exactly one job watcher.
+    // The Season renderings currently drawn, as the export's tokens
+    // (srv/gpkg_view.go viewLayerTables knows what each implies).
+    function seasonExportTokens() {
+        return SEASON_CHIPS.filter(c => chipOn(c));
+    }
+    // Of those, the ones the server has no table for — named to the user
+    // rather than dropped (invariant 1: a silent omission reads as a complete
+    // answer).
+    function seasonExportGaps() {
+        const words = { entry: 'entry cells', speed: 'speed cells' };
+        return seasonExportTokens().filter(c => words[c]).map(c => words[c]);
+    }
+
     async function exportGPKG() {
         if (!A || A.exporting) return;
         if (!window.GeoPackageExport) { toast('Export module not loaded', 'error'); return; }
         pause();
         const btn = document.getElementById('anim-export');
         const on = LAYER_ORDER.filter(n => A.on[n]);
-        if (!on.length) {
+        if (!on.length && !seasonExportTokens().length) {
             toast('No layers are switched on — turn on at least one chip to export it', 'warning');
             return;
         }
@@ -2784,12 +2930,27 @@
                 // both keeps the cache key honest about which frame it was.
                 to: A.toISO,
                 at: fmtDate(A.t),
-                // The Season overlay is not an animator chip but it IS on
-                // screen: the file carries its front contours too.
-                layers: (window.FireSeason && FireSeason.frontOn()) ? on.concat(['season']) : on,
+                // WHAT IS ON SCREEN, NOT WHAT IS A CHIP. The Season
+                // renderings live in fireseason.js, not in A.on, and until
+                // they were listed here a frame showing the season contours,
+                // the patrol isochrones and the pressure isopleths exported a
+                // file with none of them in it — the export's whole promise is
+                // "this view as data", and a missing layer breaks it silently.
+                // Two of them (entry, speed) have no table yet and two
+                // (patrolfront, patrolpressure) are contours the browser
+                // rebuilds from patrol_effort, so the toast names what the
+                // file carries as input and what it cannot carry at all.
+                layers: on.concat(seasonExportTokens()),
                 aoi: A.aoiID || '',
                 label: 'this view at ' + fmtDateHuman(A.t),
             });
+            const missing = seasonExportGaps();
+            if (missing.length) {
+                toast('The ' + missing.join(' and ') + ' on screen '
+                    + (missing.length > 1 ? 'are' : 'is') + ' drawn from grids that have no export table yet,'
+                    + ' so ' + (missing.length > 1 ? 'they are' : 'it is') + ' not in the file.', 'info',
+                    { key: 'gpkg-season-gap' });
+            }
         } catch (e) {
             console.error('GPKG export failed:', e);
             toast('GeoPackage export failed: ' + e.message, 'error');
@@ -2953,6 +3114,68 @@
              + 'the fire grid shows all of them as a heat field.';
     }
 
+    // ── the resting chip row ────────────────────────────────────────────
+    //
+    // `A.chipsRested` is the state, `A.chipsPinned` is the reader having said
+    // "stay open" with the ⋯, and `A.chipsHover` is a mouse in the row. The
+    // row folds only when none of the three objects.
+    function offChipCount() {
+        return Array.from(document.querySelectorAll('#anim-chips > .anim-chip[data-layer]'))
+            .filter(c => !c.classList.contains('hidden') && !c.classList.contains('on')).length;
+    }
+    function applyChipsRested() {
+        const row = document.getElementById('anim-chips');
+        if (!row || !A) return;
+        const n = offChipCount();
+        const rested = !!A.chipsRested && n > 0;
+        row.classList.toggle('rested', rested);
+        const more = document.getElementById('anim-chips-more');
+        if (more) {
+            // A ⋯ with nothing behind it is a dead control: every rendering is
+            // already on screen, so the button says so by not being there.
+            more.classList.toggle('hidden', n === 0);
+            const lbl = more.querySelector('.anim-chip-lbl');
+            if (lbl) lbl.textContent = rested ? String(n) : '';
+            more.setAttribute('aria-expanded', rested ? 'false' : 'true');
+            more.title = rested
+                ? n + ' more rendering' + (n === 1 ? '' : 's') + ' — show them'
+                : 'Show only what is drawn';
+            if (n > 0) more.classList.add('visible');
+        }
+        // A zero-width chip must not be a tab stop: the keyboard would walk
+        // through ten invisible controls to reach the eleventh.
+        document.querySelectorAll('#anim-chips > .anim-chip[data-layer]').forEach(c => {
+            c.tabIndex = (rested && !c.classList.contains('on')) ? -1 : 0;
+        });
+    }
+    function setChipsRested(on) {
+        if (!A) return;
+        A.chipsRested = !!on;
+        clearTimeout(A.chipsTimer);
+        applyChipsRested();
+    }
+    function wakeChips() {
+        if (!A) return;
+        clearTimeout(A.chipsTimer);
+        setChipsRested(false);
+    }
+    function scheduleChipsRest(delay) {
+        if (!A) return;
+        clearTimeout(A.chipsTimer);
+        A.chipsTimer = setTimeout(() => {
+            if (!A || A.chipsPinned || A.chipsHover) return;
+            setChipsRested(true);
+        }, delay == null ? 3200 : delay);
+    }
+    // The ⋯ itself: an explicit ask, so it PINS the row open until asked
+    // again — a control the reader pressed must not undo itself three seconds
+    // later.
+    function toggleChipsRested() {
+        if (!A) return;
+        if (A.chipsRested) { A.chipsPinned = true; setChipsRested(false); }
+        else { A.chipsPinned = false; setChipsRested(true); }
+    }
+
     function updateChips() {
         if (!A) return;
         const seasonNo = seasonRefusal();
@@ -2960,8 +3183,26 @@
             const name = chip.dataset.layer;
             const on = chipOn(name);
             chip.classList.toggle('on', on);
-            const dot = chip.querySelector('i');
-            if (dot) dot.style.background = on ? CHIPS[name].color : '#555';
+            const mark = chip.querySelector('i');
+            if (mark) {
+                if (mark.classList.contains('rg')) {
+                    // A glyph is a picture of the ink, so it is coloured, not
+                    // filled: off it is the dim outline of what would be drawn.
+                    mark.style.color = CHIPS[name].color;
+                    mark.style.background = '';
+                    // `patrol` draws dots or a grid by zoom — the mark follows
+                    // the rendering, or the chip is a picture of the wrong ink.
+                    if (name === 'patrol') {
+                        const want = chipMarkHTML(name).match(/rg-(\w+)/);
+                        if (want && !mark.classList.contains(want[1] === 'grid' ? 'rg-grid' : 'rg-dots')) {
+                            mark.classList.remove('rg-grid', 'rg-dots');
+                            mark.classList.add('rg-' + want[1]);
+                        }
+                    }
+                } else {
+                    mark.style.background = on ? CHIPS[name].color : '#555';
+                }
+            }
             if (on) chip.style.color = '';
             if (SEASON_CHIPS.indexOf(name) >= 0 && !((name === 'patrolfront' || name === 'patrolpressure') && window.HAS_PATROL === false)) {
                 chip.classList.toggle('unavailable', !!seasonNo && !on);
@@ -2978,8 +3219,12 @@
             hl.classList.toggle('on', !!p);
             hl.setAttribute('aria-pressed', p ? 'true' : 'false');
             hl.title = hlTitle(p);
-            hl.innerHTML = '<i></i>highlight' + (p ? ' \u00b7 ' + p.id : '');
+            hl.innerHTML = '<i></i><span class="anim-chip-lbl">highlight' + (p ? ' \u00b7 ' + p.id : '') + '</span>';
         }
+        // The fold follows the ON set: a chip switched on must appear even
+        // while the row is resting (that is the whole point of what it rests
+        // TO), and the ⋯'s count must be the number actually folded.
+        applyChipsRested();
         announceLayers();
     }
 
@@ -3018,6 +3263,10 @@
 
     async function toggleChip(name, want) {
         if (!A) return;
+        // Choosing is working in the row: it stays open while they choose and
+        // tidies a few seconds after the last one (applyChipsRested() runs on
+        // every updateChips(), so the chip just switched on is never folded).
+        if (!A.applyingHL) { wakeChips(); scheduleChipsRest(); }
         // The user chose a layer: highlight's choice is no longer the rule.
         if (A.highlight && !A.applyingHL) A.highlight = false;
         if (!A.applyingHL && SEASON_CHIPS.indexOf(name) >= 0) A.seasonTouched = true;
@@ -3103,6 +3352,16 @@
         const s = {};
         SEASON_CHIPS.forEach(c => { s[c] = chipOn(c); });
         return s;
+    }
+    // Is the map already carrying a Season rendering? Read from fireseason.js
+    // rather than through chipOn(), because this is asked while A is still
+    // being built — the answer decides whether the curator may choose at all.
+    function anySeasonOn() {
+        const FS = window.FireSeason;
+        if (!FS) return false;
+        return !!(FS.frontOn() || FS.vanguardOn()
+               || (FS.speedOn && FS.speedOn()) || (FS.entryOn && FS.entryOn())
+               || (FS.patrolOn && FS.patrolOn()) || (FS.pressureOn && FS.pressureOn()));
     }
     function restoreSeasonIfCurated() {
         if (!A || !A.seasonBefore || A.seasonTouched) return;
@@ -3210,6 +3469,17 @@
         FireSeason.onChange(() => { if (A) { updateChips(); draw(A.t); } });
     }
 
+    // The chip's mark: the category's glyph where the rendering has one of its
+    // own, the status dot otherwise. `<i>` in both cases and one width in both
+    // states — the loading dots take the same slot, so a chip never reflows
+    // the row as its data lands.
+    function chipMarkHTML(name) {
+        const R = window.Renderings;
+        const key = name === 'patrol' ? (chipOn('patrol') && A && A.on.effortGrid ? 'effortGrid' : 'effortPts') : name;
+        const cat = R && R.cat(key);
+        return cat ? '<i class="rg rg-' + cat + '" aria-hidden="true"></i>' : '<i aria-hidden="true"></i>';
+    }
+
     // ---------- UI build / teardown ----------
     function buildUI() {
         const container = document.getElementById('time-slider-container');
@@ -3221,13 +3491,13 @@
         const inline = document.createElement('span');
         inline.id = 'anim-inline';
         inline.innerHTML = `
-            <button id="anim-play" class="anim-btn primary" title="Play/Pause (space)">⏸</button>
+            <button id="anim-play" class="anim-btn primary" title="Play/Pause (space)" aria-label="Pause"><i class="icon-pause"></i></button>
             <span id="anim-date-lbl"></span>
-            <button id="anim-slower" class="anim-btn" title="Slower (hold to ramp)">−</button>
+            <button id="anim-slower" class="anim-btn" title="Slower (hold to ramp)" aria-label="Slower"><i class="icon-minus"></i></button>
             <span id="anim-speed-lbl"></span>
-            <button id="anim-faster" class="anim-btn" title="Faster (hold to ramp)">+</button>
-            <button id="anim-export" class="anim-btn" title="Download this animation — GIF, or a GeoPackage of this frame">⬇</button>
-            <button id="anim-close" class="anim-btn" title="Close animator (Esc)">✕</button>`;
+            <button id="anim-faster" class="anim-btn" title="Faster (hold to ramp)" aria-label="Faster"><i class="icon-plus"></i></button>
+            <button id="anim-export" class="anim-btn" title="Download this animation — GIF, or a GeoPackage of this frame" aria-label="Download"><i class="icon-download"></i></button>
+            <button id="anim-close" class="anim-btn" title="Close animator (Esc)" aria-label="Close animator"><i class="icon-x"></i></button>`;
         dateRow.appendChild(inline);
         // staggered expansion, same behaviour as the date preset tags
         Array.from(inline.children).forEach((el, i) => {
@@ -3246,7 +3516,7 @@
             chip.dataset.layer = name;
             chip.title = def.title;
             chip.setAttribute('aria-pressed', 'false');
-            chip.innerHTML = `<i></i>${def.label}`;
+            chip.innerHTML = chipMarkHTML(name) + '<span class="anim-chip-lbl">' + def.label + '</span>';
             chip.onclick = () => toggleChip(name);
             // patrol: hidden entirely when the pixels toggle is off (unless a
             // share link explicitly enabled it). When the account owns no
@@ -3267,6 +3537,37 @@
             }
             chips.appendChild(chip);
         }
+        // The ⋯ that unfolds the rest of the row (see #anim-chips.rested in
+        // the CSS above). It sits AFTER the layers and BEFORE the way-of-
+        // looking chip, because that is where the folded chips were.
+        const more = document.createElement('button');
+        more.type = 'button';
+        more.id = 'anim-chips-more';
+        more.className = 'anim-chip anim-chip-more';
+        more.setAttribute('aria-expanded', 'true');
+        more.innerHTML = '<i class="icon-more-horizontal"></i><span class="anim-chip-lbl"></span>';
+        more.onclick = () => toggleChipsRested();
+        chips.appendChild(more);
+
+        // Hovering the row is the reader working in it: it must not fold
+        // under them (same rule as the legend's rest state). MOUSE ONLY — a
+        // touch "hover" is a tap, and the ⋯ is the touch affordance. The
+        // test is the EVENT's pointerType, not a `(hover: hover)` media
+        // query: the query answers for the device, the event answers for the
+        // gesture, and a query that says "no hover" on a machine that has a
+        // mouse (headless Chrome, a tablet with a trackpad attached later)
+        // silently removes the behaviour instead of adapting it.
+        chips.addEventListener('pointerenter', e => {
+            if (e.pointerType && e.pointerType !== 'mouse') return;
+            if (A) A.chipsHover = true;
+            wakeChips();
+        });
+        chips.addEventListener('pointerleave', e => {
+            if (e.pointerType && e.pointerType !== 'mouse') return;
+            if (A) A.chipsHover = false;
+            scheduleChipsRest(900);
+        });
+
         // The way of looking, set apart from the layers: it is about all of
         // them, not one of them.
         const hl = document.createElement('button');
@@ -3275,7 +3576,7 @@
         hl.className = 'anim-chip anim-chip-mode';
         hl.title = hlTitle(null);
         hl.setAttribute('aria-pressed', 'false');
-        hl.innerHTML = '<i></i>highlight';
+        hl.innerHTML = '<i></i><span class="anim-chip-lbl">highlight</span>';
         hl.onclick = () => toggleHighlight();
         chips.appendChild(hl);
         header.appendChild(chips);
@@ -3284,6 +3585,10 @@
             setTimeout(() => chip.classList.add('visible'), 60 + i * 45);
         });
         updateChips();
+        // The full row is shown first — the reader has just opened the
+        // animator and the set IS the answer to "what can this show me" —
+        // then it tidies itself once they have had time to read it.
+        scheduleChipsRest(4200);
 
         // playhead + progress in slider track — position BEFORE appending so
         // they don't flash at the track's left edge and jump on first draw
@@ -3617,12 +3922,26 @@
                 clipGeom, aoiID,
                 t0: parseD(fromISO), t1: parseD(toISO) + DAY - 1,
                 playing: false, speed: 1, raf: null, recording: false,
-                // A profile id, or false. Default ON: a fresh open shows the
-                // 'now' story; a link that hand-picked layers stays off.
+                // A profile id, or false. THE CURATOR IS THE ONLY THING THAT
+                // MAY CHOOSE LAYERS — AND ONLY WHEN NOTHING ELSE ALREADY HAS.
+                // Default ON for a plain open (an empty map has no story of
+                // its own to lose), OFF when the layer set on screen was
+                // composed deliberately: a share link that named `anim=`
+                // layers, or a map already carrying Season renderings (the
+                // `season=` half of the same link, or the reader's own
+                // clicks). Opening the animator used to run the 'now' profile
+                // over the top of that and switch the contours and the
+                // pressure isopleths back off — a link that restored them and
+                // an app that then discarded them, which reads as the restore
+                // having failed.
                 highlight: opts.highlight === undefined
-                    ? (opts.layers && opts.layers.length ? false : HL_DEFAULT)
+                    ? ((opts.layers && opts.layers.length) || anySeasonOn() ? false : HL_DEFAULT)
                     : (opts.highlight === true || opts.highlight === '1' ? HL_DEFAULT
-                       : (opts.highlight && hlProfile(opts.highlight) ? opts.highlight : false))
+                       : (opts.highlight && hlProfile(opts.highlight) ? opts.highlight : false)),
+                // Carried across a date-window reopen, so the overlay the
+                // reader had before the curator ran still comes back on close.
+                seasonTouched: !!opts.seasonTouched,
+                seasonBefore: opts.seasonBefore || null
             };
             if (A.highlight && !hlAvailable(hlProfile(A.highlight))) {
                 const nx = hlNext(A.highlight);
@@ -3661,7 +3980,7 @@
             // the link would have said, so the loading modal covers it once.
             let hlSeason = null;
             if (A.highlight) {
-                A.seasonBefore = seasonSnapshot();
+                if (!A.seasonBefore) A.seasonBefore = seasonSnapshot();
                 const pl = profileLayers(hlProfile(A.highlight), bbox);
                 initial = pl.data;
                 hlSeason = pl.season;
@@ -3747,11 +4066,14 @@
                 }, 450);
             }
         },
-        close() {
+        close(opts) {
             if (!A) return;
             closeExportMenu();
             pause();
-            restoreSeasonIfCurated();
+            // A date-window change REOPENS the same animation, so the Season
+            // overlay must not be restored in between: it would flip the
+            // curator's chips off and the reopen would flip them on again.
+            if (!(opts && opts.keepSeason)) restoreSeasonIfCurated();
             A.highlight = false;
             syncLiveLayers();           // the live LOD layers are the user's again
             map.off('move', A.mapHandler);
@@ -3810,10 +4132,16 @@
                 const layers = LAYER_ORDER.filter(n => A.on[n]);
                 const paused = !A.playing;
                 const aoi = A.aoiID || null;
-                const highlight = !!A.highlight;
-                this.close();
+                // THE PROFILE, NOT A BOOLEAN. `!!A.highlight` reopened every
+                // curated animation as 'now': changing the date window threw
+                // away the story the reader had chosen and re-picked the
+                // layers. A reopen is the same animation over a new window.
+                const highlight = A.highlight || false;
+                const seasonTouched = A.seasonTouched;
+                const seasonBefore = A.seasonBefore;
+                this.close({ keepSeason: true });
                 // speed intentionally recomputed for the new span
-                this.open({ layers, paused, aoi, highlight });
+                this.open({ layers, paused, aoi, highlight, seasonTouched, seasonBefore });
             }, 350);
         },
         getState() {

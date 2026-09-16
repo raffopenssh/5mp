@@ -63,10 +63,28 @@ var viewLayerTables = map[string][]string{
 	"effortGrid":  {"patrol_effort"},
 	"effortPts":   {"patrol_effort"},
 	"infra":       {"roads", "rivers", "places", "waterbodies"},
-	// Not an animator chip but the Map-strip Season overlay; anim.js adds
-	// it to `layers` when FireSeason is on, so the file holds what the
-	// screen showed.
-	"season": {"fire_season_front", "fire_vanguard"},
+	// Not animator chips but the Map-strip Season renderings; anim.js adds
+	// whichever are drawn to `layers`, so the file holds what the screen
+	// showed. `season` is the old single token (front + vanguard) and is
+	// kept because share links minted before the split still carry it.
+	"season":         {"fire_season_front", "fire_vanguard"},
+	"front":          {"fire_season_front"},
+	"vanguard":       {"fire_vanguard"},
+	// The patrol isochrones and the pressure isopleths are CONTOURS OF
+	// patrol_effort, rebuilt in the browser at the playhead
+	// (fireseason.js pressureContoursAt). The file carries their input, not
+	// the lines: a line drawn for one instant of one viewport is a picture,
+	// while the visits are the measurement. anim.js says so in its toast —
+	// a layer that is on screen and absent from the file must be named,
+	// not silently dropped.
+	"patrolfront":    {"patrol_effort"},
+	"patrolpressure": {"patrol_effort"},
+	// Entry and speed cells are read from the season grids (/api/fire-season-
+	// speed, .../entry) and have no export table yet: an empty list means
+	// "this token selects nothing", which is honest, and wants() still
+	// answers false for every table.
+	"entry":          {},
+	"speed":          {},
 }
 
 func (v gpkgViewOpts) wants(table string) bool {

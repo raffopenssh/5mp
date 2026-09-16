@@ -299,7 +299,17 @@ src_guard "stats_width_transition"        present "transition: width" "srv/stati
 # Highlight is a curator: on by default, steps through profiles, off the
 # moment the user toggles a chip, and its PROFILE (not a flag) rides the link.
 src_guard "anim_hl_profiles"              present "HL_PROFILES" "srv/static/anim.js"
-src_guard "anim_hl_default_on"            present "opts.layers.length . false : HL_DEFAULT" "srv/static/anim.js"
+src_guard "anim_hl_default_on"            present "opts.layers.length. .. anySeasonOn.. . false : HL_DEFAULT" "srv/static/anim.js"
+# ONLY IF NOTHING ELSE HAS CHOSEN. A link that restored the season overlay
+# (season=front,patrol,pressure) had its lines switched back off the moment the
+# animator opened, because the curator ran its own profile over the top -- a
+# restore that undoes itself reads as a restore that failed.
+src_guard "anim_hl_yields_to_season"      present "function anySeasonOn" "srv/static/anim.js"
+# A date-window change REOPENS the animation; it must carry the profile ID, not
+# a boolean (every curated story came back as 'now'), and must not restore the
+# season overlay in between (the reopen would have to undo it again).
+src_guard "anim_reopen_keeps_profile"     present "const highlight = A.highlight .. false" "srv/static/anim.js"
+src_guard "anim_reopen_keeps_season"      present "keepSeason" "srv/static/anim.js"
 src_guard "anim_hl_off_on_user_toggle"    present "A.highlight && !A.applyingHL" "srv/static/anim.js"
 src_guard "anim_hl_share_is_profile"      present "anim_hl., String.st.highlight" "$GLOBE"
 src_guard "anim_hl_share_not_flag"        absent  "anim_hl., .1.)" "$GLOBE"
@@ -307,6 +317,56 @@ src_guard "anim_hl_restores_season"       present "restoreSeasonIfCurated" "srv/
 src_guard "anim_hl_hides_live_lod"        present "function syncLiveLayers" "srv/static/anim.js"
 src_guard "anim_hl_season_needs_span"     present "HL_SEASON_MIN_DAYS" "srv/static/anim.js"
 test_url_param "animation_highlight_profile" "&park=CAF_Chinko&from=2024-11-01&to=2025-03-31&anim=fireGrid&anim_hl=season&anim_paused=1" "" ""
+
+# ── ONE RENDERING VOCABULARY ──────────────────────────────────────
+# The legend pill, a pinned chip and the animator's chips describe the same
+# renderings; they used to use three sets of words and one shape-shifting mark,
+# and the pill gave up and said "5 modes" (a number that names nothing).
+src_guard "renderings_module"             present "window.Renderings" "srv/static/renderings.js"
+src_guard "renderings_loaded"             present "renderings.js" "$GLOBE"
+src_guard "renderings_glyph_css"          present "\\.rg-iso" "srv/static/globe.css"
+src_guard "pill_has_no_mode_count"        absent  "[0-9]. modes|' modes'" "$GLOBE"
+# No new legend ROWS: the patrol isochrones and the pressure isopleths attach
+# to the existing pixels row, the season lines to the fires row -- and the rows
+# that own season renderings are DERIVED, not typed at each call site (they
+# were, which is how the patrol pill stayed empty while the map drew the lines).
+src_guard "season_rows_derived"           present "function renderSeasonRows" "$GLOBE"
+src_guard "season_rows_not_typed"         absent  "renderRowModes\\('fires'\\)" "$GLOBE"
+# The chip row rests to what is actually drawn (eleven chips, ten of them
+# saying "not me", over the map the animation is for).
+src_guard "anim_chips_rest"               present "function scheduleChipsRest" "srv/static/anim.js"
+src_guard "anim_chips_more_button"        present "anim-chips-more" "srv/static/anim.js"
+src_guard "anim_chips_rest_on_play"       present "A.chipsPinned. setChipsRested" "srv/static/anim.js"
+# A GIF frame must be composited from a MAP frame the map has actually
+# repainted (the season contours are MapLibre layers, and the GL buffer is only
+# readable inside a render turn), and the season's playhead must not be
+# throttled while exporting.
+src_guard "gif_waits_for_map_frame"       present "function mapFrameInto" "srv/static/anim.js"
+src_guard "gif_forces_season_playhead"    present "draw\\(t, true\\)" "srv/static/anim.js"
+src_guard "season_anim_force_arg"         present "function animAt\\(t, force\\)" "srv/static/fireseason.js"
+# The GeoPackage of a frame carries the Season renderings that are ON, and says
+# which of them it cannot carry.
+src_guard "gpkg_season_tokens"            present "function seasonExportTokens" "srv/static/anim.js"
+src_guard "gpkg_names_its_gaps"           present "function seasonExportGaps" "srv/static/anim.js"
+src_guard "gpkg_server_knows_tokens"      present "\"patrolpressure\": *\\{" "srv/gpkg_view.go"
+
+# ── LOAD-TIME SMOKE ──────────────────────────────────────────────
+# A module that throws while loading leaves NOTHING behind and looks like a CSS
+# bug (see tests/js_load_smoke.js for the backtick that cost an afternoon).
+js_smoke() {
+    local name="$1"; shift
+    printf "%-50s" "$name"
+    if node tests/js_load_smoke.js "$@" >/dev/null 2>&1; then
+        green "PASS"; PASSED=$((PASSED + 1))
+    else
+        red "FAIL"; node tests/js_load_smoke.js "$@" 2>&1 | sed 's/^/    /'; FAILED=$((FAILED + 1))
+    fi
+}
+if command -v node >/dev/null 2>&1; then
+    js_smoke "anim_js_loads"        srv/static/anim.js Animator '#anim-open-btn' '.anim-chip-more' '#anim-chips.rested'
+    js_smoke "renderings_js_loads"  srv/static/renderings.js Renderings
+    js_smoke "fireseason_js_loads"  srv/static/fireseason.js FireSeason
+fi
 
 # ── TOASTS ────────────────────────────────────────────────────────────────
 # ONE SURFACE. There were four (showToast, #task-toast, .upload-toast, the

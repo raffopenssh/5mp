@@ -330,3 +330,17 @@ Park tooltip icon buttons → `GET /api/parks/{id}/export.kml` (`srv/api.go`,
   a hint (use browser menu → Print/Share) plus a client-side "Download .html"
   button (blob anchor; clones the doc and strips `.print-bar` first). No
   server involvement.
+
+---
+
+### A frame's GeoPackage carries the Season renderings that are on (2026-09-16)
+
+`anim.js exportGPKG()` sends `seasonExportTokens()` — the Season renderings
+actually drawn — alongside the animator chips, and `srv/gpkg_view.go`
+`viewLayerTables` resolves them: `front` → `fire_season_front`, `vanguard` →
+`fire_vanguard`, `patrolfront`/`patrolpressure` → `patrol_effort` (the visits
+the isopleths are contoured from; the lines are rebuilt in the browser at the
+playhead), `entry`/`speed` → **nothing yet**. The old single `season` token
+(front + vanguard) is kept for links minted before the split.
+`seasonExportGaps()` names the renderings the file cannot carry in a toast —
+invariant 1: a silent omission reads as a complete answer.
