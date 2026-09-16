@@ -28,6 +28,7 @@
     const DAY = 86400000;
     const EFFORT_FADE_DAYS = 90;   // effort ash-out horizon
     const TRAJ_FADE_DAYS = 21;     // trajectory ashening after group end
+    const VAN_FADE_DAYS = 60;      // vanguard chains ashen slower: the few hundred lines that carry information should outlive the field's
     const DEFOREST_FLASH_DAYS = 45;
     // Deforestation ages on a different clock from fire. A fire front is an
     // event that ends; canopy loss is a state that persists, so a patch greys
@@ -87,12 +88,13 @@
         trajs:    LAYERS.trajs,
         front:    { label: 'front',    color: '#fb923c', title: 'Season front \u2014 dashed isochrones every 5 days, drawn as the playhead reaches them' },
         vanguard: { label: 'vanguard', color: '#fde047', title: 'Vanguard fires \u2014 chains that began 10\u201360 days ahead of the season front, in lead colour (turns on paths)' },
-        entry:    { label: 'entry',    color: '#fb7185', title: 'Early-burn ground \u2014 cells that burn ahead of their surroundings season after season; a square brightens as its usual entry comes due, flashes white when this season\u2019s first detection lands in it and cools back over a week' },
+        entry:    { label: 'entry',    color: '#fb7185', title: 'Early-burn ground \u2014 cells that burn ahead of their surroundings season after season; a square brightens as its usual entry comes due, flares white when this season\u2019s first detection lands in it, cools over a week and ashens over the months after' },
+        speed:    { label: 'speed',    color: '#f59e0b', title: 'Season speed \u2014 how fast the front travelled, cell by cell as it arrives at the playhead; last season\u2019s answer stays as ash until this season\u2019s front overwrites it' },
         patrol:   { label: 'patrol',   color: '#4ade80', title: 'Patrol effort \u2014 a heat field zoomed out, circles like the live map zoomed in; cools over 90 days' },
         deforest: LAYERS.deforest,
         settlements: LAYERS.settlements
     };
-    const CHIP_ORDER = ['fireGrid', 'trajs', 'front', 'vanguard', 'entry', 'patrol', 'deforest', 'settlements'];
+    const CHIP_ORDER = ['fireGrid', 'trajs', 'front', 'vanguard', 'entry', 'speed', 'patrol', 'deforest', 'settlements'];
     const HIGHLIGHT_TITLE = 'Highlight what is happening now \u2014 dims the heat fields and static context so live fire paths, fresh clearings and patrol stand out';
     // 'turb' (turbidity plume + mining sites) removed 2026-08-06 --
     // docs/MINING_FINDINGS_2026-08.md §10. The turbidity endpoint is disabled, so
@@ -136,6 +138,7 @@
         if (name === 'front') return !!(window.FireSeason && FireSeason.frontOn());
         if (name === 'vanguard') return !!(window.FireSeason && FireSeason.vanguardOn());
         if (name === 'entry') return !!(window.FireSeason && FireSeason.entryOn && FireSeason.entryOn());
+        if (name === 'speed') return !!(window.FireSeason && FireSeason.speedOn && FireSeason.speedOn());
         return !!A.on[name];
     }
 
@@ -1971,7 +1974,7 @@
                 if (g._off || g.t0 > t) continue;
                 if (vanOn0 ? g._hideWhenVan : g._van) continue;
                 if (vanOnly && !g.vanguard) continue;
-                if (t > g.t1 && (t - g.t1) >= TRAJ_FADE_DAYS * DAY) continue;
+                if (t > g.t1 && (t - g.t1) >= ((vanOn0 && g.vanguard) ? VAN_FADE_DAYS : TRAJ_FADE_DAYS) * DAY) continue;
                 nLive++;
             }
             const inkW = nLive > 4000 ? 1.0 : nLive > 2000 ? 1.4 : nLive > 800 ? 1.9 : 2.5;
@@ -1989,17 +1992,20 @@
                 if (g._off) continue;
                 if (vanOn ? g._hideWhenVan : g._van) continue;   // one population, drawn once
                 if (vanOnly && !g.vanguard) continue;
-                let alpha, ash;
+                const isVan = vanOn && g.vanguard;
+                let alpha, ash, fade = 0;
                 if (t <= g.t1) {
                     alpha = inkA; ash = 0;
                 } else {
-                    const fade = (t - g.t1) / (TRAJ_FADE_DAYS * DAY);
+                    // vanguard chains ashen over VAN_FADE_DAYS (slower: the
+                    // story they tell outlives the season's noise), plain
+                    // trajectories over TRAJ_FADE_DAYS
+                    fade = (t - g.t1) / ((isVan ? VAN_FADE_DAYS : TRAJ_FADE_DAYS) * DAY);
                     if (fade >= 1) continue;               // fully gone
                     ash = Math.min(1, fade * 1.6);         // grey out first…
                     alpha = inkA * (1 - fade);             // …then vanish
                 }
-                const isVan = vanOn && g.vanguard;
-                if (isVan) { vanLater.push([g, alpha, ash]); continue; }
+                if (isVan) { vanLater.push([g, alpha, ash, fade]); continue; }
                 ctx.strokeStyle = ashColor(ash, alpha);
                 ctx.lineWidth = (t <= g.t1 ? inkW : inkW * 0.6);
                 ctx.lineJoin = 'round'; ctx.lineCap = 'round';
@@ -2042,7 +2048,7 @@
                     ctx.beginPath(); ctx.arc(headX, headY, headR, 0, 6.283); ctx.fill();
                 }
             }
-            for (const [g, alpha, ash] of vanLater) drawVanguard(ctx, g, t, alpha, ash, inkW, headR);
+            for (const [g, alpha, ash, fade] of vanLater) drawVanguard(ctx, g, t, alpha, ash, inkW, headR, fade);
         }
 
         if (clipped) ctx.restore();
@@ -2076,10 +2082,11 @@
     //
     // Drawn after the field so the few hundred chains that carry information
     // sit on top of the thousands that do not.
-    function drawVanguard(ctx, g, t, alpha, ash, inkW, headR) {
+    function drawVanguard(ctx, g, t, alpha, ash, inkW, headR, fade) {
         const scr = g._scr, pts = g.pts, leads = g.leads;
         const lead = g.lead_start == null ? 10 : g.lead_start;
         const live = t <= g.t1;
+        fade = fade || 0;
         // width = certainty of the day order (FireSeason.evidenceMul, the
         // same grade the map layer draws); opacity = how far ahead the
         // season the segment was (leadAlpha); a segment bridging a day
@@ -2087,7 +2094,11 @@
         const FS = window.FireSeason;
         const mul = FS && FS.evidenceMul ? FS.evidenceMul(g.tier, g.bits) : 1;
         const lAlpha = FS && FS.leadAlpha ? FS.leadAlpha : (() => 0.95);
-        const w = (live ? inkW : inkW * 0.6) * 1.4 * mul;
+        // the evidence grade (mul) is kept through the ash: a chain that was
+        // wide because its day order was measured stays wider than an
+        // unmeasured one as both grey out; the stroke thins with the fade,
+        // not in a step at the chain's end
+        const w = inkW * 1.4 * mul * (1 - 0.45 * fade);
         ctx.lineJoin = 'round'; ctx.lineCap = 'round';
 
         // Walk the chain up to t, one SEGMENT at a time: each carries the
@@ -2902,7 +2913,7 @@
             const dot = chip.querySelector('i');
             if (dot) dot.style.background = on ? CHIPS[name].color : '#555';
             if (on) chip.style.color = '';
-            if (name === 'front' || name === 'vanguard' || name === 'entry') {
+            if (name === 'front' || name === 'vanguard' || name === 'entry' || name === 'speed') {
                 chip.classList.toggle('unavailable', !!seasonNo && !on);
                 chip.title = seasonNo && !on ? seasonNo + ' here \u2014 ' + CHIPS[name].title : CHIPS[name].title;
             }
@@ -2961,13 +2972,13 @@
                 return;
             }
         }
-        if (name === 'front' || name === 'vanguard' || name === 'entry') {
+        if (name === 'front' || name === 'vanguard' || name === 'entry' || name === 'speed') {
             if (!window.FireSeason) return;
             // fireseason.js owns the state and emits onChange, which redraws
             // us and re-reads the chips (see wireSeason). Vanguard chains are
             // drawn from the trajectories, so they need them loaded — but not
             // shown: draw() keeps the vanguard population when paths are off.
-            if (name === 'front') FireSeason.setFront(!cur); else if (name === 'entry') FireSeason.setEntry(!cur); else FireSeason.setVanguard(!cur);
+            if (name === 'front') FireSeason.setFront(!cur); else if (name === 'entry') FireSeason.setEntry(!cur); else if (name === 'speed') FireSeason.setSpeed(!cur); else FireSeason.setVanguard(!cur);
             if (name === 'vanguard' && !cur && A.data.trajs === undefined) await ensureLayer('trajs');
             updateChips();
             draw(A.t);
@@ -3488,7 +3499,8 @@
             // is not an empty one.
             const FS = window.FireSeason;
             const seasonAny = !!(FS && ((FS.frontOn() && (FS.meta() || {}).season) ||
-                (FS.entryOn && FS.entryOn() && ((FS.entryMeta && FS.entryMeta()) || {}).status === 'ok')));
+                (FS.entryOn && FS.entryOn() && ((FS.entryMeta && FS.entryMeta()) || {}).status === 'ok') ||
+                (FS.speedOn && FS.speedOn() && ((FS.speedMeta && FS.speedMeta()) || {}).grid)));
             if (!any && !seasonAny) toast('No animatable data in view for this window — toggle layers or adjust dates', 'warning');
 
             A.mapHandler = () => { if (A) draw(A.t); };
@@ -3548,7 +3560,7 @@
         layerRefusal(name) {
             if (!A) return null;
             if (name === 'firePts') return firePtsRefusal();
-            if (name === 'front' || name === 'vanguard' || name === 'entry') return chipOn(name) ? null : seasonRefusal();
+            if (name === 'front' || name === 'vanguard' || name === 'entry' || name === 'speed') return chipOn(name) ? null : seasonRefusal();
             const chip = chipFor(name);
             if (chip && chip.classList.contains('unavailable')) return chip.title || 'Not available here';
             return null;

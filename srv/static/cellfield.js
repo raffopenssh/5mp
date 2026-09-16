@@ -108,13 +108,27 @@
             sparseIndex = {};
             for (var i = 0; i < sparse.length; i++) sparseIndex[sparse[i].iy * grid.nx + sparse[i].ix] = i;
         }
-        /* paint(cell) → [r,g,b,a] (0..255) or null; a 5th element > 0 marks
-         * the cell HOT: its rim is drawn in its own colour instead of the
-         * dark tile edge, so an igniting square glows to its edge. For a dense field `cell`
-         * is {i, ix, iy, v}; for a sparse one it is the cell object itself.
-         * scale = px per cell; rim = {alpha: 0..1, dark: 0..1} draws the
-         * outer pixel ring of each square darker/fainter, so squares read as
-         * tiles where they touch. key: skip the repaint if unchanged. */
+        /* paint(cell) → [r,g,b,a] (0..255) or null; a 5th element 0..1
+         * marks the cell HOT (flaring): it fills its gutter and blooms a
+         * soft ring of its own colour into the empty cells around it, so
+         * an igniting square glows past its edge and cools back into the
+         * grid. For a dense field `cell` is {i, ix, iy, v}; for a sparse
+         * one it is the cell object itself.
+         *
+         * Look (o):
+         *   scale   px per cell (1 for a field, 4–8 to see squares)
+         *   gutter  at scale ≥ 4, draw the last pixel column/row of each
+         *           cell at this share of its alpha (0 = a clear hairline,
+         *           0.5 = a soft one for a dense field): the squares sit on a grid
+         *           and touching cells read as tiles of one field, not as
+         *           outlined sprites (the dark rim that preceded it drew
+         *           every square as a game tile)
+         *   block   coarsen a SPARSE field to k×k-cell blocks (aligned to
+         *           the grid, the brightest member colours the block): the
+         *           prototype's 5 km cell at the zoom where a 2.5 km cell
+         *           is two pixels, so the pattern survives as organised
+         *           blocks instead of a dust of specks
+         *   key     skip the repaint if unchanged */
         function render(paint, o) {
             o = o || {};
             if (!grid || !ensure()) return false;
@@ -136,61 +150,66 @@
                 rowIy[j] = iy < 0 ? 0 : iy >= ny ? ny - 1 : iy;
             }
             // colour per grid cell, computed once per cell (not per pixel)
-            var col = new Uint8ClampedArray(nx * ny * 4), has = new Uint8Array(nx * ny), hot = new Uint8Array(nx * ny);
+            var col = new Uint8ClampedArray(nx * ny * 4), has = new Uint8Array(nx * ny), hot = new Float32Array(nx * ny);
             var any = false;
+            var K = sparse && o.block > 1 ? Math.round(o.block) : 1;
+            function put(ci, c) {
+                if (has[ci] && col[ci * 4 + 3] >= c[3] && hot[ci] >= (c[4] || 0)) return;
+                col[ci * 4] = c[0]; col[ci * 4 + 1] = c[1]; col[ci * 4 + 2] = c[2]; col[ci * 4 + 3] = c[3]; has[ci] = 1; hot[ci] = c[4] > 0 ? Math.min(1, c[4]) : 0; any = true;
+            }
             if (dense) {
                 for (var i = 0; i < nx * ny; i++) {
                     var v = dense[i]; if (!v) continue;
                     var c = paint({ i: i, ix: i % nx, iy: (i / nx) | 0, v: v });
                     if (!c || !c[3]) continue;
-                    col[i * 4] = c[0]; col[i * 4 + 1] = c[1]; col[i * 4 + 2] = c[2]; col[i * 4 + 3] = c[3]; has[i] = 1; hot[i] = c[4] > 0 ? 1 : 0; any = true;
+                    put(i, c);
                 }
             } else if (sparse) {
                 for (var k = 0; k < sparse.length; k++) {
-                    var cl = sparse[k], ci = cl.iy * nx + cl.ix;
+                    var cl = sparse[k];
                     var cc = paint(cl);
                     if (!cc || !cc[3]) continue;
-                    col[ci * 4] = cc[0]; col[ci * 4 + 1] = cc[1]; col[ci * 4 + 2] = cc[2]; col[ci * 4 + 3] = cc[3]; has[ci] = 1; hot[ci] = cc[4] > 0 ? 1 : 0; any = true;
+                    if (K === 1) { put(cl.iy * nx + cl.ix, cc); continue; }
+                    var bx = Math.floor(cl.ix / K) * K, by = Math.floor(cl.iy / K) * K;
+                    for (var yy = by; yy < by + K && yy < ny; yy++) for (var xx = bx; xx < bx + K && xx < nx; xx++) put(yy * nx + xx, cc);
                 }
             }
             if (!any) { clear(); return true; }
-            // halo: below the zoom where a cell is a pixel or two, nearest
-            // sampling drops most of a sparse field. A one-cell ring at
-            // o.halo × the cell's alpha keeps the PATTERN on screen; the
-            // cell itself stays the bright centre (a convention, like the
-            // vanguard's halo — never drawn at the zoom where a square is a
-            // footprint).
-            if (o.halo && sparse) {
-                var hcol = new Uint8ClampedArray(col.length), hhas = new Uint8Array(has.length);
-                for (var q = 0; q < sparse.length; q++) {
-                    var sc = sparse[q], qi = sc.iy * nx + sc.ix;
-                    if (!has[qi]) continue;
-                    for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) {
-                        var yy = sc.iy + dy, xx = sc.ix + dx;
-                        if (yy < 0 || xx < 0 || yy >= ny || xx >= nx) continue;
-                        var ni = yy * nx + xx;
-                        if (has[ni]) continue;
-                        var na = col[qi * 4 + 3] * o.halo;
-                        if (na > hcol[ni * 4 + 3]) { hcol[ni * 4] = col[qi * 4]; hcol[ni * 4 + 1] = col[qi * 4 + 1]; hcol[ni * 4 + 2] = col[qi * 4 + 2]; hcol[ni * 4 + 3] = na; hhas[ni] = 1; }
-                    }
+            // bloom: a hot cell lends a ring of its colour to the EMPTY
+            // cells around it, alpha scaled by how hot it is — the flare.
+            // Never over a cell that has its own answer.
+            var bcol = null, bhas = null;
+            for (var q = 0; q < nx * ny; q++) {
+                if (!hot[q]) continue;
+                if (!bcol) { bcol = new Uint8ClampedArray(col.length); bhas = new Uint8Array(has.length); }
+                var qx = q % nx, qy = (q / nx) | 0;
+                for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) {
+                    if (!dx && !dy) continue;
+                    var yy2 = qy + dy, xx2 = qx + dx;
+                    if (yy2 < 0 || xx2 < 0 || yy2 >= ny || xx2 >= nx) continue;
+                    var ni = yy2 * nx + xx2;
+                    if (has[ni]) continue;
+                    var na = col[q * 4 + 3] * hot[q] * (dx && dy ? 0.3 : 0.5);
+                    if (na > bcol[ni * 4 + 3]) { bcol[ni * 4] = col[q * 4]; bcol[ni * 4 + 1] = col[q * 4 + 1]; bcol[ni * 4 + 2] = col[q * 4 + 2]; bcol[ni * 4 + 3] = na; bhas[ni] = 1; }
                 }
-                for (var hi = 0; hi < has.length; hi++) if (hhas[hi]) { has[hi] = 1; col.set(hcol.subarray(hi * 4, hi * 4 + 4), hi * 4); }
             }
-            var rim = o.rim && S >= 3 ? o.rim : null;
+            if (bcol) for (var hi = 0; hi < has.length; hi++) if (bhas[hi]) { has[hi] = 1; col.set(bcol.subarray(hi * 4, hi * 4 + 4), hi * 4); }
+            var gutter = o.gutter != null && o.gutter !== false && S >= 4, gA = gutter ? Math.max(0, Math.min(1, +o.gutter || 0)) : 1;
             for (var jj = 0; jj < H; jj++) {
                 var gy = rowIy[jj];
-                var edgeY = rim && (jj === 0 || rowIy[jj - 1] !== gy || jj === H - 1 || rowIy[jj + 1] !== gy);
+                var lastRowOfCell = gutter && (jj === H - 1 || rowIy[jj + 1] !== gy);
                 var rowOff = jj * CW * 4, base = gy * nx;
                 for (var ix = 0; ix < nx; ix++) {
                     var gi = base + ix;
                     if (!has[gi]) continue;
-                    var r = col[gi * 4], g = col[gi * 4 + 1], b = col[gi * 4 + 2], a = col[gi * 4 + 3], isHot = hot[gi];
+                    var r = col[gi * 4], g = col[gi * 4 + 1], b = col[gi * 4 + 2], a = col[gi * 4 + 3], h = hot[gi];
+                    // a hot cell keeps its gutter (it flares past the grid);
+                    // a warm one keeps part of it
+                    var ga = h > 0 ? a * Math.max(gA, Math.min(1, h * 1.5)) : a * gA;
                     for (var px = 0; px < S; px++) {
-                        var edge = !isHot && (edgeY || (rim && (px === 0 || px === S - 1)));
+                        var edge = gutter && (lastRowOfCell || px === S - 1);
                         var off = rowOff + (ix * S + px) * 4;
-                        if (edge) {
-                            d[off] = r * (1 - rim.dark); d[off + 1] = g * (1 - rim.dark); d[off + 2] = b * (1 - rim.dark); d[off + 3] = a * rim.alpha;
-                        } else { d[off] = r; d[off + 1] = g; d[off + 2] = b; d[off + 3] = a; }
+                        d[off] = r; d[off + 1] = g; d[off + 2] = b; d[off + 3] = edge ? ga : a;
                     }
                 }
             }

@@ -1546,6 +1546,11 @@ test_api "fire_season_curve_with_contours" "/api/fire-season?area=CAF_Chinko&at=
 test_api "fire_season_speed_png" "/api/fire-season-speed?area=CAF_Chinko&at=2025-01-15" "200" \
     '.season == "2024/25" and (.values | type == "string") and (.values | length) == ((.grid.nx * .grid.ny + 2) / 3 | floor) * 4 and .encoding.type == "uint8" and .encoding.none == 0 and .levels.n == 255 and (.bbox | length) == 4 and .stats.cells == 18770 and .stats.median_km_d == 5.1 and (.legend | length) == 5 and (.legend[0].km_d) == 1 and .grid.nx == 137'
 test_api "fire_season_speed_by_point" "/api/fire-season-speed?lon=24.0&lat=6.4&at=2025-01-15" "200" '.area == "CAF_Chinko"'
+# A window touching two seasons carries both (oldest first), each with its
+# arrival grid (front day-of-season per cell, 2-day steps) the same length as
+# its values; the primary season is the latest one the window touches.
+test_api "fire_season_speed_window_seasons" "/api/fire-season-speed?area=CAF_Chinko&from=2025-06-01&to=2025-09-15" "200" \
+    '.season == "2025/26" and (.seasons | length) == 2 and .seasons[0].season == "2024/25" and .seasons[1].season == "2025/26" and (.seasons[0].arrival | length) == (.seasons[0].values | length) and (.seasons[0].season_start < .seasons[1].season_start) and .arrival_encoding.step_days == 2 and .window.from == "2025-06-01"'
 test_api "fire_season_speed_no_area" "/api/fire-season-speed?lon=0&lat=0" "200" '.area == null and (.status | test("no area"))'
 test_api "fire_season_speed_invisible_aoi_404" "/api/fire-season-speed?area=aoi_nobody_000000000000" "404" ''
 

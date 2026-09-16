@@ -292,21 +292,55 @@ chip, stats-panel chip, KML/QML/Locus styles. Thinned by confidence below z7
 (`entryMinShare`: z<5.5 ≥70 %, z<7 ≥50 %) never dropped, a hairline rim
 from z8, layer below trajectories/vanguard/front lines.
 
-**Time — a cell's life over the season** (`entryState(c, dos)` → `{mul,
-flash, word}`, the one function the paint, the tip's "At the playhead" line
-and the legend's life row read; `dos` = day of season at the window end or
-the playhead, `null` = every cell at full weight): *dormant* (> 30 d before
-its usual entry `uf − days`) ×0.5 → *due* rises to ×1 over
-`ENTRY_DUE_DAYS=30` (the expected arrival sweeps the ground ahead of the
-front as a wave) → *ignition* when this season's `first_burn` lands:
-`flash = exp(−age/(8/3))` over `ENTRY_FLASH_DAYS=8`, colour lerped to
-`ENTRY_FLASH` near-white by `flash^0.7`, and the cell is marked **hot**
-(paint's 5th element) so CellField draws its rim in its own colour, not the
-dark tile edge → *burnt* ×1 → *past* (usual front passed, no burn) −70 %
-over `ENTRY_FADE_DAYS=60`, never off. Animator: `anim-chip[data-layer=entry]`;
-`animAt(t)` repaints at ≤ 12/s, key rounds `dos` to a quarter day (~4 ms a
-frame at Chinko z9, scale 6). An animator opened with only Season layers
-on no longer toasts "No animatable data" (`seasonAny` in anim.js).
+**Time — what the slider means for a cell (2026-09-16).** A cell is a
+*state at an instant*: the window's end, or the animator's playhead. The
+window's *start* only says which seasons load. `entryStateAt(c, T)` finds
+the season `T` falls in (`seasonAt`, from the answer's `seasons[]`; the
+dry-season gap belongs to the season just ended) and reads that season's
+first burn from `c.fbs` — the wire's `first_burn_all` (every stored season,
+aligned with `cells`), so a playhead crossing a season boundary shows each
+season's ignitions as they come. The core `entryState(c, dos, fb)` → `{mul,
+flash, ash, word}`, the one function the paint, the tip's "At the playhead"
+line and the legend's life row read: *dormant* (> 30 d before its usual
+entry `uf − days`) ×`ENTRY_DORMANT`=0.22 — near-hidden, the animation is
+about what is happening → *due* rises to ×1 over `ENTRY_DUE_DAYS=30` →
+*ignition* when the first burn lands: `flash = exp(−age/(8/3))` over
+`ENTRY_FLASH_DAYS=8`, colour lerped to `ENTRY_FLASH` near-white, the cell
+marked **hot** (paint's 5th element) so CellField fills its gutter and
+blooms a ring of its colour into the empty cells around it → *burnt* ×1 for
+`ENTRY_ASH_START=45` d → *ash*: toward rose-grey `ENTRY_ASH` over
+`ENTRY_ASH_DAYS=150`, weight down to ~0.32, never off → *past* (usual front
+passed, no burn) back to dormant over `ENTRY_FADE_DAYS=60`. `animAt(t)`
+repaints at ≤ 12/s (key rounds `t` to a quarter day). A static window is
+the same function at its end, so a 90-day window ending today shows this
+season's few ignitions bright over near-hidden dormant ground.
+
+**The speed field follows the same rule.** `/api/fire-season-speed` takes
+`from`/`to` and returns `seasons[]` — every season the window touches,
+oldest first, each with `values` (levels) and `arrival` (the front's
+day-of-season per cell in 2-day steps, byte b → day 2·(b−1), 0 = none) —
+plus the old top-level primary (`season`/`values`/`stats`, the latest one).
+`drawSpeed(t)` draws a cell **only once the season shown has reached it**
+(arrival ≤ instant): a 6-day flare toward cream at full alpha (settled cells
+sit at `SPEED_BASE_A`=205 so the arriving front reads as light), then its
+speed colour. Not reached this season → not drawn — no ghost of last
+season (tried as ash, dropped 2026-09-16: cleaner to show only what the
+season has done). Paint is a LUT per level (`ensureSpeedLUT`) inlined from
+`speedStateAt()` — the object-and-words version is for the tip only; an XSA
+field (95k cells) repaints in ~20 ms. The animator has a `speed` chip.
+
+**Look (`cellfield.js`, 2026-09-16).** The dark `rim` (every square a game
+tile) and the sprite `halo` are gone. `gutter` (scale ≥ 4): the last pixel
+row/column of each cell at a share of its alpha — 0 for the entry squares
+(clear hairlines between tiles), 0.7 for the dense speed field (a soft
+grid); `cellScale()` picks 4–8 px per cell from the on-screen cell size so
+the gutter stays one screen pixel. `block` coarsens a sparse field to
+aligned k×k blocks at low zoom (`entryBlock`: 2×2 under z7 — the
+prototype's 5 km cell — 3×3 under z5.5) so the pattern survives as
+organised blocks, not specks. Hot cells bloom (see above). Vanguard chains
+in the animator ashen over `VAN_FADE_DAYS=60` (trajectories 21) and their
+evidence width `mul` is kept through the ash, thinning with the fade rather
+than stepping at the chain's end.
 
 **UX.** Season menu fourth row *Entry ground* (`icon-grid-2x2`), default
 off, share `season=front,vanguard,speed,entry`; Map-strip chip `N early-burn
