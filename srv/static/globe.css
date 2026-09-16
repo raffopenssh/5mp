@@ -2585,7 +2585,7 @@
            differently — map detail is one-of (radio), animation renderings are
            any-of (checkbox), because a fire really can be a heat field and a
            set of paths at the same time. */
-        .mode-menu { min-width: 172px; }
+        .mode-menu { min-width: 172px; max-height: calc(100vh - 24px); overflow-y: auto; }
         .mode-menu-head { padding: 6px 9px 3px; font-size: 9px; font-weight: 700; letter-spacing: 0.6px;
             text-transform: uppercase; color: #6b7280; }
         .mode-menu-head + .mode-menu-head, .mode-menu .aoi-menu-item + .mode-menu-head {

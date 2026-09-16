@@ -3132,8 +3132,17 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                         cell: cell ? { early: cell.early, held: cell.held, days: cell.days, month: cell.month, fb: cell.fb } : null,
                         tip,
                         legendSwatch: !!legend,
-                        share: { season: share.get('season') },
+                        share: { season: share.get('season'), season_vs: share.get('season_vs') },
                         chip: (document.querySelector('#stats-map .ml-chip.fs em') || {}).textContent || null,
+                        // Compared seasons (ghost fronts on the reference's
+                        // calendar) and the patrol isochrones (tenant-scoped).
+                        compare: FS && FS.compare ? FS.compare() : [], compareAvailable: FS && FS.compareAvailable ? FS.compareAvailable() : [],
+                        compareFeatures: map.getSource('fireseason-cmp-src') ? map.querySourceFeatures('fireseason-cmp-src').length : 0,
+                        compareYears: map.getSource('fireseason-cmp-src') ? [...new Set(map.querySourceFeatures('fireseason-cmp-src').map(f => f.properties.cmp))].sort() : [],
+                        compareColors: map.getSource('fireseason-cmp-src') ? [...new Set(map.querySourceFeatures('fireseason-cmp-src').map(f => f.properties.color))].sort() : [],
+                        patrol: !!(FS && FS.patrolOn && FS.patrolOn()), patrolMeta: FS && FS.patrolMeta ? FS.patrolMeta() : null,
+                        patrolAllowed: !!(FS && FS.patrolAllowed && FS.patrolAllowed()),
+                        drawnPatrol: map.getLayer('fireseason-patrol') ? map.queryRenderedFeatures({ layers: ['fireseason-patrol'] }).length : 0,
                         animChip: !!document.querySelector('.anim-chip[data-layer="entry"]')
                     };
                 },
@@ -3160,8 +3169,17 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                         // tracker drew what is in view, and the live heads.
                         trackers: v ? v.trackers : null, kfShown: !!(FS && FS.kfShown && FS.kfShown()),
                         drawnLiveHeads: map.getLayer('fireseason-van-head') ? map.queryRenderedFeatures({ layers: ['fireseason-van-head'] }).length : 0,
-                        share: { season: share.get('season') },
+                        share: { season: share.get('season'), season_vs: share.get('season_vs') },
                         chip: (document.querySelector('#stats-map .ml-chip.fs em') || {}).textContent || null,
+                        // Compared seasons (ghost fronts on the reference's
+                        // calendar) and the patrol isochrones (tenant-scoped).
+                        compare: FS && FS.compare ? FS.compare() : [], compareAvailable: FS && FS.compareAvailable ? FS.compareAvailable() : [],
+                        compareFeatures: map.getSource('fireseason-cmp-src') ? map.querySourceFeatures('fireseason-cmp-src').length : 0,
+                        compareYears: map.getSource('fireseason-cmp-src') ? [...new Set(map.querySourceFeatures('fireseason-cmp-src').map(f => f.properties.cmp))].sort() : [],
+                        compareColors: map.getSource('fireseason-cmp-src') ? [...new Set(map.querySourceFeatures('fireseason-cmp-src').map(f => f.properties.color))].sort() : [],
+                        patrol: !!(FS && FS.patrolOn && FS.patrolOn()), patrolMeta: FS && FS.patrolMeta ? FS.patrolMeta() : null,
+                        patrolAllowed: !!(FS && FS.patrolAllowed && FS.patrolAllowed()),
+                        drawnPatrol: map.getLayer('fireseason-patrol') ? map.queryRenderedFeatures({ layers: ['fireseason-patrol'] }).length : 0,
                         // The Fire accordion's season block (fireSeasonBlock),
                         // per open popup: summary held, curve drawn, ticks,
                         // and the vanguard marks on the narrative rows.
@@ -15490,7 +15508,8 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
         // (fireseason.js), or null for every other row.
         function seasonRowState(name) {
             if (name !== 'fires' || !window.FireSeason) return null;
-            return { front: FireSeason.frontOn(), van: FireSeason.vanguardOn(), speed: FireSeason.speedOn(), entry: !!(FireSeason.entryOn && FireSeason.entryOn()) };
+            return { front: FireSeason.frontOn(), van: FireSeason.vanguardOn(), speed: FireSeason.speedOn(), entry: !!(FireSeason.entryOn && FireSeason.entryOn()),
+                     patrol: !!(FireSeason.patrolOn && FireSeason.patrolOn()), cmp: FireSeason.compare ? FireSeason.compare().length : 0 };
         }
         function rowModeSummary(name, st, anim, season) {
             const parts = [];
@@ -15504,11 +15523,12 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             }
             anim.forEach(l => parts.push(ANIM_MODE_LABEL[l] || l));
             if (anim.length) cls = 'anim';
-            if (season && season.front) parts.push('front');
+            if (season && season.front) parts.push(season.cmp ? 'front vs ' + season.cmp + ' season' + (season.cmp === 1 ? '' : 's') : 'front');
             if (season && season.van) parts.push('vanguard');
             if (season && season.speed) parts.push('speed');
             if (season && season.entry) parts.push('entry ground');
-            if (!st && !anim.length && season && (season.front || season.van || season.speed || season.entry)) cls = 'season';
+            if (season && season.patrol) parts.push('patrol isochrones');
+            if (!st && !anim.length && season && (season.front || season.van || season.speed || season.entry || season.patrol)) cls = 'season';
             const label = parts.length === 0 ? 'off'
                         : parts.length <= 2 ? parts.join(' · ')
                         : parts.length + ' modes';
@@ -15705,7 +15725,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                     if (k === 'front' && on && FireSeason.compareLegendHTML) html += FireSeason.compareLegendHTML({ cls: 'in-menu', onclick: 'setRowSeasonCompare' });
                 });
                 // The same ramp the map draws (sampled from FireSeason.leadColor).
-                if (FireSeason.legendHTML && (FireSeason.vanguardOn() || !refusal)) html += FireSeason.legendHTML({ cls: 'in-menu' });
+                if (FireSeason.legendHTML && FireSeason.vanguardOn()) html += FireSeason.legendHTML({ cls: 'in-menu' });
                 if (FireSeason.speedOn() && FireSeason.speedLegendHTML) html += FireSeason.speedLegendHTML({ cls: 'in-menu' });
                 if (FireSeason.entryOn && FireSeason.entryOn() && FireSeason.entryLegendHTML) html += FireSeason.entryLegendHTML({ cls: 'in-menu' });
                 if (FireSeason.patrolOn && FireSeason.patrolOn() && FireSeason.patrolLegendHTML) html += FireSeason.patrolLegendHTML({ cls: 'in-menu' });
