@@ -459,3 +459,77 @@ agree) and toasts (`key: 'anim-auto-focus'`). Details that matter:
   a share link opening the animator does not race `loadAOIs()`.
 * `/api/fire-anim-trajectories` returns `groups`, not `trajectories` — a
   debugging probe on the wrong key reads as an empty layer.
+
+---
+
+### One rendering vocabulary; the chip row rests (2026-09-16)
+
+Three surfaces describe the same renderings — the stats-panel legend pill, a
+pinned chip, the animator's chip row — and each had grown its own words and its
+own mark. The animator said `fires` / `patrol circles` / `entry`, the legend's
+pill said **"5 modes"** (a number that names nothing), and every chip wore the
+same coloured dot, which meant only "on". With the Season renderings added
+(front, vanguard, speed, entry, patrol iso, pressure iso) the row reached
+eleven chips and the pill became unreadable.
+
+**`srv/static/renderings.js` is now the only vocabulary.** A small closed set of
+categories — `shapes lines dots grid paths contours cells iso vanguard` — each
+with one word, one gloss and one glyph; `Renderings.summary()` dedupes
+categories and caps the list (3 on desktop, 2 under 768 px) with `+n`. The
+glyph is a *picture of the ink*: a weighted lattice for a summed field, outlined
+squares for a 2.5 km raster, parallel fronts (one dashed) for the isochrones,
+rings from a point for isopleths, chevrons for the chains ahead of the front.
+CSS lives in `globe.css` (`.rg`, `.rg-*`) because the legend needs it with the
+animator closed.
+
+* **No new legend rows.** Patrol iso/pressure attach to the existing **pixels**
+  row, the season lines to **fires**. The rows that own season renderings are
+  *derived* (`SEASON_ROWS` + `renderSeasonRows()` in globe.html) — the two old
+  call sites typed `renderRowModes('fires')`, which is why the patrol pill
+  stayed empty while the map was drawing the lines.
+* **The menu row is `glyph · what it shows · how`** — "season front · contours",
+  "patrol pressure · iso", "entry ground · cells". The other way round, two
+  renderings of one category were two rows both labelled `cells`. A count rides
+  in the annotation (`vanguard · 15 in view`), which replaced the pin's second,
+  footprints-marked button.
+* **In-menu legends are `.compact`**: caption + ramp + first line of numbers;
+  the method prose folds away and `openModeMenu()` moves it into the legend's
+  `title`. `.mode-menu` is capped at 252 px / 76 vh (300 px / 58 vh on a phone)
+  — an unfolded fire row used to be taller than the screen, putting its own
+  switches out of reach.
+* **The pulse is gone.** `renderRowModes()` caches `el.__lodHTML` and writes
+  only on change, and flashes `.changed` only when the *rendering key* changes;
+  it used to rewrite `innerHTML` every playhead frame, replaying the flip
+  animation ~12×/s while contours were on.
+
+**The chip row rests to what is drawn.** `#anim-chips.rested` folds every chip
+that is OFF (width + opacity, negative margin to swallow the flex gap; never
+`display:none`, so it grows back) and shows one `⋯ n` button. It rests when
+play starts and ~3 s after the last chip was touched; it wakes on the `⋯`
+(which *pins* it open), and on a real mouse `pointerenter` — the test is
+`e.pointerType === 'mouse'`, not a `(hover: hover)` media query, because the
+query answers for the device and the event answers for the gesture. `highlight`
+never folds: it is the switch that can rebuild the whole set.
+
+**Highlight yields to a composed map.** The curator is ON only for a plain
+open: `opts.layers` naming layers *or* `anySeasonOn()` leaves it off, so a link
+carrying `season=front,patrol,pressure` is not clobbered by the `now` profile
+half a second after it restored. A date-window change **reopens** the same
+animation and must carry the profile **id** (`A.highlight || false`, not
+`!!A.highlight`) and `close({ keepSeason: true })`.
+
+**GIF export composites a real map frame.** `mapFrameInto()` calls
+`map.triggerRepaint()` and copies the GL canvas from the `render` event (with
+`idle`/180 ms fallbacks): `preserveDrawingBuffer` is false, and the season
+layers are MapLibre's, so the old straight `drawImage(map.getCanvas())` froze
+the contours while the canvas fires moved. `draw(t, true)` forces
+`FireSeason.animAt(t, force)` past its 80 ms coalescing — a frame dropped on
+screen is invisible, a frame dropped in a file is the file being wrong.
+
+**A module that throws at load looks like a CSS bug.** A pair of backticks in a
+comment *inside* anim.js's injected-CSS template literal ended the literal;
+`node --check` passed, `window.Animator` was never defined, and the only
+symptom was the "Animate" button rendering as an unstyled native `<button>`.
+`tests/js_load_smoke.js` (wired into `run_ui_tests.sh`) now loads each module
+under a stub DOM and asserts its global and its injected selectors. **Never put
+a backtick in anim.js's CSS block.**

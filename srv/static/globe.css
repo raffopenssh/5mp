@@ -1159,34 +1159,64 @@
            deforestation / settlement row it belongs to rather than as a fourth
            palette. Deliberately dim: it answers a question the user has only
            when they ask it. */
+        /* ── ONE MARK PER RENDERING (srv/static/renderings.js) ────────────
+           Every surface that can say "this layer is drawn as …" — a legend
+           row's pill, a pinned chip, the animator's chips, a menu row — draws
+           the SAME glyph for the same kind of ink, and the glyph is a picture
+           of that ink: a lattice for a summed field, outlined cells for a
+           2.5 km raster, a dashed contour for an isochrone, nested loops for
+           isopleths, chevrons for the chains ahead of the front. Before this,
+           each of those surfaces had its own mark (mostly a coloured dot that
+           said only "on"), and the legend fell back to counting switches —
+           "5 modes" — as soon as the Season layers landed.
+
+           Monochrome masks, so the mark takes the LAYER's colour from
+           currentColor: the fire row's pill and the fire chip are the same
+           glyph in the same red, which is what makes the two surfaces legible
+           as one control. */
+        .rg { display: inline-block; flex: none; width: 10px; height: 10px; vertical-align: -1px;
+            background: currentColor; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+            -webkit-mask-position: center; mask-position: center;
+            -webkit-mask-size: contain; mask-size: contain;
+            -webkit-mask-image: var(--rg); mask-image: var(--rg); }
+        .rg-shapes { --rg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linejoin='round'%3E%3Cpath d='M4 8l5-4 8 3 3 7-5 6-9-2z'/%3E%3C/svg%3E"); }
+        .rg-lines { --rg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M3 18l5-3'/%3E%3Cpath d='M11 13l4 4'/%3E%3Cpath d='M18 9l3-4'/%3E%3C/svg%3E"); }
+        .rg-dots { --rg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Ccircle cx='6' cy='16' r='2.6'/%3E%3Ccircle cx='12.5' cy='8.5' r='2.6'/%3E%3Ccircle cx='18.5' cy='15.5' r='2.6'/%3E%3C/svg%3E"); }
+        .rg-grid { --rg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Crect x='2.5' y='2.5' width='6' height='6' fill-opacity='.35'/%3E%3Crect x='9' y='2.5' width='6' height='6' fill-opacity='.6'/%3E%3Crect x='15.5' y='2.5' width='6' height='6' fill-opacity='.3'/%3E%3Crect x='2.5' y='9' width='6' height='6' fill-opacity='.65'/%3E%3Crect x='9' y='9' width='6' height='6'/%3E%3Crect x='15.5' y='9' width='6' height='6' fill-opacity='.55'/%3E%3Crect x='2.5' y='15.5' width='6' height='6' fill-opacity='.25'/%3E%3Crect x='9' y='15.5' width='6' height='6' fill-opacity='.5'/%3E%3Crect x='15.5' y='15.5' width='6' height='6' fill-opacity='.3'/%3E%3C/svg%3E"); }
+        .rg-paths { --rg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round'%3E%3Cpath d='M3 19c4-7 7 2 11-6'/%3E%3Ccircle cx='18.5' cy='7' r='2.6' fill='black' stroke='none'/%3E%3C/svg%3E"); }
+        .rg-contours { --rg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.1' stroke-linecap='round'%3E%3Cpath d='M2.5 7.5c4-4 9-4 13 0s4.5 1.5 6-1'/%3E%3Cpath d='M2.5 14c4-4 9-4 13 0s4.5 1.5 6-1' stroke-dasharray='3.4 2.8'/%3E%3Cpath d='M2.5 20.5c4-4 9-4 13 0' stroke-opacity='.5'/%3E%3C/svg%3E"); }
+        .rg-cells { --rg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2'%3E%3Crect x='3.5' y='3.5' width='7' height='7'/%3E%3Crect x='13.5' y='3.5' width='7' height='7'/%3E%3Crect x='3.5' y='13.5' width='7' height='7'/%3E%3Crect x='13.5' y='13.5' width='7' height='7'/%3E%3C/svg%3E"); }
+        .rg-iso { --rg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='4.5' cy='19.5' r='2.2' fill='black' stroke='none'/%3E%3Cpath d='M4.5 12.5A7 7 0 0 1 11.5 19.5'/%3E%3Cpath d='M4.5 6.5A13 13 0 0 1 17.5 19.5' stroke-opacity='.75'/%3E%3Cpath d='M4.5 1A18.5 18.5 0 0 1 23 19.5' stroke-opacity='.45'/%3E%3C/svg%3E"); }
+        .rg-vanguard { --rg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 5l6 7-6 7'/%3E%3Cpath d='M14 5l6 7-6 7'/%3E%3C/svg%3E"); }
+
         /* The rendering pill is a BUTTON: it says what is drawn and, clicked,
            forces full shapes or the fast rendering for this layer. The stats
            row and the pinned chip carry the same control with the same words —
            one concept in the two places a layer can be reached from. */
-        .stats-lod .lod-mode { flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px;
+        .stats-lod .lod-mode { flex-shrink: 1; min-width: 0; max-width: 100%;
+            display: inline-flex; align-items: center; gap: 4px;
             padding: 1px 6px; border-radius: 8px; font-weight: 600; letter-spacing: 0.2px;
             font-size: 9px; line-height: 1.3; cursor: pointer; font-family: inherit;
             border: 1px solid transparent;
             color: currentColor; opacity: 0.6; background: rgba(255,255,255,0.05); }
+        /* Last-resort clamp: the word list is already capped by cell width
+           (rowModeSummary picks 2 or 3 categories), but a long forced label
+           ('shapes · forced') must ellipsize inside the pill rather than be
+           sliced by the grid cell — a pill cut mid-word looks like a broken
+           layout, an ellipsis looks like a pill with more to say. */
+        .stats-lod .lod-mode > span:not(.lod-caret) { overflow: hidden; text-overflow: ellipsis;
+            white-space: nowrap; min-width: 0; }
         .stats-lod .lod-mode:hover { opacity: 1; background: rgba(255,255,255,0.12); }
         .stats-lod .lod-mode.forced { opacity: 0.95; border-color: currentColor; }
-        /* The glyph is the same distinction the pinned chips make: a stroke for
-           real geometry, a short stroke for the chord rendering, a dot for
-           points. */
-        .stats-lod .lod-mode::before { content: ''; width: 6px; height: 6px; flex: none;
-            border-radius: 50%; background: currentColor; }
-        .stats-lod .lod-mode.shapes::before { width: 9px; height: 2px; border-radius: 1px; }
-        .stats-lod .lod-mode.segments::before { width: 6px; height: 2px; border-radius: 1px; }
+        /* THE PILL'S MARK IS THE INK ON THE MAP (srv/static/renderings.js).
+           It used to be a shape-shifting ::before — a dot, a stroke, a dashed
+           stroke — that could say three things about a row drawing six, and
+           the pill then gave up and said "5 modes", a number that names
+           nothing. Mark and word are now one closed vocabulary shared by the
+           legend row, a pinned chip and the animator's chips. */
+        .stats-lod .lod-mode .rg { width: 9px; height: 9px; }
         .stats-lod .lod-mode.shapes { opacity: 0.8; }
-        /* An animated rendering: the same dotted-field glyph the animator's
-           heat layer is, so the pill's mark and the map agree. */
-        .stats-lod .lod-mode.anim::before { width: 7px; height: 7px; border-radius: 2px;
-            background: currentColor; box-shadow: 0 0 4px currentColor; }
-        .stats-lod .lod-mode.anim { opacity: 0.95; }
-        /* The Season overlay alone (fire layer off): a dashed stroke, the
-           front's own glyph. */
-        .stats-lod .lod-mode.season::before { width: 9px; height: 0; border-radius: 0;
-            background: none; border-top: 2px dashed currentColor; }
+        .stats-lod .lod-mode.anim, .stats-lod .lod-mode.season { opacity: 0.95; }
         .lod-caret { margin-left: 3px; font-size: 8px; opacity: 0.7; }
         .stats-item.fire .stats-lod { color: var(--color-fire); }
         .stats-item.deforest .stats-lod { color: var(--color-deforestation); }
@@ -1990,16 +2020,13 @@
             cursor: pointer; color: inherit; opacity: 0.6;
             background: rgba(255,255,255,0.08); border: 1px solid transparent; }
         .pinned-layer-chip .chip-lod:hover { opacity: 1; background: rgba(255,255,255,0.18); }
-        /* Vanguard count on a fire pin: the Season overlay's lead yellow,
-           lit when that overlay is drawing them. Same pill as .chip-lod. */
-        .pinned-layer-chip .chip-van { flex: none; display: inline-flex; align-items: center; gap: 2px;
-            height: 14px; margin-left: 3px; padding: 0 5px; border-radius: 7px;
-            font-family: inherit; font-size: 8px; font-weight: 600; line-height: 1;
-            cursor: pointer; color: #fde047; opacity: 0.7;
-            background: rgba(253,224,71,0.1); border: 1px solid transparent; }
-        .pinned-layer-chip .chip-van i { font-size: 9px; }
-        .pinned-layer-chip .chip-van:hover { opacity: 1; background: rgba(253,224,71,0.22); }
-        .pinned-layer-chip .chip-van.on { opacity: 1; border-color: rgba(253,224,71,0.6); }
+        /* The pin's pill carries the same glyph vocabulary as the legend's
+           (srv/static/renderings.js), so "what is drawn here" reads the same
+           on a chip and on a row. It replaced a second, footprints-marked
+           button for the vanguard count — one control per chip, and the count
+           now rides on the vanguard row inside the pill's own menu. */
+        .pinned-layer-chip .chip-lod .rg { width: 8px; height: 8px; margin-right: 3px; }
+        .pinned-layer-chip .chip-lod.season { color: #fde047; background: rgba(253,224,71,0.12); opacity: 0.85; }
         .pinned-layer-chip .chip-lod.forced { opacity: 0.95; border-color: currentColor; }
         /* An individual pin is served whole, so its mark states a fact rather
            than offering a choice: same words, no pointer, no hover lift. */
@@ -2587,7 +2614,16 @@
            differently — map detail is one-of (radio), animation renderings are
            any-of (checkbox), because a fire really can be a heat field and a
            set of paths at the same time. */
-        .mode-menu { min-width: 172px; max-height: calc(100vh - 24px); overflow-y: auto; }
+        /* A MENU, NOT A PANEL. It is anchored to a 40 px pill and may open
+           over a map tip, so it is capped in BOTH directions: 252 px wide
+           (the legend's own compact measure plus its padding) and 76 vh tall,
+           scrolling inside itself. Without the height cap a fire row with
+           four renderings on and their keys under them was taller than a
+           phone, and the switches at the bottom — the reason the menu exists
+           — could not be reached at all. */
+        .mode-menu { min-width: 172px; max-width: 252px;
+            max-height: min(76vh, calc(100vh - 24px)); overflow-y: auto;
+            overscroll-behavior: contain; }
         .mode-menu-head { padding: 6px 9px 3px; font-size: 9px; font-weight: 700; letter-spacing: 0.6px;
             text-transform: uppercase; color: #6b7280; }
         .mode-menu-head + .mode-menu-head, .mode-menu .aoi-menu-item + .mode-menu-head {
@@ -2616,6 +2652,17 @@
            rule as the animator's dimmed chips: a refusal must be answerable,
            not invisible. */
         .mode-menu .mode-opt.refused { opacity: 0.45; }
+        /* A "Drawn as" row is `mark · glyph · word · variant`: the mark is the
+           switch, the glyph is the ink, the word is the category and the
+           variant says which of two renderings in that category this is
+           (`iso · pressure`, `cells · entry ground`) — or carries its count
+           (`vanguard · 15 in view`), which is what a chip glyph used to do
+           from outside the menu. */
+        .mode-menu .mode-rg { width: 11px; height: 11px; opacity: 0.85; }
+        .mode-menu .mode-opt.on .mode-rg { opacity: 1; }
+        .mode-menu .mode-word { font-variant-numeric: tabular-nums; }
+        .mode-menu .mode-var { font-style: normal; font-size: 9px; opacity: 0.6; margin-left: auto;
+            padding-left: 8px; white-space: nowrap; }
 
         /* Inline rename — a label edit, not a version fork, so it happens on
            the name itself instead of opening the draw panel and minting a
@@ -2744,6 +2791,17 @@
 
          
         @media (max-width: 768px) {
+
+            /* The rendering menu on a phone: still a menu (anchored to the
+               pill, not a sheet), but it must fit beside the panel it opens
+               from and above the slider — and it must never be taller than
+               the thumb can reach. Wider measure than desktop because the
+               panel itself is nearly full width; the compact legends inside
+               it grow with it. */
+            .mode-menu { max-width: min(88vw, 300px); max-height: 58vh; }
+            .mode-menu .fs-legend.compact,
+            .mode-menu .fs-cmp.compact { max-width: none; }
+            .mode-menu .aoi-menu-item { padding: 8px 9px; }   /* a real tap target */
 
             .logo-subtitle { display: none; }
             .logo-icon { width: 28px; height: 28px; }
@@ -4738,6 +4796,32 @@ body.is-guest .session-chip-logout:hover { opacity: 1; background: rgba(251,191,
     .admin-panel-tabs::-webkit-scrollbar { display: none; }
     .admin-tab { flex: none; white-space: nowrap; scroll-snap-align: start; padding: 9px 12px; }
 }
+
+/* ── A LEGEND INSIDE A MENU IS A REMINDER, NOT THE METHOD SECTION ──────
+   (2026-09-16) These same builders serve three surfaces: the Map strip's key
+   (opened deliberately, full width of the panel), the Methods page, and — new
+   — the row's own "Drawn as" menu, where they sit under the switch that drew
+   the line. In the menu the reader has just tapped a pill to CHOOSE a
+   rendering; three paragraphs of patrol-day weighting there is a wall of text
+   between them and the next checkbox, and on a 412 px phone it filled the
+   screen and pushed the remaining switches out of reach.
+
+   So `.compact` keeps what a key IS — the swatch, the caption, the ramp, its
+   ticks and the first line of numbers — and folds the method prose
+   (`.fs-ramp-how`, the animated-life strip) away. Nothing is lost: each row's
+   own title already carries its full description, and openModeMenu() moves
+   the folded text into the legend's `title`. The type scale is the legend's
+   own, one step down (9.5px on 10.5px), so it still reads as the same key. */
+.mode-menu .fs-legend.compact,
+.mode-menu .fs-cmp.compact { font-size: 9.5px; line-height: 1.3; padding: 3px 9px 6px; max-width: 232px; }
+.mode-menu .fs-legend.compact .fs-ramp-how,
+.mode-menu .fs-legend.compact .fs-entry-life,
+.mode-menu .fs-legend.compact .fs-ramp-width + .fs-ramp-width { display: none; }
+.mode-menu .fs-legend.compact .fs-ramp { height: 4px; }
+.mode-menu .fs-legend.compact .fs-ramp-cap { margin-bottom: 2px; }
+.mode-menu .fs-legend.compact .fs-ramp-width { margin-top: 3px; gap: 2px 7px; }
+.mode-menu .fs-cmp.compact .filter-chip { font-size: 8.5px; padding: 1px 4px; }
+.mode-menu .fs-legend.compact .fs-entry-sw i { width: 7px; height: 7px; }
 
 /* Fire-season vanguard legend: the ramp is sampled from FireSeason.leadColor
    (fireseason.js legendHTML) so every panel shows the ramp the map draws. */

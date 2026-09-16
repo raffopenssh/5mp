@@ -1541,7 +1541,14 @@
         animMeta = Object.assign({}, front, { front_reached_pct: pct, usual_offset_days: null, at_playhead: true });
         emit();
     }
-    function animAt(t) {
+    /* `force`: draw this exact instant now, skipping the 80 ms coalescing
+       below. The throttle exists for a playhead the eye is watching (12
+       repaints/s is plenty, and re-contouring the pressure field is not free);
+       an EXPORT is not being watched -- it asks for n specific instants and
+       must get all n, or the GIF's contours stand still while its fires move.
+       A frame dropped on screen is invisible; a frame dropped in a file is
+       the file being wrong. */
+    function animAt(t, force) {
         if (!map || !map.getLayer(FRONT_LYR)) { if (map && st.entry) drawEntry(t == null ? windowEndMs() : t); if (map && st.speed) drawSpeed(t); return; }
         // While the animator runs it draws the vanguard chains itself, built
         // up to the playhead; the whole-season layer would show them ahead
@@ -1577,9 +1584,9 @@
             return;
         }
         var now = performance.now();
-        if (animT !== null && Math.abs(t - animT) < 0.1 * DAY_MS) return;   // same tenth of a day: nothing to say
+        if (!force && animT !== null && Math.abs(t - animT) < 0.1 * DAY_MS) return;   // same tenth of a day: nothing to say
         playheadMeta(t);
-        if (animT !== null && now - animWall < 80) {                          // ~12 repaints/s is plenty…
+        if (!force && animT !== null && now - animWall < 80) {                          // ~12 repaints/s is plenty…
             // …but the LAST position of a scrub must land: trail it.
             clearTimeout(animTrail);
             animTrail = setTimeout(function () { if (animDay !== null) animAt(t); }, 90);
