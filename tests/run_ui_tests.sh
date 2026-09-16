@@ -295,6 +295,16 @@ src_guard "stats_width_governor"          present "statsWidthGovernor" "srv/stat
 src_guard "stats_width_hysteresis"        present "QUIET_MS" "srv/static/floatui.js"
 src_guard "stats_width_transition"        present "transition: width" "srv/static/globe.css"
 
+# ── ANIMATOR HIGHLIGHT ────────────────────────────────────────────────────
+# Highlight is a curator: on by default, steps through profiles, off the
+# moment the user toggles a chip, and its PROFILE (not a flag) rides the link.
+src_guard "anim_hl_profiles"              present "HL_PROFILES" "srv/static/anim.js"
+src_guard "anim_hl_default_on"            present "opts.layers.length . false : HL_DEFAULT" "srv/static/anim.js"
+src_guard "anim_hl_off_on_user_toggle"    present "A.highlight && !A.applyingHL" "srv/static/anim.js"
+src_guard "anim_hl_share_is_profile"      present "anim_hl., String.st.highlight" "$GLOBE"
+src_guard "anim_hl_share_not_flag"        absent  "anim_hl., .1.)" "$GLOBE"
+test_url_param "animation_highlight_profile" "&park=CAF_Chinko&from=2024-11-01&to=2025-03-31&anim=fireGrid&anim_hl=season&anim_paused=1" "" ""
+
 # ── TOASTS ────────────────────────────────────────────────────────────────
 # ONE SURFACE. There were four (showToast, #task-toast, .upload-toast, the
 # satellite-hint card), each with its own corner, its own timers and its own
