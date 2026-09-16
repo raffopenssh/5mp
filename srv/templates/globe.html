@@ -59,6 +59,10 @@
          mode=auto, geometry or centroids decided by the server from the true
          count in view, cross-faded. See srv/static/lodlayer.js. -->
     <script src="/static/lodlayer.js?v={{.Version}}"></script>
+    <!-- One vocabulary for "how is this layer drawn": one word and one glyph
+         per rendering, shared by the legend rows, the pinned chips and the
+         animator's chips. Loaded early — the legend renders before anim.js. -->
+    <script src="/static/renderings.js?v={{.Version}}"></script>
     
     <!-- Lucide Icons -->
     <link href="https://unpkg.com/lucide-static@0.577.0/font/lucide.css" rel="stylesheet">
@@ -407,7 +411,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
     <!-- Time Slider -->
     <div class="time-slider-container" id="time-slider-container">
         <div class="time-slider-header">
-            <div class="time-slider-date" id="time-slider-date"><span class="time-slider-date-part" id="time-slider-date-start" onclick="editSliderDate('start')" title="Click to set start date">Jan 2020</span><span class="time-slider-date-sep"> - </span><span class="time-slider-date-part" id="time-slider-date-end" onclick="editSliderDate('end')" title="Click to set end date">Dec 2024</span><span class="time-slider-date-tags" id="time-slider-date-tags"><span class="time-slider-date-tag" data-preset="td" onclick="applyDatePreset('td')">td<span class="tag-hint">Today</span></span><span class="time-slider-date-tag" data-preset="3d" onclick="applyDatePreset('3d')">3d<span class="tag-hint">Last 3 days</span></span><span class="time-slider-date-tag" data-preset="7d" onclick="applyDatePreset('7d')">7d<span class="tag-hint">Last 7 days</span></span><span class="time-slider-date-tag" data-preset="14d" onclick="applyDatePreset('14d')">14d<span class="tag-hint">Last 14 days</span></span><span class="time-slider-date-tag" data-preset="30d" onclick="applyDatePreset('30d')">30d<span class="tag-hint">Last 30 days</span></span><span class="time-slider-date-tag" data-preset="90d" onclick="applyDatePreset('90d')">90d<span class="tag-hint">Last 90 days</span></span><span class="time-slider-date-tag" data-preset="cmo" onclick="applyDatePreset('cmo')">cmo<span class="tag-hint">Current month</span></span><span class="time-slider-tag-expand" id="date-tag-expand" onclick="toggleDateTags()" title="Date presets">+</span></span><button id="anim-open-btn" onclick="Animator.toggle()" title="Animate visible data over the selected time window">&#9654; animate</button></div>
+            <div class="time-slider-date" id="time-slider-date"><span class="time-slider-date-part" id="time-slider-date-start" onclick="editSliderDate('start')" title="Click to set start date">Jan 2020</span><span class="time-slider-date-sep"> - </span><span class="time-slider-date-part" id="time-slider-date-end" onclick="editSliderDate('end')" title="Click to set end date">Dec 2024</span><span class="time-slider-date-tags" id="time-slider-date-tags"><span class="time-slider-date-tag" data-preset="td" onclick="applyDatePreset('td')">td<span class="tag-hint">Today</span></span><span class="time-slider-date-tag" data-preset="3d" onclick="applyDatePreset('3d')">3d<span class="tag-hint">Last 3 days</span></span><span class="time-slider-date-tag" data-preset="7d" onclick="applyDatePreset('7d')">7d<span class="tag-hint">Last 7 days</span></span><span class="time-slider-date-tag" data-preset="14d" onclick="applyDatePreset('14d')">14d<span class="tag-hint">Last 14 days</span></span><span class="time-slider-date-tag" data-preset="30d" onclick="applyDatePreset('30d')">30d<span class="tag-hint">Last 30 days</span></span><span class="time-slider-date-tag" data-preset="90d" onclick="applyDatePreset('90d')">90d<span class="tag-hint">Last 90 days</span></span><span class="time-slider-date-tag" data-preset="cmo" onclick="applyDatePreset('cmo')">cmo<span class="tag-hint">Current month</span></span><span class="time-slider-tag-expand" id="date-tag-expand" onclick="toggleDateTags()" title="Date presets">+</span></span><button id="anim-open-btn" onclick="Animator.toggle()" title="Animate every layer that is on over the selected time window — play, scrub, export a GIF"><i class="icon-play"></i><span>Animate</span></button></div>
         </div>
         <div class="time-slider-track-wrapper">
             <div class="time-slider-track" id="time-slider-track">
@@ -4387,7 +4391,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 // The stats row and the fire pins mirror the overlay's state;
                 // one listener, so neither can lag the map.
                 window.FireSeason.onChange(function () {
-                    if (typeof renderRowModes === 'function') renderRowModes('fires');
+                    if (typeof renderSeasonRows === 'function') renderSeasonRows();
                     if (typeof updatePinnedIndicator === 'function') updatePinnedIndicator();
                 });
             }
@@ -5337,7 +5341,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                     // Vanguard chains under the same scope/window/bbox: the
                     // fire row's readout prints them (renderRowModes 'fires').
                     window._statsVanguard = (typeof stats.vanguard_groups === 'number') ? stats.vanguard_groups : null;
-                    if (typeof renderRowModes === 'function') renderRowModes('fires');
+                    if (typeof renderSeasonRows === 'function') renderSeasonRows();
                     const fireTrend = stats.fire_trend || 'stable';
                     const fireTrendEl = document.getElementById('stats-fire-trend');
                     if (fireTrendEl) {
@@ -15346,8 +15350,8 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             if (!el) return;
             const st = lodState[name] || null;
             const anim = animRowLayers(name);          // animation renderings on for this row
-            const season = seasonRowState(name);       // Season overlay renderings (fire row only)
-            const seasonOn = !!(season && (season.front || season.van));
+            const season = seasonRowState(name);       // Season overlay renderings (fire + patrol rows)
+            const seasonOn = !!(season && season.any);
             // The readout is shown whenever the row is drawing SOMETHING. A row
             // switched off in the panel but animated on the map is still on
             // screen, and a legend that hides it is the same wrong answer as a
@@ -15415,31 +15419,45 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 // on: a number about lines that are not drawn is clutter.
                 const fm = FireSeason.meta();
                 const bits = [];
-                if (season.front) {
+                if (season.on.indexOf('front') >= 0) {
                     const w = seasonFrontWords(fm, { terse: true }) || (FireSeason.busy() ? 'front loading\u2026' : '');
                     if (w) bits.push(w);
                 }
-                if (season.van && typeof window._statsVanguard === 'number') bits.push(window._statsVanguard.toLocaleString() + ' vanguard');
+                if (season.on.indexOf('vanguard') >= 0 && typeof window._statsVanguard === 'number') bits.push(window._statsVanguard.toLocaleString() + ' vanguard');
                 const seasonTxt = bits.join(' \u00b7 ');
                 if (seasonTxt) countTxt = countTxt ? countTxt + ` <span class="lod-sub">\u00b7 ${escapeHtml(seasonTxt)}</span>` : escapeHtml(seasonTxt);
-                if (fm && fm.stats && !countTitle) countTitle = 'Season front: the day a fifth of the land that burns in a season had burned within ~60 km '
+                if (fm && fm.stats && !countTitle && name === 'fires') countTitle = 'Season front: the day a fifth of the land that burns in a season had burned within ~60 km '
                     + '(first ' + fm.stats.front_first + (fm.complete ? ', last ' + fm.stats.front_last : ', season in progress') + '). '
                     + 'Vanguard: fire chains that began ' + FireSeason.LEAD_DAYS + '\u2013' + FireSeason.LEAD_MAX + ' days ahead of it.';
             }
 
             const summary = rowModeSummary(name, st, anim, season);
-            el.innerHTML = `<span class="lod-count"${countTitle ? ` title="${escapeHtml(countTitle)}"` : ''}>${pinned}${countTxt}</span>`
+            const html = `<span class="lod-count"${countTitle ? ` title="${escapeHtml(countTitle)}"` : ''}>${pinned}${countTxt}</span>`
                          + `<button type="button" class="lod-mode ${summary.cls}${summary.forced ? ' forced' : ''}" `
                          + `aria-haspopup="true" `
                          + `onclick="event.stopPropagation();openLayerModeMenu(this,'${name}')" `
-                         + `title="${escapeHtml(summary.title)}">${summary.label}<span class="lod-caret">\u25be</span></button>`;
-            el.title = countTitle || summary.title;            // Flash only when the MODE changed: a count ticking as you pan is
+                         + `title="${escapeHtml(summary.title)}">${summary.glyph}<span>${escapeHtml(summary.label)}</span>`
+                         + `<span class="lod-caret">\u25be</span></button>`;
+            // A REDRAW IS NOT AN EVENT. With the season contours on, this
+            // readout re-renders at the animator's playhead rate (the front's
+            // date is part of it), and every rewrite built a NEW pill inside a
+            // container still carrying `.changed` — so the flash meant to mark
+            // a change of rendering replayed several times a second and the
+            // legend pulsed. Write only when the text actually changed, and
+            // flash only when the RENDERING changed.
+            if (el.__lodHTML !== html) { el.__lodHTML = html; el.innerHTML = html; }
+            el.title = countTitle || summary.title;
+            // Flash only when the MODE changed: a count ticking as you pan is
             // not news, a change of rendering is.
             if (el.dataset.render !== summary.key) {
                 el.dataset.render = summary.key;
                 el.classList.remove('changed');
                 void el.offsetWidth;
                 el.classList.add('changed');
+            } else if (el.classList.contains('changed') && !el.__flashT) {
+                // One flash, then the class goes: it must not be lying in wait
+                // for the next rewrite to restart the animation.
+                el.__flashT = setTimeout(() => { el.classList.remove('changed'); el.__flashT = null; }, 750);
             }
         }
         window.renderRowModes = renderRowModes;
@@ -15462,24 +15480,39 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
         // button gives no way to see what the other states even are.
         // `patrol` and `fires` (fireGrid) each choose their rendering by zoom
         // (anim.js CHIPS, 2026-09-15); the menu offers what the chip row does.
+        // The animator's own renderings, per row. `pixels` names both patrol
+        // frames rather than the one `patrol` chip: the chip picks dots or
+        // grid by zoom, but the menu is where a reader says which they want,
+        // and the pill must name the one actually on the map.
         const ANIM_ROW_LAYERS = {
-            pixels:      ['patrol'],
+            pixels:      ['effortPts', 'effortGrid'],
             fires:       ['fireGrid', 'trajs'],
             deforest:    ['deforest'],
             settlements: ['settlements']
         };
-        const ANIM_MODE_LABEL = {
-            fireGrid: 'fires', firePts: 'points', trajs: 'paths',
-            effortGrid: 'grid', effortPts: 'circles', patrol: 'patrol',
-            deforest: 'dots', settlements: 'dots'
+        // The words are Renderings.word() — one vocabulary, one glyph each
+        // (srv/static/renderings.js). What lives here is only the VARIANT: the
+        // qualifier that tells two renderings of one category apart (two cell
+        // rasters, two sets of isopleths), and the sentence each needs.
+        // A ROW IS NAMED BY WHAT IT SHOWS, ANNOTATED BY HOW (2026-09-16).
+        // These read as the menu's primary label ('fire heat', 'patrol
+        // effort'), with the rendering CATEGORY beside them as the quiet
+        // annotation ('grid', 'dots', 'contours') and the category's glyph in
+        // front. The other way round, two renderings of one category were two
+        // rows both labelled `cells`, distinguished only by a dim word at the
+        // far right — a menu you have to read twice.
+        const ANIM_MODE_VARIANT = {
+            fireGrid: 'fire heat', firePts: 'fire detections', trajs: 'fire paths',
+            effortGrid: 'patrol effort', effortPts: 'patrol visits', patrol: 'patrol effort',
+            deforest: 'clearings', settlements: 'settlements'
         };
         const ANIM_MODE_DESC = {
             fireGrid: 'Every detection in the window as a heat field, summed and cooled over time — the detections themselves once zoomed in',
             patrol: 'Patrol effort — a heat field zoomed out, circles like the live map zoomed in; cools over 90 days',
             firePts:  'Individual VIIRS detections, one dot each',
             trajs:    'Fire paths — trajectories building at true dated speed, then ashing out',
-            effortGrid: 'Patrol effort as grid pixels',
-            effortPts:  'Patrol effort as circles, ageing over 90 days',
+            effortGrid: 'Patrol effort as a heat field, cooling over 90 days',
+            effortPts:  'Patrol effort as circles, one per visited cell, ageing over 90 days',
             deforest: 'Clearings appear when they happened and grey out with age',
             settlements: 'Settlements as static context'
         };
@@ -15489,6 +15522,81 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             return (ANIM_ROW_LAYERS[name] || []).filter(l => Animator.isLayerOn(l));
         }
         window.animRowLayers = animRowLayers;
+
+        // ── THE ROW'S OTHER RENDERINGS ────────────────────────────────
+        //
+        // The Season overlay (fireseason.js) draws four more renderings of the
+        // fire subject and two of the patrol subject. They are renderings of
+        // rows that already exist — not new rows: a reader counting things on
+        // the map should find the same five cells in the panel however many
+        // kinds of line the season work adds, and the answer to "what is this
+        // green dash-dot line?" belongs on the row that owns patrol effort.
+        //
+        // Each is an entry in its row's one menu, named by its category's word
+        // plus the variant that distinguishes it: `iso · arrival` and `iso ·
+        // pressure` are both isopleths of patrol presence, `cells · speed` and
+        // `cells · entry` are both 2.5 km rasters. The pill above then says
+        // `iso` or `cells` ONCE — it is a legend, not an inventory.
+        function seasonRefusalWords() {
+            if (!window.FireSeason) return 'The season overlay is still loading';
+            const fm = FireSeason.meta();
+            return (fm && fm.status && !fm.season) ? fm.status : null;
+        }
+        function patrolRefusalWords() {
+            const FS = window.FireSeason;
+            if (!FS || !FS.patrolAllowed || FS.patrolAllowed()) return null;
+            return window.IS_GUEST ? 'Patrol effort was not included in this shared link'
+                                   : 'No patrol tracks in this account';
+        }
+        function rowSeasonRenderings(name) {
+            const FS = window.FireSeason;
+            if (!FS) return [];
+            const no = seasonRefusalWords();
+            if (name === 'fires') return [
+                { key: 'front', variant: 'season front', on: FS.frontOn(), refusal: no,
+                  desc: 'Dashed isochrones every 5 days: by this date a fifth of the land that burns in a season had burned within ~60 km. Follows the time slider.' },
+                { key: 'vanguard', variant: 'vanguard fires', on: FS.vanguardOn(), refusal: no,
+                  desc: 'Fire chains that began ' + FS.LEAD_DAYS + '\u2013' + FS.LEAD_MAX + ' days ahead of the season front \u2014 the one population whose day order is measurably real. Bright while ahead, ordinary red once the season caught up.' },
+                { key: 'speed', variant: 'season speed', on: FS.speedOn(), refusal: no,
+                  desc: 'How fast the front travels, km/day, from the gradient of its arrival-time surface: where the season runs (pale) and where it stalls (rust). Cells appear as the front reaches them (by the slider\u2019s end, or the playhead). A description of the season drawn, not a forecast.' },
+                { key: 'entry', variant: 'entry ground', on: !!(FS.entryOn && FS.entryOn()), refusal: no,
+                  desc: 'Traditional early-burn ground: 2.5 km cells whose first burn came \u2265 15 days before the local front in \u2265 40 % of the seasons held (at least 2) \u2014 where the season usually enters. Rose squares, solid where more seasons agree.' }
+            ];
+            if (name === 'pixels') {
+                const pno = patrolRefusalWords();
+                return [
+                    { key: 'patrolfront', variant: 'patrol arrival', on: !!(FS.patrolOn && FS.patrolOn()), refusal: pno,
+                      desc: 'The rangers\u2019 front: green dash-dot lines every 5 days marking when patrol presence had built up here (\u2265 3 patrol-days within ~5 km since the window\u2019s start; foot 1, vehicle 0.7, helicopter 0.4, fixed-wing 0.2). Read against the fire front \u2014 were the teams there before the season arrived.' },
+                    { key: 'patrolpressure', variant: 'patrol pressure', on: !!(FS.pressureOn && FS.pressureOn()), refusal: pno,
+                      desc: 'Pressure isopleths: solid lines at 1, 2, 5, 10, 20, 50\u2026 patrol-days within ~5 km, rebuilt at the playhead so the rings grow as the effort lands. The threshold isopleth is the arrival lines\u2019 outermost one.' }
+                ];
+            }
+            return [];
+        }
+        // Which rows have Season renderings at all — derived from the table
+        // above, so a row gains one by being listed there and nowhere else.
+        // The old call sites typed 'fires', which is how the patrol
+        // isochrones and the pressure isopleths ended up drawn on the map
+        // with the Patrol row's pill still empty.
+        const SEASON_ROWS = Object.keys(LOD_STAT_EL).filter(n => rowSeasonRenderingsStatic(n));
+        function rowSeasonRenderingsStatic(name) { return name === 'fires' || name === 'pixels'; }
+        function renderSeasonRows() { SEASON_ROWS.forEach(renderRowModes); }
+        window.renderSeasonRows = renderSeasonRows;
+
+        // The switch behind each entry. One writer (fireseason.js), reached
+        // from the legend, the Map strip's chip and the animator's chip alike.
+        function setRowRendering(key, on) {
+            closeLayerModeMenu();
+            const FS = window.FireSeason;
+            if (!FS) return;
+            const set = { front: FS.setFront, vanguard: FS.setVanguard, speed: FS.setSpeed,
+                          entry: FS.setEntry, patrolfront: FS.setPatrol, patrolpressure: FS.setPressure };
+            if (!set[key]) return;
+            set[key].call(FS, !!on);
+            if (window.MapLegend && MapLegend.refresh) MapLegend.refresh();
+            if (typeof updateShareURL === 'function') updateShareURL();
+        }
+        window.setRowRendering = setRowRendering;
 
         // The pill says what is on screen, in as few words as fit. Two
         // renderings are named; more than two is "3 modes" — the list is one
@@ -15507,43 +15615,60 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                  + ' fetched — the fast path for tens of thousands of trajectories.'
         };
 
-        // The Season overlay, as the fire row sees it: two more renderings
-        // (fireseason.js), or null for every other row.
+        // The Season overlay, as a row sees it: four more renderings on the
+        // fire row, two on the patrol row (fireseason.js), or null elsewhere.
+        // `cmp` is the compared-seasons count, which the menu shows as chips.
         function seasonRowState(name) {
-            if (name !== 'fires' || !window.FireSeason) return null;
-            return { front: FireSeason.frontOn(), van: FireSeason.vanguardOn(), speed: FireSeason.speedOn(), entry: !!(FireSeason.entryOn && FireSeason.entryOn()),
-                     patrol: !!(FireSeason.patrolOn && FireSeason.patrolOn()), pressure: !!(FireSeason.pressureOn && FireSeason.pressureOn()), cmp: FireSeason.compare ? FireSeason.compare().length : 0 };
+            if (!window.FireSeason) return null;
+            const rs = rowSeasonRenderings(name);
+            if (!rs.length) return null;
+            const st = { on: rs.filter(r => r.on).map(r => r.key), any: false,
+                         cmp: (name === 'fires' && FireSeason.compare) ? FireSeason.compare().length : 0 };
+            st.any = st.on.length > 0;
+            return st;
         }
+        // The pill: what kind of ink is on the map for this row, in the one
+        // vocabulary (srv/static/renderings.js) — `shapes · grid · contours`,
+        // never "5 modes". Categories are deduped, so two cell rasters or two
+        // sets of isopleths cost one word; the menu holds the detail.
         function rowModeSummary(name, st, anim, season) {
-            const parts = [];
+            const R = window.Renderings;
+            const keys = [];
             let cls = 'dots', forced = false;
             if (st) {
                 const lodKey = st.mirror || ('view-' + name);
                 const mode = st.detail || (window.LODLayer ? LODLayer.detail(lodKey) : 'auto');
                 forced = mode !== 'auto';
                 cls = lodModeClass(st.render);
-                parts.push((LOD_MODE_LABEL[mode] || LOD_MODE_LABEL.auto)(st.render));
+                keys.push(st.render || 'points');
             }
-            anim.forEach(l => parts.push(ANIM_MODE_LABEL[l] || l));
+            anim.forEach(l => keys.push(l));
             if (anim.length) cls = 'anim';
-            if (season && season.front) parts.push(season.cmp ? 'front vs ' + season.cmp + ' season' + (season.cmp === 1 ? '' : 's') : 'front');
-            if (season && season.van) parts.push('vanguard');
-            if (season && season.speed) parts.push('speed');
-            if (season && season.entry) parts.push('entry ground');
-            if (season && season.patrol) parts.push('patrol isochrones');
-            if (season && season.pressure) parts.push('patrol pressure');
-            if (!st && !anim.length && season && (season.front || season.van || season.speed || season.entry || season.patrol || season.pressure)) cls = 'season';
-            const label = parts.length === 0 ? 'off'
-                        : parts.length <= 2 ? parts.join(' · ')
-                        : parts.length + ' modes';
+            (season && season.on || []).forEach(k => keys.push(k));
+            if (!st && !anim.length && season && season.any) cls = 'season';
+            // HOW MANY WORDS FIT IS A PROPERTY OF THE CELL, NOT OF THE DATA.
+            // The readout lives in one third of the stats grid; on a phone
+            // that is ~120 px, and three categories ('shapes · paths ·
+            // contours') were cut mid-word by the cell's overflow — a pill
+            // that truncates silently is the one thing a summary must never
+            // do (invariant 8). Two words plus '+n' there, three on desktop;
+            // summary() counts what it dropped either way, and the full list
+            // is one tap away in the menu.
+            const narrow = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
+            const sum = R ? R.summary(keys, narrow ? 2 : 3) : { text: keys.join(' \u00b7 '), cats: keys };
+            const glyph = R && sum.cats.length ? R.glyph(sum.cats[0]) : '';
+            const label = sum.text || 'off';
             // WHY, when the reason is not "too many of them". Dots beside a
             // sibling layer's shapes reads as a broken layer unless the row
             // says which question the renderer answered.
             const why = st && LOD_BASIS_WHY[st.basis] ? LOD_BASIS_WHY[st.basis] + ' ' : '';
-            const title = (parts.length ? 'Drawn as ' + parts.join(', ') + '. ' : '')
+            const gloss = R && sum.cats.length
+                ? sum.cats.map(c => R.word(c) + ' (' + R.gloss(c) + ')').join(', ')
+                : '';
+            const title = (gloss ? 'Drawn as ' + gloss + '. ' : '')
                         + why
                         + 'Click to choose how this layer is drawn.';
-            return { label, cls, forced, title, key: parts.join('|') };
+            return { label, glyph, cls, forced, title, key: keys.join('|') };
         }
 
         // One sentence per state, saying what is drawn and how to change it.
@@ -15613,8 +15738,11 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
         // Same component, same words, same marks: a pinned layer and a
         // viewport layer are the same kind of thing seen from two places, and
         // the old split (a cycle button on each, with its own call site) is
-        // how the two would drift apart. A pin has no Animation group — the
-        // animator's renderings are of the viewport, not of a named pin.
+        // how the two would drift apart. A pin has no ANIMATOR renderings —
+        // those are of the viewport, not of a named pin — but it does carry
+        // the Season ones, because the season's lines and its lead colour are
+        // drawn over the very features the pin holds (which is what the old
+        // footprints glyph on the chip was trying to say).
         function openLayerModeMenu(btn, name) {
             const st = lodState[name] || null;
             openModeMenu(btn, {
@@ -15623,12 +15751,17 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 render: st ? st.render : null,
                 detail: st ? st.detail : null,
                 onDetail: m => `setRowDetail('${name}','${m}')`,
-                animRow: name
+                animRow: name,
+                seasonRow: name
             });
         }
         window.openLayerModeMenu = openLayerModeMenu;
 
-        function openPinModeMenu(btn, key) {
+        // Which row's Season renderings belong to a pinned layer of this type.
+        function pinSeasonRow(type) { return type === 'fires' ? 'fires' : null; }
+        window.pinSeasonRow = pinSeasonRow;
+
+        function openPinModeMenu(btn, key, type, vanguard) {
             if (!window.LODLayer || !LODLayer.has(key)) return;
             const s = LODLayer.state(key) || {};
             openModeMenu(btn, {
@@ -15637,7 +15770,10 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 render: s.render,
                 detail: s.detail,
                 onDetail: m => `setPinDetail('${key}','${m}')`,
-                animRow: null
+                animRow: null,
+                seasonRow: pinSeasonRow(type),
+                counts: (typeof vanguard === 'number' && vanguard > 0)
+                    ? { vanguard: vanguard.toLocaleString() + ' in view' } : null
             });
         }
         window.openPinModeMenu = openPinModeMenu;
@@ -15682,61 +15818,81 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 });
             }
 
-            const animLayers = o.animRow ? (ANIM_ROW_LAYERS[o.animRow] || []) : [];
-            if (animOpen() && animLayers.length) {
-                html += `<div class="mode-menu-head">Animation</div>`;
+            // ── DRAWN AS ────────────────────────────────────────
+            //
+            // One any-of group for every rendering of this row that is not the
+            // LOD budget: the animator's frames while it is open, and the
+            // Season overlay's lines and cell rasters, which need no animator.
+            // They used to be two groups with two vocabularies ("Animation:
+            // Grid" / "Season: Patrol isochrones"), which asked the reader to
+            // know which subsystem drew a line before they could switch it
+            // off. Here each row is `glyph · what it shows · how` in the one
+            // vocabulary (srv/static/renderings.js) — "season front ·
+            // contours", "patrol pressure · iso", "entry ground · cells" — and
+            // the glyph is a picture of the ink actually on the map.
+            const R = window.Renderings;
+            const animLayers = (o.animRow && animOpen()) ? (ANIM_ROW_LAYERS[o.animRow] || []) : [];
+            const seasonRend = o.seasonRow ? rowSeasonRenderings(o.seasonRow) : [];
+            const modeRow = (on, refused, glyphKey, word, name, desc, onclick, count) => {
+                const label = name || word;
+                const annot = [name ? word : '', count || ''].filter(Boolean).join(' \u00b7 ');
+                return `<button type="button" class="aoi-menu-item mode-opt${on ? ' on' : ''}${refused && !on ? ' refused' : ''}" `
+                + `role="menuitemcheckbox" aria-checked="${on}" `
+                + `title="${escapeHtml(refused && !on ? refused + ' \u2014 ' + desc : desc)}" `
+                + `onclick="event.stopPropagation();${onclick}">`
+                + `<span class="mode-mark check"></span>`
+                + (R ? R.glyph(glyphKey, { cls: 'mode-rg' }) : '')
+                + `<span class="mode-word">${escapeHtml(label)}</span>`
+                + (annot ? `<em class="mode-var">${escapeHtml(annot)}</em>` : '')
+                + `</button>`;
+            };
+            if (animLayers.length || seasonRend.length) {
+                html += `<div class="mode-menu-head">Drawn as</div>`;
                 animLayers.forEach(l => {
                     const on = Animator.isLayerOn(l);
                     const refusal = Animator.layerRefusal ? Animator.layerRefusal(l) : null;
-                    const label = (ANIM_MODE_LABEL[l] || l);
-                    const desc = refusal || ANIM_MODE_DESC[l] || '';
-                    html += `<button type="button" class="aoi-menu-item mode-opt${on ? ' on' : ''}`
-                          + `${refusal && !on ? ' refused' : ''}" role="menuitemcheckbox" aria-checked="${on}" `
-                          + `title="${escapeHtml(desc)}" `
-                          + `onclick="event.stopPropagation();setRowAnimLayer('${o.animRow}','${l}')">`
-                          + `<span class="mode-mark check"></span>${label.charAt(0).toUpperCase() + label.slice(1)}</button>`;
+                    const desc = (ANIM_MODE_DESC[l] || '') + ' \u2014 while the animation is open';
+                    html += modeRow(on, refusal, l, R ? R.word(l) : l, ANIM_MODE_VARIANT[l] || '',
+                                    desc, `setRowAnimLayer('${o.animRow}','${l}')`);
                 });
-            }
-            // (No "open ▶ Animate…" hint when the animator is closed: the
-            // menu says what is on offer now, not what would be elsewhere.)
-            // Season: two renderings of the fire subject read from what
-            // scripts/fire_front.py measured (docs/agents/fire.md). Always
-            // offered on the fire row — they need no animator — and refused
-            // with the reason where the area's front is not built.
-            if (o.animRow === 'fires' && window.FireSeason) {
-                const fm = FireSeason.meta();
-                const refusal = fm && fm.status && !fm.season ? fm.status : null;
-                html += `<div class="mode-menu-head">Season</div>`;
-                [['front', FireSeason.frontOn(), 'Season front',
-                  'Dashed isochrones every 5 days: by this date a fifth of the land that burns in a season had burned within ~60 km. Follows the time slider.'],
-                 ['vanguard', FireSeason.vanguardOn(), 'Vanguard fires',
-                  `Fire chains that began ${FireSeason.LEAD_DAYS}\u2013${FireSeason.LEAD_MAX} days ahead of the season front \u2014 the one population whose day order is measurably real. Bright while ahead, ordinary red once the season caught up.`],
-                 ['speed', FireSeason.speedOn(), 'Season speed',
-                  'How fast the front travels, km/day, from the gradient of its arrival-time surface: where the season runs (pale) and where it stalls (rust). Cells appear as the front reaches them (by the slider\u2019s end, or the playhead); where this season\u2019s front has not arrived, last season\u2019s answer stays as ash. A description of the season drawn, not a forecast.'],
-                 ['entry', !!(FireSeason.entryOn && FireSeason.entryOn()), 'Entry ground',
-                  'Traditional early-burn ground: 2.5 km cells whose first burn came \u2265 15 days before the local front in \u2265 40 % of the seasons held (at least 2) \u2014 where the season usually enters, the leading edge the first flights go to. Rose squares, solid where more seasons agree; each lives through the season \u2014 dormant, due, flaring white at its first detection, ashening over the months after. Not this year\u2019s herds \u2014 the vanguard chains are that.'],
-                 ['patrol', !!(FireSeason.patrolOn && FireSeason.patrolOn()), 'Patrol isochrones',
-                  'The rangers\u2019 front: green dash-dot lines every 5 days marking when patrol presence had built up here (\u2265 3 patrol-days within ~5 km since the window\u2019s start; foot 1, vehicle 0.7, helicopter 0.4, fixed-wing 0.2). Read against the fire front \u2014 were the teams there before the season arrived. Follows the time slider and animates like the front. Only the account that uploaded the tracks sees them.']
-                ].forEach(([k, on, label, desc]) => {
-                    // Patrol has its own refusal: not "no front here" but "not
-                    // your tracks" — a dimmed row that says why, not an empty layer.
-                    const ref = k === 'patrol' ? (FireSeason.patrolAllowed && !FireSeason.patrolAllowed()
-                        ? (window.IS_GUEST ? 'Patrol effort was not included in this shared link' : 'No patrol tracks in this account') : null) : refusal;
-                    html += `<button type="button" class="aoi-menu-item mode-opt${on ? ' on' : ''}${ref && !on ? ' refused' : ''}" `
-                          + `role="menuitemcheckbox" aria-checked="${on}" title="${escapeHtml(ref && !on ? ref + ' \u2014 ' + desc : desc)}" `
-                          + `onclick="event.stopPropagation();setRowSeason('${k}',${!on})">`
-                          + `<span class="mode-mark check"></span>${label}</button>`;
-                    if (k === 'front' && on && FireSeason.compareLegendHTML) html += FireSeason.compareLegendHTML({ cls: 'in-menu', onclick: 'setRowSeasonCompare' });
+                seasonRend.forEach(s => {
+                    // A count belongs on the row that switches the thing it
+                    // counts: `vanguard fires · chevrons · 15 in view` is what
+                    // the pin's second, footprints-marked button used to say,
+                    // said where the switch actually is.
+                    html += modeRow(s.on, s.refusal, s.key, R ? R.word(s.key) : s.key, s.variant,
+                                    s.desc, `setRowRendering('${s.key}',${!s.on})`,
+                                    o.counts && o.counts[s.key]);
+                    // The compared seasons are chips under the contour row they
+                    // qualify, so "vs 2020/21" is read where the line is chosen.
+                    if (s.key === 'front' && s.on && FireSeason.compareLegendHTML) {
+                        html += FireSeason.compareLegendHTML({ cls: 'in-menu compact', onclick: 'setRowSeasonCompare' });
+                    }
                 });
-                // The same ramp the map draws (sampled from FireSeason.leadColor).
-                if (FireSeason.legendHTML && FireSeason.vanguardOn()) html += FireSeason.legendHTML({ cls: 'in-menu' });
-                if (FireSeason.speedOn() && FireSeason.speedLegendHTML) html += FireSeason.speedLegendHTML({ cls: 'in-menu' });
-                if (FireSeason.entryOn && FireSeason.entryOn() && FireSeason.entryLegendHTML) html += FireSeason.entryLegendHTML({ cls: 'in-menu' });
-                if (FireSeason.patrolOn && FireSeason.patrolOn() && FireSeason.patrolLegendHTML) html += FireSeason.patrolLegendHTML({ cls: 'in-menu' });
+                // The ramps the map itself draws, under the switch that drew
+                // them: a legend belongs beside its own line.
+                if (o.seasonRow === 'fires' && window.FireSeason) {
+                    if (FireSeason.legendHTML && FireSeason.vanguardOn()) html += FireSeason.legendHTML({ cls: 'in-menu compact' });
+                    if (FireSeason.speedOn() && FireSeason.speedLegendHTML) html += FireSeason.speedLegendHTML({ cls: 'in-menu compact' });
+                    if (FireSeason.entryOn && FireSeason.entryOn() && FireSeason.entryLegendHTML) html += FireSeason.entryLegendHTML({ cls: 'in-menu compact' });
+                }
+                if (o.seasonRow === 'pixels' && window.FireSeason) {
+                    if (FireSeason.patrolOn && FireSeason.patrolOn() && FireSeason.patrolLegendHTML) html += FireSeason.patrolLegendHTML({ cls: 'in-menu compact' });
+                    if (FireSeason.pressureOn && FireSeason.pressureOn() && FireSeason.pressureLegendHTML) html += FireSeason.pressureLegendHTML({ cls: 'in-menu compact' });
+                }
             }
             if (!html) return;
 
             el.innerHTML = html;
+            // The folded method prose becomes the key's own tooltip: a
+            // compact legend hides sentences, and a hidden sentence that is
+            // nowhere reachable is a deletion. (The switch above it already
+            // carries its full description; this covers the ramp itself.)
+            el.querySelectorAll('.fs-legend.compact').forEach(lg => {
+                const folded = [...lg.querySelectorAll('.fs-ramp-how, .fs-entry-life')]
+                    .map(n => n.textContent.trim()).filter(Boolean).join(' \u2014 ');
+                if (folded && !lg.title) lg.title = folded;
+            });
             document.body.appendChild(el);
             const r = btn.getBoundingClientRect();
             const w = el.offsetWidth, h = el.offsetHeight;
@@ -15767,8 +15923,9 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
         // and the fire pins' vanguard mark switch (fireseason.js is the one
         // owner; everything else re-renders from its onChange).
         // The Map group's labels: what the row draws, in the words the tips use.
-        const ROW_LAYER_LABEL = { fires: 'Fire trajectories', deforest: 'Deforestation', settlements: 'Settlements' };
+        const ROW_LAYER_LABEL = { pixels: 'Patrol effort', fires: 'Fire trajectories', deforest: 'Deforestation', settlements: 'Settlements' };
         const ROW_LAYER_DESC = {
+            pixels: 'Patrol effort in view — the visited cells of this account’s uploaded tracks (green)',
             fires: 'Fire paths in view — VIIRS detections linked day to day into trajectories (solid red, a head at the latest point)',
             deforest: 'Forest-loss patches in view',
             settlements: 'Settlement footprints in view'
@@ -15779,16 +15936,11 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
         }
         window.setRowLayer = setRowLayer;
 
+        // Legacy name kept for the popup's fire accordion: one writer, one
+        // set of words — setRowRendering (which the legend and the pins use).
         function setRowSeason(which, on) {
-            closeLayerModeMenu();
-            if (!window.FireSeason) return;
-            if (which === 'front') FireSeason.setFront(on);
-            else if (which === 'speed') FireSeason.setSpeed(on);
-            else if (which === 'entry') FireSeason.setEntry(on);
-            else if (which === 'patrol') FireSeason.setPatrol(on);
-            else FireSeason.setVanguard(on);
-            if (window.MapLegend && MapLegend.refresh) MapLegend.refresh();
-            if (typeof updateShareURL === 'function') updateShareURL();
+            setRowRendering(which === 'patrol' ? 'patrolfront'
+                          : which === 'pressure' ? 'patrolpressure' : which, on);
         }
         window.setRowSeason = setRowSeason;
         // A compared season toggled from the fire row's menu: the menu stays
@@ -22346,16 +22498,28 @@ ${starredItems.narratives.map(n => {
                     // than in the stats legend because a pin is where a
                     // pinned layer is managed, and the stats row does not
                     // exist for one.
+                    // The pin carries the SAME pill as the legend row, with
+                    // the same words and marks (srv/static/renderings.js): what
+                    // is drawn here, clickable to choose. It lives on the chip
+                    // rather than in the stats legend because a pin is where a
+                    // pinned layer is managed, and the stats row does not exist
+                    // for one.
                     let lodMark = '';
                     if (p.lod) {
-                        const cls = lodModeClass(p.render);
-                        const label = (LOD_MODE_LABEL[p.detail || 'auto'] || LOD_MODE_LABEL.auto)(p.render);
+                        const sRow = pinSeasonRow(p.type);
+                        const sSt = sRow ? seasonRowState(sRow) : null;
+                        const keys = [p.render || 'points'].concat((sSt && sSt.on) || []);
+                        const sum = window.Renderings ? window.Renderings.summary(keys)
+                                                      : { text: keys.join(' \u00b7 '), cats: keys };
+                        const cls = (sSt && sSt.any) ? 'season' : lodModeClass(p.render);
                         const title = lodModeTitle(typeLabels[p.type] || p.type, p.detail || 'auto',
                             { render: p.render }, (p.total || count).toLocaleString());
                         lodMark = `<button type="button" class="chip-lod ${cls}${(p.detail && p.detail !== 'auto') ? ' forced' : ''}" `
                                 + `aria-haspopup="true" `
-                                + `onclick="event.stopPropagation();openPinModeMenu(this,'${p.key}')" `
-                                + `title="${escapeHtml(title)}">${label}<span class="lod-caret">\u25be</span></button>`;
+                                + `onclick="event.stopPropagation();openPinModeMenu(this,'${p.key}','${p.type}',${typeof p.vanguard === 'number' ? p.vanguard : 'null'})" `
+                                + `title="${escapeHtml(title)}">`
+                                + (window.Renderings && sum.cats.length ? window.Renderings.glyph(sum.cats[0]) : '')
+                                + `<span>${escapeHtml(sum.text || 'off')}</span><span class="lod-caret">\u25be</span></button>`;
                     }
                     const clsNote = p.classification ? ` · ${p.classification} only` : '';
                     // WAITING IS SAID WHERE THE ANSWER WILL APPEAR.
@@ -22373,25 +22537,16 @@ ${starredItems.narratives.map(n => {
                     const chipTitle = p.loading
                         ? `${typeLabels[p.type] || p.type}: loading this view…${clsNote} - × to cancel`
                         : `${typeLabels[p.type] || p.type}: ${count} features${tierNote}${clsNote} - Click to fly to`;
-                    // VANGUARD, ON THE PIN THAT HOLDS THEM. A fire pin's count
-                    // is every chain in view; the few that began 10–60 d ahead
-                    // of the season front are the ones whose day order is
-                    // measurably real (docs/agents/fire.md), so the chip names
-                    // them — in the Season overlay's lead colour, and the mark
-                    // is the switch for that overlay, because "which ones?"
-                    // is the question it raises.
-                    let vanMark = '';
-                    if (!p.loading && typeof p.vanguard === 'number' && p.vanguard > 0 && window.FireSeason) {
-                        const vOn = FireSeason.vanguardOn();
-                        vanMark = `<button type="button" class="chip-van${vOn ? ' on' : ''}" `
-                                + `onclick="event.stopPropagation();setRowSeason('vanguard',${!vOn})" `
-                                + `title="${p.vanguard.toLocaleString()} of these began ${FireSeason.LEAD_DAYS}–${FireSeason.LEAD_MAX} days ahead of the season front (vanguard). `
-                                + `Click to ${vOn ? 'hide' : 'show'} them in lead colour.">`
-                                + `<i class="icon-footprints"></i>${p.vanguard.toLocaleString()}</button>`;
-                    }
+                    // THE PIN HAS ONE CONTROL, NOT A GLYPH PER LAYER. The
+                    // vanguard count used to ride here as a second button with
+                    // a footprints icon in a fourth colour — a rendering
+                    // switch bolted onto a chip that already had one, in a
+                    // vocabulary nothing else used. It is a row of the pin's
+                    // own "Drawn as" menu now (`vanguard · 15 in view`), beside
+                    // the shapes/dots choice it belongs with.
                     html += `<span class="pinned-layer-chip ${p.type}${p.loading ? ' is-loading' : ''}" data-chip-key="b:${p.key}" style="cursor:pointer;" onclick="event.stopPropagation(); flyToPinnedLayer('${p.key}')" title="${escapeHtml(chipTitle)}">`;
                     html += `<span class="chip-icon">${icon}</span>`;
-                    html += `${countMark}${vanMark}${p.loading ? '' : lodMark}`;
+                    html += `${countMark}${p.loading ? '' : lodMark}`;
                     html += `<span class="chip-remove" onclick="event.stopPropagation(); removePinnedLayer('${p.key}')" title="Remove">×</span>`;
                     html += `</span>`;
                 } else if (p.isSingle) {
