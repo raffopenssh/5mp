@@ -33,21 +33,22 @@ type earlyGroundCell struct {
 
 // earlyGroundRow is the stored row plus the derived answer for one season.
 type earlyGroundRow struct {
-	Area        string
-	Status      string // "ok" | "insufficient" | "not yet computed"
-	Rule        string
-	AheadDays   int
-	MinShare    float64
-	MinEarly    int
-	SeasonsHeld int
-	Seasons     []string
-	Res         float64
-	X0, Y0      float64
-	NX, NY      int
-	Cells       [][]int
-	FirstBurn   []*int // for the season asked, aligned with Cells; nil = none stored
-	Stats       map[string]interface{}
-	ComputedAt  string
+	Area         string
+	Status       string // "ok" | "insufficient" | "not yet computed"
+	Rule         string
+	AheadDays    int
+	MinShare     float64
+	MinEarly     int
+	SeasonsHeld  int
+	Seasons      []string
+	Res          float64
+	X0, Y0       float64
+	NX, NY       int
+	Cells        [][]int
+	FirstBurn    []*int            // for the season asked, aligned with Cells; nil = none stored
+	FirstBurnAll map[string][]*int // every season stored, aligned with Cells (the animator's accumulation)
+	Stats        map[string]interface{}
+	ComputedAt   string
 }
 
 // earlyGround reads the area's row. season selects which first-burn column
@@ -97,6 +98,12 @@ func (s *Server) earlyGround(area, season string) *earlyGroundRow {
 			if col, ok := all[season]; ok && len(col) == len(row.Cells) {
 				row.FirstBurn = col
 			}
+			row.FirstBurnAll = map[string][]*int{}
+			for k, col := range all {
+				if len(col) == len(row.Cells) {
+					row.FirstBurnAll[k] = col
+				}
+			}
 		}
 	}
 	return &row
@@ -136,6 +143,13 @@ func (r *earlyGroundRow) wire(season string) map[string]interface{} {
 	if r.FirstBurn != nil {
 		out["first_burn_season"] = season
 		out["first_burn"] = r.FirstBurn // day-of-season of this season's first detection per cell (null = not yet)
+	}
+	if len(r.FirstBurnAll) > 0 {
+		// Every stored season's first-burn day per cell, so a time window
+		// spanning several seasons shows each of them (fireseason.js
+		// entryState); season labels resolve to dates through the answer's
+		// top-level seasons[] list.
+		out["first_burn_all"] = r.FirstBurnAll
 	}
 	return out
 }
