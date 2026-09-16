@@ -187,8 +187,8 @@ const UI_TESTS = [
                 if (!cell || cell.fb == null || cell.uf == null) return false;
                 const S = FireSeason.entryState, due = cell.uf - cell.days;
                 const ign = S(cell, cell.fb + 0.5), cooled = S(cell, cell.fb + 30), dormant = S(cell, Math.min(cell.fb, due) - 60), later = S(cell, Math.min(cell.fb, due) - 10);
-                return ign.flash > 0.8 && /first detection today/.test(ign.word) && cooled.flash === 0 && cooled.mul === 1 && dormant.mul === 0.5 && later.mul > dormant.mul && FireSeason.entryColor(0.4) === '#9f1239' && FireSeason.entryColor(0.7) === '#fb7185';
-            }, msg: 'entryState: dormant 0.5 → due rising → ignition flash → cooled full weight; the rose ramp ends are the documented ones' },
+                return ign.flash > 0.8 && /first detection today/.test(ign.word) && cooled.flash === 0 && cooled.mul === 1 && dormant.mul < 0.3 && later.mul > dormant.mul && S(cell, cell.fb + 200).ash === 1 && FireSeason.entryColor(0.4) === '#9f1239' && FireSeason.entryColor(0.7) === '#fb7185';
+            }, msg: 'entryState: dormant (near-hidden) → due rising → ignition flash → cooled full weight → ash; the rose ramp ends are the documented ones' },
         ]
     },
     
