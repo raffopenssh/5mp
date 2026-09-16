@@ -206,18 +206,27 @@ const UI_TESTS = [
             { type: 'fn', fn: () => { const f = TEST.fireSeason(); return f.front && f.seasonShown === '2025/26' && f.compare.length === 2 && f.compareAvailable.indexOf('2025/26') < 0 && f.compareAvailable.length >= 6; }, msg: 'Reference season from the slider; the compare list offers every other stored season' },
             { type: 'fn', fn: () => { const f = TEST.fireSeason(); return f.compareFeatures > 10 && f.compareYears.join(',') === '2020/21,2022/23' && f.compareColors.length === 2 && f.compareColors.indexOf(FireSeason.compareColor('2020/21')) >= 0; }, msg: 'Ghost fronts of both seasons loaded, one hue per season (cmpColor)' },
             { type: 'fn', fn: () => { const fs = map.querySourceFeatures('fireseason-cmp-src'); const lab = fs.filter(f => f.properties.label); const t0 = Date.parse(FireSeason.meta().season_start + 'T00:00:00Z'); return lab.length > 0 && lab.every(f => /\u201921|\u201923$/.test(f.properties.text)) && fs.every(f => f.properties.tr === t0 + f.properties.dos * 86400000); }, msg: 'Labels carry the year; every ghost line sits on the reference calendar by day of season' },
-            { type: 'fn', fn: () => { const f = TEST.fireSeason(); return f.share.season_vs === '2020/21,2022/23' && !/patrol/.test(f.share.season || '') && !f.patrol && !f.patrolAllowed && window.HAS_PATROL === false; }, msg: 'Share link carries season_vs; patrol is dropped for a tenant without tracks' },
+            // Tenant-scoped: a sandbox WITHOUT tracks drops `patrol` from the
+            // link and has no Patrols chip; one WITH tracks (a test upload
+            // gives test2026 some) keeps it, and the chip says honestly that
+            // none of them are here (Chinko).
+            { type: 'fn', fn: () => { const f = TEST.fireSeason(); if (f.share.season_vs !== '2020/21,2022/23') return false;
+                return window.HAS_PATROL === false ? (!/patrol/.test(f.share.season || '') && !f.patrol && !f.patrolAllowed && !document.querySelector('#stats-map .ml-chip.pt'))
+                    : (/patrol/.test(f.share.season || '') && f.patrol && f.patrolAllowed && /no patrol data/.test(f.patrolsChip || '') && !f.pressure); }, msg: 'Share link carries season_vs; patrol is dropped for a tenant without tracks, kept (chip: no patrol data here) for one with' },
             { type: 'fn', fn: () => {
+                // Patrols live in their own chip/menu, not the Season one; for
+                // a tenant without tracks the chip is absent and the layers
+                // menu's Patrols row is refused with the reason.
                 MapLegend.fireSeasonMenu(document.querySelector('#stats-map .ml-chip.fs'));
                 const rows = [...document.querySelectorAll('.mode-menu .aoi-menu-item')];
-                const pr = rows.find(r => /Patrol isochrones/.test(r.textContent));
+                const noPatrolRow = !rows.some(r => /Patrol/.test(r.textContent)) && (!!document.querySelector('#stats-map .ml-chip.pt') === (window.HAS_PATROL !== false));
                 const chips = document.querySelectorAll('.mode-menu .fs-cmp .filter-chip');
                 const onChips = [...chips].filter(c => c.classList.contains('on')).map(c => c.textContent);
-                const ok = pr && pr.classList.contains('refused') && /No patrol tracks/.test(pr.title) && chips.length >= 6 && onChips.join(',') === '2022/23,2020/21';
+                const ok = noPatrolRow && chips.length >= 6 && onChips.join(',') === '2022/23,2020/21';
                 MapLegend.fireSeasonCompare('2020/21');
                 const after = TEST.fireSeason();
                 return ok && after.compare.join(',') === '2022/23' && after.share.season_vs === '2022/23';
-            }, msg: 'Menu: patrol row refused with the reason; year chips in the filter-chip style, toggling one updates the layer and the link' },
+            }, msg: 'Season menu: no patrol row (Patrols is its own chip); year chips in the filter-chip style, toggling one updates the layer and the link' },
         ]
     },
 
