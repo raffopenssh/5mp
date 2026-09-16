@@ -500,7 +500,7 @@
            now (geology: rock/junction tables; basemap: which imagery; historical:
            opacity and the archive). Body = configure, × = off, and the × is why a
            layer is never destroyed by the tap that was meant to inspect it. */
-        .ml-chip.geo, .ml-chip.base, .ml-chip.hist { padding: 0; gap: 0; cursor: default; }
+        .ml-chip.geo, .ml-chip.base, .ml-chip.hist, .ml-chip.fs, .ml-chip.pt { padding: 0; gap: 0; cursor: default; }
         .ml-chip-main, .ml-chip-x { background: none; border: 0; color: inherit; font: inherit;
             cursor: pointer; -webkit-tap-highlight-color: transparent;
             display: inline-flex; align-items: center; transition: background 0.15s, color 0.15s; }
@@ -519,10 +519,12 @@
         .ml-chip:hover { background: rgba(255,255,255,0.1); color: #fff; }
         /* …except the two-target chips, whose halves light up individually — a
            whole-chip hover on those reads as one target. */
-        .ml-chip.geo:hover, .ml-chip.base:hover, .ml-chip.hist:hover { background: rgba(255,255,255,0.05); }
+        .ml-chip.geo:hover, .ml-chip.base:hover, .ml-chip.hist:hover, .ml-chip.fs:hover, .ml-chip.pt:hover { background: rgba(255,255,255,0.05); }
         .ml-chip.base { border-color: rgba(96,165,250,0.35); color: #93c5fd; }
         .ml-chip.hist { border-color: rgba(251,191,36,0.35); color: #fcd34d; }
         .ml-chip.geo  { border-color: rgba(167,139,250,0.4); color: #c4b5fd; }
+        .ml-chip.pt   { border-color: rgba(74,222,128,0.4); color: #86efac; }
+        .ml-chip.pt.offview { border-color: rgba(255,255,255,0.12); color: #7c8291; background: rgba(255,255,255,0.03); }
         /* Amber, the colour this app uses everywhere for "you are looking at a
            subset": a geology drape isolated to one commodity must not read as
            the whole map. */
