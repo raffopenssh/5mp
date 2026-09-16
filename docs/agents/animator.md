@@ -86,6 +86,53 @@ purple.
   a surface is a hit, so competing on distance would beat the trajectory the
   user is pointing at.
 
+### Highlight is a curator, not a dimmer (2026-09-16)
+
+`highlight` used to be one switch that dimmed the surfaces and left the eleven
+chips to the user — a fresh open showed "whatever the map had on". Now it is
+**on by default** and **chooses the chips**: each profile in `HL_PROFILES`
+(`anim.js`) is a small set that reads together over the dimmed heat field.
+
+| id | chips | needs |
+|---|---|---|
+| `now` (default) | fireGrid · paths · deforest · patrol | — |
+| `season` | fireGrid · front · vanguard · entry | season data (`seasonRefusal()` null) and a window ≥ `HL_SEASON_MIN_DAYS` (60) |
+| `patrol` | paths · patrol · patrol pressure | `HAS_PATROL !== false` |
+| `change` | fireGrid · deforest · settlements | — |
+
+* **Click steps to the next available profile** (wraps); the chip label reads
+  `highlight · season`, its title names the next one. A profile whose data
+  layers all come back empty is skipped with a toast (one lap max).
+* **Any chip click switches highlight off** (`toggleChip` clears `A.highlight`
+  unless `A.applyingHL`) and *keeps the layers as they are* — the profile is
+  the user's starting point, not a rule that undoes their click. Off never
+  clears the map.
+* **State is the profile id**: `A.highlight` is `'now' | … | false`;
+  `Animator.highlight()` / `getState().highlight` return it; the share link
+  writes `anim_hl=<id>` (legacy `anim_hl=1` → default). A link that names
+  `anim=` layers **without** `anim_hl` is a hand-picked set and opens with
+  highlight off; a fresh open (no `opts.layers`) opens with `now`.
+* `Animator.setHighlight(id|false|undefined)` and `highlightProfiles()` are the
+  programmatic surface.
+
+What else the curator touches — and what it must not:
+
+* **Season overlay** (`fireseason.js`): profiles set the chips through
+  `FireSeason.set*` (the same switch as the chip), so they flip the map's
+  overlay too. It is snapshotted before the first profile (`A.seasonBefore`)
+  and **restored on close** unless the user toggled a *season* chip themselves
+  (`A.seasonTouched`). Clicking a non-season chip switches highlight off but
+  still lets the overlay go back.
+* **Live LOD layers** (`lod-view-{fires,deforest,settlements}-*`): while a
+  profile is active, the live map layer of a row **the animation draws** is
+  hidden (`syncLiveLayers`, re-applied on `lod:state` because LODLayer
+  re-adds layers on refetch) — the legend already marks that row as
+  `.layer-animated`, so hiding tells no lie. Rows the profile does not animate
+  stay as the user set them: hiding those would leave an "on" row drawing
+  nothing. Patrol pixels were already handled by `syncBaseEffortVisibility`.
+* **Never touched: basemap, historical sheets, geology.** They are not
+  animated; they are the user's choice.
+
 ### The legend states every rendering, and switches them
 
 The stats panel's rows are the map's legend. With the animator open they were

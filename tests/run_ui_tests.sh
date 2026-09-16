@@ -303,6 +303,9 @@ src_guard "anim_hl_default_on"            present "opts.layers.length . false : 
 src_guard "anim_hl_off_on_user_toggle"    present "A.highlight && !A.applyingHL" "srv/static/anim.js"
 src_guard "anim_hl_share_is_profile"      present "anim_hl., String.st.highlight" "$GLOBE"
 src_guard "anim_hl_share_not_flag"        absent  "anim_hl., .1.)" "$GLOBE"
+src_guard "anim_hl_restores_season"       present "restoreSeasonIfCurated" "srv/static/anim.js"
+src_guard "anim_hl_hides_live_lod"        present "function syncLiveLayers" "srv/static/anim.js"
+src_guard "anim_hl_season_needs_span"     present "HL_SEASON_MIN_DAYS" "srv/static/anim.js"
 test_url_param "animation_highlight_profile" "&park=CAF_Chinko&from=2024-11-01&to=2025-03-31&anim=fireGrid&anim_hl=season&anim_paused=1" "" ""
 
 # ── TOASTS ────────────────────────────────────────────────────────────────
