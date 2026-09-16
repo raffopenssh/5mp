@@ -1215,6 +1215,14 @@
             html += row('', 'menuitemcheckbox', fsOn(), 'Fire season', 'icon-waves',
                 'Where the burning season had arrived by when, and the fire chains that ran ahead of it',
                 fsOn() ? 'MapLegend.fireSeasonOff()' : 'MapLegend.fireSeasonOn(this)', 'check');
+            // Patrol isochrones: one switch, so it toggles directly. Refused
+            // with the reason for an account that owns no tracks.
+            var pAllowed = !(FireSeason.patrolAllowed && !FireSeason.patrolAllowed());
+            var pOn = !!(FireSeason.patrolOn && FireSeason.patrolOn());
+            html += row(pAllowed ? '' : ' refused', 'menuitemcheckbox', pOn, 'Patrol isochrones', 'icon-footprints',
+                pAllowed ? 'The rangers\u2019 front: dated lines marking when patrol presence had built up (\u2265 3 patrol-days within ~5 km), read against the fire front'
+                         : (window.IS_GUEST ? 'Patrol effort was not included in this shared link' : 'No patrol tracks in this account \u2014 patrol data is only visible to the account that uploaded it'),
+                pAllowed ? 'MapLegend.fireSeasonSet(\'patrol\',' + (!pOn) + ')' : 'void 0', 'check');
         }
 
         // The full legend, per-unit toggles, opacity and the downloads live in
@@ -1313,9 +1321,18 @@
         html += row('', 'menuitemcheckbox', eOn, 'Entry ground', 'icon-grid-2x2',
             'Traditional early-burn ground: cells whose first burn came \u2265 15 days before the local front in \u2265 40 % of the seasons held (at least 2) \u2014 where the season usually enters. Squares, solid where more seasons agree; fades once the slider is past the usual front here. Not this year\u2019s herds (the vanguard chains are that)',
             'MapLegend.fireSeasonSet(\'entry\',' + (!eOn) + ')', 'check');
+        var pOn = !!(FireSeason.patrolOn && FireSeason.patrolOn());
+        var pRef = FireSeason.patrolAllowed && !FireSeason.patrolAllowed()
+            ? (window.IS_GUEST ? 'Patrol effort was not included in this shared link' : 'No patrol tracks in this account \u2014 patrol data is only visible to the account that uploaded it') : '';
+        html += row(pRef ? ' refused' : '', 'menuitemcheckbox', pOn, 'Patrol isochrones', 'icon-footprints',
+            (pRef ? pRef + ' \u2014 ' : '') + 'The rangers\u2019 front: dash-dot green lines every 5 days marking when patrol presence had built up (\u2265 3 patrol-days within ~5 km since the window\u2019s start; foot 1, vehicle 0.7, helicopter 0.4, fixed-wing 0.2). Read against the fire front; animates like it',
+            pRef ? '' : 'MapLegend.fireSeasonSet(\'patrol\',' + (!pOn) + ')', 'check');
+        // Compare years: chips under the front row while the front is on.
+        if (FireSeason.frontOn() && FireSeason.compareLegendHTML) html += FireSeason.compareLegendHTML({ cls: 'in-menu', onclick: 'MapLegend.fireSeasonCompare' });
         if (FireSeason.legendHTML && (FireSeason.vanguardOn() || fm.season)) html += FireSeason.legendHTML({ cls: 'in-menu' });
         if (FireSeason.speedOn() && FireSeason.speedLegendHTML) html += FireSeason.speedLegendHTML({ cls: 'in-menu' });
         if (eOn && FireSeason.entryLegendHTML) html += FireSeason.entryLegendHTML({ cls: 'in-menu' });
+        if (pOn && FireSeason.patrolLegendHTML) html += FireSeason.patrolLegendHTML({ cls: 'in-menu' });
         // No season picker: the front FOLLOWS THE TIME SLIDER (the season the
         // window ends in), as the vanguard chains do. A list of eight years
         // beside a slider that already says the year is a second control for
@@ -3771,6 +3788,16 @@
                 else if (em && em.area === null) parts.push('no area here');
                 else if (em && em.status) parts.push('entry ground not yet computed');
             }
+            if (FireSeason.frontOn() && FireSeason.compare && FireSeason.compare().length) {
+                var cs = FireSeason.compare();
+                parts.push('vs ' + (cs.length <= 3 ? cs.join(', ') : cs.length + ' seasons'));
+            }
+            if (FireSeason.patrolOn && FireSeason.patrolOn()) {
+                var pm = FireSeason.patrolMeta();
+                if (pm && pm.status === 'ok') parts.push('patrols reached ' + pm.cells.toLocaleString() + ' cells · ' + pm.patrol_days.toLocaleString() + ' patrol-days');
+                else if (pm && pm.area === null) parts.push('no area here');
+                else if (pm && pm.status) parts.push(/no patrol/.test(pm.status) ? 'no patrol data here' : pm.status);
+            }
             var fsNote = FireSeason.busy() && !parts.length ? 'loading…' : parts.join(' · ');
             chips += '<span class="ml-chip fs' + (/no |not yet/.test(fsNote) ? ' offview' : '') + '">' +
                 '<button type="button" class="ml-chip-main" title="' +
@@ -4298,11 +4325,21 @@
             if (typeof FireSeason === 'undefined') return;
             FireSeason.off(); render();
         },
+        fireSeasonCompare: function (lbl) {
+            if (typeof FireSeason === 'undefined') return;
+            FireSeason.toggleCompare(lbl);
+            render();
+            var chip = document.querySelector('#stats-map .ml-chip.fs');
+            closeMenu();
+            if (chip && FireSeason.isOn()) openFireSeasonMenu(chip);
+            if (typeof updateShareURL === 'function') updateShareURL();
+        },
         fireSeasonSet: function (which, on) {
             if (typeof FireSeason === 'undefined') return;
             if (which === 'front') FireSeason.setFront(on);
             else if (which === 'speed') FireSeason.setSpeed(on);
             else if (which === 'entry') FireSeason.setEntry(on);
+            else if (which === 'patrol') FireSeason.setPatrol(on);
             else FireSeason.setVanguard(on);
             render();
             // Keep the menu: the reader is composing the picture. Rebuilt so

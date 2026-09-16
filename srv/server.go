@@ -517,6 +517,7 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("GET /api/fire-season", s.HandleAPIFireSeason)
 	mux.HandleFunc("GET /api/fire-vanguard", s.HandleAPIFireVanguard)
 	mux.HandleFunc("GET /api/fire-season-speed", s.HandleAPIFireSeasonSpeed)
+	mux.HandleFunc("GET /api/patrol-isochrones", s.HandleAPIPatrolIsochrones)
 	mux.HandleFunc("POST /api/admin/update-fire-alerts", s.RequireAdmin(s.HandleAPIUpdateFireAlerts))
 	mux.HandleFunc("POST /api/update-fire-alerts", s.RequireAdminOrLocal(s.HandleAPIUpdateFireAlerts))
 	mux.HandleFunc("POST /api/refresh-park", s.RequireAdminOrLocal(s.HandleAPIRefreshPark))
