@@ -483,6 +483,37 @@ else
     ERRORS+=("lod_lines_promote_when_sparse")
 fi
 
+# THE BIG TIER IS TILES. A pinned area past ~3,000 fire trajectories is
+# answered with a vector-tile template instead of one JSON body (the 3.4 MB
+# XSA answer froze phones); the count must still be the true count in view,
+# the tile must decode as an MVT with the row id on every feature, and a tile
+# for no area must be refused -- a z3 tile of a continent is the same freeze
+# moved to the server.
+printf "%-50s" "lod_big_pin_is_tiled"
+tiled=$(curl -s -m 90 -b "$COOKIE_FILE" \
+    "${BASE_URL}/api/features-in-bbox?type=fire_trajectory&bbox=22,4,26,9&mode=auto&seg=1&tiles=1&limit=30000&geom_budget=12000&from=2024-01-01&to=2026-09-16&area=CAF_Chinko")
+t_render=$(echo "$tiled" | grep -o '"render":"[a-z]*"' | head -1)
+t_total=$(echo "$tiled" | grep -o '"total":[0-9]*' | grep -o '[0-9]*')
+t_tpl=$(echo "$tiled" | grep -o '"tiles":"[^"]*"' | head -1)
+plain=$(curl -s -m 90 -b "$COOKIE_FILE" \
+    "${BASE_URL}/api/features-in-bbox?type=fire_trajectory&bbox=22,4,26,9&mode=auto&seg=1&limit=100000&geom_budget=0&from=2024-01-01&to=2026-09-16&area=CAF_Chinko" \
+    | grep -o '"total":[0-9]*' | grep -o '[0-9]*')
+tile_ct=$(curl -s -m 60 -o /tmp/lod_tile_test.mvt -w "%{content_type}" -b "$COOKIE_FILE" \
+    "${BASE_URL}/api/lod-tiles/7/73/61.mvt?type=fire_trajectory&area=CAF_Chinko&from=2024-01-01&to=2026-09-16")
+tile_bytes=$(stat -c %s /tmp/lod_tile_test.mvt 2>/dev/null || echo 0)
+tile_has_rid=$(grep -c "rid" /tmp/lod_tile_test.mvt 2>/dev/null || echo 0)
+noarea=$(curl -s -o /dev/null -w "%{http_code}" -b "$COOKIE_FILE" \
+    "${BASE_URL}/api/lod-tiles/7/73/61.mvt?type=fire_trajectory")
+if [[ "$t_render" == '"render":"tiles"' && -n "$t_total" && "$t_total" -gt 3000 && "$t_total" == "$plain" \
+      && "$t_tpl" == *'/api/lod-tiles/{z}/{x}/{y}.mvt?'* && "$t_tpl" != *pwd* \
+      && "$tile_ct" == "application/vnd.mapbox-vector-tile" && "$tile_bytes" -gt 1000 && "$tile_has_rid" -gt 0 \
+      && "$noarea" == "400" ]]; then
+    green "✓"; PASSED=$((PASSED + 1))
+else
+    red "FAIL (render $t_render total $t_total vs $plain tpl $t_tpl tile $tile_ct ${tile_bytes}B rid=$tile_has_rid noarea $noarea)"
+    FAILED=$((FAILED + 1)); ERRORS+=("lod_big_pin_is_tiled")
+fi
+
 # A GeoPackage peek must be a LOOKUP, not a build. ?aoi_menu_item=gpkg on a
 # share link asks "is this file already there?" so it can download instead of
 # making the recipient click -- if asking created a job, opening a shared link

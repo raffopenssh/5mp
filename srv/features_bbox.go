@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -87,102 +88,67 @@ func (s *Server) HandleAPIFeaturesInBBox(w http.ResponseWriter, r *http.Request)
 	// spread=0 opts back into the old "biggest N anywhere" behaviour.
 	spread := q.Get("spread") != "0"
 
-	where := `
-		FROM feature_geometries
-		WHERE feature_type = ?
-		  AND bbox_maxx >= ? AND bbox_minx <= ?
-		  AND bbox_maxy >= ? AND bbox_miny <= ?
-	`
-	args := []interface{}{featureType, bbox[0], bbox[2], bbox[1], bbox[3]}
+	sc := s.bboxScope(r, featureType, bbox)
+	where, args, area := sc.where, sc.args, sc.area
+	classIDs := sc.classIDs
+	hasMetaFilter := classIDs != nil
 
-	// ?area= scopes the answer to one area's rows. A pinned layer is a
-	// statement about an area ("Chinko's fires"), so when the pin is rendered
-	// viewport-first — fetching what is on screen instead of the whole park at
-	// once — panning to a neighbouring park must not quietly adopt its rows.
+	// TILES: the answer for a big pinned line layer is a URL, not a payload.
 	//
-	// It is `area`, not `park`, because an AOI id in `?park=` is a hard 404:
-	// ParkIDMiddleware rejects one on every request, by design (an AOI is not a
-	// park and /api/parks/{aoi} must not serve it). The first viewport-first
-	// pin sent `park=XSA_Study_Area` and every fetch 404'd, so an AOI fire pin
-	// silently drew nothing and reported "0 in view" — see AGENTS.md, the
-	// no-op that reads as an answer. `park=` is still accepted for parks so old
-	// share links and any cached client keep working.
+	// A 38,789-chord AOI pin was one 3.4 MB JSON body: parsed on the phone's
+	// main thread, cloned into MapLibre's worker, indexed by geojson-vt and
+	// fetched again at every zoom — seconds frozen per gesture. When the
+	// client says it can draw vector tiles (?tiles=1) and the count in view
+	// is past the point where a chord field is one payload, the answer is a
+	// tile template instead (srv/features_tiles.go): every feature still
+	// drawn, the same row id on every one, only the tiles in view fetched.
 	//
-	// An AOI id IS a park_id in this table, so one column serves both; the
-	// visibility check is aoiScopeSQL/aoiExcludeSQL above plus the explicit
-	// check here — an invisible id is ignored rather than refused, so an id is
-	// never an oracle.
-	area := q.Get("area")
-	if area == "" {
-		area = q.Get("park")
-	}
-	if area != "" && IsAOIID(area) {
-		if _, err := s.GetAOI(area, s.RequestPrincipalID(r), false); err != nil {
-			area = ""
+	// Only for an explicit ?area= (a pin), so a continental stats-panel
+	// toggle cannot ask for a z3 tile of 300k trajectories; never under a
+	// class filter the tile endpoint does not carry; never when the user
+	// forced a detail mode (the client only sends tiles= in 'auto'). The
+	// count is a single aggregate query, so the pass-1 row scan below is not
+	// paid for a response that ships no rows. ?tiles=keep is the client
+	// saying "I am already tiled, do not switch me back at a small view":
+	// tiles serve full geometry above tileFullGeomZoom, so promoting back to
+	// a JSON answer would tear down a source for nothing.
+	if tilesReq := q.Get("tiles"); tilesReq != "" && mode == "auto" && lineLikeFeature(featureType) && area != "" && !hasMetaFilter {
+		// Two aggregates in parallel: COUNT(*) is answered from the covering
+		// bbox index (0.1 s for 38k rows); the vanguard count has to touch
+		// the table and takes twice that, so it runs beside rather than after.
+		var total, van int
+		var errCount, errVan error
+		var wg sync.WaitGroup
+		wg.Add(2)
+		go func() {
+			defer wg.Done()
+			errCount = s.DB.QueryRowContext(r.Context(), `SELECT COUNT(*)`+where, args...).Scan(&total)
+		}()
+		go func() {
+			defer wg.Done()
+			errVan = s.DB.QueryRowContext(r.Context(), `SELECT COUNT(*)`+where+` AND vanguard = 1`, args...).Scan(&van)
+		}()
+		wg.Wait()
+		if errCount == nil && errVan == nil && (tilesReq == "keep" || total > tileAboveCount) {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"mode":           "tiles",
+				"render":         "tiles",
+				"render_basis":   "tiled",
+				"type":           featureType,
+				"tiles":          lodTileTemplate(q, featureType),
+				"tile_layer":     lodTileLayerName,
+				"tile_geom_zoom": tileFullGeomZoom,
+				"tile_maxzoom":   tileMaxZoom,
+				"count":          total,
+				"total":          total,
+				"truncated":      false,
+				"unit":           "features",
+				"vanguard_total": van,
+			})
+			return
 		}
 	}
-
-	// The focus scope (?aoi=/?park_focus=) and the pin scope (?area=) must not
-	// contradict each other. Without a focus, ?area=<AOI> ALONE used to keep
-	// the default aoiExcludeSQL ("no AOI rows at all") and then AND
-	// park_id=<that AOI> — excluded and required at once, so an AOI pin whose
-	// client didn't also send ?aoi= got 0 rows with a 200, the no-op that
-	// reads as an answer (share link /s/pxvn2c5, 2026-08-16: the client only
-	// sends aoi= when window.AOI_IDS has loaded, a race the pin restore
-	// loses on a slow link). A validated ?area= is a visibility-checked AOI
-	// id, so let it stand in as the scope when no explicit focus came.
-	scope := s.areaScopeParam(r)
-	if scope == "" && area != "" && IsAOIID(area) {
-		scope = area
-	}
-	where += areaScopeSQL("park_id", scope)
-	// When the scope IS the area, areaScopeSQL already pins park_id (and, for
-	// an AOI, admits the legacy 'aoi:<id>' alias the bare equality would
-	// drop). Only add the equality when they differ.
-	if area != "" && area != scope {
-		where += " AND park_id = ?"
-		args = append(args, area)
-	}
-
-	// Date filters match UI narrative behavior: filter on start_date.
-	// Settlements mostly lack dates, so NULL start_date always passes.
-	if from := q.Get("from"); from != "" {
-		where += " AND (start_date IS NULL OR start_date >= ?)"
-		args = append(args, from)
-	}
-	if to := q.Get("to"); to != "" {
-		where += " AND (start_date IS NULL OR start_date <= ?)"
-		args = append(args, to)
-	}
-
-	// ?class= — the popup's classification filter ("only agricultural
-	// clearings", "only fishing camps"), applied HERE rather than in the
-	// browser.
-	//
-	// It used to be client-side over a whole-park fetch, which is why a
-	// filtered pin was the one thing the LOD loader could not serve: the
-	// points and slim-geometry renderings ship no properties to filter on, so
-	// the filter would have silently emptied the layer. The classification is
-	// not in feature_geometries at all — it lives in park_settlements /
-	// deforestation_events keyed by the polygon_ids list — so it is resolved
-	// through the same Go-side map as the hover tips (feature_meta.go), never
-	// the polygon_ids LIKE join.
-	//
-	// Requires ?area=: without it the candidate set spans every park in view,
-	// and the filter only ever comes from one area's popup. Ignored rather
-	// than refused otherwise — the unfiltered answer is the honest superset.
-	//
-	// ?age= and ?crop= are two more dimensions of the same filter (settlement
-	// persistence buckets; cropland presence / conversion buckets — see
-	// featureIDsWithClass for the bucket words). They AND with ?class=.
-	classFilter := strings.TrimSpace(q.Get("class"))
-	ageFilter := strings.TrimSpace(q.Get("age"))
-	cropFilter := strings.TrimSpace(q.Get("crop"))
-	var classIDs map[string]bool
-	if (classFilter != "" || ageFilter != "" || cropFilter != "") && area != "" {
-		classIDs = s.featureIDsWithClass(featureType, area, classFilter, ageFilter, cropFilter)
-	}
-	hasMetaFilter := classIDs != nil
 
 	// Pass 1 is index-only: id, centroid, rank inputs. No geojson, so the rows
 	// that lose the selection cost nothing to read.
@@ -426,6 +392,118 @@ func (s *Server) HandleAPIFeaturesInBBox(w http.ResponseWriter, r *http.Request)
 		"total":        total,
 		"truncated":    truncated,
 	}))
+}
+
+// bboxScope is the WHERE clause every viewport feature endpoint shares —
+// the bbox intersection, the area pin, the focus scope, the date window and
+// the popup's classification filter — so /api/features-in-bbox and
+// /api/lod-tiles answer the same question about the same rows. Two copies
+// of this drifted would be two layers disagreeing about one pin.
+type bboxScope struct {
+	where    string
+	args     []interface{}
+	area     string
+	classIDs map[string]bool // nil when no meta filter applies
+}
+
+func (s *Server) bboxScope(r *http.Request, featureType string, bbox [4]float64) bboxScope {
+	q := r.URL.Query()
+	where := `
+		FROM feature_geometries
+		WHERE feature_type = ?
+		  AND bbox_maxx >= ? AND bbox_minx <= ?
+		  AND bbox_maxy >= ? AND bbox_miny <= ?
+	`
+	args := []interface{}{featureType, bbox[0], bbox[2], bbox[1], bbox[3]}
+
+	// ?area= scopes the answer to one area's rows. A pinned layer is a
+	// statement about an area ("Chinko's fires"), so when the pin is rendered
+	// viewport-first — fetching what is on screen instead of the whole park at
+	// once — panning to a neighbouring park must not quietly adopt its rows.
+	//
+	// It is `area`, not `park`, because an AOI id in `?park=` is a hard 404:
+	// ParkIDMiddleware rejects one on every request, by design (an AOI is not a
+	// park and /api/parks/{aoi} must not serve it). The first viewport-first
+	// pin sent `park=XSA_Study_Area` and every fetch 404'd, so an AOI fire pin
+	// silently drew nothing and reported "0 in view" — see AGENTS.md, the
+	// no-op that reads as an answer. `park=` is still accepted for parks so old
+	// share links and any cached client keep working.
+	//
+	// An AOI id IS a park_id in this table, so one column serves both; the
+	// visibility check is aoiScopeSQL/aoiExcludeSQL above plus the explicit
+	// check here — an invisible id is ignored rather than refused, so an id is
+	// never an oracle.
+	area := q.Get("area")
+	if area == "" {
+		area = q.Get("park")
+	}
+	if area != "" && IsAOIID(area) {
+		if _, err := s.GetAOI(area, s.RequestPrincipalID(r), false); err != nil {
+			area = ""
+		}
+	}
+
+	// The focus scope (?aoi=/?park_focus=) and the pin scope (?area=) must not
+	// contradict each other. Without a focus, ?area=<AOI> ALONE used to keep
+	// the default aoiExcludeSQL ("no AOI rows at all") and then AND
+	// park_id=<that AOI> — excluded and required at once, so an AOI pin whose
+	// client didn't also send ?aoi= got 0 rows with a 200, the no-op that
+	// reads as an answer (share link /s/pxvn2c5, 2026-08-16: the client only
+	// sends aoi= when window.AOI_IDS has loaded, a race the pin restore
+	// loses on a slow link). A validated ?area= is a visibility-checked AOI
+	// id, so let it stand in as the scope when no explicit focus came.
+	scope := s.areaScopeParam(r)
+	if scope == "" && area != "" && IsAOIID(area) {
+		scope = area
+	}
+	where += areaScopeSQL("park_id", scope)
+	// When the scope IS the area, areaScopeSQL already pins park_id (and, for
+	// an AOI, admits the legacy 'aoi:<id>' alias the bare equality would
+	// drop). Only add the equality when they differ.
+	if area != "" && area != scope {
+		where += " AND park_id = ?"
+		args = append(args, area)
+	}
+
+	// Date filters match UI narrative behavior: filter on start_date.
+	// Settlements mostly lack dates, so NULL start_date always passes.
+	if from := q.Get("from"); from != "" {
+		where += " AND (start_date IS NULL OR start_date >= ?)"
+		args = append(args, from)
+	}
+	if to := q.Get("to"); to != "" {
+		where += " AND (start_date IS NULL OR start_date <= ?)"
+		args = append(args, to)
+	}
+
+	// ?class= — the popup's classification filter ("only agricultural
+	// clearings", "only fishing camps"), applied HERE rather than in the
+	// browser.
+	//
+	// It used to be client-side over a whole-park fetch, which is why a
+	// filtered pin was the one thing the LOD loader could not serve: the
+	// points and slim-geometry renderings ship no properties to filter on, so
+	// the filter would have silently emptied the layer. The classification is
+	// not in feature_geometries at all — it lives in park_settlements /
+	// deforestation_events keyed by the polygon_ids list — so it is resolved
+	// through the same Go-side map as the hover tips (feature_meta.go), never
+	// the polygon_ids LIKE join.
+	//
+	// Requires ?area=: without it the candidate set spans every park in view,
+	// and the filter only ever comes from one area's popup. Ignored rather
+	// than refused otherwise — the unfiltered answer is the honest superset.
+	//
+	// ?age= and ?crop= are two more dimensions of the same filter (settlement
+	// persistence buckets; cropland presence / conversion buckets — see
+	// featureIDsWithClass for the bucket words). They AND with ?class=.
+	classFilter := strings.TrimSpace(q.Get("class"))
+	ageFilter := strings.TrimSpace(q.Get("age"))
+	cropFilter := strings.TrimSpace(q.Get("crop"))
+	var classIDs map[string]bool
+	if (classFilter != "" || ageFilter != "" || cropFilter != "") && area != "" {
+		classIDs = s.featureIDsWithClass(featureType, area, classFilter, ageFilter, cropFilter)
+	}
+	return bboxScope{where: where, args: args, area: area, classIDs: classIDs}
 }
 
 // subPixelShapes — would this layer's polygons be smaller than a screen pixel?
