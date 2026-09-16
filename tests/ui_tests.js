@@ -192,6 +192,35 @@ const UI_TESTS = [
         ]
     },
     
+    // === SEASON: COMPARE YEARS + PATROL ISOCHRONES ===
+    // The slider still names the reference season; earlier seasons are ADDED
+    // beside it (season_vs=), each in the hue of how many seasons back it is,
+    // its 15-day lines labelled with the year, aligned by day of season. The
+    // patrol isochrones are tenant-scoped: the sandbox owns no tracks, so the
+    // link's `patrol` is dropped and the menu row says why, not an empty layer.
+    {
+        name: 'season_compare_and_patrol_scope',
+        url: '&park_focus=CAF_Chinko&from=2025-07-01&to=2026-06-30&season=front,patrol&season_vs=2020%2F21,2022%2F23&layers=none&bbox=22.6,5.2,25.6,8.2',
+        wait: 9000,
+        assertions: [
+            { type: 'fn', fn: () => { const f = TEST.fireSeason(); return f.front && f.seasonShown === '2025/26' && f.compare.length === 2 && f.compareAvailable.indexOf('2025/26') < 0 && f.compareAvailable.length >= 6; }, msg: 'Reference season from the slider; the compare list offers every other stored season' },
+            { type: 'fn', fn: () => { const f = TEST.fireSeason(); return f.compareFeatures > 10 && f.compareYears.join(',') === '2020/21,2022/23' && f.compareColors.length === 2 && f.compareColors.indexOf(FireSeason.compareColor('2020/21')) >= 0; }, msg: 'Ghost fronts of both seasons loaded, one hue per season (cmpColor)' },
+            { type: 'fn', fn: () => { const fs = map.querySourceFeatures('fireseason-cmp-src'); const lab = fs.filter(f => f.properties.label); const t0 = Date.parse(FireSeason.meta().season_start + 'T00:00:00Z'); return lab.length > 0 && lab.every(f => /\u201921|\u201923$/.test(f.properties.text)) && fs.every(f => f.properties.tr === t0 + f.properties.dos * 86400000); }, msg: 'Labels carry the year; every ghost line sits on the reference calendar by day of season' },
+            { type: 'fn', fn: () => { const f = TEST.fireSeason(); return f.share.season_vs === '2020/21,2022/23' && !/patrol/.test(f.share.season || '') && !f.patrol && !f.patrolAllowed && window.HAS_PATROL === false; }, msg: 'Share link carries season_vs; patrol is dropped for a tenant without tracks' },
+            { type: 'fn', fn: () => {
+                MapLegend.fireSeasonMenu(document.querySelector('#stats-map .ml-chip.fs'));
+                const rows = [...document.querySelectorAll('.mode-menu .aoi-menu-item')];
+                const pr = rows.find(r => /Patrol isochrones/.test(r.textContent));
+                const chips = document.querySelectorAll('.mode-menu .fs-cmp .filter-chip');
+                const onChips = [...chips].filter(c => c.classList.contains('on')).map(c => c.textContent);
+                const ok = pr && pr.classList.contains('refused') && /No patrol tracks/.test(pr.title) && chips.length >= 6 && onChips.join(',') === '2022/23,2020/21';
+                MapLegend.fireSeasonCompare('2020/21');
+                const after = TEST.fireSeason();
+                return ok && after.compare.join(',') === '2022/23' && after.share.season_vs === '2022/23';
+            }, msg: 'Menu: patrol row refused with the reason; year chips in the filter-chip style, toggling one updates the layer and the link' },
+        ]
+    },
+
     // === SEARCH ===
     {
         name: 'search_query',

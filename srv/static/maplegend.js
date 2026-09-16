@@ -1329,7 +1329,7 @@
             pRef ? '' : 'MapLegend.fireSeasonSet(\'patrol\',' + (!pOn) + ')', 'check');
         // Compare years: chips under the front row while the front is on.
         if (FireSeason.frontOn() && FireSeason.compareLegendHTML) html += FireSeason.compareLegendHTML({ cls: 'in-menu', onclick: 'MapLegend.fireSeasonCompare' });
-        if (FireSeason.legendHTML && (FireSeason.vanguardOn() || fm.season)) html += FireSeason.legendHTML({ cls: 'in-menu' });
+        if (FireSeason.legendHTML && FireSeason.vanguardOn()) html += FireSeason.legendHTML({ cls: 'in-menu' });
         if (FireSeason.speedOn() && FireSeason.speedLegendHTML) html += FireSeason.speedLegendHTML({ cls: 'in-menu' });
         if (eOn && FireSeason.entryLegendHTML) html += FireSeason.entryLegendHTML({ cls: 'in-menu' });
         if (pOn && FireSeason.patrolLegendHTML) html += FireSeason.patrolLegendHTML({ cls: 'in-menu' });

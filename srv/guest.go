@@ -255,8 +255,18 @@ func scopeFromURL(raw string) string {
 	out := []string{}
 	// Sorted by construction (iterate the constant list, not the map) so the
 	// stored value is stable and two identical views produce one string.
+	// The Season overlay's patrol isochrones (`season=front,patrol`) are
+	// patrol data drawn by another name: a sender looking at them grants
+	// the scope too, or the guest would see the fire front and an empty
+	// patrol layer with no word why.
+	seasonPatrol := false
+	for _, n := range strings.Split(u.Query().Get("season"), ",") {
+		if strings.TrimSpace(n) == "patrol" {
+			seasonPatrol = true
+		}
+	}
 	for _, name := range []string{ScopePatrol} {
-		if layer, ok := scopedLayers[name]; ok && on(layer) {
+		if layer, ok := scopedLayers[name]; ok && (on(layer) || (name == ScopePatrol && seasonPatrol)) {
 			out = append(out, name)
 		}
 	}

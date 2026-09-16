@@ -1570,6 +1570,29 @@ if [ -n "${AOI_OWNER_PWD:-}" ]; then
         red "FAIL ($(echo "$body" | jq -c '{complete, front_reached_pct, w:.words[0:120]}'))"; FAILED=$((FAILED + 1)); ERRORS+=("fire_season_in_progress")
     fi
 fi
+# Patrol isochrones (srv/patrol_isochrone.go): the rangers' front on the
+# season-front grid. The sandbox tenant owns no tracks over Ruaha, so its
+# honest answer is a status, not an empty layer; a client tenant with tracks
+# gets dated contours in its window's calendar, every movement type weighted
+# (weights on the wire), and the front/usual association with both groups
+# counted. The compare-seasons side of the same change is /api/fire-season
+# ?season=… which already existed; assert its contours carry dos/label.
+test_api "patrol_isochrones_sandbox_has_none" "/api/patrol-isochrones?area=TZA_Ruaha&from=2026-02-01&to=2026-09-16" "200" \
+    '.area == "TZA_Ruaha" and .cells == 0 and (.status | test("no patrol data")) and (.contours | length) == 0'
+test_api "patrol_isochrones_no_area" "/api/patrol-isochrones?lon=0&lat=0" "200" '.area == null and (.status | test("no area"))'
+test_api "patrol_isochrones_invisible_aoi_404" "/api/patrol-isochrones?area=aoi_nobody_000000000000&from=2026-01-01&to=2026-02-01" "404" ''
+if [[ -n "$GEO_CLIENT_PWD" ]]; then
+    printf "%-50s" "patrol_isochrones_client_contours"
+    body=$(curl -s -m 60 --get --data-urlencode "pwd=$GEO_CLIENT_PWD" --data-urlencode "area=TZA_Ruaha" --data-urlencode "from=2026-02-01" --data-urlencode "to=2026-09-16" "${BASE_URL}/api/patrol-isochrones")
+    ok=$(echo "$body" | jq -r 'if .status != "ok" then true else (.cells > 0 and (.contours | length) > 0 and ([.contours[].properties | has("dos") and has("date") and has("label")] | all) and (.weights.foot == 1) and (.by_mode | length) > 0 and (.association.patrolled_before_front.cells + .association.other.cells > 0) and (.arrival | length) == .cells) end')
+    if [ "$ok" = "true" ]; then
+        green "✓ ($(echo "$body" | jq -r '"\(.cells) cells, \(.contours|length) lines, \(.status)"'))"; PASSED=$((PASSED + 1))
+    else
+        red "FAIL ($(echo "$body" | jq -c '{status, cells, nc:(.contours|length)}'))"; FAILED=$((FAILED + 1)); ERRORS+=("patrol_isochrones_client")
+    fi
+fi
+test_api "fire_season_compare_season_contours" "/api/fire-season?area=CAF_Chinko&season=2020/21" "200" \
+    '.season == "2020/21" and .complete == true and (.contours | length) > 5 and ([.contours[].properties | has("dos") and has("date") and has("label")] | all)'
 test_api "anim_trajs_vanguard_leads" "/api/fire-anim-trajectories?bbox=23,5,26,8&from=2024-11-01&to=2024-12-31&limit=4000" "200" \
     '([.groups[] | select(.vanguard)] | length > 0) and ([.groups[] | select(.vanguard) | (.leads | length) == (.pts | length)] | all) and ([.groups[] | select(.vanguard | not) | has("leads") | not] | all)'
 # Certainty → width (fireseason.js evidenceMul): the continuous score behind
