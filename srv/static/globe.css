@@ -2815,14 +2815,17 @@
                tucked to the right of the last row — the smallest thing that
                is still a real touch target. */
             .stats-map { grid-column: 1 / -1; margin: 0; }
-            .stats-map.quiet { margin: -2px -2px -4px 0; }
             /* THE EMPTY CELL IS THE STRIP'S HOME WHILE IT IS RESTING. The
                readout is a 3-column grid of 5 stats, so there is always a
                sixth cell with nothing in it — and a rested strip is exactly
                chip-sized. Spanning the full width for two icons pushed the
                map down a row for nothing. Woken, it goes back to 1/-1,
                because a key of eleven periods does not fit in a third of a
-               phone. */
+               phone. The QUIET state (default basemap, no overlay: one ghost
+               icon) lives in the same cell for the same reason — spanning
+               the width for one icon cost a whole blank row of a phone
+               screen (user report 2026-09-16). */
+            .stats-map.quiet,
             .stats-map.ml-rest:not(.quiet) { grid-column: auto; align-self: center;
                 justify-self: end; margin: 0; }
             .stats-map.ml-rest .ml-row { justify-content: flex-end; flex-wrap: nowrap; }
