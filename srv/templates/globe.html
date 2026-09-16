@@ -15303,12 +15303,12 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
         // question ('why are my trajectories dots?'); the other two name what
         // was asked for, because that is now the answer.
         const LOD_MODE_LABEL = {
-            auto: r => (r === 'geometry' ? 'shapes' : r === 'segments' ? 'lines' : 'dots'),
+            auto: r => (r === 'geometry' ? 'shapes' : r === 'segments' ? 'lines' : r === 'tiles' ? 'lines · tiled' : 'dots'),
             shapes: () => 'shapes · forced',
             fast: r => (r === 'geometry' ? 'fast' : r === 'segments' ? 'lines · fast' : 'dots · fast')
         };
         function lodModeClass(render) {
-            return render === 'geometry' ? 'shapes' : render === 'segments' ? 'segments' : 'dots';
+            return render === 'geometry' ? 'shapes' : (render === 'segments' || render === 'tiles') ? 'segments' : 'dots';
         }
         // The row's LOD state, kept so the readout can be re-rendered when
         // something OTHER than a fetch changes what the row is drawing — the
@@ -15480,7 +15480,10 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             subpixel: 'At this zoom each shape is under 3 px across, so points'
                     + ' are the clearer drawing — zoom in for outlines.',
             crowded: 'The paths already cover the view, so the full geometry'
-                   + ' would add vertices but no visible shape — zoom in for full paths.'
+                   + ' would add vertices but no visible shape — zoom in for full paths.',
+            tiled: 'Served as map tiles: every feature is drawn (direction lines'
+                 + ' at this zoom, full paths from z9) and only the tiles in view are'
+                 + ' fetched — the fast path for tens of thousands of trajectories.'
         };
 
         // The Season overlay, as the fire row sees it: two more renderings
@@ -15527,6 +15530,8 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 ? `${countTxt} ${what} drawn as full clickable shapes`
                 : st.render === 'segments'
                 ? `${countTxt} ${what} drawn as short direction lines (start → middle → end); hover one for its details`
+                : st.render === 'tiles'
+                ? `${countTxt} ${what} served as map tiles — direction lines here, full paths from z9; hover one for its details`
                 : `${countTxt} ${what} drawn as points; hover one for its details`;
             const now = mode === 'auto' ? 'Detail follows the view'
                       : mode === 'shapes' ? 'Full shapes forced for this layer'

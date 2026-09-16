@@ -57,7 +57,8 @@ func compressibleType(ct string) bool {
 		"application/xml", "application/xhtml+xml", "application/rss+xml",
 		"application/atom+xml", "application/geo+json", "application/vnd.geo+json",
 		"application/ld+json", "application/manifest+json", "application/wasm",
-		"image/svg+xml", "application/vnd.google-earth.kml+xml":
+		"image/svg+xml", "application/vnd.google-earth.kml+xml",
+		"application/vnd.mapbox-vector-tile":
 		return true
 	}
 	return strings.HasSuffix(ct, "+json") || strings.HasSuffix(ct, "+xml")

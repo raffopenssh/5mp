@@ -62,6 +62,49 @@
     // Polygons keep dots: a settlement's centroid IS the settlement, at the
     // zoom where this tier applies.
     var SEG_TYPES = { fire_trajectory: true };
+    // THE TILE TIER. Past a few thousand features a pinned line layer is
+    // served as vector tiles (srv/features_tiles.go) instead of one JSON
+    // body: 38,789 XSA chords were 3.4 MB parsed on the main thread, cloned
+    // into MapLibre's worker, indexed by geojson-vt and re-fetched at every
+    // zoom — a phone froze for seconds per gesture. Tiles are decoded in the
+    // worker, only the ones in view are fetched, and a pan fetches only the
+    // new ones. The SERVER decides (render: 'tiles', from the true count in
+    // view); the client only says it can take them (?tiles=1) and, once
+    // tiled, asks to stay tiled (?tiles=keep) — tiles carry full geometry
+    // above tile_geom_zoom, so there is nothing a JSON answer would add.
+    var TILE_LAYER = 'features';
+
+    // Every rendering shares one SOURCE ID so the cross-fade has one thing to
+    // fade; but a GeoJSON source and a vector-tile source are different
+    // kinds, and MapLibre cannot change a source's kind in place. Swapping
+    // means the layers go too (they are bound to the source), and the next
+    // ensureLayers re-adds them with or without `source-layer`.
+    function swapSourceKind(key, tiled) {
+        var s = reg.get(key), L = ids(key);
+        if (!!s.tiled === !!tiled && map.getSource(L.src)) return;
+        [L.fill, L.line, L.arrow, L.point, L.dots].forEach(removeLayer);
+        try { if (map.getSource(L.src)) map.removeSource(L.src); } catch (e) {}
+        s.tiled = !!tiled;
+        s.render = null;   // the layers are gone; the next ensureLayers is a birth, not a crossing
+    }
+
+    // INK IS PER PIXEL, NOT PER FEATURE. densityPaint's tiers were tuned on a
+    // ~1400x900 laptop viewport; a phone has a quarter of those pixels, so
+    // the same 38,789 chords cover each pixel four times as often and the
+    // same stroke turns the AOI into one red field (user report, 2026-09-16:
+    // "all folks see is a red blob instead of lines"). Scale the count the
+    // ramp sees by how much smaller than the reference this viewport is.
+    // Same reasoning as the server's inkCrowded: what matters is how much
+    // of the screen the strokes already cover.
+    var REF_VIEWPORT_PX = 1400 * 900;
+    function viewportPx() {
+        var c = map && map.getCanvas ? map.getCanvas() : null;
+        var w = c ? c.clientWidth : window.innerWidth, h = c ? c.clientHeight : window.innerHeight;
+        return Math.max(1, (w || 1400) * (h || 900));
+    }
+    function inkCount(n) {
+        return Math.round(n * Math.max(1, REF_VIEWPORT_PX / viewportPx()));
+    }
     // A fire trajectory's stroke width carries how sure we are of its day
     // order: `eb` (evidence_bits, srv/features_bbox.go) graded x1 → x1.5 at
     // 6 bits, falling back to the tier word `ev` on an old wire — the ONE
@@ -154,6 +197,14 @@
         // default and being corrected a frame later.
         applyDensity(key, count || 0);
         var vector = render !== 'points';
+        // A tiled source's layers must name the tile layer; a GeoJSON
+        // source's must not. Same layer ids, same paint, same tips either
+        // way — the source kind is the only thing that differs, and it is
+        // decided by swapSourceKind before this runs.
+        var addLayer = function (spec) {
+            if (s.tiled) spec['source-layer'] = TILE_LAYER;
+            map.addLayer(spec);
+        };
         var wantArrow = vector && s.featureType === 'fire_trajectory';
         var want = vector ? [L.fill, L.line, L.point] : [L.dots];
         var unwant = vector ? [L.dots] : [L.fill, L.line, L.arrow, L.point];
@@ -167,7 +218,7 @@
                 // drawn as sub-pixel POLYGONS while its neighbour drew dots
                 // (see subPixelShapes in srv/features_bbox.go). Ink cannot fix
                 // a geometry problem — do not re-add a per-type alpha.
-                map.addLayer({
+                addLayer({
                     id: L.dots, type: 'circle', source: L.src,
                     paint: {
                         // Small and dense: this rendering exists because there
@@ -183,7 +234,7 @@
             }
         } else {
             if (!map.getLayer(L.fill)) {
-                map.addLayer({
+                addLayer({
                     id: L.fill, type: 'fill', source: L.src,
                     filter: ['any', ['==', ['geometry-type'], 'Polygon'], ['==', ['geometry-type'], 'MultiPolygon']],
                     paint: { 'fill-color': color, 'fill-opacity': 0, 'fill-outline-color': color }
@@ -191,7 +242,7 @@
                 registerTip(key, L.fill, false);
             }
             if (!map.getLayer(L.line)) {
-                map.addLayer({
+                addLayer({
                     id: L.line, type: 'line', source: L.src,
                     filter: ['any', ['==', ['geometry-type'], 'LineString'], ['==', ['geometry-type'], 'MultiLineString']],
                     paint: { 'line-color': color, 'line-width': widthExpr(s, s.lineWidth || 2), 'line-opacity': 0 }
@@ -209,7 +260,7 @@
             if (wantArrow && !map.getLayer(L.arrow) && map.hasImage && map.hasImage('arrow-right')) {
                 var dirF = (window.FireSeason && FireSeason.directionFilter) ? FireSeason.directionFilter('ev')
                     : ['in', ['coalesce', ['get', 'ev'], 'unmeasured'], ['literal', ['supported', 'weak']]];
-                map.addLayer({
+                addLayer({
                     id: L.arrow, type: 'symbol', source: L.src,
                     filter: ['all', ['==', ['geometry-type'], 'LineString'], dirF],
                     layout: {
@@ -226,7 +277,7 @@
                 });
             }
             if (!map.getLayer(L.point)) {
-                map.addLayer({
+                addLayer({
                     id: L.point, type: 'circle', source: L.src,
                     filter: ['==', ['geometry-type'], 'Point'],
                     paint: {
@@ -342,11 +393,17 @@
         // floor must still be visible on a dark basemap: 0.06 read as an empty
         // map with a smudge on it.
         if (n <= 25000) return { w: 0.75, o: 0.2, arrow: 0, r: 1.2, ring: 0, fill: 0.12 };
-        return { w: 0.7, o: 0.16, arrow: 0, r: 1.1, ring: 0, fill: 0.1 };
+        if (n <= 60000) return { w: 0.7, o: 0.16, arrow: 0, r: 1.1, ring: 0, fill: 0.1 };
+        // Only reachable through inkCount: a phone showing tens of thousands
+        // of chords. Thinner still, and the floor stays visible — a 0.6 px
+        // stroke on a 3x display is two device pixels, and at 4x coverage
+        // 0.11 accumulates to ~0.4, which reads as structure, not a smudge.
+        if (n <= 150000) return { w: 0.6, o: 0.11, arrow: 0, r: 1.0, ring: 0, fill: 0.09 };
+        return { w: 0.5, o: 0.08, arrow: 0, r: 0.9, ring: 0, fill: 0.08 };
     }
 
     function applyDensity(key, n) {
-        var L = ids(key), d = densityPaint(n);
+        var L = ids(key), d = densityPaint(inkCount(n));
         var s0 = reg.get(key);
         if (s0) {
             s0.lineOpacity = d.o; s0.arrowOpacity = d.arrow; s0.fillOpacity = d.fill;
@@ -562,6 +619,12 @@
         });
         // A path's cheap tier is a chord, not a centroid — see SEG_TYPES.
         if (SEG_TYPES[s.featureType]) qs.set('seg', '1');
+        // ...and its BIG tier is vector tiles (see TILE_LAYER). Only offered
+        // for a pinned area in 'auto': a forced detail mode is a statement
+        // about this screen's patience and keeps the JSON tiers it names.
+        if (SEG_TYPES[s.featureType] && s.park && (s.detail || 'auto') === 'auto') {
+            qs.set('tiles', s.tiled ? 'keep' : '1');
+        }
         if (s.dated !== false) {
             if (typeof dateFrom !== 'undefined' && dateFrom) qs.set('from', dateFrom);
             if (typeof dateTo !== 'undefined' && dateTo) qs.set('to', dateTo);
@@ -630,10 +693,28 @@
             var d = await res.json();
             if (!reg.has(key)) return;   // removed while loading
             var render = d.render || (d.mode === 'points' ? 'points' : 'geometry');
-            var data = (render === 'points' || render === 'segments') ? pointsToGeoJSON(d) : d;
             var L = ids(key);
-            if (map.getSource(L.src)) map.getSource(L.src).setData(data);
-            else map.addSource(L.src, { type: 'geojson', data: data });
+            if (render === 'tiles') {
+                swapSourceKind(key, true);
+                var tileURL = location.origin + d.tiles;
+                var src = map.getSource(L.src);
+                if (src && src.setTiles) {
+                    // The window changed: same source, new template. MapLibre
+                    // drops the old tiles and refetches only what is in view.
+                    if (!s.tileURL || s.tileURL !== tileURL) src.setTiles([tileURL]);
+                } else {
+                    map.addSource(L.src, {
+                        type: 'vector', tiles: [tileURL],
+                        minzoom: 0, maxzoom: d.tile_maxzoom || 12
+                    });
+                }
+                s.tileURL = tileURL;
+            } else {
+                swapSourceKind(key, false);
+                var data = (render === 'points' || render === 'segments') ? pointsToGeoJSON(d) : d;
+                if (map.getSource(L.src)) map.getSource(L.src).setData(data);
+                else map.addSource(L.src, { type: 'geojson', data: data });
+            }
             ensureLayers(key, render, s.color, d.count || 0);
             s.lastBBox = bbox;
             s.lastSig = sig;
