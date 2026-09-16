@@ -56,10 +56,16 @@
         VAN_DIM_LYR = 'fireseason-van-dim', VAN_GAP_LYR = 'fireseason-van-gap',
         VAN_HEAD_LYR = 'fireseason-van-head', VAN_HEAD_HALO = 'fireseason-van-head-halo',
         VAN_ARROW_LYR = 'fireseason-van-arrow',
-        SPEED_LYR = 'fireseason-speed', ENTRY_LYR = 'fireseason-entry';
+        SPEED_LYR = 'fireseason-speed', ENTRY_LYR = 'fireseason-entry',
+        CMP_SRC = 'fireseason-cmp-src', CMP_LYR = 'fireseason-cmp', CMP_LBL = 'fireseason-cmp-label',
+        PAT_SRC = 'fireseason-patrol-src', PAT_LYR = 'fireseason-patrol', PAT_LBL = 'fireseason-patrol-label', PAT_WAVE = 'fireseason-patrol-wave';
 
     var map = null;
-    var st = { front: false, van: false, speed: false, entry: false };   // the season shown follows the time slider
+    var st = { front: false, van: false, speed: false, entry: false, patrol: false, cmp: [] };   // the season shown follows the time slider; cmp = earlier seasons drawn beside it
+    var cmpData = {};      // season label → /api/fire-season answer (contours) for the compared seasons
+    var cmpArea = '';      // the area cmpData belongs to
+    var patrol = null;     // last /api/patrol-isochrones answer
+    var patrolKey = '';
     var front = null;      // last /api/fire-season answer
     var van = null;        // last /api/fire-vanguard answer
     var speed = null;      // last /api/fire-season-speed answer
@@ -76,7 +82,8 @@
         var t = (typeof dateTo !== 'undefined' && dateTo) ? dateTo : '';
         return { from: f, to: t };
     }
-    function anyOn() { return st.front || st.van || st.speed || st.entry; }
+    function anyOn() { return st.front || st.van || st.speed || st.entry || st.patrol; }
+    function patrolAllowed() { return window.HAS_PATROL !== false; }
     function emit() { listeners.forEach(function (fn) { try { fn(); } catch (e) { /* listener's problem */ } }); }
     function refreshStrip() {
         if (window.MapLegend && MapLegend.refresh) MapLegend.refresh();
@@ -256,6 +263,66 @@
                 paint: { 'text-color': ['get', 'color'], 'text-halo-color': 'rgba(8,10,16,0.95)', 'text-halo-width': 1.4 }
             });
         }
+        if (!map.getSource(CMP_SRC)) map.addSource(CMP_SRC, { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+        if (!map.getSource(PAT_SRC)) map.addSource(PAT_SRC, { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+        if (!map.getLayer(CMP_LYR)) {
+            // Earlier seasons beside the reference one: the same dashed
+            // isochrone (it is the same object), the YEAR in the hue. Only
+            // the 15-day lines outside an animation — a second season's
+            // 5-day lines on top of the first's is texture, not comparison.
+            map.addLayer({
+                id: CMP_LYR, type: 'line', source: CMP_SRC,
+                filter: ['==', ['get', 'label'], true],
+                layout: { 'line-cap': 'round', 'line-join': 'round' },
+                paint: { 'line-color': ['get', 'color'], 'line-dasharray': [2.5, 2], 'line-width': 1.3, 'line-opacity': 0.8 }
+            }, FRONT_WAVE);
+            map.addLayer({
+                id: CMP_LBL, type: 'symbol', source: CMP_SRC,
+                filter: ['==', ['get', 'label'], true],
+                layout: {
+                    'symbol-placement': 'line', 'symbol-spacing': 360,
+                    'text-field': ['get', 'text'], 'text-size': 10,
+                    'text-font': ['Noto Sans Regular'],
+                    'text-letter-spacing': 0.04, 'text-max-angle': 30,
+                    'text-pitch-alignment': 'viewport', 'text-rotation-alignment': 'map'
+                },
+                paint: { 'text-color': ['get', 'color'], 'text-halo-color': 'rgba(8,10,16,0.95)', 'text-halo-width': 1.3 }
+            }, FRONT_WAVE);
+        }
+        if (!map.getLayer(PAT_WAVE)) {
+            // Patrol isochrones: the rangers' front. Same recipe as the fire
+            // front (dated lines every 5 d, labelled every 15, a wave in the
+            // animator) in the patrol green, DASH-DOT so the two families
+            // are told apart in greyscale before hue.
+            map.addLayer({
+                id: PAT_WAVE, type: 'line', source: PAT_SRC,
+                layout: { 'line-cap': 'round', 'line-join': 'round' },
+                paint: { 'line-color': ['get', 'color'], 'line-width': 14, 'line-blur': 6, 'line-opacity': 0 }
+            });
+            map.addLayer({
+                id: PAT_LYR, type: 'line', source: PAT_SRC,
+                layout: { 'line-cap': 'butt', 'line-join': 'round' },
+                paint: {
+                    'line-color': ['get', 'color'],
+                    'line-dasharray': [4, 1.6, 1, 1.6],
+                    'line-width': ['case', ['get', 'label'], 1.8, 0.8],
+                    'line-opacity': ['case', ['get', 'label'], 0.92, 0.55]
+                }
+            });
+            map.addLayer({
+                id: PAT_LBL, type: 'symbol', source: PAT_SRC,
+                filter: ['==', ['get', 'label'], true],
+                layout: {
+                    'symbol-placement': 'line', 'symbol-spacing': 340,
+                    'text-field': ['get', 'text'], 'text-size': 10.5,
+                    'text-font': ['Noto Sans Regular'],
+                    'text-letter-spacing': 0.04, 'text-max-angle': 30,
+                    'text-pitch-alignment': 'viewport', 'text-rotation-alignment': 'map'
+                },
+                paint: { 'text-color': ['get', 'color'], 'text-halo-color': 'rgba(8,10,16,0.95)', 'text-halo-width': 1.4 }
+            });
+            registerPatrolTip();
+        }
         if (!map.getLayer(VAN_DIM_LYR)) {
             // The continuation: the same chain after the season caught up.
             // Drawn first so the ahead part sits on top where they meet.
@@ -358,6 +425,8 @@
     function applyVisibility() {
         if (!map) return;
         [FRONT_LYR, FRONT_LBL, FRONT_WAVE].forEach(function (id) { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', st.front ? 'visible' : 'none'); });
+        [CMP_LYR, CMP_LBL].forEach(function (id) { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', (st.front && st.cmp.length) ? 'visible' : 'none'); });
+        [PAT_LYR, PAT_LBL, PAT_WAVE].forEach(function (id) { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', st.patrol ? 'visible' : 'none'); });
         [VAN_LYR, VAN_GAP_LYR, VAN_DIM_LYR, VAN_ARROW_LYR, VAN_HEAD_HALO, VAN_HEAD_LYR].forEach(function (id) { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', st.van ? 'visible' : 'none'); });
         if (speedField) speedField.setVisible(st.speed);
         if (entryField) entryField.setVisible(st.entry);
@@ -440,8 +509,182 @@
                 front._bbox = bb;
             }
             setData(FRONT_SRC, feats);
+            loadCompare();   // the reference moved: the ghosts re-align to its calendar
             refreshStrip();
         }).catch(function () { inflight--; emit(); });
+    }
+
+    /* ── compare seasons ────────────────────────────────────────────────
+     * "Chinko 2020 against 2026." The slider still names the REFERENCE
+     * season (no picker — a list of years beside a slider that says the
+     * year is a second control for one question); the compared seasons are
+     * ADDED beside it, drawn on the reference season's calendar by day of
+     * season, so the 16 Jul line of 2021 lies where the front stood on the
+     * same day of that season. Hue = how many seasons back, an ordinal
+     * ramp that cools with distance (pink → violet → indigo → sky): the
+     * reference stays in the fire's own ember, the past is the cold end.
+     * Static: 15-day lines only, each labelled with its year ("16 Jul ’21").
+     * Animator: each compared season shows the line the playhead's day of
+     * season has just reached, with a two-week wake — where the front
+     * stood THEN, beside where it stands NOW. */
+    var CMP_STOPS = ['#f472b6', '#c084fc', '#a78bfa', '#818cf8', '#60a5fa', '#7dd3fc'];
+    function seasonStartYear(lbl) { return parseInt(String(lbl || '').slice(0, 4), 10); }
+    function cmpColor(lbl) {
+        var ref = front && front.season ? seasonStartYear(front.season) : NaN;
+        var k = isNaN(ref) ? 1 : Math.max(1, ref - seasonStartYear(lbl));
+        return CMP_STOPS[Math.min(CMP_STOPS.length, k) - 1];
+    }
+    function cmpYearMark(lbl) { var y = String(lbl || ''); return '\u2019' + (y.indexOf('/') > 0 ? y.slice(-2) : y.slice(-2)); }
+    function cmpAvailable() {
+        // every stored season but the reference one, newest first
+        if (!front || !front.seasons) return [];
+        return front.seasons.map(function (x) { return x.label || x.season; }).filter(function (l) { return l && l !== front.season; }).reverse();
+    }
+    function buildCompareFeatures() {
+        var feats = [];
+        var refStart = front && front.season_start ? Date.parse(front.season_start + 'T00:00:00Z') : null;
+        st.cmp.forEach(function (lbl) {
+            var j = cmpData[lbl];
+            if (!j || !j.contours || lbl === (front && front.season)) return;
+            var col = cmpColor(lbl), start = j.season_start ? Date.parse(j.season_start + 'T00:00:00Z') : null;
+            j.contours.forEach(function (f) {
+                var p = f.properties || {};
+                feats.push({ type: 'Feature', geometry: f.geometry, properties: {
+                    cmp: lbl, dos: p.dos, date: p.date, label: !!p.label, color: col,
+                    text: (p.text || '') + ' ' + cmpYearMark(lbl),
+                    // on the REFERENCE season's calendar, by day of season
+                    tr: (refStart != null ? refStart : (start || 0)) + (p.dos || 0) * DAY_MS
+                } });
+            });
+        });
+        setData(CMP_SRC, feats);
+        applyVisibility();
+    }
+    function loadCompare() {
+        if (!st.front || !front || !front.area || !st.cmp.length) { setData(CMP_SRC, []); return; }
+        if (cmpArea !== front.area) { cmpData = {}; cmpArea = front.area; }
+        var missing = st.cmp.filter(function (l) { return !cmpData[l] && l !== front.season; });
+        if (!missing.length) { buildCompareFeatures(); return; }
+        inflight++; emit();
+        Promise.all(missing.map(function (lbl) {
+            var u = '/api/fire-season?pwd=' + pwd() + '&area=' + encodeURIComponent(front.area) + '&season=' + encodeURIComponent(lbl);
+            return fetch(u).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { cmpData[lbl] = j || { contours: [] }; }).catch(function () { cmpData[lbl] = { contours: [] }; });
+        })).then(function () { inflight--; buildCompareFeatures(); refreshStrip(); });
+    }
+    function compareLegendHTML(opts) {
+        opts = opts || {};
+        var avail = cmpAvailable();
+        if (!avail.length) return '';
+        var h = '<div class="fs-cmp' + (opts.cls ? ' ' + opts.cls : '') + '"><div class="fs-ramp-cap">Compare with earlier seasons \u2014 same day of season, on ' + esc(front.season) + '\u2019s calendar</div><div class="filter-strip">';
+        avail.forEach(function (lbl) {
+            var on = st.cmp.indexOf(lbl) >= 0, c = cmpColor(lbl);
+            h += '<button type="button" class="filter-chip' + (on ? ' on' : '') + '" style="--chip:' + c + '" aria-pressed="' + on + '" ' +
+                'title="' + (on ? 'Stop drawing' : 'Draw') + ' the ' + esc(lbl) + ' front beside ' + esc(front.season) + '" ' +
+                'onclick="event.stopPropagation();' + (opts.onclick || 'FireSeason.toggleCompare') + '(\'' + esc(lbl) + '\')">' + esc(lbl) + '</button>';
+        });
+        h += '</div>';
+        if (st.cmp.length) h += '<div class="fs-ramp-how">15-day lines of each season, labelled with the year; in the animator, where its front stood on the same day of season, with a two-week wake.</div>';
+        h += '</div>';
+        return h;
+    }
+
+    /* ── patrol isochrones ──────────────────────────────────────────────
+     * The rangers' front: the day patrol presence had built up at a place
+     * (≥ 3 patrol-days within ~5 km since the window's start, each
+     * movement type at its own weight — the server names them), contoured
+     * every 5 d in the patrol green, dash-dot. Read against the fire front
+     * it answers "were the teams there before the season arrived, and did
+     * the front come later than usual where they were" — the server's
+     * `association` says the second in numbers, at the front's own 60 km
+     * scale, as a description, never as an effect. Tenant-scoped: an
+     * account without patrol tracks is refused with that reason. */
+    function patrolColor(t) {            // t 0..1 early→late: bright green → pale mint
+        var a = [0x22, 0xc5, 0x5e], b = [0xbb, 0xf7, 0xd0];
+        return hex(lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t));
+    }
+    function patrolURL() {
+        var f = focusId(), c = map.getCenter();
+        var u = '/api/patrol-isochrones?pwd=' + pwd() + (f ? '&area=' + encodeURIComponent(f)
+            : '&lon=' + c.lng.toFixed(3) + '&lat=' + c.lat.toFixed(3));
+        var d = dates();
+        if (d.from) u += '&from=' + d.from;
+        if (d.to) u += '&to=' + d.to;
+        return u;
+    }
+    function patrolInView() {
+        if (!patrol || !patrol.grid) return false;
+        var c = map.getCenter(), g = patrol.grid;
+        return c.lng >= g.x0 && c.lng <= g.x0 + g.res * g.nx && c.lat >= g.y0 && c.lat <= g.y0 + g.res * g.ny;
+    }
+    function loadPatrol(force) {
+        if (!st.patrol || !map) return Promise.resolve();
+        var d = dates();
+        var key = (focusId() || 'pt') + '|' + d.from + '|' + d.to;
+        if (!force && key === patrolKey && patrol && (focusId() || patrolInView())) return Promise.resolve();
+        inflight++; emit();
+        return fetch(patrolURL()).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+            inflight--;
+            patrolKey = key;
+            patrol = j || { status: 'request failed' };
+            var feats = [];
+            if (j && j.contours && j.contours.length) {
+                var ds = j.contours.map(function (f) { return f.properties.dos; });
+                var lo = Math.min.apply(null, ds), hi = Math.max.apply(null, ds);
+                feats = j.contours.map(function (f) {
+                    var t = hi > lo ? (f.properties.dos - lo) / (hi - lo) : 0.5;
+                    f.properties.color = patrolColor(t);
+                    f.properties.label = !!f.properties.label;
+                    f.properties.t = Date.parse((f.properties.date || '') + 'T00:00:00Z') || 0;
+                    f.properties.kind = 'patrol';
+                    return f;
+                });
+            }
+            setData(PAT_SRC, feats);
+            if (animT !== null) animAt(animT);
+            refreshStrip();
+        }).catch(function () { inflight--; emit(); });
+    }
+    function patrolModeWords(j) {
+        var bm = (j && j.by_mode) || {}, ks = Object.keys(bm).sort(function (a, b) { return bm[b] - bm[a]; });
+        return ks.map(function (k) { return bm[k].toLocaleString() + ' ' + k.replace('_', '-'); }).join(' \u00b7 ');
+    }
+    function patrolAssocWords(j) {
+        var a = j && j.association;
+        if (!a || !a.patrolled_before_front) return '';
+        var b = a.patrolled_before_front, o = a.other;
+        function off(v) { return v == null ? 'too few cells to say' : v === 0 ? 'on its usual day' : Math.abs(v) + ' d ' + (v > 0 ? 'later' : 'earlier') + ' than usual'; }
+        return 'Where patrols had been before the front arrived (' + b.cells.toLocaleString() + ' cells) the front came <b>' + off(b.offset_days) +
+            '</b>; elsewhere (' + o.cells.toLocaleString() + ' cells) ' + off(o.offset_days) + '. A description at the front\u2019s ~60 km scale, not an effect.';
+    }
+    function patrolLegendHTML(opts) {
+        opts = opts || {};
+        var j = patrol || {};
+        var sw = '<span class="fs-sw-line" style="background:repeating-linear-gradient(90deg,' + patrolColor(0.2) + ' 0 6px,transparent 6px 8px,' + patrolColor(0.2) + ' 8px 10px,transparent 10px 12px)"></span>';
+        var h = '<div class="fs-legend' + (opts.cls ? ' ' + opts.cls : '') + '">' +
+            '<div class="fs-ramp-cap">' + sw + ' Patrol isochrones: by this date \u2265 ' + esc(j.threshold || 3) + ' patrol-days within ~5 km</div>';
+        var w = j.weights || {};
+        var ws = ['foot', 'vehicle', 'boat', 'rotor_wing', 'fixed_wing'].filter(function (k) { return w[k] != null; })
+            .map(function (k) { return k.replace('_', '-') + ' ' + w[k]; }).join(' \u00b7 ');
+        if (ws) h += '<div class="fs-ramp-how">A patrol-day is a 2.5 km cell with a patrol in it on a day, weighted by how it moved: ' + esc(ws) + ' \u2014 a team on foot is the presence that meets a fire, an aircraft sees it.</div>';
+        if (j.status === 'ok') {
+            h += '<div class="fs-ramp-how">' + esc(j.patrol_days.toLocaleString()) + ' patrol-days since ' + esc(fmtDate(j.from)) + ' (' + esc(patrolModeWords(j)) + ') \u00b7 ' + esc(j.cells.toLocaleString()) + ' cells reached</div>';
+            var aw = patrolAssocWords(j);
+            if (aw) h += '<div class="fs-ramp-how" style="color:#bbf7d0">' + aw + '</div>';
+        }
+        h += '</div>';
+        return h;
+    }
+    function patrolTipHTML(p) {
+        if (!p || p.kind !== 'patrol') return '';
+        var h = '<div style="font-weight:600;margin-bottom:3px;color:#86efac">Patrol isochrone \u00b7 ' + esc(fmtDate(p.date)) + '</div>';
+        h += '<div>By this date patrols had spent <b>\u2265 ' + esc((patrol && patrol.threshold) || 3) + ' patrol-days</b> within ~5 km of this line' + (patrol && patrol.from ? ' since ' + esc(fmtDate(patrol.from)) : '') + '.</div>';
+        if (patrol && patrol.by_mode) h += '<div style="opacity:.75;margin-top:3px">' + esc(patrolModeWords(patrol)) + ' cell-days in the window; foot 1 \u00b7 vehicle 0.7 \u00b7 helicopter 0.4 \u00b7 fixed-wing 0.2</div>';
+        h += '<div style="opacity:.6;font-size:11px;margin-top:4px">Read against the fire front: the dashed ember lines say when the season arrived, these say when the teams had.</div>';
+        return h;
+    }
+    function registerPatrolTip() {
+        if (!window.MapTip || !MapTip.register) return;
+        MapTip.register(PAT_LYR, { html: patrolTipHTML, tabLabel: 'Patrol', tabColor: '#4ade80', priority: 5 });
     }
 
     /* ── speed ──────────────────────────────────────────────────────────
@@ -1063,7 +1306,7 @@
         if (!anyOn()) return;
         clearTimeout(moveTimer);
         moveTimer = setTimeout(function () {
-            loadFront(false); loadVan(false);
+            loadFront(false); loadVan(false); loadPatrol(false);
             loadSpeed(false).then(function () { if (st.speed && animT === null) drawSpeed(null); });   // zoom band may have changed
             loadEntry(false).then(function () { if (st.entry && animT === null) drawEntry(windowEndMs()); });
             if (st.entry) refreshStrip();   // the in-view count
@@ -1072,10 +1315,11 @@
     function onDates() {
         if (st.van) { vanKey = ''; loadVan(true); }
         if (st.front) loadFront(false);   // the front follows the window
+        if (st.patrol) loadPatrol(false);  // presence accumulates from the window's start
         if (st.speed) loadSpeed(false).then(function () { if (st.speed && animT === null) drawSpeed(null); });   // the seasons it touches, drawn at its end
         if (st.entry) loadEntry(false).then(function () { if (st.entry && animT === null) drawEntry(windowEndMs()); });   // and the fade follows the window's end
     }
-    function onFocus() { if (anyOn()) { frontKey = ''; speedKey = ''; entryKey = ''; loadFront(true); loadVan(true); loadSpeed(true); loadEntry(true); } }
+    function onFocus() { if (anyOn()) { frontKey = ''; speedKey = ''; entryKey = ''; patrolKey = ''; loadFront(true); loadVan(true); loadSpeed(true); loadEntry(true); loadPatrol(true); } }
 
     /* ── animator ───────────────────────────────────────────────────────
      * The animator hands us its playhead (ms). The front is a MapLibre
@@ -1148,6 +1392,13 @@
             map.setPaintProperty(FRONT_WAVE, 'line-opacity', 0);
             map.setPaintProperty(FRONT_LYR, 'line-width', ['case', ['get', 'label'], 1.6, 0.7]);
             map.setPaintProperty(FRONT_LYR, 'line-opacity', ['case', ['get', 'label'], 0.9, 0.55]);
+            if (map.getLayer(CMP_LYR)) { map.setFilter(CMP_LYR, ['==', ['get', 'label'], true]); map.setFilter(CMP_LBL, ['==', ['get', 'label'], true]); map.setPaintProperty(CMP_LYR, 'line-width', 1.3); map.setPaintProperty(CMP_LYR, 'line-opacity', 0.8); }
+            if (map.getLayer(PAT_LYR)) {
+                map.setFilter(PAT_LYR, null); map.setFilter(PAT_LBL, ['==', ['get', 'label'], true]); map.setFilter(PAT_WAVE, null);
+                map.setPaintProperty(PAT_WAVE, 'line-opacity', 0);
+                map.setPaintProperty(PAT_LYR, 'line-width', ['case', ['get', 'label'], 1.8, 0.8]);
+                map.setPaintProperty(PAT_LYR, 'line-opacity', ['case', ['get', 'label'], 0.92, 0.55]);
+            }
             return;
         }
         var now = performance.now();
@@ -1178,6 +1429,26 @@
                 ['interpolate', ['linear'], ageD, 0, 3.6, 4, 2.6, 10, 1.9, 40, 1.5, 120, 1.3]]);
         map.setPaintProperty(FRONT_LYR, 'line-opacity',
             ['interpolate', ['linear'], ageD, 0, 1.0, 5, 0.9, 20, 0.65, 60, 0.4, 150, 0.3]);
+        if (map.getLayer(CMP_LYR)) {
+            // each compared season: the line its front had just reached on
+            // this day of season, and a two-week wake behind it
+            var ageR = ['/', ['-', t, ['get', 'tr']], DAY_MS];
+            var wake = ['all', ['<=', ['get', 'tr'], t], ['>=', ['get', 'tr'], t - 15 * DAY_MS]];
+            map.setFilter(CMP_LYR, wake);
+            map.setFilter(CMP_LBL, ['all', ['<=', ['get', 'tr'], t], ['>=', ['get', 'tr'], t - 5 * DAY_MS]]);
+            map.setPaintProperty(CMP_LYR, 'line-width', ['interpolate', ['linear'], ageR, 0, 2.6, 5, 1.4, 15, 0.8]);
+            map.setPaintProperty(CMP_LYR, 'line-opacity', ['interpolate', ['linear'], ageR, 0, 0.95, 5, 0.6, 15, 0.25]);
+        }
+        if (map.getLayer(PAT_LYR)) {
+            var reachedP = ['<=', ['get', 't'], t];
+            map.setFilter(PAT_LYR, reachedP);
+            map.setFilter(PAT_WAVE, ['all', reachedP, ['>=', ['get', 't'], t - 6 * DAY_MS]]);
+            map.setFilter(PAT_LBL, ['all', reachedP, ['any', ['==', ['get', 'label'], true], ['>=', ['get', 't'], t - 6 * DAY_MS]]]);
+            map.setPaintProperty(PAT_WAVE, 'line-opacity', ['interpolate', ['linear'], ageD, 0, 0.55, 2.5, 0.35, 6, 0]);
+            map.setPaintProperty(PAT_LYR, 'line-width',
+                ['*', ['case', ['get', 'label'], 1.0, 0.6], ['interpolate', ['linear'], ageD, 0, 3.6, 4, 2.6, 10, 2.0, 40, 1.7, 120, 1.5]]);
+            map.setPaintProperty(PAT_LYR, 'line-opacity', ['interpolate', ['linear'], ageD, 0, 1.0, 5, 0.9, 20, 0.7, 60, 0.5, 150, 0.4]);
+        }
     }
 
     /* ── public ─────────────────────────────────────────────────────────── */
@@ -1236,7 +1507,34 @@
             ensureLayers();
             if (st.entry) loadEntry(true); else { if (entryField) entryField.clear(); refreshStrip(); }
         },
-        off: function () { this.setFront(false); this.setVanguard(false); this.setSpeed(false); this.setEntry(false); },
+        patrolOn: function () { return st.patrol; },
+        patrolMeta: function () { return patrol; },
+        patrolAllowed: patrolAllowed,
+        patrolLegendHTML: patrolLegendHTML,
+        patrolAssocWords: function () { return patrolAssocWords(patrol); },
+        setPatrol: function (want) {
+            st.patrol = !!want && patrolAllowed();
+            if (!map) return;
+            ensureLayers();
+            if (st.patrol) loadPatrol(true); else { setData(PAT_SRC, []); patrol = null; refreshStrip(); }
+        },
+        compare: function () { return st.cmp.slice(); },
+        compareAvailable: cmpAvailable,
+        compareColor: cmpColor,
+        compareLegendHTML: compareLegendHTML,
+        setCompare: function (list) {
+            st.cmp = (list || []).filter(Boolean);
+            if (!map) return;
+            ensureLayers();
+            if (st.cmp.length && !st.front) this.setFront(true); else loadCompare();
+            refreshStrip();
+        },
+        toggleCompare: function (lbl) {
+            var i = st.cmp.indexOf(lbl);
+            if (i >= 0) st.cmp.splice(i, 1); else st.cmp.push(lbl);
+            this.setCompare(st.cmp);
+        },
+        off: function () { this.setFront(false); this.setVanguard(false); this.setSpeed(false); this.setEntry(false); this.setPatrol(false); this.setCompare([]); },
         animAt: animAt,
         lift: lift,      // lodlayer.js calls it after adding a line layer
         // switchBasemap() rebuilds the style; put the layers back on idle.
@@ -1244,15 +1542,17 @@
             if (!anyOn() || !map) return;
             map.once('idle', function () {
                 ensureLayers();
-                frontKey = ''; vanKey = ''; speedKey = ''; entryKey = '';
+                frontKey = ''; vanKey = ''; speedKey = ''; entryKey = ''; patrolKey = '';
                 if (speedField) speedField.invalidate();
                 if (entryField) entryField.invalidate();
-                loadFront(true); loadVan(true); loadSpeed(true); loadEntry(true);
+                loadFront(true); loadVan(true); loadSpeed(true); loadEntry(true); loadPatrol(true);
             });
         },
         getShareParams: function () {
             if (!anyOn()) return null;
-            return { season: [st.front ? 'front' : '', st.van ? 'vanguard' : '', st.speed ? 'speed' : '', st.entry ? 'entry' : ''].filter(Boolean).join(',') };
+            var p = { season: [st.front ? 'front' : '', st.van ? 'vanguard' : '', st.speed ? 'speed' : '', st.entry ? 'entry' : '', st.patrol ? 'patrol' : ''].filter(Boolean).join(',') };
+            if (st.cmp.length) p.season_vs = st.cmp.join(',');
+            return p;
         },
         restoreFromParams: function (params) {
             var v = params.get('season');
@@ -1262,6 +1562,9 @@
             if (parts.indexOf('vanguard') >= 0) this.setVanguard(true);
             if (parts.indexOf('speed') >= 0) this.setSpeed(true);
             if (parts.indexOf('entry') >= 0) this.setEntry(true);
+            if (parts.indexOf('patrol') >= 0 && patrolAllowed()) this.setPatrol(true);   // a link naming patrol is dropped, not switched on, for an account without it
+            var vs = params.get('season_vs');
+            if (vs) this.setCompare(vs.split(',').filter(Boolean));
         },
         // The words the strip and the fire tip share; one definition.
         LEAD_DAYS: 10, LEAD_MAX: 60,

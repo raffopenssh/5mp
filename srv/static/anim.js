@@ -91,10 +91,12 @@
         entry:    { label: 'entry',    color: '#fb7185', title: 'Early-burn ground \u2014 cells that burn ahead of their surroundings season after season; a square brightens as its usual entry comes due, flares white when this season\u2019s first detection lands in it, cools over a week and ashens over the months after' },
         speed:    { label: 'speed',    color: '#f59e0b', title: 'Season speed \u2014 how fast the front travelled, cell by cell as it arrives at the playhead; last season\u2019s answer stays as ash until this season\u2019s front overwrites it' },
         patrol:   { label: 'patrol',   color: '#4ade80', title: 'Patrol effort \u2014 a heat field zoomed out, circles like the live map zoomed in; cools over 90 days' },
+        patrolfront: { label: 'patrol front', color: '#86efac', title: 'Patrol isochrones \u2014 dash-dot lines marking when patrol presence had built up (\u2265 3 patrol-days within ~5 km), drawn as the playhead reaches them, like the fire front' },
         deforest: LAYERS.deforest,
         settlements: LAYERS.settlements
     };
-    const CHIP_ORDER = ['fireGrid', 'trajs', 'front', 'vanguard', 'entry', 'speed', 'patrol', 'deforest', 'settlements'];
+    const CHIP_ORDER = ['fireGrid', 'trajs', 'front', 'vanguard', 'entry', 'speed', 'patrol', 'patrolfront', 'deforest', 'settlements'];
+    const SEASON_CHIPS = ['front', 'vanguard', 'entry', 'speed', 'patrolfront'];   // fireseason.js owns their state
     const HIGHLIGHT_TITLE = 'Highlight what is happening now \u2014 dims the heat fields and static context so live fire paths, fresh clearings and patrol stand out';
     // 'turb' (turbidity plume + mining sites) removed 2026-08-06 --
     // docs/MINING_FINDINGS_2026-08.md §10. The turbidity endpoint is disabled, so
@@ -139,6 +141,7 @@
         if (name === 'vanguard') return !!(window.FireSeason && FireSeason.vanguardOn());
         if (name === 'entry') return !!(window.FireSeason && FireSeason.entryOn && FireSeason.entryOn());
         if (name === 'speed') return !!(window.FireSeason && FireSeason.speedOn && FireSeason.speedOn());
+        if (name === 'patrolfront') return !!(window.FireSeason && FireSeason.patrolOn && FireSeason.patrolOn());
         return !!A.on[name];
     }
 
@@ -2913,7 +2916,7 @@
             const dot = chip.querySelector('i');
             if (dot) dot.style.background = on ? CHIPS[name].color : '#555';
             if (on) chip.style.color = '';
-            if (name === 'front' || name === 'vanguard' || name === 'entry' || name === 'speed') {
+            if (SEASON_CHIPS.indexOf(name) >= 0 && !(name === 'patrolfront' && window.HAS_PATROL === false)) {
                 chip.classList.toggle('unavailable', !!seasonNo && !on);
                 chip.title = seasonNo && !on ? seasonNo + ' here \u2014 ' + CHIPS[name].title : CHIPS[name].title;
             }
@@ -2972,13 +2975,13 @@
                 return;
             }
         }
-        if (name === 'front' || name === 'vanguard' || name === 'entry' || name === 'speed') {
+        if (SEASON_CHIPS.indexOf(name) >= 0) {
             if (!window.FireSeason) return;
             // fireseason.js owns the state and emits onChange, which redraws
             // us and re-reads the chips (see wireSeason). Vanguard chains are
             // drawn from the trajectories, so they need them loaded — but not
             // shown: draw() keeps the vanguard population when paths are off.
-            if (name === 'front') FireSeason.setFront(!cur); else if (name === 'entry') FireSeason.setEntry(!cur); else if (name === 'speed') FireSeason.setSpeed(!cur); else FireSeason.setVanguard(!cur);
+            if (name === 'front') FireSeason.setFront(!cur); else if (name === 'entry') FireSeason.setEntry(!cur); else if (name === 'speed') FireSeason.setSpeed(!cur); else if (name === 'patrolfront') FireSeason.setPatrol(!cur); else FireSeason.setVanguard(!cur);
             if (name === 'vanguard' && !cur && A.data.trajs === undefined) await ensureLayer('trajs');
             updateChips();
             draw(A.t);
@@ -3066,14 +3069,14 @@
             // animating it here would only ever play an empty layer, and a
             // silently empty layer reads as a broken feature rather than as
             // "not yours".
-            if (name === 'patrol') {
+            if (name === 'patrol' || name === 'patrolfront') {
                 if (window.HAS_PATROL === false) {
                     chip.classList.add('unavailable');
                     chip.title = window.IS_GUEST
                         ? 'Patrol effort was not included in this shared link'
                         : 'No patrol tracks in this account \u2014 patrol effort is only visible to the account it was uploaded in';
-                } else if (!(window.viewLayers && window.viewLayers.pixels) && !chipOn('patrol')) {
-                    chip.classList.add('hidden');
+                } else if (name === 'patrol' && !(window.viewLayers && window.viewLayers.pixels) && !chipOn('patrol')) {
+                    chip.classList.add('hidden');   // the isochrones chip stays: it is a Season rendering, not the pixels
                 }
             }
             chips.appendChild(chip);
@@ -3500,7 +3503,8 @@
             const FS = window.FireSeason;
             const seasonAny = !!(FS && ((FS.frontOn() && (FS.meta() || {}).season) ||
                 (FS.entryOn && FS.entryOn() && ((FS.entryMeta && FS.entryMeta()) || {}).status === 'ok') ||
-                (FS.speedOn && FS.speedOn() && ((FS.speedMeta && FS.speedMeta()) || {}).grid)));
+                (FS.speedOn && FS.speedOn() && ((FS.speedMeta && FS.speedMeta()) || {}).grid) ||
+                (FS.patrolOn && FS.patrolOn() && ((FS.patrolMeta && FS.patrolMeta()) || {}).status === 'ok')));
             if (!any && !seasonAny) toast('No animatable data in view for this window — toggle layers or adjust dates', 'warning');
 
             A.mapHandler = () => { if (A) draw(A.t); };
@@ -3560,7 +3564,7 @@
         layerRefusal(name) {
             if (!A) return null;
             if (name === 'firePts') return firePtsRefusal();
-            if (name === 'front' || name === 'vanguard' || name === 'entry' || name === 'speed') return chipOn(name) ? null : seasonRefusal();
+            if (SEASON_CHIPS.indexOf(name) >= 0) return chipOn(name) ? null : seasonRefusal();
             const chip = chipFor(name);
             if (chip && chip.classList.contains('unavailable')) return chip.title || 'Not available here';
             return null;
