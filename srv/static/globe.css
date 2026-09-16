@@ -4764,6 +4764,14 @@ body.is-guest .session-chip-logout:hover { opacity: 1; background: rgba(251,191,
 .fs-entry-life-i { white-space: nowrap; }
 .fs-entry-life .fs-entry-sw { margin: 0 3px 0 1px; }
 .fs-w-dash { height: 2px; background: repeating-linear-gradient(90deg, #fde047 0 5px, transparent 5px 8px); border-radius: 0; }
+/* Compare seasons: the fire filter strip's own chips (.filter-chip), one
+   per stored season, tinted by how many seasons back it is (fireseason.js
+   cmpColor → --chip). Same fill/ring rule as the type|age|crops chips. */
+.fs-cmp { font-size: 10.5px; color: #cbd5e1; line-height: 1.35; }
+.fs-cmp.in-menu { padding: 6px 12px 8px; max-width: 280px; }
+.fs-cmp .filter-strip { margin: 3px 0 0; }
+.fs-cmp .filter-chip { font-variant-numeric: tabular-nums; font-family: inherit; }
+.fs-sw-line { display: inline-block; width: 22px; height: 2px; vertical-align: middle; margin-right: 4px; }
 #methods-season-legend { list-style: none; margin-left: -20px; }
 #methods-season-legend .fs-legend { max-width: 360px; padding: 4px 0 0; }
 /* Vanguard lead beside a fire narrative row (Fire accordion): the Season

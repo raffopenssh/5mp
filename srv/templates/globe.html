@@ -15690,17 +15690,25 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                  ['speed', FireSeason.speedOn(), 'Season speed',
                   'How fast the front travels, km/day, from the gradient of its arrival-time surface: where the season runs (pale) and where it stalls (rust). Cells appear as the front reaches them (by the slider\u2019s end, or the playhead); where this season\u2019s front has not arrived, last season\u2019s answer stays as ash. A description of the season drawn, not a forecast.'],
                  ['entry', !!(FireSeason.entryOn && FireSeason.entryOn()), 'Entry ground',
-                  'Traditional early-burn ground: 2.5 km cells whose first burn came \u2265 15 days before the local front in \u2265 40 % of the seasons held (at least 2) \u2014 where the season usually enters, the leading edge the first flights go to. Rose squares, solid where more seasons agree; each lives through the season \u2014 dormant, due, flaring white at its first detection, ashening over the months after. Not this year\u2019s herds \u2014 the vanguard chains are that.']
+                  'Traditional early-burn ground: 2.5 km cells whose first burn came \u2265 15 days before the local front in \u2265 40 % of the seasons held (at least 2) \u2014 where the season usually enters, the leading edge the first flights go to. Rose squares, solid where more seasons agree; each lives through the season \u2014 dormant, due, flaring white at its first detection, ashening over the months after. Not this year\u2019s herds \u2014 the vanguard chains are that.'],
+                 ['patrol', !!(FireSeason.patrolOn && FireSeason.patrolOn()), 'Patrol isochrones',
+                  'The rangers\u2019 front: green dash-dot lines every 5 days marking when patrol presence had built up here (\u2265 3 patrol-days within ~5 km since the window\u2019s start; foot 1, vehicle 0.7, helicopter 0.4, fixed-wing 0.2). Read against the fire front \u2014 were the teams there before the season arrived. Follows the time slider and animates like the front. Only the account that uploaded the tracks sees them.']
                 ].forEach(([k, on, label, desc]) => {
-                    html += `<button type="button" class="aoi-menu-item mode-opt${on ? ' on' : ''}${refusal && !on ? ' refused' : ''}" `
-                          + `role="menuitemcheckbox" aria-checked="${on}" title="${escapeHtml(refusal && !on ? refusal + ' here \u2014 ' + desc : desc)}" `
+                    // Patrol has its own refusal: not "no front here" but "not
+                    // your tracks" — a dimmed row that says why, not an empty layer.
+                    const ref = k === 'patrol' ? (FireSeason.patrolAllowed && !FireSeason.patrolAllowed()
+                        ? (window.IS_GUEST ? 'Patrol effort was not included in this shared link' : 'No patrol tracks in this account') : null) : refusal;
+                    html += `<button type="button" class="aoi-menu-item mode-opt${on ? ' on' : ''}${ref && !on ? ' refused' : ''}" `
+                          + `role="menuitemcheckbox" aria-checked="${on}" title="${escapeHtml(ref && !on ? ref + ' \u2014 ' + desc : desc)}" `
                           + `onclick="event.stopPropagation();setRowSeason('${k}',${!on})">`
                           + `<span class="mode-mark check"></span>${label}</button>`;
+                    if (k === 'front' && on && FireSeason.compareLegendHTML) html += FireSeason.compareLegendHTML({ cls: 'in-menu', onclick: 'setRowSeasonCompare' });
                 });
                 // The same ramp the map draws (sampled from FireSeason.leadColor).
                 if (FireSeason.legendHTML && (FireSeason.vanguardOn() || !refusal)) html += FireSeason.legendHTML({ cls: 'in-menu' });
                 if (FireSeason.speedOn() && FireSeason.speedLegendHTML) html += FireSeason.speedLegendHTML({ cls: 'in-menu' });
                 if (FireSeason.entryOn && FireSeason.entryOn() && FireSeason.entryLegendHTML) html += FireSeason.entryLegendHTML({ cls: 'in-menu' });
+                if (FireSeason.patrolOn && FireSeason.patrolOn() && FireSeason.patrolLegendHTML) html += FireSeason.patrolLegendHTML({ cls: 'in-menu' });
             }
             if (!html) return;
 
@@ -15711,6 +15719,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             el.style.left = Math.max(6, Math.min(window.innerWidth - w - 6, r.right - w)) + 'px';
             el.style.top = (r.bottom + h + 6 > window.innerHeight ? Math.max(6, r.top - h - 4) : r.bottom + 4) + 'px';
             modeMenuEl = el;
+            el.__anchor = btn;   // so a chip inside can rebuild the menu in place
             setTimeout(() => document.addEventListener('click', closeLayerModeMenu), 0);
         }
 
@@ -15752,11 +15761,23 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             if (which === 'front') FireSeason.setFront(on);
             else if (which === 'speed') FireSeason.setSpeed(on);
             else if (which === 'entry') FireSeason.setEntry(on);
+            else if (which === 'patrol') FireSeason.setPatrol(on);
             else FireSeason.setVanguard(on);
             if (window.MapLegend && MapLegend.refresh) MapLegend.refresh();
             if (typeof updateShareURL === 'function') updateShareURL();
         }
         window.setRowSeason = setRowSeason;
+        // A compared season toggled from the fire row's menu: the menu stays
+        // open (the reader is composing years) and re-renders its chips.
+        function setRowSeasonCompare(lbl) {
+            if (!window.FireSeason) return;
+            FireSeason.toggleCompare(lbl);
+            const btn = modeMenuEl && modeMenuEl.__anchor;
+            closeLayerModeMenu();
+            if (btn) openLayerModeMenu(btn, 'fires');
+            if (typeof updateShareURL === 'function') updateShareURL();
+        }
+        window.setRowSeasonCompare = setRowSeasonCompare;
 
         function setRowAnimLayer(name, layer) {
             closeLayerModeMenu();
