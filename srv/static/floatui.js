@@ -763,8 +763,11 @@
         function detach() {
             if (detached) return;
             detached = true;
-            const r = container.getBoundingClientRect();
             const mapEl = container.offsetParent || container.parentElement;
+            // The map's move handler can outlive the card (closed mid-gesture
+            // on a phone): nothing to hand over to the screen then.
+            if (!mapEl) return;
+            const r = container.getBoundingClientRect();
             const mr = mapEl.getBoundingClientRect();
             // Stop MapLibre repositioning the popup on map move: unhook its
             // bound _update from map events, then neuter the method.

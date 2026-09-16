@@ -416,6 +416,7 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("POST /api/upload", RateLimitMiddleware(uploadRL, s.HandleAPIUpload))
 	mux.HandleFunc("GET /api/stats", s.HandleAPIStats)
 	mux.HandleFunc("GET /api/features-in-bbox", s.HandleAPIFeaturesInBBox)
+	mux.HandleFunc("GET /api/lod-tiles/{z}/{x}/{y}", s.HandleAPILODTile)
 	// One feature by row id: what a zoomed-out point dot resolves to when the
 	// user hovers it (srv/features_bbox.go).
 	mux.HandleFunc("GET /api/feature-detail", s.HandleAPIFeatureDetail)
