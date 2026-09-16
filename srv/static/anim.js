@@ -122,8 +122,12 @@
     ];
     const HL_DEFAULT = 'now';
     function hlProfile(id) { return HL_PROFILES.find(p => p.id === id) || null; }
+    // A season profile over a 7-day window is a picture of nothing: the
+    // front's isochrones are 5 days apart and the entry ground is a
+    // season-long statement.
+    const HL_SEASON_MIN_DAYS = 60;
     function hlAvailable(p) {
-        if (p.needs === 'season' && seasonRefusal()) return false;
+        if (p.needs === 'season' && (seasonRefusal() || (A && (A.t1 - A.t0) / DAY < HL_SEASON_MIN_DAYS))) return false;
         if (p.needs === 'patrol' && window.HAS_PATROL === false) return false;
         return true;
     }
@@ -3016,6 +3020,7 @@
         if (!A) return;
         // The user chose a layer: highlight's choice is no longer the rule.
         if (A.highlight && !A.applyingHL) A.highlight = false;
+        if (!A.applyingHL && SEASON_CHIPS.indexOf(name) >= 0) A.seasonTouched = true;
         // Legacy names a share link or the legend may still use.
         if (name === 'firePts') name = 'fireGrid';
         if (name === 'effortGrid' || name === 'effortPts') return toggleDataLayer(name, want);
@@ -3059,6 +3064,7 @@
         if (!A) return;
         updateChips();
         syncBaseEffortVisibility();
+        syncLiveLayers();
         draw(A.t);
         if (typeof updateShareURL === 'function') updateShareURL();
     }
@@ -3084,6 +3090,55 @@
         const set = { front: FS.setFront, vanguard: FS.setVanguard, entry: FS.setEntry, speed: FS.setSpeed, patrolfront: FS.setPatrol, patrolpressure: FS.setPressure };
         Object.keys(season).forEach(c => { if (set[c] && chipOn(c) !== !!season[c]) set[c].call(FS, !!season[c]); });
     }
+    // The Season chips are the map's own overlay (fireseason.js), so a
+    // profile that flips them flips the map. That is right while the
+    // curator is in charge and wrong the moment it is not: the user's Season
+    // overlay must come back when the animator closes with a profile still
+    // active. Snapshot before the first profile touches it; restore on close
+    // unless the user toggled a SEASON chip themselves (then the overlay on
+    // screen is their choice, and restoring would undo their click). A
+    // click on some other chip switches the curator off but says nothing
+    // about the Season overlay, so that still goes back.
+    function seasonSnapshot() {
+        const s = {};
+        SEASON_CHIPS.forEach(c => { s[c] = chipOn(c); });
+        return s;
+    }
+    function restoreSeasonIfCurated() {
+        if (!A || !A.seasonBefore || A.seasonTouched) return;
+        A.applyingHL = true;
+        try { applySeason(A.seasonBefore); } finally { A.applyingHL = false; }
+    }
+    // The live map keeps drawing the LOD layers (fires / deforest /
+    // settlements toggles) under the animation. When the curator animates
+    // the same row, the static picture underneath is the clutter it exists
+    // to remove — and the legend already marks such a row as "drawn by the
+    // animation" (.layer-animated), so hiding the live layer tells no lie.
+    // Rows the profile does NOT animate stay exactly as the user set them:
+    // hiding those would leave an "on" row drawing nothing. Nothing that is
+    // not animated (basemap, historical sheets, geology) is ever touched.
+    const LIVE_ROWS = { fires: ['fireGrid', 'firePts', 'trajs'], deforest: ['deforest'], settlements: ['settlements'] };
+    function liveLayerIds(row) {
+        const k = 'lod-view-' + row;
+        return [k + '-fill', k + '-line', k + '-arrows', k + '-point', k + '-dots'];
+    }
+    function syncLiveLayers() {
+        if (typeof map === 'undefined' || !map || !map.getLayer) return;
+        Object.keys(LIVE_ROWS).forEach(row => {
+            const hide = !!(A && A.highlight && LIVE_ROWS[row].some(n => A.on[n]));
+            liveLayerIds(row).forEach(id => {
+                try {
+                    if (!map.getLayer(id)) return;
+                    const want = hide ? 'none' : 'visible';
+                    if ((map.getLayoutProperty(id, 'visibility') || 'visible') !== want) map.setLayoutProperty(id, 'visibility', want);
+                } catch (e) {}
+            });
+        });
+    }
+    // LODLayer re-adds its layers on every refetch (cross-fade), born
+    // visible; follow it. Once after the fade too, for the layer that is
+    // added late.
+    window.addEventListener('lod:state', () => { if (A && A.highlight) { syncLiveLayers(); setTimeout(syncLiveLayers, 320); } });
     // `want`: undefined = step to the next profile; false/null = off; a
     // profile id (or true = default) = that profile. Off keeps the layers as
     // they are — highlight is a choice of layers, and taking it off is not
@@ -3100,24 +3155,50 @@
             A.highlight = false;
             return finishToggle();
         }
-        A.highlight = p.id;
-        A.applyingHL = true;
-        try {
-            const { data, season } = profileLayers(p, A.fetchBbox);
-            const loads = [];
-            LAYER_ORDER.forEach(n => {
-                const on = data.indexOf(n) >= 0;
-                if (!!A.on[n] === on) return;
-                A.on[n] = on;
-                if (on) loads.push(ensureLayer(n));
-            });
-            applySeason(season);
-            if (season.vanguard && A.data.trajs === undefined) loads.push(ensureLayer('trajs'));
-            updateChips();
-            syncBaseEffortVisibility();
-            if (loads.length) { showLoading(true); await Promise.all(loads); hideLoading(); }
-        } finally { if (A) A.applyingHL = false; }
+        if (!A.seasonBefore) A.seasonBefore = seasonSnapshot();
+        // A profile whose layers turn out EMPTY here (a park with no
+        // clearings, a window with no patrol) is skipped with its reason:
+        // an "on" set of chips drawing nothing reads as broken. Bounded to
+        // one lap so an empty view cannot spin.
+        const tried = new Set();
+        while (p && !tried.has(p.id)) {
+            tried.add(p.id);
+            A.highlight = p.id;
+            A.applyingHL = true;
+            let data;
+            try {
+                const pl = profileLayers(p, A.fetchBbox);
+                data = pl.data;
+                const loads = [];
+                LAYER_ORDER.forEach(n => {
+                    const on = data.indexOf(n) >= 0;
+                    if (!!A.on[n] === on) return;
+                    A.on[n] = on;
+                    if (on) loads.push(ensureLayer(n));
+                });
+                applySeason(pl.season);
+                if (pl.season.vanguard && A.data.trajs === undefined) loads.push(ensureLayer('trajs'));
+                updateChips();
+                syncBaseEffortVisibility();
+                syncLiveLayers();
+                if (loads.length) { showLoading(true); await Promise.all(loads); hideLoading(); }
+            } finally { if (A) A.applyingHL = false; }
+            if (!A) return;
+            if (data.some(layerHasData) || p.chips.some(c => SEASON_CHIPS.indexOf(c) >= 0 && chipOn(c))) break;
+            const nx = hlNext(p.id);
+            if (!nx || tried.has(nx.id)) break;
+            toast('Nothing to show for \u201c' + p.id + '\u201d in this view and window \u2014 skipped to \u201c' + nx.id + '\u201d.', 'info', { key: 'anim-hl-skip' });
+            p = nx;
+        }
         finishToggle();
+    }
+    function layerHasData(n) {
+        const d = A && A.data[n];
+        if (!d) return false;
+        if (Array.isArray(d)) return d.length > 0;
+        if (d.frames) return d.frames.length > 0;
+        if (d.points) return d.points.length > 0;
+        return true;
     }
     // The Season overlay can be switched from the legend menu or the Map
     // strip while we run; the chips must follow, and the canvas must redraw
@@ -3580,6 +3661,7 @@
             // the link would have said, so the loading modal covers it once.
             let hlSeason = null;
             if (A.highlight) {
+                A.seasonBefore = seasonSnapshot();
                 const pl = profileLayers(hlProfile(A.highlight), bbox);
                 initial = pl.data;
                 hlSeason = pl.season;
@@ -3650,6 +3732,7 @@
                 toast('Paused at ' + fmtDateHuman(A.t) + ' — nothing has happened yet in this window. Press ▶ to play.',
                       'info', { key: 'anim-empty-start' });
             }
+            syncLiveLayers();
             if (typeof updateShareURL === 'function') updateShareURL();
 
             // ?anim_export= — the shared frame points at a download. It opens
@@ -3668,6 +3751,9 @@
             if (!A) return;
             closeExportMenu();
             pause();
+            restoreSeasonIfCurated();
+            A.highlight = false;
+            syncLiveLayers();           // the live LOD layers are the user's again
             map.off('move', A.mapHandler);
             map.off('moveend', A.moveEndHandler);
             window.removeEventListener('resize', A.resizeHandler);
