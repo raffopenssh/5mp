@@ -645,6 +645,46 @@ season's denominator is the union of its front cells and the cells the
 `usual_offset_days` (−39 d at 1 %) is the selection bias measured above;
 it prints beside its pct, which is the reader's warning.
 
+### Patrols: isochrones (when) + pressure isopleths (how much) — 2026-09-16
+
+`srv/patrol_isochrone.go` (`/api/patrol-isochrones`) is the rangers' side
+of the season on the **same 2.5 km grid**. One field — kernel-weighted
+patrol-days within ~5 km (foot 1 · vehicle/boat 0.7 · rotor 0.4 · fixed-wing
+0.2; σ = 2 cells, r = 4) — read two ways:
+
+* **isochrones** (`contours`): the day a cell first held ≥ `threshold` (3),
+  smoothed and contoured every 5 d like the fire front — dash-dot green;
+* **pressure isopleths** (`pressure.contours`): the field's *amount* at the
+  window's end, cut on a **log ladder** 1, 2, 5, 10, 20, 50 … (effort piles
+  up around stations; equal steps draw one knot) — solid green, every line
+  labelled with its number. The `threshold` isopleth is the isochrones'
+  outermost line: the check that both describe one thing. `pressure.unit`
+  names the unit; `pressure.max` is the top.
+
+The wire also ships `visits` (`[ix,iy,day,w]`, day-sorted) + `kernel_r`, so
+**the client rebuilds the field at the animator's playhead** (`fireseason.js`
+`pressureFieldAt` — forward steps add only the new days, a backward scrub
+restarts; contoured with `marchingSquaresJS`, a port of the Go one). Rings
+therefore grow as the effort lands; on teardown the server's window-end lines
+return. Hue is by rank on the *full window's* ladder so a line keeps its
+colour as new levels appear above it.
+
+**UI shape.** Patrols are **not** in the Season chip/menu: they have their
+own `Patrols` chip (`.ml-chip.pt`, Lucide `radar`) in the stats-panel Map
+strip, an Overlays row like Fire season (on → isochrones + opens the chip
+menu; off → `patrolsOff`), animator chips `patrol front` / `patrol pressure`,
+fire-row pill words, and share tokens `season=…,patrol,pressure` (either
+grants a guest link the patrol scope, `srv/guest.go`). `FireSeason.fireOn()`
+is the Season chip, `patrolAnyOn()` the Patrols chip, `isOn()` either. The
+area rule is the front's (focus, else the grid under the view centre) — it
+works with no filter bbox drawn. A tenant without tracks gets a refused row
+with the reason, never an empty layer; a link naming `patrol` is *dropped*
+for it. The sandbox (`test2026`) **does** own 19 effort rows from a 2026-07
+test upload, so `HAS_PATROL` is true there and Chinko answers "no patrol
+data here" — `ui_tests.js season_compare_and_patrol_scope` branches on it.
+Tests: api `patrol_isochrones_*` (pressure ladder sorted, text == level,
+visits == patrol_days), ui as above.
+
 ## Kalman seed-ahead chains — the vanguard layer's population (shipped 2026-09-15)
 
 **What and why, in plain words.** The plain tracker runs over the whole

@@ -58,10 +58,11 @@
         VAN_ARROW_LYR = 'fireseason-van-arrow',
         SPEED_LYR = 'fireseason-speed', ENTRY_LYR = 'fireseason-entry',
         CMP_SRC = 'fireseason-cmp-src', CMP_LYR = 'fireseason-cmp', CMP_LBL = 'fireseason-cmp-label',
-        PAT_SRC = 'fireseason-patrol-src', PAT_LYR = 'fireseason-patrol', PAT_LBL = 'fireseason-patrol-label', PAT_WAVE = 'fireseason-patrol-wave';
+        PAT_SRC = 'fireseason-patrol-src', PAT_LYR = 'fireseason-patrol', PAT_LBL = 'fireseason-patrol-label', PAT_WAVE = 'fireseason-patrol-wave',
+        PRS_SRC = 'fireseason-pressure-src', PRS_LYR = 'fireseason-pressure', PRS_LBL = 'fireseason-pressure-label';
 
     var map = null;
-    var st = { front: false, van: false, speed: false, entry: false, patrol: false, cmp: [] };   // the season shown follows the time slider; cmp = earlier seasons drawn beside it
+    var st = { front: false, van: false, speed: false, entry: false, patrol: false, pressure: false, cmp: [] };   // the season shown follows the time slider; cmp = earlier seasons drawn beside it
     var cmpData = {};      // season label → /api/fire-season answer (contours) for the compared seasons
     var cmpArea = '';      // the area cmpData belongs to
     var patrol = null;     // last /api/patrol-isochrones answer
@@ -82,7 +83,9 @@
         var t = (typeof dateTo !== 'undefined' && dateTo) ? dateTo : '';
         return { from: f, to: t };
     }
-    function anyOn() { return st.front || st.van || st.speed || st.entry || st.patrol; }
+    function anyOn() { return fireOn() || patrolAnyOn(); }
+    function fireOn() { return st.front || st.van || st.speed || st.entry; }        // the Season chip
+    function patrolAnyOn() { return st.patrol || st.pressure; }                    // the Patrols chip
     function patrolAllowed() { return window.HAS_PATROL !== false; }
     function emit() { listeners.forEach(function (fn) { try { fn(); } catch (e) { /* listener's problem */ } }); }
     function refreshStrip() {
@@ -265,6 +268,7 @@
         }
         if (!map.getSource(CMP_SRC)) map.addSource(CMP_SRC, { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
         if (!map.getSource(PAT_SRC)) map.addSource(PAT_SRC, { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+        if (!map.getSource(PRS_SRC)) map.addSource(PRS_SRC, { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
         if (!map.getLayer(CMP_LYR)) {
             // Earlier seasons beside the reference one: the same dashed
             // isochrone (it is the same object), the YEAR in the hue. Only
@@ -322,6 +326,34 @@
                 paint: { 'text-color': ['get', 'color'], 'text-halo-color': 'rgba(8,10,16,0.95)', 'text-halo-width': 1.4 }
             });
             registerPatrolTip();
+        }
+        if (!map.getLayer(PRS_LYR)) {
+            // Pressure isopleths: the same presence field at the window's
+            // end, contoured by AMOUNT (1, 2, 5, 10 … patrol-days within
+            // ~5 km). SOLID thin green so they read as a different family
+            // from the dash-dot isochrones (when) in greyscale; brighter
+            // and wider up the ladder, every line labelled with its number.
+            map.addLayer({
+                id: PRS_LYR, type: 'line', source: PRS_SRC,
+                layout: { 'line-cap': 'round', 'line-join': 'round' },
+                paint: {
+                    'line-color': ['get', 'color'],
+                    'line-width': ['+', 0.6, ['*', 1.4, ['get', 't']]],
+                    'line-opacity': ['+', 0.45, ['*', 0.5, ['get', 't']]]
+                }
+            });
+            map.addLayer({
+                id: PRS_LBL, type: 'symbol', source: PRS_SRC,
+                layout: {
+                    'symbol-placement': 'line', 'symbol-spacing': 300,
+                    'text-field': ['get', 'text'], 'text-size': 10,
+                    'text-font': ['Noto Sans Regular'],
+                    'text-letter-spacing': 0.04, 'text-max-angle': 30,
+                    'text-pitch-alignment': 'viewport', 'text-rotation-alignment': 'map'
+                },
+                paint: { 'text-color': ['get', 'color'], 'text-halo-color': 'rgba(8,10,16,0.95)', 'text-halo-width': 1.4 }
+            });
+            registerPressureTip();
         }
         if (!map.getLayer(VAN_DIM_LYR)) {
             // The continuation: the same chain after the season caught up.
@@ -427,6 +459,7 @@
         [FRONT_LYR, FRONT_LBL, FRONT_WAVE].forEach(function (id) { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', st.front ? 'visible' : 'none'); });
         [CMP_LYR, CMP_LBL].forEach(function (id) { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', (st.front && st.cmp.length) ? 'visible' : 'none'); });
         [PAT_LYR, PAT_LBL, PAT_WAVE].forEach(function (id) { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', st.patrol ? 'visible' : 'none'); });
+        [PRS_LYR, PRS_LBL].forEach(function (id) { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', st.pressure ? 'visible' : 'none'); });
         [VAN_LYR, VAN_GAP_LYR, VAN_DIM_LYR, VAN_ARROW_LYR, VAN_HEAD_HALO, VAN_HEAD_LYR].forEach(function (id) { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', st.van ? 'visible' : 'none'); });
         if (speedField) speedField.setVisible(st.speed);
         if (entryField) entryField.setVisible(st.entry);
@@ -617,7 +650,7 @@
         return c.lng >= g.x0 && c.lng <= g.x0 + g.res * g.nx && c.lat >= g.y0 && c.lat <= g.y0 + g.res * g.ny;
     }
     function loadPatrol(force) {
-        if (!st.patrol || !map) return Promise.resolve();
+        if (!patrolAnyOn() || !map) return Promise.resolve();
         var d = dates();
         var key = (focusId() || 'pt') + '|' + d.from + '|' + d.to;
         if (!force && key === patrolKey && patrol && (focusId() || patrolInView())) return Promise.resolve();
@@ -640,9 +673,147 @@
                 });
             }
             setData(PAT_SRC, feats);
+            prs.acc = null;   // new visits: the playhead field restarts
+            setData(PRS_SRC, pressureFeatures(j));
             if (animT !== null) animAt(animT);
             refreshStrip();
         }).catch(function () { inflight--; emit(); });
+    }
+    /* Pressure: one hue ramp up the ladder (dim moss → bright mint), t = rank
+     * among the levels actually cut, so the top line is always the
+     * brightest whatever the maximum is. */
+    function pressureColor(t) {
+        var a = [0x16, 0x65, 0x34], b = [0xd9, 0xf9, 0x9d];
+        return hex(lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t));
+    }
+    function pressureFeatures(j) {
+        var pc = j && j.pressure && j.pressure.contours;
+        if (!pc || !pc.length) return [];
+        var n = pc.length;
+        return pc.map(function (f, i) {
+            var t = n > 1 ? i / (n - 1) : 1;
+            f.properties.t = t;
+            f.properties.color = pressureColor(t);
+            f.properties.kind = 'pressure';
+            return f;
+        });
+    }
+    /* Animated pressure: the field the server contoured at the window's
+     * end, rebuilt on the client at the playhead. Visits come day-sorted,
+     * so a forward step only adds the days since the last frame; a scrub
+     * backwards restarts from zero (11k visits × 81 kernel cells is under
+     * a millisecond). Contoured here with the same marching squares. */
+    var prs = { acc: null, vi: 0, day: -1, nx: 0, ny: 0, kern: null, r: 0 };
+    function pressureReset(j) {
+        var g = j.grid; prs.nx = g.nx; prs.ny = g.ny; prs.acc = new Float64Array(g.nx * g.ny); prs.vi = 0; prs.day = -1;
+        var r = j.kernel_r || 4, sg = j.kernel_cells || 2, k = [];
+        for (var dy = -r; dy <= r; dy++) for (var dx = -r; dx <= r; dx++) k.push(Math.exp(-(dx * dx + dy * dy) / (2 * sg * sg)));
+        prs.kern = k; prs.r = r;
+    }
+    function pressureFieldAt(dayIdx) {
+        var j = patrol; if (!j || !j.visits || !j.grid) return null;
+        if (!prs.acc || prs.nx !== j.grid.nx || prs.ny !== j.grid.ny || dayIdx < prs.day) pressureReset(j);
+        var vs = j.visits, nx = prs.nx, ny = prs.ny, r = prs.r, k = prs.kern, acc = prs.acc, W = 2 * r + 1;
+        while (prs.vi < vs.length && vs[prs.vi][2] <= dayIdx) {
+            var v = vs[prs.vi++], ix = v[0], iy = v[1], w = v[3];
+            for (var dy = -r; dy <= r; dy++) { var yy = iy + dy; if (yy < 0 || yy >= ny) continue;
+                for (var dx = -r; dx <= r; dx++) { var xx = ix + dx; if (xx < 0 || xx >= nx) continue;
+                    acc[yy * nx + xx] += w * k[(dy + r) * W + dx + r]; } }
+        }
+        prs.day = dayIdx;
+        return acc;
+    }
+    var PRESSURE_LADDER = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000];
+    function pressureContoursAt(t) {
+        var j = patrol; if (!j || !j.visits || !j.from) return [];
+        var dayIdx = Math.floor((t - Date.parse(j.from + 'T00:00:00Z')) / DAY_MS);
+        if (dayIdx < 0) return [];
+        var acc = pressureFieldAt(dayIdx); if (!acc) return [];
+        var mx = 0; for (var i = 0; i < acc.length; i++) if (acc[i] > mx) mx = acc[i];
+        var g = j.grid, feats = [], lv = PRESSURE_LADDER.filter(function (l) { return l <= mx; });
+        // Colour by rank on the FULL window's ladder, so a line keeps its hue
+        // as the season plays rather than re-tinting every time a new level
+        // appears above it.
+        var full = (j.pressure && j.pressure.levels && j.pressure.levels.length) ? j.pressure.levels : lv;
+        lv.forEach(function (l) {
+            var lines = marchingSquaresJS(acc, g.nx, g.ny, g.x0, g.y0, g.res, l);
+            if (!lines.length) return;
+            var ri = full.indexOf(l), tt = full.length > 1 ? Math.max(0, ri) / (full.length - 1) : 1;
+            feats.push({ type: 'Feature', geometry: { type: 'MultiLineString', coordinates: lines },
+                properties: { level: l, label: true, text: String(l), t: tt, color: pressureColor(tt), kind: 'pressure' } });
+        });
+        return feats;
+    }
+    // Port of srv/patrol_isochrone.go marchingSquares (segments linked into
+    // polylines by shared endpoints, thinned to ~¼ cell).
+    function marchingSquaresJS(z, nx, ny, x0, y0, res, level) {
+        var segs = [];
+        function interp(ax, ay, az, bx, by, bz) { var t = (level - az) / (bz - az); t = t < 0 ? 0 : t > 1 ? 1 : t; return [ax + t * (bx - ax), ay + t * (by - ay)]; }
+        for (var iy = 0; iy < ny - 1; iy++) for (var ix = 0; ix < nx - 1; ix++) {
+            var v0 = z[iy * nx + ix], v1 = z[iy * nx + ix + 1], v2 = z[(iy + 1) * nx + ix + 1], v3 = z[(iy + 1) * nx + ix];
+            var idx = (v0 >= level ? 1 : 0) | (v1 >= level ? 2 : 0) | (v2 >= level ? 4 : 0) | (v3 >= level ? 8 : 0);
+            if (idx === 0 || idx === 15) continue;
+            var cx = [x0 + (ix + 0.5) * res, x0 + (ix + 1.5) * res, x0 + (ix + 1.5) * res, x0 + (ix + 0.5) * res];
+            var cy = [y0 + (iy + 0.5) * res, y0 + (iy + 0.5) * res, y0 + (iy + 1.5) * res, y0 + (iy + 1.5) * res];
+            var v = [v0, v1, v2, v3];
+            var edge = function (e) { var a = e, b = (e + 1) % 4; return interp(cx[a], cy[a], v[a], cx[b], cy[b], v[b]); };
+            var add = function (e1, e2) { segs.push([edge(e1), edge(e2)]); };
+            switch (idx) {
+                case 1: case 14: add(3, 0); break;
+                case 2: case 13: add(0, 1); break;
+                case 3: case 12: add(3, 1); break;
+                case 4: case 11: add(1, 2); break;
+                case 6: case 9: add(0, 2); break;
+                case 7: case 8: add(3, 2); break;
+                default: { var c = (v0 + v1 + v2 + v3) / 4; if ((c >= level) === (idx === 5)) { add(3, 0); add(1, 2); } else { add(0, 1); add(3, 2); } }
+            }
+        }
+        if (!segs.length) return [];
+        var key = function (p) { return p[0].toFixed(5) + ',' + p[1].toFixed(5); };
+        var ends = {};
+        segs.forEach(function (s, i) { (ends[key(s[0])] = ends[key(s[0])] || []).push(i); (ends[key(s[1])] = ends[key(s[1])] || []).push(i); });
+        var used = new Uint8Array(segs.length), out = [];
+        function take(p) { var l = ends[key(p)] || []; for (var q = 0; q < l.length; q++) { var i = l[q]; if (used[i]) continue; used[i] = 1; return key(segs[i][0]) === key(p) ? segs[i][1] : segs[i][0]; } return null; }
+        for (var i = 0; i < segs.length; i++) {
+            if (used[i]) continue; used[i] = 1;
+            var line = [segs[i][0], segs[i][1]], np;
+            while ((np = take(line[line.length - 1]))) line.push(np);
+            while ((np = take(line[0]))) line.unshift(np);
+            if (line.length < 3) continue;
+            var thin = [[r4(line[0][0]), r4(line[0][1])]], last = line[0];
+            for (var k = 1; k < line.length; k++) {
+                if (Math.abs(line[k][0] - last[0]) + Math.abs(line[k][1] - last[1]) >= res * 0.25 || k === line.length - 1) { thin.push([r4(line[k][0]), r4(line[k][1])]); last = line[k]; }
+            }
+            if (thin.length >= 6) out.push(thin);
+        }
+        return out;
+    }
+    function r4(v) { return Math.round(v * 1e4) / 1e4; }
+    function pressureLegendHTML(opts) {
+        opts = opts || {};
+        var j = patrol || {}, pr = j.pressure || {};
+        var lv = pr.levels || [];
+        var h = '<div class="fs-legend' + (opts.cls ? ' ' + opts.cls : '') + '">' +
+            '<div class="fs-ramp-cap"><span class="fs-sw-line" style="background:linear-gradient(90deg,' + pressureColor(0) + ',' + pressureColor(1) + ')"></span> Pressure isopleths: patrol-days within ~5 km at the window\u2019s end</div>';
+        if (lv.length) {
+            h += '<div class="fs-ramp-how">Lines at ' + lv.map(function (v, i) { return '<b style="color:' + pressureColor(lv.length > 1 ? i / (lv.length - 1) : 1) + '">' + esc(String(v)) + '</b>'; }).join(' \u00b7 ') +
+                ' \u00b7 most anywhere ' + esc(String(pr.max)) + (j.threshold ? ' \u00b7 the ' + esc(String(j.threshold)) + '-line is where the isochrones stop' : '') + '</div>';
+        } else if (j.status && j.status !== 'ok') h += '<div class="fs-ramp-how">' + esc(j.status) + '</div>';
+        else if (pr.max != null) h += '<div class="fs-ramp-how">Presence everywhere below 1 patrol-day (most ' + esc(String(pr.max)) + ')</div>';
+        h += '<div class="fs-ramp-how">Where the effort went, not when: a log ladder because presence piles up around stations. A patrol-day is a 2.5 km cell with a patrol in it on a day, weighted by how it moved (foot 1 \u00b7 vehicle 0.7 \u00b7 helicopter 0.4 \u00b7 fixed-wing 0.2), spread over ~5 km.</div>';
+        h += '</div>';
+        return h;
+    }
+    function pressureTipHTML(p) {
+        if (!p || p.kind !== 'pressure') return '';
+        var h = '<div style="font-weight:600;margin-bottom:3px;color:#bef264">Patrol pressure \u00b7 ' + esc(String(p.level)) + ' patrol-days</div>';
+        h += '<div>By ' + esc(fmtDate((patrol && patrol.to) || '')) + ' patrols had spent <b>' + esc(String(p.level)) + ' patrol-days</b> within ~5 km of this line' + (patrol && patrol.from ? ' since ' + esc(fmtDate(patrol.from)) : '') + '; more inside it, less outside.</div>';
+        h += '<div style="opacity:.6;font-size:11px;margin-top:4px">Solid lines say how much; the dash-dot isochrones say when.</div>';
+        return h;
+    }
+    function registerPressureTip() {
+        if (!window.MapTip || !MapTip.register) return;
+        MapTip.register(PRS_LYR, { html: pressureTipHTML, tabLabel: 'Pressure', tabColor: '#bef264', priority: 5 });
     }
     function patrolModeWords(j) {
         var bm = (j && j.by_mode) || {}, ks = Object.keys(bm).sort(function (a, b) { return bm[b] - bm[a]; });
@@ -1315,7 +1486,7 @@
     function onDates() {
         if (st.van) { vanKey = ''; loadVan(true); }
         if (st.front) loadFront(false);   // the front follows the window
-        if (st.patrol) loadPatrol(false);  // presence accumulates from the window's start
+        if (patrolAnyOn()) loadPatrol(false);  // presence accumulates from the window's start
         if (st.speed) loadSpeed(false).then(function () { if (st.speed && animT === null) drawSpeed(null); });   // the seasons it touches, drawn at its end
         if (st.entry) loadEntry(false).then(function () { if (st.entry && animT === null) drawEntry(windowEndMs()); });   // and the fade follows the window's end
     }
@@ -1379,6 +1550,10 @@
         [VAN_LYR, VAN_GAP_LYR, VAN_DIM_LYR, VAN_HEAD_LYR, VAN_ARROW_LYR].forEach(function (id) {
             if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', (st.van && !animating) ? 'visible' : 'none');
         });
+        // Pressure follows the playhead: the field is rebuilt from the
+        // visits up to that day and re-contoured, so the rings grow as the
+        // effort lands. Back to the server's window-end lines on teardown.
+        if (!animating && st.pressure && patrol) setData(PRS_SRC, pressureFeatures(patrol));
         if (t == null) {
             clearTimeout(animTrail);
             if (animMeta) { animMeta = null; emit(); }
@@ -1417,6 +1592,7 @@
         // four days when this season's first detection lands in it.
         if (st.entry) drawEntry(t);
         if (st.speed) drawSpeed(t);
+        if (st.pressure && patrol && patrol.visits) setData(PRS_SRC, pressureContoursAt(t));
         var ageD = ['/', ['-', t, ['get', 't']], DAY_MS];                    // days since the season reached this line
         var reached = ['<=', ['get', 't'], t];
         map.setFilter(FRONT_LYR, reached);
@@ -1515,9 +1691,19 @@
         setPatrol: function (want) {
             st.patrol = !!want && patrolAllowed();
             if (!map) return;
-            ensureLayers();
-            if (st.patrol) loadPatrol(true); else { setData(PAT_SRC, []); patrol = null; refreshStrip(); }
+            ensureLayers(); applyVisibility();
+            if (st.patrol) loadPatrol(patrolKey === ''); else if (!st.pressure) { setData(PAT_SRC, []); setData(PRS_SRC, []); patrol = null; patrolKey = ''; refreshStrip(); } else refreshStrip();
         },
+        pressureOn: function () { return st.pressure; },
+        pressureLegendHTML: pressureLegendHTML,
+        setPressure: function (want) {
+            st.pressure = !!want && patrolAllowed();
+            if (!map) return;
+            ensureLayers(); applyVisibility();
+            if (st.pressure) loadPatrol(patrolKey === ''); else if (!st.patrol) { setData(PAT_SRC, []); setData(PRS_SRC, []); patrol = null; patrolKey = ''; refreshStrip(); } else refreshStrip();
+        },
+        fireOn: fireOn, patrolAnyOn: patrolAnyOn,
+        patrolsOff: function () { this.setPatrol(false); this.setPressure(false); },
         compare: function () { return st.cmp.slice(); },
         compareAvailable: cmpAvailable,
         compareColor: cmpColor,
@@ -1534,7 +1720,7 @@
             if (i >= 0) st.cmp.splice(i, 1); else st.cmp.push(lbl);
             this.setCompare(st.cmp);
         },
-        off: function () { this.setFront(false); this.setVanguard(false); this.setSpeed(false); this.setEntry(false); this.setPatrol(false); this.setCompare([]); },
+        off: function () { this.setFront(false); this.setVanguard(false); this.setSpeed(false); this.setEntry(false); this.setCompare([]); },   // the Season chip's ×; the Patrols chip has its own (patrolsOff)
         animAt: animAt,
         lift: lift,      // lodlayer.js calls it after adding a line layer
         // switchBasemap() rebuilds the style; put the layers back on idle.
@@ -1550,7 +1736,7 @@
         },
         getShareParams: function () {
             if (!anyOn()) return null;
-            var p = { season: [st.front ? 'front' : '', st.van ? 'vanguard' : '', st.speed ? 'speed' : '', st.entry ? 'entry' : '', st.patrol ? 'patrol' : ''].filter(Boolean).join(',') };
+            var p = { season: [st.front ? 'front' : '', st.van ? 'vanguard' : '', st.speed ? 'speed' : '', st.entry ? 'entry' : '', st.patrol ? 'patrol' : '', st.pressure ? 'pressure' : ''].filter(Boolean).join(',') };
             if (st.cmp.length) p.season_vs = st.cmp.join(',');
             return p;
         },
@@ -1563,6 +1749,7 @@
             if (parts.indexOf('speed') >= 0) this.setSpeed(true);
             if (parts.indexOf('entry') >= 0) this.setEntry(true);
             if (parts.indexOf('patrol') >= 0 && patrolAllowed()) this.setPatrol(true);   // a link naming patrol is dropped, not switched on, for an account without it
+            if (parts.indexOf('pressure') >= 0 && patrolAllowed()) this.setPressure(true);
             var vs = params.get('season_vs');
             if (vs) this.setCompare(vs.split(',').filter(Boolean));
         },

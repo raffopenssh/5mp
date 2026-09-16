@@ -64,6 +64,29 @@ TEST.isPopupOpen('CAF_Chinko');
 TEST.done();  // Print results
 ```
 
+### Viewing a tenant's data in the browser tool (guest link, then revoke)
+
+Tenant-scoped layers (patrol effort) are only visible to the account that
+owns them, and the browser tool must never be handed a live password (it
+lands in the conversation and the address bar — invariant 14). Mint a
+short-lived **guest link** from the shell instead, open `/s/{slug}`, and
+revoke it when done:
+
+```bash
+source secrets.env   # the owning tenant's password is a named var; never type it
+JAR=$(mktemp); curl -s -o /dev/null -c $JAR --get --data-urlencode "pwd=$THE_TENANT_PWD" http://localhost:8000/
+curl -s -b $JAR -X POST http://localhost:8000/api/shortlink -H 'Content-Type: application/json' \
+  -d '{"url":"/?park_focus=TZA_Ruaha&season=patrol,pressure","guest":true,"patrol":true,"days":1,"title":"tmp test"}'
+# → {"slug":"g-…"}; browser: navigate http://localhost:8000/s/g-…  (add &test=1 to the url for TEST.*)
+curl -s -b $JAR -X DELETE http://localhost:8000/api/shortlink/g-…      # revoke; rm $JAR
+```
+
+`"patrol":true` is required — a guest link carries patrol only when the
+sender says so. The in-browser `runUITests([...])` asserts against the
+*current* URL only: navigate to the test's `url` first, load
+`tests/ui_tests.js` (copy to `srv/static/_tmp.js`, `<script>` it, delete
+after), then run.
+
 ### Share Link Testing
 
 URL params encode full UI state for reproducible tests:

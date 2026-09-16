@@ -11,7 +11,16 @@ package srv
 //	       "grid":{x0,y0,res,nx,ny}, "cells", "patrol_days", "threshold", "kernel_cells",
 //	       "contours":[Feature{dos,date,label,text}…],     dos = days since `from`
 //	       "arrival":[[ix,iy,dos]…],                        per reached cell
+//	       "pressure":{unit,levels,max,contours:[Feature{level,label,text}…]},
 //	       "association":{…}, "status"}
+//
+// `pressure` is the same field the isochrones are cut from, read the other
+// way: instead of WHEN a cell's presence crossed one level, HOW MUCH
+// presence a cell holds at the window's end — kernel-weighted patrol-days
+// within ~5 km — contoured at 1, 2, 5, 10, 20, 50 … (a log ladder: effort
+// concentrates near stations, and equal steps would draw one knot and
+// nothing else). The isopleth at `threshold` is therefore the isochrones'
+// outermost line, which is the check that both describe one thing.
 //
 // Definition (one writer, this file). Grid = the area's season-front grid
 // (2.5 km, scripts/fire_front.py), so a patrol cell and a fire cell are one
@@ -236,6 +245,7 @@ func (s *Server) HandleAPIPatrolIsochrones(w http.ResponseWriter, r *http.Reques
 		base["cells"] = 0
 		base["status"] = "no patrol data in this window here"
 		base["contours"] = []interface{}{}
+		base["pressure"] = patrolPressure(make([]float64, nx*ny), nx, ny, x0, y0, res)
 		json.NewEncoder(w).Encode(base)
 		return
 	}
@@ -276,6 +286,7 @@ func (s *Server) HandleAPIPatrolIsochrones(w http.ResponseWriter, r *http.Reques
 		}
 	}
 	base["cells"] = reached
+	base["pressure"] = patrolPressure(acc, nx, ny, x0, y0, res)
 	if reached == 0 {
 		base["status"] = fmt.Sprintf("patrols present (%d patrol-days) but nowhere reached %g within ~5 km", len(visits), patrolThreshold)
 		base["contours"] = []interface{}{}
@@ -321,9 +332,60 @@ func (s *Server) HandleAPIPatrolIsochrones(w http.ResponseWriter, r *http.Reques
 	}
 	base["contours"] = feats
 	base["arrival"] = arr
+	// The visits themselves, day-sorted, so the client can rebuild the
+	// presence field at any playhead (kernel params ride beside them) and
+	// draw the pressure lines growing as the animator runs.
+	vis := make([][4]float64, 0, len(visits))
+	for _, v := range visits {
+		vis = append(vis, [4]float64{float64(v.ix), float64(v.iy), float64(v.day), v.w})
+	}
+	base["visits"] = vis
+	base["kernel_r"] = patrolKernelR
 	base["association"] = patrolFrontAssociation(pick.front, pick.usual, arrival, nx, ny, pick.start, fromT, toT)
 	base["status"] = "ok"
 	json.NewEncoder(w).Encode(base)
+}
+
+// patrolPressureLadder: the contour levels offered, in patrol-days within
+// ~5 km; only those below the field's maximum are cut.
+var patrolPressureLadder = []float64{1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000}
+
+// patrolPressure contours the accumulated presence at the window's end.
+// The field is defined everywhere (0 where nobody went), so the lines close
+// around the effort rather than stopping at a mask edge. Labelled at every
+// level: a ladder line without its number is a ring, not a quantity.
+func patrolPressure(acc []float64, nx, ny int, x0, y0, res float64) map[string]interface{} {
+	mx := 0.0
+	for _, v := range acc {
+		if v > mx {
+			mx = v
+		}
+	}
+	feats := []map[string]interface{}{}
+	levels := []float64{}
+	for _, lvl := range patrolPressureLadder {
+		if lvl > mx {
+			break
+		}
+		lines := marchingSquares(acc, nx, ny, x0, y0, res, lvl)
+		if len(lines) == 0 {
+			continue
+		}
+		levels = append(levels, lvl)
+		feats = append(feats, map[string]interface{}{
+			"type":     "Feature",
+			"geometry": map[string]interface{}{"type": "MultiLineString", "coordinates": lines},
+			"properties": map[string]interface{}{
+				"level": lvl, "label": true, "text": strconv.FormatFloat(lvl, 'f', -1, 64),
+			},
+		})
+	}
+	return map[string]interface{}{
+		"unit":     "patrol-days within ~5 km of the cell at the window's end (weighted by movement type — see weights; the isochrone threshold is on this scale)",
+		"levels":   levels,
+		"max":      math.Round(mx*10) / 10,
+		"contours": feats,
+	}
 }
 
 // patrolFrontAssociation: over the reference season's cells whose front had

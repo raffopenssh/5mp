@@ -3180,6 +3180,9 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                         patrol: !!(FS && FS.patrolOn && FS.patrolOn()), patrolMeta: FS && FS.patrolMeta ? FS.patrolMeta() : null,
                         patrolAllowed: !!(FS && FS.patrolAllowed && FS.patrolAllowed()),
                         drawnPatrol: map.getLayer('fireseason-patrol') ? map.queryRenderedFeatures({ layers: ['fireseason-patrol'] }).length : 0,
+                        pressure: !!(FS && FS.pressureOn && FS.pressureOn()),
+                        pressureFeatures: map.getSource('fireseason-pressure-src') ? map.querySourceFeatures('fireseason-pressure-src').length : 0,
+                        patrolsChip: (document.querySelector('#stats-map .ml-chip.pt em') || {}).textContent || null,
                         // The Fire accordion's season block (fireSeasonBlock),
                         // per open popup: summary held, curve drawn, ticks,
                         // and the vanguard marks on the narrative rows.
@@ -15509,7 +15512,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
         function seasonRowState(name) {
             if (name !== 'fires' || !window.FireSeason) return null;
             return { front: FireSeason.frontOn(), van: FireSeason.vanguardOn(), speed: FireSeason.speedOn(), entry: !!(FireSeason.entryOn && FireSeason.entryOn()),
-                     patrol: !!(FireSeason.patrolOn && FireSeason.patrolOn()), cmp: FireSeason.compare ? FireSeason.compare().length : 0 };
+                     patrol: !!(FireSeason.patrolOn && FireSeason.patrolOn()), pressure: !!(FireSeason.pressureOn && FireSeason.pressureOn()), cmp: FireSeason.compare ? FireSeason.compare().length : 0 };
         }
         function rowModeSummary(name, st, anim, season) {
             const parts = [];
@@ -15528,7 +15531,8 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             if (season && season.speed) parts.push('speed');
             if (season && season.entry) parts.push('entry ground');
             if (season && season.patrol) parts.push('patrol isochrones');
-            if (!st && !anim.length && season && (season.front || season.van || season.speed || season.entry || season.patrol)) cls = 'season';
+            if (season && season.pressure) parts.push('patrol pressure');
+            if (!st && !anim.length && season && (season.front || season.van || season.speed || season.entry || season.patrol || season.pressure)) cls = 'season';
             const label = parts.length === 0 ? 'off'
                         : parts.length <= 2 ? parts.join(' · ')
                         : parts.length + ' modes';
@@ -25342,7 +25346,9 @@ ${starredItems.narratives.map(n => {
                 params.set('anim_t', st.tISO);
                 if (st.aoi) params.set('anim_aoi', st.aoi);
                 if (!st.playing) params.set('anim_paused', '1');
-                if (st.highlight) params.set('anim_hl', '1');
+                // The highlight PROFILE ('now', 'season', …), not a flag: the
+                // recipient must see the same curated set, not just the dimming.
+                if (st.highlight) params.set('anim_hl', String(st.highlight));
                 // An open download menu, and which entry it points at. Same
                 // contract as aoi_menu_item: a hint the recipient clicks, never
                 // an export that starts itself.
@@ -25515,7 +25521,9 @@ ${starredItems.narratives.map(n => {
                 t: params.get('anim_t') || undefined,
                 aoi: params.get('anim_aoi') || undefined,
                 paused: params.get('anim_paused') === '1',
-                highlight: params.get('anim_hl') === '1',
+                // A profile id; legacy '1' means the default profile. Absent
+                // with layers named = a hand-picked set, highlight off.
+                highlight: params.get('anim_hl') ? params.get('anim_hl') : false,
                 exportItem: params.get('anim_export') || undefined
             };
         }

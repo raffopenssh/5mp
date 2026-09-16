@@ -92,12 +92,54 @@
         speed:    { label: 'speed',    color: '#f59e0b', title: 'Season speed \u2014 how fast the front travelled, cell by cell as it arrives at the playhead; last season\u2019s answer stays as ash until this season\u2019s front overwrites it' },
         patrol:   { label: 'patrol',   color: '#4ade80', title: 'Patrol effort \u2014 a heat field zoomed out, circles like the live map zoomed in; cools over 90 days' },
         patrolfront: { label: 'patrol front', color: '#86efac', title: 'Patrol isochrones \u2014 dash-dot lines marking when patrol presence had built up (\u2265 3 patrol-days within ~5 km), drawn as the playhead reaches them, like the fire front' },
+        patrolpressure: { label: 'patrol pressure', color: '#bef264', title: 'Pressure isopleths \u2014 solid lines at 1, 2, 5, 10 \u2026 patrol-days within ~5 km, rebuilt at the playhead so the rings grow as the effort lands' },
         deforest: LAYERS.deforest,
         settlements: LAYERS.settlements
     };
-    const CHIP_ORDER = ['fireGrid', 'trajs', 'front', 'vanguard', 'entry', 'speed', 'patrol', 'patrolfront', 'deforest', 'settlements'];
-    const SEASON_CHIPS = ['front', 'vanguard', 'entry', 'speed', 'patrolfront'];   // fireseason.js owns their state
-    const HIGHLIGHT_TITLE = 'Highlight what is happening now \u2014 dims the heat fields and static context so live fire paths, fresh clearings and patrol stand out';
+    const CHIP_ORDER = ['fireGrid', 'trajs', 'front', 'vanguard', 'entry', 'speed', 'patrol', 'patrolfront', 'patrolpressure', 'deforest', 'settlements'];
+    const SEASON_CHIPS = ['front', 'vanguard', 'entry', 'speed', 'patrolfront', 'patrolpressure'];   // fireseason.js owns their state
+    // HIGHLIGHT IS A CURATOR, NOT A DIMMER (2026-09-16). It used to be one
+    // switch that dimmed the surfaces and left the layer choice to the user,
+    // which on a fresh open meant "whatever the map happened to have on":
+    // eleven chips, most of them off, and the user asked to know which four
+    // tell the story. Now it is ON by default and CHOOSES: each profile is a
+    // small set of chips that read together, over the dimmed heat field.
+    // Clicking it steps to the next profile the view can support (no season
+    // data -> no season profile; no patrol -> no patrol profile). Touching
+    // ANY chip switches it off: the user has taken the choice back, and the
+    // profile becomes their starting point, not a rule that undoes their
+    // click. A share link carries the profile id (`anim_hl=season`); a link
+    // that names layers without a profile is a hand-picked set, and stays off.
+    const HL_PROFILES = [
+        { id: 'now',    chips: ['fireGrid', 'trajs', 'deforest', 'patrol'],
+          title: 'What is happening at the playhead \u2014 fire paths, fresh clearings and patrol at full ink over a dimmed heat field' },
+        { id: 'season', chips: ['fireGrid', 'front', 'vanguard', 'entry'], needs: 'season',
+          title: 'How the season moves \u2014 the front\u2019s isochrones, the vanguard chains ahead of it and the ground that burns early' },
+        { id: 'patrol', chips: ['trajs', 'patrol', 'patrolpressure'], needs: 'patrol',
+          title: 'Fire against patrol \u2014 burning fronts over the rings of patrol pressure' },
+        { id: 'change', chips: ['fireGrid', 'deforest', 'settlements'],
+          title: 'The human footprint \u2014 clearings and settlements over a dimmed fire field' }
+    ];
+    const HL_DEFAULT = 'now';
+    function hlProfile(id) { return HL_PROFILES.find(p => p.id === id) || null; }
+    function hlAvailable(p) {
+        if (p.needs === 'season' && seasonRefusal()) return false;
+        if (p.needs === 'patrol' && window.HAS_PATROL === false) return false;
+        return true;
+    }
+    function hlNext(cur) {
+        const avail = HL_PROFILES.filter(hlAvailable);
+        if (!avail.length) return null;
+        const i = avail.findIndex(p => p.id === cur);
+        return avail[(i + 1) % avail.length];
+    }
+    function hlTitle(p) {
+        const nx = hlNext(p ? p.id : null);
+        const next = nx && (!p || nx.id !== p.id) ? ' Click for \u201c' + nx.id + '\u201d.' : '';
+        return (p ? 'Highlight \u201c' + p.id + '\u201d: ' + p.title + '.' + next
+                  : 'Highlight \u2014 pick a set of layers that tell one story and dim the rest.' + next)
+             + ' Toggling any layer yourself switches highlight off.';
+    }
     // 'turb' (turbidity plume + mining sites) removed 2026-08-06 --
     // docs/MINING_FINDINGS_2026-08.md §10. The turbidity endpoint is disabled, so
     // there is nothing to animate. Remaining turb branches below are inert.
@@ -142,6 +184,7 @@
         if (name === 'entry') return !!(window.FireSeason && FireSeason.entryOn && FireSeason.entryOn());
         if (name === 'speed') return !!(window.FireSeason && FireSeason.speedOn && FireSeason.speedOn());
         if (name === 'patrolfront') return !!(window.FireSeason && FireSeason.patrolOn && FireSeason.patrolOn());
+        if (name === 'patrolpressure') return !!(window.FireSeason && FireSeason.pressureOn && FireSeason.pressureOn());
         return !!A.on[name];
     }
 
@@ -2916,13 +2959,23 @@
             const dot = chip.querySelector('i');
             if (dot) dot.style.background = on ? CHIPS[name].color : '#555';
             if (on) chip.style.color = '';
-            if (SEASON_CHIPS.indexOf(name) >= 0 && !(name === 'patrolfront' && window.HAS_PATROL === false)) {
+            if (SEASON_CHIPS.indexOf(name) >= 0 && !((name === 'patrolfront' || name === 'patrolpressure') && window.HAS_PATROL === false)) {
                 chip.classList.toggle('unavailable', !!seasonNo && !on);
                 chip.title = seasonNo && !on ? seasonNo + ' here \u2014 ' + CHIPS[name].title : CHIPS[name].title;
             }
         });
+        // A chip a profile switched on must be seen (patrol hides when the
+        // map's pixels toggle is off) — an on switch nobody can see is a lie.
+        const pc = chipFor('patrol');
+        if (pc && chipOn('patrol')) { pc.classList.remove('hidden'); pc.classList.add('visible'); }
         const hl = document.getElementById('anim-highlight');
-        if (hl) { hl.classList.toggle('on', !!A.highlight); hl.setAttribute('aria-pressed', A.highlight ? 'true' : 'false'); }
+        if (hl) {
+            const p = hlProfile(A.highlight);
+            hl.classList.toggle('on', !!p);
+            hl.setAttribute('aria-pressed', p ? 'true' : 'false');
+            hl.title = hlTitle(p);
+            hl.innerHTML = '<i></i>highlight' + (p ? ' \u00b7 ' + p.id : '');
+        }
         announceLayers();
     }
 
@@ -2961,6 +3014,8 @@
 
     async function toggleChip(name, want) {
         if (!A) return;
+        // The user chose a layer: highlight's choice is no longer the rule.
+        if (A.highlight && !A.applyingHL) A.highlight = false;
         // Legacy names a share link or the legend may still use.
         if (name === 'firePts') name = 'fireGrid';
         if (name === 'effortGrid' || name === 'effortPts') return toggleDataLayer(name, want);
@@ -2981,7 +3036,7 @@
             // us and re-reads the chips (see wireSeason). Vanguard chains are
             // drawn from the trajectories, so they need them loaded — but not
             // shown: draw() keeps the vanguard population when paths are off.
-            if (name === 'front') FireSeason.setFront(!cur); else if (name === 'entry') FireSeason.setEntry(!cur); else if (name === 'speed') FireSeason.setSpeed(!cur); else if (name === 'patrolfront') FireSeason.setPatrol(!cur); else FireSeason.setVanguard(!cur);
+            if (name === 'front') FireSeason.setFront(!cur); else if (name === 'entry') FireSeason.setEntry(!cur); else if (name === 'speed') FireSeason.setSpeed(!cur); else if (name === 'patrolfront') FireSeason.setPatrol(!cur); else if (name === 'patrolpressure') FireSeason.setPressure(!cur); else FireSeason.setVanguard(!cur);
             if (name === 'vanguard' && !cur && A.data.trajs === undefined) await ensureLayer('trajs');
             updateChips();
             draw(A.t);
@@ -3007,11 +3062,61 @@
         draw(A.t);
         if (typeof updateShareURL === 'function') updateShareURL();
     }
-    function toggleHighlight(want) {
+    // The data layers and season switches a profile asks for, given what this
+    // view can draw. `patrol` resolves to the zoom's rendering, like open().
+    function profileLayers(p, bbox) {
+        const data = [], season = {};
+        SEASON_CHIPS.forEach(c => { season[c] = false; });
+        (p.chips || []).forEach(c => {
+            if (SEASON_CHIPS.indexOf(c) >= 0) {
+                const isPatrol = c === 'patrolfront' || c === 'patrolpressure';
+                season[c] = isPatrol ? window.HAS_PATROL !== false : !seasonRefusal();
+                return;
+            }
+            if (c === 'patrol') { if (window.HAS_PATROL !== false) data.push(patrolLayerForViewBbox(bbox)); return; }
+            if (LAYERS[c]) data.push(c);
+        });
+        return { data, season };
+    }
+    function applySeason(season) {
+        const FS = window.FireSeason;
+        if (!FS) return;
+        const set = { front: FS.setFront, vanguard: FS.setVanguard, entry: FS.setEntry, speed: FS.setSpeed, patrolfront: FS.setPatrol, patrolpressure: FS.setPressure };
+        Object.keys(season).forEach(c => { if (set[c] && chipOn(c) !== !!season[c]) set[c].call(FS, !!season[c]); });
+    }
+    // `want`: undefined = step to the next profile; false/null = off; a
+    // profile id (or true = default) = that profile. Off keeps the layers as
+    // they are — highlight is a choice of layers, and taking it off is not
+    // an instruction to clear the map.
+    async function toggleHighlight(want) {
         if (!A) return;
-        const next = want === undefined ? !A.highlight : !!want;
-        if (next === !!A.highlight) return;
-        A.highlight = next;
+        let p = null;
+        if (want === undefined) p = hlNext(A.highlight || null);
+        else if (want === true) p = hlProfile(HL_DEFAULT);
+        else if (want) p = hlProfile(want) || hlProfile(HL_DEFAULT);
+        if (p && !hlAvailable(p)) p = hlNext(p.id);
+        if (!p) {
+            if (!A.highlight) return;
+            A.highlight = false;
+            return finishToggle();
+        }
+        A.highlight = p.id;
+        A.applyingHL = true;
+        try {
+            const { data, season } = profileLayers(p, A.fetchBbox);
+            const loads = [];
+            LAYER_ORDER.forEach(n => {
+                const on = data.indexOf(n) >= 0;
+                if (!!A.on[n] === on) return;
+                A.on[n] = on;
+                if (on) loads.push(ensureLayer(n));
+            });
+            applySeason(season);
+            if (season.vanguard && A.data.trajs === undefined) loads.push(ensureLayer('trajs'));
+            updateChips();
+            syncBaseEffortVisibility();
+            if (loads.length) { showLoading(true); await Promise.all(loads); hideLoading(); }
+        } finally { if (A) A.applyingHL = false; }
         finishToggle();
     }
     // The Season overlay can be switched from the legend menu or the Map
@@ -3069,7 +3174,7 @@
             // animating it here would only ever play an empty layer, and a
             // silently empty layer reads as a broken feature rather than as
             // "not yours".
-            if (name === 'patrol' || name === 'patrolfront') {
+            if (name === 'patrol' || name === 'patrolfront' || name === 'patrolpressure') {
                 if (window.HAS_PATROL === false) {
                     chip.classList.add('unavailable');
                     chip.title = window.IS_GUEST
@@ -3087,7 +3192,7 @@
         hl.type = 'button';
         hl.id = 'anim-highlight';
         hl.className = 'anim-chip anim-chip-mode';
-        hl.title = HIGHLIGHT_TITLE;
+        hl.title = hlTitle(null);
         hl.setAttribute('aria-pressed', 'false');
         hl.innerHTML = '<i></i>highlight';
         hl.onclick = () => toggleHighlight();
@@ -3431,8 +3536,17 @@
                 clipGeom, aoiID,
                 t0: parseD(fromISO), t1: parseD(toISO) + DAY - 1,
                 playing: false, speed: 1, raf: null, recording: false,
-                highlight: !!opts.highlight
+                // A profile id, or false. Default ON: a fresh open shows the
+                // 'now' story; a link that hand-picked layers stays off.
+                highlight: opts.highlight === undefined
+                    ? (opts.layers && opts.layers.length ? false : HL_DEFAULT)
+                    : (opts.highlight === true || opts.highlight === '1' ? HL_DEFAULT
+                       : (opts.highlight && hlProfile(opts.highlight) ? opts.highlight : false))
             };
+            if (A.highlight && !hlAvailable(hlProfile(A.highlight))) {
+                const nx = hlNext(A.highlight);
+                A.highlight = nx ? nx.id : false;
+            }
             A.t = A.t0;
             const spanDays = (A.t1 - A.t0) / DAY;
             A.speed = opts.speed || Math.max(0.5, spanDays / 20);
@@ -3462,9 +3576,23 @@
                 if (v.settlements || pins.has('settlements')) initial.push('settlements');
                 if (!initial.length) initial = ['fireGrid', 'trajs'];
             }
+            // Highlight chooses: its profile replaces whatever the toggles or
+            // the link would have said, so the loading modal covers it once.
+            let hlSeason = null;
+            if (A.highlight) {
+                const pl = profileLayers(hlProfile(A.highlight), bbox);
+                initial = pl.data;
+                hlSeason = pl.season;
+            }
             initial.forEach(n => { A.on[n] = true; });
 
             buildUI();
+            if (hlSeason) {
+                A.applyingHL = true;
+                try { applySeason(hlSeason); } finally { A.applyingHL = false; }
+                if (hlSeason.vanguard && !A.on.trajs) ensureLayer('trajs');
+                updateChips();
+            }
             // The vanguard chip may already be on (fireseason.js state) while
             // paths are not: its chains come from the trajectories, so load
             // them without switching paths on.
@@ -3504,7 +3632,7 @@
             const seasonAny = !!(FS && ((FS.frontOn() && (FS.meta() || {}).season) ||
                 (FS.entryOn && FS.entryOn() && ((FS.entryMeta && FS.entryMeta()) || {}).status === 'ok') ||
                 (FS.speedOn && FS.speedOn() && ((FS.speedMeta && FS.speedMeta()) || {}).grid) ||
-                (FS.patrolOn && FS.patrolOn() && ((FS.patrolMeta && FS.patrolMeta()) || {}).status === 'ok')));
+                (((FS.patrolOn && FS.patrolOn()) || (FS.pressureOn && FS.pressureOn())) && ((FS.patrolMeta && FS.patrolMeta()) || {}).status === 'ok')));
             if (!any && !seasonAny) toast('No animatable data in view for this window — toggle layers or adjust dates', 'warning');
 
             A.mapHandler = () => { if (A) draw(A.t); };
@@ -3575,8 +3703,11 @@
          * control. `on` omitted toggles.
          */
         setLayer(name, on) { return toggleChip(name, on); },
-        highlight() { return !!(A && A.highlight); },
+        /** The active profile id ('now', 'season', …) or false. */
+        highlight() { return (A && A.highlight) || false; },
+        /** `on`: undefined steps to the next profile, false switches off, an id selects. */
         setHighlight(on) { return toggleHighlight(on); },
+        highlightProfiles() { return HL_PROFILES.filter(hlAvailable).map(p => p.id); },
         toggle() { A ? this.close() : this.open(); },
         // Called by the time slider whenever the date window changes
         // (preset tap like td/90d, slider drag, or precise date edit).
@@ -3607,7 +3738,7 @@
                 tISO: fmtDate(A.t),
                 playing: A.playing,
                 aoi: A.aoiID || null,
-                highlight: !!A.highlight,
+                highlight: A.highlight || false,
                 // Which download the open menu is pointing at, so the share
                 // link reproduces what is on screen — an open menu IS on
                 // screen, and it is the one piece of UI whose whole purpose is

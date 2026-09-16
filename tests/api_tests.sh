@@ -1578,13 +1578,13 @@ fi
 # counted. The compare-seasons side of the same change is /api/fire-season
 # ?season=… which already existed; assert its contours carry dos/label.
 test_api "patrol_isochrones_sandbox_has_none" "/api/patrol-isochrones?area=TZA_Ruaha&from=2026-02-01&to=2026-09-16" "200" \
-    '.area == "TZA_Ruaha" and .cells == 0 and (.status | test("no patrol data")) and (.contours | length) == 0'
+    '.area == "TZA_Ruaha" and .cells == 0 and (.status | test("no patrol data")) and (.contours | length) == 0 and (.pressure.contours | length) == 0 and .pressure.max == 0'
 test_api "patrol_isochrones_no_area" "/api/patrol-isochrones?lon=0&lat=0" "200" '.area == null and (.status | test("no area"))'
 test_api "patrol_isochrones_invisible_aoi_404" "/api/patrol-isochrones?area=aoi_nobody_000000000000&from=2026-01-01&to=2026-02-01" "404" ''
 if [[ -n "$GEO_CLIENT_PWD" ]]; then
     printf "%-50s" "patrol_isochrones_client_contours"
     body=$(curl -s -m 60 --get --data-urlencode "pwd=$GEO_CLIENT_PWD" --data-urlencode "area=TZA_Ruaha" --data-urlencode "from=2026-02-01" --data-urlencode "to=2026-09-16" "${BASE_URL}/api/patrol-isochrones")
-    ok=$(echo "$body" | jq -r 'if .status != "ok" then true else (.cells > 0 and (.contours | length) > 0 and ([.contours[].properties | has("dos") and has("date") and has("label")] | all) and (.weights.foot == 1) and (.by_mode | length) > 0 and (.association.patrolled_before_front.cells + .association.other.cells > 0) and (.arrival | length) == .cells) end')
+    ok=$(echo "$body" | jq -r 'if .status != "ok" then true else (.cells > 0 and (.contours | length) > 0 and ([.contours[].properties | has("dos") and has("date") and has("label")] | all) and (.weights.foot == 1) and (.by_mode | length) > 0 and (.association.patrolled_before_front.cells + .association.other.cells > 0) and (.arrival | length) == .cells and (.pressure.levels | length) > 0 and (.pressure.levels == (.pressure.levels | sort)) and ([.pressure.contours[].properties | (.text == (.level | tostring))] | all) and (.pressure.max >= .threshold) and (.visits | length) == .patrol_days and ([.visits[2]] | all) and (.kernel_r == 4)) end')
     if [ "$ok" = "true" ]; then
         green "✓ ($(echo "$body" | jq -r '"\(.cells) cells, \(.contours|length) lines, \(.status)"'))"; PASSED=$((PASSED + 1))
     else
