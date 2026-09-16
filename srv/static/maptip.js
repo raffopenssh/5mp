@@ -610,7 +610,7 @@
      *
      * MapLibre hit-tests the drawn pixel. That is the right answer for a
      * country-sized polygon and the wrong one for everything this map is made
-     * of: a fire trajectory is drawn at line-width 0.7-2.4 px (densityPaint),
+     * of: a fire trajectory is drawn at line-width 0.4-2.4 px (densityPaint),
      * a detection dot at radius 1.1-5. Human pointing error is a few px with a
      * mouse and, by both platform guidelines, ~9-11 mm - about 24 CSS px -
      * with a finger, whose contact patch also HIDES the target it is aiming

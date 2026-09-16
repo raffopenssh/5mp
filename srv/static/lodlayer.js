@@ -395,11 +395,13 @@
         if (n <= 25000) return { w: 0.75, o: 0.2, arrow: 0, r: 1.2, ring: 0, fill: 0.12 };
         if (n <= 60000) return { w: 0.7, o: 0.16, arrow: 0, r: 1.1, ring: 0, fill: 0.1 };
         // Only reachable through inkCount: a phone showing tens of thousands
-        // of chords. Thinner still, and the floor stays visible — a 0.6 px
-        // stroke on a 3x display is two device pixels, and at 4x coverage
-        // 0.11 accumulates to ~0.4, which reads as structure, not a smudge.
-        if (n <= 150000) return { w: 0.6, o: 0.11, arrow: 0, r: 1.0, ring: 0, fill: 0.09 };
-        return { w: 0.5, o: 0.08, arrow: 0, r: 0.9, ring: 0, fill: 0.08 };
+        // of chords. Thinner still, and the floor stays visible — a 0.5 px
+        // stroke on a 2.6x display is still more than one device pixel, and
+        // at 4x coverage 0.09 accumulates to ~0.35, which reads as structure,
+        // not a smudge. (0.6/0.11 and 0.5/0.08 were still "one red field"
+        // over a whole AOI at z≈5.5 on a phone — user report 2026-09-16.)
+        if (n <= 150000) return { w: 0.5, o: 0.09, arrow: 0, r: 1.0, ring: 0, fill: 0.09 };
+        return { w: 0.4, o: 0.065, arrow: 0, r: 0.9, ring: 0, fill: 0.08 };
     }
 
     function applyDensity(key, n) {
