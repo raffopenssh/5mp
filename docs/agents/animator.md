@@ -398,7 +398,7 @@ untouched (footer 93 px). Press feedback is `:active { transform: scale(.93) }`
 - Speed +/−: click steps ×1.35, press-and-hold ramps (mobile). Keyboard: space/←/→/Esc.
 - **Share links**: `anim=<layers>&anim_speed&anim_t&anim_paused` written by `shareCurrentView()` (via `Animator.getState()`); restored through `window._pendingAnim` set in `restoreStateFromURL()`, polled by anim.js until map ready.
 - `chooseStep()`: ≤92d→day, ≤800d→week, else month. GIF export via `gifenc` CDN
-  (720px; hidden on mobile). **The GIF plays back at the on-screen speed**: its
+  (720px; on mobile the frame cap drops to `GIF_MAX_FRAMES_MOBILE`=80 — never hidden, a hidden row reads as "unavailable"). **The GIF plays back at the on-screen speed**: its
   duration is `spanDays / A.speed` seconds, frames are `10/s` capped at
   `GIF_MAX_FRAMES`, and the per-frame `delay` is then stretched so a capped
   export gets *choppier, not faster*. It used to be a fixed 80 frames × 100 ms,
