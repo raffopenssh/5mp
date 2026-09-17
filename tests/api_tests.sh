@@ -1580,6 +1580,12 @@ fi
 test_api "patrol_isochrones_sandbox_has_none" "/api/patrol-isochrones?area=TZA_Ruaha&from=2026-02-01&to=2026-09-16" "200" \
     '.area == "TZA_Ruaha" and .cells == 0 and (.status | test("no patrol data")) and (.contours | length) == 0 and (.pressure.contours | length) == 0 and .pressure.max == 0'
 test_api "patrol_isochrones_no_area" "/api/patrol-isochrones?lon=0&lat=0" "200" '.area == null and (.status | test("no area"))'
+# A multi-year window: refused without clip (the 800 d cap), answered with
+# clip=1 as the season `to` falls in, and the wire lists every season so the
+# animator can fetch the earlier ones itself (fireseason.js loadPatrolHistory).
+test_api "patrol_isochrones_long_window_400" "/api/patrol-isochrones?area=TZA_Ruaha&from=2020-01-01&to=2026-09-16" "400" ''
+test_api "patrol_isochrones_clip_to_season" "/api/patrol-isochrones?area=TZA_Ruaha&from=2020-01-01&to=2026-09-16&clip=1" "200" \
+    '.from == .season_start and .to == "2026-09-16" and (.seasons | length) > 5 and ([.seasons[] | has("label") and has("start") and has("end")] | all)'
 test_api "patrol_isochrones_invisible_aoi_404" "/api/patrol-isochrones?area=aoi_nobody_000000000000&from=2026-01-01&to=2026-02-01" "404" ''
 if [[ -n "$GEO_CLIENT_PWD" ]]; then
     printf "%-50s" "patrol_isochrones_client_contours"

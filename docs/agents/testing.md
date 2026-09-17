@@ -150,6 +150,19 @@ npx playwright test tests/playwright/
 
 ---
 
+## Running `ui_tests.js` from a browser-tool session
+
+Same trick as the stress suite: `srv/static/ui_tests.js` is a symlink to
+`tests/ui_tests.js`, so on any `?test=1` page:
+
+```javascript
+eval(await (await fetch('/static/ui_tests.js', { cache: 'no-store' })).text());
+await runUITests(['anim_front_every_season']);   // one test, or none for all
+```
+
+Navigate to the test's `url` first (the runner asserts against the current
+page). An assertion `fn` may be `async` — the runner awaits it.
+
 ## Interactive map stress testing (browser-tool sessions)
 
 **Opt-in only.** This is NOT part of `run_all.sh` or `runUITests()` and must
