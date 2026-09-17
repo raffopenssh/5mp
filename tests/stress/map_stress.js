@@ -271,6 +271,210 @@ window.MapStress = (() => {
             // page reloads ≈200ms later; nothing to assert here
         },
 
+        // ANIMATOR toggle soak (2026-09-17). Every chip, every highlight
+        // profile, open/close, date-window reopen, pixels toggle from the
+        // panel while open — and after EVERY step `animCheck()` asserts the
+        // invariants that, when broken, read as "the patrol layer showed":
+        //   * live patrol pixels (grid-*) visible  ⇔  viewLayers.pixels && !Animator.animatingPatrol()
+        //   * every chip's .on / aria-pressed  ⇔  Animator.isLayerOn(name)
+        //   * FireSeason.*On()  ⇔  the season chip's state (one owner)
+        //   * lod-view-* hidden only while a profile animates that row
+        //   * closed ⇒ no canvas, no chips, season overlay back to what it was
+        //     (unless a season chip was clicked by hand)
+        async animator() {
+            const A = window.Animator;
+            if (!A) { __errs.push('ANIM: window.Animator missing'); return; }
+            const FS = window.FireSeason;
+            const gridVis = () => ['grid-halo', 'grid-glow', 'grid-fill', 'grid-cells']
+                .filter(id => map.getLayer(id))
+                .map(id => map.getLayoutProperty(id, 'visibility') || 'visible');
+            const seasonState = () => FS ? {
+                front: !!FS.frontOn(), vanguard: !!FS.vanguardOn(),
+                entry: !!(FS.entryOn && FS.entryOn()), speed: !!(FS.speedOn && FS.speedOn()),
+                patrolfront: !!(FS.patrolOn && FS.patrolOn()), patrolpressure: !!(FS.pressureOn && FS.pressureOn()) } : {};
+            const seasonBefore = seasonState();
+            let touchedSeason = false;
+            function check(where) {
+                const open = A.isOpen();
+                const px = !!(window.viewLayers && viewLayers.pixels);
+                const wantGrid = (px && !(open && A.animatingPatrol())) ? 'visible' : 'none';
+                const gv = gridVis();
+                if (gv.some(v => v !== wantGrid))
+                    __errs.push(`ANIM[${where}]: patrol pixels ${JSON.stringify(gv)} want ${wantGrid} (pixels=${px} open=${open} animPatrol=${open && A.animatingPatrol()})`);
+                const chips = [...document.querySelectorAll('.anim-chip[data-layer]')];
+                if (!open && (chips.length || document.querySelector('#anim-canvas, canvas.anim-canvas')))
+                    __errs.push(`ANIM[${where}]: closed but UI residue (${chips.length} chips)`);
+                if (open && !chips.length) __errs.push(`ANIM[${where}]: open but no chips`);
+                const ss = seasonState();
+                for (const c of chips) {
+                    const n = c.dataset.layer, on = A.isLayerOn(n);
+                    if (c.classList.contains('on') !== on)
+                        __errs.push(`ANIM[${where}]: chip ${n} .on=${c.classList.contains('on')} state=${on}`);
+                    if (c.getAttribute('aria-pressed') !== String(on))
+                        __errs.push(`ANIM[${where}]: chip ${n} aria-pressed=${c.getAttribute('aria-pressed')} state=${on}`);
+                    if (n in ss && ss[n] !== on)
+                        __errs.push(`ANIM[${where}]: season ${n} FireSeason=${ss[n]} chip=${on}`);
+                    if (n === 'patrol' && on && c.classList.contains('hidden'))
+                        __errs.push(`ANIM[${where}]: patrol chip on but hidden`);
+                }
+                if (!open && !touchedSeason) {
+                    const diff = Object.keys(seasonBefore).filter(k => seasonBefore[k] !== ss[k]);
+                    if (diff.length) __errs.push(`ANIM[${where}]: season overlay not restored on close: ${diff.join(',')}`);
+                }
+                // live LOD rows: hidden only while a profile animates the row
+                const rows = { fires: ['fireGrid', 'firePts', 'trajs'], deforest: ['deforest'], settlements: ['settlements'] };
+                const hl = open && A.highlight();
+                const lyr = open ? A.layers() : [];
+                for (const row of Object.keys(rows)) {
+                    const hide = !!(hl && rows[row].some(n => lyr.indexOf(n) >= 0));
+                    for (const suf of ['fill', 'line', 'point', 'dots', 'arrows']) {
+                        const id = `lod-view-${row}-${suf}`;
+                        if (!map.getLayer(id)) continue;
+                        const v = map.getLayoutProperty(id, 'visibility') || 'visible';
+                        if (v !== (hide ? 'none' : 'visible'))
+                            __errs.push(`ANIM[${where}]: ${id} ${v} (hl=${hl} layers=${lyr})`);
+                    }
+                }
+            }
+            const chipNames = () => [...document.querySelectorAll('.anim-chip[data-layer]')]
+                .filter(c => !c.classList.contains('unavailable')).map(c => c.dataset.layer);
+            const SEASON = ['front', 'vanguard', 'entry', 'speed', 'patrolfront', 'patrolpressure'];
+            const settle = async (ms) => { await s(ms || 700); };
+
+            check('start');
+            // 1. plain open (curator 'now'), step every profile twice around
+            A.open(); await settle(3500); check('open');
+            const profiles = A.highlightProfiles();
+            for (let i = 0; i < profiles.length * 2 + 1; i++) {
+                await A.setHighlight(); await settle(1800); check('hl-step-' + i);
+            }
+            for (const p of profiles) { await A.setHighlight(p); await settle(1500); check('hl-' + p); }
+            await A.setHighlight(false); await settle(400); check('hl-off');
+            // 2. every chip on then off, by click (clicks switch highlight off)
+            for (const n of chipNames()) {
+                const c = document.querySelector(`.anim-chip[data-layer="${n}"]`);
+                if (SEASON.indexOf(n) >= 0) touchedSeason = true;
+                c.click(); await settle(1500); check('chip-on-' + n);
+                c.click(); await settle(600); check('chip-off-' + n);
+            }
+            // 3. rapid churn on patrol + pixels toggle from the panel while open
+            for (let i = 0; i < 6; i++) { A.setLayer('patrol'); await s(120); }
+            await settle(1500); check('patrol-churn');
+            toggleViewLayer('pixels'); await settle(400); check('pixels-toggle-1');
+            A.setLayer('patrol', true); await settle(1500); check('patrol-on-pixels-off');
+            toggleViewLayer('pixels'); await settle(400); check('pixels-toggle-2');
+            A.setLayer('patrol', false); await settle(400); check('patrol-off');
+            // 4. play / pause / seek
+            document.getElementById('anim-play')?.click(); await s(1500);
+            document.getElementById('anim-play')?.click(); await s(300); check('play-pause');
+            // 5. date-window reopen with a profile active, then close
+            await A.setHighlight('now'); await settle(1500);
+            await widenWindow(200); await settle(3000); check('reopen-widened');
+            A.close(); await settle(600); check('closed-1');
+            // 6. reopen/close cycles with a season profile and a chip click in between
+            for (let i = 0; i < 3; i++) {
+                A.open(); await settle(3000); check('cycle-open-' + i);
+                if (profiles.indexOf('season') >= 0) { await A.setHighlight('season'); await settle(1800); check('cycle-season-' + i); }
+                if (i === 1) { A.setLayer('deforest'); await settle(1000); check('cycle-chip-' + i); }
+                A.close(); await settle(600); check('cycle-closed-' + i);
+            }
+            // 7. pixels toggle round-trip with the animator closed
+            toggleViewLayer('pixels'); await s(300); check('closed-pixels-off');
+            // 8. pixels OFF in the panel: no profile may switch patrol on
+            //    (the "patrol layer showed" report, 2026-09-17)
+            A.open(); await settle(3000); check('px-off-open');
+            for (let i = 0; i < profiles.length + 1; i++) {
+                await A.setHighlight(); await settle(1200); check('px-off-hl-' + i);
+                if (A.layers().some(n => /^effort/.test(n)))
+                    __errs.push('ANIM[px-off-hl-' + i + ']: profile ' + A.highlight() + ' animates patrol with pixels off');
+                if (A.highlight() === 'patrol')
+                    __errs.push('ANIM[px-off-hl-' + i + ']: patrol profile offered with pixels off');
+            }
+            const pchip = document.querySelector('.anim-chip[data-layer="patrol"]');
+            if (pchip && !pchip.classList.contains('hidden') && !A.isLayerOn('patrol'))
+                __errs.push('ANIM[px-off]: patrol chip shown with pixels off');
+            toggleViewLayer('pixels'); await s(400); check('px-on-while-open');
+            if (pchip && pchip.classList.contains('hidden'))
+                __errs.push('ANIM[px-on-while-open]: patrol chip still hidden after pixels on');
+            A.close(); await settle(600); check('closed-final');
+            esc(); await s(300);
+        },
+
+        // FIRE VECTOR TILES (2026-09-17). A pinned fire layer over a big area
+        // is served as vector tiles (srv/features_tiles.go, lodlayer.js
+        // TILE_LAYER): pan/zoom fetch tiles, a date change swaps the tile
+        // template, a detail mode swaps the SOURCE KIND (vector <-> geojson),
+        // the animator hides/shows the live rows. Soak every transition and
+        // assert: tiles actually served, no errors, pinned-* layers present
+        // while pinned and gone after unpin, baseline restored.
+        // Tiles start above 3,000 trajectories in the pin's window, so the
+        // window is widened to ~2 years first; CAF_Chinko then tiles (4,051).
+        // Pass an AOI id to soak the AOI path — the session must be able to
+        // SEE it (an invisible ?area= is dropped server-side and the pin
+        // quietly shows the parks' rows instead).
+        async fireTiles(area) {
+            area = area || 'CAF_Chinko';
+            const L = window.LODLayer;
+            if (!L || typeof addPinnedLayer !== 'function') { __errs.push('TILES: LODLayer/addPinnedLayer missing'); return; }
+            const key = getPinKey(area, 'fire');
+            const tiled = () => { const st = L.state(key); return st ? { tiled: !!st.tiled, count: st.count, render: st.render, url: st.tileURL } : null; };
+            // an LOD pin's layers are lod-<key>-{fill,line,arrows,point,dots}
+            const pinnedIds = () => map.getStyle().layers.map(l => l.id).filter(id => id.indexOf('lod-' + key) === 0);
+            const chk = (w, wantPinned) => {
+                const ids = pinnedIds();
+                if (wantPinned && !ids.length) __errs.push(`TILES[${w}]: pinned layer missing`);
+                if (!wantPinned && ids.length) __errs.push(`TILES[${w}]: pinned residue ${ids}`);
+                const st = tiled();
+                if (wantPinned && st && st.tiled) {
+                    const src = map.getSource('lod-' + key);
+                    if (src && src.type !== 'vector') __errs.push(`TILES[${w}]: state says tiled but source is ${src.type}`);
+                }
+            };
+            // wait until LODLayer stops loading for this key
+            const settled = async (ms) => { const t0 = Date.now(); await s(600);
+                while (Date.now() - t0 < (ms || 15000)) { const st = L.state(key); if (!st || !st.inflightSig) break; await s(200); } await s(300); };
+            const views = [[23.9, 6.9, 7.5], [23.0, 7.2, 8], [24.8, 6.5, 9], [23.9, 6.9, 10.5], [23.9, 6.9, 6]];
+            map.jumpTo({ center: [23.9, 6.9], zoom: 7.5 }); await s(1500);
+            await widenWindow(360);
+            await addPinnedLayer(area, area, 'fire'); await settled(); chk('pinned', true);
+            const st0 = tiled();
+            if (!st0) __errs.push('TILES: no LODLayer state for ' + key);
+            let sawTiles = !!(st0 && st0.tiled);
+            // pan/zoom soak with hover/click on tile features
+            for (let round = 0; round < 2; round++)
+                for (const [lng, lat, z] of views) {
+                    map.jumpTo({ center: [lng, lat], zoom: z }); await settled(8000);
+                    const st = tiled(); sawTiles = sawTiles || !!(st && st.tiled);
+                    chk('view-' + z, true);
+                    const ts = targetsFrom(pinnedIds().filter(id => !/-text$/.test(id)), 20);
+                    for (const [x, y] of ts) { mm(x, y); await s(15); }
+                    if (ts.length) { click(...ts[0]); await s(300); esc(); }
+                }
+            // date-window change swaps the tile template (setTiles)
+            await widenWindow(60); await settled(); chk('widened', true);
+            // detail modes swap the source kind: tiles -> geojson -> tiles
+            for (const m of ['shapes', 'fast', 'auto', 'shapes', 'auto']) {
+                L.setDetail(key, m); await settled(12000); chk('detail-' + m, true);
+            }
+            // animator over a tiled pin: live rows hidden by the curator, pins untouched
+            if (window.Animator) {
+                Animator.open(); await s(3000); chk('anim-open', true);
+                map.jumpTo({ center: [22.0, 7.5], zoom: 7 }); await settled(8000); chk('anim-moved', true);
+                Animator.close(); await s(800); chk('anim-closed', true);
+            }
+            // rapid pin churn: unpin/pin while tiles are in flight
+            for (let i = 0; i < 3; i++) {
+                removePinnedLayer(key); await s(120);
+                await addPinnedLayer(area, area, 'fire'); await s(150);
+            }
+            await settled(); chk('churn', true);
+            removePinnedLayer(key); await s(1200); chk('unpinned', false);
+            if (!sawTiles) __errs.push('TILES: the layer was never served as tiles over ' + area + ' — the tile tier was not exercised');
+            const srcs = Object.keys(map.getStyle().sources).filter(k => k === 'lod-' + key);
+            if (srcs.length) __errs.push('TILES: source residue ' + srcs);
+            esc(); await s(300);
+        },
+
         // Pan/zoom + hover/click soak across scales.
         async panZoomSoak() {
             const views = [[23.9, 6.9, 7.5], [30.5, 15.5, 7], [29.5, -0.6, 8.5], [34.9, -2.4, 8]];
@@ -287,8 +491,12 @@ window.MapStress = (() => {
         // geomap-structural-* layers/sources persist at line-opacity 0 by
         // design (soft-off); they are not residue.
         const st = map.getStyle();
-        const structL = st.layers.filter(l => /^geomap-structural-/.test(l.id)).length;
-        const structS = Object.keys(st.sources).filter(k => /^geomap-struct-src-/.test(k)).length;
+        // fireseason-* layers likewise stay at visibility none with an empty
+        // source once the Season overlay has been on and off again.
+        const softOff = l => /^geomap-structural-/.test(l.id) ||
+            (/^fireseason-/.test(l.id) && (l.layout || {}).visibility === 'none');
+        const structL = st.layers.filter(softOff).length;
+        const structS = Object.keys(st.sources).filter(k => /^geomap-struct-src-/.test(k) || /^fireseason-/.test(k)).length;
         const clean = baseline && (now.layers - structL) === baseline.layers &&
             (now.sources - structS) === baseline.sources && now.images === baseline.images &&
             __errs.length === 0;

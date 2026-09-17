@@ -1510,6 +1510,14 @@ test_api "fire_season_window_count" "/api/fire-season?area=CAF_Chinko&at=2025-03
 test_api "fire_season_before_front" "/api/fire-season?area=CAF_Chinko&at=2024-08-15&summary=1" "200" \
     '.front_reached_pct == 0 and .usual_offset_days == null'
 test_api "fire_season_full_has_contours" "/api/fire-season?area=CAF_Chinko&at=2024-12-01" "200" '(.contours | length) > 0'
+# bbox mode: every PARK in view (no AOIs), each at the season `at` falls in;
+# thinned lines and an area cap that says so (invariant 8).
+test_api "fire_season_bbox_all_parks" "/api/fire-season?bbox=20,3,29,10&at=2024-12-01" "200" \
+    '.mode == "bbox" and .count > 1 and .truncated == false and ([.areas[].area] | index("CAF_Chinko") != null) and ([.areas[] | select(.area | startswith("XSA"))] | length == 0) and (.areas[] | select(.area == "CAF_Chinko") | .season == "2024/25" and (.contours | length) > 0)'
+test_api "fire_season_bbox_thinned_capped" "/api/fire-season?bbox=-20,-35,52,20&at=2024-12-01&lines=30&limit=5" "200" \
+    '.count == 5 and .total > 5 and .truncated == true and ([.areas[].contours[] | select(.properties.label != true or (.properties.dos % 30) != 0)] | length == 0)'
+test_api "fire_season_bbox_exclude" "/api/fire-season?bbox=20,3,29,10&at=2024-12-01&exclude=CAF_Chinko" "200" \
+    '([.areas[].area] | index("CAF_Chinko") == null)'
 # The stats panel's season row is fed by /api/stats under the fire row's
 # own scope and window (one view, one basis).
 test_api "stats_vanguard_groups" "/api/stats?park_focus=CAF_Chinko&from=2024-08-01&to=2025-03-31" "200" \

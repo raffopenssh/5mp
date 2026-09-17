@@ -148,8 +148,13 @@
     const HL_SEASON_MIN_DAYS = 60;
     function hlAvailable(p) {
         if (p.needs === 'season' && (seasonRefusal() || (A && (A.t1 - A.t0) / DAY < HL_SEASON_MIN_DAYS))) return false;
-        if (p.needs === 'patrol' && window.HAS_PATROL === false) return false;
+        if (p.needs === 'patrol' && !patrolOffered()) return false;
         return true;
+    }
+    // Patrol effort is offered when the account owns it AND the panel's
+    // pixels row is on. A share link with `layers=none` says "no patrol".
+    function patrolOffered() {
+        return window.HAS_PATROL !== false && !!(window.viewLayers && window.viewLayers.pixels);
     }
     function hlNext(cur) {
         const avail = HL_PROFILES.filter(hlAvailable);
@@ -917,11 +922,17 @@
         // kind of wait.
         const chip = chipFor(name);
         if (chip) setChipLoading(chip, true);
+        const mine = A;
         A.loading[name] = loadLayer(name).catch(e => {
+            // Closed (or reopened) while this load was in flight: the
+            // animation it was for is gone, so there is nobody to tell. It
+            // used to read A.on with A null and surface as an unhandled
+            // rejection on every close-during-load (map_stress fireTiles).
+            if (A !== mine) return;
             A.on[name] = false;
             toast(e.message, 'warning');
         }).finally(() => {
-            delete A.loading[name];
+            if (mine.loading) delete mine.loading[name];
             // A refetch can return the same number of points for a different
             // area, and the sprite keys count position — drop them explicitly.
             invalidateSprites();
@@ -3272,6 +3283,7 @@
             const name = chip.dataset.layer;
             const on = chipOn(name);
             chip.classList.toggle('on', on);
+            chip.setAttribute('aria-pressed', on ? 'true' : 'false');
             const mark = chip.querySelector('i');
             if (mark) {
                 if (mark.classList.contains('rg')) {
@@ -3301,7 +3313,13 @@
         // A chip a profile switched on must be seen (patrol hides when the
         // map's pixels toggle is off) — an on switch nobody can see is a lie.
         const pc = chipFor('patrol');
-        if (pc && chipOn('patrol')) { pc.classList.remove('hidden'); pc.classList.add('visible'); }
+        if (pc && window.HAS_PATROL !== false) {
+            // ...and it follows the panel's pixels row both ways while we are
+            // open, so switching pixels on in the panel offers the chip.
+            const hide = !chipOn('patrol') && !patrolOffered();
+            pc.classList.toggle('hidden', hide);
+            if (!hide) pc.classList.add('visible');
+        }
         const hl = document.getElementById('anim-highlight');
         if (hl) {
             const p = hlProfile(A.highlight);
@@ -3429,7 +3447,11 @@
                 season[c] = isPatrol ? window.HAS_PATROL !== false : !seasonRefusal();
                 return;
             }
-            if (c === 'patrol') { if (window.HAS_PATROL !== false) data.push(patrolLayerForViewBbox(bbox)); return; }
+            // The panel's pixels toggle is the user's statement about patrol
+            // (the chip is hidden while it is off). A profile that switched
+            // patrol on over it drew the layer the user had just turned off
+            // — the "patrol showed" state (2026-09-17). Off means off.
+            if (c === 'patrol') { if (patrolOffered()) data.push(patrolLayerForViewBbox(bbox)); return; }
             if (LAYERS[c]) data.push(c);
         });
         return { data, season };
@@ -4101,6 +4123,7 @@
             // never had, so an impossible layer is dropped WITH its reason
             // rather than switched on to draw nothing.
             await refreshFirePtsFeasibility();
+            if (!A) return;
             if (A.on.firePts && A.ptsFeas && A.ptsFeas.ok === false) {
                 A.on.firePts = false;
                 initial = initial.filter(n => n !== 'firePts');
@@ -4111,6 +4134,10 @@
             showLoading(true);
             await Promise.all(active.map(n => ensureLayer(n)));
             hideLoading();
+            // Closed while the first load was in flight (Esc, a date-window
+            // reopen, a stress soak): nothing below is about an animation
+            // that still exists.
+            if (!A) return;
 
             const any = LAYER_ORDER.some(n => A.on[n] && A.data[n] && (
                 Array.isArray(A.data[n]) ? A.data[n].length :
@@ -4191,6 +4218,8 @@
         },
         isOpen() { return !!A; },
         animatingPatrol,   // globe.html's pixel toggle asks this before showing the lattice
+        /** The panel's pixels row changed: re-read what the patrol chip may offer. */
+        refreshChips() { if (A) updateChips(); },
         /** Which animation renderings are on right now. */
         layers() { return A ? LAYER_ORDER.filter(n => A.on[n]) : []; },
         isLayerOn(name) { return chipOn(name); },
