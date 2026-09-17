@@ -299,7 +299,9 @@ src_guard "stats_width_transition"        present "transition: width" "srv/stati
 # Highlight is a curator: on by default, steps through profiles, off the
 # moment the user toggles a chip, and its PROFILE (not a flag) rides the link.
 src_guard "anim_hl_profiles"              present "HL_PROFILES" "srv/static/anim.js"
-src_guard "anim_hl_default_on"            present "opts.layers.length. .. anySeasonOn.. . false : HL_DEFAULT" "srv/static/anim.js"
+src_guard "anim_hl_default_on"            present "Array.isArray\(opts.layers\) \|\| anySeasonOn\(\) \? false : HL_DEFAULT" "srv/static/anim.js"
+# An empty `anim=` is a composition (every data chip off), not a plain open.
+src_guard "anim_empty_layers_is_a_choice"  present "if \(Array.isArray\(opts.layers\)\) \{" "srv/static/anim.js"
 # ONLY IF NOTHING ELSE HAS CHOSEN. A link that restored the season overlay
 # (season=front,patrol,pressure) had its lines switched back off the moment the
 # animator opened, because the curator ran its own profile over the top -- a
@@ -334,9 +336,12 @@ src_guard "season_rows_derived"           present "function renderSeasonRows" "$
 src_guard "season_rows_not_typed"         absent  "renderRowModes\\('fires'\\)" "$GLOBE"
 # The chip row rests to what is actually drawn (eleven chips, ten of them
 # saying "not me", over the map the animation is for).
-src_guard "anim_chips_rest"               present "function scheduleChipsRest" "srv/static/anim.js"
+# The chip row changes shape only on a gesture: no idle timer, no hover wake.
+src_guard "anim_chips_rest"               present "function toggleChipsRested" "srv/static/anim.js"
+src_guard "anim_chips_no_timer"           absent  "scheduleChipsRest|chipsHover" "srv/static/anim.js"
+src_guard "anim_chips_recent_stays"       present "#anim-chips.rested > .anim-chip.visible:not\(.on\):not\(.recent\)" "srv/static/anim.js"
 src_guard "anim_chips_more_button"        present "anim-chips-more" "srv/static/anim.js"
-src_guard "anim_chips_rest_on_play"       present "A.chipsPinned. setChipsRested" "srv/static/anim.js"
+src_guard "anim_chips_rest_on_play"       present "^        setChipsRested\(true\);" "srv/static/anim.js"
 # A GIF frame must be composited from a MAP frame the map has actually
 # repainted (the season contours are MapLibre layers, and the GL buffer is only
 # readable inside a render turn), and the season's playhead must not be
