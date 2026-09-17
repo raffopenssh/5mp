@@ -58,6 +58,11 @@ func (s *Server) vanguardTracker(r *http.Request, area string) string {
 func (s *Server) HandleAPIFireSeason(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	area := strings.TrimSpace(q.Get("area"))
+	if area == "" && q.Get("bbox") != "" {
+		// No focus, a viewport: every park's front in view (bbox mode).
+		s.fireSeasonBBox(w, r)
+		return
+	}
 	if area == "" {
 		// No focus: the area whose front grid holds the view centre. An AOI
 		// the caller may see wins (it is the larger question); otherwise the
@@ -773,4 +778,160 @@ func frontCurve(front, usual []byte, nx, ny, step int, complete bool) (fc, uc []
 		return out
 	}
 	return cum(hf, tf), cum(hu, tu)
+}
+
+// fireSeasonBBox — GET /api/fire-season?bbox=w,s,e,n[&at=][&lines=all|15|30][&limit=][&exclude=]
+//
+// The unfocused map used to draw ONE area's front: the park under the view
+// centre. Two parks side by side then showed contours in one and none in the
+// other, which reads as "no data there", not as "not the one at the centre"
+// (report 2026-09-17: "contours should show consistently across parks").
+// This answers for every PARK whose front grid intersects the bbox, each at
+// the season the caller's `at` falls in (else its latest) — the same rule as
+// the single-area path, so the picture agrees with the stats row.
+//
+// Parks only: an AOI's grid spans the parks inside it and would draw a second
+// front over each; an AOI is drawn when it is the focus (?area=).
+//
+// `lines` thins the contours for an overview (15 = the labelled 15-day
+// lines, 30 = the 30-day lines): a continent of 5-day lines is ~9 MB and a
+// thicket. `limit` caps the areas (nearest the bbox centre first) and the
+// answer says so (`truncated`, invariant 8). `exclude` names the area the
+// caller already holds (the reference), so it is not shipped twice.
+func (s *Server) fireSeasonBBox(w http.ResponseWriter, r *http.Request) {
+	q := r.URL.Query()
+	parts := strings.Split(q.Get("bbox"), ",")
+	if len(parts) != 4 {
+		http.Error(w, `{"error":"bbox must be w,s,e,n"}`, http.StatusBadRequest)
+		return
+	}
+	var bb [4]float64
+	for i, p := range parts {
+		v, err := strconv.ParseFloat(strings.TrimSpace(p), 64)
+		if err != nil {
+			http.Error(w, `{"error":"bbox must be w,s,e,n"}`, http.StatusBadRequest)
+			return
+		}
+		bb[i] = v
+	}
+	lines := q.Get("lines")
+	if lines != "15" && lines != "30" {
+		lines = "all"
+	}
+	limit := 60
+	if n, err := strconv.Atoi(q.Get("limit")); err == nil && n > 0 && n <= 200 {
+		limit = n
+	}
+	at := q.Get("at")
+	exclude := q.Get("exclude")
+
+	type row struct {
+		Area, Season, Start, End string
+		Complete                 bool
+		Contours                 string
+		dist                     float64
+	}
+	rows, err := s.DB.QueryContext(r.Context(), `
+		SELECT area_id, season, season_start, season_end, complete, COALESCE(contours_json,''),
+		       x0 + res * nx / 2.0, y0 + res * ny / 2.0
+		FROM fire_season_front
+		WHERE x0 <= ? AND x0 + res * nx >= ? AND y0 <= ? AND y0 + res * ny >= ?
+		ORDER BY area_id, season_start`, bb[2], bb[0], bb[3], bb[1])
+	if err != nil {
+		internalError(w, "query failed", err)
+		return
+	}
+	cx, cy := (bb[0]+bb[2])/2, (bb[1]+bb[3])/2
+	// Per area: the season `at` falls in, else the latest.
+	pick := map[string]*row{}
+	var order []string
+	for rows.Next() {
+		var rw row
+		var complete int
+		var gx, gy float64
+		if rows.Scan(&rw.Area, &rw.Season, &rw.Start, &rw.End, &complete, &rw.Contours, &gx, &gy) != nil {
+			continue
+		}
+		if rw.Area == exclude || IsAOIID(rw.Area) {
+			continue
+		}
+		rw.Complete = complete == 1
+		rw.dist = math.Hypot(gx-cx, gy-cy)
+		cur, seen := pick[rw.Area]
+		if !seen {
+			order = append(order, rw.Area)
+			pick[rw.Area] = &rw
+			continue
+		}
+		// rows arrive by season_start: a later row replaces the pick unless
+		// the pick already holds `at`.
+		if at != "" && cur.Start <= at && at <= cur.End {
+			continue
+		}
+		pick[rw.Area] = &rw
+	}
+	rows.Close()
+	total := len(order)
+	sort.Slice(order, func(i, j int) bool { return pick[order[i]].dist < pick[order[j]].dist })
+	if len(order) > limit {
+		order = order[:limit]
+	}
+	type feat struct {
+		Type       string          `json:"type"`
+		Geometry   json.RawMessage `json:"geometry"`
+		Properties struct {
+			Dos   int    `json:"dos"`
+			Date  string `json:"date"`
+			Label bool   `json:"label"`
+			Text  string `json:"text"`
+		} `json:"properties"`
+	}
+	type areaOut struct {
+		Area        string      `json:"area"`
+		Season      string      `json:"season"`
+		SeasonStart string      `json:"season_start"`
+		SeasonEnd   string      `json:"season_end"`
+		Complete    bool        `json:"complete"`
+		Contours    interface{} `json:"contours"`
+	}
+	out := make([]areaOut, 0, len(order))
+	for _, id := range order {
+		rw := pick[id]
+		ao := areaOut{Area: rw.Area, Season: rw.Season, SeasonStart: rw.Start, SeasonEnd: rw.End, Complete: rw.Complete}
+		if lines == "all" || rw.Contours == "" {
+			if rw.Contours == "" {
+				ao.Contours = []feat{}
+			} else {
+				ao.Contours = json.RawMessage(rw.Contours)
+			}
+		} else {
+			var fs []feat
+			if json.Unmarshal([]byte(rw.Contours), &fs) != nil {
+				fs = nil
+			}
+			keep := make([]feat, 0, len(fs)/3+1)
+			for _, f := range fs {
+				if !f.Properties.Label {
+					continue
+				}
+				if lines == "30" && f.Properties.Dos%30 != 0 {
+					continue
+				}
+				keep = append(keep, f)
+			}
+			ao.Contours = keep
+		}
+		out = append(out, ao)
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Cache-Control", "private, max-age=600")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"mode":      "bbox",
+		"at":        at,
+		"lines":     lines,
+		"areas":     out,
+		"count":     len(out),
+		"total":     total,
+		"truncated": total > len(out),
+	})
 }

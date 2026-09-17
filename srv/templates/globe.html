@@ -7398,6 +7398,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
 
         function setBbox(minLng, minLat, maxLng, maxLat) {
             currentBbox = [minLng, minLat, maxLng, maxLat];
+            window.dispatchEvent(new CustomEvent('5mp:bbox-changed'));
             
             // Deselect the 162 keystones toggle when bbox is drawn
             keystonesEnabled = false;
@@ -7918,6 +7919,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
             var bbox = countryBboxCache[country];
             if (bbox && bbox.minLng !== Infinity) {
                 currentBbox = [bbox.minLng, bbox.minLat, bbox.maxLng, bbox.maxLat];
+                window.dispatchEvent(new CustomEvent('5mp:bbox-changed'));
                 
                 // Show the active filter UI
                 var activeFilters = document.getElementById('active-filters');
@@ -7944,6 +7946,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
         function clearCountrySearch() {
             currentCountryFilter = '';
             currentBbox = null;
+            window.dispatchEvent(new CustomEvent('5mp:bbox-changed'));
             
             var input = document.getElementById('country-search');
             if (input) {
@@ -8034,6 +8037,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
 
         function clearBbox() {
             currentBbox = null;
+            window.dispatchEvent(new CustomEvent('5mp:bbox-changed'));
             
             // Hide filter panel display
             var filterArea = document.getElementById('filter-area');
@@ -15209,6 +15213,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 GRID_PIXEL_LAYERS.forEach(id => {
                     if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', vis);
                 });
+                if (window.Animator && Animator.refreshChips) Animator.refreshChips();
                 return;
             }
             if (viewLayers[name]) {
