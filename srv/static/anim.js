@@ -50,6 +50,12 @@
     const POINTS_ZOOM = 6.5;       // default to real points at/above this zoom
     const POINTS_MAX_AREA = 40;    // deg², matches server cap
     const GIF_MAX_FRAMES = 160;    // size ceiling; duration is preserved by delay
+    // On a phone the same clip is encoded on a slower core and a hot battery;
+    // halve the frame ceiling (choppier, same duration) rather than hide the
+    // export — a hidden row read as "not available for me", not as a
+    // kindness (2026-09-17).
+    const GIF_MAX_FRAMES_MOBILE = 80;
+    const isMobileViewport = () => !!(window.matchMedia && window.matchMedia('(max-width: 768px)').matches);
 
     let A = null; // active animator state
     let openSeq = 0; // open() generation, see Animator.open
@@ -439,8 +445,6 @@
         #anim-inline > #anim-date-lbl.visible { min-width: 76px; }
         #anim-speed-lbl { min-width: 44px; font-size: 10px; }
         #anim-inline > #anim-speed-lbl.visible { min-width: 44px; }
-        /* GIF encoding a phone's viewport is minutes of CPU; the row stays,
-           the GIF entry hides itself (see exportMenuHTML). */
     }
 
     /* ── TOUCH: A CONTROL IS AS BIG AS IT IS, NOT AS BIG AS ITS HIT SLOP ──
@@ -2855,7 +2859,8 @@
             const durSec = Math.max(1, (span / DAY) / Math.max(0.25, A.speed));
             // 10 fps is the target; clamp frame count for size, then stretch
             // the delay so the *duration* stays right (choppier, not faster).
-            const frames = Math.max(8, Math.min(GIF_MAX_FRAMES, Math.round(durSec * 10)));
+            const maxFrames = isMobileViewport() ? GIF_MAX_FRAMES_MOBILE : GIF_MAX_FRAMES;
+            const frames = Math.max(8, Math.min(maxFrames, Math.round(durSec * 10)));
             const delayMs = Math.max(20, Math.min(500, Math.round(durSec * 1000 / frames)));
             for (let i = 0; i < frames; i++) {
                 const t = A.t0 + span * i / (frames - 1);
@@ -3046,13 +3051,15 @@
     }
 
     function exportMenuHTML() {
-        const mobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
+        const mobile = isMobileViewport();
         return Object.keys(EXPORT_ITEMS).map(k => {
-            // Encoding a GIF is tens of seconds of main-thread canvas work per
-            // export; on a phone it is minutes and a hot battery. The row is
-            // hidden there rather than offered and then apologised for.
-            if (k === 'gif' && mobile) return '';
-            const it = EXPORT_ITEMS[k];
+            // The GIF row used to hide itself on phones (CPU/battery). A phone
+            // viewport is FEWER output pixels than the 720 px desktop frame and
+            // the per-frame cost is mostly MapLibre's repaint wait, which no
+            // device escapes — so it is offered everywhere, with a lower frame
+            // cap on mobile (GIF_MAX_FRAMES_MOBILE) and a note saying so.
+            const it = Object.assign({}, EXPORT_ITEMS[k]);
+            if (k === 'gif' && mobile) it.note = 'the animation, slower on phones';
             const link = exportShareLink(k);
             return `<div class="aoi-menu-row">`
                  + `<button class="aoi-menu-item" data-item="${k}" data-anim-export="${k}">`
