@@ -2757,10 +2757,20 @@
     // of an 18 GB-dataset map on a phone), so the colour buffer is only
     // guaranteed readable while the GL frame is still current: inside a
     // `render`/`idle` turn. We therefore ask MapLibre to repaint
-    // (`triggerRepaint`) and read the canvas from the `render` event it fires,
-    // with `idle` and a short timeout as fallbacks so an export can never
-    // hang on a map that decided nothing changed.
+    // (`triggerRepaint`) and read the canvas from the event it fires, with a
+    // timeout as fallback so an export can never hang on a map that decided
+    // nothing changed.
+    //
+    // WHICH event matters. The season layers are GeoJSON sources, and
+    // `setData` is a round-trip through a worker: the FIRST `render` after
+    // `triggerRepaint` still paints the previous contours, so a capture on
+    // `render` is exactly one frame behind the fire canvas (measured: the
+    // render-hash sequence equals the idle-hash sequence shifted by one).
+    // `idle` fires once the new data is painted (~0.9 s/frame here). So:
+    // `idle` while a season rendering is on, `render` otherwise — a
+    // canvas-only export need not pay for a wait that buys it nothing.
     function mapFrameInto(octx, outW, outH) {
+        const needIdle = anySeasonOn();
         const mapCanvas = map.getCanvas();
         const paint = () => {
             octx.fillStyle = '#0a0a0a';
@@ -2773,13 +2783,14 @@
                 if (done) return;
                 done = true;
                 map.off('render', onRender);
+                map.off('idle', onRender);
                 clearTimeout(timer);
                 paint();
                 resolve();
             };
             const onRender = () => finish();
-            map.on('render', onRender);
-            const timer = setTimeout(finish, 180);
+            map.on(needIdle ? 'idle' : 'render', onRender);
+            const timer = setTimeout(finish, needIdle ? 2500 : 180);
             map.triggerRepaint();
         });
     }

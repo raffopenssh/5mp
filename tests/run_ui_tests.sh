@@ -342,6 +342,10 @@ src_guard "anim_chips_rest_on_play"       present "A.chipsPinned. setChipsRested
 # readable inside a render turn), and the season's playhead must not be
 # throttled while exporting.
 src_guard "gif_waits_for_map_frame"       present "function mapFrameInto" "srv/static/anim.js"
+# … and with a season rendering on, the frame is read on `idle`, not `render`:
+# setData is a worker round-trip and the first render still shows the previous
+# contours (measured one frame behind, 2026-09-17).
+src_guard "gif_idle_when_season_on"       present "const needIdle = anySeasonOn()" "srv/static/anim.js"
 src_guard "gif_forces_season_playhead"    present "draw\\(t, true\\)" "srv/static/anim.js"
 src_guard "season_anim_force_arg"         present "function animAt\\(t, force\\)" "srv/static/fireseason.js"
 # The GeoPackage of a frame carries the Season renderings that are ON, and says
