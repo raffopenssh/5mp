@@ -122,9 +122,16 @@ lives in the middleware.
 3. **A guest may not mint links.** Blocked twice on purpose: in `guestMayRead`
    and again in the create handler. A capability that mints capabilities is a
    password.
-4. **The strongest credential present wins.** `guestAuth` is consulted after
-   both password checks, so a signed-in user holding a stale guest cookie stays
-   themselves; and `RequestEnv`'s guest branch is likewise last.
+4. **The strongest credential present wins — but an arrival is a switch.**
+   `guestAuth` is consulted after both password checks, so a signed-in user
+   holding a *stale* guest cookie stays themselves; and `RequestEnv`'s guest
+   branch is likewise last. The moment of *arrival* is different: opening
+   `/s/g-…` while signed in drops the `access_pwd` cookie
+   (`HandleShortLink`), exactly as a `?pwd=` for another login replaces the
+   cookie — the URL is the newer statement of intent. Before 2026-09-17 a
+   logged-in colleague clicking a guest link silently kept their own session
+   and never saw the shared view. Pinned by
+   `guest_link_supersedes_a_held_password` / `password_supersedes_a_held_guest_key`.
 5. **`/s/` is not in `isPublicPath`.** It is allowed through
    `PasswordMiddleware` explicitly, because the arriving guest has no cookie
    yet — that request is how they get one. It answers `no-store`.
