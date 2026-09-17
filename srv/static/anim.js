@@ -3226,6 +3226,13 @@
             more.classList.toggle('hidden', n === 0);
             const lbl = more.querySelector('.anim-chip-lbl');
             if (lbl) lbl.textContent = rested && folded.length ? String(folded.length) : '';
+            // The glyph must say which way it goes. ⋯ means "more" everywhere,
+            // so it is right only while there IS more behind it; a full row
+            // folds, and « is the fold. One glyph for both directions read as
+            // "more" on an already-complete row — the reader could not tell
+            // the button would collapse it.
+            const ico = more.querySelector('i');
+            if (ico) ico.className = rested ? 'icon-more-horizontal' : 'icon-chevrons-left';
             more.setAttribute('aria-expanded', rested ? 'false' : 'true');
             more.title = rested
                 ? (folded.length
