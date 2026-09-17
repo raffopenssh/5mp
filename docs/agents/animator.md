@@ -551,12 +551,17 @@ animator closed.
 
 **The chip row rests to what is drawn.** `#anim-chips.rested` folds every chip
 that is OFF (width + opacity, negative margin to swallow the flex gap; never
-`display:none`, so it grows back) and shows one `⋯ n` button. It rests when
-play starts and ~3 s after the last chip was touched; it wakes on the `⋯`
-(which *pins* it open), and on a real mouse `pointerenter` — the test is
-`e.pointerType === 'mouse'`, not a `(hover: hover)` media query, because the
-query answers for the device and the event answers for the gesture. `highlight`
-never folds: it is the switch that can rebuild the whole set.
+`display:none`, so it grows back) and shows one button whose glyph names its
+direction: `⋯ n` while folded (n more renderings), `«` while open (fold back).
+It opens rested, and folds on the gestures that mean "done choosing, looking
+now": play, a grab of the playhead, a hand on the map canvas (`pointerdown`/
+`touchstart`/`wheel` on the canvas — **not** `map.on('movestart')`, which
+also fires for the code's own `fitBounds` after a chip, and whose
+`originalEvent` is absent on wheel zoom). Never on a timer, never on hover,
+never on a chip toggle: an earlier idle/hover version reflowed three lines to
+one under a finger mid-decision. A chip switched OFF while resting stays
+(`.recent`) until the next fold gesture. `highlight` never folds: it is the
+switch that can rebuild the whole set. One entry point: `attentionOnMap()`.
 
 **Highlight yields to a composed map.** The curator is ON only for a plain
 open: `opts.layers` naming layers *or* `anySeasonOn()` leaves it off, so a link
