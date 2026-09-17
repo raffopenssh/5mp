@@ -1191,6 +1191,25 @@ if [[ -n "$CLIENT_PWD" ]]; then
         ERRORS+=("a password does not supersede a held guest key")
     fi
 
+    # ...AND A SHARED LINK OPENED BY A SIGNED-IN BROWSER SUPERSEDES THE
+    # PASSWORD. The newer statement of intent wins in both directions: a
+    # colleague already logged in who clicks a guest link must see the view
+    # they were sent, not their own session with the key silently ignored.
+    printf "%-50s" "guest_link_supersedes_a_held_password"
+    JAR8=$(mktemp)
+    curl -s -m 30 -o /dev/null -c "$JAR8" --get --data-urlencode "pwd=${CLIENT_PWD}" "${BASE_URL}/"
+    pre=$(curl -s -m 30 -o /dev/null -w "%{http_code}" -b "$JAR8" "${BASE_URL}/api/admin/access")
+    curl -s -m 30 -o /dev/null -b "$JAR8" -c "$JAR8" "${BASE_URL}/s/${L}"
+    isg=$(curl -s -m 30 -b "$JAR8" "${BASE_URL}/" | grep -c 'IS_GUEST = true' || true)
+    adm=$(curl -s -m 30 -o /dev/null -w "%{http_code}" -b "$JAR8" "${BASE_URL}/api/admin/access")
+    rm -f "$JAR8"
+    if [[ "$pre" == "200" && "$isg" != "0" && "$adm" != "200" ]]; then
+        green "✓"; PASSED=$((PASSED + 1))
+    else
+        red "FAIL (pre $pre, is_guest=$isg admin=$adm)"; FAILED=$((FAILED + 1))
+        ERRORS+=("a guest link does not supersede a held password")
+    fi
+
     # Tags: set on one link, renamed everywhere, removable. A tag is one name
     # for one purpose — the whole-group rename exists because renaming one row
     # would fork the group out of the next "renew all".

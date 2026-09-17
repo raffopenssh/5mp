@@ -390,6 +390,19 @@ func (s *Server) HandleShortLink(w http.ResponseWriter, r *http.Request) {
 			MaxAge: int(guestTTL / time.Second), HttpOnly: true, Secure: true,
 			SameSite: http.SameSiteLaxMode,
 		})
+		// OPENING A SHARED LINK IS A SWITCH, NOT NOISE — the same rule the
+		// middleware applies to a `?pwd=` for a different login. A browser
+		// already signed in with a password used to keep that session: the
+		// guest cookie was set and then ignored ("strongest credential
+		// wins"), so the sender's colleague saw their OWN tenant, dates and
+		// layers instead of the view they were sent, and nothing said so. The
+		// URL is the newer statement of intent, so the password cookie is
+		// dropped here and the page renders as the link. The password is not
+		// lost — they know it — and the still-held-guest-cookie case in the
+		// middleware (a stale key beside a live password) is unchanged.
+		if c, err := r.Cookie("access_pwd"); err == nil && c.Value != "" {
+			ClearAccessPwdCookie(w)
+		}
 	}
 
 	target := l.URL
