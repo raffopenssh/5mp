@@ -370,8 +370,9 @@
        idea, two surfaces.
 
        THE ROW CHANGES SHAPE ONLY ON THE READER'S OWN GESTURE — never on a
-       timer, never on hover. It folds when play starts (the eye is on the map
-       now) and on the ⋯; it unfolds on the ⋯. The earlier version also folded
+       timer, never on hover. It folds when the eye goes to the map: play,
+       a grab of the playhead, a hand-drag or zoom of the map, and on the «;
+       it unfolds on the ⋯. The earlier version also folded
        3 s after the last chip touch and on mouse-leave, and woke on mouse-
        enter: on a phone that re-flowed three lines to one under a finger that
        was on its way to the next chip, and on a desktop the mouse crossing
@@ -2766,9 +2767,8 @@
         if (A.t >= A.t1 - 1) A.t = A.t0;
         A.playing = true; A.lastNow = null;
         // Playing is the answer arriving: the eye belongs on the map, so the
-        // row folds to what is actually being drawn. The ⋯ reopens it, and
-        // then it stays open — nothing but the reader closes it again.
-        setChipsRested(true);
+        // row folds to what is actually being drawn.
+        attentionOnMap();
         updatePlayBtn();
         syncProbe();
         A.raf = requestAnimationFrame(loop);
@@ -3164,9 +3164,15 @@
 
     // ── the resting chip row ────────────────────────────────────────────
     //
-    // `A.chipsRested` is the whole state. It changes on exactly two gestures:
-    // play() folds, the ⋯ toggles. No timer, no hover — see the CSS comment
-    // at #anim-chips.rested for what those did to the reader.
+    // `A.chipsRested` is the whole state. It folds on the gestures that
+    // mean "I am done choosing, I am looking now" — play, grabbing the
+    // playhead, dragging or zooming the map by hand — and toggles on the
+    // ⋯/«. Never on a timer, never on hover, never on a map move the code
+    // made itself (fitBounds after a chip): see the CSS comment at
+    // #anim-chips.rested for what those did to the reader.
+    function attentionOnMap() {
+        if (A && !A.chipsRested) setChipsRested(true);
+    }
     function layerChips() {
         return Array.from(document.querySelectorAll('#anim-chips > .anim-chip[data-layer]'))
             .filter(c => !c.classList.contains('hidden'));
@@ -3776,6 +3782,7 @@
             e.preventDefault(); e.stopPropagation();
             wasPlaying = A.playing;
             pause();
+            attentionOnMap();
             document.addEventListener('pointermove', scrubMove);
             document.addEventListener('pointerup', scrubEnd);
             document.addEventListener('pointercancel', scrubEnd);
@@ -4122,6 +4129,12 @@
             A.mapHandler = () => { if (A) draw(A.t); };
             A.moveEndHandler = onMoveEnd;
             A.resizeHandler = () => { if (A) { A.resize(); draw(A.t); } };
+            // A hand on the map is the eye on the map. DOM events on the
+            // canvas, not map 'movestart': that fires for fitBounds after a
+            // chip too, and MapLibre's originalEvent is missing on wheel zoom.
+            A.handOnMap = () => attentionOnMap();
+            A.handEvents = ['pointerdown', 'touchstart', 'wheel'];
+            A.handEvents.forEach(t => map.getCanvas().addEventListener(t, A.handOnMap, { passive: true }));
             map.on('move', A.mapHandler);
             map.on('moveend', A.moveEndHandler);
             window.addEventListener('resize', A.resizeHandler);
@@ -4161,6 +4174,7 @@
             syncLiveLayers();           // the live LOD layers are the user's again
             map.off('move', A.mapHandler);
             map.off('moveend', A.moveEndHandler);
+            if (A.handEvents) A.handEvents.forEach(t => map.getCanvas().removeEventListener(t, A.handOnMap));
             window.removeEventListener('resize', A.resizeHandler);
             document.removeEventListener('keydown', A.keyHandler);
             clearTimeout(A._refetchTimer);
