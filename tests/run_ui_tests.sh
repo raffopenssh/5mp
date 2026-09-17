@@ -341,7 +341,7 @@ src_guard "anim_chips_rest"               present "function toggleChipsRested" "
 src_guard "anim_chips_no_timer"           absent  "scheduleChipsRest|chipsHover" "srv/static/anim.js"
 src_guard "anim_chips_recent_stays"       present "#anim-chips.rested > .anim-chip.visible:not\(.on\):not\(.recent\)" "srv/static/anim.js"
 src_guard "anim_chips_more_button"        present "anim-chips-more" "srv/static/anim.js"
-src_guard "anim_chips_rest_on_play"       present "^        setChipsRested\(true\);" "srv/static/anim.js"
+src_guard "anim_chips_rest_on_play"       present "function attentionOnMap" "srv/static/anim.js"
 # A GIF frame must be composited from a MAP frame the map has actually
 # repainted (the season contours are MapLibre layers, and the GL buffer is only
 # readable inside a render turn), and the season's playhead must not be

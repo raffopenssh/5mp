@@ -537,7 +537,124 @@
     }
     var frontFeats = [];   // the reference season's contours (what the map shows outside an animation)
     function applyFrontData() {
-        setData(FRONT_SRC, (animT !== null && hist.feats) ? frontFeats.concat(hist.feats) : frontFeats);
+        var feats = (animT !== null && hist.feats) ? frontFeats.concat(hist.feats) : frontFeats;
+        if (others.feats.length) feats = feats.concat(others.feats);
+        if (animT !== null && othersHist.feats.length) feats = feats.concat(othersHist.feats);
+        setData(FRONT_SRC, feats);
+    }
+
+    /* ── every park in view (no focus) ────────────────────────────────
+     * The reference (`front`) is ONE area — the focus, else the park under
+     * the view centre — and it is what the stats row, the compare seasons
+     * and the animator's history describe. Unfocused, the map used to draw
+     * only that one: two parks side by side, contours in one and none in
+     * the other, which reads as "no data there". Now the other parks in
+     * view come too (server bbox mode, one request), each at the season
+     * the window ends in, so the picture is consistent across parks.
+     *   * Focus (park or AOI) or a filter box scopes it: focus → the
+     *     reference alone (the old picture); a filter box → the parks the
+     *     box intersects.
+     *   * Zoom thins the lines the same way for every park: every 5-day
+     *     line from z 6.5, the labelled 15-day lines from z 4.5, the
+     *     30-day lines below — a continent of 5-day lines is ~9 MB and a
+     *     thicket. The reference is thinned to match (`thinFront`), or
+     *     one park would be drawn in a different key than its neighbours.
+     *   * The bbox is quantised (padded 30 %, rounded to 0.5°) so a pan
+     *     inside the fetched box costs nothing; small screens ask for
+     *     fewer areas (`othersLimit`) — one payload, decoded once.
+     *   * Animator: the other parks' earlier seasons come one request per
+     *     reference season (`at` = that season's end), so the playhead
+     *     meets each park's front at its own dates; deduped by
+     *     area+season. */
+    var others = { key: '', feats: [], areas: {}, loading: false };
+    var othersHist = { key: '', feats: [], loading: false };
+    function filterBox() {
+        return (typeof currentBbox !== 'undefined' && currentBbox && currentBbox.length === 4) ? currentBbox : null;
+    }
+    function linesForZoom() {
+        var z = map.getZoom();
+        return z >= 6.5 ? 'all' : (z >= 4.5 ? '15' : '30');
+    }
+    function othersLimit() {
+        var small = (window.innerWidth || 1400) < 768;
+        return small ? 30 : 60;
+    }
+    function othersBbox() {
+        var fb = filterBox();
+        if (fb) return fb.map(function (v) { return +v.toFixed(2); });
+        var b = map.getBounds(), w = b.getEast() - b.getWest(), h = b.getNorth() - b.getSouth();
+        var q = 0.5;
+        return [Math.floor((b.getWest() - w * 0.3) / q) * q, Math.floor((b.getSouth() - h * 0.3) / q) * q,
+                Math.ceil((b.getEast() + w * 0.3) / q) * q, Math.ceil((b.getNorth() + h * 0.3) / q) * q];
+    }
+    function othersActive() { return st.front && !focusId(); }
+    function thinFront(feats, lines) {
+        if (lines === 'all') return feats;
+        return feats.filter(function (f) { return f.properties.label && (lines === '15' || f.properties.dos % 30 === 0); });
+    }
+    function othersFeatures(j, mark) {
+        var feats = [];
+        ((j && j.areas) || []).forEach(function (a) {
+            if (front && a.area === front.area) return;   // the reference draws itself
+            var ff = frontFeatures(a, mark ? cmpYearMark(a.season) : '').feats;
+            ff.forEach(function (f) { f.properties.area = a.area; });
+            feats = feats.concat(ff);
+        });
+        return feats;
+    }
+    function othersURL(bb, at, lines) {
+        var u = '/api/fire-season?pwd=' + pwd() + '&bbox=' + bb.join(',') + '&lines=' + lines + '&limit=' + othersLimit();
+        if (at) u += '&at=' + at;
+        if (front && front.area) u += '&exclude=' + encodeURIComponent(front.area);
+        return u;
+    }
+    function loadOthers(force) {
+        if (!map) return;
+        if (!othersActive()) {
+            if (others.feats.length || othersHist.feats.length) { others = { key: '', feats: [], areas: {}, loading: false }; othersHist = { key: '', feats: [], loading: false }; applyFrontData(); }
+            return;
+        }
+        var bb = othersBbox(), lines = linesForZoom(), at = dates().to || '';
+        var key = bb.join(',') + '|' + lines + '|' + at + '|' + (front && front.area || '');
+        if (!force && key === others.key) return;
+        others.key = key; others.loading = true;
+        fetch(othersURL(bb, at, lines)).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+            if (others.key !== key) return;   // a newer ask is out
+            others.loading = false;
+            others.areas = {};
+            ((j && j.areas) || []).forEach(function (a) { others.areas[a.area] = a.season; });
+            others.feats = othersFeatures(j, false);
+            others.truncated = !!(j && j.truncated);
+            // the reference is thinned to the same key as its neighbours
+            if (front && front.contours) frontFeats = thinFront(frontFeatures(front, '').feats, lines);
+            applyFrontData();
+            if (animT !== null) loadOthersHistory();
+        }).catch(function () { if (others.key === key) others.loading = false; });
+    }
+    function loadOthersHistory() {
+        if (!othersActive() || !front || !front.seasons || animT === null) return;
+        var bb = othersBbox(), lines = linesForZoom();
+        var want = windowSeasons(front.seasons).filter(function (s) { return s.label !== front.season; });
+        var key = bb.join(',') + '|' + lines + '|' + want.map(function (s) { return s.end; }).join(',');
+        if (key === othersHist.key || othersHist.loading) return;
+        othersHist.key = key; othersHist.loading = true;
+        var seen = {};
+        Object.keys(others.areas).forEach(function (a) { seen[a + '|' + others.areas[a]] = true; });
+        Promise.all(want.map(function (s) {
+            return fetch(othersURL(bb, s.end, lines)).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
+        })).then(function (answers) {
+            if (othersHist.key !== key) return;
+            othersHist.loading = false;
+            var feats = [];
+            answers.forEach(function (j) {
+                if (!j || !j.areas) return;
+                j.areas = j.areas.filter(function (a) { var k = a.area + '|' + a.season; if (seen[k]) return false; seen[k] = true; return true; });
+                feats = feats.concat(othersFeatures(j, true));
+            });
+            othersHist.feats = feats;
+            applyFrontData();
+            if (animT !== null) animAt(animT, true);
+        });
     }
     function loadFront(force) {
         if (!st.front || !map) return Promise.resolve();
@@ -552,9 +669,10 @@
             animMeta = null; animPctKey = null;
             if (animT !== null) playheadMeta(animT);   // a new front under a running animator
             var ff = frontFeatures(j, '');
-            frontFeats = ff.feats;
+            frontFeats = othersActive() ? thinFront(ff.feats, linesForZoom()) : ff.feats;
             if (ff.bbox) front._bbox = ff.bbox;
             applyFrontData();
+            loadOthers(true);   // the reference changed: the neighbours' exclude/thinning follow it
             if (animT !== null) loadHistory();   // the other seasons of the window, for the animator
             loadCompare();   // the reference moved: the ghosts re-align to its calendar
             refreshStrip();
@@ -1624,7 +1742,7 @@
         if (!anyOn()) return;
         clearTimeout(moveTimer);
         moveTimer = setTimeout(function () {
-            loadFront(false); loadVan(false); loadPatrol(false);
+            loadFront(false); loadOthers(false); loadVan(false); loadPatrol(false);
             loadSpeed(false).then(function () { if (st.speed && animT === null) drawSpeed(null); });   // zoom band may have changed
             loadEntry(false).then(function () { if (st.entry && animT === null) drawEntry(windowEndMs()); });
             if (st.entry) refreshStrip();   // the in-view count
@@ -1794,7 +1912,7 @@
             // Every season the window touches goes on the sources (the
             // earlier ones fetched once), so the playhead meets each year's
             // front at its own dates rather than waiting for the last one.
-            loadHistory(); loadPatrolHistory();
+            loadHistory(); loadPatrolHistory(); loadOthersHistory();
             applyFrontData(); applyPatrolData();
         }
         // The ground under the animated fires: full weight until the usual
@@ -1857,6 +1975,7 @@
             map.on('moveend', onMove);
             window.addEventListener('5mp:date-window-changed', onDates);
             window.addEventListener('5mp:focus-changed', onFocus);
+            window.addEventListener('5mp:bbox-changed', function () { if (st.front) loadOthers(true); });
         },
         isOn: anyOn,
         frontOn: function () { return st.front; },
@@ -1886,7 +2005,7 @@
             st.front = !!want;
             if (!map) return;
             ensureLayers();
-            if (st.front) loadFront(true); else { setData(FRONT_SRC, []); refreshStrip(); }
+            if (st.front) loadFront(true); else { others = { key: '', feats: [], areas: {}, loading: false }; othersHist = { key: '', feats: [], loading: false }; setData(FRONT_SRC, []); refreshStrip(); }
         },
         setVanguard: function (want) {
             st.van = !!want;

@@ -133,6 +133,52 @@ Now, in `fireseason.js`:
 Tests: api `patrol_isochrones_long_window_400` / `_clip_to_season`; ui
 `anim_front_every_season` (async assertion — `runUITests` awaits `fn`).
 
+### Every park's front, unless scoped (2026-09-17)
+
+The reference front (`front` in `fireseason.js`) is ONE area: the focus,
+else the park under the view centre. Unfocused, that was also all the map
+drew — two parks side by side, contours in one and none in the other, which
+reads as "no data there". Now `/api/fire-season?bbox=…` (`fireSeasonBBox`,
+`srv/fire_season.go`) answers for every **park** whose front grid intersects
+the bbox, each at the season `at` falls in (else latest — the single-area
+rule), and `loadOthers()` puts them on `FRONT_SRC` beside the reference
+(`others.feats`, property `area`). Rules:
+
+* **Scope:** a focus (park or AOI, `aoiFocusID`) → the reference alone; a
+  filter box (`currentBbox`, `5mp:bbox-changed`) → the parks the box
+  intersects; neither → the padded viewport. AOIs are never in bbox mode
+  (their grid spans the parks inside them).
+* **Zoom thins every park the same way** (`linesForZoom`: all 5-day lines
+  ≥ z6.5, labelled 15-day ≥ z4.5, 30-day below) and the reference is
+  thinned to match (`thinFront`) — one key for the whole picture. Server
+  `lines=all|15|30`; continental at 30-day = 60 areas, ~150 KB gzipped.
+* **Payload discipline:** bbox quantised to 0.5° after 30 % padding (a pan
+  inside it costs nothing), `limit` 60 desktop / 30 under 768 px
+  (`othersLimit`), `exclude=<reference>` so it is not shipped twice,
+  `truncated` reported (invariant 8).
+* **Animator:** `loadOthersHistory()` fetches one bbox answer per earlier
+  reference season (`at` = that season's end), deduped by area+season, so
+  the playhead meets each park's earlier fronts at their own dates. Seek
+  cost measured 5.3 ms with 13 areas on vs 2.1 ms off.
+* The stats row, compare seasons and `playheadMeta` still describe the
+  **reference** only — they are one area's numbers and say which.
+
+Tests: api `fire_season_bbox_*`.
+
+### Patrol follows the panel's pixels row (2026-09-17)
+
+"The patrol layer showed" — with the panel's patrol (pixels) row OFF, a
+plain open ran the `now` profile, which switched `patrol` on regardless
+(`layers=none&anim=…&anim_hl=now` reproduced it). `patrolOffered()` =
+`HAS_PATROL !== false && viewLayers.pixels`; `profileLayers` and the
+`patrol` profile's `needs` both use it, the chip hides/unhides with the row
+while open (`Animator.refreshChips()` from `applyViewLayer('pixels')`), and
+chips now keep `aria-pressed` in step with `.on`. Two close-during-load
+crashes fixed with it (`ensureLayer` catch/finally and `open()` after its
+awaits read `A` while null). Soaked with `MapStress.phases.animator()` —
+every chip, every profile, pixels toggles, date reopen, close cycles, all
+asserted against the invariants listed at the top of that phase.
+
 ### Highlight is a curator, not a dimmer (2026-09-16)
 
 `highlight` used to be one switch that dimmed the surfaces and left the eleven

@@ -182,7 +182,28 @@ MapStress.report();                // did the style return to baseline?
 ```
 
 Desktop phases want `/?pwd=test2026&test=1&popup=CAF_Chinko`. Two phases
-added after the 2026-08 mobile black-map session:
+added 2026-09-17:
+
+- **`animator`** — every chip on/off by click, every highlight profile
+  (stepped and by id), patrol churn, the panel's pixels toggle while open
+  and closed, play/pause, a date-window reopen, open/close cycles; after
+  every step it asserts the patrol-pixels rule, chip `.on`/`aria-pressed`
+  vs `Animator.isLayerOn`, FireSeason state vs season chips, live LOD rows
+  hidden only when a profile animates them, and that the season overlay is
+  restored on close. ~100 s. Found the "patrol showed with pixels off" bug.
+- **`fireTiles(area)`** — the pinned fire layer's vector-tile tier
+  (`/api/lod-tiles`): widens the window to ~2 y so `CAF_Chinko` tiles
+  (> 3,000 trajectories), then pan/zoom, date change (`setTiles`), detail
+  modes (source-kind swap), animator over it, pin churn, unpin → baseline.
+  An AOI id works only for a session that can **see** it: an invisible
+  `?area=` is dropped server-side and the pin quietly shows park rows.
+  Found two close-during-load crashes in `anim.js`.
+
+Browser caching note: `?v=<git hash>` does not change for uncommitted
+static edits — clear the browser cache (`network_clear_cache`) before
+re-running a phase against a rebuilt server.
+
+Two phases added after the 2026-08 mobile black-map session:
 
 - **`mobileTouch`** — coarse-pointer soak (real TouchEvents: taps on real
   features, pinches, popup open/close via the maptip action, resize after
