@@ -519,10 +519,15 @@ animation and must carry the profile **id** (`A.highlight || false`, not
 `!!A.highlight`) and `close({ keepSeason: true })`.
 
 **GIF export composites a real map frame.** `mapFrameInto()` calls
-`map.triggerRepaint()` and copies the GL canvas from the `render` event (with
-`idle`/180 ms fallbacks): `preserveDrawingBuffer` is false, and the season
-layers are MapLibre's, so the old straight `drawImage(map.getCanvas())` froze
-the contours while the canvas fires moved. `draw(t, true)` forces
+`map.triggerRepaint()` and copies the GL canvas from the map's own event:
+`preserveDrawingBuffer` is false, and the season layers are MapLibre's, so the
+old straight `drawImage(map.getCanvas())` froze the contours while the canvas
+fires moved. **Which event: `idle` when a season rendering is on, `render`
+otherwise** (2026-09-17). `setData` is a worker round-trip, so the first
+`render` after `triggerRepaint` still paints the *previous* contours — measured
+in the browser, the render-hash sequence was the idle-hash sequence shifted by
+exactly one frame. `idle` costs ~0.9 s/frame (160 frames ≈ 52 s), so a
+canvas-only export keeps the 180 ms `render` path. `draw(t, true)` forces
 `FireSeason.animAt(t, force)` past its 80 ms coalescing — a frame dropped on
 screen is invisible, a frame dropped in a file is the file being wrong.
 
