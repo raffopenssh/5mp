@@ -491,6 +491,12 @@
            reads as a chip that failed to load rather than as a tidy row. */
         #anim-chips.rested > .anim-chip.visible:not(.on):not(.recent):not(.anim-chip-more):not(.anim-chip-mode) {
             margin-left: -7px; }
+        /* On a phone the right-aligning gutter is a whole line: with four
+           chips and the ⋯ across the row, margin-left:auto has no room and
+           wraps the highlight chip onto a line of its own — one more line of
+           map covered for a chip that would fit beside the ⋯. Here the gutter
+           is a fixed one, wide enough to still read as "set apart". */
+        .anim-chip-mode { margin-left: 8px; }
         .anim-chip { font-size: 9px; min-height: 17px; border-radius: 3px; }
         .anim-chip.visible { max-width: 190px; padding: 1px 7px 1px 5px; gap: 5px; overflow: visible; }
         .anim-chip.visible::before { content: ''; position: absolute; inset: -2px -3px; }
