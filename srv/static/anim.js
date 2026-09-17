@@ -276,7 +276,13 @@
     #anim-inline > #anim-speed-lbl.visible { min-width: 46px; }
 
     /* layer chips row — same badge geometry as the date tags */
-    #anim-chips { display: flex; flex-wrap: wrap; gap: 3px; align-items: center; margin: 3px 0 4px; min-height: 16px; }
+    #anim-chips { display: flex; flex-wrap: wrap; gap: 3px; align-items: center; margin: 3px 0 4px; min-height: 16px;
+        transition: height .3s cubic-bezier(.4,0,.2,1); }
+    /* While the row changes shape its HEIGHT is animated by JS (rowHeightTween):
+       the chips fold over 300 ms but flex-wrap re-flows three lines to one in a
+       single frame, and that jump moved the slider under the finger. */
+    #anim-chips.sizing { overflow: hidden; }
+    #anim-chips.measuring, #anim-chips.measuring * { transition: none !important; }
     .anim-chip { font-size: 9px; font-weight: 600; color: #888; background: rgba(255,255,255,0.04);
         border: 1px solid rgba(255,255,255,0.12); border-radius: 3px; padding: 1px 5px; cursor: pointer;
         letter-spacing: 0.3px; line-height: 1.3; white-space: nowrap; user-select: none; -webkit-user-select: none;
@@ -357,13 +363,30 @@
        the stats-panel legend's resting state (.ml-rest in globe.css) — one
        idea, two surfaces.
 
-       It rests when the animation starts playing (the eye is on the map now),
-       and a few seconds after the last chip was touched. It wakes on hover
-       with a mouse, on the ⋯ anywhere, and it will not rest at all while the
-       reader is hovering the row or has pinned it open. */
-    #anim-chips.rested > .anim-chip.visible:not(.on):not(.anim-chip-more):not(.anim-chip-mode) {
+       THE ROW CHANGES SHAPE ONLY ON THE READER'S OWN GESTURE — never on a
+       timer, never on hover. It folds when play starts (the eye is on the map
+       now) and on the ⋯; it unfolds on the ⋯. The earlier version also folded
+       3 s after the last chip touch and on mouse-leave, and woke on mouse-
+       enter: on a phone that re-flowed three lines to one under a finger that
+       was on its way to the next chip, and on a desktop the mouse crossing
+       the row to reach the slider made it breathe. A chip switched OFF while
+       the row is resting stays where it is (.recent) until the next fold
+       gesture — a control must not vanish under the finger that pressed it.
+
+       The motion is sequenced like a container transform: folding, a chip
+       FADES first and only then gives up its width, so the label is never
+       crushed by the shrinking box; unfolding, the width comes back first and
+       the label fades in once there is room for it. */
+    #anim-chips.rested > .anim-chip.visible:not(.on):not(.recent):not(.anim-chip-more):not(.anim-chip-mode) {
         max-width: 0; opacity: 0; padding-left: 0; padding-right: 0; border-width: 0;
-        margin-left: -3px; pointer-events: none; }
+        margin-left: -3px; pointer-events: none;
+        transition: opacity .12s ease, max-width .22s cubic-bezier(.4,0,.2,1) .1s,
+            padding .22s cubic-bezier(.4,0,.2,1) .1s, margin .22s cubic-bezier(.4,0,.2,1) .1s,
+            border-width .22s .1s, background .15s, color .15s; }
+    #anim-chips.unfolding > .anim-chip.visible:not(.on):not(.recent):not(.anim-chip-more):not(.anim-chip-mode) {
+        transition: opacity .16s ease .14s, max-width .22s cubic-bezier(.4,0,.2,1),
+            padding .22s cubic-bezier(.4,0,.2,1), margin .22s cubic-bezier(.4,0,.2,1),
+            border-width .22s, background .15s, color .15s; }
     /* The highlight chip is exempt: it is not a layer but a WAY OF LOOKING,
        and it
        is the control that chooses layers for you. Folding it away would put
@@ -376,7 +399,8 @@
     /* A row that folded nothing must not offer to unfold it. */
     .anim-chip-more.hidden { display: none; }
     @media (prefers-reduced-motion: reduce) {
-        #anim-chips.rested > .anim-chip.visible:not(.on) { transition: none; }
+        #anim-chips, #anim-chips.rested > .anim-chip.visible:not(.on),
+        #anim-chips.unfolding > .anim-chip.visible:not(.on) { transition: none; }
     }
     /* The way-of-looking chip: same size as its neighbours, set apart by a
        gutter and a half-disc mark instead of a status dot, so it does not read
@@ -465,7 +489,7 @@
         /* The gap is 7px here, so a folded chip must eat 7px — with -3px the
            row kept a visible hole where the folded renderings had been, which
            reads as a chip that failed to load rather than as a tidy row. */
-        #anim-chips.rested > .anim-chip.visible:not(.on):not(.anim-chip-more):not(.anim-chip-mode) {
+        #anim-chips.rested > .anim-chip.visible:not(.on):not(.recent):not(.anim-chip-more):not(.anim-chip-mode) {
             margin-left: -7px; }
         .anim-chip { font-size: 9px; min-height: 17px; border-radius: 3px; }
         .anim-chip.visible { max-width: 190px; padding: 1px 7px 1px 5px; gap: 5px; overflow: visible; }
@@ -2732,9 +2756,9 @@
         if (A.t >= A.t1 - 1) A.t = A.t0;
         A.playing = true; A.lastNow = null;
         // Playing is the answer arriving: the eye belongs on the map, so the
-        // row folds to what is actually being drawn (unless the reader has
-        // pinned it open with the ⋯).
-        if (!A.chipsPinned) setChipsRested(true);
+        // row folds to what is actually being drawn. The ⋯ reopens it, and
+        // then it stays open — nothing but the reader closes it again.
+        setChipsRested(true);
         updatePlayBtn();
         syncProbe();
         A.raf = requestAnimationFrame(loop);
@@ -3127,64 +3151,92 @@
 
     // ── the resting chip row ────────────────────────────────────────────
     //
-    // `A.chipsRested` is the state, `A.chipsPinned` is the reader having said
-    // "stay open" with the ⋯, and `A.chipsHover` is a mouse in the row. The
-    // row folds only when none of the three objects.
-    function offChipCount() {
+    // `A.chipsRested` is the whole state. It changes on exactly two gestures:
+    // play() folds, the ⋯ toggles. No timer, no hover — see the CSS comment
+    // at #anim-chips.rested for what those did to the reader.
+    function layerChips() {
         return Array.from(document.querySelectorAll('#anim-chips > .anim-chip[data-layer]'))
-            .filter(c => !c.classList.contains('hidden') && !c.classList.contains('on')).length;
+            .filter(c => !c.classList.contains('hidden'));
+    }
+    function offChipCount() {
+        return layerChips().filter(c => !c.classList.contains('on')).length;
+    }
+    // Chips the fold would actually hide: off, and not just touched.
+    function foldedChips(rested) {
+        return layerChips().filter(c => !c.classList.contains('on')
+            && !(rested && c.classList.contains('recent')));
+    }
+    // The row's height is tweened between its two wrapped shapes: the target
+    // is measured on a transition-less clone, so flex-wrap's one-frame jump
+    // from three lines to one becomes a motion the eye can follow.
+    function rowHeightTween(row, mutate) {
+        const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (reduce || !row.offsetParent) { mutate(); return; }
+        const h0 = row.offsetHeight;
+        const clone = row.cloneNode(true);
+        clone.removeAttribute('id');
+        clone.classList.add('measuring');
+        clone.style.cssText = 'position:absolute;visibility:hidden;pointer-events:none;height:auto;width:' + row.clientWidth + 'px';
+        row.parentNode.appendChild(clone);
+        mutate(clone);
+        const h1 = clone.offsetHeight;
+        clone.remove();
+        if (h1 === h0) { mutate(row); return; }
+        clearTimeout(row.__hTimer);
+        row.style.height = h0 + 'px';
+        row.classList.add('sizing');
+        void row.offsetHeight;
+        mutate(row);
+        row.style.height = h1 + 'px';
+        row.__hTimer = setTimeout(() => { row.style.height = ''; row.classList.remove('sizing'); }, 340);
     }
     function applyChipsRested() {
         const row = document.getElementById('anim-chips');
         if (!row || !A) return;
         const n = offChipCount();
-        const rested = !!A.chipsRested && n > 0;
-        row.classList.toggle('rested', rested);
+        const onCount = layerChips().length - n;
+        // Nothing drawn is nothing to rest TO: the full row is the question.
+        const rested = !!A.chipsRested && n > 0 && onCount > 0;
+        const was = row.classList.contains('rested');
+        if (rested !== was) {
+            const apply = el => {
+                el.classList.toggle('rested', rested);
+                el.classList.toggle('unfolding', !rested);
+            };
+            rowHeightTween(row, el => apply(el || row));
+        }
+        const folded = foldedChips(rested);
         const more = document.getElementById('anim-chips-more');
         if (more) {
             // A ⋯ with nothing behind it is a dead control: every rendering is
             // already on screen, so the button says so by not being there.
             more.classList.toggle('hidden', n === 0);
             const lbl = more.querySelector('.anim-chip-lbl');
-            if (lbl) lbl.textContent = rested ? String(n) : '';
+            if (lbl) lbl.textContent = rested && folded.length ? String(folded.length) : '';
             more.setAttribute('aria-expanded', rested ? 'false' : 'true');
             more.title = rested
-                ? n + ' more rendering' + (n === 1 ? '' : 's') + ' — show them'
+                ? (folded.length
+                    ? folded.length + ' more rendering' + (folded.length === 1 ? '' : 's') + ': '
+                        + folded.map(c => (c.querySelector('.anim-chip-lbl') || c).textContent.trim()).join(', ')
+                    : 'Show every rendering')
                 : 'Show only what is drawn';
             if (n > 0) more.classList.add('visible');
         }
         // A zero-width chip must not be a tab stop: the keyboard would walk
         // through ten invisible controls to reach the eleventh.
-        document.querySelectorAll('#anim-chips > .anim-chip[data-layer]').forEach(c => {
-            c.tabIndex = (rested && !c.classList.contains('on')) ? -1 : 0;
-        });
+        const hidden = new Set(rested ? folded : []);
+        layerChips().forEach(c => { c.tabIndex = hidden.has(c) ? -1 : 0; });
     }
+    // A fold gesture forgets what was "just touched".
     function setChipsRested(on) {
         if (!A) return;
         A.chipsRested = !!on;
-        clearTimeout(A.chipsTimer);
+        if (on) layerChips().forEach(c => c.classList.remove('recent'));
         applyChipsRested();
     }
-    function wakeChips() {
-        if (!A) return;
-        clearTimeout(A.chipsTimer);
-        setChipsRested(false);
-    }
-    function scheduleChipsRest(delay) {
-        if (!A) return;
-        clearTimeout(A.chipsTimer);
-        A.chipsTimer = setTimeout(() => {
-            if (!A || A.chipsPinned || A.chipsHover) return;
-            setChipsRested(true);
-        }, delay == null ? 3200 : delay);
-    }
-    // The ⋯ itself: an explicit ask, so it PINS the row open until asked
-    // again — a control the reader pressed must not undo itself three seconds
-    // later.
     function toggleChipsRested() {
         if (!A) return;
-        if (A.chipsRested) { A.chipsPinned = true; setChipsRested(false); }
-        else { A.chipsPinned = false; setChipsRested(true); }
+        setChipsRested(!A.chipsRested);
     }
 
     function updateChips() {
@@ -3283,10 +3335,13 @@
 
     async function toggleChip(name, want) {
         if (!A) return;
-        // Choosing is working in the row: it stays open while they choose and
-        // tidies a few seconds after the last one (applyChipsRested() runs on
-        // every updateChips(), so the chip just switched on is never folded).
-        if (!A.applyingHL) { wakeChips(); scheduleChipsRest(); }
+        // Choosing never changes the row's shape. A chip switched OFF while
+        // the row rests is marked `recent` so it stays under the finger that
+        // pressed it (applyChipsRested() runs on every updateChips(), so a
+        // chip switched ON is never folded either).
+        if (!A.applyingHL && A.chipsRested && chipOn(name)) {
+            const c = chipFor(name); if (c) c.classList.add('recent');
+        }
         // The user chose a layer: highlight's choice is no longer the rule.
         if (A.highlight && !A.applyingHL) A.highlight = false;
         if (!A.applyingHL && SEASON_CHIPS.indexOf(name) >= 0) A.seasonTouched = true;
@@ -3569,25 +3624,6 @@
         more.onclick = () => toggleChipsRested();
         chips.appendChild(more);
 
-        // Hovering the row is the reader working in it: it must not fold
-        // under them (same rule as the legend's rest state). MOUSE ONLY — a
-        // touch "hover" is a tap, and the ⋯ is the touch affordance. The
-        // test is the EVENT's pointerType, not a `(hover: hover)` media
-        // query: the query answers for the device, the event answers for the
-        // gesture, and a query that says "no hover" on a machine that has a
-        // mouse (headless Chrome, a tablet with a trackpad attached later)
-        // silently removes the behaviour instead of adapting it.
-        chips.addEventListener('pointerenter', e => {
-            if (e.pointerType && e.pointerType !== 'mouse') return;
-            if (A) A.chipsHover = true;
-            wakeChips();
-        });
-        chips.addEventListener('pointerleave', e => {
-            if (e.pointerType && e.pointerType !== 'mouse') return;
-            if (A) A.chipsHover = false;
-            scheduleChipsRest(900);
-        });
-
         // The way of looking, set apart from the layers: it is about all of
         // them, not one of them.
         const hl = document.createElement('button');
@@ -3604,11 +3640,12 @@
         Array.from(chips.children).filter(c => !c.classList.contains('hidden')).forEach((chip, i) => {
             setTimeout(() => chip.classList.add('visible'), 60 + i * 45);
         });
+        // The row opens RESTED: what is drawn, plus a ⋯ n saying how many
+        // more there are. It used to open full and fold itself 4 s later —
+        // under the reader, mid-decision. (applyChipsRested() shows the full
+        // row anyway while nothing is on: then the set is the question.)
+        A.chipsRested = true;
         updateChips();
-        // The full row is shown first — the reader has just opened the
-        // animator and the set IS the answer to "what can this show me" —
-        // then it tidies itself once they have had time to read it.
-        scheduleChipsRest(4200);
 
         // playhead + progress in slider track — position BEFORE appending so
         // they don't flash at the track's left edge and jump on first draw
@@ -3955,7 +3992,7 @@
                 // an app that then discarded them, which reads as the restore
                 // having failed.
                 highlight: opts.highlight === undefined
-                    ? ((opts.layers && opts.layers.length) || anySeasonOn() ? false : HL_DEFAULT)
+                    ? (Array.isArray(opts.layers) || anySeasonOn() ? false : HL_DEFAULT)
                     : (opts.highlight === true || opts.highlight === '1' ? HL_DEFAULT
                        : (opts.highlight && hlProfile(opts.highlight) ? opts.highlight : false)),
                 // Carried across a date-window reopen, so the overlay the
@@ -3974,7 +4011,13 @@
 
             // default layer set: current toggles + pins, grid vs points by zoom
             let initial;
-            if (opts.layers && opts.layers.length) {
+            // `opts.layers` PRESENT is a composition, even when it is empty:
+            // a link written with every data chip off carries `anim=`, and
+            // that empty set is the reader's answer, not the absence of one.
+            // Testing `.length` here sent it down the default branch, which
+            // switched the patrol grid back on from the map's pixels toggle
+            // (`/s/g-tk7bb6t23vrcvf9f`). Only an ABSENT array is a plain open.
+            if (Array.isArray(opts.layers)) {
                 // A share link can name patrol layers the receiving account
                 // cannot see (patrol effort is scoped to the account it was
                 // uploaded in, srv/tenant.go). Drop them rather than switching
