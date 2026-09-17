@@ -509,6 +509,36 @@
         var c = map.getCenter(), b = front._bbox;
         return c.lng >= b[0] && c.lng <= b[2] && c.lat >= b[1] && c.lat <= b[3];
     }
+    /* One season's contours as features: colour by day of season, absolute
+     * time `t` for the animator's age expressions, `l30` on the 30-day
+     * lines (what an ashed-out season keeps), and — for a season other
+     * than the reference (`mark` truthy) — the line's own year in the
+     * label text, since an ash line three seasons back must still say
+     * which year it was. */
+    function frontFeatures(j, mark) {
+        if (!j || !j.contours || !j.contours.length) return { feats: [], bbox: null };
+        var ds = j.contours.map(function (f) { return f.properties.dos; });
+        var lo = Math.min.apply(null, ds), hi = Math.max.apply(null, ds);
+        var bb = [180, 90, -180, -90];
+        var feats = j.contours.map(function (f) {
+            var p = f.properties, t = hi > lo ? (p.dos - lo) / (hi - lo) : 0.5;
+            var q = { dos: p.dos, date: p.date, text: (p.text || '') + (mark ? ' \u2019' + String(p.date || '').slice(2, 4) : ''), season: j.season || '',
+                color: frontColor(t), label: !!p.label, l30: !!p.label && (p.dos % 30 === 0),
+                t: Date.parse((p.date || '') + 'T00:00:00Z') || 0 };
+            (f.geometry.coordinates || []).forEach(function (line) {
+                line.forEach(function (pt) {
+                    if (pt[0] < bb[0]) bb[0] = pt[0]; if (pt[1] < bb[1]) bb[1] = pt[1];
+                    if (pt[0] > bb[2]) bb[2] = pt[0]; if (pt[1] > bb[3]) bb[3] = pt[1];
+                });
+            });
+            return { type: 'Feature', geometry: f.geometry, properties: q };
+        });
+        return { feats: feats, bbox: bb };
+    }
+    var frontFeats = [];   // the reference season's contours (what the map shows outside an animation)
+    function applyFrontData() {
+        setData(FRONT_SRC, (animT !== null && hist.feats) ? frontFeats.concat(hist.feats) : frontFeats);
+    }
     function loadFront(force) {
         if (!st.front || !map) return Promise.resolve();
         var key = (focusId() || 'pt') + '|@' + dates().to;
@@ -518,33 +548,72 @@
             inflight--;
             frontKey = key;
             front = j || { status: 'request failed', seasons: [] };
+            if (cmpArea !== (front.area || '')) { cmpData = {}; cmpArea = front.area || ''; hist.key = ''; hist.feats = null; }
             animMeta = null; animPctKey = null;
             if (animT !== null) playheadMeta(animT);   // a new front under a running animator
-            var feats = [];
-            if (j && j.contours && j.contours.length) {
-                var ds = j.contours.map(function (f) { return f.properties.dos; });
-                var lo = Math.min.apply(null, ds), hi = Math.max.apply(null, ds);
-                var bb = [180, 90, -180, -90];
-                feats = j.contours.map(function (f) {
-                    var t = hi > lo ? (f.properties.dos - lo) / (hi - lo) : 0.5;
-                    f.properties.color = frontColor(t);
-                    f.properties.label = !!f.properties.label;
-                    // numeric time for the animator's age expressions
-                    f.properties.t = Date.parse((f.properties.date || '') + 'T00:00:00Z') || 0;
-                    (f.geometry.coordinates || []).forEach(function (line) {
-                        line.forEach(function (p) {
-                            if (p[0] < bb[0]) bb[0] = p[0]; if (p[1] < bb[1]) bb[1] = p[1];
-                            if (p[0] > bb[2]) bb[2] = p[0]; if (p[1] > bb[3]) bb[3] = p[1];
-                        });
-                    });
-                    return f;
-                });
-                front._bbox = bb;
-            }
-            setData(FRONT_SRC, feats);
+            var ff = frontFeatures(j, '');
+            frontFeats = ff.feats;
+            if (ff.bbox) front._bbox = ff.bbox;
+            applyFrontData();
+            if (animT !== null) loadHistory();   // the other seasons of the window, for the animator
             loadCompare();   // the reference moved: the ghosts re-align to its calendar
             refreshStrip();
         }).catch(function () { inflight--; emit(); });
+    }
+
+    /* ── every season in the window (animator) ─────────────────────────
+     * The map shows ONE season's front — the one the slider ends in. Over
+     * a 2020–2026 window that left the animator empty for six years and
+     * then drew 2026 (the report that fixed this: "contours only show up
+     * in 2026"). While the animator runs, the contours of every season the
+     * window touches are on the source, each at its OWN dates, so the
+     * playhead meets each year's front where and when it stood; the
+     * age expressions in animAt then ash a season out as the next one
+     * builds — thinner, greyer, and down to its 30-day lines, so six
+     * seasons read as a comparison rather than a thicket. Fetched one
+     * season at a time (the compare feature's cache, cmpData) the first
+     * time the animator asks; nothing outside an animation. */
+    var hist = { key: '', feats: null, loading: false };
+    function windowSeasons(list) {
+        var d = dates(), from = d.from || '0000-01-01', to = d.to || '9999-12-31';
+        return (list || []).filter(function (s) { return (s.end || s.season_end || '9999') >= from && (s.start || s.season_start || '0000') <= to; })
+            .map(function (s) { return { label: s.label || s.season, start: s.start || s.season_start, end: s.end || s.season_end }; });
+    }
+    function loadHistory() {
+        if (!st.front || !front || !front.area || !front.seasons) return;
+        var want = windowSeasons(front.seasons).map(function (s) { return s.label; }).filter(function (l) { return l && l !== front.season; });
+        var key = front.area + '|' + want.join(',');
+        if (key === hist.key || hist.loading) return;
+        var missing = want.filter(function (l) { return !cmpData[l]; });
+        function build() {
+            hist.key = key; hist.loading = false;
+            var feats = [];
+            want.forEach(function (lbl) { feats = feats.concat(frontFeatures(cmpData[lbl], cmpYearMark(lbl)).feats); });
+            hist.feats = feats;
+            applyFrontData();
+            if (animT !== null) { animPctKey = null; playheadMeta(animT); animAt(animT, true); }
+        }
+        if (!missing.length) { build(); return; }
+        hist.loading = true; inflight++; emit();
+        Promise.all(missing.map(function (lbl) {
+            var u = '/api/fire-season?pwd=' + pwd() + '&area=' + encodeURIComponent(front.area) + '&season=' + encodeURIComponent(lbl);
+            return fetch(u).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { cmpData[lbl] = j || { contours: [] }; }).catch(function () { cmpData[lbl] = { contours: [] }; });
+        })).then(function () { inflight--; build(); refreshStrip(); });
+    }
+    // The season answer whose dates hold instant t: the reference, or one
+    // of the history's. null = none loaded covers it.
+    function seasonAnswerAt(t) {
+        var day = new Date(t).toISOString().slice(0, 10);
+        if (front && front.season_start && front.seasons) {
+            var hit = null;
+            front.seasons.forEach(function (s) { if (s.start <= day && day <= s.end) hit = s; });
+            if (hit) {
+                if (hit.label === front.season) return front;
+                var j = cmpData[hit.label];
+                return (j && j.season_start) ? j : null;
+            }
+        }
+        return null;
     }
 
     /* ── compare seasons ────────────────────────────────────────────────
@@ -635,19 +704,43 @@
         var a = [0x22, 0xc5, 0x5e], b = [0xbb, 0xf7, 0xd0];
         return hex(lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t));
     }
-    function patrolURL() {
-        var f = focusId(), c = map.getCenter();
+    function patrolURL(from, to, area) {
+        var f = area || focusId(), c = map.getCenter();
         var u = '/api/patrol-isochrones?pwd=' + pwd() + (f ? '&area=' + encodeURIComponent(f)
             : '&lon=' + c.lng.toFixed(3) + '&lat=' + c.lat.toFixed(3));
         var d = dates();
-        if (d.from) u += '&from=' + d.from;
-        if (d.to) u += '&to=' + d.to;
-        return u;
+        from = from || d.from; to = to || d.to;
+        if (from) u += '&from=' + from;
+        if (to) u += '&to=' + to;
+        // Presence is counted per season (the front's rule: the season `to`
+        // falls in), so clip=1 always; the animator fetches the earlier
+        // seasons of the window one by one. Also what keeps a 2020–2026
+        // window under the server's 800 d cap.
+        return u + '&clip=1';
     }
     function patrolInView() {
         if (!patrol || !patrol.grid) return false;
         var c = map.getCenter(), g = patrol.grid;
         return c.lng >= g.x0 && c.lng <= g.x0 + g.res * g.nx && c.lat >= g.y0 && c.lat <= g.y0 + g.res * g.ny;
+    }
+    // One patrol answer's isochrones as features, at their own dates.
+    function patrolFeatures(j, mark) {
+        if (!j || !j.contours || !j.contours.length) return [];
+        var ds = j.contours.map(function (f) { return f.properties.dos; });
+        var lo = Math.min.apply(null, ds), hi = Math.max.apply(null, ds);
+        return j.contours.map(function (f) {
+            var p = f.properties, t = hi > lo ? (p.dos - lo) / (hi - lo) : 0.5;
+            return { type: 'Feature', geometry: f.geometry, properties: {
+                dos: p.dos, date: p.date, text: (p.text || '') + (mark ? ' \u2019' + String(p.date || '').slice(2, 4) : ''), kind: 'patrol', season: j.season || '',
+                color: patrolColor(t), label: !!p.label, l30: !!p.label && (p.dos % 30 === 0),
+                t: Date.parse((p.date || '') + 'T00:00:00Z') || 0 } };
+        });
+    }
+    var patrolFeats = [];
+    function applyPatrolData() {
+        var feats = patrolFeats;
+        if (animT !== null && phist.periods) phist.periods.forEach(function (P) { feats = feats.concat(P.feats); });
+        setData(PAT_SRC, feats);
     }
     function loadPatrol(force) {
         if (!patrolAnyOn() || !map) return Promise.resolve();
@@ -659,25 +752,44 @@
             inflight--;
             patrolKey = key;
             patrol = j || { status: 'request failed' };
-            var feats = [];
-            if (j && j.contours && j.contours.length) {
-                var ds = j.contours.map(function (f) { return f.properties.dos; });
-                var lo = Math.min.apply(null, ds), hi = Math.max.apply(null, ds);
-                feats = j.contours.map(function (f) {
-                    var t = hi > lo ? (f.properties.dos - lo) / (hi - lo) : 0.5;
-                    f.properties.color = patrolColor(t);
-                    f.properties.label = !!f.properties.label;
-                    f.properties.t = Date.parse((f.properties.date || '') + 'T00:00:00Z') || 0;
-                    f.properties.kind = 'patrol';
-                    return f;
-                });
-            }
-            setData(PAT_SRC, feats);
-            prs.acc = null;   // new visits: the playhead field restarts
+            if (pdataArea !== (patrol.area || '')) { pdata = {}; pdataArea = patrol.area || ''; phist.key = ''; phist.periods = null; }
+            patrolFeats = patrolFeatures(j, '');
+            applyPatrolData();
+            prs.acc = null; prs.src = null;   // new visits: the playhead field restarts
             setData(PRS_SRC, pressureFeatures(j));
-            if (animT !== null) animAt(animT);
+            if (animT !== null) { loadPatrolHistory(); animAt(animT, true); }
             refreshStrip();
         }).catch(function () { inflight--; emit(); });
+    }
+    /* The earlier patrol seasons of the window (animator only; see the
+     * front's loadHistory). One request per season, each clipped to the
+     * window, cached per area; the answer holds that season's isochrones,
+     * its end-of-season pressure rings, and its visits for the playhead. */
+    var pdata = {}, pdataArea = '';
+    var phist = { key: '', periods: null, loading: false };
+    function loadPatrolHistory() {
+        if (!patrolAnyOn() || !patrol || !patrol.area || !patrol.seasons || !patrol.from) return;
+        var d = dates(), from = d.from || '', to = d.to || '';
+        var want = windowSeasons(patrol.seasons).map(function (s) {
+            return { label: s.label, from: (from && from > s.start) ? from : s.start, to: (to && to < s.end) ? to : s.end };
+        }).filter(function (P) { return P.label !== patrol.season && P.from <= P.to && P.from < patrol.from; });
+        var key = patrol.area + '|' + want.map(function (P) { return P.from + '_' + P.to; }).join(',');
+        if (key === phist.key || phist.loading) return;
+        var missing = want.filter(function (P) { return !pdata[P.from + '|' + P.to]; });
+        function build() {
+            phist.key = key; phist.loading = false;
+            phist.periods = want.map(function (P) {
+                var j = pdata[P.from + '|' + P.to] || {};
+                return { from: P.from, to: P.to, label: P.label, j: j, feats: patrolFeatures(j, cmpYearMark(P.label)) };
+            });
+            applyPatrolData();
+            if (animT !== null) animAt(animT, true);
+        }
+        if (!missing.length) { build(); return; }
+        phist.loading = true; inflight++; emit();
+        Promise.all(missing.map(function (P) {
+            return fetch(patrolURL(P.from, P.to, patrol.area)).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { pdata[P.from + '|' + P.to] = j || { status: 'request failed' }; }).catch(function () { pdata[P.from + '|' + P.to] = { status: 'request failed' }; });
+        })).then(function () { inflight--; build(); refreshStrip(); });
     }
     /* Pressure: one hue ramp up the ladder (dim moss → bright mint), t = rank
      * among the levels actually cut, so the top line is always the
@@ -703,16 +815,16 @@
      * so a forward step only adds the days since the last frame; a scrub
      * backwards restarts from zero (11k visits × 81 kernel cells is under
      * a millisecond). Contoured here with the same marching squares. */
-    var prs = { acc: null, vi: 0, day: -1, nx: 0, ny: 0, kern: null, r: 0 };
+    var prs = { acc: null, vi: 0, day: -1, nx: 0, ny: 0, kern: null, r: 0, src: null };
     function pressureReset(j) {
-        var g = j.grid; prs.nx = g.nx; prs.ny = g.ny; prs.acc = new Float64Array(g.nx * g.ny); prs.vi = 0; prs.day = -1;
+        var g = j.grid; prs.nx = g.nx; prs.ny = g.ny; prs.acc = new Float64Array(g.nx * g.ny); prs.vi = 0; prs.day = -1; prs.src = j;
         var r = j.kernel_r || 4, sg = j.kernel_cells || 2, k = [];
         for (var dy = -r; dy <= r; dy++) for (var dx = -r; dx <= r; dx++) k.push(Math.exp(-(dx * dx + dy * dy) / (2 * sg * sg)));
         prs.kern = k; prs.r = r;
     }
-    function pressureFieldAt(dayIdx) {
-        var j = patrol; if (!j || !j.visits || !j.grid) return null;
-        if (!prs.acc || prs.nx !== j.grid.nx || prs.ny !== j.grid.ny || dayIdx < prs.day) pressureReset(j);
+    function pressureFieldAt(j, dayIdx) {
+        if (!j || !j.visits || !j.grid) return null;
+        if (!prs.acc || prs.src !== j || prs.nx !== j.grid.nx || prs.ny !== j.grid.ny || dayIdx < prs.day) pressureReset(j);
         var vs = j.visits, nx = prs.nx, ny = prs.ny, r = prs.r, k = prs.kern, acc = prs.acc, W = 2 * r + 1;
         while (prs.vi < vs.length && vs[prs.vi][2] <= dayIdx) {
             var v = vs[prs.vi++], ix = v[0], iy = v[1], w = v[3];
@@ -724,11 +836,11 @@
         return acc;
     }
     var PRESSURE_LADDER = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000];
-    function pressureContoursAt(t) {
-        var j = patrol; if (!j || !j.visits || !j.from) return [];
+    function pressureContoursFor(j, t) {
+        if (!j || !j.visits || !j.from) return [];
         var dayIdx = Math.floor((t - Date.parse(j.from + 'T00:00:00Z')) / DAY_MS);
         if (dayIdx < 0) return [];
-        var acc = pressureFieldAt(dayIdx); if (!acc) return [];
+        var acc = pressureFieldAt(j, dayIdx); if (!acc) return [];
         var mx = 0; for (var i = 0; i < acc.length; i++) if (acc[i] > mx) mx = acc[i];
         var g = j.grid, feats = [], lv = PRESSURE_LADDER.filter(function (l) { return l <= mx; });
         // Colour by rank on the FULL window's ladder, so a line keeps its hue
@@ -740,9 +852,39 @@
             if (!lines.length) return;
             var ri = full.indexOf(l), tt = full.length > 1 ? Math.max(0, ri) / (full.length - 1) : 1;
             feats.push({ type: 'Feature', geometry: { type: 'MultiLineString', coordinates: lines },
-                properties: { level: l, label: true, text: String(l), t: tt, color: pressureColor(tt), kind: 'pressure' } });
+                properties: { level: l, label: true, text: String(l), t: tt, color: pressureColor(tt), kind: 'pressure', at: t, season: j.season || '' } });
         });
         return feats;
+    }
+    /* The pressure picture at playhead t over every season of the window.
+     * Pressure is PER SEASON, never carried across: little in the rains,
+     * building before the dry season, a peak, then a new count — a ring
+     * that grew for six years would say the teams never left. The season
+     * t is in is rebuilt from its visits up to t (live, `at` = t); every
+     * season already over keeps its end-of-season rings as the server cut
+     * them (`at` = the day after it ended), which the age expressions in
+     * animAt ash out; nothing for seasons still ahead. */
+    function pressureAnimFeatures(t) {
+        var out = [], periods = (phist.periods || []).slice();
+        if (patrol && patrol.visits) periods.push({ from: patrol.from, to: patrol.to, j: patrol, label: patrol.season });
+        periods.forEach(function (P) {
+            var j = P.j; if (!j || !j.visits || !j.from) return;
+            var f0 = Date.parse(P.from + 'T00:00:00Z'), f1 = Date.parse(P.to + 'T00:00:00Z') + DAY_MS;
+            if (t < f0) return;
+            if (t >= f1) {
+                // A finished season keeps its PEAK CORE — the top two rungs
+                // of its ladder — as ash: where the effort concentrated,
+                // not every ring it ever had. Amounts are not dated lines;
+                // the outer rings go with the season.
+                var pf = pressureFeatures(j), top = pf.length ? Math.max.apply(null, pf.map(function (f) { return f.properties.level; })) : 0;
+                var keep = PRESSURE_LADDER.filter(function (l) { return l <= top; }).slice(-2);
+                pf.forEach(function (f) {
+                    if (keep.indexOf(f.properties.level) < 0) return;
+                    out.push({ type: 'Feature', geometry: f.geometry, properties: Object.assign({}, f.properties, { at: f1, text: f.properties.text + ' ' + cmpYearMark(P.label), season: P.label || '' }) });
+                });
+            } else out = out.concat(pressureContoursFor(j, t));
+        });
+        return out;
     }
     // Port of srv/patrol_isochrone.go marchingSquares (segments linked into
     // polylines by shared endpoints, thinned to ~¼ cell).
@@ -806,8 +948,10 @@
     }
     function pressureTipHTML(p) {
         if (!p || p.kind !== 'pressure') return '';
-        var h = '<div style="font-weight:600;margin-bottom:3px;color:#bef264">Patrol pressure \u00b7 ' + esc(String(p.level)) + ' patrol-days</div>';
-        h += '<div>By ' + esc(fmtDate((patrol && patrol.to) || '')) + ' patrols had spent <b>' + esc(String(p.level)) + ' patrol-days</b> within ~5 km of this line' + (patrol && patrol.from ? ' since ' + esc(fmtDate(patrol.from)) : '') + '; more inside it, less outside.</div>';
+        var P = null; (phist.periods || []).forEach(function (x) { if (x.label === p.season) P = x; });
+        var by = P ? fmtDate(P.to) : fmtDate((patrol && patrol.to) || ''), since = P ? P.from : (patrol && patrol.from);
+        var h = '<div style="font-weight:600;margin-bottom:3px;color:#bef264">Patrol pressure \u00b7 ' + esc(String(p.level)) + ' patrol-days' + (P ? ' \u00b7 ' + esc(P.label) : '') + '</div>';
+        h += '<div>By ' + esc(by) + ' patrols had spent <b>' + esc(String(p.level)) + ' patrol-days</b> within ~5 km of this line' + (since ? ' since ' + esc(fmtDate(since)) : '') + '; more inside it, less outside.</div>';
         h += '<div style="opacity:.6;font-size:11px;margin-top:4px">Solid lines say how much; the dash-dot isochrones say when.</div>';
         return h;
     }
@@ -847,8 +991,10 @@
     }
     function patrolTipHTML(p) {
         if (!p || p.kind !== 'patrol') return '';
-        var h = '<div style="font-weight:600;margin-bottom:3px;color:#86efac">Patrol isochrone \u00b7 ' + esc(fmtDate(p.date)) + '</div>';
-        h += '<div>By this date patrols had spent <b>\u2265 ' + esc((patrol && patrol.threshold) || 3) + ' patrol-days</b> within ~5 km of this line' + (patrol && patrol.from ? ' since ' + esc(fmtDate(patrol.from)) : '') + '.</div>';
+        var P = null; (phist.periods || []).forEach(function (x) { if (x.label === p.season) P = x; });
+        var since = P ? P.from : (patrol && patrol.from);
+        var h = '<div style="font-weight:600;margin-bottom:3px;color:#86efac">Patrol isochrone \u00b7 ' + esc(fmtDate(p.date)) + (P ? ' \u00b7 ' + esc(P.label) : '') + '</div>';
+        h += '<div>By this date patrols had spent <b>\u2265 ' + esc((patrol && patrol.threshold) || 3) + ' patrol-days</b> within ~5 km of this line' + (since ? ' since ' + esc(fmtDate(since)) : '') + '.</div>';
         if (patrol && patrol.by_mode) h += '<div style="opacity:.75;margin-top:3px">' + esc(patrolModeWords(patrol)) + ' cell-days in the window; foot 1 \u00b7 vehicle 0.7 \u00b7 helicopter 0.4 \u00b7 fixed-wing 0.2</div>';
         h += '<div style="opacity:.6;font-size:11px;margin-top:4px">Read against the fire front: the dashed ember lines say when the season arrived, these say when the teams had.</div>';
         return h;
@@ -1525,9 +1671,12 @@
         return c[i] + (c[i + 1] - c[i]) * (x - i);
     }
     function playheadMeta(t) {
-        if (!front || !front.front_curve || !front.season_start) { animMeta = null; return; }
-        var cv = front.front_curve, step = cv.step_days || 5;
-        var dos = (t - Date.parse(front.season_start + 'T00:00:00Z')) / DAY_MS;
+        // The season the playhead is IN — over a multi-year window that is
+        // one of the history's, not the slider's end — else the reference.
+        var sn = seasonAnswerAt(t) || front;
+        if (!sn || !sn.front_curve || !sn.season_start) { animMeta = null; return; }
+        var cv = sn.front_curve, step = cv.step_days || 5;
+        var dos = (t - Date.parse(sn.season_start + 'T00:00:00Z')) / DAY_MS;
         var pct = curveAt(cv.front, step, dos);
         if (pct === null) { animMeta = null; return; }
         // No offset against usual at the playhead: the server's
@@ -1535,10 +1684,10 @@
         // and a curve-quantile reading here would be a second estimator
         // under the same word (invariant 7) -- and scripts/eval_usual_shift.py
         // shows both are biased tens of days early until late season.
-        var key = Math.round(pct);
+        var key = Math.round(pct) + '|' + (sn.season || '');
         if (key === animPctKey && animMeta) return;
         animPctKey = key;
-        animMeta = Object.assign({}, front, { front_reached_pct: pct, usual_offset_days: null, at_playhead: true });
+        animMeta = Object.assign({}, front, sn, { front_reached_pct: pct, usual_offset_days: null, at_playhead: true, seasons: front.seasons });
         emit();
     }
     /* `force`: draw this exact instant now, skipping the 80 ms coalescing
@@ -1548,6 +1697,32 @@
        must get all n, or the GIF's contours stand still while its fires move.
        A frame dropped on screen is invisible; a frame dropped in a file is
        the file being wrong. */
+    /* Ash. A season that is over stays on the map as a comparison, not as
+     * ink: over ~a year after the front passed a line it goes from its own
+     * colour to a neutral grey, from 1.3 px to 0.8, from 0.3 opacity to
+     * ~0.1, and sheds first its 5-day lines (after 8 months) and then its
+     * 15-day lines (after 20 months), keeping the 30-day ones. Subtle on
+     * purpose: six seasons of 5-day lines at full weight is a thicket; six
+     * seasons of grey 30-day lines is what "last year it stood here" looks
+     * like. The ash is warm for fire and cool for patrols so a reader who
+     * has lost the dash pattern still has the family. */
+    var ASH_FIRE = '#8d8380', ASH_PATROL = '#7f8d84';
+    function ashColor(ageD, ash) { return ['interpolate', ['linear'], ageD, 150, ['get', 'color'], 330, ash]; }
+    function ashOpacity(ageD, stops) { return ['interpolate', ['linear'], ageD].concat(stops, [365, 0.2, 800, 0.14, 2000, 0.1]); }
+    function ashWidth(ageD, stops) { return ['*', ['case', ['get', 'label'], 1.0, 0.6], ['interpolate', ['linear'], ageD].concat(stops, [400, 1.0, 1500, 0.8])]; }
+    function ashLineFilter(t) {   // which lines survive at what age (ms)
+        return ['all', ['<=', ['get', 't'], t],
+            ['any', ['>=', ['get', 't'], t - 240 * DAY_MS],
+                ['all', ['==', ['get', 'label'], true], ['>=', ['get', 't'], t - 600 * DAY_MS]],
+                ['==', ['get', 'l30'], true]]];
+    }
+    function ashLabelFilter(t) {  // this season's labels; only the 30-day lines (with their year) once ashed
+        return ['all', ['<=', ['get', 't'], t],
+            ['any', ['>=', ['get', 't'], t - 6 * DAY_MS],
+                ['all', ['==', ['get', 'label'], true], ['>=', ['get', 't'], t - 200 * DAY_MS]],
+                ['==', ['get', 'l30'], true]]];
+    }
+    function ashTextOpacity(ageD) { return ['interpolate', ['linear'], ageD, 150, 1, 365, 0.55, 2000, 0.4]; }
     function animAt(t, force) {
         if (!map || !map.getLayer(FRONT_LYR)) { if (map && st.entry) drawEntry(t == null ? windowEndMs() : t); if (map && st.speed) drawSpeed(t); return; }
         // While the animator runs it draws the vanguard chains itself, built
@@ -1568,23 +1743,37 @@
             if (st.speed) drawSpeed(null);
             if (animDay === null) return;
             animDay = null; animT = null;
+            applyFrontData(); applyPatrolData();   // the reference season only, again
             map.setFilter(FRONT_LYR, null);
             map.setFilter(FRONT_LBL, ['==', ['get', 'label'], true]);
             map.setFilter(FRONT_WAVE, null);
             map.setPaintProperty(FRONT_WAVE, 'line-opacity', 0);
+            map.setPaintProperty(FRONT_LYR, 'line-color', ['get', 'color']);
             map.setPaintProperty(FRONT_LYR, 'line-width', ['case', ['get', 'label'], 1.6, 0.7]);
             map.setPaintProperty(FRONT_LYR, 'line-opacity', ['case', ['get', 'label'], 0.9, 0.55]);
+            map.setPaintProperty(FRONT_LBL, 'text-color', ['get', 'color']);
+            map.setPaintProperty(FRONT_LBL, 'text-opacity', 1);
             if (map.getLayer(CMP_LYR)) { map.setFilter(CMP_LYR, ['==', ['get', 'label'], true]); map.setFilter(CMP_LBL, ['==', ['get', 'label'], true]); map.setPaintProperty(CMP_LYR, 'line-width', 1.3); map.setPaintProperty(CMP_LYR, 'line-opacity', 0.8); }
             if (map.getLayer(PAT_LYR)) {
                 map.setFilter(PAT_LYR, null); map.setFilter(PAT_LBL, ['==', ['get', 'label'], true]); map.setFilter(PAT_WAVE, null);
                 map.setPaintProperty(PAT_WAVE, 'line-opacity', 0);
+                map.setPaintProperty(PAT_LYR, 'line-color', ['get', 'color']);
                 map.setPaintProperty(PAT_LYR, 'line-width', ['case', ['get', 'label'], 1.8, 0.8]);
                 map.setPaintProperty(PAT_LYR, 'line-opacity', ['case', ['get', 'label'], 0.92, 0.55]);
+                map.setPaintProperty(PAT_LBL, 'text-color', ['get', 'color']);
+                map.setPaintProperty(PAT_LBL, 'text-opacity', 1);
+            }
+            if (map.getLayer(PRS_LYR)) {
+                map.setFilter(PRS_LBL, null);
+                map.setPaintProperty(PRS_LYR, 'line-color', ['get', 'color']);
+                map.setPaintProperty(PRS_LYR, 'line-width', ['+', 0.6, ['*', 1.4, ['get', 't']]]);
+                map.setPaintProperty(PRS_LYR, 'line-opacity', ['+', 0.45, ['*', 0.5, ['get', 't']]]);
             }
             return;
         }
         var now = performance.now();
         if (!force && animT !== null && Math.abs(t - animT) < 0.1 * DAY_MS) return;   // same tenth of a day: nothing to say
+        var starting = animDay === null;
         playheadMeta(t);
         if (!force && animT !== null && now - animWall < 80) {                          // ~12 repaints/s is plenty…
             // …but the LAST position of a scrub must land: trail it.
@@ -1594,24 +1783,31 @@
         }
         clearTimeout(animTrail);
         animWall = now; animT = t; animDay = new Date(t).toISOString().slice(0, 10);
+        if (starting) {
+            // Every season the window touches goes on the sources (the
+            // earlier ones fetched once), so the playhead meets each year's
+            // front at its own dates rather than waiting for the last one.
+            loadHistory(); loadPatrolHistory();
+            applyFrontData(); applyPatrolData();
+        }
         // The ground under the animated fires: full weight until the usual
         // front arrives at a cell, stepping back after; a cell lights up for
         // four days when this season's first detection lands in it.
         if (st.entry) drawEntry(t);
         if (st.speed) drawSpeed(t);
-        if (st.pressure && patrol && patrol.visits) setData(PRS_SRC, pressureContoursAt(t));
+        if (st.pressure && patrol && patrol.visits) setData(PRS_SRC, pressureAnimFeatures(t));
         var ageD = ['/', ['-', t, ['get', 't']], DAY_MS];                    // days since the season reached this line
         var reached = ['<=', ['get', 't'], t];
-        map.setFilter(FRONT_LYR, reached);
+        map.setFilter(FRONT_LYR, ashLineFilter(t));
         map.setFilter(FRONT_WAVE, ['all', reached, ['>=', ['get', 't'], t - 6 * DAY_MS]]);
-        map.setFilter(FRONT_LBL, ['all', reached, ['any', ['==', ['get', 'label'], true], ['>=', ['get', 't'], t - 6 * DAY_MS]]]);
+        map.setFilter(FRONT_LBL, ashLabelFilter(t));
         map.setPaintProperty(FRONT_WAVE, 'line-opacity',
             ['interpolate', ['linear'], ageD, 0, 0.6, 2.5, 0.4, 6, 0]);
-        map.setPaintProperty(FRONT_LYR, 'line-width',
-            ['*', ['case', ['get', 'label'], 1.0, 0.6],
-                ['interpolate', ['linear'], ageD, 0, 3.6, 4, 2.6, 10, 1.9, 40, 1.5, 120, 1.3]]);
-        map.setPaintProperty(FRONT_LYR, 'line-opacity',
-            ['interpolate', ['linear'], ageD, 0, 1.0, 5, 0.9, 20, 0.65, 60, 0.4, 150, 0.3]);
+        map.setPaintProperty(FRONT_LYR, 'line-color', ashColor(ageD, ASH_FIRE));
+        map.setPaintProperty(FRONT_LYR, 'line-width', ashWidth(ageD, [0, 3.6, 4, 2.6, 10, 1.9, 40, 1.5, 120, 1.3]));
+        map.setPaintProperty(FRONT_LYR, 'line-opacity', ashOpacity(ageD, [0, 1.0, 5, 0.9, 20, 0.65, 60, 0.4, 150, 0.3]));
+        map.setPaintProperty(FRONT_LBL, 'text-color', ashColor(ageD, ASH_FIRE));
+        map.setPaintProperty(FRONT_LBL, 'text-opacity', ashTextOpacity(ageD));
         if (map.getLayer(CMP_LYR)) {
             // each compared season: the line its front had just reached on
             // this day of season, and a two-week wake behind it
@@ -1623,14 +1819,27 @@
             map.setPaintProperty(CMP_LYR, 'line-opacity', ['interpolate', ['linear'], ageR, 0, 0.95, 5, 0.6, 15, 0.25]);
         }
         if (map.getLayer(PAT_LYR)) {
-            var reachedP = ['<=', ['get', 't'], t];
-            map.setFilter(PAT_LYR, reachedP);
-            map.setFilter(PAT_WAVE, ['all', reachedP, ['>=', ['get', 't'], t - 6 * DAY_MS]]);
-            map.setFilter(PAT_LBL, ['all', reachedP, ['any', ['==', ['get', 'label'], true], ['>=', ['get', 't'], t - 6 * DAY_MS]]]);
+            map.setFilter(PAT_LYR, ashLineFilter(t));
+            map.setFilter(PAT_WAVE, ['all', reached, ['>=', ['get', 't'], t - 6 * DAY_MS]]);
+            map.setFilter(PAT_LBL, ashLabelFilter(t));
             map.setPaintProperty(PAT_WAVE, 'line-opacity', ['interpolate', ['linear'], ageD, 0, 0.55, 2.5, 0.35, 6, 0]);
-            map.setPaintProperty(PAT_LYR, 'line-width',
-                ['*', ['case', ['get', 'label'], 1.0, 0.6], ['interpolate', ['linear'], ageD, 0, 3.6, 4, 2.6, 10, 2.0, 40, 1.7, 120, 1.5]]);
-            map.setPaintProperty(PAT_LYR, 'line-opacity', ['interpolate', ['linear'], ageD, 0, 1.0, 5, 0.9, 20, 0.7, 60, 0.5, 150, 0.4]);
+            map.setPaintProperty(PAT_LYR, 'line-color', ashColor(ageD, ASH_PATROL));
+            map.setPaintProperty(PAT_LYR, 'line-width', ashWidth(ageD, [0, 3.6, 4, 2.6, 10, 2.0, 40, 1.7, 120, 1.5]));
+            map.setPaintProperty(PAT_LYR, 'line-opacity', ashOpacity(ageD, [0, 1.0, 5, 0.9, 20, 0.7, 60, 0.5, 150, 0.4]));
+            map.setPaintProperty(PAT_LBL, 'text-color', ashColor(ageD, ASH_PATROL));
+            map.setPaintProperty(PAT_LBL, 'text-opacity', ashTextOpacity(ageD));
+        }
+        if (map.getLayer(PRS_LYR)) {
+            // Live rings (`at` = playhead) at full weight; a finished
+            // season's end-of-season rings ash out from the day it ended,
+            // and only the live season's rings carry their numbers (an
+            // ashed ring's number and year are in its tip).
+            var ageP = ['/', ['-', t, ['coalesce', ['get', 'at'], t]], DAY_MS];
+            var rank = ['coalesce', ['get', 't'], 1];
+            map.setFilter(PRS_LBL, ['>=', ['coalesce', ['get', 'at'], t], t - 1 * DAY_MS]);
+            map.setPaintProperty(PRS_LYR, 'line-color', ['interpolate', ['linear'], ageP, 30, ['get', 'color'], 240, ASH_PATROL]);
+            map.setPaintProperty(PRS_LYR, 'line-width', ['*', ['+', 0.6, ['*', 1.4, rank]], ['interpolate', ['linear'], ageP, 0, 1, 365, 0.7, 1500, 0.55]]);
+            map.setPaintProperty(PRS_LYR, 'line-opacity', ['*', ['+', 0.45, ['*', 0.5, rank]], ['interpolate', ['linear'], ageP, 0, 1, 30, 0.6, 150, 0.35, 365, 0.22, 800, 0.15, 2000, 0.1]]);
         }
     }
 

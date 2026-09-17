@@ -230,6 +230,43 @@ const UI_TESTS = [
         ]
     },
 
+    // === ANIMATOR: EVERY SEASON OF THE WINDOW, ASHING OUT ===
+    // A 2020–2026 window used to draw no front until the playhead reached the
+    // season the slider ENDS in. Now every season the window touches is on
+    // the source at its own dates once the animator asks; the playhead's
+    // season is the one the stats row speaks for; earlier seasons are
+    // filtered down to their 30-day lines (ash), never removed.
+    {
+        name: 'anim_front_every_season',
+        url: '&park_focus=CAF_Chinko&from=2020-01-01&to=2026-06-30&season=front&layers=none&anim=&anim_paused=1&anim_t=2020-01-01&bbox=22.6,5.2,25.6,8.2',
+        wait: 9000,
+        assertions: [
+            { type: 'fn', fn: async () => {
+                if (!window.Animator || !Animator.seek) return false;
+                Animator.seek('2022-01-15');                       // mid 2021/22 — a season the slider does NOT end in
+                await new Promise(r => setTimeout(r, 6000));       // the history fetch (one request per season)
+                Animator.seek('2022-01-16');
+                await new Promise(r => setTimeout(r, 1500));
+                const src = map.getSource('fireseason-front-src'), feats = (src && src._data && src._data.features) || [];
+                const seasons = new Set(feats.map(f => f.properties.season).filter(Boolean));
+                const m = FireSeason.meta();
+                window.__animSeasonProbe = { n: feats.length, seasons: seasons.size, meta: m && m.season, pct: m && m.front_reached_pct };
+                return seasons.size >= 5 && m && m.season === '2021/22' && m.at_playhead && m.front_reached_pct > 0;
+            }, msg: 'Contours of ≥ 5 seasons loaded; the stats row speaks for the season the playhead is in (2021/22), not the slider\'s end' },
+            { type: 'fn', fn: () => {
+                // Ash is a filter, not a removal: 2020/21's 30-day lines
+                // survive, its 5-day lines do not; 2021/22's do.
+                const t = Date.parse('2022-01-16T00:00:00Z'), D = 86400000;
+                const rendered = map.queryRenderedFeatures({ layers: ['fireseason-front'] }).map(f => f.properties);
+                const old5 = rendered.filter(p => !p.label && t - p.t > 240 * D), old30 = rendered.filter(p => p.l30 && t - p.t > 240 * D);
+                const cur = rendered.filter(p => t - p.t < 200 * D);
+                return old5.length === 0 && old30.length > 0 && cur.length > 0 && old30.every(p => /\u2019\d\d$/.test(p.text));
+            }, msg: 'Older seasons keep only their 30-day lines, labelled with their own year; the current season draws all of them' },
+            { type: 'fn', fn: () => { Animator.close(); const n = map.getSource('fireseason-front-src')._data.features.length; const s = new Set(map.getSource('fireseason-front-src')._data.features.map(f => f.properties.season)); return n > 0 && s.size === 1; },
+              msg: 'Closing the animator puts the reference season alone back on the map' },
+        ]
+    },
+
     // === SEARCH ===
     {
         name: 'search_query',
@@ -340,7 +377,7 @@ if (typeof window !== 'undefined' && window.TEST) {
                         TEST.assert(el && el.value.includes(a.text), a.msg);
                         break;
                     case 'fn':
-                        TEST.assert(a.fn(), a.msg);
+                        TEST.assert(await a.fn(), a.msg);   // a fn may be async (the animator's history fetch)
                         break;
                 }
             }

@@ -6,8 +6,8 @@ package srv
 // year ("the front bent around the ground the teams had been on since
 // June").
 //
-//	GET /api/patrol-isochrones?area=<park|aoi>|lon=&lat=&from=&to=[&mode=all|ground|air]
-//	    → {"area","season","season_start","from","to",
+//	GET /api/patrol-isochrones?area=<park|aoi>|lon=&lat=&from=&to=[&mode=all|ground|air][&clip=1]
+//	    → {"area","season","season_start","from","to","seasons":[{label,start,end}…],
 //	       "grid":{x0,y0,res,nx,ny}, "cells", "patrol_days", "threshold", "kernel_cells",
 //	       "contours":[Feature{dos,date,label,text}…],     dos = days since `from`
 //	       "arrival":[[ix,iy,dos]…],                        per reached cell
@@ -136,6 +136,15 @@ func (s *Server) HandleAPIPatrolIsochrones(w http.ResponseWriter, r *http.Reques
 		front, usual       []byte
 	}
 	var pick *row
+	// Every season of the area (label, start, end): the animator fetches
+	// one window per season so a multi-year slider draws each year's
+	// isochrones in its own place (the handler caps a window at 800 d).
+	type seasonOut struct {
+		Label string `json:"label"`
+		Start string `json:"start"`
+		End   string `json:"end"`
+	}
+	var seasonsOut []seasonOut
 	{
 		rs, err := s.DB.QueryContext(r.Context(), `
 			SELECT season, season_start, season_end, nx, ny, res, x0, y0, front, usual
@@ -149,6 +158,7 @@ func (s *Server) HandleAPIPatrolIsochrones(w http.ResponseWriter, r *http.Reques
 			if rs.Scan(&rw.season, &rw.start, &rw.end, &rw.nx, &rw.ny, &rw.res, &rw.x0, &rw.y0, &rw.front, &rw.usual) != nil {
 				continue
 			}
+			seasonsOut = append(seasonsOut, seasonOut{rw.season, rw.start, rw.end})
 			if pick == nil || rw.start <= to {
 				c := rw
 				pick = &c
@@ -161,6 +171,14 @@ func (s *Server) HandleAPIPatrolIsochrones(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	if from == "" || from > to {
+		from = pick.start
+	}
+	// clip=1: presence accumulates from the REFERENCE season's start, not
+	// the window's — the front's rule ("a 2024/25 window drawn with the
+	// 2025/26 front contradicts its slider"), so a multi-year slider gets
+	// the season `to` falls in, and the animator fetches the earlier
+	// seasons one by one.
+	if q.Get("clip") == "1" && from < pick.start {
 		from = pick.start
 	}
 	fromT, ok1 := parseISODate(from)
@@ -235,7 +253,7 @@ func (s *Server) HandleAPIPatrolIsochrones(w http.ResponseWriter, r *http.Reques
 	}
 	rows.Close()
 	base := map[string]interface{}{
-		"area": area, "season": pick.season, "season_start": pick.start, "from": from, "to": to,
+		"area": area, "season": pick.season, "season_start": pick.start, "from": from, "to": to, "seasons": seasonsOut,
 		"grid":      map[string]interface{}{"x0": x0, "y0": y0, "res": res, "nx": nx, "ny": ny},
 		"threshold": patrolThreshold, "kernel_cells": patrolKernelSigma, "reach_km": 5, "mode": mode, "weights": patrolModeWeight,
 		"unit":        "patrol-days (a 2.5 km cell with a patrol in it on a day, weighted by movement type — see weights)",
