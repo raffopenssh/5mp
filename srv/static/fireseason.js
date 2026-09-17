@@ -871,6 +871,7 @@
             var j = P.j; if (!j || !j.visits || !j.from) return;
             var f0 = Date.parse(P.from + 'T00:00:00Z'), f1 = Date.parse(P.to + 'T00:00:00Z') + DAY_MS;
             if (t < f0) return;
+            if (t >= f1 + ASH_MAX_DAYS * DAY_MS) return;   // ash lasts two seasons, like the lines
             if (t >= f1) {
                 // A finished season keeps its PEAK CORE — the top two rungs
                 // of its ladder — as ash: where the effort concentrated,
@@ -1707,17 +1708,23 @@
      * like. The ash is warm for fire and cool for patrols so a reader who
      * has lost the dash pattern still has the family. */
     var ASH_FIRE = '#8d8380', ASH_PATROL = '#7f8d84';
+    // How long ash lasts. A season's 30-day lines stay through the NEXT
+    // season as "last year it stood here", and go when the one after that
+    // begins: six years of kept 30-day lines over a 2020–2026 window was a
+    // thicket again, one rung up (`/s/rwv2rz5`, 2026-09-17). Two seasons,
+    // in days, since a season is a year.
+    var ASH_MAX_DAYS = 2 * 365;
     function ashColor(ageD, ash) { return ['interpolate', ['linear'], ageD, 150, ['get', 'color'], 330, ash]; }
     function ashOpacity(ageD, stops) { return ['interpolate', ['linear'], ageD].concat(stops, [365, 0.2, 800, 0.14, 2000, 0.1]); }
     function ashWidth(ageD, stops) { return ['*', ['case', ['get', 'label'], 1.0, 0.6], ['interpolate', ['linear'], ageD].concat(stops, [400, 1.0, 1500, 0.8])]; }
     function ashLineFilter(t) {   // which lines survive at what age (ms)
-        return ['all', ['<=', ['get', 't'], t],
+        return ['all', ['<=', ['get', 't'], t], ['>=', ['get', 't'], t - ASH_MAX_DAYS * DAY_MS],
             ['any', ['>=', ['get', 't'], t - 240 * DAY_MS],
                 ['all', ['==', ['get', 'label'], true], ['>=', ['get', 't'], t - 600 * DAY_MS]],
                 ['==', ['get', 'l30'], true]]];
     }
     function ashLabelFilter(t) {  // this season's labels; only the 30-day lines (with their year) once ashed
-        return ['all', ['<=', ['get', 't'], t],
+        return ['all', ['<=', ['get', 't'], t], ['>=', ['get', 't'], t - ASH_MAX_DAYS * DAY_MS],
             ['any', ['>=', ['get', 't'], t - 6 * DAY_MS],
                 ['all', ['==', ['get', 'label'], true], ['>=', ['get', 't'], t - 200 * DAY_MS]],
                 ['==', ['get', 'l30'], true]]];

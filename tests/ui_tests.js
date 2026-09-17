@@ -260,8 +260,9 @@ const UI_TESTS = [
                 const rendered = map.queryRenderedFeatures({ layers: ['fireseason-front'] }).map(f => f.properties);
                 const old5 = rendered.filter(p => !p.label && t - p.t > 240 * D), old30 = rendered.filter(p => p.l30 && t - p.t > 240 * D);
                 const cur = rendered.filter(p => t - p.t < 200 * D);
-                return old5.length === 0 && old30.length > 0 && cur.length > 0 && old30.every(p => /\u2019\d\d$/.test(p.text));
-            }, msg: 'Older seasons keep only their 30-day lines, labelled with their own year; the current season draws all of them' },
+                const ancient = rendered.filter(p => t - p.t > 730 * D);   // ash lasts two seasons, then goes
+                return old5.length === 0 && old30.length > 0 && cur.length > 0 && ancient.length === 0 && old30.every(p => /\u2019\d\d$/.test(p.text));
+            }, msg: 'Older seasons keep only their 30-day lines, labelled with their own year, for two seasons; the current season draws all of them' },
             { type: 'fn', fn: () => { Animator.close(); const n = map.getSource('fireseason-front-src')._data.features.length; const s = new Set(map.getSource('fireseason-front-src')._data.features.map(f => f.properties.season)); return n > 0 && s.size === 1; },
               msg: 'Closing the animator puts the reference season alone back on the map' },
         ]

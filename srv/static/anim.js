@@ -3262,10 +3262,19 @@
 
     // Hide the live map's patrol pixel layers while the animator renders effort
     // (they'd overlap the animated circles/grid); restore per viewLayers.pixels.
+    // The patrol isochrones and pressure rings count too: they are the
+    // animator's dated picture of the same effort, and the whole-window pixel
+    // lattice drawn over them at full weight buries the ash (`/s/rwv2rz5`).
     const BASE_EFFORT_LAYERS = ['grid-halo', 'grid-glow', 'grid-fill', 'grid-cells'];
+    function animatingPatrol() {
+        if (!A) return false;
+        if (A.on.effortGrid || A.on.effortPts) return true;
+        const FS = window.FireSeason;
+        return !!(FS && ((FS.patrolOn && FS.patrolOn()) || (FS.pressureOn && FS.pressureOn())));
+    }
     function syncBaseEffortVisibility() {
         if (typeof map === 'undefined' || !map || !map.getLayer) return;
-        const animatingEffort = !!(A && (A.on.effortGrid || A.on.effortPts));
+        const animatingEffort = animatingPatrol();
         const vis = (animatingEffort || !(window.viewLayers && window.viewLayers.pixels)) ? 'none' : 'visible';
         BASE_EFFORT_LAYERS.forEach(id => {
             try { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', vis); } catch (e) {}
@@ -3477,7 +3486,7 @@
     function wireSeason() {
         if (seasonWired || !window.FireSeason) return;
         seasonWired = true;
-        FireSeason.onChange(() => { if (A) { updateChips(); draw(A.t); } });
+        FireSeason.onChange(() => { if (A) { updateChips(); syncBaseEffortVisibility(); draw(A.t); } });
     }
 
     // The chip's mark: the category's glyph where the rendering has one of its
@@ -4104,6 +4113,7 @@
             if (typeof updateShareURL === 'function') updateShareURL();
         },
         isOpen() { return !!A; },
+        animatingPatrol,   // globe.html's pixel toggle asks this before showing the lattice
         /** Which animation renderings are on right now. */
         layers() { return A ? LAYER_ORDER.filter(n => A.on[n]) : []; },
         isLayerOn(name) { return chipOn(name); },
