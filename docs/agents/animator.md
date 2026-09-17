@@ -86,6 +86,53 @@ purple.
   a surface is a hit, so competing on distance would beat the trajectory the
   user is pointing at.
 
+### Every season of the window; the past as ash (2026-09-17)
+
+The front was fetched for ONE season — the one the slider ends in — and the
+animator filtered its contours by `t ≤ playhead`. Over a 2020–2026 window that
+drew nothing for six years, then 2026; the compare seasons did not help
+because they sit on the reference season's *calendar* (same day of season),
+so they too waited for 2026. Patrol isochrones/pressure did worse: the server
+caps a window at 800 d, so the request 400'd and the guest link on a phone
+showed "none of it" (`/s/g-h7c4n4qd3thfh5h7` was the report).
+
+Now, in `fireseason.js`:
+
+* **Fire front — `loadHistory()`.** On the animator's first `animAt(t)`
+  (`starting`) every season in `front.seasons` overlapping the window is
+  fetched with `season=` (shared cache `cmpData`, one request per season,
+  once) and put on `FRONT_SRC` beside the reference (`applyFrontData`), each
+  contour at its **own** dates. Teardown (`animAt(null)`) puts the reference
+  alone back. `playheadMeta` reads `front_curve` from the season the playhead
+  is *in* (`seasonAnswerAt`), so the stats row says `front 71 %` for 2021/22,
+  not `0 %` of 2026/27.
+* **Patrol — `loadPatrolHistory()`.** `patrolURL()` always sends `clip=1`
+  (server: `from = max(from, season_start)`), so the static picture is the
+  season `to` falls in — the front's rule — and the request stays under the
+  cap. The wire now carries `seasons[]`; the animator fetches one window per
+  earlier season (`pdata`, `phist.periods`), each holding its isochrones,
+  end-of-season pressure rings and visits.
+* **Pressure is per season, never carried across** (little in the rains,
+  a build-up, a peak, then a new count). `pressureAnimFeatures(t)`: the
+  season `t` is in is rebuilt live from its visits (`pressureContoursFor`,
+  `prs.src` keyed to the answer); a finished season keeps only its **peak
+  core** — the top two rungs of its ladder (`PRESSURE_LADDER`) — as ash,
+  `at` = the day after it ended; nothing for seasons ahead.
+* **Ash is one rule for every dated line** (`ashColor/ashOpacity/ashWidth/
+  ashLineFilter/ashLabelFilter`): colour → `ASH_FIRE` (warm) / `ASH_PATROL`
+  (cool) between 150 and 330 d of age; opacity 0.3 @150 d → 0.2 @1 y → 0.1
+  @5 y; width 1.3 → 0.8; the 5-day lines drop after 240 d, the 15-day after
+  600 d, the 30-day lines (`l30`) stay. Labels: the current season's;
+  once ashed only the 30-day lines, in the line's **own year**
+  (`'16 Jul ’21'` from `date`, not the season label — the 2020/21 season's
+  August is ’20). Pressure rings share the fade, and only live rings carry
+  numbers (an ashed ring's number and year are in its tip).
+* `Animator.seek(ISO|ms)` pauses and draws one instant — for tests and the
+  console; the slider is the UI.
+
+Tests: api `patrol_isochrones_long_window_400` / `_clip_to_season`; ui
+`anim_front_every_season` (async assertion — `runUITests` awaits `fn`).
+
 ### Highlight is a curator, not a dimmer (2026-09-16)
 
 `highlight` used to be one switch that dimmed the surfaces and left the eleven

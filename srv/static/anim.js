@@ -4155,6 +4155,17 @@
                 this.open({ layers, paused, aoi, highlight, seasonTouched, seasonBefore });
             }, 350);
         },
+        // seek(ISO date | ms): pause and put the playhead there, drawing the
+        // frame at once. For tests and the console — the slider is the UI.
+        seek(when) {
+            if (!A) return false;
+            const t = typeof when === 'number' ? when : Date.parse(String(when).slice(0, 10) + 'T00:00:00Z');
+            if (!isFinite(t)) return false;
+            if (A.playing) pause();
+            A.t = Math.max(A.t0, Math.min(A.t1, t));
+            drawAndSync();
+            return true;
+        },
         getState() {
             if (!A) return null;
             return {
