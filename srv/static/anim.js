@@ -1277,10 +1277,22 @@
     // Lead colour (FireSeason.leadColor, orange 0 d → yellow 15 d → white
     // 40 d ahead, the legend's ramp), ashed
     // towards the same grey as fire red so the two populations age alike.
+    // Lead → [r,g,b], memoised on the half-day: FireSeason.leadColor builds
+    // a hex string and this parsed it back, per segment, per frame.
+    const _vanRGB = new Map();
+    function vanRGB(lead) {
+        const key = Math.round((lead == null ? 10 : lead) * 2);
+        let c = _vanRGB.get(key);
+        if (!c) {
+            const hex = (window.FireSeason ? FireSeason.leadColor(key / 2) : '#fde047');
+            c = [parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16), parseInt(hex.slice(5, 7), 16)];
+            _vanRGB.set(key, c);
+        }
+        return c;
+    }
     function vanColor(lead, k, alpha) {
-        const hex = (window.FireSeason ? FireSeason.leadColor(lead == null ? 10 : lead) : '#fde047');
-        const r0 = parseInt(hex.slice(1, 3), 16), g0 = parseInt(hex.slice(3, 5), 16), b0 = parseInt(hex.slice(5, 7), 16);
-        const r = Math.round(r0 + (140 - r0) * k), g = Math.round(g0 + (140 - g0) * k), b = Math.round(b0 + (140 - b0) * k);
+        const c = vanRGB(lead);
+        const r = Math.round(c[0] + (140 - c[0]) * k), g = Math.round(c[1] + (140 - c[1]) * k), b = Math.round(c[2] + (140 - c[2]) * k);
         return `rgba(${r},${g},${b},${alpha})`;
     }
     function ashColor(k, alpha) {
@@ -1855,6 +1867,11 @@
     // ---------- draw ----------
     function draw(t, force) {
         if (!A) return;
+        if (A.drawing) return;   // re-entrant call from a listener we fired ourselves
+        A.drawing = true;
+        try { drawFrame(t, force); } finally { if (A) A.drawing = false; }
+    }
+    function drawFrame(t, force) {
         // The season front is a MapLibre layer, not canvas: tell it the
         // playhead so it shows the isochrones the season had reached by t.
         // `force` while exporting: every requested instant must land (see
@@ -2254,8 +2271,31 @@
     //
     // Drawn after the field so the few hundred chains that carry information
     // sit on top of the thousands that do not.
+    // Per chain, ONCE: each segment's lead (mean of its two vertices), its
+    // gap in days and its colour BIN. None of it depends on t or the view,
+    // and it was rebuilt from `g.leads` on every frame. The bin is the
+    // half-day the memoised ramp is keyed on, so segments in one bin are
+    // the same ink and are stroked as ONE path below.
+    function vanStatic(g) {
+        if (g._vs) return g._vs;
+        const pts = g.pts, leads = g.leads;
+        const lead = g.lead_start == null ? 10 : g.lead_start;
+        const n = Math.max(0, pts.length - 1);
+        const L = new Float32Array(n), gap = new Uint8Array(n), bin = new Int16Array(n);
+        for (let i = 0; i < n; i++) {
+            let v = lead;
+            if (leads) {
+                const a = leads[i], b = leads[i + 1];
+                if (a != null || b != null) v = a == null ? b : (b == null ? a : (a + b) / 2);
+            }
+            L[i] = v;
+            bin[i] = Math.round(v * 2);
+            gap[i] = Math.min(255, Math.round((pts[i + 1][2] - pts[i][2]) / DAY));
+        }
+        return (g._vs = { L, gap, bin, n, lead0: leads && leads[0] != null ? leads[0] : lead });
+    }
     function drawVanguard(ctx, g, t, alpha, ash, inkW, headR, fade) {
-        const scr = g._scr, pts = g.pts, leads = g.leads;
+        const scr = g._scr, pts = g.pts;
         const lead = g.lead_start == null ? 10 : g.lead_start;
         const live = t <= g.t1;
         fade = fade || 0;
@@ -2273,58 +2313,78 @@
         const w = inkW * 1.4 * mul * (1 - 0.45 * fade);
         ctx.lineJoin = 'round'; ctx.lineCap = 'round';
 
-        // Walk the chain up to t, one SEGMENT at a time: each carries the
-        // mean lead of its two vertices (its colour) and whether that is
-        // still ahead of the season (>= 0) or after it.
-        // segs: [{ahead:bool, lead:number, x0,y0,x1,y1}]
-        const segs = [];
+        // Walk the chain up to t. `m` segments are drawn; the last one may be
+        // cut at the playhead (screen-space interpolation: a segment is a
+        // few km, so it is the same line).
+        const S = vanStatic(g);
         let headX = null, headY = null, headAhead = true, headLead = lead;
-        const segLead = (i) => {
-            if (!leads) return lead;
-            const a = leads[i], b = leads[i + 1];
-            if (a == null && b == null) return lead;
-            return a == null ? b : (b == null ? a : (a + b) / 2);
-        };
-        if (pts.length && pts[0][2] <= t) { headX = scr[0]; headY = scr[1]; headAhead = !leads || leads[0] == null || leads[0] >= 0; headLead = leads && leads[0] != null ? leads[0] : lead; }
-        for (let i = 0; i + 1 < pts.length; i++) {
-            const pt = pts[i + 1];
+        if (pts.length && pts[0][2] <= t) { headX = scr[0]; headY = scr[1]; headAhead = S.lead0 >= 0; headLead = S.lead0; }
+        let m = 0, cutX = 0, cutY = 0, cut = false;
+        for (let i = 0; i < S.n; i++) {
             if (pts[i][2] > t) break;
-            const L = segLead(i);
-            const x0 = scr[i * 2], y0 = scr[i * 2 + 1];
-            let x1 = scr[(i + 1) * 2], y1 = scr[(i + 1) * 2 + 1];
+            const pt = pts[i + 1];
             if (pt[2] > t) {
                 const span = pt[2] - pts[i][2];
                 const frac = span > 0 ? (t - pts[i][2]) / span : 0;
                 if (frac <= 0) break;
-                x1 = x0 + (x1 - x0) * frac; y1 = y0 + (y1 - y0) * frac;
+                const x0 = scr[i * 2], y0 = scr[i * 2 + 1];
+                cutX = x0 + (scr[(i + 1) * 2] - x0) * frac; cutY = y0 + (scr[(i + 1) * 2 + 1] - y0) * frac; cut = true;
+                m = i + 1; break;
             }
-            segs.push({ ahead: L >= 0, lead: L, x0, y0, x1, y1, gap: Math.round((pt[2] - pts[i][2]) / DAY) });
-            headX = x1; headY = y1; headAhead = L >= 0; headLead = L;
-            if (pt[2] > t) break;
+            m = i + 1;
         }
         if (headX === null) return;
-
+        if (m) {
+            headX = cut ? cutX : scr[m * 2]; headY = cut ? cutY : scr[m * 2 + 1];
+            headAhead = S.L[m - 1] >= 0; headLead = S.L[m - 1];
+        }
+        // Stroke the drawn segments as RUNS: consecutive segments of one
+        // colour bin, one side of the front and one dash state are one path.
+        // A chain of 40 segments used to be 40 (80 with the halo) separate
+        // beginPath/stroke calls with a fresh rgba string each.
+        const runs = (pass) => {
+            let i = 0;
+            while (i < m) {
+                const b = S.bin[i], ahead = S.L[i] >= 0, dash = S.gap[i] > 1;
+                let j = i + 1;
+                while (j < m && S.bin[j] === b && (S.L[j] >= 0) === ahead && (S.gap[j] > 1) === dash) j++;
+                pass(i, j, ahead, S.L[i], dash);
+                i = j;
+            }
+        };
+        const trace = (i, j, perSeg) => {
+            if (perSeg) {   // dashed: one path per segment, so each gap's dash pattern starts at its own vertex, as before
+                for (let k = i; k < j; k++) trace(k, k + 1, false);
+                return;
+            }
+            ctx.beginPath();
+            ctx.moveTo(scr[i * 2], scr[i * 2 + 1]);
+            for (let k = i + 1; k < j; k++) ctx.lineTo(scr[k * 2], scr[k * 2 + 1]);
+            if (j === m && cut) ctx.lineTo(cutX, cutY); else ctx.lineTo(scr[j * 2], scr[j * 2 + 1]);
+            ctx.stroke();
+        };
         // Halo under the ahead run: wide, soft, lead-coloured per segment.
         // Fresh only — ash has no halo, the point of ash is that the story
         // is over.
-        if (ash < 0.6) {
+        if (ash < 0.6 && m) {
             ctx.lineWidth = w * 3.2;
-            for (const sg of segs) {
-                if (!sg.ahead) continue;
-                ctx.strokeStyle = vanColor(sg.lead, ash, alpha * 0.22 * (1 - ash / 0.6));
-                ctx.beginPath(); ctx.moveTo(sg.x0, sg.y0); ctx.lineTo(sg.x1, sg.y1); ctx.stroke();
-            }
+            runs((i, j, ahead, L) => {
+                if (!ahead) return;
+                ctx.strokeStyle = vanColor(L, ash, alpha * 0.22 * (1 - ash / 0.6));
+                trace(i, j);
+            });
         }
         let dashed = false;
-        for (const sg of segs) {
-            ctx.strokeStyle = sg.ahead ? vanColor(sg.lead, ash, alpha * lAlpha(sg.lead) / 0.95) : ashColor(ash, alpha);
-            ctx.lineWidth = sg.ahead ? w : w / 1.4;
-            const wantDash = sg.gap > 1;
-            if (wantDash !== dashed) { ctx.setLineDash(wantDash ? [w * 3, w * 1.4] : []); dashed = wantDash; }
-            ctx.beginPath(); ctx.moveTo(sg.x0, sg.y0); ctx.lineTo(sg.x1, sg.y1); ctx.stroke();
-        }
-        if (dashed) ctx.setLineDash([]);
-        if (!segs.length) {
+        if (m) {
+            const ashStr = ashColor(ash, alpha);
+            runs((i, j, ahead, L, wantDash) => {
+                ctx.strokeStyle = ahead ? vanColor(L, ash, alpha * lAlpha(L) / 0.95) : ashStr;
+                ctx.lineWidth = ahead ? w : w / 1.4;
+                if (wantDash !== dashed) { ctx.setLineDash(wantDash ? [w * 3, w * 1.4] : []); dashed = wantDash; }
+                trace(i, j, wantDash);
+            });
+            if (dashed) ctx.setLineDash([]);
+        } else {
             // one vertex so far: a dot, so a chain that has just begun is
             // still on screen rather than waiting for its second day
             ctx.fillStyle = vanColor(headLead, ash, alpha);
@@ -3589,7 +3649,11 @@
     function wireSeason() {
         if (seasonWired || !window.FireSeason) return;
         seasonWired = true;
-        FireSeason.onChange(() => { if (A) { updateChips(); syncBaseEffortVisibility(); draw(A.t); } });
+        // NOT while we are the one drawing: draw() → FireSeason.animAt() →
+        // playheadMeta() → emit() lands here on every frame whose reached-%
+        // ticked, and used to draw the SAME frame a second time from inside
+        // the first — half the vanguard frame cost was that echo.
+        FireSeason.onChange(() => { if (A && !A.drawing) { updateChips(); syncBaseEffortVisibility(); draw(A.t); } });
     }
 
     // The chip's mark: the category's glyph where the rendering has one of its
