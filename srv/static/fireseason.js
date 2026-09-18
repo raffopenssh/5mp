@@ -9,10 +9,14 @@
  *             land that burns had burned, within ~60 km". Drawn as thin lines
  *             every 5 days, labelled every 15, coloured early→late.
  *   SPEED     how fast the front travels, km/day — the gradient of the
- *             front as an arrival-time surface (1/|∇T|), one byte per 2.5 km
- *             cell (/api/fire-season-speed), drawn as squares by CellField.
- *             Where the season runs and where it stalls. Descriptive, not a
- *             forecast.
+ *             front as an arrival-time surface (1/|∇T|). Not a raster: a
+ *             property OF THE FRONT LINES. /api/fire-season?speed=1 splits
+ *             every isochrone into runs of one speed class
+ *             (srv/fire_season_lines.go, `speed_contours`) and the same
+ *             contour layer draws them heavier where the season stalled and
+ *             hairline where it raced — the spacing of the lines, restated
+ *             as their weight. Zero extra payload beyond the split lines,
+ *             every zoom, every park in view. Descriptive, not a forecast.
  *   ENTRY     "traditional early-burn ground": the cells whose FIRST burn of
  *             the season came >= 15 d before the local front in >= 40 % of
  *             the complete seasons held (and in at least 2) — where the
@@ -56,7 +60,7 @@
         VAN_DIM_LYR = 'fireseason-van-dim', VAN_GAP_LYR = 'fireseason-van-gap',
         VAN_HEAD_LYR = 'fireseason-van-head', VAN_HEAD_HALO = 'fireseason-van-head-halo',
         VAN_ARROW_LYR = 'fireseason-van-arrow',
-        SPEED_LYR = 'fireseason-speed', ENTRY_LYR = 'fireseason-entry',
+        ENTRY_LYR = 'fireseason-entry',
         CMP_SRC = 'fireseason-cmp-src', CMP_LYR = 'fireseason-cmp', CMP_LBL = 'fireseason-cmp-label',
         PAT_SRC = 'fireseason-patrol-src', PAT_LYR = 'fireseason-patrol', PAT_LBL = 'fireseason-patrol-label', PAT_WAVE = 'fireseason-patrol-wave',
         PRS_SRC = 'fireseason-pressure-src', PRS_LYR = 'fireseason-pressure', PRS_LBL = 'fireseason-pressure-label';
@@ -69,10 +73,10 @@
     var patrolKey = '';
     var front = null;      // last /api/fire-season answer
     var van = null;        // last /api/fire-vanguard answer
-    var speed = null;      // last /api/fire-season-speed answer
+    var speed = null;      // the reference front's speed summary ({area, season, stats, status}; from /api/fire-season?speed=1)
     var entry = null;      // last /api/fire-season?early=1 answer (its early_ground + season_start)
-    var frontKey = '', vanKey = '', speedKey = '', entryKey = '';
-    var speedField = null, entryField = null;   // CellField renderers (one grid, two fields)
+    var frontKey = '', vanKey = '', entryKey = '';
+    var entryField = null;   // CellField renderer (early-burn ground)
     var moveTimer = null, inflight = 0;
     var listeners = [];
 
@@ -219,12 +223,9 @@
     /* ── layers ─────────────────────────────────────────────────────────── */
     function ensureLayers() {
         if (!map || !map.getStyle()) return;
-        // Two raster fields under every line, added first so the contours
-        // and chains draw over them: the speed map (dense) and the
-        // early-burn ground (sparse squares). One renderer (CellField).
+        // The early-burn ground under every line, added first so the
+        // contours and chains draw over it (CellField squares).
         if (window.CellField) {
-            if (!speedField) speedField = CellField.create(map, SPEED_LYR, { opacity: 0.65 });
-            speedField.ensure();
             if (!entryField) entryField = CellField.create(map, ENTRY_LYR, { opacity: 1, minzoom: 4 });
             entryField.ensure();
         }
@@ -235,27 +236,27 @@
             // season reached in the last few days, fading as they age. Silent
             // (opacity 0) outside an animation; drawn under the crisp lines.
             map.addLayer({
-                id: FRONT_WAVE, type: 'line', source: FRONT_SRC,
+                id: FRONT_WAVE, type: 'line', source: FRONT_SRC, filter: FRONT_LBL_SEL,
                 layout: { 'line-cap': 'round', 'line-join': 'round' },
                 paint: { 'line-color': ['get', 'color'], 'line-width': 14, 'line-blur': 6, 'line-opacity': 0 }
             });
         }
         if (!map.getLayer(FRONT_LYR)) {
             map.addLayer({
-                id: FRONT_LYR, type: 'line', source: FRONT_SRC,
+                id: FRONT_LYR, type: 'line', source: FRONT_SRC, filter: FRONT_LINE_SEL,
                 layout: { 'line-cap': 'round', 'line-join': 'round' },
                 paint: {
                     'line-color': ['get', 'color'],
                     'line-dasharray': [2.5, 2],   // a contour, not a fire line — legible in greyscale
-                    'line-width': ['case', ['get', 'label'], 1.6, 0.7],
-                    'line-opacity': ['case', ['get', 'label'], 0.9, 0.55]
+                    'line-width': frontWidthStatic(),
+                    'line-opacity': frontOpacityStatic()
                 }
             });
         }
         if (!map.getLayer(FRONT_LBL)) {
             map.addLayer({
                 id: FRONT_LBL, type: 'symbol', source: FRONT_SRC,
-                filter: ['==', ['get', 'label'], true],
+                filter: ['all', FRONT_LBL_SEL, ['==', ['get', 'label'], true]],
                 layout: {
                     'symbol-placement': 'line', 'symbol-spacing': 320,
                     'text-field': ['get', 'text'], 'text-size': 10.5,
@@ -461,8 +462,6 @@
         [PAT_LYR, PAT_LBL, PAT_WAVE].forEach(function (id) { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', st.patrol ? 'visible' : 'none'); });
         [PRS_LYR, PRS_LBL].forEach(function (id) { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', st.pressure ? 'visible' : 'none'); });
         [VAN_LYR, VAN_GAP_LYR, VAN_DIM_LYR, VAN_ARROW_LYR, VAN_HEAD_HALO, VAN_HEAD_LYR].forEach(function (id) { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', st.van ? 'visible' : 'none'); });
-        if (speedField) speedField.setVisible(st.speed);
-        Object.keys(speedAreas).forEach(function (a) { speedAreas[a].field.setVisible(st.speed); });
         if (entryField) entryField.setVisible(st.entry);
         Object.keys(entryAreas).forEach(function (a) { entryAreas[a].field.setVisible(st.entry); });
     }
@@ -480,8 +479,9 @@
         if (d.to) u += '&at=' + d.to;   // the season the window ends in
         if (d.from) u += '&from=' + d.from;   // vanguard_in_window: the panel's basis
         if (d.to) u += '&to=' + d.to;
-        return u;
+        return u + speedParam();
     }
+    function speedParam() { return st.speed ? '&speed=1' : ''; }
 
     /* ── summary for tips ───────────────────────────────────────────────
      * The park/AOI hover tips ask "where does the season stand here" for
@@ -517,16 +517,34 @@
      * than the reference (`mark` truthy) — the line's own year in the
      * label text, since an ash line three seasons back must still say
      * which year it was. */
+    /* Two roles on one source: `lb` (the whole isochrone — labels and the
+     * animator's wave run along it) and `ln` (what the line layer draws).
+     * With SPEED off both are the plain contour. With speed on and the
+     * answer carrying `speed_contours`, the line role moves to the split
+     * runs, each with `sw` — its slowness 0..1 on the log ramp (1 = the
+     * front stalled, 0 = it raced) — which the paint turns into weight;
+     * the whole contour keeps the labels so a run boundary never cuts a
+     * date in half. An answer without the split (an older cache, a season
+     * fetched before the toggle) keeps the plain line. */
+    function slowness(kmd) {
+        var lo = Math.log(1), hi = Math.log(50);
+        return Math.max(0, Math.min(1, (hi - Math.log(Math.max(1e-3, kmd))) / (hi - lo)));
+    }
     function frontFeatures(j, mark) {
         if (!j || !j.contours || !j.contours.length) return { feats: [], bbox: null };
         var ds = j.contours.map(function (f) { return f.properties.dos; });
         var lo = Math.min.apply(null, ds), hi = Math.max.apply(null, ds);
         var bb = [180, 90, -180, -90];
-        var feats = j.contours.map(function (f) {
-            var p = f.properties, t = hi > lo ? (p.dos - lo) / (hi - lo) : 0.5;
-            var q = { dos: p.dos, date: p.date, text: (p.text || '') + (mark ? ' \u2019' + String(p.date || '').slice(2, 4) : ''), season: j.season || '',
+        var split = st.speed && j.speed_contours && j.speed_contours.length ? j.speed_contours : null;
+        function props(p) {
+            var t = hi > lo ? (p.dos - lo) / (hi - lo) : 0.5;
+            return { dos: p.dos, date: p.date, text: (p.text || '') + (mark ? ' \u2019' + String(p.date || '').slice(2, 4) : ''), season: j.season || '',
                 color: frontColor(t), label: !!p.label, l30: !!p.label && (p.dos % 30 === 0),
                 t: Date.parse((p.date || '') + 'T00:00:00Z') || 0 };
+        }
+        var feats = j.contours.map(function (f) {
+            var q = props(f.properties);
+            q.lb = true; q.ln = !split;
             (f.geometry.coordinates || []).forEach(function (line) {
                 line.forEach(function (pt) {
                     if (pt[0] < bb[0]) bb[0] = pt[0]; if (pt[1] < bb[1]) bb[1] = pt[1];
@@ -535,11 +553,22 @@
             });
             return { type: 'Feature', geometry: f.geometry, properties: q };
         });
+        if (split) {
+            split.forEach(function (f) {
+                var q = props(f.properties);
+                q.lb = false; q.ln = true; q.kmd = f.properties.kmd; q.sw = slowness(f.properties.kmd);
+                feats.push({ type: 'Feature', geometry: f.geometry, properties: q });
+            });
+        }
         return { feats: feats, bbox: bb };
     }
     var frontFeats = [];   // the reference season's contours (what the map shows outside an animation)
     function applyFrontData() {
-        var feats = (animT !== null && hist.feats) ? frontFeats.concat(hist.feats) : frontFeats;
+        // Unfocused, the server serves ONE surface over the view (the
+        // mosaic, reference included) — the reference's own contours and
+        // its history stay off the map, else the seam is back.
+        var mosaic = othersActive() && others.mosaic;
+        var feats = mosaic ? [] : ((animT !== null && hist.feats) ? frontFeats.concat(hist.feats) : frontFeats);
         if (others.feats.length) feats = feats.concat(others.feats);
         if (animT !== null && othersHist.feats.length) feats = feats.concat(othersHist.feats);
         setData(FRONT_SRC, feats);
@@ -568,7 +597,7 @@
      *     reference season (`at` = that season's end), so the playhead
      *     meets each park's front at its own dates; deduped by
      *     area+season. */
-    var others = { key: '', feats: [], areas: {}, loading: false };
+    var others = { key: '', feats: [], areas: {}, stats: {}, loading: false };
     var othersHist = { key: '', feats: [], loading: false };
     function filterBox() {
         return (typeof currentBbox !== 'undefined' && currentBbox && currentBbox.length === 4) ? currentBbox : null;
@@ -596,6 +625,12 @@
     }
     function othersFeatures(j, mark) {
         var feats = [];
+        if (j && j.mosaic && j.mosaic.contours) {
+            // one surface: its lines belong to no single park (`owners` lists whose ground each came from)
+            var mf = frontFeatures(j.mosaic, mark ? cmpYearMark(j.mosaic.season) : '').feats;
+            mf.forEach(function (f) { f.properties.mosaic = true; });
+            return mf;
+        }
         ((j && j.areas) || []).forEach(function (a) {
             if (front && a.area === front.area) return;   // the reference draws itself
             var ff = frontFeatures(a, mark ? cmpYearMark(a.season) : '').feats;
@@ -605,7 +640,7 @@
         return feats;
     }
     function othersURL(bb, at, lines) {
-        var u = '/api/fire-season?pwd=' + pwd() + '&bbox=' + bb.join(',') + '&lines=' + lines + '&limit=' + othersLimit();
+        var u = '/api/fire-season?pwd=' + pwd() + '&bbox=' + bb.join(',') + '&lines=' + lines + '&limit=' + othersLimit() + speedParam();
         if (at) u += '&at=' + at;
         if (front && front.area) u += '&exclude=' + encodeURIComponent(front.area);
         return u;
@@ -613,18 +648,19 @@
     function loadOthers(force) {
         if (!map) return;
         if (!othersActive()) {
-            if (others.feats.length || othersHist.feats.length) { others = { key: '', feats: [], areas: {}, loading: false }; othersHist = { key: '', feats: [], loading: false }; applyFrontData(); }
+            if (others.feats.length || othersHist.feats.length) { others = { key: '', feats: [], areas: {}, stats: {}, loading: false }; othersHist = { key: '', feats: [], loading: false }; applyFrontData(); }
             return;
         }
         var bb = othersBbox(), lines = linesForZoom(), at = dates().to || '';
-        var key = bb.join(',') + '|' + lines + '|' + at + '|' + (front && front.area || '');
+        var key = bb.join(',') + '|' + lines + '|' + at + '|' + (front && front.area || '') + speedParam();
         if (!force && key === others.key) return;
         others.key = key; others.loading = true;
         fetch(othersURL(bb, at, lines)).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
             if (others.key !== key) return;   // a newer ask is out
             others.loading = false;
             others.areas = {};
-            ((j && j.areas) || []).forEach(function (a) { others.areas[a.area] = a.season; });
+            ((j && j.areas) || []).forEach(function (a) { others.areas[a.area] = a.season; if (a.speed_stats) others.stats[a.area] = a.speed_stats; });
+            others.mosaic = !!(j && j.mosaic);
             others.feats = othersFeatures(j, false);
             others.truncated = !!(j && j.truncated);
             // the reference is thinned to the same key as its neighbours
@@ -637,7 +673,7 @@
         if (!othersActive() || !front || !front.seasons || animT === null) return;
         var bb = othersBbox(), lines = linesForZoom();
         var want = windowSeasons(front.seasons).filter(function (s) { return s.label !== front.season; });
-        var key = bb.join(',') + '|' + lines + '|' + want.map(function (s) { return s.end; }).join(',');
+        var key = bb.join(',') + '|' + lines + '|' + want.map(function (s) { return s.end; }).join(',') + speedParam();
         if (key === othersHist.key || othersHist.loading) return;
         othersHist.key = key; othersHist.loading = true;
         var seen = {};
@@ -660,13 +696,14 @@
     }
     function loadFront(force) {
         if (!st.front || !map) return Promise.resolve();
-        var key = (focusId() || 'pt') + '|@' + dates().to;
+        var key = (focusId() || 'pt') + '|@' + dates().to + speedParam();
         if (!force && key === frontKey && front && (focusId() || frontInView())) return Promise.resolve();
         inflight++; emit();
         return fetch(frontURL()).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
             inflight--;
             frontKey = key;
             front = j || { status: 'request failed', seasons: [] };
+            setSpeedMeta(front);
             if (cmpArea !== (front.area || '')) { cmpData = {}; cmpArea = front.area || ''; hist.key = ''; hist.feats = null; }
             animMeta = null; animPctKey = null;
             if (animT !== null) playheadMeta(animT);   // a new front under a running animator
@@ -716,7 +753,7 @@
         if (!missing.length) { build(); return; }
         hist.loading = true; inflight++; emit();
         Promise.all(missing.map(function (lbl) {
-            var u = '/api/fire-season?pwd=' + pwd() + '&area=' + encodeURIComponent(front.area) + '&season=' + encodeURIComponent(lbl);
+            var u = '/api/fire-season?pwd=' + pwd() + '&area=' + encodeURIComponent(front.area) + '&season=' + encodeURIComponent(lbl) + speedParam();
             return fetch(u).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { cmpData[lbl] = j || { contours: [] }; }).catch(function () { cmpData[lbl] = { contours: [] }; });
         })).then(function () { inflight--; build(); refreshStrip(); });
     }
@@ -789,7 +826,7 @@
         if (!missing.length) { buildCompareFeatures(); return; }
         inflight++; emit();
         Promise.all(missing.map(function (lbl) {
-            var u = '/api/fire-season?pwd=' + pwd() + '&area=' + encodeURIComponent(front.area) + '&season=' + encodeURIComponent(lbl);
+            var u = '/api/fire-season?pwd=' + pwd() + '&area=' + encodeURIComponent(front.area) + '&season=' + encodeURIComponent(lbl) + speedParam();
             return fetch(u).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { cmpData[lbl] = j || { contours: [] }; }).catch(function () { cmpData[lbl] = { contours: [] }; });
         })).then(function () { inflight--; buildCompareFeatures(); refreshStrip(); });
     }
@@ -1320,77 +1357,101 @@
     }
 
     /* ── speed ──────────────────────────────────────────────────────────
-     * Same area rule as the front (focus, else the grid under the view
-     * centre; the server resolves both). The WINDOW says which seasons
-     * load (every season it touches, each with its speed levels and the
-     * front's arrival day per cell); the INSTANT — the window's end, or
-     * the animator's playhead — says what a cell shows:
+     * A property of the front lines (frontFeatures: `ln` runs carry `sw`,
+     * their slowness 0..1 on the ramp 50 → 1 km/d). This section is the
+     * paint that turns `sw` into weight, the tip that reads a run's km/day
+     * back, and the legend. Nothing is computed here but weight.
      *
-     *   arrived this season, ≤ instant   the season reached it: flares
-     *                                    for 6 d (toward white, full alpha)
-     *                                    then settles to its speed colour
-     *   not yet this season               nothing — a cell is drawn only
-     *                                    once the season shown has reached
-     *                                    it (earlier seasons in the window
-     *                                    are loaded so a playhead crossing a
-     *                                    season boundary starts clean)
-     *
-     * So a running season sweeps its own field in cell by cell, and a
-     * finished season shows whole. Nothing is
-     * computed here but colour. */
-    function speedURL() {
-        var f = focusId(), c = map.getCenter();
-        var u = '/api/fire-season-speed?pwd=' + pwd() + (f ? '&area=' + encodeURIComponent(f)
-            : '&lon=' + c.lng.toFixed(3) + '&lat=' + c.lat.toFixed(3));
-        var d = dates();
-        if (d.from && d.to) u += '&from=' + d.from + '&to=' + d.to;
-        else if (d.to) u += '&at=' + d.to;
-        return u;
+     * The weight is deliberately restrained: the picture is still the
+     * isochrones, and where they crowd (the front stalled) they are also
+     * heavier and more opaque; where they spread (it raced) they thin to a
+     * hairline. One reading reinforcing the other, never a second colour
+     * over the date ramp. Static: width 0.45 + 1.3·sw (×1.3 on labelled
+     * lines), opacity 0.35 + 0.6·sw — a stalled line is barely heavier
+     * than today's labelled one; a racing line recedes to a faint hair. Animator: the age ramp × (0.5 + sw).
+     * Plain features (speed off) have no `sw`: coalesce to 0.5, i.e. the
+     * old 0.7 / 1.6 px. */
+    var FRONT_LINE_SEL = ['==', ['get', 'ln'], true], FRONT_LBL_SEL = ['==', ['get', 'lb'], true];
+    function swExpr() { return ['coalesce', ['get', 'sw'], 0.5]; }
+    function frontWidthStatic() {
+        // speed off → labelled 1.6 / plain 0.7 (the old constants); on → by slowness
+        return ['*', ['case', ['get', 'label'], 1.3, 1], ['case', ['has', 'sw'], ['+', 0.45, ['*', 1.3, swExpr()]], ['case', ['get', 'label'], 1.23, 0.7]]];
     }
-    function speedInView() {
-        if (!speed || !speed.bbox) return false;
-        var c = map.getCenter(), b = speed.bbox;
-        return c.lng >= b[0] && c.lng <= b[2] && c.lat >= b[1] && c.lat <= b[3];
+    function frontOpacityStatic() {
+        return ['case', ['has', 'sw'], ['+', 0.35, ['*', 0.6, swExpr()]], ['case', ['get', 'label'], 0.9, 0.55]];
     }
-    // The field, decoded once into a byte per cell (0 = no front, b = level
-    // b−1 on the server's log ramp) and coloured here from the SAME stops
-    // the legend prints; a click reads the byte under the pointer back.
-    var speedStops = null;
-    var speedSeasons = [];          // the REFERENCE area's [{season, start(ms), end(ms), levels(u8), arrival(u8)}] oldest first
-    var speedUnion = null;          // u8 per cell: 1 where any season has a front (CellField's dense mask)
-    var SPEED_FLARE_DAYS = 6, SPEED_BASE_A = 205;   // settled cells sit under the flare (255) so an arriving front reads as light
-    /* Every park in view (no focus) has its own field: `speedAreas[area]`
-     * = {j, field (a CellField of its own — one canvas per grid), seasons,
-     * union}. The reference is speedAreas[speed.area] as well, so one draw
-     * loop serves the picture; `speed`/`speedSeasons` keep naming the
-     * reference for the legend, the strip and the tip's "this area". */
-    var speedAreas = {};
-    function speedFieldFor(area) {
-        if (speedAreas[area] && speedAreas[area].field) return speedAreas[area].field;
-        var f = (area === (speed && speed.area) && speedField) ? speedField
-            : CellField.create(map, SPEED_LYR + '-' + area, { opacity: 0.65, beforeId: entryField ? entryField.id : undefined });
-        f.ensure(); f.setVisible(st.speed);
-        return f;
+    function speedWeight(expr) {   // the animator's width ramp, weighted by slowness where the runs carry it
+        return ['*', expr, ['case', ['has', 'sw'], ['+', 0.5, swExpr()], 1]];
     }
-    function speedSeasonsOf(j) {
-        var out = [], n = j.grid.nx * j.grid.ny, union = new Uint8Array(n);
-        (j.seasons || []).forEach(function (sn) {
-            var lv = CellField.b64u8(sn.values), ar = CellField.b64u8(sn.arrival);
-            if (lv.length !== n || ar.length !== n) return;
-            for (var i = 0; i < n; i++) if (lv[i]) union[i] = 1;
-            out.push({ season: sn.season, start: Date.parse(sn.season_start + 'T00:00:00Z'), end: Date.parse(sn.season_end + 'T00:00:00Z'), levels: lv, arrival: ar, cells: sn.cells, complete: sn.complete });
+    // The strip's / legend's object: the reference front's speed summary.
+    function setSpeedMeta(j) {
+        if (!st.speed) { speed = null; return; }
+        if (!j || j.area === null) { speed = { area: null, status: (j && j.status) || 'no area here' }; return; }
+        speed = { area: j.area, season: j.season, stats: j.speed_stats || null,
+                  status: j.speed_stats ? 'ok' : (j.status || (j.contours ? 'no speed for this front' : 'not yet computed')) };
+    }
+    // What the pointer is on: the split run under it (its km/day is the class centre).
+    function speedAt(lng, lat, point) {
+        if (!map || !st.speed || !map.getLayer(FRONT_LYR)) return null;
+        var p = point || map.project([lng, lat]), r = 5;
+        var fs = map.queryRenderedFeatures([[p.x - r, p.y - r], [p.x + r, p.y + r]], { layers: [FRONT_LYR] });
+        var f = null;
+        for (var i = 0; i < fs.length; i++) { if (fs[i].properties && fs[i].properties.kmd != null) { f = fs[i]; break; } }
+        if (!f) return null;
+        var q = f.properties, area = q.area || (front && front.area) || '';
+        var sst = (speed && speed.area === area && speed.stats) || others.stats[area] || null;
+        return { kmd: +q.kmd, season: q.season, area: area, dos: q.dos, date: q.date, stats: sst };
+    }
+    function speedWords(kmd) {
+        return kmd < 2 ? 'the season stalls here' : kmd < 6 ? 'the season walks here' : kmd < 15 ? 'the season runs here' : 'the season sweeps through here';
+    }
+    function speedTipHTML(h) {
+        var v = h.kmd < 10 ? h.kmd.toFixed(1) : Math.round(h.kmd);
+        var stt = h.stats ? '<div class="maptip-meta">' + (h.area ? esc(h.area.replace(/_/g, ' ')) : 'this area') + ': median ' + h.stats.median_km_d + ' km/d (p10 ' + h.stats.p10_km_d + ', p90 ' + h.stats.p90_km_d + ')</div>' : '';
+        var when = h.date ? '<div class="maptip-meta">Isochrone of ' + fmtDate(h.date) + ' (day ' + h.dos + ' of the ' + esc(h.season || '') + ' season)</div>' : '';
+        return '<div class="maptip-title">Season speed: <b>~' + v + ' km/day</b></div>' +
+            '<div class="maptip-body">' + speedWords(h.kmd) + ' \u2014 how fast the front travelled along this stretch, from the gradient of its arrival-time surface; the line is drawn heavier the slower it moved.</div>' + when + stt +
+            '<div class="maptip-dim">Describes the season drawn; not a forecast.</div>';
+    }
+    var SPEED_PROBE = 'fireseason-speed-probe', speedProbeOn = false;
+    function ensureSpeedProbe() {
+        if (speedProbeOn || !window.MapTip || !MapTip.registerProbe) return;
+        // Click only, low priority: a contour under a chain or a pin must not
+        // outrank it (maptip.js "PRECEDENCE").
+        MapTip.registerProbe(SPEED_PROBE, {
+            priority: -5, clickOnly: true, tabLabel: 'Season speed', tabColor: '#f59e0b',
+            probe: function (e) {
+                if (!st.speed || !e || !e.lngLat) return null;
+                var h = speedAt(e.lngLat.lng, e.lngLat.lat, e.point);
+                if (!h) return null;
+                return { html: speedTipHTML(h), properties: { kmd: h.kmd, season: h.season, area: h.area }, dist: 0 };
+            }
         });
-        out.sort(function (a, b) { return a.start - b.start; });
-        return { seasons: out, union: union };
+        speedProbeOn = true;
     }
-    /* Grids overlap: every park's front grid is its boundary plus a margin,
-     * and two neighbours' margins cover the same ground twice — drawn twice
-     * at 0.65 opacity that is a brighter block where nothing is different.
-     * A lattice cell belongs to ONE area: the smallest grid that holds it
-     * (the point → area rule of /api/fire-season, fireSeasonAreaAt), so the
-     * picture is one field. `list` = [{grid, union, mask}]; each mask is
-     * rebuilt from its union with the cells another, smaller grid owns
-     * zeroed. Sparse fields pass a `keep(ix, iy)` test instead (ownsCell). */
+    // Legend: a weight ramp, not a colour ramp — the colour stays the date's.
+    function speedLegendHTML(opts) {
+        opts = opts || {};
+        var sst = speed && speed.stats;
+        var cls = (sst && sst.classes) || [];
+        var samples = cls.length ? [cls[0], cls[Math.floor(cls.length / 3)], cls[Math.floor(2 * cls.length / 3)], cls[cls.length - 1]] : [{ km_d: 1.3 }, { km_d: 3.4 }, { km_d: 9 }, { km_d: 39 }];
+        var rows = samples.map(function (c) {
+            var w = (0.45 + 1.3 * slowness(c.km_d)).toFixed(1), o = (0.35 + 0.6 * slowness(c.km_d)).toFixed(2);
+            return '<div class="fs-spd-row"><span class="fs-spd-line" style="border-top:' + w + 'px dashed #fb923c;opacity:' + o + '"></span><span>' + (c.km_d < 10 ? c.km_d : Math.round(c.km_d)) + ' km/d \u2014 ' + speedWords(c.km_d).replace('the season ', '').replace(' here', '') + '</span></div>';
+        }).join('');
+        var stt = sst ? '<div class="fs-ramp-width">' + esc(speed.season || '') + ': median ' + sst.median_km_d + ' km/d (p10 ' + sst.p10_km_d + ', p90 ' + sst.p90_km_d + ') over ' + Number(sst.cells || 0).toLocaleString() + ' cells the front reached</div>' : '';
+        var how = '<div class="fs-ramp-how">Where the isochrones crowd the front stalled; where they spread it raced. The weight says the same: a line is heavier the slower the season moved along it. Click a line for its km/day.</div>';
+        var nOthers = Object.keys(others.areas || {}).length;
+        return '<div class="fs-legend' + (opts.cls ? ' ' + opts.cls : '') + '"><div class="fs-ramp-cap">Season speed \u2014 line weight, km/day the front travelled</div><div class="fs-spd">' + rows + '</div>' + stt + how + othersNote(nOthers, others.truncated, 0) + '</div>';
+    }
+    // Shared by the entry ground (the one CellField left): a field's canvas
+    // and the cell-ownership rule between overlapping park grids.
+    function removeField(f) {
+        f.clear();
+        if (map.getLayer(f.id)) map.removeLayer(f.id);
+        if (map.getSource(f.srcId)) map.removeSource(f.srcId);
+    }
+
     function ownCells(list) {
         list.forEach(function (A) {
             var g = A.grid, n = g.nx * g.ny, m = A.mask = new Uint8Array(A.union);
@@ -1409,8 +1470,7 @@
             });
         });
     }
-    // Sparse fields: `has(B, gx, gy)` says whether B has a cell on lattice
-    // cell (gx, gy) — the caller builds it once per B.
+
     function ownsCell(list, A, ix, iy, has) {
         var g = A.grid, n = g.nx * g.ny, gx = Math.round(g.x0 / g.res) + ix, gy = Math.round(g.y0 / g.res) + iy;
         for (var k = 0; k < list.length; k++) {
@@ -1421,273 +1481,10 @@
         }
         return true;
     }
-    function speedOwnCells() {
-        var list = Object.keys(speedAreas).map(function (a) { var A = speedAreas[a]; return { area: a, grid: A.j.grid, union: A.union, A: A }; });
-        ownCells(list);
-        list.forEach(function (L) { L.A.field.setDense(L.mask); L.A.field.invalidate(); });
-    }
-    function speedRGB(kmd) {
-        var lg = speedStops || [];
-        if (!lg.length) return [245, 158, 11];
-        function rgb(h) { return [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]; }
-        if (kmd <= lg[0].km_d) return rgb(lg[0].color);
-        for (var i = 1; i < lg.length; i++) {
-            if (kmd <= lg[i].km_d) {
-                var a = lg[i - 1], b = lg[i], t = (Math.log(kmd) - Math.log(a.km_d)) / (Math.log(b.km_d) - Math.log(a.km_d));
-                var ca = rgb(a.color), cb = rgb(b.color);
-                return [ca[0] + (cb[0] - ca[0]) * t, ca[1] + (cb[1] - ca[1]) * t, ca[2] + (cb[2] - ca[2]) * t];
-            }
-        }
-        return rgb(lg[lg.length - 1].color);
-    }
-    function speedOfByte(b) {
-        var lv = speed && speed.levels;
-        if (!lv || !b) return null;
-        var lo = Math.log(lv.km_d_min), hi = Math.log(lv.km_d_max);
-        return Math.exp(lo + (hi - lo) * (b - 1) / (lv.n - 1));
-    }
-    function arrivalMs(sn, i) {          // when the front reached cell i in season sn; null = never
-        var b = sn.arrival[i];
-        return b ? sn.start + 2 * (b - 1) * DAY_MS : null;
-    }
-    /* What cell i shows at instant T (ms): {season, level, age (d since the
-     * front arrived), flare 0..1, ash: bool, word} or null. The season is
-     * the one T falls in (else the last that had begun); a cell that season
-     * has not reached yet shows the previous season's answer as ash. */
-    function speedStateAt(i, T, list) {
-        list = list || speedSeasons;
-        if (!list.length) return null;
-        var cur = -1;
-        for (var k = 0; k < list.length; k++) if (list[k].start <= T) cur = k;
-        if (cur < 0) return null;
-        var sn = list[cur], at = arrivalMs(sn, i);
-        if (at != null && at <= T) {
-            var age = (T - at) / DAY_MS;
-            var flare = age < SPEED_FLARE_DAYS ? Math.exp(-age / (SPEED_FLARE_DAYS / 3)) : 0;
-            return { season: sn.season, level: sn.levels[i], age: age, flare: flare, ash: false,
-                word: age < 1 ? 'the front arrived here today' : 'the front arrived here ' + Math.round(age) + ' d ago' };
-        }
-        return null;   // not reached this season: not drawn
-    }
-    // Colour LUTs, one per level (256 entries): the paint pass over an
-    // XSA-sized field (95k cells, 12×/s under a playhead) cannot afford a
-    // log, an exp and a ramp walk per cell. Rebuilt when the stops change.
-    var speedLUT = null, speedLUTKey = '';
-    function ensureSpeedLUT() {
-        var lv = speed && speed.levels, key = JSON.stringify(speedStops) + '|' + JSON.stringify(lv);
-        if (speedLUT && key === speedLUTKey) return;
-        speedLUTKey = key;
-        speedLUT = new Uint8ClampedArray(256 * 3);
-        for (var b = 1; b < 256; b++) {
-            var k = speedRGB(speedOfByte(b));
-            speedLUT[b * 3] = k[0]; speedLUT[b * 3 + 1] = k[1]; speedLUT[b * 3 + 2] = k[2];
-        }
-    }
-    var speedRenderT = null;
-    // px per cell on screen at this zoom (mercator x): the canvas scale
-    // follows it so a one-pixel gutter stays one screen pixel wide
-    function cellPx(grid) { return grid.res / 360 * 512 * Math.pow(2, map.getZoom()); }
-    function cellScale(grid) { return Math.max(4, Math.min(8, Math.round(cellPx(grid)))); }
-    function drawSpeedArea(A, T, z) {
-        var field = A.field, list = A.seasons;
-        if (!A.j || !A.j.grid || !list.length) { field.clear(); return; }
-        if (!gridNearView(A.j.grid)) return;   // off screen: drawn the frame it comes back (its key is stale)
-        var hi = z >= 8, S = hi ? cellScale(A.j.grid) : 1;
-        var key = ['speed', A.j.area, list.map(function (x) { return x.season; }).join(','), S, Math.round(T / (DAY_MS / 2))].join('|');
-        var cur = -1;
-        for (var k = 0; k < list.length; k++) if (list[k].start <= T) cur = k;
-        if (cur < 0) { field.clear(); return; }
-        var sn = list[cur];
-        var FL = SPEED_FLARE_DAYS, LUT = speedLUT;
-        // the same rule as speedStateAt(), inlined: no object, no words
-        field.render(function (c) {
-            var i = c.i, b = sn.arrival[i];
-            if (b) {
-                var at = sn.start + 2 * (b - 1) * DAY_MS;
-                if (at <= T) {
-                    var lv = sn.levels[i] * 3, age = (T - at) / DAY_MS;
-                    if (age < FL) {
-                        var f = Math.pow(Math.exp(-age / (FL / 3)), 0.7);
-                        return [lerp(LUT[lv], 255, f * 0.8), lerp(LUT[lv + 1], 255, f * 0.7), lerp(LUT[lv + 2], 255, f * 0.55), SPEED_BASE_A + (255 - SPEED_BASE_A) * f, f];
-                    }
-                    return [LUT[lv], LUT[lv + 1], LUT[lv + 2], SPEED_BASE_A];
-                }
-            }
-            return null;   // not reached this season: nothing (no ghost of last season — a clean field)
-        }, { scale: S, gutter: hi ? 0.7 : false, key: key });
-    }
-    function drawSpeed(t) {
-        if (!speedField) return;
-        var T = t == null ? windowEndMs() : t;
-        if (T == null) T = Date.now();
-        speedRenderT = T;
-        ensureSpeedLUT();
-        var z = map.getZoom(), any = false;
-        Object.keys(speedAreas).forEach(function (a) { any = true; drawSpeedArea(speedAreas[a], T, z); });
-        if (!any) speedField.clear();
-    }
-    function setSpeedData(j) {
-        speedStops = (j && j.legend) || speedStops;
-        speedSeasons = [];
-        speedUnion = null;
-        // the previous reference's field, if it is not one of the others, goes
-        var prev = Object.keys(speedAreas).filter(function (a) { return speedAreas[a].field === speedField; });
-        prev.forEach(function (a) { delete speedAreas[a]; });
-        if (!j || !j.grid || !j.seasons || !j.seasons.length) { speedField.clear(); return; }
-        var ss = speedSeasonsOf(j);
-        speedSeasons = ss.seasons; speedUnion = ss.union;
-        if (speedAreas[j.area] && speedAreas[j.area].field !== speedField) removeField(speedAreas[j.area].field);   // it was one of the others: the reference takes over
-        speedField.setGrid(j.grid);
-        speedField.setDense(speedUnion);
-        speedField.invalidate();
-        speedAreas[j.area] = { j: j, field: speedField, seasons: speedSeasons, union: speedUnion };
-        speedOwnCells();
-    }
 
-    /* ── every park in view (no focus): the speed fields ─────────────
-     * Bbox mode of /api/fire-season-speed: one request, every park's
-     * seasons in the window (the animator's need) or the one the window
-     * ends in (`at`, the static picture — a dense field per season is the
-     * one payload here that does not thin with zoom, so the static ask is
-     * one season). Same scope, quantised bbox and small-screen limit as the
-     * fronts. Fields are kept per area across answers (a pan that keeps a
-     * park keeps its canvas), and dropped when the park leaves the box. */
-    var sothers = { key: '', loading: false, truncated: false, total: 0 };
-    // OFF pending a rework (2026-09-18): every park's padded grid drawn as
-    // its own rectangle is a wall of seamed orange blocks at z6, not a
-    // field (docs/agents/animator.md "Speed across parks"). The server
-    // side (bbox mode) and this loader stay so the rework can start from a
-    // working wire; flip the flag to see the current picture.
-    var SPEED_OTHERS = false;
-    function speedOthersActive() { return SPEED_OTHERS && st.speed && !focusId(); }
-    function sothersURL(bb) {
-        var d = dates(), u = '/api/fire-season-speed?pwd=' + pwd() + '&bbox=' + bb.join(',') + '&limit=' + othersLimit();
-        if (animT !== null && d.from && d.to) u += '&from=' + d.from + '&to=' + d.to;
-        else if (d.to) u += '&at=' + d.to;
-        if (speed && speed.area) u += '&exclude=' + encodeURIComponent(speed.area);
-        return u;
-    }
-    function removeField(f) {
-        f.clear();
-        if (map.getLayer(f.id)) map.removeLayer(f.id);
-        if (map.getSource(f.srcId)) map.removeSource(f.srcId);
-    }
-    function dropSpeedOthers(keep) {
-        Object.keys(speedAreas).forEach(function (a) {
-            var A = speedAreas[a];
-            if (A.field === speedField || (keep && keep[a])) return;
-            removeField(A.field);
-            delete speedAreas[a];
-        });
-    }
-    function loadSpeedOthers(force) {
-        if (!map || !speedField) return Promise.resolve();
-        if (!speedOthersActive()) {
-            if (sothers.key) { sothers = { key: '', loading: false, truncated: false, total: 0 }; dropSpeedOthers(null); speedOwnCells(); drawSpeed(animT !== null ? animT : null); }
-            return Promise.resolve();
-        }
-        var bb = othersBbox(), d = dates(), win = animT !== null;
-        var key = bb.join(',') + '|' + d.from + '@' + d.to + '|' + (speed && speed.area || '');
-        // the window's seasons serve a static picture too; one season does not serve an animation
-        if (!force && key === sothers.key && (sothers.win || !win)) return Promise.resolve();
-        sothers.key = key; sothers.loading = true; sothers.win = win;
-        return fetch(sothersURL(bb)).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
-            if (sothers.key !== key) return;
-            sothers.loading = false;
-            if (!speedStops && j && j.legend) speedStops = j.legend;
-            if (j && j.levels && !(speed && speed.levels)) speed = Object.assign({}, speed || {}, { levels: j.levels, legend: j.legend });
-            var keep = {};
-            ((j && j.areas) || []).forEach(function (a) {
-                if (!a.grid || !a.seasons || !a.seasons.length || (speed && a.area === speed.area)) return;
-                keep[a.area] = true;
-                var ss = speedSeasonsOf(a), field = speedFieldFor(a.area);
-                field.setGrid(a.grid); field.setDense(ss.union); field.invalidate();
-                speedAreas[a.area] = { j: a, field: field, seasons: ss.seasons, union: ss.union };
-            });
-            dropSpeedOthers(keep);
-            speedOwnCells();
-            sothers.truncated = !!(j && j.truncated); sothers.total = (j && j.total) || 0;
-            drawSpeed(animT !== null ? animT : null);
-            refreshStrip();
-        }).catch(function () { if (sothers.key === key) sothers.loading = false; });
-    }
-    function speedAt(lng, lat) {
-        if (!speedField || !speed || !speed.levels) return null;
-        var T = speedRenderT == null ? windowEndMs() : speedRenderT;
-        if (T == null) T = Date.now();
-        var areas = Object.keys(speedAreas);
-        for (var k = 0; k < areas.length; k++) {
-            var A = speedAreas[areas[k]], h = A.field.at(lng, lat);
-            if (!h) continue;   // no front here in any season loaded
-            var stt = speedStateAt(h.i, T, A.seasons);
-            if (!stt) continue;
-            var lv = speed.levels, lvl = stt.level - 1;
-            var sn = null; A.seasons.forEach(function (x) { if (x.season === stt.season) sn = x; });
-            return { kmd: speedOfByte(stt.level), level: lvl, season: stt.season, area: A.j.area, stats: A.j.stats, state: stt,
-                arrived: sn ? arrivalMs(sn, h.i) : null, atMax: lvl === lv.n - 1, atMin: lvl === 0 };
-        }
-        return null;
-    }
-    function speedWords(kmd) {
-        return kmd < 2 ? 'the season stalls here' : kmd < 6 ? 'the season walks here' : kmd < 15 ? 'the season runs here' : 'the season sweeps through here';
-    }
-    function speedTipHTML(h) {
-        var v = h.atMax ? '\u2265 ' + Math.round(h.kmd) : h.atMin ? '\u2264 ' + h.kmd.toFixed(1) : (h.kmd < 10 ? h.kmd.toFixed(1) : Math.round(h.kmd));
-        var sst = h.stats || (speed && speed.stats);
-        var stt = sst ? '<div class="maptip-meta">' + (h.area ? esc(h.area.replace(/_/g, ' ')) : 'this area') + ': median ' + sst.median_km_d + ' km/d (p10 ' + sst.p10_km_d + ', p90 ' + sst.p90_km_d + ')</div>' : '';
-        var when = h.state ? '<div class="maptip-meta">' + (h.arrived != null ? 'Front reached this cell ' + fmtDate(new Date(h.arrived).toISOString().slice(0, 10)) + ' \u00b7 ' : '') + esc(h.state.word) + (h.state.ash ? ' (drawn as ash)' : '') + '</div>' : '';
-        return '<div class="maptip-title">Season speed: <b>' + v + ' km/day</b></div>' +
-            '<div class="maptip-body">' + speedWords(h.kmd) + ' \u2014 how fast the ' + esc(h.season || '') + ' front travelled, from the gradient of its arrival-time surface.</div>' + when + stt +
-            '<div class="maptip-dim">Describes the season drawn; not a forecast.</div>';
-    }
-    var SPEED_PROBE = 'fireseason-speed-probe', speedProbeOn = false;
-    function ensureSpeedProbe() {
-        if (speedProbeOn || !window.MapTip || !MapTip.registerProbe) return;
-        // A backdrop (negative priority, click only): the field sits under
-        // every line and pin over the area, so it must never outrank a chain
-        // or a settlement, and a hover tip over a whole-viewport fill would
-        // follow the cursor forever (maptip.js "PRECEDENCE").
-        MapTip.registerProbe(SPEED_PROBE, {
-            priority: -10, clickOnly: true, tabLabel: 'Season speed', tabColor: '#f59e0b',
-            probe: function (e) {
-                if (!st.speed || !e || !e.lngLat) return null;
-                var h = speedAt(e.lngLat.lng, e.lngLat.lat);
-                if (!h) return null;
-                return { html: speedTipHTML(h), properties: { kmd: h.kmd, season: h.season, area: h.area }, dist: 0 };
-            }
-        });
-        speedProbeOn = true;
-    }
-    function loadSpeed(force) {
-        if (!st.speed || !map) return Promise.resolve();
-        var key = (focusId() || 'pt') + '|' + dates().from + '@' + dates().to;
-        if (!force && key === speedKey && speed && (focusId() || speedInView())) return Promise.resolve();
-        inflight++; emit();
-        return fetch(speedURL()).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
-            inflight--;
-            speedKey = key;
-            speed = j || { status: 'request failed' };
-            setSpeedData(j);
-            drawSpeed(animT !== null ? animT : null);
-            loadSpeedOthers(true);   // the reference changed: the neighbours' exclude follows it
-            ensureSpeedProbe();
-            refreshStrip();
-        }).catch(function () { inflight--; emit(); });
-    }
-    // Speed legend, sampled from the server's fixed stops (km/day, log
-    // ramp) so the panel cannot say one ramp while the PNG draws another.
-    function speedLegendHTML(opts) {
-        opts = opts || {};
-        var lg = (speed && speed.legend) || [];
-        if (!lg.length) return '';
-        var stops = lg.map(function (st, i) { return st.color + ' ' + (i / (lg.length - 1) * 100).toFixed(0) + '%'; });
-        var bar = '<div class="fs-ramp" style="background:linear-gradient(90deg,' + stops.join(',') + ')"></div>';
-        var ticks = '<div class="fs-ramp-ticks">' + lg.map(function (st) { return '<span>' + st.km_d + '</span>'; }).join('') + '</div>';
-        var stt = speed.stats ? '<div class="fs-ramp-width">' + esc(speed.season || '') + ': median ' + speed.stats.median_km_d + ' km/d (p10 ' + speed.stats.p10_km_d + ', p90 ' + speed.stats.p90_km_d + ') over ' + Number(speed.stats.cells || 0).toLocaleString() + ' cells the front has reached</div>' : '';
-        var ash = '<div class="fs-ramp-width">A cell is drawn once the season\u2019s front has reached it (by the slider\u2019s end, or the playhead) and flares as it arrives</div>';
-        var nOthers = Object.keys(speedAreas).filter(function (a) { return speedAreas[a].field !== speedField; }).length;
-        return '<div class="fs-legend' + (opts.cls ? ' ' + opts.cls : '') + '"><div class="fs-ramp-cap">Season speed, km/day (how fast the front travels; log scale)</div>' + bar + ticks + stt + ash + othersNote(nOthers, sothers.truncated, sothers.total) + '</div>';
-    }
+    function cellPx(grid) { return grid.res / 360 * 512 * Math.pow(2, map.getZoom()); }
+
+    function cellScale(grid) { return Math.max(4, Math.min(8, Math.round(cellPx(grid)))); }
 
 
     /* ── entry ground ───────────────────────────────────────────────────
@@ -2187,7 +1984,6 @@
         clearTimeout(moveTimer);
         moveTimer = setTimeout(function () {
             loadFront(false); loadOthers(false); loadVan(false); loadPatrol(false); loadPatrolOthers(false);
-            loadSpeed(false).then(function () { loadSpeedOthers(false); if (st.speed && animT === null) drawSpeed(null); });   // zoom band may have changed
             loadEntry(false).then(function () { loadEntryOthers(false); if (st.entry && animT === null) drawEntry(windowEndMs()); });
             if (st.entry) refreshStrip();   // the in-view count
         }, 350);
@@ -2196,10 +1992,9 @@
         if (st.van) { vanKey = ''; loadVan(true); }
         if (st.front) loadFront(false);   // the front follows the window
         if (patrolAnyOn()) loadPatrol(false);  // presence accumulates from the window's start
-        if (st.speed) loadSpeed(false).then(function () { loadSpeedOthers(false); if (st.speed && animT === null) drawSpeed(null); });   // the seasons it touches, drawn at its end
         if (st.entry) loadEntry(false).then(function () { loadEntryOthers(false); if (st.entry && animT === null) drawEntry(windowEndMs()); });   // and the fade follows the window's end
     }
-    function onFocus() { if (anyOn()) { frontKey = ''; speedKey = ''; entryKey = ''; patrolKey = ''; loadFront(true); loadVan(true); loadSpeed(true); loadEntry(true); loadPatrol(true); } }
+    function onFocus() { if (anyOn()) { frontKey = ''; entryKey = ''; patrolKey = ''; loadFront(true); loadVan(true); loadEntry(true); loadPatrol(true); } }
 
     /* ── animator ───────────────────────────────────────────────────────
      * The animator hands us its playhead (ms). The front is a MapLibre
@@ -2293,7 +2088,7 @@
     }
     function ashTextOpacity(ageD) { return ['interpolate', ['linear'], ageD, 150, 1, 365, 0.55, 2000, 0.4]; }
     function animAt(t, force) {
-        if (!map || !map.getLayer(FRONT_LYR)) { if (map && st.entry) drawEntry(t == null ? windowEndMs() : t); if (map && st.speed) drawSpeed(t); return; }
+        if (!map || !map.getLayer(FRONT_LYR)) { if (map && st.entry) drawEntry(t == null ? windowEndMs() : t); return; }
         // While the animator runs it draws the vanguard chains itself, built
         // up to the playhead; the whole-season layer would show them ahead
         // of it. Hidden for the duration, back on teardown.
@@ -2309,17 +2104,16 @@
             clearTimeout(animTrail);
             if (animMeta) { animMeta = null; emit(); }
             if (st.entry) drawEntry(windowEndMs());   // back to the slider's end
-            if (st.speed) drawSpeed(null);
             if (animDay === null) return;
             animDay = null; animT = null;
             applyFrontData(); applyPatrolData();   // the reference season only, again
-            map.setFilter(FRONT_LYR, null);
-            map.setFilter(FRONT_LBL, ['==', ['get', 'label'], true]);
-            map.setFilter(FRONT_WAVE, null);
+            map.setFilter(FRONT_LYR, FRONT_LINE_SEL);
+            map.setFilter(FRONT_LBL, ['all', FRONT_LBL_SEL, ['==', ['get', 'label'], true]]);
+            map.setFilter(FRONT_WAVE, FRONT_LBL_SEL);
             map.setPaintProperty(FRONT_WAVE, 'line-opacity', 0);
             map.setPaintProperty(FRONT_LYR, 'line-color', ['get', 'color']);
-            map.setPaintProperty(FRONT_LYR, 'line-width', ['case', ['get', 'label'], 1.6, 0.7]);
-            map.setPaintProperty(FRONT_LYR, 'line-opacity', ['case', ['get', 'label'], 0.9, 0.55]);
+            map.setPaintProperty(FRONT_LYR, 'line-width', frontWidthStatic());
+            map.setPaintProperty(FRONT_LYR, 'line-opacity', frontOpacityStatic());
             map.setPaintProperty(FRONT_LBL, 'text-color', ['get', 'color']);
             map.setPaintProperty(FRONT_LBL, 'text-opacity', 1);
             if (map.getLayer(CMP_LYR)) { map.setFilter(CMP_LYR, ['==', ['get', 'label'], true]); map.setFilter(CMP_LBL, ['==', ['get', 'label'], true]); map.setPaintProperty(CMP_LYR, 'line-width', 1.3); map.setPaintProperty(CMP_LYR, 'line-opacity', 0.8); }
@@ -2356,24 +2150,23 @@
             // Every season the window touches goes on the sources (the
             // earlier ones fetched once), so the playhead meets each year's
             // front at its own dates rather than waiting for the last one.
-            loadHistory(); loadPatrolHistory(); loadOthersHistory(); loadPatrolOthers(false); loadPatrolOthersHistory(); loadSpeedOthers(false);
+            loadHistory(); loadPatrolHistory(); loadOthersHistory(); loadPatrolOthers(false); loadPatrolOthersHistory();
             applyFrontData(); applyPatrolData();
         }
         // The ground under the animated fires: full weight until the usual
         // front arrives at a cell, stepping back after; a cell lights up for
         // four days when this season's first detection lands in it.
         if (st.entry) drawEntry(t);
-        if (st.speed) drawSpeed(t);
         pressureAnimStep(t, force);
         var ageD = ['/', ['-', t, ['get', 't']], DAY_MS];                    // days since the season reached this line
         var reached = ['<=', ['get', 't'], t];
-        map.setFilter(FRONT_LYR, ashLineFilter(t));
-        map.setFilter(FRONT_WAVE, ['all', reached, ['>=', ['get', 't'], t - 6 * DAY_MS]]);
-        map.setFilter(FRONT_LBL, ashLabelFilter(t));
+        map.setFilter(FRONT_LYR, ['all', FRONT_LINE_SEL, ashLineFilter(t)]);
+        map.setFilter(FRONT_WAVE, ['all', FRONT_LBL_SEL, reached, ['>=', ['get', 't'], t - 6 * DAY_MS]]);
+        map.setFilter(FRONT_LBL, ['all', FRONT_LBL_SEL, ashLabelFilter(t)]);
         map.setPaintProperty(FRONT_WAVE, 'line-opacity',
             ['interpolate', ['linear'], ageD, 0, 0.6, 2.5, 0.4, 6, 0]);
         map.setPaintProperty(FRONT_LYR, 'line-color', ashColor(ageD, ASH_FIRE));
-        map.setPaintProperty(FRONT_LYR, 'line-width', ashWidth(ageD, [0, 3.6, 4, 2.6, 10, 1.9, 40, 1.5, 120, 1.3]));
+        map.setPaintProperty(FRONT_LYR, 'line-width', speedWeight(ashWidth(ageD, [0, 3.6, 4, 2.6, 10, 1.9, 40, 1.5, 120, 1.3])));
         map.setPaintProperty(FRONT_LYR, 'line-opacity', ashOpacity(ageD, [0, 1.0, 5, 0.9, 20, 0.65, 60, 0.4, 150, 0.3]));
         map.setPaintProperty(FRONT_LBL, 'text-color', ashColor(ageD, ASH_FIRE));
         map.setPaintProperty(FRONT_LBL, 'text-opacity', ashTextOpacity(ageD));
@@ -2435,7 +2228,7 @@
         entryLegendHTML: entryLegendHTML,
         entryAt: function (lng, lat) { return entryField ? entryField.at(lng, lat) : null; },
         entryRenderedFor: function () { return entryRenderT; },
-        ENTRY_COLOR: entryHex(0.7), entryColor: entryHex, entryState: entryState, entryStateAt: entryStateAt, speedStateAt: speedStateAt,
+        ENTRY_COLOR: entryHex(0.7), entryColor: entryHex, entryState: entryState, entryStateAt: entryStateAt,
         speedAt: speedAt,
         speedLegendHTML: speedLegendHTML,
         // The front as loaded, or — while the animator runs — the same
@@ -2449,9 +2242,10 @@
         onChange: function (fn) { listeners.push(fn); },
         setFront: function (want) {
             st.front = !!want;
+            if (!st.front && st.speed) { st.speed = false; speed = null; }   // speed is a property of the lines: no lines, no speed
             if (!map) return;
             ensureLayers();
-            if (st.front) loadFront(true); else { others = { key: '', feats: [], areas: {}, loading: false }; othersHist = { key: '', feats: [], loading: false }; setData(FRONT_SRC, []); refreshStrip(); }
+            if (st.front) loadFront(true); else { others = { key: '', feats: [], areas: {}, stats: {}, loading: false }; othersHist = { key: '', feats: [], loading: false }; setData(FRONT_SRC, []); refreshStrip(); }
         },
         setVanguard: function (want) {
             st.van = !!want;
@@ -2460,10 +2254,18 @@
             if (st.van) loadVan(true); else { setData(VAN_SRC, []); refreshStrip(); }
         },
         setSpeed: function (want) {
+            // Speed rides the front lines (`speed_contours` on every front
+            // answer), so the toggle refetches the fronts with or without the
+            // split runs: reference, neighbours, and the animator's / compare's
+            // earlier seasons (their cache is per season, so it is emptied).
             st.speed = !!want;
+            if (st.speed) st.front = true;
+            if (!st.speed) speed = null;
             if (!map) return;
             ensureLayers();
-            if (st.speed) loadSpeed(true); else { if (speedField) speedField.clear(); loadSpeedOthers(false); refreshStrip(); }
+            cmpData = {}; hist.key = ''; hist.feats = null; others.key = ''; othersHist.key = ''; othersHist.feats = [];
+            if (st.speed) ensureSpeedProbe();
+            loadFront(true);
         },
         setEntry: function (want) {
             st.entry = !!want;
@@ -2516,10 +2318,9 @@
             if (!anyOn() || !map) return;
             map.once('idle', function () {
                 ensureLayers();
-                frontKey = ''; vanKey = ''; speedKey = ''; entryKey = ''; patrolKey = '';
-                if (speedField) speedField.invalidate();
+                frontKey = ''; vanKey = ''; entryKey = ''; patrolKey = '';
                 if (entryField) entryField.invalidate();
-                loadFront(true); loadVan(true); loadSpeed(true); loadEntry(true); loadPatrol(true);
+                loadFront(true); loadVan(true); loadEntry(true); loadPatrol(true);
             });
         },
         getShareParams: function () {

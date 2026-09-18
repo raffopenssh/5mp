@@ -109,7 +109,7 @@
         front:    { label: 'season contours', color: '#fb923c', title: 'Season front \u2014 dashed isochrones every 5 days, drawn as the playhead reaches them' },
         vanguard: { label: 'vanguard', color: '#fde047', title: 'Vanguard fires \u2014 chains that began 10\u201360 days ahead of the season front, in lead colour (turns on paths)' },
         entry:    { label: 'entry cells', color: '#fb7185', title: 'Early-burn ground \u2014 cells that burn ahead of their surroundings season after season; a square brightens as its usual entry comes due, flares white when this season\u2019s first detection lands in it, cools over a week and ashens over the months after' },
-        speed:    { label: 'speed cells', color: '#f59e0b', title: 'Season speed \u2014 how fast the front travelled, cell by cell as it arrives at the playhead; last season\u2019s answer stays as ash until this season\u2019s front overwrites it' },
+        speed:    { label: 'speed weight', color: '#f59e0b', title: 'Season speed \u2014 the season contours weighted by how fast the front travelled: heavier where it stalled, hairline where it raced' },
         patrol:   { label: 'patrol',   color: '#4ade80', title: 'Patrol effort \u2014 a heat field zoomed out, circles like the live map zoomed in; cools over 90 days' },
         patrolfront: { label: 'patrol iso', color: '#86efac', title: 'Patrol isochrones \u2014 dash-dot lines marking when patrol presence had built up (\u2265 3 patrol-days within ~5 km), drawn as the playhead reaches them, like the fire front' },
         patrolpressure: { label: 'pressure iso', color: '#bef264', title: 'Pressure isopleths \u2014 solid lines at 1, 2, 5, 10 \u2026 patrol-days within ~5 km, rebuilt at the playhead so the rings grow as the effort lands' },
@@ -2956,7 +2956,7 @@
     // rather than dropped (invariant 1: a silent omission reads as a complete
     // answer).
     function seasonExportGaps() {
-        const words = { entry: 'entry cells', speed: 'speed cells' };
+        const words = { entry: 'entry cells', speed: 'speed weight' };
         return seasonExportTokens().filter(c => words[c]).map(c => words[c]);
     }
 
@@ -4149,7 +4149,7 @@
             const FS = window.FireSeason;
             const seasonAny = !!(FS && ((FS.frontOn() && (FS.meta() || {}).season) ||
                 (FS.entryOn && FS.entryOn() && ((FS.entryMeta && FS.entryMeta()) || {}).status === 'ok') ||
-                (FS.speedOn && FS.speedOn() && ((FS.speedMeta && FS.speedMeta()) || {}).grid) ||
+                (FS.speedOn && FS.speedOn() && ((FS.speedMeta && FS.speedMeta()) || {}).stats) ||
                 (((FS.patrolOn && FS.patrolOn()) || (FS.pressureOn && FS.pressureOn())) && ((FS.patrolMeta && FS.patrolMeta()) || {}).status === 'ok')));
             if (!any && !seasonAny) toast('No animatable data in view for this window — toggle layers or adjust dates', 'warning');
 

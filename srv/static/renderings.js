@@ -36,7 +36,7 @@
         effortGrid: 'grid', effortPts: 'dots', patrol: 'dots',
         deforest: 'dots', settlements: 'dots',
         // the Season overlay's own renderings (fireseason.js)
-        front: 'contours', vanguard: 'vanguard', entry: 'cells', speed: 'cells',
+        front: 'contours', vanguard: 'vanguard', entry: 'cells', speed: 'contours',   // speed is the contours' weight, not a raster
         patrolfront: 'iso', patrolpressure: 'iso'
     };
 

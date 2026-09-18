@@ -1356,7 +1356,7 @@
             ' days ahead of the season front, followed into the season \u2014 bright while ahead, faint once the season caught up; chevrons give the direction of travel, and a large chevron at the end marks a chain still moving',
             'MapLegend.fireSeasonSet(\'vanguard\',' + (!FireSeason.vanguardOn()) + ')', 'check');
         html += row('', 'menuitemcheckbox', FireSeason.speedOn(), 'Season speed', 'icon-gauge',
-            'How fast the front travels, km/day (gradient of its arrival-time surface): pale where the season sweeps through, rust where it stalls. Descriptive, not a forecast',
+            'How fast the front travels, km/day (gradient of its arrival-time surface), as the weight of the season contours: heavier where the season stalled, hairline where it swept through. Turns the contours on. Descriptive, not a forecast',
             'MapLegend.fireSeasonSet(\'speed\',' + (!FireSeason.speedOn()) + ')', 'check');
         var eOn = !!(FireSeason.entryOn && FireSeason.entryOn());
         html += row('', 'menuitemcheckbox', eOn, 'Entry ground', 'icon-grid-2x2',

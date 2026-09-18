@@ -153,13 +153,14 @@ func (s *Server) HandleAPIFireSeason(w http.ResponseWriter, r *http.Request) {
 		complete, startMonth, nx, ny         int
 		computedAt                           string
 		frontBlob, usualBlob                 []byte
+		gRes, gX0, gY0                       float64
 	)
 	err = s.DB.QueryRowContext(r.Context(), `
 		SELECT season_start, complete, start_month, latest_day, contours_json, stats_json, computed_at,
-		       nx, ny, front, usual
+		       nx, ny, front, usual, res, x0, y0
 		FROM fire_season_front WHERE area_id = ? AND season = ?`, area, want).
 		Scan(&seasonStart, &complete, &startMonth, &latest, &contours, &stats, &computedAt,
-			&nx, &ny, &frontBlob, &usualBlob)
+			&nx, &ny, &frontBlob, &usualBlob, &gRes, &gX0, &gY0)
 	if err != nil {
 		http.Error(w, `{"error":"no such season"}`, http.StatusNotFound)
 		return
@@ -214,6 +215,16 @@ func (s *Server) HandleAPIFireSeason(w http.ResponseWriter, r *http.Request) {
 	var contoursOut json.RawMessage
 	if q.Get("summary") == "" {
 		contoursOut = json.RawMessage(orNull(contours))
+	}
+	// speed=1: the isochrones split by speed class (srv/fire_season_lines.go)
+	// so the client can weight the lines — the speed map as a property of
+	// the front, not a second raster.
+	var speedOut, speedStatsOut interface{}
+	if q.Get("speed") != "" && q.Get("summary") == "" {
+		sc, sst := speedContours(orNull(contours), frontBlob, nx, ny, gRes, gX0, gY0)
+		if sc != nil {
+			speedOut, speedStatsOut = sc, sst
+		}
 	}
 	// Early-burn ground (srv/fire_early_ground.go) rides along only when
 	// asked (`early=1`): ~20 KB of cells the summary path must not pay for.
@@ -281,6 +292,8 @@ func (s *Server) HandleAPIFireSeason(w http.ResponseWriter, r *http.Request) {
 		"computed_at":        computedAt,
 		"stats":              json.RawMessage(orNull(stats)),
 		"contours":           contoursOut,
+		"speed_contours":     speedOut,
+		"speed_stats":        speedStatsOut,
 		"early_ground":       earlyOut,
 		// One sentence, written once here so a report, a tip and an agent
 		// quote the same words (the UI's seasonFrontWords is its short form).
@@ -825,6 +838,21 @@ func (s *Server) fireSeasonBBox(w http.ResponseWriter, r *http.Request) {
 	at := q.Get("at")
 	exclude := q.Get("exclude")
 	early := q.Get("early") != ""
+	wantSpeed := q.Get("speed") != "" && q.Get("summary") == ""
+	// The picture itself is ONE surface over the box (srv/fire_season_mosaic.go),
+	// the reference included — per-area `contours` below are empty when it
+	// is served, the areas list stays as the inventory (and the early-burn
+	// ground rides per area as before). Memoised per quantised ask.
+	var mosaic json.RawMessage
+	if q.Get("summary") == "" && q.Get("mosaic") != "0" {
+		mkey := fmt.Sprintf("%v|%s|%s|%s|%v", bb, at, lines, exclude, wantSpeed)
+		if e := mosaicCache.get(mkey); e != nil {
+			mosaic = e.body
+		} else if m := fireSeasonMosaic(s.mosaicGrids(bb, at), bb, exclude, lines, wantSpeed); m != nil {
+			mosaic, _ = json.Marshal(m)
+			mosaicCache.put(mkey, mosaic, "")
+		}
+	}
 
 	type row struct {
 		Area, Season, Start, End string
@@ -907,6 +935,10 @@ func (s *Server) fireSeasonBBox(w http.ResponseWriter, r *http.Request) {
 		// `early_ground` — so the squares can be drawn for every park in
 		// view, not only the one under the centre.
 		Early interface{} `json:"early_ground,omitempty"`
+		// speed=1: the isochrones split by speed class (srv/fire_season_lines.go),
+		// thinned like `contours`.
+		Speed      interface{} `json:"speed_contours,omitempty"`
+		SpeedStats interface{} `json:"speed_stats,omitempty"`
 	}
 	out := make([]areaOut, 0, len(order))
 	for _, id := range order {
@@ -915,8 +947,8 @@ func (s *Server) fireSeasonBBox(w http.ResponseWriter, r *http.Request) {
 		if early {
 			ao.Early = s.earlyGround(rw.Area, rw.Season).wire(rw.Season)
 		}
-		if q.Get("summary") != "" {
-			ao.Contours = []feat{} // early-burn ground alone (the client holds the fronts already)
+		if q.Get("summary") != "" || mosaic != nil {
+			ao.Contours = []feat{} // early-burn ground alone, or the mosaic draws
 		} else if lines == "all" || rw.Contours == "" {
 			if rw.Contours == "" {
 				ao.Contours = []feat{}
@@ -940,6 +972,29 @@ func (s *Server) fireSeasonBBox(w http.ResponseWriter, r *http.Request) {
 			}
 			ao.Contours = keep
 		}
+		if wantSpeed && rw.Contours != "" && mosaic == nil {
+			var (
+				fnx, fny       int
+				fres, fx0, fy0 float64
+				front          []byte
+			)
+			if s.DB.QueryRowContext(r.Context(), `
+				SELECT nx, ny, res, x0, y0, front FROM fire_season_front WHERE area_id = ? AND season = ?`,
+				rw.Area, rw.Season).Scan(&fnx, &fny, &fres, &fx0, &fy0, &front) != nil {
+				front = nil
+			}
+			sc, sst := speedContours(rw.Contours, front, fnx, fny, fres, fx0, fy0)
+			if sc != nil {
+				keep := make([]speedFeat, 0, len(sc))
+				for _, f := range sc {
+					if lines != "all" && (!f.Properties.Label || (lines == "30" && f.Properties.Dos%30 != 0)) {
+						continue
+					}
+					keep = append(keep, f)
+				}
+				ao.Speed, ao.SpeedStats = keep, sst
+			}
+		}
 		out = append(out, ao)
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -949,6 +1004,7 @@ func (s *Server) fireSeasonBBox(w http.ResponseWriter, r *http.Request) {
 		"at":        at,
 		"lines":     lines,
 		"areas":     out,
+		"mosaic":    mosaic,
 		"count":     len(out),
 		"total":     total,
 		"truncated": total > len(out),
