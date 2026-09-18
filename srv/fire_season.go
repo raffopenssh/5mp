@@ -824,6 +824,7 @@ func (s *Server) fireSeasonBBox(w http.ResponseWriter, r *http.Request) {
 	}
 	at := q.Get("at")
 	exclude := q.Get("exclude")
+	early := q.Get("early") != ""
 
 	type row struct {
 		Area, Season, Start, End string
@@ -831,6 +832,12 @@ func (s *Server) fireSeasonBBox(w http.ResponseWriter, r *http.Request) {
 		Contours                 string
 		dist                     float64
 	}
+	type seasonRef struct {
+		Label string `json:"label"`
+		Start string `json:"start"`
+		End   string `json:"end"`
+	}
+	seasonsOf := map[string][]seasonRef{}
 	rows, err := s.DB.QueryContext(r.Context(), `
 		SELECT area_id, season, season_start, season_end, complete, COALESCE(contours_json,''),
 		       x0 + res * nx / 2.0, y0 + res * ny / 2.0
@@ -857,6 +864,7 @@ func (s *Server) fireSeasonBBox(w http.ResponseWriter, r *http.Request) {
 		}
 		rw.Complete = complete == 1
 		rw.dist = math.Hypot(gx-cx, gy-cy)
+		seasonsOf[rw.Area] = append(seasonsOf[rw.Area], seasonRef{rw.Season, rw.Start, rw.End})
 		cur, seen := pick[rw.Area]
 		if !seen {
 			order = append(order, rw.Area)
@@ -892,13 +900,24 @@ func (s *Server) fireSeasonBBox(w http.ResponseWriter, r *http.Request) {
 		SeasonStart string      `json:"season_start"`
 		SeasonEnd   string      `json:"season_end"`
 		Complete    bool        `json:"complete"`
+		Seasons     []seasonRef `json:"seasons"`
 		Contours    interface{} `json:"contours"`
+		// early=1: the park's early-burn ground (srv/fire_early_ground.go)
+		// with this season's first-burn column, as the single path's
+		// `early_ground` — so the squares can be drawn for every park in
+		// view, not only the one under the centre.
+		Early interface{} `json:"early_ground,omitempty"`
 	}
 	out := make([]areaOut, 0, len(order))
 	for _, id := range order {
 		rw := pick[id]
-		ao := areaOut{Area: rw.Area, Season: rw.Season, SeasonStart: rw.Start, SeasonEnd: rw.End, Complete: rw.Complete}
-		if lines == "all" || rw.Contours == "" {
+		ao := areaOut{Area: rw.Area, Season: rw.Season, SeasonStart: rw.Start, SeasonEnd: rw.End, Complete: rw.Complete, Seasons: seasonsOf[id]}
+		if early {
+			ao.Early = s.earlyGround(rw.Area, rw.Season).wire(rw.Season)
+		}
+		if q.Get("summary") != "" {
+			ao.Contours = []feat{} // early-burn ground alone (the client holds the fronts already)
+		} else if lines == "all" || rw.Contours == "" {
 			if rw.Contours == "" {
 				ao.Contours = []feat{}
 			} else {

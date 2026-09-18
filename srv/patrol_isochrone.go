@@ -90,153 +90,91 @@ func modeWeight(mt string) float64 {
 	return 0.7 // an unlabelled track: treated as a vehicle
 }
 
-func (s *Server) HandleAPIPatrolIsochrones(w http.ResponseWriter, r *http.Request) {
-	q := r.URL.Query()
-	area := strings.TrimSpace(q.Get("area"))
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Cache-Control", "private, max-age=120")
-	if area == "" {
-		lon, e1 := strconv.ParseFloat(q.Get("lon"), 64)
-		lat, e2 := strconv.ParseFloat(q.Get("lat"), 64)
-		if e1 != nil || e2 != nil {
-			http.Error(w, `{"error":"area or lon,lat required"}`, http.StatusBadRequest)
-			return
-		}
-		area = s.fireSeasonAreaAt(r, lon, lat)
-		if area == "" {
-			json.NewEncoder(w).Encode(map[string]interface{}{"area": nil, "status": "no area with a season front here"})
-			return
-		}
-	}
-	if IsAOIID(area) {
-		if !ValidAOIID(area) {
-			http.NotFound(w, r)
-			return
-		}
-		if _, err := s.GetAOI(area, s.RequestPrincipalID(r), false); err != nil {
-			http.NotFound(w, r)
-			return
-		}
-	} else if !ValidParkID(area) {
-		http.NotFound(w, r)
-		return
-	}
+// patrolSeasonRow is one fire_season_front row: the grid the patrol field
+// is measured on and the season it names.
+type patrolSeasonRow struct {
+	area, season, start, end string
+	nx, ny                   int
+	res, x0, y0              float64
+	front, usual             []byte
+}
 
-	// The reference season: the one `to` falls in (else the latest begun by
-	// `to`) — the same rule as /api/fire-season, so both overlays name one.
-	to := q.Get("to")
-	if to == "" {
-		to = time.Now().UTC().Format("2006-01-02")
-	}
-	from := q.Get("from")
-	type row struct {
-		season, start, end string
-		nx, ny             int
-		res, x0, y0        float64
-		front, usual       []byte
-	}
-	var pick *row
-	// Every season of the area (label, start, end): the animator fetches
-	// one window per season so a multi-year slider draws each year's
-	// isochrones in its own place (the handler caps a window at 800 d).
-	type seasonOut struct {
-		Label string `json:"label"`
-		Start string `json:"start"`
-		End   string `json:"end"`
-	}
-	var seasonsOut []seasonOut
-	{
-		rs, err := s.DB.QueryContext(r.Context(), `
-			SELECT season, season_start, season_end, nx, ny, res, x0, y0, front, usual
-			FROM fire_season_front WHERE area_id = ? ORDER BY season_start`, area)
-		if err != nil {
-			internalError(w, "query failed", err)
-			return
-		}
-		for rs.Next() {
-			var rw row
-			if rs.Scan(&rw.season, &rw.start, &rw.end, &rw.nx, &rw.ny, &rw.res, &rw.x0, &rw.y0, &rw.front, &rw.usual) != nil {
-				continue
-			}
-			seasonsOut = append(seasonsOut, seasonOut{rw.season, rw.start, rw.end})
-			if pick == nil || rw.start <= to {
-				c := rw
-				pick = &c
-			}
-		}
-		rs.Close()
-	}
-	if pick == nil {
-		json.NewEncoder(w).Encode(map[string]interface{}{"area": area, "season": nil, "status": "not yet computed"})
-		return
-	}
-	if from == "" || from > to {
-		from = pick.start
-	}
-	// clip=1: presence accumulates from the REFERENCE season's start, not
-	// the window's — the front's rule ("a 2024/25 window drawn with the
-	// 2025/26 front contradicts its slider"), so a multi-year slider gets
-	// the season `to` falls in, and the animator fetches the earlier
-	// seasons one by one.
-	if q.Get("clip") == "1" && from < pick.start {
-		from = pick.start
-	}
-	fromT, ok1 := parseISODate(from)
-	toT, ok2 := parseISODate(to)
-	if !ok1 || !ok2 {
-		http.Error(w, `{"error":"bad from/to"}`, http.StatusBadRequest)
-		return
-	}
-	nDays := int(toT.Sub(fromT).Hours()/24) + 1
-	if nDays < 1 || nDays > 800 {
-		http.Error(w, `{"error":"window must be 1..800 days"}`, http.StatusBadRequest)
-		return
-	}
-	nx, ny, res, x0, y0 := pick.nx, pick.ny, pick.res, pick.x0, pick.y0
-	x1, y1 := x0+res*float64(nx), y0+res*float64(ny)
+type patrolSeasonOut struct {
+	Label string `json:"label"`
+	Start string `json:"start"`
+	End   string `json:"end"`
+}
 
-	// Presence in the window over the grid's bbox, from the track points
-	// themselves (they carry the movement type; subcell_visits does not):
-	// one record per (cell, day, mode), each weighted by patrolModeWeight.
-	// `mode=ground|air` restricts to one family for the API reader who
-	// wants that picture; the UI never asks — the default is everything,
-	// weighted. The timestamp is stored as '2026-06-26 04:23:57 +0000 UTC';
-	// its first 10 characters are the day.
-	mode := q.Get("mode")
-	if mode != "air" && mode != "ground" {
-		mode = "all"
+// patrolRawVisit is one (cell, day, movement type) of track points on the
+// GLOBAL 0.025° lattice (gx = floor(lon/res), gy = floor(lat/res)). Every
+// season-front grid is aligned to that lattice (x0/res and y0/res are
+// integers — asserted by scripts/fire_front.py's grid rule and checked here
+// with patrolGridAligned), so one query over a viewport serves every park
+// in it: an area's cell is (gx − x0/res, gy − y0/res).
+type patrolRawVisit struct {
+	gx, gy int
+	day    string
+	mt     string
+}
+
+func patrolGridAligned(x0, y0, res float64) bool {
+	ax, ay := x0/res, y0/res
+	return math.Abs(ax-math.Round(ax)) < 1e-6 && math.Abs(ay-math.Round(ay)) < 1e-6
+}
+
+func patrolModeSQL(mode string) string {
+	switch mode {
+	case "air":
+		return "AND t.movement_type IN ('aircraft','fixed_wing','rotor_wing')"
+	case "ground":
+		return "AND t.movement_type NOT IN ('aircraft','fixed_wing','rotor_wing')"
 	}
-	modeSQL := ""
-	if mode == "air" {
-		modeSQL = "AND t.movement_type IN ('aircraft','fixed_wing','rotor_wing')"
-	} else if mode == "ground" {
-		modeSQL = "AND t.movement_type NOT IN ('aircraft','fixed_wing','rotor_wing')"
-	}
+	return ""
+}
+
+// patrolRawVisits: presence in [from, to] over a lon/lat box, from the
+// track points themselves (they carry the movement type; subcell_visits
+// does not): one record per (cell, day, mode). The timestamp is stored as
+// '2026-06-26 04:23:57 +0000 UTC'; its first 10 characters are the day.
+func (s *Server) patrolRawVisits(r *http.Request, res, x0, y0, x1, y1 float64, from, to, mode string) ([]patrolRawVisit, error) {
 	rows, err := s.DB.QueryContext(r.Context(), `
-		SELECT CAST(floor((t.lon - ?) / ?) AS INTEGER), CAST(floor((t.lat - ?) / ?) AS INTEGER),
-		       substr(t.timestamp, 1, 10), COALESCE(t.movement_type, ''), COUNT(*)
+		SELECT CAST(floor(t.lon / ?) AS INTEGER), CAST(floor(t.lat / ?) AS INTEGER),
+		       substr(t.timestamp, 1, 10), COALESCE(t.movement_type, '')
 		FROM track_points t
 		WHERE `+PatrolEnvsSQL("t.env")+`
 		  AND t.lat >= ? AND t.lat < ? AND t.lon >= ? AND t.lon < ?
-		  AND substr(t.timestamp, 1, 10) BETWEEN ? AND ? `+modeSQL+`
+		  AND substr(t.timestamp, 1, 10) BETWEEN ? AND ? `+patrolModeSQL(mode)+`
 		GROUP BY 1, 2, 3, 4`,
-		x0, res, y0, res, s.PatrolEnvsJSON(r), y0, y1, x0, x1, from, to)
+		res, res, s.PatrolEnvsJSON(r), y0, y1, x0, x1, from, to)
 	if err != nil {
-		internalError(w, "query failed", err)
-		return
+		return nil, err
 	}
+	defer rows.Close()
+	var out []patrolRawVisit
+	for rows.Next() {
+		var v patrolRawVisit
+		if rows.Scan(&v.gx, &v.gy, &v.day, &v.mt) == nil {
+			out = append(out, v)
+		}
+	}
+	return out, nil
+}
+
+// patrolAreaAnswer computes one area's isochrones + pressure from raw
+// visits (any lattice cell outside the grid or the window is dropped). It
+// is the whole of the single-area wire under the top level; the bbox path
+// wraps one per park.
+func patrolAreaAnswer(pick *patrolSeasonRow, seasons []patrolSeasonOut, raw []patrolRawVisit, from, to, mode, lines string, fromT, toT time.Time, nDays int) map[string]interface{} {
+	nx, ny, res, x0, y0 := pick.nx, pick.ny, pick.res, pick.x0, pick.y0
+	offX, offY := int(math.Round(x0/res)), int(math.Round(y0/res))
 	var visits []patrolCellDay
 	modeDays := map[string]int{}
-	for rows.Next() {
-		var ix, iy, n int
-		var day, mt string
-		if rows.Scan(&ix, &iy, &day, &mt, &n) != nil {
-			continue
-		}
+	for _, rv := range raw {
+		ix, iy := rv.gx-offX, rv.gy-offY
 		if ix < 0 || iy < 0 || ix >= nx || iy >= ny {
 			continue
 		}
-		dT, ok := parseISODate(day)
+		dT, ok := parseISODate(rv.day)
 		if !ok {
 			continue
 		}
@@ -244,6 +182,7 @@ func (s *Server) HandleAPIPatrolIsochrones(w http.ResponseWriter, r *http.Reques
 		if d < 0 || d >= nDays {
 			continue
 		}
+		mt := rv.mt
 		w := modeWeight(mt)
 		if mt == "" {
 			mt = "unlabelled"
@@ -251,9 +190,8 @@ func (s *Server) HandleAPIPatrolIsochrones(w http.ResponseWriter, r *http.Reques
 		modeDays[mt]++
 		visits = append(visits, patrolCellDay{ix, iy, d, w})
 	}
-	rows.Close()
 	base := map[string]interface{}{
-		"area": area, "season": pick.season, "season_start": pick.start, "from": from, "to": to, "seasons": seasonsOut,
+		"area": pick.area, "season": pick.season, "season_start": pick.start, "season_end": pick.end, "from": from, "to": to, "seasons": seasons,
 		"grid":      map[string]interface{}{"x0": x0, "y0": y0, "res": res, "nx": nx, "ny": ny},
 		"threshold": patrolThreshold, "kernel_cells": patrolKernelSigma, "reach_km": 5, "mode": mode, "weights": patrolModeWeight,
 		"unit":        "patrol-days (a 2.5 km cell with a patrol in it on a day, weighted by movement type — see weights)",
@@ -264,8 +202,7 @@ func (s *Server) HandleAPIPatrolIsochrones(w http.ResponseWriter, r *http.Reques
 		base["status"] = "no patrol data in this window here"
 		base["contours"] = []interface{}{}
 		base["pressure"] = patrolPressure(make([]float64, nx*ny), nx, ny, x0, y0, res)
-		json.NewEncoder(w).Encode(base)
-		return
+		return base
 	}
 	sort.Slice(visits, func(i, j int) bool { return visits[i].day < visits[j].day })
 
@@ -305,11 +242,19 @@ func (s *Server) HandleAPIPatrolIsochrones(w http.ResponseWriter, r *http.Reques
 	}
 	base["cells"] = reached
 	base["pressure"] = patrolPressure(acc, nx, ny, x0, y0, res)
+	// The visits themselves, day-sorted, so the client can rebuild the
+	// presence field at any playhead (kernel params ride beside them) and
+	// draw the pressure lines growing as the animator runs.
+	vis := make([][4]float64, 0, len(visits))
+	for _, v := range visits {
+		vis = append(vis, [4]float64{float64(v.ix), float64(v.iy), float64(v.day), v.w})
+	}
+	base["visits"] = vis
+	base["kernel_r"] = patrolKernelR
 	if reached == 0 {
 		base["status"] = fmt.Sprintf("patrols present (%d patrol-days) but nowhere reached %g within ~5 km", len(visits), patrolThreshold)
 		base["contours"] = []interface{}{}
-		json.NewEncoder(w).Encode(base)
-		return
+		return base
 	}
 	arr := make([][3]int, 0, reached)
 	mask := make([]bool, nx*ny)
@@ -334,34 +279,315 @@ func (s *Server) HandleAPIPatrolIsochrones(w http.ResponseWriter, r *http.Reques
 	l0 := int(math.Floor(lo/patrolContourStep)) * patrolContourStep
 	l1 := int(math.Ceil(hi/patrolContourStep)) * patrolContourStep
 	for lvl := l0; lvl <= l1; lvl += patrolContourStep {
-		lines := marchingSquares(field, nx, ny, x0, y0, res, float64(lvl))
-		if len(lines) == 0 {
+		label := lvl%patrolLabelStep == 0
+		// `lines` thins for an overview the same way /api/fire-season does
+		// (15 = labelled 15-day lines, 30 = 30-day lines), so a viewport of
+		// parks is drawn in one key.
+		if (lines == "15" && !label) || (lines == "30" && (!label || lvl%30 != 0)) {
+			continue
+		}
+		segs := marchingSquares(field, nx, ny, x0, y0, res, float64(lvl))
+		if len(segs) == 0 {
 			continue
 		}
 		d := fromT.AddDate(0, 0, lvl)
 		feats = append(feats, map[string]interface{}{
 			"type":     "Feature",
-			"geometry": map[string]interface{}{"type": "MultiLineString", "coordinates": lines},
+			"geometry": map[string]interface{}{"type": "MultiLineString", "coordinates": segs},
 			"properties": map[string]interface{}{
-				"dos": lvl, "date": d.Format("2006-01-02"), "label": lvl%patrolLabelStep == 0,
+				"dos": lvl, "date": d.Format("2006-01-02"), "label": label,
 				"text": fmt.Sprintf("%d %s", d.Day(), d.Format("Jan")),
 			},
 		})
 	}
 	base["contours"] = feats
 	base["arrival"] = arr
-	// The visits themselves, day-sorted, so the client can rebuild the
-	// presence field at any playhead (kernel params ride beside them) and
-	// draw the pressure lines growing as the animator runs.
-	vis := make([][4]float64, 0, len(visits))
-	for _, v := range visits {
-		vis = append(vis, [4]float64{float64(v.ix), float64(v.iy), float64(v.day), v.w})
-	}
-	base["visits"] = vis
-	base["kernel_r"] = patrolKernelR
 	base["association"] = patrolFrontAssociation(pick.front, pick.usual, arrival, nx, ny, pick.start, fromT, toT)
 	base["status"] = "ok"
-	json.NewEncoder(w).Encode(base)
+	return base
+}
+
+// patrolPickSeason: the reference season among an area's rows — the one
+// `to` falls in (else the latest begun by `to`) — the same rule as
+// /api/fire-season, so both overlays name one.
+func patrolPickSeason(rows []patrolSeasonRow, to string) (*patrolSeasonRow, []patrolSeasonOut) {
+	var pick *patrolSeasonRow
+	var seasons []patrolSeasonOut
+	for i := range rows {
+		rw := &rows[i]
+		seasons = append(seasons, patrolSeasonOut{rw.season, rw.start, rw.end})
+		if pick == nil || rw.start <= to {
+			pick = rw
+		}
+	}
+	return pick, seasons
+}
+
+// patrolWindow resolves from/to/clip against the picked season: `from`
+// defaults to the season's start; clip=1 pulls it up to the season's
+// start (presence is counted per season — the front's rule, and what
+// keeps a 2020–2026 slider under the 800 d cap).
+func patrolWindow(pick *patrolSeasonRow, from, to string, clip bool) (string, time.Time, time.Time, int, bool) {
+	if from == "" || from > to {
+		from = pick.start
+	}
+	if clip && from < pick.start {
+		from = pick.start
+	}
+	fromT, ok1 := parseISODate(from)
+	toT, ok2 := parseISODate(to)
+	if !ok1 || !ok2 {
+		return from, fromT, toT, 0, false
+	}
+	nDays := int(toT.Sub(fromT).Hours()/24) + 1
+	return from, fromT, toT, nDays, true
+}
+
+func (s *Server) HandleAPIPatrolIsochrones(w http.ResponseWriter, r *http.Request) {
+	q := r.URL.Query()
+	area := strings.TrimSpace(q.Get("area"))
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Cache-Control", "private, max-age=120")
+	if area == "" && q.Get("bbox") != "" {
+		s.patrolIsochronesBBox(w, r)
+		return
+	}
+	if area == "" {
+		lon, e1 := strconv.ParseFloat(q.Get("lon"), 64)
+		lat, e2 := strconv.ParseFloat(q.Get("lat"), 64)
+		if e1 != nil || e2 != nil {
+			http.Error(w, `{"error":"area, bbox or lon,lat required"}`, http.StatusBadRequest)
+			return
+		}
+		area = s.fireSeasonAreaAt(r, lon, lat)
+		if area == "" {
+			json.NewEncoder(w).Encode(map[string]interface{}{"area": nil, "status": "no area with a season front here"})
+			return
+		}
+	}
+	if IsAOIID(area) {
+		if !ValidAOIID(area) {
+			http.NotFound(w, r)
+			return
+		}
+		if _, err := s.GetAOI(area, s.RequestPrincipalID(r), false); err != nil {
+			http.NotFound(w, r)
+			return
+		}
+	} else if !ValidParkID(area) {
+		http.NotFound(w, r)
+		return
+	}
+
+	to := q.Get("to")
+	if to == "" {
+		to = time.Now().UTC().Format("2006-01-02")
+	}
+	// Every season of the area (label, start, end): the animator fetches
+	// one window per season so a multi-year slider draws each year's
+	// isochrones in its own place (the handler caps a window at 800 d).
+	var rows []patrolSeasonRow
+	{
+		rs, err := s.DB.QueryContext(r.Context(), `
+			SELECT area_id, season, season_start, season_end, nx, ny, res, x0, y0, front, usual
+			FROM fire_season_front WHERE area_id = ? ORDER BY season_start`, area)
+		if err != nil {
+			internalError(w, "query failed", err)
+			return
+		}
+		for rs.Next() {
+			var rw patrolSeasonRow
+			if rs.Scan(&rw.area, &rw.season, &rw.start, &rw.end, &rw.nx, &rw.ny, &rw.res, &rw.x0, &rw.y0, &rw.front, &rw.usual) == nil {
+				rows = append(rows, rw)
+			}
+		}
+		rs.Close()
+	}
+	pick, seasonsOut := patrolPickSeason(rows, to)
+	if pick == nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{"area": area, "season": nil, "status": "not yet computed"})
+		return
+	}
+	from, fromT, toT, nDays, ok := patrolWindow(pick, q.Get("from"), to, q.Get("clip") == "1")
+	if !ok {
+		http.Error(w, `{"error":"bad from/to"}`, http.StatusBadRequest)
+		return
+	}
+	if nDays < 1 || nDays > 800 {
+		http.Error(w, `{"error":"window must be 1..800 days"}`, http.StatusBadRequest)
+		return
+	}
+	mode := q.Get("mode")
+	if mode != "air" && mode != "ground" {
+		mode = "all"
+	}
+	x1, y1 := pick.x0+pick.res*float64(pick.nx), pick.y0+pick.res*float64(pick.ny)
+	raw, err := s.patrolRawVisits(r, pick.res, pick.x0, pick.y0, x1, y1, from, to, mode)
+	if err != nil {
+		internalError(w, "query failed", err)
+		return
+	}
+	json.NewEncoder(w).Encode(patrolAreaAnswer(pick, seasonsOut, raw, from, to, mode, q.Get("lines"), fromT, toT, nDays))
+}
+
+// patrolIsochronesBBox — GET /api/patrol-isochrones?bbox=w,s,e,n&from=&to=[&lines=all|15|30][&limit=][&exclude=][&visits=1]
+//
+// The fire front's bbox rule (fireSeasonBBox) for the rangers: unfocused,
+// the map drew ONE area's isochrones (the park under the view centre), so
+// two patrolled parks side by side showed lines in one and none in the
+// other. This answers for every PARK whose grid intersects the bbox AND
+// holds a patrol-day in the window — each the full single-area wire
+// (contours, pressure, visits for the playhead), at the season `to` falls
+// in, always clipped to it (the single path's clip=1: presence is counted
+// per season). Parks the caller can see nothing in are not listed but are
+// counted (`candidates`), so an empty `areas` says "no patrols here", not
+// "no parks here" (invariant 1). One track_points scan over the union of
+// the candidate grids serves them all (patrolRawVisit). `limit` caps the
+// areas nearest the bbox centre first and `truncated` says so (invariant
+// 8); `exclude` names the reference the caller already holds.
+func (s *Server) patrolIsochronesBBox(w http.ResponseWriter, r *http.Request) {
+	q := r.URL.Query()
+	parts := strings.Split(q.Get("bbox"), ",")
+	if len(parts) != 4 {
+		http.Error(w, `{"error":"bbox must be w,s,e,n"}`, http.StatusBadRequest)
+		return
+	}
+	var bb [4]float64
+	for i, p := range parts {
+		v, err := strconv.ParseFloat(strings.TrimSpace(p), 64)
+		if err != nil {
+			http.Error(w, `{"error":"bbox must be w,s,e,n"}`, http.StatusBadRequest)
+			return
+		}
+		bb[i] = v
+	}
+	to := q.Get("to")
+	if to == "" {
+		to = time.Now().UTC().Format("2006-01-02")
+	}
+	lines := q.Get("lines")
+	if lines != "15" && lines != "30" {
+		lines = "all"
+	}
+	limit := 60
+	if n, err := strconv.Atoi(q.Get("limit")); err == nil && n > 0 && n <= 200 {
+		limit = n
+	}
+	exclude := q.Get("exclude")
+	withVisits := q.Get("visits") == "1"
+	mode := q.Get("mode")
+	if mode != "air" && mode != "ground" {
+		mode = "all"
+	}
+	rs, err := s.DB.QueryContext(r.Context(), `
+		SELECT area_id, season, season_start, season_end, nx, ny, res, x0, y0, front, usual
+		FROM fire_season_front
+		WHERE x0 <= ? AND x0 + res * nx >= ? AND y0 <= ? AND y0 + res * ny >= ?
+		ORDER BY area_id, season_start`, bb[2], bb[0], bb[3], bb[1])
+	if err != nil {
+		internalError(w, "query failed", err)
+		return
+	}
+	byArea := map[string][]patrolSeasonRow{}
+	var order []string
+	for rs.Next() {
+		var rw patrolSeasonRow
+		if rs.Scan(&rw.area, &rw.season, &rw.start, &rw.end, &rw.nx, &rw.ny, &rw.res, &rw.x0, &rw.y0, &rw.front, &rw.usual) != nil {
+			continue
+		}
+		if rw.area == exclude || IsAOIID(rw.area) || !patrolGridAligned(rw.x0, rw.y0, rw.res) {
+			continue
+		}
+		if _, seen := byArea[rw.area]; !seen {
+			order = append(order, rw.area)
+		}
+		byArea[rw.area] = append(byArea[rw.area], rw)
+	}
+	rs.Close()
+	type cand struct {
+		pick    *patrolSeasonRow
+		seasons []patrolSeasonOut
+		from    string
+		fromT   time.Time
+		toT     time.Time
+		nDays   int
+		dist    float64
+	}
+	cands := map[string]*cand{}
+	var ux0, uy0, ux1, uy1 = math.Inf(1), math.Inf(1), math.Inf(-1), math.Inf(-1)
+	var res float64
+	var minFrom string
+	var kept []string
+	cx, cy := (bb[0]+bb[2])/2, (bb[1]+bb[3])/2
+	for _, id := range order {
+		pick, seasons := patrolPickSeason(byArea[id], to)
+		if pick == nil {
+			continue
+		}
+		from, fromT, toT, nDays, ok := patrolWindow(pick, q.Get("from"), to, true)
+		if !ok || nDays < 1 || nDays > 800 {
+			continue
+		}
+		if res != 0 && pick.res != res {
+			continue // one lattice per answer (every grid is 0.025°; a stranger would mis-index)
+		}
+		res = pick.res
+		c := &cand{pick: pick, seasons: seasons, from: from, fromT: fromT, toT: toT, nDays: nDays,
+			dist: math.Hypot(pick.x0+pick.res*float64(pick.nx)/2-cx, pick.y0+pick.res*float64(pick.ny)/2-cy)}
+		cands[id] = c
+		kept = append(kept, id)
+		ux0, uy0 = math.Min(ux0, pick.x0), math.Min(uy0, pick.y0)
+		ux1, uy1 = math.Max(ux1, pick.x0+pick.res*float64(pick.nx)), math.Max(uy1, pick.y0+pick.res*float64(pick.ny))
+		if minFrom == "" || from < minFrom {
+			minFrom = from
+		}
+	}
+	out := []map[string]interface{}{}
+	withPatrols := 0
+	if len(kept) > 0 {
+		raw, err := s.patrolRawVisits(r, res, ux0, uy0, ux1, uy1, minFrom, to, mode)
+		if err != nil {
+			internalError(w, "query failed", err)
+			return
+		}
+		// Bucket the lattice cells by area (a cell can lie in two
+		// overlapping grids; it belongs to both).
+		sort.Slice(kept, func(i, j int) bool { return cands[kept[i]].dist < cands[kept[j]].dist })
+		for _, id := range kept {
+			c := cands[id]
+			p := c.pick
+			offX, offY := int(math.Round(p.x0/res)), int(math.Round(p.y0/res))
+			var mine []patrolRawVisit
+			for _, v := range raw {
+				ix, iy := v.gx-offX, v.gy-offY
+				if ix >= 0 && iy >= 0 && ix < p.nx && iy < p.ny && v.day >= c.from {
+					mine = append(mine, v)
+				}
+			}
+			if len(mine) == 0 {
+				continue
+			}
+			withPatrols++
+			if len(out) >= limit {
+				continue
+			}
+			a := patrolAreaAnswer(p, c.seasons, mine, c.from, to, mode, lines, c.fromT, c.toT, c.nDays)
+			if !withVisits {
+				delete(a, "visits") // ~⅔ of the bytes; only an animator needs them (visits=1)
+			}
+			out = append(out, a)
+		}
+	}
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"mode":       "bbox",
+		"to":         to,
+		"lines":      lines,
+		"areas":      out,
+		"count":      len(out),
+		"total":      withPatrols,
+		"candidates": len(kept),
+		"truncated":  withPatrols > len(out),
+	})
 }
 
 // patrolPressureLadder: the contour levels offered, in patrol-days within

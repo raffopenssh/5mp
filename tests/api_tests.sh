@@ -1624,6 +1624,31 @@ if [[ -n "$GEO_CLIENT_PWD" ]]; then
         red "FAIL ($(echo "$body" | jq -c '{status, cells, nc:(.contours|length)}'))"; FAILED=$((FAILED + 1)); ERRORS+=("patrol_isochrones_client")
     fi
 fi
+# Every patrolled park in view (bbox mode, srv/patrol_isochrone.go
+# patrolIsochronesBBox): parks only, each clipped to the season `to` falls
+# in, candidates counted beside the parks that hold patrols (the sandbox's
+# handful of test rows reach three parks of forty: "3 of 40 have patrols",
+# not "3 parks here"), visits only on request, `lines` thinning as the fronts.
+test_api "patrol_isochrones_bbox_sandbox_counts_candidates" "/api/patrol-isochrones?bbox=30,-12,40,-1&from=2026-01-01&to=2026-09-16" "200" \
+    '.mode == "bbox" and .count == .total and .count < .candidates and .candidates > 10 and .truncated == false and ([.areas[] | has("visits") | not] | all)'
+test_api "patrol_isochrones_bbox_needs_dates_ok" "/api/patrol-isochrones?bbox=30,-12,40,-1" "200" '.mode == "bbox"'
+if [[ -n "$GEO_CLIENT_PWD" ]]; then
+    printf "%-50s" "patrol_isochrones_bbox_client_every_park"
+    body=$(curl -s -m 60 --get --data-urlencode "pwd=$GEO_CLIENT_PWD" --data-urlencode "bbox=30,-12,40,-1" --data-urlencode "from=2020-01-01" --data-urlencode "to=2026-09-16" --data-urlencode "lines=30" --data-urlencode "limit=5" "${BASE_URL}/api/patrol-isochrones")
+    ok=$(echo "$body" | jq -r 'if .total == 0 then true else (.count == 5 and .truncated == true and ([.areas[] | has("visits") | not] | all) and ([.areas[] | .from >= .season_start] | all) and ([.areas[].contours[] | select(.properties.label != true or (.properties.dos % 30) != 0)] | length == 0) and ([.areas[] | select(.area | startswith("XSA"))] | length == 0)) end')
+    if [ "$ok" = "true" ]; then green "✓ ($(echo "$body" | jq -r '"\(.count)/\(.total) parks, \(.candidates) candidates"'))"; PASSED=$((PASSED + 1)); else red "FAIL ($(echo "$body" | jq -c '{count,total,candidates}'))"; FAILED=$((FAILED + 1)); ERRORS+=("patrol_isochrones_bbox_client"); fi
+    printf "%-50s" "patrol_isochrones_bbox_visits_on_request"
+    body=$(curl -s -m 60 --get --data-urlencode "pwd=$GEO_CLIENT_PWD" --data-urlencode "bbox=33,-10,36,-6" --data-urlencode "from=2026-01-01" --data-urlencode "to=2026-09-16" --data-urlencode "visits=1" --data-urlencode "limit=2" "${BASE_URL}/api/patrol-isochrones")
+    ok=$(echo "$body" | jq -r 'if .total == 0 then true else ([.areas[] | (.visits | length) == .patrol_days] | all) end')
+    if [ "$ok" = "true" ]; then green "✓"; PASSED=$((PASSED + 1)); else red "FAIL"; FAILED=$((FAILED + 1)); ERRORS+=("patrol_isochrones_bbox_visits"); fi
+fi
+# Speed and early-burn ground in bbox mode (every park in view): legend once
+# at the top, one area object per park, `values` not shipped twice; early=1
+# rides the front's bbox answer, summary=1 leaves the contours out.
+test_api "fire_season_speed_bbox" "/api/fire-season-speed?bbox=20,3,29,10&at=2024-12-01&limit=3" "200" \
+    '.mode == "bbox" and .count == 3 and .truncated == true and (.legend | length) > 0 and ([.areas[] | has("values") | not] | all) and ([.areas[] | (.seasons | length) >= 1 and has("grid")] | all)'
+test_api "fire_season_bbox_early_summary" "/api/fire-season?bbox=20,3,29,10&at=2024-12-01&early=1&summary=1&limit=3" "200" \
+    '.count == 3 and ([.areas[] | has("early_ground") and (.contours | length) == 0 and (.seasons | length) > 0] | all) and ([.areas[] | select(.early_ground.status == "ok") | .early_ground.cells | length > 0] | all)'
 test_api "fire_season_compare_season_contours" "/api/fire-season?area=CAF_Chinko&season=2020/21" "200" \
     '.season == "2020/21" and .complete == true and (.contours | length) > 5 and ([.contours[].properties | has("dos") and has("date") and has("label")] | all)'
 test_api "anim_trajs_vanguard_leads" "/api/fire-anim-trajectories?bbox=23,5,26,8&from=2024-11-01&to=2024-12-31&limit=4000" "200" \
