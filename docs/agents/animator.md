@@ -254,6 +254,36 @@ The front's bbox rule, extended to the layers that were still one-area:
 Tests: api `patrol_isochrones_bbox_*`, `fire_season_speed_bbox`,
 `fire_season_bbox_early_summary`; ui `season_every_park_in_view`.
 
+### Vanguard frame cost (2026-09-18)
+
+With vanguard on, a frame at z5 over CAR cost ~30 ms on the VM's headless
+Chrome (≈100 ms on a phone); now ~14 ms, same pixels (A/B'd against HEAD's
+`anim.js` with a frozen `performance.now`: inked pixel counts equal, mean
+per-pixel difference 0.04–0.13/255 — antialiasing at path joins).
+
+* **Half of it was an echo.** `draw()` → `FireSeason.animAt()` →
+  `playheadMeta()` → `emit()` → anim.js's `FireSeason.onChange` listener →
+  `draw(A.t)` again, from inside the first, on every frame whose reached-%
+  ticked. `draw()` now sets `A.drawing` and the listener skips while it is
+  set (a state change from the legend still redraws).
+* **`vanStatic(g)`** computes each chain's per-segment lead, gap days and
+  colour bin once (`g._vs`); `drawVanguard` walks it and strokes **runs** —
+  consecutive segments of one bin / one side of the front / one dash state
+  as one path — instead of one `beginPath`/`stroke` and a fresh rgba string
+  per segment (×2 with the halo). Dashed runs still stroke per segment so
+  each gap's dash phase starts at its vertex, as before. `vanRGB(lead)`
+  memoises the ramp on the half-day; `FireSeason.leadColor` built a hex
+  string that was parsed back per segment per frame.
+
+What remains is `ctx.strokeStyle` assignment per run (~4 ms/frame here) and
+MapLibre's own render; the next lever would be coarser colour bins, which
+changes the ramp's resolution and so is not free of visual change.
+
+`speed` has its own rendering category (`Renderings.CAT.speed = 'speed'`,
+word `weight`, glyph `.rg-speed` — contours thinning as they spread). It was
+filed under `contours`, so front + speed wore one mark twice and the pill
+deduped them into one word.
+
 ### Patrol follows the panel's pixels row (2026-09-17)
 
 "The patrol layer showed" — with the panel's patrol (pixels) row OFF, a

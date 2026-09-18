@@ -36,7 +36,10 @@
         effortGrid: 'grid', effortPts: 'dots', patrol: 'dots',
         deforest: 'dots', settlements: 'dots',
         // the Season overlay's own renderings (fireseason.js)
-        front: 'contours', vanguard: 'vanguard', entry: 'cells', speed: 'contours',   // speed is the contours' weight, not a raster
+        // speed is the contours' WEIGHT, not a raster: its own mark (lines
+        // thinning as they spread), so a chip row with front + speed shows
+        // two different pictures, not the same one twice
+        front: 'contours', vanguard: 'vanguard', entry: 'cells', speed: 'speed',
         patrolfront: 'iso', patrolpressure: 'iso'
     };
 
@@ -45,7 +48,7 @@
     var WORD = {
         shapes: 'shapes', lines: 'lines', dots: 'dots', grid: 'grid',
         paths: 'paths', contours: 'contours', cells: 'cells', iso: 'iso',
-        vanguard: 'vanguard'
+        vanguard: 'vanguard', speed: 'weight'
     };
     var GLOSS = {
         shapes: 'full clickable outlines',
@@ -56,7 +59,8 @@
         contours: 'dashed isochrones — a line per date',
         cells: 'a 2.5 km cell raster',
         iso: 'isopleths — nested lines of equal value',
-        vanguard: 'the chains ahead of the front, in lead colour'
+        vanguard: 'the chains ahead of the front, in lead colour',
+        speed: 'the contours weighted by the front\u2019s speed \u2014 heavy where it stalled, hairline where it raced'
     };
 
     function cat(key) { return CAT[key] || null; }
