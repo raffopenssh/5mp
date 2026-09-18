@@ -300,7 +300,7 @@ const UI_TESTS = [
                 // Ash is a filter, not a removal: 2020/21's 30-day lines
                 // survive, its 5-day lines do not; 2021/22's do.
                 const t = Date.parse('2022-01-16T00:00:00Z'), D = 86400000;
-                const rendered = map.queryRenderedFeatures({ layers: ['fireseason-front'] }).map(f => f.properties);
+                const rendered = map.queryRenderedFeatures({ layers: ['fireseason-front'] }).filter(f => !(f.state && f.state.o === 0)).map(f => f.properties);   // the animator hides by feature-state, not by filter
                 const old5 = rendered.filter(p => !p.label && t - p.t > 240 * D), old30 = rendered.filter(p => p.l30 && t - p.t > 240 * D);
                 const cur = rendered.filter(p => t - p.t < 200 * D);
                 const ancient = rendered.filter(p => t - p.t > 730 * D);   // ash lasts two seasons, then goes

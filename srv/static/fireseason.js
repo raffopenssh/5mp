@@ -56,6 +56,7 @@
 
     var FRONT_SRC = 'fireseason-front-src', FRONT_LYR = 'fireseason-front',
         FRONT_LBL = 'fireseason-front-label', FRONT_WAVE = 'fireseason-front-wave',
+        FRONT_LBL_SRC = 'fireseason-front-lbl-src', PAT_LBL_SRC = 'fireseason-patrol-lbl-src',
         VAN_SRC = 'fireseason-van-src', VAN_LYR = 'fireseason-van',
         VAN_DIM_LYR = 'fireseason-van-dim', VAN_GAP_LYR = 'fireseason-van-gap',
         VAN_HEAD_LYR = 'fireseason-van-head', VAN_HEAD_HALO = 'fireseason-van-head-halo',
@@ -229,7 +230,8 @@
             if (!entryField) entryField = CellField.create(map, ENTRY_LYR, { opacity: 1, minzoom: 4 });
             entryField.ensure();
         }
-        if (!map.getSource(FRONT_SRC)) map.addSource(FRONT_SRC, { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+        if (!map.getSource(FRONT_SRC)) map.addSource(FRONT_SRC, { type: 'geojson', promoteId: 'fid', data: { type: 'FeatureCollection', features: [] } });
+        if (!map.getSource(FRONT_LBL_SRC)) map.addSource(FRONT_LBL_SRC, { type: 'geojson', promoteId: 'fid', data: { type: 'FeatureCollection', features: [] } });
         if (!map.getSource(VAN_SRC)) map.addSource(VAN_SRC, { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
         if (!map.getLayer(FRONT_WAVE)) {
             // The animator's wave: a wide blurred stroke on the contours the
@@ -255,7 +257,7 @@
         }
         if (!map.getLayer(FRONT_LBL)) {
             map.addLayer({
-                id: FRONT_LBL, type: 'symbol', source: FRONT_SRC,
+                id: FRONT_LBL, type: 'symbol', source: FRONT_LBL_SRC,
                 filter: ['all', FRONT_LBL_SEL, ['==', ['get', 'label'], true]],
                 layout: {
                     'symbol-placement': 'line', 'symbol-spacing': 320,
@@ -267,9 +269,10 @@
                 paint: { 'text-color': ['get', 'color'], 'text-halo-color': 'rgba(8,10,16,0.95)', 'text-halo-width': 1.4 }
             });
         }
-        if (!map.getSource(CMP_SRC)) map.addSource(CMP_SRC, { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
-        if (!map.getSource(PAT_SRC)) map.addSource(PAT_SRC, { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
-        if (!map.getSource(PRS_SRC)) map.addSource(PRS_SRC, { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+        if (!map.getSource(CMP_SRC)) map.addSource(CMP_SRC, { type: 'geojson', promoteId: 'fid', data: { type: 'FeatureCollection', features: [] } });
+        if (!map.getSource(PAT_SRC)) map.addSource(PAT_SRC, { type: 'geojson', promoteId: 'fid', data: { type: 'FeatureCollection', features: [] } });
+        if (!map.getSource(PAT_LBL_SRC)) map.addSource(PAT_LBL_SRC, { type: 'geojson', promoteId: 'fid', data: { type: 'FeatureCollection', features: [] } });
+        if (!map.getSource(PRS_SRC)) map.addSource(PRS_SRC, { type: 'geojson', promoteId: 'fid', data: { type: 'FeatureCollection', features: [] } });
         if (!map.getLayer(CMP_LYR)) {
             // Earlier seasons beside the reference one: the same dashed
             // isochrone (it is the same object), the YEAR in the hue. Only
@@ -315,7 +318,7 @@
                 }
             });
             map.addLayer({
-                id: PAT_LBL, type: 'symbol', source: PAT_SRC,
+                id: PAT_LBL, type: 'symbol', source: PAT_LBL_SRC,
                 filter: ['==', ['get', 'label'], true],
                 layout: {
                     'symbol-placement': 'line', 'symbol-spacing': 340,
@@ -465,9 +468,32 @@
         if (entryField) entryField.setVisible(st.entry);
         Object.keys(entryAreas).forEach(function (a) { entryAreas[a].field.setVisible(st.entry); });
     }
+    /* Every feature carries `fid` (its index — the source's promoteId), so
+     * the animator can drive its paint through feature-state (`fsFrame`)
+     * instead of re-filtering the source every frame. The label layers read
+     * a MIRROR source holding only the labelled lines: a symbol layer's
+     * filter must change with the playhead (a hidden label must not take
+     * collision space), and a filter change reloads its whole source —
+     * on the mirror that is a third of the geometry and no line
+     * tessellation. */
+    var srcFeats = {};   // source id → the features it holds (for fsFrame)
+    var LBL_MIRROR = {};
+    LBL_MIRROR[FRONT_SRC] = FRONT_LBL_SRC; LBL_MIRROR[PAT_SRC] = PAT_LBL_SRC;
     function setData(src, features) {
         var s = map && map.getSource(src);
-        if (s) s.setData({ type: 'FeatureCollection', features: features || [] });
+        features = features || [];
+        for (var i = 0; i < features.length; i++) features[i].properties.fid = i;
+        srcFeats[src] = features;
+        fsForget(src);
+        if (s) s.setData({ type: 'FeatureCollection', features: features });
+        var mirror = LBL_MIRROR[src];
+        if (mirror && map.getSource(mirror)) {
+            var lbl = features.filter(function (f) { return f.properties.label && f.properties.lb !== false; });
+            srcFeats[mirror] = lbl;
+            fsForget(mirror);
+            map.getSource(mirror).setData({ type: 'FeatureCollection', features: lbl });
+        }
+        if (animT !== null && (src === FRONT_SRC || src === PAT_SRC || src === CMP_SRC || src === PRS_SRC)) fsFrame(animT);
     }
 
     /* ── front ──────────────────────────────────────────────────────────── */
@@ -2087,6 +2113,162 @@
                 ['==', ['get', 'l30'], true]]];
     }
     function ashTextOpacity(ageD) { return ['interpolate', ['linear'], ageD, 150, 1, 365, 0.55, 2000, 0.4]; }
+
+    /* ── animator paint through feature-state ─────────────────────────
+     * What the animator changes per frame is the AGE of every line (days
+     * since the season reached it) and what follows from it: colour
+     * cooling to ash, width, opacity, the wave, which labels show. Written
+     * as new data-driven paint expressions and filters each frame (the
+     * first version), every frame made MapLibre reload the whole GeoJSON
+     * source in its workers — re-tessellating 400k vertices of contours
+     * at z 5 (~0.6–1 s a frame on a laptop GPU, a visible hang on a
+     * phone). Here the expressions are constant and read feature-state
+     * (`o` opacity, `w` width ramp, `k` ash mix 0..1, `v` wave opacity,
+     * `x` text opacity); the frame computes the same piecewise-linear
+     * ramps in JS and sets state only where a value moved (quantised to
+     * 1/100). MapLibre then updates the paint buffers of the changed
+     * features alone — no reload, no tessellation. Pixel-for-pixel the
+     * same picture as the expression version: same stops, same rules. */
+    function pl(x, stops) {   // ['interpolate', ['linear'], x, ...stops]
+        if (x <= stops[0]) return stops[1];
+        for (var i = 2; i < stops.length; i += 2) {
+            if (x <= stops[i]) { var x0 = stops[i - 2], y0 = stops[i - 1]; return y0 + (stops[i + 1] - y0) * (x - x0) / (stops[i] - x0); }
+        }
+        return stops[stops.length - 1];
+    }
+    function q2(v) { return Math.round(v * 100) / 100; }
+    var fsLast = {};     // source → { fid: 'o|w|k|v|x' } last applied
+    var fsMode = false;  // paint expressions currently the feature-state ones
+    function fsForget(src) { fsLast[src] = {}; if (map && map.getSource(src)) { try { map.removeFeatureState({ source: src }); } catch (e) { /* source gone */ } } }
+    function fsSet(src, fid, o, w, k, v, x) {
+        var key = o + '|' + w + '|' + k + '|' + v + '|' + x, last = fsLast[src] || (fsLast[src] = {});
+        if (last[fid] === key) return;
+        last[fid] = key;
+        map.setFeatureState({ source: src, id: fid }, { o: o, w: w, k: k, v: v, x: x });
+    }
+    var FS = { fs: function (n, d) { return ['coalesce', ['feature-state', n], d]; } };
+    function fsColor(ash) { return ['interpolate', ['linear'], FS.fs('k', 0), 0, ['get', 'color'], 1, ash]; }
+    // ashLineFilter / ashLabelFilter / ashColor / ashOpacity / ashWidth /
+    // ashTextOpacity, evaluated for one line at playhead t (ms). Returns
+    // null when the line is not drawn at all.
+    function frontState(p, t, wStops, oStops) {
+        var age = (t - p.t) / DAY_MS;
+        var inRange = p.t <= t && p.t >= t - ASH_MAX_DAYS * DAY_MS;
+        var line = inRange && (age <= 240 || (p.label && age <= 600) || p.l30);
+        var lbl = inRange && (age <= 6 || (p.label && age <= 200) || p.l30);
+        var k = q2(Math.max(0, Math.min(1, (age - 150) / 180)));
+        var o = line ? q2(pl(age, oStops.concat([365, 0.2, 800, 0.14, 2000, 0.1]))) : 0;
+        var w = line ? q2(pl(age, wStops.concat([400, 1.0, 1500, 0.8]))) : 0;
+        var v = (inRange && age <= 6) ? q2(pl(age, [0, 0.6, 2.5, 0.4, 6, 0])) : 0;
+        var x = lbl ? q2(pl(age, [150, 1, 365, 0.55, 2000, 0.4])) : 0;
+        return { o: o, w: w, k: k, v: v, x: x, lbl: lbl };
+    }
+    var FRONT_W = [0, 3.6, 4, 2.6, 10, 1.9, 40, 1.5, 120, 1.3], FRONT_O = [0, 1.0, 5, 0.9, 20, 0.65, 60, 0.4, 150, 0.3];
+    var PAT_W = [0, 3.6, 4, 2.6, 10, 2.0, 40, 1.7, 120, 1.5], PAT_O = [0, 1.0, 5, 0.9, 20, 0.7, 60, 0.5, 150, 0.4];
+    /* A symbol layer's filter still has to move with the playhead (a label
+     * hidden by opacity keeps its collision box and blocks a shown one),
+     * but on the mirror source, and no more often than every ~300 ms —
+     * with the last state always landing (trailing call). */
+    var lblFilter = {};   // layer → { json, wall, timer }
+    function throttledFilter(layer, filter) {
+        if (!map.getLayer(layer)) return;
+        var json = JSON.stringify(filter), L = lblFilter[layer] || (lblFilter[layer] = { json: '', wall: 0, timer: null });
+        if (json === L.json) return;
+        var now = performance.now(), gap = 300;
+        clearTimeout(L.timer);
+        if (now - L.wall >= gap) { L.json = json; L.wall = now; map.setFilter(layer, filter); return; }
+        L.timer = setTimeout(function () { if (L.json !== json && map.getLayer(layer)) { L.json = json; L.wall = performance.now(); map.setFilter(layer, filter); } }, gap - (now - L.wall));
+    }
+    function fsEnter() {   // constant, state-driven paint for the animation (set once)
+        if (fsMode) return;
+        fsMode = true;
+        map.setFilter(FRONT_LYR, FRONT_LINE_SEL);
+        map.setFilter(FRONT_WAVE, FRONT_LBL_SEL);
+        map.setPaintProperty(FRONT_WAVE, 'line-opacity', FS.fs('v', 0));
+        map.setPaintProperty(FRONT_WAVE, 'line-width', ['case', ['>', FS.fs('v', 0), 0], 14, 0]);   // a 14 px blurred stroke costs fragments even at opacity 0
+        map.setPaintProperty(FRONT_LYR, 'line-color', fsColor(ASH_FIRE));
+        map.setPaintProperty(FRONT_LYR, 'line-width', speedWeight(['*', ['case', ['get', 'label'], 1.0, 0.6], FS.fs('w', 0)]));
+        map.setPaintProperty(FRONT_LYR, 'line-opacity', FS.fs('o', 0));
+        map.setPaintProperty(FRONT_LBL, 'text-color', fsColor(ASH_FIRE));
+        map.setPaintProperty(FRONT_LBL, 'text-opacity', FS.fs('x', 0));
+        if (map.getLayer(CMP_LYR)) {
+            map.setFilter(CMP_LYR, null);
+            map.setPaintProperty(CMP_LYR, 'line-width', FS.fs('w', 0));
+            map.setPaintProperty(CMP_LYR, 'line-opacity', FS.fs('o', 0));
+        }
+        if (map.getLayer(PAT_LYR)) {
+            map.setFilter(PAT_LYR, null);
+            map.setFilter(PAT_WAVE, null);
+            map.setPaintProperty(PAT_WAVE, 'line-opacity', FS.fs('v', 0));
+            map.setPaintProperty(PAT_WAVE, 'line-width', ['case', ['>', FS.fs('v', 0), 0], 14, 0]);
+            map.setPaintProperty(PAT_LYR, 'line-color', fsColor(ASH_PATROL));
+            map.setPaintProperty(PAT_LYR, 'line-width', ['*', ['case', ['get', 'label'], 1.0, 0.6], FS.fs('w', 0)]);
+            map.setPaintProperty(PAT_LYR, 'line-opacity', FS.fs('o', 0));
+            map.setPaintProperty(PAT_LBL, 'text-color', fsColor(ASH_PATROL));
+            map.setPaintProperty(PAT_LBL, 'text-opacity', FS.fs('x', 0));
+        }
+        if (map.getLayer(PRS_LYR)) {
+            var rank = ['coalesce', ['get', 't'], 1];
+            map.setPaintProperty(PRS_LYR, 'line-color', fsColor(ASH_PATROL));
+            map.setPaintProperty(PRS_LYR, 'line-width', ['*', ['+', 0.6, ['*', 1.4, rank]], FS.fs('w', 1)]);
+            map.setPaintProperty(PRS_LYR, 'line-opacity', ['*', ['+', 0.45, ['*', 0.5, rank]], FS.fs('o', 1)]);
+        }
+    }
+    function fsLeave() {
+        fsMode = false;
+        [FRONT_SRC, FRONT_LBL_SRC, PAT_SRC, PAT_LBL_SRC, CMP_SRC, PRS_SRC].forEach(fsForget);
+        Object.keys(lblFilter).forEach(function (l) { clearTimeout(lblFilter[l].timer); });
+        lblFilter = {};
+    }
+    var fsCost = 0;   // EMA of the frame's main-thread ms (the adaptive repaint gap reads it)
+    function fsFrame(t) {
+        if (!map || animT === null) return;
+        fsEnter();
+        var a = performance.now(), i, p, S;
+        var ff = srcFeats[FRONT_SRC] || [];
+        for (i = 0; i < ff.length; i++) { p = ff[i].properties; S = frontState(p, t, FRONT_W, FRONT_O); fsSet(FRONT_SRC, p.fid, S.o, S.w, S.k, S.v, 0); }
+        var fl = srcFeats[FRONT_LBL_SRC] || [];
+        for (i = 0; i < fl.length; i++) { p = fl[i].properties; S = frontState(p, t, FRONT_W, FRONT_O); fsSet(FRONT_LBL_SRC, p.fid, 0, 0, S.k, 0, S.x); }
+        throttledFilter(FRONT_LBL, ['all', FRONT_LBL_SEL, ashLabelFilter(t)]);
+        if (map.getLayer(PAT_LYR)) {
+            var pf = srcFeats[PAT_SRC] || [];
+            for (i = 0; i < pf.length; i++) { p = pf[i].properties; S = frontState(p, t, PAT_W, PAT_O); fsSet(PAT_SRC, p.fid, S.o, S.w, S.k, S.v, 0); }
+            var pll = srcFeats[PAT_LBL_SRC] || [];
+            for (i = 0; i < pll.length; i++) { p = pll[i].properties; S = frontState(p, t, PAT_W, PAT_O); fsSet(PAT_LBL_SRC, p.fid, 0, 0, S.k, 0, S.x); }
+            throttledFilter(PAT_LBL, ashLabelFilter(t));
+        }
+        if (map.getLayer(CMP_LYR)) {
+            // each compared season: the line its front had just reached on
+            // this day of season, and a two-week wake behind it
+            var cf = srcFeats[CMP_SRC] || [];
+            for (i = 0; i < cf.length; i++) {
+                p = cf[i].properties;
+                var ageR = (t - p.tr) / DAY_MS, wake = p.tr <= t && p.tr >= t - 15 * DAY_MS;
+                fsSet(CMP_SRC, p.fid, wake ? q2(pl(ageR, [0, 0.95, 5, 0.6, 15, 0.25])) : 0, wake ? q2(pl(ageR, [0, 2.6, 5, 1.4, 15, 0.8])) : 0, 0, 0, 0);
+            }
+            throttledFilter(CMP_LBL, ['all', ['<=', ['get', 'tr'], t], ['>=', ['get', 'tr'], t - 5 * DAY_MS]]);
+        }
+        if (map.getLayer(PRS_LYR)) {
+            // Live rings (`at` = playhead) at full weight; a finished
+            // season's end-of-season rings ash out from the day it ended,
+            // and only the live season's rings carry their numbers.
+            var rf = srcFeats[PRS_SRC] || [];
+            for (i = 0; i < rf.length; i++) {
+                p = rf[i].properties;
+                var ageP = (t - (p.at != null ? p.at : t)) / DAY_MS;
+                fsSet(PRS_SRC, p.fid, q2(pl(ageP, [0, 1, 30, 0.6, 150, 0.35, 365, 0.22, 800, 0.15, 2000, 0.1])), q2(pl(ageP, [0, 1, 365, 0.7, 1500, 0.55])),
+                    q2(Math.max(0, Math.min(1, (ageP - 30) / 210))), 0, 0);
+            }
+            throttledFilter(PRS_LBL, ['>=', ['coalesce', ['get', 'at'], t], t - 1 * DAY_MS]);
+        }
+        var ms = performance.now() - a;
+        fsCost = fsCost ? fsCost * 0.7 + ms * 0.3 : ms;
+    }
+    // The repaint gap: ~12/s when a frame is cheap, stretching to 4/s
+    // when the main thread needs the time (a phone with six seasons of
+    // lines) — the playhead keeps its pace, the picture drops frames
+    // instead of stalling.
+    function animGap() { return Math.max(80, Math.min(250, fsCost * 3)); }
     function animAt(t, force) {
         if (!map || !map.getLayer(FRONT_LYR)) { if (map && st.entry) drawEntry(t == null ? windowEndMs() : t); return; }
         // While the animator runs it draws the vanguard chains itself, built
@@ -2106,11 +2288,13 @@
             if (st.entry) drawEntry(windowEndMs());   // back to the slider's end
             if (animDay === null) return;
             animDay = null; animT = null;
+            fsLeave();
             applyFrontData(); applyPatrolData();   // the reference season only, again
             map.setFilter(FRONT_LYR, FRONT_LINE_SEL);
             map.setFilter(FRONT_LBL, ['all', FRONT_LBL_SEL, ['==', ['get', 'label'], true]]);
             map.setFilter(FRONT_WAVE, FRONT_LBL_SEL);
             map.setPaintProperty(FRONT_WAVE, 'line-opacity', 0);
+            map.setPaintProperty(FRONT_WAVE, 'line-width', 14);
             map.setPaintProperty(FRONT_LYR, 'line-color', ['get', 'color']);
             map.setPaintProperty(FRONT_LYR, 'line-width', frontWidthStatic());
             map.setPaintProperty(FRONT_LYR, 'line-opacity', frontOpacityStatic());
@@ -2120,6 +2304,7 @@
             if (map.getLayer(PAT_LYR)) {
                 map.setFilter(PAT_LYR, null); map.setFilter(PAT_LBL, ['==', ['get', 'label'], true]); map.setFilter(PAT_WAVE, null);
                 map.setPaintProperty(PAT_WAVE, 'line-opacity', 0);
+                map.setPaintProperty(PAT_WAVE, 'line-width', 14);
                 map.setPaintProperty(PAT_LYR, 'line-color', ['get', 'color']);
                 map.setPaintProperty(PAT_LYR, 'line-width', ['case', ['get', 'label'], 1.8, 0.8]);
                 map.setPaintProperty(PAT_LYR, 'line-opacity', ['case', ['get', 'label'], 0.92, 0.55]);
@@ -2138,7 +2323,7 @@
         if (!force && animT !== null && Math.abs(t - animT) < 0.1 * DAY_MS) return;   // same tenth of a day: nothing to say
         var starting = animDay === null;
         playheadMeta(t);
-        if (!force && animT !== null && now - animWall < 80) {                          // ~12 repaints/s is plenty…
+        if (!force && animT !== null && now - animWall < animGap()) {                   // ~12 repaints/s is plenty…
             // …but the LAST position of a scrub must land: trail it.
             clearTimeout(animTrail);
             animTrail = setTimeout(function () { if (animDay !== null) animAt(t); }, 90);
@@ -2158,51 +2343,7 @@
         // four days when this season's first detection lands in it.
         if (st.entry) drawEntry(t);
         pressureAnimStep(t, force);
-        var ageD = ['/', ['-', t, ['get', 't']], DAY_MS];                    // days since the season reached this line
-        var reached = ['<=', ['get', 't'], t];
-        map.setFilter(FRONT_LYR, ['all', FRONT_LINE_SEL, ashLineFilter(t)]);
-        map.setFilter(FRONT_WAVE, ['all', FRONT_LBL_SEL, reached, ['>=', ['get', 't'], t - 6 * DAY_MS]]);
-        map.setFilter(FRONT_LBL, ['all', FRONT_LBL_SEL, ashLabelFilter(t)]);
-        map.setPaintProperty(FRONT_WAVE, 'line-opacity',
-            ['interpolate', ['linear'], ageD, 0, 0.6, 2.5, 0.4, 6, 0]);
-        map.setPaintProperty(FRONT_LYR, 'line-color', ashColor(ageD, ASH_FIRE));
-        map.setPaintProperty(FRONT_LYR, 'line-width', speedWeight(ashWidth(ageD, [0, 3.6, 4, 2.6, 10, 1.9, 40, 1.5, 120, 1.3])));
-        map.setPaintProperty(FRONT_LYR, 'line-opacity', ashOpacity(ageD, [0, 1.0, 5, 0.9, 20, 0.65, 60, 0.4, 150, 0.3]));
-        map.setPaintProperty(FRONT_LBL, 'text-color', ashColor(ageD, ASH_FIRE));
-        map.setPaintProperty(FRONT_LBL, 'text-opacity', ashTextOpacity(ageD));
-        if (map.getLayer(CMP_LYR)) {
-            // each compared season: the line its front had just reached on
-            // this day of season, and a two-week wake behind it
-            var ageR = ['/', ['-', t, ['get', 'tr']], DAY_MS];
-            var wake = ['all', ['<=', ['get', 'tr'], t], ['>=', ['get', 'tr'], t - 15 * DAY_MS]];
-            map.setFilter(CMP_LYR, wake);
-            map.setFilter(CMP_LBL, ['all', ['<=', ['get', 'tr'], t], ['>=', ['get', 'tr'], t - 5 * DAY_MS]]);
-            map.setPaintProperty(CMP_LYR, 'line-width', ['interpolate', ['linear'], ageR, 0, 2.6, 5, 1.4, 15, 0.8]);
-            map.setPaintProperty(CMP_LYR, 'line-opacity', ['interpolate', ['linear'], ageR, 0, 0.95, 5, 0.6, 15, 0.25]);
-        }
-        if (map.getLayer(PAT_LYR)) {
-            map.setFilter(PAT_LYR, ashLineFilter(t));
-            map.setFilter(PAT_WAVE, ['all', reached, ['>=', ['get', 't'], t - 6 * DAY_MS]]);
-            map.setFilter(PAT_LBL, ashLabelFilter(t));
-            map.setPaintProperty(PAT_WAVE, 'line-opacity', ['interpolate', ['linear'], ageD, 0, 0.55, 2.5, 0.35, 6, 0]);
-            map.setPaintProperty(PAT_LYR, 'line-color', ashColor(ageD, ASH_PATROL));
-            map.setPaintProperty(PAT_LYR, 'line-width', ashWidth(ageD, [0, 3.6, 4, 2.6, 10, 2.0, 40, 1.7, 120, 1.5]));
-            map.setPaintProperty(PAT_LYR, 'line-opacity', ashOpacity(ageD, [0, 1.0, 5, 0.9, 20, 0.7, 60, 0.5, 150, 0.4]));
-            map.setPaintProperty(PAT_LBL, 'text-color', ashColor(ageD, ASH_PATROL));
-            map.setPaintProperty(PAT_LBL, 'text-opacity', ashTextOpacity(ageD));
-        }
-        if (map.getLayer(PRS_LYR)) {
-            // Live rings (`at` = playhead) at full weight; a finished
-            // season's end-of-season rings ash out from the day it ended,
-            // and only the live season's rings carry their numbers (an
-            // ashed ring's number and year are in its tip).
-            var ageP = ['/', ['-', t, ['coalesce', ['get', 'at'], t]], DAY_MS];
-            var rank = ['coalesce', ['get', 't'], 1];
-            map.setFilter(PRS_LBL, ['>=', ['coalesce', ['get', 'at'], t], t - 1 * DAY_MS]);
-            map.setPaintProperty(PRS_LYR, 'line-color', ['interpolate', ['linear'], ageP, 30, ['get', 'color'], 240, ASH_PATROL]);
-            map.setPaintProperty(PRS_LYR, 'line-width', ['*', ['+', 0.6, ['*', 1.4, rank]], ['interpolate', ['linear'], ageP, 0, 1, 365, 0.7, 1500, 0.55]]);
-            map.setPaintProperty(PRS_LYR, 'line-opacity', ['*', ['+', 0.45, ['*', 0.5, rank]], ['interpolate', ['linear'], ageP, 0, 1, 30, 0.6, 150, 0.35, 365, 0.22, 800, 0.15, 2000, 0.1]]);
-        }
+        fsFrame(t);
     }
 
     /* ── public ─────────────────────────────────────────────────────────── */
@@ -2236,6 +2377,12 @@
         // season curve at the playhead (the server's numbers are at the
         // window's END, which is where the slider rests, not where it is).
         meta: function () { return animMeta || front; },
+        // Is there a front to animate anywhere in the view? The reference
+        // (`front`) is the park under the view CENTRE and is null over
+        // open ground, but the bbox answer (mosaic / every park in view)
+        // still draws lines — the animator must not call that "no data".
+        // Loading counts as maybe.
+        frontAnyInView: function () { return !!((front && front.season) || (others.feats && others.feats.length) || others.loading || inflight > 0 || (frontFeats && frontFeats.length)); },
         vanguard: function () { return van; },
         summary: summary,
         busy: function () { return inflight > 0; },

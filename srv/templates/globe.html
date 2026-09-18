@@ -3146,7 +3146,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                         compareColors: map.getSource('fireseason-cmp-src') ? [...new Set(map.querySourceFeatures('fireseason-cmp-src').map(f => f.properties.color))].sort() : [],
                         patrol: !!(FS && FS.patrolOn && FS.patrolOn()), patrolMeta: FS && FS.patrolMeta ? FS.patrolMeta() : null,
                         patrolAllowed: !!(FS && FS.patrolAllowed && FS.patrolAllowed()),
-                        drawnPatrol: map.getLayer('fireseason-patrol') ? map.queryRenderedFeatures({ layers: ['fireseason-patrol'] }).length : 0,
+                        drawnPatrol: map.getLayer('fireseason-patrol') ? map.queryRenderedFeatures({ layers: ['fireseason-patrol'] }).filter(f => !(f.state && f.state.o === 0)).length : 0,
                         animChip: !!document.querySelector('.anim-chip[data-layer="entry"]')
                     };
                 },
@@ -3162,7 +3162,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                         area: m ? m.area : null, seasonShown: m ? m.season : null,
                         contours: (m && m.contours || []).length, status: m ? m.status : null,
                         vanguardCount: v ? v.count : null, vanguardTotal: v ? v.total : null,
-                        drawnFront: map.getLayer('fireseason-front') ? map.queryRenderedFeatures({ layers: ['fireseason-front'] }).length : 0,
+                        drawnFront: map.getLayer('fireseason-front') ? map.queryRenderedFeatures({ layers: ['fireseason-front'] }).filter(f => !(f.state && f.state.o === 0)).length : 0,
                         drawnVanguard: map.getLayer('fireseason-van') ? map.queryRenderedFeatures({ layers: ['fireseason-van', 'fireseason-van-gap', 'fireseason-van-dim'] }).length : 0,
                         // certainty → width, lead → opacity, missed day → dash
                         // (fireseason.js evidenceMul / leadAlpha / gap):
@@ -3183,7 +3183,7 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                         compareColors: map.getSource('fireseason-cmp-src') ? [...new Set(map.querySourceFeatures('fireseason-cmp-src').map(f => f.properties.color))].sort() : [],
                         patrol: !!(FS && FS.patrolOn && FS.patrolOn()), patrolMeta: FS && FS.patrolMeta ? FS.patrolMeta() : null,
                         patrolAllowed: !!(FS && FS.patrolAllowed && FS.patrolAllowed()),
-                        drawnPatrol: map.getLayer('fireseason-patrol') ? map.queryRenderedFeatures({ layers: ['fireseason-patrol'] }).length : 0,
+                        drawnPatrol: map.getLayer('fireseason-patrol') ? map.queryRenderedFeatures({ layers: ['fireseason-patrol'] }).filter(f => !(f.state && f.state.o === 0)).length : 0,
                         pressure: !!(FS && FS.pressureOn && FS.pressureOn()),
                         pressureFeatures: map.getSource('fireseason-pressure-src') ? map.querySourceFeatures('fireseason-pressure-src').length : 0,
                         patrolsChip: (document.querySelector('#stats-map .ml-chip.pt em') || {}).textContent || null,

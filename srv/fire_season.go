@@ -848,7 +848,7 @@ func (s *Server) fireSeasonBBox(w http.ResponseWriter, r *http.Request) {
 		mkey := fmt.Sprintf("%v|%s|%s|%s|%v", bb, at, lines, exclude, wantSpeed)
 		if e := mosaicCache.get(mkey); e != nil {
 			mosaic = e.body
-		} else if m := fireSeasonMosaic(s.mosaicGrids(bb, at), bb, exclude, lines, wantSpeed); m != nil {
+		} else if m := fireSeasonMosaic(s.mosaicGrids(bb, at, exclude), bb, exclude, lines, wantSpeed); m != nil {
 			mosaic, _ = json.Marshal(m)
 			mosaicCache.put(mkey, mosaic, "")
 		}

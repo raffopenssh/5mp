@@ -704,6 +704,42 @@ draws less than before. `fire_season_own.go` (line clipping) is deleted.
 Tests: `fire_season_bbox_all_parks`, `fire_season_bbox_no_mosaic`,
 `fire_season_bbox_mosaic_speed`.
 
+**Two defects found the same day, by putting the mosaic beside fbc65a2's
+per-park picture** (`/tmp` reference, animator at ~30 Aug 2026):
+
+* **Season-year alignment** (`mosaicGrids(bb, at, ref)`). Each area took
+  "the season containing `at`"; the client asks for a season's mosaic at the
+  *reference's* season end (`at=2026-02-28` for Ruaha's March-calendar
+  2025/26), by which every February-calendar neighbour (Katavi, Luasi,
+  Nsumbu, Kundelungu …) had rolled into 2026/27. One surface held two
+  season-years, and the 365 d cliff between them, ramped by `seamRamp`,
+  drew as a **70-line glowing staircase** down the Katavi/Ugalla seam. Now
+  the anchor is the `ref`'s season containing `at` (else the commonest such
+  start), each area takes the season whose start is nearest it, and an area
+  whose nearest is > 183 d away is left out rather than drawn a year stale.
+* **De-quantisation.** The stored front is whole days (int16). Contoured as
+  stored, a 0.7 d/cell surface is one-day plateaus and every line hugs cell
+  edges: p90 turning angle **45°** (6.7 % of vertices > 45°) against **7°**
+  for matplotlib's lines on the float front — a pixel staircase, and it
+  starved the label placer (6 labels rendered vs 30 per-area). `gaussianNC`
+  σ = 1.2 over the joined surface before `marchingSquares` (after
+  `seamRamp`): p90 7.8°, labels back.
+
+**Stale calendars.** A rebuild that moves an area's start month changes
+its season *labels* ("2025" → "2025/26"), so `INSERT OR REPLACE` left the
+old stack beside the new (99 rows in 20 areas; Kafue held a full January
+and February stack). `build_area` now deletes the area's rows whose
+`start_month` differs after writing; the existing 99 need one purge
+(`DELETE FROM fire_season_front WHERE start_month != <area's current>` —
+they are all in `fire_season_front_pre_landscape`).
+
+Client cost, same view as the reference: the mosaic ships 176 KB gz vs
+431 KB per-area (`mosaic=0`); per-area line density is unchanged by the
+landscape rebuild (2025/26, ten Ruaha-junction areas: 20.7k → 21.6k
+contour vertices) — the reference *looked* denser because overlapping
+grids drew shared ground twice (double alpha) and because its edge bundles
+were the seam artefact.
+
 ### Patrols: isochrones (when) + pressure isopleths (how much) — 2026-09-16
 
 `srv/patrol_isochrone.go` (`/api/patrol-isochrones`) is the rangers' side
