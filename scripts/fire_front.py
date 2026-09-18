@@ -602,6 +602,19 @@ def build_area(conn, area_id, current_only=False, verbose=True):
                 f"front on {stats['cells_with_front']:,} cells ({stats['cells_burned']:,} burned), "
                 f"{stats['front_first']} → {stats['front_last']}, {len(feats)} contours")
     write_early_ground(conn, area_id, grid, for_early, verbose=verbose)
+    # One calendar per area. A season row is keyed (area, season LABEL), and
+    # the label changes with the calendar ("2025" on a January start,
+    # "2025/26" on May), so a rebuild that moved the start month left the
+    # old stack beside the new one (2026-09-18: 99 rows in 20 areas, Kafue
+    # holding a full January AND February stack) — two rows claiming the
+    # same year, one of them day-of-season on a clock nobody uses any more.
+    if written:
+        stale = conn.execute("SELECT COUNT(*) FROM fire_season_front WHERE area_id=? AND start_month != ?",
+                             (area_id, sm)).fetchone()[0]
+        if stale:
+            conn.execute("DELETE FROM fire_season_front WHERE area_id=? AND start_month != ?", (area_id, sm))
+            if verbose:
+                log(f"{area_id}: dropped {stale} season row(s) on another calendar (start month != {sm})")
     if verbose:
         log(f"{area_id}: season starts month {sm}; {len(written)} season(s) in {time.time() - t0:.1f}s")
     return written

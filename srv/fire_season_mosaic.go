@@ -87,8 +87,20 @@ func epochDays(iso string) (float64, bool) {
 	return math.Floor(float64(t.Unix()) / 86400), true
 }
 
-// mosaicGrids: the ownership set with each grid's season calendar.
-func (s *Server) mosaicGrids(bb [4]float64, at string) []*mosaicGrid {
+// mosaicGrids: the ownership set with each grid's season calendar, one
+// season per area — the season on the REFERENCE's season-year, not "the
+// season containing `at`". Those differ for a month every year: at
+// 2026-02-28 (the client's `at` for Ruaha's 2025/26, which starts in
+// March) every February-calendar neighbour (Katavi, Luasi, Nsumbu,
+// Kundelungu …) had already rolled into 2026/27, so one surface held two
+// season-years and the 365 d cliff between them, smeared by seamRamp, drew
+// as a 70-line glowing staircase down the Katavi/Ugalla seam. Anchor: the
+// season of `ref` that contains `at` (else the commonest such start among
+// the areas in the box); each area then takes the season whose start is
+// nearest the anchor, and an area whose nearest season is more than half
+// a year away (a front not yet measured this year) is left out rather
+// than drawn a year stale — its ground falls to the next-larger grid.
+func (s *Server) mosaicGrids(bb [4]float64, at, ref string) []*mosaicGrid {
 	rows, err := s.DB.Query(`
 		SELECT area_id, season, season_start, season_end, nx, ny, res, x0, y0, front
 		FROM fire_season_front
@@ -98,8 +110,7 @@ func (s *Server) mosaicGrids(bb [4]float64, at string) []*mosaicGrid {
 		return nil
 	}
 	defer rows.Close()
-	pick := map[string]*mosaicGrid{}
-	held := map[string]bool{}
+	all := map[string][]*mosaicGrid{}
 	var order []string
 	for rows.Next() {
 		var (
@@ -115,18 +126,49 @@ func (s *Server) mosaicGrids(bb [4]float64, at string) []*mosaicGrid {
 		if !ok {
 			continue
 		}
-		g := &mosaicGrid{ownGrid: newOwnGrid(area, nx, ny, res, x0, y0, front), season: season, start: st, end: en, startDay: sd}
-		if _, seen := pick[area]; !seen {
+		if _, seen := all[area]; !seen {
 			order = append(order, area)
-		} else if held[area] {
-			continue
 		}
-		pick[area] = g
-		held[area] = at != "" && st <= at && at <= en
+		all[area] = append(all[area], &mosaicGrid{ownGrid: newOwnGrid(area, nx, ny, res, x0, y0, front), season: season, start: st, end: en, startDay: sd})
+	}
+	// the season containing `at`, else the latest (the per-area rule)
+	holding := func(gs []*mosaicGrid) *mosaicGrid {
+		for _, g := range gs {
+			if at != "" && g.start <= at && at <= g.end {
+				return g
+			}
+		}
+		return gs[len(gs)-1]
+	}
+	anchor, haveAnchor := 0.0, false
+	if gs, ok := all[ref]; ok {
+		anchor, haveAnchor = holding(gs).startDay, true
+	}
+	if !haveAnchor {
+		count := map[float64]int{}
+		for _, a := range order {
+			count[holding(all[a]).startDay]++
+		}
+		best := -1
+		for sd, c := range count {
+			if c > best || (c == best && sd > anchor) {
+				best, anchor, haveAnchor = c, sd, true
+			}
+		}
 	}
 	out := make([]*mosaicGrid, 0, len(order))
 	for _, a := range order {
-		out = append(out, pick[a])
+		var pick *mosaicGrid
+		for _, g := range all[a] {
+			if pick == nil || math.Abs(g.startDay-anchor) < math.Abs(pick.startDay-anchor) ||
+				(math.Abs(g.startDay-anchor) == math.Abs(pick.startDay-anchor) && g.startDay > pick.startDay) {
+				pick = g
+			}
+		}
+		if pick == nil || (haveAnchor && math.Abs(pick.startDay-anchor) > 183) {
+			continue
+		}
+		out = append(out, pick)
 	}
 	return out
 }
@@ -230,6 +272,21 @@ func fireSeasonMosaic(grids []*mosaicGrid, bb [4]float64, ref, lines string, wan
 		return nil
 	}
 	near := seamRamp(v, mask, owner, nx, ny)
+	// The stored front is WHOLE days (int16, fire_front.py pack); contoured
+	// as stored, a surface that climbs 0.7 d/cell is a stack of one-day
+	// plateaus and every 5-day line hugs their cell edges — a pixel
+	// staircase (p90 turning angle 45° against 7° for matplotlib's lines on
+	// the float front). One σ of Gaussian over the joined surface puts the
+	// half-day back (quantisation noise ±0.5 d → ±0.15 d) without moving a
+	// front (the field itself was smoothed σ=3 upstream), so the mosaic's
+	// lines are as smooth as the per-area ones.
+	const dequantSigma = 1.2
+	sm := gaussianNC(v, mask, nx, ny, dequantSigma)
+	for i := range v {
+		if mask[i] {
+			v[i] = sm[i]
+		}
+	}
 	// levels every 5 d on the reference's calendar (labelled every 15, as fire_front.py)
 	const step, labelStep = 5, 15
 	l0, l1 := int(math.Floor(lo/step))*step, int(math.Ceil(hi/step))*step

@@ -4147,7 +4147,7 @@
             // ground lives through the season): an open with only those on
             // is not an empty one.
             const FS = window.FireSeason;
-            const seasonAny = !!(FS && ((FS.frontOn() && (FS.meta() || {}).season) ||
+            const seasonAny = !!(FS && ((FS.frontOn() && ((FS.frontAnyInView && FS.frontAnyInView()) || (FS.meta() || {}).season)) ||
                 (FS.entryOn && FS.entryOn() && ((FS.entryMeta && FS.entryMeta()) || {}).status === 'ok') ||
                 (FS.speedOn && FS.speedOn() && ((FS.speedMeta && FS.speedMeta()) || {}).stats) ||
                 (((FS.patrolOn && FS.patrolOn()) || (FS.pressureOn && FS.pressureOn())) && ((FS.patrolMeta && FS.patrolMeta()) || {}).status === 'ok')));
