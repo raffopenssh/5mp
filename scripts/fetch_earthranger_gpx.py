@@ -1,17 +1,28 @@
 #!/usr/bin/env python3
-"""Fetch GPS tracks from EarthRanger (PAMDAS) and upload as anonymised GPX.
+"""Fetch GPS tracks from EarthRanger (PAMDAS) and write an anonymised GPX.
 
-Designed to be called daily by the Go backend.  READ-ONLY access to the
-EarthRanger API — no writes, no deletes.
+Called by the Go autofetch worker (srv/autofetch.go).  READ-ONLY access to the
+EarthRanger API — no writes, no deletes.  It never talks to our own HTTP API:
+the worker queues the file it writes (a password must never travel in a URL).
 
 Usage:
     python3 fetch_earthranger_gpx.py \\
         --url https://nyerere.pamdas.org \\
         --user MananeCR \\
-        --upload-url http://localhost:8000/api/upload/async?pwd=test2026 \\
-        [--days 1] [--dry-run]
+        --out /tmp/x.gpx [--since 2026-09-01T00:00:00Z | --days 1] \\
+        [--seen keys.txt --new-keys new.txt] [--dry-run]
 
     Password is read from EARTHRANGER_PASSWORD env var (never passed as arg).
+
+Idempotence (migration 070): --seen is a file of 16-hex-char keys the worker
+has already ingested for this source; every point whose point_key() is in it
+is dropped, and the keys of the points that were kept are written to
+--new-keys ("<key>\\t<recorded_at>" per line).  Two runs over overlapping
+windows therefore never import a point twice.
+
+Completeness (AGENTS.md invariant 1): a subject whose track fetch failed is
+counted in `errors`, and the summary says `partial: true`; the worker then
+keeps what arrived but does not advance its high-water mark.
 
 What it does:
   1. Authenticates via OAuth2 (read-only session)
@@ -25,8 +36,8 @@ What it does:
      - EarthRanger subject metadata (type, subtype, patrol_type) is embedded
        in GPX <extensions> under the er: namespace so the Go classifier can
        use authoritative type info instead of guessing from speed
-  7. Uploads the GPX via the app's async upload endpoint
-  8. Prints a JSON summary to stdout for the Go caller
+  7. Writes the GPX to --out
+  8. Prints a JSON summary as the LAST line of stdout for the Go caller
 
 GPX extension namespace:
   xmlns:er="http://5mp.globe/earthranger/1"
@@ -38,6 +49,7 @@ GPX extension namespace:
 """
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -102,16 +114,61 @@ PATROL_TYPE_OVERRIDES = {
 def er_authenticate(session: requests.Session, url: str, user: str, pw: str) -> str:
     """Obtain an OAuth2 bearer token.  Tries common client_ids."""
     for cid in CLIENT_IDS:
+        # The form carries the password: never follow a redirect with it.
         resp = session.post(
             f"{url.rstrip('/')}/oauth2/token",
             data={'grant_type': 'password', 'username': user, 'password': pw, 'client_id': cid},
-            timeout=30,
+            timeout=30, allow_redirects=False,
         )
+        if 300 <= resp.status_code < 400:
+            raise RuntimeError(f"{url} redirected the token request; use the final address")
         if resp.status_code == 200:
             token = resp.json().get('access_token')
             if token:
                 return token
-    raise RuntimeError(f"Authentication failed for {url} (tried client_ids: {CLIENT_IDS})")
+        if resp.status_code not in (400, 401, 403):
+            # Not a verdict on the credentials (5xx, 429, ...): a plain error,
+            # so the worker retries instead of counting towards a pause.
+            raise RuntimeError(f"token endpoint returned HTTP {resp.status_code}")
+    raise AuthError(f"Authentication failed for {url} (tried client_ids: {CLIENT_IDS})")
+
+
+class AuthError(RuntimeError):
+    """Credentials rejected (as opposed to the server being unreachable)."""
+
+
+def unwrap_results(data):
+    """ER wraps lists as {data: {results: [...], next: url}} or {data: [...]}.
+    Returns (results_list, next_url_or_None)."""
+    nxt = None
+    results = data
+    if isinstance(data, dict):
+        inner = data.get('data', data)
+        if isinstance(inner, dict):
+            nxt = inner.get('next')
+            results = inner.get('results', [])
+        else:
+            results = inner
+    if not isinstance(results, list):
+        results = []
+    return results, nxt
+
+
+def er_get_all(session: requests.Session, api: str, path: str, params: dict,
+               max_pages: int = 50) -> list:
+    """Follow ER pagination; a roster cut at page one is a silent partial."""
+    out = []
+    data = er_get(session, api, path, params)
+    results, nxt = unwrap_results(data)
+    out.extend(results)
+    pages = 1
+    while nxt and pages < max_pages:
+        resp = session.get(nxt, timeout=60)
+        resp.raise_for_status()
+        results, nxt = unwrap_results(resp.json())
+        out.extend(results)
+        pages += 1
+    return out
 
 
 def er_get(session: requests.Session, api: str, path: str, params: Optional[dict] = None):
@@ -123,17 +180,7 @@ def er_get(session: requests.Session, api: str, path: str, params: Optional[dict
 
 def fetch_subjects(session: requests.Session, api: str) -> list:
     """Return list of non-wildlife subjects."""
-    data = er_get(session, api, 'subjects', {'page_size': 500})
-    results = data
-    # Handle nested response structures
-    if isinstance(data, dict):
-        if 'data' in data:
-            inner = data['data']
-            results = inner.get('results', inner) if isinstance(inner, dict) else inner
-        elif 'results' in data:
-            results = data['results']
-    if not isinstance(results, list):
-        results = []
+    results = er_get_all(session, api, 'subjects', {'page_size': 500})
 
     allowed = []
     for s in results:
@@ -158,7 +205,7 @@ def fetch_patrols(session: requests.Session, api: str,
     """
     subject_patrol = {}  # subject_id → patrol_type
     try:
-        data = er_get(session, api, 'activity/patrols', {
+        results = er_get_all(session, api, 'activity/patrols', {
             'filter': json.dumps({
                 'date_range': {'lower': since, 'upper': until},
                 'status': ['open', 'done'],
@@ -167,17 +214,6 @@ def fetch_patrols(session: requests.Session, api: str,
         })
     except Exception:
         # Patrol API may not be accessible — non-fatal
-        return subject_patrol
-
-    # Unwrap response (may be {data: {results: [...]}} or just [...])
-    results = data
-    if isinstance(data, dict):
-        if 'data' in data:
-            inner = data['data']
-            results = inner.get('results', inner) if isinstance(inner, dict) else inner
-        elif 'results' in data:
-            results = data['results']
-    if not isinstance(results, list):
         return subject_patrol
 
     for patrol in results:
@@ -269,6 +305,20 @@ def normalise_timestamp(t: str) -> str:
     # Remove UTC offset (+00:00, +0000, -05:00, etc.)
     t = re.sub(r'[+-]\d{2}:?\d{2}$', '', t)
     return t + 'Z'
+
+
+def point_key(subject_id: str, recorded_at: str) -> str:
+    """Ledger key shared with srv/autofetch_ledger.go:autofetchKeyHash —
+    sha256("<subject_id>|<recorded_at RFC3339 Z>") first 16 hex chars.
+    Change one side and the other must change with it."""
+    return hashlib.sha256(f"{subject_id}|{recorded_at}".encode()).hexdigest()[:16]
+
+
+def load_seen(path: Optional[str]) -> set:
+    if not path:
+        return set()
+    with open(path, encoding='utf-8') as fh:
+        return {ln.strip() for ln in fh if ln.strip()}
 
 
 # ── GPX builder ───────────────────────────────────────────────────────────────
@@ -370,12 +420,13 @@ def main():
     ap = argparse.ArgumentParser(description='Fetch EarthRanger GPS tracks → anonymised GPX')
     ap.add_argument('--url', required=True, help='PAMDAS server URL')
     ap.add_argument('--user', required=True, help='Username')
-    ap.add_argument('--upload-url', default=None, help='App async upload URL (legacy; prefer --out)')
-    ap.add_argument('--out', default=None, help='Write the GPX to this path instead of uploading')
+    ap.add_argument('--out', default=None, help='Write the GPX to this path')
+    ap.add_argument('--seen', default=None, help='File of point keys already ingested (one per line); dropped')
+    ap.add_argument('--new-keys', default=None, help='Write "<key>\\t<recorded_at>" of every kept point here')
     ap.add_argument('--days', type=int, default=1, help='Days of history (default: 1, used if --since not set)')
     ap.add_argument('--since', type=str, default=None,
                     help='ISO-8601 timestamp: only fetch data after this time (overrides --days)')
-    ap.add_argument('--dry-run', action='store_true', help='Build GPX but do not upload')
+    ap.add_argument('--dry-run', action='store_true', help='Build GPX but do not write it')
     args = ap.parse_args()
 
     # Password from environment variable — never from command line
@@ -390,8 +441,11 @@ def main():
     # 1. Authenticate
     try:
         token = er_authenticate(session, args.url, args.user, password)
-    except RuntimeError as e:
-        print(json.dumps({'ok': False, 'error': str(e)}))
+    except AuthError as e:
+        print(json.dumps({'ok': False, 'auth_failed': True, 'error': str(e)}))
+        sys.exit(1)
+    except Exception as e:
+        print(json.dumps({'ok': False, 'error': f'{type(e).__name__}: {e}'}))
         sys.exit(1)
 
     session.headers['Authorization'] = f'Bearer {token}'
@@ -405,7 +459,12 @@ def main():
     until = now.isoformat()
 
     # 2. Get subjects (excluding wildlife/animal collars)
-    subjects = fetch_subjects(session, api)
+    try:
+        subjects = fetch_subjects(session, api)
+    except Exception as e:
+        print(json.dumps({'ok': False, 'error': f'subject list: {type(e).__name__}: {e}'}))
+        sys.exit(1)
+    seen = load_seen(args.seen)
 
     # 3. Fetch patrol context — maps subject_id → patrol_type string
     #    This tells us when a person/er_mobile is actually in a vehicle or aircraft.
@@ -430,10 +489,18 @@ def main():
     tracks = {}  # subject_id → [(lon, lat, time, alt), ...]
     subject_count = 0
     skipped_no_source = 0
+    fetch_errors = 0      # a failed fetch is a hole, not a quiet subject
+    dropped_seen = 0
+    new_keys = []         # (key, recorded_at) of every kept point
 
     for s in subjects:
         sid = s['id']
-        sources = fetch_sources(session, api, sid)
+        try:
+            sources = fetch_sources(session, api, sid)
+        except Exception as e:
+            fetch_errors += 1
+            sys.stderr.write(f"warn: sources for {sid}: {type(e).__name__}: {e}\n")
+            continue
         if not sources:
             skipped_no_source += 1
             continue
@@ -442,19 +509,39 @@ def main():
         for src_id in sources:
             try:
                 pts = fetch_tracks(session, api, sid, src_id, since, until)
-                all_points.extend(pts)
-            except Exception:
-                pass  # skip individual source errors
+            except Exception as e:
+                fetch_errors += 1
+                sys.stderr.write(f"warn: tracks for {sid}/{src_id}: {type(e).__name__}: {e}\n")
+                continue
+            for pt in pts:
+                ts = normalise_timestamp(pt[2])
+                key = point_key(sid, ts)
+                if key in seen:
+                    dropped_seen += 1
+                    continue
+                seen.add(key)  # the same point from two sources counts once
+                new_keys.append((key, ts))
+                all_points.append((pt[0], pt[1], ts, pt[3]))
 
         if all_points:
             tracks[sid] = all_points
             subject_count += 1
 
+    partial = fetch_errors > 0
+
+    def write_new_keys():
+        if args.new_keys and not args.dry_run:
+            with open(args.new_keys, 'w', encoding='utf-8') as fh:
+                for key, ts in new_keys:
+                    fh.write(f"{key}\t{ts}\n")
+
     # 6. Build GPX
     if not tracks:
-        print(json.dumps({'ok': True, 'subjects': 0, 'points': 0, 'uploaded': False,
+        write_new_keys()
+        print(json.dumps({'ok': True, 'subjects': 0, 'points': 0, 'dropped': dropped_seen,
+                          'partial': partial, 'errors': fetch_errors,
                           'types': {'foot': 0, 'vehicle': 0, 'aircraft': 0},
-                          'message': 'No GPS data found for the period'}))
+                          'message': 'No new GPS data for the period'}))
         sys.exit(0)
 
     gpx_xml, total_pts = build_gpx(tracks, subject_meta)
@@ -466,48 +553,24 @@ def main():
         category = classify_subject(meta)
         type_counts[category] = type_counts.get(category, 0) + 1
 
-    # 8. Upload
+    # 8. Write
+    summary = {'ok': True, 'subjects': subject_count, 'points': total_pts,
+               'dropped': dropped_seen, 'partial': partial, 'errors': fetch_errors,
+               'types': type_counts}
     if args.dry_run:
-        # Write to stdout for inspection
+        # Write to stderr for inspection
         sys.stderr.write(gpx_xml[:2000] + '\n...\n')
-        print(json.dumps({'ok': True, 'subjects': subject_count, 'points': total_pts,
-                          'types': type_counts, 'uploaded': False, 'dry_run': True}))
+        print(json.dumps({**summary, 'dry_run': True}))
         sys.exit(0)
 
-    if args.out:
-        with open(args.out, 'w', encoding='utf-8') as fh:
-            fh.write(gpx_xml)
-        print(json.dumps({'ok': True, 'subjects': subject_count, 'points': total_pts,
-                          'types': type_counts, 'uploaded': False, 'out': args.out}))
-        sys.exit(0)
-
-    if not args.upload_url:
-        print(json.dumps({'ok': False, 'error': 'one of --out or --upload-url is required'}))
+    if not args.out:
+        print(json.dumps({'ok': False, 'error': '--out is required'}))
         sys.exit(1)
 
-    try:
-        resp = requests.post(
-            args.upload_url,
-            files={'gpx': (f'autofetch-{now.strftime("%Y%m%d")}.gpx',
-                           gpx_xml.encode('utf-8'), 'application/gpx+xml')},
-            timeout=120,
-        )
-        resp.raise_for_status()
-        upload_result = resp.json()
-    except Exception as e:
-        print(json.dumps({'ok': False, 'error': f'Upload failed: {e}',
-                          'subjects': subject_count, 'points': total_pts,
-                          'types': type_counts}))
-        sys.exit(1)
-
-    print(json.dumps({
-        'ok': True,
-        'subjects': subject_count,
-        'points': total_pts,
-        'types': type_counts,
-        'uploaded': True,
-        'queue_id': upload_result.get('queue_id'),
-    }))
+    with open(args.out, 'w', encoding='utf-8') as fh:
+        fh.write(gpx_xml)
+    write_new_keys()
+    print(json.dumps({**summary, 'out': args.out}))
 
 
 if __name__ == '__main__':
