@@ -477,8 +477,13 @@ func (s *Server) HandleAPIAutofetchAdd(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 400, map[string]string{"error": "service_url, username, and password are required"})
 		return
 	}
-	if u, err := url.Parse(req.ServiceURL); err != nil || u.Scheme != "https" || u.Host == "" {
+	u, err := url.Parse(req.ServiceURL)
+	if err != nil || u.Scheme != "https" || u.Host == "" || u.User != nil {
 		writeJSON(w, 400, map[string]string{"error": "service_url must be an https:// URL"})
+		return
+	}
+	if err := autofetchHostAllowed(u.Host); err != nil {
+		writeJSON(w, 400, map[string]string{"error": "service_url: " + err.Error()})
 		return
 	}
 	if req.IntervalH <= 0 {
@@ -726,7 +731,7 @@ func (s *Server) HandleAPIAutofetchEnable(w http.ResponseWriter, r *http.Request
 		return
 	}
 	if _, err = s.DB.ExecContext(r.Context(),
-		`UPDATE autofetch_sources SET enabled = 1, password = ? WHERE id = ?`, encrypted, req.ID); err != nil {
+		`UPDATE autofetch_sources SET enabled = 1, password = ?, consecutive_failures = 0 WHERE id = ?`, encrypted, req.ID); err != nil {
 		writeJSON(w, 500, map[string]string{"error": err.Error()})
 		return
 	}
@@ -763,6 +768,10 @@ func (s *Server) HandleAPIAutofetchRunNow(w http.ResponseWriter, r *http.Request
 		writeJSON(w, 404, map[string]string{"error": "source not found"})
 		return
 	}
+	if _, running := autofetchRunning.Load(id); running {
+		writeJSON(w, 409, map[string]string{"error": "a fetch for this source is already running"})
+		return
+	}
 	go s.runAutofetchSource(context.Background(), id)
 	writeJSON(w, 200, map[string]string{"ok": "started"})
 }
@@ -793,10 +802,12 @@ func (s *Server) StartAutofetchWorker(ctx context.Context) {
 	}
 }
 
-// runAutofetchDue finds enabled sources whose interval has elapsed and runs them.
+// runAutofetchDue finds enabled sources whose interval has elapsed since the
+// last ATTEMPT (not the last success: a failing source retries at its
+// interval, not every tick) and runs them.
 func (s *Server) runAutofetchDue(ctx context.Context) {
 	rows, err := s.DB.QueryContext(ctx,
-		`SELECT id, interval_h, last_run_at FROM autofetch_sources
+		`SELECT id, interval_h, COALESCE(last_attempt_at, last_run_at), consecutive_failures FROM autofetch_sources
 		 WHERE enabled = 1 AND password != ''`)
 	if err != nil {
 		slog.Error("autofetch: query sources", "error", err)
@@ -808,24 +819,21 @@ func (s *Server) runAutofetchDue(ctx context.Context) {
 	var due []int64
 	for rows.Next() {
 		var id int64
-		var intervalH int
+		var intervalH, failures int
 		var lastRun sql.NullString
-		if err := rows.Scan(&id, &intervalH, &lastRun); err != nil {
+		if err := rows.Scan(&id, &intervalH, &lastRun, &failures); err != nil {
 			continue
 		}
 		if !lastRun.Valid {
 			due = append(due, id) // never run
 			continue
 		}
-		parsed, err := time.Parse("2006-01-02 15:04:05", lastRun.String)
-		if err != nil {
-			parsed, err = time.Parse(time.RFC3339, lastRun.String)
-		}
+		parsed, err := parseSQLTime(lastRun.String)
 		if err != nil {
 			due = append(due, id) // can't parse, run it
 			continue
 		}
-		if now.Sub(parsed) >= time.Duration(intervalH)*time.Hour {
+		if now.Sub(parsed) >= autofetchBackoff(time.Duration(intervalH)*time.Hour, failures) {
 			due = append(due, id)
 		}
 	}
@@ -835,118 +843,242 @@ func (s *Server) runAutofetchDue(ctx context.Context) {
 	}
 }
 
+// autofetchScriptResult is the JSON summary fetch_earthranger_gpx.py prints
+// as its LAST line (warnings may precede it on stderr).
+type autofetchScriptResult struct {
+	OK       bool   `json:"ok"`
+	Points   int    `json:"points"`
+	Dropped  int    `json:"dropped"`
+	Subjects int    `json:"subjects"`
+	Partial  bool   `json:"partial"`
+	Errors   int    `json:"errors"`
+	Error    string `json:"error"`
+	Auth     bool   `json:"auth_failed"`
+}
+
+// parseAutofetchOutput finds the summary in the script's combined output.
+// No summary is an error (AGENTS.md invariant 1: a run that said nothing did
+// not succeed), never "ok with zero points".
+func parseAutofetchOutput(output []byte) (autofetchScriptResult, error) {
+	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
+	for i := len(lines) - 1; i >= 0; i-- {
+		l := strings.TrimSpace(lines[i])
+		if !strings.HasPrefix(l, "{") {
+			continue
+		}
+		var res autofetchScriptResult
+		if err := json.Unmarshal([]byte(l), &res); err == nil {
+			return res, nil
+		}
+	}
+	tail := string(output)
+	if len(tail) > 300 {
+		tail = tail[len(tail)-300:]
+	}
+	return autofetchScriptResult{}, fmt.Errorf("script produced no summary: %s", strings.TrimSpace(tail))
+}
+
 // runAutofetchSource decrypts credentials and runs the Python fetch script.
+//
+// Window and idempotence: the run fetches [last_run_at - autofetchOverlap,
+// now], the script drops every point the ledger (autofetch_seen) already
+// holds and reports the keys it kept; those are recorded once the GPX is
+// durably queued. last_run_at advances only on a complete success; a failed
+// or partial run leaves it, so the next run re-covers the same window and
+// the ledger keeps that from counting twice.
 func (s *Server) runAutofetchSource(ctx context.Context, id int64) {
-	var apiType, serviceURL, username, encryptedPw, dataEnv string
-	var intervalH int
+	if !autofetchTryLock(id) {
+		slog.Info("autofetch: already running, skipped", "id", id)
+		return
+	}
+	defer autofetchUnlock(id)
+	ctx, cancel := context.WithTimeout(ctx, autofetchRunTimeout)
+	defer cancel()
+
+	var apiType, serviceURL, username, encryptedPw, dataEnv, tenantEnv, title string
+	var intervalH, failures int
 	var lastRunAt sql.NullString
 	err := s.DB.QueryRowContext(ctx,
-		`SELECT api_type, service_url, username, password, interval_h, last_run_at, data_env
+		`SELECT api_type, service_url, username, password, interval_h, last_run_at, data_env, env, title, consecutive_failures
 		 FROM autofetch_sources WHERE id = ? AND enabled = 1 AND password != ''`, id,
-	).Scan(&apiType, &serviceURL, &username, &encryptedPw, &intervalH, &lastRunAt, &dataEnv)
+	).Scan(&apiType, &serviceURL, &username, &encryptedPw, &intervalH, &lastRunAt, &dataEnv, &tenantEnv, &title, &failures)
 	if err != nil {
 		slog.Error("autofetch: source not found or disabled", "id", id, "error", err)
 		return
 	}
+	_, _ = s.DB.ExecContext(ctx, `UPDATE autofetch_sources SET last_attempt_at = CURRENT_TIMESTAMP WHERE id = ?`, id)
 
-	// Decrypt password
+	// fail records an attempt that must not advance the high-water mark.
+	// It never touches the stored credential: only the owner's explicit
+	// Pause does (HandleAPIAutofetchDisable). A streak of failures -- auth
+	// or otherwise -- is answered with backoff (autofetchBackoff) and a
+	// notification, not by purging a password someone will have to find again.
+	fail := func(status string, authFailure bool) {
+		failures++
+		if authFailure {
+			status = "auth " + status
+		}
+		slog.Error("autofetch: run failed", "id", id, "status", status, "consecutive", failures)
+		_, _ = s.DB.ExecContext(ctx,
+			`UPDATE autofetch_sources SET last_status = ?, consecutive_failures = ? WHERE id = ?`,
+			status, failures, id)
+		// Tell the tenant once per streak (and again if it persists), not every tick.
+		if failures == 1 || failures == autofetchBackoffAfter || failures%10 == 0 {
+			label := title
+			if label == "" {
+				label = extractParkName(serviceURL)
+			}
+			_, _ = s.DB.ExecContext(ctx,
+				`INSERT INTO notifications (park_id, notification_type, title, message, reference_id, env, created_at)
+				 VALUES ('', 'autofetch_failed', ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+				"Automated fetch failed: "+label, status, strconv.FormatInt(id, 10), tenantEnv)
+		}
+	}
+
 	password, err := decryptPassword(encryptedPw)
 	if err != nil {
-		slog.Error("autofetch: failed to decrypt credentials", "id", id, "error", err)
-		_, _ = s.DB.ExecContext(ctx,
-			`UPDATE autofetch_sources SET last_status = 'error: credential decryption failed' WHERE id = ?`, id)
+		fail("error: credential decryption failed", false)
+		return
+	}
+	if dataEnv == "" {
+		fail("error: source not migrated (no data env)", false)
 		return
 	}
 
-	// Calculate --since timestamp from last_run_at.
-	// If we have a previous run time, fetch only data since then (with 30min overlap for safety).
-	// This avoids refetching the full --days window on manual "Run Now".
-	var sinceArg string
+	// Window: from the high-water mark less the late-sync overlap. A source
+	// that never ran fetches --days (the backfill_since on add is a
+	// last_run_at, so it takes this path too).
+	//
+	// The overlap may only reach back as far as the ledger can vouch for:
+	// before migration 070 nothing was recorded, so a source with an empty
+	// ledger keeps the historical 30-minute overlap (exactly the old run) and
+	// widens to autofetchOverlap once the ledger covers it. Otherwise the
+	// first run after the deploy would re-import three days it already holds.
+	var hwm time.Time
 	if lastRunAt.Valid && lastRunAt.String != "" {
-		parsed, parseErr := time.Parse("2006-01-02 15:04:05", lastRunAt.String)
-		if parseErr != nil {
-			parsed, parseErr = time.Parse(time.RFC3339, lastRunAt.String)
-		}
-		if parseErr == nil {
-			// Overlap by 30 minutes to catch any edge-case data
-			sinceTime := parsed.Add(-30 * time.Minute)
-			sinceArg = sinceTime.UTC().Format(time.RFC3339)
+		if parsed, perr := parseSQLTime(lastRunAt.String); perr == nil {
+			hwm = parsed
 		}
 	}
+	if hwm.IsZero() {
+		hwm = time.Now().Add(-time.Duration(max(intervalH/24, 1)) * 24 * time.Hour)
+	}
+	since := hwm.Add(-autofetchOverlap)
+	var ledgerMin sql.NullString
+	_ = s.DB.QueryRowContext(ctx, `SELECT MIN(recorded_at) FROM autofetch_seen WHERE source_id = ?`, id).Scan(&ledgerMin)
+	if !ledgerMin.Valid {
+		since = hwm.Add(-autofetchLegacyOverlap)
+	} else if lm, err := time.Parse(time.RFC3339, ledgerMin.String); err == nil && lm.After(since) {
+		since = lm
+	}
+	sinceArg := since.UTC().Format(time.RFC3339)
 
-	slog.Info("autofetch: running", "id", id, "url", serviceURL, "since", sinceArg)
+	// A ledger that cannot be read degrades to the pre-070 behaviour (a
+	// possible double count inside the overlap), never to a lost fetch.
+	seenPath, seenN, err := s.writeAutofetchSeen(ctx, id, since)
+	if err != nil {
+		slog.Warn("autofetch: ledger unreadable, running without de-duplication", "id", id, "error", err)
+		seenPath = ""
+	} else {
+		defer os.Remove(seenPath)
+	}
+	outFile, err := os.CreateTemp("", "autofetch-*.gpx")
+	if err != nil {
+		fail(fmt.Sprintf("error: temp file: %v", err), false)
+		return
+	}
+	outPath := outFile.Name()
+	outFile.Close()
+	defer os.Remove(outPath)
+	newKeysPath := outPath + ".keys"
+	defer os.Remove(newKeysPath)
+
+	slog.Info("autofetch: running", "id", id, "url", serviceURL, "since", sinceArg, "seen_keys", seenN)
 
 	// The fetched tracks are filed under the source's OWN env (data_env), so
 	// visibility is an ACL the read path applies (PatrolEnvs) and not a
 	// question of which password the worker happened to use. The script writes
 	// the GPX to a file and the worker queues it directly -- no HTTP, no
 	// password in a URL.
-	if dataEnv == "" {
-		slog.Error("autofetch: source has no data env (migration unfinished)", "id", id)
-		_, _ = s.DB.ExecContext(ctx,
-			`UPDATE autofetch_sources SET last_status = 'error: source not migrated' WHERE id = ?`, id)
-		return
-	}
-	outFile, err := os.CreateTemp("", "autofetch-*.gpx")
-	if err != nil {
-		slog.Error("autofetch: temp file", "id", id, "error", err)
-		return
-	}
-	outPath := outFile.Name()
-	outFile.Close()
-	defer os.Remove(outPath)
-
 	args := []string{"scripts/fetch_earthranger_gpx.py",
 		"--url", serviceURL,
 		"--user", username,
 		"--out", outPath,
+		"--since", sinceArg,
+		"--new-keys", newKeysPath,
 	}
-	if sinceArg != "" {
-		args = append(args, "--since", sinceArg)
-	} else {
-		args = append(args, "--days", strconv.Itoa(max(intervalH/24, 1)))
+	if seenPath != "" {
+		args = append(args, "--seen", seenPath)
 	}
-
 	cmd := exec.CommandContext(ctx, "python3", args...)
 	// Pass password via environment variable — not command-line args
 	cmd.Env = append(os.Environ(), "EARTHRANGER_PASSWORD="+password)
+	output, runErr := cmd.CombinedOutput()
 
-	output, err := cmd.CombinedOutput()
-
-	status := "ok"
-	points := 0
-	if err != nil {
-		status = fmt.Sprintf("error: %v", err)
-		slog.Error("autofetch: script failed", "id", id, "error", err, "output", string(output))
-	} else {
-		// Parse JSON output from script
-		var result struct {
-			OK     bool   `json:"ok"`
-			Points int    `json:"points"`
-			Error  string `json:"error"`
+	res, perr := parseAutofetchOutput(output)
+	if perr != nil {
+		if ctx.Err() != nil {
+			fail(fmt.Sprintf("error: timed out after %s", autofetchRunTimeout), false)
+			return
 		}
-		if json.Unmarshal(output, &result) == nil {
-			points = result.Points
-			if !result.OK {
-				status = fmt.Sprintf("error: %s", result.Error)
-			}
+		fail(fmt.Sprintf("error: %v", perr), false)
+		return
+	}
+	if !res.OK {
+		msg := res.Error
+		if msg == "" && runErr != nil {
+			msg = runErr.Error()
 		}
-		if status == "ok" && points > 0 {
-			if err := s.queueAutofetchFile(ctx, outPath, dataEnv); err != nil {
-				status = fmt.Sprintf("error: queue upload: %v", err)
-			}
-		}
-		slog.Info("autofetch: completed", "id", id, "points", points, "status", status)
+		fail("error: "+msg, res.Auth)
+		return
 	}
 
+	status := "ok"
+	if res.Points > 0 {
+		if err := s.queueAutofetchFile(ctx, outPath, dataEnv); err != nil {
+			fail(fmt.Sprintf("error: queue upload: %v", err), false)
+			return
+		}
+		if n, err := s.recordAutofetchSeen(ctx, id, newKeysPath); err != nil {
+			// The GPX is queued; a ledger gap means the next run may re-offer
+			// these points and be told so by the file-hash check at worst.
+			slog.Warn("autofetch: ledger write incomplete", "id", id, "recorded", n, "error", err)
+		}
+	}
+	if res.Partial {
+		// Some subject fetches failed: keep what arrived, but do not move the
+		// high-water mark past a hole (invariant 1); the ledger makes the
+		// re-fetch free. A hole that persists is not retried forever, or the
+		// window would grow without bound: after autofetchPartialGiveUp
+		// consecutive partial runs the mark advances and the status says so.
+		failures++
+		if failures < autofetchPartialGiveUp {
+			status = fmt.Sprintf("partial: %d subject fetches failed; window will be retried (%d/%d)", res.Errors, failures, autofetchPartialGiveUp)
+			_, _ = s.DB.ExecContext(ctx,
+				`UPDATE autofetch_sources SET last_status = ?, last_points = ?, consecutive_failures = ? WHERE id = ?`,
+				status, res.Points, failures, id)
+			slog.Warn("autofetch: partial", "id", id, "points", res.Points, "errors", res.Errors, "streak", failures)
+			return
+		}
+		status = fmt.Sprintf("ok with gaps: %d subject fetches failed on %d consecutive runs; moved on", res.Errors, failures)
+		slog.Warn("autofetch: persistent partial, advancing", "id", id, "errors", res.Errors)
+	}
+	slog.Info("autofetch: completed", "id", id, "points", res.Points, "dropped_seen", res.Dropped, "subjects", res.Subjects)
 	_, _ = s.DB.ExecContext(ctx,
-		`UPDATE autofetch_sources SET last_run_at = CURRENT_TIMESTAMP, last_status = ?, last_points = ? WHERE id = ?`,
-		status, points, id)
+		`UPDATE autofetch_sources SET last_run_at = CURRENT_TIMESTAMP, last_status = ?, last_points = ?, consecutive_failures = 0 WHERE id = ?`,
+		status, res.Points, id)
 }
 
 // queueAutofetchFile files the script's GPX into upload_queue under env, with
-// the same hash de-duplication the HTTP endpoint applies.
+// the same size bound and hash de-duplication the HTTP endpoint applies.
 func (s *Server) queueAutofetchFile(ctx context.Context, path, env string) error {
+	st, err := os.Stat(path)
+	if err != nil {
+		return err
+	}
+	if st.Size() > maxUploadSize {
+		return fmt.Errorf("fetched GPX is %d MB, over the %d MB upload bound", st.Size()>>20, maxUploadSize>>20)
+	}
 	content, err := os.ReadFile(path)
 	if err != nil {
 		return err
@@ -1018,7 +1150,14 @@ func writeJSON(w http.ResponseWriter, code int, v interface{}) {
 
 // probeEarthRanger authenticates and returns discovered park names.
 func probeEarthRanger(serviceURL, username, password string) (string, error) {
-	client := &http.Client{Timeout: 30 * time.Second}
+	// The form carries the user's ER password. Never follow a redirect with
+	// it: a host that answers 307 -> http://<internal> would receive it.
+	client := &http.Client{
+		Timeout: 30 * time.Second,
+		CheckRedirect: func(*http.Request, []*http.Request) error {
+			return fmt.Errorf("service_url redirected; use the final https:// address")
+		},
+	}
 
 	// Try common client IDs
 	var token string
@@ -1034,6 +1173,9 @@ func probeEarthRanger(serviceURL, username, password string) (string, error) {
 			return "", fmt.Errorf("cannot reach %s: %w", serviceURL, err)
 		}
 		defer resp.Body.Close()
+		if resp.StatusCode/100 == 3 {
+			return "", fmt.Errorf("service_url redirected; use the final https:// address")
+		}
 		if resp.StatusCode == 200 {
 			var tok struct {
 				AccessToken string `json:"access_token"`

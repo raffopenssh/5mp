@@ -70,6 +70,32 @@ carried `RequestEnv`. What changed is only what `RequestEnv` *means*.
   (logged otherwise — invariant 1), then `rebuildAllEffortData`. The legacy
   `.autofetch_key` is only read for rows without the prefix. Backup of the
   touched tables: `backups/pre065_patrol_tables.sqlite3` (untracked).
+* **Ingestion is exactly-once and the high-water mark only moves on success**
+  (migration **070**, `srv/autofetch_ledger.go`). `effort_data` is additive,
+  so the old 30-minute fetch overlap was imported twice on every run (5.5% of
+  af12's track points were cross-upload duplicates on 2026-09-18; file-hash
+  de-dup cannot see it because the GPX carries the run's timestamp).
+  `autofetch_seen(source_id, key_hash, recorded_at)` is a bounded per-source
+  ledger (pruned at 30 d); the worker hands the script the keys in the window
+  (`--seen`), the script drops them and reports what it kept (`--new-keys`),
+  recorded after the GPX is durably queued. Key =
+  `sha256("<subject_id>|<recorded_at Z>")[:16]` on **both** sides —
+  `TestAutofetchKeyHashParity` pins it; `TestAutofetchLedgerDedupsOverlap`
+  runs the real script twice against a fake ER. With the ledger the window is
+  `last_run_at − 72 h` (late-syncing devices), but only as far back as the
+  ledger can vouch for: an empty ledger keeps the old 30 min, so the first run
+  after the deploy re-imports nothing. A ledger read error degrades to the
+  old behaviour, never to a lost fetch. `last_run_at` advances only on a
+  complete `ok`; scheduling uses `last_attempt_at`, and a failure streak
+  backs off (×2 per failure from the 3rd, cap 24 h) with an `autofetch_failed`
+  notification to the tenant — **the stored credential is never cleared by
+  the worker**, only by the owner's Pause. A `partial` run (a subject fetch
+  failed — the script no longer swallows these) holds the mark for 3 runs,
+  then advances and says "ok with gaps". One run per source at a time
+  (`autofetchRunning`; "Fetch now" → 409), 45 min timeout, script output
+  without a JSON summary is an error not "ok/0". `service_url` must be a
+  public https host (`autofetchHostAllowed`) and neither the probe nor the
+  script follows a redirect of the credential-bearing token POST.
 * Onboarding is *not* tenant-scoped — a park is global data. `onboard_park.py`
   now skips only `env='test'` instead of requiring `env='prod'`, or a
   non-default tenant's request would never be processed.
