@@ -165,6 +165,58 @@ rule), and `loadOthers()` puts them on `FRONT_SRC` beside the reference
 
 Tests: api `fire_season_bbox_*`.
 
+### Every park's patrols, pressure and early-burn ground (2026-09-18)
+
+The front's bbox rule, extended to the layers that were still one-area:
+
+* **Patrol isochrones + pressure** — `/api/patrol-isochrones?bbox=…&from&to`
+  (`patrolIsochronesBBox`, `srv/patrol_isochrone.go`): every *park* whose
+  grid intersects the bbox **and holds a patrol-day** in the window, each
+  the full single-area wire, clipped to the season `to` falls in,
+  `lines=all|15|30` thinning, `limit`/`truncated`/`exclude`. One
+  `track_points` scan serves them all: every front grid sits on the global
+  0.025° lattice (`patrolGridAligned`; `patrolRawVisit` is keyed
+  `floor(lon/res)`), so visits are bucketed per park in Go. `candidates`
+  counts the parks in the box so an empty `areas` reads "no patrols", not
+  "no parks" (invariant 1). **`visits` ship only with `visits=1`** — they
+  are ⅔ of the bytes and only the animator needs them (`pothers.visits`
+  marks an answer that can animate; a static answer never serves an
+  animation). Client: `pothers` / `pothersHist` in `fireseason.js`, the
+  reference thinned to the same zoom key (`thinFront` works on patrol
+  features too), pressure accumulators live **on the answer** (`j._prs`),
+  one per area × season.
+* **Pressure CPU budget** (`pressureAnimStep`): the per-frame cost that
+  scales with the viewport is re-contouring n parks × ladder × grid. The
+  pass is timed and the next one waits `2 × cost` of wall time, so on a slow
+  phone the rings step in coarser increments while the rest animates at
+  full rate; `force` (export frames) always cuts. Per answer: no new visits
+  since the last cut → the last features stand; grid off the padded view →
+  not re-cut (`gridNearView`). `marchingSquaresJS` scans only the touched
+  box (`_prs.box`, visits ± kernel + 1) and links segments by integer
+  **edge id**, not coordinate strings — 13 Tanzanian parks at peak went
+  from ~140 ms to ~40 ms a forced frame on the VM's headless Chrome.
+* **Early-burn ground** — `/api/fire-season?bbox=&early=1&summary=1`
+  (contours omitted) adds `early_ground` + `seasons` per area;
+  `entryAreas[area]` = one `CellField` per park (`fireseason-entry-<area>`,
+  placed before `FRONT_WAVE`), `entryStateAt(c, T, E)` takes the area's
+  answer, the strip count sums every field in view.
+* **Owned cells** (`ownCells` / `ownsCell`): grids are boundary + margin and
+  neighbours overlap, so a cell drawn by two fields was a brighter block
+  where nothing differed. A lattice cell belongs to the **smallest grid
+  that has a value there** (the point → area rule of `fireSeasonAreaAt`); a
+  smaller grid with no answer does not punch a hole.
+* **Speed across parks is wired but OFF** (`SPEED_OTHERS = false`):
+  `/api/fire-season-speed?bbox=` (`fireSeasonSpeedBBox`, legend once at the
+  top, no `values` per area) and `speedAreas[area]` fields work, but every
+  park's padded rectangle drawn as its own seamed block is a wall of orange
+  at z6, not a field — and 40 parks × 8 seasons is 2.9 MB gzipped. Needs a
+  rework of the rendering (one viewport-resolution composite raster, or a
+  different visual altogether) before it is switched on.
+* Legends say `Drawn for n areas in view` (+ how many the cap cut).
+
+Tests: api `patrol_isochrones_bbox_*`, `fire_season_speed_bbox`,
+`fire_season_bbox_early_summary`; ui `season_every_park_in_view`.
+
 ### Patrol follows the panel's pixels row (2026-09-17)
 
 "The patrol layer showed" — with the panel's patrol (pixels) row OFF, a

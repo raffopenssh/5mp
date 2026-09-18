@@ -230,6 +230,49 @@ const UI_TESTS = [
         ]
     },
 
+    // === SEASON: EVERY PARK IN VIEW — PATROL PRESSURE + EARLY-BURN GROUND ===
+    // Unfocused, the patrol/pressure and early-burn layers used to draw ONE
+    // area (the park under the view centre). Now every park in the box comes
+    // (server bbox mode); the sandbox's few test tracks sit where three park
+    // grids overlap (Kilombero / Nyerere / Selous), so its pressure rings
+    // must come for more than the reference, and each early-burn field is
+    // its own canvas layer. Owned cells: a lattice cell belongs to the
+    // smallest grid that has it, so no square is drawn twice.
+    {
+        name: 'season_every_park_in_view',
+        url: '&lat=-8.4&lng=36.2&z=7&from=2026-01-01&to=2026-09-16&season=entry,pressure&layers=none',
+        wait: 9000,
+        assertions: [
+            { type: 'fn', fn: () => {
+                if (window.HAS_PATROL === false) return true;   // a tenant without tracks has no pressure layer to test
+                const feats = map.getSource('fireseason-pressure-src')._data.features;
+                const areas = new Set(feats.map(f => f.properties.area || FireSeason.patrolMeta().area));
+                window.__everyParkProbe = { n: feats.length, areas: [...areas] };
+                return feats.length > 0 && areas.size >= 2 && feats.every(f => f.properties.kind === 'pressure' && f.properties.text === String(f.properties.level));
+            }, msg: 'Pressure rings for more than the reference park, every line labelled with its level' },
+            { type: 'fn', fn: () => {
+                const lyrs = map.getStyle().layers.map(l => l.id).filter(id => /^fireseason-entry-/.test(id));
+                const e = TEST.fireEntry();
+                return lyrs.length >= 2 && e.on && e.drawn && lyrs.every(id => map.getLayoutProperty(id, 'visibility') !== 'none');
+            }, msg: 'Early-burn ground: one canvas field per other park in view, visible with the reference' },
+            { type: 'fn', fn: () => {
+                // one cell, one owner: the same lattice cell is never on two fields
+                const seen = {}, dup = [];
+                map.getStyle().layers.map(l => l.id).filter(id => /^fireseason-entry/.test(id)).forEach(id => {
+                    const A = FireSeason.entryFieldFor ? FireSeason.entryFieldFor(id) : null; if (!A) return;
+                    const g = A.grid(), ox = Math.round(g.x0 / g.res), oy = Math.round(g.y0 / g.res);
+                    (A.sparse() || []).forEach(c => { const k = (oy + c.iy) + ',' + (ox + c.ix); if (seen[k]) dup.push(k); seen[k] = 1; });
+                });
+                return Object.keys(seen).length > 0 && dup.length === 0;
+            }, msg: 'Owned cells: no lattice cell is drawn by two fields' },
+            { type: 'fn', fn: () => {
+                MapLegend.fireSeasonMenu(document.querySelector('#stats-map .ml-chip.fs'));
+                const txt = document.querySelector('.mode-menu').textContent;
+                return /Drawn for \d+ areas in view/.test(txt);
+            }, msg: 'Legend says how many areas are drawn' },
+        ]
+    },
+
     // === ANIMATOR: EVERY SEASON OF THE WINDOW, ASHING OUT ===
     // A 2020–2026 window used to draw no front until the playhead reached the
     // season the slider ENDS in. Now every season the window touches is on
