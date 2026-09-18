@@ -212,13 +212,17 @@ func seasonSpeed(front []byte, nx, ny int, res, y0 float64) []float64 {
 func (s *Server) HandleAPIFireSeasonSpeed(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	area := strings.TrimSpace(q.Get("area"))
+	if area == "" && q.Get("bbox") != "" {
+		s.fireSeasonSpeedBBox(w, r)
+		return
+	}
 	if area == "" {
 		// No focus: the area whose grid holds the view centre, resolved by
 		// the same rule as /api/fire-season so both overlays name one area.
 		lon, e1 := strconv.ParseFloat(q.Get("lon"), 64)
 		lat, e2 := strconv.ParseFloat(q.Get("lat"), 64)
 		if e1 != nil || e2 != nil {
-			http.Error(w, `{"error":"area or lon,lat required"}`, http.StatusBadRequest)
+			http.Error(w, `{"error":"area, bbox or lon,lat required"}`, http.StatusBadRequest)
 			return
 		}
 		area = s.fireSeasonAreaAt(r, lon, lat)
@@ -244,14 +248,44 @@ func (s *Server) HandleAPIFireSeasonSpeed(w http.ResponseWriter, r *http.Request
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Cache-Control", "private, max-age=600")
+	from, to, at := q.Get("from"), q.Get("to"), q.Get("at")
+	out, err := s.speedAreaAnswer(r, area, q.Get("season"), from, to, at)
+	if err != nil {
+		internalError(w, "query failed", err)
+		return
+	}
+	speedCommon(out, from, to)
+	json.NewEncoder(w).Encode(out)
+}
 
-	// Which seasons: explicit `season=`; else every season overlapping the
-	// slider's window [from, to] (a window is a statement about time, and a
-	// cell's answer is the LAST front that reached it inside the window —
-	// fireseason.js picks per cell), else the one `at` falls in, else the
-	// latest. The primary season (top-level `season`/`values`/`stats`) is
-	// the latest overlapping one, the same rule as /api/fire-season, so
-	// the two overlays name one season.
+// speedCommon adds the wire's shared vocabulary (legend, levels, words):
+// top-level in the single-area answer, once beside `areas` in bbox mode.
+func speedCommon(out map[string]interface{}, from, to string) {
+	legend := make([]map[string]interface{}, 0, len(speedStops))
+	for _, st := range speedStops {
+		legend = append(legend, map[string]interface{}{"km_d": st.KmD, "color": rgbHex(st.Color)})
+	}
+	out["legend"] = legend
+	// byte b > 0 → level b-1 → km/day = km_d_min·(km_d_max/km_d_min)^(level/(n-1)); `stops` is the colour ramp
+	out["levels"] = map[string]interface{}{"n": speedLevels, "km_d_min": speedStops[0].KmD, "km_d_max": speedStops[len(speedStops)-1].KmD}
+	out["encoding"] = map[string]interface{}{"type": "uint8", "none": 0, "offset": 1, "order": "row-major, row 0 = south"}
+	out["arrival_encoding"] = map[string]interface{}{"type": "uint8", "none": 0, "day_of_season": "2*(b-1)", "step_days": 2}
+	out["window"] = map[string]interface{}{"from": from, "to": to}
+	out["words"] = "How fast the season front travels, km/day, from the gradient of its arrival-time surface " +
+		"(smoothed σ=2 cells). Descriptive, not a forecast."
+}
+
+// speedAreaAnswer is one area's speed field(s) — the object the single
+// path serves at the top level and the bbox path lists under `areas`.
+//
+// Which seasons: explicit `want`; else every season overlapping the
+// slider's window [from, to] (a window is a statement about time, and a
+// cell's answer is the LAST front that reached it inside the window —
+// fireseason.js picks per cell), else the one `at` falls in, else the
+// latest. The primary season (top-level `season`/`values`/`stats`) is the
+// latest overlapping one, the same rule as /api/fire-season, so the two
+// overlays name one season.
+func (s *Server) speedAreaAnswer(r *http.Request, area, want, from, to, at string) (map[string]interface{}, error) {
 	type seasonRow struct {
 		lbl, st, en string
 		complete    bool
@@ -262,8 +296,7 @@ func (s *Server) HandleAPIFireSeasonSpeed(w http.ResponseWriter, r *http.Request
 			SELECT season, season_start, season_end, complete FROM fire_season_front
 			WHERE area_id = ? ORDER BY season_start`, area)
 		if err != nil {
-			internalError(w, "query failed", err)
-			return
+			return nil, err
 		}
 		for rs.Next() {
 			var sr seasonRow
@@ -275,8 +308,6 @@ func (s *Server) HandleAPIFireSeasonSpeed(w http.ResponseWriter, r *http.Request
 		}
 		rs.Close()
 	}
-	want := q.Get("season")
-	from, to, at := q.Get("from"), q.Get("to"), q.Get("at")
 	if to == "" {
 		to = at
 	}
@@ -309,8 +340,7 @@ func (s *Server) HandleAPIFireSeasonSpeed(w http.ResponseWriter, r *http.Request
 		chosen = []seasonRow{pick}
 	}
 	if len(chosen) == 0 {
-		json.NewEncoder(w).Encode(map[string]interface{}{"area": area, "season": nil, "status": "not yet computed"})
-		return
+		return map[string]interface{}{"area": area, "season": nil, "status": "not yet computed"}, nil
 	}
 	// The primary season: the latest chosen one that HAS a front. A
 	// season a few weeks old carries a few hundred cells; its stats are
@@ -374,11 +404,9 @@ func (s *Server) HandleAPIFireSeasonSpeed(w http.ResponseWriter, r *http.Request
 		fields = append(fields, seasonField{row: sr, levels: levels, arr: arr, vals: vals})
 	}
 	if len(fields) == 0 {
-		json.NewEncoder(w).Encode(map[string]interface{}{"area": area, "season": chosen[len(chosen)-1].lbl, "status": "no front this season"})
-		return
+		return map[string]interface{}{"area": area, "season": chosen[len(chosen)-1].lbl, "status": "no front this season"}, nil
 	}
 	primary := fields[len(fields)-1]
-	season := primary.row.lbl
 	vals := primary.vals
 	pct := func(p float64) float64 {
 		if len(vals) == 0 {
@@ -386,12 +414,6 @@ func (s *Server) HandleAPIFireSeasonSpeed(w http.ResponseWriter, r *http.Request
 		}
 		i := int(p * float64(len(vals)-1))
 		return math.Round(vals[i]*10) / 10
-	}
-	legend := make([]map[string]interface{}, 0, len(speedStops))
-	for _, st := range speedStops {
-		legend = append(legend, map[string]interface{}{
-			"km_d": st.KmD, "color": rgbHex(st.Color),
-		})
 	}
 	seasonsOut := make([]map[string]interface{}, 0, len(fields))
 	for _, f := range fields {
@@ -402,31 +424,107 @@ func (s *Server) HandleAPIFireSeasonSpeed(w http.ResponseWriter, r *http.Request
 			"arrival": base64.StdEncoding.EncodeToString(f.arr),
 		})
 	}
-	levels := primary.levels
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"area":     area,
-		"season":   season,
-		"bbox":     []float64{x0, y0, x0 + res*float64(nx), y0 + res*float64(ny)},
-		"grid":     map[string]interface{}{"x0": x0, "y0": y0, "res": res, "nx": nx, "ny": ny},
-		"values":   base64.StdEncoding.EncodeToString(levels), // uint8 per cell, see above
-		"encoding": map[string]interface{}{"type": "uint8", "none": 0, "offset": 1, "order": "row-major, row 0 = south"},
+	return map[string]interface{}{
+		"area":   area,
+		"season": primary.row.lbl,
+		"status": "ok",
+		"bbox":   []float64{x0, y0, x0 + res*float64(nx), y0 + res*float64(ny)},
+		"grid":   map[string]interface{}{"x0": x0, "y0": y0, "res": res, "nx": nx, "ny": ny},
+		"values": base64.StdEncoding.EncodeToString(primary.levels), // uint8 per cell, see speedCommon.encoding
 		"stats": map[string]interface{}{
 			"cells": len(vals), "p10_km_d": pct(0.10), "median_km_d": pct(0.50), "p90_km_d": pct(0.90),
 			"smoothing_sigma_cells": 2, "cell_km": math.Round(res*111*10) / 10,
 		},
-		"legend": legend,
-		// byte b > 0 → level b-1 → km/day = km_d_min·(km_d_max/km_d_min)^(level/(n-1)); `stops` is the colour ramp
-		"levels": map[string]interface{}{"n": speedLevels, "km_d_min": speedStops[0].KmD, "km_d_max": speedStops[len(speedStops)-1].KmD},
 		// every season the window touches, oldest first; `arrival` is the
 		// front's day of season per cell (byte b > 0 → day 2·(b−1)), so a
 		// cell can be drawn the day the front reached it and the last season
 		// to reach a cell inside the window wins
-		"seasons":          seasonsOut,
-		"arrival_encoding": map[string]interface{}{"type": "uint8", "none": 0, "day_of_season": "2*(b-1)", "step_days": 2},
-		"window":           map[string]interface{}{"from": from, "to": to},
-		"words": "How fast the season front travels, km/day, from the gradient of its arrival-time surface " +
-			"(smoothed σ=2 cells). Descriptive, not a forecast.",
-	})
+		"seasons": seasonsOut,
+	}, nil
+}
+
+// fireSeasonSpeedBBox — GET /api/fire-season-speed?bbox=w,s,e,n[&from=&to=|&at=][&limit=][&exclude=]
+//
+// The front's bbox rule (fireSeasonBBox) for the speed field: every PARK
+// whose grid intersects the bbox, each with the seasons its window
+// touches, nearest the bbox centre first, `limit` + `truncated` (invariant
+// 8), `exclude` for the reference the caller already holds. Legend and
+// levels ride once at the top. A dense field is ~2 × nx·ny bytes per
+// season before gzip (mostly zeros: a 100×100 park gzips to a few KB), so
+// a continent at 30 areas × 6 seasons is a one-off few hundred KB, which
+// is why the client asks with a quantised bbox and a small-screen limit.
+func (s *Server) fireSeasonSpeedBBox(w http.ResponseWriter, r *http.Request) {
+	q := r.URL.Query()
+	parts := strings.Split(q.Get("bbox"), ",")
+	if len(parts) != 4 {
+		http.Error(w, `{"error":"bbox must be w,s,e,n"}`, http.StatusBadRequest)
+		return
+	}
+	var bb [4]float64
+	for i, p := range parts {
+		v, err := strconv.ParseFloat(strings.TrimSpace(p), 64)
+		if err != nil {
+			http.Error(w, `{"error":"bbox must be w,s,e,n"}`, http.StatusBadRequest)
+			return
+		}
+		bb[i] = v
+	}
+	limit := 60
+	if n, err := strconv.Atoi(q.Get("limit")); err == nil && n > 0 && n <= 200 {
+		limit = n
+	}
+	exclude := q.Get("exclude")
+	from, to, at := q.Get("from"), q.Get("to"), q.Get("at")
+	rs, err := s.DB.QueryContext(r.Context(), `
+		SELECT DISTINCT area_id, x0 + res * nx / 2.0, y0 + res * ny / 2.0
+		FROM fire_season_front
+		WHERE x0 <= ? AND x0 + res * nx >= ? AND y0 <= ? AND y0 + res * ny >= ?`, bb[2], bb[0], bb[3], bb[1])
+	if err != nil {
+		internalError(w, "query failed", err)
+		return
+	}
+	type cand struct {
+		id   string
+		dist float64
+	}
+	var cands []cand
+	cx, cy := (bb[0]+bb[2])/2, (bb[1]+bb[3])/2
+	seen := map[string]bool{}
+	for rs.Next() {
+		var id string
+		var gx, gy float64
+		if rs.Scan(&id, &gx, &gy) != nil || id == exclude || IsAOIID(id) || seen[id] {
+			continue
+		}
+		seen[id] = true
+		cands = append(cands, cand{id, math.Hypot(gx-cx, gy-cy)})
+	}
+	rs.Close()
+	sort.Slice(cands, func(i, j int) bool { return cands[i].dist < cands[j].dist })
+	total := len(cands)
+	if len(cands) > limit {
+		cands = cands[:limit]
+	}
+	areas := make([]map[string]interface{}, 0, len(cands))
+	for _, c := range cands {
+		a, err := s.speedAreaAnswer(r, c.id, "", from, to, at)
+		if err != nil {
+			internalError(w, "query failed", err)
+			return
+		}
+		if a["status"] != "ok" {
+			continue
+		}
+		delete(a, "values") // the primary season's field is seasons[last].values; not shipped twice
+		areas = append(areas, a)
+	}
+	out := map[string]interface{}{
+		"mode": "bbox", "areas": areas, "count": len(areas), "total": total, "truncated": total > len(cands),
+	}
+	speedCommon(out, from, to)
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Cache-Control", "private, max-age=600")
+	json.NewEncoder(w).Encode(out)
 }
 
 func rgbHex(c [3]uint8) string {
