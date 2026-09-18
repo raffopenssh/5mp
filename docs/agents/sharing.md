@@ -184,6 +184,26 @@ patrol tenant (`gpkgKeyFor`), or a scope-restricted export would be served the
 account's own cached file; and `visibilityFingerprint` already gives a guest its
 own response-cache slot keyed on slug, which is what makes the above safe.
 
+### A built file is a read of what went into it (2026-09-18 audit)
+
+`GET /api/geopackage` listed the *issuer's* exports to a guest — effort layers
+included, with working `download_url`s — while `/api/grid` correctly showed
+that same key nothing. The scope gated the pixels and not the file made of
+them. Now `gpkgCarriesPatrolSQL` (`effort = 1 AND cache_key NOT LIKE '%|np%'`)
+is one predicate read by both the list and `loadGeoPackageJob`, so a scope-less
+guest neither sees nor can fetch such a job (404, not 403). A guest's *own*
+export carries `|np` and stays visible to it. Pinned by
+`guest_scope_withholds_patrol_exports`.
+
+Found in the same pass, fixed the same day, not guest-specific: `from`/`to` in
+`/api/export/merged.kml` were interpolated into SQL and into the KML
+description unescaped (a `' OR '1'='1` executed and returned 200) — now
+`isoDateRe`-validated and bound; the rate limiter keyed on the *first*
+`X-Forwarded-For` hop, which the client writes — now the last; and the password
+gate had no limiter at all, so `?pwd=` could be guessed at line rate —
+`pwdGateRL` in `PasswordMiddleware` meters non-empty wrong attempts per IP
+(10 burst, 1/s).
+
 ## The date columns: WHEN a link is about
 
 A share URL always carried a time window, but in one of two ways that look
