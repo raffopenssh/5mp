@@ -462,7 +462,9 @@
         [PRS_LYR, PRS_LBL].forEach(function (id) { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', st.pressure ? 'visible' : 'none'); });
         [VAN_LYR, VAN_GAP_LYR, VAN_DIM_LYR, VAN_ARROW_LYR, VAN_HEAD_HALO, VAN_HEAD_LYR].forEach(function (id) { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', st.van ? 'visible' : 'none'); });
         if (speedField) speedField.setVisible(st.speed);
+        Object.keys(speedAreas).forEach(function (a) { speedAreas[a].field.setVisible(st.speed); });
         if (entryField) entryField.setVisible(st.entry);
+        Object.keys(entryAreas).forEach(function (a) { entryAreas[a].field.setVisible(st.entry); });
     }
     function setData(src, features) {
         var s = map && map.getSource(src);
@@ -855,10 +857,20 @@
         });
     }
     var patrolFeats = [];
+    function patrolOthersActive() { return patrolAnyOn() && !focusId(); }
     function applyPatrolData() {
-        var feats = patrolFeats;
+        var feats = patrolOthersActive() ? thinFront(patrolFeats, linesForZoom()) : patrolFeats;
         if (animT !== null && phist.periods) phist.periods.forEach(function (P) { feats = feats.concat(P.feats); });
+        if (pothers.feats.length) feats = feats.concat(pothers.feats);
+        if (animT !== null && pothersHist.periods.length) pothersHist.periods.forEach(function (P) { feats = feats.concat(P.feats); });
         setData(PAT_SRC, feats);
+    }
+    // The window-end pressure rings: the reference's and every other
+    // park's in view (what the map shows outside an animation).
+    function applyPressureStatic() {
+        var feats = pressureFeatures(patrol);
+        if (pothers.prsFeats.length) feats = feats.concat(pothers.prsFeats);
+        setData(PRS_SRC, feats);
     }
     function loadPatrol(force) {
         if (!patrolAnyOn() || !map) return Promise.resolve();
@@ -873,11 +885,124 @@
             if (pdataArea !== (patrol.area || '')) { pdata = {}; pdataArea = patrol.area || ''; phist.key = ''; phist.periods = null; }
             patrolFeats = patrolFeatures(j, '');
             applyPatrolData();
-            prs.acc = null; prs.src = null;   // new visits: the playhead field restarts
-            setData(PRS_SRC, pressureFeatures(j));
+            if (patrol) patrol._prs = null;   // new visits: the playhead field restarts
+            applyPressureStatic();
+            loadPatrolOthers(true);   // the reference changed: the neighbours' exclude follows it
             if (animT !== null) { loadPatrolHistory(); animAt(animT, true); }
             refreshStrip();
         }).catch(function () { inflight--; emit(); });
+    }
+
+    /* ── every patrolled park in view (no focus) ─────────────────────
+     * The front's rule (see `others`) for the rangers: the reference
+     * `patrol` is one area, and unfocused the map used to draw only it —
+     * Ruaha's isochrones with Nyerere's missing beside them. Server bbox
+     * mode (/api/patrol-isochrones?bbox=) answers for every park in the
+     * box that holds a patrol-day in the window, clipped to the season
+     * `to` falls in, thinned by zoom like the fronts; the visits (the
+     * animator's raw material, ~⅔ of the bytes) come only when an
+     * animation is on (`visits=1`), so the static picture is light. Scope,
+     * bbox quantisation and the small-screen limit are the front's. */
+    var pothers = { key: '', areas: {}, feats: [], prsFeats: [], loading: false, truncated: false, total: 0 };
+    var pothersHist = { key: '', periods: [], loading: false };
+    function pothersURL(bb, from, to, lines, visits) {
+        var u = '/api/patrol-isochrones?pwd=' + pwd() + '&bbox=' + bb.join(',') + '&lines=' + lines + '&limit=' + othersLimit() + '&clip=1';
+        if (from) u += '&from=' + from;
+        if (to) u += '&to=' + to;
+        if (visits) u += '&visits=1';
+        if (patrol && patrol.area) u += '&exclude=' + encodeURIComponent(patrol.area);
+        return u;
+    }
+    function pothersFeatures(j) {
+        var feats = [];
+        ((j && j.areas) || []).forEach(function (a) {
+            if (patrol && a.area === patrol.area) return;
+            var ff = patrolFeatures(a, '');
+            ff.forEach(function (f) { f.properties.area = a.area; });
+            feats = feats.concat(ff);
+        });
+        return feats;
+    }
+    function loadPatrolOthers(force) {
+        if (!map) return;
+        if (!patrolOthersActive()) {
+            if (pothers.feats.length || pothers.prsFeats.length || pothersHist.periods.length) {
+                pothers = { key: '', areas: {}, feats: [], prsFeats: [], loading: false, truncated: false, total: 0 };
+                pothersHist = { key: '', periods: [], loading: false };
+                applyPatrolData(); applyPressureStatic();
+            }
+            return;
+        }
+        var bb = othersBbox(), lines = linesForZoom(), d = dates(), visits = animT !== null;
+        var key = bb.join(',') + '|' + lines + '|' + (d.from || '') + '|' + (d.to || '') + '|' + (patrol && patrol.area || '');
+        // an answer WITH visits serves a static picture too; one without
+        // does not serve an animation
+        if (!force && key === pothers.key && (pothers.visits || !visits)) return;
+        pothers.key = key; pothers.loading = true; pothers.visits = visits;
+        fetch(pothersURL(bb, d.from, d.to, lines, visits)).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+            if (pothers.key !== key) return;   // a newer ask is out
+            pothers.loading = false;
+            pothers.areas = {};
+            var prsFeats = [];
+            ((j && j.areas) || []).forEach(function (a) {
+                if (patrol && a.area === patrol.area) return;
+                pothers.areas[a.area] = a;
+                prsFeats = prsFeats.concat(pressureFeatures(a).map(function (f) { f.properties.area = a.area; return f; }));
+            });
+            pothers.feats = pothersFeatures(j);
+            pothers.prsFeats = prsFeats;
+            pothers.truncated = !!(j && j.truncated);
+            pothers.total = (j && j.total) || 0;
+            applyPatrolData();
+            if (animT === null) applyPressureStatic();
+            if (animT !== null) { loadPatrolOthersHistory(); animAt(animT, true); }
+            refreshStrip();
+        }).catch(function () { if (pothers.key === key) pothers.loading = false; });
+    }
+    // The season list that names the window's seasons: the reference's,
+    // else the fire front's, else the first neighbour's (a view centre on
+    // open water still has parks in it).
+    function patrolSeasonList() {
+        if (patrol && patrol.seasons && patrol.seasons.length) return patrol.seasons;
+        if (front && front.seasons && front.seasons.length) return front.seasons;
+        for (var k in pothers.areas) if (pothers.areas[k].seasons) return pothers.areas[k].seasons;
+        return [];
+    }
+    /* The other parks' earlier seasons (animator only): one bbox request
+     * per earlier season of the window, `to` = that season's end (the
+     * server picks, per park, the season that day falls in and clips to
+     * it), deduped by area+season, visits included. */
+    function loadPatrolOthersHistory() {
+        if (!patrolOthersActive() || animT === null || pothers.loading) return;   // (called again when the current seasons land)
+        var bb = othersBbox(), lines = linesForZoom(), d = dates(), from = d.from || '', to = d.to || '';
+        var refLabel = patrol && patrol.season;
+        var want = windowSeasons(patrolSeasonList()).map(function (s) {
+            return { label: s.label, from: (from && from > s.start) ? from : s.start, to: (to && to < s.end) ? to : s.end };
+        }).filter(function (P) { return P.label !== refLabel && P.from <= P.to && (!patrol || !patrol.from || P.from < patrol.from); });
+        var key = bb.join(',') + '|' + lines + '|' + want.map(function (P) { return P.from + '_' + P.to; }).join(',') + '|' + Object.keys(pothers.areas).join(',');
+        if (key === pothersHist.key || pothersHist.loading) return;
+        pothersHist.key = key; pothersHist.loading = true;
+        var seen = {};
+        Object.keys(pothers.areas).forEach(function (a) { seen[a + '|' + pothers.areas[a].season] = true; });
+        Promise.all(want.map(function (P) {
+            return fetch(pothersURL(bb, P.from, P.to, lines, true)).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
+        })).then(function (answers) {
+            if (pothersHist.key !== key) return;
+            pothersHist.loading = false;
+            var periods = [];
+            answers.forEach(function (j) {
+                ((j && j.areas) || []).forEach(function (a) {
+                    if (patrol && a.area === patrol.area) return;
+                    var k = a.area + '|' + a.season; if (seen[k]) return; seen[k] = true;
+                    var ff = patrolFeatures(a, cmpYearMark(a.season));
+                    ff.forEach(function (f) { f.properties.area = a.area; });
+                    periods.push({ from: a.from, to: a.to, label: a.season, j: a, feats: ff });
+                });
+            });
+            pothersHist.periods = periods;
+            applyPatrolData();
+            if (animT !== null) animAt(animT, true);
+        });
     }
     /* The earlier patrol seasons of the window (animator only; see the
      * front's loadHistory). One request per season, each clipped to the
@@ -932,20 +1057,25 @@
      * end, rebuilt on the client at the playhead. Visits come day-sorted,
      * so a forward step only adds the days since the last frame; a scrub
      * backwards restarts from zero (11k visits × 81 kernel cells is under
-     * a millisecond). Contoured here with the same marching squares. */
-    var prs = { acc: null, vi: 0, day: -1, nx: 0, ny: 0, kern: null, r: 0, src: null };
+     * a millisecond). Contoured here with the same marching squares. The
+     * accumulator lives ON the answer (`j._prs`): one per area × season,
+     * since every park in view animates at once. */
     function pressureReset(j) {
-        var g = j.grid; prs.nx = g.nx; prs.ny = g.ny; prs.acc = new Float64Array(g.nx * g.ny); prs.vi = 0; prs.day = -1; prs.src = j;
-        var r = j.kernel_r || 4, sg = j.kernel_cells || 2, k = [];
+        var g = j.grid, r = j.kernel_r || 4, sg = j.kernel_cells || 2, k = [];
         for (var dy = -r; dy <= r; dy++) for (var dx = -r; dx <= r; dx++) k.push(Math.exp(-(dx * dx + dy * dy) / (2 * sg * sg)));
-        prs.kern = k; prs.r = r;
+        j._prs = { acc: new Float64Array(g.nx * g.ny), vi: 0, day: -1, kern: k, r: r, feats: null, featsVi: -1, box: [g.nx, g.ny, -1, -1] };
+        return j._prs;
     }
     function pressureFieldAt(j, dayIdx) {
         if (!j || !j.visits || !j.grid) return null;
-        if (!prs.acc || prs.src !== j || prs.nx !== j.grid.nx || prs.ny !== j.grid.ny || dayIdx < prs.day) pressureReset(j);
-        var vs = j.visits, nx = prs.nx, ny = prs.ny, r = prs.r, k = prs.kern, acc = prs.acc, W = 2 * r + 1;
+        var prs = j._prs;
+        if (!prs || dayIdx < prs.day) prs = pressureReset(j);
+        var vs = j.visits, nx = j.grid.nx, ny = j.grid.ny, r = prs.r, k = prs.kern, acc = prs.acc, W = 2 * r + 1, bx = prs.box;
         while (prs.vi < vs.length && vs[prs.vi][2] <= dayIdx) {
             var v = vs[prs.vi++], ix = v[0], iy = v[1], w = v[3];
+            // the touched box, one cell wider than the kernel so a contour can close
+            if (ix - r - 1 < bx[0]) bx[0] = ix - r - 1; if (iy - r - 1 < bx[1]) bx[1] = iy - r - 1;
+            if (ix + r + 1 > bx[2]) bx[2] = ix + r + 1; if (iy + r + 1 > bx[3]) bx[3] = iy + r + 1;
             for (var dy = -r; dy <= r; dy++) { var yy = iy + dy; if (yy < 0 || yy >= ny) continue;
                 for (var dx = -r; dx <= r; dx++) { var xx = ix + dx; if (xx < 0 || xx >= nx) continue;
                     acc[yy * nx + xx] += w * k[(dy + r) * W + dx + r]; } }
@@ -959,20 +1089,44 @@
         var dayIdx = Math.floor((t - Date.parse(j.from + 'T00:00:00Z')) / DAY_MS);
         if (dayIdx < 0) return [];
         var acc = pressureFieldAt(j, dayIdx); if (!acc) return [];
+        var prs = j._prs;
+        // Nothing landed since the last cut (the same visits, a later day):
+        // the rings have not moved, so the last features stand.
+        if (prs.feats && prs.featsVi === prs.vi) return prs.feats;
         var mx = 0; for (var i = 0; i < acc.length; i++) if (acc[i] > mx) mx = acc[i];
         var g = j.grid, feats = [], lv = PRESSURE_LADDER.filter(function (l) { return l <= mx; });
+        if (!lv.length) { prs.feats = feats; prs.featsVi = prs.vi; return feats; }
         // Colour by rank on the FULL window's ladder, so a line keeps its hue
         // as the season plays rather than re-tinting every time a new level
         // appears above it.
         var full = (j.pressure && j.pressure.levels && j.pressure.levels.length) ? j.pressure.levels : lv;
         lv.forEach(function (l) {
-            var lines = marchingSquaresJS(acc, g.nx, g.ny, g.x0, g.y0, g.res, l);
+            var lines = marchingSquaresJS(acc, g.nx, g.ny, g.x0, g.y0, g.res, l, prs.box);
             if (!lines.length) return;
             var ri = full.indexOf(l), tt = full.length > 1 ? Math.max(0, ri) / (full.length - 1) : 1;
             feats.push({ type: 'Feature', geometry: { type: 'MultiLineString', coordinates: lines },
-                properties: { level: l, label: true, text: String(l), t: tt, color: pressureColor(tt), kind: 'pressure', at: t, season: j.season || '' } });
+                properties: { level: l, label: true, text: String(l), t: tt, color: pressureColor(tt), kind: 'pressure', at: t, season: j.season || '', area: j.area || '' } });
         });
+        prs.feats = feats; prs.featsVi = prs.vi;
         return feats;
+    }
+    // Is this answer's grid anywhere near the view? A park two screens
+    // away is not re-contoured every frame (its rings come back the frame
+    // it is panned into).
+    function gridNearView(g) {
+        if (!g || !map) return true;
+        var b = map.getBounds(), w = b.getEast() - b.getWest(), h = b.getNorth() - b.getSouth();
+        return g.x0 <= b.getEast() + w * 0.3 && g.x0 + g.res * g.nx >= b.getWest() - w * 0.3 &&
+               g.y0 <= b.getNorth() + h * 0.3 && g.y0 + g.res * g.ny >= b.getSouth() - h * 0.3;
+    }
+    // Every patrol answer that can animate: the reference and its earlier
+    // seasons, every other park in view and theirs.
+    function pressurePeriods() {
+        var periods = (phist.periods || []).slice();
+        if (patrol && patrol.visits) periods.push({ from: patrol.from, to: patrol.to, j: patrol, label: patrol.season });
+        Object.keys(pothers.areas).forEach(function (a) { var j = pothers.areas[a]; if (j.visits) periods.push({ from: j.from, to: j.to, j: j, label: j.season }); });
+        pothersHist.periods.forEach(function (P) { if (P.j && P.j.visits) periods.push(P); });
+        return periods;
     }
     /* The pressure picture at playhead t over every season of the window.
      * Pressure is PER SEASON, never carried across: little in the rains,
@@ -983,9 +1137,8 @@
      * them (`at` = the day after it ended), which the age expressions in
      * animAt ash out; nothing for seasons still ahead. */
     function pressureAnimFeatures(t) {
-        var out = [], periods = (phist.periods || []).slice();
-        if (patrol && patrol.visits) periods.push({ from: patrol.from, to: patrol.to, j: patrol, label: patrol.season });
-        periods.forEach(function (P) {
+        var out = [];
+        pressurePeriods().forEach(function (P) {
             var j = P.j; if (!j || !j.visits || !j.from) return;
             var f0 = Date.parse(P.from + 'T00:00:00Z'), f1 = Date.parse(P.to + 'T00:00:00Z') + DAY_MS;
             if (t < f0) return;
@@ -999,26 +1152,54 @@
                 var keep = PRESSURE_LADDER.filter(function (l) { return l <= top; }).slice(-2);
                 pf.forEach(function (f) {
                     if (keep.indexOf(f.properties.level) < 0) return;
-                    out.push({ type: 'Feature', geometry: f.geometry, properties: Object.assign({}, f.properties, { at: f1, text: f.properties.text + ' ' + cmpYearMark(P.label), season: P.label || '' }) });
+                    out.push({ type: 'Feature', geometry: f.geometry, properties: Object.assign({}, f.properties, { at: f1, text: f.properties.text + ' ' + cmpYearMark(P.label), season: P.label || '', area: j.area || '' }) });
                 });
-            } else out = out.concat(pressureContoursFor(j, t));
+            } else if (gridNearView(j.grid)) out = out.concat(pressureContoursFor(j, t));
+            else if (j._prs && j._prs.feats) out = out.concat(j._prs.feats);   // off screen: the last cut stands
         });
         return out;
     }
+    /* Pressure under the playhead, within a CPU budget. Re-contouring
+     * every park in view every frame is the one cost that scales with the
+     * viewport (n parks × ladder × grid), and a phone at 12 repaints/s has
+     * ~80 ms a frame for everything. So the pass is timed, and the next one
+     * waits until the playhead has moved on by at least twice what the
+     * last one cost (a 40 ms cut → at most one every 80 ms of wall time):
+     * the rings then grow in slightly larger steps on a slow device rather
+     * than the whole animation stuttering. `force` (an export frame) always
+     * cuts. */
+    var prsWall = { at: 0, cost: 0 };
+    function pressureAnimStep(t, force) {
+        if (!(st.pressure && pressurePeriods().length)) return;
+        var now = performance.now();
+        if (!force && now - prsWall.at < prsWall.cost * 2) return;
+        var feats = pressureAnimFeatures(t);
+        prsWall.cost = performance.now() - now; prsWall.at = performance.now();
+        setData(PRS_SRC, feats);
+    }
     // Port of srv/patrol_isochrone.go marchingSquares (segments linked into
-    // polylines by shared endpoints, thinned to ~¼ cell).
-    function marchingSquaresJS(z, nx, ny, x0, y0, res, level) {
-        var segs = [];
+    // polylines by shared endpoints, thinned to ~¼ cell). Two things the Go
+    // one does not need, because this runs per frame on a phone for every
+    // park in view: `box` = [ix0, iy0, ix1, iy1] limits the scan to the
+    // cells the presence has touched (a patrol field is a few knots on a
+    // 30k-cell grid), and endpoints are keyed by the integer id of the cell
+    // EDGE they sit on, not by a string of their coordinates.
+    function marchingSquaresJS(z, nx, ny, x0, y0, res, level, box) {
+        var segs = [], keys = [];
+        var bx0 = 0, by0 = 0, bx1 = nx - 1, by1 = ny - 1;
+        if (box) { bx0 = Math.max(0, box[0]); by0 = Math.max(0, box[1]); bx1 = Math.min(nx - 1, box[2]); by1 = Math.min(ny - 1, box[3]); }
         function interp(ax, ay, az, bx, by, bz) { var t = (level - az) / (bz - az); t = t < 0 ? 0 : t > 1 ? 1 : t; return [ax + t * (bx - ax), ay + t * (by - ay)]; }
-        for (var iy = 0; iy < ny - 1; iy++) for (var ix = 0; ix < nx - 1; ix++) {
+        for (var iy = by0; iy < by1; iy++) for (var ix = bx0; ix < bx1; ix++) {
             var v0 = z[iy * nx + ix], v1 = z[iy * nx + ix + 1], v2 = z[(iy + 1) * nx + ix + 1], v3 = z[(iy + 1) * nx + ix];
             var idx = (v0 >= level ? 1 : 0) | (v1 >= level ? 2 : 0) | (v2 >= level ? 4 : 0) | (v3 >= level ? 8 : 0);
             if (idx === 0 || idx === 15) continue;
             var cx = [x0 + (ix + 0.5) * res, x0 + (ix + 1.5) * res, x0 + (ix + 1.5) * res, x0 + (ix + 0.5) * res];
             var cy = [y0 + (iy + 0.5) * res, y0 + (iy + 0.5) * res, y0 + (iy + 1.5) * res, y0 + (iy + 1.5) * res];
             var v = [v0, v1, v2, v3];
+            // edge ids: horizontal edge of cell (ix,iy) = 2·(iy·nx+ix), vertical = 2·(iy·nx+ix)+1
+            var ek = [2 * (iy * nx + ix), 2 * (iy * nx + ix + 1) + 1, 2 * ((iy + 1) * nx + ix), 2 * (iy * nx + ix) + 1];
             var edge = function (e) { var a = e, b = (e + 1) % 4; return interp(cx[a], cy[a], v[a], cx[b], cy[b], v[b]); };
-            var add = function (e1, e2) { segs.push([edge(e1), edge(e2)]); };
+            var add = function (e1, e2) { segs.push([edge(e1), edge(e2)]); keys.push([ek[e1], ek[e2]]); };
             switch (idx) {
                 case 1: case 14: add(3, 0); break;
                 case 2: case 13: add(0, 1); break;
@@ -1030,16 +1211,20 @@
             }
         }
         if (!segs.length) return [];
-        var key = function (p) { return p[0].toFixed(5) + ',' + p[1].toFixed(5); };
-        var ends = {};
-        segs.forEach(function (s, i) { (ends[key(s[0])] = ends[key(s[0])] || []).push(i); (ends[key(s[1])] = ends[key(s[1])] || []).push(i); });
+        var ends = new Map();
+        for (var si = 0; si < segs.length; si++) {
+            var k0 = keys[si][0], k1 = keys[si][1];
+            var l0 = ends.get(k0); if (!l0) ends.set(k0, l0 = []); l0.push(si);
+            var l1 = ends.get(k1); if (!l1) ends.set(k1, l1 = []); l1.push(si);
+        }
         var used = new Uint8Array(segs.length), out = [];
-        function take(p) { var l = ends[key(p)] || []; for (var q = 0; q < l.length; q++) { var i = l[q]; if (used[i]) continue; used[i] = 1; return key(segs[i][0]) === key(p) ? segs[i][1] : segs[i][0]; } return null; }
+        // take: the unused segment touching edge k, returning its far end (point + edge key)
+        function take(k) { var l = ends.get(k); if (!l) return null; for (var q = 0; q < l.length; q++) { var i = l[q]; if (used[i]) continue; used[i] = 1; return keys[i][0] === k ? [segs[i][1], keys[i][1]] : [segs[i][0], keys[i][0]]; } return null; }
         for (var i = 0; i < segs.length; i++) {
             if (used[i]) continue; used[i] = 1;
-            var line = [segs[i][0], segs[i][1]], np;
-            while ((np = take(line[line.length - 1]))) line.push(np);
-            while ((np = take(line[0]))) line.unshift(np);
+            var line = [segs[i][0], segs[i][1]], headK = keys[i][1], tailK = keys[i][0], np;
+            while ((np = take(headK))) { line.push(np[0]); headK = np[1]; }
+            while ((np = take(tailK))) { line.unshift(np[0]); tailK = np[1]; }
             if (line.length < 3) continue;
             var thin = [[r4(line[0][0]), r4(line[0][1])]], last = line[0];
             for (var k = 1; k < line.length; k++) {
@@ -1050,6 +1235,15 @@
         return out;
     }
     function r4(v) { return Math.round(v * 1e4) / 1e4; }
+    /* "Drawn for n parks in view": every park-in-view layer says how many it
+     * drew, and when the cap cut some (invariant 8) — a picture with a park
+     * missing must not read as that park having nothing. */
+    function othersNote(n, truncated, total) {
+        if (!n && !truncated) return '';
+        var h = '<div class="fs-ramp-how">Drawn for ' + (n + 1) + ' areas in view';
+        if (truncated) h += ' — ' + Math.max(0, total - n) + ' more not drawn at this zoom (zoom in)';
+        return h + '</div>';
+    }
     function pressureLegendHTML(opts) {
         opts = opts || {};
         var j = patrol || {}, pr = j.pressure || {};
@@ -1061,6 +1255,7 @@
                 ' \u00b7 most anywhere ' + esc(String(pr.max)) + (j.threshold ? ' \u00b7 the ' + esc(String(j.threshold)) + '-line is where the isochrones stop' : '') + '</div>';
         } else if (j.status && j.status !== 'ok') h += '<div class="fs-ramp-how">' + esc(j.status) + '</div>';
         else if (pr.max != null) h += '<div class="fs-ramp-how">Presence everywhere below 1 patrol-day (most ' + esc(String(pr.max)) + ')</div>';
+        h += othersNote(Object.keys(pothers.areas).length, pothers.truncated, pothers.total);
         h += '<div class="fs-ramp-how">Where the effort went, not when: a log ladder because presence piles up around stations. A patrol-day is a 2.5 km cell with a patrol in it on a day, weighted by how it moved (foot 1 \u00b7 vehicle 0.7 \u00b7 helicopter 0.4 \u00b7 fixed-wing 0.2), spread over ~5 km.</div>';
         h += '</div>';
         return h;
@@ -1105,6 +1300,7 @@
             var aw = patrolAssocWords(j);
             if (aw) h += '<div class="fs-ramp-how" style="color:#bbf7d0">' + aw + '</div>';
         }
+        h += othersNote(Object.keys(pothers.areas).length, pothers.truncated, pothers.total);
         h += '</div>';
         return h;
     }
@@ -1160,9 +1356,76 @@
     // b−1 on the server's log ramp) and coloured here from the SAME stops
     // the legend prints; a click reads the byte under the pointer back.
     var speedStops = null;
-    var speedSeasons = [];          // [{season, start(ms), end(ms), levels(u8), arrival(u8)}] oldest first
+    var speedSeasons = [];          // the REFERENCE area's [{season, start(ms), end(ms), levels(u8), arrival(u8)}] oldest first
     var speedUnion = null;          // u8 per cell: 1 where any season has a front (CellField's dense mask)
     var SPEED_FLARE_DAYS = 6, SPEED_BASE_A = 205;   // settled cells sit under the flare (255) so an arriving front reads as light
+    /* Every park in view (no focus) has its own field: `speedAreas[area]`
+     * = {j, field (a CellField of its own — one canvas per grid), seasons,
+     * union}. The reference is speedAreas[speed.area] as well, so one draw
+     * loop serves the picture; `speed`/`speedSeasons` keep naming the
+     * reference for the legend, the strip and the tip's "this area". */
+    var speedAreas = {};
+    function speedFieldFor(area) {
+        if (speedAreas[area] && speedAreas[area].field) return speedAreas[area].field;
+        var f = (area === (speed && speed.area) && speedField) ? speedField
+            : CellField.create(map, SPEED_LYR + '-' + area, { opacity: 0.65, beforeId: entryField ? entryField.id : undefined });
+        f.ensure(); f.setVisible(st.speed);
+        return f;
+    }
+    function speedSeasonsOf(j) {
+        var out = [], n = j.grid.nx * j.grid.ny, union = new Uint8Array(n);
+        (j.seasons || []).forEach(function (sn) {
+            var lv = CellField.b64u8(sn.values), ar = CellField.b64u8(sn.arrival);
+            if (lv.length !== n || ar.length !== n) return;
+            for (var i = 0; i < n; i++) if (lv[i]) union[i] = 1;
+            out.push({ season: sn.season, start: Date.parse(sn.season_start + 'T00:00:00Z'), end: Date.parse(sn.season_end + 'T00:00:00Z'), levels: lv, arrival: ar, cells: sn.cells, complete: sn.complete });
+        });
+        out.sort(function (a, b) { return a.start - b.start; });
+        return { seasons: out, union: union };
+    }
+    /* Grids overlap: every park's front grid is its boundary plus a margin,
+     * and two neighbours' margins cover the same ground twice — drawn twice
+     * at 0.65 opacity that is a brighter block where nothing is different.
+     * A lattice cell belongs to ONE area: the smallest grid that holds it
+     * (the point → area rule of /api/fire-season, fireSeasonAreaAt), so the
+     * picture is one field. `list` = [{grid, union, mask}]; each mask is
+     * rebuilt from its union with the cells another, smaller grid owns
+     * zeroed. Sparse fields pass a `keep(ix, iy)` test instead (ownsCell). */
+    function ownCells(list) {
+        list.forEach(function (A) {
+            var g = A.grid, n = g.nx * g.ny, m = A.mask = new Uint8Array(A.union);
+            list.forEach(function (B) {
+                if (B === A) return;
+                var h = B.grid, nb = h.nx * h.ny;
+                if (nb > n || (nb === n && B.area >= A.area)) return;   // B is not smaller: A keeps its cells there
+                // B's extent in A's cell indices (both on the 0.025° lattice);
+                // a cell goes to B only where B has an answer of its own — a
+                // smaller grid with no front there does not punch a hole
+                var dx = Math.round((h.x0 - g.x0) / g.res), dy = Math.round((h.y0 - g.y0) / g.res);
+                var ix0 = Math.max(0, dx), iy0 = Math.max(0, dy), ix1 = Math.min(g.nx, dx + h.nx), iy1 = Math.min(g.ny, dy + h.ny);
+                for (var iy = iy0; iy < iy1; iy++) for (var ix = ix0; ix < ix1; ix++) {
+                    if (B.union[(iy - dy) * h.nx + (ix - dx)]) m[iy * g.nx + ix] = 0;
+                }
+            });
+        });
+    }
+    // Sparse fields: `has(B, gx, gy)` says whether B has a cell on lattice
+    // cell (gx, gy) — the caller builds it once per B.
+    function ownsCell(list, A, ix, iy, has) {
+        var g = A.grid, n = g.nx * g.ny, gx = Math.round(g.x0 / g.res) + ix, gy = Math.round(g.y0 / g.res) + iy;
+        for (var k = 0; k < list.length; k++) {
+            var B = list[k]; if (B === A) continue;
+            var h = B.grid, nb = h.nx * h.ny;
+            if (nb > n || (nb === n && B.area >= A.area)) continue;
+            if (has(B, gx, gy)) return false;
+        }
+        return true;
+    }
+    function speedOwnCells() {
+        var list = Object.keys(speedAreas).map(function (a) { var A = speedAreas[a]; return { area: a, grid: A.j.grid, union: A.union, A: A }; });
+        ownCells(list);
+        list.forEach(function (L) { L.A.field.setDense(L.mask); L.A.field.invalidate(); });
+    }
     function speedRGB(kmd) {
         var lg = speedStops || [];
         if (!lg.length) return [245, 158, 11];
@@ -1191,12 +1454,13 @@
      * front arrived), flare 0..1, ash: bool, word} or null. The season is
      * the one T falls in (else the last that had begun); a cell that season
      * has not reached yet shows the previous season's answer as ash. */
-    function speedStateAt(i, T) {
-        if (!speedSeasons.length) return null;
+    function speedStateAt(i, T, list) {
+        list = list || speedSeasons;
+        if (!list.length) return null;
         var cur = -1;
-        for (var k = 0; k < speedSeasons.length; k++) if (speedSeasons[k].start <= T) cur = k;
+        for (var k = 0; k < list.length; k++) if (list[k].start <= T) cur = k;
         if (cur < 0) return null;
-        var sn = speedSeasons[cur], at = arrivalMs(sn, i);
+        var sn = list[cur], at = arrivalMs(sn, i);
         if (at != null && at <= T) {
             var age = (T - at) / DAY_MS;
             var flare = age < SPEED_FLARE_DAYS ? Math.exp(-age / (SPEED_FLARE_DAYS / 3)) : 0;
@@ -1224,22 +1488,19 @@
     // follows it so a one-pixel gutter stays one screen pixel wide
     function cellPx(grid) { return grid.res / 360 * 512 * Math.pow(2, map.getZoom()); }
     function cellScale(grid) { return Math.max(4, Math.min(8, Math.round(cellPx(grid)))); }
-    function drawSpeed(t) {
-        if (!speedField) return;
-        if (!speed || !speed.grid || !speedSeasons.length) { speedField.clear(); return; }
-        var T = t == null ? windowEndMs() : t;
-        if (T == null) T = Date.now();
-        speedRenderT = T;
-        var z = map.getZoom(), hi = z >= 8, S = hi ? cellScale(speed.grid) : 1;
-        var key = ['speed', speed.area, speedSeasons.map(function (x) { return x.season; }).join(','), S, Math.round(T / (DAY_MS / 2))].join('|');
-        ensureSpeedLUT();
+    function drawSpeedArea(A, T, z) {
+        var field = A.field, list = A.seasons;
+        if (!A.j || !A.j.grid || !list.length) { field.clear(); return; }
+        if (!gridNearView(A.j.grid)) return;   // off screen: drawn the frame it comes back (its key is stale)
+        var hi = z >= 8, S = hi ? cellScale(A.j.grid) : 1;
+        var key = ['speed', A.j.area, list.map(function (x) { return x.season; }).join(','), S, Math.round(T / (DAY_MS / 2))].join('|');
         var cur = -1;
-        for (var k = 0; k < speedSeasons.length; k++) if (speedSeasons[k].start <= T) cur = k;
-        if (cur < 0) { speedField.clear(); return; }
-        var sn = speedSeasons[cur];
+        for (var k = 0; k < list.length; k++) if (list[k].start <= T) cur = k;
+        if (cur < 0) { field.clear(); return; }
+        var sn = list[cur];
         var FL = SPEED_FLARE_DAYS, LUT = speedLUT;
         // the same rule as speedStateAt(), inlined: no object, no words
-        speedField.render(function (c) {
+        field.render(function (c) {
             var i = c.i, b = sn.arrival[i];
             if (b) {
                 var at = sn.start + 2 * (b - 1) * DAY_MS;
@@ -1255,42 +1516,125 @@
             return null;   // not reached this season: nothing (no ghost of last season — a clean field)
         }, { scale: S, gutter: hi ? 0.7 : false, key: key });
     }
+    function drawSpeed(t) {
+        if (!speedField) return;
+        var T = t == null ? windowEndMs() : t;
+        if (T == null) T = Date.now();
+        speedRenderT = T;
+        ensureSpeedLUT();
+        var z = map.getZoom(), any = false;
+        Object.keys(speedAreas).forEach(function (a) { any = true; drawSpeedArea(speedAreas[a], T, z); });
+        if (!any) speedField.clear();
+    }
     function setSpeedData(j) {
-        speedStops = (j && j.legend) || null;
+        speedStops = (j && j.legend) || speedStops;
         speedSeasons = [];
         speedUnion = null;
-        if (!j || !j.grid || !j.seasons || !j.seasons.length) return;
-        var n = j.grid.nx * j.grid.ny;
-        speedUnion = new Uint8Array(n);
-        j.seasons.forEach(function (sn) {
-            var lv = CellField.b64u8(sn.values), ar = CellField.b64u8(sn.arrival);
-            if (lv.length !== n || ar.length !== n) return;
-            for (var i = 0; i < n; i++) if (lv[i]) speedUnion[i] = 1;
-            speedSeasons.push({ season: sn.season, start: Date.parse(sn.season_start + 'T00:00:00Z'), end: Date.parse(sn.season_end + 'T00:00:00Z'), levels: lv, arrival: ar, cells: sn.cells, complete: sn.complete });
-        });
-        speedSeasons.sort(function (a, b) { return a.start - b.start; });
+        // the previous reference's field, if it is not one of the others, goes
+        var prev = Object.keys(speedAreas).filter(function (a) { return speedAreas[a].field === speedField; });
+        prev.forEach(function (a) { delete speedAreas[a]; });
+        if (!j || !j.grid || !j.seasons || !j.seasons.length) { speedField.clear(); return; }
+        var ss = speedSeasonsOf(j);
+        speedSeasons = ss.seasons; speedUnion = ss.union;
+        if (speedAreas[j.area] && speedAreas[j.area].field !== speedField) removeField(speedAreas[j.area].field);   // it was one of the others: the reference takes over
         speedField.setGrid(j.grid);
         speedField.setDense(speedUnion);
         speedField.invalidate();
+        speedAreas[j.area] = { j: j, field: speedField, seasons: speedSeasons, union: speedUnion };
+        speedOwnCells();
+    }
+
+    /* ── every park in view (no focus): the speed fields ─────────────
+     * Bbox mode of /api/fire-season-speed: one request, every park's
+     * seasons in the window (the animator's need) or the one the window
+     * ends in (`at`, the static picture — a dense field per season is the
+     * one payload here that does not thin with zoom, so the static ask is
+     * one season). Same scope, quantised bbox and small-screen limit as the
+     * fronts. Fields are kept per area across answers (a pan that keeps a
+     * park keeps its canvas), and dropped when the park leaves the box. */
+    var sothers = { key: '', loading: false, truncated: false, total: 0 };
+    // OFF pending a rework (2026-09-18): every park's padded grid drawn as
+    // its own rectangle is a wall of seamed orange blocks at z6, not a
+    // field (docs/agents/animator.md "Speed across parks"). The server
+    // side (bbox mode) and this loader stay so the rework can start from a
+    // working wire; flip the flag to see the current picture.
+    var SPEED_OTHERS = false;
+    function speedOthersActive() { return SPEED_OTHERS && st.speed && !focusId(); }
+    function sothersURL(bb) {
+        var d = dates(), u = '/api/fire-season-speed?pwd=' + pwd() + '&bbox=' + bb.join(',') + '&limit=' + othersLimit();
+        if (animT !== null && d.from && d.to) u += '&from=' + d.from + '&to=' + d.to;
+        else if (d.to) u += '&at=' + d.to;
+        if (speed && speed.area) u += '&exclude=' + encodeURIComponent(speed.area);
+        return u;
+    }
+    function removeField(f) {
+        f.clear();
+        if (map.getLayer(f.id)) map.removeLayer(f.id);
+        if (map.getSource(f.srcId)) map.removeSource(f.srcId);
+    }
+    function dropSpeedOthers(keep) {
+        Object.keys(speedAreas).forEach(function (a) {
+            var A = speedAreas[a];
+            if (A.field === speedField || (keep && keep[a])) return;
+            removeField(A.field);
+            delete speedAreas[a];
+        });
+    }
+    function loadSpeedOthers(force) {
+        if (!map || !speedField) return Promise.resolve();
+        if (!speedOthersActive()) {
+            if (sothers.key) { sothers = { key: '', loading: false, truncated: false, total: 0 }; dropSpeedOthers(null); speedOwnCells(); drawSpeed(animT !== null ? animT : null); }
+            return Promise.resolve();
+        }
+        var bb = othersBbox(), d = dates(), win = animT !== null;
+        var key = bb.join(',') + '|' + d.from + '@' + d.to + '|' + (speed && speed.area || '');
+        // the window's seasons serve a static picture too; one season does not serve an animation
+        if (!force && key === sothers.key && (sothers.win || !win)) return Promise.resolve();
+        sothers.key = key; sothers.loading = true; sothers.win = win;
+        return fetch(sothersURL(bb)).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+            if (sothers.key !== key) return;
+            sothers.loading = false;
+            if (!speedStops && j && j.legend) speedStops = j.legend;
+            if (j && j.levels && !(speed && speed.levels)) speed = Object.assign({}, speed || {}, { levels: j.levels, legend: j.legend });
+            var keep = {};
+            ((j && j.areas) || []).forEach(function (a) {
+                if (!a.grid || !a.seasons || !a.seasons.length || (speed && a.area === speed.area)) return;
+                keep[a.area] = true;
+                var ss = speedSeasonsOf(a), field = speedFieldFor(a.area);
+                field.setGrid(a.grid); field.setDense(ss.union); field.invalidate();
+                speedAreas[a.area] = { j: a, field: field, seasons: ss.seasons, union: ss.union };
+            });
+            dropSpeedOthers(keep);
+            speedOwnCells();
+            sothers.truncated = !!(j && j.truncated); sothers.total = (j && j.total) || 0;
+            drawSpeed(animT !== null ? animT : null);
+            refreshStrip();
+        }).catch(function () { if (sothers.key === key) sothers.loading = false; });
     }
     function speedAt(lng, lat) {
         if (!speedField || !speed || !speed.levels) return null;
-        var h = speedField.at(lng, lat);
-        if (!h) return null;   // no front here in any season loaded
         var T = speedRenderT == null ? windowEndMs() : speedRenderT;
-        var stt = speedStateAt(h.i, T == null ? Date.now() : T);
-        if (!stt) return null;
-        var lv = speed.levels, lvl = stt.level - 1;
-        var sn = null; speedSeasons.forEach(function (x) { if (x.season === stt.season) sn = x; });
-        return { kmd: speedOfByte(stt.level), level: lvl, season: stt.season, area: speed.area, state: stt,
-            arrived: sn ? arrivalMs(sn, h.i) : null, atMax: lvl === lv.n - 1, atMin: lvl === 0 };
+        if (T == null) T = Date.now();
+        var areas = Object.keys(speedAreas);
+        for (var k = 0; k < areas.length; k++) {
+            var A = speedAreas[areas[k]], h = A.field.at(lng, lat);
+            if (!h) continue;   // no front here in any season loaded
+            var stt = speedStateAt(h.i, T, A.seasons);
+            if (!stt) continue;
+            var lv = speed.levels, lvl = stt.level - 1;
+            var sn = null; A.seasons.forEach(function (x) { if (x.season === stt.season) sn = x; });
+            return { kmd: speedOfByte(stt.level), level: lvl, season: stt.season, area: A.j.area, stats: A.j.stats, state: stt,
+                arrived: sn ? arrivalMs(sn, h.i) : null, atMax: lvl === lv.n - 1, atMin: lvl === 0 };
+        }
+        return null;
     }
     function speedWords(kmd) {
         return kmd < 2 ? 'the season stalls here' : kmd < 6 ? 'the season walks here' : kmd < 15 ? 'the season runs here' : 'the season sweeps through here';
     }
     function speedTipHTML(h) {
         var v = h.atMax ? '\u2265 ' + Math.round(h.kmd) : h.atMin ? '\u2264 ' + h.kmd.toFixed(1) : (h.kmd < 10 ? h.kmd.toFixed(1) : Math.round(h.kmd));
-        var stt = speed && speed.stats ? '<div class="maptip-meta">this area: median ' + speed.stats.median_km_d + ' km/d (p10 ' + speed.stats.p10_km_d + ', p90 ' + speed.stats.p90_km_d + ')</div>' : '';
+        var sst = h.stats || (speed && speed.stats);
+        var stt = sst ? '<div class="maptip-meta">' + (h.area ? esc(h.area.replace(/_/g, ' ')) : 'this area') + ': median ' + sst.median_km_d + ' km/d (p10 ' + sst.p10_km_d + ', p90 ' + sst.p90_km_d + ')</div>' : '';
         var when = h.state ? '<div class="maptip-meta">' + (h.arrived != null ? 'Front reached this cell ' + fmtDate(new Date(h.arrived).toISOString().slice(0, 10)) + ' \u00b7 ' : '') + esc(h.state.word) + (h.state.ash ? ' (drawn as ash)' : '') + '</div>' : '';
         return '<div class="maptip-title">Season speed: <b>' + v + ' km/day</b></div>' +
             '<div class="maptip-body">' + speedWords(h.kmd) + ' \u2014 how fast the ' + esc(h.season || '') + ' front travelled, from the gradient of its arrival-time surface.</div>' + when + stt +
@@ -1325,6 +1669,7 @@
             speed = j || { status: 'request failed' };
             setSpeedData(j);
             drawSpeed(animT !== null ? animT : null);
+            loadSpeedOthers(true);   // the reference changed: the neighbours' exclude follows it
             ensureSpeedProbe();
             refreshStrip();
         }).catch(function () { inflight--; emit(); });
@@ -1340,7 +1685,8 @@
         var ticks = '<div class="fs-ramp-ticks">' + lg.map(function (st) { return '<span>' + st.km_d + '</span>'; }).join('') + '</div>';
         var stt = speed.stats ? '<div class="fs-ramp-width">' + esc(speed.season || '') + ': median ' + speed.stats.median_km_d + ' km/d (p10 ' + speed.stats.p10_km_d + ', p90 ' + speed.stats.p90_km_d + ') over ' + Number(speed.stats.cells || 0).toLocaleString() + ' cells the front has reached</div>' : '';
         var ash = '<div class="fs-ramp-width">A cell is drawn once the season\u2019s front has reached it (by the slider\u2019s end, or the playhead) and flares as it arrives</div>';
-        return '<div class="fs-legend' + (opts.cls ? ' ' + opts.cls : '') + '"><div class="fs-ramp-cap">Season speed, km/day (how fast the front travels; log scale)</div>' + bar + ticks + stt + ash + '</div>';
+        var nOthers = Object.keys(speedAreas).filter(function (a) { return speedAreas[a].field !== speedField; }).length;
+        return '<div class="fs-legend' + (opts.cls ? ' ' + opts.cls : '') + '"><div class="fs-ramp-cap">Season speed, km/day (how fast the front travels; log scale)</div>' + bar + ticks + stt + ash + othersNote(nOthers, sothers.truncated, sothers.total) + '</div>';
     }
 
 
@@ -1454,11 +1800,12 @@
         });
         return out;
     }
-    function entryDos(t) {
+    function entryDos(t, E) {
         // day of season for a playhead / window end against the season the
         // answer names; null when unknown
-        if (!entry || !entry.season_start) return null;
-        var t0 = Date.parse(entry.season_start + 'T00:00:00Z');
+        E = E || entry;
+        if (!E || !E.season_start) return null;
+        var t0 = Date.parse(E.season_start + 'T00:00:00Z');
         return isFinite(t0) ? (t - t0) / DAY_MS : null;
     }
     /* A cell's state at an ABSOLUTE instant: the season T falls in gives
@@ -1467,25 +1814,40 @@
      * each season's ignitions as they come, and last season's ash under
      * this season's dormant ground. Falls back to entryState on the
      * answer's own season when the list is missing. */
-    function entryStateAt(c, T) {
+    function entryStateAt(c, T, E) {
+        E = E || entry;
         if (T == null) return entryState(c, null);
-        var sn = seasonAt(entry && entry.seasons, T);
-        if (!sn) return entryState(c, entryDos(T));
+        var sn = seasonAt(E && E.seasons, T);
+        if (!sn) return entryState(c, entryDos(T, E));
         var dos = (T - sn.start) / DAY_MS;
-        var fb = c.fbs && sn.label in c.fbs ? c.fbs[sn.label] : (sn.label === entry.season ? c.fb : null);
+        var fb = c.fbs && sn.label in c.fbs ? c.fbs[sn.label] : (sn.label === (E && E.season) ? c.fb : null);
         return entryState(c, dos, fb);
     }
     var entryRenderT = null;   // the instant the squares are drawn for (window end, or the playhead)
-    function drawEntry(t) {
-        if (!entryField || !map) return;
-        var eg = entry && entry.early_ground;
-        if (!eg || eg.status !== 'ok' || !eg.cells) { entryField.clear(); return; }
-        var z = map.getZoom(), minShare = entryMinShare(z), hi = z >= 8, block = entryBlock(z), S = hi ? cellScale(eg.grid) : 1;
-        entryRenderT = t;
-        var key = ['entry', entry.area, entry.season, minShare, S, block, t == null ? 'x' : Math.round(t / (DAY_MS / 4))].join('|');
-        entryField.render(function (c) {
+    /* One field per park in view (no focus), like the speed map:
+     * `entryAreas[area]` = {j (the area's answer: season, season_start,
+     * seasons, early_ground), field, cells}; the reference is among them
+     * on `entryField`. */
+    var entryAreas = {};
+    function entryCells(eg) {
+        var fb = eg.first_burn || null, all = eg.first_burn_all || null;
+        return eg.cells.map(function (c, i) {
+            var fbs = null;
+            if (all) { fbs = {}; for (var k in all) if (all[k] && all[k][i] != null) fbs[k] = all[k][i]; }
+            return { ix: c[0], iy: c[1], early: c[2], held: c[3], share: c[3] ? c[2] / c[3] : 0, days: c[4], month: c[5],
+                uf: c[6], fb: fb ? fb[i] : null, fbs: fbs };
+        });
+    }
+    function drawEntryArea(A, t, z) {
+        var eg = A.j && A.j.early_ground, field = A.field;
+        if (!eg || eg.status !== 'ok' || !eg.cells) { field.clear(); return; }
+        if (!gridNearView(eg.grid)) return;   // off screen: drawn the frame it comes back
+        var minShare = entryMinShare(z), hi = z >= 8, block = entryBlock(z), S = hi ? cellScale(eg.grid) : 1;
+        var key = ['entry', A.j.area, A.j.season, minShare, S, block, t == null ? 'x' : Math.round(t / (DAY_MS / 4))].join('|');
+        var E = A.j;
+        field.render(function (c) {
             if (c.share < minShare) return null;
-            var rgb = entryRGB(c.share), stt = entryStateAt(c, t);
+            var rgb = entryRGB(c.share), stt = entryStateAt(c, t, E);
             var a = entryAlpha(c.share) * stt.mul;
             if (stt.flash > 0) {
                 var k = Math.pow(stt.flash, 0.7);   // hold the white a little, then cool
@@ -1494,6 +1856,13 @@
             if (stt.ash > 0) return [lerp(rgb[0], ENTRY_ASH[0], stt.ash * 0.8), lerp(rgb[1], ENTRY_ASH[1], stt.ash * 0.8), lerp(rgb[2], ENTRY_ASH[2], stt.ash * 0.8), 255 * a];
             return [rgb[0], rgb[1], rgb[2], 255 * a];
         }, { scale: S, gutter: hi ? 0 : false, block: block, key: key });
+    }
+    function drawEntry(t) {
+        if (!entryField || !map) return;
+        entryRenderT = t;
+        var z = map.getZoom(), any = false;
+        Object.keys(entryAreas).forEach(function (a) { any = true; drawEntryArea(entryAreas[a], t, z); });
+        if (!any) entryField.clear();
     }
     function windowEndMs() { var d = dates(); return d.to ? Date.parse(d.to + 'T00:00:00Z') : null; }
     function loadEntry(force) {
@@ -1506,37 +1875,101 @@
             entryKey = key;
             entry = j || { status: 'request failed' };
             var eg = entry.early_ground;
+            Object.keys(entryAreas).forEach(function (a) { if (entryAreas[a].field === entryField) delete entryAreas[a]; });
             if (eg && eg.status === 'ok' && eg.cells && entryField) {
-                var fb = eg.first_burn || null, all = eg.first_burn_all || null;
-                var cells = eg.cells.map(function (c, i) {
-                    var fbs = null;
-                    if (all) { fbs = {}; for (var k in all) if (all[k] && all[k][i] != null) fbs[k] = all[k][i]; }
-                    return { ix: c[0], iy: c[1], early: c[2], held: c[3], share: c[3] ? c[2] / c[3] : 0, days: c[4], month: c[5],
-                        uf: c[6], fb: fb ? fb[i] : null, fbs: fbs };
-                });
+                var cells = entryCells(eg);
+                if (entryAreas[entry.area] && entryAreas[entry.area].field !== entryField) { removeField(entryAreas[entry.area].field); delete entryAreas[entry.area]; }
                 entryField.setGrid(eg.grid);
                 entryField.setSparse(cells);
                 entryField.invalidate();
+                entryAreas[entry.area] = { j: entry, field: entryField, cells: cells };
                 drawEntry(animT !== null ? animT : windowEndMs());
             } else if (entryField) entryField.clear();
+            loadEntryOthers(true);
             ensureEntryProbe();
             refreshStrip();
         }).catch(function () { inflight--; emit(); });
     }
+    /* Every park in view (no focus): /api/fire-season?bbox=&early=1
+     * &summary=1 — the early-burn ground of each park at the season the
+     * window ends in, no contours (the front layer holds those). Sparse
+     * cells, ~5 KB a park gzipped. */
+    var eothers = { key: '', loading: false, truncated: false, total: 0 };
+    function entryOthersActive() { return st.entry && !focusId(); }
+    function eothersURL(bb) {
+        var d = dates(), u = '/api/fire-season?pwd=' + pwd() + '&bbox=' + bb.join(',') + '&early=1&summary=1&limit=' + othersLimit();
+        if (d.to) u += '&at=' + d.to;
+        if (entry && entry.area) u += '&exclude=' + encodeURIComponent(entry.area);
+        return u;
+    }
+    function entryOwnCells() {
+        var list = Object.keys(entryAreas).map(function (a) {
+            var A = entryAreas[a], g = A.j.early_ground.grid, ox = Math.round(g.x0 / g.res), oy = Math.round(g.y0 / g.res), set = {};
+            A.cells.forEach(function (c) { set[(oy + c.iy) * 1e6 + (ox + c.ix)] = 1; });   // lattice cell → present
+            return { area: a, grid: g, A: A, set: set };
+        });
+        function has(B, gx, gy) { return !!B.set[gy * 1e6 + gx]; }
+        list.forEach(function (L) {
+            var own = L.A.cells.filter(function (c) { return ownsCell(list, L, c.ix, c.iy, has); });
+            L.A.field.setSparse(own); L.A.field.invalidate();
+        });
+    }
+    function dropEntryOthers(keep) {
+        Object.keys(entryAreas).forEach(function (a) {
+            var A = entryAreas[a];
+            if (A.field === entryField || (keep && keep[a])) return;
+            removeField(A.field);
+            delete entryAreas[a];
+        });
+    }
+    function loadEntryOthers(force) {
+        if (!map || !entryField) return Promise.resolve();
+        if (!entryOthersActive()) {
+            if (eothers.key) { eothers = { key: '', loading: false, truncated: false, total: 0 }; dropEntryOthers(null); entryOwnCells(); drawEntry(animT !== null ? animT : windowEndMs()); }
+            return Promise.resolve();
+        }
+        var bb = othersBbox(), d = dates();
+        var key = bb.join(',') + '|@' + d.to + '|' + (entry && entry.area || '');
+        if (!force && key === eothers.key) return Promise.resolve();
+        eothers.key = key; eothers.loading = true;
+        return fetch(eothersURL(bb)).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+            if (eothers.key !== key) return;
+            eothers.loading = false;
+            var keep = {};
+            ((j && j.areas) || []).forEach(function (a) {
+                var eg = a.early_ground;
+                if (!eg || eg.status !== 'ok' || !eg.cells || (entry && a.area === entry.area)) return;
+                keep[a.area] = true;
+                var cells = entryCells(eg);
+                var A = entryAreas[a.area], field = A && A.field !== entryField ? A.field
+                    : CellField.create(map, ENTRY_LYR + '-' + a.area, { opacity: 1, minzoom: 4, beforeId: map.getLayer(FRONT_WAVE) ? FRONT_WAVE : undefined });
+                field.ensure(); field.setVisible(st.entry);
+                field.setGrid(eg.grid); field.setSparse(cells); field.invalidate();
+                // the area's answer in the reference's shape (season, season_start, seasons, early_ground)
+                entryAreas[a.area] = { j: { area: a.area, season: a.season, season_start: a.season_start, seasons: a.seasons, early_ground: eg }, field: field, cells: cells };
+            });
+            dropEntryOthers(keep);
+            entryOwnCells();
+            eothers.truncated = !!(j && j.truncated); eothers.total = (j && j.total) || 0;
+            drawEntry(animT !== null ? animT : windowEndMs());
+            refreshStrip();
+        }).catch(function () { if (eothers.key === key) eothers.loading = false; });
+    }
     var MONTHS = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-    function entryTipHTML(c) {
-        var eg = entry.early_ground;
+    function entryTipHTML(c, E) {
+        E = E || entry;
+        var eg = E.early_ground;
         var h = '<div class="maptip-title" style="color:' + entryHex(Math.max(0.55, c.share)) + '">Early-burn ground</div>';
         h += '<div class="maptip-body">Herds have entered here early in <b>' + c.early + ' of ' + c.held + ' seasons</b>' +
             (c.days > 0 ? ' \u00b7 typically ~<b>' + c.days + ' days</b> before the local front' : '') +
             (c.month ? ' \u00b7 usually <b>' + MONTHS[c.month] + '</b>' : '') + '</div>';
         if (c.fb != null && eg.first_burn_season) {
-            var d0 = Date.parse(entry.season_start + 'T00:00:00Z'), d = new Date(d0 + c.fb * DAY_MS).toISOString().slice(0, 10);
+            var d0 = Date.parse(E.season_start + 'T00:00:00Z'), d = new Date(d0 + c.fb * DAY_MS).toISOString().slice(0, 10);
             var before = (c.uf != null && c.uf >= 0) ? c.uf - c.fb : null;
             h += '<div class="maptip-meta">Season ' + esc(eg.first_burn_season) + ': first detection here ' + fmtDate(d) +
                 (before != null ? (before > 0 ? ' \u2014 ' + Math.round(before) + ' d before the usual front' : ' \u2014 ' + Math.round(-before) + ' d after the usual front') : '') + '</div>';
         }
-        var stw = entryStateAt(c, entryRenderT).word;
+        var stw = entryStateAt(c, entryRenderT, E).word;
         if (stw) h += '<div class="maptip-meta">At the playhead: ' + esc(stw) + '</div>';
         h += '<div class="maptip-dim">Rule: first burn of the season \u2265 ' + eg.ahead_days + ' d ahead of the front in \u2265 ' + Math.round(eg.min_share * 100) +
             ' % of seasons (at least ' + eg.min_early + '); ' + eg.count.toLocaleString() + ' cells over ' + eg.seasons_held + ' seasons, ~' +
@@ -1553,9 +1986,13 @@
             priority: -5, tabLabel: 'Early-burn ground', tabColor: entryHex(0.7),
             probe: function (e) {
                 if (!st.entry || !entryField || !e || !e.lngLat) return null;
-                var c = entryField.at(e.lngLat.lng, e.lngLat.lat);
-                if (!c || c.share < entryMinShare(map.getZoom())) return null;
-                return { html: entryTipHTML(c), properties: { early: c.early, held: c.held, days_ahead: c.days, month: c.month }, dist: 0 };
+                var areas = Object.keys(entryAreas), minShare = entryMinShare(map.getZoom());
+                for (var k = 0; k < areas.length; k++) {
+                    var A = entryAreas[areas[k]], c = A.field.at(e.lngLat.lng, e.lngLat.lat);
+                    if (!c || c.share < minShare) continue;
+                    return { html: entryTipHTML(c, A.j), properties: { early: c.early, held: c.held, days_ahead: c.days, month: c.month, area: A.j.area }, dist: 0 };
+                }
+                return null;
             }
         });
         entryProbeOn = true;
@@ -1575,7 +2012,8 @@
         } else if (eg && eg.status) {
             line = '<div class="fs-ramp-width">' + esc(eg.reason || eg.status) + '</div>';
         }
-        return '<div class="fs-legend' + (opts.cls ? ' ' + opts.cls : '') + '">' + cap + line + '</div>';
+        var nOthers = Object.keys(entryAreas).filter(function (a) { return entryAreas[a].field !== entryField; }).length;
+        return '<div class="fs-legend' + (opts.cls ? ' ' + opts.cls : '') + '">' + cap + line + othersNote(nOthers, eothers.truncated, eothers.total) + '</div>';
     }
     // The graded swatch (the rule's floor, midway, 70 %+), sampled from the
     // same stops the squares draw — the panel cannot say one ramp while the
@@ -1602,10 +2040,16 @@
     // The strip's count: cells / km² of early-burn ground in the viewport
     // (the same cells the squares draw; the thinning band is honoured).
     function entryInViewCount() {
-        if (!entryField || !map || !entry || !entry.early_ground || entry.early_ground.status !== 'ok') return null;
-        var b = map.getBounds(), minShare = entryMinShare(map.getZoom());
-        var cells = entryField.cellsIn([b.getWest(), b.getSouth(), b.getEast(), b.getNorth()]).filter(function (c) { return c.share >= minShare; });
-        return { cells: cells.length, km2: Math.round(cells.length * entryField.cellKm2()), total: entry.early_ground.count, seasons: entry.early_ground.seasons_held };
+        if (!entryField || !map) return null;
+        var areas = Object.keys(entryAreas).filter(function (a) { var eg = entryAreas[a].j.early_ground; return eg && eg.status === 'ok'; });
+        if (!areas.length) return null;
+        var b = map.getBounds(), bb = [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()], minShare = entryMinShare(map.getZoom());
+        var n = 0, km2 = 0, total = 0, seasons = entry && entry.early_ground ? entry.early_ground.seasons_held : null;
+        areas.forEach(function (a) {
+            var A = entryAreas[a], cells = A.field.cellsIn(bb).filter(function (c) { return c.share >= minShare; });
+            n += cells.length; km2 += cells.length * A.field.cellKm2(); total += A.j.early_ground.count || 0;
+        });
+        return { cells: n, km2: Math.round(km2), total: total, seasons: seasons, areas: areas.length };
     }
 
     /* ── vanguard ───────────────────────────────────────────────────────── */
@@ -1742,9 +2186,9 @@
         if (!anyOn()) return;
         clearTimeout(moveTimer);
         moveTimer = setTimeout(function () {
-            loadFront(false); loadOthers(false); loadVan(false); loadPatrol(false);
-            loadSpeed(false).then(function () { if (st.speed && animT === null) drawSpeed(null); });   // zoom band may have changed
-            loadEntry(false).then(function () { if (st.entry && animT === null) drawEntry(windowEndMs()); });
+            loadFront(false); loadOthers(false); loadVan(false); loadPatrol(false); loadPatrolOthers(false);
+            loadSpeed(false).then(function () { loadSpeedOthers(false); if (st.speed && animT === null) drawSpeed(null); });   // zoom band may have changed
+            loadEntry(false).then(function () { loadEntryOthers(false); if (st.entry && animT === null) drawEntry(windowEndMs()); });
             if (st.entry) refreshStrip();   // the in-view count
         }, 350);
     }
@@ -1752,8 +2196,8 @@
         if (st.van) { vanKey = ''; loadVan(true); }
         if (st.front) loadFront(false);   // the front follows the window
         if (patrolAnyOn()) loadPatrol(false);  // presence accumulates from the window's start
-        if (st.speed) loadSpeed(false).then(function () { if (st.speed && animT === null) drawSpeed(null); });   // the seasons it touches, drawn at its end
-        if (st.entry) loadEntry(false).then(function () { if (st.entry && animT === null) drawEntry(windowEndMs()); });   // and the fade follows the window's end
+        if (st.speed) loadSpeed(false).then(function () { loadSpeedOthers(false); if (st.speed && animT === null) drawSpeed(null); });   // the seasons it touches, drawn at its end
+        if (st.entry) loadEntry(false).then(function () { loadEntryOthers(false); if (st.entry && animT === null) drawEntry(windowEndMs()); });   // and the fade follows the window's end
     }
     function onFocus() { if (anyOn()) { frontKey = ''; speedKey = ''; entryKey = ''; patrolKey = ''; loadFront(true); loadVan(true); loadSpeed(true); loadEntry(true); loadPatrol(true); } }
 
@@ -1860,7 +2304,7 @@
         // Pressure follows the playhead: the field is rebuilt from the
         // visits up to that day and re-contoured, so the rings grow as the
         // effort lands. Back to the server's window-end lines on teardown.
-        if (!animating && st.pressure && patrol) setData(PRS_SRC, pressureFeatures(patrol));
+        if (!animating && st.pressure) applyPressureStatic();
         if (t == null) {
             clearTimeout(animTrail);
             if (animMeta) { animMeta = null; emit(); }
@@ -1912,7 +2356,7 @@
             // Every season the window touches goes on the sources (the
             // earlier ones fetched once), so the playhead meets each year's
             // front at its own dates rather than waiting for the last one.
-            loadHistory(); loadPatrolHistory(); loadOthersHistory();
+            loadHistory(); loadPatrolHistory(); loadOthersHistory(); loadPatrolOthers(false); loadPatrolOthersHistory(); loadSpeedOthers(false);
             applyFrontData(); applyPatrolData();
         }
         // The ground under the animated fires: full weight until the usual
@@ -1920,7 +2364,7 @@
         // four days when this season's first detection lands in it.
         if (st.entry) drawEntry(t);
         if (st.speed) drawSpeed(t);
-        if (st.pressure && patrol && patrol.visits) setData(PRS_SRC, pressureAnimFeatures(t));
+        pressureAnimStep(t, force);
         var ageD = ['/', ['-', t, ['get', 't']], DAY_MS];                    // days since the season reached this line
         var reached = ['<=', ['get', 't'], t];
         map.setFilter(FRONT_LYR, ashLineFilter(t));
@@ -1984,6 +2428,8 @@
         speedOn: function () { return st.speed; },
         speedMeta: function () { return speed; },
         entryOn: function () { return st.entry; },
+        // test hook: the CellField behind an entry layer id (reference or another park's)
+        entryFieldFor: function (layerId) { var hit = null; Object.keys(entryAreas).forEach(function (a) { if (entryAreas[a].field.id === layerId) hit = entryAreas[a].field; }); return hit; },
         entryMeta: function () { return entry && entry.early_ground ? Object.assign({ area: entry.area, season: entry.season, season_start: entry.season_start }, entry.early_ground) : (entry || null); },
         entryInView: entryInViewCount,
         entryLegendHTML: entryLegendHTML,
@@ -2017,13 +2463,13 @@
             st.speed = !!want;
             if (!map) return;
             ensureLayers();
-            if (st.speed) loadSpeed(true); else { if (speedField) speedField.clear(); refreshStrip(); }
+            if (st.speed) loadSpeed(true); else { if (speedField) speedField.clear(); loadSpeedOthers(false); refreshStrip(); }
         },
         setEntry: function (want) {
             st.entry = !!want;
             if (!map) return;
             ensureLayers();
-            if (st.entry) loadEntry(true); else { if (entryField) entryField.clear(); refreshStrip(); }
+            if (st.entry) loadEntry(true); else { if (entryField) entryField.clear(); loadEntryOthers(false); refreshStrip(); }
         },
         patrolOn: function () { return st.patrol; },
         patrolMeta: function () { return patrol; },
@@ -2034,7 +2480,7 @@
             st.patrol = !!want && patrolAllowed();
             if (!map) return;
             ensureLayers(); applyVisibility();
-            if (st.patrol) loadPatrol(patrolKey === ''); else if (!st.pressure) { setData(PAT_SRC, []); setData(PRS_SRC, []); patrol = null; patrolKey = ''; refreshStrip(); } else refreshStrip();
+            if (st.patrol) loadPatrol(patrolKey === ''); else if (!st.pressure) { patrol = null; patrolKey = ''; patrolFeats = []; loadPatrolOthers(false); setData(PAT_SRC, []); setData(PRS_SRC, []); refreshStrip(); } else refreshStrip();
         },
         pressureOn: function () { return st.pressure; },
         pressureLegendHTML: pressureLegendHTML,
@@ -2042,7 +2488,7 @@
             st.pressure = !!want && patrolAllowed();
             if (!map) return;
             ensureLayers(); applyVisibility();
-            if (st.pressure) loadPatrol(patrolKey === ''); else if (!st.patrol) { setData(PAT_SRC, []); setData(PRS_SRC, []); patrol = null; patrolKey = ''; refreshStrip(); } else refreshStrip();
+            if (st.pressure) loadPatrol(patrolKey === ''); else if (!st.patrol) { patrol = null; patrolKey = ''; patrolFeats = []; loadPatrolOthers(false); setData(PAT_SRC, []); setData(PRS_SRC, []); refreshStrip(); } else refreshStrip();
         },
         fireOn: fireOn, patrolAnyOn: patrolAnyOn,
         patrolsOff: function () { this.setPatrol(false); this.setPressure(false); },
