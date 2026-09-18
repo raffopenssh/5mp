@@ -1043,6 +1043,30 @@ if [[ -n "$CLIENT_PWD" ]]; then
         ERRORS+=("explicit patrol scope not honoured")
     fi
 
+    # A built file is a read of whatever went into it. Before 2026-09-18 a
+    # scope-less guest was offered the ISSUER's whole export list -- effort
+    # layers included -- with working download_urls, while the same key was
+    # correctly denied the pixels on the map. List and by-id must agree.
+    printf "%-50s" "guest_scope_withholds_patrol_exports"
+    own_eff=$(curl -s -m 30 "${BASE_URL}/api/geopackage?pwd=${CLIENT_PWD}" \
+        | jq -r '[.exports[] | select(.effort==true and .state=="ready")] | length')
+    own_id=$(curl -s -m 30 "${BASE_URL}/api/geopackage?pwd=${CLIENT_PWD}" \
+        | jq -r '[.exports[] | select(.effort==true and .state=="ready")][0].id // empty')
+    g_eff=$(curl -s -m 30 -b "$JAR2" "${BASE_URL}/api/geopackage" \
+        | jq -r '[.exports[] | select(.effort==true)] | length')
+    if [[ -z "$own_id" ]]; then
+        yellow "skip (no ready effort export to withhold)"; PASSED=$((PASSED + 1))
+    else
+        g_dl=$(curl -s -m 30 -o /dev/null -w "%{http_code}" -b "$JAR2" "${BASE_URL}/api/geopackage/${own_id}/download")
+        o_dl=$(curl -s -m 30 -o /dev/null -w "%{http_code}" -r 0-0 "${BASE_URL}/api/geopackage/${own_id}/download?pwd=${CLIENT_PWD}")
+        if [[ "$g_eff" -eq 0 && "$g_dl" == "404" && "$o_dl" != "404" ]]; then
+            green "✓ (owner lists $own_eff, guest lists $g_eff, guest download $g_dl, owner $o_dl)"; PASSED=$((PASSED + 1))
+        else
+            red "FAIL (owner $own_eff, guest list $g_eff, guest dl $g_dl, owner dl $o_dl)"; FAILED=$((FAILED + 1))
+            ERRORS+=("scope-less guest can list/download patrol-bearing exports")
+        fi
+    fi
+
     printf "%-50s" "guest_link_expires_and_is_revocable"
     expjson=$(curl -s -m 30 -X POST "${BASE_URL}/api/shortlink?pwd=${CLIENT_PWD}" \
         -H 'Content-Type: application/json' -d '{"url":"/?t=exp","guest":true,"days":7}')

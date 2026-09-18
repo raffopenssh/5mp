@@ -784,6 +784,13 @@ func (s *Server) HandleAPIGeoPackageList(w http.ResponseWriter, r *http.Request)
 		q += " AND area_id = ?"
 		args = append(args, area)
 	}
+	// A guest borrows the issuer's principal, so without this it was offered
+	// every export the account had built -- patrol layers included -- with a
+	// working download_url, while the map correctly showed it none. Same
+	// predicate as loadGeoPackageJob.
+	if !GuestHasScope(r, ScopePatrol) {
+		q += " AND NOT (" + gpkgCarriesPatrolSQL + ")"
+	}
 	q += " ORDER BY created_at DESC LIMIT 50"
 	rows, err := s.DB.Query(q, args...)
 	if err != nil {
@@ -818,8 +825,25 @@ func (s *Server) loadGeoPackageJob(w http.ResponseWriter, r *http.Request) (*Geo
 			return nil, "", false
 		}
 	}
+	// A file with patrol layers is a read of patrol data. A guest whose key
+	// does not carry the scope gets 404, exactly as it would for an AOI it
+	// cannot see -- the id must not confirm the export exists.
+	if !GuestHasScope(r, ScopePatrol) {
+		var n int
+		_ = s.DB.QueryRow(`SELECT COUNT(*) FROM geopackage_jobs WHERE id = ? AND `+gpkgCarriesPatrolSQL, id).Scan(&n)
+		if n > 0 {
+			http.NotFound(w, r)
+			return nil, "", false
+		}
+	}
 	return j, path, true
 }
+
+// gpkgCarriesPatrolSQL is true of a job whose file holds patrol layers: effort
+// was asked for AND the key does not carry the `|np` marker gpkgKeyFor adds
+// when the builder's patrol tenant was restricted (a guest's own export). One
+// predicate, read by the list and the by-id loader, so the two cannot drift.
+const gpkgCarriesPatrolSQL = `(effort = 1 AND COALESCE(cache_key,'') NOT LIKE '%|np%')`
 
 // HandleAPIGeoPackageDownload — GET /api/geopackage/{id}/download.
 //

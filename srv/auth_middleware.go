@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"time"
 )
 
 // validPasswords are loaded from the ACCESS_PASSWORDS env var (comma-separated),
@@ -203,10 +204,23 @@ func (s *Server) PasswordMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
+		// A WRONG password is the one event worth metering. The gate had no
+		// limiter at all (only /login and /register did), so the shared alpha
+		// password could be guessed at line rate through `?pwd=`. Only a
+		// non-empty, invalid attempt spends a token: a fresh visit or a
+		// scrubbed URL is not a guess. 10 burst, then one attempt a second.
+		if r.URL.Query().Get("pwd") != "" && !pwdGateRL.allow(extractIP(r)) {
+			http.Error(w, "Too many password attempts — wait a minute and try again", http.StatusTooManyRequests)
+			return
+		}
+
 		// Show password form
 		s.showPasswordForm(w, r)
 	})
 }
+
+// pwdGateRL meters failed `?pwd=` attempts per client IP (see above).
+var pwdGateRL = newRateLimiter(1, time.Second, 10)
 
 // RequestEnv returns the env *tenant* this request belongs to: the scope in
 // which its patrol data (effort_data, subcell_visits, gpx_uploads,
