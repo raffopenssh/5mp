@@ -156,7 +156,6 @@ func gaussianNC(v []float64, mask []bool, nx, ny int, sigma float64) []float64 {
 // where the season has no front). res in degrees, y0 the grid's south edge.
 func seasonSpeed(front []byte, nx, ny int, res, y0 float64) []float64 {
 	n := nx * ny
-	out := make([]float64, n)
 	if n == 0 || len(front) < 2*n {
 		return nil
 	}
@@ -172,6 +171,15 @@ func seasonSpeed(front []byte, nx, ny int, res, y0 float64) []float64 {
 	if !any {
 		return nil
 	}
+	return speedOfSurface(v, mask, nx, ny, res, y0)
+}
+
+// speedOfSurface: 1/|∇T| of an arrival-day surface (days; `mask` where it
+// holds a value), km/day per cell, NaN off the mask. Smoothed σ=2 cells
+// first, central differences, like the eikonal probe.
+func speedOfSurface(v []float64, mask []bool, nx, ny int, res, y0 float64) []float64 {
+	n := nx * ny
+	out := make([]float64, n)
 	sm := gaussianNC(v, mask, nx, ny, 2)
 	kmY := res * 111.0
 	kmX := res * 111.0 * math.Cos((y0+res*float64(ny)/2)*math.Pi/180)
