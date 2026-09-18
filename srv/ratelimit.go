@@ -80,11 +80,14 @@ func (rl *rateLimiter) cleanup() {
 
 func extractIP(r *http.Request) string {
 	if fwd := r.Header.Get("X-Forwarded-For"); fwd != "" {
-		// Take only the first IP (the original client)
-		if first, _, ok := strings.Cut(fwd, ","); ok {
-			return strings.TrimSpace(first)
+		// Take the LAST entry, not the first. The exe.dev proxy appends the
+		// address it saw the client connect from; everything before it is
+		// whatever the client chose to send, so keying on the first hop let a
+		// caller reset its bucket by rotating a header.
+		parts := strings.Split(fwd, ",")
+		if ip := strings.TrimSpace(parts[len(parts)-1]); ip != "" {
+			return ip
 		}
-		return strings.TrimSpace(fwd)
 	}
 	// Strip port from RemoteAddr
 	host := r.RemoteAddr

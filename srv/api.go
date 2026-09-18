@@ -5693,6 +5693,13 @@ func (s *Server) HandleAPIMergedKML(w http.ResponseWriter, r *http.Request) {
 	// Parse date filters
 	fromDate := r.URL.Query().Get("from")
 	toDate := r.URL.Query().Get("to")
+	// Both are concatenated into SQL below (they were interpolated unvalidated
+	// until 2026-09-18: `from=' OR '1'='1` executed). A date is YYYY-MM-DD or
+	// nothing; anything else is a 400, not a query.
+	if (fromDate != "" && !isoDateRe.MatchString(fromDate)) || (toDate != "" && !isoDateRe.MatchString(toDate)) {
+		http.Error(w, "from/to must be YYYY-MM-DD", http.StatusBadRequest)
+		return
+	}
 
 	// Build KML header
 	var kml strings.Builder
@@ -5700,7 +5707,7 @@ func (s *Server) HandleAPIMergedKML(w http.ResponseWriter, r *http.Request) {
 	kml.WriteString("<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n")
 	kml.WriteString("<Document>\n")
 	kml.WriteString(fmt.Sprintf("<name>5MP Conservation Data - %d Parks</name>\n", len(parkIDs)))
-	kml.WriteString(fmt.Sprintf("<description>Fire, settlement, and deforestation data from 5MP Conservation Monitoring. Date range: %s to %s</description>\n", fromDate, toDate))
+	kml.WriteString(fmt.Sprintf("<description>Fire, settlement, and deforestation data from 5MP Conservation Monitoring. Date range: %s to %s</description>\n", xmlEscape(fromDate), xmlEscape(toDate)))
 
 	// Define shared styles
 	kml.WriteString("<Style id=\"boundary\"><LineStyle><color>ff00ff00</color><width>3</width></LineStyle><PolyStyle><color>2000ff00</color></PolyStyle></Style>\n")
@@ -5749,18 +5756,23 @@ func (s *Server) HandleAPIMergedKML(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Build date filter
+		// Bound, not interpolated. dateArgs rides after parkID in every query
+		// that appends dateFilter.
 		dateFilter := ""
+		dateArgs := []interface{}{}
 		if fromDate != "" {
-			dateFilter = fmt.Sprintf(" AND start_date >= '%s'", fromDate)
+			dateFilter = " AND start_date >= ?"
+			dateArgs = append(dateArgs, fromDate)
 		}
 		if toDate != "" {
-			dateFilter += fmt.Sprintf(" AND (end_date <= '%s' OR end_date IS NULL)", toDate)
+			dateFilter += " AND (end_date <= ? OR end_date IS NULL)"
+			dateArgs = append(dateArgs, toDate)
 		}
 
 		// Fire trajectories
 		kml.WriteString("<Folder><name>Fire Activity</name>\n")
 		fireRows, _ := s.DB.Query(`SELECT geojson, properties_json, start_date, end_date 
-			FROM feature_geometries WHERE park_id = ? AND feature_type = 'fire_trajectory'`+dateFilter+` LIMIT 500`, parkID)
+			FROM feature_geometries WHERE park_id = ? AND feature_type = 'fire_trajectory'`+dateFilter+` LIMIT 500`, append([]interface{}{parkID}, dateArgs...)...)
 		if fireRows != nil {
 			for fireRows.Next() {
 				var geojson, props string
@@ -5812,7 +5824,7 @@ func (s *Server) HandleAPIMergedKML(w http.ResponseWriter, r *http.Request) {
 		// Deforestation
 		kml.WriteString("<Folder><name>Deforestation</name>\n")
 		deforestRows, _ := s.DB.Query(`SELECT geojson, properties_json FROM feature_geometries 
-			WHERE park_id = ? AND feature_type = 'deforestation'`+dateFilter+` LIMIT 200`, parkID)
+			WHERE park_id = ? AND feature_type = 'deforestation'`+dateFilter+` LIMIT 200`, append([]interface{}{parkID}, dateArgs...)...)
 		if deforestRows != nil {
 			for deforestRows.Next() {
 				var geojson, props string
