@@ -381,12 +381,14 @@ Prototype history and the ten order-sensitive tests that came out real ≈
 shuffled inside the season: `scripts/fire_vanguard/README.md`. What shipped:
 
 **Definition** (`scripts/fire_front.py`, table `fire_season_front`, migration
-066). Per area (park or AOI) and season: 2.5 km cells; *burnable* = cells that
+066). Per area (park or AOI) and season: 2.5 km cells on the global 0.025°
+lattice, grid = the area's detections' extent + 0.05°; **measured from the
+landscape, not the catchment** (2026-09-18, below); *burnable* = cells that
 burned in any season held; the **front** at a cell is the day-of-season when
 20 % of the burnable cells within ±60 km have burned — **causal** (known the
 day it happens, so archive and this morning's detections meet the same rule),
-normalised-convolution smoothed σ=3 cells. Season starts in the area's quietest
-month (climatology trough), measured, never assumed; a season whose data begins
+normalised-convolution smoothed σ=3 cells. Season starts in the landscape's quietest
+month (climatology trough over the padded extent), measured, never assumed; a season whose data begins
 > 15 d after its start is skipped (XSA 2023/24 was an artefact: data starts
 2024-01-01). **usual** = median front of previous complete seasons; live, where
 this season's front has not arrived, `lead_basis:'usual'` stands in — and the
@@ -590,8 +592,9 @@ quantile would be a second estimator under the one word (invariant 7).
 (`srv/fire_season_speed.go`) → the eikonal gradient of the stored front on a
 fixed log ramp 1–50 km/d (`legend` 5 stops, areas comparable), σ=2
 normalised-convolution smoothing, central differences; `stats{cells,
-p10/median/p90_km_d}` (Chinko 2024/25: 18,770 cells, median 5.1 — matches
-numpy exactly), `grid{x0,y0,res,nx,ny}` (row 0 = south). Since 2026-09-15
+p10/median/p90_km_d}` (Chinko 2024/25 on the catchment front: 18,770
+cells, median 5.1 — matched numpy exactly; the landscape front gives 20,139 /
+4.6, so the test bounds rather than pins them), `grid{x0,y0,res,nx,ny}` (row 0 = south). Since 2026-09-15
 the field travels as packed `values` (base64 uint8 per cell, 0 = none,
 1..255 = levels; `encoding{}`, `levels{}`) and is painted client-side by
 `cellfield.js` — the same renderer and probe as the early-burn ground (see
@@ -644,6 +647,62 @@ season's denominator is the union of its front cells and the cells the
 `fire_season_in_progress_not_100pct` (owner-gated). The early-season
 `usual_offset_days` (−39 d at 1 %) is the selection bias measured above;
 it prints beside its pct, which is the reader's warning.
+
+### The front is one surface per landscape, not one per catchment (2026-09-18)
+
+Every park's front was computed from *its* detections (`protected_area_id`,
+F10: a catchment), so at every grid overlap two parks disagreed about the
+same ground — Ruaha vs Kitulo a **median 20 d** (p90 34) over 3,637 shared
+cells — and the unfocused map showed two families of isochrones crossing at
+an angle. Two rendering fixes were tried and both failed the same way:
+clipping lines to owned cells left lines "starting from nowhere" at every
+seam, and a server-side mosaic blended by depth-from-grid-edge drew the
+Chebyshev depth's axis-aligned isolines as **staircases**. The seam was in
+the data, so the fix is upstream, in `fire_front.py build_area`:
+
+* **`load_onsets`** — first burn per cell per season and the burnable
+  footprint over **every detection within a window's reach** of the grid
+  (padded by `pad_cells` = 60 km + 3σ, ~31 cells; computed padded, stored
+  cropped), aggregated in SQL (one `idx_fire_location` band scan, `GROUP BY
+  cell, season-year`, ~3–7 s for Ruaha's 1.4 M detections) so Python sees
+  cells × seasons, not detections. The area's own detections still choose
+  its grid, which seasons it holds, `MIN_SEASON_DETECTIONS` and the
+  truncated-season skip.
+* **`load_climatology`** — the season start month is the trough of the
+  *padded extent's* climatology. With the catchment's, Ruaha said February
+  and Uzungwa Scarp April, so a March burn was this season's onset in one and
+  last season's in the other: a **7 d step** remained on shared ground after
+  the onsets agreed. The landscape around both says March; Luasi (February)
+  vs Ruaha measured 0 d anyway. A season label is still the start year.
+* `--current` reuses a stored complete front for the `usual` stack only when
+  its `start_month` equals the one measured now.
+
+Measured after (`scripts/eval_front_seams.py <ids> <season>`: `|Δ|` in
+absolute days over shared cells, both grids holding a value): every junction pair **median 0 d, p90
+≤ 1** (Ruaha/Kitulo 3,738 of 3,738 cells; Ruaha/Uzungwa 2,880). The front's
+own skill did not move — `eval_fire_baseline.py` on Ruaha/Kitulo/Uzungwa,
+vanguard target: `recur` +0.48 → +0.52, `clim_early` +0.43 → +0.42, `clim`
++0.30 → +0.32 (within the IQR). Rebuilt 2026-09-18 `fire_front.py --all
+--tag` (~15–25 s/area, `logs/fire_front_landscape_20260918.log`); the
+catchment fronts are kept in `fire_season_front_pre_landscape` for one
+comparison and can be dropped.
+
+**The join** (`srv/fire_season_mosaic.go`, bbox mode, `mosaic` in the
+answer; `mosaic=0` to get per-area contours): one lattice over the quantised
+bbox, each cell takes the **smallest** grid with a value (`ownGrid.smallerThan`,
+the point → area rule), converted to absolute days on the reference's
+calendar (`calendar_of`, else the commonest season start), `seamRamp` (σ=2
+over the ≤ 6 cells beside an owner boundary — a no-op where grids agree,
+a ramp where two calendars still differ; speed is NaN'd there so a step is
+not a stall), `marchingSquares` every 5 d, `speed_contours` from
+`speedOfSurface` of the same surface. LRU-cached 10 min per bbox/at/lines.
+Cost: z8 box 26k cells 0.19 s cold; 15° box 312k cells 0.57 s; above 4 M
+cells (continental) `mosaic` is null and per-area 30-day lines draw. The
+mosaic ships **fewer** vertices than the per-area answer (5.5k vs 25.8k at
+the Ruaha junction: overlaps drawn once, clipped to the box), so the phone
+draws less than before. `fire_season_own.go` (line clipping) is deleted.
+Tests: `fire_season_bbox_all_parks`, `fire_season_bbox_no_mosaic`,
+`fire_season_bbox_mosaic_speed`.
 
 ### Patrols: isochrones (when) + pressure isopleths (how much) — 2026-09-16
 
