@@ -2,21 +2,22 @@ package srv
 
 // One front over the viewport.
 //
-// Each park's season front is measured on its own grid (boundary + margin)
-// against its own season calendar, and stored as contours of DAY OF SEASON.
-// Drawn side by side those grids overlap, and the overlap was two families
-// of isochrones crossing at an angle — and, clipped to owned cells, lines
-// that began from nowhere at every seam (the 2026-09-18 report: "starting
-// lines from nowhere", "blocky"). The seam is not in the fires; it is in
-// drawing per park what the fires do per landscape.
+// Each park's season front is stored on its own grid (boundary + margin)
+// as DAY OF SEASON on its own calendar. Drawn side by side those grids
+// overlap; while each was measured from its catchment's fires alone the
+// overlap was two families of isochrones crossing at an angle, and
+// clipped to owned cells, lines that began from nowhere at every seam
+// (2026-09-18: "starting lines from nowhere", "blocky"). The fix is
+// upstream — fire_front.py measures every grid from every fire within a
+// window's reach and on the landscape's calendar, so neighbours agree on
+// shared ground (median |Δ| 0 d) — and this file is only the join.
 //
-// So the bbox path draws ONE surface: every lattice cell in view takes the
+// The bbox path draws ONE surface: every lattice cell in view takes the
 // arrival day of the park grid that owns it (smallest grid with a value
-// there — fire_season_own.go), converted to an ABSOLUTE day so calendars
+// there — ownGrid below), converted to an ABSOLUTE day so calendars
 // agree, and that mosaic is contoured once (marchingSquares, every 5 d on
 // the reference's calendar). A line then runs across park seams as the
-// front did; where two parks genuinely disagree about a date the line
-// kinks, it does not stop. Speed (fire_season_lines.go) is the gradient of
+// front did. Speed (fire_season_lines.go) is the gradient of
 // the same surface, so the weight is continuous too.
 //
 // Cost: a z6.5 viewport is ~150k cells × ~70 levels; memoised per
@@ -31,6 +32,44 @@ import (
 	"sort"
 	"time"
 )
+
+// ownGrid: one park's stored front grid on the shared 0.025° lattice
+// (x0/y0 are multiples of res up to float noise), so a lattice cell maps
+// into any grid by integer offset. Ownership order: the SMALLEST grid with
+// a value speaks for a cell — the point → area rule of fireSeasonAreaAt.
+type ownGrid struct {
+	area        string
+	nx, ny      int
+	res, x0, y0 float64
+	front       []byte // int16 LE per cell; < 0 = no front
+	gx0, gy0    int    // lattice index of cell (0,0)
+}
+
+func (g *ownGrid) n() int { return g.nx * g.ny }
+
+// has reports whether g carries a front at lattice cell (gx, gy).
+func (g *ownGrid) has(gx, gy int) bool {
+	ix, iy := gx-g.gx0, gy-g.gy0
+	if ix < 0 || iy < 0 || ix >= g.nx || iy >= g.ny {
+		return false
+	}
+	i := iy*g.nx + ix
+	if 2*i+1 >= len(g.front) {
+		return false
+	}
+	return int16(uint16(g.front[2*i])|uint16(g.front[2*i+1])<<8) >= 0
+}
+
+func newOwnGrid(area string, nx, ny int, res, x0, y0 float64, front []byte) *ownGrid {
+	return &ownGrid{area: area, nx: nx, ny: ny, res: res, x0: x0, y0: y0, front: front,
+		gx0: int(math.Round(x0 / res)), gy0: int(math.Round(y0 / res))}
+}
+
+// smallerThan: B outranks A for a shared cell when B's grid is smaller (ties
+// by id, so the rule is a total order and two grids never both yield).
+func (b *ownGrid) smallerThan(a *ownGrid) bool {
+	return b.n() < a.n() || (b.n() == a.n() && b.area < a.area)
+}
 
 var mosaicCache = &tileCache{m: map[string]*tileCacheEntry{}, lru: list.New(), maxB: 48 << 20, ttl: 10 * time.Minute}
 
@@ -118,17 +157,15 @@ func fireSeasonMosaic(grids []*mosaicGrid, bb [4]float64, ref, lines string, wan
 		return nil
 	}
 	gx0, gy0 := int(math.Round(x0/res)), int(math.Round(y0/res))
-	// Which grid speaks for a cell. Hard ownership (smallest grid with a
-	// value) still left seams: each park's front is measured from ITS
-	// CATCHMENT's fires only (protected_area_id, fire.md F10), so a grid's
-	// margin outside the catchment is a 60 km-window extrapolation that
-	// contradicts the neighbour by 20–40 days. So the surface is FEATHERED:
-	// a grid's weight at a cell is its depth from its own edge, saturating
-	// at featherCells (≈ the window radius, where the edge bias ends); the
-	// value is the weighted mean. One grid alone → its value; the overlap
-	// → a transition, not a step. `owner` (for the inventory) is the
-	// heaviest voice.
-	const featherCells = 12
+	// Which grid speaks for a cell: the SMALLEST grid with a value there
+	// (ownGrid.smallerThan). Since 2026-09-18 every park's front is measured
+	// from every detection within a window's reach of its grid
+	// (fire_front.py load_onsets), so two grids say the same day on shared
+	// ground (median |delta| 0 d, Ruaha/Kitulo 3,738 cells) and a hard
+	// join is seamless; the residual at a seam is two season calendars
+	// (Ruaha Feb vs Kilombero Apr: 6 d), a real disagreement, drawn as a
+	// small kink. An earlier version blended by depth-from-grid-edge and
+	// drew the Chebyshev depth's axis-aligned isolines as staircases.
 	order := make([]*mosaicGrid, len(grids))
 	copy(order, grids)
 	sort.Slice(order, func(i, j int) bool { return order[i].smallerThan(order[j].ownGrid) })
@@ -166,7 +203,6 @@ func fireSeasonMosaic(grids []*mosaicGrid, bb [4]float64, ref, lines string, wan
 			gx, gy := gx0+ix, gy0+iy
 			i := iy*nx + ix
 			v[i] = math.NaN()
-			var num, den, best float64
 			for k, g := range order {
 				jx, jy := gx-g.gx0, gy-g.gy0
 				if jx < 0 || jy < 0 || jx >= g.nx || jy >= g.ny {
@@ -180,25 +216,20 @@ func fireSeasonMosaic(grids []*mosaicGrid, bb [4]float64, ref, lines string, wan
 				if f < 0 {
 					continue
 				}
-				depth := math.Min(math.Min(float64(jx), float64(g.nx-1-jx)), math.Min(float64(jy), float64(g.ny-1-jy))) + 1
-				w := math.Min(depth, featherCells) / featherCells
 				d := g.startDay + float64(f) - refStart // day on the reference's calendar
-				num += w * d
-				den += w
-				if w > best && k < 127 {
-					best, owner[i] = w, int8(k)
-				}
-			}
-			if den > 0 {
-				d := num / den
 				v[i], mask[i], any = d, true, true
+				if k < 127 {
+					owner[i] = int8(k)
+				}
 				lo, hi = math.Min(lo, d), math.Max(hi, d)
+				break
 			}
 		}
 	}
 	if !any {
 		return nil
 	}
+	near := seamRamp(v, mask, owner, nx, ny)
 	// levels every 5 d on the reference's calendar (labelled every 15, as fire_front.py)
 	const step, labelStep = 5, 15
 	l0, l1 := int(math.Floor(lo/step))*step, int(math.Ceil(hi/step))*step
@@ -247,15 +278,77 @@ func fireSeasonMosaic(grids []*mosaicGrid, bb [4]float64, ref, lines string, wan
 		"grid":     map[string]interface{}{"x0": x0, "y0": y0, "res": res, "nx": nx, "ny": ny},
 		"contours": feats,
 		"owners":   areas, // which park's front each stretch of ground came from, by cell count
-		"words": "One arrival-time surface over the view: each 2.5 km cell blends the season fronts of the park grids covering it, each weighted by " +
-			"its depth from its own grid edge (a park's front is measured from its catchment's fires, so its margin is the least trustworthy), on one calendar, " +
-			"contoured every 5 days. A line crosses park seams; where two parks disagree the surface passes between them.",
+		"words": "One arrival-time surface over the view: each 2.5 km cell takes the season front of the smallest park grid covering it, on one calendar, " +
+			"contoured every 5 days. Every park's front is measured from every fire within 60 km of its grid, so neighbours agree on shared ground and a line runs across park seams.",
 	}
 	if wantSpeed {
 		speed := speedOfSurface(v, mask, nx, ny, res, y0)
+		for i := range speed {
+			if near[i] {
+				speed[i] = math.NaN() // the ramp is a calendar step, not a stall: the run carries its neighbour's class
+			}
+		}
 		if sc, sst := splitBySpeed(feats, speed, nx, ny, res, x0, y0); sc != nil {
 			out["speed_contours"], out["speed_stats"] = sc, sst
 		}
 	}
 	return out
+}
+
+// seamRamp turns the step at an owner boundary into a ramp. Two grids with
+// different season calendars (Ruaha starts February, Kilombero April) put a
+// cell's first burn of March in different seasons, so their fronts differ
+// by a few days on shared ground; hard ownership then makes a contour run
+// along the seam. Only cells within seamCells of a boundary are smoothed
+// (normalised Gaussian, seamSigma) — everything else stays the stored
+// value. Returns the cells touched, so speed does not read the ramp.
+func seamRamp(v []float64, mask []bool, owner []int8, nx, ny int) []bool {
+	const seamCells, seamSigma = 6, 2.0
+	n := nx * ny
+	near := make([]bool, n)
+	var q []int
+	for y := 0; y < ny; y++ {
+		for x := 0; x < nx; x++ {
+			i := y*nx + x
+			if owner[i] < 0 {
+				continue
+			}
+			if (x+1 < nx && owner[i+1] >= 0 && owner[i+1] != owner[i]) ||
+				(y+1 < ny && owner[i+nx] >= 0 && owner[i+nx] != owner[i]) {
+				for _, j := range []int{i, i + 1, i + nx} {
+					if j < n && !near[j] && mask[j] {
+						near[j] = true
+						q = append(q, j)
+					}
+				}
+			}
+		}
+	}
+	if len(q) == 0 {
+		return near
+	}
+	// dilate seamCells times (4-neighbourhood BFS)
+	for step := 0; step < seamCells; step++ {
+		var next []int
+		for _, i := range q {
+			x, y := i%nx, i/nx
+			for _, j := range []int{i - 1, i + 1, i - nx, i + nx} {
+				if j < 0 || j >= n || (j == i-1 && x == 0) || (j == i+1 && x == nx-1) || (j == i-nx && y == 0) || (j == i+nx && y == ny-1) {
+					continue
+				}
+				if !near[j] && mask[j] {
+					near[j] = true
+					next = append(next, j)
+				}
+			}
+		}
+		q = next
+	}
+	sm := gaussianNC(v, mask, nx, ny, seamSigma)
+	for i := range v {
+		if near[i] && !math.IsNaN(sm[i]) {
+			v[i] = sm[i]
+		}
+	}
+	return near
 }

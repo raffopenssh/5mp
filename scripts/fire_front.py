@@ -25,9 +25,22 @@ arrive.
 
 WHY THIS DEFINITION
 
+* The season starts in the LANDSCAPE's quietest month (the trough of the
+  monthly climatology over the padded extent), measured, never typed: the
+  XSA burns Nov–Mar and is quiet in July/August; Zambia burns Jun–Oct.
 * Causal. "A fifth of the burnable land has burned" is known on the day it
   happens, so the same rule serves the finished archive and this morning's
   detections; nothing is re-labelled when the season ends.
+* The front is a property of the LANDSCAPE, not of the catchment. Each
+  area's grid is its boundary plus a margin, and the cells of that grid
+  are measured from EVERY detection within a window's reach of it (the
+  padded extent, `load_onsets`) — not from the detections filed under the
+  area (`protected_area_id`). Two neighbours therefore say the same day
+  on the ground they share (2026-09-18: measured on the catchment alone,
+  Ruaha and Kitulo disagreed by a median 20 d over 3,637 shared cells, and
+  the map showed two families of isochrones crossing at every seam). The
+  area's own detections still choose its grid, its season calendar and
+  which seasons it holds.
 * The denominator is land that has burned in ANY season we hold for the
   area (its burnable footprint), not all land: a window that is half
   rainforest would otherwise never reach a fifth, and a window on the edge
@@ -39,9 +52,6 @@ WHY THIS DEFINITION
   notification needs ("burning three weeks before the season usually
   reaches this area"); the measured front replaces it as the season
   arrives.
-* The season starts in the area's quietest month (the trough of its monthly
-  climatology), measured, never typed: the XSA burns Nov–Mar and is quiet in
-  July/August; Zambia burns Jun–Oct.
 
 WHAT IT WRITES
 
@@ -199,6 +209,58 @@ class Grid:
 
     def meta(self):
         return dict(res=self.res, x0=self.x0, y0=self.y0, nx=self.nx, ny=self.ny)
+
+
+def pad_cells(lat_mid):
+    """Cells of margin a grid needs so every stored cell sees a full
+    WINDOW_KM box and a full smoothing kernel: beyond it no detection can
+    move a stored cell's front, so two grids agree exactly where they
+    overlap (up to their season calendars)."""
+    km_per_cell = 111.0 * math.cos(math.radians(lat_mid)) * RES_DEG
+    return int(round(WINDOW_KM / km_per_cell)) + int(math.ceil(3 * SMOOTH_SIGMA_CELLS)) + 1
+
+
+def load_climatology(conn, grid):
+    """Detections per 'YYYY-MM' over every detection in `grid` (the landscape)."""
+    return dict(conn.execute(
+        "SELECT substr(acq_date, 1, 7), COUNT(*) FROM fire_detections "
+        "WHERE latitude >= ? AND latitude < ? AND longitude >= ? AND longitude < ? GROUP BY 1",
+        (grid.y0, grid.y0 + grid.res * grid.ny, grid.x0, grid.x0 + grid.res * grid.nx)).fetchall())
+
+
+def load_onsets(conn, grid, start_month, seasons):
+    """First-burn day-of-season per cell per season over EVERY detection in
+    `grid` (a padded extent — the landscape, not the catchment), plus the
+    burnable footprint (any burn in any season). Aggregated in SQL (one
+    idx_fire_location band scan, GROUP BY cell/season) so Python sees
+    ~cells x seasons rows, not detections. Returns ({label: onset}, burnable)."""
+    x1 = grid.x0 + grid.res * grid.nx
+    y1 = grid.y0 + grid.res * grid.ny
+    sql = f"""
+        SELECT CAST((longitude - ?) / ? AS INT) AS ix, CAST((latitude - ?) / ? AS INT) AS iy,
+               CASE WHEN CAST(substr(acq_date, 6, 2) AS INT) >= ? THEN CAST(substr(acq_date, 1, 4) AS INT)
+                    ELSE CAST(substr(acq_date, 1, 4) AS INT) - 1 END AS sy,
+               MIN(acq_date)
+        FROM fire_detections
+        WHERE latitude >= ? AND latitude < ? AND longitude >= ? AND longitude < ?
+        GROUP BY ix, iy, sy"""
+    onsets = {}
+    burnable = np.zeros((grid.ny, grid.nx), bool)
+    starts = {s: season_bounds(s, start_month)[0].toordinal() for s in seasons}
+    by_year = {int(s[:4]): s for s in seasons}
+    for ix, iy, sy, first in conn.execute(sql, (grid.x0, grid.res, grid.y0, grid.res, start_month,
+                                                grid.y0, y1, grid.x0, x1)):
+        if ix < 0 or iy < 0 or ix >= grid.nx or iy >= grid.ny:
+            continue
+        burnable[iy, ix] = True
+        s = by_year.get(sy)
+        if s is None:
+            continue
+        o = onsets.get(s)
+        if o is None:
+            o = onsets[s] = np.full((grid.ny, grid.nx), np.nan)
+        o[iy, ix] = date.fromisoformat(first).toordinal() - starts[s]
+    return onsets, burnable
 
 
 def onset_grid(grid, lon, lat, dos):
@@ -442,32 +504,31 @@ def build_area(conn, area_id, current_only=False, verbose=True):
             log(f"{area_id}: {lon.size} detections — too few for a season front")
         return []
     dates = np.array([date.fromordinal(int(d)) for d in np.unique(day)])
-    by_month = {}
-    # detections per month for the climatology
-    ord_months = {}
-    for o in np.unique(day):
-        d = date.fromordinal(int(o))
-        ord_months[int(o)] = f"{d.year:04d}-{d.month:02d}"
-    months = np.vectorize(ord_months.get)(day)
-    um, cnt = np.unique(months, return_counts=True)
-    by_month = dict(zip(um.tolist(), cnt.tolist()))
-    sm = season_start_month(by_month)
     latest = date.fromordinal(int(day.max()))
-    seasons = sorted({season_of(d, sm) for d in dates})
     grid = Grid.around(lon, lat)
     lat_mid = float((lat.min() + lat.max()) / 2)
 
-    # Burnable footprint: every cell that burned in any season we hold.
-    burnable = np.zeros((grid.ny, grid.nx), bool)
-    iy, ix = grid.index(lon, lat)
-    burnable[iy, ix] = True
+    # The landscape around the grid: every detection within a window's
+    # reach. The season calendar (quietest month) and the first burn per
+    # cell per season are both measured there — not on the catchment —
+    # so two neighbours share one calendar and one surface on the ground
+    # they share (Ruaha's catchment said February, Uzungwa Scarp's April;
+    # the landscape around both says March, and a 7-day step at their
+    # seam went with it). Computed on the padded grid, stored cropped.
+    pad = pad_cells(lat_mid)
+    pgrid = Grid(grid.x0 - pad * grid.res, grid.y0 - pad * grid.res,
+                 grid.nx + 2 * pad, grid.ny + 2 * pad, grid.res)
+    sm = season_start_month(load_climatology(conn, pgrid))
+    seasons = sorted({season_of(d, sm) for d in dates})
+    onsets_p, burnable_p = load_onsets(conn, pgrid, sm, seasons)
+    crop = (slice(pad, pad + grid.ny), slice(pad, pad + grid.nx))
 
     ensure_table(conn)
     # Usual front needs the previous complete seasons: process in order and
     # keep the completed fronts in hand.
     completed = []
     existing = {r[0]: r for r in conn.execute(
-        "SELECT season, complete, front FROM fire_season_front WHERE area_id=?", (area_id,))}
+        "SELECT season, complete, front, start_month FROM fire_season_front WHERE area_id=?", (area_id,))}
     written = []
     for_early = {}   # label -> dict(start, complete, front, onset, lat_mid): the early-burn ground's input
     for s in seasons:
@@ -478,12 +539,14 @@ def build_area(conn, area_id, current_only=False, verbose=True):
             # Reuse the stored complete front for the usual-front stack (and
             # for the early-burn ground, whose input is every complete season).
             row = existing.get(s)
-            if row and row[1]:
+            # ...only on the same calendar: a stored front whose season began
+            # in another month is day-of-season on another clock.
+            if row and row[1] and row[3] == sm:
                 f = unpack(row[2], grid.ny, grid.nx) if len(row[2]) == grid.ny * grid.nx * 2 else None
                 completed.append(f)
-                if f is not None and m.any():
+                if f is not None and s in onsets_p:
                     for_early[s] = dict(start=s0, complete=True, front=f, lat_mid=lat_mid,
-                                        onset=onset_grid(grid, lon[m], lat[m], day[m] - s0.toordinal()))
+                                        onset=onsets_p[s][crop])
             continue
         if m.sum() < MIN_SEASON_DETECTIONS:
             continue
@@ -495,9 +558,11 @@ def build_area(conn, area_id, current_only=False, verbose=True):
                 log(f"{area_id} {s}: data begins {date.fromordinal(int(day.min()))}, "
                     f"after the season start — skipped (truncated)")
             continue
-        dos = day[m] - s0.toordinal()
-        onset = onset_grid(grid, lon[m], lat[m], dos)
-        front = front_grid(onset, burnable, lat_mid)
+        onset_p = onsets_p.get(s)
+        if onset_p is None:
+            continue
+        front = front_grid(onset_p, burnable_p, lat_mid)[crop]
+        onset = onset_p[crop]
         prev = [f for f in completed if f is not None]
         if prev:
             with np.errstate(all="ignore"):

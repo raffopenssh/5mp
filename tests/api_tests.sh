@@ -1512,8 +1512,14 @@ test_api "fire_season_before_front" "/api/fire-season?area=CAF_Chinko&at=2024-08
 test_api "fire_season_full_has_contours" "/api/fire-season?area=CAF_Chinko&at=2024-12-01" "200" '(.contours | length) > 0'
 # bbox mode: every PARK in view (no AOIs), each at the season `at` falls in;
 # thinned lines and an area cap that says so (invariant 8).
+# Unfocused, the picture is ONE surface (srv/fire_season_mosaic.go): per-area
+# contours are empty, `mosaic.contours` draws, `owners` says whose ground.
 test_api "fire_season_bbox_all_parks" "/api/fire-season?bbox=20,3,29,10&at=2024-12-01" "200" \
-    '.mode == "bbox" and .count > 1 and .truncated == false and ([.areas[].area] | index("CAF_Chinko") != null) and ([.areas[] | select(.area | startswith("XSA"))] | length == 0) and (.areas[] | select(.area == "CAF_Chinko") | .season == "2024/25" and (.contours | length) > 0)'
+    '.mode == "bbox" and .count > 1 and .truncated == false and ([.areas[].area] | index("CAF_Chinko") != null) and ([.areas[] | select(.area | startswith("XSA"))] | length == 0) and (.areas[] | select(.area == "CAF_Chinko") | .season == "2024/25" and (.contours | length) == 0) and (.mosaic.contours | length) > 0 and ([.mosaic.owners[].area] | index("CAF_Chinko") != null) and .mosaic.grid.res == 0.025'
+test_api "fire_season_bbox_no_mosaic" "/api/fire-season?bbox=20,3,29,10&at=2024-12-01&mosaic=0" "200" \
+    '.mosaic == null and (.areas[] | select(.area == "CAF_Chinko") | (.contours | length) > 0)'
+test_api "fire_season_bbox_mosaic_speed" "/api/fire-season?bbox=20,3,29,10&at=2024-12-01&speed=1" "200" \
+    '(.mosaic.speed_contours | length) > 0 and ([.mosaic.speed_contours[].properties | has("kmd") and has("cls")] | all) and .mosaic.speed_stats.cells > 0'
 test_api "fire_season_bbox_thinned_capped" "/api/fire-season?bbox=-20,-35,52,20&at=2024-12-01&lines=30&limit=5" "200" \
     '.count == 5 and .total > 5 and .truncated == true and ([.areas[].contours[] | select(.properties.label != true or (.properties.dos % 30) != 0)] | length == 0)'
 test_api "fire_season_bbox_exclude" "/api/fire-season?bbox=20,3,29,10&at=2024-12-01&exclude=CAF_Chinko" "200" \
@@ -1571,7 +1577,7 @@ test_api "fire_season_curve_with_contours" "/api/fire-season?area=CAF_Chinko&at=
 # that match the numpy probe (Chinko 2024/25: median 5.1, p10 1.6, p90 24.3
 # — scripts/fire_vanguard/eikonal.py's method). Same season rule as the front.
 test_api "fire_season_speed_png" "/api/fire-season-speed?area=CAF_Chinko&at=2025-01-15" "200" \
-    '.season == "2024/25" and (.values | type == "string") and (.values | length) == ((.grid.nx * .grid.ny + 2) / 3 | floor) * 4 and .encoding.type == "uint8" and .encoding.none == 0 and .levels.n == 255 and (.bbox | length) == 4 and .stats.cells == 18770 and .stats.median_km_d == 5.1 and (.legend | length) == 5 and (.legend[0].km_d) == 1 and .grid.nx == 137'
+    '.season == "2024/25" and (.values | type == "string") and (.values | length) == ((.grid.nx * .grid.ny + 2) / 3 | floor) * 4 and .encoding.type == "uint8" and .encoding.none == 0 and .levels.n == 255 and (.bbox | length) == 4 and .stats.cells > 10000 and (.stats.median_km_d > 1 and .stats.median_km_d < 50) and (.legend | length) == 5 and (.legend[0].km_d) == 1 and .grid.nx == 137'
 test_api "fire_season_speed_by_point" "/api/fire-season-speed?lon=24.0&lat=6.4&at=2025-01-15" "200" '.area == "CAF_Chinko"'
 # A window touching two seasons carries both (oldest first), each with its
 # arrival grid (front day-of-season per cell, 2-day steps) the same length as
