@@ -133,6 +133,43 @@ Now, in `fireseason.js`:
 Tests: api `patrol_isochrones_long_window_400` / `_clip_to_season`; ui
 `anim_front_every_season` (async assertion — `runUITests` awaits `fn`).
 
+### The playhead moves feature-state, never the filter (2026-09-18)
+
+Every frame of the season animation used to write **new** data-driven paint
+expressions and filters on the front/patrol/compare/pressure layers
+(`ageD = t − get('t')` baked into `line-color/width/opacity`, `ashLineFilter(t)`).
+A changed data-driven expression or filter makes MapLibre **reload the
+GeoJSON source in its workers** — re-tessellating every contour — so at z 5
+over CAR (402k front vertices) a frame cost ~0.6–1 s and a phone visibly
+hung (`/s/g-z2k3jvphq7kfssnh`). Now, in `fireseason.js`:
+
+* Sources carry `promoteId: 'fid'` (`setData` numbers features), and the
+  animation paint is **constant**, reading `['feature-state', …]`: `o`
+  opacity, `w` width ramp, `k` ash mix 0..1 (`fsColor`: interpolate
+  `get color` → ash), `v` wave opacity, `x` text opacity. `fsEnter()` sets it
+  once when the animation starts, teardown restores the static paint.
+* `fsFrame(t)` evaluates the **same** piecewise-linear ramps in JS (`pl()`,
+  `frontState()` = ashLineFilter + ashLabelFilter + ashColor/Opacity/Width
+  + wave + text), quantised to 1/100, and calls `setFeatureState` only where
+  a value moved (`fsSet` cache). Hidden = `o` 0 **and** `w` 0 (a 14 px
+  blurred wave stroke costs fragments even at opacity 0). Pixel-identical
+  to the expression version by construction — same stops, same rules.
+* **Labels live on a mirror source** (`FRONT_LBL_SRC`, `PAT_LBL_SRC` — the
+  labelled lines only, filled by `setData`). A symbol's filter still has to
+  follow the playhead (a label hidden by opacity keeps its collision box
+  and blocks a shown one), but a reload of the mirror is a third of the
+  geometry and no line tessellation, and `throttledFilter` applies it at
+  most every 300 ms with the last state always landing.
+* The repaint gap adapts: `animGap()` = clamp(80 ms, 3× the EMA of the
+  frame's main-thread ms, 250 ms) — drop frames, never stall.
+* Main-thread cost measured on that CAR view: 5–15 ms JS + 20–50 ms render
+  bookkeeping per frame, from a full source reload. `TEST.fireSeason()
+  .drawnFront/drawnPatrol` and `anim_front_every_season` exclude
+  `state.o === 0` features, since hiding is no longer a filter.
+* `FireSeason.frontAnyInView()`: the animator's "no animatable data" test
+  used to read the reference front (the park under the view CENTRE — null
+  over open ground) while the bbox mosaic drew lines all over the view.
+
 ### Every park's front, unless scoped (2026-09-17)
 
 The reference front (`front` in `fireseason.js`) is ONE area: the focus,
