@@ -12,8 +12,10 @@
 (function () {
     'use strict';
 
-    var overlay, scroller, toc, article, progress, readtime, head, sheet;
+    var overlay, scroller, toc, article, readtime, head, sheet, steps, nowBtn, nowIdx, nowTitle, drop;
+    var segs = [], fills = [];
     var built = false, opener = null, raf = 0, links = [], heads = [];
+    var mobileMQ = matchMedia('(max-width: 860px)');
     var SCROLL_KEY = 'about.scrollTop';
 
     function $(id) { return document.getElementById(id); }
@@ -47,6 +49,7 @@
             a.textContent = headingText(h);
             a.addEventListener('click', function (ev) {
                 ev.preventDefault();
+                setTocOpen(false);
                 scrollToHeading(h);
                 try { h.focus({ preventScroll: true }); } catch (e) { /* focus is a nicety */ }
             });
@@ -54,10 +57,64 @@
             return a;
         });
         toc.appendChild(frag);
+        buildSteps();
         // Read time from the words actually on the page, ~220 wpm.
         var words = (article.textContent || '').trim().split(/\s+/).length;
         if (readtime) readtime.textContent = Math.max(1, Math.round(words / 220)) + ' min read';
         built = true;
+    }
+
+    // buildSteps — one segment per heading, width proportional to the text
+    // it heads (the reader sees how long each part is before entering it).
+    // Each fills left→right as its section is read; the whole track is the
+    // progress bar. Click/tap jumps. Section lengths are measured from the
+    // DOM, never typed (invariant 2).
+    function sectionLengths() {
+        var tops = heads.map(function (h) { return h.offsetTop; });
+        tops.push(article.scrollHeight);
+        return heads.map(function (h, i) { return Math.max(1, tops[i + 1] - tops[i]); });
+    }
+    function buildSteps() {
+        if (!steps) return;
+        steps.innerHTML = '';
+        segs = []; fills = [];
+        var len = sectionLengths(), total = len.reduce(function (a, b) { return a + b; }, 0);
+        heads.forEach(function (h, i) {
+            var b = document.createElement('button');
+            b.type = 'button'; b.className = 'about-step';
+            // sqrt of the share: long parts read long, short parts stay tappable
+            b.style.flexGrow = String(Math.sqrt(len[i] / total * heads.length));
+            b.setAttribute('aria-label', (i + 1) + ' of ' + heads.length + ': ' + headingText(h));
+            var f = document.createElement('span'); f.className = 'about-step-fill';
+            var tip = document.createElement('span'); tip.className = 'about-step-tip'; tip.textContent = headingText(h);
+            b.appendChild(f); b.appendChild(tip);
+            b.addEventListener('click', function () { scrollToHeading(h); try { h.focus({ preventScroll: true }); } catch (e) { /* nicety */ } });
+            steps.appendChild(b); segs.push(b); fills.push(f);
+        });
+    }
+    function setNow(i) {
+        if (!nowBtn || !heads[i]) return;
+        var h = heads[i], isSub = h.tagName === 'H4';
+        nowIdx.textContent = (i + 1) + '/' + heads.length;
+        var parent = null;
+        if (isSub) for (var k = i - 1; k >= 0; k--) if (heads[k].tagName === 'H3') { parent = heads[k]; break; }
+        nowTitle.innerHTML = '';
+        if (parent) { var sp = document.createElement('span'); sp.className = 'sub'; sp.textContent = headingText(parent) + ' › '; nowTitle.appendChild(sp); }
+        nowTitle.appendChild(document.createTextNode(headingText(h)));
+    }
+    function setTocOpen(open) {
+        if (!sheet || !nowBtn) return;
+        sheet.classList.toggle('toc-open', open);
+        nowBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+    // placeToc — the same <nav> lives beside the article on wide screens and
+    // inside the header dropdown on narrow ones; move it rather than clone it
+    // so there is one set of links and one active state.
+    function placeToc() {
+        if (!toc || !drop) return;
+        var grid = article.parentElement;
+        if (mobileMQ.matches) { if (toc.parentElement !== drop) drop.appendChild(toc); }
+        else { if (toc.parentElement !== grid) grid.insertBefore(toc, article); setTocOpen(false); }
     }
 
     function onScroll() {
@@ -65,7 +122,16 @@
         raf = requestAnimationFrame(function () {
             raf = 0;
             var max = scroller.scrollHeight - scroller.clientHeight;
-            if (progress) progress.style.width = (max > 0 ? Math.min(100, scroller.scrollTop / max * 100) : 0) + '%';
+            if (fills.length) {
+                // Fill by reading line: the segment holding the line is partly
+                // full, earlier ones full, later ones empty. At the end, all full.
+                var lineY = scroller.scrollTop + 72, atEnd = max > 0 && scroller.scrollTop >= max - 2;
+                var tops = heads.map(function (h) { return h.offsetTop; }); tops.push(article.scrollHeight);
+                for (var j = 0; j < fills.length; j++) {
+                    var p = atEnd ? 1 : Math.min(1, Math.max(0, (lineY - tops[j]) / Math.max(1, tops[j + 1] - tops[j])));
+                    fills[j].style.width = (p * 100) + '%';
+                }
+            }
             // Remember here, not on close: once the overlay is display:none
             // the scroller reads 0.
             if (overlay.classList.contains('active')) {
@@ -84,20 +150,18 @@
                 if (on !== a.classList.contains('active')) {
                     a.classList.toggle('active', on);
                     if (on) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current');
-                    // keep the active chip visible in the mobile row
-                    if (on && toc.scrollWidth > toc.clientWidth + 1) {
-                        var r = a.getBoundingClientRect(), t = toc.getBoundingClientRect();
-                        if (r.left < t.left + 16 || r.right > t.right - 16) {
-                            toc.scrollTo({ left: a.offsetLeft - 16, behavior: 'smooth' });
-                        }
-                    }
+                    if (on) setNow(i);
                 }
+                if (segs[i]) segs[i].classList.toggle('active', on);
             });
+            if (nowBtn && !nowTitle.textContent) setNow(active);
         });
     }
 
     function onOpen() {
         buildToc();
+        placeToc();
+        if (steps && heads.length) buildSteps(); // heights may have changed since (licences)
         opener = document.activeElement && document.activeElement !== document.body ? document.activeElement : null;
         var wantsSection = /[?&]methods=/.test(location.search);
         if (!wantsSection) {
@@ -119,6 +183,7 @@
             try { opener.focus({ preventScroll: true }); } catch (e) { /* ignore */ }
         }
         opener = null;
+        setTocOpen(false);
         if (sheet) sheet.style.transform = '';
     }
 
@@ -163,11 +228,16 @@
         overlay = $('modal-manifest');
         if (!overlay) return;
         scroller = $('about-scroll'); toc = $('about-toc'); article = $('about-article');
-        progress = $('about-progress'); readtime = $('about-readtime');
+        readtime = $('about-readtime'); steps = $('about-steps');
+        nowBtn = $('about-now'); nowIdx = $('about-now-idx'); nowTitle = $('about-now-title'); drop = $('about-drop');
         head = overlay.querySelector('.about-head'); sheet = overlay.querySelector('.about-modal');
         if (!scroller || !toc || !article) return;
         scroller.addEventListener('scroll', onScroll, { passive: true });
-        window.addEventListener('resize', onScroll);
+        window.addEventListener('resize', function () { placeToc(); if (built) buildSteps(); onScroll(); });
+        if (mobileMQ.addEventListener) mobileMQ.addEventListener('change', placeToc);
+        if (nowBtn) nowBtn.addEventListener('click', function (e) { e.stopPropagation(); setTocOpen(!sheet.classList.contains('toc-open')); });
+        overlay.addEventListener('click', function (e) { if (sheet.classList.contains('toc-open') && !e.target.closest('.about-drop') && !e.target.closest('.about-now')) setTocOpen(false); });
+        overlay.addEventListener('keydown', function (e) { if (e.key === 'Escape' && sheet.classList.contains('toc-open')) { e.stopPropagation(); setTocOpen(false); } });
         if (head && sheet && 'ontouchstart' in window) bindSwipe();
         var wasOpen = overlay.classList.contains('active');
         new MutationObserver(function () {
@@ -178,7 +248,8 @@
         }).observe(overlay, { attributes: true, attributeFilter: ['class'] });
         if (wasOpen) onOpen();
         // late-rendered content (licences) changes heights: refresh the bar
-        new MutationObserver(onScroll).observe(article, { childList: true, subtree: true });
+        var rebuild = 0;
+        new MutationObserver(function () { clearTimeout(rebuild); rebuild = setTimeout(function () { if (built) buildSteps(); onScroll(); }, 120); }).observe(article, { childList: true, subtree: true });
     }
 
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();

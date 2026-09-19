@@ -114,8 +114,8 @@
     // ends the settling: their hand wins.
     function settle(h, m) {
         var sc = m.scroller(h), stop = false, ends = [250, 600, 1200, 2000];
-        var off = function () { stop = true; ['wheel', 'touchstart', 'keydown'].forEach(function (t) { window.removeEventListener(t, off, true); }); };
-        ['wheel', 'touchstart', 'keydown'].forEach(function (t) { window.addEventListener(t, off, true); });
+        var off = function () { stop = true; ['wheel', 'touchstart', 'pointerdown', 'keydown'].forEach(function (t) { window.removeEventListener(t, off, true); }); };
+        ['wheel', 'touchstart', 'pointerdown', 'keydown'].forEach(function (t) { window.addEventListener(t, off, true); });
         align(h, sc);
         ends.forEach(function (ms) {
             setTimeout(function () {
