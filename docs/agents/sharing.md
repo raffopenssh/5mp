@@ -204,6 +204,20 @@ gate had no limiter at all, so `?pwd=` could be guessed at line rate —
 `pwdGateRL` in `PasswordMiddleware` meters non-empty wrong attempts per IP
 (10 burst, 1/s).
 
+### The audit surface is the whole VM, not the handler list (2026-09-19)
+
+A follow-up pass found no new code issues but two leaks *around* the app.
+Nine stale `busybox httpd` debug servers from earlier agent sessions were
+still listening on `0.0.0.0` (ports 8011–8765), one of them serving a text
+file holding a live tenant `?pwd=` URL; killed, file removed. And the
+Protected Planet API token was shipped to every browser as a dead
+`MAPTILER_KEY` constant in `globe.html` (mislabelled — it is not a MapTiler
+key) — removed; the token is already public via git history (AGENTS.md
+Secrets) and should be rotated upstream. Also bumped `go.mod` to 1.25.13 —
+`govulncheck` reported 22 reachable stdlib CVEs at 1.25.6, 0 after. Before
+any hand-off, `sudo ss -tlnp | grep busybox` and `govulncheck ./...` belong
+in the checklist next to the handler probes.
+
 ## The date columns: WHEN a link is about
 
 A share URL always carried a time window, but in one of two ways that look
