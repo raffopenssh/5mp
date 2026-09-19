@@ -218,6 +218,25 @@ Secrets) and should be rotated upstream. Also bumped `go.mod` to 1.25.13 —
 any hand-off, `sudo ss -tlnp | grep busybox` and `govulncheck ./...` belong
 in the checklist next to the handler probes.
 
+### Final pass (2026-09-19, later): two id/addr oracles, both closed
+
+Re-probed file paths (server-minted ids / whitelist / `filepath.Base` — fine),
+SQL string-building (none request-derived), headers (HSTS, nosniff, DENY,
+`SameSite=Lax` — effective CSRF since `exe.xyz` is on the Public Suffix List),
+listeners (only 22/8000/9999). Two fixes:
+
+* `/api/upload/status/{id}` took a sequential integer and answered any
+  password holder — the sandbox could page through another tenant's
+  `result_json` (segment counts, distances, validation). Now the row must be in
+  `PatrolEnvs(r)` (own tenant + shared autofetch envs), else 404. Pinned by
+  `upload_status_is_tenant_scoped`.
+* `RequireAdminOrLocal` trusted any loopback `RemoteAddr`. If the exe.dev
+  proxy connects from 127.0.0.1 (unverifiable from inside the VM — the browser
+  tool cannot reach the proxy), every `test2026` holder was "cron" on
+  `/api/refresh-park`, `/api/update-fire-alerts`, the sync triggers. Loopback
+  now also requires an **absent** `X-Forwarded-For`; a proxied request always
+  carries one, cron never does.
+
 ## The date columns: WHEN a link is about
 
 A share URL always carried a time window, but in one of two ways that look
