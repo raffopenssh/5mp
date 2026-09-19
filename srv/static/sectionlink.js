@@ -99,9 +99,12 @@
         return window;
     }
 
+    // offsetOf — the heading's scroll-margin-top, so a surface with a sticky
+    // bar inside its scroller (the About TOC chips) declares the clearance.
+    function offsetOf(h) { return parseFloat(getComputedStyle(h).scrollMarginTop) || 16; }
     function align(h, sc) {
         if (sc && sc !== window && sc !== document.body) {
-            var top = h.getBoundingClientRect().top - sc.getBoundingClientRect().top + sc.scrollTop - 16;
+            var top = h.getBoundingClientRect().top - sc.getBoundingClientRect().top + sc.scrollTop - offsetOf(h);
             sc.scrollTo({ top: Math.max(0, top), behavior: 'auto' });
         } else h.scrollIntoView({ block: 'start' });
     }
@@ -118,7 +121,7 @@
             setTimeout(function () {
                 if (stop || !document.contains(h)) return;
                 var ref = (sc && sc !== window) ? sc.getBoundingClientRect().top : 0;
-                if (Math.abs(h.getBoundingClientRect().top - ref - 16) > 8) align(h, m.scroller(h));
+                if (Math.abs(h.getBoundingClientRect().top - ref - offsetOf(h)) > 8) align(h, m.scroller(h));
                 if (ms === ends[ends.length - 1]) off();
             }, ms);
         });
