@@ -175,6 +175,19 @@ func (s *Server) HandleUploadStatus(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	q := dbgen.New(s.DB)
 
+	// Queue IDs are sequential; the row must belong to the caller's tenant or
+	// the id is an oracle onto another tenant's patrol upload summaries.
+	// 404, not 403 (AGENTS.md invariant 6).
+	var n int
+	if err := s.DB.QueryRowContext(ctx, "SELECT count(*) FROM upload_queue WHERE id = ? AND "+PatrolEnvsSQL("COALESCE(env,'')"), id, s.PatrolEnvsJSON(r)).Scan(&n); err != nil || n == 0 {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "queue item not found",
+		})
+		return
+	}
+
 	status, err := q.GetUploadQueueStatus(ctx, id)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
