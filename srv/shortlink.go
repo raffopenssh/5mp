@@ -370,6 +370,20 @@ func (s *Server) HandleShortLink(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Cache-Control", "private, no-store")
 
+	// A chat client unfurling the link gets the preview document, not the
+	// redirect: it carries the link's own title and — for a methods section —
+	// that section's text and image. Nothing from the shared VIEW is
+	// rendered (srv/og.go, SAFETY), no cookie is set, no hit is counted.
+	if isLinkPreviewBot(r) && !l.Revoked && !l.Expired {
+		m := s.ogForURL(parseURLOrNil(l.URL))
+		if strings.TrimSpace(l.Title) != "" {
+			m.Title = l.Title + " · 5MP.globe"
+		}
+		m.URL = ogSite + "/s/" + l.Slug
+		ogPreviewPage(w, m, "/s/"+l.Slug)
+		return
+	}
+
 	if l.Guest {
 		if l.Revoked {
 			s.shortLinkGone(w, "This shared link has been switched off",
@@ -428,6 +442,14 @@ func (s *Server) HandleShortLink(w http.ResponseWriter, r *http.Request) {
 	target = forwardQuery(target, r.URL.Query())
 	go s.bumpShortLinkHit(l.Slug)
 	http.Redirect(w, r, target, http.StatusFound)
+}
+
+func parseURLOrNil(raw string) *url.URL {
+	u, err := url.Parse(raw)
+	if err != nil {
+		return nil
+	}
+	return u
 }
 
 // forwardQuery merges q into target's query; `pwd` never travels, and a key
