@@ -1594,6 +1594,10 @@
             transition: bottom 0.28s cubic-bezier(.4,0,.2,1), opacity 0.2s;
             animation: toastIn 0.34s cubic-bezier(0.22,1.2,0.4,1);
         }
+        /* A toast is map furniture, not dialog furniture. While a modal is
+           open it stays UNDER the overlay (dimmed with the rest of the map)
+           instead of printing across the modal's text. */
+        body:has(.modal-overlay.active) .app-toast { z-index: 1999; }
         @keyframes toastIn {
             from { opacity: 0; transform: translateX(-50%) translateY(14px) scale(0.97); }
             to   { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
