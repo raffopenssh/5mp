@@ -210,9 +210,12 @@ func (s *Server) RequireAdmin(next http.HandlerFunc) http.HandlerFunc {
 // This allows cron jobs running on the same machine to call admin endpoints.
 func (s *Server) RequireAdminOrLocal(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Allow requests from localhost (for cron jobs)
+		// Allow requests from localhost (for cron jobs). A request that came
+		// through the exe.dev proxy may also arrive from loopback but always
+		// carries X-Forwarded-For — that is a browser, not cron, and must take
+		// the admin path.
 		host := r.RemoteAddr
-		if strings.HasPrefix(host, "127.0.0.1:") || strings.HasPrefix(host, "[::1]:") {
+		if (strings.HasPrefix(host, "127.0.0.1:") || strings.HasPrefix(host, "[::1]:")) && r.Header.Get("X-Forwarded-For") == "" {
 			next(w, r)
 			return
 		}

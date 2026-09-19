@@ -1067,6 +1067,25 @@ if [[ -n "$CLIENT_PWD" ]]; then
         fi
     fi
 
+    # Upload queue ids are sequential integers. Before 2026-09-19 the status
+    # endpoint answered any id to any password holder, so the sandbox could
+    # page through another tenant's patrol upload summaries (result_json:
+    # segment counts, distances, validation). Now scoped by PatrolEnvs: 404.
+    printf "%-50s" "upload_status_is_tenant_scoped"
+    q_id=$(sqlite3 db.sqlite3 "SELECT id FROM upload_queue WHERE COALESCE(env,'') NOT IN ('test','') ORDER BY id DESC LIMIT 1" 2>/dev/null || echo "")
+    if [[ -z "$q_id" ]]; then
+        yellow "skip (no non-sandbox queue row)"; PASSED=$((PASSED + 1))
+    else
+        sb=$(curl -s -m 30 -o /dev/null -w "%{http_code}" "${BASE_URL}/api/upload/status/${q_id}?pwd=test2026")
+        ow=$(curl -s -m 30 -o /dev/null -w "%{http_code}" "${BASE_URL}/api/upload/status/${q_id}?pwd=${CLIENT_PWD}")
+        if [[ "$sb" == "404" && "$ow" == "200" ]]; then
+            green "✓ (sandbox $sb, owner $ow on queue id $q_id)"; PASSED=$((PASSED + 1))
+        else
+            red "FAIL (sandbox $sb, owner $ow on queue id $q_id)"; FAILED=$((FAILED + 1))
+            ERRORS+=("upload queue status readable across tenants")
+        fi
+    fi
+
     printf "%-50s" "guest_link_expires_and_is_revocable"
     expjson=$(curl -s -m 30 -X POST "${BASE_URL}/api/shortlink?pwd=${CLIENT_PWD}" \
         -H 'Content-Type: application/json' -d '{"url":"/?t=exp","guest":true,"days":7}')
