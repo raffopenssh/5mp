@@ -56,6 +56,9 @@ type pageData struct {
 	// would produce one, because an editor that 403s on save is worse than an
 	// editor that was never offered.
 	IsGuest bool
+	// OG: <title>, canonical and link-preview tags for THIS url (srv/og.go);
+	// a `?methods=` section link previews as its section.
+	OG template.HTML
 	// AOIHome: the union bbox of the AOIs this session may see, or nil.
 	// An AOI is the reason its owner logs in, so it — not the continent — is
 	// the viewport a session opens on. Server-side so there is no flash of
@@ -164,6 +167,7 @@ func (s *Server) HandleRoot(w http.ResponseWriter, r *http.Request) {
 		IsGuest:   guest != nil,
 		AOIHome:   s.aoiHomeView(s.RequestPrincipalID(r)),
 		GuestSlug: guestSlug(guest),
+		OG:        template.HTML(ogTags(s.ogForURL(r.URL))),
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -590,9 +594,7 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("GET /robots.txt", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, s.StaticDir+"/robots.txt")
 	})
-	mux.HandleFunc("GET /sitemap.xml", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, s.StaticDir+"/sitemap.xml")
-	})
+	mux.HandleFunc("GET /sitemap.xml", s.HandleSitemap)
 
 	// Offline-tile builder: local, encrypted, into shared_files (srv/mbtiles.go).
 	InitMBTilesQueue(s)
