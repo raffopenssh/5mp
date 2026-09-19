@@ -554,34 +554,40 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
     </div>
 
     
-    <!-- 5MP Info Modal -->
-    <div id="modal-manifest" class="modal-overlay" onclick="closeModalOnOverlay(event)" role="dialog" aria-modal="true" aria-label="About 5MP">
-        <div class="modal" style="max-width: 600px; max-height: 85vh; overflow-y: auto;">
-            <div class="modal-header">
-                <h2 class="modal-title" style="display: flex; align-items: center; gap: 10px;">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-                        <path d="M2 12h20"></path>
-                    </svg>
-                    5 Megapixels of Global Conservation
-                </h2>
-                <button class="modal-close" onclick="closeModal('manifest')" aria-label="Close about dialog">×</button>
-            </div>
-            <div style="padding: 20px; font-size: 14px; line-height: 1.7; color: #c0c0c0;">
-                
-                <!-- About Section -->
-                <div style="background: linear-gradient(135deg, rgba(34,197,94,0.15) 0%, rgba(34,197,94,0.05) 100%); border: 1px solid rgba(34,197,94,0.3); border-radius: 8px; padding: 16px; margin-bottom: 20px;">
-                    <p style="font-size: 15px; color: #fff; margin-bottom: 12px;"><strong>A transparent map of global conservation effort</strong></p>
-                    <p style="margin-bottom: 12px; font-size: 13px;">In 2017, the OECD estimated global biodiversity finance at USD 78-91 billion, while potentially harmful investments reached USD 500 billion. Despite this spending, we lack a comprehensive map of where conservation effort actually happens on the ground.</p>
-                    <p style="margin-bottom: 12px; font-size: 13px;">With Earth's surface at 510 million km², dividing into 100 km² pixels gives us <strong style="color: #22c55e;">5.1 million pixels</strong> – the resolution of an average digital camera in 2010. We aim to create a transparent map showing conservation patrol coverage for each of these pixels.</p>
-                    <p style="margin: 0; font-size: 13px;">This tool monitors <strong>162 African keystone protected areas</strong> covering 2.1 million km², tracking fire events, deforestation, settlements, and patrol effort to ensure accountability and reveal where resources are needed most.</p>
+    <!-- 5MP Info Modal — "How this map works". Layout/behaviour: srv/static/about.js + .about-* in globe.css -->
+    <div id="modal-manifest" class="modal-overlay about-overlay" onclick="closeModalOnOverlay(event)" role="dialog" aria-modal="true" aria-labelledby="about-title">
+        <div class="modal about-modal">
+            <header class="about-head">
+                <div class="about-grip" aria-hidden="true"></div>
+                <div class="about-head-row">
+                    <h2 class="modal-title about-title" id="about-title">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" aria-hidden="true">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                            <path d="M2 12h20"></path>
+                        </svg>
+                        <span class="about-title-text"><span class="about-title-main">How this map works</span><span class="about-title-sub">5 Megapixels of Global Conservation · <span id="about-readtime"></span></span></span>
+                    </h2>
+                    <button class="modal-close about-close" onclick="closeModal('manifest')" aria-label="Close"><i class="icon-x" aria-hidden="true"></i></button>
                 </div>
-                
+                <div class="about-progress" aria-hidden="true"><div class="about-progress-bar" id="about-progress"></div></div>
+            </header>
+            <div class="about-scroll" id="about-scroll">
+                <div class="about-grid">
+                    <nav class="about-toc" id="about-toc" aria-label="Contents"></nav>
+                    <article class="about-article" id="about-article">
+
+                <!-- About Section -->
+                <div class="about-hero">
+                    <p class="about-hero-lead"><strong>A transparent map of global conservation effort</strong></p>
+                    <p>In 2017, the OECD estimated global biodiversity finance at USD 78-91 billion, while potentially harmful investments reached USD 500 billion. Despite this spending, we lack a comprehensive map of where conservation effort actually happens on the ground.</p>
+                    <p>With Earth's surface at 510 million km², dividing into 100 km² pixels gives us <strong class="about-accent">5.1 million pixels</strong> – the resolution of an average digital camera in 2010. We aim to create a transparent map showing conservation patrol coverage for each of these pixels.</p>
+                    <p>This tool monitors <strong>162 African keystone protected areas</strong> covering 2.1 million km², tracking fire events, deforestation, settlements, and patrol effort to ensure accountability and reveal where resources are needed most.</p>
+                </div>
+
                 <!-- Quick Start -->
-                <!-- Quick Start -->
-                <h3 style="color: #22c55e; margin: 16px 0 12px; font-size: 15px;" id="methods-quick-start" class="methods-h">Quick Start</h3>
-                <ul style="margin: 0 0 16px; padding-left: 18px; font-size: 13px;">
+                <h3 id="methods-quick-start" class="methods-h">Quick Start</h3>
+                <ul class="about-list">
                     <li><strong>Click a park</strong> to see fire, settlement & deforestation data</li>
                     <li><strong>Use time slider</strong> to filter data by date range</li>
                     <li><strong>Upload GPX</strong> to add patrol tracks (upload button)</li>
@@ -590,20 +596,20 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 </ul>
 
                 <!-- What You See -->
-                <h3 style="color: #22c55e; margin: 20px 0 12px; font-size: 15px;" id="methods-layers" class="methods-h">Data Layers</h3>
-                <ul style="margin-bottom: 16px; padding-left: 20px; font-size: 13px;">
-                    <li style="margin-bottom: 6px;"><span style="color: #f97316;">Fire Activity</span> – Satellite detections grouped into trajectories with origin/destination</li>
-                    <li style="margin-bottom: 6px;"><span style="color: #a855f7;">Settlements</span> – Built-up areas classified by type and distance to park</li>
-                    <li style="margin-bottom: 6px;"><span style="color: #ef4444;">Deforestation</span> – Forest loss events clustered and classified by cause</li>
-                    <li style="margin-bottom: 6px;"><span style="color: #22c55e;">Patrol Tracks</span> – GPS coverage intensity in 10×10 km grid cells</li>
+                <h3 id="methods-layers" class="methods-h">Data Layers</h3>
+                <ul class="about-list about-layers">
+                    <li><span class="about-swatch" style="--c:#f97316"></span><span><strong style="color:#f97316">Fire Activity</strong> – Satellite detections grouped into trajectories with origin/destination</span></li>
+                    <li><span class="about-swatch" style="--c:#a855f7"></span><span><strong style="color:#a855f7">Settlements</strong> – Built-up areas classified by type and distance to park</span></li>
+                    <li><span class="about-swatch" style="--c:#ef4444"></span><span><strong style="color:#ef4444">Deforestation</strong> – Forest loss events clustered and classified by cause</span></li>
+                    <li><span class="about-swatch" style="--c:#22c55e"></span><span><strong style="color:#22c55e">Patrol Tracks</strong> – GPS coverage intensity in 10×10 km grid cells</span></li>
                 </ul>
 
                 <!-- Data Processing -->
-                <h3 style="color: #22c55e; margin: 20px 0 12px; font-size: 15px;" id="methods-processing" class="methods-h">How We Process Data</h3>
-                
-                <h4 style="color: #f97316; margin: 14px 0 6px; font-size: 13px;" id="methods-fire" class="methods-h">Fire: Lines, Season Front &amp; Vanguard</h4>
-                <p style="margin: 0 0 8px; font-size: 12px; color: #ddd; border-left: 3px solid #fde047; padding-left: 10px;"><strong>In short.</strong> Red lines show where fire moved from day to day. In the main season they mark the corridors that burn every year — but not the direction; no method can read that from satellite data (we tested). Two layers give you something to act on: <span style="color:#fde047">vanguard</span> chains — this year’s fires 10–60 days ahead of the season, direction measured, refreshed nightly — and <span style="color:#fb7185">early-burn squares</span> — the ground the season enters first, year after year. Send the first flights there.</p>
-                <ul style="margin-bottom: 14px; padding-left: 20px; font-size: 12px; color: #aaa;">
+                <h3 id="methods-processing" class="methods-h">How We Process Data</h3>
+
+                <h4 id="methods-fire" class="methods-h" style="--h:#f97316">Fire: Lines, Season Front &amp; Vanguard</h4>
+                <p class="about-callout"><strong>In short.</strong> Red lines show where fire moved from day to day. In the main season they mark the corridors that burn every year — but not the direction; no method can read that from satellite data (we tested). Two layers give you something to act on: <span style="color:#fde047">vanguard</span> chains — this year’s fires 10–60 days ahead of the season, direction measured, refreshed nightly — and <span style="color:#fb7185">early-burn squares</span> — the ground the season enters first, year after year. Send the first flights there.</p>
+                <ul class="about-list about-defs">
                     <li><strong>Detections.</strong> NASA VIIRS (three satellites) passes twice a day and reports each 375 m pixel burning at that moment. Fetched daily from FIRMS; each area reads its boundary plus 30 km. More satellites since 2024 means more detections, not more fire, so charts break their line there.</li>
                     <li><strong>Lines.</strong> Pixels alight in 30+ different months (flares, kilns, dumps) are set aside. Three same-day detections within 3 km form a <em>patch</em>; a patch links to yesterday’s if it lies ahead of it (within 5 km + 8 km per unseen day, turn under 100°, at most 3 unseen days). A line needs 10 detections over 2 days. Speed never rejects a link: herders and hunters cover 80 km a day, and every speed cap removed exactly those chains.</li>
                     <li><strong>Two tests.</strong> <em>Is the day order real?</em> Shuffle the days within each month, rebuild, compare. Real links have yesterday’s and today’s patches nearly touching; chance links don’t. Summed along a chain this gives the <em>evidence tier</em>: <em>supported</em> (≈1 in 100 by chance), <em>weak</em>, <em>unsupported</em> (coin toss), <em>single</em>, <em>unmeasured</em>. <strong>Wide</strong> lines have confirmed order and carry <strong>direction chevrons</strong>; thin lines only confirm the corridor. <em>Is the place right?</em> Hide one season, predict it from earlier ones: last season’s fires predict this season’s in 99 % of 151 areas, and only 1.5–4 % of fires land on ground that never burned before. Past fire is a sound map of future fire.</li>
@@ -616,16 +622,16 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                     <li><strong>Refresh.</strong> Lines rebuild nightly, same rules for the archive and this morning’s detections. Fronts, vanguard, speed and early-burn ground refresh daily for the current season, in rotation for past ones. An area without a front yet says so.</li>
                 </ul>
 
-                <h4 style="color: #a855f7; margin: 14px 0 6px; font-size: 13px;" id="methods-settlements" class="methods-h">Settlement Detection</h4>
-                <ul style="margin-bottom: 14px; padding-left: 20px; font-size: 12px; color: #aaa;">
+                <h4 id="methods-settlements" class="methods-h" style="--h:#a855f7">Settlement Detection</h4>
+                <ul class="about-list">
                     <li>Source: EU Global Human Settlement Layer (10m resolution)</li>
                     <li>Built-up pixels clustered into settlement polygons</li>
                     <li>Distance to park boundary and nearest road calculated</li>
                     <li>Classified: village, farm compound, herding camp, fishing camp, seasonal camp, possible mining site — inferred from river proximity, deforestation shape, fire seasonality and remoteness</li>
                 </ul>
 
-                <h4 style="color: #ef4444; margin: 14px 0 6px; font-size: 13px;" id="methods-deforestation" class="methods-h">Deforestation Analysis</h4>
-                <ul style="margin-bottom: 14px; padding-left: 20px; font-size: 12px; color: #aaa;">
+                <h4 id="methods-deforestation" class="methods-h" style="--h:#ef4444">Deforestation Analysis</h4>
+                <ul class="about-list">
                     <li>Source: Hansen Global Forest Change (30m resolution)</li>
                     <li>Annual tree cover loss 2001-2024</li>
                     <li>Clustered into events (5km radius)</li>
@@ -633,8 +639,8 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                     <li>Near-real-time: GFW integrated alerts (GLAD-S2/RADD, ~10m) with 100km buffer — one park rescanned per day</li>
                 </ul>
 
-                <h4 style="color: #22c55e; margin: 14px 0 6px; font-size: 13px;" id="methods-patrols" class="methods-h">Patrol Tracking</h4>
-                <ul style="margin-bottom: 14px; padding-left: 20px; font-size: 12px; color: #aaa;">
+                <h4 id="methods-patrols" class="methods-h" style="--h:#22c55e">Patrol Tracking</h4>
+                <ul class="about-list">
                     <li>Upload GPX tracks from GPS devices or apps</li>
                     <li>Tracks split into 10×10 km grid cells</li>
                     <li>Movement classified: foot (<7 km/h), vehicle (7-80), aircraft (>80) with subtypes: boat, fixed-wing, rotor-wing from trajectory analysis</li>
@@ -642,52 +648,33 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 </ul>
 
                 <!-- Update Schedule -->
-                <h3 style="color: #22c55e; margin: 20px 0 12px; font-size: 15px;" id="methods-schedule" class="methods-h">Update Schedule</h3>
-                <table style="width: 100%; font-size: 12px; border-collapse: collapse; margin-bottom: 16px;">
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <td style="padding: 6px 0; color: #f97316;">Fire data</td>
-                        <td style="padding: 6px 0;">Daily at 5am CAT</td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <td style="padding: 6px 0; color: #ef4444;">Deforestation alerts (GFW)</td>
-                        <td style="padding: 6px 0;">Daily rotation — one park/day</td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <td style="padding: 6px 0; color: #a3a3a3;">Park narratives refresh</td>
-                        <td style="padding: 6px 0;">Daily — follows the scanned park</td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <td style="padding: 6px 0; color: #3b82f6;">Research papers</td>
-                        <td style="padding: 6px 0;">Daily (OpenAlex API)</td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <td style="padding: 6px 0; color: #8b5cf6;">Legal documents</td>
-                        <td style="padding: 6px 0;">Weekly (FAOLEX)</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 6px 0; color: #22c55e;">Patrol data</td>
-                        <td style="padding: 6px 0;">On upload (instant)</td>
-                    </tr>
+                <h3 id="methods-schedule" class="methods-h">Update Schedule</h3>
+                <table class="about-table">
+                    <tr><td><span class="about-swatch" style="--c:#f97316"></span>Fire data</td><td>Daily at 5am CAT</td></tr>
+                    <tr><td><span class="about-swatch" style="--c:#ef4444"></span>Deforestation alerts (GFW)</td><td>Daily rotation — one park/day</td></tr>
+                    <tr><td><span class="about-swatch" style="--c:#a3a3a3"></span>Park narratives refresh</td><td>Daily — follows the scanned park</td></tr>
+                    <tr><td><span class="about-swatch" style="--c:#3b82f6"></span>Research papers</td><td>Daily (OpenAlex API)</td></tr>
+                    <tr><td><span class="about-swatch" style="--c:#8b5cf6"></span>Legal documents</td><td>Weekly (FAOLEX)</td></tr>
+                    <tr><td><span class="about-swatch" style="--c:#22c55e"></span>Patrol data</td><td>On upload (instant)</td></tr>
                 </table>
 
                 <!-- Data sources & licences: rendered from /api/licenses by
                      renderAboutLicences() so this list and the Impressum and
                      the MBTiles metadata cannot disagree about who we owe credit. -->
-                <h3 style="color: #22c55e; margin: 20px 0 12px; font-size: 15px;" id="methods-sources" class="methods-h">Data Sources &amp; Licences</h3>
-                <p style="font-size: 12px; color: #888; margin: 0 0 10px;">Everything here was measured, drawn or published by somebody else first. Each source is listed with the terms its publisher granted; the full register with citations is at <a href="/licenses" target="_blank" style="color:#22c55e;">/licenses</a>.</p>
-                <div id="about-licences" style="font-size: 11px;"><span style="color:#666;">Loading…</span></div>
+                <h3 id="methods-sources" class="methods-h">Data Sources &amp; Licences</h3>
+                <p class="about-muted">Everything here was measured, drawn or published by somebody else first. Each source is listed with the terms its publisher granted; the full register with citations is at <a href="/licenses" target="_blank">/licenses</a>.</p>
+                <div id="about-licences" class="about-licences"><span style="color:#666;">Loading…</span></div>
 
                 <!-- Footer -->
-                <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 11px; color: #666;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-                        <span>Version: <strong id="modal-version" style="color: #22c55e;">{{.Version}}</strong></span>
-                        <span><a href="https://github.com/raffopenssh/5mp" target="_blank" style="color: #888;">GitHub</a> · <a href="/licenses" target="_blank" style="color: #888;">Licences</a></span>
-                    </div>
+                <footer class="about-foot">
+                    <span>Version <strong id="modal-version">{{.Version}}</strong></span>
+                    <span><a href="https://github.com/raffopenssh/5mp" target="_blank">GitHub</a> · <a href="/licenses" target="_blank">Licences</a></span>
+                </footer>
+                    </article>
                 </div>
             </div>
         </div>
     </div>
-
     <!-- Park Stats Modal -->
     <div id="modal-park-stats" class="modal-overlay" onclick="closeModalOnOverlay(event)" role="dialog" aria-modal="true" aria-label="Park statistics">
         <div class="modal" style="max-width: 420px;">
@@ -4517,17 +4504,17 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                 for (const e of data.licenses) {
                     if (e.category !== cat) {
                         cat = e.category;
-                        html += `<div style="color:#aaa;font-weight:600;margin:10px 0 4px;">${escapeHtml(catTitle[cat] || cat)}</div>`;
+                        html += `<div class="about-lic-cat">${escapeHtml(catTitle[cat] || cat)}</div>`;
                     }
                     const lic = e.licence_url
-                        ? `<a href="${escapeHtml(e.licence_url)}" target="_blank" rel="noopener" style="color:#888;">${escapeHtml(e.licence)}</a>`
+                        ? `<a href="${escapeHtml(e.licence_url)}" target="_blank" rel="noopener" class="about-lic-lic">${escapeHtml(e.licence)}</a>`
                         : escapeHtml(e.licence);
-                    html += `<div style="display:flex;gap:8px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.06);" title="${escapeHtml(e.attribution)}">
-                        <span style="flex:0 0 6px;height:6px;margin-top:5px;border-radius:50%;background:${termsColor[e.terms] || '#666'};" title="${escapeHtml(e.terms)}"></span>
-                        <div style="flex:1;min-width:0;">
-                            <a href="${escapeHtml(e.url)}" target="_blank" rel="noopener" style="color:#ddd;">${escapeHtml(e.name)}</a>
-                            <span style="color:#666;"> — ${escapeHtml(e.use)}</span>
-                            <div style="color:#777;">${escapeHtml(e.publisher)} · ${lic}</div>
+                    html += `<div class="about-lic" title="${escapeHtml(e.attribution)}">
+                        <span class="about-lic-dot" style="background:${termsColor[e.terms] || '#666'};" title="${escapeHtml(e.terms)}"></span>
+                        <div class="about-lic-body">
+                            <a href="${escapeHtml(e.url)}" target="_blank" rel="noopener">${escapeHtml(e.name)}</a>
+                            <span class="about-lic-use"> — ${escapeHtml(e.use)}</span>
+                            <div class="about-lic-meta">${escapeHtml(e.publisher)} · ${lic}</div>
                         </div></div>`;
                 }
                 html += `<div style="color:#666;margin-top:10px;line-height:1.5;">
@@ -26776,4 +26763,5 @@ ${starredItems.narratives.map(n => {
     <!-- A share link on every heading of a surface: "How this map works"
          (?methods=<section>) and admin sub-sections (&section=). -->
     <script src="/static/sectionlink.js?v={{.Version}}"></script>
+    <script src="/static/about.js?v={{.Version}}"></script>
 </body></html>
