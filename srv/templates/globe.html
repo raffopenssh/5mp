@@ -570,7 +570,14 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
                     </h2>
                     <button class="modal-close about-close" onclick="closeModal('manifest')" aria-label="Close"><i class="icon-x" aria-hidden="true"></i></button>
                 </div>
-                <div class="about-progress" aria-hidden="true"><div class="about-progress-bar" id="about-progress"></div></div>
+                <!-- Segmented reading track: one segment per section, width ∝ length, fills as read; tap = jump -->
+                <div class="about-steps" id="about-steps" role="group" aria-label="Sections"></div>
+                <button class="about-now" id="about-now" type="button" aria-expanded="false" aria-controls="about-toc">
+                    <span class="about-now-idx" id="about-now-idx"></span>
+                    <span class="about-now-title" id="about-now-title"></span>
+                    <i class="icon-chevron-down about-now-chev" aria-hidden="true"></i>
+                </button>
+                <div class="about-drop" id="about-drop"></div>
             </header>
             <div class="about-scroll" id="about-scroll">
                 <div class="about-grid">

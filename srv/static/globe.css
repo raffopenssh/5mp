@@ -4912,9 +4912,9 @@ h1:hover > .seclink, h2:hover > .seclink, h3:hover > .seclink, h4:hover > .secli
     width: 100%; max-width: 860px; height: min(860px, 100%); max-height: 100%;
     background: #161616; border-radius: 14px;
 }
-.about-head { flex: none; position: relative; background: rgba(22,22,22,0.96); border-bottom: 1px solid rgba(255,255,255,0.08); }
+.about-head { flex: none; position: relative; z-index: 4; background: rgba(22,22,22,0.96); border-bottom: 1px solid rgba(255,255,255,0.08); }
 .about-grip { display: none; }
-.about-head-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px 14px 22px; }
+.about-head-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px 10px 22px; }
 .about-title { display: flex; align-items: center; gap: 12px; min-width: 0; margin: 0; font-size: 17px; }
 .about-title svg { flex: none; }
 .about-title-text { display: flex; flex-direction: column; min-width: 0; }
@@ -4922,8 +4922,17 @@ h1:hover > .seclink, h2:hover > .seclink, h3:hover > .seclink, h4:hover > .secli
 .about-title-sub { font-size: 11.5px; font-weight: 400; color: #8a8a8a; margin-top: 3px; letter-spacing: 0.1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .about-close { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 10px; color: #999; font-size: 18px; padding: 0; transition: background .15s, color .15s; }
 .about-close:hover { background: rgba(255,255,255,0.08); color: #fff; }
-.about-progress { position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: transparent; }
-.about-progress-bar { height: 100%; width: 0; background: #22c55e; transition: width .08s linear; box-shadow: 0 0 6px rgba(34,197,94,0.6); }
+/* Segmented reading track (about.js buildSteps): sections as segments */
+.about-steps { display: flex; gap: 3px; padding: 0 22px 10px; }
+.about-step { position: relative; flex: 1 1 0; min-width: 14px; height: 14px; padding: 0; border: 0; background: transparent; cursor: pointer; border-radius: 3px; }
+.about-step::before { content: ''; position: absolute; left: 0; right: 0; top: 5px; height: 3px; border-radius: 2px; background: rgba(255,255,255,0.12); transition: background .15s; }
+.about-step-fill { position: absolute; left: 0; top: 5px; height: 3px; width: 0; border-radius: 2px; background: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,0.45); }
+.about-step:hover::before { background: rgba(255,255,255,0.22); }
+.about-step.active::before { background: rgba(34,197,94,0.28); }
+.about-step:focus-visible { outline: 2px solid #22c55e; outline-offset: 1px; }
+.about-step .about-step-tip { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); padding: 4px 8px; border-radius: 6px; background: #0e0e0e; border: 1px solid rgba(255,255,255,0.12); color: #ddd; font-size: 11px; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .12s; z-index: 5; }
+.about-step:hover .about-step-tip, .about-step:focus-visible .about-step-tip { opacity: 1; }
+.about-now, .about-drop { display: none; }
 
 .about-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
 @media (prefers-reduced-motion: reduce) { .about-scroll { scroll-behavior: auto; } }
@@ -4983,16 +4992,30 @@ h1:hover > .seclink, h2:hover > .seclink, h3:hover > .seclink, h4:hover > .secli
 @keyframes aboutIn { from { opacity: 0; transform: translateY(12px) scale(.985); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .about-overlay.active .about-modal { animation: none; } }
 
-/* Narrow desktop / tablet: TOC collapses to the chip row */
+/* Narrow desktop / tablet / phone: the side TOC is gone. The segmented track
+   carries navigation; the current section's title sits under it and opens
+   the full contents as a dropdown (about.js moves #about-toc into #about-drop). */
 @media (max-width: 860px) {
     .about-grid { grid-template-columns: minmax(0, 1fr); }
-    .about-toc { position: sticky; top: 0; z-index: 3; flex-direction: row; gap: 6px; padding: 10px 16px; overflow-x: auto; scrollbar-width: none; background: rgba(22,22,22,0.94); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.06); scroll-snap-type: x proximity; -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); }
-    .about-toc::-webkit-scrollbar { display: none; }
+    .about-steps { padding: 0 16px 6px; }
+    .about-step { min-width: 8px; }
+    .about-step .about-step-tip { display: none; }
+    .about-now { display: flex; align-items: center; gap: 8px; width: 100%; padding: 6px 16px 10px; border: 0; background: transparent; color: #e6e6e6; font: inherit; font-size: 13px; text-align: left; cursor: pointer; }
+    .about-now-idx { flex: none; font-variant-numeric: tabular-nums; font-size: 11px; color: #22c55e; font-weight: 600; letter-spacing: .3px; }
+    .about-now-title { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
+    .about-now-title .sub { color: #9a9a9a; font-weight: 400; }
+    .about-now-chev { flex: none; color: #8a8a8a; font-size: 14px; transition: transform .18s; }
+    .about-now[aria-expanded="true"] .about-now-chev { transform: rotate(180deg); }
+    .about-drop { display: block; position: absolute; left: 0; right: 0; top: 100%; z-index: 6; max-height: min(60vh, 420px); overflow-y: auto; background: #181818; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.1); box-shadow: 0 16px 32px rgba(0,0,0,0.45); transform-origin: top; transform: scaleY(.96); opacity: 0; pointer-events: none; transition: opacity .15s, transform .15s; }
+    .about-modal.toc-open .about-drop { opacity: 1; transform: none; pointer-events: auto; }
+    .about-drop .about-toc { position: static; padding: 8px 10px 12px; }
+    .about-drop .about-toc a { padding: 10px 12px; font-size: 14px; }
+    .about-drop .about-toc a.sub { padding-left: 26px; font-size: 13.5px; }
     .about-toc-label { display: none; }
-    .about-toc a, .about-toc a.sub { flex: none; scroll-snap-align: start; padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.1); border-left-width: 1px; font-size: 12px; color: #a5a5a5; background: rgba(255,255,255,0.03); }
-    .about-toc a.active { color: #0f2a17; background: #22c55e; border-color: #22c55e; font-weight: 600; }
     .about-article { padding: 18px 20px 28px; max-width: none; }
-    .about-article h3.methods-h, .about-article h4.methods-h { scroll-margin-top: 62px; }
+    .about-article h3.methods-h, .about-article h4.methods-h { scroll-margin-top: 20px; }
+    .about-scroll { transition: opacity .15s, filter .15s; }
+    .about-modal.toc-open .about-scroll { pointer-events: none; opacity: .35; filter: blur(2px); }
 }
 
 /* Phone: full-height bottom sheet */
@@ -5003,13 +5026,14 @@ h1:hover > .seclink, h2:hover > .seclink, h3:hover > .seclink, h4:hover > .secli
     @keyframes aboutUp { from { transform: translateY(40px); opacity: .6; } to { transform: none; opacity: 1; } }
     .about-head { padding-top: env(safe-area-inset-top); touch-action: none; }
     .about-grip { display: block; width: 36px; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.18); margin: 8px auto -4px; }
-    .about-head-row { padding: 10px 8px 10px 16px; }
+    .about-head-row { padding: 8px 8px 8px 16px; }
     .about-title-main { font-size: 16px; }
     .about-close { width: 44px; height: 44px; }
     .about-article { font-size: 15px; line-height: 1.6; padding: 16px 16px 40px; }
     .about-defs li, .about-hero p { font-size: 14px; }
     .about-table { font-size: 13.5px; }
     .about-table td:first-child { white-space: normal; }
+    .about-steps { padding: 0 16px 4px; }
     .about-modal.dragging { transition: none; }
     .about-modal.snapping { transition: transform .22s cubic-bezier(.2,.8,.2,1); }
 }
@@ -5020,3 +5044,5 @@ h1:hover > .seclink, h2:hover > .seclink, h3:hover > .seclink, h4:hover > .secli
 .about-lic-use { color: #7a7a7a; }
 .about-lic-meta { color: #808080; font-size: 11.5px; }
 .about-licences a.about-lic-lic { color: #9a9a9a; }
+.about-table td:first-child { position: relative; padding-left: 20px; }
+.about-table td:first-child .about-swatch { position: absolute; left: 2px; top: 13px; margin: 0; }
