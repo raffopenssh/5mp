@@ -24,20 +24,23 @@ BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(BASE)
 sys.path.insert(0, os.path.join(BASE, "analysis"))
 sys.path.insert(0, os.path.join(BASE, "scripts"))
-from gfw_alerts import TRUNCATION_FLOOR, HEAL_FILE  # noqa: E402
+from gfw_alerts import TRUNCATION_FLOOR, HEAL_FILE, _tile_read  # noqa: E402
 
 
 def suspect_tiles():
     """[(w, s, since)] cache tiles at/over the cap and not marked complete."""
     out = []
-    for p in glob.glob("data/gfw_tiles/*.json"):
+    for p in glob.glob("data/gfw_tiles/*.json*"):
         try:
-            d = json.load(open(p))
+            d = _tile_read(p)
             rows = d["rows"]
         except Exception:
             continue
         if len(rows) >= TRUNCATION_FLOOR and not d.get("complete"):
-            w, s, since = os.path.basename(p)[:-5].split("_", 2)
+            base = os.path.basename(p).split(".json")[0]
+            parts = base.split("_", 2)
+            w, s = parts[0], parts[1]
+            since = parts[2] if len(parts) > 2 else d.get("since", "")
             out.append((float(w), float(s), since))
     return out
 
