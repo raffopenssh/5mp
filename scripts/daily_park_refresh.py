@@ -43,6 +43,7 @@ import sys
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
+from gzjson import gz
 
 BASE_DIR = Path(__file__).parent.parent
 sys.path.insert(0, str(BASE_DIR / 'scripts'))
@@ -476,7 +477,7 @@ def reload_fire_groups(park_id, dry_run=False):
     if dry_run:
         log("  [dry-run] would run load_fire_groups_to_db.py --park --force")
         return
-    if not (BASE_DIR / 'data' / 'fire_groups_v5' / f'{park_id}.json').exists():
+    if not gz.exists(BASE_DIR / 'data' / 'fire_groups_v5' / f'{park_id}.json'):
         log(f"  no fire groups file for {park_id}, skipping fire reload")
         return
     r = subprocess.run(

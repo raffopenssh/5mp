@@ -82,6 +82,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).parent))
 from fire_source import DB_PATH  # noqa: E402
+from gzjson import gz
 
 BASE_DIR = Path(__file__).parent.parent
 GROUPS_DIR = BASE_DIR / "data" / "fire_groups_v5"
@@ -782,13 +783,11 @@ def tag_file(area_id, conn=None):
     """Re-tag data/fire_groups_v5/{area}.json in place. Returns
     (groups, vanguards) or None when the file is absent."""
     p = GROUPS_DIR / f"{area_id}.json"
-    if not p.exists():
+    if not gz.exists(p):
         return None
-    groups = json.loads(p.read_text())
+    groups = gz.load(p)
     n = tag_groups(groups, area_id, conn)
-    tmp = p.with_suffix(".json.tmp")
-    tmp.write_text(json.dumps(groups))
-    tmp.replace(p)
+    gz.dump(p, groups)   # atomic .json.gz
     if conn is not None:
         patch_feature_properties(conn, area_id, groups)
     return len(groups), n

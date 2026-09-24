@@ -194,8 +194,7 @@ CREATE TABLE fire_detections (
     UNIQUE(latitude, longitude, acq_date, acq_time, satellite)
 );
 CREATE INDEX idx_fire_date ON fire_detections(acq_date);
-CREATE INDEX idx_fire_location ON fire_detections(latitude, longitude);
-CREATE INDEX idx_fire_grid ON fire_detections(grid_cell_id);
+-- idx_fire_location / idx_fire_grid dropped in migration 071 (dead; autoindex covers lat/lon)
 CREATE INDEX idx_fire_pa ON fire_detections(protected_area_id);
 CREATE INDEX idx_fire_infraction ON fire_detections(in_protected_area, acq_date);
 CREATE TABLE fire_data_sync (

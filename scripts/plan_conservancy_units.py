@@ -54,6 +54,7 @@ from shapely.prepared import prep
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 import mining_model as MM   # MINING_MODEL=heldout|insample -> which prediction.json the unit table reads
+from gzjson import gz
 DB, HDB = ROOT / "db.sqlite3", ROOT / "data/histmaps/labels.sqlite3"
 ZONES = ROOT / "data/plan_zones"
 OUT = ROOT / "data/plan_zones" / ("conservancy_units" if os.environ.get("PLAN_AOI", "XSA_Study_Area") == "XSA_Study_Area" else f"conservancy_units_{os.environ['PLAN_AOI']}")
@@ -500,7 +501,7 @@ def cells(con, G):
         add("fire", lon, lat, n); add("fire_nf", lon[nf], lat[nf], n[nf])
     # fronts: each trajectory → the set of cells it crosses, kept as index arrays (a front touching a unit counts once)
     G.longdens = Z().astype(np.float32); G.alldens = Z().astype(np.float32); F = []; cx, sy = Z(), Z()
-    for g in json.load(open(ROOT / "data/fire_groups_v5" / f"{AOI}.json")):
+    for g in gz.load(ROOT / "data/fire_groups_v5" / f"{AOI}.json"):
         t = g.get("trajectory") or []
         if len(t) < 2: continue
         rr, cc = G.rc_arr([p[0] for p in t], [p[1] for p in t]); cl = []

@@ -36,6 +36,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 import plan_conservancy_units as P
 import __main__; __main__.Grid = P.Grid
+from gzjson import gz
 
 IN = P.OUT; OUT = ROOT / "data/plan_zones" / ("solver" if P.AOI == "XSA_Study_Area" else f"solver_{P.AOI}"); OUT.mkdir(parents=True, exist_ok=True)
 log = P.log
@@ -78,7 +79,7 @@ def movement(st, hold_season=2025, capture=0.50, sigma_km=4.0, k=12):
     from scipy import ndimage
     G = st["G"]; F = G.fronts
     long = [(i, f) for i, f in enumerate(F) if f[1] and f[2]]
-    raw = json.load(open(ROOT / "data/fire_groups_v5" / f"{P.AOI}.json"))
+    raw = gz.load(ROOT / "data/fire_groups_v5" / f"{P.AOI}.json")
     # rebuild dated trajectories of the long transhumance fronts in G.fronts order (cells() kept only the cell sets)
     T = []
     for g in raw:

@@ -58,6 +58,7 @@ from collections import defaultdict
 
 sys.path.insert(0, str(Path(__file__).parent))
 from fire_source import park_fire_count
+from gzjson import gz
 
 BASE_DIR = Path(__file__).parent.parent
 PROD_DIR = BASE_DIR / "data" / "fire_groups_v5"
@@ -234,10 +235,9 @@ def load_dir(d, parks):
     out = {}
     for p in parks:
         f = Path(d) / f"{p}.json"
-        if not f.exists():
+        if not gz.exists(f):
             continue
-        with open(f) as fh:
-            out[p] = json.load(fh)
+        out[p] = gz.load(f)
     return out
 
 
@@ -325,9 +325,9 @@ def main():
         dest.mkdir(parents=True, exist_ok=True)
         n = 0
         for p in parks:
-            src = PROD_DIR / f"{p}.json"
-            if src.exists():
-                shutil.copy2(src, dest / f"{p}.json")
+            src = gz.path(PROD_DIR / f"{p}.json")
+            if src:
+                shutil.copy2(src, dest / src.name)
                 n += 1
             else:
                 print(f"  warning: no production output for {p}")

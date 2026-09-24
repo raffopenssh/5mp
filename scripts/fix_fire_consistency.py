@@ -43,6 +43,7 @@ GROUPS_DIR = BASE_DIR / "data" / "fire_groups_v5"
 sys.path.insert(0, str(SCRIPTS))
 
 from check_fire_consistency import check, BAD_KEYS  # noqa: E402
+from gzjson import gz
 
 
 def log(msg):
@@ -56,9 +57,9 @@ def dedupe_json(parks, dry_run):
     changed = []
     for park in parks:
         f = GROUPS_DIR / f"{park}.json"
-        if not f.exists():
+        if not gz.exists(f):
             continue
-        groups = json.load(open(f))
+        groups = gz.load(f)
         n = dedupe_feature_ids(groups, park)
         if not n:
             continue

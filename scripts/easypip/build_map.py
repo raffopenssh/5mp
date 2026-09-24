@@ -54,6 +54,7 @@ from shapely.prepared import prep
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
+from gzjson import gz  # noqa: E402
 from plan_zone_stats import read_kml, km2  # noqa: E402  (one KML parser, not two)
 import mining_model as MM  # noqa: E402  MINING_MODEL=heldout|insample selects the gold surface
 
@@ -298,11 +299,11 @@ def load_stats():
 
 def load_fire(frame):
     """v5 fronts whose path enters the frame, as polylines + their type mix."""
-    if not GROUPS.exists():
+    if not gz.exists(GROUPS):
         return [], {}, "unmeasured: fire_groups_v5 missing"
     x0, y0, x1, y1 = frame
     segs, types, years = [], Counter(), Counter()
-    for g in json.load(open(GROUPS)):
+    for g in gz.load(GROUPS):
         tr = g.get("trajectory") or []
         if len(tr) < 2:
             continue

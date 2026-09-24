@@ -28,6 +28,7 @@ import sqlite3
 import argparse
 import collections
 from pathlib import Path
+from gzjson import gz
 
 BASE_DIR = Path(__file__).parent.parent
 DB_PATH = BASE_DIR / "db.sqlite3"
@@ -37,10 +38,10 @@ GROUPS_DIR = BASE_DIR / "data" / "fire_groups_v5"
 def load_json_groups():
     """park_id -> list of feature_ids (with duplicates preserved)."""
     out = {}
-    for f in sorted(glob.glob(str(GROUPS_DIR / "*.json"))):
-        park = Path(f).stem
+    for f in gz.glob(GROUPS_DIR):
+        park = gz.area_id(f)
         try:
-            out[park] = [g['feature_id'] for g in json.load(open(f))]
+            out[park] = [g['feature_id'] for g in gz.load(f)]
         except Exception as e:
             out[park] = []
             print(f"  WARN: unreadable {park}.json: {e}")
@@ -76,9 +77,9 @@ def evidence_drift():
     lr = BASE_DIR / "data" / "fire_link_lr.json"
     cur = hashlib.sha256(lr.read_bytes()).hexdigest()[:8] if lr.exists() else None
     stale = unscored = 0
-    for f in glob.glob(str(GROUPS_DIR / "*.json")):
+    for f in gz.glob(GROUPS_DIR):
         try:
-            for g in json.load(open(f)):
+            for g in gz.load(f):
                 m = g.get('evidence_model')
                 if m is None:
                     unscored += 1

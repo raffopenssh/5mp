@@ -1,6 +1,8 @@
 import json, math
 from collections import Counter
-g = json.load(open('/home/exedev/5mp/data/fire_groups_v5/XSA_Study_Area.json'))
+import sys; sys.path.insert(0, '/home/exedev/5mp/scripts')
+from gzjson import gz
+g = gz.load('/home/exedev/5mp/data/fire_groups_v5/XSA_Study_Area.json')
 
 def bearing(p1,p2):
     dy=(p2[1]-p1[1]); dx=(p2[0]-p1[0])*math.cos(math.radians((p1[1]+p2[1])/2))

@@ -45,6 +45,7 @@ from shapely import vectorized
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 import mining_model as MM  # noqa: E402  MINING_MODEL=heldout|insample
+from gzjson import gz
 DB = ROOT / "db.sqlite3"
 AOI = "XSA_Study_Area"
 GROUPS = ROOT / "data/fire_groups_v5" / f"{AOI}.json"
@@ -277,7 +278,7 @@ def fire_grid(con, zones, since="2018-04-01"):
 
 
 def fire_trajectories(zones):
-    groups = json.load(open(GROUPS))
+    groups = gz.load(GROUPS)
     names = list(zones)
     preps = {n: prep(zones[n]["geom"]) for n in names}
     cents = {n: zones[n]["geom"].centroid for n in names}

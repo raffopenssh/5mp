@@ -253,8 +253,10 @@ def pick_outlets(area, max_outlets=MAX_OUTLETS):
 
 # ------------------------------------------------------------ cached fetching
 def _gunzip(body):
-    """Bodies are stored decompressed, but be tolerant of rows written before
-    that was true (and of any server that ignores our Accept-Encoding)."""
+    """Bodies are stored gzipped since 2026-09-24 (watershed GeoJSON packs
+    ~17x: 805 MB -> ~50 MB); tolerate plain rows too (older writers, and
+    analysis/amw_model.py before it compressed). Detected by magic, not by a
+    column, so a mixed table reads correctly."""
     if body[:2] == b"\x1f\x8b":
         import gzip
         try:
@@ -262,6 +264,14 @@ def _gunzip(body):
         except Exception:
             pass
     return body
+
+
+def _gzip_body(body):
+    """Compress for storage; leave already-gzipped bytes alone."""
+    if body[:2] == b"\x1f\x8b":
+        return body
+    import gzip
+    return gzip.compress(body, 6)
 
 
 def cached_get(con, url, refresh=False, sleep=5.0, timeout=180):
@@ -276,8 +286,8 @@ def cached_get(con, url, refresh=False, sleep=5.0, timeout=180):
                                     timeout=timeout) as resp:
             status, body = resp.status, resp.read()
             # /app/getwshed always responds gzip (it is what the web app asks
-            # for); urllib does not transparently decompress. Store plain JSON
-            # in the cache so the cache is inspectable with sqlite3.
+            # for); urllib does not transparently decompress. Normalise to
+            # plain bytes here, then _gzip_body re-packs for storage.
             if resp.headers.get("Content-Encoding") == "gzip":
                 import gzip
                 try:
@@ -289,7 +299,7 @@ def cached_get(con, url, refresh=False, sleep=5.0, timeout=180):
     except Exception as ex:
         status, body = 0, str(ex)[:500].encode()
     con.execute("INSERT OR REPLACE INTO http_cache(url, status, body, fetched_at) "
-                "VALUES (?,?,?,datetime('now'))", (url, status, sqlite3.Binary(body)))
+                "VALUES (?,?,?,datetime('now'))", (url, status, sqlite3.Binary(_gzip_body(body))))
     con.commit()
     return status, _gunzip(body), False
 

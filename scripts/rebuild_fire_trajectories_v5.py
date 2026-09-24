@@ -55,6 +55,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from fire_source import (load_park_fires as _load_fires,
                          load_aoi_fires as _load_aoi_fires,
                          earliest_fire_date, date_num, parse_acq_time)
+from gzjson import gz
 
 try:
     from scipy.optimize import linear_sum_assignment
@@ -1336,9 +1337,8 @@ def main():
         existing_groups = []
         if args.incremental:
             existing_file = out_dir / f"{park_id}.json"
-            if existing_file.exists():
-                with open(existing_file) as f:
-                    existing_groups = json.load(f)
+            if gz.exists(existing_file):
+                existing_groups = gz.load(existing_file)
             spanning = [g for g in existing_groups
                         if g.get('end_date', '') >= effective_min_date
                         and g.get('start_date', '') < effective_min_date]
@@ -1398,8 +1398,7 @@ def main():
         multi_day = len([g for g in groups if g['days'] >= 2])
         avg_fires = sum(g['fire_count'] for g in new_groups) / len(new_groups) if new_groups else 0
 
-        with open(out_dir / f"{park_id}.json", 'w') as f:
-            json.dump(groups, f)
+        gz.dump(out_dir / f"{park_id}.json", groups)   # .json.gz (scripts/gzjson.py)
 
         total_groups += len(groups)
         total_fires_processed += len(fires)
