@@ -12,16 +12,17 @@ import json, sqlite3, sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 from load_fire_groups_to_db import day_offsets, DB_PATH, INPUT_DIR
+from gzjson import gz
 
 def main():
     conn = sqlite3.connect(DB_PATH, timeout=120)
     conn.execute("PRAGMA busy_timeout=120000")
-    files = sorted(INPUT_DIR.glob("*.json"))
+    files = gz.glob(INPUT_DIR)
     total = 0
     for i, f in enumerate(files, 1):
-        park = f.stem
+        park = gz.area_id(f)
         try:
-            groups = json.load(open(f))
+            groups = gz.load(f)
         except Exception as e:
             print(f"  ! {park}: {e}")
             continue

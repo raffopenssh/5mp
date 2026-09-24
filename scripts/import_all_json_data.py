@@ -17,6 +17,7 @@ import sqlite3
 import os
 from pathlib import Path
 from datetime import datetime
+from gzjson import gz
 
 DB_PATH = Path(__file__).parent.parent / 'db.sqlite3'
 DATA_DIR = Path(__file__).parent.parent / 'data'
@@ -484,11 +485,10 @@ def load_fire_narratives(conn):
         return 0
     
     count = 0
-    for json_file in narratives_dir.glob('*.json'):
-        park_id = json_file.stem
+    for json_file in gz.glob(narratives_dir):
+        park_id = gz.area_id(json_file)
         try:
-            with open(json_file) as f:
-                narrative = json.load(f)
+            narrative = gz.load(json_file)
             
             conn.execute('''
                 INSERT OR REPLACE INTO fire_narrative_cache 

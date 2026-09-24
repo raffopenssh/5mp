@@ -38,6 +38,7 @@ import numpy as np
 from scipy import ndimage
 ROOT = Path(__file__).resolve().parents[1]; sys.path.insert(0, str(ROOT / "scripts"))
 import fire_front as FF
+from gzjson import gz
 
 A_FRACS = [0.05, 0.10, 0.20, 0.30, 0.50]
 SIGMA_KM = 4.0
@@ -224,7 +225,7 @@ def xsa_lines(conn, A, preds_by_season):
     g = A["grid"]; mask = A["mask"]
     def season_of(d): y, m = int(d[:4]), int(d[5:7]); return f"{y}/{str(y+1)[2:]}" if m >= 8 else f"{y-1}/{str(y)[2:]}"
     sets = {}
-    for gr in json.load(open(ROOT / "data/fire_groups_v5/XSA_Study_Area.json")):
+    for gr in gz.load(ROOT / "data/fire_groups_v5/XSA_Study_Area.json"):
         t = gr.get("trajectory") or []
         if len(t) >= 2 and gr.get("group_type") == "transhumance" and float(gr.get("distance_km") or 0) >= 150:
             sets.setdefault(("long_fronts", season_of(gr["start_date"])), []).append(t)

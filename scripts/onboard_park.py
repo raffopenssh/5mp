@@ -43,6 +43,7 @@ import urllib.request
 import urllib.parse
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from gzjson import gz
 
 BASE_DIR = Path(__file__).parent.parent
 sys.path.insert(0, str(BASE_DIR / 'scripts'))
@@ -549,9 +550,7 @@ def process_removal(conn, req, dry_run):
     conn.commit()
     for d in ['fire_groups_v5', 'export/fire_narratives', 'deforestation_events',
               'settlement_events', 'gfw_alerts']:
-        f = BASE_DIR / 'data' / d / f'{park_id}.json'
-        if f.exists():
-            f.unlink()
+        gz.remove(BASE_DIR / 'data' / d / f'{park_id}.json')   # .json and/or .json.gz
     conn.execute("UPDATE park_onboarding_requests SET status='removed', processed_at=? WHERE id=?",
                  (datetime.now(timezone.utc).isoformat(), req['id']))
     conn.commit()

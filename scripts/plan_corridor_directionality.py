@@ -1,7 +1,9 @@
 import json, math
 from collections import Counter
 
-g = json.load(open('/home/exedev/5mp/data/fire_groups_v5/XSA_Study_Area.json'))
+import sys; sys.path.insert(0, '/home/exedev/5mp/scripts')
+from gzjson import gz
+g = gz.load('/home/exedev/5mp/data/fire_groups_v5/XSA_Study_Area.json')
 
 def seg_pass(traj, inside):
     """indices of traj points inside zone"""

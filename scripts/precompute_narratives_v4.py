@@ -12,6 +12,7 @@ import sqlite3
 from pathlib import Path
 from datetime import datetime, timedelta
 from collections import defaultdict
+from gzjson import gz
 
 DB_PATH = Path(__file__).parent.parent / 'db.sqlite3'
 DATA_DIR = Path(__file__).parent.parent / 'data'
@@ -325,12 +326,7 @@ class NarrativeGeneratorV4:
         fire_dir.mkdir(exist_ok=True)
         
         for park_id, data in narratives.items():
-            # Atomic write: write to temp file then rename
-            output_file = fire_dir / f'{park_id}.json'
-            temp_file = output_file.with_suffix('.json.tmp')
-            with open(temp_file, 'w') as f:
-                json.dump(data, f)
-            temp_file.rename(output_file)
+            gz.dump(fire_dir / f'{park_id}.json', data)   # atomic .json.gz
         
         # Update cache
         log("Updating fire_narrative_cache...")

@@ -23,8 +23,9 @@ from skimage.draw import line as skline
 from pathlib import Path; ROOT = Path(__file__).resolve().parents[1]; sys.path.insert(0, str(ROOT / "scripts")); OUTD = Path("/tmp/herdv"); OUTD.mkdir(exist_ok=True)
 import plan_conservancy_units as P
 import __main__; __main__.Grid = P.Grid
+from gzjson import gz
 st = pickle.load(open(str(ROOT / "data/plan_zones/conservancy_units/state.pkl"), "rb")); G = st["G"]
-raw = json.load(open(str(ROOT / "data/fire_groups_v5/XSA_Study_Area.json")))
+raw = gz.load(ROOT / "data/fire_groups_v5/XSA_Study_Area.json")
 def season_of(d): y, m = int(d[:4]), int(d[5:7]); return y if m >= 8 else y - 1
 T = []
 for g in raw:

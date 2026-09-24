@@ -46,6 +46,7 @@ from shapely.ops import transform, unary_union
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT / "scripts" / "deprecated"))  # 3-yr Aug-2026 budget the Aug PIP quotes
+from gzjson import gz  # noqa: E402
 from plan_zone_stats import RIM_KM, km2, read_kml  # noqa: E402
 import mining_model as MM  # noqa: E402  MINING_MODEL=heldout|insample: which mining surface every number below reads
 
@@ -347,7 +348,7 @@ def corridor_block(zs, geoms):
 
 def fire_block(zs):
     """The fire system, at the scale the plan has to govern it."""
-    groups = json.load(open(GROUPS))
+    groups = gz.load(GROUPS)
     types = Counter(g["group_type"] for g in groups)
     con = sqlite3.connect(f"file:{DB}?mode=ro", uri=True)
     det = con.execute(

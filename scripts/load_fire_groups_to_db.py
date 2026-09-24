@@ -40,6 +40,7 @@ import hashlib
 from pathlib import Path
 from datetime import datetime, timedelta
 from collections import defaultdict
+from gzjson import gz
 
 BASE_DIR = Path(__file__).parent.parent
 DB_PATH = BASE_DIR / "db.sqlite3"
@@ -443,11 +444,10 @@ class FireGroupLoader:
             return 0, {}
         
         input_file = INPUT_DIR / f"{park_id}.json"
-        if not input_file.exists():
+        if not gz.exists(input_file):
             return 0, {}
         
-        with open(input_file) as f:
-            groups = json.load(f)
+        groups = gz.load(input_file)
         
         if not groups:
             # A park whose rebuild legitimately produced zero groups (too few
@@ -677,8 +677,8 @@ class FireGroupLoader:
         else:
             # AOI outputs live in the same directory but must not be swept up
             # by a full park run.
-            park_ids = sorted([f.stem for f in INPUT_DIR.glob("*.json")
-                               if f.stem in self.parks])
+            park_ids = sorted([gz.area_id(f) for f in gz.glob(INPUT_DIR)
+                               if gz.area_id(f) in self.parks])
         
         log(f"Processing {len(park_ids)} parks...")
         

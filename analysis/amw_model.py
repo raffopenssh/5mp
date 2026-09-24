@@ -55,6 +55,7 @@ sets would not score high, and any Africa number would be meaningless.
 """
 import concurrent.futures as cf
 import datetime
+import gzip
 import hashlib
 import json
 import os
@@ -125,7 +126,10 @@ def _get_json(url, body=None, timeout=120, cache=True):
                               (key,)).fetchone()
             con.close()
             if row and row[0] == 200:
-                return json.loads(row[1])
+                b = row[1]
+                if b[:2] == b"\x1f\x8b":   # bodies are stored gzipped (2026-09-24)
+                    b = gzip.decompress(b)
+                return json.loads(b)
         except Exception:
             pass
     data = None if body is None else json.dumps(body).encode()
@@ -138,7 +142,7 @@ def _get_json(url, body=None, timeout=120, cache=True):
             con = _cache_con()
             con.execute("INSERT OR REPLACE INTO http_cache(url, status, body, "
                         "fetched_at) VALUES (?,?,?,?)",
-                        (key, 200, raw,
+                        (key, 200, gzip.compress(raw, 6),
                          datetime.datetime.utcnow().isoformat(timespec="seconds")))
             con.commit()
             con.close()

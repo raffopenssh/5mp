@@ -14,6 +14,7 @@ import json
 import sqlite3
 import sys
 from pathlib import Path
+from gzjson import gz
 
 DB_PATH = "db.sqlite3"
 DATA_DIR = Path("data")
@@ -159,9 +160,9 @@ def check_json_files(park_id):
     
     results = {}
     for name, path in files.items():
-        if path.exists():
+        if gz.exists(path):
             try:
-                data = json.loads(path.read_text())
+                data = gz.load(path)
                 if isinstance(data, list):
                     count = len(data)
                 elif isinstance(data, dict):

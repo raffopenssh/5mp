@@ -4,6 +4,7 @@ import json
 import sqlite3
 from pathlib import Path
 from datetime import datetime
+from gzjson import gz
 
 DB_PATH = Path(__file__).parent.parent / "db.sqlite3"
 NARRATIVES_DIR = Path(__file__).parent.parent / "data/export/fire_narratives"
@@ -12,9 +13,9 @@ def main():
     conn = sqlite3.connect(str(DB_PATH))
     count = 0
     
-    for f in NARRATIVES_DIR.glob('*.json'):
-        data = json.load(open(f))
-        park_id = f.stem
+    for f in gz.glob(NARRATIVES_DIR):
+        data = gz.load(f)
+        park_id = gz.area_id(f)
         years_data = data.get('trend', {}).get('years', [])
         # years is array of objects with 'year' field
         year_nums = [y.get('year') for y in years_data if isinstance(y, dict) and 'year' in y]
