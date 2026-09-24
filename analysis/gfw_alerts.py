@@ -43,46 +43,88 @@ TILE_CACHE_DIR = "data/gfw_tiles"
 TILE_TTL_DAYS = 14
 
 
-def _tile_key(w, s, since):
-    """Cache key: tile origin at 0.01-deg resolution + the 'since' cutoff.
-    'since' is part of the key because a tile fetched for an older cutoff is a
-    superset but a newer one is not, and quietly serving a short window as a
-    long one would silently under-report alerts."""
-    return f"{w:.2f}_{s:.2f}_{since}"
+def _tile_key(w, s, since=None):
+    """Cache key: tile origin at 0.01-deg resolution. `since` is deliberately
+    NOT part of the key (it was until 2026-09-24): the default cutoff is
+    today-400d, so a since-keyed cache produced a fresh file for every tile on
+    every night and never hit across days -- 3,042 files for 461 tiles,
+    3.7 GB, +80 MB/day, with nothing ever deleted. The cutoff is stored
+    INSIDE the entry and checked on read: an entry fetched for an older
+    cutoff is a superset and is served filtered to the requested window; a
+    newer one is not and is a miss."""
+    return f"{w:.2f}_{s:.2f}"
 
 
-def _tile_cached(key):
-    path = os.path.join(TILE_CACHE_DIR, key + ".json")
+def _tile_path(key):
+    return os.path.join(TILE_CACHE_DIR, key + ".json.gz")
+
+
+def _tile_read(path):
+    """Decode one cache entry (gzip; legacy plain .json accepted)."""
+    import gzip
+    opener = gzip.open if path.endswith(".gz") else open
+    with opener(path, "rt") as f:
+        return json.load(f)
+
+
+def _tile_cached(key, since):
+    path = _tile_path(key)
     if not os.path.exists(path):
         return None
     age_days = (time.time() - os.path.getmtime(path)) / 86400
     if age_days > TILE_TTL_DAYS:
         return None
     try:
-        d = json.load(open(path))
+        d = _tile_read(path)
         rows = d["rows"]
     except Exception:
         return None
-    if len(rows) >= TRUNCATION_FLOOR and not d.get("complete"):
+    if not d.get("complete"):
         # Stored before truncation detection existed: the API silently capped
-        # one of this tile's answers. A big tile assembled BY subdivision is
-        # fine and carries complete=true; an unmarked big tile is suspect.
-        # Treat as a miss so it is refetched with subdivision.
+        # one of this tile's answers. Treat as a miss so it is refetched with
+        # subdivision.
         return None
+    stored_since = d.get("since")
+    if not stored_since or stored_since > since:
+        # Shorter window than asked for: serving it would under-report.
+        return None
+    if stored_since < since:
+        rows = [r for r in rows if r.get("gfw_integrated_alerts__date", "") >= since]
     return rows
 
 
-def _tile_store(key, rows):
+def _tile_store(key, rows, since):
+    import gzip
     os.makedirs(TILE_CACHE_DIR, exist_ok=True)
-    path = os.path.join(TILE_CACHE_DIR, key + ".json")
+    path = _tile_path(key)
     tmp = path + ".tmp"
     # complete=True: this answer passed truncation detection (any sub-query
     # at or above TRUNCATION_FLOOR was subdivided), so a large row count here
-    # is genuine, not a cap.
-    json.dump({"fetched_at": datetime.datetime.now(datetime.timezone.utc)
-               .strftime("%Y-%m-%dT%H:%M:%SZ"), "complete": True,
-               "rows": rows}, open(tmp, "w"))
+    # is genuine, not a cap. gzip: the rows are ~27x compressible.
+    with gzip.open(tmp, "wt", compresslevel=6) as f:
+        json.dump({"fetched_at": datetime.datetime.now(datetime.timezone.utc)
+                   .strftime("%Y-%m-%dT%H:%M:%SZ"), "complete": True,
+                   "since": since, "rows": rows}, f, separators=(",", ":"))
     os.replace(tmp, path)
+
+
+def prune_tile_cache(ttl_days=None):
+    """Delete expired entries (a cache without eviction is a log). Also
+    removes legacy since-keyed `*_YYYY-MM-DD.json` files, which the new
+    reader never consults. Returns (n_deleted, bytes_freed)."""
+    import glob
+    ttl = TILE_TTL_DAYS if ttl_days is None else ttl_days
+    n = freed = 0
+    for p in glob.glob(os.path.join(TILE_CACHE_DIR, "*")):
+        base = os.path.basename(p)
+        legacy = base.endswith(".json") and base.count("_") >= 2
+        expired = (time.time() - os.path.getmtime(p)) / 86400 > ttl
+        if legacy or expired or base.endswith(".tmp"):
+            try:
+                freed += os.path.getsize(p); os.remove(p); n += 1
+            except OSError:
+                pass
+    return n, freed
 _version = None
 _nreq = 0
 
@@ -128,12 +170,12 @@ def fetch_tile(w, s, e, n, since, depth=0, use_cache=True):
     of one tile's fetch.
     """
     if use_cache and depth == 0:
-        key = _tile_key(w, s, since)
-        hit = _tile_cached(key)
+        key = _tile_key(w, s)
+        hit = _tile_cached(key, since)
         if hit is not None:
             return hit
         rows = _fetch_tile_uncached(w, s, e, n, since, 0)
-        _tile_store(key, rows)
+        _tile_store(key, rows, since)
         return rows
     return _fetch_tile_uncached(w, s, e, n, since, depth)
 
@@ -272,6 +314,11 @@ def main():
     if args.no_tile_cache:
         global TILE_TTL_DAYS
         TILE_TTL_DAYS = 0
+
+    n_pruned, freed = prune_tile_cache(ttl_days=14)
+    if n_pruned:
+        print(f"tile cache: pruned {n_pruned} expired entries "
+              f"({freed/1e6:.0f} MB)", file=sys.stderr)
 
     since = args.since or (datetime.date.today() -
                            datetime.timedelta(days=400)).isoformat()

@@ -206,6 +206,32 @@ re-runs cheap. Test-env requests are skipped by the worker.
 
 ---
 
+## GFW tile cache: key by tile, not by cutoff (2026-09-24)
+
+Disk grew ~105 MB/day; `disk_watch` attributed 80 of it to `data/gfw_tiles/`
+and 25 to `db.sqlite3` (≈100k fire rows/night × row+5 indexes — that part is
+the product). The tile cache key was `{w}_{s}_{since}` and `since` defaults to
+today−400d, so every night minted a new file per tile, never hit across days,
+and nothing evicted: 3,042 files for 461 tiles, 3.7 GB (0.54 GB was the
+latest copy per tile; ~27× compressible). **A cache without eviction is a
+log; a key containing the clock never hits.** Now (`analysis/gfw_alerts.py`):
+
+* key is `{w}_{s}`, file is `*.json.gz`; `since` is stored inside and checked
+  on read — an older stored cutoff is a superset and is served filtered to the
+  requested window, a newer one is a miss (never under-report).
+* `prune_tile_cache()` runs on every invocation: deletes entries past
+  `TILE_TTL_DAYS` (14) and any legacy since-keyed `*.json`.
+* Migrated 2026-09-24: 379 fresh tiles re-encoded, 3.7 GB → 20 MB;
+  `--park CAF_Chinko` afterwards: 0 API requests. Expected steady state
+  ≈ 20–30 MB total, ~1–3 MB/day churn.
+
+Remaining growth is `db.sqlite3` (~25 MB/day in fire season; `freelist_count`
+is 93 pages, so no VACUUM is owed). Not cron, but worth knowing: `.git` is
+824 MB because nightly outputs (`data/gfw_alerts/`, `data/*_events/`) are
+tracked and re-committed with each code commit.
+
+---
+
 ## GFW silent truncation + heal queue (2026-08-19)
 
 The GFW query endpoint caps large answers (observed exactly 40,000 and 45,000
