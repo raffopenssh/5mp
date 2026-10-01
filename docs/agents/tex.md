@@ -9,6 +9,11 @@ report prose and data are not. Do not move anything from `scripts/piptex/` into 
 ```bash
 scripts/piptex/build_all.sh          # main.pdf (30 MB) + main_share.pdf (1.5 MB), both in reports/pip_latex/
 ```
+**Versioning (2026-10-01):** `reports/` is its own **local** git repo (`reports/.git`, never pushed — the report and data are not
+public; the 5mp repo ignores `reports/` and `scripts/piptex`). The generator lives at `reports/piptex/`; `scripts/piptex` is a
+symlink to it, so every command below still works from the 5mp root. **Commit in `reports/` after each build/share** (explicit
+paths, no `git add -A`): `cd reports && git add piptex pip_latex <changed deliverables> && git commit`.
+
 Needs TeX Live (`texlive-latex-extra`, `biber`, `latexmk`; installed 2026-09-07) and `share.json`.
 `build_pip_tex.py [--share]` writes `main.tex`/`main_share.tex`; `--share` swaps the two maps for
 2400-px JPEGs and adds a line in the title box linking to the full-resolution PDF.
