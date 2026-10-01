@@ -87,13 +87,15 @@ Source of the asks: the author's comments in `/tmp/shelley-uploads/PIP_Radom_Num
 - Org chart figure is `[tbp]` now (was `[H]`) so the Gantt page is not half empty.
 
 **Open:**
-1. **Timeline figure (`fig:timeline`, §6)** — the author rejected two drafts ("excel-like"; wants "best in class, clean,
-   easy to read"). Current third draft: one axis on top with years + month ticks, dry season as a thin yellow band on the
-   axis, six rounded bars (prep grey, phases dark grey, Phase 2 in Habsburg yellow split at the second wave), gate as a
-   dotted hairline with a diamond, close diamond. Still wrong: in-bar texts overflow short bars (Phase 1, first-wave
-   segment), gate/close notes collide at the bottom, `Overfull \vbox 201pt` appeared after the org chart went `[tbp]`
-   (check `grep "Overfull .vbox" main.log` and which page). Look at `/tmp/g-15.png` style renders at 70–110 dpi before
-   iterating; show the author a crop each time.
+1. ~~Timeline figure~~ **done 2026-10-01 evening**: `scripts/piptex/timeline_tikz.py` (`timeline_tikz(P, B, y1, y2, tex, usd)`;
+   run it standalone → `/tmp/tl/tl-1.png` at 110 dpi for a quick look). A *season calendar*, not a Gantt: month strip on top
+   (dry months Habsburg, bold initials; rains near-white), dry months washed faintly through four lanes (PAPER / PEOPLE /
+   FIELD / AIR) with thin tracks, bold-title + grey-subtitle labels *beside* events (never inside bars — that was the overflow
+   bug), numbered teal dots for the two waves with the staffing line stepping thicker 1→2, Phase 2 as the only yellow bar,
+   gate and close as wine-red **dashed** verticals with diamonds in a decisions row under the strip, phase brackets with the
+   SSD budget per phase at the bottom. Checked in greyscale and deuteranopia (shapes carry the meaning, not hue); 150 mm wide.
+   Risk register table is `[tbp]` (was `[H]`: it overflowed p. 16 by 201 pt under the floated org chart) — it now lands on
+   p. 17 above the end of the Conclusion; author may prefer otherwise.
 2. Rebuild + share: `scripts/piptex/build_all.sh`; then `set -a; source secrets.env; set +a; python3 scripts/piptex/share.py pdf`,
    rebuild `--share` (the small PDF prints the full PDF's link), `share.py pdf_share docx maps budget`, revoke the four
    superseded slugs (`pdf g-pxk4n2qj7dr2hg2k`, `pdf_share g-6xkjz6px5ct3z3px`, `docx g-76wrj2ndfv2fsk8q`, `maps
