@@ -170,6 +170,9 @@ def main():
     ap.add_argument("--echo-cod-y2", type=int, default=1, help="ECHO teams on DRC community zones by year 2 — the COD strand, its own budget (0 = none)")
     ap.add_argument("--echo-sdn-y2", type=int, default=1, help="ECHO teams on Sudan community zones by year 2 — the SDN strand, its own budget (0 = none)")
     ap.add_argument("--robust-draws", type=int, default=500, help="perturbation draws for the selection-robustness check (weights ±, gold/people/threat inputs ±20%%, zone dropout)")
+    ap.add_argument("--pin-tango", action="append", default=[], metavar="LAT,LON,LABEL",
+                    help="a TANGO team placed by DECISION, not by rank: the qualifying settlement (>= MIN_SITE_POP) nearest the point, on the nearest "
+                         "corridor zone, second wave, outside the --tango-y2 cap but inside --staff-y2 (review decision 2026-10-01: Boro-Medina)")
     ap.add_argument("--fp-min-pop", type=int, default=5000); ap.add_argument("--narrate", action="store_true"); ap.add_argument("--no-llm", action="store_true", help="skip the muse-glimmer site adjudication"); ap.add_argument("--workers", type=int, default=32)
     a = ap.parse_args(); tag = a.tag
     st, G, zs, lab, p10, bud, mv, rk = load(tag)
@@ -332,6 +335,29 @@ def main():
     y2, staff2 = stage(a.staff_y2, a.echo_y2, a.tango_y2, a.fp_y2, caps_f, seed_fp=[s for s in y1 if s["kind"] == "FP"])
     y1_keys = {(s["kind"], s["place"]) for s in y1}
     for s in y2: s["year"] = 1 if (s["kind"], s["place"]) in y1_keys else 2
+    # ---------------------------------------------------------------- pinned TANGO teams (user decision; printed as such)
+    # A pin is not a ranking result: it is a team the client asked for by name, carried through the same site rules (settlement
+    # >= MIN_SITE_POP, reach, water printed) and the same budget. It consumes staff cap, not the ranked TANGO cap, and is always
+    # second wave. `why` says "decision", so the report cannot present it as the model's choice.
+    for spec in a.pin_tango:
+        la, lo, label = spec.split(",", 2); la, lo = float(la), float(lo)
+        if staff2 + TEAM > a.staff_y2: print(f"pin {label}: staff cap {a.staff_y2} reached, not placed"); continue
+        kx = math.cos(math.radians(la))
+        # nearest corridor zone by polygon distance
+        zpoly = {f["properties"]["uid"]: shape(f["geometry"]).buffer(0) for f in zs if f["properties"]["solver_class"] == "corridor"}
+        t = min((t for t in tango if t["uid"] in zpoly), key=lambda t: zpoly[t["uid"]].distance(Point(lo, la)))
+        dist_km = zpoly[t["uid"]].distance(Point(lo, la)) * 111 * kx
+        cands = [x for x in IX["S"] if P.dkm((lo, la), (x[1], x[0])) <= SITE_REACH_KM]
+        sl = shortlist(cands, IX, AC, G, t["mask"], t["udr"] * t["mask"], prefer=lambda x: 1.0 / (1.0 + P.dkm((lo, la), (x[1], x[0]))), need_road=False)
+        if not sl: print(f"pin {label}: no settlement >= {MIN_SITE_POP} people within {SITE_REACH_KM:g} km of ({la}, {lo}); not placed"); continue
+        sl.sort(key=lambda c: P.dkm((lo, la), (c["row"][1], c["row"][0])))     # the pin names a place: the nearest qualifying settlement is the site
+        why = (f"DECISION, not rank (review of 1 Oct 2026): a herder team at {label}. Nearest corridor zone {t['uid']} ({dist_km:.0f} km away; bundles {t['bundles']}, "
+               f"{t['fronts']:,} fitted fronts, {t['gold_top05']} gold-target cells in the band) already carries {sum(1 for s in y2 if s['kind'] == 'TANGO' and t['uid'] in s['zone_uids'])} TANGO team(s) at its eastern end; "
+               f"this site puts the first people on the leg of it that runs west to the CAR border.")
+        s_ = mk("TANGO", sl[0], [t["uid"]], round(t["urgency"] * 0.7, 3), (f"from month {t['onset']} (bundle onset) through the dry season" if t["onset"] else "dry season"), why, [label])
+        s_["alternatives"] = [dict(name=c["name"], people=int(c["row"][2] or 0), road_km=c["road_km"], reach=c["reach"], score=c["score"], lon=round(c["row"][1], 4), lat=round(c["row"][0], 4)) for c in sl]
+        s_.update(year=2, strand="SSD", pinned=label, place=label if P.dkm((lo, la), (s_["lon"], s_["lat"])) <= 3 else f"{s_['place']} (for {label})")
+        y2.append(s_); staff2 += TEAM; print(f"pin {label}: TANGO at {s_['place']} ({s_['lon']}, {s_['lat']}), zone {t['uid']}, {sl[0]['row'][2]:,} people")
     for s in y2: s.setdefault("strand", "SSD")
     for i, s in enumerate([s for s in y2 if s["kind"] == "ECHO" and s["strand"] == "SSD"], 1): s["id"] = f"E{i}"
     for k, v in STRANDS.items():   # K = CAR, D = DRC, S = Sudan (C is the planner's conservancy rank, E the SSD ECHO)
@@ -456,16 +482,31 @@ def adjudicate(placed, zs, workers):
     better-connected one). The LLM chooses among measured candidates only; it cannot add a site or move one."""
     from concurrent.futures import ThreadPoolExecutor
     byuid = {f["properties"]["uid"]: f["properties"] for f in zs}
+    # cache (2026-10-01): a team whose kind, machine reasons and shortlist are unchanged keeps the adjudication already made
+    # (deploy.json.prev), so a re-run for one new team does not re-open every site choice — and the model that made the
+    # earlier choices (muse-glimmer-30b) need not still be served. Delete the .prev to re-adjudicate everything.
+    prev = OUT / "deploy.json.prev"; old = {}
+    if prev.exists():
+        for t in json.load(open(prev)).get("teams", []):
+            if t.get("adjudication") and t["kind"] != "FP":
+                old[(t["kind"], tuple(t["zone_uids"]), re.sub(r" Site.*$", "", t["why"]), tuple(c["name"] for c in t.get("alternatives", [])))] = t
+    cached = 0
+    for s in placed:
+        k = (s["kind"], tuple(s["zone_uids"]), re.sub(r" Site.*$", "", s["why"]), tuple(c["name"] for c in s.get("alternatives", [])))
+        if k in old and not s.get("pinned"):
+            t = old[k]; s.update(place=t["place"], lon=t["lon"], lat=t["lat"], site_people=t["site_people"], road_km=t["road_km"], reach=t["reach"], why=t["why"], adjudication=t["adjudication"]); s["_adj_cached"] = True; cached += 1
+    todo = [i for i, s in enumerate(placed) if not s.pop("_adj_cached", False)]
+    print(f"adjudicate: {cached} kept from deploy.json.prev, {len(todo)} to ask {P.LLM_MODEL}")
     def one(i):
         s = placed[i]; p = byuid.get(s["zone_uids"][0], {})
         z = {k: p.get(k) for k in ("solver_class", "area_ha", "population_est", "towns", "boundary", "mine_top05_cells", "herd_bundles")}
         out = P.llm_json(ADJ_SYS, f"TEAM {s['kind']}; machine reasons: {s['why']}\n\nSHORTLIST:\n{json.dumps(s['alternatives'], ensure_ascii=False)}\n\nZONE:\n{json.dumps(z, ensure_ascii=False)[:3000]}", max_tokens=2500)
         return i, out
     with ThreadPoolExecutor(max_workers=workers) as ex:
-        for i, out in ex.map(one, range(len(placed))):
+        for i, out in ex.map(one, todo):
             s = placed[i]; ch = out.get("choice")
             if not isinstance(ch, int) or not (1 <= ch <= len(s["alternatives"])): s["adjudication"] = f"kept machine choice ({out.get('error', 'no valid choice')})"; continue
-            c = s["alternatives"][ch - 1]; s["adjudication"] = f"muse-glimmer chose #{ch} ({c['name']}): {out.get('reason', '')}"
+            c = s["alternatives"][ch - 1]; s["adjudication"] = f"{P.LLM_MODEL.split('/')[-1]} chose #{ch} ({c['name']}): {out.get('reason', '')}"
             if ch != 1:
                 s.update(place=c["name"], lon=c["lon"], lat=c["lat"], site_people=c["people"], road_km=c["road_km"], reach=c["reach"])
                 rc = c["reach"]; s["why"] = re.sub(r" Site: .*$", "", s["why"]) + f" Site (adjudicated): {c['people']:,} people, road {c['road_km']} km" + (f", reaches {rc['share']:.0%} of targets within {REACH_MIN//60} h ({rc['car_share']:.0%} by car/motorbike)." if rc else ".")

@@ -271,7 +271,7 @@ ASSUMPTIONS = [
 # --------------------------------------------------------------------------
 def derive(F, P):
     """Every derived quantity the lines and facts.budget.headcount share. Periods are PHASES (2026-10):
-    deploy 'year 1' = the first wave (fields from Dec 2027), 'year 2' = the second wave (from Apr 2028).
+    deploy 'year 1' = the first wave, 'year 2' = the second wave (months in plan.yaml wave_dates).
     A unit already in place is paid months_paid[kind][y] in phase y; a unit first deployed in phase y is paid
     months_first_phase[kind][y]. With echo/tango [0, 12] and first-phase [0, 8] that is 4 x 12 + 6 x 8 = 96 team-months."""
     N = len(P["year_labels"]); Y = list(range(N))
@@ -307,7 +307,7 @@ def derive(F, P):
 def lines(F, P):
     """Return [(cat, action, item, basis, rate_code, qty_per_phase, delivery_unit)].
     F = facts.json (needs F['deploy']['by_year']), P = plan.yaml. qty is a list of len N (one per phase)."""
-    d = derive(F, P); N, Y, by, tsize = d["N"], d["Y"], d["by"], d["tsize"]
+    d = derive(F, P); N, Y, by, tsize = d["N"], d["Y"], d["by"], d["tsize"]; WD = P["wave_dates"]
     echo, tango, fp, teams = d["echo"], d["tango"], d["fp"], d["teams"]
     n_echo, n_tango, n_fp, n_teams = d["n_echo"], d["n_tango"], d["n_fp"], d["n_teams"]
     team_months, fp_pm, scout_pm, lead_pm = d["team_months"], d["fp_pm"], d["scout_pm"], d["lead_pm"]
@@ -347,8 +347,8 @@ def lines(F, P):
        f"Half-time, {s(fin_pm)} FTE-months. Banking and approvals run through the AP South Sudan country representative's office",
        "SAL_OFFICER", fin_pm, "FP"))
     A(("2 National staff", "A4", "Community wildlife scouts (ECHO/TANGO members)",
-       f"{T['scouts']} scouts per team. No field teams in Phase 1 (rains). First wave ({by[0]['echo']} ECHO + {by[0]['tango']} TANGO) x {me[1]} months from Dec 2027, "
-       f"second wave ({n_echo[1]} ECHO + {n_tango[1]} TANGO) x {mfe[1]} months from Apr 2028: team-months {s(team_months)}",
+       f"{T['scouts']} scouts per team. No field teams in Phase 1 (rains). First wave ({by[0]['echo']} ECHO + {by[0]['tango']} TANGO) x {me[1]} months from {WD[0]}, "
+       f"second wave ({n_echo[1]} ECHO + {n_tango[1]} TANGO) x {mfe[1]} months from {WD[1]}: team-months {s(team_months)}",
        "SAL_SCOUT", scout_pm, "TEAM"))
     A(("2 National staff", "A4", "Scout team leaders", "One per team, same months", "SAL_LEAD", lead_pm, "TEAM"))
     A(("2 National staff", "A4", "Scout and leader food allowance", "Same person-months as scouts plus leaders",
@@ -638,6 +638,7 @@ def _locations(F, P):
     """Every place the plan puts money, from facts: team sites (ECHO/TANGO/FP by strand) plus Chinko HQ.
     weights[y] = months active in year y (an FP is 12, HQ is 1); the Allocation sheet splits each budget line's
     delivery unit across its locations in proportion to these weights, so a line for 'all teams' becomes a cost per site."""
+    WD = P["wave_dates"]
     N = len(P["year_labels"]); mp = P["months_paid"]; mf = P.get("months_first_phase") or mp
     sme = P.get("strand_months_paid") or mp["echo"]
     def months(kind, join, y):   # months a unit deployed in phase `join` (1-based) works in phase y; 1 in the set-up phase if it is
@@ -664,7 +665,7 @@ def _locations(F, P):
 
 def build_xlsx(path, F, P):
     from openpyxl.worksheet.datavalidation import DataValidation
-    rows, t = compute(F, P); N = t["N"]; a = t["a"]
+    rows, t = compute(F, P); N = t["N"]; a = t["a"]; WD = P["wave_dates"]
     EDIT = PatternFill("solid", fgColor="FFF2CC")
     wb = openpyxl.Workbook()
     # ---- Rates (editable: unit cost)
@@ -760,7 +761,7 @@ def build_xlsx(path, F, P):
     wl["A2"] = ("Weight = months active in the phase (a team being recruited and equipped in Phase 1 counts 1; Chinko HQ 1); the regional row under FP is twice the towns' combined weight, so "
                 "two thirds of the backbone lines (coordinator, partner grant, Wau compound, Juba travel) stay regional. Edit a weight to move money "
                 "between sites; a site with 0 in a phase gets nothing that phase."); wl["A2"].font = Font(italic=True, size=9)
-    wl.append([]); wl.append(["Team", "Place", "Kind", "Delivery unit", "Country", "Wave (1 = Dec 2027, 2 = Apr 2028)"] + [f"Weight {PH[y]}" for y in range(N)]); style_header(wl, 4, 6 + N)
+    wl.append([]); wl.append(["Team", "Place", "Kind", "Delivery unit", "Country", f"Wave (1 = {WD[0]}, 2 = {WD[1]})"] + [f"Weight {PH[y]}" for y in range(N)]); style_header(wl, 4, 6 + N)
     loc_first = 5
     for L_ in locs:
         wl.append([L_["id"], L_["place"], L_["kind"], L_["drv"], L_["country"], L_["year"]] + L_["w"]); r = wl.max_row
@@ -853,7 +854,7 @@ def build_txt(path, xlsx_name, F, P):
     tot = sum(t["total"]); o = []; Pp = o.append
     yl = P["year_labels"]; PH = P.get("phase_names") or [f"Year {y+1}" for y in range(N)]; HM = P.get("horizon_months") or 12 * N
     pm_ = d["pm_"]; PHU = [f"PHASE {y+1}" for y in Y]; PHM = [f"({pm_[y]} mo)" for y in Y]
-    PHL = [f"Phase {y+1} ({yl[y]}, {pm_[y]} months)" for y in Y]
+    PHL = [f"Phase {y+1} ({yl[y]}, {pm_[y]} months)" for y in Y]; WD, WDL = P["wave_dates"], P["wave_dates_long"]
     def row(label, vals, total=True):
         Pp(f"    {label:38s}" + "".join(f" {m(v):>12s}" for v in vals) + (f" {m(sum(vals)):>12s}" if total else ""))
     def hdr_row(last):
@@ -881,8 +882,8 @@ def build_txt(path, xlsx_name, F, P):
     Pp("                           SSWS leads visibly, Chinko HQ oversees, AP South")
     Pp("                           Sudan carries Juba.")
     Pp(f"  3  People on the ground  {staff} field staff recruited by wave; none in the field in Phase 1 (rains).")
-    Pp(f"                           First wave {by[0]['echo']} ECHO + {by[0]['tango']} TANGO + {by[0]['fp']} FP from Dec 2027; all {by[-1]['echo']} ECHO +")
-    Pp(f"                           {by[-1]['tango']} TANGO + {by[-1]['fp']} FP from Apr 2028: {d['team_months'][-1]:g} team-months, all in Phase 2.")
+    Pp(f"                           First wave {by[0]['echo']} ECHO + {by[0]['tango']} TANGO + {by[0]['fp']} FP from {WD[0]}; all {by[-1]['echo']} ECHO +")
+    Pp(f"                           {by[-1]['tango']} TANGO + {by[-1]['fp']} FP from {WD[1]}: {d['team_months'][-1]:g} team-months, all in Phase 2.")
     for k in STRAND_KEYS:
         if any(b.get(f"echo_{k.lower()}") for b in by):
             Pp(f"                           {k} strand, separately: " + "; ".join(f"P{y+1} {by[y].get(f'echo_{k.lower()}', 0)} ECHO ({by[y].get(f'staff_{k.lower()}', 0)} staff)" for y in Y) + ".")
@@ -916,7 +917,7 @@ def build_txt(path, xlsx_name, F, P):
         "There is no vehicle fleet - 4x4s are hired by the day. No Juba office. No headquarters. The heaviest single asset is a motorbike.",
         f"The calendar does the rest. The project starts on 1 June 2027, in the rains, and {PHL[0]} is set-up only: "
         "recruit, equip, train, position the avgas, run the paper track from Juba. Every field audience is present from December, so "
-        f"{PHL[1]} is the one field season: the first wave of teams deploys in December 2027, the second in April 2028, "
+        f"{PHL[1]} is the one field season: the first wave of teams deploys in {WDL[0]}, the second in {WDL[1]}, "
         "and all are paid to the end of November 2028.",
     ]:
         Pp(wrap(para)); Pp("")
@@ -1039,7 +1040,7 @@ def build_txt(path, xlsx_name, F, P):
 
 def summary(F, P):
     """The numbers other documents quote (into facts.json). per_year / ssd_per_year etc. are PER PHASE since 2026-10."""
-    rows, t = compute(F, P); d = derive(F, P); N = t["N"]; Y = range(N)
+    rows, t = compute(F, P); d = derive(F, P); N = t["N"]; Y = range(N); WD = P["wave_dates"]
     ssd = [r for r in rows if r["drv"] not in STRAND_KEYS]
     def phase_of(qty): return next((y + 1 for y in Y if qty[y]), None)
     equipment = [dict(item=r["item"], code=r["code"], qty=round(sum(r["qty"])), unit_cost=r["rate"], total=round(sum(r["tot"])), phase=phase_of(r["qty"]),
@@ -1050,7 +1051,7 @@ def summary(F, P):
     hc("Project Manager (international, based in South Sudan)", 1, d["pm_pm"], "both", f"full-time from 1 Jan 2027: {d['pm_pre']} pre-launch months (booked to Phase 1) + {sum(P['pm_months'])} = {sum(d['pm_pm'])} months; reports to the Chinko Landscape Coordinator")
     hc("National project coordinator, Juba/Wau", 1, d["coord_pm"], "both", f"all {sum(d['coord_pm'])} months")
     hc("Finance/admin officer (0.5 FTE, AP South Sudan, Juba)", 1, d["fin_pm"], "both", f"{sum(d['fin_pm'])} FTE-months")
-    hc("Focal points (one person each)", d["fp"][-1], d["fp_pm"], "both", f"{d['fp'][0]} from the start, {d['fp'][-1]} from Apr 2028: {sum(d['fp_pm'])} person-months")
+    hc("Focal points (one person each)", d["fp"][-1], d["fp_pm"], "both", f"{d['fp'][0]} from the start, {d['fp'][-1]} from {WD[1]}: {sum(d['fp_pm'])} person-months")
     hc("Community wildlife scouts", d["teams"][-1] * T["scouts"], d["scout_pm"], 2, f"{T['scouts']} per team x {d['team_months'][-1]:g} team-months, Phase 2 only")
     hc("Scout team leaders", d["teams"][-1] * T["leader"], d["lead_pm"], 2, f"one per team, {d['team_months'][-1]:g} team-months, Phase 2 only")
     AV = {"SAV_HR": ("Savannah STOL (light aircraft)", "surveillance, livestock counts and rim reconnaissance, several flights over the 2027-28 dry season"),
