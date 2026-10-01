@@ -43,3 +43,14 @@ Needs TeX Live (`texlive-latex-extra`, `biber`, `latexmk`; installed 2026-09-07)
 
 Palatino (`mathpazo`), 150 mm text width, `titlesec`, `parskip`, `tcolorbox` title box in Habsburg yellow
 (`#F2D33C`), IEEE bibliography in `\small\RaggedRight`. Keep it that way unless the author asks.
+
+## v2 review round (2026-10-01, commit d7c71078 →)
+
+- **Map pages**: image `height=.89\textheight` (was `.93`). The landscape text block is 186 mm; at `.93` the
+  3-line Figure 1 caption overflowed by 10 pt (`Overfull \vbox … while \output is active`), the `[H]` figure
+  spilled to a second landscape page and left a blank page 4. The `\afterpage{\clearpage\newgeometry…}`
+  wrapper was innocent — check `grep "Overfull .vbox" main.log` before blaming it. 21 pages, no empty page.
+- Share 2026-10-01: new slugs pdf `g-jm9tsxs323xhvcc9`, pdf_share `g-gk8nmjcgnnvt5sbh`, docx `g-4x6pxzcg2zk2dcww`,
+  maps `g-97dbb6zhjrhm6gw8`, budget `g-npdxrw8vtm3mf8wj`, dossier `g-g2g5qxkzxczxsqfh` (gpkg/legal_brief/aoi_gpkg_light/views unchanged).
+- Revoked 7 superseded guest slugs (the six 2026-09-07 file links + the intermediate docx minted before the `--share` rebuild).
+  Still live but not in the PDFs: six 2026-09-15/16 `map view`/`tmp ui inspect` links on principal 6 — not PIP, left for the owner to decide.
