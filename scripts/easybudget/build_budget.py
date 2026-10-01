@@ -280,9 +280,10 @@ ASSUMPTIONS = [
 # --------------------------------------------------------------------------
 def derive(F, P):
     """Every derived quantity the lines and facts.budget.headcount share. Periods are PHASES (2026-10):
-    deploy 'year 1' = the first wave, 'year 2' = the second wave (months in plan.yaml wave_dates).
+    deploy 'year 1' = the first wave, 'year 2' = the second wave; each KIND has its own deploy month per wave
+    (plan.yaml wave_dates_by_kind: TANGO Nov 2027 before the herds, ECHO Dec 2027 / Jan 2028, FP Nov / Jan).
     A unit already in place is paid months_paid[kind][y] in phase y; a unit first deployed in phase y is paid
-    months_first_phase[kind][y]. With echo/tango [0, 12] and first-phase [0, 8] that is 4 x 12 + 6 x 8 = 96 team-months."""
+    months_first_phase[kind][y]. 2026-10-01: tango [0, 13], echo [0, 12] / first-phase [0, 11]: 5 x 13 + 2 x 12 + 3 x 11 = 122."""
     N = len(P["year_labels"]); Y = list(range(N))
     by = F["deploy"]["by_year"]                  # [{echo, tango, fp, staff, new_echo, new_tango, new_fp}, ...]
     T = P["team"]; tsize = T["scouts"] + T["leader"]
@@ -316,7 +317,7 @@ def derive(F, P):
 def lines(F, P):
     """Return [(cat, action, item, basis, rate_code, qty_per_phase, delivery_unit)].
     F = facts.json (needs F['deploy']['by_year']), P = plan.yaml. qty is a list of len N (one per phase)."""
-    d = derive(F, P); N, Y, by, tsize = d["N"], d["Y"], d["by"], d["tsize"]; WD = P["wave_dates"]
+    d = derive(F, P); N, Y, by, tsize = d["N"], d["Y"], d["by"], d["tsize"]; WD = P["wave_dates"]; WK = P.get("wave_dates_by_kind") or {k: WD for k in ("echo", "tango", "fp")}
     echo, tango, fp, teams = d["echo"], d["tango"], d["fp"], d["teams"]
     n_echo, n_tango, n_fp, n_teams = d["n_echo"], d["n_tango"], d["n_fp"], d["n_teams"]
     team_months, fp_pm, scout_pm, lead_pm = d["team_months"], d["fp_pm"], d["scout_pm"], d["lead_pm"]
@@ -357,8 +358,8 @@ def lines(F, P):
        f"Half-time, {s(fin_pm)} FTE-months. Banking and approvals run through the AP South Sudan country representative's office",
        "SAL_OFFICER", fin_pm, "FP"))
     A(("2 National staff", "A4", "Community wildlife scouts (ECHO/TANGO members)",
-       f"{T['scouts']} scouts per team. No field teams in Phase 1 (rains). First wave ({by[0]['echo']} ECHO + {by[0]['tango']} TANGO) x {me[1]} months from {WD[0]}, "
-       f"second wave ({n_echo[1]} ECHO + {n_tango[1]} TANGO) x {mfe[1]} months from {WD[1]}: team-months {s(team_months)}",
+       f"{T['scouts']} scouts per team. No field teams in Phase 1 (wet season). TANGO corridor teams ({by[0]['tango']}) x {mt[1]} months from {WK['tango'][0]}, before the herds; "
+       f"ECHO conservancy teams {by[0]['echo']} x {me[1]} months from {WK['echo'][0]} and {n_echo[1]} x {mfe[1]} months from {WK['echo'][1]}: team-months {s(team_months)}",
        "SAL_SCOUT", scout_pm, "TEAM"))
     A(("2 National staff", "A4", "Scout team leaders", "One per team, same months", "SAL_LEAD", lead_pm, "TEAM"))
     A(("2 National staff", "A4", "Scout and leader food allowance", "Same person-months as scouts plus leaders",
@@ -399,7 +400,7 @@ def lines(F, P):
     A(("4 Field activities", "A7", "R44 helicopter support, medevac and operational needs",
        f"{s(P['heli_hours'])} hours. AP Aviation to confirm availability and positioning", "HELI_HR", P["heli_hours"], None))
     A(("4 Field activities", "A7", "Avgas positioned at field locations (ESTIMATE)",
-       f"{s(P['avgas_barrels'])} barrels, bought and positioned in the rains ahead of the flying season", "AVGAS_BBL", P["avgas_barrels"], None))
+       f"{s(P['avgas_barrels'])} barrels, bought and positioned in the wet season ahead of the flying season", "AVGAS_BBL", P["avgas_barrels"], None))
     A(("4 Field activities", "A7", "Ground field-check missions (rim cells, gold-target cells, uncertain sites)",
        f"{s(P['field_check_missions'])} missions x 12 vehicle-days", "VEH_HIRE", [m * 12 for m in P["field_check_missions"]], None))
     A(("4 Field activities", "A6", "Corridor and conservancy meetings with herder leadership and communities",
@@ -452,7 +453,7 @@ def lines(F, P):
        f"{s(P['domestic_legs_base'])} legs plus 6 per focal point outside Wau ({s(fp_away)}); set-up and government liaison front-loaded", "FLT_DOM",
        [P["domestic_legs_base"][y] + 6 * fp_away[y] for y in Y], "FP"))
     A(("7 Travel and accommodation", "A2", "Juba accommodation (paper track: regulations, gazette request, RRC)",
-       f"{s(P['juba_nights'])} nights - the paper time runs in the rains, before the field season", "ACC_JUBA", P["juba_nights"], "FP"))
+       f"{s(P['juba_nights'])} nights - the paper time runs in the wet season, before the field season", "ACC_JUBA", P["juba_nights"], "FP"))
     A(("7 Travel and accommodation", "A2", "Juba per diems", "Same days as above", "PERDIEM_J", P["juba_nights"], "FP"))
     fn = [30 * m for m in P["field_check_missions"]]
     A(("7 Travel and accommodation", "A7", "Field accommodation, missions", f"30 person-nights per field-check mission ({s(fn)})",
@@ -481,7 +482,7 @@ def lines(F, P):
     # ---- 10 Training
     first_wave_staff = n_teams[0] * tsize
     A(("10 Training", "A4", "Scout induction and community-engagement training",
-       f"{P['train_induction_days']} days per new team member ({s([n_teams[y] * tsize for y in Y])}) in the phase they are recruited - the first wave is trained in the rains, "
+       f"{P['train_induction_days']} days per new team member ({s([n_teams[y] * tsize for y in Y])}) in the phase they are recruited - the first wave is trained in the wet season, "
        f"before anyone deploys - plus a {P['train_refresher_days']}-day refresher for the first wave ({first_wave_staff}) in Phase 2. "
        "Community engagement is explicit: the wildlife service descends from an armed force", "TRAIN_PD",
        [n_teams[y] * tsize * P["train_induction_days"] + (first_wave_staff * P["train_refresher_days"] if y else 0) for y in Y],
@@ -837,7 +838,7 @@ def build_xlsx(path, F, P):
     pivot_sheet("By location", "COST PER LOCATION (as per the plan's team sites; lines for 'all teams' split by months active)", "Location", "PivotLocation")
     pivot_sheet("By strand", "COST BY BUDGET STRAND (South Sudan request vs the separate CAR / DRC / Sudan conservancy budgets)", "Strand", "PivotStrand")
     pivot_sheet("By delivery unit", "LOADED COST OF EACH DELIVERY UNIT (teams, focal points and backbone, Chinko HQ, strands)", "Delivery unit", "PivotUnit")
-    # ---- Phasing (plain formulae: Phase 1 = set-up in the rains, Phase 2 = the field season; Phase 1 is also the first six months)
+    # ---- Phasing (plain formulae: Phase 1 = set-up in the wet season, Phase 2 = the field season; Phase 1 is also the first six months)
     ws7 = wb.create_sheet("Phasing"); ws7["A1"] = f"PHASING ON THE {HM}-MONTH CALENDAR (Phase 1 = set-up, no field teams; Phase 2 = the one field season)"
     ws7["A1"].font = Font(bold=True, size=12); ws7.append([]); ws7.append(["Period", "Direct", "Loaded"]); style_header(ws7, 3, 3)
     for y in range(N):
@@ -892,17 +893,18 @@ def build_txt(path, xlsx_name, F, P):
     Pp("  2  Shape                 No new organisation. A national partner implements,")
     Pp("                           SSWS leads visibly, Chinko HQ oversees, AP South")
     Pp("                           Sudan carries Juba.")
-    Pp(f"  3  People on the ground  {staff} field staff recruited by wave; none in the field in Phase 1 (rains).")
-    Pp(f"                           First wave {by[0]['echo']} ECHO + {by[0]['tango']} TANGO + {by[0]['fp']} FP from {WD[0]}; all {by[-1]['echo']} ECHO +")
-    Pp(f"                           {by[-1]['tango']} TANGO + {by[-1]['fp']} FP from {WD[1]}: {d['team_months'][-1]:g} team-months, all in Phase 2.")
+    WK = P.get("wave_dates_by_kind") or {k: WD for k in ("echo", "tango", "fp")}
+    Pp(f"  3  People on the ground  {staff} field staff recruited by wave; none in the field in Phase 1 (wet season).")
+    Pp(f"                           All {by[0]['tango']} TANGO + {by[0]['fp']} FP from {WK['tango'][0]} (before the herds), {by[0]['echo']} ECHO from {WK['echo'][0]};")
+    Pp(f"                           all {by[-1]['echo']} ECHO + {by[-1]['tango']} TANGO + {by[-1]['fp']} FP from {WK['echo'][1]}: {d['team_months'][-1]:g} team-months, all in Phase 2.")
     for k in STRAND_KEYS:
         if any(b.get(f"echo_{k.lower()}") for b in by):
             Pp(f"                           {k} strand, separately: " + "; ".join(f"P{y+1} {by[y].get(f'echo_{k.lower()}', 0)} ECHO ({by[y].get(f'staff_{k.lower()}', 0)} staff)" for y in Y) + ".")
     Pp("                           A team is 4 scouts + 1 leader; a focal point one person.")
     Pp(f"  4  Money on the ground   {natl/tot:.0%} of the total is national staff, partner")
     Pp("                           grants and SSWS support.")
-    Pp(f"  5  Seasonal payroll      Teams are paid from deployment to Nov 2028 ({P['months_paid']['echo'][1]} months for the")
-    Pp(f"                           first wave, {P['months_first_phase']['echo'][1]} for the second), not from the start of the grant.")
+    Pp(f"  5  Seasonal payroll      Teams are paid from deployment to Nov 2028 ({P['months_paid']['tango'][1]} months TANGO, {P['months_paid']['echo'][1]} for")
+    Pp(f"                           first-wave ECHO, {P['months_first_phase']['echo'][1]} for the second), not from the start of the grant.")
     Pp(f"  6  The corridor's price  Water, veterinary and meetings: USD {m(t['corridor_price'])} -")
     Pp("                           the herders named it, so it is a line, not an intention.")
     Pp(f"  7  One expatriate        A full-time Project Manager in South Sudan from 1 Jan 2027 ({sum(d['pm_pm'])} months,")
@@ -926,10 +928,10 @@ def build_txt(path, xlsx_name, F, P):
         f"{by[-1]['fp']} focal points ({', '.join(F['deploy']['fp_places'])}), "
         f"{by[-1]['echo']+by[-1]['tango']} seasonal scout teams, and the activities themselves. "
         "There is no vehicle fleet - 4x4s are hired by the day. No Juba office. No headquarters. The heaviest single asset is a motorbike.",
-        f"The calendar does the rest. The project starts on 1 June 2027, in the rains, and {PHL[0]} is set-up only: "
-        "recruit, equip, train, position the avgas, run the paper track from Juba. Every field audience is present from December, so "
-        f"{PHL[1]} is the one field season: the first wave of teams deploys in {WDL[0]}, the second in {WDL[1]}, "
-        "and all are paid to the end of November 2028.",
+        f"The calendar does the rest. The project starts on 1 June 2027, in the wet season, and {PHL[0]} is set-up only: "
+        f"recruit, equip, train, position the avgas, run the paper track from Juba. The herds arrive in November, so "
+        f"{PHL[1]} is the one field season: the TANGO corridor teams deploy in {WDL[0]}, before the herds, the ECHO conservancy teams in "
+        f"{P.get('wave_dates_by_kind', {}).get('echo', WD)[0]} and {WDL[1]}, and all are paid to the end of November 2028.",
     ]:
         Pp(wrap(para)); Pp("")
     Pp(""); Pp("THE HEADLINE"); Pp("-" * W); Pp("")
@@ -950,8 +952,8 @@ def build_txt(path, xlsx_name, F, P):
             "the recruitment and the training before anyone deploys."))
     Pp(""); Pp("")
     Pp("PHASING ON THE PLAN'S OWN CLOCK"); Pp("-" * W)
-    Pp(wrap("The FIELD clock opens in December; the PAPER clock runs from the first day, from Juba. Phase 1 is the first six months "
-            "of the project, so there is no separate six-month tranche: the two rows below add up to the total."))
+    Pp(wrap(f"The FIELD clock opens in {WDL[0]}; the PAPER clock runs from the first day, from Juba. Phase 1 is the first {pm_[0]} months "
+            "of the project, so there is no separate set-up tranche: the two rows below add up to the total."))
     Pp(""); Pp(f"    {'PERIOD':38s} {'DIRECT':>12s} {'LOADED':>12s} {'CUMULATIVE':>12s}"); Pp("    " + "-" * (W - 8))
     cum = 0
     for y in Y:
@@ -1033,7 +1035,7 @@ def build_txt(path, xlsx_name, F, P):
     Pp("WHAT WOULD MAKE THIS BUDGET WRONG"); Pp("-" * W)
     for item, why in [
         (f"No SSWS endorsement by {P['gate_date']}", "Then the project does not launch on 1 June 2027 and nothing in Phase 1 is spent."),
-        ("A lost season", "This project has ONE field season (Dec 2027-Nov 2028) in a state whose conflict record is quiet with bad days. A cancelled season cannot be pushed right inside 18 months; that is what the contingency is for, and why the hand-over decision in Nov 2028 matters."),
+        ("A lost season", f"This project has ONE field season ({yl[1]}) in a state whose conflict record is quiet with bad days. A cancelled season cannot be pushed right inside 18 months; that is what the contingency is for, and why the hand-over decision in Nov 2028 matters."),
         ("A mineral title issued on the rim", "Then the second wave stops expanding and spends itself on that single problem."),
         ("The aviation rates", "150/h for the Savannah and 700/h for the R44 sit far below this catalogue's own benchmark (about 465 and 1,860). If the operator's real rate applies, the aviation lines roughly triple."),
         ("Partner capacity", "The model rests on a national partner able to absorb and account for the grant. Verify that in the first Wau visit."),
