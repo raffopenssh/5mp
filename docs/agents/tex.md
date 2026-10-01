@@ -58,3 +58,45 @@ Palatino (`mathpazo`), 150 mm text width, `titlesec`, `parskip`, `tcolorbox` tit
 - **Gazettement, not a new park (2026-10-01, author's call):** the plan no longer proposes a national park; the mid-term target is Numatina's *existing* gazettement made real (Schedule IV boundary description under ss. 8(3)/80, mining ban written in, 1953 forest-reserve overlap settled). Red edits in exec summary, General findings, Mining Act box, MWCT/MoEF entries, Priority action 2, §5(iii) block paragraph (`NUM_GR_PCT` = WDPA Numatina share of the core_block zone, read from `zones.geojson` overlaps, asserted present), §5 target sentence, Conclusion. Headline figure `TOTAL_M` = South Sudan request + Sudan strand (CAR/DRC excluded), footnoted; `\label{sec:cost}` added. 22 pages now (last bib entry spills to p. 22; no blank page).
   Share: pdf `g-pxk4n2qj7dr2hg2k`, pdf_share `g-6xkjz6px5ct3z3px`, docx `g-76wrj2ndfv2fsk8q`; the three org-chart-round slugs + the uncoloured docx `g-psrdv2d4k2spjxvh` revoked (17 total).
 - **Review colours in the docx**: pandoc drops `\color{}` but keeps `\textcolor{}` as a Span `style`; `build_docx.py` rewrites the `\au`/`\sh`/`\flag` macros to `\textcolor`, `colors.lua` maps the span to character styles `AuthorEdit`/`ShelleyEdit`, which are injected into a generated `reference.docx` (pandoc default + two `<w:style type="character">` with the same hex). Check: `unzip -p x.docx word/document.xml | grep -o 'rStyle w:val="[^"]*"' | sort | uniq -c`.
+
+## Round 3 (2026-10-01 afternoon) — IN PROGRESS, handover
+
+Source of the asks: the author's comments in `/tmp/shelley-uploads/PIP_Radom_Numatina_Southern_v1_2026-09-2-3.docx`
+(18 comments C0–C17 + tracked edits; extract with the `comments.xml`/`w:ins`/`w:del` walker — python-docx is not installed).
+
+**Done (uncommitted parts live in the git-ignored `scripts/piptex/`, so check the files, not the log):**
+- Budget: PM + national coordinator **merged** into one post (`coordinator_months: [0, 0]`, `SAL_INTL` relabelled, headcount/
+  recruitment/laptop lines follow); solar pumps **stay** (author: "I thought this was referring to water points") but are never
+  called "water points" anywhere; SAV_HR/HELI_HR/MBIKE_SSD notes rewritten as *AP in-house dry operating cost, fuel in
+  AVGAS_BBL* / *AP SSD delivered price vs East-African retail* — no FLAG left in the workbook. New headline SSD 1.56 M,
+  SSD+SDN 1.67 M (`reports/BUDGET_EASY_2026-10.*`).
+- Situation map: isochrones **wine red** `#7a1f2e` (lines, labels, legend swatch), fire hairlines alpha .035, labels
+  white-haloed bold 8 pt, **hand-tuned: monthly isochrones only, longest line only, 1–2 labels each** (6 labels: 30 Oct,
+  29 Nov, 29 Dec). `build_all.sh` now makes `*_full.jpg` (q88, full res) + `*_small.jpg` from `reports/*.png` — the full PDF
+  carried stale Sep-7 PNG copies before; full PDF is 6.8 MB now (author's cap ~10 MB).
+- Report: title "Version 2, 1 October 2026", no colour legend of the old round (green/red macros are identity now);
+  **`\nw{}` = pink (#C2185B) marks everything new in this round** (default on; `--clean` off; docx style `NewEdit`).
+  Exec summary in a yellow tcolorbox (fits page 1), "How to read the numbers and links" grey box after it; links are
+  blue in-text `\href`s, footnote URLs only for `gpkg`/`aoi_gpkg_light`/`budget` (`FOOTNOTE_URL_KEYS`); **no `:8000`**
+  anywhere (`share.py PUBLIC`, `share.json` rewritten). Legally important back to a plain `description` list with the
+  legal-brief footnote; §4 institutions shortened; E1-in-numbers box removed (no extra sentence needed — the schedule
+  box's intro lists what every zone stores); Boro-Medina paragraph no longer proposes T6; §6 rewritten (no "reviewed
+  budget of 16 Sep" sentence, no flags); budget/headcount/equipment tables → **Appendix A** after the bibliography;
+  conclusion takes the author's text + the "recommended for forty years" chain (hillman1983, wcs2007/2010/2016,
+  brooks2023, 2026 Act).
+- Org chart figure is `[tbp]` now (was `[H]`) so the Gantt page is not half empty.
+
+**Open:**
+1. **Timeline figure (`fig:timeline`, §6)** — the author rejected two drafts ("excel-like"; wants "best in class, clean,
+   easy to read"). Current third draft: one axis on top with years + month ticks, dry season as a thin yellow band on the
+   axis, six rounded bars (prep grey, phases dark grey, Phase 2 in Habsburg yellow split at the second wave), gate as a
+   dotted hairline with a diamond, close diamond. Still wrong: in-bar texts overflow short bars (Phase 1, first-wave
+   segment), gate/close notes collide at the bottom, `Overfull \vbox 201pt` appeared after the org chart went `[tbp]`
+   (check `grep "Overfull .vbox" main.log` and which page). Look at `/tmp/g-15.png` style renders at 70–110 dpi before
+   iterating; show the author a crop each time.
+2. Rebuild + share: `scripts/piptex/build_all.sh`; then `set -a; source secrets.env; set +a; python3 scripts/piptex/share.py pdf`,
+   rebuild `--share` (the small PDF prints the full PDF's link), `share.py pdf_share docx maps budget`, revoke the four
+   superseded slugs (`pdf g-pxk4n2qj7dr2hg2k`, `pdf_share g-6xkjz6px5ct3z3px`, `docx g-76wrj2ndfv2fsk8q`, `maps
+   g-97dbb6zhjrhm6gw8`, `budget g-npdxrw8vtm3mf8wj`) per the audit rule above.
+3. Decisions the author has not confirmed: the aviation-rate justification wording (AP in-house aircraft) and that the
+   workplan table in §5 stays beside the new timeline figure (duplication).

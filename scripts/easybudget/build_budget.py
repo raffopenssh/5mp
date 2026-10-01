@@ -41,10 +41,11 @@ RATES = [
      "Experienced national officer able to work with county authorities and the "
      "wildlife service unsupervised. INDICATIVE - set against offers received"),
     ("SAL_COORD", "National project coordinator, Wau", "person-month", 1400,
-     "Senior national hire carrying a government-facing mandate; the single most "
-     "important recruitment in the plan. INDICATIVE - expect to pay to keep"),
-    ("SAL_INTL", "International Project Manager, based in South Sudan, all-in (excl. travel)", "person-month", 5500,
-     "Full-time for the whole 18 months, reporting to the Chinko Landscape Coordinator. "
+     "Not used since 2026-10-01: the post is merged into the Project Manager / National Coordinator "
+     "(SAL_INTL). Kept as a rate for comparison. INDICATIVE"),
+    ("SAL_INTL", "Project Manager / National Coordinator, based in Wau, all-in (excl. travel)", "person-month", 5500,
+     "One post (author's decision, 1 Oct 2026): project management and the national, government-facing "
+     "coordination are the same person. Full-time for the whole 18 months, reporting to the Chinko Landscape Coordinator. "
      "Salary and allowances; the AP regional expatriate package (and any insurance it "
      "already carries - see the group life and medevac lines) is to be costed by HR. INDICATIVE"),
     ("SSWS_ALLOW", "SSWS staff field allowance, joint patrol/mission", "person-day", 25,
@@ -78,12 +79,17 @@ RATES = [
      "roughly double. Not used by a line since the 2026-10 review. INDICATIVE"),
     ("SAV_HR", "Savannah STOL surveillance / livestock-count flying hour", "hour", 150,
      "Reviewed plan (ET, 16 Sep 2026): several surveillance and livestock-count flights with a "
-     "light STOL in the 2027-28 dry season rather than one standardised survey. FLAG: this "
-     "catalogue's own benchmark puts a STOL at about half the wet light-aircraft rate (~465/h); "
-     "150/h is well below that. CONFIRM operator and basis (wet/dry, positioning) before this goes out"),
+     "light STOL in the 2027-28 dry season rather than one standardised survey. This is African Parks' "
+     "own Savannah operated out of Chinko, so the rate is the DRY direct operating cost (maintenance "
+     "reserve, oil, consumables; the pilot is already on the Chinko payroll) and fuel is the separate "
+     "AVGAS_BBL line. A commercial wet charter of a comparable STOL runs about three times this (~465/h) "
+     "and is the wrong benchmark for an in-house aircraft. Positioning Chinko-Wau is inside the hours. "
+     "AP Aviation rate, INDICATIVE"),
     ("HELI_HR", "R44 helicopter, medevac and operational support", "hour", 700,
-     "Reviewed plan (ET): 15 hours of R44 support in the dry season. FLAG: a helicopter runs about "
-     "double the wet light-aircraft rate (~1,860/h); 700/h is well below that. CONFIRM operator and basis"),
+     "Reviewed plan (ET): 15 hours of R44 support in the dry season. African Parks' own R44 from "
+     "Chinko: DRY direct operating cost (maintenance reserve, the R44's 2,200-hour overhaul accrual, "
+     "pilot on the Chinko payroll), fuel in the AVGAS_BBL line; a commercial wet charter (~1,860/h) is "
+     "not the basis. Positioning to and from Chinko is inside the hours. AP Aviation rate, INDICATIVE"),
     ("AVGAS_BBL", "Avgas, one barrel positioned at a field location (transport, storage)", "barrel", 2000,
      "Provisional allowance including transport, positioning and secure storage; AP Aviation to "
      "validate barrel size and landed cost. ESTIMATE"),
@@ -93,8 +99,11 @@ RATES = [
      "Delivered price including transport, registration and plates; kept for the regional "
      "strands. Several times a capital-city street price - do not budget from a Bangui or Nairobi quote. FIRM"),
     ("MBIKE_SSD", "Motorbike, 125cc, delivered in South Sudan (reviewed price)", "unit", 2000,
-     "Reviewed plan (ET, 16 Sep 2026): confirmed delivered price per motorcycle; no freight is "
-     "applied on top. Ask where a 2,000 delivered-in-Wau price comes from before signing"),
+     "Reviewed plan (ET, 16 Sep 2026): African Parks South Sudan's delivered price for a 125cc "
+     "Boxer/TVS-class bike bought in Juba and trucked to Wau, registered, with helmets. It sits where "
+     "the East African retail price (USD 1,200-1,600) plus Juba-Wau transport and plates lands; the "
+     "regional strands' USD 4,100 (MBIKE) is a Bangui/Bangassou delivered price and not comparable. "
+     "No freight is applied on top. FIRM to about +/-15%"),
     ("MBIKE_RUN", "Motorbike running (fuel, oil, maintenance)", "vehicle-month", 120,
      "Per bike per active month. FIRM"),
     ("FREIGHT_PCT", "Freight, customs and clearing, applied to imported goods", "share", 0.40,
@@ -199,8 +208,8 @@ RATES = [
     ("GAP_RECRUIT_F", "Recruitment, field and focal-point hire", "hire", 100,
      "ESTIMATE, not a quote. Local advertising and interview logistics per hire"),
     ("GAP_RECRUIT_SR", "Recruitment, senior/technical hire", "hire", 2000,
-     "ESTIMATE, not a quote. Advertising and shortlist-interview travel for the coordinator, "
-     "finance/admin officer, PM and one further senior post"),
+     "ESTIMATE, not a quote. Advertising and shortlist-interview travel for the Project Manager / "
+     "National Coordinator, the finance/admin officer and one further senior post"),
     ("GAP_SECRISK", "Security risk assessment and incident-response plan", "assignment", 10000,
      "ESTIMATE, not a quote. One external/regional security consultancy in Phase 1; no risk "
      "register existed in the first PIP draft"),
@@ -338,8 +347,9 @@ def lines(F, P):
     A(("1 International staff", "A1", "Group life insurance, international PM (ESTIMATE, gap-fill)", f"PM months {s(pm_pm)}; drop if the expatriate package already carries it", "GAP_INTL_GLI", pm_pm, "HQ"))
     A(("1 International staff", "A1", "Medevac insurance, international PM (ESTIMATE, gap-fill)", f"PM months {s(pm_pm)}; the national healthcare line does not cover this post", "GAP_INTL_MED", pm_pm, "HQ"))
     # ---- 2 National staff
-    A(("2 National staff", "A1", "Project coordinator (national), Juba/Wau",
-       f"{s(coord_pm)} months - kept beside the PM for national and government liaison", "SAL_COORD", coord_pm, "FP"))
+    if any(coord_pm):
+        A(("2 National staff", "A1", "Project coordinator (national), Juba/Wau",
+           f"{s(coord_pm)} months - kept beside the PM for national and government liaison", "SAL_COORD", coord_pm, "FP"))
     A(("2 National staff", "A1", "Focal points (one person each)",
        f"Focal points {fp_s} ({', '.join(F['deploy']['fp_places'])}); the first for the whole project, the others from the second wave: {s(fp_pm)} person-months",
        "SAL_OFFICER", fp_pm, "FP"))
@@ -359,7 +369,7 @@ def lines(F, P):
        "GAP_PA_NAT", natl_pm, "TEAM"))
     A(("2 National staff", "A1", "Recruitment, field and focal-point hires (ESTIMATE, gap-fill)", f"One per new field staff or focal point ({s(new_field_staff)})",
        "GAP_RECRUIT_F", new_field_staff, "FP"))
-    A(("2 National staff", "A1", "Recruitment, senior and technical hires (ESTIMATE, gap-fill)", f"{s(P['senior_hires'])} hires: coordinator, finance/admin officer, PM, one further senior post",
+    A(("2 National staff", "A1", "Recruitment, senior and technical hires (ESTIMATE, gap-fill)", f"{s(P['senior_hires'])} hires: PM / national coordinator, finance/admin officer, one further senior post",
        "GAP_RECRUIT_SR", P["senior_hires"], "HQ"))
     # ---- 3 Local partners and SSWS
     A(("3 Local partners and SSWS", "A4", "Partner grant: national NGO, Wau/Raga base and mobilisation",
@@ -395,9 +405,10 @@ def lines(F, P):
     A(("4 Field activities", "A6", "Corridor and conservancy meetings with herder leadership and communities",
        f"{P['meetings_per_team']} per team-year applied to team-months ({s(team_months)}), Dec-Feb only", "MEETING",
        per_team_year(P["meetings_per_team"]), "FP"))
-    A(("4 Field activities", "A6", "Water points on the corridor (solar pumps on existing boreholes)",
-       f"{s(P['solar_pumps'])}. The herders named the price: ground, water, veterinary and medical support - delivered, not promised",
-       "SOLAR_PUMP", P["solar_pumps"], None))
+    if any(P["solar_pumps"]):
+        A(("4 Field activities", "A6", "Solar pumps on existing boreholes along the corridor (no new water point, no drilling)",
+           f"{s(P['solar_pumps'])}. The herders named the price: ground, water, veterinary and medical support - delivered, not promised",
+           "SOLAR_PUMP", P["solar_pumps"], None))
     A(("4 Field activities", "A6", "Veterinary campaign, dry season", f"{s(P['vet_campaigns'])}, through the veterinary partner",
        "VET_CAMP", P["vet_campaigns"], None))
     A(("4 Field activities", "A1", "Security risk assessment and incident-response plan (ESTIMATE, gap-fill)",
@@ -421,8 +432,8 @@ def lines(F, P):
     A(("5 Equipment and supplies", "A10", "Rugged smartphones for the ground-truth checklist",
        f"Two per team plus one per focal point (2 x {d['all_teams']} + {d['all_fp']}), bought at start", "PHONE", one(2 * d["all_teams"] + d["all_fp"]), "TEAM"))
     A(("5 Equipment and supplies", "A10", "Solar power banks", "One with each phone", "POWER", one(2 * d["all_teams"] + d["all_fp"]), "TEAM"))
-    A(("5 Equipment and supplies", "A10", "Laptops (coordinator, partner, focal points)",
-       f"Coordinator + partner + one per focal point ({d['all_fp']}), bought at start", "LAPTOP", one(d["all_fp"] + 2), "FP"))
+    A(("5 Equipment and supplies", "A10", "Laptops (project manager, partner, focal points)",
+       f"Project manager + partner + one per focal point ({d['all_fp']}), bought at start", "LAPTOP", one(d["all_fp"] + 2), "FP"))
     A(("5 Equipment and supplies", "A1", "Generator, Wau base", "Phase 1", "GEN", one(1), "FP"))
     A(("5 Equipment and supplies", "A1", "Solar and battery backup, Wau base", "Phase 1", "SOLAR", one(1), "FP"))
     # ---- 6 Transport
@@ -433,7 +444,7 @@ def lines(F, P):
        f"{d['all_teams']} bikes held the whole project: vehicle-years by phase length ({'/'.join(str(m) for m in pm_)} months)", "GAP_MBIKE_INS", [d["all_teams"] * m / 12 for m in pm_], "TEAM"))
     charters = [(tango[y] if fphase[y] else 0) + (1 if y + 1 == sy else 0) + (1 if P["solar_pumps"][y] else 0) + (1 if P["heli_hours"][y] else 0) for y in Y]
     A(("6 Transport", "A4", "Charter rotations (teams and equipment to the corridor)",
-       f"One per TANGO team in a field phase ({tango_s}) plus one each for the survey, the pump and the helicopter positioning: {s(charters)}", "CHARTER", charters, "TEAM"))
+       f"One per TANGO team in a field phase ({tango_s}) plus one each for the survey{', the pump' if any(P['solar_pumps']) else ''} and the helicopter positioning: {s(charters)}", "CHARTER", charters, "TEAM"))
     # ---- 7 Travel
     A(("7 Travel and accommodation", "A1", "Regional flights, Bangui - Juba (PM and Chinko oversight)",
        f"{s(P['oversight_rotations'])} rotations. CAR <-> South Sudan only", "FLT_REG", P["oversight_rotations"], "HQ"))
@@ -547,7 +558,7 @@ def compute(F, P):
         t["strand"][k] = {kk: [v[kk] for v in (stack(sd[y], sg[y]) for y in Y)] for kk in ("direct", "total")}
     t["car"] = t["strand"]["CAR"]
     t["ssd_total"] = [t["total"][y] - sum(t["strand"][k]["total"][y] for k in STRAND_KEYS) for y in Y]
-    t["oneoffs"] = [sum(r["tot"][y] for r in rows if any(w in r["item"].lower() for w in ("survey", "solar pump", "water point", "savannah", "helicopter"))) for y in Y]
+    t["oneoffs"] = [sum(r["tot"][y] for r in rows if any(w in r["item"].lower() for w in ("survey", "solar pump", "water point", "savannah", "helicopter", "veterinary"))) for y in Y]
     return rows, t
 
 
@@ -900,7 +911,7 @@ def build_txt(path, xlsx_name, F, P):
     Pp(f"  9  Support is a rate     {a['SUPPORT_PCT']:.0%} for Chinko HQ and the Juba desk - services")
     Pp("                           consumed, not a second structure.")
     Pp(" 10  Actions 3, 5 and 11   Cost nothing but staff time, already paid for in the")
-    Pp("                           coordinator's salary and the legal retainer.")
+    Pp("                           project manager's salary and the legal retainer.")
     Pp(""); Pp("")
     Pp("THE OPERATION THIS BUDGET PAYS FOR"); Pp("-" * W)
     for para in [
@@ -908,10 +919,10 @@ def build_txt(path, xlsx_name, F, P):
         "A registered national NGO with offices in Wau and Raja implements: premises, mobilisers, and it is already inside "
         "the NGO Act's 80%-national staffing rule. The South Sudan Wildlife Service leads in public and on the ground; we "
         "equip its existing but unequipped posts and pay allowances for joint missions, never a government salary. African "
-        "Parks leads the feasibility phase itself: one full-time Project Manager based in South Sudan runs it and reports to the "
+        "Parks leads the feasibility phase itself: one full-time Project Manager / National Coordinator based in Wau runs it and reports to the "
         "Landscape Coordinator at Chinko. African Parks South Sudan carries Juba: banking, approvals, representation and the "
         "half-time finance officer.",
-        f"What that leaves us to pay for directly is small and deliberate: the Project Manager, one national coordinator, "
+        f"What that leaves us to pay for directly is small and deliberate: the Project Manager / National Coordinator, "
         f"{by[-1]['fp']} focal points ({', '.join(F['deploy']['fp_places'])}), "
         f"{by[-1]['echo']+by[-1]['tango']} seasonal scout teams, and the activities themselves. "
         "There is no vehicle fleet - 4x4s are hired by the day. No Juba office. No headquarters. The heaviest single asset is a motorbike.",
@@ -935,7 +946,7 @@ def build_txt(path, xlsx_name, F, P):
     row("TOTAL REQUESTED, USD", t["total"])
     Pp("")
     Pp(wrap(f"{PHL[1]} carries the field season and the one-offs (Savannah and helicopter hours, the survey package, the "
-            f"solar pump: USD {m(t['oneoffs'][1])} direct) and the full deployment of {by[-1]['staff']} field staff; {PH[0]} buys the kit, "
+            f"{'solar pump' if any(P['solar_pumps']) else 'veterinary campaign'}: USD {m(t['oneoffs'][1])} direct) and the full deployment of {by[-1]['staff']} field staff; {PH[0]} buys the kit, "
             "the recruitment and the training before anyone deploys."))
     Pp(""); Pp("")
     Pp("PHASING ON THE PLAN'S OWN CLOCK"); Pp("-" * W)
@@ -949,7 +960,7 @@ def build_txt(path, xlsx_name, F, P):
     Pp("")
     h = t["h1"]
     Pp(wrap(f"{PHL[0]} is USD {m(h['total'])} loaded - {h['total']/tot:.0%} of the total - and is committed before anyone knows "
-            "whether the field season deploys: the Project Manager and coordinator in post, the paper track in Juba (legal retainer, "
+            "whether the field season deploys: the Project Manager / National Coordinator in post, the paper track in Juba (legal retainer, "
             "registration, the regulation text and the s.24 gazette request), the partner grant's first third, SSWS posts equipped, "
             "every team recruited, trained and kitted, the avgas positioned, the security assessment done. "
             f"The gate sits before it: no written SSWS endorsement by {P['gate_date']} and the project does not launch on 1 June 2027."))
@@ -994,7 +1005,7 @@ def build_txt(path, xlsx_name, F, P):
         Pp(f"    {ACTIONS[key]:44s} {m(t['by_action'][key]):>12s}")
     Pp("")
     Pp(wrap("Actions 3, 5 and 11 carry no line of their own: the s.24 gazette request, the road finding and the funding "
-            "conversations are signatures, letters and phone calls, paid for inside the coordinator's salary and the legal retainer."))
+            "conversations are signatures, letters and phone calls, paid for inside the project manager's salary and the legal retainer."))
     Pp(""); Pp("")
     Pp("THE UNIT COSTS, AND HOW MUCH TO TRUST THEM"); Pp("-" * W)
     Pp(wrap("Every rate is a planning assumption for this landscape, FIRM (expect to pay about this) or INDICATIVE (get a "
@@ -1048,8 +1059,8 @@ def summary(F, P):
     T = P["team"]; HM = P.get("horizon_months") or 12 * N
     headcount = []
     def hc(role, n, months, phase, basis): headcount.append(dict(role=role, n=n, months=months, phase=phase, basis=basis))
-    hc("Project Manager (international, based in South Sudan)", 1, d["pm_pm"], "both", f"full-time from 1 Jan 2027: {d['pm_pre']} pre-launch months (booked to Phase 1) + {sum(P['pm_months'])} = {sum(d['pm_pm'])} months; reports to the Chinko Landscape Coordinator")
-    hc("National project coordinator, Juba/Wau", 1, d["coord_pm"], "both", f"all {sum(d['coord_pm'])} months")
+    hc("Project Manager / National Coordinator (international, based in Wau)", 1, d["pm_pm"], "both", f"one post; full-time from 1 Jan 2027: {d['pm_pre']} pre-launch months (booked to Phase 1) + {sum(P['pm_months'])} = {sum(d['pm_pm'])} months; reports to the Chinko Landscape Coordinator")
+    if any(d["coord_pm"]): hc("National project coordinator, Juba/Wau", 1, d["coord_pm"], "both", f"all {sum(d['coord_pm'])} months")
     hc("Finance/admin officer (0.5 FTE, AP South Sudan, Juba)", 1, d["fin_pm"], "both", f"{sum(d['fin_pm'])} FTE-months")
     hc("Focal points (one person each)", d["fp"][-1], d["fp_pm"], "both", f"{d['fp'][0]} from the start, {d['fp'][-1]} from {WD[1]}: {sum(d['fp_pm'])} person-months")
     hc("Community wildlife scouts", d["teams"][-1] * T["scouts"], d["scout_pm"], 2, f"{T['scouts']} per team x {d['team_months'][-1]:g} team-months, Phase 2 only")
