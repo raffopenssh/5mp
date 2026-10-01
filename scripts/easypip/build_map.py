@@ -1182,8 +1182,8 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
         key(None, "Focal point (1 person)", None, None, kind="*", color=TEAM_C, short="Focal point (1)")
         key(None, "ECHO team (5)", None, None, kind="s", color=TEAM_C, short="ECHO team (5)")
         key(None, "TANGO team (5)", None, None, kind="^", color=TEAM_C, short="TANGO team (5)")
-        key(None, "Year-2 team: hollow", None, None, kind=[k_ for k_, kd in (("*", "FP"), ("s", "ECHO"), ("^", "TANGO")) if any(t["year"] == 2 and t["kind"] == kd for t in deploy["teams"])], color=TEAM_C, hollow=True,
-            short=f"hollow = year 2 ({n1} year 1, +{n2} year 2)")
+        key(None, "Second-wave team: hollow", None, None, kind=[k_ for k_, kd in (("*", "FP"), ("s", "ECHO"), ("^", "TANGO")) if any(t["year"] == 2 and t["kind"] == kd for t in deploy["teams"])], color=TEAM_C, hollow=True,
+            short=f"hollow = second wave ({n1} first wave, +{n2} second)")
     elif planner_n and not SITUATION:
         # planner layers are drawn only with --planner; the legend says what they are and how sure the machine is
         n_prop = planner_n

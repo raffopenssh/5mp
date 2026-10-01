@@ -164,7 +164,9 @@ def strand_of(country): return next((k for k, v in STRANDS.items() if v["iso"] =
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--tag", default=""); ap.add_argument("--staff-y1", type=int, default=30); ap.add_argument("--staff-y2", type=int, default=80)
+    ap.add_argument("--tag", default=""); ap.add_argument("--staff-y1", type=int, default=40); ap.add_argument("--staff-y2", type=int, default=80)
+    ap.add_argument("--tango-y1", type=int, default=None, help="TANGO teams in the FIRST wave (default: all of --tango-y2 — corridor teams go in before the herds, plan.yaml wave_dates_by_kind; 2026-10-01)")
+    ap.add_argument("--echo-y1", type=int, default=None, help="ECHO teams in the first wave (default: half of --echo-y2, at least 2)")
     ap.add_argument("--echo-y2", type=int, default=5); ap.add_argument("--tango-y2", type=int, default=5); ap.add_argument("--fp-y2", type=int, default=3)
     ap.add_argument("--echo-car-y2", type=int, default=2, help="ECHO teams on CAR community zones by year 2 — the CAR strand, a separate budget outside --staff-y1/--staff-y2 (0 = none)")
     ap.add_argument("--echo-cod-y2", type=int, default=1, help="ECHO teams on DRC community zones by year 2 — the COD strand, its own budget (0 = none)")
@@ -331,14 +333,16 @@ def main():
             s["strand"] = "SSD"; chosen.append(s); staff += 1
         return chosen, staff
     # year 1 first; year 2 then starts from year 1's focal points (a town office is not moved because the teams' centre moved)
-    y1, staff1 = stage(a.staff_y1, max(2, a.echo_y2 // 2), max(2, a.tango_y2 // 2), max(1, a.fp_y2 // 2), {k: (max(1, c // 2) if c else 0) for k, c in caps_f.items()})
+    n_tango_y1 = a.tango_y2 if a.tango_y1 is None else a.tango_y1
+    n_echo_y1 = max(2, a.echo_y2 // 2) if a.echo_y1 is None else a.echo_y1
+    y1, staff1 = stage(a.staff_y1, n_echo_y1, n_tango_y1, max(1, a.fp_y2 // 2), {k: (max(1, c // 2) if c else 0) for k, c in caps_f.items()})
     y2, staff2 = stage(a.staff_y2, a.echo_y2, a.tango_y2, a.fp_y2, caps_f, seed_fp=[s for s in y1 if s["kind"] == "FP"])
     y1_keys = {(s["kind"], s["place"]) for s in y1}
     for s in y2: s["year"] = 1 if (s["kind"], s["place"]) in y1_keys else 2
     # ---------------------------------------------------------------- pinned TANGO teams (user decision; printed as such)
     # A pin is not a ranking result: it is a team the client asked for by name, carried through the same site rules (settlement
-    # >= MIN_SITE_POP, reach, water printed) and the same budget. It consumes staff cap, not the ranked TANGO cap, and is always
-    # second wave. `why` says "decision", so the report cannot present it as the model's choice.
+    # >= MIN_SITE_POP, reach, water printed) and the same budget. It consumes staff cap, not the ranked TANGO cap, and joins the TANGO
+    # wave (first wave when all TANGO go first). `why` says "decision", so the report cannot present it as the model's choice.
     for spec in a.pin_tango:
         la, lo, label = spec.split(",", 2); la, lo = float(la), float(lo)
         if staff2 + TEAM > a.staff_y2: print(f"pin {label}: staff cap {a.staff_y2} reached, not placed"); continue
@@ -356,7 +360,7 @@ def main():
                f"this site puts the first people on the leg of it that runs west to the CAR border.")
         s_ = mk("TANGO", sl[0], [t["uid"]], round(t["urgency"] * 0.7, 3), (f"from month {t['onset']} (bundle onset) through the dry season" if t["onset"] else "dry season"), why, [label])
         s_["alternatives"] = [dict(name=c["name"], people=int(c["row"][2] or 0), road_km=c["road_km"], reach=c["reach"], score=c["score"], lon=round(c["row"][1], 4), lat=round(c["row"][0], 4)) for c in sl]
-        s_.update(year=2, strand="SSD", pinned=label, place=label if P.dkm((lo, la), (s_["lon"], s_["lat"])) <= 3 else f"{s_['place']} (for {label})")
+        s_.update(year=(1 if n_tango_y1 >= a.tango_y2 else 2), strand="SSD", pinned=label, place=label if P.dkm((lo, la), (s_["lon"], s_["lat"])) <= 3 else f"{s_['place']} (for {label})")
         y2.append(s_); staff2 += TEAM; print(f"pin {label}: TANGO at {s_['place']} ({s_['lon']}, {s_['lat']}), zone {t['uid']}, {sl[0]['row'][2]:,} people")
     for s in y2: s.setdefault("strand", "SSD")
     for i, s in enumerate([s for s in y2 if s["kind"] == "ECHO" and s["strand"] == "SSD"], 1): s["id"] = f"E{i}"
