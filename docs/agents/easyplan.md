@@ -130,6 +130,27 @@ parser asserts on those numbers — do not add a 15th category). Strands keep `s
 unchanged. `facts.budget` gained `equipment`, `headcount`, `aviation`/`aviation_support`, `team_months`,
 `gap_fill_total`; `first_6_months` now equals Phase 1. Total USD 1.90 M (0.55 / 1.35), SSD request 1.51 M.
 
+## Versioning the plan — two repos, how to reverse course (2026-10-01)
+
+A plan change touches two places, and both are under git:
+
+| What | Where | Tracked by |
+|---|---|---|
+| Inputs + decisions: `docs/plan/plan.yaml`, the summary template, `facts.json`, `deploy.json` + geojsons, `DEPLOY.txt`, scripts (`easyplan.py`, `plan_deploy.py`, `easybudget/`) | 5mp checkout | **5mp git** (GitHub) |
+| Outputs + the report: `reports/BUDGET_EASY_*`, `PIP_SUMMARY_EASY.*`, maps, `ZONING_PLAN_*.gpkg`, `pip_latex/` (TeX, PDF, DOCX, `share.json`), and the report generator `reports/piptex/` (`scripts/piptex` is a symlink to it) | `reports/` | **local git repo `reports/.git`** — never pushed; the report and data are not public, 5mp ignores `reports/` and `scripts/piptex` |
+
+Rules:
+- **One plan change = one commit in each repo**, same wording, so the pair can be found again (`git log --oneline` in both;
+  explicit paths, never `git add -A`). Commit `reports/` after every `easyplan.py` / `build_all.sh` / `share.py` run.
+- **To reverse a plan decision:** `git log -- docs/plan/plan.yaml` in 5mp → `git checkout <rev> -- docs/plan/plan.yaml data/plan_zones/solver/deploy.json …`
+  → `python3 scripts/easyplan.py` → `scripts/piptex/build_all.sh`; the `reports/` repo then shows the outputs' diff against the
+  version that was shared (and `git -C reports checkout <rev> -- pip_latex/share.json` restores which guest links were live).
+- **After a restart / new VM:** both repos must exist; if `reports/.git` is gone, the shared PDFs are still retrievable through
+  the guest links in `docs/agents/tex.md` (slugs listed per share) and `data/shared_files/`. `scripts/piptex` must be a
+  symlink to `../reports/piptex` (`ln -s ../reports/piptex scripts/piptex`), otherwise `build_all.sh` is missing.
+- Decisions that are *not* in `plan.yaml` (hand edits such as "TANGO year = 1", "deploy frozen on the 7 Sep herd model") go into
+  `deploy.json → params.note` **and** `docs/agents/zoning.md`, so a re-run cannot silently undo them.
+
 ## History
 
 The August 2026 three-year budget (1.68 M) lives in `scripts/deprecated/build_budget_3yr_2026_08.py`
