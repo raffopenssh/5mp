@@ -1125,7 +1125,7 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
              f"is the density, not one big fire", short="Fire front 2024\u201326")
     if SITUATION and SEASON_OVERLAY:   # a legend row may only describe a layer that is actually drawn
         SO = SEASON_OVERLAY
-        key("_", f"Season front {SO['season']}: light dashed isochrones every 5 days, stronger every 15, labelled monthly", "none", "#bdbdbd", lw=1.0, ls=(0, (4, 3)), alpha=0.9,
+        key("_", f"Season front {SO['season']}: dashed isochrones every 5 days, stronger every 15, dated monthly", "none", "#7a1f2e", lw=1.0, ls=(0, (4, 3)), alpha=0.9,
             short=f"Season front {SO['season']}, dashed isochrones (5 d)")
         key("_", f"Vanguard fire chain \u2014 lit {SO['lead_days']}\u2013{SO['lead_max_days']} days ahead of the front; chevrons = day order while ahead, ash after the season caught up", "none", VANGUARD_C, lw=1.0, alpha=0.7,
             short=f"Vanguard chain ({fmt(SO['n_chains'])}), \u203a = direction, {SO['lead_days']}\u2013{SO['lead_max_days']} d ahead")
@@ -1471,7 +1471,7 @@ def main():
     #    reader is meant to take away is DENSITY, not any single path.
     if fire:
         ax.add_collection(LineCollection(fire, colors=RED, linewidths=0.30,
-                                         alpha=0.045, zorder=2.0,
+                                         alpha=0.035, zorder=2.0,
                                          capstyle="round"))
     if SITUATION and SEASON_OVERLAY:
         # the app's season front and vanguard chains, very subtly (reviewer C6): just above the fire hairlines (z 2.0)
@@ -1481,8 +1481,8 @@ def main():
         # the part AFTER the season caught up (faint ash, no chevrons). White isochrones: the backdrop here is the red
         # fire wash on paper, not the app's dark base, and a red isochrone vanished in it.
         SO = SEASON_OVERLAY
-        LABEL_EVERY_KM, CHEVRON_EVERY_KM = 320.0, 28.0
-        ISO_C = "#b4b4b4"     # a light grey rather than pure white: #e8e8e8 vanished on the pale rim of the wash
+        LABEL_EVERY_KM, CHEVRON_EVERY_KM = 240.0, 28.0
+        ISO_C = "#7a1f2e"     # wine red (author, 1 Oct 2026): the grey read as "not fire"; a DARK red stands on the pale wash where a bright one vanished
         def walk(ln, every_km, first_km):
             """Points (x, y, angle_deg) every `every_km` along a lon/lat polyline, the first at `first_km`."""
             out, acc, nxt = [], 0.0, first_km
@@ -1496,16 +1496,26 @@ def main():
             return out
         for dos, txt, lab, g in SO["iso"]:
             lines = [list(ls.coords) for ls in (g.geoms if hasattr(g, "geoms") else [g])]
-            ax.add_collection(LineCollection(lines, colors=ISO_C, linewidths=1.1 if lab else 0.5, alpha=0.9 if lab else 0.55,
+            ax.add_collection(LineCollection(lines, colors=ISO_C, linewidths=1.2 if lab else 0.6, alpha=0.75 if lab else 0.6,
                                              linestyle=(0, (2.5, 2)), zorder=2.02))
-            if lab and dos % 30 == 0:     # labels on the monthly isochrones only, few per line
-                for ln in lines:
-                    for mx, my, ang in walk(ln, LABEL_EVERY_KM, LABEL_EVERY_KM * 0.5):
+            if lab and dos % 30 == 0:
+                # Hand-tuned (author, 1 Oct 2026): the app labels algorithmically; the sheet tells the season's story instead.
+                # Each MONTHLY isochrone is labelled once, on its longest line (the main front marching south from the Sudan rim
+                # to Chinko), at its midpoint; a line over 600 km gets two labels. Fewer labels than isochrones, on purpose. The late-season islands inside Chinko and
+                # the short closed rings stay unlabelled - a date on them says nothing about where the fire goes.
+                def _km(ln): return sum(math.hypot((b_[0] - a_[0]) * kx, b_[1] - a_[1]) * 111.0 for a_, b_ in zip(ln, ln[1:]))
+                main = max(lines, key=_km); ln_km = _km(main)
+                for ln in ([main] if ln_km >= 80 else []):
+                    spots = ([ln_km / 3, 2 * ln_km / 3] if ln_km > 600 else [ln_km / 2])
+                    for mx, my, ang in [walk(ln, 10 * ln_km, sp)[0] for sp in spots if walk(ln, 10 * ln_km, sp)]:
                         if ang > 90: ang -= 180
                         if ang < -90: ang += 180
                         if x0 < mx < x1 and y0 < my < y1:
-                            ax.text(mx, my, txt, fontsize=4.8, color=ISO_C, alpha=0.95, ha="center", va="center", rotation=ang, rotation_mode="anchor",
-                                    zorder=2.03, path_effects=[pe.withStroke(linewidth=1.1, foreground="#9a5a5a", alpha=0.7)])
+                            # white fill with a dark-red halo (author, 1 Oct 2026): the grey 4.8-pt labels were illegible,
+                            # above all in the 2400-px share PDF
+                            # halo in the contour's own grey, a little heavier, so the label reads as part of the line
+                            ax.text(mx, my, txt, fontsize=8.0, weight="bold", color=ISO_C, alpha=0.85, ha="center", va="center", rotation=ang, rotation_mode="anchor",
+                                    zorder=2.03, path_effects=[pe.withStroke(linewidth=1.7, foreground="#f7efe6", alpha=0.9)])
         if SO["chains"]:
             ahead, after, chev = [], [], []
             hl = 2.2 / 111.0      # chevron size in degrees of latitude (~2.2 km)
