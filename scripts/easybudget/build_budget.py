@@ -85,7 +85,7 @@ RATES = [
      "AVGAS_BBL line. A commercial wet charter of a comparable STOL runs about three times this (~465/h) "
      "and is the wrong benchmark for an in-house aircraft. Positioning Chinko-Wau is inside the hours. "
      "AP Aviation rate, INDICATIVE"),
-    ("HELI_HR", "R44 helicopter, medevac and operational support", "hour", 700,
+    ("HELI_HR", "R44 helicopter, operational support", "hour", 700,
      "Reviewed plan (ET): 15 hours of R44 support in the dry season. African Parks' own R44 from "
      "Chinko: DRY direct operating cost (maintenance reserve, the R44's 2,200-hour overhaul accrual, "
      "pilot on the Chinko payroll), fuel in the AVGAS_BBL line; a commercial wet charter (~1,860/h) is "
@@ -397,7 +397,7 @@ def lines(F, P):
            f"P{sy}. First structured count since 2007, flown within the Savannah hours; design, observers, analysis and the written result", "SURVEY_TECH", yr(1, sy), None))
     if P["survey_hours"]:
         A(("4 Field activities", "A7", "Aerial survey flying hours", f"P{sy}: {P['survey_hours']} hours at survey altitude", "FLY_HR", yr(P["survey_hours"], sy), None))
-    A(("4 Field activities", "A7", "R44 helicopter support, medevac and operational needs",
+    A(("4 Field activities", "A7", "R44 helicopter support, operational needs",
        f"{s(P['heli_hours'])} hours. AP Aviation to confirm availability and positioning", "HELI_HR", P["heli_hours"], None))
     A(("4 Field activities", "A7", "Avgas positioned at field locations (ESTIMATE)",
        f"{s(P['avgas_barrels'])} barrels, bought and positioned in the wet season ahead of the flying season", "AVGAS_BBL", P["avgas_barrels"], None))
@@ -1068,7 +1068,7 @@ def summary(F, P):
     hc("Community wildlife scouts", d["teams"][-1] * T["scouts"], d["scout_pm"], 2, f"{T['scouts']} per team x {d['team_months'][-1]:g} team-months, Phase 2 only")
     hc("Scout team leaders", d["teams"][-1] * T["leader"], d["lead_pm"], 2, f"one per team, {d['team_months'][-1]:g} team-months, Phase 2 only")
     AV = {"SAV_HR": ("Savannah STOL (light aircraft)", "surveillance, livestock counts and rim reconnaissance, several flights over the 2027-28 dry season"),
-          "HELI_HR": ("R44 helicopter", "medevac and operational support"), "AVGAS_BBL": ("Avgas (barrels positioned in Phase 1)", "fuel for the above"),
+          "HELI_HR": ("R44 helicopter", "operational support"), "AVGAS_BBL": ("Avgas (barrels positioned in Phase 1)", "fuel for the above"),
           "SURVEY_TECH": ("Survey technical package", "design, observers, analysis; flown within the Savannah hours"), "FLY_HR": ("Light aircraft, wet", "reconnaissance / survey")}
     av_all = [dict(craft=AV[r["code"]][0], code=r["code"], hours=round(sum(r["qty"])) if r["unit"] == "hour" else None, qty=round(sum(r["qty"])), unit=r["unit"],
                    rate=r["rate"], total=round(sum(r["tot"])), phase=phase_of(r["qty"]), purpose=AV[r["code"]][1]) for r in ssd if r["code"] in AV and sum(r["qty"])]
