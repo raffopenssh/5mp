@@ -50,7 +50,8 @@ Palatino (`mathpazo`), 150 mm text width, `titlesec`, `parskip`, `tcolorbox` tit
   3-line Figure 1 caption overflowed by 10 pt (`Overfull \vbox … while \output is active`), the `[H]` figure
   spilled to a second landscape page and left a blank page 4. The `\afterpage{\clearpage\newgeometry…}`
   wrapper was innocent — check `grep "Overfull .vbox" main.log` before blaming it. 21 pages, no empty page.
-- Share 2026-10-01: new slugs pdf `g-jm9tsxs323xhvcc9`, pdf_share `g-gk8nmjcgnnvt5sbh`, docx `g-4x6pxzcg2zk2dcww`,
+- **Org chart** (Figure 3) is black-and-white TikZ in absolute mm: lane heads (LANDSCAPE / PROGRAMME / FIELD) with a hairline, cards 38.5 mm wide on a 25/75/125 grid, partners dashed, field teams grey-filled with a count badge, orthogonal reporting lines, key row beside the NGO card. Project Manager and National Coordinator share one card (author's call); PM is Wau-based. `color=black` on the picture so `\sh{}` colours only the caption.
+- Share 2026-10-01: new slugs pdf `g-sgcjwgjg4pkpfq7z`, pdf_share `g-vgvgwxn5pmfhb8zn`, docx `g-hn75qqkqg26txmtr`,
   maps `g-97dbb6zhjrhm6gw8`, budget `g-npdxrw8vtm3mf8wj`, dossier `g-g2g5qxkzxczxsqfh` (gpkg/legal_brief/aoi_gpkg_light/views unchanged).
-- Revoked 7 superseded guest slugs (the six 2026-09-07 file links + the intermediate docx minted before the `--share` rebuild).
+- Revoked 10 superseded guest slugs (the six 2026-09-07 file links, the intermediate docx minted before the `--share` rebuild, and the pdf/pdf_share/docx of the first 2026-10-01 pass, superseded by the org-chart redo).
   Still live but not in the PDFs: six 2026-09-15/16 `map view`/`tmp ui inspect` links on principal 6 — not PIP, left for the owner to decide.
