@@ -87,15 +87,28 @@ Source of the asks: the author's comments in `/tmp/shelley-uploads/PIP_Radom_Num
 - Org chart figure is `[tbp]` now (was `[H]`) so the Gantt page is not half empty.
 
 **Open:**
-1. ~~Timeline figure~~ **done 2026-10-01 evening**: `scripts/piptex/timeline_tikz.py` (`timeline_tikz(P, B, y1, y2, tex, usd)`;
-   run it standalone → `/tmp/tl/tl-1.png` at 110 dpi for a quick look). A *season calendar*, not a Gantt: month strip on top
-   (dry months Habsburg, bold initials; rains near-white), dry months washed faintly through four lanes (PAPER / PEOPLE /
-   FIELD / AIR) with thin tracks, bold-title + grey-subtitle labels *beside* events (never inside bars — that was the overflow
-   bug), numbered teal dots for the two waves with the staffing line stepping thicker 1→2, Phase 2 as the only yellow bar,
-   gate and close as wine-red **dashed** verticals with diamonds in a decisions row under the strip, phase brackets with the
-   SSD budget per phase at the bottom. Checked in greyscale and deuteranopia (shapes carry the meaning, not hue); 150 mm wide.
-   Risk register table is `[tbp]` (was `[H]`: it overflowed p. 16 by 201 pt under the floated org chart) — it now lands on
-   p. 17 above the end of the Conclusion; author may prefer otherwise.
+1. ~~Timeline figure~~ **redone 2026-10-01 evening** — `scripts/piptex/timeline_tikz.py` (`timeline_tikz(P, B, y1, y2, tex, usd, teams=T)`;
+   run standalone → `/tmp/tl/tl-1.png`). A *season calendar*, not a Gantt: month strip (dry months Habsburg, bold initials; "wet
+   season", never "rains"), faint dry wash through the lanes, lanes PAPER / PEOPLE / TANGO teams / ECHO teams / Focal points / AIR.
+   Team lanes use the **map colours** (corridor red, community purple, teal) with one numbered dot per deployment month derived from
+   `deploy.teams` × `plan.wave_dates_by_kind`, a dotted recruitment line per batch (`recruit_lead_months` before its own dot, staggered),
+   the line thickening with people. Gate/close = wine-red dashed verticals + diamonds; phase brackets carry the SSD budget. Labels sit
+   *beside* events, never inside bars. Checked in greyscale + deuteranopia. **Still to fine-tune (next conversation):** page flow —
+   `\FloatBarrier` before the Conclusion (`placeins`) keeps Fig 4 / Table 5 out of the References but makes p. 16 (org chart) and
+   p. 17 (risk table) float-only pages; 24 pages now.
+1b. **Waves by kind (author, 2026-10-01 evening):** TANGO corridor teams deploy **Nov 2027** before the herds (`movement.json` herd-front
+   weight Nov 1,158 / Dec 1,583 / Jan 3,212 / Feb 1,190 / Mar 255 / Apr 88), ECHO Dec 2027 + Jan 2028, FP Nov + Jan. Phase 1 = Jun–Oct
+   (5 mo), Phase 2 = Nov 2027–Nov 2028 (13 mo). `plan.yaml`: `wave_dates_by_kind`, `months_paid tango [0,13] / fp [5,13]`,
+   `pm_months [5,13]`, `finance_officer_months [2.5,6.5]`, `recruit_lead_months`. `plan_deploy.py --tango-y1` (default all) /
+   `--echo-y1`, `--staff-y1` 40. **The deploy pipeline was NOT re-run**: `muse-glimmer-30b` returns HTTP 400 and `--no-llm` re-picks
+   sites (Bisellia/Kozi/Tonj…) — `deploy.json` + the two geojsons had TANGO `year` set to 1 by hand (`params.note`), sites unchanged;
+   DEPLOY.txt header edited. 122 team-months (5×13 + 2×12 + 3×11), SSD request **1.59 M** (0.379 / 1.215), total 1.99 M; author will
+   adapt the budget. Map legend says "second wave"; belt is 7 towns / 91,218 (the `--no-llm` geojsons had briefly made it 10).
+1c. **Org chart in colour** (map palette: teal FP, purple ECHO, red TANGO cards + badges, Habsburg PM card). **Appendix B "Data detail:
+   one zone as stored"**: the E1-in-numbers box (restored from the author's screenshot; rows read from `zones.geojson` uid 187 +
+   `deploy.json` E1, as `\parbox` pairs so the breakable tcolorbox can break) + the E1 boundary schedule box, both moved out of §5
+   (pointer sentence stays). Prose: "first wave" phrases rewritten by kind; "rains" → "wet season" everywhere (plan.yaml, budget txt,
+   summary template, TeX). Budget/summary/map outputs in `reports/` regenerated (git-ignored).
 2. Rebuild + share: `scripts/piptex/build_all.sh`; then `set -a; source secrets.env; set +a; python3 scripts/piptex/share.py pdf`,
    rebuild `--share` (the small PDF prints the full PDF's link), `share.py pdf_share docx maps budget`, revoke the four
    superseded slugs (`pdf g-pxk4n2qj7dr2hg2k`, `pdf_share g-6xkjz6px5ct3z3px`, `docx g-76wrj2ndfv2fsk8q`, `maps
