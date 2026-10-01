@@ -74,7 +74,7 @@ SOURCE = {"river": "HydroRIVERS v1.0 (WWF), named from the 1930s Sudan Survey sh
           "hist_water": "1930s Sudan Survey 1:250,000 sheet, traced linework (khor/river)",
           "ridge": "hilltop marks (peak / trig point) on the 1930s Sudan Survey sheets, chained",
           "swamp": "JRC Global Surface Water (seasonal) / HydroLAKES edge", "road": "OpenStreetMap (HeiGIT extract)",
-          "border": "GADM 4.1 country boundary", "hist_boundary": "1930s Sudan Survey district / province line",
+          "border": "OCHA COD-AB (HDX) country outline, the government-endorsed line; the 2 km mesh edge the leg follows was cut on the Natural Earth 50m outline, within a few km of it", "hist_boundary": "1930s Sudan Survey district / province line",
           "open bush": "no linear feature — landmarks are 1930s sheet village/water symbols", "geological contact": "published geological map (Sudan 2004 / CAR 1964) — not visible on the ground"}
 COD = ROOT / "data/admin_cod"          # OCHA COD-AB (HDX) — the government-endorsed admin set, with p-codes, all four countries
 COD_FILES = [("SSD", "ssd_admin3.geojson", 3, "payam"), ("COD", "cod_admin3.geojson", 3, "secteur/chefferie"),

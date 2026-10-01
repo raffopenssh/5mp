@@ -126,3 +126,26 @@ Source of the asks: the author's comments in `/tmp/shelley-uploads/PIP_Radom_Num
    g-97dbb6zhjrhm6gw8`, `budget g-npdxrw8vtm3mf8wj`) per the audit rule above.
 3. Decisions the author has not confirmed: the aviation-rate justification wording (AP in-house aircraft) and that the
    workplan table in §5 stays beside the new timeline figure (duplication).
+
+## Round 5 — final (2026-10-01 night, after the author's flags)
+
+- **Border source → OCHA (flag 3):** `plan_boundary.py` `SOURCE["border"]` had read "GADM 4.1" — wrong twice: the mesh's border
+  feature is `data/world_countries.geojson` (Natural Earth 50m, `plan_conservancy_units.countries()`), and the admin set of the
+  report is OCHA COD-AB. The label now names COD-AB as the line a drafter follows and says the 2 km mesh edge was cut on the NE
+  outline (NE vs COD-AB: median 2 km apart, max ~10 km). Re-running `plan_boundary.py` changed **only** that label (272 zones, no leg,
+  no legal text, all 272 `in_words` kept); then `easyplan.py` (budget txt byte-identical), `plan_zones_package.py --out
+  reports/ZONING_PLAN_2026-10`, `plan_zones_qgis.py`. Swapping the snap feature itself to COD-AB was rejected: the zone polygons
+  follow the NE line, so a COD-AB feature 2–5 km off would turn border legs into "open bush".
+- **Workplan table gone (flag 4):** the calendar figure (`fig:timeline`) is emitted right after the Workplan paragraph at the end
+  of §5 and is the only workplan; `WP`/`WP_ROWS` still read `plan.yaml` but are unused. Cost's first sentence points back to it.
+- **"plan", not "program(me)" (flag 5):** exec summary + Conclusion; the org-chart lane is `PROJECT` (was PROGRAMME). "integer
+  programme" (§5 (iii)) stays — a term of art. `plan.yaml`/budget txt untouched (one "permanent programme" in a plan.yaml row that
+  no longer prints, one "older programmes" in a budget note).
+- **Appendix A on one page (flag 6):** the three budget tables share p. 18 — `\footnotesize`, `\arraystretch 1.03`, captions
+  `footnotesize`/`skip=3pt` inside a `\begingroup`, budget-table description column `.53`, headcount `.34/.47`, one-line captions, the
+  Excel link in-text (the footnote URL is already in §6). Needs ~195 pt; the page has ~200 — if a table grows a row, drop
+  `\arraystretch` to 1.0 before anything else.
+- `\widowpenalty=\clubpenalty=10000`; `\why` is `\par\nobreak` so an institution's italic line cannot leave its name (it had, p. 6/7).
+- **21 pages**, both logs clean. Share: pdf `g-rmnfvfm5ns9ssdpp`, pdf_share `g-zqt2q5htcjfcfj6f`, docx `g-3cp9rzd8frf86pc6`, gpkg
+  `g-shzqsxwqrn33bdkn`; maps/budget/dossier/legal_brief/aoi_gpkg_light unchanged. Revoked 7 (the four 1 Oct evening slugs + three
+  minted in the wrong order — mint **gpkg before pdf**, the PDFs embed the gpkg link). Live PIP guest set = 9 links, one per deliverable.
