@@ -99,6 +99,8 @@ GREEN_E = "#2f7f6f"        # Southern NP - existing, someone else's ground
 USER_GREY = "#8c8c86"      # planner sheet: every hand-drawn boundary, one quiet colour
 TAN = "#b08d57"            # pastoral / grazing zones
 RED = "#c62828"            # fire
+FRONT_EARLY, FRONT_LATE = "#b71c1c", "#f3b6b6"   # season-front isochrones, early -> late (the app's ramp, fireseason.js)
+VANGUARD_C = "#9a3412"     # vanguard chains: fires lit 10-60 d ahead of the front (the app's orange lead ramp, darkened for paper)
 ORANGE = "#e08a1e"         # settlements
 CLEAR = "#3b2a7a"          # clearing (deforestation). Indigo, the app's violet family pulled to the dark end: the
                            # sheet's warm side is taken (fire red, corridor red, built-up amber, gold) and the
@@ -314,6 +316,49 @@ def load_fire(frame):
         types[g.get("group_type") or "unclassified"] += 1
         years[g.get("year")] += 1
     return segs, dict(types.most_common()), dict(sorted(years.items()))
+
+
+SEASON_OVERLAY = None      # set by load_season_overlay(); None = not drawn (legend then says nothing about it)
+
+
+def load_season_overlay(frame, area="XSA_Study_Area"):
+    """The app's own fire-season layers, overlaid as drawn there (docs/agents/fire.md "Season front & vanguard"):
+    the stored front's isochrones for the latest complete season (`/api/fire-season?area=&season=`) and every KF
+    vanguard chain in frame (`/api/fire-vanguard?bbox=`, 10-60 d ahead of the front, 2024-26). Read from the running
+    server with the XSA owner password ($AOI_OWNER_PWD); without it the overlay is skipped and named as missing."""
+    import os, urllib.request, urllib.parse
+    pwd = os.environ.get("AOI_OWNER_PWD")
+    if not pwd:
+        print("season overlay skipped: AOI_OWNER_PWD unset (set -a; source secrets.env)"); return None
+    base = "http://localhost:8000"
+    def get(path):
+        with urllib.request.urlopen(f"{base}{path}&pwd={urllib.parse.quote(pwd)}", timeout=120) as r:
+            return json.loads(r.read())
+    try:
+        meta = get(f"/api/fire-season?area={area}&summary=1")
+        complete = [x for x in meta["seasons"] if x["complete"]]
+        if not complete: return None
+        season = complete[-1]["label"]
+        fs = get(f"/api/fire-season?area={area}&season={urllib.parse.quote(season)}")
+        x0, y0, x1, y1 = frame
+        # &aoi= scopes the answer to the AOI's own KF chains (without it the parks' chains answer for the bbox)
+        van = get(f"/api/fire-vanguard?bbox={x0},{y0},{x1},{y1}&from={complete[0]['start']}&to={complete[-1]['end']}&aoi={area}")
+    except Exception as e:
+        print("season overlay skipped:", e); return None
+    # the front is measured over the detections' extent + padding; the sheet's fire wash is the AOI's, so the
+    # isochrones are clipped to the AOI polygon (an isochrone over blank paper was a white line on white)
+    con = sqlite3.connect(f"file:{DB}?mode=ro", uri=True)
+    aoi = shape(json.loads(con.execute("SELECT geometry FROM aois WHERE id=?", (area,)).fetchone()[0])); con.close()
+    iso = []
+    for c in fs["contours"]:
+        pr = c.get("properties") or c
+        g = shape(c["geometry"]).intersection(aoi)
+        if not g.is_empty: iso.append((pr["dos"], pr["text"], bool(pr.get("label")), g))
+    chains = [([(p[0], p[1]) for p in g["pts"]], list(g.get("leads") or [])) for g in van["groups"] if len(g["pts"]) >= 2]
+    if van.get("truncated"):
+        print("season overlay: vanguard answer truncated", van.get("count"), van.get("total"))
+    return dict(season=season, iso=iso, chains=chains, n_chains=van["total"], seasons=[complete[0]["label"], complete[-1]["label"]],
+                front_first=fs["stats"].get("front_first"), lead_days=van.get("lead_days"), lead_max_days=van.get("lead_max_days"))
 
 
 def load_settlements(frame):
@@ -874,6 +919,17 @@ TEAM_C = "#0b7285"
 DASHDOT = (0, (5, 2.2, 1.2, 2.2))     # the one dash-dot used for every "context, not the subject" outline
 
 
+SHARE_JSON = ROOT / "reports/pip_latex/share.json"
+
+
+def gpkg_link():
+    """The guest link to the GeoPackage that holds this sheet's layers: the AOI light package for the situation
+    sheet, the zoning plan package for the planner/deployment sheet (keys as in scripts/piptex/share.py)."""
+    if not SHARE_JSON.exists():
+        return None
+    return json.load(open(SHARE_JSON)).get("aoi_gpkg_light" if SITUATION else "gpkg")
+
+
 def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
                 date, planner_n=0, deploy=None, dens_drawn=False):
     """Every row of the right-hand column, as (height_inches, render) pairs.
@@ -955,7 +1011,8 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
         ms *= PANEL_SCALE; lw = lw * PANEL_SCALE if lw else lw
         import textwrap as _t
         nlines = (_t.wrap(note, wrap_chars(NS)) if note else [])
-        h = LS * PT * LEAD + len(nlines) * NS * PT * 1.34 + SP * 0.85
+        llines = _t.wrap(label, wrap_chars(LS)) or [label]     # a long row label wraps instead of running off the card
+        h = len(llines) * LS * PT * LEAD + len(nlines) * NS * PT * 1.34 + SP * 0.85
 
         def draw(ax, y):
             yc = y + LS * PT * 0.60
@@ -993,10 +1050,10 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
                 ax.plot([SYM_X], [yc], marker=marker, ms=ms, mfc=mfc, mec=mec,
                         mew=mew, alpha=alpha, clip_on=False)
             live = ms or lw or kind
-            ax.text(TXT_X, y, label, fontsize=LS, color=INK if live else MUTED, va="top",
-                    style="normal" if live else "italic")
+            ax.text(TXT_X, y, "\n".join(llines), fontsize=LS, color=INK if live else MUTED, va="top",
+                    style="normal" if live else "italic", linespacing=LEAD * 0.92)
             if nlines:
-                ax.text(TXT_X, y + LS * PT * LEAD, "\n".join(nlines),
+                ax.text(TXT_X, y + len(llines) * LS * PT * LEAD, "\n".join(nlines),
                         fontsize=NS, color=MUTED, va="top", style="italic",
                         linespacing=1.34)
         add(h, draw)
@@ -1034,16 +1091,16 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
         key("s", "Boundaries as drawn by the authors", "none", USER_GREY, lw=1.0, ls=DASHDOT, alpha=0.8,
             short="Drawn by the authors")
         key("s", "Southern NP, gazetted", "none", USER_GREY, lw=1.0, alpha=0.8, short="Southern NP, gazetted")
-        for c, w in (("core", "Core"), ("wilderness", "Wilderness"), ("community", "Community"), ("corridor", "Corridor")):
+        for c, w in (("core", "Core"), ("wilderness", "Old-growth vegetation"), ("community", "Community"), ("corridor", "Corridor")):
             key("s", w, "none", ZONE_C[c], lw=0.9, ls=DASHDOT, alpha=0.7, short=f"Zoning: {w.lower()}")
     elif planner_n and not SITUATION:
-        key("s", "Boundaries as drawn by the authors (park, wilderness, grazing, corridor pins)", "none", USER_GREY, lw=1.1, ls=(0, (6, 3)),
+        key("s", "Boundaries as drawn by the authors (park, old-growth blocks, grazing, corridor pins)", "none", USER_GREY, lw=1.1, ls=(0, (6, 3)),
             short="Boundaries as drawn by the authors")
         key("s", "Southern National Park \u2014 already gazetted (tinted)", "none", USER_GREY, lw=1.1, short="Southern NP, gazetted (tinted)")
     elif not SITUATION:
       key("s", "The proposed park", "none", GREEN, lw=3.4)
-      key("s", "Wilderness blocks around it \u2014 proposed, not park", "none",
-          GREEN_W, lw=1.6, short="Proposed wilderness")
+      key("s", "Old-growth vegetation blocks around it \u2014 proposed, not park", "none",
+          GREEN_W, lw=1.6, short="Proposed old-growth blocks")
       key("s", "Southern National Park \u2014 already gazetted", "none", GREEN_E,
           lw=2.0, short="Southern NP (gazetted)")
       key("s", "Sustainable-grazing zones", "none", TAN, lw=1.6, ls=(0, (7, 4)), short="Grazing zones (drawn)")
@@ -1066,6 +1123,12 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
         lw=1.4, alpha=0.55,
         note=f"{fmt(len(fire))} of them in frame \u2014 the depth of the wash "
              f"is the density, not one big fire", short="Fire front 2024\u201326")
+    if SITUATION and SEASON_OVERLAY:   # a legend row may only describe a layer that is actually drawn
+        SO = SEASON_OVERLAY
+        key("_", f"Season front {SO['season']}: light dashed isochrones every 5 days, stronger every 15, labelled monthly", "none", "#bdbdbd", lw=1.0, ls=(0, (4, 3)), alpha=0.9,
+            short=f"Season front {SO['season']}, dashed isochrones (5 d)")
+        key("_", f"Vanguard fire chain \u2014 lit {SO['lead_days']}\u2013{SO['lead_max_days']} days ahead of the front; chevrons = day order while ahead, ash after the season caught up", "none", VANGUARD_C, lw=1.0, alpha=0.7,
+            short=f"Vanguard chain ({fmt(SO['n_chains'])}), \u203a = direction, {SO['lead_days']}\u2013{SO['lead_max_days']} d ahead")
     if (planner_n or SITUATION) and dens_drawn:   # a legend row may only describe a layer that is actually drawn
         key("o", "Built-up, people per 2 km cell (solid amber discs, same size rule as the towns)", ORANGE, ORANGE, swatch="cells", mew=0.25, alpha=0.92,
             note="GHSL clusters binned per cell \u2014 a footprint is 0.7 px at this scale, so people are drawn, not shapes; unnamed clusters stay in this layer", short="Built-up, size \u221d people")
@@ -1161,6 +1224,19 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
     if not SITUATION: text("A tilde after a site name means the assessment could not confirm its "
          "position on the ground.", 9.4, MUTED, style="italic", x=TXT_X,
          gap=SP, tag="blurb")
+
+    # ------------------------------------------------------------ data link
+    # every layer on the sheet, as a GeoPackage: the guest link minted by scripts/piptex/share.py (share.json)
+    gp = gpkg_link()
+    if gp:
+        head("Data", INK)
+        text("This sheet's layers as a GeoPackage for QGIS:" if SITUATION else "Zones, units, teams and boundaries as a GeoPackage for QGIS:",
+             10.6, INK, x=TXT_X, gap=SP * 0.3, tag="data")
+        # the proxy serves the default port without a port number; the scheme is implied on paper
+        host, _, slug = gp.replace("https://", "").replace(":8000/", "/").partition("/")
+        text(host, 10.6, INK, x=TXT_X, gap=0.0, wrap=False, tag="data")
+        text("/" + slug, 10.6, INK, x=TXT_X + 0.06, gap=SP * 0.3, wrap=False, tag="data")
+        text("Read-only link, valid for one year.", 9.2, MUTED, style="italic", x=TXT_X, gap=SP, tag="data")
 
     # ------------------------------------------------------------ provenance
     # one line under the frame, at the legend's size: read after the map, never competing with it
@@ -1301,6 +1377,8 @@ def main():
         frame = (x0, y0, x1, y1)
 
     fire, fire_types, fire_years = load_fire(frame)
+    global SEASON_OVERLAY
+    SEASON_OVERLAY = load_season_overlay(frame) if SITUATION else None
     setl = load_settlements(frame)
     global POP_MAX
     POP_MAX = max([r[2] or 0 for r in setl] + [1])      # one people scale for the whole sheet (towns AND built-up cells)
@@ -1395,7 +1473,64 @@ def main():
         ax.add_collection(LineCollection(fire, colors=RED, linewidths=0.30,
                                          alpha=0.045, zorder=2.0,
                                          capstyle="round"))
-
+    if SITUATION and SEASON_OVERLAY:
+        # the app's season front and vanguard chains, very subtly (reviewer C6): just above the fire hairlines (z 2.0)
+        # and below everything else (built-up z 2.10+). Drawn by the app's rules (srv/static/fireseason.js): isochrones
+        # dashed, the 15-day ones (`label`) stronger and labelled ALONG the line at a fixed spacing; a vanguard chain is
+        # split per segment into the part still AHEAD of the front (coloured, chevrons along it for the day order) and
+        # the part AFTER the season caught up (faint ash, no chevrons). White isochrones: the backdrop here is the red
+        # fire wash on paper, not the app's dark base, and a red isochrone vanished in it.
+        SO = SEASON_OVERLAY
+        LABEL_EVERY_KM, CHEVRON_EVERY_KM = 320.0, 28.0
+        ISO_C = "#b4b4b4"     # a light grey rather than pure white: #e8e8e8 vanished on the pale rim of the wash
+        def walk(ln, every_km, first_km):
+            """Points (x, y, angle_deg) every `every_km` along a lon/lat polyline, the first at `first_km`."""
+            out, acc, nxt = [], 0.0, first_km
+            for (ax_, ay_), (bx_, by_) in zip(ln, ln[1:]):
+                seg = math.hypot((bx_ - ax_) * kx, by_ - ay_) * 111.0
+                while seg > 0 and acc + seg >= nxt:
+                    f = (nxt - acc) / seg
+                    out.append((ax_ + (bx_ - ax_) * f, ay_ + (by_ - ay_) * f, math.degrees(math.atan2(by_ - ay_, (bx_ - ax_) * kx))))
+                    nxt += every_km
+                acc += seg
+            return out
+        for dos, txt, lab, g in SO["iso"]:
+            lines = [list(ls.coords) for ls in (g.geoms if hasattr(g, "geoms") else [g])]
+            ax.add_collection(LineCollection(lines, colors=ISO_C, linewidths=1.1 if lab else 0.5, alpha=0.9 if lab else 0.55,
+                                             linestyle=(0, (2.5, 2)), zorder=2.02))
+            if lab and dos % 30 == 0:     # labels on the monthly isochrones only, few per line
+                for ln in lines:
+                    for mx, my, ang in walk(ln, LABEL_EVERY_KM, LABEL_EVERY_KM * 0.5):
+                        if ang > 90: ang -= 180
+                        if ang < -90: ang += 180
+                        if x0 < mx < x1 and y0 < my < y1:
+                            ax.text(mx, my, txt, fontsize=4.8, color=ISO_C, alpha=0.95, ha="center", va="center", rotation=ang, rotation_mode="anchor",
+                                    zorder=2.03, path_effects=[pe.withStroke(linewidth=1.1, foreground="#9a5a5a", alpha=0.7)])
+        if SO["chains"]:
+            ahead, after, chev = [], [], []
+            hl = 2.2 / 111.0      # chevron size in degrees of latitude (~2.2 km)
+            for pts, leads in SO["chains"]:
+                for i, (a_, b_) in enumerate(zip(pts, pts[1:])):
+                    ld = leads[i + 1] if i + 1 < len(leads) else (leads[-1] if leads else 10)
+                    (ahead if ld is None or ld >= 0 else after).append([a_, b_])
+                # chevrons along the ahead part only, as the app does (direction = the measured day order)
+                run = []
+                for i, pt in enumerate(pts):
+                    ld = leads[i] if i < len(leads) else 10
+                    if ld is None or ld >= 0: run.append(pt)
+                    else: break
+                for cx_, cy_, ang in walk(run, CHEVRON_EVERY_KM, CHEVRON_EVERY_KM * 0.6):
+                    ux_, uy_ = math.cos(math.radians(ang)), math.sin(math.radians(ang)); lx_, ly_ = -uy_, ux_
+                    tip = (cx_ + ux_ * hl * 0.5 / kx, cy_ + uy_ * hl * 0.5)
+                    bs = (cx_ - ux_ * hl * 0.5 / kx, cy_ - uy_ * hl * 0.5)
+                    chev.append([bs[0] + lx_ * hl * 0.45 / kx, bs[1] + ly_ * hl * 0.45, tip[0], tip[1], bs[0] - lx_ * hl * 0.45 / kx, bs[1] - ly_ * hl * 0.45])
+            if after:
+                ax.add_collection(LineCollection(after, colors="#9ca3af", linewidths=0.3, alpha=0.3, zorder=2.04, capstyle="round"))
+            if ahead:
+                ax.add_collection(LineCollection(ahead, colors=VANGUARD_C, linewidths=0.4, alpha=0.32, zorder=2.045, capstyle="round"))
+            if chev:
+                ax.add_collection(LineCollection([[(c[0], c[1]), (c[2], c[3]), (c[4], c[5])] for c in chev], colors=VANGUARD_C,
+                                                 linewidths=0.4, alpha=0.45, zorder=2.046, capstyle="round", joinstyle="miter"))
     # 4. the shapes, drawn as the hierarchy they are
     order = ["grazing", "wilderness", "existing", "park", "pin", "other"]
     style = {
@@ -1573,7 +1708,7 @@ def main():
                 # count and any qualifier in parentheses, keep the name
                 import re as _re
                 town = (" · " + _re.sub(r"\s[\d,]+$", "", towns[0]).split(" (")[0].replace("*", "").strip()) if towns else ""
-                nm = str(pr.get("seed", cls)).replace(" proposal", "") + ("" if "_" not in fp.stem.replace("optimize_", "") else f" ({fp.stem.split('_', 2)[2]})")
+                nm = str(pr.get("seed", cls)).replace(" proposal", "").replace("wilderness", "old-growth vegetation") + ("" if "_" not in fp.stem.replace("optimize_", "") else f" ({fp.stem.split('_', 2)[2]})")
                 kha = pr['area_ha'] / 1000
                 planner_labels.append((c.x, c.y,
                                        f"{town.strip(' ·') or nm} · {kha:,.0f}k ha · {pr['population_est']:,} ppl",
@@ -1711,8 +1846,8 @@ def main():
     area_entries = []
     for nm, z in ({} if SITUATION else zones).items():
         role = role_of(nm)
-        if role in ("pin",):
-            continue
+        if role in ("pin",) or (deploy and role != "existing"):
+            continue    # deployment sheet: the authors' drawn blocks are quiet grey context and carry no name (review 2026-10-01); only gazetted Southern NP keeps its label
         c = z["geom"].representative_point()
         col = {"park": GREEN, "wilderness": "#4f7a5c", "existing": GREEN_E,
                "grazing": "#8a6b3a"}.get(role, MUTED)
@@ -1740,7 +1875,7 @@ def main():
     span_km = (x1 - x0) * kx * 111.0
     bar_km = next((k for k in (50, 100, 200, 300) if 0.12 < k / span_km < 0.32), 100)
     draw_scalebar(ax, frame, kx, bar_km, x_frac=0.74)     # lower-right; the legend card holds the lower-left
-    draw_north(ax, frame)
+    draw_north(ax, frame, y_frac=0.045)   # low enough to clear the legend card (grew by the Data block, 2026-10-01)
 
     draw_inset_legend(fig, ax, items)
 
