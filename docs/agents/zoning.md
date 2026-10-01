@@ -368,6 +368,17 @@ Next: pick the frontier row with the client (core cap is a political number), `s
 
 ## Deploy (2026-09-06) — `scripts/plan_deploy.py`
 
+> **Deploy frozen (2026-10-01, author's call "1"):** `deploy.json` + the two geojsons are the **7 Sep herd model** sites with the TANGO
+> `year` set to 1 by hand (`params.note`). Commit `7800d4d3` (15 Sep) re-bundled the corridors and did *not* re-run deploy; on today's
+> `movement.json` the TANGO `why` text differs (bundle ids, front counts) so **every TANGO/FP cache key misses**, the machine's raw pick is a
+> hamlet (Bisellia 211 ppl, Kozi 430) that the LLM had overruled under ADJ rule 1, and rank 3 flips: zone 269 (0.75, Bandasi) over zone
+> 264 (0.70, T5 Tambura, the CAR corridor) — margin 0.05. **Do not re-run `plan_deploy.py` and publish the result** without (a) a
+> deterministic adjudicator (ADJ rules 1–3 are numeric; `muse-glimmer-30b` is gone, HTTP 400) and (b) `selection_frequency` on the
+> rank-3 flip. Plumbing already there: `--reuse FILE` (a deploy.json or a shared `ZONING_PLAN_*.gpkg`, `deploy_teams` layer) adds
+> earlier adjudications/briefs to the `deploy.json.prev` cache; `--no-llm` applies the cache and keeps the machine choice / writes
+> no brief for misses (it used to skip adjudication entirely — that is why the 13:05 run "re-picked sites"); LLM HTTP errors are
+> caught (`llm_safe`); the brief cache key ignores `year` and the `Wave:` sentence. `--pin-tango` stays in the code, unused.
+
 Runs **after** `plan_solver.py solve/rank`; the solver decides classes, deploy decides where a small staff stands first.
 `python3 -W ignore scripts/plan_deploy.py [--narrate] [--staff-y1 30 --staff-y2 80 --echo-y2 5 --tango-y2 5 --fp-y2 3]` →
 `data/plan_zones/solver/DEPLOY.txt`, `deploy.json`, `deploy_teams.geojson` (points), `deploy_footprint.geojson` (served zones +

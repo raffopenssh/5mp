@@ -175,7 +175,8 @@ def main():
     ap.add_argument("--pin-tango", action="append", default=[], metavar="LAT,LON,LABEL",
                     help="a TANGO team placed by DECISION, not by rank: the qualifying settlement (>= MIN_SITE_POP) nearest the point, on the nearest "
                          "corridor zone, second wave, outside the --tango-y2 cap but inside --staff-y2 (review decision 2026-10-01: Boro-Medina)")
-    ap.add_argument("--fp-min-pop", type=int, default=5000); ap.add_argument("--narrate", action="store_true"); ap.add_argument("--no-llm", action="store_true", help="skip the muse-glimmer site adjudication"); ap.add_argument("--workers", type=int, default=32)
+    ap.add_argument("--fp-min-pop", type=int, default=5000); ap.add_argument("--narrate", action="store_true"); ap.add_argument("--no-llm", action="store_true", help="ask no LLM: cached adjudications/briefs (deploy.json.prev, --reuse) are still applied, the rest keeps the machine choice / gets no brief"); ap.add_argument("--workers", type=int, default=32)
+    ap.add_argument("--reuse", action="append", default=[], metavar="FILE", help="extra source of earlier adjudications and briefs: a deploy.json or a shared ZONING_PLAN_*.gpkg (deploy_teams layer); repeatable, searched after deploy.json.prev")
     a = ap.parse_args(); tag = a.tag
     st, G, zs, lab, p10, bud, mv, rk = load(tag)
     con = sqlite3.connect(str(P.DB)); IX = site_index(con, G); C = IX["C"]; pop_r = np.nan_to_num(C["pop"])
@@ -266,7 +267,7 @@ def main():
                 s2 = mk("TANGO", sl2[0], [t["uid"]], round(t["urgency"] * 0.85, 3), s_["season"], why + f" Second team: the zone spans {len(t['bundles'])} bundles and {t['area_ha']/1e6:.1f} M ha; this site is > {2*SITE_REACH_KM:g} km from the first.", [])
                 s2["alternatives"] = [dict(name=c["name"], people=int(c["row"][2] or 0), road_km=c["road_km"], reach=c["reach"], score=c["score"], lon=round(c["row"][1], 4), lat=round(c["row"][0], 4)) for c in sl2]
                 placed.append(s2)
-    if not a.no_llm: adjudicate(placed, zs, a.workers)
+    adjudicate(placed, zs, a.workers, prior_teams(tag, a.reuse), ask=not a.no_llm)
     # two teams of one kind on one passage are one team: after adjudication, a site within 2 x SITE_REACH_KM of a higher-urgency
     # site of the same kind falls back to its farthest shortlisted alternative, or is dropped
     placed.sort(key=lambda s: -s["urgency"]); kept = []
@@ -410,7 +411,7 @@ def main():
     json.dump(dict(params=vars(a), mining_model=P.MM.variant(), mining_note=G.mining_note, team_size=TEAM, road_km=ROAD_KM, site_reach_km=SITE_REACH_KM, year1_staff=staff1, year2_staff=staff2, strands=strand_staff, car_staff=dict(year1=strand_staff["CAR"]["year1"], year2=strand_staff["CAR"]["year2"], cap_teams=caps_f["CAR"]), robustness=robust, teams=y2, echo_candidates=[{k: v for k, v in e.items()} for e in echo], tango_candidates=[{k: v for k, v in t.items() if k not in ("udr", "mask")} for t in tango]),
               open(OUT / f"deploy{tag}.json", "w"), indent=1, ensure_ascii=False)
     (OUT / f"DEPLOY{tag}.txt").write_text("\n".join(L) + "\n"); print("\n".join(L))
-    if a.narrate: narrate(tag, y2, zs, a.workers); L = text_out(); (OUT / f"DEPLOY{tag}.txt").write_text("\n".join(L) + "\n"); print("\n".join(L[:6]))
+    if a.narrate: narrate(tag, y2, zs, a.workers, prior_teams(tag, a.reuse), ask=not a.no_llm); L = text_out(); (OUT / f"DEPLOY{tag}.txt").write_text("\n".join(L) + "\n"); print("\n".join(L[:6]))
 
 def selection_frequency(echo, a, draws=None, seed=0):
     """Per ECHO candidate zone, the share of perturbed re-rankings that pick it (see selection_robustness). Computed once,
@@ -481,7 +482,33 @@ You receive the machine's SHORTLIST of up to three base sites for ONE team, each
 Choose the base. Rules, in order: (1) a hamlet under 1,000 people is a base only if no larger site is within 0.15 of its reach share; (2) otherwise prefer the higher reach share, then the shorter median minutes; (3) a site with no settlement and no mapped water is not a base; (4) do not invent facts; if the shortlist's first entry satisfies these, keep it.
 Answer ONLY a JSON object: {"choice": <1-based index into the shortlist>, "reason": "<=2 sentences using only the numbers given"}"""
 
-def adjudicate(placed, zs, workers):
+def prior_teams(tag, reuse=()):
+    """Earlier team records that carry adjudications and briefs: deploy<tag>.json.prev first, then every --reuse file — a deploy.json
+    or a shared ZONING_PLAN_*.gpkg (its deploy_teams layer stores the same fields, JSON columns as text). The LLM that wrote them
+    (muse-glimmer-30b) is no longer served (2026-10-01), so these are the only source of adjudications and briefs until another is."""
+    out = []
+    for f in [OUT / f"deploy{tag}.json.prev"] + [Path(x) for x in reuse]:
+        if not f.exists(): log(f"prior_teams: {f} missing, skipped"); continue
+        if f.suffix == ".gpkg":
+            c = sqlite3.connect(str(f)); c.row_factory = sqlite3.Row
+            rows = [dict(r) for r in c.execute("SELECT * FROM deploy_teams")]
+            for r in rows:
+                for k in ("zone_uids", "alternatives", "reach", "towns"):
+                    if isinstance(r.get(k), str):
+                        try: r[k] = json.loads(r[k])
+                        except ValueError: pass
+                r.pop("geom", None); r["_src"] = f.name
+            out += rows
+        else:
+            out += [dict(t, _src=f.name) for t in json.load(open(f)).get("teams", [])]
+    return out
+
+def llm_safe(sys_prompt, user, max_tokens):
+    """P.llm_json raises on HTTP errors (muse-glimmer-30b: HTTP 400 since 2026-10-01); a dead model must read as 'unavailable', not kill the run."""
+    try: return P.llm_json(sys_prompt, user, max_tokens=max_tokens)
+    except Exception as e: return {"error": f"LLM unavailable ({type(e).__name__}: {str(e)[:80]})"}
+
+def adjudicate(placed, zs, workers, prior, ask=True):
     """muse-glimmer re-orders each team's shortlist (a judgement call the numbers alone leave open: a bigger village vs a
     better-connected one). The LLM chooses among measured candidates only; it cannot add a site or move one."""
     from concurrent.futures import ThreadPoolExecutor
@@ -489,22 +516,24 @@ def adjudicate(placed, zs, workers):
     # cache (2026-10-01): a team whose kind, machine reasons and shortlist are unchanged keeps the adjudication already made
     # (deploy.json.prev), so a re-run for one new team does not re-open every site choice — and the model that made the
     # earlier choices (muse-glimmer-30b) need not still be served. Delete the .prev to re-adjudicate everything.
-    prev = OUT / "deploy.json.prev"; old = {}
-    if prev.exists():
-        for t in json.load(open(prev)).get("teams", []):
-            if t.get("adjudication") and t["kind"] != "FP":
-                old[(t["kind"], tuple(t["zone_uids"]), re.sub(r" Site.*$", "", t["why"]), tuple(c["name"] for c in t.get("alternatives", [])))] = t
+    old = {}
+    for t in prior:
+        if t.get("adjudication") and t["kind"] != "FP":
+            old.setdefault((t["kind"], tuple(t["zone_uids"]), re.sub(r" Site.*$", "", t["why"]), tuple(c["name"] for c in t.get("alternatives", []) or [])), t)
     cached = 0
     for s in placed:
         k = (s["kind"], tuple(s["zone_uids"]), re.sub(r" Site.*$", "", s["why"]), tuple(c["name"] for c in s.get("alternatives", [])))
         if k in old and not s.get("pinned"):
             t = old[k]; s.update(place=t["place"], lon=t["lon"], lat=t["lat"], site_people=t["site_people"], road_km=t["road_km"], reach=t["reach"], why=t["why"], adjudication=t["adjudication"]); s["_adj_cached"] = True; cached += 1
     todo = [i for i, s in enumerate(placed) if not s.pop("_adj_cached", False)]
-    print(f"adjudicate: {cached} kept from deploy.json.prev, {len(todo)} to ask {P.LLM_MODEL}")
+    if not ask:
+        for i in todo: placed[i]["adjudication"] = "kept machine choice (no LLM asked: --no-llm, nothing cached for this shortlist)"
+        print(f"adjudicate: {cached} kept from prior runs ({', '.join(sorted({t['_src'] for t in old.values()})) or 'none'}), {len(todo)} keep the machine choice (--no-llm)"); return
+    print(f"adjudicate: {cached} kept from prior runs, {len(todo)} to ask {P.LLM_MODEL}")
     def one(i):
         s = placed[i]; p = byuid.get(s["zone_uids"][0], {})
         z = {k: p.get(k) for k in ("solver_class", "area_ha", "population_est", "towns", "boundary", "mine_top05_cells", "herd_bundles")}
-        out = P.llm_json(ADJ_SYS, f"TEAM {s['kind']}; machine reasons: {s['why']}\n\nSHORTLIST:\n{json.dumps(s['alternatives'], ensure_ascii=False)}\n\nZONE:\n{json.dumps(z, ensure_ascii=False)[:3000]}", max_tokens=2500)
+        out = llm_safe(ADJ_SYS, f"TEAM {s['kind']}; machine reasons: {s['why']}\n\nSHORTLIST:\n{json.dumps(s['alternatives'], ensure_ascii=False)}\n\nZONE:\n{json.dumps(z, ensure_ascii=False)[:3000]}", max_tokens=2500)
         return i, out
     with ThreadPoolExecutor(max_workers=workers) as ex:
         for i, out in ex.map(one, todo):
@@ -520,31 +549,34 @@ You are given the team's site and the machine's reasons, plus the STORED DESCRIP
 Style: plain prose for a field coordinator; no coordinates, no field names (write 'gold-target cells', not mine_top05_cells), round numbers, no list longer than three names.
 Answer ONLY a JSON object: {"short": "ONE sentence, <=30 words: base, ground, purpose", "brief": "<=5 sentences, <=120 words: where the team is based and why, what ground it covers (two or three named edges), whom it meets and when, what it watches for", "first_season": "<=2 sentences: the first two concrete things to do"}"""
 
-def narrate(tag, teams, zs, workers):
+def narrate(tag, teams, zs, workers, prior, ask=True):
     from concurrent.futures import ThreadPoolExecutor
     byuid = {f["properties"]["uid"]: f["properties"] for f in zs}
-    # only NEW or changed teams are narrated: a brief written for the same kind, site, zones, year and machine reasons is
-    # kept from the previous deploy.json (the LLM is the expensive step; user 2026-09-07). The key deliberately excludes the
-    # id, which shifts when the order changes (E5 → E4) without the team changing.
-    prev = OUT / f"deploy{tag}.json.prev"
+    # only NEW or changed teams are narrated: a brief written for the same kind, site, zones and machine reasons is kept from
+    # the previous deploy.json / --reuse files (the LLM is the expensive step; user 2026-09-07). The key deliberately excludes
+    # the id, which shifts when the order changes (E5 → E4), and the year/wave (2026-10-01: TANGO moved to wave 1 — the
+    # briefs never mention the wave; the 'Wave:' sentence of `why` is stripped for the same reason).
+    nowave = lambda w: re.sub(r" Wave: .*$", "", w or "")
     old = {}
-    if prev.exists():
-        for t in json.load(open(prev)).get("teams", []):
-            if t.get("brief") and not t["brief"].startswith("(brief failed"): old[(t["kind"], t["place"], tuple(t["zone_uids"]), t["year"], t["why"])] = t
+    for t in prior:
+        if t.get("brief") and not t["brief"].startswith("(brief failed"): old.setdefault((t["kind"], t["place"], tuple(t["zone_uids"]), nowave(t["why"])), t)
     todo = []
     for s in teams:
-        o = old.get((s["kind"], s["place"], tuple(s["zone_uids"]), s["year"], s["why"]))
+        o = old.get((s["kind"], s["place"], tuple(s["zone_uids"]), nowave(s["why"])))
         if o: s["brief"], s["first_season"], s["short"] = o["brief"], o.get("first_season"), o.get("short")
         else: todo.append(s)
-    print(f"narrate: {len(teams) - len(todo)} briefs kept from the previous run, {len(todo)} to write", file=sys.stderr)
+    print(f"narrate: {len(teams) - len(todo)} briefs kept from prior runs, {len(todo)} to write" + (" — NOT written (--no-llm)" if ask is False and todo else ""), file=sys.stderr)
     teams_all = teams; teams = todo
+    if not ask:
+        for s in teams: s["brief"] = "(brief failed: no LLM asked (--no-llm) and no prior brief for this team/site/zones)"; s["first_season"] = s["short"] = None
+        teams = []
     def one(s):
         zdesc = []
         for u in s["zone_uids"][:4]:
             p = byuid.get(u, {})
             zdesc.append({k: p.get(k) for k in ("uid", "solver_class", "area_ha", "country", "population_est", "new_since_2015", "towns", "boundary", "unattributed_pct", "mine_top05_cells", "mine_candidates", "mine_watchlist", "mine_reported", "fronts_long", "herd_bundles", "clearing_since_2020_km2", "cropland_2019_pct", "rationale", "panel_name", "panel_story", "panel_boundary_in_words", "panel_herd_calendar")})
         user = "TEAM:\n" + json.dumps({k: s[k] for k in ("id", "kind", "place", "lon", "lat", "site_people", "road_km", "water", "season", "why", "year")}, ensure_ascii=False) + "\n\nZONES SERVED (stored descriptions):\n" + json.dumps(zdesc, ensure_ascii=False)[:9000]
-        return s["id"], P.llm_json(BRIEF_SYS, user, max_tokens=3000)
+        return s["id"], llm_safe(BRIEF_SYS, user, max_tokens=3000)
     with ThreadPoolExecutor(max_workers=workers) as ex:
         for tid, out in ex.map(one, teams):
             s = next(t for t in teams if t["id"] == tid)
