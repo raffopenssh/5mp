@@ -8,7 +8,8 @@ re-run after the plan changes:
     python3 scripts/easyplan.py --check    # exit 1 if the summary text has drifted from its template
 
 WHERE TO EDIT WHAT
-  the plan's decisions (horizon, months paid, one-offs) ....... docs/plan/plan.yaml
+  the plan's decisions (phases, months paid, one-offs, workplan) docs/plan/plan.yaml   (2026-10: two PHASES, Jun 2027 start, 18 months;
+                                                                                        deploy "year 1/2" = first/second wave of teams)
   the prose of the proposal .................................. docs/plan/PIP_SUMMARY_template.txt  ({{jinja}})
   unit costs / budget lines .................................. scripts/easybudget/build_budget.py
   team placements / zone classes ............................. re-run plan_solver.py solve, plan_deploy.py
@@ -242,7 +243,7 @@ def main():
         import build_budget as B
         x = ROOT / f"reports/BUDGET_EASY_{tag}.xlsx"; t = ROOT / f"reports/BUDGET_EASY_{tag}.txt"
         B.build_xlsx(str(x), F, P); B.build_txt(str(t), x.name, F, P)
-        print(f"budget: {B.summary(F, P)['total']:,} USD over {F['years']} years → {t.name}, {x.name}")
+        print(f"budget: {B.summary(F, P)['total']:,} USD over {P.get('horizon_months') or 12 * F['years']} months ({F['years']} phases) → {t.name}, {x.name}")
     txt = render(F, P)
     out = ROOT / "reports/PIP_SUMMARY_EASY.txt"
     if a.check:

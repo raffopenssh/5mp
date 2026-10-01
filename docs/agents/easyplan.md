@@ -114,12 +114,28 @@ one-off kit (field kit, bikes, phones, Starlink, laptops, induction training). P
 (`docs/plan/reference_conservancy_budget.md`, ~500 k/yr for a 61-staff conservancy — what EASY seeds,
 not what it costs). Delivery-unit tags `TEAM`/`FP`/`HQ` give the loaded cost per team.
 
+## 2026-10 ET adoption
+
+The reviewed 18-month budget (ET input, 16 Sep 2026; diff in `reports/BUDGET_DIFF_ET_2026-09.md`, adoption notes in
+`reports/BUDGET_ADOPT_ET_2026-10.md`) is the current plan: **1 Jun 2027 start, two PHASES** — Phase 1 Jun–Nov 2027
+(set-up, no field teams), Phase 2 Dec 2027–Nov 2028 (the one field season). The code still calls the two periods
+Y1/Y2; deploy.json "year 1/2" = first wave (Dec 2027) / second wave (Apr 2028). Months per unit come from
+`months_paid` (already in place) and `months_first_phase` (the phase a unit joins): 4 × 12 + 6 × 8 = 96 team-months.
+Per-team-YEAR ratios (meetings, SSWS days) apply to team-months ÷ 12; all equipment is bought in Phase 1 for every
+unit. A full-time **Project Manager** in South Sudan (`pm_months` + `pm_prelaunch_months`, from 1 Jan 2027) replaces
+the Chinko adviser. Aviation = `savannah_hours` + `heli_hours` + `avgas_barrels` (+ SURVEY_TECH); the FLY_HR recon
+line is gone. Rates added: `MBIKE_SSD`, `CBO_SEED_SSD`, `SAV_HR`, `HELI_HR`, `AVGAS_BBL`, `GAP_*` (ESTIMATE); codes in
+`NO_FREIGHT_CODES` sit in category 6 without freight. Gap-fill lines live inside categories 1–11 (the PIP LaTeX
+parser asserts on those numbers — do not add a 15th category). Strands keep `strand_months_paid: [7, 9]` and are
+unchanged. `facts.budget` gained `equipment`, `headcount`, `aviation`/`aviation_support`, `team_months`,
+`gap_fill_total`; `first_6_months` now equals Phase 1. Total USD 1.90 M (0.55 / 1.35), SSD request 1.51 M.
+
 ## History
 
 The August 2026 three-year budget (1.68 M) lives in `scripts/deprecated/build_budget_3yr_2026_08.py`
 and is still imported by the August PIP generators (`easypip/pip_facts.py`, `build_docs.py`), which
 describe the *hand-drawn* zones. Superseded reports are in `reports/superseded/` (gitignored).
-Current result (2026-09-06): 2 years Nov 2026–Oct 2028, USD 1.52 M (0.50 / 1.03), 21 → 53 field staff.
+Result 2026-09-06 (superseded): 2 years Nov 2026–Oct 2028, USD 1.52 M (0.50 / 1.03), 21 → 53 field staff.
 
 ## PIP LaTeX report
 
