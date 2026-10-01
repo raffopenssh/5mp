@@ -114,9 +114,15 @@ Source of the asks: the author's comments in `/tmp/shelley-uploads/PIP_Radom_Num
    `deploy.json` E1, as `\parbox` pairs so the breakable tcolorbox can break) + the E1 boundary schedule box, both moved out of §5
    (pointer sentence stays). Prose: "first wave" phrases rewritten by kind; "rains" → "wet season" everywhere (plan.yaml, budget txt,
    summary template, TeX). Budget/summary/map outputs in `reports/` regenerated (git-ignored).
+1d. **Page flow fixed (2026-10-01 night):** `\FloatBarrier` moved from before the Conclusion to before References (floats interleave
+   with the Conclusion text; no float-only pages), the risk register is **Appendix B** (`app:risk`, `[H]`; §6 keeps the Risks paragraph
+   with a pointer), every appendix section starts with `\clearpage` (a `[H]` table under an appendix heading otherwise orphans the
+   heading). GitHub-scripts sentence removed from the front box (generator is no longer public). `build_docx.py` resolves
+   `\ref` to appendix letters (`app:*` by order) and `sec:cost`. 23 pages. Docx re-shared for the author's final read:
+   `g-9fjgt9zsf9h6ff3h` (old `g-76wrj2ndfv2fsk8q` revoked). Final layout pass after the read.
 2. Rebuild + share: `scripts/piptex/build_all.sh`; then `set -a; source secrets.env; set +a; python3 scripts/piptex/share.py pdf`,
    rebuild `--share` (the small PDF prints the full PDF's link), `share.py pdf_share docx maps budget`, revoke the four
-   superseded slugs (`pdf g-pxk4n2qj7dr2hg2k`, `pdf_share g-6xkjz6px5ct3z3px`, `docx g-76wrj2ndfv2fsk8q`, `maps
+   superseded slugs (`pdf g-pxk4n2qj7dr2hg2k`, `pdf_share g-6xkjz6px5ct3z3px`, `maps
    g-97dbb6zhjrhm6gw8`, `budget g-npdxrw8vtm3mf8wj`) per the audit rule above.
 3. Decisions the author has not confirmed: the aviation-rate justification wording (AP in-house aircraft) and that the
    workplan table in §5 stays beside the new timeline figure (duplication).
