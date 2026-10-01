@@ -901,7 +901,7 @@ def export_zones(st, lab, tag="", min_ha=2000, cons_target_ha=150_000):
                     if mm.sum() * G.cell_km2() * 100 < min_ha: continue
                     k += 1; zl[mm] = k; names[k] = f"community zone {k}"
                 continue
-            k += 1; zl[m] = k; names[k] = f"{c} zone {k}"
+            k += 1; zl[m] = k; names[k] = f"{c} zone {k}".replace("wilderness zone", "old-growth vegetation zone")   # the label; the class KEY stays "wilderness"
     U2, polys, _ = P.attributes(con, G, zl, surf, st["feats"], names, 0, refs, ctry, park, T, freeze=T)
     sol = json.load(open(OUT / f"solve{tag}.json")); p10 = np.load(OUT / "threat_p10.npy") if (OUT / "threat_p10.npy").exists() else None
     cl = np.load(OUT / "claim_state.npy") if (OUT / "claim_state.npy").exists() else None

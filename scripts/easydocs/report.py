@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Stage 5: write the EASY document-dossier report from the ledgers.
+r"""Stage 5: write the EASY document-dossier report from the ledgers.
 
 Pure assembly -- no LLM. Everything here is derived from docs.sqlite3 so a
 number in the report can be re-derived by rerunning this script (AGENTS.md
@@ -10,7 +10,13 @@ Writes:
   data/easy_docs/easy_docs_index.json       machine-readable, everything
 
 Usage: python3 report.py [--out reports/EASY_DOCS_DOSSIER_2026-08.txt]
+       python3 report.py --cited scripts/piptex/refs.bib [--out ...]   # only the documents the PIP cites (reviewer C25)
+
+--cited keeps the documents whose file name appears in a \path{} of the given .bib (the PIP's reference list names
+each dossier file that way), and the people, organisations, places and provisions drawn from those files only; the
+machine index JSON is not rewritten in that mode (it describes the whole dump).
 """
+import re
 import argparse, collections, json, os, sqlite3, textwrap, datetime
 
 ROOT = os.environ.get("EASYDOCS_DIR", "/home/exedev/5mp/data/easy_docs")
@@ -102,10 +108,21 @@ def people(c):
     return list(by.values())
 
 
-def orgs(c):
+def orgs(c, cited=None):
+    """`cited`: keep only organisations whose roster lines name one of these files (the batch input lists the
+    source files per line, possibly truncated, so a cited file is matched by prefix)."""
     out = []
-    for (js,) in c.execute("SELECT json FROM roster_batches WHERE kind='orgs' AND state='done'"):
+    for js, inp in c.execute("SELECT json, input FROM roster_batches WHERE kind='orgs' AND state='done'"):
+        src = {}
+        for ln in (inp or "").splitlines():
+            parts = [x.strip() for x in ln.split("|")]
+            if len(parts) >= 6 and parts[0].isdigit():
+                src[int(parts[0])] = parts[-1]
         for e in json.loads(js).get("orgs") or []:
+            if cited is not None:
+                named = " ".join(src.get(int(i), "") for i in (e.get("lines") or []) if str(i).isdigit())
+                if not any(n[:40] in named for n in cited):
+                    continue
             out.append(e)
     by = collections.OrderedDict()
     for e in out:
@@ -149,6 +166,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default=os.path.join(
         REPO, "reports", "EASY_DOCS_DOSSIER_2026-08.txt"))
+    ap.add_argument("--cited", default="", help=".bib whose \\path{} entries select the documents to keep")
     a = ap.parse_args()
     import sys
     sys.path.insert(0, os.path.join(REPO, "scripts", "easydocs"))
@@ -157,6 +175,22 @@ def main():
     ppl = people(c)
     org = orgs(c)
     prov, places, place_src = chunk_evidence(c)
+    cited = None
+    if a.cited:
+        norm = lambda x: re.sub(r"[^a-z0-9]", "", x.lower().replace("--", "-"))
+        want = {norm(p) for p in re.findall(r"\\path\{([^}]*)\}", open(a.cited).read())}
+        cited = {n for n in files if norm(n) in want}
+        missing = want - {norm(n) for n in cited}
+        if missing or not cited:
+            sys.exit(f"--cited: {len(missing)} \\path entries match no file in the ledger: {sorted(missing)}")
+        docs = {n: o for n, o in docs.items() if n in cited}
+        files = {n: f for n, f in files.items() if n in cited}
+        ppl = [e for e in ppl if any(src in cited for src in (e.get("sources") or []))]
+        org = orgs(c, cited)
+        prov = {n: v for n, v in prov.items() if n in cited}
+        place_src = {p: {n for n in src if n in cited} for p, src in place_src.items()}
+        place_src = {p: src for p, src in place_src.items() if src}
+        places = collections.Counter({p: ct for p, ct in places.items() if p in place_src})
     npages = c.execute("SELECT sum(pages) FROM files WHERE method='vision_ocr'").fetchone()[0] or 0
     nchunks = c.execute("SELECT count(*) FROM chunks WHERE state='done'").fetchone()[0]
     dups = {n: f["dup_of"] for n, f in files.items() if f["method"] == "duplicate"}
@@ -175,16 +209,21 @@ def main():
     P = L.append
     P("=" * W)
     P("")
-    P("        THE DOCUMENT DOSSIER")
-    P("        Every file in the EASY document dump, read, dated, status-checked")
-    P("        and scored against the AP-RCA plan for western South Sudan")
+    P("        THE DOCUMENT DOSSIER" + (" - DOCUMENTS CITED IN THE PLAN" if cited else ""))
+    if cited:
+        P(f"        The {len(docs)} documents the Priority Intervention Plan cites, read, dated,")
+        P("        status-checked and scored against the AP-RCA plan for western South Sudan")
+    else:
+        P("        Every file in the EASY document dump, read, dated, status-checked")
+        P("        and scored against the AP-RCA plan for western South Sudan")
     P(f"        Machine-read {datetime.date.today():%d %B %Y} - INTERNAL")
     P("")
-    P(wrap(f"{len(files)} files ({len(dups)} exact duplicates, "
-           f"{len(unread)} unreadable) -> {len(docs)} documents read in full: "
-           f"{npages} scanned pages transcribed by vision OCR, "
-           f"{nchunks} text windows extracted, then merged into "
-           f"{len(ppl)} named people and {len(org)} organisations.", "        "))
+    head_ = (f"{len(files)} files cited in the plan's reference list -> {len(docs)} documents read in full, "
+             f"then merged into {len(ppl)} named people." if cited else
+             f"{len(files)} files ({len(dups)} exact duplicates, {len(unread)} unreadable) -> {len(docs)} documents read in full: "
+             f"{npages} scanned pages transcribed by vision OCR, {nchunks} text windows extracted, then merged into "
+             f"{len(ppl)} named people and {len(org)} organisations.")
+    P(wrap(head_, "        "))
     P("")
     P(wrap("Everything below is derived from the ledger in "
            "data/easy_docs/docs.sqlite3 - rerun scripts/easydocs/report.py to "
@@ -421,6 +460,9 @@ def main():
                    for p, ct in places.most_common()],
         "not_read": unread, "duplicates": dups,
     }
+    if cited:
+        print(f"wrote {a.out} ({len(out)} chars, {out.count(chr(10))} lines); index JSON untouched (--cited)")
+        return
     jp = os.path.join(ROOT, "easy_docs_index.json")
     with open(jp, "w") as f:
         json.dump(idx, f, ensure_ascii=False, indent=1)
