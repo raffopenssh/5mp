@@ -149,3 +149,18 @@ Source of the asks: the author's comments in `/tmp/shelley-uploads/PIP_Radom_Num
 - **21 pages**, both logs clean. Share: pdf `g-rmnfvfm5ns9ssdpp`, pdf_share `g-zqt2q5htcjfcfj6f`, docx `g-3cp9rzd8frf86pc6`, gpkg
   `g-shzqsxwqrn33bdkn`; maps/budget/dossier/legal_brief/aoi_gpkg_light unchanged. Revoked 7 (the four 1 Oct evening slugs + three
   minted in the wrong order — mint **gpkg before pdf**, the PDFs embed the gpkg link). Live PIP guest set = 9 links, one per deliverable.
+
+## Round 6 (2026-10-01, late) — layout fixes from the author's screenshots
+
+- **Page after a map page overflowed the paper** (p. 5 and p. 11 ran to 839 pt instead of 790; footnote lines were cut off at the
+  page edge, silently — no `Overfull \vbox` in the log). Cause: `\end{landscape}` ships the map page with `\newgeometry{margin=10mm}`
+  and the *next* page's `\@colht`/`\@colroom`/`\vsize` were already set from that tall text block before `\restoregeometry` ran.
+  `\fixcolht` (defined in the preamble) resets the three after `\restoregeometry` in both map wrappers. **Check after every build:**
+  `pdftotext -bbox main.pdf` → max `yMax` per page must be ≤ 790 (map pages lower).
+- Legally important: the legal-brief footnote hung on `\subsection{}` and printed a lone "7" under the heading; it now sits on a
+  one-line lead sentence. `\interfootnotelinepenalty=10000` removed (it was not the cause and forbids legitimate splits).
+- §4 institutions: one `enumerate` (the three `[resume]` blocks produced uneven gaps), `itemsep=2pt` for all enumerates.
+- §5 priority actions: the action words lead in bold (Present this plan / Find out the state of the s. 80 regulations / Ask for a
+  s. 24 closure order / Use the 2026–27 dry season).
+- 21 pages, logs clean. Share: pdf `g-vhqp427vfw953ppk`, pdf_share `g-fh5524mts95hqg6q`, docx `g-8ptqksvk7544kz98`; round-5
+  pdf/pdf_share/docx revoked. Live guest set on principal 6 since 2026-08-17: 15 = 9 PIP deliverables + the six map-view links.
