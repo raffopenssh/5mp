@@ -291,3 +291,14 @@ Syncs conservation-related legal documents from FAO FAOLEX database:
 API endpoint: `GET /api/parks/{id}/legal`
 
 ---
+
+## Python ABI mix (2026-10-15)
+
+User-site pandas/NumPy 2.x live in `~/.local`; Debian's `python3-bottleneck`,
+`python3-numexpr` (and its dependent `python3-tables`) were NumPy‑1 builds that
+pandas probes as optional deps, dumping a ~100-line ImportError traceback into
+every cron log (`logs/aoi.log`) while still running fine. They were
+`apt-get remove`d; nothing in the repo imports them. If a traceback starting
+"A module that was compiled using NumPy 1.x" reappears, find the apt package
+with `dpkg -S` on the path in the trace and remove it (or `pip install` a
+NumPy‑2 build) rather than pinning numpy<2.
