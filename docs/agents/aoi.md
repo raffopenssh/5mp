@@ -430,6 +430,15 @@ is Hansen <=2023 / alerts >=2024, matching the parks exactly so the numbers stay
 comparable. **Onboarding a park runs it too** — before this, a new park showed
 two years of loss beside 161 parks showing twenty-four.
 
+**GFW integrated alerts do not cover savanna (2026-10-16).** GLAD-L/RADD are
+humid-forest products: north of ~6 °N the XSA AOI has no alert coverage
+(71.9 % of its area in 0.5° tiles with < 50 alerts 2024–26; Wau tile 28.0/7.5:
+20.8 km² Hansen loss 2019–23, 23 alerts) and the `deforestation` unit stores
+that as "no clearing" (invariant 1). The zoning does not rest on it (conversion
+= GHSL built-up + clusters + GLAD cropland), but a printed
+`clearing_since_2020_km2` there is *unmeasured*, not 0 — needs a
+`clearing_basis`. Audit: `reports/REVIEW_V2_FEEDBACK_2026-10.md` §G.
+
 Two traps the plan for it did not mention: the unit costs **~50 s per 2-degree
 window**, not the 0.6 s of the read (the cost is polygonising the mask), and
 polygons alone are invisible — the popup and narratives read
