@@ -1362,7 +1362,14 @@ def main():
     rim_km = st["rim_km"]
 
     # ---- frame from the shapes themselves
-    allg = unary_union([z["geom"] for z in zones.values()])
+    frame_geoms = [z["geom"] for z in zones.values()]
+    if deploy:
+        # the zones the teams work are part of the ask too: K1 (Sam-Ouandja, CAR strand) lies west of every
+        # drawn KML and was cut off at the frame edge on 2026-10-16. Same rule — derived, never typed.
+        _zp = Path(a.planner) if Path(a.planner).name == "zones.geojson" else Path(a.planner).parent / "zones.geojson"
+        _served = {u for t in deploy["footprints"] for u in (t.get("zone_uids") or [])}
+        frame_geoms += [shape(f["geometry"]) for f in json.load(open(_zp))["features"] if int(f["properties"]["uid"]) in _served]
+    allg = unary_union(frame_geoms)
     x0, y0, x1, y1 = allg.bounds
     frame = (x0 - FRAME_PAD_DEG, y0 - FRAME_PAD_DEG,
              x1 + FRAME_PAD_DEG, y1 + FRAME_PAD_DEG)
