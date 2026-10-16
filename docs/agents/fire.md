@@ -1041,6 +1041,41 @@ Three consequences in the frontend, each a separate lie avoided:
 Only a **known, changed** fleet breaks the line: a week with no epoch row must
 not manufacture a break out of ignorance (the same guard F8's `methodKey` uses).
 
+## Wind (ERA5) — the Harmattan check and the per-step wind covariate (2026-10-16)
+
+Reviewer TA (AP-RCA) claimed Jan–Feb front direction is the Harmattan, not
+herds. Measured in `reports/HARMATTAN_CHECK_2026-10.md` (+ `.png`,
+`data/eval/fire_wind_check.json`): every daily step of the 13,185 long
+transhumance fronts against the ERA5 10 m wind at its own place and days.
+Read that note before quoting any wind sentence; the numbers are there.
+
+**Modules.** `scripts/fetch_era5_wind.py` (CDS, `~/.cdsapirc`, one .nc per
+month under `data/climate/era5/`, skipped if present; ~5 min/month on the CDS
+queue — run it in tmux) → `scripts/wind_field.py` (`WindField.load(aoi)`
+collapses the .nc files into `<aoi>_wind_daily.npz`, auto-rebuilt when a .nc is
+newer; `vec/at/mean_vec` nearest-cell lookup; `annotate_groups()` adds
+`wind_steps / wind_downwind_share / wind_upwind_share / wind_align_deg /
+wind_speed_ms` to fire_groups_v5 dicts) → `scripts/fire_wind_check.py` (the
+analysis; null = wind day shuffled within season-month at the step's own
+place, 200 draws, `skill = real − null`, like `eval_fire_null.py`).
+Conventions live in `wind_field.py`'s docstring: bearings are travel
+direction ("to"), `wind_to = atan2(u, v)`, downwind |Δ| ≤ 45°, upwind ≥ 135°;
+`day` = 24 h mean, `pm` = 12+15 UTC mean. Missing wind is NaN / an absent
+field, never 0 (invariant 1).
+
+**Hooking into the cron (not yet on).** `wind_field.ensure(aoi, start, end,
+months)` fetches the missing months and rebuilds the npz; it needs `cdsapi`,
+which is only in `.venv` — call it with `python=.venv/bin/python`. The natural
+place is a `daily_fire_update` step after 2e (monthly, like the hotspot
+mask), then `annotate_groups()` inside `load_fire_groups_to_db.py` so the
+wind fields reach `feature_geometries.properties`. ERA5T lags ~5 days, so
+the NRT groups are always `wind_steps`-less at first and gain the fields on
+the next rebuild — a state, not an error. Same request can carry
+`total_precipitation`, `2m_temperature/dewpoint`, `volumetric_soil_water_layer_1`
+for a fuel-curing prior on the Kalman chains (see the report's last section);
+any such change is judged by `eval_fire_baseline.py` leading-edge Gini and
+`eval_fire_null.py`, never by eye.
+
 ## Fire pipeline health & consistency
 
 Three artefacts must agree or the popup silently breaks ("Feature not found"
