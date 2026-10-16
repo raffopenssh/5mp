@@ -1,20 +1,20 @@
-c7e5081 2026-09-15 03:39:23 URL ?park=<id>: fly to the park and open its popup (counterpart of ?aoi=); it was listed as a viewport param but never read. Popup restore falls back to the cached /api/areas when source tiles are not yet in view
-a624e95 2026-09-15 03:36:15 api_tests: short-link fixture cleanup waits on the SQLite lock (.timeout 30s) instead of aborting the suite under set -e when the nightly writer holds it
-aa9db3a 2026-09-14 22:03:28 Season front in progress: measure reached-share against the cells the usual front reaches, not against itself (XSA 2026/27 read 100 % six weeks in); words say 'half'/'last' only for a complete season
-9750c44 2026-09-14 20:25:09 v8 rebuild verified: tiers populated; derive vanguard count in report_leads test; Season chip names its basis ('in view'); fire.md closes the handover
-8476b48 2026-09-14 19:08:43 Section links: share any heading of How-this-map-works and admin sub-sections
-4519daf 2026-09-14 18:52:05 Methods: one plain-language fire section (detections → chains → evidence tier → season front/vanguard/speed)
-57a41d0 2026-09-14 18:44:51 fire.md: close season-front open items (playhead readout, shift-calibration declined by measurement, speed map, index measured unnecessary, AOI fire catch-up)
-9f0d5b4 2026-09-14 18:39:19 Season speed: click the field for the speed under the pointer — PNG made invertible (unique palette per log level), decoded once client-side, MapTip backdrop probe
-986aa28 2026-09-14 18:30:25 Season speed map: /api/fire-season-speed (1/|∇T| of the front grid as a PNG field) drawn as a third Season rendering
-0b2611f 2026-09-14 18:18:27 AOI fires catch up: aoi_runner requeues a stale fire_v5 weekly; /refresh resets derived-dataset cursors
-100e9de 2026-09-14 18:15:01 Fire season: readout follows the animator playhead (front_curve always sent); parks CSV memoises the 30 s fire count; shift-calibrated usual measured and declined
-44a37c9 2026-09-14 18:07:04 gofmt gpkg_style.go
-592950f 2026-09-14 18:00:25 Vanguard everywhere the fire subject speaks: accordion season sparkline, bell, realtime, KML/Locus/CSV/XLSX
-62c9a64 2026-09-14 17:34:39 fire.md: close handover items 1, 2, 7; document /api/fire-season leads/words in API.md
-06a0ce5 2026-09-14 17:31:06 Vanguard: per-segment lead colour, evidence-tier width, Map group in fire-row menu, season block in the star report
-ad9bc4c 2026-09-14 17:01:37 Vanguard wire format carries evidence tier (for width); fire.md handover of open points
-bb11cc1 2026-09-14 16:56:43 Season front & vanguard: native to the fire row, tips, pins, animator, exports
-3858868 2026-09-14 15:48:31 Season front: vanguard count in the chip menu, fire tip season line, notification wording, methods block, fire.md
-b8a418b 2026-09-14 15:41:26 FireSeason: hide the whole-season vanguard layer while the animator draws the chains
-2aeb8d5 2026-09-14 15:40:17 Fire season front + vanguard: measured lead per trajectory, Map-strip overlay, animator, cron backfill
+3f996073 2026-09-24 13:22:01 Disk: drop 2 dead fire indexes, gzip fire_groups_v5/fire_narratives stores and http_cache bodies
+601aea01 2026-09-24 12:51:52 GFW tile cache: key by tile not by cutoff, gzip, prune expired (3.7 GB -> 20 MB, -80 MB/day)
+83634214 2026-09-19 13:17:09 Toasts stay under an open modal overlay instead of printing across it
+06bbafae 2026-09-19 13:16:21 Link previews per methods section: section-aware OG/title on password + globe page, /s/{slug} OG document for unfurlers, rendered sitemap with one URL per section, og-methods.png
+58a10e98 2026-09-19 13:00:27 About modal: reading-grade UX — segmented section track, sticky TOC/dropdown, mobile bottom sheet
+20b03338 2026-09-19 12:41:05 About modal: reading-grade UX — derived TOC with active tracking, progress bar, read time, mobile bottom sheet with swipe-to-close, remembered scroll, typography pass
+85d3de21 2026-09-19 12:29:51 Methods · Fire: rewritten a third shorter in plain language (1,445 → 985 words); catches up with the last week's diffs — speed is contour weight not a raster, front is one surface per landscape (neighbours agree), compare seasons, patrol front + pressure isopleths
+6d6cbf18 2026-09-19 05:53:29 Security final pass: tenant-scope /api/upload/status/{id} (sequential-id oracle onto other tenants' patrol upload summaries), RequireAdminOrLocal ignores loopback when X-Forwarded-For is present; api test + sharing.md audit note
+ebb34098 2026-09-19 05:40:55 Security follow-up: drop Protected Planet token shipped as dead MAPTILER_KEY in globe.html, bump Go toolchain to 1.25.13 (22 reachable stdlib CVEs -> 0), record stale-httpd finding
+5c3a8dad 2026-09-18 16:32:41 Autofetch hardening for new-park onboarding: exactly-once ingestion ledger, high-water mark only on success, failure backoff without credential purge
+6bef0b02 2026-09-18 10:41:32 docs(sharing): record the 2026-09-18 security audit findings and fixes
+f12a2bf8 2026-09-18 10:41:09 Security audit fixes: bind merged.kml dates (SQLi), hide patrol-bearing exports from scope-less guests, key rate limiter on last XFF hop, meter failed ?pwd= attempts
+61019d33 2026-09-18 08:25:25 Vanguard frames: kill the draw→emit→draw echo, per-chain static segment table, run-batched strokes (same pixels, ~2× faster); season speed gets its own rendering glyph (weight)
+6100bd67 2026-09-18 08:07:42 Season front: one season-year per mosaic, de-quantised surface; animator drives paint through feature-state, not per-frame filters
+759b7899 2026-09-18 07:04:43 Season front is one surface per landscape: fire_front.py measures every grid from all detections within a window's reach, on the landscape's season calendar (seams 20 d → 0 d); mosaic joins by hard ownership + seamRamp, fire_season_own.go deleted; tests + fire.md
+e20675cc 2026-09-18 06:16:35 WIP: season speed as contour weight (speed_contours); viewport front mosaic (feathered) — mosaic still shows staircase seams, see follow-up
+cccb9bc1 2026-09-18 05:42:33 ui test season_every_park_in_view; animator.md: every park's patrols/pressure/early-burn ground, speed bbox wire off pending rework
+0c216bbd 2026-09-18 05:41:54 Patrol isochrones, pressure and early-burn ground for every park in view; speed bbox wire (off)
+fbc65a21 2026-09-17 19:55:06 Fire front for every park in view; animator patrol follows the pixels row; animator + fire-tile stress phases
+11aa1f93 2026-09-17 06:06:20 Animator chip row: fold on any 'eye on the map' gesture — play, playhead grab, hand on the canvas

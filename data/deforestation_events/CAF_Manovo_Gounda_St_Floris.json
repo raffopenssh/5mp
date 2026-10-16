@@ -4818,7 +4818,7 @@
     "polygon_ids": "deforest_CAF_Manovo_Gounda_St_Floris_2023_670"
   },
   {
-    "id": 44381,
+    "id": 46830,
     "park_id": "CAF_Manovo_Gounda_St_Floris",
     "year": 2025,
     "area_km2": 0.0004,
@@ -4836,7 +4836,7 @@
     "fires_same_year": 1270,
     "fire_ratio": 127000.0,
     "nearest_settlement_km": 0.0,
-    "classified_at": "2026-09-11T07:30:07.342698",
+    "classified_at": "2026-10-14T07:30:02.617378",
     "polygon_ids": "deforest_gfw_CAF_Manovo_Gounda_St_Floris_2025_8.23_20.85"
   }
 ]
