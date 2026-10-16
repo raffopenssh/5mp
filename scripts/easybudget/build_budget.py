@@ -87,9 +87,9 @@ RATES = [
      "AP Aviation rate, INDICATIVE"),
     ("HELI_HR", "R44 helicopter, operational support", "hour", 700,
      "Reviewed plan (ET): 15 hours of R44 support in the dry season. African Parks' own R44 from "
-     "Chinko: DRY direct operating cost (maintenance reserve, the R44's 2,200-hour overhaul accrual, "
-     "pilot on the Chinko payroll), fuel in the AVGAS_BBL line; a commercial wet charter (~1,860/h) is "
-     "not the basis. Positioning to and from Chinko is inside the hours. AP Aviation rate, INDICATIVE"),
+     "Boma: DRY direct operating cost (maintenance reserve, the R44's 2,200-hour overhaul accrual, "
+     "pilot on the Boma payroll), fuel in the AVGAS_BBL line; a commercial wet charter (~1,860/h) is "
+     "not the basis. Positioning from Boma (~725 km to Wau, via Juba; ~4 h each way) is inside the hours unless AP Aviation bills it separately. AP Aviation rate, INDICATIVE"),
     ("AVGAS_BBL", "Avgas, one barrel positioned at a field location (transport, storage)", "barrel", 2000,
      "Provisional allowance including transport, positioning and secure storage; AP Aviation to "
      "validate barrel size and landed cost. ESTIMATE"),
@@ -415,7 +415,7 @@ def lines(F, P):
     if P["survey_hours"]:
         A(("4 Field activities", "A7", "Aerial survey flying hours", f"P{sy}: {P['survey_hours']} hours at survey altitude", "FLY_HR", yr(P["survey_hours"], sy), None))
     A(("4 Field activities", "A7", "R44 helicopter support, operational needs",
-       f"{s(P['heli_hours'])} hours. AP Aviation to confirm availability and positioning", "HELI_HR", P["heli_hours"], None))
+       f"{s(P['heli_hours'])} hours. AP Aviation to confirm availability and the positioning from Boma", "HELI_HR", P["heli_hours"], None))
     A(("4 Field activities", "A7", "Avgas positioned at field locations (ESTIMATE)",
        f"{s(P['avgas_barrels'])} barrels, bought and positioned in the wet season ahead of the flying season", "AVGAS_BBL", P["avgas_barrels"], None))
     A(("4 Field activities", "A7", "Ground field-check missions (rim cells, gold-target cells, uncertain sites)",
