@@ -69,13 +69,13 @@ def main():
         dst = exp / name
         if not dst.exists() or dst.stat().st_size != files[0].stat().st_size:
             shutil.copyfile(files[0], dst)
-        # the embedded QGIS project references ./<basename>.gpkg -- the basename
-        # changed, so the project inside must be re-pointed (exports.md).
+        # the embedded QGIS project (qgis_projects.content = hex .qgz, GEOPACKAGE_EXPORT.md)
+        # references ./<basename>.gpkg -- the basename changed, so re-point it.
         rc = subprocess.run(["python3", "-c", f"""
 import sqlite3, zlib, zipfile, io, sys
 p = {str(dst)!r}; old = {files[0].name!r}; new = {name!r}
 c = sqlite3.connect(p)
-rows = c.execute("select name, xml from qgis_projects").fetchall()
+rows = c.execute("select name, content from qgis_projects").fetchall()
 for n, xml in rows:
     raw = bytes.fromhex(xml.decode() if isinstance(xml, bytes) else xml)
     z = zipfile.ZipFile(io.BytesIO(raw)); buf = io.BytesIO(); zo = zipfile.ZipFile(buf, 'w', zipfile.ZIP_DEFLATED)
@@ -87,7 +87,7 @@ for n, xml in rows:
         zo.writestr(zi, b)
     zo.close()
     if hit == 0: sys.exit('embedded project %s does not reference %s' % (n, old))
-    c.execute("update qgis_projects set xml=? where name=?", (buf.getvalue().hex(), n))
+    c.execute("update qgis_projects set content=? where name=?", (buf.getvalue().hex(), n))
     print('  re-pointed embedded project', n, hit, 'refs')
 c.commit()
 """])
