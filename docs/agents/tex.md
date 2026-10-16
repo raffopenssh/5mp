@@ -164,3 +164,10 @@ Source of the asks: the author's comments in `/tmp/shelley-uploads/PIP_Radom_Num
   s. 24 closure order / Use the 2026–27 dry season).
 - 21 pages, logs clean. Share: pdf `g-vhqp427vfw953ppk`, pdf_share `g-fh5524mts95hqg6q`, docx `g-8ptqksvk7544kz98`; round-5
   pdf/pdf_share/docx revoked. Live guest set on principal 6 since 2026-08-17: 15 = 9 PIP deliverables + the six map-view links.
+
+## v3 S4 (2026-10-16) — Appendix C "Methods and AI note"
+
+`app:methods` sits between the risk register and Data detail (letters shift: Data detail is D). The front "How to read" box and the §5 (i)–(iv)
+paragraphs live there (`HOWTO_BODY`, `METHOD_PARAS` in the generator); Priority keeps a three-sentence summary; every "Section 5(iv)" cross-ref
+reads "Appendix C(iv)". The AI disclosure is stated once, in that appendix, as what was produced with a model and what people checked — never
+"should be checked" (user's rule). Constraint block prints `deploy.json` `spatial_constraint[0].name` verbatim, so `tex()` maps ≤/≥ to math.
