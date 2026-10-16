@@ -269,3 +269,4 @@ docs/plan/PIP_SUMMARY_*
 docs/plan/superseded_PIP_SUMMARY_*
 data/disk_watch/
 data/fire_vanguard_kf/
+data/climate/era5/*.nc
