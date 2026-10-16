@@ -1077,7 +1077,14 @@ per-bundle rows are not the planner's. **`--wind-weight` is measured and not
 adopted** (`data/eval/herd_vanguard_wind.json`: 1.4 % of segments affected,
 hold-out capture 0.892 → 0.892 / 0.891, mean skill +0.468 → +0.468 / +0.469);
 the default stays 0 and must not be raised without a new hold-out run.
-ERA5-Land curing prior: unmeasured until the land fetch finishes (tmux `land`).
+**ERA5-Land curing prior: measured and not adopted** (`scripts/fetch_era5.py --product land`
+→ `scripts/climate_field.py` → `fire_climate_check.py` → `eval_fire_baseline.py --xsa --climate`; note §(g),
+`data/eval/fire_baseline_xsa_climate.json`, `data/eval/fire_climate_check.json`): on the 2025/26 vanguard target
+`cured10_1mm` / `cured20_5mm` / `soil_dry_nov` score Gini −0.13 / −0.16 / −0.11 alone and −0.09 / −0.13 / −0.09
+multiplied into `clim_early` (+0.06) — paired difference −0.15 / −0.19 / −0.15, better in 0 of 1 held-out seasons;
+front steps follow the soil-moisture gradient no better than a random bearing (|skill| ≤ 0.01) and the fuel state at a
+front equals the fuel state at any detection (Dec 0.97 vs 0.97 cured). Do not re-propose a curing term without a new
+held-out season.
 **Positive control (`scripts/fire_wind_poscontrol.py`, note §(h)): none exists** —
 no fire class (spreading, local, spot, short transhumance) aligns with the
 daily ERA5 wind either (all ≈ 0.24–0.25 downwind). So never quote the day-
