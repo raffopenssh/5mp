@@ -115,7 +115,7 @@ c.commit()
     s = sp.read_text()
     line = (f"Measured on this file: {stats['cells']} cells touch the AOI, {stats['unmeasured']} are unmeasured "
             f"(= {stats['unmeasured_area_pct']} % of the AOI area); {stats['unmeasured_with_hansen_loss']} of the "
-            f"unmeasured cells hold > 0.5 km² of Hansen loss 2015–23.")
+            f"unmeasured cells hold > 0.5 km² of Hansen loss 2015–23. (The 71.9 % in feedback §G1 was counted on the 400-day tile cache, 2025-08→2026-10, over whole tiles; this file counts 2024-01→2026-08 alerts and weights cells by their share inside the AOI.)")
     if "{{GFW_STATS}}" in s:
         s = s.replace("{{GFW_STATS}}", line)
     elif "Measured on this file:" not in s:
