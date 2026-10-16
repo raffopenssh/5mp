@@ -519,6 +519,8 @@ def lines(F, P):
        "TEAM"))
     A(("10 Training", "A10", "Ground-truth checklist and data training (fire, gold, herd routes, river names)",
        s(P["train_data_pd"]) + " participant-days", "TRAIN_PD", P["train_data_pd"], "TEAM"))
+    A(("10 Training", "A10", "Track-count training for ECHO/TANGO with local hunters and herders (replaces camera traps)",
+       s(P.get("track_training_pd", [0, 0])) + " participant-days; tracks documented with the teams' smartphones, Yata-Ngaya precedent (TA, Oct 2026)", "TRAIN_PD", list(P.get("track_training_pd", [0, 0])), "TEAM"))
     A(("10 Training", "A8", "Preparatory land-use consultations with the boom towns north-east of the park",
        s(P["landuse_workshop_pd"]) + " participant-days (4 consultations x 25 x 2 days); preparatory, not formal classification workshops", "TRAIN_PD", P["landuse_workshop_pd"], None))
     # ---- 11 Legal
