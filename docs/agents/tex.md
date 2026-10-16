@@ -171,3 +171,12 @@ Source of the asks: the author's comments in `/tmp/shelley-uploads/PIP_Radom_Num
 paragraphs live there (`HOWTO_BODY`, `METHOD_PARAS` in the generator); Priority keeps a three-sentence summary; every "Section 5(iv)" cross-ref
 reads "Appendix C(iv)". The AI disclosure is stated once, in that appendix, as what was produced with a model and what people checked — never
 "should be checked" (user's rule). Constraint block prints `deploy.json` `spatial_constraint[0].name` verbatim, so `tex()` maps ≤/≥ to math.
+
+## v3 S5 (2026-10-16) — downstream + TA archive
+
+After any rebuild that changes the PDF, summary, ToR or budget: `python3 scripts/ta_archive_refresh_report.py` (run from `scripts/`;
+imports `sha` from `ta_archive_finalize.py`) re-copies `report/` inside `reports/TA_ARCHIVE_XSA_2026-10/`, rewrites `MANIFEST.txt`
+and re-zips (0.85 GB, ~3 min, zip not committed). The archive PDF keeps the project's historic spelling `Pongo-Wau-Numatinna`.
+The "mineral title on the rim → expansion pauses" stop rule never existed in the PIP; it was summary/slides-only and is now a
+risk-register sentence there. `build_budget.py` derives the "one-offs" and "corridor's price" prose from non-zero lines, so a
+deferred line (survey package, vet campaign, pump) drops out of the sentence by itself.
