@@ -974,8 +974,14 @@ def build_txt(path, xlsx_name, F, P):
     Pp("                           grants and SSWS support.")
     Pp(f"  5  Seasonal payroll      Teams are paid from deployment to Nov 2028 ({P['months_paid']['tango'][1]} months TANGO, {P['months_paid']['echo'][1]} for")
     Pp(f"                           first-wave ECHO, {P['months_first_phase']['echo'][1]} for the second), not from the start of the grant.")
-    Pp(f"  6  The corridor's price  Water, veterinary and meetings: USD {m(t['corridor_price'])} -")
-    Pp("                           the herders named it, so it is a line, not an intention.")
+    _a6 = [r for r in rows if r["act"] == "A6" and r["drv"] not in STRAND_KEYS and sum(r["tot"])]
+    _a6_kinds = ", ".join(sorted({"water" if "pump" in r["item"].lower() or "water" in r["item"].lower() else "veterinary" if "veterinar" in r["item"].lower() else "meetings" for r in _a6}))
+    Pp(f"  6  The corridor's price  {_a6_kinds.capitalize()}: USD {m(t['corridor_price'])} -")
+    if _a6_kinds == "meetings":
+        Pp("                           the herders named water and veterinary care too; those are deferred")
+        Pp("                           with the scope (review C6/C7) and costed again in the Jul 2028 business plan.")
+    else:
+        Pp("                           the herders named it, so it is a line, not an intention.")
     Pp(f"  7  One expatriate        A full-time Project Manager in South Sudan from {d['pm_start']} ({sum(d['pm_pm'])} months,")
     Pp(f"                           also the Wau focal point), reporting to Chinko; {sum(t['by_cat']['1 International staff'])/tot:.0%} of the budget.")
     Pp(f"  8  Freight is {a['FREIGHT_PCT']:.0%}        Of everything imported. A line, not a rounding error.")
@@ -1016,8 +1022,15 @@ def build_txt(path, xlsx_name, F, P):
     Pp("    " + "=" * (W - 8))
     row("TOTAL REQUESTED, USD", t["total"])
     Pp("")
-    Pp(wrap(f"{PHL[1]} carries the field season and the one-offs (Savannah and helicopter hours, the survey package, the "
-            f"{'solar pump' if any(P['solar_pumps']) else 'veterinary campaign'}: USD {m(t['oneoffs'][1])} direct) and the full deployment of {by[-1]['staff']} field staff; {PH[0]} buys the kit, "
+    _oneoff_names = []
+    for r in rows:
+        il = r["item"].lower()
+        if sum(r["tot"]) and any(w in il for w in ("survey", "solar pump", "water point", "savannah", "helicopter", "veterinary")):
+            _oneoff_names.append("Savannah hours" if "savannah" in il else "helicopter hours" if "helicopter" in il or "r44" in il
+                                 else "the survey package" if "survey" in il else "the solar pump" if "pump" in il else "the veterinary campaign")
+    _oneoff_names = list(dict.fromkeys(_oneoff_names))
+    Pp(wrap(f"{PHL[1]} carries the field season and the one-offs ({', '.join(_oneoff_names)}: USD {m(t['oneoffs'][1])} direct) "
+            f"and the full deployment of {by[-1]['staff']} field staff; {PH[0]} buys the kit, "
             "the recruitment and the training before anyone deploys."))
     Pp(""); Pp("")
     Pp("PHASING ON THE PLAN'S OWN CLOCK"); Pp("-" * W)
@@ -1093,7 +1106,7 @@ def build_txt(path, xlsx_name, F, P):
     Pp("WHAT THIS BUDGET DELIBERATELY DOES NOT BUY"); Pp("-" * W)
     for item, why in [
         ("A vehicle fleet", "Six months of the year the field is shut and a fleet still costs money, drivers and theft risk. 4x4s are hired by the day."),
-        ("An aircraft", f"{sum(P['savannah_hours']):g} Savannah hours and {sum(P['heli_hours']):g} helicopter hours in one dry season do not justify an airframe. Hours are bought from an operator, fuel is positioned; the survey capability is borrowed."),
+        ("An aircraft", f"{sum(P['savannah_hours']):g} Savannah hours and {sum(P['heli_hours']):g} helicopter hours in one dry season do not justify an airframe. Hours are flown on African Parks' own aircraft at dry rates, fuel is positioned; no aerial-survey package is bought."),
         ("A Juba office", "There is a functioning one already, belonging to a partner in the same group."),
         ("A resident expatriate structure", "One Project Manager in country, reporting to Chinko; no second expatriate post. This landscape's bottleneck has never been technical knowledge."),
         ("Road rebuilding", "Reopening the 1932 alignment is a separate capital project with its own EIA."),
