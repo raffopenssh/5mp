@@ -20,7 +20,7 @@ R = BASE / "reports"
 PL = R / "pip_latex"
 
 COPIES = {  # destination (relative to report/) : source
-    "PIP_Pongo-Wau-Numatinna_2026-10_final.pdf": PL / "main_final.pdf",
+    "PIP_Radom_Numatina_Southern_v3_2026-10-16_final.pdf": PL / "main_final.pdf",   # = the document title (user, 16 Oct)
     "PIP_SUMMARY_EASY_2026-10.txt": R / "PIP_SUMMARY_EASY.txt",
     "ToR_Project_Manager_South_Sudan_2026-10.txt": R / "ToR_Project_Manager_South_Sudan.txt",
     "BUDGET_EASY_2026-10.txt": R / "BUDGET_EASY_2026-10.txt",
@@ -59,8 +59,9 @@ def main():
         d.parent.mkdir(parents=True, exist_ok=True)
         if not d.exists() or sha(d) != sha(src):
             shutil.copyfile(src, d); n += 1
-    txt = rep / "PIP_Pongo-Wau-Numatinna_2026-10_final.txt"
-    subprocess.run(["pdftotext", "-layout", str(rep / "PIP_Pongo-Wau-Numatinna_2026-10_final.pdf"), str(txt)], check=True)
+    for old in rep.glob("PIP_Pongo-Wau-Numatinna_*"): old.unlink()   # pre-rename copies
+    txt = rep / "PIP_Radom_Numatina_Southern_v3_2026-10-16_final.txt"
+    subprocess.run(["pdftotext", "-layout", str(rep / "PIP_Radom_Numatina_Southern_v3_2026-10-16_final.pdf"), str(txt)], check=True)
     if txt.stat().st_size < 50_000:
         sys.exit("pdftotext produced a suspiciously small file")
     print(f"report/: {n} files refreshed of {len(COPIES)} (+ pdftotext)")
