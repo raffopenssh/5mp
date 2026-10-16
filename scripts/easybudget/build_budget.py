@@ -121,9 +121,12 @@ RATES = [
      "voice. FIRM"),
     ("INREACH_SUB", "Satellite messenger subscription", "unit-month", 35, "FIRM"),
     ("STARLINK_KIT", "Starlink terminal", "unit", 500, "Current hardware price, 2026"),
-    ("STARLINK_MO", "Starlink subscription", "unit-month", 40,
-     "Current 2026 tariff. Older programmes in the region still carry legacy "
+    ("STARLINK_MO", "Starlink subscription", "unit-month", 25,
+     "USD 25/month (author, 16 Oct 2026; was 40). Older programmes in the region still carry legacy "
      "business plans at USD 700-900/month - do not copy those figures across"),
+    ("FIELD_SOLAR", "Field solar kit for a camp Starlink (100 W panel, controller, ~300 Wh LiFePO4 power station, cables)", "kit", 400,
+     "Local market, Juba/Wau, delivered price - no freight line. A Starlink Mini draws 25-40 W; the kit runs it through the "
+     "working day and charges the team's phones. Author's figure, 16 Oct 2026. INDICATIVE"),
     ("AIRTIME", "Mobile airtime", "person-month", 15, "Per staff member. FIRM"),
     ("UNIFORM", "Scout uniform and personal kit", "person-year", 250,
      "Two sets, boots, pack and badges, excluding freight. FIRM"),
@@ -326,6 +329,14 @@ def lines(F, P):
     T = P["team"]; pm_ = d["pm_"]; one = d["one_off"]
     me, mt = P["months_paid"]["echo"], P["months_paid"]["tango"]; mfe = P["months_first_phase"]["echo"]
     sy = P["survey_year"]
+    legal_m = P.get("legal_retainer_months") or list(pm_)      # null = every month of the project (docs/plan/scenarios.yaml options)
+    gis_m = P.get("gis_support_months") or list(pm_)
+    secrisk = P.get("security_assessment", 1)
+    mpt = P.get("mbikes_per_team", 1); fp_mb = P.get("fp_mbikes", 0)                       # review C7 "more motorbike": options, defaults = plan as it stands
+    sl_team = P.get("starlink_team_bases", 0); trk_tango = P.get("trackers_per_tango_team", 1)   # review C4 comms options
+    ir_echo = P.get("inreach_echo_teams", 1); ir_fp = P.get("inreach_fp", 1)                       # 1 = as it stands; 0 = Starlink + phones replace the messenger
+    base_veh = P.get("base_vehicle_days_per_month", 0)                                      # review C5: 4x4 hire for the PM / Wau base
+    all_echo, all_tango = sum(n_echo), sum(n_tango); tango_months = d["tango_months"]; echo_months = d["echo_months"]
     def yr(v, year):  # one-off in a given phase (1-based), else 0
         return [v if y + 1 == year else 0 for y in Y]
     def s(lst):
@@ -413,7 +424,7 @@ def lines(F, P):
     A(("4 Field activities", "A6", "Veterinary campaign, dry season", f"{s(P['vet_campaigns'])}, through the veterinary partner",
        "VET_CAMP", P["vet_campaigns"], None))
     A(("4 Field activities", "A1", "Security risk assessment and incident-response plan (ESTIMATE, gap-fill)",
-       "One external assignment in Phase 1, before anyone deploys", "GAP_SECRISK", one(1), None))
+       "One external assignment in Phase 1, before anyone deploys", "GAP_SECRISK", one(secrisk), None))
     fs, fc = P["facilitation_scoping_days"], P["facilitation_consultation_days"]
     A(("4 Field activities", "A4", "Conservancy constitution facilitation (preparatory)",
        f"{fs} days to scope each new conservancy (new ECHO zones {s(n_echo)}) plus {fc} per conservancy in a phase with teams in the field "
@@ -438,11 +449,17 @@ def lines(F, P):
     A(("5 Equipment and supplies", "A1", "Generator, Wau base", "Phase 1", "GEN", one(1), "FP"))
     A(("5 Equipment and supplies", "A1", "Solar and battery backup, Wau base", "Phase 1", "SOLAR", one(1), "FP"))
     # ---- 6 Transport
-    A(("6 Transport", "A4", "Motorbikes for team movement (delivered price, no freight)", f"One per team ({d['all_teams']}), bought at start; ECHO rides, TANGO walks with the herds but needs resupply",
-       "MBIKE_SSD", one(d["all_teams"]), "TEAM"))
-    A(("6 Transport", "A4", "Motorbike running costs", f"Team-months in the field: {s(team_months)}", "MBIKE_RUN", team_months, "TEAM"))
+    n_bikes = mpt * d["all_teams"] + fp_mb * d["all_fp"]
+    A(("6 Transport", "A4", "Motorbikes for team movement (delivered price, no freight)",
+       f"{mpt} per team ({d['all_teams']} teams){f' plus {fp_mb} per focal point ({d['all_fp']})' if fp_mb else ''}, bought at start; ECHO rides, TANGO walks with the herds but needs resupply",
+       "MBIKE_SSD", one(n_bikes), "TEAM"))
+    bike_months = [mpt * team_months[y] + fp_mb * fp_pm[y] for y in Y]
+    A(("6 Transport", "A4", "Motorbike running costs", f"Bike-months in the field: {s(bike_months)}", "MBIKE_RUN", bike_months, "TEAM"))
     A(("6 Transport", "A4", "Motorbike insurance, third party and theft (ESTIMATE, gap-fill)",
-       f"{d['all_teams']} bikes held the whole project: vehicle-years by phase length ({'/'.join(str(m) for m in pm_)} months)", "GAP_MBIKE_INS", [d["all_teams"] * m / 12 for m in pm_], "TEAM"))
+       f"{n_bikes} bikes held the whole project: vehicle-years by phase length ({'/'.join(str(m) for m in pm_)} months)", "GAP_MBIKE_INS", [n_bikes * m / 12 for m in pm_], "TEAM"))
+    if base_veh:
+        A(("6 Transport", "A1", "4x4 hire for the PM / Wau base (review C5)", f"{base_veh} hired vehicle-days per month, every month ({s(pm_)}); no vehicle is bought",
+           "VEH_HIRE", [base_veh * m for m in pm_], "FP"))
     charters = [(tango[y] if fphase[y] else 0) + (1 if y + 1 == sy else 0) + (1 if P["solar_pumps"][y] else 0) + (1 if P["heli_hours"][y] else 0) for y in Y]
     A(("6 Transport", "A4", "Charter rotations (teams and equipment to the corridor)",
        f"One per TANGO team in a field phase ({tango_s}) plus one each for the survey{', the pump' if any(P['solar_pumps']) else ''} and the helicopter positioning: {s(charters)}", "CHARTER", charters, "TEAM"))
@@ -471,14 +488,22 @@ def lines(F, P):
     A(("9 Communications and IT", "A1", "Starlink terminals (one per focal-point base)", f"All {d['all_fp']} bases, bought at start",
        "STARLINK_KIT", one(d["all_fp"]), "FP"))
     A(("9 Communications and IT", "A1", "Starlink subscriptions", f"Focal-point base-months ({s(fp_pm)})", "STARLINK_MO", fp_pm, "FP"))
+    if sl_team:
+        A(("9 Communications and IT", "A1", "Starlink terminals, team bases (review C4)",
+           f"One per team, ECHO and TANGO ({d['all_teams']}), bought at start: broadband, calls and data upload from every camp - this is the control-room link to Chinko / Wau", "STARLINK_KIT", one(d["all_teams"]), "TEAM"))
+        A(("9 Communications and IT", "A1", "Starlink subscriptions, team bases (review C4)", f"Team-months ({s(team_months)})", "STARLINK_MO", list(team_months), "TEAM"))
+        A(("9 Communications and IT", "A1", "Field solar kits for the team-base Starlinks (local purchase)",
+           f"One per team ({d['all_teams']}), bought at start in Juba/Wau: a terminal without power is not a link; the kit also charges the team's phones", "FIELD_SOLAR", one(d["all_teams"]), "TEAM"))
+    n_ir = trk_tango * all_tango + ir_echo * all_echo + ir_fp * d["all_fp"]
+    ir_months = [trk_tango * tango_months[y] + ir_echo * echo_months[y] + ir_fp * fp_pm[y] for y in Y]
     A(("9 Communications and IT", "A10", "Satellite messengers (team safety and track logging)",
-       f"One per team plus one per focal point ({d['all_teams']} + {d['all_fp']}), bought at start", "INREACH", one(d["all_teams"] + d["all_fp"]), "TEAM"))
-    A(("9 Communications and IT", "A10", "Satellite messenger subscriptions", f"Team-months in the field plus focal-point months ({s([team_months[y] + fp_pm[y] for y in Y])})",
-       "INREACH_SUB", [team_months[y] + fp_pm[y] for y in Y], "TEAM"))
+       f"{trk_tango} per TANGO team ({all_tango}: SOS and track log in the pocket when walking with the herds, away from camp and power), "
+       f"{ir_echo} per ECHO team ({all_echo}), {ir_fp} per focal point ({d['all_fp']}), bought at start", "INREACH", one(n_ir), "TEAM"))
+    A(("9 Communications and IT", "A10", "Satellite messenger subscriptions", f"Device-months: {s(ir_months)}", "INREACH_SUB", ir_months, "TEAM"))
     A(("9 Communications and IT", "A1", "Mobile airtime", "All national person-months", "AIRTIME", natl_pm, "FP"))
     A(("9 Communications and IT", "A10", "GIS / data-management continuity (ESTIMATE, gap-fill)",
-       f"Part-time remote support every month ({s(pm_)}) to keep the gold-target and herd models current as ground truth comes in; "
-       "may be partly covered by the existing consultancy", "GAP_GIS", list(pm_), None))
+       f"Part-time remote support every month ({s(gis_m)}) to keep the gold-target and herd models current as ground truth comes in; "
+       "may be partly covered by the existing consultancy", "GAP_GIS", list(gis_m), None))
     # ---- 10 Training
     first_wave_staff = n_teams[0] * tsize
     A(("10 Training", "A4", "Scout induction and community-engagement training",
@@ -493,7 +518,7 @@ def lines(F, P):
        s(P["landuse_workshop_pd"]) + " participant-days (4 consultations x 25 x 2 days); preparatory, not formal classification workshops", "TRAIN_PD", P["landuse_workshop_pd"], None))
     # ---- 11 Legal
     A(("11 Legal, registration and audit", "A2", "In-country counsel: regulations text, s.24 gazette request, boundary descriptions",
-       f"Retainer, every month of the project ({s(pm_)}). Actions 2 and 3 are the cheapest and most durable acts in the plan", "LEGAL", list(pm_), None))
+       f"Retainer, {'every month of the project' if legal_m == list(pm_) else 'months'} ({s(legal_m)}). Actions 2 and 3 are the cheapest and most durable acts in the plan", "LEGAL", list(legal_m), None))
     A(("11 Legal, registration and audit", "A4", "NGO/CBO registration, RRC renewal, no-objection letters",
        "Two cycles. Two clocks, both slow - start them in parallel", "REG_NGO", [1] * N, None))
     A(("11 Legal, registration and audit", "A1", "Grant-specific audit near close-out", f"{s(P['audits'])}; NGO Act 2016 s.13", "AUDIT", P["audits"], None))
@@ -531,6 +556,7 @@ def compute(F, P):
     N = len(P["year_labels"]); Y = range(N)
     rate = {r[0]: r[3] for r in RATES}; unit = {r[0]: r[2] for r in RATES}
     a = {k: v for k, _l, v, _s in ASSUMPTIONS}
+    a.update(P.get("assumptions") or {})         # a scenario may override a ratio (docs/plan/scenarios.yaml); plan.yaml as it stands sets none
     rows = []
     for cat, act, item, basis, code, qty, drv in lines(F, P):
         tot = [q * rate[code] for q in qty]

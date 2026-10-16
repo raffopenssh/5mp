@@ -18,7 +18,11 @@ Coverage, per row, of the ground the constraint keeps (every 2 km cell NOT on th
   gold   share of the mining model's top-5 % target cells inside the chosen teams' footprints (served zones + 25 km round each site)
   herd   share of the herd utilisation (movement_bundle_ud.npy, all bundles) inside those footprints
   shield share of the shielded edge (community-zone perimeter × shield, RANK.txt) held by a staffed ECHO zone
-Writes FRONTIER_FOCUS<tag>.txt + .json next to deploy.json."""
+Writes FRONTIER_FOCUS<tag>.txt + .json next to deploy.json.
+
+--scenario NAME [NAME ...] | all   applies named plan.yaml override sets from docs/plan/scenarios.yaml (cuts, adds, combined)
+  and prints baseline + each scenario for the caps/months given (default then: --caps 1.0 --months 13 8), writing
+  FRONTIER_LEAN<tag>.txt/.json instead. Stage order is unchanged; teams and FPs remain the output. plan.yaml itself is not edited."""
 import argparse, copy, json, sys
 from pathlib import Path
 import numpy as np
@@ -33,6 +37,30 @@ import plan_deploy as D
 import build_budget as B
 import __main__; __main__.Grid = P.Grid
 OUT = S.OUT
+
+def load_scenarios():
+    Y = yaml.safe_load(open(ROOT / "docs/plan/scenarios.yaml"))
+    flat = {}
+    for grp in ("cuts", "adds"):
+        for k, v in (Y.get(grp) or {}).items(): flat[k] = dict(v, group=grp, overrides=dict(v.get("overrides") or {}))
+    def expand(name, seen=()):
+        if name in flat: return flat[name]
+        c = (Y.get("combined") or {})[name]; ov = {}; parts = []
+        for m in c["of"]:
+            e = expand(m, seen + (name,)); parts.append(m)
+            for kk, vv in e["overrides"].items():
+                if kk == "assumptions": ov["assumptions"] = {**ov.get("assumptions", {}), **vv}
+                else: ov[kk] = vv
+        return dict(group="combined", of=parts, overrides=ov, review=c.get("review", ""), removes=f"= {' + '.join(parts)}")
+    names = list(flat) + list(Y.get("combined") or {})
+    return {n: expand(n) for n in names}
+
+def apply_overrides(P_, ov):
+    P_ = copy.deepcopy(P_)
+    for k, v in ov.items():
+        if k == "assumptions": P_["assumptions"] = {**(P_.get("assumptions") or {}), **v}
+        else: P_[k] = v
+    return P_
 
 def months_for(P_, M):
     P_ = copy.deepcopy(P_)
@@ -74,8 +102,17 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--tag", default=""); ap.add_argument("--caps", type=float, nargs="+", default=[0.8, 1.0, 1.2], help="M USD, loaded South Sudan total")
     ap.add_argument("--months", type=int, nargs="+", default=[13, 8]); ap.add_argument("--max-fp", type=int, default=3); ap.add_argument("--max-echo", type=int, default=6); ap.add_argument("--max-tango", type=int, default=6)
+    ap.add_argument("--pool", default=None, help="deploy json whose `pool` is grown; default deploy_focus_pool<tag>.json if present (the full placed pool), else deploy<tag>.json "
+                    "(a CAPPED run's pool holds only the sites it staged, in a different order)")
+    ap.add_argument("--scenario", nargs="+", default=None, help="names from docs/plan/scenarios.yaml, or 'all'; baseline is always printed first")
     a = ap.parse_args(); tag = a.tag
-    dep = json.load(open(OUT / f"deploy{tag}.json")); F0 = json.load(open(OUT / "facts.json")); Pyaml = yaml.safe_load(open(ROOT / "docs/plan/plan.yaml"))
+    SC = {}
+    if a.scenario:
+        allsc = load_scenarios(); names = list(allsc) if a.scenario == ["all"] else a.scenario
+        SC = {n: allsc[n] for n in names}
+        if "--caps" not in sys.argv: a.caps = [1.0]
+    pool_path = Path(a.pool) if a.pool else (OUT / f"deploy_focus_pool{tag}.json" if (OUT / f"deploy_focus_pool{tag}.json").exists() else OUT / f"deploy{tag}.json")
+    dep = json.load(open(pool_path)); print(f"pool: {pool_path.name}", file=sys.stderr); F0 = json.load(open(OUT / "facts.json")); Pyaml = yaml.safe_load(open(ROOT / "docs/plan/plan.yaml"))
     pool = [s for s in dep["pool"] if s.get("strand", "SSD") == "SSD" and s["kind"] in ("ECHO", "TANGO")]
     car = [dict(t) for t in dep["teams"] if t.get("strand") == "CAR"]
     # ---------------------------------------------------------------- ground kept by the constraint, on the solver grid
@@ -97,8 +134,10 @@ def main():
         return dict(gold=round(int((gold & m).sum()) / max(tot_gold, 1), 3), herd=round(float(bud[m].sum()) / max(tot_ud, 1e-9), 3), shield=round(sum(w for u, w in comm_w.items() if u in held) / max(tot_shield, 1e-9), 3))
     # ---------------------------------------------------------------- grow
     rows = []
-    for M in a.months:
-        P_ = months_for(Pyaml, M)
+    for sc_name, sc in [("baseline", dict(overrides={}))] + list(SC.items()):
+      Psc = apply_overrides(Pyaml, sc["overrides"])
+      for M in a.months:
+        P_ = months_for(Psc, M)
         for cap in a.caps:
             chosen = []; cnt = {"ECHO": 0, "TANGO": 0}; steps = []; refused = None
             def total_of(units):
@@ -121,12 +160,13 @@ def main():
                 fps = nf
             units = assign(chosen + fps); ssd_total, car_total, all_total, summ = cost(F0, P_, units + car)
             cov = coverage(units)
-            rows.append(dict(cap_musd=cap, months_paid=M, teams=len(chosen), echo=cnt["ECHO"], tango=cnt["TANGO"], fp=len(fps), staff=5 * len(chosen) + len(fps),
+            rows.append(dict(scenario=sc_name, cap_musd=cap, months_paid=M, teams=len(chosen), echo=cnt["ECHO"], tango=cnt["TANGO"], fp=len(fps), staff=5 * len(chosen) + len(fps),
                              ssd_loaded=ssd_total, car_loaded=car_total, backbone_only=base[0], per_phase=summ["ssd_per_year"], load_factor=summ["load_factor"],
                              units=[dict(id=u["id"], kind=u["kind"], place=u["place"], zone_uids=u["zone_uids"], year=u["year"], urgency=u.get("urgency"), robust=u.get("robust")) for u in units],
                              next_refused=refused, steps=steps, coverage=cov,
                              backbone_split=dict(fp_and_backbone=base[3]["backbone_loaded"], hq_and_fixed=[base[0] - sum(base[3]["backbone_loaded"])])))
     # ---------------------------------------------------------------- write
+    if SC: return write_lean(a, tag, rows, SC, tot_gold, tot_ud, tot_shield, dict(dep, pool_file=pool_path.name, n_pool=len(pool)))
     L = [f"FRONTIER_FOCUS{tag} — what a loaded South Sudan budget cap buys under the deployment constraint plan_deploy.py last ran with; teams and focal points are the OUTPUT.",
          f"  constraint: {dep.get('constraint') or '(none)'}",
          f"  pool: {len(pool)} placed South Sudan sites in staging order (ECHO by selection frequency bucketed 0.1, then urgency; TANGO by urgency); grown one unit at a time, teams then FPs; cost = build_budget.summary (HQ, freight, bank, support, contingency in); CAR strand (K-teams) costed beside, outside the cap.",
@@ -143,5 +183,30 @@ def main():
     (OUT / f"FRONTIER_FOCUS{tag}.txt").write_text("\n".join(L) + "\n"); print("\n".join(L))
     json.dump(dict(constraint=dep.get("constraint"), deprioritise=dep.get("deprioritise"), spatial=[x["name"] for x in dep.get("spatial_constraint") or []], caps=a.caps, months=a.months,
                    kept_ground=dict(gold_cells=tot_gold, herd_ud=round(tot_ud, 2), shield_km=round(tot_shield)), rows=rows), open(OUT / f"FRONTIER_FOCUS{tag}.json", "w"), indent=1, ensure_ascii=False)
+
+def write_lean(a, tag, rows, SC, tot_gold, tot_ud, tot_shield, dep):
+    """FRONTIER_LEAN: scenario x (cap, months) — backbone-only, its saving against baseline, what the cap then buys."""
+    base = {(r["cap_musd"], r["months_paid"]): r for r in rows if r["scenario"] == "baseline"}
+    L = [f"FRONTIER_LEAN{tag} — what a loaded South Sudan cap buys once named backbone options (docs/plan/scenarios.yaml) are applied; plan.yaml itself unchanged.",
+         f"  constraint: {dep.get('constraint') or '(none)'}",
+         f"  pool: {dep['pool_file']} ({dep['n_pool']} placed South Sudan sites, staging order as published); rates as build_budget.RATES today (Starlink USD 25/month).",
+         "  backbone-only = the South Sudan request with NO team and NO focal point (loaded). saving = baseline backbone - scenario backbone at the same contract length; a negative saving is an ADD.",
+         "  teams/FPs are grown in the published stage order until the loaded SSD total would exceed the cap; CAR strand costed beside, outside the cap.",
+         f"  coverage = share of the ground the constraint keeps: {tot_gold} gold-target cells, herd UD {tot_ud:.1f}, shielded community edge {tot_shield:,.0f} km.", "",
+         f"  {'scenario':<22} {'cap':>4} {'mo':>3} | {'backbone':>9} {'saving':>8} | {'teams':>5} {'E':>2} {'T':>2} {'FP':>3} {'staff':>5} | {'SSD loaded':>10} {'headroom':>8} | {'gold':>5} {'herd':>5} {'shield':>6} | units (wave) ; first refused"]
+    for r in rows:
+        b = base[(r["cap_musd"], r["months_paid"])]; sav = b["backbone_only"] - r["backbone_only"]
+        us = ", ".join(f"{u['id']} {u['place'].split('*')[0].strip()} (w{u['year']})" for u in r["units"])
+        nr = r["next_refused"]; nr_s = f"{nr[0]} {nr[1].split('*')[0].strip()} -> {nr[3]:,.0f}" if nr else "pool exhausted"
+        L.append(f"  {r['scenario']:<22} {r['cap_musd']:>4.1f} {r['months_paid']:>3} | {r['backbone_only']:>9,.0f} {sav:>8,.0f} | {r['teams']:>5} {r['echo']:>2} {r['tango']:>2} {r['fp']:>3} {r['staff']:>5} | {r['ssd_loaded']:>10,.0f} {r['cap_musd']*1e6 - r['ssd_loaded']:>8,.0f} | {r['coverage']['gold']:>5.0%} {r['coverage']['herd']:>5.0%} {r['coverage']['shield']:>6.0%} | {us} ; refused: {nr_s}")
+    L += ["", "  what each option changes (the line's own basis text):"]
+    for n, sc in SC.items():
+        L.append(f"  - {n} [{sc.get('group')}] {sc.get('review', '')}")
+        L.append(f"      {'removes' if sc.get('group') != 'adds' else 'adds'}: {sc.get('removes') or sc.get('adds') or ''}")
+        L.append(f"      overrides: {json.dumps(sc['overrides'], ensure_ascii=False)}")
+    (OUT / f"FRONTIER_LEAN{tag}.txt").write_text("\n".join(L) + "\n"); print("\n".join(L))
+    json.dump(dict(constraint=dep.get("constraint"), caps=a.caps, months=a.months, scenarios={n: dict(group=sc.get("group"), review=sc.get("review"), removes=sc.get("removes"), adds=sc.get("adds"), of=sc.get("of"), overrides=sc["overrides"]) for n, sc in SC.items()},
+                   kept_ground=dict(gold_cells=tot_gold, herd_ud=round(tot_ud, 2), shield_km=round(tot_shield)),
+                   rows=[dict(r, saving=base[(r["cap_musd"], r["months_paid"])]["backbone_only"] - r["backbone_only"]) for r in rows]), open(OUT / f"FRONTIER_LEAN{tag}.json", "w"), indent=1, ensure_ascii=False)
 
 if __name__ == "__main__": main()
