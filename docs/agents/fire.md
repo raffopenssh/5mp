@@ -1078,6 +1078,13 @@ adopted** (`data/eval/herd_vanguard_wind.json`: 1.4 % of segments affected,
 hold-out capture 0.892 → 0.892 / 0.891, mean skill +0.468 → +0.468 / +0.469);
 the default stays 0 and must not be raised without a new hold-out run.
 ERA5-Land curing prior: unmeasured until the land fetch finishes (tmux `land`).
+**Positive control (`scripts/fire_wind_poscontrol.py`, note §(h)): none exists** —
+no fire class (spreading, local, spot, short transhumance) aligns with the
+daily ERA5 wind either (all ≈ 0.24–0.25 downwind). So never quote the day-
+shuffle z alone; the Harmattan is excluded by the absolute Jan–Feb split
+(23.8 % down vs 24.5 % up against a steady wind), the two-way reversal along
+each corridor and the Oct–Dec/Mar hold-out. "Fronts follow the axis" is
+partly circular (axes are fitted on the fronts) — do not lead with it.
 
 **Hooking into the cron (not yet on).** `wind_field.ensure(aoi, start, end,
 months)` fetches the missing months and rebuilds the npz; it needs `cdsapi`,
