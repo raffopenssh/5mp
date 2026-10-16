@@ -149,6 +149,14 @@ unchanged. `facts.budget` gained `equipment`, `headcount`, `aviation`/`aviation_
   row's team caps (`--echo-y1` = the row's wave-1 ECHO count) and `easyplan.py`. Team counts are read from the frontier
   row, never typed. **Caveat:** `months: 8` changes only the team contract months (13/12/11 → 8/7/6), not `phase_months` /
   `year_labels` — the backbone calendar stays 18 months; a true Nov–Jun submission is still a plan.yaml calendar edit.
+* **PM-as-FP (`pm_fp_town: Wau`, scenario `pm_is_wau_fp`, in `focus`; 2026-10-16).** The Project Manager, based in Wau, is
+  the wave-1 Wau focal point. Mechanics: `plan_deploy.py --pm-fp-town` (default = plan.yaml) seeds the town as the only
+  wave-1 FP (`pm: true`, staff 0, `why` says DECISION); `--fp-y2 N` = N *paid* FPs on top, all wave 2 where the teams need
+  one. The frontier seeds the same unit (free, outside `--max-fp`) and `assign()` puts every paid FP in wave 2 when a PM
+  unit is present; `FP`/`staff` columns count paid FPs only (`=PM` marks the unit). Budget: `by_year.fp/new_fp` exclude
+  `pm` units; the unit's own weight in the per-unit pivot is 0 (it is costed in the PM lines); the Wau desk keeps office
+  running + Starlink months (`d["base_pm"]`); `fp_away` (FP flights) is now counted **by place** ("Wau" not in place), which
+  moved the baseline row by +3.1 k — the old `fp - 1` assumed FP #1 was Wau while the frontier had put F1 at Tambura.
 * **`docs/plan/versions/`** — frozen plan.yaml copies at decision points (README there); `cp` one back to reverse course.
 * `easyplan.py --check` **re-renders facts.json and the budget before comparing** — `git checkout` them if you did not mean
   to publish (it is not a read-only check).

@@ -89,7 +89,7 @@ def facts(P):
         z = zones[t["zone_uids"][0]] if t["kind"] != "FP" else None
         d = dict(id=t["id"], kind=t["kind"], strand=t.get("strand", "SSD"), year=t["year"], place=re.sub(r"\*.*$", "", t["place"]).strip(),
                  place_unverified="*" in t["place"], site_people=t["site_people"], zone_uids=t["zone_uids"],
-                 lon=t["lon"], lat=t["lat"], water=t["water"], serves=t.get("serves"))
+                 lon=t["lon"], lat=t["lat"], water=t["water"], serves=t.get("serves"), pm=bool(t.get("pm")))
         if z:
             hb = json.loads(z["herd_bundles"])
             d.update(area_ha=z["area_ha"], people=z["population_est"], country=z["country"], gold=z["mine_top05_cells"],
@@ -116,8 +116,9 @@ def facts(P):
     by_year = []
     for y in range(1, N + 1):
         # ECHO counts are the SOUTH SUDAN strand only; the CAR strand (K-teams, a separate budget) is echo_car/new_echo_car
-        cnt = lambda k, yy, st="SSD": sum(1 for t in teams.values() if t["kind"] == k and t["year"] == yy and (t["strand"] == st or k != "ECHO"))
-        cum = lambda k, st="SSD": sum(1 for t in teams.values() if t["kind"] == k and t["year"] <= y and (t["strand"] == st or k != "ECHO"))
+        # an FP flagged pm is the Project Manager (plan.yaml pm_fp_town): on the map and in fp_places, NOT a paid focal point
+        cnt = lambda k, yy, st="SSD": sum(1 for t in teams.values() if t["kind"] == k and t["year"] == yy and (t["strand"] == st or k != "ECHO") and not t.get("pm"))
+        cum = lambda k, st="SSD": sum(1 for t in teams.values() if t["kind"] == k and t["year"] <= y and (t["strand"] == st or k != "ECHO") and not t.get("pm"))
         row = dict(echo=cum("ECHO"), tango=cum("TANGO"), fp=cum("FP"), new_echo=cnt("ECHO", y), new_tango=cnt("TANGO", y), new_fp=cnt("FP", y),
                    staff=cum("ECHO") * 5 + cum("TANGO") * 5 + cum("FP"))
         for k in STRANDS:   # echo_car / new_echo_car / staff_car, echo_cod / …, echo_sdn / … — one foreign budget line each
@@ -131,7 +132,7 @@ def facts(P):
     park = pip["park"]
     F = dict(
         generated=date.today().isoformat(), plan=P, years=N,
-        deploy=dict(by_year=by_year, teams=teams, fp_places=[t["place"] for t in sorted(teams.values(), key=lambda x: x["id"]) if t["kind"] == "FP"],
+        deploy=dict(by_year=by_year, teams=teams, fp_places=[t["place"] + (" (the PM)" if t.get("pm") else "") for t in sorted(teams.values(), key=lambda x: x["id"]) if t["kind"] == "FP"],
                     echo_total_ha=sum(t["area_ha"] for t in echo), echo_total_people=sum(t["people"] for t in echo),
                     echo_total_gold=sum(t["gold"] for t in echo), n_echo=len(echo),
                     n_echo_car=len(echo_car), echo_car_total_ha=sum(t["area_ha"] for t in echo_car), echo_car_total_people=sum(t["people"] for t in echo_car),
