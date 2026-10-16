@@ -305,6 +305,13 @@ def focal_points_of(chosen, n_fp, town_pop, seed=()):
                         water="town (supplies itself)", season="year-round", why=f"town of {tp:,} people; {len(served)} of this year's team sites within {FP_REACH_KM:g} km ({', '.join(s['place'] for s in served)}), {len(new)} of them not held by an earlier focal point; county and traditional authorities are seated here", towns=[n], serves=[s["place"] for s in served]))
     return out
 
+def pm_fp_unit(town, town_pop):
+    """the Project Manager as a focal point: the named town (fp_towns entry), staff 0, pm=True; zone_uids/serves are filled by focal_points_of from the teams it reaches"""
+    t = next((t for t in town_pop if t["name"] == town), None)
+    if t is None: raise SystemExit(f"--pm-fp-town {town!r}: not an FP town (>= fp_min_pop people on a road); towns: {', '.join(x['name'] for x in town_pop)}")
+    return dict(kind="FP", staff=0, pm=True, zone_uids=[], urgency=0.0, place=t["name"], lon=round(t["lon"], 4), lat=round(t["lat"], 4), site_people=int(t["pop"]), road_km=t["road_km"],
+                water="town (supplies itself)", season="year-round", why=f"DECISION (AP-RCA, Oct 2026): the Project Manager, based here, is the wave-1 focal point — no focal-point salary or desk is budgeted for {t['name']} in the first year; paid focal points join in wave 2 where the teams need one", towns=[t["name"]], serves=[])
+
 def stage_key(s): return (-(round(s["robust"], 1) if s["kind"] == "ECHO" else s["urgency"]), -s["urgency"])
 
 def main():
@@ -312,7 +319,8 @@ def main():
     ap.add_argument("--tag", default=""); ap.add_argument("--staff-y1", type=int, default=40); ap.add_argument("--staff-y2", type=int, default=80)
     ap.add_argument("--tango-y1", type=int, default=None, help="TANGO teams in the FIRST wave (default: all of --tango-y2 — corridor teams go in before the herds, plan.yaml wave_dates_by_kind; 2026-10-01)")
     ap.add_argument("--echo-y1", type=int, default=None, help="ECHO teams in the first wave (default: half of --echo-y2, at least 2)")
-    ap.add_argument("--echo-y2", type=int, default=5); ap.add_argument("--tango-y2", type=int, default=5); ap.add_argument("--fp-y2", type=int, default=3)
+    ap.add_argument("--echo-y2", type=int, default=5); ap.add_argument("--tango-y2", type=int, default=5); ap.add_argument("--fp-y2", type=int, default=3, help="PAID focal points by year 2 (the PM-as-FP town, if any, is on top)")
+    ap.add_argument("--pm-fp-town", default=None, help="town whose wave-1 focal point IS the Project Manager (no FP salary/desk; staff 0); default plan.yaml pm_fp_town; '' = none")
     ap.add_argument("--echo-car-y2", type=int, default=2, help="ECHO teams on CAR community zones by year 2 — the CAR strand, a separate budget outside --staff-y1/--staff-y2 (0 = none)")
     ap.add_argument("--echo-cod-y2", type=int, default=1, help="ECHO teams on DRC community zones by year 2 — the COD strand, its own budget (0 = none)")
     ap.add_argument("--echo-sdn-y2", type=int, default=1, help="ECHO teams on Sudan community zones by year 2 — the SDN strand, its own budget (0 = none)")
@@ -452,6 +460,8 @@ def main():
     town_pop = [t for t in town_pop if t[3] >= a.fp_min_pop]
     town_pop = [dict(name=n, lon=lo, lat=la, pop=tp, road_km=(round(r, 1) if (r := IX["road_km"](lo, la, ROAD_FAR_KM)) is not None else None)) for n, lo, la, tp in town_pop]
     def focal_points(chosen, n_fp, seed=()): return focal_points_of(chosen, n_fp, town_pop, seed)
+    pm_town = a.pm_fp_town if a.pm_fp_town is not None else (__import__("yaml").safe_load(open(P.ROOT / "docs/plan/plan.yaml")).get("pm_fp_town") or "")
+    pm_seed = [pm_fp_unit(pm_town, town_pop)] if pm_town else []
     # ---------------------------------------------------------------- staging: year 1, year 2 under the staff caps
     for s in placed: s.setdefault("strand", "SSD")
     # ECHO is staged by SELECTION STABILITY, not by point urgency (user decision 2026-09-07): the share of perturbed
@@ -479,14 +489,16 @@ def main():
             if cnt[s["kind"]] >= lim or staff + s["staff"] > cap_staff: continue
             chosen.append(s); cnt[s["kind"]] += 1; staff += s["staff"]
         for s in focal_points([c for c in chosen if c["strand"] == "SSD"], n_fp, seed_fp):
-            if staff + 1 > cap_staff: break
-            s["strand"] = "SSD"; chosen.append(s); staff += 1
+            if staff + s["staff"] > cap_staff: break
+            s["strand"] = "SSD"; chosen.append(s); staff += s["staff"]
         return chosen, staff
     # year 1 first; year 2 then starts from year 1's focal points (a town office is not moved because the teams' centre moved)
     n_tango_y1 = a.tango_y2 if a.tango_y1 is None else a.tango_y1
     n_echo_y1 = max(2, a.echo_y2 // 2) if a.echo_y1 is None else a.echo_y1
-    y1, staff1 = stage(a.staff_y1, n_echo_y1, n_tango_y1, max(1, a.fp_y2 // 2), {k: (max(1, c // 2) if c else 0) for k, c in caps_f.items()})
-    y2, staff2 = stage(a.staff_y2, a.echo_y2, a.tango_y2, a.fp_y2, caps_f, seed_fp=[s for s in y1 if s["kind"] == "FP"])
+    # PM-as-FP (plan.yaml pm_fp_town, 2026-10-16): the town is seeded as the ONLY wave-1 focal point (the PM, staff 0, no FP pay);
+    # every paid FP (--fp-y2) then joins in wave 2 where the teams need one. Without it: first max(1, n//2) paid FPs in wave 1.
+    y1, staff1 = stage(a.staff_y1, n_echo_y1, n_tango_y1, (1 if pm_seed else max(1, a.fp_y2 // 2)), {k: (max(1, c // 2) if c else 0) for k, c in caps_f.items()}, seed_fp=pm_seed)
+    y2, staff2 = stage(a.staff_y2, a.echo_y2, a.tango_y2, a.fp_y2 + len(pm_seed), caps_f, seed_fp=[s for s in y1 if s["kind"] == "FP"])
     y1_keys = {(s["kind"], s["place"]) for s in y1}
     for s in y2: s["year"] = 1 if (s["kind"], s["place"]) in y1_keys else 2
     # ---------------------------------------------------------------- pinned TANGO teams (user decision; printed as such)
@@ -519,7 +531,7 @@ def main():
     strand_staff = {k: dict(year1=sum(s["staff"] for s in y2 if s["strand"] == k and s["year"] <= 1), year2=sum(s["staff"] for s in y2 if s["strand"] == k), cap_teams=caps_f[k], placed=sum(1 for s in y2 if s["strand"] == k), **v) for k, v in STRANDS.items()}
     robust = selection_robustness(echo, y2, a, freq=rob_freq)
     for i, s in enumerate([s for s in y2 if s["kind"] == "TANGO"], 1): s["id"] = f"T{i}"
-    for i, s in enumerate([s for s in y2 if s["kind"] == "FP"], 1): s["id"] = f"F{i}"
+    for i, s in enumerate(sorted([s for s in y2 if s["kind"] == "FP"], key=lambda s: (not s.get("pm"), s["year"])), 1): s["id"] = f"F{i}"
     # ---------------------------------------------------------------- footprints
     zg = {f["properties"]["uid"]: shape(f["geometry"]).buffer(0) for f in zs}
     feats = []
@@ -541,7 +553,7 @@ def main():
         for yr in (1, 2):
             L.append(f"YEAR {yr}" + (" (adds to year 1)" if yr == 2 else ""))
             for s in sorted([s for s in y2 if s["year"] == yr], key=lambda s: (s["kind"] != "FP", s["kind"], -s["urgency"])):
-                L.append(f"  {s['id']:<3} {s['kind']:<5} x{s['staff']}  {s['place']}  ({s['lon']}, {s['lat']})  urgency {s['urgency']:.2f}" + (f"  picked in {s['robust']:.0%} of perturbed re-rankings" if s.get("robust") is not None else "") + f"  zones {s['zone_uids']}  footprint {s.get('footprint_km2', 0):,} km²")
+                L.append(f"  {s['id']:<3} {s['kind']:<5} x{s['staff']}  {s['place']}{' (the Project Manager — no focal-point pay)' if s.get('pm') else ''}  ({s['lon']}, {s['lat']})  urgency {s['urgency']:.2f}" + (f"  picked in {s['robust']:.0%} of perturbed re-rankings" if s.get("robust") is not None else "") + f"  zones {s['zone_uids']}  footprint {s.get('footprint_km2', 0):,} km²")
                 L.append(f"        water: {s['water']}; road {(str(s['road_km']) + ' km') if s.get('road_km') is not None else 'no mapped road within %g km (OSRM car trips say tracks exist)' % ROAD_FAR_KM}; when: {s['season']}"); L.append(f"        why: {s['why']}")
                 if s.get("adjudication"): L.append(f"        site: {s['adjudication']}; shortlist {[(c['name'], c['people'], (c['reach'] or {}).get('share')) for c in s.get('alternatives', [])]}")
                 if s.get("short"): L.append(f"        short: {s['short']}")

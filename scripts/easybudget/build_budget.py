@@ -309,7 +309,11 @@ def derive(F, P):
     d["natl_pm"] = [d["scout_pm"][y] + d["lead_pm"][y] + d["fp_pm"][y] + d["coord_pm"][y] + d["fin_pm"][y] for y in Y]
     d["field_staff"] = [d["teams"][y] * tsize + d["fp"][y] for y in Y]
     d["new_field_staff"] = [d["n_teams"][y] * tsize + d["n_fp"][y] for y in Y]
-    d["fp_away"] = [max(d["fp"][y] - 1, 0) for y in Y]                      # focal points outside Wau
+    # paid focal points outside Wau (flights): by PLACE, so a PM-as-FP at Wau (plan.yaml pm_fp_town; pm=True in deploy.teams, never counted in fp/new_fp) does not shift the count
+    tm = (F["deploy"].get("teams") or {}).values()
+    d["fp_away"] = [sum(1 for t in tm if t["kind"] == "FP" and not t.get("pm") and t["year"] <= y + 1 and "wau" not in t["place"].lower()) for y in Y]
+    d["pm_fp"] = [1 if any(t["kind"] == "FP" and t.get("pm") and t["year"] <= y + 1 for t in tm) else 0 for y in Y]   # the PM's Wau desk months are still Wau base months
+    d["base_pm"] = [mp["fp"][y] * d["pm_fp"][y] for y in Y]
     d["field_phase"] = [1 if d["team_months"][y] else 0 for y in Y]        # phases with teams on the ground
     # equipment: everything bought once, in the first phase, for every unit the plan will field (reviewed plan: no per-cohort split)
     d["all_teams"] = sum(d["n_teams"]); d["all_fp"] = sum(d["n_fp"])
@@ -363,7 +367,7 @@ def lines(F, P):
         A(("2 National staff", "A1", "Project coordinator (national), Juba/Wau",
            f"{s(coord_pm)} months - kept beside the PM for national and government liaison", "SAL_COORD", coord_pm, "FP"))
     A(("2 National staff", "A1", "Focal points (one person each)",
-       f"Focal points {fp_s} ({', '.join(F['deploy']['fp_places'])}); the first for the whole project, the others from the second wave: {s(fp_pm)} person-months",
+       f"Focal points {fp_s} ({', '.join(F['deploy']['fp_places'])}); " + ("the Project Manager is the wave-1 focal point (no pay here), the paid ones join from the second wave" if any(d["pm_fp"]) else "the first for the whole project, the others from the second wave") + f": {s(fp_pm)} person-months",
        "SAL_OFFICER", fp_pm, "FP"))
     A(("2 National staff", "A1", "Finance/admin officer, 0.5 FTE hosted by AP South Sudan, Juba",
        f"Half-time, {s(fin_pm)} FTE-months. Banking and approvals run through the AP South Sudan country representative's office",
@@ -483,11 +487,12 @@ def lines(F, P):
     A(("8 Premises and utilities", "A1", "Wau office/compound, shared with the national partner",
        f"Every month of the project ({s(pm_)}). No Juba office: AP South Sudan hosts the desk", "OFFICE_WAU", list(pm_), "FP"))
     A(("8 Premises and utilities", "A1", "Office running costs (Wau, plus each focal point's desk)",
-       f"Focal-point months ({s(fp_pm)})", "OFFICE_RUN", fp_pm, "FP"))
+       f"Focal-point months ({s(fp_pm)})" + (f" plus the PM's Wau desk ({s(d['base_pm'])})" if any(d["pm_fp"]) else ""), "OFFICE_RUN", [fp_pm[y] + d["base_pm"][y] for y in Y], "FP"))
     # ---- 9 Comms
-    A(("9 Communications and IT", "A1", "Starlink terminals (one per focal-point base)", f"All {d['all_fp']} bases, bought at start",
-       "STARLINK_KIT", one(d["all_fp"]), "FP"))
-    A(("9 Communications and IT", "A1", "Starlink subscriptions", f"Focal-point base-months ({s(fp_pm)})", "STARLINK_MO", fp_pm, "FP"))
+    n_fp_base = d["all_fp"] + max(d["pm_fp"])
+    A(("9 Communications and IT", "A1", "Starlink terminals (one per focal-point base)", f"All {n_fp_base} bases" + (" (incl. the PM's Wau base)" if max(d["pm_fp"]) else "") + ", bought at start",
+       "STARLINK_KIT", one(n_fp_base), "FP"))
+    A(("9 Communications and IT", "A1", "Starlink subscriptions", f"Focal-point base-months ({s([fp_pm[y] + d['base_pm'][y] for y in Y])})", "STARLINK_MO", [fp_pm[y] + d["base_pm"][y] for y in Y], "FP"))
     if sl_team:
         A(("9 Communications and IT", "A1", "Starlink terminals, team bases (review C4)",
            f"One per team, ECHO and TANGO ({d['all_teams']}), bought at start: broadband, calls and data upload from every camp - this is the control-room link to Chinko / Wau", "STARLINK_KIT", one(d["all_teams"]), "TEAM"))
@@ -686,7 +691,7 @@ def _locations(F, P):
     out = []
     for tid, t in sorted(F["deploy"]["teams"].items()):
         kind, strand = t["kind"], t.get("strand", "SSD")
-        if kind == "FP": drv, w = "FP", [months("fp", t["year"], y) for y in range(N)]
+        if kind == "FP": drv, w = "FP", ([0] * N if t.get("pm") else [months("fp", t["year"], y) for y in range(N)])   # the PM-as-FP is costed in the PM lines
         elif strand != "SSD": drv, w = strand, [sme[y] if t["year"] <= y + 1 else 0 for y in range(N)]
         else: drv, w = "TEAM", [months(kind.lower(), t["year"], y) for y in range(N)]
         out.append(dict(id=tid, place=t["place"], kind=kind, drv=drv, country=t.get("country") or {"CAR": "CAF", "COD": "COD", "SDN": "SDN"}.get(strand, "SSD"), year=t["year"], w=w))
@@ -1006,7 +1011,7 @@ def build_txt(path, xlsx_name, F, P):
     yf = N - 1; nt = by[yf]["echo"] + by[yf]["tango"]; tm = sum(d["TEAM"]["loaded"]); fp = sum(d["FP"]["loaded"])
     Pp(f"    PER UNIT, WHOLE PROJECT ({nt} teams, {by[yf]['fp']} focal points; Phase 1 kit and training included)")
     Pp(f"      One ECHO/TANGO team, {P['team']['scouts']} scouts + {P['team']['leader']} leader, one season   {m(tm/nt):>10s}")
-    Pp(f"      One focal point (share of the Wau/Juba backbone)              {m(fp/by[yf]['fp']):>10s}")
+    Pp(f"      One focal point (share of the Wau/Juba backbone)              {m(fp/by[yf]['fp']) if by[yf]['fp'] else 'no paid focal point':>10s}")
     Pp(f"      PM and Chinko HQ oversight, {HM} months                         {m(sum(d['HQ']['loaded'])):>10s}")
     Pp("")
     Pp(wrap("The ECHO and TANGO strands are costed as one kind of team: the same contract, kit and training, under one "
@@ -1090,7 +1095,7 @@ def summary(F, P):
     hc("Project Manager / National Coordinator (international, based in Wau)", 1, d["pm_pm"], "both", f"one post; full-time from 1 Jan 2027: {d['pm_pre']} pre-launch months (booked to Phase 1) + {sum(P['pm_months'])} = {sum(d['pm_pm'])} months; reports to the Chinko Landscape Coordinator")
     if any(d["coord_pm"]): hc("National project coordinator, Juba/Wau", 1, d["coord_pm"], "both", f"all {sum(d['coord_pm'])} months")
     hc("Finance/admin officer (0.5 FTE, AP South Sudan, Juba)", 1, d["fin_pm"], "both", f"{sum(d['fin_pm'])} FTE-months")
-    hc("Focal points (one person each)", d["fp"][-1], d["fp_pm"], "both", f"{d['fp'][0]} from the start, {d['fp'][-1]} from {WD[1]}: {sum(d['fp_pm'])} person-months")
+    hc("Focal points (one person each)", d["fp"][-1], d["fp_pm"], "both", f"{d['fp'][0]} from the start, {d['fp'][-1]} from {WD[1]}: {sum(d['fp_pm'])} person-months" + ("; the Project Manager is the Wau focal point (costed above)" if any(d["pm_fp"]) else ""))
     hc("Community wildlife scouts", d["teams"][-1] * T["scouts"], d["scout_pm"], 2, f"{T['scouts']} per team x {d['team_months'][-1]:g} team-months, Phase 2 only")
     hc("Scout team leaders", d["teams"][-1] * T["leader"], d["lead_pm"], 2, f"one per team, {d['team_months'][-1]:g} team-months, Phase 2 only")
     AV = {"SAV_HR": ("Savannah STOL (light aircraft)", "surveillance, livestock counts and rim reconnaissance, several flights over the 2027-28 dry season"),
