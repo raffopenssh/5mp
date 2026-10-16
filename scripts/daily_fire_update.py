@@ -66,6 +66,13 @@ INCREMENTAL_DAYS = 14  # Days window for incremental rebuild
 # 150-280 active groups, so an uncapped feed drowns everything else.
 MAX_ALERTS_PER_PARK = 5
 
+# ERA5 wind/fuel covariates for the herd-movement analysis (docs/agents/fire.md "Wind (ERA5)").
+# OFF by default until the measured ladder says the covariate helps; flip with FIRE_ERA5=1 in the
+# unit's environment. Areas listed get Oct-Mar wind + ERA5-Land fuel fields refreshed monthly.
+ERA5_ENABLED = os.environ.get('FIRE_ERA5', '0') == '1'
+ERA5_AREAS = [a for a in os.environ.get('FIRE_ERA5_AREAS', 'XSA_Study_Area').split(',') if a]
+ERA5_PYTHON = str(BASE_DIR / '.venv' / 'bin' / 'python')   # cdsapi lives only in the venv
+
 def log(msg):
     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print(f"[{timestamp}] {msg}", flush=True)
@@ -436,6 +443,31 @@ class DailyFireUpdater:
         except Exception as e:
             log(f"  NRT->SP audit error: {e}")
             self._fail('nrt_sp_audit', e)
+
+    def refresh_era5(self):
+        """Step 2f (monthly, opt-in): fetch the current season's ERA5 wind and ERA5-Land fuel months for
+        ERA5_AREAS and fold them into the daily npz caches (wind_field.py / climate_field.py). The groups
+        loader then annotates trajectories with per-step wind. A month the archive does not hold yet
+        (ERA5T lags ~5 d) is skipped; any failure is a SYSTEM notification, never a crash."""
+        if not ERA5_ENABLED or datetime.now().day != 1:
+            return
+        log("Step 2f: ERA5 wind + fuel refresh (monthly)...")
+        sys.path.insert(0, str(SCRIPTS_DIR))
+        today = datetime.now().date()
+        s_year = today.year if today.month >= 8 else today.year - 1
+        start, end = f"{s_year}-10", f"{s_year + 1}-04"
+        for aoi in ERA5_AREAS:
+            for name, mod in (('wind', 'wind_field'), ('land', 'climate_field')):
+                try:
+                    m = __import__(mod)
+                    m.ensure(aoi, start, end, months=[9, 10, 11, 12, 1, 2, 3, 4], python=ERA5_PYTHON, prune=True)
+                    log(f"  {aoi} {name}: ok")
+                except Exception as e:
+                    log(f"  {aoi} {name} failed: {e}")
+                    self._fail(f'era5_{name}', e)
+                    self._notify_system('era5_refresh_failed', 'ERA5 Refresh Failed',
+                                        f'{aoi} {name}: {str(e)[:300]} (scripts/fetch_era5.py; creds ~/.cdsapirc)')
+        self.stats['era5'] = 'ran'
 
     def check_consistency(self):
         """Verify fire_groups_v5 JSON, feature_geometries and the narrative
@@ -1043,6 +1075,9 @@ class DailyFireUpdater:
 
         # Step 2e: NRT->SP reconciliation audit (monthly; no-op other days)
         self.audit_nrt_sp()
+
+        # Step 2f: ERA5 wind/fuel covariates (monthly; opt-in via FIRE_ERA5=1)
+        self.refresh_era5()
         
         # Step 3: Rebuild groups (incremental)
         self.rebuild_groups_incremental()

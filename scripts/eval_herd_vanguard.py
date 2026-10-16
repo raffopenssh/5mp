@@ -15,7 +15,9 @@ then asks: (1) do the fitted bands capture the held-out season's VANGUARD fronts
 is measured trustworthy)?  (2) does fitting on `supported` tiers help or hurt?  (3) does the bundle's direction
 (from day order) agree with its vanguard chains' direction?  (4) timing relative to the season front per bundle.
 Writes /tmp/herdv only."""
-import json, math, pickle, sys, warnings; warnings.filterwarnings("ignore")
+import argparse, json, math, pickle, sys, warnings; warnings.filterwarnings("ignore")
+_ap = argparse.ArgumentParser(); _ap.add_argument("--wind-weight", type=float, nargs="*", default=[], help="also run A with fast-downwind segments weighted 1-w (ERA5, wind_field.step_weights); e.g. 0.5 1.0")
+_ap.add_argument("--only-wind", action="store_true", help="run only A and the wind-weighted variants (skips B-H)"); ARGS = _ap.parse_args()
 from collections import Counter
 import numpy as np
 from scipy import ndimage
@@ -52,13 +54,15 @@ van_groups = plain & np.array([x["van"] for x in T])  # the earlier definition (
 van = kf                                                # the vanguard population as the app now defines it
 lead = np.array([np.nan if x["lead"] is None else x["lead"] for x in T])
 alld_s = ndimage.gaussian_filter(G.alldens, sig_c)
+STEP_W = None   # per-front per-segment weights (wind_field.step_weights) when --wind-weight is active
 def bridge_ud(idx, w=None):
     ud = np.zeros((G.h, G.w), np.float32)
     for n, j in enumerate(idx):
-        t = T[j]["t"]; rr, cc = G.rc_arr([p[0] for p in t], [p[1] for p in t]); wj = (1.0 if w is None else w[n]) / max(len(t) - 1, 1)
+        t = T[j]["t"]; rr, cc = G.rc_arr([p[0] for p in t], [p[1] for p in t])
+        sw = STEP_W[j] if STEP_W is not None else np.ones(max(len(t) - 1, 1), np.float32); wj = (1.0 if w is None else w[n]) / max(float(sw.sum()), 1e-9)
         for i in range(len(t) - 1):
             lr, lc = skline(int(rr[i]), int(cc[i]), int(rr[i + 1]), int(cc[i + 1])); ok = G.inside(lr, lc)
-            if ok.any(): ud[lr[ok], lc[ok]] += wj / max(ok.sum(), 1)
+            if ok.any(): ud[lr[ok], lc[ok]] += wj * float(sw[i]) / max(ok.sum(), 1)
     return ndimage.gaussian_filter(ud, sig_c)
 def isopleth(ud, q):
     flat = np.sort(ud.ravel())[::-1]; cs = np.cumsum(flat); thr = flat[np.searchsorted(cs, q * cs[-1])]; return ud >= max(thr, 1e-12)
@@ -103,6 +107,18 @@ def run(name, fit_sel, weights=None, lab=None, capture_min=0.5):
 res = {}
 res["A_current"] = run("A current model (all long fronts)", plain)
 labA = res["A_current"][2]
+if ARGS.wind_weight:
+    # the Harmattan question, measured: does removing the mass of fast downwind segments change what the bands predict?
+    import wind_field as WFm
+    wf = WFm.WindField.load("XSA_Study_Area"); print("wind covered", wf.covered())
+    for ww in ARGS.wind_weight:
+        STEP_W = [WFm.step_weights(x["t"], wf, ww) for x in T]
+        n_dw = sum(int((w < 1).sum()) for w in STEP_W); n_all = sum(len(w) for w in STEP_W)
+        print(f"\n-- wind_weight {ww}: {n_dw:,} of {n_all:,} segments are fast (>20 km/day) + downwind -> weight {1 - ww:.2f}")
+        res[f"A_wind_{ww}"] = run(f"A + wind_weight {ww} (same bundles as A)", plain, lab=labA)
+    STEP_W = None
+if ARGS.only_wind:
+    json.dump({k: dict(net=v[0], rows=v[1]) for k, v in res.items()}, open(OUTD / "res_wind.json", "w"), indent=1, default=float); sys.exit(0)
 res["B_supported"] = run("B supported tier only (fire.md 'downstream to revisit')", plain & (tier == "supported"), lab=labA)
 res["C_supp_weak"] = run("C supported+weak", plain & np.isin(tier, ["supported", "weak"]), lab=labA)
 # lead-weighted: fronts starting ahead of the front weigh more (w = 1 + clip(lead,0,60)/20); season 2023 has no front -> w=1
