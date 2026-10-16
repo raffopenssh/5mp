@@ -73,8 +73,30 @@ def boundary_names(props, n=4):
     return out
 
 
+def contig_block(features, touch_deg=0.00045):
+    """v3 review F3 (TA C2): the largest contiguous block of core + old-growth zones (zones touching within ~50 m),
+    its area, core share, people and the part in South Sudan -- read, not typed, by the report."""
+    from shapely.geometry import shape
+    from shapely.strtree import STRtree
+    sel = [f for f in features if f["properties"]["solver_class"] in ("core", "wilderness")]
+    geoms = [shape(f["geometry"]) for f in sel]; tree = STRtree(geoms); parent = list(range(len(geoms)))
+    def find(i):
+        while parent[i] != i: parent[i] = parent[parent[i]]; i = parent[i]
+        return i
+    for i, g in enumerate(geoms):
+        for k in tree.query(g.buffer(touch_deg)):
+            if k != i and geoms[k].distance(g) < touch_deg: parent[find(i)] = find(k)
+    comps = {}
+    for i in range(len(geoms)): comps.setdefault(find(i), []).append(i)
+    big = [sel[i]["properties"] for i in max(comps.values(), key=lambda c: sum(sel[i]["properties"]["area_ha"] for i in c))]
+    return dict(zones=len(big), km2=round(sum(z["area_ha"] for z in big) / 100), core_km2=round(sum(z["area_ha"] for z in big if z["solver_class"] == "core") / 100),
+                people=sum(z["population_est"] for z in big), ssd_km2=round(sum(z["area_ha"] for z in big if z["country"] == "SSD") / 100),
+                uids=sorted(z["uid"] for z in big), touch_m=round(touch_deg * 111000))
+
+
 def facts(P):
     deploy = j(SOLVER / "deploy.json"); solve = j(SOLVER / "solve.json")
+    contig = contig_block(j(SOLVER / "zones.geojson")["features"])
     zones = {f["properties"]["uid"]: f["properties"] for f in j(SOLVER / "zones.geojson")["features"]}
     rank = j(SOLVER / "rank_conservancies.json"); movement = j(SOLVER / "movement.json")
     threat = j(SOLVER / "threat.json"); frontier = j(SOLVER / "frontier.json")
@@ -146,7 +168,8 @@ def facts(P):
                    max_core_ha=solve["max_core_ha"], capture=solve["corridor_capture"], axis_draws=solve["opts"]["axis_draws"],
                    max_half_width_km=solve["opts"]["max_width_km"], frontier_runs=len(frontier["rows"]),
                    core_block=dict(area_ha=core_block["area_ha"], people=core_block["population_est"], clearing20=core_block["clearing_since_2020_km2"],
-                                   solver_class=core_block["solver_class"], boundary=boundary_names(core_block, 6))),
+                                   solver_class=core_block["solver_class"], boundary=boundary_names(core_block, 6)),
+                   contig_block=contig),
         movement=dict(fronts=movement["fronts_fit"] + movement["fronts_holdout"], bundles=len(movement["bundles"]),
                       hold_season=movement["hold_season"],
                       holdout_min=min(b["holdout_capture"] for z in zones.values() for b in json.loads(z["herd_bundles"])) if True else None,
