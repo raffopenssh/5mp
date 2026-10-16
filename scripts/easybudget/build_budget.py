@@ -141,7 +141,7 @@ RATES = [
      "constituted body to pay. INDICATIVE"),
     ("FIELDKIT", "Team field kit (tent, tarp, cooking, torches, pangas)", "team", 1400,
      "Per four-person team, excluding freight. FIRM"),
-    ("CAMTRAP", "Camera trap", "unit", 450, "Landed, per unit. FIRM"),
+    ("CAMTRAP", "Camera trap", "unit", 450, "Not used since 2026-10-16 (review B8: the 30 units are dropped, track-count training with local hunters and herders replaces them). Kept as a rate for comparison. FIRM"),
     ("GEN", "Generator, 5 kVA", "unit", 2500, "Installed. FIRM"),
     ("SOLAR", "Office solar and battery backup", "set", 4000, "Installed. INDICATIVE"),
     # -- premises and running ----------------------------------------------
@@ -306,6 +306,7 @@ def derive(F, P):
     d["coord_pm"] = P["coordinator_months"]; d["fin_pm"] = P["finance_officer_months"]
     d["pm_pre"] = P.get("pm_prelaunch_months", 0)                                   # PM months before 1 Jun 2027, booked to Phase 1
     d["pm_pm"] = [P["pm_months"][y] + (d["pm_pre"] if y == 0 else 0) for y in Y]
+    d["pm_start"] = "1 Jan 2027" if d["pm_pre"] == 5 else ("1 Jun 2027" if d["pm_pre"] == 0 else f"{d['pm_pre']} months before 1 Jun 2027")   # C1: 18 months from 1 Jun 2027
     d["natl_pm"] = [d["scout_pm"][y] + d["lead_pm"][y] + d["fp_pm"][y] + d["coord_pm"][y] + d["fin_pm"][y] for y in Y]
     d["field_staff"] = [d["teams"][y] * tsize + d["fp"][y] for y in Y]
     d["new_field_staff"] = [d["n_teams"][y] * tsize + d["n_fp"][y] for y in Y]
@@ -356,9 +357,9 @@ def lines(F, P):
     A = L.append
     # ---- 1 International staff
     A(("1 International staff", "A1", "Project Manager (international), full-time, based in South Sudan",
-       f"{s(pm_pm)} months: in post from 1 January 2027 ({d['pm_pre']} pre-launch months - presentations to SSWS, FFI and the local NGOs, "
-       f"the endorsement before the gate - booked to Phase 1) then every month to Nov 2028. Runs the feasibility phase on the ground and "
-       "reports to the Chinko Landscape Coordinator. The AP regional expatriate package is costed separately by HR", "SAL_INTL", pm_pm, "HQ"))
+       f"{s(pm_pm)} months: in post from {d['pm_start']}" + (f" ({d['pm_pre']} pre-launch months - presentations to SSWS, FFI and the local NGOs, "
+       f"the endorsement before the gate - booked to Phase 1)" if d['pm_pre'] else "") + f" then every month to Nov 2028; USD {RATE['SAL_INTL']:,} a month all-in (EM C11, Oct 2026). Runs the "
+       "assessment and engagement phase on the ground, is the Wau focal point, and reports to the Chinko Landscape Coordinator", "SAL_INTL", pm_pm, "HQ"))
     A(("1 International staff", "A1", "PM work and residence permits", "NGO Act 2016 s.18; two cycles, pending confirmation of their treatment in the expatriate package", "PERMIT", [1] * N, "HQ"))
     A(("1 International staff", "A1", "Group life insurance, international PM (ESTIMATE, gap-fill)", f"PM months {s(pm_pm)}; drop if the expatriate package already carries it", "GAP_INTL_GLI", pm_pm, "HQ"))
     A(("1 International staff", "A1", "Medevac insurance, international PM (ESTIMATE, gap-fill)", f"PM months {s(pm_pm)}; the national healthcare line does not cover this post", "GAP_INTL_MED", pm_pm, "HQ"))
@@ -439,8 +440,9 @@ def lines(F, P):
        f"One per conservancy scoped in the previous phase (new ECHO zones {s(n_echo)} lag one phase: {s([0]+n_echo[:-1])}); "
        "paid once the body is constituted; grows into the AP SSD conservancy model (docs/plan/reference_conservancy_budget.md)",
        "CBO_SEED_SSD", [0] + n_echo[:-1], None))
-    A(("4 Field activities", "A10", "Camera traps for community biomonitoring", f"{s(P['camera_traps'])} units on the academic partner's protocol",
-       "CAMTRAP", P["camera_traps"], "TEAM"))
+    if any(P["camera_traps"]):   # B8 (TA email / EM C7, Oct 2026): dropped; the track-count training line in cat. 10 replaces it
+        A(("4 Field activities", "A10", "Camera traps for community biomonitoring", f"{s(P['camera_traps'])} units on the academic partner's protocol",
+           "CAMTRAP", P["camera_traps"], "TEAM"))
     # ---- 5 Equipment: all bought at project start (Phase 1) for every team and focal point the plan fields
     A(("5 Equipment and supplies", "A4", "Scout uniforms and personal kit", f"One set per member of every team ({tsize} x {d['all_teams']} teams), bought at start; no replacement inside the grant",
        "UNIFORM", one(d["all_teams"] * tsize), "TEAM"))
@@ -928,8 +930,9 @@ def build_txt(path, xlsx_name, F, P):
     Pp("                           Sudan carries Juba.")
     WK = P.get("wave_dates_by_kind") or {k: WD for k in ("echo", "tango", "fp")}
     Pp(f"  3  People on the ground  {staff} field staff recruited by wave; none in the field in Phase 1 (wet season).")
-    Pp(f"                           All {by[0]['tango']} TANGO + {by[0]['fp']} FP from {WK['tango'][0]} (before the herds), {by[0]['echo']} ECHO from {WK['echo'][0]};")
-    Pp(f"                           all {by[-1]['echo']} ECHO + {by[-1]['tango']} TANGO + {by[-1]['fp']} FP from {WK['echo'][1]}: {d['team_months'][-1]:g} team-months, all in Phase 2.")
+    fp0 = f"{by[0]['fp']} FP" if by[0]['fp'] else ("the PM as Wau FP" if d["pm_fp"][0] else "0 FP")
+    Pp(f"                           All {by[0]['tango']} TANGO + {fp0} from {WK['tango'][0]} (before the herds), {by[0]['echo']} ECHO from {WK['echo'][0]};")
+    Pp(f"                           all {by[-1]['echo']} ECHO + {by[-1]['tango']} TANGO + {by[-1]['fp']} paid FP from {WK['echo'][1]}: {d['team_months'][-1]:g} team-months, all in Phase 2.")
     for k in STRAND_KEYS:
         if any(b.get(f"echo_{k.lower()}") for b in by):
             Pp(f"                           {k} strand, separately: " + "; ".join(f"P{y+1} {by[y].get(f'echo_{k.lower()}', 0)} ECHO ({by[y].get(f'staff_{k.lower()}', 0)} staff)" for y in Y) + ".")
@@ -940,8 +943,8 @@ def build_txt(path, xlsx_name, F, P):
     Pp(f"                           first-wave ECHO, {P['months_first_phase']['echo'][1]} for the second), not from the start of the grant.")
     Pp(f"  6  The corridor's price  Water, veterinary and meetings: USD {m(t['corridor_price'])} -")
     Pp("                           the herders named it, so it is a line, not an intention.")
-    Pp(f"  7  One expatriate        A full-time Project Manager in South Sudan from 1 Jan 2027 ({sum(d['pm_pm'])} months,")
-    Pp(f"                           {d['pm_pre']} before launch), reporting to Chinko; {sum(t['by_cat']['1 International staff'])/tot:.0%} of the budget.")
+    Pp(f"  7  One expatriate        A full-time Project Manager in South Sudan from {d['pm_start']} ({sum(d['pm_pm'])} months,")
+    Pp(f"                           also the Wau focal point), reporting to Chinko; {sum(t['by_cat']['1 International staff'])/tot:.0%} of the budget.")
     Pp(f"  8  Freight is {a['FREIGHT_PCT']:.0%}        Of everything imported. A line, not a rounding error.")
     Pp(f"  9  Support is a rate     {a['SUPPORT_PCT']:.0%} for Chinko HQ and the Juba desk - services")
     Pp("                           consumed, not a second structure.")
@@ -958,7 +961,7 @@ def build_txt(path, xlsx_name, F, P):
         "Landscape Coordinator at Chinko. African Parks South Sudan carries Juba: banking, approvals, representation and the "
         "half-time finance officer.",
         f"What that leaves us to pay for directly is small and deliberate: the Project Manager / National Coordinator, "
-        f"{by[-1]['fp']} focal points ({', '.join(F['deploy']['fp_places'])}), "
+        f"{by[-1]['fp'] + sum(1 for x in F['deploy']['fp_places'] if 'PM' in x)} focal points ({', '.join(F['deploy']['fp_places'])}" + ("; the PM holds the Wau desk, so one is paid" if any(d["pm_fp"]) and by[-1]['fp'] == 1 else (f"; the PM holds the Wau desk, so {by[-1]['fp']} are paid" if any(d["pm_fp"]) else "")) + "), "
         f"{by[-1]['echo']+by[-1]['tango']} seasonal scout teams, and the activities themselves. "
         "There is no vehicle fleet - 4x4s are hired by the day. No Juba office. No headquarters. The heaviest single asset is a motorbike.",
         f"The calendar does the rest. The project starts on 1 June 2027, in the wet season, and {PHL[0]} is set-up only: "
@@ -1013,7 +1016,8 @@ def build_txt(path, xlsx_name, F, P):
     yf = N - 1; nt = by[yf]["echo"] + by[yf]["tango"]; tm = sum(d["TEAM"]["loaded"]); fp = sum(d["FP"]["loaded"])
     Pp(f"    PER UNIT, WHOLE PROJECT ({nt} teams, {by[yf]['fp']} focal points; Phase 1 kit and training included)")
     Pp(f"      One ECHO/TANGO team, {P['team']['scouts']} scouts + {P['team']['leader']} leader, one season   {m(tm/nt):>10s}")
-    Pp(f"      One focal point (share of the Wau/Juba backbone)              {m(fp/by[yf]['fp']) if by[yf]['fp'] else 'no paid focal point':>10s}")
+    _bb = f"Wau/Juba backbone incl. {by[yf]['fp']} paid focal point{'s' if by[yf]['fp'] != 1 else ''}, whole project"
+    Pp(f"      {_bb:<62s}{m(fp):>10s}")   # whole, not per FP: with one paid FP a per-unit figure misreads as the FP's own cost (5MP, 16 Oct 2026)
     Pp(f"      PM and Chinko HQ oversight, {HM} months                         {m(sum(d['HQ']['loaded'])):>10s}")
     Pp("")
     Pp(wrap("The ECHO and TANGO strands are costed as one kind of team: the same contract, kit and training, under one "
@@ -1094,7 +1098,7 @@ def summary(F, P):
     T = P["team"]; HM = P.get("horizon_months") or 12 * N
     headcount = []
     def hc(role, n, months, phase, basis): headcount.append(dict(role=role, n=n, months=months, phase=phase, basis=basis))
-    hc("Project Manager / National Coordinator (international, based in Wau)", 1, d["pm_pm"], "both", f"one post; full-time from 1 Jan 2027: {d['pm_pre']} pre-launch months (booked to Phase 1) + {sum(P['pm_months'])} = {sum(d['pm_pm'])} months; reports to the Chinko Landscape Coordinator")
+    hc("Project Manager / National Coordinator (international, based in Wau)", 1, d["pm_pm"], "both", f"one post; full-time from {d['pm_start']}: " + (f"{d['pm_pre']} pre-launch months (booked to Phase 1) + {sum(P['pm_months'])} = " if d['pm_pre'] else "") + f"{sum(d['pm_pm'])} months at USD {RATE['SAL_INTL']:,} all-in; also the Wau focal point; reports to the Chinko Landscape Coordinator")
     if any(d["coord_pm"]): hc("National project coordinator, Juba/Wau", 1, d["coord_pm"], "both", f"all {sum(d['coord_pm'])} months")
     hc("Finance/admin officer (0.5 FTE, AP South Sudan, Juba)", 1, d["fin_pm"], "both", f"{sum(d['fin_pm'])} FTE-months")
     hc("Focal points (one person each)", d["fp"][-1], d["fp_pm"], "both", f"{d['fp'][0]} from the start, {d['fp'][-1]} from {WD[1]}: {sum(d['fp_pm'])} person-months" + ("; the Project Manager is the Wau focal point (costed above)" if any(d["pm_fp"]) else ""))
