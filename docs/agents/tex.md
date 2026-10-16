@@ -3,6 +3,8 @@
 **Local only.** `scripts/piptex/` is git-ignored (it carries names from confidential field reporting and
 live guest links); `reports/` is ignored anyway. The scripts that *compute* the numbers are public; the
 report prose and data are not. Do not move anything from `scripts/piptex/` into a tracked path.
+`docs/plan` and `data/plan_zones/solver` are likewise symlinks into `reports/` (plan inputs + solver outputs);
+both were purged from 5mp history on 2026-10-16 — never re-add them.
 
 ## Build
 
