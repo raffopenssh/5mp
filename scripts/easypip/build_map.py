@@ -97,6 +97,9 @@ GREEN = "#1a7a3a"          # the proposed park - the subject of the sheet
 GREEN_W = "#7fae8b"        # wilderness blocks - the frame around it
 GREEN_E = "#2f7f6f"        # Southern NP - existing, someone else's ground
 USER_GREY = "#8c8c86"      # planner sheet: every hand-drawn boundary, one quiet colour
+SET_ASIDE_FACTOR = 0.625   # deployment sheet: a candidate zone whose urgency keeps <= this of itself under the declared constraint
+                           # (factor 0.25 on >= half its ground, or by name) is hatched "set aside for this phase"
+SET_ASIDE_C = "#5a5a5a"    # the hatch and the constraint line: neutral ink, not a class colour
 TAN = "#b08d57"            # pastoral / grazing zones
 RED = "#c62828"            # fire
 FRONT_EARLY, FRONT_LATE = "#b71c1c", "#f3b6b6"   # season-front isochrones, early -> late (the app's ramp, fireseason.js)
@@ -704,8 +707,26 @@ def load_deploy(pdir, arg):
         t["year"] = int(t.get("year") or 2)
         t["place_short"] = str(t.get("place", "")).replace("near ", "").split(" (")[0].replace("*", "").strip()
     dj = fp.with_name(fp.name.replace("_footprint.geojson", ".json"))     # deploy.json: the strand table (budget lines, prefixes, draw style)
-    strands = (json.load(open(dj)).get("strands") or {}) if dj.exists() else {}
-    return dict(footprints=foot, teams=teams, path=fp, strands=strands)
+    D = json.load(open(dj)) if dj.exists() else {}
+    strands = D.get("strands") or {}
+    # v3 (Oct 2026): the declared management constraint. A zone is "set aside for this phase" when its urgency keeps at most
+    # SET_ASIDE_FACTOR of itself — i.e. at least half its ground lies east of the line, or it is penalised by name/strand.
+    # Derived from the candidates' `deprioritised` factor, never from a typed list.
+    set_aside = {int(c["uid"]) for k in ("echo_candidates", "tango_candidates") for c in (D.get(k) or [])
+                 if c.get("deprioritised") is not None and c["deprioritised"] <= SET_ASIDE_FACTOR}
+    line = None
+    gpx = (D.get("params") or {}).get("deprioritise_east_of", "")
+    if gpx:
+        gp = ROOT / gpx.split("=")[0]
+        if gp.exists():
+            import xml.etree.ElementTree as ET
+            ns = {"g": "http://www.topografix.com/GPX/1/1"}
+            pts = [(float(e.get("lon")), float(e.get("lat"))) for e in ET.parse(gp).getroot().iter("{http://www.topografix.com/GPX/1/1}trkpt")]
+            clip = (D.get("params") or {}).get("line_clip_lat") or [-90, 90]
+            pts = [q for q in pts if clip[0] <= q[1] <= clip[1]]
+            if len(pts) > 1: line = LineString(sorted(pts, key=lambda q: q[1]))
+    return dict(footprints=foot, teams=teams, path=fp, strands=strands, set_aside=set_aside, line=line,
+                factor=((D.get("spatial_constraint") or [{}])[0].get("factor")))
 
 
 def solver_raster(pdir):
@@ -816,6 +837,7 @@ def place_labels(fig, ax, labels, avoid=(), marker_pad_px=9.0, reserved=()):
         return not (a[2] + pad < b[0] or b[2] + pad < a[0]
                     or a[3] + pad < b[1] or b[3] + pad < a[1])
 
+    axbb = ax.get_window_extent(renderer=rend)
     for lon, lat in avoid:  # marker keep-out squares, in display pixels
         px, py = ax.transData.transform((lon, lat))
         taken.append((px - marker_pad_px, py - marker_pad_px,
@@ -833,6 +855,8 @@ def place_labels(fig, ax, labels, avoid=(), marker_pad_px=9.0, reserved=()):
             t.remove()
             box = (bb.x0, bb.y0, bb.x1, bb.y1)
             cost = sum(1 for b in taken if hit(box, b)) * 100 + k
+            # a label running off the frame is unreadable (K1 "Sam-Ouandja" lost its "K" at the west edge, 2026-10-16)
+            if box[0] < axbb.x0 or box[2] > axbb.x1 or box[1] < axbb.y0 or box[3] > axbb.y1: cost += 1000
             if best_cost is None or cost < best_cost:
                 best, best_cost, best_box = (dx, dy), cost, box
             if cost < 100:
@@ -999,7 +1023,7 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
                                             clip_on=False))
 
     def key(marker, label, mfc, mec, ms=9, mew=1.4, lw=0, ls="solid",
-            alpha=1.0, note="", short="", kind=None, color=None, hollow=False, swatch=False):
+            alpha=1.0, note="", short="", kind=None, color=None, hollow=False, swatch=False, hatch=None):
         if LEGEND_COMPACT:
             label, note = (short or label), ""
         """One legend row: the symbol exactly as drawn on the map, then why.
@@ -1036,7 +1060,7 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
             elif swatch:   # an AREA: a wide rectangle - never a square, which is a point symbol (ECHO team)
                 w, hh = 0.050, 0.62 * LS * PT
                 ax.add_patch(Rectangle((SYM_X - w / 2, yc - hh / 2), w, hh, facecolor=mfc, edgecolor=mec,
-                                       lw=mew, alpha=alpha, clip_on=False, linestyle=ls))
+                                       lw=mew, alpha=alpha, clip_on=False, linestyle=ls, hatch=hatch))
             elif kind:   # a point symbol: the SAME routine that draws it on the map, at the SAME size
                 kinds = kind if isinstance(kind, (list, tuple)) else [kind]     # a group (the hollow year-2 row shows every shape)
                 if len(kinds) == 1:
@@ -1179,6 +1203,12 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
                     short=f"{v['name'].replace('conservancies', 'conservancy')}: separate budget ({ids})")
         key("s", "Fill depth = evidence for the class (people / herd use)", "none", "none", ms=0, mew=0,
             short="deeper fill = stronger evidence")
+        if deploy.get("set_aside"):
+            key("s", f"Set aside for this phase (AP-RCA constraint, urgency \u00d7 {deploy.get('factor') or 0:g}): later phase / via FFI", "none", SET_ASIDE_C, swatch=True, mew=0.0, alpha=0.4, hatch="///",
+                short=f"Set aside this phase ({len(deploy['set_aside'])} zones): later / via FFI")
+        if deploy.get("line") is not None:
+            key("_", "Nahr al Jur / Sue line \u2014 the declared constraint (east of it penalised)", "none", SET_ASIDE_C, lw=1.6, ls=(0, (6, 2.5)), alpha=0.85,
+                short="Jur / Sue line: constraint, east penalised")
         key(None, "Focal point (1 person)", None, None, kind="*", color=TEAM_C, short="Focal point (1)")
         key(None, "ECHO team (5)", None, None, kind="s", color=TEAM_C, short="ECHO team (5)")
         key(None, "TANGO team (5)", None, None, kind="^", color=TEAM_C, short="TANGO team (5)")
@@ -1367,8 +1397,9 @@ def main():
         # the zones the teams work are part of the ask too: K1 (Sam-Ouandja, CAR strand) lies west of every
         # drawn KML and was cut off at the frame edge on 2026-10-16. Same rule — derived, never typed.
         _zp = Path(a.planner) if Path(a.planner).name == "zones.geojson" else Path(a.planner).parent / "zones.geojson"
-        _served = {u for t in deploy["footprints"] for u in (t.get("zone_uids") or [])}
-        frame_geoms += [shape(f["geometry"]) for f in json.load(open(_zp))["features"] if int(f["properties"]["uid"]) in _served]
+        # v3 (2026-10-16, user): every zone drawn — served, set aside (hatched) or a foreign strand — must sit whole inside the
+        # frame, so the frame is the whole solved zoning, not the KMLs plus the served zones.
+        frame_geoms += [shape(f["geometry"]) for f in json.load(open(_zp))["features"]]
     allg = unary_union(frame_geoms)
     x0, y0, x1, y1 = allg.bounds
     frame = (x0 - FRAME_PAD_DEG, y0 - FRAME_PAD_DEG,
@@ -1379,9 +1410,17 @@ def main():
     # report format: widen the frame to a landscape A-series ratio. The extra width goes EAST, where the study
     # area's diagonal edge leaves the frame blank — that strip is where the legend card sits, off the map content.
     need_w = (y1 - y0) * LANDSCAPE_ASPECT / kx
+    if deploy:
+        # the legend card is an inset in the east strip; with the whole zoning in the frame (2026-10-16) that strip must be
+        # at least the card's width beyond the easternmost zone, or the card covers the hatched set-aside zones east of Wau.
+        card_frac = (PANEL_W_IN + 0.65) / MAP_W_IN
+        need_w = max(need_w, (allg.bounds[2] + 0.15 - x0) / (1 - card_frac))
     if need_w > (x1 - x0):
         x1 = x0 + need_w
-        frame = (x0, y0, x1, y1)
+    need_h = (x1 - x0) * kx / LANDSCAPE_ASPECT
+    if need_h > (y1 - y0):   # keep the page ratio: the extra height is split north/south (both blank beyond the AOI)
+        y0 -= (need_h - (y1 - y0)) / 2; y1 += (need_h - (y1 - y0)) / 2
+    frame = (x0, y0, x1, y1)
 
     fire, fire_types, fire_years = load_fire(frame)
     global SEASON_OVERLAY
@@ -1611,6 +1650,12 @@ def main():
                 continue
             for p in poly_patches(g, facecolor="none", edgecolor=ZONE_C[cls], linewidth=0.7, linestyle=DASHDOT, zorder=2.5, alpha=0.5):
                 ax.add_patch(p)
+            if int(pr["uid"]) in deploy.get("set_aside", ()):   # declared constraint: set aside for this phase (later phase / via FFI)
+                for p in poly_patches(g, facecolor="none", edgecolor=SET_ASIDE_C, linewidth=0.0, hatch="///", zorder=2.55, alpha=0.28):
+                    ax.add_patch(p)
+        if deploy.get("line") is not None:   # the Jur / Sue river line the constraint is drawn on (clipped as the solver clips it)
+            xs, ys = zip(*deploy["line"].coords)
+            ax.plot(xs, ys, color=SET_ASIDE_C, lw=1.6, ls=(0, (6, 2.5)), zorder=3.3, alpha=0.85, solid_capstyle="round")
         # (ii) the zones the teams work: filled by the solver's per-pixel intensity (evidence for the class → opacity).
         #      The fill is the RASTER itself (the 2 km cells the solver decided on), masked to the served zones on the
         #      same grid — one honest pixel edge, no vector clip fighting the cells — and kept light enough that the
