@@ -67,7 +67,7 @@ def undirected_kmeans(X, fit, k, iters=60, seed=0):
     lab, flip = assign(C)
     return lab, flip, C
 
-def movement(st, hold_season=2025, capture=0.50, sigma_km=4.0, k=12):
+def movement(st, hold_season=2025, capture=0.50, sigma_km=4.0, k=12, wind_weight=0.0):
     """Utilisation distribution of each origin–destination bundle of the long transhumance fronts.
 
     Each trajectory segment is a Brownian bridge (Horne et al. 2007): the herd was somewhere between two dated
@@ -103,6 +103,13 @@ def movement(st, hold_season=2025, capture=0.50, sigma_km=4.0, k=12):
     lab, flip, C = undirected_kmeans(X, fit, k)
     Xo = np.where(flip[:, None], X[:, [2, 3, 0, 1]], X)
     cell_km = G.res / 1000; sig_c = sigma_km / cell_km
+    # --wind-weight (2026-10-16, OFF at 0): fast downwind segments weigh 1 - wind_weight in the UD (wind_field.step_weights).
+    # Measured by eval_herd_vanguard.py --wind-weight against the hold-out ladder before it is ever turned on.
+    SW = None
+    if wind_weight > 0:
+        import wind_field as WFm
+        wf_ = WFm.WindField.load(P.AOI); SW = [WFm.step_weights(t[0], wf_, wind_weight) for t in T]
+        log(f"movement: wind_weight {wind_weight}: {sum(int((w < 1).sum()) for w in SW):,} of {sum(len(w) for w in SW):,} segments down-weighted (wind {wf_.covered()})")
     def bridge_ud(idx):
         """UD raster of the fronts idx: each segment rasterised as a line, then Gaussian-spread by sigma — the
         Brownian-bridge kernel for a segment is well approximated by a blurred line when the segment is short
@@ -110,10 +117,11 @@ def movement(st, hold_season=2025, capture=0.50, sigma_km=4.0, k=12):
         from skimage.draw import line as skline
         ud = np.zeros((G.h, G.w), np.float32)
         for j in idx:
-            t = T[j][0]; rr, cc = G.rc_arr([p[0] for p in t], [p[1] for p in t]); w = 1.0 / max(len(t) - 1, 1)
+            t = T[j][0]; rr, cc = G.rc_arr([p[0] for p in t], [p[1] for p in t])
+            sw = SW[j] if SW is not None else np.ones(max(len(t) - 1, 1), np.float32); w = 1.0 / max(float(sw.sum()), 1e-9)
             for i in range(len(t) - 1):
                 lr, lc = skline(int(rr[i]), int(cc[i]), int(rr[i + 1]), int(cc[i + 1])); ok = G.inside(lr, lc)
-                if ok.any(): ud[lr[ok], lc[ok]] += w / max(ok.sum(), 1)
+                if ok.any(): ud[lr[ok], lc[ok]] += w * float(sw[i]) / max(ok.sum(), 1)
         return ndimage.gaussian_filter(ud, sig_c)
     def isopleth(ud, q):
         flat = np.sort(ud.ravel())[::-1]; cs = np.cumsum(flat); thr = flat[np.searchsorted(cs, q * cs[-1])]
@@ -163,7 +171,7 @@ def movement(st, hold_season=2025, capture=0.50, sigma_km=4.0, k=12):
     hi_all = np.flatnonzero(~fit); net_hit = float(np.mean([inside_share(j, band_all > 0) >= 0.5 for j in hi_all])) if hi_all.size else None
     null_all = top_n(alld_s, int((band_all > 0).sum()))
     net_null = float(np.mean([inside_share(j, null_all) >= 0.5 for j in hi_all])) if hi_all.size else None
-    res = dict(hold_season=hold_season, sigma_km=sigma_km, capture_default=capture, k=k, bundling="undirected", fronts_fit=n_fit_total, fronts_holdout=int((~fit).sum()),
+    res = dict(hold_season=hold_season, sigma_km=sigma_km, capture_default=capture, k=k, bundling="undirected", wind_weight=wind_weight, fronts_fit=n_fit_total, fronts_holdout=int((~fit).sum()),
                network_km2=round(float((band_all > 0).sum()) * G.cell_km2()), network_share_of_aoi=round(float((band_all > 0).sum() / G.mask.sum()), 3),
                network_holdout_capture=None if net_hit is None else round(net_hit, 2), network_holdout_capture_null_allfire=None if net_null is None else round(net_null, 2),
                bundles=[{k_: v for k_, v in b.items() if k_ not in ("mask", "ud")} for b in bundles])
@@ -1024,6 +1032,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("mode", choices=["movement", "threat", "claim", "solve", "frontier", "compare", "rank", "support", "narrate", "all"])
     ap.add_argument("--hold-season", type=int, default=2025); ap.add_argument("--capture", type=float, default=0.5); ap.add_argument("--sigma-km", type=float, default=4.0); ap.add_argument("--k", type=int, default=12)
+    ap.add_argument("--wind-weight", type=float, default=0.0, help="movement: weight 1-w on fast (>20 km/day) downwind segments (ERA5; default 0 = off, see eval_herd_vanguard.py --wind-weight)")
     ap.add_argument("--max-core-ha", type=float, default=6_000_000, help="total NEW core (beyond gazetted WDPA parks) the state can gazette across the AOI")
     ap.add_argument("--corridor-capture", type=float, default=0.35, help="share of EACH bundle's herd utilisation its corridor band is widened to hold (the band's width axis of the frontier)")
     ap.add_argument("--time-limit", type=float, default=600); ap.add_argument("--gap", type=float, default=0.01)
@@ -1045,7 +1054,7 @@ def main():
     a = ap.parse_args(); st = load_state()
     W = json.loads(a.weights) if a.weights else None
     global PREP_OPTS; PREP_OPTS = dict(pa_edge_km=a.pa_edge_km, wild_buffer_km=a.wild_buffer_km, axis_draws=a.axis_draws, axis_width_km=tuple(float(v) for v in a.axis_width_km.split(",")), capture=a.corridor_capture, max_width_km=a.max_width_km)
-    if a.mode in ("movement", "all"): movement(st, a.hold_season, a.capture, a.sigma_km, a.k)
+    if a.mode in ("movement", "all"): movement(st, a.hold_season, a.capture, a.sigma_km, a.k, wind_weight=a.wind_weight)
     if a.mode in ("threat", "all"): threat(st)
     if a.mode in ("claim", "all"): claim(st)
     if a.mode in ("solve", "all"):

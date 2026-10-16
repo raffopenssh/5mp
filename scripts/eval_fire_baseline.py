@@ -120,8 +120,10 @@ def load_area(conn, area_id):
     return dict(area_id=area_id, grid=g, mask=mask, seasons=seasons, sig=SIGMA_KM / max(cell_km, 0.5), cell_km=cell_km)
 
 
-def ladder_area(A, extra=None):
-    """rolling-origin ladder for one area. extra: dict name->score grid (static predictors, XSA). Returns list of rows."""
+def ladder_area(A, extra=None, extra_by_season=None):
+    """rolling-origin ladder for one area. extra: dict name->score grid (static predictors, XSA);
+    extra_by_season: season label -> dict name->score grid (time-varying predictors known DURING the held-out season,
+    e.g. the ERA5-Land cured-fuel day; concurrent weather, not a prior season). Returns list of rows."""
     S = A["seasons"]; sig = A["sig"]; mask = A["mask"]; out = []
     for k in range(2, len(S)):
         hold = S[k]
@@ -145,6 +147,13 @@ def ladder_area(A, extra=None):
             held5 = np.sum([p["held5"] for p in pf], 0); rec5 = np.sum([p["rec5"] for p in pf], 0)
             preds["recur5"] = np.where(held5 > 0, rec5 / np.maximum(held5, 1), 0).astype(np.float32)
         if extra: preds.update(extra)
+        if extra_by_season and hold["season"] in extra_by_season:
+            ebs = extra_by_season[hold["season"]]; preds.update(ebs)
+            # combination: early-season climatology ranked x cured-fuel ranked (both known in time), the honest "fuel-aware" map
+            for name, sc in list(ebs.items()):
+                if sc is None: continue
+                ce = preds["clim_early"]; r1 = np.argsort(np.argsort(ce.ravel())).reshape(ce.shape); r2 = np.argsort(np.argsort(np.nan_to_num(sc, nan=-1e9).ravel())).reshape(ce.shape)
+                preds[f"clim_early_x_{name}"] = (r1.astype(np.float32) * r2.astype(np.float32))
         for tname, tgt in (("all", hold["dens"]), ("vanguard", hold["van"])):
             if tgt.sum() < 50: continue
             for pname, sc in preds.items():
@@ -220,6 +229,40 @@ def xsa_extra(conn, A):
     return ex
 
 
+def xsa_climate(A):
+    """ERA5-Land fuel predictors per season on the XSA front grid (scripts/climate_field.py). For held-out season s, per cell:
+    cured10_1mm / cured20_5mm = minus the day-of-season the cell first completed N dry days (rain < X mm) — earlier curing
+    scores higher; soil_dry_nov = minus mean 0-7 cm soil water over 1-30 Nov (drier scores higher). All NaN -> None (unmeasured)
+    when the season's days are not covered. Returns (season -> dict name -> grid) or {} if no land data."""
+    import climate_field as CF
+    npz = Path(CF.ERA5) / "XSA_Study_Area_land_daily.npz"
+    if not npz.exists(): return {}
+    cf = CF.ClimateField.load("XSA_Study_Area"); g = A["grid"]; ny, nx = g.ny, g.nx
+    lon = g.x0 + (np.arange(nx) + 0.5) * g.res; lat = g.y0 + (np.arange(ny) + 0.5) * g.res; LON, LAT = np.meshgrid(lon, lat)
+    r, c, ok = cf._rc(LON.ravel(), LAT.ravel())
+    out = {}
+    # season windows: Sep 1 (y) .. Apr 1 (y+1) from the season label
+    for sdict in A["seasons"]:
+        y = int(sdict["season"][:4]); d0 = cf.daynum(date(y, 9, 1)); d1 = cf.daynum(date(y + 1, 4, 1))
+        idx = [cf.day_index.get(d, -1) for d in range(d0, d1)]
+        if min(idx) < 0 or len(idx) < 150: continue   # season not fully covered -> no predictor (unmeasured, not 0)
+        rain = cf.rain_d[idx]                           # [day, lat, lon]
+        if not np.isfinite(rain[:-1]).all(): continue
+        def cured_day(n_dry, thr):
+            dry = (rain < thr); run = np.zeros(rain.shape[1:], np.int32); first = np.full(rain.shape[1:], np.nan, np.float32)
+            for t in range(rain.shape[0] - 1):
+                run = np.where(dry[t], run + 1, 0); hit = (run >= n_dry) & np.isnan(first); first[hit] = t
+            return first
+        preds = {"cured10_1mm": -cured_day(10, 1.0), "cured20_5mm": -cured_day(20, 5.0)}
+        nov = [cf.day_index[d] for d in range(cf.daynum(date(y, 11, 1)), cf.daynum(date(y, 12, 1)))]
+        preds["soil_dry_nov"] = -cf.swvl1[nov].mean(0)
+        P_ = {}
+        for name, grid in preds.items():
+            v = np.full(ny * nx, np.nan, np.float32); v[ok] = grid[r[ok], c[ok]]; P_[name] = v.reshape(ny, nx)
+        out[sdict["season"]] = P_
+    return out
+
+
 def xsa_lines(conn, A, preds_by_season):
     """capture of long fronts / KF vanguard chains (inside-share >= 0.5) by each predictor's top-a mask, per held-out season."""
     g = A["grid"]; mask = A["mask"]
@@ -250,12 +293,14 @@ def xsa_lines(conn, A, preds_by_season):
 
 
 def main():
-    ap = argparse.ArgumentParser(); ap.add_argument("--area", nargs="*"); ap.add_argument("--xsa", action="store_true"); ap.add_argument("--db", default=str(ROOT / "db.sqlite3"))
+    ap = argparse.ArgumentParser(); ap.add_argument("--area", nargs="*"); ap.add_argument("--xsa", action="store_true"); ap.add_argument("--climate", action="store_true", help="XSA: add ERA5-Land cured-fuel / soil predictors (needs data/climate/era5/*_land_daily.npz)"); ap.add_argument("--db", default=str(ROOT / "db.sqlite3"))
     a = ap.parse_args(); conn = sqlite3.connect(a.db); conn.execute("PRAGMA query_only=1")
     out = dict(computed_at=time.strftime("%Y-%m-%dT%H:%M"), a_fracs=A_FRACS, sigma_km=SIGMA_KM, lead_days=[LEAD_LO, LEAD_HI], early_days=EARLY_D)
     if a.xsa:
         A = load_area(conn, "XSA_Study_Area"); ex = xsa_extra(conn, A)
-        rows = ladder_area(A, ex); out["xsa"] = summarise(rows, "XSA_Study_Area (inside the AOI)")
+        clim = xsa_climate(A) if a.climate else {}
+        if a.climate: print(f"ERA5-Land cured-fuel predictors for seasons: {sorted(clim)}")
+        rows = ladder_area(A, ex, clim or None); out["xsa"] = summarise(rows, "XSA_Study_Area (inside the AOI)")
         # per-season predictor grids for the line targets
         S = A["seasons"]; pbs = {}
         for k in range(2, len(S)):
@@ -276,7 +321,7 @@ def main():
         out["dense_areas"] = summarise([r for r in rows if r["area"] in big], f"areas with >= 20k detections in a season ({len(big)})")
         json.dump(rows, open(ROOT / "data/eval/fire_baseline_rows.json", "w"), default=float)  # per (area, season, pred) — gitignored
         print(f"\nskipped ({len(skipped)}, < 3 seasons or no detections): {' '.join(skipped)}")
-    p = ROOT / "data/eval" / ("fire_baseline_xsa.json" if a.xsa else "fire_baseline.json"); p.parent.mkdir(exist_ok=True)
+    p = ROOT / "data/eval" / (("fire_baseline_xsa_climate.json" if a.climate else "fire_baseline_xsa.json") if a.xsa else "fire_baseline.json"); p.parent.mkdir(exist_ok=True)
     json.dump(out, open(p, "w"), default=float); print(f"\nwrote {p}")
 
 

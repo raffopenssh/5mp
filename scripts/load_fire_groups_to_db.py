@@ -438,6 +438,17 @@ class FireGroupLoader:
         
         return '. '.join(parts) + '.'
 
+    def _annotate_wind(self, area_id, groups):
+        try:
+            import wind_field
+            npz = Path(wind_field.ERA5) / f"{area_id}_wind_daily.npz"
+            if not npz.exists():
+                return
+            n = wind_field.annotate_groups(groups, wind_field.WindField.load(area_id))
+            log(f"  wind: {n}/{len(groups)} groups annotated from {npz.name}")
+        except Exception as e:
+            log(f"  wind annotation skipped: {e}")
+
     def process_park(self, park_id, force=False):
         """Process and load fire groups for one park"""
         if park_id not in self.parks:
@@ -448,6 +459,10 @@ class FireGroupLoader:
             return 0, {}
         
         groups = gz.load(input_file)
+        # Per-step ERA5 wind covariate (scripts/wind_field.py): fields are added only to groups with wind
+        # days covered; an absent field means "no wind yet" (ERA5T lags ~5 d), never 0. No npz -> nothing.
+        if groups:
+            self._annotate_wind(park_id, groups)
         
         if not groups:
             # A park whose rebuild legitimately produced zero groups (too few
@@ -556,6 +571,8 @@ class FireGroupLoader:
                 # seasons, live), per-vertex leads, the stretch run while still
                 # ahead, and the vanguard flag (>= VANGUARD_LEAD_DAYS). Absent
                 # (None) until the area's front has been built.
+                # ERA5 per-step wind (wind_field.ANNOTATION); absent when no wind day is covered
+                **{k: group[k] for k in ("wind_steps", "wind_downwind_share", "wind_upwind_share", "wind_align_deg", "wind_speed_ms") if k in group},
                 "fire_season": group.get('season'),
                 "lead_start": group.get('lead_start'),
                 "lead_basis": group.get('lead_basis'),

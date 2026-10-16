@@ -4,7 +4,7 @@
 One module, three jobs, so the herd model, the vanguard/Kalman evaluation and the
 cron builders all read the SAME wind:
 
-  ensure(aoi, months)        -> fetch missing monthly .nc via scripts/fetch_era5_wind.py (CDS creds in ~/.cdsapirc)
+  ensure(aoi, months)        -> fetch missing monthly .nc via scripts/fetch_era5.py --product wind (CDS creds in ~/.cdsapirc)
   WindField.load(aoi)        -> compact npz cache (data/climate/era5/<aoi>_wind_daily.npz), rebuilt when a .nc is newer
   wf.at(lon, lat, 'YYYY-MM-DD', which='day'|'pm')  -> (u, v) m/s, nearest 0.25 deg cell, daily mean or 12-15 UTC mean
   wf.vec(lons, lats, dates)  -> vectorised u, v arrays (NaN where no data)
@@ -74,45 +74,56 @@ def _read_nc(path):
         return t, ds["latitude"].values, ds["longitude"].values, ds["u10"].values, ds["v10"].values
 
 
-def build(aoi):
-    """Collapse every cached monthly .nc into one npz of daily fields (day mean + pm mean)."""
+def build(aoi, prune=False):
+    """Fold every cached monthly .nc into one npz of daily fields (day mean + pm mean), INCREMENTALLY: months already
+    in the npz are not re-read, so a pruned .nc (prune=True deletes a .nc once folded) is never needed again."""
+    out = os.path.join(ERA5, f"{aoi}_wind_daily.npz")
     files = sorted(glob.glob(os.path.join(ERA5, f"{aoi}_????-??.nc")))
-    if not files:
-        raise SystemExit(f"no ERA5 files for {aoi} under {ERA5}; run fetch_era5_wind.py first")
-    lats = lons = None; days = []; U = []; V = []; Up = []; Vp = []
-    for p in files:
+    lats = lons = None; days = []; U = []; V = []; Up = []; Vp = []; sources = []
+    if os.path.exists(out):
+        z = np.load(out, allow_pickle=False); lats, lons = z["lats"], z["lons"]; sources = z["sources"].tolist()
+        days = z["days"].tolist(); U = list(z["u_day"]); V = list(z["v_day"]); Up = list(z["u_pm"]); Vp = list(z["v_pm"])
+    new = [p for p in files if os.path.basename(p) not in sources]
+    if not new and not days:
+        raise SystemExit(f"no ERA5 wind files for {aoi} under {ERA5}; run fetch_era5.py --product wind first")
+    for p in new:
         t, la, lo, u, v = _read_nc(p)
         if lats is None: lats, lons = la, lo
         assert np.allclose(la, lats) and np.allclose(lo, lons), p
         d = (t // 86400).astype(np.int64); h = (t % 86400) // 3600
         for dd in np.unique(d):
+            if int(dd) in days: continue
             m = d == dd; mp = m & np.isin(h, PM_HOURS)
             days.append(int(dd)); U.append(u[m].mean(0)); V.append(v[m].mean(0))
             Up.append(u[mp].mean(0) if mp.any() else u[m].mean(0)); Vp.append(v[mp].mean(0) if mp.any() else v[m].mean(0))
+        sources.append(os.path.basename(p))
     order = np.argsort(days); days = np.asarray(days)[order]
-    out = os.path.join(ERA5, f"{aoi}_wind_daily.npz")
     np.savez_compressed(out, days=days, lats=lats, lons=lons,
-                        u_day=np.asarray(U, np.float32)[order], v_day=np.asarray(V, np.float32)[order],
-                        u_pm=np.asarray(Up, np.float32)[order], v_pm=np.asarray(Vp, np.float32)[order],
-                        sources=np.asarray([os.path.basename(p) for p in files]))
-    print(f"[wind] {out}: {len(days)} days, grid {len(lats)}x{len(lons)}, {len(files)} files")
+                        u_day=np.asarray(U, np.float16)[order], v_day=np.asarray(V, np.float16)[order],
+                        u_pm=np.asarray(Up, np.float16)[order], v_pm=np.asarray(Vp, np.float16)[order],
+                        sources=np.asarray(sorted(sources)))
+    print(f"[wind] {out}: {len(days)} days, grid {len(lats)}x{len(lons)}, {len(sources)} months (+{len(new)} new)")
+    if prune:
+        for p in new: os.remove(p)
     return out
 
 
-def ensure(aoi, start, end, months=None, python=None):
-    """Fetch the months [start, end] (YYYY-MM) that are not cached yet, then rebuild the npz. Needs cdsapi (venv)."""
+def ensure(aoi, start, end, months=None, python=None, prune=False):
+    """Fetch the months [start, end] (YYYY-MM) that are not cached yet, then fold them into the npz. Needs cdsapi (venv).
+    Months the archive does not hold yet (ERA5T lag ~5 d) are skipped, not errors."""
     py = python or sys.executable
-    cmd = [py, os.path.join(ROOT, "scripts", "fetch_era5_wind.py"), "--aoi", aoi, "--start", start, "--end", end, "--no-summary"]
+    cmd = [py, os.path.join(ROOT, "scripts", "fetch_era5.py"), "--product", "wind", "--aoi", aoi, "--start", start, "--end", end]
     if months: cmd += ["--months", ",".join(str(m) for m in months)]
     subprocess.run(cmd, check=True)
-    return build(aoi)
+    return build(aoi, prune=prune)
 
 
 class WindField:
     def __init__(self, npz):
         z = np.load(npz, allow_pickle=False)
         self.days = z["days"]; self.lats = z["lats"]; self.lons = z["lons"]
-        self.u = {"day": z["u_day"], "pm": z["u_pm"]}; self.v = {"day": z["v_day"], "pm": z["v_pm"]}
+        self.u = {"day": z["u_day"].astype(np.float32), "pm": z["u_pm"].astype(np.float32)}; self.v = {"day": z["v_day"].astype(np.float32), "pm": z["v_pm"].astype(np.float32)}
+        self.sources = z["sources"].tolist() if "sources" in z else []
         self.day_index = {int(d): i for i, d in enumerate(self.days)}
         self.dlat = float(abs(self.lats[1] - self.lats[0])); self.dlon = float(abs(self.lons[1] - self.lons[0]))
         self.lat0 = float(self.lats[0]); self.lon0 = float(self.lons[0]); self.lat_desc = self.lats[1] < self.lats[0]
@@ -121,7 +132,8 @@ class WindField:
     def load(cls, aoi, rebuild=False):
         npz = os.path.join(ERA5, f"{aoi}_wind_daily.npz")
         ncs = glob.glob(os.path.join(ERA5, f"{aoi}_????-??.nc"))
-        if rebuild or not os.path.exists(npz) or (ncs and max(os.path.getmtime(p) for p in ncs) > os.path.getmtime(npz)):
+        folded = set(np.load(npz, allow_pickle=False)["sources"].tolist()) if os.path.exists(npz) else set()
+        if rebuild or not os.path.exists(npz) or any(os.path.basename(p) not in folded for p in ncs):
             build(aoi)
         return cls(npz)
 
@@ -171,6 +183,25 @@ def steps(traj):
     return out
 
 
+def step_weights(traj, wf, wind_weight, fast_km_day=20.0, which="day"):
+    """Per-segment weights for a Brownian-bridge UD (plan_solver.movement / eval_herd_vanguard --wind-weight):
+    a segment that ran DOWNWIND (|bearing - wind_to| <= 45 deg) AND fast (> fast_km_day) is the one kind of step a
+    wind-driven fire could fake, so it is weighted 1 - wind_weight; every other segment (stationary, cross/upwind,
+    slow, or no wind data) keeps weight 1. Returns an array of len(traj) - 1. Nothing is dropped, so the fronts
+    themselves are unchanged; only their mass on the map moves."""
+    n = len(traj) - 1; w = np.ones(max(n, 0), np.float32)
+    if n <= 0 or wind_weight <= 0: return w
+    for i, (p, q) in enumerate(zip(traj, traj[1:])):
+        km = float(dist_km(p[0], p[1], q[0], q[1]))
+        if km < 1.0: continue
+        gap = max((date.fromisoformat(q[2]) - date.fromisoformat(p[2])).days, 1)
+        if km / gap <= fast_km_day: continue
+        u, v = wf.mean_vec((p[0] + q[0]) / 2, (p[1] + q[1]) / 2, p[2], q[2], which)
+        if not (np.isfinite(u) and np.isfinite(v)): continue
+        if abs(float(ang_diff(bearing(p[0], p[1], q[0], q[1]), wind_to_deg(u, v)))) <= 45: w[i] = 1.0 - wind_weight
+    return w
+
+
 def annotate_groups(groups, wf, which="day"):
     """Add the ANNOTATION fields to each group dict in place (NaN-free: fields absent when no wind day is covered)."""
     n = 0
@@ -198,10 +229,11 @@ if __name__ == "__main__":
     ap.add_argument("--build", action="store_true")
     ap.add_argument("--ensure", nargs=2, metavar=("START", "END"), help="YYYY-MM YYYY-MM")
     ap.add_argument("--months", help="calendar months to keep, e.g. 10,11,12,1,2,3")
+    ap.add_argument("--prune-nc", action="store_true", help="delete a monthly .nc once folded into the npz (it is never re-fetched)")
     a = ap.parse_args()
     if a.ensure:
-        ensure(a.aoi, a.ensure[0], a.ensure[1], [int(m) for m in a.months.split(",")] if a.months else None)
+        ensure(a.aoi, a.ensure[0], a.ensure[1], [int(m) for m in a.months.split(",")] if a.months else None, prune=a.prune_nc)
     elif a.build:
-        build(a.aoi)
+        build(a.aoi, prune=a.prune_nc)
     else:
         wf = WindField.load(a.aoi); print("covered", wf.covered(), "days", len(wf.days), "grid", len(wf.lats), "x", len(wf.lons))
