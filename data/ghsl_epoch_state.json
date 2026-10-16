@@ -3327,6 +3327,41 @@
   },
   "version": "2026-08-13a"
  },
+ "aoi_North_CAR_Complex_261006091204": {
+  "at": "2026-10-07T06:45:31Z",
+  "breakdown": {
+   "established": 17,
+   "permanent": 267,
+   "recent": 3
+  },
+  "citation": "Pesaresi M., Politis P. (2023): GHS-BUILT-S R2023A. European Commission JRC. doi:10.2905/9F06F36F-4B11-47EC-ABB0-4F8B7B1D72EA",
+  "clusters": 287,
+  "persistence_source": "ghsl_E2000+E2015",
+  "terms": "CC BY 4.0",
+  "tiles": {
+   "R8_C20": {
+    "E2000": "21d8bab4da8eaf0fef60918310ef9703fdfa854a463c067e60d69b4bbe8368d3",
+    "E2015": "7f937ad4f5958ab8a77a8643094ccddc421ddf8a0506d6e350a2d73423bf2d41",
+    "E2030": "598cd07422f8dac16dda0aaed746a26af46068542027bfa3f1308a20ddaa7fbc"
+   },
+   "R8_C21": {
+    "E2000": "497e99dc71cd102c02a0bf88c1e61059045c059e078fd21c3933cf6e80c37304",
+    "E2015": "de8a10d53ff5f1201eb51e353aa0619cd0b3ef9b76fe4273823c5485bc13dea3",
+    "E2030": "a1d2a772348dc03e19c0101998885ad30e0fcd2f086067a5dc1e038ad63ad900"
+   },
+   "R9_C20": {
+    "E2000": "7dc8d944104df2ca9437e3bd1491a5abdaaf318508bee724ea2549735181954c",
+    "E2015": "93819e5719866921edb553adb4969ae06ffdf21a0465d0991c6be4fcb6e0ce8e",
+    "E2030": "14ec0f15ddfad41f817e47b36922779eb59b423bf061b4098c9ec80ca625ef46"
+   },
+   "R9_C21": {
+    "E2000": "2fca432b351f89e0b3875b4ef08066bb5140bda14faeb98e69a802a3bf7d9b74",
+    "E2015": "95a3271073d330eafe95d76bb47052626c9177774fb72cf89b2dfd026a12b4d6",
+    "E2030": "20658f1eba28e8b7095ddad7343e0d9e66db3acdcc62a73ea3d62e5a631c0ca7"
+   }
+  },
+  "version": "2026-08-13a"
+ },
  "aoi_Serra_Bonita_260818165659": {
   "at": "2026-08-20T06:45:43Z",
   "breakdown": {

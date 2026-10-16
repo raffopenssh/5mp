@@ -4444,6 +4444,38 @@
    "R12_C21"
   ]
  },
+ "aoi_North_CAR_Complex_261006091204": {
+  "after": {
+   "area_m2": 6706064.0,
+   "classes": {
+    "settlement": 22,
+    "temporary_camp": 176,
+    "town": 31,
+    "village": 58
+   },
+   "clusters": 287,
+   "detector_rows": 76,
+   "extent_m2": 72390000.0,
+   "legacy_area_rows": 0,
+   "legacy_pop_rows": 0,
+   "polygons": 1131,
+   "polygons_with_extent": 1131,
+   "population_measured": 177046
+  },
+  "at": "2026-10-07T06:45:41Z",
+  "clusters": 287,
+  "extent_over_surface": 10.794707595990733,
+  "ok": true,
+  "pipeline": "2026-08-13d",
+  "polygons": 1131,
+  "stale_removed": 0,
+  "tiles": [
+   "R8_C20",
+   "R8_C21",
+   "R9_C20",
+   "R9_C21"
+  ]
+ },
  "aoi_Serra_Bonita_260818165659": {
   "after": {
    "area_m2": 4469729.0,
