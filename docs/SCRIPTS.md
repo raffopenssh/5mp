@@ -272,6 +272,18 @@ both ends (the F9 block stays flagged; flags stay under 5 % of the corpus).
 
 ---
 
+### `scripts/fetch_era5_wind.py`
+
+ERA5 10 m wind (u/v) for an AOI bbox from the Copernicus CDS (ECMWF account). Purpose: de-confound the
+Jan–Feb (Harmattan) fire-front direction in the herd-route analysis (PIP review B5).
+
+- Auth: `~/.cdsapirc` with `url: https://cds.climate.copernicus.eu/api` and `key: <personal access token>`
+  (from https://cds.climate.copernicus.eu/profile). Not in git. Licence for `reanalysis-era5-single-levels`
+  must be accepted once on the CDS site.
+- Run: `.venv/bin/python scripts/fetch_era5_wind.py --aoi XSA_Study_Area --start 2019-12 --end 2026-03 --months 12,1,2,3`
+- Output: `data/climate/era5/<aoi>_<YYYY-MM>.nc` (3-hourly, 0.25°) and `<aoi>_daily.csv`
+  (daily mean u10, v10, speed m/s, direction-from deg per cell). Requests are queued server-side; minutes per month.
+
 ## Historical Data Scripts
 
 ### `scripts/build_unified_fire_dataset.py`
