@@ -244,7 +244,7 @@ GOODS_CATS = ("5 Equipment and supplies", "6 Transport")
 GOODS_CODES = ("UNIFORM", "FIELDKIT", "PHONE", "POWER", "MBIKE", "INREACH", "LAPTOP", "GEN", "SOLAR", "STARLINK_KIT", "CAMTRAP")   # imported goods wherever they sit (a strand's category holds both)
 NO_FREIGHT_CODES = ("MBIKE_SSD", "GAP_MBIKE_INS")   # in category 6 but not an import: a delivered price, an insurance premium
 def is_goods(r): return r["code"] not in NO_FREIGHT_CODES and (r["cat"] in GOODS_CATS or (r["cat"] in STRAND_CAT.values() and r["code"] in GOODS_CODES))
-EQUIPMENT_CODES = GOODS_CODES + ("MBIKE_SSD",)   # what facts.budget.equipment lists (South Sudan side)
+EQUIPMENT_CODES = GOODS_CODES + ("MBIKE_SSD", "FIELD_SOLAR")   # what facts.budget.equipment lists (South Sudan side; FIELD_SOLAR is bought locally, no freight - review C4)
 
 ACTIONS = {
     "A1": "1  Secure SSWS backing first",
@@ -873,6 +873,39 @@ def build_xlsx(path, F, P):
     pivot_sheet("By location", "COST PER LOCATION (as per the plan's team sites; lines for 'all teams' split by months active)", "Location", "PivotLocation")
     pivot_sheet("By strand", "COST BY BUDGET STRAND (South Sudan request vs the separate CAR / DRC / Sudan conservancy budgets)", "Strand", "PivotStrand")
     pivot_sheet("By delivery unit", "LOADED COST OF EACH DELIVERY UNIT (teams, focal points and backbone, Chinko HQ, strands)", "Delivery unit", "PivotUnit")
+    # ---- AP format (review C9, EM C6 / Eric Tamko): the static summary layout of reports/review_v2_sources/AP_budget_template_ET_input.xlsx
+    #      (Row Labels | Phase 1 direct, loaded | Phase 2 direct, loaded | Grand Total direct, loaded), SUMIFS over Allocation - no pivot to refresh,
+    #      so it reads in any viewer. Four blocks on one sheet: category, strand, delivery unit, plan action. Loaded = TOTAL REQUESTED.
+    AP_SHEET = "AP format (ET)"
+    ap = wb.create_sheet(AP_SHEET); a_last = wal.max_row
+    ap["A1"] = f"AP BUDGET FORMAT (ET input, Oct 2026) - direct and loaded USD by phase; static SUMIFS over the Allocation sheet, {HM} months"; ap["A1"].font = Font(bold=True, size=12)
+    ap["A2"] = "Loaded = direct + freight on goods + bank + Chinko HQ/Juba desk + contingency; the loaded grand total equals TOTAL REQUESTED on the Budget sheet. Edit nothing here."; ap["A2"].font = Font(italic=True, size=9)
+    def ap_block(title, field_col, labels):
+        ap.append([]); r0 = ap.max_row + 1
+        ap.append([title] + [x for y in range(N) for x in (PH[y], "")] + ["Grand Total", "Grand Total"]); ap.cell(row=r0, column=1).font = Font(bold=True)
+        ap.append(["Row Labels"] + [x for _ in range(N) for x in ("Sum of Direct USD", "Sum of Loaded USD")] + ["Grand Total (Sum of Direct USD)", "Grand Total (Sum of Loaded USD)"])
+        style_header(ap, r0 + 1, 2 * N + 3); first = ap.max_row + 1
+        for lab in labels:
+            r = ap.max_row + 1; cells = [lab]
+            for y in range(N):
+                crit = f'Allocation!${field_col}$4:${field_col}${a_last},A{r},Allocation!$I$4:$I${a_last},"{PH[y]}"'
+                cells += [f"=SUMIFS(Allocation!$J$4:$J${a_last},{crit})", f"=SUMIFS(Allocation!$K$4:$K${a_last},{crit})"]
+            dcols = [get_column_letter(2 + 2 * y) for y in range(N)]; lcols = [get_column_letter(3 + 2 * y) for y in range(N)]
+            cells += ["=" + "+".join(f"{c}{r}" for c in dcols), "=" + "+".join(f"{c}{r}" for c in lcols)]
+            ap.append(cells)
+        last = ap.max_row; r = last + 1
+        ap.append(["Total Result"] + [f"=SUM({get_column_letter(c)}{first}:{get_column_letter(c)}{last})" for c in range(2, 2 * N + 4)])
+        for c in range(1, 2 * N + 4): ap.cell(row=r, column=c).font = Font(bold=True)
+        for rr in range(first, r + 1):
+            for c in range(2, 2 * N + 4): ap.cell(row=rr, column=c).number_format = MONEY
+    cats = list(dict.fromkeys(rv["cat"] for rv in rows))
+    ap_block("By cost category", "A", cats)
+    ap_block("By budget strand", "E", ["South Sudan request"] + [strand_name[k] for k in STRAND_KEYS])
+    ap_block("By delivery unit", "D", ["HQ", "FP", "TEAM", "NONE"] + list(STRAND_KEYS))
+    ap_block("By plan action", "B", list(ACTIONS.values()))
+    ap.column_dimensions["A"].width = 44
+    for c in "BCDEFGH": ap.column_dimensions[c].width = 18
+    ap.sheet_properties.tabColor = "1F4E79"
     # ---- Phasing (plain formulae: Phase 1 = set-up in the wet season, Phase 2 = the field season; Phase 1 is also the first six months)
     ws7 = wb.create_sheet("Phasing"); ws7["A1"] = f"PHASING ON THE {HM}-MONTH CALENDAR (Phase 1 = set-up, no field teams; Phase 2 = the one field season)"
     ws7["A1"].font = Font(bold=True, size=12); ws7.append([]); ws7.append(["Period", "Direct", "Loaded"]); style_header(ws7, 3, 3)
@@ -1105,9 +1138,13 @@ def summary(F, P):
     hc("Community wildlife scouts", d["teams"][-1] * T["scouts"], d["scout_pm"], 2, f"{T['scouts']} per team x {d['team_months'][-1]:g} team-months, Phase 2 only")
     hc("Scout team leaders", d["teams"][-1] * T["leader"], d["lead_pm"], 2, f"one per team, {d['team_months'][-1]:g} team-months, Phase 2 only")
     AV = {"SAV_HR": ("Savannah STOL (light aircraft)", "surveillance, livestock counts and rim reconnaissance, several flights over the 2027-28 dry season"),
-          "HELI_HR": ("R44 helicopter", "operational support"), "AVGAS_BBL": ("Avgas (barrels positioned in Phase 1)", "fuel for the above"),
+          "HELI_HR": ("R44 helicopter", "operational support"), "AVGAS_BBL": (None, "fuel for the above: the aircraft rates are dry (EM C4)"),
           "SURVEY_TECH": ("Survey technical package", "design, observers, analysis; flown within the Savannah hours"), "FLY_HR": ("Light aircraft, wet", "reconnaissance / survey")}
-    av_all = [dict(craft=AV[r["code"]][0], code=r["code"], hours=round(sum(r["qty"])) if r["unit"] == "hour" else None, qty=round(sum(r["qty"])), unit=r["unit"],
+    def _craft(r):   # AVGAS: the label names the barrels per phase (emergency reserve in Phase 1, operational fuel for the flying in Phase 2), never typed
+        if AV[r["code"]][0] is not None: return AV[r["code"]][0]
+        q = [round(v) for v in r["qty"]]
+        return f"Avgas ({q[0]} emergency barrels positioned in Phase 1" + (f" + {q[1]} barrels of operational fuel for the flying hours in Phase 2" if len(q) > 1 and q[1] else "") + ")"
+    av_all = [dict(craft=_craft(r), code=r["code"], hours=round(sum(r["qty"])) if r["unit"] == "hour" else None, qty=round(sum(r["qty"])), unit=r["unit"],
                    rate=r["rate"], total=round(sum(r["tot"])), phase=phase_of(r["qty"]), purpose=AV[r["code"]][1]) for r in ssd if r["code"] in AV and sum(r["qty"])]
     aviation = [a for a in av_all if a["hours"] is not None]            # the aircraft: every entry has hours
     aviation_support = [a for a in av_all if a["hours"] is None]        # survey package, avgas: no hours
