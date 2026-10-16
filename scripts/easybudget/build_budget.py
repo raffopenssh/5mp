@@ -135,10 +135,11 @@ RATES = [
      "conservancy model: what a community body needs to exist before it has "
      "its own funding. The model's 50,000 direct community fund is NOT here - "
      "it is the conservancy's own budget once registered. INDICATIVE"),
-    ("CBO_SEED_SSD", "Conservancy CBO governance seed, South Sudan (reviewed)", "conservancy", 15000,
-     "Reviewed plan (ET): 15,000 per conservancy formally constituted within the project, against "
-     "the 17,000 catalogue rate kept for the strands. Disbursed once the facilitation line has a "
-     "constituted body to pay. INDICATIVE"),
+    ("CBO_SEED_SSD", "Community outreach and engagement per conservancy zone, South Sudan (reviewed)", "conservancy", 15000,
+     "Reviewed plan (ET): 15,000 per conservancy zone, against the 17,000 catalogue rate kept for the "
+     "strands. Redirected 16 Oct 2026 (review C6/C7, author's decision) from a CBO governance seed to "
+     "outreach: meetings, materials and the community's own events in the staffed zones; still available "
+     "to seed a governance body if one is constituted inside the phase. INDICATIVE"),
     ("FIELDKIT", "Team field kit (tent, tarp, cooking, torches, pangas)", "team", 1400,
      "Per four-person team, excluding freight. FIRM"),
     ("CAMTRAP", "Camera trap", "unit", 450, "Not used since 2026-10-16 (review B8: the 30 units are dropped, track-count training with local hunters and herders replaces them). Kept as a rate for comparison. FIRM"),
@@ -436,9 +437,10 @@ def lines(F, P):
        f"(ECHO zones {echo_s}). Scoping and consultation with communities and traditional authorities, not full legal constitution - "
        "that is not expected to complete inside 18 months",
        "FACILITATOR", [n_echo[y] * fs + echo[y] * fc * fphase[y] for y in Y], None))
-    A(("4 Field activities", "A4", "Conservancy CBO governance seed",
-       f"One per conservancy scoped in the previous phase (new ECHO zones {s(n_echo)} lag one phase: {s([0]+n_echo[:-1])}); "
-       "paid once the body is constituted; grows into the AP SSD conservancy model (docs/plan/reference_conservancy_budget.md)",
+    A(("4 Field activities", "A4", "Community outreach and engagement in the conservancy zones",
+       f"One per conservancy zone scoped in the previous phase (new ECHO zones {s(n_echo)} lag one phase: {s([0]+n_echo[:-1])}); "
+       "outreach meetings, materials and community events (EM C6); may still seed a governance body if one is constituted "
+       "(docs/plan/reference_conservancy_budget.md)",
        "CBO_SEED_SSD", [0] + n_echo[:-1], None))
     if any(P["camera_traps"]):   # B8 (TA email / EM C7, Oct 2026): dropped; the track-count training line in cat. 10 replaces it
         A(("4 Field activities", "A10", "Camera traps for community biomonitoring", f"{s(P['camera_traps'])} units on the academic partner's protocol",

@@ -180,3 +180,7 @@ and re-zips (0.85 GB, ~3 min, zip not committed). The archive PDF keeps the proj
 The "mineral title on the rim → expansion pauses" stop rule never existed in the PIP; it was summary/slides-only and is now a
 risk-register sentence there. `build_budget.py` derives the "one-offs" and "corridor's price" prose from non-zero lines, so a
 deferred line (survey package, vet campaign, pump) drops out of the sentence by itself.
+Deliverable filenames follow the title: `DELIV_STEM` in the generator (`build_pip_tex.py --name` → `PIP_Radom_Numatina_Southern_v3_2026-10-16`,
+from `VERSION_LINE`); `build_all.sh`, `build_docx.py`, `share.py` and the archive refresh all read it — bump `VERSION_LINE`, nothing else.
+`share.py` re-uploads and mints **new** links, so run it (then rebuild once more so the PDF carries the new links) only at delivery.
+C7 (16 Oct, author): the 30,000 governance seed is now the "Community outreach and engagement" line, same amount (`\revchg{5MP}{C7}`).
