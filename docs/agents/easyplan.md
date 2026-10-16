@@ -130,6 +130,29 @@ parser asserts on those numbers — do not add a 15th category). Strands keep `s
 unchanged. `facts.budget` gained `equipment`, `headcount`, `aviation`/`aviation_support`, `team_months`,
 `gap_fill_total`; `first_6_months` now equals Phase 1. Total USD 1.90 M (0.55 / 1.35), SSD request 1.51 M.
 
+## Budget scenarios and the focus interface (2026-10-16)
+
+* **`docs/plan/scenarios.yaml`** — named override sets for plan.yaml (`cuts`, `adds`, `combined`). Each entry is one
+  decision: `review` (the REVIEW_V2 item it answers, or "author"), `removes`/`adds` in the line's own basis words,
+  `overrides` (plan.yaml keys; an `assumptions:` dict overrides `build_budget.ASSUMPTIONS` ratios). Savings are never typed
+  — `plan_deploy_frontier.py --scenario all` prints them (`FRONTIER_LEAN.txt/.json`). plan.yaml keeps its defaults until a
+  scenario is picked. Option keys added for this (all defaulting to the plan as it stands): `legal_retainer_months`,
+  `gis_support_months`, `security_assessment`, `mbikes_per_team`, `fp_mbikes`, `starlink_team_bases` (terminal +
+  subscription + `FIELD_SOLAR` kit per team base — the control-room link), `trackers_per_tango_team`, `inreach_echo_teams`,
+  `inreach_fp`, `base_vehicle_days_per_month`.
+* **The frontier reads `deploy_focus_pool.json`** (the 22-site pool run), not `deploy.json` — a capped run's pool holds only
+  the sites it staged, in a different order (`--pool FILE` to override). It bit once: the baseline row came out as 3 TANGO.
+* **`docs/plan/focus.yaml` + `scripts/plan_focus.py pool|frontier|pick|all [--dry-run]`** — the one file AP-RCA edits when
+  the spatial focus or the money changes: constraint line / by-name penalties / factor, pool caps, `caps_musd × months ×
+  scenarios`, and the `pick` row. `pick` freezes plan.yaml to `docs/plan/versions/`, edits the chosen overrides and
+  contract months in place (comments kept, each line tagged `# focus.yaml <scenario> <date>`), runs `plan_deploy.py` at the
+  row's team caps (`--echo-y1` = the row's wave-1 ECHO count) and `easyplan.py`. Team counts are read from the frontier
+  row, never typed. **Caveat:** `months: 8` changes only the team contract months (13/12/11 → 8/7/6), not `phase_months` /
+  `year_labels` — the backbone calendar stays 18 months; a true Nov–Jun submission is still a plan.yaml calendar edit.
+* **`docs/plan/versions/`** — frozen plan.yaml copies at decision points (README there); `cp` one back to reverse course.
+* `easyplan.py --check` **re-renders facts.json and the budget before comparing** — `git checkout` them if you did not mean
+  to publish (it is not a read-only check).
+
 ## Versioning the plan — two repos, how to reverse course (2026-10-01)
 
 A plan change touches two places, and both are under git:
