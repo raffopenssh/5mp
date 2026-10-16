@@ -1063,6 +1063,22 @@ direction ("to"), `wind_to = atan2(u, v)`, downwind |Δ| ≤ 45°, upwind ≥ 13
 `day` = 24 h mean, `pm` = 12+15 UTC mean. Missing wind is NaN / an absent
 field, never 0 (invariant 1).
 
+**Result (full 19-month run, `reports/` commit `cd01f4a`).** 321,336 steps:
+Jan–Feb downwind 0.238 vs null 0.238 ± 0.0006 (z = 0.1), upwind 0.245;
+windiest-third days z = 0.4; per-bundle |z| ≤ 1.7 except b10 (+0.008, z 3.3)
+and b14 (−0.009, z −3.8). Fronts follow the corridor axis (59–100 % within
+45°, both directions) not the wind (1–30 %); **b7** is the one corridor whose
+axis lies along the wind (204° vs 205°, 54 % "downwind" by geometry, day-level
+z = −1.7) — say so whenever b7 / TANGO zone 255 is quoted. Bands capture
+held-out Oct–Dec+Mar fronts at 0.32–0.67 (Jan–Feb 0.41–0.68); axis refit
+without Jan–Feb rotates bearings 0.1–4.3°. The check's nearest-centroid
+assignment gives b5 +229 and b9 +143 fronts vs `movement.json` — its
+per-bundle rows are not the planner's. **`--wind-weight` is measured and not
+adopted** (`data/eval/herd_vanguard_wind.json`: 1.4 % of segments affected,
+hold-out capture 0.892 → 0.892 / 0.891, mean skill +0.468 → +0.468 / +0.469);
+the default stays 0 and must not be raised without a new hold-out run.
+ERA5-Land curing prior: unmeasured until the land fetch finishes (tmux `land`).
+
 **Hooking into the cron (not yet on).** `wind_field.ensure(aoi, start, end,
 months)` fetches the missing months and rebuilds the npz; it needs `cdsapi`,
 which is only in `.venv` — call it with `python=.venv/bin/python`. The natural
